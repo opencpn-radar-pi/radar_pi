@@ -1,0 +1,12 @@
+--mode=c
+--lineend=linux
+--style=otbs
+--indent=spaces=4
+--indent-switches
+--indent-cases
+--add-brackets
+--add-one-line-brackets
+--pad-oper
+--pad-header
+--unpad-paren
+--convert-tabs
