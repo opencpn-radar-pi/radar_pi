@@ -35,7 +35,7 @@
 #include "wx/wxprec.h"
 
 #ifndef  WX_PRECOMP
-  #include "wx/wx.h"
+#include "wx/wx.h"
 #endif //precompiled headers
 
 #define     PLUGIN_VERSION_MAJOR    1
@@ -45,7 +45,7 @@
 #define     MY_API_VERSION_MINOR    8
 
 #ifndef PI
-      #define PI        3.1415926535897931160E0      /* pi */
+#define PI        3.1415926535897931160E0      /* pi */
 #endif
 
 #ifdef __WXGTK__
@@ -60,23 +60,23 @@
 
 
 enum {
-        BM_ID_RED,
-        BM_ID_RED_SLAVE,
-        BM_ID_GREEN,
-        BM_ID_GREEN_SLAVE,
-        BM_ID_AMBER,
-        BM_ID_AMBER_SLAVE,
-        BM_ID_BLANK,
-        BM_ID_BLANK_SLAVE
+    BM_ID_RED,
+    BM_ID_RED_SLAVE,
+    BM_ID_GREEN,
+    BM_ID_GREEN_SLAVE,
+    BM_ID_AMBER,
+    BM_ID_AMBER_SLAVE,
+    BM_ID_BLANK,
+    BM_ID_BLANK_SLAVE
 
 };
 
-double radar_distance (double lat1, double lon1, double lat2, double lon2, char unit);
+double radar_distance(double lat1, double lon1, double lat2, double lon2, char unit);
 
 enum {
-      RADAR_OFF,
-      RADAR_ON,
-      };
+    RADAR_OFF,
+    RADAR_ON,
+};
 
 
 #pragma pack(push,1)
@@ -109,7 +109,7 @@ struct range_settings {
 extern double   br_overlay_transparency;
 extern bool     br_master;
 extern bool     br_auto;
-extern int      br_displaymode; 
+extern int      br_displaymode;
 extern bool     br_enable_log;
 extern int      br_gain;
 extern int      br_rejection;
@@ -135,117 +135,133 @@ class BR24DisplayOptionsDialog;
 class br24radar_pi : public opencpn_plugin_18
 {
 public:
-      br24radar_pi(void *ppimgr);
+    br24radar_pi(void *ppimgr);
 
 //    The required PlugIn Methods
-      int Init(void);
-      bool DeInit(void);
+    int Init(void);
+    bool DeInit(void);
 
-      int GetAPIVersionMajor();
-      int GetAPIVersionMinor();
-      int GetPlugInVersionMajor();
-      int GetPlugInVersionMinor();
+    int GetAPIVersionMajor();
+    int GetAPIVersionMinor();
+    int GetPlugInVersionMajor();
+    int GetPlugInVersionMinor();
 
-      wxBitmap *GetPlugInBitmap();
-      wxString GetCommonName();
-      wxString GetShortDescription();
-      wxString GetLongDescription();
+    wxBitmap *GetPlugInBitmap();
+    wxString GetCommonName();
+    wxString GetShortDescription();
+    wxString GetLongDescription();
 
 //    The required override PlugIn Methods
-      bool RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp);
-      bool RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp);
-      void SetPositionFix(PlugIn_Position_Fix &pfix);
-      void SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix);
-      void OnContextMenuItemCallback(int id);
+    bool RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp);
+    bool RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp);
+    void SetPositionFix(PlugIn_Position_Fix &pfix);
+    void SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix);
+    void OnContextMenuItemCallback(int id);
 
-      void SetDefaults(void);
-      int GetToolbarToolCount(void);
-      void OnToolbarToolCallback(int id);
-      void ShowPreferencesDialog( wxWindow* parent );
+    void SetDefaults(void);
+    int GetToolbarToolCount(void);
+    void OnToolbarToolCallback(int id);
+    void ShowPreferencesDialog(wxWindow* parent);
 
 // Other public methods
 
-      void OnBR24ControlDialogClose();         // Control dialog
-      void SetDisplayMode(int mode);
-      void UpdateDisplayParameters(void);
-      void SetOperationMode(int mode);
+    void OnBR24ControlDialogClose();         // Control dialog
+    void SetDisplayMode(int mode);
+    void UpdateDisplayParameters(void);
+    void SetOperationMode(int mode);
 
-      void SetBR24ControlsDialogX(int x){ m_BR24Controls_dialog_x = x; }
-      void SetBR24ControlsDialogY(int y){ m_BR24Controls_dialog_y = y; }
-      void SetBR24ControlsDialogSizeX(int sx){ m_BR24Controls_dialog_sx = sx; }
-      void SetBR24ControlsDialogSizeY(int sy){ m_BR24Controls_dialog_sy = sy; }
+    void SetBR24ControlsDialogX(int x) {
+        m_BR24Controls_dialog_x = x;
+    }
+    void SetBR24ControlsDialogY(int y) {
+        m_BR24Controls_dialog_y = y;
+    }
+    void SetBR24ControlsDialogSizeX(int sx) {
+        m_BR24Controls_dialog_sx = sx;
+    }
+    void SetBR24ControlsDialogSizeY(int sy) {
+        m_BR24Controls_dialog_sy = sy;
+    }
 
-      void OnBR24ManualDialogShow();
-      void OnBR24ManualDialogClose();
-      void SetBR24ManualDialogX(int x){ m_BR24Manual_dialog_x = x; }
-      void SetBR24ManualDialogY(int y){ m_BR24Manual_dialog_y = y; }
-      void SetBR24ManualDialogSizeX(int sx){ m_BR24Manual_dialog_sx = sx; }
-      void SetBR24ManualDialogSizeY(int sy){ m_BR24Manual_dialog_sy = sy; }
-      void SetRangeMode(int mode);
-      void SetFilterProcess(int br_process, int sel_gain);
-      void SetGainMode(int mode);
-      void SetRejectionMode(int mode);
-      bool LoadConfig(void);
-      bool SaveConfig(void);
+    void OnBR24ManualDialogShow();
+    void OnBR24ManualDialogClose();
+    void SetBR24ManualDialogX(int x) {
+        m_BR24Manual_dialog_x = x;
+    }
+    void SetBR24ManualDialogY(int y) {
+        m_BR24Manual_dialog_y = y;
+    }
+    void SetBR24ManualDialogSizeX(int sx) {
+        m_BR24Manual_dialog_sx = sx;
+    }
+    void SetBR24ManualDialogSizeY(int sy) {
+        m_BR24Manual_dialog_sy = sy;
+    }
+    void SetRangeMode(int mode);
+    void SetFilterProcess(int br_process, int sel_gain);
+    void SetGainMode(int mode);
+    void SetRejectionMode(int mode);
+    bool LoadConfig(void);
+    bool SaveConfig(void);
 
 private:
-      void TransmitCmd(char* msg,int size);
-      void RadarTxOff(void);
-      void RadarTxOn(void);
-      void RadarStayAlive(void);
-      void UpdateState(void);
-      void DoTick(void);
-      bool br_time_render;
-      void Select_Range(int req_range_index);
-      void Select_Clutter(int req_clutter_index);
-      void Select_Rejection(int req_rejection_index);
-      void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
-      void RenderRadarStandalone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
-      void RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
-      void OpenGL3_Render_Overlay();
-      void RenderRadarBuffer ( wxDC *pdc, int width, int height);
+    void TransmitCmd(char* msg, int size);
+    void RadarTxOff(void);
+    void RadarTxOn(void);
+    void RadarStayAlive(void);
+    void UpdateState(void);
+    void DoTick(void);
+    bool br_time_render;
+    void Select_Range(int req_range_index);
+    void Select_Clutter(int req_clutter_index);
+    void Select_Rejection(int req_rejection_index);
+    void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
+    void RenderRadarStandalone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
+    void RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
+    void OpenGL3_Render_Overlay();
+    void RenderRadarBuffer(wxDC *pdc, int width, int height);
 
-      void draw_blob_dc(wxDC &dc, double angle, double radius, double blob_r, double arc_length,
-                               double scale, int xoff, int yoff);
-      void draw_blob_gl(double angle, double radius, double blob_r, double arc_length);
-      void draw_histogram_column(int x,int y);
+    void draw_blob_dc(wxDC &dc, double angle, double radius, double blob_r, double arc_length,
+                      double scale, int xoff, int yoff);
+    void draw_blob_gl(double angle, double radius, double blob_r, double arc_length);
+    void draw_histogram_column(int x, int y);
 
-      void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
+    void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
 
-      wxFileConfig     *m_pconfig;
-      wxWindow         *m_parent_window;
-      wxMenu           *m_pmenu;
+    wxFileConfig     *m_pconfig;
+    wxWindow         *m_parent_window;
+    wxMenu           *m_pmenu;
 
-      int              m_display_width, m_display_height;
-      int              m_tool_id;
-      bool              m_bShowIcon;
-      wxBitmap          *m_pdeficon;
+    int              m_display_width, m_display_height;
+    int              m_tool_id;
+    bool              m_bShowIcon;
+    wxBitmap          *m_pdeficon;
 
-      //    Controls added to Preferences panel
-      wxCheckBox              *m_pShowIcon;
+    //    Controls added to Preferences panel
+    wxCheckBox              *m_pShowIcon;
 
-      wxMutex                 m_mutex;
-      MulticastRXThread       *m_pmcrxt;        // wxsocket holder
+    wxMutex                 m_mutex;
+    MulticastRXThread       *m_pmcrxt;        // wxsocket holder
 
-      wxDatagramSocket   *m_out_sock101;
-      wxDateTime         m_dt_last_render;
+    wxDatagramSocket   *m_out_sock101;
+    wxDateTime         m_dt_last_render;
 
-      BR24DisplayOptionsDialog      *m_pOptionsDialog;
+    BR24DisplayOptionsDialog      *m_pOptionsDialog;
 
-      BR24ControlsDialog       *m_pControlDialog;
+    BR24ControlsDialog       *m_pControlDialog;
 
-      int                m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
-      int                m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
+    int                m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
+    int                m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
 
-      BR24ManualDialog       *m_pManualDialog;
+    BR24ManualDialog       *m_pManualDialog;
 
-      int                m_BR24Manual_dialog_sx, m_BR24Manual_dialog_sy ;
-      int                m_BR24Manual_dialog_x, m_BR24Manual_dialog_y ;
+    int                m_BR24Manual_dialog_sx, m_BR24Manual_dialog_sy ;
+    int                m_BR24Manual_dialog_x, m_BR24Manual_dialog_y ;
 
-      wxBitmap           *m_ptemp_icon;
-      wxLogWindow       *m_plogwin;
-      int               m_sent_bm_id_normal;
-      int               m_sent_bm_id_rollover;
+    wxBitmap           *m_ptemp_icon;
+    wxLogWindow       *m_plogwin;
+    int               m_sent_bm_id_normal;
+    int               m_sent_bm_id_rollover;
 
 };
 
@@ -254,25 +270,25 @@ private:
 class MulticastRXThread: public wxThread
 {
 
-      public:
+public:
 
-            MulticastRXThread(wxMutex *pMutex, const wxString &IP_addr, const wxString &service_port);
-            ~MulticastRXThread(void);
-            void *Entry(void);
+    MulticastRXThread(wxMutex *pMutex, const wxString &IP_addr, const wxString &service_port);
+    ~MulticastRXThread(void);
+    void *Entry(void);
 
-            void OnExit(void);
+    void OnExit(void);
 
 
-      private:
-            void process_buffer(void);
+private:
+    void process_buffer(void);
 
-            wxMutex     *m_pShareMutex;
+    wxMutex     *m_pShareMutex;
 
-            wxString m_ip;
-            wxString m_service_port;
+    wxString m_ip;
+    wxString m_service_port;
 
-            wxDatagramSocket  *m_sock;
-            wxIPV4address     m_myaddr;
+    wxDatagramSocket  *m_sock;
+    wxIPV4address     m_myaddr;
 
 };
 //----------------------------------------------------------------------------------------------------------
@@ -281,36 +297,36 @@ class MulticastRXThread: public wxThread
 
 class BR24DisplayOptionsDialog: public wxDialog
 {
-      DECLARE_CLASS( BR24DisplayOptionsDialog )
-      DECLARE_EVENT_TABLE()
+    DECLARE_CLASS(BR24DisplayOptionsDialog)
+    DECLARE_EVENT_TABLE()
 
-      public:
+public:
 
-           BR24DisplayOptionsDialog( );
+    BR24DisplayOptionsDialog();
 
-            ~BR24DisplayOptionsDialog( );
-            void Init();
+    ~BR24DisplayOptionsDialog();
+    void Init();
 
-            bool Create(  wxWindow *parent, br24radar_pi *ppi);
+    bool Create(wxWindow *parent, br24radar_pi *ppi);
 
-           void CreateDisplayOptions();
+    void CreateDisplayOptions();
 
-      private:
-            void OnClose(wxCloseEvent& event);
-            void OnIdOKClick( wxCommandEvent& event );
-            void OnDisplayOptionClick( wxCommandEvent& event );
-            void OnRange_Calibration_Value( wxCommandEvent& event );
-            void OnIntervalSlider( wxCommandEvent& event );
-            void OnDisplayModeClick(wxCommandEvent& event);
+private:
+    void OnClose(wxCloseEvent& event);
+    void OnIdOKClick(wxCommandEvent& event);
+    void OnDisplayOptionClick(wxCommandEvent& event);
+    void OnRange_Calibration_Value(wxCommandEvent& event);
+    void OnIntervalSlider(wxCommandEvent& event);
+    void OnDisplayModeClick(wxCommandEvent& event);
 
-            wxWindow          *pParent;
-            br24radar_pi      *pPlugIn;
+    wxWindow          *pParent;
+    br24radar_pi      *pPlugIn;
 
-            // DisplayOptions
-      wxRadioBox        *pOverlayDisplayOptions;
-      wxRadioBox        *pDisplayMode;
-      wxTextCtrl        *pText_Range_Calibration_Value;
-      wxSlider          *pIntervalSlider;
+    // DisplayOptions
+    wxRadioBox        *pOverlayDisplayOptions;
+    wxRadioBox        *pDisplayMode;
+    wxTextCtrl        *pText_Range_Calibration_Value;
+    wxSlider          *pIntervalSlider;
 };
 
 //----------------------------------------------------------------------------------------------------------
@@ -318,46 +334,46 @@ class BR24DisplayOptionsDialog: public wxDialog
 //----------------------------------------------------------------------------------------------------------
 class BR24ControlsDialog: public wxDialog
 {
-      DECLARE_CLASS( BR24ControlsDialog )
-      DECLARE_EVENT_TABLE()
+    DECLARE_CLASS(BR24ControlsDialog)
+    DECLARE_EVENT_TABLE()
 
-      public:
+public:
 
-           BR24ControlsDialog( );
+    BR24ControlsDialog();
 
-            ~BR24ControlsDialog( );
-            void Init();
+    ~BR24ControlsDialog();
+    void Init();
 
-            bool Create(  wxWindow *parent, br24radar_pi *ppi, wxWindowID id = wxID_ANY,
-                         const wxString& caption = _("BR24 Radar Control"),
-                         const wxPoint& pos = wxDefaultPosition,
-                         const wxSize& size = wxDefaultSize,
-                         long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU );
+    bool Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID id = wxID_ANY,
+                const wxString& caption = _("BR24 Radar Control"),
+                const wxPoint& pos = wxDefaultPosition,
+                const wxSize& size = wxDefaultSize,
+                long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
 
-           void CreateControls();
+    void CreateControls();
 
-      private:
-            void OnClose(wxCloseEvent& event);
-            void OnIdOKClick( wxCommandEvent& event );
-            void OnMove( wxMoveEvent& event );
-            void OnSize( wxSizeEvent& event );
-            void OnTransSlider(wxCommandEvent &event);
-            void OnOperationModeClick(wxCommandEvent &event);
-            void OnFilterProcessClick(wxCommandEvent &event);
-            void OnRejectionModeClick(wxCommandEvent &event);
-            void OnGainSlider(wxCommandEvent &event);
-            void OnLogModeClick(wxCommandEvent &event);
+private:
+    void OnClose(wxCloseEvent& event);
+    void OnIdOKClick(wxCommandEvent& event);
+    void OnMove(wxMoveEvent& event);
+    void OnSize(wxSizeEvent& event);
+    void OnTransSlider(wxCommandEvent &event);
+    void OnOperationModeClick(wxCommandEvent &event);
+    void OnFilterProcessClick(wxCommandEvent &event);
+    void OnRejectionModeClick(wxCommandEvent &event);
+    void OnGainSlider(wxCommandEvent &event);
+    void OnLogModeClick(wxCommandEvent &event);
 
-            wxWindow          *pParent;
-            br24radar_pi         *pPlugIn;
+    wxWindow          *pParent;
+    br24radar_pi         *pPlugIn;
 
-            // Controls
-            wxSlider          *pTranSlider;
-            wxRadioBox        *pOperationMode;
-            wxRadioBox        *pRejectionMode;
-            wxRadioBox        *pFilterProcess;
-            wxSlider          *pGainSlider;
-            wxCheckBox        *pCB_log;
+    // Controls
+    wxSlider          *pTranSlider;
+    wxRadioBox        *pOperationMode;
+    wxRadioBox        *pRejectionMode;
+    wxRadioBox        *pFilterProcess;
+    wxSlider          *pGainSlider;
+    wxCheckBox        *pCB_log;
 };
 
 
@@ -366,39 +382,39 @@ class BR24ControlsDialog: public wxDialog
 //----------------------------------------------------------------------------------------------------------
 class BR24ManualDialog: public wxDialog
 {
-      DECLARE_CLASS( BR24ManualDialog )
-      DECLARE_EVENT_TABLE()
+    DECLARE_CLASS(BR24ManualDialog)
+    DECLARE_EVENT_TABLE()
 
-      public:
+public:
 
-           BR24ManualDialog( );
+    BR24ManualDialog();
 
-            ~BR24ManualDialog( );
-            void Init();
+    ~BR24ManualDialog();
+    void Init();
 
-            bool Create(  wxWindow *parent, br24radar_pi *ppi, wxWindowID id = wxID_ANY,
-                         const wxString& m_caption = _("BR24 Manual Control"),
-                         const wxPoint& pos = wxDefaultPosition,
-                         const wxSize& size = wxDefaultSize,
-                         long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU );
+    bool Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID id = wxID_ANY,
+                const wxString& m_caption = _("BR24 Manual Control"),
+                const wxPoint& pos = wxDefaultPosition,
+                const wxSize& size = wxDefaultSize,
+                long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
 
-           void CreateControls();
+    void CreateControls();
 
-      private:
-            void OnClose(wxCloseEvent& event);
-            void OnIdOKClick( wxCommandEvent& event );
-            void OnMove( wxMoveEvent& event );
-            void OnSize( wxSizeEvent& event );
-            void OnRangeModeClick(wxCommandEvent &event);
-            void OnRange_Calibration_Value(wxCommandEvent &event);
+private:
+    void OnClose(wxCloseEvent& event);
+    void OnIdOKClick(wxCommandEvent& event);
+    void OnMove(wxMoveEvent& event);
+    void OnSize(wxSizeEvent& event);
+    void OnRangeModeClick(wxCommandEvent &event);
+    void OnRange_Calibration_Value(wxCommandEvent &event);
 
-            wxWindow          *pParent;
-            br24radar_pi         *pPlugIn;
+    wxWindow          *pParent;
+    br24radar_pi         *pPlugIn;
 
-            // Controls
+    // Controls
 
-            wxRadioBox        *pRangeSelect;
-            wxButton          *bClose;
+    wxRadioBox        *pRangeSelect;
+    wxButton          *bClose;
 };
 
 
