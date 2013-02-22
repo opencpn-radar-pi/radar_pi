@@ -1618,8 +1618,8 @@ void MulticastRXThread::process_buffer(void)
             angleraw = (br_line.br24.angle[1] << 8) | br_line.br24.angle[0];
             br_scan_range_meters =  range_raw * 10 ;  // max 24 km => 24000
         } else {
-            int16_t large_range = (br_line.br4g.largerange[1] << 8) | br_line.br4g.largerange[0];
-            int16_t small_range = (br_line.br4g.smallrange[1] << 8) | br_line.br4g.smallrange[0];
+            short int large_range = (br_line.br4g.largerange[1] << 8) | br_line.br4g.largerange[0];
+            short int small_range = (br_line.br4g.smallrange[1] << 8) | br_line.br4g.smallrange[0];
 
             if (large_range == 0x80) {
                 if (small_range == -1) {
@@ -1637,7 +1637,7 @@ void MulticastRXThread::process_buffer(void)
                       ));
             CHATTY(printf("4G model range_raw=%f large_range=%x small_range=%x\n", range_raw, large_range, small_range));
             angleraw = (br_line.br4g.angle[1] << 8) | br_line.br4g.angle[0];
-            br_scan_range_meters = range_raw * 0.1 * sqrt(2);
+            br_scan_range_meters = range_raw * 0.1 * sqrt((double) 2.0);
             CHATTY(printf("4G model range=%f range_raw=%f large_range=%x small_range=%x\n", br_scan_range_meters, range_raw, large_range, small_range));
         }
 
