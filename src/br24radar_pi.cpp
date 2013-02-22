@@ -54,14 +54,18 @@ using namespace std;
 #ifdef __WXMSW__
 #include "GL/glu.h"
 #else
-typedef unsigned char byte;
+typedef char byte;
 #endif
 
 
 #include "br24radar_pi.h"
 #include "ocpndc.h"
 
-bool              br_thread_active;
+/* A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration) */
+static unsigned char BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
+
+bool br_thread_active;
+
 enum {
     // process ID's
     ID_OK,
@@ -85,6 +89,7 @@ double            br_range_meters = 0;      // current range for radar
 double            br_scan_range_meters;
 long              br_previous_range = 0;
 double            br_range_calibration;
+wxString          br_radar_interface;
 
 int               max_angle = 0;
 int               min_angle = 361;
@@ -1124,6 +1129,7 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(_T("BR24RadarRainGain"),  &br_rain_clutter_gain, 50);
         pConf->Read(_T("BR24RadarClutterGain"),  &br_sea_clutter_gain, 50);
         pConf->Read(_T("BR24RadarRangeCalibration"),  &br_range_calibration, 1.0);
+        pConf->Read(_T("BR24RadarInterface"), &br_radar_interface, _T("0.0.0.0"));
 
         m_BR24Controls_dialog_sx = pConf->Read(_T("BR24ControlsDialogSizeX"), 300L);
         m_BR24Controls_dialog_sy = pConf->Read(_T("BR24ControlsDialogSizeY"), 540L);
@@ -1157,6 +1163,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(_T("BR24RadarRainGain"), br_rain_clutter_gain);
         pConf->Write(_T("BR24RadarClutterGain"), br_sea_clutter_gain);
         pConf->Write(_T("BR24RadarRangeCalibration"),  br_range_calibration);
+        pConf->Write(_T("BR24RadarInterface"),  br_radar_interface);
 
         pConf->Write(_T("BR24ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
         pConf->Write(_T("BR24ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
@@ -1464,11 +1471,11 @@ MulticastRXThread::MulticastRXThread(wxMutex *pMutex, const wxString &IP_addr, c
 
     m_pShareMutex = pMutex;
 
-    m_ip = *IP_addr;
-    m_service_port = *service_port;
+    m_ip = IP_addr;
+    m_service_port = service_port;
     m_sock = 0;
 
-    wxLogMessage(_T("RXThread: Creating thread m_IP addr: %s m_Port: %s"), m_ip.c_str(), m_service_port.c_str());
+    wxLogMessage(_T("RXThread: Creating thread m_IP addr: %ls m_Port: %ls"), m_ip.c_str(), m_service_port.c_str());
 
     Create();
 
@@ -1488,50 +1495,51 @@ void *MulticastRXThread::Entry(void)
 
     br_thread_active = true;
     //    Create a datagram socket for receiving data
-    m_myaddr.AnyAddress();             // equivalent to localhost
-    m_myaddr.Service(m_service_port);     // 6678 is expected data port passed by RXthread
+    m_myaddr.AnyAddress();            
+    m_myaddr.Service(m_service_port);
     wxString msg;
 
     m_sock = new wxDatagramSocket(m_myaddr, wxSOCKET_REUSEADDR);
-//*
-    if (m_sock) {
-	wxLogMessage(_T("RXThreadEntry: Datagram Socket opened: Receiver %s"), m_service_port.c_str());
-    } else {
-        wxLogMessage(_T("RXThreadEntry: Datagram Socket failed: Receiver %s"), m_service_port.c_str());
+
+    if (!m_sock) {
+        wxLogMessage(_T("BR24Radar: Unable to listen on port %ls"), m_service_port.c_str());
+        br_thread_active = false;
+        return 0;
     }
-//*/
     m_sock->SetFlags(wxSOCKET_BLOCK);                         // This blocks the thread out until data received
 
     //    Subscribe to a multicast group
-    unsigned int a;
-#ifdef __WXGTK__
+    unsigned int mcAddr;
+    unsigned int recvAddr;
+
+#ifndef __WXMSW__
     GAddress gaddress;
     _GAddress_Init_INET(&gaddress);
     GAddress_INET_SetHostName(&gaddress, m_ip.mb_str());
-//       struct in_addr *iaddr;
-//       iaddr = &(((struct sockaddr_in *)gaddress.m_addr)->sin_addr);
-//       iaddr->s_addr = inet_addr(m_ip.mb_str());
 
     struct in_addr *addr;
     addr = &(((struct sockaddr_in *)gaddress.m_addr)->sin_addr);
-    a = addr->s_addr;
-#endif
+    mcAddr = addr->s_addr;
 
-#ifdef __WXMSW__
-    a = inet_addr(m_ip.mb_str());
+    _GAddress_Init_INET(&gaddress);
+    GAddress_INET_SetHostName(&gaddress, br_radar_interface.mb_str());
+    addr = &(((struct sockaddr_in *)gaddress.m_addr)->sin_addr);
+    recvAddr = addr->s_addr;
+
+#else
+    mcAddr = inet_addr(m_ip.mb_str());
+    recvAddr = inet_addr(br_radar_interface.mb_str());
 #endif
 
     struct ip_mreq mreq;
-    mreq.imr_multiaddr.s_addr = a;
-    mreq.imr_interface.s_addr = INADDR_ANY;   // this should be the RX interface
-    // gotten like inet_addr("192.168.37.99");
+    mreq.imr_multiaddr.s_addr = mcAddr;
+    mreq.imr_interface.s_addr = recvAddr;
 
     bool bam = m_sock->SetOption(IPPROTO_IP, IP_ADD_MEMBERSHIP, (const void *)&mreq, sizeof(mreq));
-    if (bam) {
-	wxLogMessage(_T("RXThreadEntry: Successfully added to multicast group."));
-    }
-    else {
-	wxLogMessage(_T("RXThreadEntry: Failed to add to multicast group."));
+    if (!bam) {
+        wxLogMessage(_T("Unable to listen to multicast group: %d"), m_sock->LastError());
+        br_thread_active = false;
+        return 0;
     }
 
     wxIPV4address rx_addr;
@@ -1574,7 +1582,7 @@ thread_exit:
 }
 
 void MulticastRXThread::process_buffer(void)
-// We only get Data packets of fixed legnth from PORT (6678), see structure in .h file
+// We only get Data packets of fixed length from PORT (6678), see structure in .h file
 // Sequence Header - 8 bytes
 // 32 line header/data sets per packet
 //      Line Header - 24 bytes
@@ -1585,25 +1593,64 @@ void MulticastRXThread::process_buffer(void)
 
         //  sort Data in Packet - this is a workaround for not being able to do Union-structures directly
 
-        memcpy(&br_line, &br_packet.br_frame_pkt.scan_lines[scan_start], 536);
+        memcpy(&br_line, &br_packet.br_frame_pkt.scan_lines[scan_start], 536); 
 
+        double range_raw = 0;
+        int angleraw;
 
-        double range_raw = ((br_line.scale[2] & 0xff) << 16 | (br_line.scale[1] & 0xff) << 8 | (br_line.scale[0] & 0xff)); // Little -> big endian
-        br_scan_range_meters =  range_raw * 10 ;  // max 24 km => 24000
+#define CHATTY(x)
+#undef CHATTY_BLOCK
+
+#ifdef CHATTY_BLOCK
+        printf("Header ");
+        int i;
+        unsigned char * p;
+        for (p = (unsigned char *) &br_line, i = 0; i < sizeof(br_line.br24); i++) {
+            printf(" %02X", (*p++) & 0xff);
+        }
+        printf("\n");
+#endif
+
+        if (memcmp(br_line.br24.mark, BR24MARK, sizeof(BR24MARK)) == 0) {
+            CHATTY(printf("BR24\n"));
+
+            range_raw = ((br_line.br24.range[2] & 0xff) << 16 | (br_line.br24.range[1] & 0xff) << 8 | (br_line.br24.range[0] & 0xff)); // Little -> big endian
+            angleraw = (br_line.br24.angle[1] << 8) | br_line.br24.angle[0];
+            br_scan_range_meters =  range_raw * 10 ;  // max 24 km => 24000
+        } else {
+            int16_t large_range = (br_line.br4g.largerange[1] << 8) | br_line.br4g.largerange[0];
+            int16_t small_range = (br_line.br4g.smallrange[1] << 8) | br_line.br4g.smallrange[0];
+
+            if (large_range == 0x80) {
+                if (small_range == -1) {
+                    wxLogMessage(_T("RXThreadProcessBuffer:  Neither 4G range field set\n"));
+                } else {
+                    range_raw = small_range;
+                }
+            } else {
+                range_raw = large_range * 348;
+            }
+            CHATTY(
+                printf("4G header large_range=%x %x small_range=%x %x\n"
+                       , br_line.br4g.largerange[0], br_line.br4g.largerange[1]
+                       , br_line.br4g.smallrange[0], br_line.br4g.smallrange[1]
+                      ));
+            CHATTY(printf("4G model range_raw=%f large_range=%x small_range=%x\n", range_raw, large_range, small_range));
+            angleraw = (br_line.br4g.angle[1] << 8) | br_line.br4g.angle[0];
+            br_scan_range_meters = range_raw * 0.1 * sqrt(2);
+            CHATTY(printf("4G model range=%f range_raw=%f large_range=%x small_range=%x\n", br_scan_range_meters, range_raw, large_range, small_range));
+        }
 
         // Range change desired?
         if (br_range_meters != br_scan_range_meters) {
             wxLogMessage(_T("RXThreadProcessBuffer:  Range Change: %g --> %g \n"), br_range_meters, br_scan_range_meters);
-//      wxLogMessage(_T("RXThreadProcessBuffer:  Raw Range: %d  %x  %x  %x"),range_raw, (char) br_line.scale[2], (char)br_line.scale[1], (char)br_line.scale[0]);
 
             br_range_meters = br_scan_range_meters;
             br_sweep_count = 0;
         }
 
-        int angleraw = (br_line.angle[1] & 0xff);
-        angleraw = (angleraw << 8) | (br_line.angle[0] & 0xff);
         long angle = angleraw * 360 / 4096;
-//      wxLogMessage(_T("RXThreadProcessBuffer:  Angle: %d  %x  %x"),angle, br_line.angle[1], br_line.angle[0]);
+        //wxLogMessage(_T("RXThreadProcessBuffer:  Angle: %d %d"),angle, angleraw);
 
         if (angle < min_angle) {            // setting new LB and fixing UB
             min_angle = angle;

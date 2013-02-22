@@ -78,33 +78,54 @@ enum {
     RADAR_ON,
 };
 
-
 #pragma pack(push,1)
+
+struct br24_header {
+    unsigned char status[2];       //2 bytes
+    unsigned char scan_number[2];  //2 bytes
+    unsigned char mark[4];         //4 bytes 0x00, 0x44, 0x0d, 0x0e
+    unsigned char angle[2];        //2 bytes
+    unsigned char u00[2];          //2 bytes blank
+    unsigned char range[4];        //4 bytes
+    unsigned char u01[2];          //2 bytes blank
+    unsigned char u1[2];           //2 bytes
+    unsigned char u2[4];           //4 bytes blank
+};
+
+struct br4g_header {
+    unsigned char status[2];       //2 bytes
+    unsigned char scan_number[2];  //2 bytes
+    unsigned char u00[2];          //Always 0x4400 (integer)
+    unsigned char largerange[2];   //2 bytes or -1
+    unsigned char angle[2];        //2 bytes
+    unsigned char u01[2];          //Always 0x8000 = -1
+    unsigned char smallrange[2];   //2 bytes or -1
+    unsigned char rotation[2];     //2 bytes, looks like rotation/angle
+    unsigned char u02[4];          //4 bytes signed integer, always -1
+    unsigned char u03[4];          //4 bytes signed integer, mostly -1 (0x80 in last byte) or 0xa0 in last byte
+};
+
+struct radar_line {
+    union {
+        br24_header   br24;
+        br4g_header   br4g;
+    };
+    unsigned char data[512];       // 24 total
+};
 
 struct radar_frame_pkt {
     unsigned short  frame_hdr[4];
     char            scan_lines[32 * (24 + 512)]; //  scan lines
 };
 
-struct radar_line {
-    unsigned char   status[2];      //2 bytes
-    unsigned char   scan_number[2]; //2 bytes
-    unsigned char   u0[4];          //4 bytes blank
-    unsigned char   angle[2];       //2 bytes
-    unsigned char   u00[2];         //2 bytes blank
-    unsigned char   scale[4];       //4 bytes
-    unsigned char   u01[2];         //2 bytes blank
-    unsigned char   u1[2];          //2 bytes
-    unsigned char   u2[4];          //4 bytes blank
-    unsigned char   data[512];      // 24 total
-} ;
-
-struct range_settings {
-    float           range_meters;
-    char            range_command[6];
-} ;
+#define MODEL_4G
 
 #pragma pack(pop)
+
+struct range_settings {
+    float   range_meters;
+    char    range_command[6];
+};
 
 extern double   br_overlay_transparency;
 extern bool     br_master;
