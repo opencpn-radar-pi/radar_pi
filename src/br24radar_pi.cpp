@@ -1204,7 +1204,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
     }
 
 	if (wxIsNaN(br_hdt)) {
-        br_hdt = pfix.Cog;
+			br_hdt = pfix.Cog;
     }
 
     if (wxIsNaN(br_hdt)) {
