@@ -1258,7 +1258,7 @@ void br24radar_pi::RadarTxOn(void)
 void br24radar_pi::RadarStayAlive(void)
 {
     if (br_master && (br_radar_state == RADAR_ON)) {
-        char pck[2] = {(byte)0xA0, (byte)0xc1};
+        char pck[] = {(byte)0xA0, (byte)0xc1};
         TransmitCmd(pck, sizeof(pck));
     }
 }
@@ -1267,16 +1267,7 @@ void br24radar_pi::Select_Range(int req_range_index)
 {
     req_range_index = min(req_range_index, 15);
     if (br_master) {
-        char br_range_cmd[] = {
-            br24_range_settings[req_range_index].range_command[0],
-            br24_range_settings[req_range_index].range_command[1],
-            br24_range_settings[req_range_index].range_command[2],
-            br24_range_settings[req_range_index].range_command[3],
-            br24_range_settings[req_range_index].range_command[4],
-            br24_range_settings[req_range_index].range_command[5],
-        };
-        TransmitCmd(br_range_cmd, sizeof(br_range_cmd));
-
+        TransmitCmd(br24_range_settings[req_range_index].range_command, sizeof(br24_range_settings[0].range_command));
 
         wxString msg;
         msg.Printf(_T("SelectRange: %g meters\n"), br24_range_settings[req_range_index].range_meters);
@@ -1295,66 +1286,66 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
 
         switch (br_process) {
             case 0: {                        // Auto Gain
-                    char case0[11] = {
+                    char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
                         0, 0, 0, 0, (byte)0x01,
                         0, 0, 0, (byte)0xa1
                     };
-                    msg.Printf(_T("AutoGain: %o"), case0);
+                    msg.Printf(_T("AutoGain: %o"), cmd);
                     wxLogMessage(msg);
-                    TransmitCmd(case0, 11);
+                    TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
             case 1: {                        // Manual Gain
-                    char case1[11] = {
+                    char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
                         0, 0, 0, 0, 0, 0, 0, 0,
                         (char)(sel_gain)
                     };
-                    msg.Printf(_T("ManualGain: %o"), case1);
+                    msg.Printf(_T("ManualGain: %o"), cmd);
                     wxLogMessage(msg);
-                    TransmitCmd(case1, 11);
+                    TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
             case 2: {                       // Rain Clutter - Manual
-                    char case2[11] = {
+                    char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
                         (byte)0x04,
                         0, 0, 0, 0, 0, 0, 0,
                         (char)(sel_gain / 2)
                     };
-                    msg.Printf(_T("RainClutter: %o"), case2);
+                    msg.Printf(_T("RainClutter: %o"), cmd);
                     wxLogMessage(msg);
-                    TransmitCmd(case2, 11);
+                    TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
             case 3: {                       // Sea Clutter - Auto
-                    char case3[11] = {
+                    char cmd[11] = {
                         (byte)0x06,
                         (byte)0xc1,
                         (byte)0x02,
                         0, 0, 0, (byte)0x01,
                         0, 0, 0, (byte)0xd3
                     };
-                    msg.Printf(_T("SeaClutter: %o"), case3);
+                    msg.Printf(_T("SeaClutter: %o"), cmd);
                     wxLogMessage(msg);
-                    TransmitCmd(case3, 11);
+                    TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
             case 4: {                       // Sea Clutter - Manual
-                    char case4[11] = {
+                    char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
                         (byte)0x02,
                         0, 0, 0, 0, 0, 0, 0,
                         (char)(sel_gain)
                     };
-                    msg.Printf(_T("SeaClutter: %o"), case4);
+                    msg.Printf(_T("SeaClutter: %o"), cmd);
                     wxLogMessage(msg);
-                    TransmitCmd(case4, 11);
+                    TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
         };
@@ -1365,13 +1356,13 @@ void br24radar_pi::SetRejectionMode(int mode)
 {
     br_rejection = mode;
     if (br_master) {
-        char br_rejection_cmd[11] = {
+        char br_rejection_cmd[] = {
             (byte)0x08,
             (byte)0x0c,
             0, 0, 0, 0, 0, 0, 0, 0,
             (char) br_rejection
         };
-        TransmitCmd(br_rejection_cmd, 11);
+        TransmitCmd(br_rejection_cmd, sizeof(br_rejection_cmd));
         wxString msg;
         msg.Printf(_T("Rejection: %o"), br_rejection_cmd);
         wxLogMessage(msg);
@@ -1598,7 +1589,7 @@ void MulticastRXThread::process_buffer(void)
         double range_raw = 0;
         int angleraw;
 
-#define CHATTY(x)
+#define CHATTY(x) 
 #undef CHATTY_BLOCK
 
 #ifdef CHATTY_BLOCK
@@ -1709,13 +1700,14 @@ void MulticastRXThread::process_buffer(void)
 
 double deg2rad(double deg)
 {
-    return (deg * PI / 180);
+    return (deg * PI / 180.0);
 }
 
 double rad2deg(double rad)
 {
-    return (rad * 180 / PI);
+    return (rad * 180.0 / PI);
 }
+
 double radar_distance(double lat1, double lon1, double lat2, double lon2, char unit)
 {
     // Spherical Law of Cosines
@@ -1736,11 +1728,6 @@ double radar_distance(double lat1, double lon1, double lat2, double lon2, char u
         case 'N':              // nautical miles
             break;
     }
-    return (dist);
+    return dist;
 }
-
-
-
-
-
 
