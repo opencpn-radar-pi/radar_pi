@@ -1723,15 +1723,15 @@ double radar_distance(double lat1, double lon1, double lat2, double lon2, char u
 
     theta = lon2 - lon1;
     dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta));
-    dist = acos(dist);      // radians
+    dist = acos(dist);         // radians
     dist = rad2deg(dist);
-    dist = abs(dist) * 60   ;   // nautical miles/degree
+    dist = abs(dist) * 60;     // nautical miles/degree
     switch (unit) {
-        case 'M':               // statute miles
+        case 'M':              // statute miles
             dist = dist * 1.1515;
             break;
-        case 'K':
-            dist = dist * 1.609344; // kilometers
+        case 'K':              // kilometers
+            dist = dist * 1.852;
             break;
         case 'N':              // nautical miles
             break;
