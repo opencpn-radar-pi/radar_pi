@@ -28,6 +28,13 @@
  ***************************************************************************
  */
 
+// Kees says:
+// The original implementation used a 'gathering' scan buffer and a 'display'
+// buffer, but the only thing done between the two is a full copy without any
+// locking, so glitches could still occur.
+// For now let's disable the code but leave it around.
+#undef BR24_DOUBLE_BUFFERING
+
 #include "wx/wxprec.h"
 
 #ifndef  WX_PRECOMP
@@ -82,7 +89,13 @@ union packet_buf {
 radar_line br_line;
 
 unsigned char     br_scan_buf[360][512];        //scan buffer
+
+#ifdef BR24_DOUBLE_BUFFERED
 unsigned char     br_static_buf[360][512];      //static buffer for GL3 rendering
+#else
+# define br_static_buf br_scan_buf
+#endif
+
 long              br_scan_distribution[255];    // intensity distribution
 
 double            br_range_meters = 0;      // current range for radar
@@ -119,7 +132,7 @@ range_settings br24_range_settings[] = {
     {24000, {(byte)0x03, (byte)0xc1, (byte)0x80, (byte)0xa9, 3, 0}}
 };
 
-int   n_ranges = 16;
+const int n_ranges = sizeof(br24_range_settings)/sizeof(br24_range_settings[0]);
 
 bool br_bpos_set;
 double br_ownship_lat;
@@ -1080,7 +1093,7 @@ void br24radar_pi::draw_blob_gl(double angle, double radius, double blob_r, doub
     double xm1 = (radius) * ca;       //    Calculate the blob center x,y
     double ym1 = (radius) * sa;
 
-    double blob_width = abs((arc_length / 360.) * (radius * 2.0 * PI)); // arc legnth = 1 pi/180 => 254 pi/180 or .0174 => 4.45 pixels
+    double blob_width = abs((arc_length / 360.) * (radius * 2.0 * PI)); // arc length = 1 pi/180 => 254 pi/180 or .0174 => 4.45 pixels
 
     if (blob_width < blob_r) {
         blob_width = blob_r;
@@ -1122,7 +1135,7 @@ bool br24radar_pi::LoadConfig(void)
     if (pConf) {
         pConf->SetPath(_T("/Settings"));
         pConf->Read(_T("BR24RadarDisplayOption"), &br_display_option, 0);
-        pConf->Read(_T("BR24adarDisplayMode"),  &br_displaymode, 0);
+        pConf->Read(_T("BR24RadarDisplayMode"),  &br_displaymode, 0);
         pConf->Read(_T("BR24RadarTransparency"),  &br_overlay_transparency, .50);
         pConf->Read(_T("BR24RadarLog"),  &br_enable_log, false);
         pConf->Read(_T("BR24RadarGain"),  &br_gain, 50);
@@ -1678,11 +1691,11 @@ void MulticastRXThread::process_buffer(void)
         }
 
         if ((br_displaymode == 1) && (br_sweep_count > 2)) {    // after a couple of sweeps update static display screen
-            memset(&br_static_buf[0][0], 0, 360 * 512);     // clear and re-load the static display memory
 
-            memcpy(&br_static_buf[0][0], &br_scan_buf[0][0], 360 * 512);
-
-            memset(&br_scan_buf[0][0], 0, (360 * 512));
+#ifdef BR24_DOUBLE_BUFFERED
+            memcpy(br_static_buf, br_scan_buf, sizeof(br_static_buf));
+            memset(br_scan_buf, 0, sizeof(br_scan_buf));
+#endif
 
             br_static_timestamp = wxDateTime::Now();
             br_sweep_count = 0;
