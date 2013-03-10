@@ -1725,7 +1725,7 @@ double radar_distance(double lat1, double lon1, double lat2, double lon2, char u
     dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta));
     dist = acos(dist);         // radians
     dist = rad2deg(dist);
-    dist = abs(dist) * 60;     // nautical miles/degree
+    dist = fabs(dist) * 60;    // nautical miles/degree
     switch (unit) {
         case 'M':              // statute miles
             dist = dist * 1.1515;
