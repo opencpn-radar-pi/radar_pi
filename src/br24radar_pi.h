@@ -131,7 +131,6 @@ extern double   br_overlay_transparency;
 extern bool     br_master;
 extern bool     br_auto;
 extern int      br_displaymode;
-extern bool     br_enable_log;
 extern int      br_gain;
 extern int      br_rejection;
 extern int      br_filter_process;
@@ -249,61 +248,60 @@ private:
 
     void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
 
-    wxFileConfig     *m_pconfig;
-    wxWindow         *m_parent_window;
-    wxMenu           *m_pmenu;
+    wxFileConfig             *m_pconfig;
+    wxWindow                 *m_parent_window;
+    wxMenu                   *m_pmenu;
 
-    int              m_display_width, m_display_height;
-    int              m_tool_id;
-    bool              m_bShowIcon;
-    wxBitmap          *m_pdeficon;
+    int                       m_display_width, m_display_height;
+    int                       m_tool_id;
+    bool                      m_bShowIcon;
+    wxBitmap                 *m_pdeficon;
 
     //    Controls added to Preferences panel
-    wxCheckBox              *m_pShowIcon;
+    wxCheckBox               *m_pShowIcon;
 
-    wxMutex                 m_mutex;
-    MulticastRXThread       *m_pmcrxt;        // wxsocket holder
+    MulticastRXThread        *m_receiveThread;
 
-    wxDatagramSocket   *m_out_sock101;
-    wxDateTime         m_dt_last_render;
+    wxDatagramSocket         *m_out_sock101;
+    wxDateTime                m_dt_last_render;
 
-    BR24DisplayOptionsDialog      *m_pOptionsDialog;
+    BR24DisplayOptionsDialog *m_pOptionsDialog;
 
     BR24ControlsDialog       *m_pControlDialog;
+    int                       m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
+    int                       m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
 
-    int                m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
-    int                m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
+    BR24ManualDialog         *m_pManualDialog;
+    int                       m_BR24Manual_dialog_sx, m_BR24Manual_dialog_sy ;
+    int                       m_BR24Manual_dialog_x, m_BR24Manual_dialog_y ;
 
-    BR24ManualDialog       *m_pManualDialog;
-
-    int                m_BR24Manual_dialog_sx, m_BR24Manual_dialog_sy ;
-    int                m_BR24Manual_dialog_x, m_BR24Manual_dialog_y ;
-
-    wxBitmap           *m_ptemp_icon;
-    wxLogWindow       *m_plogwin;
-    int               m_sent_bm_id_normal;
-    int               m_sent_bm_id_rollover;
-
+    wxBitmap                 *m_ptemp_icon;
+    int                       m_sent_bm_id_normal;
+    int                       m_sent_bm_id_rollover;
 };
-
-
 
 class MulticastRXThread: public wxThread
 {
 
 public:
 
-    MulticastRXThread(wxMutex *pMutex, const wxString &IP_addr, const wxString &service_port);
+    MulticastRXThread(const wxString &IP_addr, const wxString &service_port)
+    : wxThread(wxTHREAD_JOINABLE)
+    , m_ip(IP_addr)
+    , m_service_port(service_port)
+    , m_sock(0)
+    {
+      wxLogMessage(_T("BR24 radar thread starting for multicast address %ls port %ls"), m_ip.c_str(), m_service_port.c_str());
+      Create(1024 * 1024);
+    };
+
     ~MulticastRXThread(void);
     void *Entry(void);
 
     void OnExit(void);
 
-
 private:
     void process_buffer(void);
-
-    wxMutex     *m_pShareMutex;
 
     wxString m_ip;
     wxString m_service_port;
@@ -312,6 +310,7 @@ private:
     wxIPV4address     m_myaddr;
 
 };
+
 //----------------------------------------------------------------------------------------------------------
 //    BR24Radar DisplayOptions Dialog Specification
 //----------------------------------------------------------------------------------------------------------

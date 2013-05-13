@@ -61,7 +61,6 @@ enum {                                      // process ID's
     ID_TRANSLIDER,
     ID_OPERATIONMODE,
     ID_RANGE,
-    ID_LOGENABLE,
     ID_CLUTTER,
     ID_GAIN,
     ID_REJECTION
@@ -73,7 +72,6 @@ double   br_overlay_transparency;
 bool     br_master;
 bool    br_auto;
 int     br_displaymode;
-bool    br_enable_log;
 int     br_gain;
 int     br_rejection;
 int     br_filter_process;
@@ -255,16 +253,6 @@ void BR24ControlsDialog::CreateControls()
     pGainSlider->Connect(wxEVT_SCROLL_CHANGED,
                          wxCommandEventHandler(BR24ControlsDialog::OnGainSlider), NULL, this);
 
-    //  Log enable
-    pCB_log = new wxCheckBox(this, ID_LOGENABLE, _("Enable BR24 Radar log"));
-    boxSizer->Add(pCB_log, 1, wxALIGN_LEFT | wxALL, 2);
-
-    pCB_log->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
-                     wxCommandEventHandler(BR24ControlsDialog::OnLogModeClick), NULL, this);
-
-    pCB_log->SetValue(br_enable_log);
-
-
 // A horizontal box sizer to contain OK
     wxBoxSizer* AckBox = new wxBoxSizer(wxHORIZONTAL);
     boxSizer->Add(AckBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
@@ -277,14 +265,7 @@ void BR24ControlsDialog::CreateControls()
 
 void BR24ControlsDialog::OnOperationModeClick(wxCommandEvent &event)
 {
-
     pPlugIn->SetOperationMode(pOperationMode->GetSelection());
-
-}
-
-void BR24ControlsDialog::OnLogModeClick(wxCommandEvent &event)
-{
-    br_enable_log = pCB_log->GetValue();
 }
 
 void BR24ControlsDialog::OnTransSlider(wxCommandEvent &event)

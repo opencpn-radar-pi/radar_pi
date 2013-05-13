@@ -71,8 +71,6 @@ typedef char byte;
 /* A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration) */
 static unsigned char BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
 
-bool br_thread_active;
-
 enum {
     // process ID's
     ID_OK,
@@ -151,8 +149,6 @@ wxDateTime  br_dt_stayalive;
 int   br_scan_packets_per_tick;
 
 bool  br_bshown_dc_message;
-wxTextCtrl        *plogtc;
-wxDialog          *plogcontainer;
 
 // the class factories, used to create and destroy instances of the PlugIn
 
@@ -167,22 +163,6 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p)
 }
 
 int nseq;
-//bool br_enable_log;
-
-/*  Private logging functions
-void grLogMessage(wxString s)
-{
-    if(br_enable_log && plogtc && plogcontainer) {
-        wxString seq;
-        seq.Printf(_T("%6d: "), nseq++);
-
-        plogtc->AppendText(seq);
-
-        plogtc->AppendText(s);
-        plogcontainer->Show();
-    }
-}
-*/
 
 //---------------------------------------------------------------------------------------------------------
 //
@@ -229,23 +209,6 @@ int br24radar_pi::Init(void)
     m_sent_bm_id_normal = -1;
     m_sent_bm_id_rollover =  -1;
 
-//********************************************************************************************************
-//   Logbook window
-    m_plogwin = new wxLogWindow(NULL, _T("BR24 Radar Event Log"));
-    plogcontainer = new wxDialog(NULL, -1, _T("BR24 Radar Log"), wxPoint(0, 0), wxSize(600, 400),
-                                 wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-
-    plogtc = new wxTextCtrl(plogcontainer, -1, _T(""), wxPoint(0, 0), wxSize(600, 400), wxTE_MULTILINE);
-//      plogcontainer->Show();
-
-//      plog = new wxLogTextCtrl(m_plogtc);
-
-
-    wxLogMessage(_T("br24 Radar log opened"));
-//      grLogMessage(_T("br24 Radar log opened\n"));
-
-//      AddLocaleCatalog( _T("opencpn-br24radar") );        // For international use
-
 //******************************************************************************************/
 //******************************************************************************************/
 //      Set default parameters for controls displays
@@ -290,10 +253,8 @@ int br24radar_pi::Init(void)
     m_out_sock101 = new wxDatagramSocket(addr101, wxSOCKET_REUSEADDR | wxSOCKET_NOWAIT);
 
     //    Create the THREAD for Multicast radar data reception
-    m_pmcrxt = new MulticastRXThread(&m_mutex, _T("236.6.7.8"), _T("6678"));
-
-    m_pmcrxt->Run();
-    wxLogMessage(_T("Init: Running MulticastRXThread on 236.6.7.8 PORT 6678"));
+    m_receiveThread = new MulticastRXThread(_T("236.6.7.8"), _T("6678"));
+    m_receiveThread->Run();
 
 
     m_pmenu = new wxMenu();            // this is a dummy menu
@@ -317,29 +278,17 @@ int br24radar_pi::Init(void)
 
 bool br24radar_pi::DeInit(void)
 {
-//      printf("br24radar DeInit()\n");
-//      delete _img_radar_pi;
-
+    wxLogMessage(_T("BR24 radar plugin is stopping."));
     SaveConfig();
+    wxLogMessage(_T("BR24 radar config saved."));
 
-//      RadarTxOff();                                   // not neded - will auto turn off without stayalive signals
-    if (m_pmcrxt) {
-        m_pmcrxt->Delete();
-        int max_timeout = 5;
-        int timeout = max_timeout;                   // deadman
-        while (br_thread_active && timeout > 0) {
-            wxSleep(1);
-            timeout--;
-        }
-        printf("Thread stopped in %d seconds\n", max_timeout - timeout);
+    if (m_receiveThread) {
+        wxLogMessage(_T("BR24 radar thread waiting ...."));
+        m_receiveThread->Wait();                     // This makes TestDestroy return true
+        wxLogMessage(_T("BR24 radar thread is stopped."));
+        delete m_receiveThread;
+        wxLogMessage(_T("BR24 radar thread is deleted."));
     }
-
-//  Cannot delete until PlugIn dtor (which never happens)
-//  delete m_pdeficon;
-
-    plogcontainer->Hide();
-    plogcontainer->Close();
-    delete plogcontainer;
 
     return true;
 }
@@ -403,13 +352,9 @@ void br24radar_pi::SetDefaults(void)
 
 void br24radar_pi::ShowPreferencesDialog(wxWindow* parent)
 {
-
     m_pOptionsDialog = new BR24DisplayOptionsDialog;
     m_pOptionsDialog->Create(m_parent_window, this);
     m_pOptionsDialog->Show();
-
-
-
 }
 
 //*********************************************************************************
@@ -1137,7 +1082,6 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(_T("BR24RadarDisplayOption"), &br_display_option, 0);
         pConf->Read(_T("BR24RadarDisplayMode"),  &br_displaymode, 0);
         pConf->Read(_T("BR24RadarTransparency"),  &br_overlay_transparency, .50);
-        pConf->Read(_T("BR24RadarLog"),  &br_enable_log, false);
         pConf->Read(_T("BR24RadarGain"),  &br_gain, 50);
         pConf->Read(_T("BR24RadarRainGain"),  &br_rain_clutter_gain, 50);
         pConf->Read(_T("BR24RadarClutterGain"),  &br_sea_clutter_gain, 50);
@@ -1154,6 +1098,7 @@ bool br24radar_pi::LoadConfig(void)
         m_BR24Manual_dialog_x =  pConf->Read(_T("BR24ManualDialogPosX"), 20L);
         m_BR24Manual_dialog_y =  pConf->Read(_T("BR24ManualDialogPosY"), 170L);
 
+        SaveConfig();
         return true;
     } else {
         return false;
@@ -1171,7 +1116,6 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(_T("BR24RadarDisplayOption"), br_display_option);
         pConf->Write(_T("BR24RadarDisplayMode"), br_displaymode);
         pConf->Write(_T("BR24RadarTransparency"), br_overlay_transparency);
-        pConf->Write(_T("BR24RadarLog"), br_enable_log);
         pConf->Write(_T("BR24RadarGain"), br_gain);
         pConf->Write(_T("BR24RadarRainGain"), br_rain_clutter_gain);
         pConf->Write(_T("BR24RadarClutterGain"), br_sea_clutter_gain);
@@ -1187,6 +1131,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(_T("BR24ManualDialogSizeY"),  m_BR24Manual_dialog_sy);
         pConf->Write(_T("BR24ManualDialogPosX"),   m_BR24Manual_dialog_x);
         pConf->Write(_T("BR24ManualDialogPosY"),   m_BR24Manual_dialog_y);
+        pConf->Flush();
 
         return true;
     } else {
@@ -1246,7 +1191,6 @@ void br24radar_pi::TransmitCmd(char* msg, int size)
 void br24radar_pi::RadarTxOff(void)
 {
     wxLogMessage(_T("BR24 Radar turned Off manually."));
-//    grLogMessage(_T("TX Off\n"));
 
     char pck[3] = {(byte)0x00, (byte)0xc1, (byte)0x00};
     TransmitCmd(pck, sizeof(pck));
@@ -1259,7 +1203,6 @@ void br24radar_pi::RadarTxOff(void)
 void br24radar_pi::RadarTxOn(void)
 {
     wxLogMessage(_T("BR24 Radar turned ON manually."));
-//  grLogMessage(_T("TX On\n"));
 
     char pck[3] = {(byte)0x00, (byte)0xc1, (byte)0x01};               // ON
     TransmitCmd(pck, sizeof(pck));
@@ -1469,21 +1412,18 @@ void br24radar_pi::CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollov
 
 // Ethernet packet stuff *************************************************************
 
-MulticastRXThread::MulticastRXThread(wxMutex *pMutex, const wxString &IP_addr, const wxString &service_port)
+/*
+MulticastRXThread::MulticastRXThread(const wxString &IP_addr, const wxString &service_port)
 {
-//      m_pTarget = MessageTarget;
-
-    m_pShareMutex = pMutex;
-
     m_ip = IP_addr;
     m_service_port = service_port;
     m_sock = 0;
 
     wxLogMessage(_T("RXThread: Creating thread m_IP addr: %ls m_Port: %ls"), m_ip.c_str(), m_service_port.c_str());
 
-    Create();
-
+    Create(1024 * 1024);
 }
+*/
 
 MulticastRXThread::~MulticastRXThread()
 {
@@ -1492,14 +1432,14 @@ MulticastRXThread::~MulticastRXThread()
 
 void MulticastRXThread::OnExit()
 {
+  wxLogMessage(_T("BR24 radar thread is stopping."));
 }
 
 void *MulticastRXThread::Entry(void)
 {
 
-    br_thread_active = true;
     //    Create a datagram socket for receiving data
-    m_myaddr.AnyAddress();            
+    m_myaddr.AnyAddress();
     m_myaddr.Service(m_service_port);
     wxString msg;
 
@@ -1507,7 +1447,6 @@ void *MulticastRXThread::Entry(void)
 
     if (!m_sock) {
         wxLogMessage(_T("BR24Radar: Unable to listen on port %ls"), m_service_port.c_str());
-        br_thread_active = false;
         return 0;
     }
     m_sock->SetFlags(wxSOCKET_BLOCK);                         // This blocks the thread out until data received
@@ -1542,7 +1481,6 @@ void *MulticastRXThread::Entry(void)
     bool bam = m_sock->SetOption(IPPROTO_IP, IP_ADD_MEMBERSHIP, (const void *)&mreq, sizeof(mreq));
     if (!bam) {
         wxLogMessage(_T("Unable to listen to multicast group: %d"), m_sock->LastError());
-        br_thread_active = false;
         return 0;
     }
 
@@ -1551,13 +1489,8 @@ void *MulticastRXThread::Entry(void)
     // just so long as it looks like an IP
 
     //    The big while....
-    bool not_done = true;
     int n_rx_once = 0;
-    while ((not_done)) {
-        if (TestDestroy()) {
-            not_done = false;                               // smooth exit
-            goto thread_exit;
-        }
+    while (!TestDestroy()) {
 
         m_sock->RecvFrom(rx_addr, br_packet.buf, sizeof(br_packet.buf));
 //       printf(" bytes read %d\n", m_sock->LastCount());
@@ -1576,12 +1509,10 @@ void *MulticastRXThread::Entry(void)
         }
 
     }
-thread_exit:
 
 //        if(outfile.is_open())
 //          outfile.close();                // save full screen painting data
 
-    br_thread_active = false;
     return 0;
 }
 
@@ -1597,12 +1528,12 @@ void MulticastRXThread::process_buffer(void)
 
         //  sort Data in Packet - this is a workaround for not being able to do Union-structures directly
 
-        memcpy(&br_line, &br_packet.br_frame_pkt.scan_lines[scan_start], 536); 
+        memcpy(&br_line, &br_packet.br_frame_pkt.scan_lines[scan_start], 536);
 
         double range_raw = 0;
         int angleraw;
 
-#define CHATTY(x) 
+#define CHATTY(x)
 #undef CHATTY_BLOCK
 
 #ifdef CHATTY_BLOCK
