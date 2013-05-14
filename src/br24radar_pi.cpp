@@ -699,19 +699,13 @@ void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay
 bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 {
     if (0 == br_bshown_dc_message) {
-
-//        ::wxMessageBox(message, _T("br24radar message"), wxICON_INFORMATION | wxOK, GetOCPNCanvasWindow());
-
         br_bshown_dc_message = 1;
-
-        wxString message(_("The Radar Overlay PlugIn requires OpenGL mode to be activated in Toolbox->Settings"));
+        wxString message(_("The Radar Overlay PlugIn requires the Accelerated Graphics (OpenGL) mode to be activated in Options->Display->Chart Display Options"));
         wxMessageDialog dlg(GetOCPNCanvasWindow(),  message, _T("br24radar message"), wxOK);
         dlg.ShowModal();
-
     }
 
     return false;
-
 }
 
 // Called by Plugin Manager on main system process cycle
