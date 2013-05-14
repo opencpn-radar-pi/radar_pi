@@ -253,7 +253,8 @@ int br24radar_pi::Init(void)
     m_out_sock101 = new wxDatagramSocket(addr101, wxSOCKET_REUSEADDR | wxSOCKET_NOWAIT);
 
     //    Create the THREAD for Multicast radar data reception
-    m_receiveThread = new MulticastRXThread(_T("236.6.7.8"), _T("6678"));
+    m_quit = false;
+    m_receiveThread = new MulticastRXThread(&m_quit, _T("236.6.7.8"), _T("6678"));
     m_receiveThread->Run();
 
 
@@ -284,7 +285,8 @@ bool br24radar_pi::DeInit(void)
 
     if (m_receiveThread) {
         wxLogMessage(_T("BR24 radar thread waiting ...."));
-        m_receiveThread->Wait();                     // This makes TestDestroy return true
+        m_quit = true;
+        m_receiveThread->Wait();
         wxLogMessage(_T("BR24 radar thread is stopped."));
         delete m_receiveThread;
         wxLogMessage(_T("BR24 radar thread is deleted."));
@@ -326,16 +328,14 @@ wxString br24radar_pi::GetCommonName()
 
 wxString br24radar_pi::GetShortDescription()
 {
-    return _("SIMRAD Radar PlugIn for OpenCPN");
+    return _("Navico Radar PlugIn for OpenCPN");
 }
 
 
 wxString br24radar_pi::GetLongDescription()
 {
-    return _("SIMRAD BR24 Radar PlugIn for OpenCPN\n");
-
+    return _("Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n");
 }
-
 
 void br24radar_pi::SetDefaults(void)
 {
@@ -842,6 +842,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
     glTranslated(radar_center.x, radar_center.y, 0);
 
+    wxLogMessage(_T("Rotating image for HDT=%f"), br_hdt);
     glRotatef(br_hdt - 90, 0, 0, 1);        //correction for boat heading -90 for base north
 
     // scaling...
@@ -1443,7 +1444,7 @@ void *MulticastRXThread::Entry(void)
         wxLogMessage(_T("BR24Radar: Unable to listen on port %ls"), m_service_port.c_str());
         return 0;
     }
-    m_sock->SetFlags(wxSOCKET_BLOCK);                         // This blocks the thread out until data received
+    m_sock->SetFlags(wxSOCKET_BLOCK); // We use blocking but use Wait() to avoid timeouts.
 
     //    Subscribe to a multicast group
     unsigned int mcAddr;
@@ -1484,29 +1485,25 @@ void *MulticastRXThread::Entry(void)
 
     //    The big while....
     int n_rx_once = 0;
-    while (!TestDestroy()) {
-
-        m_sock->RecvFrom(rx_addr, br_packet.buf, sizeof(br_packet.buf));
-//       printf(" bytes read %d\n", m_sock->LastCount());
-
-        if (m_sock->LastCount()) {
-            if (0 == n_rx_once) {
-                wxLogMessage(_T("MulticastRXThreadEntry: First Packet Received."));
-                n_rx_once++;
+    while (!*m_quit) {
+        if (m_sock->Wait(1, 0))
+        {
+            m_sock->RecvFrom(rx_addr, br_packet.buf, sizeof(br_packet.buf));
+            if (m_sock->Error())
+            {
+              wxLogMessage(_T("MulticastRXThreadEntry: error on multicast socket"));
+              break;
             }
-            br_scan_packets_per_tick++;
-
-            process_buffer();
-
-//          if (outfile.is_open())
-//                outfile.write((const char *)&br_packet.br_frame_pkt.scan_lines[0],sizeof(br_packet.br_frame_pkt.scan_lines[0])); // line header + 6 bytes data
+            if (m_sock->LastCount()) {
+                if (0 == n_rx_once) {
+                    wxLogMessage(_T("MulticastRXThreadEntry: First Packet Received."));
+                    n_rx_once++;
+                }
+                br_scan_packets_per_tick++;
+                process_buffer();
+            }
         }
-
     }
-
-//        if(outfile.is_open())
-//          outfile.close();                // save full screen painting data
-
     return 0;
 }
 

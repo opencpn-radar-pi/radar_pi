@@ -39,7 +39,7 @@
 #endif //precompiled headers
 
 #define     PLUGIN_VERSION_MAJOR    1
-#define     PLUGIN_VERSION_MINOR    0
+#define     PLUGIN_VERSION_MINOR    20130513
 
 #define     MY_API_VERSION_MAJOR    1
 #define     MY_API_VERSION_MINOR    8
@@ -278,6 +278,8 @@ private:
     wxBitmap                 *m_ptemp_icon;
     int                       m_sent_bm_id_normal;
     int                       m_sent_bm_id_rollover;
+
+    volatile bool             m_quit;
 };
 
 class MulticastRXThread: public wxThread
@@ -285,8 +287,9 @@ class MulticastRXThread: public wxThread
 
 public:
 
-    MulticastRXThread(const wxString &IP_addr, const wxString &service_port)
+    MulticastRXThread(volatile bool * quit, const wxString &IP_addr, const wxString &service_port)
     : wxThread(wxTHREAD_JOINABLE)
+    , m_quit(quit)
     , m_ip(IP_addr)
     , m_service_port(service_port)
     , m_sock(0)
@@ -303,12 +306,11 @@ public:
 private:
     void process_buffer(void);
 
-    wxString m_ip;
-    wxString m_service_port;
-
-    wxDatagramSocket  *m_sock;
-    wxIPV4address     m_myaddr;
-
+    wxString           m_ip;
+    wxString           m_service_port;
+    volatile bool    * m_quit;
+    wxDatagramSocket * m_sock;
+    wxIPV4address      m_myaddr;
 };
 
 //----------------------------------------------------------------------------------------------------------
