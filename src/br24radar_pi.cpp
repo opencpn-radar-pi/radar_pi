@@ -232,8 +232,8 @@ int br24radar_pi::Init(void)
 
     //    This PlugIn needs a toolbar icon
     {
-        m_tool_id  = InsertPlugInTool(_T(""), _img_radar_red, _img_radar_red, wxITEM_NORMAL,
-                                      _T("BR24Radar"), _T(""), NULL,
+        m_tool_id  = InsertPlugInTool(wxT(""), _img_radar_red, _img_radar_red, wxITEM_NORMAL,
+                                      wxT("BR24Radar"), wxT(""), NULL,
                                       BR24RADAR_TOOL_POSITION, 0, this);
 
         CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_BLANK);
@@ -245,12 +245,12 @@ int br24radar_pi::Init(void)
 
     wxIPV4address addr101;
     addr101.AnyAddress();
-    addr101.Service(_T("6678"));
+    addr101.Service(wxT("6678"));
     m_out_sock101 = new wxDatagramSocket(addr101, wxSOCKET_REUSEADDR | wxSOCKET_NOWAIT);
 
     //    Create the THREAD for Multicast radar data reception
     m_quit = false;
-    m_receiveThread = new MulticastRXThread(this, &m_quit, _T("236.6.7.8"), _T("6678"));
+    m_receiveThread = new MulticastRXThread(this, &m_quit, wxT("236.6.7.8"), wxT("6678"));
     m_receiveThread->Run();
 
 
@@ -275,17 +275,17 @@ int br24radar_pi::Init(void)
 
 bool br24radar_pi::DeInit(void)
 {
-    wxLogMessage(_T("BR24 radar plugin is stopping."));
+    wxLogMessage(wxT("BR24 radar plugin is stopping."));
     SaveConfig();
-    wxLogMessage(_T("BR24 radar config saved."));
+    wxLogMessage(wxT("BR24 radar config saved."));
 
     if (m_receiveThread) {
-        wxLogMessage(_T("BR24 radar thread waiting ...."));
+        wxLogMessage(wxT("BR24 radar thread waiting ...."));
         m_quit = true;
         m_receiveThread->Wait();
-        wxLogMessage(_T("BR24 radar thread is stopped."));
+        wxLogMessage(wxT("BR24 radar thread is stopped."));
         delete m_receiveThread;
-        wxLogMessage(_T("BR24 radar thread is deleted."));
+        wxLogMessage(wxT("BR24 radar thread is deleted."));
     }
 
     return true;
@@ -318,7 +318,7 @@ wxBitmap *br24radar_pi::GetPlugInBitmap()
 
 wxString br24radar_pi::GetCommonName()
 {
-    return _T("BR24Radar");
+    return wxT("BR24Radar");
 }
 
 
@@ -339,8 +339,8 @@ void br24radar_pi::SetDefaults(void)
     if (!m_bShowIcon) {
         m_bShowIcon = true;
 
-        m_tool_id  = InsertPlugInTool(_T(""), _img_radar_red, _img_radar_red, wxITEM_CHECK,
-                                      _T("BR24Radar"), _T(""), NULL,
+        m_tool_id  = InsertPlugInTool(wxT(""), _img_radar_red, _img_radar_red, wxITEM_CHECK,
+                                      wxT("BR24Radar"), wxT(""), NULL,
                                       BR24RADAR_TOOL_POSITION, 0, this);
     }
 
@@ -351,6 +351,22 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow* parent)
     m_pOptionsDialog = new BR24DisplayOptionsDialog;
     m_pOptionsDialog->Create(m_parent_window, this);
     m_pOptionsDialog->Show();
+}
+
+void logBinaryData(const wxString& what, const char * data, int size)
+{
+    wxString explain;
+    int i;
+
+    explain.Alloc(size * 3 + 50);
+    explain += wxT("BR24radar_pi: ");
+    explain += what;
+    explain += wxString::Format(wxT(" %d bytes: "), size);
+    for (i = 0; i < size; i++)
+    {
+      explain += wxString::Format(wxT(" %02X"), (unsigned char) data[i]);
+    }
+    wxLogMessage(explain);
 }
 
 //*********************************************************************************
@@ -385,7 +401,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     pParent = parent;
     pPlugIn = ppi;
 //      wxString msg;
-//      msg.Printf(_T("OptionsDialog: Creating Dialog"));
+//      msg.Printf(wxT("OptionsDialog: Creating Dialog"));
 //      wxLogMessage(msg);
 
 //  wxDialog *PreferencesDialog = new wxDialog( parent, wxID_ANY, _("BR24 Target Display Preferences"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE );
@@ -476,7 +492,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     pText_Range_Calibration_Value = new wxTextCtrl(this, wxID_ANY);
     itemStaticBoxSizerCalibration->Add(pText_Range_Calibration_Value, 1, wxALIGN_LEFT | wxALL, 5);
     wxString m_temp;
-    m_temp.Printf(_T("%2.5f"), pPlugIn->settings.range_calibration);
+    m_temp.Printf(wxT("%2.5f"), pPlugIn->settings.range_calibration);
     pText_Range_Calibration_Value->SetValue(m_temp);
     pText_Range_Calibration_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                                            wxCommandEventHandler(BR24DisplayOptionsDialog::OnRange_Calibration_Value), NULL, this);
@@ -638,6 +654,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         br_radar_state = RADAR_ON;
         if (br_scanner_state == RADAR_OFF) {
             settings.master_mode = true;
+            wxLogMessage(wxT("BR24radar_pi: Master mode on"));
             RadarStayAlive();
             RadarTxOn();
         }
@@ -646,6 +663,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         if (settings.master_mode == true) {
             RadarTxOff();
             settings.master_mode = false;
+            wxLogMessage(wxT("BR24radar_pi: Master mode off"));
         }
     }
 
@@ -667,7 +685,7 @@ void br24radar_pi::DoTick(void)
           wxTimeSpan ts = now.Subtract(m_dt_last_render);
           long delta_t = ts.GetSeconds().ToLong();
           wxString msg;
-          msg.Printf(_T("ROGL: TimeSpan: %g -> %g"), delta_t, br_display_interval);
+          msg.Printf(wxT("ROGL: TimeSpan: %g -> %g"), delta_t, br_display_interval);
           wxLogMessage(msg);
 
           if(delta_t < br_display_interval )
@@ -694,7 +712,7 @@ void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay
 {
     /*
         wxString msg;
-        msg.Printf(_T("UpdateState:  Master State: %d  Radar state: %d   Scanner state:  %d "), settings.master_mode, br_radar_state, br_scanner_state);
+        msg.Printf(wxT("UpdateState:  Master State: %d  Radar state: %d   Scanner state:  %d "), settings.master_mode, br_radar_state, br_scanner_state);
         wxLogMessage(msg);
     */
     if (br_radar_state == RADAR_ON) {
@@ -721,7 +739,7 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
     if (0 == br_bshown_dc_message) {
         br_bshown_dc_message = 1;
         wxString message(_("The Radar Overlay PlugIn requires the Accelerated Graphics (OpenGL) mode to be activated in Options->Display->Chart Display Options"));
-        wxMessageDialog dlg(GetOCPNCanvasWindow(),  message, _T("br24radar message"), wxOK);
+        wxMessageDialog dlg(GetOCPNCanvasWindow(),  message, wxT("br24radar message"), wxOK);
         dlg.ShowModal();
     }
 
@@ -778,7 +796,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
                 GetCanvasLLPix(vp, wxPoint(vp->pix_width, 0), &lat, &lon);
                 c_dist = radar_distance(lat, lon, br_ownship_lat, br_ownship_lon, 'K');
                 /*
-                      msg.Printf(_T("Max_distance to (vert,horiz) %g > %g ,%g, %g, ,%g, %g\n"),
+                      msg.Printf(wxT("Max_distance to (vert,horiz) %g > %g ,%g, %g, ,%g, %g\n"),
                           c_dist, max_distance,lat, lon, br_ownship_lat, br_ownship_lon);
                       grLogMessage(msg);
                 */
@@ -790,7 +808,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
                 max_distance = radar_distance(lat, lon, br_ownship_lat, br_ownship_lon, 'K') * 1000;
             }
 
-            /*     msg.Printf(_T("Max_distance is  %g (%g, %g) to (%g, %g) \n"),
+            /*     msg.Printf(wxT("Max_distance is  %g (%g, %g) to (%g, %g) \n"),
                       max_distance, lat, lon, br_ownship_lat, br_ownship_lon);
                    grLogMessage(msg);
             */
@@ -809,7 +827,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
             // do we need to change it?
             if (br_previous_range != req_range) {     // don't care if scanner range is sometimes slightly different
-                msg.Printf(_T("RenderGLOverlay: In Auto Mode - Previous Range: %d  Requested Range %d \n"), br_previous_range, req_range);
+                msg.Printf(wxT("RenderGLOverlay: In Auto Mode - Previous Range: %d  Requested Range %d \n"), br_previous_range, req_range);
                 wxLogMessage(msg);
                 br_previous_range = req_range;
                 Select_Range(req_range_index);      // command radar to optimum range for display
@@ -828,7 +846,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         }
         v_scale_ppm = v_scale_ppm * settings.range_calibration;
 
-//      msg.Printf(_T("RenderGLOverlay: v_scale_ppm: %d = (vp->pix_height: %d / Dist_y: %d) pixs/meter Update = %d\n "),
+//      msg.Printf(wxT("RenderGLOverlay: v_scale_ppm: %d = (vp->pix_height: %d / Dist_y: %d) pixs/meter Update = %d\n "),
 //        v_scale_ppm, vp->pix_height, dist_y, settings.display_mode);
 //      wxLogMessage(msg);
 
@@ -852,7 +870,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
 //    wxString msg;
-//    msg.Printf(_T("RenderRR)Swept: OpenGL 1.2 method.\n"));
+//    msg.Printf(wxT("RenderRR)Swept: OpenGL 1.2 method.\n"));
 //      wxLogMessage(msg);
 
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
@@ -863,7 +881,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     glTranslated(radar_center.x, radar_center.y, 0);
 
     double heading = fmod(br_hdt + settings.heading_correction + 360.0, 360.0);
-    wxLogMessage(_T("Rotating image for HDT=%f Correction=%d Result=%f"), br_hdt, settings.heading_correction, heading);
+    wxLogMessage(wxT("Rotating image for HDT=%f Correction=%d Result=%f"), br_hdt, settings.heading_correction, heading);
     glRotatef(heading - 90.0, 0, 0, 1);        //correction for boat heading -90 for base north
 
     // scaling...
@@ -1094,26 +1112,26 @@ bool br24radar_pi::LoadConfig(void)
     wxFileConfig *pConf = (wxFileConfig *)m_pconfig;
 
     if (pConf) {
-        pConf->SetPath(_T("/Settings"));
-        pConf->Read(_T("BR24RadarDisplayOption"), &settings.display_option, 0);
-        pConf->Read(_T("BR24RadarDisplayMode"),  &settings.display_mode, 0);
-        pConf->Read(_T("BR24RadarTransparency"),  &settings.overlay_transparency, .50);
-        pConf->Read(_T("BR24RadarGain"),  &settings.gain, 50);
-        pConf->Read(_T("BR24RadarRainGain"),  &settings.rain_clutter_gain, 50);
-        pConf->Read(_T("BR24RadarClutterGain"),  &settings.sea_clutter_gain, 50);
-        pConf->Read(_T("BR24RadarRangeCalibration"),  &settings.range_calibration, 1.0);
-        pConf->Read(_T("BR24RadarHeadingCorrection"),  &settings.heading_correction, 0);
-        pConf->Read(_T("BR24RadarInterface"), &settings.radar_interface, _T("0.0.0.0"));
+        pConf->SetPath(wxT("/Settings"));
+        pConf->Read(wxT("BR24RadarDisplayOption"), &settings.display_option, 0);
+        pConf->Read(wxT("BR24RadarDisplayMode"),  &settings.display_mode, 0);
+        pConf->Read(wxT("BR24RadarTransparency"),  &settings.overlay_transparency, .50);
+        pConf->Read(wxT("BR24RadarGain"),  &settings.gain, 50);
+        pConf->Read(wxT("BR24RadarRainGain"),  &settings.rain_clutter_gain, 50);
+        pConf->Read(wxT("BR24RadarClutterGain"),  &settings.sea_clutter_gain, 50);
+        pConf->Read(wxT("BR24RadarRangeCalibration"),  &settings.range_calibration, 1.0);
+        pConf->Read(wxT("BR24RadarHeadingCorrection"),  &settings.heading_correction, 0);
+        pConf->Read(wxT("BR24RadarInterface"), &settings.radar_interface, wxT("0.0.0.0"));
 
-        m_BR24Controls_dialog_sx = pConf->Read(_T("BR24ControlsDialogSizeX"), 300L);
-        m_BR24Controls_dialog_sy = pConf->Read(_T("BR24ControlsDialogSizeY"), 540L);
-        m_BR24Controls_dialog_x =  pConf->Read(_T("BR24ControlsDialogPosX"), 20L);
-        m_BR24Controls_dialog_y =  pConf->Read(_T("BR24ControlsDialogPosY"), 170L);
+        m_BR24Controls_dialog_sx = pConf->Read(wxT("BR24ControlsDialogSizeX"), 300L);
+        m_BR24Controls_dialog_sy = pConf->Read(wxT("BR24ControlsDialogSizeY"), 540L);
+        m_BR24Controls_dialog_x =  pConf->Read(wxT("BR24ControlsDialogPosX"), 20L);
+        m_BR24Controls_dialog_y =  pConf->Read(wxT("BR24ControlsDialogPosY"), 170L);
 
-        m_BR24Manual_dialog_sx = pConf->Read(_T("BR24ManualDialogSizeX"), 300L);
-        m_BR24Manual_dialog_sy = pConf->Read(_T("BR24ManualDialogSizeY"), 540L);
-        m_BR24Manual_dialog_x =  pConf->Read(_T("BR24ManualDialogPosX"), 20L);
-        m_BR24Manual_dialog_y =  pConf->Read(_T("BR24ManualDialogPosY"), 170L);
+        m_BR24Manual_dialog_sx = pConf->Read(wxT("BR24ManualDialogSizeX"), 300L);
+        m_BR24Manual_dialog_sy = pConf->Read(wxT("BR24ManualDialogSizeY"), 540L);
+        m_BR24Manual_dialog_x =  pConf->Read(wxT("BR24ManualDialogPosX"), 20L);
+        m_BR24Manual_dialog_y =  pConf->Read(wxT("BR24ManualDialogPosY"), 170L);
 
         SaveConfig();
         return true;
@@ -1129,26 +1147,26 @@ bool br24radar_pi::SaveConfig(void)
     wxFileConfig *pConf = (wxFileConfig *)m_pconfig;
 
     if (pConf) {
-        pConf->SetPath(_T("/Settings"));
-        pConf->Write(_T("BR24RadarDisplayOption"), settings.display_option);
-        pConf->Write(_T("BR24RadarDisplayMode"), settings.display_mode);
-        pConf->Write(_T("BR24RadarTransparency"), settings.overlay_transparency);
-        pConf->Write(_T("BR24RadarGain"), settings.gain);
-        pConf->Write(_T("BR24RadarRainGain"), settings.rain_clutter_gain);
-        pConf->Write(_T("BR24RadarClutterGain"), settings.sea_clutter_gain);
-        pConf->Write(_T("BR24RadarRangeCalibration"),  settings.range_calibration);
-        pConf->Write(_T("BR24RadarHeadingCorrection"),  settings.heading_correction);
-        pConf->Write(_T("BR24RadarInterface"),  settings.radar_interface);
+        pConf->SetPath(wxT("/Settings"));
+        pConf->Write(wxT("BR24RadarDisplayOption"), settings.display_option);
+        pConf->Write(wxT("BR24RadarDisplayMode"), settings.display_mode);
+        pConf->Write(wxT("BR24RadarTransparency"), settings.overlay_transparency);
+        pConf->Write(wxT("BR24RadarGain"), settings.gain);
+        pConf->Write(wxT("BR24RadarRainGain"), settings.rain_clutter_gain);
+        pConf->Write(wxT("BR24RadarClutterGain"), settings.sea_clutter_gain);
+        pConf->Write(wxT("BR24RadarRangeCalibration"),  settings.range_calibration);
+        pConf->Write(wxT("BR24RadarHeadingCorrection"),  settings.heading_correction);
+        pConf->Write(wxT("BR24RadarInterface"),  settings.radar_interface);
 
-        pConf->Write(_T("BR24ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
-        pConf->Write(_T("BR24ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
-        pConf->Write(_T("BR24ControlsDialogPosX"),   m_BR24Controls_dialog_x);
-        pConf->Write(_T("BR24ControlsDialogPosY"),   m_BR24Controls_dialog_y);
+        pConf->Write(wxT("BR24ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
+        pConf->Write(wxT("BR24ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
+        pConf->Write(wxT("BR24ControlsDialogPosX"),   m_BR24Controls_dialog_x);
+        pConf->Write(wxT("BR24ControlsDialogPosY"),   m_BR24Controls_dialog_y);
 
-        pConf->Write(_T("BR24ManualDialogSizeX"),  m_BR24Manual_dialog_sx);
-        pConf->Write(_T("BR24ManualDialogSizeY"),  m_BR24Manual_dialog_sy);
-        pConf->Write(_T("BR24ManualDialogPosX"),   m_BR24Manual_dialog_x);
-        pConf->Write(_T("BR24ManualDialogPosY"),   m_BR24Manual_dialog_y);
+        pConf->Write(wxT("BR24ManualDialogSizeX"),  m_BR24Manual_dialog_sx);
+        pConf->Write(wxT("BR24ManualDialogSizeY"),  m_BR24Manual_dialog_sy);
+        pConf->Write(wxT("BR24ManualDialogPosX"),   m_BR24Manual_dialog_x);
+        pConf->Write(wxT("BR24ManualDialogPosY"),   m_BR24Manual_dialog_y);
         pConf->Flush();
 
         return true;
@@ -1201,30 +1219,32 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 void br24radar_pi::TransmitCmd(char* msg, int size)
 {
     wxIPV4address addr101;
-    addr101.Service(6680);        //(_T("6680"));      addr101.Service(_T("6680"));
-    addr101.Hostname(_T("236.6.7.10"));
+    addr101.Service(6680);        //(wxT("6680"));      addr101.Service(wxT("6680"));
+    addr101.Hostname(wxT("236.6.7.10"));
     m_out_sock101->SendTo(addr101, msg, size);
 
     if (m_out_sock101->Error()) {
-        wxLogMessage(_T("BR24 m_out_sock101 error %d\n"), m_out_sock101->LastError());
+        wxLogMessage(wxT("BR24radar_pi: unable to transmit command, error %d\n"), m_out_sock101->LastError());
+        return;
     };
+
+    logBinaryData(wxT("sent command"), msg, size);
 };
 
 void br24radar_pi::RadarTxOff(void)
 {
-    wxLogMessage(_T("BR24 Radar turned Off manually."));
+    wxLogMessage(wxT("BR24 Radar turned Off manually."));
 
     char pck[3] = {(byte)0x00, (byte)0xc1, (byte)0x00};
     TransmitCmd(pck, sizeof(pck));
 
     pck[0] = (byte)0x01;
     TransmitCmd(pck, sizeof(pck));
-
 }
 
 void br24radar_pi::RadarTxOn(void)
 {
-    wxLogMessage(_T("BR24 Radar turned ON manually."));
+    wxLogMessage(wxT("BR24 Radar turned ON manually."));
 
     char pck[3] = {(byte)0x00, (byte)0xc1, (byte)0x01};               // ON
     TransmitCmd(pck, sizeof(pck));
@@ -1245,13 +1265,13 @@ void br24radar_pi::Select_Range(int req_range_index)
 {
     req_range_index = min(req_range_index, 15);
     if (settings.master_mode) {
+        wxLogMessage(wxT("SelectRange: %g meters\n"), br24_range_settings[req_range_index].range_meters);
         TransmitCmd(br24_range_settings[req_range_index].range_command, sizeof(br24_range_settings[0].range_command));
-
-        wxString msg;
-        msg.Printf(_T("SelectRange: %g meters\n"), br24_range_settings[req_range_index].range_meters);
-        wxLogMessage(msg);
     }
-
+    else
+    {
+        wxLogMessage(wxT("Not master, ignore SelectRange: %g meters\n"), br24_range_settings[req_range_index].range_meters);
+    }
 }
 
 void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
@@ -1259,7 +1279,7 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
     wxString msg;
 
     if (settings.master_mode) {
-        msg.Printf(_T("SetFilterProcess: %d %d"), br_process, sel_gain);
+        msg.Printf(wxT("SetFilterProcess: %d %d"), br_process, sel_gain);
         wxLogMessage(msg);
 
         switch (br_process) {
@@ -1270,7 +1290,7 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, 0, (byte)0x01,
                         0, 0, 0, (byte)0xa1
                     };
-                    msg.Printf(_T("AutoGain: %o"), cmd);
+                    msg.Printf(wxT("AutoGain: %o"), cmd);
                     wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
@@ -1282,7 +1302,7 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, 0, 0, 0, 0, 0,
                         (char)(sel_gain)
                     };
-                    msg.Printf(_T("ManualGain: %o"), cmd);
+                    msg.Printf(wxT("ManualGain: %o"), cmd);
                     wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
@@ -1295,7 +1315,7 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, 0, 0, 0, 0,
                         (char)(sel_gain / 2)
                     };
-                    msg.Printf(_T("RainClutter: %o"), cmd);
+                    msg.Printf(wxT("RainClutter: %o"), cmd);
                     wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
@@ -1308,7 +1328,7 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, (byte)0x01,
                         0, 0, 0, (byte)0xd3
                     };
-                    msg.Printf(_T("SeaClutter: %o"), cmd);
+                    msg.Printf(wxT("SeaClutter: %o"), cmd);
                     wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
@@ -1321,12 +1341,16 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, 0, 0, 0, 0,
                         (char)(sel_gain)
                     };
-                    msg.Printf(_T("SeaClutter: %o"), cmd);
+                    msg.Printf(wxT("SeaClutter: %o"), cmd);
                     wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
         };
+    }
+    else
+    {
+        wxLogMessage(wxT("Not master, so ignore SetFilterProcess: %d %d"), br_process, sel_gain);
     }
 }
 
@@ -1342,10 +1366,9 @@ void br24radar_pi::SetRejectionMode(int mode)
         };
         TransmitCmd(br_rejection_cmd, sizeof(br_rejection_cmd));
         wxString msg;
-        msg.Printf(_T("Rejection: %o"), br_rejection_cmd);
+        msg.Printf(wxT("Rejection: %o"), br_rejection_cmd);
         wxLogMessage(msg);
     }
-
 }
 
 //*****************************************************************************************************
@@ -1441,7 +1464,7 @@ MulticastRXThread::~MulticastRXThread()
 
 void MulticastRXThread::OnExit()
 {
-  wxLogMessage(_T("BR24 radar thread is stopping."));
+  wxLogMessage(wxT("BR24radar_pi: radar thread is stopping."));
 }
 
 void *MulticastRXThread::Entry(void)
@@ -1455,7 +1478,7 @@ void *MulticastRXThread::Entry(void)
     m_sock = new wxDatagramSocket(m_myaddr, wxSOCKET_REUSEADDR);
 
     if (!m_sock) {
-        wxLogMessage(_T("BR24Radar: Unable to listen on port %ls"), m_service_port.c_str());
+        wxLogMessage(wxT("BR24radar_pi: Unable to listen on port %ls"), m_service_port.c_str());
         return 0;
     }
     m_sock->SetFlags(wxSOCKET_BLOCK); // We use blocking but use Wait() to avoid timeouts.
@@ -1489,12 +1512,13 @@ void *MulticastRXThread::Entry(void)
 
     bool bam = m_sock->SetOption(IPPROTO_IP, IP_ADD_MEMBERSHIP, (const void *)&mreq, sizeof(mreq));
     if (!bam) {
-        wxLogMessage(_T("Unable to listen to multicast group: %d"), m_sock->LastError());
+        wxLogError(wxT("Unable to listen to multicast group: %d"), m_sock->LastError());
+        // wxMessageBox(wxT("Unable to listen to radar data"), wxT("BR24radar"), wxOK | wxICON_EXCLAMATION);
         return 0;
     }
 
     wxIPV4address rx_addr;
-    rx_addr.Hostname(_T("0.0.0.0"));   // UDP sender broadcast IP is dynamically assigned else standard IGMPV4
+    rx_addr.Hostname(wxT("0.0.0.0"));   // UDP sender broadcast IP is dynamically assigned else standard IGMPV4
     // just so long as it looks like an IP
 
     //    The big while....
@@ -1503,14 +1527,9 @@ void *MulticastRXThread::Entry(void)
         if (m_sock->Wait(1, 0))
         {
             m_sock->RecvFrom(rx_addr, br_packet.buf, sizeof(br_packet.buf));
-            if (m_sock->Error())
-            {
-              wxLogMessage(_T("MulticastRXThreadEntry: error on multicast socket"));
-              break;
-            }
             if (m_sock->LastCount()) {
                 if (0 == n_rx_once) {
-                    wxLogMessage(_T("MulticastRXThreadEntry: First Packet Received."));
+                    wxLogMessage(wxT("BR24radar_pi: First Packet Received."));
                     n_rx_once++;
                 }
                 br_scan_packets_per_tick++;
@@ -1538,59 +1557,66 @@ void MulticastRXThread::process_buffer(void)
         double range_raw = 0;
         int angleraw;
 
-#define CHATTY(x)
-#undef CHATTY_BLOCK
-
-#ifdef CHATTY_BLOCK
-        printf("Header ");
-        int i;
-        unsigned char * p;
-        for (p = (unsigned char *) &br_line, i = 0; i < sizeof(br_line.br24); i++) {
-            printf(" %02X", (*p++) & 0xff);
-        }
-        printf("\n");
-#endif
+        bool model4G = false;
+        short int large_range;
+        short int small_range;
 
         if (memcmp(br_line.br24.mark, BR24MARK, sizeof(BR24MARK)) == 0) {
-            CHATTY(printf("BR24\n"));
 
             range_raw = ((br_line.br24.range[2] & 0xff) << 16 | (br_line.br24.range[1] & 0xff) << 8 | (br_line.br24.range[0] & 0xff)); // Little -> big endian
             angleraw = (br_line.br24.angle[1] << 8) | br_line.br24.angle[0];
             br_scan_range_meters =  range_raw * 10 ;  // max 24 km => 24000
         } else {
-            short int large_range = (br_line.br4g.largerange[1] << 8) | br_line.br4g.largerange[0];
-            short int small_range = (br_line.br4g.smallrange[1] << 8) | br_line.br4g.smallrange[0];
+            large_range = (br_line.br4g.largerange[1] << 8) | br_line.br4g.largerange[0];
+            small_range = (br_line.br4g.smallrange[1] << 8) | br_line.br4g.smallrange[0];
 
             if (large_range == 0x80) {
                 if (small_range == -1) {
-                    wxLogMessage(_T("RXThreadProcessBuffer:  Neither 4G range field set\n"));
+                    wxLogMessage(wxT("BR24radar_pi:  Neither 4G range field set\n"));
                 } else {
                     range_raw = small_range;
                 }
             } else {
                 range_raw = large_range * 348;
             }
-            CHATTY(
-                printf("4G header large_range=%x %x small_range=%x %x\n"
-                       , br_line.br4g.largerange[0], br_line.br4g.largerange[1]
-                       , br_line.br4g.smallrange[0], br_line.br4g.smallrange[1]
-                      ));
-            CHATTY(printf("4G model range_raw=%f large_range=%x small_range=%x\n", range_raw, large_range, small_range));
             angleraw = (br_line.br4g.angle[1] << 8) | br_line.br4g.angle[0];
             br_scan_range_meters = range_raw * 0.1 * sqrt((double) 2.0);
-            CHATTY(printf("4G model range=%f range_raw=%f large_range=%x small_range=%x\n", br_scan_range_meters, range_raw, large_range, small_range));
+            model4G = true;
         }
 
         // Range change desired?
         if (br_range_meters != br_scan_range_meters) {
-            wxLogMessage(_T("RXThreadProcessBuffer:  Range Change: %g --> %g \n"), br_range_meters, br_scan_range_meters);
+            if (model4G)
+            {
+              logBinaryData(wxT("4G line header"), (char *) &br_line, sizeof(br_line.br4g));
+              wxLogMessage(wxT("4G header large_range=%x %x small_range=%x %x")
+                          , br_line.br4g.largerange[0], br_line.br4g.largerange[1]
+                          , br_line.br4g.smallrange[0], br_line.br4g.smallrange[1]
+                          );
+              wxLogMessage(wxT("4G model range_raw=%f large_range=%x small_range=%x"), range_raw, large_range, small_range);
+            }
+            else
+            {
+              logBinaryData(wxT("BR24 line header"), (char *) &br_line, sizeof(br_line.br24));
+              wxLogMessage(wxT("BR24 header range=%x %x %x angle=%x %x")
+                          , br_line.br24.range[0]
+                          , br_line.br24.range[1]
+                          , br_line.br24.range[2]
+                          , br_line.br24.angle[0]
+                          , br_line.br24.angle[1]
+                          );
+              wxLogMessage(wxT("BR24 model range_raw=%f angle_raw=%f"), range_raw, angleraw);
+            }
+
+            wxLogMessage(wxT("BR24radar_pi:  Range Change: %g --> %g meters"), br_range_meters, br_scan_range_meters);
 
             br_range_meters = br_scan_range_meters;
             br_sweep_count = 0;
+
         }
 
         long angle = angleraw * 360 / 4096;
-        //wxLogMessage(_T("RXThreadProcessBuffer:  Angle: %d %d"),angle, angleraw);
+        //wxLogMessage(wxT("RXThreadProcessBuffer:  Angle: %d %d"),angle, angleraw);
 
         if (angle < min_angle) {            // setting new LB and fixing UB
             min_angle = angle;
@@ -1604,7 +1630,7 @@ void MulticastRXThread::process_buffer(void)
             max_angle = 0;
             min_angle = 361;
         }
-//      wxLogMessage(_T("RXThreadProcessBuffer:  Scan test: %d %d %d"),min_angle, max_angle, br_sweep_count);
+//      wxLogMessage(wxT("RXThreadProcessBuffer:  Scan test: %d %d %d"),min_angle, max_angle, br_sweep_count);
 
         unsigned char *dest_data1 = &br_scan_buf[angle][0];  // start address of destination in scan_buf
 //      unsigned char *dest_data2 = &br_scan_buf[angle+1][0]; // next line
