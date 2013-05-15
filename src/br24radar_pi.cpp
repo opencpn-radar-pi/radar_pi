@@ -862,8 +862,9 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
     glTranslated(radar_center.x, radar_center.y, 0);
 
-    wxLogMessage(_T("Rotating image for HDT=%f"), br_hdt);
-    glRotatef(br_hdt - 90, 0, 0, 1);        //correction for boat heading -90 for base north
+    double heading = fmod(br_hdt + settings.heading_correction + 360.0, 360.0);
+    wxLogMessage(_T("Rotating image for HDT=%f Correction=%d Result=%f"), br_hdt, settings.heading_correction, heading);
+    glRotatef(heading - 90.0, 0, 0, 1);        //correction for boat heading -90 for base north
 
     // scaling...
     double radar_pixels_per_meter = 512. / br_scan_range_meters;
