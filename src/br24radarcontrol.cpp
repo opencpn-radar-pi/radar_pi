@@ -59,27 +59,12 @@ enum {                                      // process ID's
     ID_TEXTCTRL1 = 10000,
     ID_OK,
     ID_TRANSLIDER,
-    ID_OPERATIONMODE,
+    ID_RANGEMODE,
     ID_RANGE,
     ID_CLUTTER,
     ID_GAIN,
     ID_REJECTION
 };
-
-// These are external variables defined in br24radar.h
-
-double   br_overlay_transparency;
-bool     br_master;
-bool    br_auto;
-int     br_displaymode;
-int     br_gain;
-int     br_rejection;
-int     br_filter_process;
-int     br_sea_clutter_gain;
-int     br_rain_clutter_gain;
-int     br_range_index;
-
-int     sel_gain;
 
 //---------------------------------------------------------------------------------------
 //          Radar Control Implementation
@@ -92,7 +77,7 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
     EVT_BUTTON(ID_OK, BR24ControlsDialog::OnIdOKClick)
     EVT_MOVE(BR24ControlsDialog::OnMove)
     EVT_SIZE(BR24ControlsDialog::OnSize)
-    EVT_RADIOBUTTON(ID_OPERATIONMODE, BR24ControlsDialog::OnOperationModeClick)
+    EVT_RADIOBUTTON(ID_RANGEMODE, BR24ControlsDialog::OnRangeModeClick)
     EVT_RADIOBUTTON(ID_CLUTTER, BR24ControlsDialog::OnFilterProcessClick)
     EVT_RADIOBUTTON(ID_REJECTION, BR24ControlsDialog::OnRejectionModeClick)
 
@@ -161,24 +146,24 @@ void BR24ControlsDialog::CreateControls()
     wxStaticBoxSizer* BoxSizerOperation = new wxStaticBoxSizer(BoxOperation, wxVERTICAL);
     boxSizer->Add(BoxSizerOperation, 0, wxEXPAND | wxALL, border_size);
 
-    wxString OperationModeStrings[] = {
+    wxString RangeModeStrings[] = {
         _("Manual"),
         _("Automatic"),
     };
 
-    pOperationMode = new wxRadioBox(this, ID_OPERATIONMODE, _("Operation Mode"),
+    pRangeMode = new wxRadioBox(this, ID_RANGEMODE, _("Range Mode"),
                                     wxDefaultPosition, wxDefaultSize,
-                                    2, OperationModeStrings, 1, wxRA_SPECIFY_COLS);
+                                    2, RangeModeStrings, 1, wxRA_SPECIFY_COLS);
 
-    BoxSizerOperation->Add(pOperationMode, 0, wxALL | wxEXPAND, 2);
+    BoxSizerOperation->Add(pRangeMode, 0, wxALL | wxEXPAND, 2);
 
-    pOperationMode->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
-                            wxCommandEventHandler(BR24ControlsDialog::OnOperationModeClick), NULL, this);
-    if (br_auto) {
-        pOperationMode->SetSelection(1);
+    pRangeMode->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
+                            wxCommandEventHandler(BR24ControlsDialog::OnRangeModeClick), NULL, this);
+    if (pPlugIn->settings.auto_range_mode) {
+        pRangeMode->SetSelection(1);
     } else {
-        pOperationMode->SetSelection(0);
-        pPlugIn->SetOperationMode(0);
+        pRangeMode->SetSelection(0);
+        pPlugIn->SetRange(0);
     }
 
     //Transparency slider
@@ -194,7 +179,7 @@ void BR24ControlsDialog::CreateControls()
     pTranSlider->Connect(wxEVT_SCROLL_CHANGED,
                          wxCommandEventHandler(BR24ControlsDialog::OnTransSlider), NULL, this);
 
-    pTranSlider->SetValue(br_overlay_transparency * 100);
+    pTranSlider->SetValue(pPlugIn->settings.overlay_transparency * 100);
     pPlugIn->UpdateDisplayParameters();
 
 //  Image Conditioning Options
@@ -219,9 +204,9 @@ void BR24ControlsDialog::CreateControls()
     pRejectionMode->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
                             wxCommandEventHandler(BR24ControlsDialog::OnRejectionModeClick), NULL, this);
 
-    pRejectionMode->SetSelection(br_rejection);
+    pRejectionMode->SetSelection(pPlugIn->settings.rejection);
 
-//  Clutter Options
+//  Cluster Options
     wxString FilterProcessStrings[] = {
         _("Auto Gain"),
         _("Manual Gain"),
@@ -230,14 +215,14 @@ void BR24ControlsDialog::CreateControls()
         _("Sea Clutter - Manual"),
     };
 
-    pFilterProcess = new wxRadioBox(this, ID_CLUTTER, _("Filter & Process"),
+    pFilterProcess = new wxRadioBox(this, ID_CLUTTER, _("Tuning"),
                                     wxDefaultPosition, wxDefaultSize,
                                     5, FilterProcessStrings, 1, wxRA_SPECIFY_COLS);
 
     BoxConditioningSizer->Add(pFilterProcess, 0, wxALL | wxEXPAND, 2);
     pFilterProcess->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
                             wxCommandEventHandler(BR24ControlsDialog::OnFilterProcessClick), NULL, this);
-    pPlugIn->SetFilterProcess(pFilterProcess->GetSelection(), sel_gain);
+    // pPlugIn->SetFilterProcess(pFilterProcess->GetSelection(), sel_gain);
 
 //  Gain slider
 
@@ -263,36 +248,38 @@ void BR24ControlsDialog::CreateControls()
     AckBox->Add(bOK, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 }
 
-void BR24ControlsDialog::OnOperationModeClick(wxCommandEvent &event)
+void BR24ControlsDialog::OnRangeModeClick(wxCommandEvent &event)
 {
-    pPlugIn->SetOperationMode(pOperationMode->GetSelection());
+    pPlugIn->SetRangeMode(pRangeMode->GetSelection());
 }
 
 void BR24ControlsDialog::OnTransSlider(wxCommandEvent &event)
 {
-    br_overlay_transparency = ((double)pTranSlider->GetValue()) / 100.;
+    pPlugIn->settings.overlay_transparency = ((double)pTranSlider->GetValue()) / 100.;
     pPlugIn->UpdateDisplayParameters();
 }
 
 void BR24ControlsDialog::OnFilterProcessClick(wxCommandEvent &event)
 {
-    br_filter_process = pFilterProcess->GetSelection();
-    switch (br_filter_process) {
+    int sel_gain = 0;
+
+    pPlugIn->settings.filter_process = pFilterProcess->GetSelection();
+    switch (pPlugIn->settings.filter_process) {
         case 1: {
-                sel_gain = br_gain;
+                sel_gain = pPlugIn->settings.gain;
                 break;
             }
         case 2: {
-                sel_gain = br_sea_clutter_gain;
+                sel_gain = pPlugIn->settings.sea_clutter_gain;
                 break;
             }
         case 4: {
-                sel_gain = br_rain_clutter_gain;
+                sel_gain = pPlugIn->settings.rain_clutter_gain;
                 break;
             }
     }
     pGainSlider->SetValue(sel_gain);
-    pPlugIn->SetFilterProcess(br_filter_process, sel_gain);
+    pPlugIn->SetFilterProcess(pPlugIn->settings.filter_process, sel_gain);
 }
 
 void BR24ControlsDialog::OnRejectionModeClick(wxCommandEvent &event)
@@ -302,21 +289,21 @@ void BR24ControlsDialog::OnRejectionModeClick(wxCommandEvent &event)
 
 void BR24ControlsDialog::OnGainSlider(wxCommandEvent &event)
 {
-    sel_gain = pGainSlider->GetValue();
-    pPlugIn->SetFilterProcess(br_filter_process, sel_gain);
+    int sel_gain = pGainSlider->GetValue();
+    pPlugIn->SetFilterProcess(pPlugIn->settings.filter_process, sel_gain);
 
-    switch (br_filter_process) {
+    switch (pPlugIn->settings.filter_process) {
         case 1: {
-                br_gain = sel_gain;
+                pPlugIn->settings.gain = sel_gain;
                 break;
             }
         case 2: {
-                br_sea_clutter_gain = sel_gain;
+                pPlugIn->settings.sea_clutter_gain = sel_gain;
                 break;
             }
         case 4: {
                 sel_gain = sel_gain * 8 / 10;
-                br_rain_clutter_gain = sel_gain;
+                pPlugIn->settings.rain_clutter_gain = sel_gain;
                 break;
             }
     }
@@ -457,7 +444,7 @@ void BR24ManualDialog::CreateControls()
     BoxRangeSizer->Add(pRangeSelect, 0, wxALL | wxEXPAND, 2);
 
     pRangeSelect->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
-                          wxCommandEventHandler(BR24ManualDialog::OnRangeModeClick), NULL, this);
+                          wxCommandEventHandler(BR24ManualDialog::OnRangeClick), NULL, this);
 
     pRangeSelect->SetSelection(0);
 
@@ -466,11 +453,11 @@ void BR24ManualDialog::CreateControls()
     ManualSizer->Add(bClose, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 }
 
-void BR24ManualDialog::OnRangeModeClick(wxCommandEvent &event)
+void BR24ManualDialog::OnRangeClick(wxCommandEvent &event)
 {
-    br_range_index = pRangeSelect->GetSelection();
-    pPlugIn->SetRangeMode(br_range_index);
-    wxString message(_("Range: %d"), br_range_index);
+    pPlugIn->settings.range_index = pRangeSelect->GetSelection();
+    pPlugIn->SetRange(pPlugIn->settings.range_index);
+    wxString message(_("Range: %d"), pPlugIn->settings.range_index);
     wxMessageDialog dlg(GetOCPNCanvasWindow(),  message, _T("BR24 Radar"));
 }
 

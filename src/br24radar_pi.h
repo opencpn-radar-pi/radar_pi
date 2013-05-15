@@ -127,16 +127,22 @@ struct range_settings {
     char    range_command[6];
 };
 
-extern double   br_overlay_transparency;
-extern bool     br_master;
-extern bool     br_auto;
-extern int      br_displaymode;
-extern int      br_gain;
-extern int      br_rejection;
-extern int      br_filter_process;
-extern int      br_sea_clutter_gain;
-extern int      br_rain_clutter_gain;
-extern int      br_range_index;
+struct radar_control_settings {
+    double   overlay_transparency;
+    bool     master_mode;
+    bool     auto_range_mode;
+    int      range_index;
+    int      display_option;
+    int      display_mode;
+    int      gain;
+    int      rejection;
+    int      filter_process;
+    int      sea_clutter_gain;
+    int      rain_clutter_gain;
+    double   range_calibration;
+    int      heading_correction;
+    wxString radar_interface;        // IP address of interface to bind to (on UNIX)
+};
 
 //    Forward definitions
 class MulticastRXThread;
@@ -188,7 +194,7 @@ public:
     void OnBR24ControlDialogClose();         // Control dialog
     void SetDisplayMode(int mode);
     void UpdateDisplayParameters(void);
-    void SetOperationMode(int mode);
+    void SetRangeMode(int mode);
 
     void SetBR24ControlsDialogX(int x) {
         m_BR24Controls_dialog_x = x;
@@ -217,12 +223,14 @@ public:
     void SetBR24ManualDialogSizeY(int sy) {
         m_BR24Manual_dialog_sy = sy;
     }
-    void SetRangeMode(int mode);
+    void SetRange(int index);
     void SetFilterProcess(int br_process, int sel_gain);
     void SetGainMode(int mode);
     void SetRejectionMode(int mode);
     bool LoadConfig(void);
     bool SaveConfig(void);
+
+    radar_control_settings settings;
 
 private:
     void TransmitCmd(char* msg, int size);
@@ -287,11 +295,12 @@ class MulticastRXThread: public wxThread
 
 public:
 
-    MulticastRXThread(volatile bool * quit, const wxString &IP_addr, const wxString &service_port)
+    MulticastRXThread(br24radar_pi *ppi, volatile bool * quit, const wxString &IP_addr, const wxString &service_port)
     : wxThread(wxTHREAD_JOINABLE)
-    , m_quit(quit)
+    , pPlugIn(ppi)
     , m_ip(IP_addr)
     , m_service_port(service_port)
+    , m_quit(quit)
     , m_sock(0)
     {
       wxLogMessage(_T("BR24 radar thread starting for multicast address %ls port %ls"), m_ip.c_str(), m_service_port.c_str());
@@ -306,6 +315,7 @@ public:
 private:
     void process_buffer(void);
 
+    br24radar_pi      *pPlugIn;
     wxString           m_ip;
     wxString           m_service_port;
     volatile bool    * m_quit;
@@ -340,6 +350,7 @@ private:
     void OnRange_Calibration_Value(wxCommandEvent& event);
     void OnIntervalSlider(wxCommandEvent& event);
     void OnDisplayModeClick(wxCommandEvent& event);
+    void OnHeadingSlider(wxCommandEvent& event);
 
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
@@ -349,6 +360,7 @@ private:
     wxRadioBox        *pDisplayMode;
     wxTextCtrl        *pText_Range_Calibration_Value;
     wxSlider          *pIntervalSlider;
+    wxSlider          *pHeadingSlider;
 };
 
 //----------------------------------------------------------------------------------------------------------
@@ -380,7 +392,7 @@ private:
     void OnMove(wxMoveEvent& event);
     void OnSize(wxSizeEvent& event);
     void OnTransSlider(wxCommandEvent &event);
-    void OnOperationModeClick(wxCommandEvent &event);
+    void OnRangeModeClick(wxCommandEvent &event);
     void OnFilterProcessClick(wxCommandEvent &event);
     void OnRejectionModeClick(wxCommandEvent &event);
     void OnGainSlider(wxCommandEvent &event);
@@ -391,7 +403,7 @@ private:
 
     // Controls
     wxSlider          *pTranSlider;
-    wxRadioBox        *pOperationMode;
+    wxRadioBox        *pRangeMode;
     wxRadioBox        *pRejectionMode;
     wxRadioBox        *pFilterProcess;
     wxSlider          *pGainSlider;
@@ -427,11 +439,10 @@ private:
     void OnIdOKClick(wxCommandEvent& event);
     void OnMove(wxMoveEvent& event);
     void OnSize(wxSizeEvent& event);
-    void OnRangeModeClick(wxCommandEvent &event);
-    void OnRange_Calibration_Value(wxCommandEvent &event);
+    void OnRangeClick(wxCommandEvent &event);
 
     wxWindow          *pParent;
-    br24radar_pi         *pPlugIn;
+    br24radar_pi      *pPlugIn;
 
     // Controls
 

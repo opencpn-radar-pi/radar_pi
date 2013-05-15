@@ -49,8 +49,6 @@
 #include <wx/fileconf.h>
 #include <fstream>
 
-//#include "chart1.h"
-
 using namespace std;
 
 #ifdef __WXGTK__
@@ -64,7 +62,6 @@ using namespace std;
 typedef char byte;
 #endif
 
-
 #include "br24radar_pi.h"
 #include "ocpndc.h"
 
@@ -77,6 +74,7 @@ enum {
     ID_OVERLAYDISPLAYOPTION,
     ID_DISPLAYTYPE,
     ID_INTERVALSLIDER,
+    ID_HEADINGSLIDER,
 };
 
 union packet_buf {
@@ -99,8 +97,6 @@ long              br_scan_distribution[255];    // intensity distribution
 double            br_range_meters = 0;      // current range for radar
 double            br_scan_range_meters;
 long              br_previous_range = 0;
-double            br_range_calibration;
-wxString          br_radar_interface;
 
 int               max_angle = 0;
 int               min_angle = 361;
@@ -141,8 +137,7 @@ double hdt_last_message;
 
 int   br_radar_state;
 int   br_scanner_state;
-int   br_display_option;
-long   br_display_interval(0);
+long  br_display_interval(0);
 int   br_sweep_count;
 wxDateTime  br_dt_last_tick;
 wxDateTime  br_dt_stayalive;
@@ -194,16 +189,12 @@ int br24radar_pi::Init(void)
     m_pControlDialog = NULL;
     m_pManualDialog = NULL;
 
-    br_displaymode = 0;
     br_radar_state = RADAR_OFF;
     br_scanner_state = RADAR_OFF;                 // Radar scanner is off
     br_sweep_count = 0;
-    br_master = false;                        // we're not the master controller at startup
-    br_auto = true;                           // starts with auto range change
     br_dt_last_tick = wxDateTime::Now();
     br_dt_stayalive = wxDateTime::Now();
 
-    br_overlay_transparency = .50;
     m_dt_last_render = wxDateTime::Now();
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
@@ -211,6 +202,11 @@ int br24radar_pi::Init(void)
 
 //******************************************************************************************/
 //******************************************************************************************/
+    settings.display_mode = 0;
+    settings.master_mode = false;                 // we're not the master controller at startup
+    settings.auto_range_mode = true;                    // starts with auto range change
+    settings.overlay_transparency = .50;
+
 //      Set default parameters for controls displays
     m_BR24Controls_dialog_x = 0;
     m_BR24Controls_dialog_y = 0;
@@ -254,7 +250,7 @@ int br24radar_pi::Init(void)
 
     //    Create the THREAD for Multicast radar data reception
     m_quit = false;
-    m_receiveThread = new MulticastRXThread(&m_quit, _T("236.6.7.8"), _T("6678"));
+    m_receiveThread = new MulticastRXThread(this, &m_quit, _T("236.6.7.8"), _T("6678"));
     m_receiveThread->Run();
 
 
@@ -425,7 +421,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     pOverlayDisplayOptions->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
                                     wxCommandEventHandler(BR24DisplayOptionsDialog::OnDisplayOptionClick), NULL, this);
 
-    pOverlayDisplayOptions->SetSelection(br_display_option);
+    pOverlayDisplayOptions->SetSelection(pPlugIn->settings.display_option);
 
 //  Display Options
     wxStaticBox* itemStaticBoxSizerDisOptStatic = new wxStaticBox(this, wxID_ANY, _("Display Options"));
@@ -447,7 +443,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     pDisplayMode->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
                           wxCommandEventHandler(BR24DisplayOptionsDialog::OnDisplayModeClick), NULL, this);
 
-    pDisplayMode->SetSelection(br_displaymode);
+    pDisplayMode->SetSelection(pPlugIn->settings.display_mode);
 
 //interval slider
     wxStaticBox* interval_sliderbox = new wxStaticBox(this, wxID_ANY, _("Interval 1 sec-6 min"));
@@ -463,22 +459,41 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
                              wxCommandEventHandler(BR24DisplayOptionsDialog::OnIntervalSlider), NULL, this);
 
     pIntervalSlider->SetValue(br_display_interval / 36);
-    if (br_displaymode != 1) {
+    if (pPlugIn->settings.display_mode != 1) {
         interval_sliderbox->Hide();
         pIntervalSlider->Hide();
     }
 
-// Range Calibration Factor
-    wxStaticText *pStatic_Range_Calibration = new wxStaticText(this, wxID_ANY, _("Radar range Calibration factor:"));
-    DisplayOptionsBox->Add(pStatic_Range_Calibration, 1, wxALIGN_LEFT | wxALL, 2);
+//  Calibration
+    wxStaticBox* itemStaticBoxCalibration = new wxStaticBox(this, wxID_ANY, _("Calibration"));
+    wxStaticBoxSizer* itemStaticBoxSizerCalibration = new wxStaticBoxSizer(itemStaticBoxCalibration, wxVERTICAL);
+    DisplayOptionsCheckBoxSizer->Add(itemStaticBoxSizerCalibration, 0, wxEXPAND | wxALL, border_size);
+
+    // Range Factor
+    wxStaticText *pStatic_Range_Calibration = new wxStaticText(this, wxID_ANY, _("Range factor"));
+    itemStaticBoxSizerCalibration->Add(pStatic_Range_Calibration, 1, wxALIGN_LEFT | wxALL, 2);
 
     pText_Range_Calibration_Value = new wxTextCtrl(this, wxID_ANY);
-    DisplayOptionsBox->Add(pText_Range_Calibration_Value, 1, wxALIGN_LEFT | wxALL, 5);
+    itemStaticBoxSizerCalibration->Add(pText_Range_Calibration_Value, 1, wxALIGN_LEFT | wxALL, 5);
     wxString m_temp;
-    m_temp.Printf(_T("%2.5f deg"), br_range_calibration); // TODO: Change back to UTF16 char later
+    m_temp.Printf(_T("%2.5f"), pPlugIn->settings.range_calibration);
     pText_Range_Calibration_Value->SetValue(m_temp);
     pText_Range_Calibration_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                                            wxCommandEventHandler(BR24DisplayOptionsDialog::OnRange_Calibration_Value), NULL, this);
+
+    // Heading correction slider
+    wxStaticBox* headingBox = new wxStaticBox(this, wxID_ANY, _("Heading correction"));
+    wxStaticBoxSizer* headingBoxSizer = new wxStaticBoxSizer(headingBox, wxVERTICAL);
+    itemStaticBoxSizerCalibration->Add(headingBoxSizer, 0, wxALL | wxEXPAND, 2);
+
+    pHeadingSlider = new wxSlider(this, ID_HEADINGSLIDER, 0 , -90, +90, wxDefaultPosition,  wxDefaultSize,
+                               wxSL_HORIZONTAL | wxSL_LABELS,  wxDefaultValidator, _("slider"));
+
+    headingBoxSizer->Add(pHeadingSlider, 0, wxALL | wxEXPAND, 2);
+
+    pHeadingSlider->Connect(wxEVT_SCROLL_CHANGED, wxCommandEventHandler(BR24DisplayOptionsDialog::OnHeadingSlider), NULL, this);
+
+    pHeadingSlider->SetValue(pPlugIn->settings.heading_correction);
 
 // Accept/Reject button
     wxStdDialogButtonSizer* DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
@@ -495,7 +510,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
 
 void BR24DisplayOptionsDialog::OnDisplayOptionClick(wxCommandEvent &event)
 {
-    br_display_option = pOverlayDisplayOptions->GetSelection();
+    pPlugIn->settings.display_option = pOverlayDisplayOptions->GetSelection();
 
 }
 
@@ -507,15 +522,20 @@ void BR24DisplayOptionsDialog::OnDisplayModeClick(wxCommandEvent &event)
 void BR24DisplayOptionsDialog::OnRange_Calibration_Value(wxCommandEvent &event)
 {
     wxString temp = pText_Range_Calibration_Value->GetValue();
-    temp.ToDouble(&br_range_calibration);
+    temp.ToDouble(&pPlugIn->settings.range_calibration);
 }
-
 
 void BR24DisplayOptionsDialog::OnIntervalSlider(wxCommandEvent &event)
 {
     br_display_interval = pIntervalSlider->GetValue() * 36;
 
 }
+
+void BR24DisplayOptionsDialog::OnHeadingSlider(wxCommandEvent &event)
+{
+    pPlugIn->settings.heading_correction = pIntervalSlider->GetValue();
+}
+
 void BR24DisplayOptionsDialog::OnClose(wxCloseEvent& event)
 {
     pPlugIn->SaveConfig();
@@ -581,13 +601,13 @@ void br24radar_pi::OnBR24ManualDialogClose()
 
 void br24radar_pi::SetDisplayMode(int mode)
 {
-    br_displaymode = mode;
+    settings.display_mode = mode;
 }
 
-void br24radar_pi::SetOperationMode(int mode)
+void br24radar_pi::SetRangeMode(int mode)
 {
-    br_auto = (mode == 1);
-    if (!br_auto) {
+    settings.auto_range_mode = (mode == 1);
+    if (!settings.auto_range_mode) {
         m_pManualDialog->Show();
     }
 }
@@ -598,10 +618,10 @@ void br24radar_pi::UpdateDisplayParameters(void)
     RequestRefresh(GetOCPNCanvasWindow());
 }
 
-void br24radar_pi::SetRangeMode(int mode)
+void br24radar_pi::SetRange(int index)
 {
-    br_range_index = mode;
-    Select_Range(br_range_index);
+    settings.range_index = index;
+    Select_Range(settings.range_index);
 }
 
 //*******************************************************************************
@@ -617,15 +637,15 @@ void br24radar_pi::OnToolbarToolCallback(int id)
     if (br_radar_state == RADAR_OFF) {  // turned off
         br_radar_state = RADAR_ON;
         if (br_scanner_state == RADAR_OFF) {
-            br_master = true;
+            settings.master_mode = true;
             RadarStayAlive();
             RadarTxOn();
         }
     } else {
         br_radar_state = RADAR_OFF;
-        if (br_master == true) {
+        if (settings.master_mode == true) {
             RadarTxOff();
-            br_master = false;
+            settings.master_mode = false;
         }
     }
 
@@ -656,7 +676,7 @@ void br24radar_pi::DoTick(void)
     */
     if (br_scan_packets_per_tick > 0) { // Something coming from radar unit?
         br_scanner_state = RADAR_ON ;
-        if (br_master && br_dt_stayalive.IsValid()) {
+        if (settings.master_mode && br_dt_stayalive.IsValid()) {
             wxTimeSpan sats = now.Subtract(br_dt_stayalive);
             long delta_t = sats.GetSeconds().ToLong();          // send out stayalive every 5 secs
             if (delta_t > 5) {
@@ -674,7 +694,7 @@ void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay
 {
     /*
         wxString msg;
-        msg.Printf(_T("UpdateState:  Master State: %d  Radar state: %d   Scanner state:  %d "), br_master, br_radar_state, br_scanner_state);
+        msg.Printf(_T("UpdateState:  Master State: %d  Radar state: %d   Scanner state:  %d "), settings.master_mode, br_radar_state, br_scanner_state);
         wxLogMessage(msg);
     */
     if (br_radar_state == RADAR_ON) {
@@ -741,7 +761,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
         // cc1->m_bFollow = FALSE; or ClearbFollow(); to keep boat centered on radar (not implemented)
 
-        if (br_auto) {  // Calculate the "optimum" radar range setting in meters so Radar just fills Screen
+        if (settings.auto_range_mode) {  // Calculate the "optimum" radar range setting in meters so Radar just fills Screen
             if (br_bpos_set) {   // br_bpos_set is only set by NMEA input
                 GetCanvasLLPix(vp, wxPoint(0, 0), &lat, &lon);       // Dist to Lower Left Corner
                 c_dist = radar_distance(lat, lon, br_ownship_lat, br_ownship_lon, 'K');
@@ -806,14 +826,14 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         if (dist_y > 0.) {
             v_scale_ppm = vp->pix_height / dist_y ;    // pixel height of screen div by equivalent meters
         }
-        v_scale_ppm = v_scale_ppm * br_range_calibration;
+        v_scale_ppm = v_scale_ppm * settings.range_calibration;
 
 //      msg.Printf(_T("RenderGLOverlay: v_scale_ppm: %d = (vp->pix_height: %d / Dist_y: %d) pixs/meter Update = %d\n "),
-//        v_scale_ppm, vp->pix_height, dist_y, br_displaymode);
+//        v_scale_ppm, vp->pix_height, dist_y, settings.display_mode);
 //      wxLogMessage(msg);
 
 
-        switch (br_displaymode) {
+        switch (settings.display_mode) {
             case 0:                                         // direct realtime sweep render mode
                 RenderRadarOverlay(boat_center, v_scale_ppm, vp);
                 break;
@@ -855,7 +875,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     for (int angle = 0 ; angle < 360 ; ++angle) {
         for (int radius = 0; radius < 512; ++radius) {
             alpha = br_scan_buf[angle][radius];
-            switch (br_display_option) {
+            switch (settings.display_option) {
                 case 0:
                     glColor4ub(255, 0, 0, (GLubyte)alpha);  // red, blue, green, alpha
                     draw_blob_gl(angle, radius,  1, .75);  // angle, radius, blob radius, arc legnth
@@ -1074,14 +1094,15 @@ bool br24radar_pi::LoadConfig(void)
 
     if (pConf) {
         pConf->SetPath(_T("/Settings"));
-        pConf->Read(_T("BR24RadarDisplayOption"), &br_display_option, 0);
-        pConf->Read(_T("BR24RadarDisplayMode"),  &br_displaymode, 0);
-        pConf->Read(_T("BR24RadarTransparency"),  &br_overlay_transparency, .50);
-        pConf->Read(_T("BR24RadarGain"),  &br_gain, 50);
-        pConf->Read(_T("BR24RadarRainGain"),  &br_rain_clutter_gain, 50);
-        pConf->Read(_T("BR24RadarClutterGain"),  &br_sea_clutter_gain, 50);
-        pConf->Read(_T("BR24RadarRangeCalibration"),  &br_range_calibration, 1.0);
-        pConf->Read(_T("BR24RadarInterface"), &br_radar_interface, _T("0.0.0.0"));
+        pConf->Read(_T("BR24RadarDisplayOption"), &settings.display_option, 0);
+        pConf->Read(_T("BR24RadarDisplayMode"),  &settings.display_mode, 0);
+        pConf->Read(_T("BR24RadarTransparency"),  &settings.overlay_transparency, .50);
+        pConf->Read(_T("BR24RadarGain"),  &settings.gain, 50);
+        pConf->Read(_T("BR24RadarRainGain"),  &settings.rain_clutter_gain, 50);
+        pConf->Read(_T("BR24RadarClutterGain"),  &settings.sea_clutter_gain, 50);
+        pConf->Read(_T("BR24RadarRangeCalibration"),  &settings.range_calibration, 1.0);
+        pConf->Read(_T("BR24RadarHeadingCorrection"),  &settings.heading_correction, 0);
+        pConf->Read(_T("BR24RadarInterface"), &settings.radar_interface, _T("0.0.0.0"));
 
         m_BR24Controls_dialog_sx = pConf->Read(_T("BR24ControlsDialogSizeX"), 300L);
         m_BR24Controls_dialog_sy = pConf->Read(_T("BR24ControlsDialogSizeY"), 540L);
@@ -1108,14 +1129,15 @@ bool br24radar_pi::SaveConfig(void)
 
     if (pConf) {
         pConf->SetPath(_T("/Settings"));
-        pConf->Write(_T("BR24RadarDisplayOption"), br_display_option);
-        pConf->Write(_T("BR24RadarDisplayMode"), br_displaymode);
-        pConf->Write(_T("BR24RadarTransparency"), br_overlay_transparency);
-        pConf->Write(_T("BR24RadarGain"), br_gain);
-        pConf->Write(_T("BR24RadarRainGain"), br_rain_clutter_gain);
-        pConf->Write(_T("BR24RadarClutterGain"), br_sea_clutter_gain);
-        pConf->Write(_T("BR24RadarRangeCalibration"),  br_range_calibration);
-        pConf->Write(_T("BR24RadarInterface"),  br_radar_interface);
+        pConf->Write(_T("BR24RadarDisplayOption"), settings.display_option);
+        pConf->Write(_T("BR24RadarDisplayMode"), settings.display_mode);
+        pConf->Write(_T("BR24RadarTransparency"), settings.overlay_transparency);
+        pConf->Write(_T("BR24RadarGain"), settings.gain);
+        pConf->Write(_T("BR24RadarRainGain"), settings.rain_clutter_gain);
+        pConf->Write(_T("BR24RadarClutterGain"), settings.sea_clutter_gain);
+        pConf->Write(_T("BR24RadarRangeCalibration"),  settings.range_calibration);
+        pConf->Write(_T("BR24RadarHeadingCorrection"),  settings.heading_correction);
+        pConf->Write(_T("BR24RadarInterface"),  settings.radar_interface);
 
         pConf->Write(_T("BR24ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
         pConf->Write(_T("BR24ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
@@ -1208,7 +1230,7 @@ void br24radar_pi::RadarTxOn(void)
 
 void br24radar_pi::RadarStayAlive(void)
 {
-    if (br_master && (br_radar_state == RADAR_ON)) {
+    if (settings.master_mode && (br_radar_state == RADAR_ON)) {
         char pck[] = {(byte)0xA0, (byte)0xc1};
         TransmitCmd(pck, sizeof(pck));
     }
@@ -1217,7 +1239,7 @@ void br24radar_pi::RadarStayAlive(void)
 void br24radar_pi::Select_Range(int req_range_index)
 {
     req_range_index = min(req_range_index, 15);
-    if (br_master) {
+    if (settings.master_mode) {
         TransmitCmd(br24_range_settings[req_range_index].range_command, sizeof(br24_range_settings[0].range_command));
 
         wxString msg;
@@ -1231,7 +1253,7 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
 {
     wxString msg;
 
-    if (br_master) {
+    if (settings.master_mode) {
         msg.Printf(_T("SetFilterProcess: %d %d"), br_process, sel_gain);
         wxLogMessage(msg);
 
@@ -1305,13 +1327,13 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
 
 void br24radar_pi::SetRejectionMode(int mode)
 {
-    br_rejection = mode;
-    if (br_master) {
+    settings.rejection = mode;
+    if (settings.master_mode) {
         char br_rejection_cmd[] = {
             (byte)0x08,
             (byte)0x0c,
             0, 0, 0, 0, 0, 0, 0, 0,
-            (char) br_rejection
+            (char) settings.rejection
         };
         TransmitCmd(br_rejection_cmd, sizeof(br_rejection_cmd));
         wxString msg;
@@ -1407,19 +1429,6 @@ void br24radar_pi::CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollov
 
 // Ethernet packet stuff *************************************************************
 
-/*
-MulticastRXThread::MulticastRXThread(const wxString &IP_addr, const wxString &service_port)
-{
-    m_ip = IP_addr;
-    m_service_port = service_port;
-    m_sock = 0;
-
-    wxLogMessage(_T("RXThread: Creating thread m_IP addr: %ls m_Port: %ls"), m_ip.c_str(), m_service_port.c_str());
-
-    Create(1024 * 1024);
-}
-*/
-
 MulticastRXThread::~MulticastRXThread()
 {
     delete m_sock;
@@ -1460,13 +1469,13 @@ void *MulticastRXThread::Entry(void)
     mcAddr = addr->s_addr;
 
     _GAddress_Init_INET(&gaddress);
-    GAddress_INET_SetHostName(&gaddress, br_radar_interface.mb_str());
+    GAddress_INET_SetHostName(&gaddress, pPlugIn->settings.radar_interface.mb_str());
     addr = &(((struct sockaddr_in *)gaddress.m_addr)->sin_addr);
     recvAddr = addr->s_addr;
 
 #else
     mcAddr = inet_addr(m_ip.mb_str());
-    recvAddr = inet_addr(br_radar_interface.mb_str());
+    recvAddr = inet_addr(pPlugIn->settings.radar_interface.mb_str());
 #endif
 
     struct ip_mreq mreq;
@@ -1612,7 +1621,7 @@ void MulticastRXThread::process_buffer(void)
             }
         }
 
-        if ((br_displaymode == 1) && (br_sweep_count > 2)) {    // after a couple of sweeps update static display screen
+        if ((pPlugIn->settings.display_mode == 1) && (br_sweep_count > 2)) {    // after a couple of sweeps update static display screen
 
 #ifdef BR24_DOUBLE_BUFFERED
             memcpy(br_static_buf, br_scan_buf, sizeof(br_static_buf));
