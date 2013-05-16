@@ -133,7 +133,6 @@ double br_ownship_lat;
 double br_ownship_lon;
 double br_hdm;
 double br_hdt;
-double hdt_last_message;
 
 int   br_radar_state;
 int   br_scanner_state;
@@ -199,6 +198,9 @@ int br24radar_pi::Init(void)
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
     m_sent_bm_id_rollover =  -1;
+
+    m_hdt_source = 0;
+    m_hdt_prev_source = 0;
 
 //******************************************************************************************/
 //******************************************************************************************/
@@ -1234,28 +1236,38 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
     br_ownship_lat = pfix.Lat;
     br_ownship_lon = pfix.Lon;
 
-    br_hdt = pfix.Hdt;
-
-    if (wxIsNaN(br_hdt)) {
+    m_hdt_source = 0;
+    if (!wxIsNaN(pfix.Hdt))
+    {
+        br_hdt = pfix.Hdt;
+        m_hdt_source = 1;
+    }
+    else if (!wxIsNaN(pfix.Hdm) && !wxIsNaN(pfix.Var))
+    {
         br_hdt = pfix.Hdm + pfix.Var;
+        m_hdt_source = 2;
     }
-
-    if (wxIsNaN(br_hdt)) {
+    else if (!wxIsNaN(pfix.Cog))
+    {
         br_hdt = pfix.Cog;
+        m_hdt_source = 3;
     }
 
-    if (wxIsNaN(br_hdt)) {
-        br_hdt = 0.;
-    }
-
-    if (br_hdt != hdt_last_message) {
-
-        hdt_last_message = br_hdt;
+    if (m_hdt_source != m_hdt_prev_source)
+    {
+        switch (m_hdt_source)
+        {
+        case 0: wxLogMessage(wxT("BR24radar_pi: No Heading source; keeping old value %f"), br_hdt); break;
+        case 1: wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT")); break;
+        case 2: wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM")); break;
+        case 3: wxLogMessage(wxT("BR24radar_pi: Heading source is now COG")); break;
+        }
+        m_hdt_prev_source = m_hdt_source;
     }
 
     br_bpos_set = true;
-
 }
+
 //************************************************************************
 // Plugin Command Data Streams
 //************************************************************************

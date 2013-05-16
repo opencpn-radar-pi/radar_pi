@@ -292,6 +292,9 @@ private:
     int                       m_sent_bm_id_rollover;
 
     volatile bool             m_quit;
+
+    int                       m_hdt_source;
+    int                       m_hdt_prev_source;
 };
 
 class MulticastRXThread: public wxThread
