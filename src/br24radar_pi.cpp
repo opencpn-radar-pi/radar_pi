@@ -205,7 +205,7 @@ int br24radar_pi::Init(void)
     settings.display_mode = 0;
     settings.master_mode = false;                 // we're not the master controller at startup
     settings.auto_range_mode = true;                    // starts with auto range change
-    settings.overlay_transparency = .50;
+    settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
 
 //      Set default parameters for controls displays
     m_BR24Controls_dialog_x = 0;
@@ -527,7 +527,6 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
 void BR24DisplayOptionsDialog::OnDisplayOptionClick(wxCommandEvent &event)
 {
     pPlugIn->settings.display_option = pOverlayDisplayOptions->GetSelection();
-
 }
 
 void BR24DisplayOptionsDialog::OnDisplayModeClick(wxCommandEvent &event)
@@ -544,7 +543,6 @@ void BR24DisplayOptionsDialog::OnRange_Calibration_Value(wxCommandEvent &event)
 void BR24DisplayOptionsDialog::OnIntervalSlider(wxCommandEvent &event)
 {
     br_display_interval = pIntervalSlider->GetValue() * 36;
-
 }
 
 void BR24DisplayOptionsDialog::OnHeadingSlider(wxCommandEvent &event)
@@ -587,7 +585,6 @@ void br24radar_pi::OnContextMenuItemCallback(int id)
     }
 }
 
-/*
 void br24radar_pi::OnBR24ControlDialogClose()
 {
     if (m_pControlDialog) {
@@ -596,7 +593,6 @@ void br24radar_pi::OnBR24ControlDialogClose()
 
     SaveConfig();
 }
-*/
 
 void br24radar_pi::OnBR24ManualDialogShow()
 {
@@ -876,6 +872,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
     glPushMatrix();
 
     glTranslated(radar_center.x, radar_center.y, 0);
@@ -896,6 +893,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
             alpha = br_scan_buf[angle][radius];
             switch (settings.display_option) {
                 case 0:
+                    alpha = alpha * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
                     glColor4ub(255, 0, 0, (GLubyte)alpha);  // red, blue, green, alpha
                     draw_blob_gl(angle, radius,  1, .75);  // angle, radius, blob radius, arc legnth
                     draw_blob_gl(angle + 0.5, radius,  1, .75);
@@ -916,6 +914,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
                     if (50 < alpha && alpha < 101) {
                         blue = 255;
                     }
+                    alpha = alpha * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
 
                     glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);    // red, blue, green
                     draw_blob_gl(angle, radius,  1, .75);
@@ -983,7 +982,8 @@ void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_pp
         glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
         glPushMatrix();
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT);
         glTranslated(radar_center.x, radar_center.y, 0);
@@ -1116,7 +1116,7 @@ bool br24radar_pi::LoadConfig(void)
         if (pConf->Read(wxT("DisplayOption"), &settings.display_option, 0))
         {
             pConf->Read(wxT("DisplayMode"),  &settings.display_mode, 0);
-            pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, .50);
+            pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
             pConf->Read(wxT("Gain"),  &settings.gain, 50);
             pConf->Read(wxT("RainGain"),  &settings.rain_clutter_gain, 50);
             pConf->Read(wxT("ClutterGain"),  &settings.sea_clutter_gain, 50);
@@ -1146,7 +1146,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->DeleteEntry(wxT("BR24RadarDisplayOption"));
         if (pConf->Read(wxT("BR24RadarDisplayMode"),  &settings.display_mode, 0))
             pConf->DeleteEntry(wxT("BR24RadarDisplayMode"));
-        if (pConf->Read(wxT("BR24RadarTransparency"),  &settings.overlay_transparency, .50))
+        if (pConf->Read(wxT("BR24RadarTransparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY))
             pConf->DeleteEntry(wxT("BR24RadarTransparency"));
         if (pConf->Read(wxT("BR24RadarGain"),  &settings.gain, 50))
             pConf->DeleteEntry(wxT("BR24RadarGain"));

@@ -127,8 +127,12 @@ struct range_settings {
     char    range_command[6];
 };
 
+#define DEFAULT_OVERLAY_TRANSPARENCY (5)
+#define MIN_OVERLAY_TRANSPARENCY (0)
+#define MAX_OVERLAY_TRANSPARENCY (10)
+
 struct radar_control_settings {
-    double   overlay_transparency;
+    int      overlay_transparency;    // now 0-100, no longer a double
     bool     master_mode;
     bool     auto_range_mode;
     int      range_index;

@@ -171,15 +171,16 @@ void BR24ControlsDialog::CreateControls()
     wxStaticBoxSizer* transliderboxsizer = new wxStaticBoxSizer(transliderbox, wxVERTICAL);
     BoxSizerOperation->Add(transliderboxsizer, 0, wxALL | wxEXPAND, 2);
 
-    pTranSlider = new wxSlider(this, ID_TRANSLIDER, 90 , 10, 100, wxDefaultPosition,  wxDefaultSize,
-                               wxSL_HORIZONTAL,  wxDefaultValidator, _("slider"));
+    pTranSlider = new wxSlider( this, ID_TRANSLIDER, DEFAULT_OVERLAY_TRANSPARENCY, MIN_OVERLAY_TRANSPARENCY, MAX_OVERLAY_TRANSPARENCY - 1
+                              , wxDefaultPosition, wxDefaultSize
+                              , wxSL_HORIZONTAL, wxDefaultValidator, _("slider"));
 
     transliderboxsizer->Add(pTranSlider, 0, wxALL | wxEXPAND, 2);
 
     pTranSlider->Connect(wxEVT_SCROLL_CHANGED,
                          wxCommandEventHandler(BR24ControlsDialog::OnTransSlider), NULL, this);
 
-    pTranSlider->SetValue(pPlugIn->settings.overlay_transparency * 100);
+    pTranSlider->SetValue(pPlugIn->settings.overlay_transparency);
     pPlugIn->UpdateDisplayParameters();
 
 //  Image Conditioning Options
@@ -255,7 +256,7 @@ void BR24ControlsDialog::OnRangeModeClick(wxCommandEvent &event)
 
 void BR24ControlsDialog::OnTransSlider(wxCommandEvent &event)
 {
-    pPlugIn->settings.overlay_transparency = ((double)pTranSlider->GetValue()) / 100.;
+    pPlugIn->settings.overlay_transparency = pTranSlider->GetValue();
     pPlugIn->UpdateDisplayParameters();
 }
 
