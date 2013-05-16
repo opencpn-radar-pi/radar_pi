@@ -502,13 +502,12 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     wxStaticBoxSizer* headingBoxSizer = new wxStaticBoxSizer(headingBox, wxVERTICAL);
     itemStaticBoxSizerCalibration->Add(headingBoxSizer, 0, wxALL | wxEXPAND, 2);
 
-    pHeadingSlider = new wxSlider(this, ID_HEADINGSLIDER, 0 , -90, +90, wxDefaultPosition,  wxDefaultSize,
+    pHeadingSlider = new wxSlider(this, ID_HEADINGSLIDER, 0 , -180, +180, wxDefaultPosition,  wxDefaultSize,
                                wxSL_HORIZONTAL | wxSL_LABELS,  wxDefaultValidator, _("slider"));
 
     headingBoxSizer->Add(pHeadingSlider, 0, wxALL | wxEXPAND, 2);
 
     pHeadingSlider->Connect(wxEVT_SCROLL_CHANGED, wxCommandEventHandler(BR24DisplayOptionsDialog::OnHeadingSlider), NULL, this);
-
     pHeadingSlider->SetValue(pPlugIn->settings.heading_correction);
 
 // Accept/Reject button
@@ -547,7 +546,7 @@ void BR24DisplayOptionsDialog::OnIntervalSlider(wxCommandEvent &event)
 
 void BR24DisplayOptionsDialog::OnHeadingSlider(wxCommandEvent &event)
 {
-    pPlugIn->settings.heading_correction = pIntervalSlider->GetValue();
+    pPlugIn->settings.heading_correction = pHeadingSlider->GetValue();
 }
 
 void BR24DisplayOptionsDialog::OnClose(wxCloseEvent& event)
