@@ -196,31 +196,31 @@ public:
     void UpdateDisplayParameters(void);
     void SetRangeMode(int mode);
 
-    void SetBR24ControlsDialogX(int x) {
+    void SetBR24ControlsDialogX(long x) {
         m_BR24Controls_dialog_x = x;
     }
-    void SetBR24ControlsDialogY(int y) {
+    void SetBR24ControlsDialogY(long y) {
         m_BR24Controls_dialog_y = y;
     }
-    void SetBR24ControlsDialogSizeX(int sx) {
+    void SetBR24ControlsDialogSizeX(long sx) {
         m_BR24Controls_dialog_sx = sx;
     }
-    void SetBR24ControlsDialogSizeY(int sy) {
+    void SetBR24ControlsDialogSizeY(long sy) {
         m_BR24Controls_dialog_sy = sy;
     }
 
     void OnBR24ManualDialogShow();
     void OnBR24ManualDialogClose();
-    void SetBR24ManualDialogX(int x) {
+    void SetBR24ManualDialogX(long x) {
         m_BR24Manual_dialog_x = x;
     }
-    void SetBR24ManualDialogY(int y) {
+    void SetBR24ManualDialogY(long y) {
         m_BR24Manual_dialog_y = y;
     }
-    void SetBR24ManualDialogSizeX(int sx) {
+    void SetBR24ManualDialogSizeX(long sx) {
         m_BR24Manual_dialog_sx = sx;
     }
-    void SetBR24ManualDialogSizeY(int sy) {
+    void SetBR24ManualDialogSizeY(long sy) {
         m_BR24Manual_dialog_sy = sy;
     }
     void SetRange(int index);
@@ -276,12 +276,12 @@ private:
     BR24DisplayOptionsDialog *m_pOptionsDialog;
 
     BR24ControlsDialog       *m_pControlDialog;
-    int                       m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
-    int                       m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
+    long                      m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
+    long                      m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
 
     BR24ManualDialog         *m_pManualDialog;
-    int                       m_BR24Manual_dialog_sx, m_BR24Manual_dialog_sy ;
-    int                       m_BR24Manual_dialog_x, m_BR24Manual_dialog_y ;
+    long                      m_BR24Manual_dialog_sx, m_BR24Manual_dialog_sy ;
+    long                      m_BR24Manual_dialog_x, m_BR24Manual_dialog_y ;
 
     wxBitmap                 *m_ptemp_icon;
     int                       m_sent_bm_id_normal;

@@ -557,21 +557,19 @@ void BR24DisplayOptionsDialog::OnClose(wxCloseEvent& event)
     pPlugIn->SaveConfig();
 }
 
-
 void BR24DisplayOptionsDialog::OnIdOKClick(wxCommandEvent& event)
 {
     pPlugIn->SaveConfig();
 }
+
 //********************************************************************************
 // Operation Dialogs - Control, Manual, and Options
 
 void br24radar_pi::OnContextMenuItemCallback(int id)
 {
-    if (NULL == m_pControlDialog) {
+    if (!m_pControlDialog) {
         m_pControlDialog = new BR24ControlsDialog;
         m_pControlDialog->Create(m_parent_window, this);
-//           m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
-//                   m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy);
         m_pControlDialog->Hide();
     }
 
@@ -582,13 +580,14 @@ void br24radar_pi::OnContextMenuItemCallback(int id)
         m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
                                   m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy);
     }
-    if (NULL == m_pManualDialog) {
+    if (!m_pManualDialog) {
         m_pManualDialog = new BR24ManualDialog;
         m_pManualDialog->Create(m_parent_window, this);
         m_pManualDialog->Hide();
     }
 }
 
+/*
 void br24radar_pi::OnBR24ControlDialogClose()
 {
     if (m_pControlDialog) {
@@ -597,6 +596,7 @@ void br24radar_pi::OnBR24ControlDialogClose()
 
     SaveConfig();
 }
+*/
 
 void br24radar_pi::OnBR24ManualDialogShow()
 {
@@ -1109,72 +1109,116 @@ void br24radar_pi::draw_blob_gl(double angle, double radius, double blob_r, doub
 bool br24radar_pi::LoadConfig(void)
 {
 
-    wxFileConfig *pConf = (wxFileConfig *)m_pconfig;
+    wxFileConfig *pConf = m_pconfig;
 
     if (pConf) {
+        pConf->SetPath(wxT("/Plugins/BR24Radar"));
+        if (pConf->Read(wxT("DisplayOption"), &settings.display_option, 0))
+        {
+            pConf->Read(wxT("DisplayMode"),  &settings.display_mode, 0);
+            pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, .50);
+            pConf->Read(wxT("Gain"),  &settings.gain, 50);
+            pConf->Read(wxT("RainGain"),  &settings.rain_clutter_gain, 50);
+            pConf->Read(wxT("ClutterGain"),  &settings.sea_clutter_gain, 50);
+            pConf->Read(wxT("RangeCalibration"),  &settings.range_calibration, 1.0);
+            pConf->Read(wxT("HeadingCorrection"),  &settings.heading_correction, 0);
+            pConf->Read(wxT("Interface"), &settings.radar_interface, wxT("0.0.0.0"));
+
+            pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
+            pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
+            pConf->Read(wxT("ControlsDialogPosX"), &m_BR24Controls_dialog_x, 20L);
+            pConf->Read(wxT("ControlsDialogPosY"), &m_BR24Controls_dialog_y, 170L);
+
+            pConf->Read(wxT("ManualDialogSizeX"), &m_BR24Manual_dialog_sx, 300L);
+            pConf->Read(wxT("ManualDialogSizeY"), &m_BR24Manual_dialog_sy, 540L);
+            pConf->Read(wxT("ManualDialogPosX"), &m_BR24Manual_dialog_x, 20L);
+            pConf->Read(wxT("ManualDialogPosY"), &m_BR24Manual_dialog_y, 170L);
+
+            SaveConfig();
+            return true;
+        }
+    }
+
+    // Read the old location with old paths
+    if (pConf) {
         pConf->SetPath(wxT("/Settings"));
-        pConf->Read(wxT("BR24RadarDisplayOption"), &settings.display_option, 0);
-        pConf->Read(wxT("BR24RadarDisplayMode"),  &settings.display_mode, 0);
-        pConf->Read(wxT("BR24RadarTransparency"),  &settings.overlay_transparency, .50);
-        pConf->Read(wxT("BR24RadarGain"),  &settings.gain, 50);
-        pConf->Read(wxT("BR24RadarRainGain"),  &settings.rain_clutter_gain, 50);
-        pConf->Read(wxT("BR24RadarClutterGain"),  &settings.sea_clutter_gain, 50);
-        pConf->Read(wxT("BR24RadarRangeCalibration"),  &settings.range_calibration, 1.0);
-        pConf->Read(wxT("BR24RadarHeadingCorrection"),  &settings.heading_correction, 0);
-        pConf->Read(wxT("BR24RadarInterface"), &settings.radar_interface, wxT("0.0.0.0"));
+        if (pConf->Read(wxT("BR24RadarDisplayOption"), &settings.display_option, 0))
+            pConf->DeleteEntry(wxT("BR24RadarDisplayOption"));
+        if (pConf->Read(wxT("BR24RadarDisplayMode"),  &settings.display_mode, 0))
+            pConf->DeleteEntry(wxT("BR24RadarDisplayMode"));
+        if (pConf->Read(wxT("BR24RadarTransparency"),  &settings.overlay_transparency, .50))
+            pConf->DeleteEntry(wxT("BR24RadarTransparency"));
+        if (pConf->Read(wxT("BR24RadarGain"),  &settings.gain, 50))
+            pConf->DeleteEntry(wxT("BR24RadarGain"));
+        if (pConf->Read(wxT("BR24RadarRainGain"),  &settings.rain_clutter_gain, 50))
+            pConf->DeleteEntry(wxT("BR24RadarRainGain"));
+        if (pConf->Read(wxT("BR24RadarClutterGain"),  &settings.sea_clutter_gain, 50))
+            pConf->DeleteEntry(wxT("BR24RadarClutterGain"));
+        if (pConf->Read(wxT("BR24RadarRangeCalibration"),  &settings.range_calibration, 1.0))
+            pConf->DeleteEntry(wxT("BR24RadarRangeCalibration"));
+        if (pConf->Read(wxT("BR24RadarHeadingCorrection"),  &settings.heading_correction, 0))
+            pConf->DeleteEntry(wxT("BR24RadarHeadingCorrection"));
+        if (pConf->Read(wxT("BR24RadarInterface"), &settings.radar_interface, wxT("0.0.0.0")))
+            pConf->DeleteEntry(wxT("BR24RadarInterface"));
 
-        m_BR24Controls_dialog_sx = pConf->Read(wxT("BR24ControlsDialogSizeX"), 300L);
-        m_BR24Controls_dialog_sy = pConf->Read(wxT("BR24ControlsDialogSizeY"), 540L);
-        m_BR24Controls_dialog_x =  pConf->Read(wxT("BR24ControlsDialogPosX"), 20L);
-        m_BR24Controls_dialog_y =  pConf->Read(wxT("BR24ControlsDialogPosY"), 170L);
+        if (pConf->Read(wxT("BR24ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L))
+            pConf->DeleteEntry(wxT("BR24ControlsDialogSizeX"));
+        if (pConf->Read(wxT("BR24ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L))
+            pConf->DeleteEntry(wxT("BR24ControlsDialogSizeY"));
+        if (pConf->Read(wxT("BR24ControlsDialogPosX"), &m_BR24Controls_dialog_x, 20L))
+            pConf->DeleteEntry(wxT("BR24ControlsDialogPosX"));
+        if (pConf->Read(wxT("BR24ControlsDialogPosY"), &m_BR24Controls_dialog_y, 170L))
+            pConf->DeleteEntry(wxT("BR24ControlsDialogPosY"));
 
-        m_BR24Manual_dialog_sx = pConf->Read(wxT("BR24ManualDialogSizeX"), 300L);
-        m_BR24Manual_dialog_sy = pConf->Read(wxT("BR24ManualDialogSizeY"), 540L);
-        m_BR24Manual_dialog_x =  pConf->Read(wxT("BR24ManualDialogPosX"), 20L);
-        m_BR24Manual_dialog_y =  pConf->Read(wxT("BR24ManualDialogPosY"), 170L);
+        if (pConf->Read(wxT("BR24ManualDialogSizeX"), &m_BR24Manual_dialog_sx, 300L))
+            pConf->DeleteEntry(wxT("BR24ManualDialogSizeX"));
+        if (pConf->Read(wxT("BR24ManualDialogSizeY"), &m_BR24Manual_dialog_sy, 540L))
+            pConf->DeleteEntry(wxT("BR24ManualDialogSizeY"));
+        if (pConf->Read(wxT("BR24ManualDialogPosX"), &m_BR24Manual_dialog_x, 20L))
+            pConf->DeleteEntry(wxT("BR24ManualDialogPosX"));
+        if (pConf->Read(wxT("BR24ManualDialogPosY"), &m_BR24Manual_dialog_y, 170L))
+            pConf->DeleteEntry(wxT("BR24ManualDialogPosY"));
 
         SaveConfig();
         return true;
-    } else {
-        return false;
     }
 
+    return false;
 }
 
 bool br24radar_pi::SaveConfig(void)
 {
 
-    wxFileConfig *pConf = (wxFileConfig *)m_pconfig;
+    wxFileConfig *pConf = m_pconfig;
 
     if (pConf) {
-        pConf->SetPath(wxT("/Settings"));
-        pConf->Write(wxT("BR24RadarDisplayOption"), settings.display_option);
-        pConf->Write(wxT("BR24RadarDisplayMode"), settings.display_mode);
-        pConf->Write(wxT("BR24RadarTransparency"), settings.overlay_transparency);
-        pConf->Write(wxT("BR24RadarGain"), settings.gain);
-        pConf->Write(wxT("BR24RadarRainGain"), settings.rain_clutter_gain);
-        pConf->Write(wxT("BR24RadarClutterGain"), settings.sea_clutter_gain);
-        pConf->Write(wxT("BR24RadarRangeCalibration"),  settings.range_calibration);
-        pConf->Write(wxT("BR24RadarHeadingCorrection"),  settings.heading_correction);
-        pConf->Write(wxT("BR24RadarInterface"),  settings.radar_interface);
+        pConf->SetPath(wxT("/Plugins/BR24Radar"));
+        pConf->Write(wxT("DisplayOption"), settings.display_option);
+        pConf->Write(wxT("DisplayMode"), settings.display_mode);
+        pConf->Write(wxT("Transparency"), settings.overlay_transparency);
+        pConf->Write(wxT("Gain"), settings.gain);
+        pConf->Write(wxT("RainGain"), settings.rain_clutter_gain);
+        pConf->Write(wxT("ClutterGain"), settings.sea_clutter_gain);
+        pConf->Write(wxT("RangeCalibration"),  settings.range_calibration);
+        pConf->Write(wxT("HeadingCorrection"),  settings.heading_correction);
+        pConf->Write(wxT("Interface"),  settings.radar_interface);
 
-        pConf->Write(wxT("BR24ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
-        pConf->Write(wxT("BR24ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
-        pConf->Write(wxT("BR24ControlsDialogPosX"),   m_BR24Controls_dialog_x);
-        pConf->Write(wxT("BR24ControlsDialogPosY"),   m_BR24Controls_dialog_y);
+        pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
+        pConf->Write(wxT("ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
+        pConf->Write(wxT("ControlsDialogPosX"),   m_BR24Controls_dialog_x);
+        pConf->Write(wxT("ControlsDialogPosY"),   m_BR24Controls_dialog_y);
 
-        pConf->Write(wxT("BR24ManualDialogSizeX"),  m_BR24Manual_dialog_sx);
-        pConf->Write(wxT("BR24ManualDialogSizeY"),  m_BR24Manual_dialog_sy);
-        pConf->Write(wxT("BR24ManualDialogPosX"),   m_BR24Manual_dialog_x);
-        pConf->Write(wxT("BR24ManualDialogPosY"),   m_BR24Manual_dialog_y);
+        pConf->Write(wxT("ManualDialogSizeX"),  m_BR24Manual_dialog_sx);
+        pConf->Write(wxT("ManualDialogSizeY"),  m_BR24Manual_dialog_sy);
+        pConf->Write(wxT("ManualDialogPosX"),   m_BR24Manual_dialog_x);
+        pConf->Write(wxT("ManualDialogPosY"),   m_BR24Manual_dialog_y);
         pConf->Flush();
+        wxLogMessage(wxT("BR24radar_pi: saved config"));
 
         return true;
-    } else {
-        return false;
     }
 
-    return true;
+    return false;
 }
 
 // Positional Data passed from NMEA to plugin
