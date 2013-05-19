@@ -30,7 +30,6 @@
 
 #ifndef _BR24RADARPI_H_
 #define _BR24RADARPI_H_
-#endif
 
 #include "wx/wxprec.h"
 
@@ -234,7 +233,13 @@ public:
     bool LoadConfig(void);
     bool SaveConfig(void);
 
+    long GetRangeMeters();
+    void SetRangeMeters(long range);
+
     radar_control_settings settings;
+
+    BR24DisplayOptionsDialog *m_pOptionsDialog;
+    BR24ControlsDialog       *m_pControlDialog;
 
 private:
     void TransmitCmd(char* msg, int size);
@@ -277,9 +282,6 @@ private:
     wxDatagramSocket         *m_out_sock101;
     wxDateTime                m_dt_last_render;
 
-    BR24DisplayOptionsDialog *m_pOptionsDialog;
-
-    BR24ControlsDialog       *m_pControlDialog;
     long                      m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
     long                      m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
 
@@ -392,6 +394,7 @@ public:
                 long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
 
     void CreateControls();
+    void SetActualRange(long range);
 
 private:
     void OnClose(wxCloseEvent& event);
@@ -400,6 +403,7 @@ private:
     void OnSize(wxSizeEvent& event);
     void OnTransSlider(wxCommandEvent &event);
     void OnRangeModeClick(wxCommandEvent &event);
+    void OnRangeValue(wxCommandEvent &event);
     void OnFilterProcessClick(wxCommandEvent &event);
     void OnRejectionModeClick(wxCommandEvent &event);
     void OnGainSlider(wxCommandEvent &event);
@@ -411,6 +415,8 @@ private:
     // Controls
     wxSlider          *pTranSlider;
     wxRadioBox        *pRangeMode;
+    wxTextCtrl        *pRange;
+    wxTextCtrl        *pActualRange;
     wxRadioBox        *pRejectionMode;
     wxRadioBox        *pFilterProcess;
     wxSlider          *pGainSlider;
@@ -418,45 +424,4 @@ private:
 };
 
 
-//----------------------------------------------------------------------------------------------------------
-//    BR24Radar Manual Dialog Specification
-//----------------------------------------------------------------------------------------------------------
-class BR24ManualDialog: public wxDialog
-{
-    DECLARE_CLASS(BR24ManualDialog)
-    DECLARE_EVENT_TABLE()
-
-public:
-
-    BR24ManualDialog();
-
-    ~BR24ManualDialog();
-    void Init();
-
-    bool Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID id = wxID_ANY,
-                const wxString& m_caption = _("BR24 Manual Control"),
-                const wxPoint& pos = wxDefaultPosition,
-                const wxSize& size = wxDefaultSize,
-                long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
-
-    void CreateControls();
-
-private:
-    void OnClose(wxCloseEvent& event);
-    void OnIdOKClick(wxCommandEvent& event);
-    void OnMove(wxMoveEvent& event);
-    void OnSize(wxSizeEvent& event);
-    void OnRangeClick(wxCommandEvent &event);
-
-    wxWindow          *pParent;
-    br24radar_pi      *pPlugIn;
-
-    // Controls
-
-    wxRadioBox        *pRangeSelect;
-    wxButton          *bClose;
-};
-
-
-
-//#endif
+#endif

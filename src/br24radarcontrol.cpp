@@ -58,9 +58,10 @@ using namespace std;
 enum {                                      // process ID's
     ID_TEXTCTRL1 = 10000,
     ID_OK,
-    ID_TRANSLIDER,
     ID_RANGEMODE,
     ID_RANGE,
+    ID_REPORTED_RANGE,
+    ID_TRANSLIDER,
     ID_CLUTTER,
     ID_GAIN,
     ID_REJECTION
@@ -107,6 +108,7 @@ bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID 
 
     pParent = parent;
     pPlugIn = ppi;
+    pActualRange = 0;
 
     long wstyle = wxDEFAULT_FRAME_STYLE;
 //      if ( ( global_color_scheme != GLOBAL_COLOR_SCHEME_DAY ) && ( global_color_scheme != GLOBAL_COLOR_SCHEME_RGB ) )
@@ -141,7 +143,7 @@ void BR24ControlsDialog::CreateControls()
     wxBoxSizer* boxSizer = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(boxSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL | wxEXPAND, 2);
 
-//  Operation Mode options
+    //  Operation Mode options
     wxStaticBox* BoxOperation = new wxStaticBox(this, wxID_ANY, _("Operational Control"));
     wxStaticBoxSizer* BoxSizerOperation = new wxStaticBoxSizer(BoxOperation, wxVERTICAL);
     boxSizer->Add(BoxSizerOperation, 0, wxEXPAND | wxALL, border_size);
@@ -165,6 +167,26 @@ void BR24ControlsDialog::CreateControls()
         pRangeMode->SetSelection(0);
         pPlugIn->SetRange(0);
     }
+
+    // Range edit
+
+    wxStaticBox* RangeBox = new wxStaticBox(this, wxID_ANY, _("Range"));
+    wxStaticBoxSizer* RangeBoxSizer = new wxStaticBoxSizer(RangeBox, wxVERTICAL);
+    BoxSizerOperation->Add(RangeBoxSizer, 0, wxEXPAND | wxALL, border_size);
+
+    pRange = new wxTextCtrl(this, wxID_ANY);
+    RangeBoxSizer->Add(pRange, 1, wxALIGN_LEFT | wxALL, 5);
+    pRange->Connect(wxEVT_COMMAND_TEXT_UPDATED,
+                               wxCommandEventHandler(BR24ControlsDialog::OnRangeValue), NULL, this);
+    pRange->Disable();
+
+    // Range display
+
+    pActualRange = new wxTextCtrl(this, wxID_ANY);
+    RangeBoxSizer->Add(pActualRange, 1, wxALIGN_LEFT | wxALL, 5);
+    pActualRange->Disable();
+
+    /* TODO: Add up down buttons */
 
     //Transparency slider
     wxStaticBox* transliderbox = new wxStaticBox(this, wxID_ANY, _("Transparency"));
@@ -251,7 +273,35 @@ void BR24ControlsDialog::CreateControls()
 
 void BR24ControlsDialog::OnRangeModeClick(wxCommandEvent &event)
 {
-    pPlugIn->SetRangeMode(pRangeMode->GetSelection());
+    int mode = pRangeMode->GetSelection();
+
+    pPlugIn->SetRangeMode(mode);
+    if (mode)
+    {
+      pRange->Disable();
+    }
+    else
+    {
+      pRange->Enable();
+    }
+}
+
+void BR24ControlsDialog::SetActualRange(long range)
+{
+    wxString rangeText;
+
+    rangeText.Printf(wxT("%ld"), range);
+    pActualRange->SetValue(rangeText);
+}
+
+void BR24ControlsDialog::OnRangeValue(wxCommandEvent &event)
+{
+    long value;
+
+    if (pRange->GetValue().ToLong(&value))
+    {
+        pPlugIn->SetRangeMeters(value);
+    }
 }
 
 void BR24ControlsDialog::OnTransSlider(wxCommandEvent &event)
@@ -340,159 +390,3 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
 
     event.Skip();
 }
-//---------------------------------------------------------------------------------------
-//          Manual Control Implementation
-//---------------------------------------------------------------------------------------
-IMPLEMENT_CLASS(BR24ManualDialog, wxDialog)
-
-BEGIN_EVENT_TABLE(BR24ManualDialog, wxDialog)
-
-    EVT_CLOSE(BR24ManualDialog::OnClose)
-    EVT_BUTTON(ID_OK, BR24ManualDialog::OnIdOKClick)
-    EVT_MOVE(BR24ManualDialog::OnMove)
-    EVT_SIZE(BR24ManualDialog::OnSize)
-
-END_EVENT_TABLE()
-
-
-BR24ManualDialog::BR24ManualDialog()
-{
-    Init();
-}
-
-BR24ManualDialog::~BR24ManualDialog()
-{
-}
-
-
-void BR24ManualDialog::Init()
-{
-}
-
-
-bool BR24ManualDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID id,
-                              const wxString& m_caption,
-                              const wxPoint& pos, const wxSize& size, long style)
-{
-
-    pParent = parent;
-    pPlugIn = ppi;
-
-
-    //    As a display optimization....
-    //    if current color scheme is other than DAY,
-    //    Then create the dialog ..WITHOUT.. borders and title bar.
-    //    This way, any window decorations set by external themes, etc
-    //    will not detract from night-vision
-
-    long wstyle = wxDEFAULT_FRAME_STYLE;
-//      if ( ( global_color_scheme != GLOBAL_COLOR_SCHEME_DAY ) && ( global_color_scheme != GLOBAL_COLOR_SCHEME_RGB ) )
-//            wstyle |= ( wxNO_BORDER );
-
-    wxSize size_min = size;
-//      size_min.IncTo ( wxSize ( 500,600 ) );
-    if (!wxDialog::Create(parent, id, m_caption, pos, size_min, wstyle)) {
-        return false;
-    }
-
-
-    CreateControls();
-
-    DimeWindow(this);
-
-    Fit();
-    SetMinSize(GetBestSize());
-
-    return true;
-}
-
-void BR24ManualDialog::CreateControls()
-{
-    int border_size = 4;
-
-// A top-level sizer
-    wxBoxSizer* ManualSizer = new wxBoxSizer(wxVERTICAL);
-    SetSizer(ManualSizer);
-
-//  Operating options
-    wxStaticBox* BoxRange = new wxStaticBox(this, wxID_ANY, _("Manual Control"));
-    wxStaticBoxSizer* BoxRangeSizer = new wxStaticBoxSizer(BoxRange, wxVERTICAL);
-    ManualSizer->Add(BoxRangeSizer, 0, wxEXPAND | wxALL, border_size);
-
-    wxString RangeStrings[] = {
-        _("50 meters"),
-        _("75"),
-        _("100"),
-        _("250"),
-        _("500"),
-        _("750"),
-        _("1000"),
-        _("1500"),
-        _("2000"),
-        _("3000"),
-        _("4000"),
-        _("6000"),
-        _("8000"),
-        _("12000"),
-        _("16000"),
-        _("24000")
-    };
-
-    pRangeSelect = new wxRadioBox(this, ID_RANGE, _("Range:"),
-                                  wxDefaultPosition, wxDefaultSize,
-                                  16, RangeStrings, 1, wxRA_SPECIFY_COLS);
-
-    BoxRangeSizer->Add(pRangeSelect, 0, wxALL | wxEXPAND, 2);
-
-    pRangeSelect->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
-                          wxCommandEventHandler(BR24ManualDialog::OnRangeClick), NULL, this);
-
-    pRangeSelect->SetSelection(0);
-
-// The Close button
-    wxButton* bClose = new wxButton(this, ID_OK, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
-    ManualSizer->Add(bClose, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
-}
-
-void BR24ManualDialog::OnRangeClick(wxCommandEvent &event)
-{
-    pPlugIn->settings.range_index = pRangeSelect->GetSelection();
-    pPlugIn->SetRange(pPlugIn->settings.range_index);
-    wxString message(_("Range: %d"), pPlugIn->settings.range_index);
-    wxMessageDialog dlg(GetOCPNCanvasWindow(),  message, _T("BR24 Radar"));
-}
-
-
-void BR24ManualDialog::OnClose(wxCloseEvent& event)
-{
-    pPlugIn->OnBR24ManualDialogClose();
-    event.Skip();
-}
-
-
-void BR24ManualDialog::OnIdOKClick(wxCommandEvent& event)
-{
-    pPlugIn->OnBR24ManualDialogClose();
-    event.Skip();
-}
-
-void BR24ManualDialog::OnMove(wxMoveEvent& event)
-{
-    //    Record the dialog position
-    wxPoint p =  GetPosition();
-    pPlugIn->SetBR24ManualDialogX(p.x);
-    pPlugIn->SetBR24ManualDialogY(p.y);
-
-    event.Skip();
-}
-
-void BR24ManualDialog::OnSize(wxSizeEvent& event)
-{
-    //    Record the dialog size
-    wxSize p = event.GetSize();
-    pPlugIn->SetBR24ManualDialogSizeX(p.x);
-    pPlugIn->SetBR24ManualDialogSizeY(p.y);
-
-    event.Skip();
-}
-

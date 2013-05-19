@@ -186,7 +186,6 @@ br24radar_pi::br24radar_pi(void *ppimgr)
 int br24radar_pi::Init(void)
 {
     m_pControlDialog = NULL;
-    m_pManualDialog = NULL;
 
     br_radar_state = RADAR_OFF;
     br_scanner_state = RADAR_OFF;                 // Radar scanner is off
@@ -258,7 +257,7 @@ int br24radar_pi::Init(void)
 
     m_pmenu = new wxMenu();            // this is a dummy menu
     // required by Windows as parent to item created
-    wxMenuItem *pmi = new wxMenuItem(m_pmenu, -1, _("Radar Control"));
+    wxMenuItem *pmi = new wxMenuItem(m_pmenu, -1, _("Radar Control..."));
     int miid = AddCanvasContextMenuItem(pmi, this);
     SetCanvasContextMenuItemViz(miid, true);
 
@@ -579,34 +578,12 @@ void br24radar_pi::OnContextMenuItemCallback(int id)
         m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
                                   m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy);
     }
-    if (!m_pManualDialog) {
-        m_pManualDialog = new BR24ManualDialog;
-        m_pManualDialog->Create(m_parent_window, this);
-        m_pManualDialog->Hide();
-    }
 }
 
 void br24radar_pi::OnBR24ControlDialogClose()
 {
     if (m_pControlDialog) {
         m_pControlDialog->Hide();
-    }
-
-    SaveConfig();
-}
-
-void br24radar_pi::OnBR24ManualDialogShow()
-{
-    if (m_pManualDialog) {
-        m_pManualDialog->Show();
-        m_pManualDialog->SetSize(m_BR24Manual_dialog_x, m_BR24Manual_dialog_y,
-                                 m_BR24Manual_dialog_sx, m_BR24Manual_dialog_sy);
-    }
-}
-void br24radar_pi::OnBR24ManualDialogClose()
-{
-    if (m_pManualDialog) {
-        m_pManualDialog->Hide();
     }
 
     SaveConfig();
@@ -620,9 +597,11 @@ void br24radar_pi::SetDisplayMode(int mode)
 void br24radar_pi::SetRangeMode(int mode)
 {
     settings.auto_range_mode = (mode == 1);
-    if (!settings.auto_range_mode) {
-        m_pManualDialog->Show();
-    }
+}
+
+long br24radar_pi::GetRangeMeters()
+{
+    return (long) br_range_meters;
 }
 
 void br24radar_pi::UpdateDisplayParameters(void)
@@ -1130,11 +1109,6 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("ControlsDialogPosX"), &m_BR24Controls_dialog_x, 20L);
             pConf->Read(wxT("ControlsDialogPosY"), &m_BR24Controls_dialog_y, 170L);
 
-            pConf->Read(wxT("ManualDialogSizeX"), &m_BR24Manual_dialog_sx, 300L);
-            pConf->Read(wxT("ManualDialogSizeY"), &m_BR24Manual_dialog_sy, 540L);
-            pConf->Read(wxT("ManualDialogPosX"), &m_BR24Manual_dialog_x, 20L);
-            pConf->Read(wxT("ManualDialogPosY"), &m_BR24Manual_dialog_y, 170L);
-
             SaveConfig();
             return true;
         }
@@ -1171,15 +1145,6 @@ bool br24radar_pi::LoadConfig(void)
         if (pConf->Read(wxT("BR24ControlsDialogPosY"), &m_BR24Controls_dialog_y, 170L))
             pConf->DeleteEntry(wxT("BR24ControlsDialogPosY"));
 
-        if (pConf->Read(wxT("BR24ManualDialogSizeX"), &m_BR24Manual_dialog_sx, 300L))
-            pConf->DeleteEntry(wxT("BR24ManualDialogSizeX"));
-        if (pConf->Read(wxT("BR24ManualDialogSizeY"), &m_BR24Manual_dialog_sy, 540L))
-            pConf->DeleteEntry(wxT("BR24ManualDialogSizeY"));
-        if (pConf->Read(wxT("BR24ManualDialogPosX"), &m_BR24Manual_dialog_x, 20L))
-            pConf->DeleteEntry(wxT("BR24ManualDialogPosX"));
-        if (pConf->Read(wxT("BR24ManualDialogPosY"), &m_BR24Manual_dialog_y, 170L))
-            pConf->DeleteEntry(wxT("BR24ManualDialogPosY"));
-
         SaveConfig();
         return true;
     }
@@ -1209,10 +1174,6 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("ControlsDialogPosX"),   m_BR24Controls_dialog_x);
         pConf->Write(wxT("ControlsDialogPosY"),   m_BR24Controls_dialog_y);
 
-        pConf->Write(wxT("ManualDialogSizeX"),  m_BR24Manual_dialog_sx);
-        pConf->Write(wxT("ManualDialogSizeY"),  m_BR24Manual_dialog_sy);
-        pConf->Write(wxT("ManualDialogPosX"),   m_BR24Manual_dialog_x);
-        pConf->Write(wxT("ManualDialogPosY"),   m_BR24Manual_dialog_y);
         pConf->Flush();
         wxLogMessage(wxT("BR24radar_pi: saved config"));
 
@@ -1327,6 +1288,21 @@ void br24radar_pi::Select_Range(int req_range_index)
     {
         wxLogMessage(wxT("Not master, ignore SelectRange: %g meters\n"), br24_range_settings[req_range_index].range_meters);
     }
+}
+
+void br24radar_pi::SetRangeMeters(long meters)
+{
+    long decimeters = meters * 10L;
+
+    wxLogMessage(wxT("SetRangeMeters: %ld meters\n"), meters);
+
+    char pck[] = { (byte) 0x03
+                 , (byte) 0xc1
+                 , (byte) ((decimeters >>  0) & 0XFFL)
+                 , (byte) ((decimeters >>  8) & 0XFFL)
+                 , (byte) ((decimeters >> 16) & 0XFFL)
+                 };
+    TransmitCmd(pck, sizeof(pck));
 }
 
 void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
@@ -1668,6 +1644,11 @@ void MulticastRXThread::process_buffer(void)
             br_range_meters = br_scan_range_meters;
             br_sweep_count = 0;
 
+            // Set the control's value to the real range that we received, not a table idea
+            if (pPlugIn->m_pControlDialog)
+            {
+                pPlugIn->m_pControlDialog->SetActualRange(br_range_meters);
+            }
         }
 
         long angle = angleraw * 360 / 4096;
