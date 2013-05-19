@@ -87,9 +87,9 @@ struct br24_header {
     unsigned char u00[2];          //2 bytes blank
     unsigned char range[4];        //4 bytes
     unsigned char u01[2];          //2 bytes blank
-    unsigned char u1[2];           //2 bytes
-    unsigned char u2[4];           //4 bytes blank
-};
+    unsigned char u02[2];          //2 bytes
+    unsigned char u03[4];          //4 bytes blank
+}; /* total size = 24 */
 
 struct br4g_header {
     unsigned char status[2];       //2 bytes
@@ -102,29 +102,25 @@ struct br4g_header {
     unsigned char rotation[2];     //2 bytes, looks like rotation/angle
     unsigned char u02[4];          //4 bytes signed integer, always -1
     unsigned char u03[4];          //4 bytes signed integer, mostly -1 (0x80 in last byte) or 0xa0 in last byte
-};
+}; /* total size = 24 */
 
 struct radar_line {
     union {
         br24_header   br24;
         br4g_header   br4g;
     };
-    unsigned char data[512];       // 24 total
+    unsigned char data[512];
 };
+
+
+/* A single packet, 17160 = 8 + (24 + 512) * 32 bytes = 17156 ... */
 
 struct radar_frame_pkt {
-    unsigned short  frame_hdr[4];
-    char            scan_lines[32 * (24 + 512)]; //  scan lines
+    unsigned char   frame_hdr[8];
+    radar_line      line[32];          //  scan lines
 };
-
-#define MODEL_4G
 
 #pragma pack(pop)
-
-struct range_settings {
-    float   range_meters;
-    char    range_command[6];
-};
 
 #define DEFAULT_OVERLAY_TRANSPARENCY (5)
 #define MIN_OVERLAY_TRANSPARENCY (0)
@@ -133,6 +129,8 @@ struct range_settings {
 struct radar_control_settings {
     int      overlay_transparency;    // now 0-100, no longer a double
     bool     master_mode;
+    bool     overlay_chart;           // true means always show if received, even if not master
+    bool     verbose;
     bool     auto_range_mode;
     int      range_index;
     int      display_option;
@@ -144,6 +142,7 @@ struct radar_control_settings {
     int      rain_clutter_gain;
     double   range_calibration;
     int      heading_correction;
+    int      distance_format;        // 0 = "Nautical miles"), 1 = "Statute miles", 2 = "Kilometers", 3 = "Meters"
     wxString radar_interface;        // IP address of interface to bind to (on UNIX)
 };
 
@@ -226,7 +225,6 @@ public:
     void SetBR24ManualDialogSizeY(long sy) {
         m_BR24Manual_dialog_sy = sy;
     }
-    void SetRange(int index);
     void SetFilterProcess(int br_process, int sel_gain);
     void SetGainMode(int mode);
     void SetRejectionMode(int mode);
@@ -237,6 +235,9 @@ public:
     void SetRangeMeters(long range);
 
     radar_control_settings settings;
+
+    unsigned char             m_scan_buf[360][512];        // scan buffer that contains raw radar scan image
+    int                       m_scan_range[360];           // range in decimeters for the corresponding line in m_scan_buf
 
     BR24DisplayOptionsDialog *m_pOptionsDialog;
     BR24ControlsDialog       *m_pControlDialog;
@@ -249,7 +250,6 @@ private:
     void UpdateState(void);
     void DoTick(void);
     bool br_time_render;
-    void Select_Range(int req_range_index);
     void Select_Clutter(int req_clutter_index);
     void Select_Rejection(int req_rejection_index);
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
@@ -322,7 +322,7 @@ public:
     void OnExit(void);
 
 private:
-    void process_buffer(void);
+    void process_buffer(radar_frame_pkt * packet, int len);
 
     br24radar_pi      *pPlugIn;
     wxString           m_ip;
@@ -415,7 +415,7 @@ private:
     // Controls
     wxSlider          *pTranSlider;
     wxRadioBox        *pRangeMode;
-    wxTextCtrl        *pRange;
+    wxChoice          *pRange;
     wxTextCtrl        *pActualRange;
     wxRadioBox        *pRejectionMode;
     wxRadioBox        *pFilterProcess;

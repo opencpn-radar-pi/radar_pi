@@ -84,6 +84,87 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
 
 END_EVENT_TABLE()
 
+//Ranges are metric for BR24 - the hex codes are little endian = 10 X range value
+
+static const wxString g_metric_range_names[] = {
+    wxT("50 m"),
+    wxT("75 m"),
+    wxT("100 m"),
+    wxT("250 m"),
+    wxT("500 m"),
+    wxT("750 m"),
+    wxT("1 km"),
+    wxT("1.5 km"),
+    wxT("2 km"),
+    wxT("3 km"),
+    wxT("4 km"),
+    wxT("6 km"),
+    wxT("8 km"),
+    wxT("12 km"),
+    wxT("16 km"),
+    wxT("24 km"),
+    wxT("36 km"),
+    wxT("48 km")
+};
+
+static const int g_metric_range_distances[] = {
+    50,
+    75,
+    100,
+    250,
+    500,
+    750,
+    1000,
+    1500,
+    2000,
+    3000,
+    4000,
+    6000,
+    8000,
+    12000,
+    16000,
+    24000,
+    36000,
+    48000
+};
+
+static const wxString g_mile_range_names[] = {
+    wxT("1/2 cable"),
+    wxT("1 cable"),
+    wxT("1/8 NM"),
+    wxT("1/4 NM"),
+    wxT("1/2 NM"),
+    wxT("3/4 NM"),
+    wxT("1 NM"),
+    wxT("2 NM"),
+    wxT("3 NM"),
+    wxT("4 NM"),
+    wxT("6 NM"),
+    wxT("8 NM"),
+    wxT("12 NM"),
+    wxT("16 NM"),
+    wxT("24 NM"),
+    wxT("36 NM")
+};
+
+static const int g_mile_range_distances[] = {
+    1852/20,
+    1852/10,
+    1852/8,
+    1852/4,
+    1852/2,
+    1852*3/4,
+    1852*1,
+    1852*2,
+    1852*3,
+    1852*4,
+    1852*6,
+    1852*8,
+    1852*12,
+    1852*16,
+    1852*24,
+    1852*36
+};
 
 BR24ControlsDialog::BR24ControlsDialog()
 {
@@ -99,7 +180,6 @@ BR24ControlsDialog::~BR24ControlsDialog()
 void BR24ControlsDialog::Init()
 {
 }
-
 
 bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID id,
                                 const wxString& caption,
@@ -165,7 +245,6 @@ void BR24ControlsDialog::CreateControls()
         pRangeMode->SetSelection(1);
     } else {
         pRangeMode->SetSelection(0);
-        pPlugIn->SetRange(0);
     }
 
     // Range edit
@@ -174,13 +253,30 @@ void BR24ControlsDialog::CreateControls()
     wxStaticBoxSizer* RangeBoxSizer = new wxStaticBoxSizer(RangeBox, wxVERTICAL);
     BoxSizerOperation->Add(RangeBoxSizer, 0, wxEXPAND | wxALL, border_size);
 
-    pRange = new wxTextCtrl(this, wxID_ANY);
+    const wxString *names;
+    int n;
+    if (pPlugIn->settings.distance_format < 2) /* NMi or Mi */
+    {
+      names = g_mile_range_names;
+      n = sizeof(g_mile_range_names)/sizeof(g_mile_range_names[0]);
+    }
+    else
+    {
+      names = g_metric_range_names;
+      n = sizeof(g_metric_range_names)/sizeof(g_metric_range_names[0]);
+    }
+
+    pRange = new wxChoice(this, wxID_ANY
+                              , wxDefaultPosition, wxDefaultSize
+                              , n, names
+                              , 0, wxDefaultValidator, _("choice"));
     RangeBoxSizer->Add(pRange, 1, wxALIGN_LEFT | wxALL, 5);
-    pRange->Connect(wxEVT_COMMAND_TEXT_UPDATED,
+    pRange->Connect(wxEVT_COMMAND_CHOICE_SELECTED,
                                wxCommandEventHandler(BR24ControlsDialog::OnRangeValue), NULL, this);
     pRange->Disable();
+    pRange->SetSelection(0);
 
-    // Range display
+    // Actual Range display
 
     pActualRange = new wxTextCtrl(this, wxID_ANY);
     RangeBoxSizer->Add(pActualRange, 1, wxALIGN_LEFT | wxALL, 5);
@@ -220,7 +316,7 @@ void BR24ControlsDialog::CreateControls()
 
     pRejectionMode = new wxRadioBox(this, ID_REJECTION, _("Rejection"),
                                     wxDefaultPosition, wxDefaultSize,
-                                    4, RejectionStrings, 1, wxRA_SPECIFY_COLS);
+                                    sizeof(RejectionStrings)/sizeof(RejectionStrings[0]), RejectionStrings, 1, wxRA_SPECIFY_COLS);
 
     BoxConditioningSizer->Add(pRejectionMode, 0, wxALL | wxEXPAND, 2);
 
@@ -292,15 +388,50 @@ void BR24ControlsDialog::SetActualRange(long range)
 
     rangeText.Printf(wxT("%ld"), range);
     pActualRange->SetValue(rangeText);
+
+    if (pPlugIn->settings.auto_range_mode) {
+        const int * ranges;
+        int         n;
+        if (pPlugIn->settings.distance_format < 2) { /* NMi or Mi */
+            n = (int) sizeof(g_mile_range_distances)/sizeof(g_mile_range_distances[0]);
+            ranges = g_mile_range_distances;
+        }
+        else {
+            n = (int) sizeof(g_metric_range_distances)/sizeof(g_metric_range_distances[0]);
+            ranges = g_metric_range_distances;
+        }
+
+        for (; n > 0; n--) {
+            if (ranges[n] < range) {
+              break;
+            }
+        }
+        pRange->SetSelection(n);
+    }
 }
 
 void BR24ControlsDialog::OnRangeValue(wxCommandEvent &event)
 {
-    long value;
+    int selection = pRange->GetSelection();
 
-    if (pRange->GetValue().ToLong(&value))
-    {
-        pPlugIn->SetRangeMeters(value);
+    if (selection != wxNOT_FOUND) {
+        const int * ranges;
+        int         n;
+        if (pPlugIn->settings.distance_format < 2) { /* NMi or Mi */
+            n = (int) sizeof(g_mile_range_distances)/sizeof(g_mile_range_distances[0]);
+            ranges = g_mile_range_distances;
+        }
+        else {
+            n = (int) sizeof(g_metric_range_distances)/sizeof(g_metric_range_distances[0]);
+            ranges = g_metric_range_distances;
+        }
+        if (selection >= 0 && selection < n) {
+            wxLogMessage(wxT("Range index %d = %d meters"), selection, ranges[selection]);
+            pPlugIn->SetRangeMeters(ranges[selection]);
+        }
+        else {
+            wxLogMessage(wxT("Improbable range index %d"), n);
+        }
     }
 }
 
