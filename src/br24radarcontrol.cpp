@@ -349,7 +349,7 @@ void BR24ControlsDialog::CreateControls()
     wxStaticBoxSizer* sliderGainsizer = new wxStaticBoxSizer(BoxGain, wxVERTICAL);
     BoxConditioningSizer->Add(sliderGainsizer, 0, wxALL | wxEXPAND, 2);
 
-    pGainSlider = new wxSlider(this, ID_GAIN, 90 , 10, 100, wxDefaultPosition,  wxDefaultSize,
+    pGainSlider = new wxSlider(this, ID_GAIN, 128, 0, 255, wxDefaultPosition,  wxDefaultSize,
                                wxSL_HORIZONTAL,  wxDefaultValidator, _("slider"));
 
     sliderGainsizer->Add(pGainSlider, 0, wxALL | wxEXPAND, 2);
@@ -484,7 +484,7 @@ void BR24ControlsDialog::OnGainSlider(wxCommandEvent &event)
                 break;
             }
         case 4: {
-                sel_gain = sel_gain * 8 / 10;
+                sel_gain = sel_gain * 0x50 / 0x100;
                 pPlugIn->settings.rain_clutter_gain = sel_gain;
                 break;
             }
