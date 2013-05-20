@@ -107,7 +107,45 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p)
     delete p;
 }
 
-int nseq;
+/********************************************************************************************************/
+//   Distance measurement for simple sphere
+/********************************************************************************************************/
+
+static double deg2rad(double deg)
+{
+    return (deg * PI / 180.0);
+}
+
+static double rad2deg(double rad)
+{
+    return (rad * 180.0 / PI);
+}
+
+static double radar_distance(double lat1, double lon1, double lat2, double lon2, char unit)
+{
+    // Spherical Law of Cosines
+    double theta, dist;
+
+    theta = lon2 - lon1;
+    dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta));
+    dist = acos(dist);         // radians
+    dist = rad2deg(dist);
+    dist = fabs(dist) * 60;    // nautical miles/degree
+    wxLogMessage(wxT("dist %f Nm"), dist);
+    switch (unit) {
+        case 'M':              // statute miles
+            dist = dist * 1.1515;
+            break;
+        case 'K':              // kilometers
+            dist = dist * 1.852;
+            break;
+        case 'N':              // nautical miles
+            break;
+    }
+    wxLogMessage(wxT("-> dist %f %c"), dist, unit);
+    return dist;
+}
+
 
 //---------------------------------------------------------------------------------------------------------
 //
@@ -708,8 +746,6 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
             boat_center = center_screen;
         }
 
-        // cc1->m_bFollow = FALSE; or ClearbFollow(); to keep boat centered on radar (not implemented)
-
         if (settings.auto_range_mode) {  // Calculate the "optimum" radar range setting in meters so Radar just fills Screen
             if (br_bpos_set) {   // br_bpos_set is only set by NMEA input
                 GetCanvasLLPix(vp, wxPoint(0, 0), &lat, &lon);       // Dist to Lower Left Corner
@@ -726,12 +762,8 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
                 GetCanvasLLPix(vp, wxPoint(vp->pix_width, 0), &lat, &lon);
                 c_dist = radar_distance(lat, lon, br_ownship_lat, br_ownship_lon, 'K');
-                /*
-                      msg.Printf(wxT("Max_distance to (vert,horiz) %g > %g ,%g, %g, ,%g, %g\n"),
-                          c_dist, max_distance,lat, lon, br_ownship_lat, br_ownship_lon);
-                      grLogMessage(msg);
-                */
                 max_distance = wxMax(max_distance, c_dist) * 1000;                      // meters
+
             } else {
                 // If ownship position is not valid, use the ViewPort center
                 GetCanvasLLPix(vp, wxPoint(vp->pix_width / 2, vp->pix_height / 2), &br_ownship_lat, &br_ownship_lon);
@@ -805,8 +837,9 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
     glTranslated(radar_center.x, radar_center.y, 0);
 
-    double heading = fmod(br_hdt + settings.heading_correction + 360.0, 360.0);
-    wxLogMessage(wxT("Rotating image for HDT=%f Correction=%d Result=%f"), br_hdt, settings.heading_correction, heading);
+    double heading = fmod(br_hdt + settings.heading_correction + rad2deg(vp->rotation) + 360.0, 360.0);
+    wxLogMessage(wxT("Rotating image for HDT=%f Correction=%d Rotation=%f Result=%f"), br_hdt, settings.heading_correction,
+    rad2deg(vp->rotation), heading);
     glRotatef(heading - 90.0, 0, 0, 1);        //correction for boat heading -90 for base north
 
     // scaling...
@@ -840,7 +873,6 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
         double blobRadius = (width * 360.0) / (LINES_PER_ROTATION + 0.0);
         double angleDeg   = (angle * 360.0) / (LINES_PER_ROTATION + 0.0) - blobRadius / 2.0;
         angle_prev = angle;
-        wxLogMessage(wxT("width=%d angle=%d"), width, angle);
 
         for (int radius = 0; radius < 512; ++radius) {
             int red = 0, green = 0, blue = 0, strength = m_scan_buf[angle][radius], alpha;
@@ -1613,43 +1645,5 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
         }
         m_angle_prev = angle_raw;
     }
-}
-
-
-/********************************************************************************************************/
-//   Distance measurement for simple sphere
-/********************************************************************************************************/
-
-double deg2rad(double deg)
-{
-    return (deg * PI / 180.0);
-}
-
-double rad2deg(double rad)
-{
-    return (rad * 180.0 / PI);
-}
-
-double radar_distance(double lat1, double lon1, double lat2, double lon2, char unit)
-{
-    // Spherical Law of Cosines
-    double theta, dist;
-
-    theta = lon2 - lon1;
-    dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta));
-    dist = acos(dist);         // radians
-    dist = rad2deg(dist);
-    dist = fabs(dist) * 60;    // nautical miles/degree
-    switch (unit) {
-        case 'M':              // statute miles
-            dist = dist * 1.1515;
-            break;
-        case 'K':              // kilometers
-            dist = dist * 1.852;
-            break;
-        case 'N':              // nautical miles
-            break;
-    }
-    return dist;
 }
 
