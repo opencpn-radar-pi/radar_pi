@@ -78,12 +78,6 @@ union packet_buf {
 long              br_range_meters = 0;      // current range for radar
 long              br_previous_range = 0;
 
-int               max_angle = 0;
-int               min_angle = 361;
-
-
-wxDateTime        br_static_timestamp;
-
 
 bool br_bpos_set;
 double br_ownship_lat;
@@ -157,6 +151,12 @@ int br24radar_pi::Init(void)
 
     m_hdt_source = 0;
     m_hdt_prev_source = 0;
+
+    for (int i = 0; i < LINES_PER_ROTATION; i++) {
+        m_scan_range[i][0] = 0;
+        m_scan_range[i][1] = 0;
+        m_scan_range[i][2] = 0;
+    }
 
 //******************************************************************************************/
 //******************************************************************************************/
@@ -812,94 +812,65 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     // scaling...
     max_range = 0;
     for (angle = 0; angle < 360; angle++) {
-        if (m_scan_range[angle] > max_range) {
-            max_range = m_scan_range[angle];
+        if (m_scan_range[angle][0] > max_range) {
+            max_range = m_scan_range[angle][0];
         }
     }
     double radar_pixels_per_meter = 512. / max_range;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
     glScaled(scale_factor, scale_factor, 1.);
 
+    // Find the highest scanline in use
+    int angle_prev;
+    for (angle_prev = LINES_PER_ROTATION - 1; angle_prev > LINES_PER_ROTATION - 100; angle_prev--) {
+        if (m_scan_range[angle_prev][0] == max_range
+         && m_scan_range[angle_prev][1] == max_range
+         && m_scan_range[angle_prev][2] == max_range) {
+            break;
+        }
+    }
+    wxLogMessage(wxT("max_range=%d angle_prev=%d"), max_range, angle_prev);
 
-    int red, green, blue, alpha;
-    for (int angle = 0 ; angle < 360 ; ++angle) {
+    for (int angle = 0 ; angle < LINES_PER_ROTATION ; ++angle) {
+        if (!m_scan_range[angle][0] && !m_scan_range[angle][1] && !m_scan_range[angle][2]) {
+            continue;
+        }
+        int width = (angle + LINES_PER_ROTATION - angle_prev) % LINES_PER_ROTATION;
+        width = wxMin(width, 5 * 4096/360);
+        double blobRadius = (width * 360.0) / (LINES_PER_ROTATION + 0.0);
+        double angleDeg   = (angle * 360.0) / (LINES_PER_ROTATION + 0.0) - blobRadius / 2.0;
+        angle_prev = angle;
+        wxLogMessage(wxT("width=%d angle=%d"), width, angle);
+
         for (int radius = 0; radius < 512; ++radius) {
-            alpha = m_scan_buf[angle][radius];
+            int red = 0, green = 0, blue = 0, strength = m_scan_buf[angle][radius], alpha;
+            alpha = strength * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
             switch (settings.display_option) {
                 case 0:
-                    alpha = alpha * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
-                    glColor4ub(255, 0, 0, (GLubyte)alpha);  // red, blue, green, alpha
-                    draw_blob_gl(angle, radius,  1, .75);  // angle, radius, blob radius, arc legnth
-                    draw_blob_gl(angle + 0.5, radius,  1, .75);
+                    red = 255;
                     break;
                 case 1:
-                    red = 0;
-                    green = 0;
-                    blue = 0;
-
-                    if (alpha > 200) {
+                    if (strength > 200) {
                         red = 255;
-                    }
-
-                    if (alpha > 100 && alpha < 201) {
+                    } else if (strength > 100) {
                         green = 255;
-                    }
-
-                    if (50 < alpha && alpha < 101) {
+                    } else if (strength > 50) {
                         blue = 255;
                     }
-                    alpha = alpha * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
-
-                    glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);    // red, blue, green
-                    draw_blob_gl(angle, radius,  1, .75);
-                    draw_blob_gl(angle + 0.5, radius,  1, .75);
                     break;
                 case 2:
-                    red = 0;
-                    green = 0;
-                    blue = 0;
-
-                    if (alpha > 175) {
+                    if (strength > 175) {
                         red = 255;
-                    }
-
-                    if (alpha > 100 && alpha < 176) {
+                    } else if (strength > 100) {
                         green = 255;
-                    }
-
-                    if (50 < alpha && alpha < 101) {
+                    } else if (strength > 50) {
                         blue = 255;
                     }
-                    /*
-                            for(int angle=0 ; angle < 360 ; angle++)                // scanbuf [360][512] has the even lines filled in already by process buffer
-                            {
-                                for(int radius=0; radius < 512; radius++)
-                                {
-                                    glColor4ub(255, 0, 0, br_static_buf[angle][radius]);    // red, blue, green
-                                    draw_blob_gl(angle, radius, 1.0, 0.5);
-                                    draw_blob_gl(angle+0.5, radius, 1.0, 0.5);
-
-                                    wxColour c1(br_static_buf[angle][radius], 0, 0);    // red, blue, green intensities
-                                    wxPen p1(c1);
-                                    wxBrush b1(c1);
-                                    pdc->SetPen(p1);
-                                    pdc->SetBrush(b1);
-                                    draw_blob_dc(*pdc, angle, radius, 1.0, 0.5, 4., width/2, height/2);
-
-                                    wxColour c2(br_scan_buf[angle][radius], 0, 0);
-                                    wxPen p2(c2);
-                                    wxBrush b2(c2);
-                                    pdc->SetPen(p2);
-                                    pdc->SetBrush(b2);
-                                    draw_blob_dc(*pdc, angle+0.5, radius, 1.0, 0.5, 4., width/2, height/2); // half a degree for filling in matrix?
-                                }
-                            }
-                        }
-                    */
-                    glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);    // red, blue, green
-                    draw_blob_gl(angle, radius, 1.0, 1.0);
-                    draw_blob_gl(angle + 0.5, radius, 1.0, 1.0);
                     break;
+            }
+            if (strength > 50) { // Only draw when there is color, saves lots of CPU
+                glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);    // red, blue, green
+                draw_blob_gl(angleDeg, radius,  blobRadius, .75);
             }
         }
     }
@@ -911,39 +882,35 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
 void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
-    wxDateTime br_last_timestamp;
-    if (br_static_timestamp != br_last_timestamp) {
-        glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
-        glPushMatrix();
-        glEnable(GL_BLEND);
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
-        glClearColor(0.0, 0.0, 0.0, 0.0);
-        glClear(GL_COLOR_BUFFER_BIT);
-        glTranslated(radar_center.x, radar_center.y, 0);
+    glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
+    glPushMatrix();
+    glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glTranslated(radar_center.x, radar_center.y, 0);
 
-        glRotatef(- 90, 0, 0, 1);        // display up for heading
+    glRotatef(- 90, 0, 0, 1);        // display up for heading
 
-        // scaling...
-        int alpha;
-        for (int angle = 0 ; angle < 360 ; ++angle) {
-            double radar_pixels_per_meter = 512. / m_scan_range[angle];
-            double scale_factor = v_scale_ppm / radar_pixels_per_meter;   // screen pix/radar pix
-            glScaled(scale_factor, scale_factor, 1.);
-            for (int radius = 0; radius < 512; ++radius) {
-                alpha = m_scan_buf[angle][radius];
-                glColor4ub(255, 0, 0, (GLubyte)alpha);  // red, blue, green, alpha
-                draw_blob_gl(angle, radius, 1, .75);
-                draw_blob_gl(angle + 0.5, radius, 1, .75);
-            }
+    // scaling...
+    int alpha;
+    for (int angle = 0 ; angle < LINES_PER_ROTATION ; ++angle) {
+        double radar_pixels_per_meter = 512. / m_scan_range[angle][0];
+        double scale_factor = v_scale_ppm / radar_pixels_per_meter;   // screen pix/radar pix
+        glScaled(scale_factor, scale_factor, 1.);
+        for (int radius = 0; radius < 512; ++radius) {
+            alpha = m_scan_buf[angle][radius];
+            glColor4ub(255, 0, 0, (GLubyte)alpha);  // red, blue, green, alpha
+            draw_blob_gl(angle, radius, 1, .75);
+            draw_blob_gl(angle + 0.5, radius, 1, .75);
         }
-
-        glPopMatrix();
-        glPopAttrib();
-
-        br_last_timestamp = br_static_timestamp;
     }
+
+    glPopMatrix();
+    glPopAttrib();
 }
+
 void br24radar_pi::RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
     int alpha;
@@ -951,12 +918,14 @@ void br24radar_pi::RenderSpectrum(wxPoint radar_center, double v_scale_ppm, Plug
 
     memset(&scan_distribution[0], 0, 255);
 
-    for (int angle = 0 ; angle < 360 ; angle += 2) {
-        for (int radius = 1; radius < 510; ++radius) {
-            alpha = m_scan_buf[angle][radius];
-            if (alpha > 0 && alpha < 255) {
-                scan_distribution[0] += 1;
-                scan_distribution[alpha] += 1;
+    for (int angle = 0 ; angle < LINES_PER_ROTATION ; angle++) {
+        if (m_scan_range[angle][0] != 0) {
+            for (int radius = 1; radius < 510; ++radius) {
+                alpha = m_scan_buf[angle][radius];
+                if (alpha > 0 && alpha < 255) {
+                    scan_distribution[0] += 1;
+                    scan_distribution[alpha] += 1;
+                }
             }
         }
     }
@@ -1063,6 +1032,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("RangeCalibration"),  &settings.range_calibration, 1.0);
             pConf->Read(wxT("HeadingCorrection"),  &settings.heading_correction, 0);
             pConf->Read(wxT("Interface"), &settings.radar_interface, wxT("0.0.0.0"));
+            pConf->Read(wxT("BeamWidth"), &settings.beam_width, 2);
 
             pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
             pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
@@ -1132,6 +1102,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("RangeCalibration"),  settings.range_calibration);
         pConf->Write(wxT("HeadingCorrection"),  settings.heading_correction);
         pConf->Write(wxT("Interface"),  settings.radar_interface);
+        pConf->Write(wxT("BeamWidth"),  settings.beam_width);
 
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
         pConf->Write(wxT("ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
@@ -1512,11 +1483,12 @@ void *MulticastRXThread::Entry(void)
     rx_addr.Hostname(wxT("0.0.0.0"));   // UDP sender broadcast IP is dynamically assigned else standard IGMPV4
     // just so long as it looks like an IP
 
+    m_angle_prev = 0;
+
     //    The big while....
     int n_rx_once = 0;
     while (!*m_quit) {
-        if (m_sock->Wait(1, 0))
-        {
+        if (m_sock->Wait(1, 0)) {
             packet_buf frame;
             m_sock->RecvFrom(rx_addr, frame.buf, sizeof(frame.buf));
             int len = m_sock->LastCount();
@@ -1557,7 +1529,7 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
         int range_meters;
 
         if (pPlugIn->settings.verbose) {
-          logBinaryData(wxT("line header"), (char *) line, sizeof(line->br4g));
+          // logBinaryData(wxT("line header"), (char *) line, sizeof(line->br4g));
         }
 
         if (memcmp(line->br24.mark, BR24MARK, sizeof(BR24MARK)) == 0) {
@@ -1586,7 +1558,7 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
         // Range change desired?
         if (range_meters != br_range_meters) {
             if (model4G) {
-                logBinaryData(wxT("4G line header"), (char *) &line, sizeof(line->br4g));
+                logBinaryData(wxT("4G line header"), (char *) line, sizeof(line->br4g));
                 wxLogMessage(wxT("4G header large_range=%x %x small_range=%x %x")
                             , line->br4g.largerange[0], line->br4g.largerange[1]
                             , line->br4g.smallrange[0], line->br4g.smallrange[1]
@@ -1620,55 +1592,26 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
             }
         }
 
-        long angle = angle_raw * 360 / 4096;
-        if (pPlugIn->settings.verbose) {
-            wxLogMessage(wxT("RXThreadProcessBuffer:  Angle: %d %d"),angle, angle_raw);
-        }
-
-        if (angle < min_angle) {            // setting new LB and fixing UB
-            min_angle = angle;
-        }
-        if (angle > max_angle) {            // setting new UB and fixing LB
-            max_angle = angle;
-        }
-
-        if (angle < max_angle) {
-            br_sweep_count++;
-            max_angle = 0;
-            min_angle = 361;
-        }
-//      wxLogMessage(wxT("RXThreadProcessBuffer:  Scan test: %d %d %d"),min_angle, max_angle, br_sweep_count);
-
-        unsigned char *dest_data1 = &pPlugIn->m_scan_buf[angle][0];  // start address of destination in scan_buf
-        memcpy(dest_data1, line->data, 512);
-        pPlugIn->m_scan_buf[angle][511] = (byte)0xff;               // Max Range Line
-        pPlugIn->m_scan_range[angle] = range_meters;
-
-#if 0
-        int alpha, alpha2;                              // Filling in odd radar bearing values
-        for (int angle = 0 ; angle < 358 ; angle += 2) {
-            for (int radius = 0; radius < 512; ++radius) {
-                alpha = m_scan_buf[angle][radius];
-                alpha2 = m_scan_buf[(angle + 2) % 360][radius];
-                if (alpha2 > 50) {                      // 50 is the lower threshold
-                    m_scan_buf[angle + 1][radius] = (alpha + alpha2) / 2;
-                }
-            }
-        }
-#endif
-
-        static int angle_counter = 0;
-        angle_counter++;
-        if (angle < 2)
+        if ((angle_raw + LINES_PER_ROTATION - m_angle_prev) % LINES_PER_ROTATION < pPlugIn->settings.beam_width)
         {
-          wxLogMessage(wxT("BR24radar_pi: angle=%d, count=%d"), angle, angle_counter);
-          angle_counter = 0;
+          continue;
         }
 
-        if ((pPlugIn->settings.display_mode == 1) && (br_sweep_count > 2)) {    // after a couple of sweeps update static display screen
-            br_static_timestamp = wxDateTime::Now();
-            br_sweep_count = 0;
+        unsigned char *dest_data1 = &pPlugIn->m_scan_buf[angle_raw][0];  // start address of destination in scan_buf
+        memcpy(dest_data1, line->data, 512);
+        pPlugIn->m_scan_buf[angle_raw][511] = (byte)0xff;                    // Max Range Line
+        pPlugIn->m_scan_range[angle_raw][2] = pPlugIn->m_scan_range[angle_raw][1];
+        pPlugIn->m_scan_range[angle_raw][1] = pPlugIn->m_scan_range[angle_raw][0];
+        pPlugIn->m_scan_range[angle_raw][0] = range_meters;
+
+        // Zero out the range of all skipped angles
+        m_angle_prev = (m_angle_prev + 1) % LINES_PER_ROTATION;
+        while (m_angle_prev % LINES_PER_ROTATION < angle_raw) {
+            pPlugIn->m_scan_range[m_angle_prev][2] = pPlugIn->m_scan_range[m_angle_prev][1];
+            pPlugIn->m_scan_range[m_angle_prev][1] = pPlugIn->m_scan_range[m_angle_prev][0];
+            pPlugIn->m_scan_range[m_angle_prev++][0] = 0;
         }
+        m_angle_prev = angle_raw;
     }
 }
 

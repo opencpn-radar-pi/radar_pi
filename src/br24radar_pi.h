@@ -144,6 +144,7 @@ struct radar_control_settings {
     int      heading_correction;
     int      distance_format;        // 0 = "Nautical miles"), 1 = "Statute miles", 2 = "Kilometers", 3 = "Meters"
     wxString radar_interface;        // IP address of interface to bind to (on UNIX)
+    int      beam_width;
 };
 
 //    Forward definitions
@@ -236,8 +237,10 @@ public:
 
     radar_control_settings settings;
 
-    unsigned char             m_scan_buf[360][512];        // scan buffer that contains raw radar scan image
-    int                       m_scan_range[360];           // range in decimeters for the corresponding line in m_scan_buf
+#define LINES_PER_ROTATION (4096)
+    unsigned char             m_scan_buf[LINES_PER_ROTATION][512];  // scan buffer that contains raw radar scan image
+    int                       m_scan_range[LINES_PER_ROTATION][3];  // range in decimeters for the corresponding line in m_scan_buf
+                                                                    // kept for 3 rotations, so a scanline is discarded after 3.
 
     BR24DisplayOptionsDialog *m_pOptionsDialog;
     BR24ControlsDialog       *m_pControlDialog;
@@ -330,6 +333,8 @@ private:
     volatile bool    * m_quit;
     wxDatagramSocket * m_sock;
     wxIPV4address      m_myaddr;
+
+    int                m_angle_prev;
 };
 
 //----------------------------------------------------------------------------------------------------------
