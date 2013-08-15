@@ -865,10 +865,16 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     wxLogMessage(wxT("max_range=%d angle_prev=%d"), max_range, angle_prev);
 
     for (int angle = 0 ; angle < LINES_PER_ROTATION ; ++angle) {
+        // Skip angles that have not been received for three rotations. We may want to fine-tune this further.
         if (!m_scan_range[angle][0] && !m_scan_range[angle][1] && !m_scan_range[angle][2]) {
             continue;
         }
+        // Next line is important: we draw blobs that are (angle - angle_prev) wide. This varies automatically
+        // if the radar skips particular scanlines. This varies per model and per rotation, the original BR24 skips
+        // more data than the 3G and the 3G probably skips more than the 4G.
         int width = (angle + LINES_PER_ROTATION - angle_prev) % LINES_PER_ROTATION;
+
+        // The rest is just conversion so that we draw in the degree based angles that OpenGL uses.
         width = wxMin(width, 5 * 4096/360);
         double blobRadius = (width * 360.0) / (LINES_PER_ROTATION + 0.0);
         double angleDeg   = (angle * 360.0) / (LINES_PER_ROTATION + 0.0) - blobRadius / 2.0;
@@ -1632,11 +1638,15 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
         unsigned char *dest_data1 = &pPlugIn->m_scan_buf[angle_raw][0];  // start address of destination in scan_buf
         memcpy(dest_data1, line->data, 512);
         pPlugIn->m_scan_buf[angle_raw][511] = (byte)0xff;                    // Max Range Line
+
+        // Store the range received for this angle, and cache the previous two ranges
         pPlugIn->m_scan_range[angle_raw][2] = pPlugIn->m_scan_range[angle_raw][1];
         pPlugIn->m_scan_range[angle_raw][1] = pPlugIn->m_scan_range[angle_raw][0];
         pPlugIn->m_scan_range[angle_raw][0] = range_meters;
 
-        // Zero out the range of all skipped angles
+        // Zero out the range of all skipped angles.
+        // When painting the buffer on the screen we 'repair' this by drawing wider blobs, from the last angle we did
+        // receive to this angle.
         m_angle_prev = (m_angle_prev + 1) % LINES_PER_ROTATION;
         while (m_angle_prev % LINES_PER_ROTATION < angle_raw) {
             pPlugIn->m_scan_range[m_angle_prev][2] = pPlugIn->m_scan_range[m_angle_prev][1];
