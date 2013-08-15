@@ -70,8 +70,6 @@ enum {
 
 };
 
-double radar_distance(double lat1, double lon1, double lat2, double lon2, char unit);
-
 enum {
     RADAR_OFF,
     RADAR_ON,
