@@ -64,7 +64,8 @@ enum {                                      // process ID's
     ID_TRANSLIDER,
     ID_CLUTTER,
     ID_GAIN,
-    ID_REJECTION
+    ID_REJECTION,
+    ID_ALARMZONES
 };
 
 //---------------------------------------------------------------------------------------
@@ -81,6 +82,7 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
     EVT_RADIOBUTTON(ID_RANGEMODE, BR24ControlsDialog::OnRangeModeClick)
     EVT_RADIOBUTTON(ID_CLUTTER, BR24ControlsDialog::OnFilterProcessClick)
     EVT_RADIOBUTTON(ID_REJECTION, BR24ControlsDialog::OnRejectionModeClick)
+	EVT_RADIOBUTTON(ID_ALARMZONES, BR24ControlsDialog::OnAlarmDialogClick)
 
 END_EVENT_TABLE()
 
@@ -357,6 +359,24 @@ void BR24ControlsDialog::CreateControls()
     pGainSlider->Connect(wxEVT_SCROLL_CHANGED,
                          wxCommandEventHandler(BR24ControlsDialog::OnGainSlider), NULL, this);
 
+// Alarm Zone Operations
+
+    wxString    AlarmZoneString[] = { _("Inactive"),_("Zone 1"),_("Zone 2")};
+
+    pAlarmZones = new wxRadioBox(this, ID_ALARMZONES, _("Alarm Zones"), wxDefaultPosition,
+                                 wxDefaultSize, 3, AlarmZoneString, 1, wxRA_SPECIFY_COLS);
+
+    BoxSizerOperation->Add(pAlarmZones, 0, wxALL | wxEXPAND, 2);
+
+    pAlarmZones->Connect
+        (
+            wxEVT_COMMAND_RADIOBOX_SELECTED,
+            wxCommandEventHandler(BR24ControlsDialog::OnAlarmDialogClick),
+            NULL,
+            this
+        );
+    pAlarmZones->SetSelection(pPlugIn->settings.alarm_zone);
+
 // A horizontal box sizer to contain OK
     wxBoxSizer* AckBox = new wxBoxSizer(wxHORIZONTAL);
     boxSizer->Add(AckBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
@@ -490,6 +510,13 @@ void BR24ControlsDialog::OnGainSlider(wxCommandEvent &event)
             }
     }
 }
+
+void BR24ControlsDialog::OnAlarmDialogClick(wxCommandEvent &event)
+{
+    int zone = (pAlarmZones->GetSelection());
+    pPlugIn->Select_Alarm_Zones(zone);
+}
+
 void BR24ControlsDialog::OnClose(wxCloseEvent& event)
 {
     pPlugIn->OnBR24ControlDialogClose();
