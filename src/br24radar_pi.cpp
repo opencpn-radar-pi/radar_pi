@@ -64,6 +64,7 @@ static unsigned char BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
 enum {
     // process ID's
     ID_OK,
+    ID_RANGE_UNITS,
     ID_OVERLAYDISPLAYOPTION,
     ID_DISPLAYTYPE,
     ID_INTERVALSLIDER,
@@ -75,25 +76,30 @@ union packet_buf {
     unsigned char   buf[20000];     // 32 lines of 512 = 16,384, DO NOT ALTER from 20000!
 };
 
-long              br_range_meters = 0;      // current range for radar
-long              br_previous_range = 0;
-
-
-bool br_bpos_set;
-double br_ownship_lat;
-double br_ownship_lon;
+bool br_bpos_set = true;
+bool bpos_warn_msg = false;
+double br_ownship_lat, br_ownship_lon;
+double cur_lat, cur_lon;
 double br_hdm;
 double br_hdt;
 
+double mark_rng, mark_brg;      // This is needed for context operation
+long  br_range_meters = 0;      // current range for radar
+long  br_previous_range = 0;
+
 int   br_radar_state;
 int   br_scanner_state;
+
 long  br_display_interval(0);
 int   br_sweep_count;
-wxDateTime  br_dt_last_tick;
+//wxDateTime  br_dt_last_tick;
+wxDateTime  watchdog;
 wxDateTime  br_dt_stayalive;
 int   br_scan_packets_per_tick;
 
 bool  br_bshown_dc_message;
+int   radar_control_id, alarm_zone_id;
+bool  alarm_context_mode;
 
 // the class factories, used to create and destroy instances of the PlugIn
 
@@ -110,6 +116,7 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p)
 /********************************************************************************************************/
 //   Distance measurement for simple sphere
 /********************************************************************************************************/
+static double twoPI = 2 * PI;
 
 static double deg2rad(double deg)
 {
@@ -121,17 +128,36 @@ static double rad2deg(double rad)
     return (rad * 180.0 / PI);
 }
 
+static double mod(double numb1, double numb2)
+{
+	double result = numb1 - (numb2 * int(numb1/numb2));
+			return result;
+}
+
+static double modcrs(double numb1,double numb2)
+{
+	if (numb1 > twoPI)
+		numb1 = mod(numb1, twoPI);
+	double result = twoPI - mod(twoPI-numb1,numb2);
+	return result;
+}
+
+static double local_distance (double lat1, double lon1, double lat2, double lon2) {
+	// Spherical Law of Cosines
+	double theta, dist; 
+
+	theta = lon2 - lon1; 
+	dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta)); 
+	dist = acos(dist);		// radians
+	dist = rad2deg(dist); 
+	dist = abs(dist) * 60	;	// nautical miles/degree
+	return (dist); 
+}
+
 static double radar_distance(double lat1, double lon1, double lat2, double lon2, char unit)
 {
-    // Spherical Law of Cosines
-    double theta, dist;
+   double dist = local_distance (lat1,lon1,lat2,lon2);
 
-    theta = lon2 - lon1;
-    dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta));
-    dist = acos(dist);         // radians
-    dist = rad2deg(dist);
-    dist = fabs(dist) * 60;    // nautical miles/degree
-    wxLogMessage(wxT("dist %f Nm"), dist);
     switch (unit) {
         case 'M':              // statute miles
             dist = dist * 1.1515;
@@ -144,6 +170,16 @@ static double radar_distance(double lat1, double lon1, double lat2, double lon2,
     }
     wxLogMessage(wxT("-> dist %f %c"), dist, unit);
     return dist;
+}
+
+static double local_bearing (double lat1, double lon1, double lat2, double lon2) //FES
+{
+	double angle = atan2 ( deg2rad(lat2-lat1), (deg2rad(lon2-lon1) * cos(deg2rad(lat1))));
+
+    angle = rad2deg(angle) ;
+    angle = 90.0 - angle;
+    if (angle < 0) angle = 360 + angle;
+	return (angle);
 }
 
 
@@ -179,7 +215,7 @@ int br24radar_pi::Init(void)
     br_radar_state = RADAR_OFF;
     br_scanner_state = RADAR_OFF;                 // Radar scanner is off
     br_sweep_count = 0;
-    br_dt_last_tick = wxDateTime::Now();
+//    br_dt_last_tick = wxDateTime::Now();
     br_dt_stayalive = wxDateTime::Now();
 
     m_dt_last_render = wxDateTime::Now();
@@ -209,10 +245,6 @@ int br24radar_pi::Init(void)
     m_BR24Controls_dialog_sx = 200;
     m_BR24Controls_dialog_sy = 200;
 
-    m_BR24Manual_dialog_x = 0;
-    m_BR24Manual_dialog_y = 0;
-    m_BR24Manual_dialog_sx = 200;
-    m_BR24Manual_dialog_sy = 200;
 
     ::wxDisplaySize(&m_display_width, &m_display_height);
 
@@ -244,17 +276,24 @@ int br24radar_pi::Init(void)
     addr101.Service(wxT("6678"));
     m_out_sock101 = new wxDatagramSocket(addr101, wxSOCKET_REUSEADDR | wxSOCKET_NOWAIT);
 
+    // Context Menu Items (Right click on chart screen)
+
     m_pmenu = new wxMenu();            // this is a dummy menu
     // required by Windows as parent to item created
     wxMenuItem *pmi = new wxMenuItem(m_pmenu, -1, _("Radar Control..."));
     int miid = AddCanvasContextMenuItem(pmi, this);
     SetCanvasContextMenuItemViz(miid, true);
 
-    // Create the control dialog so that the actual range setting can be stored.
+    wxMenuItem *pmi2 = new wxMenuItem(m_pmenu, -1, _("Set Alarm Point"));
+    alarm_zone_id = AddCanvasContextMenuItem(pmi2, this );
+    SetCanvasContextMenuItemViz(alarm_zone_id, false);
+    alarm_context_mode = false;
+
+/*    // Create the control dialog so that the actual range setting can be stored.
     m_pControlDialog = new BR24ControlsDialog;
     m_pControlDialog->Create(m_parent_window, this);
     m_pControlDialog->Hide();
-
+*/
     //    Create the THREAD for Multicast radar data reception
     m_quit = false;
     m_receiveThread = new MulticastRXThread(this, &m_quit, wxT("236.6.7.8"), wxT("6678"));
@@ -400,11 +439,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
 {
     pParent = parent;
     pPlugIn = ppi;
-//      wxString msg;
-//      msg.Printf(wxT("OptionsDialog: Creating Dialog"));
-//      wxLogMessage(msg);
 
-//  wxDialog *PreferencesDialog = new wxDialog( parent, wxID_ANY, _("BR24 Target Display Preferences"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE );
     if (!wxDialog::Create(parent, wxID_ANY, _("BR24 Target Display Preferences"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)) {
         return false;
     }
@@ -421,7 +456,30 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     wxStaticBoxSizer* DisplayOptionsCheckBoxSizer = new wxStaticBoxSizer(DisplayOptionsCheckBox, wxVERTICAL);
     DisplayOptionsBox->Add(DisplayOptionsCheckBoxSizer, 0, wxEXPAND | wxALL, border_size);
 
-/// Option settings
+     //  Range Units options
+    wxStaticBox* BoxRangeUnits = new wxStaticBox(this, wxID_ANY, _("Range Units"));
+    wxStaticBoxSizer* BoxSizerOperation = new wxStaticBoxSizer(BoxRangeUnits, wxVERTICAL);
+    DisplayOptionsCheckBoxSizer->Add(BoxSizerOperation, 0, wxEXPAND | wxALL, border_size);
+
+    wxString RangeModeStrings[] = {
+        _("Nautical Miles"),
+        _("Statute Miles"),
+        _("Kilometers"),
+        _("Meters"),
+    };
+
+    pRangeUnits = new wxRadioBox(this, ID_RANGE_UNITS, _("Range Units"),
+                                    wxDefaultPosition, wxDefaultSize,
+                                    4, RangeModeStrings, 1, wxRA_SPECIFY_COLS);
+
+    BoxSizerOperation->Add(pRangeUnits, 0, wxALL | wxEXPAND, 2);
+
+    pRangeUnits->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
+                            wxCommandEventHandler(BR24DisplayOptionsDialog::OnRangeUnitsClick), NULL, this);
+    
+    pRangeUnits->SetSelection(pPlugIn->settings.range_units);
+
+    /// Option settings
     wxString Overlay_Display_Options[] = {
         _("Monocolor-Red"),
         _("Multi-color"),
@@ -460,25 +518,6 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
                           wxCommandEventHandler(BR24DisplayOptionsDialog::OnDisplayModeClick), NULL, this);
 
     pDisplayMode->SetSelection(pPlugIn->settings.display_mode);
-
-//interval slider
-    wxStaticBox* interval_sliderbox = new wxStaticBox(this, wxID_ANY, _("Interval 1 sec-6 min"));
-    wxStaticBoxSizer* interval_sliderboxsizer = new wxStaticBoxSizer(interval_sliderbox, wxVERTICAL);
-    DisplayOptionsBox->Add(interval_sliderboxsizer, 0, wxALL | wxEXPAND, 2);
-
-    pIntervalSlider = new wxSlider(this, ID_INTERVALSLIDER, 50 , 10, 100, wxDefaultPosition,  wxDefaultSize,
-                                   wxSL_HORIZONTAL,  wxDefaultValidator, _(""));
-
-    interval_sliderboxsizer->Add(pIntervalSlider, 0, wxALL | wxEXPAND, 2);
-
-    pIntervalSlider->Connect(wxEVT_SCROLL_THUMBRELEASE,
-                             wxCommandEventHandler(BR24DisplayOptionsDialog::OnIntervalSlider), NULL, this);
-
-    pIntervalSlider->SetValue(br_display_interval / 36);
-    if (pPlugIn->settings.display_mode != 1) {
-        interval_sliderbox->Hide();
-        pIntervalSlider->Hide();
-    }
 
 //  Calibration
     wxStaticBox* itemStaticBoxCalibration = new wxStaticBox(this, wxID_ANY, _("Calibration"));
@@ -523,6 +562,11 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     return true;
 }
 
+void BR24DisplayOptionsDialog::OnRangeUnitsClick(wxCommandEvent &event)
+{
+    pPlugIn->settings.range_units = pRangeUnits->GetSelection();
+}
+
 void BR24DisplayOptionsDialog::OnDisplayOptionClick(wxCommandEvent &event)
 {
     pPlugIn->settings.display_option = pOverlayDisplayOptions->GetSelection();
@@ -537,11 +581,6 @@ void BR24DisplayOptionsDialog::OnRange_Calibration_Value(wxCommandEvent &event)
 {
     wxString temp = pText_Range_Calibration_Value->GetValue();
     temp.ToDouble(&pPlugIn->settings.range_calibration);
-}
-
-void BR24DisplayOptionsDialog::OnIntervalSlider(wxCommandEvent &event)
-{
-    br_display_interval = pIntervalSlider->GetValue() * 36;
 }
 
 void BR24DisplayOptionsDialog::OnHeadingSlider(wxCommandEvent &event)
@@ -564,28 +603,69 @@ void BR24DisplayOptionsDialog::OnIdOKClick(wxCommandEvent& event)
 
 void br24radar_pi::OnContextMenuItemCallback(int id)
 {
-    if (!m_pControlDialog) {
-        m_pControlDialog = new BR24ControlsDialog;
-        m_pControlDialog->Create(m_parent_window, this);
-        m_pControlDialog->Hide();
-    }
-
-    if (m_pControlDialog->IsShown()) {
-        m_pControlDialog->Hide();
-    } else {
+   if (!alarm_context_mode){
+        if (!m_pControlDialog) {
+            m_pControlDialog = new BR24ControlsDialog;
+            m_pControlDialog->Create(m_parent_window, this);
+        }
         m_pControlDialog->Show();
         m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
                                   m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy);
     }
+
+   if (alarm_context_mode){
+       SetCanvasContextMenuItemViz(radar_control_id, false);
+       mark_rng = local_distance(br_ownship_lat, br_ownship_lon, cur_lat, cur_lon);
+       mark_brg = local_bearing(br_ownship_lat, br_ownship_lon, cur_lat, cur_lon);
+       m_pAlarmZoneDialog->OnContextMenuAlarmCallback(mark_rng, mark_brg);
+   }
 }
 
 void br24radar_pi::OnBR24ControlDialogClose()
 {
     if (m_pControlDialog) {
         m_pControlDialog->Hide();
+        SetCanvasContextMenuItemViz(alarm_zone_id, false);
     }
 
     SaveConfig();
+}
+
+void br24radar_pi::OnAlarmZoneDialogClose()
+{
+    if (m_pAlarmZoneDialog) {
+        m_pAlarmZoneDialog->Hide();
+        SetCanvasContextMenuItemViz(alarm_zone_id, false);
+        SetCanvasContextMenuItemViz(radar_control_id, true);
+        alarm_context_mode = false;
+    }
+
+    SaveConfig();
+}
+
+void br24radar_pi::Select_Alarm_Zones(int zone)
+{
+    settings.alarm_zone = zone;
+
+    if (!m_pAlarmZoneDialog) {
+        m_pAlarmZoneDialog = new AlarmZoneDialog;
+        m_pAlarmZoneDialog->Create(m_parent_window, this);
+   }
+    if (zone > 0) {
+        m_pControlDialog->Hide();
+        m_pAlarmZoneDialog->Show();
+        m_pAlarmZoneDialog->OnAlarmZoneDialogShow(zone);
+        SetCanvasContextMenuItemViz(alarm_zone_id, true);
+        SetCanvasContextMenuItemViz(radar_control_id, false);
+        alarm_context_mode = true;
+
+    }
+    else {
+        m_pAlarmZoneDialog->Hide();
+        SetCanvasContextMenuItemViz(alarm_zone_id, false);
+        SetCanvasContextMenuItemViz(radar_control_id, true);
+        alarm_context_mode = false;
+    }
 }
 
 void br24radar_pi::SetDisplayMode(int mode)
@@ -645,22 +725,25 @@ void br24radar_pi::DoTick(void)
 {
     wxDateTime now = wxDateTime::Now();
 
-    //    If no data appears to be coming in,
+     wxTimeSpan wtchdg = now.Subtract(watchdog);
+            long delta_wdt = wtchdg.GetSeconds().ToLong();
+
+            if (delta_wdt > 60)  {              // check every minute
+                br_bpos_set = false;
+                m_hdt_source = false;
+                watchdog = now;
+            }
+/*
+             if ((br_bpos_set == bpos_warn_msg)) {       // needs synchronization
+
+                wxString message(_("The Radar Overlay has lost GPS position and heading data"));
+                wxMessageDialog dlg(GetOCPNCanvasWindow(),  message, wxT("System Message"), wxOK);
+                dlg.ShowModal();
+                bpos_warn_msg = true;
+            }
+*/
+     //    If no data appears to be coming in,
     //    switch to Master mode and Turn on Radar
-
-    /*if(m_dt_last_render.IsValid())
-       {
-          wxDateTime now = wxDateTime::Now();
-          wxTimeSpan ts = now.Subtract(m_dt_last_render);
-          long delta_t = ts.GetSeconds().ToLong();
-          wxString msg;
-          msg.Printf(wxT("ROGL: TimeSpan: %g -> %g"), delta_t, br_display_interval);
-          wxLogMessage(msg);
-
-          if(delta_t < br_display_interval )
-                br_time_render = false;
-       }
-    */
     if (br_scan_packets_per_tick > 0) { // Something coming from radar unit?
         br_scanner_state = RADAR_ON ;
         if (settings.master_mode && br_dt_stayalive.IsValid()) {
@@ -1049,11 +1132,10 @@ bool br24radar_pi::LoadConfig(void)
 
     if (pConf) {
         pConf->SetPath(wxT("/Settings"));
-        pConf->Read( _T ( "DistanceFormat" ), &settings.distance_format, 0 ); //0 = "Nautical miles"), 1 = "Statute miles", 2 = "Kilometers", 3 = "Meters"
-
-        pConf->SetPath(wxT("/Plugins/BR24Radar"));
+         pConf->SetPath(wxT("/Plugins/BR24Radar"));
         if (pConf->Read(wxT("DisplayOption"), &settings.display_option, 0))
         {
+            pConf->Read(wxT("RangeUnits" ), &settings.range_units, 0 ); //0 = "Nautical miles"), 1 = "Statute miles", 2 = "Kilometers", 3 = "Meters"
             pConf->Read(wxT("DisplayMode"),  &settings.display_mode, 0);
             pConf->Read(wxT("OverlayChart"),  &settings.overlay_chart, 0);
             pConf->Read(wxT("VerboseLog"),  &settings.verbose, 0);
@@ -1124,6 +1206,7 @@ bool br24radar_pi::SaveConfig(void)
     if (pConf) {
         pConf->SetPath(wxT("/Plugins/BR24Radar"));
         pConf->Write(wxT("DisplayOption"), settings.display_option);
+        pConf->Write(wxT("RangeUnits" ), settings.range_units);
         pConf->Write(wxT("DisplayMode"), settings.display_mode);
         pConf->Write(wxT("OverlayChart"), settings.overlay_chart);
         pConf->Write(wxT("VerboseLog"), settings.verbose);
@@ -1157,43 +1240,42 @@ void br24radar_pi::SetPositionFix(PlugIn_Position_Fix &pfix)
     br_ownship_lon = pfix.Lon;
 
     br_bpos_set = true;
-
+    bpos_warn_msg = false;
 }
 void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 {
     br_ownship_lat = pfix.Lat;
     br_ownship_lon = pfix.Lon;
 
-    m_hdt_source = 0;
+//    m_hdt_source = 0;
     if (!wxIsNaN(pfix.Hdt))
     {
         br_hdt = pfix.Hdt;
+        if(m_hdt_source != 1) wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
         m_hdt_source = 1;
     }
     else if (!wxIsNaN(pfix.Hdm) && !wxIsNaN(pfix.Var))
     {
         br_hdt = pfix.Hdm + pfix.Var;
+        if(m_hdt_source != 2)  wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM"));
         m_hdt_source = 2;
     }
     else if (!wxIsNaN(pfix.Cog))
     {
         br_hdt = pfix.Cog;
+        if(m_hdt_source != 3)  wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
         m_hdt_source = 3;
     }
 
-    if (m_hdt_source != m_hdt_prev_source)
-    {
-        switch (m_hdt_source)
-        {
-        case 0: wxLogMessage(wxT("BR24radar_pi: No Heading source; keeping old value %f"), br_hdt); break;
-        case 1: wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT")); break;
-        case 2: wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM")); break;
-        case 3: wxLogMessage(wxT("BR24radar_pi: Heading source is now COG")); break;
-        }
-        m_hdt_prev_source = m_hdt_source;
-    }
-
     br_bpos_set = true;
+    bpos_warn_msg = false;
+}
+
+//**************** Cursor position events **********************
+void br24radar_pi::SetCursorLatLon(double lat, double lon)
+{
+cur_lat = lat;
+cur_lon = lon;
 }
 
 //************************************************************************

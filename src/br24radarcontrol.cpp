@@ -255,7 +255,7 @@ void BR24ControlsDialog::CreateControls()
 
     const wxString *names;
     int n;
-    if (pPlugIn->settings.distance_format < 2) /* NMi or Mi */
+    if (pPlugIn->settings.range_units < 2) /* NMi or Mi */
     {
       names = g_mile_range_names;
       n = sizeof(g_mile_range_names)/sizeof(g_mile_range_names[0]);
@@ -392,7 +392,7 @@ void BR24ControlsDialog::SetActualRange(long range)
     if (pPlugIn->settings.auto_range_mode) {
         const int * ranges;
         int         n;
-        if (pPlugIn->settings.distance_format < 2) { /* NMi or Mi */
+        if (pPlugIn->settings.range_units < 2) { /* NMi or Mi */
             n = (int) sizeof(g_mile_range_distances)/sizeof(g_mile_range_distances[0]);
             ranges = g_mile_range_distances;
         }
@@ -417,7 +417,7 @@ void BR24ControlsDialog::OnRangeValue(wxCommandEvent &event)
     if (selection != wxNOT_FOUND) {
         const int * ranges;
         int         n;
-        if (pPlugIn->settings.distance_format < 2) { /* NMi or Mi */
+        if (pPlugIn->settings.range_units < 2) { /* NMi or Mi */
             n = (int) sizeof(g_mile_range_distances)/sizeof(g_mile_range_distances[0]);
             ranges = g_mile_range_distances;
         }
