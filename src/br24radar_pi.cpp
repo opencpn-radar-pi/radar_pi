@@ -536,19 +536,27 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     pText_Range_Calibration_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                                            wxCommandEventHandler(BR24DisplayOptionsDialog::OnRange_Calibration_Value), NULL, this);
 
-    // Heading correction slider
-    wxStaticBox* headingBox = new wxStaticBox(this, wxID_ANY, _("Heading correction"));
-    wxStaticBoxSizer* headingBoxSizer = new wxStaticBoxSizer(headingBox, wxVERTICAL);
-    itemStaticBoxSizerCalibration->Add(headingBoxSizer, 0, wxALL | wxEXPAND, 2);
+    // Heading correction
+    wxStaticText *pStatic_Heading_Correction = new wxStaticText(this, wxID_ANY, _("Heading factor (+ or -, 0 ->180)"));
+    itemStaticBoxSizerCalibration->Add(pStatic_Heading_Correction, 1, wxALIGN_LEFT | wxALL, 2);
 
-    pHeadingSlider = new wxSlider(this, ID_HEADINGSLIDER, 0 , -180, +180, wxDefaultPosition,  wxDefaultSize,
+    pText_Heading_Correction_Value = new wxTextCtrl(this, wxID_ANY);
+    itemStaticBoxSizerCalibration->Add(pText_Heading_Correction_Value, 1, wxALIGN_LEFT | wxALL, 5);
+    m_temp.Printf(wxT("%2.5f"), pPlugIn->settings.heading_correction);
+    pText_Heading_Correction_Value->SetValue(m_temp);
+    pText_Heading_Correction_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
+                                           wxCommandEventHandler(BR24DisplayOptionsDialog::OnHeading_Calibration_Value), NULL, this);
+
+
+
+ /*   pHeadingSlider = new wxSlider(this, ID_HEADINGSLIDER, 0 , -180, +180, wxDefaultPosition,  wxDefaultSize,
                                wxSL_HORIZONTAL | wxSL_LABELS,  wxDefaultValidator, _("slider"));
 
     headingBoxSizer->Add(pHeadingSlider, 0, wxALL | wxEXPAND, 2);
 
     pHeadingSlider->Connect(wxEVT_SCROLL_CHANGED, wxCommandEventHandler(BR24DisplayOptionsDialog::OnHeadingSlider), NULL, this);
     pHeadingSlider->SetValue(pPlugIn->settings.heading_correction);
-
+*/
 // Accept/Reject button
     wxStdDialogButtonSizer* DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
     DisplayOptionsBox->Add(DialogButtonSizer, 0, wxALIGN_RIGHT | wxALL, 5);
@@ -583,9 +591,10 @@ void BR24DisplayOptionsDialog::OnRange_Calibration_Value(wxCommandEvent &event)
     temp.ToDouble(&pPlugIn->settings.range_calibration);
 }
 
-void BR24DisplayOptionsDialog::OnHeadingSlider(wxCommandEvent &event)
+void BR24DisplayOptionsDialog::OnHeading_Calibration_Value(wxCommandEvent &event)
 {
-    pPlugIn->settings.heading_correction = pHeadingSlider->GetValue();
+    wxString temp = pText_Heading_Correction_Value->GetValue();
+    temp.ToDouble(&pPlugIn->settings.heading_correction);
 }
 
 void BR24DisplayOptionsDialog::OnClose(wxCloseEvent& event)
@@ -874,7 +883,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         double ulat, llat, ulon, llon;
         GetCanvasLLPix(vp, wxPoint(0, vp->pix_height), &ulat, &ulon);  // is pix_height a mapable coordinate?
         GetCanvasLLPix(vp, wxPoint(0, 0), &llat, &llon);
-        double dist_y = radar_distance(ulat, ulon, llat, llon, 'K') * 1000; // Distance of height of display - meters
+        double dist_y = radar_distance(llat, llon, ulat, ulon, 'K') * 1000; // Distance of height of display - meters
 
         double v_scale_ppm = 1.0;
         if (dist_y > 0.) {
@@ -988,6 +997,12 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
                 draw_blob_gl(angleDeg, radius,  blobRadius, .75);
             }
         }
+    }
+
+   // Alarm Zone image
+    if(settings.alarm_zone >0){
+        float scale = v_scale_ppm * 1852;           // pixels per naut mile
+            RenderAlarmZone(scale);
     }
 
     glPopMatrix();
@@ -1121,7 +1136,47 @@ void br24radar_pi::draw_blob_gl(double angle, double radius, double blob_r, doub
 }
 
 //****************************************************************************
+void br24radar_pi::RenderAlarmZone(float scale)
+{
+    int red = 0, green = 0, blue = 200, alpha = 50;
+    glRotatef(- 90.0, 0, 0, 1);        //correction for base north
+    glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);    // red, blue, green
 
+    if (settings.alarm_zone == 1){
+            float radius1 = m_pAlarmZoneDialog->Zone1.outer_range * scale;
+            float radius2 = m_pAlarmZoneDialog->Zone1.inner_range * scale;
+
+            if (m_pAlarmZoneDialog->Zone1.type == 1) DrawFilledArc(radius1, radius2, 0.0, 359.0);
+            if (m_pAlarmZoneDialog->Zone1.type == 0){
+                float a1 = m_pAlarmZoneDialog->Zone1.start_bearing;
+                float a2 = m_pAlarmZoneDialog->Zone1.end_bearing;
+                DrawFilledArc(radius1, radius2, a1, a2);
+            }
+    }
+    if (settings.alarm_zone == 2){
+            float radius1 = m_pAlarmZoneDialog->Zone2.outer_range * scale;
+            float radius2 = m_pAlarmZoneDialog->Zone2.inner_range * scale;
+
+            if (m_pAlarmZoneDialog->Zone2.type == 1) DrawFilledArc(radius1, radius2, 0.0, 359.0);
+            if (m_pAlarmZoneDialog->Zone2.type == 0){
+                float a1 = m_pAlarmZoneDialog->Zone1.start_bearing;
+                float a2 = m_pAlarmZoneDialog->Zone1.end_bearing;
+                DrawFilledArc(radius1, radius2, a1, a2);
+            }
+    }
+}
+
+void br24radar_pi::DrawFilledArc(float r1, float r2, float a1, float a2)
+{
+    if (a1 > a2) a2 += 360.0;
+    glBegin(GL_LINE_LOOP); 
+        for( int n = a1; n <= a2; ++n ) {
+            float t = deg2rad(n);
+            glVertex2f(sin(t)*r1, cos(t)*r1);
+            glVertex2f(sin(t)*r2, cos(t)*r2);
+        }
+    glEnd();
+}
 
 //****************************************************************************
 
@@ -1650,7 +1705,7 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
             range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
             angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
 
-            range_meters = range_raw;
+            range_meters = range_raw * 10.0 / sqrt(2.0);
         } else {
             large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
             small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];

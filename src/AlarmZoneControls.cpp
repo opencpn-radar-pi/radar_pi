@@ -369,6 +369,11 @@ void AlarmZoneDialog::OnContextMenuAlarmCallback(double mark_rng, double mark_br
         }
     inner_set = true;
     }
+
+  if(outer_set && inner_set) {
+      outer_set = false;
+      inner_set = false;
+  }
   OnAlarmZoneDialogShow(pPlugIn->settings.alarm_zone);
 }
 

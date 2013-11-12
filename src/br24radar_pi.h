@@ -147,7 +147,7 @@ struct radar_control_settings {
     int      sea_clutter_gain;
     int      rain_clutter_gain;
     double   range_calibration;
-    int      heading_correction;
+    double   heading_correction;
     int      range_units;        // 0 = "Nautical miles"), 1 = "Statute miles", 2 = "Kilometers", 3 = "Meters"
     wxString radar_interface;        // IP address of interface to bind to (on UNIX)
     int      beam_width;
@@ -266,8 +266,8 @@ private:
     void OpenGL3_Render_Overlay();
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
 
-    void RenderAlarmZone(double scale_factor);
-    void DrawFilledCircle(float r, int segments);
+    void RenderAlarmZone(float scale);
+    void DrawFilledArc(float r1, float r2, float a1,float a2);
 
     void draw_blob_dc(wxDC &dc, double angle, double radius, double blob_r, double arc_length,
                       double scale, int xoff, int yoff);
@@ -372,7 +372,7 @@ private:
     void OnRange_Calibration_Value(wxCommandEvent& event);
     void OnIntervalSlider(wxCommandEvent& event);
     void OnDisplayModeClick(wxCommandEvent& event);
-    void OnHeadingSlider(wxCommandEvent& event);
+    void OnHeading_Calibration_Value(wxCommandEvent& event);
 
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
@@ -383,7 +383,7 @@ private:
     wxRadioBox        *pDisplayMode;
     wxTextCtrl        *pText_Range_Calibration_Value;
     wxSlider          *pIntervalSlider;
-    wxSlider          *pHeadingSlider;
+    wxTextCtrl        *pText_Heading_Correction_Value;
 };
 
 //----------------------------------------------------------------------------------------------------------
@@ -466,10 +466,11 @@ public:
                 long            style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU
             );
 
+
     void    CreateControls();
     void    OnContextMenuAlarmCallback(double mark_rng, double mark_brg);
     void    OnAlarmZoneDialogShow(int zone);
-
+    
     alarm_zone_settings Zone1;
     alarm_zone_settings Zone2;
 
