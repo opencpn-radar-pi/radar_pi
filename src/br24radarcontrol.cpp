@@ -131,9 +131,9 @@ static const int g_metric_range_distances[] = {
 };
 
 static const wxString g_mile_range_names[] = {
-    wxT("1/2 cable"),
-    wxT("1 cable"),
-    wxT("1/8 NM"),
+    wxT("50 yds"),
+    wxT("75 yds"),
+    wxT("100 yds"),
     wxT("1/4 NM"),
     wxT("1/2 NM"),
     wxT("3/4 NM"),
@@ -405,8 +405,9 @@ void BR24ControlsDialog::OnRangeModeClick(wxCommandEvent &event)
 void BR24ControlsDialog::SetActualRange(long range)
 {
     wxString rangeText;
+    double rangeNM = range / 1852.0;
 
-    rangeText.Printf(wxT("%ld"), range);
+    rangeText.Printf(wxT("%ld  %f"), range,rangeNM);
     pActualRange->SetValue(rangeText);
 
     if (pPlugIn->settings.auto_range_mode) {
@@ -446,7 +447,7 @@ void BR24ControlsDialog::OnRangeValue(wxCommandEvent &event)
             ranges = g_metric_range_distances;
         }
         if (selection >= 0 && selection < n) {
-            wxLogMessage(wxT("Range index %d = %d meters"), selection, ranges[selection]);
+//            wxLogMessage(wxT("Range index %d = %d meters"), selection, ranges[selection]);
             pPlugIn->SetRangeMeters(ranges[selection]);
         }
         else {

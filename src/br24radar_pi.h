@@ -34,6 +34,7 @@
 #include "wx/wxprec.h"
 #include <wx/glcanvas.h>
 
+
 #ifndef  WX_PRECOMP
 #include "wx/wx.h"
 #endif //precompiled headers
@@ -58,7 +59,6 @@
 
 #include "ocpn_plugin.h"
 #include "navutil.h"
-
 
 enum {
     BM_ID_RED,
@@ -229,7 +229,6 @@ public:
     void Select_Alarm_Zones(int zone);
     void OnAlarmZoneDialogClose();
 
-
     void SetFilterProcess(int br_process, int sel_gain);
     void SetGainMode(int mode);
     void SetRejectionMode(int mode);
@@ -240,6 +239,10 @@ public:
     void SetRangeMeters(long range);
 
     radar_control_settings settings;
+
+    alarm_zone_settings Zone1;
+    alarm_zone_settings Zone2;
+
 
 #define LINES_PER_ROTATION (4096)
     unsigned char             m_scan_buf[LINES_PER_ROTATION][512];  // scan buffer that contains raw radar scan image
@@ -266,8 +269,10 @@ private:
     void OpenGL3_Render_Overlay();
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
 
-    void RenderAlarmZone(float scale);
-    void DrawFilledArc(float r1, float r2, float a1,float a2);
+    void RenderAlarmZone(wxPoint radar_center, double v_scale_ppm);
+    bool TestforAlarm(double range, double bearing);
+    void PlayAlarmSound(bool on_off);
+    void DrawFilledArc(double r1, double r2, double a1, double a2);
 
     void draw_blob_dc(wxDC &dc, double angle, double radius, double blob_r, double arc_length,
                       double scale, int xoff, int yoff);
@@ -299,7 +304,9 @@ private:
     long                      m_Alarm_dialog_sx, m_Alarm_dialog_sy ;
     long                      m_Alarm_dialog_x, m_Alarm_dialog_y ;
 
+
     wxBitmap                 *m_ptemp_icon;
+    wxLogWindow		         *m_plogwin;
     int                       m_sent_bm_id_normal;
     int                       m_sent_bm_id_rollover;
 
@@ -307,6 +314,8 @@ private:
 
     int                       m_hdt_source;
     int                       m_hdt_prev_source;
+
+    double                    llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
 };
 
 class MulticastRXThread: public wxThread
@@ -322,7 +331,7 @@ public:
     , m_quit(quit)
     , m_sock(0)
     {
-      wxLogMessage(_T("BR24 radar thread starting for multicast address %ls port %ls"), m_ip.c_str(), m_service_port.c_str());
+//      wxLogMessage(_T("BR24 radar thread starting for multicast address %ls port %ls"), m_ip.c_str(), m_service_port.c_str());
       Create(1024 * 1024);
     };
 
@@ -425,7 +434,7 @@ private:
     void OnLogModeClick(wxCommandEvent &event);
 
     wxWindow          *pParent;
-    br24radar_pi         *pPlugIn;
+    br24radar_pi      *pPlugIn;
 
     // Controls
     wxSlider          *pTranSlider;
@@ -470,9 +479,6 @@ public:
     void    CreateControls();
     void    OnContextMenuAlarmCallback(double mark_rng, double mark_brg);
     void    OnAlarmZoneDialogShow(int zone);
-    
-    alarm_zone_settings Zone1;
-    alarm_zone_settings Zone2;
 
 private:
     void            OnAlarmZoneModeClick(wxCommandEvent &event);
