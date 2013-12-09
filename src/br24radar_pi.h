@@ -260,7 +260,6 @@ private:
     void RadarStayAlive(void);
     void UpdateState(void);
     void DoTick(void);
-    bool br_time_render;
     void Select_Clutter(int req_clutter_index);
     void Select_Rejection(int req_rejection_index);
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
@@ -270,13 +269,12 @@ private:
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
 
     void RenderAlarmZone(wxPoint radar_center, double v_scale_ppm);
-    bool TestforAlarm(double range, double bearing);
     void PlayAlarmSound(bool on_off);
     void DrawFilledArc(double r1, double r2, double a1, double a2);
 
     void draw_blob_dc(wxDC &dc, double angle, double radius, double blob_r, double arc_length,
                       double scale, int xoff, int yoff);
-    void draw_blob_gl(double angle, double radius, double blob_r, double arc_length);
+    void draw_blob_gl(double angle, double radius, double blob_width);
     void draw_histogram_column(int x, int y);
 
     void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
@@ -350,7 +348,6 @@ private:
     wxDatagramSocket * m_sock;
     wxIPV4address      m_myaddr;
 
-    int                m_angle_prev;
 };
 
 //----------------------------------------------------------------------------------------------------------

@@ -407,7 +407,7 @@ void BR24ControlsDialog::SetActualRange(long range)
     wxString rangeText;
     double rangeNM = range / 1852.0;
 
-    rangeText.Printf(wxT("%ld  %f"), range,rangeNM);
+    rangeText.Printf(wxT("%ld Meters, %f NM"), range,rangeNM);
     pActualRange->SetValue(rangeText);
 
     if (pPlugIn->settings.auto_range_mode) {

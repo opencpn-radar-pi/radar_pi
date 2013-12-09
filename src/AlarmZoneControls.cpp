@@ -67,7 +67,7 @@ enum {                                      // process ID's
 	ID_ALARMZONES
 };
 
-bool    outer_set, inner_set;
+bool    outer_set;
  
 //---------------------------------------------------------------------------------------
 //          Alarm Controls Implementation
@@ -274,7 +274,6 @@ void AlarmZoneDialog::OnAlarmZoneModeClick(wxCommandEvent &event)
   }
 
   outer_set = false;
-  inner_set = false;
 
 }
 
@@ -350,31 +349,26 @@ void AlarmZoneDialog::OnContextMenuAlarmCallback(double mark_rng, double mark_br
     }
     outer_set = true;
   }
-  else if(!inner_set) {
-      if (pPlugIn->settings.alarm_zone == 1){
-          pPlugIn->Zone1.inner_range = mark_rng;
-          if(pPlugIn->Zone1.outer_range < mark_rng){
-              pPlugIn->Zone1.inner_range = pPlugIn->Zone1.outer_range;
-              pPlugIn->Zone1.outer_range = mark_rng;
-              }
-          }
+  else {
+        if (pPlugIn->settings.alarm_zone == 1){
+            pPlugIn->Zone1.inner_range = mark_rng;
+            if(pPlugIn->Zone1.outer_range < mark_rng){
+                pPlugIn->Zone1.inner_range = pPlugIn->Zone1.outer_range;
+                pPlugIn->Zone1.outer_range = mark_rng;
+                }
+            }
          pPlugIn->Zone1.end_bearing = mark_brg;
 
-    if (pPlugIn->settings.alarm_zone == 2){
-         pPlugIn->Zone2.inner_range = mark_rng;
-          if(pPlugIn->Zone2.outer_range < mark_rng){
-              pPlugIn->Zone2.inner_range = pPlugIn->Zone2.outer_range;
-              pPlugIn->Zone2.outer_range = mark_rng;
-              }
-         pPlugIn->Zone2.end_bearing = mark_brg;
-        }
-    inner_set = true;
+        if (pPlugIn->settings.alarm_zone == 2){
+                pPlugIn->Zone2.inner_range = mark_rng;
+                if(pPlugIn->Zone2.outer_range < mark_rng){
+                    pPlugIn->Zone2.inner_range = pPlugIn->Zone2.outer_range;
+                    pPlugIn->Zone2.outer_range = mark_rng;
+                    }
+                pPlugIn->Zone2.end_bearing = mark_brg;
+            }
+        outer_set = false;
     }
-
-  if(outer_set && inner_set) {
-      outer_set = false;
-      inner_set = false;  
-  }
 
   OnAlarmZoneDialogShow(pPlugIn->settings.alarm_zone);
 }
