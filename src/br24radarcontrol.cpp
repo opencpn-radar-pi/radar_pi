@@ -133,7 +133,7 @@ static const int g_metric_range_distances[] = {
 static const wxString g_mile_range_names[] = {
     wxT("50 yds"),
     wxT("75 yds"),
-    wxT("100 yds"),
+    wxT("200 yds"),
     wxT("1/4 NM"),
     wxT("1/2 NM"),
     wxT("3/4 NM"),
@@ -190,7 +190,7 @@ bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID 
 
     pParent = parent;
     pPlugIn = ppi;
-    pActualRange = 0;
+//    pActualRange = 0;
 
     long wstyle = wxDEFAULT_FRAME_STYLE;
 //      if ( ( global_color_scheme != GLOBAL_COLOR_SCHEME_DAY ) && ( global_color_scheme != GLOBAL_COLOR_SCHEME_RGB ) )
@@ -278,11 +278,16 @@ void BR24ControlsDialog::CreateControls()
     pRange->Disable();
     pRange->SetSelection(0);
 
+    // Comand Range display
+
+    pCommandRange = new wxTextCtrl(this, wxID_ANY);
+    RangeBoxSizer->Add(pCommandRange, 1, wxALIGN_LEFT | wxALL, 5);
+
     // Actual Range display
 
     pActualRange = new wxTextCtrl(this, wxID_ANY);
     RangeBoxSizer->Add(pActualRange, 1, wxALIGN_LEFT | wxALL, 5);
-    pActualRange->Disable();
+//    pActualRange->Disable();
 
     /* TODO: Add up down buttons */
 
@@ -405,15 +410,15 @@ void BR24ControlsDialog::OnRangeModeClick(wxCommandEvent &event)
 void BR24ControlsDialog::SetActualRange(long range)
 {
     wxString rangeText;
-    double rangeNM = range / 1852.0;
+    float rangeNM = range / 1852.0;
 
-    rangeText.Printf(wxT("%ld Meters, %f NM"), range,rangeNM);
+    rangeText.Printf(wxT("%ld Mtrs %.2f NM"), range,rangeNM);
     pActualRange->SetValue(rangeText);
 
     if (pPlugIn->settings.auto_range_mode) {
         const int * ranges;
         int         n;
-        if (pPlugIn->settings.range_units < 2) { /* NMi or Mi */
+        if (pPlugIn->settings.range_units < 2) {                    /* NMi or Mi */
             n = (int) sizeof(g_mile_range_distances)/sizeof(g_mile_range_distances[0]);
             ranges = g_mile_range_distances;
         }
@@ -434,6 +439,7 @@ void BR24ControlsDialog::SetActualRange(long range)
 void BR24ControlsDialog::OnRangeValue(wxCommandEvent &event)
 {
     int selection = pRange->GetSelection();
+     wxString rangeText;
 
     if (selection != wxNOT_FOUND) {
         const int * ranges;
@@ -447,7 +453,12 @@ void BR24ControlsDialog::OnRangeValue(wxCommandEvent &event)
             ranges = g_metric_range_distances;
         }
         if (selection >= 0 && selection < n) {
-//            wxLogMessage(wxT("Range index %d = %d meters"), selection, ranges[selection]);
+ //           wxLogMessage(wxT("Range index %d = %d meters"), selection, ranges[selection]);
+
+            float rangeNM = ranges[selection] / 1852.0;
+            rangeText.Printf(wxT("%d Mtrs %.2f NM"), ranges[selection],rangeNM);
+            pCommandRange->SetValue(rangeText);
+
             pPlugIn->SetRangeMeters(ranges[selection]);
         }
         else {

@@ -271,7 +271,6 @@ private:
     void RenderAlarmZone(wxPoint radar_center, double v_scale_ppm);
     void PlayAlarmSound(bool on_off);
     void DrawFilledArc(double r1, double r2, double a1, double a2);
-
     void draw_blob_dc(wxDC &dc, double angle, double radius, double blob_r, double arc_length,
                       double scale, int xoff, int yoff);
     void draw_blob_gl(double angle, double radius, double blob_width);
@@ -437,6 +436,7 @@ private:
     wxSlider          *pTranSlider;
     wxRadioBox        *pRangeMode;
     wxChoice          *pRange;
+    wxTextCtrl        *pCommandRange;
     wxTextCtrl        *pActualRange;
     wxRadioBox        *pRejectionMode;
     wxRadioBox        *pFilterProcess;

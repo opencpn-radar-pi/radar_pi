@@ -58,7 +58,8 @@ typedef char byte;
 #include "br24radar_pi.h"
 #include "ocpndc.h"
 
-/* A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration) */
+// A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration)
+
 static unsigned char BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
 
 enum {
@@ -141,7 +142,7 @@ static double mod(double numb1, double numb2)
 	double result = numb1 - (numb2 * int(numb1/numb2));
 			return result;
 }
-
+/*
 static double modcrs(double numb1,double numb2)
 {
 	if (numb1 > twoPI)
@@ -149,7 +150,7 @@ static double modcrs(double numb1,double numb2)
 	double result = twoPI - mod(twoPI-numb1,numb2);
 	return result;
 }
-
+*/
 static double local_distance (double lat1, double lon1, double lat2, double lon2) {
 	// Spherical Law of Cosines
 	double theta, dist; 
@@ -762,7 +763,7 @@ void br24radar_pi::DoTick(void)
 
             if (delta_wdt > 60)  {              // check every minute
                 br_bpos_set = false;
-                m_hdt_source = false;
+                m_hdt_source = 0;
                 PlayAlarmSound(false);
                 watchdog = now;
             }
@@ -903,6 +904,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         dist_y = radar_distance(llat, llon, ulat, ulon, 'K') * 1000.0; // Distance of height of display - meters
         pix_y = vp->pix_height;
         v_scale_ppm = 1.0;
+
 //        msg.Printf(wxT("RenderGLOverlay: vp->pix_height: %f ,Dist_y: %f "), pix_y , dist_y);
 //        wxLogMessage(msg);
 
@@ -953,7 +955,6 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
             max_range = m_scan_range[angle][0];
         }
     }
-    if(m_pControlDialog) m_pControlDialog->SetActualRange(max_range);
     
     double radar_pixels_per_meter = 512. / max_range;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
@@ -1234,12 +1235,8 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glPushMatrix();
-    int red = 0, green = 0, blue = 200, alpha = 50;
-
     glTranslated(radar_center.x, radar_center.y, 0);
     glRotatef(-90.0, 0, 0, 1);        //correction for base north
-
-    glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);    // red, blue, green
     
     ppNM = v_scale_ppm * 1852.0 ;          // screen pixels per naut mile
     
@@ -1252,6 +1249,8 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm)
                 AZ_angle_1 = Zone1.start_bearing;
                 AZ_angle_2 = Zone1.end_bearing;
             }
+            int red = 0, green = 200, blue = 0, alpha = 50;
+            glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);    // red, blue, green
             DrawFilledArc(AZ_outer_radius, AZ_inner_radius, AZ_angle_1, AZ_angle_2);
     }
     if (settings.alarm_zone == 2){
@@ -1263,6 +1262,9 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm)
                 AZ_angle_1 = Zone1.start_bearing;
                 AZ_angle_2 = Zone1.end_bearing;
             }
+
+            int red = 0, green = 0, blue = 200, alpha = 50;
+            glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);    // red, blue, green
             DrawFilledArc(AZ_outer_radius, AZ_inner_radius, AZ_angle_1, AZ_angle_2);
     }
         
@@ -1307,13 +1309,12 @@ void br24radar_pi::DrawFilledArc(double r1, double r2, double a1, double a2)
             double ct = cos(deg2rad(90-n));
             double st2 = sin(deg2rad(90-n-1));
             double ct2 = cos(deg2rad(90-n-1));
-    glBegin(GL_TRIANGLES);
-            glVertex2f(st*r1, ct*r1);
-            glVertex2f(st2*r1, ct2*r1);
-            glVertex2f(st*r2, ct*r2);
-    glEnd();
+            glBegin(GL_TRIANGLES);
+                    glVertex2f(st*r1, ct*r1);
+                    glVertex2f(st2*r1, ct2*r1);
+                    glVertex2f(st*r2, ct*r2);
+            glEnd();
         }
-
 }
 
 //****************************************************************************
@@ -1461,7 +1462,6 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
     br_ownship_lat = pfix.Lat;
     br_ownship_lon = pfix.Lon;
 
-//    m_hdt_source = 0;
     if (!wxIsNaN(pfix.Hdt))
     {
         br_hdt = pfix.Hdt;
@@ -1771,6 +1771,7 @@ void *MulticastRXThread::Entry(void)
  //       wxLogMessage(wxT("BR24radar_pi: Unable to listen on port %ls"), m_service_port.c_str());
         return 0;
     }
+
     m_sock->SetFlags(wxSOCKET_BLOCK); // We use blocking but use Wait() to avoid timeouts.
 
     //    Subscribe to a multicast group
@@ -1854,11 +1855,11 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
         short int large_range;
         short int small_range;
         int range_meters;
-/*
-        if (pPlugIn->settings.verbose) {
-           logBinaryData(wxT("line header"), (char *) line, sizeof(line->br4g));
-        }
-*/
+
+ //       if (pPlugIn->settings.verbose) {
+ //          logBinaryData(wxT("line header"), (char *) line, sizeof(line->br4g));
+//        }
+
         if (memcmp(line->br24.mark, BR24MARK, sizeof(BR24MARK)) == 0) {
             range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
             angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
