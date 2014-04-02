@@ -32,8 +32,7 @@
 #define _BR24RADARPI_H_
 
 #include "wx/wxprec.h"
-#include <wx/glcanvas.h>
-
+#include <wx/glcanvas.h> 
 
 #ifndef  WX_PRECOMP
 #include "wx/wx.h"
@@ -58,7 +57,9 @@
 #endif
 
 #include "ocpn_plugin.h"
-#include "navutil.h"
+
+//#include "navutil.h"        //This is the devil
+//#include "OCPN_Sound.h"     // If we try this instead?
 
 enum {
     BM_ID_RED,
@@ -71,11 +72,11 @@ enum {
     BM_ID_BLANK_SLAVE
 
 };
-
+/*
 static double radar_distance(double lat1, double lon1, double lat2, double lon2, char unit);
 static double local_distance (double lat1, double lon1, double lat2, double lon2);
 static double local_bearing (double lat1, double lon1, double lat2, double lon2);
-
+*/
 enum {
     RADAR_OFF,
     RADAR_ON,
@@ -267,9 +268,9 @@ private:
     void RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
     void OpenGL3_Render_Overlay();
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
-
+    void DrawRadarImage(int max_range, wxPoint radar_center);
     void RenderAlarmZone(wxPoint radar_center, double v_scale_ppm);
-    void PlayAlarmSound(bool on_off);
+    void PlayAlarmSound(bool on_off); // Hakan 
     void DrawFilledArc(double r1, double r2, double a1, double a2);
     void draw_blob_dc(wxDC &dc, double angle, double radius, double blob_r, double arc_length,
                       double scale, int xoff, int yoff);
@@ -303,7 +304,7 @@ private:
 
 
     wxBitmap                 *m_ptemp_icon;
-    wxLogWindow		         *m_plogwin;
+//    wxLogWindow		         *m_plogwin; // Hakan
     int                       m_sent_bm_id_normal;
     int                       m_sent_bm_id_rollover;
 

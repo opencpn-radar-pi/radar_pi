@@ -41,9 +41,6 @@
 #include "wx/datetime.h"
 #include <wx/fileconf.h>
 #include "chart1.h"
-#include "chcanv.h" //
-#include "navutil.h"
-#include "routeman.h"
 
 #include <math.h>
 #include <fstream>
@@ -62,6 +59,8 @@ using namespace std;
 #include "br24radar_pi.h"
 
 
+
+
 enum {                                      // process ID's
     ID_OK_Z,
 	ID_ALARMZONES
@@ -72,6 +71,7 @@ bool    outer_set;
 //---------------------------------------------------------------------------------------
 //          Alarm Controls Implementation
 //---------------------------------------------------------------------------------------
+
 IMPLEMENT_CLASS(AlarmZoneDialog, wxDialog)
 
 BEGIN_EVENT_TABLE(AlarmZoneDialog, wxDialog)
@@ -116,6 +116,7 @@ bool AlarmZoneDialog::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
 
     return true;
 }
+
 
 void AlarmZoneDialog::CreateControls()
 {
@@ -197,6 +198,7 @@ void AlarmZoneDialog::CreateControls()
 }
 
 //*********************************************************************************************************************
+
 void AlarmZoneDialog::OnAlarmZoneDialogShow(int zone)
 {
     wxString AlarmZoneText;
@@ -221,10 +223,10 @@ void AlarmZoneDialog::OnAlarmZoneDialogShow(int zone)
                 pStart_Bearing_Value->Enable();
                 pEnd_Bearing_Value->Enable();
             
-                AlarmZoneText.Printf(wxT("%3.1f°  "), pPlugIn->Zone1.start_bearing);
+                AlarmZoneText.Printf(wxT("%3.1f"), pPlugIn->Zone1.start_bearing);
                 pStart_Bearing_Value->SetValue(AlarmZoneText);
 
-                AlarmZoneText.Printf(wxT("%3.1f°  "), pPlugIn->Zone1.end_bearing);
+                AlarmZoneText.Printf(wxT("%3.1f"), pPlugIn->Zone1.end_bearing);
                 pEnd_Bearing_Value->SetValue(AlarmZoneText);
             }
     }
@@ -247,10 +249,10 @@ void AlarmZoneDialog::OnAlarmZoneDialogShow(int zone)
                 pStart_Bearing_Value->Enable();
                 pEnd_Bearing_Value->Enable();
             
-                AlarmZoneText.Printf(wxT("%3.1f°  "), pPlugIn->Zone2.start_bearing);
+                AlarmZoneText.Printf(wxT("%3.1f"), pPlugIn->Zone2.start_bearing);
                 pStart_Bearing_Value->SetValue(AlarmZoneText);
 
-                AlarmZoneText.Printf(wxT("%3.1f°  "), pPlugIn->Zone2.end_bearing);
+                AlarmZoneText.Printf(wxT("%3.1f"), pPlugIn->Zone2.end_bearing);
                 pEnd_Bearing_Value->SetValue(AlarmZoneText);
             }
     }
@@ -372,4 +374,3 @@ void AlarmZoneDialog::OnContextMenuAlarmCallback(double mark_rng, double mark_br
 
   OnAlarmZoneDialogShow(pPlugIn->settings.alarm_zone);
 }
-

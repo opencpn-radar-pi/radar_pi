@@ -479,6 +479,9 @@ void BR24ControlsDialog::OnFilterProcessClick(wxCommandEvent &event)
 
     pPlugIn->settings.filter_process = pFilterProcess->GetSelection();
     switch (pPlugIn->settings.filter_process) {
+        case 0: {   //Gain Auto
+                break;
+            }
         case 1: {
                 sel_gain = pPlugIn->settings.gain;
                 break;
@@ -487,6 +490,9 @@ void BR24ControlsDialog::OnFilterProcessClick(wxCommandEvent &event)
                 sel_gain = pPlugIn->settings.sea_clutter_gain;
                 break;
             }
+        case 3: {
+                break;
+            }        
         case 4: {
                 sel_gain = pPlugIn->settings.rain_clutter_gain;
                 break;
