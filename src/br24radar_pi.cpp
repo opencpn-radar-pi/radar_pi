@@ -88,7 +88,7 @@ double br_hdt;
 
 double mark_rng, mark_brg;      // This is needed for context operation
 long  br_range_meters = 0;      // current range for radar
-long  br_previous_range = 0;
+double  previous_range = 0.0;
 
 int   br_radar_state;
 int   br_scanner_state;
@@ -892,14 +892,12 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
                 max_distance = radar_distance(lat, lon, br_ownship_lat, br_ownship_lon, 'K') * 1000;
             }
 
-            long int wanted_range = (long int) max_distance;
+            double wanted_range =  max_distance;
 
-            // do we need to change it?
-            if (br_previous_range != wanted_range) {     // don't care if scanner range is sometimes slightly different
- //               wxLogMessage(wxT("RenderGLOverlay: In Auto Mode - Previous Range: %d  Requested Range %d \n"), br_previous_range,
- //               wanted_range);
-                br_previous_range = wanted_range;
-                SetRangeMeters(wanted_range);
+            if((wanted_range > 1.01*previous_range) || (wanted_range < .99*previous_range)){
+                previous_range = wanted_range;
+               // long range_meters = (long) wanted_range;
+                SetRangeMeters((long)wanted_range);
             }
         }
 
@@ -955,7 +953,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     // scaling...
     int max_range = 1, angle;
     for (angle = 0 ; angle < LINES_PER_ROTATION ; angle++) {  
-        if (m_scan_range[angle][0] != max_range) {
+        if (m_scan_range[angle][0] > max_range) {               // this needs analysis
             max_range = m_scan_range[angle][0];
         }
     }
@@ -1301,12 +1299,15 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("Zone1EndBrng"), &Zone1.end_bearing, 0);
             pConf->Read(wxT("Zone1OutRng"), &Zone1.outer_range, 0);
             pConf->Read(wxT("Zone1InRng"), &Zone1.inner_range, 0);
+            pConf->Read(wxT("Zone1ArcCirc"), &Zone1.type, 0);
 
             pConf->Read(wxT("Zone2StBrng"), &Zone2.start_bearing, 0);
             pConf->Read(wxT("Zone2EndBrng"), &Zone2.end_bearing, 0);
             pConf->Read(wxT("Zone2OutRng"), &Zone2.outer_range, 0);
             pConf->Read(wxT("Zone2InRng"), &Zone2.inner_range, 0);
-            pConf->Read(wxT("RadarAlertAudioFile"), &RadarAlertAudioFile ); //Hakan
+            pConf->Read(wxT("Zone2ArcCirc"), &Zone2.type, 0);
+
+            pConf->Read(wxT("RadarAlertAudioFile"), &RadarAlertAudioFile );
             SaveConfig();
             return true;
         }
@@ -1383,12 +1384,14 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("Zone1EndBrng"), Zone1.end_bearing);
         pConf->Write(wxT("Zone1OutRng"), Zone1.outer_range);
         pConf->Write(wxT("Zone1InRng"), Zone1.inner_range);
+        pConf->Write(wxT("Zone1ArcCirc"), Zone1.type);
 
         pConf->Write(wxT("Zone2StBrng"), Zone2.start_bearing);
         pConf->Write(wxT("Zone2EndBrng"), Zone2.end_bearing);
         pConf->Write(wxT("Zone2OutRng"), Zone2.outer_range);
         pConf->Write(wxT("Zone2InRng"), Zone2.inner_range);
-        
+        pConf->Write(wxT("Zone2ArcCirc"), Zone2.type);
+
         pConf->Flush();
 //        wxLogMessage(wxT("BR24radar_pi: saved config"));
 
@@ -1534,7 +1537,7 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         (byte)0x06,
                         (byte)0xc1,
                         0, 0, 0, 0, 0, 0, 0, 0,
-                        (char)(sel_gain)
+                        (char)(int)(sel_gain * 255 / 100)
                     };
                     msg.Printf(wxT("ManualGain: %o"), cmd);
                     wxLogMessage(msg);
@@ -1547,7 +1550,7 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         (byte)0xc1,
                         (byte)0x04,
                         0, 0, 0, 0, 0, 0, 0,
-                        (char)(sel_gain / 2)
+                        (char)(int)(sel_gain * 255 / 200)
                     };
  //                   msg.Printf(wxT("RainClutter: %o"), cmd);
   //                  wxLogMessage(msg);
@@ -1573,7 +1576,7 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         (byte)0xc1,
                         (byte)0x02,
                         0, 0, 0, 0, 0, 0, 0,
-                        (char)(sel_gain)
+                        (char)(int)(sel_gain *255 / 100)
                     };
  //                   msg.Printf(wxT("SeaClutter: %o"), cmd);
  //                   wxLogMessage(msg);

@@ -348,16 +348,15 @@ void BR24ControlsDialog::CreateControls()
     BoxConditioningSizer->Add(pFilterProcess, 0, wxALL | wxEXPAND, 2);
     pFilterProcess->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
                             wxCommandEventHandler(BR24ControlsDialog::OnFilterProcessClick), NULL, this);
-    // pPlugIn->SetFilterProcess(pFilterProcess->GetSelection(), sel_gain);
 
 //  Gain slider
 
-    wxStaticBox* BoxGain = new wxStaticBox(this, wxID_ANY, _("0-100%"));
+    wxStaticBox* BoxGain = new wxStaticBox(this, wxID_ANY, _("Gain"));
     wxStaticBoxSizer* sliderGainsizer = new wxStaticBoxSizer(BoxGain, wxVERTICAL);
     BoxConditioningSizer->Add(sliderGainsizer, 0, wxALL | wxEXPAND, 2);
 
-    pGainSlider = new wxSlider(this, ID_GAIN, 128, 0, 255, wxDefaultPosition,  wxDefaultSize,
-                               wxSL_HORIZONTAL,  wxDefaultValidator, _("slider"));
+    pGainSlider = new wxSlider(this, ID_GAIN, 50, 0, 100, wxDefaultPosition,  wxDefaultSize,
+                               wxSL_HORIZONTAL|wxSL_LABELS,  wxDefaultValidator, _("slider"));
 
     sliderGainsizer->Add(pGainSlider, 0, wxALL | wxEXPAND, 2);
 
@@ -479,22 +478,27 @@ void BR24ControlsDialog::OnFilterProcessClick(wxCommandEvent &event)
 
     pPlugIn->settings.filter_process = pFilterProcess->GetSelection();
     switch (pPlugIn->settings.filter_process) {
-        case 0: {   //Gain Auto
+        case 0: {                                       //Gain Auto
+                pGainSlider->Disable();
                 break;
             }
         case 1: {
                 sel_gain = pPlugIn->settings.gain;
+                pGainSlider->Enable();
                 break;
             }
         case 2: {
                 sel_gain = pPlugIn->settings.sea_clutter_gain;
+                pGainSlider->Enable();
                 break;
             }
-        case 3: {
+        case 3: {                                       // Sea Clutter Auto
+                pGainSlider->Disable();
                 break;
             }        
         case 4: {
                 sel_gain = pPlugIn->settings.rain_clutter_gain;
+                pGainSlider->Enable();
                 break;
             }
     }

@@ -270,7 +270,7 @@ private:
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
     void DrawRadarImage(int max_range, wxPoint radar_center);
     void RenderAlarmZone(wxPoint radar_center, double v_scale_ppm);
-    void PlayAlarmSound(bool on_off); // Hakan 
+    void PlayAlarmSound(bool on_off); 
     void DrawFilledArc(double r1, double r2, double a1, double a2);
     void draw_blob_dc(wxDC &dc, double angle, double radius, double blob_r, double arc_length,
                       double scale, int xoff, int yoff);
