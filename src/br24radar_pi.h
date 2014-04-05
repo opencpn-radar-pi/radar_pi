@@ -32,6 +32,7 @@
 #define _BR24RADARPI_H_
 
 #include "wx/wxprec.h"
+#include <wx/glcanvas.h> 
 
 #ifndef  WX_PRECOMP
 #include "wx/wx.h"
@@ -57,6 +58,8 @@
 
 #include "ocpn_plugin.h"
 
+//#include "navutil.h"        //This is the devil
+//#include "OCPN_Sound.h"     // If we try this instead?
 
 enum {
     BM_ID_RED,
@@ -125,6 +128,7 @@ struct radar_frame_pkt {
 #define MAX_OVERLAY_TRANSPARENCY (10)
 
 struct radar_control_settings {
+    int     radar_type;
     int      overlay_transparency;    // now 0-100, no longer a double
     bool     master_mode;
     bool     overlay_chart;           // true means always show if received, even if not master
@@ -133,22 +137,31 @@ struct radar_control_settings {
     int      range_index;
     int      display_option;
     int      display_mode;
+	int      alarm_zone;            // active zone (0 = none,1,2)
     int      gain;
     int      rejection;
     int      filter_process;
     int      sea_clutter_gain;
     int      rain_clutter_gain;
     double   range_calibration;
-    int      heading_correction;
-    int      distance_format;        // 0 = "Nautical miles"), 1 = "Statute miles", 2 = "Kilometers", 3 = "Meters"
+    double   heading_correction;
+    int      range_units;        // 0 = "Nautical miles"), 1 = "Statute miles", 2 = "Kilometers", 3 = "Meters"
     wxString radar_interface;        // IP address of interface to bind to (on UNIX)
     int      beam_width;
+};
+
+struct alarm_zone_settings {
+    int type;                   // 0 = circle, 1 = arc
+    double inner_range;
+    double outer_range;
+    double start_bearing;
+    double end_bearing;
 };
 
 //    Forward definitions
 class MulticastRXThread;
 class BR24ControlsDialog;
-class BR24ManualDialog;
+class AlarmZoneDialog;
 class BR24DisplayOptionsDialog;
 
 //ofstream outfile("C:/ProgramData/opencpn/BR24DataDump.dat",ofstream::binary);
@@ -183,6 +196,7 @@ public:
     bool RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp);
     void SetPositionFix(PlugIn_Position_Fix &pfix);
     void SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix);
+    void SetCursorLatLon(double lat, double lon);
     void OnContextMenuItemCallback(int id);
 
     void SetDefaults(void);
@@ -209,21 +223,9 @@ public:
     void SetBR24ControlsDialogSizeY(long sy) {
         m_BR24Controls_dialog_sy = sy;
     }
+    void Select_Alarm_Zones(int zone);
+    void OnAlarmZoneDialogClose();
 
-    void OnBR24ManualDialogShow();
-    void OnBR24ManualDialogClose();
-    void SetBR24ManualDialogX(long x) {
-        m_BR24Manual_dialog_x = x;
-    }
-    void SetBR24ManualDialogY(long y) {
-        m_BR24Manual_dialog_y = y;
-    }
-    void SetBR24ManualDialogSizeX(long sx) {
-        m_BR24Manual_dialog_sx = sx;
-    }
-    void SetBR24ManualDialogSizeY(long sy) {
-        m_BR24Manual_dialog_sy = sy;
-    }
     void SetFilterProcess(int br_process, int sel_gain);
     void SetGainMode(int mode);
     void SetRejectionMode(int mode);
@@ -235,6 +237,10 @@ public:
 
     radar_control_settings settings;
 
+    alarm_zone_settings Zone1;
+    alarm_zone_settings Zone2;
+
+
 #define LINES_PER_ROTATION (4096)
     unsigned char             m_scan_buf[LINES_PER_ROTATION][512];  // scan buffer that contains raw radar scan image
     int                       m_scan_range[LINES_PER_ROTATION][3];  // range in decimeters for the corresponding line in m_scan_buf
@@ -242,6 +248,7 @@ public:
 
     BR24DisplayOptionsDialog *m_pOptionsDialog;
     BR24ControlsDialog       *m_pControlDialog;
+    AlarmZoneDialog          *m_pAlarmZoneDialog;
 
 private:
     void TransmitCmd(char* msg, int size);
@@ -250,7 +257,6 @@ private:
     void RadarStayAlive(void);
     void UpdateState(void);
     void DoTick(void);
-    bool br_time_render;
     void Select_Clutter(int req_clutter_index);
     void Select_Rejection(int req_rejection_index);
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
@@ -258,10 +264,13 @@ private:
     void RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
     void OpenGL3_Render_Overlay();
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
-
+    void DrawRadarImage(int max_range, wxPoint radar_center);
+    void RenderAlarmZone(wxPoint radar_center, double v_scale_ppm);
+    void PlayAlarmSound(bool on_off); 
+    void DrawFilledArc(double r1, double r2, double a1, double a2);
     void draw_blob_dc(wxDC &dc, double angle, double radius, double blob_r, double arc_length,
                       double scale, int xoff, int yoff);
-    void draw_blob_gl(double angle, double radius, double blob_r, double arc_length);
+    void draw_blob_gl(double angle, double radius, double blob_width);
     void draw_histogram_column(int x, int y);
 
     void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
@@ -286,11 +295,12 @@ private:
     long                      m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
     long                      m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
 
-    BR24ManualDialog         *m_pManualDialog;
-    long                      m_BR24Manual_dialog_sx, m_BR24Manual_dialog_sy ;
-    long                      m_BR24Manual_dialog_x, m_BR24Manual_dialog_y ;
+    long                      m_Alarm_dialog_sx, m_Alarm_dialog_sy ;
+    long                      m_Alarm_dialog_x, m_Alarm_dialog_y ;
+
 
     wxBitmap                 *m_ptemp_icon;
+//    wxLogWindow		         *m_plogwin; // Hakan
     int                       m_sent_bm_id_normal;
     int                       m_sent_bm_id_rollover;
 
@@ -298,6 +308,8 @@ private:
 
     int                       m_hdt_source;
     int                       m_hdt_prev_source;
+
+    double                    llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
 };
 
 class MulticastRXThread: public wxThread
@@ -313,7 +325,7 @@ public:
     , m_quit(quit)
     , m_sock(0)
     {
-      wxLogMessage(_T("BR24 radar thread starting for multicast address %ls port %ls"), m_ip.c_str(), m_service_port.c_str());
+//      wxLogMessage(_T("BR24 radar thread starting for multicast address %ls port %ls"), m_ip.c_str(), m_service_port.c_str());
       Create(1024 * 1024);
     };
 
@@ -332,7 +344,6 @@ private:
     wxDatagramSocket * m_sock;
     wxIPV4address      m_myaddr;
 
-    int                m_angle_prev;
 };
 
 //----------------------------------------------------------------------------------------------------------
@@ -358,21 +369,23 @@ public:
 private:
     void OnClose(wxCloseEvent& event);
     void OnIdOKClick(wxCommandEvent& event);
+    void OnRangeUnitsClick(wxCommandEvent& event);
     void OnDisplayOptionClick(wxCommandEvent& event);
     void OnRange_Calibration_Value(wxCommandEvent& event);
     void OnIntervalSlider(wxCommandEvent& event);
     void OnDisplayModeClick(wxCommandEvent& event);
-    void OnHeadingSlider(wxCommandEvent& event);
+    void OnHeading_Calibration_Value(wxCommandEvent& event);
 
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
 
     // DisplayOptions
+    wxRadioBox        *pRangeUnits;
     wxRadioBox        *pOverlayDisplayOptions;
     wxRadioBox        *pDisplayMode;
     wxTextCtrl        *pText_Range_Calibration_Value;
     wxSlider          *pIntervalSlider;
-    wxSlider          *pHeadingSlider;
+    wxTextCtrl        *pText_Heading_Correction_Value;
 };
 
 //----------------------------------------------------------------------------------------------------------
@@ -410,21 +423,77 @@ private:
     void OnFilterProcessClick(wxCommandEvent &event);
     void OnRejectionModeClick(wxCommandEvent &event);
     void OnGainSlider(wxCommandEvent &event);
+	void OnAlarmDialogClick(wxCommandEvent &event);
     void OnLogModeClick(wxCommandEvent &event);
 
     wxWindow          *pParent;
-    br24radar_pi         *pPlugIn;
+    br24radar_pi      *pPlugIn;
 
     // Controls
     wxSlider          *pTranSlider;
     wxRadioBox        *pRangeMode;
     wxChoice          *pRange;
+    wxTextCtrl        *pCommandRange;
     wxTextCtrl        *pActualRange;
     wxRadioBox        *pRejectionMode;
     wxRadioBox        *pFilterProcess;
     wxSlider          *pGainSlider;
+	wxRadioBox        *pAlarmZones;
     wxCheckBox        *pCB_log;
 };
 
+/*
+ =======================================================================================================================
+    BR24Radar Alarm Zone Dialog Specification ;
+ =======================================================================================================================
+ */
+class AlarmZoneDialog :    public wxDialog
+{
+    DECLARE_CLASS(AlarmZoneDialog)
+    DECLARE_EVENT_TABLE()
+
+public:
+    AlarmZoneDialog();
+
+    ~AlarmZoneDialog();
+    void    Init();
+
+    bool    Create
+            (
+                wxWindow        *parent,
+                br24radar_pi    *ppi,
+                wxWindowID      id = wxID_ANY,
+                const wxString  &m_caption = _(" Alarm Zone Control"),
+                const wxPoint   &pos = wxDefaultPosition,
+                const wxSize    &size = wxDefaultSize,
+                long            style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU
+            );
+
+
+    void    CreateControls();
+    void    OnContextMenuAlarmCallback(double mark_rng, double mark_brg);
+    void    OnAlarmZoneDialogShow(int zone);
+
+private:
+    void            OnAlarmZoneModeClick(wxCommandEvent &event);
+    void            OnInner_Range_Value(wxCommandEvent &event);
+    void            OnOuter_Range_Value(wxCommandEvent &event);
+    void            OnStart_Bearing_Value(wxCommandEvent &event);
+    void            OnEnd_Bearing_Value(wxCommandEvent &event);
+    void            OnClose(wxCloseEvent &event);
+    void            OnIdOKClick(wxCommandEvent &event);
+
+    wxWindow        *pParent;
+    br24radar_pi    *pPlugIn;
+
+    /* Controls */
+    wxTextCtrl      *pZoneNumber;
+    wxRadioBox      *pAlarmZoneType;
+    wxTextCtrl      *pInner_Range;
+    wxTextCtrl      *pOuter_Range;
+    wxTextCtrl      *pStart_Bearing_Value;
+    wxTextCtrl      *pEnd_Bearing_Value;
+    wxButton        *bClose;
+};
 
 #endif

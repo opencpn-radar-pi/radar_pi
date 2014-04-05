@@ -64,7 +64,8 @@ enum {                                      // process ID's
     ID_TRANSLIDER,
     ID_CLUTTER,
     ID_GAIN,
-    ID_REJECTION
+    ID_REJECTION,
+    ID_ALARMZONES
 };
 
 //---------------------------------------------------------------------------------------
@@ -81,6 +82,7 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
     EVT_RADIOBUTTON(ID_RANGEMODE, BR24ControlsDialog::OnRangeModeClick)
     EVT_RADIOBUTTON(ID_CLUTTER, BR24ControlsDialog::OnFilterProcessClick)
     EVT_RADIOBUTTON(ID_REJECTION, BR24ControlsDialog::OnRejectionModeClick)
+	EVT_RADIOBUTTON(ID_ALARMZONES, BR24ControlsDialog::OnAlarmDialogClick)
 
 END_EVENT_TABLE()
 
@@ -129,9 +131,9 @@ static const int g_metric_range_distances[] = {
 };
 
 static const wxString g_mile_range_names[] = {
-    wxT("1/2 cable"),
-    wxT("1 cable"),
-    wxT("1/8 NM"),
+    wxT("50 yds"),
+    wxT("75 yds"),
+    wxT("200 yds"),
     wxT("1/4 NM"),
     wxT("1/2 NM"),
     wxT("3/4 NM"),
@@ -188,7 +190,7 @@ bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID 
 
     pParent = parent;
     pPlugIn = ppi;
-    pActualRange = 0;
+//    pActualRange = 0;
 
     long wstyle = wxDEFAULT_FRAME_STYLE;
 //      if ( ( global_color_scheme != GLOBAL_COLOR_SCHEME_DAY ) && ( global_color_scheme != GLOBAL_COLOR_SCHEME_RGB ) )
@@ -255,7 +257,7 @@ void BR24ControlsDialog::CreateControls()
 
     const wxString *names;
     int n;
-    if (pPlugIn->settings.distance_format < 2) /* NMi or Mi */
+    if (pPlugIn->settings.range_units < 2) /* NMi or Mi */
     {
       names = g_mile_range_names;
       n = sizeof(g_mile_range_names)/sizeof(g_mile_range_names[0]);
@@ -276,11 +278,16 @@ void BR24ControlsDialog::CreateControls()
     pRange->Disable();
     pRange->SetSelection(0);
 
+    // Comand Range display
+
+    pCommandRange = new wxTextCtrl(this, wxID_ANY);
+    RangeBoxSizer->Add(pCommandRange, 1, wxALIGN_LEFT | wxALL, 5);
+
     // Actual Range display
 
     pActualRange = new wxTextCtrl(this, wxID_ANY);
     RangeBoxSizer->Add(pActualRange, 1, wxALIGN_LEFT | wxALL, 5);
-    pActualRange->Disable();
+//    pActualRange->Disable();
 
     /* TODO: Add up down buttons */
 
@@ -341,21 +348,38 @@ void BR24ControlsDialog::CreateControls()
     BoxConditioningSizer->Add(pFilterProcess, 0, wxALL | wxEXPAND, 2);
     pFilterProcess->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
                             wxCommandEventHandler(BR24ControlsDialog::OnFilterProcessClick), NULL, this);
-    // pPlugIn->SetFilterProcess(pFilterProcess->GetSelection(), sel_gain);
 
 //  Gain slider
 
-    wxStaticBox* BoxGain = new wxStaticBox(this, wxID_ANY, _("0-100%"));
+    wxStaticBox* BoxGain = new wxStaticBox(this, wxID_ANY, _("Gain"));
     wxStaticBoxSizer* sliderGainsizer = new wxStaticBoxSizer(BoxGain, wxVERTICAL);
     BoxConditioningSizer->Add(sliderGainsizer, 0, wxALL | wxEXPAND, 2);
 
-    pGainSlider = new wxSlider(this, ID_GAIN, 128, 0, 255, wxDefaultPosition,  wxDefaultSize,
-                               wxSL_HORIZONTAL,  wxDefaultValidator, _("slider"));
+    pGainSlider = new wxSlider(this, ID_GAIN, 50, 0, 100, wxDefaultPosition,  wxDefaultSize,
+                               wxSL_HORIZONTAL|wxSL_LABELS,  wxDefaultValidator, _("slider"));
 
     sliderGainsizer->Add(pGainSlider, 0, wxALL | wxEXPAND, 2);
 
     pGainSlider->Connect(wxEVT_SCROLL_CHANGED,
                          wxCommandEventHandler(BR24ControlsDialog::OnGainSlider), NULL, this);
+
+// Alarm Zone Operations
+
+    wxString    AlarmZoneString[] = { _("Inactive"),_("Zone 1"),_("Zone 2")};
+
+    pAlarmZones = new wxRadioBox(this, ID_ALARMZONES, _("Alarm Zones"), wxDefaultPosition,
+                                 wxDefaultSize, 3, AlarmZoneString, 1, wxRA_SPECIFY_COLS);
+
+    BoxSizerOperation->Add(pAlarmZones, 0, wxALL | wxEXPAND, 2);
+
+    pAlarmZones->Connect
+        (
+            wxEVT_COMMAND_RADIOBOX_SELECTED,
+            wxCommandEventHandler(BR24ControlsDialog::OnAlarmDialogClick),
+            NULL,
+            this
+        );
+    pAlarmZones->SetSelection(pPlugIn->settings.alarm_zone);
 
 // A horizontal box sizer to contain OK
     wxBoxSizer* AckBox = new wxBoxSizer(wxHORIZONTAL);
@@ -385,14 +409,15 @@ void BR24ControlsDialog::OnRangeModeClick(wxCommandEvent &event)
 void BR24ControlsDialog::SetActualRange(long range)
 {
     wxString rangeText;
+    float rangeNM = range / 1852.0;
 
-    rangeText.Printf(wxT("%ld"), range);
+    rangeText.Printf(wxT("%ld Mtrs %.2f NM"), range,rangeNM);
     pActualRange->SetValue(rangeText);
 
     if (pPlugIn->settings.auto_range_mode) {
         const int * ranges;
         int         n;
-        if (pPlugIn->settings.distance_format < 2) { /* NMi or Mi */
+        if (pPlugIn->settings.range_units < 2) {                    /* NMi or Mi */
             n = (int) sizeof(g_mile_range_distances)/sizeof(g_mile_range_distances[0]);
             ranges = g_mile_range_distances;
         }
@@ -413,11 +438,12 @@ void BR24ControlsDialog::SetActualRange(long range)
 void BR24ControlsDialog::OnRangeValue(wxCommandEvent &event)
 {
     int selection = pRange->GetSelection();
+     wxString rangeText;
 
     if (selection != wxNOT_FOUND) {
         const int * ranges;
         int         n;
-        if (pPlugIn->settings.distance_format < 2) { /* NMi or Mi */
+        if (pPlugIn->settings.range_units < 2) { /* NMi or Mi */
             n = (int) sizeof(g_mile_range_distances)/sizeof(g_mile_range_distances[0]);
             ranges = g_mile_range_distances;
         }
@@ -426,7 +452,12 @@ void BR24ControlsDialog::OnRangeValue(wxCommandEvent &event)
             ranges = g_metric_range_distances;
         }
         if (selection >= 0 && selection < n) {
-            wxLogMessage(wxT("Range index %d = %d meters"), selection, ranges[selection]);
+ //           wxLogMessage(wxT("Range index %d = %d meters"), selection, ranges[selection]);
+
+            float rangeNM = ranges[selection] / 1852.0;
+            rangeText.Printf(wxT("%d Mtrs %.2f NM"), ranges[selection],rangeNM);
+            pCommandRange->SetValue(rangeText);
+
             pPlugIn->SetRangeMeters(ranges[selection]);
         }
         else {
@@ -447,16 +478,27 @@ void BR24ControlsDialog::OnFilterProcessClick(wxCommandEvent &event)
 
     pPlugIn->settings.filter_process = pFilterProcess->GetSelection();
     switch (pPlugIn->settings.filter_process) {
+        case 0: {                                       //Gain Auto
+                pGainSlider->Disable();
+                break;
+            }
         case 1: {
                 sel_gain = pPlugIn->settings.gain;
+                pGainSlider->Enable();
                 break;
             }
         case 2: {
                 sel_gain = pPlugIn->settings.sea_clutter_gain;
+                pGainSlider->Enable();
                 break;
             }
+        case 3: {                                       // Sea Clutter Auto
+                pGainSlider->Disable();
+                break;
+            }        
         case 4: {
                 sel_gain = pPlugIn->settings.rain_clutter_gain;
+                pGainSlider->Enable();
                 break;
             }
     }
@@ -490,6 +532,13 @@ void BR24ControlsDialog::OnGainSlider(wxCommandEvent &event)
             }
     }
 }
+
+void BR24ControlsDialog::OnAlarmDialogClick(wxCommandEvent &event)
+{
+    int zone = (pAlarmZones->GetSelection());
+    pPlugIn->Select_Alarm_Zones(zone);
+}
+
 void BR24ControlsDialog::OnClose(wxCloseEvent& event)
 {
     pPlugIn->OnBR24ControlDialogClose();

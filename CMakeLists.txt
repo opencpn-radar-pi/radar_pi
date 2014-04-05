@@ -18,6 +18,8 @@ ENDIF (COMMAND cmake_policy)
 
 PROJECT(br24radar_pi)
 
+#SET(CMAKE_VERBOSE_MAKEFILE ON)
+
 SET(PACKAGE_NAME br24radar_pi)
 SET(PLUGIN_SOURCE_DIR .)
 MESSAGE (STATUS "*** Staging to build ${PACKAGE_NAME} ***")
@@ -79,6 +81,7 @@ SET(SRC_br24radar
             src/br24radar_pi.h
             src/br24radar_pi.cpp
             src/br24radarcontrol.cpp
+			src/AlarmZoneControls.cpp
 )
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_br24radar})
 
@@ -103,7 +106,6 @@ ENDIF(UNIX)
 
 IF(WIN32)
 INSTALL(TARGETS ${PACKAGE_NAME} RUNTIME DESTINATION "c:/Program Files/opencpn/plugins")
-#INSTALL(TARGETS ${PACKAGE_NAME} RUNTIME DESTINATION "E:/opencpn_cmake2008/plugins")
 ENDIF(WIN32)
 
 # find src/ -name \*.cpp -or -name \*.c -or -name \*.h -or -name \*.hpp >po/POTFILES.in
