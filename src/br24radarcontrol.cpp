@@ -519,15 +519,18 @@ void BR24ControlsDialog::OnGainSlider(wxCommandEvent &event)
     switch (pPlugIn->settings.filter_process) {
         case 1: {
                 pPlugIn->settings.gain = sel_gain;
+                pPlugIn->SaveConfig();
                 break;
             }
         case 2: {
                 pPlugIn->settings.sea_clutter_gain = sel_gain;
+                pPlugIn->SaveConfig();
                 break;
             }
         case 4: {
                 sel_gain = sel_gain * 0x50 / 0x100;
                 pPlugIn->settings.rain_clutter_gain = sel_gain;
+                pPlugIn->SaveConfig();
                 break;
             }
     }

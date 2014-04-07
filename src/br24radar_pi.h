@@ -304,7 +304,7 @@ private:
 
 
     wxBitmap                 *m_ptemp_icon;
-//    wxLogWindow		         *m_plogwin; // Hakan
+//    wxLogWindow		         *m_plogwin;
     int                       m_sent_bm_id_normal;
     int                       m_sent_bm_id_rollover;
 

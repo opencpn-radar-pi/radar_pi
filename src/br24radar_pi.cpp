@@ -102,7 +102,7 @@ int   br_scan_packets_per_tick;
 
 bool  br_bshown_dc_message;
 wxTextCtrl        *plogtc;
-//wxDialog          *plogcontainer; //Hakan
+//wxDialog          *plogcontainer;
 
 int   radar_control_id, alarm_zone_id;
 bool  alarm_context_mode;
@@ -350,11 +350,11 @@ bool br24radar_pi::DeInit(void)
         delete m_receiveThread;
 //        wxLogMessage(wxT("BR24 radar thread is deleted."));
     }
-/*    //* Hakan
+    /*   
     if(plogcontainer)
             plogcontainer->Close();
     delete m_plogwin;
-    //*/
+    */
 
     return true;
 }
@@ -770,7 +770,7 @@ void br24radar_pi::DoTick(void)
             if (delta_wdt > 60)  {              // check every minute
                 br_bpos_set = false;
                 m_hdt_source = 0;
-                PlayAlarmSound(false); // Hakan
+                PlayAlarmSound(false); 
                 watchdog = now;
             }
 /*
@@ -1074,12 +1074,12 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                         if (AZ_angle_1 > angle_deg) angle_deg += 360.0;    
                         if (angle_deg > AZ_angle_1 && angle_deg < AZ_angle_2) {
                             if (bogey_range > inner_range && bogey_range < outer_range){
-                                PlayAlarmSound(true); //Hakan
+                                PlayAlarmSound(true); 
                             }
                         }                     
                  }
                  else {
-                     PlayAlarmSound(false); // Hakan 
+                     PlayAlarmSound(false);
                      }           
             }            
         }
@@ -1218,7 +1218,7 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm)
     glPopAttrib();
 }
 
-// Hakan
+
 void br24radar_pi::PlayAlarmSound(bool on_off){
 
     
@@ -1497,7 +1497,7 @@ void br24radar_pi::SetRangeMeters(long meters)
 {
     if (settings.master_mode) {
         if (meters > 50 && meters < 64000) {
-            long decimeters = meters * 10L/1.762;  //Hakan
+            long decimeters = meters * 10L/1.762; 
             char pck[] = { (byte) 0x03
                          , (byte) 0xc1
                          , (byte) ((decimeters >>  0) & 0XFFL)
