@@ -105,7 +105,7 @@ INSTALL(TARGETS ${PACKAGE_NAME} RUNTIME LIBRARY DESTINATION "/usr/local/lib/open
 ENDIF(UNIX)
 
 IF(WIN32)
-INSTALL(TARGETS ${PACKAGE_NAME} RUNTIME DESTINATION "c:/Program Files/opencpn/plugins")
+INSTALL(TARGETS ${PACKAGE_NAME} RUNTIME DESTINATION "plugins") 
 ENDIF(WIN32)
 
 # find src/ -name \*.cpp -or -name \*.c -or -name \*.h -or -name \*.hpp >po/POTFILES.in
