@@ -102,7 +102,7 @@ int   br_scan_packets_per_tick;
 
 bool  br_bshown_dc_message;
 wxTextCtrl        *plogtc;
-//wxDialog          *plogcontainer; //Hakan
+//wxDialog          *plogcontainer;
 
 int   radar_control_id, alarm_zone_id;
 bool  alarm_context_mode;
@@ -350,11 +350,11 @@ bool br24radar_pi::DeInit(void)
         delete m_receiveThread;
 //        wxLogMessage(wxT("BR24 radar thread is deleted."));
     }
-/*    //* Hakan
+    /*   
     if(plogcontainer)
             plogcontainer->Close();
     delete m_plogwin;
-    //*/
+    */
 
     return true;
 }
@@ -770,7 +770,7 @@ void br24radar_pi::DoTick(void)
             if (delta_wdt > 60)  {              // check every minute
                 br_bpos_set = false;
                 m_hdt_source = 0;
-                PlayAlarmSound(false); // Hakan
+                PlayAlarmSound(false); 
                 watchdog = now;
             }
 /*
@@ -1074,12 +1074,12 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                         if (AZ_angle_1 > angle_deg) angle_deg += 360.0;    
                         if (angle_deg > AZ_angle_1 && angle_deg < AZ_angle_2) {
                             if (bogey_range > inner_range && bogey_range < outer_range){
-                                PlayAlarmSound(true); //Hakan
+                                PlayAlarmSound(true); 
                             }
                         }                     
                  }
                  else {
-                     PlayAlarmSound(false); // Hakan 
+                     PlayAlarmSound(false);
                      }           
             }            
         }
@@ -1218,7 +1218,7 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm)
     glPopAttrib();
 }
 
-// Hakan
+
 void br24radar_pi::PlayAlarmSound(bool on_off){
 
     
@@ -1284,7 +1284,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
             pConf->Read(wxT("Gain"),  &settings.gain, 50);
             pConf->Read(wxT("RainGain"),  &settings.rain_clutter_gain, 50);
-            pConf->Read(wxT("ClutterGain"),  &settings.sea_clutter_gain, 50);
+            pConf->Read(wxT("ClutterGain"),  &settings.sea_clutter_gain, 25);
             pConf->Read(wxT("RangeCalibration"),  &settings.range_calibration, 1.0);
             pConf->Read(wxT("HeadingCorrection"),  &settings.heading_correction, 0);
             pConf->Read(wxT("Interface"), &settings.radar_interface, wxT("0.0.0.0"));
@@ -1497,7 +1497,7 @@ void br24radar_pi::SetRangeMeters(long meters)
 {
     if (settings.master_mode) {
         if (meters > 50 && meters < 64000) {
-            long decimeters = meters * 10L/1.762;  //Hakan
+            long decimeters = meters * 10L/1.762; 
             char pck[] = { (byte) 0x03
                          , (byte) 0xc1
                          , (byte) ((decimeters >>  0) & 0XFFL)
@@ -1527,8 +1527,8 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, 0, (byte)0x01,
                         0, 0, 0, (byte)0xa1
                     };
- //                   msg.Printf(wxT("AutoGain: %o"), cmd);
- //                   wxLogMessage(msg);
+                    //msg.Printf(wxT("AutoGain: %o"), cmd);
+                    //wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
@@ -1539,21 +1539,22 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, 0, 0, 0, 0, 0,
                         (char)(int)(sel_gain * 255 / 100)
                     };
-                    msg.Printf(wxT("ManualGain: %o"), cmd);
-                    wxLogMessage(msg);
+                    //msg.Printf(wxT("ManualGain: %o"), cmd);
+                    //wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
-            case 2: {                       // Rain Clutter - Manual
+            case 2: {                       // Rain Clutter - Manual. Range is 0x01 to 0x50 
+                    sel_gain = sel_gain * 0x50 / 0x100;
                     char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
                         (byte)0x04,
                         0, 0, 0, 0, 0, 0, 0,
-                        (char)(int)(sel_gain * 255 / 200)
+                        (char)(int)(sel_gain * 255 / 100)
                     };
- //                   msg.Printf(wxT("RainClutter: %o"), cmd);
-  //                  wxLogMessage(msg);
+                    //msg.Printf(wxT("RainClutter 0-0x50:cmd %o, sel %d, calc %d"), cmd, sel_gain, sel_gain * 255 / 100);
+                    //wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
@@ -1565,12 +1566,12 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, (byte)0x01,
                         0, 0, 0, (byte)0xd3
                     };
-                    msg.Printf(wxT("SeaClutter: %o"), cmd);
-                    wxLogMessage(msg);
+                    //msg.Printf(wxT("SeaClutter-Auto: %o"), cmd);
+                    //wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
-            case 4: {                       // Sea Clutter - Manual
+            case 4: {                       // Sea Clutter
                     char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
@@ -1578,8 +1579,8 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, 0, 0, 0, 0,
                         (char)(int)(sel_gain *255 / 100)
                     };
- //                   msg.Printf(wxT("SeaClutter: %o"), cmd);
- //                   wxLogMessage(msg);
+                    //msg.Printf(wxT("SeaClutter-Man: %o, sel %d, calc %d"), cmd, sel_gain, sel_gain * 255 / 100); //"), cmd);
+                    //wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
