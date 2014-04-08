@@ -355,7 +355,7 @@ void BR24ControlsDialog::CreateControls()
     wxStaticBoxSizer* sliderGainsizer = new wxStaticBoxSizer(BoxGain, wxVERTICAL);
     BoxConditioningSizer->Add(sliderGainsizer, 0, wxALL | wxEXPAND, 2);
 
-    pGainSlider = new wxSlider(this, ID_GAIN, 50, 0, 100, wxDefaultPosition,  wxDefaultSize,
+    pGainSlider = new wxSlider(this, ID_GAIN, 50, 1, 100, wxDefaultPosition,  wxDefaultSize,
                                wxSL_HORIZONTAL|wxSL_LABELS,  wxDefaultValidator, _("slider"));
 
     sliderGainsizer->Add(pGainSlider, 0, wxALL | wxEXPAND, 2);
@@ -482,13 +482,13 @@ void BR24ControlsDialog::OnFilterProcessClick(wxCommandEvent &event)
                 pGainSlider->Disable();
                 break;
             }
-        case 1: {
+        case 1: {                                       //Manual Gain
                 sel_gain = pPlugIn->settings.gain;
                 pGainSlider->Enable();
                 break;
             }
-        case 2: {
-                sel_gain = pPlugIn->settings.sea_clutter_gain;
+        case 2: {                                       //Rain Clutter Man
+                sel_gain = pPlugIn->settings.rain_clutter_gain;
                 pGainSlider->Enable();
                 break;
             }
@@ -496,8 +496,8 @@ void BR24ControlsDialog::OnFilterProcessClick(wxCommandEvent &event)
                 pGainSlider->Disable();
                 break;
             }        
-        case 4: {
-                sel_gain = pPlugIn->settings.rain_clutter_gain;
+        case 4: {                                       //Sea Clutter Man
+                sel_gain = pPlugIn->settings.sea_clutter_gain;
                 pGainSlider->Enable();
                 break;
             }
@@ -514,23 +514,24 @@ void BR24ControlsDialog::OnRejectionModeClick(wxCommandEvent &event)
 void BR24ControlsDialog::OnGainSlider(wxCommandEvent &event)
 {
     int sel_gain = pGainSlider->GetValue();
-    pPlugIn->SetFilterProcess(pPlugIn->settings.filter_process, sel_gain);
+
 
     switch (pPlugIn->settings.filter_process) {
-        case 1: {
+        case 1: {                                   //Gain Man
                 pPlugIn->settings.gain = sel_gain;
                 break;
             }
-        case 2: {
-                pPlugIn->settings.sea_clutter_gain = sel_gain;
-                break;
-            }
-        case 4: {
-                sel_gain = sel_gain * 0x50 / 0x100;
+        case 2: {                                   //Rain Cutter Man
                 pPlugIn->settings.rain_clutter_gain = sel_gain;
                 break;
             }
-    }
+        case 4: {                                   //Sea Clutter Man
+                //sel_gain = sel_gain * 0x50 / 0x100;
+                pPlugIn->settings.sea_clutter_gain = sel_gain;
+                break;
+            }
+    } 
+    pPlugIn->SetFilterProcess(pPlugIn->settings.filter_process, sel_gain);
 }
 
 void BR24ControlsDialog::OnAlarmDialogClick(wxCommandEvent &event)
