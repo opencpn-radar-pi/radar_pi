@@ -1284,7 +1284,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
             pConf->Read(wxT("Gain"),  &settings.gain, 50);
             pConf->Read(wxT("RainGain"),  &settings.rain_clutter_gain, 50);
-            pConf->Read(wxT("ClutterGain"),  &settings.sea_clutter_gain, 50);
+            pConf->Read(wxT("ClutterGain"),  &settings.sea_clutter_gain, 25);
             pConf->Read(wxT("RangeCalibration"),  &settings.range_calibration, 1.0);
             pConf->Read(wxT("HeadingCorrection"),  &settings.heading_correction, 0);
             pConf->Read(wxT("Interface"), &settings.radar_interface, wxT("0.0.0.0"));
@@ -1527,8 +1527,8 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, 0, (byte)0x01,
                         0, 0, 0, (byte)0xa1
                     };
- //                   msg.Printf(wxT("AutoGain: %o"), cmd);
- //                   wxLogMessage(msg);
+                    //msg.Printf(wxT("AutoGain: %o"), cmd);
+                    //wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
@@ -1539,21 +1539,22 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, 0, 0, 0, 0, 0,
                         (char)(int)(sel_gain * 255 / 100)
                     };
-                    msg.Printf(wxT("ManualGain: %o"), cmd);
-                    wxLogMessage(msg);
+                    //msg.Printf(wxT("ManualGain: %o"), cmd);
+                    //wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
-            case 2: {                       // Rain Clutter - Manual
+            case 2: {                       // Rain Clutter - Manual. Range is 0x01 to 0x50 
+                    sel_gain = sel_gain * 0x50 / 0x100;
                     char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
                         (byte)0x04,
                         0, 0, 0, 0, 0, 0, 0,
-                        (char)(int)(sel_gain * 255 / 200)
+                        (char)(int)(sel_gain * 255 / 100)
                     };
- //                   msg.Printf(wxT("RainClutter: %o"), cmd);
-  //                  wxLogMessage(msg);
+                    //msg.Printf(wxT("RainClutter 0-0x50:cmd %o, sel %d, calc %d"), cmd, sel_gain, sel_gain * 255 / 100);
+                    //wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
@@ -1565,12 +1566,12 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, (byte)0x01,
                         0, 0, 0, (byte)0xd3
                     };
-                    msg.Printf(wxT("SeaClutter: %o"), cmd);
-                    wxLogMessage(msg);
+                    //msg.Printf(wxT("SeaClutter-Auto: %o"), cmd);
+                    //wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
-            case 4: {                       // Sea Clutter - Manual
+            case 4: {                       // Sea Clutter
                     char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
@@ -1578,8 +1579,8 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, 0, 0, 0, 0,
                         (char)(int)(sel_gain *255 / 100)
                     };
- //                   msg.Printf(wxT("SeaClutter: %o"), cmd);
- //                   wxLogMessage(msg);
+                    //msg.Printf(wxT("SeaClutter-Man: %o, sel %d, calc %d"), cmd, sel_gain, sel_gain * 255 / 100); //"), cmd);
+                    //wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
