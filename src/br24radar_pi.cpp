@@ -51,8 +51,9 @@
 using namespace std;
 
 #ifdef __WXGTK__
-# include <netinet/in.h>
-# include <sys/ioctl.h>
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <netdb.h>
 #endif
 
 #ifdef __WXOSX__
@@ -1744,28 +1745,27 @@ void *MulticastRXThread::Entry(void)
 
     struct addrinfo hints;
     struct addrinfo *addr;
-    
+
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_protocol = IPPROTO_UDP;
     hints.ai_socktype = SOCK_DGRAM;
-    
+
     if (getaddrinfo(m_ip.mb_str(), 0, &hints, &addr) && addr) {
         mcAddr = ((struct sockaddr_in *) addr->ai_addr)->sin_addr.s_addr;
     }
     else {
-        wxLogError(wxT("Unable to determine address of %s"), m_ip.mb_str());
+        wxLogError(wxT("Unable to determine address of %s"), m_ip.c_str());
         return 0;
     }
- 
+
     if (getaddrinfo(pPlugIn->settings.radar_interface.mb_str(), 0, &hints, &addr) && addr) {
         recvAddr = ((struct sockaddr_in *) addr->ai_addr)->sin_addr.s_addr;
     }
     else {
-        wxLogError(wxT("Unable to determine address of %s"), pPlugIn->settings.radar_interface.mb_str());
+        wxLogError(wxT("Unable to determine address of %s"), pPlugIn->settings.radar_interface.c_str());
         return 0;
     }
-    
 
     struct ip_mreq mreq;
     mreq.imr_multiaddr.s_addr = mcAddr;
