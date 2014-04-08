@@ -493,7 +493,6 @@ private:
     wxTextCtrl      *pOuter_Range;
     wxTextCtrl      *pStart_Bearing_Value;
     wxTextCtrl      *pEnd_Bearing_Value;
-    wxButton        *bClose;
 };
 
 #endif
