@@ -137,7 +137,7 @@ struct radar_control_settings {
     int      range_index;
     int      display_option;
     int      display_mode;
-	int      alarm_zone;            // active zone (0 = none,1,2)
+    int      alarm_zone;            // active zone (0 = none,1,2)
     int      gain;
     int      rejection;
     int      filter_process;
@@ -300,7 +300,7 @@ private:
 
 
     wxBitmap                 *m_ptemp_icon;
-//    wxLogWindow		         *m_plogwin; // Hakan
+//    wxLogWindow    	         *m_plogwin; // Hakan
     int                       m_sent_bm_id_normal;
     int                       m_sent_bm_id_rollover;
 
@@ -423,7 +423,7 @@ private:
     void OnFilterProcessClick(wxCommandEvent &event);
     void OnRejectionModeClick(wxCommandEvent &event);
     void OnGainSlider(wxCommandEvent &event);
-	void OnAlarmDialogClick(wxCommandEvent &event);
+    void OnAlarmDialogClick(wxCommandEvent &event);
     void OnLogModeClick(wxCommandEvent &event);
 
     wxWindow          *pParent;
@@ -438,7 +438,7 @@ private:
     wxRadioBox        *pRejectionMode;
     wxRadioBox        *pFilterProcess;
     wxSlider          *pGainSlider;
-	wxRadioBox        *pAlarmZones;
+    wxRadioBox        *pAlarmZones;
     wxCheckBox        *pCB_log;
 };
 

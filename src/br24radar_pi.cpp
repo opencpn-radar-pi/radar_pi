@@ -28,6 +28,12 @@
  ***************************************************************************
  */
 
+#ifdef _WINDOWS
+# include <WinSock2.h>
+# include <ws2tcpip.h>
+# pragma comment (lib, "Ws2_32.lib")
+#endif
+
 #include "wx/wxprec.h"
 
 #ifndef  WX_PRECOMP
@@ -45,13 +51,21 @@
 using namespace std;
 
 #ifdef __WXGTK__
-#include <netinet/in.h>
-#include <sys/ioctl.h>
+# include <netinet/in.h>
+# include <sys/ioctl.h>
+#endif
+
+#ifdef __WXOSX__
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <netdb.h>
 #endif
 
 #ifdef __WXMSW__
-#include "GL/glu.h"
-#else
+# include "GL/glu.h"
+#endif
+
+#ifndef __WXMSW__
 typedef char byte;
 #endif
 
@@ -143,28 +157,28 @@ static double rad2deg(double rad)
 /*
 static double mod(double numb1, double numb2)
 {
-	double result = numb1 - (numb2 * int(numb1/numb2));
-			return result;
+    double result = numb1 - (numb2 * int(numb1/numb2));
+    return result;
 }
 
 static double modcrs(double numb1,double numb2)
 {
-	if (numb1 > twoPI)
-		numb1 = mod(numb1, twoPI);
-	double result = twoPI - mod(twoPI-numb1,numb2);
-	return result;
+    if (numb1 > twoPI)
+        numb1 = mod(numb1, twoPI);
+    double result = twoPI - mod(twoPI-numb1,numb2);
+    return result;
 }
 */
 static double local_distance (double lat1, double lon1, double lat2, double lon2) {
-	// Spherical Law of Cosines
-	double theta, dist; 
+    // Spherical Law of Cosines
+    double theta, dist; 
 
-	theta = lon2 - lon1; 
-	dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta)); 
-	dist = acos(dist);		// radians
-	dist = rad2deg(dist); 
-	dist = abs(dist) * 60	;	// nautical miles/degree
-	return (dist); 
+    theta = lon2 - lon1; 
+    dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta)); 
+    dist = acos(dist);        // radians
+    dist = rad2deg(dist); 
+    dist = fabs(dist) * 60    ;    // nautical miles/degree
+    return (dist); 
 }
 
 static double radar_distance(double lat1, double lon1, double lat2, double lon2, char unit)
@@ -187,12 +201,12 @@ static double radar_distance(double lat1, double lon1, double lat2, double lon2,
 
 static double local_bearing (double lat1, double lon1, double lat2, double lon2) //FES
 {
-	double angle = atan2 ( deg2rad(lat2-lat1), (deg2rad(lon2-lon1) * cos(deg2rad(lat1))));
+    double angle = atan2 ( deg2rad(lat2-lat1), (deg2rad(lon2-lon1) * cos(deg2rad(lat1))));
 
     angle = rad2deg(angle) ;
     angle = 90.0 - angle;
     if (angle < 0) angle = 360 + angle;
-	return (angle);
+    return (angle);
 }
 
 
@@ -250,13 +264,17 @@ int br24radar_pi::Init(void)
 
       m_plogwin = new wxLogWindow(NULL, _T("Event Log"));
       plogcontainer = new wxDialog(NULL, -1, _T("Log"), wxPoint(0,0), wxSize(600,400),
-				     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER );
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER );
 
       plogtc = new wxTextCtrl(plogcontainer, -1, _T(""), wxPoint(0,0), wxSize(600,400), wxTE_MULTILINE );
 
       ::wxDisplaySize(&m_display_width, &m_display_height);
       
 /******************************************************************************************/
+    memset(&settings, 0, sizeof(settings));
+    memset(&Zone1, 0, sizeof(Zone1));
+    memset(&Zone2, 0, sizeof(Zone2));
+
     settings.display_mode = 0;
     settings.master_mode = false;                 // we're not the master controller at startup
     settings.auto_range_mode = true;                    // starts with auto range change
@@ -1724,24 +1742,30 @@ void *MulticastRXThread::Entry(void)
     unsigned int mcAddr;
     unsigned int recvAddr;
 
-#ifndef __WXMSW__
-    GAddress gaddress;
-    _GAddress_Init_INET(&gaddress);
-    GAddress_INET_SetHostName(&gaddress, m_ip.mb_str());
-
-    struct in_addr *addr;
-    addr = &(((struct sockaddr_in *)gaddress.m_addr)->sin_addr);
-    mcAddr = addr->s_addr;
-
-    _GAddress_Init_INET(&gaddress);
-    GAddress_INET_SetHostName(&gaddress, pPlugIn->settings.radar_interface.mb_str());
-    addr = &(((struct sockaddr_in *)gaddress.m_addr)->sin_addr);
-    recvAddr = addr->s_addr;
-
-#else
-    mcAddr = inet_addr(m_ip.mb_str());
-    recvAddr = inet_addr(pPlugIn->settings.radar_interface.mb_str());
-#endif
+    struct addrinfo hints;
+    struct addrinfo *addr;
+    
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_protocol = IPPROTO_UDP;
+    hints.ai_socktype = SOCK_DGRAM;
+    
+    if (getaddrinfo(m_ip.mb_str(), 0, &hints, &addr) && addr) {
+        mcAddr = ((struct sockaddr_in *) addr->ai_addr)->sin_addr.s_addr;
+    }
+    else {
+        wxLogError(wxT("Unable to determine address of %s"), m_ip.mb_str());
+        return 0;
+    }
+ 
+    if (getaddrinfo(pPlugIn->settings.radar_interface.mb_str(), 0, &hints, &addr) && addr) {
+        recvAddr = ((struct sockaddr_in *) addr->ai_addr)->sin_addr.s_addr;
+    }
+    else {
+        wxLogError(wxT("Unable to determine address of %s"), pPlugIn->settings.radar_interface.mb_str());
+        return 0;
+    }
+    
 
     struct ip_mreq mreq;
     mreq.imr_multiaddr.s_addr = mcAddr;
