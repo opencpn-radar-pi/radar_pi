@@ -1439,19 +1439,25 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
     if (!wxIsNaN(pfix.Hdt))
     {
         br_hdt = pfix.Hdt;
-        if(m_hdt_source != 1) wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
+        if (m_hdt_source != 1) {
+           wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
+        }
         m_hdt_source = 1;
     }
     else if (!wxIsNaN(pfix.Hdm) && !wxIsNaN(pfix.Var))
     {
         br_hdt = pfix.Hdm + pfix.Var;
-        if(m_hdt_source != 2)  wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM"));
+        if (m_hdt_source != 2) {
+            wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM"));
+        }
         m_hdt_source = 2;
     }
     else if (!wxIsNaN(pfix.Cog))
     {
         br_hdt = pfix.Cog;
-        if(m_hdt_source != 3)  wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
+        if (m_hdt_source != 3) {
+            wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
+        }
         m_hdt_source = 3;
     }
 
