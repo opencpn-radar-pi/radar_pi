@@ -257,18 +257,6 @@ int br24radar_pi::Init(void)
         m_scan_range[i][2] = 0;
     }
 
-/******************************************************************************************
-//  Logbook window
-
-      m_plogwin = new wxLogWindow(NULL, _T("Event Log"));
-      plogcontainer = new wxDialog(NULL, -1, _T("Log"), wxPoint(0,0), wxSize(600,400),
-                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER );
-
-      plogtc = new wxTextCtrl(plogcontainer, -1, _T(""), wxPoint(0,0), wxSize(600,400), wxTE_MULTILINE );
-
-      ::wxDisplaySize(&m_display_width, &m_display_height);
-
-/******************************************************************************************/
     //memset(&settings, 0, sizeof(settings));
     memset(&Zone1, 0, sizeof(Zone1));
     memset(&Zone2, 0, sizeof(Zone2));
@@ -1095,22 +1083,26 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 /**********************************************************************************************************/
 // Alarm Section
 
-                 if(settings.alarm_zone >0){
-                     double angle_deg = (angle * 360.0) / LINES_PER_ROTATION ;
-                     double inner_range = AZ_inner_radius / ppNM ;
-                     double outer_range = AZ_outer_radius / ppNM ;
-                     double bogey_range = (radius / 512.0) * (max_range / 1852.0);
-                        if (AZ_angle_1 > AZ_angle_2) AZ_angle_2 += 360.0 ;
-                        if (AZ_angle_1 > angle_deg) angle_deg += 360.0;
-                        if (angle_deg > AZ_angle_1 && angle_deg < AZ_angle_2) {
-                            if (bogey_range > inner_range && bogey_range < outer_range){
-                                PlayAlarmSound(true);
-                            }
+                if (settings.alarm_zone >0) {
+                    double angle_deg = (angle * 360.0) / LINES_PER_ROTATION;
+                    double inner_range = AZ_inner_radius / ppNM;
+                    double outer_range = AZ_outer_radius / ppNM;
+                    double bogey_range = (radius / 512.0) * (max_range / 1852.0);
+
+                    if (AZ_angle_1 > AZ_angle_2) {
+                        AZ_angle_2 += 360.0;
+                    }
+                    if (AZ_angle_1 > angle_deg) {
+                        angle_deg += 360.0;
+                    }
+                    if (angle_deg > AZ_angle_1 && angle_deg < AZ_angle_2) {
+                        if (bogey_range > inner_range && bogey_range < outer_range){
+                            PlayAlarmSound(true);
                         }
-                 }
-                 else {
-                     PlayAlarmSound(false);
-                     }
+                    }
+                } else {
+                    PlayAlarmSound(false);
+                }
             }
         }
     }
