@@ -170,14 +170,14 @@ static double modcrs(double numb1,double numb2)
 */
 static double local_distance (double lat1, double lon1, double lat2, double lon2) {
     // Spherical Law of Cosines
-    double theta, dist; 
+    double theta, dist;
 
-    theta = lon2 - lon1; 
-    dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta)); 
+    theta = lon2 - lon1;
+    dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta));
     dist = acos(dist);        // radians
-    dist = rad2deg(dist); 
+    dist = rad2deg(dist);
     dist = fabs(dist) * 60    ;    // nautical miles/degree
-    return (dist); 
+    return (dist);
 }
 
 static double radar_distance(double lat1, double lon1, double lat2, double lon2, char unit)
@@ -268,7 +268,7 @@ int br24radar_pi::Init(void)
       plogtc = new wxTextCtrl(plogcontainer, -1, _T(""), wxPoint(0,0), wxSize(600,400), wxTE_MULTILINE );
 
       ::wxDisplaySize(&m_display_width, &m_display_height);
-      
+
 /******************************************************************************************/
     //memset(&settings, 0, sizeof(settings));
     memset(&Zone1, 0, sizeof(Zone1));
@@ -546,7 +546,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
 
     pRangeUnits->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
                             wxCommandEventHandler(BR24DisplayOptionsDialog::OnRangeUnitsClick), NULL, this);
-    
+
     pRangeUnits->SetSelection(pPlugIn->settings.range_units);
 
     /// Option settings
@@ -993,12 +993,12 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
     // scaling...
     int max_range = 1, angle;
-    for (angle = 0 ; angle < LINES_PER_ROTATION ; angle++) {  
+    for (angle = 0 ; angle < LINES_PER_ROTATION ; angle++) {
         if (m_scan_range[angle][0] > max_range) {               // this needs analysis
             max_range = m_scan_range[angle][0];
         }
     }
-    
+
     double radar_pixels_per_meter = 512. / max_range;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
     scale_factor = scale_factor * settings.range_calibration;
@@ -1055,12 +1055,12 @@ void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_pp
             RenderAlarmZone(radar_center,v_scale_ppm);
     }
 }
-  
+
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
   {
     // DRAWING PICTURE
 
-   
+
     for (int angle = 0 ; angle < LINES_PER_ROTATION ; ++angle) {
 
         if (!m_scan_range[angle][0] && !m_scan_range[angle][1] && !m_scan_range[angle][2]) {
@@ -1095,9 +1095,9 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                         }
                         break;
                 }
-            
+
                 glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);    // red, blue, green
-                double blob_deg = 2 * 360.0 / LINES_PER_ROTATION; 
+                double blob_deg = 2 * 360.0 / LINES_PER_ROTATION;
                 double blob_width = wxMax(1,(blob_deg /360.0) * (radius * 2.0 * PI)); // radar Pixels
 
                 double angleDeg   = (angle * 360.0) / LINES_PER_ROTATION - (blob_deg/2);
@@ -1112,17 +1112,17 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                      double outer_range = AZ_outer_radius / ppNM ;
                      double bogey_range = (radius / 512.0) * (max_range / 1852.0);
                         if (AZ_angle_1 > AZ_angle_2) AZ_angle_2 += 360.0 ;
-                        if (AZ_angle_1 > angle_deg) angle_deg += 360.0;    
+                        if (AZ_angle_1 > angle_deg) angle_deg += 360.0;
                         if (angle_deg > AZ_angle_1 && angle_deg < AZ_angle_2) {
                             if (bogey_range > inner_range && bogey_range < outer_range){
                                 PlayAlarmSound(true); //Hakan
                             }
-                        }                     
+                        }
                  }
                  else {
-                     PlayAlarmSound(false); // Hakan 
-                     }           
-            }            
+                     PlayAlarmSound(false); // Hakan
+                     }
+            }
         }
     }
 }
@@ -1224,9 +1224,9 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm)
     glPushMatrix();
     glTranslated(radar_center.x, radar_center.y, 0);
     glRotatef(-90.0, 0, 0, 1);        //correction for base north
-    
+
     ppNM = v_scale_ppm * 1852.0 ;          // screen pixels per naut mile
-    
+
     if (settings.alarm_zone == 1){
             AZ_outer_radius = Zone1.outer_range * ppNM;
             AZ_inner_radius = Zone1.inner_range * ppNM;
@@ -1254,7 +1254,7 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm)
             glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);    // red, blue, green
             DrawFilledArc(AZ_outer_radius, AZ_inner_radius, AZ_angle_1, AZ_angle_2);
     }
-        
+
     glPopMatrix();
     glPopAttrib();
 }
@@ -1262,7 +1262,7 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm)
 // Hakan
 void br24radar_pi::PlayAlarmSound(bool on_off){
 
-    
+
     if( !alarm_sound_on && on_off) {
         if( !RadarAlarm.IsOk() ) RadarAlarm.Create( RadarAlertAudioFile );
 
@@ -1285,14 +1285,14 @@ void br24radar_pi::PlayAlarmSound(bool on_off){
      {
         if( RadarAlarm.IsOk() ) RadarAlarm.Stop();
         alarm_sound_on = false;
-    } 
+    }
 }
 //*/
 
 void br24radar_pi::DrawFilledArc(double r1, double r2, double a1, double a2)
 {
     if (a1 > a2) a2 += 360.0;
-     
+
         for( double n = a1; n <= a2; ++n ) {
             double st = sin(deg2rad(90-n));
             double ct = cos(deg2rad(90-n));
@@ -1335,7 +1335,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
             pConf->Read(wxT("ControlsDialogPosX"), &m_BR24Controls_dialog_x, 20L);
             pConf->Read(wxT("ControlsDialogPosY"), &m_BR24Controls_dialog_y, 170L);
-            
+
             pConf->Read(wxT("Zone1StBrng"), &Zone1.start_bearing, 0);
             pConf->Read(wxT("Zone1EndBrng"), &Zone1.end_bearing, 0);
             pConf->Read(wxT("Zone1OutRng"), &Zone1.outer_range, 0);
@@ -1637,7 +1637,7 @@ void br24radar_pi::SetRejectionMode(int mode)
     if (settings.master_mode) {
         char br_rejection_cmd[] = {
             (byte)0x08,
-            (byte)0xc1,     
+            (byte)0xc1,
             (char) settings.rejection
         };
         TransmitCmd(br_rejection_cmd, sizeof(br_rejection_cmd));
