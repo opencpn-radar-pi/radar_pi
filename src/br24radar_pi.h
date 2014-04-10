@@ -39,7 +39,7 @@
 #endif //precompiled headers
 
 #define     PLUGIN_VERSION_MAJOR    1
-#define     PLUGIN_VERSION_MINOR    40408
+#define     PLUGIN_VERSION_MINOR    316701
 
 #define     MY_API_VERSION_MAJOR    1
 #define     MY_API_VERSION_MINOR    8
@@ -57,6 +57,21 @@
 #endif
 
 #include "ocpn_plugin.h"
+
+#ifndef SOCKET
+# define SOCKET int
+#endif
+#ifndef INVALID_SOCKET
+# define INVALID_SOCKET ((SOCKET)~0)
+#endif
+
+#ifdef __WXMSW__
+# define SOCKETERRSTR (strerror(WSAGetLastError()))
+#else
+# include <errno.h>
+# define SOCKETERRSTR (strerror(errno))
+# define closesocket(fd) close(fd)
+#endif
 
 //#include "navutil.h"        //This is the devil
 //#include "OCPN_Sound.h"     // If we try this instead?
@@ -289,7 +304,7 @@ private:
 
     MulticastRXThread        *m_receiveThread;
 
-    wxDatagramSocket         *m_out_sock101;
+    SOCKET                    m_radar_socket;
     wxDateTime                m_dt_last_render;
 
     long                      m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
@@ -317,13 +332,13 @@ class MulticastRXThread: public wxThread
 
 public:
 
-    MulticastRXThread(br24radar_pi *ppi, volatile bool * quit, const wxString &IP_addr, const wxString &service_port)
+    MulticastRXThread(br24radar_pi *ppi, volatile bool * quit, const wxString &IP_addr, const wxString &service_port, SOCKET radar_socket)
     : wxThread(wxTHREAD_JOINABLE)
     , pPlugIn(ppi)
     , m_ip(IP_addr)
     , m_service_port(service_port)
     , m_quit(quit)
-    , m_sock(0)
+    , m_radar_socket(radar_socket)
     {
 //      wxLogMessage(_T("BR24 radar thread starting for multicast address %ls port %ls"), m_ip.c_str(), m_service_port.c_str());
       Create(1024 * 1024);
@@ -341,8 +356,8 @@ private:
     wxString           m_ip;
     wxString           m_service_port;
     volatile bool    * m_quit;
-    wxDatagramSocket * m_sock;
     wxIPV4address      m_myaddr;
+    SOCKET             m_radar_socket;
 
 };
 

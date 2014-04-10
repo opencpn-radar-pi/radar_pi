@@ -51,9 +51,8 @@
 using namespace std;
 
 #ifdef __WXGTK__
-# include <sys/types.h>
-# include <sys/socket.h>
-# include <netdb.h>
+# include <netinet/in.h>
+# include <sys/ioctl.h>
 #endif
 
 #ifdef __WXOSX__
@@ -110,14 +109,13 @@ int   br_scanner_state;
 
 long  br_display_interval(0);
 
-//wxDateTime  br_dt_last_tick;
 wxDateTime  watchdog;
 wxDateTime  br_dt_stayalive;
 int   br_scan_packets_per_tick;
 
 bool  br_bshown_dc_message;
 wxTextCtrl        *plogtc;
-//wxDialog          *plogcontainer;
+//wxDialog          *plogcontainer; //Hakan
 
 int   radar_control_id, alarm_zone_id;
 bool  alarm_context_mode;
@@ -243,7 +241,7 @@ int br24radar_pi::Init(void)
     br_radar_state = RADAR_OFF;
     br_scanner_state = RADAR_OFF;                 // Radar scanner is off
 
-//    br_dt_last_tick = wxDateTime::Now();
+    watchdog = wxDateTime::Now();
     br_dt_stayalive = wxDateTime::Now();
 
     m_dt_last_render = wxDateTime::Now();
@@ -271,8 +269,8 @@ int br24radar_pi::Init(void)
 
       ::wxDisplaySize(&m_display_width, &m_display_height);
       
-******************************************************************************************/
-    memset(&settings, 0, sizeof(settings));
+/******************************************************************************************/
+    //memset(&settings, 0, sizeof(settings));
     memset(&Zone1, 0, sizeof(Zone1));
     memset(&Zone2, 0, sizeof(Zone2));
 
@@ -309,14 +307,34 @@ int br24radar_pi::Init(void)
         CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_BLANK);
     }
 
-    wxIPV4address dummy;                // Do this to initialize the wxSocketBase tables
-
     //    Create the control socket for the Radar data receiver
 
-    wxIPV4address addr101;
-    addr101.AnyAddress();
-    addr101.Service(wxT("6678"));
-    m_out_sock101 = new wxDatagramSocket(addr101, wxSOCKET_REUSEADDR | wxSOCKET_NOWAIT);
+    struct sockaddr_in adr101;
+    memset(&adr101, 0, sizeof(adr101));
+    adr101.sin_family = AF_INET;
+    adr101.sin_addr.s_addr=htonl(INADDR_ANY);
+    adr101.sin_port=htons(6678);
+    int one = 1;
+    int r = 0;
+    m_radar_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (m_radar_socket == INVALID_SOCKET) {
+        r = -1;
+    }
+    else {
+        r = setsockopt(m_radar_socket, SOL_SOCKET, SO_REUSEADDR, (const char *) &one, sizeof(one));
+    }
+
+    if (!r)
+    {
+        r = bind(m_radar_socket, (struct sockaddr *) &adr101, sizeof(adr101));
+    }
+
+    if (r)
+    {
+        wxLogError(wxT("BR24radar_pi: Unable to create UDP sending socket"));
+        // Might as well give up now
+        return 0;
+    }
 
     // Context Menu Items (Right click on chart screen)
 
@@ -339,7 +357,7 @@ int br24radar_pi::Init(void)
 */
     //    Create the THREAD for Multicast radar data reception
     m_quit = false;
-    m_receiveThread = new MulticastRXThread(this, &m_quit, wxT("236.6.7.8"), wxT("6678"));
+    m_receiveThread = new MulticastRXThread(this, &m_quit, wxT("236.6.7.8"), wxT("6678"), m_radar_socket);
     m_receiveThread->Run();
 
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
@@ -369,11 +387,15 @@ bool br24radar_pi::DeInit(void)
         delete m_receiveThread;
 //        wxLogMessage(wxT("BR24 radar thread is deleted."));
     }
-    /*   
+/*    //* Hakan
     if(plogcontainer)
             plogcontainer->Close();
     delete m_plogwin;
-    */
+    //*/
+
+    if (m_radar_socket != INVALID_SOCKET) {
+        closesocket(m_radar_socket);
+    }
 
     return true;
 }
@@ -789,7 +811,7 @@ void br24radar_pi::DoTick(void)
             if (delta_wdt > 60)  {              // check every minute
                 br_bpos_set = false;
                 m_hdt_source = 0;
-                PlayAlarmSound(false); 
+                PlayAlarmSound(false); // Hakan
                 watchdog = now;
             }
 /*
@@ -1093,12 +1115,12 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                         if (AZ_angle_1 > angle_deg) angle_deg += 360.0;    
                         if (angle_deg > AZ_angle_1 && angle_deg < AZ_angle_2) {
                             if (bogey_range > inner_range && bogey_range < outer_range){
-                                PlayAlarmSound(true); 
+                                PlayAlarmSound(true); //Hakan
                             }
                         }                     
                  }
                  else {
-                     PlayAlarmSound(false);
+                     PlayAlarmSound(false); // Hakan 
                      }           
             }            
         }
@@ -1237,7 +1259,7 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm)
     glPopAttrib();
 }
 
-
+// Hakan
 void br24radar_pi::PlayAlarmSound(bool on_off){
 
     
@@ -1303,7 +1325,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
             pConf->Read(wxT("Gain"),  &settings.gain, 50);
             pConf->Read(wxT("RainGain"),  &settings.rain_clutter_gain, 50);
-            pConf->Read(wxT("ClutterGain"),  &settings.sea_clutter_gain, 25);
+            pConf->Read(wxT("ClutterGain"),  &settings.sea_clutter_gain, 50);
             pConf->Read(wxT("RangeCalibration"),  &settings.range_calibration, 1.0);
             pConf->Read(wxT("HeadingCorrection"),  &settings.heading_correction, 0);
             pConf->Read(wxT("Interface"), &settings.radar_interface, wxT("0.0.0.0"));
@@ -1412,7 +1434,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("Zone2ArcCirc"), Zone2.type);
 
         pConf->Flush();
-//        wxLogMessage(wxT("BR24radar_pi: saved config"));
+        wxLogMessage(wxT("BR24radar_pi: saved config"));
 
         return true;
     }
@@ -1437,28 +1459,19 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
     if (!wxIsNaN(pfix.Hdt))
     {
         br_hdt = pfix.Hdt;
-        if (m_hdt_source != 1)
-        {
-            wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
-        }
+        if(m_hdt_source != 1) wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
         m_hdt_source = 1;
     }
     else if (!wxIsNaN(pfix.Hdm) && !wxIsNaN(pfix.Var))
     {
         br_hdt = pfix.Hdm + pfix.Var;
-        if (m_hdt_source != 2)
-        {
-            wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM"));
-        }
+        if(m_hdt_source != 2)  wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM"));
         m_hdt_source = 2;
     }
     else if (!wxIsNaN(pfix.Cog))
     {
         br_hdt = pfix.Cog;
-        if (m_hdt_source != 3)
-        {
-            wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
-        }
+        if(m_hdt_source != 3)  wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
         m_hdt_source = 3;
     }
 
@@ -1478,17 +1491,16 @@ cur_lon = lon;
 //************************************************************************
 void br24radar_pi::TransmitCmd(char* msg, int size)
 {
-    wxIPV4address addr101;
-    addr101.Service(6680);        //(wxT("6680"));      addr101.Service(wxT("6680"));
-    addr101.Hostname(wxT("236.6.7.10"));
-    m_out_sock101->SendTo(addr101, msg, size);
+    struct sockaddr_in adr101;
+    memset(&adr101, 0, sizeof(adr101));
+    adr101.sin_family = AF_INET;
+    adr101.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 10); // 236.6.7.10
+    adr101.sin_port=htons(6680);
 
-    if (m_out_sock101->Error()) {
-//        wxLogMessage(wxT("BR24radar_pi: unable to transmit command, error %d\n"), m_out_sock101->LastError());
+    if (m_radar_socket == INVALID_SOCKET || sendto(m_radar_socket, msg, size, 0, (struct sockaddr *) &adr101, sizeof(adr101))) {
+        wxLogMessage(wxT("BR24radar_pi: unable to transmit command to radar: %s\n"), strerror(errno));
         return;
     };
-
-//    logBinaryData(wxT("sent command"), msg, size);
 };
 
 void br24radar_pi::RadarTxOff(void)
@@ -1525,7 +1537,7 @@ void br24radar_pi::SetRangeMeters(long meters)
 {
     if (settings.master_mode) {
         if (meters > 50 && meters < 64000) {
-            long decimeters = meters * 10L/1.762; 
+            long decimeters = meters * 10L/1.762;  //Hakan
             char pck[] = { (byte) 0x03
                          , (byte) 0xc1
                          , (byte) ((decimeters >>  0) & 0XFFL)
@@ -1555,8 +1567,8 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, 0, (byte)0x01,
                         0, 0, 0, (byte)0xa1
                     };
-                    //msg.Printf(wxT("AutoGain: %o"), cmd);
-                    //wxLogMessage(msg);
+ //                   msg.Printf(wxT("AutoGain: %o"), cmd);
+ //                   wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
@@ -1567,22 +1579,21 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, 0, 0, 0, 0, 0,
                         (char)(int)(sel_gain * 255 / 100)
                     };
-                    //msg.Printf(wxT("ManualGain: %o"), cmd);
-                    //wxLogMessage(msg);
+                    msg.Printf(wxT("ManualGain: %o"), cmd);
+                    wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
-            case 2: {                       // Rain Clutter - Manual. Range is 0x01 to 0x50 
-                    sel_gain = sel_gain * 0x50 / 0x100;
+            case 2: {                       // Rain Clutter - Manual
                     char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
                         (byte)0x04,
                         0, 0, 0, 0, 0, 0, 0,
-                        (char)(int)(sel_gain * 255 / 100)
+                        (char)(int)(sel_gain * 255 / 200)
                     };
-                    //msg.Printf(wxT("RainClutter 0-0x50:cmd %o, sel %d, calc %d"), cmd, sel_gain, sel_gain * 255 / 100);
-                    //wxLogMessage(msg);
+ //                   msg.Printf(wxT("RainClutter: %o"), cmd);
+  //                  wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
@@ -1594,12 +1605,12 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, (byte)0x01,
                         0, 0, 0, (byte)0xd3
                     };
-                    //msg.Printf(wxT("SeaClutter-Auto: %o"), cmd);
-                    //wxLogMessage(msg);
+                    msg.Printf(wxT("SeaClutter: %o"), cmd);
+                    wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
-            case 4: {                       // Sea Clutter
+            case 4: {                       // Sea Clutter - Manual
                     char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
@@ -1607,8 +1618,8 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, 0, 0, 0, 0,
                         (char)(int)(sel_gain *255 / 100)
                     };
-                    //msg.Printf(wxT("SeaClutter-Man: %o, sel %d, calc %d"), cmd, sel_gain, sel_gain * 255 / 100); //"), cmd);
-                    //wxLogMessage(msg);
+ //                   msg.Printf(wxT("SeaClutter: %o"), cmd);
+ //                   wxLogMessage(msg);
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
@@ -1724,7 +1735,6 @@ void br24radar_pi::CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollov
 
 MulticastRXThread::~MulticastRXThread()
 {
-    delete m_sock;
 }
 
 void MulticastRXThread::OnExit()
@@ -1732,81 +1742,173 @@ void MulticastRXThread::OnExit()
 //  wxLogMessage(wxT("BR24radar_pi: radar thread is stopping."));
 }
 
+static int my_inet_aton(const char *cp, struct in_addr *addr)
+{
+    register u_long val;
+    register int base, n;
+    register char c;
+    u_int parts[4];
+    register u_int *pp = parts;
+
+    c = *cp;
+    for (;;) {
+        /*
+         * Collect number up to ``.''.
+         * Values are specified as for C:
+         * 0x=hex, 0=octal, isdigit=decimal.
+         */
+        if (!isdigit(c))
+        {
+            return (0);
+        }
+        val = 0;
+        base = 10;
+        if (c == '0') {
+            c = *++cp;
+            if (c == 'x' || c == 'X') {
+                base = 16, c = *++cp;
+            } else {
+                base = 8;
+            }
+        }
+        for (;;) {
+            if (isascii(c) && isdigit(c)) {
+                val = (val * base) + (c - '0');
+                c = *++cp;
+            }
+            else if (base == 16 && isascii(c) && isxdigit(c)) {
+                val = (val << 4) |
+                    (c + 10 - (islower(c) ? 'a' : 'A'));
+                c = *++cp;
+            } else {
+                break;
+            }
+        }
+        if (c == '.') {
+            /*
+             * Internet format:
+             *    a.b.c.d
+             *    a.b.c    (with c treated as 16 bits)
+             *    a.b    (with b treated as 24 bits)
+             */
+            if (pp >= parts + 3)
+            {
+                return (0);
+            }
+            *pp++ = val;
+            c = *++cp;
+        } else {
+            break;
+        }
+    }
+    /*
+     * Check for trailing characters.
+     */
+    if (c != '\0' && (!isascii(c) || !isspace(c)))
+    {
+        return 0;
+    }
+    /*
+     * Concoct the address according to
+     * the number of parts specified.
+     */
+    n = pp - parts + 1;
+    switch (n) {
+
+    case 0:
+        return 0;        /* initial nondigit */
+
+    case 1:                /* a -- 32 bits */
+        break;
+
+    case 2:                /* a.b -- 8.24 bits */
+        if (val > 0xffffff) {
+            return 0;
+        }
+        val |= parts[0] << 24;
+        break;
+
+    case 3:                /* a.b.c -- 8.8.16 bits */
+        if (val > 0xffff) {
+            return 0;
+        }
+        val |= (parts[0] << 24) | (parts[1] << 16);
+        break;
+
+    case 4:                /* a.b.c.d -- 8.8.8.8 bits */
+        if (val > 0xff) {
+            return 0;
+        }
+        val |= (parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8);
+        break;
+    }
+    if (addr) {
+        addr->s_addr = htonl(val);
+    }
+    return 1;
+}
+
+static bool socketReady( SOCKET sockfd, int timeout )
+{
+    fd_set fdin;
+    struct timeval tv = { (long) timeout, 0 };
+
+    FD_ZERO(&fdin);
+    FD_SET(sockfd, &fdin);
+
+    int r = select(sockfd + 1, &fdin, 0, &fdin, &tv);
+
+    return r > 0;
+}
+
 void *MulticastRXThread::Entry(void)
 {
-
-    //    Create a datagram socket for receiving data
-    m_myaddr.AnyAddress();
-    m_myaddr.Service(m_service_port);
     wxString msg;
+    int r;
 
-    m_sock = new wxDatagramSocket(m_myaddr, wxSOCKET_REUSEADDR);
+    // Subscribe m_radar_socket to a multicast group
+    struct in_addr mcAddr;
+    struct in_addr recvAddr;
 
-    if (!m_sock) {
- //       wxLogMessage(wxT("BR24radar_pi: Unable to listen on port %ls"), m_service_port.c_str());
+    if (!my_inet_aton(m_ip.mb_str().data(), &mcAddr)) {
+        wxLogError(wxT("Unable to determine address of %s"), m_ip.mb_str().data());
         return 0;
     }
 
-    m_sock->SetFlags(wxSOCKET_BLOCK); // We use blocking but use Wait() to avoid timeouts.
-
-    //    Subscribe to a multicast group
-    unsigned int mcAddr;
-    unsigned int recvAddr;
-
-    struct addrinfo hints;
-    struct addrinfo *addr;
-
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_protocol = IPPROTO_UDP;
-    hints.ai_socktype = SOCK_DGRAM;
-
-    if (getaddrinfo(m_ip.mb_str(), 0, &hints, &addr) && addr) {
-        mcAddr = ((struct sockaddr_in *) addr->ai_addr)->sin_addr.s_addr;
-    }
-    else {
-        wxLogError(wxT("Unable to determine address of %s"), m_ip.c_str());
-        return 0;
-    }
-
-    if (getaddrinfo(pPlugIn->settings.radar_interface.mb_str(), 0, &hints, &addr) && addr) {
-        recvAddr = ((struct sockaddr_in *) addr->ai_addr)->sin_addr.s_addr;
-    }
-    else {
-        wxLogError(wxT("Unable to determine address of %s"), pPlugIn->settings.radar_interface.c_str());
+    if (!my_inet_aton(pPlugIn->settings.radar_interface.mb_str().data(), &recvAddr)) {
+        wxLogError(wxT("Unable to determine address of %s"), pPlugIn->settings.radar_interface.mb_str().data());
         return 0;
     }
 
     struct ip_mreq mreq;
-    mreq.imr_multiaddr.s_addr = mcAddr;
-    mreq.imr_interface.s_addr = recvAddr;
+    mreq.imr_multiaddr = mcAddr;
+    mreq.imr_interface = recvAddr;
 
-    bool bam = m_sock->SetOption(IPPROTO_IP, IP_ADD_MEMBERSHIP, (const void *)&mreq, sizeof(mreq));
-    if (!bam) {
-        wxLogError(wxT("Unable to listen to multicast group: %d"), m_sock->LastError());
-        // wxMessageBox(wxT("Unable to listen to radar data"), wxT("BR24radar"), wxOK | wxICON_EXCLAMATION);
+    r = setsockopt(m_radar_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq));
+    if (r) {
+        wxLogError(wxT("Unable to listen to multicast group: %s"), SOCKETERRSTR);
         return 0;
     }
 
-    wxIPV4address rx_addr;
-    rx_addr.Hostname(wxT("0.0.0.0"));   // UDP sender broadcast IP is dynamically assigned else standard IGMPV4
-    // just so long as it looks like an IP
+    sockaddr_storage rx_addr;
+    socklen_t        rx_len;
 
-/************************************************************************************************************/
-    //    The big while....
+    //    Loop until we quit
     int n_rx_once = 0;
     while (!*m_quit) {
-        if (m_sock->Wait(1, 0)) {
+        if (socketReady(m_radar_socket, 1)) {
             packet_buf frame;
-            m_sock->RecvFrom(rx_addr, frame.buf, sizeof(frame.buf));
-            int len = m_sock->LastCount();
-            if (len) {
+            rx_len = sizeof(rx_addr);
+            r = recvfrom(m_radar_socket, (char *) frame.buf, sizeof(frame.buf), 0, (struct sockaddr *) &rx_addr, &rx_len);
+            if (r) {
                 if (0 == n_rx_once) {
- //                   wxLogMessage(wxT("BR24radar_pi: First Packet Received."));
+                    if (pPlugIn->settings.verbose) {
+                        wxLogMessage(wxT("BR24radar_pi: First Packet Received."));
+                    }
                     n_rx_once++;
                 }
                 br_scan_packets_per_tick++;
-                process_buffer(&frame.packet, len);
+                process_buffer(&frame.packet, r);
             }
         }
     }
