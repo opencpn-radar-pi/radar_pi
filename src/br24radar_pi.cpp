@@ -1522,7 +1522,7 @@ void br24radar_pi::RadarStayAlive(void)
 void br24radar_pi::SetRangeMeters(long meters)
 {
     if (settings.master_mode) {
-        if (meters > 50 && meters < 64000) {
+        if (meters >= 50 && meters <= 64000) {
             long decimeters = meters * 10L/1.762;
             char pck[] = { (byte) 0x03
                          , (byte) 0xc1
