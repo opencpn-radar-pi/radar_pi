@@ -81,7 +81,7 @@ SET(SRC_br24radar
             src/br24radar_pi.h
             src/br24radar_pi.cpp
             src/br24radarcontrol.cpp
-			src/AlarmZoneControls.cpp
+            src/AlarmZoneControls.cpp
 )
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_br24radar})
 
@@ -105,7 +105,7 @@ INSTALL(TARGETS ${PACKAGE_NAME} RUNTIME LIBRARY DESTINATION "/usr/local/lib/open
 ENDIF(UNIX)
 
 IF(WIN32)
-INSTALL(TARGETS ${PACKAGE_NAME} RUNTIME DESTINATION "plugins") 
+INSTALL(TARGETS ${PACKAGE_NAME} RUNTIME DESTINATION "plugins")
 ENDIF(WIN32)
 
 # find src/ -name \*.cpp -or -name \*.c -or -name \*.h -or -name \*.hpp >po/POTFILES.in

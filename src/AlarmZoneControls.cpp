@@ -63,7 +63,7 @@ using namespace std;
 
 enum {                                      // process ID's
     ID_OK_Z,
-	ID_ALARMZONES
+    ID_ALARMZONES
 };
 
 bool    outer_set;

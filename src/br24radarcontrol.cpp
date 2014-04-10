@@ -82,7 +82,7 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
     EVT_RADIOBUTTON(ID_RANGEMODE, BR24ControlsDialog::OnRangeModeClick)
     EVT_RADIOBUTTON(ID_CLUTTER, BR24ControlsDialog::OnFilterProcessClick)
     EVT_RADIOBUTTON(ID_REJECTION, BR24ControlsDialog::OnRejectionModeClick)
-	EVT_RADIOBUTTON(ID_ALARMZONES, BR24ControlsDialog::OnAlarmDialogClick)
+    EVT_RADIOBUTTON(ID_ALARMZONES, BR24ControlsDialog::OnAlarmDialogClick)
 
 END_EVENT_TABLE()
 
