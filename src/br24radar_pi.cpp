@@ -1965,9 +1965,9 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
                     range_raw = small_range;
                 }
             } else {
-                range_raw = large_range * 348;
+                range_raw = large_range * 256;
             }
-            range_meters = (int) ((double) range_raw * sqrt(2.0) / 10.0);
+            range_meters = range_raw / 4;
         }
 
         // Range change desired?
