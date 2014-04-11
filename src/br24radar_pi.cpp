@@ -795,7 +795,7 @@ void br24radar_pi::DoTick(void)
 
     if (delta_t > 60) {
         // If the position data is over one minute old reset our heading and sound an alarm.
-        // Note that the watchdog is continuously reset every time we do retrieve data.
+        // Note that the watchdog is continuously reset every time we receive a heading.
         br_bpos_set = false;
         m_hdt_source = 0;
         PlayAlarmSound(false);
@@ -877,7 +877,13 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
     UpdateState();
 
-    if (br_scanner_state == RADAR_ON && (br_radar_state == RADAR_ON || settings.display_mode == 0)) {
+    if (br_scanner_state == RADAR_ON                                // Received spoke data
+    && (
+         (br_radar_state == RADAR_ON && settings.display_mode != 0) // Pressed radar in non-overlay mode
+         ||
+         (settings.display_mode == 0 && m_hdt_source > 0)           // overlay mode and heading received
+       ))
+    {
         m_dt_last_render = wxDateTime::Now();
 
         double c_dist, lat, lon;
@@ -1435,8 +1441,8 @@ void br24radar_pi::SetPositionFix(PlugIn_Position_Fix &pfix)
 
     br_bpos_set = true;
     bpos_warn_msg = false;
-    watchdog = wxDateTime::Now();
 }
+
 void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 {
     br_ownship_lat = pfix.Lat;
