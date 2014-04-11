@@ -181,6 +181,7 @@ BR24ControlsDialog::~BR24ControlsDialog()
 
 void BR24ControlsDialog::Init()
 {
+    // Initialize all members that need initialization
 }
 
 bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID id,
@@ -288,6 +289,7 @@ void BR24ControlsDialog::CreateControls()
     pActualRange = new wxTextCtrl(this, wxID_ANY);
     RangeBoxSizer->Add(pActualRange, 1, wxALIGN_LEFT | wxALL, 5);
 //    pActualRange->Disable();
+    SetActualRange(pPlugIn->GetRangeMeters());
 
     /* TODO: Add up down buttons */
 
@@ -306,7 +308,6 @@ void BR24ControlsDialog::CreateControls()
                          wxCommandEventHandler(BR24ControlsDialog::OnTransSlider), NULL, this);
 
     pTranSlider->SetValue(pPlugIn->settings.overlay_transparency);
-    pPlugIn->UpdateDisplayParameters();
 
 //  Image Conditioning Options
     wxStaticBox* BoxConditioning = new wxStaticBox(this, wxID_ANY, _("Signal Conditioning"));
@@ -389,6 +390,8 @@ void BR24ControlsDialog::CreateControls()
     wxButton* bOK = new wxButton(this, ID_OK, _("&Close"),
                                  wxDefaultPosition, wxDefaultSize, 0);
     AckBox->Add(bOK, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+
+    pPlugIn->UpdateDisplayParameters();
 }
 
 void BR24ControlsDialog::OnRangeModeClick(wxCommandEvent &event)
@@ -495,7 +498,7 @@ void BR24ControlsDialog::OnFilterProcessClick(wxCommandEvent &event)
         case 3: {                                       // Sea Clutter Auto
                 pGainSlider->Disable();
                 break;
-            }        
+            }
         case 4: {                                       //Sea Clutter Man
                 sel_gain = pPlugIn->settings.sea_clutter_gain;
                 pGainSlider->Enable();
@@ -530,7 +533,7 @@ void BR24ControlsDialog::OnGainSlider(wxCommandEvent &event)
                 pPlugIn->settings.sea_clutter_gain = sel_gain;
                 break;
             }
-    } 
+    }
     pPlugIn->SetFilterProcess(pPlugIn->settings.filter_process, sel_gain);
 }
 

@@ -745,7 +745,6 @@ long br24radar_pi::GetRangeMeters()
 
 void br24radar_pi::UpdateDisplayParameters(void)
 {
-    wxTimeSpan hr(1, 0, 0, 0);
     RequestRefresh(GetOCPNCanvasWindow());
 }
 
@@ -1323,6 +1322,8 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("HeadingCorrection"),  &settings.heading_correction, 0);
             pConf->Read(wxT("Interface"), &settings.radar_interface, wxT("0.0.0.0"));
             pConf->Read(wxT("BeamWidth"), &settings.beam_width, 2);
+            pConf->Read(wxT("InterferenceRejection"), &settings.rejection, 0);
+            pConf->Read(wxT("AlarmZonesActive"), &settings.alarm_zone, 0);
 
             pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
             pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
@@ -1405,6 +1406,8 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("HeadingCorrection"),  settings.heading_correction);
         pConf->Write(wxT("Interface"),  settings.radar_interface);
         pConf->Write(wxT("BeamWidth"),  settings.beam_width);
+        pConf->Write(wxT("InterferenceRejection"), settings.rejection);
+        pConf->Write(wxT("AlarmZonesActive"), settings.alarm_zone);
 
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
         pConf->Write(wxT("ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
@@ -1981,7 +1984,7 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
 
             // Set the control's value to the real range that we received, not a table idea
             if (pPlugIn->m_pControlDialog) {
-                pPlugIn->m_pControlDialog->SetActualRange(range_meters);
+                pPlugIn->m_pControlDialog->SetActualRange(br_range_meters);
             }
         }
 
