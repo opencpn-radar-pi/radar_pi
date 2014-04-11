@@ -146,7 +146,6 @@ struct radar_control_settings {
     int     radar_type;
     int      overlay_transparency;    // now 0-100, no longer a double
     bool     master_mode;
-    bool     overlay_chart;           // true means always show if received, even if not master
     bool     verbose;
     bool     auto_range_mode;
     int      range_index;

@@ -75,7 +75,10 @@ typedef char byte;
 #include "OCPN_Sound.h" //Devil
 
 // A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration)
+// Note that 3G scanners are BR24's with better power, so they are more BR23+ than 4G-.
+// As far as we know they 3G's use exactly the same command set.
 
+// If BR24MARK is found, we switch to BR24 mode, otherwise 4G.
 static unsigned char BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
 
 enum {
@@ -775,6 +778,12 @@ void br24radar_pi::OnToolbarToolCallback(int id)
 
     UpdateState();
 }
+
+// DoTick
+// ------
+// Called on every RenderGLOverlay call, i.e. once a second.
+//
+// This checks if we need to ping the radar to keep it alive (or make it alive)
 //*********************************************************************************
 // Keeps Radar scanner on line if master and radar on -  run by RenderGLOverlay
 
@@ -782,31 +791,30 @@ void br24radar_pi::DoTick(void)
 {
     wxDateTime now = wxDateTime::Now();
 
-     wxTimeSpan wtchdg = now.Subtract(watchdog);
-            long delta_wdt = wtchdg.GetSeconds().ToLong();
+    long delta_t = now.Subtract(watchdog).GetSeconds().ToLong();
 
-            if (delta_wdt > 60)  {              // check every minute
-                br_bpos_set = false;
-                m_hdt_source = 0;
-                PlayAlarmSound(false);
-                watchdog = now;
-            }
-/*
-             if ((br_bpos_set == bpos_warn_msg)) {       // needs synchronization
+    if (delta_t > 60) {
+        // If the position data is over one minute old reset our heading and sound an alarm.
+        // Note that the watchdog is continuously reset every time we do retrieve data.
+        br_bpos_set = false;
+        m_hdt_source = 0;
+        PlayAlarmSound(false);
+        watchdog = now;
+    }
 
-                wxString message(_("The Radar Overlay has lost GPS position and heading data"));
-                wxMessageDialog dlg(GetOCPNCanvasWindow(),  message, wxT("System Message"), wxOK);
-                dlg.ShowModal();
-                bpos_warn_msg = true;
-            }
-*/
-     //    If no data appears to be coming in,
-    //    switch to Master mode and Turn on Radar
+#ifdef NEVER
+    if ((br_bpos_set == bpos_warn_msg)) {       // needs synchronization
+        wxString message(_("The Radar Overlay has lost GPS position and heading data"));
+        wxMessageDialog dlg(GetOCPNCanvasWindow(),  message, wxT("System Message"), wxOK);
+        dlg.ShowModal();
+        bpos_warn_msg = true;
+    }
+#endif
+    
     if (br_scan_packets_per_tick > 0) { // Something coming from radar unit?
         br_scanner_state = RADAR_ON ;
-        if (settings.master_mode && br_dt_stayalive.IsValid()) {
-            wxTimeSpan sats = now.Subtract(br_dt_stayalive);
-            long delta_t = sats.GetSeconds().ToLong();          // send out stayalive every 5 secs
+        if (settings.master_mode) {
+            delta_t = now.Subtract(br_dt_stayalive).GetSeconds().ToLong();
             if (delta_t > 5) {
                 br_dt_stayalive = now;
                 RadarStayAlive();
@@ -869,7 +877,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
     UpdateState();
 
-    if (br_scanner_state == RADAR_ON && (br_radar_state == RADAR_ON || settings.overlay_chart)) {
+    if (br_scanner_state == RADAR_ON && (br_radar_state == RADAR_ON || settings.display_mode == 0)) {
         m_dt_last_render = wxDateTime::Now();
 
         double c_dist, lat, lon;
@@ -1300,7 +1308,6 @@ bool br24radar_pi::LoadConfig(void)
         {
             pConf->Read(wxT("RangeUnits" ), &settings.range_units, 0 ); //0 = "Nautical miles"), 1 = "Statute miles", 2 = "Kilometers", 3 = "Meters"
             pConf->Read(wxT("DisplayMode"),  &settings.display_mode, 0);
-            pConf->Read(wxT("OverlayChart"),  &settings.overlay_chart, 0);
             pConf->Read(wxT("VerboseLog"),  &settings.verbose, 0);
             pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
             pConf->Read(wxT("Gain"),  &settings.gain, 50);
@@ -1341,7 +1348,6 @@ bool br24radar_pi::LoadConfig(void)
             pConf->DeleteEntry(wxT("BR24RadarDisplayOption"));
         if (pConf->Read(wxT("BR24RadarDisplayMode"),  &settings.display_mode, 0))
             pConf->DeleteEntry(wxT("BR24RadarDisplayMode"));
-        settings.overlay_chart = false;
         settings.verbose = false;
         if (pConf->Read(wxT("BR24RadarTransparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY))
             pConf->DeleteEntry(wxT("BR24RadarTransparency"));
@@ -1384,7 +1390,6 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("DisplayOption"), settings.display_option);
         pConf->Write(wxT("RangeUnits" ), settings.range_units);
         pConf->Write(wxT("DisplayMode"), settings.display_mode);
-        pConf->Write(wxT("OverlayChart"), settings.overlay_chart);
         pConf->Write(wxT("VerboseLog"), settings.verbose);
         pConf->Write(wxT("Transparency"), settings.overlay_transparency);
         pConf->Write(wxT("Gain"), settings.gain);
@@ -1430,6 +1435,7 @@ void br24radar_pi::SetPositionFix(PlugIn_Position_Fix &pfix)
 
     br_bpos_set = true;
     bpos_warn_msg = false;
+    watchdog = wxDateTime::Now();
 }
 void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 {
@@ -1463,13 +1469,14 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 
     br_bpos_set = true;
     bpos_warn_msg = false;
+    watchdog = wxDateTime::Now();
 }
 
 //**************** Cursor position events **********************
 void br24radar_pi::SetCursorLatLon(double lat, double lon)
 {
-cur_lat = lat;
-cur_lon = lon;
+    cur_lat = lat;
+    cur_lon = lon;
 }
 
 //************************************************************************
@@ -1902,46 +1909,49 @@ void *MulticastRXThread::Entry(void)
     return 0;
 }
 
-void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
+// process_buffer
+// --------------
+// Process one radar frame packet, which can contain up to 32 'spokes' or lines extending outwards
+// from the radar up to the range indicated in the packet.
+//
 // We only get Data packets of fixed length from PORT (6678), see structure in .h file
 // Sequence Header - 8 bytes
 // 32 line header/data sets per packet
 //      Line Header - 24 bytes
 //      Line Data - 512 bytes
+//
+void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
 {
     for (int scanline = 0; scanline < 32 ; scanline++) {
         radar_line * line = &packet->line[scanline];
         if ((char *) &packet->line[scanline + 1] > (char *) packet + len)
         {
-//          wxLogMessage(wxT("BR24radar_pi: Truncated packet at line %d len %d"), scanline, len);
+          // ignore a truncated spoke
           break;
         }
 
         int range_raw = 0;
         int angle_raw;
 
-//        bool model4G = false;
         short int large_range;
         short int small_range;
         int range_meters;
 
- //       if (pPlugIn->settings.verbose) {
- //          logBinaryData(wxT("line header"), (char *) line, sizeof(line->br4g));
-//        }
-
         if (memcmp(line->br24.mark, BR24MARK, sizeof(BR24MARK)) == 0) {
+            // BR24 and 3G mode
             range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
             angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
             range_meters = (int) ((double)range_raw * 10.0 / sqrt(2.0));
 
         } else {
+            // 4G mode
             large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
             small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
             angle_raw = (line->br4g.angle[1] << 8) | line->br4g.angle[0];
 
             if (large_range == 0x80) {
                 if (small_range == -1) {
- //                   wxLogMessage(wxT("BR24radar_pi:  Neither 4G range field set\n"));
+                    range_raw = 0; // Invalid range received
                 } else {
                     range_raw = small_range;
                 }
@@ -1949,13 +1959,17 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
                 range_raw = large_range * 348;
             }
             range_meters = (int) ((double) range_raw * sqrt(2.0) / 10.0);
- //           model4G = true;
         }
 
         // Range change desired?
         if (range_meters != br_range_meters) {
 
-            wxLogMessage(wxT("BR24radar_pi:  Range Change: %d --> %d meters"), br_range_meters, range_meters);
+            if (range_meters == 0) {
+                wxLogMessage(wxT("BR24radar_pi:  Invalid range received: %d meters"), br_range_meters, range_meters);
+            }
+            else {
+                wxLogMessage(wxT("BR24radar_pi:  Range Change: %d --> %d meters (raw value: %d"), br_range_meters, range_meters, range_raw);
+            }
 
             br_range_meters = range_meters;
 
@@ -1965,14 +1979,16 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
             }
         }
 
-        unsigned char *dest_data1 = &pPlugIn->m_scan_buf[angle_raw][0];  // start address of destination in scan_buf
+        unsigned char *dest_data1 = pPlugIn->m_scan_buf[angle_raw];
         memcpy(dest_data1, line->data, 512);
-        pPlugIn->m_scan_buf[angle_raw][511] = (byte)0xff;                    // Max Range Line
-
+        
+        // The following line is a quick hack to confirm on-screen where the range ends, by putting a 'ring' of
+        // returned radar energy at the max range line.
+        // TODO: create nice actual range circles.
+        pPlugIn->m_scan_buf[angle_raw][511] = (byte)0xff;
+        
         pPlugIn->m_scan_range[angle_raw][2] = pPlugIn->m_scan_range[angle_raw][1];
         pPlugIn->m_scan_range[angle_raw][1] = pPlugIn->m_scan_range[angle_raw][0];
         pPlugIn->m_scan_range[angle_raw][0] = range_meters;
-
     }
 }
-
