@@ -299,11 +299,11 @@ int br24radar_pi::Init(void)
 
     //    Create the control socket for the Radar data receiver
 
-    struct sockaddr_in adr101;
-    memset(&adr101, 0, sizeof(adr101));
-    adr101.sin_family = AF_INET;
-    adr101.sin_addr.s_addr=htonl(INADDR_ANY);
-    adr101.sin_port=htons(6678);
+    struct sockaddr_in adr;
+    memset(&adr, 0, sizeof(adr));
+    adr.sin_family = AF_INET;
+    adr.sin_addr.s_addr=htonl(INADDR_ANY);
+    adr.sin_port=htons(6680);
     int one = 1;
     int r = 0;
     m_radar_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -316,7 +316,7 @@ int br24radar_pi::Init(void)
 
     if (!r)
     {
-        r = bind(m_radar_socket, (struct sockaddr *) &adr101, sizeof(adr101));
+        r = bind(m_radar_socket, (struct sockaddr *) &adr, sizeof(adr));
     }
 
     if (r)
@@ -347,7 +347,7 @@ int br24radar_pi::Init(void)
 */
     //    Create the THREAD for Multicast radar data reception
     m_quit = false;
-    m_receiveThread = new MulticastRXThread(this, &m_quit, wxT("236.6.7.8"), wxT("6678"), m_radar_socket);
+    m_receiveThread = new MulticastRXThread(this, &m_quit);
     m_receiveThread->Run();
 
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
@@ -1500,14 +1500,14 @@ void br24radar_pi::SetCursorLatLon(double lat, double lon)
 //************************************************************************
 void br24radar_pi::TransmitCmd(char* msg, int size)
 {
-    struct sockaddr_in adr101;
-    memset(&adr101, 0, sizeof(adr101));
-    adr101.sin_family = AF_INET;
-    adr101.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 10); // 236.6.7.10
-    adr101.sin_port=htons(6680);
+    struct sockaddr_in adr;
+    memset(&adr, 0, sizeof(adr));
+    adr.sin_family = AF_INET;
+    adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 10); // 236.6.7.10
+    adr.sin_port=htons(6680);
 
-    if (m_radar_socket == INVALID_SOCKET || sendto(m_radar_socket, msg, size, 0, (struct sockaddr *) &adr101, sizeof(adr101))) {
-        wxLogMessage(wxT("BR24radar_pi: unable to transmit command to radar: %s\n"), strerror(errno));
+    if (m_radar_socket == INVALID_SOCKET || sendto(m_radar_socket, msg, size, 0, (struct sockaddr *) &adr, sizeof(adr)) < size) {
+        wxLogMessage(wxT("BR24radar_pi: unable to transmit command to radar: %s\n"), SOCKETERRSTR);
         return;
     };
 };
@@ -1874,29 +1874,56 @@ static bool socketReady( SOCKET sockfd, int timeout )
 void *MulticastRXThread::Entry(void)
 {
     wxString msg;
-    int r;
+    SOCKET rx_socket;
+    struct sockaddr_in adr;
+    int one = 1;
+    int r = 0;
 
-    // Subscribe m_radar_socket to a multicast group
-    struct in_addr mcAddr;
-    struct in_addr recvAddr;
+    memset(&adr, 0, sizeof(adr));
+    adr.sin_family = AF_INET;
+    adr.sin_addr.s_addr=htonl(INADDR_ANY);
+    adr.sin_port=htons(6678);
+    rx_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (rx_socket == INVALID_SOCKET) {
+        r = -1;
+    }
+    else {
+        r = setsockopt(rx_socket, SOL_SOCKET, SO_REUSEADDR, (const char *) &one, sizeof(one));
+    }
 
-    if (!my_inet_aton(m_ip.mb_str().data(), &mcAddr)) {
-        wxLogError(wxT("Unable to determine address of %s"), m_ip.mb_str().data());
+    if (!r)
+    {
+        r = bind(rx_socket, (struct sockaddr *) &adr, sizeof(adr));
+    }
+
+    if (r)
+    {
+        wxLogError(wxT("BR24radar_pi: Unable to create UDP sending socket"));
+        // Might as well give up now
+        if (rx_socket != INVALID_SOCKET) {
+            closesocket(rx_socket);
+        }
         return 0;
     }
 
+    // Subscribe rx_socket to a multicast group
+    struct in_addr recvAddr;
+
     if (!my_inet_aton(pPlugIn->settings.radar_interface.mb_str().data(), &recvAddr)) {
         wxLogError(wxT("Unable to determine address of %s"), pPlugIn->settings.radar_interface.mb_str().data());
+        closesocket(rx_socket);
         return 0;
     }
 
     struct ip_mreq mreq;
-    mreq.imr_multiaddr = mcAddr;
+    // listen to 236.6.7.8 on interface identified by recvAddr.
+    mreq.imr_multiaddr.s_addr = htonl((236 << 24) | (6 << 16) | (7 << 8) | 8); // 236.6.7.8
     mreq.imr_interface = recvAddr;
 
-    r = setsockopt(m_radar_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq));
+    r = setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq));
     if (r) {
         wxLogError(wxT("Unable to listen to multicast group: %s"), SOCKETERRSTR);
+        closesocket(rx_socket);
         return 0;
     }
 
@@ -1906,10 +1933,10 @@ void *MulticastRXThread::Entry(void)
     //    Loop until we quit
     int n_rx_once = 0;
     while (!*m_quit) {
-        if (socketReady(m_radar_socket, 1)) {
+        if (socketReady(rx_socket, 1)) {
             packet_buf frame;
             rx_len = sizeof(rx_addr);
-            r = recvfrom(m_radar_socket, (char *) frame.buf, sizeof(frame.buf), 0, (struct sockaddr *) &rx_addr, &rx_len);
+            r = recvfrom(rx_socket, (char *) frame.buf, sizeof(frame.buf), 0, (struct sockaddr *) &rx_addr, &rx_len);
             if (r) {
                 if (0 == n_rx_once) {
                     if (pPlugIn->settings.verbose) {
@@ -1922,6 +1949,8 @@ void *MulticastRXThread::Entry(void)
             }
         }
     }
+
+    closesocket(rx_socket);
     return 0;
 }
 

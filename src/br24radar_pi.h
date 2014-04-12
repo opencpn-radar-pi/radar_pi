@@ -331,13 +331,10 @@ class MulticastRXThread: public wxThread
 
 public:
 
-    MulticastRXThread(br24radar_pi *ppi, volatile bool * quit, const wxString &IP_addr, const wxString &service_port, SOCKET radar_socket)
+    MulticastRXThread(br24radar_pi *ppi, volatile bool * quit)
     : wxThread(wxTHREAD_JOINABLE)
     , pPlugIn(ppi)
-    , m_ip(IP_addr)
-    , m_service_port(service_port)
     , m_quit(quit)
-    , m_radar_socket(radar_socket)
     {
 //      wxLogMessage(_T("BR24 radar thread starting for multicast address %ls port %ls"), m_ip.c_str(), m_service_port.c_str());
       Create(1024 * 1024);
@@ -353,11 +350,8 @@ private:
 
     br24radar_pi      *pPlugIn;
     wxString           m_ip;
-    wxString           m_service_port;
     volatile bool    * m_quit;
     wxIPV4address      m_myaddr;
-    SOCKET             m_radar_socket;
-
 };
 
 //----------------------------------------------------------------------------------------------------------
