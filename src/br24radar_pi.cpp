@@ -121,7 +121,7 @@ wxTextCtrl        *plogtc;
 
 int   radar_control_id, alarm_zone_id;
 bool  alarm_context_mode;
-double AZ_outer_radius, AZ_inner_radius,AZ_angle_1,AZ_angle_2;
+double AZ_outer_radius, AZ_inner_radius, AZ_angle_1, AZ_angle_2;
 double ppNM;
 
 
@@ -162,11 +162,11 @@ static double mod(double numb1, double numb2)
     return result;
 }
 
-static double modcrs(double numb1,double numb2)
+static double modcrs(double numb1, double numb2)
 {
     if (numb1 > twoPI)
         numb1 = mod(numb1, twoPI);
-    double result = twoPI - mod(twoPI-numb1,numb2);
+    double result = twoPI - mod(twoPI-numb1, numb2);
     return result;
 }
 */
@@ -184,7 +184,7 @@ static double local_distance (double lat1, double lon1, double lat2, double lon2
 
 static double radar_distance(double lat1, double lon1, double lat2, double lon2, char unit)
 {
-   double dist = local_distance (lat1,lon1,lat2,lon2);
+   double dist = local_distance (lat1, lon1, lat2, lon2);
 
     switch (unit) {
         case 'M':              // statute miles
@@ -196,7 +196,7 @@ static double radar_distance(double lat1, double lon1, double lat2, double lon2,
         case 'N':              // nautical miles
             break;
     }
-//    wxLogMessage(wxT("Radar Distance %f,%f,%f,%f,%f, %c"), lat1,lon1,lat2,lon2, dist, unit);
+//    wxLogMessage(wxT("Radar Distance %f,%f,%f,%f,%f, %c"), lat1, lon1, lat2, lon2, dist, unit);
     return dist;
 }
 
@@ -662,7 +662,7 @@ void BR24DisplayOptionsDialog::OnIdOKClick(wxCommandEvent& event)
 
 void br24radar_pi::OnContextMenuItemCallback(int id)
 {
-   if (!alarm_context_mode){
+   if (!alarm_context_mode) {
         if (!m_pControlDialog) {
             m_pControlDialog = new BR24ControlsDialog;
             m_pControlDialog->Create(m_parent_window, this);
@@ -672,7 +672,7 @@ void br24radar_pi::OnContextMenuItemCallback(int id)
                                   m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy);
     }
 
-   if (alarm_context_mode){
+   if (alarm_context_mode) {
        SetCanvasContextMenuItemViz(radar_control_id, false);
        mark_rng = local_distance(br_ownship_lat, br_ownship_lon, cur_lat, cur_lon);
        mark_brg = local_bearing(br_ownship_lat, br_ownship_lon, cur_lat, cur_lon);
@@ -925,7 +925,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
             double wanted_range =  max_distance;
 
-            if((wanted_range > 1.01*previous_range) || (wanted_range < .99*previous_range)){
+            if ((wanted_range > 1.01*previous_range) || (wanted_range < .99*previous_range)) {
                 previous_range = wanted_range;
                // long range_meters = (long) wanted_range;
                 SetRangeMeters((long)wanted_range);
@@ -940,7 +940,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         pix_y = vp->pix_height;
         v_scale_ppm = 1.0;
 
-//        msg.Printf(wxT("RenderGLOverlay: vp->pix_height: %f ,Dist_y: %f "), pix_y , dist_y);
+//        msg.Printf(wxT("RenderGLOverlay: vp->pix_height: %f, Dist_y: %f "), pix_y , dist_y);
 //        wxLogMessage(msg);
 
         if (dist_y > 0.) {
@@ -1000,8 +1000,8 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     glPopAttrib();
 
     // Alarm Zone image
-    if(settings.alarm_zone >0){
-            RenderAlarmZone(radar_center,v_scale_ppm);
+    if (settings.alarm_zone >0) {
+            RenderAlarmZone(radar_center, v_scale_ppm);
     }
 }
 
@@ -1041,13 +1041,13 @@ void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_pp
     glPopAttrib();
 
     // Alarm Zone image
-    if(settings.alarm_zone >0){
-            RenderAlarmZone(radar_center,v_scale_ppm);
+    if (settings.alarm_zone >0) {
+            RenderAlarmZone(radar_center, v_scale_ppm);
     }
 }
 
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
-  {
+{
     // DRAWING PICTURE
 
 
@@ -1088,7 +1088,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
                 glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);    // red, blue, green
                 double blob_deg = 2 * 360.0 / LINES_PER_ROTATION;
-                double blob_width = wxMax(1,(blob_deg /360.0) * (radius * 2.0 * PI)); // radar Pixels
+                double blob_width = wxMax(1, (blob_deg /360.0) * (radius * 2.0 * PI)); // radar Pixels
 
                 double angleDeg   = (angle * 360.0) / LINES_PER_ROTATION - (blob_deg/2);
                 draw_blob_gl(angleDeg, radius, blob_width);
@@ -1096,7 +1096,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 /**********************************************************************************************************/
 // Alarm Section
 
-                if (settings.alarm_zone >0) {
+                if (settings.alarm_zone > 0) {
                     double angle_deg = (angle * 360.0) / LINES_PER_ROTATION;
                     double inner_range = AZ_inner_radius / ppNM;
                     double outer_range = AZ_outer_radius / ppNM;
@@ -1109,7 +1109,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                         angle_deg += 360.0;
                     }
                     if (angle_deg > AZ_angle_1 && angle_deg < AZ_angle_2) {
-                        if (bogey_range > inner_range && bogey_range < outer_range){
+                        if (bogey_range > inner_range && bogey_range < outer_range) {
                             PlayAlarmSound(true);
                         }
                     }
@@ -1221,12 +1221,14 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm)
 
     ppNM = v_scale_ppm * 1852.0 ;          // screen pixels per naut mile
 
-    if (settings.alarm_zone == 1){
+    if (settings.alarm_zone == 1) {
             AZ_outer_radius = Zone1.outer_range * ppNM;
             AZ_inner_radius = Zone1.inner_range * ppNM;
 
-            if (Zone1.type == 1) AZ_angle_1=0,AZ_angle_2=359;
-            if (Zone1.type == 0){
+            if (Zone1.type == 1) {
+                AZ_angle_1 = 0;
+                AZ_angle_2 = 359;
+            } else {
                 AZ_angle_1 = Zone1.start_bearing;
                 AZ_angle_2 = Zone1.end_bearing;
             }
@@ -1234,12 +1236,14 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm)
             glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);    // red, blue, green
             DrawFilledArc(AZ_outer_radius, AZ_inner_radius, AZ_angle_1, AZ_angle_2);
     }
-    if (settings.alarm_zone == 2){
+    if (settings.alarm_zone == 2) {
             AZ_outer_radius = Zone2.outer_range * ppNM;
             AZ_inner_radius = Zone2.inner_range * ppNM;
 
-            if (Zone2.type == 1) AZ_angle_1=0,AZ_angle_2=359;
-            if (Zone2.type == 0){
+            if (Zone2.type == 1) {
+                AZ_angle_1 = 0;
+                AZ_angle_2 = 359;
+            } else {
                 AZ_angle_1 = Zone1.start_bearing;
                 AZ_angle_2 = Zone1.end_bearing;
             }
@@ -1253,30 +1257,32 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm)
     glPopAttrib();
 }
 
-void br24radar_pi::PlayAlarmSound(bool on_off){
+void br24radar_pi::PlayAlarmSound(bool on_off)
+{
+    if (!alarm_sound_on && on_off) {
+        if (!RadarAlarm.IsOk()) {
+            RadarAlarm.Create(RadarAlertAudioFile);
+        }
 
-
-    if( !alarm_sound_on && on_off) {
-        if( !RadarAlarm.IsOk() ) RadarAlarm.Create( RadarAlertAudioFile );
-
-        #ifndef __WXMSW__
-                if(RadarAlarm.IsOk() && !RadarAlarm.IsPlaying()){
-                    RadarAlarm.Play();
-                    wxLogMessage(wxT("Radar Guard Alarm"));
-                    alarm_sound_on = true;
-                }
-        #else
-                if(RadarAlarm.IsOk() && !alarm_sound_on){
-                    RadarAlarm.Play();
-                    wxLogMessage(wxT("Radar Guard Alarm"));
-                    alarm_sound_on = true;
-                }
-        #endif
+#ifndef __WXMSW__
+        if (RadarAlarm.IsOk() && !RadarAlarm.IsPlaying()) {
+            RadarAlarm.Play();
+            wxLogMessage(wxT("Radar Guard Alarm"));
+            alarm_sound_on = true;
+        }
+#else
+        if (RadarAlarm.IsOk() && !alarm_sound_on) {
+            RadarAlarm.Play();
+            wxLogMessage(wxT("Radar Guard Alarm"));
+            alarm_sound_on = true;
+        }
+#endif
     }
 
-    if( alarm_sound_on && !on_off)
-     {
-        if( RadarAlarm.IsOk() ) RadarAlarm.Stop();
+    if (alarm_sound_on && !on_off) {
+        if (RadarAlarm.IsOk()) {
+            RadarAlarm.Stop();
+        }
         alarm_sound_on = false;
     }
 }
@@ -1284,19 +1290,21 @@ void br24radar_pi::PlayAlarmSound(bool on_off){
 
 void br24radar_pi::DrawFilledArc(double r1, double r2, double a1, double a2)
 {
-    if (a1 > a2) a2 += 360.0;
+    if (a1 > a2) {
+        a2 += 360.0;
+    }
 
-        for( double n = a1; n <= a2; ++n ) {
-            double st = sin(deg2rad(90-n));
-            double ct = cos(deg2rad(90-n));
-            double st2 = sin(deg2rad(90-n-1));
-            double ct2 = cos(deg2rad(90-n-1));
-            glBegin(GL_TRIANGLES);
-                    glVertex2f(st*r1, ct*r1);
-                    glVertex2f(st2*r1, ct2*r1);
-                    glVertex2f(st*r2, ct*r2);
-            glEnd();
-        }
+    for( double n = a1; n <= a2; ++n ) {
+        double st = sin(deg2rad(90-n));
+        double ct = cos(deg2rad(90-n));
+        double st2 = sin(deg2rad(90-n-1));
+        double ct2 = cos(deg2rad(90-n-1));
+        glBegin(GL_TRIANGLES);
+        glVertex2f(st*r1, ct*r1);
+        glVertex2f(st2*r1, ct2*r1);
+        glVertex2f(st*r2, ct*r2);
+        glEnd();
+    }
 }
 
 //****************************************************************************
@@ -1308,9 +1316,8 @@ bool br24radar_pi::LoadConfig(void)
 
     if (pConf) {
         pConf->SetPath(wxT("/Settings"));
-         pConf->SetPath(wxT("/Plugins/BR24Radar"));
-        if (pConf->Read(wxT("DisplayOption"), &settings.display_option, 0))
-        {
+        pConf->SetPath(wxT("/Plugins/BR24Radar"));
+        if (pConf->Read(wxT("DisplayOption"), &settings.display_option, 0)) {
             pConf->Read(wxT("RangeUnits" ), &settings.range_units, 0 ); //0 = "Nautical miles"), 1 = "Statute miles", 2 = "Kilometers", 3 = "Meters"
             pConf->Read(wxT("DisplayMode"),  &settings.display_mode, 0);
             pConf->Read(wxT("VerboseLog"),  &settings.verbose, 0);
@@ -1548,7 +1555,7 @@ void br24radar_pi::SetRangeMeters(long meters)
                          , (byte) ((decimeters >> 24) & 0XFFL)
                          };
             TransmitCmd(pck, sizeof(pck));
-        wxLogMessage(wxT("SetRangeMeters: %ld meters: %x, %x, %x, %x, \n"), meters, pck[2],pck[3],pck[4],pck[5]);
+        wxLogMessage(wxT("SetRangeMeters: %ld meters: %x, %x, %x, %x, \n"), meters, pck[2], pck[3], pck[4], pck[5]);
         }
     }
 }
