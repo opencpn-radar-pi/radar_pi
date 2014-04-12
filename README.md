@@ -11,14 +11,9 @@ You have to be able to compile OpenCPN itself - Get the info at http://opencpn.o
 * go to the plugin subdirectory in your OpenCPN source tree
 * git clone git://github.com/canboat/BR24radar_pi.git
 
-Build as normally:
-
-* cd ..
-* cd build
-* cmake ..
-* cmake --build .
+Build as normally. This should build the plugin as well.
 
 License
 =======
-The plugin code is licensed under the terms of the GPL v2 or, at your will, later.
+The plugin code is licensed under the terms of the GPL v2.
 
