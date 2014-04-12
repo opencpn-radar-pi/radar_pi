@@ -193,6 +193,9 @@ static double radar_distance(double lat1, double lon1, double lat2, double lon2,
         case 'K':              // kilometers
             dist = dist * 1.852;
             break;
+        case 'm':              // meters
+            dist = dist * 1852.0;
+            break;
         case 'N':              // nautical miles
             break;
     }
@@ -872,9 +875,9 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
     // this is expected to be called at least once per second
 
-    DoTick();
+    DoTick(); // update timers and watchdogs
 
-    UpdateState();
+    UpdateState(); // update the toolbar
 
     if (br_scanner_state == RADAR_ON                                // Received spoke data
     && (
@@ -885,7 +888,6 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     {
         m_dt_last_render = wxDateTime::Now();
 
-        double c_dist, lat, lon;
         double max_distance = 0;
         wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
         wxPoint boat_center;
@@ -899,33 +901,17 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         }
 
         if (settings.auto_range_mode) {  // Calculate the "optimum" radar range setting in meters so Radar just fills Screen
-            if (br_bpos_set) {   // br_bpos_set is only set by NMEA input
-                GetCanvasLLPix(vp, wxPoint(0, 0), &lat, &lon);       // Dist to Lower Left Corner
-                c_dist = radar_distance(lat, lon, br_ownship_lat, br_ownship_lon, 'K');
-                max_distance = c_dist;
 
-                GetCanvasLLPix(vp, wxPoint(0, vp->pix_height), &lat, &lon);       // Dist to Upper Left Corner
-                c_dist = radar_distance(lat, lon, br_ownship_lat, br_ownship_lon, 'K');
-                max_distance = wxMax(max_distance, c_dist);
+            // We used to take the position of the boat into account, so that when you panned the zoom range would go up
+            // This is not what the plotters do, so just to make it work the same way we're doing it the same way.
+            // The radar range is set such that it covers the entire screen plus 50% so that a little panning is OK.
+            // This is what the plotters do as well.
 
-                GetCanvasLLPix(vp, wxPoint(vp->pix_width, vp->pix_height), &lat, &lon);  // Upper Right Corner
-                c_dist = radar_distance(lat, lon, br_ownship_lat, br_ownship_lon, 'K');
-                max_distance = wxMax(max_distance, c_dist);
+            max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
 
-                GetCanvasLLPix(vp, wxPoint(vp->pix_width, 0), &lat, &lon);
-                c_dist = radar_distance(lat, lon, br_ownship_lat, br_ownship_lon, 'K');
-                max_distance = wxMax(max_distance, c_dist) * 1000;                      // meters
+            double wanted_range =  max_distance / 2.0 * 1.5;
 
-            } else {
-                // If ownship position is not valid, use the ViewPort center
-                GetCanvasLLPix(vp, wxPoint(vp->pix_width / 2, vp->pix_height / 2), &br_ownship_lat, &br_ownship_lon);
-                GetCanvasLLPix(vp, wxPoint(0, 0), &lat, &lon);
-                max_distance = radar_distance(lat, lon, br_ownship_lat, br_ownship_lon, 'K') * 1000;
-            }
-
-            double wanted_range =  max_distance;
-
-            if ((wanted_range > 1.01*previous_range) || (wanted_range < .99*previous_range)) {
+            if ((wanted_range > 1.10 * previous_range) || (wanted_range < 0.90 * previous_range)) {
                 previous_range = wanted_range;
                // long range_meters = (long) wanted_range;
                 SetRangeMeters((long)wanted_range);
@@ -936,7 +922,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
         GetCanvasLLPix(vp, wxPoint(0, vp->pix_height-1), &ulat, &ulon);  // is pix_height a mapable coordinate?
         GetCanvasLLPix(vp, wxPoint(0, 0), &llat, &llon);
-        dist_y = radar_distance(llat, llon, ulat, ulon, 'K') * 1000.0; // Distance of height of display - meters
+        dist_y = radar_distance(llat, llon, ulat, ulon, 'm'); // Distance of height of display - meters
         pix_y = vp->pix_height;
         v_scale_ppm = 1.0;
 
@@ -944,6 +930,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 //        wxLogMessage(msg);
 
         if (dist_y > 0.) {
+            // v_scale_ppm = vertical pixels per meter
             v_scale_ppm = vp->pix_height / dist_y ;    // pixel height of screen div by equivalent meters
         }
 //        msg.Printf(wxT("RenderGLOverlay: v_scale_ppm: %f  "), v_scale_ppm);
@@ -966,8 +953,6 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
-    wxString msg;
-
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -982,20 +967,15 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     glRotatef(heading - 90.0, 0, 0, 1);        //correction for boat heading -90 for base north
 
     // scaling...
-    int max_range = 1, angle;
-    for (angle = 0 ; angle < LINES_PER_ROTATION ; angle++) {
-        if (m_scan_range[angle][0] > max_range) {               // this needs analysis
-            max_range = m_scan_range[angle][0];
-        }
-    }
-
-    double radar_pixels_per_meter = 512. / max_range;
+ 
+    double radar_pixels_per_meter = 512. / br_range_meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
     scale_factor = scale_factor * settings.range_calibration;
-//        msg.Printf(wxT("RenderRadarOverlay: v_scale_ppm: %f  radar_pixels_per_meter: %f"), v_scale_ppm, radar_pixels_per_meter);
-//        wxLogMessage(msg);
+    if (settings.verbose) {
+        wxLogMessage(wxT("RenderRadarOverlay: br_range_meters=%f v_scale_ppm: %f radar_pixels_per_meter: %f => scale factor = %f"), br_range_meters, v_scale_ppm, radar_pixels_per_meter, scale_factor);
+    }
     glScaled(scale_factor, scale_factor, 1.);
-    DrawRadarImage(max_range, radar_center);
+    DrawRadarImage(br_range_meters, radar_center);
     glPopMatrix();
     glPopAttrib();
 
@@ -1025,18 +1005,14 @@ void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_pp
     glRotatef(-90.0, 0, 0, 1);
 
     // scaling...
-    int max_range = 1, angle;
-    for (angle = 0; angle < 360; angle++) {
-        if (m_scan_range[angle][0] > max_range) {
-            max_range = m_scan_range[angle][0];
-        }
-    }
-    double radar_pixels_per_meter = 512. / max_range;
+    double radar_pixels_per_meter = 512. / br_range_meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
     glScaled(scale_factor, scale_factor, 1.);
-//        msg.Printf(wxT("RenderRadarOverlay: v_scale_ppm: %f  radar_pixels_per_meter: %f"), v_scale_ppm, radar_pixels_per_meter);
-//        wxLogMessage(msg);
-    DrawRadarImage(max_range, radar_center);
+    if (settings.verbose) {
+        msg.Printf(wxT("RenderRadarOverlay: br_range=%f v_scale_ppm=%f  radar_pixels_per_meter=%f"), br_range_meters, v_scale_ppm, radar_pixels_per_meter);
+        wxLogMessage(msg);
+    }
+    DrawRadarImage(br_range_meters, radar_center);
     glPopMatrix();
     glPopAttrib();
 
