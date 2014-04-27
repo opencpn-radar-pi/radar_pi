@@ -1,0 +1,260 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: br24radar_pi 3.3.1606\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-04-27 17:40+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/AlarmZoneControls.cpp:129 src/br24radarcontrol.cpp:371
+msgid "Alarm Zones"
+msgstr ""
+
+#: src/AlarmZoneControls.cpp:139
+msgid "Arc"
+msgstr ""
+
+#: src/AlarmZoneControls.cpp:140
+msgid "Circle"
+msgstr ""
+
+#: src/AlarmZoneControls.cpp:143
+msgid "Zone Type:"
+msgstr ""
+
+#: src/AlarmZoneControls.cpp:155
+msgid "Inner Range"
+msgstr ""
+
+#: src/AlarmZoneControls.cpp:164
+msgid "Outer Range"
+msgstr ""
+
+#: src/AlarmZoneControls.cpp:174
+msgid "Start Bearing"
+msgstr ""
+
+#: src/AlarmZoneControls.cpp:184
+msgid "End Bearing"
+msgstr ""
+
+#: src/AlarmZoneControls.cpp:195 src/br24radarcontrol.cpp:390
+msgid "&Close"
+msgstr ""
+
+#: src/AlarmZoneControls.cpp:205
+msgid "Zone"
+msgstr ""
+
+#: src/br24radar_pi.cpp:338
+msgid "Radar Control..."
+msgstr ""
+
+#: src/br24radar_pi.cpp:342
+msgid "Set Alarm Point"
+msgstr ""
+
+#: src/br24radar_pi.cpp:421
+msgid "Navico Radar PlugIn for OpenCPN"
+msgstr ""
+
+#: src/br24radar_pi.cpp:427
+msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+msgstr ""
+
+#: src/br24radar_pi.cpp:498
+msgid "BR24 Target Display Preferences"
+msgstr ""
+
+#: src/br24radar_pi.cpp:515 src/br24radar_pi.cpp:526
+msgid "Range Units"
+msgstr ""
+
+#: src/br24radar_pi.cpp:520
+msgid "Nautical Miles"
+msgstr ""
+
+#: src/br24radar_pi.cpp:521
+msgid "Statute Miles"
+msgstr ""
+
+#: src/br24radar_pi.cpp:522
+msgid "Kilometers"
+msgstr ""
+
+#: src/br24radar_pi.cpp:523
+msgid "Meters"
+msgstr ""
+
+#: src/br24radar_pi.cpp:539
+msgid "Monocolor-Red"
+msgstr ""
+
+#: src/br24radar_pi.cpp:540
+msgid "Multi-color"
+msgstr ""
+
+#: src/br24radar_pi.cpp:541
+msgid "GL3+"
+msgstr ""
+
+#: src/br24radar_pi.cpp:544
+msgid "Overlay Display Options"
+msgstr ""
+
+#: src/br24radar_pi.cpp:556
+msgid "Display Options"
+msgstr ""
+
+#: src/br24radar_pi.cpp:561
+msgid "Radar Chart Overlay"
+msgstr ""
+
+#: src/br24radar_pi.cpp:562
+msgid "Radar Standalone"
+msgstr ""
+
+#: src/br24radar_pi.cpp:563
+msgid "Spectrum"
+msgstr ""
+
+#: src/br24radar_pi.cpp:566
+msgid "Radar Display"
+msgstr ""
+
+#: src/br24radar_pi.cpp:578
+msgid "Calibration"
+msgstr ""
+
+#: src/br24radar_pi.cpp:583
+msgid "Range factor"
+msgstr ""
+
+#: src/br24radar_pi.cpp:595
+msgid "Heading factor (+ or -, 0 ->180)"
+msgstr ""
+
+#: src/br24radar_pi.cpp:811
+msgid "The Radar Overlay has lost GPS position and heading data"
+msgstr ""
+
+#: src/br24radar_pi.cpp:863
+msgid ""
+"The Radar Overlay PlugIn requires the Accelerated Graphics (OpenGL) mode to "
+"be activated in Options->Display->Chart Display Options"
+msgstr ""
+
+#: src/br24radar_pi.h:413
+msgid "BR24 Radar Control"
+msgstr ""
+
+#: src/br24radar_pi.h:472
+msgid " Alarm Zone Control"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:230
+msgid "Operational Control"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:235
+msgid "Manual"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:236
+msgid "Automatic"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:239
+msgid "Range Mode"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:255
+msgid "Range"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:275
+msgid "choice"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:297
+msgid "Transparency"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:303 src/br24radarcontrol.cpp:360
+msgid "slider"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:313
+msgid "Signal Conditioning"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:319
+msgid "Off"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:320
+msgid "Low"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:321
+msgid "Medium"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:322
+msgid "High"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:325
+msgid "Rejection"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:338
+msgid "Auto Gain"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:339
+msgid "Manual Gain"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:340
+msgid "Rain Clutter - Manual"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:341
+msgid "Sea Clutter - Auto"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:342
+msgid "Sea Clutter - Manual"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:345
+msgid "Tuning"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:355
+msgid "Gain"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:369
+msgid "Inactive"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:369
+msgid "Zone 1"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:369
+msgid "Zone 2"
+msgstr ""
