@@ -202,7 +202,7 @@ void AlarmZoneDialog::CreateControls()
 void AlarmZoneDialog::OnAlarmZoneDialogShow(int zone)
 {
     wxString AlarmZoneText;
-    AlarmZoneText.Printf(_T("%d: %i"),_("Zone"), zone);
+    AlarmZoneText.Printf(_T("%s: %i"),_("Zone"), zone);
     pZoneNumber->SetValue(AlarmZoneText);
 
     if (zone == 1)
