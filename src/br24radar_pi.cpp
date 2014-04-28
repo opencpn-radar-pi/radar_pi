@@ -1025,8 +1025,8 @@ void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_pp
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 {
     // DRAWING PICTURE
-
-
+    GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
+ 
     for (int angle = 0 ; angle < LINES_PER_ROTATION ; ++angle) {
 
         if (!m_scan_range[angle][0] && !m_scan_range[angle][1] && !m_scan_range[angle][2]) {
@@ -1034,10 +1034,9 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         }
         for (int radius = 0; radius < 512; ++radius) {
 
-            int red = 0, green = 0, blue = 0, strength = m_scan_buf[angle][radius], alpha;
+            int red = 0, green = 0, blue = 0, strength = m_scan_buf[angle][radius];
 
             if (strength > 50) { // Only draw when there is color, saves lots of CPU
-                alpha = strength * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
                 switch (settings.display_option) {
                     case 0:
                         red = 255;
