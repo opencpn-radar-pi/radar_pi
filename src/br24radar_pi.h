@@ -73,8 +73,6 @@
 # define closesocket(fd) close(fd)
 #endif
 
-//#include "navutil.h"        //This is the devil
-//#include "OCPN_Sound.h"     // If we try this instead?
 
 enum {
     BM_ID_RED,
