@@ -970,7 +970,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
     // scaling...
  
-    double radar_pixels_per_meter = 512. / br_range_meters;
+    double radar_pixels_per_meter = 512.0 / br_range_meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
     scale_factor = scale_factor * settings.range_calibration;
     if (settings.verbose) {
@@ -1028,15 +1028,16 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 {
     // DRAWING PICTURE
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
+    const double spoke_width = deg2rad(360) / LINES_PER_ROTATION; // How wide is one spoke?
  
-    for (int angle = 0 ; angle < LINES_PER_ROTATION ; ++angle) {
+    for (int angle = 0 ; angle < LINES_PER_ROTATION; ++angle) {
 
         if (!m_scan_range[angle][0] && !m_scan_range[angle][1] && !m_scan_range[angle][2]) {
             continue;   // test for entries in each prior scan, if all three empty - stop the process
         }
         for (int radius = 0; radius < 512; ++radius) {
 
-            int red = 0, green = 0, blue = 0, strength = m_scan_buf[angle][radius];
+            GLubyte red = 0, green = 0, blue = 0, strength = m_scan_buf[angle][radius];
 
             if (strength > 50) { // Only draw when there is color, saves lots of CPU
                 switch (settings.display_option) {
@@ -1063,12 +1064,12 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                         break;
                 }
 
-                glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);    // red, blue, green
-                double blob_deg = 2 * 360.0 / LINES_PER_ROTATION;
-                double blob_width = wxMax(1, (blob_deg /360.0) * (radius * 2.0 * PI)); // radar Pixels
-
-                double angleDeg   = (angle * 360.0) / LINES_PER_ROTATION - (blob_deg/2);
-                draw_blob_gl(angleDeg, radius, blob_width);
+                glColor4ub(red, green, blue, alpha);    // red, blue, green
+                double arc_width = spoke_width;
+                double arc_heigth = 1;
+                double angleRad = angle * spoke_width;
+                
+                draw_blob_gl(angleRad, radius, arc_width, arc_heigth);
 
 /**********************************************************************************************************/
 // Alarm Section
@@ -1155,35 +1156,42 @@ void br24radar_pi::draw_histogram_column(int x, int y)  // x=0->255 => 0->1020, 
 
 }
 
-void br24radar_pi::draw_blob_gl(double angle, double radius, double blob_width)
+void br24radar_pi::draw_blob_gl(double angle, double radius, double blob_width, double blob_heigth)
 {
-    double ca = cos(deg2rad(angle));
-    double sa = sin(deg2rad(angle));
+     double ca = cos(angle);
+     double sa = sin(angle);
+     const double blob_start = 0.0;
+     const double blob_end = blob_heigth;
 
-    double xm1 = (radius) * ca;       //    Calculate the blob center x,y
-    double ym1 = (radius) * sa;
+     double xm1 = (radius + blob_start) * ca;
+     double ym1 = (radius + blob_start) * sa;
+     double xm2 = (radius + blob_end) * ca;
+     double ym2 = (radius + blob_end) * sa;
 
-    double xa = xm1 + blob_width; // final coordinates for blob LR corner
-    double ya = ym1 - blob_width;
+     double blob_width_start2 = (radius + blob_start) * blob_width;
+     double blob_width_end2 =   (radius + blob_end) * blob_width;
 
-    double xb = xm1 - blob_width; // final coordinates for blob LL corner
-    double yb = ym1 - blob_width;
+     double xa = xm1 + blob_width_start2 * sa;
+     double ya = ym1 - blob_width_start2 * ca;
 
-    double xc = xm1 - blob_width; // final coordinates for blob UL corner
-    double yc = ym1 + blob_width;
+     double xb = xm2 + blob_width_end2 * sa;
+     double yb = ym2 - blob_width_end2 * ca;
 
-    double xd = xm1 + blob_width; // final coordinates for blob UR corner
-    double yd = ym1 + blob_width;
+     double xc = xm1 - blob_width_start2 * sa;
+     double yc = ym1 + blob_width_start2 * ca;
 
-    glBegin(GL_TRIANGLES);        // draw blob in two triangles
-    glVertex2d(xa, ya);
-    glVertex2d(xb, yb);
-    glVertex2d(xc, yc);
+     double xd = xm2 - blob_width_end2 * sa;
+     double yd = ym2 + blob_width_end2 * ca;
 
-    glVertex2f(xa, ya);
-    glVertex2f(xc, yc);
-    glVertex2f(xd, yd);
-    glEnd();
+     glBegin(GL_TRIANGLES);
+     glVertex2d(xa, ya);
+     glVertex2d(xb, yb);
+     glVertex2d(xc, yc);
+
+     glVertex2d(xb, yb);
+     glVertex2d(xc, yc);
+     glVertex2d(xd, yd);
+     glEnd();
 }
 
 //****************************************************************************
