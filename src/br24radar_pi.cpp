@@ -241,6 +241,8 @@ br24radar_pi::br24radar_pi(void *ppimgr)
 
 int br24radar_pi::Init(void)
 {
+    AddLocaleCatalog( _T("opencpn-br24radar_pi") );
+
     m_pControlDialog = NULL;
 
     br_radar_state = RADAR_OFF;
@@ -505,7 +507,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     topSizer->Add(DisplayOptionsBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL | wxEXPAND, 2);
 
     //  BR24 toolbox icon checkbox
-    wxStaticBox* DisplayOptionsCheckBox = new wxStaticBox(this, wxID_ANY, _(""));
+    wxStaticBox* DisplayOptionsCheckBox = new wxStaticBox(this, wxID_ANY, _T(""));
     wxStaticBoxSizer* DisplayOptionsCheckBoxSizer = new wxStaticBoxSizer(DisplayOptionsCheckBox, wxVERTICAL);
     DisplayOptionsBox->Add(DisplayOptionsCheckBoxSizer, 0, wxEXPAND | wxALL, border_size);
 
@@ -1410,7 +1412,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("Zone2ArcCirc"), Zone2.type);
 
         pConf->Flush();
-        wxLogMessage(wxT("BR24radar_pi: saved config"));
+        //wxLogMessage(wxT("BR24radar_pi: saved config"));
 
         return true;
     }
