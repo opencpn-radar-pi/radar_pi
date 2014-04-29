@@ -82,6 +82,7 @@ SET(SRC_br24radar
             src/br24radar_pi.cpp
             src/br24radarcontrol.cpp
             src/AlarmZoneControls.cpp
+            src/AlarmZoneBogey.cpp
 )
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_br24radar})
 
