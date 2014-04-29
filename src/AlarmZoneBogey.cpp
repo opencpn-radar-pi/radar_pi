@@ -122,8 +122,8 @@ void AlarmZoneBogey::CreateControls()
 
     wxButton    *bConfirm = new wxButton(this, ID_CONFIRM, _("&Confirm"), wxDefaultPosition, wxDefaultSize, 0);
     AlarmZoneBogeySizer->Add(bConfirm, 0, wxALIGN_CENTER_VERTICAL | wxALL, border);
-    
-    wxButton    *bClose = new wxButton(this, ID_CLOSE, _("C&onfirm & Close"), wxDefaultPosition, wxDefaultSize, 0);
+
+    wxButton    *bClose = new wxButton(this, ID_CLOSE, _("C&onfirm + Close"), wxDefaultPosition, wxDefaultSize, 0);
     AlarmZoneBogeySizer->Add(bClose, 0, wxALIGN_CENTER_VERTICAL | wxALL, border);
 }
 
