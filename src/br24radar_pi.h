@@ -150,6 +150,7 @@ struct radar_control_settings {
     int      display_option;
     int      display_mode;
     int      alarm_zone;            // active zone (0 = none,1,2)
+    int      alarm_zone_threshold;  // How many blobs must be sent by radar before we fire alarm
     int      gain;
     int      rejection;
     int      filter_process;

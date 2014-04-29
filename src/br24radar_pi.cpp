@@ -1026,6 +1026,8 @@ void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_pp
 
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 {
+    int bogey_count = 0;
+
     // DRAWING PICTURE
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
     const double spoke_width = deg2rad(360) / LINES_PER_ROTATION; // How wide is one spoke?
@@ -1088,15 +1090,15 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                     }
                     if (angle_deg > AZ_angle_1 && angle_deg < AZ_angle_2) {
                         if (bogey_range > inner_range && bogey_range < outer_range) {
-                            PlayAlarmSound(true);
+                            bogey_count++;
                         }
                     }
-                } else {
-                    PlayAlarmSound(false);
                 }
             }
         }
     }
+
+    PlayAlarmSound(bogey_count > settings.alarm_zone_threshold);
 }
 
 void br24radar_pi::RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
@@ -1249,19 +1251,16 @@ void br24radar_pi::PlayAlarmSound(bool on_off)
             RadarAlarm.Create(RadarAlertAudioFile);
         }
 
-#ifndef __WXMSW__
-        if (RadarAlarm.IsOk() && !RadarAlarm.IsPlaying()) {
-            RadarAlarm.Play();
+        if (!alarm_sound_on) {
+            if (RadarAlarm.IsOk()) {
+                RadarAlarm.Play();
+            }
+            else {
+                wxBell();
+            }
             wxLogMessage(wxT("Radar Guard Alarm"));
             alarm_sound_on = true;
         }
-#else
-        if (RadarAlarm.IsOk() && !alarm_sound_on) {
-            RadarAlarm.Play();
-            wxLogMessage(wxT("Radar Guard Alarm"));
-            alarm_sound_on = true;
-        }
-#endif
     }
 
     if (alarm_sound_on && !on_off) {
@@ -1271,7 +1270,6 @@ void br24radar_pi::PlayAlarmSound(bool on_off)
         alarm_sound_on = false;
     }
 }
-//*/
 
 void br24radar_pi::DrawFilledArc(double r1, double r2, double a1, double a2)
 {
@@ -1279,16 +1277,8 @@ void br24radar_pi::DrawFilledArc(double r1, double r2, double a1, double a2)
         a2 += 360.0;
     }
 
-    for( double n = a1; n <= a2; ++n ) {
-        double st = sin(deg2rad(90-n));
-        double ct = cos(deg2rad(90-n));
-        double st2 = sin(deg2rad(90-n-1));
-        double ct2 = cos(deg2rad(90-n-1));
-        glBegin(GL_TRIANGLES);
-        glVertex2f(st*r1, ct*r1);
-        glVertex2f(st2*r1, ct2*r1);
-        glVertex2f(st*r2, ct*r2);
-        glEnd();
+    for (double n = a1; n <= a2; ++n ) {
+        draw_blob_gl(deg2rad(90-n), r1, deg2rad(1), r2 - r1);
     }
 }
 
@@ -1316,6 +1306,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("BeamWidth"), &settings.beam_width, 2);
             pConf->Read(wxT("InterferenceRejection"), &settings.rejection, 0);
             pConf->Read(wxT("AlarmZonesActive"), &settings.alarm_zone, 0);
+            pConf->Read(wxT("AlarmZonesThreshold"), &settings.alarm_zone_threshold, 5L);
 
             pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
             pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
@@ -1333,6 +1324,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("Zone2OutRng"), &Zone2.outer_range, 0);
             pConf->Read(wxT("Zone2InRng"), &Zone2.inner_range, 0);
             pConf->Read(wxT("Zone2ArcCirc"), &Zone2.type, 0);
+
 
             pConf->Read(wxT("RadarAlertAudioFile"), &RadarAlertAudioFile );
             SaveConfig();
@@ -1400,6 +1392,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("BeamWidth"),  settings.beam_width);
         pConf->Write(wxT("InterferenceRejection"), settings.rejection);
         pConf->Write(wxT("AlarmZonesActive"), settings.alarm_zone);
+        pConf->Write(wxT("AlarmZonesThreshold"), settings.alarm_zone_threshold);
 
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
         pConf->Write(wxT("ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
