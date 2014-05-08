@@ -429,6 +429,14 @@ private:
     void OnIdOKClick(wxCommandEvent& event);
     void OnMove(wxMoveEvent& event);
     void OnSize(wxSizeEvent& event);
+
+    void OnPlusClick(wxCommandEvent& event);
+    void OnValueClick(wxCommandEvent& event);
+    void OnMinusClick(wxCommandEvent& event);
+    void OnAutoClick(wxCommandEvent& event);
+
+    void OnRangeClick(wxCommandEvent& event);
+
     void OnTransSlider(wxCommandEvent &event);
     void OnRangeModeClick(wxCommandEvent &event);
     void OnRangeValue(wxCommandEvent &event);
@@ -438,10 +446,38 @@ private:
     void OnAlarmDialogClick(wxCommandEvent &event);
     void OnLogModeClick(wxCommandEvent &event);
 
+    void EnterEditMode(wxButton * button, int newMinValue, int newMaxValue, int newValue, bool newHasAuto);
+
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
 
-    // Controls
+    wxBoxSizer        *topSizer;
+    wxBoxSizer        *editBox;
+    wxBoxSizer        *controlBox;
+
+    // Edit Controls
+
+    bool               editMode;
+    bool               hasAuto;
+    int                maxValue;
+    int                minValue;
+    wxButton          *bValue;
+    wxButton          *bEdit;       // this points back to one of the buttons below
+
+    wxButton          *bPlus;
+    wxButton          *bMinus;
+    wxButton          *bAuto;
+
+    // Show Controls
+
+    wxButton          *bRange;
+    wxButton          *bGain;
+    wxButton          *bSea;
+    wxButton          *bRain;
+
+
+
+#ifdef OLD
     wxSlider          *pTranSlider;
     wxRadioBox        *pRangeMode;
     wxChoice          *pRange;
@@ -452,6 +488,7 @@ private:
     wxSlider          *pGainSlider;
     wxRadioBox        *pAlarmZones;
     wxCheckBox        *pCB_log;
+#endif
 };
 
 /*
