@@ -39,7 +39,7 @@
 #endif //precompiled headers
 
 #define     PLUGIN_VERSION_MAJOR    0
-#define     PLUGIN_VERSION_MINOR    40429
+#define     PLUGIN_VERSION_MINOR    40510
 
 #define     MY_API_VERSION_MAJOR    1
 #define     MY_API_VERSION_MINOR    8
@@ -133,8 +133,19 @@ struct radar_frame_pkt {
     unsigned char   frame_hdr[8];
     radar_line      line[32];          //  scan lines
 };
-
 #pragma pack(pop)
+
+static wxFont g_font;
+static wxSize g_buttonSize;
+
+typedef enum ControlType {
+    CT_RANGE,
+    CT_GAIN,
+    CT_SEA,
+    CT_RAIN,
+    CT_TRANSPARENCY,
+    CT_REJECTION
+} ControlType;
 
 #define DEFAULT_OVERLAY_TRANSPARENCY (5)
 #define MIN_OVERLAY_TRANSPARENCY (0)
@@ -242,9 +253,8 @@ public:
     void OnAlarmZoneBogeyClose();
     void OnAlarmZoneBogeyConfirm();
 
-    void SetFilterProcess(int br_process, int sel_gain);
-    void SetGainMode(int mode);
-    void SetRejectionMode(int mode);
+    void SetControlValue(ControlType controlType, int value);
+
     bool LoadConfig(void);
     bool SaveConfig(void);
 
@@ -400,6 +410,98 @@ private:
     wxTextCtrl        *pText_Heading_Correction_Value;
 };
 
+
+//----------------------------------------------------------------------------------------------------------
+//    BR24Radar Control Dialog Helpers Specification
+//----------------------------------------------------------------------------------------------------------
+
+class RadarControlButton: public wxButton
+{
+public:
+    RadarControlButton()
+    {
+        
+    };
+    
+    RadarControlButton(wxWindow *parent,
+                       wxWindowID id,
+                       const wxString& label,
+                       br24radar_pi *ppi,
+                       ControlType ct,
+                       bool newHasAuto,
+                       int newValue
+                      )
+    {
+        Create(parent, id, label, wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
+        minValue = 0;
+        maxValue = 100;
+        value = 0;
+        hasAuto = newHasAuto;
+        pPlugIn = ppi;
+        firstLine = label;
+        controlType = ct;
+        if (hasAuto) {
+            SetAuto();
+        } else {
+            SetValue(newValue);
+        }
+        
+        this->SetFont(g_font);
+    }
+    
+    // Set a new value, if it is in range. If not the value is ignored.
+    // Computes a new label and a new technicalValue
+    // The default conversion is technicalValue = (int) ((double) value * 255.0 / 100.0)
+    virtual void SetValue(int value);
+    virtual void SetAuto();
+    
+    
+    wxString   firstLine;
+    
+    int        technicalValue; // value converted to what system needs
+    br24radar_pi *pPlugIn;
+
+    int        value;
+    bool       isAuto;
+    
+    int        minValue;
+    int        maxValue;
+    bool       hasAuto;
+    ControlType controlType;
+    
+};
+
+class RadarRangeControlButton: public RadarControlButton
+{
+public:
+    RadarRangeControlButton(wxWindow *parent,
+                            wxWindowID id,
+                            const wxString& label,
+                            br24radar_pi *ppi
+                           )
+    {
+        Create(parent, id, label, wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
+        minValue = 0;
+        maxValue = 0;
+        value = 0;
+        hasAuto = true;
+        pPlugIn = ppi;
+        firstLine = label;
+        controlType = CT_RANGE;
+        
+        this->SetFont(g_font);
+        
+        SetValue(ppi->settings.range_index);
+        isAuto = ppi->settings.auto_range_mode;
+        if (isAuto) {
+            SetAuto();
+        }
+    }
+ 
+    virtual void SetValue(int value);
+    virtual void SetAuto();
+};
+
 //----------------------------------------------------------------------------------------------------------
 //    BR24Radar Control Dialog Specification
 //----------------------------------------------------------------------------------------------------------
@@ -416,10 +518,11 @@ public:
     void Init();
 
     bool Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID id = wxID_ANY,
-                const wxString& caption = _("BR24 Radar Control"),
+                const wxString& caption = _("Radar"),
                 const wxPoint& pos = wxDefaultPosition,
                 const wxSize& size = wxDefaultSize,
-                long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
+                long style = wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX)
+                );
 
     void CreateControls();
     void SetActualRange(long range);
@@ -430,23 +533,19 @@ private:
     void OnMove(wxMoveEvent& event);
     void OnSize(wxSizeEvent& event);
 
+    void OnPlusTenClick(wxCommandEvent& event);
     void OnPlusClick(wxCommandEvent& event);
     void OnValueClick(wxCommandEvent& event);
     void OnMinusClick(wxCommandEvent& event);
+    void OnMinusTenClick(wxCommandEvent& event);
     void OnAutoClick(wxCommandEvent& event);
 
-    void OnRangeClick(wxCommandEvent& event);
+    void OnRadarControlButtonClick(wxCommandEvent& event);
 
-    void OnTransSlider(wxCommandEvent &event);
-    void OnRangeModeClick(wxCommandEvent &event);
-    void OnRangeValue(wxCommandEvent &event);
-    void OnFilterProcessClick(wxCommandEvent &event);
-    void OnRejectionModeClick(wxCommandEvent &event);
-    void OnGainSlider(wxCommandEvent &event);
     void OnAlarmDialogClick(wxCommandEvent &event);
     void OnLogModeClick(wxCommandEvent &event);
 
-    void EnterEditMode(wxButton * button, int newMinValue, int newMaxValue, int newValue, bool newHasAuto);
+    void EnterEditMode(RadarControlButton * button);
 
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
@@ -457,24 +556,23 @@ private:
 
     // Edit Controls
 
-    bool               editMode;
-    bool               hasAuto;
-    int                maxValue;
-    int                minValue;
-    wxButton          *bValue;
-    wxButton          *bEdit;       // this points back to one of the buttons below
+    RadarControlButton *editControl; // Only set when in edit mode
 
+    wxButton          *bPlusTen;
     wxButton          *bPlus;
+    wxButton          *bValue;
     wxButton          *bMinus;
+    wxButton          *bMinusTen;
     wxButton          *bAuto;
 
     // Show Controls
 
-    wxButton          *bRange;
-    wxButton          *bGain;
-    wxButton          *bSea;
-    wxButton          *bRain;
-
+    RadarRangeControlButton *bRange;
+    RadarControlButton *bGain;
+    RadarControlButton *bSea;
+    RadarControlButton *bRain;
+    RadarControlButton *bTransparency;
+    RadarControlButton *bRejection;
 
 
 #ifdef OLD

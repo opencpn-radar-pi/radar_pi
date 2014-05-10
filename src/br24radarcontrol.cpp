@@ -57,22 +57,21 @@ using namespace std;
 
 enum {                                      // process ID's
     ID_TEXTCTRL1 = 10000,
-    ID_OK,
+    ID_PLUS_TEN,
     ID_PLUS,
     ID_VALUE,
     ID_MINUS,
+    ID_MINUS_TEN,
     ID_AUTO,
 
     ID_RANGE,
     ID_GAIN,
     ID_SEA,
     ID_RAIN,
-
-    ID_RANGEMODE,
-    ID_REPORTED_RANGE,
-    ID_TRANSLIDER,
-    ID_CLUTTER,
+    ID_TRANSPARENCY,
     ID_REJECTION,
+    
+//    ID_CLUTTER,
     ID_ALARMZONES
 };
 
@@ -84,108 +83,209 @@ IMPLEMENT_CLASS(BR24ControlsDialog, wxDialog)
 BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
 
     EVT_CLOSE(BR24ControlsDialog::OnClose)
-    EVT_BUTTON(ID_OK, BR24ControlsDialog::OnIdOKClick)
-    EVT_BUTTON(ID_PLUS, BR24ControlsDialog::OnPlusClick)
+//    EVT_BUTTON(ID_OK,    BR24ControlsDialog::OnIdOKClick)
+    EVT_BUTTON(ID_PLUS_TEN,  BR24ControlsDialog::OnPlusTenClick)
+    EVT_BUTTON(ID_PLUS,  BR24ControlsDialog::OnPlusClick)
     EVT_BUTTON(ID_VALUE, BR24ControlsDialog::OnValueClick)
     EVT_BUTTON(ID_MINUS, BR24ControlsDialog::OnMinusClick)
+    EVT_BUTTON(ID_MINUS_TEN, BR24ControlsDialog::OnMinusTenClick)
+    EVT_BUTTON(ID_AUTO,  BR24ControlsDialog::OnAutoClick)
 
-    EVT_BUTTON(ID_RANGE, BR24ControlsDialog::OnRangeClick)
-    EVT_BUTTON(ID_GAIN, BR24ControlsDialog::OnRangeClick)
-    EVT_BUTTON(ID_SEA, BR24ControlsDialog::OnRangeClick)
-    EVT_BUTTON(ID_RAIN, BR24ControlsDialog::OnRangeClick)
+    EVT_BUTTON(ID_RANGE, BR24ControlsDialog::OnRadarControlButtonClick)
+    EVT_BUTTON(ID_GAIN, BR24ControlsDialog::OnRadarControlButtonClick)
+    EVT_BUTTON(ID_SEA, BR24ControlsDialog::OnRadarControlButtonClick)
+    EVT_BUTTON(ID_RAIN, BR24ControlsDialog::OnRadarControlButtonClick)
+    EVT_BUTTON(ID_TRANSPARENCY, BR24ControlsDialog::OnRadarControlButtonClick)
+    EVT_BUTTON(ID_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
 
     EVT_MOVE(BR24ControlsDialog::OnMove)
     EVT_SIZE(BR24ControlsDialog::OnSize)
-    EVT_RADIOBUTTON(ID_RANGEMODE, BR24ControlsDialog::OnRangeModeClick)
-    EVT_RADIOBUTTON(ID_CLUTTER, BR24ControlsDialog::OnFilterProcessClick)
-    EVT_RADIOBUTTON(ID_REJECTION, BR24ControlsDialog::OnRejectionModeClick)
     EVT_RADIOBUTTON(ID_ALARMZONES, BR24ControlsDialog::OnAlarmDialogClick)
 
 END_EVENT_TABLE()
 
 //Ranges are metric for BR24 - the hex codes are little endian = 10 X range value
 
-static const wxString g_metric_range_names[] = {
-    wxT("50 m"),
-    wxT("75 m"),
-    wxT("100 m"),
-    wxT("250 m"),
-    wxT("500 m"),
-    wxT("750 m"),
-    wxT("1 km"),
-    wxT("1.5 km"),
-    wxT("2 km"),
-    wxT("3 km"),
-    wxT("4 km"),
-    wxT("6 km"),
-    wxT("8 km"),
-    wxT("12 km"),
-    wxT("16 km"),
-    wxT("24 km"),
-    wxT("36 km"),
-    wxT("48 km")
+static const wxString g_range_names[2][18] = {
+    {
+        wxT("50 m"),
+        wxT("75 m"),
+        wxT("100 m"),
+        wxT("250 m"),
+        wxT("500 m"),
+        wxT("750 m"),
+        wxT("1 km"),
+        wxT("1.5 km"),
+        wxT("2 km"),
+        wxT("3 km"),
+        wxT("4 km"),
+        wxT("6 km"),
+        wxT("8 km"),
+        wxT("12 km"),
+        wxT("16 km"),
+        wxT("24 km"),
+        wxT("36 km"),
+        wxT("48 km")
+    },
+    {
+        wxT("1/20 NM"),
+        wxT("1/10 NM"),
+        wxT("1/8 NM"),
+        wxT("1/4 NM"),
+        wxT("1/2 NM"),
+        wxT("3/4 NM"),
+        wxT("1 NM"),
+        wxT("2 NM"),
+        wxT("3 NM"),
+        wxT("4 NM"),
+        wxT("6 NM"),
+        wxT("8 NM"),
+        wxT("12 NM"),
+        wxT("16 NM"),
+        wxT("24 NM"),
+        wxT("36 NM"),
+        wxT("36 NM")  // pad to same length as metric
+    }
+
 };
 
-static const int g_metric_range_distances[] = {
-    50,
-    75,
-    100,
-    250,
-    500,
-    750,
-    1000,
-    1500,
-    2000,
-    3000,
-    4000,
-    6000,
-    8000,
-    12000,
-    16000,
-    24000,
-    36000,
-    48000
+static const int g_range_distances[2][18] = {
+    {
+        50,
+        75,
+        100,
+        250,
+        500,
+        750,
+        1000,
+        1500,
+        2000,
+        3000,
+        4000,
+        6000,
+        8000,
+        12000,
+        16000,
+        24000,
+        36000,
+        48000
+    },
+    {
+        1852/20,
+        1852/10,
+        1852/8,
+        1852/4,
+        1852/2,
+        1852*3/4,
+        1852*1,
+        1852*2,
+        1852*3,
+        1852*4,
+        1852*6,
+        1852*8,
+        1852*12,
+        1852*16,
+        1852*24,
+        1852*36
+    }
 };
 
-static const wxString g_mile_range_names[] = {
-    wxT("1/20 NM"),
-    wxT("1/10 NM"),
-    wxT("1/8 NM"),
-    wxT("1/4 NM"),
-    wxT("1/2 NM"),
-    wxT("3/4 NM"),
-    wxT("1 NM"),
-    wxT("2 NM"),
-    wxT("3 NM"),
-    wxT("4 NM"),
-    wxT("6 NM"),
-    wxT("8 NM"),
-    wxT("12 NM"),
-    wxT("16 NM"),
-    wxT("24 NM"),
-    wxT("36 NM")
-};
+static const int METRIC_RANGE_COUNT = 18;
+static const int MILE_RANGE_COUNT = 16;
 
-static const int g_mile_range_distances[] = {
-    1852/20,
-    1852/10,
-    1852/8,
-    1852/4,
-    1852/2,
-    1852*3/4,
-    1852*1,
-    1852*2,
-    1852*3,
-    1852*4,
-    1852*6,
-    1852*8,
-    1852*12,
-    1852*16,
-    1852*24,
-    1852*36
-};
+static const int g_range_maxValue[2] = { MILE_RANGE_COUNT, METRIC_RANGE_COUNT };
 
+void RadarControlButton::SetValue(int newValue)
+{
+    if (newValue < minValue) {
+        value = minValue;
+    } else if (newValue > maxValue) {
+        value = maxValue;
+    } else {
+        value = newValue;
+    }
+    
+    wxString label;
+    
+    label.Printf(wxT("%s\n%d"), firstLine, value);
+    this->SetLabel(label);
+    
+    isAuto = false;
+    pPlugIn->SetControlValue(CT_RANGE, value);
+}
 
+void RadarControlButton::SetAuto()
+{
+    wxString label;
+    
+    label.Printf(wxT("%s\nAUTO"), firstLine);
+    this->SetLabel(label);
+    
+    isAuto = true;
+    
+    technicalValue = -1;
+}
+
+void RadarRangeControlButton::SetValue(int newValue)
+{
+    int units = pPlugIn->settings.range_units;
+    
+    wxLogMessage(wxT("Range units = %d\n"), units);
+    
+    maxValue = g_range_maxValue[units] - 1;
+
+    if (newValue >= minValue && newValue <= maxValue) {
+        value = newValue;
+    }
+    else if (value < minValue) {
+        value = 0;
+    } else if (value > maxValue) {
+        value = maxValue;
+    }
+    wxLogMessage(wxT("Range index = %d\n"), value);
+    
+    int meters = g_range_distances[units][value];
+    wxLogMessage(wxT("Range meters = %d\n"), meters);
+    pPlugIn->SetRangeMeters(meters);
+
+    wxString label;
+    wxString rangeText = g_range_names[units][value];
+    
+    label.Printf(wxT("%s\n%s"), firstLine, rangeText);
+    
+    this->SetLabel(label);
+    
+    isAuto = false;
+    pPlugIn->SetControlValue(CT_RANGE, value);
+}
+
+void RadarRangeControlButton::SetAuto()
+{
+    int units = pPlugIn->settings.range_units;
+    
+    wxLogMessage(wxT("Range units = %d\n"), units);
+    
+    maxValue = g_range_maxValue[units] - 1;
+    int newValue = pPlugIn->settings.range_index;
+    if (newValue >= minValue && newValue <= maxValue) {
+        value = newValue;
+    }
+    else if (value < minValue) {
+        value = 0;
+    } else if (value > maxValue) {
+        value = maxValue;
+    }
+    
+    wxString label;
+    wxString rangeText = g_range_names[units][value];
+    
+    label.Printf(wxT("%s\nAUTO(%s)"), firstLine, rangeText);
+    
+    this->SetLabel(label);
+    
+    isAuto = true;
+    pPlugIn->SetControlValue(CT_RANGE, -1);
+}
 
 BR24ControlsDialog::BR24ControlsDialog()
 {
@@ -210,41 +310,39 @@ bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID 
 
     pParent = parent;
     pPlugIn = ppi;
-//    pActualRange = 0;
 
-    long wstyle = wxDEFAULT_FRAME_STYLE;
-//      if ( ( global_color_scheme != GLOBAL_COLOR_SCHEME_DAY ) && ( global_color_scheme != GLOBAL_COLOR_SCHEME_RGB ) )
-//            wstyle |= ( wxNO_BORDER );
+    g_font = *OCPNGetFont(_("Dialog"), 14);
+    wxTextCtrl *t = new wxTextCtrl(parent, id, wxT("Transparency")); 
+    g_buttonSize = wxSize(t->GetBestSize().GetWidth() + 10, 50);
+    if (ppi->settings.verbose) {
+        wxLogMessage(wxT("Dynamic button width = %d"), g_buttonSize.GetWidth());
+    }
 
-    wxSize size_min = size;
-//      size_min.IncTo ( wxSize ( 500,600 ) );
+#ifdef wxMSW
+    long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
+#else
+    long wstyle =                 wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
+#endif
+    
+    // Determine desired button width
+
+    wxSize size_min = wxSize(g_buttonSize.GetWidth(), 4 * g_buttonSize.GetHeight());
     if (!wxDialog::Create(parent, id, caption, pos, size_min, wstyle)) {
         return false;
     }
 
     CreateControls();
-
     DimeWindow(this);
-
     Fit();
-    SetMinSize(GetBestSize());
-
+    size_min = GetBestSize();
+    SetMinSize(size_min);
+    SetSize(size_min);
     return true;
 }
 
 void BR24ControlsDialog::CreateControls()
 {
-    int border_size = 4;
-
-    static int BORDER = 5;
-
-    wxSize * controlButtonSize = new wxSize(150, 50);
-
-    wxFont * activeFont = new wxFont();
-    activeFont->SetPointSize(13);
-
-    wxFont * plusMinusFont = new wxFont();
-    plusMinusFont->SetPointSize(20);
+    static int BORDER = 0;
 
 // A top-level sizer
     topSizer = new wxBoxSizer(wxVERTICAL);
@@ -254,25 +352,35 @@ void BR24ControlsDialog::CreateControls()
     editBox = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(editBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
     
+// The +10 button
+    bPlusTen = new wxButton(this, ID_PLUS_TEN, _("+10"), wxDefaultPosition, g_buttonSize, 0);
+    editBox->Add(bPlusTen, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bPlusTen->SetFont(g_font);
+
 // The + button
-    bPlus = new wxButton(this, ID_PLUS, _("+"), wxDefaultPosition, *controlButtonSize, 0);
+    bPlus = new wxButton(this, ID_PLUS, _("+1"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bPlus, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bPlus->SetFont(*plusMinusFont);
+    bPlus->SetFont(g_font);
 
 // The VALUE button
-    bValue = new wxButton(this, ID_VALUE, _("Some Value"), wxDefaultPosition, *controlButtonSize, 0);
+    bValue = new wxButton(this, ID_VALUE, _("Value"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bValue, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bValue->SetFont(*activeFont);
+    bValue->SetFont(g_font);
 
 // The - button
-    bMinus = new wxButton(this, ID_MINUS, _("-"), wxDefaultPosition, *controlButtonSize, 0);
+    bMinus = new wxButton(this, ID_MINUS, _("-1"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bMinus, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bMinus->SetFont(*plusMinusFont);
-
+    bMinus->SetFont(g_font);
+    
+// The -10 button
+    bMinusTen = new wxButton(this, ID_MINUS_TEN, _("-10"), wxDefaultPosition, g_buttonSize, 0);
+    editBox->Add(bMinusTen, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bMinusTen->SetFont(g_font);
+    
 // The Auto button
-    bAuto = new wxButton(this, ID_AUTO, _("Auto"), wxDefaultPosition, *controlButtonSize, 0);
+    bAuto = new wxButton(this, ID_AUTO, _("Auto"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bAuto, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bAuto->SetFont(*plusMinusFont);
+    bAuto->SetFont(g_font);
 
     topSizer->Hide(editBox);
 
@@ -281,168 +389,35 @@ void BR24ControlsDialog::CreateControls()
     topSizer->Add(controlBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
     
 // The RANGE button
-    bRange = new wxButton(this, ID_RANGE, _("Range"), wxDefaultPosition, *controlButtonSize, 0);
+    bRange = new RadarRangeControlButton(this, ID_RANGE, _("Range"), pPlugIn);
     controlBox->Add(bRange, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bRange->SetLabel(wxT("Range\n5 NM"));
-    bRange->SetFont(*activeFont);
     
 // The GAIN button
-    bGain = new wxButton(this, ID_GAIN, _("Gain\nAUTO"), wxDefaultPosition, *controlButtonSize, 0);
+    bGain = new RadarControlButton(this, ID_GAIN, _("Gain"), pPlugIn, CT_GAIN, true, pPlugIn->settings.gain);
     controlBox->Add(bGain, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bGain->SetLabel(wxT("Gain\nAUTO"));
-    bGain->SetFont(*activeFont);
     
 // The SEA button
-    bSea = new wxButton(this, ID_SEA, _("Sea\nAUTO"), wxDefaultPosition, *controlButtonSize, 0);
+    bSea = new RadarControlButton(this, ID_SEA, _("Sea"), pPlugIn, CT_SEA, true, pPlugIn->settings.sea_clutter_gain);
     controlBox->Add(bSea, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bSea->SetFont(*activeFont);
     
-// The GAIN button
-    bSea = new wxButton(this, ID_RAIN, _("Rain\nAUTO"), wxDefaultPosition, *controlButtonSize, 0);
-    controlBox->Add(bSea, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bSea->SetFont(*activeFont);
+// The RAIN button
+    bRain = new RadarControlButton(this, ID_RAIN, _("Rain"), pPlugIn, CT_RAIN, false, pPlugIn->settings.rain_clutter_gain);
+    controlBox->Add(bRain, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     
+// The TRANSPARENCY button
+    bTransparency = new RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), pPlugIn, CT_TRANSPARENCY, false, pPlugIn->settings.overlay_transparency);
+    controlBox->Add(bTransparency, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+
+// The REJECTION button
+    bRejection = new RadarControlButton(this, ID_REJECTION, _("Target Rej."), pPlugIn, CT_REJECTION, false, pPlugIn->settings.rejection);
+    controlBox->Add(bRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bRejection->minValue = 0;
+    bRejection->maxValue = 3;
+
     
 #ifdef OLD
-    //  Operation Mode options
-    wxStaticBox* BoxOperation = new wxStaticBox(this, wxID_ANY, _("Operational Control"));
-    wxStaticBoxSizer* BoxSizerOperation = new wxStaticBoxSizer(BoxOperation, wxVERTICAL);
-    topSizer->Add(BoxSizerOperation, 0, wxEXPAND | wxALL, border_size);
 
-    wxString RangeModeStrings[] = {
-        _("Manual"),
-        _("Automatic"),
-    };
-
-    pRangeMode = new wxRadioBox(this, ID_RANGEMODE, _("Range Mode"),
-                                    wxDefaultPosition, wxDefaultSize,
-                                    2, RangeModeStrings, 1, wxRA_SPECIFY_COLS);
-
-    BoxSizerOperation->Add(pRangeMode, 0, wxALL | wxEXPAND, 2);
-
-    pRangeMode->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
-                            wxCommandEventHandler(BR24ControlsDialog::OnRangeModeClick), NULL, this);
-    if (pPlugIn->settings.auto_range_mode) {
-        pRangeMode->SetSelection(1);
-    } else {
-        pRangeMode->SetSelection(0);
-    }
-
-    // Range edit
-
-    wxStaticBox* RangeBox = new wxStaticBox(this, wxID_ANY, _("Range"));
-    wxStaticBoxSizer* RangeBoxSizer = new wxStaticBoxSizer(RangeBox, wxVERTICAL);
-    BoxSizerOperation->Add(RangeBoxSizer, 0, wxEXPAND | wxALL, border_size);
-
-    const wxString *names;
-    int n;
-    if (pPlugIn->settings.range_units < 2) /* NMi or Mi */
-    {
-      names = g_mile_range_names;
-      n = sizeof(g_mile_range_names)/sizeof(g_mile_range_names[0]);
-    }
-    else
-    {
-      names = g_metric_range_names;
-      n = sizeof(g_metric_range_names)/sizeof(g_metric_range_names[0]);
-    }
-
-    pRange = new wxChoice(this, wxID_ANY
-                              , wxDefaultPosition, wxDefaultSize
-                              , n, names
-                              , 0, wxDefaultValidator, _("choice"));
-    RangeBoxSizer->Add(pRange, 1, wxALIGN_LEFT | wxALL, 5);
-    pRange->Connect(wxEVT_COMMAND_CHOICE_SELECTED,
-                               wxCommandEventHandler(BR24ControlsDialog::OnRangeValue), NULL, this);
-    pRange->Disable();
-    pRange->SetSelection(0);
-
-    // Comand Range display
-
-    pCommandRange = new wxTextCtrl(this, wxID_ANY);
-    RangeBoxSizer->Add(pCommandRange, 1, wxALIGN_LEFT | wxALL, 5);
-
-    // Actual Range display
-
-    pActualRange = new wxTextCtrl(this, wxID_ANY);
-    RangeBoxSizer->Add(pActualRange, 1, wxALIGN_LEFT | wxALL, 5);
-//    pActualRange->Disable();
-    SetActualRange(pPlugIn->GetRangeMeters());
-
-    /* TODO: Add up down buttons */
-
-    //Transparency slider
-    wxStaticBox* transliderbox = new wxStaticBox(this, wxID_ANY, _("Transparency"));
-    wxStaticBoxSizer* transliderboxsizer = new wxStaticBoxSizer(transliderbox, wxVERTICAL);
-    BoxSizerOperation->Add(transliderboxsizer, 0, wxALL | wxEXPAND, 2);
-
-    pTranSlider = new wxSlider( this, ID_TRANSLIDER, DEFAULT_OVERLAY_TRANSPARENCY, MIN_OVERLAY_TRANSPARENCY, MAX_OVERLAY_TRANSPARENCY - 1
-                              , wxDefaultPosition, wxDefaultSize
-                              , wxSL_HORIZONTAL, wxDefaultValidator, _("slider"));
-
-    transliderboxsizer->Add(pTranSlider, 0, wxALL | wxEXPAND, 2);
-
-    pTranSlider->Connect(wxEVT_SCROLL_CHANGED,
-                         wxCommandEventHandler(BR24ControlsDialog::OnTransSlider), NULL, this);
-
-    pTranSlider->SetValue(pPlugIn->settings.overlay_transparency);
-
-//  Image Conditioning Options
-    wxStaticBox* BoxConditioning = new wxStaticBox(this, wxID_ANY, _("Signal Conditioning"));
-    wxStaticBoxSizer* BoxConditioningSizer = new wxStaticBoxSizer(BoxConditioning, wxVERTICAL);
-    topSizer->Add(BoxConditioningSizer, 0, wxEXPAND | wxALL, border_size);
-
-// Rejection settings
-    wxString RejectionStrings[] = {
-        _("Off"),
-        _("Low"),
-        _("Medium"),
-        _("High"),
-    };
-
-    pRejectionMode = new wxRadioBox(this, ID_REJECTION, _("Rejection"),
-                                    wxDefaultPosition, wxDefaultSize,
-                                    sizeof(RejectionStrings)/sizeof(RejectionStrings[0]), RejectionStrings, 1, wxRA_SPECIFY_COLS);
-
-    BoxConditioningSizer->Add(pRejectionMode, 0, wxALL | wxEXPAND, 2);
-
-    pRejectionMode->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
-                            wxCommandEventHandler(BR24ControlsDialog::OnRejectionModeClick), NULL, this);
-
-    pRejectionMode->SetSelection(pPlugIn->settings.rejection);
-
-//  Cluster Options
-    wxString FilterProcessStrings[] = {
-        _("Auto Gain"),
-        _("Manual Gain"),
-        _("Rain Clutter - Manual"),
-        _("Sea Clutter - Auto"),
-        _("Sea Clutter - Manual"),
-    };
-
-    pFilterProcess = new wxRadioBox(this, ID_CLUTTER, _("Tuning"),
-                                    wxDefaultPosition, wxDefaultSize,
-                                    5, FilterProcessStrings, 1, wxRA_SPECIFY_COLS);
-
-    BoxConditioningSizer->Add(pFilterProcess, 0, wxALL | wxEXPAND, 2);
-    pFilterProcess->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
-                            wxCommandEventHandler(BR24ControlsDialog::OnFilterProcessClick), NULL, this);
-
-//  Gain slider
-
-    wxStaticBox* BoxGain = new wxStaticBox(this, wxID_ANY, _("Gain"));
-    wxStaticBoxSizer* sliderGainsizer = new wxStaticBoxSizer(BoxGain, wxVERTICAL);
-    BoxConditioningSizer->Add(sliderGainsizer, 0, wxALL | wxEXPAND, 2);
-
-    pGainSlider = new wxSlider(this, ID_GAIN, 50, 1, 100, wxDefaultPosition,  wxDefaultSize,
-                               wxSL_HORIZONTAL|wxSL_LABELS,  wxDefaultValidator, _("slider"));
-
-    sliderGainsizer->Add(pGainSlider, 0, wxALL | wxEXPAND, 2);
-
-    pGainSlider->Connect(wxEVT_SCROLL_CHANGED,
-                         wxCommandEventHandler(BR24ControlsDialog::OnGainSlider), NULL, this);
-
-// Alarm Zone Operations
+    // Alarm Zone Operations
 
     wxString    AlarmZoneString[] = { _("Inactive"),_("Zone 1"),_("Zone 2")};
 
@@ -474,161 +449,28 @@ void BR24ControlsDialog::CreateControls()
     pPlugIn->UpdateDisplayParameters();
 }
 
-void BR24ControlsDialog::OnRangeModeClick(wxCommandEvent &event)
-{
-    int mode = 0; // pRangeMode->GetSelection();
-
-    pPlugIn->SetRangeMode(mode);
-
-#ifdef OLD
-    if (mode)
-    {
-      pRange->Disable();
-    }
-    else
-    {
-      pRange->Enable();
-    }
-#endif
-
-}
-
 void BR24ControlsDialog::SetActualRange(long range)
 {
-    wxString rangeText;
-    float rangeNM = range / 1852.0;
-
-    rangeText.Printf(wxT("Range\n%ld Mtrs %.2f NM"), range,rangeNM);
-    bRange->SetLabel(rangeText);
-
-    if (pPlugIn->settings.auto_range_mode) {
-        const int * ranges;
-        int         n;
-        if (pPlugIn->settings.range_units < 2) {                    /* NMi or Mi */
-            n = (int) sizeof(g_mile_range_distances)/sizeof(g_mile_range_distances[0]);
-            ranges = g_mile_range_distances;
-        }
-        else {
-            n = (int) sizeof(g_metric_range_distances)/sizeof(g_metric_range_distances[0]);
-            ranges = g_metric_range_distances;
-        }
-
-        for (; n > 0; n--) {
-            if (ranges[n] < range) {
-              break;
-            }
-        }
-//        pRange->SetSelection(n);
+    const int * ranges;
+    int         n;
+    
+    if (pPlugIn->settings.range_units < 1) {                    /* NMi or Mi */
+        n = (int) MILE_RANGE_COUNT;
+        ranges = g_range_distances[0];
     }
-}
-
-void BR24ControlsDialog::OnRangeValue(wxCommandEvent &event)
-{
-#ifdef OLD
-    int selection = pRange->GetSelection();
-     wxString rangeText;
-
-    if (selection != wxNOT_FOUND) {
-        const int * ranges;
-        int         n;
-        if (pPlugIn->settings.range_units < 2) { /* NMi or Mi */
-            n = (int) sizeof(g_mile_range_distances)/sizeof(g_mile_range_distances[0]);
-            ranges = g_mile_range_distances;
-        }
-        else {
-            n = (int) sizeof(g_metric_range_distances)/sizeof(g_metric_range_distances[0]);
-            ranges = g_metric_range_distances;
-        }
-        if (selection >= 0 && selection < n) {
- //           wxLogMessage(wxT("Range index %d = %d meters"), selection, ranges[selection]);
-
-            float rangeNM = ranges[selection] / 1852.0;
-            rangeText.Printf(wxT("%d Mtrs %.2f NM"), ranges[selection],rangeNM);
-            pCommandRange->SetValue(rangeText);
-
-            pPlugIn->SetRangeMeters(ranges[selection]);
-        }
-        else {
-            wxLogMessage(wxT("Improbable range index %d"), n);
+    else {
+        n = (int) METRIC_RANGE_COUNT;
+        ranges = g_range_distances[1];
+    }
+    
+    for (; n > 0; n--) {
+        if (ranges[n] < range) {
+            break;
         }
     }
-#endif
-
+    bRange->SetValue(n);
 }
 
-void BR24ControlsDialog::OnTransSlider(wxCommandEvent &event)
-{
- //   pPlugIn->settings.overlay_transparency = pTranSlider->GetValue();
-    pPlugIn->UpdateDisplayParameters();
-}
-
-void BR24ControlsDialog::OnFilterProcessClick(wxCommandEvent &event)
-{
-#ifdef OLD
-    int sel_gain = 0;
-
-    pPlugIn->settings.filter_process = pFilterProcess->GetSelection();
-    switch (pPlugIn->settings.filter_process) {
-        case 0: {                                       //Gain Auto
-                pGainSlider->Disable();
-                break;
-            }
-        case 1: {                                       //Manual Gain
-                sel_gain = pPlugIn->settings.gain;
-                pGainSlider->Enable();
-                break;
-            }
-        case 2: {                                       //Rain Clutter Man
-                sel_gain = pPlugIn->settings.rain_clutter_gain;
-                pGainSlider->Enable();
-                break;
-            }
-        case 3: {                                       // Sea Clutter Auto
-                pGainSlider->Disable();
-                break;
-            }
-        case 4: {                                       //Sea Clutter Man
-                sel_gain = pPlugIn->settings.sea_clutter_gain;
-                pGainSlider->Enable();
-                break;
-            }
-    }
-    pGainSlider->SetValue(sel_gain);
-    pPlugIn->SetFilterProcess(pPlugIn->settings.filter_process, sel_gain);
-#endif
-}
-
-void BR24ControlsDialog::OnRejectionModeClick(wxCommandEvent &event)
-{
-#ifdef OLD
-    pPlugIn->SetRejectionMode(pRejectionMode->GetSelection());
-#endif
-}
-
-void BR24ControlsDialog::OnGainSlider(wxCommandEvent &event)
-{
-#ifdef OLD
-    int sel_gain = pGainSlider->GetValue();
-
-
-    switch (pPlugIn->settings.filter_process) {
-        case 1: {                                   //Gain Man
-                pPlugIn->settings.gain = sel_gain;
-                break;
-            }
-        case 2: {                                   //Rain Cutter Man
-                pPlugIn->settings.rain_clutter_gain = sel_gain;
-                break;
-            }
-        case 4: {                                   //Sea Clutter Man
-                //sel_gain = sel_gain * 0x50 / 0x100;
-                pPlugIn->settings.sea_clutter_gain = sel_gain;
-                break;
-            }
-    }
-    pPlugIn->SetFilterProcess(pPlugIn->settings.filter_process, sel_gain);
-#endif
-}
 
 void BR24ControlsDialog::OnAlarmDialogClick(wxCommandEvent &event)
 {
@@ -649,10 +491,20 @@ void BR24ControlsDialog::OnIdOKClick(wxCommandEvent& event)
     pPlugIn->OnBR24ControlDialogClose();
 }
 
+void BR24ControlsDialog::OnPlusTenClick(wxCommandEvent& event)
+{
+    editControl->SetValue(editControl->value + 10);
+    wxString label = editControl->GetLabel();
+    
+    bValue->SetLabel(label);
+}
 
 void BR24ControlsDialog::OnPlusClick(wxCommandEvent& event)
 {
-    //
+    editControl->SetValue(editControl->value + 1);
+    wxString label = editControl->GetLabel();
+    
+    bValue->SetLabel(label);
 }
 
 void BR24ControlsDialog::OnValueClick(wxCommandEvent &event)
@@ -664,40 +516,57 @@ void BR24ControlsDialog::OnValueClick(wxCommandEvent &event)
 
 void BR24ControlsDialog::OnAutoClick(wxCommandEvent &event)
 {
+    editControl->SetAuto();
+
     topSizer->Hide(editBox);
     topSizer->Show(controlBox);
     topSizer->Layout();
 }
 
-
 void BR24ControlsDialog::OnMinusClick(wxCommandEvent& event)
 {
-    //
+    editControl->SetValue(editControl->value - 1);
+        
+    wxString label = editControl->GetLabel();
+    bValue->SetLabel(label);
 }
 
-void BR24ControlsDialog::EnterEditMode(wxButton * button, int newMinValue, int newMaxValue, int newValue, bool newHasAuto)
+void BR24ControlsDialog::OnMinusTenClick(wxCommandEvent& event)
 {
-    editMode = true;
-    hasAuto  = newHasAuto;
-    maxValue = newMaxValue;
-    minValue = newMinValue;
-    bEdit    = button;
+    editControl->SetValue(editControl->value - 10);
+    
+    wxString label = editControl->GetLabel();
+    bValue->SetLabel(label);
+}
 
-    if (hasAuto) {
-        bAuto->Show();
-    }
-    else {
-        bAuto->Hide();
-    }
+void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
+{
+    editControl = button;
+    bValue->SetLabel(button->GetLabel());
     topSizer->Hide(controlBox);
     topSizer->Show(editBox);
+    if (editControl->hasAuto) {
+        bAuto->Enable();
+    }
+    else {
+        bAuto->Disable();
+    }
+    if (editControl->maxValue > 20) {
+        bPlusTen->Show();
+        bMinusTen->Show();
+    }
+    else {
+        bPlusTen->Hide();
+        bMinusTen->Hide();
+    }
+    editBox->Layout();
     topSizer->Layout();
 }
 
 
-void BR24ControlsDialog::OnRangeClick(wxCommandEvent& event)
+void BR24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event)
 {
-    EnterEditMode(bRange, 0, 18, 6, true);
+    EnterEditMode((RadarControlButton *) event.GetEventObject());
 }
 
 
@@ -716,8 +585,8 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
 {
     //    Record the dialog size
     wxSize p = event.GetSize();
-    pPlugIn->SetBR24ControlsDialogSizeX(p.x);
-    pPlugIn->SetBR24ControlsDialogSizeY(p.y);
+    pPlugIn->SetBR24ControlsDialogSizeX(p.GetWidth());
+    pPlugIn->SetBR24ControlsDialogSizeY(p.GetHeight());
 
     event.Skip();
 }

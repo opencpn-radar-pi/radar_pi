@@ -522,14 +522,12 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
 
     wxString RangeModeStrings[] = {
         _("Nautical Miles"),
-        _("Statute Miles"),
         _("Kilometers"),
-        _("Meters"),
     };
 
     pRangeUnits = new wxRadioBox(this, ID_RANGE_UNITS, _("Range Units"),
                                     wxDefaultPosition, wxDefaultSize,
-                                    4, RangeModeStrings, 1, wxRA_SPECIFY_COLS);
+                                    2, RangeModeStrings, 1, wxRA_SPECIFY_COLS);
 
     BoxSizerOperation->Add(pRangeUnits, 0, wxALL | wxEXPAND, 2);
 
@@ -1334,7 +1332,10 @@ bool br24radar_pi::LoadConfig(void)
         pConf->SetPath(wxT("/Settings"));
         pConf->SetPath(wxT("/Plugins/BR24Radar"));
         if (pConf->Read(wxT("DisplayOption"), &settings.display_option, 0)) {
-            pConf->Read(wxT("RangeUnits" ), &settings.range_units, 0 ); //0 = "Nautical miles"), 1 = "Statute miles", 2 = "Kilometers", 3 = "Meters"
+            pConf->Read(wxT("RangeUnits" ), &settings.range_units, 0 ); //0 = "Nautical miles"), 1 = "Kilometers"
+            if (settings.range_units > 1) {
+                settings.range_units = 1;
+            }
             pConf->Read(wxT("DisplayMode"),  &settings.display_mode, 0);
             pConf->Read(wxT("VerboseLog"),  &settings.verbose, 0);
             pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
@@ -1579,54 +1580,55 @@ void br24radar_pi::SetRangeMeters(long meters)
     }
 }
 
-void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
+void br24radar_pi::SetControlValue(ControlType controlType, int value)
 {
     wxString msg;
-
-    if (settings.master_mode) {
-//        msg.Printf(wxT("SetFilterProcess: %d %d"), br_process, sel_gain);
-//        wxLogMessage(msg);
-
-        switch (br_process) {
-            case 0: {                        // Auto Gain
+    
+    if (settings.master_mode || controlType == CT_TRANSPARENCY) {
+        switch (controlType) {
+            case CT_GAIN: {
+                if (value < 0) {                // AUTO gain
                     char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
                         0, 0, 0, 0, (byte)0x01,
                         0, 0, 0, (byte)0xa1
                     };
-                    //msg.Printf(wxT("AutoGain: %o"), cmd);
-                    //wxLogMessage(msg);
+                    if (settings.verbose) {
+                        wxLogMessage(wxT("Gain: Auto"));
+                    }
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
-                }
-            case 1: {                        // Manual Gain
+                } else {                        // Manual Gain
                     char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
                         0, 0, 0, 0, 0, 0, 0, 0,
-                        (char)(int)(sel_gain * 255 / 100)
+                        (char) value
                     };
-                    //msg.Printf(wxT("ManualGain: %o"), cmd);
-                    //wxLogMessage(msg);
+                    if (settings.verbose) {
+                        wxLogMessage(wxT("Gain: %d"), value);
+                    }
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
-            case 2: {                       // Rain Clutter - Manual. Range is 0x01 to 0x50 
-                    sel_gain = sel_gain * 0x50 / 0x100;
-                    char cmd[] = {
-                        (byte)0x06,
-                        (byte)0xc1,
-                        (byte)0x04,
-                        0, 0, 0, 0, 0, 0, 0,
-                        (char)(int)(sel_gain * 255 / 100)
-                    };
-                    //msg.Printf(wxT("RainClutter 0-0x50:cmd %o, sel %d, calc %d"), cmd, sel_gain, sel_gain * 255 / 100);
-                    //wxLogMessage(msg);
-                    TransmitCmd(cmd, sizeof(cmd));
-                    break;
+            }
+            case CT_RAIN: {                       // Rain Clutter - Manual. Range is 0x01 to 0x50
+                char cmd[] = {
+                    (byte)0x06,
+                    (byte)0xc1,
+                    (byte)0x04,
+                    0, 0, 0, 0, 0, 0, 0,
+                    (char) value
+                };
+                if (settings.verbose) {
+                    wxLogMessage(wxT("Rain: %d"), value);
                 }
-            case 3: {                       // Sea Clutter - Auto
+                TransmitCmd(cmd, sizeof(cmd));
+                break;
+            }
+            case CT_SEA: {
+                if (value < 0) {                 // Sea Clutter - Auto
                     char cmd[11] = {
                         (byte)0x06,
                         (byte)0xc1,
@@ -1634,45 +1636,51 @@ void br24radar_pi::SetFilterProcess(int br_process, int sel_gain)
                         0, 0, 0, (byte)0x01,
                         0, 0, 0, (byte)0xd3
                     };
-                    //msg.Printf(wxT("SeaClutter-Auto: %o"), cmd);
-                    //wxLogMessage(msg);
+                    if (settings.verbose) {
+                        wxLogMessage(wxT("Sea: Auto"));
+                    }
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
-                }
-            case 4: {                       // Sea Clutter
+                } else {                       // Sea Clutter
                     char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
                         (byte)0x02,
                         0, 0, 0, 0, 0, 0, 0,
-                        (char)(int)(sel_gain *255 / 100)
+                        (char)value
                     };
-                    //msg.Printf(wxT("SeaClutter-Man: %o, sel %d, calc %d"), cmd, sel_gain, sel_gain * 255 / 100); //"), cmd);
-                    //wxLogMessage(msg);
+                    if (settings.verbose) {
+                        wxLogMessage(wxT("Sea: %d"), value);
+                    }
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
-        };
+            case CT_REJECTION: {
+                settings.rejection = value;
+                char br_rejection_cmd[] = {
+                    (byte)0x08,
+                    (byte)0xc1,
+                    (char) settings.rejection
+                };
+                if (settings.verbose) {
+                    wxLogMessage(wxT("Rejection: %d"), value);
+                }
+                TransmitCmd(br_rejection_cmd, sizeof(br_rejection_cmd));
+                break;
+            }
+            case CT_TRANSPARENCY: {
+                settings.overlay_transparency = value;
+                break;
+            }
+            default: {
+                wxLogMessage(wxT("Unhandled control setting for control %d"), controlType);
+            }
+            };
+        }
     }
     else
     {
-        wxLogMessage(wxT("Not master, so ignore SetFilterProcess: %d %d"), br_process, sel_gain);
-    }
-}
-
-void br24radar_pi::SetRejectionMode(int mode)
-{
-    settings.rejection = mode;
-    if (settings.master_mode) {
-        char br_rejection_cmd[] = {
-            (byte)0x08,
-            (byte)0xc1,
-            (char) settings.rejection
-        };
-        TransmitCmd(br_rejection_cmd, sizeof(br_rejection_cmd));
- //       wxString msg;
- //       msg.Printf(wxT("Rejection: %o"), br_rejection_cmd);
- //       wxLogMessage(msg);
+        wxLogMessage(wxT("Not master, so ignore SetControlValue: %d %d"), controlType, value);
     }
 }
 
