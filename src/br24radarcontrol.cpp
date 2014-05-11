@@ -111,6 +111,25 @@ END_EVENT_TABLE()
 
 static const wxString g_range_names[2][18] = {
     {
+        wxT("1/20 NM"),
+        wxT("1/10 NM"),
+        wxT("1/8 NM"),
+        wxT("1/4 NM"),
+        wxT("1/2 NM"),
+        wxT("3/4 NM"),
+        wxT("1 NM"),
+        wxT("2 NM"),
+        wxT("3 NM"),
+        wxT("4 NM"),
+        wxT("6 NM"),
+        wxT("8 NM"),
+        wxT("12 NM"),
+        wxT("16 NM"),
+        wxT("24 NM"),
+        wxT("36 NM"),
+        wxT("36 NM")  // pad to same length as metric
+    },
+    {
         wxT("50 m"),
         wxT("75 m"),
         wxT("100 m"),
@@ -129,30 +148,28 @@ static const wxString g_range_names[2][18] = {
         wxT("24 km"),
         wxT("36 km"),
         wxT("48 km")
-    },
-    {
-        wxT("1/20 NM"),
-        wxT("1/10 NM"),
-        wxT("1/8 NM"),
-        wxT("1/4 NM"),
-        wxT("1/2 NM"),
-        wxT("3/4 NM"),
-        wxT("1 NM"),
-        wxT("2 NM"),
-        wxT("3 NM"),
-        wxT("4 NM"),
-        wxT("6 NM"),
-        wxT("8 NM"),
-        wxT("12 NM"),
-        wxT("16 NM"),
-        wxT("24 NM"),
-        wxT("36 NM"),
-        wxT("36 NM")  // pad to same length as metric
     }
-
 };
 
 static const int g_range_distances[2][18] = {
+    {
+        1852/20,
+        1852/10,
+        1852/8,
+        1852/4,
+        1852/2,
+        1852*3/4,
+        1852*1,
+        1852*2,
+        1852*3,
+        1852*4,
+        1852*6,
+        1852*8,
+        1852*12,
+        1852*16,
+        1852*24,
+        1852*36
+    },
     {
         50,
         75,
@@ -172,33 +189,41 @@ static const int g_range_distances[2][18] = {
         24000,
         36000,
         48000
-    },
-    {
-        1852/20,
-        1852/10,
-        1852/8,
-        1852/4,
-        1852/2,
-        1852*3/4,
-        1852*1,
-        1852*2,
-        1852*3,
-        1852*4,
-        1852*6,
-        1852*8,
-        1852*12,
-        1852*16,
-        1852*24,
-        1852*36
     }
 };
 
-static const int METRIC_RANGE_COUNT = 18;
 static const int MILE_RANGE_COUNT = 16;
+static const int METRIC_RANGE_COUNT = 18;
 
 static const int g_range_maxValue[2] = { MILE_RANGE_COUNT, METRIC_RANGE_COUNT };
 
 static const wxString g_rejection_names[4] = { wxT("Off"), wxT("Low"), wxT("Medium"), wxT("High") };
+
+extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
+{
+    const int * ranges;
+    size_t      n;
+    
+    if (units < 1) {                    /* NMi or Mi */
+        n = MILE_RANGE_COUNT;
+        ranges = g_range_distances[0];
+    }
+    else {
+        n = METRIC_RANGE_COUNT;
+        ranges = g_range_distances[1];
+    }
+    if (radarType == RT_BR24) {
+        n--;
+    }
+    
+    for (; n > 0; n--) {
+        if (ranges[n] < *range_meters) {
+            break;
+        }
+    }
+    *range_meters = ranges[n];
+    return n;
+}
 
 void RadarControlButton::SetValue(int newValue)
 {
@@ -236,65 +261,49 @@ void RadarControlButton::SetAuto()
     technicalValue = -1;
 }
 
-void RadarRangeControlButton::SetValue(int newValue)
+int RadarRangeControlButton::SetValueInt(int newValue)
 {
     int units = pPlugIn->settings.range_units;
     
-    wxLogMessage(wxT("Range units = %d\n"), units);
-    
     maxValue = g_range_maxValue[units] - 1;
-
+    
     if (newValue >= minValue && newValue <= maxValue) {
         value = newValue;
-    }
-    else if (value < minValue) {
-        value = 0;
+    } else if (pPlugIn->settings.auto_range_mode && auto_range_index >= 0) {
+        value = auto_range_index;
     } else if (value > maxValue) {
         value = maxValue;
     }
-    wxLogMessage(wxT("Range index = %d\n"), value);
-    
     int meters = g_range_distances[units][value];
-    wxLogMessage(wxT("Range meters = %d\n"), meters);
-    pPlugIn->SetRangeMeters(meters);
+    wxString label;
+    wxString rangeText = value < 0 ? wxT("?") : g_range_names[units][value];
+    
+    if (pPlugIn->settings.auto_range_mode) {
+        label.Printf(wxT("%s\nAUTO (%s)"), firstLine, rangeText);
+    }
+    else{
+        label.Printf(wxT("%s\n%s"), firstLine, rangeText);
+    }
+    this->SetLabel(label);
+    wxLogMessage(wxT("Range label %s auto=%d unit=%d max=%d new=%d val=%d"), label, pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
+    
+    return meters;
+}
+
+void RadarRangeControlButton::SetValue(int newValue)
+{
+    isAuto = false;
     pPlugIn->settings.auto_range_mode = false;
 
-    wxString label;
-    wxString rangeText = g_range_names[units][value];
-    
-    label.Printf(wxT("%s\n%s"), firstLine, rangeText);
-    
-    this->SetLabel(label);
-    
-    isAuto = false;
+    int meters = SetValueInt(newValue);
+    pPlugIn->SetRangeMeters(meters);
 }
 
 void RadarRangeControlButton::SetAuto()
 {
-    int units = pPlugIn->settings.range_units;
-    
-    wxLogMessage(wxT("Range units = %d\n"), units);
-    
-    maxValue = g_range_maxValue[units] - 1;
-    int newValue = pPlugIn->settings.range_index;
-    if (newValue >= minValue && newValue <= maxValue) {
-        value = newValue;
-    }
-    else if (value < minValue) {
-        value = 0;
-    } else if (value > maxValue) {
-        value = maxValue;
-    }
-    
-    wxString label;
-    wxString rangeText = g_range_names[units][value];
-    
-    label.Printf(wxT("%s\nAUTO(%s)"), firstLine, rangeText);
-    
-    this->SetLabel(label);
-    
     isAuto = true;
     pPlugIn->settings.auto_range_mode = true;
+    SetValueInt(auto_range_index);
 }
 
 BR24ControlsDialog::BR24ControlsDialog()
@@ -458,26 +467,15 @@ void BR24ControlsDialog::UpdateGuardZoneState()
     bGuard2->SetLabel(label);
 }
 
-void BR24ControlsDialog::SetActualRange(long range)
+void BR24ControlsDialog::SetRangeIndex(size_t index)
 {
-    const int * ranges;
-    int         n;
-    
-    if (pPlugIn->settings.range_units < 1) {                    /* NMi or Mi */
-        n = (int) MILE_RANGE_COUNT;
-        ranges = g_range_distances[0];
-    }
-    else {
-        n = (int) METRIC_RANGE_COUNT;
-        ranges = g_range_distances[1];
-    }
-    
-    for (; n > 0; n--) {
-        if (ranges[n] < range) {
-            break;
-        }
-    }
-    bRange->SetValue(n);
+    bRange->SetValueInt(index); // set and recompute the range label
+}
+
+void BR24ControlsDialog::SetAutoRangeIndex(size_t index)
+{
+    bRange->auto_range_index = index;
+    bRange->SetValueInt(-1); // recompute the range label
 }
 
 void BR24ControlsDialog::OnZone1ButtonClick(wxCommandEvent &event)

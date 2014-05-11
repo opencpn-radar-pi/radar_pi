@@ -105,10 +105,12 @@ double br_hdt;
 
 double mark_rng, mark_brg;      // This is needed for context operation
 long  br_range_meters = 0;      // current range for radar
-double  previous_range = 0.0;
+int auto_range_meters = 0;      // What the range should be, at least, when AUTO mode is selected
+int previous_auto_range_meters = 0;
 
 int   br_radar_state;
 int   br_scanner_state;
+RadarType br_radar_type = RT_BR24;
 
 long  br_display_interval(0);
 
@@ -121,7 +123,6 @@ wxTextCtrl        *plogtc;
 
 int   radar_control_id, alarm_zone_id;
 bool  alarm_context_mode;
-double ppNM;
 
 
 wxSound     RadarAlarm;     //This is the Devil
@@ -252,7 +253,6 @@ int br24radar_pi::Init(void)
     br_dt_stayalive = wxDateTime::Now();
     alarm_sound_last = wxDateTime::Now();
 
-    m_dt_last_render = wxDateTime::Now();
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
     m_sent_bm_id_rollover =  -1;
@@ -665,7 +665,13 @@ void br24radar_pi::OnContextMenuItemCallback(int id)
         if (!m_pControlDialog) {
             m_pControlDialog = new BR24ControlsDialog;
             m_pControlDialog->Create(m_parent_window, this);
-            m_pControlDialog->SetActualRange(br_range_meters);
+            
+            int range = auto_range_meters;
+            m_pControlDialog->SetAutoRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
+            if (br_range_meters) {
+                range = br_range_meters;
+                m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
+            }
         }
         m_pControlDialog->Show();
         m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
@@ -886,45 +892,52 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     DoTick(); // update timers and watchdogs
 
     UpdateState(); // update the toolbar
-
+    
+    double max_distance = 0;
+    wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
+    wxPoint boat_center;
+    
+    if (br_bpos_set) {
+        wxPoint pp;
+        GetCanvasPixLL(vp, &pp, br_ownship_lat, br_ownship_lon);
+        boat_center = pp;
+    } else {
+        boat_center = center_screen;
+    }
+    
+    // Calculate the "optimum" radar range setting in meters so Radar just fills Screen
+    
+    // We used to take the position of the boat into account, so that when you panned the zoom range would go up
+    // This is not what the plotters do, so just to make it work the same way we're doing it the same way.
+    // The radar range is set such that it covers the entire screen plus 50% so that a little panning is OK.
+    // This is what the plotters do as well.
+    
+    max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
+    
+    auto_range_meters =  max_distance / 2.0 * 1.5;
+    size_t idx = convertMetersToRadarAllowedValue(&auto_range_meters, settings.range_units, br_radar_type);
+    if (auto_range_meters != previous_auto_range_meters) {
+        if (settings.verbose) {
+            wxLogMessage(wxT("Automatic scale changed from %d to %d meters")
+                         , previous_auto_range_meters, auto_range_meters);
+        }
+        previous_auto_range_meters = auto_range_meters;
+        if (m_pControlDialog) {
+            m_pControlDialog->SetAutoRangeIndex(idx);
+        }
+        if (settings.auto_range_mode) {
+            // Send command directly to radar
+            SetRangeMeters(auto_range_meters);
+        }
+    }
+    
     if (br_scanner_state == RADAR_ON                                // Received spoke data
-    && (
-         (br_radar_state == RADAR_ON && settings.display_mode != 0) // Pressed radar in non-overlay mode
-         ||
-         (settings.display_mode == 0 && m_hdt_source > 0)           // overlay mode and heading received
-       ))
+        && (
+            (br_radar_state == RADAR_ON && settings.display_mode != 0) // Pressed radar in non-overlay mode
+            ||
+            (settings.display_mode == 0 && m_hdt_source > 0)           // overlay mode and heading received
+            ))
     {
-        m_dt_last_render = wxDateTime::Now();
-
-        double max_distance = 0;
-        wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
-        wxPoint boat_center;
-
-        if (br_bpos_set) {
-            wxPoint pp;
-            GetCanvasPixLL(vp, &pp, br_ownship_lat, br_ownship_lon);
-            boat_center = pp;
-        } else {
-            boat_center = center_screen;
-        }
-
-        if (settings.auto_range_mode) {  // Calculate the "optimum" radar range setting in meters so Radar just fills Screen
-
-            // We used to take the position of the boat into account, so that when you panned the zoom range would go up
-            // This is not what the plotters do, so just to make it work the same way we're doing it the same way.
-            // The radar range is set such that it covers the entire screen plus 50% so that a little panning is OK.
-            // This is what the plotters do as well.
-
-            max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
-
-            double wanted_range =  max_distance / 2.0 * 1.5;
-
-            if ((wanted_range > 1.10 * previous_range) || (wanted_range < 0.90 * previous_range)) {
-                previous_range = wanted_range;
-               // long range_meters = (long) wanted_range;
-                SetRangeMeters((long)wanted_range);
-            }
-        }
 
         //    Calculate image scale factor
 
@@ -1019,7 +1032,7 @@ void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_pp
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
     glScaled(scale_factor, scale_factor, 1.);
     if (settings.verbose) {
-        msg.Printf(wxT("RenderRadarOverlay: br_range=%f v_scale_ppm=%f  radar_pixels_per_meter=%f"), br_range_meters, v_scale_ppm, radar_pixels_per_meter);
+        msg.Printf(wxT("RenderRadarOverlay: br_range=%d v_scale_ppm=%f  radar_pixels_per_meter=%f"), br_range_meters, v_scale_ppm, radar_pixels_per_meter);
         wxLogMessage(msg);
     }
     DrawRadarImage(br_range_meters, radar_center);
@@ -1221,8 +1234,9 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm, Plu
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    double ppNM;
 
-    ppNM = v_scale_ppm * 1852.0 ;          // screen pixels per naut mile
+    ppNM = v_scale_ppm * 1852.0 ;          // screen pixels per nautical mile to screen pixels per meter
     int start_bearing, end_bearing;
     int red = 0, green = 200, blue = 0, alpha = 50;
 
@@ -2008,7 +2022,7 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
             range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
             angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
             range_meters = (int) ((double)range_raw * 10.0 / sqrt(2.0));
-
+            br_radar_type = RT_BR24;
         } else {
             // 4G mode
             large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
@@ -2025,6 +2039,7 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
                 range_raw = large_range * 256;
             }
             range_meters = range_raw / 4;
+            br_radar_type = RT_4G;
         }
 
         // Range change desired?
@@ -2041,7 +2056,7 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
 
             // Set the control's value to the real range that we received, not a table idea
             if (pPlugIn->m_pControlDialog) {
-                pPlugIn->m_pControlDialog->SetActualRange(br_range_meters);
+                pPlugIn->m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range_meters, pPlugIn->settings.range_units, br_radar_type));
             }
         }
 

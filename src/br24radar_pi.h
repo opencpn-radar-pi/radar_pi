@@ -155,12 +155,18 @@ typedef enum GuardZoneType {
 
 extern wxString GuardZoneNames[3];
 
+typedef enum RadarType {
+    RT_BR24,
+    RT_4G
+} RadarType;
+
+extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, RadarType radar_type);
+
 #define DEFAULT_OVERLAY_TRANSPARENCY (5)
 #define MIN_OVERLAY_TRANSPARENCY (0)
 #define MAX_OVERLAY_TRANSPARENCY (10)
 
 struct radar_control_settings {
-    int     radar_type;
     int      overlay_transparency;    // now 0-100, no longer a double
     bool     master_mode;
     bool     verbose;
@@ -266,6 +272,7 @@ public:
     bool SaveConfig(void);
 
     long GetRangeMeters();
+    long GetOptimalRangeMeters();
     void SetRangeMeters(long range);
 
     radar_control_settings settings;
@@ -323,7 +330,6 @@ private:
     MulticastRXThread        *m_receiveThread;
 
     SOCKET                    m_radar_socket;
-    wxDateTime                m_dt_last_render;
 
     long                      m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
     long                      m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
@@ -491,7 +497,7 @@ public:
         Create(parent, id, label, wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
         minValue = 0;
         maxValue = 0;
-        value = 0;
+        value = -1; // means: never set
         hasAuto = true;
         pPlugIn = ppi;
         firstLine = label;
@@ -500,15 +506,15 @@ public:
         
         this->SetFont(g_font);
         
-        SetValue(ppi->settings.range_index);
         isAuto = ppi->settings.auto_range_mode;
-        if (isAuto) {
-            SetAuto();
-        }
     }
+    
+    int auto_range_index;
  
     virtual void SetValue(int value);
     virtual void SetAuto();
+
+    int SetValueInt(int value);
 };
 
 //----------------------------------------------------------------------------------------------------------
@@ -534,7 +540,8 @@ public:
                 );
 
     void CreateControls();
-    void SetActualRange(long range);
+    void SetRangeIndex(size_t index);
+    void SetAutoRangeIndex(size_t index);
     void UpdateGuardZoneState();
 
 private:
