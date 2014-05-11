@@ -439,6 +439,7 @@ public:
         hasAuto = newHasAuto;
         pPlugIn = ppi;
         firstLine = label;
+        names = 0;
         controlType = ct;
         if (hasAuto) {
             SetAuto();
@@ -455,6 +456,7 @@ public:
     virtual void SetValue(int value);
     virtual void SetAuto();
     
+    const wxString  *names;
     
     wxString   firstLine;
     
@@ -487,6 +489,7 @@ public:
         hasAuto = true;
         pPlugIn = ppi;
         firstLine = label;
+        names = 0;
         controlType = CT_RANGE;
         
         this->SetFont(g_font);

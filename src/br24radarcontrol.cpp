@@ -195,6 +195,8 @@ static const int MILE_RANGE_COUNT = 16;
 
 static const int g_range_maxValue[2] = { MILE_RANGE_COUNT, METRIC_RANGE_COUNT };
 
+static const wxString g_rejection_names[4] = { wxT("Off"), wxT("Low"), wxT("Medium"), wxT("High") };
+
 void RadarControlButton::SetValue(int newValue)
 {
     if (newValue < minValue) {
@@ -206,12 +208,17 @@ void RadarControlButton::SetValue(int newValue)
     }
     
     wxString label;
+
+    if (names) {
+        label.Printf(wxT("%s\n%s"), firstLine, names[value]);
+    } else {
+        label.Printf(wxT("%s\n%d"), firstLine, value);
+    }
     
-    label.Printf(wxT("%s\n%d"), firstLine, value);
     this->SetLabel(label);
     
     isAuto = false;
-    pPlugIn->SetControlValue(CT_RANGE, value);
+    pPlugIn->SetControlValue(controlType, value);
 }
 
 void RadarControlButton::SetAuto()
@@ -397,22 +404,26 @@ void BR24ControlsDialog::CreateControls()
     controlBox->Add(bGain, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     
 // The SEA button
-    bSea = new RadarControlButton(this, ID_SEA, _("Sea"), pPlugIn, CT_SEA, true, pPlugIn->settings.sea_clutter_gain);
+    bSea = new RadarControlButton(this, ID_SEA, _("Sea Clutter"), pPlugIn, CT_SEA, true, pPlugIn->settings.sea_clutter_gain);
     controlBox->Add(bSea, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     
 // The RAIN button
-    bRain = new RadarControlButton(this, ID_RAIN, _("Rain"), pPlugIn, CT_RAIN, false, pPlugIn->settings.rain_clutter_gain);
+    bRain = new RadarControlButton(this, ID_RAIN, _("Rain Clutter"), pPlugIn, CT_RAIN, false, pPlugIn->settings.rain_clutter_gain);
     controlBox->Add(bRain, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     
 // The TRANSPARENCY button
     bTransparency = new RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), pPlugIn, CT_TRANSPARENCY, false, pPlugIn->settings.overlay_transparency);
     controlBox->Add(bTransparency, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bTransparency->minValue = MIN_OVERLAY_TRANSPARENCY;
+    bTransparency->maxValue = MAX_OVERLAY_TRANSPARENCY;
 
 // The REJECTION button
-    bRejection = new RadarControlButton(this, ID_REJECTION, _("Target Rej."), pPlugIn, CT_REJECTION, false, pPlugIn->settings.rejection);
+    bRejection = new RadarControlButton(this, ID_REJECTION, _("Interf. Rej"), pPlugIn, CT_REJECTION, false, pPlugIn->settings.rejection);
     controlBox->Add(bRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bRejection->minValue = 0;
     bRejection->maxValue = 3;
+    bRejection->names = g_rejection_names;
+    bRejection->SetValue(pPlugIn->settings.rejection); // redraw after adding names
 
     
 #ifdef OLD
@@ -546,10 +557,10 @@ void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
     topSizer->Hide(controlBox);
     topSizer->Show(editBox);
     if (editControl->hasAuto) {
-        bAuto->Enable();
+        bAuto->Show();
     }
     else {
-        bAuto->Disable();
+        bAuto->Hide();
     }
     if (editControl->maxValue > 20) {
         bPlusTen->Show();

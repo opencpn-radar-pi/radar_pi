@@ -1529,7 +1529,9 @@ void br24radar_pi::TransmitCmd(char* msg, int size)
     if (m_radar_socket == INVALID_SOCKET || sendto(m_radar_socket, msg, size, 0, (struct sockaddr *) &adr, sizeof(adr)) < size) {
         wxLogMessage(wxT("BR24radar_pi: unable to transmit command to radar: %s\n"), SOCKETERRSTR);
         return;
-    };
+    } else if (settings.verbose) {
+        logBinaryData(wxT("command"), msg, size);
+    }
 };
 
 void br24radar_pi::RadarTxOff(void)
@@ -1574,8 +1576,10 @@ void br24radar_pi::SetRangeMeters(long meters)
                          , (byte) ((decimeters >> 16) & 0XFFL)
                          , (byte) ((decimeters >> 24) & 0XFFL)
                          };
+            if (settings.verbose) {
+                wxLogMessage(wxT("SetRangeMeters: %ld meters\n"), meters);
+            }
             TransmitCmd(pck, sizeof(pck));
-        wxLogMessage(wxT("SetRangeMeters: %ld meters: %x, %x, %x, %x, \n"), meters, pck[2], pck[3], pck[4], pck[5]);
         }
     }
 }
