@@ -71,8 +71,9 @@ enum {                                      // process ID's
     ID_TRANSPARENCY,
     ID_REJECTION,
     
-//    ID_CLUTTER,
-    ID_ALARMZONES
+    ID_ZONE1,
+    ID_ZONE2,
+
 };
 
 //---------------------------------------------------------------------------------------
@@ -98,9 +99,11 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
     EVT_BUTTON(ID_TRANSPARENCY, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
 
+    EVT_BUTTON(ID_ZONE1, BR24ControlsDialog::OnZone1ButtonClick)
+    EVT_BUTTON(ID_ZONE2, BR24ControlsDialog::OnZone2ButtonClick)
+
     EVT_MOVE(BR24ControlsDialog::OnMove)
     EVT_SIZE(BR24ControlsDialog::OnSize)
-    EVT_RADIOBUTTON(ID_ALARMZONES, BR24ControlsDialog::OnAlarmDialogClick)
 
 END_EVENT_TABLE()
 
@@ -254,6 +257,7 @@ void RadarRangeControlButton::SetValue(int newValue)
     int meters = g_range_distances[units][value];
     wxLogMessage(wxT("Range meters = %d\n"), meters);
     pPlugIn->SetRangeMeters(meters);
+    pPlugIn->settings.auto_range_mode = false;
 
     wxString label;
     wxString rangeText = g_range_names[units][value];
@@ -263,7 +267,6 @@ void RadarRangeControlButton::SetValue(int newValue)
     this->SetLabel(label);
     
     isAuto = false;
-    pPlugIn->SetControlValue(CT_RANGE, value);
 }
 
 void RadarRangeControlButton::SetAuto()
@@ -291,7 +294,7 @@ void RadarRangeControlButton::SetAuto()
     this->SetLabel(label);
     
     isAuto = true;
-    pPlugIn->SetControlValue(CT_RANGE, -1);
+    pPlugIn->settings.auto_range_mode = true;
 }
 
 BR24ControlsDialog::BR24ControlsDialog()
@@ -355,69 +358,73 @@ void BR24ControlsDialog::CreateControls()
     topSizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(topSizer);
     
-// A box sizer to contain RANGE button
+    //**************** EDIT BOX ******************//
+    // A box sizer to contain RANGE button
     editBox = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(editBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
     
-// The +10 button
+    // The +10 button
     bPlusTen = new wxButton(this, ID_PLUS_TEN, _("+10"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bPlusTen, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bPlusTen->SetFont(g_font);
 
-// The + button
+    // The + button
     bPlus = new wxButton(this, ID_PLUS, _("+1"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bPlus, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bPlus->SetFont(g_font);
 
-// The VALUE button
+    // The VALUE button
     bValue = new wxButton(this, ID_VALUE, _("Value"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bValue, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bValue->SetFont(g_font);
 
-// The - button
+    // The - button
     bMinus = new wxButton(this, ID_MINUS, _("-1"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bMinus, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bMinus->SetFont(g_font);
     
-// The -10 button
+    // The -10 button
     bMinusTen = new wxButton(this, ID_MINUS_TEN, _("-10"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bMinusTen, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bMinusTen->SetFont(g_font);
     
-// The Auto button
+    // The Auto button
     bAuto = new wxButton(this, ID_AUTO, _("Auto"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bAuto, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bAuto->SetFont(g_font);
 
     topSizer->Hide(editBox);
 
-// A box sizer to contain RANGE button
+    //**************** CONTROL BOX ******************//
+    // These are the controls that the users sees when the dialog is started
+
+    // A box sizer to contain RANGE, GAIN etc button
     controlBox = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(controlBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
     
-// The RANGE button
+    // The RANGE button
     bRange = new RadarRangeControlButton(this, ID_RANGE, _("Range"), pPlugIn);
     controlBox->Add(bRange, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     
-// The GAIN button
+    // The GAIN button
     bGain = new RadarControlButton(this, ID_GAIN, _("Gain"), pPlugIn, CT_GAIN, true, pPlugIn->settings.gain);
     controlBox->Add(bGain, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     
-// The SEA button
+    // The SEA button
     bSea = new RadarControlButton(this, ID_SEA, _("Sea Clutter"), pPlugIn, CT_SEA, true, pPlugIn->settings.sea_clutter_gain);
     controlBox->Add(bSea, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     
-// The RAIN button
+    // The RAIN button
     bRain = new RadarControlButton(this, ID_RAIN, _("Rain Clutter"), pPlugIn, CT_RAIN, false, pPlugIn->settings.rain_clutter_gain);
     controlBox->Add(bRain, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     
-// The TRANSPARENCY button
+    // The TRANSPARENCY button
     bTransparency = new RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), pPlugIn, CT_TRANSPARENCY, false, pPlugIn->settings.overlay_transparency);
     controlBox->Add(bTransparency, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bTransparency->minValue = MIN_OVERLAY_TRANSPARENCY;
     bTransparency->maxValue = MAX_OVERLAY_TRANSPARENCY;
 
-// The REJECTION button
+    // The REJECTION button
     bRejection = new RadarControlButton(this, ID_REJECTION, _("Interf. Rej"), pPlugIn, CT_REJECTION, false, pPlugIn->settings.rejection);
     controlBox->Add(bRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bRejection->minValue = 0;
@@ -425,39 +432,30 @@ void BR24ControlsDialog::CreateControls()
     bRejection->names = g_rejection_names;
     bRejection->SetValue(pPlugIn->settings.rejection); // redraw after adding names
 
+    // The GUARD ZONE 1 button
+    bGuard1 = new wxButton(this, ID_ZONE1, _("Guard Zone 1"), wxDefaultPosition, g_buttonSize, 0);
+    controlBox->Add(bGuard1, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bGuard1->SetFont(g_font);
+
+    // The GUARD ZONE 2 button
+    bGuard2 = new wxButton(this, ID_ZONE2, _("Guard Zone 2"), wxDefaultPosition, g_buttonSize, 0);
+    controlBox->Add(bGuard2, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bGuard2->SetFont(g_font);
+
+    UpdateGuardZoneState();
     
-#ifdef OLD
-
-    // Alarm Zone Operations
-
-    wxString    AlarmZoneString[] = { _("Inactive"),_("Zone 1"),_("Zone 2")};
-
-    pAlarmZones = new wxRadioBox(this, ID_ALARMZONES, _("Alarm Zones"), wxDefaultPosition,
-                                 wxDefaultSize, 3, AlarmZoneString, 1, wxRA_SPECIFY_COLS);
-
-    BoxSizerOperation->Add(pAlarmZones, 0, wxALL | wxEXPAND, 2);
-
-    pAlarmZones->Connect
-        (
-            wxEVT_COMMAND_RADIOBOX_SELECTED,
-            wxCommandEventHandler(BR24ControlsDialog::OnAlarmDialogClick),
-            NULL,
-            this
-        );
-    pAlarmZones->SetSelection(pPlugIn->settings.alarm_zone);
-
-// A horizontal box sizer to contain OK
-    wxBoxSizer* AckBox = new wxBoxSizer(wxHORIZONTAL);
-    topSizer->Add(AckBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
-
-// The OK button
-    wxButton* bOK = new wxButton(this, ID_OK, _("&Close"),
-                                 wxDefaultPosition, wxDefaultSize, 0);
-    AckBox->Add(bOK, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    
-#endif /* OLD */
-
     pPlugIn->UpdateDisplayParameters();
+}
+
+void BR24ControlsDialog::UpdateGuardZoneState()
+{
+    wxString label;
+
+    label.Printf(wxT("Guard Zone 1\n%s"), GuardZoneNames[pPlugIn->guardZones[0].type]);
+    bGuard1->SetLabel(label);
+
+    label.Printf(wxT("Guard Zone 2\n%s"), GuardZoneNames[pPlugIn->guardZones[1].type]);
+    bGuard2->SetLabel(label);
 }
 
 void BR24ControlsDialog::SetActualRange(long range)
@@ -482,13 +480,14 @@ void BR24ControlsDialog::SetActualRange(long range)
     bRange->SetValue(n);
 }
 
-
-void BR24ControlsDialog::OnAlarmDialogClick(wxCommandEvent &event)
+void BR24ControlsDialog::OnZone1ButtonClick(wxCommandEvent &event)
 {
-#ifdef OLD
-    int zone = (pAlarmZones->GetSelection());
-    pPlugIn->Select_Alarm_Zones(zone);
-#endif
+    pPlugIn->Select_Alarm_Zones(0);
+}
+
+void BR24ControlsDialog::OnZone2ButtonClick(wxCommandEvent &event)
+{
+    pPlugIn->Select_Alarm_Zones(1);
 }
 
 void BR24ControlsDialog::OnClose(wxCloseEvent& event)
