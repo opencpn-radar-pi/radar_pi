@@ -1608,11 +1608,15 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 } else {                        // Manual Gain
+                    int v = value * 255 / 100;
+                    if (v > 255) {
+                        v = 255;
+                    }
                     char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
                         0, 0, 0, 0, 0, 0, 0, 0,
-                        (char) value
+                        (char) v
                     };
                     if (settings.verbose) {
                         wxLogMessage(wxT("Gain: %d"), value);
@@ -1622,12 +1626,17 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 }
             }
             case CT_RAIN: {                       // Rain Clutter - Manual. Range is 0x01 to 0x50
+                int v = value * 0x50 / 100;
+                if (v > 255) {
+                    v = 255;
+                }
+                
                 char cmd[] = {
                     (byte)0x06,
                     (byte)0xc1,
                     (byte)0x04,
                     0, 0, 0, 0, 0, 0, 0,
-                    (char) value
+                    (char) v
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("Rain: %d"), value);
@@ -1650,12 +1659,16 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 } else {                       // Sea Clutter
+                    int v = value * 255 / 100;
+                    if (v > 255) {
+                        v = 255;
+                    }
                     char cmd[] = {
                         (byte)0x06,
                         (byte)0xc1,
                         (byte)0x02,
-                        0, 0, 0, 0, 0, 0, 0,
-                        (char)value
+                        0, 0, 0, 0, 0, 0, 0, 
+                       (char)v
                     };
                     if (settings.verbose) {
                         wxLogMessage(wxT("Sea: %d"), value);
