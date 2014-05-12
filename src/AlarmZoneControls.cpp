@@ -195,7 +195,7 @@ void AlarmZoneDialog::SetVisibility()
 {
     GuardZoneType zoneType = (GuardZoneType) pAlarmZoneType->GetSelection();
     
-    pPlugIn->guardZones[pPlugIn->settings.alarm_zone - 1].type = zoneType;
+    pPlugIn->guardZones[pPlugIn->settings.alarm_zone].type = zoneType;
     
     if (zoneType == GZ_OFF) {
         pStart_Bearing_Value->Disable();

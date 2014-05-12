@@ -931,43 +931,34 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         }
     }
     
-    if (br_scanner_state == RADAR_ON                                // Received spoke data
-        && (
-            (br_radar_state == RADAR_ON && settings.display_mode != 0) // Pressed radar in non-overlay mode
-            ||
-            (settings.display_mode == 0 && m_hdt_source > 0)           // overlay mode and heading received
-            ))
-    {
+    //    Calculate image scale factor
+    
+    GetCanvasLLPix(vp, wxPoint(0, vp->pix_height-1), &ulat, &ulon);  // is pix_height a mapable coordinate?
+    GetCanvasLLPix(vp, wxPoint(0, 0), &llat, &llon);
+    dist_y = radar_distance(llat, llon, ulat, ulon, 'm'); // Distance of height of display - meters
+    pix_y = vp->pix_height;
+    v_scale_ppm = 1.0;
+    if (dist_y > 0.) {
+        // v_scale_ppm = vertical pixels per meter
+        v_scale_ppm = vp->pix_height / dist_y ;    // pixel height of screen div by equivalent meters
+    }
 
-        //    Calculate image scale factor
-
-        GetCanvasLLPix(vp, wxPoint(0, vp->pix_height-1), &ulat, &ulon);  // is pix_height a mapable coordinate?
-        GetCanvasLLPix(vp, wxPoint(0, 0), &llat, &llon);
-        dist_y = radar_distance(llat, llon, ulat, ulon, 'm'); // Distance of height of display - meters
-        pix_y = vp->pix_height;
-        v_scale_ppm = 1.0;
-
-//        msg.Printf(wxT("RenderGLOverlay: vp->pix_height: %f, Dist_y: %f "), pix_y , dist_y);
-//        wxLogMessage(msg);
-
-        if (dist_y > 0.) {
-            // v_scale_ppm = vertical pixels per meter
-            v_scale_ppm = vp->pix_height / dist_y ;    // pixel height of screen div by equivalent meters
-        }
-//        msg.Printf(wxT("RenderGLOverlay: v_scale_ppm: %f  "), v_scale_ppm);
-//        wxLogMessage(msg);
-
-        switch (settings.display_mode) {
-            case 0:                                         // direct real time sweep render mode
+    switch (settings.display_mode) {
+        case 0:                                    // direct real time sweep render mode
+            if (m_hdt_source > 0) {
                 RenderRadarOverlay(boat_center, v_scale_ppm, vp);
-                break;
-            case 1:                                     // plain scope look
+            }
+            break;
+        case 1:                                     // plain scope look
+            if (br_radar_state == RADAR_ON) {
                 RenderRadarStandalone(boat_center, v_scale_ppm, vp);
-                break;
-            case 2:
+            }
+            break;
+        case 2:
+            if (br_radar_state == RADAR_ON) {
                 RenderSpectrum(center_screen, v_scale_ppm, vp);
-                break;
-        }
+            }
+            break;
     }
     return true;
 }
@@ -988,19 +979,21 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     glRotatef(heading - 90.0, 0, 0, 1);        //correction for boat heading -90 for base north
 
     // scaling...
- 
-    double radar_pixels_per_meter = 512.0 / br_range_meters;
+    int meters = br_range_meters;
+    if (!meters) meters = auto_range_meters;
+    if (!meters) meters = 1000;
+    double radar_pixels_per_meter = 512. / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
-    scale_factor = scale_factor * settings.range_calibration;
-    if (settings.verbose) {
-        wxLogMessage(wxT("RenderRadarOverlay: br_range_meters=%f v_scale_ppm: %f radar_pixels_per_meter: %f => scale factor = %f"), br_range_meters, v_scale_ppm, radar_pixels_per_meter, scale_factor);
-    }
     glScaled(scale_factor, scale_factor, 1.);
-    DrawRadarImage(br_range_meters, radar_center);
-
+    if (br_range_meters) { // only draw radar if something received
+        DrawRadarImage(br_range_meters, radar_center);
+    }
+    
     // Alarm Zone image
-    if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
+    if (br_radar_state == RADAR_ON) {
+        if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
             RenderAlarmZone(radar_center, v_scale_ppm, vp);
+        }
     }
 
     glPopMatrix();
@@ -1028,14 +1021,15 @@ void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_pp
     glRotatef(-90.0, 0, 0, 1);
 
     // scaling...
-    double radar_pixels_per_meter = 512. / br_range_meters;
+    int meters = br_range_meters;
+    if (!meters) meters = auto_range_meters;
+    if (!meters) meters = 1000;
+    double radar_pixels_per_meter = 512. / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
     glScaled(scale_factor, scale_factor, 1.);
-    if (settings.verbose) {
-        msg.Printf(wxT("RenderRadarOverlay: br_range=%d v_scale_ppm=%f  radar_pixels_per_meter=%f"), br_range_meters, v_scale_ppm, radar_pixels_per_meter);
-        wxLogMessage(msg);
+    if (br_range_meters) {
+        DrawRadarImage(br_range_meters, radar_center);
     }
-    DrawRadarImage(br_range_meters, radar_center);
 
     // Alarm Zone image
     if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
@@ -1099,24 +1093,26 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 /**********************************************************************************************************/
 // Alarm Section
 
-                for (size_t z = 0; z < GUARD_ZONES; z++) {
-                    if (guardZones[z].type != GZ_OFF) {
-                        double angle_deg = (angle * 360.0) / LINES_PER_ROTATION;
-                        double inner_range = guardZones[z].inner_range;
-                        double outer_range = guardZones[z].outer_range;
-                        double bogey_range = (radius / 512.0) * (max_range / 1852.0);
-                        double angle_1 = guardZones[z].start_bearing;
-                        double angle_2 = guardZones[z].end_bearing;
-                        
-                        if (angle_1 > angle_2) {
-                            angle_2 += 360.0;
-                        }
-                        if (angle_1 > angle_deg) {
-                            angle_deg += 360.0;
-                        }
-                        if (angle_deg > angle_1 && angle_deg < angle_2) {
-                            if (bogey_range > inner_range && bogey_range < outer_range) {
-                                bogey_count[z]++;
+                if (br_radar_state == RADAR_ON) {
+                    for (size_t z = 0; z < GUARD_ZONES; z++) {
+                        if (guardZones[z].type != GZ_OFF) {
+                            double angle_deg = (angle * 360.0) / LINES_PER_ROTATION;
+                            double inner_range = guardZones[z].inner_range;
+                            double outer_range = guardZones[z].outer_range;
+                            double bogey_range = (radius / 512.0) * (max_range / 1852.0);
+                            double angle_1 = guardZones[z].start_bearing;
+                            double angle_2 = guardZones[z].end_bearing;
+                            
+                            if (angle_1 > angle_2) {
+                                angle_2 += 360.0;
+                            }
+                            if (angle_1 > angle_deg) {
+                                angle_deg += 360.0;
+                            }
+                            if (angle_deg > angle_1 && angle_deg < angle_2) {
+                                if (bogey_range > inner_range && bogey_range < outer_range) {
+                                    bogey_count[z]++;
+                                }
                             }
                         }
                     }
@@ -1124,7 +1120,6 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             }
         }
     }
-
     HandleBogeyCount(bogey_count);
 }
 
