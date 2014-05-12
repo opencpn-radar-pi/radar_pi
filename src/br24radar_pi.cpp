@@ -732,8 +732,8 @@ void br24radar_pi::Select_Alarm_Zones(int zone)
 
     if (!m_pAlarmZoneDialog) {
         m_pAlarmZoneDialog = new AlarmZoneDialog;
-        m_pAlarmZoneDialog->Create(m_parent_window, this);
-        m_pAlarmZoneDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y, 0, 0);
+        wxPoint pos = wxPoint(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y); // show at same loc as controls
+        m_pAlarmZoneDialog->Create(m_parent_window, this, wxID_ANY, _(" Alarm Zone Control"), pos);
     }
     if (zone >= 0) {
         m_pAlarmZoneDialog->Show();

@@ -99,10 +99,14 @@ bool AlarmZoneDialog::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
 {
     pParent = parent;
     pPlugIn = pPI;
+    
+#ifdef wxMSW
+    long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
+#else
+    long wstyle =                 wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
+#endif
 
-    long    wstyle = wxDEFAULT_FRAME_STYLE;
-
-    wxSize  size_min = size;
+    wxSize  size_min = wxSize(200, 200);
 
     if(!wxDialog::Create(parent, id, m_caption, pos, size_min, wstyle)) return false;
 
