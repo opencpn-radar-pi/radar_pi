@@ -985,7 +985,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     double radar_pixels_per_meter = 512. / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
     glScaled(scale_factor, scale_factor, 1.);
-    if (br_range_meters) { // only draw radar if something received
+    if (br_range_meters && br_scanner_state == RADAR_ON) { // only draw radar if something received
         DrawRadarImage(br_range_meters, radar_center);
     }
     
@@ -1027,7 +1027,7 @@ void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_pp
     double radar_pixels_per_meter = 512. / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
     glScaled(scale_factor, scale_factor, 1.);
-    if (br_range_meters) {
+    if (br_range_meters && br_scanner_state == RADAR_ON) { // only draw radar if something received
         DrawRadarImage(br_range_meters, radar_center);
     }
 
