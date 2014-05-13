@@ -39,7 +39,7 @@
 #endif //precompiled headers
 
 #define     PLUGIN_VERSION_MAJOR    0
-#define     PLUGIN_VERSION_MINOR    40429
+#define     PLUGIN_VERSION_MINOR    40513
 
 #define     MY_API_VERSION_MAJOR    1
 #define     MY_API_VERSION_MINOR    8
@@ -73,6 +73,7 @@
 # define closesocket(fd) close(fd)
 #endif
 
+# define ARRAY_SIZE(x)   (sizeof(x)/sizeof(x[0]))
 
 enum {
     BM_ID_RED,
@@ -133,15 +134,41 @@ struct radar_frame_pkt {
     unsigned char   frame_hdr[8];
     radar_line      line[32];          //  scan lines
 };
-
 #pragma pack(pop)
+
+static wxFont g_font;
+static wxSize g_buttonSize;
+
+typedef enum ControlType {
+    CT_RANGE,
+    CT_GAIN,
+    CT_SEA,
+    CT_RAIN,
+    CT_TRANSPARENCY,
+    CT_REJECTION,
+    CT_TARGET_BOOST
+} ControlType;
+
+typedef enum GuardZoneType {
+    GZ_OFF,
+    GZ_ARC,
+    GZ_CIRCLE
+} GuardZoneType;
+
+extern wxString GuardZoneNames[3];
+
+typedef enum RadarType {
+    RT_BR24,
+    RT_4G
+} RadarType;
+
+extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, RadarType radar_type);
 
 #define DEFAULT_OVERLAY_TRANSPARENCY (5)
 #define MIN_OVERLAY_TRANSPARENCY (0)
 #define MAX_OVERLAY_TRANSPARENCY (10)
 
 struct radar_control_settings {
-    int     radar_type;
     int      overlay_transparency;    // now 0-100, no longer a double
     bool     master_mode;
     bool     verbose;
@@ -153,6 +180,7 @@ struct radar_control_settings {
     int      alarm_zone_threshold;  // How many blobs must be sent by radar before we fire alarm
     int      gain;
     int      rejection;
+    int      target_boost;
     int      filter_process;
     int      sea_clutter_gain;
     int      rain_clutter_gain;
@@ -223,7 +251,6 @@ public:
     void OnBR24ControlDialogClose();         // Control dialog
     void SetDisplayMode(int mode);
     void UpdateDisplayParameters(void);
-    void SetRangeMode(int mode);
 
     void SetBR24ControlsDialogX(long x) {
         m_BR24Controls_dialog_x = x;
@@ -242,21 +269,20 @@ public:
     void OnAlarmZoneBogeyClose();
     void OnAlarmZoneBogeyConfirm();
 
-    void SetFilterProcess(int br_process, int sel_gain);
-    void SetGainMode(int mode);
-    void SetRejectionMode(int mode);
+    void SetControlValue(ControlType controlType, int value);
+
     bool LoadConfig(void);
     bool SaveConfig(void);
 
     long GetRangeMeters();
+    long GetOptimalRangeMeters();
     void SetRangeMeters(long range);
 
     radar_control_settings settings;
 
-    alarm_zone_settings Zone1;
-    alarm_zone_settings Zone2;
-
-
+#define GUARD_ZONES (2)
+    alarm_zone_settings guardZones[GUARD_ZONES];
+    
 #define LINES_PER_ROTATION (4096)
     unsigned char             m_scan_buf[LINES_PER_ROTATION][512];  // scan buffer that contains raw radar scan image
     int                       m_scan_range[LINES_PER_ROTATION][3];  // range in decimeters for the corresponding line in m_scan_buf
@@ -283,7 +309,7 @@ private:
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
     void DrawRadarImage(int max_range, wxPoint radar_center);
     void RenderAlarmZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
-    void HandleBogeyCount(int bogey_count);
+    void HandleBogeyCount(int *bogey_count);
     void DrawFilledArc(double r1, double r2, double a1, double a2);
     void draw_blob_dc(wxDC &dc, double angle, double radius, double blob_r, double arc_length,
                       double scale, int xoff, int yoff);
@@ -307,7 +333,6 @@ private:
     MulticastRXThread        *m_receiveThread;
 
     SOCKET                    m_radar_socket;
-    wxDateTime                m_dt_last_render;
 
     long                      m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
     long                      m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
@@ -400,6 +425,101 @@ private:
     wxTextCtrl        *pText_Heading_Correction_Value;
 };
 
+
+//----------------------------------------------------------------------------------------------------------
+//    BR24Radar Control Dialog Helpers Specification
+//----------------------------------------------------------------------------------------------------------
+
+class RadarControlButton: public wxButton
+{
+public:
+    RadarControlButton()
+    {
+        
+    };
+    
+    RadarControlButton(wxWindow *parent,
+                       wxWindowID id,
+                       const wxString& label,
+                       br24radar_pi *ppi,
+                       ControlType ct,
+                       bool newHasAuto,
+                       int newValue
+                      )
+    {
+        Create(parent, id, label, wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
+        minValue = 0;
+        maxValue = 100;
+        value = 0;
+        hasAuto = newHasAuto;
+        pPlugIn = ppi;
+        firstLine = label;
+        names = 0;
+        controlType = ct;
+        if (hasAuto) {
+            SetAuto();
+        } else {
+            SetValue(newValue);
+        }
+        
+        this->SetFont(g_font);
+    }
+    
+    // Set a new value, if it is in range. If not the value is ignored.
+    // Computes a new label and a new technicalValue
+    // The default conversion is technicalValue = (int) ((double) value * 255.0 / 100.0)
+    virtual void SetValue(int value);
+    virtual void SetAuto();
+    
+    const wxString  *names;
+    
+    wxString   firstLine;
+    
+    int        technicalValue; // value converted to what system needs
+    br24radar_pi *pPlugIn;
+
+    int        value;
+    bool       isAuto;
+    
+    int        minValue;
+    int        maxValue;
+    bool       hasAuto;
+    ControlType controlType;
+    
+};
+
+class RadarRangeControlButton: public RadarControlButton
+{
+public:
+    RadarRangeControlButton(wxWindow *parent,
+                            wxWindowID id,
+                            const wxString& label,
+                            br24radar_pi *ppi
+                           )
+    {
+        Create(parent, id, label, wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
+        minValue = 0;
+        maxValue = 0;
+        value = -1; // means: never set
+        hasAuto = true;
+        pPlugIn = ppi;
+        firstLine = label;
+        names = 0;
+        controlType = CT_RANGE;
+        
+        this->SetFont(g_font);
+        
+        isAuto = ppi->settings.auto_range_mode;
+    }
+    
+    int auto_range_index;
+ 
+    virtual void SetValue(int value);
+    virtual void SetAuto();
+
+    int SetValueInt(int value);
+};
+
 //----------------------------------------------------------------------------------------------------------
 //    BR24Radar Control Dialog Specification
 //----------------------------------------------------------------------------------------------------------
@@ -416,42 +536,78 @@ public:
     void Init();
 
     bool Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID id = wxID_ANY,
-                const wxString& caption = _("BR24 Radar Control"),
+                const wxString& caption = _("Radar"),
                 const wxPoint& pos = wxDefaultPosition,
                 const wxSize& size = wxDefaultSize,
-                long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
+                long style = wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX)
+                );
 
     void CreateControls();
-    void SetActualRange(long range);
+    void SetRangeIndex(size_t index);
+    void SetAutoRangeIndex(size_t index);
+    void UpdateGuardZoneState();
 
 private:
     void OnClose(wxCloseEvent& event);
     void OnIdOKClick(wxCommandEvent& event);
     void OnMove(wxMoveEvent& event);
     void OnSize(wxSizeEvent& event);
-    void OnTransSlider(wxCommandEvent &event);
-    void OnRangeModeClick(wxCommandEvent &event);
-    void OnRangeValue(wxCommandEvent &event);
-    void OnFilterProcessClick(wxCommandEvent &event);
-    void OnRejectionModeClick(wxCommandEvent &event);
-    void OnGainSlider(wxCommandEvent &event);
-    void OnAlarmDialogClick(wxCommandEvent &event);
-    void OnLogModeClick(wxCommandEvent &event);
+
+    void OnPlusTenClick(wxCommandEvent& event);
+    void OnPlusClick(wxCommandEvent& event);
+    void OnValueClick(wxCommandEvent& event);
+    void OnMinusClick(wxCommandEvent& event);
+    void OnMinusTenClick(wxCommandEvent& event);
+    void OnAutoClick(wxCommandEvent& event);
+    
+    void OnAdvancedBackButtonClick(wxCommandEvent& event);
+    void OnAdvancedButtonClick(wxCommandEvent& event);
+
+    void OnRadarControlButtonClick(wxCommandEvent& event);
+
+    void OnZone1ButtonClick(wxCommandEvent &event);
+    void OnZone2ButtonClick(wxCommandEvent &event);
+
+    void EnterEditMode(RadarControlButton * button);
 
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
 
-    // Controls
-    wxSlider          *pTranSlider;
-    wxRadioBox        *pRangeMode;
-    wxChoice          *pRange;
-    wxTextCtrl        *pCommandRange;
-    wxTextCtrl        *pActualRange;
-    wxRadioBox        *pRejectionMode;
-    wxRadioBox        *pFilterProcess;
-    wxSlider          *pGainSlider;
-    wxRadioBox        *pAlarmZones;
-    wxCheckBox        *pCB_log;
+    wxBoxSizer        *topSizer;
+    wxBoxSizer        *editBox;
+    wxBoxSizer        *advancedBox;
+    wxBoxSizer        *controlBox;
+    
+    wxBoxSizer        *fromBox; // If on edit control, this is where the button is from
+
+
+    // Edit Controls
+
+    RadarControlButton *fromControl; // Only set when in edit mode
+
+    // The following three groups are the button lists on the 
+    wxButton           *bPlusTen;
+    wxButton           *bPlus;
+    wxButton           *bValue;
+    wxButton           *bMinus;
+    wxButton           *bMinusTen;
+    wxButton           *bAuto;
+    
+    // Advanced controls
+    wxButton           *bAdvancedBack;
+    RadarControlButton *bTransparency;
+    RadarControlButton *bRejection;
+    RadarControlButton *bTargetBoost;
+
+    // Show Controls
+
+    RadarRangeControlButton *bRange;
+    RadarControlButton *bGain;
+    RadarControlButton *bSea;
+    RadarControlButton *bRain;
+    wxButton           *bAdvanced;
+    wxButton           *bGuard1;
+    wxButton           *bGuard2;
 };
 
 /*
@@ -487,6 +643,7 @@ public:
     void    OnAlarmZoneDialogShow(int zone);
 
 private:
+    void            SetVisibility();
     void            OnAlarmZoneModeClick(wxCommandEvent &event);
     void            OnInner_Range_Value(wxCommandEvent &event);
     void            OnOuter_Range_Value(wxCommandEvent &event);
@@ -536,7 +693,7 @@ public:
 
 
     void    CreateControls();
-    void    SetBogeyCount(int bogey_count, int next_alarm);
+    void    SetBogeyCount(int *bogey_count, int next_alarm);
 
 private:
     void            OnClose(wxCloseEvent &event);
