@@ -559,6 +559,9 @@ private:
     void OnMinusClick(wxCommandEvent& event);
     void OnMinusTenClick(wxCommandEvent& event);
     void OnAutoClick(wxCommandEvent& event);
+    
+    void OnAdvancedBackButtonClick(wxCommandEvent& event);
+    void OnAdvancedButtonClick(wxCommandEvent& event);
 
     void OnRadarControlButtonClick(wxCommandEvent& event);
 
@@ -572,18 +575,29 @@ private:
 
     wxBoxSizer        *topSizer;
     wxBoxSizer        *editBox;
+    wxBoxSizer        *advancedBox;
     wxBoxSizer        *controlBox;
+    
+    wxBoxSizer        *fromBox; // If on edit control, this is where the button is from
+
 
     // Edit Controls
 
-    RadarControlButton *editControl; // Only set when in edit mode
+    RadarControlButton *fromControl; // Only set when in edit mode
 
-    wxButton          *bPlusTen;
-    wxButton          *bPlus;
-    wxButton          *bValue;
-    wxButton          *bMinus;
-    wxButton          *bMinusTen;
-    wxButton          *bAuto;
+    // The following three groups are the button lists on the 
+    wxButton           *bPlusTen;
+    wxButton           *bPlus;
+    wxButton           *bValue;
+    wxButton           *bMinus;
+    wxButton           *bMinusTen;
+    wxButton           *bAuto;
+    
+    // Advanced controls
+    wxButton           *bAdvancedBack;
+    RadarControlButton *bTransparency;
+    RadarControlButton *bRejection;
+    RadarControlButton *bTargetBoost;
 
     // Show Controls
 
@@ -591,10 +605,7 @@ private:
     RadarControlButton *bGain;
     RadarControlButton *bSea;
     RadarControlButton *bRain;
-    RadarControlButton *bTransparency;
-    RadarControlButton *bRejection;
-    RadarControlButton *bTargetBoost;
-
+    wxButton           *bAdvanced;
     wxButton           *bGuard1;
     wxButton           *bGuard2;
 };
