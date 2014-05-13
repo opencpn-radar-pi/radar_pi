@@ -385,7 +385,7 @@ void BR24ControlsDialog::CreateControls()
     bPlusTen->SetFont(g_font);
 
     // The + button
-    bPlus = new wxButton(this, ID_PLUS, _("+1"), wxDefaultPosition, g_buttonSize, 0);
+    bPlus = new wxButton(this, ID_PLUS, _("+"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bPlus, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bPlus->SetFont(g_font);
 
@@ -395,7 +395,7 @@ void BR24ControlsDialog::CreateControls()
     bValue->SetFont(g_font);
 
     // The - button
-    bMinus = new wxButton(this, ID_MINUS, _("-1"), wxDefaultPosition, g_buttonSize, 0);
+    bMinus = new wxButton(this, ID_MINUS, _("-"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bMinus, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bMinus->SetFont(g_font);
     
