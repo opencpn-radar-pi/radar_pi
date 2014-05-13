@@ -1348,6 +1348,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("Interface"), &settings.radar_interface, wxT("0.0.0.0"));
             pConf->Read(wxT("BeamWidth"), &settings.beam_width, 2);
             pConf->Read(wxT("InterferenceRejection"), &settings.rejection, 0);
+            pConf->Read(wxT("TargetBoost"), &settings.target_boost, 0);
             pConf->Read(wxT("AlarmZonesThreshold"), &settings.alarm_zone_threshold, 5L);
 
             pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
@@ -1433,6 +1434,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("Interface"),  settings.radar_interface);
         pConf->Write(wxT("BeamWidth"),  settings.beam_width);
         pConf->Write(wxT("InterferenceRejection"), settings.rejection);
+        pConf->Write(wxT("TargetBoost"), settings.target_boost);
         pConf->Write(wxT("AlarmZonesThreshold"), settings.alarm_zone_threshold);
 
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
@@ -1673,7 +1675,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 }
             case CT_REJECTION: {
                 settings.rejection = value;
-                char br_rejection_cmd[] = {
+                char cmd[] = {
                     (byte)0x08,
                     (byte)0xc1,
                     (char) settings.rejection
@@ -1681,7 +1683,20 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 if (settings.verbose) {
                     wxLogMessage(wxT("Rejection: %d"), value);
                 }
-                TransmitCmd(br_rejection_cmd, sizeof(br_rejection_cmd));
+                TransmitCmd(cmd, sizeof(cmd));
+                break;
+            }
+            case CT_TARGET_BOOST: {
+                settings.target_boost = value;
+                char cmd[] = {
+                    (byte)0x0a,
+                    (byte)0xc1,
+                    (char) value
+                };
+                if (settings.verbose) {
+                    wxLogMessage(wxT("Target boost: %d"), value);
+                }
+                TransmitCmd(cmd, sizeof(cmd));
                 break;
             }
             case CT_TRANSPARENCY: {

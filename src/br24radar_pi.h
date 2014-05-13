@@ -73,6 +73,7 @@
 # define closesocket(fd) close(fd)
 #endif
 
+# define ARRAY_SIZE(x)   (sizeof(x)/sizeof(x[0]))
 
 enum {
     BM_ID_RED,
@@ -144,7 +145,8 @@ typedef enum ControlType {
     CT_SEA,
     CT_RAIN,
     CT_TRANSPARENCY,
-    CT_REJECTION
+    CT_REJECTION,
+    CT_TARGET_BOOST
 } ControlType;
 
 typedef enum GuardZoneType {
@@ -178,6 +180,7 @@ struct radar_control_settings {
     int      alarm_zone_threshold;  // How many blobs must be sent by radar before we fire alarm
     int      gain;
     int      rejection;
+    int      target_boost;
     int      filter_process;
     int      sea_clutter_gain;
     int      rain_clutter_gain;
@@ -590,6 +593,7 @@ private:
     RadarControlButton *bRain;
     RadarControlButton *bTransparency;
     RadarControlButton *bRejection;
+    RadarControlButton *bTargetBoost;
 
     wxButton           *bGuard1;
     wxButton           *bGuard2;

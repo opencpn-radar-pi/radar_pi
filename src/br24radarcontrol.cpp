@@ -70,6 +70,7 @@ enum {                                      // process ID's
     ID_RAIN,
     ID_TRANSPARENCY,
     ID_REJECTION,
+    ID_TARGET_BOOST,
     
     ID_ZONE1,
     ID_ZONE2,
@@ -98,6 +99,7 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
     EVT_BUTTON(ID_RAIN, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_TRANSPARENCY, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
+    EVT_BUTTON(ID_TARGET_BOOST, BR24ControlsDialog::OnRadarControlButtonClick)
 
     EVT_BUTTON(ID_ZONE1, BR24ControlsDialog::OnZone1ButtonClick)
     EVT_BUTTON(ID_ZONE2, BR24ControlsDialog::OnZone2ButtonClick)
@@ -197,7 +199,8 @@ static const int METRIC_RANGE_COUNT = 18;
 
 static const int g_range_maxValue[2] = { MILE_RANGE_COUNT, METRIC_RANGE_COUNT };
 
-static const wxString g_rejection_names[4] = { wxT("Off"), wxT("Low"), wxT("Medium"), wxT("High") };
+static const wxString g_rejection_names[4]    = { wxT("Off"), wxT("Low"), wxT("Medium"), wxT("High") };
+static const wxString g_target_boost_names[3] = { wxT("Off"), wxT("Low"), wxT("High") };
 
 extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
 {
@@ -437,10 +440,18 @@ void BR24ControlsDialog::CreateControls()
     bRejection = new RadarControlButton(this, ID_REJECTION, _("Interf. Rej"), pPlugIn, CT_REJECTION, false, pPlugIn->settings.rejection);
     controlBox->Add(bRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bRejection->minValue = 0;
-    bRejection->maxValue = 3;
+    bRejection->maxValue = ARRAY_SIZE(g_rejection_names) - 1;
     bRejection->names = g_rejection_names;
     bRejection->SetValue(pPlugIn->settings.rejection); // redraw after adding names
-
+    
+    // The TARGET BOOST button
+    bTargetBoost = new RadarControlButton(this, ID_TARGET_BOOST, _("Target Boost"), pPlugIn, CT_TARGET_BOOST, false, pPlugIn->settings.target_boost);
+    controlBox->Add(bTargetBoost, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bTargetBoost->minValue = 0;
+    bTargetBoost->maxValue = ARRAY_SIZE(g_target_boost_names) - 1;
+    bTargetBoost->names = g_target_boost_names;
+    bTargetBoost->SetValue(pPlugIn->settings.target_boost); // redraw after adding names
+    
     // The GUARD ZONE 1 button
     bGuard1 = new wxButton(this, ID_ZONE1, _("Guard Zone 1"), wxDefaultPosition, g_buttonSize, 0);
     controlBox->Add(bGuard1, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
