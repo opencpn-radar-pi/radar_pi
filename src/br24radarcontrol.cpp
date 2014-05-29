@@ -210,7 +210,7 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
 {
     const int * ranges;
     size_t      n;
-    
+
     if (units < 1) {                    /* NMi or Mi */
         n = MILE_RANGE_COUNT;
         ranges = g_range_distances[0];
@@ -222,7 +222,7 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
     if (radarType == RT_BR24) {
         n--;
     }
-    
+
     for (; n > 0; n--) {
         if (ranges[n] < *range_meters) {
             break;
@@ -241,7 +241,7 @@ void RadarControlButton::SetValue(int newValue)
     } else {
         value = newValue;
     }
-    
+
     wxString label;
 
     if (names) {
@@ -249,9 +249,9 @@ void RadarControlButton::SetValue(int newValue)
     } else {
         label.Printf(wxT("%s\n%d"), firstLine, value);
     }
-    
+
     this->SetLabel(label);
-    
+
     isAuto = false;
     pPlugIn->SetControlValue(controlType, value);
 }
@@ -259,21 +259,21 @@ void RadarControlButton::SetValue(int newValue)
 void RadarControlButton::SetAuto()
 {
     wxString label;
-    
+
     label.Printf(wxT("%s\nAUTO"), firstLine);
     this->SetLabel(label);
-    
+
     isAuto = true;
-    
+
     technicalValue = -1;
 }
 
 int RadarRangeControlButton::SetValueInt(int newValue)
 {
     int units = pPlugIn->settings.range_units;
-    
+
     maxValue = g_range_maxValue[units] - 1;
-    
+
     if (newValue >= minValue && newValue <= maxValue) {
         value = newValue;
     } else if (pPlugIn->settings.auto_range_mode && auto_range_index >= 0) {
@@ -284,7 +284,7 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     int meters = g_range_distances[units][value];
     wxString label;
     wxString rangeText = value < 0 ? wxT("?") : g_range_names[units][value];
-    
+
     if (pPlugIn->settings.auto_range_mode) {
         label.Printf(wxT("%s\nAUTO (%s)"), firstLine, rangeText);
     }
@@ -293,7 +293,7 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     }
     this->SetLabel(label);
     wxLogMessage(wxT("Range label %s auto=%d unit=%d max=%d new=%d val=%d"), label, pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
-    
+
     return meters;
 }
 
@@ -338,7 +338,7 @@ bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID 
     pPlugIn = ppi;
 
     g_font = *OCPNGetFont(_("Dialog"), 14);
-    wxTextCtrl *t = new wxTextCtrl(parent, id, wxT("Transparency")); 
+    wxTextCtrl *t = new wxTextCtrl(parent, id, wxT("Transparency"));
     g_buttonSize = wxSize(t->GetBestSize().GetWidth() + 10, 50);
     if (ppi->settings.verbose) {
         wxLogMessage(wxT("Dynamic button width = %d"), g_buttonSize.GetWidth());
@@ -349,7 +349,7 @@ bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID 
 #else
     long wstyle =                 wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
 #endif
-    
+
     // Determine desired button width
 
     wxSize size_min = wxSize(g_buttonSize.GetWidth(), 4 * g_buttonSize.GetHeight());
@@ -373,12 +373,12 @@ void BR24ControlsDialog::CreateControls()
 // A top-level sizer
     topSizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(topSizer);
-    
+
     //**************** EDIT BOX ******************//
     // A box sizer to contain RANGE button
     editBox = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(editBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-    
+
     // The +10 button
     bPlusTen = new wxButton(this, ID_PLUS_TEN, _("+10"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bPlusTen, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
@@ -398,12 +398,12 @@ void BR24ControlsDialog::CreateControls()
     bMinus = new wxButton(this, ID_MINUS, _("-"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bMinus, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bMinus->SetFont(g_font);
-    
+
     // The -10 button
     bMinusTen = new wxButton(this, ID_MINUS_TEN, _("-10"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bMinusTen, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bMinusTen->SetFont(g_font);
-    
+
     // The Auto button
     bAuto = new wxButton(this, ID_AUTO, _("Auto"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bAuto, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
@@ -421,13 +421,13 @@ void BR24ControlsDialog::CreateControls()
     bAdvancedBack = new wxButton(this, ID_ADVANCED_BACK, _("<<\nBack"), wxDefaultPosition, g_buttonSize, 0);
     advancedBox->Add(bAdvancedBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bAdvancedBack->SetFont(g_font);
-    
+
     // The TRANSPARENCY button
     bTransparency = new RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), pPlugIn, CT_TRANSPARENCY, false, pPlugIn->settings.overlay_transparency);
     advancedBox->Add(bTransparency, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bTransparency->minValue = MIN_OVERLAY_TRANSPARENCY;
     bTransparency->maxValue = MAX_OVERLAY_TRANSPARENCY;
-    
+
     // The REJECTION button
     bRejection = new RadarControlButton(this, ID_REJECTION, _("Interf. Rej"), pPlugIn, CT_REJECTION, false, pPlugIn->settings.rejection);
     advancedBox->Add(bRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
@@ -435,7 +435,7 @@ void BR24ControlsDialog::CreateControls()
     bRejection->maxValue = ARRAY_SIZE(g_rejection_names) - 1;
     bRejection->names = g_rejection_names;
     bRejection->SetValue(pPlugIn->settings.rejection); // redraw after adding names
-    
+
     // The TARGET BOOST button
     bTargetBoost = new RadarControlButton(this, ID_TARGET_BOOST, _("Target Boost"), pPlugIn, CT_TARGET_BOOST, false, pPlugIn->settings.target_boost);
     advancedBox->Add(bTargetBoost, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
@@ -443,28 +443,28 @@ void BR24ControlsDialog::CreateControls()
     bTargetBoost->maxValue = ARRAY_SIZE(g_target_boost_names) - 1;
     bTargetBoost->names = g_target_boost_names;
     bTargetBoost->SetValue(pPlugIn->settings.target_boost); // redraw after adding names
-    
+
     topSizer->Hide(advancedBox);
-    
+
     //**************** CONTROL BOX ******************//
     // These are the controls that the users sees when the dialog is started
 
     // A box sizer to contain RANGE, GAIN etc button
     controlBox = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(controlBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-    
+
     // The RANGE button
     bRange = new RadarRangeControlButton(this, ID_RANGE, _("Range"), pPlugIn);
     controlBox->Add(bRange, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    
+
     // The GAIN button
     bGain = new RadarControlButton(this, ID_GAIN, _("Gain"), pPlugIn, CT_GAIN, true, pPlugIn->settings.gain);
     controlBox->Add(bGain, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    
+
     // The SEA button
     bSea = new RadarControlButton(this, ID_SEA, _("Sea Clutter"), pPlugIn, CT_SEA, true, pPlugIn->settings.sea_clutter_gain);
     controlBox->Add(bSea, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    
+
     // The RAIN button
     bRain = new RadarControlButton(this, ID_RAIN, _("Rain Clutter"), pPlugIn, CT_RAIN, false, pPlugIn->settings.rain_clutter_gain);
     controlBox->Add(bRain, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
@@ -484,8 +484,10 @@ void BR24ControlsDialog::CreateControls()
     controlBox->Add(bGuard2, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bGuard2->SetFont(g_font);
 
+    fromBox = controlBox;
+
     UpdateGuardZoneState();
-    
+
     pPlugIn->UpdateDisplayParameters();
 }
 
@@ -536,7 +538,7 @@ void BR24ControlsDialog::OnPlusTenClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value + 10);
     wxString label = fromControl->GetLabel();
-    
+
     bValue->SetLabel(label);
 }
 
@@ -544,7 +546,7 @@ void BR24ControlsDialog::OnPlusClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value + 1);
     wxString label = fromControl->GetLabel();
-    
+
     bValue->SetLabel(label);
 }
 
@@ -567,7 +569,7 @@ void BR24ControlsDialog::OnAutoClick(wxCommandEvent &event)
 void BR24ControlsDialog::OnMinusClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value - 1);
-        
+
     wxString label = fromControl->GetLabel();
     bValue->SetLabel(label);
 }
@@ -575,7 +577,7 @@ void BR24ControlsDialog::OnMinusClick(wxCommandEvent& event)
 void BR24ControlsDialog::OnMinusTenClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value - 10);
-    
+
     wxString label = fromControl->GetLabel();
     bValue->SetLabel(label);
 }
@@ -600,10 +602,8 @@ void BR24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event)
 
 void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
 {
-    fromControl = button;
-    if (!fromBox) {
-        fromBox = controlBox;
-    }
+    fromControl = button; // Keep a record of which button was clicked
+
     bValue->SetLabel(button->GetLabel());
     topSizer->Hide(controlBox);
     topSizer->Hide(advancedBox);
