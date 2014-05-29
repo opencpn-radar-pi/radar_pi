@@ -133,9 +133,8 @@ void AlarmZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm)
 {
     wxString text;
     wxString t;
-    
-    text = wxT("");
-    for (size_t z = 0; z < GUARD_ZONES; z++) {
+
+    for (int z = 0; z < GUARD_ZONES; z++) {
         t.Printf(wxT("Zone %d: %d "), z + 1, bogey_count[z]);
         text += t;
     }
