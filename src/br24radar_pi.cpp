@@ -214,6 +214,122 @@ static double local_bearing (double lat1, double lon1, double lat2, double lon2)
     return (angle);
 }
 
+/**
+ * Draw an OpenGL blob at a particular angle in radians, of a particular arc_length, also in radians.
+ *
+ * The minimum distance from the center of the plane is radius, and it ends at radius + blob_heigth
+ */
+static void draw_blob_gl(double angle, double radius, double arc_width, double blob_heigth)
+{
+     double ca = cos(angle);
+     double sa = sin(angle);
+     const double blob_start = 0.0;
+     const double blob_end = blob_heigth;
+
+     double xm1 = (radius + blob_start) * ca;
+     double ym1 = (radius + blob_start) * sa;
+     double xm2 = (radius + blob_end) * ca;
+     double ym2 = (radius + blob_end) * sa;
+
+     double arc_width_start2 = (radius + blob_start) * arc_width;
+     double arc_width_end2 =   (radius + blob_end) * arc_width;
+
+     double xa = xm1 + arc_width_start2 * sa;
+     double ya = ym1 - arc_width_start2 * ca;
+
+     double xb = xm2 + arc_width_end2 * sa;
+     double yb = ym2 - arc_width_end2 * ca;
+
+     double xc = xm1 - arc_width_start2 * sa;
+     double yc = ym1 + arc_width_start2 * ca;
+
+     double xd = xm2 - arc_width_end2 * sa;
+     double yd = ym2 + arc_width_end2 * ca;
+
+     glBegin(GL_TRIANGLES);
+     glVertex2d(xa, ya);
+     glVertex2d(xb, yb);
+     glVertex2d(xc, yc);
+
+     glVertex2d(xb, yb);
+     glVertex2d(xc, yc);
+     glVertex2d(xd, yd);
+     glEnd();
+}
+
+static void DrawArc(float cx, float cy, float r, float start_angle, float arc_angle, int num_segments)
+{
+  float theta = arc_angle / float(num_segments - 1); // - 1 comes from the fact that the arc is open
+
+  float tangential_factor = tanf(theta);
+  float radial_factor = cosf(theta);
+
+  float x = r * cosf(start_angle);
+  float y = r * sinf(start_angle);
+
+  glBegin(GL_LINE_STRIP);
+  for(int ii = 0; ii < num_segments; ii++)
+  {
+    glVertex2f(x + cx, y + cy);
+
+    float tx = -y;
+    float ty = x;
+
+    x += tx * tangential_factor;
+    y += ty * tangential_factor;
+
+    x *= radial_factor;
+    y *= radial_factor;
+  }
+  glEnd();
+}
+
+static void DrawOutlineArc(double r1, double r2, double a1, double a2, bool stippled)
+{
+    if (a1 > a2) {
+        a2 += 360.0;
+    }
+    int  segments = (a2 - a1) * 4;
+    bool circle = (a1 == 0.0 && a2 == 359.0);
+
+    if (!circle) {
+        a1 -= 0.5;
+        a2 += 0.5;
+    }
+    a1 = deg2rad(a1);
+    a2 = deg2rad(a2);
+
+    if (stippled) {
+        glEnable (GL_LINE_STIPPLE);
+        glLineStipple (1, 0x0F0F);
+        glLineWidth(2.0);
+    } else {
+        glLineWidth(3.0);
+    }
+
+    DrawArc(0.0, 0.0, r1, a1, a2 - a1, segments);
+    DrawArc(0.0, 0.0, r2, a1, a2 - a1, segments);
+
+    if (!circle) {
+        glBegin(GL_LINES);
+        glVertex2f(r1 * cosf(a1), r1 * sinf(a1));
+        glVertex2f(r2 * cosf(a1), r2 * sinf(a1));
+        glVertex2f(r1 * cosf(a2), r1 * sinf(a2));
+        glVertex2f(r2 * cosf(a2), r2 * sinf(a2));
+        glEnd();
+    }
+}
+
+static void DrawFilledArc(double r1, double r2, double a1, double a2)
+{
+    if (a1 > a2) {
+        a2 += 360.0;
+    }
+
+    for (double n = a1; n <= a2; ++n ) {
+        draw_blob_gl(deg2rad(n), r2, deg2rad(0.5), r1 - r2);
+    }
+}
 
 //---------------------------------------------------------------------------------------------------------
 //
@@ -488,6 +604,8 @@ void BR24DisplayOptionsDialog::Init()
 
 bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
 {
+    wxString m_temp;
+
     pParent = parent;
     pPlugIn = ppi;
 
@@ -568,22 +686,25 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
 
     pDisplayMode->SetSelection(pPlugIn->settings.display_mode);
 
+    wxString GuardZoneStyleStrings[] = {
+        _("Shading"),
+        _("Outline"),
+        _("Shading + Outline"),
+    };
+    pGuardZoneStyle = new wxRadioBox(this, ID_DISPLAYTYPE, _("Guard Zone Styling"),
+                                     wxDefaultPosition, wxDefaultSize,
+                                     3, GuardZoneStyleStrings, 1, wxRA_SPECIFY_COLS);
+
+    itemStaticBoxSizerDisOpt->Add(pGuardZoneStyle, 0, wxALL | wxEXPAND, 2);
+    pGuardZoneStyle->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
+                          wxCommandEventHandler(BR24DisplayOptionsDialog::OnGuardZoneStyleClick), NULL, this);
+    pGuardZoneStyle->SetSelection(pPlugIn->settings.alarm_zone_render_style);
+
+
 //  Calibration
     wxStaticBox* itemStaticBoxCalibration = new wxStaticBox(this, wxID_ANY, _("Calibration"));
     wxStaticBoxSizer* itemStaticBoxSizerCalibration = new wxStaticBoxSizer(itemStaticBoxCalibration, wxVERTICAL);
     DisplayOptionsCheckBoxSizer->Add(itemStaticBoxSizerCalibration, 0, wxEXPAND | wxALL, border_size);
-
-    // Range Factor
-    wxStaticText *pStatic_Range_Calibration = new wxStaticText(this, wxID_ANY, _("Range factor"));
-    itemStaticBoxSizerCalibration->Add(pStatic_Range_Calibration, 1, wxALIGN_LEFT | wxALL, 2);
-
-    pText_Range_Calibration_Value = new wxTextCtrl(this, wxID_ANY);
-    itemStaticBoxSizerCalibration->Add(pText_Range_Calibration_Value, 1, wxALIGN_LEFT | wxALL, 5);
-    wxString m_temp;
-    m_temp.Printf(wxT("%2.5f"), pPlugIn->settings.range_calibration);
-    pText_Range_Calibration_Value->SetValue(m_temp);
-    pText_Range_Calibration_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
-                                           wxCommandEventHandler(BR24DisplayOptionsDialog::OnRange_Calibration_Value), NULL, this);
 
     // Heading correction
     wxStaticText *pStatic_Heading_Correction = new wxStaticText(this, wxID_ANY, _("Heading factor (+ or -, 0 ->180)"));
@@ -634,10 +755,9 @@ void BR24DisplayOptionsDialog::OnDisplayModeClick(wxCommandEvent &event)
     pPlugIn->SetDisplayMode(pDisplayMode->GetSelection());
 }
 
-void BR24DisplayOptionsDialog::OnRange_Calibration_Value(wxCommandEvent &event)
+void BR24DisplayOptionsDialog::OnGuardZoneStyleClick(wxCommandEvent &event)
 {
-    wxString temp = pText_Range_Calibration_Value->GetValue();
-    temp.ToDouble(&pPlugIn->settings.range_calibration);
+    pPlugIn->settings.alarm_zone_render_style = pGuardZoneStyle->GetSelection();
 }
 
 void BR24DisplayOptionsDialog::OnHeading_Calibration_Value(wxCommandEvent &event)
@@ -1000,27 +1120,24 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
     glPopMatrix();
     glPopAttrib();
-
 }
 
  /******************************************************************************************************/
 
 void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
-    wxString msg;
-
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glPushMatrix();
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
 
- //   glEnable(GL_BLEND);
- //   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
-
     glTranslated(radar_center.x, radar_center.y, 0);
-    glRotatef(-90.0, 0, 0, 1);
+
+    double heading = fmod(br_hdt + settings.heading_correction + rad2deg(vp->rotation) + 360.0, 360.0);
+//    wxLogMessage(wxT("Rotating image for HDT=%f Correction=%d Rotation=%f Result=%f"), br_hdt, settings.heading_correction,
+//    rad2deg(vp->rotation), heading);
+    glRotatef(heading - 90.0, 0, 0, 1);        //correction for boat heading -90 for base north
 
     // scaling...
     int meters = br_range_meters;
@@ -1028,6 +1145,7 @@ void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_pp
     if (!meters) meters = 1000;
     double radar_pixels_per_meter = 512. / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
+
     glPushMatrix();
     glScaled(scale_factor, scale_factor, 1.);
     if (br_range_meters && br_scanner_state == RADAR_ON) { // only draw radar if something received
@@ -1036,9 +1154,12 @@ void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_pp
     glPopMatrix();
 
     // Alarm Zone image
-    if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
+    if (br_radar_state == RADAR_ON) {
+        if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
             RenderAlarmZone(radar_center, v_scale_ppm, vp);
+        }
     }
+
     glPopMatrix();
     glPopAttrib();
 }
@@ -1184,48 +1305,6 @@ void br24radar_pi::draw_histogram_column(int x, int y)  // x=0->255 => 0->1020, 
 
 }
 
-/**
- * Draw an OpenGL blob at a particular angle in radians, of a particular arc_length, also in radians.
- *
- * The minimum distance from the center of the plane is radius, and it ends at radius + blob_heigth
- */
-void br24radar_pi::draw_blob_gl(double angle, double radius, double arc_width, double blob_heigth)
-{
-     double ca = cos(angle);
-     double sa = sin(angle);
-     const double blob_start = 0.0;
-     const double blob_end = blob_heigth;
-
-     double xm1 = (radius + blob_start) * ca;
-     double ym1 = (radius + blob_start) * sa;
-     double xm2 = (radius + blob_end) * ca;
-     double ym2 = (radius + blob_end) * sa;
-
-     double arc_width_start2 = (radius + blob_start) * arc_width;
-     double arc_width_end2 =   (radius + blob_end) * arc_width;
-
-     double xa = xm1 + arc_width_start2 * sa;
-     double ya = ym1 - arc_width_start2 * ca;
-
-     double xb = xm2 + arc_width_end2 * sa;
-     double yb = ym2 - arc_width_end2 * ca;
-
-     double xc = xm1 - arc_width_start2 * sa;
-     double yc = ym1 + arc_width_start2 * ca;
-
-     double xd = xm2 - arc_width_end2 * sa;
-     double yd = ym2 + arc_width_end2 * ca;
-
-     glBegin(GL_TRIANGLES);
-     glVertex2d(xa, ya);
-     glVertex2d(xb, yb);
-     glVertex2d(xc, yc);
-
-     glVertex2d(xb, yb);
-     glVertex2d(xc, yc);
-     glVertex2d(xd, yd);
-     glEnd();
-}
 
 //****************************************************************************
 void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
@@ -1249,8 +1328,19 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm, Plu
                 start_bearing = guardZones[z].start_bearing;
                 end_bearing = guardZones[z].end_bearing;
             }
-            glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);
-            DrawFilledArc(guardZones[z].outer_range * ppNM, guardZones[z].inner_range * ppNM, start_bearing, end_bearing);
+            switch (settings.alarm_zone_render_style) {
+            case 1:
+                glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
+                DrawOutlineArc(guardZones[z].outer_range * ppNM, guardZones[z].inner_range * ppNM, start_bearing, end_bearing, true);
+                break;
+            case 2:
+                glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);
+                DrawOutlineArc(guardZones[z].outer_range * ppNM, guardZones[z].inner_range * ppNM, start_bearing, end_bearing, false);
+                // fall thru
+            default:
+                glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);
+                DrawFilledArc(guardZones[z].outer_range * ppNM, guardZones[z].inner_range * ppNM, start_bearing, end_bearing);
+            }
         }
 
         red = 0; green = 0; blue = 200;
@@ -1315,16 +1405,6 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
     }
 }
 
-void br24radar_pi::DrawFilledArc(double r1, double r2, double a1, double a2)
-{
-    if (a1 > a2) {
-        a2 += 360.0;
-    }
-
-    for (double n = a1; n <= a2; ++n ) {
-        draw_blob_gl(deg2rad(n), r2, deg2rad(0.5), r1 - r2);
-    }
-}
 
 //****************************************************************************
 
@@ -1354,6 +1434,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("InterferenceRejection"), &settings.rejection, 0);
             pConf->Read(wxT("TargetBoost"), &settings.target_boost, 0);
             pConf->Read(wxT("AlarmZonesThreshold"), &settings.alarm_zone_threshold, 5L);
+            pConf->Read(wxT("AlarmZonesRenderStyle"), &settings.alarm_zone_render_style, 0);
 
             pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
             pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
@@ -1440,6 +1521,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("InterferenceRejection"), settings.rejection);
         pConf->Write(wxT("TargetBoost"), settings.target_boost);
         pConf->Write(wxT("AlarmZonesThreshold"), settings.alarm_zone_threshold);
+        pConf->Write(wxT("AlarmZonesRenderStyle"), settings.alarm_zone_render_style);
 
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
         pConf->Write(wxT("ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);

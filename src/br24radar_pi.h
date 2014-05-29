@@ -178,6 +178,7 @@ struct radar_control_settings {
     int      display_mode;
     int      alarm_zone;            // active zone (0 = none,1,2)
     int      alarm_zone_threshold;  // How many blobs must be sent by radar before we fire alarm
+    int      alarm_zone_render_style;
     int      gain;
     int      rejection;
     int      target_boost;
@@ -310,10 +311,6 @@ private:
     void DrawRadarImage(int max_range, wxPoint radar_center);
     void RenderAlarmZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
     void HandleBogeyCount(int *bogey_count);
-    void DrawFilledArc(double r1, double r2, double a1, double a2);
-    void draw_blob_dc(wxDC &dc, double angle, double radius, double blob_r, double arc_length,
-                      double scale, int xoff, int yoff);
-    void draw_blob_gl(double angle, double radius, double blob_width, double blob_heigth);
     void draw_histogram_column(int x, int y);
 
     void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
@@ -408,9 +405,9 @@ private:
     void OnIdOKClick(wxCommandEvent& event);
     void OnRangeUnitsClick(wxCommandEvent& event);
     void OnDisplayOptionClick(wxCommandEvent& event);
-    void OnRange_Calibration_Value(wxCommandEvent& event);
     void OnIntervalSlider(wxCommandEvent& event);
     void OnDisplayModeClick(wxCommandEvent& event);
+    void OnGuardZoneStyleClick(wxCommandEvent& event);
     void OnHeading_Calibration_Value(wxCommandEvent& event);
 
     wxWindow          *pParent;
@@ -420,7 +417,7 @@ private:
     wxRadioBox        *pRangeUnits;
     wxRadioBox        *pOverlayDisplayOptions;
     wxRadioBox        *pDisplayMode;
-    wxTextCtrl        *pText_Range_Calibration_Value;
+    wxRadioBox        *pGuardZoneStyle;
     wxSlider          *pIntervalSlider;
     wxTextCtrl        *pText_Heading_Correction_Value;
 };
