@@ -92,8 +92,12 @@ bool AlarmZoneBogey::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
 {
     pParent = parent;
     pPlugIn = pPI;
-
-    long    wstyle = wxDEFAULT_FRAME_STYLE;
+    
+#ifdef wxMSW
+    long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
+#else
+    long wstyle =                 wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
+#endif
 
     wxSize  size_min = size;
 
@@ -117,7 +121,7 @@ void AlarmZoneBogey::CreateControls()
     wxBoxSizer  *AlarmZoneBogeySizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(AlarmZoneBogeySizer);
 
-    pBogeyCountText = new wxStaticText(this, wxID_ANY, _("Bogey Count"), wxDefaultPosition, wxDefaultSize, 0);
+    pBogeyCountText = new wxStaticText(this, wxID_ANY, _("Zone 1: unknown\nZone 2: unknown\nTimeout"), wxDefaultPosition, wxDefaultSize, 0);
     AlarmZoneBogeySizer->Add(pBogeyCountText, 0, wxALIGN_LEFT | wxALL, border);
 
     wxButton    *bConfirm = new wxButton(this, ID_CONFIRM, _("&Confirm"), wxDefaultPosition, wxDefaultSize, 0);
@@ -135,12 +139,12 @@ void AlarmZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm)
     wxString t;
 
     for (int z = 0; z < GUARD_ZONES; z++) {
-        t.Printf(wxT("Zone %d: %d "), z + 1, bogey_count[z]);
+        t.Printf(wxT("Zone %d: %d\n"), z + 1, bogey_count[z]);
         text += t;
     }
 
     if (next_alarm >= 0) {
-        t.Printf(wxT("Next alarm in %d seconds"), next_alarm);
+        t.Printf(wxT("Next alarm in %d s"), next_alarm);
         text += t;
     }
     pBogeyCountText->SetLabel(text);
