@@ -780,7 +780,9 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         br_radar_state = RADAR_ON;
         if (br_scanner_state == RADAR_OFF) {
             settings.master_mode = true;
-//            wxLogMessage(wxT("BR24radar_pi: Master mode on"));
+            if (settings.verbose) {
+                wxLogMessage(wxT("BR24radar_pi: Master mode on"));
+            }
             RadarStayAlive();
             RadarTxOn();
         }
@@ -789,7 +791,9 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         if (settings.master_mode == true) {
             RadarTxOff();
             settings.master_mode = false;
-//            wxLogMessage(wxT("BR24radar_pi: Master mode off"));
+            if (settings.verbose) {
+                wxLogMessage(wxT("BR24radar_pi: Master mode off"));
+            }
         }
     }
 
@@ -844,11 +848,6 @@ void br24radar_pi::DoTick(void)
 
 void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay
 {
-    /*
-        wxString msg;
-        msg.Printf(wxT("UpdateState:  Master State: %d  Radar state: %d   Scanner state:  %d "), settings.master_mode, br_radar_state, br_scanner_state);
-        wxLogMessage(msg);
-    */
     if (br_radar_state == RADAR_ON) {
         if (br_scanner_state  == RADAR_ON) {
             CacheSetToolbarToolBitmaps(BM_ID_GREEN, BM_ID_GREEN);     // ON
