@@ -224,7 +224,7 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
     }
 
     for (; n > 0; n--) {
-        if (ranges[n] < *range_meters) {
+        if (ranges[n] > 0 && ranges[n] < *range_meters) {
             break;
         }
     }
@@ -292,7 +292,7 @@ int RadarRangeControlButton::SetValueInt(int newValue)
         label.Printf(wxT("%s\n%s"), firstLine, rangeText);
     }
     this->SetLabel(label);
-    wxLogMessage(wxT("Range label %s auto=%d unit=%d max=%d new=%d val=%d"), label, pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
+    wxLogMessage(wxT("Range label '%s' auto=%d unit=%d max=%d new=%d val=%d"), rangeText, pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
 
     return meters;
 }
