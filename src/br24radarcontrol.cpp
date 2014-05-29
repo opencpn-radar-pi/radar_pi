@@ -515,12 +515,12 @@ void BR24ControlsDialog::SetAutoRangeIndex(size_t index)
 
 void BR24ControlsDialog::OnZone1ButtonClick(wxCommandEvent &event)
 {
-    pPlugIn->Select_Alarm_Zones(0);
+    pPlugIn->Select_Guard_Zones(0);
 }
 
 void BR24ControlsDialog::OnZone2ButtonClick(wxCommandEvent &event)
 {
-    pPlugIn->Select_Alarm_Zones(1);
+    pPlugIn->Select_Guard_Zones(1);
 }
 
 void BR24ControlsDialog::OnClose(wxCloseEvent& event)

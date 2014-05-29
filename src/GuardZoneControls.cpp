@@ -68,32 +68,32 @@ wxString GuardZoneNames[3] = { wxT("Off"), wxT("Arc"), wxT("Circle") };
 bool    outer_set;
 
 //---------------------------------------------------------------------------------------
-//          Alarm Controls Implementation
+//          Guard Controls Implementation
 //---------------------------------------------------------------------------------------
 
-IMPLEMENT_CLASS(AlarmZoneDialog, wxDialog)
+IMPLEMENT_CLASS(GuardZoneDialog, wxDialog)
 
-BEGIN_EVENT_TABLE(AlarmZoneDialog, wxDialog)
+BEGIN_EVENT_TABLE(GuardZoneDialog, wxDialog)
 
-    EVT_CLOSE(AlarmZoneDialog::OnClose)
-    EVT_BUTTON(ID_OK_Z, AlarmZoneDialog::OnIdOKClick)
+    EVT_CLOSE(GuardZoneDialog::OnClose)
+    EVT_BUTTON(ID_OK_Z, GuardZoneDialog::OnIdOKClick)
 
 END_EVENT_TABLE()
 
-AlarmZoneDialog::AlarmZoneDialog()
+GuardZoneDialog::GuardZoneDialog()
 {
     Init();
 }
 
-AlarmZoneDialog::~AlarmZoneDialog()
+GuardZoneDialog::~GuardZoneDialog()
 {
 }
 
-void AlarmZoneDialog::Init()
+void GuardZoneDialog::Init()
 {
 }
 
-bool AlarmZoneDialog::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
+bool GuardZoneDialog::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
                                 const wxString  &m_caption, const wxPoint   &pos,
                                 const wxSize    &size, long style)
 {
@@ -121,92 +121,92 @@ bool AlarmZoneDialog::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
 }
 
 
-void AlarmZoneDialog::CreateControls()
+void GuardZoneDialog::CreateControls()
 {
     int border_size = 4;
 
-    wxBoxSizer  *AlarmZoneSizer = new wxBoxSizer(wxVERTICAL);
-    SetSizer(AlarmZoneSizer);
+    wxBoxSizer  *GuardZoneSizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(GuardZoneSizer);
 
-    // Alarm Zone options
-    wxStaticBox         *BoxAlarmZone = new wxStaticBox(this, wxID_ANY, _("Alarm Zones"));
-    wxStaticBoxSizer    *BoxAlarmZoneSizer = new wxStaticBoxSizer(BoxAlarmZone, wxVERTICAL);
-    AlarmZoneSizer->Add(BoxAlarmZoneSizer, 0, wxEXPAND | wxALL, border_size);
+    // Guard Zone options
+    wxStaticBox         *BoxGuardZone = new wxStaticBox(this, wxID_ANY, _("Guard Zones"));
+    wxStaticBoxSizer    *BoxGuardZoneSizer = new wxStaticBoxSizer(BoxGuardZone, wxVERTICAL);
+    GuardZoneSizer->Add(BoxGuardZoneSizer, 0, wxEXPAND | wxALL, border_size);
 
     pZoneNumber = new wxTextCtrl(this, wxID_ANY);
-    BoxAlarmZoneSizer->Add(pZoneNumber, 1, wxALIGN_LEFT | wxALL, 5);
+    BoxGuardZoneSizer->Add(pZoneNumber, 1, wxALIGN_LEFT | wxALL, 5);
 
-    pAlarmZoneType = new wxRadioBox (this, ID_ALARMZONES, _("Zone Type:"),
+    pGuardZoneType = new wxRadioBox (this, ID_ALARMZONES, _("Zone Type:"),
                                             wxDefaultPosition, wxDefaultSize,
                                             3, GuardZoneNames, 1, wxRA_SPECIFY_COLS );
 
-    BoxAlarmZoneSizer->Add(pAlarmZoneType, 0, wxALL | wxEXPAND, 2);
+    BoxGuardZoneSizer->Add(pGuardZoneType, 0, wxALL | wxEXPAND, 2);
 
-    pAlarmZoneType->Connect( wxEVT_COMMAND_RADIOBOX_SELECTED,
-                                wxCommandEventHandler(AlarmZoneDialog::OnAlarmZoneModeClick),
+    pGuardZoneType->Connect( wxEVT_COMMAND_RADIOBOX_SELECTED,
+                                wxCommandEventHandler(GuardZoneDialog::OnGuardZoneModeClick),
                                 NULL, this );
 
     //Inaner and Outer Ranges
     wxString m_temp;
     wxStaticText *pInner_Range_Text = new wxStaticText(this, wxID_ANY, _("Inner Range"),wxDefaultPosition,
         wxDefaultSize, 0);
-    BoxAlarmZoneSizer->Add(pInner_Range_Text, 0, wxALIGN_LEFT | wxALL, 0);
+    BoxGuardZoneSizer->Add(pInner_Range_Text, 0, wxALIGN_LEFT | wxALL, 0);
 
     pInner_Range = new wxTextCtrl(this, wxID_ANY);
-    BoxAlarmZoneSizer->Add(pInner_Range, 1, wxALIGN_LEFT | wxALL, 5);
+    BoxGuardZoneSizer->Add(pInner_Range, 1, wxALIGN_LEFT | wxALL, 5);
     pInner_Range->Connect(wxEVT_COMMAND_TEXT_UPDATED,
-                                           wxCommandEventHandler(AlarmZoneDialog::OnInner_Range_Value), NULL, this);
+                                           wxCommandEventHandler(GuardZoneDialog::OnInner_Range_Value), NULL, this);
 
     wxStaticText *pOuter_Range_Text = new wxStaticText(this, wxID_ANY, _("Outer Range"),wxDefaultPosition,
         wxDefaultSize, 0);
-    BoxAlarmZoneSizer->Add(pOuter_Range_Text, 0, wxALIGN_LEFT | wxALL, 0);
+    BoxGuardZoneSizer->Add(pOuter_Range_Text, 0, wxALIGN_LEFT | wxALL, 0);
 
     pOuter_Range = new wxTextCtrl(this, wxID_ANY);
-    BoxAlarmZoneSizer->Add(pOuter_Range, 1, wxALIGN_LEFT | wxALL, 5);
+    BoxGuardZoneSizer->Add(pOuter_Range, 1, wxALIGN_LEFT | wxALL, 5);
     pOuter_Range->Connect(wxEVT_COMMAND_TEXT_UPDATED,
-                                           wxCommandEventHandler(AlarmZoneDialog::OnOuter_Range_Value), NULL, this);
+                                           wxCommandEventHandler(GuardZoneDialog::OnOuter_Range_Value), NULL, this);
 
     //1st and 2nd Arc Subtending Bearings
     wxStaticText *pStart_Bearing = new wxStaticText(this, wxID_ANY, _("Start Bearing"),wxDefaultPosition,
         wxDefaultSize, 0);
-    BoxAlarmZoneSizer->Add(pStart_Bearing, 0, wxALIGN_LEFT | wxALL, 0);
+    BoxGuardZoneSizer->Add(pStart_Bearing, 0, wxALIGN_LEFT | wxALL, 0);
 
     pStart_Bearing_Value = new wxTextCtrl(this, wxID_ANY);
-    BoxAlarmZoneSizer->Add(pStart_Bearing_Value, 1, wxALIGN_LEFT | wxALL, 5);
+    BoxGuardZoneSizer->Add(pStart_Bearing_Value, 1, wxALIGN_LEFT | wxALL, 5);
     pStart_Bearing_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
-                                           wxCommandEventHandler(AlarmZoneDialog::OnStart_Bearing_Value), NULL, this);
+                                           wxCommandEventHandler(GuardZoneDialog::OnStart_Bearing_Value), NULL, this);
 
 
     wxStaticText *pEnd_Bearing = new wxStaticText(this, wxID_ANY, _("End Bearing"),wxDefaultPosition,
         wxDefaultSize, 0);
-    BoxAlarmZoneSizer->Add(pEnd_Bearing, 0, wxALIGN_LEFT | wxALL, 0);
+    BoxGuardZoneSizer->Add(pEnd_Bearing, 0, wxALIGN_LEFT | wxALL, 0);
 
     pEnd_Bearing_Value = new wxTextCtrl(this, wxID_ANY);
-    BoxAlarmZoneSizer->Add(pEnd_Bearing_Value, 1, wxALIGN_LEFT | wxALL, 5);
+    BoxGuardZoneSizer->Add(pEnd_Bearing_Value, 1, wxALIGN_LEFT | wxALL, 5);
     pEnd_Bearing_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
-                                           wxCommandEventHandler(AlarmZoneDialog::OnEnd_Bearing_Value), NULL, this);
+                                           wxCommandEventHandler(GuardZoneDialog::OnEnd_Bearing_Value), NULL, this);
 
 
     // The Close button
     wxButton    *bClose = new wxButton(this, ID_OK_Z, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
-    AlarmZoneSizer->Add(bClose, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    GuardZoneSizer->Add(bClose, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
 }
 
 //*********************************************************************************************************************
 
-void AlarmZoneDialog::SetVisibility()
+void GuardZoneDialog::SetVisibility()
 {
-    GuardZoneType zoneType = (GuardZoneType) pAlarmZoneType->GetSelection();
+    GuardZoneType zoneType = (GuardZoneType) pGuardZoneType->GetSelection();
 
-    pPlugIn->guardZones[pPlugIn->settings.alarm_zone].type = zoneType;
+    pPlugIn->guardZones[pPlugIn->settings.guard_zone].type = zoneType;
 
     if (zoneType == GZ_OFF) {
         pStart_Bearing_Value->Disable();
         pEnd_Bearing_Value->Disable();
         pInner_Range->Disable();
         pOuter_Range->Disable();
-    } else if (pAlarmZoneType->GetSelection() == GZ_CIRCLE) {
+    } else if (pGuardZoneType->GetSelection() == GZ_CIRCLE) {
         pStart_Bearing_Value->Disable();
         pEnd_Bearing_Value->Disable();
         pInner_Range->Enable();
@@ -221,91 +221,91 @@ void AlarmZoneDialog::SetVisibility()
 }
 
 
-void AlarmZoneDialog::OnAlarmZoneDialogShow(int zone)
+void GuardZoneDialog::OnGuardZoneDialogShow(int zone)
 {
-    wxString AlarmZoneText;
-    AlarmZoneText.Printf(_T("%s: %i"),_("Zone"), zone + 1);
-    pZoneNumber->SetValue(AlarmZoneText);
+    wxString GuardZoneText;
+    GuardZoneText.Printf(_T("%s: %i"),_("Zone"), zone + 1);
+    pZoneNumber->SetValue(GuardZoneText);
 
-    pAlarmZoneType->SetSelection(pPlugIn->guardZones[zone].type);
+    pGuardZoneType->SetSelection(pPlugIn->guardZones[zone].type);
 
-    AlarmZoneText.Printf(wxT("%2.2f"), pPlugIn->guardZones[zone].inner_range);
-    pInner_Range->SetValue(AlarmZoneText);
+    GuardZoneText.Printf(wxT("%2.2f"), pPlugIn->guardZones[zone].inner_range);
+    pInner_Range->SetValue(GuardZoneText);
 
-    AlarmZoneText.Printf(wxT("%2.2f"), pPlugIn->guardZones[zone].outer_range);
-    pOuter_Range->SetValue(AlarmZoneText);
+    GuardZoneText.Printf(wxT("%2.2f"), pPlugIn->guardZones[zone].outer_range);
+    pOuter_Range->SetValue(GuardZoneText);
 
-    AlarmZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].start_bearing);
-    pStart_Bearing_Value->SetValue(AlarmZoneText);
-    AlarmZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].end_bearing);
-    pEnd_Bearing_Value->SetValue(AlarmZoneText);
+    GuardZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].start_bearing);
+    pStart_Bearing_Value->SetValue(GuardZoneText);
+    GuardZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].end_bearing);
+    pEnd_Bearing_Value->SetValue(GuardZoneText);
 
     SetVisibility();
 }
 
-void AlarmZoneDialog::OnAlarmZoneModeClick(wxCommandEvent &event)
+void GuardZoneDialog::OnGuardZoneModeClick(wxCommandEvent &event)
 {
     SetVisibility();
     outer_set = false;
 }
 
-void AlarmZoneDialog::OnInner_Range_Value(wxCommandEvent &event)
+void GuardZoneDialog::OnInner_Range_Value(wxCommandEvent &event)
 {
     wxString temp = pInner_Range->GetValue();
 
-    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.alarm_zone].inner_range);
+    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].inner_range);
 }
 
-void AlarmZoneDialog::OnOuter_Range_Value(wxCommandEvent &event)
+void GuardZoneDialog::OnOuter_Range_Value(wxCommandEvent &event)
 {
     wxString temp = pOuter_Range->GetValue();
 
-    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.alarm_zone].outer_range);
+    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range);
 }
 
-void AlarmZoneDialog::OnStart_Bearing_Value(wxCommandEvent &event)
+void GuardZoneDialog::OnStart_Bearing_Value(wxCommandEvent &event)
 {
     wxString temp = pStart_Bearing_Value->GetValue();
 
-    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.alarm_zone].start_bearing);
+    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].start_bearing);
 }
 
-void AlarmZoneDialog::OnEnd_Bearing_Value(wxCommandEvent &event)
+void GuardZoneDialog::OnEnd_Bearing_Value(wxCommandEvent &event)
 {
     wxString temp = pEnd_Bearing_Value->GetValue();
 
-    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.alarm_zone].end_bearing);
+    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].end_bearing);
 }
 
-void AlarmZoneDialog::OnClose(wxCloseEvent &event)
+void GuardZoneDialog::OnClose(wxCloseEvent &event)
 {
-    pPlugIn->OnAlarmZoneDialogClose();
+    pPlugIn->OnGuardZoneDialogClose();
     event.Skip();
 }
 
-void AlarmZoneDialog::OnIdOKClick(wxCommandEvent &event)
+void GuardZoneDialog::OnIdOKClick(wxCommandEvent &event)
 {
-    pPlugIn->OnAlarmZoneDialogClose();
+    pPlugIn->OnGuardZoneDialogClose();
     event.Skip();
 }
 
-void AlarmZoneDialog::OnContextMenuAlarmCallback(double mark_rng, double mark_brg)
+void GuardZoneDialog::OnContextMenuGuardCallback(double mark_rng, double mark_brg)
 {
     if(!outer_set) {
-        pPlugIn->guardZones[pPlugIn->settings.alarm_zone].outer_range = mark_rng;
-        pPlugIn->guardZones[pPlugIn->settings.alarm_zone].start_bearing = mark_brg;
+        pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range = mark_rng;
+        pPlugIn->guardZones[pPlugIn->settings.guard_zone].start_bearing = mark_brg;
 
         outer_set = true;
     }
     else {
-        pPlugIn->guardZones[pPlugIn->settings.alarm_zone].inner_range = mark_rng;
-        if (pPlugIn->guardZones[pPlugIn->settings.alarm_zone].outer_range < mark_rng) {
-            pPlugIn->guardZones[pPlugIn->settings.alarm_zone].inner_range = pPlugIn->guardZones[pPlugIn->settings.alarm_zone].outer_range;
-            pPlugIn->guardZones[pPlugIn->settings.alarm_zone].outer_range = mark_rng;
+        pPlugIn->guardZones[pPlugIn->settings.guard_zone].inner_range = mark_rng;
+        if (pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range < mark_rng) {
+            pPlugIn->guardZones[pPlugIn->settings.guard_zone].inner_range = pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range;
+            pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range = mark_rng;
         }
-        pPlugIn->guardZones[pPlugIn->settings.alarm_zone].end_bearing = mark_brg;
+        pPlugIn->guardZones[pPlugIn->settings.guard_zone].end_bearing = mark_brg;
         outer_set = false;
     }
 
-    OnAlarmZoneDialogShow(pPlugIn->settings.alarm_zone);
+    OnGuardZoneDialogShow(pPlugIn->settings.guard_zone);
 }

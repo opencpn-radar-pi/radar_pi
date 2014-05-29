@@ -176,9 +176,9 @@ struct radar_control_settings {
     int      range_index;
     int      display_option;
     int      display_mode;
-    int      alarm_zone;            // active zone (0 = none,1,2)
-    int      alarm_zone_threshold;  // How many blobs must be sent by radar before we fire alarm
-    int      alarm_zone_render_style;
+    int      guard_zone;            // active zone (0 = none,1,2)
+    int      guard_zone_threshold;  // How many blobs must be sent by radar before we fire alarm
+    int      guard_zone_render_style;
     int      gain;
     int      rejection;
     int      target_boost;
@@ -192,7 +192,7 @@ struct radar_control_settings {
     int      beam_width;
 };
 
-struct alarm_zone_settings {
+struct guard_zone_settings {
     int type;                   // 0 = circle, 1 = arc
     double inner_range;
     double outer_range;
@@ -203,8 +203,8 @@ struct alarm_zone_settings {
 //    Forward definitions
 class MulticastRXThread;
 class BR24ControlsDialog;
-class AlarmZoneDialog;
-class AlarmZoneBogey;
+class GuardZoneDialog;
+class GuardZoneBogey;
 class BR24DisplayOptionsDialog;
 
 //ofstream outfile("C:/ProgramData/opencpn/BR24DataDump.dat",ofstream::binary);
@@ -265,10 +265,10 @@ public:
     void SetBR24ControlsDialogSizeY(long sy) {
         m_BR24Controls_dialog_sy = sy;
     }
-    void Select_Alarm_Zones(int zone);
-    void OnAlarmZoneDialogClose();
-    void OnAlarmZoneBogeyClose();
-    void OnAlarmZoneBogeyConfirm();
+    void Select_Guard_Zones(int zone);
+    void OnGuardZoneDialogClose();
+    void OnGuardZoneBogeyClose();
+    void OnGuardZoneBogeyConfirm();
 
     void SetControlValue(ControlType controlType, int value);
 
@@ -282,7 +282,7 @@ public:
     radar_control_settings settings;
 
 #define GUARD_ZONES (2)
-    alarm_zone_settings guardZones[GUARD_ZONES];
+    guard_zone_settings guardZones[GUARD_ZONES];
 
 #define LINES_PER_ROTATION (4096)
     unsigned char             m_scan_buf[LINES_PER_ROTATION][512];  // scan buffer that contains raw radar scan image
@@ -291,8 +291,8 @@ public:
 
     BR24DisplayOptionsDialog *m_pOptionsDialog;
     BR24ControlsDialog       *m_pControlDialog;
-    AlarmZoneDialog          *m_pAlarmZoneDialog;
-    AlarmZoneBogey           *m_pAlarmZoneBogey;
+    GuardZoneDialog          *m_pGuardZoneDialog;
+    GuardZoneBogey           *m_pGuardZoneBogey;
 
 private:
     void TransmitCmd(char* msg, int size);
@@ -309,7 +309,7 @@ private:
     void OpenGL3_Render_Overlay();
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
     void DrawRadarImage(int max_range, wxPoint radar_center);
-    void RenderAlarmZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
+    void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
     void HandleBogeyCount(int *bogey_count);
     void draw_histogram_column(int x, int y);
 
@@ -334,8 +334,8 @@ private:
     long                      m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
     long                      m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
 
-    long                      m_Alarm_dialog_sx, m_Alarm_dialog_sy ;
-    long                      m_Alarm_dialog_x, m_Alarm_dialog_y ;
+    long                      m_Guard_dialog_sx, m_Guard_dialog_sy ;
+    long                      m_Guard_dialog_x, m_Guard_dialog_y ;
 
 
     wxBitmap                 *m_ptemp_icon;
@@ -609,18 +609,18 @@ private:
 
 /*
  =======================================================================================================================
-    BR24Radar Alarm Zone Dialog Specification ;
+    BR24Radar Guard Zone Dialog Specification ;
  =======================================================================================================================
  */
-class AlarmZoneDialog :    public wxDialog
+class GuardZoneDialog :    public wxDialog
 {
-    DECLARE_CLASS(AlarmZoneDialog)
+    DECLARE_CLASS(GuardZoneDialog)
     DECLARE_EVENT_TABLE()
 
 public:
-    AlarmZoneDialog();
+    GuardZoneDialog();
 
-    ~AlarmZoneDialog();
+    ~GuardZoneDialog();
     void    Init();
 
     bool    Create
@@ -628,7 +628,7 @@ public:
                 wxWindow        *parent,
                 br24radar_pi    *ppi,
                 wxWindowID      id = wxID_ANY,
-                const wxString  &m_caption = _(" Alarm Zone Control"),
+                const wxString  &m_caption = _(" Guard Zone Control"),
                 const wxPoint   &pos = wxDefaultPosition,
                 const wxSize    &size = wxDefaultSize,
                 long            style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU
@@ -636,12 +636,12 @@ public:
 
 
     void    CreateControls();
-    void    OnContextMenuAlarmCallback(double mark_rng, double mark_brg);
-    void    OnAlarmZoneDialogShow(int zone);
+    void    OnContextMenuGuardCallback(double mark_rng, double mark_brg);
+    void    OnGuardZoneDialogShow(int zone);
 
 private:
     void            SetVisibility();
-    void            OnAlarmZoneModeClick(wxCommandEvent &event);
+    void            OnGuardZoneModeClick(wxCommandEvent &event);
     void            OnInner_Range_Value(wxCommandEvent &event);
     void            OnOuter_Range_Value(wxCommandEvent &event);
     void            OnStart_Bearing_Value(wxCommandEvent &event);
@@ -654,7 +654,7 @@ private:
 
     /* Controls */
     wxTextCtrl      *pZoneNumber;
-    wxRadioBox      *pAlarmZoneType;
+    wxRadioBox      *pGuardZoneType;
     wxTextCtrl      *pInner_Range;
     wxTextCtrl      *pOuter_Range;
     wxTextCtrl      *pStart_Bearing_Value;
@@ -663,18 +663,18 @@ private:
 
 /*
  =======================================================================================================================
-    BR24Radar Alarm Zone Bogey Dialog Specification ;
+    BR24Radar Guard Zone Bogey Dialog Specification ;
  =======================================================================================================================
  */
-class AlarmZoneBogey :    public wxDialog
+class GuardZoneBogey :    public wxDialog
 {
-    DECLARE_CLASS(AlarmZoneBogey)
+    DECLARE_CLASS(GuardZoneBogey)
     DECLARE_EVENT_TABLE()
 
 public:
-    AlarmZoneBogey();
+    GuardZoneBogey();
 
-    ~AlarmZoneBogey();
+    ~GuardZoneBogey();
     void    Init();
 
     bool    Create
@@ -682,7 +682,7 @@ public:
                 wxWindow        *parent,
                 br24radar_pi    *ppi,
                 wxWindowID      id = wxID_ANY,
-                const wxString  &m_caption = _("Alarm Zone Active"),
+                const wxString  &m_caption = _("Guard Zone Active"),
                 const wxPoint   &pos = wxDefaultPosition,
                 const wxSize    &size = wxDefaultSize,
                 long            style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU

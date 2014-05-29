@@ -63,30 +63,30 @@ enum {                                      // process ID's
     ID_CLOSE
 };
 
-IMPLEMENT_CLASS(AlarmZoneBogey, wxDialog)
+IMPLEMENT_CLASS(GuardZoneBogey, wxDialog)
 
-BEGIN_EVENT_TABLE(AlarmZoneBogey, wxDialog)
+BEGIN_EVENT_TABLE(GuardZoneBogey, wxDialog)
 
-    EVT_CLOSE(AlarmZoneBogey::OnClose)
-    EVT_BUTTON(ID_CONFIRM, AlarmZoneBogey::OnIdConfirmClick)
-    EVT_BUTTON(ID_CLOSE, AlarmZoneBogey::OnIdCloseClick)
+    EVT_CLOSE(GuardZoneBogey::OnClose)
+    EVT_BUTTON(ID_CONFIRM, GuardZoneBogey::OnIdConfirmClick)
+    EVT_BUTTON(ID_CLOSE, GuardZoneBogey::OnIdCloseClick)
 
 END_EVENT_TABLE()
 
-AlarmZoneBogey::AlarmZoneBogey()
+GuardZoneBogey::GuardZoneBogey()
 {
     Init();
 }
 
-AlarmZoneBogey::~AlarmZoneBogey()
+GuardZoneBogey::~GuardZoneBogey()
 {
 }
 
-void AlarmZoneBogey::Init()
+void GuardZoneBogey::Init()
 {
 }
 
-bool AlarmZoneBogey::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
+bool GuardZoneBogey::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
                                 const wxString  &m_caption, const wxPoint   &pos,
                                 const wxSize    &size, long style)
 {
@@ -114,26 +114,26 @@ bool AlarmZoneBogey::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
 }
 
 
-void AlarmZoneBogey::CreateControls()
+void GuardZoneBogey::CreateControls()
 {
     const int border = 5;
 
-    wxBoxSizer  *AlarmZoneBogeySizer = new wxBoxSizer(wxVERTICAL);
-    SetSizer(AlarmZoneBogeySizer);
+    wxBoxSizer  *GuardZoneBogeySizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(GuardZoneBogeySizer);
 
     pBogeyCountText = new wxStaticText(this, wxID_ANY, _("Zone 1: unknown\nZone 2: unknown\nTimeout"), wxDefaultPosition, wxDefaultSize, 0);
-    AlarmZoneBogeySizer->Add(pBogeyCountText, 0, wxALIGN_LEFT | wxALL, border);
+    GuardZoneBogeySizer->Add(pBogeyCountText, 0, wxALIGN_LEFT | wxALL, border);
 
     wxButton    *bConfirm = new wxButton(this, ID_CONFIRM, _("&Confirm"), wxDefaultPosition, wxDefaultSize, 0);
-    AlarmZoneBogeySizer->Add(bConfirm, 0, wxALIGN_CENTER_VERTICAL | wxALL, border);
+    GuardZoneBogeySizer->Add(bConfirm, 0, wxALIGN_CENTER_VERTICAL | wxALL, border);
 
     wxButton    *bClose = new wxButton(this, ID_CLOSE, _("C&onfirm + Close"), wxDefaultPosition, wxDefaultSize, 0);
-    AlarmZoneBogeySizer->Add(bClose, 0, wxALIGN_CENTER_VERTICAL | wxALL, border);
+    GuardZoneBogeySizer->Add(bClose, 0, wxALIGN_CENTER_VERTICAL | wxALL, border);
 }
 
 //*********************************************************************************************************************
 
-void AlarmZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm)
+void GuardZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm)
 {
     wxString text;
     wxString t;
@@ -150,20 +150,20 @@ void AlarmZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm)
     pBogeyCountText->SetLabel(text);
 }
 
-void AlarmZoneBogey::OnClose(wxCloseEvent &event)
+void GuardZoneBogey::OnClose(wxCloseEvent &event)
 {
-    pPlugIn->OnAlarmZoneBogeyClose();
+    pPlugIn->OnGuardZoneBogeyClose();
     event.Skip();
 }
 
-void AlarmZoneBogey::OnIdConfirmClick(wxCommandEvent &event)
+void GuardZoneBogey::OnIdConfirmClick(wxCommandEvent &event)
 {
-    pPlugIn->OnAlarmZoneBogeyConfirm();
+    pPlugIn->OnGuardZoneBogeyConfirm();
     event.Skip();
 }
 
-void AlarmZoneBogey::OnIdCloseClick(wxCommandEvent &event)
+void GuardZoneBogey::OnIdCloseClick(wxCommandEvent &event)
 {
-    pPlugIn->OnAlarmZoneBogeyClose();
+    pPlugIn->OnGuardZoneBogeyClose();
     event.Skip();
 }

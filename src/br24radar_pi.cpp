@@ -121,13 +121,13 @@ int   br_scan_packets_per_tick;
 bool  br_bshown_dc_message;
 wxTextCtrl        *plogtc;
 
-int   radar_control_id, alarm_zone_id;
-bool  alarm_context_mode;
+int   radar_control_id, guard_zone_id;
+bool  guard_context_mode;
 
 
 wxSound     RadarAlarm;     //This is the Devil
 wxString    RadarAlertAudioFile;
-bool        alarm_bogey_confirmed = false;
+bool        guard_bogey_confirmed = false;
 wxDateTime  alarm_sound_last;
 
 // the class factories, used to create and destroy instances of the PlugIn
@@ -384,7 +384,7 @@ int br24radar_pi::Init(void)
 
     memset(&guardZones, 0, sizeof(guardZones));
 
-    settings.alarm_zone = 0;   // this used to be active alarm zone, now it means which guard zone window is active
+    settings.guard_zone = 0;   // this used to be active guard zone, now it means which guard zone window is active
     settings.display_mode = 0;
     settings.master_mode = false;                 // we're not the master controller at startup
     settings.auto_range_mode = true;                    // starts with auto range change
@@ -455,10 +455,10 @@ int br24radar_pi::Init(void)
     int miid = AddCanvasContextMenuItem(pmi, this);
     SetCanvasContextMenuItemViz(miid, true);
 
-    wxMenuItem *pmi2 = new wxMenuItem(m_pmenu, -1, _("Set Alarm Point"));
-    alarm_zone_id = AddCanvasContextMenuItem(pmi2, this );
-    SetCanvasContextMenuItemViz(alarm_zone_id, false);
-    alarm_context_mode = false;
+    wxMenuItem *pmi2 = new wxMenuItem(m_pmenu, -1, _("Set Guard Point"));
+    guard_zone_id = AddCanvasContextMenuItem(pmi2, this );
+    SetCanvasContextMenuItemViz(guard_zone_id, false);
+    guard_context_mode = false;
 
     //    Create the THREAD for Multicast radar data reception
     m_quit = false;
@@ -698,7 +698,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     itemStaticBoxSizerDisOpt->Add(pGuardZoneStyle, 0, wxALL | wxEXPAND, 2);
     pGuardZoneStyle->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
                           wxCommandEventHandler(BR24DisplayOptionsDialog::OnGuardZoneStyleClick), NULL, this);
-    pGuardZoneStyle->SetSelection(pPlugIn->settings.alarm_zone_render_style);
+    pGuardZoneStyle->SetSelection(pPlugIn->settings.guard_zone_render_style);
 
 
 //  Calibration
@@ -757,7 +757,7 @@ void BR24DisplayOptionsDialog::OnDisplayModeClick(wxCommandEvent &event)
 
 void BR24DisplayOptionsDialog::OnGuardZoneStyleClick(wxCommandEvent &event)
 {
-    pPlugIn->settings.alarm_zone_render_style = pGuardZoneStyle->GetSelection();
+    pPlugIn->settings.guard_zone_render_style = pGuardZoneStyle->GetSelection();
 }
 
 void BR24DisplayOptionsDialog::OnHeading_Calibration_Value(wxCommandEvent &event)
@@ -781,7 +781,7 @@ void BR24DisplayOptionsDialog::OnIdOKClick(wxCommandEvent& event)
 
 void br24radar_pi::OnContextMenuItemCallback(int id)
 {
-   if (!alarm_context_mode) {
+   if (!guard_context_mode) {
         if (!m_pControlDialog) {
             m_pControlDialog = new BR24ControlsDialog;
             m_pControlDialog->Create(m_parent_window, this);
@@ -798,11 +798,11 @@ void br24radar_pi::OnContextMenuItemCallback(int id)
                                   m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy);
     }
 
-   if (alarm_context_mode) {
+   if (guard_context_mode) {
        SetCanvasContextMenuItemViz(radar_control_id, false);
        mark_rng = local_distance(br_ownship_lat, br_ownship_lon, cur_lat, cur_lon);
        mark_brg = local_bearing(br_ownship_lat, br_ownship_lon, cur_lat, cur_lon);
-       m_pAlarmZoneDialog->OnContextMenuAlarmCallback(mark_rng, mark_brg);
+       m_pGuardZoneDialog->OnContextMenuGuardCallback(mark_rng, mark_brg);
    }
 }
 
@@ -810,19 +810,19 @@ void br24radar_pi::OnBR24ControlDialogClose()
 {
     if (m_pControlDialog) {
         m_pControlDialog->Hide();
-        SetCanvasContextMenuItemViz(alarm_zone_id, false);
+        SetCanvasContextMenuItemViz(guard_zone_id, false);
     }
 
     SaveConfig();
 }
 
-void br24radar_pi::OnAlarmZoneDialogClose()
+void br24radar_pi::OnGuardZoneDialogClose()
 {
-    if (m_pAlarmZoneDialog) {
-        m_pAlarmZoneDialog->Hide();
-        SetCanvasContextMenuItemViz(alarm_zone_id, false);
-        alarm_context_mode = false;
-        alarm_bogey_confirmed = false;
+    if (m_pGuardZoneDialog) {
+        m_pGuardZoneDialog->Hide();
+        SetCanvasContextMenuItemViz(guard_zone_id, false);
+        guard_context_mode = false;
+        guard_bogey_confirmed = false;
         SaveConfig();
     }
     if (m_pControlDialog) {
@@ -833,41 +833,41 @@ void br24radar_pi::OnAlarmZoneDialogClose()
 
 }
 
-void br24radar_pi::OnAlarmZoneBogeyConfirm()
+void br24radar_pi::OnGuardZoneBogeyConfirm()
 {
-    alarm_bogey_confirmed = true; // This will stop the sound being repeated
+    guard_bogey_confirmed = true; // This will stop the sound being repeated
 }
 
-void br24radar_pi::OnAlarmZoneBogeyClose()
+void br24radar_pi::OnGuardZoneBogeyClose()
 {
-    alarm_bogey_confirmed = true; // This will stop the sound being repeated
-    if (m_pAlarmZoneBogey) {
-        m_pAlarmZoneBogey->Hide();
+    guard_bogey_confirmed = true; // This will stop the sound being repeated
+    if (m_pGuardZoneBogey) {
+        m_pGuardZoneBogey->Hide();
     }
 }
 
-void br24radar_pi::Select_Alarm_Zones(int zone)
+void br24radar_pi::Select_Guard_Zones(int zone)
 {
-    settings.alarm_zone = zone;
+    settings.guard_zone = zone;
 
-    if (!m_pAlarmZoneDialog) {
-        m_pAlarmZoneDialog = new AlarmZoneDialog;
+    if (!m_pGuardZoneDialog) {
+        m_pGuardZoneDialog = new GuardZoneDialog;
         wxPoint pos = wxPoint(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y); // show at same loc as controls
-        m_pAlarmZoneDialog->Create(m_parent_window, this, wxID_ANY, _(" Alarm Zone Control"), pos);
+        m_pGuardZoneDialog->Create(m_parent_window, this, wxID_ANY, _(" Guard Zone Control"), pos);
     }
     if (zone >= 0) {
-        m_pAlarmZoneDialog->Show();
+        m_pGuardZoneDialog->Show();
         m_pControlDialog->Hide();
-        m_pAlarmZoneDialog->OnAlarmZoneDialogShow(zone);
-        SetCanvasContextMenuItemViz(alarm_zone_id, true);
+        m_pGuardZoneDialog->OnGuardZoneDialogShow(zone);
+        SetCanvasContextMenuItemViz(guard_zone_id, true);
         SetCanvasContextMenuItemViz(radar_control_id, false);
-        alarm_context_mode = true;
+        guard_context_mode = true;
     }
     else {
-        m_pAlarmZoneDialog->Hide();
-        SetCanvasContextMenuItemViz(alarm_zone_id, false);
+        m_pGuardZoneDialog->Hide();
+        SetCanvasContextMenuItemViz(guard_zone_id, false);
         SetCanvasContextMenuItemViz(radar_control_id, true);
-        alarm_context_mode = false;
+        guard_context_mode = false;
     }
 }
 
@@ -935,7 +935,7 @@ void br24radar_pi::DoTick(void)
     long delta_t = now.Subtract(watchdog).GetSeconds().ToLong();
 
     if (delta_t > 60) {
-        // If the position data is over one minute old reset our heading and sound an alarm.
+        // If the position data is over one minute old reset our heading and sound an guard.
         // Note that the watchdog is continuously reset every time we receive a heading.
         br_bpos_set = false;
         m_hdt_source = 0;
@@ -1111,10 +1111,10 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     }
     glPopMatrix();
 
-    // Alarm Zone image
+    // Guard Zone image
     if (br_radar_state == RADAR_ON) {
         if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
-            RenderAlarmZone(radar_center, v_scale_ppm, vp);
+            RenderGuardZone(radar_center, v_scale_ppm, vp);
         }
     }
 
@@ -1153,10 +1153,10 @@ void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_pp
     }
     glPopMatrix();
 
-    // Alarm Zone image
+    // Guard Zone image
     if (br_radar_state == RADAR_ON) {
         if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
-            RenderAlarmZone(radar_center, v_scale_ppm, vp);
+            RenderGuardZone(radar_center, v_scale_ppm, vp);
         }
     }
 
@@ -1216,7 +1216,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                 draw_blob_gl(angleRad, radius, arc_width, arc_heigth);
 
 /**********************************************************************************************************/
-// Alarm Section
+// Guard Section
 
                 if (br_radar_state == RADAR_ON) {
                     for (size_t z = 0; z < GUARD_ZONES; z++) {
@@ -1307,7 +1307,7 @@ void br24radar_pi::draw_histogram_column(int x, int y)  // x=0->255 => 0->1020, 
 
 
 //****************************************************************************
-void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
+void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
     glEnable(GL_BLEND);
@@ -1328,7 +1328,7 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm, Plu
                 start_bearing = guardZones[z].start_bearing;
                 end_bearing = guardZones[z].end_bearing;
             }
-            switch (settings.alarm_zone_render_style) {
+            switch (settings.guard_zone_render_style) {
             case 1:
                 glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
                 DrawOutlineArc(guardZones[z].outer_range * ppNM, guardZones[z].inner_range * ppNM, start_bearing, end_bearing, true);
@@ -1354,31 +1354,31 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
     bool bogeysFound = false;
 
     for (int z = 0; z < GUARD_ZONES; z++) {
-        if (bogey_count[z] > settings.alarm_zone_threshold) {
+        if (bogey_count[z] > settings.guard_zone_threshold) {
             bogeysFound = true;
             break;
         }
     }
 
     if (bogeysFound
-        && (!m_pAlarmZoneDialog || !m_pAlarmZoneDialog->IsShown()) // Don't raise bogeys as long as control dialog is shown
+        && (!m_pGuardZoneDialog || !m_pGuardZoneDialog->IsShown()) // Don't raise bogeys as long as control dialog is shown
         ) {
         // We have bogeys and there is no objection to showing the dialog
 
         if (!RadarAlarm.IsOk()) {
             RadarAlarm.Create(RadarAlertAudioFile);
         }
-        if (!m_pAlarmZoneBogey) {
+        if (!m_pGuardZoneBogey) {
             // If this is the first time we have a bogey create & show the dialog immediately
-            m_pAlarmZoneBogey = new AlarmZoneBogey;
-            m_pAlarmZoneBogey->Create(m_parent_window, this);
-            m_pAlarmZoneBogey->Show();
+            m_pGuardZoneBogey = new GuardZoneBogey;
+            m_pGuardZoneBogey->Create(m_parent_window, this);
+            m_pGuardZoneBogey->Show();
         }
 
         wxDateTime now = wxDateTime::Now();
         int delta_t = now.Subtract(alarm_sound_last).GetSeconds().ToLong();
         const int alarm_interval = 10;
-        if (!alarm_bogey_confirmed && delta_t >= alarm_interval) {
+        if (!guard_bogey_confirmed && delta_t >= alarm_interval) {
             // If the last time is 10 seconds ago we ping a sound, unless the user confirmed
             alarm_sound_last = now;
 
@@ -1388,19 +1388,19 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
             else {
                 wxBell();
             }
-            m_pAlarmZoneBogey->Show();
+            m_pGuardZoneBogey->Show();
             delta_t = alarm_interval;
         }
-        m_pAlarmZoneBogey->SetBogeyCount(bogey_count, alarm_bogey_confirmed ? -1 : alarm_interval - delta_t);
+        m_pGuardZoneBogey->SetBogeyCount(bogey_count, guard_bogey_confirmed ? -1 : alarm_interval - delta_t);
     }
 
     if (!bogeysFound) {
         if (RadarAlarm.IsOk()) {
             RadarAlarm.Stop();
         }
-        alarm_bogey_confirmed = false; // Reset for next time we see bogeys
-        if (m_pAlarmZoneBogey && m_pAlarmZoneBogey->IsShown()) {
-            m_pAlarmZoneBogey->Hide();
+        guard_bogey_confirmed = false; // Reset for next time we see bogeys
+        if (m_pGuardZoneBogey && m_pGuardZoneBogey->IsShown()) {
+            m_pGuardZoneBogey->Hide();
         }
     }
 }
@@ -1433,8 +1433,8 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("BeamWidth"), &settings.beam_width, 2);
             pConf->Read(wxT("InterferenceRejection"), &settings.rejection, 0);
             pConf->Read(wxT("TargetBoost"), &settings.target_boost, 0);
-            pConf->Read(wxT("AlarmZonesThreshold"), &settings.alarm_zone_threshold, 5L);
-            pConf->Read(wxT("AlarmZonesRenderStyle"), &settings.alarm_zone_render_style, 0);
+            pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
+            pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
 
             pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
             pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
@@ -1520,8 +1520,8 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("BeamWidth"),  settings.beam_width);
         pConf->Write(wxT("InterferenceRejection"), settings.rejection);
         pConf->Write(wxT("TargetBoost"), settings.target_boost);
-        pConf->Write(wxT("AlarmZonesThreshold"), settings.alarm_zone_threshold);
-        pConf->Write(wxT("AlarmZonesRenderStyle"), settings.alarm_zone_render_style);
+        pConf->Write(wxT("GuardZonesThreshold"), settings.guard_zone_threshold);
+        pConf->Write(wxT("GuardZonesRenderStyle"), settings.guard_zone_render_style);
 
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
         pConf->Write(wxT("ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
