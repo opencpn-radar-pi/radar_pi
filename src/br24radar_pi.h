@@ -32,7 +32,7 @@
 #define _BR24RADARPI_H_
 
 #include "wx/wxprec.h"
-#include <wx/glcanvas.h> 
+#include <wx/glcanvas.h>
 
 #ifndef  WX_PRECOMP
 #include "wx/wx.h"
@@ -282,7 +282,7 @@ public:
 
 #define GUARD_ZONES (2)
     alarm_zone_settings guardZones[GUARD_ZONES];
-    
+
 #define LINES_PER_ROTATION (4096)
     unsigned char             m_scan_buf[LINES_PER_ROTATION][512];  // scan buffer that contains raw radar scan image
     int                       m_scan_range[LINES_PER_ROTATION][3];  // range in decimeters for the corresponding line in m_scan_buf
@@ -435,9 +435,9 @@ class RadarControlButton: public wxButton
 public:
     RadarControlButton()
     {
-        
+
     };
-    
+
     RadarControlButton(wxWindow *parent,
                        wxWindowID id,
                        const wxString& label,
@@ -461,31 +461,31 @@ public:
         } else {
             SetValue(newValue);
         }
-        
+
         this->SetFont(g_font);
     }
-    
+
     // Set a new value, if it is in range. If not the value is ignored.
     // Computes a new label and a new technicalValue
     // The default conversion is technicalValue = (int) ((double) value * 255.0 / 100.0)
     virtual void SetValue(int value);
     virtual void SetAuto();
-    
+
     const wxString  *names;
-    
+
     wxString   firstLine;
-    
+
     int        technicalValue; // value converted to what system needs
     br24radar_pi *pPlugIn;
 
     int        value;
     bool       isAuto;
-    
+
     int        minValue;
     int        maxValue;
     bool       hasAuto;
     ControlType controlType;
-    
+
 };
 
 class RadarRangeControlButton: public RadarControlButton
@@ -506,14 +506,14 @@ public:
         firstLine = label;
         names = 0;
         controlType = CT_RANGE;
-        
+
         this->SetFont(g_font);
-        
+
         isAuto = ppi->settings.auto_range_mode;
     }
-    
+
     int auto_range_index;
- 
+
     virtual void SetValue(int value);
     virtual void SetAuto();
 
@@ -559,7 +559,7 @@ private:
     void OnMinusClick(wxCommandEvent& event);
     void OnMinusTenClick(wxCommandEvent& event);
     void OnAutoClick(wxCommandEvent& event);
-    
+
     void OnAdvancedBackButtonClick(wxCommandEvent& event);
     void OnAdvancedButtonClick(wxCommandEvent& event);
 
@@ -577,7 +577,7 @@ private:
     wxBoxSizer        *editBox;
     wxBoxSizer        *advancedBox;
     wxBoxSizer        *controlBox;
-    
+
     wxBoxSizer        *fromBox; // If on edit control, this is where the button is from
 
 
@@ -585,14 +585,14 @@ private:
 
     RadarControlButton *fromControl; // Only set when in edit mode
 
-    // The following three groups are the button lists on the 
+    // The following three groups are the button lists on the
     wxButton           *bPlusTen;
     wxButton           *bPlus;
     wxButton           *bValue;
     wxButton           *bMinus;
     wxButton           *bMinusTen;
     wxButton           *bAuto;
-    
+
     // Advanced controls
     wxButton           *bAdvancedBack;
     RadarControlButton *bTransparency;

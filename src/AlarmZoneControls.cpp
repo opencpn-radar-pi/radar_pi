@@ -66,7 +66,7 @@ enum {                                      // process ID's
 wxString GuardZoneNames[3] = { wxT("Off"), wxT("Arc"), wxT("Circle") };
 
 bool    outer_set;
- 
+
 //---------------------------------------------------------------------------------------
 //          Alarm Controls Implementation
 //---------------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ AlarmZoneDialog::~AlarmZoneDialog()
 }
 
 void AlarmZoneDialog::Init()
-{    
+{
 }
 
 bool AlarmZoneDialog::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
@@ -99,7 +99,7 @@ bool AlarmZoneDialog::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
 {
     pParent = parent;
     pPlugIn = pPI;
-    
+
 #ifdef wxMSW
     long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
 #else
@@ -128,7 +128,7 @@ void AlarmZoneDialog::CreateControls()
     wxBoxSizer  *AlarmZoneSizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(AlarmZoneSizer);
 
-    // Alarm Zone options 
+    // Alarm Zone options
     wxStaticBox         *BoxAlarmZone = new wxStaticBox(this, wxID_ANY, _("Alarm Zones"));
     wxStaticBoxSizer    *BoxAlarmZoneSizer = new wxStaticBoxSizer(BoxAlarmZone, wxVERTICAL);
     AlarmZoneSizer->Add(BoxAlarmZoneSizer, 0, wxEXPAND | wxALL, border_size);
@@ -165,7 +165,7 @@ void AlarmZoneDialog::CreateControls()
     BoxAlarmZoneSizer->Add(pOuter_Range, 1, wxALIGN_LEFT | wxALL, 5);
     pOuter_Range->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                                            wxCommandEventHandler(AlarmZoneDialog::OnOuter_Range_Value), NULL, this);
-   
+
     //1st and 2nd Arc Subtending Bearings
     wxStaticText *pStart_Bearing = new wxStaticText(this, wxID_ANY, _("Start Bearing"),wxDefaultPosition,
         wxDefaultSize, 0);
@@ -175,7 +175,7 @@ void AlarmZoneDialog::CreateControls()
     BoxAlarmZoneSizer->Add(pStart_Bearing_Value, 1, wxALIGN_LEFT | wxALL, 5);
     pStart_Bearing_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                                            wxCommandEventHandler(AlarmZoneDialog::OnStart_Bearing_Value), NULL, this);
-    
+
 
     wxStaticText *pEnd_Bearing = new wxStaticText(this, wxID_ANY, _("End Bearing"),wxDefaultPosition,
         wxDefaultSize, 0);
@@ -185,9 +185,9 @@ void AlarmZoneDialog::CreateControls()
     BoxAlarmZoneSizer->Add(pEnd_Bearing_Value, 1, wxALIGN_LEFT | wxALL, 5);
     pEnd_Bearing_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                                            wxCommandEventHandler(AlarmZoneDialog::OnEnd_Bearing_Value), NULL, this);
-   
-    
-    // The Close button 
+
+
+    // The Close button
     wxButton    *bClose = new wxButton(this, ID_OK_Z, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
     AlarmZoneSizer->Add(bClose, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
@@ -198,9 +198,9 @@ void AlarmZoneDialog::CreateControls()
 void AlarmZoneDialog::SetVisibility()
 {
     GuardZoneType zoneType = (GuardZoneType) pAlarmZoneType->GetSelection();
-    
+
     pPlugIn->guardZones[pPlugIn->settings.alarm_zone].type = zoneType;
-    
+
     if (zoneType == GZ_OFF) {
         pStart_Bearing_Value->Disable();
         pEnd_Bearing_Value->Disable();
@@ -228,18 +228,18 @@ void AlarmZoneDialog::OnAlarmZoneDialogShow(int zone)
     pZoneNumber->SetValue(AlarmZoneText);
 
     pAlarmZoneType->SetSelection(pPlugIn->guardZones[zone].type);
-        
+
     AlarmZoneText.Printf(wxT("%2.2f"), pPlugIn->guardZones[zone].inner_range);
     pInner_Range->SetValue(AlarmZoneText);
-    
+
     AlarmZoneText.Printf(wxT("%2.2f"), pPlugIn->guardZones[zone].outer_range);
     pOuter_Range->SetValue(AlarmZoneText);
-    
+
     AlarmZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].start_bearing);
     pStart_Bearing_Value->SetValue(AlarmZoneText);
     AlarmZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].end_bearing);
     pEnd_Bearing_Value->SetValue(AlarmZoneText);
- 
+
     SetVisibility();
 }
 
@@ -294,7 +294,7 @@ void AlarmZoneDialog::OnContextMenuAlarmCallback(double mark_rng, double mark_br
     if(!outer_set) {
         pPlugIn->guardZones[pPlugIn->settings.alarm_zone].outer_range = mark_rng;
         pPlugIn->guardZones[pPlugIn->settings.alarm_zone].start_bearing = mark_brg;
-        
+
         outer_set = true;
     }
     else {
@@ -306,6 +306,6 @@ void AlarmZoneDialog::OnContextMenuAlarmCallback(double mark_rng, double mark_br
         pPlugIn->guardZones[pPlugIn->settings.alarm_zone].end_bearing = mark_brg;
         outer_set = false;
     }
-    
+
     OnAlarmZoneDialogShow(pPlugIn->settings.alarm_zone);
 }

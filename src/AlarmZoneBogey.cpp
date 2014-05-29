@@ -92,7 +92,7 @@ bool AlarmZoneBogey::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
 {
     pParent = parent;
     pPlugIn = pPI;
-    
+
 #ifdef wxMSW
     long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
 #else

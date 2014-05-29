@@ -665,7 +665,7 @@ void br24radar_pi::OnContextMenuItemCallback(int id)
         if (!m_pControlDialog) {
             m_pControlDialog = new BR24ControlsDialog;
             m_pControlDialog->Create(m_parent_window, this);
-            
+
             int range = auto_range_meters;
             m_pControlDialog->SetAutoRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
             if (br_range_meters) {
@@ -826,7 +826,7 @@ void br24radar_pi::DoTick(void)
         bpos_warn_msg = true;
     }
 #endif
-    
+
     if (br_scan_packets_per_tick > 0) { // Something coming from radar unit?
         br_scanner_state = RADAR_ON ;
         if (settings.master_mode) {
@@ -892,11 +892,11 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     DoTick(); // update timers and watchdogs
 
     UpdateState(); // update the toolbar
-    
+
     double max_distance = 0;
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
     wxPoint boat_center;
-    
+
     if (br_bpos_set) {
         wxPoint pp;
         GetCanvasPixLL(vp, &pp, br_ownship_lat, br_ownship_lon);
@@ -904,16 +904,16 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     } else {
         boat_center = center_screen;
     }
-    
+
     // Calculate the "optimum" radar range setting in meters so Radar just fills Screen
-    
+
     // We used to take the position of the boat into account, so that when you panned the zoom range would go up
     // This is not what the plotters do, so just to make it work the same way we're doing it the same way.
     // The radar range is set such that it covers the entire screen plus 50% so that a little panning is OK.
     // This is what the plotters do as well.
-    
+
     max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
-    
+
     auto_range_meters =  max_distance / 2.0 * 1.5;
     size_t idx = convertMetersToRadarAllowedValue(&auto_range_meters, settings.range_units, br_radar_type);
     if (auto_range_meters != previous_auto_range_meters) {
@@ -930,9 +930,9 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
             SetRangeMeters(auto_range_meters);
         }
     }
-    
+
     //    Calculate image scale factor
-    
+
     GetCanvasLLPix(vp, wxPoint(0, vp->pix_height-1), &ulat, &ulon);  // is pix_height a mapable coordinate?
     GetCanvasLLPix(vp, wxPoint(0, 0), &llat, &llon);
     dist_y = radar_distance(llat, llon, ulat, ulon, 'm'); // Distance of height of display - meters
@@ -988,7 +988,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     if (br_range_meters && br_scanner_state == RADAR_ON) { // only draw radar if something received
         DrawRadarImage(br_range_meters, radar_center);
     }
-    
+
     // Alarm Zone image
     if (br_radar_state == RADAR_ON) {
         if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
@@ -1042,7 +1042,7 @@ void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_pp
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 {
     int bogey_count[GUARD_ZONES];
-    
+
     memset(&bogey_count, 0, sizeof(bogey_count));
 
     // DRAWING PICTURE
@@ -1102,7 +1102,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                             double bogey_range = (radius / 512.0) * (max_range / 1852.0);
                             double angle_1 = guardZones[z].start_bearing;
                             double angle_2 = guardZones[z].end_bearing;
-                            
+
                             if (angle_1 > angle_2) {
                                 angle_2 += 360.0;
                             }
@@ -1236,7 +1236,7 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm, Plu
     int red = 0, green = 200, blue = 0, alpha = 50;
 
     for (size_t z = 0; z < GUARD_ZONES; z++) {
-        
+
         if (guardZones[z].type != GZ_OFF) {
             if (guardZones[z].type == GZ_CIRCLE) {
                 start_bearing = 0;
@@ -1248,7 +1248,7 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm, Plu
             glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);
             DrawFilledArc(guardZones[z].outer_range * ppNM, guardZones[z].inner_range * ppNM, start_bearing, end_bearing);
         }
-        
+
         red = 0; green = 0; blue = 200;
     }
 
@@ -1258,7 +1258,7 @@ void br24radar_pi::RenderAlarmZone(wxPoint radar_center, double v_scale_ppm, Plu
 void br24radar_pi::HandleBogeyCount(int *bogey_count)
 {
     bool bogeysFound = false;
-    
+
     for (int z = 0; z < GUARD_ZONES; z++) {
         if (bogey_count[z] > settings.alarm_zone_threshold) {
             bogeysFound = true;
@@ -1299,7 +1299,7 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
         }
         m_pAlarmZoneBogey->SetBogeyCount(bogey_count, alarm_bogey_confirmed ? -1 : alarm_interval - delta_t);
     }
- 
+
     if (!bogeysFound) {
         if (RadarAlarm.IsOk()) {
             RadarAlarm.Stop();
@@ -1588,7 +1588,7 @@ void br24radar_pi::SetRangeMeters(long meters)
 void br24radar_pi::SetControlValue(ControlType controlType, int value)
 {
     wxString msg;
-    
+
     if (settings.master_mode || controlType == CT_TRANSPARENCY) {
         switch (controlType) {
             case CT_GAIN: {
@@ -1627,7 +1627,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 if (v > 255) {
                     v = 255;
                 }
-                
+
                 char cmd[] = {
                     (byte)0x06,
                     (byte)0xc1,
@@ -1664,7 +1664,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                         (byte)0x06,
                         (byte)0xc1,
                         (byte)0x02,
-                        0, 0, 0, 0, 0, 0, 0, 
+                        0, 0, 0, 0, 0, 0, 0,
                        (char)v
                     };
                     if (settings.verbose) {
@@ -2085,12 +2085,12 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
 
         unsigned char *dest_data1 = pPlugIn->m_scan_buf[angle_raw];
         memcpy(dest_data1, line->data, 512);
-        
+
         // The following line is a quick hack to confirm on-screen where the range ends, by putting a 'ring' of
         // returned radar energy at the max range line.
         // TODO: create nice actual range circles.
         pPlugIn->m_scan_buf[angle_raw][511] = (byte)0xff;
-        
+
         pPlugIn->m_scan_range[angle_raw][2] = pPlugIn->m_scan_range[angle_raw][1];
         pPlugIn->m_scan_range[angle_raw][1] = pPlugIn->m_scan_range[angle_raw][0];
         pPlugIn->m_scan_range[angle_raw][0] = range_meters;
