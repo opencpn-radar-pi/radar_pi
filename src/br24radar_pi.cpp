@@ -1187,7 +1187,7 @@ void br24radar_pi::draw_histogram_column(int x, int y)  // x=0->255 => 0->1020, 
 /**
  * Draw an OpenGL blob at a particular angle in radians, of a particular arc_length, also in radians.
  *
- * The minim distance from the center of the plan is radius, and it ends at radius + blob_heigth
+ * The minimum distance from the center of the plane is radius, and it ends at radius + blob_heigth
  */
 void br24radar_pi::draw_blob_gl(double angle, double radius, double arc_width, double blob_heigth)
 {
