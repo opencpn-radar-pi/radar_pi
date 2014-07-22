@@ -365,6 +365,21 @@ int br24radar_pi::Init(void)
     br_radar_state = RADAR_OFF;
     br_scanner_state = RADAR_OFF;                 // Radar scanner is off
 
+#ifdef __WXMSW__
+    {
+        WSADATA wsaData;
+        int r;
+
+        // Initialize Winsock
+        r = WSAStartup(MAKEWORD(2,2), &wsaData);
+        if (r != 0) {
+            wxLogError(wxT("BR24radar_pi: Unable to initialise Windows Sockets, error %d"), r);
+            // Might as well give up now
+            return 0;
+        }
+    }
+#endif
+
     watchdog = wxDateTime::Now();
     br_dt_stayalive = wxDateTime::Now();
     alarm_sound_last = wxDateTime::Now();
