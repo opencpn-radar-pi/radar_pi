@@ -68,6 +68,7 @@ enum {                                      // process ID's
     ID_TRANSPARENCY,
     ID_REJECTION,
     ID_TARGET_BOOST,
+    ID_SCAN_AGE,
 
     ID_RANGE,
     ID_GAIN,
@@ -99,6 +100,7 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
     EVT_BUTTON(ID_TRANSPARENCY, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_TARGET_BOOST, BR24ControlsDialog::OnRadarControlButtonClick)
+    EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
 
     EVT_BUTTON(ID_RANGE, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_GAIN, BR24ControlsDialog::OnRadarControlButtonClick)
@@ -443,6 +445,12 @@ void BR24ControlsDialog::CreateControls()
     bTargetBoost->maxValue = ARRAY_SIZE(g_target_boost_names) - 1;
     bTargetBoost->names = g_target_boost_names;
     bTargetBoost->SetValue(pPlugIn->settings.target_boost); // redraw after adding names
+
+        // The SCAN AGE button
+    bScanAge = new RadarControlButton(this, ID_SCAN_AGE, _("Scan Age"), pPlugIn, CT_SCAN_AGE, false, pPlugIn->settings.max_age);
+    advancedBox->Add(bScanAge, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bScanAge->minValue = 1;
+    bScanAge->maxValue = 12;
 
     topSizer->Hide(advancedBox);
 

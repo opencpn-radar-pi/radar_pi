@@ -391,12 +391,6 @@ int br24radar_pi::Init(void)
     m_hdt_source = 0;
     m_hdt_prev_source = 0;
 
-    for (int i = 0; i < LINES_PER_ROTATION; i++) {
-        m_scan_range[i][0] = 0;
-        m_scan_range[i][1] = 0;
-        m_scan_range[i][2] = 0;
-    }
-
     memset(&guardZones, 0, sizeof(guardZones));
 
     settings.guard_zone = 0;   // this used to be active guard zone, now it means which guard zone window is active
@@ -420,6 +414,11 @@ int br24radar_pi::Init(void)
 
     //    And load the configuration items
     LoadConfig();
+
+    for (int i = 0; i < LINES_PER_ROTATION; i++) {
+        m_scan_line[i].age = settings.max_age + 1;
+        m_scan_line[i].range = 0;
+    }
 
     // Get a pointer to the opencpn display canvas, to use as a parent for the UI dialog
     m_parent_window = GetOCPNCanvasWindow();
@@ -1186,17 +1185,25 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     memset(&bogey_count, 0, sizeof(bogey_count));
 
     // DRAWING PICTURE
-    GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
     const double spoke_width = deg2rad(360) / LINES_PER_ROTATION; // How wide is one spoke?
 
     for (int angle = 0 ; angle < LINES_PER_ROTATION; ++angle) {
+        scan_line * scan = &m_scan_line[angle];
 
-        if (!m_scan_range[angle][0] && !m_scan_range[angle][1] && !m_scan_range[angle][2]) {
-            continue;   // test for entries in each prior scan, if all three empty - stop the process
+        if (scan->age >= settings.max_age) {
+            continue;   // Old data, don't show
         }
+        scan->age++;
+        GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
+        /*
+        if (scan->age > 1 && settings.max_age > 0) {
+            alpha *= (settings.max_age - scan->age) / settings.max_age;
+        }
+        */
+
         for (int radius = 0; radius < 512; ++radius) {
 
-            GLubyte red = 0, green = 0, blue = 0, strength = m_scan_buf[angle][radius];
+            GLubyte red = 0, green = 0, blue = 0, strength = scan->data[radius];
 
             if (strength > 50) { // Only draw when there is color, saves lots of CPU
                 switch (settings.display_option) {
@@ -1228,7 +1235,8 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                 double arc_heigth = 1;
                 double angleRad = angle * spoke_width;
 
-                draw_blob_gl(angleRad, radius, arc_width, arc_heigth);
+                double r = radius * (double) scan->range / (double) max_range;
+                draw_blob_gl(angleRad, r, arc_width, arc_heigth);
 
 /**********************************************************************************************************/
 // Guard Section
@@ -1271,9 +1279,9 @@ void br24radar_pi::RenderSpectrum(wxPoint radar_center, double v_scale_ppm, Plug
     memset(&scan_distribution[0], 0, 255);
 
     for (int angle = 0 ; angle < LINES_PER_ROTATION ; angle++) {
-        if (m_scan_range[angle][0] != 0) {
+        if (m_scan_line[angle].range != 0 && m_scan_line[angle].age <= 1) {
             for (int radius = 1; radius < 510; ++radius) {
-                alpha = m_scan_buf[angle][radius];
+                alpha = m_scan_line[angle].data[radius];
                 if (alpha > 0 && alpha < 255) {
                     scan_distribution[0] += 1;
                     scan_distribution[alpha] += 1;
@@ -1448,6 +1456,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("BeamWidth"), &settings.beam_width, 2);
             pConf->Read(wxT("InterferenceRejection"), &settings.rejection, 0);
             pConf->Read(wxT("TargetBoost"), &settings.target_boost, 0);
+            pConf->Read(wxT("ScanMaxAge"), &settings.max_age, 6);
             pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
             pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
 
@@ -1537,6 +1546,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("TargetBoost"), settings.target_boost);
         pConf->Write(wxT("GuardZonesThreshold"), settings.guard_zone_threshold);
         pConf->Write(wxT("GuardZonesRenderStyle"), settings.guard_zone_render_style);
+        pConf->Write(wxT("ScanMaxAge"), settings.max_age);
 
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
         pConf->Write(wxT("ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
@@ -1690,7 +1700,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
 {
     wxString msg;
 
-    if (settings.master_mode || controlType == CT_TRANSPARENCY) {
+    if (settings.master_mode || controlType == CT_TRANSPARENCY || controlType == CT_SCAN_AGE) {
         switch (controlType) {
             case CT_GAIN: {
                 if (value < 0) {                // AUTO gain
@@ -1802,6 +1812,10 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
             }
             case CT_TRANSPARENCY: {
                 settings.overlay_transparency = value;
+                break;
+            }
+            case CT_SCAN_AGE: {
+                settings.max_age = value;
                 break;
             }
             default: {
@@ -2184,16 +2198,15 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
             }
         }
 
-        unsigned char *dest_data1 = pPlugIn->m_scan_buf[angle_raw];
+        unsigned char *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
         memcpy(dest_data1, line->data, 512);
 
         // The following line is a quick hack to confirm on-screen where the range ends, by putting a 'ring' of
         // returned radar energy at the max range line.
         // TODO: create nice actual range circles.
-        pPlugIn->m_scan_buf[angle_raw][511] = (byte)0xff;
+        dest_data1[511] = (byte)0xff;
 
-        pPlugIn->m_scan_range[angle_raw][2] = pPlugIn->m_scan_range[angle_raw][1];
-        pPlugIn->m_scan_range[angle_raw][1] = pPlugIn->m_scan_range[angle_raw][0];
-        pPlugIn->m_scan_range[angle_raw][0] = range_meters;
+        pPlugIn->m_scan_line[angle_raw].range = range_meters;
+        pPlugIn->m_scan_line[angle_raw].age = 0;
     }
 }

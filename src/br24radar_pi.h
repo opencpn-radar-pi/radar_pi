@@ -39,7 +39,7 @@
 #endif //precompiled headers
 
 #define     PLUGIN_VERSION_MAJOR    0
-#define     PLUGIN_VERSION_MINOR    40722
+#define     PLUGIN_VERSION_MINOR    41012
 
 #define     MY_API_VERSION_MAJOR    1
 #define     MY_API_VERSION_MINOR    8
@@ -146,7 +146,8 @@ typedef enum ControlType {
     CT_RAIN,
     CT_TRANSPARENCY,
     CT_REJECTION,
-    CT_TARGET_BOOST
+    CT_TARGET_BOOST,
+    CT_SCAN_AGE
 } ControlType;
 
 typedef enum GuardZoneType {
@@ -190,6 +191,7 @@ struct radar_control_settings {
     int      range_units;        // 0 = "Nautical miles"), 1 = "Statute miles", 2 = "Kilometers", 3 = "Meters"
     wxString radar_interface;        // IP address of interface to bind to (on UNIX)
     int      beam_width;
+    int      max_age;
 };
 
 struct guard_zone_settings {
@@ -198,6 +200,12 @@ struct guard_zone_settings {
     double outer_range;
     double start_bearing;
     double end_bearing;
+};
+
+struct scan_line {
+    int range;                  // range of this scan line in decimeters
+    int age;                    // how old this scan line is. We keep old scans on-screen for a while
+    GLubyte data[512];          // radar return strength
 };
 
 //    Forward definitions
@@ -284,10 +292,8 @@ public:
 #define GUARD_ZONES (2)
     guard_zone_settings guardZones[GUARD_ZONES];
 
-#define LINES_PER_ROTATION (4096)
-    unsigned char             m_scan_buf[LINES_PER_ROTATION][512];  // scan buffer that contains raw radar scan image
-    int                       m_scan_range[LINES_PER_ROTATION][3];  // range in decimeters for the corresponding line in m_scan_buf
-                                                                    // kept for 3 rotations, so a scanline is discarded after 3.
+#define LINES_PER_ROTATION (4096) // 4G radars can generate up to 4096 lines per rotation
+    scan_line                 m_scan_line[LINES_PER_ROTATION];
 
     BR24DisplayOptionsDialog *m_pOptionsDialog;
     BR24ControlsDialog       *m_pControlDialog;
@@ -595,6 +601,7 @@ private:
     RadarControlButton *bTransparency;
     RadarControlButton *bRejection;
     RadarControlButton *bTargetBoost;
+    RadarControlButton *bScanAge;
 
     // Show Controls
 
