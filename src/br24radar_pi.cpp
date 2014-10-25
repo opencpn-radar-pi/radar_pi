@@ -1187,7 +1187,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     // DRAWING PICTURE
     const double spoke_width = deg2rad(360) / LINES_PER_ROTATION; // How wide is one spoke?
 
-    for (int angle = 0 ; angle < LINES_PER_ROTATION; ++angle) {
+    for (unsigned int angle = 0 ; angle < LINES_PER_ROTATION; ++angle) {
         scan_line * scan = &m_scan_line[angle];
 
         if (scan->age >= settings.max_age) {
@@ -1200,6 +1200,28 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             alpha *= (settings.max_age - scan->age) / settings.max_age;
         }
         */
+        double arc_width = spoke_width;
+        double arc_heigth = 1;
+        double angleRad = angle * spoke_width;
+
+        if (settings.draw_algorithm == 1) {
+            // widen the arc_width to include the previous missed spokes
+            // Search the previous spoke that was drawn.
+            unsigned int previousAngle = angle;
+            unsigned int spokes = 0;
+
+            do {
+                previousAngle = (previousAngle - 1) % LINES_PER_ROTATION;
+                spokes++;
+            } while (m_scan_line[previousAngle].age >= settings.max_age);
+            arc_width *= spokes;
+            angleRad -= (spokes - 1) * spoke_width / 2.0;
+            if (spokes > 50) {
+                // Heuristic, so many missed spokes means the radar is not reliable.
+                // Quit drawing!
+                return;
+            }
+        }
 
         for (int radius = 0; radius < 512; ++radius) {
 
@@ -1231,10 +1253,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                 }
 
                 glColor4ub(red, green, blue, alpha);    // red, blue, green
-                double arc_width = spoke_width;
-                double arc_heigth = 1;
-                double angleRad = angle * spoke_width;
-
+                // Compensate for any scale difference between the scan and the current range:
                 double r = radius * (double) scan->range / (double) max_range;
                 draw_blob_gl(angleRad, r, arc_width, arc_heigth);
 
@@ -1457,6 +1476,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("InterferenceRejection"), &settings.rejection, 0);
             pConf->Read(wxT("TargetBoost"), &settings.target_boost, 0);
             pConf->Read(wxT("ScanMaxAge"), &settings.max_age, 6);
+            pConf->Read(wxT("DrawAlgorithm"), &settings.draw_algorithm, 1);
             pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
             pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
 
@@ -1547,6 +1567,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("GuardZonesThreshold"), settings.guard_zone_threshold);
         pConf->Write(wxT("GuardZonesRenderStyle"), settings.guard_zone_render_style);
         pConf->Write(wxT("ScanMaxAge"), settings.max_age);
+        pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
 
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
         pConf->Write(wxT("ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);

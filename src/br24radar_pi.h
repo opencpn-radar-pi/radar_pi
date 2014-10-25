@@ -192,6 +192,7 @@ struct radar_control_settings {
     wxString radar_interface;        // IP address of interface to bind to (on UNIX)
     int      beam_width;
     int      max_age;
+    int      draw_algorithm;
 };
 
 struct guard_zone_settings {
