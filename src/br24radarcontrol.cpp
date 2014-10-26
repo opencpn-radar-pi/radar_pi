@@ -57,6 +57,7 @@ using namespace std;
 
 enum {                                      // process ID's
     ID_TEXTCTRL1 = 10000,
+    ID_BACK,
     ID_PLUS_TEN,
     ID_PLUS,
     ID_VALUE,
@@ -88,10 +89,9 @@ IMPLEMENT_CLASS(BR24ControlsDialog, wxDialog)
 BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
 
     EVT_CLOSE(BR24ControlsDialog::OnClose)
-//    EVT_BUTTON(ID_OK,    BR24ControlsDialog::OnIdOKClick)
+    EVT_BUTTON(ID_BACK, BR24ControlsDialog::OnBackClick)
     EVT_BUTTON(ID_PLUS_TEN,  BR24ControlsDialog::OnPlusTenClick)
     EVT_BUTTON(ID_PLUS,  BR24ControlsDialog::OnPlusClick)
-    EVT_BUTTON(ID_VALUE, BR24ControlsDialog::OnValueClick)
     EVT_BUTTON(ID_MINUS, BR24ControlsDialog::OnMinusClick)
     EVT_BUTTON(ID_MINUS_TEN, BR24ControlsDialog::OnMinusTenClick)
     EVT_BUTTON(ID_AUTO,  BR24ControlsDialog::OnAutoClick)
@@ -341,8 +341,9 @@ bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID 
     pPlugIn = ppi;
 
     g_font = *OCPNGetFont(_("Dialog"), 14);
-    wxTextCtrl *t = new wxTextCtrl(parent, id, wxT("Transparency"));
-    g_buttonSize = wxSize(t->GetBestSize().GetWidth() + 10, 50);
+    wxButton *t = new wxButton(parent, id, wxT("AUTO (1/16 NM) WITH"));
+    t->SetFont(g_font);
+    g_buttonSize = wxSize(t->GetClientSize().GetWidth() + 10, 50);
     if (ppi->settings.verbose) {
         wxLogMessage(wxT("Dynamic button width = %d"), g_buttonSize.GetWidth());
     }
@@ -381,6 +382,11 @@ void BR24ControlsDialog::CreateControls()
     // A box sizer to contain RANGE button
     editBox = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(editBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+    
+    // The <<Back button
+    bBack = new wxButton(this, ID_BACK, _("<<\nBack"), wxDefaultPosition, g_buttonSize, 0);
+    editBox->Add(bBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bBack->SetFont(g_font);
 
     // The +10 button
     bPlusTen = new wxButton(this, ID_PLUS_TEN, _("+10"), wxDefaultPosition, g_buttonSize, 0);
@@ -393,9 +399,9 @@ void BR24ControlsDialog::CreateControls()
     bPlus->SetFont(g_font);
 
     // The VALUE button
-    bValue = new wxButton(this, ID_VALUE, _("Value"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bValue, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bValue->SetFont(g_font);
+    tValue = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, g_buttonSize, 0);
+    editBox->Add(tValue, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
+    tValue->SetFont(g_font);
 
     // The - button
     bMinus = new wxButton(this, ID_MINUS, _("-"), wxDefaultPosition, g_buttonSize, 0);
@@ -548,7 +554,7 @@ void BR24ControlsDialog::OnPlusTenClick(wxCommandEvent& event)
     fromControl->SetValue(fromControl->value + 10);
     wxString label = fromControl->GetLabel();
 
-    bValue->SetLabel(label);
+    tValue->SetLabel(label);
 }
 
 void BR24ControlsDialog::OnPlusClick(wxCommandEvent& event)
@@ -556,10 +562,10 @@ void BR24ControlsDialog::OnPlusClick(wxCommandEvent& event)
     fromControl->SetValue(fromControl->value + 1);
     wxString label = fromControl->GetLabel();
 
-    bValue->SetLabel(label);
+    tValue->SetLabel(label);
 }
 
-void BR24ControlsDialog::OnValueClick(wxCommandEvent &event)
+void BR24ControlsDialog::OnBackClick(wxCommandEvent &event)
 {
     topSizer->Hide(editBox);
     topSizer->Show(fromBox);
@@ -580,7 +586,7 @@ void BR24ControlsDialog::OnMinusClick(wxCommandEvent& event)
     fromControl->SetValue(fromControl->value - 1);
 
     wxString label = fromControl->GetLabel();
-    bValue->SetLabel(label);
+    tValue->SetLabel(label);
 }
 
 void BR24ControlsDialog::OnMinusTenClick(wxCommandEvent& event)
@@ -588,7 +594,7 @@ void BR24ControlsDialog::OnMinusTenClick(wxCommandEvent& event)
     fromControl->SetValue(fromControl->value - 10);
 
     wxString label = fromControl->GetLabel();
-    bValue->SetLabel(label);
+    tValue->SetLabel(label);
 }
 
 void BR24ControlsDialog::OnAdvancedBackButtonClick(wxCommandEvent& event)
@@ -613,7 +619,7 @@ void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
 {
     fromControl = button; // Keep a record of which button was clicked
 
-    bValue->SetLabel(button->GetLabel());
+    tValue->SetLabel(button->GetLabel());
     topSizer->Hide(controlBox);
     topSizer->Hide(advancedBox);
     topSizer->Show(editBox);

@@ -564,7 +564,7 @@ private:
 
     void OnPlusTenClick(wxCommandEvent& event);
     void OnPlusClick(wxCommandEvent& event);
-    void OnValueClick(wxCommandEvent& event);
+    void OnBackClick(wxCommandEvent& event);
     void OnMinusClick(wxCommandEvent& event);
     void OnMinusTenClick(wxCommandEvent& event);
     void OnAutoClick(wxCommandEvent& event);
@@ -594,10 +594,11 @@ private:
 
     RadarControlButton *fromControl; // Only set when in edit mode
 
-    // The following three groups are the button lists on the
+    // The 'edit' control has these buttons:
+    wxButton           *bBack;
     wxButton           *bPlusTen;
     wxButton           *bPlus;
-    wxButton           *bValue;
+    wxStaticText       *tValue;
     wxButton           *bMinus;
     wxButton           *bMinusTen;
     wxButton           *bAuto;
