@@ -206,6 +206,7 @@ struct guard_zone_settings {
 struct scan_line {
     int range;                  // range of this scan line in decimeters
     int age;                    // how old this scan line is. We keep old scans on-screen for a while
+    double heading;             // heading of boat at time of reception
     GLubyte data[512];          // radar return strength
 };
 
@@ -311,9 +312,7 @@ private:
     void Select_Clutter(int req_clutter_index);
     void Select_Rejection(int req_rejection_index);
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
-    void RenderRadarStandalone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
     void RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
-    void OpenGL3_Render_Overlay();
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
     void DrawRadarImage(int max_range, wxPoint radar_center);
     void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);

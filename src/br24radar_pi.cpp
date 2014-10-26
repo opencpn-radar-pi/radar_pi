@@ -1078,13 +1078,9 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
     switch (settings.display_mode) {
         case 0:                                    // direct real time sweep render mode
+        case 1:
             if (m_hdt_source > 0) {
                 RenderRadarOverlay(boat_center, v_scale_ppm, vp);
-            }
-            break;
-        case 1:                                     // plain scope look
-            if (br_radar_state == RADAR_ON) {
-                RenderRadarStandalone(boat_center, v_scale_ppm, vp);
             }
             break;
         case 2:
@@ -1099,16 +1095,19 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
     glPushMatrix();
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    if (settings.display_mode == 0) {
+        glEnable(GL_BLEND);
+    }
+    else {
+        glClearColor(0, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
 
     glTranslated(radar_center.x, radar_center.y, 0);
 
-    double heading = fmod(br_hdt + settings.heading_correction + rad2deg(vp->rotation) + 360.0, 360.0);
-//    wxLogMessage(wxT("Rotating image for HDT=%f Correction=%d Rotation=%f Result=%f"), br_hdt, settings.heading_correction,
-//    rad2deg(vp->rotation), heading);
+    double heading = fmod(settings.heading_correction + rad2deg(vp->rotation) + 360.0, 360.0);
     glRotatef(heading - 90.0, 0, 0, 1);        //correction for boat heading -90 for base north
 
     // scaling...
@@ -1128,48 +1127,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     // Guard Zone image
     if (br_radar_state == RADAR_ON) {
         if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
-            RenderGuardZone(radar_center, v_scale_ppm, vp);
-        }
-    }
-
-    glPopMatrix();
-    glPopAttrib();
-}
-
- /******************************************************************************************************/
-
-void br24radar_pi::RenderRadarStandalone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
-{
-    glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glPushMatrix();
-    glClearColor(0, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glTranslated(radar_center.x, radar_center.y, 0);
-
-    double heading = fmod(br_hdt + settings.heading_correction + rad2deg(vp->rotation) + 360.0, 360.0);
-//    wxLogMessage(wxT("Rotating image for HDT=%f Correction=%d Rotation=%f Result=%f"), br_hdt, settings.heading_correction,
-//    rad2deg(vp->rotation), heading);
-    glRotatef(heading - 90.0, 0, 0, 1);        //correction for boat heading -90 for base north
-
-    // scaling...
-    int meters = br_range_meters;
-    if (!meters) meters = auto_range_meters;
-    if (!meters) meters = 1000;
-    double radar_pixels_per_meter = 512. / meters;
-    double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
-
-    glPushMatrix();
-    glScaled(scale_factor, scale_factor, 1.);
-    if (br_range_meters && br_scanner_state == RADAR_ON) { // only draw radar if something received
-        DrawRadarImage(br_range_meters, radar_center);
-    }
-    glPopMatrix();
-
-    // Guard Zone image
-    if (br_radar_state == RADAR_ON) {
-        if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
+            glRotatef(br_hdt, 0, 0, 1); // Draw entire guard zone at current heading
             RenderGuardZone(radar_center, v_scale_ppm, vp);
         }
     }
@@ -1185,7 +1143,8 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     memset(&bogey_count, 0, sizeof(bogey_count));
 
     // DRAWING PICTURE
-    const double spoke_width = deg2rad(360) / LINES_PER_ROTATION; // How wide is one spoke?
+    const double spokeWidthDeg = 360.0 / LINES_PER_ROTATION;
+    const double spokeWidthRad = deg2rad(spokeWidthDeg); // How wide is one spoke?
 
     for (unsigned int angle = 0 ; angle < LINES_PER_ROTATION; ++angle) {
         scan_line * scan = &m_scan_line[angle];
@@ -1200,9 +1159,10 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             alpha *= (settings.max_age - scan->age) / settings.max_age;
         }
         */
-        double arc_width = spoke_width;
+        double arc_width = spokeWidthRad;
         double arc_heigth = 1;
-        double angleRad = angle * spoke_width;
+        double angleDeg = fmod(angle * spokeWidthDeg + scan->heading + 360.0, 360.0);
+        double angleRad = deg2rad(angleDeg);
 
         if (settings.draw_algorithm == 1) {
             // widen the arc_width to include the previous missed spokes
@@ -1215,11 +1175,14 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                 spokes++;
             } while (m_scan_line[previousAngle].age >= settings.max_age);
             arc_width *= spokes;
-            angleRad -= (spokes - 1) * spoke_width / 2.0;
-            if (spokes > 50) {
-                // Heuristic, so many missed spokes means the radar is not reliable.
-                // Quit drawing!
-                return;
+            angleRad -= (spokes - 1) * spokeWidthRad / 2.0;
+            if (spokes > 3 && settings.verbose) {
+                wxLogMessage(wxT("BR24radar_pi: spoke skip %u to %u"), previousAngle, angle);
+            }
+            if (spokes > LINES_PER_ROTATION / 16) {
+                // Heuristic, so many missed spokes means the boat is rotating very fast
+                // or the radar is unreliable.
+                continue;
             }
         }
 
@@ -1263,20 +1226,20 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                 if (br_radar_state == RADAR_ON) {
                     for (size_t z = 0; z < GUARD_ZONES; z++) {
                         if (guardZones[z].type != GZ_OFF) {
-                            double angle_deg = (angle * 360.0) / LINES_PER_ROTATION;
                             double inner_range = guardZones[z].inner_range;
                             double outer_range = guardZones[z].outer_range;
                             double bogey_range = (radius / 512.0) * (max_range / 1852.0);
                             double angle_1 = guardZones[z].start_bearing;
                             double angle_2 = guardZones[z].end_bearing;
+                            angleDeg = angle * spokeWidthDeg;
 
                             if (angle_1 > angle_2) {
                                 angle_2 += 360.0;
                             }
-                            if (angle_1 > angle_deg) {
-                                angle_deg += 360.0;
+                            if (angle_1 > angleDeg) {
+                                angleDeg += 360.0;
                             }
-                            if (angle_deg > angle_1 && angle_deg < angle_2) {
+                            if (angleDeg > angle_1 && angleDeg < angle_2) {
                                 if (bogey_range > inner_range && bogey_range < outer_range) {
                                     bogey_count[z]++;
                                 }
@@ -1635,6 +1598,12 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         }
         m_hdt_source = 3;
     }
+
+    /*
+    if (settings.verbose) {
+        wxLogMessage(wxT("BR24radar_pi: Heading %f"), br_hdt);
+    }
+    */
 
     br_bpos_set = true;
     bpos_warn_msg = false;
@@ -2229,5 +2198,6 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
 
         pPlugIn->m_scan_line[angle_raw].range = range_meters;
         pPlugIn->m_scan_line[angle_raw].age = 0;
+        pPlugIn->m_scan_line[angle_raw].heading = br_hdt;
     }
 }
