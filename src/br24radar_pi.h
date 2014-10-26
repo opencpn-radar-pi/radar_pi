@@ -57,6 +57,8 @@
 #endif
 
 #include "ocpn_plugin.h"
+#include "nmea0183/nmea0183.h"
+
 
 #ifndef SOCKET
 # define SOCKET int
@@ -251,6 +253,7 @@ public:
     void SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix);
     void SetCursorLatLon(double lat, double lon);
     void OnContextMenuItemCallback(int id);
+    void SetNMEASentence(wxString &sentence);
 
     void SetDefaults(void);
     int GetToolbarToolCount(void);
@@ -353,6 +356,9 @@ private:
 
     int                       m_hdt_source;
     int                       m_hdt_prev_source;
+    double                    m_var;
+
+    NMEA0183                  m_NMEA0183;
 
     double                    llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
 

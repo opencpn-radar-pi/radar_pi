@@ -488,6 +488,7 @@ int br24radar_pi::Init(void)
             INSTALLS_CONTEXTMENU_ITEMS |
             WANTS_CONFIG               |
             WANTS_NMEA_EVENTS          |
+            WANTS_NMEA_SENTENCES       |
             WANTS_PREFERENCES
            );
 }
@@ -1585,6 +1586,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
     else if (!wxIsNaN(pfix.Hdm) && !wxIsNaN(pfix.Var))
     {
         br_hdt = pfix.Hdm + pfix.Var;
+        m_var = pfix.Var;
         if (m_hdt_source != 2) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM"));
         }
@@ -1902,6 +1904,37 @@ void br24radar_pi::CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollov
     }
 }
 
+void br24radar_pi::SetNMEASentence( wxString &sentence )
+{
+    m_NMEA0183 << sentence;
+
+    if (m_NMEA0183.PreParse()) {
+        if (m_hdt_source == 2 && m_NMEA0183.LastSentenceIDReceived == _T("HDG") && m_NMEA0183.Parse()) {
+            if (!wxIsNaN(m_NMEA0183.Hdg.MagneticVariationDegrees)) {
+                if (m_NMEA0183.Hdg.MagneticVariationDirection == East)
+                    m_var = +m_NMEA0183.Hdg.MagneticVariationDegrees;
+                else if (m_NMEA0183.Hdg.MagneticVariationDirection == West)
+                    m_var = -m_NMEA0183.Hdg.MagneticVariationDegrees;
+            }
+            if (!wxIsNaN(m_NMEA0183.Hdg.MagneticSensorHeadingDegrees) ) {
+                br_hdt = m_NMEA0183.Hdg.MagneticSensorHeadingDegrees + m_var;
+            }
+        }
+        else if (m_hdt_source == 2 && m_NMEA0183.LastSentenceIDReceived == _T("HDM") && m_NMEA0183.Parse()) {
+            if (!wxIsNaN(m_NMEA0183.Hdm.DegreesMagnetic)) {
+                br_hdt = m_NMEA0183.Hdm.DegreesMagnetic + m_var;
+            }
+        }
+        else if (m_hdt_source == 1 && m_NMEA0183.LastSentenceIDReceived == _T("HDT") && m_NMEA0183.Parse()) {
+            if (!wxIsNaN(m_NMEA0183.Hdt.DegreesTrue)) {
+                 br_hdt = m_NMEA0183.Hdt.DegreesTrue;
+            }
+        }
+        if (settings.verbose) {
+            wxLogMessage(wxT("BR24radar_pi: NMEA %s heading %f"), m_NMEA0183.LastSentenceIDReceived, br_hdt);
+        }
+    }
+}
 
 
 // Ethernet packet stuff *************************************************************
