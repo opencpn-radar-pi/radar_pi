@@ -794,31 +794,36 @@ void BR24DisplayOptionsDialog::OnIdOKClick(wxCommandEvent& event)
 //********************************************************************************
 // Operation Dialogs - Control, Manual, and Options
 
+void br24radar_pi::ShowRadarControl()
+{
+    if (!m_pControlDialog) {
+        m_pControlDialog = new BR24ControlsDialog;
+        m_pControlDialog->Create(m_parent_window, this);
+
+        int range = auto_range_meters;
+        m_pControlDialog->SetAutoRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
+        if (br_range_meters) {
+            range = br_range_meters;
+            m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
+        }
+    }
+    m_pControlDialog->Show();
+    m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
+        m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy);
+}
+
 void br24radar_pi::OnContextMenuItemCallback(int id)
 {
-   if (!guard_context_mode) {
-        if (!m_pControlDialog) {
-            m_pControlDialog = new BR24ControlsDialog;
-            m_pControlDialog->Create(m_parent_window, this);
-
-            int range = auto_range_meters;
-            m_pControlDialog->SetAutoRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
-            if (br_range_meters) {
-                range = br_range_meters;
-                m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
-            }
-        }
-        m_pControlDialog->Show();
-        m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
-                                  m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy);
+    if (!guard_context_mode) {
+        ShowRadarControl();
     }
 
-   if (guard_context_mode) {
-       SetCanvasContextMenuItemViz(radar_control_id, false);
-       mark_rng = local_distance(br_ownship_lat, br_ownship_lon, cur_lat, cur_lon);
-       mark_brg = local_bearing(br_ownship_lat, br_ownship_lon, cur_lat, cur_lon);
-       m_pGuardZoneDialog->OnContextMenuGuardCallback(mark_rng, mark_brg);
-   }
+    if (guard_context_mode) {
+        SetCanvasContextMenuItemViz(radar_control_id, false);
+        mark_rng = local_distance(br_ownship_lat, br_ownship_lon, cur_lat, cur_lon);
+        mark_brg = local_bearing(br_ownship_lat, br_ownship_lon, cur_lat, cur_lon);
+        m_pGuardZoneDialog->OnContextMenuGuardCallback(mark_rng, mark_brg);
+    }
 }
 
 void br24radar_pi::OnBR24ControlDialogClose()
@@ -921,6 +926,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
             RadarStayAlive();
             RadarTxOn();
         }
+        ShowRadarControl();
     } else {
         br_radar_state = RADAR_OFF;
         if (settings.master_mode == true) {
@@ -930,6 +936,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
                 wxLogMessage(wxT("BR24radar_pi: Master mode off"));
             }
         }
+        OnBR24ControlDialogClose();
     }
 
     UpdateState();

@@ -323,6 +323,7 @@ private:
     void draw_histogram_column(int x, int y);
 
     void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
+    void ShowRadarControl();
 
     wxFileConfig             *m_pconfig;
     wxWindow                 *m_parent_window;
