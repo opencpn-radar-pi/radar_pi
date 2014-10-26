@@ -2175,13 +2175,14 @@ void *MulticastRXThread::Entry(void)
 //
 void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
 {
-    for (int scanline = 0; scanline < 32 ; scanline++) {
+    if (len < sizeof(packet->frame_hdr))
+    {
+        return;
+    }
+    int scanlines_in_packet = (len - sizeof(packet->frame_hdr)) / sizeof(radar_line);
+
+    for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
         radar_line * line = &packet->line[scanline];
-        if ((char *) &packet->line[scanline + 1] > (char *) packet + len)
-        {
-          // ignore a truncated spoke
-          break;
-        }
 
         int range_raw = 0;
         int angle_raw;
