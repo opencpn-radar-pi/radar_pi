@@ -466,10 +466,16 @@ int br24radar_pi::Init(void)
     m_pmenu = new wxMenu();            // this is a dummy menu
     // required by Windows as parent to item created
     wxMenuItem *pmi = new wxMenuItem(m_pmenu, -1, _("Radar Control..."));
+#ifdef __WXMSW__
+    wxFont *qFont = OCPNGetFont(_("Menu"), 10);
+    pmi->SetFont(*qFont);
+#endif
     int miid = AddCanvasContextMenuItem(pmi, this);
-    SetCanvasContextMenuItemViz(miid, true);
 
     wxMenuItem *pmi2 = new wxMenuItem(m_pmenu, -1, _("Set Guard Point"));
+#ifdef __WXMSW__
+    pmi->SetFont(*qFont);
+#endif
     guard_zone_id = AddCanvasContextMenuItem(pmi2, this );
     SetCanvasContextMenuItemViz(guard_zone_id, false);
     guard_context_mode = false;
