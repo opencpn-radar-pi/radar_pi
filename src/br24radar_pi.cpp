@@ -790,11 +790,13 @@ void BR24DisplayOptionsDialog::OnHeading_Calibration_Value(wxCommandEvent &event
 void BR24DisplayOptionsDialog::OnClose(wxCloseEvent& event)
 {
     pPlugIn->SaveConfig();
+    this->Hide();
 }
 
 void BR24DisplayOptionsDialog::OnIdOKClick(wxCommandEvent& event)
 {
     pPlugIn->SaveConfig();
+    this->Hide();
 }
 
 //********************************************************************************
