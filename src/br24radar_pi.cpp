@@ -1930,9 +1930,6 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
                  br_hdt = m_NMEA0183.Hdt.DegreesTrue;
             }
         }
-        if (settings.verbose) {
-            wxLogMessage(wxT("BR24radar_pi: NMEA %s heading %f"), m_NMEA0183.LastSentenceIDReceived, br_hdt);
-        }
     }
 }
 
