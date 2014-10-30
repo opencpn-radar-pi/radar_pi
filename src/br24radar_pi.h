@@ -130,11 +130,14 @@ struct radar_line {
 };
 
 
-/* A single packet, 17160 = 8 + (24 + 512) * 32 bytes = 17156 ... */
+/* Normally the packets are have 32 spokes, or scan lines, but we assume nothing
+ * so we take up to 120 spokes. This is the nearest round figure without going over
+ * 64kB.
+ */
 
 struct radar_frame_pkt {
     unsigned char   frame_hdr[8];
-    radar_line      line[32];          //  scan lines
+    radar_line      line[120];    //  scan lines, or spokes
 };
 #pragma pack(pop)
 

@@ -91,11 +91,6 @@ enum {
     ID_HEADINGSLIDER,
 };
 
-union packet_buf {
-    radar_frame_pkt packet;
-    unsigned char   buf[20000];     // 32 lines of 512 = 16,384, DO NOT ALTER from 20000!
-};
-
 bool br_bpos_set = true;
 bool bpos_warn_msg = false;
 double br_ownship_lat, br_ownship_lon;
@@ -2142,9 +2137,9 @@ void *MulticastRXThread::Entry(void)
     int n_rx_once = 0;
     while (!*m_quit) {
         if (socketReady(rx_socket, 1)) {
-            packet_buf frame;
+            radar_frame_pkt packet;
             rx_len = sizeof(rx_addr);
-            r = recvfrom(rx_socket, (char *) frame.buf, sizeof(frame.buf), 0, (struct sockaddr *) &rx_addr, &rx_len);
+            r = recvfrom(rx_socket, (char *) &packet, sizeof(packet), 0, (struct sockaddr *) &rx_addr, &rx_len);
             if (r) {
                 if (0 == n_rx_once) {
                     if (pPlugIn->settings.verbose) {
@@ -2153,7 +2148,7 @@ void *MulticastRXThread::Entry(void)
                     n_rx_once++;
                 }
                 br_scan_packets_per_tick++;
-                process_buffer(&frame.packet, r);
+                process_buffer(&packet, r);
             }
         }
     }
@@ -2180,6 +2175,10 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
         return;
     }
     int scanlines_in_packet = (len - sizeof(packet->frame_hdr)) / sizeof(radar_line);
+
+    if (scanlines_in_packet != 32) {
+        wxLogMessage(wxT("br24radar_pi: received strange packet with %d spokes"), scanlines_in_packet);
+    }
 
     for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
         radar_line * line = &packet->line[scanline];
