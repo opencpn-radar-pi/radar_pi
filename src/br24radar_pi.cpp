@@ -1095,7 +1095,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     size_t idx = convertMetersToRadarAllowedValue(&auto_range_meters, settings.range_units, br_radar_type);
     if (auto_range_meters != previous_auto_range_meters) {
         if (settings.verbose) {
-            wxLogMessage(wxT("Automatic scale changed from %d to %d meters")
+            wxLogMessage(wxT("BR24radar_pi: Automatic scale changed from %d to %d meters")
                          , previous_auto_range_meters, auto_range_meters);
         }
         previous_auto_range_meters = auto_range_meters;
@@ -1691,7 +1691,7 @@ void br24radar_pi::TransmitCmd(char* msg, int size)
 
 void br24radar_pi::RadarTxOff(void)
 {
-//    wxLogMessage(wxT("BR24 Radar turned Off manually."));
+//    wxLogMessage(wxT("BR24radar_pi: radar turned Off manually."));
 
     char pck[3] = {(byte)0x00, (byte)0xc1, (byte)0x00};
     TransmitCmd(pck, sizeof(pck));
@@ -1732,7 +1732,7 @@ void br24radar_pi::SetRangeMeters(long meters)
                          , (byte) ((decimeters >> 24) & 0XFFL)
                          };
             if (settings.verbose) {
-                wxLogMessage(wxT("SetRangeMeters: %ld meters\n"), meters);
+                wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: %ld meters\n"), meters);
             }
             TransmitCmd(pck, sizeof(pck));
         }
@@ -1754,7 +1754,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                         0, 0, 0, (byte)0xa1
                     };
                     if (settings.verbose) {
-                        wxLogMessage(wxT("Gain: Auto"));
+                        wxLogMessage(wxT("BR24radar_pi: Gain: Auto"));
                     }
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
@@ -1770,7 +1770,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                         (char) v
                     };
                     if (settings.verbose) {
-                        wxLogMessage(wxT("Gain: %d"), value);
+                        wxLogMessage(wxT("BR24radar_pi: Gain: %d"), value);
                     }
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
@@ -1790,7 +1790,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                     (char) v
                 };
                 if (settings.verbose) {
-                    wxLogMessage(wxT("Rain: %d"), value);
+                    wxLogMessage(wxT("BR24radar_pi: Rain: %d"), value);
                 }
                 TransmitCmd(cmd, sizeof(cmd));
                 break;
@@ -1805,7 +1805,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                         0, 0, 0, (byte)0xd3
                     };
                     if (settings.verbose) {
-                        wxLogMessage(wxT("Sea: Auto"));
+                        wxLogMessage(wxT("BR24radar_pi: Sea: Auto"));
                     }
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
@@ -1822,7 +1822,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                        (char)v
                     };
                     if (settings.verbose) {
-                        wxLogMessage(wxT("Sea: %d"), value);
+                        wxLogMessage(wxT("BR24radar_pi: Sea: %d"), value);
                     }
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
@@ -1835,7 +1835,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                     (char) settings.rejection
                 };
                 if (settings.verbose) {
-                    wxLogMessage(wxT("Rejection: %d"), value);
+                    wxLogMessage(wxT("BR24radar_pi: Rejection: %d"), value);
                 }
                 TransmitCmd(cmd, sizeof(cmd));
                 break;
@@ -1848,7 +1848,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                     (char) value
                 };
                 if (settings.verbose) {
-                    wxLogMessage(wxT("Target boost: %d"), value);
+                    wxLogMessage(wxT("BR24radar_pi: Target boost: %d"), value);
                 }
                 TransmitCmd(cmd, sizeof(cmd));
                 break;
@@ -1861,7 +1861,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                     (char) value
                 };
                 if (settings.verbose) {
-                    wxLogMessage(wxT("Scan speed: %d"), value);
+                    wxLogMessage(wxT("BR24radar_pi: Scan speed: %d"), value);
                 }
                 TransmitCmd(cmd, sizeof(cmd));
                 break;
@@ -1875,14 +1875,14 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             default: {
-                wxLogMessage(wxT("Unhandled control setting for control %d"), controlType);
+                wxLogMessage(wxT("BR24radar_pi: Unhandled control setting for control %d"), controlType);
             }
             };
         }
     }
     else
     {
-        wxLogMessage(wxT("Not master, so ignore SetControlValue: %d %d"), controlType, value);
+        wxLogMessage(wxT("BR24radar_pi: Not master, so ignore SetControlValue: %d %d"), controlType, value);
     }
 }
 
@@ -2390,10 +2390,13 @@ void *RadarCommandReceiveThread::Entry(void)
         return 0;
     }
 
-    sockaddr_storage rx_addr;
+    union {
+      sockaddr_storage addr;
+      sockaddr_in      ipv4;
+    } rx_addr;
     socklen_t        rx_len;
 
-    wxLogMessage(wxT("Listening for commands"));
+    wxLogMessage(wxT("BR24radar_pi: Listening for commands"));
     //    Loop until we quit
     int n_rx_once = 0;
     while (!*m_quit) {
@@ -2402,7 +2405,19 @@ void *RadarCommandReceiveThread::Entry(void)
             rx_len = sizeof(rx_addr);
             r = recvfrom(rx_socket, (char * ) command, sizeof(command), 0, (struct sockaddr *) &rx_addr, &rx_len);
             if (r > 0) {
-                logBinaryData(wxT("br24radar_pi: received command"), command, r);
+                wxString s;
+
+                if (rx_addr.addr.ss_family == AF_INET) {
+                    s.Printf(wxT("%u.%u.%u.%u sent command")
+                        , rx_addr.ipv4.sin_addr.S_un.S_un_b.s_b1
+                        , rx_addr.ipv4.sin_addr.S_un.S_un_b.s_b2
+                        , rx_addr.ipv4.sin_addr.S_un.S_un_b.s_b3
+                        , rx_addr.ipv4.sin_addr.S_un.S_un_b.s_b4
+                        );
+                } else {
+                    s = wxT("non-IPV4 sent command");
+                }
+                logBinaryData(s, command, r);
             }
         }
     }
@@ -2479,16 +2494,16 @@ void *RadarReportReceiveThread::Entry(void)
     sockaddr_storage rx_addr;
     socklen_t        rx_len;
 
-    wxLogMessage(wxT("Listening for reports"));
+    wxLogMessage(wxT("BR24radar_pi: Listening for reports"));
     //    Loop until we quit
     int n_rx_once = 0;
     while (!*m_quit) {
         if (socketReady(rx_socket, 1)) {
-            unsigned char command[1500];
+            unsigned char report[1500];
             rx_len = sizeof(rx_addr);
-            r = recvfrom(rx_socket, (char * ) command, sizeof(command), 0, (struct sockaddr *) &rx_addr, &rx_len);
+            r = recvfrom(rx_socket, (char * ) report, sizeof(report), 0, (struct sockaddr *) &rx_addr, &rx_len);
             if (r > 0) {
-                ProcessIncomingReport(command, r);
+                ProcessIncomingReport(report, r);
             }
         }
     }
@@ -2510,7 +2525,7 @@ struct radar_state {
     UINT32 field3;  // 1
     UINT8  field4a;
     UINT32 field4b;
-    UINT32 sea;
+    UINT32 sea;     // sea state
     UINT32 field6a;
     UINT32 field6b;
     UINT32 field6c;
@@ -2535,13 +2550,13 @@ void RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
     if (len == 18 && command[0] == 0x01 && command[1] == 0xC4) {
         // Radar status in byte 2
         if (command[2] != prevStatus) {
-            wxLogMessage(wxT("br24radar_pi: radar status = %u"), command[2]);
+            wxLogMessage(wxT("BR24radar_pi: radar status = %u"), command[2]);
             prevStatus = command[2];
         }
     }
     else if (len == 99 && command[0] == 0x02 && command[1] == 0xC4) {
         radar_state * s = (radar_state *) command;
-        wxLogMessage(wxT("br24radar_pi: radar state f1=%u f2=%u f3=%u f4a=%u f4b=%u sea=%u f6a=%u f6b=%u f6c=%u f6d=%u rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
+        wxLogMessage(wxT("BR24radar_pi: radar state f1=%u f2=%u f3=%u f4a=%u f4b=%u sea=%u f6a=%u f6b=%u f6c=%u f6d=%u rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
             , s->field1
             , s->field2
             , s->field3
@@ -2563,9 +2578,9 @@ void RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
             , s->field13
             , s->field14
             );
-        logBinaryData(wxT("br24radar_pi: state"), command, len);
+        logBinaryData(wxT("state"), command, len);
     }
     else {
-        logBinaryData(wxT("br24radar_pi: received report"), command, len);
+        logBinaryData(wxT("received report"), command, len);
     }
 }
