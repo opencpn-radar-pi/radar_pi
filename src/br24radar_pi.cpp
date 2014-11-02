@@ -65,10 +65,6 @@ using namespace std;
 # include "GL/glu.h"
 #endif
 
-#ifndef __WXMSW__
-typedef char byte;
-#endif
-
 #include "br24radar_pi.h"
 #include "ocpndc.h"
 
@@ -79,7 +75,7 @@ typedef char byte;
 // As far as we know they 3G's use exactly the same command set.
 
 // If BR24MARK is found, we switch to BR24 mode, otherwise 4G.
-static unsigned char BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
+static UINT8 BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
 
 enum {
     // process ID's
@@ -1371,7 +1367,7 @@ void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, Plu
 
     ppNM = v_scale_ppm * 1852.0 ;          // screen pixels per nautical mile to screen pixels per meter
     int start_bearing, end_bearing;
-    int red = 0, green = 200, blue = 0, alpha = 50;
+    GLubyte red = 0, green = 200, blue = 0, alpha = 50;
 
     for (size_t z = 0; z < GUARD_ZONES; z++) {
 
@@ -1389,11 +1385,11 @@ void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, Plu
                 DrawOutlineArc(guardZones[z].outer_range * ppNM, guardZones[z].inner_range * ppNM, start_bearing, end_bearing, true);
                 break;
             case 2:
-                glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);
+                glColor4ub(red, green, blue, alpha);
                 DrawOutlineArc(guardZones[z].outer_range * ppNM, guardZones[z].inner_range * ppNM, start_bearing, end_bearing, false);
                 // fall thru
             default:
-                glColor4ub((GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha);
+                glColor4ub(red, green, blue, alpha);
                 DrawFilledArc(guardZones[z].outer_range * ppNM, guardZones[z].inner_range * ppNM, start_bearing, end_bearing);
             }
         }
@@ -1677,7 +1673,7 @@ void br24radar_pi::SetCursorLatLon(double lat, double lon)
 //************************************************************************
 // Plugin Command Data Streams
 //************************************************************************
-void br24radar_pi::TransmitCmd(char* msg, int size)
+void br24radar_pi::TransmitCmd(UINT8 * msg, int size)
 {
     struct sockaddr_in adr;
     memset(&adr, 0, sizeof(adr));
@@ -1685,11 +1681,11 @@ void br24radar_pi::TransmitCmd(char* msg, int size)
     adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 10); // 236.6.7.10
     adr.sin_port=htons(6680);
 
-    if (m_radar_socket == INVALID_SOCKET || sendto(m_radar_socket, msg, size, 0, (struct sockaddr *) &adr, sizeof(adr)) < size) {
+    if (m_radar_socket == INVALID_SOCKET || sendto(m_radar_socket, (char *) msg, size, 0, (struct sockaddr *) &adr, sizeof(adr)) < size) {
         wxLogMessage(wxT("BR24radar_pi: unable to transmit command to radar: %s\n"), SOCKETERRSTR);
         return;
     } else if (settings.verbose) {
-        logBinaryData(wxT("command"), (UINT8 *) msg, size);
+        logBinaryData(wxT("command"), msg, size);
     }
 };
 
@@ -1697,10 +1693,10 @@ void br24radar_pi::RadarTxOff(void)
 {
 //    wxLogMessage(wxT("BR24radar_pi: radar turned Off manually."));
 
-    char pck[3] = {(byte)0x00, (byte)0xc1, (byte)0x00};
+    UINT8 pck[3] = {0x00, 0xc1, 0x00};
     TransmitCmd(pck, sizeof(pck));
 
-    pck[0] = (byte)0x01;
+    pck[0] = 0x01;
     TransmitCmd(pck, sizeof(pck));
 }
 
@@ -1708,17 +1704,17 @@ void br24radar_pi::RadarTxOn(void)
 {
 //    wxLogMessage(wxT("BR24 Radar turned ON manually."));
 
-    char pck[3] = {(byte)0x00, (byte)0xc1, (byte)0x01};               // ON
+    UINT8 pck[3] = {0x00, 0xc1, 0x01};               // ON
     TransmitCmd(pck, sizeof(pck));
 
-    pck[0] = (byte)0x01;
+    pck[0] = 0x01;
     TransmitCmd(pck, sizeof(pck));
 }
 
 void br24radar_pi::RadarStayAlive(void)
 {
     if (settings.master_mode && (br_radar_state == RADAR_ON)) {
-        char pck[] = {(byte)0xA0, (byte)0xc1};
+        UINT8 pck[] = {0xA0, 0xc1};
         TransmitCmd(pck, sizeof(pck));
     }
 }
@@ -1728,13 +1724,13 @@ void br24radar_pi::SetRangeMeters(long meters)
     if (settings.master_mode) {
         if (meters >= 50 && meters <= 64000) {
             long decimeters = meters * 10L/1.762;
-            char pck[] = { (byte) 0x03
-                         , (byte) 0xc1
-                         , (byte) ((decimeters >>  0) & 0XFFL)
-                         , (byte) ((decimeters >>  8) & 0XFFL)
-                         , (byte) ((decimeters >> 16) & 0XFFL)
-                         , (byte) ((decimeters >> 24) & 0XFFL)
-                         };
+            UINT8 pck[] = { 0x03
+                          , 0xc1
+                          , ((decimeters >>  0) & 0XFFL)
+                          , ((decimeters >>  8) & 0XFFL)
+                          , ((decimeters >> 16) & 0XFFL)
+                          , ((decimeters >> 24) & 0XFFL)
+                          };
             if (settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: %ld meters\n"), meters);
             }
@@ -1751,11 +1747,11 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
         switch (controlType) {
             case CT_GAIN: {
                 if (value < 0) {                // AUTO gain
-                    char cmd[] = {
-                        (byte)0x06,
-                        (byte)0xc1,
-                        0, 0, 0, 0, (byte)0x01,
-                        0, 0, 0, (byte)0xa1
+                    UINT8 cmd[] = {
+                        0x06,
+                        0xc1,
+                        0, 0, 0, 0, 0x01,
+                        0, 0, 0, 0xa1
                     };
                     if (settings.verbose) {
                         wxLogMessage(wxT("BR24radar_pi: Gain: Auto"));
@@ -1767,11 +1763,11 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                     if (v > 255) {
                         v = 255;
                     }
-                    char cmd[] = {
-                        (byte)0x06,
-                        (byte)0xc1,
+                    UINT8 cmd[] = {
+                        0x06,
+                        0xc1,
                         0, 0, 0, 0, 0, 0, 0, 0,
-                        (char) v
+                        v
                     };
                     if (settings.verbose) {
                         wxLogMessage(wxT("BR24radar_pi: Gain: %d"), value);
@@ -1786,12 +1782,12 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                     v = 255;
                 }
 
-                char cmd[] = {
-                    (byte)0x06,
-                    (byte)0xc1,
-                    (byte)0x04,
+                UINT8 cmd[] = {
+                    0x06,
+                    0xc1,
+                    0x04,
                     0, 0, 0, 0, 0, 0, 0,
-                    (char) v
+                    v
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Rain: %d"), value);
@@ -1801,12 +1797,12 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
             }
             case CT_SEA: {
                 if (value < 0) {                 // Sea Clutter - Auto
-                    char cmd[11] = {
-                        (byte)0x06,
-                        (byte)0xc1,
-                        (byte)0x02,
-                        0, 0, 0, (byte)0x01,
-                        0, 0, 0, (byte)0xd3
+                    UINT8 cmd[11] = {
+                        0x06,
+                        0xc1,
+                        0x02,
+                        0, 0, 0, 0x01,
+                        0, 0, 0, 0xd3
                     };
                     if (settings.verbose) {
                         wxLogMessage(wxT("BR24radar_pi: Sea: Auto"));
@@ -1818,12 +1814,12 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                     if (v > 255) {
                         v = 255;
                     }
-                    char cmd[] = {
-                        (byte)0x06,
-                        (byte)0xc1,
-                        (byte)0x02,
+                    UINT8 cmd[] = {
+                        0x06,
+                        0xc1,
+                        0x02,
                         0, 0, 0, 0, 0, 0, 0,
-                       (char)v
+                        v
                     };
                     if (settings.verbose) {
                         wxLogMessage(wxT("BR24radar_pi: Sea: %d"), value);
@@ -1833,10 +1829,10 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 }
             case CT_INTERFERENCE_REJECTION: {
                 settings.interference_rejection = value;
-                char cmd[] = {
-                    (byte)0x08,
-                    (byte)0xc1,
-                    (char) settings.interference_rejection
+                UINT8 cmd[] = {
+                    0x08,
+                    0xc1,
+                    settings.interference_rejection
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Rejection: %d"), value);
@@ -1846,10 +1842,10 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
             }
             case CT_TARGET_SEPARATION: {
                 settings.target_separation = value;
-                char cmd[] = {
-                    (byte)0x22,
-                    (byte)0xc1,
-                    (char) value
+                UINT8 cmd[] = {
+                    0x22,
+                    0xc1,
+                    value
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Target separation: %d"), value);
@@ -1859,10 +1855,10 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
             }
             case CT_NOISE_REJECTION: {
                 settings.noise_rejection = value;
-                char cmd[] = {
-                    (byte)0x21,
-                    (byte)0xc1,
-                    (char) settings.noise_rejection
+                UINT8 cmd[] = {
+                    0x21,
+                    0xc1,
+                    settings.noise_rejection
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Noise rejection: %d"), value);
@@ -1872,10 +1868,10 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
             }
             case CT_TARGET_BOOST: {
                 settings.target_boost = value;
-                char cmd[] = {
-                    (byte)0x0a,
-                    (byte)0xc1,
-                    (char) value
+                UINT8 cmd[] = {
+                    0x0a,
+                    0xc1,
+                    value
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Target boost: %d"), value);
@@ -1885,10 +1881,10 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
             }
             case CT_SCAN_SPEED: {
                 settings.scan_speed = value;
-                char cmd[] = {
-                    (byte)0x0f,
-                    (byte)0xc1,
-                    (char) value
+                UINT8 cmd[] = {
+                    0x0f,
+                    0xc1,
+                    value
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Scan speed: %d"), value);
@@ -2341,13 +2337,13 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             }
         }
 
-        unsigned char *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
+        UINT8 *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
         memcpy(dest_data1, line->data, 512);
 
         // The following line is a quick hack to confirm on-screen where the range ends, by putting a 'ring' of
         // returned radar energy at the max range line.
         // TODO: create nice actual range circles.
-        dest_data1[511] = (byte)0xff;
+        dest_data1[511] = 0xff;
 
         pPlugIn->m_scan_line[angle_raw].range = range_meters;
         pPlugIn->m_scan_line[angle_raw].age = now;
@@ -2431,7 +2427,7 @@ void *RadarCommandReceiveThread::Entry(void)
     int n_rx_once = 0;
     while (!*m_quit) {
         if (socketReady(rx_socket, 1)) {
-            unsigned char command[1500];
+            UINT8 command[1500];
             rx_len = sizeof(rx_addr);
             r = recvfrom(rx_socket, (char * ) command, sizeof(command), 0, (struct sockaddr *) &rx_addr, &rx_len);
             if (r > 0) {
@@ -2529,7 +2525,7 @@ void *RadarReportReceiveThread::Entry(void)
     int n_rx_once = 0;
     while (!*m_quit) {
         if (socketReady(rx_socket, 1)) {
-            unsigned char report[1500];
+            UINT8 report[1500];
             rx_len = sizeof(rx_addr);
             r = recvfrom(rx_socket, (char * ) report, sizeof(report), 0, (struct sockaddr *) &rx_addr, &rx_len);
             if (r > 0) {

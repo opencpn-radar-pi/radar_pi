@@ -641,6 +641,7 @@ void BR24ControlsDialog::OnAdvancedBackButtonClick(wxCommandEvent& event)
     topSizer->Hide(advancedBox);
     topSizer->Show(controlBox);
     advancedBox->Layout();
+    Fit();
     topSizer->Layout();
 }
 

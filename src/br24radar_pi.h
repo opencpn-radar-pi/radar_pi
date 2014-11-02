@@ -97,30 +97,30 @@ enum {
 #pragma pack(push,1)
 
 struct br24_header {
-    unsigned char headerLen;       //1 bytes
-    unsigned char status;          //1 bytes
-    unsigned char scan_number[2];  //2 bytes
-    unsigned char mark[4];         //4 bytes 0x00, 0x44, 0x0d, 0x0e
-    unsigned char angle[2];        //2 bytes
-    unsigned char u00[2];          //2 bytes blank
-    unsigned char range[4];        //4 bytes
-    unsigned char u01[2];          //2 bytes blank
-    unsigned char u02[2];          //2 bytes
-    unsigned char u03[4];          //4 bytes blank
+    UINT8 headerLen;       //1 bytes
+    UINT8 status;          //1 bytes
+    UINT8 scan_number[2];  //2 bytes
+    UINT8 mark[4];         //4 bytes 0x00, 0x44, 0x0d, 0x0e
+    UINT8 angle[2];        //2 bytes
+    UINT8 u00[2];          //2 bytes blank
+    UINT8 range[4];        //4 bytes
+    UINT8 u01[2];          //2 bytes blank
+    UINT8 u02[2];          //2 bytes
+    UINT8 u03[4];          //4 bytes blank
 }; /* total size = 24 */
 
 struct br4g_header {
-    unsigned char headerLen;       //1 bytes
-    unsigned char status;          //1 bytes
-    unsigned char scan_number[2];  //2 bytes
-    unsigned char u00[2];          //Always 0x4400 (integer)
-    unsigned char largerange[2];   //2 bytes or -1
-    unsigned char angle[2];        //2 bytes
-    unsigned char u01[2];          //Always 0x8000 = -1
-    unsigned char smallrange[2];   //2 bytes or -1
-    unsigned char rotation[2];     //2 bytes, looks like rotation/angle
-    unsigned char u02[4];          //4 bytes signed integer, always -1
-    unsigned char u03[4];          //4 bytes signed integer, mostly -1 (0x80 in last byte) or 0xa0 in last byte
+    UINT8 headerLen;       //1 bytes
+    UINT8 status;          //1 bytes
+    UINT8 scan_number[2];  //2 bytes
+    UINT8 u00[2];          //Always 0x4400 (integer)
+    UINT8 largerange[2];   //2 bytes or -1
+    UINT8 angle[2];        //2 bytes
+    UINT8 u01[2];          //Always 0x8000 = -1
+    UINT8 smallrange[2];   //2 bytes or -1
+    UINT8 rotation[2];     //2 bytes, looks like rotation/angle
+    UINT8 u02[4];          //4 bytes signed integer, always -1
+    UINT8 u03[4];          //4 bytes signed integer, mostly -1 (0x80 in last byte) or 0xa0 in last byte
 }; /* total size = 24 */
 
 struct radar_line {
@@ -128,7 +128,7 @@ struct radar_line {
         br24_header   br24;
         br4g_header   br4g;
     };
-    unsigned char data[512];
+    UINT8 data[512];
 };
 
 
@@ -138,8 +138,8 @@ struct radar_line {
  */
 
 struct radar_frame_pkt {
-    unsigned char   frame_hdr[8];
-    radar_line      line[120];    //  scan lines, or spokes
+    UINT8      frame_hdr[8];
+    radar_line line[120];    //  scan lines, or spokes
 };
 #pragma pack(pop)
 
@@ -228,7 +228,7 @@ struct scan_line {
     int range;                  // range of this scan line in decimeters
     wxDateTime age;             // how old this scan line is. We keep old scans on-screen for a while
     double heading;             // heading of boat at time of reception
-    GLubyte data[512];          // radar return strength
+    UINT8 data[512];          // radar return strength
 };
 
 //    Forward definitions
@@ -328,7 +328,7 @@ public:
     receive_statistics          m_statistics;
 
 private:
-    void TransmitCmd(char* msg, int size);
+    void TransmitCmd(UINT8 * msg, int size);
     void RadarTxOff(void);
     void RadarTxOn(void);
     void RadarStayAlive(void);
