@@ -428,7 +428,7 @@ public:
     void OnExit(void);
 
 private:
-    void ProcessIncomingCommand( char * command, int len );
+    void ProcessIncomingCommand( UINT8 * command, int len );
 
     br24radar_pi      *pPlugIn;
     wxString           m_ip;

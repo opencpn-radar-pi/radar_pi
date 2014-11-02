@@ -581,7 +581,7 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow* parent)
     m_pOptionsDialog->Show();
 }
 
-void logBinaryData(const wxString& what, const char * data, int size)
+void logBinaryData(const wxString& what, const UINT8 * data, int size)
 {
     wxString explain;
     int i;
@@ -592,7 +592,7 @@ void logBinaryData(const wxString& what, const char * data, int size)
     explain += wxString::Format(wxT(" %d bytes: "), size);
     for (i = 0; i < size; i++)
     {
-      explain += wxString::Format(wxT(" %02X"), (unsigned char) data[i]);
+      explain += wxString::Format(wxT(" %02X"), data[i]);
     }
     wxLogMessage(explain);
 }
@@ -927,14 +927,12 @@ void br24radar_pi::OnToolbarToolCallback(int id)
 {
     if (br_radar_state == RADAR_OFF) {  // turned off
         br_radar_state = RADAR_ON;
-        if (br_scanner_state == RADAR_OFF) {
-            settings.master_mode = true;
-            if (settings.verbose) {
-                wxLogMessage(wxT("BR24radar_pi: Master mode on"));
-            }
-            RadarStayAlive();
-            RadarTxOn();
+        settings.master_mode = true;
+        if (settings.verbose) {
+            wxLogMessage(wxT("BR24radar_pi: Master mode on"));
         }
+        RadarStayAlive();
+        RadarTxOn();
         ShowRadarControl();
     } else {
         br_radar_state = RADAR_OFF;
@@ -1669,7 +1667,7 @@ void br24radar_pi::TransmitCmd(char* msg, int size)
         wxLogMessage(wxT("BR24radar_pi: unable to transmit command to radar: %s\n"), SOCKETERRSTR);
         return;
     } else if (settings.verbose) {
-        logBinaryData(wxT("command"), msg, size);
+        logBinaryData(wxT("command"), (UINT8 *) msg, size);
     }
 };
 
@@ -2378,9 +2376,9 @@ void *RadarCommandReceiveThread::Entry(void)
     int n_rx_once = 0;
     while (!*m_quit) {
         if (socketReady(rx_socket, 1)) {
-            char command[1500];
+            unsigned char command[1500];
             rx_len = sizeof(rx_addr);
-            r = recvfrom(rx_socket, command, sizeof(command), 0, (struct sockaddr *) &rx_addr, &rx_len);
+            r = recvfrom(rx_socket, (char * ) command, sizeof(command), 0, (struct sockaddr *) &rx_addr, &rx_len);
             if (r > 0 && pPlugIn->settings.verbose) {
                 ProcessIncomingCommand(command, r);
             }
@@ -2391,16 +2389,73 @@ void *RadarCommandReceiveThread::Entry(void)
     return 0;
 }
 
-void RadarCommandReceiveThread::ProcessIncomingCommand( char * command, int len )
+//
+// The following is the received radar state. It sends this regularly
+// but especially after something sends it a state change.
+//
+#pragma pack(push,1)
+struct radar_state {
+    UINT8  what;    // 0x02
+    UINT8  command; // 0xC4
+    UINT16 field1;  // 0x06 0x09
+    UINT32 field2;  // 0
+    UINT32 field3;  // 1
+    UINT8  field4a;
+    UINT32 field4b;
+    UINT32 sea;
+    UINT32 field6a;
+    UINT32 field6b;
+    UINT32 field6c;
+    UINT8  field6d;
+    UINT32 rejection;
+    UINT32 field7;
+    UINT32 target_boost;
+    UINT32 field8;
+    UINT32 field9;
+    UINT32 field10;
+    UINT32 field11;
+    UINT32 field12;
+    UINT32 field13;
+    UINT32 field14;
+};
+#pragma pack(pop)
+
+void RadarCommandReceiveThread::ProcessIncomingCommand( UINT8 * command, int len )
 {
     static char prevStatus = 0;
 
-    if (len == 18 && command[0] == 0x01 && command[1] == (char) 0xC4) {
+    if (len == 18 && command[0] == 0x01 && command[1] == 0xC4) {
         // Radar status in byte 2
         if (command[2] != prevStatus) {
             wxLogMessage(wxT("br24radar_pi: radar status = %u"), command[2]);
             prevStatus = command[2];
         }
+    }
+    else if (len == 99 && command[0] == 0x02 && command[1] == 0xC4) {
+        radar_state * s = (radar_state *) command;
+        wxLogMessage(wxT("br24radar_pi: radar state f1=%u f2=%u f3=%u f4a=%u f4b=%u sea=%u f6a=%u f6b=%u f6c=%u f6d=%u rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
+            , s->field1
+            , s->field2
+            , s->field3
+            , s->field4a
+            , s->field4b
+            , s->sea
+            , s->field6a
+            , s->field6b
+            , s->field6c
+            , s->field6d
+            , s->rejection
+            , s->field7
+            , s->target_boost
+            , s->field8
+            , s->field9
+            , s->field10
+            , s->field11
+            , s->field12
+            , s->field13
+            , s->field14
+            );
+        logBinaryData(wxT("br24radar_pi: state"), command, len);
     }
     else {
         logBinaryData(wxT("br24radar_pi: received command"), command, len);
