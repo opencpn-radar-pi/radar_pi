@@ -650,6 +650,7 @@ void BR24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event)
     topSizer->Show(advancedBox);
     topSizer->Hide(controlBox);
     controlBox->Layout();
+    Fit();
     topSizer->Layout();
 }
 
