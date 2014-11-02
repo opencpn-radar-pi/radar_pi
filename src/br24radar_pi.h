@@ -160,7 +160,9 @@ typedef enum ControlType {
     CT_SEA,
     CT_RAIN,
     CT_TRANSPARENCY,
-    CT_REJECTION,
+    CT_INTERFERENCE_REJECTION,
+    CT_TARGET_SEPARATION,
+    CT_NOISE_REJECTION,
     CT_TARGET_BOOST,
     CT_SCAN_SPEED,
     CT_SCAN_AGE
@@ -197,7 +199,9 @@ struct radar_control_settings {
     int      guard_zone_threshold;  // How many blobs must be sent by radar before we fire alarm
     int      guard_zone_render_style;
     int      gain;
-    int      rejection;
+    int      interference_rejection;
+    int      target_separation;
+    int      noise_rejection;
     int      target_boost;
     int      filter_process;
     int      sea_clutter_gain;
@@ -678,7 +682,9 @@ private:
     // Advanced controls
     wxButton           *bAdvancedBack;
     RadarControlButton *bTransparency;
-    RadarControlButton *bRejection;
+    RadarControlButton *bInterferenceRejection;
+    RadarControlButton *bTargetSeparation;
+    RadarControlButton *bNoiseRejection;
     RadarControlButton *bTargetBoost;
     RadarControlButton *bScanSpeed;
     RadarControlButton *bScanAge;

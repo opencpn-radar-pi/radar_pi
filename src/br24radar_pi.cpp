@@ -1486,7 +1486,9 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("HeadingCorrection"),  &settings.heading_correction, 0);
             pConf->Read(wxT("Interface"), &settings.radar_interface, wxT("0.0.0.0"));
             pConf->Read(wxT("BeamWidth"), &settings.beam_width, 2);
-            pConf->Read(wxT("InterferenceRejection"), &settings.rejection, 0);
+            pConf->Read(wxT("InterferenceRejection"), &settings.interference_rejection, 0);
+            pConf->Read(wxT("TargetSeparation"), &settings.target_separation, 0);
+            pConf->Read(wxT("NoiseRejection"), &settings.noise_rejection, 0);
             pConf->Read(wxT("TargetBoost"), &settings.target_boost, 0);
             pConf->Read(wxT("ScanMaxAge"), &settings.max_age, 6);
             pConf->Read(wxT("DrawAlgorithm"), &settings.draw_algorithm, 1);
@@ -1576,7 +1578,9 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("HeadingCorrection"),  settings.heading_correction);
         pConf->Write(wxT("Interface"),  settings.radar_interface);
         pConf->Write(wxT("BeamWidth"),  settings.beam_width);
-        pConf->Write(wxT("InterferenceRejection"), settings.rejection);
+        pConf->Write(wxT("InterferenceRejection"), settings.interference_rejection);
+        pConf->Write(wxT("TargetSeparation"), settings.target_separation);
+        pConf->Write(wxT("NoiseRejection"), settings.noise_rejection);
         pConf->Write(wxT("TargetBoost"), settings.target_boost);
         pConf->Write(wxT("GuardZonesThreshold"), settings.guard_zone_threshold);
         pConf->Write(wxT("GuardZonesRenderStyle"), settings.guard_zone_render_style);
@@ -1827,15 +1831,41 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                     TransmitCmd(cmd, sizeof(cmd));
                     break;
                 }
-            case CT_REJECTION: {
-                settings.rejection = value;
+            case CT_INTERFERENCE_REJECTION: {
+                settings.interference_rejection = value;
                 char cmd[] = {
                     (byte)0x08,
                     (byte)0xc1,
-                    (char) settings.rejection
+                    (char) settings.interference_rejection
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Rejection: %d"), value);
+                }
+                TransmitCmd(cmd, sizeof(cmd));
+                break;
+            }
+            case CT_TARGET_SEPARATION: {
+                settings.target_separation = value;
+                char cmd[] = {
+                    (byte)0x22,
+                    (byte)0xc1,
+                    (char) value
+                };
+                if (settings.verbose) {
+                    wxLogMessage(wxT("BR24radar_pi: Target separation: %d"), value);
+                }
+                TransmitCmd(cmd, sizeof(cmd));
+                break;
+            }
+            case CT_NOISE_REJECTION: {
+                settings.noise_rejection = value;
+                char cmd[] = {
+                    (byte)0x21,
+                    (byte)0xc1,
+                    (char) settings.noise_rejection
+                };
+                if (settings.verbose) {
+                    wxLogMessage(wxT("BR24radar_pi: Noise rejection: %d"), value);
                 }
                 TransmitCmd(cmd, sizeof(cmd));
                 break;
