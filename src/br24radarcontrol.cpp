@@ -406,9 +406,13 @@ void BR24ControlsDialog::CreateControls()
     bPlus->SetFont(g_font);
 
     // The VALUE button
-    tValue = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(tValue, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
-    tValue->SetFont(g_font);
+    tValue = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, g_buttonSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    editBox->Add(tValue, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    wxFont fatFont = g_font;
+    fatFont.SetWeight(wxFONTWEIGHT_BOLD);
+    fatFont.SetPointSize(g_font.GetPointSize() + 1);
+    tValue->SetFont(fatFont);
+    tValue->SetBackgroundColour(*wxLIGHT_GREY);
 
     // The - button
     bMinus = new wxButton(this, ID_MINUS, _("-"), wxDefaultPosition, g_buttonSize, 0);
