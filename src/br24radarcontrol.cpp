@@ -470,6 +470,13 @@ void BR24ControlsDialog::CreateControls()
     bScanAge->minValue = 1;
     bScanAge->maxValue = 12;
 
+    if (pPlugIn->settings.verbose) {
+        // The Statistics button
+        tStatistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, g_buttonSize, 0);
+        advancedBox->Add(tStatistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
+        tStatistics->SetFont(*OCPNGetFont(_("Dialog"), 8));
+    }
+
     topSizer->Hide(advancedBox);
 
     //**************** CONTROL BOX ******************//

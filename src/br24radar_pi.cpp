@@ -111,7 +111,6 @@ long  br_display_interval(0);
 
 wxDateTime  watchdog;
 wxDateTime  br_dt_stayalive;
-int   br_scan_packets_per_tick;
 
 bool  br_bshown_dc_message;
 wxTextCtrl        *plogtc;
@@ -477,8 +476,10 @@ int br24radar_pi::Init(void)
 
     //    Create the THREAD for Multicast radar data reception
     m_quit = false;
-    m_receiveThread = new MulticastRXThread(this, &m_quit);
-    m_receiveThread->Run();
+    m_dataReceiveThread = new RadarDataReceiveThread(this, &m_quit);
+    m_dataReceiveThread->Run();
+    m_commandReceiveThread = new RadarCommandReceiveThread(this, &m_quit);
+    m_commandReceiveThread->Run();
 
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
@@ -497,11 +498,16 @@ int br24radar_pi::Init(void)
 bool br24radar_pi::DeInit(void)
 {
     SaveConfig();
+    m_quit = true; // Signal quit to any of the threads. Takes up to 1s.
 
-    if (m_receiveThread) {
-        m_quit = true;
-        m_receiveThread->Wait();
-        delete m_receiveThread;
+    if (m_dataReceiveThread) {
+        m_dataReceiveThread->Wait();
+        delete m_dataReceiveThread;
+    }
+
+    if (m_commandReceiveThread) {
+        m_commandReceiveThread->Wait();
+        delete m_commandReceiveThread;
     }
 
     if (m_radar_socket != INVALID_SOCKET) {
@@ -976,7 +982,7 @@ void br24radar_pi::DoTick(void)
     }
 #endif
 
-    if (br_scan_packets_per_tick > 0) { // Something coming from radar unit?
+    if (m_statistics.spokes > m_statistics.broken_spokes) { // Something coming from radar unit?
         br_scanner_state = RADAR_ON ;
         if (settings.master_mode) {
             delta_t = now.Subtract(br_dt_stayalive).GetSeconds().ToLong();
@@ -988,7 +994,24 @@ void br24radar_pi::DoTick(void)
     } else {
         br_scanner_state = RADAR_OFF;
     }
-    br_scan_packets_per_tick = 0;
+
+    
+    if (m_pControlDialog && m_pControlDialog->tStatistics && settings.verbose) {
+        wxString t;
+        t.Printf(wxT("pkt %d/%d\nspokes %d/%d/%d")
+                , m_statistics.packets
+                , m_statistics.broken_packets
+                , m_statistics.spokes
+                , m_statistics.broken_spokes
+                , m_statistics.missing_spokes);
+        m_pControlDialog->tStatistics->SetLabel(t);
+    }
+
+    m_statistics.broken_packets = 0;
+    m_statistics.broken_spokes  = 0;
+    m_statistics.missing_spokes = 0;
+    m_statistics.packets        = 0;
+    m_statistics.spokes         = 0;
 }
 
 void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay
@@ -1961,11 +1984,11 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
 
 // Ethernet packet stuff *************************************************************
 
-MulticastRXThread::~MulticastRXThread()
+RadarDataReceiveThread::~RadarDataReceiveThread()
 {
 }
 
-void MulticastRXThread::OnExit()
+void RadarDataReceiveThread::OnExit()
 {
 //  wxLogMessage(wxT("BR24radar_pi: radar thread is stopping."));
 }
@@ -2089,7 +2112,7 @@ static bool socketReady( SOCKET sockfd, int timeout )
     return r > 0;
 }
 
-void *MulticastRXThread::Entry(void)
+void *RadarDataReceiveThread::Entry(void)
 {
     wxString msg;
     SOCKET rx_socket;
@@ -2162,7 +2185,6 @@ void *MulticastRXThread::Entry(void)
                     }
                     n_rx_once++;
                 }
-                br_scan_packets_per_tick++;
                 process_buffer(&packet, r);
             }
         }
@@ -2183,21 +2205,42 @@ void *MulticastRXThread::Entry(void)
 //      Line Header - 24 bytes
 //      Line Data - 512 bytes
 //
-void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
+void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 {
+    static int next_scan_number = -1;
+    int scan_number;
+    pPlugIn->m_statistics.packets++;
+
     if (len < sizeof(packet->frame_hdr))
     {
+        pPlugIn->m_statistics.broken_packets++;
         return;
     }
     int scanlines_in_packet = (len - sizeof(packet->frame_hdr)) / sizeof(radar_line);
 
     if (scanlines_in_packet != 32) {
-        wxLogMessage(wxT("br24radar_pi: received strange packet with %d spokes"), scanlines_in_packet);
+        pPlugIn->m_statistics.broken_packets++;
     }
 
     for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
         radar_line * line = &packet->line[scanline];
 
+        // Validate the spoke
+        scan_number = line->br24.scan_number[0] + (line->br24.scan_number[1] << 8);
+        pPlugIn->m_statistics.spokes++;
+        if (line->br24.headerLen != 0x18 || line->br24.status != 0x02) {
+            pPlugIn->m_statistics.broken_spokes++;
+            continue;
+        }
+        if (next_scan_number >= 0 && scan_number != next_scan_number) {
+            if (scan_number > next_scan_number) {
+                pPlugIn->m_statistics.missing_spokes += scan_number - next_scan_number;
+            } else {
+                pPlugIn->m_statistics.missing_spokes += 4096 + scan_number - next_scan_number;
+            }
+        }
+        next_scan_number = (scan_number + 1) % LINES_PER_ROTATION;
+ 
         int range_raw = 0;
         int angle_raw;
 
@@ -2260,4 +2303,90 @@ void MulticastRXThread::process_buffer(radar_frame_pkt * packet, int len)
         pPlugIn->m_scan_line[angle_raw].age = 0;
         pPlugIn->m_scan_line[angle_raw].heading = br_hdt;
     }
+}
+
+
+RadarCommandReceiveThread::~RadarCommandReceiveThread()
+{
+}
+
+void RadarCommandReceiveThread::OnExit()
+{
+}
+
+void *RadarCommandReceiveThread::Entry(void)
+{
+    wxString msg;
+    SOCKET rx_socket;
+    struct sockaddr_in adr;
+    int one = 1;
+    int r = 0;
+
+    memset(&adr, 0, sizeof(adr));
+    adr.sin_family = AF_INET;
+    adr.sin_addr.s_addr=htonl(INADDR_ANY);
+    adr.sin_port=htons(6679);
+    rx_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (rx_socket == INVALID_SOCKET) {
+        r = -1;
+    }
+    else {
+        r = setsockopt(rx_socket, SOL_SOCKET, SO_REUSEADDR, (const char *) &one, sizeof(one));
+    }
+
+    if (!r)
+    {
+        r = bind(rx_socket, (struct sockaddr *) &adr, sizeof(adr));
+    }
+
+    if (r)
+    {
+        wxLogError(wxT("BR24radar_pi: Unable to create UDP receive socket"));
+        // Might as well give up now
+        if (rx_socket != INVALID_SOCKET) {
+            closesocket(rx_socket);
+        }
+        return 0;
+    }
+
+    // Subscribe rx_socket to a multicast group
+    struct in_addr recvAddr;
+
+    if (!my_inet_aton(pPlugIn->settings.radar_interface.mb_str().data(), &recvAddr)) {
+        wxLogError(wxT("Unable to determine address of %s"), pPlugIn->settings.radar_interface.mb_str().data());
+        closesocket(rx_socket);
+        return 0;
+    }
+
+    struct ip_mreq mreq;
+    // listen to 236.6.7.9 on interface identified by recvAddr.
+    mreq.imr_multiaddr.s_addr = htonl((236 << 24) | (6 << 16) | (7 << 8) | 9); // 236.6.7.9
+    mreq.imr_interface = recvAddr;
+
+    r = setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq));
+    if (r) {
+        wxLogError(wxT("Unable to listen to multicast group: %s"), SOCKETERRSTR);
+        closesocket(rx_socket);
+        return 0;
+    }
+
+    sockaddr_storage rx_addr;
+    socklen_t        rx_len;
+
+    wxLogMessage(wxT("Listening for commands"));
+    //    Loop until we quit
+    int n_rx_once = 0;
+    while (!*m_quit) {
+        if (socketReady(rx_socket, 1)) {
+            char command[1500];
+            rx_len = sizeof(rx_addr);
+            r = recvfrom(rx_socket, command, sizeof(command), 0, (struct sockaddr *) &rx_addr, &rx_len);
+            if (r > 0) {
+                logBinaryData(wxT("received command"), command, r);
+            }
+        }
+    }
+
+    closesocket(rx_socket);
+    return 0;
 }

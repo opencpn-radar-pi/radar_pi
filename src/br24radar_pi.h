@@ -97,7 +97,8 @@ enum {
 #pragma pack(push,1)
 
 struct br24_header {
-    unsigned char status[2];       //2 bytes
+    unsigned char headerLen;       //1 bytes
+    unsigned char status;          //1 bytes
     unsigned char scan_number[2];  //2 bytes
     unsigned char mark[4];         //4 bytes 0x00, 0x44, 0x0d, 0x0e
     unsigned char angle[2];        //2 bytes
@@ -109,7 +110,8 @@ struct br24_header {
 }; /* total size = 24 */
 
 struct br4g_header {
-    unsigned char status[2];       //2 bytes
+    unsigned char headerLen;       //1 bytes
+    unsigned char status;          //1 bytes
     unsigned char scan_number[2];  //2 bytes
     unsigned char u00[2];          //Always 0x4400 (integer)
     unsigned char largerange[2];   //2 bytes or -1
@@ -140,6 +142,14 @@ struct radar_frame_pkt {
     radar_line      line[120];    //  scan lines, or spokes
 };
 #pragma pack(pop)
+
+struct receive_statistics {
+    int packets;
+    int broken_packets;
+    int spokes;
+    int broken_spokes;
+    int missing_spokes;
+};
 
 static wxFont g_font;
 static wxSize g_buttonSize;
@@ -218,7 +228,8 @@ struct scan_line {
 };
 
 //    Forward definitions
-class MulticastRXThread;
+class RadarDataReceiveThread;
+class RadarCommandReceiveThread;
 class BR24ControlsDialog;
 class GuardZoneDialog;
 class GuardZoneBogey;
@@ -309,6 +320,7 @@ public:
     BR24ControlsDialog       *m_pControlDialog;
     GuardZoneDialog          *m_pGuardZoneDialog;
     GuardZoneBogey           *m_pGuardZoneBogey;
+    receive_statistics          m_statistics;
 
 private:
     void TransmitCmd(char* msg, int size);
@@ -342,7 +354,8 @@ private:
     //    Controls added to Preferences panel
     wxCheckBox               *m_pShowIcon;
 
-    MulticastRXThread        *m_receiveThread;
+    RadarDataReceiveThread   *m_dataReceiveThread;
+    RadarCommandReceiveThread *m_commandReceiveThread;
 
     SOCKET                    m_radar_socket;
 
@@ -367,15 +380,14 @@ private:
     NMEA0183                  m_NMEA0183;
 
     double                    llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
-
 };
 
-class MulticastRXThread: public wxThread
+class RadarDataReceiveThread: public wxThread
 {
 
 public:
 
-    MulticastRXThread(br24radar_pi *ppi, volatile bool * quit)
+    RadarDataReceiveThread(br24radar_pi *ppi, volatile bool * quit)
     : wxThread(wxTHREAD_JOINABLE)
     , pPlugIn(ppi)
     , m_quit(quit)
@@ -384,7 +396,7 @@ public:
       Create(1024 * 1024);
     };
 
-    ~MulticastRXThread(void);
+    ~RadarDataReceiveThread(void);
     void *Entry(void);
 
     void OnExit(void);
@@ -392,6 +404,30 @@ public:
 private:
     void process_buffer(radar_frame_pkt * packet, int len);
 
+    br24radar_pi      *pPlugIn;
+    wxString           m_ip;
+    volatile bool    * m_quit;
+    wxIPV4address      m_myaddr;
+};
+
+class RadarCommandReceiveThread: public wxThread
+{
+
+public:
+
+    RadarCommandReceiveThread(br24radar_pi *ppi, volatile bool * quit)
+    : wxThread(wxTHREAD_JOINABLE)
+    , pPlugIn(ppi)
+    , m_quit(quit)
+    {
+      Create(64 * 1024);
+    };
+
+    ~RadarCommandReceiveThread(void);
+    void *Entry(void);
+    void OnExit(void);
+
+private:
     br24radar_pi      *pPlugIn;
     wxString           m_ip;
     volatile bool    * m_quit;
@@ -561,6 +597,8 @@ public:
     void SetRangeIndex(size_t index);
     void SetAutoRangeIndex(size_t index);
     void UpdateGuardZoneState();
+
+    wxStaticText       *tStatistics;
 
 private:
     void OnClose(wxCloseEvent& event);
