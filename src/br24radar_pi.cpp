@@ -2381,7 +2381,7 @@ void *RadarCommandReceiveThread::Entry(void)
             char command[1500];
             rx_len = sizeof(rx_addr);
             r = recvfrom(rx_socket, command, sizeof(command), 0, (struct sockaddr *) &rx_addr, &rx_len);
-            if (r > 0) {
+            if (r > 0 && pPlugIn->settings.verbose) {
                 logBinaryData(wxT("received command"), command, r);
             }
         }
