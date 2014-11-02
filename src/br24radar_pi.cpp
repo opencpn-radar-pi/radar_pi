@@ -2382,11 +2382,27 @@ void *RadarCommandReceiveThread::Entry(void)
             rx_len = sizeof(rx_addr);
             r = recvfrom(rx_socket, command, sizeof(command), 0, (struct sockaddr *) &rx_addr, &rx_len);
             if (r > 0 && pPlugIn->settings.verbose) {
-                logBinaryData(wxT("received command"), command, r);
+                ProcessIncomingCommand(command, r);
             }
         }
     }
 
     closesocket(rx_socket);
     return 0;
+}
+
+void RadarCommandReceiveThread::ProcessIncomingCommand( char * command, int len )
+{
+    static char prevStatus = 0;
+
+    if (len == 18 && command[0] == 0x01 && command[1] == (char) 0xC4) {
+        // Radar status in byte 2
+        if (command[2] != prevStatus) {
+            wxLogMessage(wxT("br24radar_pi: radar status = %u"), command[2]);
+            prevStatus = command[2];
+        }
+    }
+    else {
+        logBinaryData(wxT("br24radar_pi: received command"), command, len);
+    }
 }
