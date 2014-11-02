@@ -222,7 +222,7 @@ struct guard_zone_settings {
 
 struct scan_line {
     int range;                  // range of this scan line in decimeters
-    int age;                    // how old this scan line is. We keep old scans on-screen for a while
+    wxDateTime age;             // how old this scan line is. We keep old scans on-screen for a while
     double heading;             // heading of boat at time of reception
     GLubyte data[512];          // radar return strength
 };

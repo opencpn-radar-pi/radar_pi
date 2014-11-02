@@ -124,6 +124,8 @@ wxString    RadarAlertAudioFile;
 bool        guard_bogey_confirmed = false;
 wxDateTime  alarm_sound_last;
 
+static wxCriticalSection br_scanLock;
+
 // the class factories, used to create and destroy instances of the PlugIn
 
 extern "C" DECL_EXP opencpn_plugin* create_pi(void *ppimgr)
@@ -408,9 +410,10 @@ int br24radar_pi::Init(void)
 
     //    And load the configuration items
     LoadConfig();
-
+    
+    wxDateTime now = wxDateTime::UNow();
     for (int i = 0; i < LINES_PER_ROTATION; i++) {
-        m_scan_line[i].age = settings.max_age + 1;
+        m_scan_line[i].age = now;
         m_scan_line[i].range = 0;
     }
 
@@ -1059,9 +1062,9 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 {
     br_bshown_dc_message = 0;             // show message box if RenderOverlay() is called again
-    wxString msg;
 
     // this is expected to be called at least once per second
+    // but if we are scrolling or otherwise it can be MUCH more often!
 
     DoTick(); // update timers and watchdogs
 
@@ -1179,6 +1182,8 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 {
+    wxDateTime now = wxDateTime::UNow();
+
     int bogey_count[GUARD_ZONES];
 
     memset(&bogey_count, 0, sizeof(bogey_count));
@@ -1187,13 +1192,15 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     const double spokeWidthDeg = 360.0 / LINES_PER_ROTATION;
     const double spokeWidthRad = deg2rad(spokeWidthDeg); // How wide is one spoke?
 
+    wxCriticalSectionLocker locker(br_scanLock);
+
     for (unsigned int angle = 0 ; angle < LINES_PER_ROTATION; ++angle) {
         scan_line * scan = &m_scan_line[angle];
 
-        if (scan->age >= settings.max_age) {
+        wxTimeSpan diff = now - scan->age;
+        if (diff.GetMilliseconds() >= settings.max_age * 1000) {
             continue;   // Old data, don't show
         }
-        scan->age++;
         GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
         /*
         if (scan->age > 1 && settings.max_age > 0) {
@@ -1214,7 +1221,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             do {
                 previousAngle = (previousAngle - 1) % LINES_PER_ROTATION;
                 spokes++;
-            } while (m_scan_line[previousAngle].age >= settings.max_age);
+            } while ((now - m_scan_line[previousAngle].age).GetMilliseconds() >= settings.max_age * 1000);
             arc_width *= spokes;
             angleRad -= (spokes - 1) * spokeWidthRad / 2.0;
             if (spokes > 3 && settings.verbose) {
@@ -1301,8 +1308,10 @@ void br24radar_pi::RenderSpectrum(wxPoint radar_center, double v_scale_ppm, Plug
 
     memset(&scan_distribution[0], 0, 255);
 
+    wxCriticalSectionLocker locker(br_scanLock);
+
     for (int angle = 0 ; angle < LINES_PER_ROTATION ; angle++) {
-        if (m_scan_line[angle].range != 0 && m_scan_line[angle].age <= 1) {
+        if (m_scan_line[angle].range != 0 ) {
             for (int radius = 1; radius < 510; ++radius) {
                 alpha = m_scan_line[angle].data[radius];
                 if (alpha > 0 && alpha < 255) {
@@ -2214,6 +2223,10 @@ void *RadarDataReceiveThread::Entry(void)
 //
 void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 {
+    wxDateTime now = wxDateTime::Now();
+
+    wxCriticalSectionLocker locker(br_scanLock);
+
     static int next_scan_number = -1;
     int scan_number;
     pPlugIn->m_statistics.packets++;
@@ -2307,7 +2320,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         dest_data1[511] = (byte)0xff;
 
         pPlugIn->m_scan_line[angle_raw].range = range_meters;
-        pPlugIn->m_scan_line[angle_raw].age = 0;
+        pPlugIn->m_scan_line[angle_raw].age = now;
         pPlugIn->m_scan_line[angle_raw].heading = br_hdt;
     }
 }
