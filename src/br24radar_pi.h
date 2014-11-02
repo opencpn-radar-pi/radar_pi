@@ -152,6 +152,7 @@ typedef enum ControlType {
     CT_TRANSPARENCY,
     CT_REJECTION,
     CT_TARGET_BOOST,
+    CT_SCAN_SPEED,
     CT_SCAN_AGE
 } ControlType;
 
@@ -198,6 +199,7 @@ struct radar_control_settings {
     int      beam_width;
     int      max_age;
     int      draw_algorithm;
+    int      scan_speed;
 };
 
 struct guard_zone_settings {
@@ -612,6 +614,7 @@ private:
     RadarControlButton *bTransparency;
     RadarControlButton *bRejection;
     RadarControlButton *bTargetBoost;
+    RadarControlButton *bScanSpeed;
     RadarControlButton *bScanAge;
 
     // Show Controls

@@ -69,6 +69,7 @@ enum {                                      // process ID's
     ID_TRANSPARENCY,
     ID_REJECTION,
     ID_TARGET_BOOST,
+    ID_SCAN_SPEED,
     ID_SCAN_AGE,
 
     ID_RANGE,
@@ -100,6 +101,7 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
     EVT_BUTTON(ID_TRANSPARENCY, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_TARGET_BOOST, BR24ControlsDialog::OnRadarControlButtonClick)
+    EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
 
     EVT_BUTTON(ID_RANGE, BR24ControlsDialog::OnRadarControlButtonClick)
@@ -207,6 +209,7 @@ static const int g_range_maxValue[2] = { MILE_RANGE_COUNT, METRIC_RANGE_COUNT };
 
 static const wxString g_rejection_names[4]    = { wxT("Off"), wxT("Low"), wxT("Medium"), wxT("High") };
 static const wxString g_target_boost_names[3] = { wxT("Off"), wxT("Low"), wxT("High") };
+static const wxString g_scan_speed_names[2]   = { wxT("Normal"), wxT("Fast") };
 
 extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
 {
@@ -452,6 +455,14 @@ void BR24ControlsDialog::CreateControls()
     bTargetBoost->maxValue = ARRAY_SIZE(g_target_boost_names) - 1;
     bTargetBoost->names = g_target_boost_names;
     bTargetBoost->SetValue(pPlugIn->settings.target_boost); // redraw after adding names
+    
+    // The SCAN SPEED button
+    bScanSpeed = new RadarControlButton(this, ID_SCAN_SPEED, _("Scan Speed"), pPlugIn, CT_SCAN_SPEED, false, pPlugIn->settings.scan_speed);
+    advancedBox->Add(bScanSpeed, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bScanSpeed->minValue = 0;
+    bScanSpeed->maxValue = ARRAY_SIZE(g_scan_speed_names) - 1;
+    bScanSpeed->names = g_scan_speed_names;
+    bScanSpeed->SetValue(pPlugIn->settings.scan_speed); // redraw after adding names
 
         // The SCAN AGE button
     bScanAge = new RadarControlButton(this, ID_SCAN_AGE, _("Scan Age"), pPlugIn, CT_SCAN_AGE, false, pPlugIn->settings.max_age);

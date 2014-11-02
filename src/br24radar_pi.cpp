@@ -1453,6 +1453,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("DrawAlgorithm"), &settings.draw_algorithm, 1);
             pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
             pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
+            pConf->Read(wxT("ScanSpeed"), &settings.scan_speed, 0);
 
             pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
             pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
@@ -1542,6 +1543,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("GuardZonesRenderStyle"), settings.guard_zone_render_style);
         pConf->Write(wxT("ScanMaxAge"), settings.max_age);
         pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
+        pConf->Write(wxT("ScanSpeed"), settings.scan_speed);
 
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
         pConf->Write(wxT("ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
@@ -1808,6 +1810,19 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("Target boost: %d"), value);
+                }
+                TransmitCmd(cmd, sizeof(cmd));
+                break;
+            }
+            case CT_SCAN_SPEED: {
+                settings.scan_speed = value;
+                char cmd[] = {
+                    (byte)0x0f,
+                    (byte)0xc1,
+                    (char) value
+                };
+                if (settings.verbose) {
+                    wxLogMessage(wxT("Scan speed: %d"), value);
                 }
                 TransmitCmd(cmd, sizeof(cmd));
                 break;
