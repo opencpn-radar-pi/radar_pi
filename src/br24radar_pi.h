@@ -230,6 +230,7 @@ struct scan_line {
 //    Forward definitions
 class RadarDataReceiveThread;
 class RadarCommandReceiveThread;
+class RadarReportReceiveThread;
 class BR24ControlsDialog;
 class GuardZoneDialog;
 class GuardZoneBogey;
@@ -356,6 +357,7 @@ private:
 
     RadarDataReceiveThread   *m_dataReceiveThread;
     RadarCommandReceiveThread *m_commandReceiveThread;
+    RadarReportReceiveThread *m_reportReceiveThread;
 
     SOCKET                    m_radar_socket;
 
@@ -428,7 +430,31 @@ public:
     void OnExit(void);
 
 private:
-    void ProcessIncomingCommand( UINT8 * command, int len );
+    br24radar_pi      *pPlugIn;
+    wxString           m_ip;
+    volatile bool    * m_quit;
+    wxIPV4address      m_myaddr;
+};
+
+class RadarReportReceiveThread: public wxThread
+{
+
+public:
+
+    RadarReportReceiveThread(br24radar_pi *ppi, volatile bool * quit)
+    : wxThread(wxTHREAD_JOINABLE)
+    , pPlugIn(ppi)
+    , m_quit(quit)
+    {
+      Create(64 * 1024);
+    };
+
+    ~RadarReportReceiveThread(void);
+    void *Entry(void);
+    void OnExit(void);
+
+private:
+    void ProcessIncomingReport( UINT8 * command, int len );
 
     br24radar_pi      *pPlugIn;
     wxString           m_ip;

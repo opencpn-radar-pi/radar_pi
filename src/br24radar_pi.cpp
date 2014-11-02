@@ -478,8 +478,12 @@ int br24radar_pi::Init(void)
     m_quit = false;
     m_dataReceiveThread = new RadarDataReceiveThread(this, &m_quit);
     m_dataReceiveThread->Run();
-    m_commandReceiveThread = new RadarCommandReceiveThread(this, &m_quit);
-    m_commandReceiveThread->Run();
+    if (settings.verbose) {
+        m_commandReceiveThread = new RadarCommandReceiveThread(this, &m_quit);
+        m_commandReceiveThread->Run();
+        m_reportReceiveThread = new RadarReportReceiveThread(this, &m_quit);
+        m_reportReceiveThread->Run();
+    }
 
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
@@ -508,6 +512,11 @@ bool br24radar_pi::DeInit(void)
     if (m_commandReceiveThread) {
         m_commandReceiveThread->Wait();
         delete m_commandReceiveThread;
+    }
+
+    if (m_reportReceiveThread) {
+        m_reportReceiveThread->Wait();
+        delete m_reportReceiveThread;
     }
 
     if (m_radar_socket != INVALID_SOCKET) {
@@ -2323,6 +2332,92 @@ void *RadarCommandReceiveThread::Entry(void)
     memset(&adr, 0, sizeof(adr));
     adr.sin_family = AF_INET;
     adr.sin_addr.s_addr=htonl(INADDR_ANY);
+    adr.sin_port=htons(6680);
+    rx_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (rx_socket == INVALID_SOCKET) {
+        r = -1;
+    }
+    else {
+        r = setsockopt(rx_socket, SOL_SOCKET, SO_REUSEADDR, (const char *) &one, sizeof(one));
+    }
+
+    if (!r)
+    {
+        r = bind(rx_socket, (struct sockaddr *) &adr, sizeof(adr));
+    }
+
+    if (r)
+    {
+        wxLogError(wxT("BR24radar_pi: Unable to create UDP receive socket"));
+        // Might as well give up now
+        if (rx_socket != INVALID_SOCKET) {
+            closesocket(rx_socket);
+        }
+        return 0;
+    }
+
+    // Subscribe rx_socket to a multicast group
+    struct in_addr recvAddr;
+
+    if (!my_inet_aton(pPlugIn->settings.radar_interface.mb_str().data(), &recvAddr)) {
+        wxLogError(wxT("Unable to determine address of %s"), pPlugIn->settings.radar_interface.mb_str().data());
+        closesocket(rx_socket);
+        return 0;
+    }
+
+    struct ip_mreq mreq;
+    // listen to 236.6.7.10 on interface identified by recvAddr.
+    mreq.imr_multiaddr.s_addr = htonl((236 << 24) | (6 << 16) | (7 << 8) | 10); // 236.6.7.10
+    mreq.imr_interface = recvAddr;
+
+    r = setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq));
+    if (r) {
+        wxLogError(wxT("Unable to listen to multicast group: %s"), SOCKETERRSTR);
+        closesocket(rx_socket);
+        return 0;
+    }
+
+    sockaddr_storage rx_addr;
+    socklen_t        rx_len;
+
+    wxLogMessage(wxT("Listening for commands"));
+    //    Loop until we quit
+    int n_rx_once = 0;
+    while (!*m_quit) {
+        if (socketReady(rx_socket, 1)) {
+            unsigned char command[1500];
+            rx_len = sizeof(rx_addr);
+            r = recvfrom(rx_socket, (char * ) command, sizeof(command), 0, (struct sockaddr *) &rx_addr, &rx_len);
+            if (r > 0) {
+                logBinaryData(wxT("br24radar_pi: received command"), command, r);
+            }
+        }
+    }
+
+    closesocket(rx_socket);
+    return 0;
+}
+
+
+RadarReportReceiveThread::~RadarReportReceiveThread()
+{
+}
+
+void RadarReportReceiveThread::OnExit()
+{
+}
+
+void *RadarReportReceiveThread::Entry(void)
+{
+    wxString msg;
+    SOCKET rx_socket;
+    struct sockaddr_in adr;
+    int one = 1;
+    int r = 0;
+
+    memset(&adr, 0, sizeof(adr));
+    adr.sin_family = AF_INET;
+    adr.sin_addr.s_addr=htonl(INADDR_ANY);
     adr.sin_port=htons(6679);
     rx_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (rx_socket == INVALID_SOCKET) {
@@ -2371,7 +2466,7 @@ void *RadarCommandReceiveThread::Entry(void)
     sockaddr_storage rx_addr;
     socklen_t        rx_len;
 
-    wxLogMessage(wxT("Listening for commands"));
+    wxLogMessage(wxT("Listening for reports"));
     //    Loop until we quit
     int n_rx_once = 0;
     while (!*m_quit) {
@@ -2379,8 +2474,8 @@ void *RadarCommandReceiveThread::Entry(void)
             unsigned char command[1500];
             rx_len = sizeof(rx_addr);
             r = recvfrom(rx_socket, (char * ) command, sizeof(command), 0, (struct sockaddr *) &rx_addr, &rx_len);
-            if (r > 0 && pPlugIn->settings.verbose) {
-                ProcessIncomingCommand(command, r);
+            if (r > 0) {
+                ProcessIncomingReport(command, r);
             }
         }
     }
@@ -2420,7 +2515,7 @@ struct radar_state {
 };
 #pragma pack(pop)
 
-void RadarCommandReceiveThread::ProcessIncomingCommand( UINT8 * command, int len )
+void RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 {
     static char prevStatus = 0;
 
@@ -2458,6 +2553,6 @@ void RadarCommandReceiveThread::ProcessIncomingCommand( UINT8 * command, int len
         logBinaryData(wxT("br24radar_pi: state"), command, len);
     }
     else {
-        logBinaryData(wxT("br24radar_pi: received command"), command, len);
+        logBinaryData(wxT("br24radar_pi: received report"), command, len);
     }
 }
