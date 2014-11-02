@@ -67,10 +67,11 @@ enum {                                      // process ID's
 
     ID_ADVANCED_BACK,
     ID_TRANSPARENCY,
-    ID_REJECTION,
+    ID_INTERFERENCE_REJECTION,
     ID_TARGET_BOOST,
-    ID_SCAN_SPEED,
+    ID_NOISE_REJECTION,
     ID_TARGET_SEPARATION,
+    ID_SCAN_SPEED,
     ID_SCAN_AGE,
 
     ID_RANGE,
@@ -100,8 +101,9 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
 
     EVT_BUTTON(ID_ADVANCED_BACK,  BR24ControlsDialog::OnAdvancedBackButtonClick)
     EVT_BUTTON(ID_TRANSPARENCY, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
+    EVT_BUTTON(ID_INTERFERENCE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_TARGET_BOOST, BR24ControlsDialog::OnRadarControlButtonClick)
+    EVT_BUTTON(ID_NOISE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_TARGET_SEPARATION, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
@@ -449,7 +451,7 @@ void BR24ControlsDialog::CreateControls()
     bTransparency->maxValue = MAX_OVERLAY_TRANSPARENCY;
 
     // The REJECTION button
-    bInterferenceRejection = new RadarControlButton(this, ID_REJECTION, _("Interf. Rej"), pPlugIn, CT_INTERFERENCE_REJECTION, false, pPlugIn->settings.interference_rejection);
+    bInterferenceRejection = new RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interf. Rej"), pPlugIn, CT_INTERFERENCE_REJECTION, false, pPlugIn->settings.interference_rejection);
     advancedBox->Add(bInterferenceRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bInterferenceRejection->minValue = 0;
     bInterferenceRejection->maxValue = ARRAY_SIZE(g_interference_rejection_names) - 1;
@@ -465,7 +467,7 @@ void BR24ControlsDialog::CreateControls()
     bTargetSeparation->SetValue(pPlugIn->settings.target_separation); // redraw after adding names
 
     // The NOISE REJECTION button
-    bNoiseRejection = new RadarControlButton(this, ID_REJECTION, _("Noise Rej."), pPlugIn, CT_NOISE_REJECTION, false, pPlugIn->settings.noise_rejection);
+    bNoiseRejection = new RadarControlButton(this, ID_NOISE_REJECTION, _("Noise Rej"), pPlugIn, CT_NOISE_REJECTION, false, pPlugIn->settings.noise_rejection);
     advancedBox->Add(bNoiseRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bNoiseRejection->minValue = 0;
     bNoiseRejection->maxValue = ARRAY_SIZE(g_noise_rejection_names) - 1;
