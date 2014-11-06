@@ -75,14 +75,16 @@
 # define closesocket(fd) close(fd)
 #endif
 
-#ifndef UINT8
-# define UINT8 uint8_t
-#endif
-#ifndef UINT16
-# define UINT16 uint16_t
-#endif
-#ifndef UINT32
-# define UINT32 uint32_t
+#ifndef __WXMSW__
+# ifndef UINT8
+#  define UINT8 uint8_t
+# endif
+# ifndef UINT16
+#  define UINT16 uint16_t
+# endif
+# ifndef UINT32
+#  define UINT32 uint32_t
+# endif
 #endif
 
 # define ARRAY_SIZE(x)   (sizeof(x)/sizeof(x[0]))

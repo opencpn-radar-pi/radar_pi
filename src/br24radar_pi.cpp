@@ -2435,7 +2435,7 @@ void *RadarCommandReceiveThread::Entry(void)
                 wxString s;
 
                 if (rx_addr.addr.ss_family == AF_INET) {
-                    uint8_t * a = (uint8_t *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
+                    UINT8 * a = (UINT8 *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
 
                     s.Printf(wxT("%u.%u.%u.%u sent command"), a[0] , a[1] , a[2] , a[3]);
                 } else {
