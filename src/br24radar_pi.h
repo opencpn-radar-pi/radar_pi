@@ -343,6 +343,7 @@ private:
     void TransmitCmd(UINT8 * msg, int size);
     void RadarTxOff(void);
     void RadarTxOn(void);
+    void RadarSendState(void);
     void RadarStayAlive(void);
     void UpdateState(void);
     void DoTick(void);
@@ -560,9 +561,6 @@ public:
         this->SetFont(g_font);
     }
 
-    // Set a new value, if it is in range. If not the value is ignored.
-    // Computes a new label and a new technicalValue
-    // The default conversion is technicalValue = (int) ((double) value * 255.0 / 100.0)
     virtual void SetValue(int value);
     virtual void SetAuto();
 
@@ -570,7 +568,6 @@ public:
 
     wxString   firstLine;
 
-    int        technicalValue; // value converted to what system needs
     br24radar_pi *pPlugIn;
 
     int        value;

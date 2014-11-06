@@ -276,8 +276,7 @@ void RadarControlButton::SetAuto()
 
     isAuto = true;
 
-    technicalValue = -1;
-    pPlugIn->SetControlValue(controlType, technicalValue);
+    pPlugIn->SetControlValue(controlType, -1);
 }
 
 int RadarRangeControlButton::SetValueInt(int newValue)

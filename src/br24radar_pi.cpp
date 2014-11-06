@@ -101,6 +101,7 @@ int previous_auto_range_meters = 0;
 
 int   br_radar_state;
 int   br_scanner_state;
+bool  br_send_state;
 RadarType br_radar_type = RT_BR24;
 
 long  br_display_interval(0);
@@ -819,10 +820,12 @@ void br24radar_pi::ShowRadarControl()
         m_pControlDialog = new BR24ControlsDialog;
         m_pControlDialog->Create(m_parent_window, this);
 
-        int range = auto_range_meters;
-        m_pControlDialog->SetAutoRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
-        if (br_range_meters) {
-            range = br_range_meters;
+        if (settings.auto_range_mode) {
+            int range = auto_range_meters;
+            m_pControlDialog->SetAutoRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
+        }
+        else if (br_range_meters) {
+            int range = br_range_meters;
             m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
         }
     }
@@ -943,6 +946,8 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         }
         RadarStayAlive();
         RadarTxOn();
+        RadarSendState();
+        br_send_state = true; // Send state again as soon as we get any data
         ShowRadarControl();
     } else {
         br_radar_state = RADAR_OFF;
@@ -997,6 +1002,10 @@ void br24radar_pi::DoTick(void)
             if (delta_t > 5) {
                 br_dt_stayalive = now;
                 RadarStayAlive();
+            }
+            if (br_send_state) {
+                RadarSendState();
+                br_send_state = false;
             }
         }
     } else {
@@ -1721,6 +1730,21 @@ void br24radar_pi::RadarStayAlive(void)
     }
 }
 
+void br24radar_pi::RadarSendState(void)
+{
+    if (settings.auto_range_mode) {
+        SetRangeMeters(auto_range_meters);
+    }
+    SetControlValue(CT_GAIN, settings.gain);
+    SetControlValue(CT_RAIN, settings.rain_clutter_gain);
+    SetControlValue(CT_SEA, settings.sea_clutter_gain);
+    SetControlValue(CT_INTERFERENCE_REJECTION, settings.interference_rejection);
+    SetControlValue(CT_TARGET_SEPARATION, settings.target_separation);
+    SetControlValue(CT_NOISE_REJECTION, settings.noise_rejection);
+    SetControlValue(CT_TARGET_BOOST, settings.target_boost);
+    SetControlValue(CT_SCAN_SPEED, settings.scan_speed);
+}
+
 void br24radar_pi::SetRangeMeters(long meters)
 {
     if (settings.master_mode) {
@@ -1748,6 +1772,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
     if (settings.master_mode || controlType == CT_TRANSPARENCY || controlType == CT_SCAN_AGE) {
         switch (controlType) {
             case CT_GAIN: {
+                settings.gain = value;
                 if (value < 0) {                // AUTO gain
                     UINT8 cmd[] = {
                         0x06,
@@ -1759,7 +1784,6 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                         wxLogMessage(wxT("BR24radar_pi: Gain: Auto"));
                     }
                     TransmitCmd(cmd, sizeof(cmd));
-                    break;
                 } else {                        // Manual Gain
                     int v = value * 255 / 100;
                     if (v > 255) {
@@ -1775,10 +1799,11 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                         wxLogMessage(wxT("BR24radar_pi: Gain: %d"), value);
                     }
                     TransmitCmd(cmd, sizeof(cmd));
-                    break;
                 }
+                break;
             }
             case CT_RAIN: {                       // Rain Clutter - Manual. Range is 0x01 to 0x50
+                settings.rain_clutter_gain = value;
                 int v = value * 0x50 / 100;
                 if (v > 255) {
                     v = 255;
@@ -1798,6 +1823,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             case CT_SEA: {
+                settings.sea_clutter_gain = value;
                 if (value < 0) {                 // Sea Clutter - Auto
                     UINT8 cmd[11] = {
                         0x06,
@@ -1810,7 +1836,6 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                         wxLogMessage(wxT("BR24radar_pi: Sea: Auto"));
                     }
                     TransmitCmd(cmd, sizeof(cmd));
-                    break;
                 } else {                       // Sea Clutter
                     int v = value * 255 / 100;
                     if (v > 255) {
@@ -1827,8 +1852,9 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                         wxLogMessage(wxT("BR24radar_pi: Sea: %d"), value);
                     }
                     TransmitCmd(cmd, sizeof(cmd));
-                    break;
                 }
+                break;
+            }
             case CT_INTERFERENCE_REJECTION: {
                 settings.interference_rejection = value;
                 UINT8 cmd[] = {
@@ -1905,7 +1931,6 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
             default: {
                 wxLogMessage(wxT("BR24radar_pi: Unhandled control setting for control %d"), controlType);
             }
-            };
         }
     }
     else
