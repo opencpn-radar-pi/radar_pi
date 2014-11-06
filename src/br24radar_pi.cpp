@@ -464,6 +464,8 @@ int br24radar_pi::Init(void)
     pmi->SetFont(*qFont);
 #endif
     int miid = AddCanvasContextMenuItem(pmi, this);
+    SetCanvasContextMenuItemViz(miid, true);
+
 
     wxMenuItem *pmi2 = new wxMenuItem(m_pmenu, -1, _("Set Guard Point"));
 #ifdef __WXMSW__
@@ -2424,7 +2426,6 @@ void *RadarCommandReceiveThread::Entry(void)
 
     wxLogMessage(wxT("BR24radar_pi: Listening for commands"));
     //    Loop until we quit
-    int n_rx_once = 0;
     while (!*m_quit) {
         if (socketReady(rx_socket, 1)) {
             UINT8 command[1500];
@@ -2434,12 +2435,9 @@ void *RadarCommandReceiveThread::Entry(void)
                 wxString s;
 
                 if (rx_addr.addr.ss_family == AF_INET) {
-                    s.Printf(wxT("%u.%u.%u.%u sent command")
-                        , rx_addr.ipv4.sin_addr.S_un.S_un_b.s_b1
-                        , rx_addr.ipv4.sin_addr.S_un.S_un_b.s_b2
-                        , rx_addr.ipv4.sin_addr.S_un.S_un_b.s_b3
-                        , rx_addr.ipv4.sin_addr.S_un.S_un_b.s_b4
-                        );
+                    uint8_t * a = (uint8_t *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
+
+                    s.Printf(wxT("%u.%u.%u.%u sent command"), a[0] , a[1] , a[2] , a[3]);
                 } else {
                     s = wxT("non-IPV4 sent command");
                 }
