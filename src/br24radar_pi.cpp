@@ -120,7 +120,7 @@ wxString    RadarAlertAudioFile;
 bool        guard_bogey_confirmed = false;
 wxDateTime  alarm_sound_last;
 
-static wxCriticalSection br_scanLock;
+// static wxCriticalSection br_scanLock;
 
 // the class factories, used to create and destroy instances of the PlugIn
 
@@ -1190,7 +1190,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     const double spokeWidthDeg = 360.0 / LINES_PER_ROTATION;
     const double spokeWidthRad = deg2rad(spokeWidthDeg); // How wide is one spoke?
 
-    wxCriticalSectionLocker locker(br_scanLock);
+    // wxCriticalSectionLocker locker(br_scanLock);
 
     for (unsigned int angle = 0 ; angle < LINES_PER_ROTATION; ++angle) {
         scan_line * scan = &m_scan_line[angle];
@@ -1306,7 +1306,7 @@ void br24radar_pi::RenderSpectrum(wxPoint radar_center, double v_scale_ppm, Plug
 
     memset(&scan_distribution[0], 0, 255);
 
-    wxCriticalSectionLocker locker(br_scanLock);
+    // wxCriticalSectionLocker locker(br_scanLock);
 
     for (int angle = 0 ; angle < LINES_PER_ROTATION ; angle++) {
         if (m_scan_line[angle].range != 0 ) {
@@ -2253,7 +2253,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 {
     wxDateTime now = wxDateTime::Now();
 
-    wxCriticalSectionLocker locker(br_scanLock);
+    // wxCriticalSectionLocker locker(br_scanLock);
 
     static int next_scan_number = -1;
     int scan_number;
