@@ -202,7 +202,7 @@ extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, Rad
 struct radar_control_settings {
     int      overlay_transparency;    // now 0-100, no longer a double
     bool     master_mode;
-    bool     verbose;
+    int      verbose;
     bool     auto_range_mode;
     int      range_index;
     int      display_option;

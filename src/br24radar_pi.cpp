@@ -480,9 +480,11 @@ int br24radar_pi::Init(void)
     m_quit = false;
     m_dataReceiveThread = new RadarDataReceiveThread(this, &m_quit);
     m_dataReceiveThread->Run();
-    if (settings.verbose) {
+    if (settings.verbose > 1) {
         m_commandReceiveThread = new RadarCommandReceiveThread(this, &m_quit);
         m_commandReceiveThread->Run();
+    }
+    if (settings.verbose) {
         m_reportReceiveThread = new RadarReportReceiveThread(this, &m_quit);
         m_reportReceiveThread->Run();
     }
@@ -1231,7 +1233,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             } while ((now - m_scan_line[previousAngle].age).GetMilliseconds() >= settings.max_age * 1000);
             arc_width *= spokes;
             angleRad -= (spokes - 1) * spokeWidthRad / 2.0;
-            if (spokes > 3 && settings.verbose) {
+            if (spokes > 3 && settings.verbose > 1) {
                 wxLogMessage(wxT("BR24radar_pi: spoke skip %u to %u"), previousAngle, angle);
             }
             if (spokes > LINES_PER_ROTATION / 16) {
@@ -1534,7 +1536,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->DeleteEntry(wxT("BR24RadarDisplayOption"));
         if (pConf->Read(wxT("BR24RadarDisplayMode"),  &settings.display_mode, 0))
             pConf->DeleteEntry(wxT("BR24RadarDisplayMode"));
-        settings.verbose = false;
+        settings.verbose = 0;
         if (pConf->Read(wxT("BR24RadarTransparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY))
             pConf->DeleteEntry(wxT("BR24RadarTransparency"));
         if (pConf->Read(wxT("BR24RadarGain"),  &settings.gain, 50))
@@ -2543,7 +2545,9 @@ void *RadarReportReceiveThread::Entry(void)
     sockaddr_storage rx_addr;
     socklen_t        rx_len;
 
-    wxLogMessage(wxT("BR24radar_pi: Listening for reports"));
+    if (pPlugIn->settings.verbose) {
+        wxLogMessage(wxT("BR24radar_pi: Listening for reports"));
+    }
     //    Loop until we quit
     int n_rx_once = 0;
     while (!*m_quit) {
@@ -2629,7 +2633,7 @@ void RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
             );
         logBinaryData(wxT("state"), command, len);
     }
-    else {
+    else if (pPlugIn->settings.verbose > 1) {
         logBinaryData(wxT("received report"), command, len);
     }
 }
