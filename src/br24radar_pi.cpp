@@ -480,7 +480,7 @@ int br24radar_pi::Init(void)
     m_quit = false;
     m_dataReceiveThread = new RadarDataReceiveThread(this, &m_quit);
     m_dataReceiveThread->Run();
-    if (settings.verbose > 1) {
+    if (settings.verbose >= 2) {
         m_commandReceiveThread = new RadarCommandReceiveThread(this, &m_quit);
         m_commandReceiveThread->Run();
     }
@@ -1173,7 +1173,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     glPushMatrix();
     glScaled(scale_factor, scale_factor, 1.);
     if (br_range_meters && br_scanner_state == RADAR_ON) { // only draw radar if something received
-        DrawRadarImage(br_range_meters, radar_center);
+        DrawRadarImage(meters, radar_center);
     }
     glPopMatrix();
 
@@ -1192,6 +1192,8 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 {
     wxDateTime now = wxDateTime::UNow();
+    UINT32 drawn_spokes = 0;
+    UINT32 drawn_blobs  = 0;
 
     int bogey_count[GUARD_ZONES];
 
@@ -1207,8 +1209,8 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         scan_line * scan = &m_scan_line[angle];
 
         wxTimeSpan diff = now - scan->age;
-        if (diff.GetMilliseconds() >= settings.max_age * 1000) {
-            continue;   // Old data, don't show
+        if (!scan->range || diff.GetMilliseconds() >= settings.max_age * 1000) {
+            continue;   // No or old data, don't show
         }
         GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
         /*
@@ -1230,10 +1232,10 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             do {
                 previousAngle = (previousAngle - 1) % LINES_PER_ROTATION;
                 spokes++;
-            } while ((now - m_scan_line[previousAngle].age).GetMilliseconds() >= settings.max_age * 1000);
+            } while (!m_scan_line[previousAngle].range || (now - m_scan_line[previousAngle].age).GetMilliseconds() >= settings.max_age * 1000);
             arc_width *= spokes;
             angleRad -= (spokes - 1) * spokeWidthRad / 2.0;
-            if (spokes > 3 && settings.verbose > 1) {
+            if (spokes > 3 && settings.verbose >= 2) {
                 wxLogMessage(wxT("BR24radar_pi: spoke skip %u to %u"), previousAngle, angle);
             }
             if (spokes > LINES_PER_ROTATION / 16) {
@@ -1243,6 +1245,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             }
         }
 
+        drawn_spokes++;
         for (int radius = 0; radius < 512; ++radius) {
 
             GLubyte red = 0, green = 0, blue = 0, strength = scan->data[radius];
@@ -1274,8 +1277,12 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
                 glColor4ub(red, green, blue, alpha);    // red, blue, green
                 // Compensate for any scale difference between the scan and the current range:
-                double r = radius * (double) scan->range / (double) max_range;
+                double r = (double) radius * ((double) scan->range / (double) max_range);
+                if (settings.verbose >= 3 && radius == 1) {
+                    wxLogMessage(wxT("BR24radar_pi: r=%f scanRange=%d maxRange=%d"), r, scan->range, max_range);
+                }
                 draw_blob_gl(angleRad, r, arc_width, arc_heigth);
+                drawn_blobs++;
 
 /**********************************************************************************************************/
 // Guard Section
@@ -1306,6 +1313,9 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                 }
             }
         }
+    }
+    if (settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: drawn %u spokes with %u blobs"), drawn_spokes, drawn_blobs);
     }
     HandleBogeyCount(bogey_count);
 }
@@ -1482,7 +1492,7 @@ bool br24radar_pi::LoadConfig(void)
         pConf->SetPath(wxT("/Plugins/BR24Radar"));
         if (pConf->Read(wxT("DisplayOption"), &settings.display_option, 0)) {
             pConf->Read(wxT("RangeUnits" ), &settings.range_units, 0 ); //0 = "Nautical miles"), 1 = "Kilometers"
-            if (settings.range_units > 1) {
+            if (settings.range_units >= 2) {
                 settings.range_units = 1;
             }
             pConf->Read(wxT("DisplayMode"),  &settings.display_mode, 0);
@@ -2633,7 +2643,7 @@ void RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
             );
         logBinaryData(wxT("state"), command, len);
     }
-    else if (pPlugIn->settings.verbose > 1) {
+    else if (pPlugIn->settings.verbose >= 2) {
         logBinaryData(wxT("received report"), command, len);
     }
 }
