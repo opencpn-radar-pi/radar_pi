@@ -65,8 +65,6 @@ using namespace std;
 # include "GL/glu.h"
 #endif
 
-#include <math.h>
-
 #include "br24radar_pi.h"
 #include "ocpndc.h"
 
