@@ -2649,7 +2649,6 @@ void *RadarReportReceiveThread::Entry(void)
         wxLogMessage(wxT("BR24radar_pi: Listening for reports"));
     }
     //    Loop until we quit
-    int n_rx_once = 0;
     while (!*m_quit) {
         if (socketReady(rx_socket, 1)) {
             UINT8 report[1500];
