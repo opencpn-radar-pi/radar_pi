@@ -71,7 +71,7 @@ enum {                                      // process ID's
     ID_TARGET_BOOST,
     ID_NOISE_REJECTION,
     ID_TARGET_SEPARATION,
-    ID_SENSITIVITY,
+    ID_DOWNSAMPLE,
     ID_SCAN_SPEED,
     ID_SCAN_AGE,
 
@@ -106,7 +106,7 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
     EVT_BUTTON(ID_TARGET_BOOST, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_NOISE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_TARGET_SEPARATION, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_SENSITIVITY, BR24ControlsDialog::OnRadarControlButtonClick)
+    EVT_BUTTON(ID_DOWNSAMPLE, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
 
@@ -305,7 +305,7 @@ int RadarRangeControlButton::SetValueInt(int newValue)
         label.Printf(wxT("%s\n%s"), firstLine, rangeText);
     }
     this->SetLabel(label);
-    wxLogMessage(wxT("Range label '%s' auto=%d unit=%d max=%d new=%d val=%d"), rangeText, pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
+    wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d val=%d"), rangeText, pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
 
     return meters;
 }
@@ -483,9 +483,11 @@ void BR24ControlsDialog::CreateControls()
     bTargetBoost->names = g_target_boost_names;
     bTargetBoost->SetValue(pPlugIn->settings.target_boost); // redraw after adding names
 
-    // The SENSITIVITY button
-    bSensitivity = new RadarControlButton(this, ID_SENSITIVITY, _("Sensitivity"), pPlugIn, CT_SENSITIVITY, false, pPlugIn->settings.sensitivity);
-    advancedBox->Add(bSensitivity, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    // The DOWNSAMPLE button
+    bDownsample = new RadarControlButton(this, ID_DOWNSAMPLE, _("Downsample"), pPlugIn, CT_DOWNSAMPLE, false, pPlugIn->settings.downsample);
+    advancedBox->Add(bDownsample, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bDownsample->minValue = 1;
+    bDownsample->maxValue = 8;
 
     // The SCAN SPEED button
     bScanSpeed = new RadarControlButton(this, ID_SCAN_SPEED, _("Scan Speed"), pPlugIn, CT_SCAN_SPEED, false, pPlugIn->settings.scan_speed);

@@ -176,7 +176,7 @@ typedef enum ControlType {
     CT_TARGET_SEPARATION,
     CT_NOISE_REJECTION,
     CT_TARGET_BOOST,
-    CT_SENSITIVITY,
+    CT_DOWNSAMPLE,
     CT_SCAN_SPEED,
     CT_SCAN_AGE
 } ControlType;
@@ -242,7 +242,7 @@ struct radar_control_settings {
     int      max_age;
     int      draw_algorithm;
     int      scan_speed;
-    int      sensitivity;
+    int      downsample;
 };
 
 struct guard_zone_settings {
@@ -256,7 +256,6 @@ struct guard_zone_settings {
 struct scan_line {
     int range;                  // range of this scan line in decimeters
     wxDateTime age;             // how old this scan line is. We keep old scans on-screen for a while
-    double heading;             // heading of boat at time of reception
     UINT8 data[512];          // radar return strength
 };
 
@@ -713,7 +712,7 @@ private:
     RadarControlButton *bTargetSeparation;
     RadarControlButton *bNoiseRejection;
     RadarControlButton *bTargetBoost;
-    RadarControlButton *bSensitivity;
+    RadarControlButton *bDownsample;
     RadarControlButton *bScanSpeed;
     RadarControlButton *bScanAge;
 
