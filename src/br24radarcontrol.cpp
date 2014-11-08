@@ -71,6 +71,7 @@ enum {                                      // process ID's
     ID_TARGET_BOOST,
     ID_NOISE_REJECTION,
     ID_TARGET_SEPARATION,
+    ID_SENSITIVITY,
     ID_SCAN_SPEED,
     ID_SCAN_AGE,
 
@@ -105,6 +106,7 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
     EVT_BUTTON(ID_TARGET_BOOST, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_NOISE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_TARGET_SEPARATION, BR24ControlsDialog::OnRadarControlButtonClick)
+    EVT_BUTTON(ID_SENSITIVITY, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
 
@@ -480,7 +482,11 @@ void BR24ControlsDialog::CreateControls()
     bTargetBoost->maxValue = ARRAY_SIZE(g_target_boost_names) - 1;
     bTargetBoost->names = g_target_boost_names;
     bTargetBoost->SetValue(pPlugIn->settings.target_boost); // redraw after adding names
-    
+
+    // The SENSITIVITY button
+    bSensitivity = new RadarControlButton(this, ID_SENSITIVITY, _("Sensitivity"), pPlugIn, CT_SENSITIVITY, false, pPlugIn->settings.sensitivity);
+    advancedBox->Add(bSensitivity, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+
     // The SCAN SPEED button
     bScanSpeed = new RadarControlButton(this, ID_SCAN_SPEED, _("Scan Speed"), pPlugIn, CT_SCAN_SPEED, false, pPlugIn->settings.scan_speed);
     advancedBox->Add(bScanSpeed, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);

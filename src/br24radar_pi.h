@@ -176,6 +176,7 @@ typedef enum ControlType {
     CT_TARGET_SEPARATION,
     CT_NOISE_REJECTION,
     CT_TARGET_BOOST,
+    CT_SENSITIVITY,
     CT_SCAN_SPEED,
     CT_SCAN_AGE
 } ControlType;
@@ -195,6 +196,21 @@ typedef enum RadarType {
 
 extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, RadarType radar_type);
 
+typedef enum DisplayModeType {
+    DM_CHART_OVERLAY,
+    DM_CHART_BLACKOUT,
+    DM_SPECTRUM,
+    DM_EMULATOR
+} DisplayModeType;
+
+static wxString DisplayModeStrings[] = {
+    _("Radar Chart Overlay"),
+    _("Radar Standalone"),
+    _("Spectrum"),
+    _("Emulator"),
+};
+
+
 #define DEFAULT_OVERLAY_TRANSPARENCY (5)
 #define MIN_OVERLAY_TRANSPARENCY (0)
 #define MAX_OVERLAY_TRANSPARENCY (10)
@@ -206,7 +222,7 @@ struct radar_control_settings {
     bool     auto_range_mode;
     int      range_index;
     int      display_option;
-    int      display_mode;
+    DisplayModeType display_mode;
     int      guard_zone;            // active zone (0 = none,1,2)
     int      guard_zone_threshold;  // How many blobs must be sent by radar before we fire alarm
     int      guard_zone_render_style;
@@ -226,6 +242,7 @@ struct radar_control_settings {
     int      max_age;
     int      draw_algorithm;
     int      scan_speed;
+    int      sensitivity;
 };
 
 struct guard_zone_settings {
@@ -296,7 +313,7 @@ public:
 // Other public methods
 
     void OnBR24ControlDialogClose();         // Control dialog
-    void SetDisplayMode(int mode);
+    void SetDisplayMode(DisplayModeType mode);
     void UpdateDisplayParameters(void);
 
     void SetBR24ControlsDialogX(long x) {
@@ -422,6 +439,7 @@ public:
 
 private:
     void process_buffer(radar_frame_pkt * packet, int len);
+    void emulate_fake_buffer(void);
 
     br24radar_pi      *pPlugIn;
     wxString           m_ip;
@@ -695,6 +713,7 @@ private:
     RadarControlButton *bTargetSeparation;
     RadarControlButton *bNoiseRejection;
     RadarControlButton *bTargetBoost;
+    RadarControlButton *bSensitivity;
     RadarControlButton *bScanSpeed;
     RadarControlButton *bScanAge;
 
