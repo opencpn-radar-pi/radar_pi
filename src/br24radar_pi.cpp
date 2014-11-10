@@ -2223,7 +2223,14 @@ static bool socketReady( SOCKET sockfd, int timeout )
         FD_SET(sockfd, &fdin);
         r = select(sockfd + 1, &fdin, 0, &fdin, &tv);
     } else {
-        r = select(0, 0, 0, 0, &tv);
+#ifndef __WXMSW__
+        // Common UNIX style sleep, unlike 'sleep' this causes no alarms
+        // and has fewer threading issues.
+        r = select(1, 0, 0, 0, &tv);
+#else
+        Sleep(timeout * 1000);
+        r = 0;
+#endif
     }
 
     return r > 0;
