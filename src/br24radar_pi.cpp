@@ -1023,7 +1023,7 @@ void br24radar_pi::DoTick(void)
         if (m_pControlDialog && m_pControlDialog->tStatistics) {
             m_pControlDialog->tStatistics->SetLabel(t);
         }
-        wxLogMessage(wxT("BR24radar_pi: received %s"), t);
+        wxLogMessage(wxT("BR24radar_pi: received %s"), t.c_str());
     }
 
     m_statistics.broken_packets = 0;

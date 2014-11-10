@@ -262,9 +262,9 @@ void RadarControlButton::SetValue(int newValue)
     wxString label;
 
     if (names) {
-        label.Printf(wxT("%s\n%s"), firstLine, names[value]);
+        label.Printf(wxT("%s\n%s"), firstLine.c_str(), names[value].c_str());
     } else {
-        label.Printf(wxT("%s\n%d"), firstLine, value);
+        label.Printf(wxT("%s\n%d"), firstLine.c_str(), value);
     }
 
     this->SetLabel(label);
@@ -309,7 +309,7 @@ int RadarRangeControlButton::SetValueInt(int newValue)
         label << firstLine << wxT("\n") << rangeText;
     }
     this->SetLabel(label);
-    wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d val=%d"), rangeText, pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
+    wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d val=%d"), rangeText.c_str(), pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
 
     return meters;
 }
@@ -621,13 +621,13 @@ void BR24ControlsDialog::CreateControls()
 
 void BR24ControlsDialog::UpdateGuardZoneState()
 {
-    wxString label;
+    wxString label1, label2;
 
-    label.Printf(wxT("%s 1\n%s"), _("Guard zone"), GuardZoneNames[pPlugIn->guardZones[0].type]);
-    bGuard1->SetLabel(label);
+    label1 << _("Guard zone") << wxT(" 1\n") << GuardZoneNames[pPlugIn->guardZones[0].type];
+    bGuard1->SetLabel(label1);
 
-    label.Printf(wxT("%s 2\n%s"), _("Guard zone"), GuardZoneNames[pPlugIn->guardZones[1].type]);
-    bGuard2->SetLabel(label);
+    label1 << _("Guard zone") << wxT(" 2\n") << GuardZoneNames[pPlugIn->guardZones[1].type];
+    bGuard2->SetLabel(label2);
 }
 
 void BR24ControlsDialog::SetRangeIndex(size_t index)
