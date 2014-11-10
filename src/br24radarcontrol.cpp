@@ -262,9 +262,9 @@ void RadarControlButton::SetValue(int newValue)
     wxString label;
 
     if (names) {
-        label.Printf(wxT("%s\n%s"), firstLine, names[value]);
+        label.Printf(wxT("%s\n%s"), firstLine.c_str(), names[value].c_str());
     } else {
-        label.Printf(wxT("%s\n%d"), firstLine, value);
+        label.Printf(wxT("%s\n%d"), firstLine.c_str(), value);
     }
 
     this->SetLabel(label);
@@ -277,7 +277,7 @@ void RadarControlButton::SetAuto()
 {
     wxString label;
 
-    label.Printf(wxT("%s\nAUTO"), firstLine);
+    label.Printf(wxT("%s\nAUTO"), firstLine.c_str());
     this->SetLabel(label);
 
     isAuto = true;
@@ -303,13 +303,13 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     wxString rangeText = value < 0 ? wxT("?") : g_range_names[units][value];
 
     if (pPlugIn->settings.auto_range_mode) {
-        label.Printf(wxT("%s\nAUTO (%s)"), firstLine, rangeText);
+        label.Printf(wxT("%s\nAUTO (%s)"), firstLine.c_str(), rangeText.c_str());
     }
     else{
-        label.Printf(wxT("%s\n%s"), firstLine, rangeText);
+        label.Printf(wxT("%s\n%s"), firstLine.c_str(), rangeText.c_str());
     }
     this->SetLabel(label);
-    wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d val=%d"), rangeText, pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
+    wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d val=%d"), rangeText.c_str(), pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
 
     return meters;
 }
@@ -590,10 +590,10 @@ void BR24ControlsDialog::UpdateGuardZoneState()
 {
     wxString label;
 
-    label.Printf(wxT("Guard Zone 1\n%s"), GuardZoneNames[pPlugIn->guardZones[0].type]);
+    label.Printf(wxT("Guard Zone 1\n%s"), GuardZoneNames[pPlugIn->guardZones[0].type].c_str());
     bGuard1->SetLabel(label);
 
-    label.Printf(wxT("Guard Zone 2\n%s"), GuardZoneNames[pPlugIn->guardZones[1].type]);
+    label.Printf(wxT("Guard Zone 2\n%s"), GuardZoneNames[pPlugIn->guardZones[1].type].c_str());
     bGuard2->SetLabel(label);
 }
 
