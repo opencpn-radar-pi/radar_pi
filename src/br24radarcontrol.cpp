@@ -217,6 +217,12 @@ static const int METRIC_RANGE_COUNT = 18;
 
 static const int g_range_maxValue[2] = { MILE_RANGE_COUNT, METRIC_RANGE_COUNT };
 
+wxString interference_rejection_names[4];
+wxString target_separation_names[4];
+wxString noise_rejection_names[3];
+wxString target_boost_names[3];
+wxString scan_speed_names[2];
+
 extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
 {
     const int * ranges;
@@ -230,7 +236,7 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
         n = METRIC_RANGE_COUNT;
         ranges = g_range_distances[1];
     }
-    if (radarType == RT_BR24) {
+    if (radarType != RT_4G) {
         n--;
     }
 
@@ -271,7 +277,7 @@ void RadarControlButton::SetAuto()
 {
     wxString label;
 
-    label << _("Auto") << wxT("\n") << firstLine;
+    label << firstLine << wxT("\n") << _("Auto");
     this->SetLabel(label);
 
     isAuto = true;
@@ -509,12 +515,11 @@ void BR24ControlsDialog::CreateControls()
 
     // The REJECTION button
 
-    wxString interference_rejection_names[] = {
-        _("Off"),
-        _("Low"),
-        _("Medium"),
-        _("High")
-    };
+    interference_rejection_names[0] = _("Off");
+    interference_rejection_names[1] = _("Low");
+    interference_rejection_names[2] = _("Medium");
+    interference_rejection_names[3] = _("High");
+
     bInterferenceRejection = new RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"), pPlugIn, CT_INTERFERENCE_REJECTION, false, pPlugIn->settings.interference_rejection);
     advancedBox->Add(bInterferenceRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bInterferenceRejection->minValue = 0;
@@ -523,12 +528,12 @@ void BR24ControlsDialog::CreateControls()
     bInterferenceRejection->SetValue(pPlugIn->settings.interference_rejection); // redraw after adding names
 
     // The TARGET SEPARATION button
-    wxString target_separation_names[] = {
-        _("Off"),
-        _("Low"),
-        _("Medium"),
-        _("High")
-    };
+
+    target_separation_names[0] = _("Off");
+    target_separation_names[1] = _("Low");
+    target_separation_names[2] = _("Medium");
+    target_separation_names[3] = _("High");
+
     bTargetSeparation = new RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"), pPlugIn, CT_TARGET_SEPARATION, false, pPlugIn->settings.target_separation);
     advancedBox->Add(bTargetSeparation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bTargetSeparation->minValue = 0;
@@ -537,11 +542,10 @@ void BR24ControlsDialog::CreateControls()
     bTargetSeparation->SetValue(pPlugIn->settings.target_separation); // redraw after adding names
 
     // The NOISE REJECTION button
-    wxString noise_rejection_names[] = {
-        _("Off"),
-        _("Low"),
-        _("High")
-    };
+    noise_rejection_names[0] = _("Off");
+    noise_rejection_names[1] = _("Low");
+    noise_rejection_names[2] = _("High");
+
     bNoiseRejection = new RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), pPlugIn, CT_NOISE_REJECTION, false, pPlugIn->settings.noise_rejection);
     advancedBox->Add(bNoiseRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bNoiseRejection->minValue = 0;
@@ -549,38 +553,37 @@ void BR24ControlsDialog::CreateControls()
     bNoiseRejection->names = noise_rejection_names;
     bNoiseRejection->SetValue(pPlugIn->settings.noise_rejection); // redraw after adding names
 
+    advanced4gBox = new wxBoxSizer(wxVERTICAL);
+    advancedBox->Add(advanced4gBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+
     // The TARGET BOOST button
-    wxString target_boost_names[] = {
-        _("Off"),
-        _("Low"),
-        _("High")
-    };
+    target_boost_names[0] = _("Off");
+    target_boost_names[1] = _("Low");
+    target_boost_names[2] = _("High");
     bTargetBoost = new RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), pPlugIn, CT_TARGET_BOOST, false, pPlugIn->settings.target_boost);
-    advancedBox->Add(bTargetBoost, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advanced4gBox->Add(bTargetBoost, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bTargetBoost->minValue = 0;
     bTargetBoost->maxValue = ARRAY_SIZE(target_boost_names) - 1;
     bTargetBoost->names = target_boost_names;
     bTargetBoost->SetValue(pPlugIn->settings.target_boost); // redraw after adding names
 
-    // The DOWNSAMPLE button
-    bDownsample = new RadarControlButton(this, ID_DOWNSAMPLE, _("Downsample"), pPlugIn, CT_DOWNSAMPLE, false, pPlugIn->settings.downsample);
-    advancedBox->Add(bDownsample, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bDownsample->minValue = 1;
-    bDownsample->maxValue = 8;
-
     // The SCAN SPEED button
-    wxString scan_speed_names[] = {
-        _("Normal"),
-        _("Fast")
-    };
+    scan_speed_names[0] = _("Normal");
+    scan_speed_names[1] = _("Fast");
     bScanSpeed = new RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), pPlugIn, CT_SCAN_SPEED, false, pPlugIn->settings.scan_speed);
-    advancedBox->Add(bScanSpeed, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advanced4gBox->Add(bScanSpeed, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bScanSpeed->minValue = 0;
     bScanSpeed->maxValue = ARRAY_SIZE(scan_speed_names) - 1;
     bScanSpeed->names = scan_speed_names;
     bScanSpeed->SetValue(pPlugIn->settings.scan_speed); // redraw after adding names
 
-        // The SCAN AGE button
+    // The DOWNSAMPLE button
+    bDownsample = new RadarControlButton(this, ID_DOWNSAMPLE, _("Downsample"), pPlugIn, CT_DOWNSAMPLE, false, pPlugIn->settings.downsampleUser);
+    advancedBox->Add(bDownsample, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bDownsample->minValue = 1;
+    bDownsample->maxValue = 8;
+
+    // The SCAN AGE button
     bScanAge = new RadarControlButton(this, ID_SCAN_AGE, _("Scan age"), pPlugIn, CT_SCAN_AGE, false, pPlugIn->settings.max_age);
     advancedBox->Add(bScanAge, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bScanAge->minValue = 1;
@@ -749,8 +752,16 @@ void BR24ControlsDialog::OnAdvancedBackButtonClick(wxCommandEvent& event)
 
 void BR24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event)
 {
+    extern RadarType br_radar_type;
+
     fromBox = advancedBox;
     topSizer->Show(advancedBox);
+    if (br_radar_type == RT_4G) {
+        advancedBox->Show(advanced4gBox);
+    } else {
+        advancedBox->Hide(advanced4gBox);
+    }
+    advancedBox->Layout();
     topSizer->Hide(controlBox);
     controlBox->Layout();
     Fit();

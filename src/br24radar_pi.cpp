@@ -101,7 +101,7 @@ int previous_auto_range_meters = 0;
 int   br_radar_state;
 int   br_scanner_state;
 bool  br_send_state;
-RadarType br_radar_type = RT_BR24;
+RadarType br_radar_type = RT_UNKNOWN;
 
 long  br_display_interval(0);
 
@@ -1535,7 +1535,8 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
             pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
             pConf->Read(wxT("ScanSpeed"), &settings.scan_speed, 0);
-            pConf->Read(wxT("Downsample"), &settings.downsample, 1);
+            pConf->Read(wxT("Downsample"), &settings.downsampleUser, 1);
+            settings.downsample = 2 << (settings.downsampleUser - 1);
 
             pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
             pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
@@ -1966,7 +1967,8 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             case CT_DOWNSAMPLE: {
-                settings.downsample = value;
+                settings.downsampleUser = value;
+                settings.downsample = 2 << (settings.downsampleUser - 1);
                 break;
             }
             default: {

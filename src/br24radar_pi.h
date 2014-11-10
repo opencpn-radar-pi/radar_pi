@@ -188,6 +188,7 @@ typedef enum GuardZoneType {
 } GuardZoneType;
 
 typedef enum RadarType {
+    RT_UNKNOWN,
     RT_BR24,
     RT_4G
 } RadarType;
@@ -240,7 +241,8 @@ struct radar_control_settings {
     int      max_age;
     int      draw_algorithm;
     int      scan_speed;
-    int      downsample;
+    int      downsampleUser;    // 1..8 =
+    int      downsample;        //         1..128
 };
 
 struct guard_zone_settings {
@@ -687,6 +689,7 @@ private:
     wxBoxSizer        *messageBox;   // Contains NO HDG and/or NO GPS
     wxBoxSizer        *editBox;
     wxBoxSizer        *advancedBox;
+    wxBoxSizer        *advanced4gBox;
     wxBoxSizer        *controlBox;
 
     wxBoxSizer        *fromBox; // If on edit control, this is where the button is from
