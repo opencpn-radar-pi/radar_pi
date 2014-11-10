@@ -187,8 +187,6 @@ typedef enum GuardZoneType {
     GZ_CIRCLE
 } GuardZoneType;
 
-extern wxString GuardZoneNames[3];
-
 typedef enum RadarType {
     RT_BR24,
     RT_4G

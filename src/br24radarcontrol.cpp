@@ -217,12 +217,6 @@ static const int METRIC_RANGE_COUNT = 18;
 
 static const int g_range_maxValue[2] = { MILE_RANGE_COUNT, METRIC_RANGE_COUNT };
 
-static const wxString g_interference_rejection_names[4]    = { _("Off"), _("Low"), _("Medium"), _("High") };
-static const wxString g_target_separation_names[4]    = { _("Off"), _("Low"), _("Medium"), _("High") };
-static const wxString g_noise_rejection_names[3] = { _("Off"), _("Low"), _("High") };
-static const wxString g_target_boost_names[3] = { _("Off"), _("Low"), _("High") };
-static const wxString g_scan_speed_names[2]   = { _("Normal"), _("Fast") };
-
 extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
 {
     const int * ranges;
@@ -514,35 +508,58 @@ void BR24ControlsDialog::CreateControls()
     bTransparency->maxValue = MAX_OVERLAY_TRANSPARENCY;
 
     // The REJECTION button
+
+    wxString interference_rejection_names[] = {
+        _("Off"),
+        _("Low"),
+        _("Medium"),
+        _("High")
+    };
     bInterferenceRejection = new RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"), pPlugIn, CT_INTERFERENCE_REJECTION, false, pPlugIn->settings.interference_rejection);
     advancedBox->Add(bInterferenceRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bInterferenceRejection->minValue = 0;
-    bInterferenceRejection->maxValue = ARRAY_SIZE(g_interference_rejection_names) - 1;
-    bInterferenceRejection->names = g_interference_rejection_names;
+    bInterferenceRejection->maxValue = ARRAY_SIZE(interference_rejection_names) - 1;
+    bInterferenceRejection->names = interference_rejection_names;
     bInterferenceRejection->SetValue(pPlugIn->settings.interference_rejection); // redraw after adding names
 
     // The TARGET SEPARATION button
+    wxString target_separation_names[] = {
+        _("Off"),
+        _("Low"),
+        _("Medium"),
+        _("High")
+    };
     bTargetSeparation = new RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"), pPlugIn, CT_TARGET_SEPARATION, false, pPlugIn->settings.target_separation);
     advancedBox->Add(bTargetSeparation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bTargetSeparation->minValue = 0;
-    bTargetSeparation->maxValue = ARRAY_SIZE(g_target_separation_names) - 1;
-    bTargetSeparation->names = g_target_separation_names;
+    bTargetSeparation->maxValue = ARRAY_SIZE(target_separation_names) - 1;
+    bTargetSeparation->names = target_separation_names;
     bTargetSeparation->SetValue(pPlugIn->settings.target_separation); // redraw after adding names
 
     // The NOISE REJECTION button
+    wxString noise_rejection_names[] = {
+        _("Off"),
+        _("Low"),
+        _("High")
+    };
     bNoiseRejection = new RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), pPlugIn, CT_NOISE_REJECTION, false, pPlugIn->settings.noise_rejection);
     advancedBox->Add(bNoiseRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bNoiseRejection->minValue = 0;
-    bNoiseRejection->maxValue = ARRAY_SIZE(g_noise_rejection_names) - 1;
-    bNoiseRejection->names = g_noise_rejection_names;
+    bNoiseRejection->maxValue = ARRAY_SIZE(noise_rejection_names) - 1;
+    bNoiseRejection->names = noise_rejection_names;
     bNoiseRejection->SetValue(pPlugIn->settings.noise_rejection); // redraw after adding names
 
     // The TARGET BOOST button
+    wxString target_boost_names[] = {
+        _("Off"),
+        _("Low"),
+        _("High")
+    };
     bTargetBoost = new RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), pPlugIn, CT_TARGET_BOOST, false, pPlugIn->settings.target_boost);
     advancedBox->Add(bTargetBoost, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bTargetBoost->minValue = 0;
-    bTargetBoost->maxValue = ARRAY_SIZE(g_target_boost_names) - 1;
-    bTargetBoost->names = g_target_boost_names;
+    bTargetBoost->maxValue = ARRAY_SIZE(target_boost_names) - 1;
+    bTargetBoost->names = target_boost_names;
     bTargetBoost->SetValue(pPlugIn->settings.target_boost); // redraw after adding names
 
     // The DOWNSAMPLE button
@@ -552,11 +569,15 @@ void BR24ControlsDialog::CreateControls()
     bDownsample->maxValue = 8;
 
     // The SCAN SPEED button
+    wxString scan_speed_names[] = {
+        _("Normal"),
+        _("Fast")
+    };
     bScanSpeed = new RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), pPlugIn, CT_SCAN_SPEED, false, pPlugIn->settings.scan_speed);
     advancedBox->Add(bScanSpeed, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bScanSpeed->minValue = 0;
-    bScanSpeed->maxValue = ARRAY_SIZE(g_scan_speed_names) - 1;
-    bScanSpeed->names = g_scan_speed_names;
+    bScanSpeed->maxValue = ARRAY_SIZE(scan_speed_names) - 1;
+    bScanSpeed->names = scan_speed_names;
     bScanSpeed->SetValue(pPlugIn->settings.scan_speed); // redraw after adding names
 
         // The SCAN AGE button
@@ -623,6 +644,12 @@ void BR24ControlsDialog::UpdateGuardZoneState()
 {
     wxString label1, label2;
 
+    wxString GuardZoneNames[] = {
+        _("Off"),
+        _("Arc"),
+        _("Circle")
+    };
+    
     label1 << _("Guard zone") << wxT(" 1\n") << GuardZoneNames[pPlugIn->guardZones[0].type];
     bGuard1->SetLabel(label1);
 

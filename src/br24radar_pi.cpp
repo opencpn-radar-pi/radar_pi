@@ -693,7 +693,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     wxString Overlay_Display_Options[] = {
         _("Monocolor-Red"),
         _("Multi-color"),
-        _("GL3+"),
+        _("Multi-color 2"),
     };
 
     pOverlayDisplayOptions = new wxRadioBox(this, ID_OVERLAYDISPLAYOPTION, _("Overlay Display Options"),

@@ -63,8 +63,6 @@ enum {                                      // process ID's
     ID_ALARMZONES
 };
 
-wxString GuardZoneNames[3] = { _("Off"), _("Arc"), _("Circle") };
-
 bool    outer_set;
 
 //---------------------------------------------------------------------------------------
@@ -136,9 +134,14 @@ void GuardZoneDialog::CreateControls()
     pZoneNumber = new wxTextCtrl(this, wxID_ANY);
     BoxGuardZoneSizer->Add(pZoneNumber, 1, wxALIGN_LEFT | wxALL, 5);
 
+    wxString GuardZoneNames[] = {
+        _("Off"),
+        _("Arc"),
+        _("Circle")
+    };
     pGuardZoneType = new wxRadioBox (this, ID_ALARMZONES, _("Zone type:"),
                                             wxDefaultPosition, wxDefaultSize,
-                                            3, GuardZoneNames, 1, wxRA_SPECIFY_COLS );
+                                            ARRAY_SIZE(GuardZoneNames), GuardZoneNames, 1, wxRA_SPECIFY_COLS );
 
     BoxGuardZoneSizer->Add(pGuardZoneType, 0, wxALL | wxEXPAND, 2);
 
