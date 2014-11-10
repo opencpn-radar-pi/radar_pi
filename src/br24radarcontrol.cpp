@@ -653,7 +653,7 @@ void BR24ControlsDialog::UpdateGuardZoneState()
     label1 << _("Guard zone") << wxT(" 1\n") << GuardZoneNames[pPlugIn->guardZones[0].type];
     bGuard1->SetLabel(label1);
 
-    label1 << _("Guard zone") << wxT(" 2\n") << GuardZoneNames[pPlugIn->guardZones[1].type];
+    label2 << _("Guard zone") << wxT(" 2\n") << GuardZoneNames[pPlugIn->guardZones[1].type];
     bGuard2->SetLabel(label2);
 }
 
