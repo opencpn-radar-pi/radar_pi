@@ -1789,10 +1789,10 @@ void br24radar_pi::SetRangeMeters(long meters)
             long decimeters = meters * 10L/1.762;
             UINT8 pck[] = { 0x03
                           , 0xc1
-                          , ((decimeters >>  0) & 0XFFL)
-                          , ((decimeters >>  8) & 0XFFL)
-                          , ((decimeters >> 16) & 0XFFL)
-                          , ((decimeters >> 24) & 0XFFL)
+                          , (UINT8) ((decimeters >>  0) & 0XFFL)
+                          , (UINT8) ((decimeters >>  8) & 0XFFL)
+                          , (UINT8) ((decimeters >> 16) & 0XFFL)
+                          , (UINT8) ((decimeters >> 24) & 0XFFL)
                           };
             if (settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: %ld meters\n"), meters);
@@ -1830,7 +1830,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                         0x06,
                         0xc1,
                         0, 0, 0, 0, 0, 0, 0, 0,
-                        v
+                        (UINT8) v
                     };
                     if (settings.verbose) {
                         wxLogMessage(wxT("BR24radar_pi: Gain: %d"), value);
@@ -1851,7 +1851,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                     0xc1,
                     0x04,
                     0, 0, 0, 0, 0, 0, 0,
-                    v
+                    (UINT8) v
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Rain: %d"), value);
@@ -1883,7 +1883,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                         0xc1,
                         0x02,
                         0, 0, 0, 0, 0, 0, 0,
-                        v
+                        (UINT8) v
                     };
                     if (settings.verbose) {
                         wxLogMessage(wxT("BR24radar_pi: Sea: %d"), value);
@@ -1897,7 +1897,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 UINT8 cmd[] = {
                     0x08,
                     0xc1,
-                    settings.interference_rejection
+                    (UINT8) settings.interference_rejection
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Rejection: %d"), value);
@@ -1910,7 +1910,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 UINT8 cmd[] = {
                     0x22,
                     0xc1,
-                    value
+                    (UINT8) value
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Target separation: %d"), value);
@@ -1923,7 +1923,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 UINT8 cmd[] = {
                     0x21,
                     0xc1,
-                    settings.noise_rejection
+                    (UINT8) settings.noise_rejection
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Noise rejection: %d"), value);
@@ -1936,7 +1936,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 UINT8 cmd[] = {
                     0x0a,
                     0xc1,
-                    value
+                    (UINT8) value
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Target boost: %d"), value);
@@ -1949,7 +1949,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 UINT8 cmd[] = {
                     0x0f,
                     0xc1,
-                    value
+                    (UINT8) value
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Scan speed: %d"), value);
@@ -2345,7 +2345,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     int scan_number;
     pPlugIn->m_statistics.packets++;
 
-    if (len < sizeof(packet->frame_hdr))
+    if (len < (int) sizeof(packet->frame_hdr))
     {
         pPlugIn->m_statistics.broken_packets++;
         return;
