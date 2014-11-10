@@ -83,6 +83,10 @@ enum {                                      // process ID's
     ID_ZONE1,
     ID_ZONE2,
 
+    ID_MESSAGE,
+    ID_BPOS,
+    ID_HEADING
+
 };
 
 //---------------------------------------------------------------------------------------
@@ -355,7 +359,7 @@ bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID 
     t->SetFont(g_font);
     g_buttonSize = wxSize(t->GetClientSize().GetWidth() + 10, 50);
     if (ppi->settings.verbose) {
-        wxLogMessage(wxT("Dynamic button width = %d"), g_buttonSize.GetWidth());
+        wxLogMessage(wxT("BR24radar_pi: Dynamic button width = %d"), g_buttonSize.GetWidth());
     }
 
 #ifdef wxMSW
@@ -383,10 +387,38 @@ bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID 
 void BR24ControlsDialog::CreateControls()
 {
     static int BORDER = 0;
+    wxFont fatFont = g_font;
+    fatFont.SetWeight(wxFONTWEIGHT_BOLD);
+    fatFont.SetPointSize(g_font.GetPointSize() + 1);
 
-// A top-level sizer
+
+    // A top-level sizer
     topSizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(topSizer);
+
+    //**************** MESSAGE BOX ******************//
+    // A box sizer to contain warnings
+
+    wxFont msg_font = *OCPNGetFont(_("Dialog"), 12);
+
+    messageBox = new wxBoxSizer(wxVERTICAL);
+    topSizer->Add(messageBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
+    tMessage = new wxStaticText(this, ID_BPOS, _("Radar overlay requires the following data"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    messageBox->Add(tMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    tMessage->SetFont(msg_font);
+ 
+    cbBoatPos = new wxCheckBox(this, ID_BPOS, _("Boat position"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    messageBox->Add(cbBoatPos, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    cbBoatPos->SetFont(msg_font);
+    cbBoatPos->Disable();
+    
+    cbHeading = new wxCheckBox(this, ID_HEADING, _("Heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    messageBox->Add(cbHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    cbHeading->SetFont(msg_font);
+    cbHeading->Disable();
+
+    topSizer->Hide(messageBox);
 
     //**************** EDIT BOX ******************//
     // A box sizer to contain RANGE button
@@ -411,9 +443,6 @@ void BR24ControlsDialog::CreateControls()
     // The VALUE button
     tValue = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, g_buttonSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     editBox->Add(tValue, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    wxFont fatFont = g_font;
-    fatFont.SetWeight(wxFONTWEIGHT_BOLD);
-    fatFont.SetPointSize(g_font.GetPointSize() + 1);
     tValue->SetFont(fatFont);
     tValue->SetBackgroundColour(*wxLIGHT_GREY);
 
@@ -720,4 +749,36 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
     pPlugIn->SetBR24ControlsDialogSizeY(p.GetHeight());
 
     event.Skip();
+}
+
+
+void BR24ControlsDialog::UpdateMessage(bool haveGPS, bool haveHeading)
+{
+    cbBoatPos->SetValue(haveGPS);
+    cbHeading->SetValue(haveHeading);
+
+    if (haveGPS && haveHeading) {
+        if (topSizer->IsShown(messageBox))
+        {
+            topSizer->Hide(messageBox);
+            topSizer->Show(controlBox);
+            topSizer->Hide(advancedBox);
+            topSizer->Hide(editBox);
+            Fit();
+            topSizer->Layout();
+        }
+    } else {
+        if (!topSizer->IsShown(messageBox)) {
+            topSizer->Show(messageBox);
+            topSizer->Hide(controlBox);
+            topSizer->Hide(advancedBox);
+            topSizer->Hide(editBox);
+            messageBox->Layout();
+            Fit();
+            topSizer->Layout();
+        }
+    }
+    
+    editBox->Layout();
+    topSizer->Layout();
 }

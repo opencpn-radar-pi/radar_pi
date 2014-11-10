@@ -87,8 +87,7 @@ enum {
     ID_HEADINGSLIDER,
 };
 
-bool br_bpos_set = true;
-bool bpos_warn_msg = false;
+bool br_bpos_set = false;
 double br_ownship_lat, br_ownship_lon;
 double cur_lat, cur_lon;
 double br_hdm;
@@ -106,8 +105,12 @@ RadarType br_radar_type = RT_BR24;
 
 long  br_display_interval(0);
 
-wxDateTime  watchdog;
-wxDateTime  br_dt_stayalive;
+time_t      br_bpos_watchdog;
+time_t      br_hdt_watchdog;
+#define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
+time_t      br_dt_stayalive;
+#define     STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
+
 
 bool  br_bshown_dc_message;
 wxTextCtrl        *plogtc;
@@ -119,7 +122,8 @@ bool  guard_context_mode;
 wxSound     RadarAlarm;     //This is the Devil
 wxString    RadarAlertAudioFile;
 bool        guard_bogey_confirmed = false;
-wxDateTime  alarm_sound_last;
+time_t      alarm_sound_last;
+#define     ALARM_TIMEOUT (10)
 
 // static wxCriticalSection br_scanLock;
 
@@ -373,10 +377,11 @@ int br24radar_pi::Init(void)
     }
 #endif
 
-    watchdog = wxDateTime::Now();
-    br_dt_stayalive = wxDateTime::Now();
-    alarm_sound_last = wxDateTime::Now();
-
+    br_dt_stayalive = time(0);
+    alarm_sound_last = br_dt_stayalive;
+    br_bpos_watchdog = 0;
+    br_hdt_watchdog  = 0;
+    
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
     m_sent_bm_id_rollover =  -1;
@@ -963,38 +968,38 @@ void br24radar_pi::OnToolbarToolCallback(int id)
 
 void br24radar_pi::DoTick(void)
 {
-    wxDateTime now = wxDateTime::Now();
+    time_t now = time(0);
     static time_t previousTicks = 0;
 
-    if (now.GetTicks() == previousTicks) {
+    if (now == previousTicks) {
         // Repeated call during scroll, do not do Tick processing
         return;
     }
-    previousTicks = now.GetTicks();
+    previousTicks = now;
 
-    long delta_t = now.Subtract(watchdog).GetSeconds().ToLong();
-    if (delta_t > 60) {
-        // If the position data is over one minute old reset our heading and sound an guard.
+    if (br_bpos_set && (now - br_bpos_watchdog >= WATCHDOG_TIMEOUT)) {
+        // If the position data is 10s old reset our heading.
         // Note that the watchdog is continuously reset every time we receive a heading.
         br_bpos_set = false;
+        if (m_pControlDialog) {
+            m_pControlDialog->UpdateMessage(br_bpos_set, m_hdt_source > 0);
+        }
+        wxLogMessage(wxT("BR24radar_pi: Lost Boat Position data"));
+    }
+    if (m_hdt_source > 0 && (now - br_hdt_watchdog >= WATCHDOG_TIMEOUT)) {
+        // If the position data is 10s old reset our heading.
+        // Note that the watchdog is continuously reset every time we receive a heading
         m_hdt_source = 0;
-        watchdog = now;
+        if (m_pControlDialog) {
+            m_pControlDialog->UpdateMessage(br_bpos_set, m_hdt_source > 0);
+        }
+        wxLogMessage(wxT("BR24radar_pi: Lost Heading data"));
     }
-
-#ifdef NEVER
-    if ((br_bpos_set == bpos_warn_msg)) {       // needs synchronization
-        wxString message(_("The Radar Overlay has lost GPS position and heading data"));
-        wxMessageDialog dlg(GetOCPNCanvasWindow(),  message, wxT("System Message"), wxOK);
-        dlg.ShowModal();
-        bpos_warn_msg = true;
-    }
-#endif
 
     if (m_statistics.spokes > m_statistics.broken_spokes) { // Something coming from radar unit?
         br_scanner_state = RADAR_ON ;
         if (settings.master_mode) {
-            delta_t = now.Subtract(br_dt_stayalive).GetSeconds().ToLong();
-            if (delta_t > 5) {
+            if (now - br_dt_stayalive >= STAYALIVE_TIMEOUT) {
                 br_dt_stayalive = now;
                 RadarStayAlive();
             }
@@ -1169,7 +1174,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     double radar_pixels_per_meter = 512. / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
 
-    if (m_hdt_source > 0) {
+    if (br_bpos_set && m_hdt_source > 0) {
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
         if (br_range_meters && br_scanner_state == RADAR_ON) { // only draw radar if something received
@@ -1184,9 +1189,6 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
                 RenderGuardZone(radar_center, v_scale_ppm, vp);
             }
         }
-    } else {
-        // Show what is wrong and why we are not rendering
-        wxLogMessage(wxT("BR24radar_pi: Not showing overlay as the boat heading is unknown"));
     }
     glPopMatrix();
     glPopAttrib();
@@ -1469,10 +1471,9 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
             m_pGuardZoneBogey->Show();
         }
 
-        wxDateTime now = wxDateTime::Now();
-        int delta_t = now.Subtract(alarm_sound_last).GetSeconds().ToLong();
-        const int alarm_interval = 10;
-        if (!guard_bogey_confirmed && delta_t >= alarm_interval) {
+        time_t now = time(0);
+        int delta_t = now - alarm_sound_last;
+        if (!guard_bogey_confirmed && delta_t >= ALARM_TIMEOUT) {
             // If the last time is 10 seconds ago we ping a sound, unless the user confirmed
             alarm_sound_last = now;
 
@@ -1483,9 +1484,9 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
                 wxBell();
             }
             m_pGuardZoneBogey->Show();
-            delta_t = alarm_interval;
+            delta_t = ALARM_TIMEOUT;
         }
-        m_pGuardZoneBogey->SetBogeyCount(bogey_count, guard_bogey_confirmed ? -1 : alarm_interval - delta_t);
+        m_pGuardZoneBogey->SetBogeyCount(bogey_count, guard_bogey_confirmed ? -1 : ALARM_TIMEOUT - delta_t);
     }
 
     if (!bogeysFound) {
@@ -1657,20 +1658,15 @@ bool br24radar_pi::SaveConfig(void)
     return false;
 }
 
+
 // Positional Data passed from NMEA to plugin
 void br24radar_pi::SetPositionFix(PlugIn_Position_Fix &pfix)
 {
-    br_ownship_lat = pfix.Lat;
-    br_ownship_lon = pfix.Lon;
-
-    br_bpos_set = true;
-    bpos_warn_msg = false;
 }
 
 void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 {
-    br_ownship_lat = pfix.Lat;
-    br_ownship_lon = pfix.Lon;
+    time_t now = time(0);
 
     if (!wxIsNaN(pfix.Hdt))
     {
@@ -1679,6 +1675,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
            wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
         }
         m_hdt_source = 1;
+        br_hdt_watchdog = now;
     }
     else if (!wxIsNaN(pfix.Hdm) && !wxIsNaN(pfix.Var))
     {
@@ -1688,25 +1685,30 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM"));
         }
         m_hdt_source = 2;
+        br_hdt_watchdog = now;
     }
-    else if (!wxIsNaN(pfix.Cog))
+    else if (!wxIsNaN(pfix.Cog) && (m_hdt_source == 3 || (now - br_hdt_watchdog <= WATCHDOG_TIMEOUT / 2)))
     {
         br_hdt = pfix.Cog;
         if (m_hdt_source != 3) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
         }
         m_hdt_source = 3;
+        br_hdt_watchdog = now;
     }
 
-    /*
-    if (settings.verbose) {
-        wxLogMessage(wxT("BR24radar_pi: Heading %f"), br_hdt);
+    if (pfix.FixTime && now - pfix.FixTime <= WATCHDOG_TIMEOUT) {
+        br_ownship_lat = pfix.Lat;
+        br_ownship_lon = pfix.Lon;
+        if (!br_bpos_set) {
+            wxLogMessage(wxT("BR24radar_pi: GPS position is now known"));
+        }
+        br_bpos_set = true;
+        br_bpos_watchdog = now;
     }
-    */
-
-    br_bpos_set = true;
-    bpos_warn_msg = false;
-    watchdog = wxDateTime::Now();
+    if (m_pControlDialog) {
+        m_pControlDialog->UpdateMessage(br_bpos_set, m_hdt_source > 0);
+    }
 }
 
 //**************** Cursor position events **********************
@@ -2074,16 +2076,19 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
             }
             if (!wxIsNaN(m_NMEA0183.Hdg.MagneticSensorHeadingDegrees) ) {
                 br_hdt = m_NMEA0183.Hdg.MagneticSensorHeadingDegrees + m_var;
+                br_hdt_watchdog = time(0);
             }
         }
         else if (m_hdt_source == 2 && m_NMEA0183.LastSentenceIDReceived == _T("HDM") && m_NMEA0183.Parse()) {
             if (!wxIsNaN(m_NMEA0183.Hdm.DegreesMagnetic)) {
                 br_hdt = m_NMEA0183.Hdm.DegreesMagnetic + m_var;
+                br_hdt_watchdog = time(0);
             }
         }
         else if (m_hdt_source == 1 && m_NMEA0183.LastSentenceIDReceived == _T("HDT") && m_NMEA0183.Parse()) {
             if (!wxIsNaN(m_NMEA0183.Hdt.DegreesTrue)) {
-                 br_hdt = m_NMEA0183.Hdt.DegreesTrue;
+                br_hdt = m_NMEA0183.Hdt.DegreesTrue;
+                br_hdt_watchdog = time(0);
             }
         }
     }
@@ -2209,15 +2214,17 @@ static int my_inet_aton(const char *cp, struct in_addr *addr)
 
 static bool socketReady( SOCKET sockfd, int timeout )
 {
+    int r;
     fd_set fdin;
     struct timeval tv = { (long) timeout, 0 };
 
     FD_ZERO(&fdin);
     if (sockfd >= (SOCKET) 0) {
         FD_SET(sockfd, &fdin);
+        r = select(sockfd + 1, &fdin, 0, &fdin, &tv);
+    } else {
+        r = select(0, 0, 0, 0, &tv);
     }
-
-    int r = select(sockfd + 1, &fdin, 0, &fdin, &tv);
 
     return r > 0;
 }
@@ -2285,7 +2292,7 @@ void *RadarDataReceiveThread::Entry(void)
     int n_rx_once = 0;
     while (!*m_quit) {
         if (pPlugIn->settings.display_mode == DM_EMULATOR) {
-            socketReady(-1, 1);
+            socketReady(-1, 1); // sleep for 1s
             emulate_fake_buffer();
         }
         else {
@@ -2432,7 +2439,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
  */
 void RadarDataReceiveThread::emulate_fake_buffer(void)
 {
-    wxDateTime now = wxDateTime::Now();
+    wxDateTime now = wxDateTime::UNow();
 
     static int next_scan_number = 0;
     pPlugIn->m_statistics.packets++;
@@ -2476,7 +2483,9 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
         pPlugIn->m_scan_line[angle_raw].range = range_meters;
         pPlugIn->m_scan_line[angle_raw].age = now;
     }
-    wxLogMessage(wxT("BR24radar_pi: emulating %d spokes at range %d with %d spots"), scanlines_in_packet, range_meters, spots);
+    if (pPlugIn->settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: emulating %d spokes at range %d with %d spots"), scanlines_in_packet, range_meters, spots);
+    }
 }
 
 

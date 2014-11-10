@@ -39,7 +39,7 @@
 #endif //precompiled headers
 
 #define     PLUGIN_VERSION_MAJOR    0
-#define     PLUGIN_VERSION_MINOR    41108
+#define     PLUGIN_VERSION_MINOR    41110
 
 #define     MY_API_VERSION_MAJOR    1
 #define     MY_API_VERSION_MINOR    8
@@ -655,6 +655,7 @@ public:
     void SetRangeIndex(size_t index);
     void SetAutoRangeIndex(size_t index);
     void UpdateGuardZoneState();
+    void UpdateMessage(bool haveGPS, bool haveHeading);
 
     wxStaticText       *tStatistics;
 
@@ -685,12 +686,17 @@ private:
     br24radar_pi      *pPlugIn;
 
     wxBoxSizer        *topSizer;
+    wxBoxSizer        *messageBox;   // Contains NO HDG and/or NO GPS
     wxBoxSizer        *editBox;
     wxBoxSizer        *advancedBox;
     wxBoxSizer        *controlBox;
 
     wxBoxSizer        *fromBox; // If on edit control, this is where the button is from
 
+    // MessageBox
+    wxStaticText       *tMessage;
+    wxCheckBox         *cbBoatPos;
+    wxCheckBox         *cbHeading;
 
     // Edit Controls
 
