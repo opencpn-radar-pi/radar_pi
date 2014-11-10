@@ -63,7 +63,7 @@ enum {                                      // process ID's
     ID_ALARMZONES
 };
 
-wxString GuardZoneNames[3] = { wxT("Off"), wxT("Arc"), wxT("Circle") };
+wxString GuardZoneNames[3] = { _("Off"), _("Arc"), _("Circle") };
 
 bool    outer_set;
 
@@ -129,14 +129,14 @@ void GuardZoneDialog::CreateControls()
     SetSizer(GuardZoneSizer);
 
     // Guard Zone options
-    wxStaticBox         *BoxGuardZone = new wxStaticBox(this, wxID_ANY, _("Guard Zones"));
+    wxStaticBox         *BoxGuardZone = new wxStaticBox(this, wxID_ANY, _("Guard zones"));
     wxStaticBoxSizer    *BoxGuardZoneSizer = new wxStaticBoxSizer(BoxGuardZone, wxVERTICAL);
     GuardZoneSizer->Add(BoxGuardZoneSizer, 0, wxEXPAND | wxALL, border_size);
 
     pZoneNumber = new wxTextCtrl(this, wxID_ANY);
     BoxGuardZoneSizer->Add(pZoneNumber, 1, wxALIGN_LEFT | wxALL, 5);
 
-    pGuardZoneType = new wxRadioBox (this, ID_ALARMZONES, _("Zone Type:"),
+    pGuardZoneType = new wxRadioBox (this, ID_ALARMZONES, _("Zone type:"),
                                             wxDefaultPosition, wxDefaultSize,
                                             3, GuardZoneNames, 1, wxRA_SPECIFY_COLS );
 
@@ -148,7 +148,7 @@ void GuardZoneDialog::CreateControls()
 
     //Inaner and Outer Ranges
     wxString m_temp;
-    wxStaticText *pInner_Range_Text = new wxStaticText(this, wxID_ANY, _("Inner Range"),wxDefaultPosition,
+    wxStaticText *pInner_Range_Text = new wxStaticText(this, wxID_ANY, _("Inner range"),wxDefaultPosition,
         wxDefaultSize, 0);
     BoxGuardZoneSizer->Add(pInner_Range_Text, 0, wxALIGN_LEFT | wxALL, 0);
 
@@ -157,7 +157,7 @@ void GuardZoneDialog::CreateControls()
     pInner_Range->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                                            wxCommandEventHandler(GuardZoneDialog::OnInner_Range_Value), NULL, this);
 
-    wxStaticText *pOuter_Range_Text = new wxStaticText(this, wxID_ANY, _("Outer Range"),wxDefaultPosition,
+    wxStaticText *pOuter_Range_Text = new wxStaticText(this, wxID_ANY, _("Outer range"),wxDefaultPosition,
         wxDefaultSize, 0);
     BoxGuardZoneSizer->Add(pOuter_Range_Text, 0, wxALIGN_LEFT | wxALL, 0);
 
@@ -167,7 +167,7 @@ void GuardZoneDialog::CreateControls()
                                            wxCommandEventHandler(GuardZoneDialog::OnOuter_Range_Value), NULL, this);
 
     //1st and 2nd Arc Subtending Bearings
-    wxStaticText *pStart_Bearing = new wxStaticText(this, wxID_ANY, _("Start Bearing"),wxDefaultPosition,
+    wxStaticText *pStart_Bearing = new wxStaticText(this, wxID_ANY, _("Start bearing"),wxDefaultPosition,
         wxDefaultSize, 0);
     BoxGuardZoneSizer->Add(pStart_Bearing, 0, wxALIGN_LEFT | wxALL, 0);
 
@@ -177,7 +177,7 @@ void GuardZoneDialog::CreateControls()
                                            wxCommandEventHandler(GuardZoneDialog::OnStart_Bearing_Value), NULL, this);
 
 
-    wxStaticText *pEnd_Bearing = new wxStaticText(this, wxID_ANY, _("End Bearing"),wxDefaultPosition,
+    wxStaticText *pEnd_Bearing = new wxStaticText(this, wxID_ANY, _("End bearing"),wxDefaultPosition,
         wxDefaultSize, 0);
     BoxGuardZoneSizer->Add(pEnd_Bearing, 0, wxALIGN_LEFT | wxALL, 0);
 

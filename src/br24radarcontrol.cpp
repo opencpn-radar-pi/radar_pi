@@ -217,11 +217,11 @@ static const int METRIC_RANGE_COUNT = 18;
 
 static const int g_range_maxValue[2] = { MILE_RANGE_COUNT, METRIC_RANGE_COUNT };
 
-static const wxString g_interference_rejection_names[4]    = { wxT("Off"), wxT("Low"), wxT("Medium"), wxT("High") };
-static const wxString g_target_separation_names[4]    = { wxT("Off"), wxT("Low"), wxT("Medium"), wxT("High") };
-static const wxString g_noise_rejection_names[3] = { wxT("Off"), wxT("Low"), wxT("High") };
-static const wxString g_target_boost_names[3] = { wxT("Off"), wxT("Low"), wxT("High") };
-static const wxString g_scan_speed_names[2]   = { wxT("Normal"), wxT("Fast") };
+static const wxString g_interference_rejection_names[4]    = { _("Off"), _("Low"), _("Medium"), _("High") };
+static const wxString g_target_separation_names[4]    = { _("Off"), _("Low"), _("Medium"), _("High") };
+static const wxString g_noise_rejection_names[3] = { _("Off"), _("Low"), _("High") };
+static const wxString g_target_boost_names[3] = { _("Off"), _("Low"), _("High") };
+static const wxString g_scan_speed_names[2]   = { _("Normal"), _("Fast") };
 
 extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
 {
@@ -277,7 +277,7 @@ void RadarControlButton::SetAuto()
 {
     wxString label;
 
-    label.Printf(wxT("%s\nAUTO"), firstLine);
+    label << _("Auto") << wxT("\n") << firstLine;
     this->SetLabel(label);
 
     isAuto = true;
@@ -303,10 +303,10 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     wxString rangeText = value < 0 ? wxT("?") : g_range_names[units][value];
 
     if (pPlugIn->settings.auto_range_mode) {
-        label.Printf(wxT("%s\nAUTO (%s)"), firstLine, rangeText);
+        label << firstLine << wxT("\n") << _("Auto") << wxT(" (") << rangeText << wxT(")");
     }
-    else{
-        label.Printf(wxT("%s\n%s"), firstLine, rangeText);
+    else {
+        label << firstLine << wxT("\n") << rangeText;
     }
     this->SetLabel(label);
     wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d val=%d"), rangeText, pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
@@ -354,31 +354,21 @@ bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID 
     pParent = parent;
     pPlugIn = ppi;
 
-    g_font = *OCPNGetFont(_("Dialog"), 14);
-    wxButton *t = new wxButton(parent, id, wxT("AUTO (1/16 NM) WITH"));
-    t->SetFont(g_font);
-    g_buttonSize = wxSize(t->GetClientSize().GetWidth() + 10, 50);
-    if (ppi->settings.verbose) {
-        wxLogMessage(wxT("BR24radar_pi: Dynamic button width = %d"), g_buttonSize.GetWidth());
-    }
-
 #ifdef wxMSW
     long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
 #else
     long wstyle =                 wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
 #endif
 
-    // Determine desired button width
-
-    wxSize size_min = wxSize(g_buttonSize.GetWidth(), 4 * g_buttonSize.GetHeight());
-    if (!wxDialog::Create(parent, id, caption, pos, size_min, wstyle)) {
+    if (!wxDialog::Create(parent, id, caption, pos, wxDefaultSize, wstyle)) {
         return false;
     }
-
+    g_font = *OCPNGetFont(_("Dialog"), 12);
+    
     CreateControls();
-    DimeWindow(this);
+    DimeWindow(this); // Call OpenCPN to change colours depending on day/night mode
     Fit();
-    size_min = GetBestSize();
+    wxSize size_min = GetBestSize();
     SetMinSize(size_min);
     SetSize(size_min);
     return true;
@@ -390,7 +380,6 @@ void BR24ControlsDialog::CreateControls()
     wxFont fatFont = g_font;
     fatFont.SetWeight(wxFONTWEIGHT_BOLD);
     fatFont.SetPointSize(g_font.GetPointSize() + 1);
-
 
     // A top-level sizer
     topSizer = new wxBoxSizer(wxVERTICAL);
@@ -404,10 +393,52 @@ void BR24ControlsDialog::CreateControls()
     messageBox = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(messageBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
-    tMessage = new wxStaticText(this, ID_BPOS, _("Radar overlay requires the following data"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    /*
+     * Here come dragons... Since I haven't been able to create buttons that adapt up, and at the same time
+     * calculate the biggest button, and I want all buttons to be the same width I use a trick.
+     * I generate a multiline StaticText containing all the (long) button labels and find out what the width
+     * of that is, and then generate the buttons using that width.
+     * I know, this is a hack, but this way it works relatively nicely even with translations.
+     */
+    wxString label;
+    label << _("Transparency") << wxT("\n");
+    label << _("Interference rejection") << wxT("\n");
+    label << _("Target separation") << wxT("\n");
+    label << _("Noise rejection") << wxT("\n");
+    label << _("Target boost") << wxT("\n");
+    label << _("Downsample") << wxT("\n");
+    label << _("Scan speed") << wxT("\n");
+    label << _("Scan age") << wxT("\n");
+    label << _("Gain") << wxT("\n");
+    label << _("Sea clutter") << wxT("\n");
+    label << _("Rain clutter") << wxT("\n");
+    label << _("Auto") << wxT(" (1/20 Nm)\n");
+
+    tMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     messageBox->Add(tMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    
+    tMessage->SetFont(g_font);
+    topSizer->Fit(this);
+    topSizer->Layout();
+    int width = topSizer->GetSize().GetWidth() + 10;
+    if (width < 60) {
+        width = 60;
+    }
+    if (width > 300) {
+        width = 300;
+    }
+    g_buttonSize = wxSize(width, 50);
+    if (pPlugIn->settings.verbose) {
+        wxLogMessage(wxT("BR24radar_pi: Dynamic button width = %d"), g_buttonSize.GetWidth());
+    }
+    // Determined desired button width
+
+    // Now set actual text for tMessage 
+    tMessage->SetLabel(_("Radar overlay requires the following data"));
     tMessage->SetFont(msg_font);
  
+
+
     cbBoatPos = new wxCheckBox(this, ID_BPOS, _("Boat position"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     messageBox->Add(cbBoatPos, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
     cbBoatPos->SetFont(msg_font);
@@ -470,7 +501,9 @@ void BR24ControlsDialog::CreateControls()
     topSizer->Add(advancedBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
     // The Back button
-    bAdvancedBack = new wxButton(this, ID_ADVANCED_BACK, _("<<\nBack"), wxDefaultPosition, g_buttonSize, 0);
+    wxString backButtonStr;
+    backButtonStr << wxT("<<\n") << _("Back");
+    bAdvancedBack = new wxButton(this, ID_ADVANCED_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
     advancedBox->Add(bAdvancedBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bAdvancedBack->SetFont(g_font);
 
@@ -481,7 +514,7 @@ void BR24ControlsDialog::CreateControls()
     bTransparency->maxValue = MAX_OVERLAY_TRANSPARENCY;
 
     // The REJECTION button
-    bInterferenceRejection = new RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interf. Rej"), pPlugIn, CT_INTERFERENCE_REJECTION, false, pPlugIn->settings.interference_rejection);
+    bInterferenceRejection = new RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"), pPlugIn, CT_INTERFERENCE_REJECTION, false, pPlugIn->settings.interference_rejection);
     advancedBox->Add(bInterferenceRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bInterferenceRejection->minValue = 0;
     bInterferenceRejection->maxValue = ARRAY_SIZE(g_interference_rejection_names) - 1;
@@ -489,7 +522,7 @@ void BR24ControlsDialog::CreateControls()
     bInterferenceRejection->SetValue(pPlugIn->settings.interference_rejection); // redraw after adding names
 
     // The TARGET SEPARATION button
-    bTargetSeparation = new RadarControlButton(this, ID_TARGET_SEPARATION, _("Target Sep."), pPlugIn, CT_TARGET_SEPARATION, false, pPlugIn->settings.target_separation);
+    bTargetSeparation = new RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"), pPlugIn, CT_TARGET_SEPARATION, false, pPlugIn->settings.target_separation);
     advancedBox->Add(bTargetSeparation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bTargetSeparation->minValue = 0;
     bTargetSeparation->maxValue = ARRAY_SIZE(g_target_separation_names) - 1;
@@ -497,7 +530,7 @@ void BR24ControlsDialog::CreateControls()
     bTargetSeparation->SetValue(pPlugIn->settings.target_separation); // redraw after adding names
 
     // The NOISE REJECTION button
-    bNoiseRejection = new RadarControlButton(this, ID_NOISE_REJECTION, _("Noise Rej"), pPlugIn, CT_NOISE_REJECTION, false, pPlugIn->settings.noise_rejection);
+    bNoiseRejection = new RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), pPlugIn, CT_NOISE_REJECTION, false, pPlugIn->settings.noise_rejection);
     advancedBox->Add(bNoiseRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bNoiseRejection->minValue = 0;
     bNoiseRejection->maxValue = ARRAY_SIZE(g_noise_rejection_names) - 1;
@@ -505,7 +538,7 @@ void BR24ControlsDialog::CreateControls()
     bNoiseRejection->SetValue(pPlugIn->settings.noise_rejection); // redraw after adding names
 
     // The TARGET BOOST button
-    bTargetBoost = new RadarControlButton(this, ID_TARGET_BOOST, _("Target Boost"), pPlugIn, CT_TARGET_BOOST, false, pPlugIn->settings.target_boost);
+    bTargetBoost = new RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), pPlugIn, CT_TARGET_BOOST, false, pPlugIn->settings.target_boost);
     advancedBox->Add(bTargetBoost, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bTargetBoost->minValue = 0;
     bTargetBoost->maxValue = ARRAY_SIZE(g_target_boost_names) - 1;
@@ -519,7 +552,7 @@ void BR24ControlsDialog::CreateControls()
     bDownsample->maxValue = 8;
 
     // The SCAN SPEED button
-    bScanSpeed = new RadarControlButton(this, ID_SCAN_SPEED, _("Scan Speed"), pPlugIn, CT_SCAN_SPEED, false, pPlugIn->settings.scan_speed);
+    bScanSpeed = new RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), pPlugIn, CT_SCAN_SPEED, false, pPlugIn->settings.scan_speed);
     advancedBox->Add(bScanSpeed, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bScanSpeed->minValue = 0;
     bScanSpeed->maxValue = ARRAY_SIZE(g_scan_speed_names) - 1;
@@ -527,7 +560,7 @@ void BR24ControlsDialog::CreateControls()
     bScanSpeed->SetValue(pPlugIn->settings.scan_speed); // redraw after adding names
 
         // The SCAN AGE button
-    bScanAge = new RadarControlButton(this, ID_SCAN_AGE, _("Scan Age"), pPlugIn, CT_SCAN_AGE, false, pPlugIn->settings.max_age);
+    bScanAge = new RadarControlButton(this, ID_SCAN_AGE, _("Scan age"), pPlugIn, CT_SCAN_AGE, false, pPlugIn->settings.max_age);
     advancedBox->Add(bScanAge, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bScanAge->minValue = 1;
     bScanAge->maxValue = 12;
@@ -557,25 +590,25 @@ void BR24ControlsDialog::CreateControls()
     controlBox->Add(bGain, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 
     // The SEA button
-    bSea = new RadarControlButton(this, ID_SEA, _("Sea Clutter"), pPlugIn, CT_SEA, true, pPlugIn->settings.sea_clutter_gain);
+    bSea = new RadarControlButton(this, ID_SEA, _("Sea clutter"), pPlugIn, CT_SEA, true, pPlugIn->settings.sea_clutter_gain);
     controlBox->Add(bSea, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 
     // The RAIN button
-    bRain = new RadarControlButton(this, ID_RAIN, _("Rain Clutter"), pPlugIn, CT_RAIN, false, pPlugIn->settings.rain_clutter_gain);
+    bRain = new RadarControlButton(this, ID_RAIN, _("Rain clutter"), pPlugIn, CT_RAIN, false, pPlugIn->settings.rain_clutter_gain);
     controlBox->Add(bRain, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 
     // The ADVANCED button
-    bAdvanced = new wxButton(this, ID_ADVANCED, _("Advanced\nControls"), wxDefaultPosition, g_buttonSize, 0);
+    bAdvanced = new wxButton(this, ID_ADVANCED, _("Advanced\ncontrols"), wxDefaultPosition, g_buttonSize, 0);
     controlBox->Add(bAdvanced, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bAdvanced->SetFont(g_font);
 
     // The GUARD ZONE 1 button
-    bGuard1 = new wxButton(this, ID_ZONE1, _("Guard Zone 1"), wxDefaultPosition, g_buttonSize, 0);
+    bGuard1 = new wxButton(this, ID_ZONE1, _("Guard zone 1"), wxDefaultPosition, g_buttonSize, 0);
     controlBox->Add(bGuard1, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bGuard1->SetFont(g_font);
 
     // The GUARD ZONE 2 button
-    bGuard2 = new wxButton(this, ID_ZONE2, _("Guard Zone 2"), wxDefaultPosition, g_buttonSize, 0);
+    bGuard2 = new wxButton(this, ID_ZONE2, _("Guard zone 2"), wxDefaultPosition, g_buttonSize, 0);
     controlBox->Add(bGuard2, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bGuard2->SetFont(g_font);
 
@@ -590,10 +623,10 @@ void BR24ControlsDialog::UpdateGuardZoneState()
 {
     wxString label;
 
-    label.Printf(wxT("Guard Zone 1\n%s"), GuardZoneNames[pPlugIn->guardZones[0].type]);
+    label.Printf(wxT("%s 1\n%s"), _("Guard zone"), GuardZoneNames[pPlugIn->guardZones[0].type]);
     bGuard1->SetLabel(label);
 
-    label.Printf(wxT("Guard Zone 2\n%s"), GuardZoneNames[pPlugIn->guardZones[1].type]);
+    label.Printf(wxT("%s 2\n%s"), _("Guard zone"), GuardZoneNames[pPlugIn->guardZones[1].type]);
     bGuard2->SetLabel(label);
 }
 

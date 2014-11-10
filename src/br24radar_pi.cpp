@@ -1059,7 +1059,7 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
     if (0 == br_bshown_dc_message) {
         br_bshown_dc_message = 1;
         wxString message(_("The Radar Overlay PlugIn requires the Accelerated Graphics (OpenGL) mode to be activated in Options->Display->Chart Display Options"));
-        wxMessageDialog dlg(GetOCPNCanvasWindow(),  message, wxT("br24radar message"), wxOK);
+        wxMessageDialog dlg(GetOCPNCanvasWindow(),  message, _("br24radar message"), wxOK);
         dlg.ShowModal();
     }
 
@@ -2275,7 +2275,7 @@ void *RadarDataReceiveThread::Entry(void)
     struct in_addr recvAddr;
 
     if (!my_inet_aton(pPlugIn->settings.radar_interface.mb_str().data(), &recvAddr)) {
-        wxLogError(wxT("Unable to determine address of %s"), pPlugIn->settings.radar_interface.mb_str().data());
+        wxLogError(wxT("BR24radar_pi: Unable to determine address of %s"), pPlugIn->settings.radar_interface.mb_str().data());
         closesocket(rx_socket);
         return 0;
     }
@@ -2287,7 +2287,7 @@ void *RadarDataReceiveThread::Entry(void)
 
     r = setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq));
     if (r) {
-        wxLogError(wxT("Unable to listen to multicast group: %s"), SOCKETERRSTR);
+        wxLogError(wxT("BR24radar_pi: Unable to listen to multicast group: %s"), SOCKETERRSTR);
         closesocket(rx_socket);
         return 0;
     }
@@ -2544,7 +2544,7 @@ void *RadarCommandReceiveThread::Entry(void)
     struct in_addr recvAddr;
 
     if (!my_inet_aton(pPlugIn->settings.radar_interface.mb_str().data(), &recvAddr)) {
-        wxLogError(wxT("Unable to determine address of %s"), pPlugIn->settings.radar_interface.mb_str().data());
+        wxLogError(wxT("BR24radar_pi: Unable to determine address of %s"), pPlugIn->settings.radar_interface.mb_str().data());
         closesocket(rx_socket);
         return 0;
     }
@@ -2556,7 +2556,7 @@ void *RadarCommandReceiveThread::Entry(void)
 
     r = setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq));
     if (r) {
-        wxLogError(wxT("Unable to listen to multicast group: %s"), SOCKETERRSTR);
+        wxLogError(wxT("BR24radar_pi: Unable to listen to multicast group: %s"), SOCKETERRSTR);
         closesocket(rx_socket);
         return 0;
     }
@@ -2641,7 +2641,7 @@ void *RadarReportReceiveThread::Entry(void)
     struct in_addr recvAddr;
 
     if (!my_inet_aton(pPlugIn->settings.radar_interface.mb_str().data(), &recvAddr)) {
-        wxLogError(wxT("Unable to determine address of %s"), pPlugIn->settings.radar_interface.mb_str().data());
+        wxLogError(wxT("BR24radar_pi: Unable to determine address of %s"), pPlugIn->settings.radar_interface.mb_str().data());
         closesocket(rx_socket);
         return 0;
     }
@@ -2653,7 +2653,7 @@ void *RadarReportReceiveThread::Entry(void)
 
     r = setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq));
     if (r) {
-        wxLogError(wxT("Unable to listen to multicast group: %s"), SOCKETERRSTR);
+        wxLogError(wxT("BR24radar_pi: Unable to listen to multicast group: %s"), SOCKETERRSTR);
         closesocket(rx_socket);
         return 0;
     }
