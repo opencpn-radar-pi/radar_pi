@@ -150,7 +150,7 @@ void GuardZoneDialog::CreateControls()
                                 wxCommandEventHandler(GuardZoneDialog::OnGuardZoneModeClick),
                                 NULL, this );
 
-    //Inaner and Outer Ranges
+    //Inner and Outer Ranges
     wxString m_temp;
     wxStaticText *pInner_Range_Text = new wxStaticText(this, wxID_ANY, _("Inner range"),wxDefaultPosition,
         wxDefaultSize, 0);
@@ -227,16 +227,20 @@ void GuardZoneDialog::SetVisibility()
 
 void GuardZoneDialog::OnGuardZoneDialogShow(int zone)
 {
+    double conversionFactor = RangeUnitsToMeters[pPlugIn->settings.range_units];
+
     wxString GuardZoneText;
-    GuardZoneText.Printf(_T("%s: %i"),_("Zone"), zone + 1);
+    wxString t;
+    t.Printf(_T(": %d"), zone + 1);
+    GuardZoneText << _("Zone") << t;
     pZoneNumber->SetValue(GuardZoneText);
 
     pGuardZoneType->SetSelection(pPlugIn->guardZones[zone].type);
 
-    GuardZoneText.Printf(wxT("%2.2f"), pPlugIn->guardZones[zone].inner_range);
+    GuardZoneText.Printf(wxT("%2.2f"), pPlugIn->guardZones[zone].inner_range / conversionFactor);
     pInner_Range->SetValue(GuardZoneText);
 
-    GuardZoneText.Printf(wxT("%2.2f"), pPlugIn->guardZones[zone].outer_range);
+    GuardZoneText.Printf(wxT("%2.2f"), pPlugIn->guardZones[zone].outer_range / conversionFactor);
     pOuter_Range->SetValue(GuardZoneText);
 
     GuardZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].start_bearing);
@@ -256,15 +260,23 @@ void GuardZoneDialog::OnGuardZoneModeClick(wxCommandEvent &event)
 void GuardZoneDialog::OnInner_Range_Value(wxCommandEvent &event)
 {
     wxString temp = pInner_Range->GetValue();
+    double t;
+    temp.ToDouble(&t);
+    
+    int conversionFactor = RangeUnitsToMeters[pPlugIn->settings.range_units];
 
-    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].inner_range);
+    pPlugIn->guardZones[pPlugIn->settings.guard_zone].inner_range = (int) (t * conversionFactor);
 }
 
 void GuardZoneDialog::OnOuter_Range_Value(wxCommandEvent &event)
 {
     wxString temp = pOuter_Range->GetValue();
+    double t;
+    temp.ToDouble(&t);
+    
+    int conversionFactor = RangeUnitsToMeters[pPlugIn->settings.range_units];
 
-    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range);
+    pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range = (int) (t * conversionFactor);
 }
 
 void GuardZoneDialog::OnStart_Bearing_Value(wxCommandEvent &event)

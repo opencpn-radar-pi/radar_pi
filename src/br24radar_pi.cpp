@@ -1317,20 +1317,20 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             if (br_radar_state == RADAR_ON) {
                 for (size_t z = 0; z < GUARD_ZONES; z++) {
                     if (guardZones[z].type != GZ_OFF) {
-                        double inner_range = guardZones[z].inner_range;
-                        double outer_range = guardZones[z].outer_range;
-                        double bogey_range = (radius / 512.0) * (max_range / 1852.0);
-                        double angle_1 = guardZones[z].start_bearing;
-                        double angle_2 = guardZones[z].end_bearing;
+                        int inner_range = guardZones[z].inner_range; // now in meters
+                        int outer_range = guardZones[z].outer_range; // now in meters
+                        int bogey_range = radius * max_range / 512;
+                        if (bogey_range > inner_range && bogey_range < outer_range) {
+                            double angle_1 = guardZones[z].start_bearing;
+                            double angle_2 = guardZones[z].end_bearing;
 
-                        if (angle_1 > angle_2) {
-                            angle_2 += 360.0;
-                        }
-                        if (angle_1 > angleDeg) {
-                            angleDeg += 360.0;
-                        }
-                        if (angleDeg > angle_1 && angleDeg < angle_2) {
-                            if (bogey_range > inner_range && bogey_range < outer_range) {
+                            if (angle_1 > angle_2) {
+                                angle_2 += 360.0;
+                            }
+                            if (angle_1 > angleDeg) {
+                                angleDeg += 360.0;
+                            }
+                            if (angleDeg > angle_1 && angleDeg < angle_2) {
                                 bogey_count[z]++;
                             }
                         }
@@ -1411,9 +1411,7 @@ void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, Plu
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    double ppNM;
-
-    ppNM = v_scale_ppm * 1852.0 ;          // screen pixels per nautical mile to screen pixels per meter
+    
     int start_bearing, end_bearing;
     GLubyte red = 0, green = 200, blue = 0, alpha = 50;
 
@@ -1430,15 +1428,15 @@ void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, Plu
             switch (settings.guard_zone_render_style) {
             case 1:
                 glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
-                DrawOutlineArc(guardZones[z].outer_range * ppNM, guardZones[z].inner_range * ppNM, start_bearing, end_bearing, true);
+                DrawOutlineArc(guardZones[z].outer_range * v_scale_ppm, guardZones[z].inner_range * v_scale_ppm, start_bearing, end_bearing, true);
                 break;
             case 2:
                 glColor4ub(red, green, blue, alpha);
-                DrawOutlineArc(guardZones[z].outer_range * ppNM, guardZones[z].inner_range * ppNM, start_bearing, end_bearing, false);
+                DrawOutlineArc(guardZones[z].outer_range * v_scale_ppm, guardZones[z].inner_range * v_scale_ppm, start_bearing, end_bearing, false);
                 // fall thru
             default:
                 glColor4ub(red, green, blue, alpha);
-                DrawFilledArc(guardZones[z].outer_range * ppNM, guardZones[z].inner_range * ppNM, start_bearing, end_bearing);
+                DrawFilledArc(guardZones[z].outer_range * v_scale_ppm, guardZones[z].inner_range * v_scale_ppm, start_bearing, end_bearing);
             }
         }
 
@@ -1519,6 +1517,7 @@ bool br24radar_pi::LoadConfig(void)
             if (settings.range_units >= 2) {
                 settings.range_units = 1;
             }
+            settings.range_unit_meters = (settings.range_units == 1) ? 1000 : 1852;
             pConf->Read(wxT("DisplayMode"),  (int *) &settings.display_mode, 0);
             pConf->Read(wxT("VerboseLog"),  &settings.verbose, 0);
             pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
@@ -1549,16 +1548,41 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("ControlsDialogPosX"), &m_BR24Controls_dialog_x, 20L);
             pConf->Read(wxT("ControlsDialogPosY"), &m_BR24Controls_dialog_y, 170L);
 
+            double d;
             pConf->Read(wxT("Zone1StBrng"), &guardZones[0].start_bearing, 0);
             pConf->Read(wxT("Zone1EndBrng"), &guardZones[0].end_bearing, 0);
-            pConf->Read(wxT("Zone1OutRng"), &guardZones[0].outer_range, 0);
-            pConf->Read(wxT("Zone1InRng"), &guardZones[0].inner_range, 0);
+            if (pConf->Read(wxT("Zone1OutRng"), &d, 0)) {
+                pConf->DeleteEntry(wxT("Zone1OutRng"));
+                guardZones[0].outer_range = (int) (d * 1852.0);
+                wxLogMessage(wxT("BR24radar_pi: converting old guard range %f to %d"), d, guardZones[0].outer_range);
+            } else {
+                pConf->Read(wxT("Zone1OuterRng"), &guardZones[0].outer_range, 0);
+            }
+            if (pConf->Read(wxT("Zone1InRng"), &d, 0)) {
+                pConf->DeleteEntry(wxT("Zone1InRng"));
+                guardZones[0].inner_range = (int) (d * 1852.0);
+                wxLogMessage(wxT("BR24radar_pi: converting old guard range %f to %d"), d, guardZones[0].inner_range);
+            } else {
+                pConf->Read(wxT("Zone1InnerRng"), &guardZones[0].inner_range, 0);
+            }
             pConf->Read(wxT("Zone1ArcCirc"), &guardZones[0].type, 0);
 
             pConf->Read(wxT("Zone2StBrng"), &guardZones[1].start_bearing, 0);
             pConf->Read(wxT("Zone2EndBrng"), &guardZones[1].end_bearing, 0);
-            pConf->Read(wxT("Zone2OutRng"), &guardZones[1].outer_range, 0);
-            pConf->Read(wxT("Zone2InRng"), &guardZones[1].inner_range, 0);
+            if (pConf->Read(wxT("Zone2OutRng"), &d, 0)) {
+                pConf->DeleteEntry(wxT("Zone2OutRng"));
+                guardZones[1].outer_range = (int) (d * 1852.0);
+                wxLogMessage(wxT("BR24radar_pi: converting old guard range %f to %d"), d, guardZones[1].outer_range);
+            } else {
+                pConf->Read(wxT("Zone2OuterRng"), &guardZones[1].outer_range, 0);
+            }
+            if (pConf->Read(wxT("Zone2InRng"), &d, 0)) {
+                pConf->DeleteEntry(wxT("Zone2InRng"));
+                guardZones[1].inner_range = (int) (d * 1852.0);
+                wxLogMessage(wxT("BR24radar_pi: converting old guard range %f to %d"), d, guardZones[1].inner_range);
+            } else {
+                pConf->Read(wxT("Zone2InnerRng"), &guardZones[1].inner_range, 0);
+            }
             pConf->Read(wxT("Zone2ArcCirc"), &guardZones[1].type, 0);
 
 
@@ -1646,14 +1670,14 @@ bool br24radar_pi::SaveConfig(void)
 
         pConf->Write(wxT("Zone1StBrng"), guardZones[0].start_bearing);
         pConf->Write(wxT("Zone1EndBrng"), guardZones[0].end_bearing);
-        pConf->Write(wxT("Zone1OutRng"), guardZones[0].outer_range);
-        pConf->Write(wxT("Zone1InRng"), guardZones[0].inner_range);
+        pConf->Write(wxT("Zone1OuterRng"), guardZones[0].outer_range);
+        pConf->Write(wxT("Zone1InnerRng"), guardZones[0].inner_range);
         pConf->Write(wxT("Zone1ArcCirc"), guardZones[0].type);
 
         pConf->Write(wxT("Zone2StBrng"), guardZones[1].start_bearing);
         pConf->Write(wxT("Zone2EndBrng"), guardZones[1].end_bearing);
-        pConf->Write(wxT("Zone2OutRng"), guardZones[1].outer_range);
-        pConf->Write(wxT("Zone2InRng"), guardZones[1].inner_range);
+        pConf->Write(wxT("Zone2OuterRng"), guardZones[1].outer_range);
+        pConf->Write(wxT("Zone2InnerRng"), guardZones[1].inner_range);
         pConf->Write(wxT("Zone2ArcCirc"), guardZones[1].type);
 
         pConf->Flush();

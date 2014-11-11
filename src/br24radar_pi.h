@@ -209,6 +209,10 @@ static wxString DisplayModeStrings[] = {
     _("Emulator"),
 };
 
+static int RangeUnitsToMeters[2] = {
+    1852,
+    1000
+};
 
 #define DEFAULT_OVERLAY_TRANSPARENCY (5)
 #define MIN_OVERLAY_TRANSPARENCY (0)
@@ -235,8 +239,9 @@ struct radar_control_settings {
     int      rain_clutter_gain;
     double   range_calibration;
     double   heading_correction;
-    int      range_units;        // 0 = "Nautical miles"), 1 = "Statute miles", 2 = "Kilometers", 3 = "Meters"
-    wxString radar_interface;        // IP address of interface to bind to (on UNIX)
+    int      range_units;       // 0 = Nautical miles, 1 = Kilometers
+    int      range_unit_meters; // ... 1852 or 1000, depending on range_units
+    wxString radar_interface;   // IP address of interface to bind to (on UNIX)
     int      beam_width;
     int      max_age;
     int      draw_algorithm;
@@ -247,8 +252,8 @@ struct radar_control_settings {
 
 struct guard_zone_settings {
     int type;                   // 0 = circle, 1 = arc
-    double inner_range;
-    double outer_range;
+    int inner_range;            // now in meters
+    int outer_range;            // now in meters
     double start_bearing;
     double end_bearing;
 };
@@ -256,7 +261,7 @@ struct guard_zone_settings {
 struct scan_line {
     int range;                  // range of this scan line in decimeters
     wxDateTime age;             // how old this scan line is. We keep old scans on-screen for a while
-    UINT8 data[512];          // radar return strength
+    UINT8 data[512];            // radar return strength
 };
 
 //    Forward definitions
