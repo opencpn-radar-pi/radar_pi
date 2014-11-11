@@ -359,7 +359,7 @@ bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID 
 #ifdef wxMSW
     long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
 #else
-    long wstyle =                 wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
+    long wstyle =                 wxCLOSE_BOX | wxCAPTION | wxRESIZE_BORDER;
 #endif
 
     if (!wxDialog::Create(parent, id, caption, pos, wxDefaultSize, wstyle)) {
@@ -368,11 +368,6 @@ bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID 
     g_font = *OCPNGetFont(_("Dialog"), 12);
     
     CreateControls();
-    DimeWindow(this); // Call OpenCPN to change colours depending on day/night mode
-    Fit();
-    wxSize size_min = GetBestSize();
-    SetMinSize(size_min);
-    SetSize(size_min);
     return true;
 }
 
@@ -389,8 +384,6 @@ void BR24ControlsDialog::CreateControls()
 
     //**************** MESSAGE BOX ******************//
     // A box sizer to contain warnings
-
-    wxFont msg_font = *OCPNGetFont(_("Dialog"), 12);
 
     messageBox = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(messageBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
@@ -423,8 +416,12 @@ void BR24ControlsDialog::CreateControls()
     topSizer->Fit(this);
     topSizer->Layout();
     int width = topSizer->GetSize().GetWidth() + 10;
-    if (width < 60) {
-        width = 60;
+    wxSize bestSize = GetBestSize();
+    if (width < bestSize.GetWidth()) {
+        width = bestSize.GetWidth();
+    }
+    if (width < 100) {
+        width = 100;
     }
     if (width > 300) {
         width = 300;
@@ -437,21 +434,18 @@ void BR24ControlsDialog::CreateControls()
 
     // Now set actual text for tMessage 
     tMessage->SetLabel(_("Radar overlay requires the following data"));
-    tMessage->SetFont(msg_font);
  
-
-
     cbBoatPos = new wxCheckBox(this, ID_BPOS, _("Boat position"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     messageBox->Add(cbBoatPos, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
-    cbBoatPos->SetFont(msg_font);
+    cbBoatPos->SetFont(g_font);
     cbBoatPos->Disable();
     
     cbHeading = new wxCheckBox(this, ID_HEADING, _("Heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     messageBox->Add(cbHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
-    cbHeading->SetFont(msg_font);
+    cbHeading->SetFont(g_font);
     cbHeading->Disable();
 
-    topSizer->Hide(messageBox);
+    // topSizer->Hide(messageBox);
 
     //**************** EDIT BOX ******************//
     // A box sizer to contain RANGE button
@@ -640,10 +634,16 @@ void BR24ControlsDialog::CreateControls()
     bGuard2->SetFont(g_font);
 
     fromBox = controlBox;
+    topSizer->Hide(controlBox);
 
     UpdateGuardZoneState();
 
     pPlugIn->UpdateDisplayParameters();
+    DimeWindow(this); // Call OpenCPN to change colours depending on day/night mode
+    Fit();
+    wxSize size_min = GetBestSize();
+    SetMinSize(size_min);
+    SetSize(size_min);
 }
 
 void BR24ControlsDialog::UpdateGuardZoneState()

@@ -209,7 +209,7 @@ static wxString DisplayModeStrings[] = {
     _("Emulator"),
 };
 
-static int RangeUnitsToMeters[2] = {
+static const int RangeUnitsToMeters[2] = {
     1852,
     1000
 };
