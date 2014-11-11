@@ -528,20 +528,18 @@ void BR24ControlsDialog::CreateControls()
     bInterferenceRejection->maxValue = ARRAY_SIZE(interference_rejection_names) - 1;
     bInterferenceRejection->names = interference_rejection_names;
     bInterferenceRejection->SetValue(pPlugIn->settings.interference_rejection); // redraw after adding names
+    
+    // The TARGET BOOST button
+    target_boost_names[0] = _("Off");
+    target_boost_names[1] = _("Low");
+    target_boost_names[2] = _("High");
+    bTargetBoost = new RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), pPlugIn, CT_TARGET_BOOST, false, pPlugIn->settings.target_boost);
+    advancedBox->Add(bTargetBoost, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bTargetBoost->minValue = 0;
+    bTargetBoost->maxValue = ARRAY_SIZE(target_boost_names) - 1;
+    bTargetBoost->names = target_boost_names;
+    bTargetBoost->SetValue(pPlugIn->settings.target_boost); // redraw after adding names
 
-    // The TARGET SEPARATION button
-
-    target_separation_names[0] = _("Off");
-    target_separation_names[1] = _("Low");
-    target_separation_names[2] = _("Medium");
-    target_separation_names[3] = _("High");
-
-    bTargetSeparation = new RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"), pPlugIn, CT_TARGET_SEPARATION, false, pPlugIn->settings.target_separation);
-    advancedBox->Add(bTargetSeparation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bTargetSeparation->minValue = 0;
-    bTargetSeparation->maxValue = ARRAY_SIZE(target_separation_names) - 1;
-    bTargetSeparation->names = target_separation_names;
-    bTargetSeparation->SetValue(pPlugIn->settings.target_separation); // redraw after adding names
 
     // The NOISE REJECTION button
     noise_rejection_names[0] = _("Off");
@@ -557,17 +555,20 @@ void BR24ControlsDialog::CreateControls()
 
     advanced4gBox = new wxBoxSizer(wxVERTICAL);
     advancedBox->Add(advanced4gBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+    
+    // The TARGET SEPARATION button
 
-    // The TARGET BOOST button
-    target_boost_names[0] = _("Off");
-    target_boost_names[1] = _("Low");
-    target_boost_names[2] = _("High");
-    bTargetBoost = new RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), pPlugIn, CT_TARGET_BOOST, false, pPlugIn->settings.target_boost);
-    advanced4gBox->Add(bTargetBoost, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bTargetBoost->minValue = 0;
-    bTargetBoost->maxValue = ARRAY_SIZE(target_boost_names) - 1;
-    bTargetBoost->names = target_boost_names;
-    bTargetBoost->SetValue(pPlugIn->settings.target_boost); // redraw after adding names
+    target_separation_names[0] = _("Off");
+    target_separation_names[1] = _("Low");
+    target_separation_names[2] = _("Medium");
+    target_separation_names[3] = _("High");
+
+    bTargetSeparation = new RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"), pPlugIn, CT_TARGET_SEPARATION, false, pPlugIn->settings.target_separation);
+    advanced4gBox->Add(bTargetSeparation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bTargetSeparation->minValue = 0;
+    bTargetSeparation->maxValue = ARRAY_SIZE(target_separation_names) - 1;
+    bTargetSeparation->names = target_separation_names;
+    bTargetSeparation->SetValue(pPlugIn->settings.target_separation); // redraw after adding names
 
     // The SCAN SPEED button
     scan_speed_names[0] = _("Normal");
