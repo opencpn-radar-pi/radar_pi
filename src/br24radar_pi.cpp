@@ -598,7 +598,7 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow* parent)
 {
     m_pOptionsDialog = new BR24DisplayOptionsDialog;
     m_pOptionsDialog->Create(m_parent_window, this);
-    m_pOptionsDialog->Show();
+    m_pOptionsDialog->ShowModal();
 }
 
 void logBinaryData(const wxString& what, const UINT8 * data, int size)
