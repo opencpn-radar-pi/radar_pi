@@ -244,15 +244,11 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
         n--;
     }
 
-    wxLogMessage(wxT("    convertRange %d units %d type %d -> %p %d"), *range_meters, units, radarType, ranges, n);
-
     for (; n > 0; n--) {
-        wxLogMessage(wxT("      range %d test index %d range %d"), *range_meters, n, ranges[n]);
         if (ranges[n] > 0 && ranges[n] < *range_meters) {
             break;
         }
     }
-    wxLogMessage(wxT("Convert range %d into index %d range %d"), *range_meters, n, ranges[n]);
     *range_meters = ranges[n];
 
     return n;
