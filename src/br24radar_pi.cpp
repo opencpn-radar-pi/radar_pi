@@ -103,10 +103,12 @@ int   br_scanner_state;
 bool  br_send_state;
 RadarType br_radar_type = RT_UNKNOWN;
 
-long  br_display_interval(0);
-
-time_t      br_bpos_watchdog;
-time_t      br_hdt_watchdog;
+static bool  br_radar_seen = false;
+static bool  br_data_seen = false;
+static time_t      br_bpos_watchdog;
+static time_t      br_hdt_watchdog;
+static time_t      br_radar_watchdog;
+static time_t      br_data_watchdog;
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 time_t      br_dt_stayalive;
 #define     STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
@@ -138,6 +140,7 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p)
 {
     delete p;
 }
+
 
 /********************************************************************************************************/
 //   Distance measurement for simple sphere
@@ -380,6 +383,8 @@ int br24radar_pi::Init(void)
     alarm_sound_last = br_dt_stayalive;
     br_bpos_watchdog = 0;
     br_hdt_watchdog  = 0;
+    br_radar_watchdog = 0;
+    br_data_watchdog = 0;
     
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
@@ -387,6 +392,17 @@ int br24radar_pi::Init(void)
 
     m_hdt_source = 0;
     m_hdt_prev_source = 0;
+
+    m_statistics.broken_packets = 0;
+    m_statistics.broken_spokes  = 0;
+    m_statistics.missing_spokes = 0;
+    m_statistics.packets        = 0;
+    m_statistics.spokes         = 0;
+
+    m_pOptionsDialog = 0;
+    m_pControlDialog = 0;
+    m_pGuardZoneDialog = 0;
+    m_pGuardZoneBogey = 0;
 
     memset(&guardZones, 0, sizeof(guardZones));
 
@@ -487,15 +503,14 @@ int br24radar_pi::Init(void)
     m_quit = false;
     m_dataReceiveThread = new RadarDataReceiveThread(this, &m_quit);
     m_dataReceiveThread->Run();
+    m_commandReceiveThread = 0;
     if (settings.verbose >= 2) {
         m_commandReceiveThread = new RadarCommandReceiveThread(this, &m_quit);
         m_commandReceiveThread->Run();
     }
-    if (settings.verbose) {
-        m_reportReceiveThread = new RadarReportReceiveThread(this, &m_quit);
-        m_reportReceiveThread->Run();
-    }
-
+    m_reportReceiveThread = new RadarReportReceiveThread(this, &m_quit);
+    m_reportReceiveThread->Run();
+    
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
             WANTS_OVERLAY_CALLBACK     |
@@ -980,23 +995,21 @@ void br24radar_pi::DoTick(void)
         // If the position data is 10s old reset our heading.
         // Note that the watchdog is continuously reset every time we receive a heading.
         br_bpos_set = false;
-        if (m_pControlDialog) {
-            m_pControlDialog->UpdateMessage(br_bpos_set, m_hdt_source > 0);
-        }
         wxLogMessage(wxT("BR24radar_pi: Lost Boat Position data"));
     }
     if (m_hdt_source > 0 && (now - br_hdt_watchdog >= WATCHDOG_TIMEOUT)) {
         // If the position data is 10s old reset our heading.
         // Note that the watchdog is continuously reset every time we receive a heading
         m_hdt_source = 0;
-        if (m_pControlDialog) {
-            m_pControlDialog->UpdateMessage(br_bpos_set, m_hdt_source > 0);
-        }
         wxLogMessage(wxT("BR24radar_pi: Lost Heading data"));
+    }
+    if (br_radar_seen && (now - br_radar_watchdog >= WATCHDOG_TIMEOUT)) {
+        br_radar_seen = false;
+        wxLogMessage(wxT("BR24radar_pi: Lost radar presence"));
     }
 
     if (m_statistics.spokes > m_statistics.broken_spokes) { // Something coming from radar unit?
-        br_scanner_state = RADAR_ON ;
+        br_scanner_state = RADAR_ON;
         if (settings.master_mode) {
             if (now - br_dt_stayalive >= STAYALIVE_TIMEOUT) {
                 br_dt_stayalive = now;
@@ -1007,8 +1020,14 @@ void br24radar_pi::DoTick(void)
                 br_send_state = false;
             }
         }
+        br_data_watchdog = now;
+        br_data_seen = true;
     } else {
         br_scanner_state = RADAR_OFF;
+        if (br_data_seen && (now - br_data_watchdog >= WATCHDOG_TIMEOUT)) {
+            br_data_seen = false;
+            wxLogMessage(wxT("BR24radar_pi: Lost radar data"));
+        }
     }
 
     if (settings.verbose) {
@@ -1024,6 +1043,11 @@ void br24radar_pi::DoTick(void)
         }
         wxLogMessage(wxT("BR24radar_pi: received %s"), t.c_str());
     }
+    
+    if (m_pControlDialog) {
+        m_pControlDialog->UpdateMessage(br_bpos_set, m_hdt_source > 0, br_radar_seen, br_data_seen);
+    }
+
 
     m_statistics.broken_packets = 0;
     m_statistics.broken_spokes  = 0;
@@ -1100,7 +1124,9 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
 
     auto_range_meters =  max_distance / 2.0 * 1.5;
+    // call convertMetersToRadarAllowedValue now to compute fitting allowed range
     size_t idx = convertMetersToRadarAllowedValue(&auto_range_meters, settings.range_units, br_radar_type);
+    wxLogMessage(wxT("BR24radar_pi: screensize=%f autorange_meters=%d"), max_distance, auto_range_meters);
     if (auto_range_meters != previous_auto_range_meters) {
         if (settings.verbose) {
             wxLogMessage(wxT("BR24radar_pi: Automatic scale changed from %d to %d meters")
@@ -1738,7 +1764,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         br_bpos_watchdog = now;
     }
     if (m_pControlDialog) {
-        m_pControlDialog->UpdateMessage(br_bpos_set, m_hdt_source > 0);
+        m_pControlDialog->UpdateMessage(br_bpos_set, m_hdt_source > 0, br_radar_seen, br_data_seen);
     }
 }
 
@@ -1761,7 +1787,7 @@ void br24radar_pi::TransmitCmd(UINT8 * msg, int size)
     adr.sin_port=htons(6680);
 
     if (m_radar_socket == INVALID_SOCKET || sendto(m_radar_socket, (char *) msg, size, 0, (struct sockaddr *) &adr, sizeof(adr)) < size) {
-        wxLogMessage(wxT("BR24radar_pi: unable to transmit command to radar: %s\n"), SOCKETERRSTR);
+        wxLogError(wxT("BR24radar_pi: Unable to transmit command to radar"));
         return;
     } else if (settings.verbose) {
         logBinaryData(wxT("command"), msg, size);
@@ -2319,7 +2345,7 @@ void *RadarDataReceiveThread::Entry(void)
 
     r = setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq));
     if (r) {
-        wxLogError(wxT("BR24radar_pi: Unable to listen to multicast group: %s"), SOCKETERRSTR);
+        wxLogError(wxT("BR24radar_pi: Unable to listen to multicast group"));
         closesocket(rx_socket);
         return 0;
     }
@@ -2370,6 +2396,8 @@ void *RadarDataReceiveThread::Entry(void)
 void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 {
     wxDateTime now = wxDateTime::Now();
+    br_radar_seen = true;
+    br_radar_watchdog = time(0);
 
     // wxCriticalSectionLocker locker(br_scanLock);
 
@@ -2419,6 +2447,11 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
             angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
             range_meters = (int) ((double)range_raw * 10.0 / sqrt(2.0));
+            if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
+                wxString label;
+                label << _("Radar") << wxT(" BR24");
+                pPlugIn->m_pControlDialog->SetLabel(label);
+            }
             br_radar_type = RT_BR24;
         } else {
             // 4G mode
@@ -2436,6 +2469,11 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 range_raw = large_range * 256;
             }
             range_meters = range_raw / 4;
+            if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
+                wxString label;
+                label << _("Radar") << wxT(" 4G");
+                pPlugIn->m_pControlDialog->SetLabel(label);
+            }
             br_radar_type = RT_4G;
         }
 
@@ -2482,6 +2520,10 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
 
     static int next_scan_number = 0;
     pPlugIn->m_statistics.packets++;
+    br_data_seen = true;
+    br_radar_seen = true;
+    br_radar_watchdog = time(0);
+    br_data_watchdog = br_radar_watchdog;
 
     int scanlines_in_packet = LINES_PER_ROTATION * 24 / 60;
     int range_meters = auto_range_meters;
@@ -2588,7 +2630,7 @@ void *RadarCommandReceiveThread::Entry(void)
 
     r = setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq));
     if (r) {
-        wxLogError(wxT("BR24radar_pi: Unable to listen to multicast group: %s"), SOCKETERRSTR);
+        wxLogError(wxT("BR24radar_pi: Unable to listen to multicast group"));
         closesocket(rx_socket);
         return 0;
     }
@@ -2685,7 +2727,7 @@ void *RadarReportReceiveThread::Entry(void)
 
     r = setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq));
     if (r) {
-        wxLogError(wxT("BR24radar_pi: Unable to listen to multicast group: %s"), SOCKETERRSTR);
+        wxLogError(wxT("BR24radar_pi: Unable to listen to multicast group"));
         closesocket(rx_socket);
         return 0;
     }
@@ -2750,13 +2792,16 @@ void RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
     if (len == 18 && command[0] == 0x01 && command[1] == 0xC4) {
         // Radar status in byte 2
         if (command[2] != prevStatus) {
-            wxLogMessage(wxT("BR24radar_pi: radar status = %u"), command[2]);
+            if (pPlugIn->settings.verbose > 0) {
+                wxLogMessage(wxT("BR24radar_pi: radar status = %u"), command[2]);
+            }
             prevStatus = command[2];
         }
     }
     else if (len == 99 && command[0] == 0x02 && command[1] == 0xC4) {
         radar_state * s = (radar_state *) command;
-        wxLogMessage(wxT("BR24radar_pi: radar state f1=%u f2=%u f3=%u f4a=%u f4b=%u sea=%u f6a=%u f6b=%u f6c=%u f6d=%u rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
+        if (pPlugIn->settings.verbose > 0) {
+            wxLogMessage(wxT("BR24radar_pi: radar state f1=%u f2=%u f3=%u f4a=%u f4b=%u sea=%u f6a=%u f6b=%u f6c=%u f6d=%u rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
             , s->field1
             , s->field2
             , s->field3
@@ -2778,7 +2823,10 @@ void RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
             , s->field13
             , s->field14
             );
-        logBinaryData(wxT("state"), command, len);
+           logBinaryData(wxT("state"), command, len);
+        }
+        br_radar_seen = true;
+        br_radar_watchdog = time(0);
     }
     else if (pPlugIn->settings.verbose >= 2) {
         logBinaryData(wxT("received report"), command, len);

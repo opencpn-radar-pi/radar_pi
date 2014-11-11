@@ -614,6 +614,7 @@ public:
         Create(parent, id, label, wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
         minValue = 0;
         maxValue = 0;
+        auto_range_index = 0;
         value = -1; // means: never set
         hasAuto = true;
         pPlugIn = ppi;
@@ -626,12 +627,12 @@ public:
         isAuto = ppi->settings.auto_range_mode;
     }
 
-    int auto_range_index;
-
     virtual void SetValue(int value);
     virtual void SetAuto();
 
     int SetValueInt(int value);
+
+    int auto_range_index;
 };
 
 //----------------------------------------------------------------------------------------------------------
@@ -660,7 +661,7 @@ public:
     void SetRangeIndex(size_t index);
     void SetAutoRangeIndex(size_t index);
     void UpdateGuardZoneState();
-    void UpdateMessage(bool haveGPS, bool haveHeading);
+    void UpdateMessage(bool haveGPS, bool haveHeading, bool haveRadar, bool haveData);
 
     wxStaticText       *tStatistics;
 
@@ -703,6 +704,9 @@ private:
     wxStaticText       *tMessage;
     wxCheckBox         *cbBoatPos;
     wxCheckBox         *cbHeading;
+    wxCheckBox         *cbRadar;
+    wxCheckBox         *cbData;
+
 
     // Edit Controls
 

@@ -85,7 +85,9 @@ enum {                                      // process ID's
 
     ID_MESSAGE,
     ID_BPOS,
-    ID_HEADING
+    ID_HEADING,
+    ID_RADAR,
+    ID_DATA
 
 };
 
@@ -188,6 +190,8 @@ static const int g_range_distances[2][18] = {
         1852*12,
         1852*16,
         1852*24,
+        1852*36,
+        1852*36,
         1852*36
     },
     {
@@ -229,23 +233,28 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
     size_t      n;
 
     if (units < 1) {                    /* NMi or Mi */
-        n = MILE_RANGE_COUNT;
+        n = MILE_RANGE_COUNT - 1;
         ranges = g_range_distances[0];
     }
     else {
-        n = METRIC_RANGE_COUNT;
+        n = METRIC_RANGE_COUNT - 1;
         ranges = g_range_distances[1];
     }
     if (radarType != RT_4G) {
         n--;
     }
 
+    wxLogMessage(wxT("    convertRange %d units %d type %d -> %p %d"), *range_meters, units, radarType, ranges, n);
+
     for (; n > 0; n--) {
+        wxLogMessage(wxT("      range %d test index %d range %d"), *range_meters, n, ranges[n]);
         if (ranges[n] > 0 && ranges[n] < *range_meters) {
             break;
         }
     }
+    wxLogMessage(wxT("Convert range %d into index %d range %d"), *range_meters, n, ranges[n]);
     *range_meters = ranges[n];
+
     return n;
 }
 
@@ -293,7 +302,7 @@ int RadarRangeControlButton::SetValueInt(int newValue)
 
     if (newValue >= minValue && newValue <= maxValue) {
         value = newValue;
-    } else if (pPlugIn->settings.auto_range_mode && auto_range_index >= 0) {
+    } else if (pPlugIn->settings.auto_range_mode) {
         value = auto_range_index;
     } else if (value > maxValue) {
         value = maxValue;
@@ -435,15 +444,35 @@ void BR24ControlsDialog::CreateControls()
     // Now set actual text for tMessage 
     tMessage->SetLabel(_("Radar overlay requires the following data"));
  
+    wxStaticBox* nmeaBox = new wxStaticBox(this, wxID_ANY, _("NMEA sources"));
+    nmeaBox->SetFont(g_font);
+    wxStaticBoxSizer* nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
+    messageBox->Add(nmeaSizer, 0, wxEXPAND | wxALL, BORDER * 2);
+
     cbBoatPos = new wxCheckBox(this, ID_BPOS, _("Boat position"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    messageBox->Add(cbBoatPos, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    nmeaSizer->Add(cbBoatPos, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     cbBoatPos->SetFont(g_font);
     cbBoatPos->Disable();
     
     cbHeading = new wxCheckBox(this, ID_HEADING, _("Heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    messageBox->Add(cbHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    nmeaSizer->Add(cbHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     cbHeading->SetFont(g_font);
     cbHeading->Disable();
+    
+    wxStaticBox* ipBox = new wxStaticBox(this, wxID_ANY, _("ZeroConf via (wired) Ethernet"));
+    ipBox->SetFont(g_font);
+    wxStaticBoxSizer* ipSizer = new wxStaticBoxSizer(ipBox, wxVERTICAL);
+    messageBox->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);
+
+    cbRadar = new wxCheckBox(this, ID_RADAR, _("Radar present"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    ipSizer->Add(cbRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    cbRadar->SetFont(g_font);
+    cbRadar->Disable();
+    
+    cbData = new wxCheckBox(this, ID_DATA, _("Radar sending data"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    ipSizer->Add(cbData, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    cbData->SetFont(g_font);
+    cbData->Disable();
 
     // topSizer->Hide(messageBox);
 
@@ -826,12 +855,14 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
 }
 
 
-void BR24ControlsDialog::UpdateMessage(bool haveGPS, bool haveHeading)
+void BR24ControlsDialog::UpdateMessage(bool haveGPS, bool haveHeading, bool haveRadar, bool haveData)
 {
     cbBoatPos->SetValue(haveGPS);
     cbHeading->SetValue(haveHeading);
+    cbRadar->SetValue(haveRadar);
+    cbData->SetValue(haveData);
 
-    if (haveGPS && haveHeading) {
+    if (haveGPS && haveHeading && haveRadar && haveData) {
         if (topSizer->IsShown(messageBox))
         {
             topSizer->Hide(messageBox);
