@@ -309,7 +309,9 @@ int RadarRangeControlButton::SetValueInt(int newValue)
         label << firstLine << wxT("\n") << rangeText;
     }
     this->SetLabel(label);
-    wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d val=%d"), rangeText.c_str(), pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
+    if (pPlugIn->settings.verbose > 0) {
+        wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d val=%d"), rangeText.c_str(), pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
+    }
 
     return meters;
 }

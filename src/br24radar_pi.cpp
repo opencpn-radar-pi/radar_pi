@@ -216,10 +216,8 @@ static double local_bearing (double lat1, double lon1, double lat2, double lon2)
  *
  * The minimum distance from the center of the plane is radius, and it ends at radius + blob_heigth
  */
-static void draw_blob_gl(double angle, double radius, double arc_width, double blob_heigth)
+static void draw_blob_gl(double ca, double sa, double radius, double arc_width, double blob_heigth)
 {
-     double ca = cos(angle);
-     double sa = sin(angle);
      const double blob_start = 0.0;
      const double blob_end = blob_heigth;
 
@@ -324,7 +322,8 @@ static void DrawFilledArc(double r1, double r2, double a1, double a2)
     }
 
     for (double n = a1; n <= a2; ++n ) {
-        draw_blob_gl(deg2rad(n), r2, deg2rad(0.5), r1 - r2);
+        double nr = deg2rad(n);
+        draw_blob_gl(cos(nr), sin(nr), r2, deg2rad(0.5), r1 - r2);
     }
 }
 
@@ -1199,6 +1198,8 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     static unsigned int previousAngle = LINES_PER_ROTATION;
     static const double spokeWidthDeg = 360.0 / LINES_PER_ROTATION;
     static const double spokeWidthRad = deg2rad(spokeWidthDeg); // How wide is one spoke?
+    double angleDeg;
+    double angleRad;
 
     wxDateTime now = wxDateTime::UNow();
     UINT32 drawn_spokes = 0;
@@ -1213,8 +1214,8 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
 
     // DRAWING PICTURE
-    for (unsigned int angle = 0 ; angle < LINES_PER_ROTATION; angle += downsample) {
-        unsigned int scanAngle = angle;
+    for (unsigned int angle = 0 ; angle <= LINES_PER_ROTATION - downsample; angle += downsample) {
+        unsigned int scanAngle = angle, drawAngle = angle;
         scan_line * scan = 0;
         int bestAge = settings.max_age * 1000;
 
@@ -1239,14 +1240,15 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         unsigned int blobSpokesWide = downsample;
         if (settings.draw_algorithm == 1)
         {
+            drawAngle = scanAngle;
             if (previousAngle < LINES_PER_ROTATION) {
-                blobSpokesWide = (scanAngle - previousAngle + LINES_PER_ROTATION) % LINES_PER_ROTATION;
+                blobSpokesWide = (drawAngle - previousAngle + LINES_PER_ROTATION) % LINES_PER_ROTATION;
             }
             if (blobSpokesWide > LINES_PER_ROTATION / 16) {
                 // Whoaaa, that would be much too wide. Fall back to normal width
                 blobSpokesWide = downsample;
             }
-            previousAngle = scanAngle;
+            previousAngle = drawAngle;
         }
 
         // At this point we have: 
@@ -1254,10 +1256,13 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         // blobSpokesWide -- how many spokes wide this is going to be
         // Adjust the scanAngle accordingly
 
-        double arc_width = spokeWidthRad * blobSpokesWide;
-        double arc_heigth = 1;
-        double angleDeg = fmod((scanAngle - blobSpokesWide / 2.0 + 0.5)  * spokeWidthDeg + 360.0, 360.0);
-        double angleRad = deg2rad(angleDeg);
+        double arc_width = spokeWidthRad * blobSpokesWide / 2.0;
+        double arc_heigth = ((double) scan->range / (double) max_range);
+            
+        angleDeg = fmod((drawAngle - blobSpokesWide / 2.0 + 0.5) * spokeWidthDeg + 360.0, 360.0);
+        angleRad = deg2rad(angleDeg);
+        double angleCos = cos(angleRad);
+        double angleSin = sin(angleRad);
 
         drawn_spokes++;
         for (int radius = 0; radius < 512; ++radius) {
@@ -1298,12 +1303,12 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             glColor4ub(red, green, blue, alpha);    // red, blue, green
             // Compensate for any scale difference between the scan and the current range:
             double r = (double) radius * ((double) scan->range / (double) max_range);
+            
             if (settings.verbose >= 3 && radius == 1 && !loggedRange) {
                 wxLogMessage(wxT("BR24radar_pi: r=%f scanRange=%d maxRange=%d"), r, scan->range, max_range);
-                wxLogMessage(wxT("BR24radar_pi: draw_blob_gl(%f,%f,%f,%f)"), angleRad, r, arc_width, arc_heigth);
                 loggedRange = true;
             }
-            draw_blob_gl(angleRad, r, arc_width, arc_heigth);
+            draw_blob_gl(angleCos, angleSin, r, arc_width, arc_heigth);
             drawn_blobs++;
 
             /**********************************************************************************************************/
@@ -1332,8 +1337,6 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                     }
                 }
             }
-
-
         }
     }
     if (settings.verbose >= 2) {
@@ -1536,6 +1539,9 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
             pConf->Read(wxT("ScanSpeed"), &settings.scan_speed, 0);
             pConf->Read(wxT("Downsample"), &settings.downsampleUser, 1);
+            if (settings.downsampleUser < 1) {
+                settings.downsampleUser = 1; // otherwise we get infinite loop
+            }
             settings.downsample = 2 << (settings.downsampleUser - 1);
 
             pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
@@ -1629,7 +1635,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("ScanMaxAge"), settings.max_age);
         pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
         pConf->Write(wxT("ScanSpeed"), settings.scan_speed);
-        pConf->Write(wxT("Downsample"), settings.downsample);
+        pConf->Write(wxT("Downsample"), settings.downsampleUser);
 
 
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
