@@ -40,7 +40,7 @@
 #include "wx/sckaddr.h"
 #include "wx/datetime.h"
 #include <wx/fileconf.h>
-#include "chart1.h"
+//#include "chart1.h"
 
 #include <math.h>
 #include <fstream>

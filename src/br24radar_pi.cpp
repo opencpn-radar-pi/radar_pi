@@ -66,9 +66,10 @@ using namespace std;
 #endif
 
 #include "br24radar_pi.h"
-#include "ocpndc.h"
+//#include "ocpndc.h"
 
-#include "OCPN_Sound.h" //Devil
+//#include "OCPN_Sound.h" //Devil
+#include <wx/sound.h>
 
 // A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration)
 // Note that 3G scanners are BR24's with better power, so they are more BR23+ than 4G-.
