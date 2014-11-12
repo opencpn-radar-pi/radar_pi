@@ -1,0 +1,339 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: opencpn\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-11-10 20:45+0100\n"
+"PO-Revision-Date: 2014-11-11 13:08-0500\n"
+"Last-Translator: nohal <pavel@kalian.cz>\n"
+"Language-Team: Swedish\n"
+"Language: sv_SE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: crowdin.com\n"
+
+#: src/GuardZoneBogey.cpp:124
+msgid "Zone 1: unknown\nZone 2: unknown\nTimeout"
+msgstr "Zon 1: okänd\nZon 2: okänd\nAvbrott"
+
+#: src/GuardZoneBogey.cpp:127
+msgid "&Confirm"
+msgstr "&Bekräfta"
+
+#: src/GuardZoneBogey.cpp:130
+msgid "C&onfirm + Close"
+msgstr "Bekräfta + Stäng"
+
+#: src/GuardZoneBogey.cpp:142 src/GuardZoneControls.cpp:227
+msgid "Zone"
+msgstr "Zon"
+
+#: src/GuardZoneBogey.cpp:147
+#, c-format
+msgid "Next alarm in %d s"
+msgstr "Nästa larm om %d s"
+
+#: src/GuardZoneControls.cpp:66 src/br24radarcontrol.cpp:220
+#: src/br24radarcontrol.cpp:221 src/br24radarcontrol.cpp:222
+#: src/br24radarcontrol.cpp:223
+msgid "Off"
+msgstr "Av"
+
+#: src/GuardZoneControls.cpp:66
+msgid "Arc"
+msgstr "Sektor"
+
+#: src/GuardZoneControls.cpp:66
+msgid "Circle"
+msgstr "Cirkel"
+
+#: src/GuardZoneControls.cpp:132
+msgid "Guard zones"
+msgstr "Larmzoner"
+
+#: src/GuardZoneControls.cpp:139
+msgid "Zone type:"
+msgstr "Zontyp:"
+
+#: src/GuardZoneControls.cpp:151
+msgid "Inner range"
+msgstr "Inre gräns"
+
+#: src/GuardZoneControls.cpp:160
+msgid "Outer range"
+msgstr "Yttre gräns"
+
+#: src/GuardZoneControls.cpp:170
+msgid "Start bearing"
+msgstr "Från bäring"
+
+#: src/GuardZoneControls.cpp:180
+msgid "End bearing"
+msgstr "Till bäring"
+
+#: src/GuardZoneControls.cpp:191
+msgid "&Close"
+msgstr "&Stäng"
+
+#: src/br24radar_pi.cpp:470
+msgid "Radar Control..."
+msgstr "Radar Inställningar..."
+
+#: src/br24radar_pi.cpp:472
+msgid "Menu"
+msgstr "Meny"
+
+#: src/br24radar_pi.cpp:479
+msgid "Set Guard Point"
+msgstr "Markera larmpunkt"
+
+#: src/br24radar_pi.cpp:576
+msgid "Navico Radar PlugIn for OpenCPN"
+msgstr "Navico Radarmodul för OpenCPN"
+
+#: src/br24radar_pi.cpp:582
+msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+msgstr "Navico Broadband BR24/3G/4G Radarmodul för OpenCPN\n"
+
+#: src/br24radar_pi.cpp:655
+msgid "BR24 Target Display Preferences"
+msgstr "BR24 Inställningar Målvisning"
+
+#: src/br24radar_pi.cpp:672 src/br24radar_pi.cpp:681
+msgid "Range Units"
+msgstr "Räckvidd -Enhet"
+
+#: src/br24radar_pi.cpp:677
+msgid "Nautical Miles"
+msgstr "Nautisk Mil"
+
+#: src/br24radar_pi.cpp:678
+msgid "Kilometers"
+msgstr "Kilometer"
+
+#: src/br24radar_pi.cpp:694
+msgid "Monocolor-Red"
+msgstr "Enfärgad-Röd"
+
+#: src/br24radar_pi.cpp:695
+msgid "Multi-color"
+msgstr "Flerfärgad"
+
+#: src/br24radar_pi.cpp:696
+msgid "GL3+"
+msgstr "GL3 +"
+
+#: src/br24radar_pi.cpp:699
+msgid "Overlay Display Options"
+msgstr "Alternativ överlagrad visning"
+
+#: src/br24radar_pi.cpp:711
+msgid "Display Options"
+msgstr "Skärminställningar"
+
+#: src/br24radar_pi.cpp:715
+msgid "Radar Display"
+msgstr "Radarvisning"
+
+#: src/br24radar_pi.cpp:727
+msgid "Shading"
+msgstr "Skuggning"
+
+#: src/br24radar_pi.cpp:728
+msgid "Outline"
+msgstr "Kontur"
+
+#: src/br24radar_pi.cpp:729
+msgid "Shading + Outline"
+msgstr "Skuggad med kontur"
+
+#: src/br24radar_pi.cpp:731
+msgid "Guard Zone Styling"
+msgstr "Utseende larmzon"
+
+#: src/br24radar_pi.cpp:742
+msgid "Calibration"
+msgstr "Kalibrering"
+
+#: src/br24radar_pi.cpp:747
+msgid "Heading factor (+ or -, 0 ->180)"
+msgstr "Kurskorrig. (+  -, 0 ->180)"
+
+#: src/br24radar_pi.cpp:892 src/br24radar_pi.h:757
+msgid " Guard Zone Control"
+msgstr " Larmzon Kontroll"
+
+#: src/br24radar_pi.cpp:1061
+msgid "The Radar Overlay PlugIn requires the Accelerated Graphics (OpenGL) mode to be activated in Options->Display->Chart Display Options"
+msgstr "Överlagring av radarbilden kräver att hårdvarugrafik (OpenGL) är aktiverad. Se: Inställningar->Visa->Anpassa visning av sjökort"
+
+#: src/br24radar_pi.cpp:1062
+msgid "br24radar message"
+msgstr "BR24adar meddelande"
+
+#: src/br24radar_pi.h:207
+msgid "Radar Chart Overlay"
+msgstr "Kortöverlagrad radar"
+
+#: src/br24radar_pi.h:208
+msgid "Radar Standalone"
+msgstr "Självständing radarbild"
+
+#: src/br24radar_pi.h:209
+msgid "Spectrum"
+msgstr "Spektrum"
+
+#: src/br24radar_pi.h:210
+msgid "Emulator"
+msgstr "Emulator"
+
+#: src/br24radar_pi.h:648
+msgid "Radar"
+msgstr "Radar"
+
+#: src/br24radar_pi.h:811
+msgid "Guard Zone Active"
+msgstr "Aktiverad Larmzon"
+
+#: src/br24radarcontrol.cpp:220 src/br24radarcontrol.cpp:221
+#: src/br24radarcontrol.cpp:222 src/br24radarcontrol.cpp:223
+msgid "Low"
+msgstr "Låg"
+
+#: src/br24radarcontrol.cpp:220 src/br24radarcontrol.cpp:221
+msgid "Medium"
+msgstr "Medium"
+
+#: src/br24radarcontrol.cpp:220 src/br24radarcontrol.cpp:221
+#: src/br24radarcontrol.cpp:222 src/br24radarcontrol.cpp:223
+msgid "High"
+msgstr "Hög"
+
+#: src/br24radarcontrol.cpp:224
+msgid "Normal"
+msgstr "Normal"
+
+#: src/br24radarcontrol.cpp:224
+msgid "Fast"
+msgstr "Snabb"
+
+#: src/br24radarcontrol.cpp:280 src/br24radarcontrol.cpp:306
+#: src/br24radarcontrol.cpp:415 src/br24radarcontrol.cpp:491
+msgid "Auto"
+msgstr "Auto"
+
+#: src/br24radarcontrol.cpp:366 src/br24radarcontrol.cpp:391
+#: src/br24radarcontrol.cpp:572
+msgid "Dialog"
+msgstr "Dialog"
+
+#: src/br24radarcontrol.cpp:404 src/br24radarcontrol.cpp:511
+msgid "Transparency"
+msgstr "Transparent"
+
+#: src/br24radarcontrol.cpp:405 src/br24radarcontrol.cpp:517
+msgid "Interference rejection"
+msgstr "Egenavstörning"
+
+#: src/br24radarcontrol.cpp:406 src/br24radarcontrol.cpp:525
+msgid "Target separation"
+msgstr "Målseparation"
+
+#: src/br24radarcontrol.cpp:407 src/br24radarcontrol.cpp:533
+msgid "Noise rejection"
+msgstr "Brusfilter"
+
+#: src/br24radarcontrol.cpp:408 src/br24radarcontrol.cpp:541
+msgid "Target boost"
+msgstr "Målförstärkning"
+
+#: src/br24radarcontrol.cpp:409 src/br24radarcontrol.cpp:549
+msgid "Downsample"
+msgstr "Begr.Upplösning"
+
+#: src/br24radarcontrol.cpp:410 src/br24radarcontrol.cpp:555
+msgid "Scan speed"
+msgstr "Scanhastighet"
+
+#: src/br24radarcontrol.cpp:411 src/br24radarcontrol.cpp:563
+msgid "Scan age"
+msgstr "Mål-Livslängd"
+
+#: src/br24radarcontrol.cpp:412 src/br24radarcontrol.cpp:589
+msgid "Gain"
+msgstr "Förstärkning"
+
+#: src/br24radarcontrol.cpp:413 src/br24radarcontrol.cpp:593
+msgid "Sea clutter"
+msgstr "Sjöfilter"
+
+#: src/br24radarcontrol.cpp:414 src/br24radarcontrol.cpp:597
+msgid "Rain clutter"
+msgstr "Regnfilter"
+
+#: src/br24radarcontrol.cpp:437
+msgid "Radar overlay requires the following data"
+msgstr "Överlagrad radarbild kräver följande indata"
+
+#: src/br24radarcontrol.cpp:442
+msgid "Boat position"
+msgstr "Båtens position"
+
+#: src/br24radarcontrol.cpp:447
+msgid "Heading"
+msgstr "Kompasskurs"
+
+#: src/br24radarcontrol.cpp:460
+msgid "<<\nBack"
+msgstr "<< \nTillbaks"
+
+#: src/br24radarcontrol.cpp:465
+msgid "+10"
+msgstr "+ 10"
+
+#: src/br24radarcontrol.cpp:470
+msgid "+"
+msgstr "+"
+
+#: src/br24radarcontrol.cpp:475
+msgid "Value"
+msgstr "Värde"
+
+#: src/br24radarcontrol.cpp:481
+msgid "-"
+msgstr "-"
+
+#: src/br24radarcontrol.cpp:486
+msgid "-10"
+msgstr "-10"
+
+#: src/br24radarcontrol.cpp:505
+msgid "Back"
+msgstr "Bakåt"
+
+#: src/br24radarcontrol.cpp:570
+msgid "Statistics"
+msgstr "Statistik"
+
+#: src/br24radarcontrol.cpp:585
+msgid "Range"
+msgstr "Räckvidd"
+
+#: src/br24radarcontrol.cpp:601
+msgid "Advanced\ncontrols"
+msgstr "Avancerade\ninställningar"
+
+#: src/br24radarcontrol.cpp:606
+msgid "Guard zone 1"
+msgstr "Larmzon 1"
+
+#: src/br24radarcontrol.cpp:611
+msgid "Guard zone 2"
+msgstr "Larmzon 2"
+
+#: src/br24radarcontrol.cpp:626 src/br24radarcontrol.cpp:629
+msgid "Guard zone"
+msgstr "Larmzone"
+
