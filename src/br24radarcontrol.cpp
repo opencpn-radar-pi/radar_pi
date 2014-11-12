@@ -764,8 +764,6 @@ void BR24ControlsDialog::OnBackClick(wxCommandEvent &event)
 
 void BR24ControlsDialog::OnAutoClick(wxCommandEvent &event)
 {
-    extern RadarType br_radar_type;
-
     fromControl->SetAuto();
 
     OnBackClick(event);
