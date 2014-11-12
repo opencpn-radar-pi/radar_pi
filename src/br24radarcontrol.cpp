@@ -747,18 +747,28 @@ void BR24ControlsDialog::OnPlusClick(wxCommandEvent& event)
 
 void BR24ControlsDialog::OnBackClick(wxCommandEvent &event)
 {
+    extern RadarType br_radar_type;
+
     topSizer->Hide(editBox);
     topSizer->Show(fromBox);
+    if (fromBox == advancedBox) {
+        if (br_radar_type == RT_4G) {
+            advancedBox->Show(advanced4gBox);
+        } else {
+            advancedBox->Hide(advanced4gBox);
+        }
+    }
+
     topSizer->Layout();
 }
 
 void BR24ControlsDialog::OnAutoClick(wxCommandEvent &event)
 {
+    extern RadarType br_radar_type;
+
     fromControl->SetAuto();
 
-    topSizer->Hide(editBox);
-    topSizer->Show(fromBox);
-    topSizer->Layout();
+    OnBackClick(event);
 }
 
 void BR24ControlsDialog::OnMinusClick(wxCommandEvent& event)
