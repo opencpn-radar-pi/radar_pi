@@ -259,7 +259,7 @@ struct guard_zone_settings {
 
 struct scan_line {
     int range;                  // range of this scan line in decimeters
-    wxDateTime age;             // how old this scan line is. We keep old scans on-screen for a while
+    wxLongLong age;             // how old this scan line is. We keep old scans on-screen for a while
     UINT8 data[512];            // radar return strength
 };
 

@@ -434,7 +434,7 @@ int br24radar_pi::Init(void)
         wxLogMessage(wxT("BR24radar_pi: logging verbosity = %d"), settings.verbose);
     }
 
-    wxDateTime now = wxDateTime::UNow();
+    wxLongLong now = wxGetLocalTimeMillis();
     for (int i = 0; i < LINES_PER_ROTATION; i++) {
         m_scan_line[i].age = now;
         m_scan_line[i].range = 0;
@@ -1205,7 +1205,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     double radar_pixels_per_meter = 512. / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
 
-    if (br_bpos_set && m_hdt_source > 0) {
+    if ((br_bpos_set && m_hdt_source > 0) || settings.display_mode == DM_EMULATOR) {
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
         if (br_range_meters && br_scanner_state == RADAR_ON) { // only draw radar if something received
@@ -1233,10 +1233,11 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     double angleDeg;
     double angleRad;
 
-    wxDateTime now = wxDateTime::UNow();
+    wxLongLong now = wxGetLocalTimeMillis();
     UINT32 drawn_spokes = 0;
     UINT32 drawn_blobs  = 0;
-    int max_age = 0; // Age in millis
+    UINT32 skipped      = 0;
+    wxLongLong max_age = 0; // Age in millis
     bool loggedRange = false;
 
     int bogey_count[GUARD_ZONES];
@@ -1244,25 +1245,31 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
     memset(&bogey_count, 0, sizeof(bogey_count));
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
+    if (settings.verbose >= 4) {
+        wxLogMessage(wxT("Draw now=%ld"), now);
+    }
 
     // DRAWING PICTURE
     for (unsigned int angle = 0 ; angle <= LINES_PER_ROTATION - downsample; angle += downsample) {
         unsigned int scanAngle = angle, drawAngle = angle;
         scan_line * scan = 0;
-        int bestAge = settings.max_age * 1000;
-
+        wxLongLong bestAge = settings.max_age * 1000;
         // Find the newest scan in [angle, angle + downSample>
         for (unsigned int i = 0; i < downsample; i++) {
-             scan_line * s = &m_scan_line[angle + i];
-             int diff = (int) ((now - s->age).GetMilliseconds()).GetValue();
-             if (s->range && diff >= 0 && diff < bestAge) {
-                 scan = s;
-                 scanAngle = angle + i;
-                 bestAge = diff;
-             }
+            scan_line * s = &m_scan_line[angle + i];
+            wxLongLong diff = now - s->age;
+            if (settings.verbose >= 4) {
+                wxLogMessage(wxT("    a=%d diff=%ld bestAge=%ld range=%d"), angle + i, diff, bestAge, s->range);
+            }
+            if (s->range && diff >= 0 && diff < bestAge) {
+                scan = s;
+                scanAngle = angle + i;
+                bestAge = diff;
+            }
         }
         if (!scan) {
-             continue;   // No or old data, don't show
+            skipped++;
+            continue;   // No or old data, don't show
         }
 
         if (bestAge > max_age) {
@@ -1372,7 +1379,8 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         }
     }
     if (settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: drawn %u spokes with %u blobs maxAge=%d"), drawn_spokes, drawn_blobs, max_age);
+        wxLogMessage(wxT("BR24radar_pi: %ld drawn %u skipped %u spokes with %u blobs maxAge=%ld")
+            , now, drawn_spokes, skipped, drawn_blobs, max_age);
     }
     HandleBogeyCount(bogey_count);
 }
@@ -2436,7 +2444,7 @@ void *RadarDataReceiveThread::Entry(void)
 //
 void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 {
-    wxDateTime now = wxDateTime::Now();
+    wxLongLong now = wxGetLocalTimeMillis();
     br_radar_seen = true;
     br_radar_watchdog = time(0);
 
@@ -2557,7 +2565,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
  */
 void RadarDataReceiveThread::emulate_fake_buffer(void)
 {
-    wxDateTime now = wxDateTime::UNow();
+    wxLongLong now = wxGetLocalTimeMillis();
 
     static int next_scan_number = 0;
     pPlugIn->m_statistics.packets++;
@@ -2606,7 +2614,7 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
         pPlugIn->m_scan_line[angle_raw].age = now;
     }
     if (pPlugIn->settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: emulating %d spokes at range %d with %d spots"), scanlines_in_packet, range_meters, spots);
+        wxLogMessage(wxT("BR24radar_pi: %ld emulating %d spokes at range %d with %d spots"), now, scanlines_in_packet, range_meters, spots);
     }
 }
 
