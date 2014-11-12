@@ -1677,7 +1677,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->SetPath(wxT("/Plugins/BR24Radar"));
         pConf->Write(wxT("DisplayOption"), settings.display_option);
         pConf->Write(wxT("RangeUnits" ), settings.range_units);
-        pConf->Write(wxT("DisplayMode"), settings.display_mode);
+        pConf->Write(wxT("DisplayMode"), (int)settings.display_mode);
         pConf->Write(wxT("VerboseLog"), settings.verbose);
         pConf->Write(wxT("Transparency"), settings.overlay_transparency);
         pConf->Write(wxT("Gain"), settings.gain);
