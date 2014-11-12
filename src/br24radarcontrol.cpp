@@ -376,6 +376,7 @@ bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID 
     return true;
 }
 
+
 void BR24ControlsDialog::CreateControls()
 {
     static int BORDER = 0;
@@ -387,19 +388,16 @@ void BR24ControlsDialog::CreateControls()
     topSizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(topSizer);
 
-    //**************** MESSAGE BOX ******************//
-    // A box sizer to contain warnings
-
-    messageBox = new wxBoxSizer(wxVERTICAL);
-    topSizer->Add(messageBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-
     /*
-     * Here come dragons... Since I haven't been able to create buttons that adapt up, and at the same time
+     * Here be dragons... Since I haven't been able to create buttons that adapt up, and at the same time
      * calculate the biggest button, and I want all buttons to be the same width I use a trick.
      * I generate a multiline StaticText containing all the (long) button labels and find out what the width
      * of that is, and then generate the buttons using that width.
      * I know, this is a hack, but this way it works relatively nicely even with translations.
      */
+    wxBoxSizer * testBox = new wxBoxSizer(wxVERTICAL);
+    topSizer->Add(testBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
     wxString label;
     label << _("Transparency") << wxT("\n");
     label << _("Interference rejection") << wxT("\n");
@@ -414,10 +412,10 @@ void BR24ControlsDialog::CreateControls()
     label << _("Rain clutter") << wxT("\n");
     label << _("Auto") << wxT(" (1/20 Nm)\n");
 
-    tMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    messageBox->Add(tMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
-    
-    tMessage->SetFont(g_font);
+    wxStaticText * testMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    testBox->Add(testMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    testMessage->SetFont(g_font);
+
     topSizer->Fit(this);
     topSizer->Layout();
     int width = topSizer->GetSize().GetWidth() + 10;
@@ -435,11 +433,22 @@ void BR24ControlsDialog::CreateControls()
     if (pPlugIn->settings.verbose) {
         wxLogMessage(wxT("BR24radar_pi: Dynamic button width = %d"), g_buttonSize.GetWidth());
     }
+    topSizer->Hide(testBox);
+    topSizer->Remove(testBox);
     // Determined desired button width
 
-    // Now set actual text for tMessage 
+
+    //**************** MESSAGE BOX ******************//
+    // A box sizer to contain warnings
+
+    messageBox = new wxBoxSizer(wxVERTICAL);
+    topSizer->Add(messageBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
+    tMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    messageBox->Add(tMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
     tMessage->SetLabel(_("Radar overlay requires the following data"));
- 
+    tMessage->SetFont(g_font);
+
     wxStaticBox* nmeaBox = new wxStaticBox(this, wxID_ANY, _("NMEA sources"));
     nmeaBox->SetFont(g_font);
     wxStaticBoxSizer* nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
@@ -455,7 +464,7 @@ void BR24ControlsDialog::CreateControls()
     cbHeading->SetFont(g_font);
     cbHeading->Disable();
     
-    wxStaticBox* ipBox = new wxStaticBox(this, wxID_ANY, _("ZeroConf via (wired) Ethernet"));
+    ipBox = new wxStaticBox(this, wxID_ANY, _("ZeroConf via (wired) Ethernet"));
     ipBox->SetFont(g_font);
     wxStaticBoxSizer* ipSizer = new wxStaticBoxSizer(ipBox, wxVERTICAL);
     messageBox->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);
@@ -666,9 +675,9 @@ void BR24ControlsDialog::CreateControls()
     pPlugIn->UpdateDisplayParameters();
     DimeWindow(this); // Call OpenCPN to change colours depending on day/night mode
     Fit();
-    wxSize size_min = GetBestSize();
-    SetMinSize(size_min);
-    SetSize(size_min);
+    //wxSize size_min = GetBestSize();
+    //SetMinSize(size_min);
+    //SetSize(size_min);
 }
 
 void BR24ControlsDialog::UpdateGuardZoneState()
@@ -858,6 +867,11 @@ void BR24ControlsDialog::UpdateMessage(bool haveGPS, bool haveHeading, bool have
     cbRadar->SetValue(haveRadar);
     cbData->SetValue(haveData);
 
+    if (haveRadar) {
+        // Override any error set earlier, apparently we now get data
+
+    }
+
     if (haveGPS && haveHeading && haveRadar && haveData) {
         if (topSizer->IsShown(messageBox))
         {
@@ -882,4 +896,32 @@ void BR24ControlsDialog::UpdateMessage(bool haveGPS, bool haveHeading, bool have
     
     editBox->Layout();
     topSizer->Layout();
+}
+
+void BR24ControlsDialog::SetErrorMessage(wxString &msg)
+{
+    tMessage->SetLabel(msg);
+    topSizer->Show(messageBox);
+    topSizer->Hide(controlBox);
+    topSizer->Hide(advancedBox);
+    topSizer->Hide(editBox);
+    messageBox->Layout();
+    Fit();
+    topSizer->Layout();
+}
+
+void BR24ControlsDialog::SetRadarIPAddress(wxString &msg)
+{
+    wxString label;
+
+    label << _("Radar IP") << wxT(" ") << msg;
+    cbRadar->SetLabel(label);
+}
+
+void BR24ControlsDialog::SetMcastIPAddress(wxString &msg)
+{
+    wxString label;
+
+    label << _("ZeroConf via (wired) Ethernet") << wxT(" ") << msg;
+    ipBox->SetLabel(label);
 }

@@ -38,7 +38,7 @@
 #include "wx/wx.h"
 #endif //precompiled headers
 
-#define     PLUGIN_VERSION_MAJOR    0
+#define     PLUGIN_VERSION_MAJOR    1
 #define     PLUGIN_VERSION_MINOR    41110
 
 #define     MY_API_VERSION_MAJOR    1
@@ -241,7 +241,6 @@ struct radar_control_settings {
     double   heading_correction;
     int      range_units;       // 0 = Nautical miles, 1 = Kilometers
     int      range_unit_meters; // ... 1852 or 1000, depending on range_units
-    wxString radar_interface;   // IP address of interface to bind to (on UNIX)
     int      beam_width;
     int      max_age;
     int      draw_algorithm;
@@ -493,7 +492,7 @@ public:
     void OnExit(void);
 
 private:
-    void ProcessIncomingReport( UINT8 * command, int len );
+    bool ProcessIncomingReport( UINT8 * command, int len );
 
     br24radar_pi      *pPlugIn;
     wxString           m_ip;
@@ -662,6 +661,9 @@ public:
     void SetAutoRangeIndex(size_t index);
     void UpdateGuardZoneState();
     void UpdateMessage(bool haveGPS, bool haveHeading, bool haveRadar, bool haveData);
+    void SetErrorMessage(wxString &msg);
+    void SetRadarIPAddress(wxString &msg);
+    void SetMcastIPAddress(wxString &msg);
 
     wxStaticText       *tStatistics;
 
@@ -693,6 +695,7 @@ private:
 
     wxBoxSizer        *topSizer;
     wxBoxSizer        *messageBox;   // Contains NO HDG and/or NO GPS
+    wxStaticBox       *ipBox;
     wxBoxSizer        *editBox;
     wxBoxSizer        *advancedBox;
     wxBoxSizer        *advanced4gBox;
