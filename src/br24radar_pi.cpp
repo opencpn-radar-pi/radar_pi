@@ -1247,7 +1247,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     memset(&bogey_count, 0, sizeof(bogey_count));
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
     if (settings.verbose >= 4) {
-        wxLogMessage(wxT("Draw now=%ld"), now);
+        wxLogMessage(wxT("Draw now=%") PRId64, now);
     }
 
     // DRAWING PICTURE
@@ -1260,7 +1260,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             scan_line * s = &m_scan_line[angle + i];
             wxLongLong diff = now - s->age;
             if (settings.verbose >= 4) {
-                wxLogMessage(wxT("    a=%d diff=%ld bestAge=%ld range=%d"), angle + i, diff, bestAge, s->range);
+                wxLogMessage(wxT("    a=%d diff=%") PRId64 wxT(" bestAge=%") PRId64 wxT(" range=%d"), angle + i, diff, bestAge, s->range);
             }
             if (s->range && diff >= 0 && diff < bestAge) {
                 scan = s;
@@ -1380,7 +1380,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         }
     }
     if (settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: %ld drawn %u skipped %u spokes with %u blobs maxAge=%ld")
+        wxLogMessage(wxT("BR24radar_pi: %"PRId64)wxT(" drawn %u skipped %u spokes with %u blobs maxAge=%"PRId64)
             , now, drawn_spokes, skipped, drawn_blobs, max_age);
     }
     HandleBogeyCount(bogey_count);
@@ -1863,7 +1863,7 @@ void br24radar_pi::SetRangeMeters(long meters)
                           , (UINT8) ((decimeters >> 24) & 0XFFL)
                           };
             if (settings.verbose) {
-                wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: %ld meters\n"), meters);
+                wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: %") PRId64 wxT(" meters\n"), meters);
             }
             TransmitCmd(pck, sizeof(pck));
         }
@@ -2615,7 +2615,7 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
         pPlugIn->m_scan_line[angle_raw].age = now;
     }
     if (pPlugIn->settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: %ld emulating %d spokes at range %d with %d spots"), now, scanlines_in_packet, range_meters, spots);
+        wxLogMessage(wxT("BR24radar_pi: %")PRId64 wxT(" emulating %d spokes at range %d with %d spots"), now, scanlines_in_packet, range_meters, spots);
     }
 }
 

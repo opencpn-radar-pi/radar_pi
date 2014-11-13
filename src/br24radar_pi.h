@@ -84,6 +84,9 @@
 # ifndef UINT32
 #  define UINT32 uint32_t
 # endif
+# define PRId64 wxT("ld")
+#else
+# define PRId64 wxT("I64d")
 #endif
 
 # define ARRAY_SIZE(x)   (sizeof(x)/sizeof(x[0]))
