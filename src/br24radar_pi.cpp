@@ -2533,9 +2533,18 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         // Validate the spoke
         scan_number = line->br24.scan_number[0] + (line->br24.scan_number[1] << 8);
         pPlugIn->m_statistics.spokes++;
-        if (line->br24.headerLen != 0x18 || line->br24.status != 0x02) {
+        if (line->br24.headerLen != 0x18) {
             if (pPlugIn->settings.verbose) {
-                wxLogMessage(wxT("BR24radar_pi: strange status %02x %02x"), line->br24.headerLen, line->br24.status);
+                wxLogMessage(wxT("BR24radar_pi: strange header length %d"), line->br24.headerLen);
+            }
+            // Do not draw something with this... 
+            pPlugIn->m_statistics.missing_spokes++;
+            next_scan_number = (scan_number + 1) % LINES_PER_ROTATION;
+            continue;
+        }
+        if (line->br24.status != 0x02) {
+            if (pPlugIn->settings.verbose) {
+                wxLogMessage(wxT("BR24radar_pi: strange status %02x"), line->br24.headerLen, line->br24.status);
             }
             pPlugIn->m_statistics.broken_spokes++;
         }
