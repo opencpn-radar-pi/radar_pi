@@ -2593,11 +2593,13 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         // Range change desired?
         if (range_meters != br_range_meters) {
 
-            if (range_meters == 0) {
-                wxLogMessage(wxT("BR24radar_pi:  Invalid range received, keeping %d meters"), br_range_meters);
-            }
-            else {
-                wxLogMessage(wxT("BR24radar_pi:  Range Change: %d --> %d meters (raw value: %d"), br_range_meters, range_meters, range_raw);
+            if (pPlugIn->settings.verbose >= 1) {
+                if (range_meters == 0) {
+                    wxLogMessage(wxT("BR24radar_pi:  Invalid range received, keeping %d meters"), br_range_meters);
+                }
+                else {
+                    wxLogMessage(wxT("BR24radar_pi:  Range Change: %d --> %d meters (raw value: %d"), br_range_meters, range_meters, range_raw);
+                }
             }
 
             br_range_meters = range_meters;
