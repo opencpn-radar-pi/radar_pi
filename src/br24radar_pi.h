@@ -220,7 +220,7 @@ static const int RangeUnitsToMeters[2] = {
 #define DEFAULT_OVERLAY_TRANSPARENCY (5)
 #define MIN_OVERLAY_TRANSPARENCY (0)
 #define MAX_OVERLAY_TRANSPARENCY (10)
-#define MIN_AGE (1)
+#define MIN_AGE (4)
 #define MAX_AGE (12)
 
 struct radar_control_settings {

@@ -1628,7 +1628,12 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("TargetSeparation"), &settings.target_separation, 0);
             pConf->Read(wxT("NoiseRejection"), &settings.noise_rejection, 0);
             pConf->Read(wxT("TargetBoost"), &settings.target_boost, 0);
-            pConf->Read(wxT("ScanMaxAge"), &settings.max_age, 6);
+            pConf->Read(wxT("ScanMaxAge"), &settings.max_age, MIN_AGE);
+            if (settings.max_age < MIN_AGE) {
+                settings.max_age = MIN_AGE;
+            } else if (settings.max_age > MAX_AGE) {
+                settings.max_age = MAX_AGE;
+            }
             pConf->Read(wxT("DrawAlgorithm"), &settings.draw_algorithm, 1);
             pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
             pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
