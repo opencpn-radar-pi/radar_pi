@@ -618,7 +618,7 @@ void BR24ControlsDialog::CreateControls()
     bScanAge = new RadarControlButton(this, ID_SCAN_AGE, _("Scan age"), pPlugIn, CT_SCAN_AGE, false, pPlugIn->settings.max_age);
     advancedBox->Add(bScanAge, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bScanAge->minValue = 1;
-    bScanAge->maxValue = 12;
+    bScanAge->maxValue = MAX_AGE;
 
     if (pPlugIn->settings.verbose) {
         // The Statistics button

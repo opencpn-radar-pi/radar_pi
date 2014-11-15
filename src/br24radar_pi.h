@@ -90,6 +90,7 @@
 #endif
 
 # define ARRAY_SIZE(x)   (sizeof(x)/sizeof(x[0]))
+# define MILLISECONDS_PER_SECOND (1000)
 
 enum {
     BM_ID_RED,
@@ -219,6 +220,8 @@ static const int RangeUnitsToMeters[2] = {
 #define DEFAULT_OVERLAY_TRANSPARENCY (5)
 #define MIN_OVERLAY_TRANSPARENCY (0)
 #define MAX_OVERLAY_TRANSPARENCY (10)
+#define MIN_AGE (1)
+#define MAX_AGE (12)
 
 struct radar_control_settings {
     int      overlay_transparency;    // now 0-100, no longer a double
@@ -347,13 +350,16 @@ public:
     long GetOptimalRangeMeters();
     void SetRangeMeters(long range);
 
-    radar_control_settings settings;
+    void ComputeGuardZoneAngles();
 
-#define GUARD_ZONES (2)
-    guard_zone_settings guardZones[GUARD_ZONES];
+    radar_control_settings settings;
 
 #define LINES_PER_ROTATION (4096) // 4G radars can generate up to 4096 lines per rotation
     scan_line                 m_scan_line[LINES_PER_ROTATION];
+
+#define GUARD_ZONES (2)
+    guard_zone_settings guardZones[GUARD_ZONES];
+    bool guardZoneAngles[GUARD_ZONES][LINES_PER_ROTATION]; // Is that angle in the guard zone?
 
     BR24DisplayOptionsDialog *m_pOptionsDialog;
     BR24ControlsDialog       *m_pControlDialog;

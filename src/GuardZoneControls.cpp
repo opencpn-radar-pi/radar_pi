@@ -204,6 +204,7 @@ void GuardZoneDialog::SetVisibility()
     GuardZoneType zoneType = (GuardZoneType) pGuardZoneType->GetSelection();
 
     pPlugIn->guardZones[pPlugIn->settings.guard_zone].type = zoneType;
+    pPlugIn->ComputeGuardZoneAngles();
 
     if (zoneType == GZ_OFF) {
         pStart_Bearing_Value->Disable();
@@ -248,6 +249,7 @@ void GuardZoneDialog::OnGuardZoneDialogShow(int zone)
     GuardZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].end_bearing);
     pEnd_Bearing_Value->SetValue(GuardZoneText);
 
+    pPlugIn->ComputeGuardZoneAngles();
     SetVisibility();
 }
 
@@ -266,6 +268,7 @@ void GuardZoneDialog::OnInner_Range_Value(wxCommandEvent &event)
     int conversionFactor = RangeUnitsToMeters[pPlugIn->settings.range_units];
 
     pPlugIn->guardZones[pPlugIn->settings.guard_zone].inner_range = (int) (t * conversionFactor);
+    pPlugIn->ComputeGuardZoneAngles();
 }
 
 void GuardZoneDialog::OnOuter_Range_Value(wxCommandEvent &event)
@@ -273,10 +276,11 @@ void GuardZoneDialog::OnOuter_Range_Value(wxCommandEvent &event)
     wxString temp = pOuter_Range->GetValue();
     double t;
     temp.ToDouble(&t);
-    
+
     int conversionFactor = RangeUnitsToMeters[pPlugIn->settings.range_units];
 
     pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range = (int) (t * conversionFactor);
+    pPlugIn->ComputeGuardZoneAngles();
 }
 
 void GuardZoneDialog::OnStart_Bearing_Value(wxCommandEvent &event)
@@ -322,6 +326,7 @@ void GuardZoneDialog::OnContextMenuGuardCallback(double mark_rng, double mark_br
         pPlugIn->guardZones[pPlugIn->settings.guard_zone].end_bearing = mark_brg;
         outer_set = false;
     }
+    pPlugIn->ComputeGuardZoneAngles();
 
     OnGuardZoneDialogShow(pPlugIn->settings.guard_zone);
 }
