@@ -389,7 +389,7 @@ int br24radar_pi::Init(void)
     br_hdt_watchdog  = 0;
     br_radar_watchdog = 0;
     br_data_watchdog = 0;
-    
+
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
     m_sent_bm_id_rollover =  -1;
@@ -515,7 +515,7 @@ int br24radar_pi::Init(void)
     }
     m_reportReceiveThread = new RadarReportReceiveThread(this, &m_quit);
     m_reportReceiveThread->Run();
-    
+
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
             WANTS_OVERLAY_CALLBACK     |
@@ -1294,7 +1294,7 @@ void br24radar_pi::ComputeGuardZoneAngles()
     if (settings.verbose >= 3) {
         wxLogMessage(wxT("BR24radar_pi: ComputeGuardZoneAngles done, %d marks"), marks);
     }
-    
+
 }
 
 
@@ -1362,7 +1362,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             previousAngle = drawAngle;
         }
 
-        // At this point we have: 
+        // At this point we have:
         // scanAngle -- the angle in LINES_PER_ROTATION which has data
         // blobSpokesWide -- how many spokes wide this is going to be
         // Adjust the scanAngle accordingly
@@ -2418,7 +2418,7 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
 
     // Hurrah! Success!
     return rx_socket;
-    
+
 fail:
     errorMsg << wxT(" ") << address;
     wxLogError(wxT("BR2radar_pi: %s"), errorMsg.c_str());
@@ -2535,7 +2535,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             if (pPlugIn->settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: strange header length %d"), line->br24.headerLen);
             }
-            // Do not draw something with this... 
+            // Do not draw something with this...
             pPlugIn->m_statistics.missing_spokes++;
             next_scan_number = (scan_number + 1) % LINES_PER_ROTATION;
             continue;
@@ -2846,7 +2846,7 @@ static int getifaddrs( struct ifaddrs ** ifap )
             ift = (struct ifaddrs_storage *)(ift->ifa.ifa_next);
         }
     }
-    
+
     *ifap = (struct ifaddrs*) ifa;
     closesocket(sock);
     return 0;

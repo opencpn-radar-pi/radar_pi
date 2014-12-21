@@ -264,7 +264,7 @@ void GuardZoneDialog::OnInner_Range_Value(wxCommandEvent &event)
     wxString temp = pInner_Range->GetValue();
     double t;
     temp.ToDouble(&t);
-    
+
     int conversionFactor = RangeUnitsToMeters[pPlugIn->settings.range_units];
 
     pPlugIn->guardZones[pPlugIn->settings.guard_zone].inner_range = (int) (t * conversionFactor);
