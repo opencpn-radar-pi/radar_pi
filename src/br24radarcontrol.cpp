@@ -407,10 +407,10 @@ void BR24ControlsDialog::CreateControls()
     label << _("Downsample") << wxT("\n");
     label << _("Scan speed") << wxT("\n");
     label << _("Scan age") << wxT("\n");
-    label << _("Gain") << wxT("\n");
+    label << _("Gain") << wxT("\n"); 
     label << _("Sea clutter") << wxT("\n");
     label << _("Rain clutter") << wxT("\n");
-    label << _("Auto") << wxT(" (1/20 Nm)\n");
+    label << _("Auto") << wxT(" (1/20 Nm)\n"); 
 
     wxStaticText * testMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     testBox->Add(testMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
@@ -658,12 +658,12 @@ void BR24ControlsDialog::CreateControls()
     bAdvanced->SetFont(g_font);
 
     // The GUARD ZONE 1 button
-    bGuard1 = new wxButton(this, ID_ZONE1, _("Guard zone 1"), wxDefaultPosition, g_buttonSize, 0);
+    bGuard1 = new wxButton(this, ID_ZONE1, _("Guard zone 1\n"), wxDefaultPosition, g_buttonSize, 0);
     controlBox->Add(bGuard1, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bGuard1->SetFont(g_font);
 
     // The GUARD ZONE 2 button
-    bGuard2 = new wxButton(this, ID_ZONE2, _("Guard zone 2"), wxDefaultPosition, g_buttonSize, 0);
+    bGuard2 = new wxButton(this, ID_ZONE2, _("Guard zone 2\n"), wxDefaultPosition, g_buttonSize, 0);
     controlBox->Add(bGuard2, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bGuard2->SetFont(g_font);
 

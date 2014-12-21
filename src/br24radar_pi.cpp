@@ -1040,7 +1040,7 @@ void br24radar_pi::DoTick(void)
 
     if (settings.verbose) {
         wxString t;
-        t.Printf(wxT("packets %d/%d\nspokes %d/%d/%d")
+        t.Printf(wxT("packets %d/%d\nspokes:%d/%d/%d")
                 , m_statistics.packets
                 , m_statistics.broken_packets
                 , m_statistics.spokes
@@ -1049,8 +1049,8 @@ void br24radar_pi::DoTick(void)
         if (m_pControlDialog && m_pControlDialog->tStatistics) {
             m_pControlDialog->tStatistics->SetLabel(t);
         }
-        t.Replace(wxT("\n"), wxT(" "));
-        wxLogMessage(wxT("BR24radar_pi: received %s, %d %d %d %d"), t.c_str(), br_bpos_set, m_hdt_source, br_radar_seen, br_data_seen);
+            t.Replace(wxT("\n"), wxT(" "));
+            wxLogMessage(wxT("BR24radar_pi: received %s, %d %d %d %d"), t.c_str(), br_bpos_set, m_hdt_source, br_radar_seen, br_data_seen);
     }
 
     if (m_pControlDialog) {
@@ -1422,7 +1422,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             // Guard Section
 
             for (size_t z = 0; z < GUARD_ZONES; z++) {
-                if (guardZoneAngles[z][scanAngle]) {
+                if (guardZoneAngles[z][scanAngle] && guardZones[z].type != GZ_OFF) {
                     int inner_range = guardZones[z].inner_range; // now in meters
                     int outer_range = guardZones[z].outer_range; // now in meters
                     int bogey_range = radius * max_range / 512;
@@ -1686,8 +1686,15 @@ bool br24radar_pi::LoadConfig(void)
             }
             pConf->Read(wxT("Zone2ArcCirc"), &guardZones[1].type, 0);
 
-
-            pConf->Read(wxT("RadarAlertAudioFile"), &RadarAlertAudioFile );
+            pConf->Read(wxT("RadarAlertAudioFile") , &RadarAlertAudioFile) ; 
+            if(RadarAlertAudioFile == wxEmptyString ) { //For first time launch copy AIS Alert audio file
+                pConf->SetPath(wxT("/Settings/AIS"));
+                pConf->Read(wxT("AISAlertAudioFile"), &RadarAlertAudioFile);
+                if(RadarAlertAudioFile != wxEmptyString) {
+                    pConf->SetPath(wxT("/Plugins/BR24Radar"));
+                    pConf->Write(wxT("RadarAlertAudioFile"), RadarAlertAudioFile); 
+                }
+            }
             SaveConfig();
             return true;
         }
@@ -1777,7 +1784,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("Zone2OuterRng"), guardZones[1].outer_range);
         pConf->Write(wxT("Zone2InnerRng"), guardZones[1].inner_range);
         pConf->Write(wxT("Zone2ArcCirc"), guardZones[1].type);
-
+        
         pConf->Flush();
         //wxLogMessage(wxT("BR24radar_pi: saved config"));
 
@@ -2188,7 +2195,8 @@ void br24radar_pi::CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollov
     }
 
     if ((pnormal) && (prollover)) {
-        SetToolbarToolBitmaps(m_tool_id, pnormal, prollover);
+        SetToolbarToolBitmaps(m_tool_id, pnormal, prollover);        
+        m_bShowIcon = true;
     }
 }
 
