@@ -1242,30 +1242,24 @@ void br24radar_pi::ComputeGuardZoneAngles()
 
     for (size_t z = 0; z < GUARD_ZONES; z++) {
         switch (guardZones[z].type) {
+            case GZ_CIRCLE:
+                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: circle at range %d to %d meters"), z + 1, guardZones[z].inner_range, guardZones[z].outer_range);
+                angle_1 = 0.0;
+                angle_2 = 360.0;
+                break;
             case GZ_ARC:
                 wxLogMessage(wxT("BR24radar_pi: GuardZone %d: bearing %f to %f range %d to %d meters"), z + 1
                              , guardZones[z].start_bearing
                              , guardZones[z].end_bearing
                              , guardZones[z].inner_range, guardZones[z].outer_range);
-                break;
-            case GZ_CIRCLE:
-                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: circle at range %d to %d meters"), z + 1, guardZones[z].inner_range, guardZones[z].outer_range);
-                break;
-            default:
-                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
-        }
-
-        switch (guardZones[z].type) {
-            case GZ_CIRCLE:
-                angle_1 = 0.0;
-                angle_2 = 360.0;
-                break;
-            case GZ_ARC:
                 angle_1 = guardZones[z].start_bearing;
                 angle_2 = guardZones[z].end_bearing;
                 break;
             default:
-                continue;
+                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
+                angle_1 = 720.0; // Will never be reached, so no marks are set -> off...
+                angle_2 = 720.0;
+                break;
         }
 
         if (angle_1 > angle_2) {
