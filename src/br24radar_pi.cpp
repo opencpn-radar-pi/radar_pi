@@ -2372,7 +2372,6 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     SOCKET rx_socket;
     struct sockaddr_in adr;
     int one = 1;
-    int r = 0;
     wxString errorMsg;
 
     if (!addr) {
@@ -2389,18 +2388,17 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     adr.sin_port = htons(port);
     rx_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (rx_socket == INVALID_SOCKET) {
-        r = -1;
-    }
-    else {
-        r = setsockopt(rx_socket, SOL_SOCKET, SO_REUSEADDR, (const char *) &one, sizeof(one));
-    }
-
-    if (!r) {
-        r = bind(rx_socket, (struct sockaddr *) &adr, sizeof(adr));
-    }
-
-    if (r) {
         errorMsg << _("Cannot create UDP socket");
+        goto fail;
+    }
+    if (setsockopt(rx_socket, SOL_SOCKET, SO_REUSEADDR, (const char *) &one, sizeof(one)))
+    {
+        errorMsg << _("Cannot set reuse address option on socket");
+        goto fail;
+    }
+
+    if (bind(rx_socket, (struct sockaddr *) &adr, sizeof(adr))) {
+        errorMsg << _("Cannot bind UDP socket to port ") << port;
         goto fail;
     }
 
@@ -2413,9 +2411,8 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
         goto fail;
     }
 
-    r = setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq));
-    if (r) {
-        errorMsg << _("Invalid IP address for UDP multicast") << address;
+    if (setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq))) {
+        errorMsg << _("Invalid IP address for UDP multicast");
         goto fail;
     }
 
@@ -2423,8 +2420,9 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     return rx_socket;
     
 fail:
+    errorMsg << wxT(" ") << address;
+    wxLogError(wxT("BR2radar_pi: %s"), errorMsg.c_str());
     if (pPlugIn && pPlugIn->m_pControlDialog) {
-        errorMsg << wxT(" ") << address;
         pPlugIn->m_pControlDialog->SetErrorMessage(errorMsg);
     }
     if (rx_socket != INVALID_SOCKET) {
@@ -3063,6 +3061,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
     }
     else if (pPlugIn->settings.verbose >= 2) {
         logBinaryData(wxT("received report"), command, len);
+        return true;
     }
     return false;
 }
