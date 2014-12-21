@@ -154,10 +154,10 @@ IF(APPLE)
  #  relative to ${CMAKE_CURRENT_BINARY_DIR}
  #  This avoids absolute paths in the wmm.pkgproj file
 
-configure_file(${CMAKE_SOURCE_DIR}/cmake/gpl.txt
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/gpl.txt
             ${CMAKE_CURRENT_BINARY_DIR}/license.txt COPYONLY)
 
-configure_file(${CMAKE_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jpg
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jpg
             ${CMAKE_CURRENT_BINARY_DIR}/pkg_background.jpg COPYONLY)
 
  # Patch the pkgproj.in file to make the output package name conform to Xxx-Plugin_x.x.pkg format
@@ -165,7 +165,7 @@ configure_file(${CMAKE_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jpg
  #  <key>NAME</key>
  #  <string>${VERBOSE_NAME}-Plugin_${VERSION_MAJOR}.${VERSION_MINOR}</string>
 
- configure_file(${CMAKE_SOURCE_DIR}/buildosx/InstallOSX/${PACKAGE_NAME}.pkgproj.in
+ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/buildosx/InstallOSX/${PACKAGE_NAME}.pkgproj.in
             ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}.pkgproj)
 
  ADD_CUSTOM_COMMAND(

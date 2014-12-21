@@ -389,7 +389,7 @@ int br24radar_pi::Init(void)
     br_hdt_watchdog  = 0;
     br_radar_watchdog = 0;
     br_data_watchdog = 0;
-    
+
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
     m_sent_bm_id_rollover =  -1;
@@ -515,7 +515,7 @@ int br24radar_pi::Init(void)
     }
     m_reportReceiveThread = new RadarReportReceiveThread(this, &m_quit);
     m_reportReceiveThread->Run();
-    
+
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
             WANTS_OVERLAY_CALLBACK     |
@@ -1242,30 +1242,24 @@ void br24radar_pi::ComputeGuardZoneAngles()
 
     for (size_t z = 0; z < GUARD_ZONES; z++) {
         switch (guardZones[z].type) {
+            case GZ_CIRCLE:
+                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: circle at range %d to %d meters"), z + 1, guardZones[z].inner_range, guardZones[z].outer_range);
+                angle_1 = 0.0;
+                angle_2 = 360.0;
+                break;
             case GZ_ARC:
                 wxLogMessage(wxT("BR24radar_pi: GuardZone %d: bearing %f to %f range %d to %d meters"), z + 1
                              , guardZones[z].start_bearing
                              , guardZones[z].end_bearing
                              , guardZones[z].inner_range, guardZones[z].outer_range);
-                break;
-            case GZ_CIRCLE:
-                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: circle at range %d to %d meters"), z + 1, guardZones[z].inner_range, guardZones[z].outer_range);
-                break;
-            default:
-                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
-        }
-
-        switch (guardZones[z].type) {
-            case GZ_CIRCLE:
-                angle_1 = 0.0;
-                angle_2 = 360.0;
-                break;
-            case GZ_ARC:
                 angle_1 = guardZones[z].start_bearing;
                 angle_2 = guardZones[z].end_bearing;
                 break;
             default:
-                continue;
+                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
+                angle_1 = 720.0; // Will never be reached, so no marks are set -> off...
+                angle_2 = 720.0;
+                break;
         }
 
         if (angle_1 > angle_2) {
@@ -1294,7 +1288,7 @@ void br24radar_pi::ComputeGuardZoneAngles()
     if (settings.verbose >= 3) {
         wxLogMessage(wxT("BR24radar_pi: ComputeGuardZoneAngles done, %d marks"), marks);
     }
-    
+
 }
 
 
@@ -1362,7 +1356,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             previousAngle = drawAngle;
         }
 
-        // At this point we have: 
+        // At this point we have:
         // scanAngle -- the angle in LINES_PER_ROTATION which has data
         // blobSpokesWide -- how many spokes wide this is going to be
         // Adjust the scanAngle accordingly
@@ -2380,7 +2374,6 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     SOCKET rx_socket;
     struct sockaddr_in adr;
     int one = 1;
-    int r = 0;
     wxString errorMsg;
 
     if (!addr) {
@@ -2397,18 +2390,17 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     adr.sin_port = htons(port);
     rx_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (rx_socket == INVALID_SOCKET) {
-        r = -1;
-    }
-    else {
-        r = setsockopt(rx_socket, SOL_SOCKET, SO_REUSEADDR, (const char *) &one, sizeof(one));
-    }
-
-    if (!r) {
-        r = bind(rx_socket, (struct sockaddr *) &adr, sizeof(adr));
-    }
-
-    if (r) {
         errorMsg << _("Cannot create UDP socket");
+        goto fail;
+    }
+    if (setsockopt(rx_socket, SOL_SOCKET, SO_REUSEADDR, (const char *) &one, sizeof(one)))
+    {
+        errorMsg << _("Cannot set reuse address option on socket");
+        goto fail;
+    }
+
+    if (bind(rx_socket, (struct sockaddr *) &adr, sizeof(adr))) {
+        errorMsg << _("Cannot bind UDP socket to port ") << port;
         goto fail;
     }
 
@@ -2421,18 +2413,18 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
         goto fail;
     }
 
-    r = setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq));
-    if (r) {
-        errorMsg << _("Invalid IP address for UDP multicast") << address;
+    if (setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq))) {
+        errorMsg << _("Invalid IP address for UDP multicast");
         goto fail;
     }
 
     // Hurrah! Success!
     return rx_socket;
-    
+
 fail:
+    errorMsg << wxT(" ") << address;
+    wxLogError(wxT("BR2radar_pi: %s"), errorMsg.c_str());
     if (pPlugIn && pPlugIn->m_pControlDialog) {
-        errorMsg << wxT(" ") << address;
         pPlugIn->m_pControlDialog->SetErrorMessage(errorMsg);
     }
     if (rx_socket != INVALID_SOCKET) {
@@ -2545,7 +2537,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             if (pPlugIn->settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: strange header length %d"), line->br24.headerLen);
             }
-            // Do not draw something with this... 
+            // Do not draw something with this...
             pPlugIn->m_statistics.missing_spokes++;
             next_scan_number = (scan_number + 1) % LINES_PER_ROTATION;
             continue;
@@ -2856,7 +2848,7 @@ static int getifaddrs( struct ifaddrs ** ifap )
             ift = (struct ifaddrs_storage *)(ift->ifa.ifa_next);
         }
     }
-    
+
     *ifap = (struct ifaddrs*) ifa;
     closesocket(sock);
     return 0;
@@ -3071,6 +3063,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
     }
     else if (pPlugIn->settings.verbose >= 2) {
         logBinaryData(wxT("received report"), command, len);
+        return true;
     }
     return false;
 }

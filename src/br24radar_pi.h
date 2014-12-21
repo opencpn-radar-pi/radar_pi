@@ -572,7 +572,8 @@ public:
                        int newValue
                       )
     {
-        Create(parent, id, label + _T("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
+
+        Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
         minValue = 0;
         maxValue = 100;
         value = 0;
@@ -618,7 +619,7 @@ public:
                             br24radar_pi *ppi
                            )
     {
-        Create(parent, id, label + _T("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
+        Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
         minValue = 0;
         maxValue = 0;
         auto_range_index = 0;

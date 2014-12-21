@@ -371,7 +371,7 @@ bool BR24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID 
         return false;
     }
     g_font = *OCPNGetFont(_("Dialog"), 12);
-    
+
     CreateControls();
     return true;
 }
@@ -458,12 +458,12 @@ void BR24ControlsDialog::CreateControls()
     nmeaSizer->Add(cbBoatPos, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     cbBoatPos->SetFont(g_font);
     cbBoatPos->Disable();
-    
+
     cbHeading = new wxCheckBox(this, ID_HEADING, _("Heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     nmeaSizer->Add(cbHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     cbHeading->SetFont(g_font);
     cbHeading->Disable();
-    
+
     ipBox = new wxStaticBox(this, wxID_ANY, _("ZeroConf via (wired) Ethernet"));
     ipBox->SetFont(g_font);
     wxStaticBoxSizer* ipSizer = new wxStaticBoxSizer(ipBox, wxVERTICAL);
@@ -473,7 +473,7 @@ void BR24ControlsDialog::CreateControls()
     ipSizer->Add(cbRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     cbRadar->SetFont(g_font);
     cbRadar->Disable();
-    
+
     cbData = new wxCheckBox(this, ID_DATA, _("Radar sending data"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     ipSizer->Add(cbData, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     cbData->SetFont(g_font);
@@ -485,7 +485,7 @@ void BR24ControlsDialog::CreateControls()
     // A box sizer to contain RANGE button
     editBox = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(editBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-    
+
     // The <<Back button
     bBack = new wxButton(this, ID_BACK, _("<<\nBack"), wxDefaultPosition, g_buttonSize, 0);
     editBox->Add(bBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
@@ -556,7 +556,7 @@ void BR24ControlsDialog::CreateControls()
     bInterferenceRejection->maxValue = ARRAY_SIZE(interference_rejection_names) - 1;
     bInterferenceRejection->names = interference_rejection_names;
     bInterferenceRejection->SetValue(pPlugIn->settings.interference_rejection); // redraw after adding names
-    
+
     // The TARGET BOOST button
     target_boost_names[0] = _("Off");
     target_boost_names[1] = _("Low");
@@ -583,7 +583,7 @@ void BR24ControlsDialog::CreateControls()
 
     advanced4gBox = new wxBoxSizer(wxVERTICAL);
     advancedBox->Add(advanced4gBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
-    
+
     // The TARGET SEPARATION button
 
     target_separation_names[0] = _("Off");
@@ -658,12 +658,16 @@ void BR24ControlsDialog::CreateControls()
     bAdvanced->SetFont(g_font);
 
     // The GUARD ZONE 1 button
-    bGuard1 = new wxButton(this, ID_ZONE1, _("Guard zone 1\n"), wxDefaultPosition, g_buttonSize, 0);
+    wxString label1;
+    label1 << _("Guard zone") << wxT(" 1\n");
+    bGuard1 = new wxButton(this, ID_ZONE1, label1, wxDefaultPosition, g_buttonSize, 0);
     controlBox->Add(bGuard1, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bGuard1->SetFont(g_font);
 
     // The GUARD ZONE 2 button
-    bGuard2 = new wxButton(this, ID_ZONE2, _("Guard zone 2\n"), wxDefaultPosition, g_buttonSize, 0);
+    wxString label2;
+    label2 << _("Guard zone") << wxT(" 2\n");
+    bGuard2 = new wxButton(this, ID_ZONE2, label2, wxDefaultPosition, g_buttonSize, 0);
     controlBox->Add(bGuard2, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bGuard2->SetFont(g_font);
 
@@ -689,7 +693,7 @@ void BR24ControlsDialog::UpdateGuardZoneState()
         _("Arc"),
         _("Circle")
     };
-    
+
     label1 << _("Guard zone") << wxT(" 1\n") << GuardZoneNames[pPlugIn->guardZones[0].type];
     bGuard1->SetLabel(label1);
 
@@ -901,7 +905,7 @@ void BR24ControlsDialog::UpdateMessage(bool haveGPS, bool haveHeading, bool have
             topSizer->Layout();
         }
     }
-    
+
     editBox->Layout();
     topSizer->Layout();
 }
