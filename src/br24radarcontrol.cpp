@@ -658,12 +658,16 @@ void BR24ControlsDialog::CreateControls()
     bAdvanced->SetFont(g_font);
 
     // The GUARD ZONE 1 button
-    bGuard1 = new wxButton(this, ID_ZONE1, _("Guard zone 1"), wxDefaultPosition, g_buttonSize, 0);
+    wxString label1;
+    label1 << _("Guard zone") << wxT(" 1\n");
+    bGuard1 = new wxButton(this, ID_ZONE1, label1, wxDefaultPosition, g_buttonSize, 0);
     controlBox->Add(bGuard1, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bGuard1->SetFont(g_font);
 
     // The GUARD ZONE 2 button
-    bGuard2 = new wxButton(this, ID_ZONE2, _("Guard zone 2"), wxDefaultPosition, g_buttonSize, 0);
+    wxString label2;
+    label2 << _("Guard zone") << wxT(" 2\n");
+    bGuard2 = new wxButton(this, ID_ZONE2, label2, wxDefaultPosition, g_buttonSize, 0);
     controlBox->Add(bGuard2, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bGuard2->SetFont(g_font);
 
