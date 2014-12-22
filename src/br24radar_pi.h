@@ -394,7 +394,6 @@ private:
 
     int                       m_display_width, m_display_height;
     int                       m_tool_id;
-    bool                      m_bShowIcon;
     wxBitmap                 *m_pdeficon;
 
     //    Controls added to Preferences panel
