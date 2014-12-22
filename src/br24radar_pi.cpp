@@ -1416,7 +1416,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             // Guard Section
 
             for (size_t z = 0; z < GUARD_ZONES; z++) {
-                if (guardZoneAngles[z][scanAngle] && guardZones[z].type != GZ_OFF) {
+                if (guardZoneAngles[z][scanAngle]) {
                     int inner_range = guardZones[z].inner_range; // now in meters
                     int outer_range = guardZones[z].outer_range; // now in meters
                     int bogey_range = radius * max_range / 512;
