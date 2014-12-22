@@ -2182,8 +2182,7 @@ void br24radar_pi::CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollov
     }
 
     if ((pnormal) && (prollover)) {
-        SetToolbarToolBitmaps(m_tool_id, pnormal, prollover);        
-        m_bShowIcon = true;
+        SetToolbarToolBitmaps(m_tool_id, pnormal, prollover); 
     }
 }
 
