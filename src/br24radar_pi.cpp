@@ -603,15 +603,8 @@ wxString br24radar_pi::GetLongDescription()
 
 void br24radar_pi::SetDefaults(void)
 {
-    // If the config somehow says NOT to show the icon, override it so the user gets good feedback
-    if (!m_bShowIcon) {
-        m_bShowIcon = true;
-
-        m_tool_id  = InsertPlugInTool(wxT(""), _img_radar_red, _img_radar_red, wxITEM_CHECK,
-                                      wxT("BR24Radar"), wxT(""), NULL,
-                                      BR24RADAR_TOOL_POSITION, 0, this);
-    }
-
+    // This will be called upon enabling a PlugIn via the user Dialog.
+    // We don't need to do anything special here.
 }
 
 void br24radar_pi::ShowPreferencesDialog(wxWindow* parent)
