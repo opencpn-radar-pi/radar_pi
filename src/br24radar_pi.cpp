@@ -456,7 +456,7 @@ int br24radar_pi::Init(void)
     memset(&adr, 0, sizeof(adr));
     adr.sin_family = AF_INET;
     adr.sin_addr.s_addr=htonl(INADDR_ANY);
-    adr.sin_port=htons(6680);
+    adr.sin_port=htons(0);
     int one = 1;
     int r = 0;
     m_radar_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
