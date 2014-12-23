@@ -114,7 +114,7 @@ time_t      br_dt_stayalive;
 #define     STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
 
 
-bool  br_bshown_dc_message;
+bool  br_bshown_dc_message = false;
 wxTextCtrl        *plogtc;
 
 int   radar_control_id, guard_zone_id;
@@ -1115,21 +1115,21 @@ void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay
 
 bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 {
-    if (0 == br_bshown_dc_message) {
-        br_bshown_dc_message = 1;
+    if (br_radar_state == RADAR_ON && !br_bshown_dc_message) {
+        br_bshown_dc_message = true;
         wxString message(_("The Radar Overlay PlugIn requires the Accelerated Graphics (OpenGL) mode to be activated in Options->Display->Chart Display Options"));
-        wxMessageDialog dlg(GetOCPNCanvasWindow(),  message, _("br24radar message"), wxOK);
+        wxMessageDialog dlg(GetOCPNCanvasWindow(), message, _("br24radar message"), wxCANCEL | wxOK);
         dlg.ShowModal();
+        return false;
     }
-
-    return false;
+    return true;
 }
 
 // Called by Plugin Manager on main system process cycle
 
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 {
-    br_bshown_dc_message = 0;             // show message box if RenderOverlay() is called again
+    br_bshown_dc_message = false;             // show message box if RenderOverlay() is called again
 
     // this is expected to be called at least once per second
     // but if we are scrolling or otherwise it can be MUCH more often!
@@ -2557,7 +2557,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             next_scan_number = (scan_number + 1) % LINES_PER_ROTATION;
             continue;
         }
-        if (line->br24.status != 0x02) {
+        if (line->br24.status != 0x02 && line->br24.status != 0x18) {
             if (pPlugIn->settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: strange status %02x"), line->br24.headerLen, line->br24.status);
             }
@@ -3047,6 +3047,13 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
         }
         return true;
     }
+    else if (len == 564 && command[0] == 0x05 && command[1] == 0xC4) {
+        // Content unknown, but we know that BR24's send this
+        if (pPlugIn->settings.verbose >= 2) {
+            logBinaryData(wxT("received report #5"), command, len);
+        }
+        return true;
+    }
     else if (len == 99 && command[0] == 0x02 && command[1] == 0xC4) {
         radar_state * s = (radar_state *) command;
         if (pPlugIn->settings.verbose > 0) {
@@ -3078,7 +3085,6 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
     }
     else if (pPlugIn->settings.verbose >= 2) {
         logBinaryData(wxT("received report"), command, len);
-        return true;
     }
     return false;
 }
