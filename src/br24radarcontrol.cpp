@@ -924,16 +924,20 @@ void BR24ControlsDialog::SetErrorMessage(wxString &msg)
 
 void BR24ControlsDialog::SetRadarIPAddress(wxString &msg)
 {
-    wxString label;
+    if (cbRadar) {
+        wxString label;
 
-    label << _("Radar IP") << wxT(" ") << msg;
-    cbRadar->SetLabel(label);
+        label << _("Radar IP") << wxT(" ") << msg;
+        cbRadar->SetLabel(label);
+    }
 }
 
 void BR24ControlsDialog::SetMcastIPAddress(wxString &msg)
 {
-    wxString label;
+    if (ipBox) {
+        wxString label;
 
-    label << _("ZeroConf via (wired) Ethernet") << wxT(" ") << msg;
-    ipBox->SetLabel(label);
+        label << _("ZeroConf via (wired) Ethernet") << wxT(" ") << msg;
+        ipBox->SetLabel(label);
+    }
 }
