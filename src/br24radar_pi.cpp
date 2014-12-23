@@ -2592,6 +2592,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
                 wxString label;
                 label << _("Radar") << wxT(" BR24");
+                pPlugIn->m_pControlDialog->SetTitle(label);
                 pPlugIn->m_pControlDialog->SetLabel(label);
             }
             br_radar_type = RT_BR24;
@@ -2614,6 +2615,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
                 wxString label;
                 label << _("Radar") << wxT(" 4G");
+                pPlugIn->m_pControlDialog->SetTitle(label);
                 pPlugIn->m_pControlDialog->SetLabel(label);
             }
             br_radar_type = RT_4G;
