@@ -12,8 +12,10 @@ Compiling
 
 You can compile just this plugin without having to compile the entire OpenCPN source. If you check out the plugin source into the plugins subdirectory of your OpenCPN source tree, you can build it as part of it (exactly as with the versions prior to 1.0).
 
-You will need the general preconditions for building OpenCPN from http://opencpn.org/ocpn/developers_manual 
+You will need the general preconditions for building OpenCPN from http://opencpn.org/ocpn/developers_manual .
 
+The following command line snippets show how to build the entire package separately from the OpenCPN source.
+In order to build multiple platforms you can build in separate `build-${platform}` directories.
 
 ###Obtain the source code
 
@@ -24,8 +26,8 @@ git clone https://github.com/canboat/BR24radar_pi.git
 ###Build on Microsoft Windows
 
 ```
-mkdir BR24radar_pi/build
-cd BR24radar_pi/build
+mkdir BR24radar_pi/build-win32
+cd BR24radar_pi/build-win32
 cmake ..
 cmake --build .
 ```
@@ -40,12 +42,15 @@ cmake --build . --config release --target package
 
 ###Build on Linux
 
+Example on 64 bit Intel/AMD64 system:
+
 ```
-mkdir BR24radar_pi/build
-cd BR24radar_pi/build
+mkdir BR24radar_pi/build-linux-x86_64
+cd BR24radar_pi/build-linux-x86_64
 cmake ..
-cmake --build .
+make
 ```
+
 
 ###Creating a package on Linux
 
@@ -55,9 +60,10 @@ make package
 
 ###Build on Mac OS X:
 
-Tools: Can be installed either manually or from Homebrew (http://brew.sh)
+XCode can be downloaded from the App Store.
+
+Tools: Can be installed either manually or from Homebrew (http://brew.sh). Homebrew is _highly_ recommended.
 ```
-#brew install git #If I remember well, it is already available on the system
 brew install cmake
 brew install gettext
 ln -s /usr/local/Cellar/gettext/0.19.2/bin/msgmerge /usr/local/bin/msgmerge
@@ -81,6 +87,10 @@ sudo make install
 Before running cmake, you must set the deployment target to OS X 10.7 to be compatible with the libraries used by core OpenCPN
 ```
 export MACOSX_DEPLOYMENT_TARGET=10.7
+mkdir build-mac
+cd build-mac
+cmake ..
+make
 ```
 
 ####Packaging on OS X
