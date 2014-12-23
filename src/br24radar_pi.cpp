@@ -68,8 +68,6 @@ using namespace std;
 #include "br24radar_pi.h"
 //#include "ocpndc.h"
 
-//#include "OCPN_Sound.h" //Devil
-#include <wx/sound.h>
 
 // A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration)
 // Note that 3G scanners are BR24's with better power, so they are more BR23+ than 4G-.
@@ -84,8 +82,9 @@ enum {
     ID_RANGE_UNITS,
     ID_OVERLAYDISPLAYOPTION,
     ID_DISPLAYTYPE,
-    ID_INTERVALSLIDER,
     ID_HEADINGSLIDER,
+    ID_SELECT_SOUND,
+    ID_TEST_SOUND
 };
 
 bool br_bpos_set = false;
@@ -115,15 +114,12 @@ time_t      br_dt_stayalive;
 #define     STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
 
 
-bool  br_bshown_dc_message;
+bool  br_bshown_dc_message = false;
 wxTextCtrl        *plogtc;
 
 int   radar_control_id, guard_zone_id;
 bool  guard_context_mode;
 
-
-wxSound     RadarAlarm;     //This is the Devil
-wxString    RadarAlertAudioFile;
 bool        guard_bogey_confirmed = false;
 time_t      alarm_sound_last;
 #define     ALARM_TIMEOUT (10)
@@ -351,7 +347,7 @@ static void DrawFilledArc(double r1, double r2, double a1, double a2)
 //---------------------------------------------------------------------------------------------------------
 
 br24radar_pi::br24radar_pi(void *ppimgr)
-    : opencpn_plugin_18(ppimgr)
+    : opencpn_plugin_110(ppimgr)
 {
     // Create the PlugIn icons
     initialize_images();
@@ -460,7 +456,7 @@ int br24radar_pi::Init(void)
     memset(&adr, 0, sizeof(adr));
     adr.sin_family = AF_INET;
     adr.sin_addr.s_addr=htonl(INADDR_ANY);
-    adr.sin_port=htons(6680);
+    adr.sin_port=htons(0);
     int one = 1;
     int r = 0;
     m_radar_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -668,22 +664,23 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
         return false;
     }
 
+    int font_size_y, font_descent, font_lead;
+    GetTextExtent( _T("0"), NULL, &font_size_y, &font_descent, &font_lead );
+    wxSize small_button_size( -1, (int) ( 1.4 * ( font_size_y + font_descent + font_lead ) ) );
+
     int border_size = 4;
     wxBoxSizer* topSizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(topSizer);
 
-    wxBoxSizer* DisplayOptionsBox = new wxBoxSizer(wxVERTICAL);
+    wxFlexGridSizer * DisplayOptionsBox = new wxFlexGridSizer(2, 5, 5);
     topSizer->Add(DisplayOptionsBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL | wxEXPAND, 2);
 
     //  BR24 toolbox icon checkbox
-    wxStaticBox* DisplayOptionsCheckBox = new wxStaticBox(this, wxID_ANY, _T(""));
-    wxStaticBoxSizer* DisplayOptionsCheckBoxSizer = new wxStaticBoxSizer(DisplayOptionsCheckBox, wxVERTICAL);
-    DisplayOptionsBox->Add(DisplayOptionsCheckBoxSizer, 0, wxEXPAND | wxALL, border_size);
+//    wxStaticBox* DisplayOptionsCheckBox = new wxStaticBox(this, wxID_ANY, _T(""));
+//    wxStaticBoxSizer* DisplayOptionsCheckBoxSizer = new wxStaticBoxSizer(DisplayOptionsCheckBox, wxVERTICAL);
+//    DisplayOptionsBox->Add(DisplayOptionsCheckBoxSizer, 0, wxEXPAND | wxALL, border_size);
 
      //  Range Units options
-    wxStaticBox* BoxRangeUnits = new wxStaticBox(this, wxID_ANY, _("Range Units"));
-    wxStaticBoxSizer* BoxSizerOperation = new wxStaticBoxSizer(BoxRangeUnits, wxVERTICAL);
-    DisplayOptionsCheckBoxSizer->Add(BoxSizerOperation, 0, wxEXPAND | wxALL, border_size);
 
     wxString RangeModeStrings[] = {
         _("Nautical Miles"),
@@ -693,8 +690,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     pRangeUnits = new wxRadioBox(this, ID_RANGE_UNITS, _("Range Units"),
                                     wxDefaultPosition, wxDefaultSize,
                                     2, RangeModeStrings, 1, wxRA_SPECIFY_COLS);
-
-    BoxSizerOperation->Add(pRangeUnits, 0, wxALL | wxEXPAND, 2);
+    DisplayOptionsBox->Add(pRangeUnits, 0, wxALL | wxEXPAND, 2);
 
     pRangeUnits->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
                             wxCommandEventHandler(BR24DisplayOptionsDialog::OnRangeUnitsClick), NULL, this);
@@ -712,7 +708,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
                                             wxDefaultPosition, wxDefaultSize,
                                             3, Overlay_Display_Options, 1, wxRA_SPECIFY_COLS);
 
-    DisplayOptionsCheckBoxSizer->Add(pOverlayDisplayOptions, 0, wxALL | wxEXPAND, 2);
+    DisplayOptionsBox->Add(pOverlayDisplayOptions, 0, wxALL | wxEXPAND, 2);
 
     pOverlayDisplayOptions->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
                                     wxCommandEventHandler(BR24DisplayOptionsDialog::OnDisplayOptionClick), NULL, this);
@@ -720,15 +716,15 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     pOverlayDisplayOptions->SetSelection(pPlugIn->settings.display_option);
 
 //  Display Options
-    wxStaticBox* itemStaticBoxSizerDisOptStatic = new wxStaticBox(this, wxID_ANY, _("Display Options"));
-    wxStaticBoxSizer* itemStaticBoxSizerDisOpt = new wxStaticBoxSizer(itemStaticBoxSizerDisOptStatic, wxVERTICAL);
-    DisplayOptionsCheckBoxSizer->Add(itemStaticBoxSizerDisOpt, 0, wxEXPAND | wxALL, border_size);
+//    wxStaticBox* itemStaticBoxSizerDisOptStatic = new wxStaticBox(this, wxID_ANY, _("Display Options"));
+//    wxStaticBoxSizer* itemStaticBoxSizerDisOpt = new wxStaticBoxSizer(itemStaticBoxSizerDisOptStatic, wxVERTICAL);
+//    DisplayOptionsBox->Add(itemStaticBoxSizerDisOpt, 0, wxEXPAND | wxALL, border_size);
 
     pDisplayMode = new wxRadioBox(this, ID_DISPLAYTYPE, _("Radar Display"),
                                   wxDefaultPosition, wxDefaultSize,
                                   ARRAY_SIZE(DisplayModeStrings), DisplayModeStrings, 1, wxRA_SPECIFY_COLS);
 
-    itemStaticBoxSizerDisOpt->Add(pDisplayMode, 0, wxALL | wxEXPAND, 2);
+    DisplayOptionsBox->Add(pDisplayMode, 0, wxALL | wxEXPAND, 2);
 
     pDisplayMode->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
                           wxCommandEventHandler(BR24DisplayOptionsDialog::OnDisplayModeClick), NULL, this);
@@ -744,7 +740,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
                                      wxDefaultPosition, wxDefaultSize,
                                      3, GuardZoneStyleStrings, 1, wxRA_SPECIFY_COLS);
 
-    itemStaticBoxSizerDisOpt->Add(pGuardZoneStyle, 0, wxALL | wxEXPAND, 2);
+    DisplayOptionsBox->Add(pGuardZoneStyle, 0, wxALL | wxEXPAND, 2);
     pGuardZoneStyle->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
                           wxCommandEventHandler(BR24DisplayOptionsDialog::OnGuardZoneStyleClick), NULL, this);
     pGuardZoneStyle->SetSelection(pPlugIn->settings.guard_zone_render_style);
@@ -753,22 +749,38 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
 //  Calibration
     wxStaticBox* itemStaticBoxCalibration = new wxStaticBox(this, wxID_ANY, _("Calibration"));
     wxStaticBoxSizer* itemStaticBoxSizerCalibration = new wxStaticBoxSizer(itemStaticBoxCalibration, wxVERTICAL);
-    DisplayOptionsCheckBoxSizer->Add(itemStaticBoxSizerCalibration, 0, wxEXPAND | wxALL, border_size);
+    DisplayOptionsBox->Add(itemStaticBoxSizerCalibration, 0, wxEXPAND | wxALL, border_size);
 
     // Heading correction
-    wxStaticText *pStatic_Heading_Correction = new wxStaticText(this, wxID_ANY, _("Heading factor (+ or -, 0 ->180)"));
+    wxStaticText *pStatic_Heading_Correction = new wxStaticText(this, wxID_ANY, _("Heading correction\n(-180 to +180)"));
     itemStaticBoxSizerCalibration->Add(pStatic_Heading_Correction, 1, wxALIGN_LEFT | wxALL, 2);
 
     pText_Heading_Correction_Value = new wxTextCtrl(this, wxID_ANY);
-    itemStaticBoxSizerCalibration->Add(pText_Heading_Correction_Value, 1, wxALIGN_LEFT | wxALL, 5);
-    m_temp.Printf(wxT("%2.5f"), pPlugIn->settings.heading_correction);
+    itemStaticBoxSizerCalibration->Add(pText_Heading_Correction_Value, 1, wxALIGN_LEFT | wxALL, border_size);
+    m_temp.Printf(wxT("%2.1f"), pPlugIn->settings.heading_correction);
     pText_Heading_Correction_Value->SetValue(m_temp);
     pText_Heading_Correction_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                                            wxCommandEventHandler(BR24DisplayOptionsDialog::OnHeading_Calibration_Value), NULL, this);
 
+    // Guard Zone Alarm
+
+    wxStaticBox* guardZoneBox = new wxStaticBox(this, wxID_ANY, _("Guard Zone Sound"));
+    wxStaticBoxSizer* guardZoneSizer = new wxStaticBoxSizer(guardZoneBox, wxVERTICAL);
+    DisplayOptionsBox->Add(guardZoneSizer, 0, wxEXPAND | wxALL, border_size);
+
+    wxButton *pSelectSound = new wxButton(this, ID_SELECT_SOUND, _("Select Alert Sound"), wxDefaultPosition, small_button_size, 0);
+    pSelectSound->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+                          wxCommandEventHandler(BR24DisplayOptionsDialog::OnSelectSoundClick), NULL, this);
+    guardZoneSizer->Add(pSelectSound, 0, wxALL, border_size);
+
+    wxButton *pTestSound = new wxButton(this, ID_TEST_SOUND, _("Test Alert Sound"), wxDefaultPosition, small_button_size, 0);
+    pTestSound->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+                          wxCommandEventHandler(BR24DisplayOptionsDialog::OnTestSoundClick), NULL, this);
+    guardZoneSizer->Add(pTestSound, 0, wxALL, border_size);
+
     // Accept/Reject button
     wxStdDialogButtonSizer* DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
-    DisplayOptionsBox->Add(DialogButtonSizer, 0, wxALIGN_RIGHT | wxALL, 5);
+    topSizer->Add(DialogButtonSizer, 0, wxALIGN_RIGHT | wxALL, border_size);
 
 
     DimeWindow(this);
@@ -797,6 +809,29 @@ void BR24DisplayOptionsDialog::OnDisplayModeClick(wxCommandEvent &event)
 void BR24DisplayOptionsDialog::OnGuardZoneStyleClick(wxCommandEvent &event)
 {
     pPlugIn->settings.guard_zone_render_style = pGuardZoneStyle->GetSelection();
+}
+
+void BR24DisplayOptionsDialog::OnSelectSoundClick(wxCommandEvent &event)
+{
+    wxString *sharedData = GetpSharedDataLocation();
+    wxString sound_dir;
+    
+    sound_dir.Append( *sharedData );
+    sound_dir.Append( wxT("sounds") );
+
+    wxFileDialog *openDialog = new wxFileDialog( NULL, _("Select Sound File"), sound_dir, wxT(""),
+            _("WAV files (*.wav)|*.wav|All files (*.*)|*.*"), wxFD_OPEN );
+    int response = openDialog->ShowModal();
+    if( response == wxID_OK ) {
+        pPlugIn->settings.alert_audio_file = openDialog->GetPath();
+    }
+}
+
+void BR24DisplayOptionsDialog::OnTestSoundClick(wxCommandEvent &event)
+{
+    if (!pPlugIn->settings.alert_audio_file.IsEmpty()) {
+        PlugInPlaySound(pPlugIn->settings.alert_audio_file);
+    }
 }
 
 void BR24DisplayOptionsDialog::OnHeading_Calibration_Value(wxCommandEvent &event)
@@ -857,6 +892,7 @@ void br24radar_pi::OnContextMenuItemCallback(int id)
 void br24radar_pi::OnBR24ControlDialogClose()
 {
     if (m_pControlDialog) {
+        m_pControlDialog->GetPosition(&m_BR24Controls_dialog_x, &m_BR24Controls_dialog_y);
         m_pControlDialog->Hide();
         SetCanvasContextMenuItemViz(guard_zone_id, false);
     }
@@ -867,6 +903,7 @@ void br24radar_pi::OnBR24ControlDialogClose()
 void br24radar_pi::OnGuardZoneDialogClose()
 {
     if (m_pGuardZoneDialog) {
+        m_pGuardZoneDialog->GetPosition(&m_BR24Controls_dialog_x, &m_BR24Controls_dialog_y);
         m_pGuardZoneDialog->Hide();
         SetCanvasContextMenuItemViz(guard_zone_id, false);
         guard_context_mode = false;
@@ -876,6 +913,7 @@ void br24radar_pi::OnGuardZoneDialogClose()
     if (m_pControlDialog) {
         m_pControlDialog->UpdateGuardZoneState();
         m_pControlDialog->Show();
+        m_pControlDialog->SetPosition(wxPoint(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y));
         SetCanvasContextMenuItemViz(radar_control_id, true);
     }
 
@@ -904,8 +942,10 @@ void br24radar_pi::Select_Guard_Zones(int zone)
         m_pGuardZoneDialog->Create(m_parent_window, this, wxID_ANY, _(" Guard Zone Control"), pos);
     }
     if (zone >= 0) {
+        m_pControlDialog->GetPosition(&m_BR24Controls_dialog_x, &m_BR24Controls_dialog_y);
         m_pGuardZoneDialog->Show();
         m_pControlDialog->Hide();
+        m_pGuardZoneDialog->SetPosition(wxPoint(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y));
         m_pGuardZoneDialog->OnGuardZoneDialogShow(zone);
         SetCanvasContextMenuItemViz(guard_zone_id, true);
         SetCanvasContextMenuItemViz(radar_control_id, false);
@@ -1080,21 +1120,21 @@ void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay
 
 bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 {
-    if (0 == br_bshown_dc_message) {
-        br_bshown_dc_message = 1;
+    if (br_radar_state == RADAR_ON && !br_bshown_dc_message) {
+        br_bshown_dc_message = true;
         wxString message(_("The Radar Overlay PlugIn requires the Accelerated Graphics (OpenGL) mode to be activated in Options->Display->Chart Display Options"));
-        wxMessageDialog dlg(GetOCPNCanvasWindow(),  message, _("br24radar message"), wxOK);
+        wxMessageDialog dlg(GetOCPNCanvasWindow(), message, _("br24radar message"), wxCANCEL | wxOK);
         dlg.ShowModal();
+        return false;
     }
-
-    return false;
+    return true;
 }
 
 // Called by Plugin Manager on main system process cycle
 
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 {
-    br_bshown_dc_message = 0;             // show message box if RenderOverlay() is called again
+    br_bshown_dc_message = false;             // show message box if RenderOverlay() is called again
 
     // this is expected to be called at least once per second
     // but if we are scrolling or otherwise it can be MUCH more often!
@@ -1546,9 +1586,6 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
         ) {
         // We have bogeys and there is no objection to showing the dialog
 
-        if (!RadarAlarm.IsOk()) {
-            RadarAlarm.Create(RadarAlertAudioFile);
-        }
         if (!m_pGuardZoneBogey) {
             // If this is the first time we have a bogey create & show the dialog immediately
             m_pGuardZoneBogey = new GuardZoneBogey;
@@ -1562,8 +1599,8 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
             // If the last time is 10 seconds ago we ping a sound, unless the user confirmed
             alarm_sound_last = now;
 
-            if (RadarAlarm.IsOk()) {
-                RadarAlarm.Play();
+            if (!settings.alert_audio_file.IsEmpty()) {
+                PlugInPlaySound(settings.alert_audio_file);
             }
             else {
                 wxBell();
@@ -1575,9 +1612,6 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
     }
 
     if (!bogeysFound) {
-        if (RadarAlarm.IsOk()) {
-            RadarAlarm.Stop();
-        }
         guard_bogey_confirmed = false; // Reset for next time we see bogeys
         if (m_pGuardZoneBogey && m_pGuardZoneBogey->IsShown()) {
             m_pGuardZoneBogey->Hide();
@@ -1672,16 +1706,8 @@ bool br24radar_pi::LoadConfig(void)
                 pConf->Read(wxT("Zone2InnerRng"), &guardZones[1].inner_range, 0);
             }
             pConf->Read(wxT("Zone2ArcCirc"), &guardZones[1].type, 0);
+            pConf->Read(wxT("RadarAlertAudioFile"), &settings.alert_audio_file);
 
-            pConf->Read(wxT("RadarAlertAudioFile") , &RadarAlertAudioFile) ; 
-            if(RadarAlertAudioFile == wxEmptyString ) { //For first time launch copy AIS Alert audio file
-                pConf->SetPath(wxT("/Settings/AIS"));
-                pConf->Read(wxT("AISAlertAudioFile"), &RadarAlertAudioFile);
-                if(RadarAlertAudioFile != wxEmptyString) {
-                    pConf->SetPath(wxT("/Plugins/BR24Radar"));
-                    pConf->Write(wxT("RadarAlertAudioFile"), RadarAlertAudioFile); 
-                }
-            }
             SaveConfig();
             return true;
         }
@@ -1752,7 +1778,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
         pConf->Write(wxT("ScanSpeed"), settings.scan_speed);
         pConf->Write(wxT("Downsample"), settings.downsampleUser);
-
+        pConf->Write(wxT("RadarAlertAudioFile"), settings.alert_audio_file);
 
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
         pConf->Write(wxT("ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
@@ -2534,7 +2560,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             next_scan_number = (scan_number + 1) % LINES_PER_ROTATION;
             continue;
         }
-        if (line->br24.status != 0x02) {
+        if (line->br24.status != 0x02 && line->br24.status != 0x18) {
             if (pPlugIn->settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: strange status %02x"), line->br24.headerLen, line->br24.status);
             }
@@ -2564,6 +2590,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
                 wxString label;
                 label << _("Radar") << wxT(" BR24");
+                pPlugIn->m_pControlDialog->SetTitle(label);
                 pPlugIn->m_pControlDialog->SetLabel(label);
             }
             br_radar_type = RT_BR24;
@@ -2586,6 +2613,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
                 wxString label;
                 label << _("Radar") << wxT(" 4G");
+                pPlugIn->m_pControlDialog->SetTitle(label);
                 pPlugIn->m_pControlDialog->SetLabel(label);
             }
             br_radar_type = RT_4G;
@@ -3024,6 +3052,13 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
         }
         return true;
     }
+    else if (len == 564 && command[0] == 0x05 && command[1] == 0xC4) {
+        // Content unknown, but we know that BR24's send this
+        if (pPlugIn->settings.verbose >= 2) {
+            logBinaryData(wxT("received report #5"), command, len);
+        }
+        return true;
+    }
     else if (len == 99 && command[0] == 0x02 && command[1] == 0xC4) {
         radar_state * s = (radar_state *) command;
         if (pPlugIn->settings.verbose > 0) {
@@ -3055,7 +3090,6 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
     }
     else if (pPlugIn->settings.verbose >= 2) {
         logBinaryData(wxT("received report"), command, len);
-        return true;
     }
     return false;
 }

@@ -41,7 +41,7 @@
 #include "version.h"
 
 #define     MY_API_VERSION_MAJOR    1
-#define     MY_API_VERSION_MINOR    8
+#define     MY_API_VERSION_MINOR    10
 
 #ifndef PI
 #define PI        3.1415926535897931160E0      /* pi */
@@ -252,6 +252,7 @@ struct radar_control_settings {
     int      scan_speed;
     int      downsampleUser;    // 1..8 =
     int      downsample;        //         1..128
+    wxString alert_audio_file;
 };
 
 struct guard_zone_settings {
@@ -285,7 +286,7 @@ class BR24DisplayOptionsDialog;
 
 #define BR24RADAR_TOOL_POSITION    -1          // Request default positioning of toolbar tool
 
-class br24radar_pi : public opencpn_plugin_18
+class br24radar_pi : public opencpn_plugin_110
 {
 public:
     br24radar_pi(void *ppimgr);
@@ -405,11 +406,11 @@ private:
 
     SOCKET                    m_radar_socket;
 
-    long                      m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
-    long                      m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
+    int                       m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
+    int                       m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
 
-    long                      m_Guard_dialog_sx, m_Guard_dialog_sy ;
-    long                      m_Guard_dialog_x, m_Guard_dialog_y ;
+    int                       m_Guard_dialog_sx, m_Guard_dialog_sy ;
+    int                       m_Guard_dialog_x, m_Guard_dialog_y ;
 
 
     wxBitmap                 *m_ptemp_icon;
@@ -536,6 +537,8 @@ private:
     void OnDisplayModeClick(wxCommandEvent& event);
     void OnGuardZoneStyleClick(wxCommandEvent& event);
     void OnHeading_Calibration_Value(wxCommandEvent& event);
+    void OnSelectSoundClick(wxCommandEvent& event);
+    void OnTestSoundClick(wxCommandEvent& event);
 
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
