@@ -803,7 +803,7 @@ private:
     br24radar_pi    *pPlugIn;
 
     /* Controls */
-    wxTextCtrl      *pZoneNumber;
+    wxStaticBox     *pBoxGuardZone;
     wxRadioBox      *pGuardZoneType;
     wxTextCtrl      *pInner_Range;
     wxTextCtrl      *pOuter_Range;
