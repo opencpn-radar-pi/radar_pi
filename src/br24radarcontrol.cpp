@@ -895,7 +895,7 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
 
     }
 
-    if (haveGPS && haveHeading && haveRadar && haveData) {
+    if (haveOpenGL && haveGPS && haveHeading && haveRadar && haveData) {
         if (topSizer->IsShown(messageBox))
         {
             topSizer->Hide(messageBox);
