@@ -406,11 +406,11 @@ private:
 
     SOCKET                    m_radar_socket;
 
-    long                      m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
-    long                      m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
+    int                       m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
+    int                       m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
 
-    long                      m_Guard_dialog_sx, m_Guard_dialog_sy ;
-    long                      m_Guard_dialog_x, m_Guard_dialog_y ;
+    int                       m_Guard_dialog_sx, m_Guard_dialog_sy ;
+    int                       m_Guard_dialog_x, m_Guard_dialog_y ;
 
 
     wxBitmap                 *m_ptemp_icon;

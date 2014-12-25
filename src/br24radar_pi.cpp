@@ -892,6 +892,7 @@ void br24radar_pi::OnContextMenuItemCallback(int id)
 void br24radar_pi::OnBR24ControlDialogClose()
 {
     if (m_pControlDialog) {
+        m_pControlDialog->GetPosition(&m_BR24Controls_dialog_x, &m_BR24Controls_dialog_y);
         m_pControlDialog->Hide();
         SetCanvasContextMenuItemViz(guard_zone_id, false);
     }
@@ -902,6 +903,7 @@ void br24radar_pi::OnBR24ControlDialogClose()
 void br24radar_pi::OnGuardZoneDialogClose()
 {
     if (m_pGuardZoneDialog) {
+        m_pGuardZoneDialog->GetPosition(&m_BR24Controls_dialog_x, &m_BR24Controls_dialog_y);
         m_pGuardZoneDialog->Hide();
         SetCanvasContextMenuItemViz(guard_zone_id, false);
         guard_context_mode = false;
@@ -911,6 +913,7 @@ void br24radar_pi::OnGuardZoneDialogClose()
     if (m_pControlDialog) {
         m_pControlDialog->UpdateGuardZoneState();
         m_pControlDialog->Show();
+        m_pControlDialog->SetPosition(wxPoint(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y));
         SetCanvasContextMenuItemViz(radar_control_id, true);
     }
 
@@ -939,8 +942,10 @@ void br24radar_pi::Select_Guard_Zones(int zone)
         m_pGuardZoneDialog->Create(m_parent_window, this, wxID_ANY, _(" Guard Zone Control"), pos);
     }
     if (zone >= 0) {
+        m_pControlDialog->GetPosition(&m_BR24Controls_dialog_x, &m_BR24Controls_dialog_y);
         m_pGuardZoneDialog->Show();
         m_pControlDialog->Hide();
+        m_pGuardZoneDialog->SetPosition(wxPoint(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y));
         m_pGuardZoneDialog->OnGuardZoneDialogShow(zone);
         SetCanvasContextMenuItemViz(guard_zone_id, true);
         SetCanvasContextMenuItemViz(radar_control_id, false);
@@ -2587,6 +2592,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
                 wxString label;
                 label << _("Radar") << wxT(" BR24");
+                pPlugIn->m_pControlDialog->SetName(label);
                 pPlugIn->m_pControlDialog->SetLabel(label);
             }
             br_radar_type = RT_BR24;
@@ -2609,6 +2615,8 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
                 wxString label;
                 label << _("Radar") << wxT(" 4G");
+                pPlugIn->m_pControlDialog->SetName(label);
+                pPlugIn->m_pControlDialog->Set
                 pPlugIn->m_pControlDialog->SetLabel(label);
             }
             br_radar_type = RT_4G;
