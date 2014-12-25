@@ -105,6 +105,7 @@ RadarType br_radar_type = RT_UNKNOWN;
 
 static bool  br_radar_seen = false;
 static bool  br_data_seen = false;
+static bool  br_opengl_mode = false;
 static time_t      br_bpos_watchdog;
 static time_t      br_hdt_watchdog;
 static time_t      br_radar_watchdog;
@@ -112,10 +113,6 @@ static time_t      br_data_watchdog;
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 time_t      br_dt_stayalive;
 #define     STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
-
-
-bool  br_bshown_dc_message = false;
-wxTextCtrl        *plogtc;
 
 int   radar_control_id, guard_zone_id;
 bool  guard_context_mode;
@@ -1087,7 +1084,7 @@ void br24radar_pi::DoTick(void)
     }
 
     if (m_pControlDialog) {
-        m_pControlDialog->UpdateMessage(br_bpos_set, m_hdt_source > 0, br_radar_seen, br_data_seen);
+        m_pControlDialog->UpdateMessage(br_opengl_mode, br_bpos_set, m_hdt_source > 0, br_radar_seen, br_data_seen);
     }
 
     m_statistics.broken_packets = 0;
@@ -1120,13 +1117,12 @@ void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay
 
 bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 {
-    if (br_radar_state == RADAR_ON && !br_bshown_dc_message) {
-        br_bshown_dc_message = true;
-        wxString message(_("The Radar Overlay PlugIn requires the Accelerated Graphics (OpenGL) mode to be activated in Options->Display->Chart Display Options"));
-        wxMessageDialog dlg(GetOCPNCanvasWindow(), message, _("br24radar message"), wxCANCEL | wxOK);
-        dlg.ShowModal();
-        return false;
-    }
+    br_opengl_mode = false;
+
+    DoTick(); // update timers and watchdogs
+
+    UpdateState(); // update the toolbar
+
     return true;
 }
 
@@ -1134,7 +1130,7 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 {
-    br_bshown_dc_message = false;             // show message box if RenderOverlay() is called again
+    br_opengl_mode = true;
 
     // this is expected to be called at least once per second
     // but if we are scrolling or otherwise it can be MUCH more often!
@@ -1856,9 +1852,6 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         }
         br_bpos_set = true;
         br_bpos_watchdog = now;
-    }
-    if (m_pControlDialog) {
-        m_pControlDialog->UpdateMessage(br_bpos_set, m_hdt_source > 0, br_radar_seen, br_data_seen);
     }
 }
 
