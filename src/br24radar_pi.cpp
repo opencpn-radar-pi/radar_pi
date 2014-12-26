@@ -1939,7 +1939,7 @@ void br24radar_pi::SetRangeMeters(long meters)
                           , (UINT8) ((decimeters >> 24) & 0XFFL)
                           };
             if (settings.verbose) {
-                wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: %") wxTPRId64 wxT(" meters\n"), meters);
+                wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: %ld meters\n"), meters);
             }
             TransmitCmd(pck, sizeof(pck));
         }
@@ -2555,7 +2555,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             next_scan_number = (scan_number + 1) % LINES_PER_ROTATION;
             continue;
         }
-        if (line->br24.status != 0x02 && line->br24.status != 0x18) {
+        if (line->br24.status != 0x02 && line->br24.status != 0x12) {
             if (pPlugIn->settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: strange status %02x"), line->br24.status);
             }
@@ -2940,7 +2940,7 @@ void *RadarReportReceiveThread::Entry(void)
                     wxString addr;
                     UINT8 * a = (UINT8 *) &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr; // sin_addr is in network layout
                     addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
-                    if (pPlugIn->settings.verbose) {
+                    if (pPlugIn->settings.verbose >= 1) {
                         wxLogMessage(wxT("BR24radar_pi: Listening for radar reports on %s"), addr.c_str());
                     }
                     if (pPlugIn->m_pControlDialog) {
@@ -3037,54 +3037,91 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 {
     static char prevStatus = 0;
 
-    if (len == 18 && command[0] == 0x01 && command[1] == 0xC4) {
-        // Radar status in byte 2
-        if (command[2] != prevStatus) {
-            if (pPlugIn->settings.verbose > 0) {
-                wxLogMessage(wxT("BR24radar_pi: radar status = %u"), command[2]);
-            }
-            prevStatus = command[2];
+    if (command[1] == 0xC4) {
+        // Looks like a radar report. Is it a known one?
+        switch ((len << 8) + command[0])
+        {
+            case (18 << 8) + 0x01:
+                // Radar status in byte 2
+                if (command[2] != prevStatus) {
+                    if (pPlugIn->settings.verbose > 0) {
+                        wxLogMessage(wxT("BR24radar_pi: radar status = %u"), command[2]);
+                    }
+                    prevStatus = command[2];
+                }
+                break;
+
+            case (99 << 8) + 0x02:
+                if (pPlugIn->settings.verbose > 0) {
+                    radar_state * s = (radar_state *) command;
+
+                    wxLogMessage(wxT("BR24radar_pi: radar state f1=%u f2=%u f3=%u f4a=%u f4b=%u sea=%u f6a=%u f6b=%u f6c=%u f6d=%u rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
+                                 , s->field1
+                                 , s->field2
+                                 , s->field3
+                                 , s->field4a
+                                 , s->field4b
+                                 , s->sea
+                                 , s->field6a
+                                 , s->field6b
+                                 , s->field6c
+                                 , s->field6d
+                                 , s->rejection
+                                 , s->field7
+                                 , s->target_boost
+                                 , s->field8
+                                 , s->field9
+                                 , s->field10
+                                 , s->field11
+                                 , s->field12
+                                 , s->field13
+                                 , s->field14
+                                 );
+                    logBinaryData(wxT("state"), command, len);
+                }
+                break;
+
+            case (564 << 8) + 0x05:
+                // Content unknown, but we know that BR24 radomes send this
+                if (pPlugIn->settings.verbose >= 4) {
+                    logBinaryData(wxT("received familiar report"), command, len);
+                }
+                break;
+
+            default:
+                if (pPlugIn->settings.verbose >= 2) {
+                    logBinaryData(wxT("received unknown report"), command, len);
+                }
+                break;
+
         }
         return true;
     }
-    else if (len == 564 && command[0] == 0x05 && command[1] == 0xC4) {
-        // Content unknown, but we know that BR24's send this
-        if (pPlugIn->settings.verbose >= 2) {
-            logBinaryData(wxT("received report #5"), command, len);
+    if (command[1] == 0xF5) {
+        // Looks like a radar report. Is it a known one?
+        switch ((len << 8) + command[0])
+        {
+            case ( 16 << 8) + 0x0f:
+            case (  8 << 8) + 0x10:
+            case ( 10 << 8) + 0x12:
+            case ( 46 << 8) + 0x13:
+                // Content unknown, but we know that BR24 radomes send this
+                if (pPlugIn->settings.verbose >= 4) {
+                    logBinaryData(wxT("received familiar report"), command, len);
+                }
+                break;
+
+            default:
+                if (pPlugIn->settings.verbose >= 2) {
+                    logBinaryData(wxT("received unknown report"), command, len);
+                }
+                break;
+                
         }
         return true;
     }
-    else if (len == 99 && command[0] == 0x02 && command[1] == 0xC4) {
-        radar_state * s = (radar_state *) command;
-        if (pPlugIn->settings.verbose > 0) {
-            wxLogMessage(wxT("BR24radar_pi: radar state f1=%u f2=%u f3=%u f4a=%u f4b=%u sea=%u f6a=%u f6b=%u f6c=%u f6d=%u rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
-            , s->field1
-            , s->field2
-            , s->field3
-            , s->field4a
-            , s->field4b
-            , s->sea
-            , s->field6a
-            , s->field6b
-            , s->field6c
-            , s->field6d
-            , s->rejection
-            , s->field7
-            , s->target_boost
-            , s->field8
-            , s->field9
-            , s->field10
-            , s->field11
-            , s->field12
-            , s->field13
-            , s->field14
-            );
-           logBinaryData(wxT("state"), command, len);
-        }
-        return true;
-    }
-    else if (pPlugIn->settings.verbose >= 2) {
-        logBinaryData(wxT("received report"), command, len);
+    if (pPlugIn->settings.verbose >= 2) {
+        logBinaryData(wxT("received unknown message"), command, len);
     }
     return false;
 }
