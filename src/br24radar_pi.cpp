@@ -2557,7 +2557,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         }
         if (line->br24.status != 0x02 && line->br24.status != 0x18) {
             if (pPlugIn->settings.verbose) {
-                wxLogMessage(wxT("BR24radar_pi: strange status %02x"), line->br24.headerLen, line->br24.status);
+                wxLogMessage(wxT("BR24radar_pi: strange status %02x"), line->br24.status);
             }
             pPlugIn->m_statistics.broken_spokes++;
         }
