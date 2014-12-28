@@ -105,6 +105,7 @@ RadarType br_radar_type = RT_UNKNOWN;
 
 static bool  br_radar_seen = false;
 static bool  br_data_seen = false;
+static bool  br_opengl_mode = false;
 static time_t      br_bpos_watchdog;
 static time_t      br_hdt_watchdog;
 static time_t      br_radar_watchdog;
@@ -112,10 +113,6 @@ static time_t      br_data_watchdog;
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 time_t      br_dt_stayalive;
 #define     STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
-
-
-bool  br_bshown_dc_message = false;
-wxTextCtrl        *plogtc;
 
 int   radar_control_id, guard_zone_id;
 bool  guard_context_mode;
@@ -1087,7 +1084,7 @@ void br24radar_pi::DoTick(void)
     }
 
     if (m_pControlDialog) {
-        m_pControlDialog->UpdateMessage(br_bpos_set, m_hdt_source > 0, br_radar_seen, br_data_seen);
+        m_pControlDialog->UpdateMessage(br_opengl_mode, br_bpos_set, m_hdt_source > 0, br_radar_seen, br_data_seen);
     }
 
     m_statistics.broken_packets = 0;
@@ -1120,13 +1117,12 @@ void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay
 
 bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 {
-    if (br_radar_state == RADAR_ON && !br_bshown_dc_message) {
-        br_bshown_dc_message = true;
-        wxString message(_("The Radar Overlay PlugIn requires the Accelerated Graphics (OpenGL) mode to be activated in Options->Display->Chart Display Options"));
-        wxMessageDialog dlg(GetOCPNCanvasWindow(), message, _("br24radar message"), wxCANCEL | wxOK);
-        dlg.ShowModal();
-        return false;
-    }
+    br_opengl_mode = false;
+
+    DoTick(); // update timers and watchdogs
+
+    UpdateState(); // update the toolbar
+
     return true;
 }
 
@@ -1134,7 +1130,7 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 {
-    br_bshown_dc_message = false;             // show message box if RenderOverlay() is called again
+    br_opengl_mode = true;
 
     // this is expected to be called at least once per second
     // but if we are scrolling or otherwise it can be MUCH more often!
@@ -1671,16 +1667,16 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("ControlsDialogPosY"), &m_BR24Controls_dialog_y, 170L);
 
             double d;
-            pConf->Read(wxT("Zone1StBrng"), &guardZones[0].start_bearing, 0);
-            pConf->Read(wxT("Zone1EndBrng"), &guardZones[0].end_bearing, 0);
-            if (pConf->Read(wxT("Zone1OutRng"), &d, 0)) {
+            pConf->Read(wxT("Zone1StBrng"), &guardZones[0].start_bearing, 0.0);
+            pConf->Read(wxT("Zone1EndBrng"), &guardZones[0].end_bearing, 0.0);
+            if (pConf->Read(wxT("Zone1OutRng"), &d, 0.0)) {
                 pConf->DeleteEntry(wxT("Zone1OutRng"));
                 guardZones[0].outer_range = (int) (d * 1852.0);
                 wxLogMessage(wxT("BR24radar_pi: converting old guard range %f to %d"), d, guardZones[0].outer_range);
             } else {
                 pConf->Read(wxT("Zone1OuterRng"), &guardZones[0].outer_range, 0);
             }
-            if (pConf->Read(wxT("Zone1InRng"), &d, 0)) {
+            if (pConf->Read(wxT("Zone1InRng"), &d, 0.0)) {
                 pConf->DeleteEntry(wxT("Zone1InRng"));
                 guardZones[0].inner_range = (int) (d * 1852.0);
                 wxLogMessage(wxT("BR24radar_pi: converting old guard range %f to %d"), d, guardZones[0].inner_range);
@@ -1689,9 +1685,9 @@ bool br24radar_pi::LoadConfig(void)
             }
             pConf->Read(wxT("Zone1ArcCirc"), &guardZones[0].type, 0);
 
-            pConf->Read(wxT("Zone2StBrng"), &guardZones[1].start_bearing, 0);
-            pConf->Read(wxT("Zone2EndBrng"), &guardZones[1].end_bearing, 0);
-            if (pConf->Read(wxT("Zone2OutRng"), &d, 0)) {
+            pConf->Read(wxT("Zone2StBrng"), &guardZones[1].start_bearing, 0.0);
+            pConf->Read(wxT("Zone2EndBrng"), &guardZones[1].end_bearing, 0.0);
+            if (pConf->Read(wxT("Zone2OutRng"), &d, 0.0)) {
                 pConf->DeleteEntry(wxT("Zone2OutRng"));
                 guardZones[1].outer_range = (int) (d * 1852.0);
                 wxLogMessage(wxT("BR24radar_pi: converting old guard range %f to %d"), d, guardZones[1].outer_range);
@@ -1855,9 +1851,6 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         br_bpos_set = true;
         br_bpos_watchdog = now;
     }
-    if (m_pControlDialog) {
-        m_pControlDialog->UpdateMessage(br_bpos_set, m_hdt_source > 0, br_radar_seen, br_data_seen);
-    }
 }
 
 //**************** Cursor position events **********************
@@ -1944,7 +1937,7 @@ void br24radar_pi::SetRangeMeters(long meters)
                           , (UINT8) ((decimeters >> 24) & 0XFFL)
                           };
             if (settings.verbose) {
-                wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: %") wxTPRId64 wxT(" meters\n"), meters);
+                wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: %ld meters\n"), meters);
             }
             TransmitCmd(pck, sizeof(pck));
         }
@@ -2560,9 +2553,9 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             next_scan_number = (scan_number + 1) % LINES_PER_ROTATION;
             continue;
         }
-        if (line->br24.status != 0x02 && line->br24.status != 0x18) {
+        if (line->br24.status != 0x02 && line->br24.status != 0x12) {
             if (pPlugIn->settings.verbose) {
-                wxLogMessage(wxT("BR24radar_pi: strange status %02x"), line->br24.headerLen, line->br24.status);
+                wxLogMessage(wxT("BR24radar_pi: strange status %02x"), line->br24.status);
             }
             pPlugIn->m_statistics.broken_spokes++;
         }
@@ -2945,7 +2938,7 @@ void *RadarReportReceiveThread::Entry(void)
                     wxString addr;
                     UINT8 * a = (UINT8 *) &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr; // sin_addr is in network layout
                     addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
-                    if (pPlugIn->settings.verbose) {
+                    if (pPlugIn->settings.verbose >= 1) {
                         wxLogMessage(wxT("BR24radar_pi: Listening for radar reports on %s"), addr.c_str());
                     }
                     if (pPlugIn->m_pControlDialog) {
@@ -3042,54 +3035,91 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 {
     static char prevStatus = 0;
 
-    if (len == 18 && command[0] == 0x01 && command[1] == 0xC4) {
-        // Radar status in byte 2
-        if (command[2] != prevStatus) {
-            if (pPlugIn->settings.verbose > 0) {
-                wxLogMessage(wxT("BR24radar_pi: radar status = %u"), command[2]);
-            }
-            prevStatus = command[2];
+    if (command[1] == 0xC4) {
+        // Looks like a radar report. Is it a known one?
+        switch ((len << 8) + command[0])
+        {
+            case (18 << 8) + 0x01:
+                // Radar status in byte 2
+                if (command[2] != prevStatus) {
+                    if (pPlugIn->settings.verbose > 0) {
+                        wxLogMessage(wxT("BR24radar_pi: radar status = %u"), command[2]);
+                    }
+                    prevStatus = command[2];
+                }
+                break;
+
+            case (99 << 8) + 0x02:
+                if (pPlugIn->settings.verbose > 0) {
+                    radar_state * s = (radar_state *) command;
+
+                    wxLogMessage(wxT("BR24radar_pi: radar state f1=%u f2=%u f3=%u f4a=%u f4b=%u sea=%u f6a=%u f6b=%u f6c=%u f6d=%u rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
+                                 , s->field1
+                                 , s->field2
+                                 , s->field3
+                                 , s->field4a
+                                 , s->field4b
+                                 , s->sea
+                                 , s->field6a
+                                 , s->field6b
+                                 , s->field6c
+                                 , s->field6d
+                                 , s->rejection
+                                 , s->field7
+                                 , s->target_boost
+                                 , s->field8
+                                 , s->field9
+                                 , s->field10
+                                 , s->field11
+                                 , s->field12
+                                 , s->field13
+                                 , s->field14
+                                 );
+                    logBinaryData(wxT("state"), command, len);
+                }
+                break;
+
+            case (564 << 8) + 0x05:
+                // Content unknown, but we know that BR24 radomes send this
+                if (pPlugIn->settings.verbose >= 4) {
+                    logBinaryData(wxT("received familiar report"), command, len);
+                }
+                break;
+
+            default:
+                if (pPlugIn->settings.verbose >= 2) {
+                    logBinaryData(wxT("received unknown report"), command, len);
+                }
+                break;
+
         }
         return true;
     }
-    else if (len == 564 && command[0] == 0x05 && command[1] == 0xC4) {
-        // Content unknown, but we know that BR24's send this
-        if (pPlugIn->settings.verbose >= 2) {
-            logBinaryData(wxT("received report #5"), command, len);
+    if (command[1] == 0xF5) {
+        // Looks like a radar report. Is it a known one?
+        switch ((len << 8) + command[0])
+        {
+            case ( 16 << 8) + 0x0f:
+            case (  8 << 8) + 0x10:
+            case ( 10 << 8) + 0x12:
+            case ( 46 << 8) + 0x13:
+                // Content unknown, but we know that BR24 radomes send this
+                if (pPlugIn->settings.verbose >= 4) {
+                    logBinaryData(wxT("received familiar report"), command, len);
+                }
+                break;
+
+            default:
+                if (pPlugIn->settings.verbose >= 2) {
+                    logBinaryData(wxT("received unknown report"), command, len);
+                }
+                break;
+                
         }
         return true;
     }
-    else if (len == 99 && command[0] == 0x02 && command[1] == 0xC4) {
-        radar_state * s = (radar_state *) command;
-        if (pPlugIn->settings.verbose > 0) {
-            wxLogMessage(wxT("BR24radar_pi: radar state f1=%u f2=%u f3=%u f4a=%u f4b=%u sea=%u f6a=%u f6b=%u f6c=%u f6d=%u rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
-            , s->field1
-            , s->field2
-            , s->field3
-            , s->field4a
-            , s->field4b
-            , s->sea
-            , s->field6a
-            , s->field6b
-            , s->field6c
-            , s->field6d
-            , s->rejection
-            , s->field7
-            , s->target_boost
-            , s->field8
-            , s->field9
-            , s->field10
-            , s->field11
-            , s->field12
-            , s->field13
-            , s->field14
-            );
-           logBinaryData(wxT("state"), command, len);
-        }
-        return true;
-    }
-    else if (pPlugIn->settings.verbose >= 2) {
-        logBinaryData(wxT("received report"), command, len);
+    if (pPlugIn->settings.verbose >= 2) {
+        logBinaryData(wxT("received unknown message"), command, len);
     }
     return false;
 }

@@ -130,12 +130,9 @@ void GuardZoneDialog::CreateControls()
     SetSizer(GuardZoneSizer);
 
     // Guard Zone options
-    wxStaticBox         *BoxGuardZone = new wxStaticBox(this, wxID_ANY, _("Guard zones"));
-    wxStaticBoxSizer    *BoxGuardZoneSizer = new wxStaticBoxSizer(BoxGuardZone, wxVERTICAL);
+    pBoxGuardZone = new wxStaticBox(this, wxID_ANY, _("Guard zones"));
+    wxStaticBoxSizer    *BoxGuardZoneSizer = new wxStaticBoxSizer(pBoxGuardZone, wxVERTICAL);
     GuardZoneSizer->Add(BoxGuardZoneSizer, 0, wxEXPAND | wxALL, border_size);
-
-    pZoneNumber = new wxTextCtrl(this, wxID_ANY);
-    BoxGuardZoneSizer->Add(pZoneNumber, 1, wxALIGN_LEFT | wxALL, 5);
 
     GuardZoneNames[0] = _("Off");
     GuardZoneNames[1] = _("Arc");
@@ -232,9 +229,9 @@ void GuardZoneDialog::OnGuardZoneDialogShow(int zone)
 
     wxString GuardZoneText;
     wxString t;
-    t.Printf(_T(": %d"), zone + 1);
-    GuardZoneText << _("Zone") << t;
-    pZoneNumber->SetValue(GuardZoneText);
+    t.Printf(_T(" %d"), zone + 1);
+    GuardZoneText << _("Guard Zone") << t;
+    pBoxGuardZone->SetLabel(GuardZoneText);
 
     pGuardZoneType->SetSelection(pPlugIn->guardZones[zone].type);
 

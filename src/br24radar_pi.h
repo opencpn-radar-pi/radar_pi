@@ -671,7 +671,7 @@ public:
     void SetRangeIndex(size_t index);
     void SetAutoRangeIndex(size_t index);
     void UpdateGuardZoneState();
-    void UpdateMessage(bool haveGPS, bool haveHeading, bool haveRadar, bool haveData);
+    void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveRadar, bool haveData);
     void SetErrorMessage(wxString &msg);
     void SetRadarIPAddress(wxString &msg);
     void SetMcastIPAddress(wxString &msg);
@@ -716,6 +716,7 @@ private:
 
     // MessageBox
     wxStaticText       *tMessage;
+    wxCheckBox         *cbOpenGL;
     wxCheckBox         *cbBoatPos;
     wxCheckBox         *cbHeading;
     wxCheckBox         *cbRadar;
@@ -803,7 +804,7 @@ private:
     br24radar_pi    *pPlugIn;
 
     /* Controls */
-    wxTextCtrl      *pZoneNumber;
+    wxStaticBox     *pBoxGuardZone;
     wxRadioBox      *pGuardZoneType;
     wxTextCtrl      *pInner_Range;
     wxTextCtrl      *pOuter_Range;

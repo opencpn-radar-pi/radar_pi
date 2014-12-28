@@ -449,6 +449,16 @@ void BR24ControlsDialog::CreateControls()
     tMessage->SetLabel(_("Radar overlay requires the following data"));
     tMessage->SetFont(g_font);
 
+    wxStaticBox* optionsBox = new wxStaticBox(this, wxID_ANY, _("OpenCPN options"));
+    optionsBox->SetFont(g_font);
+    wxStaticBoxSizer* optionsSizer = new wxStaticBoxSizer(optionsBox, wxVERTICAL);
+    messageBox->Add(optionsSizer, 0, wxEXPAND | wxALL, BORDER * 2);
+
+    cbOpenGL = new wxCheckBox(this, ID_BPOS, _("Accelerated Graphics (OpenGL)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    optionsSizer->Add(cbOpenGL, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    cbOpenGL->SetFont(g_font);
+    cbOpenGL->Disable();
+
     wxStaticBox* nmeaBox = new wxStaticBox(this, wxID_ANY, _("NMEA sources"));
     nmeaBox->SetFont(g_font);
     wxStaticBoxSizer* nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
@@ -872,8 +882,9 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
 }
 
 
-void BR24ControlsDialog::UpdateMessage(bool haveGPS, bool haveHeading, bool haveRadar, bool haveData)
+void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveRadar, bool haveData)
 {
+    cbOpenGL->SetValue(haveOpenGL);
     cbBoatPos->SetValue(haveGPS);
     cbHeading->SetValue(haveHeading);
     cbRadar->SetValue(haveRadar);
@@ -884,7 +895,7 @@ void BR24ControlsDialog::UpdateMessage(bool haveGPS, bool haveHeading, bool have
 
     }
 
-    if (haveGPS && haveHeading && haveRadar && haveData) {
+    if (haveOpenGL && haveGPS && haveHeading && haveRadar && haveData) {
         if (topSizer->IsShown(messageBox))
         {
             topSizer->Hide(messageBox);
