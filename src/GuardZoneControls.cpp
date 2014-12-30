@@ -285,6 +285,7 @@ void GuardZoneDialog::OnStart_Bearing_Value(wxCommandEvent &event)
     wxString temp = pStart_Bearing_Value->GetValue();
 
     temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].start_bearing);
+    pPlugIn->ComputeGuardZoneAngles();
 }
 
 void GuardZoneDialog::OnEnd_Bearing_Value(wxCommandEvent &event)
@@ -292,6 +293,7 @@ void GuardZoneDialog::OnEnd_Bearing_Value(wxCommandEvent &event)
     wxString temp = pEnd_Bearing_Value->GetValue();
 
     temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].end_bearing);
+    pPlugIn->ComputeGuardZoneAngles();
 }
 
 void GuardZoneDialog::OnClose(wxCloseEvent &event)
