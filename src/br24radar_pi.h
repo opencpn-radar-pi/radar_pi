@@ -131,7 +131,7 @@ struct br4g_header {
     UINT8 u00[2];          //Always 0x4400 (integer)
     UINT8 largerange[2];   //2 bytes or -1
     UINT8 angle[2];        //2 bytes
-    UINT8 u01[2];          //Always 0x8000 = -1
+    UINT8 u01[2];          //Always 0x8000 = -1  or heading from radar
     UINT8 smallrange[2];   //2 bytes or -1
     UINT8 rotation[2];     //2 bytes, looks like rotation/angle
     UINT8 u02[4];          //4 bytes signed integer, always -1

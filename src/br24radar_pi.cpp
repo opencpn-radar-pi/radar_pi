@@ -93,6 +93,10 @@ double cur_lat, cur_lon;
 double br_hdm;
 double br_hdt;
 
+bool variation = false;
+bool headingonradar = false;
+double var = 0;
+
 double mark_rng, mark_brg;      // This is needed for context operation
 long  br_range_meters = 0;      // current range for radar
 int auto_range_meters = 0;      // What the range should be, at least, when AUTO mode is selected
@@ -1224,7 +1228,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     double heading = fmod( rad2deg(vp->rotation)        // viewport rotation
                          + 360.0                        // alway get a positive result
                          - 90.0                         // difference between compass and OpenGL rotation
-                         + br_hdt                       // current true heading
+ //                        + br_hdt                       // current true heading, already added in receive data thread
                          + settings.heading_correction  // fix any radome rotation fault
                          , 360.0);
     glRotatef(heading, 0, 0, 1);
@@ -1281,8 +1285,8 @@ void br24radar_pi::ComputeGuardZoneAngles()
                              , guardZones[z].start_bearing
                              , guardZones[z].end_bearing
                              , guardZones[z].inner_range, guardZones[z].outer_range);
-                angle_1 = guardZones[z].start_bearing;
-                angle_2 = guardZones[z].end_bearing;
+            angle_1 = guardZones[z].start_bearing + br_hdt;
+			angle_2 = guardZones[z].end_bearing + br_hdt;  // + br_hdt, heading on radar, added in buffer
                 break;
             default:
                 wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
@@ -1542,8 +1546,8 @@ void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, Plu
                 start_bearing = 0;
                 end_bearing = 359;
             } else {
-                start_bearing = guardZones[z].start_bearing;
-                end_bearing = guardZones[z].end_bearing;
+                start_bearing = guardZones[z].start_bearing + br_hdt;  // +br_hdt for heading on radar (added in buffer)
+					end_bearing = guardZones[z].end_bearing + br_hdt;
             }
             switch (settings.guard_zone_render_style) {
             case 1:
@@ -1815,7 +1819,20 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 {
     time_t now = time(0);
 
-    if (!wxIsNaN(pfix.Hdt))
+//   changes for heading on radar
+	if (!wxIsNaN(pfix.Var)) {			// set variation for use in radar receive thread
+		variation = true;
+		var = pfix.Var;
+		}
+	if (headingonradar) {
+//		if (m_hdt_source != 4) {
+			wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f \n"), br_hdt);
+			m_hdt_source = 4;
+//			}
+		br_hdt_watchdog = now;
+		}
+	
+	else if (!wxIsNaN(pfix.Hdt))    // end of changes for heading on radar
     {
         br_hdt = pfix.Hdt;
         if (m_hdt_source != 1) {
@@ -2573,6 +2590,10 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         int range_raw = 0;
         int angle_raw;
 
+		int var_raw = 0;   // added for heading on radar
+		int br_hdt_raw = 0;
+		int br_hdm_raw = 0;
+
         short int large_range;
         short int small_range;
         int range_meters;
@@ -2633,6 +2654,29 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 pPlugIn->m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range_meters, pPlugIn->settings.range_units, br_radar_type));
             }
         }
+
+		//  changes for heading on radar follow   Douwe Fokkema 06-02-2015
+
+			
+			var_raw = (int) (var * LINES_PER_ROTATION) / 360;
+			br_hdm_raw = (line->br4g.u01[1] << 8) | line->br4g.u01[0];
+			
+			if (line->br4g.u01[1] != 0x80 && variation) {   // without variation heading on radar can not be used
+				headingonradar = true;							// heading on radar
+				br_hdt_raw = br_hdm_raw + var_raw;
+				br_hdt = ((double) (br_hdt_raw * 360)) / LINES_PER_ROTATION;
+				angle_raw += br_hdt_raw;
+				}
+			else {
+				headingonradar = false;
+				br_hdt_raw = (br_hdt * LINES_PER_ROTATION) / 360;  // otherwise use existing br_hdt
+				angle_raw += br_hdt_raw;			 // map spoke on true direction
+				}
+			if (angle_raw >= LINES_PER_ROTATION) angle_raw -= LINES_PER_ROTATION;
+			if (angle_raw < 0) angle_raw += LINES_PER_ROTATION;
+				
+			//  end of changes for heading on radar
+
 
         UINT8 *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
         memcpy(dest_data1, line->data, 512);
