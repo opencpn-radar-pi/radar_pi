@@ -59,7 +59,6 @@ Additional change: In case the radar is transmitting data the pi will only displ
 #include "wx/datetime.h"
 #include <wx/fileconf.h>
 #include <fstream>
-#include <stdio.h>
 
 using namespace std;
 
@@ -1850,7 +1849,6 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 		cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
 		wxString nmeastring = wxString::FromUTF8(buffer);
 		PushNMEABuffer (nmeastring);  // issue heading from radar to OCPN
-		// this heading has priority 0 in OCPN
 		}
 	
 	else if (!wxIsNaN(pfix.Hdt))    // end of changes for heading on radar
