@@ -2622,12 +2622,12 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
             angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
             range_meters = (int) ((double)range_raw * 10.0 / sqrt(2.0));
-            if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
+  /*          if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
                 wxString label;
                 label << _("Radar") << wxT(" BR24");
                 pPlugIn->m_pControlDialog->SetTitle(label);
                 pPlugIn->m_pControlDialog->SetLabel(label);
-            }
+            } */
             br_radar_type = RT_BR24;
         } else {
             // 4G mode
@@ -2645,12 +2645,12 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 range_raw = large_range * 256;
             }
             range_meters = range_raw / 4;
-            if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
+    /*        if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
                 wxString label;
                 label << _("Radar") << wxT(" 4G");
                 pPlugIn->m_pControlDialog->SetTitle(label);
                 pPlugIn->m_pControlDialog->SetLabel(label);
-            }
+            }   */
             br_radar_type = RT_4G;
         }
 
