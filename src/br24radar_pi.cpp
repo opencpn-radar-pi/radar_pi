@@ -108,6 +108,7 @@ int br_hdt_raw = 0;
 
 bool variation = false;
 bool heading_on_radar = false;
+int display_heading_on_radar = 0;
 double var = 0;
 
 double mark_rng, mark_brg;      // This is needed for context operation
@@ -2616,6 +2617,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         short int large_range;
         short int small_range;
         int range_meters;
+		
 
         if (memcmp(line->br24.mark, BR24MARK, sizeof(BR24MARK)) == 0) {
             // BR24 and 3G mode
@@ -2681,12 +2683,26 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 			br_hdm_raw = (line->br4g.u01[1] << 8) | line->br4g.u01[0];
 			
 			if (line->br4g.u01[1] != 0x80 && variation) {   // without variation heading on radar can not be used
+				if (display_heading_on_radar != 2 && pPlugIn->m_pControlDialog) {
+					display_heading_on_radar = 2 ;   // "Radar" has been displayed earlier
+					wxString label;
+					label << _("Heading") << wxT(" Radar");
+					pPlugIn->m_pControlDialog->SetTitle(label);
+					pPlugIn->m_pControlDialog->SetLabel(label);
+					}    
 				heading_on_radar = true;							// heading on radar
 				br_hdt_raw = br_hdm_raw + var_raw;
 				br_hdt = ((double) (br_hdt_raw * 360)) / LINES_PER_ROTATION;
 				angle_raw += br_hdt_raw;
 				}
-			else {
+			else {								// no heading on radar
+				if (display_heading_on_radar != 1 && pPlugIn->m_pControlDialog) {
+					display_heading_on_radar = 1 ;   // "Normal" has been displayed earlier
+					wxString label;
+					label << _("Heading") << wxT(" Normal");
+					pPlugIn->m_pControlDialog->SetTitle(label);
+					pPlugIn->m_pControlDialog->SetLabel(label);
+					} 
 				heading_on_radar = false;
 				br_hdt_raw = (br_hdt * LINES_PER_ROTATION) / 360;  // otherwise use existing br_hdt
 				angle_raw += br_hdt_raw;			 // map spoke on true direction
