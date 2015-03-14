@@ -2699,7 +2699,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 				if (display_heading_on_radar != 1 && pPlugIn->m_pControlDialog) {
 					display_heading_on_radar = 1 ;   // "Normal" has been displayed earlier
 					wxString label;
-					label << _("Heading") << wxT(" Normal");
+					label << _("Heading") << wxT(" NMEA");
 					pPlugIn->m_pControlDialog->SetTitle(label);
 					pPlugIn->m_pControlDialog->SetLabel(label);
 					} 
