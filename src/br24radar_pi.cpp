@@ -105,11 +105,13 @@ double cur_lat, cur_lon;
 double br_hdm;
 double br_hdt;
 int br_hdt_raw = 0;
+unsigned int i_display = 0;  // used in radar reive thread for display operation
 
 bool variation = false;
 bool heading_on_radar = false;
 int display_heading_on_radar = 0;
 double var = 0;
+unsigned int downsample;  // moved from display radar to here; also used in radar receive thread
 
 double mark_rng, mark_brg;      // This is needed for context operation
 long  br_range_meters = 0;      // current range for radar
@@ -1350,7 +1352,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     UINT32 skipped      = 0;
     wxLongLong max_age = 0; // Age in millis
     int bogey_count[GUARD_ZONES];
-    unsigned int downsample = (unsigned int) settings.downsample;
+    downsample = (unsigned int) settings.downsample;
 
     memset(&bogey_count, 0, sizeof(bogey_count));
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
@@ -1413,12 +1415,14 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         angleRad = deg2rad(angleDeg);
         double angleCos = cos(angleRad);
         double angleSin = sin(angleRad);
+		double r_begin = 0, r_end = 0;
+		boolean blobs_to_draw = false;
 
         drawn_spokes++;
         for (int radius = 0; radius < 512; ++radius) {
 
             GLubyte red = 0, green = 0, blue = 0, strength = scan->data[radius];
-
+/*
             switch (settings.display_option) {
                 case 0:
                     if (strength <= 50) {
@@ -1448,15 +1452,38 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                         continue;
                     }
                     break;
-            }
+            }   
 
-            glColor4ub(red, green, blue, alpha);    // red, blue, green
-            // Compensate for any scale difference between the scan and the current range:
+			*/
+			red = 255;
+			if ( strength > 50 ) {    // register this blob or add it to the previous blob
+				if (! blobs_to_draw) {
+					r_begin = (double) radius * ((double) scan->range / (double) max_range);
+					r_end = r_begin;
+					blobs_to_draw = true;
+					}
+				r_end += arc_heigth;
+				}
+			
+			else if ((strength <= 50 || radius == 512) && blobs_to_draw) {     // no data to display anymore so display previous blobs combined
+				glColor4ub(red, green, blue, alpha);    // red, blue, green
+				double heigth = r_end - r_begin;
+				draw_blob_gl(angleCos, angleSin, r_begin, arc_width, heigth);
+				drawn_blobs++;
+				r_begin = 0;
+				blobs_to_draw = false;
+				continue;     // continue to next radius
+				}
+			else if (strength <= 50) continue;
+				
+
+   /*         glColor4ub(red, green, blue, alpha);    // red, blue, green
+        //     Compensate for any scale difference between the scan and the current range:
             double r = (double) radius * ((double) scan->range / (double) max_range);
 
             draw_blob_gl(angleCos, angleSin, r, arc_width, arc_heigth);
             drawn_blobs++;
-
+			*/
             /**********************************************************************************************************/
             // Guard Section
 
@@ -1470,7 +1497,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                     }
                 }
             }
-        }
+        }   // end of loop over radius
     }
     if (settings.verbose >= 2) {
         now = wxGetLocalTimeMillis();
@@ -2707,8 +2734,12 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 				br_hdt_raw = (br_hdt * LINES_PER_ROTATION) / 360;  // otherwise use existing br_hdt
 				angle_raw += br_hdt_raw;			 // map spoke on true direction
 				}
-			if (angle_raw >= LINES_PER_ROTATION) angle_raw -= LINES_PER_ROTATION;
-			if (angle_raw < 0) angle_raw += LINES_PER_ROTATION;
+			while (angle_raw >= LINES_PER_ROTATION) {
+				angle_raw -= LINES_PER_ROTATION;
+				}
+			while (angle_raw < 0) {
+				angle_raw += LINES_PER_ROTATION;
+				}
 				
 			//  end of changes for heading on radar
 
@@ -2724,6 +2755,17 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         pPlugIn->m_scan_line[angle_raw].range = range_meters;
         pPlugIn->m_scan_line[angle_raw].age = now;
     }
+	//  all scanlines ready now, try to display
+	unsigned int sample = downsample / 2 ;
+	if (sample == 0 ) sample = 1;
+	
+	if (i_display >=  sample) {   //	display every "sample" time
+		GetOCPNCanvasWindow()->Refresh(true);
+		wxLogMessage(wxT("BR24radar_pi: i-display  receive, %d sample"), i_display);
+		i_display = 0;
+		}
+	i_display ++;
+	
 }
 
 /*
