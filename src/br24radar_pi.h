@@ -181,7 +181,8 @@ typedef enum ControlType {
     CT_TARGET_BOOST,
     CT_DOWNSAMPLE,
     CT_SCAN_SPEED,
-    CT_SCAN_AGE
+    CT_SCAN_AGE,
+    CT_TIMED_IDLE //Hakan
 } ControlType;
 
 typedef enum GuardZoneType {
@@ -248,6 +249,7 @@ struct radar_control_settings {
     int      range_unit_meters; // ... 1852 or 1000, depending on range_units
     int      beam_width;
     int      max_age;
+    int      timed_idle;          //Hakan for Timed Idle
     int      draw_algorithm;
     int      scan_speed;
     int      downsampleUser;    // 1..8 =
@@ -670,6 +672,8 @@ public:
     void CreateControls();
     void SetRangeIndex(size_t index);
     void SetAutoRangeIndex(size_t index);
+    void SetTimedIdleIndex(int index);   //Hakan
+    void SetIdleLabel(int time_left);    //Hakan
     void UpdateGuardZoneState();
     void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveRadar, bool haveData);
     void SetErrorMessage(wxString &msg);
@@ -746,6 +750,7 @@ private:
     RadarControlButton *bDownsample;
     RadarControlButton *bScanSpeed;
     RadarControlButton *bScanAge;
+    RadarControlButton *bTimedIdle; //Hakan
 
     // Show Controls
 
