@@ -98,7 +98,7 @@ long  br_range_meters = 0;      // current range for radar
 int auto_range_meters = 0;      // What the range should be, at least, when AUTO mode is selected
 int previous_auto_range_meters = 0;
 
-int   br_last_idle = 0;         //Timed Idle Hakan
+int   br_last_idle_set = 0;         //Timed Idle Hakan
 int   br_idle_set_count = 0;    //Hakan
 bool  onInit_Timed_Idle;        //Hakan
 static time_t br_idle_watchdog; //Hakan
@@ -1104,7 +1104,7 @@ void br24radar_pi::DoTick(void)
     //Check if Timed Idle is active //Hakan
     if(settings.timed_idle != 0) {
         //int factor = 5 * 60; //Time factor for Timed Idle time ToDo: after test factor = 5 * 60//ToDo - take this away
-        if( br_last_idle == settings.timed_idle) {
+        if( br_last_idle_set == settings.timed_idle) {
             //if( m_pControlDialog->editBox->IsShown()); //topSizer->IsShown(messageBox))  ToDo
             if(br_idle_watchdog > 0) {
                 if( br_radar_state == RADAR_ON && (now > (br_idle_watchdog + (3 * 60)) || onInit_Timed_Idle) ) {  //Run radar for 3 minutes or start idle if newly initiated. ToDo 5 minutes
@@ -1113,22 +1113,18 @@ void br24radar_pi::DoTick(void)
                     br24radar_pi::OnToolbarToolCallback(999999);    //Stop radar scanning
                     return; //Else we jump into next if() with RADAR OFF
                  }
-                if( br_radar_state == RADAR_OFF && now > (br_idle_watchdog + (settings.timed_idle * 5 * 60))) {  //ToDo: after test factor = 5 * 60
-                    if( now > (br_idle_watchdog + (settings.timed_idle * 5 * 60))) {
-                    /*int time_left = ((settings.timed_idle * factor) + (1*60)) - (now - br_idle_watchdog); //Hakan ToDo preference variable for run time
-                    wxString msg;
-                    msg = _("%d Minutes of Idle initiated"), time_left/60;
-                    //Show message box while idle*/
+                if( br_radar_state == RADAR_OFF ) { //&& now > (br_idle_watchdog + (settings.timed_idle * 5 * 60))) {  //ToDo: after test factor = 5 * 60
+                    if( now > (br_idle_watchdog + (settings.timed_idle * 5 * 60))) {                    
                     br_idle_watchdog = 0;
                     br24radar_pi::OnToolbarToolCallback(999999);    //Start radar scanning
                     } else {
                         // Send minutes left to radar control
-                        int time_left = (br_idle_watchdog + (settings.timed_idle * 5 * 60)) - now;
+                        int time_left = ((br_idle_watchdog + (settings.timed_idle * 5 * 60)) - now)/60;
                         wxString Label;
                         Label.Printf(wxT("Radar scanner is Idle"));
                         wxString Msg;
                         Msg.Printf(wxT("%d minutes until next run"), time_left);
-                        bool IdleMessageBox = wxMessageBox(Msg,Label,5,0,0,0);
+                        //wxMessageBox(Msg,Label,5,0,0,0); //Funkar men messagebox väntar på svar
                         //m_pControlDialog->SetIdleLabel(time_left);
                     }
                 }                
@@ -1140,11 +1136,11 @@ void br24radar_pi::DoTick(void)
             return;
         }
         br_idle_set_count = 0;        
-        if( br_last_idle == 0) onInit_Timed_Idle = true;    //Timed_Idle function init 
-        br_last_idle = settings.timed_idle;
+        if( br_last_idle_set == 0) onInit_Timed_Idle = true;    //Timed_Idle function init 
+        br_last_idle_set = settings.timed_idle;
     } else {
           br_idle_watchdog = 0;
-          br_last_idle = 0; //                  b_idle_on = false; ToDo take away
+          br_last_idle_set = 0; //                  b_idle_on = false; ToDo take away
     }
 }
 
