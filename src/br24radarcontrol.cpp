@@ -74,7 +74,7 @@ enum {                                      // process ID's
     ID_DOWNSAMPLE,
     ID_SCAN_SPEED,
     ID_SCAN_AGE,
-    ID_TIMED_IDLE,  //Hakan
+    ID_TIMED_IDLE,
 
     ID_RANGE,
     ID_GAIN,
@@ -116,7 +116,7 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
     EVT_BUTTON(ID_DOWNSAMPLE, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_TIMED_IDLE, BR24ControlsDialog::OnRadarControlButtonClick) //Hakan
+    EVT_BUTTON(ID_TIMED_IDLE, BR24ControlsDialog::OnRadarControlButtonClick)
 
     EVT_BUTTON(ID_RANGE, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_GAIN, BR24ControlsDialog::OnRadarControlButtonClick)
@@ -228,7 +228,7 @@ wxString target_separation_names[4];
 wxString noise_rejection_names[3];
 wxString target_boost_names[3];
 wxString scan_speed_names[2];
-wxString timed_idle_times[8];   //Hakan
+wxString timed_idle_times[8];
 
 extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
 {
@@ -410,7 +410,7 @@ void BR24ControlsDialog::CreateControls()
     label << _("Downsample") << wxT("\n");
     label << _("Scan speed") << wxT("\n");
     label << _("Scan age") << wxT("\n");
-    label << _("Timed Idle") << wxT("\n");  //Hakan
+    label << _("Timed Idle") << wxT("\n");
     label << _("Gain") << wxT("\n"); 
     label << _("Sea clutter") << wxT("\n");
     label << _("Rain clutter") << wxT("\n");
@@ -634,7 +634,7 @@ void BR24ControlsDialog::CreateControls()
     bScanAge->minValue = MIN_AGE;
     bScanAge->maxValue = MAX_AGE;
 
-    // The TIMED IDLE button //Hakan
+    // The TIMED IDLE button
     timed_idle_times[0] = _("Off");
     timed_idle_times[1] = _("5 min");
     timed_idle_times[2] = _("10 min");
@@ -745,17 +745,9 @@ void BR24ControlsDialog::SetAutoRangeIndex(size_t index)
 
 void BR24ControlsDialog::SetTimedIdleIndex(int index)
 {
-    bTimedIdle->SetValue(index) ; // set and recompute the Timed Idle label //Hakan
+    bTimedIdle->SetValue(index) ; // set and recompute the Timed Idle label
+    if (pPlugIn->m_pIdleDialog && index == 0) pPlugIn->m_pIdleDialog->Close();
 }
-
-void BR24ControlsDialog::SetIdleLabel(int time_left) //So silly ToDo take away!!!!!!!!!!!!!!!
-{
-    wxString name[8];
-    name[1].Printf(wxT("Idle; %d min left"), (pPlugIn->settings.timed_idle * 5) - time_left);
-    //name.Printf(wxT("Idle; %d min left"), (pPlugIn->settings.timed_idle * 5) - time_left);
-    bTimedIdle->names = name;     //timed_idle_times;   //Hakan
-}
-
 
 void BR24ControlsDialog::OnZone1ButtonClick(wxCommandEvent &event)
 {

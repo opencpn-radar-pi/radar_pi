@@ -182,7 +182,7 @@ typedef enum ControlType {
     CT_DOWNSAMPLE,
     CT_SCAN_SPEED,
     CT_SCAN_AGE,
-    CT_TIMED_IDLE //Hakan
+    CT_TIMED_IDLE
 } ControlType;
 
 typedef enum GuardZoneType {
@@ -249,7 +249,8 @@ struct radar_control_settings {
     int      range_unit_meters; // ... 1852 or 1000, depending on range_units
     int      beam_width;
     int      max_age;
-    int      timed_idle;          //Hakan for Timed Idle
+    int      timed_idle;
+    int      idle_run_time;
     int      draw_algorithm;
     int      scan_speed;
     int      downsampleUser;    // 1..8 =
@@ -279,6 +280,7 @@ class BR24ControlsDialog;
 class GuardZoneDialog;
 class GuardZoneBogey;
 class BR24DisplayOptionsDialog;
+class Idle_Dialog;
 
 //ofstream outfile("C:/ProgramData/opencpn/BR24DataDump.dat",ofstream::binary);
 
@@ -344,6 +346,8 @@ public:
     void OnGuardZoneBogeyClose();
     void OnGuardZoneBogeyConfirm();
 
+
+
     void SetControlValue(ControlType controlType, int value);
 
     bool LoadConfig(void);
@@ -368,6 +372,7 @@ public:
     BR24ControlsDialog       *m_pControlDialog;
     GuardZoneDialog          *m_pGuardZoneDialog;
     GuardZoneBogey           *m_pGuardZoneBogey;
+    Idle_Dialog              *m_pIdleDialog;
     receive_statistics          m_statistics;
 
 private:
@@ -672,8 +677,7 @@ public:
     void CreateControls();
     void SetRangeIndex(size_t index);
     void SetAutoRangeIndex(size_t index);
-    void SetTimedIdleIndex(int index);   //Hakan
-    void SetIdleLabel(int time_left);    //Hakan
+    void SetTimedIdleIndex(int index);
     void UpdateGuardZoneState();
     void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveRadar, bool haveData);
     void SetErrorMessage(wxString &msg);
@@ -750,7 +754,7 @@ private:
     RadarControlButton *bDownsample;
     RadarControlButton *bScanSpeed;
     RadarControlButton *bScanAge;
-    RadarControlButton *bTimedIdle; //Hakan
+    RadarControlButton *bTimedIdle;
 
     // Show Controls
 
@@ -858,6 +862,53 @@ private:
 
     /* Controls */
     wxStaticText    *pBogeyCountText;
+};
+
+/*
+ =======================================================================================================================
+    BR24Radar Timed Idle Dialog Specification ;
+ =======================================================================================================================
+ */
+
+// Class Idle_Dialog
+class Idle_Dialog : public wxDialog 
+{
+    DECLARE_CLASS(Idle_Dialog)
+    DECLARE_EVENT_TABLE()
+    	
+public:		
+		Idle_Dialog();  
+
+		~Idle_Dialog();
+
+        void    Init();
+
+    bool Create
+            (
+                wxWindow        *parent,
+                br24radar_pi    *ppi,
+                wxWindowID      id = wxID_ANY,
+                const wxString  &m_caption = _("Radar Idle"),
+                const wxPoint   &pos = wxPoint(0 ,0),
+                const wxSize    &size = wxDefaultSize,
+                long            style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU
+            );
+
+    void    CreateControls();
+    void    SetIdleTimes(int IdleTime, int IdleTimeLeft);
+
+private: 
+    
+    void            OnClose(wxCloseEvent &event);
+    void            OnIdStopIdleClick(wxCommandEvent &event);
+
+    wxWindow        *pParent;
+    br24radar_pi    *pPlugIn;
+
+    /* Controls  */	
+    wxStaticText *p_Idle_Mode;
+    wxStaticText *p_IdleTimeLeft;
+	wxButton *m_btnStopIdle;
 };
 
 #endif
