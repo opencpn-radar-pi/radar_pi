@@ -1124,7 +1124,7 @@ void br24radar_pi::DoTick(void)
                         if (!m_pIdleDialog) {
                             m_pIdleDialog = new Idle_Dialog;
                             m_pIdleDialog->Create(m_parent_window, this);
-                        } else m_pIdleDialog->SetIdleTimes(settings.timed_idle * factor/60, time_left);                                                
+                        } else br24radar_pi::m_pIdleDialog->SetIdleTimes(settings.timed_idle * factor/60, time_left);     //m_pIdleDialog->                                           
                         m_pIdleDialog->Show();
                     }
                 }                
