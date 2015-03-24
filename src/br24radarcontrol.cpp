@@ -72,6 +72,7 @@ enum {                                      // process ID's
     ID_NOISE_REJECTION,
     ID_TARGET_SEPARATION,
     ID_DOWNSAMPLE,
+	ID_REFRESHRATE, 
     ID_SCAN_SPEED,
     ID_SCAN_AGE,
 
@@ -113,6 +114,7 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
     EVT_BUTTON(ID_NOISE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_TARGET_SEPARATION, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_DOWNSAMPLE, BR24ControlsDialog::OnRadarControlButtonClick)
+	EVT_BUTTON(ID_REFRESHRATE, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
 
@@ -623,6 +625,12 @@ void BR24ControlsDialog::CreateControls()
     advancedBox->Add(bDownsample, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bDownsample->minValue = 1;
     bDownsample->maxValue = 8;
+
+	// The REFRESHRATE button
+    bRefreshrate = new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), pPlugIn, CT_REFRESHRATE, false, pPlugIn->settings.refreshrate);
+    advancedBox->Add(bRefreshrate, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bRefreshrate->minValue = 1;
+    bRefreshrate->maxValue = 10;
 
     // The SCAN AGE button
     bScanAge = new RadarControlButton(this, ID_SCAN_AGE, _("Scan age"), pPlugIn, CT_SCAN_AGE, false, pPlugIn->settings.max_age);

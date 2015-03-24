@@ -112,6 +112,8 @@ bool heading_on_radar = false;
 int display_heading_on_radar = 0;
 double var = 0;
 unsigned int downsample;  // moved from display radar to here; also used in radar receive thread
+unsigned int refreshrate;  // refreshrate for radar used in process buffer
+unsigned int PassHeadingToOCPN = 0;  // From ini file, if 0, do not pass the heading_on_radar to OCPN
 
 double mark_rng, mark_brg;      // This is needed for context operation
 long  br_range_meters = 0;      // current range for radar
@@ -1104,7 +1106,7 @@ void br24radar_pi::DoTick(void)
     }
 
     if (m_pControlDialog) {
-        m_pControlDialog->UpdateMessage(br_opengl_mode, br_bpos_set, m_hdt_source > 0, br_radar_seen, br_data_seen);
+		m_pControlDialog->UpdateMessage(br_opengl_mode, br_bpos_set, m_hdt_source > 0, br_radar_seen, br_data_seen);
     }
 
     m_statistics.broken_packets = 0;
@@ -1352,8 +1354,18 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     UINT32 skipped      = 0;
     wxLongLong max_age = 0; // Age in millis
     int bogey_count[GUARD_ZONES];
+
+	char buffer [18];
+	int cx;
+	if(PassHeadingToOCPN == 1){
+		cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
+		wxString nmeastring = wxString::FromUTF8(buffer);
+		PushNMEABuffer (nmeastring);  // issue heading from radar to OCPN
+			}
+
     downsample = (unsigned int) settings.downsample;
 
+	refreshrate = (unsigned int) settings.refreshrate;
     memset(&bogey_count, 0, sizeof(bogey_count));
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
     if (settings.verbose >= 4) {
@@ -1388,7 +1400,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         if (bestAge > max_age) {
             max_age = bestAge;
         }
-
+//		wxLogMessage(wxT("BR24radar_pi: downsample  spoke width%i \n"), downsample);
         unsigned int blobSpokesWide = downsample;
         if (settings.draw_algorithm == 1)
         {
@@ -1703,6 +1715,11 @@ bool br24radar_pi::LoadConfig(void)
                 settings.downsampleUser = 1; // otherwise we get infinite loop
             }
             settings.downsample = 2 << (settings.downsampleUser - 1);
+			pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 1);
+			refreshrate = settings.refreshrate;  
+
+			pConf->Read(wxT("PassHeadingToOCPN"), &settings.PassHeadingToOCPN, 1);    // PassHeadingToOCPN=0 : do not pass heading_from_radar to OCPN
+			PassHeadingToOCPN = settings.PassHeadingToOCPN;
 
             pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
             pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
@@ -1819,6 +1836,8 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
         pConf->Write(wxT("ScanSpeed"), settings.scan_speed);
         pConf->Write(wxT("Downsample"), settings.downsampleUser);
+		pConf->Write(wxT("Refreshrate"), settings.refreshrate);
+		pConf->Write(wxT("PassHeadingToOCPN"), settings.PassHeadingToOCPN);
         pConf->Write(wxT("RadarAlertAudioFile"), settings.alert_audio_file);
 
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
@@ -1871,12 +1890,15 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 			wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f \n"), br_hdt);
 			m_hdt_source = 4;
 			}
+		br_hdt_watchdog = now;
 		char buffer [18];
 		int cx;
-		br_hdt_watchdog = now;
+		
+		if(PassHeadingToOCPN == 1){
 		cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
 		wxString nmeastring = wxString::FromUTF8(buffer);
 		PushNMEABuffer (nmeastring);  // issue heading from radar to OCPN
+			}
 		}
 	
 	else if (!wxIsNaN(pfix.Hdt))    // end of changes for heading on radar
@@ -2178,6 +2200,17 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 settings.downsample = 2 << (settings.downsampleUser - 1);
                 break;
             }
+
+			case CT_REFRESHRATE: {
+                settings.refreshrate = value;
+                break;
+            }
+			
+			case CT_PASSHEADING: {
+                settings.PassHeadingToOCPN = value;
+                break;
+            }
+
             default: {
                 wxLogMessage(wxT("BR24radar_pi: Unhandled control setting for control %d"), controlType);
             }
@@ -2706,7 +2739,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 		//  changes for heading on radar follow   Douwe Fokkema 06-02-2015
 
 			
-			var_raw = (int) (var * LINES_PER_ROTATION) / 360;
+			var_raw = (int) (var * 11.377) ; //  this is * 4096 / 360
 			br_hdm_raw = (line->br4g.u01[1] << 8) | line->br4g.u01[0];
 			
 			if (line->br4g.u01[1] != 0x80 && variation) {   // without variation heading on radar can not be used
@@ -2719,7 +2752,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 					}    
 				heading_on_radar = true;							// heading on radar
 				br_hdt_raw = br_hdm_raw + var_raw;
-				br_hdt = ((double) (br_hdt_raw * 360)) / LINES_PER_ROTATION;
+				br_hdt = (double) (br_hdt_raw * .08789);   //  is * 360  / 4096
 				angle_raw += br_hdt_raw;
 				}
 			else {								// no heading on radar
@@ -2731,7 +2764,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 					pPlugIn->m_pControlDialog->SetLabel(label);
 					} 
 				heading_on_radar = false;
-				br_hdt_raw = (br_hdt * LINES_PER_ROTATION) / 360;  // otherwise use existing br_hdt
+				br_hdt_raw = int (br_hdt * 11.37);   // otherwise use existing br_hdt    * 4096 / 360
 				angle_raw += br_hdt_raw;			 // map spoke on true direction
 				}
 			while (angle_raw >= LINES_PER_ROTATION) {
@@ -2740,7 +2773,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 			while (angle_raw < 0) {
 				angle_raw += LINES_PER_ROTATION;
 				}
-				
 			//  end of changes for heading on radar
 
 
@@ -2756,16 +2788,14 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         pPlugIn->m_scan_line[angle_raw].age = now;
     }
 	//  all scanlines ready now, try to display
-	unsigned int sample = downsample / 2 ;
-	if (sample == 0 ) sample = 1;
 	
-	if (i_display >=  sample) {   //	display every "sample" time
-		GetOCPNCanvasWindow()->Refresh(true);
-		wxLogMessage(wxT("BR24radar_pi: i-display  receive, %d sample"), i_display);
+	if(br_radar_state == RADAR_ON){
+	if (i_display >=  refreshrate ) {   //	display every "sample" time 
+		if (refreshrate != 10) GetOCPNCanvasWindow()->Refresh(true);
 		i_display = 0;
 		}
 	i_display ++;
-	
+		}
 }
 
 /*
@@ -2785,7 +2815,7 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
     br_radar_watchdog = time(0);
     br_data_watchdog = br_radar_watchdog;
 
-    int scanlines_in_packet = LINES_PER_ROTATION * 24 / 60;
+    int scanlines_in_packet = 4096 * 24 / 60;
     int range_meters = auto_range_meters;
     int spots = 0;
     br_radar_type = RT_BR24;

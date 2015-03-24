@@ -180,6 +180,8 @@ typedef enum ControlType {
     CT_NOISE_REJECTION,
     CT_TARGET_BOOST,
     CT_DOWNSAMPLE,
+	CT_REFRESHRATE,
+	CT_PASSHEADING,
     CT_SCAN_SPEED,
     CT_SCAN_AGE
 } ControlType;
@@ -251,6 +253,8 @@ struct radar_control_settings {
     int      draw_algorithm;
     int      scan_speed;
     int      downsampleUser;    // 1..8 =
+	int		refreshrate;
+	int		 PassHeadingToOCPN;
     int      downsample;        //         1..128
     wxString alert_audio_file;
 };
@@ -743,6 +747,7 @@ private:
     RadarControlButton *bNoiseRejection;
     RadarControlButton *bTargetBoost;
     RadarControlButton *bDownsample;
+	RadarControlButton *bRefreshrate;
     RadarControlButton *bScanSpeed;
     RadarControlButton *bScanAge;
 
