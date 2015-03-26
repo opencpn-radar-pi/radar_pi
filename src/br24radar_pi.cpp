@@ -103,7 +103,8 @@ bool br_bpos_set = false;
 double br_ownship_lat, br_ownship_lon;
 double cur_lat, cur_lon;
 double br_hdm;
-double br_hdt;
+double br_hdt;     // this is the heading that the pi is using for all heading operations
+					// br_hdt will come from the radar if available else from the NMEA stream
 int br_hdt_raw = 0;
 unsigned int i_display = 0;  // used in radar reive thread for display operation
 
@@ -114,6 +115,7 @@ double var = 0;
 unsigned int downsample;  // moved from display radar to here; also used in radar receive thread
 unsigned int refreshrate;  // refreshrate for radar used in process buffer
 unsigned int PassHeadingToOCPN = 0;  // From ini file, if 0, do not pass the heading_on_radar to OCPN
+bool RenderOverlay_busy = false;
 
 double mark_rng, mark_brg;      // This is needed for context operation
 long  br_range_meters = 0;      // current range for radar
@@ -1152,6 +1154,7 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 {
+	RenderOverlay_busy = true;   //  the receive thread should not call (throug refresh canvas) this when it is busy
     br_opengl_mode = true;
     // this is expected to be called at least once per second
     // but if we are scrolling or otherwise it can be MUCH more often!
@@ -1225,6 +1228,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
             }
             break;
     }
+	RenderOverlay_busy = false;
     return true;
 }
 
@@ -1268,14 +1272,14 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
         // Guard Zone image
         if (br_radar_state == RADAR_ON) {
             if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
-                glRotatef(-settings.heading_correction, 0, 0, 1); //  Undo heading correction, rest is OK
+                glRotatef(-settings.heading_correction + br_hdt, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
                 RenderGuardZone(radar_center, v_scale_ppm, vp);
             }
         }
     }
     glPopMatrix();
     glPopAttrib();
-}
+}		// end of RenderRadarOverlay
 
 /*
  * Precompute which angles returned from the radar are in which guard zones.
@@ -1301,8 +1305,8 @@ void br24radar_pi::ComputeGuardZoneAngles()
                              , guardZones[z].start_bearing
                              , guardZones[z].end_bearing
                              , guardZones[z].inner_range, guardZones[z].outer_range);
-            angle_1 = guardZones[z].start_bearing;
-			angle_2 = guardZones[z].end_bearing;  
+            angle_1 = guardZones[z].start_bearing + br_hdt;      // br_hdt added to provide guard zone relative to heading
+			angle_2 = guardZones[z].end_bearing + br_hdt;		// br_hdt added to provide guard zone relative to heading
                 break;
             default:
                 wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
@@ -1357,10 +1361,11 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
 	char buffer [18];
 	int cx;
-	if(PassHeadingToOCPN == 1){
+	if(PassHeadingToOCPN == 1 && heading_on_radar && br_radar_state == RADAR_ON){
 		cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
 		wxString nmeastring = wxString::FromUTF8(buffer);
 		PushNMEABuffer (nmeastring);  // issue heading from radar to OCPN
+		wxLogMessage(wxT("BR24radar_pi: ") wxTPRId64 wxT(" heading passed to OCPN from draw image"), now);
 			}
 
     downsample = (unsigned int) settings.downsample;
@@ -1428,74 +1433,95 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         double angleCos = cos(angleRad);
         double angleSin = sin(angleRad);
 		double r_begin = 0, r_end = 0;
-		boolean blobs_to_draw = false;
+	
+		enum colors {blanc, blauw, groen, rood};   // sorry dutch colors as the english ones are used already
+		colors actual_color = blanc, previous_color = blanc;
 
         drawn_spokes++;
-        for (int radius = 0; radius < 512; ++radius) {
+        for (int radius = 0; radius <= 512; ++radius) {   // loop 1 more time as only the previous one will be displayed
 
-            GLubyte red = 0, green = 0, blue = 0, strength = scan->data[radius];
-/*
+            GLubyte red = 0, green = 0, blue = 0, strength; 
+			if (radius < 512) strength = scan->data[radius];
+			else strength = 0;   
             switch (settings.display_option) {
-                case 0:
-                    if (strength <= 50) {
-                        continue;
-                    }
-                    red = 255;
-                    break;
-                case 1:
-                    if (strength > 200) {
-                        red = 255;
-                    } else if (strength > 100) {
-                        green = 255;
+
+				//  first find out the actual color
+					case 0:
+					actual_color = blanc;
+					if (strength > 50) {
+					actual_color = rood;
+					}
+					break;
+
+				case 1:
+					actual_color = blanc;
+					if (strength > 200) {
+					actual_color = rood;
+					} else if (strength > 100) {
+                        actual_color = groen;
                     } else if (strength > 50) {
-                        blue = 255;
-                    } else {
-                        continue;
-                    }
+                        actual_color = blauw;
+                    } 
                     break;
+
                 case 2:
-                    if (strength > 175) {
-                        red = 255;
+                    actual_color = blanc;
+					if (strength > 250) {
+                        actual_color = rood;
                     } else if (strength > 100) {
-                        green = 255;
-                    } else if (strength > 50) {
-                        blue = 255;
-                    } else {
-                        continue;
-                    }
+                        actual_color = groen;
+                    } else if (strength > 20) {
+                        actual_color = blauw;
+                    } 
                     break;
             }   
 
-			*/
-			red = 255;
-			if ( strength > 50 ) {    // register this blob or add it to the previous blob
-				if (! blobs_to_draw) {
-					r_begin = (double) radius * ((double) scan->range / (double) max_range);
-					r_end = r_begin;
-					blobs_to_draw = true;
-					}
+			if (actual_color == blanc && previous_color == blanc) 
+				{					// nothing to do, next radius
+				continue;
+				}
+
+			if (actual_color == previous_color) 
+				{					// continue with same color, just register it and continue with guard
 				r_end += arc_heigth;
 				}
-			
-			else if ((strength <= 50 || radius == 512) && blobs_to_draw) {     // no data to display anymore so display previous blobs combined
+
+			else if (previous_color == blanc && actual_color != blanc)
+				{					// blob starts, no display, just register 
+				r_begin = (double) radius * ((double) scan->range / (double) max_range);
+				r_end = r_begin + arc_heigth;
+				previous_color = actual_color;			// new color
+				}
+
+			else if (previous_color != blanc && (previous_color != actual_color)) 
+				{					// display time, first get the color in the glue byte
+				switch (previous_color) {
+				case rood:
+					red = 255;
+					break;
+				case groen:
+					green = 255;
+					break;
+				case blauw:
+					blue = 255;
+					break;
+					}
 				glColor4ub(red, green, blue, alpha);    // red, blue, green
 				double heigth = r_end - r_begin;
 				draw_blob_gl(angleCos, angleSin, r_begin, arc_width, heigth);
 				drawn_blobs++;
-				r_begin = 0;
-				blobs_to_draw = false;
-				continue;     // continue to next radius
-				}
-			else if (strength <= 50) continue;
-				
-
-   /*         glColor4ub(red, green, blue, alpha);    // red, blue, green
-        //     Compensate for any scale difference between the scan and the current range:
-            double r = (double) radius * ((double) scan->range / (double) max_range);
-
-            draw_blob_gl(angleCos, angleSin, r, arc_width, arc_heigth);
-            drawn_blobs++;
-			*/
+				previous_color = actual_color;
+				if (actual_color != blanc)
+					{			// change of color, start new blob
+					r_begin = (double) radius * ((double) scan->range / (double) max_range);
+					r_end = r_begin + arc_heigth;
+					}
+				else 
+					{			// actual_color == blanc, blank pixel, next radius
+					continue;
+					}
+				}					
+				 		
             /**********************************************************************************************************/
             // Guard Section
 
@@ -1518,7 +1544,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                      , now, drawn_spokes, skipped, drawn_blobs, max_age, bogey_count[0], bogey_count[1]);
     }
     HandleBogeyCount(bogey_count);
-}
+}		// end of DrawRadarImage
 
 void br24radar_pi::RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
@@ -1715,10 +1741,10 @@ bool br24radar_pi::LoadConfig(void)
                 settings.downsampleUser = 1; // otherwise we get infinite loop
             }
             settings.downsample = 2 << (settings.downsampleUser - 1);
-			pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 1);
+			pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 10);
 			refreshrate = settings.refreshrate;  
 
-			pConf->Read(wxT("PassHeadingToOCPN"), &settings.PassHeadingToOCPN, 1);    // PassHeadingToOCPN=0 : do not pass heading_from_radar to OCPN
+			pConf->Read(wxT("PassHeadingToOCPN"), &settings.PassHeadingToOCPN, 0);    // PassHeadingToOCPN == 0 : do not pass heading_from_radar to OCPN
 			PassHeadingToOCPN = settings.PassHeadingToOCPN;
 
             pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
@@ -1885,7 +1911,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 		var = pfix.Var;
 		}
 	else variation = false;
-	if (heading_on_radar) {
+	if (heading_on_radar && br_radar_state == RADAR_ON) {
 		if (m_hdt_source != 4) {
 			wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f \n"), br_hdt);
 			m_hdt_source = 4;
@@ -1903,7 +1929,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 	
 	else if (!wxIsNaN(pfix.Hdt))    // end of changes for heading on radar
     {
-        br_hdt = pfix.Hdt;
+        if (!heading_on_radar) br_hdt = pfix.Hdt;
         if (m_hdt_source != 1) {
            wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
         }
@@ -1912,7 +1938,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
     }
     else if (!wxIsNaN(pfix.Hdm) && !wxIsNaN(pfix.Var))
     {
-        br_hdt = pfix.Hdm + pfix.Var;
+        if (!heading_on_radar) br_hdt = pfix.Hdm + pfix.Var;
         m_var = pfix.Var;
         if (m_hdt_source != 2) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM"));
@@ -1922,7 +1948,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
     }
     else if (!wxIsNaN(pfix.Cog) && (m_hdt_source == 3 || (now - br_hdt_watchdog <= WATCHDOG_TIMEOUT / 2)))
     {
-        br_hdt = pfix.Cog;
+        if (!heading_on_radar) br_hdt = pfix.Cog;
         if (m_hdt_source != 3) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
         }
@@ -2317,19 +2343,19 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
                     m_var = -m_NMEA0183.Hdg.MagneticVariationDegrees;
             }
             if (!wxIsNaN(m_NMEA0183.Hdg.MagneticSensorHeadingDegrees) ) {
-                br_hdt = m_NMEA0183.Hdg.MagneticSensorHeadingDegrees + m_var;
+                if (!heading_on_radar) br_hdt = m_NMEA0183.Hdg.MagneticSensorHeadingDegrees + m_var;
                 br_hdt_watchdog = time(0);
             }
         }
         else if (m_hdt_source == 2 && m_NMEA0183.LastSentenceIDReceived == _T("HDM") && m_NMEA0183.Parse()) {
             if (!wxIsNaN(m_NMEA0183.Hdm.DegreesMagnetic)) {
-                br_hdt = m_NMEA0183.Hdm.DegreesMagnetic + m_var;
+                if (!heading_on_radar) br_hdt = m_NMEA0183.Hdm.DegreesMagnetic + m_var;
                 br_hdt_watchdog = time(0);
             }
         }
         else if (m_hdt_source == 1 && m_NMEA0183.LastSentenceIDReceived == _T("HDT") && m_NMEA0183.Parse()) {
             if (!wxIsNaN(m_NMEA0183.Hdt.DegreesTrue)) {
-                br_hdt = m_NMEA0183.Hdt.DegreesTrue;
+                if (!heading_on_radar) br_hdt = m_NMEA0183.Hdt.DegreesTrue;
                 br_hdt_watchdog = time(0);
             }
         }
@@ -2742,7 +2768,8 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 			var_raw = (int) (var * 11.377) ; //  this is * 4096 / 360
 			br_hdm_raw = (line->br4g.u01[1] << 8) | line->br4g.u01[0];
 			
-			if (line->br4g.u01[1] != 0x80 && variation) {   // without variation heading on radar can not be used
+			if (line->br4g.u01[1] != 0x80 && variation && br_radar_type == RT_4G) {   // without variation heading on radar can not be used
+																		// heading_on_radar only for 4G radar
 				if (display_heading_on_radar != 2 && pPlugIn->m_pControlDialog) {
 					display_heading_on_radar = 2 ;   // "Radar" has been displayed earlier
 					wxString label;
@@ -2752,7 +2779,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 					}    
 				heading_on_radar = true;							// heading on radar
 				br_hdt_raw = br_hdm_raw + var_raw;
-				br_hdt = (double) (br_hdt_raw * .08789);   //  is * 360  / 4096
+				br_hdt = (double) (br_hdt_raw * 360) / LINES_PER_ROTATION;   //  is * 360  / 4096
 				angle_raw += br_hdt_raw;
 				}
 			else {								// no heading on radar
@@ -2787,14 +2814,28 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         pPlugIn->m_scan_line[angle_raw].range = range_meters;
         pPlugIn->m_scan_line[angle_raw].age = now;
     }
-	//  all scanlines ready now, try to display
-	
+	//  all scanlines ready now, refresh section follows
+
+	if (RenderOverlay_busy) {
+		i_display = 0;			// rendering ongoing, reset the counter, don't refresh now
+								// this will also balance performance, if too busy no refresh
+		 if (pPlugIn->settings.verbose >= 2) wxLogMessage(wxT("BR24radar_pi:  busy encountered"));
+		}
+	else {
 	if(br_radar_state == RADAR_ON){
 	if (i_display >=  refreshrate ) {   //	display every "sample" time 
 		if (refreshrate != 10) GetOCPNCanvasWindow()->Refresh(true);
 		i_display = 0;
 		}
 	i_display ++;
+		}
+	if(PassHeadingToOCPN == 1 && heading_on_radar && br_radar_state == RADAR_ON){
+		char buffer [18];
+		int cx;
+		cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
+		wxString nmeastring = wxString::FromUTF8(buffer);
+		PushNMEABuffer (nmeastring);  // issue heading from radar to OCPN
+		}
 		}
 }
 
