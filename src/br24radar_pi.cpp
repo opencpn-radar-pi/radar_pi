@@ -116,6 +116,7 @@ unsigned int downsample;  // moved from display radar to here; also used in rada
 unsigned int refreshrate;  // refreshrate for radar used in process buffer
 unsigned int PassHeadingToOCPN = 0;  // From ini file, if 0, do not pass the heading_on_radar to OCPN
 bool RenderOverlay_busy = false;
+bool bogeysFound = false;
 
 double mark_rng, mark_brg;      // This is needed for context operation
 long  br_range_meters = 0;      // current range for radar
@@ -445,7 +446,6 @@ int br24radar_pi::Init(void)
 //****************************************************************************************
     //    Get a pointer to the opencpn configuration object
     m_pconfig = GetOCPNConfigObject();
-
     //    And load the configuration items
     LoadConfig();
     if (settings.verbose > 0) {
@@ -1016,6 +1016,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         RadarSendState();
         br_send_state = true; // Send state again as soon as we get any data
         ShowRadarControl();
+
     } else {
         br_radar_state = RADAR_OFF;
         if (settings.master_mode == true) {
@@ -1025,7 +1026,13 @@ void br24radar_pi::OnToolbarToolCallback(int id)
                 wxLogMessage(wxT("BR24radar_pi: Master mode off"));
             }
         }
-        OnBR24ControlDialogClose();
+        if (m_pGuardZoneBogey) {
+        m_pGuardZoneBogey->Hide();
+			}
+		if (m_pGuardZoneDialog){
+			m_pGuardZoneDialog->Hide();
+			}
+		OnBR24ControlDialogClose();
     }
 
     UpdateState();
@@ -1166,7 +1173,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     wxPoint boat_center;
 
 	heading_on_radar = false;  // reset heading_on_radar, 
-	// in case no radar data is received heading_on_radar might remain true indefinitely
+	// Otherwise, in case no radar data is received, heading_on_radar might remain true indefinitely
 
     if (br_bpos_set) {
         wxPoint pp;
@@ -1306,7 +1313,19 @@ void br24radar_pi::ComputeGuardZoneAngles()
                              , guardZones[z].end_bearing
                              , guardZones[z].inner_range, guardZones[z].outer_range);
             angle_1 = guardZones[z].start_bearing + br_hdt;      // br_hdt added to provide guard zone relative to heading
+			while (angle_1 < 0) {
+				angle_1 += 360;
+				}
+			while (angle_1 >= 360) {
+				angle_1 -= 360;
+				}
 			angle_2 = guardZones[z].end_bearing + br_hdt;		// br_hdt added to provide guard zone relative to heading
+			while (angle_2 < 0) {
+				angle_2 += 360;
+				}
+			while (angle_2 >= 360) {
+				angle_2 -= 360;
+				}
                 break;
             default:
                 wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
@@ -1346,6 +1365,9 @@ void br24radar_pi::ComputeGuardZoneAngles()
 
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 {
+
+		
+
     static unsigned int previousAngle = LINES_PER_ROTATION;
     static const double spokeWidthDeg = 360.0 / LINES_PER_ROTATION;
     static const double spokeWidthRad = deg2rad(spokeWidthDeg); // How wide is one spoke?
@@ -1378,6 +1400,12 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     }
 
     // DRAWING PICTURE
+
+	
+	bogey_count[0] = 0;
+	bogey_count[1] = 0;			// is this required here??? DF
+
+
     for (unsigned int angle = 0 ; angle <= LINES_PER_ROTATION - downsample; angle += downsample) {
         unsigned int scanAngle = angle, drawAngle = angle;
         scan_line * scan = 0;
@@ -1438,12 +1466,13 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 		colors actual_color = blanc, previous_color = blanc;
 
         drawn_spokes++;
+
         for (int radius = 0; radius <= 512; ++radius) {   // loop 1 more time as only the previous one will be displayed
 
             GLubyte red = 0, green = 0, blue = 0, strength; 
 			if (radius < 512) strength = scan->data[radius];
 			else strength = 0;   
-            switch (settings.display_option) {
+            switch (settings.display_option) {     // Here the colors are related to the intensity levels
 
 				//  first find out the actual color
 					case 0:
@@ -1524,7 +1553,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 				 		
             /**********************************************************************************************************/
             // Guard Section
-
+		
             for (size_t z = 0; z < GUARD_ZONES; z++) {
                 if (guardZoneAngles[z][scanAngle]) {
                     int inner_range = guardZones[z].inner_range; // now in meters
@@ -1649,7 +1678,7 @@ void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, Plu
 
 void br24radar_pi::HandleBogeyCount(int *bogey_count)
 {
-    bool bogeysFound = false;
+    bogeysFound = false;
 
     for (int z = 0; z < GUARD_ZONES; z++) {
         if (bogey_count[z] > settings.guard_zone_threshold) {
@@ -1659,20 +1688,19 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
     }
 
     if (bogeysFound
-        && (!m_pGuardZoneDialog || !m_pGuardZoneDialog->IsShown()) // Don't raise bogeys as long as control dialog is shown
+  //      && (!m_pGuardZoneDialog || !m_pGuardZoneDialog->IsShown()) // Don't raise bogeys as long as control dialog is shown
         ) {
         // We have bogeys and there is no objection to showing the dialog
-
         if (!m_pGuardZoneBogey) {
             // If this is the first time we have a bogey create & show the dialog immediately
             m_pGuardZoneBogey = new GuardZoneBogey;
             m_pGuardZoneBogey->Create(m_parent_window, this);
             m_pGuardZoneBogey->Show();
         }
-
+		
         time_t now = time(0);
         int delta_t = now - alarm_sound_last;
-        if (!guard_bogey_confirmed && delta_t >= ALARM_TIMEOUT) {
+        if (!guard_bogey_confirmed && delta_t >= ALARM_TIMEOUT && bogeysFound) {
             // If the last time is 10 seconds ago we ping a sound, unless the user confirmed
             alarm_sound_last = now;
 
@@ -1681,19 +1709,32 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
             }
             else {
                 wxBell();
-            }
+            }  // end of ping
             m_pGuardZoneBogey->Show();
             delta_t = ALARM_TIMEOUT;
         }
         m_pGuardZoneBogey->SetBogeyCount(bogey_count, guard_bogey_confirmed ? -1 : ALARM_TIMEOUT - delta_t);
-    }
-
+		}	
+	
     if (!bogeysFound) {
-        guard_bogey_confirmed = false; // Reset for next time we see bogeys
-        if (m_pGuardZoneBogey && m_pGuardZoneBogey->IsShown()) {
+
+		if (!m_pGuardZoneBogey) {
+            // If this is the first time we have a bogey create & show the dialog immediately
+            m_pGuardZoneBogey = new GuardZoneBogey;
+            m_pGuardZoneBogey->Create(m_parent_window, this);
             m_pGuardZoneBogey->Hide();
         }
+		else {
+			m_pGuardZoneBogey->SetBogeyCount(bogey_count, 0);
+			}
+			
+
+        guard_bogey_confirmed = false; // Reset for next time we see bogeys
+ //       if (m_pGuardZoneBogey && m_pGuardZoneBogey->IsShown()) {
+  //          m_pGuardZoneBogey->Hide();
+   //     }
     }
+	
 }
 
 
@@ -2743,6 +2784,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         }
 
         // Range change desired?
+
         if (range_meters != br_range_meters) {
 
             if (pPlugIn->settings.verbose >= 1) {
@@ -2750,7 +2792,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                     wxLogMessage(wxT("BR24radar_pi:  Invalid range received, keeping %d meters"), br_range_meters);
                 }
                 else {
-                    wxLogMessage(wxT("BR24radar_pi:  Range Change: %d --> %d meters (raw value: %d"), br_range_meters, range_meters, range_raw);
+                    wxLogMessage(wxT("BR24radar_pi:  Range ChangeXXXX: %d --> %d meters (raw value: %d"), br_range_meters, range_meters, range_raw);
                 }
             }
 
@@ -2810,6 +2852,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         // returned radar energy at the max range line.
         // TODO: create nice actual range circles.
         dest_data1[511] = 0xff;
+
 
         pPlugIn->m_scan_line[angle_raw].range = range_meters;
         pPlugIn->m_scan_line[angle_raw].age = now;
