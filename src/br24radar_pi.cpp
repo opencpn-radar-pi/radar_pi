@@ -435,10 +435,13 @@ int br24radar_pi::Init(void)
     settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
 
 //      Set default parameters for controls displays
-    m_BR24Controls_dialog_x = 0;
+    m_BR24Controls_dialog_x = 0;	// position
     m_BR24Controls_dialog_y = 0;
-    m_BR24Controls_dialog_sx = 200;
+    m_BR24Controls_dialog_sx = 200;  // size
     m_BR24Controls_dialog_sy = 200;
+
+	m_GuardZoneBogey_x = 200;
+    m_GuardZoneBogey_y = 200;
 
 
     ::wxDisplaySize(&m_display_width, &m_display_height);
@@ -549,7 +552,7 @@ int br24radar_pi::Init(void)
 
 bool br24radar_pi::DeInit(void)
 {
-    SaveConfig();
+    
     m_quit = true; // Signal quit to any of the threads. Takes up to 1s.
 
     if (m_dataReceiveThread) {
@@ -883,7 +886,10 @@ void br24radar_pi::ShowRadarControl()
         m_pControlDialog->Create(m_parent_window, this);
 
         if (settings.auto_range_mode) {
-            int range = auto_range_meters;
+ //           int range = auto_range_meters;
+			int range = br_range_meters;    //  always use br_range_meters   this is the current value used in the pi
+											//  will be updated in the receive thread in not correct
+			//   xxx remove if
             m_pControlDialog->SetAutoRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
         }
         else if (br_range_meters) {
@@ -949,7 +955,9 @@ void br24radar_pi::OnGuardZoneBogeyClose()
 {
     guard_bogey_confirmed = true; // This will stop the sound being repeated
     if (m_pGuardZoneBogey) {
+		m_pGuardZoneBogey->GetPosition(&m_GuardZoneBogey_x, &m_GuardZoneBogey_y);
         m_pGuardZoneBogey->Hide();
+		SaveConfig();
     }
 }
 
@@ -1204,6 +1212,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         previous_auto_range_meters = auto_range_meters;
         if (m_pControlDialog) {
             m_pControlDialog->SetAutoRangeIndex(idx);
+			br_range_meters = auto_range_meters;
         }
         if (settings.auto_range_mode) {
             // Send command directly to radar
@@ -1695,7 +1704,8 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
             // If this is the first time we have a bogey create & show the dialog immediately
             m_pGuardZoneBogey = new GuardZoneBogey;
             m_pGuardZoneBogey->Create(m_parent_window, this);
-            m_pGuardZoneBogey->Show();
+			 m_pGuardZoneBogey->SetPosition(wxPoint(m_GuardZoneBogey_x, m_GuardZoneBogey_y));
+			 m_pGuardZoneBogey->Show();
         }
 		
         time_t now = time(0);
@@ -1710,7 +1720,9 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
             else {
                 wxBell();
             }  // end of ping
-            m_pGuardZoneBogey->Show();
+            if (m_pGuardZoneBogey) {
+			m_pGuardZoneBogey->Show();
+				}
             delta_t = ALARM_TIMEOUT;
         }
         m_pGuardZoneBogey->SetBogeyCount(bogey_count, guard_bogey_confirmed ? -1 : ALARM_TIMEOUT - delta_t);
@@ -1722,10 +1734,11 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
             // If this is the first time we have a bogey create & show the dialog immediately
             m_pGuardZoneBogey = new GuardZoneBogey;
             m_pGuardZoneBogey->Create(m_parent_window, this);
+			 m_pGuardZoneBogey->SetPosition(wxPoint(m_GuardZoneBogey_x, m_GuardZoneBogey_y));
             m_pGuardZoneBogey->Hide();
         }
 		else {
-			m_pGuardZoneBogey->SetBogeyCount(bogey_count, 0);
+			m_pGuardZoneBogey->SetBogeyCount(bogey_count, -1);   // with -1 "next alarm in... "will not be displayed
 			}
 			
 
@@ -1792,6 +1805,9 @@ bool br24radar_pi::LoadConfig(void)
             pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
             pConf->Read(wxT("ControlsDialogPosX"), &m_BR24Controls_dialog_x, 20L);
             pConf->Read(wxT("ControlsDialogPosY"), &m_BR24Controls_dialog_y, 170L);
+
+			pConf->Read(wxT("GuardZonePosX"), &m_GuardZoneBogey_x, 20L);
+            pConf->Read(wxT("GuardZonePosY"), &m_GuardZoneBogey_y, 170L);
 
             double d;
             pConf->Read(wxT("Zone1StBrng"), &guardZones[0].start_bearing, 0.0);
@@ -1863,10 +1879,12 @@ bool br24radar_pi::LoadConfig(void)
             pConf->DeleteEntry(wxT("BR24ControlsDialogSizeX"));
         if (pConf->Read(wxT("BR24ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L))
             pConf->DeleteEntry(wxT("BR24ControlsDialogSizeY"));
-        if (pConf->Read(wxT("BR24ControlsDialogPosX"), &m_BR24Controls_dialog_x, 20L))
-            pConf->DeleteEntry(wxT("BR24ControlsDialogPosX"));
-        if (pConf->Read(wxT("BR24ControlsDialogPosY"), &m_BR24Controls_dialog_y, 170L))
-            pConf->DeleteEntry(wxT("BR24ControlsDialogPosY"));
+        
+		if (pConf->Read(wxT("GuardZoneDialogPosX"), &m_GuardZoneBogey_x, 20L))
+            pConf->DeleteEntry(wxT("GuardZoneDialogPosX"));
+        if (pConf->Read(wxT("GuardZoneDialogPosY"), &m_GuardZoneBogey_y, 170L))
+            pConf->DeleteEntry(wxT("GuardZoneDialogPosY"));
+
 
         SaveConfig();
         return true;
@@ -1912,6 +1930,8 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("ControlsDialogPosX"),   m_BR24Controls_dialog_x);
         pConf->Write(wxT("ControlsDialogPosY"),   m_BR24Controls_dialog_y);
 
+		pConf->Write(wxT("GuardZonePosX"),   m_GuardZoneBogey_x);
+        pConf->Write(wxT("GuardZonePosY"),   m_GuardZoneBogey_y);
 
         pConf->Write(wxT("Zone1StBrng"), guardZones[0].start_bearing);
         pConf->Write(wxT("Zone1EndBrng"), guardZones[0].end_bearing);
@@ -2095,6 +2115,7 @@ void br24radar_pi::SetRangeMeters(long meters)
                 wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: %ld meters\n"), meters);
             }
             TransmitCmd(pck, sizeof(pck));
+			br_range_meters = meters;   //  current value, will be updated if receive thread receives different (if radar does not react)
         }
     }
 }
@@ -2784,7 +2805,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         }
 
         // Range change desired?
-
         if (range_meters != br_range_meters) {
 
             if (pPlugIn->settings.verbose >= 1) {
@@ -2792,7 +2812,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                     wxLogMessage(wxT("BR24radar_pi:  Invalid range received, keeping %d meters"), br_range_meters);
                 }
                 else {
-                    wxLogMessage(wxT("BR24radar_pi:  Range ChangeXXXX: %d --> %d meters (raw value: %d"), br_range_meters, range_meters, range_raw);
+                    wxLogMessage(wxT("BR24radar_pi:  Range Change: %d --> %d meters (raw value: %d"), br_range_meters, range_meters, range_raw);
                 }
             }
 
