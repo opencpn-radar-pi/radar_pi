@@ -957,7 +957,7 @@ void br24radar_pi::OnGuardZoneBogeyClose()
     if (m_pGuardZoneBogey) {
 		m_pGuardZoneBogey->GetPosition(&m_GuardZoneBogey_x, &m_GuardZoneBogey_y);
         m_pGuardZoneBogey->Hide();
-		SaveConfig();
+// x		SaveConfig();
     }
 }
 
@@ -1704,8 +1704,8 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
             // If this is the first time we have a bogey create & show the dialog immediately
             m_pGuardZoneBogey = new GuardZoneBogey;
             m_pGuardZoneBogey->Create(m_parent_window, this);
-			 m_pGuardZoneBogey->SetPosition(wxPoint(m_GuardZoneBogey_x, m_GuardZoneBogey_y));
-			 m_pGuardZoneBogey->Show();
+	// x		 m_pGuardZoneBogey->SetPosition(wxPoint(m_GuardZoneBogey_x, m_GuardZoneBogey_y));
+	//		 m_pGuardZoneBogey->Show();
         }
 		
         time_t now = time(0);
@@ -1731,11 +1731,11 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
     if (!bogeysFound) {
 
 		if (!m_pGuardZoneBogey) {
-            // If this is the first time we have a bogey create & show the dialog immediately
-            m_pGuardZoneBogey = new GuardZoneBogey;
-            m_pGuardZoneBogey->Create(m_parent_window, this);
-			 m_pGuardZoneBogey->SetPosition(wxPoint(m_GuardZoneBogey_x, m_GuardZoneBogey_y));
-            m_pGuardZoneBogey->Hide();
+ //           // If this is the first time we have a bogey create & show the dialog immediately
+ //           m_pGuardZoneBogey = new GuardZoneBogey;
+ //           m_pGuardZoneBogey->Create(m_parent_window, this);
+// x			 m_pGuardZoneBogey->SetPosition(wxPoint(m_GuardZoneBogey_x, m_GuardZoneBogey_y));
+    //        m_pGuardZoneBogey->Hide();
         }
 		else {
 			m_pGuardZoneBogey->SetBogeyCount(bogey_count, -1);   // with -1 "next alarm in... "will not be displayed
