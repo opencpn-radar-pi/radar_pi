@@ -1667,11 +1667,10 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
         }
     }
 
-    if (bogeysFound
-        && (!m_pGuardZoneDialog || !m_pGuardZoneDialog->IsShown()) // Don't raise bogeys as long as control dialog is shown
+ /*   if (bogeysFound
+  //      && (!m_pGuardZoneDialog || !m_pGuardZoneDialog->IsShown()) // Don't raise bogeys as long as control dialog is shown
         ) {
         // We have bogeys and there is no objection to showing the dialog
-
         if (!m_pGuardZoneBogey) {
             // If this is the first time we have a bogey create & show the dialog immediately
             m_pGuardZoneBogey = new GuardZoneBogey;
@@ -1679,10 +1678,10 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
 	// x		 m_pGuardZoneBogey->SetPosition(wxPoint(m_GuardZoneBogey_x, m_GuardZoneBogey_y));
 	//		 m_pGuardZoneBogey->Show();
         }
-
+		
         time_t now = time(0);
         int delta_t = now - alarm_sound_last;
-        if (!guard_bogey_confirmed && delta_t >= ALARM_TIMEOUT) {
+        if (!guard_bogey_confirmed && delta_t >= ALARM_TIMEOUT && bogeysFound) {
             // If the last time is 10 seconds ago we ping a sound, unless the user confirmed
             alarm_sound_last = now;
 
@@ -1691,13 +1690,17 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
             }
             else {
                 wxBell();
-
             }  // end of ping
             if (m_pGuardZoneBogey) {
 			m_pGuardZoneBogey->Show();
 				}
+            delta_t = ALARM_TIMEOUT;
+        }
+        m_pGuardZoneBogey->SetBogeyCount(bogey_count, guard_bogey_confirmed ? -1 : ALARM_TIMEOUT - delta_t);
+		}	
+	
+    if (!bogeysFound) {
 
-        
 		if (!m_pGuardZoneBogey) {
  //           // If this is the first time we have a bogey create & show the dialog immediately
  //           m_pGuardZoneBogey = new GuardZoneBogey;
@@ -1714,15 +1717,10 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
  //       if (m_pGuardZoneBogey && m_pGuardZoneBogey->IsShown()) {
   //          m_pGuardZoneBogey->Hide();
    //     }
-=======
-    if (!bogeysFound) {
-        guard_bogey_confirmed = false; // Reset for next time we see bogeys
-        if (m_pGuardZoneBogey && m_pGuardZoneBogey->IsShown()) {
-            m_pGuardZoneBogey->Hide();
-        }
->>>>>>> parent of 7c3da84... removed additional log messages
-    }
+    }   */
+	
 }
+
 
 
 //****************************************************************************
