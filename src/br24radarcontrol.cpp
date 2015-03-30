@@ -72,6 +72,7 @@ enum {                                      // process ID's
     ID_NOISE_REJECTION,
     ID_TARGET_SEPARATION,
     ID_DOWNSAMPLE,
+	ID_REFRESHRATE, 
     ID_SCAN_SPEED,
     ID_SCAN_AGE,
 
@@ -113,6 +114,7 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
     EVT_BUTTON(ID_NOISE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_TARGET_SEPARATION, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_DOWNSAMPLE, BR24ControlsDialog::OnRadarControlButtonClick)
+	EVT_BUTTON(ID_REFRESHRATE, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
 
@@ -291,7 +293,7 @@ void RadarControlButton::SetAuto()
 }
 
 int RadarRangeControlButton::SetValueInt(int newValue)
-{
+{									// only called from the receive thread, display value from the radar
     int units = pPlugIn->settings.range_units;
 
     maxValue = g_range_maxValue[units] - 1;
@@ -321,20 +323,37 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     return meters;
 }
 
+int RadarRangeControlButton::CalcValueInt(int newValue)
+{										//	same as SetValueInt but does not modify the value on the button
+    int units = pPlugIn->settings.range_units;
+
+    maxValue = g_range_maxValue[units] - 1;
+
+    if (newValue >= minValue && newValue <= maxValue) {
+        value = newValue;
+    } else if (pPlugIn->settings.auto_range_mode) {
+        value = auto_range_index;
+    } else if (value > maxValue) {
+        value = maxValue;
+    }
+    int meters = g_range_distances[units][value];
+    return meters;
+}
+
 void RadarRangeControlButton::SetValue(int newValue)
 {
     isAuto = false;
     pPlugIn->settings.auto_range_mode = false;
 
-    int meters = SetValueInt(newValue);
-    pPlugIn->SetRangeMeters(meters);
+    int meters = CalcValueInt(newValue);   // do not display the new value now, will be done by receive thread
+    pPlugIn->SetRangeMeters(meters);		// send new value to the radar
 }
 
 void RadarRangeControlButton::SetAuto()
 {
     isAuto = true;
     pPlugIn->settings.auto_range_mode = true;
-    SetValueInt(auto_range_index);
+ //   SetValueInt(auto_range_index);	// do not display the new value now, will be done by receive thread
 }
 
 BR24ControlsDialog::BR24ControlsDialog()
@@ -407,10 +426,10 @@ void BR24ControlsDialog::CreateControls()
     label << _("Downsample") << wxT("\n");
     label << _("Scan speed") << wxT("\n");
     label << _("Scan age") << wxT("\n");
-    label << _("Gain") << wxT("\n"); 
+    label << _("Gain") << wxT("\n");
     label << _("Sea clutter") << wxT("\n");
     label << _("Rain clutter") << wxT("\n");
-    label << _("Auto") << wxT(" (1/20 Nm)\n"); 
+    label << _("Auto") << wxT(" (1/20 Nm)\n");
 
     wxStaticText * testMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     testBox->Add(testMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
@@ -623,6 +642,12 @@ void BR24ControlsDialog::CreateControls()
     advancedBox->Add(bDownsample, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bDownsample->minValue = 1;
     bDownsample->maxValue = 8;
+
+	// The REFRESHRATE button
+    bRefreshrate = new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), pPlugIn, CT_REFRESHRATE, false, pPlugIn->settings.refreshrate);
+    advancedBox->Add(bRefreshrate, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bRefreshrate->minValue = 1;
+    bRefreshrate->maxValue = 10;
 
     // The SCAN AGE button
     bScanAge = new RadarControlButton(this, ID_SCAN_AGE, _("Scan age"), pPlugIn, CT_SCAN_AGE, false, pPlugIn->settings.max_age);

@@ -131,7 +131,7 @@ struct br4g_header {
     UINT8 u00[2];          //Always 0x4400 (integer)
     UINT8 largerange[2];   //2 bytes or -1
     UINT8 angle[2];        //2 bytes
-    UINT8 u01[2];          //Always 0x8000 = -1
+    UINT8 u01[2];          //Always 0x8000 = -1  or heading from radar
     UINT8 smallrange[2];   //2 bytes or -1
     UINT8 rotation[2];     //2 bytes, looks like rotation/angle
     UINT8 u02[4];          //4 bytes signed integer, always -1
@@ -180,6 +180,8 @@ typedef enum ControlType {
     CT_NOISE_REJECTION,
     CT_TARGET_BOOST,
     CT_DOWNSAMPLE,
+	CT_REFRESHRATE,
+	CT_PASSHEADING,
     CT_SCAN_SPEED,
     CT_SCAN_AGE
 } ControlType;
@@ -251,6 +253,8 @@ struct radar_control_settings {
     int      draw_algorithm;
     int      scan_speed;
     int      downsampleUser;    // 1..8 =
+	int		refreshrate;
+	int		 PassHeadingToOCPN;
     int      downsample;        //         1..128
     wxString alert_audio_file;
 };
@@ -408,6 +412,7 @@ private:
 
     int                       m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
     int                       m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
+	int						m_GuardZoneBogey_x, m_GuardZoneBogey_y ;
 
     int                       m_Guard_dialog_sx, m_Guard_dialog_sy ;
     int                       m_Guard_dialog_x, m_Guard_dialog_y ;
@@ -574,7 +579,6 @@ public:
                        int newValue
                       )
     {
-
         Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
         minValue = 0;
         maxValue = 100;
@@ -641,6 +645,7 @@ public:
     virtual void SetAuto();
 
     int SetValueInt(int value);
+	int CalcValueInt(int value);   // same as SetValueInt, but does not change the displayed value
 
     int auto_range_index;
 };
@@ -744,6 +749,7 @@ private:
     RadarControlButton *bNoiseRejection;
     RadarControlButton *bTargetBoost;
     RadarControlButton *bDownsample;
+	RadarControlButton *bRefreshrate;
     RadarControlButton *bScanSpeed;
     RadarControlButton *bScanAge;
 
