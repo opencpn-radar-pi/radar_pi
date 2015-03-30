@@ -884,18 +884,9 @@ void br24radar_pi::ShowRadarControl()
     if (!m_pControlDialog) {
         m_pControlDialog = new BR24ControlsDialog;
         m_pControlDialog->Create(m_parent_window, this);
-
-        if (settings.auto_range_mode) {
- //           int range = auto_range_meters;
-			int range = br_range_meters;    //  always use br_range_meters   this is the current value used in the pi
-											//  will be updated in the receive thread in not correct
-			//   xxx remove if
+			int range = (int) br_range_meters;    //  always use br_range_meters   this is the current value used in the pi
+												//  will be updated in the receive thread if not correct
             m_pControlDialog->SetAutoRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
-        }
-        else if (br_range_meters) {
-            int range = br_range_meters;
-            m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
-        }
     }
     m_pControlDialog->Show();
     m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
@@ -1191,27 +1182,29 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     // The radar range is set such that it covers the entire screen plus 50% so that a little panning is OK.
     // This is what the plotters do as well.
 
-    max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
-
-    auto_range_meters =  max_distance / 2.0 * 1.5;
-    // call convertMetersToRadarAllowedValue now to compute fitting allowed range
-    size_t idx = convertMetersToRadarAllowedValue(&auto_range_meters, settings.range_units, br_radar_type);
-    //wxLogMessage(wxT("BR24radar_pi: screensize=%f autorange_meters=%d"), max_distance, auto_range_meters);
-    if (auto_range_meters != previous_auto_range_meters) {
-        if (settings.verbose) {
-            wxLogMessage(wxT("BR24radar_pi: Automatic scale changed from %d to %d meters")
-                         , previous_auto_range_meters, auto_range_meters);
-        }
-        previous_auto_range_meters = auto_range_meters;
-        if (m_pControlDialog) {
-            m_pControlDialog->SetAutoRangeIndex(idx);
-			br_range_meters = auto_range_meters;
-        }
-        if (settings.auto_range_mode) {
-            // Send command directly to radar
-            SetRangeMeters(auto_range_meters);
-        }
-    }
+	if (settings.auto_range_mode) 
+		{
+		max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
+		auto_range_meters =  max_distance / 2.0 * 1.5;
+		// call convertMetersToRadarAllowedValue now to compute fitting allowed range
+		size_t idx = convertMetersToRadarAllowedValue(&auto_range_meters, settings.range_units, br_radar_type);
+		//wxLogMessage(wxT("BR24radar_pi: screensize=%f autorange_meters=%d"), max_distance, auto_range_meters);
+		if (auto_range_meters != previous_auto_range_meters) 
+			{						//   range change required
+			if (settings.verbose) {
+				wxLogMessage(wxT("BR24radar_pi: Automatic scale changed from %d to %d meters")
+					, previous_auto_range_meters, auto_range_meters);
+				}
+			previous_auto_range_meters = auto_range_meters;
+			//      if (m_pControlDialog) {
+			//          m_pControlDialog->SetAutoRangeIndex(idx);
+			//		br_range_meters = (long) auto_range_meters;
+			// no update of control value, this is done when new range received from radar in receive thread
+			// Send command directly to radar
+			SetRangeMeters(auto_range_meters);
+			}
+		}
+    
 
     //    Calculate image scale factor
 
@@ -1264,7 +1257,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     glRotatef(heading, 0, 0, 1);
 
     // scaling...
-    int meters = br_range_meters;
+    int meters = (int) br_range_meters;
     if (!meters) meters = auto_range_meters;
     if (!meters) meters = 1000;
     double radar_pixels_per_meter = 512. / meters;
@@ -1273,8 +1266,8 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     if ((br_bpos_set && m_hdt_source > 0) || settings.display_mode == DM_EMULATOR) {
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
-        if (br_range_meters && br_radar_state == RADAR_ON) { //   br_scanner_state changed into br_radar_state by Douwe Fokkema, 
-			//no image unless radar is on// only draw radar if something received
+        if ((int) br_range_meters && br_radar_state == RADAR_ON) { //   br_scanner_state changed into br_radar_state by Douwe Fokkema, 
+			//no image unless radar is on, only draw radar if something received
             DrawRadarImage(meters, radar_center);
         }
         glPopMatrix();
@@ -2087,7 +2080,7 @@ void br24radar_pi::SetRangeMeters(long meters)
                 wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: %ld meters\n"), meters);
             }
             TransmitCmd(pck, sizeof(pck));
-			br_range_meters = meters;   //  current value, will be updated if receive thread receives different (if radar does not react)
+			//  do not update control value here, is only done from receive thread
         }
     }
 }
@@ -2776,8 +2769,9 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             br_radar_type = RT_4G;
         }
 
-        // Range change desired?
-        if (range_meters != br_range_meters) {
+        // Range change received from radar? 
+		
+        if (range_meters != (int) br_range_meters) {
 
             if (pPlugIn->settings.verbose >= 1) {
                 if (range_meters == 0) {
@@ -2788,7 +2782,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 }
             }
 
-            br_range_meters = range_meters;
+            br_range_meters = (long) range_meters;
 
             // Set the control's value to the real range that we received, not a table idea
             if (pPlugIn->m_pControlDialog) {

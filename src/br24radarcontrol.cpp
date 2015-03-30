@@ -323,20 +323,37 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     return meters;
 }
 
+int RadarRangeControlButton::CalcValueInt(int newValue)
+{										//	same as SetValueInt but does not modify the value on the button
+    int units = pPlugIn->settings.range_units;
+
+    maxValue = g_range_maxValue[units] - 1;
+
+    if (newValue >= minValue && newValue <= maxValue) {
+        value = newValue;
+    } else if (pPlugIn->settings.auto_range_mode) {
+        value = auto_range_index;
+    } else if (value > maxValue) {
+        value = maxValue;
+    }
+    int meters = g_range_distances[units][value];
+    return meters;
+}
+
 void RadarRangeControlButton::SetValue(int newValue)
 {
     isAuto = false;
     pPlugIn->settings.auto_range_mode = false;
 
-    int meters = SetValueInt(newValue);
-    pPlugIn->SetRangeMeters(meters);
+    int meters = CalcValueInt(newValue);   // do not display the new value now, will be done by receive thread
+    pPlugIn->SetRangeMeters(meters);		// send new value to the radar
 }
 
 void RadarRangeControlButton::SetAuto()
 {
     isAuto = true;
     pPlugIn->settings.auto_range_mode = true;
-    SetValueInt(auto_range_index);
+ //   SetValueInt(auto_range_index);	// do not display the new value now, will be done by receive thread
 }
 
 BR24ControlsDialog::BR24ControlsDialog()
