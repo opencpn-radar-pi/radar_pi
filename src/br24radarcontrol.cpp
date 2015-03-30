@@ -293,7 +293,7 @@ void RadarControlButton::SetAuto()
 }
 
 int RadarRangeControlButton::SetValueInt(int newValue)
-{
+{									// only called from the receive thread, display value from the radar
     int units = pPlugIn->settings.range_units;
 
     maxValue = g_range_maxValue[units] - 1;
