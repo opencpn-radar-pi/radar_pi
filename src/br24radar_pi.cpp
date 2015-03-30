@@ -1715,7 +1715,7 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
 			}
 		}
 
-	if (bogeysFound && (!m_pGuardZoneDialog || !m_pGuardZoneDialog->IsShown()) // Don't raise bogeys as long as control dialog is shown)
+	if (bogeysFound && (!m_pGuardZoneDialog || !m_pGuardZoneDialog->IsShown()) ) // Don't raise bogeys as long as control dialog is shown)
 		{
 		// We have bogeys and there is no objection to showing the dialog
         if(settings.timed_idle != 0) m_pControlDialog->SetTimedIdleIndex(0) ; //Disable Timed Idle if set
