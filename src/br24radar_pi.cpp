@@ -1655,59 +1655,60 @@ void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, Plu
 }
 
 void br24radar_pi::HandleBogeyCount(int *bogey_count)
-{
-    bool bogeysFound = false;
+	{
+	bool bogeysFound = false;
 
-    for (int z = 0; z < GUARD_ZONES; z++) {
-        if (bogey_count[z] > settings.guard_zone_threshold) {
-            bogeysFound = true;
-            break;
-        }
-    }
+	for (int z = 0; z < GUARD_ZONES; z++) {
+		if (bogey_count[z] > settings.guard_zone_threshold) {
+			bogeysFound = true;
+			break;
+			}
+		}
 
-    if (bogeysFound)
-         {
-        // We have bogeys and there is no objection to showing the dialog
-        if (!m_pGuardZoneBogey) {
-            // If this is the first time we have a bogey create & show the dialog immediately
-            m_pGuardZoneBogey = new GuardZoneBogey;
-            m_pGuardZoneBogey->Create(m_parent_window, this);
+	if (bogeysFound)
+		{
+		// We have bogeys and there is no objection to showing the dialog
+		if (!m_pGuardZoneBogey) {
+			// If this is the first time we have a bogey create & show the dialog immediately
+			m_pGuardZoneBogey = new GuardZoneBogey;
+			m_pGuardZoneBogey->Create(m_parent_window, this);
 			m_pGuardZoneBogey->Show();
 			m_pGuardZoneBogey->SetPosition(wxPoint(m_GuardZoneBogey_x, m_GuardZoneBogey_y));
 			}
 		else if (!guard_bogey_confirmed)
 			{
 			m_pGuardZoneBogey->Show();
-        }
-        time_t now = time(0);
-        int delta_t = now - alarm_sound_last;
-        if (!guard_bogey_confirmed && delta_t >= ALARM_TIMEOUT && bogeysFound) {
-            // If the last time is 10 seconds ago we ping a sound, unless the user confirmed
-            alarm_sound_last = now;
+			}
+		time_t now = time(0);
+		int delta_t = now - alarm_sound_last;
+		if (!guard_bogey_confirmed && delta_t >= ALARM_TIMEOUT && bogeysFound) {
+			// If the last time is 10 seconds ago we ping a sound, unless the user confirmed
+			alarm_sound_last = now;
 
-            if (!settings.alert_audio_file.IsEmpty()) {
-                PlugInPlaySound(settings.alert_audio_file);
-           }
-            else {
-                wxBell();
-            }  // end of ping
-            if (m_pGuardZoneBogey) {
-			m_pGuardZoneBogey->Show();
+			if (!settings.alert_audio_file.IsEmpty()) {
+				PlugInPlaySound(settings.alert_audio_file);
 				}
-            delta_t = ALARM_TIMEOUT;
-        }
+			else {
+				wxBell();
+				}  // end of ping
+			if (m_pGuardZoneBogey) {
+				m_pGuardZoneBogey->Show();
+				}
+			delta_t = ALARM_TIMEOUT;
+			}
 		if( m_pGuardZoneBogey) {
-        m_pGuardZoneBogey->SetBogeyCount(bogey_count, guard_bogey_confirmed ? -1 : ALARM_TIMEOUT - delta_t);
+			m_pGuardZoneBogey->SetBogeyCount(bogey_count, guard_bogey_confirmed ? -1 : ALARM_TIMEOUT - delta_t);
 			}
 		}	
-	 
-    if (!bogeysFound && m_pGuardZoneBogey) {
-			m_pGuardZoneBogey->SetBogeyCount(bogey_count, -1);   // with -1 "next alarm in... "will not be displayed
-        guard_bogey_confirmed = false; // Reset for next time we see bogeys
-										// keep showing the bogey dialogue with 0 bo
-    }   
-	
-}
+
+	if (!bogeysFound && m_pGuardZoneBogey) {
+		m_pGuardZoneBogey->SetBogeyCount(bogey_count, -1);   // with -1 "next alarm in... "will not be displayed
+		guard_bogey_confirmed = false; // Reset for next time we see bogeys
+		// keep showing the bogey dialogue with 0 bogeys
+
+		}   
+
+	}
 
 
 
