@@ -33,6 +33,7 @@ SET(SRC_br24radar
             src/br24radarcontrol.cpp
             src/GuardZoneControls.cpp
             src/GuardZoneBogey.cpp
+			src/Idle_Dialog.cpp
 )
 SET(SRC_NMEA0183
         src/nmea0183/LatLong.hpp

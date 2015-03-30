@@ -122,6 +122,11 @@ long  br_range_meters = 0;      // current range for radar
 int auto_range_meters = 0;      // What the range should be, at least, when AUTO mode is selected
 int previous_auto_range_meters = 0;
 
+int   br_last_idle_set = 0;     //Timed Idle
+int   br_idle_set_count = 0;
+bool  onInit_Timed_Idle;
+static time_t br_idle_watchdog;
+
 int   br_radar_state;
 int   br_scanner_state;
 bool  br_send_state;
@@ -406,6 +411,7 @@ int br24radar_pi::Init(void)
     br_hdt_watchdog  = 0;
     br_radar_watchdog = 0;
     br_data_watchdog = 0;
+    br_idle_watchdog = 0;
 
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
@@ -424,6 +430,7 @@ int br24radar_pi::Init(void)
     m_pControlDialog = 0;
     m_pGuardZoneDialog = 0;
     m_pGuardZoneBogey = 0;
+    m_pIdleDialog = 0;
 
     memset(&guardZones, 0, sizeof(guardZones));
 
@@ -1014,6 +1021,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         RadarTxOn();
         RadarSendState();
         br_send_state = true; // Send state again as soon as we get any data
+        if( id != 999999  && settings.timed_idle != 0) m_pControlDialog->SetTimedIdleIndex(0) ; //Disable Timed Idle if user click the icon while idle
         ShowRadarControl();
     } else {
         br_radar_state = RADAR_OFF;
@@ -1120,6 +1128,48 @@ void br24radar_pi::DoTick(void)
     m_statistics.missing_spokes = 0;
     m_statistics.packets        = 0;
     m_statistics.spokes         = 0;
+
+    /*******************************************
+    Function Timed Idle. Check if active 
+    ********************************************/
+    if(settings.timed_idle != 0) {
+        int factor = 5 * 60; 
+        if( br_last_idle_set == settings.timed_idle) {
+            if(br_idle_watchdog > 0) {
+                if( br_radar_state == RADAR_ON && (now > (br_idle_watchdog + (settings.idle_run_time * 60)) || onInit_Timed_Idle) ) {  
+                    onInit_Timed_Idle = false;   
+                    br_idle_watchdog = 0; 
+                    br24radar_pi::OnToolbarToolCallback(999999);    //Stop radar scanning
+                 }
+                 else if( br_radar_state == RADAR_OFF ) { 
+                    if( now > (br_idle_watchdog + (settings.timed_idle * factor))) {                    
+                    br_idle_watchdog = 0;
+                    if (m_pIdleDialog) m_pIdleDialog->Close();
+                        br24radar_pi::OnToolbarToolCallback(999999);    //Start radar scanning
+                    } else {
+                        // Send minutes left to radar control                        
+                        int time_left = ((br_idle_watchdog + (settings.timed_idle * factor)) - now)/60;
+                        if (!m_pIdleDialog) {
+                            m_pIdleDialog = new Idle_Dialog;
+                            m_pIdleDialog->Create(m_parent_window, this);
+                        } else br24radar_pi::m_pIdleDialog->SetIdleTimes(settings.timed_idle * factor/60, time_left);     //m_pIdleDialog->                                           
+                        m_pIdleDialog->Show();
+                    }
+                }                
+            } else (br_idle_watchdog = now);
+            return;
+        }
+        if(br_idle_set_count < 4) {    //Wait five turns, =5 sec, before action when the user is about to change it.
+            br_idle_set_count ++;
+            return;
+        }
+        br_idle_set_count = 0;        
+        if( br_last_idle_set == 0) onInit_Timed_Idle = true;    //Timed_Idle function init 
+        br_last_idle_set = settings.timed_idle;
+    } else {
+          br_idle_watchdog = 0;
+          br_last_idle_set = 0; 
+    }
 }
 
 void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay
@@ -1665,9 +1715,10 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
 			}
 		}
 
-	if (bogeysFound)
+	if (bogeysFound && (!m_pGuardZoneDialog || !m_pGuardZoneDialog->IsShown()) // Don't raise bogeys as long as control dialog is shown)
 		{
 		// We have bogeys and there is no objection to showing the dialog
+        if(settings.timed_idle != 0) m_pControlDialog->SetTimedIdleIndex(0) ; //Disable Timed Idle if set
 		if (!m_pGuardZoneBogey) {
 			// If this is the first time we have a bogey create & show the dialog immediately
 			m_pGuardZoneBogey = new GuardZoneBogey;
@@ -1711,7 +1762,6 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
 	}
 
 
-
 //****************************************************************************
 
 bool br24radar_pi::LoadConfig(void)
@@ -1747,6 +1797,9 @@ bool br24radar_pi::LoadConfig(void)
             } else if (settings.max_age > MAX_AGE) {
                 settings.max_age = MAX_AGE;
             }
+            pConf->Read(wxT("TimedIdle"), &settings.timed_idle, 0); 
+            if (settings.timed_idle > 7) settings.timed_idle = 7; 
+            pConf->Read(wxT("RunTimeOnIdle"), &settings.idle_run_time, 2); 
             pConf->Read(wxT("DrawAlgorithm"), &settings.draw_algorithm, 1);
             pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
             pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
@@ -1809,6 +1862,7 @@ bool br24radar_pi::LoadConfig(void)
 
 
             pConf->Read(wxT("RadarAlertAudioFile"), &settings.alert_audio_file);
+
 
             SaveConfig();
             return true;
@@ -1879,6 +1933,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("GuardZonesThreshold"), settings.guard_zone_threshold);
         pConf->Write(wxT("GuardZonesRenderStyle"), settings.guard_zone_render_style);
         pConf->Write(wxT("ScanMaxAge"), settings.max_age);
+        pConf->Write(wxT("RunTimeOnIdle"), settings.idle_run_time); 
         pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
         pConf->Write(wxT("ScanSpeed"), settings.scan_speed);
         pConf->Write(wxT("Downsample"), settings.downsampleUser);
@@ -2085,7 +2140,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
 {
     wxString msg;
 
-    if (settings.master_mode || controlType == CT_TRANSPARENCY || controlType == CT_SCAN_AGE) {
+    if (settings.master_mode || controlType == CT_TRANSPARENCY || controlType == CT_SCAN_AGE || controlType == CT_TIMED_IDLE ) { 
         switch (controlType) {
             case CT_GAIN: {
                 settings.gain = value;
@@ -2242,6 +2297,10 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
             }
             case CT_SCAN_AGE: {
                 settings.max_age = value;
+                break;
+            }
+            case CT_TIMED_IDLE: {
+                settings.timed_idle = value; //HakanToDo use only a stable value, not changed in 5 sek
                 break;
             }
             case CT_DOWNSAMPLE: {
