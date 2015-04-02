@@ -410,7 +410,7 @@ void BR24ControlsDialog::CreateControls()
     label << _("Downsample") << wxT("\n");
     label << _("Scan speed") << wxT("\n");
     label << _("Scan age") << wxT("\n");
-    label << _("Timed Idle") << wxT("\n");
+    label << _("Timed Transmit") << wxT("\n");
     label << _("Gain") << wxT("\n"); 
     label << _("Sea clutter") << wxT("\n");
     label << _("Rain clutter") << wxT("\n");
@@ -634,7 +634,7 @@ void BR24ControlsDialog::CreateControls()
     bScanAge->minValue = MIN_AGE;
     bScanAge->maxValue = MAX_AGE;
 
-    // The TIMED IDLE button
+    // The TIMED TRANSMIT button
     timed_idle_times[0] = _("Off");
     timed_idle_times[1] = _("5 min");
     timed_idle_times[2] = _("10 min");
@@ -644,7 +644,7 @@ void BR24ControlsDialog::CreateControls()
     timed_idle_times[6] = _("30 min");
     timed_idle_times[7] = _("35 min");
 
-    bTimedIdle = new RadarControlButton(this, ID_TIMED_IDLE, _("Timed Idle"), pPlugIn, CT_TIMED_IDLE, false, pPlugIn->settings.timed_idle); //HakanToDo new setting
+    bTimedIdle = new RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), pPlugIn, CT_TIMED_IDLE, false, pPlugIn->settings.timed_idle); //HakanToDo new setting
     advancedBox->Add(bTimedIdle, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bTimedIdle->minValue = 0;
     bTimedIdle->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
