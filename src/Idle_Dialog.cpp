@@ -130,8 +130,8 @@ void Idle_Dialog::SetIdleTimes(int IdleTime, int IdleTimeLeft)
     wxString Timelabel, t, Timeleftlabel, t2;
     t.Printf(_T("%d"), IdleTime);
     t2.Printf(_T("%d"), IdleTimeLeft + 1);
-    Timelabel << _("Idle time is set to ") << t <<_(" minutes");
-    Timeleftlabel << _("ca.") << t2 << _(" minutes until next run");
+    Timelabel << _("Idle time is set to") << _T(" ") << t << _T(" ") <<_("minutes");
+    Timeleftlabel << _("ca.") << _T(" ") << t2 << _T(" ") << _("minutes until next run");
 
     p_Idle_Mode->SetLabel(Timelabel);
     p_IdleTimeLeft->SetLabel(Timeleftlabel);

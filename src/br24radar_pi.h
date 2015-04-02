@@ -894,7 +894,7 @@ public:
                 wxWindow        *parent,
                 br24radar_pi    *ppi,
                 wxWindowID      id = wxID_ANY,
-                const wxString  &m_caption = _("Radar Idle"),
+                const wxString  &m_caption = _("Timed Transmit"),
                 const wxPoint   &pos = wxPoint(0 ,0),
                 const wxSize    &size = wxDefaultSize,
                 long            style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU
