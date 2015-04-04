@@ -133,15 +133,19 @@ END_EVENT_TABLE()
 
 //Ranges are metric for BR24 - the hex codes are little endian = 10 X range value
 
-static const wxString g_range_names[2][18] = {
+static const wxString g_range_names[2][20] = {
     {
-        wxT("1/20 NM"),
-        wxT("1/10 NM"),
-        wxT("1/8 NM"),
+        wxT("50 m"),
+        wxT("75 m"),
+        wxT("100 m"),
+		wxT("150 m"),
+		wxT("1/10 NM"),
+		wxT("1/8 NM"),
         wxT("1/4 NM"),
         wxT("1/2 NM"),
         wxT("3/4 NM"),
         wxT("1 NM"),
+		wxT("1.5 NM"),
         wxT("2 NM"),
         wxT("3 NM"),
         wxT("4 NM"),
@@ -150,14 +154,15 @@ static const wxString g_range_names[2][18] = {
         wxT("12 NM"),
         wxT("16 NM"),
         wxT("24 NM"),
-        wxT("36 NM"),
-        wxT("36 NM")  // pad to same length as metric
+        wxT("36 NM")
     },
     {
         wxT("50 m"),
         wxT("75 m"),
         wxT("100 m"),
-        wxT("250 m"),
+		wxT("150 m"),
+        wxT("200 m"),
+		wxT("300 m"),
         wxT("500 m"),
         wxT("750 m"),
         wxT("1 km"),
@@ -175,15 +180,19 @@ static const wxString g_range_names[2][18] = {
     }
 };
 
-static const int g_range_distances[2][18] = {
+static const int g_range_distances[2][20] = {
     {
-        1852/20,
-        1852/10,
-        1852/8,
-        1852/4,
-        1852/2,
-        1852*3/4,
+        50,
+        75,
+		110,
+        160,
+        220,
+        330,
+        500,
+		800,
+		1389,
         1852*1,
+		2778,
         1852*2,
         1852*3,
         1852*4,
@@ -192,15 +201,15 @@ static const int g_range_distances[2][18] = {
         1852*12,
         1852*16,
         1852*24,
-        1852*36,
-        1852*36,
         1852*36
     },
     {
         50,
         75,
         100,
-        250,
+		150,
+        200,
+		300,
         500,
         750,
         1000,
@@ -218,8 +227,8 @@ static const int g_range_distances[2][18] = {
     }
 };
 
-static const int MILE_RANGE_COUNT = 16;
-static const int METRIC_RANGE_COUNT = 18;
+static const int MILE_RANGE_COUNT = 20;
+static const int METRIC_RANGE_COUNT = 20;
 
 static const int g_range_maxValue[2] = { MILE_RANGE_COUNT, METRIC_RANGE_COUNT };
 
@@ -232,6 +241,8 @@ wxString scan_speed_names[2];
 extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
 {
     const int * ranges;
+	int myrange = int (*range_meters * 0.9);   // be shure to be inside the right interval
+											// to prevent you get 1.5 mile with a value of 1855 meters
     size_t      n;
 
     if (units < 1) {                    /* NMi or Mi */
@@ -245,12 +256,14 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
     if (radarType != RT_4G) {
         n--;
     }
-
+	unsigned int max = n;
     for (; n > 0; n--) {
-        if (ranges[n] > 0 && ranges[n] < *range_meters) {
+        if (ranges[n] > 0 && ranges[n] < myrange) {  // step down until past the right range value
             break;
         }
     }
+	if (n < max) n++;    //   and increase with 1 to get the correct index
+					// n now points at the smallest value that is larger then *range_meters
     *range_meters = ranges[n];
 
     return n;
@@ -293,7 +306,9 @@ void RadarControlButton::SetAuto()
 }
 
 int RadarRangeControlButton::SetValueInt(int newValue)
-{									// only called from the receive thread, display value from the radar
+{					// only called from the receive thread
+					// newValue is the new range index number
+					// sets the new range label in the button and returns the new range in meters
     int units = pPlugIn->settings.range_units;
 
     maxValue = g_range_maxValue[units] - 1;
@@ -324,7 +339,7 @@ int RadarRangeControlButton::SetValueInt(int newValue)
 }
 
 int RadarRangeControlButton::CalcValueInt(int newValue)
-{										//	same as SetValueInt but does not modify the value on the button
+{									//	same as SetValueInt but does not modify the value on the button, only calculate
     int units = pPlugIn->settings.range_units;
 
     maxValue = g_range_maxValue[units] - 1;
@@ -341,11 +356,12 @@ int RadarRangeControlButton::CalcValueInt(int newValue)
 }
 
 void RadarRangeControlButton::SetValue(int newValue)
-{
+{										// newValue is the index of the new range
+										// sends the command for the new range to the radar
     isAuto = false;
     pPlugIn->settings.auto_range_mode = false;
 
-    int meters = CalcValueInt(newValue);   // do not display the new value now, will be done by receive thread
+    int meters = CalcValueInt(newValue);   // do not display the new value now, will be done by receive thread when frame with new range is received 
     pPlugIn->SetRangeMeters(meters);		// send new value to the radar
 }
 
@@ -646,8 +662,8 @@ void BR24ControlsDialog::CreateControls()
 	// The REFRESHRATE button
     bRefreshrate = new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), pPlugIn, CT_REFRESHRATE, false, pPlugIn->settings.refreshrate);
     advancedBox->Add(bRefreshrate, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bRefreshrate->minValue = 1;
-    bRefreshrate->maxValue = 10;
+    bRefreshrate->minValue = 1;  
+    bRefreshrate->maxValue = 5;
 
     // The SCAN AGE button
     bScanAge = new RadarControlButton(this, ID_SCAN_AGE, _("Scan age"), pPlugIn, CT_SCAN_AGE, false, pPlugIn->settings.max_age);

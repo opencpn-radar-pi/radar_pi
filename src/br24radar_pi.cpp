@@ -114,6 +114,9 @@ int display_heading_on_radar = 0;
 double var = 0;
 unsigned int downsample;  // moved from display radar to here; also used in radar receive thread
 unsigned int refreshrate;  // refreshrate for radar used in process buffer
+unsigned int refreshmapping[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
+// user values 1 to 5 mapped to these values for refrehs interval
+// user 1 - no additional refresh, 2 - interval between frames 9, so on.
 unsigned int PassHeadingToOCPN = 0;  // From ini file, if 0, do not pass the heading_on_radar to OCPN
 bool RenderOverlay_busy = false;
 
@@ -887,6 +890,7 @@ void br24radar_pi::ShowRadarControl()
 			int range = (int) br_range_meters;    //  always use br_range_meters   this is the current value used in the pi
 												//  will be updated in the receive thread if not correct
             m_pControlDialog->SetAutoRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
+			// first time we display range from outside receive thread 
     }
     m_pControlDialog->Show();
     m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
@@ -1158,7 +1162,7 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 {
-	RenderOverlay_busy = true;   //  the receive thread should not call (throug refresh canvas) this when it is busy
+	RenderOverlay_busy = true;   //  the receive thread should not call (through refresh canvas) this when it is busy
     br_opengl_mode = true;
     // this is expected to be called at least once per second
     // but if we are scrolling or otherwise it can be MUCH more often!
@@ -1193,7 +1197,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 		auto_range_meters =  max_distance / 2.0 * 1.5;
 		// call convertMetersToRadarAllowedValue now to compute fitting allowed range
 		size_t idx = convertMetersToRadarAllowedValue(&auto_range_meters, settings.range_units, br_radar_type);
-		//wxLogMessage(wxT("BR24radar_pi: screensize=%f autorange_meters=%d"), max_distance, auto_range_meters);
+	//	wxLogMessage(wxT("BR24radar_pi: screensize=%f autorange_meters=%d"), max_distance, auto_range_meters);
 		if (auto_range_meters != previous_auto_range_meters) 
 			{						//   range change required
 			if (settings.verbose) {
@@ -1201,11 +1205,12 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 					, previous_auto_range_meters, auto_range_meters);
 				}
 			previous_auto_range_meters = auto_range_meters;
-			//      if (m_pControlDialog) {
-			//          m_pControlDialog->SetAutoRangeIndex(idx);
+			//      if (m_pControlDialog) {    
+		    //      m_pControlDialog->SetAutoRangeIndex(idx);
 			//		br_range_meters = (long) auto_range_meters;
 			// no update of control value, this is done when new range received from radar in receive thread
 			// Send command directly to radar
+			//}
 			SetRangeMeters(auto_range_meters);
 			}
 		}
@@ -1271,8 +1276,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     if ((br_bpos_set && m_hdt_source > 0) || settings.display_mode == DM_EMULATOR) {
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
-        if ((int) br_range_meters && br_radar_state == RADAR_ON) { //   br_scanner_state changed into br_radar_state by Douwe Fokkema, 
-			//no image unless radar is on, only draw radar if something received
+        if ((int) br_range_meters && br_scanner_state == RADAR_ON) {
             DrawRadarImage(meters, radar_center);
         }
         glPopMatrix();
@@ -1376,8 +1380,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 			}
 
     downsample = (unsigned int) settings.downsample;
-
-	refreshrate = (unsigned int) settings.refreshrate;
+	refreshrate = refreshmapping [settings.refreshrate - 1];
     memset(&bogey_count, 0, sizeof(bogey_count));
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
     if (settings.verbose >= 4) {
@@ -1756,8 +1759,8 @@ bool br24radar_pi::LoadConfig(void)
                 settings.downsampleUser = 1; // otherwise we get infinite loop
             }
             settings.downsample = 2 << (settings.downsampleUser - 1);
-			pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 10);
-			refreshrate = settings.refreshrate;  
+			pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 0);
+			refreshrate = refreshmapping [settings.refreshrate - 1];
 
 			pConf->Read(wxT("PassHeadingToOCPN"), &settings.PassHeadingToOCPN, 0);    // PassHeadingToOCPN == 0 : do not pass heading_from_radar to OCPN
 			PassHeadingToOCPN = settings.PassHeadingToOCPN;
@@ -2047,9 +2050,9 @@ void br24radar_pi::RadarStayAlive(void)
 
 void br24radar_pi::RadarSendState(void)
 {
-    if (settings.auto_range_mode) {
-        SetRangeMeters(auto_range_meters);
-    }
+//    if (settings.auto_range_mode) {   // don't SetRangeMeters from here. RenderGLOverlay might not yet have set auto_range_meters
+//        SetRangeMeters(auto_range_meters);  // RenderGLOverlay will call SetRangeMeters for autorange
+//    }
     SetControlValue(CT_GAIN, settings.gain);
     SetControlValue(CT_RAIN, settings.rain_clutter_gain);
     SetControlValue(CT_SEA, settings.sea_clutter_gain);
@@ -2076,7 +2079,7 @@ void br24radar_pi::SetRangeMeters(long meters)
                 wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: %ld meters\n"), meters);
             }
             TransmitCmd(pck, sizeof(pck));
-			//  do not update control value here, is only done from receive thread
+			//  do not update radar control value here, is only done from receive thread
         }
     }
 }
