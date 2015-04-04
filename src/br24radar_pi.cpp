@@ -555,7 +555,7 @@ int br24radar_pi::Init(void)
 
 bool br24radar_pi::DeInit(void)
 {
-    
+    SaveConfig();
     m_quit = true; // Signal quit to any of the threads. Takes up to 1s.
 
     if (m_dataReceiveThread) {
