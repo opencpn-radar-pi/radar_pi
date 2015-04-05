@@ -114,6 +114,9 @@ int display_heading_on_radar = 0;
 double var = 0;
 unsigned int downsample;  // moved from display radar to here; also used in radar receive thread
 unsigned int refreshrate;  // refreshrate for radar used in process buffer
+unsigned int refreshmapping[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
+// user values 1 to 5 mapped to these values for refrehs interval
+// user 1 - no additional refresh, 2 - interval between frames 9, so on.
 unsigned int PassHeadingToOCPN = 0;  // From ini file, if 0, do not pass the heading_on_radar to OCPN
 bool RenderOverlay_busy = false;
 
@@ -121,11 +124,6 @@ double mark_rng, mark_brg;      // This is needed for context operation
 long  br_range_meters = 0;      // current range for radar
 int auto_range_meters = 0;      // What the range should be, at least, when AUTO mode is selected
 int previous_auto_range_meters = 0;
-
-int   br_last_idle_set = 0;     //Timed Idle
-int   br_idle_set_count = 0;
-bool  onInit_Timed_Idle;
-static time_t br_idle_watchdog;
 
 int   br_radar_state;
 int   br_scanner_state;
@@ -411,7 +409,6 @@ int br24radar_pi::Init(void)
     br_hdt_watchdog  = 0;
     br_radar_watchdog = 0;
     br_data_watchdog = 0;
-    br_idle_watchdog = 0;
 
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
@@ -430,7 +427,6 @@ int br24radar_pi::Init(void)
     m_pControlDialog = 0;
     m_pGuardZoneDialog = 0;
     m_pGuardZoneBogey = 0;
-    m_pIdleDialog = 0;
 
     memset(&guardZones, 0, sizeof(guardZones));
 
@@ -559,7 +555,7 @@ int br24radar_pi::Init(void)
 
 bool br24radar_pi::DeInit(void)
 {
-    
+    SaveConfig();
     m_quit = true; // Signal quit to any of the threads. Takes up to 1s.
 
     if (m_dataReceiveThread) {
@@ -894,6 +890,7 @@ void br24radar_pi::ShowRadarControl()
 			int range = (int) br_range_meters;    //  always use br_range_meters   this is the current value used in the pi
 												//  will be updated in the receive thread if not correct
             m_pControlDialog->SetAutoRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
+			// first time we display range from outside receive thread 
     }
     m_pControlDialog->Show();
     m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
@@ -1021,7 +1018,6 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         RadarTxOn();
         RadarSendState();
         br_send_state = true; // Send state again as soon as we get any data
-        if( id != 999999  && settings.timed_idle != 0) m_pControlDialog->SetTimedIdleIndex(0) ; //Disable Timed Idle if user click the icon while idle
         ShowRadarControl();
     } else {
         br_radar_state = RADAR_OFF;
@@ -1128,48 +1124,6 @@ void br24radar_pi::DoTick(void)
     m_statistics.missing_spokes = 0;
     m_statistics.packets        = 0;
     m_statistics.spokes         = 0;
-
-    /*******************************************
-    Function Timed Idle. Check if active 
-    ********************************************/
-    if(settings.timed_idle != 0) {
-        int factor = 5 * 60; 
-        if( br_last_idle_set == settings.timed_idle) {
-            if(br_idle_watchdog > 0) {
-                if( br_radar_state == RADAR_ON && (now > (br_idle_watchdog + (settings.idle_run_time * 60)) || onInit_Timed_Idle) ) {  
-                    onInit_Timed_Idle = false;   
-                    br_idle_watchdog = 0; 
-                    br24radar_pi::OnToolbarToolCallback(999999);    //Stop radar scanning
-                 }
-                 else if( br_radar_state == RADAR_OFF ) { 
-                    if( now > (br_idle_watchdog + (settings.timed_idle * factor))) {                    
-                    br_idle_watchdog = 0;
-                    if (m_pIdleDialog) m_pIdleDialog->Close();
-                        br24radar_pi::OnToolbarToolCallback(999999);    //Start radar scanning
-                    } else {
-                        // Send minutes left to radar control                        
-                        int time_left = ((br_idle_watchdog + (settings.timed_idle * factor)) - now)/60;
-                        if (!m_pIdleDialog) {
-                            m_pIdleDialog = new Idle_Dialog;
-                            m_pIdleDialog->Create(m_parent_window, this);
-                        } else br24radar_pi::m_pIdleDialog->SetIdleTimes(settings.timed_idle * factor/60, time_left);     //m_pIdleDialog->                                           
-                        m_pIdleDialog->Show();
-                    }
-                }                
-            } else (br_idle_watchdog = now);
-            return;
-        }
-        if(br_idle_set_count < 4) {    //Wait five turns, =5 sec, before action when the user is about to change it.
-            br_idle_set_count ++;
-            return;
-        }
-        br_idle_set_count = 0;        
-        if( br_last_idle_set == 0) onInit_Timed_Idle = true;    //Timed_Idle function init 
-        br_last_idle_set = settings.timed_idle;
-    } else {
-          br_idle_watchdog = 0;
-          br_last_idle_set = 0; 
-    }
 }
 
 void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay
@@ -1208,7 +1162,7 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 {
-	RenderOverlay_busy = true;   //  the receive thread should not call (throug refresh canvas) this when it is busy
+	RenderOverlay_busy = true;   //  the receive thread should not call (through refresh canvas) this when it is busy
     br_opengl_mode = true;
     // this is expected to be called at least once per second
     // but if we are scrolling or otherwise it can be MUCH more often!
@@ -1243,7 +1197,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 		auto_range_meters =  max_distance / 2.0 * 1.5;
 		// call convertMetersToRadarAllowedValue now to compute fitting allowed range
 		size_t idx = convertMetersToRadarAllowedValue(&auto_range_meters, settings.range_units, br_radar_type);
-		//wxLogMessage(wxT("BR24radar_pi: screensize=%f autorange_meters=%d"), max_distance, auto_range_meters);
+	//	wxLogMessage(wxT("BR24radar_pi: screensize=%f autorange_meters=%d"), max_distance, auto_range_meters);
 		if (auto_range_meters != previous_auto_range_meters) 
 			{						//   range change required
 			if (settings.verbose) {
@@ -1251,11 +1205,12 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 					, previous_auto_range_meters, auto_range_meters);
 				}
 			previous_auto_range_meters = auto_range_meters;
-			//      if (m_pControlDialog) {
-			//          m_pControlDialog->SetAutoRangeIndex(idx);
+			//      if (m_pControlDialog) {    
+		    //      m_pControlDialog->SetAutoRangeIndex(idx);
 			//		br_range_meters = (long) auto_range_meters;
 			// no update of control value, this is done when new range received from radar in receive thread
 			// Send command directly to radar
+			//}
 			SetRangeMeters(auto_range_meters);
 			}
 		}
@@ -1321,8 +1276,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     if ((br_bpos_set && m_hdt_source > 0) || settings.display_mode == DM_EMULATOR) {
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
-        if ((int) br_range_meters && br_radar_state == RADAR_ON) { //   br_scanner_state changed into br_radar_state by Douwe Fokkema, 
-			//no image unless radar is on, only draw radar if something received
+        if ((int) br_range_meters && br_scanner_state == RADAR_ON) {
             DrawRadarImage(meters, radar_center);
         }
         glPopMatrix();
@@ -1426,8 +1380,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 			}
 
     downsample = (unsigned int) settings.downsample;
-
-	refreshrate = (unsigned int) settings.refreshrate;
+	refreshrate = refreshmapping [settings.refreshrate - 1];
     memset(&bogey_count, 0, sizeof(bogey_count));
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
     if (settings.verbose >= 4) {
@@ -1715,10 +1668,9 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
 			}
 		}
 
-	if (bogeysFound && (!m_pGuardZoneDialog || !m_pGuardZoneDialog->IsShown()) ) // Don't raise bogeys as long as control dialog is shown)
+	if (bogeysFound)
 		{
 		// We have bogeys and there is no objection to showing the dialog
-        if(settings.timed_idle != 0) m_pControlDialog->SetTimedIdleIndex(0) ; //Disable Timed Idle if set
 		if (!m_pGuardZoneBogey) {
 			// If this is the first time we have a bogey create & show the dialog immediately
 			m_pGuardZoneBogey = new GuardZoneBogey;
@@ -1762,6 +1714,7 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
 	}
 
 
+
 //****************************************************************************
 
 bool br24radar_pi::LoadConfig(void)
@@ -1797,9 +1750,6 @@ bool br24radar_pi::LoadConfig(void)
             } else if (settings.max_age > MAX_AGE) {
                 settings.max_age = MAX_AGE;
             }
-            pConf->Read(wxT("TimedIdle"), &settings.timed_idle, 0); 
-            if (settings.timed_idle > 7) settings.timed_idle = 7; 
-            pConf->Read(wxT("RunTimeOnIdle"), &settings.idle_run_time, 2); 
             pConf->Read(wxT("DrawAlgorithm"), &settings.draw_algorithm, 1);
             pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
             pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
@@ -1809,8 +1759,8 @@ bool br24radar_pi::LoadConfig(void)
                 settings.downsampleUser = 1; // otherwise we get infinite loop
             }
             settings.downsample = 2 << (settings.downsampleUser - 1);
-			pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 10);
-			refreshrate = settings.refreshrate;  
+			pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 0);
+			refreshrate = refreshmapping [settings.refreshrate - 1];
 
 			pConf->Read(wxT("PassHeadingToOCPN"), &settings.PassHeadingToOCPN, 0);    // PassHeadingToOCPN == 0 : do not pass heading_from_radar to OCPN
 			PassHeadingToOCPN = settings.PassHeadingToOCPN;
@@ -1862,7 +1812,6 @@ bool br24radar_pi::LoadConfig(void)
 
 
             pConf->Read(wxT("RadarAlertAudioFile"), &settings.alert_audio_file);
-
 
             SaveConfig();
             return true;
@@ -1933,7 +1882,6 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("GuardZonesThreshold"), settings.guard_zone_threshold);
         pConf->Write(wxT("GuardZonesRenderStyle"), settings.guard_zone_render_style);
         pConf->Write(wxT("ScanMaxAge"), settings.max_age);
-        pConf->Write(wxT("RunTimeOnIdle"), settings.idle_run_time); 
         pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
         pConf->Write(wxT("ScanSpeed"), settings.scan_speed);
         pConf->Write(wxT("Downsample"), settings.downsampleUser);
@@ -2102,9 +2050,9 @@ void br24radar_pi::RadarStayAlive(void)
 
 void br24radar_pi::RadarSendState(void)
 {
-    if (settings.auto_range_mode) {
-        SetRangeMeters(auto_range_meters);
-    }
+//    if (settings.auto_range_mode) {   // don't SetRangeMeters from here. RenderGLOverlay might not yet have set auto_range_meters
+//        SetRangeMeters(auto_range_meters);  // RenderGLOverlay will call SetRangeMeters for autorange
+//    }
     SetControlValue(CT_GAIN, settings.gain);
     SetControlValue(CT_RAIN, settings.rain_clutter_gain);
     SetControlValue(CT_SEA, settings.sea_clutter_gain);
@@ -2131,7 +2079,7 @@ void br24radar_pi::SetRangeMeters(long meters)
                 wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: %ld meters\n"), meters);
             }
             TransmitCmd(pck, sizeof(pck));
-			//  do not update control value here, is only done from receive thread
+			//  do not update radar control value here, is only done from receive thread
         }
     }
 }
@@ -2140,7 +2088,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
 {
     wxString msg;
 
-    if (settings.master_mode || controlType == CT_TRANSPARENCY || controlType == CT_SCAN_AGE || controlType == CT_TIMED_IDLE ) { 
+    if (settings.master_mode || controlType == CT_TRANSPARENCY || controlType == CT_SCAN_AGE) {
         switch (controlType) {
             case CT_GAIN: {
                 settings.gain = value;
@@ -2297,10 +2245,6 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
             }
             case CT_SCAN_AGE: {
                 settings.max_age = value;
-                break;
-            }
-            case CT_TIMED_IDLE: {
-                settings.timed_idle = value; //HakanToDo use only a stable value, not changed in 5 sek
                 break;
             }
             case CT_DOWNSAMPLE: {

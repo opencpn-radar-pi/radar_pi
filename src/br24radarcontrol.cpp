@@ -75,7 +75,6 @@ enum {                                      // process ID's
 	ID_REFRESHRATE, 
     ID_SCAN_SPEED,
     ID_SCAN_AGE,
-    ID_TIMED_IDLE,
 
     ID_RANGE,
     ID_GAIN,
@@ -118,7 +117,6 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
 	EVT_BUTTON(ID_REFRESHRATE, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_TIMED_IDLE, BR24ControlsDialog::OnRadarControlButtonClick)
 
     EVT_BUTTON(ID_RANGE, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_GAIN, BR24ControlsDialog::OnRadarControlButtonClick)
@@ -135,15 +133,19 @@ END_EVENT_TABLE()
 
 //Ranges are metric for BR24 - the hex codes are little endian = 10 X range value
 
-static const wxString g_range_names[2][18] = {
+static const wxString g_range_names[2][20] = {
     {
-        wxT("1/20 NM"),
-        wxT("1/10 NM"),
-        wxT("1/8 NM"),
+        wxT("50 m"),
+        wxT("75 m"),
+        wxT("100 m"),
+		wxT("150 m"),
+		wxT("1/10 NM"),
+		wxT("1/8 NM"),
         wxT("1/4 NM"),
         wxT("1/2 NM"),
         wxT("3/4 NM"),
         wxT("1 NM"),
+		wxT("1.5 NM"),
         wxT("2 NM"),
         wxT("3 NM"),
         wxT("4 NM"),
@@ -152,14 +154,15 @@ static const wxString g_range_names[2][18] = {
         wxT("12 NM"),
         wxT("16 NM"),
         wxT("24 NM"),
-        wxT("36 NM"),
-        wxT("36 NM")  // pad to same length as metric
+        wxT("36 NM")
     },
     {
         wxT("50 m"),
         wxT("75 m"),
         wxT("100 m"),
-        wxT("250 m"),
+		wxT("150 m"),
+        wxT("200 m"),
+		wxT("300 m"),
         wxT("500 m"),
         wxT("750 m"),
         wxT("1 km"),
@@ -177,15 +180,19 @@ static const wxString g_range_names[2][18] = {
     }
 };
 
-static const int g_range_distances[2][18] = {
+static const int g_range_distances[2][20] = {
     {
-        1852/20,
-        1852/10,
-        1852/8,
-        1852/4,
-        1852/2,
-        1852*3/4,
+        50,
+        75,
+		110,
+        160,
+        220,
+        330,
+        500,
+		800,
+		1389,
         1852*1,
+		2778,
         1852*2,
         1852*3,
         1852*4,
@@ -194,15 +201,15 @@ static const int g_range_distances[2][18] = {
         1852*12,
         1852*16,
         1852*24,
-        1852*36,
-        1852*36,
         1852*36
     },
     {
         50,
         75,
         100,
-        250,
+		150,
+        200,
+		300,
         500,
         750,
         1000,
@@ -220,8 +227,8 @@ static const int g_range_distances[2][18] = {
     }
 };
 
-static const int MILE_RANGE_COUNT = 16;
-static const int METRIC_RANGE_COUNT = 18;
+static const int MILE_RANGE_COUNT = 20;
+static const int METRIC_RANGE_COUNT = 20;
 
 static const int g_range_maxValue[2] = { MILE_RANGE_COUNT, METRIC_RANGE_COUNT };
 
@@ -230,11 +237,12 @@ wxString target_separation_names[4];
 wxString noise_rejection_names[3];
 wxString target_boost_names[3];
 wxString scan_speed_names[2];
-wxString timed_idle_times[8];
 
 extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
 {
     const int * ranges;
+	int myrange = int (*range_meters * 0.9);   // be shure to be inside the right interval
+											// to prevent you get 1.5 mile with a value of 1855 meters
     size_t      n;
 
     if (units < 1) {                    /* NMi or Mi */
@@ -248,12 +256,14 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
     if (radarType != RT_4G) {
         n--;
     }
-
+	unsigned int max = n;
     for (; n > 0; n--) {
-        if (ranges[n] > 0 && ranges[n] < *range_meters) {
+        if (ranges[n] > 0 && ranges[n] < myrange) {  // step down until past the right range value
             break;
         }
     }
+	if (n < max) n++;    //   and increase with 1 to get the correct index
+					// n now points at the smallest value that is larger then *range_meters
     *range_meters = ranges[n];
 
     return n;
@@ -296,7 +306,9 @@ void RadarControlButton::SetAuto()
 }
 
 int RadarRangeControlButton::SetValueInt(int newValue)
-{									// only called from the receive thread, display value from the radar
+{					// only called from the receive thread
+					// newValue is the new range index number
+					// sets the new range label in the button and returns the new range in meters
     int units = pPlugIn->settings.range_units;
 
     maxValue = g_range_maxValue[units] - 1;
@@ -327,7 +339,7 @@ int RadarRangeControlButton::SetValueInt(int newValue)
 }
 
 int RadarRangeControlButton::CalcValueInt(int newValue)
-{										//	same as SetValueInt but does not modify the value on the button
+{									//	same as SetValueInt but does not modify the value on the button, only calculate
     int units = pPlugIn->settings.range_units;
 
     maxValue = g_range_maxValue[units] - 1;
@@ -344,11 +356,12 @@ int RadarRangeControlButton::CalcValueInt(int newValue)
 }
 
 void RadarRangeControlButton::SetValue(int newValue)
-{
+{										// newValue is the index of the new range
+										// sends the command for the new range to the radar
     isAuto = false;
     pPlugIn->settings.auto_range_mode = false;
 
-    int meters = CalcValueInt(newValue);   // do not display the new value now, will be done by receive thread
+    int meters = CalcValueInt(newValue);   // do not display the new value now, will be done by receive thread when frame with new range is received 
     pPlugIn->SetRangeMeters(meters);		// send new value to the radar
 }
 
@@ -429,8 +442,7 @@ void BR24ControlsDialog::CreateControls()
     label << _("Downsample") << wxT("\n");
     label << _("Scan speed") << wxT("\n");
     label << _("Scan age") << wxT("\n");
-    label << _("Timed Transmit") << wxT("\n");
-    label << _("Gain") << wxT("\n"); 
+    label << _("Gain") << wxT("\n");
     label << _("Sea clutter") << wxT("\n");
     label << _("Rain clutter") << wxT("\n");
     label << _("Auto") << wxT(" (1/20 Nm)\n");
@@ -650,31 +662,14 @@ void BR24ControlsDialog::CreateControls()
 	// The REFRESHRATE button
     bRefreshrate = new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), pPlugIn, CT_REFRESHRATE, false, pPlugIn->settings.refreshrate);
     advancedBox->Add(bRefreshrate, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bRefreshrate->minValue = 1;
-    bRefreshrate->maxValue = 10;
+    bRefreshrate->minValue = 1;  
+    bRefreshrate->maxValue = 5;
 
     // The SCAN AGE button
     bScanAge = new RadarControlButton(this, ID_SCAN_AGE, _("Scan age"), pPlugIn, CT_SCAN_AGE, false, pPlugIn->settings.max_age);
     advancedBox->Add(bScanAge, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bScanAge->minValue = MIN_AGE;
     bScanAge->maxValue = MAX_AGE;
-
-    // The TIMED TRANSMIT button
-    timed_idle_times[0] = _("Off");
-    timed_idle_times[1] = _("5 min");
-    timed_idle_times[2] = _("10 min");
-    timed_idle_times[3] = _("15 min");
-    timed_idle_times[4] = _("20 min");
-    timed_idle_times[5] = _("25 min");
-    timed_idle_times[6] = _("30 min");
-    timed_idle_times[7] = _("35 min");
-
-    bTimedIdle = new RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), pPlugIn, CT_TIMED_IDLE, false, pPlugIn->settings.timed_idle); //HakanToDo new setting
-    advancedBox->Add(bTimedIdle, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bTimedIdle->minValue = 0;
-    bTimedIdle->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
-    bTimedIdle->names = timed_idle_times;
-    bTimedIdle->SetValue(pPlugIn->settings.timed_idle); // redraw after adding names
 
     if (pPlugIn->settings.verbose) {
         // The Statistics button
@@ -766,12 +761,6 @@ void BR24ControlsDialog::SetAutoRangeIndex(size_t index)
 {
     bRange->auto_range_index = index;
     bRange->SetValueInt(-1); // recompute the range label
-}
-
-void BR24ControlsDialog::SetTimedIdleIndex(int index)
-{
-    bTimedIdle->SetValue(index) ; // set and recompute the Timed Idle label
-    if (pPlugIn->m_pIdleDialog && index == 0) pPlugIn->m_pIdleDialog->Close();
 }
 
 void BR24ControlsDialog::OnZone1ButtonClick(wxCommandEvent &event)
