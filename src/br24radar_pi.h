@@ -612,7 +612,7 @@ public:
     int        minValue;
     int        maxValue;
     bool       hasAuto;
-    ControlType controlType;
+	ControlType controlType;
 
 };
 

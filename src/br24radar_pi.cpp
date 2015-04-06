@@ -2067,7 +2067,8 @@ void br24radar_pi::SetRangeMeters(long meters)
 {
     if (settings.master_mode) {
         if (meters >= 50 && meters <= 64000) {
-            long decimeters = meters * 10L/1.762;
+   //         long decimeters = meters * 10L/1.762;   //  why divide by 1.762? HDS display sends range*10
+			long decimeters = meters * 10L;			// modification by Douwe Fokkema
             UINT8 pck[] = { 0x03
                           , 0xc1
                           , (UINT8) ((decimeters >>  0) & 0XFFL)

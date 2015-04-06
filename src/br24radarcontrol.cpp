@@ -278,7 +278,7 @@ void RadarControlButton::SetValue(int newValue)
     } else {
         value = newValue;
     }
-
+	if (controlType == CT_GAIN && isAuto) value = 40;  // start with gain = 40 when coming from auto
     wxString label;
 
     if (names) {
@@ -795,6 +795,8 @@ void BR24ControlsDialog::OnPlusTenClick(wxCommandEvent& event)
 void BR24ControlsDialog::OnPlusClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value + 1);
+	if (fromControl->controlType == CT_RANGE) fromControl->value --;  //-1 again so that vlua stays the same
+						// range value will be modified when new range is received from radar
     wxString label = fromControl->GetLabel();
 
     tValue->SetLabel(label);
@@ -827,7 +829,8 @@ void BR24ControlsDialog::OnAutoClick(wxCommandEvent &event)
 void BR24ControlsDialog::OnMinusClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value - 1);
-
+	if (fromControl->controlType == CT_RANGE) fromControl->value ++; //-1 again so that vlua stays the same
+						// range value will be modified when new range is received from radar
     wxString label = fromControl->GetLabel();
     tValue->SetLabel(label);
 }
