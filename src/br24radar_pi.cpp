@@ -239,7 +239,9 @@ static double local_bearing (double lat1, double lon1, double lat2, double lon2)
 
     angle = rad2deg(angle) ;
     angle = 90.0 - angle;
-    if (angle < 0) angle = 360 + angle;
+    while (angle < 0) {      // while, just to be shure
+		angle = 360 + angle;
+		}
     return (angle);
 }
 
@@ -1244,7 +1246,8 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 	if (settings.auto_range_mode) 
 		{
 		max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
-		auto_range_meters =  max_distance / 2.0 * 1.5;
+		auto_range_meters =  max_distance / 2.0;		//* 1.5;  factor 1.5 removed. Covered by the radar as the actual range set is 1.41 times the ranges in the command
+		// this is what the HDS display does as well. The range figure displayed will fit on the screen, but the real range set is 1.41 larger
 		// call convertMetersToRadarAllowedValue now to compute fitting allowed range
 		size_t idx = convertMetersToRadarAllowedValue(&auto_range_meters, settings.range_units, br_radar_type);
 	//	wxLogMessage(wxT("BR24radar_pi: screensize=%f autorange_meters=%d"), max_distance, auto_range_meters);
@@ -1452,8 +1455,8 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             if (s->range && diff >= 0 && diff < bestAge) {
                 scan = s;
                 scanAngle = angle + i;
-				if (scanAngle >= LINES_PER_ROTATION) scanAngle -= LINES_PER_ROTATION;
-				if (scanAngle < 0) scanAngle += LINES_PER_ROTATION;
+				while (scanAngle >= LINES_PER_ROTATION) scanAngle -= LINES_PER_ROTATION;
+				while (scanAngle < 0) scanAngle += LINES_PER_ROTATION;
                 bestAge = diff;
             }
         }
@@ -1498,6 +1501,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 		colors actual_color = blanc, previous_color = blanc;
 
         drawn_spokes++;
+		scan->data[512] = 0;  // make shure this element is initialized (just outside the range)
         for (int radius = 0; radius <= 512; ++radius) {   // loop 1 more time as only the previous one will be displayed
 
             GLubyte red = 0, green = 0, blue = 0, strength; 
@@ -2869,6 +2873,8 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 				heading_on_radar = true;							// heading on radar
 				br_hdt_raw = br_hdm_raw + var_raw;
 				br_hdt = (double) (br_hdt_raw * 360) / LINES_PER_ROTATION;   //  is * 360  / 4096
+				while (br_hdt >= 360 ) br_hdt -= 360;
+				while (br_hdt < 0) br_hdt +=360;   // just make shure they are in range
 				angle_raw += br_hdt_raw;
 				}
 			else {								// no heading on radar

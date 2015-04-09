@@ -244,7 +244,9 @@ wxString timed_idle_times[8];
 extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
 {
     const int * ranges;
-	int myrange = int (*range_meters * 0.9);   // be shure to be inside the right interval
+	int inputRange = int (*range_meters);    /// debugging only
+	int myrange = int (*range_meters * 0.689);  // factor to convert the range from the radar into the displayed range
+	myrange = int (myrange * 0.9);   // be shure to be inside the right interval
 											// to prevent you get 1.5 mile with a value of 1855 meters
     size_t      n;
 
@@ -267,7 +269,7 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
     }
 	if (n < max) n++;    //   and increase with 1 to get the correct index
 					// n now points at the smallest value that is larger then *range_meters
-    *range_meters = ranges[n];
+    *range_meters = ranges[n];    
 
     return n;
 }
@@ -315,7 +317,7 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     int units = pPlugIn->settings.range_units;
 
     maxValue = g_range_maxValue[units] - 1;
-
+	int oldValue = value;  // for debugging only
     if (newValue >= minValue && newValue <= maxValue) {
         value = newValue;
     } else if (pPlugIn->settings.auto_range_mode) {
@@ -331,11 +333,12 @@ int RadarRangeControlButton::SetValueInt(int newValue)
         label << firstLine << wxT("\n") << _("Auto") << wxT(" (") << rangeText << wxT(")");
     }
     else {
-        label << firstLine << wxT("\n") << rangeText;
+//        label << firstLine << wxT("\n") << rangeText;
+		  label << firstLine << wxT("\n") << _("    ") << wxT(" (") << rangeText << wxT(")");   // sometimes "Auto" did not disappear, overwrite it
     }
     this->SetLabel(label);
     if (pPlugIn->settings.verbose > 0) {
-        wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d val=%d"), rangeText.c_str(), pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
+        wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d old=%d"), rangeText.c_str(), pPlugIn->settings.auto_range_mode, units, maxValue, newValue, oldValue);
     }
 
     return meters;

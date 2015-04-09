@@ -273,7 +273,7 @@ struct guard_zone_settings {
 struct scan_line {
     int range;                  // range of this scan line in decimeters
     wxLongLong age;             // how old this scan line is. We keep old scans on-screen for a while
-    UINT8 data[512];            // radar return strength
+    UINT8 data[513];            // radar return strength, data[512] is an additional element, accessed in drawing the spokes
 };
 
 //    Forward definitions
