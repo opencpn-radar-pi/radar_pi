@@ -98,10 +98,11 @@ long  br_range_meters = 0;      // current range for radar
 int auto_range_meters = 0;      // What the range should be, at least, when AUTO mode is selected
 int previous_auto_range_meters = 0;
 
-int   br_last_idle_set = 0;     //Timed Idle
+int   br_last_idle_set = 0;     //Timed Transmit
 int   br_idle_set_count = 0;
 bool  onInit_Timed_Idle;
 static time_t br_idle_watchdog;
+int   IdleDialogTimeLeft = 0;
 
 int   br_radar_state;
 int   br_scanner_state;
@@ -1102,7 +1103,7 @@ void br24radar_pi::DoTick(void)
     m_statistics.spokes         = 0;
 
     /*******************************************
-    Function Timed Idle. Check if active 
+    Function Timed Transmit. Check if active 
     ********************************************/
     if(settings.timed_idle != 0) {
         int factor = 5 * 60; 
@@ -1124,8 +1125,12 @@ void br24radar_pi::DoTick(void)
                         if (!m_pIdleDialog) {
                             m_pIdleDialog = new Idle_Dialog;
                             m_pIdleDialog->Create(m_parent_window, this);
-                        } else br24radar_pi::m_pIdleDialog->SetIdleTimes(settings.timed_idle * factor/60, time_left);     //m_pIdleDialog->                                           
-                        m_pIdleDialog->Show();
+                        } 
+                        if(IdleDialogTimeLeft != time_left) { 
+                            br24radar_pi::m_pIdleDialog->SetIdleTimes(settings.timed_idle * factor/60, time_left);
+                            m_pIdleDialog->Show();
+                            IdleDialogTimeLeft = time_left;
+                        }
                     }
                 }                
             } else (br_idle_watchdog = now);
