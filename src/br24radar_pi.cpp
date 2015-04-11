@@ -124,6 +124,8 @@ double mark_rng, mark_brg;      // This is needed for context operation
 long  br_range_meters = 0;      // current range for radar
 int auto_range_meters = 0;      // What the range should be, at least, when AUTO mode is selected
 int previous_auto_range_meters = 0;
+bool setRangeIssued = false;
+bool rangeChangeReceived = false;
 
 int   br_last_idle_set = 0;     //Timed Transmit
 int   br_idle_set_count = 0;
@@ -1236,6 +1238,39 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         boat_center = center_screen;
     }
 
+	// now set a new value in the range control if an unsollicited range change has been received.
+	// not for range change that the pi has initialized. For these the control was updated immediately
+	
+	if (rangeChangeReceived) 
+		{
+		rangeChangeReceived = false;
+		if (!setRangeIssued)     // this range change was not initiated by the pi
+			{
+            int current_range = (int) (br_range_meters * 0.65);
+	        if (m_pControlDialog) {
+                m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&current_range, settings.range_units, br_radar_type));
+				if (settings.verbose) {
+				wxLogMessage(wxT("BR24radar_pi: range label changed from RenderOverlay to %d meters *.65 = %d"), br_range_meters, current_range);
+					}
+		}			
+		}
+		else  //  set range issued, do not change the control value again
+			{
+			setRangeIssued = false;
+			if (settings.verbose) {
+				wxLogMessage(wxT("BR24radar_pi: range label change skipped "));
+					}
+			}
+		}
+
+	/*if (heading_on_radar  && m_pControlDialog) {           //   this does not work from here ????????
+					
+					wxString label;
+					label << _("Heading") << wxT(" Radar");
+					m_pControlDialog->SetTitle(label);
+					m_pControlDialog->SetLabel(label);
+					}    */
+
     // Calculate the "optimum" radar range setting in meters so Radar just fills Screen
 
     // We used to take the position of the boat into account, so that when you panned the zoom range would go up
@@ -1246,8 +1281,8 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 	if (settings.auto_range_mode) 
 		{
 		max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
-		auto_range_meters =  max_distance / 2.0;		//* 1.5;  factor 1.5 removed. Covered by the radar as the actual range set is 1.41 times the ranges in the command
-		// this is what the HDS display does as well. The range figure displayed will fit on the screen, but the real range set is 1.41 larger
+		auto_range_meters =  max_distance / 2.0 * 0.85;		//* 1.5;  factor 1.5 removed. Covered by the radar as the actual range set is 1.4 to 1.7 times the ranges in the command
+		// this is what the HDS display does as well. The range figure displayed will fit on the screen, but the real range set is larger
 		// call convertMetersToRadarAllowedValue now to compute fitting allowed range
 		size_t idx = convertMetersToRadarAllowedValue(&auto_range_meters, settings.range_units, br_radar_type);
 	//	wxLogMessage(wxT("BR24radar_pi: screensize=%f autorange_meters=%d"), max_distance, auto_range_meters);
@@ -1258,12 +1293,12 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 					, previous_auto_range_meters, auto_range_meters);
 				}
 			previous_auto_range_meters = auto_range_meters;
-			//      if (m_pControlDialog) {    
-		    //      m_pControlDialog->SetAutoRangeIndex(idx);
-			//		br_range_meters = (long) auto_range_meters;
-			// no update of control value, this is done when new range received from radar in receive thread
+			      if (m_pControlDialog) {    
+		          m_pControlDialog->SetAutoRangeIndex(idx);
+			//		br_range_meters = (long) auto_range_meters;   // not required, br_range_meters will only be changed in the receive thread
+			
 			// Send command directly to radar
-			//}
+			}
 			SetRangeMeters(auto_range_meters);
 			}
 		}
@@ -2001,7 +2036,8 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 		if (m_hdt_source != 4) {
 			wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f \n"), br_hdt);
 			m_hdt_source = 4;
-			}
+			 
+			} 
 		br_hdt_watchdog = now;
 		char buffer [18];
 		int cx;
@@ -2018,6 +2054,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         if (!heading_on_radar) br_hdt = pfix.Hdt;
         if (m_hdt_source != 1) {
            wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
+		    
         }
         m_hdt_source = 1;
         br_hdt_watchdog = now;
@@ -2028,6 +2065,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         m_var = pfix.Var;
         if (m_hdt_source != 2) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM"));
+		
         }
         m_hdt_source = 2;
         br_hdt_watchdog = now;
@@ -2037,6 +2075,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         if (!heading_on_radar) br_hdt = pfix.Cog;
         if (m_hdt_source != 3) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
+		
         }
         m_hdt_source = 3;
         br_hdt_watchdog = now;
@@ -2142,6 +2181,7 @@ void br24radar_pi::SetRangeMeters(long meters)
             }
             TransmitCmd(pck, sizeof(pck));
 			//  do not update radar control value here, is only done from receive thread
+			setRangeIssued = true;
         }
     }
 }
@@ -2802,7 +2842,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
             angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
             range_meters = (int) ((double)range_raw * 10.0 / sqrt(2.0));
-  /*          if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
+    /*        if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
                 wxString label;
                 label << _("Radar") << wxT(" BR24");
                 pPlugIn->m_pControlDialog->SetTitle(label);
@@ -2825,7 +2865,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 range_raw = large_range * 256;
             }
             range_meters = range_raw / 4;
-    /*        if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
+     /*       if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
                 wxString label;
                 label << _("Radar") << wxT(" 4G");
                 pPlugIn->m_pControlDialog->SetTitle(label);
@@ -2848,11 +2888,13 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             }
 
             br_range_meters = (long) range_meters;
+			rangeChangeReceived = true;  // to signal render overlay to change control value
 
             // Set the control's value to the real range that we received, not a table idea
-            if (pPlugIn->m_pControlDialog) {
-                pPlugIn->m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range_meters, pPlugIn->settings.range_units, br_radar_type));
-            }
+			// will be handled in RenderOverlay, not safe to to screen IO from receive thread
+      //      if (pPlugIn->m_pControlDialog) {
+      //          pPlugIn->m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range_meters, pPlugIn->settings.range_units, br_radar_type));
+       //     }
         }
 
 		//  changes for heading on radar follow   Douwe Fokkema 06-02-2015
@@ -2867,6 +2909,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 					display_heading_on_radar = 2 ;   // "Radar" has been displayed earlier
 					wxString label;
 					label << _("Heading") << wxT(" Radar");
+		//			wxLogMessage(wxT("BR24radar_pi:  No heading on radar received, spoke  %d "), pPlugIn->m_statistics.spokes);
 					pPlugIn->m_pControlDialog->SetTitle(label);
 					pPlugIn->m_pControlDialog->SetLabel(label);
 					}    
@@ -2879,12 +2922,13 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 				}
 			else {								// no heading on radar
 				if (display_heading_on_radar != 1 && pPlugIn->m_pControlDialog) {
-					display_heading_on_radar = 1 ;   // "Normal" has been displayed earlier
+					display_heading_on_radar = 1 ;   // "NMEA" has been displayed earlier
 					wxString label;
 					label << _("Heading") << wxT(" NMEA");
+					wxLogMessage(wxT("BR24radar_pi:  No heading on radar received, spoke  %d "), pPlugIn->m_statistics.spokes);
 					pPlugIn->m_pControlDialog->SetTitle(label);
 					pPlugIn->m_pControlDialog->SetLabel(label);
-					} 
+					}  
 				heading_on_radar = false;
 				br_hdt_raw = int (br_hdt * 11.37);   // otherwise use existing br_hdt    * 4096 / 360
 				angle_raw += br_hdt_raw;			 // map spoke on true direction

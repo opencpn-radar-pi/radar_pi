@@ -652,8 +652,7 @@ public:
     virtual void SetAuto();
 
     int SetValueInt(int value);
-	int CalcValueInt(int value);   // same as SetValueInt, but does not change the displayed value
-
+	
     int auto_range_index;
 };
 
