@@ -244,7 +244,9 @@ wxString timed_idle_times[8];
 extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
 {
     const int * ranges;
-	int myrange = int (*range_meters * 0.9);   // be shure to be inside the right interval
+	int inputRange = int (*range_meters);    /// debugging only
+	int myrange = int (*range_meters);
+	myrange = int (myrange * 0.9);   // be shure to be inside the right interval
 											// to prevent you get 1.5 mile with a value of 1855 meters
     size_t      n;
 
@@ -267,7 +269,7 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
     }
 	if (n < max) n++;    //   and increase with 1 to get the correct index
 					// n now points at the smallest value that is larger then *range_meters
-    *range_meters = ranges[n];
+    *range_meters = ranges[n];    
 
     return n;
 }
@@ -315,7 +317,7 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     int units = pPlugIn->settings.range_units;
 
     maxValue = g_range_maxValue[units] - 1;
-
+	int oldValue = value;  // for debugging only
     if (newValue >= minValue && newValue <= maxValue) {
         value = newValue;
     } else if (pPlugIn->settings.auto_range_mode) {
@@ -335,28 +337,13 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     }
     this->SetLabel(label);
     if (pPlugIn->settings.verbose > 0) {
-        wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d val=%d"), rangeText.c_str(), pPlugIn->settings.auto_range_mode, units, maxValue, newValue, value);
+        wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d old=%d"), rangeText.c_str(), pPlugIn->settings.auto_range_mode, units, maxValue, newValue, oldValue);
     }
 
     return meters;
 }
 
-int RadarRangeControlButton::CalcValueInt(int newValue)
-{									//	same as SetValueInt but does not modify the value on the button, only calculate
-    int units = pPlugIn->settings.range_units;
 
-    maxValue = g_range_maxValue[units] - 1;
-
-    if (newValue >= minValue && newValue <= maxValue) {
-        value = newValue;
-    } else if (pPlugIn->settings.auto_range_mode) {
-        value = auto_range_index;
-    } else if (value > maxValue) {
-        value = maxValue;
-    }
-    int meters = g_range_distances[units][value];
-    return meters;
-}
 
 void RadarRangeControlButton::SetValue(int newValue)
 {										// newValue is the index of the new range
@@ -364,7 +351,7 @@ void RadarRangeControlButton::SetValue(int newValue)
     isAuto = false;
     pPlugIn->settings.auto_range_mode = false;
 
-    int meters = CalcValueInt(newValue);   // do not display the new value now, will be done by receive thread when frame with new range is received 
+    int meters = SetValueInt(newValue);   // do not display the new value now, will be done by receive thread when frame with new range is received 
     pPlugIn->SetRangeMeters(meters);		// send new value to the radar
 }
 
@@ -821,8 +808,7 @@ void BR24ControlsDialog::OnPlusTenClick(wxCommandEvent& event)
 void BR24ControlsDialog::OnPlusClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value + 1);
-	if (fromControl->controlType == CT_RANGE) fromControl->value --;  //-1 again so that vlua stays the same
-						// range value will be modified when new range is received from radar
+	
     wxString label = fromControl->GetLabel();
 
     tValue->SetLabel(label);
@@ -855,8 +841,7 @@ void BR24ControlsDialog::OnAutoClick(wxCommandEvent &event)
 void BR24ControlsDialog::OnMinusClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value - 1);
-	if (fromControl->controlType == CT_RANGE) fromControl->value ++; //-1 again so that vlua stays the same
-						// range value will be modified when new range is received from radar
+	
     wxString label = fromControl->GetLabel();
     tValue->SetLabel(label);
 }
