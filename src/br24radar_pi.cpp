@@ -1070,8 +1070,10 @@ void br24radar_pi::DoTick(void)
     }
     previousTicks = now;
 
-    if (br_bpos_set && (now - br_bpos_watchdog >= WATCHDOG_TIMEOUT)) {
-        // If the position data is 10s old reset our heading.
+    if (br_bpos_set && (now - br_bpos_watchdog >= 4 * WATCHDOG_TIMEOUT)) {
+		// increased to 4 * WATCHDOG_TIMEOUT as SetPositionFixEx is not always called in time by OCPN
+
+        // If the position data is 4 * 10s old reset our heading.
         // Note that the watchdog is continuously reset every time we receive a heading.
         br_bpos_set = false;
         wxLogMessage(wxT("BR24radar_pi: Lost Boat Position data"));
@@ -2028,7 +2030,9 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
     time_t now = time(0);
 // 	PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,,230394,003.1,W"));  // only for test, position without heading
 //	PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A")); //with heading for test
-
+	if (settings.verbose) {
+		wxLogMessage(wxT("BR24radar_pi: SetPositionFix called  \n"));
+		}
 	//   changes for heading on radar
 	if (!wxIsNaN(pfix.Var)) {			// set variation for use in radar receive thread
 		variation = true;
@@ -2039,46 +2043,43 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 		if (m_hdt_source != 4) {
 			wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f \n"), br_hdt);
 			m_hdt_source = 4;
-			 
 			} 
 		br_hdt_watchdog = now;
 		char buffer [18];
 		int cx;
-		
 		if(PassHeadingToOCPN == 1){
 		cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
 		wxString nmeastring = wxString::FromUTF8(buffer);
 		PushNMEABuffer (nmeastring);  // issue heading from radar to OCPN
 			}
 		}
+
+	 else if (!wxIsNaN(pfix.Hdm) && !wxIsNaN(pfix.Var))
+    {
+        if (!heading_on_radar) br_hdt = pfix.Hdm + pfix.Var;
+        m_var = pfix.Var;
+        if (m_hdt_source != 2) {
+            wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM"));
+        }
+        m_hdt_source = 2;
+        br_hdt_watchdog = now;
+    }
 	
 	else if (!wxIsNaN(pfix.Hdt))    // end of changes for heading on radar
     {
         if (!heading_on_radar) br_hdt = pfix.Hdt;
         if (m_hdt_source != 1) {
            wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
-		    
         }
         m_hdt_source = 1;
         br_hdt_watchdog = now;
     }
-    else if (!wxIsNaN(pfix.Hdm) && !wxIsNaN(pfix.Var))
-    {
-        if (!heading_on_radar) br_hdt = pfix.Hdm + pfix.Var;
-        m_var = pfix.Var;
-        if (m_hdt_source != 2) {
-            wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM"));
-		
-        }
-        m_hdt_source = 2;
-        br_hdt_watchdog = now;
-    }
+   
     else if (!wxIsNaN(pfix.Cog) && (m_hdt_source == 3 || (now - br_hdt_watchdog <= WATCHDOG_TIMEOUT / 2)))
     {
         if (!heading_on_radar) br_hdt = pfix.Cog;
         if (m_hdt_source != 3) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
-		
         }
         m_hdt_source = 3;
         br_hdt_watchdog = now;
@@ -2468,7 +2469,9 @@ void br24radar_pi::CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollov
 void br24radar_pi::SetNMEASentence( wxString &sentence )
 {
     m_NMEA0183 << sentence;
-
+	if (settings.verbose) {	
+		wxLogMessage(wxT("BR24radar_pi: SetNMEASentence  called  \n"));
+		}
     if (m_NMEA0183.PreParse()) {
         if (m_hdt_source == 2 && m_NMEA0183.LastSentenceIDReceived == _T("HDG") && m_NMEA0183.Parse()) {
             if (!wxIsNaN(m_NMEA0183.Hdg.MagneticVariationDegrees)) {
@@ -2478,7 +2481,9 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
                     m_var = -m_NMEA0183.Hdg.MagneticVariationDegrees;
             }
             if (!wxIsNaN(m_NMEA0183.Hdg.MagneticSensorHeadingDegrees) ) {
-                if (!heading_on_radar) br_hdt = m_NMEA0183.Hdg.MagneticSensorHeadingDegrees + m_var;
+                if (!heading_on_radar) {
+					br_hdt = m_NMEA0183.Hdg.MagneticSensorHeadingDegrees + m_var;
+					}
                 br_hdt_watchdog = time(0);
             }
         }
@@ -2486,6 +2491,9 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
             if (!wxIsNaN(m_NMEA0183.Hdm.DegreesMagnetic)) {
                 if (!heading_on_radar) br_hdt = m_NMEA0183.Hdm.DegreesMagnetic + m_var;
                 br_hdt_watchdog = time(0);
+				if (settings.verbose) {	
+					wxLogMessage(wxT("BR24radar_pi: SetNMEASentence  HDM set  \n"));
+					}
             }
         }
         else if (m_hdt_source == 1 && m_NMEA0183.LastSentenceIDReceived == _T("HDT") && m_NMEA0183.Parse()) {
