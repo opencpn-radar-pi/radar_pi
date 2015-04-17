@@ -1270,13 +1270,6 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 			}
 		}
 
-	/*if (heading_on_radar  && m_pControlDialog) {           //   this does not work from here ????????
-					
-					wxString label;
-					label << _("Heading") << wxT(" Radar");
-					m_pControlDialog->SetTitle(label);
-					m_pControlDialog->SetLabel(label);
-					}    */
 
     // Calculate the "optimum" radar range setting in meters so Radar just fills Screen
 
@@ -1288,9 +1281,10 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 	if (settings.auto_range_mode) 
 		{
 		max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
-		auto_range_meters =  max_distance / 2.0;		//* 1.5;  factor 1.5 removed. Covered by the radar as the actual range set is 1.4 to 1.7 times the ranges in the command
+		auto_range_meters =  max_distance / 2.0 * 0.9;		//* 1.5;  factor 1.5 removed. Covered by the radar as the actual range set is 1.4 to 1.7 times the ranges in the command
 		// this is what the HDS display does as well. The range figure displayed will fit on the screen, but the real range set is larger
 		// call convertMetersToRadarAllowedValue now to compute fitting allowed range
+		// factor 0.9 added, range was too large
 
 		int displayedRange = auto_range_meters;  //  the value for use in the control
 		size_t idx = convertMetersToRadarAllowedValue(&displayedRange, settings.range_units, br_radar_type);
@@ -1305,7 +1299,6 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 							// the radar will accept any range, so we will be close to the range we want
 			      if (m_pControlDialog) {    
 		          m_pControlDialog->SetAutoRangeIndex(idx);
-			//		br_range_meters = (long) auto_range_meters;   // not required, br_range_meters will only be changed in the receive thread
 			
 			// Send command directly to radar
 			}
@@ -2971,16 +2964,21 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     }
 	//  all scanlines ready now, refresh section follows
 
-	if (RenderOverlay_busy) {
+	if (RenderOverlay_busy ) {
 		i_display = 0;			// rendering ongoing, reset the counter, don't refresh now
 								// this will also balance performance, if too busy no refresh
-		 if (pPlugIn->settings.verbose >= 2) wxLogMessage(wxT("BR24radar_pi:  busy encountered"));
+		 if (pPlugIn->settings.verbose ) wxLogMessage(wxT("BR24radar_pi:  busy encountered"));
 		}
 	else {
 	if(br_radar_state == RADAR_ON){
 	if (i_display >=  refreshrate ) {   //	display every "sample" time 
-		if (refreshrate != 10) GetOCPNCanvasWindow()->Refresh(true);
+		if (refreshrate != 10) {
+			
+			GetOCPNCanvasWindow()->Refresh(true);
+			if (pPlugIn->settings.verbose ) wxLogMessage(wxT("BR24radar_pi:  refresh issued"));	
+			}
 		i_display = 0;
+		RenderOverlay_busy = true;   // no further calls until RenderOverlay_busy has been cleared by RenderGLOverlay
 		}
 	i_display ++;
 		}
