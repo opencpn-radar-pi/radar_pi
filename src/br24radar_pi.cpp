@@ -1021,14 +1021,18 @@ int br24radar_pi::GetToolbarToolCount(void)
 
 void br24radar_pi::OnToolbarToolCallback(int id)
 {
-    if (br_radar_state == RADAR_OFF) {  // turned off
+    if (br_radar_state == RADAR_OFF) 
+        {  // turned off
         br_radar_state = RADAR_ON;
         settings.master_mode = true;
         if (settings.verbose) {
             wxLogMessage(wxT("BR24radar_pi: Master mode on"));
         }
         RadarStayAlive();
-        RadarTxOn();
+        if(br_scanner_state != RADAR_ON)
+            {               // don't switch on if radar is on already, radar does not like that
+            RadarTxOn();
+            }
         RadarSendState();
         br_send_state = true; // Send state again as soon as we get any data
         if( id != 999999  && settings.timed_idle != 0) m_pControlDialog->SetTimedIdleIndex(0) ; //Disable Timed Transmit if user click the icon while idle
@@ -1072,8 +1076,7 @@ void br24radar_pi::DoTick(void)
     }
     previousTicks = now;
 
-    if (br_bpos_set && (now - br_bpos_watchdog >= 4 * WATCHDOG_TIMEOUT)) {
-		// increased to 4 * WATCHDOG_TIMEOUT as SetPositionFixEx is not always called in time by OCPN
+    if (br_bpos_set && (now - br_bpos_watchdog >= WATCHDOG_TIMEOUT)) {
 
         // If the position data is 4 * 10s old reset our heading.
         // Note that the watchdog is continuously reset every time we receive a heading.
@@ -2852,12 +2855,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
             angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
             range_meters = (int) ((double)range_raw * 10.0 / sqrt(2.0));
-    /*        if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
-                wxString label;
-                label << _("Radar") << wxT(" BR24");
-                pPlugIn->m_pControlDialog->SetTitle(label);
-                pPlugIn->m_pControlDialog->SetLabel(label);
-            } */
+    
             br_radar_type = RT_BR24;
         } else {
             // 4G mode
@@ -2875,12 +2873,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 range_raw = large_range * 256;
             }
             range_meters = range_raw / 4;
-     /*       if (br_radar_type != RT_BR24 && pPlugIn->m_pControlDialog) {
-                wxString label;
-                label << _("Radar") << wxT(" 4G");
-                pPlugIn->m_pControlDialog->SetTitle(label);
-                pPlugIn->m_pControlDialog->SetLabel(label);
-            }   */
             br_radar_type = RT_4G;
         }
 
@@ -2964,26 +2956,37 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         pPlugIn->m_scan_line[angle_raw].age = now;
     }
 	//  all scanlines ready now, refresh section follows
-
-	if (RenderOverlay_busy ) {
-		i_display = 0;			// rendering ongoing, reset the counter, don't refresh now
-								// this will also balance performance, if too busy no refresh
-		 if (pPlugIn->settings.verbose ) wxLogMessage(wxT("BR24radar_pi:  busy encountered"));
+    int pos_age = difftime (time(0), br_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
+	if (RenderOverlay_busy || pos_age >= 2) // don't do additional refresh and reset the refresh conter
+        {
+		i_display = 0;			// RenderOverlay_busy: rendering ongoing, reset the counter, don't refresh now
+								// this will also balance performance, if too busy skip refresh
+                                // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
+                                // so skip next refresh
+		 if (pPlugIn->settings.verbose ) 
+             {
+             if (pos_age >= 2) wxLogMessage(wxT("BR24radar_pi:  busy encountered, br_bpos_watchdog = %i"), pos_age);
+             if (RenderOverlay_busy) wxLogMessage(wxT("BR24radar_pi:  busy encountered"));
+             }
 		}
-	else {
-	if(br_radar_state == RADAR_ON){
-	if (i_display >=  refreshrate ) {   //	display every "sample" time 
-		if (refreshrate != 10) {
-			
+	else 
+        {
+	if(br_radar_state == RADAR_ON)
+        {
+	if (i_display >=  refreshrate ) 
+        {   //	display every "refreshrate time" 
+		if (refreshrate != 10) // for 10 no refresh at all
+            {
 			GetOCPNCanvasWindow()->Refresh(true);
-			if (pPlugIn->settings.verbose ) wxLogMessage(wxT("BR24radar_pi:  refresh issued"));	
+			if (pPlugIn->settings.verbose) wxLogMessage(wxT("BR24radar_pi:  refresh issued"));	
 			}
 		i_display = 0;
 		RenderOverlay_busy = true;   // no further calls until RenderOverlay_busy has been cleared by RenderGLOverlay
 		}
 	i_display ++;
 		}
-	if(PassHeadingToOCPN == 1 && heading_on_radar && br_radar_state == RADAR_ON){
+	if(PassHeadingToOCPN == 1 && heading_on_radar && br_radar_state == RADAR_ON)
+        {
 		char buffer [18];
 		int cx;
 		cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
