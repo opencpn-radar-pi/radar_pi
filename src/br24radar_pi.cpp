@@ -566,6 +566,7 @@ int br24radar_pi::Init(void)
 
 bool br24radar_pi::DeInit(void)
 {
+    br_radar_state = RADAR_OFF;  // turn off, otherwise system may be too busy to quit
     SaveConfig();
     m_quit = true; // Signal quit to any of the threads. Takes up to 1s.
 
