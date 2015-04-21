@@ -1028,11 +1028,11 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         if (settings.verbose) {
             wxLogMessage(wxT("BR24radar_pi: Master mode on"));
         }
-        RadarStayAlive();
         if(br_scanner_state != RADAR_ON)
             {               // don't switch on if radar is on already, radar does not like that
             RadarTxOn();
             }
+        RadarStayAlive();   // moved to here, after TXOn
         RadarSendState();
         br_send_state = true; // Send state again as soon as we get any data
         if( id != 999999  && settings.timed_idle != 0) m_pControlDialog->SetTimedIdleIndex(0) ; //Disable Timed Transmit if user click the icon while idle
@@ -1112,11 +1112,15 @@ void br24radar_pi::DoTick(void)
         if (br_data_seen && (now - br_data_watchdog >= WATCHDOG_TIMEOUT)) {
             br_data_seen = false;
             wxLogMessage(wxT("BR24radar_pi: Lost radar data"));
-        } else if (br_radar_seen && !br_data_seen && settings.master_mode && br_scanner_state != RADAR_ON) {
+        } 
+ /*       else if (br_radar_seen && !br_data_seen && settings.master_mode && br_scanner_state != RADAR_ON) {
             // Switch radar on if we want it to be on but it wasn' detected earlier
             RadarTxOn();
             RadarSendState();
-        }
+        }  
+        Don't switch on if radar is on already. 
+        I don't understand this bit, might cause radar to go on /off/on when starting up
+        */
     }
 
     if (settings.verbose) {
@@ -2471,9 +2475,9 @@ void br24radar_pi::CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollov
 void br24radar_pi::SetNMEASentence( wxString &sentence )
 {
     m_NMEA0183 << sentence;
-	if (settings.verbose) {	
-		wxLogMessage(wxT("BR24radar_pi: SetNMEASentence  called  \n"));
-		}
+//	if (settings.verbose >= 2) {	
+//		wxLogMessage(wxT("BR24radar_pi: SetNMEASentence  called  \n"));
+//		}
     if (m_NMEA0183.PreParse()) {
         if (m_hdt_source == 2 && m_NMEA0183.LastSentenceIDReceived == _T("HDG") && m_NMEA0183.Parse()) {
             if (!wxIsNaN(m_NMEA0183.Hdg.MagneticVariationDegrees)) {
@@ -2493,9 +2497,9 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
             if (!wxIsNaN(m_NMEA0183.Hdm.DegreesMagnetic)) {
                 if (!heading_on_radar) br_hdt = m_NMEA0183.Hdm.DegreesMagnetic + m_var;
                 br_hdt_watchdog = time(0);
-				if (settings.verbose) {	
-					wxLogMessage(wxT("BR24radar_pi: SetNMEASentence  HDM set  \n"));
-					}
+	//			if (settings.verbose) {	
+	//				wxLogMessage(wxT("BR24radar_pi: SetNMEASentence  HDM set  \n"));
+	//				}
             }
         }
         else if (m_hdt_source == 1 && m_NMEA0183.LastSentenceIDReceived == _T("HDT") && m_NMEA0183.Parse()) {
@@ -2978,7 +2982,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 		if (refreshrate != 10) // for 10 no refresh at all
             {
 			GetOCPNCanvasWindow()->Refresh(true);
-			if (pPlugIn->settings.verbose) wxLogMessage(wxT("BR24radar_pi:  refresh issued"));	
+	//		if (pPlugIn->settings.verbose) wxLogMessage(wxT("BR24radar_pi:  refresh issued"));	
 			}
 		i_display = 0;
 		RenderOverlay_busy = true;   // no further calls until RenderOverlay_busy has been cleared by RenderGLOverlay
