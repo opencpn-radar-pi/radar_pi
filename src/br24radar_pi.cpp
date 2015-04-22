@@ -1032,7 +1032,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         if(br_scanner_state != RADAR_ON)
             {               // don't switch on if radar is on already, radar does not like that
             RadarTxOn();
-            repeatOnDelay = 2;  // DoTick will not repeat the TxOn for 2 ticks
+            repeatOnDelay = 6;  // DoTick will not repeat the TxOn for 6 ticks
             // this is to prevent repeated "ON" commands
             }
         RadarStayAlive();   // moved to here, after TXOn
@@ -1123,14 +1123,14 @@ void br24radar_pi::DoTick(void)
             // Switch radar on if we want it to be on but it wasn' detected earlier
             RadarTxOn();
             RadarSendState();
+            repeatOnDelay = 4;   // 
                 }
-            else    // prevents sending repeated "ON" commands after turning on
-                {
-                repeatOnDelay--;
-                }
+            }
         }
-    
-    }
+   if (repeatOnDelay) 
+            {
+            repeatOnDelay--;   // count down the delay timer until 0 in every call of DoTick
+            }      
 
     if (settings.verbose) {
         wxString t;
