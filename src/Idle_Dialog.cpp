@@ -99,42 +99,56 @@ bool Idle_Dialog::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
     return true;
 }
 
+//Foresee translated text to fit into the Idle_Dialog
+wxString Timelabel_1  = _("Idle time is set to");
+wxString Timelabel_2 = _("minutes");
+wxString Timeleftlabel_1 = _("ca.");
+wxString Timeleftlabel_2 = _("minutes until next run");
 
 void Idle_Dialog::CreateControls()
 {	
-    const int border = 5;
+    const int border = 5;    
+    wxString Label_1, Label_2;
+    Label_1 << Timelabel_1 << _T(" 15 ") << Timelabel_2;
+    Label_2 << Timeleftlabel_1 << _T(" 15 ") << Timeleftlabel_2;
 	
 	wxBoxSizer *sbIdleDialogSizer;
 	sbIdleDialogSizer = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, _("Radar scanner is Idling") ), wxVERTICAL );
 	this->SetSizer( sbIdleDialogSizer);
 
-	p_Idle_Mode = new wxStaticText( this, wxID_ANY, _T("Idle time is set to NN minutes  "), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
+	p_Idle_Mode = new wxStaticText( this, wxID_ANY, Label_1 , wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
 	p_Idle_Mode->Wrap( -1 );
 	sbIdleDialogSizer->Add( p_Idle_Mode, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, border );
 	
-	p_IdleTimeLeft = new wxStaticText( this, wxID_ANY, _T("ca. NN minutes until next run   "), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
+	p_IdleTimeLeft = new wxStaticText( this, wxID_ANY, Label_2, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
 	p_IdleTimeLeft->Wrap( -1 );
 	sbIdleDialogSizer->Add( p_IdleTimeLeft, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, border );
+
+	m_Idle_gauge = new wxGauge( this, wxID_ANY, 100, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL|wxGA_SMOOTH);
+	m_Idle_gauge->SetValue( 0 ); 
+	sbIdleDialogSizer->Add( m_Idle_gauge, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, border);
 	
 	m_btnStopIdle = new wxButton( this, ID_STOPIDLE, _("Turn Radar always ON"), wxDefaultPosition, wxDefaultSize, 0 );
 	sbIdleDialogSizer->Add( m_btnStopIdle, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, border );
 	
 	this->Layout();
 	sbIdleDialogSizer->Fit( this );	
-	//this->Centre( wxBOTH );
 }
 
 
 void Idle_Dialog::SetIdleTimes(int IdleTime, int IdleTimeLeft)
 {
     wxString Timelabel, t, Timeleftlabel, t2;
+    //wxString t, t2;
     t.Printf(_T("%d"), IdleTime);
     t2.Printf(_T("%d"), IdleTimeLeft + 1);
-    Timelabel << _("Idle time is set to") << _T(" ") << t << _T(" ") <<_("minutes");
-    Timeleftlabel << _("ca.") << _T(" ") << t2 << _T(" ") << _("minutes until next run");
+    Timelabel << Timelabel_1 << _T(" ") << t << _T(" ") << Timelabel_2;
+    Timeleftlabel << Timeleftlabel_1 << _T(" ") << t2 << _T(" ") << Timeleftlabel_2;
+    int GaugeValue = 100 - (100 * (IdleTimeLeft+1)/IdleTime);
 
     p_Idle_Mode->SetLabel(Timelabel);
     p_IdleTimeLeft->SetLabel(Timeleftlabel);
+    m_Idle_gauge->SetValue(GaugeValue);
 }
 
 void Idle_Dialog::OnClose(wxCloseEvent &event)
