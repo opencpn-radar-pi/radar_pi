@@ -107,6 +107,7 @@ double br_hdt;     // this is the heading that the pi is using for all heading o
 					// br_hdt will come from the radar if available else from the NMEA stream
 int br_hdt_raw = 0;
 unsigned int i_display = 0;  // used in radar reive thread for display operation
+int repeatOnDelay = 0;   // used to prevend additional TxOn commands from DoTick when radar heas just been switched on
 
 bool variation = false;
 bool heading_on_radar = false;
@@ -1031,6 +1032,8 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         if(br_scanner_state != RADAR_ON)
             {               // don't switch on if radar is on already, radar does not like that
             RadarTxOn();
+            repeatOnDelay = 2;  // DoTick will not repeat the TxOn for 2 ticks
+            // this is to prevent repeated "ON" commands
             }
         RadarStayAlive();   // moved to here, after TXOn
         RadarSendState();
@@ -1113,14 +1116,20 @@ void br24radar_pi::DoTick(void)
             br_data_seen = false;
             wxLogMessage(wxT("BR24radar_pi: Lost radar data"));
         } 
- /*       else if (br_radar_seen && !br_data_seen && settings.master_mode && br_scanner_state != RADAR_ON) {
+        else if (br_radar_seen && !br_data_seen && settings.master_mode && br_scanner_state != RADAR_ON)
+            {
+            if (!repeatOnDelay) // prevents sending repeated "ON" commands after turning on
+                {
             // Switch radar on if we want it to be on but it wasn' detected earlier
             RadarTxOn();
             RadarSendState();
-        }  
-        Don't switch on if radar is on already. 
-        I don't understand this bit, might cause radar to go on /off/on when starting up
-        */
+                }
+            else    // prevents sending repeated "ON" commands after turning on
+                {
+                repeatOnDelay--;
+                }
+        }
+    
     }
 
     if (settings.verbose) {
