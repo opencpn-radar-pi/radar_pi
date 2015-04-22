@@ -908,6 +908,7 @@ private:
     /* Controls  */	
     wxStaticText *p_Idle_Mode;
     wxStaticText *p_IdleTimeLeft;
+	wxGauge* m_Idle_gauge;
 	wxButton *m_btnStopIdle;
 };
 
