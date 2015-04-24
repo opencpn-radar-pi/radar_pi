@@ -45,6 +45,8 @@ Douwe Fokkema for
 
 Håkan Svensson for
 - Timed transmit function
+- Many tests
+- Translation files
 
 */
 
