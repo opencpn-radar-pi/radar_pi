@@ -29,14 +29,23 @@
  */
 
 
-/* Changes by Douwe Fokkema 07-02-2015 to implement "heading on radar" if heading is sent to the 4G radar via NMEA2000
- to the RI10 interface box. In this case the heading is incorporated in the header of each scanline and used 
-to map the scanlines ion their true position on the chart.
+/* 
 
-The buffer m_scan_line now contains the true (orientation) radar image. As a consequence alarm zones (arc) now have a true orientation 
-and are not relative to the heading.
+Additional contributors for release 1.1, spring 2015
 
-Additional change: In case the radar is transmitting data the pi will only display a radar image if radar state is on (green). 
+Douwe Fokkema for
+- Heading on radar. Use the heading that the radar puts in the line headers when it is getting a heading from the RI10 or
+  RI11 interface box
+- When there is no heading on radar, the heading at the time of receiving the data will be used for the radar image.
+- Performance improvements of the display process, allowing for rapid refresh
+- Rapid refresh of the radar image. You can now see the beam rotating.
+- Changes of the range settings. Displayed ranges will now correspond better with the ranges that a HDS display shows.
+- Smoother switching on of the 4G radar
+- Various smaller corrections
+
+Håkan Svensson for
+- Timed transmit function
+
 */
 
 
