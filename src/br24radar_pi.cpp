@@ -254,7 +254,7 @@ static double local_bearing (double lat1, double lon1, double lat2, double lon2)
 
     angle = rad2deg(angle) ;
     angle = 90.0 - angle;
-    while (angle < 0) {      // while, just to be shure
+    while (angle < 0) {      // while, just to be sure
         angle = 360 + angle;
         }
     return (angle);
@@ -1566,7 +1566,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         colors actual_color = blanc, previous_color = blanc;
 
         drawn_spokes++;
-        scan->data[512] = 0;  // make shure this element is initialized (just outside the range)
+        scan->data[512] = 0;  // make sure this element is initialized (just outside the range)
         for (int radius = 0; radius <= 512; ++radius) 
             {   // loop 1 more time as only the previous one will be displayed
 
@@ -2940,7 +2940,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             br_hdt_raw = br_hdm_raw + var_raw;
             br_hdt = (double) (br_hdt_raw * 360) / LINES_PER_ROTATION;   //  is * 360  / 4096
             while (br_hdt >= 360 ) br_hdt -= 360;
-            while (br_hdt < 0) br_hdt +=360;   // just make shure they are in range
+            while (br_hdt < 0) br_hdt +=360;   // just make sure they are in range
             angle_raw += br_hdt_raw;
             }
         else {                                // no heading on radar
