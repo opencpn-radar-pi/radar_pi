@@ -180,8 +180,8 @@ typedef enum ControlType {
     CT_NOISE_REJECTION,
     CT_TARGET_BOOST,
     CT_DOWNSAMPLE,
-	CT_REFRESHRATE,
-	CT_PASSHEADING,
+    CT_REFRESHRATE,
+    CT_PASSHEADING,
     CT_SCAN_SPEED,
     CT_SCAN_AGE,
     CT_TIMED_IDLE
@@ -256,8 +256,8 @@ struct radar_control_settings {
     int      draw_algorithm;
     int      scan_speed;
     int      downsampleUser;    // 1..8 =
-	int		refreshrate;
-	int		 PassHeadingToOCPN;
+    int        refreshrate;
+    int       PassHeadingToOCPN;
     int      downsample;        //         1..128
     wxString alert_audio_file;
 };
@@ -419,7 +419,7 @@ private:
 
     int                       m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
     int                       m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
-	int						m_GuardZoneBogey_x, m_GuardZoneBogey_y ;
+    int                        m_GuardZoneBogey_x, m_GuardZoneBogey_y ;
 
     int                       m_Guard_dialog_sx, m_Guard_dialog_sy ;
     int                       m_Guard_dialog_x, m_Guard_dialog_y ;
@@ -619,7 +619,7 @@ public:
     int        minValue;
     int        maxValue;
     bool       hasAuto;
-	ControlType controlType;
+    ControlType controlType;
 
 };
 
@@ -652,7 +652,7 @@ public:
     virtual void SetAuto();
 
     int SetValueInt(int value);
-	
+    
     int auto_range_index;
 };
 
@@ -756,7 +756,7 @@ private:
     RadarControlButton *bNoiseRejection;
     RadarControlButton *bTargetBoost;
     RadarControlButton *bDownsample;
-	RadarControlButton *bRefreshrate;
+    RadarControlButton *bRefreshrate;
     RadarControlButton *bScanSpeed;
     RadarControlButton *bScanAge;
     RadarControlButton *bTimedIdle;
@@ -880,11 +880,11 @@ class Idle_Dialog : public wxDialog
 {
     DECLARE_CLASS(Idle_Dialog)
     DECLARE_EVENT_TABLE()
-    	
-public:		
-		Idle_Dialog();  
+        
+public:        
+        Idle_Dialog();  
 
-		~Idle_Dialog();
+        ~Idle_Dialog();
 
         void    Init();
 
@@ -908,7 +908,7 @@ private:
     void            OnIdStopIdleClick(wxCommandEvent &event);
 
     wxWindow        *pParent;
-
+   
     br24radar_pi    *pPlugIn;
 
     /* Controls  */	
@@ -916,6 +916,7 @@ private:
     wxStaticText *p_IdleTimeLeft;
 	wxGauge* m_Idle_gauge;
 	wxButton *m_btnStopIdle;
+
 };
 
 #endif

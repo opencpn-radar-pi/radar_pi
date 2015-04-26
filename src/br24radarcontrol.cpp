@@ -72,7 +72,7 @@ enum {                                      // process ID's
     ID_NOISE_REJECTION,
     ID_TARGET_SEPARATION,
     ID_DOWNSAMPLE,
-	ID_REFRESHRATE, 
+    ID_REFRESHRATE, 
     ID_SCAN_SPEED,
     ID_SCAN_AGE,
     ID_TIMED_IDLE,
@@ -115,7 +115,7 @@ BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
     EVT_BUTTON(ID_NOISE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_TARGET_SEPARATION, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_DOWNSAMPLE, BR24ControlsDialog::OnRadarControlButtonClick)
-	EVT_BUTTON(ID_REFRESHRATE, BR24ControlsDialog::OnRadarControlButtonClick)
+    EVT_BUTTON(ID_REFRESHRATE, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
     EVT_BUTTON(ID_TIMED_IDLE, BR24ControlsDialog::OnRadarControlButtonClick)
@@ -140,14 +140,14 @@ static const wxString g_range_names[2][20] = {
         wxT("50 m"),
         wxT("75 m"),
         wxT("100 m"),
-		wxT("150 m"),
-		wxT("1/10 NM"),
-		wxT("1/8 NM"),
+        wxT("150 m"),
+        wxT("1/10 NM"),
+        wxT("1/8 NM"),
         wxT("1/4 NM"),
         wxT("1/2 NM"),
         wxT("3/4 NM"),
         wxT("1 NM"),
-		wxT("1.5 NM"),
+        wxT("1.5 NM"),
         wxT("2 NM"),
         wxT("3 NM"),
         wxT("4 NM"),
@@ -162,9 +162,9 @@ static const wxString g_range_names[2][20] = {
         wxT("50 m"),
         wxT("75 m"),
         wxT("100 m"),
-		wxT("150 m"),
+        wxT("150 m"),
         wxT("200 m"),
-		wxT("300 m"),
+        wxT("300 m"),
         wxT("500 m"),
         wxT("750 m"),
         wxT("1 km"),
@@ -186,15 +186,15 @@ static const int g_range_distances[2][20] = {
     {
         50,
         75,
-		110,
+        110,
         160,
         220,
         330,
         500,
-		800,
-		1389,
+        800,
+        1389,
         1852*1,
-		2778,
+        2778,
         1852*2,
         1852*3,
         1852*4,
@@ -209,9 +209,9 @@ static const int g_range_distances[2][20] = {
         50,
         75,
         100,
-		150,
+        150,
         200,
-		300,
+        300,
         500,
         750,
         1000,
@@ -244,10 +244,10 @@ wxString timed_idle_times[8];
 extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
 {
     const int * ranges;
-	int inputRange = int (*range_meters);    /// debugging only
-	int myrange = int (*range_meters);
-	myrange = int (myrange * 0.9);   // be shure to be inside the right interval
-											// to prevent you get 1.5 mile with a value of 1855 meters
+    int inputRange = int (*range_meters);    /// debugging only
+    int myrange = int (*range_meters);
+    myrange = int (myrange * 0.9);   // be shure to be inside the right interval
+                                            // to prevent you get 1.5 mile with a value of 1855 meters
     size_t      n;
 
     if (units < 1) {                    /* NMi or Mi */
@@ -261,14 +261,14 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
     if (radarType != RT_4G) {
         n--;
     }
-	unsigned int max = n;
+    unsigned int max = n;
     for (; n > 0; n--) {
         if (ranges[n] > 0 && ranges[n] < myrange) {  // step down until past the right range value
             break;
         }
     }
-	if (n < max) n++;    //   and increase with 1 to get the correct index
-					// n now points at the smallest value that is larger then *range_meters
+    if (n < max) n++;    //   and increase with 1 to get the correct index
+                    // n now points at the smallest value that is larger then *range_meters
     *range_meters = ranges[n];    
 
     return n;
@@ -283,7 +283,7 @@ void RadarControlButton::SetValue(int newValue)
     } else {
         value = newValue;
     }
-	if (controlType == CT_GAIN && isAuto) value = 40;  // start with gain = 40 when coming from auto
+    if (controlType == CT_GAIN && isAuto) value = 40;  // start with gain = 40 when coming from auto
     wxString label;
 
     if (names) {
@@ -311,13 +311,13 @@ void RadarControlButton::SetAuto()
 }
 
 int RadarRangeControlButton::SetValueInt(int newValue)
-{					// only called from the receive thread
-					// newValue is the new range index number
-					// sets the new range label in the button and returns the new range in meters
+{                    // only called from the receive thread
+                    // newValue is the new range index number
+                    // sets the new range label in the button and returns the new range in meters
     int units = pPlugIn->settings.range_units;
 
     maxValue = g_range_maxValue[units] - 1;
-	int oldValue = value;  // for debugging only
+    int oldValue = value;  // for debugging only
     if (newValue >= minValue && newValue <= maxValue) {
         value = newValue;
     } else if (pPlugIn->settings.auto_range_mode) {
@@ -346,20 +346,20 @@ int RadarRangeControlButton::SetValueInt(int newValue)
 
 
 void RadarRangeControlButton::SetValue(int newValue)
-{										// newValue is the index of the new range
-										// sends the command for the new range to the radar
+{                                        // newValue is the index of the new range
+                                        // sends the command for the new range to the radar
     isAuto = false;
     pPlugIn->settings.auto_range_mode = false;
 
     int meters = SetValueInt(newValue);   // do not display the new value now, will be done by receive thread when frame with new range is received 
-    pPlugIn->SetRangeMeters(meters);		// send new value to the radar
+    pPlugIn->SetRangeMeters(meters);        // send new value to the radar
 }
 
 void RadarRangeControlButton::SetAuto()
 {
     isAuto = true;
     pPlugIn->settings.auto_range_mode = true;
- //   SetValueInt(auto_range_index);	// do not display the new value now, will be done by receive thread
+ //   SetValueInt(auto_range_index);    // do not display the new value now, will be done by receive thread
 }
 
 BR24ControlsDialog::BR24ControlsDialog()
@@ -650,7 +650,7 @@ void BR24ControlsDialog::CreateControls()
     bDownsample->minValue = 1;
     bDownsample->maxValue = 8;
 
-	// The REFRESHRATE button
+    // The REFRESHRATE button
     bRefreshrate = new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), pPlugIn, CT_REFRESHRATE, false, pPlugIn->settings.refreshrate);
     advancedBox->Add(bRefreshrate, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bRefreshrate->minValue = 1;  
@@ -808,7 +808,7 @@ void BR24ControlsDialog::OnPlusTenClick(wxCommandEvent& event)
 void BR24ControlsDialog::OnPlusClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value + 1);
-	
+    
     wxString label = fromControl->GetLabel();
 
     tValue->SetLabel(label);
@@ -841,7 +841,7 @@ void BR24ControlsDialog::OnAutoClick(wxCommandEvent &event)
 void BR24ControlsDialog::OnMinusClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value - 1);
-	
+    
     wxString label = fromControl->GetLabel();
     tValue->SetLabel(label);
 }
