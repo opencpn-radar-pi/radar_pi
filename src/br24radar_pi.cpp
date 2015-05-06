@@ -1885,7 +1885,7 @@ bool br24radar_pi::LoadConfig(void)
                 settings.downsampleUser = 1; // otherwise we get infinite loop
             }
             settings.downsample = 2 << (settings.downsampleUser - 1);
-            pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 0);
+            pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 1);
             refreshrate = refreshmapping [settings.refreshrate - 1];
 
             pConf->Read(wxT("PassHeadingToOCPN"), &settings.PassHeadingToOCPN, 0);    // PassHeadingToOCPN == 0 : do not pass heading_from_radar to OCPN
