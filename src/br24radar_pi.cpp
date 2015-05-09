@@ -125,7 +125,7 @@ bool heading_on_radar = false;
 int display_heading_on_radar = 0;
 double var = 0;
 unsigned int downsample;  // moved from display radar to here; also used in radar receive thread
-unsigned int refreshrate;  // refreshrate for radar used in process buffer
+unsigned int refreshrate = 1;  // refreshrate for radar used in process buffer
 unsigned int refreshmapping[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
 // user values 1 to 5 mapped to these values for refrehs interval
 // user 1 - no additional refresh, 2 - interval between frames 9, so on.
@@ -1498,6 +1498,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             }
 
     downsample = (unsigned int) settings.downsample;
+    wxLogMessage(wxT("BR24radar_pi: refresh draradarimageF XXX, %i"), settings.refreshrate);
     refreshrate = refreshmapping [settings.refreshrate - 1];
     memset(&bogey_count, 0, sizeof(bogey_count));
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
@@ -1635,6 +1636,8 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                 case blauw:
                     blue = 255;
                     break;
+                case blanc:
+                    break;   // just to prevent compile warnings
                     }
                 glColor4ub(red, green, blue, alpha);    // red, blue, green
                 double heigth = r_end - r_begin;
@@ -1884,8 +1887,18 @@ bool br24radar_pi::LoadConfig(void)
             if (settings.downsampleUser < 1) {
                 settings.downsampleUser = 1; // otherwise we get infinite loop
             }
+            if (settings.downsampleUser > 8) {
+                settings.downsampleUser = 1; // otherwise we get strange things
+            }
             settings.downsample = 2 << (settings.downsampleUser - 1);
             pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 1);
+            wxLogMessage(wxT("BR24radar_pi: refresh gelezen XXX, %i"), settings.refreshrate);
+   //         if (settings.refreshrate < 1) {
+   //             settings.refreshrate = 1; // not allowed
+    //        }
+    //        if (settings.refreshrate > 5) {
+     //           settings.refreshrate = 5; // not allowed
+    //        }
             refreshrate = refreshmapping [settings.refreshrate - 1];
 
             pConf->Read(wxT("PassHeadingToOCPN"), &settings.PassHeadingToOCPN, 0);    // PassHeadingToOCPN == 0 : do not pass heading_from_radar to OCPN
@@ -2075,7 +2088,10 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         int cx;
         if(PassHeadingToOCPN == 1){
         cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
-        wxString nmeastring = wxString::FromUTF8(buffer);
+        wxString nmeastring; 
+        if (cx) {
+            nmeastring = wxString::FromUTF8(buffer);
+            }
         PushNMEABuffer (nmeastring);  // issue heading from radar to OCPN
             }
         }

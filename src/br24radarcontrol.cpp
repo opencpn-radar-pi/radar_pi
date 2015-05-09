@@ -244,7 +244,6 @@ wxString timed_idle_times[8];
 extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
 {
     const int * ranges;
-    int inputRange = int (*range_meters);    /// debugging only
     int myrange = int (*range_meters);
     myrange = int (myrange * 0.9);   // be shure to be inside the right interval
                                             // to prevent you get 1.5 mile with a value of 1855 meters
