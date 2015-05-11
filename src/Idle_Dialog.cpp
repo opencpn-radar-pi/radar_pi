@@ -98,6 +98,7 @@ bool Idle_Dialog::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
 
     return true;
 
+
 }
 
 //Foresee translated text to fit into the Idle_Dialog
@@ -125,7 +126,7 @@ void Idle_Dialog::CreateControls()
 	p_IdleTimeLeft->Wrap( -1 );
 	sbIdleDialogSizer->Add( p_IdleTimeLeft, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, border );
 
-	m_Idle_gauge = new wxGauge( this, wxID_ANY, 100, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL);
+	m_Idle_gauge = new wxGauge( this, wxID_ANY, 100, wxDefaultPosition, wxSize( -1,12 ), wxGA_HORIZONTAL);
 	m_Idle_gauge->SetValue( 0 ); 
 	sbIdleDialogSizer->Add( m_Idle_gauge, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, border);
 	

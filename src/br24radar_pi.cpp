@@ -461,6 +461,7 @@ int br24radar_pi::Init(void)
     settings.auto_range_mode = true;                    // starts with auto range change
     settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
     if(!settings.refreshrate) settings.refreshrate = 1;
+    settings.timed_idle = 0;
 
 //      Set default parameters for controls displays
     m_BR24Controls_dialog_x = 0;    // position
@@ -1898,8 +1899,6 @@ bool br24radar_pi::LoadConfig(void)
             } else if (settings.max_age > MAX_AGE) {
                 settings.max_age = MAX_AGE;
             }
-            pConf->Read(wxT("TimedIdle"), &settings.timed_idle, 0); 
-            if (settings.timed_idle > 7) settings.timed_idle = 7; 
             pConf->Read(wxT("RunTimeOnIdle"), &settings.idle_run_time, 2); 
             pConf->Read(wxT("DrawAlgorithm"), &settings.draw_algorithm, 1);
             pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
@@ -1995,7 +1994,6 @@ bool br24radar_pi::LoadConfig(void)
             settings.noise_rejection = 0;
             settings.target_boost = 0;
             settings.max_age = MIN_AGE;
-            settings.timed_idle = 0;
             settings.idle_run_time = 2;
             settings.draw_algorithm = 1;
             settings.guard_zone_threshold = 5L;
