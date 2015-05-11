@@ -1898,9 +1898,9 @@ bool br24radar_pi::LoadConfig(void)
             } else if (settings.max_age > MAX_AGE) {
                 settings.max_age = MAX_AGE;
             }
-            pConf->Read(wxT("TimedIdle"), &settings.timed_idle, 2); 
+            pConf->Read(wxT("TimedIdle"), &settings.timed_idle, 0); 
             if (settings.timed_idle > 7) settings.timed_idle = 7; 
-            pConf->Read(wxT("RunTimeOnIdle"), &settings.idle_run_time, 0); 
+            pConf->Read(wxT("RunTimeOnIdle"), &settings.idle_run_time, 2); 
             pConf->Read(wxT("DrawAlgorithm"), &settings.draw_algorithm, 1);
             pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
             pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
@@ -2092,7 +2092,6 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("GuardZonesRenderStyle"), settings.guard_zone_render_style);
         pConf->Write(wxT("ScanMaxAge"), settings.max_age);
         pConf->Write(wxT("RunTimeOnIdle"), settings.idle_run_time);
-        pConf->Write(wxT("TimedIdle"), settings.timed_idle);
         pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
         pConf->Write(wxT("ScanSpeed"), settings.scan_speed);
         pConf->Write(wxT("Downsample"), settings.downsampleUser);
