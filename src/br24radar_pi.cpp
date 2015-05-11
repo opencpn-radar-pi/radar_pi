@@ -119,13 +119,14 @@ double br_hdt;     // this is the heading that the pi is using for all heading o
 int br_hdt_raw = 0;
 unsigned int i_display = 0;  // used in radar reive thread for display operation
 int repeatOnDelay = 0;   // used to prevend additional TxOn commands from DoTick when radar heas just been switched on
+bool initReady = false;  //semaphore to signal that the initialisation has finished
 
 bool variation = false;
 bool heading_on_radar = false;
 int display_heading_on_radar = 0;
 double var = 0;
 unsigned int downsample;  // moved from display radar to here; also used in radar receive thread
-unsigned int RefreshRate = 1;  // refreshrate for radar used in process buffer
+unsigned int refreshRate = 1;  // refreshrate for radar used in process buffer
 unsigned int refreshmapping[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
 // user values 1 to 5 mapped to these values for refrehs interval
 // user 1 - no additional refresh, 2 - interval between frames 9, so on.
@@ -478,7 +479,14 @@ int br24radar_pi::Init(void)
     m_pconfig = GetOCPNConfigObject();
 
     //    And load the configuration items
-    LoadConfig();
+   if( LoadConfig()) 
+       {
+       wxLogMessage(wxT("BR24radar_pi: configuration file values initialised"));
+       }
+   else
+       {
+       wxLogMessage(wxT("BR24radar_pi: configuration file values initialisation failed"));
+       }
 
     if (settings.verbose > 0) {
         wxLogMessage(wxT("BR24radar_pi: logging verbosity = %d"), settings.verbose);
@@ -564,6 +572,8 @@ int br24radar_pi::Init(void)
     }
     m_reportReceiveThread = new RadarReportReceiveThread(this, &m_quit);
     m_reportReceiveThread->Run();
+
+    initReady = true;  //signal that initialisation is ready (but parts may have failed)
 
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
@@ -1086,8 +1096,9 @@ void br24radar_pi::DoTick(void)
     time_t now = time(0);
     static time_t previousTicks = 0;
 
-    if (now == previousTicks) {
+    if (now == previousTicks || !initReady) {
         // Repeated call during scroll, do not do Tick processing
+        // no tick if initialisation is not ready
         return;
     }
     previousTicks = now;
@@ -1253,6 +1264,12 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 {
+    if (!initReady)
+        { 
+         wxLogMessage(wxT("BR24radar_pi: RenderGLOverlay called with initReady == false"));
+        // do nothing if initialisation has not finished
+        return true;
+        }
     RenderOverlay_busy = true;   //  the receive thread should not call (through refresh canvas) this when it is busy
     br_opengl_mode = true;
     // this is expected to be called at least once per second
@@ -1500,7 +1517,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             }
 
     downsample = (unsigned int) settings.downsample;
-    RefreshRate = refreshmapping [settings.refreshrate - 1];
+    refreshRate = refreshmapping [settings.refreshrate - 1];
     memset(&bogey_count, 0, sizeof(bogey_count));
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
     if (settings.verbose >= 4) {
@@ -1903,7 +1920,7 @@ bool br24radar_pi::LoadConfig(void)
             if (settings.refreshrate > 5) {
                 settings.refreshrate = 5; // not allowed
             }
-            RefreshRate = refreshmapping [settings.refreshrate - 1];
+            refreshRate = refreshmapping [settings.refreshrate - 1];
 
             pConf->Read(wxT("PassHeadingToOCPN"), &settings.PassHeadingToOCPN, 0);    // PassHeadingToOCPN == 0 : do not pass heading_from_radar to OCPN
             PassHeadingToOCPN = settings.PassHeadingToOCPN;
@@ -1986,7 +2003,7 @@ bool br24radar_pi::LoadConfig(void)
             settings.scan_speed = 0;
             settings.downsampleUser = 2;
             settings.refreshrate = 1;
-            RefreshRate = refreshmapping [settings.refreshrate - 1];
+            refreshRate = refreshmapping [settings.refreshrate - 1];
             settings.PassHeadingToOCPN = 0;
             m_BR24Controls_dialog_sx = 300L;
             m_BR24Controls_dialog_sy = 540L;
@@ -3064,9 +3081,9 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         {
         if(br_radar_state == RADAR_ON)
             {
-            if (i_display >=  RefreshRate ) 
+            if (i_display >=  refreshRate ) 
                 {   //    display every "refreshrate time" 
-                if (RefreshRate != 10) // for 10 no refresh at all
+                if (refreshRate != 10) // for 10 no refresh at all
                     {
                     GetOCPNCanvasWindow()->Refresh(true);
                     //        if (pPlugIn->settings.verbose) wxLogMessage(wxT("BR24radar_pi:  refresh issued"));    
