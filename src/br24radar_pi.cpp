@@ -1329,10 +1329,10 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     if (settings.auto_range_mode) 
         {
         max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
-        auto_range_meters =  max_distance / 2.0 * 0.9;        //* 1.5;  factor 1.5 removed. Covered by the radar as the actual range set is 1.4 to 1.7 times the ranges in the command
+        auto_range_meters =  max_distance / 2.0 * 0.7;        //* 1.5;  factor 1.5 removed. Covered by the radar as the actual range set is 1.4 to 1.7 times the ranges in the command
         // this is what the HDS display does as well. The range figure displayed will fit on the screen, but the real range set is larger
         // call convertMetersToRadarAllowedValue now to compute fitting allowed range
-        // factor 0.9 added, range was too large
+        // factor 0.9 added, range was too large, later changed to 0.7
 
         int displayedRange = auto_range_meters;  //  the value for use in the control
         size_t idx = convertMetersToRadarAllowedValue(&displayedRange, settings.range_units, br_radar_type);
