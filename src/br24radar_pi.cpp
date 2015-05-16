@@ -1505,7 +1505,6 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                 scan = s;
                 scanAngle = angle + i;
                 while (scanAngle >= LINES_PER_ROTATION) scanAngle -= LINES_PER_ROTATION;
-                while (scanAngle < 0) scanAngle += LINES_PER_ROTATION;
                 bestAge = diff;
             }
         }
