@@ -28,7 +28,6 @@
  ***************************************************************************
  */
 
-
 /*
 
  Additional contributors for release 1.1, spring 2015
@@ -1485,7 +1484,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         wxLogMessage(wxT("BR24radar_pi: ") wxTPRId64 wxT(" drawing start"), now);
     }
     if (downsample == 0) {
-        wxLogMessage(wxT("BR24radar_pi: ASSERT FAILED: downsample not initialised");
+        wxLogMessage(wxT("BR24radar_pi: ASSERT FAILED: downsample not initialised"));
         // this should not happen, but prevent endless loop anyway
         downsample = 1;
     }
@@ -1543,48 +1542,64 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         double angleSin = sin(angleRad);
         double r_begin = 0, r_end = 0;
 
-        enum colors {blanc, blauw, groen, rood};   // sorry dutch colors as the english ones are used already
-        colors actual_color = blanc, previous_color = blanc;
+        enum colors { BLOB_NONE, BLOB_BLUE, BLOB_GREEN, BLOB_RED };
+        colors actual_color = BLOB_NONE, previous_color = BLOB_NONE;
 
         drawn_spokes++;
 
         scan->data[512] = 0;  // make sure this element is initialized (just outside the range)
         for (int radius = 0; radius <= 512; ++radius) {   // loop 1 more time as only the previous one will be displayed
-            GLubyte red = 0, green = 0, blue = 0, strength = (radius < 512) ? scan->data[radius] : 0;
+            GLubyte strength = (radius < 512) ? scan->data[radius] : 0;
+
+            /**********************************************************************************************************/
+            // Guard Section
+
+            if (strength > 100) {
+                for (size_t z = 0; z < GUARD_ZONES; z++) {
+                    if (guardZoneAngles[z][scanAngle]) {
+                        int inner_range = guardZones[z].inner_range; // now in meters
+                        int outer_range = guardZones[z].outer_range; // now in meters
+                        int bogey_range = radius * max_range / 512;
+                        if (bogey_range > inner_range && bogey_range < outer_range) {
+                            bogey_count[z]++;
+                        }
+                    }
+                }
+            }
 
             switch (settings.display_option) {
                     //  first find out the actual color
                 case 0:
-                    actual_color = blanc;
+                    actual_color = BLOB_NONE;
                     if (strength > 50) {
-                        actual_color = rood;
+                        actual_color = BLOB_RED;
                     }
                     break;
 
                 case 1:
-                    actual_color = blanc;
+                    actual_color = BLOB_NONE;
                     if (strength > 200) {
-                        actual_color = rood;
+                        actual_color = BLOB_RED;
                     } else if (strength > 100) {
-                        actual_color = groen;
+                        actual_color = BLOB_GREEN;
                     } else if (strength > 50) {
-                        actual_color = blauw;
+                        actual_color = BLOB_BLUE;
                     }
                     break;
 
                 case 2:
-                    actual_color = blanc;
+                    actual_color = BLOB_NONE;
                     if (strength > 250) {
-                        actual_color = rood;
+                        actual_color = BLOB_RED;
                     } else if (strength > 100) {
-                        actual_color = groen;
+                        actual_color = BLOB_GREEN;
                     } else if (strength > 20) {
-                        actual_color = blauw;
+                        actual_color = BLOB_BLUE;
                     }
                     break;
             }
 
-            if (actual_color == blanc && previous_color == blanc) {
+            if (actual_color == BLOB_NONE && previous_color == BLOB_NONE) {
                 // nothing to do, next radius
                 continue;
             }
@@ -1593,25 +1608,26 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                 // continue with same color, just register it and continue with guard
                 r_end += arc_heigth;
             }
-            else if (previous_color == blanc && actual_color != blanc) {
+            else if (previous_color == BLOB_NONE && actual_color != BLOB_NONE) {
                 // blob starts, no display, just register
                 r_begin = (double) radius * ((double) scan->range / (double) max_range);
                 r_end = r_begin + arc_heigth;
                 previous_color = actual_color;            // new color
             }
-            else if (previous_color != blanc && (previous_color != actual_color)) {
+            else if (previous_color != BLOB_NONE && (previous_color != actual_color)) {
                 // display time, first get the color in the glue byte
+                GLubyte red = 0, green = 0, blue = 0;
                 switch (previous_color) {
-                    case rood:
+                    case BLOB_RED:
                         red = 255;
                         break;
-                    case groen:
+                    case BLOB_GREEN:
                         green = 255;
                         break;
-                    case blauw:
+                    case BLOB_BLUE:
                         blue = 255;
                         break;
-                    case blanc:
+                    case BLOB_NONE:
                         break;   // just to prevent compile warnings
                 }
                 glColor4ub(red, green, blue, alpha);    // red, blue, green
@@ -1619,28 +1635,15 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                 draw_blob_gl(angleCos, angleSin, r_begin, arc_width, heigth);
                 drawn_blobs++;
                 previous_color = actual_color;
-                if (actual_color != blanc) {            // change of color, start new blob
+                if (actual_color != BLOB_NONE) {            // change of color, start new blob
                     r_begin = (double) radius * ((double) scan->range / (double) max_range);
                     r_end = r_begin + arc_heigth;
                 }
-                else {            // actual_color == blanc, blank pixel, next radius
+                else {            // actual_color == BLOB_NONE, blank pixel, next radius
                     continue;
                 }
             }
 
-            /**********************************************************************************************************/
-            // Guard Section
-
-            for (size_t z = 0; z < GUARD_ZONES; z++) {
-                if (guardZoneAngles[z][scanAngle]) {
-                    int inner_range = guardZones[z].inner_range; // now in meters
-                    int outer_range = guardZones[z].outer_range; // now in meters
-                    int bogey_range = radius * max_range / 512;
-                    if (bogey_range > inner_range && bogey_range < outer_range) {
-                        bogey_count[z]++;
-                    }
-                }
-            }
         }   // end of loop over radius
     }
     if (settings.verbose >= 2) {
@@ -3351,20 +3354,20 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
                     logBinaryData(wxT("state"), command, len);
                 }
                 break;
-                
+
             case (564 << 8) + 0x05:
                 // Content unknown, but we know that BR24 radomes send this
                 if (pPlugIn->settings.verbose >= 4) {
                     logBinaryData(wxT("received familiar report"), command, len);
                 }
                 break;
-                
+
             default:
                 if (pPlugIn->settings.verbose >= 2) {
                     logBinaryData(wxT("received unknown report"), command, len);
                 }
                 break;
-                
+
         }
         return true;
     }
@@ -3380,13 +3383,13 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
                     logBinaryData(wxT("received familiar report"), command, len);
                 }
                 break;
-                
+
             default:
                 if (pPlugIn->settings.verbose >= 2) {
                     logBinaryData(wxT("received unknown report"), command, len);
                 }
                 break;
-                
+
         }
         return true;
     }
@@ -3395,3 +3398,6 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
     }
     return false;
 }
+
+
+// vim: sw=4:ts=8:
