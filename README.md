@@ -20,7 +20,7 @@ In order to build multiple platforms you can build in separate `build-${platform
 ###Obtain the source code
 
 ```
-git clone https://github.com/douwefokkema/BR24radar_pi.git
+git clone https://github.com/canboat/BR24radar_pi.git
 ```
 
 ###Build on Microsoft Windows
