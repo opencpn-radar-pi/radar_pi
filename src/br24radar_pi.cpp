@@ -235,14 +235,11 @@ static double radar_distance(double lat1, double lon1, double lat2, double lon2,
 
 static double local_bearing (double lat1, double lon1, double lat2, double lon2) //FES
 {
-    double angle = atan2 ( deg2rad(lat2-lat1), (deg2rad(lon2-lon1) * cos(deg2rad(lat1))));
+    double angle = atan2(deg2rad(lat2-lat1), (deg2rad(lon2-lon1) * cos(deg2rad(lat1))));
 
-    angle = rad2deg(angle) ;
-    angle = 90.0 - angle;
-    while (angle < 0) {      // while, just to be sure
-        angle = 360 + angle;
-    }
-    return (angle);
+    angle = rad2deg(angle);
+    angle = MOD_DEGREES(90.0 - rad2deg(angle));
+    return angle;
 }
 
 /**
@@ -1356,19 +1353,17 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     glPushMatrix();
     glTranslated(radar_center.x, radar_center.y, 0);
 
-    double heading = fmod( rad2deg(vp->rotation)        // viewport rotation
-                          + 360.0                        // alway get a positive result
-                          - 90.0                         // difference between compass and OpenGL rotation
-                          //                        + br_hdt                       // current true heading, already added in receive data thread
-                          + settings.heading_correction  // fix any radome rotation fault
-                          , 360.0);
+    double heading = MOD_DEGREES( rad2deg(vp->rotation)        // viewport rotation
+                                - 90.0                         // difference between compass and OpenGL rotation
+                                + settings.heading_correction  // fix any radome rotation fault
+                                );
     glRotatef(heading, 0, 0, 1);
 
     // scaling...
     int meters = (int) br_range_meters;
     if (!meters) meters = auto_range_meters;
     if (!meters) meters = 1000;
-    double radar_pixels_per_meter = 512. / meters;
+    double radar_pixels_per_meter = ((double) RETURNS_PER_LINE) / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
 
     if ((br_bpos_set && m_hdt_source > 0) || settings.display_mode == DM_EMULATOR) {
@@ -1430,7 +1425,7 @@ void br24radar_pi::ComputeGuardZoneAngles()
             angle_2 += 360.0;
         }
         for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
-            double angleDeg = fmod(i * 360.0 / LINES_PER_ROTATION + settings.heading_correction + 360.0, 360.0);
+            double angleDeg = MOD_DEGREES(SCALE_RAW_TO_DEGREES(i) + settings.heading_correction);
 
             bool mark = false;
             if (settings.verbose >= 4) {
@@ -1455,7 +1450,7 @@ void br24radar_pi::ComputeGuardZoneAngles()
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 {
     static unsigned int previousAngle = LINES_PER_ROTATION;
-    static const double spokeWidthDeg = 360.0 / LINES_PER_ROTATION;
+    static const double spokeWidthDeg = SCALE_RAW_TO_DEGREES(1);
     static const double spokeWidthRad = deg2rad(spokeWidthDeg); // How wide is one spoke?
     double angleDeg;
     double angleRad;
@@ -1547,9 +1542,9 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
         drawn_spokes++;
 
-        scan->data[512] = 0;  // make sure this element is initialized (just outside the range)
-        for (int radius = 0; radius <= 512; ++radius) {   // loop 1 more time as only the previous one will be displayed
-            GLubyte strength = (radius < 512) ? scan->data[radius] : 0;
+        scan->data[RETURNS_PER_LINE] = 0;  // make sure this element is initialized (just outside the range)
+        for (int radius = 0; radius <= RETURNS_PER_LINE; ++radius) {   // loop 1 more time as only the previous one will be displayed
+            GLubyte strength = (radius < RETURNS_PER_LINE) ? scan->data[radius] : 0;
 
             /**********************************************************************************************************/
             // Guard Section
@@ -1559,7 +1554,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                     if (guardZoneAngles[z][scanAngle]) {
                         int inner_range = guardZones[z].inner_range; // now in meters
                         int outer_range = guardZones[z].outer_range; // now in meters
-                        int bogey_range = radius * max_range / 512;
+                        int bogey_range = radius * max_range / RETURNS_PER_LINE;
                         if (bogey_range > inner_range && bogey_range < outer_range) {
                             bogey_count[z]++;
                         }
@@ -2717,10 +2712,6 @@ void *RadarDataReceiveThread::Entry(void)
 // from the radar up to the range indicated in the packet.
 //
 // We only get Data packets of fixed length from PORT (6678), see structure in .h file
-// Sequence Header - 8 bytes
-// 32 line header/data sets per packet
-//      Line Header - 24 bytes
-//      Line Data - 512 bytes
 //
 void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 {
@@ -2769,7 +2760,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             if (scan_number > next_scan_number) {
                 pPlugIn->m_statistics.missing_spokes += scan_number - next_scan_number;
             } else {
-                pPlugIn->m_statistics.missing_spokes += 4096 + scan_number - next_scan_number;
+                pPlugIn->m_statistics.missing_spokes += LINES_PER_ROTATION + scan_number - next_scan_number;
             }
         }
         next_scan_number = (scan_number + 1) % LINES_PER_ROTATION;
@@ -2835,7 +2826,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         //  changes for heading on radar follow   Douwe Fokkema 06-02-2015
 
 
-        var_raw = (int) (var * 11.377) ; //  this is * 4096 / 360
+        var_raw = SCALE_DEGREES_TO_RAW(var);
         br_hdm_raw = (line->br4g.u01[1] << 8) | line->br4g.u01[0];
 
         if (line->br4g.u01[1] != 0x80 && variation && br_radar_type == RT_4G) {   // without variation heading on radar can not be used
@@ -2850,7 +2841,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             }
             heading_on_radar = true;                            // heading on radar
             br_hdt_raw = br_hdm_raw + var_raw;
-            br_hdt = (double) (br_hdt_raw * 360) / LINES_PER_ROTATION;   //  is * 360  / 4096
+            br_hdt = (double) SCALE_RAW_TO_DEGREES(br_hdt_raw);
             while (br_hdt >= 360 ) br_hdt -= 360;
             while (br_hdt < 0) br_hdt +=360;   // just make sure they are in range
             angle_raw += br_hdt_raw;
@@ -2865,7 +2856,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 pPlugIn->m_pControlDialog->SetLabel(label);
             }
             heading_on_radar = false;
-            br_hdt_raw = int (br_hdt * 11.37);   // otherwise use existing br_hdt    * 4096 / 360
+            br_hdt_raw = SCALE_DEGREES_TO_RAW(br_hdt);
             angle_raw += br_hdt_raw;             // map spoke on true direction
         }
         while (angle_raw >= LINES_PER_ROTATION) {
@@ -2878,12 +2869,12 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
 
         UINT8 *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
-        memcpy(dest_data1, line->data, 512);
+        memcpy(dest_data1, line->data, RETURNS_PER_LINE);
 
         // The following line is a quick hack to confirm on-screen where the range ends, by putting a 'ring' of
         // returned radar energy at the max range line.
         // TODO: create nice actual range circles.
-        dest_data1[511] = 0xff;
+        dest_data1[RETURNS_PER_LINE - 1] = 0xff;
 
         pPlugIn->m_scan_line[angle_raw].range = range_meters;
         pPlugIn->m_scan_line[angle_raw].age = now;
@@ -2960,7 +2951,7 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
 
         // Invent a pattern. Outermost ring, then a square pattern
         UINT8 *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
-        for (int range = 0; range < 512; range++) {
+        for (int range = 0; range < RETURNS_PER_LINE; range++) {
             int bit = range >> 5;
 
             // use bit 'bit' of angle_raw
@@ -2974,7 +2965,7 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
         // The following line is a quick hack to confirm on-screen where the range ends, by putting a 'ring' of
         // returned radar energy at the max range line.
         // TODO: create nice actual range circles.
-        dest_data1[511] = 0xff;
+        dest_data1[RETURNS_PER_LINE - 1] = 0xff;
 
         pPlugIn->m_scan_line[angle_raw].range = range_meters;
         pPlugIn->m_scan_line[angle_raw].age = now;

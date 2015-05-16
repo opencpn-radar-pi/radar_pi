@@ -92,6 +92,16 @@
 # define ARRAY_SIZE(x)   (sizeof(x)/sizeof(x[0]))
 # define MILLISECONDS_PER_SECOND (1000)
 
+
+#define LINES_PER_ROTATION  (4096) // BR radars can generate up to 4096 lines per rotation
+#define RETURNS_PER_LINE     (512) // BR radars generate 512 separate values per range, at 8 bits each
+#define DEGREES_PER_ROTATION (360) // Classical math
+
+// Use the above to convert from 'raw' headings sent by the radar (0..4095) into classical degrees (0..359) and back
+#define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double) DEGREES_PER_ROTATION / LINES_PER_ROTATION)
+#define SCALE_DEGREES_TO_RAW(angle) ((angle) * (double) LINES_PER_ROTATION / DEGREES_PER_ROTATION)
+#define MOD_DEGREES(angle) (fmod(angle + 720.0, 360.0))
+
 enum {
     BM_ID_RED,
     BM_ID_RED_SLAVE,
@@ -143,7 +153,7 @@ struct radar_line {
         br24_header   br24;
         br4g_header   br4g;
     };
-    UINT8 data[512];
+    UINT8 data[RETURNS_PER_LINE];
 };
 
 
@@ -271,9 +281,9 @@ struct guard_zone_settings {
 };
 
 struct scan_line {
-    int range;                  // range of this scan line in decimeters
-    wxLongLong age;             // how old this scan line is. We keep old scans on-screen for a while
-    UINT8 data[513];            // radar return strength, data[512] is an additional element, accessed in drawing the spokes
+    int range;                        // range of this scan line in decimeters
+    wxLongLong age;                   // how old this scan line is. We keep old scans on-screen for a while
+    UINT8 data[RETURNS_PER_LINE + 1]; // radar return strength, data[512] is an additional element, accessed in drawing the spokes
 };
 
 //    Forward definitions
@@ -365,7 +375,6 @@ public:
 
     radar_control_settings settings;
 
-#define LINES_PER_ROTATION (4096) // 4G radars can generate up to 4096 lines per rotation
     scan_line                 m_scan_line[LINES_PER_ROTATION];
 
 #define GUARD_ZONES (2)
@@ -906,17 +915,17 @@ private:
 
     void            OnClose(wxCloseEvent &event);
     void            OnIdStopIdleClick(wxCommandEvent &event);
-    
+
     wxWindow        *pParent;
-    
+
     br24radar_pi    *pPlugIn;
-    
+
     /* Controls  */
     wxStaticText *p_Idle_Mode;
     wxStaticText *p_IdleTimeLeft;
     wxGauge *m_Idle_gauge;
     wxButton *m_btnStopIdle;
-    
+
 };
 
 #endif
