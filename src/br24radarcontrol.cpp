@@ -72,7 +72,7 @@ enum {                                      // process ID's
     ID_NOISE_REJECTION,
     ID_TARGET_SEPARATION,
     ID_DOWNSAMPLE,
-    ID_REFRESHRATE, 
+    ID_REFRESHRATE,
     ID_SCAN_SPEED,
     ID_SCAN_AGE,
     ID_TIMED_IDLE,
@@ -268,7 +268,7 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
     }
     if (n < max) n++;    //   and increase with 1 to get the correct index
                     // n now points at the smallest value that is larger then *range_meters
-    *range_meters = ranges[n];    
+    *range_meters = ranges[n];
 
     return n;
 }
@@ -350,7 +350,7 @@ void RadarRangeControlButton::SetValue(int newValue)
     isAuto = false;
     pPlugIn->settings.auto_range_mode = false;
 
-    int meters = SetValueInt(newValue);   // do not display the new value now, will be done by receive thread when frame with new range is received 
+    int meters = SetValueInt(newValue);   // do not display the new value now, will be done by receive thread when frame with new range is received
     pPlugIn->SetRangeMeters(meters);        // send new value to the radar
 }
 
@@ -652,7 +652,7 @@ void BR24ControlsDialog::CreateControls()
     // The REFRESHRATE button
     bRefreshrate = new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), pPlugIn, CT_REFRESHRATE, false, pPlugIn->settings.refreshrate);
     advancedBox->Add(bRefreshrate, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bRefreshrate->minValue = 1;  
+    bRefreshrate->minValue = 1;
     bRefreshrate->maxValue = 5;
 
     // The SCAN AGE button
@@ -807,7 +807,7 @@ void BR24ControlsDialog::OnPlusTenClick(wxCommandEvent& event)
 void BR24ControlsDialog::OnPlusClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value + 1);
-    
+
     wxString label = fromControl->GetLabel();
 
     tValue->SetLabel(label);
@@ -840,7 +840,7 @@ void BR24ControlsDialog::OnAutoClick(wxCommandEvent &event)
 void BR24ControlsDialog::OnMinusClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value - 1);
-    
+
     wxString label = fromControl->GetLabel();
     tValue->SetLabel(label);
 }

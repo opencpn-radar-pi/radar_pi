@@ -29,7 +29,7 @@
  */
 
 
-/* 
+/*
 
 Additional contributors for release 1.1, spring 2015
 
@@ -480,7 +480,7 @@ int br24radar_pi::Init(void)
     m_pconfig = GetOCPNConfigObject();
 
     //    And load the configuration items
-   if( LoadConfig()) 
+   if( LoadConfig())
        {
        wxLogMessage(wxT("BR24radar_pi: configuration file values initialised"));
        }
@@ -880,7 +880,7 @@ void BR24DisplayOptionsDialog::OnSelectSoundClick(wxCommandEvent &event)
 {
     wxString *sharedData = GetpSharedDataLocation();
     wxString sound_dir;
-    
+
     sound_dir.Append( *sharedData );
     sound_dir.Append( wxT("sounds") );
 
@@ -928,7 +928,7 @@ void br24radar_pi::ShowRadarControl()
             int range = (int) br_range_meters;    //  always use br_range_meters   this is the current value used in the pi
                                                 //  will be updated in the receive thread if not correct
             m_pControlDialog->SetAutoRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
-            // first time we display range from outside receive thread 
+            // first time we display range from outside receive thread
     }
     m_pControlDialog->Show();
     m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
@@ -1046,7 +1046,7 @@ int br24radar_pi::GetToolbarToolCount(void)
 
 void br24radar_pi::OnToolbarToolCallback(int id)
 {
-    if (br_radar_state == RADAR_OFF) 
+    if (br_radar_state == RADAR_OFF)
         {  // turned off
         br_radar_state = RADAR_ON;
         settings.master_mode = true;
@@ -1075,7 +1075,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         }
         OnGuardZoneDialogClose();
         OnBR24ControlDialogClose();
-        
+
         if( m_pGuardZoneBogey) {
             m_pGuardZoneBogey->Hide();
             }
@@ -1140,7 +1140,7 @@ void br24radar_pi::DoTick(void)
         if (br_data_seen && (now - br_data_watchdog >= WATCHDOG_TIMEOUT)) {
             br_data_seen = false;
             wxLogMessage(wxT("BR24radar_pi: Lost radar data"));
-        } 
+        }
         else if (br_radar_seen && !br_data_seen && settings.master_mode && br_scanner_state != RADAR_ON)
             {
             if (!repeatOnDelay) // prevents sending repeated "ON" commands after turning on
@@ -1148,14 +1148,14 @@ void br24radar_pi::DoTick(void)
             // Switch radar on if we want it to be on but it wasn' detected earlier
             RadarTxOn();
             RadarSendState();
-            repeatOnDelay = 4;   
+            repeatOnDelay = 4;
                 }
             }
         }
-   if (repeatOnDelay) 
+   if (repeatOnDelay)
             {
-            repeatOnDelay--;   // count down the delay timer in every call of DoTick until 0 
-            }      
+            repeatOnDelay--;   // count down the delay timer in every call of DoTick until 0
+            }
 
     if (settings.verbose) {
         wxString t;
@@ -1183,36 +1183,36 @@ void br24radar_pi::DoTick(void)
     m_statistics.spokes         = 0;
 
     /*******************************************
-    Function Timed Transmit. Check if active 
+    Function Timed Transmit. Check if active
     ********************************************/
     if(settings.timed_idle != 0) {
-        int factor = 5 * 60; 
+        int factor = 5 * 60;
         if( br_last_idle_set == settings.timed_idle) {
             if(br_idle_watchdog > 0) {
-                if( br_radar_state == RADAR_ON && (now > (br_idle_watchdog + (settings.idle_run_time * 60)) || onInit_Timed_Idle) ) {  
-                    onInit_Timed_Idle = false;   
-                    br_idle_watchdog = 0; 
+                if( br_radar_state == RADAR_ON && (now > (br_idle_watchdog + (settings.idle_run_time * 60)) || onInit_Timed_Idle) ) {
+                    onInit_Timed_Idle = false;
+                    br_idle_watchdog = 0;
                     br24radar_pi::OnToolbarToolCallback(999999);    //Stop radar scanning
                  }
-                 else if( br_radar_state == RADAR_OFF ) { 
-                    if( now > (br_idle_watchdog + (settings.timed_idle * factor))) {                    
+                 else if( br_radar_state == RADAR_OFF ) {
+                    if( now > (br_idle_watchdog + (settings.timed_idle * factor))) {
                     br_idle_watchdog = 0;
                     if (m_pIdleDialog) m_pIdleDialog->Close();
                         br24radar_pi::OnToolbarToolCallback(999999);    //Start radar scanning
                     } else {
-                        // Send minutes left to radar control                        
+                        // Send minutes left to radar control
                         int time_left = ((br_idle_watchdog + (settings.timed_idle * factor)) - now)/60;
                         if (!m_pIdleDialog) {
                             m_pIdleDialog = new Idle_Dialog;
                             m_pIdleDialog->Create(m_parent_window, this);
-                        } 
-                        if(IdleDialogTimeLeft != time_left) { 
+                        }
+                        if(IdleDialogTimeLeft != time_left) {
                             br24radar_pi::m_pIdleDialog->SetIdleTimes(settings.timed_idle * factor/60, time_left);
                             m_pIdleDialog->Show();
                             IdleDialogTimeLeft = time_left;
                         }
                     }
-                }                
+                }
             } else (br_idle_watchdog = now);
             return;
         }
@@ -1220,12 +1220,12 @@ void br24radar_pi::DoTick(void)
             br_idle_set_count ++;
             return;
         }
-        br_idle_set_count = 0;        
-       if( br_last_idle_set == 0) onInit_Timed_Idle = true;    //Timed_Idle function init 
+        br_idle_set_count = 0;
+       if( br_last_idle_set == 0) onInit_Timed_Idle = true;    //Timed_Idle function init
         br_last_idle_set = settings.timed_idle;
     } else {
           br_idle_watchdog = 0;
-          br_last_idle_set = 0; 
+          br_last_idle_set = 0;
     }
 }
 
@@ -1266,7 +1266,7 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 {
     if (!initReady)
-        { 
+        {
          wxLogMessage(wxT("BR24radar_pi: RenderGLOverlay called with initReady == false"));
         // do nothing if initialisation has not finished
         return true;
@@ -1282,7 +1282,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
     wxPoint boat_center;
 
-    heading_on_radar = false;  // reset heading_on_radar, 
+    heading_on_radar = false;  // reset heading_on_radar,
     // in case no radar data is received heading_on_radar might remain true indefinitely
 
     if (br_bpos_set) {
@@ -1295,8 +1295,8 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
     // now set a new value in the range control if an unsollicited range change has been received.
     // not for range change that the pi has initialized. For these the control was updated immediately
-    
-    if (rangeChangeReceived) 
+
+    if (rangeChangeReceived)
         {
         rangeChangeReceived = false;
         if (!setRangeIssued)     // this range change was not initiated by the pi
@@ -1307,7 +1307,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: range label changed from RenderOverlay to %d meters *.65 = %d"), br_range_meters, current_range);
                     }
-                }            
+                }
             }
         else  //  set range issued, do not change the control value again
             {
@@ -1326,7 +1326,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     // The radar range is set such that it covers the entire screen plus 50% so that a little panning is OK.
     // This is what the plotters do as well.
 
-    if (settings.auto_range_mode) 
+    if (settings.auto_range_mode)
         {
         max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
         auto_range_meters =  max_distance / 2.0 * 0.7;        //* 1.5;  factor 1.5 removed. Covered by the radar as the actual range set is 1.4 to 1.7 times the ranges in the command
@@ -1337,7 +1337,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         int displayedRange = auto_range_meters;  //  the value for use in the control
         size_t idx = convertMetersToRadarAllowedValue(&displayedRange, settings.range_units, br_radar_type);
         //    wxLogMessage(wxT("BR24radar_pi: screensize=%f autorange_meters=%d"), max_distance, auto_range_meters);
-        if (auto_range_meters != previous_auto_range_meters) 
+        if (auto_range_meters != previous_auto_range_meters)
             {                        //   range change required
             if (settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: Automatic scale changed from %d to %d meters")
@@ -1345,14 +1345,14 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
                 }
             previous_auto_range_meters = auto_range_meters;  // the value we send to the radar is NOT from the list of allowed values
             // the radar will accept any range, so we will be close to the range we want
-            if (m_pControlDialog) {    
+            if (m_pControlDialog) {
                 m_pControlDialog->SetAutoRangeIndex(idx);
                 // Send command directly to radar
                 }
             SetRangeMeters(auto_range_meters);
             }
         }
-    
+
 
     //    Calculate image scale factor
 
@@ -1584,20 +1584,20 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         double angleCos = cos(angleRad);
         double angleSin = sin(angleRad);
         double r_begin = 0, r_end = 0;
-    
+
         enum colors {blanc, blauw, groen, rood};   // sorry dutch colors as the english ones are used already
         colors actual_color = blanc, previous_color = blanc;
 
         drawn_spokes++;
 
         scan->data[512] = 0;  // make sure this element is initialized (just outside the range)
-        for (int radius = 0; radius <= 512; ++radius) 
+        for (int radius = 0; radius <= 512; ++radius)
             {   // loop 1 more time as only the previous one will be displayed
 
-            GLubyte red = 0, green = 0, blue = 0, strength; 
+            GLubyte red = 0, green = 0, blue = 0, strength;
             if (radius < 512) strength = scan->data[radius];
-            else strength = 0;   
-            switch (settings.display_option) 
+            else strength = 0;
+            switch (settings.display_option)
                 {
                 //  first find out the actual color
             case 0:
@@ -1615,7 +1615,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                         actual_color = groen;
                     } else if (strength > 50) {
                         actual_color = blauw;
-                        } 
+                        }
                     break;
 
             case 2:
@@ -1626,28 +1626,28 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                         actual_color = groen;
                     } else if (strength > 20) {
                         actual_color = blauw;
-                        } 
+                        }
                     break;
-                }   
+                }
 
-            if (actual_color == blanc && previous_color == blanc) 
+            if (actual_color == blanc && previous_color == blanc)
                 {                    // nothing to do, next radius
                 continue;
                 }
 
-            if (actual_color == previous_color) 
+            if (actual_color == previous_color)
                 {                    // continue with same color, just register it and continue with guard
                 r_end += arc_heigth;
                 }
 
             else if (previous_color == blanc && actual_color != blanc)
-                {                    // blob starts, no display, just register 
+                {                    // blob starts, no display, just register
                 r_begin = (double) radius * ((double) scan->range / (double) max_range);
                 r_end = r_begin + arc_heigth;
                 previous_color = actual_color;            // new color
                 }
 
-            else if (previous_color != blanc && (previous_color != actual_color)) 
+            else if (previous_color != blanc && (previous_color != actual_color))
                 {                    // display time, first get the color in the glue byte
                 switch (previous_color) {
                 case rood:
@@ -1672,12 +1672,12 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                     r_begin = (double) radius * ((double) scan->range / (double) max_range);
                     r_end = r_begin + arc_heigth;
                     }
-                else 
+                else
                     {            // actual_color == blanc, blank pixel, next radius
                     continue;
                     }
-                }                    
-                         
+                }
+
             /**********************************************************************************************************/
             // Guard Section
 
@@ -1779,7 +1779,7 @@ void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, Plu
                 start_bearing = 0;
                 end_bearing = 359;
             } else {
-                start_bearing = guardZones[z].start_bearing;  
+                start_bearing = guardZones[z].start_bearing;
                     end_bearing = guardZones[z].end_bearing;
             }
             switch (settings.guard_zone_render_style) {
@@ -1851,14 +1851,14 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
         if( m_pGuardZoneBogey) {
             m_pGuardZoneBogey->SetBogeyCount(bogey_count, guard_bogey_confirmed ? -1 : ALARM_TIMEOUT - delta_t);
             }
-        }    
+        }
 
     if (!bogeysFound && m_pGuardZoneBogey) {
         m_pGuardZoneBogey->SetBogeyCount(bogey_count, -1);   // with -1 "next alarm in... "will not be displayed
         guard_bogey_confirmed = false; // Reset for next time we see bogeys
         // keep showing the bogey dialogue with 0 bogeys
 
-        }   
+        }
 
     }
 
@@ -1899,7 +1899,7 @@ bool br24radar_pi::LoadConfig(void)
             } else if (settings.max_age > MAX_AGE) {
                 settings.max_age = MAX_AGE;
             }
-            pConf->Read(wxT("RunTimeOnIdle"), &settings.idle_run_time, 2); 
+            pConf->Read(wxT("RunTimeOnIdle"), &settings.idle_run_time, 2);
             pConf->Read(wxT("DrawAlgorithm"), &settings.draw_algorithm, 1);
             pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
             pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
@@ -2023,7 +2023,7 @@ bool br24radar_pi::LoadConfig(void)
     }
 
     // Read the old location with old paths
-    
+
     if (pConf) {
          wxLogMessage(wxT("BR24radar_pi: read second config"));
 
@@ -2050,7 +2050,7 @@ bool br24radar_pi::LoadConfig(void)
             pConf->DeleteEntry(wxT("BR24ControlsDialogSizeX"));
         if (pConf->Read(wxT("BR24ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L))
             pConf->DeleteEntry(wxT("BR24ControlsDialogSizeY"));
-        
+
         if (pConf->Read(wxT("GuardZoneDialogPosX"), &m_GuardZoneBogey_x, 20L))
             pConf->DeleteEntry(wxT("GuardZoneDialogPosX"));
         if (pConf->Read(wxT("GuardZoneDialogPosY"), &m_GuardZoneBogey_y, 170L))
@@ -2150,13 +2150,13 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         if (m_hdt_source != 4) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f \n"), br_hdt);
             m_hdt_source = 4;
-            } 
+            }
         br_hdt_watchdog = now;
         char buffer [18];
         int cx = 0;
         if(PassHeadingToOCPN == 1){
         cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
-        wxString nmeastring; 
+        wxString nmeastring;
         if (cx) {
             nmeastring = wxString::FromUTF8(buffer);
             }
@@ -2174,7 +2174,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         m_hdt_source = 2;
         br_hdt_watchdog = now;
     }
-    
+
     else if (!wxIsNaN(pfix.Hdt))    // end of changes for heading on radar
     {
         if (!heading_on_radar) br_hdt = pfix.Hdt;
@@ -2184,7 +2184,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         m_hdt_source = 1;
         br_hdt_watchdog = now;
     }
-   
+
     else if (!wxIsNaN(pfix.Cog) && (m_hdt_source == 3 || (now - br_hdt_watchdog <= WATCHDOG_TIMEOUT / 2)))
     {
         if (!heading_on_radar) br_hdt = pfix.Cog;
@@ -2464,7 +2464,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             case CT_TIMED_IDLE: {
-                settings.timed_idle = value; 
+                settings.timed_idle = value;
                 break;
             }
             case CT_DOWNSAMPLE: {
@@ -2477,7 +2477,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 settings.refreshrate = value;
                 break;
             }
-            
+
             case CT_PASSHEADING: {
                 settings.PassHeadingToOCPN = value;
                 break;
@@ -2579,7 +2579,7 @@ void br24radar_pi::CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollov
 void br24radar_pi::SetNMEASentence( wxString &sentence )
 {
     m_NMEA0183 << sentence;
-//    if (settings.verbose >= 2) {    
+//    if (settings.verbose >= 2) {
 //        wxLogMessage(wxT("BR24radar_pi: SetNMEASentence  called  \n"));
 //        }
     if (m_NMEA0183.PreParse()) {
@@ -2601,7 +2601,7 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
             if (!wxIsNaN(m_NMEA0183.Hdm.DegreesMagnetic)) {
                 if (!heading_on_radar) br_hdt = m_NMEA0183.Hdm.DegreesMagnetic + m_var;
                 br_hdt_watchdog = time(0);
-    //            if (settings.verbose) {    
+    //            if (settings.verbose) {
     //                wxLogMessage(wxT("BR24radar_pi: SetNMEASentence  HDM set  \n"));
     //                }
             }
@@ -2950,20 +2950,20 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         int angle_raw = 0;
 
         int var_raw = 0;   // added for heading on radar
-        
+
         int br_hdm_raw = 0;
 
         short int large_range = 0;
         short int small_range = 0;
         int range_meters = 0;
-        
+
 
         if (memcmp(line->br24.mark, BR24MARK, sizeof(BR24MARK)) == 0) {
             // BR24 and 3G mode
             range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
             angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
             range_meters = (int) ((double)range_raw * 10.0 / sqrt(2.0));
-    
+
             br_radar_type = RT_BR24;
         } else {
             // 4G mode
@@ -2984,8 +2984,8 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             br_radar_type = RT_4G;
         }
 
-        // Range change received from radar? 
-        
+        // Range change received from radar?
+
         if (range_meters != (int) br_range_meters) {
 
             if (pPlugIn->settings.verbose >= 1) {
@@ -3019,7 +3019,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 //            wxLogMessage(wxT("BR24radar_pi:  No heading on radar received, spoke  %d "), pPlugIn->m_statistics.spokes);
                 pPlugIn->m_pControlDialog->SetTitle(label);
                 pPlugIn->m_pControlDialog->SetLabel(label);
-                }    
+                }
             heading_on_radar = true;                            // heading on radar
             br_hdt_raw = br_hdm_raw + var_raw;
             br_hdt = (double) (br_hdt_raw * 360) / LINES_PER_ROTATION;   //  is * 360  / 4096
@@ -3035,7 +3035,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 wxLogMessage(wxT("BR24radar_pi:  No heading on radar received, spoke  %d "), pPlugIn->m_statistics.spokes);
                 pPlugIn->m_pControlDialog->SetTitle(label);
                 pPlugIn->m_pControlDialog->SetLabel(label);
-                }  
+                }
             heading_on_radar = false;
             br_hdt_raw = int (br_hdt * 11.37);   // otherwise use existing br_hdt    * 4096 / 360
             angle_raw += br_hdt_raw;             // map spoke on true direction
@@ -3068,22 +3068,22 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         // this will also balance performance, if too busy skip refresh
         // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
         // so skip next refresh
-        if (pPlugIn->settings.verbose == 2) 
+        if (pPlugIn->settings.verbose == 2)
             {
             if (pos_age >= 2) wxLogMessage(wxT("BR24radar_pi:  busy encountered, br_bpos_watchdog = %i"), pos_age);
             if (RenderOverlay_busy) wxLogMessage(wxT("BR24radar_pi:  busy encountered"));
             }
         }
-    else 
+    else
         {
         if(br_radar_state == RADAR_ON)
             {
-            if (i_display >=  refreshRate ) 
-                {   //    display every "refreshrate time" 
+            if (i_display >=  refreshRate )
+                {   //    display every "refreshrate time"
                 if (refreshRate != 10) // for 10 no refresh at all
                     {
                     GetOCPNCanvasWindow()->Refresh(true);
-                    //        if (pPlugIn->settings.verbose) wxLogMessage(wxT("BR24radar_pi:  refresh issued"));    
+                    //        if (pPlugIn->settings.verbose) wxLogMessage(wxT("BR24radar_pi:  refresh issued"));
                     }
                 i_display = 0;
                 RenderOverlay_busy = true;   // no further calls until RenderOverlay_busy has been cleared by RenderGLOverlay
@@ -3570,7 +3570,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
                     logBinaryData(wxT("received unknown report"), command, len);
                 }
                 break;
-                
+
         }
         return true;
     }

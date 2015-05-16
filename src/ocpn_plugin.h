@@ -485,7 +485,7 @@ class DECL_EXP opencpn_plugin_111 : public opencpn_plugin_110
 public:
     opencpn_plugin_111(void *pmgr);
     virtual ~opencpn_plugin_111();
-    
+
 };
 
 class DECL_EXP opencpn_plugin_112 : public opencpn_plugin_111
@@ -493,10 +493,10 @@ class DECL_EXP opencpn_plugin_112 : public opencpn_plugin_111
 public:
     opencpn_plugin_112(void *pmgr);
     virtual ~opencpn_plugin_112();
-    
+
     virtual bool MouseEventHook( wxMouseEvent &event );
     virtual void SendVectorChartObjectInfo(wxString &chart, wxString &feature, wxString &objname, double lat, double lon, double scale, int nativescale);
-    
+
 };
 
 
@@ -755,7 +755,7 @@ public:
     virtual int GetNoCOVRTablePoints(int iTable);
     virtual int  GetNoCOVRTablenPoints(int iTable);
     virtual float *GetNoCOVRTableHead(int iTable);
-    
+
 };
 
 
@@ -822,7 +822,7 @@ public:
     float               lon_min;
     void                *private0;
     int                 type;
-    
+
     PI_line_segment_element *next;
 };
 
@@ -895,7 +895,7 @@ public:
       double                  y_rate;                 // to be used in GetPointPix() and friends
       double                  x_origin;               // on a per-object basis if necessary
       double                  y_origin;
-      
+
       int auxParm0;                                   // some per-object auxiliary parameters, used for OpenGL
       int auxParm1;
       int auxParm2;
@@ -959,7 +959,7 @@ int DECL_EXP PI_PLIBRenderObjectToGL( const wxGLContext &glcc, PI_S57Obj *pObj,
       glNewList(dl, GL_COMPILE_AND_EXECUTE);
       ... // use norm_viewport with GetCanvasLLPix here
       glEndList();
-   }      
+   }
    glPopMatrix();
    ... // use current_viewport with GetCanvasLLPix again
 */

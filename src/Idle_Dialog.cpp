@@ -108,35 +108,34 @@ wxString Timeleftlabel_1 = _("ca.");
 wxString Timeleftlabel_2 = _("minutes until next run");
 
 void Idle_Dialog::CreateControls()
-{	
-    const int border = 5;    
+{
+    const int border = 5;
     wxString Label_1, Label_2;
     Label_1 << Timelabel_1 << _T(" 15 ") << Timelabel_2;
     Label_2 << Timeleftlabel_1 << _T(" 15 ") << Timeleftlabel_2;
-	
-	wxBoxSizer *sbIdleDialogSizer;
-	sbIdleDialogSizer = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, _("Radar scanner is Idling") ), wxVERTICAL );
-	this->SetSizer( sbIdleDialogSizer);
 
-	p_Idle_Mode = new wxStaticText( this, wxID_ANY, Label_1 , wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
-	p_Idle_Mode->Wrap( -1 );
-	sbIdleDialogSizer->Add( p_Idle_Mode, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, border );
-	
-	p_IdleTimeLeft = new wxStaticText( this, wxID_ANY, Label_2, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
-	p_IdleTimeLeft->Wrap( -1 );
-	sbIdleDialogSizer->Add( p_IdleTimeLeft, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, border );
+    wxBoxSizer *sbIdleDialogSizer;
+    sbIdleDialogSizer = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, _("Radar scanner is Idling") ), wxVERTICAL );
+    this->SetSizer( sbIdleDialogSizer);
 
-	m_Idle_gauge = new wxGauge( this, wxID_ANY, 100, wxDefaultPosition, wxSize( -1,12 ), wxGA_HORIZONTAL);
-	m_Idle_gauge->SetValue( 0 ); 
-	sbIdleDialogSizer->Add( m_Idle_gauge, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, border);
-	
-	m_btnStopIdle = new wxButton( this, ID_STOPIDLE, _("Turn Radar always ON"), wxDefaultPosition, wxDefaultSize, 0 );
-	sbIdleDialogSizer->Add( m_btnStopIdle, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, border );
-	
-	this->Layout();
-	sbIdleDialogSizer->Fit( this );	
+    p_Idle_Mode = new wxStaticText( this, wxID_ANY, Label_1 , wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
+    p_Idle_Mode->Wrap( -1 );
+    sbIdleDialogSizer->Add( p_Idle_Mode, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, border );
+
+    p_IdleTimeLeft = new wxStaticText( this, wxID_ANY, Label_2, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
+    p_IdleTimeLeft->Wrap( -1 );
+    sbIdleDialogSizer->Add( p_IdleTimeLeft, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, border );
+
+    m_Idle_gauge = new wxGauge( this, wxID_ANY, 100, wxDefaultPosition, wxSize( -1,12 ), wxGA_HORIZONTAL);
+    m_Idle_gauge->SetValue( 0 );
+    sbIdleDialogSizer->Add( m_Idle_gauge, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, border);
+
+    m_btnStopIdle = new wxButton( this, ID_STOPIDLE, _("Turn Radar always ON"), wxDefaultPosition, wxDefaultSize, 0 );
+    sbIdleDialogSizer->Add( m_btnStopIdle, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, border );
+
+    this->Layout();
+    sbIdleDialogSizer->Fit( this );
 }
-
 
 void Idle_Dialog::SetIdleTimes(int IdleTime, int IdleTimeLeft)
 {
@@ -159,7 +158,7 @@ void Idle_Dialog::OnClose(wxCloseEvent &event)
 }
 
 void Idle_Dialog::OnIdStopIdleClick(wxCommandEvent &event)
-{    
+{
     Idle_Dialog::Close();
     event.Skip();
     pPlugIn->br24radar_pi::OnToolbarToolCallback(1);    //Start radar scanning and set Timed Idle off

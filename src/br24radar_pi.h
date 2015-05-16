@@ -652,7 +652,7 @@ public:
     virtual void SetAuto();
 
     int SetValueInt(int value);
-    
+
     int auto_range_index;
 };
 
@@ -876,13 +876,13 @@ private:
  */
 
 // Class Idle_Dialog
-class Idle_Dialog : public wxDialog 
+class Idle_Dialog : public wxDialog
 {
     DECLARE_CLASS(Idle_Dialog)
     DECLARE_EVENT_TABLE()
-        
-public:        
-        Idle_Dialog();  
+
+public:
+        Idle_Dialog();
 
         ~Idle_Dialog();
 
@@ -902,20 +902,20 @@ public:
     void    CreateControls();
     void    SetIdleTimes(int IdleTime, int IdleTimeLeft);
 
-private: 
-    
+private:
+
     void            OnClose(wxCloseEvent &event);
     void            OnIdStopIdleClick(wxCommandEvent &event);
 
     wxWindow        *pParent;
-   
+
     br24radar_pi    *pPlugIn;
 
-    /* Controls  */	
+    /* Controls  */
     wxStaticText *p_Idle_Mode;
     wxStaticText *p_IdleTimeLeft;
-	wxGauge* m_Idle_gauge;
-	wxButton *m_btnStopIdle;
+    wxGauge *m_Idle_gauge;
+    wxButton *m_btnStopIdle;
 
 };
 
