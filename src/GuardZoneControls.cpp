@@ -109,7 +109,7 @@ bool GuardZoneDialog::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
 
     wxSize  size_min = wxSize(200, 200);
 
-    if(!wxDialog::Create(parent, id, m_caption, pos, size_min, wstyle)) return false;
+    if (!wxDialog::Create(parent, id, m_caption, pos, size_min, wstyle)) return false;
 
     CreateControls();
 
@@ -310,7 +310,7 @@ void GuardZoneDialog::OnIdOKClick(wxCommandEvent &event)
 
 void GuardZoneDialog::OnContextMenuGuardCallback(double mark_rng, double mark_brg)
 {
-    if(!outer_set) {
+    if (!outer_set) {
         pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range = mark_rng;
         pPlugIn->guardZones[pPlugIn->settings.guard_zone].start_bearing = mark_brg;
 

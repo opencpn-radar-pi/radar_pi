@@ -87,7 +87,7 @@ bool Idle_Dialog::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
 
     wxSize  size_min = size;
 
-    if(!wxDialog::Create(parent, id, m_caption, pos, size_min, wstyle)) return false;
+    if (!wxDialog::Create(parent, id, m_caption, pos, size_min, wstyle)) return false;
 
     CreateControls();
 
