@@ -389,9 +389,9 @@ br24radar_pi::br24radar_pi(void *ppimgr)
 
 int br24radar_pi::Init(void)
 {
+    int r;
 #ifdef __WXMSW__
     WSADATA wsaData;
-    int r= 0;
 
     // Initialize Winsock
     r = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -491,7 +491,6 @@ int br24radar_pi::Init(void)
 
     CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_BLANK);
 
-
     //    Create the control socket for the Radar data receiver
 
     struct sockaddr_in adr;
@@ -500,7 +499,6 @@ int br24radar_pi::Init(void)
     adr.sin_addr.s_addr=htonl(INADDR_ANY);
     adr.sin_port=htons(0);
     int one = 1;
-    int r = 0;
     m_radar_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (m_radar_socket == INVALID_SOCKET) {
         r = -1;
