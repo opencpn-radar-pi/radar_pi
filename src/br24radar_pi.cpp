@@ -2877,7 +2877,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         // this will also balance performance, if too busy skip refresh
         // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
         // so skip next refresh
-        if (pPlugIn->settings.verbose == 2) {
+        if (pPlugIn->settings.verbose >= 2) {
             if (pos_age >= 2) wxLogMessage(wxT("BR24radar_pi:  busy encountered, br_bpos_watchdog = %i"), pos_age);
             if (RenderOverlay_busy) wxLogMessage(wxT("BR24radar_pi:  busy encountered"));
         }
