@@ -76,8 +76,8 @@ IMPLEMENT_CLASS(GuardZoneDialog, wxDialog)
 
 BEGIN_EVENT_TABLE(GuardZoneDialog, wxDialog)
 
-    EVT_CLOSE(GuardZoneDialog::OnClose)
-    EVT_BUTTON(ID_OK_Z, GuardZoneDialog::OnIdOKClick)
+EVT_CLOSE(GuardZoneDialog::OnClose)
+EVT_BUTTON(ID_OK_Z, GuardZoneDialog::OnIdOKClick)
 
 END_EVENT_TABLE()
 
@@ -95,8 +95,8 @@ void GuardZoneDialog::Init()
 }
 
 bool GuardZoneDialog::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
-                                const wxString  &m_caption, const wxPoint   &pos,
-                                const wxSize    &size, long style)
+                             const wxString  &m_caption, const wxPoint   &pos,
+                             const wxSize    &size, long style)
 {
     pParent = parent;
     pPlugIn = pPI;
@@ -138,54 +138,54 @@ void GuardZoneDialog::CreateControls()
     GuardZoneNames[1] = _("Arc");
     GuardZoneNames[2] = _("Circle");
     pGuardZoneType = new wxRadioBox (this, ID_ALARMZONES, _("Zone type:"),
-                                            wxDefaultPosition, wxDefaultSize,
-                                            ARRAY_SIZE(GuardZoneNames), GuardZoneNames, 1, wxRA_SPECIFY_COLS );
+                                     wxDefaultPosition, wxDefaultSize,
+                                     ARRAY_SIZE(GuardZoneNames), GuardZoneNames, 1, wxRA_SPECIFY_COLS );
 
     BoxGuardZoneSizer->Add(pGuardZoneType, 0, wxALL | wxEXPAND, 2);
 
     pGuardZoneType->Connect( wxEVT_COMMAND_RADIOBOX_SELECTED,
-                                wxCommandEventHandler(GuardZoneDialog::OnGuardZoneModeClick),
-                                NULL, this );
+                            wxCommandEventHandler(GuardZoneDialog::OnGuardZoneModeClick),
+                            NULL, this );
 
     //Inner and Outer Ranges
     wxString m_temp;
     wxStaticText *pInner_Range_Text = new wxStaticText(this, wxID_ANY, _("Inner range"),wxDefaultPosition,
-        wxDefaultSize, 0);
+                                                       wxDefaultSize, 0);
     BoxGuardZoneSizer->Add(pInner_Range_Text, 0, wxALIGN_LEFT | wxALL, 0);
 
     pInner_Range = new wxTextCtrl(this, wxID_ANY);
     BoxGuardZoneSizer->Add(pInner_Range, 1, wxALIGN_LEFT | wxALL, 5);
     pInner_Range->Connect(wxEVT_COMMAND_TEXT_UPDATED,
-                                           wxCommandEventHandler(GuardZoneDialog::OnInner_Range_Value), NULL, this);
+                          wxCommandEventHandler(GuardZoneDialog::OnInner_Range_Value), NULL, this);
 
     wxStaticText *pOuter_Range_Text = new wxStaticText(this, wxID_ANY, _("Outer range"),wxDefaultPosition,
-        wxDefaultSize, 0);
+                                                       wxDefaultSize, 0);
     BoxGuardZoneSizer->Add(pOuter_Range_Text, 0, wxALIGN_LEFT | wxALL, 0);
 
     pOuter_Range = new wxTextCtrl(this, wxID_ANY);
     BoxGuardZoneSizer->Add(pOuter_Range, 1, wxALIGN_LEFT | wxALL, 5);
     pOuter_Range->Connect(wxEVT_COMMAND_TEXT_UPDATED,
-                                           wxCommandEventHandler(GuardZoneDialog::OnOuter_Range_Value), NULL, this);
+                          wxCommandEventHandler(GuardZoneDialog::OnOuter_Range_Value), NULL, this);
 
     //1st and 2nd Arc Subtending Bearings
     wxStaticText *pStart_Bearing = new wxStaticText(this, wxID_ANY, _("Start bearing"),wxDefaultPosition,
-        wxDefaultSize, 0);
+                                                    wxDefaultSize, 0);
     BoxGuardZoneSizer->Add(pStart_Bearing, 0, wxALIGN_LEFT | wxALL, 0);
 
     pStart_Bearing_Value = new wxTextCtrl(this, wxID_ANY);
     BoxGuardZoneSizer->Add(pStart_Bearing_Value, 1, wxALIGN_LEFT | wxALL, 5);
     pStart_Bearing_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
-                                           wxCommandEventHandler(GuardZoneDialog::OnStart_Bearing_Value), NULL, this);
+                                  wxCommandEventHandler(GuardZoneDialog::OnStart_Bearing_Value), NULL, this);
 
 
     wxStaticText *pEnd_Bearing = new wxStaticText(this, wxID_ANY, _("End bearing"),wxDefaultPosition,
-        wxDefaultSize, 0);
+                                                  wxDefaultSize, 0);
     BoxGuardZoneSizer->Add(pEnd_Bearing, 0, wxALIGN_LEFT | wxALL, 0);
 
     pEnd_Bearing_Value = new wxTextCtrl(this, wxID_ANY);
     BoxGuardZoneSizer->Add(pEnd_Bearing_Value, 1, wxALIGN_LEFT | wxALL, 5);
     pEnd_Bearing_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
-                                           wxCommandEventHandler(GuardZoneDialog::OnEnd_Bearing_Value), NULL, this);
+                                wxCommandEventHandler(GuardZoneDialog::OnEnd_Bearing_Value), NULL, this);
 
 
     // The Close button
@@ -326,6 +326,6 @@ void GuardZoneDialog::OnContextMenuGuardCallback(double mark_rng, double mark_br
         outer_set = false;
     }
     pPlugIn->ComputeGuardZoneAngles();
-
+    
     OnGuardZoneDialogShow(pPlugIn->settings.guard_zone);
 }

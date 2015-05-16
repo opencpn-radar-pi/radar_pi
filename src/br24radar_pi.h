@@ -299,7 +299,7 @@ class br24radar_pi : public opencpn_plugin_110
 public:
     br24radar_pi(void *ppimgr);
 
-//    The required PlugIn Methods
+    //    The required PlugIn Methods
     int Init(void);
     bool DeInit(void);
 
@@ -313,7 +313,7 @@ public:
     wxString GetShortDescription();
     wxString GetLongDescription();
 
-//    The required override PlugIn Methods
+    //    The required override PlugIn Methods
     bool RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp);
     bool RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp);
     void SetPositionFix(PlugIn_Position_Fix &pfix);
@@ -327,7 +327,7 @@ public:
     void OnToolbarToolCallback(int id);
     void ShowPreferencesDialog(wxWindow* parent);
 
-// Other public methods
+    // Other public methods
 
     void OnBR24ControlDialogClose();         // Control dialog
     void SetDisplayMode(DisplayModeType mode);
@@ -426,7 +426,7 @@ private:
 
 
     wxBitmap                 *m_ptemp_icon;
-//    wxLogWindow              *m_plogwin;
+    //    wxLogWindow              *m_plogwin;
     int                       m_sent_bm_id_normal;
     int                       m_sent_bm_id_rollover;
 
@@ -451,8 +451,8 @@ public:
     , pPlugIn(ppi)
     , m_quit(quit)
     {
-//      wxLogMessage(_T("BR24 radar thread starting for multicast address %ls port %ls"), m_ip.c_str(), m_service_port.c_str());
-      Create(1024 * 1024);
+        //      wxLogMessage(_T("BR24 radar thread starting for multicast address %ls port %ls"), m_ip.c_str(), m_service_port.c_str());
+        Create(1024 * 1024);
     };
 
     ~RadarDataReceiveThread(void);
@@ -480,7 +480,7 @@ public:
     , pPlugIn(ppi)
     , m_quit(quit)
     {
-      Create(64 * 1024);
+        Create(64 * 1024);
     };
 
     ~RadarCommandReceiveThread(void);
@@ -504,7 +504,7 @@ public:
     , pPlugIn(ppi)
     , m_quit(quit)
     {
-      Create(64 * 1024);
+        Create(64 * 1024);
     };
 
     ~RadarReportReceiveThread(void);
@@ -584,7 +584,7 @@ public:
                        ControlType ct,
                        bool newHasAuto,
                        int newValue
-                      )
+                       )
     {
         Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
         minValue = 0;
@@ -630,7 +630,7 @@ public:
                             wxWindowID id,
                             const wxString& label,
                             br24radar_pi *ppi
-                           )
+                            )
     {
         Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
         minValue = 0;
@@ -774,7 +774,7 @@ private:
 
 /*
  =======================================================================================================================
-    BR24Radar Guard Zone Dialog Specification ;
+ BR24Radar Guard Zone Dialog Specification ;
  =======================================================================================================================
  */
 class GuardZoneDialog :    public wxDialog
@@ -789,15 +789,15 @@ public:
     void    Init();
 
     bool    Create
-            (
-                wxWindow        *parent,
-                br24radar_pi    *ppi,
-                wxWindowID      id = wxID_ANY,
-                const wxString  &m_caption = _(" Guard Zone Control"),
-                const wxPoint   &pos = wxDefaultPosition,
-                const wxSize    &size = wxDefaultSize,
-                long            style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU
-            );
+    (
+     wxWindow        *parent,
+     br24radar_pi    *ppi,
+     wxWindowID      id = wxID_ANY,
+     const wxString  &m_caption = _(" Guard Zone Control"),
+     const wxPoint   &pos = wxDefaultPosition,
+     const wxSize    &size = wxDefaultSize,
+     long            style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU
+     );
 
 
     void    CreateControls();
@@ -828,7 +828,7 @@ private:
 
 /*
  =======================================================================================================================
-    BR24Radar Guard Zone Bogey Dialog Specification ;
+ BR24Radar Guard Zone Bogey Dialog Specification ;
  =======================================================================================================================
  */
 class GuardZoneBogey :    public wxDialog
@@ -843,15 +843,15 @@ public:
     void    Init();
 
     bool    Create
-            (
-                wxWindow        *parent,
-                br24radar_pi    *ppi,
-                wxWindowID      id = wxID_ANY,
-                const wxString  &m_caption = _("Guard Zone Active"),
-                const wxPoint   &pos = wxDefaultPosition,
-                const wxSize    &size = wxDefaultSize,
-                long            style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU
-            );
+    (
+     wxWindow        *parent,
+     br24radar_pi    *ppi,
+     wxWindowID      id = wxID_ANY,
+     const wxString  &m_caption = _("Guard Zone Active"),
+     const wxPoint   &pos = wxDefaultPosition,
+     const wxSize    &size = wxDefaultSize,
+     long            style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU
+     );
 
 
     void    CreateControls();
@@ -871,7 +871,7 @@ private:
 
 /*
  =======================================================================================================================
-    BR24Radar Timed Idle Dialog Specification ;
+ BR24Radar Timed Idle Dialog Specification ;
  =======================================================================================================================
  */
 
@@ -882,22 +882,22 @@ class Idle_Dialog : public wxDialog
     DECLARE_EVENT_TABLE()
 
 public:
-        Idle_Dialog();
+    Idle_Dialog();
 
-        ~Idle_Dialog();
+    ~Idle_Dialog();
 
-        void    Init();
+    void    Init();
 
     bool Create
-            (
-                wxWindow        *parent,
-                br24radar_pi    *ppi,
-                wxWindowID      id = wxID_ANY,
-                const wxString  &m_caption = _("Timed Transmit"),
-                const wxPoint   &pos = wxPoint(0 ,0),
-                const wxSize    &size = wxDefaultSize,
-                long            style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU
-            );
+    (
+     wxWindow        *parent,
+     br24radar_pi    *ppi,
+     wxWindowID      id = wxID_ANY,
+     const wxString  &m_caption = _("Timed Transmit"),
+     const wxPoint   &pos = wxPoint(0 ,0),
+     const wxSize    &size = wxDefaultSize,
+     long            style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU
+     );
 
     void    CreateControls();
     void    SetIdleTimes(int IdleTime, int IdleTimeLeft);
@@ -906,17 +906,17 @@ private:
 
     void            OnClose(wxCloseEvent &event);
     void            OnIdStopIdleClick(wxCommandEvent &event);
-
+    
     wxWindow        *pParent;
-
+    
     br24radar_pi    *pPlugIn;
-
+    
     /* Controls  */
     wxStaticText *p_Idle_Mode;
     wxStaticText *p_IdleTimeLeft;
     wxGauge *m_Idle_gauge;
     wxButton *m_btnStopIdle;
-
+    
 };
 
 #endif

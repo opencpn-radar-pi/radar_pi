@@ -67,9 +67,9 @@ IMPLEMENT_CLASS(GuardZoneBogey, wxDialog)
 
 BEGIN_EVENT_TABLE(GuardZoneBogey, wxDialog)
 
-    EVT_CLOSE(GuardZoneBogey::OnClose)
-    EVT_BUTTON(ID_CONFIRM, GuardZoneBogey::OnIdConfirmClick)
-    EVT_BUTTON(ID_CLOSE, GuardZoneBogey::OnIdCloseClick)
+EVT_CLOSE(GuardZoneBogey::OnClose)
+EVT_BUTTON(ID_CONFIRM, GuardZoneBogey::OnIdConfirmClick)
+EVT_BUTTON(ID_CLOSE, GuardZoneBogey::OnIdCloseClick)
 
 END_EVENT_TABLE()
 
@@ -87,8 +87,8 @@ void GuardZoneBogey::Init()
 }
 
 bool GuardZoneBogey::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
-                                const wxString  &m_caption, const wxPoint   &pos,
-                                const wxSize    &size, long style)
+                            const wxString  &m_caption, const wxPoint   &pos,
+                            const wxSize    &size, long style)
 {
     pParent = parent;
     pPlugIn = pPI;

@@ -100,36 +100,36 @@ IMPLEMENT_CLASS(BR24ControlsDialog, wxDialog)
 
 BEGIN_EVENT_TABLE(BR24ControlsDialog, wxDialog)
 
-    EVT_CLOSE(BR24ControlsDialog::OnClose)
-    EVT_BUTTON(ID_BACK, BR24ControlsDialog::OnBackClick)
-    EVT_BUTTON(ID_PLUS_TEN,  BR24ControlsDialog::OnPlusTenClick)
-    EVT_BUTTON(ID_PLUS,  BR24ControlsDialog::OnPlusClick)
-    EVT_BUTTON(ID_MINUS, BR24ControlsDialog::OnMinusClick)
-    EVT_BUTTON(ID_MINUS_TEN, BR24ControlsDialog::OnMinusTenClick)
-    EVT_BUTTON(ID_AUTO,  BR24ControlsDialog::OnAutoClick)
+EVT_CLOSE(BR24ControlsDialog::OnClose)
+EVT_BUTTON(ID_BACK, BR24ControlsDialog::OnBackClick)
+EVT_BUTTON(ID_PLUS_TEN,  BR24ControlsDialog::OnPlusTenClick)
+EVT_BUTTON(ID_PLUS,  BR24ControlsDialog::OnPlusClick)
+EVT_BUTTON(ID_MINUS, BR24ControlsDialog::OnMinusClick)
+EVT_BUTTON(ID_MINUS_TEN, BR24ControlsDialog::OnMinusTenClick)
+EVT_BUTTON(ID_AUTO,  BR24ControlsDialog::OnAutoClick)
 
-    EVT_BUTTON(ID_ADVANCED_BACK,  BR24ControlsDialog::OnAdvancedBackButtonClick)
-    EVT_BUTTON(ID_TRANSPARENCY, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_INTERFERENCE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_TARGET_BOOST, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_NOISE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_TARGET_SEPARATION, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_DOWNSAMPLE, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_REFRESHRATE, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_TIMED_IDLE, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_ADVANCED_BACK,  BR24ControlsDialog::OnAdvancedBackButtonClick)
+EVT_BUTTON(ID_TRANSPARENCY, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_INTERFERENCE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_TARGET_BOOST, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_NOISE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_TARGET_SEPARATION, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_DOWNSAMPLE, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_REFRESHRATE, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_TIMED_IDLE, BR24ControlsDialog::OnRadarControlButtonClick)
 
-    EVT_BUTTON(ID_RANGE, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_GAIN, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_SEA, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_RAIN, BR24ControlsDialog::OnRadarControlButtonClick)
-    EVT_BUTTON(ID_ADVANCED, BR24ControlsDialog::OnAdvancedButtonClick)
-    EVT_BUTTON(ID_ZONE1, BR24ControlsDialog::OnZone1ButtonClick)
-    EVT_BUTTON(ID_ZONE2, BR24ControlsDialog::OnZone2ButtonClick)
+EVT_BUTTON(ID_RANGE, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_GAIN, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_SEA, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_RAIN, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_ADVANCED, BR24ControlsDialog::OnAdvancedButtonClick)
+EVT_BUTTON(ID_ZONE1, BR24ControlsDialog::OnZone1ButtonClick)
+EVT_BUTTON(ID_ZONE2, BR24ControlsDialog::OnZone2ButtonClick)
 
-    EVT_MOVE(BR24ControlsDialog::OnMove)
-    EVT_SIZE(BR24ControlsDialog::OnSize)
+EVT_MOVE(BR24ControlsDialog::OnMove)
+EVT_SIZE(BR24ControlsDialog::OnSize)
 
 END_EVENT_TABLE()
 
@@ -246,7 +246,7 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
     const int * ranges;
     int myrange = int (*range_meters);
     myrange = int (myrange * 0.9);   // be shure to be inside the right interval
-                                            // to prevent you get 1.5 mile with a value of 1855 meters
+    // to prevent you get 1.5 mile with a value of 1855 meters
     size_t      n;
 
     if (units < 1) {                    /* NMi or Mi */
@@ -267,7 +267,7 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
         }
     }
     if (n < max) n++;    //   and increase with 1 to get the correct index
-                    // n now points at the smallest value that is larger then *range_meters
+    // n now points at the smallest value that is larger then *range_meters
     *range_meters = ranges[n];
 
     return n;
@@ -311,8 +311,8 @@ void RadarControlButton::SetAuto()
 
 int RadarRangeControlButton::SetValueInt(int newValue)
 {                    // only called from the receive thread
-                    // newValue is the new range index number
-                    // sets the new range label in the button and returns the new range in meters
+    // newValue is the new range index number
+    // sets the new range label in the button and returns the new range in meters
     int units = pPlugIn->settings.range_units;
 
     maxValue = g_range_maxValue[units] - 1;
@@ -346,7 +346,7 @@ int RadarRangeControlButton::SetValueInt(int newValue)
 
 void RadarRangeControlButton::SetValue(int newValue)
 {                                        // newValue is the index of the new range
-                                        // sends the command for the new range to the radar
+    // sends the command for the new range to the radar
     isAuto = false;
     pPlugIn->settings.auto_range_mode = false;
 
@@ -358,12 +358,12 @@ void RadarRangeControlButton::SetAuto()
 {
     isAuto = true;
     pPlugIn->settings.auto_range_mode = true;
- //   SetValueInt(auto_range_index);    // do not display the new value now, will be done by receive thread
+    //   SetValueInt(auto_range_index);    // do not display the new value now, will be done by receive thread
 }
 
 BR24ControlsDialog::BR24ControlsDialog()
 {
-//      printf("BR24BUIDialog ctor\n");
+    //      printf("BR24BUIDialog ctor\n");
     Init();
 }
 
@@ -1001,7 +1001,7 @@ void BR24ControlsDialog::SetMcastIPAddress(wxString &msg)
 {
     if (ipBox) {
         wxString label;
-
+        
         label << _("ZeroConf via (wired) Ethernet") << wxT(" ") << msg;
         ipBox->SetLabel(label);
     }

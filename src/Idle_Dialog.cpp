@@ -56,8 +56,8 @@ IMPLEMENT_CLASS(Idle_Dialog, wxDialog)
 
 BEGIN_EVENT_TABLE(Idle_Dialog, wxDialog)
 
-    EVT_CLOSE(Idle_Dialog::OnClose)
-    EVT_BUTTON(ID_STOPIDLE, Idle_Dialog::OnIdStopIdleClick)
+EVT_CLOSE(Idle_Dialog::OnClose)
+EVT_BUTTON(ID_STOPIDLE, Idle_Dialog::OnIdStopIdleClick)
 
 END_EVENT_TABLE()
 
@@ -74,8 +74,8 @@ void Idle_Dialog::Init()
 }
 
 bool Idle_Dialog::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
-                                const wxString  &m_caption, const wxPoint   &pos,
-                                const wxSize    &size, long style)
+                         const wxString  &m_caption, const wxPoint   &pos,
+                         const wxSize    &size, long style)
 {
     pParent = parent;
     pPlugIn = pPI;
@@ -154,7 +154,7 @@ void Idle_Dialog::SetIdleTimes(int IdleTime, int IdleTimeLeft)
 
 void Idle_Dialog::OnClose(wxCloseEvent &event)
 {
-        event.Skip();
+    event.Skip();
 }
 
 void Idle_Dialog::OnIdStopIdleClick(wxCommandEvent &event)
