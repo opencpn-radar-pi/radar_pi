@@ -119,9 +119,9 @@ int br_hdt_raw = 0;
 unsigned int i_display = 0;  // used in radar reive thread for display operation
 int repeatOnDelay = 0;   // used to prevend additional TxOn commands from DoTick when radar heas just been switched on
 
-bool variation = false;
 bool heading_on_radar = false;
 int display_heading_on_radar = 0;
+bool var_is_set = false;
 double var = 0;
 unsigned int downsample = 0;  // moved from display radar to here; also used in radar receive thread
 unsigned int refreshRate = 1;  // refreshrate for radar used in process buffer
@@ -1070,14 +1070,12 @@ void br24radar_pi::DoTick(void)
 
     if (now == previousTicks) {
         // Repeated call during scroll, do not do Tick processing
-        // no tick if initialisation is not ready
         return;
     }
     previousTicks = now;
 
     if (br_bpos_set && (now - br_bpos_watchdog >= WATCHDOG_TIMEOUT)) {
-
-        // If the position data is 4 * 10s old reset our heading.
+        // If the position data is 10s old reset our heading.
         // Note that the watchdog is continuously reset every time we receive a heading.
         br_bpos_set = false;
         wxLogMessage(wxT("BR24radar_pi: Lost Boat Position data"));
@@ -1969,18 +1967,20 @@ void br24radar_pi::SetPositionFix(PlugIn_Position_Fix &pfix)
 void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 {
     time_t now = time(0);
-    //     PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,,230394,003.1,W"));  // only for test, position without heading
-    //    PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A")); //with heading for test
-    if (settings.verbose) {
-        wxLogMessage(wxT("BR24radar_pi: SetPositionFix called  \n"));
+    // PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,,230394,003.1,W"));  // only for test, position without heading
+    // PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A")); //with heading for test
+    if (settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: SetPositionFixEx var = \n"));
     }
-    //   changes for heading on radar
     if (!wxIsNaN(pfix.Var)) {            // set variation for use in radar receive thread
-        variation = true;
+        var_is_set = true;
         var = pfix.Var;
     }
-    else variation = false;
-    if (heading_on_radar && br_radar_state == RADAR_ON) {
+    else {
+        var_is_set = false;
+    }
+
+    if (heading_on_radar && var_is_set && br_radar_state == RADAR_ON) {
         if (m_hdt_source != 4) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f \n"), br_hdt);
             m_hdt_source = 4;
@@ -1988,7 +1988,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         br_hdt_watchdog = now;
         char buffer [18];
         int cx = 0;
-        if (PassHeadingToOCPN == 1){
+        if (PassHeadingToOCPN == 1) {
             cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
             wxString nmeastring;
             if (cx) {
@@ -1997,9 +1997,10 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             PushNMEABuffer (nmeastring);  // issue heading from radar to OCPN
         }
     }
-
     else if (!wxIsNaN(pfix.Hdm) && !wxIsNaN(pfix.Var)) {
-        if (!heading_on_radar) br_hdt = pfix.Hdm + pfix.Var;
+        if (!heading_on_radar) {
+            br_hdt = pfix.Hdm + pfix.Var;
+        }
         m_var = pfix.Var;
         if (m_hdt_source != 2) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM"));
@@ -2008,7 +2009,9 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         br_hdt_watchdog = now;
     }
     else if (!wxIsNaN(pfix.Hdt)) {
-        if (!heading_on_radar) br_hdt = pfix.Hdt;
+        if (!heading_on_radar) {
+            br_hdt = pfix.Hdt;
+        }
         if (m_hdt_source != 1) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
         }
@@ -2739,7 +2742,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         radar_line * line = &packet->line[scanline];
 
         // Validate the spoke
-        scan_number = line->br24.scan_number[0] + (line->br24.scan_number[1] << 8);
+        scan_number = line->br24.scan_number[0] | (line->br24.scan_number[1] << 8);
         pPlugIn->m_statistics.spokes++;
         if (line->br24.headerLen != 0x18) {
             if (pPlugIn->settings.verbose) {
@@ -2768,9 +2771,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         int range_raw = 0;
         int angle_raw = 0;
 
-        int var_raw = 0;   // added for heading on radar
-
-        int br_hdm_raw = 0;
+        short int br_hdm_raw = 0;
 
         short int large_range = 0;
         short int small_range = 0;
@@ -2826,10 +2827,9 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         //  changes for heading on radar follow   Douwe Fokkema 06-02-2015
 
 
-        var_raw = SCALE_DEGREES_TO_RAW(var);
-        br_hdm_raw = (line->br4g.u01[1] << 8) | line->br4g.u01[0];
+        br_hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
 
-        if (line->br4g.u01[1] != 0x80 && variation && br_radar_type == RT_4G) {   // without variation heading on radar can not be used
+        if (br_hdm_raw != -1 && var_is_set && br_radar_type == RT_4G) {   // without variation heading on radar can not be used
             // heading_on_radar only for 4G radar
             if (display_heading_on_radar != 2 && pPlugIn->m_pControlDialog) {
                 display_heading_on_radar = 2 ;   // "Radar" has been displayed earlier
@@ -2840,10 +2840,8 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 pPlugIn->m_pControlDialog->SetLabel(label);
             }
             heading_on_radar = true;                            // heading on radar
-            br_hdt_raw = br_hdm_raw + var_raw;
-            br_hdt = (double) SCALE_RAW_TO_DEGREES(br_hdt_raw);
-            while (br_hdt >= 360 ) br_hdt -= 360;
-            while (br_hdt < 0) br_hdt +=360;   // just make sure they are in range
+            br_hdt_raw = MOD_ROTATION(br_hdm_raw + SCALE_DEGREES_TO_RAW(var));
+            br_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(br_hdt_raw));
             angle_raw += br_hdt_raw;
         }
         else {                                // no heading on radar
@@ -2859,14 +2857,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             br_hdt_raw = SCALE_DEGREES_TO_RAW(br_hdt);
             angle_raw += br_hdt_raw;             // map spoke on true direction
         }
-        while (angle_raw >= LINES_PER_ROTATION) {
-            angle_raw -= LINES_PER_ROTATION;
-        }
-        while (angle_raw < 0) {
-            angle_raw += LINES_PER_ROTATION;
-        }
-        //  end of changes for heading on radar
-
+        angle_raw = MOD_ROTATION(angle_raw);
 
         UINT8 *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
         memcpy(dest_data1, line->data, RETURNS_PER_LINE);

@@ -101,6 +101,7 @@
 #define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double) DEGREES_PER_ROTATION / LINES_PER_ROTATION)
 #define SCALE_DEGREES_TO_RAW(angle) ((angle) * (double) LINES_PER_ROTATION / DEGREES_PER_ROTATION)
 #define MOD_DEGREES(angle) (fmod(angle + 720.0, 360.0))
+#define MOD_ROTATION(raw) (((raw) + 2 * LINES_PER_ROTATION) % LINES_PER_ROTATION)
 
 enum {
     BM_ID_RED,
@@ -111,7 +112,6 @@ enum {
     BM_ID_AMBER_SLAVE,
     BM_ID_BLANK,
     BM_ID_BLANK_SLAVE
-
 };
 
 enum {
@@ -127,7 +127,7 @@ struct br24_header {
     UINT8 scan_number[2];  //2 bytes
     UINT8 mark[4];         //4 bytes 0x00, 0x44, 0x0d, 0x0e
     UINT8 angle[2];        //2 bytes
-    UINT8 u00[2];          //2 bytes blank
+    UINT8 heading[2];      //2 bytes heading with RI-10/11?
     UINT8 range[4];        //4 bytes
     UINT8 u01[2];          //2 bytes blank
     UINT8 u02[2];          //2 bytes
@@ -141,7 +141,7 @@ struct br4g_header {
     UINT8 u00[2];          //Always 0x4400 (integer)
     UINT8 largerange[2];   //2 bytes or -1
     UINT8 angle[2];        //2 bytes
-    UINT8 u01[2];          //Always 0x8000 = -1  or heading from radar
+    UINT8 heading[2];      //2 bytes heading with RI-10/11 or -1
     UINT8 smallrange[2];   //2 bytes or -1
     UINT8 rotation[2];     //2 bytes, looks like rotation/angle
     UINT8 u02[4];          //4 bytes signed integer, always -1
