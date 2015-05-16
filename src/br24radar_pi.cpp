@@ -1485,8 +1485,8 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         wxLogMessage(wxT("BR24radar_pi: ") wxTPRId64 wxT(" drawing start"), now);
     }
     if (downsample == 0) {
-        // this can happen if the radar is transmitting before the ini file is processed
-        // and will result in an endless loop
+        wxLogMessage(wxT("BR24radar_pi: ASSERT FAILED: downsample not initialised");
+        // this should not happen, but prevent endless loop anyway
         downsample = 1;
     }
     // DRAWING PICTURE
