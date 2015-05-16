@@ -119,7 +119,6 @@ double br_hdt;     // this is the heading that the pi is using for all heading o
 int br_hdt_raw = 0;
 unsigned int i_display = 0;  // used in radar reive thread for display operation
 int repeatOnDelay = 0;   // used to prevend additional TxOn commands from DoTick when radar heas just been switched on
-bool initReady = false;  //semaphore to signal that the initialisation has finished
 
 bool variation = false;
 bool heading_on_radar = false;
@@ -467,6 +466,7 @@ int br24radar_pi::Init(void)
     }
     else {
         wxLogMessage(wxT("BR24radar_pi: configuration file values initialisation failed"));
+        return 0; // give up
     }
 
     if (settings.verbose > 0) {
@@ -549,8 +549,6 @@ int br24radar_pi::Init(void)
     }
     m_reportReceiveThread = new RadarReportReceiveThread(this, &m_quit);
     m_reportReceiveThread->Run();
-
-    initReady = true;  //signal that initialisation is ready (but parts may have failed)
 
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
@@ -1074,7 +1072,7 @@ void br24radar_pi::DoTick(void)
     time_t now = time(0);
     static time_t previousTicks = 0;
 
-    if (now == previousTicks || !initReady) {
+    if (now == previousTicks) {
         // Repeated call during scroll, do not do Tick processing
         // no tick if initialisation is not ready
         return;
@@ -1239,12 +1237,7 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 {
-    if (!initReady) {
-        wxLogMessage(wxT("BR24radar_pi: RenderGLOverlay called with initReady == false"));
-        // do nothing if initialisation has not finished
-        return true;
-    }
-    RenderOverlay_busy = true;   //  the receive thread should not call (through refresh canvas) this when it is busy
+    RenderOverlay_busy = true;   //  the receive thread should not queue another refresh (through refresh canvas) this when it is busy
     br_opengl_mode = true;
     // this is expected to be called at least once per second
     // but if we are scrolling or otherwise it can be MUCH more often!
@@ -1828,194 +1821,83 @@ bool br24radar_pi::LoadConfig(void)
     wxFileConfig *pConf = m_pconfig;
 
     if (pConf) {
-        pConf->SetPath(wxT("/Settings"));
         pConf->SetPath(wxT("/Plugins/BR24Radar"));
-        if (pConf->Read(wxT("DisplayOption"), &settings.display_option, 0)) {
-            pConf->Read(wxT("RangeUnits" ), &settings.range_units, 0 ); //0 = "Nautical miles"), 1 = "Kilometers"
-            if (settings.range_units >= 2) {
-                settings.range_units = 1;
-            }
-            settings.range_unit_meters = (settings.range_units == 1) ? 1000 : 1852;
-            pConf->Read(wxT("DisplayMode"),  (int *) &settings.display_mode, 0);
-            pConf->Read(wxT("VerboseLog"),  &settings.verbose, 0);
-            pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
-            pConf->Read(wxT("Gain"),  &settings.gain, -1);
-            pConf->Read(wxT("RainGain"),  &settings.rain_clutter_gain, 50);
-            pConf->Read(wxT("ClutterGain"),  &settings.sea_clutter_gain, -1);
-            pConf->Read(wxT("RangeCalibration"),  &settings.range_calibration, 1.0);
-            pConf->Read(wxT("HeadingCorrection"),  &settings.heading_correction, 0);
-            pConf->Read(wxT("BeamWidth"), &settings.beam_width, 2);
-            pConf->Read(wxT("InterferenceRejection"), &settings.interference_rejection, 0);
-            pConf->Read(wxT("TargetSeparation"), &settings.target_separation, 0);
-            pConf->Read(wxT("NoiseRejection"), &settings.noise_rejection, 0);
-            pConf->Read(wxT("TargetBoost"), &settings.target_boost, 0);
-            pConf->Read(wxT("ScanMaxAge"), &settings.max_age, MIN_AGE);
-            if (settings.max_age < MIN_AGE) {
-                settings.max_age = MIN_AGE;
-            } else if (settings.max_age > MAX_AGE) {
-                settings.max_age = MAX_AGE;
-            }
-            pConf->Read(wxT("RunTimeOnIdle"), &settings.idle_run_time, 2);
-            pConf->Read(wxT("DrawAlgorithm"), &settings.draw_algorithm, 1);
-            pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
-            pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
-            pConf->Read(wxT("ScanSpeed"), &settings.scan_speed, 0);
-            pConf->Read(wxT("Downsample"), &settings.downsampleUser, 2);
-            if (settings.downsampleUser < 1) {
-                settings.downsampleUser = 1; // otherwise we get infinite loop
-            }
-            if (settings.downsampleUser > 8) {
-                settings.downsampleUser = 1; // otherwise we get strange things
-            }
-            settings.downsample = 2 << (settings.downsampleUser - 1);
-            pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 1);
-            if (settings.refreshrate < 1) {
-                settings.refreshrate = 1; // not allowed
-            }
-            if (settings.refreshrate > 5) {
-                settings.refreshrate = 5; // not allowed
-            }
-            refreshRate = refreshmapping [settings.refreshrate - 1];
-
-            pConf->Read(wxT("PassHeadingToOCPN"), &settings.PassHeadingToOCPN, 0);    // PassHeadingToOCPN == 0 : do not pass heading_from_radar to OCPN
-            PassHeadingToOCPN = settings.PassHeadingToOCPN;
-
-            pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
-            pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
-            pConf->Read(wxT("ControlsDialogPosX"), &m_BR24Controls_dialog_x, 20L);
-            pConf->Read(wxT("ControlsDialogPosY"), &m_BR24Controls_dialog_y, 170L);
-
-            pConf->Read(wxT("GuardZonePosX"), &m_GuardZoneBogey_x, 20L);
-            pConf->Read(wxT("GuardZonePosY"), &m_GuardZoneBogey_y, 170L);
-
-            double d;
-            pConf->Read(wxT("Zone1StBrng"), &guardZones[0].start_bearing, 0.0);
-            pConf->Read(wxT("Zone1EndBrng"), &guardZones[0].end_bearing, 0.0);
-            if (pConf->Read(wxT("Zone1OutRng"), &d, 0.0)) {
-                pConf->DeleteEntry(wxT("Zone1OutRng"));
-                guardZones[0].outer_range = (int) (d * 1852.0);
-                wxLogMessage(wxT("BR24radar_pi: converting old guard range %f to %d"), d, guardZones[0].outer_range);
-            } else {
-                pConf->Read(wxT("Zone1OuterRng"), &guardZones[0].outer_range, 0);
-            }
-            if (pConf->Read(wxT("Zone1InRng"), &d, 0.0)) {
-                pConf->DeleteEntry(wxT("Zone1InRng"));
-                guardZones[0].inner_range = (int) (d * 1852.0);
-                wxLogMessage(wxT("BR24radar_pi: converting old guard range %f to %d"), d, guardZones[0].inner_range);
-            } else {
-                pConf->Read(wxT("Zone1InnerRng"), &guardZones[0].inner_range, 0);
-            }
-            pConf->Read(wxT("Zone1ArcCirc"), &guardZones[0].type, 0);
-
-            pConf->Read(wxT("Zone2StBrng"), &guardZones[1].start_bearing, 0.0);
-            pConf->Read(wxT("Zone2EndBrng"), &guardZones[1].end_bearing, 0.0);
-            if (pConf->Read(wxT("Zone2OutRng"), &d, 0.0)) {
-                pConf->DeleteEntry(wxT("Zone2OutRng"));
-                guardZones[1].outer_range = (int) (d * 1852.0);
-                wxLogMessage(wxT("BR24radar_pi: converting old guard range %f to %d"), d, guardZones[1].outer_range);
-            } else {
-                pConf->Read(wxT("Zone2OuterRng"), &guardZones[1].outer_range, 0);
-            }
-            if (pConf->Read(wxT("Zone2InRng"), &d, 0)) {
-                pConf->DeleteEntry(wxT("Zone2InRng"));
-                guardZones[1].inner_range = (int) (d * 1852.0);
-                wxLogMessage(wxT("BR24radar_pi: converting old guard range %f to %d"), d, guardZones[1].inner_range);
-            } else {
-                pConf->Read(wxT("Zone2InnerRng"), &guardZones[1].inner_range, 0);
-            }
-            pConf->Read(wxT("Zone2ArcCirc"), &guardZones[1].type, 0);
-
-
-            pConf->Read(wxT("RadarAlertAudioFile"), &settings.alert_audio_file);
-
-            SaveConfig();
-            return true;
+        pConf->Read(wxT("DisplayOption"), &settings.display_option, 0);
+        pConf->Read(wxT("RangeUnits" ), &settings.range_units, 0 ); //0 = "Nautical miles"), 1 = "Kilometers"
+        if (settings.range_units >= 2) {
+            settings.range_units = 1;
         }
-        else {
-            // make sure that initialisations are done when ini file is not present
-            settings.display_option= 0;
-            settings.range_units = 0;
-            settings.range_unit_meters = (settings.range_units == 1) ? 1000 : 1852;
-            settings.display_mode = DM_CHART_OVERLAY;
-            settings.verbose = 0;
-            settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
-            settings.gain = -1;
-            settings.rain_clutter_gain = 50;
-            settings.sea_clutter_gain = -1;
-            settings.range_calibration = 1.0;
-            settings.heading_correction = 0;
-            settings.beam_width = 2;
-            settings.interference_rejection = 0;
-            settings.target_separation = 0;
-            settings.noise_rejection = 0;
-            settings.target_boost = 0;
+        settings.range_unit_meters = (settings.range_units == 1) ? 1000 : 1852;
+        pConf->Read(wxT("DisplayMode"),  (int *) &settings.display_mode, 0);
+        pConf->Read(wxT("VerboseLog"),  &settings.verbose, 0);
+        pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
+        pConf->Read(wxT("Gain"),  &settings.gain, -1);
+        pConf->Read(wxT("RainGain"),  &settings.rain_clutter_gain, 50);
+        pConf->Read(wxT("ClutterGain"),  &settings.sea_clutter_gain, -1);
+        pConf->Read(wxT("RangeCalibration"),  &settings.range_calibration, 1.0);
+        pConf->Read(wxT("HeadingCorrection"),  &settings.heading_correction, 0);
+        pConf->Read(wxT("BeamWidth"), &settings.beam_width, 2);
+        pConf->Read(wxT("InterferenceRejection"), &settings.interference_rejection, 0);
+        pConf->Read(wxT("TargetSeparation"), &settings.target_separation, 0);
+        pConf->Read(wxT("NoiseRejection"), &settings.noise_rejection, 0);
+        pConf->Read(wxT("TargetBoost"), &settings.target_boost, 0);
+        pConf->Read(wxT("ScanMaxAge"), &settings.max_age, MIN_AGE);
+        if (settings.max_age < MIN_AGE) {
             settings.max_age = MIN_AGE;
-            settings.idle_run_time = 2;
-            settings.draw_algorithm = 1;
-            settings.guard_zone_threshold = 5L;
-            settings.guard_zone_render_style = 0;
-            settings.scan_speed = 0;
-            settings.downsampleUser = 2;
-            settings.refreshrate = 1;
-            refreshRate = refreshmapping [settings.refreshrate - 1];
-            settings.PassHeadingToOCPN = 0;
-            m_BR24Controls_dialog_sx = 300L;
-            m_BR24Controls_dialog_sy = 540L;
-            m_BR24Controls_dialog_x = 20L;
-            m_BR24Controls_dialog_y = 170L;
-            m_GuardZoneBogey_x = 20L;
-            m_GuardZoneBogey_y = 170L;
-            guardZones[0].start_bearing = 0.0;
-            guardZones[0].end_bearing = 0.0;
-            guardZones[0].outer_range = 0;
-            guardZones[0].inner_range = 0;
-            guardZones[0].type = 0;
-            guardZones[1].inner_range = 0;
-            guardZones[1].outer_range = 0;
-            guardZones[1].type = 0;
+        } else if (settings.max_age > MAX_AGE) {
+            settings.max_age = MAX_AGE;
         }
+        pConf->Read(wxT("RunTimeOnIdle"), &settings.idle_run_time, 2);
+        pConf->Read(wxT("DrawAlgorithm"), &settings.draw_algorithm, 1);
+        pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
+        pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
+        pConf->Read(wxT("ScanSpeed"), &settings.scan_speed, 0);
+        pConf->Read(wxT("Downsample"), &settings.downsampleUser, 2);
+        if (settings.downsampleUser < 1) {
+            settings.downsampleUser = 1; // otherwise we get infinite loop
+        }
+        if (settings.downsampleUser > 8) {
+            settings.downsampleUser = 1; // otherwise we get strange things
+        }
+        settings.downsample = 2 << (settings.downsampleUser - 1);
+        pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 1);
+        if (settings.refreshrate < 1) {
+            settings.refreshrate = 1; // not allowed
+        }
+        if (settings.refreshrate > 5) {
+            settings.refreshrate = 5; // not allowed
+        }
+        refreshRate = refreshmapping[settings.refreshrate - 1];
+
+        pConf->Read(wxT("PassHeadingToOCPN"), &settings.PassHeadingToOCPN, 0);
+        // PassHeadingToOCPN == 0 : do not pass heading_from_radar to OCPN
+        PassHeadingToOCPN = settings.PassHeadingToOCPN;
+
+        pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
+        pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
+        pConf->Read(wxT("ControlsDialogPosX"), &m_BR24Controls_dialog_x, 20L);
+        pConf->Read(wxT("ControlsDialogPosY"), &m_BR24Controls_dialog_y, 170L);
+
+        pConf->Read(wxT("GuardZonePosX"), &m_GuardZoneBogey_x, 20L);
+        pConf->Read(wxT("GuardZonePosY"), &m_GuardZoneBogey_y, 170L);
+
+        pConf->Read(wxT("Zone1StBrng"), &guardZones[0].start_bearing, 0.0);
+        pConf->Read(wxT("Zone1EndBrng"), &guardZones[0].end_bearing, 0.0);
+        pConf->Read(wxT("Zone1OuterRng"), &guardZones[0].outer_range, 0);
+        pConf->Read(wxT("Zone1InnerRng"), &guardZones[0].inner_range, 0);
+        pConf->Read(wxT("Zone1ArcCirc"), &guardZones[0].type, 0);
+
+        pConf->Read(wxT("Zone2StBrng"), &guardZones[1].start_bearing, 0.0);
+        pConf->Read(wxT("Zone2EndBrng"), &guardZones[1].end_bearing, 0.0);
+        pConf->Read(wxT("Zone2OuterRng"), &guardZones[1].outer_range, 0);
+        pConf->Read(wxT("Zone2InnerRng"), &guardZones[1].inner_range, 0);
+        pConf->Read(wxT("Zone2ArcCirc"), &guardZones[1].type, 0);
+
+        pConf->Read(wxT("RadarAlertAudioFile"), &settings.alert_audio_file);
+
         SaveConfig();
         return true;
     }
-
-    // Read the old location with old paths
-
-    if (pConf) {
-        wxLogMessage(wxT("BR24radar_pi: read second config"));
-
-        pConf->SetPath(wxT("/Settings"));
-        if (pConf->Read(wxT("BR24RadarDisplayOption"), &settings.display_option, 0))
-            pConf->DeleteEntry(wxT("BR24RadarDisplayOption"));
-        if (pConf->Read(wxT("BR24RadarDisplayMode"),  (int *) &settings.display_mode, 0))
-            pConf->DeleteEntry(wxT("BR24RadarDisplayMode"));
-        settings.verbose = 0;
-        if (pConf->Read(wxT("BR24RadarTransparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY))
-            pConf->DeleteEntry(wxT("BR24RadarTransparency"));
-        if (pConf->Read(wxT("BR24RadarGain"),  &settings.gain, 50))
-            pConf->DeleteEntry(wxT("BR24RadarGain"));
-        if (pConf->Read(wxT("BR24RadarRainGain"),  &settings.rain_clutter_gain, 50))
-            pConf->DeleteEntry(wxT("BR24RadarRainGain"));
-        if (pConf->Read(wxT("BR24RadarClutterGain"),  &settings.sea_clutter_gain, 50))
-            pConf->DeleteEntry(wxT("BR24RadarClutterGain"));
-        if (pConf->Read(wxT("BR24RadarRangeCalibration"),  &settings.range_calibration, 1.0))
-            pConf->DeleteEntry(wxT("BR24RadarRangeCalibration"));
-        if (pConf->Read(wxT("BR24RadarHeadingCorrection"),  &settings.heading_correction, 0))
-            pConf->DeleteEntry(wxT("BR24RadarHeadingCorrection"));
-
-        if (pConf->Read(wxT("BR24ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L))
-            pConf->DeleteEntry(wxT("BR24ControlsDialogSizeX"));
-        if (pConf->Read(wxT("BR24ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L))
-            pConf->DeleteEntry(wxT("BR24ControlsDialogSizeY"));
-
-        if (pConf->Read(wxT("GuardZoneDialogPosX"), &m_GuardZoneBogey_x, 20L))
-            pConf->DeleteEntry(wxT("GuardZoneDialogPosX"));
-        if (pConf->Read(wxT("GuardZoneDialogPosY"), &m_GuardZoneBogey_y, 170L))
-            pConf->DeleteEntry(wxT("GuardZoneDialogPosY"));
-
-        SaveConfig();
-        return true;
-    }
-
     return false;
 }
 
@@ -2195,7 +2077,7 @@ void br24radar_pi::RadarTxOff(void)
 
 void br24radar_pi::RadarTxOn(void)
 {
-    //    wxLogMessage(wxT("BR24 Radar turned ON manually."));
+    wxLogMessage(wxT("BR24radar_pi: Send TRANSMIT request"));
 
     UINT8 pck[3] = {0x00, 0xc1, 0x01};               // ON
     TransmitCmd(pck, sizeof(pck));
