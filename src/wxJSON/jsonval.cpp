@@ -960,7 +960,12 @@ wxJSONValue::AsString() const
             break;
         case wxJSONTYPE_INT :
             #if defined( wxJSON_64BIT_INT )
-                  s.Printf( _T("%") wxLongLongFmtSpec _T("i"),
+                  s.Printf(
+                        #if wxMAJOR_VERSION >= 3
+                        _T("%" wxLongLongFmtSpec "i"),
+                        #else
+                        _T("%") wxLongLongFmtSpec _T("i"),
+                        #endif
                         data->m_value.m_valInt64 );
             #else
             s.Printf( _T("%ld"), data->m_value.m_valLong );
@@ -968,7 +973,12 @@ wxJSONValue::AsString() const
             break;
         case wxJSONTYPE_UINT :
             #if defined( wxJSON_64BIT_INT )
-            s.Printf( _T("%") wxLongLongFmtSpec _T("u"),
+            s.Printf(
+                        #if wxMAJOR_VERSION >= 3
+                        _T("%" wxLongLongFmtSpec "u"),
+                        #else
+                        _T("%") wxLongLongFmtSpec _T("u"),
+                        #endif
                         data->m_value.m_valUInt64 );
             #else
             s.Printf( _T("%lu"), data->m_value.m_valULong );
