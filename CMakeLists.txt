@@ -33,7 +33,7 @@ SET(SRC_br24radar
             src/br24radarcontrol.cpp
             src/GuardZoneControls.cpp
             src/GuardZoneBogey.cpp
-			src/Idle_Dialog.cpp
+            src/Idle_Dialog.cpp
 )
 SET(SRC_NMEA0183
         src/nmea0183/LatLong.hpp
@@ -76,9 +76,16 @@ SET(SRC_NMEA0183
         src/nmea0183/apb.cpp
         src/nmea0183/apb.hpp
 )
+SET(SRC_JSON
+        src/wxJSON/jsonreader.cpp
+        src/wxJSON/jsonval.cpp
+        # We don't use jsonwriter.cpp yet ...
+)
 INCLUDE_DIRECTORIES(src/nmea0183)
+INCLUDE_DIRECTORIES(src/wxJSON)
+INCLUDE_DIRECTORIES(src)
 
-ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_br24radar} ${SRC_NMEA0183})
+ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_br24radar} ${SRC_NMEA0183} ${SRC_JSON})
 
 INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginLocalization.cmake")

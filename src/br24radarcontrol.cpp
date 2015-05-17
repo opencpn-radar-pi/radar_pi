@@ -484,7 +484,7 @@ void BR24ControlsDialog::CreateControls()
     cbOpenGL->SetFont(g_font);
     cbOpenGL->Disable();
 
-    wxStaticBox* nmeaBox = new wxStaticBox(this, wxID_ANY, _("NMEA sources"));
+    wxStaticBox* nmeaBox = new wxStaticBox(this, wxID_ANY, _("Data sources"));
     nmeaBox->SetFont(g_font);
     wxStaticBoxSizer* nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
     messageBox->Add(nmeaSizer, 0, wxEXPAND | wxALL, BORDER * 2);
@@ -498,6 +498,11 @@ void BR24ControlsDialog::CreateControls()
     nmeaSizer->Add(cbHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     cbHeading->SetFont(g_font);
     cbHeading->Disable();
+
+    cbVariation = new wxCheckBox(this, ID_HEADING, _("Variation"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    nmeaSizer->Add(cbVariation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    cbVariation->SetFont(g_font);
+    cbVariation->Disable();
 
     ipBox = new wxStaticBox(this, wxID_ANY, _("ZeroConf via (wired) Ethernet"));
     ipBox->SetFont(g_font);
@@ -936,17 +941,17 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
 }
 
 
-void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveRadar, bool haveData)
+void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData)
 {
     cbOpenGL->SetValue(haveOpenGL);
     cbBoatPos->SetValue(haveGPS);
     cbHeading->SetValue(haveHeading);
+    cbVariation->SetValue(haveVariation);
     cbRadar->SetValue(haveRadar);
     cbData->SetValue(haveData);
 
     if (haveRadar) {
         // Override any error set earlier, apparently we now get data
-
     }
 
     if (haveOpenGL && haveGPS && haveHeading && haveRadar && haveData) {
@@ -1001,7 +1006,7 @@ void BR24ControlsDialog::SetMcastIPAddress(wxString &msg)
 {
     if (ipBox) {
         wxString label;
-        
+
         label << _("ZeroConf via (wired) Ethernet") << wxT(" ") << msg;
         ipBox->SetLabel(label);
     }

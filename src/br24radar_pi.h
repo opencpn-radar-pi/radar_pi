@@ -38,6 +38,8 @@
 #include "wx/wx.h"
 #endif //precompiled headers
 
+#include "jsonreader.h"
+
 #include "version.h"
 
 #define     MY_API_VERSION_MAJOR    1
@@ -99,7 +101,7 @@
 
 // Use the above to convert from 'raw' headings sent by the radar (0..4095) into classical degrees (0..359) and back
 #define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double) DEGREES_PER_ROTATION / LINES_PER_ROTATION)
-#define SCALE_DEGREES_TO_RAW(angle) ((angle) * (double) LINES_PER_ROTATION / DEGREES_PER_ROTATION)
+#define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double) LINES_PER_ROTATION / DEGREES_PER_ROTATION))
 #define MOD_DEGREES(angle) (fmod(angle + 720.0, 360.0))
 #define MOD_ROTATION(raw) (((raw) + 2 * LINES_PER_ROTATION) % LINES_PER_ROTATION)
 
@@ -328,6 +330,7 @@ public:
     bool RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp);
     void SetPositionFix(PlugIn_Position_Fix &pfix);
     void SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix);
+    void SetPluginMessage(wxString &message_id, wxString &message_body);
     void SetCursorLatLon(double lat, double lon);
     void OnContextMenuItemCallback(int id);
     void SetNMEASentence(wxString &sentence);
@@ -441,9 +444,9 @@ private:
 
     volatile bool             m_quit;
 
-    int                       m_hdt_source;
-    int                       m_hdt_prev_source;
-    double                    m_var;
+    enum HeadingSource { HEADING_NONE, HEADING_HDM, HEADING_HDT, HEADING_COG, HEADING_RADAR };
+    HeadingSource             m_heading_source;
+    HeadingSource             m_prev_heading_source;
 
     NMEA0183                  m_NMEA0183;
 
@@ -692,7 +695,7 @@ public:
     void SetAutoRangeIndex(size_t index);
     void SetTimedIdleIndex(int index);
     void UpdateGuardZoneState();
-    void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveRadar, bool haveData);
+    void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
     void SetErrorMessage(wxString &msg);
     void SetRadarIPAddress(wxString &msg);
     void SetMcastIPAddress(wxString &msg);
@@ -740,6 +743,7 @@ private:
     wxCheckBox         *cbOpenGL;
     wxCheckBox         *cbBoatPos;
     wxCheckBox         *cbHeading;
+    wxCheckBox         *cbVariation;
     wxCheckBox         *cbRadar;
     wxCheckBox         *cbData;
 

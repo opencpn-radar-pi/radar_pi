@@ -113,22 +113,30 @@ bool br_bpos_set = false;
 double br_ownship_lat, br_ownship_lon;
 double cur_lat, cur_lon;
 double br_hdm;
-double br_hdt;     // this is the heading that the pi is using for all heading operations
-// br_hdt will come from the radar if available else from the NMEA stream
-int br_hdt_raw = 0;
+double br_hdt;     // this is the heading that the pi is using for all heading operations, in degrees
+                   // br_hdt will come from the radar if available else from the NMEA stream
+int br_hdt_raw = 0;// if set by radar, the heading (in 0..4095)
+
+// Variation. Used to convert magnetic into true heading.
+// Can come from SetPositionFixEx, which may hail from the WMM plugin
+// and is thus to be preferred, or GPS or a NMEA sentence. The latter will probably
+// have an outdated variation model, so is less preferred. Besides, some devices
+// transmit invalid (zero) values. So we also let non-zero values prevail.
+double br_var = 0.0;     // local magnetic variation, in degrees
+enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_SOURCE_FIX, VARIATION_SOURCE_WMM };
+VariationSource br_var_source = VARIATION_SOURCE_NONE;
+
 unsigned int i_display = 0;  // used in radar reive thread for display operation
 int repeatOnDelay = 0;   // used to prevend additional TxOn commands from DoTick when radar heas just been switched on
 
-bool heading_on_radar = false;
+bool br_heading_on_radar = false;
 int display_heading_on_radar = 0;
-bool var_is_set = false;
-double var = 0;
 unsigned int downsample = 0;  // moved from display radar to here; also used in radar receive thread
 unsigned int refreshRate = 1;  // refreshrate for radar used in process buffer
 unsigned int refreshmapping[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
 // user values 1 to 5 mapped to these values for refrehs interval
 // user 1 - no additional refresh, 2 - interval between frames 9, so on.
-unsigned int PassHeadingToOCPN = 0;  // From ini file, if 0, do not pass the heading_on_radar to OCPN
+unsigned int PassHeadingToOCPN = 0;  // From ini file, if 0, do not pass the br_heading_on_radar to OCPN
 bool RenderOverlay_busy = false;
 
 double mark_rng = 0, mark_brg = 0;      // This is needed for context operation
@@ -156,7 +164,10 @@ static time_t      br_bpos_watchdog;
 static time_t      br_hdt_watchdog;
 static time_t      br_radar_watchdog;
 static time_t      br_data_watchdog;
+static time_t      br_var_watchdog;
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
+#define     TIMER_NOT_ELAPSED(watchdog) (now < watchdog + WATCHDOG_TIMEOUT)
+#define     TIMER_ELAPSED(watchdog) (!TIMER_NOT_ELAPSED(watchdog))
 time_t      br_dt_stayalive;
 #define     STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
 
@@ -408,6 +419,7 @@ int br24radar_pi::Init(void)
     alarm_sound_last = br_dt_stayalive;
     br_bpos_watchdog = 0;
     br_hdt_watchdog  = 0;
+    br_var_watchdog = 0;
     br_radar_watchdog = 0;
     br_data_watchdog = 0;
     br_idle_watchdog = 0;
@@ -416,8 +428,8 @@ int br24radar_pi::Init(void)
     m_sent_bm_id_normal = -1;
     m_sent_bm_id_rollover =  -1;
 
-    m_hdt_source = 0;
-    m_hdt_prev_source = 0;
+    m_heading_source = HEADING_NONE;
+    m_prev_heading_source = HEADING_NONE;
 
     m_statistics.broken_packets = 0;
     m_statistics.broken_spokes  = 0;
@@ -438,7 +450,7 @@ int br24radar_pi::Init(void)
     settings.master_mode = false;                 // we're not the master controller at startup
     settings.auto_range_mode = true;                    // starts with auto range change
     settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
-    if (!settings.refreshrate) settings.refreshrate = 1;
+    settings.refreshrate = 1;
     settings.timed_idle = 0;
 
     //      Set default parameters for controls displays
@@ -556,7 +568,8 @@ int br24radar_pi::Init(void)
             WANTS_CONFIG               |
             WANTS_NMEA_EVENTS          |
             WANTS_NMEA_SENTENCES       |
-            WANTS_PREFERENCES
+            WANTS_PREFERENCES          |
+            WANTS_PLUGIN_MESSAGING
             );
 }
 
@@ -1074,23 +1087,26 @@ void br24radar_pi::DoTick(void)
     }
     previousTicks = now;
 
-    if (br_bpos_set && (now - br_bpos_watchdog >= WATCHDOG_TIMEOUT)) {
+    if (br_bpos_set && TIMER_ELAPSED(br_bpos_watchdog)) {
         // If the position data is 10s old reset our heading.
         // Note that the watchdog is continuously reset every time we receive a heading.
         br_bpos_set = false;
         wxLogMessage(wxT("BR24radar_pi: Lost Boat Position data"));
     }
-    if (m_hdt_source > 0 && (now - br_hdt_watchdog >= WATCHDOG_TIMEOUT)) {
+    if (m_heading_source != HEADING_NONE && TIMER_ELAPSED(br_hdt_watchdog)) {
         // If the position data is 10s old reset our heading.
         // Note that the watchdog is continuously reset every time we receive a heading
-        m_hdt_source = 0;
+        m_heading_source = HEADING_NONE;
         wxLogMessage(wxT("BR24radar_pi: Lost Heading data"));
     }
-    if (br_radar_seen && (now - br_radar_watchdog >= WATCHDOG_TIMEOUT)) {
+    if (br_radar_seen && TIMER_ELAPSED(br_radar_watchdog)) {
         br_radar_seen = false;
         wxLogMessage(wxT("BR24radar_pi: Lost radar presence"));
     }
     if (m_statistics.spokes > m_statistics.broken_spokes) { // Something coming from radar unit?
+        if (br_scanner_state != RADAR_ON) {
+            wxLogMessage(wxT("BR24radar_pi: First radar data seen"));
+        }
         br_scanner_state = RADAR_ON;
         if (settings.master_mode) {
             if (now - br_dt_stayalive >= STAYALIVE_TIMEOUT) {
@@ -1106,11 +1122,12 @@ void br24radar_pi::DoTick(void)
         br_data_seen = true;
     } else {
         br_scanner_state = RADAR_OFF;
-        if (br_data_seen && (now - br_data_watchdog >= WATCHDOG_TIMEOUT)) {
+        if (br_data_seen && TIMER_ELAPSED(br_data_watchdog)) {
+            br_heading_on_radar = false;
             br_data_seen = false;
             wxLogMessage(wxT("BR24radar_pi: Lost radar data"));
         }
-        else if (br_radar_seen && !br_data_seen && settings.master_mode && br_scanner_state != RADAR_ON) {
+        if (br_radar_seen && !br_data_seen && settings.master_mode && br_scanner_state != RADAR_ON) {
             if (!repeatOnDelay) { // prevents sending repeated "ON" commands after turning on
                 // Switch radar on if we want it to be on but it wasn' detected earlier
                 RadarTxOn();
@@ -1135,11 +1152,17 @@ void br24radar_pi::DoTick(void)
             m_pControlDialog->tStatistics->SetLabel(t);
         }
         t.Replace(wxT("\n"), wxT(" "));
-        wxLogMessage(wxT("BR24radar_pi: received %s, %d %d %d %d"), t.c_str(), br_bpos_set, m_hdt_source, br_radar_seen, br_data_seen);
+        wxLogMessage(wxT("BR24radar_pi: received %s, %d %d %d %d"), t.c_str(), br_bpos_set, m_heading_source, br_radar_seen, br_data_seen);
     }
 
     if (m_pControlDialog) {
-        m_pControlDialog->UpdateMessage(br_opengl_mode, br_bpos_set, m_hdt_source > 0, br_radar_seen, br_data_seen);
+        m_pControlDialog->UpdateMessage( br_opengl_mode
+                                       , br_bpos_set
+                                       , m_heading_source != HEADING_NONE
+                                       , br_var_source != VARIATION_SOURCE_NONE
+                                       , br_radar_seen
+                                       , br_data_seen
+                                       );
     }
 
     m_statistics.broken_packets = 0;
@@ -1241,9 +1264,6 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     double max_distance = 0;
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
     wxPoint boat_center;
-
-    heading_on_radar = false;  // reset heading_on_radar,
-    // in case no radar data is received heading_on_radar might remain true indefinitely
 
     if (br_bpos_set) {
         wxPoint pp;
@@ -1364,7 +1384,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     double radar_pixels_per_meter = ((double) RETURNS_PER_LINE) / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
 
-    if ((br_bpos_set && m_hdt_source > 0) || settings.display_mode == DM_EMULATOR) {
+    if ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode == DM_EMULATOR) {
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
         if ((int) br_range_meters && br_scanner_state == RADAR_ON) {
@@ -1462,7 +1482,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
     char buffer [18];
     int cx = 0;
-    if (PassHeadingToOCPN == 1 && heading_on_radar && br_radar_state == RADAR_ON) {
+    if (PassHeadingToOCPN == 1 && br_heading_on_radar && br_radar_state == RADAR_ON) {
         cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
         wxString nmeastring = wxString::FromUTF8(buffer);
         PushNMEABuffer (nmeastring);  // issue heading from radar to OCPN
@@ -1969,26 +1989,32 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
     time_t now = time(0);
     // PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,,230394,003.1,W"));  // only for test, position without heading
     // PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A")); //with heading for test
-    if (settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: SetPositionFixEx var = \n"));
-    }
-    if (!wxIsNaN(pfix.Var)) {            // set variation for use in radar receive thread
-        var_is_set = true;
-        var = pfix.Var;
-    }
-    else {
-        var_is_set = false;
+    if (br_var_source <= VARIATION_SOURCE_FIX && !wxIsNaN(pfix.Var) && (fabs(pfix.Var) > 0.0 || br_var == 0.0)) {
+        if (br_var_source < VARIATION_SOURCE_FIX || fabs(pfix.Var - br_var) > 0.0) {
+            wxLogMessage(wxT("BR24radar_pi: Position fix provides new magnetic variation %f"), pfix.Var);
+        }
+        br_var = pfix.Var;
+        br_var_source = VARIATION_SOURCE_FIX;
+        br_var_watchdog = now;
     }
 
-    if (heading_on_radar && var_is_set && br_radar_state == RADAR_ON) {
-        if (m_hdt_source != 4) {
+    if (settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: SetPositionFixEx var=%f heading_on_radar=%d br_var_wd=%d br_radar_state=%d")
+                    , pfix.Var
+                    , br_heading_on_radar
+                    , TIMER_NOT_ELAPSED(br_var_watchdog)
+                    , br_radar_state
+                    );
+    }
+    if (br_heading_on_radar && TIMER_NOT_ELAPSED(br_var_watchdog) && br_radar_state == RADAR_ON) {
+        if (m_heading_source != HEADING_RADAR) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f \n"), br_hdt);
-            m_hdt_source = 4;
+            m_heading_source = HEADING_RADAR;
         }
         br_hdt_watchdog = now;
-        char buffer [18];
-        int cx = 0;
         if (PassHeadingToOCPN == 1) {
+            char buffer [18];
+            int cx = 0;
             cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
             wxString nmeastring;
             if (cx) {
@@ -1997,37 +2023,32 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             PushNMEABuffer (nmeastring);  // issue heading from radar to OCPN
         }
     }
-    else if (!wxIsNaN(pfix.Hdm) && !wxIsNaN(pfix.Var)) {
-        if (!heading_on_radar) {
-            br_hdt = pfix.Hdm + pfix.Var;
+    else if (!wxIsNaN(pfix.Hdm) && TIMER_NOT_ELAPSED(br_var_watchdog)) {
+        br_hdt = pfix.Hdm + br_var;
+        if (m_heading_source != HEADING_HDM) {
+            wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM %f"), br_hdt);
+            m_heading_source = HEADING_HDM;
         }
-        m_var = pfix.Var;
-        if (m_hdt_source != 2) {
-            wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM"));
-        }
-        m_hdt_source = 2;
         br_hdt_watchdog = now;
     }
     else if (!wxIsNaN(pfix.Hdt)) {
-        if (!heading_on_radar) {
-            br_hdt = pfix.Hdt;
-        }
-        if (m_hdt_source != 1) {
+        br_hdt = pfix.Hdt;
+        if (m_heading_source != HEADING_HDT) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
+            m_heading_source = HEADING_HDT;
         }
-        m_hdt_source = 1;
         br_hdt_watchdog = now;
     }
-    else if (!wxIsNaN(pfix.Cog) && (m_hdt_source == 3 || (now - br_hdt_watchdog <= WATCHDOG_TIMEOUT / 2))) {
-        if (!heading_on_radar) br_hdt = pfix.Cog;
-        if (m_hdt_source != 3) {
+    else if (!wxIsNaN(pfix.Cog)) {
+        br_hdt = pfix.Cog;
+        if (m_heading_source != HEADING_COG) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
+            m_heading_source = HEADING_COG;
         }
-        m_hdt_source = 3;
         br_hdt_watchdog = now;
     }
 
-    if (pfix.FixTime && now - pfix.FixTime <= WATCHDOG_TIMEOUT) {
+    if (pfix.FixTime && TIMER_NOT_ELAPSED(pfix.FixTime)) {
         br_ownship_lat = pfix.Lat;
         br_ownship_lon = pfix.Lon;
         if (!br_bpos_set) {
@@ -2035,6 +2056,28 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         }
         br_bpos_set = true;
         br_bpos_watchdog = now;
+    }
+}
+
+void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
+{
+    static const wxString WMM_VARIATION_BOAT = wxString(_T("WMM_VARIATION_BOAT"));
+    if (message_id.Cmp(WMM_VARIATION_BOAT) == 0) {
+        wxJSONReader reader;
+        wxJSONValue message;
+        if (!reader.Parse(message_body, &message)) {
+            wxJSONValue defaultValue(360);
+            double variation = message.Get(_T("Decl"), defaultValue).AsDouble();
+
+            if (variation != 360.0) {
+                if (br_var_source != VARIATION_SOURCE_WMM) {
+                    wxLogMessage(wxT("BR24radar_pi: WMM plugin provides new magnetic variation %f"), variation);
+                }
+                br_var = variation;
+                br_var_source = VARIATION_SOURCE_WMM;
+                br_var_watchdog = time(0);
+            }
+        }
     }
 }
 
@@ -2096,9 +2139,6 @@ void br24radar_pi::RadarStayAlive(void)
 
 void br24radar_pi::RadarSendState(void)
 {
-    //    if (settings.auto_range_mode) {   // don't SetRangeMeters from here. RenderGLOverlay might not yet have set auto_range_meters
-    //        SetRangeMeters(auto_range_meters);  // RenderGLOverlay will call SetRangeMeters for autorange
-    //    }
     SetControlValue(CT_GAIN, settings.gain);
     SetControlValue(CT_RAIN, settings.rain_clutter_gain);
     SetControlValue(CT_SEA, settings.sea_clutter_gain);
@@ -2407,41 +2447,60 @@ void br24radar_pi::CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollov
     }
 }
 
+
+/*
+   SetNMEASentence is used to speed up rotation and variation
+   detection if SetPositionEx() is not called very often. This will
+   be the case if you have a high speed heading sensor (for instance, 2 to 20 Hz)
+   but only a 1 Hz GPS update.
+
+   Note that the type of heading source is only updated in SetPositionEx().
+*/
+
 void br24radar_pi::SetNMEASentence( wxString &sentence )
 {
     m_NMEA0183 << sentence;
-    //    if (settings.verbose >= 2) {
-    //        wxLogMessage(wxT("BR24radar_pi: SetNMEASentence  called  \n"));
-    //        }
+    time_t now = time(0);
+
     if (m_NMEA0183.PreParse()) {
-        if (m_hdt_source == 2 && m_NMEA0183.LastSentenceIDReceived == _T("HDG") && m_NMEA0183.Parse()) {
-            if (!wxIsNaN(m_NMEA0183.Hdg.MagneticVariationDegrees)) {
-                if (m_NMEA0183.Hdg.MagneticVariationDirection == East)
-                    m_var = +m_NMEA0183.Hdg.MagneticVariationDegrees;
-                else if (m_NMEA0183.Hdg.MagneticVariationDirection == West)
-                    m_var = -m_NMEA0183.Hdg.MagneticVariationDegrees;
+        if (m_NMEA0183.LastSentenceIDReceived == _T("HDG") && m_NMEA0183.Parse()) {
+            if (settings.verbose >= 2) {
+                wxLogMessage(wxT("BR24radar_pi: received HDG variation=%f var_source=%d br_var=%f"), m_NMEA0183.Hdg.MagneticVariationDegrees, br_var_source, br_var);
             }
-            if (!wxIsNaN(m_NMEA0183.Hdg.MagneticSensorHeadingDegrees) ) {
-                if (!heading_on_radar) {
-                    br_hdt = m_NMEA0183.Hdg.MagneticSensorHeadingDegrees + m_var;
+            if (!wxIsNaN(m_NMEA0183.Hdg.MagneticVariationDegrees) &&
+                (br_var_source <= VARIATION_SOURCE_NMEA || (br_var == 0.0 && m_NMEA0183.Hdg.MagneticVariationDegrees > 0.0))) {
+                double newVar;
+                if (m_NMEA0183.Hdg.MagneticVariationDirection == East) {
+                    newVar = +m_NMEA0183.Hdg.MagneticVariationDegrees;
                 }
-                br_hdt_watchdog = time(0);
+                else {
+                    newVar = -m_NMEA0183.Hdg.MagneticVariationDegrees;
+                }
+                if (fabs(newVar - br_var) >= 0.1) {
+                    wxLogMessage(wxT("BR24radar_pi: NMEA provides new magnetic variation %f"), newVar);
+                }
+                br_var = newVar;
+                br_var_source = VARIATION_SOURCE_NMEA;
+                br_var_watchdog = now;
+            }
+            if (m_heading_source == HEADING_HDM && !wxIsNaN(m_NMEA0183.Hdg.MagneticSensorHeadingDegrees)) {
+                br_hdt = m_NMEA0183.Hdg.MagneticSensorHeadingDegrees + br_var;
+                br_hdt_watchdog = now;
             }
         }
-        else if (m_hdt_source == 2 && m_NMEA0183.LastSentenceIDReceived == _T("HDM") && m_NMEA0183.Parse()) {
-            if (!wxIsNaN(m_NMEA0183.Hdm.DegreesMagnetic)) {
-                if (!heading_on_radar) br_hdt = m_NMEA0183.Hdm.DegreesMagnetic + m_var;
-                br_hdt_watchdog = time(0);
-                //            if (settings.verbose) {
-                //                wxLogMessage(wxT("BR24radar_pi: SetNMEASentence  HDM set  \n"));
-                //                }
-            }
+        else if (m_heading_source == HEADING_HDM
+              && m_NMEA0183.LastSentenceIDReceived == _T("HDM")
+              && m_NMEA0183.Parse()
+              && !wxIsNaN(m_NMEA0183.Hdm.DegreesMagnetic)) {
+            br_hdt = m_NMEA0183.Hdm.DegreesMagnetic + br_var;
+            br_hdt_watchdog = now;
         }
-        else if (m_hdt_source == 1 && m_NMEA0183.LastSentenceIDReceived == _T("HDT") && m_NMEA0183.Parse()) {
-            if (!wxIsNaN(m_NMEA0183.Hdt.DegreesTrue)) {
-                if (!heading_on_radar) br_hdt = m_NMEA0183.Hdt.DegreesTrue;
-                br_hdt_watchdog = time(0);
-            }
+        else if (m_heading_source == HEADING_HDT
+              && m_NMEA0183.LastSentenceIDReceived == _T("HDT")
+              && m_NMEA0183.Parse()
+              && !wxIsNaN(m_NMEA0183.Hdt.DegreesTrue)) {
+            br_hdt = m_NMEA0183.Hdt.DegreesTrue;
+            br_hdt_watchdog = now;
         }
     }
 }
@@ -2718,9 +2777,10 @@ void *RadarDataReceiveThread::Entry(void)
 //
 void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 {
-    wxLongLong now = wxGetLocalTimeMillis();
+    wxLongLong nowMillis = wxGetLocalTimeMillis();
+    time_t now = time(0);
     br_radar_seen = true;
-    br_radar_watchdog = time(0);
+    br_radar_watchdog = now;
 
     // wxCriticalSectionLocker locker(br_scanLock);
 
@@ -2824,23 +2884,17 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             // will be handled in RenderOverlay, not safe to to screen IO from receive thread
         }
 
-        //  changes for heading on radar follow   Douwe Fokkema 06-02-2015
-
-
         br_hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
-
-        if (br_hdm_raw != -1 && var_is_set && br_radar_type == RT_4G) {   // without variation heading on radar can not be used
-            // heading_on_radar only for 4G radar
+        if (br_hdm_raw != -1 && TIMER_NOT_ELAPSED(br_var_watchdog) && br_radar_type == RT_4G) {
             if (display_heading_on_radar != 2 && pPlugIn->m_pControlDialog) {
                 display_heading_on_radar = 2 ;   // "Radar" has been displayed earlier
                 wxString label;
                 label << _("Heading") << wxT(" Radar");
-                //            wxLogMessage(wxT("BR24radar_pi:  No heading on radar received, spoke  %d "), pPlugIn->m_statistics.spokes);
                 pPlugIn->m_pControlDialog->SetTitle(label);
                 pPlugIn->m_pControlDialog->SetLabel(label);
             }
-            heading_on_radar = true;                            // heading on radar
-            br_hdt_raw = MOD_ROTATION(br_hdm_raw + SCALE_DEGREES_TO_RAW(var));
+            br_heading_on_radar = true;                            // heading on radar
+            br_hdt_raw = MOD_ROTATION(br_hdm_raw + SCALE_DEGREES_TO_RAW(br_var));
             br_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(br_hdt_raw));
             angle_raw += br_hdt_raw;
         }
@@ -2853,7 +2907,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 pPlugIn->m_pControlDialog->SetTitle(label);
                 pPlugIn->m_pControlDialog->SetLabel(label);
             }
-            heading_on_radar = false;
+            br_heading_on_radar = false;
             br_hdt_raw = SCALE_DEGREES_TO_RAW(br_hdt);
             angle_raw += br_hdt_raw;             // map spoke on true direction
         }
@@ -2868,7 +2922,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         dest_data1[RETURNS_PER_LINE - 1] = 0xff;
 
         pPlugIn->m_scan_line[angle_raw].range = range_meters;
-        pPlugIn->m_scan_line[angle_raw].age = now;
+        pPlugIn->m_scan_line[angle_raw].age = nowMillis;
     }
     //  all scanlines ready now, refresh section follows
     int pos_age = difftime (time(0), br_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
@@ -2896,7 +2950,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             }
             i_display ++;
         }
-        if (PassHeadingToOCPN == 1 && heading_on_radar && br_radar_state == RADAR_ON) {
+        if (PassHeadingToOCPN == 1 && br_heading_on_radar && br_radar_state == RADAR_ON) {
             char buffer [18];
             int cx = 0;
             cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
@@ -2914,13 +2968,14 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
  */
 void RadarDataReceiveThread::emulate_fake_buffer(void)
 {
-    wxLongLong now = wxGetLocalTimeMillis();
+    wxLongLong nowMillis = wxGetLocalTimeMillis();
+    time_t now = time(0);
 
     static int next_scan_number = 0;
     pPlugIn->m_statistics.packets++;
     br_data_seen = true;
     br_radar_seen = true;
-    br_radar_watchdog = time(0);
+    br_radar_watchdog = now;
     br_data_watchdog = br_radar_watchdog;
 
     int scanlines_in_packet = 4096 * 24 / 60;
@@ -2959,10 +3014,10 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
         dest_data1[RETURNS_PER_LINE - 1] = 0xff;
 
         pPlugIn->m_scan_line[angle_raw].range = range_meters;
-        pPlugIn->m_scan_line[angle_raw].age = now;
+        pPlugIn->m_scan_line[angle_raw].age = nowMillis;
     }
     if (pPlugIn->settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" emulating %d spokes at range %d with %d spots"), now, scanlines_in_packet, range_meters, spots);
+        wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" emulating %d spokes at range %d with %d spots"), nowMillis, scanlines_in_packet, range_meters, spots);
     }
 }
 
