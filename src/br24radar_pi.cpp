@@ -136,7 +136,6 @@ unsigned int refreshRate = 1;  // refreshrate for radar used in process buffer
 unsigned int refreshmapping[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
 // user values 1 to 5 mapped to these values for refrehs interval
 // user 1 - no additional refresh, 2 - interval between frames 9, so on.
-unsigned int PassHeadingToOCPN = 0;  // From ini file, if 0, do not pass the br_heading_on_radar to OCPN
 bool RenderOverlay_busy = false;
 
 double mark_rng = 0, mark_brg = 0;      // This is needed for context operation
@@ -1138,6 +1137,12 @@ void br24radar_pi::DoTick(void)
         repeatOnDelay--;   // count down the delay timer in every call of DoTick until 0
     }
 
+    if (settings.PassHeadingToOCPN && br_heading_on_radar && br_radar_state == RADAR_ON) {
+        wxString nmeastring;
+        nmeastring.Printf(_T("$APHDT,%05.1f,M\r\n"), br_hdt );
+        PushNMEABuffer(nmeastring);
+    }
+
     if (settings.verbose) {
         wxString t;
         t.Printf(wxT("packets %d/%d\nspokes %d/%d/%d")
@@ -1477,15 +1482,6 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     UINT32 skipped      = 0;
     wxLongLong max_age = 0; // Age in millis
     int bogey_count[GUARD_ZONES];
-
-    char buffer [18];
-    int cx = 0;
-    if (PassHeadingToOCPN == 1 && br_heading_on_radar && br_radar_state == RADAR_ON) {
-        cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
-        wxString nmeastring = wxString::FromUTF8(buffer);
-        PushNMEABuffer (nmeastring);  // issue heading from radar to OCPN
-        wxLogMessage(wxT("BR24radar_pi: ") wxTPRId64 wxT(" heading passed to OCPN from draw image"), now);
-    }
 
     downsample = (unsigned int) settings.downsample;
     refreshRate = refreshmapping [settings.refreshrate - 1];
@@ -1883,8 +1879,6 @@ bool br24radar_pi::LoadConfig(void)
         refreshRate = refreshmapping[settings.refreshrate - 1];
 
         pConf->Read(wxT("PassHeadingToOCPN"), &settings.PassHeadingToOCPN, 0);
-        // PassHeadingToOCPN == 0 : do not pass heading_from_radar to OCPN
-        PassHeadingToOCPN = settings.PassHeadingToOCPN;
 
         pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
         pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
@@ -2010,16 +2004,6 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             m_heading_source = HEADING_RADAR;
         }
         br_hdt_watchdog = now;
-        if (PassHeadingToOCPN == 1) {
-            char buffer [18];
-            int cx = 0;
-            cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
-            wxString nmeastring;
-            if (cx) {
-                nmeastring = wxString::FromUTF8(buffer);
-            }
-            PushNMEABuffer (nmeastring);  // issue heading from radar to OCPN
-        }
     }
     else if (!wxIsNaN(pfix.Hdm) && TIMER_NOT_ELAPSED(br_var_watchdog)) {
         br_hdt = pfix.Hdm + br_var;
@@ -2947,13 +2931,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 RenderOverlay_busy = true;   // no further calls until RenderOverlay_busy has been cleared by RenderGLOverlay
             }
             i_display ++;
-        }
-        if (PassHeadingToOCPN == 1 && br_heading_on_radar && br_radar_state == RADAR_ON) {
-            char buffer [18];
-            int cx = 0;
-            cx = sprintf ( buffer, "$APHDT,%05.1f,M\r\n", br_hdt );
-            wxString nmeastring = wxString::FromUTF8(buffer);
-            PushNMEABuffer (nmeastring);  // issue heading from radar to OCPN
         }
     }
 }
