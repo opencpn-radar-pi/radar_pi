@@ -2831,7 +2831,8 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         int range_raw = 0;
         int angle_raw = 0;
 
-        short int br_hdm_raw = 0;
+        short int hdm_raw = 0;
+        short static int prev_hdm_raw = 0;
 
         short int large_range = 0;
         short int small_range = 0;
@@ -2884,8 +2885,8 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             // will be handled in RenderOverlay, not safe to to screen IO from receive thread
         }
 
-        br_hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
-        if (br_hdm_raw != -1 && TIMER_NOT_ELAPSED(br_var_watchdog) && br_radar_type == RT_4G) {
+        hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
+        if (hdm_raw != INT16_MIN && TIMER_NOT_ELAPSED(br_var_watchdog) && br_radar_type == RT_4G) {
             if (display_heading_on_radar != 2 && pPlugIn->m_pControlDialog) {
                 display_heading_on_radar = 2 ;   // "Radar" has been displayed earlier
                 wxString label;
@@ -2894,7 +2895,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 pPlugIn->m_pControlDialog->SetLabel(label);
             }
             br_heading_on_radar = true;                            // heading on radar
-            br_hdt_raw = MOD_ROTATION(br_hdm_raw + SCALE_DEGREES_TO_RAW(br_var));
+            br_hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(br_var));
             br_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(br_hdt_raw));
             angle_raw += br_hdt_raw;
         }
