@@ -14,10 +14,10 @@ PROJECT(br24radar_pi)
 SET(PACKAGE_NAME br24radar_pi)
 SET(VERBOSE_NAME BR24Radar)
 SET(TITLE_NAME BR24Radar)
-SET(CPACK_PACKAGE_CONTACT "BR24 Radar Plugin authors")
+SET(CPACK_PACKAGE_CONTACT "kees@verruijt.net")
 
 SET(VERSION_MAJOR "1")
-SET(VERSION_MINOR "1")
+SET(VERSION_MINOR "2")
 
 #SET(CMAKE_BUILD_TYPE Debug)
 
@@ -25,7 +25,6 @@ INCLUDE("cmake/PluginConfigure.cmake")
 
 # For convenience we define the sources as a variable. You can add
 # header files and cpp/c files and CMake will sort them out
-
 
 SET(SRC_br24radar
             src/br24radar_pi.h

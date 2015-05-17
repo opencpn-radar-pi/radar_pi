@@ -105,4 +105,16 @@ The plugin code is licensed under the terms of the GPL v2.
 
 Acknowledgements
 ----------------
-The authors wish to thank @bdbcat (Dave Register) for providing OpenCPN and the Garmin radar plugin, from which this plugin was derived, and @nohal (Pavel) for contributing the package installers.
+
+This would be a pretty useless plugin if OpenCPN did not exist. Hurrah for @bdbcat!
+
+The plugin was started by @cowelld, who took @bdbcat's Garmin radar plugin and the reverse engineered data from http://www.roboat.at/technologie/radar/ and created the first working version in 2012.
+
+@canboat started helping Dave. Soon he implemented most of the 4G specific functionality, rewrote the control dialogs, implemented the guard zones and cleaned the code considerably.
+
+@nohal contributed the packaging installers, without which this would still be a set of sources instead of deliverable packages for various platforms.
+
+@Hakansv did a lot of testing and contributed the idle timer, and contributed work on the translations.
+
+@douwefokkema implemented the heading on radar functionality, optimised the OpenGL drawing and implemented the refresh rate code.
+
