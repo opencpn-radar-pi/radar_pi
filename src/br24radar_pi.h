@@ -567,6 +567,7 @@ private:
     void OnHeading_Calibration_Value(wxCommandEvent& event);
     void OnSelectSoundClick(wxCommandEvent& event);
     void OnTestSoundClick(wxCommandEvent& event);
+    void OnPassHeadingClick(wxCommandEvent& event);
 
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
@@ -578,6 +579,7 @@ private:
     wxRadioBox        *pGuardZoneStyle;
     wxSlider          *pIntervalSlider;
     wxTextCtrl        *pText_Heading_Correction_Value;
+    wxCheckBox        *cbPassHeading;
 };
 
 

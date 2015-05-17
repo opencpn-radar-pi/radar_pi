@@ -106,7 +106,8 @@ enum {
     ID_DISPLAYTYPE,
     ID_HEADINGSLIDER,
     ID_SELECT_SOUND,
-    ID_TEST_SOUND
+    ID_TEST_SOUND,
+    ID_PASS_HEADING
 };
 
 bool br_bpos_set = false;
@@ -757,11 +758,6 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
 
     pOverlayDisplayOptions->SetSelection(pPlugIn->settings.display_option);
 
-    //  Display Options
-    //    wxStaticBox* itemStaticBoxSizerDisOptStatic = new wxStaticBox(this, wxID_ANY, _("Display Options"));
-    //    wxStaticBoxSizer* itemStaticBoxSizerDisOpt = new wxStaticBoxSizer(itemStaticBoxSizerDisOptStatic, wxVERTICAL);
-    //    DisplayOptionsBox->Add(itemStaticBoxSizerDisOpt, 0, wxEXPAND | wxALL, border_size);
-
     pDisplayMode = new wxRadioBox(this, ID_DISPLAYTYPE, _("Radar Display"),
                                   wxDefaultPosition, wxDefaultSize,
                                   ARRAY_SIZE(DisplayModeStrings), DisplayModeStrings, 1, wxRA_SPECIFY_COLS);
@@ -820,10 +816,20 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
                         wxCommandEventHandler(BR24DisplayOptionsDialog::OnTestSoundClick), NULL, this);
     guardZoneSizer->Add(pTestSound, 0, wxALL, border_size);
 
+    //  Options
+    wxStaticBox* itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
+    wxStaticBoxSizer* itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
+    topSizer->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
+
+    cbPassHeading = new wxCheckBox(this, ID_PASS_HEADING, _("Pass radar heading to OpenCPN"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    itemStaticBoxSizerOptions->Add(cbPassHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+    cbPassHeading->SetValue(pPlugIn->settings.PassHeadingToOCPN ? true : false);
+    cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                             wxCommandEventHandler(BR24DisplayOptionsDialog::OnPassHeadingClick), NULL, this);
+
     // Accept/Reject button
     wxStdDialogButtonSizer* DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
     topSizer->Add(DialogButtonSizer, 0, wxALIGN_RIGHT | wxALL, border_size);
-
 
     DimeWindow(this);
 
@@ -880,6 +886,11 @@ void BR24DisplayOptionsDialog::OnHeading_Calibration_Value(wxCommandEvent &event
 {
     wxString temp = pText_Heading_Correction_Value->GetValue();
     temp.ToDouble(&pPlugIn->settings.heading_correction);
+}
+
+void BR24DisplayOptionsDialog::OnPassHeadingClick(wxCommandEvent &event)
+{
+    pPlugIn->settings.PassHeadingToOCPN = cbPassHeading->GetValue();
 }
 
 void BR24DisplayOptionsDialog::OnClose(wxCloseEvent& event)
