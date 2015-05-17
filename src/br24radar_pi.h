@@ -31,6 +31,7 @@
 #ifndef _BR24RADARPI_H_
 #define _BR24RADARPI_H_
 
+#include <stdint.h>
 #include "wx/wxprec.h"
 #include <wx/glcanvas.h>
 
@@ -89,6 +90,10 @@
 # define wxTPRId64 wxT("ld")
 #else
 # define wxTPRId64 wxT("I64d")
+#endif
+
+#ifndef INT16_MIN
+# define INT16_MIN (-32768)
 #endif
 
 # define ARRAY_SIZE(x)   (sizeof(x)/sizeof(x[0]))
