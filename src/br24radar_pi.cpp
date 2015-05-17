@@ -470,16 +470,14 @@ int br24radar_pi::Init(void)
 
     //    And load the configuration items
     if (LoadConfig()) {
-        wxLogMessage(wxT("BR24radar_pi: configuration file values initialised"));
+        wxLogMessage(wxT("BR24radar_pi: Configuration file values initialised"));
+        wxLogMessage(wxT("BR24radar_pi: Log verbosity = %d (to modify, set VerboseLog to 0..4)"), settings.verbose);
     }
     else {
         wxLogMessage(wxT("BR24radar_pi: configuration file values initialisation failed"));
         return 0; // give up
     }
 
-    if (settings.verbose > 0) {
-        wxLogMessage(wxT("BR24radar_pi: logging verbosity = %d"), settings.verbose);
-    }
     ComputeGuardZoneAngles();
 
     wxLongLong now = wxGetLocalTimeMillis();
@@ -2832,7 +2830,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         int angle_raw = 0;
 
         short int hdm_raw = 0;
-        short static int prev_hdm_raw = 0;
 
         short int large_range = 0;
         short int small_range = 0;
