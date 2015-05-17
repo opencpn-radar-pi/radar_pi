@@ -451,7 +451,6 @@ private:
 
     enum HeadingSource { HEADING_NONE, HEADING_HDM, HEADING_HDT, HEADING_COG, HEADING_RADAR };
     HeadingSource             m_heading_source;
-    HeadingSource             m_prev_heading_source;
 
     NMEA0183                  m_NMEA0183;
 
@@ -704,8 +703,9 @@ public:
     void SetErrorMessage(wxString &msg);
     void SetRadarIPAddress(wxString &msg);
     void SetMcastIPAddress(wxString &msg);
-
-    wxStaticText       *tStatistics;
+    void SetHeadingInfo(wxString &msg);
+    void SetVariationInfo(wxString &msg);
+    void SetRadarInfo(wxString &msg);
 
 private:
     void OnClose(wxCloseEvent& event);
@@ -722,6 +722,9 @@ private:
 
     void OnAdvancedBackButtonClick(wxCommandEvent& event);
     void OnAdvancedButtonClick(wxCommandEvent& event);
+
+    void OnMessageBackButtonClick(wxCommandEvent& event);
+    void OnMessageButtonClick(wxCommandEvent& event);
 
     void OnRadarControlButtonClick(wxCommandEvent& event);
 
@@ -742,8 +745,10 @@ private:
     wxBoxSizer        *controlBox;
 
     wxBoxSizer        *fromBox; // If on edit control, this is where the button is from
+    bool              wantShowMessage; // If true, don't hide messagebox automatically
 
     // MessageBox
+    wxButton           *bMsgBack;
     wxStaticText       *tMessage;
     wxCheckBox         *cbOpenGL;
     wxCheckBox         *cbBoatPos;
@@ -751,6 +756,7 @@ private:
     wxCheckBox         *cbVariation;
     wxCheckBox         *cbRadar;
     wxCheckBox         *cbData;
+    wxStaticText       *tStatistics;
 
 
     // Edit Controls
@@ -788,6 +794,7 @@ private:
     wxButton           *bAdvanced;
     wxButton           *bGuard1;
     wxButton           *bGuard2;
+    wxButton           *bMessage;
 };
 
 /*

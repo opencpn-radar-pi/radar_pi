@@ -30,7 +30,7 @@
 
 /*
 
- Additional contributors for release 1.1, spring 2015
+ Additional contributors for release 1.2, spring 2015
 
  Douwe Fokkema for
  - Heading on radar. Use the heading that the radar puts in the line headers when it is getting a heading from the RI10 or
@@ -130,7 +130,6 @@ unsigned int i_display = 0;  // used in radar reive thread for display operation
 int repeatOnDelay = 0;   // used to prevend additional TxOn commands from DoTick when radar heas just been switched on
 
 bool br_heading_on_radar = false;
-int display_heading_on_radar = 0;
 unsigned int downsample = 0;  // moved from display radar to here; also used in radar receive thread
 unsigned int refreshRate = 1;  // refreshrate for radar used in process buffer
 unsigned int refreshmapping[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
@@ -428,7 +427,6 @@ int br24radar_pi::Init(void)
     m_sent_bm_id_rollover =  -1;
 
     m_heading_source = HEADING_NONE;
-    m_prev_heading_source = HEADING_NONE;
 
     m_statistics.broken_packets = 0;
     m_statistics.broken_spokes  = 0;
@@ -1090,12 +1088,27 @@ void br24radar_pi::DoTick(void)
         br_bpos_set = false;
         wxLogMessage(wxT("BR24radar_pi: Lost Boat Position data"));
     }
+
     if (m_heading_source != HEADING_NONE && TIMER_ELAPSED(br_hdt_watchdog)) {
         // If the position data is 10s old reset our heading.
         // Note that the watchdog is continuously reset every time we receive a heading
         m_heading_source = HEADING_NONE;
         wxLogMessage(wxT("BR24radar_pi: Lost Heading data"));
+        if (m_pControlDialog) {
+            wxString info = wxT("");
+            m_pControlDialog->SetHeadingInfo(info);
+        }
     }
+
+    if (br_var_source != VARIATION_SOURCE_NONE && TIMER_ELAPSED(br_var_watchdog)) {
+        br_var_source = VARIATION_SOURCE_NONE;
+        wxLogMessage(wxT("BR24radar_pi: Lost Variation source"));
+        if (m_pControlDialog) {
+            wxString info = wxT("");
+            m_pControlDialog->SetVariationInfo(info);
+        }
+    }
+
     if (br_radar_seen && TIMER_ELAPSED(br_radar_watchdog)) {
         br_radar_seen = false;
         wxLogMessage(wxT("BR24radar_pi: Lost radar presence"));
@@ -1143,17 +1156,18 @@ void br24radar_pi::DoTick(void)
         PushNMEABuffer(nmeastring);
     }
 
-    if (settings.verbose) {
-        wxString t;
-        t.Printf(wxT("packets %d/%d\nspokes %d/%d/%d")
-                 , m_statistics.packets
-                 , m_statistics.broken_packets
-                 , m_statistics.spokes
-                 , m_statistics.broken_spokes
-                 , m_statistics.missing_spokes);
-        if (m_pControlDialog && m_pControlDialog->tStatistics) {
-            m_pControlDialog->tStatistics->SetLabel(t);
-        }
+    wxString t;
+    t.Printf(wxT("packets %d/%d\nspokes %d/%d/%d")
+             , m_statistics.packets
+             , m_statistics.broken_packets
+             , m_statistics.spokes
+             , m_statistics.broken_spokes
+             , m_statistics.missing_spokes);
+
+    if (m_pControlDialog) {
+        m_pControlDialog->SetRadarInfo(t);
+    }
+    if (settings.verbose >= 2) {
         t.Replace(wxT("\n"), wxT(" "));
         wxLogMessage(wxT("BR24radar_pi: received %s, %d %d %d %d"), t.c_str(), br_bpos_set, m_heading_source, br_radar_seen, br_data_seen);
     }
@@ -1979,6 +1993,8 @@ void br24radar_pi::SetPositionFix(PlugIn_Position_Fix &pfix)
 void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 {
     time_t now = time(0);
+    wxString info;
+
     // PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,,230394,003.1,W"));  // only for test, position without heading
     // PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A")); //with heading for test
     if (br_var_source <= VARIATION_SOURCE_FIX && !wxIsNaN(pfix.Var) && (fabs(pfix.Var) > 0.0 || br_var == 0.0)) {
@@ -1988,6 +2004,11 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         br_var = pfix.Var;
         br_var_source = VARIATION_SOURCE_FIX;
         br_var_watchdog = now;
+        if (m_pControlDialog) {
+            info = _("GPS");
+            info << wxT(" ") << br_var;
+            m_pControlDialog->SetVariationInfo(info);
+        }
     }
 
     if (settings.verbose >= 2) {
@@ -2003,6 +2024,11 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f \n"), br_hdt);
             m_heading_source = HEADING_RADAR;
         }
+        if (m_pControlDialog) {
+            info = _("radar");
+            info << wxT(" ") << br_hdt;
+            m_pControlDialog->SetHeadingInfo(info);
+        }
         br_hdt_watchdog = now;
     }
     else if (!wxIsNaN(pfix.Hdm) && TIMER_NOT_ELAPSED(br_var_watchdog)) {
@@ -2010,6 +2036,11 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         if (m_heading_source != HEADING_HDM) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM %f"), br_hdt);
             m_heading_source = HEADING_HDM;
+        }
+        if (m_pControlDialog) {
+            info = _("HDM");
+            info << wxT(" ") << br_hdt;
+            m_pControlDialog->SetHeadingInfo(info);
         }
         br_hdt_watchdog = now;
     }
@@ -2019,6 +2050,11 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
             m_heading_source = HEADING_HDT;
         }
+        if (m_pControlDialog) {
+            info = _("HDT");
+            info << wxT(" ") << br_hdt;
+            m_pControlDialog->SetHeadingInfo(info);
+        }
         br_hdt_watchdog = now;
     }
     else if (!wxIsNaN(pfix.Cog)) {
@@ -2026,6 +2062,11 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         if (m_heading_source != HEADING_COG) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
             m_heading_source = HEADING_COG;
+        }
+        if (m_pControlDialog) {
+            info = _("COG");
+            info << wxT(" ") << br_hdt;
+            m_pControlDialog->SetHeadingInfo(info);
         }
         br_hdt_watchdog = now;
     }
@@ -2058,6 +2099,11 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
                 br_var = variation;
                 br_var_source = VARIATION_SOURCE_WMM;
                 br_var_watchdog = time(0);
+                if (m_pControlDialog) {
+                    wxString info = _("WMM");
+                    info << wxT(" ") << br_var;
+                    m_pControlDialog->SetVariationInfo(info);
+                }
             }
         }
     }
@@ -2464,6 +2510,11 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
                 br_var = newVar;
                 br_var_source = VARIATION_SOURCE_NMEA;
                 br_var_watchdog = now;
+                if (m_pControlDialog) {
+                    wxString info = _("NMEA");
+                    info << wxT(" ") << br_var;
+                    m_pControlDialog->SetVariationInfo(info);
+                }
             }
             if (m_heading_source == HEADING_HDM && !wxIsNaN(m_NMEA0183.Hdg.MagneticSensorHeadingDegrees)) {
                 br_hdt = m_NMEA0183.Hdg.MagneticSensorHeadingDegrees + br_var;
@@ -2868,27 +2919,12 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
         hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
         if (hdm_raw != INT16_MIN && TIMER_NOT_ELAPSED(br_var_watchdog) && br_radar_type == RT_4G) {
-            if (display_heading_on_radar != 2 && pPlugIn->m_pControlDialog) {
-                display_heading_on_radar = 2 ;   // "Radar" has been displayed earlier
-                wxString label;
-                label << _("Heading") << wxT(" Radar");
-                pPlugIn->m_pControlDialog->SetTitle(label);
-                pPlugIn->m_pControlDialog->SetLabel(label);
-            }
             br_heading_on_radar = true;                            // heading on radar
             br_hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(br_var));
             br_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(br_hdt_raw));
             angle_raw += br_hdt_raw;
         }
         else {                                // no heading on radar
-            if (display_heading_on_radar != 1 && pPlugIn->m_pControlDialog) {
-                display_heading_on_radar = 1 ;   // "NMEA" has been displayed earlier
-                wxString label;
-                label << _("Heading") << wxT(" NMEA");
-                wxLogMessage(wxT("BR24radar_pi:  No heading on radar received, spoke  %d "), pPlugIn->m_statistics.spokes);
-                pPlugIn->m_pControlDialog->SetTitle(label);
-                pPlugIn->m_pControlDialog->SetLabel(label);
-            }
             br_heading_on_radar = false;
             br_hdt_raw = SCALE_DEGREES_TO_RAW(br_hdt);
             angle_raw += br_hdt_raw;             // map spoke on true direction

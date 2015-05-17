@@ -65,6 +65,8 @@ enum {                                      // process ID's
     ID_MINUS_TEN,
     ID_AUTO,
 
+    ID_MSG_BACK,
+
     ID_ADVANCED_BACK,
     ID_TRANSPARENCY,
     ID_INTERFERENCE_REJECTION,
@@ -108,6 +110,8 @@ EVT_BUTTON(ID_MINUS, BR24ControlsDialog::OnMinusClick)
 EVT_BUTTON(ID_MINUS_TEN, BR24ControlsDialog::OnMinusTenClick)
 EVT_BUTTON(ID_AUTO,  BR24ControlsDialog::OnAutoClick)
 
+EVT_BUTTON(ID_MSG_BACK, BR24ControlsDialog::OnMessageBackButtonClick)
+
 EVT_BUTTON(ID_ADVANCED_BACK,  BR24ControlsDialog::OnAdvancedBackButtonClick)
 EVT_BUTTON(ID_TRANSPARENCY, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_INTERFERENCE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
@@ -127,6 +131,7 @@ EVT_BUTTON(ID_RAIN, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_ADVANCED, BR24ControlsDialog::OnAdvancedButtonClick)
 EVT_BUTTON(ID_ZONE1, BR24ControlsDialog::OnZone1ButtonClick)
 EVT_BUTTON(ID_ZONE2, BR24ControlsDialog::OnZone2ButtonClick)
+EVT_BUTTON(ID_MESSAGE, BR24ControlsDialog::OnMessageButtonClick)
 
 EVT_MOVE(BR24ControlsDialog::OnMove)
 EVT_SIZE(BR24ControlsDialog::OnSize)
@@ -519,6 +524,16 @@ void BR24ControlsDialog::CreateControls()
     cbData->SetFont(g_font);
     cbData->Disable();
 
+    tStatistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, g_buttonSize, 0);
+    tStatistics->SetFont(*OCPNGetFont(_("Dialog"), 8));
+    messageBox->Add(tStatistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
+
+    // The <Close> button
+    bMsgBack = new wxButton(this, ID_MSG_BACK, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
+    messageBox->Add(bMsgBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bMsgBack->SetFont(g_font);
+    messageBox->Hide(bMsgBack);
+
     // topSizer->Hide(messageBox);
 
     //**************** EDIT BOX ******************//
@@ -682,13 +697,6 @@ void BR24ControlsDialog::CreateControls()
     bTimedIdle->names = timed_idle_times;
     bTimedIdle->SetValue(pPlugIn->settings.timed_idle); // redraw after adding names
 
-    if (pPlugIn->settings.verbose) {
-        // The Statistics button
-        tStatistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, g_buttonSize, 0);
-        advancedBox->Add(tStatistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
-        tStatistics->SetFont(*OCPNGetFont(_("Dialog"), 8));
-    }
-
     topSizer->Hide(advancedBox);
 
     //**************** CONTROL BOX ******************//
@@ -732,6 +740,12 @@ void BR24ControlsDialog::CreateControls()
     bGuard2 = new wxButton(this, ID_ZONE2, label2, wxDefaultPosition, g_buttonSize, 0);
     controlBox->Add(bGuard2, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bGuard2->SetFont(g_font);
+
+    // The INFO button
+    bMessage = new wxButton(this, ID_MESSAGE, _("Info"), wxDefaultPosition, wxSize(width, 25), 0);
+    controlBox->Add(bMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bMessage->SetFont(g_font);
+    wantShowMessage = false;
 
     fromBox = controlBox;
     topSizer->Hide(controlBox);
@@ -886,6 +900,26 @@ void BR24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event)
     topSizer->Layout();
 }
 
+void BR24ControlsDialog::OnMessageBackButtonClick(wxCommandEvent& event)
+{
+    wantShowMessage = false;
+    fromBox = messageBox;
+    topSizer->Hide(messageBox);
+    topSizer->Show(controlBox);
+    Fit();
+    topSizer->Layout();
+}
+
+void BR24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event)
+{
+    wantShowMessage = true;
+    topSizer->Hide(controlBox);
+    messageBox->Show(bMsgBack);
+    topSizer->Show(messageBox);
+    Fit();
+    topSizer->Layout();
+}
+
 void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
 {
     fromControl = button; // Keep a record of which button was clicked
@@ -950,12 +984,8 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
     cbRadar->SetValue(haveRadar);
     cbData->SetValue(haveData);
 
-    if (haveRadar) {
-        // Override any error set earlier, apparently we now get data
-    }
-
     if (haveOpenGL && haveGPS && haveHeading && haveRadar && haveData) {
-        if (topSizer->IsShown(messageBox))
+        if (topSizer->IsShown(messageBox) && !wantShowMessage)
         {
             topSizer->Hide(messageBox);
             topSizer->Show(controlBox);
@@ -1009,5 +1039,32 @@ void BR24ControlsDialog::SetMcastIPAddress(wxString &msg)
 
         label << _("ZeroConf via (wired) Ethernet") << wxT(" ") << msg;
         ipBox->SetLabel(label);
+    }
+}
+
+void BR24ControlsDialog::SetHeadingInfo(wxString &msg)
+{
+    if (cbHeading && topSizer->IsShown(messageBox)) {
+        wxString label;
+
+        label << _("Heading") << wxT(" ") << msg;
+        cbHeading->SetLabel(label);
+    }
+}
+
+void BR24ControlsDialog::SetVariationInfo(wxString &msg)
+{
+    if (cbVariation && topSizer->IsShown(messageBox)) {
+        wxString label;
+
+        label << _("Variation") << wxT(" ") << msg;
+        cbVariation->SetLabel(label);
+    }
+}
+
+void BR24ControlsDialog::SetRadarInfo(wxString &msg)
+{
+    if (tStatistics && topSizer->IsShown(messageBox)) {
+        tStatistics->SetLabel(msg);
     }
 }
