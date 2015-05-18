@@ -962,7 +962,7 @@ wxJSONValue::AsString() const
             #if defined( wxJSON_64BIT_INT )
                   s.Printf(
                         #if wxMAJOR_VERSION >= 3
-                        _T("%" wxLongLongFmtSpec "i"),
+                        _T("%") _T(wxLongLongFmtSpec) _T("i"),
                         #else
                         _T("%") wxLongLongFmtSpec _T("i"),
                         #endif
@@ -975,7 +975,7 @@ wxJSONValue::AsString() const
             #if defined( wxJSON_64BIT_INT )
             s.Printf(
                         #if wxMAJOR_VERSION >= 3
-                        _T("%" wxLongLongFmtSpec "u"),
+                        _T("%") _T(wxLongLongFmtSpec) _T("u"),
                         #else
                         _T("%") wxLongLongFmtSpec _T("u"),
                         #endif
