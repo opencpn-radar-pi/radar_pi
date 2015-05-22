@@ -1399,9 +1399,21 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     glPushMatrix();
     glTranslated(radar_center.x, radar_center.y, 0);
 
+    if (settings.verbose >= 4) {
+        wxLogMessage(wxT("BR24radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g rotation=%g skew=%g scale=%f")
+                    , vp->clat
+                    , vp->clon
+                    , vp->view_scale_ppm
+                    , vp->rotation
+                    , vp->skew
+                    , vp->chart_scale
+                    );
+    }
+
     double heading = MOD_DEGREES( rad2deg(vp->rotation)        // viewport rotation
-                                - 90.0                         // difference between compass and OpenGL rotation
+                                + 270.0                        // difference between compass and OpenGL rotation
                                 + settings.heading_correction  // fix any radome rotation fault
+                                - vp->skew * settings.skew_factor
                                 );
     glRotatef(heading, 0, 0, 1);
 
@@ -1422,7 +1434,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
         // Guard Zone image
         if (br_radar_state == RADAR_ON) {
             if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
-                glRotatef(-settings.heading_correction + br_hdt, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
+                glRotatef(br_hdt - settings.heading_correction + vp->skew * settings.skew_factor, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
                 RenderGuardZone(radar_center, v_scale_ppm, vp);
             }
         }
@@ -1927,6 +1939,8 @@ bool br24radar_pi::LoadConfig(void)
 
         pConf->Read(wxT("RadarAlertAudioFile"), &settings.alert_audio_file);
 
+        pConf->Read(wxT("SkewFactor"), &settings.skew_factor, 1);
+
         SaveConfig();
         return true;
     }
@@ -1985,6 +1999,8 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("Zone2OuterRng"), guardZones[1].outer_range);
         pConf->Write(wxT("Zone2InnerRng"), guardZones[1].inner_range);
         pConf->Write(wxT("Zone2ArcCirc"), guardZones[1].type);
+
+        pConf->Write(wxT("SkewFactor"), settings.skew_factor);
 
         pConf->Flush();
         //wxLogMessage(wxT("BR24radar_pi: saved config"));

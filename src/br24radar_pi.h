@@ -264,6 +264,7 @@ struct radar_control_settings {
     int      rain_clutter_gain;
     double   range_calibration;
     double   heading_correction;
+    double   skew_factor;
     int      range_units;       // 0 = Nautical miles, 1 = Kilometers
     int      range_unit_meters; // ... 1852 or 1000, depending on range_units
     int      beam_width;
