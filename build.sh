@@ -41,6 +41,7 @@ then
   TARGET=""
   STATE="unofficial"
   PACKAGE=""
+  BUILDDIR="build-`uname`-`uname -m`"
 else
   STATE=`cat release-state`
   if [ "$STATE" = "" ]
