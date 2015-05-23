@@ -1,0 +1,3 @@
+
+all:
+	bash ./build.sh
