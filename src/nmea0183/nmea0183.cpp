@@ -44,93 +44,31 @@
 WX_DEFINE_LIST(MRL);
 
 
-NMEA0183::NMEA0183()
+br_NMEA0183::br_NMEA0183()
 {
    initialize();
 
-/*
-   response_table.Add( (RESPONSE *) &Aam );
-   response_table.Add( (RESPONSE *) &Alm );
-   response_table.Add( (RESPONSE *) &Apb );
-   response_table.Add( (RESPONSE *) &Asd );
-   response_table.Add( (RESPONSE *) &Bec );
-   response_table.Add( (RESPONSE *) &Bod );
-   response_table.Add( (RESPONSE *) &Bwc );
-   response_table.Add( (RESPONSE *) &Bwr );
-   response_table.Add( (RESPONSE *) &Bww );
-   response_table.Add( (RESPONSE *) &Dbt );
-   response_table.Add( (RESPONSE *) &Dcn );
-   response_table.Add( (RESPONSE *) &Dpt );
-   response_table.Add( (RESPONSE *) &Fsi );
-   response_table.Add( (RESPONSE *) &Gga );
-   response_table.Add( (RESPONSE *) &Glc );
-   response_table.Add( (RESPONSE *) &Gll );
-   response_table.Add( (RESPONSE *) &Gxa );
-   response_table.Add( (RESPONSE *) &Hsc );
-   response_table.Add( (RESPONSE *) &Lcd );
-   response_table.Add( (RESPONSE *) &Mtw );
-   response_table.Add( (RESPONSE *) &Mwv );
-   response_table.Add( (RESPONSE *) &Oln );
-   response_table.Add( (RESPONSE *) &Osd );
-   response_table.Add( (RESPONSE *) &Proprietary );
-   response_table.Add( (RESPONSE *) &Rma );
-*/
    response_table.Append( (RESPONSE *) &Hdm );
    response_table.Append( (RESPONSE *) &Hdg );
    response_table.Append( (RESPONSE *) &Hdt );
-   response_table.Append( (RESPONSE *) &Rmb );
-   response_table.Append( (RESPONSE *) &Rmc );
-   response_table.Append( (RESPONSE *) &Wpl );
-   response_table.Append( (RESPONSE *) &Rte );
-   response_table.Append( (RESPONSE *) &Gll );
-   response_table.Append( (RESPONSE *) &Vtg );
-   response_table.Append( (RESPONSE *) &Gsv );
-   response_table.Append( (RESPONSE *) &Gga );
-   response_table.Append( (RESPONSE *) &GPwpl );
-   response_table.Append( (RESPONSE *) &Apb );
    
-
-/*
-   response_table.Add( (RESPONSE *) &Rot );
-   response_table.Add( (RESPONSE *) &Rpm );
-   response_table.Add( (RESPONSE *) &Rsa );
-   response_table.Add( (RESPONSE *) &Rsd );
-   response_table.Add( (RESPONSE *) &Sfi );
-   response_table.Add( (RESPONSE *) &Stn );
-   response_table.Add( (RESPONSE *) &Trf );
-   response_table.Add( (RESPONSE *) &Ttm );
-   response_table.Add( (RESPONSE *) &Vbw );
-   response_table.Add( (RESPONSE *) &Vhw );
-   response_table.Add( (RESPONSE *) &Vdr );
-   response_table.Add( (RESPONSE *) &Vlw );
-   response_table.Add( (RESPONSE *) &Vpw );
-   response_table.Add( (RESPONSE *) &Vtg );
-   response_table.Add( (RESPONSE *) &Wcv );
-   response_table.Add( (RESPONSE *) &Wnc );
-   response_table.Add( (RESPONSE *) &Xdr );
-   response_table.Add( (RESPONSE *) &Xte );
-   response_table.Add( (RESPONSE *) &Xtr );
-   response_table.Add( (RESPONSE *) &Zda );
-   response_table.Add( (RESPONSE *) &Zfo );
-   response_table.Add( (RESPONSE *) &Ztg );
-*/
    sort_response_table();
    set_container_pointers();
 }
 
-NMEA0183::~NMEA0183()
+br_NMEA0183::~br_NMEA0183()
 {
    initialize();
 }
 
-void NMEA0183::initialize( void )
+void br_NMEA0183::initialize( void )
 {
 //   ASSERT_VALID( this );
 
    ErrorMessage.Empty();
 }
 
-void NMEA0183::set_container_pointers( void )
+void br_NMEA0183::set_container_pointers( void )
 {
 //   ASSERT_VALID( this );
 
@@ -151,7 +89,7 @@ void NMEA0183::set_container_pointers( void )
    }
 }
 
-void NMEA0183::sort_response_table( void )
+void br_NMEA0183::sort_response_table( void )
 {
 //   ASSERT_VALID( this );
 
@@ -193,7 +131,7 @@ void NMEA0183::sort_response_table( void )
 ** Public Interface
 */
 
-bool NMEA0183::IsGood( void ) const
+bool br_NMEA0183::IsGood( void ) const
 {
 //   ASSERT_VALID( this );
 
@@ -232,7 +170,7 @@ bool NMEA0183::IsGood( void ) const
 }
 
 
-bool NMEA0183::PreParse( void )
+bool br_NMEA0183::PreParse( void )
 {
       if ( IsGood() )
       {
@@ -258,7 +196,7 @@ bool NMEA0183::PreParse( void )
 }
 
 
-bool NMEA0183::Parse( void )
+bool br_NMEA0183::Parse( void )
 {
    bool return_value = FALSE;
 
@@ -340,7 +278,7 @@ bool NMEA0183::Parse( void )
    return( return_value );
 }
 
-wxArrayString NMEA0183::GetRecognizedArray(void)
+wxArrayString br_NMEA0183::GetRecognizedArray(void)
 {
     wxArrayString ret;
     
@@ -359,7 +297,7 @@ wxArrayString NMEA0183::GetRecognizedArray(void)
     
     
     
-NMEA0183& NMEA0183::operator << ( wxString & source )
+br_NMEA0183& br_NMEA0183::operator << ( wxString & source )
 {
 //   ASSERT_VALID( this );
 
@@ -368,7 +306,7 @@ NMEA0183& NMEA0183::operator << ( wxString & source )
    return( *this );
 }
 
-NMEA0183& NMEA0183::operator >> ( wxString& destination )
+br_NMEA0183& br_NMEA0183::operator >> ( wxString& destination )
 {
 //   ASSERT_VALID( this );
 

@@ -264,6 +264,7 @@ struct radar_control_settings {
     int      rain_clutter_gain;
     double   range_calibration;
     double   heading_correction;
+    double   skew_factor;
     int      range_units;       // 0 = Nautical miles, 1 = Kilometers
     int      range_unit_meters; // ... 1852 or 1000, depending on range_units
     int      beam_width;
@@ -452,7 +453,7 @@ private:
     enum HeadingSource { HEADING_NONE, HEADING_HDM, HEADING_HDT, HEADING_COG, HEADING_RADAR };
     HeadingSource             m_heading_source;
 
-    NMEA0183                  m_NMEA0183;
+    br_NMEA0183               m_NMEA0183;
 
     double                    llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
 };
