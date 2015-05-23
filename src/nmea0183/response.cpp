@@ -54,7 +54,7 @@ RESPONSE::~RESPONSE()
    ErrorMessage.Empty();
 }
 
-void RESPONSE::SetContainer( NMEA0183 *container )
+void RESPONSE::SetContainer( br_NMEA0183 *container )
 {
    container_p = container;
 }
@@ -69,7 +69,7 @@ void RESPONSE::SetErrorMessage( const wxString& error_message )
 bool RESPONSE::Write( SENTENCE& sentence )
 {
    /*
-   ** All NMEA0183 sentences begin with the mnemonic...
+   ** All br_NMEA0183 sentences begin with the mnemonic...
    */
 
     sentence  = _T("$");

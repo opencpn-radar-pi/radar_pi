@@ -62,7 +62,7 @@ class SENTENCE
       ** Methods
       */
 
-      virtual NMEA0183_BOOLEAN Boolean( int field_number ) const;
+      virtual br_NMEA0183_BOOLEAN Boolean( int field_number ) const;
       virtual unsigned char ComputeChecksum( void ) const;
       virtual COMMUNICATIONS_MODE CommunicationsMode( int field_number ) const;
       virtual double Double( int field_number ) const;
@@ -71,7 +71,7 @@ class SENTENCE
       virtual void Finish( void );
       virtual int GetNumberOfDataFields( void ) const;
       virtual int Integer( int field_number ) const;
-      virtual NMEA0183_BOOLEAN IsChecksumBad( int checksum_field_number ) const;
+      virtual br_NMEA0183_BOOLEAN IsChecksumBad( int checksum_field_number ) const;
       virtual LEFTRIGHT LeftOrRight( int field_number ) const;
       virtual NORTHSOUTH NorthOrSouth( int field_number ) const;
       virtual REFERENCE Reference( int field_number ) const;
@@ -91,7 +91,7 @@ class SENTENCE
       virtual const SENTENCE& operator += ( int value );
       virtual const SENTENCE& operator += ( EASTWEST easting );
       virtual const SENTENCE& operator += ( TRANSDUCER_TYPE transducer );
-      virtual const SENTENCE& operator += ( NMEA0183_BOOLEAN boolean );
+      virtual const SENTENCE& operator += ( br_NMEA0183_BOOLEAN boolean );
       virtual const SENTENCE& operator += ( LATLONG& source );
 };
  

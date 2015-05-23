@@ -65,7 +65,7 @@ SENTENCE::~SENTENCE()
    Sentence.Empty();
 }
 
-NMEA0183_BOOLEAN SENTENCE::Boolean( int field_number ) const
+br_NMEA0183_BOOLEAN SENTENCE::Boolean( int field_number ) const
 {
 //   ASSERT_VALID( this );
 
@@ -284,7 +284,7 @@ int SENTENCE::Integer( int field_number ) const
     return( ::atoi( Field( field_number ).mb_str() ) );
 }
 
-NMEA0183_BOOLEAN SENTENCE::IsChecksumBad( int checksum_field_number ) const
+br_NMEA0183_BOOLEAN SENTENCE::IsChecksumBad( int checksum_field_number ) const
 {
 //   ASSERT_VALID( this );
 
@@ -677,7 +677,7 @@ const SENTENCE& SENTENCE::operator += ( EASTWEST easting )
    return( *this );
 }
 
-const SENTENCE& SENTENCE::operator += ( NMEA0183_BOOLEAN boolean )
+const SENTENCE& SENTENCE::operator += ( br_NMEA0183_BOOLEAN boolean )
 {
 //   ASSERT_VALID( this );
 
@@ -695,11 +695,3 @@ const SENTENCE& SENTENCE::operator += ( NMEA0183_BOOLEAN boolean )
    return( *this );
 }
 
-const SENTENCE& SENTENCE::operator += ( LATLONG& source )
-{
-//   ASSERT_VALID( this );
-
-   source.Write( *this );
-
-   return( *this );
-}

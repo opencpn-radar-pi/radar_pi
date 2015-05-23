@@ -41,14 +41,14 @@
 ** You can use it any way you like.
 */
 
-class NMEA0183;
+class br_NMEA0183;
 
 class RESPONSE 
 {
 
    private:
 
-      NMEA0183 *container_p;
+      br_NMEA0183 *container_p;
 
    public:
 
@@ -71,7 +71,7 @@ class RESPONSE
       virtual bool Parse( const SENTENCE& sentence ) = 0;
       virtual const wxString& PlainEnglish( void );
       virtual void SetErrorMessage( const wxString& );
-      virtual void SetContainer( NMEA0183 *container );
+      virtual void SetContainer( br_NMEA0183 *container );
       virtual bool Write( SENTENCE& sentence );
 };
 

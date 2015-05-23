@@ -63,12 +63,12 @@
 #define LINE_FEED       0x0A
 
 
-typedef enum _NMEA0183_BOOLEAN
+typedef enum _br_NMEA0183_BOOLEAN
 {
    Unknown0183 = 0,
    NTrue,
    NFalse
-} NMEA0183_BOOLEAN;
+} br_NMEA0183_BOOLEAN;
 
 typedef enum _leftright
 {

@@ -453,7 +453,7 @@ private:
     enum HeadingSource { HEADING_NONE, HEADING_HDM, HEADING_HDT, HEADING_COG, HEADING_RADAR };
     HeadingSource             m_heading_source;
 
-    NMEA0183                  m_NMEA0183;
+    br_NMEA0183               m_NMEA0183;
 
     double                    llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
 };
