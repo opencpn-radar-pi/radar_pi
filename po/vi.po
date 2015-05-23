@@ -5,182 +5,179 @@ msgstr ""
 "POT-Creation-Date: 2015-05-17 11:38-0500\n"
 "PO-Revision-Date: 2015-05-23 05:01-0400\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
-"Language-Team: Finnish\n"
-"Language: fi_FI\n"
+"Language-Team: Vietnamese\n"
+"Language: vi_VN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: crowdin.com\n"
 "X-Crowdin-Project: opencpn\n"
-"X-Crowdin-Language: fi\n"
+"X-Crowdin-Language: vi\n"
 "X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
 
 #: src/GuardZoneBogey.cpp:124
 msgid "Zone 1: unknown\n"
 "Zone 2: unknown\n"
 "Timeout"
-msgstr "Alue 1: tuntematon\n"
-"Alue 2: tuntematon\n"
-"Aikaylitys"
+msgstr ""
 
 #: src/GuardZoneBogey.cpp:127
 msgid "&Confirm"
-msgstr "& Vahvistaa"
+msgstr ""
 
 #: src/GuardZoneBogey.cpp:130
 msgid "C&onfirm + Close"
-msgstr "C & Vahvista + Sulje"
+msgstr ""
 
 #: src/GuardZoneBogey.cpp:142
 msgid "Zone"
-msgstr "Vyöhyke"
+msgstr ""
 
 #: src/GuardZoneBogey.cpp:148
 #, c-format
 msgid "Next alarm in %d s"
-msgstr "Seuraava hälytys %d s"
+msgstr ""
 
 #: src/GuardZoneControls.cpp:133
 msgid "Guard zones"
-msgstr "Suoja-alueet"
+msgstr ""
 
 #: src/GuardZoneControls.cpp:137 src/br24radarcontrol.cpp:603
 #: src/br24radarcontrol.cpp:616 src/br24radarcontrol.cpp:628
 #: src/br24radarcontrol.cpp:644 src/br24radarcontrol.cpp:684
 #: src/br24radarcontrol.cpp:768
 msgid "Off"
-msgstr "Pois päältä"
+msgstr ""
 
 #: src/GuardZoneControls.cpp:138 src/br24radarcontrol.cpp:769
 msgid "Arc"
-msgstr "Kaari"
+msgstr ""
 
 #: src/GuardZoneControls.cpp:139 src/br24radarcontrol.cpp:770
 msgid "Circle"
-msgstr "Ympyrä"
+msgstr ""
 
 #: src/GuardZoneControls.cpp:140
 msgid "Zone type:"
-msgstr "Alueen tyyppi:"
+msgstr ""
 
 #: src/GuardZoneControls.cpp:152
 msgid "Inner range"
-msgstr "Sisempi alue"
+msgstr ""
 
 #: src/GuardZoneControls.cpp:161
 msgid "Outer range"
-msgstr "Ulompi alue"
+msgstr ""
 
 #: src/GuardZoneControls.cpp:171
 msgid "Start bearing"
-msgstr "Alkusuunta"
+msgstr ""
 
 #: src/GuardZoneControls.cpp:181
 msgid "End bearing"
-msgstr "Loppusuunta"
+msgstr ""
 
 #: src/GuardZoneControls.cpp:192 src/br24radarcontrol.cpp:532
 msgid "&Close"
-msgstr "&Sulje"
+msgstr ""
 
 #: src/GuardZoneControls.cpp:233
 msgid "Guard Zone"
-msgstr "Suojavyöhyke"
+msgstr ""
 
 #: src/br24radar_pi.cpp:528
 msgid "Radar Control..."
-msgstr "Tutkan ohjain..."
+msgstr ""
 
 #: src/br24radar_pi.cpp:530
 msgid "Menu"
-msgstr "Valikkko"
+msgstr ""
 
 #: src/br24radar_pi.cpp:537
 msgid "Set Guard Point"
-msgstr "Aseta suojauskohta"
+msgstr ""
 
 #: src/br24radar_pi.cpp:635
 msgid "Navico Radar PlugIn for OpenCPN"
-msgstr "Navico tutka lisäosa OpenCPN:ään"
+msgstr ""
 
 #: src/br24radar_pi.cpp:641
 msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
-msgstr "Navico laajakaista BR24 / 3G / 4G tutkalisäosa OpenCPN:ään\n"
+msgstr ""
 
 #: src/br24radar_pi.cpp:706
 msgid "BR24 Target Display Preferences"
-msgstr "BR24 Kohteen näyttöasetukset"
+msgstr ""
 
 #: src/br24radar_pi.cpp:729
 msgid "Nautical Miles"
-msgstr "Merimailit"
+msgstr ""
 
 #: src/br24radar_pi.cpp:730
 msgid "Kilometers"
-msgstr "Kilometrit"
+msgstr ""
 
 #: src/br24radar_pi.cpp:733
 msgid "Range Units"
-msgstr "Yksiköt"
+msgstr ""
 
 #: src/br24radar_pi.cpp:745
 msgid "Monocolor-Red"
-msgstr "Monocolor-punainen"
+msgstr ""
 
 #: src/br24radar_pi.cpp:746
 msgid "Multi-color"
-msgstr "Monivärinen"
+msgstr ""
 
 #: src/br24radar_pi.cpp:747
 msgid "Multi-color 2"
-msgstr "Monivärinen 2"
+msgstr ""
 
 #: src/br24radar_pi.cpp:750
 msgid "Overlay Display Options"
-msgstr "Peiton näyttöasetukset"
+msgstr ""
 
 #: src/br24radar_pi.cpp:761
 msgid "Radar Display"
-msgstr "Tutkan näyttö"
+msgstr ""
 
 #: src/br24radar_pi.cpp:773
 msgid "Shading"
-msgstr "Varjostus"
+msgstr ""
 
 #: src/br24radar_pi.cpp:774
 msgid "Outline"
-msgstr "Rajaus"
+msgstr ""
 
 #: src/br24radar_pi.cpp:775
 msgid "Shading + Outline"
-msgstr "Varjostus + rajaus"
+msgstr ""
 
 #: src/br24radar_pi.cpp:777
 msgid "Guard Zone Styling"
-msgstr "Suojavyöhykeen muotoilu"
+msgstr ""
 
 #: src/br24radar_pi.cpp:788
 msgid "Calibration"
-msgstr "Kalibrointi"
+msgstr ""
 
 #: src/br24radar_pi.cpp:793
 msgid "Heading correction\n"
 "(-180 to +180)"
-msgstr "Suuntakorjaus\n"
-"(-180 to +180)"
+msgstr ""
 
 #: src/br24radar_pi.cpp:805
 msgid "Guard Zone Sound"
-msgstr "Suojavyöhykeääni"
+msgstr ""
 
 #: src/br24radar_pi.cpp:809
 msgid "Select Alert Sound"
-msgstr "Valitse hälytysääni"
+msgstr ""
 
 #: src/br24radar_pi.cpp:814
 msgid "Test Alert Sound"
-msgstr "Testaa hälytysääntä"
+msgstr ""
 
 #: src/br24radar_pi.cpp:820
 msgid "Options"
@@ -192,15 +189,15 @@ msgstr ""
 
 #: src/br24radar_pi.cpp:870
 msgid "Select Sound File"
-msgstr "Valitse äänitiedosto"
+msgstr ""
 
 #: src/br24radar_pi.cpp:871
 msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
-msgstr "WAV tiedostot (*.wav)|*.wav|Kaikki tiedostot (*.*)|*.*"
+msgstr ""
 
 #: src/br24radar_pi.cpp:992 src/br24radar_pi.h:823
 msgid " Guard Zone Control"
-msgstr " Suoja-alue kontrolli"
+msgstr ""
 
 #: src/br24radar_pi.cpp:2019
 msgid "GPS"
@@ -232,51 +229,51 @@ msgstr ""
 
 #: src/br24radar_pi.cpp:2713
 msgid "Cannot create UDP socket"
-msgstr "Ei voi luoda UDP-liitosta"
+msgstr ""
 
 #: src/br24radar_pi.cpp:2717
 msgid "Cannot set reuse address option on socket"
-msgstr "Ei voi määrittää uutta osoitetta liitäntään"
+msgstr ""
 
 #: src/br24radar_pi.cpp:2722
 msgid "Cannot bind UDP socket to port "
-msgstr "Ei voi liittää UDP-liitosta portiin "
+msgstr ""
 
 #: src/br24radar_pi.cpp:2731
 msgid "Invalid multicast address"
-msgstr "Kelvoton monilähetysosoite"
+msgstr ""
 
 #: src/br24radar_pi.cpp:2736
 msgid "Invalid IP address for UDP multicast"
-msgstr "Kelvoton IP-osoite UDP-monilähetykseen"
+msgstr ""
 
 #: src/br24radar_pi.cpp:2770
 msgid "emulator"
-msgstr "emulaattori"
+msgstr ""
 
 #: src/br24radar_pi.h:229
 msgid "Radar Chart Overlay"
-msgstr "Tutkan kartan peittokuva"
+msgstr ""
 
 #: src/br24radar_pi.h:230
 msgid "Radar Standalone"
-msgstr "Tutka, Yksittäinen"
+msgstr ""
 
 #: src/br24radar_pi.h:231
 msgid "Spectrum"
-msgstr "Spektri"
+msgstr ""
 
 #: src/br24radar_pi.h:232
 msgid "Emulator"
-msgstr "Emulaattori"
+msgstr ""
 
 #: src/br24radar_pi.h:693
 msgid "Radar"
-msgstr "Tutka"
+msgstr ""
 
 #: src/br24radar_pi.h:877
 msgid "Guard Zone Active"
-msgstr "Aktiivinen suoja-alue"
+msgstr ""
 
 #: src/br24radar_pi.h:923 src/br24radarcontrol.cpp:439
 #: src/br24radarcontrol.cpp:693
@@ -286,67 +283,67 @@ msgstr ""
 #: src/br24radarcontrol.cpp:309 src/br24radarcontrol.cpp:337
 #: src/br24radarcontrol.cpp:443 src/br24radarcontrol.cpp:576
 msgid "Auto"
-msgstr "Auto"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:402 src/br24radarcontrol.cpp:528
 msgid "Dialog"
-msgstr "Dialogi"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:431 src/br24radarcontrol.cpp:596
 msgid "Transparency"
-msgstr "Läpinäkyvyys"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:432 src/br24radarcontrol.cpp:608
 msgid "Interference rejection"
-msgstr "Häiriöiden hylkääminen"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:433 src/br24radarcontrol.cpp:649
 msgid "Target separation"
-msgstr "Kohteen erottaminen"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:434 src/br24radarcontrol.cpp:632
 msgid "Noise rejection"
-msgstr "Häiriön hylkääminen"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:435 src/br24radarcontrol.cpp:619
 msgid "Target boost"
-msgstr "Kohteen tarkennus"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:436 src/br24radarcontrol.cpp:667
 msgid "Downsample"
-msgstr "Vähennä erotuskykyä"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:437 src/br24radarcontrol.cpp:659
 msgid "Scan speed"
-msgstr "Skannaus nopeus"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:438 src/br24radarcontrol.cpp:679
 msgid "Scan age"
-msgstr "Skannauksen ikä"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:440 src/br24radarcontrol.cpp:714
 msgid "Gain"
-msgstr "Vahvistus"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:441 src/br24radarcontrol.cpp:718
 msgid "Sea clutter"
-msgstr "Merivälke"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:442 src/br24radarcontrol.cpp:722
 msgid "Rain clutter"
-msgstr "Sade välke"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:479
 msgid "Radar overlay requires the following data"
-msgstr "Säätutkan päällyskerros vaatii seuraavat tiedot"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:482
 msgid "OpenCPN options"
-msgstr "OpenCPN asetukset"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:487
 msgid "Accelerated Graphics (OpenGL)"
-msgstr "Kiidytettyä grafiikkaa (OpenGL)"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:492
 msgid "Data sources"
@@ -354,11 +351,11 @@ msgstr ""
 
 #: src/br24radarcontrol.cpp:497
 msgid "Boat position"
-msgstr "Veneen sijainti"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:502 src/br24radarcontrol.cpp:1050
 msgid "Heading"
-msgstr "Suunta"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:507 src/br24radarcontrol.cpp:1060
 msgid "Variation"
@@ -366,71 +363,70 @@ msgstr ""
 
 #: src/br24radarcontrol.cpp:512 src/br24radarcontrol.cpp:1040
 msgid "ZeroConf via (wired) Ethernet"
-msgstr "ZeroConf (langallisen) Ethernetin kautta"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:517
 msgid "Radar present"
-msgstr "Olemassaoleva tutka"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:522
 msgid "Radar sending data"
-msgstr "Tutka lähettää tietoa"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:527
 msgid "Statistics"
-msgstr "Tilastot"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:545
 msgid "<<\n"
 "Back"
-msgstr "<< \n"
-"Takaisin"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:550
 msgid "+10"
-msgstr "+ 10"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:555
 msgid "+"
-msgstr "+"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:560
 msgid "Value"
-msgstr "Arvo"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:566
 msgid "-"
-msgstr "-"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:571
 msgid "-10"
-msgstr "-10"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:590
 msgid "Back"
-msgstr "Takaisin"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:604 src/br24radarcontrol.cpp:617
 #: src/br24radarcontrol.cpp:629 src/br24radarcontrol.cpp:645
 msgid "Low"
-msgstr "Alhainen"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:605 src/br24radarcontrol.cpp:646
 msgid "Medium"
-msgstr "Keskitaso"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:606 src/br24radarcontrol.cpp:618
 #: src/br24radarcontrol.cpp:630 src/br24radarcontrol.cpp:647
 msgid "High"
-msgstr "Korkea"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:657
 msgid "Normal"
-msgstr "Tavallinen"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:658
 msgid "Fast"
-msgstr "Nopea"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:673
 msgid "Refresh rate"
@@ -466,18 +462,17 @@ msgstr ""
 
 #: src/br24radarcontrol.cpp:710
 msgid "Range"
-msgstr "Kantama"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:726
 msgid "Advanced\n"
 "controls"
-msgstr "Kehittyneet\n"
-"säädöt"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:732 src/br24radarcontrol.cpp:739
 #: src/br24radarcontrol.cpp:773 src/br24radarcontrol.cpp:776
 msgid "Guard zone"
-msgstr "Suojavyöhyke"
+msgstr ""
 
 #: src/br24radarcontrol.cpp:745
 msgid "Info"
@@ -485,7 +480,7 @@ msgstr ""
 
 #: src/br24radarcontrol.cpp:1030
 msgid "Radar IP"
-msgstr "Tutkan IP"
+msgstr ""
 
 #: src/Idle_Dialog.cpp:105
 msgid "Idle time is set to"
