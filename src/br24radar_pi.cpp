@@ -136,7 +136,7 @@ unsigned int refreshRate = 1;  // refreshrate for radar used in process buffer
 unsigned int refreshmapping[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
 // user values 1 to 5 mapped to these values for refrehs interval
 // user 1 - no additional refresh, 2 - interval between frames 9, so on.
-bool RenderOverlay_busy = false;
+volatile bool br_refresh_busy_or_queued = false;
 
 double mark_rng = 0, mark_brg = 0;      // This is needed for context operation
 long  br_range_meters = 0;      // current range for radar
@@ -1282,7 +1282,7 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 {
-    RenderOverlay_busy = true;   //  the receive thread should not queue another refresh (through refresh canvas) this when it is busy
+    br_refresh_busy_or_queued = true;   //  the receive thread should not queue another refresh (through refresh canvas) this when it is busy
     br_opengl_mode = true;
     // this is expected to be called at least once per second
     // but if we are scrolling or otherwise it can be MUCH more often!
@@ -1381,7 +1381,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
             }
             break;
     }
-    RenderOverlay_busy = false;
+    br_refresh_busy_or_queued = false;
     return true;
 }
 
@@ -1399,9 +1399,21 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     glPushMatrix();
     glTranslated(radar_center.x, radar_center.y, 0);
 
+    if (settings.verbose >= 4) {
+        wxLogMessage(wxT("BR24radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g rotation=%g skew=%g scale=%f")
+                    , vp->clat
+                    , vp->clon
+                    , vp->view_scale_ppm
+                    , vp->rotation
+                    , vp->skew
+                    , vp->chart_scale
+                    );
+    }
+
     double heading = MOD_DEGREES( rad2deg(vp->rotation)        // viewport rotation
-                                - 90.0                         // difference between compass and OpenGL rotation
+                                + 270.0                        // difference between compass and OpenGL rotation
                                 + settings.heading_correction  // fix any radome rotation fault
+                                - vp->skew * settings.skew_factor
                                 );
     glRotatef(heading, 0, 0, 1);
 
@@ -1422,7 +1434,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
         // Guard Zone image
         if (br_radar_state == RADAR_ON) {
             if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
-                glRotatef(-settings.heading_correction + br_hdt, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
+                glRotatef(br_hdt - settings.heading_correction + vp->skew * settings.skew_factor, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
                 RenderGuardZone(radar_center, v_scale_ppm, vp);
             }
         }
@@ -1927,6 +1939,8 @@ bool br24radar_pi::LoadConfig(void)
 
         pConf->Read(wxT("RadarAlertAudioFile"), &settings.alert_audio_file);
 
+        pConf->Read(wxT("SkewFactor"), &settings.skew_factor, 1);
+
         SaveConfig();
         return true;
     }
@@ -1985,6 +1999,8 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("Zone2OuterRng"), guardZones[1].outer_range);
         pConf->Write(wxT("Zone2InnerRng"), guardZones[1].inner_range);
         pConf->Write(wxT("Zone2ArcCirc"), guardZones[1].type);
+
+        pConf->Write(wxT("SkewFactor"), settings.skew_factor);
 
         pConf->Flush();
         //wxLogMessage(wxT("BR24radar_pi: saved config"));
@@ -2955,27 +2971,27 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     }
     //  all scanlines ready now, refresh section follows
     int pos_age = difftime (time(0), br_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
-    if (RenderOverlay_busy || pos_age >= 2) { // don't do additional refresh and reset the refresh conter
-        i_display = 0;            // RenderOverlay_busy: rendering ongoing, reset the counter, don't refresh now
+    if (br_refresh_busy_or_queued || pos_age >= 2) { // don't do additional refresh and reset the refresh conter
+        i_display = 0;            // rendering ongoing, reset the counter, don't refresh now
         // this will also balance performance, if too busy skip refresh
         // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
         // so skip next refresh
         if (pPlugIn->settings.verbose >= 2) {
             if (pos_age >= 2) wxLogMessage(wxT("BR24radar_pi:  busy encountered, br_bpos_watchdog = %i"), pos_age);
-            if (RenderOverlay_busy) wxLogMessage(wxT("BR24radar_pi:  busy encountered"));
+            if (br_refresh_busy_or_queued) wxLogMessage(wxT("BR24radar_pi:  busy encountered"));
         }
     }
     else {
         if (br_radar_state == RADAR_ON) {
             if (i_display >=  refreshRate ) {   //    display every "refreshrate time"
                 if (refreshRate != 10) { // for 10 no refresh at all
+                    br_refresh_busy_or_queued = true;   // no further calls until br_refresh_busy_or_queued has been cleared by RenderGLOverlay
                     GetOCPNCanvasWindow()->Refresh(true);
                     if (pPlugIn->settings.verbose >= 4) {
                         wxLogMessage(wxT("BR24radar_pi:  refresh issued"));
                     }
                 }
                 i_display = 0;
-                RenderOverlay_busy = true;   // no further calls until RenderOverlay_busy has been cleared by RenderGLOverlay
             }
             i_display ++;
         }
