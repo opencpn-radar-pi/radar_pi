@@ -52,7 +52,7 @@ else
   echo "-------------------------- BUILD $STATE -----------------------"
 fi
 
-[ $(uname) = "Darwin" ] && export MACOSX_DEPLOYMENT_TARGET=10.9
+[ $(uname) = "Darwin" ] && export MACOSX_DEPLOYMENT_TARGET=10.7
 [ -d $BUILDDIR ] && rm -rf $BUILDDIR
 mkdir -p $BUILDDIR
 cd $BUILDDIR
