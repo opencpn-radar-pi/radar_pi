@@ -554,6 +554,11 @@ int br24radar_pi::Init(void)
     m_reportReceiveThread = new RadarReportReceiveThread(this, &m_quit);
     m_reportReceiveThread->Run();
 
+    ShowRadarControl();   //  prepare radar control
+    if (m_pControlDialog) {
+        m_pControlDialog->Hide();   // and hide it for later use
+        }
+
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
             WANTS_OVERLAY_CALLBACK     |
@@ -2991,7 +2996,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 if (refreshRate != 10) { // for 10 no refresh at all
                     br_refresh_busy_or_queued = true;   // no further calls until br_refresh_busy_or_queued has been cleared by RenderGLOverlay
                     GetOCPNCanvasWindow()->Refresh(true);
-                    RenderOverlay_busy = true;   // no further calls until RenderOverlay_busy has been cleared by RenderGLOverlay
                     if (pPlugIn->settings.verbose >= 4) {
                         wxLogMessage(wxT("BR24radar_pi:  refresh issued"));
                     }
