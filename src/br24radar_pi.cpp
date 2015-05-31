@@ -928,7 +928,7 @@ void br24radar_pi::ShowRadarControl(bool show)
 void br24radar_pi::OnContextMenuItemCallback(int id)
 {
     if (!guard_context_mode) {
-        ShowRadarControl();
+        ShowRadarControl(true);
     }
 
     if (guard_context_mode) {
@@ -1055,7 +1055,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         if (id != 999999  && settings.timed_idle != 0) {
             m_pControlDialog->SetTimedIdleIndex(0) ; //Disable Timed Transmit if user click the icon while idle
         }
-        ShowRadarControl();
+        ShowRadarControl(true);
     } else {
         br_radar_state = RADAR_OFF;
         if (settings.master_mode == true) {
