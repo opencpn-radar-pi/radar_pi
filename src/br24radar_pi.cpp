@@ -554,11 +554,8 @@ int br24radar_pi::Init(void)
     m_reportReceiveThread = new RadarReportReceiveThread(this, &m_quit);
     m_reportReceiveThread->Run();
 
-    ShowRadarControl();   //  prepare radar control
-    if (m_pControlDialog) {
-        m_pControlDialog->Hide();   // and hide it for later use
-        }
-
+    ShowRadarControl(false);   //prepare radar control but don't show it
+   
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
             WANTS_OVERLAY_CALLBACK     |
@@ -913,7 +910,7 @@ void BR24DisplayOptionsDialog::OnIdOKClick(wxCommandEvent& event)
 //********************************************************************************
 // Operation Dialogs - Control, Manual, and Options
 
-void br24radar_pi::ShowRadarControl()
+void br24radar_pi::ShowRadarControl(bool show)
 {
     if (!m_pControlDialog) {
         m_pControlDialog = new BR24ControlsDialog;
@@ -923,7 +920,7 @@ void br24radar_pi::ShowRadarControl()
         m_pControlDialog->SetAutoRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
         // first time we display range from outside receive thread
     }
-    m_pControlDialog->Show();
+   if(show) m_pControlDialog->Show();
     m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
                               m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy);
 }
@@ -1346,10 +1343,9 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         int displayedRange = auto_range_meters;  //  the value for use in the control
         size_t idx = convertMetersToRadarAllowedValue(&displayedRange, settings.range_units, br_radar_type);
         //    wxLogMessage(wxT("BR24radar_pi: screensize=%f autorange_meters=%d"), max_distance, auto_range_meters);
-  //      if (auto_range_meters != previous_auto_range_meters)       {                        //   range change required
         if (auto_range_meters == 0) auto_range_meters = 1;   // just to prevent divide by 0
         long test = previous_auto_range_meters / auto_range_meters;
-        if (test < 0.9 || test > 1.1)               //   range change required
+        if (test < 0.95 || test > 1.05)               //   range change required
             {
             if (settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: Automatic scale changed from %d to %d meters")
