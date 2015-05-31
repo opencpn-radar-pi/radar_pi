@@ -2765,7 +2765,7 @@ fail:
     errorMsg << wxT(" ") << address;
     wxLogError(wxT("BR2radar_pi: %s"), errorMsg.c_str());
     if (pPlugIn && pPlugIn->m_pControlDialog) {
-        pPlugIn->m_pControlDialog->SetErrorMessage(errorMsg);
+   //     pPlugIn->m_pControlDialog->SetErrorMessage(errorMsg);
     }
     if (rx_socket != INVALID_SOCKET) {
         closesocket(rx_socket);
@@ -2789,7 +2789,7 @@ void *RadarDataReceiveThread::Entry(void)
             if (pPlugIn->m_pControlDialog) {
                 wxString ip;
                 ip << _("emulator");
-                pPlugIn->m_pControlDialog->SetRadarIPAddress(ip);
+         //       pPlugIn->m_pControlDialog->SetRadarIPAddress(ip);
             }
         }
         else {
@@ -3029,7 +3029,7 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
         br_range_meters = range_meters;
         // Set the control's value to the real range that we received, not a table idea
         if (pPlugIn->m_pControlDialog) {
-            pPlugIn->m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range_meters, pPlugIn->settings.range_units, br_radar_type));
+   //         pPlugIn->m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range_meters, pPlugIn->settings.range_units, br_radar_type));
         }
     }
 
@@ -3299,7 +3299,7 @@ void *RadarReportReceiveThread::Entry(void)
                         wxLogMessage(wxT("BR24radar_pi: Listening for radar reports on %s"), addr.c_str());
                     }
                     if (pPlugIn->m_pControlDialog) {
-                        pPlugIn->m_pControlDialog->SetMcastIPAddress(addr);
+              //          pPlugIn->m_pControlDialog->SetMcastIPAddress(addr);
                     }
                     count = 0;
                 }
@@ -3323,7 +3323,7 @@ void *RadarReportReceiveThread::Entry(void)
                     addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
 
                     if (pPlugIn->m_pControlDialog) {
-                        pPlugIn->m_pControlDialog->SetRadarIPAddress(addr);
+               //         pPlugIn->m_pControlDialog->SetRadarIPAddress(addr);
                     }
                     if (!br_radar_seen) {
                         wxLogMessage(wxT("BR24radar_pi: detected radar at %s"), addr.c_str());
