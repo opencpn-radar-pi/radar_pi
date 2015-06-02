@@ -1308,7 +1308,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         boat_center = center_screen;
     }
 
-    // set the IP address info in the control box idf signalled by the receive thread
+    // set the IP address info in the control box if signalled by the receive thread
 
     if (ipError) {
         if (m_pControlDialog) {
