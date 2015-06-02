@@ -116,6 +116,7 @@ double cur_lat, cur_lon;
 double br_hdm;
 double br_hdt;     // this is the heading that the pi is using for all heading operations, in degrees
                    // br_hdt will come from the radar if available else from the NMEA stream
+  
 int br_hdt_raw = 0;// if set by radar, the heading (in 0..4095)
 
 // Variation. Used to convert magnetic into true heading.
@@ -144,6 +145,10 @@ int auto_range_meters = 0;      // What the range should be, at least, when AUTO
 int previous_auto_range_meters = 0;
 bool setRangeIssued = false;
 bool rangeChangeReceived = false;
+bool ipAddress = false;
+bool ipError = false;
+wxString ipAddr;
+wxString errorMsg;
 
 int   br_last_idle_set = 0;     //Timed Transmit
 int   br_idle_set_count = 0;
@@ -1302,6 +1307,22 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     } else {
         boat_center = center_screen;
     }
+
+    // set the IP address info in the control box idf signalled by the receive thread
+
+    if (ipError) {
+        if (m_pControlDialog) {
+        m_pControlDialog->SetErrorMessage(errorMsg);
+            }
+        ipError = false;
+        }
+    if (ipAddress) {
+        if (m_pControlDialog) {
+            m_pControlDialog->SetMcastIPAddress(ipAddr);
+            }
+        ipAddress = false;
+        }
+
 
     // now set a new value in the range control if an unsollicited range change has been received.
     // not for range change that the pi has initialized. For these the control was updated immediately
@@ -2715,8 +2736,7 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     SOCKET rx_socket;
     struct sockaddr_in adr;
     int one = 1;
-    wxString errorMsg;
-
+   
     if (!addr) {
         return INVALID_SOCKET;
     }
@@ -2764,9 +2784,7 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
 fail:
     errorMsg << wxT(" ") << address;
     wxLogError(wxT("BR2radar_pi: %s"), errorMsg.c_str());
-    if (pPlugIn && pPlugIn->m_pControlDialog) {
-   //     pPlugIn->m_pControlDialog->SetErrorMessage(errorMsg);
-    }
+    ipError = true;
     if (rx_socket != INVALID_SOCKET) {
         closesocket(rx_socket);
     }
@@ -2789,7 +2807,7 @@ void *RadarDataReceiveThread::Entry(void)
             if (pPlugIn->m_pControlDialog) {
                 wxString ip;
                 ip << _("emulator");
-         //       pPlugIn->m_pControlDialog->SetRadarIPAddress(ip);
+                pPlugIn->m_pControlDialog->SetRadarIPAddress(ip);
             }
         }
         else {
@@ -3029,7 +3047,7 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
         br_range_meters = range_meters;
         // Set the control's value to the real range that we received, not a table idea
         if (pPlugIn->m_pControlDialog) {
-   //         pPlugIn->m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range_meters, pPlugIn->settings.range_units, br_radar_type));
+            pPlugIn->m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range_meters, pPlugIn->settings.range_units, br_radar_type));
         }
     }
 
@@ -3298,9 +3316,8 @@ void *RadarReportReceiveThread::Entry(void)
                     if (pPlugIn->settings.verbose >= 1) {
                         wxLogMessage(wxT("BR24radar_pi: Listening for radar reports on %s"), addr.c_str());
                     }
-                    if (pPlugIn->m_pControlDialog) {
-              //          pPlugIn->m_pControlDialog->SetMcastIPAddress(addr);
-                    }
+                    ipAddr = addr;
+                    ipAddress = true;    //signals to RenderGLOverlay that the control box should be updated 
                     count = 0;
                 }
             }
@@ -3321,10 +3338,8 @@ void *RadarReportReceiveThread::Entry(void)
                     wxString addr;
                     UINT8 * a = (UINT8 *) &br_radar_addr->sin_addr; // sin_addr is in network layout
                     addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
-
-                    if (pPlugIn->m_pControlDialog) {
-               //         pPlugIn->m_pControlDialog->SetRadarIPAddress(addr);
-                    }
+                    ipAddr = addr;
+                    ipAddress = true;   //signals to RenderGLOverlay that the control box should be updated 
                     if (!br_radar_seen) {
                         wxLogMessage(wxT("BR24radar_pi: detected radar at %s"), addr.c_str());
                     }
