@@ -116,7 +116,7 @@ double cur_lat, cur_lon;
 double br_hdm;
 double br_hdt;     // this is the heading that the pi is using for all heading operations, in degrees
                    // br_hdt will come from the radar if available else from the NMEA stream
-  
+
 int br_hdt_raw = 0;// if set by radar, the heading (in 0..4095)
 
 // Variation. Used to convert magnetic into true heading.
@@ -144,11 +144,11 @@ long  br_range_meters = 0;      // current range for radar
 int auto_range_meters = 0;      // What the range should be, at least, when AUTO mode is selected
 int previous_auto_range_meters = 0;
 bool setRangeIssued = false;
-bool rangeChangeReceived = false;
-bool ipAddress = false;
-bool ipError = false;
-wxString ipAddr;
-wxString errorMsg;
+bool br_update_range_control = false;
+bool br_update_address_control = false;
+bool br_update_error_control = false;
+wxString br_ip_address; // Current IP address of the ethernet interface that we're doing multicast receive on.
+wxString br_error_msg;
 
 int   br_last_idle_set = 0;     //Timed Transmit
 int   br_idle_set_count = 0;
@@ -560,7 +560,7 @@ int br24radar_pi::Init(void)
     m_reportReceiveThread->Run();
 
     ShowRadarControl(false);   //prepare radar control but don't show it
-   
+
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
             WANTS_OVERLAY_CALLBACK     |
@@ -1310,25 +1310,25 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
     // set the IP address info in the control box if signalled by the receive thread
 
-    if (ipError) {
+    if (br_update_error_control) {
         if (m_pControlDialog) {
-        m_pControlDialog->SetErrorMessage(errorMsg);
-            }
-        ipError = false;
+            m_pControlDialog->SetErrorMessage(br_error_msg);
         }
-    if (ipAddress) {
+        br_update_error_control = false;
+    }
+    if (br_update_address_control) {
         if (m_pControlDialog) {
-            m_pControlDialog->SetMcastIPAddress(ipAddr);
-            }
-        ipAddress = false;
+            m_pControlDialog->SetMcastIPAddress(br_ip_address);
         }
+        br_update_address_control = false;
+    }
 
 
     // now set a new value in the range control if an unsollicited range change has been received.
     // not for range change that the pi has initialized. For these the control was updated immediately
 
-    if (rangeChangeReceived) {
-        rangeChangeReceived = false;
+    if (br_update_range_control) {
+        br_update_range_control = false;
         if (!setRangeIssued) {    // this range change was not initiated by the pi
             int current_range = (int) (br_range_meters * 0.65);
             if (m_pControlDialog) {
@@ -2736,7 +2736,7 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     SOCKET rx_socket;
     struct sockaddr_in adr;
     int one = 1;
-   
+
     if (!addr) {
         return INVALID_SOCKET;
     }
@@ -2751,16 +2751,16 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     adr.sin_port = htons(port);
     rx_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (rx_socket == INVALID_SOCKET) {
-        errorMsg << _("Cannot create UDP socket");
+        br_error_msg << _("Cannot create UDP socket");
         goto fail;
     }
     if (setsockopt(rx_socket, SOL_SOCKET, SO_REUSEADDR, (const char *) &one, sizeof(one))) {
-        errorMsg << _("Cannot set reuse address option on socket");
+        br_error_msg << _("Cannot set reuse address option on socket");
         goto fail;
     }
 
     if (bind(rx_socket, (struct sockaddr *) &adr, sizeof(adr))) {
-        errorMsg << _("Cannot bind UDP socket to port ") << port;
+        br_error_msg << _("Cannot bind UDP socket to port ") << port;
         goto fail;
     }
 
@@ -2769,12 +2769,12 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     mreq.imr_interface = addr->sin_addr;
 
     if (!my_inet_aton(mcastAddr, &mreq.imr_multiaddr)) {
-        errorMsg << _("Invalid multicast address") << wxT(" ") << wxString::FromUTF8(mcastAddr);
+        br_error_msg << _("Invalid multicast address") << wxT(" ") << wxString::FromUTF8(mcastAddr);
         goto fail;
     }
 
     if (setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *) &mreq, sizeof(mreq))) {
-        errorMsg << _("Invalid IP address for UDP multicast");
+        br_error_msg << _("Invalid IP address for UDP multicast");
         goto fail;
     }
 
@@ -2782,9 +2782,9 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     return rx_socket;
 
 fail:
-    errorMsg << wxT(" ") << address;
-    wxLogError(wxT("BR2radar_pi: %s"), errorMsg.c_str());
-    ipError = true;
+    br_error_msg << wxT(" ") << address;
+    wxLogError(wxT("BR2radar_pi: %s"), br_error_msg.c_str());
+    br_update_error_control = true;
     if (rx_socket != INVALID_SOCKET) {
         closesocket(rx_socket);
     }
@@ -2961,7 +2961,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             }
 
             br_range_meters = (long) range_meters;
-            rangeChangeReceived = true;  // to signal render overlay to change control value
+            br_update_range_control = true;  // to signal render overlay to change control value
 
             // Set the control's value to the real range that we received, not a table idea
             // will be handled in RenderOverlay, not safe to to screen IO from receive thread
@@ -3316,8 +3316,8 @@ void *RadarReportReceiveThread::Entry(void)
                     if (pPlugIn->settings.verbose >= 1) {
                         wxLogMessage(wxT("BR24radar_pi: Listening for radar reports on %s"), addr.c_str());
                     }
-                    ipAddr = addr;
-                    ipAddress = true;    //signals to RenderGLOverlay that the control box should be updated 
+                    br_ip_address = addr;
+                    br_update_address_control = true;    //signals to RenderGLOverlay that the control box should be updated
                     count = 0;
                 }
             }
@@ -3338,8 +3338,8 @@ void *RadarReportReceiveThread::Entry(void)
                     wxString addr;
                     UINT8 * a = (UINT8 *) &br_radar_addr->sin_addr; // sin_addr is in network layout
                     addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
-                    ipAddr = addr;
-                    ipAddress = true;   //signals to RenderGLOverlay that the control box should be updated 
+                    br_ip_address = addr;
+                    br_update_address_control = true;   //signals to RenderGLOverlay that the control box should be updated
                     if (!br_radar_seen) {
                         wxLogMessage(wxT("BR24radar_pi: detected radar at %s"), addr.c_str());
                     }
