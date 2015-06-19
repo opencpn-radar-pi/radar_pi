@@ -128,7 +128,6 @@ double br_var = 0.0;     // local magnetic variation, in degrees
 enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_SOURCE_FIX, VARIATION_SOURCE_WMM };
 VariationSource br_var_source = VARIATION_SOURCE_NONE;
 
-unsigned int i_display = 0;  // used in radar reive thread for display operation
 int repeatOnDelay = 0;   // used to prevend additional TxOn commands from DoTick when radar heas just been switched on
 
 bool br_heading_on_radar = false;
@@ -2867,6 +2866,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
     // wxCriticalSectionLocker locker(br_scanLock);
 
+    static unsigned int i_display = 0;  // used in radar reive thread for display operation
     static int next_scan_number = -1;
     int scan_number = 0;
     pPlugIn->m_statistics.packets++;
@@ -2995,7 +2995,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     //  all scanlines ready now, refresh section follows
     int pos_age = difftime (time(0), br_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
     if (br_refresh_busy_or_queued || pos_age >= 2) { // don't do additional refresh and reset the refresh conter
-        i_display = 0;            // rendering ongoing, reset the counter, don't refresh now
+        i_display = 0;  // rendering ongoing, reset the counter, don't refresh now
         // this will also balance performance, if too busy skip refresh
         // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
         // so skip next refresh
@@ -3016,7 +3016,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 }
                 i_display = 0;
             }
-            i_display ++;
+            i_display++;
         }
     }
 }
