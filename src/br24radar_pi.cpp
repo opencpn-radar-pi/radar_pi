@@ -116,6 +116,7 @@ double cur_lat, cur_lon;
 double br_hdm;
 double br_hdt;     // this is the heading that the pi is using for all heading operations, in degrees
                    // br_hdt will come from the radar if available else from the NMEA stream
+  
 int br_hdt_raw = 0;// if set by radar, the heading (in 0..4095)
 
 // Variation. Used to convert magnetic into true heading.
@@ -144,6 +145,10 @@ int auto_range_meters = 0;      // What the range should be, at least, when AUTO
 int previous_auto_range_meters = 0;
 bool setRangeIssued = false;
 bool rangeChangeReceived = false;
+bool ipAddress = false;
+bool ipError = false;
+wxString ipAddr;
+wxString errorMsg;
 
 int   br_last_idle_set = 0;     //Timed Transmit
 int   br_idle_set_count = 0;
@@ -554,6 +559,8 @@ int br24radar_pi::Init(void)
     m_reportReceiveThread = new RadarReportReceiveThread(this, &m_quit);
     m_reportReceiveThread->Run();
 
+    ShowRadarControl(false);   //prepare radar control but don't show it
+   
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
             WANTS_OVERLAY_CALLBACK     |
@@ -908,7 +915,7 @@ void BR24DisplayOptionsDialog::OnIdOKClick(wxCommandEvent& event)
 //********************************************************************************
 // Operation Dialogs - Control, Manual, and Options
 
-void br24radar_pi::ShowRadarControl()
+void br24radar_pi::ShowRadarControl(bool show)
 {
     if (!m_pControlDialog) {
         m_pControlDialog = new BR24ControlsDialog;
@@ -918,7 +925,7 @@ void br24radar_pi::ShowRadarControl()
         m_pControlDialog->SetAutoRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
         // first time we display range from outside receive thread
     }
-    m_pControlDialog->Show();
+   if(show) m_pControlDialog->Show();
     m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
                               m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy);
 }
@@ -926,7 +933,7 @@ void br24radar_pi::ShowRadarControl()
 void br24radar_pi::OnContextMenuItemCallback(int id)
 {
     if (!guard_context_mode) {
-        ShowRadarControl();
+        ShowRadarControl(true);
     }
 
     if (guard_context_mode) {
@@ -1053,7 +1060,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         if (id != 999999  && settings.timed_idle != 0) {
             m_pControlDialog->SetTimedIdleIndex(0) ; //Disable Timed Transmit if user click the icon while idle
         }
-        ShowRadarControl();
+        ShowRadarControl(true);
     } else {
         br_radar_state = RADAR_OFF;
         if (settings.master_mode == true) {
@@ -1301,6 +1308,22 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         boat_center = center_screen;
     }
 
+    // set the IP address info in the control box if signalled by the receive thread
+
+    if (ipError) {
+        if (m_pControlDialog) {
+        m_pControlDialog->SetErrorMessage(errorMsg);
+            }
+        ipError = false;
+        }
+    if (ipAddress) {
+        if (m_pControlDialog) {
+            m_pControlDialog->SetMcastIPAddress(ipAddr);
+            }
+        ipAddress = false;
+        }
+
+
     // now set a new value in the range control if an unsollicited range change has been received.
     // not for range change that the pi has initialized. For these the control was updated immediately
 
@@ -1341,7 +1364,10 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         int displayedRange = auto_range_meters;  //  the value for use in the control
         size_t idx = convertMetersToRadarAllowedValue(&displayedRange, settings.range_units, br_radar_type);
         //    wxLogMessage(wxT("BR24radar_pi: screensize=%f autorange_meters=%d"), max_distance, auto_range_meters);
-        if (auto_range_meters != previous_auto_range_meters)       {                        //   range change required
+        if (auto_range_meters == 0) auto_range_meters = 1;   // just to prevent divide by 0
+        long test = previous_auto_range_meters / auto_range_meters;
+        if (test < 0.95 || test > 1.05)               //   range change required
+            {
             if (settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: Automatic scale changed from %d to %d meters")
                              , previous_auto_range_meters, auto_range_meters);
@@ -2710,8 +2736,7 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     SOCKET rx_socket;
     struct sockaddr_in adr;
     int one = 1;
-    wxString errorMsg;
-
+   
     if (!addr) {
         return INVALID_SOCKET;
     }
@@ -2759,9 +2784,7 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
 fail:
     errorMsg << wxT(" ") << address;
     wxLogError(wxT("BR2radar_pi: %s"), errorMsg.c_str());
-    if (pPlugIn && pPlugIn->m_pControlDialog) {
-        pPlugIn->m_pControlDialog->SetErrorMessage(errorMsg);
-    }
+    ipError = true;
     if (rx_socket != INVALID_SOCKET) {
         closesocket(rx_socket);
     }
@@ -3293,9 +3316,8 @@ void *RadarReportReceiveThread::Entry(void)
                     if (pPlugIn->settings.verbose >= 1) {
                         wxLogMessage(wxT("BR24radar_pi: Listening for radar reports on %s"), addr.c_str());
                     }
-                    if (pPlugIn->m_pControlDialog) {
-                        pPlugIn->m_pControlDialog->SetMcastIPAddress(addr);
-                    }
+                    ipAddr = addr;
+                    ipAddress = true;    //signals to RenderGLOverlay that the control box should be updated 
                     count = 0;
                 }
             }
@@ -3316,10 +3338,8 @@ void *RadarReportReceiveThread::Entry(void)
                     wxString addr;
                     UINT8 * a = (UINT8 *) &br_radar_addr->sin_addr; // sin_addr is in network layout
                     addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
-
-                    if (pPlugIn->m_pControlDialog) {
-                        pPlugIn->m_pControlDialog->SetRadarIPAddress(addr);
-                    }
+                    ipAddr = addr;
+                    ipAddress = true;   //signals to RenderGLOverlay that the control box should be updated 
                     if (!br_radar_seen) {
                         wxLogMessage(wxT("BR24radar_pi: detected radar at %s"), addr.c_str());
                     }
