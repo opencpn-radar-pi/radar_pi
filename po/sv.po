@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-17 11:38-0500\n"
-"PO-Revision-Date: 2015-05-17 12:44-0400\n"
+"POT-Creation-Date: 2015-05-23 04:27-0500\n"
+"PO-Revision-Date: 2015-05-29 14:06-0400\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Swedish\n"
 "Language: sv_SE\n"
@@ -22,7 +22,7 @@ msgid "Zone 1: unknown\n"
 "Timeout"
 msgstr "Zon 1: okänd\n"
 "Zon 2: okänd\n"
-"Avbrott"
+"Avbruten"
 
 #: src/GuardZoneBogey.cpp:127
 msgid "&Confirm"
@@ -184,11 +184,11 @@ msgstr "Testa larmljudet"
 
 #: src/br24radar_pi.cpp:820
 msgid "Options"
-msgstr ""
+msgstr "Inställningar"
 
 #: src/br24radar_pi.cpp:824
 msgid "Pass radar heading to OpenCPN"
-msgstr ""
+msgstr "Skicka radarns kursdata till OpenCPN"
 
 #: src/br24radar_pi.cpp:870
 msgid "Select Sound File"
@@ -198,59 +198,59 @@ msgstr "Välj ljudfil"
 msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
 msgstr "WAV filer (*.wav)|*.wav|Alla filer (*.*)|*.*"
 
-#: src/br24radar_pi.cpp:992 src/br24radar_pi.h:823
+#: src/br24radar_pi.cpp:992 src/br24radar_pi.h:824
 msgid " Guard Zone Control"
 msgstr " Larmzon-Inställning"
 
-#: src/br24radar_pi.cpp:2019
+#: src/br24radar_pi.cpp:2035
 msgid "GPS"
 msgstr ""
 
-#: src/br24radar_pi.cpp:2039
+#: src/br24radar_pi.cpp:2055
 msgid "radar"
-msgstr ""
+msgstr "radar"
 
-#: src/br24radar_pi.cpp:2052
+#: src/br24radar_pi.cpp:2068
 msgid "HDM"
-msgstr ""
+msgstr "HDM"
 
-#: src/br24radar_pi.cpp:2065
+#: src/br24radar_pi.cpp:2081
 msgid "HDT"
-msgstr ""
+msgstr "HDT"
 
-#: src/br24radar_pi.cpp:2078
+#: src/br24radar_pi.cpp:2094
 msgid "COG"
-msgstr ""
+msgstr "COG"
 
-#: src/br24radar_pi.cpp:2114
+#: src/br24radar_pi.cpp:2130
 msgid "WMM"
-msgstr ""
+msgstr "WMM"
 
-#: src/br24radar_pi.cpp:2525
+#: src/br24radar_pi.cpp:2541
 msgid "NMEA"
-msgstr ""
+msgstr "NMEA"
 
-#: src/br24radar_pi.cpp:2713
+#: src/br24radar_pi.cpp:2729
 msgid "Cannot create UDP socket"
 msgstr "Kan inte öppna UDP-anslutning"
 
-#: src/br24radar_pi.cpp:2717
+#: src/br24radar_pi.cpp:2733
 msgid "Cannot set reuse address option on socket"
 msgstr "Återanslutningsadress kan inte anges"
 
-#: src/br24radar_pi.cpp:2722
+#: src/br24radar_pi.cpp:2738
 msgid "Cannot bind UDP socket to port "
 msgstr "Det går inte att koppla UDP anslutning till port "
 
-#: src/br24radar_pi.cpp:2731
+#: src/br24radar_pi.cpp:2747
 msgid "Invalid multicast address"
 msgstr "Ogiltig multicast-adress"
 
-#: src/br24radar_pi.cpp:2736
+#: src/br24radar_pi.cpp:2752
 msgid "Invalid IP address for UDP multicast"
 msgstr "Ogiltig IP-adress för UDP-multicast"
 
-#: src/br24radar_pi.cpp:2770
+#: src/br24radar_pi.cpp:2786
 msgid "emulator"
 msgstr "Emulator"
 
@@ -270,18 +270,18 @@ msgstr "Spektrum"
 msgid "Emulator"
 msgstr "Emulator"
 
-#: src/br24radar_pi.h:693
+#: src/br24radar_pi.h:694
 msgid "Radar"
 msgstr "Radar"
 
-#: src/br24radar_pi.h:877
+#: src/br24radar_pi.h:878
 msgid "Guard Zone Active"
 msgstr "Aktiverad Larmzon"
 
-#: src/br24radar_pi.h:923 src/br24radarcontrol.cpp:439
+#: src/br24radar_pi.h:924 src/br24radarcontrol.cpp:439
 #: src/br24radarcontrol.cpp:693
 msgid "Timed Transmit"
-msgstr ""
+msgstr "Tidsstyrd paus"
 
 #: src/br24radarcontrol.cpp:309 src/br24radarcontrol.cpp:337
 #: src/br24radarcontrol.cpp:443 src/br24radarcontrol.cpp:576
@@ -350,7 +350,7 @@ msgstr "Accelererad grafik (OpenGL)"
 
 #: src/br24radarcontrol.cpp:492
 msgid "Data sources"
-msgstr ""
+msgstr "Datakällor"
 
 #: src/br24radarcontrol.cpp:497
 msgid "Boat position"
@@ -362,7 +362,7 @@ msgstr "Kompasskurs"
 
 #: src/br24radarcontrol.cpp:507 src/br24radarcontrol.cpp:1060
 msgid "Variation"
-msgstr ""
+msgstr "Missvisning"
 
 #: src/br24radarcontrol.cpp:512 src/br24radarcontrol.cpp:1040
 msgid "ZeroConf via (wired) Ethernet"
@@ -434,35 +434,35 @@ msgstr "Snabb"
 
 #: src/br24radarcontrol.cpp:673
 msgid "Refresh rate"
-msgstr ""
+msgstr "Uppdateringsfrekvens"
 
 #: src/br24radarcontrol.cpp:685
 msgid "5 min"
-msgstr ""
+msgstr "5 min"
 
 #: src/br24radarcontrol.cpp:686
 msgid "10 min"
-msgstr ""
+msgstr "10 min"
 
 #: src/br24radarcontrol.cpp:687
 msgid "15 min"
-msgstr ""
+msgstr "15 min"
 
 #: src/br24radarcontrol.cpp:688
 msgid "20 min"
-msgstr ""
+msgstr "20 min"
 
 #: src/br24radarcontrol.cpp:689
 msgid "25 min"
-msgstr ""
+msgstr "25 min"
 
 #: src/br24radarcontrol.cpp:690
 msgid "30 min"
-msgstr ""
+msgstr "30 min"
 
 #: src/br24radarcontrol.cpp:691
 msgid "35 min"
-msgstr ""
+msgstr "35 min"
 
 #: src/br24radarcontrol.cpp:710
 msgid "Range"
@@ -481,7 +481,7 @@ msgstr "Larmzon"
 
 #: src/br24radarcontrol.cpp:745
 msgid "Info"
-msgstr ""
+msgstr "Info"
 
 #: src/br24radarcontrol.cpp:1030
 msgid "Radar IP"
@@ -489,25 +489,25 @@ msgstr "Radar IP"
 
 #: src/Idle_Dialog.cpp:105
 msgid "Idle time is set to"
-msgstr ""
+msgstr "Vald paustid är"
 
 #: src/Idle_Dialog.cpp:106
 msgid "minutes"
-msgstr ""
+msgstr "minuter"
 
 #: src/Idle_Dialog.cpp:107
 msgid "ca."
-msgstr ""
+msgstr "ca."
 
 #: src/Idle_Dialog.cpp:108
 msgid "minutes until next run"
-msgstr ""
+msgstr "minuter paus kvar"
 
 #: src/Idle_Dialog.cpp:118
 msgid "Radar scanner is Idling"
-msgstr ""
+msgstr "Radarn pausar"
 
 #: src/Idle_Dialog.cpp:133
 msgid "Turn Radar always ON"
-msgstr ""
+msgstr "Kontinuerlig radar utan paus"
 
