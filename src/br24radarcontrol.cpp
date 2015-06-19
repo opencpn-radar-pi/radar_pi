@@ -140,94 +140,58 @@ END_EVENT_TABLE()
 
 //Ranges are metric for BR24 - the hex codes are little endian = 10 X range value
 
-static const wxString g_range_names[2][20] = {
-    {
-        wxT("50 m"),
-        wxT("75 m"),
-        wxT("100 m"),
-        wxT("1/8 NM"),
-        wxT("1/4 NM"),
-        wxT("1/2 NM"),
-        wxT("3/4 NM"),
-        wxT("1 NM"),
-        wxT("1.5 NM"),
-        wxT("2 NM"),
-        wxT("3 NM"),
-        wxT("4 NM"),
-        wxT("6 NM"),
-        wxT("8 NM"),
-        wxT("12 NM"),
-        wxT("16 NM"),
-        wxT("24 NM"),
-        wxT("36 NM")
-    },
-    {
-        wxT("50 m"),
-        wxT("75 m"),
-        wxT("100 m"),
-        wxT("250 m"),
-        wxT("500 m"),
-        wxT("750 m"),
-        wxT("1 km"),
-        wxT("1.5 km"),
-        wxT("2 km"),
-        wxT("3 km"),
-        wxT("4 km"),
-        wxT("6 km"),
-        wxT("8 km"),
-        wxT("12 km"),
-        wxT("16 km"),
-        wxT("24 km"),
-        wxT("36 km"),
-        wxT("48 km")
-    }
+struct RadarRanges {
+  int meters;
+  int actual_meters;
+  const char * name;
 };
 
-static const int g_range_distances[2][20] = {
-    {
-        50,
-        75,
-        110,
-        330,
-        500,
-        800,
-        1389,
-        1852*1,
-        2778,
-        1852*2,
-        1852*3,
-        1852*4,
-        1852*6,
-        1852*8,
-        1852*12,
-        1852*16,
-        1852*24,
-        1852*36
-    },
-    {
-        50,
-        75,
-        100,
-        250,
-        500,
-        750,
-        1000,
-        1500,
-        2000,
-        3000,
-        4000,
-        6000,
-        8000,
-        12000,
-        16000,
-        24000,
-        36000,
-        48000
-    }
+static const RadarRanges g_ranges_metric[20] =
+{
+  /* Nautical (mixed) first */
+    {    50,    98, "50 m" },
+    {    75,   146, "75 m" },
+    {   100,   195, "100 m" },
+    {   250,   488, "1/4 km" },
+    {   500,   808, "1/2 km" },
+    {   750,  1154, "3/4 km" },
+    {  1000,  1616, "1 km" },
+    {  1500,  2308, "1.5 km" },
+    {  2000,  3366, "2 km" },
+    {  3000,  4713, "3 km" },
+    {  4000,  5655, "4 km" },
+    {  6000,  9408, "6 km" },
+    {  8000, 12096, "8 km" },
+    { 12000, 18176, "12 km" },
+    { 16000, 26240, "16 km" },
+    { 24000, 36352, "24 km" },
+    { 36000, 52480, "36 km" },
+    { 48000, 72704, "48 km" }
 };
 
-static const int MILE_RANGE_COUNT = 18;
-static const int METRIC_RANGE_COUNT = 18;
+static const RadarRanges g_ranges_nautical[20] =
+{
+   {    50,            98, "50 m" },
+   {    75,           146, "75 m" },
+   {   100,           195, "100 m" },
+   {  1852 / 8,       452, "1/8 NM" },
+   {  1852 / 4,       673, "1/4 NM" },
+   {  1852 / 2,      1346, "1/2 NM" },
+   {  1852 * 3 / 4,  2020, "3/4 NM" },
+   {  1852 * 1,      2693, "1 NM" },
+   {  1852 * 3 / 2,  4039, "1.5 NM" },
+   {  1852 * 2,      5655, "2 NM" },
+   {  1852 * 3,      8079, "3 NM" },
+   {  1852 * 4,     10752, "4 NM" },
+   {  1852 * 6,     16128, "6 NM" },
+   {  1852 * 8,     22208, "8 NM" },
+   { 1852 * 12,     36352, "12 NM" },
+   { 1852 * 16,     44416, "16 NM" },
+   { 1852 * 24,     72704, "24 NM" }
+};
+
+static const int MILE_RANGE_COUNT = ARRAY_SIZE(g_ranges_metric);
+static const int METRIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_nautical);
 
 static const int g_range_maxValue[2] = { MILE_RANGE_COUNT, METRIC_RANGE_COUNT };
 
@@ -238,33 +202,57 @@ wxString target_boost_names[3];
 wxString scan_speed_names[2];
 wxString timed_idle_times[8];
 
-extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
+extern size_t convertRadarMetersToIndex(int * range_meters, int units, RadarType radarType)
 {
-    const int * ranges;
+    const RadarRanges * ranges;
     int myrange = int (*range_meters);
-    // myrange = int (myrange * 0.9);   // be shure to be inside the right interval
-    // to prevent you get 1.5 mile with a value of 1855 meters
     size_t      n;
 
     if (units < 1) {                    /* NMi or Mi */
         n = MILE_RANGE_COUNT - 1;
-        ranges = g_range_distances[0];
+        ranges = g_ranges_nautical;
     }
     else {
         n = METRIC_RANGE_COUNT - 1;
-        ranges = g_range_distances[1];
+        ranges = g_ranges_metric;
     }
+
     if (radarType != RT_4G) {
-        n--;
+        n--; // only 4G has longest ranges
     }
-    unsigned int max = n;
     for (; n > 0; n--) {
-        if (ranges[n] > 0 && ranges[n] < myrange) {  // step down until past the right range value
+        if (ranges[n].actual_meters > 0 && ranges[n].actual_meters <= myrange) {  // step down until past the right range value
             break;
         }
     }
-    // n now points at the biggest value that is smaller than *range_meters
-    *range_meters = ranges[n];
+    *range_meters = ranges[n].meters;
+
+    return n;
+}
+
+extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
+{
+    const RadarRanges * ranges;
+    int myrange = int (*range_meters);
+    size_t      n;
+
+    if (units < 1) {                    /* NMi or Mi */
+        n = MILE_RANGE_COUNT - 1;
+        ranges = g_ranges_nautical;
+    }
+    else {
+        n = METRIC_RANGE_COUNT - 1;
+        ranges = g_ranges_metric;
+    }
+    if (radarType != RT_4G) {
+        n--; // only 4G has longest ranges
+    }
+    for (; n > 0; n--) {
+        if (ranges[n].meters > 0 && ranges[n].meters <= myrange) {  // step down until past the right range value
+            break;
+        }
+    }
+    *range_meters = ranges[n].meters;
 
     return n;
 }
@@ -278,7 +266,6 @@ void RadarControlButton::SetValue(int newValue)
     } else {
         value = newValue;
     }
-    if (controlType == CT_GAIN && isAuto) value = 40;  // start with gain = 40 when coming from auto
     wxString label;
 
     if (names) {
@@ -289,8 +276,6 @@ void RadarControlButton::SetValue(int newValue)
 
     this->SetLabel(label);
 
-    isAuto = false;
-    isRemote = false;
     pPlugIn->SetControlValue(controlType, value);
 }
 
@@ -300,9 +285,6 @@ void RadarControlButton::SetAuto()
 
     label << firstLine << wxT("\n") << _("Auto");
     this->SetLabel(label);
-
-    isAuto = true;
-    isRemote = false;
 
     pPlugIn->SetControlValue(controlType, -1);
 }
@@ -322,10 +304,10 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     } else if (value > maxValue) {
         value = maxValue;
     }
-    int meters = g_range_distances[units][value];
-    wxString label;
-    wxString rangeText = value < 0 ? wxT("?") : g_range_names[units][value];
 
+    int meters = units ? g_ranges_metric[value].meters : g_ranges_nautical[value].meters;
+    wxString label;
+    wxString rangeText = value < 0 ? wxT("?") : wxString::FromUTF8(units ? g_ranges_metric[value].name : g_ranges_nautical[value].name);
     if (isRemote) {
         label << firstLine << wxT("\n") << _("Remote") << wxT(" (") << rangeText << wxT(")");
     }
@@ -346,9 +328,9 @@ int RadarRangeControlButton::SetValueInt(int newValue)
 
 
 void RadarRangeControlButton::SetValue(int newValue)
-{                                        // newValue is the index of the new range
+{
+    // newValue is the index of the new range
     // sends the command for the new range to the radar
-    isAuto = false;
     isRemote = false;
     pPlugIn->settings.auto_range_mode = false;
 
@@ -358,9 +340,7 @@ void RadarRangeControlButton::SetValue(int newValue)
 
 void RadarRangeControlButton::SetAuto()
 {
-    isAuto = true;
     pPlugIn->settings.auto_range_mode = true;
-    //   SetValueInt(auto_range_index);    // do not display the new value now, will be done by receive thread
 }
 
 BR24ControlsDialog::BR24ControlsDialog()
@@ -437,7 +417,7 @@ void BR24ControlsDialog::CreateControls()
     label << _("Gain") << wxT("\n");
     label << _("Sea clutter") << wxT("\n");
     label << _("Rain clutter") << wxT("\n");
-    label << _("Auto") << wxT(" (1/20 Nm)\n");
+    label << _("Auto") << wxT(" (1/20 NM)\n");
 
     wxStaticText * testMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     testBox->Add(testMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
@@ -774,17 +754,16 @@ void BR24ControlsDialog::UpdateGuardZoneState()
     bGuard2->SetLabel(label2);
 }
 
-void BR24ControlsDialog::SetRangeIndex(size_t index)
+void BR24ControlsDialog::SetRemoteRangeIndex(size_t index)
 {
     bRange->isRemote = true;
     bRange->SetValueInt(index); // set and recompute the range label
 }
 
-void BR24ControlsDialog::SetAutoRangeIndex(size_t index)
+void BR24ControlsDialog::SetRangeIndex(size_t index)
 {
     bRange->isRemote = false;
-    bRange->auto_range_index = index;
-    bRange->SetValueInt(-1); // recompute the range label
+    bRange->SetValueInt(index); // set and recompute the range label
 }
 
 void BR24ControlsDialog::SetTimedIdleIndex(int index)

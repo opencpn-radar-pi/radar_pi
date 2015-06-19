@@ -139,10 +139,10 @@ static const unsigned int REFRESHMAPPING[] = { 10, 9, 3, 1, 0}; // translation t
 volatile bool br_refresh_busy_or_queued = false;
 
 double br_mark_rng = 0, br_mark_brg = 0;      // This is needed for context operation
-long  br_range_meters = 0;      // current range for radar
+long  br_range_meters = 0;         // current range for radar
+int br_commanded_range_meters = 0; // Range that the plugin to the radar
 int br_auto_range_meters = 0;      // What the range should be, at least, when AUTO mode is selected
 int br_previous_auto_range_meters = 0;
-bool br_set_range_issued = false;
 bool br_update_range_control = false;
 bool br_update_address_control = false;
 bool br_update_error_control = false;
@@ -919,10 +919,8 @@ void br24radar_pi::ShowRadarControl(bool show)
     if (!m_pControlDialog) {
         m_pControlDialog = new BR24ControlsDialog;
         m_pControlDialog->Create(m_parent_window, this);
-        int range = (int) br_range_meters;    //  always use br_range_meters   this is the current value used in the pi
-        //  will be updated in the receive thread if not correct
-        m_pControlDialog->SetAutoRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
-        // first time we display range from outside receive thread
+        int range = (int) br_range_meters;
+        m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
     }
    if(show) m_pControlDialog->Show();
     m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
@@ -1330,19 +1328,21 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
     if (br_update_range_control) {
         br_update_range_control = false;
-        if (!br_set_range_issued) {    // this range change was not initiated by the pi
-            int current_range = (int) ((double) br_range_meters * 1.00); // Approximate range shown on HDS display
-            if (m_pControlDialog) {
-                m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&current_range, settings.range_units, br_radar_type));
+        int radar_range = br_range_meters;
+        int idx = convertRadarMetersToIndex(&radar_range, settings.range_units, br_radar_type);
+        // above also updates radar_range to be a display value (lower, rounded number)
+        if (m_pControlDialog) {
+            if (radar_range != br_commanded_range_meters) { // this range change was not initiated by the pi
+                m_pControlDialog->SetRemoteRangeIndex(idx);
                 if (settings.verbose) {
-                    wxLogMessage(wxT("BR24radar_pi: range label changed from RenderOverlay to %d meters *.65 = %d"), br_range_meters, current_range);
+                    wxLogMessage(wxT("BR24radar_pi: remote range change to %d meters = %d"), br_range_meters, radar_range);
                 }
             }
-        }
-        else { //  set range issued, do not change the control value again
-            br_set_range_issued = false;
-            if (settings.verbose) {
-                wxLogMessage(wxT("BR24radar_pi: range label change skipped "));
+            else {
+                m_pControlDialog->SetRangeIndex(idx);
+                if (settings.verbose) {
+                    wxLogMessage(wxT("BR24radar_pi: final range change to %d meters = %d"), br_range_meters, radar_range);
+                }
             }
         }
     }
@@ -1357,28 +1357,30 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
     if (settings.auto_range_mode) {
         max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
-        br_auto_range_meters =  max_distance / 2.0 * 0.7;        //* 1.5;  factor 1.5 removed. Covered by the radar as the actual range set is 1.4 to 1.7 times the ranges in the command
-        // this is what the HDS display does as well. The range figure displayed will fit on the screen, but the real range set is larger
-        // call convertMetersToRadarAllowedValue now to compute fitting allowed range
-        // factor 0.9 added, range was too large, later changed to 0.7
+        br_auto_range_meters =  max_distance / sqrt((double) 2.0);
+        if (br_auto_range_meters < 50)
+        {
+          br_auto_range_meters = 50;
+        }
 
         int displayedRange = br_auto_range_meters;  //  the value for use in the control
         size_t idx = convertMetersToRadarAllowedValue(&displayedRange, settings.range_units, br_radar_type);
-        //    wxLogMessage(wxT("BR24radar_pi: screensize=%f autorange_meters=%d"), max_distance, auto_range_meters);
-        if (br_auto_range_meters == 0) br_auto_range_meters = 1;   // just to prevent divide by 0
+
+        // Don't adjust auto range meters continuously when it is oscillating a little bit (< 5%)
         int test = 100 * br_previous_auto_range_meters / br_auto_range_meters;
         if (test < 95 || test > 105) { //   range change required
             if (settings.verbose) {
-                wxLogMessage(wxT("BR24radar_pi: Automatic scale changed from %d to %d meters")
+                wxLogMessage(wxT("BR24radar_pi: Automatic range changed from %d to %d meters")
                              , br_previous_auto_range_meters, br_auto_range_meters);
             }
             br_previous_auto_range_meters = br_auto_range_meters;  // the value we send to the radar is NOT from the list of allowed values
             // the radar will accept any range, so we will be close to the range we want
-            if (m_pControlDialog) {
-                m_pControlDialog->SetAutoRangeIndex(idx);
-                // Send command directly to radar
+            if (displayedRange != br_commanded_range_meters) {
+                if (m_pControlDialog) {
+                    m_pControlDialog->SetRangeIndex(idx);
+                }
+                SetRangeMeters(displayedRange);
             }
-            SetRangeMeters(br_auto_range_meters);
         }
     }
 
@@ -2244,11 +2246,11 @@ void br24radar_pi::SetRangeMeters(long meters)
                 , (UINT8) ((decimeters >> 24) & 0XFFL)
             };
             if (settings.verbose) {
-                wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: %ld meters\n"), meters);
+                wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: range %ld meters\n"), meters);
             }
             TransmitCmd(pck, sizeof(pck));
             //  do not update radar control value here, is only done from receive thread
-            br_set_range_issued = true;
+            br_commanded_range_meters = meters;
         }
     }
 }
@@ -2962,10 +2964,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             }
 
             br_range_meters = (long) range_meters;
-            br_update_range_control = true;  // to signal render overlay to change control value
-
-            // Set the control's value to the real range that we received, not a table idea
-            // will be handled in RenderOverlay, not safe to to screen IO from receive thread
+            br_update_range_control = true;  // signal rendering code to change control value
         }
 
         hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];

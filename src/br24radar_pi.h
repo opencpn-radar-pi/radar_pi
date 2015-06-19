@@ -216,6 +216,7 @@ typedef enum RadarType {
     RT_4G
 } RadarType;
 
+extern size_t convertRadarMetersToIndex(int *range_meters, int units, RadarType radar_type);
 extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, RadarType radar_type);
 
 typedef enum DisplayModeType {
@@ -609,6 +610,10 @@ public:
         minValue = 0;
         maxValue = 100;
         value = 0;
+        if (ct == CT_GAIN)
+        {
+          value = 40;
+        }
         hasAuto = newHasAuto;
         pPlugIn = ppi;
         firstLine = label;
@@ -633,8 +638,6 @@ public:
     br24radar_pi *pPlugIn;
 
     int        value;
-    bool       isAuto;
-    bool       isRemote; // Set by some other computer or MFD
 
     int        minValue;
     int        maxValue;
@@ -664,8 +667,6 @@ public:
         controlType = CT_RANGE;
 
         this->SetFont(g_font);
-
-        isAuto = ppi->settings.auto_range_mode;
     }
 
     virtual void SetValue(int value);
@@ -673,6 +674,7 @@ public:
 
     int SetValueInt(int value);
 
+    bool isRemote; // Set by some other computer or MFD
     int auto_range_index;
 };
 
@@ -699,8 +701,8 @@ public:
                 );
 
     void CreateControls();
+    void SetRemoteRangeIndex(size_t index);
     void SetRangeIndex(size_t index);
-    void SetAutoRangeIndex(size_t index);
     void SetTimedIdleIndex(int index);
     void UpdateGuardZoneState();
     void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
