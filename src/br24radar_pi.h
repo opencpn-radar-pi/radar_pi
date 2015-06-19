@@ -634,6 +634,7 @@ public:
 
     int        value;
     bool       isAuto;
+    bool       isRemote; // Set by some other computer or MFD
 
     int        minValue;
     int        maxValue;

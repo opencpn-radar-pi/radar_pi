@@ -1331,7 +1331,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     if (br_update_range_control) {
         br_update_range_control = false;
         if (!br_set_range_issued) {    // this range change was not initiated by the pi
-            int current_range = (int) (br_range_meters * 0.65);
+            int current_range = (int) ((double) br_range_meters * 1.00); // Approximate range shown on HDS display
             if (m_pControlDialog) {
                 m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&current_range, settings.range_units, br_radar_type));
                 if (settings.verbose) {

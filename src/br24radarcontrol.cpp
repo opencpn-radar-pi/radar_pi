@@ -145,8 +145,6 @@ static const wxString g_range_names[2][20] = {
         wxT("50 m"),
         wxT("75 m"),
         wxT("100 m"),
-        wxT("150 m"),
-        wxT("1/10 NM"),
         wxT("1/8 NM"),
         wxT("1/4 NM"),
         wxT("1/2 NM"),
@@ -167,9 +165,7 @@ static const wxString g_range_names[2][20] = {
         wxT("50 m"),
         wxT("75 m"),
         wxT("100 m"),
-        wxT("150 m"),
-        wxT("200 m"),
-        wxT("300 m"),
+        wxT("250 m"),
         wxT("500 m"),
         wxT("750 m"),
         wxT("1 km"),
@@ -192,8 +188,6 @@ static const int g_range_distances[2][20] = {
         50,
         75,
         110,
-        160,
-        220,
         330,
         500,
         800,
@@ -214,9 +208,7 @@ static const int g_range_distances[2][20] = {
         50,
         75,
         100,
-        150,
-        200,
-        300,
+        250,
         500,
         750,
         1000,
@@ -234,8 +226,8 @@ static const int g_range_distances[2][20] = {
     }
 };
 
-static const int MILE_RANGE_COUNT = 20;
-static const int METRIC_RANGE_COUNT = 20;
+static const int MILE_RANGE_COUNT = 18;
+static const int METRIC_RANGE_COUNT = 18;
 
 static const int g_range_maxValue[2] = { MILE_RANGE_COUNT, METRIC_RANGE_COUNT };
 
@@ -250,7 +242,7 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
 {
     const int * ranges;
     int myrange = int (*range_meters);
-    myrange = int (myrange * 0.9);   // be shure to be inside the right interval
+    // myrange = int (myrange * 0.9);   // be shure to be inside the right interval
     // to prevent you get 1.5 mile with a value of 1855 meters
     size_t      n;
 
@@ -271,8 +263,7 @@ extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, Ra
             break;
         }
     }
-    if (n < max) n++;    //   and increase with 1 to get the correct index
-    // n now points at the smallest value that is larger then *range_meters
+    // n now points at the biggest value that is smaller than *range_meters
     *range_meters = ranges[n];
 
     return n;
@@ -299,6 +290,7 @@ void RadarControlButton::SetValue(int newValue)
     this->SetLabel(label);
 
     isAuto = false;
+    isRemote = false;
     pPlugIn->SetControlValue(controlType, value);
 }
 
@@ -310,12 +302,13 @@ void RadarControlButton::SetAuto()
     this->SetLabel(label);
 
     isAuto = true;
+    isRemote = false;
 
     pPlugIn->SetControlValue(controlType, -1);
 }
 
 int RadarRangeControlButton::SetValueInt(int newValue)
-{                    // only called from the receive thread
+{
     // newValue is the new range index number
     // sets the new range label in the button and returns the new range in meters
     int units = pPlugIn->settings.range_units;
@@ -333,7 +326,10 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     wxString label;
     wxString rangeText = value < 0 ? wxT("?") : g_range_names[units][value];
 
-    if (pPlugIn->settings.auto_range_mode) {
+    if (isRemote) {
+        label << firstLine << wxT("\n") << _("Remote") << wxT(" (") << rangeText << wxT(")");
+    }
+    else if (pPlugIn->settings.auto_range_mode) {
         label << firstLine << wxT("\n") << _("Auto") << wxT(" (") << rangeText << wxT(")");
     }
     else {
@@ -341,7 +337,7 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     }
     this->SetLabel(label);
     if (pPlugIn->settings.verbose > 0) {
-        wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d old=%d"), rangeText.c_str(), pPlugIn->settings.auto_range_mode, units, maxValue, newValue, oldValue);
+        wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d remote=%d unit=%d max=%d new=%d old=%d"), rangeText.c_str(), pPlugIn->settings.auto_range_mode, isRemote, units, maxValue, newValue, oldValue);
     }
 
     return meters;
@@ -353,6 +349,7 @@ void RadarRangeControlButton::SetValue(int newValue)
 {                                        // newValue is the index of the new range
     // sends the command for the new range to the radar
     isAuto = false;
+    isRemote = false;
     pPlugIn->settings.auto_range_mode = false;
 
     int meters = SetValueInt(newValue);   // do not display the new value now, will be done by receive thread when frame with new range is received
@@ -779,11 +776,13 @@ void BR24ControlsDialog::UpdateGuardZoneState()
 
 void BR24ControlsDialog::SetRangeIndex(size_t index)
 {
+    bRange->isRemote = true;
     bRange->SetValueInt(index); // set and recompute the range label
 }
 
 void BR24ControlsDialog::SetAutoRangeIndex(size_t index)
 {
+    bRange->isRemote = false;
     bRange->auto_range_index = index;
     bRange->SetValueInt(-1); // recompute the range label
 }
