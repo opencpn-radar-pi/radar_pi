@@ -133,7 +133,7 @@ int br_repeat_on_delay = 0;   // used to prevend additional TxOn commands from D
 bool br_heading_on_radar = false;
 unsigned int br_downsample = 0;  // moved from display radar to here; also used in radar receive thread
 unsigned int br_refresh_rate = 1;  // refreshrate for radar used in process buffer
-static const unsigned int refreshmapping[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
+static const unsigned int REFRESHMAPPING[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
 // user values 1 to 5 mapped to these values for refrehs interval
 // user 1 - no additional refresh, 2 - interval between frames 9, so on.
 volatile bool br_refresh_busy_or_queued = false;
@@ -1547,7 +1547,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     int bogey_count[GUARD_ZONES];
 
     br_downsample = (unsigned int) settings.downsample;
-    br_refresh_rate = refreshmapping [settings.refreshrate - 1];
+    br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
     memset(&bogey_count, 0, sizeof(bogey_count));
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
     if (settings.verbose >= 4) {
@@ -1939,7 +1939,7 @@ bool br24radar_pi::LoadConfig(void)
         if (settings.refreshrate > 5) {
             settings.refreshrate = 5; // not allowed
         }
-        br_refresh_rate = refreshmapping[settings.refreshrate - 1];
+        br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
 
         pConf->Read(wxT("PassHeadingToOCPN"), &settings.PassHeadingToOCPN, 0);
 
