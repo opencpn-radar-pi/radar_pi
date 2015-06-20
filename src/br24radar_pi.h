@@ -246,7 +246,6 @@ static const int RangeUnitsToMeters[2] = {
 
 struct radar_control_settings {
     int      overlay_transparency;    // now 0-100, no longer a double
-    bool     master_mode;
     int      verbose;
     bool     auto_range_mode;
     int      range_index;

@@ -139,7 +139,7 @@ static const unsigned int REFRESHMAPPING[] = { 10, 9, 3, 1, 0}; // translation t
 volatile bool br_refresh_busy_or_queued = false;
 
 double br_mark_rng = 0, br_mark_brg = 0;      // This is needed for context operation
-long  br_range_meters = 0;         // current range for radar
+int br_range_meters = 0;           // current range for radar
 int br_commanded_range_meters = 0; // Range that the plugin to the radar
 int br_auto_range_meters = 0;      // What the range should be, at least, when AUTO mode is selected
 int br_previous_auto_range_meters = 0;
@@ -155,8 +155,8 @@ bool  br_init_timed_idle;
 static time_t br_idle_watchdog;
 int   br_idle_dialog_time_left = 0;
 
-int   br_radar_state = 0;
-int   br_scanner_state = 0;
+int   br_radar_state = RADAR_OFF;
+int   br_scanner_state = RADAR_OFF;
 bool  br_send_state;
 RadarType br_radar_type = RT_UNKNOWN;
 
@@ -449,7 +449,6 @@ int br24radar_pi::Init(void)
 
     settings.guard_zone = 0;   // this used to be active guard zone, now it means which guard zone window is active
     settings.display_mode = DM_CHART_OVERLAY;
-    settings.master_mode = false;                 // we're not the master controller at startup
     settings.auto_range_mode = true;                    // starts with auto range change
     settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
     settings.refreshrate = 1;
@@ -551,10 +550,8 @@ int br24radar_pi::Init(void)
     m_dataReceiveThread = new RadarDataReceiveThread(this, &m_quit);
     m_dataReceiveThread->Run();
     m_commandReceiveThread = 0;
-    if (settings.verbose >= 2) {
-        m_commandReceiveThread = new RadarCommandReceiveThread(this, &m_quit);
-        m_commandReceiveThread->Run();
-    }
+    m_commandReceiveThread = new RadarCommandReceiveThread(this, &m_quit);
+    m_commandReceiveThread->Run();
     m_reportReceiveThread = new RadarReportReceiveThread(this, &m_quit);
     m_reportReceiveThread->Run();
 
@@ -919,7 +916,7 @@ void br24radar_pi::ShowRadarControl(bool show)
     if (!m_pControlDialog) {
         m_pControlDialog = new BR24ControlsDialog;
         m_pControlDialog->Create(m_parent_window, this);
-        int range = (int) br_range_meters;
+        int range = br_range_meters;
         m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type));
     }
    if(show) m_pControlDialog->Show();
@@ -1041,9 +1038,8 @@ void br24radar_pi::OnToolbarToolCallback(int id)
     if (br_radar_state == RADAR_OFF) {
         // turned off
         br_radar_state = RADAR_ON;
-        settings.master_mode = true;
         if (settings.verbose) {
-            wxLogMessage(wxT("BR24radar_pi: Master mode on"));
+            wxLogMessage(wxT("BR24radar_pi: plugin switched on"));
         }
         if (br_scanner_state != RADAR_ON) {
             // don't switch on if radar is on already, radar does not like that
@@ -1051,22 +1047,22 @@ void br24radar_pi::OnToolbarToolCallback(int id)
             br_repeat_on_delay = 6;  // DoTick will not repeat the TxOn for 6 ticks
             // this is to prevent repeated "ON" commands
         }
-        RadarStayAlive();   // moved to here, after TXOn
-        RadarSendState();
-        br_send_state = true; // Send state again as soon as we get any data
+        else {
+            RadarStayAlive();
+        }
+        br_send_state = true; // Send desired state as soon as we get any data
         if (id != 999999  && settings.timed_idle != 0) {
-            m_pControlDialog->SetTimedIdleIndex(0) ; //Disable Timed Transmit if user click the icon while idle
+            m_pControlDialog->SetTimedIdleIndex(0) ; // Disable Timed Transmit if user click the icon while idle
         }
         ShowRadarControl(true);
     } else {
-        br_radar_state = RADAR_OFF;
-        if (settings.master_mode == true) {
+        if (br_radar_state == RADAR_ON) {
             RadarTxOff();
-            settings.master_mode = false;
             if (settings.verbose) {
-                wxLogMessage(wxT("BR24radar_pi: Master mode off"));
+                wxLogMessage(wxT("BR24radar_pi: plugin switched off"));
             }
         }
+        br_radar_state = RADAR_OFF;
         OnGuardZoneDialogClose();
         OnBR24ControlDialogClose();
 
@@ -1131,9 +1127,9 @@ void br24radar_pi::DoTick(void)
     if (m_statistics.spokes > m_statistics.broken_spokes) { // Something coming from radar unit?
         if (br_scanner_state != RADAR_ON) {
             wxLogMessage(wxT("BR24radar_pi: First radar data seen"));
+            br_scanner_state = RADAR_ON;
         }
-        br_scanner_state = RADAR_ON;
-        if (settings.master_mode) {
+        if (br_radar_state == RADAR_ON) {
             if (now - br_dt_stayalive >= STAYALIVE_TIMEOUT) {
                 br_dt_stayalive = now;
                 RadarStayAlive();
@@ -1152,11 +1148,10 @@ void br24radar_pi::DoTick(void)
             br_data_seen = false;
             wxLogMessage(wxT("BR24radar_pi: Lost radar data"));
         }
-        if (br_radar_seen && !br_data_seen && settings.master_mode && br_scanner_state != RADAR_ON) {
+        if (br_radar_seen && !br_data_seen && br_radar_state == RADAR_ON) {
             if (!br_repeat_on_delay) { // prevents sending repeated "ON" commands after turning on
                 // Switch radar on if we want it to be on but it wasn' detected earlier
                 RadarTxOn();
-                RadarSendState();
                 br_repeat_on_delay = 4;
             }
         }
@@ -1293,9 +1288,19 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     // this is expected to be called at least once per second
     // but if we are scrolling or otherwise it can be MUCH more often!
 
+    // Always compute br_auto_range_meters, possibly needed by SendState() called from DoTick().
+    double max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
+    // max_distance is the length of the diagonal of the viewport. If the boat were centered, the
+    // max length to the edge of the screen is exactly half that.
+    double edge_distance = max_distance / 2.0;
+    br_auto_range_meters = (int) edge_distance;
+    if (br_auto_range_meters < 50)
+    {
+      br_auto_range_meters = 50;
+    }
+
     DoTick(); // update timers and watchdogs
     UpdateState(); // update the toolbar
-    double max_distance = 0;
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
     wxPoint boat_center;
 
@@ -1335,7 +1340,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
             if (radar_range != br_commanded_range_meters) { // this range change was not initiated by the pi
                 m_pControlDialog->SetRemoteRangeIndex(idx);
                 if (settings.verbose) {
-                    wxLogMessage(wxT("BR24radar_pi: remote range change to %d meters = %d"), br_range_meters, radar_range);
+                    wxLogMessage(wxT("BR24radar_pi: remote range change to %d meters = %d (plugin commanded %d meters)"), br_range_meters, radar_range, br_commanded_range_meters);
                 }
             }
             else {
@@ -1348,23 +1353,9 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     }
 
 
-    // Calculate the "optimum" radar range setting in meters so Radar just fills Screen
-
-    // We used to take the position of the boat into account, so that when you panned the zoom range would go up
-    // This is not what the plotters do, so just to make it work the same way we're doing it the same way.
-    // The radar range is set such that it covers the entire screen plus 50% so that a little panning is OK.
-    // This is what the plotters do as well.
+    // Calculate the "optimum" radar range setting in meters so the radar image just fills the screen
 
     if (settings.auto_range_mode) {
-        max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
-        br_auto_range_meters =  max_distance / sqrt((double) 2.0);
-        if (br_auto_range_meters < 50)
-        {
-          br_auto_range_meters = 50;
-        }
-
-        int displayedRange = br_auto_range_meters;  //  the value for use in the control
-        size_t idx = convertMetersToRadarAllowedValue(&displayedRange, settings.range_units, br_radar_type);
 
         // Don't adjust auto range meters continuously when it is oscillating a little bit (< 5%)
         int test = 100 * br_previous_auto_range_meters / br_auto_range_meters;
@@ -1373,8 +1364,11 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
                 wxLogMessage(wxT("BR24radar_pi: Automatic range changed from %d to %d meters")
                              , br_previous_auto_range_meters, br_auto_range_meters);
             }
-            br_previous_auto_range_meters = br_auto_range_meters;  // the value we send to the radar is NOT from the list of allowed values
-            // the radar will accept any range, so we will be close to the range we want
+            br_previous_auto_range_meters = br_auto_range_meters;
+
+            // Compute a 'standard' distance. This will be slightly smaller.
+            int displayedRange = br_auto_range_meters;
+            size_t idx = convertMetersToRadarAllowedValue(&displayedRange, settings.range_units, br_radar_type);
             if (displayedRange != br_commanded_range_meters) {
                 if (m_pControlDialog) {
                     m_pControlDialog->SetRangeIndex(idx);
@@ -1446,7 +1440,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     glRotatef(heading, 0, 0, 1);
 
     // scaling...
-    int meters = (int) br_range_meters;
+    int meters = br_range_meters;
     if (!meters) meters = br_auto_range_meters;
     if (!meters) meters = 1000;
     double radar_pixels_per_meter = ((double) RETURNS_PER_LINE) / meters;
@@ -1455,7 +1449,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     if ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode == DM_EMULATOR) {
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
-        if ((int) br_range_meters && br_scanner_state == RADAR_ON) {
+        if (br_range_meters > 0 && br_scanner_state == RADAR_ON) {
             DrawRadarImage(meters, radar_center);
         }
         glPopMatrix();
@@ -2185,15 +2179,13 @@ void br24radar_pi::TransmitCmd(UINT8 * msg, int size)
     if (m_radar_socket == INVALID_SOCKET || sendto(m_radar_socket, (char *) msg, size, 0, (struct sockaddr *) &adr, sizeof(adr)) < size) {
         wxLogError(wxT("BR24radar_pi: Unable to transmit command to radar"));
         return;
-    } else if (settings.verbose) {
+    } else if (settings.verbose >= 2) {
         logBinaryData(wxT("command"), msg, size);
     }
 };
 
 void br24radar_pi::RadarTxOff(void)
 {
-    //    wxLogMessage(wxT("BR24radar_pi: radar turned Off manually."));
-
     UINT8 pck[3] = {0x00, 0xc1, 0x00};
     TransmitCmd(pck, sizeof(pck));
 
@@ -2203,7 +2195,7 @@ void br24radar_pi::RadarTxOff(void)
 
 void br24radar_pi::RadarTxOn(void)
 {
-    wxLogMessage(wxT("BR24radar_pi: Send TRANSMIT request"));
+    wxLogMessage(wxT("BR24radar_pi: Turn radar on (send TRANSMIT request)"));
 
     UINT8 pck[3] = {0x00, 0xc1, 0x01};               // ON
     TransmitCmd(pck, sizeof(pck));
@@ -2214,10 +2206,8 @@ void br24radar_pi::RadarTxOn(void)
 
 void br24radar_pi::RadarStayAlive(void)
 {
-    if (settings.master_mode && (br_radar_state == RADAR_ON)) {
-        UINT8 pck[] = {0xA0, 0xc1};
-        TransmitCmd(pck, sizeof(pck));
-    }
+    UINT8 pck[] = {0xA0, 0xc1};
+    TransmitCmd(pck, sizeof(pck));
 }
 
 void br24radar_pi::RadarSendState(void)
@@ -2230,26 +2220,32 @@ void br24radar_pi::RadarSendState(void)
     SetControlValue(CT_NOISE_REJECTION, settings.noise_rejection);
     SetControlValue(CT_TARGET_BOOST, settings.target_boost);
     SetControlValue(CT_SCAN_SPEED, settings.scan_speed);
+
+    int displayedRange = br_commanded_range_meters ? br_commanded_range_meters : br_auto_range_meters;
+    size_t idx = convertMetersToRadarAllowedValue(&displayedRange, settings.range_units, br_radar_type);
+    if (m_pControlDialog) {
+        m_pControlDialog->SetRangeIndex(idx);
+    }
+    SetRangeMeters(br_commanded_range_meters);
 }
 
 void br24radar_pi::SetRangeMeters(long meters)
 {
-    if (settings.master_mode) {
-        if (meters >= 50 && meters <= 64000) {
-            //         long decimeters = meters * 10L/1.762;   //  why divide by 1.762? HDS display sends range*10
-            long decimeters = meters * 10L;            // modification by Douwe Fokkema
-            UINT8 pck[] = { 0x03
+    if (br_radar_state == RADAR_ON) {
+        if (meters >= 50 && meters <= 72704) {
+            long decimeters = meters * 10L;
+            UINT8 pck[] =
+                { 0x03
                 , 0xc1
                 , (UINT8) ((decimeters >>  0) & 0XFFL)
                 , (UINT8) ((decimeters >>  8) & 0XFFL)
                 , (UINT8) ((decimeters >> 16) & 0XFFL)
                 , (UINT8) ((decimeters >> 24) & 0XFFL)
-            };
+                };
             if (settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: range %ld meters\n"), meters);
             }
             TransmitCmd(pck, sizeof(pck));
-            //  do not update radar control value here, is only done from receive thread
             br_commanded_range_meters = meters;
         }
     }
@@ -2259,7 +2255,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
 {
     wxString msg;
 
-    if (settings.master_mode || controlType == CT_TRANSPARENCY || controlType == CT_SCAN_AGE) {
+    if (br_radar_state == RADAR_ON || controlType == CT_TRANSPARENCY || controlType == CT_SCAN_AGE) {
         switch (controlType) {
             case CT_GAIN: {
                 settings.gain = value;
@@ -2952,18 +2948,18 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
         // Range change received from radar?
 
-        if (range_meters != (int) br_range_meters) {
+        if (range_meters != br_range_meters) {
 
             if (pPlugIn->settings.verbose >= 1) {
                 if (range_meters == 0) {
-                    wxLogMessage(wxT("BR24radar_pi:  Invalid range received, keeping %d meters"), br_range_meters);
+                    wxLogMessage(wxT("BR24radar_pi: Invalid range received, keeping %d meters"), br_range_meters);
                 }
                 else {
-                    wxLogMessage(wxT("BR24radar_pi:  Range Change: %d --> %d meters (raw value: %d"), br_range_meters, range_meters, range_raw);
+                    wxLogMessage(wxT("BR24radar_pi: Radar now scanning with range %d meters (was %d meters)"), range_meters, br_range_meters);
                 }
             }
 
-            br_range_meters = (long) range_meters;
+            br_range_meters = range_meters;
             br_update_range_control = true;  // signal rendering code to change control value
         }
 
