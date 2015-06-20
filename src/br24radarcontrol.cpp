@@ -146,7 +146,7 @@ struct RadarRanges {
   const char * name;
 };
 
-static const RadarRanges g_ranges_metric[20] =
+static const RadarRanges g_ranges_metric[] =
 {
   /* Nautical (mixed) first */
     {    50,    98, "50 m" },
@@ -169,12 +169,12 @@ static const RadarRanges g_ranges_metric[20] =
     { 48000, 72704, "48 km" }
 };
 
-static const RadarRanges g_ranges_nautical[20] =
+static const RadarRanges g_ranges_nautic[] =
 {
    {    50,            98, "50 m" },
    {    75,           146, "75 m" },
    {   100,           195, "100 m" },
-   {  1852 / 8,       452, "1/8 NM" },
+   {  1852 / 8,       451, "1/8 NM" },
    {  1852 / 4,       673, "1/4 NM" },
    {  1852 / 2,      1346, "1/2 NM" },
    {  1852 * 3 / 4,  2020, "3/4 NM" },
@@ -190,10 +190,10 @@ static const RadarRanges g_ranges_nautical[20] =
    { 1852 * 24,     72704, "24 NM" }
 };
 
-static const int MILE_RANGE_COUNT = ARRAY_SIZE(g_ranges_metric);
-static const int METRIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_nautical);
+static const int METRIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_metric);
+static const int NAUTIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_nautic);
 
-static const int g_range_maxValue[2] = { MILE_RANGE_COUNT, METRIC_RANGE_COUNT };
+static const int g_range_maxValue[2] = { NAUTIC_RANGE_COUNT - 1, METRIC_RANGE_COUNT - 1 };
 
 wxString interference_rejection_names[4];
 wxString target_separation_names[4];
@@ -205,23 +205,17 @@ wxString timed_idle_times[8];
 extern size_t convertRadarMetersToIndex(int * range_meters, int units, RadarType radarType)
 {
     const RadarRanges * ranges;
-    int myrange = int (*range_meters);
-    size_t      n;
+    int myrange = *range_meters;
+    size_t n;
 
-    if (units < 1) {                    /* NMi or Mi */
-        n = MILE_RANGE_COUNT - 1;
-        ranges = g_ranges_nautical;
-    }
-    else {
-        n = METRIC_RANGE_COUNT - 1;
-        ranges = g_ranges_metric;
-    }
+    n = g_range_maxValue[units];
+    ranges = units ? g_ranges_metric : g_ranges_nautic;
 
     if (radarType != RT_4G) {
         n--; // only 4G has longest ranges
     }
     for (; n > 0; n--) {
-        if (ranges[n].actual_meters > 0 && ranges[n].actual_meters <= myrange) {  // step down until past the right range value
+        if (ranges[n].actual_meters <= myrange) {  // step down until past the right range value
             break;
         }
     }
@@ -233,22 +227,17 @@ extern size_t convertRadarMetersToIndex(int * range_meters, int units, RadarType
 extern size_t convertMetersToRadarAllowedValue(int * range_meters, int units, RadarType radarType)
 {
     const RadarRanges * ranges;
-    int myrange = int (*range_meters);
-    size_t      n;
+    int myrange = *range_meters;
+    size_t n;
 
-    if (units < 1) {                    /* NMi or Mi */
-        n = MILE_RANGE_COUNT - 1;
-        ranges = g_ranges_nautical;
-    }
-    else {
-        n = METRIC_RANGE_COUNT - 1;
-        ranges = g_ranges_metric;
-    }
+    n = g_range_maxValue[units];
+    ranges = units ? g_ranges_metric : g_ranges_nautic;
+
     if (radarType != RT_4G) {
         n--; // only 4G has longest ranges
     }
     for (; n > 0; n--) {
-        if (ranges[n].meters > 0 && ranges[n].meters <= myrange) {  // step down until past the right range value
+        if (ranges[n].meters <= myrange) {  // step down until past the right range value
             break;
         }
     }
@@ -295,7 +284,7 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     // sets the new range label in the button and returns the new range in meters
     int units = pPlugIn->settings.range_units;
 
-    maxValue = g_range_maxValue[units] - 1;
+    maxValue = g_range_maxValue[units];
     int oldValue = value;  // for debugging only
     if (newValue >= minValue && newValue <= maxValue) {
         value = newValue;
@@ -305,9 +294,9 @@ int RadarRangeControlButton::SetValueInt(int newValue)
         value = maxValue;
     }
 
-    int meters = units ? g_ranges_metric[value].meters : g_ranges_nautical[value].meters;
+    int meters = units ? g_ranges_metric[value].meters : g_ranges_nautic[value].meters;
     wxString label;
-    wxString rangeText = value < 0 ? wxT("?") : wxString::FromUTF8(units ? g_ranges_metric[value].name : g_ranges_nautical[value].name);
+    wxString rangeText = value < 0 ? wxT("?") : wxString::FromUTF8(units ? g_ranges_metric[value].name : g_ranges_nautic[value].name);
     if (isRemote) {
         label << firstLine << wxT("\n") << _("Remote") << wxT(" (") << rangeText << wxT(")");
     }
