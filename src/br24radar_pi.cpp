@@ -1620,18 +1620,18 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             /**********************************************************************************************************/
             // Guard Section
 
-            if (strength > 100) {
-                for (size_t z = 0; z < GUARD_ZONES; z++) {
-                    if (guardZoneAngles[z][scanAngle]) {
-                        int inner_range = guardZones[z].inner_range; // now in meters
-                        int outer_range = guardZones[z].outer_range; // now in meters
-                        int bogey_range = radius * max_range / RETURNS_PER_LINE;
-                        if (bogey_range > inner_range && bogey_range < outer_range) {
-                            bogey_count[z]++;
-                        }
-                    }
-                }
-            }
+			for (size_t z = 0; z < GUARD_ZONES; z++) {
+				if (strength > guardZones[z].threshold) {
+					if (guardZoneAngles[z][scanAngle]) {
+						int inner_range = guardZones[z].inner_range; // now in meters
+						int outer_range = guardZones[z].outer_range; // now in meters
+						int bogey_range = radius * max_range / RETURNS_PER_LINE;
+						if (bogey_range > inner_range && bogey_range < outer_range) {
+							bogey_count[z]++;
+						}
+					}
+				}
+			}
 
             switch (settings.display_option) {
                     //  first find out the actual color
@@ -1951,12 +1951,14 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(wxT("Zone1EndBrng"), &guardZones[0].end_bearing, 0.0);
         pConf->Read(wxT("Zone1OuterRng"), &guardZones[0].outer_range, 0);
         pConf->Read(wxT("Zone1InnerRng"), &guardZones[0].inner_range, 0);
+		pConf->Read(wxT("Zone1Threshold"), &guardZones[0].threshold, 100);
         pConf->Read(wxT("Zone1ArcCirc"), &guardZones[0].type, 0);
 
         pConf->Read(wxT("Zone2StBrng"), &guardZones[1].start_bearing, 0.0);
         pConf->Read(wxT("Zone2EndBrng"), &guardZones[1].end_bearing, 0.0);
         pConf->Read(wxT("Zone2OuterRng"), &guardZones[1].outer_range, 0);
         pConf->Read(wxT("Zone2InnerRng"), &guardZones[1].inner_range, 0);
+		pConf->Read(wxT("Zone2Threshold"), &guardZones[1].threshold, 0);
         pConf->Read(wxT("Zone2ArcCirc"), &guardZones[1].type, 0);
 
         pConf->Read(wxT("RadarAlertAudioFile"), &settings.alert_audio_file);
@@ -2014,12 +2016,14 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("Zone1EndBrng"), guardZones[0].end_bearing);
         pConf->Write(wxT("Zone1OuterRng"), guardZones[0].outer_range);
         pConf->Write(wxT("Zone1InnerRng"), guardZones[0].inner_range);
+		pConf->Write(wxT("Zone1Threshold"), guardZones[0].threshold);
         pConf->Write(wxT("Zone1ArcCirc"), guardZones[0].type);
 
         pConf->Write(wxT("Zone2StBrng"), guardZones[1].start_bearing);
         pConf->Write(wxT("Zone2EndBrng"), guardZones[1].end_bearing);
         pConf->Write(wxT("Zone2OuterRng"), guardZones[1].outer_range);
         pConf->Write(wxT("Zone2InnerRng"), guardZones[1].inner_range);
+		pConf->Write(wxT("Zone2Threshold"), guardZones[1].threshold);
         pConf->Write(wxT("Zone2ArcCirc"), guardZones[1].type);
 
         pConf->Write(wxT("SkewFactor"), settings.skew_factor);

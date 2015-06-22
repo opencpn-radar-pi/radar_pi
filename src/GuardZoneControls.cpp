@@ -157,7 +157,7 @@ void GuardZoneDialog::CreateControls()
     BoxGuardZoneSizer->Add(pInner_Range, 1, wxALIGN_LEFT | wxALL, 5);
     pInner_Range->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                           wxCommandEventHandler(GuardZoneDialog::OnInner_Range_Value), NULL, this);
-
+///   start of copy
     wxStaticText *pOuter_Range_Text = new wxStaticText(this, wxID_ANY, _("Outer range"),wxDefaultPosition,
                                                        wxDefaultSize, 0);
     BoxGuardZoneSizer->Add(pOuter_Range_Text, 0, wxALIGN_LEFT | wxALL, 0);
@@ -177,7 +177,7 @@ void GuardZoneDialog::CreateControls()
     pStart_Bearing_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                                   wxCommandEventHandler(GuardZoneDialog::OnStart_Bearing_Value), NULL, this);
 
-
+/////////////////////////////////////////
     wxStaticText *pEnd_Bearing = new wxStaticText(this, wxID_ANY, _("End bearing"),wxDefaultPosition,
                                                   wxDefaultSize, 0);
     BoxGuardZoneSizer->Add(pEnd_Bearing, 0, wxALIGN_LEFT | wxALL, 0);
@@ -187,6 +187,18 @@ void GuardZoneDialog::CreateControls()
     pEnd_Bearing_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                                 wxCommandEventHandler(GuardZoneDialog::OnEnd_Bearing_Value), NULL, this);
 
+////////////////	// start of new field for strenght
+	wxStaticText *pThreshold = new wxStaticText(this, wxID_ANY, _("Strength threshold"),wxDefaultPosition,
+                                                       wxDefaultSize, 0);
+    BoxGuardZoneSizer->Add(pThreshold, 0, wxALIGN_LEFT | wxALL, 0);
+
+    pThreshold_Value = new wxTextCtrl(this, wxID_ANY);
+    BoxGuardZoneSizer->Add(pThreshold_Value, 1, wxALIGN_LEFT | wxALL, 5);
+    pThreshold_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
+                          wxCommandEventHandler(GuardZoneDialog::OnThreshold_Value), NULL, this);
+
+	//  end of new field
+	
 
     // The Close button
     wxButton    *bClose = new wxButton(this, ID_OK_Z, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
@@ -208,17 +220,20 @@ void GuardZoneDialog::SetVisibility()
         pEnd_Bearing_Value->Disable();
         pInner_Range->Disable();
         pOuter_Range->Disable();
+		pThreshold->Disable();
     } else if (pGuardZoneType->GetSelection() == GZ_CIRCLE) {
         pStart_Bearing_Value->Disable();
         pEnd_Bearing_Value->Disable();
         pInner_Range->Enable();
         pOuter_Range->Enable();
+		pThreshold->Enable();
     }
     else {
         pStart_Bearing_Value->Enable();
         pEnd_Bearing_Value->Enable();
         pInner_Range->Enable();
         pOuter_Range->Enable();
+		pThreshold->Enable();
     }
 }
 
@@ -245,6 +260,12 @@ void GuardZoneDialog::OnGuardZoneDialogShow(int zone)
     pStart_Bearing_Value->SetValue(GuardZoneText);
     GuardZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].end_bearing);
     pEnd_Bearing_Value->SetValue(GuardZoneText);
+
+	if (pPlugIn->guardZones[zone].threshold < 0 || pPlugIn->guardZones[zone].threshold > 254) {
+		pPlugIn->guardZones[zone].threshold = 100;
+	}
+	GuardZoneText.Printf(wxT("%3.0f"), pPlugIn->guardZones[zone].threshold);
+    pThreshold_Value->SetValue(GuardZoneText);
 
     pPlugIn->ComputeGuardZoneAngles();
     SetVisibility();
@@ -293,6 +314,14 @@ void GuardZoneDialog::OnEnd_Bearing_Value(wxCommandEvent &event)
     wxString temp = pEnd_Bearing_Value->GetValue();
 
     temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].end_bearing);
+    pPlugIn->ComputeGuardZoneAngles();
+}
+
+void GuardZoneDialog::OnThreshold_Value(wxCommandEvent &event)
+{
+    wxString temp = pThreshold_Value->GetValue();
+
+    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].threshold);
     pPlugIn->ComputeGuardZoneAngles();
 }
 

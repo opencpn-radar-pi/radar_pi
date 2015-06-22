@@ -475,7 +475,7 @@ void BR24ControlsDialog::CreateControls()
     cbVariation->SetFont(g_font);
     cbVariation->Disable();
 
-    ipBox = new wxStaticBox(this, wxID_ANY, _("ZeroConf via (wired) Ethernet"));
+    ipBox = new wxStaticBox(this, wxID_ANY, _("ZeroConf via Ethernet"));
     ipBox->SetFont(g_font);
     wxStaticBoxSizer* ipSizer = new wxStaticBoxSizer(ipBox, wxVERTICAL);
     messageBox->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);
@@ -1004,7 +1004,7 @@ void BR24ControlsDialog::SetMcastIPAddress(wxString &msg)
     if (ipBox) {
         wxString label;
 
-        label << _("ZeroConf via (wired) Ethernet") << wxT(" ") << msg;
+        label << _("ZeroConf via Ethernet") << wxT(" ") << msg;
         ipBox->SetLabel(label);
     }
 }

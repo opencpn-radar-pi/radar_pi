@@ -286,6 +286,7 @@ struct guard_zone_settings {
     int outer_range;            // now in meters
     double start_bearing;
     double end_bearing;
+	double threshold;
 };
 
 struct scan_line {
@@ -841,6 +842,7 @@ private:
     void            OnOuter_Range_Value(wxCommandEvent &event);
     void            OnStart_Bearing_Value(wxCommandEvent &event);
     void            OnEnd_Bearing_Value(wxCommandEvent &event);
+	void            OnThreshold_Value(wxCommandEvent &event);
     void            OnClose(wxCloseEvent &event);
     void            OnIdOKClick(wxCommandEvent &event);
 
@@ -854,6 +856,8 @@ private:
     wxTextCtrl      *pOuter_Range;
     wxTextCtrl      *pStart_Bearing_Value;
     wxTextCtrl      *pEnd_Bearing_Value;
+	wxTextCtrl      *pThreshold_Value;
+	wxTextCtrl      *pThreshold;
 };
 
 /*
