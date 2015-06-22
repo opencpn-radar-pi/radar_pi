@@ -220,20 +220,20 @@ void GuardZoneDialog::SetVisibility()
         pEnd_Bearing_Value->Disable();
         pInner_Range->Disable();
         pOuter_Range->Disable();
-		pThreshold->Disable();
+		
     } else if (pGuardZoneType->GetSelection() == GZ_CIRCLE) {
         pStart_Bearing_Value->Disable();
         pEnd_Bearing_Value->Disable();
         pInner_Range->Enable();
         pOuter_Range->Enable();
-		pThreshold->Enable();
+		
     }
     else {
         pStart_Bearing_Value->Enable();
         pEnd_Bearing_Value->Enable();
         pInner_Range->Enable();
         pOuter_Range->Enable();
-		pThreshold->Enable();
+		
     }
 }
 
