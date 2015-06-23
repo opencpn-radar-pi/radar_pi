@@ -261,10 +261,10 @@ void GuardZoneDialog::OnGuardZoneDialogShow(int zone)
     GuardZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].end_bearing);
     pEnd_Bearing_Value->SetValue(GuardZoneText);
 
-	if (pPlugIn->guardZones[zone].threshold < 0 || pPlugIn->guardZones[zone].threshold > 254) {
-		pPlugIn->guardZones[zone].threshold = 100;
+	if (pPlugIn->guardZones[zone].bogeyStrengthThreshold < 0 || pPlugIn->guardZones[zone].bogeyStrengthThreshold > 254) {
+		pPlugIn->guardZones[zone].bogeyStrengthThreshold = 100;
 	}
-	GuardZoneText.Printf(wxT("%3.0f"), pPlugIn->guardZones[zone].threshold);
+	GuardZoneText.Printf(wxT("%3.0f"), pPlugIn->guardZones[zone].bogeyStrengthThreshold);
     pThreshold_Value->SetValue(GuardZoneText);
 
     pPlugIn->ComputeGuardZoneAngles();
@@ -321,7 +321,7 @@ void GuardZoneDialog::OnThreshold_Value(wxCommandEvent &event)
 {
     wxString temp = pThreshold_Value->GetValue();
 
-    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].threshold);
+    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].bogeyStrengthThreshold);
     pPlugIn->ComputeGuardZoneAngles();
 }
 

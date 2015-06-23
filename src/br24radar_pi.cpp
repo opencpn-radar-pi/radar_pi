@@ -98,6 +98,8 @@ using namespace std;
 // If BR24MARK is found, we switch to BR24 mode, otherwise 4G.
 static UINT8 BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
 
+static UINT8 echos[LINES_PER_ROTATION] [RETURNS_PER_LINE];
+
 enum {
     // process ID's
     ID_OK,
@@ -1621,7 +1623,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             // Guard Section
 
 			for (size_t z = 0; z < GUARD_ZONES; z++) {
-				if (strength > guardZones[z].threshold) {
+				if (strength > guardZones[z].bogeyStrengthThreshold) {
 					if (guardZoneAngles[z][scanAngle]) {
 						int inner_range = guardZones[z].inner_range; // now in meters
 						int outer_range = guardZones[z].outer_range; // now in meters
@@ -1951,14 +1953,14 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(wxT("Zone1EndBrng"), &guardZones[0].end_bearing, 0.0);
         pConf->Read(wxT("Zone1OuterRng"), &guardZones[0].outer_range, 0);
         pConf->Read(wxT("Zone1InnerRng"), &guardZones[0].inner_range, 0);
-		pConf->Read(wxT("Zone1Threshold"), &guardZones[0].threshold, 100);
+		pConf->Read(wxT("Zone1Threshold"), &guardZones[0].bogeyStrengthThreshold, 100);
         pConf->Read(wxT("Zone1ArcCirc"), &guardZones[0].type, 0);
 
         pConf->Read(wxT("Zone2StBrng"), &guardZones[1].start_bearing, 0.0);
         pConf->Read(wxT("Zone2EndBrng"), &guardZones[1].end_bearing, 0.0);
         pConf->Read(wxT("Zone2OuterRng"), &guardZones[1].outer_range, 0);
         pConf->Read(wxT("Zone2InnerRng"), &guardZones[1].inner_range, 0);
-		pConf->Read(wxT("Zone2Threshold"), &guardZones[1].threshold, 100);
+		pConf->Read(wxT("Zone2Threshold"), &guardZones[1].bogeyStrengthThreshold, 100);
         pConf->Read(wxT("Zone2ArcCirc"), &guardZones[1].type, 0);
 
         pConf->Read(wxT("RadarAlertAudioFile"), &settings.alert_audio_file);
@@ -2016,14 +2018,14 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("Zone1EndBrng"), guardZones[0].end_bearing);
         pConf->Write(wxT("Zone1OuterRng"), guardZones[0].outer_range);
         pConf->Write(wxT("Zone1InnerRng"), guardZones[0].inner_range);
-		pConf->Write(wxT("Zone1Threshold"), guardZones[0].threshold);
+		pConf->Write(wxT("Zone1Threshold"), guardZones[0].bogeyStrengthThreshold);
         pConf->Write(wxT("Zone1ArcCirc"), guardZones[0].type);
 
         pConf->Write(wxT("Zone2StBrng"), guardZones[1].start_bearing);
         pConf->Write(wxT("Zone2EndBrng"), guardZones[1].end_bearing);
         pConf->Write(wxT("Zone2OuterRng"), guardZones[1].outer_range);
         pConf->Write(wxT("Zone2InnerRng"), guardZones[1].inner_range);
-		pConf->Write(wxT("Zone2Threshold"), guardZones[1].threshold);
+		pConf->Write(wxT("Zone2Threshold"), guardZones[1].bogeyStrengthThreshold);
         pConf->Write(wxT("Zone2ArcCirc"), guardZones[1].type);
 
         pConf->Write(wxT("SkewFactor"), settings.skew_factor);
@@ -2936,7 +2938,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
             small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
             angle_raw = (line->br4g.angle[1] << 8) | line->br4g.angle[0];
-
             if (large_range == 0x80) {
                 if (small_range == -1) {
                     range_raw = 0; // Invalid range received
@@ -2979,6 +2980,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             br_hdt_raw = SCALE_DEGREES_TO_RAW(br_hdt);
             angle_raw += br_hdt_raw;             // map spoke on true direction
         }
+		if (LINES_PER_ROTATION == 2048) angle_raw = angle_raw / 2;   // divide by 2 to map on 2048 scanlines
         angle_raw = MOD_ROTATION(angle_raw);
 
         UINT8 *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;

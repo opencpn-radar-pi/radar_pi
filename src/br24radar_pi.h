@@ -100,7 +100,7 @@
 # define MILLISECONDS_PER_SECOND (1000)
 
 
-#define LINES_PER_ROTATION  (4096) // BR radars can generate up to 4096 lines per rotation
+#define LINES_PER_ROTATION  (2048) // BR radars can generate up to 4096 lines per rotation, but use only 2048
 #define RETURNS_PER_LINE     (512) // BR radars generate 512 separate values per range, at 8 bits each
 #define DEGREES_PER_ROTATION (360) // Classical math
 
@@ -286,7 +286,7 @@ struct guard_zone_settings {
     int outer_range;            // now in meters
     double start_bearing;
     double end_bearing;
-	double threshold;
+	double bogeyStrengthThreshold;
 };
 
 struct scan_line {
