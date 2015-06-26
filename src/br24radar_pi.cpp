@@ -1548,7 +1548,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
     br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
     if (previousSweep != currentSweep) {   // only reset the bogey_count at a new sweep
-		wxLogMessage(wxT("BR24radar_pi:reset bogeycount sweep, count %d  %d  "), currentSweep, bogey_count[1]);
+	//	wxLogMessage(wxT("BR24radar_pi:reset bogeycount sweep, count %d  %d  "), currentSweep, bogey_count[1]);
 		memset(&bogey_count, 0, sizeof(bogey_count));
 		previousSweep = currentSweep;
 	}
@@ -2977,7 +2977,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 			previousSweep = currentSweep;	// used to reset bogey_count DrawRadarImage
 			currentSweep++;              // number of the current sweep
 				if (currentSweep >= 256) currentSweep = 0;
-				wxLogMessage(wxT("BR24radar_pi: sweep nr %d"), currentSweep);
 			}
 
         // Range change received from radar?
