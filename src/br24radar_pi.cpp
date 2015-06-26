@@ -1737,9 +1737,9 @@ void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
 							bogey_count[z]++;   // raise alarm
 						}
 						else {   // no bogey in previous sweep (only in current sweep)
-					//		if (strength > 240) { //  this is a strong echo, always raise alarm
-								//	bogey_count[z]++;   // seems not to be needed, let's see how it works
-					//		}
+							if (strength > 240) { //  this is a strong echo, always raise alarm
+								bogey_count[z]++;   // seems not to be needed, let's see how it works
+							}
 						}
 						//			now register echo in recurrent echo counter to check for next sweep
 						echos[z][angle][radius] = 2;  // level 2: you will look back 2 sweeps
