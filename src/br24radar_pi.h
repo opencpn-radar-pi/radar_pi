@@ -196,7 +196,6 @@ typedef enum ControlType {
     CT_TARGET_SEPARATION,
     CT_NOISE_REJECTION,
     CT_TARGET_BOOST,
-    CT_DOWNSAMPLE,
     CT_REFRESHRATE,
     CT_PASSHEADING,
     CT_SCAN_SPEED,
@@ -273,10 +272,8 @@ struct radar_control_settings {
     int      idle_run_time;
     int      draw_algorithm;
     int      scan_speed;
-    int      downsampleUser;    // 1..8 =
-    int        refreshrate;
-    int       PassHeadingToOCPN;
-    int      downsample;        //         1..128
+    int      refreshrate;
+    int      PassHeadingToOCPN;
     wxString alert_audio_file;
 };
 
@@ -410,6 +407,7 @@ private:
     void Select_Rejection(int req_rejection_index);
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
     void RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
+	void Guard(unsigned int angle, int max_range, scan_line * scan);
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
     void DrawRadarImage(int max_range, wxPoint radar_center);
     void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
@@ -785,7 +783,6 @@ private:
     RadarControlButton *bTargetSeparation;
     RadarControlButton *bNoiseRejection;
     RadarControlButton *bTargetBoost;
-    RadarControlButton *bDownsample;
     RadarControlButton *bRefreshrate;
     RadarControlButton *bScanSpeed;
     RadarControlButton *bScanAge;

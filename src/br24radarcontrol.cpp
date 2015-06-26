@@ -73,7 +73,6 @@ enum {                                      // process ID's
     ID_TARGET_BOOST,
     ID_NOISE_REJECTION,
     ID_TARGET_SEPARATION,
-    ID_DOWNSAMPLE,
     ID_REFRESHRATE,
     ID_SCAN_SPEED,
     ID_SCAN_AGE,
@@ -118,7 +117,6 @@ EVT_BUTTON(ID_INTERFERENCE_REJECTION, BR24ControlsDialog::OnRadarControlButtonCl
 EVT_BUTTON(ID_TARGET_BOOST, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_NOISE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_TARGET_SEPARATION, BR24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_DOWNSAMPLE, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_REFRESHRATE, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
@@ -399,7 +397,6 @@ void BR24ControlsDialog::CreateControls()
     label << _("Target separation") << wxT("\n");
     label << _("Noise rejection") << wxT("\n");
     label << _("Target boost") << wxT("\n");
-    label << _("Downsample") << wxT("\n");
     label << _("Scan speed") << wxT("\n");
     label << _("Scan age") << wxT("\n");
     label << _("Timed Transmit") << wxT("\n");
@@ -629,12 +626,7 @@ void BR24ControlsDialog::CreateControls()
     bScanSpeed->names = scan_speed_names;
     bScanSpeed->SetValue(pPlugIn->settings.scan_speed); // redraw after adding names
 
-    // The DOWNSAMPLE button
-    bDownsample = new RadarControlButton(this, ID_DOWNSAMPLE, _("Downsample"), pPlugIn, CT_DOWNSAMPLE, false, pPlugIn->settings.downsampleUser);
-    advancedBox->Add(bDownsample, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bDownsample->minValue = 1;
-    bDownsample->maxValue = 8;
-
+   
     // The REFRESHRATE button
     bRefreshrate = new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), pPlugIn, CT_REFRESHRATE, false, pPlugIn->settings.refreshrate);
     advancedBox->Add(bRefreshrate, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
