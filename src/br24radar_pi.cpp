@@ -3013,7 +3013,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
         UINT8 *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
         memcpy(dest_data1, line->data, RETURNS_PER_LINE);
-/*   test cases
+/*  //  test cases
 		static int xtest;
 		if ((angle_raw == 10 ) && (currentSweep/4) * 4 == currentSweep) {
 			xtest = currentSweep;
@@ -3030,9 +3030,9 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 			wxLogMessage(wxT("BR24radar_pi: dot written XXX   %d angle %d"), currentSweep, angle_raw);
 		}
 		else {
-			dest_data1[101] = 0;
+			dest_data1[101] = 0;  
 		}
-/*
+		*/
 
         // The following line is a quick hack to confirm on-screen where the range ends, by putting a 'ring' of
         // returned radar energy at the max range line.
