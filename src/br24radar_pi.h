@@ -105,10 +105,13 @@
 #define DEGREES_PER_ROTATION (360) // Classical math
 
 // Use the above to convert from 'raw' headings sent by the radar (0..4095) into classical degrees (0..359) and back
-#define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double) DEGREES_PER_ROTATION / LINES_PER_ROTATION)
-#define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double) LINES_PER_ROTATION / DEGREES_PER_ROTATION))
+#define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double) DEGREES_PER_ROTATION / 4096)
+#define SCALE_RAW_TO_DEGREES2048(raw) ((raw) * (double) DEGREES_PER_ROTATION / 2048)
+#define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double) 4096 / DEGREES_PER_ROTATION))
+#define SCALE_DEGREES_TO_RAW2048(angle) ((int)((angle) * (double) 2048 / DEGREES_PER_ROTATION))
 #define MOD_DEGREES(angle) (fmod(angle + 720.0, 360.0))
-#define MOD_ROTATION(raw) (((raw) + 2 * LINES_PER_ROTATION) % LINES_PER_ROTATION)
+#define MOD_ROTATION(raw) (((raw) + 2 * 4096) % 4096)
+#define MOD_ROTATION2048(raw) (((raw) + 2 * 2048) % 2048)
 
 enum {
     BM_ID_RED,

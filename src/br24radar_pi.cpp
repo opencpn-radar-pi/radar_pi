@@ -1511,7 +1511,7 @@ void br24radar_pi::ComputeGuardZoneAngles()
             angle_2 += 360.0;
         }
         for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
-            double angleDeg = MOD_DEGREES(SCALE_RAW_TO_DEGREES(i) + settings.heading_correction);
+            double angleDeg = MOD_DEGREES(SCALE_RAW_TO_DEGREES2048(i) + settings.heading_correction);
 
             bool mark = false;
             if (settings.verbose >= 4) {
@@ -1535,7 +1535,7 @@ void br24radar_pi::ComputeGuardZoneAngles()
 
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 {
-    static const double spokeWidthDeg = SCALE_RAW_TO_DEGREES(1);
+    static const double spokeWidthDeg = SCALE_RAW_TO_DEGREES2048(1);
     static const double spokeWidthRad = deg2rad(spokeWidthDeg); // How wide is one spoke?
     double angleDeg;
     double angleRad;
@@ -1712,7 +1712,7 @@ void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
 									int radius2 = radius1 + j;
 									if (radius2 < 0) radius2 = 0;
 									if (radius2 > RETURNS_PER_LINE) radius2 = RETURNS_PER_LINE;
-									echos[z][angle2][radius2] = 1;  // these extentions will last only 1 sweep
+									echos[z][angle2][radius2] = look_back - 1;  // these extentions will last more sweeps
 								}
 							}
 						}
@@ -1724,33 +1724,31 @@ void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
 			for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) { 
 				// - 2 added, this field contains the range circle, should not raise alarm
 				GLubyte strength = (radius < RETURNS_PER_LINE) ? scan->data[radius] : 0;
-				if( radius == 100 && angle == 10) wxLogMessage(wxT("BR24radar_pi: Stenth XX last sweep, %d current %d, strength %d"), 
-					lastSweep[angle], currentSweep, strength);
 				if (guardZoneAngles[z][angle]) {
 					int inner_range = guardZones[z].inner_range; // now in meters
 					int outer_range = guardZones[z].outer_range; // now in meters
 					int bogey_range = radius * max_range / RETURNS_PER_LINE;
 					if (bogey_range > inner_range && bogey_range < outer_range && strength > 20) {
+
 						//  there is an (weak) bogey, needs to be confirmed in one of the 2 next sweeps
+
 						if (echos[z][angle][radius] ) {   // these was a bogey also in previous sweep or 2 sweeps back
 							bogey_count[z]++;   // raise alarm
-							wxLogMessage(wxT("BR24radar_pi: FOUND dual XXX last sweep, %d current %d, bogeys %d"), lastSweep[angle], currentSweep, bogey_count[z]);
 						}
 						else {   // no bogey in previous sweep (only in current sweep)
 							if (strength >= guardZones[z].bogeyStrengthThreshold) { //  this is a strong echo, always raise alarm
 								// this line raises a "single sweep" alarm
 								bogey_count[z]++;   // seems not to be needed, let's see how it works
-								wxLogMessage(wxT("BR24radar_pi: FOUND single XXX last sweep, %d current %d, bogeys %d"), lastSweep[angle], currentSweep, bogey_count[z]);
 							}
 						}
 						//			now register echo in recurrent echo counter to check for next sweep
 						echos[z][angle][radius] = look_back;  // level 3: you will look back 2 sweeps
 					}
-					else {     // there is no bogey
+					else {     
+						// there is no bogey, decrease recurrent echo counter 
+
 						if (echos[z][angle][radius] >= 1) {
-							wxLogMessage(wxT("BR24radar_pi: subtract XXX last sweep, %d current %d, echos[z][angle][radius] %d"), lastSweep[angle], currentSweep, echos[z][angle][radius]);
 							echos[z][angle][radius] --;
-							wxLogMessage(wxT("BR24radar_pi: subtracted XXX last sweep, %d current %d, echos[z][angle][radius] %d"), lastSweep[angle], currentSweep, echos[z][angle][radius]);
 						}    
 					}   // end of else
 				}       // end of "if (guardZoneAngles[z][angle])"
@@ -2919,7 +2917,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             }
             // Do not draw something with this...
             pPlugIn->m_statistics.missing_spokes++;
-            next_scan_number = (scan_number + 1) % LINES_PER_ROTATION;
+            next_scan_number = (scan_number + 1) % 4096;
             continue;
         }
         if (line->br24.status != 0x02 && line->br24.status != 0x12) {
@@ -2932,10 +2930,10 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             if (scan_number > next_scan_number) {
                 pPlugIn->m_statistics.missing_spokes += scan_number - next_scan_number;
             } else {
-                pPlugIn->m_statistics.missing_spokes += LINES_PER_ROTATION + scan_number - next_scan_number;
+                pPlugIn->m_statistics.missing_spokes += 4096 + scan_number - next_scan_number;
             }
         }
-        next_scan_number = (scan_number + 1) % LINES_PER_ROTATION;
+        next_scan_number = (scan_number + 1) % 4096;
 
         int range_raw = 0;
         int angle_raw = 0;
@@ -2998,41 +2996,42 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
         if (hdm_raw != INT16_MIN && TIMER_NOT_ELAPSED(br_var_watchdog) && br_radar_type == RT_4G) {
             br_heading_on_radar = true;                            // heading on radar
-			br_hdt_raw = hdm_raw + SCALE_DEGREES_TO_RAW(br_var);
-			while (br_hdt_raw >= 4096) br_hdt_raw -= 4096;
+			br_hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(br_var));
 			br_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(br_hdt_raw));
             angle_raw += br_hdt_raw;
+			angle_raw = MOD_ROTATION (angle_raw);
         }
         else {                                // no heading on radar
             br_heading_on_radar = false;
             br_hdt_raw = SCALE_DEGREES_TO_RAW(br_hdt);
             angle_raw += br_hdt_raw;             // map spoke on true direction
         }
-		if (LINES_PER_ROTATION == 2048) angle_raw = angle_raw / 2;   // divide by 2 to map on 2048 scanlines
-        angle_raw = MOD_ROTATION(angle_raw);
+		// until here all is based on 4096 scanlines
+
+		angle_raw = MOD_ROTATION2048(angle_raw / 2);   // divide by 2 to map on 2048 scanlines
 
         UINT8 *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
         memcpy(dest_data1, line->data, RETURNS_PER_LINE);
-/*  //  test cases
+/*  //  test case  , take out memcpy above. Will create alternating dot
 		static int xtest;
 		if ((angle_raw == 10 ) && (currentSweep/4) * 4 == currentSweep) {
 			xtest = currentSweep;
-			dest_data1[100] = 102;
+			dest_data1[256] = 250;
 			wxLogMessage(wxT("BR24radar_pi: dot written XXX   %d angle %d"), currentSweep, angle_raw);
 		}
 		else {
-			dest_data1[100] = 0;
+			dest_data1[256] = 0;
 		}
 		
 		if ((angle_raw == 11 ) && (currentSweep == xtest + 2)) {
 			
-			dest_data1[101] = 102;
+			dest_data1[257] = 250;
 			wxLogMessage(wxT("BR24radar_pi: dot written XXX   %d angle %d"), currentSweep, angle_raw);
 		}
 		else {
-			dest_data1[101] = 0;  
-		}
-		*/
+			dest_data1[257] = 0;  
+		}  */
+		
 
         // The following line is a quick hack to confirm on-screen where the range ends, by putting a 'ring' of
         // returned radar energy at the max range line.
