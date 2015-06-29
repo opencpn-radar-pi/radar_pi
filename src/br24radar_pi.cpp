@@ -1565,9 +1565,23 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     //    unsigned int scanAngle = angle;  //, drawAngle = angle;
         scan_line * scan = 0;
    
-            scan_line * s = &m_scan_line[angle];
-     
-                scan = s;
+		wxLongLong bestAge = settings.max_age * MILLISECONDS_PER_SECOND;
+		scan_line * s = &m_scan_line[angle];
+		wxLongLong diff = now - s->age;
+		if (settings.verbose >= 4) {
+			wxLogMessage(wxT("BR24radar_pi: ") wxT("    a=%d diff=%") wxTPRId64 wxT(" bestAge=%") wxTPRId64 wxT(" range=%d"), angle , diff, bestAge, s->range);
+		}
+		if (s->range && diff >= 0 && diff < bestAge) {
+			scan = s;
+			while (angle >= LINES_PER_ROTATION) angle -= LINES_PER_ROTATION;
+			bestAge = diff;
+		}
+
+		if (!scan) {
+			skipped++;
+			continue;   // No or old data, don't show
+		}
+
         if (!scan) {
             skipped++;
             continue;   // No or old data, don't show
