@@ -1568,8 +1568,6 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             scan_line * s = &m_scan_line[angle];
      
                 scan = s;
-     //           scanAngle = angle;
-         //       while (scanAngle >= LINES_PER_ROTATION) scanAngle -= LINES_PER_ROTATION;
         if (!scan) {
             skipped++;
             continue;   // No or old data, don't show
@@ -1693,7 +1691,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
 	//  checks beam with angle for bogeys 
 {
-	int bogeyWidth = 4;  // radius of bogey enlargement, to catch bogeys that reappear at a slightly different location
+	int bogeyWidth = 8;  // radius of bogey enlargement, to catch bogeys that reappear at a slightly different location
 	int look_back = 3;
 	if (lastSweep[angle] != currentSweep) {  // new sweep, this scanline has not yet been checked for bogeys
 
@@ -1723,6 +1721,7 @@ void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
 
 			for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) { 
 				// - 2 added, this field contains the range circle, should not raise alarm
+				 if (!scan) continue;   // No or old data, don't show
 				GLubyte strength = (radius < RETURNS_PER_LINE) ? scan->data[radius] : 0;
 				if (guardZoneAngles[z][angle]) {
 					int inner_range = guardZones[z].inner_range; // now in meters
@@ -2887,6 +2886,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     time_t now = time(0);
     br_radar_seen = true;
     br_radar_watchdog = now;
+	static int previous_angle_raw = 0;
 
     // wxCriticalSectionLocker locker(br_scanLock);
 
@@ -2937,9 +2937,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
         int range_raw = 0;
         int angle_raw = 0;
-
         short int hdm_raw = 0;
-
         short int large_range = 0;
         short int small_range = 0;
         int range_meters = 0;
@@ -2950,7 +2948,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
             angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
             range_meters = (int) ((double)range_raw * 10.0 / sqrt(2.0));
-
             br_radar_type = RT_BR24;
         } else {
             // 4G mode
@@ -2969,14 +2966,14 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             range_meters = range_raw / 4;
             br_radar_type = RT_4G;
         }
-
-		if (int(angle_raw / 2) == 0) {   // next sweep starts
+		if (previous_angle_raw > angle_raw) {    // next sweep starts
 			previousSweep = currentSweep;	// used to reset bogey_count DrawRadarImage
 			currentSweep++;              // number of the current sweep
+			if (pPlugIn->settings.verbose >= 1) wxLogMessage(wxT("BR24radar_pi: Sweep %d"), currentSweep);
 				if (currentSweep >= 256) currentSweep = 0;
 			}
-
-        // Range change received from radar?
+		previous_angle_raw = angle_raw;
+       // Range change received from radar?
 
         if (range_meters != br_range_meters) {
 
@@ -2988,7 +2985,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                     wxLogMessage(wxT("BR24radar_pi: Radar now scanning with range %d meters (was %d meters)"), range_meters, br_range_meters);
                 }
             }
-
             br_range_meters = range_meters;
             br_update_range_control = true;  // signal rendering code to change control value
         }
