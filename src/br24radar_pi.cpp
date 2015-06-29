@@ -1691,8 +1691,9 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
 	//  checks beam with angle for bogeys 
 {
-	int bogeyWidth = 8;  // radius of bogey enlargement, to catch bogeys that reappear at a slightly different location
-	int look_back = 3;
+	int bogeyWidth = 2;  // radius of bogey enlargement, to catch bogeys that reappear at a slightly different location
+	                     // make this a setting ??
+	int look_back = 3;   // look_back - 1 is how far you look back
 	if (lastSweep[angle] != currentSweep) {  // new sweep, this scanline has not yet been checked for bogeys
 
 		for (size_t z = 0; z < GUARD_ZONES; z++) {
@@ -1711,6 +1712,7 @@ void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
 									if (radius2 < 0) radius2 = 0;
 									if (radius2 > RETURNS_PER_LINE) radius2 = RETURNS_PER_LINE;
 									echos[z][angle2][radius2] = look_back - 1;  // these extentions will last more sweeps
+									// write look_back - 1 so it will not be extended again next sweep
 								}
 							}
 						}
@@ -1735,7 +1737,7 @@ void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
 							bogey_count[z]++;   // raise alarm
 						}
 						else {   // no bogey in previous sweep (only in current sweep)
-							if (strength >= guardZones[z].bogeyStrengthThreshold) { //  this is a strong echo, always raise alarm
+							if (strength > guardZones[z].bogeyStrengthThreshold) { //  this is a strong echo, always raise alarm
 								// this line raises a "single sweep" alarm
 								bogey_count[z]++;   // seems not to be needed, let's see how it works
 							}

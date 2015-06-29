@@ -188,7 +188,7 @@ void GuardZoneDialog::CreateControls()
                                 wxCommandEventHandler(GuardZoneDialog::OnEnd_Bearing_Value), NULL, this);
 
 ////////////////	// start of new field for strenght
-	wxStaticText *pThreshold = new wxStaticText(this, wxID_ANY, _("Single Sweep Threshold"),wxDefaultPosition,
+	wxStaticText *pThreshold = new wxStaticText(this, wxID_ANY, _("Single Sweep Threshold \n If 255: Off"),wxDefaultPosition,
                                                        wxDefaultSize, 0);
     BoxGuardZoneSizer->Add(pThreshold, 0, wxALIGN_LEFT | wxALL, 0);
 
@@ -261,7 +261,7 @@ void GuardZoneDialog::OnGuardZoneDialogShow(int zone)
     GuardZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].end_bearing);
     pEnd_Bearing_Value->SetValue(GuardZoneText);
 
-	if (pPlugIn->guardZones[zone].bogeyStrengthThreshold < 0 || pPlugIn->guardZones[zone].bogeyStrengthThreshold > 254) {
+	if (pPlugIn->guardZones[zone].bogeyStrengthThreshold < 0 || pPlugIn->guardZones[zone].bogeyStrengthThreshold > 255) {
 		pPlugIn->guardZones[zone].bogeyStrengthThreshold = 100;
 	}
 	GuardZoneText.Printf(wxT("%3.0f"), pPlugIn->guardZones[zone].bogeyStrengthThreshold);
