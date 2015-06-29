@@ -1738,7 +1738,8 @@ void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
 			for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) { 
 				// - 2 added, this field contains the range circle, should not raise alarm
 				 if (!scan) continue;   // No or old data, don't show
-				GLubyte strength = (radius < RETURNS_PER_LINE) ? scan->data[radius] : 0;
+		//		GLubyte strength = (radius < RETURNS_PER_LINE) ? scan->data[radius] : 0;
+				GLubyte strength = scan->data[radius];
 				if (guardZoneAngles[z][angle]) {
 					int inner_range = guardZones[z].inner_range; // now in meters
 					int outer_range = guardZones[z].outer_range; // now in meters
