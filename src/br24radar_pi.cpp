@@ -1616,7 +1616,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                     //  first find out the actual color
                 case 0:
                     actual_color = BLOB_NONE;
-                    if (strength > 50) {
+                    if (strength > displaysetting0_threshold_red) {
                         actual_color = BLOB_RED;
                     }
                     break;
@@ -1627,7 +1627,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                         actual_color = BLOB_RED;
                     } else if (strength > 100) {
                         actual_color = BLOB_GREEN;
-                    } else if (strength > 50) {
+                    } else if (strength > displaysetting1_threshold_blue) {
                         actual_color = BLOB_BLUE;
                     }
                     break;
@@ -1638,7 +1638,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                         actual_color = BLOB_RED;
                     } else if (strength > 100) {
                         actual_color = BLOB_GREEN;
-                    } else if (strength > 20) {
+                    } else if (strength > displaysetting2_threshold_blue) {
                         actual_color = BLOB_BLUE;
                     }
                     break;
@@ -1709,6 +1709,9 @@ void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
 	                     // make this a setting ??
 	int look_back = 3;   // look_back - 1 is how far you look back
 	if (lastSweep[angle] != currentSweep) {  // new sweep, this scanline has not yet been checked for bogeys
+		int level = displaysetting2_threshold_blue;
+		if (settings.display_option == 0) level = displaysetting0_threshold_red;
+		if (settings.display_option == 1) level = displaysetting1_threshold_blue;
 
 		for (size_t z = 0; z < GUARD_ZONES; z++) {
 			if (angle == 0) {
@@ -1744,7 +1747,7 @@ void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
 					int inner_range = guardZones[z].inner_range; // now in meters
 					int outer_range = guardZones[z].outer_range; // now in meters
 					int bogey_range = radius * max_range / RETURNS_PER_LINE;
-					if (bogey_range > inner_range && bogey_range < outer_range && strength > 20) {
+					if (bogey_range > inner_range && bogey_range < outer_range && strength > level) {
 
 						//  there is an (weak) bogey, needs to be confirmed in one of the 2 next sweeps
 
