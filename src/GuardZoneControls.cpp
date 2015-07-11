@@ -188,7 +188,7 @@ void GuardZoneDialog::CreateControls()
                                 wxCommandEventHandler(GuardZoneDialog::OnEnd_Bearing_Value), NULL, this);
 
 ////////////////	// start of new field for strenght
-	wxStaticText *pThreshold = new wxStaticText(this, wxID_ANY, _("Single Sweep Threshold \n If 255: Off"),wxDefaultPosition,
+	wxStaticText *pThreshold = new wxStaticText(this, wxID_ANY, _("Single Sweep Threshold \n255: Single Sweep Alarm Off"),wxDefaultPosition,
                                                        wxDefaultSize, 0);
     BoxGuardZoneSizer->Add(pThreshold, 0, wxALIGN_LEFT | wxALL, 0);
 

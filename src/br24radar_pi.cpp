@@ -1753,7 +1753,6 @@ void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
 
 						if (echos[z][angle][radius] ) {   // these was a bogey also in previous sweep or 2 sweeps back
 							bogey_count[z]++;   // raise alarm
-							////  to be tested !!!
 							scan->data[radius] = 253;  // increase the intensity of this confirmed dot
 						}
 						else {   // no bogey in previous sweep (only in current sweep)
