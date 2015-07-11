@@ -112,6 +112,9 @@
 #define MOD_DEGREES(angle) (fmod(angle + 720.0, 360.0))
 #define MOD_ROTATION(raw) (((raw) + 2 * 4096) % 4096)
 #define MOD_ROTATION2048(raw) (((raw) + 2 * 2048) % 2048)
+#define displaysetting0_threshold_red (50)
+#define displaysetting1_threshold_blue (50)
+#define displaysetting2_threshold_blue (20)
 
 enum {
     BM_ID_RED,
