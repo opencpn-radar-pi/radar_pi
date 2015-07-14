@@ -2623,7 +2623,6 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
               && !wxIsNaN(m_NMEA0183.Hdm.DegreesMagnetic)) {
             br_hdt = m_NMEA0183.Hdm.DegreesMagnetic + br_var;
             br_hdt_watchdog = now;
-			wxLogMessage(wxT("BR24radar_pi: HDM updated from NMEA  %f"), br_hdt);
         }
         else if (m_heading_source == HEADING_HDT
               && m_NMEA0183.LastSentenceIDReceived == _T("HDT")
