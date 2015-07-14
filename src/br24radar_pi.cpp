@@ -1562,9 +1562,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     
     // DRAWING PICTURE
     for (unsigned int angle = 0 ; angle <= LINES_PER_ROTATION - 1; angle++) {
-    //    unsigned int scanAngle = angle;  //, drawAngle = angle;
         scan_line * scan = 0;
-   
 		wxLongLong bestAge = settings.max_age * MILLISECONDS_PER_SECOND;
 		scan_line * s = &m_scan_line[angle];
 		wxLongLong diff = now - s->age;
@@ -1573,13 +1571,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 		}
 		if (s->range && diff >= 0 && diff < bestAge) {
 			scan = s;
-			while (angle >= LINES_PER_ROTATION) angle -= LINES_PER_ROTATION;
 			bestAge = diff;
-		}
-
-		if (!scan) {
-			skipped++;
-			continue;   // No or old data, don't show
 		}
 
         if (!scan) {
@@ -1589,20 +1581,16 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
         // At this point we have:
         // angle -- the angle in LINES_PER_ROTATION which has data
-        // Adjust the angle accordingly
 
         double arc_width = spokeWidthRad * 0.5;
         double arc_heigth = ((double) scan->range / (double) max_range);
-
         angleDeg = fmod((angle - 1) * spokeWidthDeg + 360.0, 360.0);
         angleRad = deg2rad(angleDeg);
         double angleCos = cos(angleRad);
         double angleSin = sin(angleRad);
         double r_begin = 0, r_end = 0;
-
         enum colors { BLOB_NONE, BLOB_BLUE, BLOB_GREEN, BLOB_RED };
         colors actual_color = BLOB_NONE, previous_color = BLOB_NONE;
-
         drawn_spokes++;
 
         scan->data[RETURNS_PER_LINE] = 0;  // make sure this element is initialized (just outside the range)
@@ -1611,36 +1599,26 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 		Guard(angle, max_range, scan);
 
 		for (int radius = 0; radius <= RETURNS_PER_LINE; ++radius) {   // loop 1 more time as only the previous one will be displayed
-			GLubyte strength = (radius < RETURNS_PER_LINE) ? scan->data[radius] : 0;
+			GLubyte strength = scan->data[radius];
 			switch (settings.display_option) {
                     //  first find out the actual color
                 case 0:
                     actual_color = BLOB_NONE;
-                    if (strength > displaysetting0_threshold_red) {
-                        actual_color = BLOB_RED;
-                    }
+                    if (strength > displaysetting0_threshold_red) actual_color = BLOB_RED;
                     break;
 
-                case 1:
-                    actual_color = BLOB_NONE;
-                    if (strength > 200) {
-                        actual_color = BLOB_RED;
-                    } else if (strength > 100) {
-                        actual_color = BLOB_GREEN;
-                    } else if (strength > displaysetting1_threshold_blue) {
-                        actual_color = BLOB_BLUE;
-                    }
-                    break;
+				case 1:
+					actual_color = BLOB_NONE;
+					if (strength > displaysetting1_threshold_blue) actual_color = BLOB_BLUE;
+					if (strength > 100) actual_color = BLOB_GREEN;
+					if (strength > 200) actual_color = BLOB_RED;
+					break;
 
                 case 2:
                     actual_color = BLOB_NONE;
-                    if (strength > 250) {
-                        actual_color = BLOB_RED;
-                    } else if (strength > 100) {
-                        actual_color = BLOB_GREEN;
-                    } else if (strength > displaysetting2_threshold_blue) {
-                        actual_color = BLOB_BLUE;
-                    }
+					if (strength > displaysetting2_threshold_blue) actual_color = BLOB_BLUE;
+					if (strength > 100) actual_color = BLOB_GREEN;
+                    if (strength > 250) actual_color = BLOB_RED;
                     break;
             }
 
@@ -1741,7 +1719,6 @@ void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
 			for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) { 
 				// - 2 added, this field contains the range circle, should not raise alarm
 				 if (!scan) continue;   // No or old data, don't show
-		//		GLubyte strength = (radius < RETURNS_PER_LINE) ? scan->data[radius] : 0;
 				GLubyte strength = scan->data[radius];
 				if (guardZoneAngles[z][angle]) {
 					int inner_range = guardZones[z].inner_range; // now in meters

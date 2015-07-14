@@ -113,8 +113,8 @@
 #define MOD_ROTATION(raw) (((raw) + 2 * 4096) % 4096)
 #define MOD_ROTATION2048(raw) (((raw) + 2 * 2048) % 2048)
 #define displaysetting0_threshold_red (50)
-#define displaysetting1_threshold_blue (50)
-#define displaysetting2_threshold_blue (20)
+#define displaysetting1_threshold_blue (50)  // should be < 100
+#define displaysetting2_threshold_blue (20)  // should be < 100
 
 enum {
     BM_ID_RED,
