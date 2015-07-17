@@ -98,11 +98,10 @@ using namespace std;
 // If BR24MARK is found, we switch to BR24 mode, otherwise 4G.
 static UINT8 BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
 
-static int echos[2] [LINES_PER_ROTATION] [RETURNS_PER_LINE];  // one for each guard zone
-static int copyOfEchos [2][LINES_PER_ROTATION] [RETURNS_PER_LINE];
 static unsigned int lastSweep[LINES_PER_ROTATION];  // for each scanline the sweepnumber that was last checked for bogeys
 static int currentSweep = 0, previousSweep = 0;   // holds the number of the current and previous sweep
 int bogey_count[GUARD_ZONES];
+static int displaysetting_threshold[3] = {displaysetting0_threshold_red, displaysetting1_threshold_blue, displaysetting2_threshold_blue};
 
 enum {
     // process ID's
@@ -1600,6 +1599,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
 		for (int radius = 0; radius <= RETURNS_PER_LINE; ++radius) {   // loop 1 more time as only the previous one will be displayed
 			GLubyte strength = scan->data[radius];
+			GLubyte hist = scan->history[radius];
 			switch (settings.display_option) {
                     //  first find out the actual color
                 case 0:
@@ -1616,6 +1616,16 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
                 case 2:
                     actual_color = BLOB_NONE;
+					hist = hist & 7;  // check only last 3 bits
+
+					/*  following lines will only display "muliple sweep" blobs
+					// this will give a very stable radar image
+					if (hist == 3 || hist >= 5) {  // corresponds to the patterns 011, 101, 110, 111
+						actual_color = BLOB_RED;
+					}
+					break;
+					*/
+
 					if (strength > displaysetting2_threshold_blue) actual_color = BLOB_BLUE;
 					if (strength > 100) actual_color = BLOB_GREEN;
                     if (strength > 250) actual_color = BLOB_RED;
@@ -1683,76 +1693,34 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
 	//  checks beam with angle for bogeys 
 {
-	int bogeyWidth = 2;  // radius of bogey enlargement, to catch bogeys that reappear at a slightly different location
-	                     // make this a setting ??
-	int look_back = 3;   // look_back - 1 is how far you look back
-	if (lastSweep[angle] != currentSweep) {  // new sweep, this scanline has not yet been checked for bogeys
-		int level = displaysetting2_threshold_blue;
-		if (settings.display_option == 0) level = displaysetting0_threshold_red;
-		if (settings.display_option == 1) level = displaysetting1_threshold_blue;
-
-		for (size_t z = 0; z < GUARD_ZONES; z++) {
-			if (angle == 0) {
-				//   new sweep just started, enlarge the blobs in echos[z] to catch moving targets as well
-				memcpy(copyOfEchos, echos, sizeof(copyOfEchos));
-				for (int angle1 = 0; angle1 < LINES_PER_ROTATION; angle1++) {
-					for (int radius1 = 0; radius1 < RETURNS_PER_LINE; radius1++){
-						if (copyOfEchos[z][angle1][radius1] == look_back) { // now enlarge the blobs
-							for (int i = - bogeyWidth; i <= bogeyWidth; i++) {
-								int angle2 = angle1 + i;
-								if (angle2 < 0) angle2 +=LINES_PER_ROTATION;
-								if (angle2 >= LINES_PER_ROTATION) angle2 -= LINES_PER_ROTATION;
-								for (int j = - bogeyWidth; j <= 10; j++) {
-									int radius2 = radius1 + j;
-									if (radius2 < 0) radius2 = 0;
-									if (radius2 > RETURNS_PER_LINE) radius2 = RETURNS_PER_LINE;
-									echos[z][angle2][radius2] = look_back - 1;  // these extentions will last more sweeps
-									// write look_back - 1 so it will not be extended again next sweep
-								}
-							}
-						}
-					}
-				}   
-
-			}      // end of the enlarge bogey part
-
-			for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) { 
-				// - 2 added, this field contains the range circle, should not raise alarm
-				 if (!scan) continue;   // No or old data, don't show
-				GLubyte strength = scan->data[radius];
-				if (guardZoneAngles[z][angle]) {
-					int inner_range = guardZones[z].inner_range; // now in meters
-					int outer_range = guardZones[z].outer_range; // now in meters
-					int bogey_range = radius * max_range / RETURNS_PER_LINE;
-					if (bogey_range > inner_range && bogey_range < outer_range && strength > level) {
-
-						//  there is an (weak) bogey, needs to be confirmed in one of the 2 next sweeps
-
-						if (echos[z][angle][radius] ) {   // these was a bogey also in previous sweep or 2 sweeps back
-							bogey_count[z]++;   // raise alarm
-							scan->data[radius] = 253;  // increase the intensity of this confirmed dot
-						}
-						else {   // no bogey in previous sweep (only in current sweep)
-							if (strength > guardZones[z].bogeyStrengthThreshold) { //  this is a strong echo, always raise alarm
-								// this line raises a "single sweep" alarm
-								bogey_count[z]++;   // seems not to be needed, let's see how it works
-							}
-						}
-						//			now register echo in recurrent echo counter to check for next sweep
-						echos[z][angle][radius] = look_back;  // level 3: you will look back 2 sweeps
-					}
-					else {     
-						// there is no bogey, decrease recurrent echo counter 
-
-						if (echos[z][angle][radius] >= 1) {
-							echos[z][angle][radius] --;
-						}    
-					}   // end of else
-				}       // end of "if (guardZoneAngles[z][angle])"
-			}           // end of loop over radius
-		}               // end of loop over z
-
-	}   //  end of "if (lastSweep[angle] != currentSweep)"
+	if (lastSweep[angle] == currentSweep) return; // this scanline has already been checked for bogeys, nothing to do now
+	if (!scan) return;   // No or old data
+	for (size_t z = 0; z < GUARD_ZONES; z++) {
+		for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) { 
+			// - 2 added, this field contains the range circle, should not raise alarm
+			
+			GLubyte strength = scan->data[radius];
+			GLubyte hist = scan->history[radius];
+			if (guardZoneAngles[z][angle]) {
+				int inner_range = guardZones[z].inner_range; // now in meters
+				int outer_range = guardZones[z].outer_range; // now in meters
+				int bogey_range = radius * max_range / RETURNS_PER_LINE;
+				if (bogey_range > inner_range && bogey_range < outer_range) {   // within range, now check requirement for alarm
+					hist = hist & 7;  // check only last 3 bits
+					if (hist == 3 || hist >= 5) {  // corresponds to the patterns 011, 101, 110, 111
+						bogey_count[z]++;
+						scan->data[radius] = 253;  // increase the intensity of this confirmed dot, so you can see what caused the alarm
+					}                              // but this red dot is only displayed until the next refresh, a bit short
+					else  {   // no bogey based on history, but may be on "singe sweep strength"
+						if (strength > guardZones[z].bogeyStrengthThreshold) { //  this is a strong echo, always raise alarm
+							// this raises a "single sweep" alarm
+							bogey_count[z]++;   
+						}	
+					}  // end of else
+				}   // end "if (bogey_range > in ......
+			}       // end of "if (guardZoneAngles[z][angle])"
+		}           // end of loop over radius
+	}               // end of loop over z
 	lastSweep[angle] = currentSweep;  // now this line was checked for bogeys, no need to check again until next sweep
 }
 
@@ -3006,6 +2974,16 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
         UINT8 *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
         memcpy(dest_data1, line->data, RETURNS_PER_LINE);
+
+		// now add this line to the history
+		UINT8 *hist_data = pPlugIn->m_scan_line[angle_raw].history;
+		for (int i = 0; i < RETURNS_PER_LINE - 1; i++) {
+			hist_data[i] = hist_data[i] << 1;     // shift left history byte 1 bit
+			if (dest_data1[i] > displaysetting_threshold[pPlugIn->settings.display_mode]) {
+				hist_data[i] = hist_data[i] | 1;    // and add 1 if above threshold
+			}
+		}
+
 /*  //  test case  , take out memcpy above. Will create alternating dot
 		static int xtest;
 		if ((angle_raw == 10 ) && (currentSweep/4) * 4 == currentSweep) {
