@@ -98,8 +98,8 @@ using namespace std;
 // If BR24MARK is found, we switch to BR24 mode, otherwise 4G.
 static UINT8 BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
 
-static unsigned int lastSweep[LINES_PER_ROTATION];  // for each scanline the sweepnumber that was last checked for bogeys
-static int currentSweep = 0, previousSweep = 0;   // holds the number of the current and previous sweep
+//static unsigned int lastSweep[LINES_PER_ROTATION];  // for each scanline the sweepnumber that was last checked for bogeys
+//static int currentSweep = 0, previousSweep = 0;   // holds the number of the current and previous sweep
 int bogey_count[GUARD_ZONES];
 static int displaysetting_threshold[3] = {displaysetting0_threshold_red, displaysetting1_threshold_blue, displaysetting2_threshold_blue};
 
@@ -432,7 +432,7 @@ int br24radar_pi::Init(void)
     br_data_watchdog = 0;
     br_idle_watchdog = 0;
 	memset(&bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
-	memset(&lastSweep, 0, sizeof(lastSweep));
+//	memset(&lastSweep, 0, sizeof(lastSweep));
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
     m_sent_bm_id_rollover =  -1;
@@ -1550,7 +1550,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
  //   if (previousSweep != currentSweep) {   // only reset the bogey_count at a new sweep
 	//	wxLogMessage(wxT("BR24radar_pi:reset bogeycount sweep, count %d  %d  "), currentSweep, bogey_count[1]);
 		memset(&bogey_count, 0, sizeof(bogey_count));
-		previousSweep = currentSweep;
+	//	previousSweep = currentSweep;
 //	}
 	if (br_radar_state == RADAR_OFF) {
 		memset(&bogey_count, 0, sizeof(bogey_count));
@@ -1755,7 +1755,7 @@ void br24radar_pi::Guard(unsigned int angle, int max_range)
 			}       // end of "if (guardZoneAngles[z][angle])"
 		}           // end of loop over radius
 	}               // end of loop over z
-	lastSweep[angle] = currentSweep;  // now this line was checked for bogeys, no need to check again until next sweep
+//	lastSweep[angle] = currentSweep;  // now this line was checked for bogeys, no need to check again until next sweep
 }
 
 void br24radar_pi::RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
@@ -2976,12 +2976,12 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             range_meters = range_raw / 4;
             br_radar_type = RT_4G;
         }
-		if (previous_angle_raw > angle_raw) {    // next sweep starts
+	/*	if (previous_angle_raw > angle_raw) {    // next sweep starts
 			previousSweep = currentSweep;	// used to reset bogey_count DrawRadarImage
 			currentSweep++;              // number of the current sweep
 			if (pPlugIn->settings.verbose >= 1) wxLogMessage(wxT("BR24radar_pi: Sweep %d"), currentSweep);
 				if (currentSweep >= 256) currentSweep = 0;
-			}
+			} */
 		previous_angle_raw = angle_raw;
        // Range change received from radar?
 
