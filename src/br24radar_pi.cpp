@@ -134,7 +134,8 @@ enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_S
 VariationSource br_var_source = VARIATION_SOURCE_NONE;
 
 int br_repeat_on_delay = 0;   // used to prevend additional TxOn commands from DoTick when radar heas just been switched on
-
+static int bogey_width = 1;  // pixel distance where you will look for neighboring targets in multi sweep filtering
+               // for bogey_width = 1, 9 pixels will be checked
 bool br_heading_on_radar = false;
 unsigned int br_refresh_rate = 1;  // refreshrate for radar used in process buffer
 static const unsigned int REFRESHMAPPING[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
@@ -1546,11 +1547,11 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     wxLongLong max_age = 0; // Age in millis
 
     br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
-    if (previousSweep != currentSweep) {   // only reset the bogey_count at a new sweep
+ //   if (previousSweep != currentSweep) {   // only reset the bogey_count at a new sweep
 	//	wxLogMessage(wxT("BR24radar_pi:reset bogeycount sweep, count %d  %d  "), currentSweep, bogey_count[1]);
 		memset(&bogey_count, 0, sizeof(bogey_count));
 		previousSweep = currentSweep;
-	}
+//	}
 	if (br_radar_state == RADAR_OFF) {
 		memset(&bogey_count, 0, sizeof(bogey_count));
 	}
@@ -1595,42 +1596,56 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         scan->data[RETURNS_PER_LINE] = 0;  // make sure this element is initialized (just outside the range)
 
 		// Guard Section
-		Guard(angle, max_range, scan);
+		Guard(angle, max_range);
 
 		for (int radius = 0; radius <= RETURNS_PER_LINE; ++radius) {   // loop 1 more time as only the previous one will be displayed
 			GLubyte strength = scan->data[radius];
 			GLubyte hist = scan->history[radius];
 			switch (settings.display_option) {
-                    //  first find out the actual color
-                case 0:
-                    actual_color = BLOB_NONE;
-                    if (strength > displaysetting0_threshold_red) actual_color = BLOB_RED;
-                    break;
+				//  first find out the actual color
+			case 0:
+				actual_color = BLOB_NONE;
+				if (strength > displaysetting0_threshold_red) actual_color = BLOB_RED;
+				break;
 
-				case 1:
-					actual_color = BLOB_NONE;
-					if (strength > displaysetting1_threshold_blue) actual_color = BLOB_BLUE;
-					if (strength > 100) actual_color = BLOB_GREEN;
-					if (strength > 200) actual_color = BLOB_RED;
-					break;
+			case 1:
+				actual_color = BLOB_NONE;
+				if (strength > displaysetting1_threshold_blue) actual_color = BLOB_BLUE;
+				if (strength > 100) actual_color = BLOB_GREEN;
+				if (strength > 200) actual_color = BLOB_RED;
+				break;
 
-                case 2:
-                    actual_color = BLOB_NONE;
-					hist = hist & 7;  // check only last 3 bits
+			case 2:
+				actual_color = BLOB_NONE;
+				hist = hist & 7;  // check only last 3 bits
 
-					/*  following lines will only display "muliple sweep" blobs
-					// this will give a very stable radar image
-					if (hist == 3 || hist >= 5) {  // corresponds to the patterns 011, 101, 110, 111
-						actual_color = BLOB_RED;
+				if (strength > displaysetting2_threshold_blue) actual_color = BLOB_BLUE;
+				if (strength > 100) actual_color = BLOB_GREEN;
+				if (strength > 250) {
+					actual_color = BLOB_RED;
+			//		break;    // for red no "multi sweep filtering"
+				}
+				//  following lines will do "multi sweep filtering"
+
+				UINT8 test = 0;
+				for (int i = -bogey_width; i <= bogey_width; i++) {
+					int ii = angle + i;
+					if (ii >= LINES_PER_ROTATION) ii -= LINES_PER_ROTATION;
+					if (ii < 0) ii += LINES_PER_ROTATION;
+					scan_line *scani = &m_scan_line[ii]; 
+					for (int j = -bogey_width; j <= bogey_width; j++) {
+						int jj = radius + j;
+						if (jj < 0) continue;
+						if (jj >= RETURNS_PER_LINE) continue;
+						test = test | scani->history[jj];
 					}
-					break;
-					*/
-
-					if (strength > displaysetting2_threshold_blue) actual_color = BLOB_BLUE;
-					if (strength > 100) actual_color = BLOB_GREEN;
-                    if (strength > 250) actual_color = BLOB_RED;
-                    break;
-            }
+				}
+				test = test & 7;  // check only last 3 bits
+				if (!(test == 3 || test >= 5)) {  // corresponds to the patterns 011, 101, 110, 111
+					actual_color = BLOB_NONE;
+				}
+				break;
+			}
 
             if (actual_color == BLOB_NONE && previous_color == BLOB_NONE) {
                 // nothing to do, next radius
@@ -1690,26 +1705,45 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 }        // end of DrawRadarImage
 
 
-void br24radar_pi::Guard(unsigned int angle, int max_range, scan_line * scan)
+void br24radar_pi::Guard(unsigned int angle, int max_range)
 	//  checks beam with angle for bogeys 
 {
-	if (lastSweep[angle] == currentSweep) return; // this scanline has already been checked for bogeys, nothing to do now
+
+	scan_line *scan = &m_scan_line[angle];  
+//	if (lastSweep[angle] == currentSweep) return; // this scanline has already been checked for bogeys, nothing to do now
 	if (!scan) return;   // No or old data
 	for (size_t z = 0; z < GUARD_ZONES; z++) {
 		for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) { 
 			// - 2 added, this field contains the range circle, should not raise alarm
-			
 			GLubyte strength = scan->data[radius];
+
 			GLubyte hist = scan->history[radius];
+			
 			if (guardZoneAngles[z][angle]) {
 				int inner_range = guardZones[z].inner_range; // now in meters
 				int outer_range = guardZones[z].outer_range; // now in meters
 				int bogey_range = radius * max_range / RETURNS_PER_LINE;
 				if (bogey_range > inner_range && bogey_range < outer_range) {   // within range, now check requirement for alarm
-					hist = hist & 7;  // check only last 3 bits
-					if (hist == 3 || hist >= 5) {  // corresponds to the patterns 011, 101, 110, 111
+
+					// also look for targets in history "in neighboring pixels"
+					UINT8 test = 0;
+					for (int i = -bogey_width; i <= bogey_width; i++) {
+						int ii = angle + i;
+						if (ii >= LINES_PER_ROTATION) ii -= LINES_PER_ROTATION;
+						if (ii < 0) ii += LINES_PER_ROTATION;
+						scan_line *scani = &m_scan_line[ii]; 
+						for (int j = -bogey_width; j <= bogey_width; j++) {
+							int jj = radius + j;
+							if (jj < 0) continue;
+							if (jj >= RETURNS_PER_LINE) continue;
+							test = test | scani->history[jj];
+						}
+					}
+
+					test = test & 7;  // check only last 3 bits
+					if (test == 3 || test >= 5) {  // corresponds to the patterns 011, 101, 110, 111
 						bogey_count[z]++;
-						scan->data[radius] = 253;  // increase the intensity of this confirmed dot, so you can see what caused the alarm
+			//			scan->data[radius] = 253;  // increase the intensity of this confirmed dot, so you can see what caused the alarm
 					}                              // but this red dot is only displayed until the next refresh, a bit short
 					else  {   // no bogey based on history, but may be on "singe sweep strength"
 						if (strength > guardZones[z].bogeyStrengthThreshold) { //  this is a strong echo, always raise alarm
@@ -2074,6 +2108,15 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             m_pControlDialog->SetHeadingInfo(info);
         }
         br_hdt_watchdog = now;
+
+		// following added, sending heading to OCPN in do tick is not often enough
+		if (settings.PassHeadingToOCPN) {
+			wxString nmeastring;
+			nmeastring.Printf(_T("$APHDT,%05.1f,M\r\n"), br_hdt );
+			PushNMEABuffer(nmeastring);
+		}
+
+
     }
     else if (!wxIsNaN(pfix.Hdm) && TIMER_NOT_ELAPSED(br_var_watchdog)) {
         br_hdt = pfix.Hdm + br_var;
@@ -2577,6 +2620,7 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
             br_hdt_watchdog = now;
         }
     }
+
 }
 
 
@@ -2975,16 +3019,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         UINT8 *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
         memcpy(dest_data1, line->data, RETURNS_PER_LINE);
 
-		// now add this line to the history
-		UINT8 *hist_data = pPlugIn->m_scan_line[angle_raw].history;
-		for (int i = 0; i < RETURNS_PER_LINE - 1; i++) {
-			hist_data[i] = hist_data[i] << 1;     // shift left history byte 1 bit
-			if (dest_data1[i] > displaysetting_threshold[pPlugIn->settings.display_mode]) {
-				hist_data[i] = hist_data[i] | 1;    // and add 1 if above threshold
-			}
-		}
-
-/*  //  test case  , take out memcpy above. Will create alternating dot
+	/*	 //  test case for guard , take out memcpy above. Will create alternating dot
 		static int xtest;
 		if ((angle_raw == 10 ) && (currentSweep/4) * 4 == currentSweep) {
 			xtest = currentSweep;
@@ -3002,8 +3037,18 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 		}
 		else {
 			dest_data1[257] = 0;  
-		}  */
-		
+		}  */  // end of test case 
+	
+
+		// now add this line to the history
+		UINT8 *hist_data = pPlugIn->m_scan_line[angle_raw].history;
+		for (int i = 0; i < RETURNS_PER_LINE - 1; i++) {
+			hist_data[i] = hist_data[i] << 1;     // shift left history byte 1 bit
+			if (dest_data1[i] > displaysetting_threshold[pPlugIn->settings.display_mode]) {
+				hist_data[i] = hist_data[i] | 1;    // and add 1 if above threshold
+			}
+		}
+
 
         // The following line is a quick hack to confirm on-screen where the range ends, by putting a 'ring' of
         // returned radar energy at the max range line.

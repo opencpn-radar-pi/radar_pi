@@ -113,7 +113,7 @@
 #define MOD_ROTATION(raw) (((raw) + 2 * 4096) % 4096)
 #define MOD_ROTATION2048(raw) (((raw) + 2 * 2048) % 2048)
 #define displaysetting0_threshold_red (50)
-#define displaysetting1_threshold_blue (50)  // should be < 100
+#define displaysetting1_threshold_blue (20)  // should be < 100
 #define displaysetting2_threshold_blue (20)  // should be < 100
 
 enum {
@@ -416,7 +416,7 @@ private:
     void Select_Rejection(int req_rejection_index);
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
     void RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
-	void Guard(unsigned int angle, int max_range, scan_line * scan);
+	void Guard(unsigned int angle, int max_range);
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
     void DrawRadarImage(int max_range, wxPoint radar_center);
     void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
