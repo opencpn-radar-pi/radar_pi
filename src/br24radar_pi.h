@@ -280,6 +280,7 @@ struct radar_control_settings {
     int      scan_speed;
     int      refreshrate;
     int      PassHeadingToOCPN;
+	bool     MultiSweepFilter;   
     wxString alert_audio_file;
 };
 
@@ -732,9 +733,11 @@ private:
     void OnMinusClick(wxCommandEvent& event);
     void OnMinusTenClick(wxCommandEvent& event);
     void OnAutoClick(wxCommandEvent& event);
+	void OnMultiSweepClick(wxCommandEvent& event);
 
     void OnAdvancedBackButtonClick(wxCommandEvent& event);
     void OnAdvancedButtonClick(wxCommandEvent& event);
+	void OnRadarGainButtonClick(wxCommandEvent& event);
 
     void OnMessageBackButtonClick(wxCommandEvent& event);
     void OnMessageButtonClick(wxCommandEvent& event);
@@ -784,6 +787,7 @@ private:
     wxButton           *bMinus;
     wxButton           *bMinusTen;
     wxButton           *bAuto;
+	wxButton           *bMultiSweep;
 
     // Advanced controls
     wxButton           *bAdvancedBack;

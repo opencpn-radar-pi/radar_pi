@@ -64,6 +64,7 @@ enum {                                      // process ID's
     ID_MINUS,
     ID_MINUS_TEN,
     ID_AUTO,
+	ID_MULTISWEEP,
 
     ID_MSG_BACK,
 
@@ -108,6 +109,7 @@ EVT_BUTTON(ID_PLUS,  BR24ControlsDialog::OnPlusClick)
 EVT_BUTTON(ID_MINUS, BR24ControlsDialog::OnMinusClick)
 EVT_BUTTON(ID_MINUS_TEN, BR24ControlsDialog::OnMinusTenClick)
 EVT_BUTTON(ID_AUTO,  BR24ControlsDialog::OnAutoClick)
+EVT_BUTTON(ID_MULTISWEEP,  BR24ControlsDialog::OnMultiSweepClick)
 
 EVT_BUTTON(ID_MSG_BACK, BR24ControlsDialog::OnMessageBackButtonClick)
 
@@ -123,7 +125,7 @@ EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_TIMED_IDLE, BR24ControlsDialog::OnRadarControlButtonClick)
 
 EVT_BUTTON(ID_RANGE, BR24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_GAIN, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_GAIN, BR24ControlsDialog::OnRadarGainButtonClick)
 EVT_BUTTON(ID_SEA, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_RAIN, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_ADVANCED, BR24ControlsDialog::OnAdvancedButtonClick)
@@ -143,6 +145,7 @@ struct RadarRanges {
   int actual_meters;
   const char * name;
 };
+static boolean gainControl = false;
 
 static const RadarRanges g_ranges_metric[] =
 {
@@ -540,7 +543,13 @@ void BR24ControlsDialog::CreateControls()
     editBox->Add(bAuto, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bAuto->SetFont(g_font);
 
+	// The Multi Sweep Filter button
+    bMultiSweep = new wxButton(this, ID_MULTISWEEP, _("Multi Sweep Filter"), wxDefaultPosition, wxSize(width, 25), 0);
+    editBox->Add(bMultiSweep, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bMultiSweep->SetFont(g_font);
+
     topSizer->Hide(editBox);
+    
 
     //**************** ADVANCED BOX ******************//
     // These are the controls that the users sees when the Advanced button is selected
@@ -815,6 +824,25 @@ void BR24ControlsDialog::OnAutoClick(wxCommandEvent &event)
     OnBackClick(event);
 }
 
+void BR24ControlsDialog::OnMultiSweepClick(wxCommandEvent &event)
+{
+	wxString labelSweep; 
+	if (pPlugIn->settings.MultiSweepFilter == false) 
+	{
+		labelSweep << _("Multi Sweep Filter ON");
+		pPlugIn->settings.MultiSweepFilter = true;
+	}
+	else
+	{
+		labelSweep << _("Multi Sweep Filter OFF");
+		pPlugIn->settings.MultiSweepFilter = false;
+	}
+	bMultiSweep->SetLabel(labelSweep);
+	bMultiSweep->SetFont(g_font);
+}
+
+
+
 void BR24ControlsDialog::OnMinusClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value - 1);
@@ -859,6 +887,7 @@ void BR24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event)
     topSizer->Layout();
 }
 
+
 void BR24ControlsDialog::OnMessageBackButtonClick(wxCommandEvent& event)
 {
     wantShowMessage = false;
@@ -893,6 +922,11 @@ void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
     else {
         bAuto->Hide();
     }
+
+	 if(gainControl) bMultiSweep->Show();   // xxx test only
+	 if(!gainControl) bMultiSweep->Hide();   // xxx test only
+	 gainControl = false;  // should be possible to read this from the button ???
+
     if (fromControl->maxValue > 20) {
         bPlusTen->Show();
         bMinusTen->Show();
@@ -911,6 +945,11 @@ void BR24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event)
     EnterEditMode((RadarControlButton *) event.GetEventObject());
 }
 
+void BR24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event)
+{
+    gainControl = true;
+	EnterEditMode((RadarControlButton *) event.GetEventObject());
+}
 
 
 void BR24ControlsDialog::OnMove(wxMoveEvent& event)
