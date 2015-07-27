@@ -98,8 +98,6 @@ using namespace std;
 // If BR24MARK is found, we switch to BR24 mode, otherwise 4G.
 static UINT8 BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
 
-//static unsigned int lastSweep[LINES_PER_ROTATION];  // for each scanline the sweepnumber that was last checked for bogeys
-//static int currentSweep = 0, previousSweep = 0;   // holds the number of the current and previous sweep
 int bogey_count[GUARD_ZONES];
 static int displaysetting_threshold[3] = {displaysetting0_threshold_red, displaysetting1_threshold_blue, displaysetting2_threshold_blue};
 
@@ -432,6 +430,13 @@ int br24radar_pi::Init(void)
     br_data_watchdog = 0;
     br_idle_watchdog = 0;
 	memset(&bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
+
+    for (int i = 0; i < LINES_PER_ROTATION - 1; i++) {   // initialyse history bytes
+        memset (&m_scan_line[i].history, 0, sizeof(m_scan_line[i].history));
+        }
+   wxLogMessage(wxT("BR24radar_pi: size of scanline %d"), sizeof(m_scan_line[1].history));
+     memset (&m_scan_line[LINES_PER_ROTATION - 1].history, 1, sizeof(m_scan_line[LINES_PER_ROTATION].history));
+     // last ones on 1 to display range circle
 //	memset(&lastSweep, 0, sizeof(lastSweep));
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
@@ -1547,11 +1552,8 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     wxLongLong max_age = 0; // Age in millis
 
     br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
- //   if (previousSweep != currentSweep) {   // only reset the bogey_count at a new sweep
-	//	wxLogMessage(wxT("BR24radar_pi:reset bogeycount sweep, count %d  %d  "), currentSweep, bogey_count[1]);
-		memset(&bogey_count, 0, sizeof(bogey_count));
-	//	previousSweep = currentSweep;
-//	}
+    memset(&bogey_count, 0, sizeof(bogey_count));
+
 	if (br_radar_state == RADAR_OFF) {
 		memset(&bogey_count, 0, sizeof(bogey_count));
 	}
@@ -1601,51 +1603,57 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 		for (int radius = 0; radius <= RETURNS_PER_LINE; ++radius) {   // loop 1 more time as only the previous one will be displayed
 			GLubyte strength = scan->data[radius];
 			GLubyte hist = scan->history[radius];
-			switch (settings.display_option) {
-				//  first find out the actual color
-			case 0:
-				actual_color = BLOB_NONE;
-				if (strength > displaysetting0_threshold_red) actual_color = BLOB_RED;
-				break;
+            hist = hist & 7;  // check only last 3 bits
+            
+            if (settings.MultiSweepFilter && (!(hist == 3 || hist >= 5)) && radius != RETURNS_PER_LINE - 1) {
+                  // corresponds to the patterns 011, 101, 110, 111
+                    actual_color = BLOB_NONE;
+                    }
+            else   {
+                switch (settings.display_option) {
+                    //  first find out the actual color
+                case 0:
+                    actual_color = BLOB_NONE;
+                    if (strength > displaysetting0_threshold_red) actual_color = BLOB_RED;
+                    break;
 
-			case 1:
-				actual_color = BLOB_NONE;
-				if (strength > displaysetting1_threshold_blue) actual_color = BLOB_BLUE;
-				if (strength > 100) actual_color = BLOB_GREEN;
-				if (strength > 200) actual_color = BLOB_RED;
-				break;
+                case 1:
+                    actual_color = BLOB_NONE;
+                    if (strength > displaysetting1_threshold_blue) actual_color = BLOB_BLUE;
+                    if (strength > 100) actual_color = BLOB_GREEN;
+                    if (strength > 200) actual_color = BLOB_RED;
+                    break;
 
-			case 2:
-				actual_color = BLOB_NONE;
-				hist = hist & 7;  // check only last 3 bits
+                case 2:
+                    actual_color = BLOB_NONE;
+                    if (strength > displaysetting2_threshold_blue) actual_color = BLOB_BLUE;
+                    if (strength > 100) actual_color = BLOB_GREEN;
+                    if (strength > 250) {
+                        actual_color = BLOB_RED;
+                        //		break;    // for red no "multi sweep filtering"
+                        }
+                    //  following lines will do "multi sweep filtering"
 
-				if (strength > displaysetting2_threshold_blue) actual_color = BLOB_BLUE;
-				if (strength > 100) actual_color = BLOB_GREEN;
-				if (strength > 250) {
-					actual_color = BLOB_RED;
-			//		break;    // for red no "multi sweep filtering"
-				}
-				//  following lines will do "multi sweep filtering"
-
-				UINT8 test = 0;
-				for (int i = -bogey_width; i <= bogey_width; i++) {
-					int ii = angle + i;
-					if (ii >= LINES_PER_ROTATION) ii -= LINES_PER_ROTATION;
-					if (ii < 0) ii += LINES_PER_ROTATION;
-					scan_line *scani = &m_scan_line[ii]; 
-					for (int j = -bogey_width; j <= bogey_width; j++) {
-						int jj = radius + j;
-						if (jj < 0) continue;
-						if (jj >= RETURNS_PER_LINE) continue;
-						test = test | scani->history[jj];
-					}
-				}
-				test = test & 7;  // check only last 3 bits
-				if (!(test == 3 || test >= 5)) {  // corresponds to the patterns 011, 101, 110, 111
-					actual_color = BLOB_NONE;
-				}
-				break;
-			}
+                    /*			UINT8 test = 0;
+                    // make boogey wider first
+                    for (int i = -bogey_width; i <= bogey_width; i++) {
+                    int ii = angle + i;
+                    if (ii >= LINES_PER_ROTATION) ii -= LINES_PER_ROTATION;
+                    if (ii < 0) ii += LINES_PER_ROTATION;
+                    scan_line *scani = &m_scan_line[ii]; 
+                    for (int j = -bogey_width; j <= bogey_width; j++) {
+                    int jj = radius + j;
+                    if (jj < 0) continue;
+                    if (jj >= RETURNS_PER_LINE) continue;
+                    test = test | scani->history[jj];
+                    }
+                    }   
+                    test = test & 7;  // check only last 3 bits   */
+                    
+                   
+                    break;
+                    }
+                }
 
             if (actual_color == BLOB_NONE && previous_color == BLOB_NONE) {
                 // nothing to do, next radius
@@ -1714,7 +1722,7 @@ void br24radar_pi::Guard(unsigned int angle, int max_range)
 	if (!scan) return;   // No or old data
 	for (size_t z = 0; z < GUARD_ZONES; z++) {
 		for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) { 
-			// - 2 added, this field contains the range circle, should not raise alarm
+			// - 2 added, -1 contains the range circle, should not raise alarm
 			GLubyte strength = scan->data[radius];
 
 			GLubyte hist = scan->history[radius];
