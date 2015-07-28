@@ -1516,8 +1516,13 @@ void br24radar_pi::ComputeGuardZoneAngles()
             // Make this 270 to 450
             angle_2 += 360.0;
         }
+        
+        for (int i = 0; i < LINES_PER_ROTATION; i++) {  // first set all to false
+            guardZoneAngles[z][i] = false;
+            }
+
         for (size_t i = 0; i < 2 * LINES_PER_ROTATION; i++) {  // "Make this 270 to 450" but that region should be covered as well
-            double angleDeg = MOD_DEGREES(SCALE_RAW_TO_DEGREES2048(i) + settings.heading_correction);
+            double angleDeg = SCALE_RAW_TO_DEGREES2048(i) + settings.heading_correction;
 
             bool mark = false;
             if (settings.verbose >= 4) {
@@ -1531,8 +1536,10 @@ void br24radar_pi::ComputeGuardZoneAngles()
                 marks++;
             }
             int ii = i;
-            if (ii > LINES_PER_ROTATION) ii -= LINES_PER_ROTATION;
-            guardZoneAngles[z][ii] = mark;
+            while (ii > LINES_PER_ROTATION) ii -= LINES_PER_ROTATION;
+            if (!guardZoneAngles[z][ii]){
+                guardZoneAngles[z][ii] = mark;  // don't write the same field twice
+                }
         }
     }
    // if (settings.verbose >= 3) {
