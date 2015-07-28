@@ -261,6 +261,16 @@ void GuardZoneDialog::OnGuardZoneDialogShow(int zone)
     GuardZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].end_bearing);
     pEnd_Bearing_Value->SetValue(GuardZoneText);
 
+    bool filt;
+    if (pPlugIn->settings.multi_sweep_filter[zone]) {
+        filt = true;
+        }
+    else
+        {
+        filt = false;
+    }
+    cbFilter->SetValue(filt);
+
     pPlugIn->ComputeGuardZoneAngles();
     SetVisibility();
 }
@@ -313,10 +323,11 @@ void GuardZoneDialog::OnEnd_Bearing_Value(wxCommandEvent &event)
 }
 
 void GuardZoneDialog::OnFilterClick(wxCommandEvent &event)
-{
- //   pPlugIn->settings.PassHeadingToOCPN = cbFilter->GetValue();
-
-}
+    {
+    int filt = cbFilter->GetValue();
+    pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.guard_zone] = filt;
+    wxLogMessage(wxT("BR24radar_pi: guard zone xxx ON %d filter %d"), pPlugIn->settings.guard_zone, filt);
+    }
 
 void GuardZoneDialog::OnClose(wxCloseEvent &event)
 {

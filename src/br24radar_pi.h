@@ -280,9 +280,10 @@ struct radar_control_settings {
     int      scan_speed;
     int      refreshrate;
     int      PassHeadingToOCPN;
-	int      multi_sweep_filter;   // bit 0: guard zone 1 filter state;
-                                   // bit 1: guard zone 2 filter state;
-                                   // bit 3: display filter state, modified in gain control;
+	int      multi_sweep_filter[3];   //  0: guard zone 1 filter state;
+                                      //  1: guard zone 2 filter state;
+                                      //  2: display filter state, modified in gain control;
+                                      //  these values are not saved, for safety reasons user must set them after each start
     wxString alert_audio_file;
 };
 

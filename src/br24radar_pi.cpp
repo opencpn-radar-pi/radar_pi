@@ -1509,12 +1509,14 @@ void br24radar_pi::ComputeGuardZoneAngles()
                 break;
         }
 
+        if (angle_1 < 0) angle_1 += 360;
+        if (angle_2 < 0) angle_2 += 360;  // negative values don't work as angleDeg will never be < angle_2
         if (angle_1 > angle_2) {
             // fi. 270 to 90 means from left to right across boat.
             // Make this 270 to 450
             angle_2 += 360.0;
         }
-        for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
+        for (size_t i = 0; i < 2 * LINES_PER_ROTATION; i++) {  // "Make this 270 to 450" but that region should be covered as well
             double angleDeg = MOD_DEGREES(SCALE_RAW_TO_DEGREES2048(i) + settings.heading_correction);
 
             bool mark = false;
@@ -1528,7 +1530,9 @@ void br24radar_pi::ComputeGuardZoneAngles()
                 mark = true;
                 marks++;
             }
-            guardZoneAngles[z][i] = mark;
+            int ii = i;
+            if (ii > LINES_PER_ROTATION) ii -= LINES_PER_ROTATION;
+            guardZoneAngles[z][ii] = mark;
         }
     }
    // if (settings.verbose >= 3) {
@@ -1552,6 +1556,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
     br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
     memset(&bogey_count, 0, sizeof(bogey_count));
+    memset(&settings.multi_sweep_filter, 0, 3);
 
 	if (br_radar_state == RADAR_OFF) {
 		memset(&bogey_count, 0, sizeof(bogey_count));
@@ -1604,7 +1609,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 			GLubyte hist = scan->history[radius];
             hist = hist & 7;  // check only last 3 bits
             
-            if (((settings.multi_sweep_filter & 4) == 4) && (!(hist == 3 || hist >= 5)) && radius != RETURNS_PER_LINE - 1) {
+            if (((settings.multi_sweep_filter[2] == 1) && (!(hist == 3 || hist >= 5)) && radius != RETURNS_PER_LINE - 1)) {
                   // corresponds to the patterns 011, 101, 110, 111
                 // blob does not pass filter conditions
                     actual_color = BLOB_NONE;
@@ -1708,7 +1713,8 @@ void br24radar_pi::Guard(unsigned int angle, int max_range)
                 int outer_range = guardZones[z].outer_range; // now in meters
                 int bogey_range = radius * max_range / RETURNS_PER_LINE;
                 if (bogey_range > inner_range && bogey_range < outer_range) {   // within range, now check requirement for alarm
-                    if ((settings.multi_sweep_filter & z+1) != 0 ) {  // multi sweep filter on for this z; works only for 2 guard zones
+
+                    if ((settings.multi_sweep_filter[z]) != 0 ) {  // multi sweep filter on for this z; works only for 2 guard zones
                         GLubyte hist = scan->history[radius] & 7; // check only last 3 bits
                         if (hist == 3 || hist >= 5) {  // corresponds to the patterns 011, 101, 110, 111
                             }
@@ -1716,6 +1722,10 @@ void br24radar_pi::Guard(unsigned int angle, int max_range)
                             continue;                  // so go to next radius
                             }
                         } 
+                    else {   // multi sweep filter off
+                        GLubyte strength = scan->data[radius];
+                        if (strength <= displaysetting_threshold[settings.display_mode]) continue;
+                        }
                     bogey_count[z]++;
                     }   // end "if (bogey_range > in ......
                 }       // end of "if (guardZoneAngles[z][angle])"
