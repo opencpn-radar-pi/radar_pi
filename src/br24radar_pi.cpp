@@ -1541,7 +1541,7 @@ void br24radar_pi::ComputeGuardZoneAngles()
             if (!guardZoneAngles[z][ii]){
                 guardZoneAngles[z][ii] = mark;  // don't write the same field twice
                 }
-
+            }
     }
    // if (settings.verbose >= 3) {
         wxLogMessage(wxT("BR24radar_pi: ComputeGuardZoneAngles done, %d marks"), marks);
