@@ -186,19 +186,19 @@ void GuardZoneDialog::CreateControls()
     BoxGuardZoneSizer->Add(pEnd_Bearing_Value, 1, wxALIGN_LEFT | wxALL, 5);
     pEnd_Bearing_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                                 wxCommandEventHandler(GuardZoneDialog::OnEnd_Bearing_Value), NULL, this);
-
-////////////////	// start of new field for strenght
-	wxStaticText *pThreshold = new wxStaticText(this, wxID_ANY, _("Single Sweep Threshold \n255: Single Sweep Alarm Off"),wxDefaultPosition,
-                                                       wxDefaultSize, 0);
-    BoxGuardZoneSizer->Add(pThreshold, 0, wxALIGN_LEFT | wxALL, 0);
-
-    pThreshold_Value = new wxTextCtrl(this, wxID_ANY);
-    BoxGuardZoneSizer->Add(pThreshold_Value, 1, wxALIGN_LEFT | wxALL, 5);
-    pThreshold_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
-                          wxCommandEventHandler(GuardZoneDialog::OnThreshold_Value), NULL, this);
-
-	//  end of new field
-	
+   
+     //  Options
+    wxStaticBox* itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
+    wxStaticBoxSizer* itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
+    GuardZoneSizer->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
+    
+    // added check box to control multi swep filtering
+    cbFilter = new wxCheckBox(this, wxID_ANY, _("Multi Sweep Filter On"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    itemStaticBoxSizerOptions->Add(cbFilter, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+//    int test = pPlugIn->settings.PassHeadingToOCPN;
+//    cbFilter->SetValue(pPlugIn->settings.PassHeadingToOCPN ? true : false);
+    cbFilter->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                             wxCommandEventHandler(GuardZoneDialog::OnFilterClick), NULL, this);
 
     // The Close button
     wxButton    *bClose = new wxButton(this, ID_OK_Z, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
@@ -261,12 +261,6 @@ void GuardZoneDialog::OnGuardZoneDialogShow(int zone)
     GuardZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].end_bearing);
     pEnd_Bearing_Value->SetValue(GuardZoneText);
 
-	if (pPlugIn->guardZones[zone].bogeyStrengthThreshold < 0 || pPlugIn->guardZones[zone].bogeyStrengthThreshold > 255) {
-		pPlugIn->guardZones[zone].bogeyStrengthThreshold = 100;
-	}
-	GuardZoneText.Printf(wxT("%3.0f"), pPlugIn->guardZones[zone].bogeyStrengthThreshold);
-    pThreshold_Value->SetValue(GuardZoneText);
-
     pPlugIn->ComputeGuardZoneAngles();
     SetVisibility();
 }
@@ -309,6 +303,7 @@ void GuardZoneDialog::OnStart_Bearing_Value(wxCommandEvent &event)
     pPlugIn->ComputeGuardZoneAngles();
 }
 
+
 void GuardZoneDialog::OnEnd_Bearing_Value(wxCommandEvent &event)
 {
     wxString temp = pEnd_Bearing_Value->GetValue();
@@ -317,12 +312,10 @@ void GuardZoneDialog::OnEnd_Bearing_Value(wxCommandEvent &event)
     pPlugIn->ComputeGuardZoneAngles();
 }
 
-void GuardZoneDialog::OnThreshold_Value(wxCommandEvent &event)
+void GuardZoneDialog::OnFilterClick(wxCommandEvent &event)
 {
-    wxString temp = pThreshold_Value->GetValue();
+ //   pPlugIn->settings.PassHeadingToOCPN = cbFilter->GetValue();
 
-    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].bogeyStrengthThreshold);
-    pPlugIn->ComputeGuardZoneAngles();
 }
 
 void GuardZoneDialog::OnClose(wxCloseEvent &event)

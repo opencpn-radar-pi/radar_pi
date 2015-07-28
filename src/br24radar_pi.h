@@ -113,7 +113,7 @@
 #define MOD_ROTATION(raw) (((raw) + 2 * 4096) % 4096)
 #define MOD_ROTATION2048(raw) (((raw) + 2 * 2048) % 2048)
 #define displaysetting0_threshold_red (50)
-#define displaysetting1_threshold_blue (20)  // should be < 100
+#define displaysetting1_threshold_blue (50)  // should be < 100
 #define displaysetting2_threshold_blue (20)  // should be < 100
 
 enum {
@@ -280,7 +280,9 @@ struct radar_control_settings {
     int      scan_speed;
     int      refreshrate;
     int      PassHeadingToOCPN;
-	bool     MultiSweepFilter;   
+	int      multi_sweep_filter;   // bit 0: guard zone 1 filter state;
+                                   // bit 1: guard zone 2 filter state;
+                                   // bit 3: display filter state, modified in gain control;
     wxString alert_audio_file;
 };
 
@@ -290,7 +292,6 @@ struct guard_zone_settings {
     int outer_range;            // now in meters
     double start_bearing;
     double end_bearing;
-	double bogeyStrengthThreshold;
 };
 
 struct scan_line {
@@ -852,7 +853,7 @@ private:
     void            OnOuter_Range_Value(wxCommandEvent &event);
     void            OnStart_Bearing_Value(wxCommandEvent &event);
     void            OnEnd_Bearing_Value(wxCommandEvent &event);
-	void            OnThreshold_Value(wxCommandEvent &event);
+    void            OnFilterClick(wxCommandEvent &event);
     void            OnClose(wxCloseEvent &event);
     void            OnIdOKClick(wxCommandEvent &event);
 
@@ -866,8 +867,7 @@ private:
     wxTextCtrl      *pOuter_Range;
     wxTextCtrl      *pStart_Bearing_Value;
     wxTextCtrl      *pEnd_Bearing_Value;
-	wxTextCtrl      *pThreshold_Value;
-	wxTextCtrl      *pThreshold;
+    wxCheckBox      *cbFilter;
 };
 
 /*

@@ -827,15 +827,17 @@ void BR24ControlsDialog::OnAutoClick(wxCommandEvent &event)
 void BR24ControlsDialog::OnMultiSweepClick(wxCommandEvent &event)
 {
 	wxString labelSweep; 
-	if (pPlugIn->settings.MultiSweepFilter == false) 
+	if ((pPlugIn->settings.multi_sweep_filter & 4) != 4) 
 	{
 		labelSweep << _("Multi Sweep Filter ON");
-		pPlugIn->settings.MultiSweepFilter = true;
+		pPlugIn->settings.multi_sweep_filter = pPlugIn->settings.multi_sweep_filter | 4;  // set bit 2
+        wxLogMessage(wxT("BR24radar_pi: Multi Sweep Filter On %d"), pPlugIn->settings.multi_sweep_filter);
 	}
 	else
 	{
 		labelSweep << _("Multi Sweep Filter OFF");
-		pPlugIn->settings.MultiSweepFilter = false;
+		pPlugIn->settings.multi_sweep_filter = pPlugIn->settings.multi_sweep_filter & 3;  // reset bit 2
+        wxLogMessage(wxT("BR24radar_pi: Multi Sweep Filter OFF %d"), pPlugIn->settings.multi_sweep_filter);
 	}
 	bMultiSweep->SetLabel(labelSweep);
 	bMultiSweep->SetFont(g_font);

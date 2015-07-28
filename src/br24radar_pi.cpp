@@ -132,8 +132,8 @@ enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_S
 VariationSource br_var_source = VARIATION_SOURCE_NONE;
 
 int br_repeat_on_delay = 0;   // used to prevend additional TxOn commands from DoTick when radar heas just been switched on
-static int bogey_width = 1;  // pixel distance where you will look for neighboring targets in multi sweep filtering
-               // for bogey_width = 1, 9 pixels will be checked
+//static int bogey_width = 1;  // pixel distance where you will look for neighboring targets in multi sweep filtering
+               // for bogey_width = 1, 9 pixels will be checked   // abondened does not seem useful
 bool br_heading_on_radar = false;
 unsigned int br_refresh_rate = 1;  // refreshrate for radar used in process buffer
 static const unsigned int REFRESHMAPPING[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
@@ -431,13 +431,12 @@ int br24radar_pi::Init(void)
     br_idle_watchdog = 0;
 	memset(&bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
 
-    for (int i = 0; i < LINES_PER_ROTATION - 1; i++) {   // initialyse history bytes
+    for (int i = 0; i < LINES_PER_ROTATION - 1; i++) {   // initialise history bytes
         memset (&m_scan_line[i].history, 0, sizeof(m_scan_line[i].history));
         }
    wxLogMessage(wxT("BR24radar_pi: size of scanline %d"), sizeof(m_scan_line[1].history));
      memset (&m_scan_line[LINES_PER_ROTATION - 1].history, 1, sizeof(m_scan_line[LINES_PER_ROTATION].history));
-     // last ones on 1 to display range circle
-//	memset(&lastSweep, 0, sizeof(lastSweep));
+     // last ones on 1 to display range circle    does not seem to work ???
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
     m_sent_bm_id_rollover =  -1;
@@ -1605,11 +1604,12 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 			GLubyte hist = scan->history[radius];
             hist = hist & 7;  // check only last 3 bits
             
-            if (settings.MultiSweepFilter && (!(hist == 3 || hist >= 5)) && radius != RETURNS_PER_LINE - 1) {
+            if (((settings.multi_sweep_filter & 4) == 4) && (!(hist == 3 || hist >= 5)) && radius != RETURNS_PER_LINE - 1) {
                   // corresponds to the patterns 011, 101, 110, 111
+                // blob does not pass filter conditions
                     actual_color = BLOB_NONE;
                     }
-            else   {
+            else   {     // blob passed filter or filter off
                 switch (settings.display_option) {
                     //  first find out the actual color
                 case 0:
@@ -1630,27 +1630,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                     if (strength > 100) actual_color = BLOB_GREEN;
                     if (strength > 250) {
                         actual_color = BLOB_RED;
-                        //		break;    // for red no "multi sweep filtering"
                         }
-                    //  following lines will do "multi sweep filtering"
-
-                    /*			UINT8 test = 0;
-                    // make boogey wider first
-                    for (int i = -bogey_width; i <= bogey_width; i++) {
-                    int ii = angle + i;
-                    if (ii >= LINES_PER_ROTATION) ii -= LINES_PER_ROTATION;
-                    if (ii < 0) ii += LINES_PER_ROTATION;
-                    scan_line *scani = &m_scan_line[ii]; 
-                    for (int j = -bogey_width; j <= bogey_width; j++) {
-                    int jj = radius + j;
-                    if (jj < 0) continue;
-                    if (jj >= RETURNS_PER_LINE) continue;
-                    test = test | scani->history[jj];
-                    }
-                    }   
-                    test = test & 7;  // check only last 3 bits   */
-                    
-                   
                     break;
                     }
                 }
@@ -1715,56 +1695,33 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
 void br24radar_pi::Guard(unsigned int angle, int max_range)
 	//  checks beam with angle for bogeys 
-{
-
-	scan_line *scan = &m_scan_line[angle];  
-//	if (lastSweep[angle] == currentSweep) return; // this scanline has already been checked for bogeys, nothing to do now
-	if (!scan) return;   // No or old data
-	for (size_t z = 0; z < GUARD_ZONES; z++) {
-		for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) { 
-			// - 2 added, -1 contains the range circle, should not raise alarm
-			GLubyte strength = scan->data[radius];
-
-			GLubyte hist = scan->history[radius];
-			
-			if (guardZoneAngles[z][angle]) {
-				int inner_range = guardZones[z].inner_range; // now in meters
-				int outer_range = guardZones[z].outer_range; // now in meters
-				int bogey_range = radius * max_range / RETURNS_PER_LINE;
-				if (bogey_range > inner_range && bogey_range < outer_range) {   // within range, now check requirement for alarm
-
-					// also look for targets in history "in neighboring pixels"
-					UINT8 test = 0;
-					for (int i = -bogey_width; i <= bogey_width; i++) {
-						int ii = angle + i;
-						if (ii >= LINES_PER_ROTATION) ii -= LINES_PER_ROTATION;
-						if (ii < 0) ii += LINES_PER_ROTATION;
-						scan_line *scani = &m_scan_line[ii]; 
-						for (int j = -bogey_width; j <= bogey_width; j++) {
-							int jj = radius + j;
-							if (jj < 0) continue;
-							if (jj >= RETURNS_PER_LINE) continue;
-							test = test | scani->history[jj];
-						}
-					}
-
-					test = test & 7;  // check only last 3 bits
-					if (test == 3 || test >= 5) {  // corresponds to the patterns 011, 101, 110, 111
-						bogey_count[z]++;
-			//			scan->data[radius] = 253;  // increase the intensity of this confirmed dot, so you can see what caused the alarm
-					}                              // but this red dot is only displayed until the next refresh, a bit short
-					else  {   // no bogey based on history, but may be on "singe sweep strength"
-						if (strength > guardZones[z].bogeyStrengthThreshold) { //  this is a strong echo, always raise alarm
-							// this raises a "single sweep" alarm
-							bogey_count[z]++;   
-						}	
-					}  // end of else
-				}   // end "if (bogey_range > in ......
-			}       // end of "if (guardZoneAngles[z][angle])"
-		}           // end of loop over radius
-	}               // end of loop over z
-//	lastSweep[angle] = currentSweep;  // now this line was checked for bogeys, no need to check again until next sweep
-}
+    {
+    scan_line *scan = &m_scan_line[angle];  
+    //	if (lastSweep[angle] == currentSweep) return; // this scanline has already been checked for bogeys, nothing to do now
+    if (!scan) return;   // No or old data
+    for (size_t z = 0; z < GUARD_ZONES; z++) {
+        for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) { 
+            // - 2 added, -1 contains the range circle, should not raise alarm
+            GLubyte hist = scan->history[radius] ;
+            if (guardZoneAngles[z][angle]) {
+                int inner_range = guardZones[z].inner_range; // now in meters
+                int outer_range = guardZones[z].outer_range; // now in meters
+                int bogey_range = radius * max_range / RETURNS_PER_LINE;
+                if (bogey_range > inner_range && bogey_range < outer_range) {   // within range, now check requirement for alarm
+                    if ((settings.multi_sweep_filter & z+1) != 0 ) {  // multi sweep filter on for this z; works only for 2 guard zones
+                        GLubyte hist = scan->history[radius] & 7; // check only last 3 bits
+                        if (hist == 3 || hist >= 5) {  // corresponds to the patterns 011, 101, 110, 111
+                            }
+                        else {                         // multi sweep filter on, no valid bogeys
+                            continue;                  // so go to next radius
+                            }
+                        } 
+                    bogey_count[z]++;
+                    }   // end "if (bogey_range > in ......
+                }       // end of "if (guardZoneAngles[z][angle])"
+            }           // end of loop over radius
+        }               // end of loop over z
+    }
 
 void br24radar_pi::RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
@@ -1985,14 +1942,12 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(wxT("Zone1EndBrng"), &guardZones[0].end_bearing, 0.0);
         pConf->Read(wxT("Zone1OuterRng"), &guardZones[0].outer_range, 0);
         pConf->Read(wxT("Zone1InnerRng"), &guardZones[0].inner_range, 0);
-		pConf->Read(wxT("Zone1Threshold"), &guardZones[0].bogeyStrengthThreshold, 100);
         pConf->Read(wxT("Zone1ArcCirc"), &guardZones[0].type, 0);
 
         pConf->Read(wxT("Zone2StBrng"), &guardZones[1].start_bearing, 0.0);
         pConf->Read(wxT("Zone2EndBrng"), &guardZones[1].end_bearing, 0.0);
         pConf->Read(wxT("Zone2OuterRng"), &guardZones[1].outer_range, 0);
         pConf->Read(wxT("Zone2InnerRng"), &guardZones[1].inner_range, 0);
-		pConf->Read(wxT("Zone2Threshold"), &guardZones[1].bogeyStrengthThreshold, 100);
         pConf->Read(wxT("Zone2ArcCirc"), &guardZones[1].type, 0);
 
         pConf->Read(wxT("RadarAlertAudioFile"), &settings.alert_audio_file);
@@ -2049,14 +2004,12 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("Zone1EndBrng"), guardZones[0].end_bearing);
         pConf->Write(wxT("Zone1OuterRng"), guardZones[0].outer_range);
         pConf->Write(wxT("Zone1InnerRng"), guardZones[0].inner_range);
-		pConf->Write(wxT("Zone1Threshold"), guardZones[0].bogeyStrengthThreshold);
         pConf->Write(wxT("Zone1ArcCirc"), guardZones[0].type);
 
         pConf->Write(wxT("Zone2StBrng"), guardZones[1].start_bearing);
         pConf->Write(wxT("Zone2EndBrng"), guardZones[1].end_bearing);
         pConf->Write(wxT("Zone2OuterRng"), guardZones[1].outer_range);
         pConf->Write(wxT("Zone2InnerRng"), guardZones[1].inner_range);
-		pConf->Write(wxT("Zone2Threshold"), guardZones[1].bogeyStrengthThreshold);
         pConf->Write(wxT("Zone2ArcCirc"), guardZones[1].type);
 
         pConf->Write(wxT("SkewFactor"), settings.skew_factor);
