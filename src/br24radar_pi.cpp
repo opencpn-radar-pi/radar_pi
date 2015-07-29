@@ -430,6 +430,9 @@ int br24radar_pi::Init(void)
     br_data_watchdog = 0;
     br_idle_watchdog = 0;
 	memset(&bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
+    settings.multi_sweep_filter[0] = 0;
+    settings.multi_sweep_filter[1] = 0;
+    settings.multi_sweep_filter[2] = 0;
 
     for (int i = 0; i < LINES_PER_ROTATION - 1; i++) {   // initialise history bytes
         memset (&m_scan_line[i].history, 0, sizeof(m_scan_line[i].history));
@@ -1564,7 +1567,6 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
     br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
     memset(&bogey_count, 0, sizeof(bogey_count));
-    memset(&settings.multi_sweep_filter, 0, 3);
 
 	if (br_radar_state == RADAR_OFF) {
 		memset(&bogey_count, 0, sizeof(bogey_count));
@@ -1722,13 +1724,11 @@ void br24radar_pi::Guard(unsigned int angle, int max_range)
                 int bogey_range = radius * max_range / RETURNS_PER_LINE;
                 if (bogey_range > inner_range && bogey_range < outer_range) {   // within range, now check requirement for alarm
 
-                    if ((settings.multi_sweep_filter[z]) != 0 ) {  // multi sweep filter on for this z; works only for 2 guard zones
+                    if ((settings.multi_sweep_filter[z]) != 0 ) {  // multi sweep filter on for this z
                         GLubyte hist = scan->history[radius] & 7; // check only last 3 bits
-                        if (hist == 3 || hist >= 5) {  // corresponds to the patterns 011, 101, 110, 111
-                            }
-                        else {                         // multi sweep filter on, no valid bogeys
-                            continue;                  // so go to next radius
-                            }
+                        if (!(hist == 3 || hist >= 5)) {  // corresponds to the patterns 011, 101, 110, 111
+                           continue;                      // multi sweep filter on, no valid bogeys
+                            }                   // so go to next radius
                         } 
                     else {   // multi sweep filter off
                         GLubyte strength = scan->data[radius];
