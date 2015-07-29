@@ -1490,6 +1490,7 @@ void br24radar_pi::ComputeGuardZoneAngles()
 {
     int marks = 0;
     double angle_1, angle_2;
+    bool guard_on = true;
     for (size_t z = 0; z < GUARD_ZONES; z++) {
         switch (guardZones[z].type) {
             case GZ_CIRCLE:
@@ -1507,11 +1508,11 @@ void br24radar_pi::ComputeGuardZoneAngles()
                 break;
             default:
                 wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
-                angle_1 = 720.0; // Will never be reached, so no marks are set -> off...
-                angle_2 = 720.0;
+                guard_on = false;
+                angle_1 = 0;
+                angle_2 = 0;
                 break;
         }
-
         if (angle_1 < 0) angle_1 += 360;
         if (angle_2 < 0) angle_2 += 360;  // negative values don't work as angleDeg will never be < angle_2
         if (angle_1 > angle_2) {
@@ -1530,7 +1531,7 @@ void br24radar_pi::ComputeGuardZoneAngles()
             while (angleDeg < angle_1) {
                 angleDeg += 360.0;
             }
-            if (angleDeg <= angle_2) {
+            if (angleDeg <= angle_2 && guard_on) {
                 mark = true;
                 marks++;
             }
