@@ -1519,31 +1519,22 @@ void br24radar_pi::ComputeGuardZoneAngles()
             // Make this 270 to 450
             angle_2 += 360.0;
         }
-        
-        for (int i = 0; i < LINES_PER_ROTATION; i++) {  // first set all to false
-            guardZoneAngles[z][i] = false;
-            }
 
-        for (size_t i = 0; i < 2 * LINES_PER_ROTATION; i++) {  // "Make this 270 to 450" but that region should be covered as well
+        for (size_t i = 0; i < LINES_PER_ROTATION; i++) {  
             double angleDeg = SCALE_RAW_TO_DEGREES2048(i) + settings.heading_correction;
 
             bool mark = false;
             if (settings.verbose >= 4) {
                 wxLogMessage(wxT("BR24radar_pi: GuardZone %d: angle %f < %f < %f"), z + 1, angle_1, angleDeg, angle_2);
             }
-            if (angleDeg < angle_1) {
+            while (angleDeg < angle_1) {
                 angleDeg += 360.0;
             }
-            if (angleDeg >= angle_1 && angleDeg <= angle_2) {
+            if (angleDeg <= angle_2) {
                 mark = true;
                 marks++;
             }
-            int ii = i;
-            while (ii > LINES_PER_ROTATION) ii -= LINES_PER_ROTATION;
-
-            if (!guardZoneAngles[z][ii]){
-                guardZoneAngles[z][ii] = mark;  // don't write the same field twice
-                }
+            guardZoneAngles[z][i] = mark;  
             }
     }
    // if (settings.verbose >= 3) {

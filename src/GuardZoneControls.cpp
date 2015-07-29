@@ -188,9 +188,14 @@ void GuardZoneDialog::CreateControls()
                                 wxCommandEventHandler(GuardZoneDialog::OnEnd_Bearing_Value), NULL, this);
    
      //  Options
-    wxStaticBox* itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
+ //   wxString label;
+ //   label << _("Warning: Targets may be") << wxT("\n\r") << _("lost with filter on");
+    wxStaticBox* itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Filter"));
     wxStaticBoxSizer* itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
     GuardZoneSizer->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
+
+    wxStaticText *pStatic_Warning = new wxStaticText(this, wxID_ANY, _("Warning: Targets may be\nmissed with filter on"));
+    itemStaticBoxSizerOptions->Add(pStatic_Warning, 1, wxALIGN_LEFT | wxALL, 2);
     
     // added check box to control multi swep filtering
     cbFilter = new wxCheckBox(this, wxID_ANY, _("Multi Sweep Filter On"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
