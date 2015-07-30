@@ -1316,7 +1316,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     UpdateState(); // update the toolbar
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
     wxPoint boat_center;
-
+    ComputeGuardZoneAngles();   // should be updated regularly in case of change of heading
     if (br_bpos_set) {
         wxPoint pp;
         GetCanvasPixLL(vp, &pp, br_ownship_lat, br_ownship_lon);
@@ -1505,6 +1505,8 @@ void br24radar_pi::ComputeGuardZoneAngles()
                              , guardZones[z].inner_range, guardZones[z].outer_range);
                 angle_1 = guardZones[z].start_bearing + br_hdt;      // br_hdt added to provide guard zone relative to heading
                 angle_2 = guardZones[z].end_bearing + br_hdt;        // br_hdt added to provide guard zone relative to heading
+                angle_1 = MOD_DEGREES (angle_1);
+                angle_2 = MOD_DEGREES (angle_2);
                 break;
             default:
                 wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
@@ -1513,8 +1515,6 @@ void br24radar_pi::ComputeGuardZoneAngles()
                 angle_2 = 0;
                 break;
         }
-        if (angle_1 < 0) angle_1 += 360;
-        if (angle_2 < 0) angle_2 += 360;  // negative values don't work as angleDeg will never be < angle_2
         if (angle_1 > angle_2) {
             // fi. 270 to 90 means from left to right across boat.
             // Make this 270 to 450
@@ -1528,7 +1528,7 @@ void br24radar_pi::ComputeGuardZoneAngles()
             if (settings.verbose >= 4) {
                 wxLogMessage(wxT("BR24radar_pi: GuardZone %d: angle %f < %f < %f"), z + 1, angle_1, angleDeg, angle_2);
             }
-            while (angleDeg < angle_1) {
+            if (angleDeg < angle_1) {
                 angleDeg += 360.0;
             }
             if (angleDeg <= angle_2 && guard_on) {
