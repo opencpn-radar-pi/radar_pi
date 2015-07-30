@@ -1092,7 +1092,7 @@ void br24radar_pi::DoTick(void)
         return;
     }
     previousTicks = now;
-
+    ComputeGuardZoneAngles();
     if (br_bpos_set && TIMER_ELAPSED(br_bpos_watchdog)) {
         // If the position data is 10s old reset our heading.
         // Note that the watchdog is continuously reset every time we receive a heading.
@@ -1477,6 +1477,7 @@ void br24radar_pi::ComputeGuardZoneAngles()
 {
     int marks = 0;
     double angle_1, angle_2;
+    bool guard_on = true;
     for (size_t z = 0; z < GUARD_ZONES; z++) {
         switch (guardZones[z].type) {
             case GZ_CIRCLE:
@@ -1491,21 +1492,24 @@ void br24radar_pi::ComputeGuardZoneAngles()
                              , guardZones[z].inner_range, guardZones[z].outer_range);
                 angle_1 = guardZones[z].start_bearing + br_hdt;      // br_hdt added to provide guard zone relative to heading
                 angle_2 = guardZones[z].end_bearing + br_hdt;        // br_hdt added to provide guard zone relative to heading
+                angle_1 = MOD_DEGREES (angle_1);
+                angle_2 = MOD_DEGREES (angle_2);
                 break;
             default:
                 wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
-                angle_1 = 720.0; // Will never be reached, so no marks are set -> off...
-                angle_2 = 720.0;
+                guard_on = false;
+                angle_1 = 0;
+                angle_2 = 0;
                 break;
         }
-
         if (angle_1 > angle_2) {
             // fi. 270 to 90 means from left to right across boat.
             // Make this 270 to 450
             angle_2 += 360.0;
         }
-        for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
-            double angleDeg = MOD_DEGREES(SCALE_RAW_TO_DEGREES(i) + settings.heading_correction);
+
+        for (size_t i = 0; i < LINES_PER_ROTATION; i++) {  
+            double angleDeg = SCALE_RAW_TO_DEGREES(i) + settings.heading_correction;
 
             bool mark = false;
             if (settings.verbose >= 4) {
@@ -1514,16 +1518,16 @@ void br24radar_pi::ComputeGuardZoneAngles()
             if (angleDeg < angle_1) {
                 angleDeg += 360.0;
             }
-            if (angleDeg >= angle_1 && angleDeg <= angle_2) {
+            if (angleDeg <= angle_2 && guard_on) {
                 mark = true;
                 marks++;
             }
-            guardZoneAngles[z][i] = mark;
-        }
+            guardZoneAngles[z][i] = mark;  
+            }
     }
-    if (settings.verbose >= 3) {
+   // if (settings.verbose >= 3) {
         wxLogMessage(wxT("BR24radar_pi: ComputeGuardZoneAngles done, %d marks"), marks);
-    }
+  //  }
 }
 
 
