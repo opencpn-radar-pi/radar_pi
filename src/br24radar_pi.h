@@ -111,7 +111,7 @@
 #define SCALE_DEGREES_TO_RAW2048(angle) ((int)((angle) * (double) 2048 / DEGREES_PER_ROTATION))
 #define MOD_DEGREES(angle) (fmod(angle + 720.0, 360.0))
 #define MOD_ROTATION(raw) (((raw) + 2 * 4096) % 4096)
-#define MOD_ROTATION2048(raw) (((raw) + 2 * 2048) % 2048)
+#define MOD_ROTATION2048(raw) (((raw) + 4096) % 2048)
 #define displaysetting0_threshold_red (50)
 #define displaysetting1_threshold_blue (50)  // should be < 100
 #define displaysetting2_threshold_blue (20)  // should be < 100
@@ -398,8 +398,7 @@ public:
 
 #define GUARD_ZONES (2)
     guard_zone_settings guardZones[GUARD_ZONES];
-    bool guardZoneAngles[GUARD_ZONES][LINES_PER_ROTATION]; // Is that angle in the guard zone?
-
+    
     BR24DisplayOptionsDialog *m_pOptionsDialog;
     BR24ControlsDialog       *m_pControlDialog;
     GuardZoneDialog          *m_pGuardZoneDialog;
@@ -419,7 +418,7 @@ private:
     void Select_Rejection(int req_rejection_index);
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
     void RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
-	void Guard(unsigned int angle, int max_range);
+	void Guard(int max_range);
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
     void DrawRadarImage(int max_range, wxPoint radar_center);
     void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
