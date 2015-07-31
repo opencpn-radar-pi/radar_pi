@@ -218,8 +218,7 @@ void GuardZoneDialog::SetVisibility()
     GuardZoneType zoneType = (GuardZoneType) pGuardZoneType->GetSelection();
 
     pPlugIn->guardZones[pPlugIn->settings.guard_zone].type = zoneType;
-    pPlugIn->ComputeGuardZoneAngles();
-
+    
     if (zoneType == GZ_OFF) {
         pStart_Bearing_Value->Enable();
         pEnd_Bearing_Value->Enable();
@@ -276,7 +275,6 @@ void GuardZoneDialog::OnGuardZoneDialogShow(int zone)
     }
     cbFilter->SetValue(filt);
 
-    pPlugIn->ComputeGuardZoneAngles();
     SetVisibility();
 }
 
@@ -295,7 +293,6 @@ void GuardZoneDialog::OnInner_Range_Value(wxCommandEvent &event)
     int conversionFactor = RangeUnitsToMeters[pPlugIn->settings.range_units];
 
     pPlugIn->guardZones[pPlugIn->settings.guard_zone].inner_range = (int) (t * conversionFactor);
-    pPlugIn->ComputeGuardZoneAngles();
 }
 
 void GuardZoneDialog::OnOuter_Range_Value(wxCommandEvent &event)
@@ -307,7 +304,6 @@ void GuardZoneDialog::OnOuter_Range_Value(wxCommandEvent &event)
     int conversionFactor = RangeUnitsToMeters[pPlugIn->settings.range_units];
 
     pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range = (int) (t * conversionFactor);
-    pPlugIn->ComputeGuardZoneAngles();
 }
 
 void GuardZoneDialog::OnStart_Bearing_Value(wxCommandEvent &event)
@@ -315,7 +311,6 @@ void GuardZoneDialog::OnStart_Bearing_Value(wxCommandEvent &event)
     wxString temp = pStart_Bearing_Value->GetValue();
 
     temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].start_bearing);
-    pPlugIn->ComputeGuardZoneAngles();
 }
 
 
@@ -324,7 +319,6 @@ void GuardZoneDialog::OnEnd_Bearing_Value(wxCommandEvent &event)
     wxString temp = pEnd_Bearing_Value->GetValue();
 
     temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].end_bearing);
-    pPlugIn->ComputeGuardZoneAngles();
 }
 
 void GuardZoneDialog::OnFilterClick(wxCommandEvent &event)
@@ -363,7 +357,6 @@ void GuardZoneDialog::OnContextMenuGuardCallback(double mark_rng, double mark_br
         pPlugIn->guardZones[pPlugIn->settings.guard_zone].end_bearing = mark_brg;
         outer_set = false;
     }
-    pPlugIn->ComputeGuardZoneAngles();
     
     OnGuardZoneDialogShow(pPlugIn->settings.guard_zone);
 }

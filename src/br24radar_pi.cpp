@@ -492,8 +492,6 @@ int br24radar_pi::Init(void)
         return 0; // give up
     }
 
-    ComputeGuardZoneAngles();
-
     wxLongLong now = wxGetLocalTimeMillis();
     for (int i = 0; i < LINES_PER_ROTATION; i++) {
         m_scan_line[i].age = now - MAX_AGE * MILLISECONDS_PER_SECOND;
@@ -1316,7 +1314,6 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     UpdateState(); // update the toolbar
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
     wxPoint boat_center;
-    ComputeGuardZoneAngles();   // should be updated regularly in case of change of heading
     if (br_bpos_set) {
         wxPoint pp;
         GetCanvasPixLL(vp, &pp, br_ownship_lat, br_ownship_lon);
@@ -1488,63 +1485,6 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
  * This needs to be called every time something changes in the GuardZone definitions
  * or heading correction.
  */
-void br24radar_pi::ComputeGuardZoneAngles()
-{
-return;    
-int marks = 0;
-    double angle_1, angle_2;
-    bool guard_on = true;
-    for (size_t z = 0; z < GUARD_ZONES; z++) {
-        switch (guardZones[z].type) {
-            case GZ_CIRCLE:
-                wxLogMessage(wxT("BR24radar_pi: GuardZone ComputeCircle%d: circle at range %d to %d meters"), z + 1, guardZones[z].inner_range, guardZones[z].outer_range);
-                angle_1 = 0.0;
-                angle_2 = 360.0;
-                break;
-            case GZ_ARC:
-                wxLogMessage(wxT("BR24radar_pi: GuardZone ComputeArc%d: bearing %f to %f range %d to %d meters"), z + 1
-                             , guardZones[z].start_bearing
-                             , guardZones[z].end_bearing
-                             , guardZones[z].inner_range, guardZones[z].outer_range);
-                angle_1 = guardZones[z].start_bearing + br_hdt;      // br_hdt added to provide guard zone relative to heading
-                angle_2 = guardZones[z].end_bearing + br_hdt;        // br_hdt added to provide guard zone relative to heading
-                angle_1 = MOD_DEGREES (angle_1);
-                angle_2 = MOD_DEGREES (angle_2);
-                break;
-            default:
-                wxLogMessage(wxT("BR24radar_pi: GuardZone Compute %d: Off"), z + 1);
-                guard_on = false;
-                angle_1 = 0;
-                angle_2 = 0;
-                break;
-        }
-        if (angle_1 > angle_2) {
-            // fi. 270 to 90 means from left to right across boat.
-            // Make this 270 to 450
-            angle_2 += 360.0;
-        }
-
-        for (size_t i = 0; i < LINES_PER_ROTATION; i++) {  
-            double angleDeg = SCALE_RAW_TO_DEGREES2048(i) + settings.heading_correction;
-
-            bool mark = false;
-            if (settings.verbose >= 4) {
-                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: angle %f < %f < %f"), z + 1, angle_1, angleDeg, angle_2);
-            }
-            if (angleDeg < angle_1) {
-                angleDeg += 360.0;
-            }
-            if (angleDeg <= angle_2 && guard_on) {
-                mark = true;
-                marks++;
-            }
-    //        guardZoneAngles[z][i] = mark;  
-            }
-    }
-   // if (settings.verbose >= 3) {
-        wxLogMessage(wxT("BR24radar_pi: ComputeGuardZoneAngles done, %d marks"), marks);
-  //  }
-}
 
 
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
@@ -1707,15 +1647,15 @@ void br24radar_pi::Guard(int max_range)
     for (size_t z = 0; z < GUARD_ZONES; z++) {
         switch (guardZones[z].type) {
         case GZ_CIRCLE:
-            wxLogMessage(wxT("BR24radar_pi: GuardZone %d: circle at range %d to %d meters"), z + 1, guardZones[z].inner_range, guardZones[z].outer_range);
+      //      wxLogMessage(wxT("BR24radar_pi: GuardZone %d: circle at range %d to %d meters"), z + 1, guardZones[z].inner_range, guardZones[z].outer_range);
             begin_arc = 0;
             end_arc = LINES_PER_ROTATION;
             break;
         case GZ_ARC:
-            wxLogMessage(wxT("BR24radar_pi: GuardZone %d: bearing %f to %f range %d to %d meters"), z + 1
-                , guardZones[z].start_bearing
-                , guardZones[z].end_bearing
-                , guardZones[z].inner_range, guardZones[z].outer_range);
+       //     wxLogMessage(wxT("BR24radar_pi: GuardZone %d: bearing %f to %f range %d to %d meters"), z + 1
+       //         , guardZones[z].start_bearing
+       //         , guardZones[z].end_bearing
+       //         , guardZones[z].inner_range, guardZones[z].outer_range);
             begin_arc = SCALE_DEGREES_TO_RAW2048 (guardZones[z].start_bearing + br_hdt);      // br_hdt added to provide guard zone relative to heading
             end_arc = SCALE_DEGREES_TO_RAW2048(guardZones[z].end_bearing + br_hdt);    
             // br_hdt added to provide guard zone relative to heading
@@ -1723,7 +1663,7 @@ void br24radar_pi::Guard(int max_range)
             end_arc = MOD_ROTATION2048(end_arc);
             break;
         default:
-            wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
+       //     wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
             begin_arc = 0;
             end_arc = 0;
             break;
@@ -3003,13 +2943,13 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             br_heading_on_radar = true;                            // heading on radar
 			br_hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(br_var));
 			br_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(br_hdt_raw));
-     //       angle_raw += br_hdt_raw;
+            angle_raw += br_hdt_raw;
 			angle_raw = MOD_ROTATION (angle_raw);
         }
         else {                                // no heading on radar
             br_heading_on_radar = false;
             br_hdt_raw = SCALE_DEGREES_TO_RAW(br_hdt);
-    //        angle_raw += br_hdt_raw;             // map spoke on true direction
+            angle_raw += br_hdt_raw;             // map spoke on true direction
         }
 		// until here all is based on 4096 scanlines
 

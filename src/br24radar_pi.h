@@ -390,8 +390,6 @@ public:
     long GetOptimalRangeMeters();
     void SetRangeMeters(long range);
 
-    void ComputeGuardZoneAngles();
-
     radar_control_settings settings;
 
     scan_line                 m_scan_line[LINES_PER_ROTATION];
