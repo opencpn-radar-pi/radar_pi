@@ -1481,22 +1481,22 @@ void br24radar_pi::ComputeGuardZoneAngles()
     for (size_t z = 0; z < GUARD_ZONES; z++) {
         switch (guardZones[z].type) {
             case GZ_CIRCLE:
-                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: circle at range %d to %d meters"), z + 1, guardZones[z].inner_range, guardZones[z].outer_range);
+         //       wxLogMessage(wxT("BR24radar_pi: GuardZone %d: circle at range %d to %d meters"), z + 1, guardZones[z].inner_range, guardZones[z].outer_range);
                 angle_1 = 0.0;
                 angle_2 = 360.0;
                 break;
             case GZ_ARC:
-                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: bearing %f to %f range %d to %d meters"), z + 1
-                             , guardZones[z].start_bearing
-                             , guardZones[z].end_bearing
-                             , guardZones[z].inner_range, guardZones[z].outer_range);
+         //       wxLogMessage(wxT("BR24radar_pi: GuardZone %d: bearing %f to %f range %d to %d meters"), z + 1
+         //                   , guardZones[z].start_bearing
+         //                    , guardZones[z].end_bearing
+         //                    , guardZones[z].inner_range, guardZones[z].outer_range);
                 angle_1 = guardZones[z].start_bearing + br_hdt;      // br_hdt added to provide guard zone relative to heading
                 angle_2 = guardZones[z].end_bearing + br_hdt;        // br_hdt added to provide guard zone relative to heading
                 angle_1 = MOD_DEGREES (angle_1);
                 angle_2 = MOD_DEGREES (angle_2);
                 break;
             default:
-                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
+          //      wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
                 guard_on = false;
                 angle_1 = 0;
                 angle_2 = 0;
