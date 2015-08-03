@@ -1092,8 +1092,8 @@ void br24radar_pi::DoTick(void)
         // Repeated call during scroll, do not do Tick processing
         return;
     }
-    previousTicks = now;
 
+    previousTicks = now;
     if (br_bpos_set && TIMER_ELAPSED(br_bpos_watchdog)) {
         // If the position data is 10s old reset our heading.
         // Note that the watchdog is continuously reset every time we receive a heading.
@@ -1273,7 +1273,7 @@ void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay
 bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
 {
     br_opengl_mode = false;
-
+    
     DoTick(); // update timers and watchdogs
 
     UpdateState(); // update the toolbar
@@ -1413,7 +1413,6 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
     force_blackout = !br_bpos_set || m_heading_source == HEADING_NONE;
-    if (force_blackout) br_hdt = 0;    
     if (settings.display_mode == DM_CHART_OVERLAY && !force_blackout) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1478,58 +1477,63 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
  * or heading correction.
  */
 void br24radar_pi::ComputeGuardZoneAngles()
-{
-    int marks = 0;
-    double angle_1, angle_2;
-    if (br_radar_state != RADAR_ON) return;
-    for (size_t z = 0; z < GUARD_ZONES; z++) {
-        switch (guardZones[z].type) {
-            case GZ_CIRCLE:
-                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: circle at range %d to %d meters"), z + 1, guardZones[z].inner_range, guardZones[z].outer_range);
-                angle_1 = 0.0;
-                angle_2 = 360.0;
-                break;
-            case GZ_ARC:
-                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: bearing %f to %f range %d to %d meters"), z + 1
-                             , guardZones[z].start_bearing
-                             , guardZones[z].end_bearing
-                             , guardZones[z].inner_range, guardZones[z].outer_range);
-                angle_1 = guardZones[z].start_bearing + br_hdt;      // br_hdt added to provide guard zone relative to heading
-                angle_2 = guardZones[z].end_bearing + br_hdt;        // br_hdt added to provide guard zone relative to heading
-                break;
-            default:
-                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
-                angle_1 = 720.0; // Will never be reached, so no marks are set -> off...
-                angle_2 = 720.0;
-                break;
-        }
+	{
+	int marks = 0;
+	double angle_1, angle_2;
 
-        if (angle_1 > angle_2) {
-            // fi. 270 to 90 means from left to right across boat.
-            // Make this 270 to 450
-            angle_2 += 360.0;
-        }
-        for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
-            double angleDeg = MOD_DEGREES(SCALE_RAW_TO_DEGREES(i) + settings.heading_correction);
+	for (size_t z = 0; z < GUARD_ZONES; z++) {
+		switch (guardZones[z].type) {
+		case GZ_CIRCLE:
+			wxLogMessage(wxT("BR24radar_pi: GuardZone %d: circle at range %d to %d meters"), z + 1, guardZones[z].inner_range, guardZones[z].outer_range);
+			angle_1 = 0.0;
+			angle_2 = 360.0;
+			break;
+		case GZ_ARC:
 
-            bool mark = false;
-            if (settings.verbose >= 4) {
-                wxLogMessage(wxT("BR24radar_pi: GuardZone %d: angle %f < %f < %f"), z + 1, angle_1, angleDeg, angle_2);
-            }
-            if (angleDeg < angle_1) {
-                angleDeg += 360.0;
-            }
-            if (angleDeg >= angle_1 && angleDeg <= angle_2) {
-                mark = true;
-                marks++;
-            }
-            guardZoneAngles[z][i] = mark;
-        }
-    }
-    if (settings.verbose >= 3) {
-        wxLogMessage(wxT("BR24radar_pi: ComputeGuardZoneAngles done, %d marks"), marks);
-    }
-}
+			angle_1 = guardZones[z].start_bearing + br_hdt;
+			angle_2 = guardZones[z].end_bearing + br_hdt;  // + br_hdt, direct heading, added in buffer
+
+			wxLogMessage(wxT("BR24radar_pi: GuardZone %d: bearing %f to %f range %d to %d meters"), z + 1
+				, guardZones[z].start_bearing
+				, guardZones[z].end_bearing
+				, guardZones[z].inner_range, guardZones[z].outer_range);
+
+			break;
+		default:
+			wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
+			angle_1 = 720.0; // Will never be reached, so no marks are set -> off...
+			angle_2 = 720.0;
+			break;
+			}
+
+		if (angle_1 > angle_2) {
+			// fi. 270 to 90 means from left to right across boat.
+			// Make this 270 to 450
+			angle_2 += 360.0;
+			}
+		for (size_t i = 0; i < LINES_PER_ROTATION; i++)
+			{
+			double angleDeg = fmod(i * 360.0 / LINES_PER_ROTATION + settings.heading_correction + 360.0, 360.0);
+
+			bool mark = false;
+			if (settings.verbose >= 4) {
+				wxLogMessage(wxT("BR24radar_pi: GuardZone %d: angle %f < %f < %f"), z + 1, angle_1, angleDeg, angle_2);
+				}
+			if (angleDeg < angle_1) {
+				angleDeg += 360.0;
+				}
+			if (angleDeg >= angle_1 && angleDeg <= angle_2) {
+				mark = true;
+				marks++;
+				}
+			guardZoneAngles[z][i] = mark;
+			}
+		}
+	if (settings.verbose >= 3) {
+		wxLogMessage(wxT("BR24radar_pi: ComputeGuardZoneAngles done, %d marks"), marks);
+		}
+
+	}
 
 
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
@@ -1843,14 +1847,14 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
 
         if (settings.timed_idle != 0) m_pControlDialog->SetTimedIdleIndex(0) ; //Disable Timed Idle if set
 
-        if (!m_pGuardZoneBogey) {
+        if (!m_pGuardZoneBogey && br_radar_state == RADAR_ON) {
             // If this is the first time we have a bogey create & show the dialog immediately
             m_pGuardZoneBogey = new GuardZoneBogey;
             m_pGuardZoneBogey->Create(m_parent_window, this);
             m_pGuardZoneBogey->Show();
             m_pGuardZoneBogey->SetPosition(wxPoint(m_GuardZoneBogey_x, m_GuardZoneBogey_y));
         }
-        else if (!br_guard_bogey_confirmed) {
+        else if (!br_guard_bogey_confirmed && br_radar_state == RADAR_ON) {
             m_pGuardZoneBogey->Show();
         }
         time_t now = time(0);
@@ -1865,7 +1869,7 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
             else {
                 wxBell();
             }  // end of ping
-            if (m_pGuardZoneBogey) {
+            if (m_pGuardZoneBogey && br_radar_state == RADAR_ON) {
                 m_pGuardZoneBogey->Show();
             }
             delta_t = ALARM_TIMEOUT;
@@ -2973,12 +2977,12 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             br_heading_on_radar = true;                            // heading on radar
             br_hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(br_var));
             br_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(br_hdt_raw));
-            angle_raw += br_hdt_raw;
+            if (!force_blackout) angle_raw += br_hdt_raw;
         }
         else {                                // no heading on radar
             br_heading_on_radar = false;
             br_hdt_raw = SCALE_DEGREES_TO_RAW(br_hdt);
-            angle_raw += br_hdt_raw;             // map spoke on true direction
+            if (!force_blackout) angle_raw += br_hdt_raw;             // map spoke on true direction, but in force_blackout head up.
         }
         angle_raw = MOD_ROTATION(angle_raw);
 
@@ -2995,13 +2999,13 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     }
     //  all scanlines ready now, refresh section follows
     int pos_age = difftime (time(0), br_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
-    if (br_refresh_busy_or_queued || pos_age >= 2) { // don't do additional refresh and reset the refresh conter
+    if (br_refresh_busy_or_queued || (pos_age >= 2 && !force_blackout)) { // don't do additional refresh and reset the refresh conter
         i_display = 0;  // rendering ongoing, reset the counter, don't refresh now
         // this will also balance performance, if too busy skip refresh
         // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
         // so skip next refresh
         if (pPlugIn->settings.verbose >= 2) {
-            if (pos_age >= 2) wxLogMessage(wxT("BR24radar_pi:  busy encountered, br_bpos_watchdog = %i"), pos_age);
+            if (pos_age >= 2) wxLogMessage(wxT("BR24radar_pi:  busy encountered, pos_age = %i"), pos_age);
             if (br_refresh_busy_or_queued) wxLogMessage(wxT("BR24radar_pi:  busy encountered"));
         }
     }
