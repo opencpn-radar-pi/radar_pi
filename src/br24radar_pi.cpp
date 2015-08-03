@@ -98,6 +98,9 @@ using namespace std;
 // If BR24MARK is found, we switch to BR24 mode, otherwise 4G.
 static UINT8 BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
 
+int bogey_count[GUARD_ZONES];
+static int displaysetting_threshold[3] = {displaysetting0_threshold_red, displaysetting1_threshold_blue, displaysetting2_threshold_blue};
+
 enum {
     // process ID's
     ID_OK,
@@ -129,9 +132,9 @@ enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_S
 VariationSource br_var_source = VARIATION_SOURCE_NONE;
 
 int br_repeat_on_delay = 0;   // used to prevend additional TxOn commands from DoTick when radar heas just been switched on
-
+//static int bogey_width = 1;  // pixel distance where you will look for neighboring targets in multi sweep filtering
+               // for bogey_width = 1, 9 pixels will be checked   // abondened does not seem useful
 bool br_heading_on_radar = false;
-unsigned int br_downsample = 0;  // moved from display radar to here; also used in radar receive thread
 unsigned int br_refresh_rate = 1;  // refreshrate for radar used in process buffer
 static const unsigned int REFRESHMAPPING[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
 // user values 1 to 5 mapped to these values for refrehs interval
@@ -168,7 +171,7 @@ static time_t      br_hdt_watchdog;
 static time_t      br_radar_watchdog;
 static time_t      br_data_watchdog;
 static time_t      br_var_watchdog;
-static bool force_blackout;         // true if no heading or no position, will force display to blackout and north up
+static bool force_blackout = false;         // true if no heading or no position, will force display to blackout and north up
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 #define     TIMER_NOT_ELAPSED(watchdog) (now < watchdog + WATCHDOG_TIMEOUT)
 #define     TIMER_ELAPSED(watchdog) (!TIMER_NOT_ELAPSED(watchdog))
@@ -427,7 +430,17 @@ int br24radar_pi::Init(void)
     br_radar_watchdog = 0;
     br_data_watchdog = 0;
     br_idle_watchdog = 0;
+	memset(&bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
+    settings.multi_sweep_filter[0] = 0;
+    settings.multi_sweep_filter[1] = 0;
+    settings.multi_sweep_filter[2] = 0;
 
+    for (int i = 0; i < LINES_PER_ROTATION - 1; i++) {   // initialise history bytes
+        memset (&m_scan_line[i].history, 0, sizeof(m_scan_line[i].history));
+        }
+   wxLogMessage(wxT("BR24radar_pi: size of scanline %d"), sizeof(m_scan_line[1].history));
+     memset (&m_scan_line[LINES_PER_ROTATION - 1].history, 1, sizeof(m_scan_line[LINES_PER_ROTATION].history));
+     // last ones on 1 to display range circle    does not seem to work ???
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
     m_sent_bm_id_rollover =  -1;
@@ -479,8 +492,6 @@ int br24radar_pi::Init(void)
         wxLogMessage(wxT("BR24radar_pi: configuration file values initialisation failed"));
         return 0; // give up
     }
-
-    ComputeGuardZoneAngles();
 
     wxLongLong now = wxGetLocalTimeMillis();
     for (int i = 0; i < LINES_PER_ROTATION; i++) {
@@ -1305,7 +1316,6 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     UpdateState(); // update the toolbar
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
     wxPoint boat_center;
-
     if (br_bpos_set) {
         wxPoint pp;
         GetCanvasPixLL(vp, &pp, br_ownship_lat, br_ownship_lon);
@@ -1453,6 +1463,8 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
         if (br_range_meters > 0 && br_scanner_state == RADAR_ON) {
+            // Guard Section
+		    Guard(meters);
             DrawRadarImage(meters, radar_center);
         }
         glPopMatrix();
@@ -1476,70 +1488,11 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
  * This needs to be called every time something changes in the GuardZone definitions
  * or heading correction.
  */
-void br24radar_pi::ComputeGuardZoneAngles()
-	{
-	int marks = 0;
-	double angle_1, angle_2;
-
-	for (size_t z = 0; z < GUARD_ZONES; z++) {
-		switch (guardZones[z].type) {
-		case GZ_CIRCLE:
-			wxLogMessage(wxT("BR24radar_pi: GuardZone %d: circle at range %d to %d meters"), z + 1, guardZones[z].inner_range, guardZones[z].outer_range);
-			angle_1 = 0.0;
-			angle_2 = 360.0;
-			break;
-		case GZ_ARC:
-
-			angle_1 = guardZones[z].start_bearing + br_hdt;
-			angle_2 = guardZones[z].end_bearing + br_hdt;  // + br_hdt, direct heading, added in buffer
-
-			wxLogMessage(wxT("BR24radar_pi: GuardZone %d: bearing %f to %f range %d to %d meters"), z + 1
-				, guardZones[z].start_bearing
-				, guardZones[z].end_bearing
-				, guardZones[z].inner_range, guardZones[z].outer_range);
-
-			break;
-		default:
-			wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
-			angle_1 = 720.0; // Will never be reached, so no marks are set -> off...
-			angle_2 = 720.0;
-			break;
-			}
-
-		if (angle_1 > angle_2) {
-			// fi. 270 to 90 means from left to right across boat.
-			// Make this 270 to 450
-			angle_2 += 360.0;
-			}
-		for (size_t i = 0; i < LINES_PER_ROTATION; i++)
-			{
-			double angleDeg = fmod(i * 360.0 / LINES_PER_ROTATION + settings.heading_correction + 360.0, 360.0);
-
-			bool mark = false;
-			if (settings.verbose >= 4) {
-				wxLogMessage(wxT("BR24radar_pi: GuardZone %d: angle %f < %f < %f"), z + 1, angle_1, angleDeg, angle_2);
-				}
-			if (angleDeg < angle_1) {
-				angleDeg += 360.0;
-				}
-			if (angleDeg >= angle_1 && angleDeg <= angle_2) {
-				mark = true;
-				marks++;
-				}
-			guardZoneAngles[z][i] = mark;
-			}
-		}
-	if (settings.verbose >= 3) {
-		wxLogMessage(wxT("BR24radar_pi: ComputeGuardZoneAngles done, %d marks"), marks);
-		}
-
-	}
 
 
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 {
-    static unsigned int previousAngle = LINES_PER_ROTATION;
-    static const double spokeWidthDeg = SCALE_RAW_TO_DEGREES(1);
+    static const double spokeWidthDeg = SCALE_RAW_TO_DEGREES2048(1);
     static const double spokeWidthRad = deg2rad(spokeWidthDeg); // How wide is one spoke?
     double angleDeg;
     double angleRad;
@@ -1549,130 +1502,84 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     UINT32 drawn_blobs  = 0;
     UINT32 skipped      = 0;
     wxLongLong max_age = 0; // Age in millis
-    int bogey_count[GUARD_ZONES];
 
-    br_downsample = (unsigned int) settings.downsample;
     br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
-    memset(&bogey_count, 0, sizeof(bogey_count));
+
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
     if (settings.verbose >= 4) {
         wxLogMessage(wxT("BR24radar_pi: ") wxTPRId64 wxT(" drawing start"), now);
     }
-    if (br_downsample == 0) {
-        wxLogMessage(wxT("BR24radar_pi: ASSERT FAILED: downsample not initialised"));
-        // this should not happen, but prevent endless loop anyway
-        br_downsample = 1;
-    }
+    
     // DRAWING PICTURE
-    for (unsigned int angle = 0 ; angle <= LINES_PER_ROTATION - br_downsample; angle += br_downsample) {
-        unsigned int scanAngle = angle, drawAngle = angle;
+    for (unsigned int angle = 0 ; angle <= LINES_PER_ROTATION - 1; angle++) {
         scan_line * scan = 0;
-        wxLongLong bestAge = settings.max_age * MILLISECONDS_PER_SECOND;
-        // Find the newest scan in [angle, angle + downSample>
-        for (unsigned int i = 0; i < br_downsample; i++) {
-            scan_line * s = &m_scan_line[angle + i];
-            wxLongLong diff = now - s->age;
-            if (settings.verbose >= 4) {
-                wxLogMessage(wxT("BR24radar_pi: ") wxT("    a=%d diff=%") wxTPRId64 wxT(" bestAge=%") wxTPRId64 wxT(" range=%d"), angle + i, diff, bestAge, s->range);
-            }
-            if (s->range && diff >= 0 && diff < bestAge) {
-                scan = s;
-                scanAngle = angle + i;
-                while (scanAngle >= LINES_PER_ROTATION) scanAngle -= LINES_PER_ROTATION;
-                bestAge = diff;
-            }
-        }
+		wxLongLong bestAge = settings.max_age * MILLISECONDS_PER_SECOND;
+		scan_line * s = &m_scan_line[angle];
+		wxLongLong diff = now - s->age;
+		if (settings.verbose >= 4) {
+			wxLogMessage(wxT("BR24radar_pi: ") wxT("    a=%d diff=%") wxTPRId64 wxT(" bestAge=%") wxTPRId64 wxT(" range=%d"), angle , diff, bestAge, s->range);
+		}
+		if (s->range && diff >= 0 && diff < bestAge) {
+			scan = s;
+			bestAge = diff;
+		}
+
         if (!scan) {
             skipped++;
             continue;   // No or old data, don't show
         }
 
-        if (bestAge > max_age) {
-            max_age = bestAge;
-        }
-        unsigned int blobSpokesWide = br_downsample;
-        if (settings.draw_algorithm == 1) {
-            drawAngle = scanAngle;
-            if (previousAngle < LINES_PER_ROTATION) {
-                blobSpokesWide = (drawAngle - previousAngle + LINES_PER_ROTATION) % LINES_PER_ROTATION;
-            }
-            if (blobSpokesWide > LINES_PER_ROTATION / 16) {
-                // Whoaaa, that would be much too wide. Fall back to normal width
-                blobSpokesWide = br_downsample;
-            }
-            previousAngle = drawAngle;
-        }
-
         // At this point we have:
-        // scanAngle -- the angle in LINES_PER_ROTATION which has data
-        // blobSpokesWide -- how many spokes wide this is going to be
-        // Adjust the scanAngle accordingly
+        // angle -- the angle in LINES_PER_ROTATION which has data
 
-        double arc_width = spokeWidthRad * blobSpokesWide / 2.0;
+        double arc_width = spokeWidthRad * 0.5;
         double arc_heigth = ((double) scan->range / (double) max_range);
-
-        angleDeg = fmod((drawAngle - blobSpokesWide / 2.0 + 0.5) * spokeWidthDeg + 360.0, 360.0);
+        angleDeg = fmod((angle - 1) * spokeWidthDeg + 360.0, 360.0);
         angleRad = deg2rad(angleDeg);
         double angleCos = cos(angleRad);
         double angleSin = sin(angleRad);
         double r_begin = 0, r_end = 0;
-
         enum colors { BLOB_NONE, BLOB_BLUE, BLOB_GREEN, BLOB_RED };
         colors actual_color = BLOB_NONE, previous_color = BLOB_NONE;
-
         drawn_spokes++;
 
         scan->data[RETURNS_PER_LINE] = 0;  // make sure this element is initialized (just outside the range)
-        for (int radius = 0; radius <= RETURNS_PER_LINE; ++radius) {   // loop 1 more time as only the previous one will be displayed
-            GLubyte strength = (radius < RETURNS_PER_LINE) ? scan->data[radius] : 0;
 
-            /**********************************************************************************************************/
-            // Guard Section
-
-            if (strength > 100) {
-                for (size_t z = 0; z < GUARD_ZONES; z++) {
-                    if (guardZoneAngles[z][scanAngle]) {
-                        int inner_range = guardZones[z].inner_range; // now in meters
-                        int outer_range = guardZones[z].outer_range; // now in meters
-                        int bogey_range = radius * max_range / RETURNS_PER_LINE;
-                        if (bogey_range > inner_range && bogey_range < outer_range) {
-                            bogey_count[z]++;
-                        }
+		for (int radius = 0; radius <= RETURNS_PER_LINE; ++radius) {   // loop 1 more time as only the previous one will be displayed
+			GLubyte strength = scan->data[radius];
+			GLubyte hist = scan->history[radius];
+            hist = hist & 7;  // check only last 3 bits
+            
+            if (((settings.multi_sweep_filter[2] == 1) && (!(hist == 3 || hist >= 5)) && radius != RETURNS_PER_LINE - 1)) {
+                  // corresponds to the patterns 011, 101, 110, 111
+                // blob does not pass filter conditions
+                    actual_color = BLOB_NONE;
                     }
-                }
-            }
-
-            switch (settings.display_option) {
+            else   {     // blob passed filter or filter off
+                switch (settings.display_option) {
                     //  first find out the actual color
                 case 0:
                     actual_color = BLOB_NONE;
-                    if (strength > 50) {
-                        actual_color = BLOB_RED;
-                    }
+                    if (strength > displaysetting0_threshold_red) actual_color = BLOB_RED;
                     break;
 
                 case 1:
                     actual_color = BLOB_NONE;
-                    if (strength > 200) {
-                        actual_color = BLOB_RED;
-                    } else if (strength > 100) {
-                        actual_color = BLOB_GREEN;
-                    } else if (strength > 50) {
-                        actual_color = BLOB_BLUE;
-                    }
+                    if (strength > displaysetting1_threshold_blue) actual_color = BLOB_BLUE;
+                    if (strength > 100) actual_color = BLOB_GREEN;
+                    if (strength > 200) actual_color = BLOB_RED;
                     break;
 
                 case 2:
                     actual_color = BLOB_NONE;
+                    if (strength > displaysetting2_threshold_blue) actual_color = BLOB_BLUE;
+                    if (strength > 100) actual_color = BLOB_GREEN;
                     if (strength > 250) {
                         actual_color = BLOB_RED;
-                    } else if (strength > 100) {
-                        actual_color = BLOB_GREEN;
-                    } else if (strength > 20) {
-                        actual_color = BLOB_BLUE;
-                    }
+                        }
                     break;
-            }
+                    }
+                }
 
             if (actual_color == BLOB_NONE && previous_color == BLOB_NONE) {
                 // nothing to do, next radius
@@ -1680,7 +1587,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             }
 
             if (actual_color == previous_color) {
-                // continue with same color, just register it and continue with guard
+                // continue with same color, just register it
                 r_end += arc_heigth;
             }
             else if (previous_color == BLOB_NONE && actual_color != BLOB_NONE) {
@@ -1717,18 +1624,85 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                 else {            // actual_color == BLOB_NONE, blank pixel, next radius
                     continue;
                 }
-            }
-
+            }   
         }   // end of loop over radius
-    }
+
     if (settings.verbose >= 2) {
         now = wxGetLocalTimeMillis();
         wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" drawn %u skipped %u spokes with %u blobs maxAge=%") wxTPRId64
                      wxT(" bogeys %d, %d")
                      , now, drawn_spokes, skipped, drawn_blobs, max_age, bogey_count[0], bogey_count[1]);
     }
-    HandleBogeyCount(bogey_count);
+    
+	}    // end of loop over angle
+	HandleBogeyCount(bogey_count);
 }        // end of DrawRadarImage
+
+
+void br24radar_pi::Guard(int max_range)
+    // scan image for bogeys 
+    {
+    //    memset(&bogey_count, 0, sizeof(bogey_count));    // gives error memset is ambiguous ????
+    
+    bogey_count[0] = 0;
+    bogey_count[1] = 0;
+    int begin_arc, end_arc = 0;
+    for (size_t z = 0; z < GUARD_ZONES; z++) {
+        switch (guardZones[z].type) {
+        case GZ_CIRCLE:
+      //      wxLogMessage(wxT("BR24radar_pi: GuardZone %d: circle at range %d to %d meters"), z + 1, guardZones[z].inner_range, guardZones[z].outer_range);
+            begin_arc = 0;
+            end_arc = LINES_PER_ROTATION;
+            break;
+        case GZ_ARC:
+       //     wxLogMessage(wxT("BR24radar_pi: GuardZone %d: bearing %f to %f range %d to %d meters"), z + 1
+       //         , guardZones[z].start_bearing
+       //         , guardZones[z].end_bearing
+       //         , guardZones[z].inner_range, guardZones[z].outer_range);
+            begin_arc = SCALE_DEGREES_TO_RAW2048 (guardZones[z].start_bearing + br_hdt);      // br_hdt added to provide guard zone relative to heading
+            end_arc = SCALE_DEGREES_TO_RAW2048(guardZones[z].end_bearing + br_hdt);    
+            // br_hdt added to provide guard zone relative to heading
+            begin_arc = MOD_ROTATION2048(begin_arc);
+            end_arc = MOD_ROTATION2048(end_arc);
+            break;
+        default:
+       //     wxLogMessage(wxT("BR24radar_pi: GuardZone %d: Off"), z + 1);
+            begin_arc = 0;
+            end_arc = 0;
+            break;
+            }
+        if (begin_arc > end_arc) end_arc += LINES_PER_ROTATION;  // now end_arc may be larger than LINES_PER_ROTATION!
+
+        for (int angle = begin_arc ; angle < end_arc ; angle++) {
+            unsigned int angle1 = MOD_ROTATION2048 (angle);
+            scan_line *scan = &m_scan_line[angle1];  
+            if (!scan) return;   // No or old data
+            for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) { 
+                // - 2 added, -1 contains the range circle, should not raise alarm
+                GLubyte hist = scan->history[radius] ;
+                //           if (guardZoneAngles[z][angle]) {
+                int inner_range = guardZones[z].inner_range; // now in meters
+                int outer_range = guardZones[z].outer_range; // now in meters
+                int bogey_range = radius * max_range / RETURNS_PER_LINE;
+                if (bogey_range > inner_range && bogey_range < outer_range) {   // within range, now check requirement for alarm
+                    if ((settings.multi_sweep_filter[z]) != 0 ) {  // multi sweep filter on for this z
+                        GLubyte hist = scan->history[radius] & 7; // check only last 3 bits
+                        if (!(hist == 3 || hist >= 5)) {  // corresponds to the patterns 011, 101, 110, 111
+                            continue;                      // multi sweep filter on, no valid bogeys
+                            }                   // so go to next radius
+                        } 
+                    else {   // multi sweep filter off
+                        GLubyte strength = scan->data[radius];
+                        if (strength <= displaysetting_threshold[settings.display_mode]) continue;
+                        }
+                    bogey_count[z]++;
+                    }   // end "if (bogey_range > in ......
+
+                }           // end of loop over radius
+            }               // end of loop over z
+        }                   // end of loop over angle
+    }
+    
 
 void br24radar_pi::RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
@@ -1841,10 +1815,8 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
             break;
         }
     }
-
     if (bogeysFound) {
         // We have bogeys and there is no objection to showing the dialog
-
         if (settings.timed_idle != 0) m_pControlDialog->SetTimedIdleIndex(0) ; //Disable Timed Idle if set
 
         if (!m_pGuardZoneBogey && br_radar_state == RADAR_ON) {
@@ -1883,7 +1855,6 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
         m_pGuardZoneBogey->SetBogeyCount(bogey_count, -1);   // with -1 "next alarm in... "will not be displayed
         br_guard_bogey_confirmed = false; // Reset for next time we see bogeys
         // keep showing the bogey dialogue with 0 bogeys
-
     }
 
 }
@@ -1929,14 +1900,6 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
         pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
         pConf->Read(wxT("ScanSpeed"), &settings.scan_speed, 0);
-        pConf->Read(wxT("Downsample"), &settings.downsampleUser, 2);
-        if (settings.downsampleUser < 1) {
-            settings.downsampleUser = 1; // otherwise we get infinite loop
-        }
-        if (settings.downsampleUser > 8) {
-            settings.downsampleUser = 1; // otherwise we get strange things
-        }
-        settings.downsample = 2 << (settings.downsampleUser - 1);
         pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 1);
         if (settings.refreshrate < 1) {
             settings.refreshrate = 1; // not allowed
@@ -2006,7 +1969,6 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("RunTimeOnIdle"), settings.idle_run_time);
         pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
         pConf->Write(wxT("ScanSpeed"), settings.scan_speed);
-        pConf->Write(wxT("Downsample"), settings.downsampleUser);
         pConf->Write(wxT("Refreshrate"), settings.refreshrate);
         pConf->Write(wxT("PassHeadingToOCPN"), settings.PassHeadingToOCPN);
         pConf->Write(wxT("RadarAlertAudioFile"), settings.alert_audio_file);
@@ -2088,6 +2050,15 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             m_pControlDialog->SetHeadingInfo(info);
         }
         br_hdt_watchdog = now;
+
+		// following added, sending heading to OCPN in do tick is not often enough
+		if (settings.PassHeadingToOCPN) {
+			wxString nmeastring;
+			nmeastring.Printf(_T("$APHDT,%05.1f,M\r\n"), br_hdt );
+			PushNMEABuffer(nmeastring);
+		}
+
+
     }
     else if (!wxIsNaN(pfix.Hdm) && TIMER_NOT_ELAPSED(br_var_watchdog)) {
         br_hdt = pfix.Hdm + br_var;
@@ -2427,12 +2398,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 settings.timed_idle = value;
                 break;
             }
-            case CT_DOWNSAMPLE: {
-                settings.downsampleUser = value;
-                settings.downsample = 2 << (settings.downsampleUser - 1);
-                break;
-            }
-
+            
             case CT_REFRESHRATE: {
                 settings.refreshrate = value;
                 break;
@@ -2596,6 +2562,7 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
             br_hdt_watchdog = now;
         }
     }
+
 }
 
 
@@ -2871,6 +2838,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     time_t now = time(0);
     br_radar_seen = true;
     br_radar_watchdog = now;
+	static int previous_angle_raw = 0;
 
     // wxCriticalSectionLocker locker(br_scanLock);
 
@@ -2901,7 +2869,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             }
             // Do not draw something with this...
             pPlugIn->m_statistics.missing_spokes++;
-            next_scan_number = (scan_number + 1) % LINES_PER_ROTATION;
+            next_scan_number = (scan_number + 1) % 4096;
             continue;
         }
         if (line->br24.status != 0x02 && line->br24.status != 0x12) {
@@ -2914,16 +2882,14 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             if (scan_number > next_scan_number) {
                 pPlugIn->m_statistics.missing_spokes += scan_number - next_scan_number;
             } else {
-                pPlugIn->m_statistics.missing_spokes += LINES_PER_ROTATION + scan_number - next_scan_number;
+                pPlugIn->m_statistics.missing_spokes += 4096 + scan_number - next_scan_number;
             }
         }
-        next_scan_number = (scan_number + 1) % LINES_PER_ROTATION;
+        next_scan_number = (scan_number + 1) % 4096;
 
         int range_raw = 0;
         int angle_raw = 0;
-
         short int hdm_raw = 0;
-
         short int large_range = 0;
         short int small_range = 0;
         int range_meters = 0;
@@ -2934,14 +2900,12 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
             angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
             range_meters = (int) ((double)range_raw * 10.0 / sqrt(2.0));
-
             br_radar_type = RT_BR24;
         } else {
             // 4G mode
             large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
             small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
             angle_raw = (line->br4g.angle[1] << 8) | line->br4g.angle[0];
-
             if (large_range == 0x80) {
                 if (small_range == -1) {
                     range_raw = 0; // Invalid range received
@@ -2954,8 +2918,14 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             range_meters = range_raw / 4;
             br_radar_type = RT_4G;
         }
-
-        // Range change received from radar?
+	/*	if (previous_angle_raw > angle_raw) {    // next sweep starts
+			previousSweep = currentSweep;	// used to reset bogey_count DrawRadarImage
+			currentSweep++;              // number of the current sweep
+			if (pPlugIn->settings.verbose >= 1) wxLogMessage(wxT("BR24radar_pi: Sweep %d"), currentSweep);
+				if (currentSweep >= 256) currentSweep = 0;
+			} */
+		previous_angle_raw = angle_raw;
+       // Range change received from radar?
 
         if (range_meters != br_range_meters) {
 
@@ -2967,7 +2937,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                     wxLogMessage(wxT("BR24radar_pi: Radar now scanning with range %d meters (was %d meters)"), range_meters, br_range_meters);
                 }
             }
-
             br_range_meters = range_meters;
             br_update_range_control = true;  // signal rendering code to change control value
         }
@@ -2984,10 +2953,43 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             br_hdt_raw = SCALE_DEGREES_TO_RAW(br_hdt);
             if (!force_blackout) angle_raw += br_hdt_raw;             // map spoke on true direction, but in force_blackout head up.
         }
-        angle_raw = MOD_ROTATION(angle_raw);
+		// until here all is based on 4096 scanlines
+
+		angle_raw = MOD_ROTATION2048(angle_raw / 2);   // divide by 2 to map on 2048 scanlines
 
         UINT8 *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
         memcpy(dest_data1, line->data, RETURNS_PER_LINE);
+
+	/*	 //  test case for guard , take out memcpy above. Will create alternating dot
+		static int xtest;
+		if ((angle_raw == 10 ) && (currentSweep/4) * 4 == currentSweep) {
+			xtest = currentSweep;
+			dest_data1[256] = 250;
+			wxLogMessage(wxT("BR24radar_pi: dot written XXX   %d angle %d"), currentSweep, angle_raw);
+		}
+		else {
+			dest_data1[256] = 0;
+		}
+		
+		if ((angle_raw == 11 ) && (currentSweep == xtest + 2)) {
+			
+			dest_data1[257] = 250;
+			wxLogMessage(wxT("BR24radar_pi: dot written XXX   %d angle %d"), currentSweep, angle_raw);
+		}
+		else {
+			dest_data1[257] = 0;  
+		}  */  // end of test case 
+	
+
+		// now add this line to the history
+		UINT8 *hist_data = pPlugIn->m_scan_line[angle_raw].history;
+		for (int i = 0; i < RETURNS_PER_LINE - 1; i++) {
+			hist_data[i] = hist_data[i] << 1;     // shift left history byte 1 bit
+			if (dest_data1[i] > displaysetting_threshold[pPlugIn->settings.display_mode]) {
+				hist_data[i] = hist_data[i] | 1;    // and add 1 if above threshold
+			}
+		}
+
 
         // The following line is a quick hack to confirm on-screen where the range ends, by putting a 'ring' of
         // returned radar energy at the max range line.
@@ -3126,7 +3128,9 @@ void *RadarCommandReceiveThread::Entry(void)
                 if (rx_addr.addr.ss_family == AF_INET) {
                     UINT8 * a = (UINT8 *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
 
-                    s.Printf(wxT("%u.%u.%u.%u sent command"), a[0] , a[1] , a[2] , a[3]);
+					if (pPlugIn->settings.verbose) {
+						s.Printf(wxT("%u.%u.%u.%u sent command"), a[0] , a[1] , a[2] , a[3]);
+					}
                 } else {
                     s = wxT("non-IPV4 sent command");
                 }

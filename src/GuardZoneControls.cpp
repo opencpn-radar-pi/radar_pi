@@ -157,7 +157,7 @@ void GuardZoneDialog::CreateControls()
     BoxGuardZoneSizer->Add(pInner_Range, 1, wxALIGN_LEFT | wxALL, 5);
     pInner_Range->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                           wxCommandEventHandler(GuardZoneDialog::OnInner_Range_Value), NULL, this);
-
+///   start of copy
     wxStaticText *pOuter_Range_Text = new wxStaticText(this, wxID_ANY, _("Outer range"),wxDefaultPosition,
                                                        wxDefaultSize, 0);
     BoxGuardZoneSizer->Add(pOuter_Range_Text, 0, wxALIGN_LEFT | wxALL, 0);
@@ -177,7 +177,7 @@ void GuardZoneDialog::CreateControls()
     pStart_Bearing_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                                   wxCommandEventHandler(GuardZoneDialog::OnStart_Bearing_Value), NULL, this);
 
-
+/////////////////////////////////////////
     wxStaticText *pEnd_Bearing = new wxStaticText(this, wxID_ANY, _("End bearing"),wxDefaultPosition,
                                                   wxDefaultSize, 0);
     BoxGuardZoneSizer->Add(pEnd_Bearing, 0, wxALIGN_LEFT | wxALL, 0);
@@ -186,7 +186,24 @@ void GuardZoneDialog::CreateControls()
     BoxGuardZoneSizer->Add(pEnd_Bearing_Value, 1, wxALIGN_LEFT | wxALL, 5);
     pEnd_Bearing_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                                 wxCommandEventHandler(GuardZoneDialog::OnEnd_Bearing_Value), NULL, this);
+   
+     //  Options
+ //   wxString label;
+ //   label << _("Warning: Targets may be") << wxT("\n\r") << _("lost with filter on");
+    wxStaticBox* itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Filter"));
+    wxStaticBoxSizer* itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
+    GuardZoneSizer->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
 
+    wxStaticText *pStatic_Warning = new wxStaticText(this, wxID_ANY, _("Warning: Targets may be\nmissed with filter on"));
+    itemStaticBoxSizerOptions->Add(pStatic_Warning, 1, wxALIGN_LEFT | wxALL, 2);
+    
+    // added check box to control multi swep filtering
+    cbFilter = new wxCheckBox(this, wxID_ANY, _("Multi Sweep Filter On"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    itemStaticBoxSizerOptions->Add(cbFilter, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+//    int test = pPlugIn->settings.PassHeadingToOCPN;
+//    cbFilter->SetValue(pPlugIn->settings.PassHeadingToOCPN ? true : false);
+    cbFilter->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                             wxCommandEventHandler(GuardZoneDialog::OnFilterClick), NULL, this);
 
     // The Close button
     wxButton    *bClose = new wxButton(this, ID_OK_Z, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
@@ -201,24 +218,26 @@ void GuardZoneDialog::SetVisibility()
     GuardZoneType zoneType = (GuardZoneType) pGuardZoneType->GetSelection();
 
     pPlugIn->guardZones[pPlugIn->settings.guard_zone].type = zoneType;
-    pPlugIn->ComputeGuardZoneAngles();
-
+    
     if (zoneType == GZ_OFF) {
-        pStart_Bearing_Value->Disable();
-        pEnd_Bearing_Value->Disable();
-        pInner_Range->Disable();
-        pOuter_Range->Disable();
+        pStart_Bearing_Value->Enable();
+        pEnd_Bearing_Value->Enable();
+        pInner_Range->Enable();
+        pOuter_Range->Enable();
+		
     } else if (pGuardZoneType->GetSelection() == GZ_CIRCLE) {
         pStart_Bearing_Value->Disable();
         pEnd_Bearing_Value->Disable();
         pInner_Range->Enable();
         pOuter_Range->Enable();
+		
     }
     else {
         pStart_Bearing_Value->Enable();
         pEnd_Bearing_Value->Enable();
         pInner_Range->Enable();
         pOuter_Range->Enable();
+		
     }
 }
 
@@ -246,7 +265,16 @@ void GuardZoneDialog::OnGuardZoneDialogShow(int zone)
     GuardZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].end_bearing);
     pEnd_Bearing_Value->SetValue(GuardZoneText);
 
-    pPlugIn->ComputeGuardZoneAngles();
+    bool filt;
+    if (pPlugIn->settings.multi_sweep_filter[zone]) {
+        filt = true;
+        }
+    else
+        {
+        filt = false;
+    }
+    cbFilter->SetValue(filt);
+
     SetVisibility();
 }
 
@@ -265,7 +293,6 @@ void GuardZoneDialog::OnInner_Range_Value(wxCommandEvent &event)
     int conversionFactor = RangeUnitsToMeters[pPlugIn->settings.range_units];
 
     pPlugIn->guardZones[pPlugIn->settings.guard_zone].inner_range = (int) (t * conversionFactor);
-    pPlugIn->ComputeGuardZoneAngles();
 }
 
 void GuardZoneDialog::OnOuter_Range_Value(wxCommandEvent &event)
@@ -277,7 +304,6 @@ void GuardZoneDialog::OnOuter_Range_Value(wxCommandEvent &event)
     int conversionFactor = RangeUnitsToMeters[pPlugIn->settings.range_units];
 
     pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range = (int) (t * conversionFactor);
-    pPlugIn->ComputeGuardZoneAngles();
 }
 
 void GuardZoneDialog::OnStart_Bearing_Value(wxCommandEvent &event)
@@ -285,16 +311,22 @@ void GuardZoneDialog::OnStart_Bearing_Value(wxCommandEvent &event)
     wxString temp = pStart_Bearing_Value->GetValue();
 
     temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].start_bearing);
-    pPlugIn->ComputeGuardZoneAngles();
 }
+
 
 void GuardZoneDialog::OnEnd_Bearing_Value(wxCommandEvent &event)
 {
     wxString temp = pEnd_Bearing_Value->GetValue();
 
     temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].end_bearing);
-    pPlugIn->ComputeGuardZoneAngles();
 }
+
+void GuardZoneDialog::OnFilterClick(wxCommandEvent &event)
+    {
+    int filt = cbFilter->GetValue();
+    pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.guard_zone] = filt;
+    // wxLogMessage(wxT("BR24radar_pi: guard zone xxx ON %d filter %d"), pPlugIn->settings.guard_zone, filt);
+    }
 
 void GuardZoneDialog::OnClose(wxCloseEvent &event)
 {
@@ -325,7 +357,6 @@ void GuardZoneDialog::OnContextMenuGuardCallback(double mark_rng, double mark_br
         pPlugIn->guardZones[pPlugIn->settings.guard_zone].end_bearing = mark_brg;
         outer_set = false;
     }
-    pPlugIn->ComputeGuardZoneAngles();
     
     OnGuardZoneDialogShow(pPlugIn->settings.guard_zone);
 }
