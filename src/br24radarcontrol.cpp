@@ -64,6 +64,7 @@ enum {                                      // process ID's
     ID_MINUS,
     ID_MINUS_TEN,
     ID_AUTO,
+	ID_MULTISWEEP,
 
     ID_MSG_BACK,
 
@@ -73,7 +74,6 @@ enum {                                      // process ID's
     ID_TARGET_BOOST,
     ID_NOISE_REJECTION,
     ID_TARGET_SEPARATION,
-    ID_DOWNSAMPLE,
     ID_REFRESHRATE,
     ID_SCAN_SPEED,
     ID_SCAN_AGE,
@@ -109,6 +109,7 @@ EVT_BUTTON(ID_PLUS,  BR24ControlsDialog::OnPlusClick)
 EVT_BUTTON(ID_MINUS, BR24ControlsDialog::OnMinusClick)
 EVT_BUTTON(ID_MINUS_TEN, BR24ControlsDialog::OnMinusTenClick)
 EVT_BUTTON(ID_AUTO,  BR24ControlsDialog::OnAutoClick)
+EVT_BUTTON(ID_MULTISWEEP,  BR24ControlsDialog::OnMultiSweepClick)
 
 EVT_BUTTON(ID_MSG_BACK, BR24ControlsDialog::OnMessageBackButtonClick)
 
@@ -118,14 +119,13 @@ EVT_BUTTON(ID_INTERFERENCE_REJECTION, BR24ControlsDialog::OnRadarControlButtonCl
 EVT_BUTTON(ID_TARGET_BOOST, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_NOISE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_TARGET_SEPARATION, BR24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_DOWNSAMPLE, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_REFRESHRATE, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_TIMED_IDLE, BR24ControlsDialog::OnRadarControlButtonClick)
 
 EVT_BUTTON(ID_RANGE, BR24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_GAIN, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_GAIN, BR24ControlsDialog::OnRadarGainButtonClick)
 EVT_BUTTON(ID_SEA, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_RAIN, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_ADVANCED, BR24ControlsDialog::OnAdvancedButtonClick)
@@ -145,6 +145,7 @@ struct RadarRanges {
   int actual_meters;
   const char * name;
 };
+static boolean gainControl = false;
 
 static const RadarRanges g_ranges_metric[] =
 {
@@ -399,7 +400,6 @@ void BR24ControlsDialog::CreateControls()
     label << _("Target separation") << wxT("\n");
     label << _("Noise rejection") << wxT("\n");
     label << _("Target boost") << wxT("\n");
-    label << _("Downsample") << wxT("\n");
     label << _("Scan speed") << wxT("\n");
     label << _("Scan age") << wxT("\n");
     label << _("Timed Transmit") << wxT("\n");
@@ -475,7 +475,7 @@ void BR24ControlsDialog::CreateControls()
     cbVariation->SetFont(g_font);
     cbVariation->Disable();
 
-    ipBox = new wxStaticBox(this, wxID_ANY, _("ZeroConf via (wired) Ethernet"));
+    ipBox = new wxStaticBox(this, wxID_ANY, _("ZeroConf via Ethernet"));
     ipBox->SetFont(g_font);
     wxStaticBoxSizer* ipSizer = new wxStaticBoxSizer(ipBox, wxVERTICAL);
     messageBox->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);
@@ -543,7 +543,13 @@ void BR24ControlsDialog::CreateControls()
     editBox->Add(bAuto, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bAuto->SetFont(g_font);
 
+	// The Multi Sweep Filter button
+    bMultiSweep = new wxButton(this, ID_MULTISWEEP, _("Multi Sweep Filter OFF"), wxDefaultPosition, wxSize(width, 25), 0);
+    editBox->Add(bMultiSweep, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bMultiSweep->SetFont(g_font);
+
     topSizer->Hide(editBox);
+    
 
     //**************** ADVANCED BOX ******************//
     // These are the controls that the users sees when the Advanced button is selected
@@ -629,12 +635,7 @@ void BR24ControlsDialog::CreateControls()
     bScanSpeed->names = scan_speed_names;
     bScanSpeed->SetValue(pPlugIn->settings.scan_speed); // redraw after adding names
 
-    // The DOWNSAMPLE button
-    bDownsample = new RadarControlButton(this, ID_DOWNSAMPLE, _("Downsample"), pPlugIn, CT_DOWNSAMPLE, false, pPlugIn->settings.downsampleUser);
-    advancedBox->Add(bDownsample, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bDownsample->minValue = 1;
-    bDownsample->maxValue = 8;
-
+   
     // The REFRESHRATE button
     bRefreshrate = new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), pPlugIn, CT_REFRESHRATE, false, pPlugIn->settings.refreshrate);
     advancedBox->Add(bRefreshrate, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
@@ -823,6 +824,27 @@ void BR24ControlsDialog::OnAutoClick(wxCommandEvent &event)
     OnBackClick(event);
 }
 
+void BR24ControlsDialog::OnMultiSweepClick(wxCommandEvent &event)
+{
+	wxString labelSweep; 
+	if ((pPlugIn->settings.multi_sweep_filter[2]) != 1) 
+	{
+		labelSweep << _("Multi Sweep Filter ON");
+		pPlugIn->settings.multi_sweep_filter[2] = 1;
+        wxLogMessage(wxT("BR24radar_pi: Multi Sweep Filter On %d"), pPlugIn->settings.multi_sweep_filter[2]);
+	}
+	else
+	{
+		labelSweep << _("Multi Sweep Filter OFF");
+		pPlugIn->settings.multi_sweep_filter[2] = 0;  // reset bit 2
+        wxLogMessage(wxT("BR24radar_pi: Multi Sweep Filter OFF %d"), pPlugIn->settings.multi_sweep_filter[2]);
+	}
+	bMultiSweep->SetLabel(labelSweep);
+	bMultiSweep->SetFont(g_font);
+}
+
+
+
 void BR24ControlsDialog::OnMinusClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value - 1);
@@ -867,6 +889,7 @@ void BR24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event)
     topSizer->Layout();
 }
 
+
 void BR24ControlsDialog::OnMessageBackButtonClick(wxCommandEvent& event)
 {
     wantShowMessage = false;
@@ -901,6 +924,11 @@ void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
     else {
         bAuto->Hide();
     }
+
+	 if(gainControl) bMultiSweep->Show();   // xxx test only
+	 if(!gainControl) bMultiSweep->Hide();   // xxx test only
+	 gainControl = false;  // should be possible to read this from the button ???
+
     if (fromControl->maxValue > 20) {
         bPlusTen->Show();
         bMinusTen->Show();
@@ -919,6 +947,11 @@ void BR24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event)
     EnterEditMode((RadarControlButton *) event.GetEventObject());
 }
 
+void BR24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event)
+{
+    gainControl = true;
+	EnterEditMode((RadarControlButton *) event.GetEventObject());
+}
 
 
 void BR24ControlsDialog::OnMove(wxMoveEvent& event)
@@ -942,7 +975,7 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
 }
 
 
-void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData)
+void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData, bool force_blackout)
 {
     cbOpenGL->SetValue(haveOpenGL);
     cbBoatPos->SetValue(haveGPS);
@@ -951,7 +984,7 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
     cbRadar->SetValue(haveRadar);
     cbData->SetValue(haveData);
 
-    if (haveOpenGL && haveGPS && haveHeading && haveRadar && haveData) {
+    if (haveOpenGL && haveRadar && haveData && ((haveGPS && haveHeading) || force_blackout) ) {
         if (topSizer->IsShown(messageBox) && !wantShowMessage)
         {
             topSizer->Hide(messageBox);
@@ -960,6 +993,14 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
             topSizer->Hide(editBox);
             Fit();
             topSizer->Layout();
+            if (force_blackout){
+                wantShowMessage = true;
+                topSizer->Hide(controlBox);
+                messageBox->Show(bMsgBack);
+                topSizer->Show(messageBox);
+                Fit();
+                topSizer->Layout();
+                }
         }
     } else {
         if (!topSizer->IsShown(messageBox)) {
@@ -1004,7 +1045,7 @@ void BR24ControlsDialog::SetMcastIPAddress(wxString &msg)
     if (ipBox) {
         wxString label;
 
-        label << _("ZeroConf via (wired) Ethernet") << wxT(" ") << msg;
+        label << _("ZeroConf via Ethernet") << wxT(" ") << msg;
         ipBox->SetLabel(label);
     }
 }

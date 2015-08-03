@@ -100,15 +100,21 @@
 # define MILLISECONDS_PER_SECOND (1000)
 
 
-#define LINES_PER_ROTATION  (4096) // BR radars can generate up to 4096 lines per rotation
+#define LINES_PER_ROTATION  (2048) // BR radars can generate up to 4096 lines per rotation, but use only 2048
 #define RETURNS_PER_LINE     (512) // BR radars generate 512 separate values per range, at 8 bits each
 #define DEGREES_PER_ROTATION (360) // Classical math
 
 // Use the above to convert from 'raw' headings sent by the radar (0..4095) into classical degrees (0..359) and back
-#define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double) DEGREES_PER_ROTATION / LINES_PER_ROTATION)
-#define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double) LINES_PER_ROTATION / DEGREES_PER_ROTATION))
+#define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double) DEGREES_PER_ROTATION / 4096)
+#define SCALE_RAW_TO_DEGREES2048(raw) ((raw) * (double) DEGREES_PER_ROTATION / 2048)
+#define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double) 4096 / DEGREES_PER_ROTATION))
+#define SCALE_DEGREES_TO_RAW2048(angle) ((int)((angle) * (double) 2048 / DEGREES_PER_ROTATION))
 #define MOD_DEGREES(angle) (fmod(angle + 720.0, 360.0))
-#define MOD_ROTATION(raw) (((raw) + 2 * LINES_PER_ROTATION) % LINES_PER_ROTATION)
+#define MOD_ROTATION(raw) (((raw) + 2 * 4096) % 4096)
+#define MOD_ROTATION2048(raw) (((raw) + 4096) % 2048)
+#define displaysetting0_threshold_red (50)
+#define displaysetting1_threshold_blue (50)  // should be < 100
+#define displaysetting2_threshold_blue (20)  // should be < 100
 
 enum {
     BM_ID_RED,
@@ -196,7 +202,6 @@ typedef enum ControlType {
     CT_TARGET_SEPARATION,
     CT_NOISE_REJECTION,
     CT_TARGET_BOOST,
-    CT_DOWNSAMPLE,
     CT_REFRESHRATE,
     CT_PASSHEADING,
     CT_SCAN_SPEED,
@@ -273,10 +278,12 @@ struct radar_control_settings {
     int      idle_run_time;
     int      draw_algorithm;
     int      scan_speed;
-    int      downsampleUser;    // 1..8 =
-    int        refreshrate;
-    int       PassHeadingToOCPN;
-    int      downsample;        //         1..128
+    int      refreshrate;
+    int      PassHeadingToOCPN;
+	int      multi_sweep_filter[3];   //  0: guard zone 1 filter state;
+                                      //  1: guard zone 2 filter state;
+                                      //  2: display filter state, modified in gain control;
+                                      //  these values are not saved, for safety reasons user must set them after each start
     wxString alert_audio_file;
 };
 
@@ -292,6 +299,9 @@ struct scan_line {
     int range;                        // range of this scan line in decimeters
     wxLongLong age;                   // how old this scan line is. We keep old scans on-screen for a while
     UINT8 data[RETURNS_PER_LINE + 1]; // radar return strength, data[512] is an additional element, accessed in drawing the spokes
+	UINT8 history[RETURNS_PER_LINE + 1]; // contains per bit the history of previous scans. 
+	   //Each scan this byte is left shifted one bit. If the strength (=level) of a return is above the threshold
+	   // a 1 is added in the rightmost position, if below threshold, a 0.
 };
 
 //    Forward definitions
@@ -380,16 +390,13 @@ public:
     long GetOptimalRangeMeters();
     void SetRangeMeters(long range);
 
-    void ComputeGuardZoneAngles();
-
     radar_control_settings settings;
 
     scan_line                 m_scan_line[LINES_PER_ROTATION];
 
 #define GUARD_ZONES (2)
     guard_zone_settings guardZones[GUARD_ZONES];
-    bool guardZoneAngles[GUARD_ZONES][LINES_PER_ROTATION]; // Is that angle in the guard zone?
-
+    
     BR24DisplayOptionsDialog *m_pOptionsDialog;
     BR24ControlsDialog       *m_pControlDialog;
     GuardZoneDialog          *m_pGuardZoneDialog;
@@ -409,6 +416,7 @@ private:
     void Select_Rejection(int req_rejection_index);
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
     void RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
+	void Guard(int max_range);
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
     void DrawRadarImage(int max_range, wxPoint radar_center);
     void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
@@ -704,7 +712,7 @@ public:
     void SetRangeIndex(size_t index);
     void SetTimedIdleIndex(int index);
     void UpdateGuardZoneState();
-    void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
+    void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData, bool force_blackout);
     void SetErrorMessage(wxString &msg);
     void SetRadarIPAddress(wxString &msg);
     void SetMcastIPAddress(wxString &msg);
@@ -724,9 +732,11 @@ private:
     void OnMinusClick(wxCommandEvent& event);
     void OnMinusTenClick(wxCommandEvent& event);
     void OnAutoClick(wxCommandEvent& event);
+	void OnMultiSweepClick(wxCommandEvent& event);
 
     void OnAdvancedBackButtonClick(wxCommandEvent& event);
     void OnAdvancedButtonClick(wxCommandEvent& event);
+	void OnRadarGainButtonClick(wxCommandEvent& event);
 
     void OnMessageBackButtonClick(wxCommandEvent& event);
     void OnMessageButtonClick(wxCommandEvent& event);
@@ -776,6 +786,7 @@ private:
     wxButton           *bMinus;
     wxButton           *bMinusTen;
     wxButton           *bAuto;
+	wxButton           *bMultiSweep;
 
     // Advanced controls
     wxButton           *bAdvancedBack;
@@ -784,7 +795,6 @@ private:
     RadarControlButton *bTargetSeparation;
     RadarControlButton *bNoiseRejection;
     RadarControlButton *bTargetBoost;
-    RadarControlButton *bDownsample;
     RadarControlButton *bRefreshrate;
     RadarControlButton *bScanSpeed;
     RadarControlButton *bScanAge;
@@ -841,6 +851,7 @@ private:
     void            OnOuter_Range_Value(wxCommandEvent &event);
     void            OnStart_Bearing_Value(wxCommandEvent &event);
     void            OnEnd_Bearing_Value(wxCommandEvent &event);
+    void            OnFilterClick(wxCommandEvent &event);
     void            OnClose(wxCloseEvent &event);
     void            OnIdOKClick(wxCommandEvent &event);
 
@@ -854,6 +865,7 @@ private:
     wxTextCtrl      *pOuter_Range;
     wxTextCtrl      *pStart_Bearing_Value;
     wxTextCtrl      *pEnd_Bearing_Value;
+    wxCheckBox      *cbFilter;
 };
 
 /*
