@@ -168,6 +168,7 @@ static time_t      br_hdt_watchdog;
 static time_t      br_radar_watchdog;
 static time_t      br_data_watchdog;
 static time_t      br_var_watchdog;
+static bool force_blackout;         // true if no heading or no position, will force display to blackout and north up
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 #define     TIMER_NOT_ELAPSED(watchdog) (now < watchdog + WATCHDOG_TIMEOUT)
 #define     TIMER_ELAPSED(watchdog) (!TIMER_NOT_ELAPSED(watchdog))
@@ -1189,6 +1190,7 @@ void br24radar_pi::DoTick(void)
                                        , br_var_source != VARIATION_SOURCE_NONE
                                        , br_radar_seen
                                        , br_data_seen
+                                       , force_blackout
                                        );
     }
 
@@ -1410,7 +1412,9 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
-    if (settings.display_mode == DM_CHART_OVERLAY) {
+    force_blackout = !br_bpos_set || m_heading_source == HEADING_NONE;
+    if (force_blackout) br_hdt = 0;    
+    if (settings.display_mode == DM_CHART_OVERLAY && !force_blackout) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
@@ -1446,7 +1450,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     double radar_pixels_per_meter = ((double) RETURNS_PER_LINE) / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
 
-    if ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode == DM_EMULATOR) {
+    if ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode == DM_EMULATOR || force_blackout) {
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
         if (br_range_meters > 0 && br_scanner_state == RADAR_ON) {
@@ -1477,6 +1481,7 @@ void br24radar_pi::ComputeGuardZoneAngles()
 {
     int marks = 0;
     double angle_1, angle_2;
+    if (br_radar_state != RADAR_ON) return;
     for (size_t z = 0; z < GUARD_ZONES; z++) {
         switch (guardZones[z].type) {
             case GZ_CIRCLE:
