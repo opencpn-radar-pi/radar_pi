@@ -1172,7 +1172,7 @@ void br24radar_pi::DoTick(void)
         br_repeat_on_delay--;   // count down the delay timer in every call of DoTick until 0
     }
 
-    if (settings.PassHeadingToOCPN && br_heading_on_radar && br_radar_state == RADAR_ON) {
+    if (settings.PassHeadingToOCPN && br_heading_on_radar && br_radar_state == RADAR_ON && !force_blackout) {
         wxString nmeastring;
         nmeastring.Printf(_T("$APHDT,%05.1f,M\r\n"), br_hdt );
         PushNMEABuffer(nmeastring);
