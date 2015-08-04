@@ -2050,12 +2050,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             m_pControlDialog->SetHeadingInfo(info);
         }
         br_hdt_watchdog = now;
-
-		// following added, sending heading to OCPN in do tick is not often enough
-		if (settings.PassHeadingToOCPN) {
-			wxString nmeastring;
-			nmeastring.Printf(_T("$APHDT,%05.1f,M\r\n"), br_hdt );
-			PushNMEABuffer(nmeastring);
+		
 		}
 
 
