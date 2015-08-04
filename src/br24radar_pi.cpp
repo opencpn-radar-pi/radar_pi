@@ -1422,7 +1422,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
-    force_blackout = !br_bpos_set || m_heading_source == HEADING_NONE;
+    force_blackout = (!br_bpos_set || m_heading_source == HEADING_NONE) && br_radar_state == RADAR_ON && br_radar_seen;
     if (settings.display_mode == DM_CHART_OVERLAY && !force_blackout) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -2050,15 +2050,6 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             m_pControlDialog->SetHeadingInfo(info);
         }
         br_hdt_watchdog = now;
-
-		// following added, sending heading to OCPN in do tick is not often enough
-		if (settings.PassHeadingToOCPN) {
-			wxString nmeastring;
-			nmeastring.Printf(_T("$APHDT,%05.1f,M\r\n"), br_hdt );
-			PushNMEABuffer(nmeastring);
-		}
-
-
     }
     else if (!wxIsNaN(pfix.Hdm) && TIMER_NOT_ELAPSED(br_var_watchdog)) {
         br_hdt = pfix.Hdm + br_var;
