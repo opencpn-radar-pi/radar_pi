@@ -110,7 +110,8 @@ enum {
     ID_HEADINGSLIDER,
     ID_SELECT_SOUND,
     ID_TEST_SOUND,
-    ID_PASS_HEADING
+    ID_PASS_HEADING,
+    ID_SELECT_AB
 };
 
 bool br_bpos_set = false;
@@ -842,6 +843,13 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                              wxCommandEventHandler(BR24DisplayOptionsDialog::OnPassHeadingClick), NULL, this);
 
+    cbSelectABRadar = new wxCheckBox(this, ID_SELECT_AB, _("Select B radar. 4G only"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    itemStaticBoxSizerOptions->Add(cbSelectABRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+    cbSelectABRadar->SetValue(pPlugIn->settings.SelectABRadar ? true : false);
+    cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                             wxCommandEventHandler(BR24DisplayOptionsDialog::OnSelectABClick), NULL, this);
+
+
     // Accept/Reject button
     wxStdDialogButtonSizer* DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
     topSizer->Add(DialogButtonSizer, 0, wxALIGN_RIGHT | wxALL, border_size);
@@ -906,6 +914,11 @@ void BR24DisplayOptionsDialog::OnHeading_Calibration_Value(wxCommandEvent &event
 void BR24DisplayOptionsDialog::OnPassHeadingClick(wxCommandEvent &event)
 {
     pPlugIn->settings.PassHeadingToOCPN = cbPassHeading->GetValue();
+}
+
+void BR24DisplayOptionsDialog::OnSelectABClick(wxCommandEvent &event)
+{
+    pPlugIn->settings.SelectABRadar = cbSelectABRadar->GetValue();
 }
 
 void BR24DisplayOptionsDialog::OnClose(wxCloseEvent& event)
@@ -1910,6 +1923,7 @@ bool br24radar_pi::LoadConfig(void)
         br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
 
         pConf->Read(wxT("PassHeadingToOCPN"), &settings.PassHeadingToOCPN, 0);
+        pConf->Read(wxT("SelectABRadar"), &settings.SelectABRadar, 0);
 
         pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
         pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
@@ -1971,6 +1985,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("ScanSpeed"), settings.scan_speed);
         pConf->Write(wxT("Refreshrate"), settings.refreshrate);
         pConf->Write(wxT("PassHeadingToOCPN"), settings.PassHeadingToOCPN);
+        pConf->Write(wxT("SelectABRadar"), settings.SelectABRadar);
         pConf->Write(wxT("RadarAlertAudioFile"), settings.alert_audio_file);
 
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
@@ -2390,16 +2405,6 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             
-            case CT_REFRESHRATE: {
-                settings.refreshrate = value;
-                break;
-            }
-
-            case CT_PASSHEADING: {
-                settings.PassHeadingToOCPN = value;
-                break;
-            }
-
             default: {
                 wxLogMessage(wxT("BR24radar_pi: Unhandled control setting for control %d"), controlType);
             }
