@@ -2050,10 +2050,6 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             m_pControlDialog->SetHeadingInfo(info);
         }
         br_hdt_watchdog = now;
-		
-		}
-
-
     }
     else if (!wxIsNaN(pfix.Hdm) && TIMER_NOT_ELAPSED(br_var_watchdog)) {
         br_hdt = pfix.Hdm + br_var;
