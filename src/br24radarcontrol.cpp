@@ -145,7 +145,7 @@ struct RadarRanges {
   int actual_meters;
   const char * name;
 };
-static boolean gainControl = false;
+
 
 static const RadarRanges g_ranges_metric[] =
 {
@@ -925,10 +925,7 @@ void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
         bAuto->Hide();
     }
 
-	 if(gainControl) bMultiSweep->Show();   // xxx test only
-	 if(!gainControl) bMultiSweep->Hide();   // xxx test only
-	 gainControl = false;  // should be possible to read this from the button ???
-
+	 
     if (fromControl->maxValue > 20) {
         bPlusTen->Show();
         bMinusTen->Show();
