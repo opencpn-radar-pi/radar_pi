@@ -1471,7 +1471,9 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
         // Guard Zone image
         if (br_radar_state == RADAR_ON) {
             if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
-                glRotatef(br_hdt - settings.heading_correction + vp->skew * settings.skew_factor, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
+				double rotation = -settings.heading_correction + vp->skew * settings.skew_factor;
+				if (!force_blackout) rotation += br_hdt;
+                glRotatef(rotation, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
                 RenderGuardZone(radar_center, v_scale_ppm, vp);
             }
         }
@@ -1659,8 +1661,14 @@ void br24radar_pi::Guard(int max_range)
        //         , guardZones[z].start_bearing
        //         , guardZones[z].end_bearing
        //         , guardZones[z].inner_range, guardZones[z].outer_range);
-            begin_arc = SCALE_DEGREES_TO_RAW2048 (guardZones[z].start_bearing + br_hdt);      // br_hdt added to provide guard zone relative to heading
-            end_arc = SCALE_DEGREES_TO_RAW2048(guardZones[z].end_bearing + br_hdt);    
+			begin_arc = guardZones[z].start_bearing;
+			end_arc = guardZones[z].end_bearing;
+			if (!force_blackout) {
+				begin_arc += br_hdt;   // arc still in degrees!
+				end_arc += br_hdt;
+			}
+            begin_arc = SCALE_DEGREES_TO_RAW2048 (begin_arc);      // br_hdt added to provide guard zone relative to heading
+            end_arc = SCALE_DEGREES_TO_RAW2048(end_arc);    // now arc in lines
             // br_hdt added to provide guard zone relative to heading
             begin_arc = MOD_ROTATION2048(begin_arc);
             end_arc = MOD_ROTATION2048(end_arc);
