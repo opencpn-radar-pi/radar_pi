@@ -1351,7 +1351,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         if (m_pControlDialog) {
             if (radar_range != br_commanded_range_meters) { // this range change was not initiated by the pi
                 m_pControlDialog->SetRemoteRangeIndex(idx);
-                if (settings.verbose) {
+				if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: remote range change to %d meters = %d (plugin commanded %d meters)"), br_range_meters, radar_range, br_commanded_range_meters);
                 }
             }
@@ -1367,17 +1367,15 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
     // Calculate the "optimum" radar range setting in meters so the radar image just fills the screen
 
-    if (settings.auto_range_mode) {
-
+	if (settings.auto_range_mode && br_radar_state == RADAR_ON) {
         // Don't adjust auto range meters continuously when it is oscillating a little bit (< 5%)
         int test = 100 * br_previous_auto_range_meters / br_auto_range_meters;
         if (test < 95 || test > 105) { //   range change required
-            if (settings.verbose) {
+			if (settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: Automatic range changed from %d to %d meters")
                              , br_previous_auto_range_meters, br_auto_range_meters);
             }
             br_previous_auto_range_meters = br_auto_range_meters;
-
             // Compute a 'standard' distance. This will be slightly smaller.
             int displayedRange = br_auto_range_meters;
             size_t idx = convertMetersToRadarAllowedValue(&displayedRange, settings.range_units, br_radar_type);
@@ -1481,15 +1479,6 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     glPopMatrix();
     glPopAttrib();
 }        // end of RenderRadarOverlay
-
-/*
- * Precompute which angles returned from the radar are in which guard zones.
- * If there are many echoes from the radar we don't want to spend too much time
- * computing these.
- *
- * This needs to be called every time something changes in the GuardZone definitions
- * or heading correction.
- */
 
 
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
@@ -1612,7 +1601,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                         blue = 255;
                         break;
                     case BLOB_NONE:
-                        break;   // just to prevent compile warnings
+                        break;   
                 }
                 glColor4ub(red, green, blue, alpha);    // red, blue, green
                 double heigth = r_end - r_begin;
@@ -2958,27 +2947,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
         UINT8 *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
         memcpy(dest_data1, line->data, RETURNS_PER_LINE);
-
-	/*	 //  test case for guard , take out memcpy above. Will create alternating dot
-		static int xtest;
-		if ((angle_raw == 10 ) && (currentSweep/4) * 4 == currentSweep) {
-			xtest = currentSweep;
-			dest_data1[256] = 250;
-			wxLogMessage(wxT("BR24radar_pi: dot written XXX   %d angle %d"), currentSweep, angle_raw);
-		}
-		else {
-			dest_data1[256] = 0;
-		}
-		
-		if ((angle_raw == 11 ) && (currentSweep == xtest + 2)) {
-			
-			dest_data1[257] = 250;
-			wxLogMessage(wxT("BR24radar_pi: dot written XXX   %d angle %d"), currentSweep, angle_raw);
-		}
-		else {
-			dest_data1[257] = 0;  
-		}  */  // end of test case 
-	
 
 		// now add this line to the history
 		UINT8 *hist_data = pPlugIn->m_scan_line[angle_raw].history;
