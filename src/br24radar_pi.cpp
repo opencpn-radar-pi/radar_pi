@@ -918,7 +918,9 @@ void BR24DisplayOptionsDialog::OnPassHeadingClick(wxCommandEvent &event)
 
 void BR24DisplayOptionsDialog::OnSelectABClick(wxCommandEvent &event)
 {
-    pPlugIn->settings.SelectABRadar = cbSelectABRadar->GetValue();
+    if (pPlugIn->settings.SelectABRadar) wxLogMessage(wxT("BR24radar_pi: XXX voor selectie value %d"), pPlugIn->settings.SelectABRadar);
+	pPlugIn->settings.SelectABRadar = cbSelectABRadar->GetValue();
+	if (pPlugIn->settings.SelectABRadar) wxLogMessage(wxT("BR24radar_pi: XXX B selected on value %d"), pPlugIn->settings.SelectABRadar);
 }
 
 void BR24DisplayOptionsDialog::OnClose(wxCloseEvent& event)
@@ -2156,8 +2158,8 @@ void br24radar_pi::TransmitCmd(UINT8 * msg, int size)
     struct sockaddr_in adr;
     memset(&adr, 0, sizeof(adr));
     adr.sin_family = AF_INET;
-    adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 10); // 236.6.7.10
-    adr.sin_port=htons(6680);
+    adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 14); // 236.6.7.14
+    adr.sin_port=htons(6658);
 
     if (m_radar_socket == INVALID_SOCKET || sendto(m_radar_socket, (char *) msg, size, 0, (struct sockaddr *) &adr, sizeof(adr)) < size) {
         wxLogError(wxT("BR24radar_pi: Unable to transmit command to radar"));
@@ -2169,10 +2171,11 @@ void br24radar_pi::TransmitCmd(UINT8 * msg, int size)
 
 void br24radar_pi::RadarTxOff(void)
 {
-    UINT8 pck[3] = {0x00, 0xc1, 0x00};
+    UINT8 pck[3] = {0x00, 0xc1, 0x01};
     TransmitCmd(pck, sizeof(pck));
 
     pck[0] = 0x01;
+	pck[2] = 0x00;
     TransmitCmd(pck, sizeof(pck));
 }
 
@@ -2779,7 +2782,7 @@ void *RadarDataReceiveThread::Entry(void)
         }
         else {
             if (rx_socket == INVALID_SOCKET) {
-                rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6678, "236.6.7.8");
+                rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6657, "236.6.7.13");
                 // If it is still INVALID_SOCKET now we just sleep for 1s in socketReady
                 if (rx_socket != INVALID_SOCKET) {
                     wxString addr;
@@ -3083,7 +3086,8 @@ void *RadarCommandReceiveThread::Entry(void)
     //    Loop until we quit
     while (!*m_quit) {
         if (rx_socket == INVALID_SOCKET && pPlugIn->settings.display_mode != DM_EMULATOR) {
-            rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6680, "236.6.7.10");
+       //     rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6680, "236.6.7.10");
+			rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6658, "236.6.7.14");
             // If it is still INVALID_SOCKET now we just sleep for 1s in socketReady
             if (rx_socket != INVALID_SOCKET) {
                 wxLogMessage(wxT("Listening for commands"));
