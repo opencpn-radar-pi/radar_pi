@@ -839,14 +839,14 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
 
     cbPassHeading = new wxCheckBox(this, ID_PASS_HEADING, _("Pass radar heading to OpenCPN"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     itemStaticBoxSizerOptions->Add(cbPassHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-    cbPassHeading->SetValue(pPlugIn->settings.PassHeadingToOCPN ? true : false);
+    cbPassHeading->SetValue(pPlugIn->settings.passHeadingToOCPN ? true : false);
     cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                              wxCommandEventHandler(BR24DisplayOptionsDialog::OnPassHeadingClick), NULL, this);
 
     cbSelectABRadar = new wxCheckBox(this, ID_SELECT_AB, _("Select B radar. 4G only"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     itemStaticBoxSizerOptions->Add(cbSelectABRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-    cbSelectABRadar->SetValue(pPlugIn->settings.SelectABRadar ? true : false);
-    cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
+    cbSelectABRadar->SetValue(pPlugIn->settings.selectABRadar ? true : false);
+    cbSelectABRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                              wxCommandEventHandler(BR24DisplayOptionsDialog::OnSelectABClick), NULL, this);
 
 
@@ -913,14 +913,12 @@ void BR24DisplayOptionsDialog::OnHeading_Calibration_Value(wxCommandEvent &event
 
 void BR24DisplayOptionsDialog::OnPassHeadingClick(wxCommandEvent &event)
 {
-    pPlugIn->settings.PassHeadingToOCPN = cbPassHeading->GetValue();
+    pPlugIn->settings.passHeadingToOCPN = cbPassHeading->GetValue();
 }
 
 void BR24DisplayOptionsDialog::OnSelectABClick(wxCommandEvent &event)
-{
-    if (pPlugIn->settings.SelectABRadar) wxLogMessage(wxT("BR24radar_pi: XXX voor selectie value %d"), pPlugIn->settings.SelectABRadar);
-	pPlugIn->settings.SelectABRadar = cbSelectABRadar->GetValue();
-	if (pPlugIn->settings.SelectABRadar) wxLogMessage(wxT("BR24radar_pi: XXX B selected on value %d"), pPlugIn->settings.SelectABRadar);
+{   
+	pPlugIn->settings.selectABRadar = cbSelectABRadar->GetValue();
 }
 
 void BR24DisplayOptionsDialog::OnClose(wxCloseEvent& event)
@@ -1187,7 +1185,7 @@ void br24radar_pi::DoTick(void)
         br_repeat_on_delay--;   // count down the delay timer in every call of DoTick until 0
     }
 
-    if (settings.PassHeadingToOCPN && br_heading_on_radar && br_radar_state == RADAR_ON && !force_blackout) {
+    if (settings.passHeadingToOCPN && br_heading_on_radar && br_radar_state == RADAR_ON && !force_blackout) {
         wxString nmeastring;
         nmeastring.Printf(_T("$APHDT,%05.1f,M\r\n"), br_hdt );
         PushNMEABuffer(nmeastring);
@@ -1921,8 +1919,8 @@ bool br24radar_pi::LoadConfig(void)
         }
         br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
 
-        pConf->Read(wxT("PassHeadingToOCPN"), &settings.PassHeadingToOCPN, 0);
-        pConf->Read(wxT("SelectABRadar"), &settings.SelectABRadar, 0);
+        pConf->Read(wxT("PassHeadingToOCPN"), &settings.passHeadingToOCPN, 0);
+        pConf->Read(wxT("SelectABRadar"), &settings.selectABRadar, 0);
 
         pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
         pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
@@ -1983,8 +1981,8 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
         pConf->Write(wxT("ScanSpeed"), settings.scan_speed);
         pConf->Write(wxT("Refreshrate"), settings.refreshrate);
-        pConf->Write(wxT("PassHeadingToOCPN"), settings.PassHeadingToOCPN);
-        pConf->Write(wxT("SelectABRadar"), settings.SelectABRadar);
+        pConf->Write(wxT("PassHeadingToOCPN"), settings.passHeadingToOCPN);
+        pConf->Write(wxT("SelectABRadar"), settings.selectABRadar);
         pConf->Write(wxT("RadarAlertAudioFile"), settings.alert_audio_file);
 
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
@@ -2158,9 +2156,14 @@ void br24radar_pi::TransmitCmd(UINT8 * msg, int size)
     struct sockaddr_in adr;
     memset(&adr, 0, sizeof(adr));
     adr.sin_family = AF_INET;
+	if (settings.selectABRadar == 1) {   //  select B radar
     adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 14); // 236.6.7.14
     adr.sin_port=htons(6658);
-
+	}
+	else {    // select A radar
+		adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 10); // 236.6.7.10
+    adr.sin_port=htons(6680);
+	}
     if (m_radar_socket == INVALID_SOCKET || sendto(m_radar_socket, (char *) msg, size, 0, (struct sockaddr *) &adr, sizeof(adr)) < size) {
         wxLogError(wxT("BR24radar_pi: Unable to transmit command to radar"));
         return;
@@ -2782,7 +2785,12 @@ void *RadarDataReceiveThread::Entry(void)
         }
         else {
             if (rx_socket == INVALID_SOCKET) {
-                rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6657, "236.6.7.13");
+				if (pPlugIn->settings.selectABRadar == 1) {     //  select B radar
+					rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6657, "236.6.7.13");
+				}
+				else {
+					rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6678, "236.6.7.8");
+				}
                 // If it is still INVALID_SOCKET now we just sleep for 1s in socketReady
                 if (rx_socket != INVALID_SOCKET) {
                     wxString addr;
@@ -3085,12 +3093,16 @@ void *RadarCommandReceiveThread::Entry(void)
 
     //    Loop until we quit
     while (!*m_quit) {
-        if (rx_socket == INVALID_SOCKET && pPlugIn->settings.display_mode != DM_EMULATOR) {
-       //     rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6680, "236.6.7.10");
-			rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6658, "236.6.7.14");
-            // If it is still INVALID_SOCKET now we just sleep for 1s in socketReady
-            if (rx_socket != INVALID_SOCKET) {
-                wxLogMessage(wxT("Listening for commands"));
+		if (rx_socket == INVALID_SOCKET && pPlugIn->settings.display_mode != DM_EMULATOR) {
+			if (pPlugIn->settings.selectABRadar == 1) {   //  select B radar
+				rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6658, "236.6.7.14");
+			}
+			else {                                        // select A radar
+				rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6680, "236.6.7.10");
+			}
+			// If it is still INVALID_SOCKET now we just sleep for 1s in socketReady
+			if (rx_socket != INVALID_SOCKET) {
+				wxLogMessage(wxT("Listening for commands"));
             }
         }
 

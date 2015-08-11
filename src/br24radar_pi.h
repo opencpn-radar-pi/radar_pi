@@ -279,12 +279,12 @@ struct radar_control_settings {
     int      draw_algorithm;
     int      scan_speed;
     int      refreshrate;
-    int      PassHeadingToOCPN;
+    int      passHeadingToOCPN;
 	int      multi_sweep_filter[3];   //  0: guard zone 1 filter state;
                                       //  1: guard zone 2 filter state;
                                       //  2: display filter state, modified in gain control;
                                       //  these values are not saved, for safety reasons user must set them after each start
-    int      SelectABRadar;
+    int      selectABRadar;
     wxString alert_audio_file;
 };
 
