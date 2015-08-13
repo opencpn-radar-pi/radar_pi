@@ -1161,6 +1161,7 @@ void br24radar_pi::DoTick(void)
             }
             if (br_send_state) {
                 RadarSendState();
+				wxLogMessage(wxT("BR24radar_pi: XXRadarSentState called"));
                 br_send_state = false;
             }
         }
@@ -1433,8 +1434,9 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
-    force_blackout = (!br_bpos_set || m_heading_source == HEADING_NONE) && br_radar_state == RADAR_ON && br_radar_seen;
-    if (settings.display_mode == DM_CHART_OVERLAY && !force_blackout) {
+    force_blackout = (!br_bpos_set || m_heading_source == HEADING_NONE) && br_radar_state == RADAR_ON && br_radar_seen 
+		&& settings.display_mode == DM_CHART_BLACKOUT;
+    if (settings.display_mode == DM_CHART_OVERLAY) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
@@ -3377,13 +3379,13 @@ void *RadarReportReceiveThread::Entry(void)
 struct radar_state {
     UINT8  what;    // 0x02
     UINT8  command; // 0xC4
-    UINT16 field1;  // 0x06 0x09
+    UINT16 range;  // 0x06 0x09
     UINT32 field2;  // 0
     UINT32 field3;  // 1
-    UINT8  field4a;
+    UINT8  gain;
     UINT32 field4b;
     UINT32 sea;     // sea state
-    UINT32 field6a;
+    UINT32 rain;
     UINT32 field6b;
     UINT32 field6c;
     UINT8  field6d;
@@ -3410,25 +3412,27 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
             case (18 << 8) + 0x01:
                 // Radar status in byte 2
                 if (command[2] != prevStatus) {
-                    if (pPlugIn->settings.verbose > 0) {
-                        wxLogMessage(wxT("BR24radar_pi: radar status = %u"), command[2]);
+             //       if (pPlugIn->settings.verbose > 0) {
+					{
+                        wxLogMessage(wxT("BR24radar_pi: XXradar status = %u"), command[2]);
                     }
                     prevStatus = command[2];
                 }
                 break;
 
             case (99 << 8) + 0x02:
-                if (pPlugIn->settings.verbose > 0) {
+        //        if (pPlugIn->settings.verbose > 0) {
+				 {
                     radar_state * s = (radar_state *) command;
 
-                    wxLogMessage(wxT("BR24radar_pi: radar state f1=%u f2=%u f3=%u f4a=%u f4b=%u sea=%u f6a=%u f6b=%u f6c=%u f6d=%u rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
-                                 , s->field1
+                    wxLogMessage(wxT("BR24radar_pi: XXradar state range=%u f2=%u f3=%u gain=%u f4b=%u sea=%u rain=%u f6b=%u f6c=%u f6d=%u rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
+                                 , s->range
                                  , s->field2
                                  , s->field3
-                                 , s->field4a
+                                 , s->gain
                                  , s->field4b
                                  , s->sea
-                                 , s->field6a
+                                 , s->rain
                                  , s->field6b
                                  , s->field6c
                                  , s->field6d
@@ -3454,9 +3458,17 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
                 }
                 break;
 
+			case (18 << 8) + 0x08:
+				// contains noise rejection and others? call this report_08
+				if (pPlugIn->settings.verbose >= 0) {
+                    logBinaryData(wxT("XXreceived report_08"), command, len);
+                }
+                break;
+
             default:
-                if (pPlugIn->settings.verbose >= 2) {
-                    logBinaryData(wxT("received unknown report"), command, len);
+          //      if (pPlugIn->settings.verbose >= 2) {
+				{
+                    logBinaryData(wxT("XXreceived unknown report"), command, len);
                 }
                 break;
 
@@ -3471,22 +3483,25 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
             case ( 10 << 8) + 0x12:
             case ( 46 << 8) + 0x13:
                 // Content unknown, but we know that BR24 radomes send this
-                if (pPlugIn->settings.verbose >= 4) {
-                    logBinaryData(wxT("received familiar report"), command, len);
+         //       if (pPlugIn->settings.verbose >= 4) {
+				{
+                    logBinaryData(wxT("XXreceived familiar report"), command, len);
                 }
                 break;
 
             default:
-                if (pPlugIn->settings.verbose >= 2) {
-                    logBinaryData(wxT("received unknown report"), command, len);
+     //           if (pPlugIn->settings.verbose >= 2) {
+				{
+                    logBinaryData(wxT("XXreceived unknown report"), command, len);
                 }
                 break;
 
         }
         return true;
     }
-    if (pPlugIn->settings.verbose >= 2) {
-        logBinaryData(wxT("received unknown message"), command, len);
+ //   if (pPlugIn->settings.verbose >= 2) {
+	{
+        logBinaryData(wxT("XXreceived unknown message"), command, len);
     }
     return false;
 }
