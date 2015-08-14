@@ -975,7 +975,7 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
 }
 
 
-void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData, bool force_blackout)
+void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData, bool blackout)
 {
     cbOpenGL->SetValue(haveOpenGL);
     cbBoatPos->SetValue(haveGPS);
@@ -984,7 +984,7 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
     cbRadar->SetValue(haveRadar);
     cbData->SetValue(haveData);
 
-    if (haveOpenGL && haveRadar && haveData && ((haveGPS && haveHeading) || force_blackout) ) {
+    if (haveOpenGL && haveRadar && haveData && ((haveGPS && haveHeading) || blackout) ) {
         if (topSizer->IsShown(messageBox) && !wantShowMessage)
         {
             topSizer->Hide(messageBox);
@@ -993,7 +993,7 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
             topSizer->Hide(editBox);
             Fit();
             topSizer->Layout();
-            if (force_blackout){
+            if (blackout){
                 wantShowMessage = true;
                 topSizer->Hide(controlBox);
                 messageBox->Show(bMsgBack);

@@ -172,7 +172,7 @@ static time_t      br_hdt_watchdog;
 static time_t      br_radar_watchdog;
 static time_t      br_data_watchdog;
 static time_t      br_var_watchdog;
-static bool force_blackout = false;         // true if no heading or no position, will force display to blackout and north up
+static bool blackout = false;         //  will force display to blackout and north up
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 #define     TIMER_NOT_ELAPSED(watchdog) (now < watchdog + WATCHDOG_TIMEOUT)
 #define     TIMER_ELAPSED(watchdog) (!TIMER_NOT_ELAPSED(watchdog))
@@ -1186,8 +1186,9 @@ void br24radar_pi::DoTick(void)
         br_repeat_on_delay--;   // count down the delay timer in every call of DoTick until 0
     }
 
-    if (settings.passHeadingToOCPN && br_heading_on_radar && br_radar_state == RADAR_ON && !force_blackout) {
+    if ((settings.passHeadingToOCPN && br_heading_on_radar && br_radar_state == RADAR_ON) || blackout) {
         wxString nmeastring;
+		if (blackout) br_hdt = 0;  // heads up in blackout mode
         nmeastring.Printf(_T("$APHDT,%05.1f,M\r\n"), br_hdt );
         PushNMEABuffer(nmeastring);
     }
@@ -1215,7 +1216,7 @@ void br24radar_pi::DoTick(void)
                                        , br_var_source != VARIATION_SOURCE_NONE
                                        , br_radar_seen
                                        , br_data_seen
-                                       , force_blackout
+                                       , blackout
                                        );
     }
 
@@ -1434,9 +1435,11 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
-    force_blackout = (!br_bpos_set || m_heading_source == HEADING_NONE) && br_radar_state == RADAR_ON && br_radar_seen 
-		&& settings.display_mode == DM_CHART_BLACKOUT;
-    if (settings.display_mode == DM_CHART_OVERLAY) {
+ //   force_blackout = (!br_bpos_set || m_heading_source == HEADING_NONE) && br_radar_state == RADAR_ON && br_radar_seen 
+//			&& settings.display_mode == DM_CHART_BLACKOUT;
+	blackout = br_radar_state == RADAR_ON && br_radar_seen && settings.display_mode == DM_CHART_BLACKOUT;
+	            //  radar only mode, will be head up, operate also without heading or position
+    if (!blackout) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
@@ -1472,7 +1475,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     double radar_pixels_per_meter = ((double) RETURNS_PER_LINE) / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
 
-    if ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode == DM_EMULATOR || force_blackout) {
+    if ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode == DM_EMULATOR || blackout) {
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
         if (br_range_meters > 0 && br_scanner_state == RADAR_ON) {
@@ -1485,7 +1488,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
         if (br_radar_state == RADAR_ON) {
             if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
 				double rotation = -settings.heading_correction + vp->skew * settings.skew_factor;
-				if (!force_blackout) rotation += br_hdt;
+				if (!blackout) rotation += br_hdt;
                 glRotatef(rotation, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
                 RenderGuardZone(radar_center, v_scale_ppm, vp);
             }
@@ -1667,7 +1670,7 @@ void br24radar_pi::Guard(int max_range)
        //         , guardZones[z].inner_range, guardZones[z].outer_range);
 			begin_arc = guardZones[z].start_bearing;
 			end_arc = guardZones[z].end_bearing;
-			if (!force_blackout) {
+			if (!blackout) {
 				begin_arc += br_hdt;   // arc still in degrees!
 				end_arc += br_hdt;
 			}
@@ -2768,7 +2771,8 @@ fail:
 
 void *RadarDataReceiveThread::Entry(void)
 {
-    SOCKET rx_socket = INVALID_SOCKET;
+    SOCKET rx_socketA = INVALID_SOCKET;
+	SOCKET rx_socketB = INVALID_SOCKET;
     int r = 0;
 
     sockaddr_storage rx_addr;
@@ -2786,47 +2790,71 @@ void *RadarDataReceiveThread::Entry(void)
             }
         }
         else {
-            if (rx_socket == INVALID_SOCKET) {
-				if (pPlugIn->settings.selectABRadar == 1) {     //  select B radar
-					rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6657, "236.6.7.13");
-				}
-				else {
-					rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6678, "236.6.7.8");
-				}
+            if (rx_socketA == INVALID_SOCKET) {
+			//	if (pPlugIn->settings.selectABRadar == 1) {     //  select B radar
+					rx_socketB = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6657, "236.6.7.13");
+			//	}
+			//	else {
+					rx_socketA = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6678, "236.6.7.8");
+			//	}
                 // If it is still INVALID_SOCKET now we just sleep for 1s in socketReady
-                if (rx_socket != INVALID_SOCKET) {
+                if (rx_socketA != INVALID_SOCKET) {
                     wxString addr;
                     UINT8 * a = (UINT8 *) &br_mcast_addr->sin_addr; // sin_addr is in network layout
                     addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
-                    wxLogMessage(wxT("BR24radar_pi: Listening for radar data on %s"), addr.c_str());
+                    wxLogMessage(wxT("BR24radar_pi: Listening for radarA data on %s"), addr.c_str());
+                }
+				if (rx_socketB != INVALID_SOCKET) {
+                    wxString addr;
+                    UINT8 * a = (UINT8 *) &br_mcast_addr->sin_addr; // sin_addr is in network layout
+                    addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
+                    wxLogMessage(wxT("BR24radar_pi: Listening for radarB data on %s"), addr.c_str());
                 }
             }
-
-            if (socketReady(rx_socket, 1000)) {
+			if (pPlugIn->settings.selectABRadar == 1) {     //  select B radar
+            if (socketReady(rx_socketB, 1000)) {
                 radar_frame_pkt packet;
                 rx_len = sizeof(rx_addr);
-                r = recvfrom(rx_socket, (char *) &packet, sizeof(packet), 0, (struct sockaddr *) &rx_addr, &rx_len);
+                r = recvfrom(rx_socketB, (char *) &packet, sizeof(packet), 0, (struct sockaddr *) &rx_addr, &rx_len);
                 if (r > 0) {
                     process_buffer(&packet, r);
                 }
                 if (r < 0 || !br_mcast_addr || !br_data_seen || !br_radar_seen) {
-                    closesocket(rx_socket);
-                    rx_socket = INVALID_SOCKET;
+                    closesocket(rx_socketB);
+                    rx_socketB = INVALID_SOCKET;
                 }
             }
+			}
+			else {
+				if (socketReady(rx_socketA, 1000)) {
+                radar_frame_pkt packet;
+                rx_len = sizeof(rx_addr);
+                r = recvfrom(rx_socketA, (char *) &packet, sizeof(packet), 0, (struct sockaddr *) &rx_addr, &rx_len);
+                if (r > 0) {
+                    process_buffer(&packet, r);
+                }
+                if (r < 0 || !br_mcast_addr || !br_data_seen || !br_radar_seen) {
+                    closesocket(rx_socketA);
+                    rx_socketA = INVALID_SOCKET;
+			}
+				}
+			}
 
             if (!br_radar_seen || !br_mcast_addr) {
-                if (rx_socket != INVALID_SOCKET) {
-                    wxLogMessage(wxT("BR24radar_pi: Stopped listening for radar data"));
-                    closesocket(rx_socket);
-                    rx_socket = INVALID_SOCKET;
+                if (rx_socketA != INVALID_SOCKET) {
+                    wxLogMessage(wxT("BR24radar_pi: Stopped listening for radarA data"));
+                    closesocket(rx_socketA);
+                    rx_socketA = INVALID_SOCKET;
                 }
             }
         }
     }
 
-    if (rx_socket != INVALID_SOCKET) {
-        closesocket(rx_socket);
+    if (rx_socketA != INVALID_SOCKET) {
+        closesocket(rx_socketA);
+    }
+	 if (rx_socketB != INVALID_SOCKET) {
+        closesocket(rx_socketB);
     }
     return 0;
 }
@@ -2952,12 +2980,12 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             br_heading_on_radar = true;                            // heading on radar
             br_hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(br_var));
             br_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(br_hdt_raw));
-            if (!force_blackout) angle_raw += br_hdt_raw;
+            if (!blackout) angle_raw += br_hdt_raw;
         }
         else {                                // no heading on radar
             br_heading_on_radar = false;
             br_hdt_raw = SCALE_DEGREES_TO_RAW(br_hdt);
-            if (!force_blackout) angle_raw += br_hdt_raw;             // map spoke on true direction, but in force_blackout head up.
+            if (!blackout) angle_raw += br_hdt_raw;             // map spoke on true direction, but in blackout head up.
         }
 		// until here all is based on 4096 scanlines
 
@@ -2986,7 +3014,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     }
     //  all scanlines ready now, refresh section follows
     int pos_age = difftime (time(0), br_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
-    if (br_refresh_busy_or_queued || (pos_age >= 2 && !force_blackout)) { // don't do additional refresh and reset the refresh conter
+    if (br_refresh_busy_or_queued || (pos_age >= 2 && !blackout)) { // don't do additional refresh and reset the refresh conter
         i_display = 0;  // rendering ongoing, reset the counter, don't refresh now
         // this will also balance performance, if too busy skip refresh
         // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
