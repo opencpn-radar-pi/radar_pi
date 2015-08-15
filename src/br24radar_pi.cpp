@@ -1326,7 +1326,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     {
       br_auto_range_meters = 50;
     }
-
+	blackout = br_radar_state == RADAR_ON && br_radar_seen && settings.display_mode == DM_CHART_BLACKOUT;
     DoTick(); // update timers and watchdogs
     UpdateState(); // update the toolbar
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
@@ -1435,8 +1435,6 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
- //   force_blackout = (!br_bpos_set || m_heading_source == HEADING_NONE) && br_radar_state == RADAR_ON && br_radar_seen 
-//			&& settings.display_mode == DM_CHART_BLACKOUT;
 	blackout = br_radar_state == RADAR_ON && br_radar_seen && settings.display_mode == DM_CHART_BLACKOUT;
 	            //  radar only mode, will be head up, operate also without heading or position
     if (!blackout) {
@@ -2566,7 +2564,6 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
             br_hdt_watchdog = now;
         }
     }
-
 }
 
 

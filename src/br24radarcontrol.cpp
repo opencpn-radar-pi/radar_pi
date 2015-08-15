@@ -67,6 +67,7 @@ enum {                                      // process ID's
 	ID_MULTISWEEP,
 
     ID_MSG_BACK,
+	ID_RDRONLY,
 
     ID_ADVANCED_BACK,
     ID_TRANSPARENCY,
@@ -79,7 +80,8 @@ enum {                                      // process ID's
     ID_SCAN_AGE,
     ID_TIMED_IDLE,
 
-    ID_RANGE,
+    ID_RADAR_ONLY,
+	ID_RANGE,
     ID_GAIN,
     ID_SEA,
     ID_RAIN,
@@ -112,6 +114,7 @@ EVT_BUTTON(ID_AUTO,  BR24ControlsDialog::OnAutoClick)
 EVT_BUTTON(ID_MULTISWEEP,  BR24ControlsDialog::OnMultiSweepClick)
 
 EVT_BUTTON(ID_MSG_BACK, BR24ControlsDialog::OnMessageBackButtonClick)
+EVT_BUTTON(ID_RDRONLY, BR24ControlsDialog::OnRdrOnlyButtonClick)
 
 EVT_BUTTON(ID_ADVANCED_BACK,  BR24ControlsDialog::OnAdvancedBackButtonClick)
 EVT_BUTTON(ID_TRANSPARENCY, BR24ControlsDialog::OnRadarControlButtonClick)
@@ -124,6 +127,7 @@ EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_SCAN_AGE, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_TIMED_IDLE, BR24ControlsDialog::OnRadarControlButtonClick)
 
+EVT_BUTTON(ID_RADAR_ONLY, BR24ControlsDialog::OnRadarOnlyButtonClick)
 EVT_BUTTON(ID_RANGE, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_GAIN, BR24ControlsDialog::OnRadarGainButtonClick)
 EVT_BUTTON(ID_SEA, BR24ControlsDialog::OnRadarControlButtonClick)
@@ -425,7 +429,7 @@ void BR24ControlsDialog::CreateControls()
     if (width > 300) {
         width = 300;
     }
-    g_buttonSize = wxSize(width, 50);
+    g_buttonSize = wxSize(width, 40);  // was 50, buttons a bit lower now
     if (pPlugIn->settings.verbose) {
         wxLogMessage(wxT("BR24radar_pi: Dynamic button width = %d"), g_buttonSize.GetWidth());
     }
@@ -494,7 +498,13 @@ void BR24ControlsDialog::CreateControls()
     tStatistics->SetFont(*OCPNGetFont(_("Dialog"), 8));
     messageBox->Add(tStatistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
 
-    // The <Close> button
+    // The <Radar Only> button
+    bRdrOnly = new wxButton(this, ID_RDRONLY, _("&Radar Only"), wxDefaultPosition, wxDefaultSize, 0);
+    messageBox->Add(bRdrOnly, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    bRdrOnly->SetFont(g_font);
+    messageBox->Hide(bRdrOnly);
+	
+	// The <Close> button
     bMsgBack = new wxButton(this, ID_MSG_BACK, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
     messageBox->Add(bMsgBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bMsgBack->SetFont(g_font);
@@ -503,6 +513,10 @@ void BR24ControlsDialog::CreateControls()
     // topSizer->Hide(messageBox);
 
     //**************** EDIT BOX ******************//
+	 // A box sizer to contain RANGE button
+    editBox = new wxBoxSizer(wxVERTICAL);
+    topSizer->Add(editBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
     // A box sizer to contain RANGE button
     editBox = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(editBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
@@ -544,7 +558,9 @@ void BR24ControlsDialog::CreateControls()
     bAuto->SetFont(g_font);
 
 	// The Multi Sweep Filter button
-    bMultiSweep = new wxButton(this, ID_MULTISWEEP, _("Multi Sweep Filter OFF"), wxDefaultPosition, wxSize(width, 25), 0);
+	wxString labelMS;
+    labelMS << _("Multi Sweep Filter") << wxT("\n") << _("OFF");
+    bMultiSweep = new wxButton(this, ID_MULTISWEEP, labelMS, wxDefaultPosition, wxSize(width, 40), 0);
     editBox->Add(bMultiSweep, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bMultiSweep->SetFont(g_font);
 
@@ -672,6 +688,20 @@ void BR24ControlsDialog::CreateControls()
     // A box sizer to contain RANGE, GAIN etc button
     controlBox = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(controlBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
+	// The RADAR ONLY / OVERLAY button
+    bRadarOnly_Overlay = new RadarRangeControlButton(this, ID_RADAR_ONLY, _("Radar Only / Overlay"), pPlugIn);
+    controlBox->Add(bRadarOnly_Overlay, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+	if (pPlugIn->settings.display_mode == DM_CHART_BLACKOUT) {
+		wxString label; 
+		label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") ;
+        bRadarOnly_Overlay->SetLabel(label);
+	}
+	else {
+		wxString label;
+		label << _("Overlay / Radar") << wxT("\n") << _("Radar Overlay");
+        bRadarOnly_Overlay->SetLabel(label);
+	}
 
     // The RANGE button
     bRange = new RadarRangeControlButton(this, ID_RANGE, _("Range"), pPlugIn);
@@ -829,13 +859,12 @@ void BR24ControlsDialog::OnMultiSweepClick(wxCommandEvent &event)
 	wxString labelSweep; 
 	if ((pPlugIn->settings.multi_sweep_filter[2]) != 1) 
 	{
-		labelSweep << _("Multi Sweep Filter ON");
+		labelSweep << _("Multi Sweep Filter") << wxT("\n") << _("ON");
 		pPlugIn->settings.multi_sweep_filter[2] = 1;
-        wxLogMessage(wxT("BR24radar_pi: Multi Sweep Filter On %d"), pPlugIn->settings.multi_sweep_filter[2]);
 	}
 	else
 	{
-		labelSweep << _("Multi Sweep Filter OFF");
+		labelSweep << _("Multi Sweep Filter") << wxT("\n") << _("OFF");
 		pPlugIn->settings.multi_sweep_filter[2] = 0;  // reset bit 2
         wxLogMessage(wxT("BR24radar_pi: Multi Sweep Filter OFF %d"), pPlugIn->settings.multi_sweep_filter[2]);
 	}
@@ -900,12 +929,29 @@ void BR24ControlsDialog::OnMessageBackButtonClick(wxCommandEvent& event)
     topSizer->Layout();
 }
 
+void BR24ControlsDialog::OnRdrOnlyButtonClick(wxCommandEvent& event)
+{
+	pPlugIn->settings.display_mode = DM_CHART_BLACKOUT;
+	messageBox->Hide(bRdrOnly);
+    wantShowMessage = false;
+    fromBox = messageBox;
+    topSizer->Hide(messageBox);
+    topSizer->Show(controlBox);
+	wxString label;
+	label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") ;
+    bRadarOnly_Overlay->SetLabel(label);
+    Fit();
+    topSizer->Layout();
+	pPlugIn->settings.display_mode = DM_CHART_BLACKOUT;
+}
+
 void BR24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event)
 {
     wantShowMessage = true;
     topSizer->Hide(controlBox);
-    messageBox->Show(bMsgBack);
     topSizer->Show(messageBox);
+	messageBox->Hide(bRdrOnly);
+	messageBox->Show(bMsgBack);
     Fit();
     topSizer->Layout();
 }
@@ -947,6 +993,22 @@ void BR24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event)
     EnterEditMode((RadarControlButton *) event.GetEventObject());
 }
 
+void BR24ControlsDialog::OnRadarOnlyButtonClick(wxCommandEvent& event)
+{
+    if (pPlugIn->settings.display_mode == DM_CHART_BLACKOUT) {
+		pPlugIn->settings.display_mode = DM_CHART_OVERLAY;
+		wxString label ; 
+		label << _("Overlay / Radar") << wxT("\n") << _("Radar Overlay");
+        bRadarOnly_Overlay->SetLabel(label);
+	}
+	else {
+		pPlugIn->settings.display_mode = DM_CHART_BLACKOUT;
+		wxString label;
+		label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") ;
+        bRadarOnly_Overlay->SetLabel(label);
+	}
+}
+
 void BR24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event)
 {
     gainControl = true;
@@ -984,7 +1046,7 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
     cbRadar->SetValue(haveRadar);
     cbData->SetValue(haveData);
 
-    if (haveOpenGL && haveRadar && haveData && ((haveGPS && haveHeading) || blackout) ) {
+    if (haveOpenGL && haveRadar && haveData && ((haveGPS && haveHeading) || pPlugIn->settings.display_mode == DM_CHART_BLACKOUT) ) {
         if (topSizer->IsShown(messageBox) && !wantShowMessage)
         {
             topSizer->Hide(messageBox);
@@ -993,18 +1055,17 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
             topSizer->Hide(editBox);
             Fit();
             topSizer->Layout();
-            if (blackout){
-                wantShowMessage = true;
-                topSizer->Hide(controlBox);
-                messageBox->Show(bMsgBack);
-                topSizer->Show(messageBox);
-                Fit();
-                topSizer->Layout();
-                }
         }
-    } else {
-        if (!topSizer->IsShown(messageBox)) {
-            topSizer->Show(messageBox);
+    } else {               // no radar shown, conditions not satisfied
+        if (!topSizer->IsShown(messageBox)) {   // switch from control box to the message box 
+            topSizer->Show(messageBox);  
+			if (!(haveOpenGL && haveRadar && haveData) || (pPlugIn->settings.display_mode == DM_CHART_BLACKOUT)){
+				messageBox->Hide(bRdrOnly);
+			}
+			else if (!(haveGPS && haveHeading)){
+			messageBox->Show(bMsgBack);
+			}
+			
             topSizer->Hide(controlBox);
             topSizer->Hide(advancedBox);
             topSizer->Hide(editBox);
@@ -1012,6 +1073,15 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
             Fit();
             topSizer->Layout();
         }
+		if((!haveGPS || !haveHeading) && (pPlugIn->settings.display_mode == DM_CHART_BLACKOUT) && haveOpenGL && haveRadar && haveData) {
+			messageBox->Show(bRdrOnly);  // user wants to show overlay but lacks position or heading
+			messageBox->Hide(bMsgBack);
+			topSizer->Hide(advancedBox);
+			topSizer->Hide(editBox);
+			messageBox->Layout();
+			Fit();
+			topSizer->Layout();
+		}                           
     }
 
     editBox->Layout();
@@ -1022,6 +1092,7 @@ void BR24ControlsDialog::SetErrorMessage(wxString &msg)
 {
     tMessage->SetLabel(msg);
     topSizer->Show(messageBox);
+//	messageBox->Show(bRdrOnly);
     topSizer->Hide(controlBox);
     topSizer->Hide(advancedBox);
     topSizer->Hide(editBox);

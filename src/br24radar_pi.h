@@ -743,9 +743,12 @@ private:
 	void OnRadarGainButtonClick(wxCommandEvent& event);
 
     void OnMessageBackButtonClick(wxCommandEvent& event);
+	
+    void OnRdrOnlyButtonClick(wxCommandEvent& event);
     void OnMessageButtonClick(wxCommandEvent& event);
 
     void OnRadarControlButtonClick(wxCommandEvent& event);
+	void OnRadarOnlyButtonClick(wxCommandEvent& event);
 
     void OnZone1ButtonClick(wxCommandEvent &event);
     void OnZone2ButtonClick(wxCommandEvent &event);
@@ -768,6 +771,7 @@ private:
 
     // MessageBox
     wxButton           *bMsgBack;
+	wxButton           *bRdrOnly;
     wxStaticText       *tMessage;
     wxCheckBox         *cbOpenGL;
     wxCheckBox         *cbBoatPos;
@@ -807,6 +811,7 @@ private:
     // Show Controls
 
     RadarRangeControlButton *bRange;
+	RadarControlButton *bRadarOnly_Overlay;
     RadarControlButton *bGain;
     RadarControlButton *bSea;
     RadarControlButton *bRain;
