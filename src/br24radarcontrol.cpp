@@ -652,8 +652,7 @@ void BR24ControlsDialog::CreateControls()
     bScanSpeed->maxValue = ARRAY_SIZE(scan_speed_names) - 1;
     bScanSpeed->names = scan_speed_names;
     bScanSpeed->SetValue(pPlugIn->settings.scan_speed); // redraw after adding names
-
-   
+	   
     // The REFRESHRATE button
     bRefreshrate = new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), pPlugIn, CT_REFRESHRATE, false, pPlugIn->settings.refreshrate);
     advancedBox->Add(bRefreshrate, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
@@ -665,6 +664,7 @@ void BR24ControlsDialog::CreateControls()
     advancedBox->Add(bScanAge, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bScanAge->minValue = MIN_AGE;
     bScanAge->maxValue = MAX_AGE;
+
     // The TIMED TRANSMIT button
     timed_idle_times[0] = _("Off");
     timed_idle_times[1] = _("5 min");
@@ -826,7 +826,6 @@ void BR24ControlsDialog::OnPlusTenClick(wxCommandEvent& event)
 void BR24ControlsDialog::OnPlusClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value + 1);
-
     wxString label = fromControl->GetLabel();
 
     tValue->SetLabel(label);
@@ -957,7 +956,6 @@ void BR24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event)
 void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
 {
     fromControl = button; // Keep a record of which button was clicked
-
     tValue->SetLabel(button->GetLabel());
     topSizer->Hide(controlBox);
     topSizer->Hide(advancedBox);
@@ -1050,8 +1048,9 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
 
 	if (!radarOn && ! black) 
 	{                          // show full message box with "radar only" button
-//		wxLogMessage(wxT("BR24radar_pi: xx m1 full message box with radar only button"));
+		if (!topSizer->IsShown(messageBox)) {
 		topSizer->Show(messageBox);
+		}
 		messageBox->Show(bRdrOnly);
 		messageBox->Hide(bMsgBack);
 		messageBox->Show(nmeaBox);
@@ -1067,9 +1066,9 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
 	}
 	else if (!radarOn && black) 
 	{                          // show message box without buttons without position
-//		wxLogMessage(wxT("BR24radar_pi: xx m1a message box without buttons without position"));
+		if (!topSizer->IsShown(messageBox)) {
 		topSizer->Show(messageBox);
-		
+		}
 		messageBox->Hide(nmeaSizer);
 		messageBox->Hide(cbHeading);
 		messageBox->Hide(cbBoatPos);
@@ -1086,8 +1085,9 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
 	}
 	else if (!navOn && !black)
 	{                          // message box with radar only button
-	//	wxLogMessage(wxT("BR24radar_pi: xx m2 message box with radar only button"));
+		if (!topSizer->IsShown(messageBox)) {
 		topSizer->Show(messageBox);
+		}
 		messageBox->Show(bRdrOnly);
 		messageBox->Show(nmeaBox);
 		messageBox->Show(cbHeading);
@@ -1102,10 +1102,9 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
         topSizer->Layout();
 	}
 	else if ((navOn || black) && !wantShowMessage)
-	{                     // show control box
+	{                         // show control box
 		if (topSizer->IsShown(messageBox))    
         {
-//		wxLogMessage(wxT("BR24radar_pi: xx control box"));
 		topSizer->Hide(messageBox);
         topSizer->Show(controlBox);
         Fit();
@@ -1113,9 +1112,10 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
 		}
 	}
 	else if (wantShowMessage)
-	{                      // message box with back button
-//		wxLogMessage(wxT("BR24radar_pi: xx mb message box with back button"));
+	{                         // message box with back button
+		if (!topSizer->IsShown(messageBox)) {
 		topSizer->Show(messageBox);
+		}
 		messageBox->Hide(bRdrOnly);
 		messageBox->Show(bMsgBack);
 		messageBox->Show(nmeaBox);
@@ -1138,56 +1138,6 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
     topSizer->Layout();
 }
 	
-	
-/*	if (haveOpenGL && haveRadar && haveData && ((haveGPS && haveHeading) || pPlugIn->settings.display_mode == DM_CHART_BLACKOUT) ) 
-	{
-        if (topSizer->IsShown(messageBox) && !wantShowMessage)
-        {                           // message box is shown not for info
-			                        // conditions are OK, switch to control
-            topSizer->Hide(messageBox);
-            topSizer->Show(controlBox);
-            topSizer->Hide(advancedBox);
-            topSizer->Hide(editBox);
-            Fit();
-            topSizer->Layout();
-        }
-    } else {               // no radar shown, conditions not satisfied
-        if (!topSizer->IsShown(messageBox)) {   // switch from control box to the message box 
-            topSizer->Show(messageBox);    // should be done in any case
-			if (pPlugIn->settings.display_mode == DM_CHART_BLACKOUT){   // blackout mode
-				messageBox->Hide(bRdrOnly);           // you are already in blackout
-
-
-
-			}
-			if (!(haveOpenGL && haveRadar && haveData) || (pPlugIn->settings.display_mode == DM_CHART_BLACKOUT)){
-				messageBox->Hide(bRdrOnly);
-			}
-			else if (!(haveGPS && haveHeading)){
-			messageBox->Show(bMsgBack);
-			}
-			
-            topSizer->Hide(controlBox);
-            topSizer->Hide(advancedBox);
-            topSizer->Hide(editBox);
-            messageBox->Layout();
-            Fit();
-            topSizer->Layout();
-        }
-		if((!haveGPS || !haveHeading) && (pPlugIn->settings.display_mode == DM_CHART_BLACKOUT) && haveOpenGL && haveRadar && haveData) {
-			messageBox->Show(bRdrOnly);  // user wants to show overlay but lacks position or heading
-			messageBox->Hide(bMsgBack);
-			topSizer->Hide(advancedBox);
-			topSizer->Hide(editBox);
-			messageBox->Layout();
-			Fit();
-			topSizer->Layout();
-		}                           
-    }
-
-    editBox->Layout();
-    topSizer->Layout();
-}   */
 
 void BR24ControlsDialog::SetErrorMessage(wxString &msg)
 {

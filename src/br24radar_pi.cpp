@@ -1117,6 +1117,12 @@ void br24radar_pi::DoTick(void)
         return;
     }
 
+	static int testrefresh;
+	if (testrefresh != settings.refreshrate) {
+	testrefresh = settings.refreshrate;
+	}
+
+
     previousTicks = now;
     if (br_bpos_set && TIMER_ELAPSED(br_bpos_watchdog)) {
         // If the position data is 10s old reset our heading.
@@ -1186,9 +1192,9 @@ void br24radar_pi::DoTick(void)
         br_repeat_on_delay--;   // count down the delay timer in every call of DoTick until 0
     }
 
-    if ((settings.passHeadingToOCPN && br_heading_on_radar && br_radar_state == RADAR_ON) || blackout) {
+    if ((settings.passHeadingToOCPN && br_heading_on_radar && br_radar_state == RADAR_ON)) {
         wxString nmeastring;
-		if (blackout) br_hdt = 0;  // heads up in blackout mode
+	//	if (blackout) br_hdt = 0;  // heads up in blackout mode
         nmeastring.Printf(_T("$APHDT,%05.1f,M\r\n"), br_hdt );
         PushNMEABuffer(nmeastring);
     }
@@ -2413,6 +2419,11 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             
+			case CT_REFRESHRATE: {
+				settings.refreshrate = value;
+				break;
+								 }
+
             default: {
                 wxLogMessage(wxT("BR24radar_pi: Unhandled control setting for control %d"), controlType);
             }

@@ -325,7 +325,6 @@ void GuardZoneDialog::OnFilterClick(wxCommandEvent &event)
     {
     int filt = cbFilter->GetValue();
     pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.guard_zone] = filt;
-    // wxLogMessage(wxT("BR24radar_pi: guard zone xxx ON %d filter %d"), pPlugIn->settings.guard_zone, filt);
     }
 
 void GuardZoneDialog::OnClose(wxCloseEvent &event)
