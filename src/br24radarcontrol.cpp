@@ -1050,7 +1050,7 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
 
 	if (!radarOn && ! black) 
 	{                          // show full message box with "radar only" button
-		wxLogMessage(wxT("BR24radar_pi: xx m1 full message box with radar only button"));
+//		wxLogMessage(wxT("BR24radar_pi: xx m1 full message box with radar only button"));
 		topSizer->Show(messageBox);
 		messageBox->Show(bRdrOnly);
 		messageBox->Hide(bMsgBack);
@@ -1067,7 +1067,7 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
 	}
 	else if (!radarOn && black) 
 	{                          // show message box without buttons without position
-		wxLogMessage(wxT("BR24radar_pi: xx m1a message box without buttons without position"));
+//		wxLogMessage(wxT("BR24radar_pi: xx m1a message box without buttons without position"));
 		topSizer->Show(messageBox);
 		
 		messageBox->Hide(nmeaSizer);
@@ -1086,7 +1086,7 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
 	}
 	else if (!navOn && !black)
 	{                          // message box with radar only button
-		wxLogMessage(wxT("BR24radar_pi: xx m2 message box with radar only button"));
+	//	wxLogMessage(wxT("BR24radar_pi: xx m2 message box with radar only button"));
 		topSizer->Show(messageBox);
 		messageBox->Show(bRdrOnly);
 		messageBox->Show(nmeaBox);
@@ -1103,15 +1103,18 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
 	}
 	else if ((navOn || black) && !wantShowMessage)
 	{                     // show control box
-		wxLogMessage(wxT("BR24radar_pi: xx control box"));
+		if (topSizer->IsShown(messageBox))    
+        {
+//		wxLogMessage(wxT("BR24radar_pi: xx control box"));
 		topSizer->Hide(messageBox);
         topSizer->Show(controlBox);
         Fit();
         topSizer->Layout();
+		}
 	}
 	else if (wantShowMessage)
 	{                      // message box with back button
-		wxLogMessage(wxT("BR24radar_pi: xx mb message box with back button"));
+//		wxLogMessage(wxT("BR24radar_pi: xx mb message box with back button"));
 		topSizer->Show(messageBox);
 		messageBox->Hide(bRdrOnly);
 		messageBox->Show(bMsgBack);
