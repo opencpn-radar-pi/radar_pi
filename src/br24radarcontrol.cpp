@@ -446,7 +446,7 @@ void BR24ControlsDialog::CreateControls()
 
     tMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     messageBox->Add(tMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
-    tMessage->SetLabel(_("Radar overlay requires the following data"));
+    tMessage->SetLabel(_("Radar requires the following"));
     tMessage->SetFont(g_font);
 
     wxStaticBox* optionsBox = new wxStaticBox(this, wxID_ANY, _("OpenCPN options"));
@@ -459,9 +459,26 @@ void BR24ControlsDialog::CreateControls()
     cbOpenGL->SetFont(g_font);
     cbOpenGL->Disable();
 
-    wxStaticBox* nmeaBox = new wxStaticBox(this, wxID_ANY, _("Data sources"));
+    ipBox = new wxStaticBox(this, wxID_ANY, _("ZeroConf via Ethernet"));
+    ipBox->SetFont(g_font);
+    wxStaticBoxSizer* ipSizer = new wxStaticBoxSizer(ipBox, wxVERTICAL);
+    messageBox->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);
+
+    cbRadar = new wxCheckBox(this, ID_RADAR, _("Radar present"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    ipSizer->Add(cbRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    cbRadar->SetFont(g_font);
+    cbRadar->Disable();
+
+    cbData = new wxCheckBox(this, ID_DATA, _("Radar sending data"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    ipSizer->Add(cbData, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    cbData->SetFont(g_font);
+    cbData->Disable();
+
+	nmeaBox = new wxStaticBox(this, wxID_ANY, _("For radar overlay also required:"));
     nmeaBox->SetFont(g_font);
-    wxStaticBoxSizer* nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
+
+ //   wxStaticBoxSizer* nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
+	nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
     messageBox->Add(nmeaSizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
     cbBoatPos = new wxCheckBox(this, ID_BPOS, _("Boat position"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
@@ -478,21 +495,6 @@ void BR24ControlsDialog::CreateControls()
     nmeaSizer->Add(cbVariation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     cbVariation->SetFont(g_font);
     cbVariation->Disable();
-
-    ipBox = new wxStaticBox(this, wxID_ANY, _("ZeroConf via Ethernet"));
-    ipBox->SetFont(g_font);
-    wxStaticBoxSizer* ipSizer = new wxStaticBoxSizer(ipBox, wxVERTICAL);
-    messageBox->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);
-
-    cbRadar = new wxCheckBox(this, ID_RADAR, _("Radar present"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    ipSizer->Add(cbRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    cbRadar->SetFont(g_font);
-    cbRadar->Disable();
-
-    cbData = new wxCheckBox(this, ID_DATA, _("Radar sending data"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    ipSizer->Add(cbData, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    cbData->SetFont(g_font);
-    cbData->Disable();
 
     tStatistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, g_buttonSize, 0);
     tStatistics->SetFont(*OCPNGetFont(_("Dialog"), 8));
@@ -933,16 +935,12 @@ void BR24ControlsDialog::OnRdrOnlyButtonClick(wxCommandEvent& event)
 {
 	pPlugIn->settings.display_mode = DM_CHART_BLACKOUT;
 	messageBox->Hide(bRdrOnly);
-    wantShowMessage = false;
-    fromBox = messageBox;
-    topSizer->Hide(messageBox);
-    topSizer->Show(controlBox);
 	wxString label;
 	label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") ;
     bRadarOnly_Overlay->SetLabel(label);
-    Fit();
-    topSizer->Layout();
-	pPlugIn->settings.display_mode = DM_CHART_BLACKOUT;
+ //   Fit();
+ //   topSizer->Layout();
+	
 }
 
 void BR24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event)
@@ -1037,7 +1035,7 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
 }
 
 
-void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData, bool blackout)
+void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData)
 {
     cbOpenGL->SetValue(haveOpenGL);
     cbBoatPos->SetValue(haveGPS);
@@ -1046,9 +1044,103 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
     cbRadar->SetValue(haveRadar);
     cbData->SetValue(haveData);
 
-    if (haveOpenGL && haveRadar && haveData && ((haveGPS && haveHeading) || pPlugIn->settings.display_mode == DM_CHART_BLACKOUT) ) {
+	bool radarOn = haveOpenGL && haveRadar && haveData;
+	bool navOn = haveGPS && haveHeading && haveVariation;
+	bool black = pPlugIn->settings.display_mode == DM_CHART_BLACKOUT;
+
+	if (!radarOn && ! black) 
+	{                          // show full message box with "radar only" button
+		wxLogMessage(wxT("BR24radar_pi: xx m1 full message box with radar only button"));
+		topSizer->Show(messageBox);
+		messageBox->Show(bRdrOnly);
+		messageBox->Hide(bMsgBack);
+		messageBox->Show(nmeaBox);
+		messageBox->Show(cbHeading);
+		messageBox->Show(cbBoatPos);
+		messageBox->Show(cbVariation);
+		topSizer->Hide(controlBox);
+        topSizer->Hide(advancedBox);
+        topSizer->Hide(editBox);
+        messageBox->Layout();
+        Fit();
+        topSizer->Layout();
+	}
+	else if (!radarOn && black) 
+	{                          // show message box without buttons without position
+		wxLogMessage(wxT("BR24radar_pi: xx m1a message box without buttons without position"));
+		topSizer->Show(messageBox);
+		
+		messageBox->Hide(nmeaSizer);
+		messageBox->Hide(cbHeading);
+		messageBox->Hide(cbBoatPos);
+		
+	//	messageBox->Hide(cbVariation);
+		messageBox->Hide(bRdrOnly);
+		messageBox->Hide(bMsgBack);
+		topSizer->Hide(controlBox);
+        topSizer->Hide(advancedBox);
+        topSizer->Hide(editBox);
+        messageBox->Layout();
+        Fit();
+        topSizer->Layout();
+	}
+	else if (!navOn && !black)
+	{                          // message box with radar only button
+		wxLogMessage(wxT("BR24radar_pi: xx m2 message box with radar only button"));
+		topSizer->Show(messageBox);
+		messageBox->Show(bRdrOnly);
+		messageBox->Show(nmeaBox);
+		messageBox->Show(cbHeading);
+		messageBox->Show(cbBoatPos);
+		messageBox->Show(cbVariation);
+		messageBox->Hide(bMsgBack);
+		topSizer->Hide(controlBox);
+        topSizer->Hide(advancedBox);
+        topSizer->Hide(editBox);
+        messageBox->Layout();
+        Fit();
+        topSizer->Layout();
+	}
+	else if ((navOn || black) && !wantShowMessage)
+	{                     // show control box
+		wxLogMessage(wxT("BR24radar_pi: xx control box"));
+		topSizer->Hide(messageBox);
+        topSizer->Show(controlBox);
+        Fit();
+        topSizer->Layout();
+	}
+	else if (wantShowMessage)
+	{                      // message box with back button
+		wxLogMessage(wxT("BR24radar_pi: xx mb message box with back button"));
+		topSizer->Show(messageBox);
+		messageBox->Hide(bRdrOnly);
+		messageBox->Show(bMsgBack);
+		messageBox->Show(nmeaBox);
+		messageBox->Show(cbHeading);
+		messageBox->Show(cbBoatPos);
+		messageBox->Show(cbVariation);
+		topSizer->Hide(controlBox);
+        topSizer->Hide(advancedBox);
+        topSizer->Hide(editBox);
+        messageBox->Layout();
+        Fit();
+        topSizer->Layout();
+	}
+	else 
+	{
+		 wxLogMessage(wxT("BR24radar_pi: XX Update message, case not covered"));
+	}
+
+	editBox->Layout();
+    topSizer->Layout();
+}
+	
+	
+/*	if (haveOpenGL && haveRadar && haveData && ((haveGPS && haveHeading) || pPlugIn->settings.display_mode == DM_CHART_BLACKOUT) ) 
+	{
         if (topSizer->IsShown(messageBox) && !wantShowMessage)
-        {
+        {                           // message box is shown not for info
+			                        // conditions are OK, switch to control
             topSizer->Hide(messageBox);
             topSizer->Show(controlBox);
             topSizer->Hide(advancedBox);
@@ -1058,7 +1150,13 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
         }
     } else {               // no radar shown, conditions not satisfied
         if (!topSizer->IsShown(messageBox)) {   // switch from control box to the message box 
-            topSizer->Show(messageBox);  
+            topSizer->Show(messageBox);    // should be done in any case
+			if (pPlugIn->settings.display_mode == DM_CHART_BLACKOUT){   // blackout mode
+				messageBox->Hide(bRdrOnly);           // you are already in blackout
+
+
+
+			}
 			if (!(haveOpenGL && haveRadar && haveData) || (pPlugIn->settings.display_mode == DM_CHART_BLACKOUT)){
 				messageBox->Hide(bRdrOnly);
 			}
@@ -1086,7 +1184,7 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
 
     editBox->Layout();
     topSizer->Layout();
-}
+}   */
 
 void BR24ControlsDialog::SetErrorMessage(wxString &msg)
 {
@@ -1116,7 +1214,7 @@ void BR24ControlsDialog::SetMcastIPAddress(wxString &msg)
     if (ipBox) {
         wxString label;
 
-        label << _("ZeroConf via Ethernet") << wxT(" ") << msg;
+        label << _("ZeroConf Ethernet") << wxT(" ") << msg;
         ipBox->SetLabel(label);
     }
 }

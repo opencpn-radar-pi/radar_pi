@@ -1216,7 +1216,6 @@ void br24radar_pi::DoTick(void)
                                        , br_var_source != VARIATION_SOURCE_NONE
                                        , br_radar_seen
                                        , br_data_seen
-                                       , blackout
                                        );
     }
 
@@ -1490,6 +1489,14 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
                 glRotatef(rotation, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
                 RenderGuardZone(radar_center, v_scale_ppm, vp);
             }
+			if (blackout) {    // draw heading line
+			glColor4ub(200, 0, 0, 50);
+					 glLineWidth(1);
+					 glBegin(GL_LINES);
+    glVertex2d(0, 0);
+    glVertex2d(br_range_meters * v_scale_ppm, 0);
+    glEnd();
+			} 
         }
     }
     glPopMatrix();
@@ -1657,15 +1664,10 @@ void br24radar_pi::Guard(int max_range)
     for (size_t z = 0; z < GUARD_ZONES; z++) {
         switch (guardZones[z].type) {
         case GZ_CIRCLE:
-      //      wxLogMessage(wxT("BR24radar_pi: GuardZone %d: circle at range %d to %d meters"), z + 1, guardZones[z].inner_range, guardZones[z].outer_range);
             begin_arc = 0;
             end_arc = LINES_PER_ROTATION;
             break;
         case GZ_ARC:
-       //     wxLogMessage(wxT("BR24radar_pi: GuardZone %d: bearing %f to %f range %d to %d meters"), z + 1
-       //         , guardZones[z].start_bearing
-       //         , guardZones[z].end_bearing
-       //         , guardZones[z].inner_range, guardZones[z].outer_range);
 			begin_arc = guardZones[z].start_bearing;
 			end_arc = guardZones[z].end_bearing;
 			if (!blackout) {

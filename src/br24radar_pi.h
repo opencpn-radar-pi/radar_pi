@@ -716,7 +716,7 @@ public:
     void SetRangeIndex(size_t index);
     void SetTimedIdleIndex(int index);
     void UpdateGuardZoneState();
-    void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData, bool blackout);
+    void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
     void SetErrorMessage(wxString &msg);
     void SetRadarIPAddress(wxString &msg);
     void SetMcastIPAddress(wxString &msg);
@@ -757,10 +757,12 @@ private:
 
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
-
+	wxBoxSizer        *nmeaSizer;
     wxBoxSizer        *topSizer;
+
     wxBoxSizer        *messageBox;   // Contains NO HDG and/or NO GPS
     wxStaticBox       *ipBox;
+	wxStaticBox	      *nmeaBox;
     wxBoxSizer        *editBox;
     wxBoxSizer        *advancedBox;
     wxBoxSizer        *advanced4gBox;
