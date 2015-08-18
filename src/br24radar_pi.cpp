@@ -3134,12 +3134,10 @@ void *RadarCommandReceiveThread::Entry(void)
     //    Loop until we quit
     while (!*m_quit) {
 		if (rx_socket == INVALID_SOCKET && pPlugIn->settings.display_mode != DM_EMULATOR) {
-			if (pPlugIn->settings.selectABRadar == 1) {   //  select B radar
-				rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6658, "236.6.7.14");
-			}
-			else {                                        // select A radar
-				rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6680, "236.6.7.10");
-			}
+				rx_socketA = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6658, "236.6.7.14");
+			                             //  socket for B radar
+				rx_socketB = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6680, "236.6.7.10");
+			                             // socket for A radar
 			// If it is still INVALID_SOCKET now we just sleep for 1s in socketReady
 			if (rx_socket != INVALID_SOCKET) {
 				wxLogMessage(wxT("Listening for commands"));

@@ -474,7 +474,7 @@ void BR24ControlsDialog::CreateControls()
     cbData->SetFont(g_font);
     cbData->Disable();
 
-	nmeaBox = new wxStaticBox(this, wxID_ANY, _("For radar overlay also required:"));
+	nmeaBox = new wxStaticBox(this, wxID_ANY, _("For radar overlay also required"));
     nmeaBox->SetFont(g_font);
 
  //   wxStaticBoxSizer* nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
@@ -1045,18 +1045,36 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
 	bool radarOn = haveOpenGL && haveRadar && haveData;
 	bool navOn = haveGPS && haveHeading && haveVariation;
 	bool black = pPlugIn->settings.display_mode == DM_CHART_BLACKOUT;
+	/*
+	Decision table to select the message or control box
+	- means not relevant
 
-	if (!radarOn && ! black) 
-	{                          // show full message box with "radar only" button
+    case nr        1   2   3   4   5   6   7   8   9   10  11
+	box type       m1  m2  m3  m3  m1  c   c   c   mb  mb  mb
+	_________________________________________________________
+	radarOn        0   0   0   0   1   1   1   1   1   1   1   
+	navOn          0   1   0   1   0   1   0   1   1   0   1
+	black          0   0   1   1   0   0   1   1   0   1   1
+	want_message   -   -   -   -   -   0   0   0   1   1   1
+
+	m1    message box plus radar only button 
+	m2    message box
+	m3    message box without NMEA (no buttons)
+	c     control box
+	mb    message box with back button
+
+	*/
+	if (! black && !navOn)               // case 1 and 5
+	{                                    // m1    message box plus radar only button 
 		if (!topSizer->IsShown(messageBox)) {
 		topSizer->Show(messageBox);
 		}
 		messageBox->Show(bRdrOnly);
 		messageBox->Hide(bMsgBack);
 		messageBox->Show(nmeaBox);
-		messageBox->Show(cbHeading);
-		messageBox->Show(cbBoatPos);
-		messageBox->Show(cbVariation);
+	//	messageBox->Show(cbHeading);
+	//	messageBox->Show(cbBoatPos);
+	//	messageBox->Show(cbVariation);
 		topSizer->Hide(controlBox);
         topSizer->Hide(advancedBox);
         topSizer->Hide(editBox);
@@ -1064,16 +1082,32 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
         Fit();
         topSizer->Layout();
 	}
-	else if (!radarOn && black) 
-	{                          // show message box without buttons without position
+	else if (!radarOn && ! black && navOn)   // case 2
+	{                                        // m2    message box
+		if (!topSizer->IsShown(messageBox)) {
+		topSizer->Show(messageBox);
+		}
+		messageBox->Hide(bRdrOnly);
+		messageBox->Hide(bMsgBack);
+		messageBox->Show(nmeaBox);
+	//	messageBox->Show(cbHeading);
+	//	messageBox->Show(cbBoatPos);
+	//	messageBox->Show(cbVariation);
+		topSizer->Hide(controlBox);
+        topSizer->Hide(advancedBox);
+        topSizer->Hide(editBox);
+        messageBox->Layout();
+        Fit();
+        topSizer->Layout();
+	}
+	else if (!radarOn && black)           // case 3 and 4
+	{                                     // m3    message box without NMEA (no buttons)
 		if (!topSizer->IsShown(messageBox)) {
 		topSizer->Show(messageBox);
 		}
 		messageBox->Hide(nmeaSizer);
-		messageBox->Hide(cbHeading);
-		messageBox->Hide(cbBoatPos);
-		
-	//	messageBox->Hide(cbVariation);
+	//	messageBox->Hide(cbHeading);
+	//	messageBox->Hide(cbBoatPos);
 		messageBox->Hide(bRdrOnly);
 		messageBox->Hide(bMsgBack);
 		topSizer->Hide(controlBox);
@@ -1083,26 +1117,8 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
         Fit();
         topSizer->Layout();
 	}
-	else if (!navOn && !black)
-	{                          // message box with radar only button
-		if (!topSizer->IsShown(messageBox)) {
-		topSizer->Show(messageBox);
-		}
-		messageBox->Show(bRdrOnly);
-		messageBox->Show(nmeaBox);
-		messageBox->Show(cbHeading);
-		messageBox->Show(cbBoatPos);
-		messageBox->Show(cbVariation);
-		messageBox->Hide(bMsgBack);
-		topSizer->Hide(controlBox);
-        topSizer->Hide(advancedBox);
-        topSizer->Hide(editBox);
-        messageBox->Layout();
-        Fit();
-        topSizer->Layout();
-	}
-	else if ((navOn || black) && !wantShowMessage)
-	{                         // show control box
+	else if ((navOn || black) && !wantShowMessage)     //  case 6, 7 and 8
+	{                                                  //  c     control box
 		if (topSizer->IsShown(messageBox))    
         {
 		topSizer->Hide(messageBox);
@@ -1111,17 +1127,17 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
         topSizer->Layout();
 		}
 	}
-	else if (wantShowMessage)
-	{                         // message box with back button
+	else if (wantShowMessage)          // case 9, 10 and 11
+	{                                  // mb    message box with back button
 		if (!topSizer->IsShown(messageBox)) {
 		topSizer->Show(messageBox);
 		}
 		messageBox->Hide(bRdrOnly);
 		messageBox->Show(bMsgBack);
 		messageBox->Show(nmeaBox);
-		messageBox->Show(cbHeading);
-		messageBox->Show(cbBoatPos);
-		messageBox->Show(cbVariation);
+	//	messageBox->Show(cbHeading);
+	//	messageBox->Show(cbBoatPos);
+	//	messageBox->Show(cbVariation);
 		topSizer->Hide(controlBox);
         topSizer->Hide(advancedBox);
         topSizer->Hide(editBox);
