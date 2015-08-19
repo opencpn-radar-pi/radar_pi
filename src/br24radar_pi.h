@@ -284,7 +284,7 @@ struct radar_control_settings {
                                       //  1: guard zone 2 filter state;
                                       //  2: display filter state, modified in gain control;
                                       //  these values are not saved, for safety reasons user must set them after each start
-    int      selectABRadar;
+    int      selectRadarB;
     wxString alert_audio_file;
 };
 
@@ -592,7 +592,7 @@ private:
     wxSlider          *pIntervalSlider;
     wxTextCtrl        *pText_Heading_Correction_Value;
     wxCheckBox        *cbPassHeading;
-    wxCheckBox        *cbSelectABRadar;
+    wxCheckBox        *cbselectRadarB;
 };
 
 
