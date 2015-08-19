@@ -150,7 +150,6 @@ int br_previous_auto_range_meters = 0;
 bool br_update_range_control = false;
 bool br_update_address_control = false;
 bool br_update_error_control = false;
-bool radarB = false;
 wxString br_ip_address; // Current IP address of the ethernet interface that we're doing multicast receive on.
 wxString br_error_msg;
 
@@ -1933,12 +1932,7 @@ bool br24radar_pi::LoadConfig(void)
 
         pConf->Read(wxT("PassHeadingToOCPN"), &settings.passHeadingToOCPN, 0);
         pConf->Read(wxT("selectRadarB"), &settings.selectRadarB, 0);
-		if( settings.selectRadarB == 0) {
-			radarB = false;
-		}
-		else {
-			radarB = true;
-		}
+		
         pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
         pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
         pConf->Read(wxT("ControlsDialogPosX"), &m_BR24Controls_dialog_x, 20L);
@@ -2173,7 +2167,7 @@ void br24radar_pi::TransmitCmd(UINT8 * msg, int size)
     struct sockaddr_in adr;
     memset(&adr, 0, sizeof(adr));
     adr.sin_family = AF_INET;
-	if (radarB) {   //  select B radar
+	if (settings.selectRadarB == 1) {   //  select B radar
     adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 14); // 236.6.7.14
     adr.sin_port=htons(6658);
 	}
@@ -2823,24 +2817,18 @@ void *RadarDataReceiveThread::Entry(void)
                     wxLogMessage(wxT("BR24radar_pi: Listening for radarB data on %s"), addr.c_str());
                 }
             }
-			if (radarB)   {     //  select B radar
+			if (pPlugIn->settings.selectRadarB == 1)   {     //  select B radar
 				if (socketReady(rx_socketB, 1000)) {
 					radar_frame_pkt packet;
 					rx_len = sizeof(rx_addr);
 					r = recvfrom(rx_socketB, (char *) &packet, sizeof(packet), 0, (struct sockaddr *) &rx_addr, &rx_len);
 					if (r > 0) {
 						process_buffer(&packet, r);
-					//	if (pPlugIn->m_statistics.spokes > pPlugIn->m_statistics.broken_spokes) {
-					//		time_t now = time(0);              // do this already here, too late in dotick
-					//		br_data_watchdog = now;
-					//		br_data_seen = true;
-					//	}
 					}
 	//				if (r < 0 || !br_mcast_addr || !br_data_seen || !br_radar_seen) {
 					if (r < 0 || !br_mcast_addr || !br_radar_seen) {
 						closesocket(rx_socketB);
 						rx_socketB = INVALID_SOCKET;
-					//	wxLogMessage(wxT("BR24radar_pi: xxxsockets closed for radarB "));
 					}
 				}
 			}
@@ -3443,7 +3431,7 @@ void *RadarReportReceiveThread::Entry(void)
                     if (!br_radar_seen) {
                         wxLogMessage(wxT("BR24radar_pi: detected radar A at %s"), addr.c_str());
                     }
-					if (!radarB) {
+					if (!pPlugIn->settings.selectRadarB == 1) {
 						br_radar_seen = true;
 						br_radar_watchdog = time(0);
 					}
@@ -3451,7 +3439,7 @@ void *RadarReportReceiveThread::Entry(void)
             }
 
 			//  check socket B for reports
-			if (socketReady(rx_socketB, 1000)) {
+			if (socketReady(rx_socketB, 1000) && pPlugIn->settings.selectRadarB == 1) {
 				rb = recvfrom(rx_socketB, (char * ) report, sizeof(report), 0, (struct sockaddr *) &rx_addr, &rx_len);
 				if (rb > 0) {
 					if (ProcessIncomingReport(report, rb)) {
@@ -3468,7 +3456,7 @@ void *RadarReportReceiveThread::Entry(void)
 						if (!br_radar_seen) {
 							wxLogMessage(wxT("BR24radar_pi: detected radar B at %s"), addr.c_str());
 						}
-						if (radarB) {
+						if (pPlugIn->settings.selectRadarB == 1) {
 							br_radar_seen = true;
 							br_radar_watchdog = time(0);
 						}
