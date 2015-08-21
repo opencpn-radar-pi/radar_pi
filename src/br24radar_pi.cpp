@@ -3440,7 +3440,7 @@ void *RadarReportReceiveThread::Entry(void)
                 }
             }
 
-			//  check socket B for reports
+			//  check socket B for reports  NB will not work as receive on A is blocking. Needs seperate thread
 			if (socketReady(rx_socketB, 1000) && pPlugIn->settings.selectRadarB == 1) {
 				rb = recvfrom(rx_socketB, (char * ) report, sizeof(report), 0, (struct sockaddr *) &rx_addr, &rx_len);
 				if (rb > 0) {
