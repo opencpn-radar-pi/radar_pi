@@ -1487,24 +1487,26 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
             DrawRadarImage(meters, radar_center);
         }
         glPopMatrix();
-        // Guard Zone image
+
+        // Guard Zone image and heading line for radar only
         if (br_radar_state == RADAR_ON) {
-            if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
-				double rotation = -settings.heading_correction + vp->skew * settings.skew_factor;
+			double rotation = -settings.heading_correction + vp->skew * settings.skew_factor;
 				if (!blackout) rotation += br_hdt;
                 glRotatef(rotation, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
-                RenderGuardZone(radar_center, v_scale_ppm, vp);
-            }
-			if (blackout) {    // draw heading line
-			glColor4ub(200, 0, 0, 50);
-					 glLineWidth(1);
-					 glBegin(GL_LINES);
-    glVertex2d(0, 0);
-    glVertex2d(br_range_meters * v_scale_ppm, 0);
-    glEnd();
+				if (blackout) {    // draw heading line
+				glColor4ub(200, 0, 0, 50);
+				glLineWidth(1);
+				glBegin(GL_LINES);
+				glVertex2d(0, 0);
+				glVertex2d(br_range_meters * v_scale_ppm, 0);
+				glEnd();
 			} 
-        }
-    }
+            if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
+                RenderGuardZone(radar_center, v_scale_ppm, vp);
+			}
+			
+		}
+	}
     glPopMatrix();
     glPopAttrib();
 }        // end of RenderRadarOverlay
