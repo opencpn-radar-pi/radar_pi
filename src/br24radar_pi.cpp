@@ -2895,7 +2895,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         return;
     }
     int scanlines_in_packet = (len - sizeof(packet->frame_hdr)) / sizeof(radar_line);
-	wxLogMessage(wxT("BR24radar_pi: XX packet proces buffer received scanlines %d"),scanlines_in_packet );
     if (scanlines_in_packet != 32) {
         pPlugIn->m_statistics.broken_packets++;
     }
