@@ -438,8 +438,8 @@ int br24radar_pi::Init(void)
     for (int i = 0; i < LINES_PER_ROTATION - 1; i++) {   // initialise history bytes
         memset (&m_scan_line[i].history, 0, sizeof(m_scan_line[i].history));
         }
-   wxLogMessage(wxT("BR24radar_pi: size of scanline %d"), sizeof(m_scan_line[1].history));
-     memset (&m_scan_line[LINES_PER_ROTATION - 1].history, 1, sizeof(m_scan_line[LINES_PER_ROTATION].history));
+    wxLogMessage(wxT("BR24radar_pi: size of scanline %d"), sizeof(m_scan_line[1].history));
+    memset (&m_scan_line[LINES_PER_ROTATION - 1].history, 1, sizeof(m_scan_line[LINES_PER_ROTATION].history));
      // last ones on 1 to display range circle    does not seem to work ???
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
