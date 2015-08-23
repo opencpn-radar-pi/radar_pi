@@ -458,7 +458,7 @@ private:
     int                       m_sent_bm_id_rollover;
 
     volatile bool             m_quit;
-
+	volatile int				AB;
     enum HeadingSource { HEADING_NONE, HEADING_HDM, HEADING_HDT, HEADING_COG, HEADING_RADAR };
     HeadingSource             m_heading_source;
 
@@ -472,10 +472,11 @@ class RadarDataReceiveThread: public wxThread
 
 public:
 
-    RadarDataReceiveThread(br24radar_pi *ppi, volatile bool * quit)
+    RadarDataReceiveThread(br24radar_pi *ppi, volatile bool * quit, int *AB)
     : wxThread(wxTHREAD_JOINABLE)
     , pPlugIn(ppi)
     , m_quit(quit)
+	, AB(AB)
     {
         //      wxLogMessage(_T("BR24 radar thread starting for multicast address %ls port %ls"), m_ip.c_str(), m_service_port.c_str());
         Create(1024 * 1024);
@@ -494,6 +495,7 @@ private:
     wxString           m_ip;
     volatile bool    * m_quit;
     wxIPV4address      m_myaddr;
+	volatile int   *AB;
 };
 
 class RadarCommandReceiveThread: public wxThread

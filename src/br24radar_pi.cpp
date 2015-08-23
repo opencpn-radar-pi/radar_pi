@@ -560,7 +560,8 @@ int br24radar_pi::Init(void)
 
     //    Create the THREAD for Multicast radar data reception
     m_quit = false;
-    m_dataReceiveThread = new RadarDataReceiveThread(this, &m_quit);
+	int AA = 3;
+    m_dataReceiveThread = new RadarDataReceiveThread(this, &m_quit, &AA);
     m_dataReceiveThread->Run();
     m_commandReceiveThread = 0;
     m_commandReceiveThread = new RadarCommandReceiveThread(this, &m_quit);
@@ -2789,7 +2790,8 @@ void *RadarDataReceiveThread::Entry(void)
 
     sockaddr_storage rx_addr;
     socklen_t        rx_len;
-
+//	if (AB == 0) {};
+	wxLogMessage(wxT("BR24radar_pi:XXX  AB = %d"), *AB);
     //    Loop until we quit
     while (!*m_quit) {
         if (pPlugIn->settings.display_mode == DM_EMULATOR) {
