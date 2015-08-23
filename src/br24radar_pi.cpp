@@ -165,6 +165,7 @@ bool  br_send_state;
 RadarType br_radar_type = RT_UNKNOWN;
 
 static bool  br_radar_seen = false;
+static double gLon, gLat;   // used for the initial boat position as read from ini file
 static bool  br_data_seen = false;
 static bool  br_opengl_mode = false;
 static time_t      br_bpos_watchdog;
@@ -1213,7 +1214,9 @@ void br24radar_pi::DoTick(void)
     }
     if (settings.verbose >= 1) {
         t.Replace(wxT("\n"), wxT(" "));
-        wxLogMessage(wxT("BR24radar_pi: received %s, %d %d %d %d"), t.c_str(), br_bpos_set, m_heading_source, br_radar_seen, br_data_seen);
+		if (settings.verbose) {
+			wxLogMessage(wxT("BR24radar_pi: received %s, %d %d %d %d"), t.c_str(), br_bpos_set, m_heading_source, br_radar_seen, br_data_seen);
+		}
     }
 
     if (m_pControlDialog) {
@@ -1336,13 +1339,14 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     DoTick(); // update timers and watchdogs
     UpdateState(); // update the toolbar
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
-    wxPoint boat_center;
+    wxPoint boat_center, pp;
     if (br_bpos_set) {
-        wxPoint pp;
         GetCanvasPixLL(vp, &pp, br_ownship_lat, br_ownship_lon);
         boat_center = pp;
     } else {
-        boat_center = center_screen;
+		GetCanvasPixLL(vp, &pp, gLat, gLon);
+		boat_center = pp;
+     //   boat_center = center_screen;
     }
 
     // set the IP address info in the control box if signalled by the receive thread
@@ -1892,7 +1896,26 @@ bool br24radar_pi::LoadConfig(void)
 
     wxFileConfig *pConf = m_pconfig;
 
-    if (pConf) {
+	if (pConf) {
+
+		wxString sll;
+		double lat, lon;
+		pConf->SetPath(wxT("/Settings/GlobalState"));
+		if (pConf->Read(wxT("OwnShipLatLon"), &sll)) {
+			sscanf(sll.mb_str(wxConvUTF8), "%lf,%lf", &lat, &lon);
+
+			//    Sanity check the lat/lon...both have to be reasonable.
+			if (fabs(lon) < 360.) {
+				while (lon < -180.)
+					lon += 360.;
+				while (lon > 180.)
+					lon -= 360.;
+				gLon = lon;
+			}
+			if (fabs(lat) < 90.0) gLat = lat;
+		}
+			wxLogMessage(wxT("BR24radar_pi:  latlon read %g %g"), gLat, gLon);
+			
         pConf->SetPath(wxT("/Plugins/BR24Radar"));
         pConf->Read(wxT("DisplayOption"), &settings.display_option, 0);
         pConf->Read(wxT("RangeUnits" ), &settings.range_units, 0 ); //0 = "Nautical miles"), 1 = "Kilometers"
