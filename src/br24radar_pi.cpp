@@ -1342,6 +1342,8 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     if (br_bpos_set) {
         GetCanvasPixLL(vp, &pp, br_ownship_lat, br_ownship_lon);
         boat_center = pp;
+		gLat = br_ownship_lat;
+		gLon = br_ownship_lon;
     } else {
 		GetCanvasPixLL(vp, &pp, gLat, gLon);
 		boat_center = pp;
