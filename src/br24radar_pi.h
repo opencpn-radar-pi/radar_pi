@@ -249,30 +249,21 @@ static const int RangeUnitsToMeters[2] = {
 #define MIN_AGE (4)
 #define MAX_AGE (12)
 
-struct radar_control_settings {
+struct pi_control_settings {
     int      overlay_transparency;    // now 0-100, no longer a double
     int      verbose;
-    bool     auto_range_mode;
-    int      range_index;
     int      display_option;
     DisplayModeType display_mode;
     int      guard_zone;            // active zone (0 = none,1,2)
     int      guard_zone_threshold;  // How many blobs must be sent by radar before we fire alarm
     int      guard_zone_render_style;
-    int      gain;
-    int      interference_rejection;
-    int      target_separation;
-    int      noise_rejection;
-    int      target_boost;
-    int      filter_process;
-    int      sea_clutter_gain;
-    int      rain_clutter_gain;
+ //   int      filter_process;
     double   range_calibration;
     double   heading_correction;
     double   skew_factor;
     int      range_units;       // 0 = Nautical miles, 1 = Kilometers
     int      range_unit_meters; // ... 1852 or 1000, depending on range_units
-    int      beam_width;
+ //   int      beam_width;
     int      max_age;
     int      timed_idle;
     int      idle_run_time;
@@ -288,6 +279,23 @@ struct radar_control_settings {
     wxString alert_audio_file;
 };
 
+struct radar_control_item{
+	int value;
+	int button;
+	bool mod;
+};
+
+struct radar_control_setting{
+	bool                    mod;
+	radar_control_item      range;
+	radar_control_item      gain;
+	radar_control_item      interference_rejection;
+	radar_control_item      target_separation;
+	radar_control_item      noise_rejection;
+	radar_control_item      target_boost;
+	radar_control_item      sea;
+	radar_control_item      rain;
+};
 struct guard_zone_settings {
     int type;                   // 0 = circle, 1 = arc
     int inner_range;            // now in meters
@@ -391,7 +399,9 @@ public:
     long GetOptimalRangeMeters();
     void SetRangeMeters(long range);
 
-    radar_control_settings settings;
+    pi_control_settings settings;
+	radar_control_setting radar_setting[2];
+	int A_B;
 
     scan_line                 m_scan_line[LINES_PER_ROTATION];
 

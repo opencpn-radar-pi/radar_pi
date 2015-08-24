@@ -433,6 +433,7 @@ int br24radar_pi::Init(void)
     br_data_watchdog = 0;
     br_idle_watchdog = 0;
 	memset(&bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
+	memset(&radar_setting, 0, sizeof(radar_setting));   // set bogey count 0 
     settings.multi_sweep_filter[0] = 0;
     settings.multi_sweep_filter[1] = 0;
     settings.multi_sweep_filter[2] = 0;
@@ -465,7 +466,6 @@ int br24radar_pi::Init(void)
 
     settings.guard_zone = 0;   // this used to be active guard zone, now it means which guard zone window is active
     settings.display_mode = DM_CHART_OVERLAY;
-    settings.auto_range_mode = true;                    // starts with auto range change
     settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
     settings.refreshrate = 1;
     settings.timed_idle = 0;
@@ -920,6 +920,7 @@ void BR24DisplayOptionsDialog::OnPassHeadingClick(wxCommandEvent &event)
 void BR24DisplayOptionsDialog::OnSelectABClick(wxCommandEvent &event)
 {   
 	pPlugIn->settings.selectRadarB = cbselectRadarB->GetValue();
+	A_B = pPlugIn->settings.selectRadarB;
 }
 
 void BR24DisplayOptionsDialog::OnClose(wxCloseEvent& event)
@@ -1927,16 +1928,8 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(wxT("DisplayMode"),  (int *) &settings.display_mode, 0);
         pConf->Read(wxT("VerboseLog"),  &settings.verbose, 0);
         pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
-        pConf->Read(wxT("Gain"),  &settings.gain, -1);
-        pConf->Read(wxT("RainGain"),  &settings.rain_clutter_gain, 50);
-        pConf->Read(wxT("ClutterGain"),  &settings.sea_clutter_gain, -1);
         pConf->Read(wxT("RangeCalibration"),  &settings.range_calibration, 1.0);
         pConf->Read(wxT("HeadingCorrection"),  &settings.heading_correction, 0);
-        pConf->Read(wxT("BeamWidth"), &settings.beam_width, 2);
-        pConf->Read(wxT("InterferenceRejection"), &settings.interference_rejection, 0);
-        pConf->Read(wxT("TargetSeparation"), &settings.target_separation, 0);
-        pConf->Read(wxT("NoiseRejection"), &settings.noise_rejection, 0);
-        pConf->Read(wxT("TargetBoost"), &settings.target_boost, 0);
         pConf->Read(wxT("ScanMaxAge"), &settings.max_age, MIN_AGE);
         if (settings.max_age < MIN_AGE) {
             settings.max_age = MIN_AGE;
@@ -1959,6 +1952,7 @@ bool br24radar_pi::LoadConfig(void)
 
         pConf->Read(wxT("PassHeadingToOCPN"), &settings.passHeadingToOCPN, 0);
         pConf->Read(wxT("selectRadarB"), &settings.selectRadarB, 0);
+		A_B = settings.selectRadarB;
 		
         pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
         pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
@@ -2002,16 +1996,8 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("DisplayMode"), (int)settings.display_mode);
         pConf->Write(wxT("VerboseLog"), settings.verbose);
         pConf->Write(wxT("Transparency"), settings.overlay_transparency);
-        pConf->Write(wxT("Gain"), settings.gain);
-        pConf->Write(wxT("RainGain"), settings.rain_clutter_gain);
-        pConf->Write(wxT("ClutterGain"), settings.sea_clutter_gain);
         pConf->Write(wxT("RangeCalibration"),  settings.range_calibration);
         pConf->Write(wxT("HeadingCorrection"),  settings.heading_correction);
-        pConf->Write(wxT("BeamWidth"),  settings.beam_width);
-        pConf->Write(wxT("InterferenceRejection"), settings.interference_rejection);
-        pConf->Write(wxT("TargetSeparation"), settings.target_separation);
-        pConf->Write(wxT("NoiseRejection"), settings.noise_rejection);
-        pConf->Write(wxT("TargetBoost"), settings.target_boost);
         pConf->Write(wxT("GuardZonesThreshold"), settings.guard_zone_threshold);
         pConf->Write(wxT("GuardZonesRenderStyle"), settings.guard_zone_render_style);
         pConf->Write(wxT("ScanMaxAge"), settings.max_age);
@@ -2237,24 +2223,24 @@ void br24radar_pi::RadarStayAlive(void)
     TransmitCmd(pck, sizeof(pck));
 }
 
-void br24radar_pi::RadarSendState(void)
-{
-    SetControlValue(CT_GAIN, settings.gain);
-    SetControlValue(CT_RAIN, settings.rain_clutter_gain);
-    SetControlValue(CT_SEA, settings.sea_clutter_gain);
-    SetControlValue(CT_INTERFERENCE_REJECTION, settings.interference_rejection);
-    SetControlValue(CT_TARGET_SEPARATION, settings.target_separation);
-    SetControlValue(CT_NOISE_REJECTION, settings.noise_rejection);
-    SetControlValue(CT_TARGET_BOOST, settings.target_boost);
-    SetControlValue(CT_SCAN_SPEED, settings.scan_speed);
-
-    int displayedRange = br_commanded_range_meters ? br_commanded_range_meters : br_auto_range_meters;
-    size_t idx = convertMetersToRadarAllowedValue(&displayedRange, settings.range_units, br_radar_type);
-    if (m_pControlDialog) {
-        m_pControlDialog->SetRangeIndex(idx);
-    }
-    SetRangeMeters(br_commanded_range_meters);
-}
+//void br24radar_pi::RadarSendState(void)
+//{
+//    SetControlValue(CT_GAIN, settings.gain);
+//    SetControlValue(CT_RAIN, settings.rain_clutter_gain);
+//    SetControlValue(CT_SEA, settings.sea_clutter_gain);
+//    SetControlValue(CT_INTERFERENCE_REJECTION, settings.interference_rejection);
+//    SetControlValue(CT_TARGET_SEPARATION, settings.target_separation);
+//    SetControlValue(CT_NOISE_REJECTION, settings.noise_rejection);
+//    SetControlValue(CT_TARGET_BOOST, settings.target_boost);
+//    SetControlValue(CT_SCAN_SPEED, settings.scan_speed);
+//
+//    int displayedRange = br_commanded_range_meters ? br_commanded_range_meters : br_auto_range_meters;
+//    size_t idx = convertMetersToRadarAllowedValue(&displayedRange, settings.range_units, br_radar_type);
+//    if (m_pControlDialog) {
+//        m_pControlDialog->SetRangeIndex(idx);
+//    }
+//    SetRangeMeters(br_commanded_range_meters);
+//}
 
 void br24radar_pi::SetRangeMeters(long meters)
 {
@@ -3465,30 +3451,30 @@ void *RadarReportReceiveThread::Entry(void)
             }
 
 			//  check socket B for reports  NB will not work as receive on A is blocking. Needs seperate thread
-			if (socketReady(rx_socketB, 1000) && pPlugIn->settings.selectRadarB == 1) {
-				rb = recvfrom(rx_socketB, (char * ) report, sizeof(report), 0, (struct sockaddr *) &rx_addr, &rx_len);
-				if (rb > 0) {
-					if (ProcessIncomingReport(report, rb)) {
-						memcpy(&mcastFoundAddr, ifa->ifa_addr, sizeof(mcastFoundAddr));
-						br_mcast_addr = &mcastFoundAddr;
-						memcpy(&radarFoundAddr, &rx_addr, sizeof(radarFoundAddr));
-						br_radar_addr = &radarFoundAddr;
+			//if (socketReady(rx_socketB, 1000) && pPlugIn->settings.selectRadarB == 1) {
+			//	rb = recvfrom(rx_socketB, (char * ) report, sizeof(report), 0, (struct sockaddr *) &rx_addr, &rx_len);
+			//	if (rb > 0) {
+			//		if (ProcessIncomingReport(report, rb)) {
+			//			memcpy(&mcastFoundAddr, ifa->ifa_addr, sizeof(mcastFoundAddr));
+			//			br_mcast_addr = &mcastFoundAddr;
+			//			memcpy(&radarFoundAddr, &rx_addr, sizeof(radarFoundAddr));
+			//			br_radar_addr = &radarFoundAddr;
 
-						wxString addr;
-						UINT8 * a = (UINT8 *) &br_radar_addr->sin_addr; // sin_addr is in network layout
-						addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
-						br_ip_address = addr;
-						br_update_address_control = true;   //signals to RenderGLOverlay that the control box should be updated
-						if (!br_radar_seen) {
-							wxLogMessage(wxT("BR24radar_pi: detected radar B at %s"), addr.c_str());
-						}
-						if (pPlugIn->settings.selectRadarB == 1) {
-							br_radar_seen = true;
-							br_radar_watchdog = time(0);
-						}
-					}
-				}
-			}
+			//			wxString addr;
+			//			UINT8 * a = (UINT8 *) &br_radar_addr->sin_addr; // sin_addr is in network layout
+			//			addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
+			//			br_ip_address = addr;
+			//			br_update_address_control = true;   //signals to RenderGLOverlay that the control box should be updated
+			//			if (!br_radar_seen) {
+			//				wxLogMessage(wxT("BR24radar_pi: detected radar B at %s"), addr.c_str());
+			//			}
+			//			if (pPlugIn->settings.selectRadarB == 1) {
+			//				br_radar_seen = true;
+			//				br_radar_watchdog = time(0);
+			//			}
+			//		}
+			//	}
+			//}
 
 
 
@@ -3555,11 +3541,12 @@ struct radar_state {
 bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 {
     static char prevStatus = 0;
-
+	logBinaryData(wxT("report received"), command, len);
     if (command[1] == 0xC4) {
         // Looks like a radar report. Is it a known one?
         switch ((len << 8) + command[0]) {
             case (18 << 8) + 0x01:
+
                 // Radar status in byte 2
                 if (command[2] != prevStatus) {
              //       if (pPlugIn->settings.verbose > 0) {
@@ -3574,6 +3561,32 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
         //        if (pPlugIn->settings.verbose > 0) {
 				 {
                     radar_state * s = (radar_state *) command;
+					
+					if (pPlugIn->radar_setting[0].gain.value != s->gain){
+						pPlugIn->radar_setting[0].gain.mod = true;
+						pPlugIn->radar_setting[0].gain.value = s->gain;
+						pPlugIn->radar_setting[0].mod = true;
+					}
+					if (pPlugIn->radar_setting[0].range.value != s->range){
+						pPlugIn->radar_setting[0].range.mod = true;
+						pPlugIn->radar_setting[0].range.value = s->range;
+						pPlugIn->radar_setting[0].mod = true;
+					}
+					if (pPlugIn->radar_setting[0].rain.value != s->rain){
+						pPlugIn->radar_setting[0].rain.mod = true;
+						pPlugIn->radar_setting[0].rain.value = s->rain;
+						pPlugIn->radar_setting[0].mod = true;
+					}
+					if (pPlugIn->radar_setting[0].sea.value != s->sea){
+						pPlugIn->radar_setting[0].sea.mod = true;
+						pPlugIn->radar_setting[0].sea.value = s->sea;
+						pPlugIn->radar_setting[0].mod = true;
+					}
+					if (pPlugIn->radar_setting[0].target_boost.value != s->target_boost){
+						pPlugIn->radar_setting[0].target_boost.mod = true;
+						pPlugIn->radar_setting[0].target_boost.value = s->target_boost;
+						pPlugIn->radar_setting[0].mod = true;
+					}
 
                     wxLogMessage(wxT("BR24radar_pi: XXradar state range=%u f2=%u f3=%u gain=%u f4b=%u sea=%u rain=%u f6b=%u f6c=%u f6d=%u rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
                                  , s->range
@@ -3597,7 +3610,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
                                  , s->field13
                                  , s->field14
                                  );
-                    logBinaryData(wxT("state"), command, len);
+             //       logBinaryData(wxT("state"), command, len);
                 }
                 break;
 
