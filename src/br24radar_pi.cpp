@@ -2271,7 +2271,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
     if (br_radar_state == RADAR_ON || controlType == CT_TRANSPARENCY || controlType == CT_SCAN_AGE) {
         switch (controlType) {
             case CT_GAIN: {
-                settings.gain = value;
+      //          settings.gain = value;
                 if (value < 0) {                // AUTO gain
                     UINT8 cmd[] = {
                         0x06,
@@ -2302,7 +2302,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             case CT_RAIN: {                       // Rain Clutter - Manual. Range is 0x01 to 0x50
-                settings.rain_clutter_gain = value;
+    //            settings.rain_clutter_gain = value;
                 int v = value * 0x50 / 100;
                 if (v > 255) {
                     v = 255;
@@ -2322,7 +2322,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             case CT_SEA: {
-                settings.sea_clutter_gain = value;
+  //              settings.sea_clutter_gain = value;
                 if (value < 0) {                 // Sea Clutter - Auto
                     UINT8 cmd[11] = {
                         0x06,
@@ -2355,11 +2355,11 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             case CT_INTERFERENCE_REJECTION: {
-                settings.interference_rejection = value;
+    //            settings.interference_rejection = value;
                 UINT8 cmd[] = {
                     0x08,
                     0xc1,
-                    (UINT8) settings.interference_rejection
+                    (UINT8) value
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Rejection: %d"), value);
@@ -2368,7 +2368,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             case CT_TARGET_SEPARATION: {
-                settings.target_separation = value;
+     //           settings.target_separation = value;
                 UINT8 cmd[] = {
                     0x22,
                     0xc1,
@@ -2381,11 +2381,11 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             case CT_NOISE_REJECTION: {
-                settings.noise_rejection = value;
+     //           settings.noise_rejection = value;
                 UINT8 cmd[] = {
                     0x21,
                     0xc1,
-                    (UINT8) settings.noise_rejection
+                    (UINT8) value
                 };
                 if (settings.verbose) {
                     wxLogMessage(wxT("BR24radar_pi: Noise rejection: %d"), value);
@@ -2394,7 +2394,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             case CT_TARGET_BOOST: {
-                settings.target_boost = value;
+     //           settings.target_boost = value;
                 UINT8 cmd[] = {
                     0x0a,
                     0xc1,
