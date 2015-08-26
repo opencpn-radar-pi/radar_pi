@@ -251,6 +251,8 @@ static const int RangeUnitsToMeters[2] = {
 
 struct pi_control_settings {
     int      overlay_transparency;    // now 0-100, no longer a double
+	bool     auto_range_mode[2];    // for A and B
+	int      range_index;
     int      verbose;
     int      display_option;
     DisplayModeType display_mode;
@@ -269,7 +271,7 @@ struct pi_control_settings {
     int      idle_run_time;
     int      draw_algorithm;
     int      scan_speed;
-    int      refreshrate;
+    int      refreshrate[2];   // for A and B
     int      passHeadingToOCPN;
 	int      multi_sweep_filter[3];   //  0: guard zone 1 filter state;
                                       //  1: guard zone 2 filter state;
@@ -279,10 +281,12 @@ struct pi_control_settings {
     wxString alert_audio_file;
 };
 
-struct radar_control_item{
+class radar_control_item{
+public:
 	int value;
 	int button;
 	bool mod;
+	void Update(int v);
 };
 
 struct radar_control_setting{

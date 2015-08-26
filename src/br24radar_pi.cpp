@@ -449,7 +449,8 @@ int br24radar_pi::Init(void)
     m_sent_bm_id_rollover =  -1;
 
     m_heading_source = HEADING_NONE;
-
+	settings.auto_range_mode[0] = true;
+	settings.auto_range_mode[1] = true;// starts with auto range change
     m_statistics.broken_packets = 0;
     m_statistics.broken_spokes  = 0;
     m_statistics.missing_spokes = 0;
@@ -467,7 +468,8 @@ int br24radar_pi::Init(void)
     settings.guard_zone = 0;   // this used to be active guard zone, now it means which guard zone window is active
     settings.display_mode = DM_CHART_OVERLAY;
     settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
-    settings.refreshrate = 1;
+    settings.refreshrate[0] = 1;
+	settings.refreshrate[1] = 1;
     settings.timed_idle = 0;
 
     //      Set default parameters for controls displays
@@ -920,7 +922,7 @@ void BR24DisplayOptionsDialog::OnPassHeadingClick(wxCommandEvent &event)
 void BR24DisplayOptionsDialog::OnSelectABClick(wxCommandEvent &event)
 {   
 	pPlugIn->settings.selectRadarB = cbselectRadarB->GetValue();
-	A_B = pPlugIn->settings.selectRadarB;
+	pPlugIn->A_B = pPlugIn->settings.selectRadarB;
 }
 
 void BR24DisplayOptionsDialog::OnClose(wxCloseEvent& event)
@@ -1120,8 +1122,8 @@ void br24radar_pi::DoTick(void)
     }
 
 	static int testrefresh;
-	if (testrefresh != settings.refreshrate) {
-	testrefresh = settings.refreshrate;
+	if (testrefresh != settings.refreshrate[A_B]) {
+		testrefresh = settings.refreshrate[A_B];
 	}
 
 
@@ -1167,11 +1169,11 @@ void br24radar_pi::DoTick(void)
                 br_dt_stayalive = now;
                 RadarStayAlive();
             }
-            if (br_send_state) {
+          /*  if (br_send_state) {
                 RadarSendState();
 				wxLogMessage(wxT("BR24radar_pi: XXRadarSentState called"));
                 br_send_state = false;
-            }
+            }*/
         }
         br_data_watchdog = now;
         br_data_seen = true;
@@ -1532,7 +1534,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     UINT32 skipped      = 0;
     wxLongLong max_age = 0; // Age in millis
 
-    br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
+	br_refresh_rate = REFRESHMAPPING[settings.refreshrate[A_B] - 1];
 
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
     if (settings.verbose >= 4) {
@@ -1941,14 +1943,23 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
         pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
         pConf->Read(wxT("ScanSpeed"), &settings.scan_speed, 0);
-        pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 1);
-        if (settings.refreshrate < 1) {
-            settings.refreshrate = 1; // not allowed
+		pConf->Read(wxT("Refreshrate"), &settings.refreshrate[0], 1);
+        if (settings.refreshrate[0] < 1) {
+            settings.refreshrate[0] = 1; // not allowed
         }
-        if (settings.refreshrate > 5) {
-            settings.refreshrate = 5; // not allowed
+		if (settings.refreshrate[0] > 5) {
+			settings.refreshrate[0] = 5; // not allowed
         }
-        br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
+		br_refresh_rate = REFRESHMAPPING[settings.refreshrate[0] - 1];
+
+		pConf->Read(wxT("RefreshrateB"), &settings.refreshrate[1], 1);
+		if (settings.refreshrate[1] < 1) {
+			settings.refreshrate[1] = 1; // not allowed
+		}
+		if (settings.refreshrate[1] > 5) {
+			settings.refreshrate[1] = 5; // not allowed
+		}
+		br_refresh_rate = REFRESHMAPPING[settings.refreshrate[1] - 1];
 
         pConf->Read(wxT("PassHeadingToOCPN"), &settings.passHeadingToOCPN, 0);
         pConf->Read(wxT("selectRadarB"), &settings.selectRadarB, 0);
@@ -2004,7 +2015,8 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("RunTimeOnIdle"), settings.idle_run_time);
         pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
         pConf->Write(wxT("ScanSpeed"), settings.scan_speed);
-        pConf->Write(wxT("Refreshrate"), settings.refreshrate);
+        pConf->Write(wxT("Refreshrate"), settings.refreshrate[0]);
+		pConf->Write(wxT("RefreshrateB"), settings.refreshrate[1]);
         pConf->Write(wxT("PassHeadingToOCPN"), settings.passHeadingToOCPN);
         pConf->Write(wxT("selectRadarB"), settings.selectRadarB);
         pConf->Write(wxT("RadarAlertAudioFile"), settings.alert_audio_file);
@@ -2264,10 +2276,18 @@ void br24radar_pi::SetRangeMeters(long meters)
     }
 }
 
+void radar_control_item::Update(int v)
+{
+	if (v != value){
+		mod = true;
+		value = v;
+		}
+};
+
 void br24radar_pi::SetControlValue(ControlType controlType, int value)
 {
     wxString msg;
-
+	int AB = 0;
     if (br_radar_state == RADAR_ON || controlType == CT_TRANSPARENCY || controlType == CT_SCAN_AGE) {
         switch (controlType) {
             case CT_GAIN: {
@@ -2282,6 +2302,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                     if (settings.verbose) {
                         wxLogMessage(wxT("BR24radar_pi: Gain: Auto"));
                     }
+					radar_setting[AB].gain.Update(-1);
                     TransmitCmd(cmd, sizeof(cmd));
                 } else {                        // Manual Gain
                     int v = value * 255 / 100;
@@ -2294,6 +2315,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                         0, 0, 0, 0, 0, 0, 0, 0,
                         (UINT8) v
                     };
+					radar_setting[AB].gain.Update(v);
                     if (settings.verbose) {
                         wxLogMessage(wxT("BR24radar_pi: Gain: %d"), value);
                     }
@@ -2433,7 +2455,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
             }
             
 			case CT_REFRESHRATE: {
-				settings.refreshrate = value;
+				settings.refreshrate[A_B] = value;
 				break;
 								 }
 
