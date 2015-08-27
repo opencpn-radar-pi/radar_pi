@@ -82,6 +82,7 @@ enum {                                      // process ID's
 
     ID_RADAR_ONLY,
 	ID_RANGE,
+	ID_RADAR_AB,
     ID_GAIN,
     ID_SEA,
     ID_RAIN,
@@ -129,6 +130,7 @@ EVT_BUTTON(ID_TIMED_IDLE, BR24ControlsDialog::OnRadarControlButtonClick)
 
 EVT_BUTTON(ID_RADAR_ONLY, BR24ControlsDialog::OnRadarOnlyButtonClick)
 EVT_BUTTON(ID_RANGE, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_RADAR_AB, BR24ControlsDialog::OnRadarABButtonClick)
 EVT_BUTTON(ID_GAIN, BR24ControlsDialog::OnRadarGainButtonClick)
 EVT_BUTTON(ID_SEA, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_RAIN, BR24ControlsDialog::OnRadarControlButtonClick)
@@ -149,7 +151,6 @@ struct RadarRanges {
   int actual_meters;
   const char * name;
 };
-static bool gainControl = false;
 
 static const RadarRanges g_ranges_metric[] =
 {
@@ -273,6 +274,30 @@ void RadarControlButton::SetValue(int newValue)
     pPlugIn->SetControlValue(controlType, value);
 }
 
+void RadarControlButton::SetValueX(int newValue)
+{            // sets value in the button without sending new value to the radar
+	if (newValue < minValue) {
+		value = minValue;
+	}
+	else if (newValue > maxValue) {
+		value = maxValue;
+	}
+	else {
+		value = newValue;
+	}
+	wxString label;
+
+	if (names) {
+		label.Printf(wxT("%s\n%s"), firstLine.c_str(), names[value].c_str());
+	}
+	else {
+		label.Printf(wxT("%s\n%d"), firstLine.c_str(), value);
+	}
+
+	this->SetLabel(label);
+
+}
+
 void RadarControlButton::SetAuto()
 {
     wxString label;
@@ -281,6 +306,15 @@ void RadarControlButton::SetAuto()
     this->SetLabel(label);
 
     pPlugIn->SetControlValue(controlType, -1);
+}
+
+void RadarControlButton::SetAutoX()
+{      // sets auto in the button without sending new value to the radar
+	wxString label;
+
+	label << firstLine << wxT("\n") << _("Auto");
+	this->SetLabel(label);
+
 }
 
 int RadarRangeControlButton::SetValueInt(int newValue)
@@ -601,7 +635,7 @@ void BR24ControlsDialog::CreateControls()
     bInterferenceRejection->minValue = 0;
     bInterferenceRejection->maxValue = ARRAY_SIZE(interference_rejection_names) - 1;
     bInterferenceRejection->names = interference_rejection_names;
-	bInterferenceRejection->SetValue(pPlugIn->radar_setting[pPlugIn->A_B].interference_rejection.button); // redraw after adding names
+	bInterferenceRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->A_B].interference_rejection.button); // redraw after adding names
 
     // The TARGET BOOST button
     target_boost_names[0] = _("Off");
@@ -613,7 +647,7 @@ void BR24ControlsDialog::CreateControls()
     bTargetBoost->minValue = 0;
     bTargetBoost->maxValue = ARRAY_SIZE(target_boost_names) - 1;
     bTargetBoost->names = target_boost_names;
-	bTargetBoost->SetValue(pPlugIn->radar_setting[pPlugIn->A_B].target_boost.button); // redraw after adding names
+	bTargetBoost->SetValueX(pPlugIn->radar_setting[pPlugIn->A_B].target_boost.button); // redraw after adding names
 
 
     // The NOISE REJECTION button
@@ -627,7 +661,7 @@ void BR24ControlsDialog::CreateControls()
     bNoiseRejection->minValue = 0;
     bNoiseRejection->maxValue = ARRAY_SIZE(noise_rejection_names) - 1;
     bNoiseRejection->names = noise_rejection_names;
-	bNoiseRejection->SetValue(pPlugIn->radar_setting[pPlugIn->A_B].noise_rejection.button); // redraw after adding names
+	bNoiseRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->A_B].noise_rejection.button); // redraw after adding names
 
     advanced4gBox = new wxBoxSizer(wxVERTICAL);
     advancedBox->Add(advanced4gBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
@@ -645,7 +679,7 @@ void BR24ControlsDialog::CreateControls()
     bTargetSeparation->minValue = 0;
     bTargetSeparation->maxValue = ARRAY_SIZE(target_separation_names) - 1;
     bTargetSeparation->names = target_separation_names;
-	bTargetSeparation->SetValue(pPlugIn->radar_setting[pPlugIn->A_B].target_separation.button); // redraw after adding names
+	bTargetSeparation->SetValueX(pPlugIn->radar_setting[pPlugIn->A_B].target_separation.button); // redraw after adding names
 
     // The SCAN SPEED button
     scan_speed_names[0] = _("Normal");
@@ -655,7 +689,7 @@ void BR24ControlsDialog::CreateControls()
     bScanSpeed->minValue = 0;
     bScanSpeed->maxValue = ARRAY_SIZE(scan_speed_names) - 1;
     bScanSpeed->names = scan_speed_names;
-    bScanSpeed->SetValue(pPlugIn->settings.scan_speed); // redraw after adding names
+    bScanSpeed->SetValueX(pPlugIn->settings.scan_speed); // redraw after adding names
 	   
     // The REFRESHRATE button
 	bRefreshrate = new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), pPlugIn, CT_REFRESHRATE, false, pPlugIn->settings.refreshrate[pPlugIn->A_B]);
@@ -709,6 +743,16 @@ void BR24ControlsDialog::CreateControls()
         bRadarOnly_Overlay->SetLabel(label);
 	}
 
+	// The RADAR A / B button
+	wxString labelab;
+	labelab << _("Radar A / B") << wxT("\n") << _("Radar A");
+	bRadarAB = new RadarRangeControlButton(this, ID_RADAR_AB, labelab, pPlugIn);
+	controlBox->Add(bRadarAB, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+	if (pPlugIn->settings.selectRadarB == 1) {
+		labelab << _("Radar A / B") << wxT("\n") << _("Radar B");
+		bRadarAB->SetLabel(labelab);
+	}
+	
     // The RANGE button
     bRange = new RadarRangeControlButton(this, ID_RANGE, _("Range"), pPlugIn);
     controlBox->Add(bRange, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
@@ -970,11 +1014,12 @@ void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
     else {
         bAuto->Hide();
     }
-
-	 if(gainControl) bMultiSweep->Show();   
-	 if(!gainControl) bMultiSweep->Hide();   
-	 gainControl = false;  // should be possible to read this from the button ???
-
+	if (fromControl == bGain){
+		bMultiSweep->Show();
+	}
+	else{
+		bMultiSweep->Hide();
+	}
     if (fromControl->maxValue > 20) {
         bPlusTen->Show();
         bMinusTen->Show();
@@ -1011,10 +1056,29 @@ void BR24ControlsDialog::OnRadarOnlyButtonClick(wxCommandEvent& event)
 
 void BR24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event)
 {
-    gainControl = true;
 	EnterEditMode((RadarControlButton *) event.GetEventObject());
 }
 
+void BR24ControlsDialog::OnRadarABButtonClick(wxCommandEvent& event)
+{
+	
+	if (pPlugIn->settings.selectRadarB == 0){
+		wxString labels;
+		pPlugIn->settings.selectRadarB = 1;
+		pPlugIn->A_B = 1;
+		labels << _("Radar A / B") << wxT("\n") << _("Radar B");
+		bRadarAB->SetLabel(labels);
+	}
+	else{
+		wxString labels;
+		pPlugIn->settings.selectRadarB = 0;
+		pPlugIn->A_B = 0;
+		labels << _("Radar A / B") << wxT("\n") << _("Radar A");
+		bRadarAB->SetLabel(labels);
+	}
+	
+	UpdateControl(true);
+}
 
 void BR24ControlsDialog::OnMove(wxMoveEvent& event)
 {
@@ -1036,6 +1100,44 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
     event.Skip();
 }
 
+void BR24ControlsDialog::UpdateControl(bool refreshAll)
+{
+	wxString label = bGain->GetLabel();
+	tValue->SetLabel(label);
+	if (pPlugIn->radar_setting[0].gain.button == -1){
+		wxLogMessage(wxT("BR24radar_pi: XX gain auto"));
+		bGain->SetAutoX();
+	}
+	else{
+		bGain->SetValueX(pPlugIn->radar_setting[0].gain.button);
+	}
+
+	label = bRain->GetLabel();
+	tValue->SetLabel(label);
+	bRain->SetValueX(pPlugIn->radar_setting[0].rain.button);
+
+	label = bSea->GetLabel();
+	tValue->SetLabel(label);
+	if (pPlugIn->radar_setting[0].sea.button == -1){
+		wxLogMessage(wxT("BR24radar_pi: XX sea auto"));
+		bSea->SetAutoX();
+	}
+	else{
+		bSea->SetValueX(pPlugIn->radar_setting[0].sea.button);
+	}
+
+	label = bTargetBoost->GetLabel();
+	tValue->SetLabel(label);
+	bTargetBoost->SetValueX(pPlugIn->radar_setting[0].target_boost.button);
+
+	label = bNoiseRejection->GetLabel();
+	tValue->SetLabel(label);
+	bNoiseRejection->SetValueX(pPlugIn->radar_setting[0].noise_rejection.button);
+
+	label = bTargetSeparation->GetLabel();
+	tValue->SetLabel(label);
+	bTargetSeparation->SetValueX(pPlugIn->radar_setting[0].target_separation.button);
+}
 
 void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData)
 {

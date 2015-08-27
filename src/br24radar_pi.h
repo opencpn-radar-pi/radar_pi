@@ -407,8 +407,9 @@ public:
 	radar_control_setting radar_setting[2];
 	int A_B;
 
-    scan_line                 m_scan_line[LINES_PER_ROTATION];
-
+    scan_line                 m_scan_lineA[LINES_PER_ROTATION];
+	scan_line                 m_scan_lineB[LINES_PER_ROTATION];
+	scan_line * m_scan_line = &m_scan_lineA[LINES_PER_ROTATION];
 #define GUARD_ZONES (2)
     guard_zone_settings guardZones[GUARD_ZONES];
     
@@ -452,9 +453,12 @@ private:
     //    Controls added to Preferences panel
     wxCheckBox               *m_pShowIcon;
 
-    RadarDataReceiveThread   *m_dataReceiveThread;
-    RadarCommandReceiveThread *m_commandReceiveThread;
-    RadarReportReceiveThread *m_reportReceiveThread;
+    RadarDataReceiveThread   *m_dataReceiveThreadA;
+    RadarCommandReceiveThread *m_commandReceiveThreadA;
+    RadarReportReceiveThread *m_reportReceiveThreadA;
+	RadarDataReceiveThread   *m_dataReceiveThreadB;
+	RadarCommandReceiveThread *m_commandReceiveThreadB;
+	RadarReportReceiveThread *m_reportReceiveThreadB;
 
     SOCKET                    m_radar_socket;
 
@@ -486,10 +490,11 @@ class RadarDataReceiveThread: public wxThread
 
 public:
 
-    RadarDataReceiveThread(br24radar_pi *ppi, volatile bool * quit)
+    RadarDataReceiveThread(br24radar_pi *ppi, volatile bool * quit, int ab)
     : wxThread(wxTHREAD_JOINABLE)
     , pPlugIn(ppi)
     , m_quit(quit)
+	, AB(ab)
     {
         //      wxLogMessage(_T("BR24 radar thread starting for multicast address %ls port %ls"), m_ip.c_str(), m_service_port.c_str());
         Create(1024 * 1024);
@@ -508,6 +513,7 @@ private:
     wxString           m_ip;
     volatile bool    * m_quit;
     wxIPV4address      m_myaddr;
+	int AB;
 };
 
 class RadarCommandReceiveThread: public wxThread
@@ -515,10 +521,11 @@ class RadarCommandReceiveThread: public wxThread
 
 public:
 
-    RadarCommandReceiveThread(br24radar_pi *ppi, volatile bool * quit)
+    RadarCommandReceiveThread(br24radar_pi *ppi, volatile bool * quit, int ab)
     : wxThread(wxTHREAD_JOINABLE)
     , pPlugIn(ppi)
     , m_quit(quit)
+	, AB(ab)
     {
         Create(64 * 1024);
     };
@@ -532,6 +539,7 @@ private:
     wxString           m_ip;
     volatile bool    * m_quit;
     wxIPV4address      m_myaddr;
+	int                AB;
 };
 
 class RadarReportReceiveThread: public wxThread
@@ -539,10 +547,11 @@ class RadarReportReceiveThread: public wxThread
 
 public:
 
-    RadarReportReceiveThread(br24radar_pi *ppi, volatile bool * quit)
+    RadarReportReceiveThread(br24radar_pi *ppi, volatile bool * quit, int ab)
     : wxThread(wxTHREAD_JOINABLE)
     , pPlugIn(ppi)
     , m_quit(quit)
+	, AB(ab)
     {
         Create(64 * 1024);
     };
@@ -558,6 +567,7 @@ private:
     wxString           m_ip;
     volatile bool    * m_quit;
     wxIPV4address      m_myaddr;
+	int                AB;
 };
 
 //----------------------------------------------------------------------------------------------------------
@@ -655,7 +665,8 @@ public:
 
     virtual void SetValue(int value);
     virtual void SetAuto();
-
+	virtual void SetValueX(int newValue);
+	virtual void SetAutoX();
     const wxString  *names;
 
     wxString   firstLine;
@@ -731,7 +742,8 @@ public:
     void SetTimedIdleIndex(int index);
     void UpdateGuardZoneState();
     void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
-    void SetErrorMessage(wxString &msg);
+	void BR24ControlsDialog::UpdateControl(bool refreshAll);
+	void SetErrorMessage(wxString &msg);
     void SetRadarIPAddress(wxString &msg);
     void SetMcastIPAddress(wxString &msg);
     void SetHeadingInfo(wxString &msg);
@@ -755,6 +767,7 @@ private:
     void OnAdvancedBackButtonClick(wxCommandEvent& event);
     void OnAdvancedButtonClick(wxCommandEvent& event);
 	void OnRadarGainButtonClick(wxCommandEvent& event);
+	void OnRadarABButtonClick(wxCommandEvent& event);
 
     void OnMessageBackButtonClick(wxCommandEvent& event);
 	
@@ -828,6 +841,7 @@ private:
 
     RadarRangeControlButton *bRange;
 	RadarControlButton *bRadarOnly_Overlay;
+	RadarControlButton *bRadarAB;
     RadarControlButton *bGain;
     RadarControlButton *bSea;
     RadarControlButton *bRain;
