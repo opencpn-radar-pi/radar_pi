@@ -255,7 +255,7 @@ struct pi_control_settings {
 	int      range_index;
     int      verbose;
     int      display_option;
-    DisplayModeType display_mode;
+    DisplayModeType display_mode[2];
     int      guard_zone;            // active zone (0 = none,1,2)
     int      guard_zone_threshold;  // How many blobs must be sent by radar before we fire alarm
     int      guard_zone_render_style;
@@ -407,9 +407,8 @@ public:
 	radar_control_setting radar_setting[2];
 	int A_B;
 
-    scan_line                 m_scan_lineA[LINES_PER_ROTATION];
-	scan_line                 m_scan_lineB[LINES_PER_ROTATION];
-	scan_line * m_scan_line = &m_scan_lineA[LINES_PER_ROTATION];
+    scan_line                 m_scan_line[2][LINES_PER_ROTATION];
+
 #define GUARD_ZONES (2)
     guard_zone_settings guardZones[GUARD_ZONES];
     

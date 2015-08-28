@@ -732,7 +732,7 @@ void BR24ControlsDialog::CreateControls()
 	// The RADAR ONLY / OVERLAY button
     bRadarOnly_Overlay = new RadarRangeControlButton(this, ID_RADAR_ONLY, _("Radar Only / Overlay"), pPlugIn);
     controlBox->Add(bRadarOnly_Overlay, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-	if (pPlugIn->settings.display_mode == DM_CHART_BLACKOUT) {
+	if (pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT) {
 		wxString label; 
 		label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") ;
         bRadarOnly_Overlay->SetLabel(label);
@@ -981,7 +981,7 @@ void BR24ControlsDialog::OnMessageBackButtonClick(wxCommandEvent& event)
 
 void BR24ControlsDialog::OnRdrOnlyButtonClick(wxCommandEvent& event)
 {
-	pPlugIn->settings.display_mode = DM_CHART_BLACKOUT;
+	pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] = DM_CHART_BLACKOUT;
 	messageBox->Hide(bRdrOnly);
 	wxString label;
 	label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") ;
@@ -1041,14 +1041,14 @@ void BR24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event)
 
 void BR24ControlsDialog::OnRadarOnlyButtonClick(wxCommandEvent& event)
 {
-    if (pPlugIn->settings.display_mode == DM_CHART_BLACKOUT) {
-		pPlugIn->settings.display_mode = DM_CHART_OVERLAY;
+	if (pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT) {
+		pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] = DM_CHART_OVERLAY;
 		wxString label ; 
 		label << _("Overlay / Radar") << wxT("\n") << _("Radar Overlay");
         bRadarOnly_Overlay->SetLabel(label);
 	}
 	else {
-		pPlugIn->settings.display_mode = DM_CHART_BLACKOUT;
+		pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] = DM_CHART_BLACKOUT;
 		wxString label;
 		label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") ;
         bRadarOnly_Overlay->SetLabel(label);
@@ -1078,7 +1078,19 @@ void BR24ControlsDialog::OnRadarABButtonClick(wxCommandEvent& event)
 		bRadarAB->SetLabel(labels);
 	}
 	
-	UpdateControl(true);
+	UpdateControl(true);   // update control values on the buttons
+	                       // and update the button text on A ? select
+	if (pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_OVERLAY) {
+		wxString label;
+		label << _("Overlay / Radar") << wxT("\n") << _("Radar Overlay");
+		bRadarOnly_Overlay->SetLabel(label);
+	}
+	else {
+		wxString label;
+		label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up");
+		bRadarOnly_Overlay->SetLabel(label);
+	}
+
 }
 
 void BR24ControlsDialog::OnMove(wxMoveEvent& event)
@@ -1104,24 +1116,24 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
 void BR24ControlsDialog::UpdateControl(bool refreshAll)
 {
 	if (!topSizer->IsShown(controlBox)) return;
-	if (pPlugIn->radar_setting[0].gain.button == -1){
+	if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button == -1){
 		wxLogMessage(wxT("BR24radar_pi: XX gain auto"));
 		bGain->SetAutoX();
 	}
 	else{
-		bGain->SetValueX(pPlugIn->radar_setting[0].gain.button);
+		bGain->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button);
 	}
-	bRain->SetValueX(pPlugIn->radar_setting[0].rain.button);
-	if (pPlugIn->radar_setting[0].sea.button == -1){
+	bRain->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].rain.button);
+	if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.button == -1){
 		wxLogMessage(wxT("BR24radar_pi: XX sea auto"));
 		bSea->SetAutoX();
 	}
 	else{
-		bSea->SetValueX(pPlugIn->radar_setting[0].sea.button);
+		bSea->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.button);
 	}
-	bTargetBoost->SetValueX(pPlugIn->radar_setting[0].target_boost.button);
-	bNoiseRejection->SetValueX(pPlugIn->radar_setting[0].noise_rejection.button);
-	bTargetSeparation->SetValueX(pPlugIn->radar_setting[0].target_separation.button);
+	bTargetBoost->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.button);
+	bNoiseRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.button);
+	bTargetSeparation->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.button);
 }
 
 void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData)
@@ -1135,7 +1147,7 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
 
 	bool radarOn = haveOpenGL && haveRadar && haveData;
 	bool navOn = haveGPS && haveHeading && haveVariation;
-	bool black = pPlugIn->settings.display_mode == DM_CHART_BLACKOUT;
+	bool black = pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT;
 	/*
 	Decision table to select the message or control box
 	- means not relevant

@@ -173,7 +173,7 @@ static time_t      br_hdt_watchdog;
 static time_t      br_radar_watchdog;
 static time_t      br_data_watchdog;
 static time_t      br_var_watchdog;
-static bool blackout = false;         //  will force display to blackout and north up
+static bool blackout[2] = { false, false };         //  will force display to blackout and north up
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 #define     TIMER_NOT_ELAPSED(watchdog) (now < watchdog + WATCHDOG_TIMEOUT)
 #define     TIMER_ELAPSED(watchdog) (!TIMER_NOT_ELAPSED(watchdog))
@@ -420,8 +420,9 @@ int br24radar_pi::Init(void)
     AddLocaleCatalog( _T("opencpn-br24radar_pi") );
 
     m_pControlDialog = NULL;
-
-	br_radar_state[settings.selectRadarB] = RADAR_OFF;
+	settings.selectRadarB = 0;   // temp setting until loadded from ini file
+	br_radar_state[0] = RADAR_OFF;    // A radar
+	br_radar_state[1] = RADAR_OFF;    // B radar
     br_scanner_state = RADAR_OFF;                 // Radar scanner is off
 
     br_dt_stayalive = time(0);
@@ -439,10 +440,12 @@ int br24radar_pi::Init(void)
     settings.multi_sweep_filter[2] = 0;
 
     for (int i = 0; i < LINES_PER_ROTATION - 1; i++) {   // initialise history bytes
-        memset (&m_scan_line[i].history, 0, sizeof(m_scan_line[i].history));
+        memset(&m_scan_line[0][i].history, 0, sizeof(m_scan_line[0][i].history));
+		memset(&m_scan_line[1][i].history, 0, sizeof(m_scan_line[1][i].history));
         }
-   wxLogMessage(wxT("BR24radar_pi: size of scanline %d"), sizeof(m_scan_line[1].history));
-     memset (&m_scan_line[LINES_PER_ROTATION - 1].history, 1, sizeof(m_scan_line[LINES_PER_ROTATION].history));
+   wxLogMessage(wxT("BR24radar_pi: size of scanline %d"), sizeof(m_scan_line[0][1].history));
+     memset(&m_scan_line[0][LINES_PER_ROTATION - 1].history, 1, sizeof(m_scan_line[0][LINES_PER_ROTATION].history));
+	 memset(&m_scan_line[1][LINES_PER_ROTATION - 1].history, 1, sizeof(m_scan_line[1][LINES_PER_ROTATION].history));
      // last ones on 1 to display range circle    does not seem to work ???
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
@@ -466,7 +469,8 @@ int br24radar_pi::Init(void)
     memset(&guardZones, 0, sizeof(guardZones));
 
     settings.guard_zone = 0;   // this used to be active guard zone, now it means which guard zone window is active
-    settings.display_mode = DM_CHART_OVERLAY;
+	settings.display_mode[0] = DM_CHART_OVERLAY;
+	settings.display_mode[1] = DM_CHART_OVERLAY;
     settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
     settings.refreshrate[0] = 1;
 	settings.refreshrate[1] = 1;
@@ -499,8 +503,10 @@ int br24radar_pi::Init(void)
 
     wxLongLong now = wxGetLocalTimeMillis();
     for (int i = 0; i < LINES_PER_ROTATION; i++) {
-        m_scan_line[i].age = now - MAX_AGE * MILLISECONDS_PER_SECOND;
-        m_scan_line[i].range = 0;
+        m_scan_line[0][i].age = now - MAX_AGE * MILLISECONDS_PER_SECOND;
+        m_scan_line[0][i].range = 0;
+		m_scan_line[1][i].age = now - MAX_AGE * MILLISECONDS_PER_SECOND;
+		m_scan_line[1][i].range = 0;
     }
 
     // Get a pointer to the opencpn display canvas, to use as a parent for the UI dialog
@@ -575,11 +581,11 @@ int br24radar_pi::Init(void)
 
 //	m_dataReceiveThreadB = new RadarDataReceiveThread(this, &m_quit, 1);
 //	m_dataReceiveThreadB->Run();
-//	m_commandReceiveThreadB = 0;
-//	m_commandReceiveThreadB = new RadarCommandReceiveThread(this, &m_quit, 1);
-//	m_commandReceiveThreadB->Run();
-//	m_reportReceiveThreadB = new RadarReportReceiveThread(this, &m_quit, 1);
-//	m_reportReceiveThreadB->Run();
+	m_commandReceiveThreadB = 0;
+	m_commandReceiveThreadB = new RadarCommandReceiveThread(this, &m_quit, 1);
+	m_commandReceiveThreadB->Run();
+	m_reportReceiveThreadB = new RadarReportReceiveThread(this, &m_quit, 1);
+	m_reportReceiveThreadB->Run();
 
     ShowRadarControl(false);   //prepare radar control but don't show it
 
@@ -811,7 +817,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     pDisplayMode->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
                           wxCommandEventHandler(BR24DisplayOptionsDialog::OnDisplayModeClick), NULL, this);
 
-    pDisplayMode->SetSelection(pPlugIn->settings.display_mode);
+	pDisplayMode->SetSelection(pPlugIn->settings.display_mode[0]);
 
     wxString GuardZoneStyleStrings[] = {
         _("Shading"),
@@ -1066,7 +1072,7 @@ void br24radar_pi::Select_Guard_Zones(int zone)
 
 void br24radar_pi::SetDisplayMode(DisplayModeType mode)
 {
-    settings.display_mode = mode;
+	settings.display_mode[settings.selectRadarB] = mode;
 }
 
 long br24radar_pi::GetRangeMeters()
@@ -1153,6 +1159,7 @@ void br24radar_pi::DoTick(void)
 
 
     previousTicks = now;
+
     if (br_bpos_set && TIMER_ELAPSED(br_bpos_watchdog)) {
         // If the position data is 10s old reset our heading.
         // Note that the watchdog is continuously reset every time we receive a heading.
@@ -1263,6 +1270,7 @@ void br24radar_pi::DoTick(void)
     m_statistics.packets        = 0;
     m_statistics.spokes         = 0;
 
+
     /*******************************************
      Function Timed Transmit. Check if active
      ********************************************/
@@ -1310,7 +1318,7 @@ void br24radar_pi::DoTick(void)
         br_idle_watchdog = 0;
         br_last_idle_set = 0;
     }
-}
+}        // end of DoTick
 
 void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay
 {
@@ -1363,7 +1371,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     {
       br_auto_range_meters = 50;
     }
-	blackout = br_radar_state[settings.selectRadarB] == RADAR_ON && br_radar_seen && settings.display_mode == DM_CHART_BLACKOUT;
+	blackout[settings.selectRadarB] = br_radar_state[settings.selectRadarB] == RADAR_ON && br_radar_seen && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
     DoTick(); // update timers and watchdogs
     UpdateState(); // update the toolbar
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
@@ -1456,7 +1464,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         v_scale_ppm = vp->pix_height / dist_y ;    // pixel height of screen div by equivalent meters
     }
 
-    switch (settings.display_mode) {
+	switch (settings.display_mode[settings.selectRadarB]) {
         case DM_CHART_OVERLAY:
         case DM_CHART_BLACKOUT:
         case DM_EMULATOR:
@@ -1475,9 +1483,9 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
-	blackout = br_radar_state[settings.selectRadarB] == RADAR_ON && br_radar_seen && settings.display_mode == DM_CHART_BLACKOUT;
+	blackout[settings.selectRadarB] = br_radar_state[settings.selectRadarB] == RADAR_ON && br_radar_seen && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
 	            //  radar only mode, will be head up, operate also without heading or position
-    if (!blackout) {
+	if (!blackout[settings.selectRadarB]) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
@@ -1513,7 +1521,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     double radar_pixels_per_meter = ((double) RETURNS_PER_LINE) / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
 
-    if ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode == DM_EMULATOR || blackout) {
+	if ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode[settings.selectRadarB] == DM_EMULATOR || blackout[settings.selectRadarB]) {
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
         if (br_range_meters > 0 && br_scanner_state == RADAR_ON) {
@@ -1526,9 +1534,9 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
         // Guard Zone image and heading line for radar only
         if (br_radar_state[settings.selectRadarB] == RADAR_ON) {
 			double rotation = -settings.heading_correction + vp->skew * settings.skew_factor;
-				if (!blackout) rotation += br_hdt;
+			if (!blackout[settings.selectRadarB]) rotation += br_hdt;
                 glRotatef(rotation, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
-				if (blackout) {    // draw heading line
+				if (blackout[settings.selectRadarB]) {    // draw heading line
 				glColor4ub(200, 0, 0, 50);
 				glLineWidth(1);
 				glBegin(GL_LINES);
@@ -1571,7 +1579,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     for (unsigned int angle = 0 ; angle <= LINES_PER_ROTATION - 1; angle++) {
         scan_line * scan = 0;
 		wxLongLong bestAge = settings.max_age * MILLISECONDS_PER_SECOND;
-		scan_line * s = &m_scan_line[angle];
+		scan_line * s = &m_scan_line[settings.selectRadarB][angle];
 		wxLongLong diff = now - s->age;
 		if (settings.verbose >= 4) {
 			wxLogMessage(wxT("BR24radar_pi: ") wxT("    a=%d diff=%") wxTPRId64 wxT(" bestAge=%") wxTPRId64 wxT(" range=%d"), angle , diff, bestAge, s->range);
@@ -1713,7 +1721,7 @@ void br24radar_pi::Guard(int max_range)
         case GZ_ARC:
 			begin_arc = guardZones[z].start_bearing;
 			end_arc = guardZones[z].end_bearing;
-			if (!blackout) {
+			if (!blackout[settings.selectRadarB]) {
 				begin_arc += br_hdt;   // arc still in degrees!
 				end_arc += br_hdt;
 			}
@@ -1733,7 +1741,7 @@ void br24radar_pi::Guard(int max_range)
 
         for (int angle = begin_arc ; angle < end_arc ; angle++) {
             unsigned int angle1 = MOD_ROTATION2048 (angle);
-            scan_line *scan = &m_scan_line[angle1];  
+			scan_line *scan = &m_scan_line[settings.selectRadarB][angle1];
             if (!scan) return;   // No or old data
             for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) { 
                 // - 2 added, -1 contains the range circle, should not raise alarm
@@ -1751,7 +1759,7 @@ void br24radar_pi::Guard(int max_range)
                         } 
                     else {   // multi sweep filter off
                         GLubyte strength = scan->data[radius];
-                        if (strength <= displaysetting_threshold[settings.display_mode]) continue;
+                        if (strength <= displaysetting_threshold[settings.display_option]) continue;
                         }
                     bogey_count[z]++;
                     }   // end "if (bogey_range > in ......
@@ -1772,9 +1780,9 @@ void br24radar_pi::RenderSpectrum(wxPoint radar_center, double v_scale_ppm, Plug
     // wxCriticalSectionLocker locker(br_scanLock);
 
     for (int angle = 0 ; angle < LINES_PER_ROTATION ; angle++) {
-        if (m_scan_line[angle].range != 0 ) {
+		if (m_scan_line[settings.selectRadarB][angle].range != 0) {
             for (int radius = 1; radius < 510; ++radius) {
-                alpha = m_scan_line[angle].data[radius];
+				alpha = m_scan_line[settings.selectRadarB][angle].data[radius];
                 if (alpha > 0 && alpha < 255) {
                     scan_distribution[0] += 1;
                     scan_distribution[alpha] += 1;
@@ -1953,7 +1961,8 @@ bool br24radar_pi::LoadConfig(void)
             settings.range_units = 1;
         }
         settings.range_unit_meters = (settings.range_units == 1) ? 1000 : 1852;
-        pConf->Read(wxT("DisplayMode"),  (int *) &settings.display_mode, 0);
+        pConf->Read(wxT("DisplayMode"),  (int *) &settings.display_mode[0], 0);
+		pConf->Read(wxT("DisplayModeB"), (int *)&settings.display_mode[1], 0);
         pConf->Read(wxT("VerboseLog"),  &settings.verbose, 0);
         pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
         pConf->Read(wxT("RangeCalibration"),  &settings.range_calibration, 1.0);
@@ -2030,7 +2039,8 @@ bool br24radar_pi::SaveConfig(void)
         pConf->SetPath(wxT("/Plugins/BR24Radar"));
         pConf->Write(wxT("DisplayOption"), settings.display_option);
         pConf->Write(wxT("RangeUnits" ), settings.range_units);
-        pConf->Write(wxT("DisplayMode"), (int)settings.display_mode);
+        pConf->Write(wxT("DisplayMode"), (int)settings.display_mode[0]);
+		pConf->Write(wxT("DisplayModeB"), (int)settings.display_mode[1]);
         pConf->Write(wxT("VerboseLog"), settings.verbose);
         pConf->Write(wxT("Transparency"), settings.overlay_transparency);
         pConf->Write(wxT("RangeCalibration"),  settings.range_calibration);
@@ -2851,7 +2861,7 @@ void *RadarDataReceiveThread::Entry(void)
     socklen_t        rx_len;
     //    Loop until we quit
     while (!*m_quit) {
-        if (pPlugIn->settings.display_mode == DM_EMULATOR) {
+        if (pPlugIn->settings.display_mode[AB] == DM_EMULATOR) {
             socketReady(INVALID_SOCKET, 1000); // sleep for 1s
             emulate_fake_buffer();
             if (pPlugIn->m_pControlDialog) {
@@ -2997,12 +3007,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             range_meters = range_raw / 4;
             br_radar_type = RT_4G;
         }
-	/*	if (previous_angle_raw > angle_raw) {    // next sweep starts
-			previousSweep = currentSweep;	// used to reset bogey_count DrawRadarImage
-			currentSweep++;              // number of the current sweep
-			if (pPlugIn->settings.verbose >= 1) wxLogMessage(wxT("BR24radar_pi: Sweep %d"), currentSweep);
-				if (currentSweep >= 256) currentSweep = 0;
-			} */
+	
 		previous_angle_raw = angle_raw;
        // Range change received from radar?
 
@@ -3025,25 +3030,25 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             br_heading_on_radar = true;                            // heading on radar
             br_hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(br_var));
             br_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(br_hdt_raw));
-            if (!blackout) angle_raw += br_hdt_raw;
+			if (!blackout[AB]) angle_raw += br_hdt_raw;
         }
         else {                                // no heading on radar
             br_heading_on_radar = false;
             br_hdt_raw = SCALE_DEGREES_TO_RAW(br_hdt);
-            if (!blackout) angle_raw += br_hdt_raw;             // map spoke on true direction, but in blackout head up.
+            if (!blackout[AB]) angle_raw += br_hdt_raw;             // map spoke on true direction, but in blackout head up.
         }
 		// until here all is based on 4096 scanlines
 
 		angle_raw = MOD_ROTATION2048(angle_raw / 2);   // divide by 2 to map on 2048 scanlines
 
-        UINT8 *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
+		UINT8 *dest_data1 = pPlugIn->m_scan_line[AB][angle_raw].data;
         memcpy(dest_data1, line->data, RETURNS_PER_LINE);
 
 		// now add this line to the history
-		UINT8 *hist_data = pPlugIn->m_scan_line[angle_raw].history;
+		UINT8 *hist_data = pPlugIn->m_scan_line[AB][angle_raw].history;
 		for (int i = 0; i < RETURNS_PER_LINE - 1; i++) {
 			hist_data[i] = hist_data[i] << 1;     // shift left history byte 1 bit
-			if (dest_data1[i] > displaysetting_threshold[pPlugIn->settings.display_mode]) {
+			if (dest_data1[i] > displaysetting_threshold[pPlugIn->settings.display_option]) {
 				hist_data[i] = hist_data[i] | 1;    // and add 1 if above threshold
 			}
 		}
@@ -3054,12 +3059,12 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         // TODO: create nice actual range circles.
         dest_data1[RETURNS_PER_LINE - 1] = 0xff;
 
-        pPlugIn->m_scan_line[angle_raw].range = range_meters;
-        pPlugIn->m_scan_line[angle_raw].age = nowMillis;
+        pPlugIn->m_scan_line[AB][angle_raw].range = range_meters;
+        pPlugIn->m_scan_line[AB][angle_raw].age = nowMillis;
     }
     //  all scanlines ready now, refresh section follows
     int pos_age = difftime (time(0), br_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
-    if (br_refresh_busy_or_queued || (pos_age >= 2 && !blackout)) { // don't do additional refresh and reset the refresh conter
+    if (br_refresh_busy_or_queued || (pos_age >= 2 && !blackout[AB])) { // don't do additional refresh and reset the refresh conter
         i_display = 0;  // rendering ongoing, reset the counter, don't refresh now
         // this will also balance performance, if too busy skip refresh
         // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
@@ -3122,7 +3127,7 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
         pPlugIn->m_statistics.spokes++;
 
         // Invent a pattern. Outermost ring, then a square pattern
-        UINT8 *dest_data1 = pPlugIn->m_scan_line[angle_raw].data;
+        UINT8 *dest_data1 = pPlugIn->m_scan_line[AB][angle_raw].data;
         for (int range = 0; range < RETURNS_PER_LINE; range++) {
             int bit = range >> 5;
 
@@ -3139,8 +3144,8 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
         // TODO: create nice actual range circles.
         dest_data1[RETURNS_PER_LINE - 1] = 0xff;
 
-        pPlugIn->m_scan_line[angle_raw].range = range_meters;
-        pPlugIn->m_scan_line[angle_raw].age = nowMillis;
+        pPlugIn->m_scan_line[AB][angle_raw].range = range_meters;
+        pPlugIn->m_scan_line[AB][angle_raw].age = nowMillis;
     }
     if (pPlugIn->settings.verbose >= 2) {
         wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" emulating %d spokes at range %d with %d spots"), nowMillis, scanlines_in_packet, range_meters, spots);
@@ -3155,6 +3160,10 @@ void RadarCommandReceiveThread::OnExit()
 {
 }
 
+
+
+
+
 void *RadarCommandReceiveThread::Entry(void)
 {             // runs twice, both for A and B radar
     SOCKET rx_socket = INVALID_SOCKET;
@@ -3168,15 +3177,17 @@ void *RadarCommandReceiveThread::Entry(void)
 
     //    Loop until we quit
     while (!*m_quit) {
-		wxLogMessage(wxT("XX while RadarCommandReceiveThread AB = %d"), AB);
-		if (rx_socket == INVALID_SOCKET && pPlugIn->settings.display_mode != DM_EMULATOR) {
-			if (AB == 1)	{
+		if (rx_socket == INVALID_SOCKET && pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] != DM_EMULATOR) {
+			if (AB == 1){
 				rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6658, "236.6.7.14");
+				wxLogMessage(wxT("XX trying to start B socket RadarCommandReceiveThread AB = %d"), AB);
 				//  B radar
 			}
 			else{
 				rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6680, "236.6.7.10");
+				wxLogMessage(wxT("XX trying to start A socket RadarCommandReceiveThread AB = %d"), AB);
 				// socket for A radar
+				if (br_mcast_addr == 0) wxLogMessage(wxT("XX RadarCommandReceiveThread br_mcast_addr == 0"));
 			}
 			                             //  socket for B radar
 			// If it is still INVALID_SOCKET now we just sleep for 1s in socketReady
@@ -3226,6 +3237,11 @@ void *RadarCommandReceiveThread::Entry(void)
 	}
 	return 0;
 }
+
+
+
+
+
 
 
 RadarReportReceiveThread::~RadarReportReceiveThread()
@@ -3367,7 +3383,7 @@ void *RadarReportReceiveThread::Entry(void)
 
     while (!*m_quit) {
 		if (AB == 0){     // radar A
-			if (rx_socket == INVALID_SOCKET && pPlugIn->settings.display_mode != DM_EMULATOR) {
+			if (rx_socket == INVALID_SOCKET && pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] != DM_EMULATOR) {
 				// Pick the next ethernet card
 
 				// If set, we used this one last time. Go to the next card.
@@ -3409,9 +3425,8 @@ void *RadarReportReceiveThread::Entry(void)
 		}                        //  end of radar A 
 			else
 			{          // radar B
-				if (br_mcast_addr != 0 && rx_socket == INVALID_SOCKET && pPlugIn->settings.display_mode != DM_EMULATOR){
+				if (br_mcast_addr != 0 && rx_socket == INVALID_SOCKET && pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] != DM_EMULATOR){
 					rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6659, "236.6.7.15");
-					wxLogMessage(wxT("XXX startUDPMulticastReceiveSocket radarB ready AB = 1 "));
 					if (rx_socket != INVALID_SOCKET) {
 						wxLogMessage(wxT("XXX startUDPMulticastReceiveSocket radarB ready AB = 1 socket valid"));
 					//	wxString addr;
@@ -3446,14 +3461,16 @@ void *RadarReportReceiveThread::Entry(void)
                     addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
                     br_ip_address = addr;
                     br_update_address_control = true;   //signals to RenderGLOverlay that the control box should be updated
-                    if (!br_radar_seen || AB == 0) {
+                    if (!br_radar_seen && AB == 0) {
                         wxLogMessage(wxT("BR24radar_pi: detected radar A at %s"), addr.c_str());
                     }
 						br_radar_seen = true;
 						br_radar_watchdog = time(0);
+						if (br_mcast_addr == 0)wxLogMessage(wxT("BR24radar_pi: XX radar seen true AB = %d br_mcast_addr == 0"), AB);
 						wxLogMessage(wxT("BR24radar_pi: XX radar seen true AB = %d"), AB);
                 }
             }
+
             if ((r < 0 ) || !br_radar_seen) { // on error, or if we haven't received anything we start looping again
 				wxLogMessage(wxT("BR24radar_pi:  on error XXX r = %d AB = %d"), r, AB);
 				if (!br_radar_seen) wxLogMessage(wxT("BR24radar_pi:  on error radar not seen"));
@@ -3546,7 +3563,6 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
                     prevStatus = command[2];
 					if (AB == 1 ) br_radar_type = RT_4G;
                 }
-				wxLogMessage(wxT("BR24radar_pi: XXprocess break AB = %d"), AB);
                 break;
 
             case (99 << 8) + 0x02:
@@ -3627,7 +3643,6 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
                 break;
 
         }
-		wxLogMessage(wxT("BR24radar_pi: XXProcessIncomingReport returned AB = %d"), AB);
         return true;
     }
     if (command[1] == 0xF5) {
