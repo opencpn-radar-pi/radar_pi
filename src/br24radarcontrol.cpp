@@ -749,8 +749,9 @@ void BR24ControlsDialog::CreateControls()
 	bRadarAB = new RadarRangeControlButton(this, ID_RADAR_AB, labelab, pPlugIn);
 	controlBox->Add(bRadarAB, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 	if (pPlugIn->settings.selectRadarB == 1) {
-		labelab << _("Radar A / B") << wxT("\n") << _("Radar B");
-		bRadarAB->SetLabel(labelab);
+		wxString labelab1;
+		labelab1 << _("Radar A / B") << wxT("\n") << _("Radar B");
+		bRadarAB->SetLabel(labelab1);
 	}
 	
     // The RANGE button
@@ -1102,8 +1103,7 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
 
 void BR24ControlsDialog::UpdateControl(bool refreshAll)
 {
-	wxString label = bGain->GetLabel();
-	tValue->SetLabel(label);
+	if (!topSizer->IsShown(controlBox)) return;
 	if (pPlugIn->radar_setting[0].gain.button == -1){
 		wxLogMessage(wxT("BR24radar_pi: XX gain auto"));
 		bGain->SetAutoX();
@@ -1111,13 +1111,7 @@ void BR24ControlsDialog::UpdateControl(bool refreshAll)
 	else{
 		bGain->SetValueX(pPlugIn->radar_setting[0].gain.button);
 	}
-
-	label = bRain->GetLabel();
-	tValue->SetLabel(label);
 	bRain->SetValueX(pPlugIn->radar_setting[0].rain.button);
-
-	label = bSea->GetLabel();
-	tValue->SetLabel(label);
 	if (pPlugIn->radar_setting[0].sea.button == -1){
 		wxLogMessage(wxT("BR24radar_pi: XX sea auto"));
 		bSea->SetAutoX();
@@ -1125,17 +1119,8 @@ void BR24ControlsDialog::UpdateControl(bool refreshAll)
 	else{
 		bSea->SetValueX(pPlugIn->radar_setting[0].sea.button);
 	}
-
-	label = bTargetBoost->GetLabel();
-	tValue->SetLabel(label);
 	bTargetBoost->SetValueX(pPlugIn->radar_setting[0].target_boost.button);
-
-	label = bNoiseRejection->GetLabel();
-	tValue->SetLabel(label);
 	bNoiseRejection->SetValueX(pPlugIn->radar_setting[0].noise_rejection.button);
-
-	label = bTargetSeparation->GetLabel();
-	tValue->SetLabel(label);
 	bTargetSeparation->SetValueX(pPlugIn->radar_setting[0].target_separation.button);
 }
 

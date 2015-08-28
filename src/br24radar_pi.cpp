@@ -564,13 +564,14 @@ int br24radar_pi::Init(void)
     //    Create the THREAD for Multicast radar data reception
     m_quit = false;
 
-    m_dataReceiveThreadA = new RadarDataReceiveThread(this, &m_quit, 0);
+	m_reportReceiveThreadA = new RadarReportReceiveThread(this, &m_quit, 0);
+	m_reportReceiveThreadA->Run();
+	m_dataReceiveThreadA = new RadarDataReceiveThread(this, &m_quit, 0);
     m_dataReceiveThreadA->Run();
     m_commandReceiveThreadA = 0;
     m_commandReceiveThreadA = new RadarCommandReceiveThread(this, &m_quit, 0);
     m_commandReceiveThreadA->Run();
-    m_reportReceiveThreadA = new RadarReportReceiveThread(this, &m_quit, 0);
-    m_reportReceiveThreadA->Run();
+   
 
 //	m_dataReceiveThreadB = new RadarDataReceiveThread(this, &m_quit, 1);
 //	m_dataReceiveThreadB->Run();
@@ -2220,16 +2221,19 @@ void br24radar_pi::TransmitCmd(UINT8 * msg, int size)
 	if (settings.selectRadarB == 1) {   //  select B radar
     adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 14); // 236.6.7.14
     adr.sin_port=htons(6658);
+	wxLogMessage(wxT("BR24radar_pi: XX transmit command AB = 1"));
+
 	}
 	else {    // select A radar
 		adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 10); // 236.6.7.10
     adr.sin_port=htons(6680);
+	wxLogMessage(wxT("BR24radar_pi: XX transmit AB = 0"));
 	}
     if (m_radar_socket == INVALID_SOCKET || sendto(m_radar_socket, (char *) msg, size, 0, (struct sockaddr *) &adr, sizeof(adr)) < size) {
         wxLogError(wxT("BR24radar_pi: Unable to transmit command to radar"));
         return;
-    } else if (settings.verbose >= 2) {
-        logBinaryData(wxT("command"), msg, size);
+    } else  {
+        logBinaryData(wxT("XX command transmitted"), msg, size);
     }
 };
 
@@ -2310,7 +2314,7 @@ void radar_control_item::Update(int v)
 };
 
 void br24radar_pi::SetControlValue(ControlType controlType, int value)
-{
+{                                                   // sends the command to the radar
     wxString msg;
 	int AB = 0;
     if (br_radar_state[settings.selectRadarB] == RADAR_ON || controlType == CT_TRANSPARENCY || controlType == CT_SCAN_AGE) {
@@ -2842,7 +2846,7 @@ void *RadarDataReceiveThread::Entry(void)
 {
     SOCKET rx_socket = INVALID_SOCKET;
     int r = 0;
-	wxLogMessage(wxT("RadarCommandReceiveThread AB= %d"), AB);
+	wxLogMessage(wxT("RadarDataReceiveThread AB = %d"), AB);
     sockaddr_storage rx_addr;
     socklen_t        rx_len;
     //    Loop until we quit
@@ -2869,7 +2873,7 @@ void *RadarDataReceiveThread::Entry(void)
                     wxString addr;
                     UINT8 * a = (UINT8 *) &br_mcast_addr->sin_addr; // sin_addr is in network layout
                     addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
-                    wxLogMessage(wxT("BR24radar_pi: Listening for radar AB= %d data on %s"), AB, addr.c_str());
+                    wxLogMessage(wxT("BR24radar_pi: Listening for radar AB = %d data on %s"), AB, addr.c_str());
                 }
             }
 				if (socketReady(rx_socket, 1000)) {
@@ -3155,7 +3159,7 @@ void *RadarCommandReceiveThread::Entry(void)
 {             // runs twice, both for A and B radar
     SOCKET rx_socket = INVALID_SOCKET;
     int r = 0;
-	wxLogMessage(wxT("RadarCommandReceiveThread AB= %d"), AB);
+	wxLogMessage(wxT("XX RadarCommandReceiveThread AB = %d"), AB);
     union {
         sockaddr_storage addr;
         sockaddr_in      ipv4;
@@ -3164,8 +3168,9 @@ void *RadarCommandReceiveThread::Entry(void)
 
     //    Loop until we quit
     while (!*m_quit) {
+		wxLogMessage(wxT("XX while RadarCommandReceiveThread AB = %d"), AB);
 		if (rx_socket == INVALID_SOCKET && pPlugIn->settings.display_mode != DM_EMULATOR) {
-			if (AB = 1)	{
+			if (AB == 1)	{
 				rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6658, "236.6.7.14");
 				//  B radar
 			}
@@ -3176,17 +3181,16 @@ void *RadarCommandReceiveThread::Entry(void)
 			                             //  socket for B radar
 			// If it is still INVALID_SOCKET now we just sleep for 1s in socketReady
 			if (rx_socket != INVALID_SOCKET && AB == 1) {
-				wxLogMessage(wxT("Listening for commands radar B socket 6658"));
+				wxLogMessage(wxT("Listening for commands radar B socket 6658 AB = %d"), AB);
             }
 			if (rx_socket != INVALID_SOCKET && AB == 0) {
-				wxLogMessage(wxT("Listening for commands radar A socket 6680"));
+				wxLogMessage(wxT("Listening for commands radar A socket 6680 AB = %d"), AB);
 			}
 		}
 			// If it is still INVALID_SOCKET now we just sleep for 1s in socketReady
-			
         
 
-        if (socketReady(rx_socket, 1000)) {  // listen to A commands (from ourselves or others)
+        if (socketReady(rx_socket, 1000)) {  // listen for commands (from ourselves or others)
             UINT8 command[1500];
             rx_len = sizeof(rx_addr);
             r = recvfrom(rx_socket, (char * ) command, sizeof(command), 0, (struct sockaddr *) &rx_addr, &rx_len);
@@ -3196,8 +3200,8 @@ void *RadarCommandReceiveThread::Entry(void)
                 if (rx_addr.addr.ss_family == AF_INET) {
                     UINT8 * a = (UINT8 *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
 
-					if (pPlugIn->settings.verbose) {
-						s.Printf(wxT("%u.%u.%u.%u sent command AB= %d"), a[0] , a[1] , a[2] , a[3], AB);
+					 {
+						s.Printf(wxT("%u.%u.%u.%u XX command received AB = %d"), a[0] , a[1] , a[2] , a[3], AB);
 					}
                 } else {
                     s = wxT("non-IPV4 sent command");
@@ -3340,7 +3344,7 @@ void *RadarReportReceiveThread::Entry(void)
     SOCKET rx_socket = INVALID_SOCKET;
     int r = 0;
     int count = 0;
-	wxLogMessage(wxT("RadarReportReceiveThread AB= %d"), AB);
+	wxLogMessage(wxT("RadarReportReceiveThread AB = %d"), AB);
 
     // This thread is special as it is the only one that loops round over the interfaces
     // to find the radar
@@ -3403,52 +3407,56 @@ void *RadarReportReceiveThread::Entry(void)
 				}
 			}
 		}                        //  end of radar A 
-					else
-						{          // radar B
-				rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6659, "236.6.7.15");
-				if (rx_socket != INVALID_SOCKET) {
-					wxString addr;
-					UINT8 * a = (UINT8 *)&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr; // sin_addr is in network layout
-					addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
-					if (pPlugIn->settings.verbose >= 1) {
-						wxLogMessage(wxT("BR24radar_pi: Listening for radarB reports on %s"), addr.c_str());
+			else
+			{          // radar B
+				if (br_mcast_addr != 0 && rx_socket == INVALID_SOCKET && pPlugIn->settings.display_mode != DM_EMULATOR){
+					rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6659, "236.6.7.15");
+					wxLogMessage(wxT("XXX startUDPMulticastReceiveSocket radarB ready AB = 1 "));
+					if (rx_socket != INVALID_SOCKET) {
+						wxLogMessage(wxT("XXX startUDPMulticastReceiveSocket radarB ready AB = 1 socket valid"));
+					//	wxString addr;
+					//	UINT8 * a = (UINT8 *)&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr; // sin_addr is in network layout
+					//	addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
+						//	if (pPlugIn->settings.verbose >= 1) {
+						wxLogMessage(wxT("BR24radar_pi:  AB = 1 Listening for radarB reports "));
+						//	}
+						//         br_ip_address = addr;
+						//         br_update_address_control = true;    //signals to RenderGLOverlay that the control box should be updated
+						count = 0;
 					}
-					//         br_ip_address = addr;
-					//         br_update_address_control = true;    //signals to RenderGLOverlay that the control box should be updated
-					count = 0;
 				}
 			}        // end of radar B
 		
             // If it is still INVALID_SOCKET now we just sleep for 1s in socketReady
-        
 
         if (socketReady(rx_socket, 1000)) {
             UINT8 report[1500];
-			wxLogMessage(wxT("BR24radar_pi:  XXX socket ready AB= %d "),AB);
+			wxLogMessage(wxT("BR24radar_pi:  XXX socket ready AB = %d "),AB);
             rx_len = sizeof(rx_addr);
             r = recvfrom(rx_socket, (char * ) report, sizeof(report), 0, (struct sockaddr *) &rx_addr, &rx_len);
             if (r > 0) {
-                if (ProcessIncomingReport(report, r)) {
+
+                if (ProcessIncomingReport(report, r) && AB == 0) {    // NB for AB == 1 ifa is not set
                     memcpy(&mcastFoundAddr, ifa->ifa_addr, sizeof(mcastFoundAddr));
                     br_mcast_addr = &mcastFoundAddr;
                     memcpy(&radarFoundAddr, &rx_addr, sizeof(radarFoundAddr));
                     br_radar_addr = &radarFoundAddr;
-
                     wxString addr;
                     UINT8 * a = (UINT8 *) &br_radar_addr->sin_addr; // sin_addr is in network layout
                     addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
                     br_ip_address = addr;
                     br_update_address_control = true;   //signals to RenderGLOverlay that the control box should be updated
-                    if (!br_radar_seen) {
+                    if (!br_radar_seen || AB == 0) {
                         wxLogMessage(wxT("BR24radar_pi: detected radar A at %s"), addr.c_str());
                     }
 						br_radar_seen = true;
 						br_radar_watchdog = time(0);
-					
+						wxLogMessage(wxT("BR24radar_pi: XX radar seen true AB = %d"), AB);
                 }
             }
             if ((r < 0 ) || !br_radar_seen) { // on error, or if we haven't received anything we start looping again
-				wxLogMessage(wxT("BR24radar_pi:  on error XXX "));
+				wxLogMessage(wxT("BR24radar_pi:  on error XXX r = %d AB = %d"), r, AB);
+				if (!br_radar_seen) wxLogMessage(wxT("BR24radar_pi:  on error radar not seen"));
                 closesocket(rx_socket);
                 rx_socket = INVALID_SOCKET;
 				if (AB == 0) {
@@ -3458,7 +3466,7 @@ void *RadarReportReceiveThread::Entry(void)
             }
 
         } else if (count >= 2 && !br_radar_seen && rx_socket != INVALID_SOCKET) {
-			wxLogMessage(wxT("BR24radar_pi:  XXXcount >= 2 && !br_radar_seen && rx_socket != INVALID_SOCKET  AB= %d"), AB);
+			wxLogMessage(wxT("BR24radar_pi:  XXXcount >= 2 && !br_radar_seen && rx_socket != INVALID_SOCKET  AB = %d"), AB);
             closesocket(rx_socket);
             rx_socket = INVALID_SOCKET;
             br_mcast_addr = 0;
@@ -3533,11 +3541,12 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
                 if (command[2] != prevStatus) {
              //       if (pPlugIn->settings.verbose > 0) {
 					{
-                        wxLogMessage(wxT("BR24radar_pi: XXradar AB= %d status = %u"), AB, command[2]);
+                        wxLogMessage(wxT("BR24radar_pi: XXprocess inc report radar AB = %d status = %u"), AB, command[2]);
                     }
                     prevStatus = command[2];
-					br_radar_type = RT_4G;
+					if (AB == 1 ) br_radar_type = RT_4G;
                 }
+				wxLogMessage(wxT("BR24radar_pi: XXprocess break AB = %d"), AB);
                 break;
 
             case (99 << 8) + 0x02:
@@ -3618,6 +3627,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
                 break;
 
         }
+		wxLogMessage(wxT("BR24radar_pi: XXProcessIncomingReport returned AB = %d"), AB);
         return true;
     }
     if (command[1] == 0xF5) {
@@ -3654,6 +3664,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 	{
         logBinaryData(wxT("XXreceived unknown message "),  command, len);
     }
+	wxLogMessage(wxT("BR24radar_pi: XXProcessIncomingReport returned AB = %d"), AB);
     return false;
 }
 
