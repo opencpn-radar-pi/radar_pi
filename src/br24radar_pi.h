@@ -271,7 +271,7 @@ struct pi_control_settings {
     int      idle_run_time;
     int      draw_algorithm;
     int      scan_speed;
-    int      refreshrate[2];   // for A and B
+    int      refreshrate;   // for A and B
     int      passHeadingToOCPN;
 	int      multi_sweep_filter[3];   //  0: guard zone 1 filter state;
                                       //  1: guard zone 2 filter state;
@@ -405,7 +405,6 @@ public:
 
     pi_control_settings settings;
 	radar_control_setting radar_setting[2];
-	int A_B;
 
     scan_line                 m_scan_line[2][LINES_PER_ROTATION];
 
@@ -417,7 +416,7 @@ public:
     GuardZoneDialog          *m_pGuardZoneDialog;
     GuardZoneBogey           *m_pGuardZoneBogey;
     Idle_Dialog              *m_pIdleDialog;
-    receive_statistics          m_statistics;
+    receive_statistics          m_statistics[2];
 
 private:
     void TransmitCmd(UINT8 * msg, int size);
