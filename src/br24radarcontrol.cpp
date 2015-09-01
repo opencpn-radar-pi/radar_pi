@@ -1119,9 +1119,8 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
 void BR24ControlsDialog::UpdateControl(bool refreshAll)
 {
 	if (!topSizer->IsShown(controlBox)) return;
-
 	// first update the range
-	if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod){
+	if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod || refreshAll){
 		SetRangeIndex(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.button);
 		pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod = false;
 	}
@@ -1133,10 +1132,10 @@ void BR24ControlsDialog::UpdateControl(bool refreshAll)
 	else{
 		bGain->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button);
 	}
-	if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].rain.mod)) {
+	if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].rain.mod || refreshAll)) {
 		bRain->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].rain.button);
 	}
-	if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.mod)) {
+	if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.mod || refreshAll)) {
 		if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.button == -1){
 			wxLogMessage(wxT("BR24radar_pi: XX sea auto"));
 			bSea->SetAutoX();
@@ -1145,13 +1144,13 @@ void BR24ControlsDialog::UpdateControl(bool refreshAll)
 			bSea->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.button);
 		}
 	}
-	if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.mod)) {
+	if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.mod || refreshAll)) {
 		bTargetBoost->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.button);
 	}
-	if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.mod)) {
+	if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.mod || refreshAll)) {
 		bNoiseRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.button);
 	}
-	if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.mod)) {
+	if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.mod || refreshAll)) {
 		bTargetSeparation->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.button);
 	}
 }
