@@ -2325,7 +2325,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                         0x06,
                         0xc1,
                         0, 0, 0, 0, 0x01,
-                        0, 0, 0, 0xa1
+                        0, 0, 0, 0xad     // changed from a1 right ????
                     };
                     if (settings.verbose) {
                         wxLogMessage(wxT("BR24radar_pi: Gain: Auto"));
@@ -2351,7 +2351,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
             }
             case CT_RAIN: {                       // Rain Clutter - Manual. Range is 0x01 to 0x50
     //            settings.rain_clutter_gain = value;
-                int v = value * 0x50 / 100;
+                int v = value * 255 / 100;
                 if (v > 255) {
                     v = 255;
                 }
@@ -3498,15 +3498,17 @@ void *RadarReportReceiveThread::Entry(void)
 //
 #pragma pack(push,1)
 struct radar_state02 {
-    UINT8  what;    // 0x02
-    UINT8  command; // 0xC4
-    UINT16 range;  // 0x06 0x09
-    UINT32 field2;  // 0
-    UINT32 field3;  // 1
-    UINT8  gain;
-    UINT32 field4b;
-    UINT32 sea;     // sea state
-    UINT32 rain;
+    UINT8  what;    // 0   0x02
+    UINT8  command; // 1 0xC4
+    UINT16 range;  //  2-3   0x06 0x09
+    UINT32 field2;  // 4-7    0
+    UINT32 field3;  // 8-11
+    UINT8  gain;    // 12
+    UINT32 field4b; // 13-16
+    UINT32 sea;     // 17-20   sea state
+    UINT8 field4c; // 21 
+	UINT8  rain;    // 22   rain clutter
+	UINT8  field4d; // 23 
     UINT32 field6b;
     UINT32 field6c;
     UINT8  field6d;
@@ -3559,7 +3561,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
                     radar_state02 * s = (radar_state02 *) command;
 					pPlugIn->radar_setting[AB].gain.Update(s->gain); 
 		//			wxLogMessage(wxT("BR24radar_pi: 
-					if (s->field3 == 1 && s->gain == 0xa1){
+					if (s->field3 == 1 && s->gain == 0xad){   // changed from a1 works now ??
 						pPlugIn->radar_setting[AB].gain.button = -1; // auto gain
 					}
 					else{
@@ -3569,7 +3571,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 		// 			pPlugIn->radar_setting[AB].range.button =    // is handled elsewhere
 		//			pPlugIn->radar_setting[AB].range.Update(s->range);
 					pPlugIn->radar_setting[AB].rain.Update(s->rain);
-					pPlugIn->radar_setting[AB].rain.button = s->rain * 100 / 0x50;
+					pPlugIn->radar_setting[AB].rain.button = s->rain * 100 / 255;
 					pPlugIn->radar_setting[AB].sea.Update(s->sea);
 					if (s->field3 == 0x01000000 && s->sea == 0xd3){
 						pPlugIn->radar_setting[AB].sea.button = -1; // auto sea
