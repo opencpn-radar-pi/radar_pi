@@ -418,6 +418,7 @@ int br24radar_pi::Init(void)
     AddLocaleCatalog( _T("opencpn-br24radar_pi") );
 
     m_pControlDialog = NULL;
+	m_pMessageBox = NULL;
 	settings.selectRadarB = 0;   // temp setting until loadded from ini file
 	br_radar_state[0] = RADAR_OFF;    // A radar
 	br_radar_state[1] = RADAR_OFF;    // B radar
@@ -460,6 +461,7 @@ int br24radar_pi::Init(void)
 	}
     m_pOptionsDialog = 0;
     m_pControlDialog = 0;
+	m_pMessageBox = 0;
     m_pGuardZoneDialog = 0;
     m_pGuardZoneBogey = 0;
     m_pIdleDialog = 0;
@@ -970,18 +972,36 @@ void BR24DisplayOptionsDialog::OnIdOKClick(wxCommandEvent& event)
 
 void br24radar_pi::ShowRadarControl(bool show)
 {
+	if (!m_pMessageBox) {
+		m_pMessageBox = new BR24MessageBox;
+		m_pMessageBox->Create(m_parent_window, this);
+		m_pMessageBox->SetSize(m_BR24Message_box_x, m_BR24Message_box_y,
+			m_BR24Message_box_sx, m_BR24Message_box_sy);
+		m_pMessageBox->Fit();		
+	}
+
+	//	if (show) {
+	//		m_pMessageBox->Show();
+	//	}
+	//	else {
+	m_pMessageBox->Hide();
+	//	}
+
     if (!m_pControlDialog) {
         m_pControlDialog = new BR24ControlsDialog;
         m_pControlDialog->Create(m_parent_window, this);
+		
+		m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
+			m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy);
+		m_pControlDialog->Fit();
+		m_pControlDialog->Hide();
         int range = br_range_meters[settings.selectRadarB];
 		int idx = convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type);
         m_pControlDialog->SetRangeIndex(idx);
 		radar_setting[settings.selectRadarB].range.Update(range);
-		radar_setting[settings.selectRadarB].range.button = idx;
+		radar_setting[settings.selectRadarB].range.button = idx;		
     }
-   if(show) m_pControlDialog->Show();
-    m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
-                              m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy);
+	control_box_closed = false;
 }
 
 void br24radar_pi::OnContextMenuItemCallback(int id)
@@ -1004,9 +1024,20 @@ void br24radar_pi::OnBR24ControlDialogClose()
         m_pControlDialog->GetPosition(&m_BR24Controls_dialog_x, &m_BR24Controls_dialog_y);
         m_pControlDialog->Hide();
         SetCanvasContextMenuItemViz(br_guard_zone_id, false);
+		control_box_closed = true;
     }
 
     SaveConfig();
+}
+
+void br24radar_pi::OnBR24MessageBoxClose()
+{
+	if (m_pMessageBox) {
+		m_pMessageBox->GetPosition(&m_BR24Message_box_x, &m_BR24Message_box_y);
+		m_pMessageBox->Hide();
+	}
+
+	SaveConfig();
 }
 
 void br24radar_pi::OnGuardZoneDialogClose()
@@ -1056,6 +1087,7 @@ void br24radar_pi::Select_Guard_Zones(int zone)
         m_pControlDialog->GetPosition(&m_BR24Controls_dialog_x, &m_BR24Controls_dialog_y);
         m_pGuardZoneDialog->Show();
         m_pControlDialog->Hide();
+		wxLogMessage(wxT("BR24radar_pi: YYYY hide mpcontrol from select guardzones"));
         m_pGuardZoneDialog->SetPosition(wxPoint(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y));
         m_pGuardZoneDialog->OnGuardZoneDialogShow(zone);
         SetCanvasContextMenuItemViz(br_guard_zone_id, true);
@@ -1166,18 +1198,18 @@ void br24radar_pi::DoTick(void)
         // Note that the watchdog is continuously reset every time we receive a heading
         m_heading_source = HEADING_NONE;
         wxLogMessage(wxT("BR24radar_pi: Lost Heading data"));
-        if (m_pControlDialog) {
+        if (m_pMessageBox) {
             wxString info = wxT("");
-            m_pControlDialog->SetHeadingInfo(info);
+            m_pMessageBox->SetHeadingInfo(info);
         }
     }
 
     if (br_var_source != VARIATION_SOURCE_NONE && TIMER_ELAPSED(br_var_watchdog)) {
         br_var_source = VARIATION_SOURCE_NONE;
         wxLogMessage(wxT("BR24radar_pi: Lost Variation source"));
-        if (m_pControlDialog) {
+        if (m_pMessageBox) {
             wxString info = wxT("");
-            m_pControlDialog->SetVariationInfo(info);
+            m_pMessageBox->SetVariationInfo(info);
         }
     }
 
@@ -1237,8 +1269,8 @@ void br24radar_pi::DoTick(void)
              , m_statistics[settings.selectRadarB].broken_spokes
              , m_statistics[settings.selectRadarB].missing_spokes);
 
-    if (m_pControlDialog) {
-        m_pControlDialog->SetRadarInfo(t);
+    if (m_pMessageBox) {
+        m_pMessageBox->SetRadarInfo(t);
     }
     if (settings.verbose >= 1) {
         t.Replace(wxT("\n"), wxT(" "));
@@ -1257,6 +1289,17 @@ void br24radar_pi::DoTick(void)
                                        );
 		m_pControlDialog->UpdateControl(false);
     }
+
+	if (m_pMessageBox) {
+		m_pMessageBox->UpdateMessage(br_opengl_mode
+			, br_bpos_set
+			, m_heading_source != HEADING_NONE
+			, br_var_source != VARIATION_SOURCE_NONE
+			, br_radar_seen
+			, br_data_seen[settings.selectRadarB]
+			);
+	}
+
 	for (int i = 0; i < 2; i++){
 		m_statistics[i].broken_packets = 0;
 		m_statistics[i].broken_spokes = 0;
@@ -1384,14 +1427,14 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     // set the IP address info in the control box if signalled by the receive thread
 
     if (br_update_error_control) {
-        if (m_pControlDialog) {
-            m_pControlDialog->SetErrorMessage(br_error_msg);
+		if (m_pMessageBox) {
+			m_pMessageBox->SetErrorMessage(br_error_msg);
         }
         br_update_error_control = false;
     }
     if (br_update_address_control) {
-        if (m_pControlDialog) {
-            m_pControlDialog->SetMcastIPAddress(br_ip_address);
+        if (m_pMessageBox) {
+            m_pMessageBox->SetMcastIPAddress(br_ip_address);
         }
         br_update_address_control = false;
     }
@@ -2000,6 +2043,11 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(wxT("ControlsDialogPosX"), &m_BR24Controls_dialog_x, 20L);
         pConf->Read(wxT("ControlsDialogPosY"), &m_BR24Controls_dialog_y, 170L);
 
+		pConf->Read(wxT("MessageBoxSizeX"), &m_BR24Message_box_sx, 300L);
+		pConf->Read(wxT("MessageBoxSizeY"), &m_BR24Message_box_sy, 540L);
+		pConf->Read(wxT("MessageBoxPosX"), &m_BR24Message_box_x, 10L);  
+		pConf->Read(wxT("MessageBoxPosY"), &m_BR24Message_box_y, 150L);
+
         pConf->Read(wxT("GuardZonePosX"), &m_GuardZoneBogey_x, 20L);
         pConf->Read(wxT("GuardZonePosY"), &m_GuardZoneBogey_y, 170L);
 
@@ -2068,6 +2116,11 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("ControlsDialogPosX"),   m_BR24Controls_dialog_x);
         pConf->Write(wxT("ControlsDialogPosY"),   m_BR24Controls_dialog_y);
 
+		pConf->Write(wxT("MessageBoxSizeX"), m_BR24Message_box_sx);
+		pConf->Write(wxT("MessageBoxSSizeY"), m_BR24Message_box_sy);
+		pConf->Write(wxT("MessageBoxSPosX"), m_BR24Message_box_x);
+		pConf->Write(wxT("MessageBoxSPosY"), m_BR24Message_box_y);
+
         pConf->Write(wxT("GuardZonePosX"),   m_GuardZoneBogey_x);
         pConf->Write(wxT("GuardZonePosY"),   m_GuardZoneBogey_y);
 
@@ -2126,10 +2179,10 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         br_var = pfix.Var;
         br_var_source = VARIATION_SOURCE_FIX;
         br_var_watchdog = now;
-        if (m_pControlDialog) {
+        if (m_pMessageBox) {
             info = _("GPS");
             info << wxT(" ") << br_var;
-            m_pControlDialog->SetVariationInfo(info);
+            m_pMessageBox->SetVariationInfo(info);
         }
     }
 
@@ -2146,10 +2199,10 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f \n"), br_hdt);
             m_heading_source = HEADING_RADAR;
         }
-        if (m_pControlDialog) {
+        if (m_pMessageBox) {
             info = _("radar");
             info << wxT(" ") << br_hdt;
-            m_pControlDialog->SetHeadingInfo(info);
+            m_pMessageBox->SetHeadingInfo(info);
         }
         br_hdt_watchdog = now;
     }
@@ -2159,10 +2212,10 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM %f"), br_hdt);
             m_heading_source = HEADING_HDM;
         }
-        if (m_pControlDialog) {
+        if (m_pMessageBox) {
             info = _("HDM");
             info << wxT(" ") << br_hdt;
-            m_pControlDialog->SetHeadingInfo(info);
+            m_pMessageBox->SetHeadingInfo(info);
         }
         br_hdt_watchdog = now;
     }
@@ -2172,10 +2225,10 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
             m_heading_source = HEADING_HDT;
         }
-        if (m_pControlDialog) {
+        if (m_pMessageBox) {
             info = _("HDT");
             info << wxT(" ") << br_hdt;
-            m_pControlDialog->SetHeadingInfo(info);
+            m_pMessageBox->SetHeadingInfo(info);
         }
         br_hdt_watchdog = now;
     }
@@ -2185,10 +2238,10 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
             m_heading_source = HEADING_COG;
         }
-        if (m_pControlDialog) {
+        if (m_pMessageBox) {
             info = _("COG");
             info << wxT(" ") << br_hdt;
-            m_pControlDialog->SetHeadingInfo(info);
+            m_pMessageBox->SetHeadingInfo(info);
         }
         br_hdt_watchdog = now;
     }
@@ -2221,10 +2274,10 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
                 br_var = variation;
                 br_var_source = VARIATION_SOURCE_WMM;
                 br_var_watchdog = time(0);
-                if (m_pControlDialog) {
+                if (m_pMessageBox) {
                     wxString info = _("WMM");
                     info << wxT(" ") << br_var;
-                    m_pControlDialog->SetVariationInfo(info);
+                    m_pMessageBox->SetVariationInfo(info);
                 }
             }
         }
@@ -2298,24 +2351,6 @@ void br24radar_pi::RadarStayAlive(void)
 	TransmitCmd(pck4, sizeof(pck4));
 }
 
-//void br24radar_pi::RadarSendState(void)
-//{
-//    SetControlValue(CT_GAIN, settings.gain);
-//    SetControlValue(CT_RAIN, settings.rain_clutter_gain);
-//    SetControlValue(CT_SEA, settings.sea_clutter_gain);
-//    SetControlValue(CT_INTERFERENCE_REJECTION, settings.interference_rejection);
-//    SetControlValue(CT_TARGET_SEPARATION, settings.target_separation);
-//    SetControlValue(CT_NOISE_REJECTION, settings.noise_rejection);
-//    SetControlValue(CT_TARGET_BOOST, settings.target_boost);
-//    SetControlValue(CT_SCAN_SPEED, settings.scan_speed);
-//
-//    int displayedRange = br_commanded_range_meters ? br_commanded_range_meters : br_auto_range_meters;
-//    size_t idx = convertMetersToRadarAllowedValue(&displayedRange, settings.range_units, br_radar_type);
-//    if (m_pControlDialog) {
-//        m_pControlDialog->SetRangeIndex(idx);
-//    }
-//    SetRangeMeters(br_commanded_range_meters);
-//}
 
 void br24radar_pi::SetRangeMeters(long meters)
 {
@@ -2647,10 +2682,10 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
                 br_var = newVar;
                 br_var_source = VARIATION_SOURCE_NMEA;
                 br_var_watchdog = now;
-                if (m_pControlDialog) {
+                if (m_pMessageBox) {
                     wxString info = _("NMEA");
                     info << wxT(" ") << br_var;
-                    m_pControlDialog->SetVariationInfo(info);
+                    m_pMessageBox->SetVariationInfo(info);
                 }
             }
             if (m_heading_source == HEADING_HDM && !wxIsNaN(m_NMEA0183.Hdg.MagneticSensorHeadingDegrees)) {
@@ -2888,10 +2923,10 @@ void *RadarDataReceiveThread::Entry(void)
         if (pPlugIn->settings.display_mode[AB] == DM_EMULATOR) {
             socketReady(INVALID_SOCKET, 1000); // sleep for 1s
             emulate_fake_buffer();
-            if (pPlugIn->m_pControlDialog) {
+            if (pPlugIn->m_pMessageBox) {
                 wxString ip;
                 ip << _("emulator");
-                pPlugIn->m_pControlDialog->SetRadarIPAddress(ip);
+                pPlugIn->m_pMessageBox->SetRadarIPAddress(ip);
             }
         }
         else {

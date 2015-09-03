@@ -5,7 +5,7 @@
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
- *
+ *           Douwe Fokkema
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -114,7 +114,6 @@ EVT_BUTTON(ID_MINUS_TEN, BR24ControlsDialog::OnMinusTenClick)
 EVT_BUTTON(ID_AUTO,  BR24ControlsDialog::OnAutoClick)
 EVT_BUTTON(ID_MULTISWEEP,  BR24ControlsDialog::OnMultiSweepClick)
 
-EVT_BUTTON(ID_MSG_BACK, BR24ControlsDialog::OnMessageBackButtonClick)
 EVT_BUTTON(ID_RDRONLY, BR24ControlsDialog::OnRdrOnlyButtonClick)
 
 EVT_BUTTON(ID_ADVANCED_BACK,  BR24ControlsDialog::OnAdvancedBackButtonClick)
@@ -474,82 +473,7 @@ void BR24ControlsDialog::CreateControls()
     // Determined desired button width
 
 
-    //**************** MESSAGE BOX ******************//
-    // A box sizer to contain warnings
-
-    messageBox = new wxBoxSizer(wxVERTICAL);
-    topSizer->Add(messageBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-
-    tMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    messageBox->Add(tMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
-    tMessage->SetLabel(_("Radar requires the following"));
-    tMessage->SetFont(g_font);
-
-    wxStaticBox* optionsBox = new wxStaticBox(this, wxID_ANY, _("OpenCPN options"));
-    optionsBox->SetFont(g_font);
-    wxStaticBoxSizer* optionsSizer = new wxStaticBoxSizer(optionsBox, wxVERTICAL);
-    messageBox->Add(optionsSizer, 0, wxEXPAND | wxALL, BORDER * 2);
-
-    cbOpenGL = new wxCheckBox(this, ID_BPOS, _("Accelerated Graphics (OpenGL)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    optionsSizer->Add(cbOpenGL, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    cbOpenGL->SetFont(g_font);
-    cbOpenGL->Disable();
-
-    ipBox = new wxStaticBox(this, wxID_ANY, _("ZeroConf via Ethernet"));
-    ipBox->SetFont(g_font);
-    wxStaticBoxSizer* ipSizer = new wxStaticBoxSizer(ipBox, wxVERTICAL);
-    messageBox->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);
-
-    cbRadar = new wxCheckBox(this, ID_RADAR, _("Radar present"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    ipSizer->Add(cbRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    cbRadar->SetFont(g_font);
-    cbRadar->Disable();
-
-    cbData = new wxCheckBox(this, ID_DATA, _("Radar sending data"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    ipSizer->Add(cbData, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    cbData->SetFont(g_font);
-    cbData->Disable();
-
-	nmeaBox = new wxStaticBox(this, wxID_ANY, _("For radar overlay also required"));
-    nmeaBox->SetFont(g_font);
-
- //   wxStaticBoxSizer* nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
-	nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
-    messageBox->Add(nmeaSizer, 0, wxEXPAND | wxALL, BORDER * 2);
-
-    cbBoatPos = new wxCheckBox(this, ID_BPOS, _("Boat position"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    nmeaSizer->Add(cbBoatPos, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    cbBoatPos->SetFont(g_font);
-    cbBoatPos->Disable();
-
-    cbHeading = new wxCheckBox(this, ID_HEADING, _("Heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    nmeaSizer->Add(cbHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    cbHeading->SetFont(g_font);
-    cbHeading->Disable();
-
-    cbVariation = new wxCheckBox(this, ID_HEADING, _("Variation"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    nmeaSizer->Add(cbVariation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    cbVariation->SetFont(g_font);
-    cbVariation->Disable();
-
-    tStatistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, g_buttonSize, 0);
-    tStatistics->SetFont(*OCPNGetFont(_("Dialog"), 8));
-    messageBox->Add(tStatistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
-
-/*    // The <Radar Only> button
-    bRdrOnly = new wxButton(this, ID_RDRONLY, _("Radar Only"), wxDefaultPosition, wxDefaultSize, 0);
-    messageBox->Add(bRdrOnly, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bRdrOnly->SetFont(g_font);
-    messageBox->Hide(bRdrOnly); */
-	
-	// The <Close> button
-    bMsgBack = new wxButton(this, ID_MSG_BACK, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
-    messageBox->Add(bMsgBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bMsgBack->SetFont(g_font);
-    messageBox->Hide(bMsgBack);
-
-    // topSizer->Hide(messageBox);
-
+   
     //**************** EDIT BOX ******************//
 	 // A box sizer to contain RANGE button
     editBox = new wxBoxSizer(wxVERTICAL);
@@ -973,16 +897,6 @@ void BR24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event)
 }
 
 
-void BR24ControlsDialog::OnMessageBackButtonClick(wxCommandEvent& event)
-{
-    wantShowMessage = false;
-    fromBox = messageBox;
-    topSizer->Hide(messageBox);
-    topSizer->Show(controlBox);
-    Fit();
-    topSizer->Layout();
-}
-
 void BR24ControlsDialog::OnRdrOnlyButtonClick(wxCommandEvent& event)
 {
 	pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] = DM_CHART_BLACKOUT;
@@ -998,12 +912,12 @@ void BR24ControlsDialog::OnRdrOnlyButtonClick(wxCommandEvent& event)
 void BR24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event)
 {
     wantShowMessage = true;
-    topSizer->Hide(controlBox);
-    topSizer->Show(messageBox);
-//	messageBox->Hide(bRdrOnly);
-	messageBox->Show(bMsgBack);
-    Fit();
-    topSizer->Layout();
+//    topSizer->Hide(controlBox);
+	if (pPlugIn->m_pMessageBox){
+		pPlugIn->m_pMessageBox->Show();
+	}
+ //   Fit();
+ //   topSizer->Layout();
 }
 
 void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
@@ -1176,157 +1090,43 @@ void BR24ControlsDialog::UpdateControl(bool refreshAll)
 
 void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData)
 {
-    cbOpenGL->SetValue(haveOpenGL);
-    cbBoatPos->SetValue(haveGPS);
-    cbHeading->SetValue(haveHeading);
-    cbVariation->SetValue(haveVariation);
-    cbRadar->SetValue(haveRadar);
-    cbData->SetValue(haveData);
-
 	bool radarOn = haveOpenGL && haveRadar; // && haveData;
 	bool navOn = haveGPS && haveHeading && haveVariation;
 	bool black = pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT;
-	/*
-	Decision table to select the message or control box
-	- means not relevant
+	bool radar_switched_on = pPlugIn->br_radar_state[pPlugIn->settings.selectRadarB] == RADAR_ON;
 
-    case nr        1   2   3   4   5   6   7   8   9   10  11
-	box type       m   m   m3  m3  m   c   c   c   mb  mb  mb
-	+ controlbox                   c               c   c   c         
-	_________________________________________________________
-	radarOn        0   0   0   0   1   1   1   1   1   1   1   
-	navOn          0   1   0   1   0   1   0   1   1   0   1
-	black          0   0   1   1   0   0   1   1   0   1   1
-	want_message   -   -   -   -   -   0   0   0   1   1   1
-
-	m1    message box plus radar only button 
-	m2    message box
-	m3    message box without NMEA (no buttons)
-	c     control box
-	mb    message box with back button
-
-	*/
-
-
-	if (!black && !navOn && !radarOn)               // case 1 
-	{                                    // m    message  
-		if (!topSizer->IsShown(messageBox)) {
-		topSizer->Show(messageBox);
+	if (!radar_switched_on || pPlugIn->control_box_closed){
+		if (pPlugIn->m_pControlDialog)
+		{
+			pPlugIn->m_pControlDialog->Hide();
 		}
-	//	messageBox->Show(bRdrOnly);
-		messageBox->Hide(bMsgBack);
-		messageBox->Show(nmeaBox);
-	//	messageBox->Show(cbHeading);
-	//	messageBox->Show(cbBoatPos);
-	//	messageBox->Show(cbVariation);
-		if (!topSizer->IsShown(controlBox)) {
-			topSizer->Show(controlBox);
-		}
-	//	topSizer->Hide(controlBox);
-    //    topSizer->Hide(advancedBox);
-   //     topSizer->Hide(editBox);
-        messageBox->Layout();
-        Fit();
-		controlBox->Layout();
-		Fit();
-        topSizer->Layout();
+		return;
 	}
 
-	if (!black && !navOn && radarOn)               // case 5 
-	{                                             // m    message  + c control
-		if (!topSizer->IsShown(messageBox)) {
-			topSizer->Show(messageBox);
+	if (!radarOn){
+		if (pPlugIn->m_pControlDialog){
+			pPlugIn->m_pControlDialog->Hide();
 		}
-	//	messageBox->Show(bRdrOnly);
-		messageBox->Hide(bMsgBack);
-		messageBox->Show(nmeaBox);
-		//	messageBox->Show(cbHeading);
-		//	messageBox->Show(cbBoatPos);
-		//	messageBox->Show(cbVariation);
-		if (!topSizer->IsShown(controlBox) && !topSizer->IsShown(advancedBox) && !topSizer->IsShown(editBox)){
-			topSizer->Show(controlBox);
+	}
+
+	else    // radar on
+	{
+		bool guard = false;
+		if (pPlugIn->m_pGuardZoneDialog){
+			if (pPlugIn->m_pGuardZoneDialog->IsShown()){
+				guard = true;
+			}
 		}
-		//	topSizer->Hide(controlBox);
-		//    topSizer->Hide(advancedBox);
-		//     topSizer->Hide(editBox);
-		messageBox->Layout();
-		Fit();
+		if (pPlugIn->m_pControlDialog && !guard) {
+			pPlugIn->m_pControlDialog->Show();
+		}
+		
+		if (!topSizer->IsShown(controlBox) && !topSizer->IsShown(advancedBox) && !topSizer->IsShown(editBox) && !guard){
+			topSizer->Show(controlBox);   
+		}
 		controlBox->Layout();
 		Fit();
 		topSizer->Layout();
-	}
-
-	else if (!radarOn && ! black && navOn)   // case 2
-	{                                        // m    message box
-		if (!topSizer->IsShown(messageBox)) {
-		topSizer->Show(messageBox);
-		}
-//		messageBox->Hide(bRdrOnly);
-		messageBox->Hide(bMsgBack);
-		messageBox->Show(nmeaBox);
-	//	messageBox->Show(cbHeading);
-	//	messageBox->Show(cbBoatPos);
-	//	messageBox->Show(cbVariation);
-		topSizer->Hide(controlBox);
-        topSizer->Hide(advancedBox);
-        topSizer->Hide(editBox);
-        messageBox->Layout();
-        Fit();
-        topSizer->Layout();
-	}
-	else if (!radarOn && black)           // case 3 and 4
-	{                                     // m3    message box without NMEA (no buttons)
-		if (!topSizer->IsShown(messageBox)) {
-		topSizer->Show(messageBox);
-		}
-		messageBox->Hide(nmeaSizer);
-	//	messageBox->Hide(cbHeading);
-	//	messageBox->Hide(cbBoatPos);
-	//	messageBox->Hide(bRdrOnly);
-		messageBox->Hide(bMsgBack);
-		topSizer->Hide(controlBox);
-        topSizer->Hide(advancedBox);
-        topSizer->Hide(editBox);
-        messageBox->Layout();
-        Fit();
-        topSizer->Layout();
-	}
-	else if ((navOn || black) && !wantShowMessage)     //  case 6, 7 and 8
-	{                                                  //  c     control box
-		if (topSizer->IsShown(messageBox))    
-        {
-		topSizer->Hide(messageBox);
-        topSizer->Show(controlBox);
-        Fit();
-        topSizer->Layout();
-		}
-	}
-	else if (wantShowMessage)          // case 9, 10 and 11
-	{                                  // mb    message box with back button
-		if (!topSizer->IsShown(messageBox)) {
-		topSizer->Show(messageBox);
-		}
-	//	messageBox->Hide(bRdrOnly);
-		messageBox->Show(bMsgBack);
-		messageBox->Show(nmeaBox);
-	//	messageBox->Show(cbHeading);
-	//	messageBox->Show(cbBoatPos);
-	//	messageBox->Show(cbVariation);
-		if (!topSizer->IsShown(controlBox) && !topSizer->IsShown(advancedBox) && !topSizer->IsShown(editBox)){
-			topSizer->Show(controlBox);
-		}
-//		topSizer->Hide(controlBox);
- //       topSizer->Hide(advancedBox);
- //       topSizer->Hide(editBox);
-        messageBox->Layout();
-        Fit();
-		controlBox->Layout();
-		Fit();
-        topSizer->Layout();
-	}
-	else 
-	{
-		 wxLogMessage(wxT("BR24radar_pi: XX Update message, case not covered"));
 	}
 
 	editBox->Layout();
@@ -1334,62 +1134,3 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
 }
 	
 
-void BR24ControlsDialog::SetErrorMessage(wxString &msg)
-{
-    tMessage->SetLabel(msg);
-    topSizer->Show(messageBox);
-//	messageBox->Show(bRdrOnly);
-    topSizer->Hide(controlBox);
-    topSizer->Hide(advancedBox);
-    topSizer->Hide(editBox);
-    messageBox->Layout();
-    Fit();
-    topSizer->Layout();
-}
-
-void BR24ControlsDialog::SetRadarIPAddress(wxString &msg)
-{
-    if (cbRadar) {
-        wxString label;
-
-        label << _("Radar IP") << wxT(" ") << msg;
-        cbRadar->SetLabel(label);
-    }
-}
-
-void BR24ControlsDialog::SetMcastIPAddress(wxString &msg)
-{
-    if (ipBox) {
-        wxString label;
-
-        label << _("ZeroConf E'net") << wxT(" ") << msg;
-        ipBox->SetLabel(label);
-    }
-}
-
-void BR24ControlsDialog::SetHeadingInfo(wxString &msg)
-{
-    if (cbHeading && topSizer->IsShown(messageBox)) {
-        wxString label;
-
-        label << _("Heading") << wxT(" ") << msg;
-        cbHeading->SetLabel(label);
-    }
-}
-
-void BR24ControlsDialog::SetVariationInfo(wxString &msg)
-{
-    if (cbVariation && topSizer->IsShown(messageBox)) {
-        wxString label;
-
-        label << _("Variation") << wxT(" ") << msg;
-        cbVariation->SetLabel(label);
-    }
-}
-
-void BR24ControlsDialog::SetRadarInfo(wxString &msg)
-{
-    if (tStatistics && topSizer->IsShown(messageBox)) {
-        tStatistics->SetLabel(msg);
-    }
-}
