@@ -98,7 +98,7 @@ using namespace std;
 // If BR24MARK is found, we switch to BR24 mode, otherwise 4G.
 static UINT8 BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
 
-int bogey_count[GUARD_ZONES];
+int bogey_count[2 * GUARD_ZONES];
 static int displaysetting_threshold[3] = {displaysetting0_threshold_red, displaysetting1_threshold_blue, displaysetting2_threshold_blue};
 
 enum {
@@ -159,7 +159,6 @@ bool  br_init_timed_idle;
 static time_t br_idle_watchdog;
 int   br_idle_dialog_time_left = 0;
 
-int   br_radar_state[2] = { RADAR_OFF, RADAR_OFF };
 int   br_scanner_state = RADAR_OFF;
 RadarType br_radar_type = RT_UNKNOWN;
 
@@ -434,10 +433,8 @@ int br24radar_pi::Init(void)
 	br_data_watchdog[1] = 0;
     br_idle_watchdog = 0;
 	memset(&bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
-	memset(&radar_setting, 0, sizeof(radar_setting));   // set bogey count 0 
-    settings.multi_sweep_filter[0] = 0;
-    settings.multi_sweep_filter[1] = 0;
-    settings.multi_sweep_filter[2] = 0;
+	memset(&radar_setting, 0, sizeof(radar_setting));   // radar settings all to 0
+	memset(&settings, 0, sizeof(settings));             // pi settings all 0
 
     for (int i = 0; i < LINES_PER_ROTATION - 1; i++) {   // initialise history bytes
         memset(&m_scan_line[0][i].history, 0, sizeof(m_scan_line[0][i].history));
@@ -1526,7 +1523,12 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
         glScaled(scale_factor, scale_factor, 1.);
         if (br_range_meters[settings.selectRadarB] > 0 && br_scanner_state == RADAR_ON) {
             // Guard Section
-		    Guard(meters);
+			if (br_radar_state[0] == RADAR_ON){
+				Guard(meters, 0);
+			}
+			if (br_radar_state[1] == RADAR_ON){
+				Guard(meters, 1);
+			}
             DrawRadarImage(meters, radar_center);
         }
         glPopMatrix();
@@ -1544,8 +1546,8 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 				glVertex2d(br_range_meters[settings.selectRadarB] * v_scale_ppm, 0);
 				glEnd();
 			} 
-            if (guardZones[0].type != GZ_OFF || guardZones[1].type != GZ_OFF) {
-                RenderGuardZone(radar_center, v_scale_ppm, vp);
+				if (guardZones[settings.selectRadarB][0].type != GZ_OFF || guardZones[settings.selectRadarB][1].type != GZ_OFF) {
+					RenderGuardZone(radar_center, v_scale_ppm, vp, settings.selectRadarB);
 			}
 			
 		}
@@ -1615,7 +1617,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 			GLubyte hist = scan->history[radius];
             hist = hist & 7;  // check only last 3 bits
             
-            if (((settings.multi_sweep_filter[2] == 1) && (!(hist == 3 || hist >= 5)) && radius != RETURNS_PER_LINE - 1)) {
+			if (((settings.multi_sweep_filter[settings.selectRadarB][2] == 1) && (!(hist == 3 || hist >= 5)) && radius != RETURNS_PER_LINE - 1)) {
                   // corresponds to the patterns 011, 101, 110, 111
                 // blob does not pass filter conditions
                     actual_color = BLOB_NONE;
@@ -1692,42 +1694,41 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
             }   
         }   // end of loop over radius
 
-    if (settings.verbose >= 2) {
-        now = wxGetLocalTimeMillis();
-        wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" drawn %u skipped %u spokes with %u blobs maxAge=%") wxTPRId64
-                     wxT(" bogeys %d, %d")
-                     , now, drawn_spokes, skipped, drawn_blobs, max_age, bogey_count[0], bogey_count[1]);
-    }
+		if (settings.verbose >= 2) {
+			now = wxGetLocalTimeMillis();
+			wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" drawn %u skipped %u spokes with %u blobs maxAge=%") wxTPRId64
+						 wxT(" bogeys %d, %d")
+						 , now, drawn_spokes, skipped, drawn_blobs, max_age, bogey_count[0], bogey_count[1]);
+		}
     
 	}    // end of loop over angle
 	HandleBogeyCount(bogey_count);
 }        // end of DrawRadarImage
 
 
-void br24radar_pi::Guard(int max_range)
+void br24radar_pi::Guard(int max_range, int AB)
     // scan image for bogeys 
     {
-    //    memset(&bogey_count, 0, sizeof(bogey_count));    // gives error memset is ambiguous ????
-    
-    bogey_count[0] = 0;
-    bogey_count[1] = 0;
+		for (int i = 0; i < 2; i++){
+			bogey_count[i + 2 * AB] = 0;
+		}
     int begin_arc, end_arc = 0;
     for (size_t z = 0; z < GUARD_ZONES; z++) {
-        switch (guardZones[z].type) {
+        switch (guardZones[AB][z].type) {
         case GZ_CIRCLE:
             begin_arc = 0;
             end_arc = LINES_PER_ROTATION;
             break;
         case GZ_ARC:
-			begin_arc = guardZones[z].start_bearing;
-			end_arc = guardZones[z].end_bearing;
+			begin_arc = guardZones[AB][z].start_bearing;
+			end_arc = guardZones[AB][z].end_bearing;
 			if (!blackout[settings.selectRadarB]) {
 				begin_arc += br_hdt;   // arc still in degrees!
 				end_arc += br_hdt;
 			}
             begin_arc = SCALE_DEGREES_TO_RAW2048 (begin_arc);      // br_hdt added to provide guard zone relative to heading
             end_arc = SCALE_DEGREES_TO_RAW2048(end_arc);    // now arc in lines
-            // br_hdt added to provide guard zone relative to heading
+            
             begin_arc = MOD_ROTATION2048(begin_arc);
             end_arc = MOD_ROTATION2048(end_arc);
             break;
@@ -1747,11 +1748,11 @@ void br24radar_pi::Guard(int max_range)
                 // - 2 added, -1 contains the range circle, should not raise alarm
                 GLubyte hist = scan->history[radius] ;
                 //           if (guardZoneAngles[z][angle]) {
-                int inner_range = guardZones[z].inner_range; // now in meters
-                int outer_range = guardZones[z].outer_range; // now in meters
+				int inner_range = guardZones[AB][z].inner_range; // now in meters
+				int outer_range = guardZones[AB][z].outer_range; // now in meters
                 int bogey_range = radius * max_range / RETURNS_PER_LINE;
                 if (bogey_range > inner_range && bogey_range < outer_range) {   // within range, now check requirement for alarm
-                    if ((settings.multi_sweep_filter[z]) != 0 ) {  // multi sweep filter on for this z
+					if ((settings.multi_sweep_filter[settings.selectRadarB][z]) != 0) {  // multi sweep filter on for this z
                         GLubyte hist = scan->history[radius] & 7; // check only last 3 bits
                         if (!(hist == 3 || hist >= 5)) {  // corresponds to the patterns 011, 101, 110, 111
                             continue;                      // multi sweep filter on, no valid bogeys
@@ -1761,12 +1762,14 @@ void br24radar_pi::Guard(int max_range)
                         GLubyte strength = scan->data[radius];
                         if (strength <= displaysetting_threshold[settings.display_option]) continue;
                         }
-                    bogey_count[z]++;
+                    bogey_count[z + 2 * AB]++;
                     }   // end "if (bogey_range > in ......
 
                 }           // end of loop over radius
             }               // end of loop over z
         }                   // end of loop over angle
+	wxLogMessage(wxT("BR24radar_pi: XXguard AB=%d bogey_count %d %d %d %d"), AB, bogey_count[0], bogey_count[1], bogey_count[2], bogey_count[3]);
+
     }
     
 
@@ -1831,7 +1834,7 @@ void br24radar_pi::draw_histogram_column(int x, int y)  // x=0->255 => 0->1020, 
 
 
 //****************************************************************************
-void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
+void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp, int AB)
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
     glEnable(GL_BLEND);
@@ -1842,26 +1845,26 @@ void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, Plu
 
     for (size_t z = 0; z < GUARD_ZONES; z++) {
 
-        if (guardZones[z].type != GZ_OFF) {
-            if (guardZones[z].type == GZ_CIRCLE) {
+		if (guardZones[AB][z].type != GZ_OFF) {
+			if (guardZones[AB][z].type == GZ_CIRCLE) {
                 start_bearing = 0;
                 end_bearing = 359;
             } else {
-                start_bearing = guardZones[z].start_bearing;
-                end_bearing = guardZones[z].end_bearing;
+				start_bearing = guardZones[AB][z].start_bearing;
+				end_bearing = guardZones[AB][z].end_bearing;
             }
             switch (settings.guard_zone_render_style) {
                 case 1:
                     glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
-                    DrawOutlineArc(guardZones[z].outer_range * v_scale_ppm, guardZones[z].inner_range * v_scale_ppm, start_bearing, end_bearing, true);
+                    DrawOutlineArc(guardZones[AB][z].outer_range * v_scale_ppm, guardZones[AB][z].inner_range * v_scale_ppm, start_bearing, end_bearing, true);
                     break;
                 case 2:
                     glColor4ub(red, green, blue, alpha);
-                    DrawOutlineArc(guardZones[z].outer_range * v_scale_ppm, guardZones[z].inner_range * v_scale_ppm, start_bearing, end_bearing, false);
+                    DrawOutlineArc(guardZones[AB][z].outer_range * v_scale_ppm, guardZones[AB][z].inner_range * v_scale_ppm, start_bearing, end_bearing, false);
                     // fall thru
                 default:
                     glColor4ub(red, green, blue, alpha);
-                    DrawFilledArc(guardZones[z].outer_range * v_scale_ppm, guardZones[z].inner_range * v_scale_ppm, start_bearing, end_bearing);
+                    DrawFilledArc(guardZones[AB][z].outer_range * v_scale_ppm, guardZones[AB][z].inner_range * v_scale_ppm, start_bearing, end_bearing);
             }
         }
 
@@ -1872,57 +1875,59 @@ void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, Plu
 }
 
 void br24radar_pi::HandleBogeyCount(int *bogey_count)
-{
-    bool bogeysFound = false;
+{      // handles bogeys for both A and B in one go
+	bool bogeysFound = false;
+	for (int z = 0; z < 2 * GUARD_ZONES; z++) {
+		if (bogey_count[z] > settings.guard_zone_threshold) {
+			bogeysFound = true;
+			break;
+		}
+	}
+//	wxLogMessage(wxT("BR24radar_pi: XXhandle bogeycount y=%d bogeysFound %d"),  y,bogeysFound);
 
-    for (int z = 0; z < GUARD_ZONES; z++) {
-        if (bogey_count[z] > settings.guard_zone_threshold) {
-            bogeysFound = true;
-            break;
-        }
-    }
-    if (bogeysFound) {
-        // We have bogeys and there is no objection to showing the dialog
-        if (settings.timed_idle != 0) m_pControlDialog->SetTimedIdleIndex(0) ; //Disable Timed Idle if set
+	if (bogeysFound) {
+		// We have bogeys and there is no objection to showing the dialog
+		if (settings.timed_idle != 0) m_pControlDialog->SetTimedIdleIndex(0); //Disable Timed Idle if set
 
-        if (!m_pGuardZoneBogey && br_radar_state[settings.selectRadarB] == RADAR_ON) {
-            // If this is the first time we have a bogey create & show the dialog immediately
-            m_pGuardZoneBogey = new GuardZoneBogey;
-            m_pGuardZoneBogey->Create(m_parent_window, this);
-            m_pGuardZoneBogey->Show();
-            m_pGuardZoneBogey->SetPosition(wxPoint(m_GuardZoneBogey_x, m_GuardZoneBogey_y));
-        }
-        else if (!br_guard_bogey_confirmed && br_radar_state[settings.selectRadarB] == RADAR_ON) {
-            m_pGuardZoneBogey->Show();
-        }
-        time_t now = time(0);
-        int delta_t = now - br_alarm_sound_last;
-        if (!br_guard_bogey_confirmed && delta_t >= ALARM_TIMEOUT && bogeysFound) {
-            // If the last time is 10 seconds ago we ping a sound, unless the user confirmed
-            br_alarm_sound_last = now;
+		if (!m_pGuardZoneBogey && (br_radar_state[0] == RADAR_ON || br_radar_state[1] == RADAR_ON)) {
+			// If this is the first time we have a bogey create & show the dialog immediately
+			m_pGuardZoneBogey = new GuardZoneBogey;
+			m_pGuardZoneBogey->Create(m_parent_window, this);
+			m_pGuardZoneBogey->Show();
+			m_pGuardZoneBogey->SetPosition(wxPoint(m_GuardZoneBogey_x, m_GuardZoneBogey_y));
+		}
+		else if (!br_guard_bogey_confirmed && (br_radar_state[0] == RADAR_ON || br_radar_state[1] == RADAR_ON)) {
+			m_pGuardZoneBogey->Show();
+		}
+		time_t now = time(0);
+		int delta_t = now - br_alarm_sound_last;
+		if (!br_guard_bogey_confirmed && delta_t >= ALARM_TIMEOUT && bogeysFound) {
+			// If the last time is 10 seconds ago we ping a sound, unless the user confirmed
+			br_alarm_sound_last = now;
 
-            if (!settings.alert_audio_file.IsEmpty()) {
-                PlugInPlaySound(settings.alert_audio_file);
-            }
-            else {
-                wxBell();
-            }  // end of ping
-            if (m_pGuardZoneBogey && br_radar_state[settings.selectRadarB] == RADAR_ON) {
-                m_pGuardZoneBogey->Show();
-            }
-            delta_t = ALARM_TIMEOUT;
-        }
-        if (m_pGuardZoneBogey) {
-            m_pGuardZoneBogey->SetBogeyCount(bogey_count, br_guard_bogey_confirmed ? -1 : ALARM_TIMEOUT - delta_t);
-        }
-    }
+			if (!settings.alert_audio_file.IsEmpty()) {
+				PlugInPlaySound(settings.alert_audio_file);
+			}
+			else {
+				wxBell();
+			}  // end of ping
+			if (m_pGuardZoneBogey && (br_radar_state[0] == RADAR_ON || br_radar_state[1] == RADAR_ON)) {
+				m_pGuardZoneBogey->Show();
+			}
+			delta_t = ALARM_TIMEOUT;
+		}
+		if (m_pGuardZoneBogey) {
+			m_pGuardZoneBogey->SetBogeyCount(bogey_count, br_guard_bogey_confirmed ? -1 : ALARM_TIMEOUT - delta_t);
+		}
+	}
 
-    if (!bogeysFound && m_pGuardZoneBogey) {
-        m_pGuardZoneBogey->SetBogeyCount(bogey_count, -1);   // with -1 "next alarm in... "will not be displayed
-        br_guard_bogey_confirmed = false; // Reset for next time we see bogeys
-        // keep showing the bogey dialogue with 0 bogeys
-    }
-
+	if (!bogeysFound && m_pGuardZoneBogey) {
+		wxLogMessage(wxT("BR24radar_pi: XXhandle no bogeys found "));
+		m_pGuardZoneBogey->SetBogeyCount(bogey_count, -1);   // with -1 "next alarm in... "will not be displayed
+		br_guard_bogey_confirmed = false; // Reset for next time we see bogeys
+		// keep showing the bogey dialogue with 0 bogeys
+	}
+	
 }
 
 
@@ -1998,17 +2003,29 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(wxT("GuardZonePosX"), &m_GuardZoneBogey_x, 20L);
         pConf->Read(wxT("GuardZonePosY"), &m_GuardZoneBogey_y, 170L);
 
-        pConf->Read(wxT("Zone1StBrng"), &guardZones[0].start_bearing, 0.0);
-        pConf->Read(wxT("Zone1EndBrng"), &guardZones[0].end_bearing, 0.0);
-        pConf->Read(wxT("Zone1OuterRng"), &guardZones[0].outer_range, 0);
-        pConf->Read(wxT("Zone1InnerRng"), &guardZones[0].inner_range, 0);
-        pConf->Read(wxT("Zone1ArcCirc"), &guardZones[0].type, 0);
+		pConf->Read(wxT("Zone1StBrng"), &guardZones[0][0].start_bearing, 0.0);
+		pConf->Read(wxT("Zone1EndBrng"), &guardZones[0][0].end_bearing, 0.0);
+		pConf->Read(wxT("Zone1OuterRng"), &guardZones[0][0].outer_range, 0);
+		pConf->Read(wxT("Zone1InnerRng"), &guardZones[0][0].inner_range, 0);
+		pConf->Read(wxT("Zone1ArcCirc"), &guardZones[0][0].type, 0);
 
-        pConf->Read(wxT("Zone2StBrng"), &guardZones[1].start_bearing, 0.0);
-        pConf->Read(wxT("Zone2EndBrng"), &guardZones[1].end_bearing, 0.0);
-        pConf->Read(wxT("Zone2OuterRng"), &guardZones[1].outer_range, 0);
-        pConf->Read(wxT("Zone2InnerRng"), &guardZones[1].inner_range, 0);
-        pConf->Read(wxT("Zone2ArcCirc"), &guardZones[1].type, 0);
+		pConf->Read(wxT("Zone2StBrng"), &guardZones[0][1].start_bearing, 0.0);
+		pConf->Read(wxT("Zone2EndBrng"), &guardZones[0][1].end_bearing, 0.0);
+		pConf->Read(wxT("Zone2OuterRng"), &guardZones[0][1].outer_range, 0);
+		pConf->Read(wxT("Zone2InnerRng"), &guardZones[0][1].inner_range, 0);
+		pConf->Read(wxT("Zone2ArcCirc"), &guardZones[0][1].type, 0);
+
+		pConf->Read(wxT("Zone1StBrngB"), &guardZones[1][0].start_bearing, 0.0);
+		pConf->Read(wxT("Zone1EndBrngB"), &guardZones[1][0].end_bearing, 0.0);
+		pConf->Read(wxT("Zone1OuterRngB"), &guardZones[1][0].outer_range, 0);
+		pConf->Read(wxT("Zone1InnerRngB"), &guardZones[1][0].inner_range, 0);
+		pConf->Read(wxT("Zone1ArcCircB"), &guardZones[1][0].type, 0);
+
+		pConf->Read(wxT("Zone2StBrngB"), &guardZones[1][1].start_bearing, 0.0);
+		pConf->Read(wxT("Zone2EndBrngB"), &guardZones[1][1].end_bearing, 0.0);
+		pConf->Read(wxT("Zone2OuterRngB"), &guardZones[1][1].outer_range, 0);
+		pConf->Read(wxT("Zone2InnerRngB"), &guardZones[1][1].inner_range, 0);
+		pConf->Read(wxT("Zone2ArcCircB"), &guardZones[1][1].type, 0);
 
         pConf->Read(wxT("RadarAlertAudioFile"), &settings.alert_audio_file);
 
@@ -2054,17 +2071,29 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("GuardZonePosX"),   m_GuardZoneBogey_x);
         pConf->Write(wxT("GuardZonePosY"),   m_GuardZoneBogey_y);
 
-        pConf->Write(wxT("Zone1StBrng"), guardZones[0].start_bearing);
-        pConf->Write(wxT("Zone1EndBrng"), guardZones[0].end_bearing);
-        pConf->Write(wxT("Zone1OuterRng"), guardZones[0].outer_range);
-        pConf->Write(wxT("Zone1InnerRng"), guardZones[0].inner_range);
-        pConf->Write(wxT("Zone1ArcCirc"), guardZones[0].type);
+        pConf->Write(wxT("Zone1StBrng"), guardZones[0][0].start_bearing);
+        pConf->Write(wxT("Zone1EndBrng"), guardZones[0][0].end_bearing);
+        pConf->Write(wxT("Zone1OuterRng"), guardZones[0][0].outer_range);
+        pConf->Write(wxT("Zone1InnerRng"), guardZones[0][0].inner_range);
+        pConf->Write(wxT("Zone1ArcCirc"), guardZones[0][0].type);
 
-        pConf->Write(wxT("Zone2StBrng"), guardZones[1].start_bearing);
-        pConf->Write(wxT("Zone2EndBrng"), guardZones[1].end_bearing);
-        pConf->Write(wxT("Zone2OuterRng"), guardZones[1].outer_range);
-        pConf->Write(wxT("Zone2InnerRng"), guardZones[1].inner_range);
-        pConf->Write(wxT("Zone2ArcCirc"), guardZones[1].type);
+        pConf->Write(wxT("Zone2StBrng"), guardZones[0][1].start_bearing);
+        pConf->Write(wxT("Zone2EndBrng"), guardZones[0][1].end_bearing);
+        pConf->Write(wxT("Zone2OuterRng"), guardZones[0][1].outer_range);
+        pConf->Write(wxT("Zone2InnerRng"), guardZones[0][1].inner_range);
+        pConf->Write(wxT("Zone2ArcCirc"), guardZones[0][1].type);
+
+		pConf->Write(wxT("Zone1StBrngB"), guardZones[1][0].start_bearing);
+		pConf->Write(wxT("Zone1EndBrngB"), guardZones[1][0].end_bearing);
+		pConf->Write(wxT("Zone1OuterRngB"), guardZones[1][0].outer_range);
+		pConf->Write(wxT("Zone1InnerRngB"), guardZones[1][0].inner_range);
+		pConf->Write(wxT("Zone1ArcCircB"), guardZones[1][0].type);
+
+		pConf->Write(wxT("Zone2StBrngB"), guardZones[1][1].start_bearing);
+		pConf->Write(wxT("Zone2EndBrngB"), guardZones[1][1].end_bearing);
+		pConf->Write(wxT("Zone2OuterRngB"), guardZones[1][1].outer_range);
+		pConf->Write(wxT("Zone2InnerRngB"), guardZones[1][1].inner_range);
+		pConf->Write(wxT("Zone2ArcCircB"), guardZones[1][1].type);
 
         pConf->Write(wxT("SkewFactor"), settings.skew_factor);
 
@@ -2261,6 +2290,12 @@ void br24radar_pi::RadarStayAlive(void)
 {
     UINT8 pck[] = {0xA0, 0xc1};
     TransmitCmd(pck, sizeof(pck));
+	UINT8 pck2[] = { 0x03, 0xc2 };
+	TransmitCmd(pck2, sizeof(pck2));
+	UINT8 pck3[] = { 0x04, 0xc2 };
+	TransmitCmd(pck3, sizeof(pck3));
+	UINT8 pck4[] = { 0x05, 0xc2 };
+	TransmitCmd(pck4, sizeof(pck4));
 }
 
 //void br24radar_pi::RadarSendState(void)
@@ -2332,7 +2367,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                     }
                     TransmitCmd(cmd, sizeof(cmd));
                 } else {                        // Manual Gain
-                    int v = value * 255 / 100;
+                    int v = (value + 1) * 255 / 100;
                     if (v > 255) {
                         v = 255;
                     }
@@ -2351,7 +2386,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
             }
             case CT_RAIN: {                       // Rain Clutter - Manual. Range is 0x01 to 0x50
     //            settings.rain_clutter_gain = value;
-                int v = value * 255 / 100;
+                int v = (value + 1) * 255 / 100;
                 if (v > 255) {
                     v = 255;
                 }
@@ -2384,7 +2419,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                     }
                     TransmitCmd(cmd, sizeof(cmd));
                 } else {                       // Sea Clutter
-                    int v = value * 255 / 100;
+                    int v = (value + 1) * 255 / 100 ;
                     if (v > 255) {
                         v = 255;
                     }
@@ -2861,12 +2896,12 @@ void *RadarDataReceiveThread::Entry(void)
         }
         else {
             if (rx_socket == INVALID_SOCKET) {
-				if (AB == 1){
-					rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6657, "236.6.7.13");
-				}
-				else{
+			//	if (AB == 1){
+			//		rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6657, "236.6.7.13");
+			//	}
+			//	else{                                                  / xxxxx
 					rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6678, "236.6.7.8");
-				}
+			//	}
                 // If it is still INVALID_SOCKET now we just sleep for 1s in socketReady
                 if (rx_socket != INVALID_SOCKET) {
                     wxString addr;
@@ -3064,7 +3099,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         }
     }
     else {
-        if (br_radar_state[pPlugIn->settings.selectRadarB] == RADAR_ON) {
+        if (pPlugIn->br_radar_state[pPlugIn->settings.selectRadarB] == RADAR_ON) {
             if (i_display >=  br_refresh_rate ) {   //    display every "refreshrate time"
                 if (br_refresh_rate != 10) { // for 10 no refresh at all
                     br_refresh_busy_or_queued = true;   // no further calls until br_refresh_busy_or_queued has been cleared by RenderGLOverlay
@@ -3512,7 +3547,7 @@ struct radar_state02 {
     UINT32 field6b;
     UINT32 field6c;
     UINT8  field6d;
-    UINT32 rejection;
+    UINT32 interference_rejection;
     UINT32 field7;
     UINT32 target_boost;
     UINT32 field8;
@@ -3525,10 +3560,10 @@ struct radar_state02 {
 };
 
 struct radar_state08 {
-	UINT8  what;        // 0  0x02   
+	UINT8  what;        // 0  0x08   
 	UINT8  command;     // 1  0xC4      
-	UINT32 field1;      // 2
-	UINT32 field2;      // 6
+	UINT32 field1;      // 2-5
+	UINT32 field2;      // 6-9
 	UINT16 field3;      // 10-11          
 	UINT8  noise;       // 12    noise rejection    
 	UINT8  target_sep;  // 13
@@ -3581,8 +3616,10 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 					} 
 					pPlugIn->radar_setting[AB].target_boost.Update(s->target_boost);
 					pPlugIn->radar_setting[AB].target_boost.button = s->target_boost;
+					pPlugIn->radar_setting[AB].interference_rejection.Update(s->interference_rejection);
+					pPlugIn->radar_setting[AB].interference_rejection.button = s->interference_rejection;
 
-                    wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d state range=%u f2=%u f3=%u gain=%u f4b=%u sea=%u rain=%u f6b=%u f6c=%u f6d=%u rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
+                    wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d state range=%u f2=%u f3=%u gain=%u f4b=%u sea=%u rain=%u f6b=%u f6c=%u f6d=%u interference_rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
                         , AB         
 						, s->range
                                  , s->field2
@@ -3594,7 +3631,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
                                  , s->field6b
                                  , s->field6c
                                  , s->field6d
-                                 , s->rejection
+                                 , s->interference_rejection
                                  , s->field7
                                  , s->target_boost
                                  , s->field8
@@ -3617,13 +3654,16 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 
 			case (18 << 8) + 0x08:
 			{
-				// contains noise rejection and others? call this report_08
-				radar_state08 * s = (radar_state08 *)command;
-					logBinaryData(wxT("XXreceived report_08"), command, len);
-					pPlugIn->radar_setting[AB].noise_rejection.Update(s->noise);
-					pPlugIn->radar_setting[AB].noise_rejection.button = s->noise;
-					pPlugIn->radar_setting[AB].target_separation.Update(s->target_sep);
-					pPlugIn->radar_setting[AB].target_separation.button = s->target_sep;
+				// contains noise rejection and target_separation
+				radar_state08 * s08 = (radar_state08 *)command;
+				
+				wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d noise = %u target_sep %u"), AB, s08->noise, s08->target_sep);
+				logBinaryData(wxT("XXreceived report_08"), command, len);
+				pPlugIn->radar_setting[AB].noise_rejection.Update(s08->noise);
+				pPlugIn->radar_setting[AB].noise_rejection.button = s08->noise;
+				pPlugIn->radar_setting[AB].target_separation.Update(s08->target_sep);
+				pPlugIn->radar_setting[AB].target_separation.button = s08->target_sep;
+				logBinaryData(wxT("XXreceived report_08"), command, len);
 				break;
 			}
             default:

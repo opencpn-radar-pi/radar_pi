@@ -271,9 +271,9 @@ struct pi_control_settings {
     int      idle_run_time;
     int      draw_algorithm;
     int      scan_speed;
-    int      refreshrate;   // for A and B
+    int      refreshrate;   
     int      passHeadingToOCPN;
-	int      multi_sweep_filter[3];   //  0: guard zone 1 filter state;
+	int      multi_sweep_filter[2][3];   //  0: guard zone 1 filter state;
                                       //  1: guard zone 2 filter state;
                                       //  2: display filter state, modified in gain control;
                                       //  these values are not saved, for safety reasons user must set them after each start
@@ -299,6 +299,7 @@ struct radar_control_setting{
 	radar_control_item      target_boost;
 	radar_control_item      sea;
 	radar_control_item      rain;
+	radar_control_item      scan_speed;
 };
 struct guard_zone_settings {
     int type;                   // 0 = circle, 1 = arc
@@ -363,6 +364,7 @@ public:
     void SetCursorLatLon(double lat, double lon);
     void OnContextMenuItemCallback(int id);
     void SetNMEASentence(wxString &sentence);
+	int   br_radar_state[2];
 
     void SetDefaults(void);
     int GetToolbarToolCount(void);
@@ -409,7 +411,7 @@ public:
     scan_line                 m_scan_line[2][LINES_PER_ROTATION];
 
 #define GUARD_ZONES (2)
-    guard_zone_settings guardZones[GUARD_ZONES];
+    guard_zone_settings guardZones[2][GUARD_ZONES];
     
     BR24DisplayOptionsDialog *m_pOptionsDialog;
     BR24ControlsDialog       *m_pControlDialog;
@@ -430,10 +432,10 @@ private:
     void Select_Rejection(int req_rejection_index);
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
     void RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
-	void Guard(int max_range);
+	void Guard(int max_range, int AB);
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
     void DrawRadarImage(int max_range, wxPoint radar_center);
-    void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
+    void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp, int AB);
     void HandleBogeyCount(int *bogey_count);
     void draw_histogram_column(int x, int y);
 
@@ -787,6 +789,7 @@ private:
 	wxBoxSizer        *nmeaSizer;
     wxBoxSizer        *topSizer;
 
+
     wxBoxSizer        *messageBox;   // Contains NO HDG and/or NO GPS
     wxStaticBox       *ipBox;
 	wxStaticBox	      *nmeaBox;
@@ -800,7 +803,6 @@ private:
 
     // MessageBox
     wxButton           *bMsgBack;
-	wxButton           *bRdrOnly;
     wxStaticText       *tMessage;
     wxCheckBox         *cbOpenGL;
     wxCheckBox         *cbBoatPos;
