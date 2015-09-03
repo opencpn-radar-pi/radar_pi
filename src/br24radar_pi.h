@@ -853,6 +853,68 @@ private:
     wxButton           *bMessage;
 };
 
+class BR24MessageBox : public wxDialog
+{
+	DECLARE_CLASS(BR24MessageBox)
+	DECLARE_EVENT_TABLE()
+
+public:
+
+	BR24ControlsDialog();
+
+	~BR24ControlsDialog();
+	void Init();
+
+	bool Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID id = wxID_ANY,
+		const wxString& caption = _("Radar"),
+		const wxPoint& pos = wxDefaultPosition,
+		const wxSize& size = wxDefaultSize,
+		long style = wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX)
+		);
+
+	void CreateControls();
+	void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
+	void BR24ControlsDialog::UpdateControl(bool refreshAll);
+	void SetErrorMessage(wxString &msg);
+	void SetRadarIPAddress(wxString &msg);
+	void SetMcastIPAddress(wxString &msg);
+	void SetHeadingInfo(wxString &msg);
+	void SetVariationInfo(wxString &msg);
+	void SetRadarInfo(wxString &msg);
+
+private:
+	void OnClose(wxCloseEvent& event);
+	void OnIdOKClick(wxCommandEvent& event);
+	void OnMove(wxMoveEvent& event);
+	void OnSize(wxSizeEvent& event);
+	
+	void OnMessageBackButtonClick(wxCommandEvent& event);
+
+	wxWindow          *pParent;
+	br24radar_pi      *pPlugIn;
+	wxBoxSizer        *nmeaSizer;
+	wxBoxSizer        *topSizer;
+
+
+	wxBoxSizer        *messageBox;   // Contains NO HDG and/or NO GPS
+	wxStaticBox       *ipBox;
+	wxStaticBox	      *nmeaBox;
+
+	bool              wantShowMessage; // If true, don't hide messagebox automatically
+
+	// MessageBox
+	wxButton           *bMsgBack;
+	wxStaticText       *tMessage;
+	wxCheckBox         *cbOpenGL;
+	wxCheckBox         *cbBoatPos;
+	wxCheckBox         *cbHeading;
+	wxCheckBox         *cbVariation;
+	wxCheckBox         *cbRadar;
+	wxCheckBox         *cbData;
+	wxStaticText       *tStatistics;
+
+};
+
 /*
  =======================================================================================================================
  BR24Radar Guard Zone Dialog Specification ;
