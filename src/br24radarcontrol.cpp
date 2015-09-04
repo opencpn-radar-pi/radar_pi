@@ -880,8 +880,8 @@ void BR24ControlsDialog::OnAdvancedBackButtonClick(wxCommandEvent& event)
 
 void BR24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event)
 {
-    extern RadarType br_radar_type;
-
+    
+	extern RadarType br_radar_type;
     fromBox = advancedBox;
     topSizer->Show(advancedBox);
     if (br_radar_type == RT_4G) {
@@ -996,7 +996,7 @@ void BR24ControlsDialog::OnRadarABButtonClick(wxCommandEvent& event)
 		bRadarAB->SetLabel(labels);
 	}
 	
-	UpdateControl(true);   // update control values on the buttons
+	UpdateControlValues(true);   // update control values on the buttons
 	                       // and update the button text on A / B select
 	UpdateGuardZoneState();
 	if (pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_OVERLAY) {
@@ -1032,7 +1032,7 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
     event.Skip();
 }
 
-void BR24ControlsDialog::UpdateControl(bool refreshAll)
+void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
 {
 	if (topSizer->IsShown(controlBox)) {
 		// first update the range
@@ -1041,17 +1041,24 @@ void BR24ControlsDialog::UpdateControl(bool refreshAll)
 			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod = false;
 		}
 
-		if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button == -1){
-			wxLogMessage(wxT("BR24radar_pi: XX gain auto"));
-			bGain->SetAutoX();
+		// gain
+		if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod || refreshAll){
+			if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button == -1){
+				wxLogMessage(wxT("BR24radar_pi: XX gain auto"));
+				bGain->SetAutoX();
+			}
+			else{
+				bGain->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button);
+			}
 		}
-		else{
-			bGain->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button);
-		}
+
+		//  rain
 		if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].rain.mod || refreshAll)) {
 			bRain->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].rain.button);
 			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].rain.mod = false;
 		}
+
+		//   sea
 		if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.mod || refreshAll)) {
 			if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.button == -1){
 				wxLogMessage(wxT("BR24radar_pi: XX sea auto"));
@@ -1064,22 +1071,32 @@ void BR24ControlsDialog::UpdateControl(bool refreshAll)
 		}
 	}
 	else if (topSizer->IsShown(advancedBox)){
+
+		//   target_boost
 		if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.mod || refreshAll)) {
 			bTargetBoost->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.button);
 			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.mod = false;
 		}
+
+		//  noise_rejection
 			if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.mod || refreshAll)) {
 		bNoiseRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.button);
 		pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.mod = false;
 			}
+
+		//  target_separation
 		if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.mod || refreshAll)) {
 			bTargetSeparation->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.button);
 			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.mod = false;
 		}
+
+		//  interference_rejection
 		if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].interference_rejection.mod || refreshAll)) {
 			bNoiseRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].interference_rejection.button);
 			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].interference_rejection.mod = false;
 		}
+
+		//   scan_speed  not yet handled as I can't find the control yet
 	/*	if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.mod || refreshAll)) {
 			bNoiseRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.button);
 			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.mod = false;
@@ -1088,33 +1105,33 @@ void BR24ControlsDialog::UpdateControl(bool refreshAll)
 }
 
 
-void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData)
+void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData)
 {
+	extern RadarType br_radar_type;
 	bool radarOn = haveOpenGL && haveRadar; // && haveData;
 	bool navOn = haveGPS && haveHeading && haveVariation;
 	bool black = pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT;
 	bool radar_switched_on = pPlugIn->br_radar_state[pPlugIn->settings.selectRadarB] == RADAR_ON;
 
-	if (!radar_switched_on || pPlugIn->control_box_closed){
-		if (pPlugIn->m_pControlDialog)
+	if (pPlugIn->control_box_closed){
 		{
 			pPlugIn->m_pControlDialog->Hide();
 		}
 		return;
 	}
 
-	if (!radarOn){
+	if (!radarOn){           // radar not seen, hide control box
 		if (pPlugIn->m_pControlDialog){
 			pPlugIn->m_pControlDialog->Hide();
 		}
 	}
 
-	else    // radar on
+	else    // radar seen (at least standby), show control box
 	{
 		bool guard = false;
-		if (pPlugIn->m_pGuardZoneDialog){
+		if (pPlugIn->m_pGuardZoneDialog){   // otherwise next statement might crash!
 			if (pPlugIn->m_pGuardZoneDialog->IsShown()){
-				guard = true;
+				guard = true;                  // just to get the guard state
 			}
 		}
 		if (pPlugIn->m_pControlDialog && !guard) {
@@ -1124,13 +1141,41 @@ void BR24ControlsDialog::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveH
 		if (!topSizer->IsShown(controlBox) && !topSizer->IsShown(advancedBox) && !topSizer->IsShown(editBox) && !guard){
 			topSizer->Show(controlBox);   
 		}
+		if (br_radar_type == RT_BR24){
+			bRadarAB->Hide();
+		}
 		controlBox->Layout();
 		Fit();
 		topSizer->Layout();
 	}
-
 	editBox->Layout();
     topSizer->Layout();
+
+	wxString labelx;
+	if (pPlugIn->settings.selectRadarB == 0){
+		if (haveData){
+			labelx << _("Radar A / B") << wxT("\n") << _("Radar A - ON");
+		}
+		else if (haveRadar){
+			labelx << _("Radar A / B") << wxT("\n") << _("Radar A - Stby");
+		}
+		else {
+			labelx << _("Radar A / B") << wxT("\n") << _("Radar A - OFF");
+		}
+	}
+	if (pPlugIn->settings.selectRadarB == 1){
+		if (haveData){
+			labelx << _("Radar A / B") << wxT("\n") << _("Radar B - ON");
+		}
+		else if (haveRadar){
+			labelx << _("Radar A / B") << wxT("\n") << _("Radar B - Stby");
+		}
+		else {
+			labelx << _("Radar A / B") << wxT("\n") << _("Radar B - OFF");
+		}
+	}
+
+	bRadarAB->SetLabel(labelx);
 }
 	
 

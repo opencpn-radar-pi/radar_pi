@@ -499,6 +499,9 @@ int br24radar_pi::Init(void)
         wxLogMessage(wxT("BR24radar_pi: configuration file values initialisation failed"));
         return 0; // give up
     }
+	if (br_radar_type == RT_BR24){    // make sure radar A only.
+		settings.selectRadarB = 0;
+	}
 
     wxLongLong now = wxGetLocalTimeMillis();
     for (int i = 0; i < LINES_PER_ROTATION; i++) {
@@ -585,8 +588,9 @@ int br24radar_pi::Init(void)
 	m_commandReceiveThreadB->Run();
 	m_reportReceiveThreadB = new RadarReportReceiveThread(this, &m_quit, 1);
 	m_reportReceiveThreadB->Run();
-
+	
     ShowRadarControl(false);   //prepare radar control but don't show it
+	control_box_closed = true;   // don't show the radar control immediately at start up
 
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
@@ -644,6 +648,8 @@ bool br24radar_pi::DeInit(void)
     }
 
     // I think we need to destroy any windows here
+	OnBR24ControlDialogClose();
+	OnBR24MessageBoxClose();
 
     return true;
 }
@@ -876,13 +882,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                              wxCommandEventHandler(BR24DisplayOptionsDialog::OnPassHeadingClick), NULL, this);
 
-    cbselectRadarB = new wxCheckBox(this, ID_SELECT_AB, _("Select B radar. 4G only"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    itemStaticBoxSizerOptions->Add(cbselectRadarB, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-    cbselectRadarB->SetValue(pPlugIn->settings.selectRadarB ? true : false);
-    cbselectRadarB->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
-                             wxCommandEventHandler(BR24DisplayOptionsDialog::OnSelectABClick), NULL, this);
-
-
+  
     // Accept/Reject button
     wxStdDialogButtonSizer* DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
     topSizer->Add(DialogButtonSizer, 0, wxALIGN_RIGHT | wxALL, border_size);
@@ -949,11 +949,6 @@ void BR24DisplayOptionsDialog::OnPassHeadingClick(wxCommandEvent &event)
     pPlugIn->settings.passHeadingToOCPN = cbPassHeading->GetValue();
 }
 
-void BR24DisplayOptionsDialog::OnSelectABClick(wxCommandEvent &event)
-{   
-	pPlugIn->settings.selectRadarB = cbselectRadarB->GetValue();
-	pPlugIn->settings.selectRadarB = pPlugIn->settings.selectRadarB;
-}
 
 void BR24DisplayOptionsDialog::OnClose(wxCloseEvent& event)
 {
@@ -979,20 +974,16 @@ void br24radar_pi::ShowRadarControl(bool show)
 			m_BR24Message_box_sx, m_BR24Message_box_sy);
 		m_pMessageBox->Fit();		
 	}
-
-	//	if (show) {
-	//		m_pMessageBox->Show();
-	//	}
-	//	else {
 	m_pMessageBox->Hide();
-	//	}
 
     if (!m_pControlDialog) {
         m_pControlDialog = new BR24ControlsDialog;
         m_pControlDialog->Create(m_parent_window, this);
-		
 		m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
 			m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy);
+		if (br_radar_type == RT_BR24){
+			m_pControlDialog->bRadarAB->Hide();
+		}
 		m_pControlDialog->Fit();
 		m_pControlDialog->Hide();
         int range = br_range_meters[settings.selectRadarB];
@@ -1026,7 +1017,6 @@ void br24radar_pi::OnBR24ControlDialogClose()
         SetCanvasContextMenuItemViz(br_guard_zone_id, false);
 		control_box_closed = true;
     }
-
     SaveConfig();
 }
 
@@ -1036,7 +1026,6 @@ void br24radar_pi::OnBR24MessageBoxClose()
 		m_pMessageBox->GetPosition(&m_BR24Message_box_x, &m_BR24Message_box_y);
 		m_pMessageBox->Hide();
 	}
-
 	SaveConfig();
 }
 
@@ -1052,7 +1041,9 @@ void br24radar_pi::OnGuardZoneDialogClose()
     }
     if (m_pControlDialog) {
         m_pControlDialog->UpdateGuardZoneState();
-        m_pControlDialog->Show();
+		if (!control_box_closed) {
+			m_pControlDialog->Show();
+		}
         m_pControlDialog->SetPosition(wxPoint(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y));
         SetCanvasContextMenuItemViz(br_radar_control_id, true);
     }
@@ -1087,7 +1078,6 @@ void br24radar_pi::Select_Guard_Zones(int zone)
         m_pControlDialog->GetPosition(&m_BR24Controls_dialog_x, &m_BR24Controls_dialog_y);
         m_pGuardZoneDialog->Show();
         m_pControlDialog->Hide();
-		wxLogMessage(wxT("BR24radar_pi: YYYY hide mpcontrol from select guardzones"));
         m_pGuardZoneDialog->SetPosition(wxPoint(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y));
         m_pGuardZoneDialog->OnGuardZoneDialogShow(zone);
         SetCanvasContextMenuItemViz(br_guard_zone_id, true);
@@ -1155,13 +1145,11 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         }
         br_radar_state[settings.selectRadarB] = RADAR_OFF;
         OnGuardZoneDialogClose();
-        OnBR24ControlDialogClose();
-
+  //      OnBR24ControlDialogClose();
         if (m_pGuardZoneBogey) {
             m_pGuardZoneBogey->Hide();
         }
     }
-
     UpdateState();
 }
 
@@ -1177,6 +1165,8 @@ void br24radar_pi::DoTick(void)
 {
     time_t now = time(0);
     static time_t previousTicks = 0;
+	static int save_state_A;   // used for timed transmit
+	static int save_state_B;
 
     if (now == previousTicks) {
         // Repeated call during scroll, do not do Tick processing
@@ -1280,14 +1270,14 @@ void br24radar_pi::DoTick(void)
     }
 
     if (m_pControlDialog) {
-        m_pControlDialog->UpdateMessage( br_opengl_mode
+        m_pControlDialog->UpdateControl( br_opengl_mode
                                        , br_bpos_set
                                        , m_heading_source != HEADING_NONE
                                        , br_var_source != VARIATION_SOURCE_NONE
                                        , br_radar_seen
                                        , br_data_seen[settings.selectRadarB]
                                        );
-		m_pControlDialog->UpdateControl(false);
+		m_pControlDialog->UpdateControlValues(false);
     }
 
 	if (m_pMessageBox) {
@@ -1312,19 +1302,43 @@ void br24radar_pi::DoTick(void)
      Function Timed Transmit. Check if active
      ********************************************/
     if (settings.timed_idle != 0) {
-        int factor = 5 * 60;
+        int factor = 5 * 60;  
         if (br_last_idle_set == settings.timed_idle) {
             if (br_idle_watchdog > 0) {
                 if (br_radar_state[settings.selectRadarB] == RADAR_ON && (now > (br_idle_watchdog + (settings.idle_run_time * 60)) || br_init_timed_idle) ) {
                     br_init_timed_idle = false;
                     br_idle_watchdog = 0;
-                    br24radar_pi::OnToolbarToolCallback(999999);    //Stop radar scanning
+
+					int setting_AB = settings.selectRadarB;
+					save_state_A = br_radar_state[0];
+					save_state_B = br_radar_state[1];
+					if (br_radar_state[0] == RADAR_ON){
+						settings.selectRadarB = 0;
+						br24radar_pi::OnToolbarToolCallback(999999);    //Stop radar A scanning
+					}
+					if (br_radar_state[1] == RADAR_ON){
+						settings.selectRadarB = 1;
+						br24radar_pi::OnToolbarToolCallback(999999);    //Stop radar B scanning
+					}
+					settings.selectRadarB = setting_AB;    // restore radar in focus
                 }
                 else if (br_radar_state[settings.selectRadarB] == RADAR_OFF ) {
                     if (now > (br_idle_watchdog + (settings.timed_idle * factor))) {
                         br_idle_watchdog = 0;
                         if (m_pIdleDialog) m_pIdleDialog->Close();
-                        br24radar_pi::OnToolbarToolCallback(999999);    //Start radar scanning
+						int setting_AB = settings.selectRadarB;
+						if (save_state_A == RADAR_ON){
+							settings.selectRadarB = 0;
+							br24radar_pi::OnToolbarToolCallback(999999);    //start radar A scanning
+						}
+						if (save_state_B == RADAR_ON){
+							settings.selectRadarB = 1;
+							br24radar_pi::OnToolbarToolCallback(999999);    //start radar B scanning
+						}
+						settings.selectRadarB = setting_AB;    // restore radar in focus
+						br_radar_state[0] = save_state_A;  //
+						br_radar_state[1] = save_state_B;
+
                     } else {
                         // Send minutes left to radar control
                         int time_left = ((br_idle_watchdog + (settings.timed_idle * factor)) - now)/60;
@@ -1566,7 +1580,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
         glScaled(scale_factor, scale_factor, 1.);
         if (br_range_meters[settings.selectRadarB] > 0 && br_scanner_state == RADAR_ON) {
             // Guard Section
-			if (br_radar_state[0] == RADAR_ON){
+			if (br_radar_state[0] == RADAR_ON){   
 				Guard(meters, 0);
 			}
 			if (br_radar_state[1] == RADAR_ON){
@@ -1756,7 +1770,10 @@ void br24radar_pi::Guard(int max_range, int AB)
 			bogey_count[i + 2 * AB] = 0;
 		}
     int begin_arc, end_arc = 0;
-    for (size_t z = 0; z < GUARD_ZONES; z++) {
+    for (size_t z = 0; z < GUARD_ZONES; z++) {  
+		if (guardZones[AB][z].type == GZ_OFF){   // skip if guardzone is off
+			break;
+		}
         switch (guardZones[AB][z].type) {
         case GZ_CIRCLE:
             begin_arc = 0;
@@ -1809,10 +1826,8 @@ void br24radar_pi::Guard(int max_range, int AB)
                     }   // end "if (bogey_range > in ......
 
                 }           // end of loop over radius
-            }               // end of loop over z
-        }                   // end of loop over angle
-	wxLogMessage(wxT("BR24radar_pi: XXguard AB=%d bogey_count %d %d %d %d"), AB, bogey_count[0], bogey_count[1], bogey_count[2], bogey_count[3]);
-
+            }               // end of loop over angle
+        }                   // end of loop over z
     }
     
 
@@ -2117,9 +2132,9 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("ControlsDialogPosY"),   m_BR24Controls_dialog_y);
 
 		pConf->Write(wxT("MessageBoxSizeX"), m_BR24Message_box_sx);
-		pConf->Write(wxT("MessageBoxSSizeY"), m_BR24Message_box_sy);
-		pConf->Write(wxT("MessageBoxSPosX"), m_BR24Message_box_x);
-		pConf->Write(wxT("MessageBoxSPosY"), m_BR24Message_box_y);
+		pConf->Write(wxT("MessageBoxSizeY"), m_BR24Message_box_sy);
+		pConf->Write(wxT("MessageBoxPosX"), m_BR24Message_box_x);
+		pConf->Write(wxT("MessageBoxPosY"), m_BR24Message_box_y);
 
         pConf->Write(wxT("GuardZonePosX"),   m_GuardZoneBogey_x);
         pConf->Write(wxT("GuardZonePosY"),   m_GuardZoneBogey_y);
@@ -2931,12 +2946,12 @@ void *RadarDataReceiveThread::Entry(void)
         }
         else {
             if (rx_socket == INVALID_SOCKET) {
-			//	if (AB == 1){
-			//		rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6657, "236.6.7.13");
-			//	}
-			//	else{                                                  / xxxxx
+				if (AB == 1){         
+					rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6657, "236.6.7.13");
+				}
+				else{                                                  
 					rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6678, "236.6.7.8");
-			//	}
+				}
                 // If it is still INVALID_SOCKET now we just sleep for 1s in socketReady
                 if (rx_socket != INVALID_SOCKET) {
                     wxString addr;
@@ -2993,8 +3008,8 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     // wxCriticalSectionLocker locker(br_scanLock);
 
     static unsigned int i_display = 0;  // used in radar reive thread for display operation
-    static int next_scan_number = -1;
-    int scan_number = 0;
+	static int next_scan_number[2] = { -1, -1 };
+	int scan_number[2] = { 0, 0 };
     pPlugIn->m_statistics[AB].packets++;
 
     if (len < (int) sizeof(packet->frame_hdr)) {
@@ -3010,7 +3025,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         radar_line * line = &packet->line[scanline];
 
         // Validate the spoke
-        scan_number = line->br24.scan_number[0] | (line->br24.scan_number[1] << 8);
+        scan_number[AB] = line->br24.scan_number[0] | (line->br24.scan_number[1] << 8);
         pPlugIn->m_statistics[AB].spokes++;
         if (line->br24.headerLen != 0x18) {
             if (pPlugIn->settings.verbose) {
@@ -3018,7 +3033,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             }
             // Do not draw something with this...
             pPlugIn->m_statistics[AB].missing_spokes++;
-            next_scan_number = (scan_number + 1) % 4096;
+            next_scan_number[AB] = (scan_number[AB] + 1) % 4096;
             continue;
         }
         if (line->br24.status != 0x02 && line->br24.status != 0x12) {
@@ -3027,14 +3042,14 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             }
             pPlugIn->m_statistics[AB].broken_spokes++;
         }
-        if (next_scan_number >= 0 && scan_number != next_scan_number) {
-            if (scan_number > next_scan_number) {
-                pPlugIn->m_statistics[AB].missing_spokes += scan_number - next_scan_number;
+        if (next_scan_number[AB] >= 0 && scan_number[AB] != next_scan_number[AB]) {
+            if (scan_number[AB] > next_scan_number[AB]) {
+                pPlugIn->m_statistics[AB].missing_spokes += scan_number[AB] - next_scan_number[AB];
             } else {
-                pPlugIn->m_statistics[AB].missing_spokes += 4096 + scan_number - next_scan_number;
+				pPlugIn->m_statistics[AB].missing_spokes += 4096 + scan_number[AB] - next_scan_number[AB];
             }
         }
-        next_scan_number = (scan_number + 1) % 4096;
+		next_scan_number[AB] = (scan_number[AB] + 1) % 4096;
 
         int range_raw = 0;
         int angle_raw = 0;

@@ -121,7 +121,7 @@ void GuardZoneBogey::CreateControls()
     wxBoxSizer  *GuardZoneBogeySizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(GuardZoneBogeySizer);
 
-    pBogeyCountText = new wxStaticText(this, wxID_ANY, _("Zone 1: unknown\nZone 2: unknown\nTimeout\n\n\n\n"), wxDefaultPosition, wxDefaultSize, 0);
+    pBogeyCountText = new wxStaticText(this, wxID_ANY, _("Zone 1: unknown\nZone 2: unknown\nTimeout\n\n"), wxDefaultPosition, wxDefaultSize, 0);
     GuardZoneBogeySizer->Add(pBogeyCountText, 0, wxALIGN_LEFT | wxALL, border);
 
 

@@ -233,7 +233,6 @@ typedef enum DisplayModeType {
 
 static wxString DisplayModeStrings[] = {
     _("Radar Chart Overlay"),
-    _("Radar Standalone"),
     _("Spectrum"),
     _("Emulator"),
 };
@@ -625,7 +624,6 @@ private:
     void OnSelectSoundClick(wxCommandEvent& event);
     void OnTestSoundClick(wxCommandEvent& event);
     void OnPassHeadingClick(wxCommandEvent& event);
-    void OnSelectABClick(wxCommandEvent& event);
     
 
     wxWindow          *pParent;
@@ -639,7 +637,6 @@ private:
     wxSlider          *pIntervalSlider;
     wxTextCtrl        *pText_Heading_Correction_Value;
     wxCheckBox        *cbPassHeading;
-    wxCheckBox        *cbselectRadarB;
 };
 
 
@@ -764,10 +761,12 @@ public:
     void SetRangeIndex(size_t index);
     void SetTimedIdleIndex(int index);
     void UpdateGuardZoneState();
-    void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
-	void BR24ControlsDialog::UpdateControl(bool refreshAll);
+    void UpdateControl(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
+	void BR24ControlsDialog::UpdateControlValues(bool refreshAll);
 	void SetErrorMessage(wxString &msg);
 	bool wantShowMessage; // If true, don't hide messagebox automatically
+
+	RadarControlButton *bRadarAB;
 
 private:
     void OnClose(wxCloseEvent& event);
@@ -801,7 +800,6 @@ private:
 
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
-	wxBoxSizer        *nmeaSizer;
     wxBoxSizer        *topSizer;
 
     wxBoxSizer        *editBox;
@@ -842,7 +840,6 @@ private:
 
     RadarRangeControlButton *bRange;
 	RadarControlButton *bRadarOnly_Overlay;
-	RadarControlButton *bRadarAB;
     RadarControlButton *bGain;
     RadarControlButton *bSea;
     RadarControlButton *bRain;
@@ -892,11 +889,13 @@ private:
 	wxWindow          *pParent;
 	br24radar_pi      *pPlugIn;
 	wxBoxSizer        *nmeaSizer;
+	wxBoxSizer        *infoSizer;
 
 
 	wxBoxSizer        *messageBox;   // Contains NO HDG and/or NO GPS
 	wxStaticBox       *ipBox;
 	wxStaticBox	      *nmeaBox;
+	wxStaticBox	      *infoBox;
 
 	bool              wantShowMessage; // If true, don't hide messagebox automatically
 
