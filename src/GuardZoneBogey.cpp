@@ -121,7 +121,7 @@ void GuardZoneBogey::CreateControls()
     wxBoxSizer  *GuardZoneBogeySizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(GuardZoneBogeySizer);
 
-    pBogeyCountText = new wxStaticText(this, wxID_ANY, _("Zone 1: unknown\nZone 2: unknown\nTimeout\n\n"), wxDefaultPosition, wxDefaultSize, 0);
+    pBogeyCountText = new wxStaticText(this, wxID_ANY, _("Zone 1: unknown\nZone 2: unknown\nTimeout\n"), wxDefaultPosition, wxDefaultSize, 0);
     GuardZoneBogeySizer->Add(pBogeyCountText, 0, wxALIGN_LEFT | wxALL, border);
 
 
@@ -149,9 +149,11 @@ void GuardZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm)
 	//		wxLogMessage(wxT("BR24radar_pi: XXset bogeycount z=%d, bogey_count[z]= %d"),z, bogey_count[z]);
 			text += t;
 		}
+		t.Printf(_("\n"));
+		text += t;
 	}
 	if (pPlugIn->br_radar_state[1] == RADAR_ON){
-		t.Printf(_("\nRadar B:\n"));
+		t.Printf(_("Radar B:\n"));
 		text << t;
 		for (int z = 0; z < GUARD_ZONES; z++) {
 			text << _("Zone");
@@ -161,7 +163,7 @@ void GuardZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm)
 	}  
 
     if (next_alarm >= 0) {
-        t.Printf(_("\nNext alarm in %d s"), next_alarm);
+        t.Printf(_("Next alarm in %d s"), next_alarm);
         text += t;
   }
 /*	else{

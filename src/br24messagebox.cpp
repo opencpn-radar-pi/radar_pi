@@ -205,20 +205,12 @@ void BR24MessageBox::CreateControls()
 	tStatistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, wxDefaultSize, 0);
     tStatistics->SetFont(*OCPNGetFont(_("Dialog"), 8));
 	infoSizer->Add(tStatistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
-
-/*    // The <Radar Only> button
-    bRdrOnly = new wxButton(this, ID_RDRONLY, _("Radar Only"), wxDefaultPosition, wxDefaultSize, 0);
-    messageBox->Add(bRdrOnly, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-    bRdrOnly->SetFont(g_font);
-    messageBox->Hide(bRdrOnly); */
 	
 	// The <Close> button
     bMsgBack = new wxButton(this, ID_MSG_BACK, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
     messageBox->Add(bMsgBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bMsgBack->SetFont(g_font);
     messageBox->Hide(bMsgBack);
-
-
 }
 
 
@@ -254,12 +246,9 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 
 	bool radarOn = haveOpenGL && haveRadar; // && haveData;
 	bool navOn = haveGPS && haveHeading && haveVariation;
-	if (navOn) wxLogMessage(wxT("BR24radar_pi: YYY update message navon"));
 	bool black = pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT;
-	if (black) wxLogMessage(wxT("BR24radar_pi: YYY update message black"));
 	bool radar_switched_on = pPlugIn->br_radar_state[pPlugIn->settings.selectRadarB] == RADAR_ON;
-	if (radar_switched_on) wxLogMessage(wxT("BR24radar_pi: YYY update message switched on"));
-	wxLogMessage(wxT("BR24radar_pi: YYY update message entered  AB= %d"), pPlugIn->settings.selectRadarB);
+//	wxLogMessage(wxT("BR24radar_pi: YYY update message entered  AB= %d"), pPlugIn->settings.selectRadarB);
 	bool want_message = false;
 	if (pPlugIn->m_pControlDialog){
 		if (pPlugIn->m_pControlDialog->wantShowMessage){
@@ -289,23 +278,18 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 
 	if (!radar_switched_on){
 		new_message_state = HIDE;
-		wxLogMessage(wxT("BR24radar_pi: YYY update message HIDE not switched on"));
 	}
 	else if (want_message){
 		new_message_state = SHOW_BACK;
-		wxLogMessage(wxT("BR24radar_pi: YYY update message SHOW_BACK"));
 	}
 	else if (!black && (!navOn || !radarOn)){
 		new_message_state = SHOW;
-		wxLogMessage(wxT("BR24radar_pi: YYY update message SHOW"));
 	}
 	else if (black && !radarOn){
 		new_message_state = SHOW_NO_NMEA;
-		wxLogMessage(wxT("BR24radar_pi: YYY update message NO_NMEA"));
 	}
 	else if ((black || navOn) && radarOn){
 		new_message_state = HIDE;
-		wxLogMessage(wxT("BR24radar_pi: YYY update message HIDE"));
 	}
 
 	cbOpenGL->SetValue(haveOpenGL);
@@ -316,16 +300,13 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 	cbData->SetValue(haveData);
 
 	if (message_state != new_message_state){
-		wxLogMessage(wxT("BR24radar_pi: YYY update switch"));
 		switch (new_message_state) {
 
 		case HIDE:
 			if (pPlugIn->m_pMessageBox){
 				if (pPlugIn->m_pMessageBox->IsShown()){
 					pPlugIn->m_pMessageBox->Hide();
-					wxLogMessage(wxT("BR24radar_pi: YYY update message case HIDE"));
 				}
-				wxLogMessage(wxT("BR24radar_pi: YYY update message case HIDE na if"));
 			}
 			break;
 
@@ -343,7 +324,6 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 			if (!messageBox->IsShown(messageBox)) {
 				pPlugIn->m_pMessageBox->Show();
 			}
-			wxLogMessage(wxT("BR24radar_pi: YYY update message case no nmea "));
 		//	messageBox->Hide(bMsgBack);
 			pPlugIn->m_pMessageBox->bMsgBack->Hide();
 	//		messageBox->Hide(nmeaBox);
@@ -356,9 +336,8 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 			if (!messageBox->IsShown(messageBox)) {
 				pPlugIn->m_pMessageBox->Show();
 			}
-			pPlugIn->m_pMessageBox->bMsgBack->Show();
 			pPlugIn->m_pMessageBox->nmeaBox->Show();
-	//		messageBox->Layout();
+			pPlugIn->m_pMessageBox->bMsgBack->Show();
 			Fit();
 			break;
 		}
@@ -367,91 +346,6 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 	// update values here !!!
 }
 
-/*	if (!black && !navOn && !radarOn)               // case 1 
-	{                                    // m    message  
-		if (pPlugIn->m_pMessageBox) {
-			pPlugIn->m_pMessageBox->Show();
-		}
-		messageBox->Hide(bMsgBack);
-		messageBox->Show(nmeaBox);
-        messageBox->Layout();
-        Fit();
-        topSizeM->Layout();
-		wxLogMessage(wxT("BR24radar_pi: YYY update message case 1"));
-	}
-
-	if (!black && !navOn && radarOn)               // case 5 
-	{                                             // m    message  
-		if (pPlugIn->m_pMessageBox) {
-			pPlugIn->m_pMessageBox->Show();
-		}
-		messageBox->Hide(bMsgBack);
-		messageBox->Show(nmeaBox);
-		messageBox->Layout();
-		Fit();
-		topSizeM->Layout();
-		wxLogMessage(wxT("BR24radar_pi: YYY update message case 5"));
-	}
-
-	else if (!radarOn && ! black && navOn)   // case 2
-	{                                        // m    message box
-		
-		if (pPlugIn->m_pMessageBox) {
-			pPlugIn->m_pMessageBox->Show();
-		}
-	//	if (!topSizeM->IsShown(messageBox)) {
-	//	topSizeM->Show(messageBox);
-	//	}
-		messageBox->Hide(bMsgBack);
-		messageBox->Show(nmeaBox);
-        messageBox->Layout();
-        Fit();
-        topSizeM->Layout();
-		wxLogMessage(wxT("BR24radar_pi: YYY update message case 2"));
-	}
-	else if (!radarOn && black)           // case 3 and 4
-	{                                     // m1    message box without NMEA (no buttons)
-		if (pPlugIn->m_pMessageBox) {
-			pPlugIn->m_pMessageBox->Show();
-		}
-
-		messageBox->Hide(nmeaSizer);
-		messageBox->Hide(bMsgBack);
-    //    messageBox->Layout();
-        Fit();
-    //    topSizeM->Layout();
-		wxLogMessage(wxT("BR24radar_pi: YYY update message case 3 4"));
-	}
-	else if ((navOn || black) && !want_message)     //  case 6, 7 and 8
-	{                                                  //  Hide messagebox
-		if (pPlugIn->m_pMessageBox)
-		{
-			pPlugIn->m_pMessageBox->Hide();
-		}
-		wxLogMessage(wxT("BR24radar_pi: YYY update message case 6 7 8"));
-     //   Fit();
-     //   topSizeM->Layout();
-		
-	}
-	else if (want_message)          // case 9, 10 and 11
-	{                                 // mb    message box with back button
-		if (!topSizeM->IsShown(messageBox)) {
-		topSizeM->Show(messageBox);
-		}
-		messageBox->Show(bMsgBack);
-		messageBox->Show(nmeaBox);
-        messageBox->Layout();
-        Fit();
-        topSizeM->Layout();
-		wxLogMessage(wxT("BR24radar_pi: YYY update message case 9 10 11"));
-	}
-	else 
-	{
-		 wxLogMessage(wxT("BR24radar_pi: YYY Update message, case not covered"));
-	}
-
-  //  topSizeM->Layout();
-} */
 	
 void BR24MessageBox::OnMessageBackButtonClick(wxCommandEvent& event)
 {

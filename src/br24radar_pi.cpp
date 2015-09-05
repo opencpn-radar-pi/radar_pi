@@ -98,7 +98,7 @@ using namespace std;
 // If BR24MARK is found, we switch to BR24 mode, otherwise 4G.
 static UINT8 BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
 
-int bogey_count[2 * GUARD_ZONES];
+int bogey_count[4];
 static int displaysetting_threshold[3] = {displaysetting0_threshold_red, displaysetting1_threshold_blue, displaysetting2_threshold_blue};
 
 enum {
@@ -1613,6 +1613,9 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
         glScaled(scale_factor, scale_factor, 1.);
         if (br_range_meters[settings.selectRadarB] > 0 && br_scanner_state == RADAR_ON) {
             // Guard Section
+			for (int i = 0; i < 4; i++){
+				bogey_count[i] = 0;
+			}
 			if (br_radar_state[0] == RADAR_ON){   
 				Guard(meters, 0);
 			}
@@ -1786,9 +1789,9 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
 		if (settings.verbose >= 2) {
 			now = wxGetLocalTimeMillis();
-			wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" drawn %u skipped %u spokes with %u blobs maxAge=%") wxTPRId64
-						 wxT(" bogeys %d, %d")
-						 , now, drawn_spokes, skipped, drawn_blobs, max_age, bogey_count[0], bogey_count[1]);
+//			wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" drawn %u skipped %u spokes with %u blobs maxAge=%") wxTPRId64
+//						 wxT(" bogeys %d, %d, %d, %d")
+//						 , now, drawn_spokes, skipped, drawn_blobs, max_age, bogey_count[0], bogey_count[1], bogey_count[2], bogey_count[3]);
 		}
     
 	}    // end of loop over angle
@@ -1799,9 +1802,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 void br24radar_pi::Guard(int max_range, int AB)
     // scan image for bogeys 
     {
-		for (int i = 0; i < 2; i++){
-			bogey_count[i + 2 * AB] = 0;
-		}
+		
     int begin_arc, end_arc = 0;
     for (size_t z = 0; z < GUARD_ZONES; z++) {  
 		if (guardZones[AB][z].type == GZ_OFF){   // skip if guardzone is off
@@ -1815,7 +1816,7 @@ void br24radar_pi::Guard(int max_range, int AB)
         case GZ_ARC:
 			begin_arc = guardZones[AB][z].start_bearing;
 			end_arc = guardZones[AB][z].end_bearing;
-			if (!blackout[settings.selectRadarB]) {
+			if (!blackout[AB]) {
 				begin_arc += br_hdt;   // arc still in degrees!
 				end_arc += br_hdt;
 			}
@@ -1835,7 +1836,7 @@ void br24radar_pi::Guard(int max_range, int AB)
 
         for (int angle = begin_arc ; angle < end_arc ; angle++) {
             unsigned int angle1 = MOD_ROTATION2048 (angle);
-			scan_line *scan = &m_scan_line[settings.selectRadarB][angle1];
+			scan_line *scan = &m_scan_line[AB][angle1];
             if (!scan) return;   // No or old data
             for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) { 
                 // - 2 added, -1 contains the range circle, should not raise alarm
@@ -1845,7 +1846,7 @@ void br24radar_pi::Guard(int max_range, int AB)
 				int outer_range = guardZones[AB][z].outer_range; // now in meters
                 int bogey_range = radius * max_range / RETURNS_PER_LINE;
                 if (bogey_range > inner_range && bogey_range < outer_range) {   // within range, now check requirement for alarm
-					if ((settings.multi_sweep_filter[settings.selectRadarB][z]) != 0) {  // multi sweep filter on for this z
+					if ((settings.multi_sweep_filter[AB][z]) != 0) {  // multi sweep filter on for this z
                         GLubyte hist = scan->history[radius] & 7; // check only last 3 bits
                         if (!(hist == 3 || hist >= 5)) {  // corresponds to the patterns 011, 101, 110, 111
                             continue;                      // multi sweep filter on, no valid bogeys
@@ -1855,12 +1856,14 @@ void br24radar_pi::Guard(int max_range, int AB)
                         GLubyte strength = scan->data[radius];
                         if (strength <= displaysetting_threshold[settings.display_option]) continue;
                         }
-                    bogey_count[z + 2 * AB]++;
+					int index = z + 2 * AB;
+                    bogey_count[index]++;
                     }   // end "if (bogey_range > in ......
 
                 }           // end of loop over radius
             }               // end of loop over angle
         }                   // end of loop over z
+//	wxLogMessage(wxT("BR24radar: Guard return to be drawn, AB= %d bogeycount %d %d %d %d"), AB, bogey_count[0], bogey_count[1], bogey_count[2], bogey_count[3]);
     }
     
 
