@@ -992,7 +992,23 @@ void br24radar_pi::ShowRadarControl(bool show)
 		radar_setting[settings.selectRadarB].range.Update(range);
 		radar_setting[settings.selectRadarB].range.button = idx;		
     }
+	m_pControlDialog->Hide();
 	control_box_closed = false;
+	m_pControlDialog->UpdateControl(br_opengl_mode
+		, br_bpos_set
+		, m_heading_source != HEADING_NONE
+		, br_var_source != VARIATION_SOURCE_NONE
+		, br_radar_seen
+		, br_data_seen[settings.selectRadarB]
+		);
+//	m_pControlDialog->UpdateControlValues(false);
+	m_pMessageBox->UpdateMessage(br_opengl_mode
+		, br_bpos_set
+		, m_heading_source != HEADING_NONE
+		, br_var_source != VARIATION_SOURCE_NONE
+		, br_radar_seen
+		, br_data_seen[settings.selectRadarB]
+		);
 }
 
 void br24radar_pi::OnContextMenuItemCallback(int id)
@@ -1145,7 +1161,24 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         }
         br_radar_state[settings.selectRadarB] = RADAR_OFF;
         OnGuardZoneDialogClose();
-  //      OnBR24ControlDialogClose();
+		if (m_pControlDialog) {
+			m_pControlDialog->UpdateControl(br_opengl_mode
+				, br_bpos_set
+				, m_heading_source != HEADING_NONE
+				, br_var_source != VARIATION_SOURCE_NONE
+				, br_radar_seen
+				, br_data_seen[settings.selectRadarB]
+				);
+		}
+		if (m_pMessageBox) {
+			m_pMessageBox->UpdateMessage(br_opengl_mode
+				, br_bpos_set
+				, m_heading_source != HEADING_NONE
+				, br_var_source != VARIATION_SOURCE_NONE
+				, br_radar_seen
+				, br_data_seen[settings.selectRadarB]
+				);
+		}
         if (m_pGuardZoneBogey) {
             m_pGuardZoneBogey->Hide();
         }

@@ -62,9 +62,9 @@ enum {                                      // process ID's
 	ID_HEADING,
 	ID_VALUE,
 	ID_BPOS
-
 };
 
+enum message_status {HIDE, SHOW, SHOW_NO_NMEA, SHOW_BACK};
 //---------------------------------------------------------------------------------------
 //          Radar Control Implementation
 //---------------------------------------------------------------------------------------
@@ -239,12 +239,13 @@ void BR24MessageBox::OnSize(wxSizeEvent& event)
 
 void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData)
 {
-    cbOpenGL->SetValue(haveOpenGL);
-    cbBoatPos->SetValue(haveGPS);
-    cbHeading->SetValue(haveHeading);
-    cbVariation->SetValue(haveVariation);
-    cbRadar->SetValue(haveRadar);
-    cbData->SetValue(haveData);
+	static message_status message_state = HIDE;
+	message_status new_message_state;
+
+	if (!pPlugIn->m_pMessageBox){
+		wxLogMessage(wxT("BR24radar_pi: ERROR UpdateMessage m_pMessageBox not existent"));
+		return;
+	}
 
 	bool radarOn = haveOpenGL && haveRadar; // && haveData;
 	bool navOn = haveGPS && haveHeading && haveVariation;
@@ -252,44 +253,116 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 	bool black = pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT;
 	if (black) wxLogMessage(wxT("BR24radar_pi: YYY update message black"));
 	bool radar_switched_on = pPlugIn->br_radar_state[pPlugIn->settings.selectRadarB] == RADAR_ON;
-	
-
-	/*
-	Decision table to select the message or control box
-	- means not relevant
-
-    case nr        1   2   3   4   5   6   7   8   9   10  11
-	box type       m   m   m1  m1  m   H   H   H   mb  mb  mb 
-	_________________________________________________________
-	radarOn        0   0   0   0   1   1   1   1   1   1   1   
-	navOn          0   1   0   1   0   1   0   1   1   0   1
-	black          0   0   1   1   0   0   1   1   0   1   1
-	want_message   -   -   -   -   -   0   0   0   1   1   1
-
-	m1    message box plus radar only button 
-	m2    message box
-	m3    message box without NMEA (no buttons)
-	H     hide messagebox
-	mb    message box with back button
-
-	*/
-
+	if (radar_switched_on) wxLogMessage(wxT("BR24radar_pi: YYY update message switched on"));
+	wxLogMessage(wxT("BR24radar_pi: YYY update message entered  AB= %d"), pPlugIn->settings.selectRadarB);
 	bool want_message = false;
 	if (pPlugIn->m_pControlDialog){
 		if (pPlugIn->m_pControlDialog->wantShowMessage){
 			want_message = true;
 		}
 	}
+
+
+	/*
+	Decision table to select the message or control box
+	- means not relevant
+
+	case nr        1   2   3   4   5   6   7   8   9   10  11
+	box type       m   m   m1  m1  m   H   H   H   mb  mb  mb
+	_________________________________________________________
+	radarOn        0   0   0   0   1   1   1   1   1   1   1
+	navOn          0   1   0   1   0   1   0   1   1   0   1
+	black          0   0   1   1   0   0   1   1   0   1   1
+	want_message   -   -   -   -   -   0   0   0   1   1   1
+
+	m    message box
+	m1    message box without NMEA (no buttons)
+	H     hide messagebox
+	mb    message box with back button
+
+	*/
+
 	if (!radar_switched_on){
-		if (pPlugIn->m_pMessageBox)
-		{
-			pPlugIn->m_pMessageBox->Hide();
-		}
-		wxLogMessage(wxT("BR24radar_pi: YYY update message radar not switched on"));
-		return;
+		new_message_state = HIDE;
+		wxLogMessage(wxT("BR24radar_pi: YYY update message HIDE not switched on"));
+	}
+	else if (want_message){
+		new_message_state = SHOW_BACK;
+		wxLogMessage(wxT("BR24radar_pi: YYY update message SHOW_BACK"));
+	}
+	else if (!black && (!navOn || !radarOn)){
+		new_message_state = SHOW;
+		wxLogMessage(wxT("BR24radar_pi: YYY update message SHOW"));
+	}
+	else if (black && !radarOn){
+		new_message_state = SHOW_NO_NMEA;
+		wxLogMessage(wxT("BR24radar_pi: YYY update message NO_NMEA"));
+	}
+	else if ((black || navOn) && radarOn){
+		new_message_state = HIDE;
+		wxLogMessage(wxT("BR24radar_pi: YYY update message HIDE"));
 	}
 
-	if (!black && !navOn && !radarOn)               // case 1 
+	cbOpenGL->SetValue(haveOpenGL);
+	cbBoatPos->SetValue(haveGPS);
+	cbHeading->SetValue(haveHeading);
+	cbVariation->SetValue(haveVariation);
+	cbRadar->SetValue(haveRadar);
+	cbData->SetValue(haveData);
+
+	if (message_state != new_message_state){
+		wxLogMessage(wxT("BR24radar_pi: YYY update switch"));
+		switch (new_message_state) {
+
+		case HIDE:
+			if (pPlugIn->m_pMessageBox){
+				if (pPlugIn->m_pMessageBox->IsShown()){
+					pPlugIn->m_pMessageBox->Hide();
+					wxLogMessage(wxT("BR24radar_pi: YYY update message case HIDE"));
+				}
+				wxLogMessage(wxT("BR24radar_pi: YYY update message case HIDE na if"));
+			}
+			break;
+
+		case SHOW:
+			if (!messageBox->IsShown(messageBox)) {
+				pPlugIn->m_pMessageBox->Show();
+			}
+			pPlugIn->m_pMessageBox->bMsgBack->Hide();
+			pPlugIn->m_pMessageBox->nmeaBox->Show();
+		//	messageBox->Layout();
+			Fit();
+			break;
+
+		case SHOW_NO_NMEA:
+			if (!messageBox->IsShown(messageBox)) {
+				pPlugIn->m_pMessageBox->Show();
+			}
+			wxLogMessage(wxT("BR24radar_pi: YYY update message case no nmea "));
+		//	messageBox->Hide(bMsgBack);
+			pPlugIn->m_pMessageBox->bMsgBack->Hide();
+	//		messageBox->Hide(nmeaBox);
+			pPlugIn->m_pMessageBox->nmeaBox->Hide();
+		//	messageBox->Layout();
+			Fit();
+			break;
+
+		case SHOW_BACK:
+			if (!messageBox->IsShown(messageBox)) {
+				pPlugIn->m_pMessageBox->Show();
+			}
+			pPlugIn->m_pMessageBox->bMsgBack->Show();
+			pPlugIn->m_pMessageBox->nmeaBox->Show();
+	//		messageBox->Layout();
+			Fit();
+			break;
+		}
+	}
+	message_state = new_message_state;
+	// update values here !!!
+}
+
+/*	if (!black && !navOn && !radarOn)               // case 1 
 	{                                    // m    message  
 		if (pPlugIn->m_pMessageBox) {
 			pPlugIn->m_pMessageBox->Show();
@@ -373,7 +446,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 	}
 
   //  topSizeM->Layout();
-}
+} */
 	
 void BR24MessageBox::OnMessageBackButtonClick(wxCommandEvent& event)
 {
