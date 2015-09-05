@@ -178,7 +178,6 @@ void BR24MessageBox::CreateControls()
 	nmeaBox = new wxStaticBox(this, wxID_ANY, _("For radar overlay also required"));
     nmeaBox->SetFont(g_font);
 
- //   wxStaticBoxSizer* nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
 	nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
     messageBox->Add(nmeaSizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
@@ -197,9 +196,15 @@ void BR24MessageBox::CreateControls()
     cbVariation->SetFont(g_font);
     cbVariation->Disable();
 
-    tStatistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, g_buttonSize, 0);
+	infoBox = new wxStaticBox(this, wxID_ANY, _("Statistics"));
+	infoBox->SetFont(g_font);
+
+	infoSizer = new wxStaticBoxSizer(infoBox, wxVERTICAL);
+	messageBox->Add(infoSizer, 0, wxEXPAND | wxALL, BORDER * 2);
+
+	tStatistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, wxDefaultSize, 0);
     tStatistics->SetFont(*OCPNGetFont(_("Dialog"), 8));
-    messageBox->Add(tStatistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
+	infoSizer->Add(tStatistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
 
 /*    // The <Radar Only> button
     bRdrOnly = new wxButton(this, ID_RDRONLY, _("Radar Only"), wxDefaultPosition, wxDefaultSize, 0);
