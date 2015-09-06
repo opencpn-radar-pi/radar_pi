@@ -374,7 +374,7 @@ public:
 
     // Other public methods
 
-    void OnBR24ControlDialogClose();         // Control dialog
+    void OnBR24ControlDialogClose(); 
 	void OnBR24MessageBoxClose();
     void SetDisplayMode(DisplayModeType mode);
     void UpdateDisplayParameters(void);
