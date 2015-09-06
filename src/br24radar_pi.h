@@ -100,15 +100,21 @@
 # define MILLISECONDS_PER_SECOND (1000)
 
 
-#define LINES_PER_ROTATION  (4096) // BR radars can generate up to 4096 lines per rotation
+#define LINES_PER_ROTATION  (2048) // BR radars can generate up to 4096 lines per rotation, but use only 2048
 #define RETURNS_PER_LINE     (512) // BR radars generate 512 separate values per range, at 8 bits each
 #define DEGREES_PER_ROTATION (360) // Classical math
 
 // Use the above to convert from 'raw' headings sent by the radar (0..4095) into classical degrees (0..359) and back
-#define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double) DEGREES_PER_ROTATION / LINES_PER_ROTATION)
-#define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double) LINES_PER_ROTATION / DEGREES_PER_ROTATION))
+#define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double) DEGREES_PER_ROTATION / 4096)
+#define SCALE_RAW_TO_DEGREES2048(raw) ((raw) * (double) DEGREES_PER_ROTATION / 2048)
+#define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double) 4096 / DEGREES_PER_ROTATION))
+#define SCALE_DEGREES_TO_RAW2048(angle) ((int)((angle) * (double) 2048 / DEGREES_PER_ROTATION))
 #define MOD_DEGREES(angle) (fmod(angle + 720.0, 360.0))
-#define MOD_ROTATION(raw) (((raw) + 2 * LINES_PER_ROTATION) % LINES_PER_ROTATION)
+#define MOD_ROTATION(raw) (((raw) + 2 * 4096) % 4096)
+#define MOD_ROTATION2048(raw) (((raw) + 4096) % 2048)
+#define displaysetting0_threshold_red (50)
+#define displaysetting1_threshold_blue (50)  // should be < 100
+#define displaysetting2_threshold_blue (20)  // should be < 100
 
 enum {
     BM_ID_RED,
@@ -196,7 +202,6 @@ typedef enum ControlType {
     CT_TARGET_SEPARATION,
     CT_NOISE_REJECTION,
     CT_TARGET_BOOST,
-    CT_DOWNSAMPLE,
     CT_REFRESHRATE,
     CT_PASSHEADING,
     CT_SCAN_SPEED,
@@ -228,7 +233,6 @@ typedef enum DisplayModeType {
 
 static wxString DisplayModeStrings[] = {
     _("Radar Chart Overlay"),
-    _("Radar Standalone"),
     _("Spectrum"),
     _("Emulator"),
 };
@@ -244,42 +248,58 @@ static const int RangeUnitsToMeters[2] = {
 #define MIN_AGE (4)
 #define MAX_AGE (12)
 
-struct radar_control_settings {
+struct pi_control_settings {
     int      overlay_transparency;    // now 0-100, no longer a double
+	bool     auto_range_mode[2];    // for A and B
+	int      range_index;
     int      verbose;
-    bool     auto_range_mode;
-    int      range_index;
     int      display_option;
-    DisplayModeType display_mode;
+    DisplayModeType display_mode[2];
     int      guard_zone;            // active zone (0 = none,1,2)
     int      guard_zone_threshold;  // How many blobs must be sent by radar before we fire alarm
     int      guard_zone_render_style;
-    int      gain;
-    int      interference_rejection;
-    int      target_separation;
-    int      noise_rejection;
-    int      target_boost;
-    int      filter_process;
-    int      sea_clutter_gain;
-    int      rain_clutter_gain;
+ //   int      filter_process;
     double   range_calibration;
     double   heading_correction;
     double   skew_factor;
     int      range_units;       // 0 = Nautical miles, 1 = Kilometers
     int      range_unit_meters; // ... 1852 or 1000, depending on range_units
-    int      beam_width;
+ //   int      beam_width;
     int      max_age;
     int      timed_idle;
     int      idle_run_time;
     int      draw_algorithm;
     int      scan_speed;
-    int      downsampleUser;    // 1..8 =
-    int        refreshrate;
-    int       PassHeadingToOCPN;
-    int      downsample;        //         1..128
+    int      refreshrate;   
+    int      passHeadingToOCPN;
+	int      multi_sweep_filter[2][3];   //  0: guard zone 1 filter state;
+                                      //  1: guard zone 2 filter state;
+                                      //  2: display filter state, modified in gain control;
+                                      //  these values are not saved, for safety reasons user must set them after each start
+    int      selectRadarB;
     wxString alert_audio_file;
 };
 
+class radar_control_item{
+public:
+	int value;
+	int button;
+	bool mod;
+	void Update(int v);
+};
+
+struct radar_control_setting{
+	bool                    mod;
+	radar_control_item      range;
+	radar_control_item      gain;
+	radar_control_item      interference_rejection;
+	radar_control_item      target_separation;
+	radar_control_item      noise_rejection;
+	radar_control_item      target_boost;
+	radar_control_item      sea;
+	radar_control_item      rain;
+	radar_control_item      scan_speed;
+};
 struct guard_zone_settings {
     int type;                   // 0 = circle, 1 = arc
     int inner_range;            // now in meters
@@ -292,6 +312,9 @@ struct scan_line {
     int range;                        // range of this scan line in decimeters
     wxLongLong age;                   // how old this scan line is. We keep old scans on-screen for a while
     UINT8 data[RETURNS_PER_LINE + 1]; // radar return strength, data[512] is an additional element, accessed in drawing the spokes
+	UINT8 history[RETURNS_PER_LINE + 1]; // contains per bit the history of previous scans. 
+	   //Each scan this byte is left shifted one bit. If the strength (=level) of a return is above the threshold
+	   // a 1 is added in the rightmost position, if below threshold, a 0.
 };
 
 //    Forward definitions
@@ -299,6 +322,7 @@ class RadarDataReceiveThread;
 class RadarCommandReceiveThread;
 class RadarReportReceiveThread;
 class BR24ControlsDialog;
+class BR24MessageBox;
 class GuardZoneDialog;
 class GuardZoneBogey;
 class BR24DisplayOptionsDialog;
@@ -340,15 +364,18 @@ public:
     void SetCursorLatLon(double lat, double lon);
     void OnContextMenuItemCallback(int id);
     void SetNMEASentence(wxString &sentence);
+	int   br_radar_state[2];
 
     void SetDefaults(void);
     int GetToolbarToolCount(void);
     void OnToolbarToolCallback(int id);
     void ShowPreferencesDialog(wxWindow* parent);
+	bool control_box_closed;
 
     // Other public methods
 
-    void OnBR24ControlDialogClose();         // Control dialog
+    void OnBR24ControlDialogClose(); 
+	void OnBR24MessageBoxClose();
     void SetDisplayMode(DisplayModeType mode);
     void UpdateDisplayParameters(void);
 
@@ -364,6 +391,19 @@ public:
     void SetBR24ControlsDialogSizeY(long sy) {
         m_BR24Controls_dialog_sy = sy;
     }
+
+	void SetBR24MessageBoxX(long x) {
+		m_BR24Message_box_x = x;
+	}
+	void SetBR24MessageBoxY(long y) {
+		m_BR24Message_box_y = y;
+	}
+	void SetBR24MessageBoxSizeX(long sx) {
+		m_BR24Message_box_sx = sx;
+	}
+	void SetBR24MessageBoxSizeY(long sy) {
+		m_BR24Message_box_sy = sy;
+	}
     void Select_Guard_Zones(int zone);
     void OnGuardZoneDialogClose();
     void OnGuardZoneBogeyClose();
@@ -380,22 +420,21 @@ public:
     long GetOptimalRangeMeters();
     void SetRangeMeters(long range);
 
-    void ComputeGuardZoneAngles();
+    pi_control_settings settings;
+	radar_control_setting radar_setting[2];
 
-    radar_control_settings settings;
-
-    scan_line                 m_scan_line[LINES_PER_ROTATION];
+    scan_line                 m_scan_line[2][LINES_PER_ROTATION];
 
 #define GUARD_ZONES (2)
-    guard_zone_settings guardZones[GUARD_ZONES];
-    bool guardZoneAngles[GUARD_ZONES][LINES_PER_ROTATION]; // Is that angle in the guard zone?
-
+    guard_zone_settings guardZones[2][GUARD_ZONES];
+    
     BR24DisplayOptionsDialog *m_pOptionsDialog;
     BR24ControlsDialog       *m_pControlDialog;
+	BR24MessageBox           *m_pMessageBox;
     GuardZoneDialog          *m_pGuardZoneDialog;
     GuardZoneBogey           *m_pGuardZoneBogey;
     Idle_Dialog              *m_pIdleDialog;
-    receive_statistics          m_statistics;
+    receive_statistics          m_statistics[2];
 
 private:
     void TransmitCmd(UINT8 * msg, int size);
@@ -409,9 +448,10 @@ private:
     void Select_Rejection(int req_rejection_index);
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
     void RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
+	void Guard(int max_range, int AB);
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
     void DrawRadarImage(int max_range, wxPoint radar_center);
-    void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
+    void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp, int AB);
     void HandleBogeyCount(int *bogey_count);
     void draw_histogram_column(int x, int y);
 
@@ -429,14 +469,21 @@ private:
     //    Controls added to Preferences panel
     wxCheckBox               *m_pShowIcon;
 
-    RadarDataReceiveThread   *m_dataReceiveThread;
-    RadarCommandReceiveThread *m_commandReceiveThread;
-    RadarReportReceiveThread *m_reportReceiveThread;
+    RadarDataReceiveThread   *m_dataReceiveThreadA;
+    RadarCommandReceiveThread *m_commandReceiveThreadA;
+    RadarReportReceiveThread *m_reportReceiveThreadA;
+	RadarDataReceiveThread   *m_dataReceiveThreadB;
+	RadarCommandReceiveThread *m_commandReceiveThreadB;
+	RadarReportReceiveThread *m_reportReceiveThreadB;
 
     SOCKET                    m_radar_socket;
 
     int                       m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
     int                       m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
+
+	int                       m_BR24Message_box_sx, m_BR24Message_box_sy;
+	int                       m_BR24Message_box_x,  m_BR24Message_box_y;
+
     int                        m_GuardZoneBogey_x, m_GuardZoneBogey_y ;
 
     int                       m_Guard_dialog_sx, m_Guard_dialog_sy ;
@@ -449,7 +496,7 @@ private:
     int                       m_sent_bm_id_rollover;
 
     volatile bool             m_quit;
-
+	volatile int				AB;
     enum HeadingSource { HEADING_NONE, HEADING_HDM, HEADING_HDT, HEADING_COG, HEADING_RADAR };
     HeadingSource             m_heading_source;
 
@@ -463,10 +510,12 @@ class RadarDataReceiveThread: public wxThread
 
 public:
 
-    RadarDataReceiveThread(br24radar_pi *ppi, volatile bool * quit)
+    RadarDataReceiveThread(br24radar_pi *ppi, volatile bool * quit, int ab)
     : wxThread(wxTHREAD_JOINABLE)
     , pPlugIn(ppi)
     , m_quit(quit)
+	, AB(ab)
+
     {
         //      wxLogMessage(_T("BR24 radar thread starting for multicast address %ls port %ls"), m_ip.c_str(), m_service_port.c_str());
         Create(1024 * 1024);
@@ -485,6 +534,8 @@ private:
     wxString           m_ip;
     volatile bool    * m_quit;
     wxIPV4address      m_myaddr;
+	int AB;
+
 };
 
 class RadarCommandReceiveThread: public wxThread
@@ -492,10 +543,11 @@ class RadarCommandReceiveThread: public wxThread
 
 public:
 
-    RadarCommandReceiveThread(br24radar_pi *ppi, volatile bool * quit)
+    RadarCommandReceiveThread(br24radar_pi *ppi, volatile bool * quit, int ab)
     : wxThread(wxTHREAD_JOINABLE)
     , pPlugIn(ppi)
     , m_quit(quit)
+	, AB(ab)
     {
         Create(64 * 1024);
     };
@@ -509,6 +561,7 @@ private:
     wxString           m_ip;
     volatile bool    * m_quit;
     wxIPV4address      m_myaddr;
+	int                AB;
 };
 
 class RadarReportReceiveThread: public wxThread
@@ -516,10 +569,11 @@ class RadarReportReceiveThread: public wxThread
 
 public:
 
-    RadarReportReceiveThread(br24radar_pi *ppi, volatile bool * quit)
+    RadarReportReceiveThread(br24radar_pi *ppi, volatile bool * quit, int ab)
     : wxThread(wxTHREAD_JOINABLE)
     , pPlugIn(ppi)
     , m_quit(quit)
+	, AB(ab)
     {
         Create(64 * 1024);
     };
@@ -535,6 +589,7 @@ private:
     wxString           m_ip;
     volatile bool    * m_quit;
     wxIPV4address      m_myaddr;
+	int                AB;
 };
 
 //----------------------------------------------------------------------------------------------------------
@@ -569,6 +624,7 @@ private:
     void OnSelectSoundClick(wxCommandEvent& event);
     void OnTestSoundClick(wxCommandEvent& event);
     void OnPassHeadingClick(wxCommandEvent& event);
+    
 
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
@@ -629,7 +685,8 @@ public:
 
     virtual void SetValue(int value);
     virtual void SetAuto();
-
+	virtual void SetValueX(int newValue);
+	virtual void SetAutoX();
     const wxString  *names;
 
     wxString   firstLine;
@@ -704,13 +761,12 @@ public:
     void SetRangeIndex(size_t index);
     void SetTimedIdleIndex(int index);
     void UpdateGuardZoneState();
-    void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
-    void SetErrorMessage(wxString &msg);
-    void SetRadarIPAddress(wxString &msg);
-    void SetMcastIPAddress(wxString &msg);
-    void SetHeadingInfo(wxString &msg);
-    void SetVariationInfo(wxString &msg);
-    void SetRadarInfo(wxString &msg);
+    void UpdateControl(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
+	void BR24ControlsDialog::UpdateControlValues(bool refreshAll);
+	void SetErrorMessage(wxString &msg);
+	bool wantShowMessage; // If true, don't hide messagebox automatically
+
+	RadarControlButton *bRadarAB;
 
 private:
     void OnClose(wxCloseEvent& event);
@@ -724,14 +780,18 @@ private:
     void OnMinusClick(wxCommandEvent& event);
     void OnMinusTenClick(wxCommandEvent& event);
     void OnAutoClick(wxCommandEvent& event);
+	void OnMultiSweepClick(wxCommandEvent& event);
 
     void OnAdvancedBackButtonClick(wxCommandEvent& event);
     void OnAdvancedButtonClick(wxCommandEvent& event);
-
-    void OnMessageBackButtonClick(wxCommandEvent& event);
+	void OnRadarGainButtonClick(wxCommandEvent& event);
+	void OnRadarABButtonClick(wxCommandEvent& event);
+		
+    void OnRdrOnlyButtonClick(wxCommandEvent& event);
     void OnMessageButtonClick(wxCommandEvent& event);
 
     void OnRadarControlButtonClick(wxCommandEvent& event);
+	void OnRadarOnlyButtonClick(wxCommandEvent& event);
 
     void OnZone1ButtonClick(wxCommandEvent &event);
     void OnZone2ButtonClick(wxCommandEvent &event);
@@ -740,30 +800,16 @@ private:
 
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
-
     wxBoxSizer        *topSizer;
-    wxBoxSizer        *messageBox;   // Contains NO HDG and/or NO GPS
-    wxStaticBox       *ipBox;
+
     wxBoxSizer        *editBox;
     wxBoxSizer        *advancedBox;
     wxBoxSizer        *advanced4gBox;
     wxBoxSizer        *controlBox;
 
     wxBoxSizer        *fromBox; // If on edit control, this is where the button is from
-    bool              wantShowMessage; // If true, don't hide messagebox automatically
-
-    // MessageBox
-    wxButton           *bMsgBack;
-    wxStaticText       *tMessage;
-    wxCheckBox         *cbOpenGL;
-    wxCheckBox         *cbBoatPos;
-    wxCheckBox         *cbHeading;
-    wxCheckBox         *cbVariation;
-    wxCheckBox         *cbRadar;
-    wxCheckBox         *cbData;
-    wxStaticText       *tStatistics;
-
-
+    
+	
     // Edit Controls
 
     RadarControlButton *fromControl; // Only set when in edit mode
@@ -776,6 +822,7 @@ private:
     wxButton           *bMinus;
     wxButton           *bMinusTen;
     wxButton           *bAuto;
+	wxButton           *bMultiSweep;
 
     // Advanced controls
     wxButton           *bAdvancedBack;
@@ -784,7 +831,6 @@ private:
     RadarControlButton *bTargetSeparation;
     RadarControlButton *bNoiseRejection;
     RadarControlButton *bTargetBoost;
-    RadarControlButton *bDownsample;
     RadarControlButton *bRefreshrate;
     RadarControlButton *bScanSpeed;
     RadarControlButton *bScanAge;
@@ -793,6 +839,7 @@ private:
     // Show Controls
 
     RadarRangeControlButton *bRange;
+	RadarControlButton *bRadarOnly_Overlay;
     RadarControlButton *bGain;
     RadarControlButton *bSea;
     RadarControlButton *bRain;
@@ -800,6 +847,69 @@ private:
     wxButton           *bGuard1;
     wxButton           *bGuard2;
     wxButton           *bMessage;
+};
+
+class BR24MessageBox : public wxDialog
+{
+	DECLARE_CLASS(BR24MessageBox)
+	DECLARE_EVENT_TABLE()
+
+public:
+
+	BR24MessageBox();
+
+	~BR24MessageBox();
+	void Init();
+
+	bool Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID id = wxID_ANY,
+		const wxString& caption = _("Radar"),
+		const wxPoint& pos = wxDefaultPosition,
+		const wxSize& size = wxDefaultSize,
+		long style = wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX)
+		);
+
+	void CreateControls();
+	void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
+	void SetErrorMessage(wxString &msg);
+	void SetRadarIPAddress(wxString &msg);
+	void SetMcastIPAddress(wxString &msg);
+	void SetHeadingInfo(wxString &msg);
+	void SetVariationInfo(wxString &msg);
+	void SetRadarInfo(wxString &msg);
+	wxBoxSizer        *topSizeM;
+
+private:
+	void OnClose(wxCloseEvent& event);
+	void OnIdOKClick(wxCommandEvent& event);
+	void OnMove(wxMoveEvent& event);
+	void OnSize(wxSizeEvent& event);
+	
+	void OnMessageBackButtonClick(wxCommandEvent& event);
+
+	wxWindow          *pParent;
+	br24radar_pi      *pPlugIn;
+	wxBoxSizer        *nmeaSizer;
+	wxBoxSizer        *infoSizer;
+
+
+	wxBoxSizer        *messageBox;   // Contains NO HDG and/or NO GPS
+	wxStaticBox       *ipBox;
+	wxStaticBox	      *nmeaBox;
+	wxStaticBox	      *infoBox;
+
+	bool              wantShowMessage; // If true, don't hide messagebox automatically
+
+	// MessageBox
+	wxButton           *bMsgBack;
+	wxStaticText       *tMessage;
+	wxCheckBox         *cbOpenGL;
+	wxCheckBox         *cbBoatPos;
+	wxCheckBox         *cbHeading;
+	wxCheckBox         *cbVariation;
+	wxCheckBox         *cbRadar;
+	wxCheckBox         *cbData;
+	wxStaticText       *tStatistics;
+
 };
 
 /*
@@ -841,6 +951,7 @@ private:
     void            OnOuter_Range_Value(wxCommandEvent &event);
     void            OnStart_Bearing_Value(wxCommandEvent &event);
     void            OnEnd_Bearing_Value(wxCommandEvent &event);
+    void            OnFilterClick(wxCommandEvent &event);
     void            OnClose(wxCloseEvent &event);
     void            OnIdOKClick(wxCommandEvent &event);
 
@@ -854,6 +965,7 @@ private:
     wxTextCtrl      *pOuter_Range;
     wxTextCtrl      *pStart_Bearing_Value;
     wxTextCtrl      *pEnd_Bearing_Value;
+    wxCheckBox      *cbFilter;
 };
 
 /*
