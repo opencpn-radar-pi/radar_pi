@@ -609,7 +609,8 @@ int br24radar_pi::Init(void)
 
 bool br24radar_pi::DeInit(void)
 {
-    br_radar_state[settings.selectRadarB] = RADAR_OFF;  // turn off, otherwise system may be too busy to quit
+    br_radar_state[0] = RADAR_OFF;  // turn off, otherwise system may be too busy to quit
+	br_radar_state[1] = RADAR_OFF;
     SaveConfig();
     m_quit = true; // Signal quit to any of the threads. Takes up to 1s.
 
@@ -1616,11 +1617,14 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 			for (int i = 0; i < 4; i++){
 				bogey_count[i] = 0;
 			}
-			if (br_radar_state[0] == RADAR_ON){   
-				Guard(meters, 0);
+			static int metersA, metersB;
+			if (settings.selectRadarB == 0) metersA = meters;
+			if (settings.selectRadarB == 1) metersB = meters;
+			if (br_radar_state[0] == RADAR_ON && metersA != 0){
+				Guard(metersA, 0);
 			}
-			if (br_radar_state[1] == RADAR_ON){
-				Guard(meters, 1);
+			if (br_radar_state[1] == RADAR_ON && metersB !=0){
+				Guard(metersB, 1);
 			}
             DrawRadarImage(meters, radar_center);
         }
@@ -1863,7 +1867,7 @@ void br24radar_pi::Guard(int max_range, int AB)
                 }           // end of loop over radius
             }               // end of loop over angle
         }                   // end of loop over z
-//	wxLogMessage(wxT("BR24radar: Guard return to be drawn, AB= %d bogeycount %d %d %d %d"), AB, bogey_count[0], bogey_count[1], bogey_count[2], bogey_count[3]);
+//wxLogMessage(wxT("BR24radar: Guard return, AB= %d bogeycount %d %d %d %d"), AB, bogey_count[0], bogey_count[1], bogey_count[2], bogey_count[3]);
     }
     
 
@@ -2016,7 +2020,6 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
 	}
 
 	if (!bogeysFound && m_pGuardZoneBogey) {
-		wxLogMessage(wxT("BR24radar_pi: XXhandle no bogeys found "));
 		m_pGuardZoneBogey->SetBogeyCount(bogey_count, -1);   // with -1 "next alarm in... "will not be displayed
 		br_guard_bogey_confirmed = false; // Reset for next time we see bogeys
 		// keep showing the bogey dialogue with 0 bogeys
@@ -2353,19 +2356,16 @@ void br24radar_pi::TransmitCmd(UINT8 * msg, int size)
 	if (settings.selectRadarB == 1) {   //  select B radar
     adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 14); // 236.6.7.14
     adr.sin_port=htons(6658);
-	wxLogMessage(wxT("BR24radar_pi: XX transmit command AB = 1"));
 
 	}
 	else {    // select A radar
 		adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 10); // 236.6.7.10
     adr.sin_port=htons(6680);
-	wxLogMessage(wxT("BR24radar_pi: XX transmit AB = 0"));
 	}
     if (m_radar_socket == INVALID_SOCKET || sendto(m_radar_socket, (char *) msg, size, 0, (struct sockaddr *) &adr, sizeof(adr)) < size) {
         wxLogError(wxT("BR24radar_pi: Unable to transmit command to radar"));
         return;
     } else  {
-        logBinaryData(wxT("XX command transmitted"), msg, size);
     }
 };
 
@@ -3185,7 +3185,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         }
     }
     else {
-        if (pPlugIn->br_radar_state[pPlugIn->settings.selectRadarB] == RADAR_ON) {
+		if (pPlugIn->br_radar_state[0] == RADAR_ON || pPlugIn->br_radar_state[1] == RADAR_ON) {
             if (i_display >=  br_refresh_rate ) {   //    display every "refreshrate time"
                 if (br_refresh_rate != 10) { // for 10 no refresh at all
                     br_refresh_busy_or_queued = true;   // no further calls until br_refresh_busy_or_queued has been cleared by RenderGLOverlay
@@ -3538,7 +3538,6 @@ void *RadarReportReceiveThread::Entry(void)
 				if (br_mcast_addr != 0 && rx_socket == INVALID_SOCKET && pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] != DM_EMULATOR){
 					rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6659, "236.6.7.15");
 					if (rx_socket != INVALID_SOCKET) {
-						wxLogMessage(wxT("XXX startUDPMulticastReceiveSocket radarB ready AB = 1 socket valid"));
 					//	wxString addr;
 					//	UINT8 * a = (UINT8 *)&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr; // sin_addr is in network layout
 					//	addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
