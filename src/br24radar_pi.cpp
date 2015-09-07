@@ -435,7 +435,7 @@ int br24radar_pi::Init(void)
     br_idle_watchdog = 0;
 	memset(&bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
 	memset(&radar_setting, 0, sizeof(radar_setting));   // radar settings all to 0
-	memset(&settings, 0, sizeof(settings));             // pi settings all 0
+	// memset(&settings, 0, sizeof(settings));             // pi settings all 0   // will crash under VC 2010!! OK with 2013
 
     for (int i = 0; i < LINES_PER_ROTATION - 1; i++) {   // initialise history bytes
         memset(&m_scan_line[0][i].history, 0, sizeof(m_scan_line[0][i].history));
@@ -883,6 +883,12 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                              wxCommandEventHandler(BR24DisplayOptionsDialog::OnPassHeadingClick), NULL, this);
 
+	cbEnableDualRadar = new wxCheckBox(this, ID_SELECT_AB, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+	itemStaticBoxSizerOptions->Add(cbEnableDualRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+	cbEnableDualRadar->SetValue(pPlugIn->settings.enable_dual_radar ? true : false);
+	cbEnableDualRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
+		wxCommandEventHandler(BR24DisplayOptionsDialog::OnEnableDualRadarClick), NULL, this);
+
   
     // Accept/Reject button
     wxStdDialogButtonSizer* DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
@@ -930,6 +936,11 @@ void BR24DisplayOptionsDialog::OnSelectSoundClick(wxCommandEvent &event)
     if (response == wxID_OK ) {
         pPlugIn->settings.alert_audio_file = openDialog->GetPath();
     }
+}
+
+void BR24DisplayOptionsDialog::OnEnableDualRadarClick(wxCommandEvent &event)
+{
+	pPlugIn->settings.enable_dual_radar = cbEnableDualRadar->GetValue();
 }
 
 void BR24DisplayOptionsDialog::OnTestSoundClick(wxCommandEvent &event)
@@ -1456,7 +1467,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     {
       br_auto_range_meters = 50;
     }
-	blackout[settings.selectRadarB] = br_radar_state[settings.selectRadarB] == RADAR_ON && br_data_seen[settings.selectRadarB] && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
+	blackout[settings.selectRadarB] = br_data_seen[settings.selectRadarB] && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
     DoTick(); // update timers and watchdogs
     UpdateState(); // update the toolbar
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
@@ -1571,7 +1582,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
-	blackout[settings.selectRadarB] = br_radar_state[settings.selectRadarB] == RADAR_ON && br_data_seen[settings.selectRadarB] && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
+	blackout[settings.selectRadarB] = br_data_seen[settings.selectRadarB] && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
 	            //  radar only mode, will be head up, operate also without heading or position
 	if (!blackout[settings.selectRadarB]) {
         glEnable(GL_BLEND);

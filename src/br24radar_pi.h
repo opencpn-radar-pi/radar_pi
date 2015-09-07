@@ -625,6 +625,7 @@ private:
     void OnSelectSoundClick(wxCommandEvent& event);
     void OnTestSoundClick(wxCommandEvent& event);
     void OnPassHeadingClick(wxCommandEvent& event);
+	void OnEnableDualRadarClick(wxCommandEvent& event);
     
 
     wxWindow          *pParent;
@@ -638,6 +639,7 @@ private:
     wxSlider          *pIntervalSlider;
     wxTextCtrl        *pText_Heading_Correction_Value;
     wxCheckBox        *cbPassHeading;
+	wxCheckBox        *cbEnableDualRadar;
 };
 
 
