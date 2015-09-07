@@ -433,8 +433,8 @@ int br24radar_pi::Init(void)
 	br_data_watchdog[0] = 0;
 	br_data_watchdog[1] = 0;
     br_idle_watchdog = 0;
-	memset(&bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
-	memset(&radar_setting, 0, sizeof(radar_setting));   // radar settings all to 0
+	memset(bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
+	memset(&radar_setting[0], 0, sizeof(radar_setting));   // radar settings all to 0
 	// memset(&settings, 0, sizeof(settings));             // pi settings all 0   // will crash under VC 2010!! OK with 2013
 
     for (int i = 0; i < LINES_PER_ROTATION - 1; i++) {   // initialise history bytes
@@ -466,7 +466,7 @@ int br24radar_pi::Init(void)
     m_pGuardZoneBogey = 0;
     m_pIdleDialog = 0;
 
-    memset(&guardZones, 0, sizeof(guardZones));
+    memset(&guardZones[0][0], 0, sizeof(guardZones));
 
     settings.guard_zone = 0;   // this used to be active guard zone, now it means which guard zone window is active
 	settings.display_mode[0] = DM_CHART_OVERLAY;
