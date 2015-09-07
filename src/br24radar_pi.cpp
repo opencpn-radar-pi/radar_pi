@@ -2130,6 +2130,7 @@ bool br24radar_pi::LoadConfig(void)
 		pConf->Read(wxT("Zone2ArcCircB"), &guardZones[1][1].type, 0);
 
         pConf->Read(wxT("RadarAlertAudioFile"), &settings.alert_audio_file);
+		pConf->Read(wxT("EnableDualRadar"), &settings.enable_dual_radar, 0);
 
         pConf->Read(wxT("SkewFactor"), &settings.skew_factor, 1);
 
@@ -2164,7 +2165,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("PassHeadingToOCPN"), settings.passHeadingToOCPN);
         pConf->Write(wxT("selectRadarB"), settings.selectRadarB);
         pConf->Write(wxT("RadarAlertAudioFile"), settings.alert_audio_file);
-
+		pConf->Write(wxT("EnableDualRadar"), settings.enable_dual_radar);
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
         pConf->Write(wxT("ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
         pConf->Write(wxT("ControlsDialogPosX"),   m_BR24Controls_dialog_x);
@@ -2356,7 +2357,6 @@ void br24radar_pi::TransmitCmd(UINT8 * msg, int size)
 	if (settings.selectRadarB == 1) {   //  select B radar
     adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 14); // 236.6.7.14
     adr.sin_port=htons(6658);
-
 	}
 	else {    // select A radar
 		adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 10); // 236.6.7.10

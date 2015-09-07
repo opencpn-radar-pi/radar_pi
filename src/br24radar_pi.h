@@ -272,6 +272,7 @@ struct pi_control_settings {
     int      scan_speed;
     int      refreshrate;   
     int      passHeadingToOCPN;
+	int      enable_dual_radar;
 	int      multi_sweep_filter[2][3];   //  0: guard zone 1 filter state;
                                       //  1: guard zone 2 filter state;
                                       //  2: display filter state, modified in gain control;
