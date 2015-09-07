@@ -1141,8 +1141,11 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 		if (!topSizer->IsShown(controlBox) && !topSizer->IsShown(advancedBox) && !topSizer->IsShown(editBox) && !guard){
 			topSizer->Show(controlBox);   
 		}
-		if (br_radar_type == RT_BR24){
+		if (br_radar_type == RT_BR24 || pPlugIn->settings.enable_dual_radar == 0){
 			bRadarAB->Hide();
+		}
+		else{
+			bRadarAB->Show();
 		}
 		controlBox->Layout();
 		Fit();

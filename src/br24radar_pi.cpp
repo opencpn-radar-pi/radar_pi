@@ -433,9 +433,9 @@ int br24radar_pi::Init(void)
 	br_data_watchdog[0] = 0;
 	br_data_watchdog[1] = 0;
     br_idle_watchdog = 0;
-	memset(&bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
-	memset(&radar_setting, 0, sizeof(radar_setting));   // radar settings all to 0
-	memset(&settings, 0, sizeof(settings));             // pi settings all 0
+	memset(bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
+	memset(&radar_setting[0], 0, sizeof(radar_setting));   // radar settings all to 0
+	// memset(&settings, 0, sizeof(settings));             // pi settings all 0   // will crash under VC 2010!! OK with 2013
 
     for (int i = 0; i < LINES_PER_ROTATION - 1; i++) {   // initialise history bytes
         memset(&m_scan_line[0][i].history, 0, sizeof(m_scan_line[0][i].history));
@@ -466,7 +466,7 @@ int br24radar_pi::Init(void)
     m_pGuardZoneBogey = 0;
     m_pIdleDialog = 0;
 
-    memset(&guardZones, 0, sizeof(guardZones));
+    memset(&guardZones[0][0], 0, sizeof(guardZones));
 
     settings.guard_zone = 0;   // this used to be active guard zone, now it means which guard zone window is active
 	settings.display_mode[0] = DM_CHART_OVERLAY;
@@ -883,6 +883,12 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                              wxCommandEventHandler(BR24DisplayOptionsDialog::OnPassHeadingClick), NULL, this);
 
+	cbEnableDualRadar = new wxCheckBox(this, ID_SELECT_AB, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+	itemStaticBoxSizerOptions->Add(cbEnableDualRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+	cbEnableDualRadar->SetValue(pPlugIn->settings.enable_dual_radar ? true : false);
+	cbEnableDualRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
+		wxCommandEventHandler(BR24DisplayOptionsDialog::OnEnableDualRadarClick), NULL, this);
+
   
     // Accept/Reject button
     wxStdDialogButtonSizer* DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
@@ -930,6 +936,11 @@ void BR24DisplayOptionsDialog::OnSelectSoundClick(wxCommandEvent &event)
     if (response == wxID_OK ) {
         pPlugIn->settings.alert_audio_file = openDialog->GetPath();
     }
+}
+
+void BR24DisplayOptionsDialog::OnEnableDualRadarClick(wxCommandEvent &event)
+{
+	pPlugIn->settings.enable_dual_radar = cbEnableDualRadar->GetValue();
 }
 
 void BR24DisplayOptionsDialog::OnTestSoundClick(wxCommandEvent &event)
@@ -1456,7 +1467,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     {
       br_auto_range_meters = 50;
     }
-	blackout[settings.selectRadarB] = br_radar_state[settings.selectRadarB] == RADAR_ON && br_data_seen[settings.selectRadarB] && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
+	blackout[settings.selectRadarB] = br_data_seen[settings.selectRadarB] && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
     DoTick(); // update timers and watchdogs
     UpdateState(); // update the toolbar
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
@@ -1571,7 +1582,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
-	blackout[settings.selectRadarB] = br_radar_state[settings.selectRadarB] == RADAR_ON && br_data_seen[settings.selectRadarB] && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
+	blackout[settings.selectRadarB] = br_data_seen[settings.selectRadarB] && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
 	            //  radar only mode, will be head up, operate also without heading or position
 	if (!blackout[settings.selectRadarB]) {
         glEnable(GL_BLEND);
@@ -2130,6 +2141,7 @@ bool br24radar_pi::LoadConfig(void)
 		pConf->Read(wxT("Zone2ArcCircB"), &guardZones[1][1].type, 0);
 
         pConf->Read(wxT("RadarAlertAudioFile"), &settings.alert_audio_file);
+		pConf->Read(wxT("EnableDualRadar"), &settings.enable_dual_radar, 0);
 
         pConf->Read(wxT("SkewFactor"), &settings.skew_factor, 1);
 
@@ -2164,7 +2176,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("PassHeadingToOCPN"), settings.passHeadingToOCPN);
         pConf->Write(wxT("selectRadarB"), settings.selectRadarB);
         pConf->Write(wxT("RadarAlertAudioFile"), settings.alert_audio_file);
-
+		pConf->Write(wxT("EnableDualRadar"), settings.enable_dual_radar);
         pConf->Write(wxT("ControlsDialogSizeX"),  m_BR24Controls_dialog_sx);
         pConf->Write(wxT("ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
         pConf->Write(wxT("ControlsDialogPosX"),   m_BR24Controls_dialog_x);
@@ -2356,7 +2368,6 @@ void br24radar_pi::TransmitCmd(UINT8 * msg, int size)
 	if (settings.selectRadarB == 1) {   //  select B radar
     adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 14); // 236.6.7.14
     adr.sin_port=htons(6658);
-
 	}
 	else {    // select A radar
 		adr.sin_addr.s_addr=htonl((236 << 24) | (6 << 16) | (7 << 8) | 10); // 236.6.7.10

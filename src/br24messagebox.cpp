@@ -316,7 +316,6 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 			}
 			pPlugIn->m_pMessageBox->bMsgBack->Hide();
 			pPlugIn->m_pMessageBox->nmeaBox->Show();
-		//	messageBox->Layout();
 			Fit();
 			break;
 
@@ -324,11 +323,8 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 			if (!messageBox->IsShown(messageBox)) {
 				pPlugIn->m_pMessageBox->Show();
 			}
-		//	messageBox->Hide(bMsgBack);
 			pPlugIn->m_pMessageBox->bMsgBack->Hide();
-	//		messageBox->Hide(nmeaBox);
 			pPlugIn->m_pMessageBox->nmeaBox->Hide();
-		//	messageBox->Layout();
 			Fit();
 			break;
 
@@ -341,6 +337,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 			Fit();
 			break;
 		}
+		Fit();
 	}
 	message_state = new_message_state;
 	// update values here !!!
