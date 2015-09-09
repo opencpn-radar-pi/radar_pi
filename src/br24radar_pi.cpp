@@ -502,6 +502,12 @@ int br24radar_pi::Init(void)
         wxLogMessage(wxT("BR24radar_pi: configuration file values initialisation failed"));
         return 0; // give up
     }
+	if (settings.display_mode[0] != DM_CHART_BLACKOUT || settings.display_mode[0] != DM_CHART_OVERLAY){
+		settings.display_mode[0] = DM_CHART_OVERLAY;
+	}
+	if (settings.display_mode[1] != DM_CHART_BLACKOUT || settings.display_mode[1] != DM_CHART_OVERLAY){
+		settings.display_mode[1] = DM_CHART_OVERLAY;
+	}   // XXX remove this stuff after fixing the emulator
 	if (br_radar_type == RT_BR24){    // make sure radar A only.
 		settings.selectRadarB = 0;
 	}
@@ -804,7 +810,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
         _("Multi-color"),
         _("Multi-color 2"),
     };
-	/*
+	
     pOverlayDisplayOptions = new wxRadioBox(this, ID_OVERLAYDISPLAYOPTION, _("Overlay Display Options"),
                                             wxDefaultPosition, wxDefaultSize,
                                             3, Overlay_Display_Options, 1, wxRA_SPECIFY_COLS);
@@ -815,7 +821,8 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
                                     wxCommandEventHandler(BR24DisplayOptionsDialog::OnDisplayOptionClick), NULL, this);
 
     pOverlayDisplayOptions->SetSelection(pPlugIn->settings.display_option);
-
+	
+	/*
     pDisplayMode = new wxRadioBox(this, ID_DISPLAYTYPE, _("Radar Display"),
                                   wxDefaultPosition, wxDefaultSize,
                                   ARRAY_SIZE(DisplayModeStrings), DisplayModeStrings, 1, wxRA_SPECIFY_COLS);
