@@ -362,6 +362,7 @@ void RadarRangeControlButton::SetValue(int newValue)
     // sends the command for the new range to the radar
     isRemote = false;
 	pPlugIn->settings.auto_range_mode[pPlugIn->settings.selectRadarB] = false;
+	wxLogMessage(wxT("BR24radar_pi: XXX RadarRangeControlButton::SetValue() false"));
 
     int meters = SetValueInt(newValue);   // do not display the new value now, will be done by receive thread when frame with new range is received
     pPlugIn->SetRangeMeters(meters);        // send new value to the radar
@@ -370,6 +371,8 @@ void RadarRangeControlButton::SetValue(int newValue)
 void RadarRangeControlButton::SetAuto()
 {
 	pPlugIn->settings.auto_range_mode[pPlugIn->settings.selectRadarB] = true;
+	wxLogMessage(wxT("BR24radar_pi: XXX RadarRangeControlButton::SetAuto() "));
+	pPlugIn->m_pControlDialog->SetRangeIndex(-1);    // immediately set auto in button
 }
 
 BR24ControlsDialog::BR24ControlsDialog()
@@ -430,6 +433,8 @@ void BR24ControlsDialog::CreateControls()
      * of that is, and then generate the buttons using that width.
      * I know, this is a hack, but this way it works relatively nicely even with translations.
      */
+
+	/*
     wxBoxSizer * testBox = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(testBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
@@ -465,15 +470,15 @@ void BR24ControlsDialog::CreateControls()
         width = 300;
     }
     g_buttonSize = wxSize(width, 40);  // was 50, buttons a bit lower now
-    if (pPlugIn->settings.verbose) {
+  //  if (pPlugIn->settings.verbose) {
         wxLogMessage(wxT("BR24radar_pi: Dynamic button width = %d"), g_buttonSize.GetWidth());
-    }
+ //   }
     topSizer->Hide(testBox);
     topSizer->Remove(testBox);
-    // Determined desired button width
+    // Determined desired button width     */
 
-
-   
+	static int width = 135;     // button width
+	g_buttonSize = wxSize(width, 40);  
     //**************** EDIT BOX ******************//
 	 // A box sizer to contain RANGE button
     editBox = new wxBoxSizer(wxVERTICAL);
@@ -821,6 +826,9 @@ void BR24ControlsDialog::OnBackClick(wxCommandEvent &event)
             advancedBox->Hide(advanced4gBox);
         }
     }
+	if (fromBox == controlBox) {
+		bRadarAB->Hide();
+	}
 
     topSizer->Layout();
 }
@@ -1037,15 +1045,19 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
 	if (topSizer->IsShown(controlBox)) {
 		// first update the range
 		if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod || refreshAll){
+			if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.button == -1){
+				wxLogMessage(wxT("BR24radar_pi: XX range auto"));
+				bRange->SetAutoX();
+			}
 			SetRangeIndex(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.button);
 			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod = false;
-		}
+		}  // don't set the actual range here, is still handled elsewhere
 
 		// gain
 		if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod || refreshAll){
 			if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button == -1){
 				wxLogMessage(wxT("BR24radar_pi: XX gain auto"));
-				bGain->SetAutoX();
+				// handled elsewhere
 			}
 			else{
 				bGain->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button);
@@ -1111,42 +1123,61 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 	bool radarOn = haveOpenGL && haveRadar; // && haveData;
 	bool navOn = haveGPS && haveHeading && haveVariation;
 	bool black = pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT;
-	bool radar_switched_on = pPlugIn->br_radar_state[pPlugIn->settings.selectRadarB] == RADAR_ON;
+	bool radar_switched_on = haveData ;
 
-	if (pPlugIn->control_box_closed){
+	if (pPlugIn->control_box_closed){  // box manually closed 
 		{
-			pPlugIn->m_pControlDialog->Hide();
+			if (pPlugIn->m_pControlDialog){
+				pPlugIn->m_pControlDialog->Hide();
+				wxLogMessage(wxT("BR24radar_pi: XXX UpdateControl pPlugIn->control_box_closed"));
+			}
+		}
+		return;
+	}
+	if (pPlugIn->control_box_opened){  // opened from context menu
+		{wxLogMessage(wxT("BR24radar_pi: XXX UpdateControl pPlugIn->control_box_opened"));
+			if (pPlugIn->m_pControlDialog){
+				pPlugIn->m_pControlDialog->Show();
+			}
 		}
 		return;
 	}
 
-	if (!radarOn){           // radar not seen, hide control box
+	if (!pPlugIn->settings.showRadar){           // radar not seen, hide control box
+		
 		if (pPlugIn->m_pControlDialog){
 			pPlugIn->m_pControlDialog->Hide();
+			wxLogMessage(wxT("BR24radar_pi: XXX UpdateControl show radar false"));
 		}
 	}
 
-	else    // radar seen (at least standby), show control box
+	else    // want to show the radar and radar is seen
 	{
 		bool guard = false;
+		wxLogMessage(wxT("BR24radar_pi: XXX UpdateControl show radar true"));
 		if (pPlugIn->m_pGuardZoneDialog){   // otherwise next statement might crash!
 			if (pPlugIn->m_pGuardZoneDialog->IsShown()){
 				guard = true;                  // just to get the guard state
 			}
 		}
 		if (pPlugIn->m_pControlDialog && !guard) {
+			wxLogMessage(wxT("BR24radar_pi: XXX UpdateControl show radar false not guard"));
 			pPlugIn->m_pControlDialog->Show();
 		}
 		
 		if (!topSizer->IsShown(controlBox) && !topSizer->IsShown(advancedBox) && !topSizer->IsShown(editBox) && !guard){
 			topSizer->Show(controlBox);   
+			wxLogMessage(wxT("BR24radar_pi: XXX UpdateControl show radar YYY"));
 		}
 		if (br_radar_type == RT_BR24 || pPlugIn->settings.enable_dual_radar == 0){
 			bRadarAB->Hide();
 		}
 		else{
-			bRadarAB->Show();
+			if (topSizer->IsShown(controlBox)){
+				bRadarAB->Show();
+			}
 		}
+		wxLogMessage(wxT("BR24radar_pi: XXX UpdateControl showRadar = true  einde"));
 		controlBox->Layout();
 		Fit();
 		topSizer->Layout();
@@ -1156,7 +1187,7 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 
 	wxString labelx;
 	if (pPlugIn->settings.selectRadarB == 0){
-		if (haveData){
+		if (pPlugIn->data_seenAB[0]){
 			labelx << _("Radar A / B") << wxT("\n") << _("Radar A - ON");
 		}
 		else if (haveRadar){
@@ -1167,7 +1198,7 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 		}
 	}
 	if (pPlugIn->settings.selectRadarB == 1){
-		if (haveData){
+		if (pPlugIn->data_seenAB[1]){
 			labelx << _("Radar A / B") << wxT("\n") << _("Radar B - ON");
 		}
 		else if (haveRadar){

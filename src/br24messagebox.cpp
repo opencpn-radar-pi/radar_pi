@@ -234,7 +234,7 @@ void BR24MessageBox::OnSize(wxSizeEvent& event)
     event.Skip();
 }
 
-void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData)
+void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool radarSeen, bool haveData)
 {
 	static message_status message_state = HIDE;
 	message_status new_message_state;
@@ -244,10 +244,10 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 		return;
 	}
 
-	bool radarOn = haveOpenGL && haveRadar; // && haveData;
+	bool radarOn = haveOpenGL && radarSeen; // && haveData;
 	bool navOn = haveGPS && haveHeading && haveVariation;
 	bool black = pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT;
-	bool radar_switched_on = pPlugIn->br_radar_state[pPlugIn->settings.selectRadarB] == RADAR_ON;
+	bool radar_switched_on = haveData;
 //	wxLogMessage(wxT("BR24radar_pi: YYY update message entered  AB= %d"), pPlugIn->settings.selectRadarB);
 	bool want_message = false;
 	if (pPlugIn->m_pControlDialog){
@@ -276,7 +276,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 
 	*/
 
-	if (!radar_switched_on){
+	if (!pPlugIn->settings.showRadar){
 		new_message_state = HIDE;
 	}
 	else if (want_message){
@@ -296,7 +296,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 	cbBoatPos->SetValue(haveGPS);
 	cbHeading->SetValue(haveHeading);
 	cbVariation->SetValue(haveVariation);
-	cbRadar->SetValue(haveRadar);
+	cbRadar->SetValue(radarSeen);
 	cbData->SetValue(haveData);
 
 	if (message_state != new_message_state){
@@ -340,7 +340,6 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 		Fit();
 	}
 	message_state = new_message_state;
-	// update values here !!!
 }
 
 	

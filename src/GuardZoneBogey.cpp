@@ -140,7 +140,7 @@ void GuardZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm)
 	static wxString previous_text;
     wxString t;
 	
-	if (pPlugIn->br_radar_state[0] == RADAR_ON){
+	if (pPlugIn->data_seenAB[0] == RADAR_ON){
 		t.Printf(_("Radar A:\n"));
 		text << t;
 		for (int z = 0; z < GUARD_ZONES; z++) {
@@ -152,7 +152,7 @@ void GuardZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm)
 		t.Printf(_("\n"));
 		text += t;
 	}
-	if (pPlugIn->br_radar_state[1] == RADAR_ON){
+	if (pPlugIn->data_seenAB[1] == RADAR_ON){
 		t.Printf(_("Radar B:\n"));
 		text << t;
 		for (int z = 0; z < GUARD_ZONES; z++) {
