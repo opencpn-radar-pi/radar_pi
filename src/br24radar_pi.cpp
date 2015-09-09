@@ -2076,8 +2076,8 @@ bool br24radar_pi::LoadConfig(void)
             settings.range_units = 1;
         }
         settings.range_unit_meters = (settings.range_units == 1) ? 1000 : 1852;
-        pConf->Read(wxT("DisplayMode"),  (int *) &settings.display_mode[0], 0);
-		pConf->Read(wxT("DisplayModeB"), (int *)&settings.display_mode[1], 0);
+        pConf->Read(wxT("DisplayMode"),  (int *) &settings.display_mode[0], DM_EMULATOR);
+		pConf->Read(wxT("DisplayModeB"), (int *)&settings.display_mode[1], DM_EMULATOR);
         pConf->Read(wxT("VerboseLog"),  &settings.verbose, 0);
         pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
         pConf->Read(wxT("RangeCalibration"),  &settings.range_calibration, 1.0);
