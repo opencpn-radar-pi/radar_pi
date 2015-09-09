@@ -271,13 +271,14 @@ struct pi_control_settings {
     int      draw_algorithm;
     int      scan_speed;
     int      refreshrate;   
-    int      passHeadingToOCPN;
+	int      passHeadingToOCPN;      
 	int      enable_dual_radar;
 	int      multi_sweep_filter[2][3];   //  0: guard zone 1 filter state;
                                       //  1: guard zone 2 filter state;
                                       //  2: display filter state, modified in gain control;
                                       //  these values are not saved, for safety reasons user must set them after each start
-    int      selectRadarB;
+	int      selectRadarB;
+	int      showRadar;
     wxString alert_audio_file;
 };
 
@@ -365,13 +366,13 @@ public:
     void SetCursorLatLon(double lat, double lon);
     void OnContextMenuItemCallback(int id);
     void SetNMEASentence(wxString &sentence);
-	int   br_radar_state[2];
+	bool data_seenAB[2];
 
     void SetDefaults(void);
     int GetToolbarToolCount(void);
     void OnToolbarToolCallback(int id);
     void ShowPreferencesDialog(wxWindow* parent);
-	bool control_box_closed;
+	bool control_box_closed, control_box_opened;
 
     // Other public methods
 
@@ -439,6 +440,7 @@ public:
 
 private:
     void TransmitCmd(UINT8 * msg, int size);
+	void TransmitCmd(int AB, UINT8 * msg, int size);   // overcharged
     void RadarTxOff(void);
     void RadarTxOn(void);
     void RadarSendState(void);
