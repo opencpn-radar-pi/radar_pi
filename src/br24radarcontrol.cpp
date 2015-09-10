@@ -995,6 +995,10 @@ void BR24ControlsDialog::OnRadarABButtonClick(wxCommandEvent& event)
 		pPlugIn->settings.selectRadarB = 1;
 		labels << _("Radar A / B") << wxT("\n") << _("Radar B");
 		bRadarAB->SetLabel(labels);
+		wxString labelx;
+		labelx << _("Radar B");
+		pPlugIn->m_pControlDialog->SetTitle(labelx);
+		pPlugIn->m_pControlDialog->SetLabel(labelx);
 	}
 	else{
 		wxString labels;
@@ -1002,6 +1006,10 @@ void BR24ControlsDialog::OnRadarABButtonClick(wxCommandEvent& event)
 		pPlugIn->settings.selectRadarB = 0;
 		labels << _("Radar A / B") << wxT("\n") << _("Radar A");
 		bRadarAB->SetLabel(labels);
+		wxString labelx;
+		labelx << _("Radar A");
+		pPlugIn->m_pControlDialog->SetTitle(labelx);
+		pPlugIn->m_pControlDialog->SetLabel(labelx);
 	}
 	
 	UpdateControlValues(true);   // update control values on the buttons
