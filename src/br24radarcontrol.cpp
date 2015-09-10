@@ -1182,24 +1182,24 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 	wxString labelx;
 	if (pPlugIn->settings.selectRadarB == 0){
 		if (pPlugIn->data_seenAB[0]){
-			labelx << _("Radar A / B") << wxT("\n") << _("Radar A - ON");
+			labelx  << _("Radar A - ON");
 		}
 		else if (haveRadar){
-			labelx << _("Radar A / B") << wxT("\n") << _("Radar A - Stby");
+			labelx  << _("Radar A - Stby");
 		}
 		else {
-			labelx << _("Radar A / B") << wxT("\n") << _("Radar A - OFF");
+			labelx << _("Radar A - OFF");
 		}
 	}
 	if (pPlugIn->settings.selectRadarB == 1){
 		if (pPlugIn->data_seenAB[1]){
-			labelx << _("Radar A / B") << wxT("\n") << _("Radar B - ON");
+			labelx  << _("Radar B - ON");
 		}
 		else if (haveRadar){
-			labelx << _("Radar A / B") << wxT("\n") << _("Radar B - Stby");
+			labelx  << _("Radar B - Stby");
 		}
 		else {
-			labelx << _("Radar A / B") << wxT("\n") << _("Radar B - OFF");
+			labelx  << _("Radar B - OFF");
 		}
 	}
 
