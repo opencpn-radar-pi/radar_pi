@@ -217,7 +217,7 @@ void GuardZoneDialog::SetVisibility()
 {
     GuardZoneType zoneType = (GuardZoneType) pGuardZoneType->GetSelection();
 
-    pPlugIn->guardZones[pPlugIn->settings.guard_zone].type = zoneType;
+	pPlugIn->guardZones[pPlugIn->settings.selectRadarB][pPlugIn->settings.guard_zone].type = zoneType;
     
     if (zoneType == GZ_OFF) {
         pStart_Bearing_Value->Enable();
@@ -252,21 +252,21 @@ void GuardZoneDialog::OnGuardZoneDialogShow(int zone)
     GuardZoneText << _("Guard Zone") << t;
     pBoxGuardZone->SetLabel(GuardZoneText);
 
-    pGuardZoneType->SetSelection(pPlugIn->guardZones[zone].type);
+	pGuardZoneType->SetSelection(pPlugIn->guardZones[pPlugIn->settings.selectRadarB][zone].type);
 
-    GuardZoneText.Printf(wxT("%2.2f"), pPlugIn->guardZones[zone].inner_range / conversionFactor);
+	GuardZoneText.Printf(wxT("%2.2f"), pPlugIn->guardZones[pPlugIn->settings.selectRadarB][zone].inner_range / conversionFactor);
     pInner_Range->SetValue(GuardZoneText);
 
-    GuardZoneText.Printf(wxT("%2.2f"), pPlugIn->guardZones[zone].outer_range / conversionFactor);
+	GuardZoneText.Printf(wxT("%2.2f"), pPlugIn->guardZones[pPlugIn->settings.selectRadarB][zone].outer_range / conversionFactor);
     pOuter_Range->SetValue(GuardZoneText);
 
-    GuardZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].start_bearing);
+	GuardZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[pPlugIn->settings.selectRadarB][zone].start_bearing);
     pStart_Bearing_Value->SetValue(GuardZoneText);
-    GuardZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[zone].end_bearing);
+	GuardZoneText.Printf(wxT("%3.1f"), pPlugIn->guardZones[pPlugIn->settings.selectRadarB][zone].end_bearing);
     pEnd_Bearing_Value->SetValue(GuardZoneText);
 
     bool filt;
-    if (pPlugIn->settings.multi_sweep_filter[zone]) {
+	if (pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.selectRadarB][zone]) {
         filt = true;
         }
     else
@@ -292,7 +292,7 @@ void GuardZoneDialog::OnInner_Range_Value(wxCommandEvent &event)
 
     int conversionFactor = RangeUnitsToMeters[pPlugIn->settings.range_units];
 
-    pPlugIn->guardZones[pPlugIn->settings.guard_zone].inner_range = (int) (t * conversionFactor);
+	pPlugIn->guardZones[pPlugIn->settings.selectRadarB][pPlugIn->settings.guard_zone].inner_range = (int)(t * conversionFactor);
 }
 
 void GuardZoneDialog::OnOuter_Range_Value(wxCommandEvent &event)
@@ -303,14 +303,14 @@ void GuardZoneDialog::OnOuter_Range_Value(wxCommandEvent &event)
 
     int conversionFactor = RangeUnitsToMeters[pPlugIn->settings.range_units];
 
-    pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range = (int) (t * conversionFactor);
+	pPlugIn->guardZones[pPlugIn->settings.selectRadarB][pPlugIn->settings.guard_zone].outer_range = (int)(t * conversionFactor);
 }
 
 void GuardZoneDialog::OnStart_Bearing_Value(wxCommandEvent &event)
 {
     wxString temp = pStart_Bearing_Value->GetValue();
 
-    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].start_bearing);
+	temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.selectRadarB][pPlugIn->settings.guard_zone].start_bearing);
 }
 
 
@@ -318,13 +318,13 @@ void GuardZoneDialog::OnEnd_Bearing_Value(wxCommandEvent &event)
 {
     wxString temp = pEnd_Bearing_Value->GetValue();
 
-    temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.guard_zone].end_bearing);
+	temp.ToDouble(&pPlugIn->guardZones[pPlugIn->settings.selectRadarB][pPlugIn->settings.guard_zone].end_bearing);
 }
 
 void GuardZoneDialog::OnFilterClick(wxCommandEvent &event)
     {
     int filt = cbFilter->GetValue();
-    pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.guard_zone] = filt;
+	pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.selectRadarB][pPlugIn->settings.guard_zone] = filt;
     }
 
 void GuardZoneDialog::OnClose(wxCloseEvent &event)
@@ -342,18 +342,18 @@ void GuardZoneDialog::OnIdOKClick(wxCommandEvent &event)
 void GuardZoneDialog::OnContextMenuGuardCallback(double mark_rng, double mark_brg)
 {
     if (!outer_set) {
-        pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range = mark_rng;
-        pPlugIn->guardZones[pPlugIn->settings.guard_zone].start_bearing = mark_brg;
+        pPlugIn->guardZones[pPlugIn->settings.selectRadarB][pPlugIn->settings.guard_zone].outer_range = mark_rng;
+        pPlugIn->guardZones[pPlugIn->settings.selectRadarB][pPlugIn->settings.guard_zone].start_bearing = mark_brg;
 
         outer_set = true;
     }
     else {
-        pPlugIn->guardZones[pPlugIn->settings.guard_zone].inner_range = mark_rng;
-        if (pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range < mark_rng) {
-            pPlugIn->guardZones[pPlugIn->settings.guard_zone].inner_range = pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range;
-            pPlugIn->guardZones[pPlugIn->settings.guard_zone].outer_range = mark_rng;
+        pPlugIn->guardZones[pPlugIn->settings.selectRadarB][pPlugIn->settings.guard_zone].inner_range = mark_rng;
+        if (pPlugIn->guardZones[pPlugIn->settings.selectRadarB][pPlugIn->settings.guard_zone].outer_range < mark_rng) {
+            pPlugIn->guardZones[pPlugIn->settings.selectRadarB][pPlugIn->settings.guard_zone].inner_range = pPlugIn->guardZones[pPlugIn->settings.selectRadarB][pPlugIn->settings.guard_zone].outer_range;
+            pPlugIn->guardZones[pPlugIn->settings.selectRadarB][pPlugIn->settings.guard_zone].outer_range = mark_rng;
         }
-        pPlugIn->guardZones[pPlugIn->settings.guard_zone].end_bearing = mark_brg;
+        pPlugIn->guardZones[pPlugIn->settings.selectRadarB][pPlugIn->settings.guard_zone].end_bearing = mark_brg;
         outer_set = false;
     }
     
