@@ -995,6 +995,10 @@ void BR24ControlsDialog::OnRadarABButtonClick(wxCommandEvent& event)
 		pPlugIn->settings.selectRadarB = 1;
 		labels << _("Radar A / B") << wxT("\n") << _("Radar B");
 		bRadarAB->SetLabel(labels);
+		wxString labelx;
+		labelx << _("Radar B");
+		pPlugIn->m_pControlDialog->SetTitle(labelx);
+		pPlugIn->m_pControlDialog->SetLabel(labelx);
 	}
 	else{
 		wxString labels;
@@ -1002,6 +1006,10 @@ void BR24ControlsDialog::OnRadarABButtonClick(wxCommandEvent& event)
 		pPlugIn->settings.selectRadarB = 0;
 		labels << _("Radar A / B") << wxT("\n") << _("Radar A");
 		bRadarAB->SetLabel(labels);
+		wxString labelx;
+		labelx << _("Radar A");
+		pPlugIn->m_pControlDialog->SetTitle(labelx);
+		pPlugIn->m_pControlDialog->SetLabel(labelx);
 	}
 	
 	UpdateControlValues(true);   // update control values on the buttons
@@ -1129,13 +1137,12 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 		{
 			if (pPlugIn->m_pControlDialog){
 				pPlugIn->m_pControlDialog->Hide();
-				wxLogMessage(wxT("BR24radar_pi: XXX UpdateControl pPlugIn->control_box_closed"));
 			}
 		}
 		return;
 	}
 	if (pPlugIn->control_box_opened){  // opened from context menu
-		{wxLogMessage(wxT("BR24radar_pi: XXX UpdateControl pPlugIn->control_box_opened"));
+		{
 			if (pPlugIn->m_pControlDialog){
 				pPlugIn->m_pControlDialog->Show();
 			}
@@ -1147,27 +1154,23 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 		
 		if (pPlugIn->m_pControlDialog){
 			pPlugIn->m_pControlDialog->Hide();
-			wxLogMessage(wxT("BR24radar_pi: XXX UpdateControl show radar false"));
 		}
 	}
 
 	else    // want to show the radar and radar is seen
 	{
 		bool guard = false;
-		wxLogMessage(wxT("BR24radar_pi: XXX UpdateControl show radar true"));
 		if (pPlugIn->m_pGuardZoneDialog){   // otherwise next statement might crash!
 			if (pPlugIn->m_pGuardZoneDialog->IsShown()){
 				guard = true;                  // just to get the guard state
 			}
 		}
 		if (pPlugIn->m_pControlDialog && !guard) {
-			wxLogMessage(wxT("BR24radar_pi: XXX UpdateControl show radar false not guard"));
 			pPlugIn->m_pControlDialog->Show();
 		}
 		
 		if (!topSizer->IsShown(controlBox) && !topSizer->IsShown(advancedBox) && !topSizer->IsShown(editBox) && !guard){
 			topSizer->Show(controlBox);   
-			wxLogMessage(wxT("BR24radar_pi: XXX UpdateControl show radar YYY"));
 		}
 		if (br_radar_type == RT_BR24 || pPlugIn->settings.enable_dual_radar == 0){
 			bRadarAB->Hide();
@@ -1177,7 +1180,6 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 				bRadarAB->Show();
 			}
 		}
-		wxLogMessage(wxT("BR24radar_pi: XXX UpdateControl showRadar = true  einde"));
 		controlBox->Layout();
 		Fit();
 		topSizer->Layout();
@@ -1188,28 +1190,28 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 	wxString labelx;
 	if (pPlugIn->settings.selectRadarB == 0){
 		if (pPlugIn->data_seenAB[0]){
-			labelx << _("Radar A / B") << wxT("\n") << _("Radar A - ON");
+			labelx  << _("Radar A - ON");
 		}
 		else if (haveRadar){
-			labelx << _("Radar A / B") << wxT("\n") << _("Radar A - Stby");
+			labelx  << _("Radar A - Stby");
 		}
 		else {
-			labelx << _("Radar A / B") << wxT("\n") << _("Radar A - OFF");
+			labelx << _("Radar A - OFF");
 		}
 	}
 	if (pPlugIn->settings.selectRadarB == 1){
 		if (pPlugIn->data_seenAB[1]){
-			labelx << _("Radar A / B") << wxT("\n") << _("Radar B - ON");
+			labelx  << _("Radar B - ON");
 		}
 		else if (haveRadar){
-			labelx << _("Radar A / B") << wxT("\n") << _("Radar B - Stby");
+			labelx  << _("Radar B - Stby");
 		}
 		else {
-			labelx << _("Radar A / B") << wxT("\n") << _("Radar B - OFF");
+			labelx  << _("Radar B - OFF");
 		}
 	}
 
-	bRadarAB->SetLabel(labelx);
+//	bRadarAB->SetLabel(labelx);
+	pPlugIn->m_pControlDialog->SetTitle(labelx);
+	pPlugIn->m_pControlDialog->SetLabel(labelx);
 }
-	
-

@@ -135,9 +135,7 @@ double br_var = 0.0;     // local magnetic variation, in degrees
 enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_SOURCE_FIX, VARIATION_SOURCE_WMM };
 VariationSource br_var_source = VARIATION_SOURCE_NONE;
 
-int br_repeat_on_delay = 0;   // used to prevend additional TxOn commands from DoTick when radar heas just been switched on
-//static int bogey_width = 1;  // pixel distance where you will look for neighboring targets in multi sweep filtering
-               // for bogey_width = 1, 9 pixels will be checked   // abondened does not seem useful
+
 bool br_heading_on_radar = false;
 unsigned int br_refresh_rate = 1;  // refreshrate for radar used in process buffer
 static const unsigned int REFRESHMAPPING[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
@@ -1172,11 +1170,9 @@ void br24radar_pi::OnToolbarToolCallback(int id)
 			wxLogMessage(wxT("BR24radar_pi: XXX toolbar clicked on AMBER br_radar_seen=%d"), br_radar_seen);
 		}
 		ShowRadarControl(true);
-	//	br_repeat_on_delay = 6;  // DoTick will not repeat the TxOn for 6 ticks   // XXXX remove ????
 	}
 	else if (toolbar_button == GREEN){
 		settings.showRadar = 0;
-		wxLogMessage(wxT("BR24radar_pi: XXX toolbar clicked on green br_radar_seen=%d"), br_radar_seen);
 		if (id != 999999 && settings.timed_idle != 0) {
 			m_pControlDialog->SetTimedIdleIndex(0); // Disable Timed Transmit if user click the icon while idle
 		}
@@ -1220,8 +1216,6 @@ void br24radar_pi::DoTick(void)
 {
 	time_t now = time(0);
 	static time_t previousTicks = 0;
-	static int save_state_A;   // used for timed transmit
-	static int save_state_B;
 	if (now == previousTicks) {
 		// Repeated call during scroll, do not do Tick processing
 		return;
@@ -1236,7 +1230,6 @@ void br24radar_pi::DoTick(void)
 		br_bpos_set = false;
 		wxLogMessage(wxT("BR24radar_pi: Lost Boat Position data"));
 	}
-
 	if (m_heading_source != HEADING_NONE && TIMER_ELAPSED(br_hdt_watchdog)) {
 		// If the position data is 10s old reset our heading.
 		// Note that the watchdog is continuously reset every time we receive a heading
@@ -1285,17 +1278,7 @@ void br24radar_pi::DoTick(void)
 			br_data_seen = false;
 			wxLogMessage(wxT("BR24radar_pi: Lost radar data"));
 		}
-		/*     if (br_radar_seen && !br_data_seen[settings.selectRadarB] && br_radar_state[settings.selectRadarB] == RADAR_ON) {
-				 if (!br_repeat_on_delay) { // prevents sending repeated "ON" commands after turning on
-				 // Switch radar on if we want it to be on but it wasn' detected earlier
-				 RadarTxOn();
-				 br_repeat_on_delay = 4;
-				 }
-				 } */
 	}
-//	if (br_repeat_on_delay) {
-//		br_repeat_on_delay--;   // count down the delay timer in every call of DoTick until 0
-//	}
 
 	if ((settings.passHeadingToOCPN && br_heading_on_radar)) {
 		wxString nmeastring;
@@ -1351,7 +1334,6 @@ void br24radar_pi::DoTick(void)
 		m_statistics[i].spokes = 0;
 	}
 
-	wxLogMessage(wxT("BR24radar_pi: XXX dotick end settings.auto_range_mode[0] %d"), settings.auto_range_mode[0]);
 
 	/*******************************************
 	 Function Timed Transmit. Check if active
@@ -1364,20 +1346,15 @@ void br24radar_pi::DoTick(void)
 					br_init_timed_idle = false;
 					br_idle_watchdog = 0;
 					if (toolbar_button == GREEN){
-						settings.selectRadarB = 0;
-						br24radar_pi::OnToolbarToolCallback(999999);    //Stop radar scanning
+						RadarTxOff();                 //Stop radar scanning
+						settings.showRadar = 0;
 					}
 				}
 				else if (toolbar_button == AMBER) {
 					if (now > (br_idle_watchdog + (settings.timed_idle * factor))) {
 						br_idle_watchdog = 0;
 						if (m_pIdleDialog) m_pIdleDialog->Close();
-						int setting_AB = settings.selectRadarB;
 						br24radar_pi::OnToolbarToolCallback(999999);    //start radar scanning
-						if (save_state_B == RADAR_ON){
-							settings.selectRadarB = 1;
-							br24radar_pi::OnToolbarToolCallback(999999);    //start radar B scanning
-						}
 					}
 					else {
 						// Send minutes left to radar control
@@ -2405,13 +2382,19 @@ void br24radar_pi::TransmitCmd(int AB, UINT8 * msg, int size)
 };
 
 void br24radar_pi::RadarTxOff(void)
-{
+{          // switch both A and B off
     UINT8 pck[3] = {0x00, 0xc1, 0x01};
-    TransmitCmd(pck, sizeof(pck));
-
+    TransmitCmd(0, pck, sizeof(pck));
     pck[0] = 0x01;
 	pck[2] = 0x00;
-    TransmitCmd(pck, sizeof(pck));
+    TransmitCmd(0, pck, sizeof(pck));
+
+	pck[0] = 0x00;
+	pck[2] = 0x01;
+	TransmitCmd(1, pck, sizeof(pck));
+	pck[0] = 0x01;
+	pck[2] = 0x00;
+	TransmitCmd(1, pck, sizeof(pck));
 }
 
 void br24radar_pi::RadarTxOn(void)
@@ -2477,7 +2460,7 @@ void radar_control_item::Update(int v)
 void br24radar_pi::SetControlValue(ControlType controlType, int value)
 {                                                   // sends the command to the radar
     wxString msg;
-    if (br_radar_seen || controlType == CT_TRANSPARENCY || controlType == CT_SCAN_AGE) {
+	if (br_radar_seen || controlType == CT_TRANSPARENCY || controlType == CT_SCAN_AGE || CT_REFRESHRATE) {
         switch (controlType) {
             case CT_GAIN: {
       //          settings.gain = value;
@@ -2650,9 +2633,6 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 wxLogMessage(wxT("BR24radar_pi: Unhandled control setting for control %d"), controlType);
             }
         }
-    }
-    else {
-        wxLogMessage(wxT("BR24radar_pi: Not master, so ignore SetControlValue: %d %d"), controlType, value);
     }
 }
 
