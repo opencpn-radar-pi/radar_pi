@@ -1166,6 +1166,9 @@ void br24radar_pi::OnToolbarToolCallback(int id)
 		if (!br_data_seen) {
 			RadarTxOn();
 		}
+		if (id != 999999 && settings.timed_idle != 0) {
+			m_pControlDialog->SetTimedIdleIndex(0); // Disable Timed Transmit if user click the icon while idle
+        }
 		if (settings.verbose) {
 			wxLogMessage(wxT("BR24radar_pi: XXX toolbar clicked on AMBER br_radar_seen=%d"), br_radar_seen);
 		}
@@ -1174,7 +1177,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
 	else if (toolbar_button == GREEN){
 		settings.showRadar = 0;
 		if (id != 999999 && settings.timed_idle != 0) {
-			m_pControlDialog->SetTimedIdleIndex(0); // Disable Timed Transmit if user click the icon while idle
+			m_pControlDialog->SetTimedIdleIndex(0); // Disable Timed Transmit if user click the icon
 		}
 		OnGuardZoneDialogClose();
 		if (m_pControlDialog) {
@@ -1350,21 +1353,22 @@ void br24radar_pi::DoTick(void)
 						settings.showRadar = 0;
 					}
 				}
-				else if (toolbar_button == AMBER) {
+				else if (toolbar_button == AMBER && !settings.showRadar) {
 					if (now > (br_idle_watchdog + (settings.timed_idle * factor))) {
 						br_idle_watchdog = 0;
 						if (m_pIdleDialog) m_pIdleDialog->Close();
+                        br_idle_dialog_time_left = 0;
 						br24radar_pi::OnToolbarToolCallback(999999);    //start radar scanning
 					}
 					else {
 						// Send minutes left to radar control
 						int time_left = ((br_idle_watchdog + (settings.timed_idle * factor)) - now) / 60;
-						if (!m_pIdleDialog) {
-							m_pIdleDialog = new Idle_Dialog;
-							m_pIdleDialog->Create(m_parent_window, this);
-						}
 						if (br_idle_dialog_time_left != time_left) {
-							br24radar_pi::m_pIdleDialog->SetIdleTimes(settings.timed_idle * factor / 60, time_left);
+						    if (!m_pIdleDialog) {
+							    m_pIdleDialog = new Idle_Dialog;
+							    m_pIdleDialog->Create(m_parent_window, this);
+						    }
+				    		br24radar_pi::m_pIdleDialog->SetIdleTimes(settings.timed_idle * factor / 60, time_left);
 							m_pIdleDialog->Show();
 							br_idle_dialog_time_left = time_left;
 						}
@@ -1387,7 +1391,8 @@ void br24radar_pi::DoTick(void)
 	else {
 		br_idle_watchdog = 0;
 		br_last_idle_set = 0;
-	}
+	}   //End of Timed Transmit
+
 	UpdateState();
 }        // end of DoTick
 
