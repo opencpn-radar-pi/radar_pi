@@ -303,7 +303,7 @@ void RadarControlButton::SetAuto()
 
     label << firstLine << wxT("\n") << _("Auto");
     this->SetLabel(label);
-
+	wxLogMessage(wxT("BR24radar_pi: XX Setauto called "));
     pPlugIn->SetControlValue(controlType, -1);
 }
 
@@ -836,7 +836,7 @@ void BR24ControlsDialog::OnBackClick(wxCommandEvent &event)
 void BR24ControlsDialog::OnAutoClick(wxCommandEvent &event)
 {
     fromControl->SetAuto();
-
+	wxLogMessage(wxT("BR24radar_pi: XXX set auto called after fromcontrol in onautoclick"));
     OnBackClick(event);
 }
 
@@ -1062,13 +1062,14 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
 		}  // don't set the actual range here, is still handled elsewhere
 
 		// gain
-		if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod || refreshAll){
+		if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.mod || refreshAll){
 			if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button == -1){
-				wxLogMessage(wxT("BR24radar_pi: XX gain auto"));
-				// handled elsewhere
+				wxLogMessage(wxT("BR24radar_pi: XX gain auto in update control values"));
+				bGain->SetAutoX();
 			}
 			else{
 				bGain->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button);
+				wxLogMessage(wxT("BR24radar_pi: XX gain  in update control values %d"),pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button);
 			}
 		}
 
@@ -1112,15 +1113,15 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
 
 		//  interference_rejection
 		if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].interference_rejection.mod || refreshAll)) {
-			bNoiseRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].interference_rejection.button);
+			bInterferenceRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].interference_rejection.button);
 			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].interference_rejection.mod = false;
 		}
 
-		//   scan_speed  not yet handled as I can't find the control yet
-	/*	if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.mod || refreshAll)) {
-			bNoiseRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.button);
+		// scanspeed
+		if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.mod || refreshAll)) {
+			bScanSpeed->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.button);
 			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.mod = false;
-		} */
+		} 
 	}
 }
 
