@@ -161,7 +161,7 @@ static time_t br_idle_watchdog;
 int   br_idle_dialog_time_left = 0;
 
 int   br_scanner_state = RADAR_OFF;
-RadarType br_radar_type = RT_UNKNOWN;
+RadarType br_radar_type = RT_4G;  // default value
 
 static bool  br_radar_seen = false;
 static bool  previous_br_radar_seen = false;
@@ -507,11 +507,7 @@ int br24radar_pi::Init(void)
 	if (settings.display_mode[1] != DM_CHART_BLACKOUT || settings.display_mode[1] != DM_CHART_OVERLAY){
 		settings.display_mode[1] = DM_CHART_OVERLAY;
 	}   // XXX remove this stuff after fixing the emulator
-	if (br_radar_type == RT_BR24){    // make sure radar A only.
-		settings.selectRadarB = 0;
-		settings.enable_dual_radar = 0;
-	}
-
+	
     wxLongLong now = wxGetLocalTimeMillis();
     for (int i = 0; i < LINES_PER_ROTATION; i++) {
         m_scan_line[0][i].age = now - MAX_AGE * MILLISECONDS_PER_SECOND;
@@ -1170,7 +1166,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
 	}
 	else if (toolbar_button == AMBER){
 		settings.showRadar = true;   // switch radar on and show it
-		if (!br_data_seen) {
+		if (!data_seenAB[settings.selectRadarB]) {
 			RadarTxOn();
 		}
 		if (settings.verbose) {
@@ -1180,6 +1176,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
 	}
 	else if (toolbar_button == GREEN){
 		settings.showRadar = 0;
+		RadarTxOff();
 		if (id != 999999 && settings.timed_idle != 0) {
 			m_pControlDialog->SetTimedIdleIndex(0); // Disable Timed Transmit if user click the icon while idle
 		}
@@ -1229,6 +1226,10 @@ void br24radar_pi::DoTick(void)
 	}
 
 	previousTicks = now;
+	if (br_radar_type == RT_BR24){    // make sure radar A only.
+		settings.selectRadarB = 0;
+		settings.enable_dual_radar = 0;
+	}
 
 	if (br_bpos_set && TIMER_ELAPSED(br_bpos_watchdog)) {
 		// If the position data is 10s old reset our heading.
@@ -1243,8 +1244,10 @@ void br24radar_pi::DoTick(void)
 		m_heading_source = HEADING_NONE;
 		wxLogMessage(wxT("BR24radar_pi: Lost Heading data"));
 		if (m_pMessageBox) {
-			wxString info = wxT("");
-			m_pMessageBox->SetHeadingInfo(info);
+			if (m_pMessageBox->IsShown()) {
+				wxString info = wxT("");
+				m_pMessageBox->SetHeadingInfo(info);
+			}
 		}
 	}
 
@@ -1252,8 +1255,10 @@ void br24radar_pi::DoTick(void)
 		br_var_source = VARIATION_SOURCE_NONE;
 		wxLogMessage(wxT("BR24radar_pi: Lost Variation source"));
 		if (m_pMessageBox) {
-			wxString info = wxT("");
-			m_pMessageBox->SetVariationInfo(info);
+			if (m_pMessageBox->IsShown()) {
+				wxString info = wxT("");
+				m_pMessageBox->SetVariationInfo(info);
+			}
 		}
 	}
 
@@ -1313,7 +1318,9 @@ void br24radar_pi::DoTick(void)
 		, m_statistics[settings.selectRadarB].missing_spokes);
 
 	if (m_pMessageBox) {
-		m_pMessageBox->SetRadarInfo(t);
+		if (m_pMessageBox->IsShown()) {
+			m_pMessageBox->SetRadarInfo(t);
+		}
 	}
 	if (settings.verbose >= 1) {
 		t.Replace(wxT("\n"), wxT(" "));
@@ -1480,14 +1487,18 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
     if (br_update_error_control) {
 		if (m_pMessageBox) {
-			m_pMessageBox->SetErrorMessage(br_error_msg);
+			if (m_pMessageBox->IsShown()) {
+				m_pMessageBox->SetErrorMessage(br_error_msg);
+			}
         }
         br_update_error_control = false;
     }
     if (br_update_address_control) {
-        if (m_pMessageBox) {
-            m_pMessageBox->SetMcastIPAddress(br_ip_address);
-        }
+		if (m_pMessageBox) {
+			if (m_pMessageBox->IsShown()) {
+				m_pMessageBox->SetMcastIPAddress(br_ip_address);
+			}
+		}
         br_update_address_control = false;
     }
 
@@ -2241,11 +2252,13 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         br_var = pfix.Var;
         br_var_source = VARIATION_SOURCE_FIX;
         br_var_watchdog = now;
-        if (m_pMessageBox) {
-            info = _("GPS");
-            info << wxT(" ") << br_var;
-            m_pMessageBox->SetVariationInfo(info);
-        }
+		if (m_pMessageBox) {
+			if (m_pMessageBox->IsShown()) {
+				info = _("GPS");
+				info << wxT(" ") << br_var;
+				m_pMessageBox->SetVariationInfo(info);
+			}
+		}
     }
 
     if (settings.verbose >= 2) {
@@ -2261,11 +2274,13 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f \n"), br_hdt);
             m_heading_source = HEADING_RADAR;
         }
-        if (m_pMessageBox) {
-            info = _("radar");
-            info << wxT(" ") << br_hdt;
-            m_pMessageBox->SetHeadingInfo(info);
-        }
+		if (m_pMessageBox) {
+			if (m_pMessageBox->IsShown()) {
+				info = _("radar");
+				info << wxT(" ") << br_hdt;
+				m_pMessageBox->SetHeadingInfo(info);
+			}
+		}
         br_hdt_watchdog = now;
     }
     else if (!wxIsNaN(pfix.Hdm) && TIMER_NOT_ELAPSED(br_var_watchdog)) {
@@ -2274,10 +2289,12 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM %f"), br_hdt);
             m_heading_source = HEADING_HDM;
         }
-        if (m_pMessageBox) {
-            info = _("HDM");
-            info << wxT(" ") << br_hdt;
-            m_pMessageBox->SetHeadingInfo(info);
+		if (m_pMessageBox) {
+			if (m_pMessageBox->IsShown()) {
+				info = _("HDM");
+				info << wxT(" ") << br_hdt;
+				m_pMessageBox->SetHeadingInfo(info);
+			}
         }
         br_hdt_watchdog = now;
     }
@@ -2287,11 +2304,13 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
             m_heading_source = HEADING_HDT;
         }
-        if (m_pMessageBox) {
-            info = _("HDT");
-            info << wxT(" ") << br_hdt;
-            m_pMessageBox->SetHeadingInfo(info);
-        }
+		if (m_pMessageBox) {
+			if (m_pMessageBox->IsShown()) {
+				info = _("HDT");
+				info << wxT(" ") << br_hdt;
+				m_pMessageBox->SetHeadingInfo(info);
+			}
+		}
         br_hdt_watchdog = now;
     }
     else if (!wxIsNaN(pfix.Cog)) {
@@ -2300,11 +2319,13 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
             m_heading_source = HEADING_COG;
         }
-        if (m_pMessageBox) {
-            info = _("COG");
-            info << wxT(" ") << br_hdt;
-            m_pMessageBox->SetHeadingInfo(info);
-        }
+		if (m_pMessageBox) {
+			if (m_pMessageBox->IsShown()) {
+				info = _("COG");
+				info << wxT(" ") << br_hdt;
+				m_pMessageBox->SetHeadingInfo(info);
+			}
+		}
         br_hdt_watchdog = now;
     }
 
@@ -2336,10 +2357,12 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
                 br_var = variation;
                 br_var_source = VARIATION_SOURCE_WMM;
                 br_var_watchdog = time(0);
-                if (m_pMessageBox) {
-                    wxString info = _("WMM");
-                    info << wxT(" ") << br_var;
-                    m_pMessageBox->SetVariationInfo(info);
+				if (m_pMessageBox) {
+					if (m_pMessageBox->IsShown()) {
+						wxString info = _("WMM");
+						info << wxT(" ") << br_var;
+						m_pMessageBox->SetVariationInfo(info);
+					}
                 }
             }
         }
@@ -2400,29 +2423,38 @@ bool br24radar_pi::TransmitCmd(int AB, UINT8 * msg, int size)
 };
 
 void br24radar_pi::RadarTxOff(void)
-{          // switch both A and B off
-    UINT8 pck[3] = {0x00, 0xc1, 0x01};
-    TransmitCmd(0, pck, sizeof(pck));
-    pck[0] = 0x01;
-	pck[2] = 0x00;
-    TransmitCmd(0, pck, sizeof(pck));
+{          
+	if(settings.enable_dual_radar == 0){   // switch active radar off
+		UINT8 pck[3] = {0x00, 0xc1, 0x01};
+		TransmitCmd(settings.selectRadarB, pck, sizeof(pck));
+		pck[0] = 0x01;
+		pck[2] = 0x00;
+		TransmitCmd(settings.selectRadarB, pck, sizeof(pck));
+	}
+	else{              // switch both A and B off
+		UINT8 pck[3] = {0x00, 0xc1, 0x01};
+		TransmitCmd(0, pck, sizeof(pck));
+		pck[0] = 0x01;
+		pck[2] = 0x00;
+		TransmitCmd(0, pck, sizeof(pck));
 
-	pck[0] = 0x00;
-	pck[2] = 0x01;
-	TransmitCmd(1, pck, sizeof(pck));
-	pck[0] = 0x01;
-	pck[2] = 0x00;
-	TransmitCmd(1, pck, sizeof(pck));
+		pck[0] = 0x00;
+		pck[2] = 0x01;
+		TransmitCmd(1, pck, sizeof(pck));
+		pck[0] = 0x01;
+		pck[2] = 0x00;
+		TransmitCmd(1, pck, sizeof(pck));
+	}
 }
 
 void br24radar_pi::RadarTxOn(void)
 {                                          // turn A on
 	if (settings.enable_dual_radar == 0){ 
 	UINT8 pck[3] = { 0x00, 0xc1, 0x01 };               // ON
-	TransmitCmd(0, pck, sizeof(pck));
+	TransmitCmd(settings.selectRadarB, pck, sizeof(pck));
 	wxLogMessage(wxT("BR24radar_pi: Turn radar %d on (send TRANSMIT request)"), settings.selectRadarB);
 	pck[0] = 0x01;
-	TransmitCmd(0, pck, sizeof(pck));
+	TransmitCmd(settings.selectRadarB, pck, sizeof(pck));
 	}
 	else{                               // turn A and B both on 
 	UINT8 pck[3] = { 0x00, 0xc1, 0x01 };               // ON
@@ -2791,11 +2823,13 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
                 br_var = newVar;
                 br_var_source = VARIATION_SOURCE_NMEA;
                 br_var_watchdog = now;
-                if (m_pMessageBox) {
-                    wxString info = _("NMEA");
-                    info << wxT(" ") << br_var;
-                    m_pMessageBox->SetVariationInfo(info);
-                }
+				if (m_pMessageBox) {
+					if (m_pMessageBox->IsShown()) {
+						wxString info = _("NMEA");
+						info << wxT(" ") << br_var;
+						m_pMessageBox->SetVariationInfo(info);
+					}
+				}
             }
             if (m_heading_source == HEADING_HDM && !wxIsNaN(m_NMEA0183.Hdg.MagneticSensorHeadingDegrees)) {
                 br_hdt = m_NMEA0183.Hdg.MagneticSensorHeadingDegrees + br_var;
@@ -3831,9 +3865,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
         // Looks like a radar report. Is it a known one?
         switch ((len << 8) + command[0]) {
 		case (16 << 8) + 0x0f:
-		
 			logBinaryData(wxT("XXreceived 3G report"), command, len);
-
 			br_radar_type = RT_BR24;
 			break;
 		
