@@ -1216,5 +1216,3 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 	pPlugIn->m_pControlDialog->SetTitle(labelx);
 	pPlugIn->m_pControlDialog->SetLabel(labelx);
 }
-	
-

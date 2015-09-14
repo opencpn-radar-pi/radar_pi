@@ -964,7 +964,7 @@ wxJSONValue::AsString() const
                         #if wxMAJOR_VERSION >= 3
                         _T("%") _T(wxLongLongFmtSpec) _T("i"),
                         #else
-                        _T("%") wxLongLongFmtSpec _T("i"),
+                        _T("%" wxLongLongFmtSpec"i"),
                         #endif
                         data->m_value.m_valInt64 );
             #else
@@ -977,7 +977,7 @@ wxJSONValue::AsString() const
                         #if wxMAJOR_VERSION >= 3
                         _T("%") _T(wxLongLongFmtSpec) _T("u"),
                         #else
-                        _T("%") wxLongLongFmtSpec _T("u"),
+                        _T("%" wxLongLongFmtSpec"u"),
                         #endif
                         data->m_value.m_valUInt64 );
             #else
