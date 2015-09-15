@@ -61,7 +61,8 @@ enum {                                      // process ID's
 	ID_DATA,
 	ID_HEADING,
 	ID_VALUE,
-	ID_BPOS
+	ID_BPOS,
+	ID_OFF
 };
 
 enum message_status {HIDE, SHOW, SHOW_NO_NMEA, SHOW_BACK};
@@ -144,6 +145,11 @@ void BR24MessageBox::CreateControls()
 
     messageBox = new wxBoxSizer(wxVERTICAL);
     topSizeM->Add(messageBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
+	offMessage = new wxStaticText(this, ID_OFF, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+	messageBox->Add(offMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+	offMessage->SetLabel(_("Can not switch radar on as\nit is not connected or off\n Switch radar on when button is amber"));
+	offMessage->SetFont(g_font);
 
     tMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     messageBox->Add(tMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
@@ -238,7 +244,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 {
 	static message_status message_state = HIDE;
 	message_status new_message_state;
-
+	static bool old_radarSeen = false;
 	if (!pPlugIn->m_pMessageBox){
 		wxLogMessage(wxT("BR24radar_pi: ERROR UpdateMessage m_pMessageBox not existent"));
 		return;
@@ -298,8 +304,8 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 	cbVariation->SetValue(haveVariation);
 	cbRadar->SetValue(radarSeen);
 	cbData->SetValue(haveData);
-
-	if (message_state != new_message_state){
+	
+	if (message_state != new_message_state || old_radarSeen != radarSeen){
 		switch (new_message_state) {
 
 		case HIDE:
@@ -314,6 +320,12 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 			if (!messageBox->IsShown(messageBox)) {
 				pPlugIn->m_pMessageBox->Show();
 			}
+			if (!radarSeen){
+				pPlugIn->m_pMessageBox->offMessage->Show();
+			}
+			else{
+				pPlugIn->m_pMessageBox->offMessage->Hide();
+			}
 			pPlugIn->m_pMessageBox->bMsgBack->Hide();
 			pPlugIn->m_pMessageBox->nmeaBox->Show();
 			Fit();
@@ -322,6 +334,12 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 		case SHOW_NO_NMEA:
 			if (!messageBox->IsShown(messageBox)) {
 				pPlugIn->m_pMessageBox->Show();
+			}
+			if (!radarSeen){
+				pPlugIn->m_pMessageBox->offMessage->Show();
+			}
+			else{
+				pPlugIn->m_pMessageBox->offMessage->Hide();
 			}
 			pPlugIn->m_pMessageBox->bMsgBack->Hide();
 			pPlugIn->m_pMessageBox->nmeaBox->Hide();
@@ -332,6 +350,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 			if (!messageBox->IsShown(messageBox)) {
 				pPlugIn->m_pMessageBox->Show();
 			}
+			pPlugIn->m_pMessageBox->offMessage->Hide();
 			pPlugIn->m_pMessageBox->nmeaBox->Show();
 			pPlugIn->m_pMessageBox->bMsgBack->Show();
 			Fit();
@@ -339,6 +358,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 		}
 		Fit();
 	}
+	old_radarSeen = radarSeen;
 	message_state = new_message_state;
 }
 

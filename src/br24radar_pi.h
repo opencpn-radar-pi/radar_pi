@@ -789,6 +789,8 @@ private:
 
     void OnAdvancedBackButtonClick(wxCommandEvent& event);
     void OnAdvancedButtonClick(wxCommandEvent& event);
+	void OnInstallationButtonClick(wxCommandEvent& event);
+
 	void OnRadarGainButtonClick(wxCommandEvent& event);
 	void OnRadarABButtonClick(wxCommandEvent& event);
 		
@@ -809,6 +811,7 @@ private:
 
     wxBoxSizer        *editBox;
     wxBoxSizer        *advancedBox;
+	wxBoxSizer        *installationBox;
     wxBoxSizer        *advanced4gBox;
     wxBoxSizer        *controlBox;
 
@@ -831,14 +834,15 @@ private:
 
     // Advanced controls
     wxButton           *bAdvancedBack;
+	wxButton           *bInstallationBack;
     RadarControlButton *bTransparency;
+	RadarControlButton *bBearingAlignment;
     RadarControlButton *bInterferenceRejection;
     RadarControlButton *bTargetSeparation;
     RadarControlButton *bNoiseRejection;
     RadarControlButton *bTargetBoost;
     RadarControlButton *bRefreshrate;
     RadarControlButton *bScanSpeed;
-    RadarControlButton *bScanAge;
     RadarControlButton *bTimedIdle;
 
     // Show Controls
@@ -849,6 +853,7 @@ private:
     RadarControlButton *bSea;
     RadarControlButton *bRain;
     wxButton           *bAdvanced;
+	wxButton           *bInstallation;
     wxButton           *bGuard1;
     wxButton           *bGuard2;
     wxButton           *bMessage;
@@ -907,6 +912,7 @@ private:
 	// MessageBox
 	wxButton           *bMsgBack;
 	wxStaticText       *tMessage;
+	wxStaticText       *offMessage;
 	wxCheckBox         *cbOpenGL;
 	wxCheckBox         *cbBoatPos;
 	wxCheckBox         *cbHeading;

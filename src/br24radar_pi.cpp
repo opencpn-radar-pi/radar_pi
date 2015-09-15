@@ -2085,7 +2085,7 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
         pConf->Read(wxT("RangeCalibration"),  &settings.range_calibration, 1.0);
         pConf->Read(wxT("HeadingCorrection"),  &settings.heading_correction, 0);
-        pConf->Read(wxT("ScanMaxAge"), &settings.max_age, MIN_AGE);
+        pConf->Read(wxT("ScanMaxAge"), &settings.max_age, 6);   // default 6
         if (settings.max_age < MIN_AGE) {
             settings.max_age = MIN_AGE;
         } else if (settings.max_age > MAX_AGE) {
