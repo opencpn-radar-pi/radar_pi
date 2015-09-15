@@ -415,7 +415,7 @@ int br24radar_pi::Init(void)
         return 0;
     }
 #endif
-
+	
     AddLocaleCatalog( _T("opencpn-br24radar_pi") );
 
     m_pControlDialog = NULL;
