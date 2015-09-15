@@ -439,12 +439,12 @@ public:
     receive_statistics          m_statistics[2];
 
 private:
-    void TransmitCmd(UINT8 * msg, int size);
-	void TransmitCmd(int AB, UINT8 * msg, int size);   // overcharged
+    bool TransmitCmd(UINT8 * msg, int size);
+	bool TransmitCmd(int AB, UINT8 * msg, int size);   // overcharged
     void RadarTxOff(void);
     void RadarTxOn(void);
     void RadarSendState(void);
-    void RadarStayAlive(void);
+    bool RadarStayAlive(void);
     void UpdateState(void);
     void DoTick(void);
     void Select_Clutter(int req_clutter_index);
@@ -672,7 +672,7 @@ public:
         value = 0;
         if (ct == CT_GAIN)
         {
-          value = 40;
+          value = 50;
         }
         hasAuto = newHasAuto;
         pPlugIn = ppi;
@@ -680,9 +680,9 @@ public:
         names = 0;
         controlType = ct;
         if (hasAuto) {
-            SetAuto();
+            SetAutoX();
         } else {
-            SetValue(newValue);
+            SetValueX(newValue);
         }
 
         this->SetFont(g_font);

@@ -161,9 +161,10 @@ static time_t br_idle_watchdog;
 int   br_idle_dialog_time_left = 0;
 
 int   br_scanner_state = RADAR_OFF;
-RadarType br_radar_type = RT_UNKNOWN;
+RadarType br_radar_type = RT_4G;  // default value
 
 static bool  br_radar_seen = false;
+static bool  previous_br_radar_seen = false;
 static double gLon, gLat;   // used for the initial boat position as read from ini file
 static bool  br_data_seen = false;
 static bool  br_opengl_mode = false;
@@ -502,14 +503,11 @@ int br24radar_pi::Init(void)
     }
 	if (settings.display_mode[0] != DM_CHART_BLACKOUT || settings.display_mode[0] != DM_CHART_OVERLAY){
 		settings.display_mode[0] = DM_CHART_OVERLAY;
-	}
+	}       // this is to teporarily remove emulator and spectrum
 	if (settings.display_mode[1] != DM_CHART_BLACKOUT || settings.display_mode[1] != DM_CHART_OVERLAY){
 		settings.display_mode[1] = DM_CHART_OVERLAY;
 	}   // XXX remove this stuff after fixing the emulator
-	if (br_radar_type == RT_BR24){    // make sure radar A only.
-		settings.selectRadarB = 0;
-	}
-
+	
     wxLongLong now = wxGetLocalTimeMillis();
     for (int i = 0; i < LINES_PER_ROTATION; i++) {
         m_scan_line[0][i].age = now - MAX_AGE * MILLISECONDS_PER_SECOND;
@@ -597,7 +595,7 @@ int br24radar_pi::Init(void)
 	m_reportReceiveThreadB->Run();
 	
     ShowRadarControl(false);   //prepare radar control but don't show it
-	control_box_closed = false;   // don't show the radar control immediately at start up
+	control_box_closed = false;   
 
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
@@ -624,32 +622,32 @@ bool br24radar_pi::DeInit(void)
         m_dataReceiveThreadA->Wait();
         delete m_dataReceiveThreadA;
     }
-	wxLogMessage(wxT("BR24radar_pi: XXX m_dataReceiveThreadA stopped in DeInit"));
+	wxLogMessage(wxT("BR24radar_pi: m_dataReceiveThreadA stopped in DeInit"));
 	if (m_dataReceiveThreadB) {
 		m_dataReceiveThreadB->Wait();
 		delete m_dataReceiveThreadB;
 	}
-	wxLogMessage(wxT("BR24radar_pi: XXX m_dataReceiveThreadB stopped in DeInit"));
+	wxLogMessage(wxT("BR24radar_pi: m_dataReceiveThreadB stopped in DeInit"));
     if (m_commandReceiveThreadA) {
         m_commandReceiveThreadA->Wait();
         delete m_commandReceiveThreadA;
     }
-	wxLogMessage(wxT("BR24radar_pi: XXX m_commandReceiveThreadA stopped in DeInit"));
+	wxLogMessage(wxT("BR24radar_pi: m_commandReceiveThreadA stopped in DeInit"));
 	if (m_commandReceiveThreadB) {
 		m_commandReceiveThreadB->Wait();
 		delete m_commandReceiveThreadB;
 	}
-	wxLogMessage(wxT("BR24radar_pi: XXX m_commandReceiveThreadB stopped in DeInit"));
+	wxLogMessage(wxT("BR24radar_pi: m_commandReceiveThreadB stopped in DeInit"));
     if (m_reportReceiveThreadA) {
         m_reportReceiveThreadA->Wait();
         delete m_reportReceiveThreadA;
     }
-	wxLogMessage(wxT("BR24radar_pi: XXX m_reportReceiveThreadA stopped in DeInit"));
+	wxLogMessage(wxT("BR24radar_pi: m_reportReceiveThreadA stopped in DeInit"));
 	if (m_reportReceiveThreadB) {
 		m_reportReceiveThreadB->Wait();
 		delete m_reportReceiveThreadB;
 	}
-	wxLogMessage(wxT("BR24radar_pi: XXX m_reportReceiveThreadB stopped in DeInit"));
+	wxLogMessage(wxT("BR24radar_pi: m_reportReceiveThreadB stopped in DeInit"));
     if (m_radar_socket != INVALID_SOCKET) {
         closesocket(m_radar_socket);
     }
@@ -991,7 +989,7 @@ void br24radar_pi::ShowRadarControl(bool show)
 		m_pMessageBox->Create(m_parent_window, this);
 		m_pMessageBox->SetSize(m_BR24Message_box_x, m_BR24Message_box_y,
 			m_BR24Message_box_sx, m_BR24Message_box_sy);
-		m_pMessageBox->Fit();		
+		m_pMessageBox->Fit();
 	}
 	m_pMessageBox->Hide();
 
@@ -1009,9 +1007,9 @@ void br24radar_pi::ShowRadarControl(bool show)
 		int idx = convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type);
         m_pControlDialog->SetRangeIndex(idx);
 		radar_setting[settings.selectRadarB].range.Update(range);
-		radar_setting[settings.selectRadarB].range.button = idx;		
+		radar_setting[settings.selectRadarB].range.button = idx;
+		m_pControlDialog->Hide();
     }
-	m_pControlDialog->Hide();
 	control_box_closed = false;
 	m_pControlDialog->UpdateControl(br_opengl_mode
 		, br_bpos_set
@@ -1020,7 +1018,7 @@ void br24radar_pi::ShowRadarControl(bool show)
 		, br_radar_seen
 		, br_data_seen
 		);
-//	m_pControlDialog->UpdateControlValues(false);
+	m_pControlDialog->UpdateControlValues(true);
 	m_pMessageBox->UpdateMessage(br_opengl_mode
 		, br_bpos_set
 		, m_heading_source != HEADING_NONE
@@ -1159,20 +1157,25 @@ void br24radar_pi::OnToolbarToolCallback(int id)
 {
 	if (toolbar_button == RED) {
 		// radar is off (not seen), but obviously we want to see it
-		settings.showRadar = true;
+		if (settings.showRadar == false){
+			settings.showRadar = true;  // but we don't send the transmit command, no use as radar is off
+		}
+		else{
+			settings.showRadar = false;  // toggle showRadar on RED
+		}
 	}
 	else if (toolbar_button == AMBER){
 		settings.showRadar = true;   // switch radar on and show it
-		if (!br_data_seen) {
+		if (!data_seenAB[settings.selectRadarB]) {
 			RadarTxOn();
 		}
 		if (settings.verbose) {
-			wxLogMessage(wxT("BR24radar_pi: XXX toolbar clicked on AMBER br_radar_seen=%d"), br_radar_seen);
 		}
 		ShowRadarControl(true);
 	}
 	else if (toolbar_button == GREEN){
 		settings.showRadar = 0;
+		RadarTxOff();
 		if (id != 999999 && settings.timed_idle != 0) {
 			m_pControlDialog->SetTimedIdleIndex(0); // Disable Timed Transmit if user click the icon while idle
 		}
@@ -1221,8 +1224,11 @@ void br24radar_pi::DoTick(void)
 		return;
 	}
 
-
 	previousTicks = now;
+	if (br_radar_type == RT_BR24){    // make sure radar A only.
+		settings.selectRadarB = 0;
+		settings.enable_dual_radar = 0;
+	}
 
 	if (br_bpos_set && TIMER_ELAPSED(br_bpos_watchdog)) {
 		// If the position data is 10s old reset our heading.
@@ -1237,8 +1243,10 @@ void br24radar_pi::DoTick(void)
 		m_heading_source = HEADING_NONE;
 		wxLogMessage(wxT("BR24radar_pi: Lost Heading data"));
 		if (m_pMessageBox) {
-			wxString info = wxT("");
-			m_pMessageBox->SetHeadingInfo(info);
+			if (m_pMessageBox->IsShown()) {
+				wxString info = wxT("");
+				m_pMessageBox->SetHeadingInfo(info);
+			}
 		}
 	}
 
@@ -1246,19 +1254,29 @@ void br24radar_pi::DoTick(void)
 		br_var_source = VARIATION_SOURCE_NONE;
 		wxLogMessage(wxT("BR24radar_pi: Lost Variation source"));
 		if (m_pMessageBox) {
-			wxString info = wxT("");
-			m_pMessageBox->SetVariationInfo(info);
+			if (m_pMessageBox->IsShown()) {
+				wxString info = wxT("");
+				m_pMessageBox->SetVariationInfo(info);
+			}
 		}
 	}
 
 	if (br_radar_seen && TIMER_ELAPSED(br_radar_watchdog)) {
 		br_radar_seen = false;
+		previous_br_radar_seen = false;
 		wxLogMessage(wxT("BR24radar_pi: Lost radar presence"));
 	}
-//	wxLogMessage(wxT("BR24radar_pi: XXXFirst radar data seen???? spokes %d, broken %d"), m_statistics[settings.selectRadarB].spokes, m_statistics[settings.selectRadarB].broken_spokes);
+	if (!previous_br_radar_seen && br_radar_seen){
+	
+		if (RadarStayAlive()){      // send stay alive to obtain control blocks from radar
+			previous_br_radar_seen = true;
+		}
+	}
+	wxLogMessage(wxT("BR24radar_pi: First radar data seen spokes %d, broken %d"), m_statistics[settings.selectRadarB].spokes, m_statistics[settings.selectRadarB].broken_spokes);
 	data_seenAB[0] = m_statistics[0].spokes > m_statistics[0].broken_spokes;
 	data_seenAB[1] = m_statistics[1].spokes > m_statistics[1].broken_spokes;
 	if (data_seenAB[0] || data_seenAB[1]) { // Something coming from radar unit?
+		br_data_seen = true;
 		if (br_scanner_state != RADAR_ON) {
 			wxLogMessage(wxT("BR24radar_pi: First radar data seen"));
 			br_scanner_state = RADAR_ON;
@@ -1274,6 +1292,7 @@ void br24radar_pi::DoTick(void)
 	}
 	else {
 		br_scanner_state = RADAR_OFF;
+		br_data_seen = false;
 		if (br_data_seen && TIMER_ELAPSED(br_data_watchdog)) {
 			br_heading_on_radar = false;
 			br_data_seen = false;
@@ -1297,7 +1316,9 @@ void br24radar_pi::DoTick(void)
 		, m_statistics[settings.selectRadarB].missing_spokes);
 
 	if (m_pMessageBox) {
-		m_pMessageBox->SetRadarInfo(t);
+		if (m_pMessageBox->IsShown()) {
+			m_pMessageBox->SetRadarInfo(t);
+		}
 	}
 	if (settings.verbose >= 1) {
 		t.Replace(wxT("\n"), wxT(" "));
@@ -1305,7 +1326,6 @@ void br24radar_pi::DoTick(void)
 			wxLogMessage(wxT("BR24radar_pi: received %s, %d %d %d %d"), t.c_str(), br_bpos_set, m_heading_source, br_radar_seen, br_data_seen);
 		}
 	}
-
 	if (m_pControlDialog) {
 		m_pControlDialog->UpdateControl(br_opengl_mode
 			, br_bpos_set
@@ -1402,12 +1422,9 @@ void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay  updates the
 		toolbar_button = GREEN;
 		CacheSetToolbarToolBitmaps(BM_ID_GREEN, BM_ID_GREEN);
 	}
-	else if (br_radar_seen && ((settings.showRadar == 1) != br_data_seen)){
+	else {
 		toolbar_button = AMBER;
 		CacheSetToolbarToolBitmaps(BM_ID_AMBER, BM_ID_AMBER);
-	}
-	else{
-		wxLogMessage(wxT("BR24radar_pi: XXX Unhandled case in UpdateState"));
 	}
 }
 
@@ -1446,7 +1463,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     {
       br_auto_range_meters = 50;
     }
-	blackout[settings.selectRadarB] = br_data_seen && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
+	blackout[settings.selectRadarB] = settings.showRadar == 1 && br_data_seen && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
     DoTick(); // update timers and watchdogs
     UpdateState(); // update the toolbar
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
@@ -1466,14 +1483,18 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
     if (br_update_error_control) {
 		if (m_pMessageBox) {
-			m_pMessageBox->SetErrorMessage(br_error_msg);
+			if (m_pMessageBox->IsShown()) {
+				m_pMessageBox->SetErrorMessage(br_error_msg);
+			}
         }
         br_update_error_control = false;
     }
     if (br_update_address_control) {
-        if (m_pMessageBox) {
-            m_pMessageBox->SetMcastIPAddress(br_ip_address);
-        }
+		if (m_pMessageBox) {
+			if (m_pMessageBox->IsShown()) {
+				m_pMessageBox->SetMcastIPAddress(br_ip_address);
+			}
+		}
         br_update_address_control = false;
     }
 
@@ -1561,7 +1582,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
-	blackout[settings.selectRadarB] = br_data_seen && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
+	blackout[settings.selectRadarB] = settings.showRadar == 1 && br_data_seen && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
 	            //  radar only mode, will be head up, operate also without heading or position
 	if (!blackout[settings.selectRadarB]) {
         glEnable(GL_BLEND);
@@ -1599,8 +1620,9 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     double radar_pixels_per_meter = ((double) RETURNS_PER_LINE) / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
 
-	if (settings.showRadar && ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode[settings.selectRadarB] == DM_EMULATOR 
-		|| blackout[settings.selectRadarB])) {
+//	if (settings.showRadar && ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode[settings.selectRadarB] == DM_EMULATOR 
+//		|| blackout[settings.selectRadarB])) {
+	if (blackout[settings.selectRadarB] || (settings.showRadar == 1 && br_bpos_set && m_heading_source != HEADING_NONE && br_data_seen)){
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
         if (br_range_meters[settings.selectRadarB] > 0 && br_scanner_state == RADAR_ON) {
@@ -1972,7 +1994,7 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
 			break;
 		}
 	}
-//	wxLogMessage(wxT("BR24radar_pi: XXhandle bogeycount y=%d bogeysFound %d"),  y,bogeysFound);
+//	wxLogMessage(wxT("BR24radar_pi: handle bogeycount y=%d bogeysFound %d"),  y,bogeysFound);
 
 	if (bogeysFound) {
 		// We have bogeys and there is no objection to showing the dialog
@@ -2082,7 +2104,7 @@ bool br24radar_pi::LoadConfig(void)
 
         pConf->Read(wxT("PassHeadingToOCPN"), &settings.passHeadingToOCPN, 0);
         pConf->Read(wxT("selectRadarB"), &settings.selectRadarB, 0);
-		pConf->Read(wxT("ShowRadar"), &settings.showRadar, 0);
+	//	pConf->Read(wxT("ShowRadar"), &settings.showRadar, 0);
         pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
         pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
         pConf->Read(wxT("ControlsDialogPosX"), &m_BR24Controls_dialog_x, 20L);
@@ -2226,11 +2248,13 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         br_var = pfix.Var;
         br_var_source = VARIATION_SOURCE_FIX;
         br_var_watchdog = now;
-        if (m_pMessageBox) {
-            info = _("GPS");
-            info << wxT(" ") << br_var;
-            m_pMessageBox->SetVariationInfo(info);
-        }
+		if (m_pMessageBox) {
+			if (m_pMessageBox->IsShown()) {
+				info = _("GPS");
+				info << wxT(" ") << br_var;
+				m_pMessageBox->SetVariationInfo(info);
+			}
+		}
     }
 
     if (settings.verbose >= 2) {
@@ -2246,11 +2270,13 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f \n"), br_hdt);
             m_heading_source = HEADING_RADAR;
         }
-        if (m_pMessageBox) {
-            info = _("radar");
-            info << wxT(" ") << br_hdt;
-            m_pMessageBox->SetHeadingInfo(info);
-        }
+		if (m_pMessageBox) {
+			if (m_pMessageBox->IsShown()) {
+				info = _("radar");
+				info << wxT(" ") << br_hdt;
+				m_pMessageBox->SetHeadingInfo(info);
+			}
+		}
         br_hdt_watchdog = now;
     }
     else if (!wxIsNaN(pfix.Hdm) && TIMER_NOT_ELAPSED(br_var_watchdog)) {
@@ -2259,10 +2285,12 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM %f"), br_hdt);
             m_heading_source = HEADING_HDM;
         }
-        if (m_pMessageBox) {
-            info = _("HDM");
-            info << wxT(" ") << br_hdt;
-            m_pMessageBox->SetHeadingInfo(info);
+		if (m_pMessageBox) {
+			if (m_pMessageBox->IsShown()) {
+				info = _("HDM");
+				info << wxT(" ") << br_hdt;
+				m_pMessageBox->SetHeadingInfo(info);
+			}
         }
         br_hdt_watchdog = now;
     }
@@ -2272,11 +2300,13 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
             m_heading_source = HEADING_HDT;
         }
-        if (m_pMessageBox) {
-            info = _("HDT");
-            info << wxT(" ") << br_hdt;
-            m_pMessageBox->SetHeadingInfo(info);
-        }
+		if (m_pMessageBox) {
+			if (m_pMessageBox->IsShown()) {
+				info = _("HDT");
+				info << wxT(" ") << br_hdt;
+				m_pMessageBox->SetHeadingInfo(info);
+			}
+		}
         br_hdt_watchdog = now;
     }
     else if (!wxIsNaN(pfix.Cog)) {
@@ -2285,11 +2315,13 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
             wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
             m_heading_source = HEADING_COG;
         }
-        if (m_pMessageBox) {
-            info = _("COG");
-            info << wxT(" ") << br_hdt;
-            m_pMessageBox->SetHeadingInfo(info);
-        }
+		if (m_pMessageBox) {
+			if (m_pMessageBox->IsShown()) {
+				info = _("COG");
+				info << wxT(" ") << br_hdt;
+				m_pMessageBox->SetHeadingInfo(info);
+			}
+		}
         br_hdt_watchdog = now;
     }
 
@@ -2321,10 +2353,12 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
                 br_var = variation;
                 br_var_source = VARIATION_SOURCE_WMM;
                 br_var_watchdog = time(0);
-                if (m_pMessageBox) {
-                    wxString info = _("WMM");
-                    info << wxT(" ") << br_var;
-                    m_pMessageBox->SetVariationInfo(info);
+				if (m_pMessageBox) {
+					if (m_pMessageBox->IsShown()) {
+						wxString info = _("WMM");
+						info << wxT(" ") << br_var;
+						m_pMessageBox->SetVariationInfo(info);
+					}
                 }
             }
         }
@@ -2341,7 +2375,7 @@ void br24radar_pi::SetCursorLatLon(double lat, double lon)
 //************************************************************************
 // Plugin Command Data Streams
 //************************************************************************
-void br24radar_pi::TransmitCmd(UINT8 * msg, int size)
+bool br24radar_pi::TransmitCmd(UINT8 * msg, int size)
 {
     struct sockaddr_in adr;
     memset(&adr, 0, sizeof(adr));
@@ -2356,12 +2390,13 @@ void br24radar_pi::TransmitCmd(UINT8 * msg, int size)
 	}
     if (m_radar_socket == INVALID_SOCKET || sendto(m_radar_socket, (char *) msg, size, 0, (struct sockaddr *) &adr, sizeof(adr)) < size) {
         wxLogError(wxT("BR24radar_pi: Unable to transmit command to radar"));
-        return;
+        return(false);
     } else  {
+		return(true);
     }
 };
 
-void br24radar_pi::TransmitCmd(int AB, UINT8 * msg, int size)
+bool br24radar_pi::TransmitCmd(int AB, UINT8 * msg, int size)
 {                                 //    overcharged version allows selection of radar
 	struct sockaddr_in adr;
 	memset(&adr, 0, sizeof(adr));
@@ -2376,56 +2411,86 @@ void br24radar_pi::TransmitCmd(int AB, UINT8 * msg, int size)
 	}
 	if (m_radar_socket == INVALID_SOCKET || sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *) &adr, sizeof(adr)) < size) {
 		wxLogError(wxT("BR24radar_pi: Unable to transmit command to radar"));
-		return;
+		return(false);
 	}
 	else  {
+		return(true);
 	}
 };
 
 void br24radar_pi::RadarTxOff(void)
-{          // switch both A and B off
-    UINT8 pck[3] = {0x00, 0xc1, 0x01};
-    TransmitCmd(0, pck, sizeof(pck));
-    pck[0] = 0x01;
-	pck[2] = 0x00;
-    TransmitCmd(0, pck, sizeof(pck));
-
-	pck[0] = 0x00;
-	pck[2] = 0x01;
-	TransmitCmd(1, pck, sizeof(pck));
-	pck[0] = 0x01;
-	pck[2] = 0x00;
-	TransmitCmd(1, pck, sizeof(pck));
-}
-
-void br24radar_pi::RadarTxOn(void)
-{
-	UINT8 pck[3] = { 0x00, 0xc1, 0x01 };               // ON
-	TransmitCmd(settings.selectRadarB, pck, sizeof(pck));
-	wxLogMessage(wxT("BR24radar_pi: Turn radar %d on (send TRANSMIT request)"), settings.selectRadarB);
-	pck[0] = 0x01;
-	TransmitCmd(0, pck, sizeof(pck));
-
-	if (settings.enable_dual_radar){      // turn other radar on
-		UINT8 pck[3] = { 0x00, 0xc1, 0x01 };               // ON
-		TransmitCmd(!settings.selectRadarB, pck, sizeof(pck));
-		wxLogMessage(wxT("BR24radar_pi: Turn radar %d on (send TRANSMIT request)"), !settings.selectRadarB);
+{          
+	if(settings.enable_dual_radar == 0){   // switch active radar off
+		UINT8 pck[3] = {0x00, 0xc1, 0x01};
+		TransmitCmd(settings.selectRadarB, pck, sizeof(pck));
 		pck[0] = 0x01;
+		pck[2] = 0x00;
+		TransmitCmd(settings.selectRadarB, pck, sizeof(pck));
+	}
+	else{              // switch both A and B off
+		UINT8 pck[3] = {0x00, 0xc1, 0x01};
+		TransmitCmd(0, pck, sizeof(pck));
+		pck[0] = 0x01;
+		pck[2] = 0x00;
+		TransmitCmd(0, pck, sizeof(pck));
+
+		pck[0] = 0x00;
+		pck[2] = 0x01;
+		TransmitCmd(1, pck, sizeof(pck));
+		pck[0] = 0x01;
+		pck[2] = 0x00;
 		TransmitCmd(1, pck, sizeof(pck));
 	}
 }
 
-void br24radar_pi::RadarStayAlive(void)
-{
-    UINT8 pck[] = {0xA0, 0xc1};
-    TransmitCmd(pck, sizeof(pck));
-	UINT8 pck2[] = { 0x03, 0xc2 };
-	TransmitCmd(pck2, sizeof(pck2));
-	UINT8 pck3[] = { 0x04, 0xc2 };
-	TransmitCmd(pck3, sizeof(pck3));
-	UINT8 pck4[] = { 0x05, 0xc2 };
-	TransmitCmd(pck4, sizeof(pck4));
+void br24radar_pi::RadarTxOn(void)
+{                                          // turn A on
+	if (settings.enable_dual_radar == 0){ 
+	UINT8 pck[3] = { 0x00, 0xc1, 0x01 };               // ON
+	TransmitCmd(settings.selectRadarB, pck, sizeof(pck));
+	wxLogMessage(wxT("BR24radar_pi: Turn radar %d on (send TRANSMIT request)"), settings.selectRadarB);
+	pck[0] = 0x01;
+	TransmitCmd(settings.selectRadarB, pck, sizeof(pck));
+	}
+	else{                               // turn A and B both on 
+	UINT8 pck[3] = { 0x00, 0xc1, 0x01 };               // ON
+	TransmitCmd(0, pck, sizeof(pck));
+	wxLogMessage(wxT("BR24radar_pi: Turn radar %d on (send TRANSMIT request)"), settings.selectRadarB);
+	pck[0] = 0x01;
+	TransmitCmd(0, pck, sizeof(pck));
+ 
+	UINT8 pckb[3] = { 0x00, 0xc1, 0x01 };               // ON
+	TransmitCmd(1, pckb, sizeof(pck));
+	wxLogMessage(wxT("BR24radar_pi: Turn radar %d on (send TRANSMIT request)"), settings.selectRadarB);
+	pckb[0] = 0x01;
+	TransmitCmd(1, pckb, sizeof(pck));
+	}
 }
+
+bool br24radar_pi::RadarStayAlive(void)
+{
+	UINT8 pck[] = {0xA0, 0xc1};
+	TransmitCmd(settings.selectRadarB, pck, sizeof(pck));
+	UINT8 pck2[] = { 0x03, 0xc2 };
+	TransmitCmd(settings.selectRadarB, pck2, sizeof(pck2));
+	UINT8 pck3[] = { 0x04, 0xc2 };
+	TransmitCmd(settings.selectRadarB, pck3, sizeof(pck3));
+	UINT8 pck4[] = { 0x05, 0xc2 };
+	bool succes = TransmitCmd(settings.selectRadarB, pck4, sizeof(pck4));  
+
+	if (settings.enable_dual_radar){    // also send on the other channel
+		UINT8 pck[] = {0xA0, 0xc1};
+		TransmitCmd(!settings.selectRadarB, pck, sizeof(pck));
+		UINT8 pck2[] = { 0x03, 0xc2 };
+		TransmitCmd(!settings.selectRadarB, pck2, sizeof(pck2));
+		UINT8 pck3[] = { 0x04, 0xc2 };
+		TransmitCmd(!settings.selectRadarB, pck3, sizeof(pck3));
+		UINT8 pck4[] = { 0x05, 0xc2 };
+		TransmitCmd(!settings.selectRadarB, pck4, sizeof(pck4));  
+	}
+	return(succes);
+}
+
 
 
 void br24radar_pi::SetRangeMeters(long meters)
@@ -2470,10 +2535,10 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                         0x06,
                         0xc1,
                         0, 0, 0, 0, 0x01,
-                        0, 0, 0, 0xad     // changed from a1 right ????
+                        0, 0, 0, 0xad     // changed from a1 to ad right ????   no changed back
                     };
                     if (settings.verbose) {
-                        wxLogMessage(wxT("BR24radar_pi: Gain: Auto"));
+                        wxLogMessage(wxT("BR24radar_pi: Gain: Auto in setcontrolvalue"));
                     }
                     TransmitCmd(cmd, sizeof(cmd));
                 } else {                        // Manual Gain
@@ -2495,7 +2560,6 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             case CT_RAIN: {                       // Rain Clutter - Manual. Range is 0x01 to 0x50
-    //            settings.rain_clutter_gain = value;
                 int v = (value + 1) * 255 / 100;
                 if (v > 255) {
                     v = 255;
@@ -2587,7 +2651,6 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             case CT_TARGET_BOOST: {
-     //           settings.target_boost = value;
                 UINT8 cmd[] = {
                     0x0a,
                     0xc1,
@@ -2754,11 +2817,13 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
                 br_var = newVar;
                 br_var_source = VARIATION_SOURCE_NMEA;
                 br_var_watchdog = now;
-                if (m_pMessageBox) {
-                    wxString info = _("NMEA");
-                    info << wxT(" ") << br_var;
-                    m_pMessageBox->SetVariationInfo(info);
-                }
+				if (m_pMessageBox) {
+					if (m_pMessageBox->IsShown()) {
+						wxString info = _("NMEA");
+						info << wxT(" ") << br_var;
+						m_pMessageBox->SetVariationInfo(info);
+					}
+				}
             }
             if (m_heading_source == HEADING_HDM && !wxIsNaN(m_NMEA0183.Hdg.MagneticSensorHeadingDegrees)) {
                 br_hdt = m_NMEA0183.Hdg.MagneticSensorHeadingDegrees + br_var;
@@ -3298,7 +3363,7 @@ void *RadarCommandReceiveThread::Entry(void)
 {             // runs twice, both for A and B radar
     SOCKET rx_socket = INVALID_SOCKET;
     int r = 0;
-	wxLogMessage(wxT("XX RadarCommandReceiveThread AB = %d"), AB);
+	wxLogMessage(wxT(" RadarCommandReceiveThread AB = %d"), AB);
     union {
         sockaddr_storage addr;
         sockaddr_in      ipv4;
@@ -3310,14 +3375,11 @@ void *RadarCommandReceiveThread::Entry(void)
 		if (rx_socket == INVALID_SOCKET && pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] != DM_EMULATOR) {
 			if (AB == 1){
 				rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6658, "236.6.7.14");
-				wxLogMessage(wxT("XX trying to start B socket RadarCommandReceiveThread AB = %d"), AB);
 				//  B radar
 			}
 			else{
 				rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6680, "236.6.7.10");
-				wxLogMessage(wxT("XX trying to start A socket RadarCommandReceiveThread AB = %d"), AB);
 				// socket for A radar
-				if (br_mcast_addr == 0) wxLogMessage(wxT("XX RadarCommandReceiveThread br_mcast_addr == 0"));
 			}
 			                             //  socket for B radar
 			// If it is still INVALID_SOCKET now we just sleep for 1s in socketReady
@@ -3354,7 +3416,6 @@ void *RadarCommandReceiveThread::Entry(void)
                 rx_socket = INVALID_SOCKET;
             }
 		}
-		
 		else if (!br_radar_seen || !br_mcast_addr) {
 			if (rx_socket != INVALID_SOCKET) {
 				closesocket(rx_socket);
@@ -3367,12 +3428,6 @@ void *RadarCommandReceiveThread::Entry(void)
 	}
 	return 0;
 }
-
-
-
-
-
-
 
 RadarReportReceiveThread::~RadarReportReceiveThread()
 {
@@ -3490,7 +3545,7 @@ void *RadarReportReceiveThread::Entry(void)
     SOCKET rx_socket = INVALID_SOCKET;
     int r = 0;
     int count = 0;
-	wxLogMessage(wxT("RadarReportReceiveThread AB = %d"), AB);
+	wxLogMessage(wxT("RadarReportReceiveThread AB = %d Entry"), AB);
 
     // This thread is special as it is the only one that loops round over the interfaces
     // to find the radar
@@ -3575,7 +3630,6 @@ void *RadarReportReceiveThread::Entry(void)
 
         if (socketReady(rx_socket, 1000)) {
             UINT8 report[1500];
-			wxLogMessage(wxT("BR24radar_pi:  XXX socket ready AB = %d "),AB);
             rx_len = sizeof(rx_addr);
             r = recvfrom(rx_socket, (char * ) report, sizeof(report), 0, (struct sockaddr *) &rx_addr, &rx_len);
             if (r > 0) {
@@ -3595,14 +3649,10 @@ void *RadarReportReceiveThread::Entry(void)
                     }
 						br_radar_seen = true;
 						br_radar_watchdog = time(0);
-						if (br_mcast_addr == 0)wxLogMessage(wxT("BR24radar_pi: XX radar seen true AB = %d br_mcast_addr == 0"), AB);
-						wxLogMessage(wxT("BR24radar_pi: XX radar seen true AB = %d"), AB);
                 }
             }
 
             if ((r < 0 ) || !br_radar_seen) { // on error, or if we haven't received anything we start looping again
-				wxLogMessage(wxT("BR24radar_pi:  on error XXX r = %d AB = %d"), r, AB);
-				if (!br_radar_seen) wxLogMessage(wxT("BR24radar_pi:  on error radar not seen"));
                 closesocket(rx_socket);
                 rx_socket = INVALID_SOCKET;
 				if (AB == 0) {
@@ -3612,7 +3662,6 @@ void *RadarReportReceiveThread::Entry(void)
             }
 
         } else if (count >= 2 && !br_radar_seen && rx_socket != INVALID_SOCKET) {
-			wxLogMessage(wxT("BR24radar_pi:  XXXcount >= 2 && !br_radar_seen && rx_socket != INVALID_SOCKET  AB = %d"), AB);
             closesocket(rx_socket);
             rx_socket = INVALID_SOCKET;
             br_mcast_addr = 0;
@@ -3638,24 +3687,32 @@ void *RadarReportReceiveThread::Entry(void)
 //
 #pragma pack(push,1)
 struct radar_state02 {
-    UINT8  what;    // 0   0x02
-    UINT8  command; // 1 0xC4
-    UINT16 range;  //  2-3   0x06 0x09
-    UINT32 field2;  // 4-7    0
-    UINT32 field3;  // 8-11
-    UINT8  gain;    // 12
-    UINT32 field4b; // 13-16
-    UINT32 sea;     // 17-20   sea state
-    UINT8 field4c; // 21 
-	UINT8  rain;    // 22   rain clutter
-	UINT8  field4d; // 23 
-    UINT32 field6b;
-    UINT32 field6c;
-    UINT8  field6d;
-    UINT32 interference_rejection;
-    UINT32 field7;
-    UINT32 target_boost;
-    UINT32 field8;
+    UINT8  what;     // 0   0x02
+    UINT8  command;  // 1 0xC4
+    UINT16 range;    //  2-3   0x06 0x09
+    UINT32 field4;   // 4-7    0
+    UINT32 field8;   // 8-11
+    UINT8  gain;     // 12
+    UINT32 field4b;  // 13-16
+    UINT32 sea;      // 17-20   sea state
+    UINT8  field21;  // 21 
+	UINT8  rain;     // 22   rain clutter
+	UINT8  field23;  // 23 
+    UINT32 field24;  //24-27
+    UINT32 field28;  //28-31
+    UINT8  field32;  //32
+	UINT8  field33;  //33
+	UINT8  interference_rejection;  //34
+	UINT8  field35;  //35
+	UINT8  field36;  //36
+	UINT8  field37;  //37
+	UINT8  field38;  //38
+	UINT8  field39;  //39
+	UINT8  field40;  //40
+    UINT8  field41;  //41
+	UINT8  target_boost;  //42
+    UINT16 field8a;
+    UINT32 field8b;
     UINT32 field9;
     UINT32 field10;
     UINT32 field11;
@@ -3667,9 +3724,11 @@ struct radar_state02 {
 struct radar_state08 {
 	UINT8  what;        // 0  0x08   
 	UINT8  command;     // 1  0xC4      
-	UINT32 field1;      // 2-5
-	UINT32 field2;      // 6-9
-	UINT16 field3;      // 10-11          
+	UINT16 field1;      // 2-3
+	UINT8  scan_speed;  // 4
+	UINT8  field3;     // 5
+	UINT32 field4;      // 6-9
+	UINT16 field5;      // 10-11          
 	UINT8  noise;       // 12    noise rejection    
 	UINT8  target_sep;  // 13
 };
@@ -3684,7 +3743,6 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
         // Looks like a radar report. Is it a known one?
         switch ((len << 8) + command[0]) {
             case (18 << 8) + 0x01:
-
                 // Radar status in byte 2
                 if (command[2] != prevStatus) {
              //       if (pPlugIn->settings.verbose > 0) {
@@ -3700,12 +3758,12 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 				 {
                     radar_state02 * s = (radar_state02 *) command;
 					pPlugIn->radar_setting[AB].gain.Update(s->gain); 
-		//			wxLogMessage(wxT("BR24radar_pi: 
-					if (s->field3 == 1 && s->gain == 0xad){   // changed from a1 works now ??
+					if (s->field8 == 1 && s->gain == 0xad){   // changed from a1 works now ??
+						pPlugIn->radar_setting[AB].gain.Update(s->gain);
 						pPlugIn->radar_setting[AB].gain.button = -1; // auto gain
 					}
 					else{
-
+						pPlugIn->radar_setting[AB].gain.Update(s->gain);
 						pPlugIn->radar_setting[AB].gain.button = s->gain * 100 / 255;
 					}
 		// 			pPlugIn->radar_setting[AB].range.button =    // is handled elsewhere
@@ -3713,7 +3771,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 					pPlugIn->radar_setting[AB].rain.Update(s->rain);
 					pPlugIn->radar_setting[AB].rain.button = s->rain * 100 / 255;
 					pPlugIn->radar_setting[AB].sea.Update(s->sea);
-					if (s->field3 == 0x01000000 && s->sea == 0xd3){
+					if (s->field8 == 0x01000000 && s->sea == 0xd3){
 						pPlugIn->radar_setting[AB].sea.button = -1; // auto sea
 					}
 					else{
@@ -3724,28 +3782,14 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 					pPlugIn->radar_setting[AB].interference_rejection.Update(s->interference_rejection);
 					pPlugIn->radar_setting[AB].interference_rejection.button = s->interference_rejection;
 
-                    wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d state range=%u f2=%u f3=%u gain=%u f4b=%u sea=%u rain=%u f6b=%u f6c=%u f6d=%u interference_rejection=%u f7=%u target_boost=%u f8=%u f9=%u f10=%u f11=%u f12=%u f13=%u f14=%u")
-                        , AB         
-						, s->range
-                                 , s->field2
-                                 , s->field3
+                    wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d state range=%u gain=%u sea=%u rain=%u interference_rejection=%u target_boost=%u ")
+                                 , AB         
+						         , s->range
                                  , s->gain
-                                 , s->field4b
                                  , s->sea
                                  , s->rain
-                                 , s->field6b
-                                 , s->field6c
-                                 , s->field6d
                                  , s->interference_rejection
-                                 , s->field7
                                  , s->target_boost
-                                 , s->field8
-                                 , s->field9
-                                 , s->field10
-                                 , s->field11
-                                 , s->field12
-                                 , s->field13
-                                 , s->field14
                                  );
              //       logBinaryData(wxT("state"), command, len);
                 }
@@ -3759,11 +3803,13 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 
 			case (18 << 8) + 0x08:
 			{
-				// contains noise rejection and target_separation
+				// contains scan speed, noise rejection and target_separation
 				radar_state08 * s08 = (radar_state08 *)command;
 				
-				wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d noise = %u target_sep %u"), AB, s08->noise, s08->target_sep);
+				wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d scanspeed= %d, noise = %u target_sep %u"), AB, s08->scan_speed, s08->noise, s08->target_sep);
 				logBinaryData(wxT("XXreceived report_08"), command, len);
+				pPlugIn->radar_setting[AB].scan_speed.Update(s08->scan_speed);
+				pPlugIn->radar_setting[AB].scan_speed.button = s08->scan_speed;
 				pPlugIn->radar_setting[AB].noise_rejection.Update(s08->noise);
 				pPlugIn->radar_setting[AB].noise_rejection.button = s08->noise;
 				pPlugIn->radar_setting[AB].target_separation.Update(s08->target_sep);
@@ -3785,9 +3831,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
         // Looks like a radar report. Is it a known one?
         switch ((len << 8) + command[0]) {
 		case (16 << 8) + 0x0f:
-		
 			logBinaryData(wxT("XXreceived 3G report"), command, len);
-
 			br_radar_type = RT_BR24;
 			break;
 		
@@ -3815,7 +3859,6 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 	{
         logBinaryData(wxT("XXreceived unknown message "),  command, len);
     }
-	wxLogMessage(wxT("BR24radar_pi: XXProcessIncomingReport returned AB = %d"), AB);
     return false;
 }
 
