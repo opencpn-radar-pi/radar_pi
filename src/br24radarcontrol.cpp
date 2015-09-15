@@ -1151,8 +1151,8 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 		return;
 	}
 
-	if (!pPlugIn->settings.showRadar){           // radar not seen, hide control box
-		
+	if (!pPlugIn->settings.showRadar || !haveRadar){           // don'want to see the radar, hide control box
+		                                                       // or no radar available, control useless
 		if (pPlugIn->m_pControlDialog){
 			pPlugIn->m_pControlDialog->Hide();
 		}
@@ -1216,3 +1216,5 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 	pPlugIn->m_pControlDialog->SetTitle(labelx);
 	pPlugIn->m_pControlDialog->SetLabel(labelx);
 }
+	
+
