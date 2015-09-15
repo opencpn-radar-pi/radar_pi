@@ -1007,9 +1007,9 @@ void br24radar_pi::ShowRadarControl(bool show)
 		int idx = convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type);
         m_pControlDialog->SetRangeIndex(idx);
 		radar_setting[settings.selectRadarB].range.Update(range);
-		radar_setting[settings.selectRadarB].range.button = idx;		
+		radar_setting[settings.selectRadarB].range.button = idx;
+		m_pControlDialog->Hide();
     }
-	m_pControlDialog->Hide();
 	control_box_closed = false;
 	m_pControlDialog->UpdateControl(br_opengl_mode
 		, br_bpos_set
@@ -2460,10 +2460,10 @@ void br24radar_pi::RadarTxOn(void)
 	TransmitCmd(0, pck, sizeof(pck));
  
 	UINT8 pckb[3] = { 0x00, 0xc1, 0x01 };               // ON
-	TransmitCmd(1, pck, sizeof(pck));
+	TransmitCmd(1, pckb, sizeof(pck));
 	wxLogMessage(wxT("BR24radar_pi: Turn radar %d on (send TRANSMIT request)"), settings.selectRadarB);
 	pckb[0] = 0x01;
-	TransmitCmd(1, pck, sizeof(pck));
+	TransmitCmd(1, pckb, sizeof(pck));
 	}
 }
 
