@@ -310,7 +310,6 @@ struct radar_control_setting{
 	radar_control_item      antenna_height;
 	radar_control_item      local_interference_rejection;
 	radar_control_item      side_lobe_suppression;
-	radar_control_item      reset_defaults;
 };
 struct guard_zone_settings {
     int type;                   // 0 = circle, 1 = arc
@@ -860,7 +859,7 @@ private:
 	RadarControlButton *bAntennaHeight;
 	RadarControlButton *bLocalInterferenceRejection;
 	RadarControlButton *bSideLobeSuppression;
-	RadarControlButton *bResetDefaults;
+	wxButton           *bResetDefaults;
 
     // Show Controls
 

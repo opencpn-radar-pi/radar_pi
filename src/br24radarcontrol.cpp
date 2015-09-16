@@ -707,8 +707,7 @@ void BR24ControlsDialog::CreateControls()
 	bSideLobeSuppression->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.button); // redraw after adding names
 
 		// The RESET RADAR DEFAULTS button
-	bResetDefaults = new RadarControlButton(this, ID_RESET_DEFAULTS, _("Reset factory defaults"),
-		pPlugIn, CT_RESET_DEFAULTS, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].reset_defaults.button);
+	bResetDefaults = new wxButton(this, ID_RESET_DEFAULTS, _("Reset factory defaults"), wxDefaultPosition, g_buttonSize, 0);
 	installationBox->Add(bResetDefaults, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 
 	advancedBox->Hide(installationBox);
