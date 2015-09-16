@@ -1386,11 +1386,11 @@ void br24radar_pi::DoTick(void)
 						// Send minutes left to Idle dialog
 						int time_left = ((br_idle_watchdog + (settings.timed_idle * factor)) - now) / 60;						
 						if (br_idle_dialog_time_left != time_left) {
-							br24radar_pi::m_pIdleDialog->SetIdleTimes(settings.timed_idle * factor / 60, time_left);
                             if (!m_pIdleDialog) {
 							    m_pIdleDialog = new Idle_Dialog;
 							    m_pIdleDialog->Create(m_parent_window, this);
 						    }
+							br24radar_pi::m_pIdleDialog->SetIdleTimes(settings.timed_idle * factor / 60, time_left);
 							m_pIdleDialog->Show();
 							br_idle_dialog_time_left = time_left;
 						}
