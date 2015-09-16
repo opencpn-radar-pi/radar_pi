@@ -81,6 +81,12 @@ enum {                                      // process ID's
     ID_INSTALLATION,
     ID_TIMED_IDLE,
 
+	ID_BEARING_ALIGNMENT,
+	ID_ANTENNA_HEIGHT,
+	ID_LOCAL_INTERFERENCE_REJECTION,
+	ID_SIDE_LOBE_SUPPRESSION,
+	ID_RESET_DEFAULTS,
+
     ID_RADAR_ONLY,
 	ID_RANGE,
 	ID_RADAR_AB,
@@ -118,6 +124,8 @@ EVT_BUTTON(ID_MULTISWEEP,  BR24ControlsDialog::OnMultiSweepClick)
 EVT_BUTTON(ID_RDRONLY, BR24ControlsDialog::OnRdrOnlyButtonClick)
 
 EVT_BUTTON(ID_ADVANCED_BACK,  BR24ControlsDialog::OnAdvancedBackButtonClick)
+
+EVT_BUTTON(ID_INSTALLATION_BACK, BR24ControlsDialog::OnInstallationBackButtonClick)
 EVT_BUTTON(ID_TRANSPARENCY, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_INTERFERENCE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_TARGET_BOOST, BR24ControlsDialog::OnRadarControlButtonClick)
@@ -661,13 +669,13 @@ void BR24ControlsDialog::CreateControls()
 
 	// The Back button
 	wxString instBackButtonStr;
-	backButtonStr << wxT("<<\n") << _("Back");
+	instBackButtonStr << wxT("<<\n") << _("Back");
 	bInstallationBack = new wxButton(this, ID_INSTALLATION_BACK, instBackButtonStr, wxDefaultPosition, g_buttonSize, 0);
 	installationBox->Add(bInstallationBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 	bInstallationBack->SetFont(g_font);
 
 	// The BEARING ALIGNMENT button
-	bBearingAlignment = new RadarControlButton(this, ID_TRANSPARENCY, _("Bearing alignment"), pPlugIn, CT_BEARING_ALIGNMENT, 
+	bBearingAlignment = new RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"), pPlugIn, CT_BEARING_ALIGNMENT,
 		false, pPlugIn->radar_setting[0].bearing_alignment.button);
 	installationBox->Add(bBearingAlignment, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 	bBearingAlignment->SetFont(g_font);    // this bearing alignment work opposite to the one defined in the pi!
@@ -682,39 +690,28 @@ void BR24ControlsDialog::CreateControls()
 	bInterferenceRejection->maxValue = 30;   // XXX to be verified and corrected
 
 	// The LOCAL INTERFERENCE REJECTION button
-
 	bLocalInterferenceRejection = new RadarControlButton(this, ID_LOCAL_INTERFERENCE_REJECTION, _("Local interference rejection"), pPlugIn, 
 		CT_LOCAL_INTERFERENCE_REJECTION, false, pPlugIn->radar_setting[0].local_interference_rejection.button);
-	advancedBox->Add(bTargetBoost, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+	installationBox->Add(bLocalInterferenceRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 	bLocalInterferenceRejection->minValue = 0;
 	bLocalInterferenceRejection->maxValue = ARRAY_SIZE(target_separation_names) - 1;   // off, low, medium, high, same as target separation
 	bLocalInterferenceRejection->names = target_separation_names;
 	bLocalInterferenceRejection->SetValueX(pPlugIn->radar_setting[0].local_interference_rejection.button); 
 
 	// The SIDE LOBE SUPPRESSION button
-	
-	bNoiseRejection = new RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), pPlugIn, CT_NOISE_REJECTION, false,
-		pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.button);
-	advancedBox->Add(bNoiseRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-	bNoiseRejection->minValue = 0;
-	bNoiseRejection->maxValue = ARRAY_SIZE(noise_rejection_names) - 1;
-	bNoiseRejection->names = noise_rejection_names;
-	bNoiseRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.button); // redraw after adding names
+	bSideLobeSuppression = new RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"), pPlugIn, CT_SIDE_LOBE_SUPPRESSION, false,
+		pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.button);
+	installationBox->Add(bSideLobeSuppression, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+	bSideLobeSuppression->minValue = 0;
+	bSideLobeSuppression->maxValue = 100;
+	bSideLobeSuppression->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.button); // redraw after adding names
 
-	advanced4gBox = new wxBoxSizer(wxVERTICAL);
-	advancedBox->Add(advanced4gBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+		// The RESET RADAR DEFAULTS button
+	bResetDefaults = new RadarControlButton(this, ID_RESET_DEFAULTS, _("Reset factory defaults"),
+		pPlugIn, CT_RESET_DEFAULTS, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].reset_defaults.button);
+	installationBox->Add(bResetDefaults, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 
-	// The RESET RADAR DEFAULTS button
-
-	bTargetSeparation = new RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"),
-		pPlugIn, CT_TARGET_SEPARATION, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.button);
-	advanced4gBox->Add(bTargetSeparation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-	bTargetSeparation->minValue = 0;
-	bTargetSeparation->maxValue = ARRAY_SIZE(target_separation_names) - 1;
-	bTargetSeparation->names = target_separation_names;
-	bTargetSeparation->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.button); // redraw after adding names
-
-	topSizer->Hide(installationBox);
+	advancedBox->Hide(installationBox);
 
 
     //**************** CONTROL BOX ******************//
@@ -723,8 +720,6 @@ void BR24ControlsDialog::CreateControls()
     // A box sizer to contain RANGE, GAIN etc button
     controlBox = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(controlBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-
-	
 
 	// The RADAR A / B button
 	wxString labelab;
@@ -923,7 +918,6 @@ void BR24ControlsDialog::OnMultiSweepClick(wxCommandEvent &event)
 }
 
 
-
 void BR24ControlsDialog::OnMinusClick(wxCommandEvent& event)
 {
     fromControl->SetValue(fromControl->value - 1);
@@ -950,12 +944,23 @@ void BR24ControlsDialog::OnAdvancedBackButtonClick(wxCommandEvent& event)
     topSizer->Layout();
 }
 
+void BR24ControlsDialog::OnInstallationBackButtonClick(wxCommandEvent& event)
+{
+	fromBox = advancedBox;
+	topSizer->Show(advancedBox);
+	advancedBox->Hide(installationBox);
+	
+	advancedBox->Layout();
+	Fit();
+	topSizer->Layout();
+}
+
 void BR24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event)
 {
-    
 	extern RadarType br_radar_type;
     fromBox = advancedBox;
     topSizer->Show(advancedBox);
+	advancedBox->Hide(installationBox);
     if (br_radar_type == RT_4G) {
         advancedBox->Show(advanced4gBox);
     } else {
@@ -970,16 +975,9 @@ void BR24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event)
 
 void BR24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event)
 {
-
-	extern RadarType br_radar_type;
 	fromBox = advancedBox;
-	topSizer->Show(advancedBox);
-	if (br_radar_type == RT_4G) {
-		advancedBox->Show(advanced4gBox);
-	}
-	else {
-		advancedBox->Hide(advanced4gBox);
-	}
+	topSizer->Hide(advancedBox);
+	advancedBox->Show(installationBox);
 	advancedBox->Layout();
 	topSizer->Hide(controlBox);
 	controlBox->Layout();
@@ -1108,7 +1106,6 @@ void BR24ControlsDialog::OnRadarABButtonClick(wxCommandEvent& event)
 		label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up");
 		bRadarOnly_Overlay->SetLabel(label);
 	}
-
 }
 
 void BR24ControlsDialog::OnMove(wxMoveEvent& event)

@@ -206,7 +206,12 @@ typedef enum ControlType {
     CT_PASSHEADING,
     CT_SCAN_SPEED,
     CT_SCAN_AGE,
-    CT_TIMED_IDLE
+    CT_TIMED_IDLE,
+	CT_BEARING_ALIGNMENT,
+	CT_SIDE_LOBE_SUPPRESSION,
+	CT_RESET_DEFAULTS,
+	CT_ANTENNA_HEIGHT,
+	CT_LOCAL_INTERFERENCE_REJECTION
 } ControlType;
 
 typedef enum GuardZoneType {
@@ -301,6 +306,11 @@ struct radar_control_setting{
 	radar_control_item      sea;
 	radar_control_item      rain;
 	radar_control_item      scan_speed;
+	radar_control_item      bearing_alignment;
+	radar_control_item      antenna_height;
+	radar_control_item      local_interference_rejection;
+	radar_control_item      side_lobe_suppression;
+	radar_control_item      reset_defaults;
 };
 struct guard_zone_settings {
     int type;                   // 0 = circle, 1 = arc
@@ -787,7 +797,8 @@ private:
     void OnAutoClick(wxCommandEvent& event);
 	void OnMultiSweepClick(wxCommandEvent& event);
 
-    void OnAdvancedBackButtonClick(wxCommandEvent& event);
+	void OnAdvancedBackButtonClick(wxCommandEvent& event); 
+	void OnInstallationBackButtonClick(wxCommandEvent& event);
     void OnAdvancedButtonClick(wxCommandEvent& event);
 	void OnInstallationButtonClick(wxCommandEvent& event);
 
@@ -836,7 +847,6 @@ private:
     wxButton           *bAdvancedBack;
 	wxButton           *bInstallationBack;
     RadarControlButton *bTransparency;
-	RadarControlButton *bBearingAlignment;
     RadarControlButton *bInterferenceRejection;
     RadarControlButton *bTargetSeparation;
     RadarControlButton *bNoiseRejection;
@@ -844,6 +854,13 @@ private:
     RadarControlButton *bRefreshrate;
     RadarControlButton *bScanSpeed;
     RadarControlButton *bTimedIdle;
+
+	// Installation controls
+	RadarControlButton *bBearingAlignment;
+	RadarControlButton *bAntennaHeight;
+	RadarControlButton *bLocalInterferenceRejection;
+	RadarControlButton *bSideLobeSuppression;
+	RadarControlButton *bResetDefaults;
 
     // Show Controls
 
