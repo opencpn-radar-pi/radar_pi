@@ -3698,8 +3698,10 @@ struct radar_state02 {
     UINT32 field4;   // 4-7    0
     UINT32 field8;   // 8-11
     UINT8  gain;     // 12
-    UINT32 field4b;  // 13-16
-    UINT32 sea;      // 17-20   sea state
+    UINT8  field13;  // 13  ==1 for sea auto
+	UINT8  field14;  // 14
+	UINT16 field15;  // 15-16
+    UINT32 sea;      // 17-20   sea state (17)
     UINT8  field21;  // 21 
 	UINT8  rain;     // 22   rain clutter
 	UINT8  field23;  // 23 
@@ -3722,8 +3724,8 @@ struct radar_state02 {
     UINT32 field10;
     UINT32 field11;
     UINT32 field12;
-    UINT32 field13;
-    UINT32 field14;
+    UINT32 field13x;
+    UINT32 field14x;
 };
 
 struct radar_state08 {
@@ -3776,7 +3778,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 					pPlugIn->radar_setting[AB].rain.Update(s->rain);
 					pPlugIn->radar_setting[AB].rain.button = s->rain * 100 / 255;
 					pPlugIn->radar_setting[AB].sea.Update(s->sea);
-					if (s->field8 == 0x01000000 && s->sea == 0xd3){
+					if (s->field13 == 0x01 && s->sea == 0xd3){
 						pPlugIn->radar_setting[AB].sea.button = -1; // auto sea
 					}
 					else{
