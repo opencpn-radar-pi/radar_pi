@@ -332,11 +332,11 @@ void RadarControlButton::SetAutoX()
 
 void BR24ControlsDialog::OnResetDefaultsButtonClick(wxCommandEvent& event)
 {
-	return;
-//	pPlugIn->SetControlValue(controlType, 0);
-//	wxString label;
-//	label << firstLine << wxT("\n") << _("Reset issued");
-//	this->SetLabel(label);
+	pPlugIn->SetControlValue(CT_RESET_DEFAULTS, 0);
+	wxString label;
+	label = _("Reset issued");
+	wxLogMessage(wxT("BR24radar_pi: XXX reset issued"));
+	bResetDefaults->SetLabel(label);
 }
 
 int RadarRangeControlButton::SetValueInt(int newValue)
@@ -699,7 +699,7 @@ void BR24ControlsDialog::CreateControls()
 		CT_ANTENNA_HEIGHT, false, pPlugIn->radar_setting[0].antenna_height.button);
 	installationBox->Add(bAntennaHeight, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 	bAntennaHeight->minValue = 0;
-	bInterferenceRejection->maxValue = 30;   // XXX to be verified and corrected
+	bAntennaHeight->maxValue = 30;   // XXX to be verified and corrected
 
 	// The LOCAL INTERFERENCE REJECTION button
 	bLocalInterferenceRejection = new RadarControlButton(this, ID_LOCAL_INTERFERENCE_REJECTION, _("Local interference rejection"), pPlugIn, 
