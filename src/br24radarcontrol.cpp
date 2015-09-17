@@ -136,6 +136,12 @@ EVT_BUTTON(ID_SCAN_SPEED, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_INSTALLATION, BR24ControlsDialog::OnInstallationButtonClick)
 EVT_BUTTON(ID_TIMED_IDLE, BR24ControlsDialog::OnRadarControlButtonClick)
 
+EVT_BUTTON(ID_BEARING_ALIGNMENT, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_ANTENNA_HEIGHT, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_LOCAL_INTERFERENCE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_SIDE_LOBE_SUPPRESSION, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_RESET_DEFAULTS, BR24ControlsDialog::OnResetDefaultsButtonClick)
+
 EVT_BUTTON(ID_RADAR_ONLY, BR24ControlsDialog::OnRadarOnlyButtonClick)
 EVT_BUTTON(ID_RANGE, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_RADAR_AB, BR24ControlsDialog::OnRadarABButtonClick)
@@ -312,7 +318,6 @@ void RadarControlButton::SetAuto()
 
     label << firstLine << wxT("\n") << _("Auto");
     this->SetLabel(label);
-	wxLogMessage(wxT("BR24radar_pi: XX Setauto called "));
     pPlugIn->SetControlValue(controlType, -1);
 }
 
@@ -323,6 +328,15 @@ void RadarControlButton::SetAutoX()
 	label << firstLine << wxT("\n") << _("Auto");
 	this->SetLabel(label);
 
+}
+
+void BR24ControlsDialog::OnResetDefaultsButtonClick(wxCommandEvent& event)
+{
+	return;
+//	pPlugIn->SetControlValue(controlType, 0);
+//	wxString label;
+//	label << firstLine << wxT("\n") << _("Reset issued");
+//	this->SetLabel(label);
 }
 
 int RadarRangeControlButton::SetValueInt(int newValue)
@@ -371,7 +385,6 @@ void RadarRangeControlButton::SetValue(int newValue)
     // sends the command for the new range to the radar
     isRemote = false;
 	pPlugIn->settings.auto_range_mode[pPlugIn->settings.selectRadarB] = false;
-	wxLogMessage(wxT("BR24radar_pi: XXX RadarRangeControlButton::SetValue() false"));
 
     int meters = SetValueInt(newValue);   // do not display the new value now, will be done by receive thread when frame with new range is received
     pPlugIn->SetRangeMeters(meters);        // send new value to the radar
@@ -380,7 +393,6 @@ void RadarRangeControlButton::SetValue(int newValue)
 void RadarRangeControlButton::SetAuto()
 {
 	pPlugIn->settings.auto_range_mode[pPlugIn->settings.selectRadarB] = true;
-	wxLogMessage(wxT("BR24radar_pi: XXX RadarRangeControlButton::SetAuto() "));
 	pPlugIn->m_pControlDialog->SetRangeIndex(-1);    // immediately set auto in button
 }
 
@@ -665,7 +677,7 @@ void BR24ControlsDialog::CreateControls()
 	// These are the controls that the users sees when the Installation button is selected
 
 	installationBox = new wxBoxSizer(wxVERTICAL);
-	advancedBox->Add(installationBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+	topSizer->Add(installationBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
 	// The Back button
 	wxString instBackButtonStr;
@@ -710,7 +722,7 @@ void BR24ControlsDialog::CreateControls()
 	bResetDefaults = new wxButton(this, ID_RESET_DEFAULTS, _("Reset factory defaults"), wxDefaultPosition, g_buttonSize, 0);
 	installationBox->Add(bResetDefaults, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 
-	advancedBox->Hide(installationBox);
+	topSizer->Hide(installationBox);
 
 
     //**************** CONTROL BOX ******************//
@@ -874,8 +886,7 @@ void BR24ControlsDialog::OnPlusClick(wxCommandEvent& event)
 void BR24ControlsDialog::OnBackClick(wxCommandEvent &event)
 {
     extern RadarType br_radar_type;
-
-    topSizer->Hide(editBox);
+	topSizer->Hide(editBox);
     topSizer->Show(fromBox);
     if (fromBox == advancedBox) {
         if (br_radar_type == RT_4G) {
@@ -887,14 +898,12 @@ void BR24ControlsDialog::OnBackClick(wxCommandEvent &event)
 	if (fromBox == controlBox) {
 		bRadarAB->Hide();
 	}
-
     topSizer->Layout();
 }
 
 void BR24ControlsDialog::OnAutoClick(wxCommandEvent &event)
 {
     fromControl->SetAuto();
-	wxLogMessage(wxT("BR24radar_pi: XXX set auto called after fromcontrol in onautoclick"));
     OnBackClick(event);
 }
 
@@ -947,8 +956,7 @@ void BR24ControlsDialog::OnInstallationBackButtonClick(wxCommandEvent& event)
 {
 	fromBox = advancedBox;
 	topSizer->Show(advancedBox);
-	advancedBox->Hide(installationBox);
-	
+	topSizer->Hide(installationBox);
 	advancedBox->Layout();
 	Fit();
 	topSizer->Layout();
@@ -959,7 +967,7 @@ void BR24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event)
 	extern RadarType br_radar_type;
     fromBox = advancedBox;
     topSizer->Show(advancedBox);
-	advancedBox->Hide(installationBox);
+	topSizer->Hide(installationBox);
     if (br_radar_type == RT_4G) {
         advancedBox->Show(advanced4gBox);
     } else {
@@ -974,15 +982,17 @@ void BR24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event)
 
 void BR24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event)
 {
-	fromBox = advancedBox;
+	fromBox = installationBox;
 	topSizer->Hide(advancedBox);
-	advancedBox->Show(installationBox);
+	topSizer->Show(installationBox);
 	advancedBox->Layout();
 	topSizer->Hide(controlBox);
 	controlBox->Layout();
 	Fit();
 	topSizer->Layout();
 }
+
+
 
 
 void BR24ControlsDialog::OnRdrOnlyButtonClick(wxCommandEvent& event)
@@ -1014,7 +1024,7 @@ void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
     tValue->SetLabel(button->GetLabel());
     topSizer->Hide(controlBox);
     topSizer->Hide(advancedBox);
-	wxLogMessage(wxT("BR24radar_pi: XX  edit mode  Hide(controlBox);"));
+	topSizer->Hide(installationBox);
     topSizer->Show(editBox);
     if (fromControl->hasAuto) {
         bAuto->Show();
@@ -1069,7 +1079,6 @@ void BR24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event)
 
 void BR24ControlsDialog::OnRadarABButtonClick(wxCommandEvent& event)
 {
-	
 	if (pPlugIn->settings.selectRadarB == 0){
 		wxString labels;
 		pPlugIn->settings.selectRadarB = 1;
@@ -1091,7 +1100,6 @@ void BR24ControlsDialog::OnRadarABButtonClick(wxCommandEvent& event)
 		pPlugIn->m_pControlDialog->SetTitle(labelx);
 		pPlugIn->m_pControlDialog->SetLabel(labelx);
 	}
-	
 	UpdateControlValues(true);   // update control values on the buttons
 	                       // and update the button text on A / B select
 	UpdateGuardZoneState();
@@ -1133,7 +1141,6 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
 		// first update the range
 		if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod || refreshAll){
 			if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.button == -1){
-				wxLogMessage(wxT("BR24radar_pi: XX range auto"));
 				bRange->SetAutoX();
 			}
 			SetRangeIndex(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.button);
@@ -1143,12 +1150,10 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
 		// gain
 		if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.mod || refreshAll){
 			if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button == -1){
-				wxLogMessage(wxT("BR24radar_pi: XX gain auto in update control values"));
 				bGain->SetAutoX();
 			}
 			else{
 				bGain->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button);
-				wxLogMessage(wxT("BR24radar_pi: XX gain  in update control values %d"),pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button);
 			}
 		}
 
@@ -1161,7 +1166,6 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
 		//   sea
 		if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.mod || refreshAll)) {
 			if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.button == -1){
-				wxLogMessage(wxT("BR24radar_pi: XX sea auto"));
 				bSea->SetAutoX();
 			}
 			else{
@@ -1225,6 +1229,9 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 		{
 			if (pPlugIn->m_pControlDialog){
 				pPlugIn->m_pControlDialog->Show();
+				topSizer->Show(controlBox);
+				Fit();
+				topSizer->Layout();
 			}
 		}
 		return;
@@ -1249,7 +1256,7 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 			pPlugIn->m_pControlDialog->Show();
 		}
 		
-		if (!topSizer->IsShown(controlBox) && !topSizer->IsShown(advancedBox) && !topSizer->IsShown(editBox) && !guard){
+		if (!topSizer->IsShown(controlBox) && !topSizer->IsShown(advancedBox) && !topSizer->IsShown(editBox) && !topSizer->IsShown(installationBox) && !guard){
 			topSizer->Show(controlBox);   
 		}
 		if (br_radar_type == RT_BR24 || pPlugIn->settings.enable_dual_radar == 0){

@@ -798,9 +798,10 @@ private:
 
 	void OnAdvancedBackButtonClick(wxCommandEvent& event); 
 	void OnInstallationBackButtonClick(wxCommandEvent& event);
+	void OnResetDefaultsButtonClick(wxCommandEvent& event);
     void OnAdvancedButtonClick(wxCommandEvent& event);
 	void OnInstallationButtonClick(wxCommandEvent& event);
-
+	
 	void OnRadarGainButtonClick(wxCommandEvent& event);
 	void OnRadarABButtonClick(wxCommandEvent& event);
 		

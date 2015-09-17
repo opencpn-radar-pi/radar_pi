@@ -503,10 +503,10 @@ int br24radar_pi::Init(void)
         wxLogMessage(wxT("BR24radar_pi: configuration file values initialisation failed"));
         return 0; // give up
     }
-	if (settings.display_mode[0] != DM_CHART_BLACKOUT || settings.display_mode[0] != DM_CHART_OVERLAY){
+	if (settings.display_mode[0] != DM_CHART_BLACKOUT && settings.display_mode[0] != DM_CHART_OVERLAY){
 		settings.display_mode[0] = DM_CHART_OVERLAY;
 	}       // this is to teporarily remove emulator and spectrum
-	if (settings.display_mode[1] != DM_CHART_BLACKOUT || settings.display_mode[1] != DM_CHART_OVERLAY){
+	if (settings.display_mode[1] != DM_CHART_BLACKOUT && settings.display_mode[1] != DM_CHART_OVERLAY){
 		settings.display_mode[1] = DM_CHART_OVERLAY;
 	}   // XXX remove this stuff after fixing the emulator
 	
@@ -597,7 +597,8 @@ int br24radar_pi::Init(void)
 	m_reportReceiveThreadB->Run();
 	
     ShowRadarControl(false);   //prepare radar control but don't show it
-	control_box_closed = false;   
+	control_box_closed = false; 
+	control_box_opened = false;
 
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
@@ -1029,7 +1030,6 @@ void br24radar_pi::ShowRadarControl(bool show)
 		, br_data_seen
 		);
 	control_box_closed = false;
-	control_box_opened = false;
 }
 
 void br24radar_pi::OnContextMenuItemCallback(int id)
@@ -1283,7 +1283,6 @@ void br24radar_pi::DoTick(void)
 	if (data_seenAB[0] || data_seenAB[1]) { // Something coming from radar unit?
 		br_data_seen = true;
 		if (br_scanner_state != RADAR_ON) {
-			wxLogMessage(wxT("BR24radar_pi: First radar data seen"));
 			br_scanner_state = RADAR_ON;
 		}
 		if (settings.showRadar) {   // if not, radar will time out and go standby
@@ -1297,7 +1296,6 @@ void br24radar_pi::DoTick(void)
 	}
 	else {
 		br_scanner_state = RADAR_OFF;
-		br_data_seen = false;
 		if (br_data_seen && TIMER_ELAPSED(br_data_watchdog)) {
 			br_heading_on_radar = false;
 			br_data_seen = false;
