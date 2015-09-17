@@ -1862,7 +1862,6 @@ void br24radar_pi::Guard(int max_range, int AB)
             if (!scan) return;   // No or old data
             for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) { 
                 // - 2 added, -1 contains the range circle, should not raise alarm
-                GLubyte hist = scan->history[radius] ;
                 //           if (guardZoneAngles[z][angle]) {
 				int inner_range = guardZones[AB][z].inner_range; // now in meters
 				int outer_range = guardZones[AB][z].outer_range; // now in meters
