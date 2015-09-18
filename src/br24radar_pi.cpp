@@ -3498,7 +3498,7 @@ void *RadarCommandReceiveThread::Entry(void)
                 } else {
                     s = wxT("non-IPV4 sent command");
                 }
-                logBinaryData(s, command, r);
+                if(print)logBinaryData(s, command, r);
             }
             if (r < 0 || !br_radar_seen) {
                 closesocket(rx_socket);
@@ -3851,24 +3851,12 @@ struct radar_state08_18 {
 
 bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 {
-    static char prevStatus = 0;
+	static char prevStatus = 0;
 	if (print)wxLogMessage(wxT("BR24radar_pi: report received AB = %d"), AB);
-	if(print)logBinaryData(wxT("report received "), command, len);
-    if (command[1] == 0xC4) {
+	if (print)logBinaryData(wxT("report received "), command, len);
+	if (command[1] == 0xC4) {
 
-
-
-		//Test only
-		pPlugIn->radar_setting[0].bearing_alignment.Update(-10);
-		pPlugIn->radar_setting[0].antenna_height.Update(7);
-		pPlugIn->radar_setting[0].side_lobe_suppression.Update(50);
-		pPlugIn->radar_setting[0].local_interference_rejection.Update(2);
-
-
-
-
-
-        // Looks like a radar report. Is it a known one?
+		// Looks like a radar report. Is it a known one?
 		switch ((len << 8) + command[0]) {
 
 		case (18 << 8) + 0x01: { //  length 18, 01 C4
@@ -3883,132 +3871,133 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 				if (AB == 1) br_radar_type = RT_4G;   // only 4G Tx on channel B
 			}
 			// local interference rejection
+			if (print)wxLogMessage(wxT("BR24radar_pi: XX local_interference_rejection updated from radar= %u, button = %d"), s->local_interference_rejection,
+				pPlugIn->radar_setting[0].local_interference_rejection.button);
 			pPlugIn->radar_setting[0].local_interference_rejection.Update(s->local_interference_rejection);
-			if (print)wxLogMessage(wxT("BR24radar_pi: XX local_interference_rejection updated from radar= %u"), s->local_interference_rejection);
 
 			break;
 		}
 
-            case (99 << 8) + 0x02:
-				 {
-                    radar_state02 * s = (radar_state02 *) command;
-					if (s->field8 == 1 && s->gain == 0xad){   // changed from a1 works now 
-						pPlugIn->radar_setting[AB].gain.Update(-1);  // auto gain
-					}
-					else{
-						pPlugIn->radar_setting[AB].gain.Update(s->gain * 100 / 255);
-					} // is handled elsewhere
-		//			pPlugIn->radar_setting[AB].range.Update(idx);
-					pPlugIn->radar_setting[AB].rain.Update(s->rain * 100 / 255);
-					if (s->field13 == 0x01 && s->sea == 0xd3){
-						pPlugIn->radar_setting[AB].sea.Update(-1); // auto sea
-					}
-					else{
-						pPlugIn->radar_setting[AB].sea.Update(s->sea * 100 / 255);
-					} 
-					pPlugIn->radar_setting[AB].target_boost.Update(s->target_boost);
-					pPlugIn->radar_setting[AB].interference_rejection.Update(s->interference_rejection);
-
-                    if (print)wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d state range=%u gain=%u sea=%u rain=%u interference_rejection=%u target_boost=%u ")
-                                 , AB         
-						         , s->range
-                                 , s->gain
-                                 , s->sea
-                                 , s->rain
-                                 , s->interference_rejection
-                                 , s->target_boost
-                                 );
-             //       logBinaryData(wxT("state"), command, len);
-                }
-                break;
-
-            case (564 << 8) + 0x05:
-                // Content unknown, but we know that BR24 radomes send this
-                    if(print)logBinaryData(wxT("XXreceived familiar 3G report"), command, len);
-					br_radar_type = RT_BR24;
-                break;
-
-			case (18 << 8) + 0x08:
-			{
-				// contains scan speed, noise rejection and target_separation and sidelobe suppression
-				radar_state08_18 * s08 = (radar_state08_18 *)command;
-				
-				if (print)wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d scanspeed= %d, noise = %u target_sep %u"), AB, s08->scan_speed, s08->noise, s08->target_sep);
-				if(print)logBinaryData(wxT("XXreceived report_08"), command, len);
-				pPlugIn->radar_setting[AB].scan_speed.Update(s08->scan_speed);
-				pPlugIn->radar_setting[AB].noise_rejection.Update(s08->noise);
-				pPlugIn->radar_setting[AB].target_separation.Update(s08->target_sep);
-				if (s08->sls_auto == 1){
-					pPlugIn->radar_setting[0].side_lobe_suppression.Update(-1);
-				}
-				else{
-					pPlugIn->radar_setting[AB].side_lobe_suppression.Update(s08->side_lobe_suppression * 100 / 255);
-				}
-				if(print)logBinaryData(wxT("XXreceived report_08"), command, len);
-				break;
+		case (99 << 8) + 0x02:
+		{
+			radar_state02 * s = (radar_state02 *)command;
+			if (s->field8 == 1 && s->gain == 0xad){   // changed from a1 works now 
+				pPlugIn->radar_setting[AB].gain.Update(-1);  // auto gain
 			}
-
-			case (66 << 8) + 0x04:     // 66 bytes starting with 04 C4
-			{
-				if (print)logBinaryData(wxT("XXreceived report_04 - 66"), command, len);
-				radar_state04_66 * s04_66 = (radar_state04_66 *)command;
-
-				// bearing alignment
-				int ba = (int) s04_66->bearing_alignment / 10;
-				if (ba > 180){
-					ba = ba - 360;
-				}
-				pPlugIn->radar_setting[0].bearing_alignment.Update(ba);
-				if (print)wxLogMessage(wxT("XX bearing alignment updated from radar %d"), ba);
-
-				// antenna height
-				pPlugIn->radar_setting[0].antenna_height.Update(s04_66->antenna_height / 1000);
-				if (print)wxLogMessage(wxT("BR24radar_pi: XX antenna_height updated from radar= %u"), s04_66->antenna_height / 1000);
+			else{
+				pPlugIn->radar_setting[AB].gain.Update(s->gain * 100 / 255);
+			} // is handled elsewhere
+			//			pPlugIn->radar_setting[AB].range.Update(idx);
+			pPlugIn->radar_setting[AB].rain.Update(s->rain * 100 / 255);
+			if (s->field13 == 0x01 && s->sea == 0xd3){
+				pPlugIn->radar_setting[AB].sea.Update(-1); // auto sea
 			}
-			
-            default:
-          //      if (pPlugIn->settings.verbose >= 2) {
-				{
-                    logBinaryData(wxT("XXreceived unknown report"), command, len);
-                }
-                break;
+			else{
+				pPlugIn->radar_setting[AB].sea.Update(s->sea * 100 / 255);
+			}
+			pPlugIn->radar_setting[AB].target_boost.Update(s->target_boost);
+			pPlugIn->radar_setting[AB].interference_rejection.Update(s->interference_rejection);
 
-        }
-        return true;
-    }
-    if (command[1] == 0xF5) {
-        // Looks like a radar report. Is it a known one?
-        switch ((len << 8) + command[0]) {
-		case (16 << 8) + 0x0f:
-			logBinaryData(wxT("XXreceived 3G report"), command, len);
+			if (print)wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d state range=%u gain=%u sea=%u rain=%u interference_rejection=%u target_boost=%u ")
+				, AB
+				, s->range
+				, s->gain
+				, s->sea
+				, s->rain
+				, s->interference_rejection
+				, s->target_boost
+				);
+			//       logBinaryData(wxT("state"), command, len);
+		}
+		break;
+
+		case (564 << 8) + 0x05:
+			// Content unknown, but we know that BR24 radomes send this
+			if (print)logBinaryData(wxT("XXreceived familiar 3G report"), command, len);
 			br_radar_type = RT_BR24;
 			break;
-		
-            case (  8 << 8) + 0x10:
-            case ( 10 << 8) + 0x12:
-            case ( 46 << 8) + 0x13:
-                // Content unknown, but we know that BR24 radomes send this
-         //       if (pPlugIn->settings.verbose >= 4) {
-				{
-                    if(print)logBinaryData(wxT("XXreceived familiar report "),  command, len);
-                }
-                break;
 
-            default:
-     //           if (pPlugIn->settings.verbose >= 2) {
-				{
-                    if(print)logBinaryData(wxT("XXreceived unknown report "), command, len);
-                }
-                break;
+		case (18 << 8) + 0x08:
+		{
+			// contains scan speed, noise rejection and target_separation and sidelobe suppression
+			radar_state08_18 * s08 = (radar_state08_18 *)command;
 
-        }
-        return true;
-    }
- //   if (pPlugIn->settings.verbose >= 2) {
+			if (print)wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d scanspeed= %d, noise = %u target_sep %u"), AB, s08->scan_speed, s08->noise, s08->target_sep);
+			if (print)logBinaryData(wxT("XXreceived report_08"), command, len);
+			pPlugIn->radar_setting[AB].scan_speed.Update(s08->scan_speed);
+			pPlugIn->radar_setting[AB].noise_rejection.Update(s08->noise);
+			pPlugIn->radar_setting[AB].target_separation.Update(s08->target_sep);
+			if (s08->sls_auto == 1){
+				pPlugIn->radar_setting[0].side_lobe_suppression.Update(-1);
+			}
+			else{
+				pPlugIn->radar_setting[AB].side_lobe_suppression.Update(s08->side_lobe_suppression * 100 / 255);
+			}
+			if (print)logBinaryData(wxT("XXreceived report_08"), command, len);
+			break;
+		}
+
+		case (66 << 8) + 0x04:     // 66 bytes starting with 04 C4
+		{
+			if (print)logBinaryData(wxT("XXreceived report_04 - 66"), command, len);
+			radar_state04_66 * s04_66 = (radar_state04_66 *)command;
+
+			// bearing alignment
+			int ba = (int)s04_66->bearing_alignment / 10;
+			if (ba > 180){
+				ba = ba - 360;
+			}
+			pPlugIn->radar_setting[0].bearing_alignment.Update(ba);
+			if (print)wxLogMessage(wxT("XX bearing alignment updated from radar %d"), ba);
+
+			// antenna height
+			pPlugIn->radar_setting[0].antenna_height.Update(s04_66->antenna_height / 1000);
+			if (print)wxLogMessage(wxT("BR24radar_pi: XX antenna_height updated from radar= %u"), s04_66->antenna_height / 1000);
+		}
+
+		default:
+			//      if (pPlugIn->settings.verbose >= 2) {
+		{
+			logBinaryData(wxT("XXreceived unknown report"), command, len);
+		}
+		break;
+
+		}
+		return true;
+	}
+	if (command[1] == 0xF5) {
+		// Looks like a radar report. Is it a known one?
+		switch ((len << 8) + command[0]) {
+		case (16 << 8) + 0x0f:
+			if (print)logBinaryData(wxT("XXreceived 3G report"), command, len);
+			br_radar_type = RT_BR24;
+			break;
+
+		case (8 << 8) + 0x10:
+		case (10 << 8) + 0x12:
+		case (46 << 8) + 0x13:
+			// Content unknown, but we know that BR24 radomes send this
+			//       if (pPlugIn->settings.verbose >= 4) {
+		{
+			if (print)logBinaryData(wxT("XXreceived familiar report "), command, len);
+		}
+		break;
+
+		default:
+			//           if (pPlugIn->settings.verbose >= 2) {
+		{
+			if (print)logBinaryData(wxT("XXreceived unknown report "), command, len);
+		}
+		break;
+
+		}
+		return true;
+	}
+	//   if (pPlugIn->settings.verbose >= 2) {
 	{
-        if(print)logBinaryData(wxT("XXreceived unknown message "),  command, len);
-    }
-    return false;
+		if (print)logBinaryData(wxT("XXreceived unknown message "), command, len);
+	}
+	return false;
 }
 
 

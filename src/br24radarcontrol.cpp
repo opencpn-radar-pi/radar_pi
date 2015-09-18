@@ -1221,7 +1221,6 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
 
 		//  local interference rejection
 		if ((pPlugIn->radar_setting[0].local_interference_rejection.mod || refreshAll)) {
-			wxLogMessage(wxT("BR24radar_pi: XXXlocal_interference_rejection = %d"), pPlugIn->radar_setting[0].local_interference_rejection.button );
 			bLocalInterferenceRejection->SetValueX(pPlugIn->radar_setting[0].local_interference_rejection.button);
 			pPlugIn->radar_setting[0].local_interference_rejection.mod = false;
 		}
