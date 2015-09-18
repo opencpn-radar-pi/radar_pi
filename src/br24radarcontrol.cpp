@@ -709,12 +709,12 @@ void BR24ControlsDialog::CreateControls()
 	bLocalInterferenceRejection->SetValueX(pPlugIn->radar_setting[0].local_interference_rejection.button); 
 
 	// The SIDE LOBE SUPPRESSION button
-	bSideLobeSuppression = new RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"), pPlugIn, CT_SIDE_LOBE_SUPPRESSION, false,
-		pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.button);
+	bSideLobeSuppression = new RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"), pPlugIn, CT_SIDE_LOBE_SUPPRESSION, true,
+		pPlugIn->radar_setting[0].side_lobe_suppression.button);
 	installationBox->Add(bSideLobeSuppression, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 	bSideLobeSuppression->minValue = 0;
 	bSideLobeSuppression->maxValue = 100;
-	bSideLobeSuppression->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.button); // redraw after adding names
+	bSideLobeSuppression->SetValueX(pPlugIn->radar_setting[0].side_lobe_suppression.button); // redraw after adding names
 
 		// The RESET RADAR DEFAULTS button
 	bResetDefaults = new wxButton(this, ID_RESET_DEFAULTS, _("Reset factory defaults"), wxDefaultPosition, g_buttonSize, 0);
@@ -1205,6 +1205,39 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
 			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.mod = false;
 		} 
 	}
+	else if (topSizer->IsShown(installationBox)){
+
+		//   antenna height
+		if ((pPlugIn->radar_setting[0].antenna_height.mod || refreshAll)) {
+			bAntennaHeight->SetValueX(pPlugIn->radar_setting[0].antenna_height.button);
+			pPlugIn->radar_setting[0].antenna_height.mod = false;
+		}
+
+		//  bearing alignment
+		if ((pPlugIn->radar_setting[0].bearing_alignment.mod || refreshAll)) {
+			bBearingAlignment->SetValueX(pPlugIn->radar_setting[0].bearing_alignment.button);
+			pPlugIn->radar_setting[0].bearing_alignment.mod = false;
+		}
+
+		//  local interference rejection
+		if ((pPlugIn->radar_setting[0].local_interference_rejection.mod || refreshAll)) {
+			wxLogMessage(wxT("BR24radar_pi: XXXlocal_interference_rejection = %d"), pPlugIn->radar_setting[0].local_interference_rejection.button );
+			bLocalInterferenceRejection->SetValueX(pPlugIn->radar_setting[0].local_interference_rejection.button);
+			pPlugIn->radar_setting[0].local_interference_rejection.mod = false;
+		}
+
+		// side lobe suppression
+		if ((pPlugIn->radar_setting[0].side_lobe_suppression.mod || refreshAll)) {
+			if (pPlugIn->radar_setting[0].side_lobe_suppression.button == -1){
+				bSideLobeSuppression->SetAutoX();
+			}
+			else{
+				bSideLobeSuppression->SetValueX(pPlugIn->radar_setting[0].side_lobe_suppression.button);
+			}
+			pPlugIn->radar_setting[0].side_lobe_suppression.mod = false;
+		}
+	}
+
 }
 
 

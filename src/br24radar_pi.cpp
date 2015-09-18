@@ -1011,8 +1011,7 @@ void br24radar_pi::ShowRadarControl(bool show)
         int range = br_range_meters[settings.selectRadarB];
 		int idx = convertMetersToRadarAllowedValue(&range, settings.range_units, br_radar_type);
         m_pControlDialog->SetRangeIndex(idx);
-		radar_setting[settings.selectRadarB].range.Update(range);
-		radar_setting[settings.selectRadarB].range.button = idx;
+		radar_setting[settings.selectRadarB].range.Update(idx);
 		m_pControlDialog->Hide();
     }
 	control_box_closed = false;
@@ -1513,8 +1512,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 		br_update_range_control[settings.selectRadarB] = false;
         int radar_range = br_range_meters[settings.selectRadarB];
         int idx = convertRadarMetersToIndex(&radar_range, settings.range_units, br_radar_type);
-		radar_setting[settings.selectRadarB].range.button = idx;
-		radar_setting[settings.selectRadarB].range.Update(radar_range);
+		radar_setting[settings.selectRadarB].range.Update(idx);
         // above also updates radar_range to be a display value (lower, rounded number)
         if (m_pControlDialog) {
             if (radar_range != br_commanded_range_meters) { // this range change was not initiated by the pi
@@ -2521,9 +2519,10 @@ void br24radar_pi::SetRangeMeters(long meters)
 
 void radar_control_item::Update(int v)
 {
-	if (v != value){
+	if (v != button){
 		mod = true;
-		value = v;
+	//	value = v;   // not needed? may be for range later
+		button = v;
 		}
 };
 
@@ -2696,6 +2695,92 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
 				settings.refreshrate = value;
 				break;
 								 }
+
+			case CT_ANTENNA_HEIGHT: {   
+				int v = value * 1000;
+				int v1 = v / 256;
+				int v2 = v - 256 * v1;
+				UINT8 cmd[10] = { 0x30, 0xc1, 0x01, 0, 0, 0,
+					(UINT8)v2, (UINT8)v1, 0, 0 };
+				if (settings.verbose) {
+					wxLogMessage(wxT("BR24radar_pi: Antenna height: %d"), v);
+				}
+				TransmitCmd(cmd, sizeof(cmd));
+				break;
+			}
+
+			case CT_BEARING_ALIGNMENT: {   // to be consistent with the local bearing alignment of the pi
+				                           // this bearing alignment works opposite to the one an a Lowrance display
+				if (value < 0){
+					value += 360;
+				}
+				int v = value * 10;
+				int v1 = v / 256;
+				int v2 = v - 256 * v1;
+				UINT8 cmd[4] = { 0x05, 0xc1,
+					(UINT8)v2, (UINT8)v1 };
+				if (settings.verbose) {
+					wxLogMessage(wxT("BR24radar_pi: Bearing alignment: %d"), v);
+				}
+				TransmitCmd(cmd, sizeof(cmd));
+				break;
+			}
+
+			case CT_SIDE_LOBE_SUPPRESSION: {
+				if (value < 0) {
+					UINT8 cmd[] = {                 // SIDE_LOBE_SUPPRESSION auto
+						0x06, 0xc1, 0x05, 0, 0, 0, 0x01, 0, 0, 0, 0xc0 };
+					if (settings.verbose) {
+						wxLogMessage(wxT("BR24radar_pi: Sea: Auto"));
+					}
+					TransmitCmd(cmd, sizeof(cmd));
+				}
+				else{
+					int v = (value + 1) * 255 / 100;
+					if (v > 255) {
+						v = 255;
+					}
+					UINT8 cmd[] = {
+						0x6, 0xc1, 0x05, 0, 0, 0, 0, 0, 0, 0,
+						(UINT8)v
+					};
+					if (settings.verbose) {
+						wxLogMessage(wxT("BR24radar_pi: CT_SIDE_LOBE_SUPPRESSION: %d"), value);
+					}
+					TransmitCmd(cmd, sizeof(cmd));
+				}
+				break;
+			}
+
+			case CT_LOCAL_INTERFERENCE_REJECTION: {
+				if (value < 0) value = 0;
+				if (value > 3) value = 3;
+				UINT8 cmd[] = {
+					0x0e,
+					0xc1,
+					(UINT8)value
+				};
+				if (settings.verbose) {
+					wxLogMessage(wxT("BR24radar_pi: Local interference rejection %d"));
+				}
+				TransmitCmd(cmd, sizeof(cmd));
+				break;
+			}
+
+			case CT_RESET_DEFAULTS: {   ///XXXXXXXXXXXXXXXXXXXXXXX
+				
+				UINT8 cmd[] = {
+					0x0f,
+					0xc1,
+					(UINT8)value
+				};
+				if (settings.verbose) {
+					wxLogMessage(wxT("BR24radar_pi: Reset defaults %d") );
+				}
+			//	TransmitCmd(cmd, sizeof(cmd));
+				break;
+			}
+
 
             default: {
                 wxLogMessage(wxT("BR24radar_pi: Unhandled control setting for control %d"), controlType);
@@ -3727,14 +3812,38 @@ struct radar_state02 {
     UINT32 field14x;
 };
 
-struct radar_state08 {
+struct radar_state04_66 {  // 04 C4 with length 66
+	UINT8  what;     // 0   0x04
+	UINT8  command;  // 1   0xC4
+	UINT32 field2;    // 2-5
+	UINT16 bearing_alignment;    // 6-7
+	UINT16 field8;  // 8-9
+	UINT16 antenna_height;    // 10-11
+};
+
+struct radar_state01_18 {  // 04 C4 with length 66
+	UINT8  what;     // 0   0x01
+	UINT8  command;  // 1   0xC4
+	UINT8  radar_status;    // 2
+	UINT8  local_interference_rejection;   // 3
+	UINT8  field4;   // 4
+	UINT8  field5;   // 5
+	UINT16 field6;    // 6-7
+	UINT16 field8;  // 8-9
+	UINT16 field10;    // 10-11
+};
+
+struct radar_state08_18 {
 	UINT8  what;        // 0  0x08   
 	UINT8  command;     // 1  0xC4      
-	UINT16 field1;      // 2-3
+	UINT16 field2;      // 2-3
 	UINT8  scan_speed;  // 4
-	UINT8  field3;     // 5
-	UINT32 field4;      // 6-9
-	UINT16 field5;      // 10-11          
+	UINT8  sls_auto;     // 5 installation: sidelobe suppression auto
+	UINT8 field6;      // 6
+	UINT8 field7;      // 7
+	UINT8 field8;      // 8
+	UINT8 side_lobe_suppression;      // 9 installation: sidelobe suppression
+	UINT16 field10;      // 10-11          
 	UINT8  noise;       // 12    noise rejection    
 	UINT8  target_sep;  // 13
 };
@@ -3744,49 +3853,61 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 {
     static char prevStatus = 0;
 	if (print)wxLogMessage(wxT("BR24radar_pi: report received AB = %d"), AB);
-	logBinaryData(wxT("report received "), command, len);
+	if(print)logBinaryData(wxT("report received "), command, len);
     if (command[1] == 0xC4) {
+
+
+
+		//Test only
+		pPlugIn->radar_setting[0].bearing_alignment.Update(-10);
+		pPlugIn->radar_setting[0].antenna_height.Update(7);
+		pPlugIn->radar_setting[0].side_lobe_suppression.Update(50);
+		pPlugIn->radar_setting[0].local_interference_rejection.Update(2);
+
+
+
+
+
         // Looks like a radar report. Is it a known one?
-        switch ((len << 8) + command[0]) {
-            case (18 << 8) + 0x01:
-                // Radar status in byte 2
-                if (command[2] != prevStatus) {
-             //       if (pPlugIn->settings.verbose > 0) {
-					{
-                        if (print)wxLogMessage(wxT("BR24radar_pi: XXprocess inc report radar AB = %d status = %u"), AB, command[2]);
-                    }
-                    prevStatus = command[2];
-					if (AB == 1 ) br_radar_type = RT_4G;
-                }
-                break;
+		switch ((len << 8) + command[0]) {
+
+		case (18 << 8) + 0x01: { //  length 18, 01 C4
+			radar_state01_18 * s = (radar_state01_18 *)command;
+			// Radar status in byte 2
+			if (s->radar_status != prevStatus) {
+				//       if (pPlugIn->settings.verbose > 0) {
+				{
+					if (print)wxLogMessage(wxT("BR24radar_pi: XXprocess inc report radar AB = %d status = %u"), AB, command[2]);
+				}
+				prevStatus = command[2];
+				if (AB == 1) br_radar_type = RT_4G;   // only 4G Tx on channel B
+			}
+			// local interference rejection
+			pPlugIn->radar_setting[0].local_interference_rejection.Update(s->local_interference_rejection);
+			if (print)wxLogMessage(wxT("BR24radar_pi: XX local_interference_rejection updated from radar= %u"), s->local_interference_rejection);
+
+			break;
+		}
 
             case (99 << 8) + 0x02:
 				 {
                     radar_state02 * s = (radar_state02 *) command;
-					pPlugIn->radar_setting[AB].gain.Update(s->gain); 
-					if (s->field8 == 1 && s->gain == 0xad){   // changed from a1 works now ??
-						pPlugIn->radar_setting[AB].gain.Update(s->gain);
-						pPlugIn->radar_setting[AB].gain.button = -1; // auto gain
+					if (s->field8 == 1 && s->gain == 0xad){   // changed from a1 works now 
+						pPlugIn->radar_setting[AB].gain.Update(-1);  // auto gain
 					}
 					else{
-						pPlugIn->radar_setting[AB].gain.Update(s->gain);
-						pPlugIn->radar_setting[AB].gain.button = s->gain * 100 / 255;
-					}
-		// 			pPlugIn->radar_setting[AB].range.button =    // is handled elsewhere
-		//			pPlugIn->radar_setting[AB].range.Update(s->range);
-					pPlugIn->radar_setting[AB].rain.Update(s->rain);
-					pPlugIn->radar_setting[AB].rain.button = s->rain * 100 / 255;
-					pPlugIn->radar_setting[AB].sea.Update(s->sea);
+						pPlugIn->radar_setting[AB].gain.Update(s->gain * 100 / 255);
+					} // is handled elsewhere
+		//			pPlugIn->radar_setting[AB].range.Update(idx);
+					pPlugIn->radar_setting[AB].rain.Update(s->rain * 100 / 255);
 					if (s->field13 == 0x01 && s->sea == 0xd3){
-						pPlugIn->radar_setting[AB].sea.button = -1; // auto sea
+						pPlugIn->radar_setting[AB].sea.Update(-1); // auto sea
 					}
 					else{
-						pPlugIn->radar_setting[AB].sea.button = s->sea * 100 / 255;
+						pPlugIn->radar_setting[AB].sea.Update(s->sea * 100 / 255);
 					} 
 					pPlugIn->radar_setting[AB].target_boost.Update(s->target_boost);
-					pPlugIn->radar_setting[AB].target_boost.button = s->target_boost;
 					pPlugIn->radar_setting[AB].interference_rejection.Update(s->interference_rejection);
-					pPlugIn->radar_setting[AB].interference_rejection.button = s->interference_rejection;
 
                     if (print)wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d state range=%u gain=%u sea=%u rain=%u interference_rejection=%u target_boost=%u ")
                                  , AB         
@@ -3803,26 +3924,48 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 
             case (564 << 8) + 0x05:
                 // Content unknown, but we know that BR24 radomes send this
-                    logBinaryData(wxT("XXreceived familiar 3G report"), command, len);
+                    if(print)logBinaryData(wxT("XXreceived familiar 3G report"), command, len);
 					br_radar_type = RT_BR24;
                 break;
 
 			case (18 << 8) + 0x08:
 			{
-				// contains scan speed, noise rejection and target_separation
-				radar_state08 * s08 = (radar_state08 *)command;
+				// contains scan speed, noise rejection and target_separation and sidelobe suppression
+				radar_state08_18 * s08 = (radar_state08_18 *)command;
 				
 				if (print)wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d scanspeed= %d, noise = %u target_sep %u"), AB, s08->scan_speed, s08->noise, s08->target_sep);
-				logBinaryData(wxT("XXreceived report_08"), command, len);
+				if(print)logBinaryData(wxT("XXreceived report_08"), command, len);
 				pPlugIn->radar_setting[AB].scan_speed.Update(s08->scan_speed);
-				pPlugIn->radar_setting[AB].scan_speed.button = s08->scan_speed;
 				pPlugIn->radar_setting[AB].noise_rejection.Update(s08->noise);
-				pPlugIn->radar_setting[AB].noise_rejection.button = s08->noise;
 				pPlugIn->radar_setting[AB].target_separation.Update(s08->target_sep);
-				pPlugIn->radar_setting[AB].target_separation.button = s08->target_sep;
-				logBinaryData(wxT("XXreceived report_08"), command, len);
+				if (s08->sls_auto == 1){
+					pPlugIn->radar_setting[0].side_lobe_suppression.Update(-1);
+				}
+				else{
+					pPlugIn->radar_setting[AB].side_lobe_suppression.Update(s08->side_lobe_suppression * 100 / 255);
+				}
+				if(print)logBinaryData(wxT("XXreceived report_08"), command, len);
 				break;
 			}
+
+			case (66 << 8) + 0x04:     // 66 bytes starting with 04 C4
+			{
+				if (print)logBinaryData(wxT("XXreceived report_04 - 66"), command, len);
+				radar_state04_66 * s04_66 = (radar_state04_66 *)command;
+
+				// bearing alignment
+				int ba = (int) s04_66->bearing_alignment / 10;
+				if (ba > 180){
+					ba = ba - 360;
+				}
+				pPlugIn->radar_setting[0].bearing_alignment.Update(ba);
+				if (print)wxLogMessage(wxT("XX bearing alignment updated from radar %d"), ba);
+
+				// antenna height
+				pPlugIn->radar_setting[0].antenna_height.Update(s04_66->antenna_height / 1000);
+				if (print)wxLogMessage(wxT("BR24radar_pi: XX antenna_height updated from radar= %u"), s04_66->antenna_height / 1000);
+			}
+			
             default:
           //      if (pPlugIn->settings.verbose >= 2) {
 				{
@@ -3847,14 +3990,14 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
                 // Content unknown, but we know that BR24 radomes send this
          //       if (pPlugIn->settings.verbose >= 4) {
 				{
-                    logBinaryData(wxT("XXreceived familiar report "),  command, len);
+                    if(print)logBinaryData(wxT("XXreceived familiar report "),  command, len);
                 }
                 break;
 
             default:
      //           if (pPlugIn->settings.verbose >= 2) {
 				{
-                    logBinaryData(wxT("XXreceived unknown report "), command, len);
+                    if(print)logBinaryData(wxT("XXreceived unknown report "), command, len);
                 }
                 break;
 
@@ -3863,7 +4006,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
     }
  //   if (pPlugIn->settings.verbose >= 2) {
 	{
-        logBinaryData(wxT("XXreceived unknown message "),  command, len);
+        if(print)logBinaryData(wxT("XXreceived unknown message "),  command, len);
     }
     return false;
 }
