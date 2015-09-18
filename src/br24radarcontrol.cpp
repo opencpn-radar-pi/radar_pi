@@ -333,10 +333,8 @@ void RadarControlButton::SetAutoX()
 void BR24ControlsDialog::OnResetDefaultsButtonClick(wxCommandEvent& event)
 {
 	pPlugIn->SetControlValue(CT_RESET_DEFAULTS, 0);
-	wxString label;
-	label = _("Reset issued");
 	wxLogMessage(wxT("BR24radar_pi: XXX reset issued"));
-	bResetDefaults->SetLabel(label);
+	bResetDefaults->SetLabel(_("Reset issued"));
 }
 
 int RadarRangeControlButton::SetValueInt(int newValue)
@@ -985,6 +983,7 @@ void BR24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event)
 	fromBox = installationBox;
 	topSizer->Hide(advancedBox);
 	topSizer->Show(installationBox);
+	bResetDefaults->SetLabel(_("Reset factory defaults"));
 	advancedBox->Layout();
 	topSizer->Hide(controlBox);
 	controlBox->Layout();
