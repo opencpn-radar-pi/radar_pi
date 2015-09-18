@@ -497,7 +497,7 @@ void BR24ControlsDialog::CreateControls()
     // Determined desired button width     */
 
 	static int width = 135;     // button width
-	g_buttonSize = wxSize(width, 40);  
+	g_buttonSize = wxSize(width, 50);  
     //**************** EDIT BOX ******************//
 	 // A box sizer to contain RANGE button
     editBox = new wxBoxSizer(wxVERTICAL);
