@@ -164,6 +164,10 @@ int   br_scanner_state = RADAR_OFF;
 RadarType br_radar_type = RT_4G;  // default value
 
 static bool  br_radar_seen = false;
+static int other_screen_address;
+static int my_address;
+static time_t other_screen_watchdog;
+static bool other_screen_active = false;
 static bool  previous_br_radar_seen = false;
 static double gLon, gLat;   // used for the initial boat position as read from ini file
 static bool  br_data_seen = false;
@@ -428,6 +432,7 @@ int br24radar_pi::Init(void)
     br_dt_stayalive = time(0);
     br_alarm_sound_last = br_dt_stayalive;
     br_bpos_watchdog = 0;
+	other_screen_watchdog = 0;
     br_hdt_watchdog  = 0;
     br_var_watchdog = 0;
     br_radar_watchdog = 0;
@@ -1235,6 +1240,16 @@ void br24radar_pi::DoTick(void)
 		settings.selectRadarB = 0;
 		settings.enable_dual_radar = 0;
 	}
+	if (my_address != other_screen_address){
+		other_screen_active = true;
+		other_screen_watchdog = 0;
+		wxLogMessage(wxT("BR24radar_pi: Other sceen detected, this %d, other"));
+		other_screen_address = my_address;
+	}
+	if (other_screen_active && TIMER_ELAPSED(other_screen_watchdog)){
+		other_screen_active = false;
+		wxLogMessage(wxT("BR24radar_pi: Other sceen disappeared"));
+	}
 
 	if (br_bpos_set && TIMER_ELAPSED(br_bpos_watchdog)) {
 		// If the position data is 10s old reset our heading.
@@ -1278,7 +1293,7 @@ void br24radar_pi::DoTick(void)
 			previous_br_radar_seen = true;
 		}
 	}
-	wxLogMessage(wxT("BR24radar_pi: First radar data seen spokes %d, broken %d"), m_statistics[settings.selectRadarB].spokes, m_statistics[settings.selectRadarB].broken_spokes);
+//	wxLogMessage(wxT("BR24radar_pi: First radar data seen spokes %d, broken %d"), m_statistics[settings.selectRadarB].spokes, m_statistics[settings.selectRadarB].broken_spokes);
 	data_seenAB[0] = m_statistics[0].spokes > m_statistics[0].broken_spokes;
 	data_seenAB[1] = m_statistics[1].spokes > m_statistics[1].broken_spokes;
 	if (data_seenAB[0] || data_seenAB[1]) { // Something coming from radar unit?
@@ -2422,6 +2437,9 @@ bool br24radar_pi::TransmitCmd(int AB, UINT8 * msg, int size)
 
 void br24radar_pi::RadarTxOff(void)
 {          
+	if (other_screen_active){
+		return;
+	}
 	if(settings.enable_dual_radar == 0){   // switch active radar off
 		UINT8 pck[3] = {0x00, 0xc1, 0x01};
 		TransmitCmd(settings.selectRadarB, pck, sizeof(pck));
@@ -3169,6 +3187,7 @@ void *RadarDataReceiveThread::Entry(void)
                     UINT8 * a = (UINT8 *) &br_mcast_addr->sin_addr; // sin_addr is in network layout
                     addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
                     if (print)wxLogMessage(wxT("BR24radar_pi: Listening for radar AB = %d data on %s"), AB, addr.c_str());
+					my_address = a[3];
                 }
             }
 				if (socketReady(rx_socket, 1000)) {
@@ -3489,21 +3508,28 @@ void *RadarCommandReceiveThread::Entry(void)
             if (r > 0) {
                 wxString s;
 
-                if (rx_addr.addr.ss_family == AF_INET) {
-                    UINT8 * a = (UINT8 *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
-
-					 {
-						s.Printf(wxT("%u.%u.%u.%u XX command received AB = %d"), a[0] , a[1] , a[2] , a[3], AB);
+				if (rx_addr.addr.ss_family == AF_INET) {
+					UINT8 * a = (UINT8 *)&rx_addr.ipv4.sin_addr; // sin_addr is in network layout
+					other_screen_address = a[3];
+					if (my_address != other_screen_address){
+						other_screen_active = true;
+						other_screen_watchdog = 0;
+						if (print)	wxLogMessage(wxT("BR24radar_pi: Other screen detected, this %d, other %d"), my_address, other_screen_address);
+						other_screen_address = my_address;
 					}
-                } else {
-                    s = wxT("non-IPV4 sent command");
-                }
-                if(print)logBinaryData(s, command, r);
-            }
-            if (r < 0 || !br_radar_seen) {
-                closesocket(rx_socket);
-                rx_socket = INVALID_SOCKET;
-            }
+					{
+						if (print)s.Printf(wxT("%u.%u.%u.%u XX command received AB = %d"), a[0], a[1], a[2], a[3], AB);
+					}
+				}
+				else {
+					s = wxT("non-IPV4 sent command");
+				}
+				if (print)logBinaryData(s, command, r);
+			}
+			if (r < 0 || !br_radar_seen) {
+				closesocket(rx_socket);
+				rx_socket = INVALID_SOCKET;
+			}
 		}
 		else if (!br_radar_seen || !br_mcast_addr) {
 			if (rx_socket != INVALID_SOCKET) {
