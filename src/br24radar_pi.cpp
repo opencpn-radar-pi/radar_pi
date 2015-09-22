@@ -3875,7 +3875,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 			} // is handled elsewhere
 			//			pPlugIn->radar_setting[AB].range.Update(idx);
 			pPlugIn->radar_setting[AB].rain.Update(s->rain * 100 / 255);
-			if (s->field13 == 0x01 && s->sea == 0xd3){
+			if (s->field13 == 0x01){
 				pPlugIn->radar_setting[AB].sea.Update(-1); // auto sea
 			}
 			else{
