@@ -209,7 +209,6 @@ typedef enum ControlType {
     CT_TIMED_IDLE,
 	CT_BEARING_ALIGNMENT,
 	CT_SIDE_LOBE_SUPPRESSION,
-	CT_RESET_DEFAULTS,
 	CT_ANTENNA_HEIGHT,
 	CT_LOCAL_INTERFERENCE_REJECTION
 } ControlType;
@@ -797,7 +796,6 @@ private:
 
 	void OnAdvancedBackButtonClick(wxCommandEvent& event); 
 	void OnInstallationBackButtonClick(wxCommandEvent& event);
-	void OnResetDefaultsButtonClick(wxCommandEvent& event);
     void OnAdvancedButtonClick(wxCommandEvent& event);
 	void OnInstallationButtonClick(wxCommandEvent& event);
 	
@@ -859,7 +857,6 @@ private:
 	RadarControlButton *bAntennaHeight;
 	RadarControlButton *bLocalInterferenceRejection;
 	RadarControlButton *bSideLobeSuppression;
-	wxButton           *bResetDefaults;
 
     // Show Controls
 

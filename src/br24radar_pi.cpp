@@ -2764,22 +2764,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
 				break;
 			}
 
-			case CT_RESET_DEFAULTS: {   
-				
-				UINT8 cmd[] = {
-					0x0f,
-					0xc1,
-					01
-				};
-				if (settings.verbose) {
-					wxLogMessage(wxT("BR24radar_pi: Reset defaults %d") );
-				}
-				TransmitCmd(cmd, sizeof(cmd));
-				TransmitCmd(cmd, sizeof(cmd)); // this command should be send twice
-				break;
-			}
-
-
+			
             default: {
                 wxLogMessage(wxT("BR24radar_pi: Unhandled control setting for control %d"), controlType);
             }

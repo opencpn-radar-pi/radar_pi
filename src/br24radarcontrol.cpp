@@ -85,7 +85,6 @@ enum {                                      // process ID's
 	ID_ANTENNA_HEIGHT,
 	ID_LOCAL_INTERFERENCE_REJECTION,
 	ID_SIDE_LOBE_SUPPRESSION,
-	ID_RESET_DEFAULTS,
 
     ID_RADAR_ONLY,
 	ID_RANGE,
@@ -140,7 +139,6 @@ EVT_BUTTON(ID_BEARING_ALIGNMENT, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_ANTENNA_HEIGHT, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_LOCAL_INTERFERENCE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_SIDE_LOBE_SUPPRESSION, BR24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_RESET_DEFAULTS, BR24ControlsDialog::OnResetDefaultsButtonClick)
 
 EVT_BUTTON(ID_RADAR_ONLY, BR24ControlsDialog::OnRadarOnlyButtonClick)
 EVT_BUTTON(ID_RANGE, BR24ControlsDialog::OnRadarControlButtonClick)
@@ -330,12 +328,6 @@ void RadarControlButton::SetAutoX()
 
 }
 
-void BR24ControlsDialog::OnResetDefaultsButtonClick(wxCommandEvent& event)
-{
-	pPlugIn->SetControlValue(CT_RESET_DEFAULTS, 0);
-	wxLogMessage(wxT("BR24radar_pi: XXX reset issued"));
-	bResetDefaults->SetLabel(_("Reset issued"));
-}
 
 int RadarRangeControlButton::SetValueInt(int newValue)
 {
@@ -716,10 +708,6 @@ void BR24ControlsDialog::CreateControls()
 	bSideLobeSuppression->maxValue = 100;
 	bSideLobeSuppression->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.button); // redraw after adding names
 
-		// The RESET RADAR DEFAULTS button
-	bResetDefaults = new wxButton(this, ID_RESET_DEFAULTS, _("Reset factory defaults"), wxDefaultPosition, g_buttonSize, 0);
-	installationBox->Add(bResetDefaults, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-
 	topSizer->Hide(installationBox);
 
 
@@ -983,7 +971,6 @@ void BR24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event)
 	fromBox = installationBox;
 	topSizer->Hide(advancedBox);
 	topSizer->Show(installationBox);
-	bResetDefaults->SetLabel(_("Reset factory defaults"));
 	advancedBox->Layout();
 	topSizer->Hide(controlBox);
 	controlBox->Layout();
