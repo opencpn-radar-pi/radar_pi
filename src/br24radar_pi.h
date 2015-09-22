@@ -274,7 +274,6 @@ struct pi_control_settings {
     int      timed_idle;
     int      idle_run_time;
     int      draw_algorithm;
-    int      scan_speed;
     int      refreshrate;   
 	int      passHeadingToOCPN;      
 	int      enable_dual_radar;

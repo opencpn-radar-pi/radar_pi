@@ -164,10 +164,7 @@ int   br_scanner_state = RADAR_OFF;
 RadarType br_radar_type = RT_4G;  // default value
 
 static bool  br_radar_seen = false;
-static int other_screen_address;
 static int my_address;
-static time_t other_screen_watchdog;
-static bool other_screen_active = false;
 static bool  previous_br_radar_seen = false;
 static double gLon, gLat;   // used for the initial boat position as read from ini file
 static bool  br_data_seen = false;
@@ -432,7 +429,6 @@ int br24radar_pi::Init(void)
     br_dt_stayalive = time(0);
     br_alarm_sound_last = br_dt_stayalive;
     br_bpos_watchdog = 0;
-	other_screen_watchdog = 0;
     br_hdt_watchdog  = 0;
     br_var_watchdog = 0;
     br_radar_watchdog = 0;
@@ -1019,7 +1015,7 @@ void br24radar_pi::ShowRadarControl(bool show)
 		radar_setting[settings.selectRadarB].range.Update(idx);
 		m_pControlDialog->Hide();
     }
-	control_box_closed = false;
+	
 	m_pControlDialog->UpdateControl(br_opengl_mode
 		, br_bpos_set
 		, m_heading_source != HEADING_NONE
@@ -1240,16 +1236,6 @@ void br24radar_pi::DoTick(void)
 		settings.selectRadarB = 0;
 		settings.enable_dual_radar = 0;
 	}
-	if (my_address != other_screen_address){
-		other_screen_active = true;
-		other_screen_watchdog = 0;
-		wxLogMessage(wxT("BR24radar_pi: Other sceen detected, this %d, other"));
-		other_screen_address = my_address;
-	}
-	if (other_screen_active && TIMER_ELAPSED(other_screen_watchdog)){
-		other_screen_active = false;
-		wxLogMessage(wxT("BR24radar_pi: Other sceen disappeared"));
-	}
 
 	if (br_bpos_set && TIMER_ELAPSED(br_bpos_watchdog)) {
 		// If the position data is 10s old reset our heading.
@@ -1298,6 +1284,7 @@ void br24radar_pi::DoTick(void)
 	data_seenAB[1] = m_statistics[1].spokes > m_statistics[1].broken_spokes;
 	if (data_seenAB[0] || data_seenAB[1]) { // Something coming from radar unit?
 		br_data_seen = true;
+		br_data_watchdog = now;
 		if (br_scanner_state != RADAR_ON) {
 			br_scanner_state = RADAR_ON;
 		}
@@ -1307,8 +1294,6 @@ void br24radar_pi::DoTick(void)
 				RadarStayAlive();
 			}
 		}
-		br_data_watchdog = now;
-		br_data_seen = true;
 	}
 	else {
 		br_scanner_state = RADAR_OFF;
@@ -2111,7 +2096,6 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(wxT("DrawAlgorithm"), &settings.draw_algorithm, 1);
         pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
         pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
-        pConf->Read(wxT("ScanSpeed"), &settings.scan_speed, 0);
 		pConf->Read(wxT("Refreshrate"), &settings.refreshrate, 1);
         if (settings.refreshrate < 1) {
             settings.refreshrate = 1; // not allowed
@@ -2192,7 +2176,6 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("ScanMaxAge"), settings.max_age);
         pConf->Write(wxT("RunTimeOnIdle"), settings.idle_run_time);
         pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
-        pConf->Write(wxT("ScanSpeed"), settings.scan_speed);
         pConf->Write(wxT("Refreshrate"), settings.refreshrate);
         pConf->Write(wxT("PassHeadingToOCPN"), settings.passHeadingToOCPN);
         pConf->Write(wxT("selectRadarB"), settings.selectRadarB);
@@ -2258,21 +2241,21 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 
     // PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,,230394,003.1,W"));  // only for test, position without heading
     // PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A")); //with heading for test
-    if (br_var_source <= VARIATION_SOURCE_FIX && !wxIsNaN(pfix.Var) && (fabs(pfix.Var) > 0.0 || br_var == 0.0)) {
-        if (br_var_source < VARIATION_SOURCE_FIX || fabs(pfix.Var - br_var) > 0.0) {
-            wxLogMessage(wxT("BR24radar_pi: Position fix provides new magnetic variation %f"), pfix.Var);
-        }
-        br_var = pfix.Var;
-        br_var_source = VARIATION_SOURCE_FIX;
-        br_var_watchdog = now;
-		if (m_pMessageBox) {
-			if (m_pMessageBox->IsShown()) {
-				info = _("GPS");
-				info << wxT(" ") << br_var;
-				m_pMessageBox->SetVariationInfo(info);
+	if (br_var_source <= VARIATION_SOURCE_FIX && !wxIsNaN(pfix.Var) && (fabs(pfix.Var) > 0.0 || br_var == 0.0)) {
+		if (br_var_source < VARIATION_SOURCE_FIX || fabs(pfix.Var - br_var) > 0.1) {
+			wxLogMessage(wxT("BR24radar_pi: Position fix provides new magnetic variation %f"), pfix.Var);
+			if (m_pMessageBox) {
+				if (m_pMessageBox->IsShown()) {
+					info = _("GPS");
+					info << wxT(" ") << br_var;
+					m_pMessageBox->SetVariationInfo(info);
+				}
 			}
+			br_var = pfix.Var;
+			br_var_source = VARIATION_SOURCE_FIX;
+			br_var_watchdog = now;
 		}
-    }
+	}
 
     if (settings.verbose >= 2) {
         wxLogMessage(wxT("BR24radar_pi: SetPositionFixEx var=%f heading_on_radar=%d br_var_wd=%d settings.showRadar=%d")
@@ -2437,9 +2420,6 @@ bool br24radar_pi::TransmitCmd(int AB, UINT8 * msg, int size)
 
 void br24radar_pi::RadarTxOff(void)
 {          
-	if (other_screen_active){
-		return;
-	}
 	if(settings.enable_dual_radar == 0){   // switch active radar off
 		UINT8 pck[3] = {0x00, 0xc1, 0x01};
 		TransmitCmd(settings.selectRadarB, pck, sizeof(pck));
@@ -2684,7 +2664,6 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 break;
             }
             case CT_SCAN_SPEED: {
-                settings.scan_speed = value;
                 UINT8 cmd[] = {
                     0x0f,
                     0xc1,
@@ -2749,7 +2728,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
 					UINT8 cmd[] = {                 // SIDE_LOBE_SUPPRESSION auto
 						0x06, 0xc1, 0x05, 0, 0, 0, 0x01, 0, 0, 0, 0xc0 };
 					if (settings.verbose) {
-						wxLogMessage(wxT("BR24radar_pi: Sea: Auto"));
+						wxLogMessage(wxT("BR24radar_pi: command Tx CT_SIDE_LOBE_SUPPRESSION Auto"));
 					}
 					TransmitCmd(cmd, sizeof(cmd));
 				}
@@ -2763,9 +2742,9 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
 						(UINT8)v
 					};
 					if (settings.verbose) {
-						wxLogMessage(wxT("BR24radar_pi: CT_SIDE_LOBE_SUPPRESSION: %d"), value);
+						wxLogMessage(wxT("BR24radar_pi: command Tx CT_SIDE_LOBE_SUPPRESSION: %d"), value);
 					}
-					TransmitCmd(cmd, sizeof(cmd));
+					TransmitCmd(cmd, sizeof(cmd));  
 				}
 				break;
 			}
@@ -2779,23 +2758,24 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
 					(UINT8)value
 				};
 				if (settings.verbose) {
-					wxLogMessage(wxT("BR24radar_pi: Local interference rejection %d"));
+					wxLogMessage(wxT("BR24radar_pi: Local interference rejection %d"), value);
 				}
 				TransmitCmd(cmd, sizeof(cmd));
 				break;
 			}
 
-			case CT_RESET_DEFAULTS: {   ///XXXXXXXXXXXXXXXXXXXXXXX
+			case CT_RESET_DEFAULTS: {   
 				
 				UINT8 cmd[] = {
 					0x0f,
 					0xc1,
-					(UINT8)value
+					01
 				};
 				if (settings.verbose) {
 					wxLogMessage(wxT("BR24radar_pi: Reset defaults %d") );
 				}
-			//	TransmitCmd(cmd, sizeof(cmd));
+				TransmitCmd(cmd, sizeof(cmd));
+				TransmitCmd(cmd, sizeof(cmd)); // this command should be send twice
 				break;
 			}
 
@@ -3233,6 +3213,9 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     time_t now = time(0);
     br_radar_seen = true;
     br_radar_watchdog = now;
+	br_data_seen = true;   // added here, otherwise loose image while data is present
+	br_data_watchdog = now;
+	
 	static int previous_angle_raw = 0;
 
     // wxCriticalSectionLocker locker(br_scanLock);
@@ -3409,6 +3392,7 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
     pPlugIn->m_statistics[AB].packets++;
     br_data_seen = true;
     br_radar_seen = true;
+
     br_radar_watchdog = now;
     br_data_watchdog = br_radar_watchdog;
 
@@ -3505,26 +3489,19 @@ void *RadarCommandReceiveThread::Entry(void)
             UINT8 command[1500];
             rx_len = sizeof(rx_addr);
             r = recvfrom(rx_socket, (char * ) command, sizeof(command), 0, (struct sockaddr *) &rx_addr, &rx_len);
-            if (r > 0) {
-                wxString s;
+			if (r > 0) {
+				wxString s;
 
 				if (rx_addr.addr.ss_family == AF_INET) {
-					UINT8 * a = (UINT8 *)&rx_addr.ipv4.sin_addr; // sin_addr is in network layout
-					other_screen_address = a[3];
-					if (my_address != other_screen_address){
-						other_screen_active = true;
-						other_screen_watchdog = 0;
-						if (print)	wxLogMessage(wxT("BR24radar_pi: Other screen detected, this %d, other %d"), my_address, other_screen_address);
-						other_screen_address = my_address;
-					}
+					UINT8 * a = (UINT8 *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
+
 					{
-						if (print)s.Printf(wxT("%u.%u.%u.%u XX command received AB = %d"), a[0], a[1], a[2], a[3], AB);
+						if(print)s.Printf(wxT("%u.%u.%u.%u XX command received AB = %d"), a[0] , a[1] , a[2] , a[3], AB);
 					}
-				}
-				else {
+				} else {
 					s = wxT("non-IPV4 sent command");
 				}
-				if (print)logBinaryData(s, command, r);
+				if(print)logBinaryData(s, command, r);
 			}
 			if (r < 0 || !br_radar_seen) {
 				closesocket(rx_socket);
@@ -3534,9 +3511,9 @@ void *RadarCommandReceiveThread::Entry(void)
 		else if (!br_radar_seen || !br_mcast_addr) {
 			if (rx_socket != INVALID_SOCKET) {
 				closesocket(rx_socket);
-                rx_socket = INVALID_SOCKET;
-            }
-        }
+				rx_socket = INVALID_SOCKET;
+			}
+		}
 	}
 	if (rx_socket != INVALID_SOCKET) {
 		closesocket(rx_socket);
@@ -3851,7 +3828,7 @@ struct radar_state01_18 {  // 04 C4 with length 66
 	UINT8  what;     // 0   0x01
 	UINT8  command;  // 1   0xC4
 	UINT8  radar_status;    // 2
-	UINT8  local_interference_rejection;   // 3
+	UINT8  field3;   // 3
 	UINT8  field4;   // 4
 	UINT8  field5;   // 5
 	UINT16 field6;    // 6-7
@@ -3859,18 +3836,19 @@ struct radar_state01_18 {  // 04 C4 with length 66
 	UINT16 field10;    // 10-11
 };
 
-struct radar_state08_18 {
+struct radar_state08_18 {  //08 c4  length 18
 	UINT8  what;        // 0  0x08   
 	UINT8  command;     // 1  0xC4      
-	UINT16 field2;      // 2-3
-	UINT8  scan_speed;  // 4
-	UINT8  sls_auto;     // 5 installation: sidelobe suppression auto
+	UINT8 field2;      // 2
+	UINT8 local_interference_rejection;   // 3
+	UINT8 scan_speed;  // 4
+	UINT8 sls_auto;     // 5 installation: sidelobe suppression auto
 	UINT8 field6;      // 6
 	UINT8 field7;      // 7
 	UINT8 field8;      // 8
 	UINT8 side_lobe_suppression;      // 9 installation: sidelobe suppression
 	UINT16 field10;      // 10-11          
-	UINT8  noise;       // 12    noise rejection    
+	UINT8  noise_rejection;       // 12    noise rejection    
 	UINT8  target_sep;  // 13
 };
 #pragma pack(pop)
@@ -3896,18 +3874,15 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 				prevStatus = command[2];
 				if (AB == 1) br_radar_type = RT_4G;   // only 4G Tx on channel B
 			}
-			// local interference rejection
-			if (print)wxLogMessage(wxT("BR24radar_pi: XX local_interference_rejection updated from radar= %u, button = %d"), s->local_interference_rejection,
-				pPlugIn->radar_setting[0].local_interference_rejection.button);
-			pPlugIn->radar_setting[0].local_interference_rejection.Update(s->local_interference_rejection);
+			
 
 			break;
 		}
 
-		case (99 << 8) + 0x02:
+		case (99 << 8) + 0x02:   // length 99, 08 C4
 		{
 			radar_state02 * s = (radar_state02 *)command;
-			if (s->field8 == 1 && s->gain == 0xad){   // changed from a1 works now 
+			if (s->field8 == 1){   // 1 for auto
 				pPlugIn->radar_setting[AB].gain.Update(-1);  // auto gain
 			}
 			else{
@@ -3937,28 +3912,34 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 		}
 		break;
 
-		case (564 << 8) + 0x05:
+		case (564 << 8) + 0x05:    // length 564, 05 C4
+			{
 			// Content unknown, but we know that BR24 radomes send this
 			if (print)logBinaryData(wxT("XXreceived familiar 3G report"), command, len);
 			br_radar_type = RT_BR24;
 			break;
+			}
 
-		case (18 << 8) + 0x08:
+		case (18 << 8) + 0x08:   // length 18, 08 C4
 		{
 			// contains scan speed, noise rejection and target_separation and sidelobe suppression
 			radar_state08_18 * s08 = (radar_state08_18 *)command;
 
-			if (print)wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d scanspeed= %d, noise = %u target_sep %u"), AB, s08->scan_speed, s08->noise, s08->target_sep);
+			if (print)wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d scanspeed= %d, noise = %u target_sep %u"), AB, s08->scan_speed, s08->noise_rejection, s08->target_sep);
 			if (print)logBinaryData(wxT("XXreceived report_08"), command, len);
 			pPlugIn->radar_setting[AB].scan_speed.Update(s08->scan_speed);
-			pPlugIn->radar_setting[AB].noise_rejection.Update(s08->noise);
+			pPlugIn->radar_setting[AB].noise_rejection.Update(s08->noise_rejection);
 			pPlugIn->radar_setting[AB].target_separation.Update(s08->target_sep);
-			if (s08->sls_auto == 1){
-				pPlugIn->radar_setting[0].side_lobe_suppression.Update(-1);
-			}
-			else{
-				pPlugIn->radar_setting[AB].side_lobe_suppression.Update(s08->side_lobe_suppression * 100 / 255);
-			}
+				if (s08->sls_auto == 1){
+					pPlugIn->radar_setting[AB].side_lobe_suppression.Update(-1);
+				}
+				else{
+					pPlugIn->radar_setting[AB].side_lobe_suppression.Update(s08->side_lobe_suppression * 100 / 255);
+				}
+// local interference rejection
+			pPlugIn->radar_setting[AB].local_interference_rejection.Update(s08->local_interference_rejection);
+				
+			if (print)wxLogMessage(wxT("BR24radar_pi: XX receive report AB= %d"), AB);
 			if (print)logBinaryData(wxT("XXreceived report_08"), command, len);
 			break;
 		}
@@ -3973,18 +3954,19 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 			if (ba > 180){
 				ba = ba - 360;
 			}
-			pPlugIn->radar_setting[0].bearing_alignment.Update(ba);
+			pPlugIn->radar_setting[AB].bearing_alignment.Update(ba);
 			if (print)wxLogMessage(wxT("XX bearing alignment updated from radar %d"), ba);
 
 			// antenna height
-			pPlugIn->radar_setting[0].antenna_height.Update(s04_66->antenna_height / 1000);
+			pPlugIn->radar_setting[AB].antenna_height.Update(s04_66->antenna_height / 1000);
 			if (print)wxLogMessage(wxT("BR24radar_pi: XX antenna_height updated from radar= %u"), s04_66->antenna_height / 1000);
+			break;
 		}
 
 		default:
 			//      if (pPlugIn->settings.verbose >= 2) {
 		{
-			logBinaryData(wxT("XXreceived unknown report"), command, len);
+		if(print)	logBinaryData(wxT("XXreceived unknown report"), command, len);
 		}
 		break;
 

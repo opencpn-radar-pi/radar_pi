@@ -634,12 +634,12 @@ void BR24ControlsDialog::CreateControls()
     // The SCAN SPEED button
     scan_speed_names[0] = _("Normal");
     scan_speed_names[1] = _("Fast");
-    bScanSpeed = new RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), pPlugIn, CT_SCAN_SPEED, false, pPlugIn->settings.scan_speed);
+    bScanSpeed = new RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), pPlugIn, CT_SCAN_SPEED, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.button);
     advanced4gBox->Add(bScanSpeed, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bScanSpeed->minValue = 0;
     bScanSpeed->maxValue = ARRAY_SIZE(scan_speed_names) - 1;
     bScanSpeed->names = scan_speed_names;
-    bScanSpeed->SetValueX(pPlugIn->settings.scan_speed); // redraw after adding names
+    bScanSpeed->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.button); // redraw after adding names
 	   
     // The REFRESHRATE button
 	bRefreshrate = new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), pPlugIn, CT_REFRESHRATE, false, pPlugIn->settings.refreshrate);
@@ -686,7 +686,7 @@ void BR24ControlsDialog::CreateControls()
 
 	// The BEARING ALIGNMENT button
 	bBearingAlignment = new RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"), pPlugIn, CT_BEARING_ALIGNMENT,
-		false, pPlugIn->radar_setting[0].bearing_alignment.button);
+		false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].bearing_alignment.button);
 	installationBox->Add(bBearingAlignment, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 	bBearingAlignment->SetFont(g_font);    // this bearing alignment work opposite to the one defined in the pi!
 	bBearingAlignment->minValue = -179;
@@ -694,7 +694,7 @@ void BR24ControlsDialog::CreateControls()
 
 	// The ANTENNA HEIGHT button
 	bAntennaHeight = new RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Antenna height"), pPlugIn,
-		CT_ANTENNA_HEIGHT, false, pPlugIn->radar_setting[0].antenna_height.button);
+		CT_ANTENNA_HEIGHT, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].antenna_height.button);
 	installationBox->Add(bAntennaHeight, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 	bAntennaHeight->minValue = 0;
 	bAntennaHeight->maxValue = 30;   // XXX to be verified and corrected
@@ -706,7 +706,7 @@ void BR24ControlsDialog::CreateControls()
 	bLocalInterferenceRejection->minValue = 0;
 	bLocalInterferenceRejection->maxValue = ARRAY_SIZE(target_separation_names) - 1;   // off, low, medium, high, same as target separation
 	bLocalInterferenceRejection->names = target_separation_names;
-	bLocalInterferenceRejection->SetValueX(pPlugIn->radar_setting[0].local_interference_rejection.button); 
+	bLocalInterferenceRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].local_interference_rejection.button); 
 
 	// The SIDE LOBE SUPPRESSION button
 	bSideLobeSuppression = new RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"), pPlugIn, CT_SIDE_LOBE_SUPPRESSION, true,
@@ -714,7 +714,7 @@ void BR24ControlsDialog::CreateControls()
 	installationBox->Add(bSideLobeSuppression, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 	bSideLobeSuppression->minValue = 0;
 	bSideLobeSuppression->maxValue = 100;
-	bSideLobeSuppression->SetValueX(pPlugIn->radar_setting[0].side_lobe_suppression.button); // redraw after adding names
+	bSideLobeSuppression->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.button); // redraw after adding names
 
 		// The RESET RADAR DEFAULTS button
 	bResetDefaults = new wxButton(this, ID_RESET_DEFAULTS, _("Reset factory defaults"), wxDefaultPosition, g_buttonSize, 0);
@@ -1173,7 +1173,7 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
 			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.mod = false;
 		}
 	}
-	else if (topSizer->IsShown(advancedBox)){
+	if (topSizer->IsShown(advancedBox)){
 
 		//   target_boost
 		if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.mod || refreshAll)) {
@@ -1205,35 +1205,35 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
 			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.mod = false;
 		} 
 	}
-	else if (topSizer->IsShown(installationBox)){
+	if (topSizer->IsShown(installationBox)){
 
 		//   antenna height
-		if ((pPlugIn->radar_setting[0].antenna_height.mod || refreshAll)) {
-			bAntennaHeight->SetValueX(pPlugIn->radar_setting[0].antenna_height.button);
-			pPlugIn->radar_setting[0].antenna_height.mod = false;
+		if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].antenna_height.mod || refreshAll)) {
+			bAntennaHeight->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].antenna_height.button);
+			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].antenna_height.mod = false;
 		}
 
 		//  bearing alignment
-		if ((pPlugIn->radar_setting[0].bearing_alignment.mod || refreshAll)) {
-			bBearingAlignment->SetValueX(pPlugIn->radar_setting[0].bearing_alignment.button);
-			pPlugIn->radar_setting[0].bearing_alignment.mod = false;
+		if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].bearing_alignment.mod || refreshAll)) {
+			bBearingAlignment->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].bearing_alignment.button);
+			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].bearing_alignment.mod = false;
 		}
 
 		//  local interference rejection
-		if ((pPlugIn->radar_setting[0].local_interference_rejection.mod || refreshAll)) {
-			bLocalInterferenceRejection->SetValueX(pPlugIn->radar_setting[0].local_interference_rejection.button);
-			pPlugIn->radar_setting[0].local_interference_rejection.mod = false;
+		if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].local_interference_rejection.mod || refreshAll)) {
+			bLocalInterferenceRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].local_interference_rejection.button);
+			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].local_interference_rejection.mod = false;
 		}
 
-		// side lobe suppression
-		if ((pPlugIn->radar_setting[0].side_lobe_suppression.mod || refreshAll)) {
-			if (pPlugIn->radar_setting[0].side_lobe_suppression.button == -1){
+		// side lobe suppression  // same for A and B
+		if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.mod || refreshAll)) {
+			if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.button == -1){
 				bSideLobeSuppression->SetAutoX();
 			}
 			else{
-				bSideLobeSuppression->SetValueX(pPlugIn->radar_setting[0].side_lobe_suppression.button);
+				bSideLobeSuppression->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.button);
 			}
-			pPlugIn->radar_setting[0].side_lobe_suppression.mod = false;
+			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.mod = false;
 		}
 	}
 
@@ -1256,17 +1256,34 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 		}
 		return;
 	}
+	
 	if (pPlugIn->control_box_opened){  // opened from context menu
-		{
-			if (pPlugIn->m_pControlDialog){
-				pPlugIn->m_pControlDialog->Show();
-				topSizer->Show(controlBox);
-				Fit();
-				topSizer->Layout();
+		bool guard = false;
+		if (pPlugIn->m_pGuardZoneDialog){   // otherwise next statement might crash!
+			if (pPlugIn->m_pGuardZoneDialog->IsShown()){
+				guard = true;                  // just to get the guard state
 			}
 		}
+		if (pPlugIn->m_pControlDialog && !guard) {
+			pPlugIn->m_pControlDialog->Show();
+		}
+		
+		if (!topSizer->IsShown(controlBox) && !topSizer->IsShown(advancedBox) && !topSizer->IsShown(editBox) && !topSizer->IsShown(installationBox) && !guard){
+			topSizer->Show(controlBox);   
+		}
+		if (br_radar_type == RT_BR24 || pPlugIn->settings.enable_dual_radar == 0){
+			bRadarAB->Hide();
+		}
+		else{
+			if (topSizer->IsShown(controlBox)){
+				bRadarAB->Show();
+			}
+		}
+		controlBox->Layout();
+		Fit();
+		topSizer->Layout();
 		return;
-	}
+	} 
 
 	if (!pPlugIn->settings.showRadar || !haveRadar){           // don'want to see the radar, hide control box
 		                                                       // or no radar available, control useless
