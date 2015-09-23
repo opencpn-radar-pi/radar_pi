@@ -1011,6 +1011,7 @@ void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
     topSizer->Hide(controlBox);
     topSizer->Hide(advancedBox);
 	topSizer->Hide(installationBox);
+	Fit();   //  solves the "partial refresh issue" for the control box
     topSizer->Show(editBox);
     if (fromControl->hasAuto) {
         bAuto->Show();
