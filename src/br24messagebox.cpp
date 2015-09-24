@@ -236,7 +236,6 @@ void BR24MessageBox::OnSize(wxSizeEvent& event)
     wxSize p = event.GetSize();
     pPlugIn->SetBR24MessageBoxSizeX(p.GetWidth());
     pPlugIn->SetBR24MessageBoxSizeY(p.GetHeight());
-
     event.Skip();
 }
 
@@ -264,7 +263,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 
 
 	/*
-	Decision table to select the message or control box
+	Decision table to select the state of the message box
 	- means not relevant
 
 	case nr        1   2   3   4   5   6   7   8   9   10  11
@@ -275,7 +274,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 	black          0   0   1   1   0   0   1   1   0   1   1
 	want_message   -   -   -   -   -   0   0   0   1   1   1
 
-	m    message box
+	m     message box
 	m1    message box without NMEA (no buttons)
 	H     hide messagebox
 	mb    message box with back button
@@ -356,8 +355,9 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 			Fit();
 			break;
 		}
-		Fit();
 	}
+	Fit();
+	topSizeM->Layout();
 	old_radarSeen = radarSeen;
 	message_state = new_message_state;
 }
