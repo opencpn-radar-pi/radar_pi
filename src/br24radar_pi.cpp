@@ -1821,12 +1821,12 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 void br24radar_pi::Guard(int max_range, int AB)
     // scan image for bogeys 
     {
-		
     int begin_arc, end_arc = 0;
     for (size_t z = 0; z < GUARD_ZONES; z++) {  
 		if (guardZones[AB][z].type == GZ_OFF){   // skip if guardzone is off
-			break;
+			continue;
 		}
+		wxLogMessage(wxT("BR24radar: Guard loop z=%d guardZones[AB][z].type = %d"), z, guardZones[AB][z].type);
         switch (guardZones[AB][z].type) {
         case GZ_CIRCLE:
             begin_arc = 0;
@@ -2236,10 +2236,10 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
     time_t now = time(0);
     wxString info;
 
-    // PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,,230394,003.1,W"));  // only for test, position without heading
-    // PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A")); //with heading for test
+	// PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,,230394,003.1,W"));  // only for test, position without heading
+	// PushNMEABuffer (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A")); //with heading for test
 	if (br_var_source <= VARIATION_SOURCE_FIX && !wxIsNaN(pfix.Var) && (fabs(pfix.Var) > 0.0 || br_var == 0.0)) {
-		if (br_var_source < VARIATION_SOURCE_FIX || fabs(pfix.Var - br_var) > 0.1) {
+		if (br_var_source < VARIATION_SOURCE_FIX || fabs(pfix.Var - br_var) > 0.05) {
 			wxLogMessage(wxT("BR24radar_pi: Position fix provides new magnetic variation %f"), pfix.Var);
 			if (m_pMessageBox) {
 				if (m_pMessageBox->IsShown()) {
@@ -2248,10 +2248,10 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 					m_pMessageBox->SetVariationInfo(info);
 				}
 			}
-			br_var = pfix.Var;
-			br_var_source = VARIATION_SOURCE_FIX;
-			br_var_watchdog = now;
 		}
+		br_var = pfix.Var;
+		br_var_source = VARIATION_SOURCE_FIX;
+		br_var_watchdog = now;
 	}
 
     if (settings.verbose >= 2) {

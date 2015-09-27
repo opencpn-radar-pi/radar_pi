@@ -940,9 +940,16 @@ void BR24ControlsDialog::OnAdvancedBackButtonClick(wxCommandEvent& event)
 
 void BR24ControlsDialog::OnInstallationBackButtonClick(wxCommandEvent& event)
 {
+	extern RadarType br_radar_type;
 	fromBox = advancedBox;
 	topSizer->Show(advancedBox);
 	topSizer->Hide(installationBox);
+	if (br_radar_type == RT_4G) {
+		advancedBox->Show(advanced4gBox);
+	}
+	else {
+		advancedBox->Hide(advanced4gBox);
+	}
 	advancedBox->Layout();
 	Fit();
 	topSizer->Layout();
