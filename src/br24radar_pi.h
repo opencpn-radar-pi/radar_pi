@@ -230,16 +230,9 @@ extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, Rad
 
 typedef enum DisplayModeType {
     DM_CHART_OVERLAY,
-    DM_CHART_BLACKOUT,
-    DM_SPECTRUM,
-    DM_EMULATOR
+    DM_CHART_BLACKOUT
 } DisplayModeType;
 
-static wxString DisplayModeStrings[] = {
-    _("Radar Chart Overlay"),
-    _("Spectrum"),
-    _("Emulator"),
-};
 
 static const int RangeUnitsToMeters[2] = {
     1852,
@@ -282,6 +275,7 @@ struct pi_control_settings {
                                       //  these values are not saved, for safety reasons user must set them after each start
 	int      selectRadarB;
 	int      showRadar;
+	bool     emulator_on;
     wxString alert_audio_file;
 };
 
@@ -457,7 +451,6 @@ private:
     void Select_Clutter(int req_clutter_index);
     void Select_Rejection(int req_rejection_index);
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
-    void RenderSpectrum(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
 	void Guard(int max_range, int AB);
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
     void DrawRadarImage(int max_range, wxPoint radar_center);
@@ -635,6 +628,7 @@ private:
     void OnTestSoundClick(wxCommandEvent& event);
     void OnPassHeadingClick(wxCommandEvent& event);
 	void OnEnableDualRadarClick(wxCommandEvent& event);
+	void OnEmulatorClick(wxCommandEvent& event);
     
 
     wxWindow          *pParent;
@@ -649,6 +643,7 @@ private:
     wxTextCtrl        *pText_Heading_Correction_Value;
     wxCheckBox        *cbPassHeading;
 	wxCheckBox        *cbEnableDualRadar;
+	wxCheckBox        *cbEmulator;
 };
 
 
