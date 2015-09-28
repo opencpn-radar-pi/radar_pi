@@ -312,14 +312,17 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 
 		case HIDE:
 			wxLogMessage(wxT("BR24radar_pi: case hide"));
-			topSizeM->Hide(messageBox);
+			if (pPlugIn->m_pMessageBox) {
+				pPlugIn->m_pMessageBox->Hide();
+			}
 			break;
 
 		case SHOW:
 			wxLogMessage(wxT("BR24radar_pi: case show"));
 			//topSizeM->Show(messageBox);
-			Show(topSizeM);
-			Show(messageBox);
+			if (pPlugIn->m_pMessageBox) {
+				pPlugIn->m_pMessageBox->Show();
+			}
 			if (!radarSeen){
 				offMessage->Show();
 			}
@@ -331,11 +334,11 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 			bMsgBack->Hide();
 			break;
 
-
-
 		case SHOW_NO_NMEA:
 			wxLogMessage(wxT("BR24radar_pi: case show no nmea"));
-			topSizeM->Show(messageBox);
+			if (pPlugIn->m_pMessageBox) {
+				pPlugIn->m_pMessageBox->Show();
+			}
 			if (!radarSeen){
 				offMessage->Show();
 			}

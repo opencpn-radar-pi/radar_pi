@@ -445,7 +445,7 @@ void BR24ControlsDialog::CreateControls()
      * I know, this is a hack, but this way it works relatively nicely even with translations.
      */
 
-	/*
+	
     wxBoxSizer * testBox = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(testBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
@@ -462,6 +462,7 @@ void BR24ControlsDialog::CreateControls()
     label << _("Sea clutter") << wxT("\n");
     label << _("Rain clutter") << wxT("\n");
     label << _("Auto") << wxT(" (1/20 NM)\n");
+	label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up\n");
 
     wxStaticText * testMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     testBox->Add(testMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
@@ -486,9 +487,8 @@ void BR24ControlsDialog::CreateControls()
  //   }
     topSizer->Hide(testBox);
     topSizer->Remove(testBox);
-    // Determined desired button width     */
+    // Determined desired button width    
 
-	static int width = 135;     // button width
 	g_buttonSize = wxSize(width, 50);  
     //**************** EDIT BOX ******************//
 	 // A box sizer to contain RANGE button
@@ -627,7 +627,7 @@ void BR24ControlsDialog::CreateControls()
     scan_speed_names[0] = _("Normal");
     scan_speed_names[1] = _("Fast");
     bScanSpeed = new RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), pPlugIn, CT_SCAN_SPEED, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.button);
-    advanced4gBox->Add(bScanSpeed, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bScanSpeed, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bScanSpeed->minValue = 0;
     bScanSpeed->maxValue = ARRAY_SIZE(scan_speed_names) - 1;
     bScanSpeed->names = scan_speed_names;
