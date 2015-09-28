@@ -3172,7 +3172,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     br_radar_seen = true;
     br_radar_watchdog = now;
 	br_data_seen = true;   // added here, otherwise loose image while data is present
-	wxLogMessage(wxT("BR24radar_pi: data seen process buffer"));
 	br_data_watchdog = now;
 	
 	static int previous_angle_raw = 0;

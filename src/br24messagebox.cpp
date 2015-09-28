@@ -327,9 +327,8 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 				offMessage->Show();
 			}
 			else{
-				nmeaSizer->Hide(messageBox);
+				offMessage->Hide();
 			}
-			
 			messageBox->Show(nmeaSizer);
 			bMsgBack->Hide();
 			break;
