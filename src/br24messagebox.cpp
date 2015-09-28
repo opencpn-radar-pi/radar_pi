@@ -306,21 +306,20 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 	cbVariation->SetValue(haveVariation);
 	cbRadar->SetValue(radarSeen);
 	cbData->SetValue(haveData);
-	wxLogMessage(wxT("BR24radar_pi: messagebox voor switch, case=%d"), new_message_state);
+	if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: messagebox voor switch, case=%d"), new_message_state);
 	if (message_state != new_message_state || old_radarSeen != radarSeen){
 		switch (new_message_state) {
 
 		case HIDE:
-			wxLogMessage(wxT("BR24radar_pi: case hide"));
-			if (pPlugIn->m_pMessageBox) {
+			if(pPlugIn->settings.verbose) wxLogMessage(wxT("BR24radar_pi: case hide"));
+			if (pPlugIn->m_pMessageBox->IsShown()) {
 				pPlugIn->m_pMessageBox->Hide();
 			}
 			break;
 
 		case SHOW:
-			wxLogMessage(wxT("BR24radar_pi: case show"));
-			//topSizeM->Show(messageBox);
-			if (pPlugIn->m_pMessageBox) {
+			if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: case show"));
+			if (!pPlugIn->m_pMessageBox-> IsShown()) {
 				pPlugIn->m_pMessageBox->Show();
 			}
 			if (!radarSeen){
@@ -334,8 +333,8 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 			break;
 
 		case SHOW_NO_NMEA:
-			wxLogMessage(wxT("BR24radar_pi: case show no nmea"));
-			if (pPlugIn->m_pMessageBox) {
+			if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: case show no nmea"));
+			if (!pPlugIn->m_pMessageBox->IsShown()) {
 				pPlugIn->m_pMessageBox->Show();
 			}
 			if (!radarSeen){
@@ -349,8 +348,10 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 			break;
 
 		case SHOW_BACK:
-			wxLogMessage(wxT("BR24radar_pi: case show back"));
-			topSizeM->Show(messageBox);
+			if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: case show back"));
+			if (!pPlugIn->m_pMessageBox->IsShown()) {
+				pPlugIn->m_pMessageBox->Show();
+			}
 			offMessage->Hide();
 			messageBox->Show(nmeaSizer);
 			bMsgBack->Show();

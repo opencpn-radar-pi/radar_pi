@@ -1289,7 +1289,6 @@ void br24radar_pi::DoTick(void)
 	data_seenAB[1] = m_statistics[1].spokes > m_statistics[1].broken_spokes;
 	if (data_seenAB[0] || data_seenAB[1]) { // Something coming from radar unit?
 		br_data_seen = true;
-		wxLogMessage(wxT("BR24radar_pi: data seen reset"));
 		br_data_watchdog = now;
 		if (br_scanner_state != RADAR_ON) {
 			br_scanner_state = RADAR_ON;
@@ -1834,7 +1833,6 @@ void br24radar_pi::Guard(int max_range, int AB)
 		if (guardZones[AB][z].type == GZ_OFF){   // skip if guardzone is off
 			continue;
 		}
-		wxLogMessage(wxT("BR24radar: Guard loop z=%d guardZones[AB][z].type = %d"), z, guardZones[AB][z].type);
         switch (guardZones[AB][z].type) {
         case GZ_CIRCLE:
             begin_arc = 0;
