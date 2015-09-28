@@ -3450,7 +3450,7 @@ void *RadarCommandReceiveThread::Entry(void)
 					UINT8 * a = (UINT8 *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
 
 					{
-						if(pPlugIn->settings.verbose)s.Printf(wxT("%u.%u.%u.%u XX command received AB = %d"), a[0] , a[1] , a[2] , a[3], AB);
+						if(pPlugIn->settings.verbose)s.Printf(wxT("%u.%u.%u.%u command received AB = %d"), a[0] , a[1] , a[2] , a[3], AB);
 					}
 				} else {
 					s = wxT("non-IPV4 sent command");
@@ -3823,7 +3823,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 			if (s->radar_status != prevStatus) {
 				//       if (pPlugIn->settings.verbose > 0) {
 				{
-					if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: XXprocess inc report radar AB = %d status = %u"), AB, command[2]);
+					if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: process inc report radar AB = %d status = %u"), AB, command[2]);
 				}
 				prevStatus = command[2];
 				if (AB == 1) br_radar_type = RT_4G;   // only 4G Tx on channel B
@@ -3853,7 +3853,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 			pPlugIn->radar_setting[AB].target_boost.Update(s->target_boost);
 			pPlugIn->radar_setting[AB].interference_rejection.Update(s->interference_rejection);
 
-			if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d state range=%u gain=%u sea=%u rain=%u interference_rejection=%u target_boost=%u ")
+			if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: radar AB = %d state range=%u gain=%u sea=%u rain=%u interference_rejection=%u target_boost=%u ")
 				, AB
 				, s->range
 				, s->gain
@@ -3869,7 +3869,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 		case (564 << 8) + 0x05:    // length 564, 05 C4
 			{
 			// Content unknown, but we know that BR24 radomes send this
-			if (pPlugIn->settings.verbose)logBinaryData(wxT("XXreceived familiar 3G report"), command, len);
+			if (pPlugIn->settings.verbose)logBinaryData(wxT("received familiar 3G report"), command, len);
 			br_radar_type = RT_BR24;
 			break;
 			}
@@ -3879,8 +3879,8 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 			// contains scan speed, noise rejection and target_separation and sidelobe suppression
 			radar_state08_18 * s08 = (radar_state08_18 *)command;
 
-			if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: XXradar AB = %d scanspeed= %d, noise = %u target_sep %u"), AB, s08->scan_speed, s08->noise_rejection, s08->target_sep);
-			if (pPlugIn->settings.verbose)logBinaryData(wxT("XXreceived report_08"), command, len);
+			if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: radar AB = %d scanspeed= %d, noise = %u target_sep %u"), AB, s08->scan_speed, s08->noise_rejection, s08->target_sep);
+			if (pPlugIn->settings.verbose)logBinaryData(wxT("received report_08"), command, len);
 			pPlugIn->radar_setting[AB].scan_speed.Update(s08->scan_speed);
 			pPlugIn->radar_setting[AB].noise_rejection.Update(s08->noise_rejection);
 			pPlugIn->radar_setting[AB].target_separation.Update(s08->target_sep);
@@ -3893,14 +3893,14 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 // local interference rejection
 			pPlugIn->radar_setting[AB].local_interference_rejection.Update(s08->local_interference_rejection);
 				
-			if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: XX receive report AB= %d"), AB);
-			if (pPlugIn->settings.verbose)logBinaryData(wxT("XXreceived report_08"), command, len);
+			if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: receive report AB= %d"), AB);
+			if (pPlugIn->settings.verbose)logBinaryData(wxT("received report_08"), command, len);
 			break;
 		}
 
 		case (66 << 8) + 0x04:     // 66 bytes starting with 04 C4
 		{
-			if (pPlugIn->settings.verbose)logBinaryData(wxT("XXreceived report_04 - 66"), command, len);
+			if (pPlugIn->settings.verbose)logBinaryData(wxT("received report_04 - 66"), command, len);
 			radar_state04_66 * s04_66 = (radar_state04_66 *)command;
 
 			// bearing alignment
@@ -3918,7 +3918,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 		default:
 			//      if (pPlugIn->settings.verbose >= 2) {
 		{
-		if(pPlugIn->settings.verbose)	logBinaryData(wxT("XXreceived unknown report"), command, len);
+		if(pPlugIn->settings.verbose)	logBinaryData(wxT("received unknown report"), command, len);
 		}
 		break;
 
@@ -3929,7 +3929,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 		// Looks like a radar report. Is it a known one?
 		switch ((len << 8) + command[0]) {
 		case (16 << 8) + 0x0f:
-			if (pPlugIn->settings.verbose)logBinaryData(wxT("XXreceived 3G report"), command, len);
+			if (pPlugIn->settings.verbose)logBinaryData(wxT("received 3G report"), command, len);
 			br_radar_type = RT_BR24;
 			break;
 
@@ -3939,14 +3939,14 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 			// Content unknown, but we know that BR24 radomes send this
 			//       if (pPlugIn->settings.verbose >= 4) {
 		{
-			if (pPlugIn->settings.verbose)logBinaryData(wxT("XXreceived familiar report "), command, len);
+			if (pPlugIn->settings.verbose)logBinaryData(wxT("received familiar report "), command, len);
 		}
 		break;
 
 		default:
 			//           if (pPlugIn->settings.verbose >= 2) {
 		{
-			if (pPlugIn->settings.verbose)logBinaryData(wxT("XXreceived unknown report "), command, len);
+			if (pPlugIn->settings.verbose)logBinaryData(wxT("received unknown report "), command, len);
 		}
 		break;
 
@@ -3955,7 +3955,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 	}
 	//   if (pPlugIn->settings.verbose >= 2) {
 	{
-		if (pPlugIn->settings.verbose)logBinaryData(wxT("XXreceived unknown message "), command, len);
+		if (pPlugIn->settings.verbose)logBinaryData(wxT("received unknown message "), command, len);
 	}
 	return false;
 }
