@@ -185,6 +185,9 @@ time_t      br_dt_stayalive;
 int   br_radar_control_id = 0, br_guard_zone_id = 0;
 bool  br_guard_context_mode;
 
+static double polar_to_cart_x[2049][513];
+static double polar_to_cart_y[2049][513];
+
 bool        br_guard_bogey_confirmed = false;
 time_t      br_alarm_sound_last;
 #define     ALARM_TIMEOUT (10)
@@ -268,30 +271,27 @@ static double local_bearing (double lat1, double lon1, double lat2, double lon2)
  *
  * The minimum distance from the center of the plane is radius, and it ends at radius + blob_heigth
  */
-static void draw_blob_gl(double ca, double sa, double radius, double arc_width, double blob_heigth)
+static void draw_blob_gl_i(int arc, int radius,  int radius_end)
 {
-    const double blob_start = 0.0;
-    const double blob_end = blob_heigth;
+//	wxLogMessage(wxT("BR24radar_pi:XXX draw blob angle = %d, r_begin = %d, r_end=%d"), arc, radius, radius_end);
+	int arc_end = arc++;
+	if (arc_end >= 2048){
+		arc_end = arc_end - 2048;
+	}
+	double xa = polar_to_cart_x[arc][radius];
+	double ya = polar_to_cart_y[arc][radius];
 
-    double xm1 = (radius + blob_start) * ca;
-    double ym1 = (radius + blob_start) * sa;
-    double xm2 = (radius + blob_end) * ca;
-    double ym2 = (radius + blob_end) * sa;
+	double xb = polar_to_cart_x[arc][radius_end];
+	double yb = polar_to_cart_y[arc][radius_end];
 
-    double arc_width_start2 = (radius + blob_start) * arc_width;
-    double arc_width_end2 =   (radius + blob_end) * arc_width;
+	double xc = polar_to_cart_x[arc_end][radius];
+	double yc = polar_to_cart_y[arc_end][radius];
 
-    double xa = xm1 + arc_width_start2 * sa;
-    double ya = ym1 - arc_width_start2 * ca;
+	double xd = polar_to_cart_x[arc_end][radius_end];
+	double yd = polar_to_cart_y[arc_end][radius_end];
 
-    double xb = xm2 + arc_width_end2 * sa;
-    double yb = ym2 - arc_width_end2 * ca;
-
-    double xc = xm1 - arc_width_start2 * sa;
-    double yc = ym1 + arc_width_start2 * ca;
-
-    double xd = xm2 - arc_width_end2 * sa;
-    double yd = ym2 + arc_width_end2 * ca;
+//	wxLogMessage(wxT("BR24radar_pi:XXX draw blob xa = %f, xb = %f, xc=%f, xd=%f"), xa, xb, xc, xd);
+//	wxLogMessage(wxT("BR24radar_pi:XXX draw blob ya = %f, yb = %f, yc %f, yd=%f"), ya, yb, yc,yd);
 
     glBegin(GL_TRIANGLES);
     glVertex2d(xa, ya);
@@ -303,6 +303,45 @@ static void draw_blob_gl(double ca, double sa, double radius, double arc_width, 
     glVertex2d(xd, yd);
     glEnd();
 }
+
+static void draw_blob_gl(double ca, double sa, double radius, double arc_width, double blob_heigth)
+{
+	const double blob_start = 0.0;
+	const double blob_end = blob_heigth;
+
+	double xm1 = (radius + blob_start) * ca;
+	double ym1 = (radius + blob_start) * sa;
+	double xm2 = (radius + blob_end) * ca;
+	double ym2 = (radius + blob_end) * sa;
+
+	double arc_width_start2 = (radius + blob_start) * arc_width;
+	double arc_width_end2 = (radius + blob_end) * arc_width;
+
+	double xa = xm1 + arc_width_start2 * sa;
+	double ya = ym1 - arc_width_start2 * ca;
+
+	double xb = xm2 + arc_width_end2 * sa;
+	double yb = ym2 - arc_width_end2 * ca;
+
+	double xc = xm1 - arc_width_start2 * sa;
+	double yc = ym1 + arc_width_start2 * ca;
+
+	double xd = xm2 - arc_width_end2 * sa;
+	double yd = ym2 + arc_width_end2 * ca;
+//	wxLogMessage(wxT("BR24radar_pi:XXX draw blobold xa = %f, xb = %f, xc=%f, xd=%f"), xa, xb, xc, xd);
+//	wxLogMessage(wxT("BR24radar_pi:XXX draw blobold ya = %f, yb = %f, yc %f, yd=%f"), ya, yb, yc, yd);
+
+	/*glBegin(GL_TRIANGLES);
+	glVertex2d(xa, ya);
+	glVertex2d(xb, yb);
+	glVertex2d(xc, yc);
+
+	glVertex2d(xb, yb);
+	glVertex2d(xc, yc);
+	glVertex2d(xd, yd);
+	glEnd();*/
+}
+
 
 static void DrawArc(float cx, float cy, float r, float start_angle, float arc_angle, int num_segments)
 {
@@ -418,6 +457,18 @@ int br24radar_pi::Init(void)
     }
 #endif
 	
+	// initialise polar_to_cart_y[arc + 1][radius] arrays
+
+	for (int arc = 0; arc < 2049; arc++){
+		double sine = sin(arc * PI / 1024);
+		double cosine = cos(arc * PI / 1024);
+		for (int radius = 0; radius < 513; radius++){
+			polar_to_cart_y[arc][radius] = radius * sine;
+			polar_to_cart_x[arc][radius] = radius * cosine;
+		}
+	}
+	double www = -1.;
+	wxLogMessage(wxT("BR24radar_pi:XXX initialized  xa = %f"), polar_to_cart_x[100][150]);
     AddLocaleCatalog( _T("opencpn-br24radar_pi") );
 
     m_pControlDialog = NULL;
@@ -1678,10 +1729,9 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 {
-    static const double spokeWidthDeg = SCALE_RAW_TO_DEGREES2048(1);
-    static const double spokeWidthRad = deg2rad(spokeWidthDeg); // How wide is one spoke?
-    double angleDeg;
-    double angleRad;
+    
+   // double angleDeg;
+  //  double angleRad;
 
     wxLongLong now = wxGetLocalTimeMillis();
     UINT32 drawn_spokes = 0;
@@ -1697,7 +1747,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     }
     
     // DRAWING PICTURE
-    for (unsigned int angle = 0 ; angle <= LINES_PER_ROTATION - 1; angle++) {
+	for (unsigned int angle = 0; angle < LINES_PER_ROTATION; angle++) {
         scan_line * scan = 0;
 		wxLongLong bestAge = settings.max_age * MILLISECONDS_PER_SECOND;
 		scan_line * s = &m_scan_line[settings.selectRadarB][angle];
@@ -1718,13 +1768,13 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         // At this point we have:
         // angle -- the angle in LINES_PER_ROTATION which has data
 
-        double arc_width = spokeWidthRad * 0.5;
-        double arc_heigth = ((double) scan->range / (double) max_range);
-        angleDeg = fmod((angle - 1) * spokeWidthDeg + 360.0, 360.0);
-        angleRad = deg2rad(angleDeg);
-        double angleCos = cos(angleRad);
-        double angleSin = sin(angleRad);
-        double r_begin = 0, r_end = 0;
+        
+//		double arc_heigth = 1; 
+//        angleDeg = fmod((angle - 1) * spokeWidthDeg + 360.0, 360.0);
+ //       angleRad = deg2rad(angleDeg);
+ //       double angleCos = cos(angleRad);
+ //       double angleSin = sin(angleRad);
+        int r_begin = 0, r_end = 0;
         enum colors { BLOB_NONE, BLOB_BLUE, BLOB_GREEN, BLOB_RED };
         colors actual_color = BLOB_NONE, previous_color = BLOB_NONE;
         drawn_spokes++;
@@ -1774,12 +1824,12 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
             if (actual_color == previous_color) {
                 // continue with same color, just register it
-                r_end += arc_heigth;
+                r_end++;
             }
             else if (previous_color == BLOB_NONE && actual_color != BLOB_NONE) {
                 // blob starts, no display, just register
-                r_begin = (double) radius * ((double) scan->range / (double) max_range);
-                r_end = r_begin + arc_heigth;
+				r_begin = radius; // *((double)scan->range / (double)max_range);
+                r_end = r_begin + 1;
                 previous_color = actual_color;            // new color
             }
             else if (previous_color != BLOB_NONE && (previous_color != actual_color)) {
@@ -1799,13 +1849,16 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                         break;   
                 }
                 glColor4ub(red, green, blue, alpha);    // red, blue, green
-                double heigth = r_end - r_begin;
-                draw_blob_gl(angleCos, angleSin, r_begin, arc_width, heigth);
+        //        double heigth = r_end - r_begin;
+		//		wxLogMessage(wxT("BR24radar_pi:XXX draw blob angle = %d, r_begin = %d, r_end=%d"), angle, r_begin, r_end);
+				
+	//			draw_blob_gl(angleCos, angleSin, r_begin, arc_width, heigth);
+                draw_blob_gl_i(angle, r_begin, r_end);
                 drawn_blobs++;
                 previous_color = actual_color;
                 if (actual_color != BLOB_NONE) {            // change of color, start new blob
-                    r_begin = (double) radius * ((double) scan->range / (double) max_range);
-                    r_end = r_begin + arc_heigth;
+					r_begin = (double)radius; // *((double)scan->range / (double)max_range);
+                    r_end = r_begin + 1;
                 }
                 else {            // actual_color == BLOB_NONE, blank pixel, next radius
                     continue;
