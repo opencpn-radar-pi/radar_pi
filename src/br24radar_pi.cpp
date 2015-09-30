@@ -1429,7 +1429,7 @@ void br24radar_pi::DoTick(void)
 
 void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay  updates the color of the toolbar button
 {
-	if (!br_radar_seen) {
+	if (!br_radar_seen || !br_opengl_mode) {
 		toolbar_button = RED;
 		CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_RED);
 	}

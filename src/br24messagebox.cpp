@@ -284,6 +284,9 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 	if (!pPlugIn->settings.showRadar){
 		new_message_state = HIDE;
 	}
+	else if (!haveOpenGL){
+		new_message_state = SHOW;
+	}
 	else if (want_message){
 		new_message_state = SHOW_BACK;
 	}
@@ -306,7 +309,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 	cbVariation->SetValue(haveVariation);
 	cbRadar->SetValue(radarSeen);
 	cbData->SetValue(haveData);
-	if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: messagebox voor switch, case=%d"), new_message_state);
+	if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: messagebox switch, case=%d"), new_message_state);
 	if (message_state != new_message_state || old_radarSeen != radarSeen){
 		switch (new_message_state) {
 
