@@ -1018,7 +1018,8 @@ void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
     topSizer->Hide(controlBox);
     topSizer->Hide(advancedBox);
 	topSizer->Hide(installationBox);
-	Fit();   //  solves the "partial refresh issue" for the control box
+//	Fit();   //  solves the "partial refresh issue" for the control box in wxWidgets 2.8
+	         // not needed withwxWidgets 3.0
     topSizer->Show(editBox);
     if (fromControl->hasAuto) {
         bAuto->Show();
