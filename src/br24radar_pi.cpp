@@ -1687,7 +1687,6 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     UINT32 drawn_spokes = 0;
     UINT32 drawn_blobs  = 0;
     UINT32 skipped      = 0;
-    wxLongLong max_age = 0; // Age in millis
 
 	br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
 
@@ -1815,9 +1814,6 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 
 		if (settings.verbose >= 2) {
 			now = wxGetLocalTimeMillis();
-//			wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" drawn %u skipped %u spokes with %u blobs maxAge=%") wxTPRId64
-//						 wxT(" bogeys %d, %d, %d, %d")
-//						 , now, drawn_spokes, skipped, drawn_blobs, max_age, bogey_count[0], bogey_count[1], bogey_count[2], bogey_count[3]);
 		}
     
 	}    // end of loop over angle
@@ -2504,7 +2500,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                         0x06,
                         0xc1,
                         0, 0, 0, 0, 0x01,
-                        0, 0, 0, 0xad     // changed from a1 to ad right ????   no changed back
+                        0, 0, 0, 0xad     // changed from a1 to ad 
                     };
                     if (settings.verbose) {
                         wxLogMessage(wxT("BR24radar_pi: Gain: Auto in setcontrolvalue"));
