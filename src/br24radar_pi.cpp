@@ -176,6 +176,11 @@ static time_t      br_radar_watchdog;
 static time_t      br_data_watchdog;
 static time_t      br_var_watchdog;
 static bool blackout[2] = { false, false };         //  will force display to blackout and north up
+
+GLfloat vertices[1000000];
+//GLfloat colors[1500000];
+int vertices_index = 0;
+
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 #define     TIMER_NOT_ELAPSED(watchdog) (now < watchdog + WATCHDOG_TIMEOUT)
 #define     TIMER_ELAPSED(watchdog) (!TIMER_NOT_ELAPSED(watchdog))
@@ -185,8 +190,8 @@ time_t      br_dt_stayalive;
 int   br_radar_control_id = 0, br_guard_zone_id = 0;
 bool  br_guard_context_mode;
 
-static double polar_to_cart_x[2049][513];
-static double polar_to_cart_y[2049][513];
+static GLfloat polar_to_cart_x[2049][513];
+static GLfloat polar_to_cart_y[2049][513];
 
 bool        br_guard_bogey_confirmed = false;
 time_t      br_alarm_sound_last;
@@ -273,27 +278,51 @@ static double local_bearing (double lat1, double lon1, double lat2, double lon2)
  */
 static void draw_blob_gl_i(int arc, int radius,  int radius_end)
 {
-//	wxLogMessage(wxT("BR24radar_pi:XXX draw blob angle = %d, r_begin = %d, r_end=%d"), arc, radius, radius_end);
+//	wxLogMessage(wxT("BR24radar_pi:XXX draw blob angle = %d, r_begin = %d, r_end=%d, index=%d"), arc, radius, radius_end, vertices_index);
 	int arc_end = arc++;
 	if (arc_end >= 2048){
 		arc_end = arc_end - 2048;
 	}
-	double xa = polar_to_cart_x[arc][radius];
-	double ya = polar_to_cart_y[arc][radius];
+	vertices[vertices_index] = polar_to_cart_x[arc][radius];   //a
+	vertices_index++;
+	vertices[vertices_index] = polar_to_cart_y[arc][radius];
+	vertices_index++;
 
-	double xb = polar_to_cart_x[arc][radius_end];
-	double yb = polar_to_cart_y[arc][radius_end];
+	vertices[vertices_index] = polar_to_cart_x[arc][radius_end];  //b
+	vertices_index++;
+	vertices[vertices_index] = polar_to_cart_y[arc][radius_end];
+	vertices_index++;
 
-	double xc = polar_to_cart_x[arc_end][radius];
-	double yc = polar_to_cart_y[arc_end][radius];
+	vertices[vertices_index] = polar_to_cart_x[arc_end][radius];  //c
+	vertices_index++;
+	vertices[vertices_index] = polar_to_cart_y[arc_end][radius];
+	vertices_index++;
 
-	double xd = polar_to_cart_x[arc_end][radius_end];
-	double yd = polar_to_cart_y[arc_end][radius_end];
+//  next triangle follows ----------------------------------------------------------------
+	vertices[vertices_index] = polar_to_cart_x[arc][radius_end];  //b
+	vertices_index++;
+	vertices[vertices_index] = polar_to_cart_y[arc][radius_end];
+	vertices_index++;
+
+	vertices[vertices_index] = polar_to_cart_x[arc_end][radius];  //c
+	vertices_index++;
+	vertices[vertices_index] = polar_to_cart_y[arc_end][radius];
+	vertices_index++;
+
+	vertices[vertices_index] = polar_to_cart_x[arc_end][radius_end];  // d
+	vertices_index++;
+	vertices[vertices_index] = polar_to_cart_y[arc_end][radius_end];
+	vertices_index++;
+
+	if (vertices_index > 999900){
+		vertices_index = 999900 ;
+		wxLogMessage(wxT("BR24radar_pi:XXX vertices array limit overflow vertices_index=%d"), vertices_index);
+	}
 
 //	wxLogMessage(wxT("BR24radar_pi:XXX draw blob xa = %f, xb = %f, xc=%f, xd=%f"), xa, xb, xc, xd);
 //	wxLogMessage(wxT("BR24radar_pi:XXX draw blob ya = %f, yb = %f, yc %f, yd=%f"), ya, yb, yc,yd);
 
-    glBegin(GL_TRIANGLES);
+/*    glBegin(GL_TRIANGLES);
     glVertex2d(xa, ya);
     glVertex2d(xb, yb);
     glVertex2d(xc, yc);
@@ -302,6 +331,7 @@ static void draw_blob_gl_i(int arc, int radius,  int radius_end)
     glVertex2d(xc, yc);
     glVertex2d(xd, yd);
     glEnd();
+	*/
 }
 
 static void draw_blob_gl(double ca, double sa, double radius, double arc_width, double blob_heigth)
@@ -463,8 +493,8 @@ int br24radar_pi::Init(void)
 		double sine = sin(arc * PI / 1024);
 		double cosine = cos(arc * PI / 1024);
 		for (int radius = 0; radius < 513; radius++){
-			polar_to_cart_y[arc][radius] = radius * sine;
-			polar_to_cart_x[arc][radius] = radius * cosine;
+			polar_to_cart_y[arc][radius] = (GLfloat) radius * sine;
+			polar_to_cart_x[arc][radius] = (GLfloat) radius * cosine;
 		}
 	}
 	double www = -1.;
@@ -1747,7 +1777,19 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
     }
     
     // DRAWING PICTURE
+	vertices_index = 0;  // index into the vertices array
+	
+	//	glTexCoord(0, 0);
+	//	glTexCoord(0, 1);
+	//	glTexCoord(1, 1);
+	//	glTexCoord(1, 0);
+	//	GLfloat texture_coord[] = { 0, 0, 0, 1, 1, 1, 1, 0 };
+	//	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	//	glTexCoordPointer(2, GL_FLOAT, 0, texture_coord);
+	
+
 	for (unsigned int angle = 0; angle < LINES_PER_ROTATION; angle++) {
+	//	wxLogMessage(wxT("BR24radar_pi:XXX angle=%d, vertices_index=%d "), angle, vertices_index);
         scan_line * scan = 0;
 		wxLongLong bestAge = settings.max_age * MILLISECONDS_PER_SECOND;
 		scan_line * s = &m_scan_line[settings.selectRadarB][angle];
@@ -1768,12 +1810,6 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
         // At this point we have:
         // angle -- the angle in LINES_PER_ROTATION which has data
 
-        
-//		double arc_heigth = 1; 
-//        angleDeg = fmod((angle - 1) * spokeWidthDeg + 360.0, 360.0);
- //       angleRad = deg2rad(angleDeg);
- //       double angleCos = cos(angleRad);
- //       double angleSin = sin(angleRad);
         int r_begin = 0, r_end = 0;
         enum colors { BLOB_NONE, BLOB_BLUE, BLOB_GREEN, BLOB_RED };
         colors actual_color = BLOB_NONE, previous_color = BLOB_NONE;
@@ -1848,7 +1884,7 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
                     case BLOB_NONE:
                         break;   
                 }
-                glColor4ub(red, green, blue, alpha);    // red, blue, green
+          //      glColor4ub(red, green, blue, alpha);    // red, blue, green
         //        double heigth = r_end - r_begin;
 		//		wxLogMessage(wxT("BR24radar_pi:XXX draw blob angle = %d, r_begin = %d, r_end=%d"), angle, r_begin, r_end);
 				
@@ -1874,6 +1910,18 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 		}
     
 	}    // end of loop over angle
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	wxLogMessage(wxT("BR24radar_pi: XXX glEnableClientState init"));
+	glVertexPointer(2, GL_FLOAT, 0, vertices);
+//	glColorPointer(4, GL_FLOAT, 0, colors);
+	glColor4ub(255, 0, 0, alpha);    // red, blue, green
+	wxLogMessage(wxT("BR24radar_pi:XXX color initialised"));
+	int number_of_triangles = vertices_index / 2;
+	glDrawArrays(GL_TRIANGLES, 0, number_of_triangles);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+//	glDisableClientState(GL_VERTEX_ARRAY);
+	wxLogMessage(wxT("BR24radar_pi: XXX GL_VERTEX_ARRAY disabled  vertices_index=%d, number_of_triangles=%d"), vertices_index, number_of_triangles);
 	HandleBogeyCount(bogey_count);
 }        // end of DrawRadarImage
 
