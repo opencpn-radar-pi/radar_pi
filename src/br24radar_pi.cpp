@@ -178,7 +178,8 @@ static time_t      br_var_watchdog;
 static bool blackout[2] = { false, false };         //  will force display to blackout and north up
 
 GLfloat vertices[2048][1000];
-GLfloat colors[2048][600];
+GLfloat colors[2048][1000];
+int colors_index[2048];
 int vertices_index[2048];
 
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
@@ -271,14 +272,11 @@ static double local_bearing (double lat1, double lon1, double lat2, double lon2)
     return angle;
 }
 
-/**
- * Draw an OpenGL blob at a particular angle in radians, of a particular arc_length, also in radians.
- *
- * The minimum distance from the center of the plane is radius, and it ends at radius + blob_heigth
- */
-static void draw_blob_gl_i(int arc, int radius,  int radius_end)
+
+static void draw_blob_gl_i(int arc, int radius, int radius_end, GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha)
 {
-//	wxLogMessage(wxT("BR24radar_pi:XXX draw blob_i inside call angle = %d, r_begin = %d, r_end=%d, index=%d"), arc, radius, radius_end, vertices_index[arc]);
+	//wxLogMessage(wxT("BR24radar_pi:XXX draw blob_i inside call arc= %d, r_begin = %d, r_end=%d, index=%d"), arc, radius, radius_end, vertices_index[arc]);
+	//wxLogMessage(wxT("BR24radar_pi:XXX draw blob_i inside call arc= %d, red = %d, green=%d, blue=%d colorsindex=%d"), arc, red, green, blue, colors_index[arc]);
 	int arc_end = arc + 1;
 	if (arc_end >= 2048){
 		arc_end = arc_end - 2048;
@@ -298,7 +296,8 @@ static void draw_blob_gl_i(int arc, int radius,  int radius_end)
 	vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc_end][radius];
 	vertices_index[arc]++;
 
-//  next triangle follows ----------------------------------------------------------------
+	//  next triangle follows ----------------------------------------------------------------
+
 	vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc][radius_end];  //b
 	vertices_index[arc]++;
 	vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc][radius_end];
@@ -313,25 +312,27 @@ static void draw_blob_gl_i(int arc, int radius,  int radius_end)
 	vertices_index[arc]++;
 	vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc_end][radius_end];
 	vertices_index[arc]++;
+
+	for (int i = 0; i < 6; i++){  // add color for 6 points
+	colors[arc][colors_index[arc]] = (GLfloat) red; 
+	colors_index[arc]++;
+	colors[arc][colors_index[arc]] = (GLfloat) green;
+	colors_index[arc]++;
+	colors[arc][colors_index[arc]] = (GLfloat) blue;
+	colors_index[arc]++;
+	colors[arc][colors_index[arc]] = (GLfloat)alpha;
+	colors_index[arc]++;
+}
+	//wxLogMessage(wxT("BR24radar_pi:XXX draw blob_i end call arc= %d, red= %d, green=%d, blue=%d colorsindex=%d"), arc, red, green, blue, colors_index[arc]);
+	if (colors_index[arc] > 990){
+		colors_index[arc] = 990;
+		wxLogMessage(wxT("BR24radar_pi:XXX color array limit overflow colors_index=%d arc=%d"), colors_index[arc], arc);
+	}
 //	wxLogMessage(wxT("BR24radar_pi:XXX draw blob_i inside at end call arc= %d, r_begin= %d, r_end=%d, index=%d"), arc, radius, radius_end, vertices_index[arc]);
 	if (vertices_index [arc]> 990){
 		vertices_index [arc]= 990 ;
 		wxLogMessage(wxT("BR24radar_pi:XXX vertices array limit overflow vertices_index=%d arc=%d"), vertices_index[arc], arc);
 	}
-
-//	wxLogMessage(wxT("BR24radar_pi:XXX draw blob xa = %f, xb = %f, xc=%f, xd=%f"), xa, xb, xc, xd);
-//	wxLogMessage(wxT("BR24radar_pi:XXX draw blob ya = %f, yb = %f, yc %f, yd=%f"), ya, yb, yc,yd);
-
-/*    glBegin(GL_TRIANGLES);
-    glVertex2d(xa, ya);
-    glVertex2d(xb, yb);
-    glVertex2d(xc, yc);
-
-    glVertex2d(xb, yb);
-    glVertex2d(xc, yc);
-    glVertex2d(xd, yd);
-    glEnd();
-	*/
 }
 
 static void draw_blob_gl(double ca, double sa, double radius, double arc_width, double blob_heigth)
@@ -1734,7 +1735,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
             DrawRadarImage(meters, radar_center);
         }
         glPopMatrix();
-
+		HandleBogeyCount(bogey_count);
         // Guard Zone image and heading line for radar only
         if (settings.showRadar) {
 			double rotation = -settings.heading_correction + vp->skew * settings.skew_factor;
@@ -1760,158 +1761,137 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
 
 void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
-{;
-    wxLongLong now = wxGetLocalTimeMillis();
-    UINT32 drawn_spokes = 0;
-    UINT32 drawn_blobs  = 0;
-    UINT32 skipped      = 0;
-    wxLongLong max_age = 0; // Age in millis
-
-    GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
-  //  if (settings.verbose >= 4) {
-        wxLogMessage(wxT("BR24radar_pi: ") wxTPRId64 wxT(" XXX drawing start"), now);
-//    }
-    
-    // DRAWING PICTURE
-	memset(&vertices_index, 0, sizeof(vertices_index));  // index into the vertices array
-	
-	for (unsigned int angle = 0; angle < LINES_PER_ROTATION; angle++) {
-	//	wxLogMessage(wxT("BR24radar_pi:XXX angle=%d, vertices_index[angle]=%d "), angle, vertices_index[angle]);
-        scan_line * scan = 0;
-		wxLongLong bestAge = settings.max_age * MILLISECONDS_PER_SECOND;
-		scan_line * s = &m_scan_line[settings.selectRadarB][angle];
-		wxLongLong diff = now - s->age;
-		if (settings.verbose >= 4) {
-			wxLogMessage(wxT("BR24radar_pi: ") wxT("    a=%d diff=%") wxTPRId64 wxT(" bestAge=%") wxTPRId64 wxT(" range=%d"), angle , diff, bestAge, s->range);
-		}
-		if (s->range && diff >= 0 && diff < bestAge) {
-			scan = s;
-			bestAge = diff;
-		}
-
-        if (!scan) {
-            skipped++;
-            continue;   // No or old data, don't show
-        }
-
-        // At this point we have:
-        // angle -- the angle in LINES_PER_ROTATION which has data
-
-        int r_begin = 0, r_end = 0;
-        enum colors { BLOB_NONE, BLOB_BLUE, BLOB_GREEN, BLOB_RED };
-        colors actual_color = BLOB_NONE, previous_color = BLOB_NONE;
-        drawn_spokes++;
-
-        scan->data[RETURNS_PER_LINE] = 0;  // make sure this element is initialized (just outside the range)
-
-		for (int radius = 0; radius <= RETURNS_PER_LINE; ++radius) {   // loop 1 more time as only the previous one will be displayed
-			GLubyte strength = scan->data[radius];
-			GLubyte hist = scan->history[radius];
-            hist = hist & 7;  // check only last 3 bits
-            
-			if (((settings.multi_sweep_filter[settings.selectRadarB][2] == 1) && (!(hist == 3 || hist >= 5)) && radius != RETURNS_PER_LINE - 1)) {
-                  // corresponds to the patterns 011, 101, 110, 111
-                // blob does not pass filter conditions
-                    actual_color = BLOB_NONE;
-                    }
-            else   {     // blob passed filter or filter off
-                switch (settings.display_option) {
-                    //  first find out the actual color
-                case 0:
-                    actual_color = BLOB_NONE;
-                    if (strength > displaysetting0_threshold_red) actual_color = BLOB_RED;
-                    break;
-
-                case 1:
-                    actual_color = BLOB_NONE;
-                    if (strength > displaysetting1_threshold_blue) actual_color = BLOB_BLUE;
-                    if (strength > 100) actual_color = BLOB_GREEN;
-                    if (strength > 200) actual_color = BLOB_RED;
-                    break;
-
-                case 2:
-                    actual_color = BLOB_NONE;
-                    if (strength > displaysetting2_threshold_blue) actual_color = BLOB_BLUE;
-                    if (strength > 100) actual_color = BLOB_GREEN;
-                    if (strength > 250) {
-                        actual_color = BLOB_RED;
-                        }
-                    break;
-                    }
-                }
-
-            if (actual_color == BLOB_NONE && previous_color == BLOB_NONE) {
-                // nothing to do, next radius
-                continue;
-            }
-
-            if (actual_color == previous_color) {
-                // continue with same color, just register it
-                r_end++;
-            }
-            else if (previous_color == BLOB_NONE && actual_color != BLOB_NONE) {
-                // blob starts, no display, just register
-				r_begin = radius; // *((double)scan->range / (double)max_range);
-                r_end = r_begin + 1;
-                previous_color = actual_color;            // new color
-            }
-            else if (previous_color != BLOB_NONE && (previous_color != actual_color)) {
-                // display time, first get the color in the glue byte
-                GLubyte red = 0, green = 0, blue = 0;
-                switch (previous_color) {
-                    case BLOB_RED:
-                        red = 255;
-                        break;
-                    case BLOB_GREEN:
-                        green = 255;
-                        break;
-                    case BLOB_BLUE:
-                        blue = 255;
-                        break;
-                    case BLOB_NONE:
-                        break;   
-                }
-          //      glColor4ub(red, green, blue, alpha);    // red, blue, green
-        //        double heigth = r_end - r_begin;
-		//		wxLogMessage(wxT("BR24radar_pi:XXX before call draw blob angle = %d, r_begin = %d, r_end=%d"), angle, r_begin, r_end);
-				
-                draw_blob_gl_i(angle, r_begin, r_end);
-		//		wxLogMessage(wxT("BR24radar_pi:XXX after call drawn angle=%d, vertices_index[angle]=%d "), angle, vertices_index[angle]);
-                drawn_blobs++;
-                previous_color = actual_color;
-                if (actual_color != BLOB_NONE) {            // change of color, start new blob
-					r_begin = (double)radius; // *((double)scan->range / (double)max_range);
-                    r_end = r_begin + 1;
-                }
-                else {            // actual_color == BLOB_NONE, blank pixel, next radius
-                    continue;
-                }
-            }   
-        }   // end of loop over radius
-
-		if (settings.verbose >= 2) {
-			now = wxGetLocalTimeMillis();
-//			wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" drawn %u skipped %u spokes with %u blobs maxAge=%") wxTPRId64
-//						 wxT(" bogeys %d, %d, %d, %d")
-//						 , now, drawn_spokes, skipped, drawn_blobs, max_age, bogey_count[0], bogey_count[1], bogey_count[2], bogey_count[3]);
-		}
-    
-	}    // end of loop over angle
-
+{
+	GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
 	glEnableClientState(GL_VERTEX_ARRAY);
-	wxLogMessage(wxT("BR24radar_pi: XXX glEnableClientState init"));
-	glColor4ub(255, 0, 0, alpha);    // red, blue, green
+	glEnableClientState(GL_COLOR_ARRAY);
+	//	wxLogMessage(wxT("BR24radar_pi: XXX glEnableClientState init"));
+//	glColor4ub(255, 0, 0, alpha);    // red, blue, green
 
 	for (int i = 0; i < 2048; i++){
-		glVertexPointer(2, GL_FLOAT, 0, vertices[i]);
-		int number_of_triangles = vertices_index[i] / 2;
-		glDrawArrays(GL_TRIANGLES, 0, number_of_triangles);
-		wxLogMessage(wxT("BR24radar_pi: XXX  drawn angle=%d vertices_index=%d, number_of_triangles=%d"), i, vertices_index[i], number_of_triangles);
+		glVertexPointer(2, GL_FLOAT, 0, &vertices[i][0]);
+		glColorPointer(4, GL_FLOAT, 0, &colors[i][0]);
+		
+		int number_of_points = vertices_index[i] / 2;
+		glDrawArrays(GL_TRIANGLES, 0, number_of_points);
+		//	wxLogMessage(wxT("BR24radar_pi: XXX  drawn angle=%d vertices_index=%d, number_of_triangles=%d"), i, vertices_index[i], number_of_triangles);
 	}
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	HandleBogeyCount(bogey_count);
+	glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
+	glDisableClientState(GL_COLOR_ARRAY);
 }        // end of DrawRadarImage
+
+
+
+
+void br24radar_pi::PrepareRadarImage(int angle)
+{
+	//	wxLongLong now = wxGetLocalTimeMillis();
+	UINT32 drawn_spokes = 0;
+	UINT32 drawn_blobs = 0;
+	//	UINT32 skipped = 0;
+	//	wxLongLong max_age = 0; // Age in millis
+
+	GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
+
+	vertices_index[angle] = 0;
+	colors_index[angle] = 0;
+//	wxLogMessage(wxT("BR24radar_pi:XXX angle=%d, vertices_index[angle]=%d "), angle, vertices_index[angle]);
+	scan_line * scan = &m_scan_line[settings.selectRadarB][angle];
+
+	int r_begin = 0, r_end = 0;
+	enum colors { BLOB_NONE, BLOB_BLUE, BLOB_GREEN, BLOB_RED };
+	colors actual_color = BLOB_NONE, previous_color = BLOB_NONE;
+	drawn_spokes++;
+	scan->data[RETURNS_PER_LINE] = 0;  // make sure this element is initialized (just outside the range)
+
+	for (int radius = 0; radius <= RETURNS_PER_LINE; ++radius) {   // loop 1 more time as only the previous one will be displayed
+		GLubyte strength = scan->data[radius];
+		GLubyte hist = scan->history[radius];
+		hist = hist & 7;  // check only last 3 bits
+
+		if (((settings.multi_sweep_filter[settings.selectRadarB][2] == 1) && (!(hist == 3 || hist >= 5)) && radius != RETURNS_PER_LINE - 1)) {
+			// corresponds to the patterns 011, 101, 110, 111
+			// blob does not pass filter conditions
+			actual_color = BLOB_NONE;
+		}
+		else   {     // blob passed filter or filter off
+			switch (settings.display_option) {
+				//  first find out the actual color
+			case 0:
+				actual_color = BLOB_NONE;
+				if (strength > displaysetting0_threshold_red) actual_color = BLOB_RED;
+				break;
+
+			case 1:
+				actual_color = BLOB_NONE;
+				if (strength > displaysetting1_threshold_blue) actual_color = BLOB_BLUE;
+				if (strength > 100) actual_color = BLOB_GREEN;
+				if (strength > 200) actual_color = BLOB_RED;
+				break;
+
+			case 2:
+				actual_color = BLOB_NONE;
+				if (strength > displaysetting2_threshold_blue) actual_color = BLOB_BLUE;
+				if (strength > 100) actual_color = BLOB_GREEN;
+				if (strength > 250) {
+					actual_color = BLOB_RED;
+				}
+				break;
+			}
+		}
+
+		if (actual_color == BLOB_NONE && previous_color == BLOB_NONE) {
+			// nothing to do, next radius
+			continue;
+		}
+
+		if (actual_color == previous_color) {
+			// continue with same color, just register it
+			r_end++;
+		}
+		else if (previous_color == BLOB_NONE && actual_color != BLOB_NONE) {
+			// blob starts, no display, just register
+			r_begin = radius;
+			r_end = r_begin + 1;
+			previous_color = actual_color;            // new color
+		}
+		else if (previous_color != BLOB_NONE && (previous_color != actual_color)) {
+			// display time, first get the color in the glue byte
+			GLubyte red = 0, green = 0, blue = 0;
+			switch (previous_color) {
+			case BLOB_RED:
+				red = 255;
+				break;
+			case BLOB_GREEN:
+				green = 255;
+				break;
+			case BLOB_BLUE:
+				blue = 255;
+				break;
+			case BLOB_NONE:
+				break;
+			}
+			//      glColor4ub(red, green, blue, alpha);    // red, blue, green
+			
+			//		wxLogMessage(wxT("BR24radar_pi:XXX before call draw blob angle = %d, r_begin = %d, r_end=%d"), angle, r_begin, r_end);
+
+			draw_blob_gl_i(angle, r_begin, r_end, red, green, blue, alpha);
+			//		wxLogMessage(wxT("BR24radar_pi:XXX after call drawn angle=%d, vertices_index[angle]=%d "), angle, vertices_index[angle]);
+			drawn_blobs++;
+			previous_color = actual_color;
+			if (actual_color != BLOB_NONE) {            // change of color, start new blob
+				r_begin = (double)radius;
+				r_end = r_begin + 1;
+			}
+			else {            // actual_color == BLOB_NONE, blank pixel, next radius
+				continue;
+			}
+		}
+	}   // end of loop over radius
+}        // end of PrepareRadarImage
+
+
+
 
 
 void br24radar_pi::Guard(int max_range, int AB)
@@ -3384,15 +3364,18 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 			}
 		}
 
-
         // The following line is a quick hack to confirm on-screen where the range ends, by putting a 'ring' of
         // returned radar energy at the max range line.
         // TODO: create nice actual range circles.
         dest_data1[RETURNS_PER_LINE - 1] = 0xff;
-
         pPlugIn->m_scan_line[AB][angle_raw].range = range_meters;
         pPlugIn->m_scan_line[AB][angle_raw].age = nowMillis;
+
+		pPlugIn->PrepareRadarImage(angle_raw);   // get the vertex array for this line
     }
+
+	
+
     //  all scanlines ready now, refresh section follows
     int pos_age = difftime (time(0), br_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
     if (br_refresh_busy_or_queued || (pos_age >= 2 && !blackout[AB])) { // don't do additional refresh and reset the refresh conter
