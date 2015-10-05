@@ -1790,7 +1790,6 @@ void br24radar_pi::PrepareRadarImage(int angle)
 
 	vertices_index[angle] = 0;
 	colors_index[angle] = 0;
-//	wxLogMessage(wxT("BR24radar_pi:XXX angle=%d, vertices_index[angle]=%d "), angle, vertices_index[angle]);
 	scan_line * scan = &m_scan_line[settings.selectRadarB][angle];
 
 	int r_begin = 0, r_end = 0;
@@ -1866,12 +1865,8 @@ void br24radar_pi::PrepareRadarImage(int angle)
 			case BLOB_NONE:
 				break;
 			}
-			//      glColor4ub(red, green, blue, alpha);    // red, blue, green
-			
-			//		wxLogMessage(wxT("BR24radar_pi:XXX before call draw blob angle = %d, r_begin = %d, r_end=%d"), angle, r_begin, r_end);
 
 			draw_blob_gl_i(angle, r_begin, r_end, red, green, blue, alpha);
-			//		wxLogMessage(wxT("BR24radar_pi:XXX after call drawn angle=%d, vertices_index[angle]=%d "), angle, vertices_index[angle]);
 			drawn_blobs++;
 			previous_color = actual_color;
 			if (actual_color != BLOB_NONE) {            // change of color, start new blob
@@ -1884,8 +1879,6 @@ void br24radar_pi::PrepareRadarImage(int angle)
 		}
 	}   // end of loop over radius
 }        // end of PrepareRadarImage
-
-
 
 
 
