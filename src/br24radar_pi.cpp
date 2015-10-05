@@ -177,8 +177,10 @@ static time_t      br_data_watchdog;
 static time_t      br_var_watchdog;
 static bool blackout[2] = { false, false };         //  will force display to blackout and north up
 
-GLfloat vertices[2048][1000];
-GLfloat colors[2048][1000];
+#define     SIZE_VERTICES (2000)
+#define     SIZE_COLORS (3000)
+GLfloat vertices[2048][SIZE_VERTICES];
+GLfloat colors[2048][SIZE_COLORS];
 int colors_index[2048];
 int vertices_index[2048];
 
@@ -275,8 +277,6 @@ static double local_bearing (double lat1, double lon1, double lat2, double lon2)
 
 static void draw_blob_gl_i(int arc, int radius, int radius_end, GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha)
 {
-	//wxLogMessage(wxT("BR24radar_pi:XXX draw blob_i inside call arc= %d, r_begin = %d, r_end=%d, index=%d"), arc, radius, radius_end, vertices_index[arc]);
-	//wxLogMessage(wxT("BR24radar_pi:XXX draw blob_i inside call arc= %d, red = %d, green=%d, blue=%d colorsindex=%d"), arc, red, green, blue, colors_index[arc]);
 	int arc_end = arc + 1;
 	if (arc_end >= 2048){
 		arc_end = arc_end - 2048;
@@ -320,18 +320,16 @@ static void draw_blob_gl_i(int arc, int radius, int radius_end, GLubyte red, GLu
 	colors_index[arc]++;
 	colors[arc][colors_index[arc]] = (GLfloat) blue;
 	colors_index[arc]++;
-	colors[arc][colors_index[arc]] = (GLfloat)alpha;
+	colors[arc][colors_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
 	colors_index[arc]++;
 }
-	//wxLogMessage(wxT("BR24radar_pi:XXX draw blob_i end call arc= %d, red= %d, green=%d, blue=%d colorsindex=%d"), arc, red, green, blue, colors_index[arc]);
-	if (colors_index[arc] > 990){
-		colors_index[arc] = 990;
-		wxLogMessage(wxT("BR24radar_pi:XXX color array limit overflow colors_index=%d arc=%d"), colors_index[arc], arc);
+	if (colors_index[arc] > SIZE_COLORS - 32){
+		colors_index[arc] = SIZE_COLORS - 32;
+		wxLogMessage(wxT("BR24radar_pi: color array limit overflow colors_index=%d arc=%d"), colors_index[arc], arc);
 	}
-//	wxLogMessage(wxT("BR24radar_pi:XXX draw blob_i inside at end call arc= %d, r_begin= %d, r_end=%d, index=%d"), arc, radius, radius_end, vertices_index[arc]);
-	if (vertices_index [arc]> 990){
-		vertices_index [arc]= 990 ;
-		wxLogMessage(wxT("BR24radar_pi:XXX vertices array limit overflow vertices_index=%d arc=%d"), vertices_index[arc], arc);
+	if (vertices_index[arc]> SIZE_VERTICES - 16){
+		vertices_index[arc] = SIZE_VERTICES - 16;
+		wxLogMessage(wxT("BR24radar_pi: vertices array limit overflow vertices_index=%d arc=%d"), vertices_index[arc], arc);
 	}
 }
 
@@ -359,10 +357,8 @@ static void draw_blob_gl(double ca, double sa, double radius, double arc_width, 
 
 	double xd = xm2 - arc_width_end2 * sa;
 	double yd = ym2 + arc_width_end2 * ca;
-//	wxLogMessage(wxT("BR24radar_pi:XXX draw blobold xa = %f, xb = %f, xc=%f, xd=%f"), xa, xb, xc, xd);
-//	wxLogMessage(wxT("BR24radar_pi:XXX draw blobold ya = %f, yb = %f, yc %f, yd=%f"), ya, yb, yc, yd);
 
-	/*glBegin(GL_TRIANGLES);
+	glBegin(GL_TRIANGLES);
 	glVertex2d(xa, ya);
 	glVertex2d(xb, yb);
 	glVertex2d(xc, yc);
@@ -370,7 +366,7 @@ static void draw_blob_gl(double ca, double sa, double radius, double arc_width, 
 	glVertex2d(xb, yb);
 	glVertex2d(xc, yc);
 	glVertex2d(xd, yd);
-	glEnd();*/
+	glEnd();
 }
 
 
@@ -1765,8 +1761,8 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 	GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
-	//	wxLogMessage(wxT("BR24radar_pi: XXX glEnableClientState init"));
-//	glColor4ub(255, 0, 0, alpha);    // red, blue, green
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	for (int i = 0; i < 2048; i++){
 		glVertexPointer(2, GL_FLOAT, 0, &vertices[i][0]);
@@ -1774,7 +1770,6 @@ void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
 		
 		int number_of_points = vertices_index[i] / 2;
 		glDrawArrays(GL_TRIANGLES, 0, number_of_points);
-		//	wxLogMessage(wxT("BR24radar_pi: XXX  drawn angle=%d vertices_index=%d, number_of_triangles=%d"), i, vertices_index[i], number_of_triangles);
 	}
 	glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
 	glDisableClientState(GL_COLOR_ARRAY);
