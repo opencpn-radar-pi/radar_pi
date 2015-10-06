@@ -179,10 +179,11 @@ static bool blackout[2] = { false, false };         //  will force display to bl
 
 #define     SIZE_VERTICES (2000)
 #define     SIZE_COLORS (3000)
-GLfloat vertices[2048][SIZE_VERTICES];
-GLfloat colors[2048][SIZE_COLORS];
-int colors_index[2048];
-int vertices_index[2048];
+static GLfloat vertices[2048][SIZE_VERTICES];
+static GLfloat colors[2048][SIZE_COLORS];
+static int colors_index[2048];
+static time_t vertices_time_stamp[2048];
+static int vertices_index[2048];
 
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 #define     TIMER_NOT_ELAPSED(watchdog) (now < watchdog + WATCHDOG_TIMEOUT)
@@ -314,7 +315,8 @@ static void draw_blob_gl_i(int arc, int radius, int radius_end, GLubyte red, GLu
 	vertices_index[arc]++;
 
 	for (int i = 0; i < 6; i++){  // add color for 6 points
-	colors[arc][colors_index[arc]] = (GLfloat) red; 
+	colors[arc][colors_index[arc]] = (GLfloat) red; // glColorPointer does not seem to function with GLubyte
+	                                                // therefore GLfloat is used
 	colors_index[arc]++;
 	colors[arc][colors_index[arc]] = (GLfloat) green;
 	colors_index[arc]++;
@@ -1728,7 +1730,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 			if (settings.showRadar && metersB != 0){
 				Guard(metersB, 1);
 			}
-            DrawRadarImage(meters, radar_center);
+            DrawRadarImage();
         }
         glPopMatrix();
 		HandleBogeyCount(bogey_count);
@@ -1756,15 +1758,19 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 }        // end of RenderRadarOverlay
 
 
-void br24radar_pi::DrawRadarImage(int max_range, wxPoint radar_center)
+void br24radar_pi::DrawRadarImage()
 {
 	GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	time_t now = time(0);
 
 	for (int i = 0; i < 2048; i++){
+		if (now - vertices_time_stamp[i] > settings.max_age){
+			continue;            // outdated line, do not display
+		}
 		glVertexPointer(2, GL_FLOAT, 0, &vertices[i][0]);
 		glColorPointer(4, GL_FLOAT, 0, &colors[i][0]);
 		
@@ -1790,6 +1796,7 @@ void br24radar_pi::PrepareRadarImage(int angle)
 
 	vertices_index[angle] = 0;
 	colors_index[angle] = 0;
+	vertices_time_stamp[angle] = time(0);
 	scan_line * scan = &m_scan_line[settings.selectRadarB][angle];
 
 	int r_begin = 0, r_end = 0;
@@ -3358,11 +3365,11 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         dest_data1[RETURNS_PER_LINE - 1] = 0xff;
         pPlugIn->m_scan_line[AB][angle_raw].range = range_meters;
         pPlugIn->m_scan_line[AB][angle_raw].age = nowMillis;
-
-		pPlugIn->PrepareRadarImage(angle_raw);   // get the vertex array for this line
+		if (AB == pPlugIn->settings.selectRadarB){
+			pPlugIn->PrepareRadarImage(angle_raw);   // prepare the vertex array for this line
+		}                                            // but only do this for the active radar
     }
 
-	
 
     //  all scanlines ready now, refresh section follows
     int pos_age = difftime (time(0), br_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
@@ -3406,10 +3413,8 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
 	time_t now = time(0);
 	static int next_scan_number = 0;
 	pPlugIn->m_statistics[AB].packets++;
-//	br_data_seen = true;
 	br_radar_seen = true;
 	br_radar_watchdog = now;
-//	br_data_watchdog = br_radar_watchdog;
 	int scanlines_in_packet = 2048 * 24 / 60;
 	int range_meters = br_auto_range_meters;
 	int spots = 0;
@@ -3430,7 +3435,6 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
 		UINT8 *dest_data1 = pPlugIn->m_scan_line[AB][angle_raw].data;
 		for (int range = 0; range < RETURNS_PER_LINE; range++) {
 			int bit = range >> 5;
-
 			// use bit 'bit' of angle_raw
 			UINT8 color = ((angle_raw >> 3) & (2 << bit)) > 0 ? 200 : 0;
 			dest_data1[range] = color;
@@ -3445,6 +3449,7 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
 		dest_data1[RETURNS_PER_LINE - 1] = 0xff;
 		pPlugIn->m_scan_line[AB][angle_raw].range = range_meters;
 		pPlugIn->m_scan_line[AB][angle_raw].age = nowMillis;
+		pPlugIn->PrepareRadarImage(angle_raw);
 	}
 	if (pPlugIn->settings.verbose >= 2) {
 		wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" emulating %d spokes at range %d with %d spots"), nowMillis, scanlines_in_packet, range_meters, spots);

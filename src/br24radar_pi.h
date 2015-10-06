@@ -454,7 +454,7 @@ private:
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
 	void Guard(int max_range, int AB);
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
-    void DrawRadarImage(int max_range, wxPoint radar_center);
+    void DrawRadarImage();
     void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp, int AB);
     void HandleBogeyCount(int *bogey_count);
     void draw_histogram_column(int x, int y);
