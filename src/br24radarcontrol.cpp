@@ -689,7 +689,7 @@ void BR24ControlsDialog::CreateControls()
 		CT_ANTENNA_HEIGHT, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].antenna_height.button);
 	installationBox->Add(bAntennaHeight, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 	bAntennaHeight->minValue = 0;
-	bAntennaHeight->maxValue = 30;   // XXX to be verified and corrected
+	bAntennaHeight->maxValue = 30;   
 
 	// The LOCAL INTERFERENCE REJECTION button
 	bLocalInterferenceRejection = new RadarControlButton(this, ID_LOCAL_INTERFERENCE_REJECTION, _("Local interference rejection"), pPlugIn, 

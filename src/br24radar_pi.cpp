@@ -497,7 +497,7 @@ int br24radar_pi::Init(void)
 		}
 	}
 	double www = -1.;
-	wxLogMessage(wxT("BR24radar_pi:XXX initialized  xa = %f"), polar_to_cart_x[100][150]);
+	wxLogMessage(wxT("BR24radar_pi:Position initialized  xa = %f"), polar_to_cart_x[100][150]);
     AddLocaleCatalog( _T("opencpn-br24radar_pi") );
 
     m_pControlDialog = NULL;
@@ -701,34 +701,40 @@ bool br24radar_pi::DeInit(void)
         m_dataReceiveThreadA->Wait();
         delete m_dataReceiveThreadA;
     }
-	wxLogMessage(wxT("BR24radar_pi: m_dataReceiveThreadA stopped in DeInit"));
+	
 	if (m_dataReceiveThreadB) {
 		m_dataReceiveThreadB->Wait();
 		delete m_dataReceiveThreadB;
+		wxLogMessage(wxT("BR24radar_pi: m_dataReceiveThreadA stopped in DeInit"));
 	}
-	wxLogMessage(wxT("BR24radar_pi: m_dataReceiveThreadB stopped in DeInit"));
+	
     if (m_commandReceiveThreadA) {
         m_commandReceiveThreadA->Wait();
         delete m_commandReceiveThreadA;
+		wxLogMessage(wxT("BR24radar_pi: m_dataReceiveThreadB stopped in DeInit"));
     }
-	wxLogMessage(wxT("BR24radar_pi: m_commandReceiveThreadA stopped in DeInit"));
+	
 	if (m_commandReceiveThreadB) {
 		m_commandReceiveThreadB->Wait();
 		delete m_commandReceiveThreadB;
+		wxLogMessage(wxT("BR24radar_pi: m_commandReceiveThreadA stopped in DeInit"));
 	}
-	wxLogMessage(wxT("BR24radar_pi: m_commandReceiveThreadB stopped in DeInit"));
+	
     if (m_reportReceiveThreadA) {
         m_reportReceiveThreadA->Wait();
         delete m_reportReceiveThreadA;
+		wxLogMessage(wxT("BR24radar_pi: m_commandReceiveThreadB stopped in DeInit"));
     }
-	wxLogMessage(wxT("BR24radar_pi: m_reportReceiveThreadA stopped in DeInit"));
+	
 	if (m_reportReceiveThreadB) {
 		m_reportReceiveThreadB->Wait();
 		delete m_reportReceiveThreadB;
+		wxLogMessage(wxT("BR24radar_pi: m_reportReceiveThreadA stopped in DeInit"));
 	}
-	wxLogMessage(wxT("BR24radar_pi: m_reportReceiveThreadB stopped in DeInit"));
+	
     if (m_radar_socket != INVALID_SOCKET) {
         closesocket(m_radar_socket);
+		wxLogMessage(wxT("BR24radar_pi: m_reportReceiveThreadB stopped in DeInit"));
     }
 
     // I think we need to destroy any windows here
@@ -3372,32 +3378,36 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
 
     //  all scanlines ready now, refresh section follows
-    int pos_age = difftime (time(0), br_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
-    if (br_refresh_busy_or_queued || (pos_age >= 2 && !blackout[AB])) { // don't do additional refresh and reset the refresh conter
-        i_display = 0;  // rendering ongoing, reset the counter, don't refresh now
-        // this will also balance performance, if too busy skip refresh
-        // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
-        // so skip next refresh
-        if (pPlugIn->settings.verbose >= 2) {
-            if (pos_age >= 2) wxLogMessage(wxT("BR24radar_pi:  busy encountered, pos_age = %i"), pos_age);
-            if (br_refresh_busy_or_queued) wxLogMessage(wxT("BR24radar_pi:  busy encountered"));
-        }
-    }
-    else {
-		if (pPlugIn->settings.showRadar) {
-            if (i_display >=  br_refresh_rate ) {   //    display every "refreshrate time"
-                if (br_refresh_rate != 10) { // for 10 no refresh at all
-                    br_refresh_busy_or_queued = true;   // no further calls until br_refresh_busy_or_queued has been cleared by RenderGLOverlay
-                    GetOCPNCanvasWindow()->Refresh(true);
-                    if (pPlugIn->settings.verbose >= 4) {
-                        wxLogMessage(wxT("BR24radar_pi:  refresh issued"));
-                    }
-                }
-                i_display = 0;
-            }
-            i_display++;
-        }
-    }
+
+	if (pPlugIn->settings.showRadar && AB == pPlugIn->settings.selectRadarB) {  // only issue refresh for active and shown channel
+		int pos_age = difftime(time(0), br_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
+		if (pPlugIn->settings.display_mode[AB] == DM_CHART_BLACKOUT){  // position not important in DM_CHART_BLACKOUT
+			pos_age = 0;
+		}
+		if (br_refresh_busy_or_queued || pos_age >= 2 ) {
+			// don't do additional refresh and reset the refresh conter
+			i_display = 0;  // rendering ongoing, reset the counter, don't refresh now
+			// this will also balance performance, if too busy skip refresh
+			// pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
+			// so skip next refresh
+			   if (pPlugIn->settings.verbose >= 2) {
+			wxLogMessage(wxT("BR24radar_pi:  busy encountered, pos_age = %i, br_refresh_busy_or_queued=%i"), pos_age, br_refresh_busy_or_queued);
+			   }
+		}
+		else {
+			if (i_display >= br_refresh_rate) {   //    display every "refreshrate time"
+				if (br_refresh_rate != 10) { // for 10 no refresh at all
+					br_refresh_busy_or_queued = true;   // no further calls until br_refresh_busy_or_queued has been cleared by RenderGLOverlay
+					GetOCPNCanvasWindow()->Refresh(true);
+					if (pPlugIn->settings.verbose >= 4) {
+						wxLogMessage(wxT("BR24radar_pi:  refresh issued"));
+					}
+				}
+				i_display = 0;
+			}
+			i_display++;
+		}
+	}
 }
 
 /*
