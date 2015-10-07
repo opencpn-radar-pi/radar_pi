@@ -1252,7 +1252,7 @@ void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 		return;
 	}
 	
-	if (pPlugIn->control_box_opened){  // opened from context menu
+	if (pPlugIn->control_box_opened){  // manually opened from context menu
 		bool guard = false;
 		if (pPlugIn->m_pGuardZoneDialog){   // otherwise next statement might crash!
 			if (pPlugIn->m_pGuardZoneDialog->IsShown()){

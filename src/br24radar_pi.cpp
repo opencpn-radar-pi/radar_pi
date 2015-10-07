@@ -1455,6 +1455,7 @@ void br24radar_pi::DoTick(void)
 	if (settings.emulator_on){
 		br_radar_seen = true;
 		br_radar_watchdog = time(0);
+		settings.selectRadarB = 0;
 	}
 
 	/*******************************************
@@ -1513,7 +1514,7 @@ void br24radar_pi::DoTick(void)
 	}   //End of Timed Transmit
 
 	UpdateState();
-}        // end of DoTick
+}        // end of br24radar_pi::DoTick(void)
 
 void br24radar_pi::UpdateState(void)   // -  run by RenderGLOverlay  updates the color of the toolbar button
 {
@@ -1756,7 +1757,6 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 				if (guardZones[settings.selectRadarB][0].type != GZ_OFF || guardZones[settings.selectRadarB][1].type != GZ_OFF) {
 					RenderGuardZone(radar_center, v_scale_ppm, vp, settings.selectRadarB);
 			}
-			
 		}
 	}
     glPopMatrix();
@@ -1772,21 +1772,18 @@ void br24radar_pi::DrawRadarImage()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	time_t now = time(0);
-
 	for (int i = 0; i < 2048; i++){
 		if (now - vertices_time_stamp[i] > settings.max_age){
 			continue;            // outdated line, do not display
 		}
 		glVertexPointer(2, GL_FLOAT, 0, &vertices[i][0]);
 		glColorPointer(4, GL_FLOAT, 0, &colors[i][0]);
-		
 		int number_of_points = vertices_index[i] / 2;
 		glDrawArrays(GL_TRIANGLES, 0, number_of_points);
 	}
 	glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
 	glDisableClientState(GL_COLOR_ARRAY);
 }        // end of DrawRadarImage
-
 
 
 
@@ -2116,7 +2113,7 @@ bool br24radar_pi::LoadConfig(void)
         settings.range_unit_meters = (settings.range_units == 1) ? 1000 : 1852;
         pConf->Read(wxT("DisplayMode"),  (int *) &settings.display_mode[0], 0);
 		pConf->Read(wxT("DisplayModeB"), (int *)&settings.display_mode[1], 0);
-		pConf->Read(wxT("EmulatorOn"), (int *)&settings.emulator_on, 0);
+	//	pConf->Read(wxT("EmulatorOn"), (int *)&settings.emulator_on, 0);
         pConf->Read(wxT("VerboseLog"),  &settings.verbose, 0);
         pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
         pConf->Read(wxT("RangeCalibration"),  &settings.range_calibration, 1.0);
@@ -2142,9 +2139,9 @@ bool br24radar_pi::LoadConfig(void)
 
         pConf->Read(wxT("PassHeadingToOCPN"), &settings.passHeadingToOCPN, 0);
         pConf->Read(wxT("selectRadarB"), &settings.selectRadarB, 0);
-		if (settings.emulator_on) {
+	/*	if (settings.emulator_on) {
 			settings.selectRadarB = 0;
-		}
+		}*/
         pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
         pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
         pConf->Read(wxT("ControlsDialogPosX"), &m_BR24Controls_dialog_x, 20L);
@@ -2203,7 +2200,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("DisplayOption"), settings.display_option);
         pConf->Write(wxT("RangeUnits" ), settings.range_units);
         pConf->Write(wxT("DisplayMode"), (int)settings.display_mode[0]);
-		pConf->Write(wxT("EmulatorOn"), (int)settings.emulator_on);
+//		pConf->Write(wxT("EmulatorOn"), (int)settings.emulator_on);
 		pConf->Write(wxT("DisplayModeB"), (int)settings.display_mode[1]);
         pConf->Write(wxT("VerboseLog"), settings.verbose);
         pConf->Write(wxT("Transparency"), settings.overlay_transparency);
@@ -2372,7 +2369,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         br_bpos_set = true;
         br_bpos_watchdog = now;
     }
-}
+}    // end of br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 
 void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
 {
