@@ -775,9 +775,8 @@ public:
 	bool wantShowMessage; // If true, don't hide messagebox automatically
 
 	RadarControlButton *bRadarAB;
-	wxBoxSizer        *advanced4gBox;
-	wxBoxSizer        *advancedBox;
 	wxBoxSizer        *topSizer;
+    wxBoxSizer        *controlBox;
 
 private:
     void OnClose(wxCloseEvent& event);
@@ -814,9 +813,10 @@ private:
 
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
+	wxBoxSizer        *advanced4gBox;
+	wxBoxSizer        *advancedBox;
     wxBoxSizer        *editBox;
 	wxBoxSizer        *installationBox;
-    wxBoxSizer        *controlBox;
     wxBoxSizer        *fromBox; // If on edit control, this is where the button is from
     
 	
