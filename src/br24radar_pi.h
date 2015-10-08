@@ -1060,7 +1060,7 @@ public:
      );
 
     void    CreateControls();
-    void    SetIdleTimes(int IdleTime, int IdleTimeLeft);
+    void    SetIdleTimes(int IdleMode, int IdleTime, int IdleTimeLeft);
 
 private:
 
