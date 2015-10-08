@@ -653,6 +653,11 @@ void BR24ControlsDialog::CreateControls()
     timed_idle_times[5] = _("25 min");
     timed_idle_times[6] = _("30 min");
     timed_idle_times[7] = _("35 min");
+    wxString TT_Label;
+    TT_Label << wxT("\n") << _("Back to activate");
+    for (int i = 1; i < 8; i++) {
+        timed_idle_times[i] << TT_Label;
+    }
 
     bTimedIdle = new RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), pPlugIn, CT_TIMED_IDLE, false, pPlugIn->settings.timed_idle); //HakanToDo new setting
     advancedBox->Add(bTimedIdle, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
