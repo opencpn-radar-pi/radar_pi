@@ -155,10 +155,12 @@ bool br_update_error_control = false;
 wxString br_ip_address; // Current IP address of the ethernet interface that we're doing multicast receive on.
 wxString br_error_msg;
 
-bool   br_init_timed_transmit;
+//Timed Transmit
+bool br_init_timed_transmit;
 static time_t br_idle_watchdog;
-int   br_idle_dialog_time_left = 999;
-int   TimedTransmit_IdleBoxMode;
+int br_idle_dialog_time_left = 999;
+int TimedTransmit_IdleBoxMode;
+int time_left = 0; 				    
 
 int   br_scanner_state = RADAR_OFF;
 RadarType br_radar_type = RT_4G;  // default value
@@ -1275,6 +1277,10 @@ void br24radar_pi::OnToolbarToolCallback(int id)
 		ShowRadarControl(true);
 	}
 	else if (toolbar_button == GREEN){
+        if (id == 999 && settings.timed_idle != 0) { // Disable Timed Transmit
+			m_pControlDialog->SetTimedIdleIndex(0);
+            return;
+		}
 		settings.showRadar = 0;
 		RadarTxOff();
 		if (id != 999999 && settings.timed_idle != 0) {
@@ -1494,29 +1500,34 @@ void br24radar_pi::DoTick(void)
                     br_idle_watchdog = TT_now;
                 }
             }
-            // Send minutes left to Idle dialog box
-            int time_left; 				    
-            if (br_idle_dialog_time_left != time_left) {
-                if (!m_pIdleDialog) {
-					m_pIdleDialog = new Idle_Dialog;
-					m_pIdleDialog->Create(m_parent_window, this);
-				}
-                if (TimedTransmit_IdleBoxMode == 1) {   //Idle
-                    time_left = ((br_idle_watchdog + (settings.timed_idle * factor)) - TT_now) / 60;
+            // Send minutes left to Idle dialog box            
+            if (!m_pIdleDialog) {
+				m_pIdleDialog = new Idle_Dialog;
+				m_pIdleDialog->Create(m_parent_window, this);
+			}
+            if (TimedTransmit_IdleBoxMode == 1) {   //Idle
+                time_left = ((br_idle_watchdog + (settings.timed_idle * factor)) - TT_now) / 60;
+                if (br_idle_dialog_time_left != time_left) {
                     br24radar_pi::m_pIdleDialog->SetIdleTimes(TimedTransmit_IdleBoxMode, settings.timed_idle * factor / 60, time_left);
+                    m_pIdleDialog->Show();
+			        br_idle_dialog_time_left = time_left;
                 }
-				if (TimedTransmit_IdleBoxMode == 2) {   //Transmit
-                    time_left = ((br_idle_watchdog + (settings.idle_run_time * 60)) - TT_now) / 60;
-               		br24radar_pi::m_pIdleDialog->SetIdleTimes(TimedTransmit_IdleBoxMode, settings.idle_run_time, time_left);
-				}
-            m_pIdleDialog->Show();
-			br_idle_dialog_time_left = time_left;
             }
+			if (TimedTransmit_IdleBoxMode == 2) {   //Transmit
+                time_left = ((br_idle_watchdog + (settings.idle_run_time * 60)) - TT_now) / 60;
+                if (br_idle_dialog_time_left != time_left) {
+               		br24radar_pi::m_pIdleDialog->SetIdleTimes(TimedTransmit_IdleBoxMode, settings.idle_run_time, time_left);
+                    m_pIdleDialog->Show();
+			        br_idle_dialog_time_left = time_left;
+                }
+			}
 		}
         else {
-            if(m_pControlDialog->topSizer->IsShown(m_pControlDialog->controlBox)) {
-                br_init_timed_transmit = true;  //First time init: Await user to leave Timed transmit setting menu.
-                br_idle_watchdog = TT_now;
+            if(m_pControlDialog) {
+                if(m_pControlDialog->topSizer->IsShown(m_pControlDialog->controlBox)) {
+                    br_init_timed_transmit = true;  //First time init: Await user to leave Timed transmit setting menu.
+                    br_idle_watchdog = TT_now;
+                }
             }
         }
 	}
