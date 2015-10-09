@@ -161,5 +161,5 @@ void Idle_Dialog::OnIdStopIdleClick(wxCommandEvent &event)
 {
     Idle_Dialog::Close();
     event.Skip();
-    pPlugIn->br24radar_pi::OnToolbarToolCallback(1);    //Start radar scanning and set Timed Idle off
+    pPlugIn->br24radar_pi::OnToolbarToolCallback(999);    //Start radar scanning and set Timed Idle off
 }
