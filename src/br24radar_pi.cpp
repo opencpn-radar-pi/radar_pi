@@ -1498,20 +1498,12 @@ void br24radar_pi::DoTick(void)
 			br_idle_dialog_time_left = time_left;
             }
 		}
-<<<<<<< HEAD
-        else {
-            if(m_pControlDialog->topSizer->IsShown(m_pControlDialog->controlBox)) {
-                br_init_timed_transmit = 1;  //First time init: Await user to leave Timed transmit setting menu.
-            }
-        }
-=======
         else {
             if(m_pControlDialog->topSizer->IsShown(m_pControlDialog->controlBox)) {
                 br_init_timed_transmit = true;  //First time init: Await user to leave Timed transmit setting menu.
                 br_idle_watchdog = TT_now;
             }
         }
->>>>>>> bb5df9bf427f681bc7f2bc72d002b987669098f8
 	}
 	else {
 		if(br_init_timed_transmit) {
