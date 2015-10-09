@@ -155,10 +155,12 @@ bool br_update_error_control = false;
 wxString br_ip_address; // Current IP address of the ethernet interface that we're doing multicast receive on.
 wxString br_error_msg;
 
-bool   br_init_timed_transmit;
+//Timed Transmit
+bool br_init_timed_transmit;
 static time_t br_idle_watchdog;
-int   br_idle_dialog_time_left = 999;
-int   TimedTransmit_IdleBoxMode;
+int br_idle_dialog_time_left = 999;
+int TimedTransmit_IdleBoxMode;
+int time_left; 				    
 
 int   br_scanner_state = RADAR_OFF;
 RadarType br_radar_type = RT_4G;  // default value
@@ -1480,7 +1482,6 @@ void br24radar_pi::DoTick(void)
                 }
             }
             // Send minutes left to Idle dialog box
-            int time_left; 				    
             if (br_idle_dialog_time_left != time_left) {
                 if (!m_pIdleDialog) {
 					m_pIdleDialog = new Idle_Dialog;
