@@ -176,6 +176,9 @@ static time_t      br_data_watchdog;
 static time_t      br_var_watchdog;
 static bool blackout[2] = { false, false };         //  will force display to blackout and north up
 
+// for VBO operation
+static GLuint vboId = 0;
+
 #define     SIZE_VERTICES (2000)
 #define     SIZE_COLORS (3000)
 static GLfloat vertices[2048][SIZE_VERTICES];
@@ -484,6 +487,7 @@ int br24radar_pi::Init(void)
         return 0;
     }
 #endif
+
 	
 	// initialise polar_to_cart_y[arc + 1][radius] arrays
 
@@ -1314,6 +1318,17 @@ void br24radar_pi::OnToolbarToolCallback(int id)
 
 void br24radar_pi::DoTick(void)
 {
+	if (settings.verbose){
+		static time_t refresh_indicater = 0;
+		static int performance_counter = 0;
+		performance_counter++;
+		int timer = time(0) - refresh_indicater;
+		if (time(0) - refresh_indicater >= 1){
+			refresh_indicater = time(0);
+			wxLogMessage(wxT("BR24radar_pi: number of refreshes last second = %d"), performance_counter);
+			performance_counter = 0;
+		}
+	}
 	time_t now = time(0);
 	static time_t previousTicks = 0;
 	if (now == previousTicks) {
