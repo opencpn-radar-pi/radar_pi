@@ -413,8 +413,12 @@ public:
     void OnGuardZoneBogeyClose();
     void OnGuardZoneBogeyConfirm();
 
-
-
+    void SetTimedTrIdleDialogX(long x) {
+        m_TimedTrIdle_dialog_x = x;
+    }
+    void SetTimedTrIdleDialogY(long y) {
+        m_TimedTrIdle_dialog_y = y;
+    }
     void SetControlValue(ControlType controlType, int value);
 
     bool LoadConfig(void);
@@ -492,7 +496,8 @@ private:
 
     int                       m_Guard_dialog_sx, m_Guard_dialog_sy ;
     int                       m_Guard_dialog_x, m_Guard_dialog_y ;
-
+    
+    int                       m_TimedTrIdle_dialog_x, m_TimedTrIdle_dialog_y;
 
     wxBitmap                 *m_ptemp_icon;
     //    wxLogWindow              *m_plogwin;
@@ -1062,9 +1067,15 @@ public:
     void    CreateControls();
     void    SetIdleTimes(int IdleMode, int IdleTime, int IdleTimeLeft);
 
+
+    //Other public methods
+    
+    
 private:
 
     void            OnClose(wxCloseEvent &event);
+    void            OnMove(wxMoveEvent& event);
+    void            OnSize(wxSizeEvent& event);
     void            OnIdStopIdleClick(wxCommandEvent &event);
 
     wxWindow        *pParent;

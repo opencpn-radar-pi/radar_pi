@@ -571,6 +571,9 @@ int br24radar_pi::Init(void)
     m_GuardZoneBogey_x = 200;
     m_GuardZoneBogey_y = 200;
 
+    m_TimedTrIdle_dialog_x = 0;
+    m_TimedTrIdle_dialog_y = 0;
+
     ::wxDisplaySize(&m_display_width, &m_display_height);
 
     //****************************************************************************************
@@ -1489,6 +1492,7 @@ void br24radar_pi::DoTick(void)
             if (!m_pIdleDialog) {
 				m_pIdleDialog = new Idle_Dialog;
 				m_pIdleDialog->Create(m_parent_window, this);
+                m_pIdleDialog->SetPosition(wxPoint(m_TimedTrIdle_dialog_x, m_TimedTrIdle_dialog_y)); 
 			}
             if (TimedTransmit_IdleBoxMode == 1) {   //Idle
                 time_left = ((br_idle_watchdog + (settings.timed_idle * factor)) - TT_now) / 60;
@@ -2137,6 +2141,10 @@ bool br24radar_pi::LoadConfig(void)
             settings.max_age = MAX_AGE;
         }
         pConf->Read(wxT("RunTimeOnIdle"), &settings.idle_run_time, 2);
+        
+        pConf->Read(wxT("TimedTrIdleDialogPosX"), &m_TimedTrIdle_dialog_x, 0);
+        pConf->Read(wxT("TimedTrIdleDialogPosY"), &m_TimedTrIdle_dialog_y, 0);
+        
         pConf->Read(wxT("DrawAlgorithm"), &settings.draw_algorithm, 1);
         pConf->Read(wxT("GuardZonesThreshold"), &settings.guard_zone_threshold, 5L);
         pConf->Read(wxT("GuardZonesRenderStyle"), &settings.guard_zone_render_style, 0);
@@ -2233,6 +2241,9 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("ControlsDialogSizeY"),  m_BR24Controls_dialog_sy);
         pConf->Write(wxT("ControlsDialogPosX"),   m_BR24Controls_dialog_x);
         pConf->Write(wxT("ControlsDialogPosY"),   m_BR24Controls_dialog_y);
+
+        pConf->Write(wxT("TimedTrIdleDialogPosX"), m_TimedTrIdle_dialog_x);
+        pConf->Write(wxT("TimedTrIdleDialogPosY"), m_TimedTrIdle_dialog_y);
 
 		pConf->Write(wxT("MessageBoxSizeX"), m_BR24Message_box_sx);
 		pConf->Write(wxT("MessageBoxSizeY"), m_BR24Message_box_sy);
