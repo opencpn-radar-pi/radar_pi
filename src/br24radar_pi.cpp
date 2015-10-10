@@ -181,13 +181,15 @@ static bool blackout[2] = { false, false };         //  will force display to bl
 // for VBO operation
 static GLuint vboId = 0;
 
-#define     SIZE_VERTICES (2000)
-#define     SIZE_COLORS (3000)
+#define     SIZE_VERTICES (5000)
+//#define     SIZE_COLORS (3000)
 static GLfloat vertices[2048][SIZE_VERTICES];
-static GLfloat colors[2048][SIZE_COLORS];
+//static GLfloat colors[2048][SIZE_COLORS];
 static int colors_index[2048];
 static time_t vertices_time_stamp[2048];
 static int vertices_index[2048];
+#define     SIZE_ALL_VERTICES (10000000)
+static GLfloat all_vertices[SIZE_ALL_VERTICES];
 
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 #define     TIMER_NOT_ELAPSED(watchdog) (now < watchdog + WATCHDOG_TIMEOUT)
@@ -286,55 +288,94 @@ static void draw_blob_gl_i(int arc, int radius, int radius_end, GLubyte red, GLu
 	if (arc_end >= 2048){
 		arc_end = arc_end - 2048;
 	}
-	vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc][radius];   //a
+	vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc][radius];   // A
 	vertices_index[arc]++;
 	vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc][radius];
 	vertices_index[arc]++;
 
-	vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc][radius_end];  //b
+	vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of A
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)green;
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)blue;
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
+	vertices_index[arc]++;
+
+	vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc][radius_end];  // B
 	vertices_index[arc]++;
 	vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc][radius_end];
 	vertices_index[arc]++;
 
-	vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc_end][radius];  //c
+	vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of B
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)green;
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)blue;
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
+	vertices_index[arc]++;
+
+	vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc_end][radius];  //  C
 	vertices_index[arc]++;
 	vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc_end][radius];
+	vertices_index[arc]++;
+
+	vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of C
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)green;
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)blue;
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
 	vertices_index[arc]++;
 
 	//  next triangle follows ----------------------------------------------------------------
 
-	vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc][radius_end];  //b
+	vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc][radius_end];  //B
 	vertices_index[arc]++;
 	vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc][radius_end];
 	vertices_index[arc]++;
 
-	vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc_end][radius];  //c
+	vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of B
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)green;
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)blue;
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
+	vertices_index[arc]++;
+
+	vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc_end][radius];  //  C
 	vertices_index[arc]++;
 	vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc_end][radius];
 	vertices_index[arc]++;
 
-	vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc_end][radius_end];  // d
+	vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of C
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)green;
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)blue;
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
+	vertices_index[arc]++;
+
+	vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc_end][radius_end];  // D
 	vertices_index[arc]++;
 	vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc_end][radius_end];
 	vertices_index[arc]++;
 
-	for (int i = 0; i < 6; i++){  // add color for 6 points
-	colors[arc][colors_index[arc]] = (GLfloat) red; // glColorPointer does not seem to function with GLubyte
-	                                                // therefore GLfloat is used
-	colors_index[arc]++;
-	colors[arc][colors_index[arc]] = (GLfloat) green;
-	colors_index[arc]++;
-	colors[arc][colors_index[arc]] = (GLfloat) blue;
-	colors_index[arc]++;
-	colors[arc][colors_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
-	colors_index[arc]++;
-}
-	if (colors_index[arc] > SIZE_COLORS - 32){
-		colors_index[arc] = SIZE_COLORS - 32;
-		wxLogMessage(wxT("BR24radar_pi: color array limit overflow colors_index=%d arc=%d"), colors_index[arc], arc);
-	}
-	if (vertices_index[arc]> SIZE_VERTICES - 16){
-		vertices_index[arc] = SIZE_VERTICES - 16;
+	vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of D
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)green;
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)blue;
+	vertices_index[arc]++;
+	vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
+	vertices_index[arc]++;
+
+	if (vertices_index[arc]> SIZE_VERTICES - 40){
+		vertices_index[arc] = SIZE_VERTICES - 40;
 		wxLogMessage(wxT("BR24radar_pi: vertices array limit overflow vertices_index=%d arc=%d"), vertices_index[arc], arc);
 	}
 }
@@ -1799,15 +1840,24 @@ void br24radar_pi::DrawRadarImage()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	time_t now = time(0);
+	int pointer = 0;
 	for (int i = 0; i < 2048; i++){
 		if (now - vertices_time_stamp[i] > settings.max_age){
 			continue;            // outdated line, do not display
 		}
-		glVertexPointer(2, GL_FLOAT, 0, &vertices[i][0]);
-		glColorPointer(4, GL_FLOAT, 0, &colors[i][0]);
-		int number_of_points = vertices_index[i] / 2;
-		glDrawArrays(GL_TRIANGLES, 0, number_of_points);
+		memcpy(&all_vertices[pointer], &vertices[i][0], 4 * vertices_index[i]);
+		pointer = pointer + vertices_index[i];
 	}
+	glVertexPointer(2, GL_FLOAT, 24, all_vertices);
+	glColorPointer(4, GL_FLOAT, 24, all_vertices + 2);
+	int number_of_points = pointer / 6;
+	glDrawArrays(GL_TRIANGLES, 0, number_of_points);
+
+//		glVertexPointer(2, GL_FLOAT, 24, &vertices[i][0]);
+//		glColorPointer(4, GL_FLOAT, 24, &vertices[i][2]);
+//		int number_of_points = vertices_index[i] / 6;
+//		glDrawArrays(GL_TRIANGLES, 0, number_of_points);
+//	}
 	glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
 	glDisableClientState(GL_COLOR_ARRAY);
 }        // end of DrawRadarImage
