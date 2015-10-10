@@ -57,12 +57,12 @@ using namespace std;
 
 enum {                                      // process ID's
     ID_MSG_BACK,
-	ID_RADAR,
-	ID_DATA,
-	ID_HEADING,
-	ID_VALUE,
-	ID_BPOS,
-	ID_OFF
+    ID_RADAR,
+    ID_DATA,
+    ID_HEADING,
+    ID_VALUE,
+    ID_BPOS,
+    ID_OFF
 };
 
 enum message_status {HIDE, SHOW, SHOW_NO_NMEA, SHOW_BACK};
@@ -100,7 +100,7 @@ void BR24MessageBox::Init()
 
 void BR24MessageBox::OnClose(wxCloseEvent& event)
 {
-	pPlugIn->OnBR24MessageBoxClose();
+    pPlugIn->OnBR24MessageBoxClose();
 }
 
 bool BR24MessageBox::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID id,
@@ -141,20 +141,20 @@ void BR24MessageBox::CreateControls()
     //**************** MESSAGE BOX ******************//
     // A box sizer to contain warnings
 
-	wxString label;
+    wxString label;
 
     messageBox = new wxBoxSizer(wxVERTICAL);
     topSizeM->Add(messageBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
-	offMessage = new wxStaticText(this, ID_OFF, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-	messageBox->Add(offMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
-	offMessage->SetLabel(_("Can not switch radar on as\nit is not connected or off\n Switch radar on when button is amber"));
-	offMessage->SetFont(g_font);
+    offMessage = new wxStaticText(this, ID_OFF, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    messageBox->Add(offMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    offMessage->SetLabel(_("Can not switch radar on as\nit is not connected or off\n Switch radar on when button is amber"));
+    offMessage->SetFont(g_font);
 
     tMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     messageBox->Add(tMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
     tMessage->SetLabel(_("Radar requires the following"));
-	tMessage->SetFont(g_font);
+    tMessage->SetFont(g_font);
 
     wxStaticBox* optionsBox = new wxStaticBox(this, wxID_ANY, _("OpenCPN options"));
     optionsBox->SetFont(g_font);
@@ -163,7 +163,7 @@ void BR24MessageBox::CreateControls()
 
     cbOpenGL = new wxCheckBox(this, ID_BPOS, _("Accelerated Graphics (OpenGL)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     optionsSizer->Add(cbOpenGL, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-	cbOpenGL->SetFont(g_font);
+    cbOpenGL->SetFont(g_font);
     cbOpenGL->Disable();
 
     ipBox = new wxStaticBox(this, wxID_ANY, _("ZeroConf via Ethernet"));
@@ -173,50 +173,50 @@ void BR24MessageBox::CreateControls()
 
     cbRadar = new wxCheckBox(this, ID_RADAR, _("Radar present"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     ipSizer->Add(cbRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-	cbRadar->SetFont(g_font);
+    cbRadar->SetFont(g_font);
     cbRadar->Disable();
 
     cbData = new wxCheckBox(this, ID_DATA, _("Radar sending data"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     ipSizer->Add(cbData, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-	cbData->SetFont(g_font);
+    cbData->SetFont(g_font);
     cbData->Disable();
 
-	nmeaBox = new wxStaticBox(this, wxID_ANY, _("For radar overlay also required"));
-	nmeaBox->SetFont(g_font);
+    nmeaBox = new wxStaticBox(this, wxID_ANY, _("For radar overlay also required"));
+    nmeaBox->SetFont(g_font);
 
-	nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
+    nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
     messageBox->Add(nmeaSizer, 0, wxEXPAND | wxALL, BORDER * 2);
-	messageBox->Hide(nmeaSizer);
+    messageBox->Hide(nmeaSizer);
 
     cbBoatPos = new wxCheckBox(this, ID_BPOS, _("Boat position"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     nmeaSizer->Add(cbBoatPos, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-	cbBoatPos->SetFont(g_font);
+    cbBoatPos->SetFont(g_font);
     cbBoatPos->Disable();
 
     cbHeading = new wxCheckBox(this, ID_HEADING, _("Heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     nmeaSizer->Add(cbHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-	cbHeading->SetFont(g_font);
+    cbHeading->SetFont(g_font);
     cbHeading->Disable();
 
     cbVariation = new wxCheckBox(this, ID_HEADING, _("Variation"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     nmeaSizer->Add(cbVariation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-	cbVariation->SetFont(g_font);
+    cbVariation->SetFont(g_font);
     cbVariation->Disable();
 
-	infoBox = new wxStaticBox(this, wxID_ANY, _("Statistics"));
-	infoBox->SetFont(g_font);
+    infoBox = new wxStaticBox(this, wxID_ANY, _("Statistics"));
+    infoBox->SetFont(g_font);
 
-	infoSizer = new wxStaticBoxSizer(infoBox, wxVERTICAL);
-	messageBox->Add(infoSizer, 0, wxEXPAND | wxALL, BORDER * 2);
+    infoSizer = new wxStaticBoxSizer(infoBox, wxVERTICAL);
+    messageBox->Add(infoSizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
-	tStatistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, wxDefaultSize, 0);
+    tStatistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, wxDefaultSize, 0);
     tStatistics->SetFont(*OCPNGetFont(_("Dialog"), 8));
-	infoSizer->Add(tStatistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
-	
-	// The <Close> button
+    infoSizer->Add(tStatistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
+
+    // The <Close> button
     bMsgBack = new wxButton(this, ID_MSG_BACK, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
     messageBox->Add(bMsgBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-	bMsgBack->SetFont(g_font);
+    bMsgBack->SetFont(g_font);
     messageBox->Hide(bMsgBack);
 }
 
@@ -242,142 +242,142 @@ void BR24MessageBox::OnSize(wxSizeEvent& event)
 
 void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool radarSeen, bool haveData)
 {
-	static message_status message_state = HIDE;
-	message_status new_message_state = HIDE;
-	static bool old_radarSeen = false;
-	if (!pPlugIn->m_pMessageBox){
-		wxLogMessage(wxT("BR24radar_pi: ERROR UpdateMessage m_pMessageBox not existent"));
-		return;
-	}
+    static message_status message_state = HIDE;
+    message_status new_message_state = HIDE;
+    static bool old_radarSeen = false;
+    if (!pPlugIn->m_pMessageBox){
+        wxLogMessage(wxT("BR24radar_pi: ERROR UpdateMessage m_pMessageBox not existent"));
+        return;
+    }
 
-	bool radarOn = haveOpenGL && radarSeen; 
-	bool navOn = haveGPS && haveHeading && haveVariation;
-	bool black = pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT;
-	bool radar_switched_on = haveData;
-	bool want_message = false;
-	if (pPlugIn->m_pControlDialog){
-		if (pPlugIn->m_pControlDialog->wantShowMessage){
-			want_message = true;
-		}
-	}
+    bool radarOn = haveOpenGL && radarSeen;
+    bool navOn = haveGPS && haveHeading && haveVariation;
+    bool black = pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT;
+    bool radar_switched_on = haveData;
+    bool want_message = false;
+    if (pPlugIn->m_pControlDialog){
+        if (pPlugIn->m_pControlDialog->wantShowMessage){
+            want_message = true;
+        }
+    }
 
 
-	/*
-	Decision table to select the state of the message box
-	- means not relevant
+    /*
+    Decision table to select the state of the message box
+    - means not relevant
 
-	case nr        1   2   3   4   5   6   7   8   9   10  11
-	box type       m   m   m1  m1  m   H   H   H   mb  mb  mb
-	_________________________________________________________
-	radarOn        0   0   0   0   1   1   1   1   1   1   1
-	navOn          0   1   0   1   0   1   0   1   1   0   1
-	black          0   0   1   1   0   0   1   1   0   1   1
-	want_message   -   -   -   -   -   0   0   0   1   1   1
+    case nr        1   2   3   4   5   6   7   8   9   10  11
+    box type       m   m   m1  m1  m   H   H   H   mb  mb  mb
+    _________________________________________________________
+    radarOn        0   0   0   0   1   1   1   1   1   1   1
+    navOn          0   1   0   1   0   1   0   1   1   0   1
+    black          0   0   1   1   0   0   1   1   0   1   1
+    want_message   -   -   -   -   -   0   0   0   1   1   1
 
-	m     message box
-	m1    message box without NMEA (no buttons)
-	H     hide messagebox
-	mb    message box with back button
+    m     message box
+    m1    message box without NMEA (no buttons)
+    H     hide messagebox
+    mb    message box with back button
 
-	*/
+    */
 
-	if (!pPlugIn->settings.showRadar){
-		new_message_state = HIDE;
-	}
-	else if (!haveOpenGL){
-		new_message_state = SHOW;
-	}
-	else if (want_message){
-		new_message_state = SHOW_BACK;
-	}
-	else if (!black && (!navOn || !radarOn)){
-		new_message_state = SHOW;
-	}
-	else if (black && !radarOn){
-		new_message_state = SHOW_NO_NMEA;
-	}
-	else if ((black || navOn) && radarOn){
-		new_message_state = HIDE;
-	}
-	else {
-		new_message_state = SHOW;
-	}
+    if (!pPlugIn->settings.showRadar){
+        new_message_state = HIDE;
+    }
+    else if (!haveOpenGL){
+        new_message_state = SHOW;
+    }
+    else if (want_message){
+        new_message_state = SHOW_BACK;
+    }
+    else if (!black && (!navOn || !radarOn)){
+        new_message_state = SHOW;
+    }
+    else if (black && !radarOn){
+        new_message_state = SHOW_NO_NMEA;
+    }
+    else if ((black || navOn) && radarOn){
+        new_message_state = HIDE;
+    }
+    else {
+        new_message_state = SHOW;
+    }
 
-	cbOpenGL->SetValue(haveOpenGL);
-	cbBoatPos->SetValue(haveGPS);
-	cbHeading->SetValue(haveHeading);
-	cbVariation->SetValue(haveVariation);
-	cbRadar->SetValue(radarSeen);
-	cbData->SetValue(haveData);
-	if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: messagebox switch, case=%d"), new_message_state);
-	if (message_state != new_message_state || old_radarSeen != radarSeen){
-		switch (new_message_state) {
+    cbOpenGL->SetValue(haveOpenGL);
+    cbBoatPos->SetValue(haveGPS);
+    cbHeading->SetValue(haveHeading);
+    cbVariation->SetValue(haveVariation);
+    cbRadar->SetValue(radarSeen);
+    cbData->SetValue(haveData);
+    if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: messagebox switch, case=%d"), new_message_state);
+    if (message_state != new_message_state || old_radarSeen != radarSeen){
+        switch (new_message_state) {
 
-		case HIDE:
-			if(pPlugIn->settings.verbose) wxLogMessage(wxT("BR24radar_pi: case hide"));
-			if (pPlugIn->m_pMessageBox->IsShown()) {
-				pPlugIn->m_pMessageBox->Hide();
-			}
-			break;
+        case HIDE:
+            if(pPlugIn->settings.verbose) wxLogMessage(wxT("BR24radar_pi: case hide"));
+            if (pPlugIn->m_pMessageBox->IsShown()) {
+                pPlugIn->m_pMessageBox->Hide();
+            }
+            break;
 
-		case SHOW:
-			if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: case show"));
-			if (!pPlugIn->m_pMessageBox-> IsShown()) {
-				pPlugIn->m_pMessageBox->Show();
-			}
-			if (!radarSeen){
-				offMessage->Show();
-			}
-			else{
-				offMessage->Hide();
-			}
-			messageBox->Show(nmeaSizer);
-			bMsgBack->Hide();
-			break;
+        case SHOW:
+            if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: case show"));
+            if (!pPlugIn->m_pMessageBox-> IsShown()) {
+                pPlugIn->m_pMessageBox->Show();
+            }
+            if (!radarSeen){
+                offMessage->Show();
+            }
+            else{
+                offMessage->Hide();
+            }
+            messageBox->Show(nmeaSizer);
+            bMsgBack->Hide();
+            break;
 
-		case SHOW_NO_NMEA:
-			if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: case show no nmea"));
-			if (!pPlugIn->m_pMessageBox->IsShown()) {
-				pPlugIn->m_pMessageBox->Show();
-			}
-			if (!radarSeen){
-				offMessage->Show();
-			}
-			else{
-				offMessage->Hide();
-			}
-			messageBox->Hide(nmeaSizer);
-			messageBox->Hide(bMsgBack);
-			break;
+        case SHOW_NO_NMEA:
+            if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: case show no nmea"));
+            if (!pPlugIn->m_pMessageBox->IsShown()) {
+                pPlugIn->m_pMessageBox->Show();
+            }
+            if (!radarSeen){
+                offMessage->Show();
+            }
+            else{
+                offMessage->Hide();
+            }
+            messageBox->Hide(nmeaSizer);
+            messageBox->Hide(bMsgBack);
+            break;
 
-		case SHOW_BACK:
-			if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: case show back"));
-			if (!pPlugIn->m_pMessageBox->IsShown()) {
-				pPlugIn->m_pMessageBox->Show();
-			}
-			offMessage->Hide();
-			messageBox->Show(nmeaSizer);
-			bMsgBack->Show();
-			break;
-		}
-	}
-	Fit();
-	topSizeM->Layout();
-	old_radarSeen = radarSeen;
-	message_state = new_message_state;
+        case SHOW_BACK:
+            if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: case show back"));
+            if (!pPlugIn->m_pMessageBox->IsShown()) {
+                pPlugIn->m_pMessageBox->Show();
+            }
+            offMessage->Hide();
+            messageBox->Show(nmeaSizer);
+            bMsgBack->Show();
+            break;
+        }
+    }
+    Fit();
+    topSizeM->Layout();
+    old_radarSeen = radarSeen;
+    message_state = new_message_state;
 }
 
-	
+
 void BR24MessageBox::OnMessageBackButtonClick(wxCommandEvent& event)
 {
-	pPlugIn->m_pControlDialog->wantShowMessage = false;
+    pPlugIn->m_pControlDialog->wantShowMessage = false;
 
-	if (pPlugIn->m_pMessageBox)
-	{
-		pPlugIn->m_pMessageBox->Hide();
-	}
-	Fit();
-	topSizeM->Layout();
+    if (pPlugIn->m_pMessageBox)
+    {
+        pPlugIn->m_pMessageBox->Hide();
+    }
+    Fit();
+    topSizeM->Layout();
 }
 
 void BR24MessageBox::SetRadarIPAddress(wxString &msg)
@@ -392,11 +392,11 @@ void BR24MessageBox::SetRadarIPAddress(wxString &msg)
 
 void BR24MessageBox::SetErrorMessage(wxString &msg)
 {
-	tMessage->SetLabel(msg);
-	topSizeM->Show(messageBox);
-	messageBox->Layout();
-	Fit();
-	topSizeM->Layout();
+    tMessage->SetLabel(msg);
+    topSizeM->Show(messageBox);
+    messageBox->Layout();
+    Fit();
+    topSizeM->Layout();
 }
 
 
