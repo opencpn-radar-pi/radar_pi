@@ -102,10 +102,10 @@ bool Idle_Dialog::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
 }
 
 //Foresee translated text to fit into the Idle_Dialog
-wxString Timelabel_1  = _("Idle time is set to");
+wxString Timelabel_1 = _("Now Transmit for");
 wxString Timelabel_2 = _("minutes");
 wxString Timeleftlabel_1 = _T("<");
-wxString Timeleftlabel_2 = _("minutes until next run");
+wxString Timeleftlabel_2 = _("minutes to shifting");
 
 void Idle_Dialog::CreateControls()
 {
@@ -115,7 +115,7 @@ void Idle_Dialog::CreateControls()
     Label_2 << Timeleftlabel_1 << _T(" 15 ") << Timeleftlabel_2;
 
     wxBoxSizer *sbIdleDialogSizer;
-    sbIdleDialogSizer = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, _("Radar scanner is Idling") ), wxVERTICAL );
+    sbIdleDialogSizer = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, _("Timed transmit is active") ), wxVERTICAL );
     this->SetSizer( sbIdleDialogSizer);
 
     p_Idle_Mode = new wxStaticText( this, wxID_ANY, Label_1 , wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
@@ -137,10 +137,11 @@ void Idle_Dialog::CreateControls()
     sbIdleDialogSizer->Fit( this );
 }
 
-void Idle_Dialog::SetIdleTimes(int IdleTime, int IdleTimeLeft)
+void Idle_Dialog::SetIdleTimes(int IdleMode, int IdleTime, int IdleTimeLeft)
 {
     wxString Timelabel, t, Timeleftlabel, t2;
-    //wxString t, t2;
+    if (IdleMode == 1) Timelabel_1 = _("Now Idle for");
+    if (IdleMode == 2) Timelabel_1 = _("Now Transmit for");    
     t.Printf(_T("%d"), IdleTime);
     t2.Printf(_T("%d"), IdleTimeLeft + 1);
     Timelabel << Timelabel_1 << _T(" ") << t << _T(" ") << Timelabel_2;
@@ -160,5 +161,5 @@ void Idle_Dialog::OnIdStopIdleClick(wxCommandEvent &event)
 {
     Idle_Dialog::Close();
     event.Skip();
-    pPlugIn->br24radar_pi::OnToolbarToolCallback(1);    //Start radar scanning and set Timed Idle off
+    pPlugIn->br24radar_pi::OnToolbarToolCallback(999);    //Start radar scanning and set Timed Idle off
 }
