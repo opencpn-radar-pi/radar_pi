@@ -1890,6 +1890,9 @@ void br24radar_pi::PrepareRadarImage(int angle)
 	//	UINT32 skipped = 0;
 	//	wxLongLong max_age = 0; // Age in millis
 
+        if(use_shader) // zero out texture data
+            memset(shader_data + angle*RETURNS_PER_LINE, 0, RETURNS_PER_LINE);
+
 	GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
 
 	vertices_index[angle] = 0;
