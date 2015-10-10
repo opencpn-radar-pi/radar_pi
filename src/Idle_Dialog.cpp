@@ -147,7 +147,7 @@ void Idle_Dialog::SetIdleTimes(int IdleMode, int IdleTime, int IdleTimeLeft)
     t2.Printf(_T("%d"), IdleTimeLeft + 1);
     Timelabel << Timelabel_1 << _T(" ") << t << _T(" ") << Timelabel_2;
     Timeleftlabel << Timeleftlabel_1 << _T(" ") << t2 << _T(" ") << Timeleftlabel_2;
-    int GaugeValue = 100 - (IdleTimeLeft >= 4 ? 99 : (100 * (IdleTimeLeft+1)/IdleTime));
+    int GaugeValue = 100 - (IdleTimeLeft >= 0.9 * IdleTime ? 99 : (100 * (IdleTimeLeft+1)/IdleTime));
     p_Idle_Mode->SetLabel(Timelabel);
     p_IdleTimeLeft->SetLabel(Timeleftlabel);
     m_Idle_gauge->SetValue(GaugeValue);
