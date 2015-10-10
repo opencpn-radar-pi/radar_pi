@@ -253,7 +253,6 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
     bool radarOn = haveOpenGL && radarSeen;
     bool navOn = haveGPS && haveHeading && haveVariation;
     bool black = pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT;
-    bool radar_switched_on = haveData;
     bool want_message = false;
     if (pPlugIn->m_pControlDialog){
         if (pPlugIn->m_pControlDialog->wantShowMessage){

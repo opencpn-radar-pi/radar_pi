@@ -1243,10 +1243,6 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
 void BR24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData)
 {
     extern RadarType br_radar_type;
-    bool radarOn = haveOpenGL && haveRadar; // && haveData;
-    bool navOn = haveGPS && haveHeading && haveVariation;
-    bool black = pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT;
-    bool radar_switched_on = haveData ;
 
     if (pPlugIn->control_box_closed){  // box manually closed
         {

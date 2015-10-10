@@ -178,9 +178,6 @@ static time_t      br_data_watchdog;
 static time_t      br_var_watchdog;
 static bool blackout[2] = { false, false };         //  will force display to blackout and north up
 
-// for VBO operation
-static GLuint vboId = 0;
-
 #define     SIZE_VERTICES (3072)
 static GLfloat vertices[2048][SIZE_VERTICES];
 static int colors_index[2048];
@@ -538,7 +535,6 @@ int br24radar_pi::Init(void)
             polar_to_cart_x[arc][radius] = (GLfloat) radius * cosine;
         }
     }
-    double www = -1.;
     wxLogMessage(wxT("BR24radar_pi:Position initialized  xa = %f"), polar_to_cart_x[100][150]);
     AddLocaleCatalog( _T("opencpn-br24radar_pi") );
 
@@ -1363,25 +1359,25 @@ void br24radar_pi::OnToolbarToolCallback(int id)
 
 void br24radar_pi::DoTick(void)
 {
+    time_t now = time(0);
+    static time_t previousTicks = 0;
+
     if (settings.verbose){
-        static time_t refresh_indicater = 0;
+        static time_t refresh_indicator = 0;
         static int performance_counter = 0;
         performance_counter++;
-        int timer = time(0) - refresh_indicater;
-        if (time(0) - refresh_indicater >= 1){
-            refresh_indicater = time(0);
+        if (now - refresh_indicator >= 1) {
+            refresh_indicator = now;
             wxLogMessage(wxT("BR24radar_pi: number of refreshes last second = %d"), performance_counter);
             performance_counter = 0;
         }
     }
-    time_t now = time(0);
-    static time_t previousTicks = 0;
     if (now == previousTicks) {
         // Repeated call during scroll, do not do Tick processing
         return;
     }
-
     previousTicks = now;
+
     if (br_radar_type == RT_BR24){    // make sure radar A only.
         settings.selectRadarB = 0;
         settings.enable_dual_radar = 0;
@@ -1833,7 +1829,6 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
 void br24radar_pi::DrawRadarImage()
 {
-    GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
     glEnable(GL_BLEND);
