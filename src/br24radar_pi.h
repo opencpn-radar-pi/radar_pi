@@ -1066,16 +1066,12 @@ public:
 
     void    CreateControls();
     void    SetIdleTimes(int IdleMode, int IdleTime, int IdleTimeLeft);
-
-
-    //Other public methods
-    
     
 private:
 
     void            OnClose(wxCloseEvent &event);
-    void            OnMove(wxMoveEvent& event);
-    void            OnSize(wxSizeEvent& event);
+    void            OnMove(wxMoveEvent &event);
+    void            OnSize(wxSizeEvent &event);
     void            OnIdStopIdleClick(wxCommandEvent &event);
 
     wxWindow        *pParent;
