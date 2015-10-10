@@ -552,7 +552,7 @@ int br24radar_pi::Init(void)
     br_radar_watchdog = 0;
 	br_data_watchdog = 0;
     br_idle_watchdog = 0;
-    settings.emulator_on = true;//false;
+    settings.emulator_on = false;
 	memset(bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
 	memset(&radar_setting[0], 0, sizeof(radar_setting));   // radar settings all to 0
 	// memset(&settings, 0, sizeof(settings));             // pi settings all 0   // will crash under VC 2010!! OK with 2013
@@ -1685,7 +1685,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
             settings.useShader = false;
         }
     }
-    
+
     // Always compute br_auto_range_meters, possibly needed by SendState() called from DoTick().
     double max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
     // max_distance is the length of the diagonal of the viewport. If the boat were centered, the
@@ -1697,8 +1697,9 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
       br_auto_range_meters = 50;
     }
 	blackout[settings.selectRadarB] = settings.showRadar == 1 && br_data_seen && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
+
     DoTick(); // update timers and watchdogs
-    UpdateState(); // update the toolbar
+
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
     wxPoint boat_center, pp;
     if (br_bpos_set) {
@@ -1832,12 +1833,14 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
                     );
     }
 
-    double heading = MOD_DEGREES( rad2deg(vp->rotation)        // viewport rotation
-                                + 270.0                        // difference between compass and OpenGL rotation
-                                + settings.heading_correction  // fix any radome rotation fault
-                                - vp->skew * settings.skew_factor
-                                );
-    glRotatef(heading, 0, 0, 1);
+    if(m_heading_source != HEADING_NONE) {
+        double heading = MOD_DEGREES( rad2deg(vp->rotation)        // viewport rotation
+                                      + 270.0                        // difference between compass and OpenGL rotation
+                                      + settings.heading_correction  // fix any radome rotation fault
+                                      - vp->skew * settings.skew_factor
+            );
+        glRotatef(heading, 0, 0, 1);
+    }
 
     // scaling...
     int meters = br_range_meters[settings.selectRadarB];
@@ -1848,7 +1851,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
 //	if (settings.showRadar && ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode[settings.selectRadarB] == DM_EMULATOR 
 //		|| blackout[settings.selectRadarB])) {
-	if (blackout[settings.selectRadarB] || (settings.showRadar == 1 && br_bpos_set && m_heading_source != HEADING_NONE && br_data_seen) ||
+	if (blackout[settings.selectRadarB] || (settings.showRadar == 1 && br_data_seen) ||
 		(settings.emulator_on && settings.showRadar)){
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
@@ -1869,6 +1872,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
             DrawRadarImage();
         }
         glPopMatrix();
+
 		HandleBogeyCount(bogey_count);
         // Guard Zone image and heading line for radar only
         if (settings.showRadar) {
@@ -1950,19 +1954,26 @@ void br24radar_pi::DrawRadarImage()
 
 void br24radar_pi::PrepareRadarImage(int angle)
 {
+        if(settings.useShader) {
+            if(shader_start_line == -1)
+                shader_start_line = angle;
+            shader_end_line = angle;
+#if 0
+            // this is slightly faster.. but not doing what we want yet
+            scan_line * scan = &m_scan_line[settings.selectRadarB][angle];
+            memcpy(shader_data + angle*RETURNS_PER_LINE, scan->data, RETURNS_PER_LINE);
+            return;
+#else            
+            // zero out texture data
+            memset(shader_data + angle*RETURNS_PER_LINE, 0, RETURNS_PER_LINE);
+#endif
+        }
+
 	//	wxLongLong now = wxGetLocalTimeMillis();
 	UINT32 drawn_spokes = 0;
 	UINT32 drawn_blobs = 0;
 	//	UINT32 skipped = 0;
 	//	wxLongLong max_age = 0; // Age in millis
-
-        if(settings.useShader) {
-            if(shader_start_line == -1)
-                shader_start_line = angle;
-            shader_end_line = angle;
-            // zero out texture data
-            memset(shader_data + angle*RETURNS_PER_LINE, 0, RETURNS_PER_LINE);
-        }
 
 	GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
 
@@ -3418,6 +3429,12 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 	
     // wxCriticalSectionLocker locker(br_scanLock);
 
+    bool need_history = false;
+    for (int z = 0; z < GUARD_ZONES; z++)
+        if(pPlugIn->guardZones[pPlugIn->settings.selectRadarB][z].type != GZ_OFF &&
+           pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.selectRadarB][z])
+            need_history = true;
+
     static unsigned int i_display = 0;  // used in radar reive thread for display operation
 	static int next_scan_number[2] = { -1, -1 };
 	int scan_number[2] = { 0, 0 };
@@ -3527,6 +3544,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 		UINT8 *dest_data1 = pPlugIn->m_scan_line[AB][angle_raw].data;
         memcpy(dest_data1, line->data, RETURNS_PER_LINE);
 
+        if(need_history) {
 		// now add this line to the history
 		UINT8 *hist_data = pPlugIn->m_scan_line[AB][angle_raw].history;
 		for (int i = 0; i < RETURNS_PER_LINE - 1; i++) {
@@ -3535,6 +3553,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 				hist_data[i] = hist_data[i] | 1;    // and add 1 if above threshold
 			}
 		}
+        }
 
         // The following line is a quick hack to confirm on-screen where the range ends, by putting a 'ring' of
         // returned radar energy at the max range line.
@@ -3551,10 +3570,10 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     //  all scanlines ready now, refresh section follows
 
 	if (pPlugIn->settings.showRadar && AB == pPlugIn->settings.selectRadarB) {  // only issue refresh for active and shown channel
-		int pos_age = difftime(time(0), br_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
-		if (pPlugIn->settings.display_mode[AB] == DM_CHART_BLACKOUT){  // position not important in DM_CHART_BLACKOUT
-			pos_age = 0;
-		}
+            int pos_age = 0;
+		if (pPlugIn->settings.display_mode[AB] != DM_CHART_BLACKOUT && br_bpos_set)  // position not important in DM_CHART_BLACKOUT
+                    pos_age = difftime(time(0), br_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
+
 		if (br_refresh_busy_or_queued || pos_age >= 2 ) {
 			// don't do additional refresh and reset the refresh conter
 			i_display = 0;  // rendering ongoing, reset the counter, don't refresh now
