@@ -245,7 +245,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
     static message_status message_state = HIDE;
     message_status new_message_state = HIDE;
     static bool old_radarSeen = false;
-    if (!pPlugIn->m_pMessageBox){
+    if (!pPlugIn->m_pMessageBox) {
         wxLogMessage(wxT("BR24radar_pi: ERROR UpdateMessage m_pMessageBox not existent"));
         return;
     }
@@ -254,8 +254,8 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
     bool navOn = haveGPS && haveHeading && haveVariation;
     bool black = pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT;
     bool want_message = false;
-    if (pPlugIn->m_pControlDialog){
-        if (pPlugIn->m_pControlDialog->wantShowMessage){
+    if (pPlugIn->m_pControlDialog) {
+        if (pPlugIn->m_pControlDialog->wantShowMessage) {
             want_message = true;
         }
     }
@@ -280,22 +280,22 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 
     */
 
-    if (!pPlugIn->settings.showRadar){
+    if (!pPlugIn->settings.showRadar) {
         new_message_state = HIDE;
     }
-    else if (!haveOpenGL){
+    else if (!haveOpenGL) {
         new_message_state = SHOW;
     }
-    else if (want_message){
+    else if (want_message) {
         new_message_state = SHOW_BACK;
     }
-    else if (!black && (!navOn || !radarOn)){
+    else if (!black && (!navOn || !radarOn)) {
         new_message_state = SHOW;
     }
-    else if (black && !radarOn){
+    else if (black && !radarOn) {
         new_message_state = SHOW_NO_NMEA;
     }
-    else if ((black || navOn) && radarOn){
+    else if ((black || navOn) && radarOn) {
         new_message_state = HIDE;
     }
     else {
@@ -309,7 +309,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
     cbRadar->SetValue(radarSeen);
     cbData->SetValue(haveData);
     if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: messagebox switch, case=%d"), new_message_state);
-    if (message_state != new_message_state || old_radarSeen != radarSeen){
+    if (message_state != new_message_state || old_radarSeen != radarSeen) {
         switch (new_message_state) {
 
         case HIDE:
@@ -324,7 +324,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
             if (!pPlugIn->m_pMessageBox-> IsShown()) {
                 pPlugIn->m_pMessageBox->Show();
             }
-            if (!radarSeen){
+            if (!radarSeen) {
                 offMessage->Show();
             }
             else{
@@ -339,7 +339,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
             if (!pPlugIn->m_pMessageBox->IsShown()) {
                 pPlugIn->m_pMessageBox->Show();
             }
-            if (!radarSeen){
+            if (!radarSeen) {
                 offMessage->Show();
             }
             else{

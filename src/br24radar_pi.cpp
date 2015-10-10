@@ -278,7 +278,7 @@ static double local_bearing (double lat1, double lon1, double lat2, double lon2)
 static void draw_blob_gl_i(int arc, int radius, int radius_end, GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha)
 {
     int arc_end = arc + 1;
-    if (arc_end >= 2048){
+    if (arc_end >= 2048) {
         arc_end = arc_end - 2048;
     }
     vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc][radius];   // A
@@ -367,7 +367,7 @@ static void draw_blob_gl_i(int arc, int radius, int radius_end, GLubyte red, GLu
     vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
     vertices_index[arc]++;
 
-    if (vertices_index[arc]> SIZE_VERTICES - 36){
+    if (vertices_index[arc]> SIZE_VERTICES - 36) {
         vertices_index[arc] = SIZE_VERTICES - 36;
         wxLogMessage(wxT("BR24radar_pi: vertices array limit overflow vertices_index=%d arc=%d"), vertices_index[arc], arc);
     }
@@ -527,10 +527,10 @@ int br24radar_pi::Init(void)
 
     // initialise polar_to_cart_y[arc + 1][radius] arrays
 
-    for (int arc = 0; arc < 2049; arc++){
+    for (int arc = 0; arc < 2049; arc++) {
         double sine = sin(arc * PI / 1024);
         double cosine = cos(arc * PI / 1024);
-        for (int radius = 0; radius < 513; radius++){
+        for (int radius = 0; radius < 513; radius++) {
             polar_to_cart_y[arc][radius] = (GLfloat) radius * sine;
             polar_to_cart_x[arc][radius] = (GLfloat) radius * cosine;
         }
@@ -574,7 +574,7 @@ int br24radar_pi::Init(void)
     m_heading_source = HEADING_NONE;
     settings.auto_range_mode[0] = true;
     settings.auto_range_mode[1] = true;// starts with auto range change
-    for (int i = 0; i < 2; i++){
+    for (int i = 0; i < 2; i++) {
         m_statistics[i].broken_packets = 0;
         m_statistics[i].broken_spokes = 0;
         m_statistics[i].missing_spokes = 0;
@@ -1135,7 +1135,7 @@ void br24radar_pi::ShowRadarControl(bool show)
         m_pControlDialog->Create(m_parent_window, this);
         m_pControlDialog->SetSize(m_BR24Controls_dialog_x, m_BR24Controls_dialog_y,
             m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy);
-        if (br_radar_type == RT_BR24){
+        if (br_radar_type == RT_BR24) {
             m_pControlDialog->bRadarAB->Hide();
         }
         m_pControlDialog->Fit();
@@ -1292,14 +1292,14 @@ void br24radar_pi::OnToolbarToolCallback(int id)
 {
     if (toolbar_button == RED) {
         // radar is off (not seen), but obviously we want to see it
-        if (settings.showRadar == false){
+        if (settings.showRadar == false) {
             settings.showRadar = true;  // but we don't send the transmit command, no use as radar is off
         }
         else{
             settings.showRadar = false;  // toggle showRadar on RED
         }
     }
-    else if (toolbar_button == AMBER){
+    else if (toolbar_button == AMBER) {
         settings.showRadar = true;   // switch radar on and show it
         if (!data_seenAB[settings.selectRadarB]) {
             RadarTxOn();
@@ -1311,7 +1311,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         }
         ShowRadarControl(true);
     }
-    else if (toolbar_button == GREEN){
+    else if (toolbar_button == GREEN) {
         if (id == 999 && settings.timed_idle != 0) { // Disable Timed Transmit
             m_pControlDialog->SetTimedIdleIndex(0);
             return;
@@ -1362,7 +1362,7 @@ void br24radar_pi::DoTick(void)
     time_t now = time(0);
     static time_t previousTicks = 0;
 
-    if (settings.verbose){
+    if (settings.verbose) {
         static time_t refresh_indicator = 0;
         static int performance_counter = 0;
         performance_counter++;
@@ -1378,7 +1378,7 @@ void br24radar_pi::DoTick(void)
     }
     previousTicks = now;
 
-    if (br_radar_type == RT_BR24){    // make sure radar A only.
+    if (br_radar_type == RT_BR24) {    // make sure radar A only.
         settings.selectRadarB = 0;
         settings.enable_dual_radar = 0;
     }
@@ -1421,9 +1421,9 @@ void br24radar_pi::DoTick(void)
         previous_br_radar_seen = false;
         wxLogMessage(wxT("BR24radar_pi: Lost radar presence"));
     }
-    if (!previous_br_radar_seen && br_radar_seen){
+    if (!previous_br_radar_seen && br_radar_seen) {
 
-        if (RadarStayAlive()){      // send stay alive to obtain control blocks from radar
+        if (RadarStayAlive()) {      // send stay alive to obtain control blocks from radar
             previous_br_radar_seen = true;
         }
     }
@@ -1499,7 +1499,7 @@ void br24radar_pi::DoTick(void)
             );
     }
 
-    for (int i = 0; i < 2; i++){
+    for (int i = 0; i < 2; i++) {
         m_statistics[i].broken_packets = 0;
         m_statistics[i].broken_spokes = 0;
         m_statistics[i].missing_spokes = 0;
@@ -1507,7 +1507,7 @@ void br24radar_pi::DoTick(void)
         m_statistics[i].spokes = 0;
     }
 
-    if (settings.emulator_on){
+    if (settings.emulator_on) {
         br_radar_seen = true;
         br_radar_watchdog = time(0);
         settings.selectRadarB = 0;
@@ -1783,21 +1783,21 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 //    if (settings.showRadar && ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode[settings.selectRadarB] == DM_EMULATOR
 //        || blackout[settings.selectRadarB])) {
     if (blackout[settings.selectRadarB] || (settings.showRadar == 1 && br_bpos_set && m_heading_source != HEADING_NONE && br_data_seen) ||
-        (settings.emulator_on && settings.showRadar)){
+        (settings.emulator_on && settings.showRadar)) {
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
         if (br_range_meters[settings.selectRadarB] > 0 && br_scanner_state == RADAR_ON) {
             // Guard Section
-            for (int i = 0; i < 4; i++){
+            for (int i = 0; i < 4; i++) {
                 bogey_count[i] = 0;
             }
             static int metersA, metersB;
             if (settings.selectRadarB == 0) metersA = meters;
             if (settings.selectRadarB == 1) metersB = meters;
-            if (settings.showRadar == RADAR_ON && metersA != 0){
+            if (settings.showRadar == RADAR_ON && metersA != 0) {
                 Guard(metersA, 0);
             }
-            if (settings.showRadar && metersB != 0){
+            if (settings.showRadar && metersB != 0) {
                 Guard(metersB, 1);
             }
             DrawRadarImage();
@@ -1835,8 +1835,8 @@ void br24radar_pi::DrawRadarImage()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     time_t now = time(0);
     int step = 6 * sizeof(GLfloat);
-    for (int i = 0; i < 2048; i++){
-        if (now - vertices_time_stamp[i] > settings.max_age){
+    for (int i = 0; i < 2048; i++) {
+        if (now - vertices_time_stamp[i] > settings.max_age) {
             continue;            // outdated line, do not display
         }
         glVertexPointer(2, GL_FLOAT, step, vertices[i]);
@@ -1960,7 +1960,7 @@ void br24radar_pi::Guard(int max_range, int AB)
     {
     int begin_arc, end_arc = 0;
     for (size_t z = 0; z < GUARD_ZONES; z++) {
-        if (guardZones[AB][z].type == GZ_OFF){   // skip if guardzone is off
+        if (guardZones[AB][z].type == GZ_OFF) {   // skip if guardzone is off
             continue;
         }
         switch (guardZones[AB][z].type) {
@@ -2525,7 +2525,7 @@ bool br24radar_pi::TransmitCmd(int AB, UINT8 * msg, int size)
 
 void br24radar_pi::RadarTxOff(void)
 {
-    if(settings.enable_dual_radar == 0){   // switch active radar off
+    if(settings.enable_dual_radar == 0) {   // switch active radar off
         UINT8 pck[3] = {0x00, 0xc1, 0x01};
         TransmitCmd(settings.selectRadarB, pck, sizeof(pck));
         pck[0] = 0x01;
@@ -2550,7 +2550,7 @@ void br24radar_pi::RadarTxOff(void)
 
 void br24radar_pi::RadarTxOn(void)
 {                                          // turn A on
-    if (settings.enable_dual_radar == 0){
+    if (settings.enable_dual_radar == 0) {
     UINT8 pck[3] = { 0x00, 0xc1, 0x01 };               // ON
     TransmitCmd(settings.selectRadarB, pck, sizeof(pck));
     if (settings.verbose) wxLogMessage(wxT("BR24radar_pi: Turn radar %d on (send TRANSMIT request)"), settings.selectRadarB);
@@ -2583,7 +2583,7 @@ bool br24radar_pi::RadarStayAlive(void)
     UINT8 pck4[] = { 0x05, 0xc2 };
     bool succes = TransmitCmd(settings.selectRadarB, pck4, sizeof(pck4));
 
-    if (settings.enable_dual_radar){    // also send on the other channel
+    if (settings.enable_dual_radar) {    // also send on the other channel
         UINT8 pck[] = {0xA0, 0xc1};
         TransmitCmd(!settings.selectRadarB, pck, sizeof(pck));
         UINT8 pck2[] = { 0x03, 0xc2 };
@@ -2622,7 +2622,7 @@ void br24radar_pi::SetRangeMeters(long meters)
 
 void radar_control_item::Update(int v)
 {
-    if (v != button){
+    if (v != button) {
         mod = true;
     //    value = v;   // not needed? may be for range later
         button = v;
@@ -2813,7 +2813,7 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
 
             case CT_BEARING_ALIGNMENT: {   // to be consistent with the local bearing alignment of the pi
                                            // this bearing alignment works opposite to the one an a Lowrance display
-                if (value < 0){
+                if (value < 0) {
                     value += 360;
                 }
                 int v = value * 10;
@@ -3244,7 +3244,7 @@ void *RadarDataReceiveThread::Entry(void)
         }
         else {
             if (rx_socket == INVALID_SOCKET) {
-                if (AB == 1){
+                if (AB == 1) {
                     rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6657, "236.6.7.13");
                 }
                 else{
@@ -3255,7 +3255,7 @@ void *RadarDataReceiveThread::Entry(void)
                     wxString addr;
                     UINT8 * a = (UINT8 *) &br_mcast_addr->sin_addr; // sin_addr is in network layout
                     addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
-                    if (pPlugIn->settings.verbose){
+                    if (pPlugIn->settings.verbose) {
                         wxLogMessage(wxT("BR24radar_pi: Listening for radar AB = %d data on %s"), AB, addr.c_str());
                     }
                     my_address = a[3];
@@ -3276,7 +3276,7 @@ void *RadarDataReceiveThread::Entry(void)
 
             if (!br_radar_seen || !br_mcast_addr) {
                 if (rx_socket != INVALID_SOCKET) {
-                    if (pPlugIn->settings.verbose){
+                    if (pPlugIn->settings.verbose) {
                         wxLogMessage(wxT("BR24radar_pi: Stopped listening for radarA data"));
                     }
                     closesocket(rx_socket);
@@ -3438,7 +3438,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         dest_data1[RETURNS_PER_LINE - 1] = 0xff;
         pPlugIn->m_scan_line[AB][angle_raw].range = range_meters;
         pPlugIn->m_scan_line[AB][angle_raw].age = nowMillis;
-        if (AB == pPlugIn->settings.selectRadarB){
+        if (AB == pPlugIn->settings.selectRadarB) {
             pPlugIn->PrepareRadarImage(angle_raw);   // prepare the vertex array for this line
         }                                            // but only do this for the active radar
     }
@@ -3448,7 +3448,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
     if (pPlugIn->settings.showRadar && AB == pPlugIn->settings.selectRadarB) {  // only issue refresh for active and shown channel
         int pos_age = difftime(time(0), br_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
-        if (pPlugIn->settings.display_mode[AB] == DM_CHART_BLACKOUT){  // position not important in DM_CHART_BLACKOUT
+        if (pPlugIn->settings.display_mode[AB] == DM_CHART_BLACKOUT) {  // position not important in DM_CHART_BLACKOUT
             pos_age = 0;
         }
         if (br_refresh_busy_or_queued || pos_age >= 2 ) {
@@ -3559,7 +3559,7 @@ void *RadarCommandReceiveThread::Entry(void)
     //    Loop until we quit
     while (!*m_quit) {
         if (rx_socket == INVALID_SOCKET && pPlugIn->settings.emulator_on) {
-            if (AB == 1){
+            if (AB == 1) {
                 rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6658, "236.6.7.14");
                 //  B radar
             }
@@ -3753,7 +3753,7 @@ void *RadarReportReceiveThread::Entry(void)
     //    Loop until we quit
 
     while (!*m_quit) {
-        if (AB == 0){     // radar A
+        if (AB == 0) {     // radar A
             if (rx_socket == INVALID_SOCKET && !pPlugIn->settings.emulator_on) {
                 // Pick the next ethernet card
 
@@ -3796,7 +3796,7 @@ void *RadarReportReceiveThread::Entry(void)
         }                        //  end of radar A
             else
             {          // radar B
-                if (br_mcast_addr != 0 && rx_socket == INVALID_SOCKET && !pPlugIn->settings.emulator_on){
+                if (br_mcast_addr != 0 && rx_socket == INVALID_SOCKET && !pPlugIn->settings.emulator_on) {
                     rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6659, "236.6.7.15");
                     if (rx_socket != INVALID_SOCKET) {
                     //    wxString addr;
@@ -3976,7 +3976,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
         case (99 << 8) + 0x02:   // length 99, 08 C4
         {
             radar_state02 * s = (radar_state02 *)command;
-            if (s->field8 == 1){   // 1 for auto
+            if (s->field8 == 1) {   // 1 for auto
                 pPlugIn->radar_setting[AB].gain.Update(-1);  // auto gain
             }
             else{
@@ -3984,7 +3984,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
             } // is handled elsewhere
             //            pPlugIn->radar_setting[AB].range.Update(idx);
             pPlugIn->radar_setting[AB].rain.Update(s->rain * 100 / 255);
-            if (s->field13 == 0x01){
+            if (s->field13 == 0x01) {
                 pPlugIn->radar_setting[AB].sea.Update(-1); // auto sea
             }
             else{
@@ -4024,7 +4024,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
             pPlugIn->radar_setting[AB].scan_speed.Update(s08->scan_speed);
             pPlugIn->radar_setting[AB].noise_rejection.Update(s08->noise_rejection);
             pPlugIn->radar_setting[AB].target_separation.Update(s08->target_sep);
-                if (s08->sls_auto == 1){
+                if (s08->sls_auto == 1) {
                     pPlugIn->radar_setting[AB].side_lobe_suppression.Update(-1);
                 }
                 else{
@@ -4045,7 +4045,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
 
             // bearing alignment
             int ba = (int)s04_66->bearing_alignment / 10;
-            if (ba > 180){
+            if (ba > 180) {
                 ba = ba - 360;
             }
             pPlugIn->radar_setting[AB].bearing_alignment.Update(ba);
