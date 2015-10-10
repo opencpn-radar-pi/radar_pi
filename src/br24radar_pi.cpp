@@ -3309,8 +3309,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     br_data_seen = true;   // added here, otherwise loose image while data is present
     br_data_watchdog = now;
 
-    static int previous_angle_raw = 0;
-
     // wxCriticalSectionLocker locker(br_scanLock);
 
     static unsigned int i_display = 0;  // used in radar reive thread for display operation
@@ -3387,9 +3385,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             br_radar_type = RT_4G;
         }
 
-        previous_angle_raw = angle_raw;
-       // Range change received from radar?
-
+        // Range change received from radar?
         if (range_meters != br_range_meters[AB]) {
 
             if (pPlugIn->settings.verbose >= 1) {
