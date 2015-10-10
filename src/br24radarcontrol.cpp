@@ -465,7 +465,7 @@ void BR24ControlsDialog::CreateControls()
 	label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up\n");
 
     wxStaticText * testMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    testBox->Add(testMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    testBox->Add(testMessage, 0, wxALL, 2);
     testMessage->SetFont(g_font);
 
     topSizer->Fit(this);
@@ -501,45 +501,45 @@ void BR24ControlsDialog::CreateControls()
 
     // The <<Back button
     bBack = new wxButton(this, ID_BACK, _("<<\nBack"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(bBack, 0, wxALL, BORDER);
     bBack->SetFont(g_font);
 
     // The +10 button
     bPlusTen = new wxButton(this, ID_PLUS_TEN, _("+10"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bPlusTen, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(bPlusTen, 0, wxALL, BORDER);
     bPlusTen->SetFont(g_font);
 
     // The + button
     bPlus = new wxButton(this, ID_PLUS, _("+"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bPlus, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(bPlus, 0, wxALL, BORDER);
     bPlus->SetFont(g_font);
 
     // The VALUE button
     tValue = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, g_buttonSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    editBox->Add(tValue, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(tValue, 0, wxALL, BORDER);
     tValue->SetFont(fatFont);
     tValue->SetBackgroundColour(*wxLIGHT_GREY);
 
     // The - button
     bMinus = new wxButton(this, ID_MINUS, _("-"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bMinus, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(bMinus, 0, wxALL, BORDER);
     bMinus->SetFont(g_font);
 
     // The -10 button
     bMinusTen = new wxButton(this, ID_MINUS_TEN, _("-10"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bMinusTen, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(bMinusTen, 0, wxALL, BORDER);
     bMinusTen->SetFont(g_font);
 
     // The Auto button
     bAuto = new wxButton(this, ID_AUTO, _("Auto"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bAuto, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(bAuto, 0, wxALL, BORDER);
     bAuto->SetFont(g_font);
 
 	// The Multi Sweep Filter button
 	wxString labelMS;
     labelMS << _("Multi Sweep Filter") << wxT("\n") << _("OFF");
     bMultiSweep = new wxButton(this, ID_MULTISWEEP, labelMS, wxDefaultPosition, wxSize(width, 40), 0);
-    editBox->Add(bMultiSweep, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(bMultiSweep, 0, wxALL, BORDER);
     bMultiSweep->SetFont(g_font);
 
     topSizer->Hide(editBox);
@@ -555,12 +555,12 @@ void BR24ControlsDialog::CreateControls()
     wxString backButtonStr;
     backButtonStr << wxT("<<\n") << _("Back");
     bAdvancedBack = new wxButton(this, ID_ADVANCED_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
-    advancedBox->Add(bAdvancedBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bAdvancedBack, 0, wxALL, BORDER);
     bAdvancedBack->SetFont(g_font);
 
     // The TRANSPARENCY button
     bTransparency = new RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), pPlugIn, CT_TRANSPARENCY, false, pPlugIn->settings.overlay_transparency);
-    advancedBox->Add(bTransparency, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bTransparency, 0, wxALL, BORDER);
     bTransparency->minValue = MIN_OVERLAY_TRANSPARENCY;
     bTransparency->maxValue = MAX_OVERLAY_TRANSPARENCY;
 
@@ -573,7 +573,7 @@ void BR24ControlsDialog::CreateControls()
 
     bInterferenceRejection = new RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"), pPlugIn, 
 		CT_INTERFERENCE_REJECTION, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].interference_rejection.button);
-    advancedBox->Add(bInterferenceRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bInterferenceRejection, 0, wxALL, BORDER);
     bInterferenceRejection->minValue = 0;
     bInterferenceRejection->maxValue = ARRAY_SIZE(interference_rejection_names) - 1;
     bInterferenceRejection->names = interference_rejection_names;
@@ -585,7 +585,7 @@ void BR24ControlsDialog::CreateControls()
     target_boost_names[2] = _("High");
 	bTargetBoost = new RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), pPlugIn, CT_TARGET_BOOST, false, 
 		pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.button);
-    advancedBox->Add(bTargetBoost, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bTargetBoost, 0, wxALL, BORDER);
     bTargetBoost->minValue = 0;
     bTargetBoost->maxValue = ARRAY_SIZE(target_boost_names) - 1;
     bTargetBoost->names = target_boost_names;
@@ -599,7 +599,7 @@ void BR24ControlsDialog::CreateControls()
 
     bNoiseRejection = new RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), pPlugIn, CT_NOISE_REJECTION, false, 
 		pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.button);
-    advancedBox->Add(bNoiseRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bNoiseRejection, 0, wxALL, BORDER);
     bNoiseRejection->minValue = 0;
     bNoiseRejection->maxValue = ARRAY_SIZE(noise_rejection_names) - 1;
     bNoiseRejection->names = noise_rejection_names;
@@ -617,7 +617,7 @@ void BR24ControlsDialog::CreateControls()
 
     bTargetSeparation = new RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"), 
 		pPlugIn, CT_TARGET_SEPARATION, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.button);
-    advanced4gBox->Add(bTargetSeparation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advanced4gBox->Add(bTargetSeparation, 0, wxALL, BORDER);
     bTargetSeparation->minValue = 0;
     bTargetSeparation->maxValue = ARRAY_SIZE(target_separation_names) - 1;
     bTargetSeparation->names = target_separation_names;
@@ -627,7 +627,7 @@ void BR24ControlsDialog::CreateControls()
     scan_speed_names[0] = _("Normal");
     scan_speed_names[1] = _("Fast");
     bScanSpeed = new RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), pPlugIn, CT_SCAN_SPEED, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.button);
-    advancedBox->Add(bScanSpeed, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bScanSpeed, 0, wxALL, BORDER);
     bScanSpeed->minValue = 0;
     bScanSpeed->maxValue = ARRAY_SIZE(scan_speed_names) - 1;
     bScanSpeed->names = scan_speed_names;
@@ -635,13 +635,13 @@ void BR24ControlsDialog::CreateControls()
 	   
     // The REFRESHRATE button
 	bRefreshrate = new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), pPlugIn, CT_REFRESHRATE, false, pPlugIn->settings.refreshrate);
-    advancedBox->Add(bRefreshrate, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bRefreshrate, 0, wxALL, BORDER);
     bRefreshrate->minValue = 1;
     bRefreshrate->maxValue = 5;
 
     // The INSTALLATION button
 	bInstallation = new wxButton(this, ID_INSTALLATION, _("Installation"), wxDefaultPosition, g_buttonSize, 0);
-	advancedBox->Add(bInstallation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+	advancedBox->Add(bInstallation, 0, wxALL, BORDER);
 	bInstallation->SetFont(g_font);
 
 	// The TIMED TRANSMIT button
@@ -660,7 +660,7 @@ void BR24ControlsDialog::CreateControls()
     }
 
     bTimedIdle = new RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), pPlugIn, CT_TIMED_IDLE, false, pPlugIn->settings.timed_idle); //HakanToDo new setting
-    advancedBox->Add(bTimedIdle, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bTimedIdle, 0, wxALL, BORDER);
     bTimedIdle->minValue = 0;
     bTimedIdle->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
     bTimedIdle->names = timed_idle_times;
@@ -678,13 +678,13 @@ void BR24ControlsDialog::CreateControls()
 	wxString instBackButtonStr;
 	instBackButtonStr << wxT("<<\n") << _("Back");
 	bInstallationBack = new wxButton(this, ID_INSTALLATION_BACK, instBackButtonStr, wxDefaultPosition, g_buttonSize, 0);
-	installationBox->Add(bInstallationBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+	installationBox->Add(bInstallationBack, 0, wxALL, BORDER);
 	bInstallationBack->SetFont(g_font);
 
 	// The BEARING ALIGNMENT button
 	bBearingAlignment = new RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"), pPlugIn, CT_BEARING_ALIGNMENT,
 		false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].bearing_alignment.button);
-	installationBox->Add(bBearingAlignment, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+	installationBox->Add(bBearingAlignment, 0, wxALL, BORDER);
 	bBearingAlignment->SetFont(g_font);    // this bearing alignment work opposite to the one defined in the pi!
 	bBearingAlignment->minValue = -179;
 	bBearingAlignment->maxValue = 180;
@@ -692,14 +692,14 @@ void BR24ControlsDialog::CreateControls()
 	// The ANTENNA HEIGHT button
 	bAntennaHeight = new RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Antenna height"), pPlugIn,
 		CT_ANTENNA_HEIGHT, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].antenna_height.button);
-	installationBox->Add(bAntennaHeight, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+	installationBox->Add(bAntennaHeight, 0, wxALL, BORDER);
 	bAntennaHeight->minValue = 0;
 	bAntennaHeight->maxValue = 30;   
 
 	// The LOCAL INTERFERENCE REJECTION button
 	bLocalInterferenceRejection = new RadarControlButton(this, ID_LOCAL_INTERFERENCE_REJECTION, _("Local interference rejection"), pPlugIn, 
 		CT_LOCAL_INTERFERENCE_REJECTION, false, pPlugIn->radar_setting[0].local_interference_rejection.button);
-	installationBox->Add(bLocalInterferenceRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+	installationBox->Add(bLocalInterferenceRejection, 0, wxALL, BORDER);
 	bLocalInterferenceRejection->minValue = 0;
 	bLocalInterferenceRejection->maxValue = ARRAY_SIZE(target_separation_names) - 1;   // off, low, medium, high, same as target separation
 	bLocalInterferenceRejection->names = target_separation_names;
@@ -708,7 +708,7 @@ void BR24ControlsDialog::CreateControls()
 	// The SIDE LOBE SUPPRESSION button
 	bSideLobeSuppression = new RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"), pPlugIn, CT_SIDE_LOBE_SUPPRESSION, true,
 		pPlugIn->radar_setting[0].side_lobe_suppression.button);
-	installationBox->Add(bSideLobeSuppression, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+	installationBox->Add(bSideLobeSuppression, 0, wxALL, BORDER);
 	bSideLobeSuppression->minValue = 0;
 	bSideLobeSuppression->maxValue = 100;
 	bSideLobeSuppression->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.button); // redraw after adding names
@@ -727,7 +727,7 @@ void BR24ControlsDialog::CreateControls()
 	wxString labelab;
 	labelab << _("Radar A / B") << wxT("\n") << _("Radar A");
 	bRadarAB = new RadarRangeControlButton(this, ID_RADAR_AB, labelab, pPlugIn);
-	controlBox->Add(bRadarAB, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+	controlBox->Add(bRadarAB, 0, wxALL, BORDER);
 	if (pPlugIn->settings.selectRadarB == 1) {
 		wxString labelab1;
 		labelab1 << _("Radar A / B") << wxT("\n") << _("Radar B");
@@ -736,7 +736,7 @@ void BR24ControlsDialog::CreateControls()
 
 	// The RADAR ONLY / OVERLAY button
 	bRadarOnly_Overlay = new RadarRangeControlButton(this, ID_RADAR_ONLY, _("Radar Only / Overlay"), pPlugIn);
-	controlBox->Add(bRadarOnly_Overlay, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+	controlBox->Add(bRadarOnly_Overlay, 0, wxALL, BORDER);
 	if (pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT) {
 		wxString label;
 		label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up");
@@ -750,42 +750,42 @@ void BR24ControlsDialog::CreateControls()
 	
     // The RANGE button
     bRange = new RadarRangeControlButton(this, ID_RANGE, _("Range"), pPlugIn);
-    controlBox->Add(bRange, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bRange, 0, wxALL, BORDER);
 
     // The GAIN button
 	bGain = new RadarControlButton(this, ID_GAIN, _("Gain"), pPlugIn, CT_GAIN, true, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button);
-    controlBox->Add(bGain, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bGain, 0, wxALL, BORDER);
 
     // The SEA button
 	bSea = new RadarControlButton(this, ID_SEA, _("Sea clutter"), pPlugIn, CT_SEA, true, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.button);
-    controlBox->Add(bSea, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bSea, 0, wxALL, BORDER);
 
     // The RAIN button
     bRain = new RadarControlButton(this, ID_RAIN, _("Rain clutter"), pPlugIn, CT_RAIN, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].rain.button);
-    controlBox->Add(bRain, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bRain, 0, wxALL, BORDER);
 
     // The ADVANCED button
     bAdvanced = new wxButton(this, ID_ADVANCED, _("Advanced\ncontrols"), wxDefaultPosition, g_buttonSize, 0);
-    controlBox->Add(bAdvanced, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bAdvanced, 0, wxALL, BORDER);
     bAdvanced->SetFont(g_font);
 
     // The GUARD ZONE 1 button
     wxString label1;
     label1 << _("Guard zone") << wxT(" 1\n");
     bGuard1 = new wxButton(this, ID_ZONE1, label1, wxDefaultPosition, g_buttonSize, 0);
-    controlBox->Add(bGuard1, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bGuard1, 0, wxALL, BORDER);
     bGuard1->SetFont(g_font);
 
     // The GUARD ZONE 2 button
     wxString label2;
     label2 << _("Guard zone") << wxT(" 2\n");
     bGuard2 = new wxButton(this, ID_ZONE2, label2, wxDefaultPosition, g_buttonSize, 0);
-    controlBox->Add(bGuard2, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bGuard2, 0, wxALL, BORDER);
     bGuard2->SetFont(g_font);
 
     // The INFO button
     bMessage = new wxButton(this, ID_MESSAGE, _("Info"), wxDefaultPosition, wxSize(width, 25), 0);
-    controlBox->Add(bMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bMessage, 0, wxALL, BORDER);
     bMessage->SetFont(g_font);
     wantShowMessage = false;
 
@@ -828,7 +828,7 @@ void BR24ControlsDialog::SetRemoteRangeIndex(size_t index)
 void BR24ControlsDialog::SetRangeIndex(size_t index)
 {
     bRange->isRemote = false;
-    bRange->SetValueInt(index); // set and recompute the range label
+//    bRange->SetValueInt(index); // set and recompute the range label
 }
 
 void BR24ControlsDialog::SetTimedIdleIndex(int index)
