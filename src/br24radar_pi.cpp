@@ -111,6 +111,7 @@ enum {
     ID_SELECT_SOUND,
     ID_TEST_SOUND,
     ID_PASS_HEADING,
+    ID_USE_SHADER,
     ID_SELECT_AB,
 	ID_EMULATOR
 };
@@ -192,8 +193,9 @@ static int vertices_index[2048];
 // for shaders
 #include "shaderutil.h"
 
-static bool use_shader = false;
+static bool can_use_shader = false;
 static unsigned char *shader_data;
+// identity vertex program (does nothing special)
 static const char *VertShaderText =
    "void main() \n"
    "{ \n"
@@ -201,6 +203,7 @@ static const char *VertShaderText =
    "   gl_Position = ftransform(); \n"
    "} \n";
 
+// Convert to rectangular to polar coordinates for radar image in texture
 static const char *FragShaderText =
    "uniform sampler2D tex2d; \n"
    "void main() \n"
@@ -548,7 +551,7 @@ int br24radar_pi::Init(void)
     br_radar_watchdog = 0;
 	br_data_watchdog = 0;
     br_idle_watchdog = 0;
-    settings.emulator_on = false;
+    settings.emulator_on = true;//false;
 	memset(bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
 	memset(&radar_setting[0], 0, sizeof(radar_setting));   // radar settings all to 0
 	// memset(&settings, 0, sizeof(settings));             // pi settings all 0   // will crash under VC 2010!! OK with 2013
@@ -848,6 +851,37 @@ void logBinaryData(const wxString& what, const UINT8 * data, int size)
     wxLogMessage(explain);
 }
 
+static GLboolean QueryExtension( const char *extName )
+{
+    /*
+     ** Search for extName in the extensions string. Use of strstr()
+     ** is not sufficient because extension names can be prefixes of
+     ** other extension names. Could use strtok() but the constant
+     ** string returned by glGetString might be in read-only memory.
+     */
+    char *p;
+    char *end;
+    int extNameLen;
+
+    extNameLen = strlen( extName );
+
+    p = (char *) glGetString( GL_EXTENSIONS );
+    if( NULL == p ) {
+        return GL_FALSE;
+    }
+
+    end = p + strlen( p );
+
+    while( p < end ) {
+        int n = strcspn( p, " " );
+        if( ( extNameLen == n ) && ( strncmp( extName, p, n ) == 0 ) ) {
+            return GL_TRUE;
+        }
+        p += ( n + 1 );
+    }
+    return GL_FALSE;
+}
+
 //*********************************************************************************
 // Display Preferences Dialog
 //*********************************************************************************
@@ -1007,6 +1041,12 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                              wxCommandEventHandler(BR24DisplayOptionsDialog::OnPassHeadingClick), NULL, this);
 
+        cbUseShader = new wxCheckBox(this, ID_USE_SHADER, _("Use gpu shader for rendering (nicer picture and less cpu)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    itemStaticBoxSizerOptions->Add(cbUseShader, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+    cbUseShader->SetValue(pPlugIn->settings.useShader);
+    cbUseShader->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                             wxCommandEventHandler(BR24DisplayOptionsDialog::OnUseShaderClick), NULL, this);
+
 	cbEnableDualRadar = new wxCheckBox(this, ID_SELECT_AB, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
 	itemStaticBoxSizerOptions->Add(cbEnableDualRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
 	cbEnableDualRadar->SetValue(pPlugIn->settings.enable_dual_radar ? true : false);
@@ -1090,6 +1130,11 @@ void BR24DisplayOptionsDialog::OnHeading_Calibration_Value(wxCommandEvent &event
 void BR24DisplayOptionsDialog::OnPassHeadingClick(wxCommandEvent &event)
 {
     pPlugIn->settings.passHeadingToOCPN = cbPassHeading->GetValue();
+}
+
+void BR24DisplayOptionsDialog::OnUseShaderClick(wxCommandEvent &event)
+{
+    pPlugIn->settings.useShader = cbUseShader->GetValue();
 }
 
 void BR24DisplayOptionsDialog::OnEmulatorClick(wxCommandEvent &event)
@@ -1614,7 +1659,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     // but if we are scrolling or otherwise it can be MUCH more often!
 
     // Determine if we can use shaders for rendering
-    if(!use_shader) {
+    if(settings.useShader && !can_use_shader) {
         if (ShadersSupported()) {
             vertShader = CompileShaderText(GL_VERTEX_SHADER, VertShaderText);
             fragShader = CompileShaderText(GL_FRAGMENT_SHADER, FragShaderText);
@@ -1628,7 +1673,10 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
             shader_data = (unsigned char*)malloc(LINES_PER_ROTATION*RETURNS_PER_LINE);
             memset(shader_data, 0, LINES_PER_ROTATION*RETURNS_PER_LINE);
 
-            use_shader = true;
+            can_use_shader = true;
+        } else {
+            wxLogMessage(wxT("BR24radar_pi: OpenGL does not support shader programs"));
+            settings.useShader = false;
         }
     }
     
@@ -1842,7 +1890,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 void br24radar_pi::DrawRadarImage()
 {
     // Determine if we can use shaders for rendering
-    if(use_shader) {
+    if(settings.useShader) {
         UseProgram(programShader);
 
         glBindTexture(GL_TEXTURE_2D, shader_tex);
@@ -1890,7 +1938,7 @@ void br24radar_pi::PrepareRadarImage(int angle)
 	//	UINT32 skipped = 0;
 	//	wxLongLong max_age = 0; // Age in millis
 
-        if(use_shader) // zero out texture data
+        if(settings.useShader) // zero out texture data
             memset(shader_data + angle*RETURNS_PER_LINE, 0, RETURNS_PER_LINE);
 
 	GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
@@ -1974,7 +2022,7 @@ void br24radar_pi::PrepareRadarImage(int angle)
 				break;
 			}
 
-                        if(use_shader) {
+                        if(settings.useShader) {
                             for(int r = r_begin; r<r_end; r++)
                                 shader_data[angle*RETURNS_PER_LINE + r] = red*alpha;
                         } else {
@@ -2242,6 +2290,7 @@ bool br24radar_pi::LoadConfig(void)
 		br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
 
         pConf->Read(wxT("PassHeadingToOCPN"), &settings.passHeadingToOCPN, 0);
+        pConf->Read(wxT("UseShader"), &settings.useShader, true);
         pConf->Read(wxT("selectRadarB"), &settings.selectRadarB, 0);
 	/*	if (settings.emulator_on) {
 			settings.selectRadarB = 0;
@@ -2317,6 +2366,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
         pConf->Write(wxT("Refreshrate"), settings.refreshrate);
         pConf->Write(wxT("PassHeadingToOCPN"), settings.passHeadingToOCPN);
+        pConf->Write(wxT("UseShader"), settings.useShader);
         pConf->Write(wxT("selectRadarB"), settings.selectRadarB);
 		pConf->Write(wxT("ShowRadar"), settings.showRadar);
         pConf->Write(wxT("RadarAlertAudioFile"), settings.alert_audio_file);

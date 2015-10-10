@@ -267,7 +267,8 @@ struct pi_control_settings {
     int      idle_run_time;
     int      draw_algorithm;
     int      refreshrate;   
-	int      passHeadingToOCPN;      
+	int      passHeadingToOCPN;
+    bool      useShader;
 	int      enable_dual_radar;
 	int      multi_sweep_filter[2][3];   //  0: guard zone 1 filter state;
                                       //  1: guard zone 2 filter state;
@@ -628,6 +629,7 @@ private:
     void OnSelectSoundClick(wxCommandEvent& event);
     void OnTestSoundClick(wxCommandEvent& event);
     void OnPassHeadingClick(wxCommandEvent& event);
+    void OnUseShaderClick(wxCommandEvent& event);
 	void OnEnableDualRadarClick(wxCommandEvent& event);
 	void OnEmulatorClick(wxCommandEvent& event);
     
@@ -643,6 +645,7 @@ private:
     wxSlider          *pIntervalSlider;
     wxTextCtrl        *pText_Heading_Correction_Value;
     wxCheckBox        *cbPassHeading;
+    wxCheckBox        *cbUseShader;
 	wxCheckBox        *cbEnableDualRadar;
 	wxCheckBox        *cbEmulator;
 };
