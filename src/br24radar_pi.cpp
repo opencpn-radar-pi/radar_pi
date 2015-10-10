@@ -195,6 +195,7 @@ static int vertices_index[2048];
 
 static bool can_use_shader = false;
 static unsigned char *shader_data;
+static int shader_start_line, shader_end_line;
 // identity vertex program (does nothing special)
 static const char *VertShaderText =
    "void main() \n"
@@ -1667,6 +1668,11 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         
             glGenTextures(1, &shader_tex);
             glBindTexture(GL_TEXTURE_2D, shader_tex);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, RETURNS_PER_LINE, LINES_PER_ROTATION, 0,
+                         GL_LUMINANCE, GL_UNSIGNED_BYTE, shader_data);
+            shader_start_line = 0;
+            shader_end_line = 0;
+
             glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
@@ -1894,9 +1900,21 @@ void br24radar_pi::DrawRadarImage()
         UseProgram(programShader);
 
         glBindTexture(GL_TEXTURE_2D, shader_tex);
+#if 0
         glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, RETURNS_PER_LINE, LINES_PER_ROTATION, 0,
                      GL_LUMINANCE, GL_UNSIGNED_BYTE, shader_data);
-
+#else
+        // if the new data wraps past the end of the texture
+        if(shader_end_line < shader_start_line) {
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, RETURNS_PER_LINE, shader_end_line,
+                            GL_LUMINANCE, GL_UNSIGNED_BYTE, shader_data);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, shader_start_line, RETURNS_PER_LINE, LINES_PER_ROTATION - shader_start_line,
+                            GL_LUMINANCE, GL_UNSIGNED_BYTE, shader_data + shader_start_line * RETURNS_PER_LINE);
+        } else
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, shader_start_line, RETURNS_PER_LINE, shader_end_line - shader_start_line,
+                            GL_LUMINANCE, GL_UNSIGNED_BYTE, shader_data + shader_start_line * RETURNS_PER_LINE);
+        shader_start_line = -1;
+#endif
         float scale = 512;
         glBegin(GL_QUADS);
         glTexCoord2f(-1, -1);  glVertex2f(-scale, -scale);
@@ -1938,8 +1956,13 @@ void br24radar_pi::PrepareRadarImage(int angle)
 	//	UINT32 skipped = 0;
 	//	wxLongLong max_age = 0; // Age in millis
 
-        if(settings.useShader) // zero out texture data
+        if(settings.useShader) {
+            if(shader_start_line == -1)
+                shader_start_line = angle;
+            shader_end_line = angle;
+            // zero out texture data
             memset(shader_data + angle*RETURNS_PER_LINE, 0, RETURNS_PER_LINE);
+        }
 
 	GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
 
@@ -3393,8 +3416,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 	br_data_seen = true;   // added here, otherwise loose image while data is present
 	br_data_watchdog = now;
 	
-	static int previous_angle_raw = 0;
-
     // wxCriticalSectionLocker locker(br_scanLock);
 
     static unsigned int i_display = 0;  // used in radar reive thread for display operation
@@ -3471,7 +3492,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             br_radar_type = RT_4G;
         }
 	
-		previous_angle_raw = angle_raw;
        // Range change received from radar?
 
         if (range_meters != br_range_meters[AB]) {
