@@ -121,8 +121,9 @@ void GuardZoneBogey::CreateControls()
     wxBoxSizer  *GuardZoneBogeySizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(GuardZoneBogeySizer);
 
-    pBogeyCountText = new wxStaticText(this, wxID_ANY, _("Zone 1: unknown\nZone 2: unknown\nTimeout"), wxDefaultPosition, wxDefaultSize, 0);
+    pBogeyCountText = new wxStaticText(this, wxID_ANY, _("Zone 1: unknown\nZone 2: unknown\nTimeout\n"), wxDefaultPosition, wxDefaultSize, 0);
     GuardZoneBogeySizer->Add(pBogeyCountText, 0, wxALIGN_LEFT | wxALL, border);
+
 
     wxButton    *bConfirm = new wxButton(this, ID_CONFIRM, _("&Confirm"), wxDefaultPosition, wxDefaultSize, 0);
     GuardZoneBogeySizer->Add(bConfirm, 0, wxALIGN_CENTER_VERTICAL | wxALL, border);
@@ -136,19 +137,45 @@ void GuardZoneBogey::CreateControls()
 void GuardZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm)
 {
     wxString text;
+	static wxString previous_text;
     wxString t;
-
-    for (int z = 0; z < GUARD_ZONES; z++) {
-        text << _("Zone");
-        t.Printf(wxT(" %d: %d\n"), z + 1, bogey_count[z]);
-        text << t;
-    }
+	
+	if (pPlugIn->data_seenAB[0] == RADAR_ON){
+		t.Printf(_("Radar A:\n"));
+		text << t;
+		for (int z = 0; z < GUARD_ZONES; z++) {
+			text << _("Zone");
+			t.Printf(wxT(" %d: %d\n"), z + 1, bogey_count[z]);
+	//		wxLogMessage(wxT("BR24radar_pi: XXset bogeycount z=%d, bogey_count[z]= %d"),z, bogey_count[z]);
+			text += t;
+		}
+		t.Printf(_("\n"));
+		text += t;
+	}
+	if (pPlugIn->data_seenAB[1] == RADAR_ON){
+		t.Printf(_("Radar B:\n"));
+		text << t;
+		for (int z = 0; z < GUARD_ZONES; z++) {
+			text << _("Zone");
+			t.Printf(wxT(" %d: %d\n"), z + 1, bogey_count[z + 2]);
+			text += t;
+		}
+	}  
 
     if (next_alarm >= 0) {
         t.Printf(_("Next alarm in %d s"), next_alarm);
         text += t;
-    }
-    pBogeyCountText->SetLabel(text);
+  }
+/*	else{
+		t.Printf(_("\n"));
+		text += t;
+	}*/
+	if (previous_text != text){
+		pBogeyCountText->SetLabel(text);
+	}
+	previous_text = text;
+	Fit();
+
 }
 
 void GuardZoneBogey::OnClose(wxCloseEvent &event)
