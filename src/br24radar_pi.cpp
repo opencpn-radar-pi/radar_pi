@@ -1847,6 +1847,10 @@ void br24radar_pi::DrawRadarImage()
 		}
 		memcpy(&all_vertices[pointer], &vertices[i][0], 4 * vertices_index[i]);
 		pointer = pointer + vertices_index[i];
+		if (pointer > SIZE_ALL_VERTICES - 4000){
+			wxLogMessage(wxT("BR24radar_pi: overflow SIZE_ALL_VERTICES "));
+			pointer = SIZE_ALL_VERTICES - 4000;
+		}
 	}
 	glVertexPointer(2, GL_FLOAT, 24, all_vertices);
 	glColorPointer(4, GL_FLOAT, 24, all_vertices + 2);
