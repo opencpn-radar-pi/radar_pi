@@ -181,15 +181,11 @@ static bool blackout[2] = { false, false };         //  will force display to bl
 // for VBO operation
 static GLuint vboId = 0;
 
-#define     SIZE_VERTICES (5000)
-//#define     SIZE_COLORS (3000)
+#define     SIZE_VERTICES (3072)
 static GLfloat vertices[2048][SIZE_VERTICES];
-//static GLfloat colors[2048][SIZE_COLORS];
 static int colors_index[2048];
 static time_t vertices_time_stamp[2048];
 static int vertices_index[2048];
-#define     SIZE_ALL_VERTICES (10000000)
-static GLfloat all_vertices[SIZE_ALL_VERTICES];
 
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 #define     TIMER_NOT_ELAPSED(watchdog) (now < watchdog + WATCHDOG_TIMEOUT)
@@ -374,8 +370,8 @@ static void draw_blob_gl_i(int arc, int radius, int radius_end, GLubyte red, GLu
 	vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
 	vertices_index[arc]++;
 
-	if (vertices_index[arc]> SIZE_VERTICES - 40){
-		vertices_index[arc] = SIZE_VERTICES - 40;
+	if (vertices_index[arc]> SIZE_VERTICES - 36){
+		vertices_index[arc] = SIZE_VERTICES - 36;
 		wxLogMessage(wxT("BR24radar_pi: vertices array limit overflow vertices_index=%d arc=%d"), vertices_index[arc], arc);
 	}
 }
@@ -742,7 +738,6 @@ bool br24radar_pi::DeInit(void)
 {
     SaveConfig();
     m_quit = true; // Signal quit to any of the threads. Takes up to 1s.
-//	settings.showRadar = 0;
     if (m_dataReceiveThreadA) {
         m_dataReceiveThreadA->Wait();
         delete m_dataReceiveThreadA;
@@ -1840,28 +1835,16 @@ void br24radar_pi::DrawRadarImage()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	time_t now = time(0);
-	int pointer = 0;
+	int step = 6 * sizeof(GLfloat);
 	for (int i = 0; i < 2048; i++){
 		if (now - vertices_time_stamp[i] > settings.max_age){
 			continue;            // outdated line, do not display
 		}
-		memcpy(&all_vertices[pointer], &vertices[i][0], 4 * vertices_index[i]);
-		pointer = pointer + vertices_index[i];
-		if (pointer > SIZE_ALL_VERTICES - 4000){
-			wxLogMessage(wxT("BR24radar_pi: overflow SIZE_ALL_VERTICES "));
-			pointer = SIZE_ALL_VERTICES - 4000;
-		}
+		glVertexPointer(2, GL_FLOAT, step, vertices[i]);
+		glColorPointer(4, GL_FLOAT, step, vertices[i] + 2);
+		int number_of_points = vertices_index[i] / 6;
+		glDrawArrays(GL_TRIANGLES, 0, number_of_points);
 	}
-	glVertexPointer(2, GL_FLOAT, 24, all_vertices);
-	glColorPointer(4, GL_FLOAT, 24, all_vertices + 2);
-	int number_of_points = pointer / 6;
-	glDrawArrays(GL_TRIANGLES, 0, number_of_points);
-
-//		glVertexPointer(2, GL_FLOAT, 24, &vertices[i][0]);
-//		glColorPointer(4, GL_FLOAT, 24, &vertices[i][2]);
-//		int number_of_points = vertices_index[i] / 6;
-//		glDrawArrays(GL_TRIANGLES, 0, number_of_points);
-//	}
 	glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
 	glDisableClientState(GL_COLOR_ARRAY);
 }        // end of DrawRadarImage
