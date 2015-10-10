@@ -343,6 +343,7 @@ class br24radar_pi : public opencpn_plugin_110
 {
 public:
     br24radar_pi(void *ppimgr);
+	void PrepareRadarImage(int angle);
 
     //    The required PlugIn Methods
     int Init(void);
@@ -453,7 +454,7 @@ private:
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
 	void Guard(int max_range, int AB);
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
-    void DrawRadarImage(int max_range, wxPoint radar_center);
+    void DrawRadarImage();
     void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp, int AB);
     void HandleBogeyCount(int *bogey_count);
     void draw_histogram_column(int x, int y);
@@ -774,6 +775,8 @@ public:
 	bool wantShowMessage; // If true, don't hide messagebox automatically
 
 	RadarControlButton *bRadarAB;
+	wxBoxSizer        *topSizer;
+    wxBoxSizer        *controlBox;
 
 private:
     void OnClose(wxCloseEvent& event);
@@ -810,14 +813,10 @@ private:
 
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
-    wxBoxSizer        *topSizer;
-
+	wxBoxSizer        *advanced4gBox;
+	wxBoxSizer        *advancedBox;
     wxBoxSizer        *editBox;
-    wxBoxSizer        *advancedBox;
 	wxBoxSizer        *installationBox;
-    wxBoxSizer        *advanced4gBox;
-    wxBoxSizer        *controlBox;
-
     wxBoxSizer        *fromBox; // If on edit control, this is where the button is from
     
 	
@@ -1061,7 +1060,7 @@ public:
      );
 
     void    CreateControls();
-    void    SetIdleTimes(int IdleTime, int IdleTimeLeft);
+    void    SetIdleTimes(int IdleMode, int IdleTime, int IdleTimeLeft);
 
 private:
 
