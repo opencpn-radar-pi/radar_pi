@@ -465,7 +465,7 @@ void BR24ControlsDialog::CreateControls()
     label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up\n");
 
     wxStaticText * testMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    testBox->Add(testMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    testBox->Add(testMessage, 0, wxALL, 2);
     testMessage->SetFont(g_font);
 
     topSizer->Fit(this);
@@ -501,45 +501,45 @@ void BR24ControlsDialog::CreateControls()
 
     // The <<Back button
     bBack = new wxButton(this, ID_BACK, _("<<\nBack"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(bBack, 0, wxALL, BORDER);
     bBack->SetFont(g_font);
 
     // The +10 button
     bPlusTen = new wxButton(this, ID_PLUS_TEN, _("+10"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bPlusTen, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(bPlusTen, 0, wxALL, BORDER);
     bPlusTen->SetFont(g_font);
 
     // The + button
     bPlus = new wxButton(this, ID_PLUS, _("+"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bPlus, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(bPlus, 0, wxALL, BORDER);
     bPlus->SetFont(g_font);
 
     // The VALUE button
     tValue = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, g_buttonSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    editBox->Add(tValue, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(tValue, 0, wxALL, BORDER);
     tValue->SetFont(fatFont);
     tValue->SetBackgroundColour(*wxLIGHT_GREY);
 
     // The - button
     bMinus = new wxButton(this, ID_MINUS, _("-"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bMinus, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(bMinus, 0, wxALL, BORDER);
     bMinus->SetFont(g_font);
 
     // The -10 button
     bMinusTen = new wxButton(this, ID_MINUS_TEN, _("-10"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bMinusTen, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(bMinusTen, 0, wxALL, BORDER);
     bMinusTen->SetFont(g_font);
 
     // The Auto button
     bAuto = new wxButton(this, ID_AUTO, _("Auto"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bAuto, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(bAuto, 0, wxALL, BORDER);
     bAuto->SetFont(g_font);
 
     // The Multi Sweep Filter button
     wxString labelMS;
     labelMS << _("Multi Sweep Filter") << wxT("\n") << _("OFF");
     bMultiSweep = new wxButton(this, ID_MULTISWEEP, labelMS, wxDefaultPosition, wxSize(width, 40), 0);
-    editBox->Add(bMultiSweep, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    editBox->Add(bMultiSweep, 0, wxALL, BORDER);
     bMultiSweep->SetFont(g_font);
 
     topSizer->Hide(editBox);
@@ -555,12 +555,12 @@ void BR24ControlsDialog::CreateControls()
     wxString backButtonStr;
     backButtonStr << wxT("<<\n") << _("Back");
     bAdvancedBack = new wxButton(this, ID_ADVANCED_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
-    advancedBox->Add(bAdvancedBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bAdvancedBack, 0, wxALL, BORDER);
     bAdvancedBack->SetFont(g_font);
 
     // The TRANSPARENCY button
     bTransparency = new RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), pPlugIn, CT_TRANSPARENCY, false, pPlugIn->settings.overlay_transparency);
-    advancedBox->Add(bTransparency, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bTransparency, 0, wxALL, BORDER);
     bTransparency->minValue = MIN_OVERLAY_TRANSPARENCY;
     bTransparency->maxValue = MAX_OVERLAY_TRANSPARENCY;
 
@@ -627,7 +627,7 @@ void BR24ControlsDialog::CreateControls()
     scan_speed_names[0] = _("Normal");
     scan_speed_names[1] = _("Fast");
     bScanSpeed = new RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), pPlugIn, CT_SCAN_SPEED, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.button);
-    advancedBox->Add(bScanSpeed, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bScanSpeed, 0, wxALL, BORDER);
     bScanSpeed->minValue = 0;
     bScanSpeed->maxValue = ARRAY_SIZE(scan_speed_names) - 1;
     bScanSpeed->names = scan_speed_names;
@@ -660,7 +660,7 @@ void BR24ControlsDialog::CreateControls()
     }
 
     bTimedIdle = new RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), pPlugIn, CT_TIMED_IDLE, false, pPlugIn->settings.timed_idle); //HakanToDo new setting
-    advancedBox->Add(bTimedIdle, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bTimedIdle, 0, wxALL, BORDER);
     bTimedIdle->minValue = 0;
     bTimedIdle->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
     bTimedIdle->names = timed_idle_times;
@@ -750,7 +750,7 @@ void BR24ControlsDialog::CreateControls()
 
     // The RANGE button
     bRange = new RadarRangeControlButton(this, ID_RANGE, _("Range"), pPlugIn);
-    controlBox->Add(bRange, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bRange, 0, wxALL, BORDER);
 
     // The GAIN button
     bGain = new RadarControlButton(this, ID_GAIN, _("Gain"), pPlugIn, CT_GAIN, true, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button);
@@ -762,30 +762,30 @@ void BR24ControlsDialog::CreateControls()
 
     // The RAIN button
     bRain = new RadarControlButton(this, ID_RAIN, _("Rain clutter"), pPlugIn, CT_RAIN, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].rain.button);
-    controlBox->Add(bRain, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bRain, 0, wxALL, BORDER);
 
     // The ADVANCED button
     bAdvanced = new wxButton(this, ID_ADVANCED, _("Advanced\ncontrols"), wxDefaultPosition, g_buttonSize, 0);
-    controlBox->Add(bAdvanced, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bAdvanced, 0, wxALL, BORDER);
     bAdvanced->SetFont(g_font);
 
     // The GUARD ZONE 1 button
     wxString label1;
     label1 << _("Guard zone") << wxT(" 1\n");
     bGuard1 = new wxButton(this, ID_ZONE1, label1, wxDefaultPosition, g_buttonSize, 0);
-    controlBox->Add(bGuard1, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bGuard1, 0, wxALL, BORDER);
     bGuard1->SetFont(g_font);
 
     // The GUARD ZONE 2 button
     wxString label2;
     label2 << _("Guard zone") << wxT(" 2\n");
     bGuard2 = new wxButton(this, ID_ZONE2, label2, wxDefaultPosition, g_buttonSize, 0);
-    controlBox->Add(bGuard2, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bGuard2, 0, wxALL, BORDER);
     bGuard2->SetFont(g_font);
 
     // The INFO button
     bMessage = new wxButton(this, ID_MESSAGE, _("Info"), wxDefaultPosition, wxSize(width, 25), 0);
-    controlBox->Add(bMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bMessage, 0, wxALL, BORDER);
     bMessage->SetFont(g_font);
     wantShowMessage = false;
 
@@ -828,7 +828,7 @@ void BR24ControlsDialog::SetRemoteRangeIndex(size_t index)
 void BR24ControlsDialog::SetRangeIndex(size_t index)
 {
     bRange->isRemote = false;
-    bRange->SetValueInt(index); // set and recompute the range label
+//    bRange->SetValueInt(index); // set and recompute the range label
 }
 
 void BR24ControlsDialog::SetTimedIdleIndex(int index)

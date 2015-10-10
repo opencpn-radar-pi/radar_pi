@@ -152,7 +152,7 @@ void BR24MessageBox::CreateControls()
     offMessage->SetFont(g_font);
 
     tMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    messageBox->Add(tMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    messageBox->Add(tMessage, 0, wxALL, 2);
     tMessage->SetLabel(_("Radar requires the following"));
     tMessage->SetFont(g_font);
 
