@@ -189,6 +189,35 @@ static int colors_index[2048];
 static time_t vertices_time_stamp[2048];
 static int vertices_index[2048];
 
+// for shaders
+#include "shaderutil.h"
+
+static bool use_shader = false;
+static unsigned char *shader_data;
+static const char *VertShaderText =
+   "void main() \n"
+   "{ \n"
+   "   gl_TexCoord[0] = gl_MultiTexCoord0; \n"
+   "   gl_Position = ftransform(); \n"
+   "} \n";
+
+static const char *FragShaderText =
+   "uniform sampler2D tex2d; \n"
+   "void main() \n"
+   "{ \n"
+   "   float d = length(gl_TexCoord[0].xy);\n" 
+   "   if (d >= 1.0) \n"
+   "      discard; \n"
+   "   float a = atan(gl_TexCoord[0].y, gl_TexCoord[0].x) / 6.28318; \n"
+   "   gl_FragColor = vec4(255, 0, 0, texture2D(tex2d, vec2(d, a)).x); \n"
+   "} \n";
+
+static GLuint shader_tex;
+static GLuint fragShader;
+static GLuint vertShader;
+static GLuint programShader;
+
+
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 #define     TIMER_NOT_ELAPSED(watchdog) (now < watchdog + WATCHDOG_TIMEOUT)
 #define     TIMER_ELAPSED(watchdog) (!TIMER_NOT_ELAPSED(watchdog))
@@ -519,7 +548,7 @@ int br24radar_pi::Init(void)
     br_radar_watchdog = 0;
 	br_data_watchdog = 0;
     br_idle_watchdog = 0;
-	settings.emulator_on = false;
+    settings.emulator_on = false;
 	memset(bogey_count, 0, sizeof(bogey_count));   // set bogey count 0 
 	memset(&radar_setting[0], 0, sizeof(radar_setting));   // radar settings all to 0
 	// memset(&settings, 0, sizeof(settings));             // pi settings all 0   // will crash under VC 2010!! OK with 2013
@@ -656,7 +685,7 @@ int br24radar_pi::Init(void)
     br_guard_zone_id = AddCanvasContextMenuItem(pmi2, this );
     SetCanvasContextMenuItemViz(br_guard_zone_id, false);
     br_guard_context_mode = false;
-
+    
     //    Create the THREAD for Multicast radar data reception
     m_quit = false;
 
@@ -1584,6 +1613,25 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     // this is expected to be called at least once per second
     // but if we are scrolling or otherwise it can be MUCH more often!
 
+    // Determine if we can use shaders for rendering
+    if(!use_shader) {
+        if (ShadersSupported()) {
+            vertShader = CompileShaderText(GL_VERTEX_SHADER, VertShaderText);
+            fragShader = CompileShaderText(GL_FRAGMENT_SHADER, FragShaderText);
+            programShader = LinkShaders(vertShader, fragShader);
+        
+            glGenTextures(1, &shader_tex);
+            glBindTexture(GL_TEXTURE_2D, shader_tex);
+            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+            shader_data = (unsigned char*)malloc(LINES_PER_ROTATION*RETURNS_PER_LINE);
+            memset(shader_data, 0, LINES_PER_ROTATION*RETURNS_PER_LINE);
+
+            use_shader = true;
+        }
+    }
+    
     // Always compute br_auto_range_meters, possibly needed by SendState() called from DoTick().
     double max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
     // max_distance is the length of the diagonal of the viewport. If the boat were centered, the
@@ -1793,6 +1841,26 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
 void br24radar_pi::DrawRadarImage()
 {
+    // Determine if we can use shaders for rendering
+    if(use_shader) {
+        UseProgram(programShader);
+
+        glBindTexture(GL_TEXTURE_2D, shader_tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, RETURNS_PER_LINE, LINES_PER_ROTATION, 0,
+                     GL_LUMINANCE, GL_UNSIGNED_BYTE, shader_data);
+
+        float scale = 512;
+        glBegin(GL_QUADS);
+        glTexCoord2f(-1, -1);  glVertex2f(-scale, -scale);
+        glTexCoord2f( 1, -1);  glVertex2f( scale, -scale);
+        glTexCoord2f( 1,  1);  glVertex2f( scale,  scale);
+        glTexCoord2f(-1,  1);  glVertex2f(-scale,  scale);
+        glEnd();
+        
+        UseProgram(0);
+        return;
+    }
+    
 	GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
@@ -1903,8 +1971,14 @@ void br24radar_pi::PrepareRadarImage(int angle)
 				break;
 			}
 
-			draw_blob_gl_i(angle, r_begin, r_end, red, green, blue, alpha);
-			drawn_blobs++;
+                        if(use_shader) {
+                            for(int r = r_begin; r<r_end; r++)
+                                shader_data[angle*RETURNS_PER_LINE + r] = red*alpha;
+                        } else {
+                            draw_blob_gl_i(angle, r_begin, r_end, red, green, blue, alpha);
+                            drawn_blobs++;
+                        }
+                        
 			previous_color = actual_color;
 			if (actual_color != BLOB_NONE) {            // change of color, start new blob
 				r_begin = (double)radius;
@@ -3196,7 +3270,7 @@ void *RadarDataReceiveThread::Entry(void)
             if (pPlugIn->m_pMessageBox) {
                 wxString ip;
                 ip << _("emulator");
-                pPlugIn->m_pMessageBox->SetRadarIPAddress(ip);
+//                pPlugIn->m_pMessageBox->SetRadarIPAddress(ip);
             }
         }
         else {
