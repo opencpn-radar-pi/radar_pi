@@ -58,6 +58,7 @@ BEGIN_EVENT_TABLE(Idle_Dialog, wxDialog)
 
 EVT_CLOSE(Idle_Dialog::OnClose)
 EVT_BUTTON(ID_STOPIDLE, Idle_Dialog::OnIdStopIdleClick)
+EVT_MOVE(Idle_Dialog::OnMove)
 
 END_EVENT_TABLE()
 
@@ -162,4 +163,14 @@ void Idle_Dialog::OnIdStopIdleClick(wxCommandEvent &event)
     Idle_Dialog::Close();
     event.Skip();
     pPlugIn->br24radar_pi::OnToolbarToolCallback(999);    //Start radar scanning and set Timed Idle off
+}
+
+void Idle_Dialog::OnMove(wxMoveEvent& event)
+{
+    //    Record the dialog position if not deafault   
+    wxPoint p =  GetPosition();
+    if (p.x > 0) pPlugIn->SetTimedTrIdleDialogX(p.x);
+    if (p.y > 0) pPlugIn->SetTimedTrIdleDialogY(p.y);
+    
+    event.Skip();
 }
