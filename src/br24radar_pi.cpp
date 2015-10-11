@@ -49,9 +49,6 @@
 
  */
 
-// for shaders
-#include "shaderutil.h"
-
 
 #ifdef _WINDOWS
 # include <WinSock2.h>
@@ -89,6 +86,9 @@ using namespace std;
 #ifdef __WXMSW__
 # include "GL/glu.h"
 #endif
+
+// for shaders
+#include "shaderutil.h"
 
 #include "br24radar_pi.h"
 //#include "ocpndc.h"
@@ -887,6 +887,7 @@ void logBinaryData(const wxString& what, const UINT8 * data, int size)
     wxLogMessage(explain);
 }
 
+#if 0
 static GLboolean QueryExtension( const char *extName )
 {
     /*
@@ -917,6 +918,7 @@ static GLboolean QueryExtension( const char *extName )
     }
     return GL_FALSE;
 }
+#endif
 
 //*********************************************************************************
 // Display Preferences Dialog
@@ -1715,6 +1717,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
             memset(shader_data, 0, LINES_PER_ROTATION*RETURNS_PER_LINE);
 
             can_use_shader = true;
+            wxLogMessage(wxT("BR24radar_pi: OpenGL supports shader programs"));
         } else {
             wxLogMessage(wxT("BR24radar_pi: OpenGL does not support shader programs"));
             settings.useShader = false;
@@ -1960,6 +1963,9 @@ void br24radar_pi::DrawRadarImage()
         glEnd();
 
         UseProgram(0);
+        if (settings.verbose >= 2) {
+            wxLogMessage(wxT("BR24radar_pi: used shader"));
+        }
         return;
     }
 

@@ -26,6 +26,10 @@ INCLUDE("cmake/PluginConfigure.cmake")
 # For convenience we define the sources as a variable. You can add
 # header files and cpp/c files and CMake will sort them out
 
+IF (WIN32)
+  INCLUDE_DIRECTORIES(src/opengl)
+ENDIF (WIN32)
+
 SET(SRC_br24radar
             src/br24radar_pi.h
             src/br24radar_pi.cpp

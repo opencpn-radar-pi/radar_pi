@@ -6,11 +6,21 @@
 extern "C" {
 #endif
 
-#ifdef __APPLE__
+#ifdef __WXGTK__
+# include "GL/gl.h"
+# include "GL/glu.h"
+# include "GL/glext.h"
+#endif
+
+#ifdef __WXOSX__
 # include <OpenGL/gl3.h>
-#else
-# include <GL/gl.h>
-# include <GL/glext.h>
+#endif
+
+#ifdef WIN32
+# include <windows.h>
+# include "GL/gl.h"
+# include "GL/glu.h"
+# include "GL/glext.h"
 #endif
 
 struct uniform_info

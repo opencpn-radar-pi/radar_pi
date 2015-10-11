@@ -24,7 +24,7 @@ PFNGLGETSHADERIVPROC GetShaderiv = NULL;
 PFNGLGETSHADERINFOLOGPROC GetShaderInfoLog = NULL;
 PFNGLCREATEPROGRAMPROC CreateProgram = NULL;
 PFNGLDELETEPROGRAMPROC DeleteProgram = NULL;
-//PFNGLATTACHSHADERPROC AttachShader = NULL;
+PFNGLATTACHSHADERPROC AttachShader = NULL;
 PFNGLLINKPROGRAMPROC LinkProgram = NULL;
 PFNGLUSEPROGRAMPROC UseProgram = NULL;
 PFNGLGETPROGRAMIVPROC GetProgramiv = NULL;
@@ -50,14 +50,14 @@ fake_ValidateProgram(GLuint prog)
 }
 #endif
 
-#if defined(__WXMSW__)
-#define systemGetProcAddress(ADDR) wglGetProcAddress(ADDR)
+#if defined(WIN32)
+# define systemGetProcAddress(ADDR) wglGetProcAddress(ADDR)
 #elif defined(__WXOSX__)
-#include <dlfcn.h>
-#define systemGetProcAddress(ADDR) dlsym( RTLD_DEFAULT, ADDR)
+# include <dlfcn.h>
+# define systemGetProcAddress(ADDR) dlsym( RTLD_DEFAULT, ADDR)
 #else
-#include <GL/glx.h>
-#define systemGetProcAddress(ADDR) glXGetProcAddress((const GLubyte*)ADDR)
+# include <GL/glx.h>
+# define systemGetProcAddress(ADDR) glXGetProcAddress((const GLubyte*)ADDR)
 #endif
 
 GLboolean
@@ -70,7 +70,7 @@ ShadersSupported(void)
     GetShaderInfoLog = systemGetProcAddress("glGetShaderInfoLog");
     CreateProgram = systemGetProcAddress("glCreateProgram");
     DeleteProgram = systemGetProcAddress("glDeleteProgram");
-    //AttachShader = systemGetProcAddress("glAttachShader");
+    AttachShader = systemGetProcAddress("glAttachShader");
     LinkProgram = systemGetProcAddress("glLinkProgram");
     UseProgram = systemGetProcAddress("glUseProgram");
     GetProgramiv = systemGetProcAddress("glGetProgramiv");
@@ -161,7 +161,6 @@ LinkShaders(GLuint vertShader, GLuint fragShader)
    return LinkShaders3(vertShader, 0, fragShader);
 }
 
-#if 0
 GLuint
 LinkShaders3(GLuint vertShader, GLuint geomShader, GLuint fragShader)
 {
@@ -195,6 +194,7 @@ LinkShaders3(GLuint vertShader, GLuint geomShader, GLuint fragShader)
 }
 
 
+#if 0
 GLuint
 LinkShaders3WithGeometryInfo(GLuint vertShader, GLuint geomShader, GLuint fragShader,
                              GLint verticesOut, GLenum inputType, GLenum outputType)
