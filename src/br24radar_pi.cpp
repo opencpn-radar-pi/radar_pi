@@ -1954,7 +1954,7 @@ void br24radar_pi::DrawRadarImage()
 
 void br24radar_pi::PrepareRadarImage(int angle)
 {
-        if(settings.useShader) {
+        if(settings.useShader && can_use_shader) {
             if(shader_start_line == -1)
                 shader_start_line = angle;
             shader_end_line = angle;
@@ -2056,7 +2056,7 @@ void br24radar_pi::PrepareRadarImage(int angle)
 				break;
 			}
 
-                        if(settings.useShader) {
+                        if(settings.useShader && can_use_shader) {
                             for(int r = r_begin; r<r_end; r++)
                                 shader_data[angle*RETURNS_PER_LINE + r] = red*alpha;
                         } else {
