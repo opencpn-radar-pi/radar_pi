@@ -573,7 +573,7 @@ void BR24ControlsDialog::CreateControls()
 
     bInterferenceRejection = new RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"), pPlugIn,
         CT_INTERFERENCE_REJECTION, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].interference_rejection.button);
-    advancedBox->Add(bInterferenceRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bInterferenceRejection, 0, wxALL, BORDER);
     bInterferenceRejection->minValue = 0;
     bInterferenceRejection->maxValue = ARRAY_SIZE(interference_rejection_names) - 1;
     bInterferenceRejection->names = interference_rejection_names;
@@ -585,7 +585,7 @@ void BR24ControlsDialog::CreateControls()
     target_boost_names[2] = _("High");
     bTargetBoost = new RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), pPlugIn, CT_TARGET_BOOST, false,
         pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.button);
-    advancedBox->Add(bTargetBoost, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bTargetBoost, 0, wxALL, BORDER);
     bTargetBoost->minValue = 0;
     bTargetBoost->maxValue = ARRAY_SIZE(target_boost_names) - 1;
     bTargetBoost->names = target_boost_names;
@@ -599,7 +599,7 @@ void BR24ControlsDialog::CreateControls()
 
     bNoiseRejection = new RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), pPlugIn, CT_NOISE_REJECTION, false,
         pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.button);
-    advancedBox->Add(bNoiseRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bNoiseRejection, 0, wxALL, BORDER);
     bNoiseRejection->minValue = 0;
     bNoiseRejection->maxValue = ARRAY_SIZE(noise_rejection_names) - 1;
     bNoiseRejection->names = noise_rejection_names;
@@ -617,7 +617,7 @@ void BR24ControlsDialog::CreateControls()
 
     bTargetSeparation = new RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"),
         pPlugIn, CT_TARGET_SEPARATION, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.button);
-    advanced4gBox->Add(bTargetSeparation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advanced4gBox->Add(bTargetSeparation, 0, wxALL, BORDER);
     bTargetSeparation->minValue = 0;
     bTargetSeparation->maxValue = ARRAY_SIZE(target_separation_names) - 1;
     bTargetSeparation->names = target_separation_names;
@@ -635,13 +635,13 @@ void BR24ControlsDialog::CreateControls()
 
     // The REFRESHRATE button
     bRefreshrate = new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), pPlugIn, CT_REFRESHRATE, false, pPlugIn->settings.refreshrate);
-    advancedBox->Add(bRefreshrate, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bRefreshrate, 0, wxALL, BORDER);
     bRefreshrate->minValue = 1;
     bRefreshrate->maxValue = 5;
 
     // The INSTALLATION button
     bInstallation = new wxButton(this, ID_INSTALLATION, _("Installation"), wxDefaultPosition, g_buttonSize, 0);
-    advancedBox->Add(bInstallation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advancedBox->Add(bInstallation, 0, wxALL, BORDER);
     bInstallation->SetFont(g_font);
 
     // The TIMED TRANSMIT button
@@ -678,13 +678,13 @@ void BR24ControlsDialog::CreateControls()
     wxString instBackButtonStr;
     instBackButtonStr << wxT("<<\n") << _("Back");
     bInstallationBack = new wxButton(this, ID_INSTALLATION_BACK, instBackButtonStr, wxDefaultPosition, g_buttonSize, 0);
-    installationBox->Add(bInstallationBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    installationBox->Add(bInstallationBack, 0, wxALL, BORDER);
     bInstallationBack->SetFont(g_font);
 
     // The BEARING ALIGNMENT button
     bBearingAlignment = new RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"), pPlugIn, CT_BEARING_ALIGNMENT,
         false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].bearing_alignment.button);
-    installationBox->Add(bBearingAlignment, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    installationBox->Add(bBearingAlignment, 0, wxALL, BORDER);
     bBearingAlignment->SetFont(g_font);    // this bearing alignment work opposite to the one defined in the pi!
     bBearingAlignment->minValue = -179;
     bBearingAlignment->maxValue = 180;
@@ -692,14 +692,14 @@ void BR24ControlsDialog::CreateControls()
     // The ANTENNA HEIGHT button
     bAntennaHeight = new RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Antenna height"), pPlugIn,
         CT_ANTENNA_HEIGHT, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].antenna_height.button);
-    installationBox->Add(bAntennaHeight, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    installationBox->Add(bAntennaHeight, 0, wxALL, BORDER);
     bAntennaHeight->minValue = 0;
     bAntennaHeight->maxValue = 30;
 
     // The LOCAL INTERFERENCE REJECTION button
     bLocalInterferenceRejection = new RadarControlButton(this, ID_LOCAL_INTERFERENCE_REJECTION, _("Local interference rejection"), pPlugIn,
         CT_LOCAL_INTERFERENCE_REJECTION, false, pPlugIn->radar_setting[0].local_interference_rejection.button);
-    installationBox->Add(bLocalInterferenceRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    installationBox->Add(bLocalInterferenceRejection, 0, wxALL, BORDER);
     bLocalInterferenceRejection->minValue = 0;
     bLocalInterferenceRejection->maxValue = ARRAY_SIZE(target_separation_names) - 1;   // off, low, medium, high, same as target separation
     bLocalInterferenceRejection->names = target_separation_names;
@@ -708,7 +708,7 @@ void BR24ControlsDialog::CreateControls()
     // The SIDE LOBE SUPPRESSION button
     bSideLobeSuppression = new RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"), pPlugIn, CT_SIDE_LOBE_SUPPRESSION, true,
         pPlugIn->radar_setting[0].side_lobe_suppression.button);
-    installationBox->Add(bSideLobeSuppression, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    installationBox->Add(bSideLobeSuppression, 0, wxALL, BORDER);
     bSideLobeSuppression->minValue = 0;
     bSideLobeSuppression->maxValue = 100;
     bSideLobeSuppression->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.button); // redraw after adding names
@@ -727,7 +727,7 @@ void BR24ControlsDialog::CreateControls()
     wxString labelab;
     labelab << _("Radar A / B") << wxT("\n") << _("Radar A");
     bRadarAB = new RadarRangeControlButton(this, ID_RADAR_AB, labelab, pPlugIn);
-    controlBox->Add(bRadarAB, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bRadarAB, 0, wxALL, BORDER);
     if (pPlugIn->settings.selectRadarB == 1) {
         wxString labelab1;
         labelab1 << _("Radar A / B") << wxT("\n") << _("Radar B");
@@ -736,7 +736,7 @@ void BR24ControlsDialog::CreateControls()
 
     // The RADAR ONLY / OVERLAY button
     bRadarOnly_Overlay = new RadarRangeControlButton(this, ID_RADAR_ONLY, _("Radar Only / Overlay"), pPlugIn);
-    controlBox->Add(bRadarOnly_Overlay, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bRadarOnly_Overlay, 0, wxALL, BORDER);
     if (pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT) {
         wxString label;
         label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up");
@@ -754,11 +754,11 @@ void BR24ControlsDialog::CreateControls()
 
     // The GAIN button
     bGain = new RadarControlButton(this, ID_GAIN, _("Gain"), pPlugIn, CT_GAIN, true, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button);
-    controlBox->Add(bGain, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bGain, 0, wxALL, BORDER);
 
     // The SEA button
     bSea = new RadarControlButton(this, ID_SEA, _("Sea clutter"), pPlugIn, CT_SEA, true, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.button);
-    controlBox->Add(bSea, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    controlBox->Add(bSea, 0, wxALL, BORDER);
 
     // The RAIN button
     bRain = new RadarControlButton(this, ID_RAIN, _("Rain clutter"), pPlugIn, CT_RAIN, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].rain.button);
