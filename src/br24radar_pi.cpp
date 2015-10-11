@@ -3487,8 +3487,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
     bool need_history = false;
     for (int z = 0; z < GUARD_ZONES; z++)
-        if(pPlugIn->guardZones[pPlugIn->settings.selectRadarB][z].type != GZ_OFF &&
-           pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.selectRadarB][z])
+        if(pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.selectRadarB][z])
             need_history = true;
 
     static unsigned int i_display = 0;  // used in radar reive thread for display operation
