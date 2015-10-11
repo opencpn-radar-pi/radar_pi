@@ -147,7 +147,7 @@ void BR24MessageBox::CreateControls()
     topSizeM->Add(messageBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
     offMessage = new wxStaticText(this, ID_OFF, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    messageBox->Add(offMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    messageBox->Add(offMessage, 0, wxALL, 2);
     offMessage->SetLabel(_("Can not switch radar on as\nit is not connected or off\n Switch radar on when button is amber"));
     offMessage->SetFont(g_font);
 
@@ -162,7 +162,7 @@ void BR24MessageBox::CreateControls()
     messageBox->Add(optionsSizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
     cbOpenGL = new wxCheckBox(this, ID_BPOS, _("Accelerated Graphics (OpenGL)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    optionsSizer->Add(cbOpenGL, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    optionsSizer->Add(cbOpenGL, 0, wxALL, BORDER);
     cbOpenGL->SetFont(g_font);
     cbOpenGL->Disable();
 
@@ -172,12 +172,12 @@ void BR24MessageBox::CreateControls()
     messageBox->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
     cbRadar = new wxCheckBox(this, ID_RADAR, _("Radar present"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    ipSizer->Add(cbRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    ipSizer->Add(cbRadar, 0, wxALL, BORDER);
     cbRadar->SetFont(g_font);
     cbRadar->Disable();
 
     cbData = new wxCheckBox(this, ID_DATA, _("Radar sending data"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    ipSizer->Add(cbData, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    ipSizer->Add(cbData, 0, wxALL, BORDER);
     cbData->SetFont(g_font);
     cbData->Disable();
 
@@ -189,17 +189,17 @@ void BR24MessageBox::CreateControls()
     messageBox->Hide(nmeaSizer);
 
     cbBoatPos = new wxCheckBox(this, ID_BPOS, _("Boat position"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    nmeaSizer->Add(cbBoatPos, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    nmeaSizer->Add(cbBoatPos, 0, wxALL, BORDER);
     cbBoatPos->SetFont(g_font);
     cbBoatPos->Disable();
 
     cbHeading = new wxCheckBox(this, ID_HEADING, _("Heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    nmeaSizer->Add(cbHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    nmeaSizer->Add(cbHeading, 0, wxALL, BORDER);
     cbHeading->SetFont(g_font);
     cbHeading->Disable();
 
     cbVariation = new wxCheckBox(this, ID_HEADING, _("Variation"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    nmeaSizer->Add(cbVariation, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    nmeaSizer->Add(cbVariation, 0, wxALL, BORDER);
     cbVariation->SetFont(g_font);
     cbVariation->Disable();
 
@@ -215,7 +215,7 @@ void BR24MessageBox::CreateControls()
 
     // The <Close> button
     bMsgBack = new wxButton(this, ID_MSG_BACK, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
-    messageBox->Add(bMsgBack, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    messageBox->Add(bMsgBack, 0, wxALL, BORDER);
     bMsgBack->SetFont(g_font);
     messageBox->Hide(bMsgBack);
 }
