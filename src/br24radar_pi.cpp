@@ -3516,10 +3516,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
     // wxCriticalSectionLocker locker(br_scanLock);
 
-    bool need_history = false;
-    for (int z = 0; z < GUARD_ZONES; z++)
-        if(pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.selectRadarB][z])
-            need_history = true;
+    bool need_history = pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.selectRadarB][2];
 
     static unsigned int i_display = 0;  // used in radar reive thread for display operation
     static int next_scan_number[2] = { -1, -1 };
