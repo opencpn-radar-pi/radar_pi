@@ -3673,7 +3673,9 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             if (i_display >= br_refresh_rate) {   //    display every "refreshrate time"
                 if (br_refresh_rate != 10) { // for 10 no refresh at all
                     br_refresh_busy_or_queued = true;   // no further calls until br_refresh_busy_or_queued has been cleared by RenderGLOverlay
-                    GetOCPNCanvasWindow()->Refresh(true);
+                    // Very important to pass "false" to refresh for high refresh rate
+                    // radar so that opencpn doesn't invalidate the cached chart image
+                    GetOCPNCanvasWindow()->Refresh(false);
                     if (pPlugIn->settings.verbose >= 4) {
                         wxLogMessage(wxT("BR24radar_pi:  refresh issued"));
                     }
