@@ -6,6 +6,7 @@
  *           Dave Cowell
  *           Kees Verruijt
  *           Douwe Fokkema
+ *           Sean D'Epagnier
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -47,6 +48,8 @@
  - Many tests
  - Translation files
 
+ Sean D'Epagnier
+ - shader support
  */
 
 
