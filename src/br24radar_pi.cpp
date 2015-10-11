@@ -213,7 +213,7 @@ static const char *FragShaderText =
    "   if (d >= 1.0) \n"
    "      discard; \n"
    "   float a = atan(gl_TexCoord[0].y, gl_TexCoord[0].x) / 6.28318; \n"
-   "   gl_FragColor = vec4(255, 0, 0, texture2D(tex2d, vec2(d, a)).x); \n"
+   "   gl_FragColor = vec4(1, 0, 0, texture2D(tex2d, vec2(d, a)).x); \n"
    "} \n";
 
 static GLuint shader_tex;
@@ -1818,6 +1818,9 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     else {
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        if(settings.useShader)
+            glEnable(GL_BLEND);
     }
     glPushMatrix();
     glTranslated(radar_center.x, radar_center.y, 0);
@@ -1975,7 +1978,12 @@ void br24radar_pi::PrepareRadarImage(int angle)
 	//	UINT32 skipped = 0;
 	//	wxLongLong max_age = 0; // Age in millis
 
-	GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
+	GLubyte alpha;
+
+        if(blackout[settings.selectRadarB])
+            alpha = 255;
+        else
+            alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
 
 	vertices_index[angle] = 0;
 	colors_index[angle] = 0;
@@ -2057,8 +2065,7 @@ void br24radar_pi::PrepareRadarImage(int angle)
 			}
 
                         if(settings.useShader && can_use_shader) {
-                            for(int r = r_begin; r<r_end; r++)
-                                shader_data[angle*RETURNS_PER_LINE + r] = red*alpha;
+                            memset(shader_data + angle*RETURNS_PER_LINE + r_begin, 255-red*alpha, r_end - r_begin);
                         } else {
                             draw_blob_gl_i(angle, r_begin, r_end, red, green, blue, alpha);
                             drawn_blobs++;
