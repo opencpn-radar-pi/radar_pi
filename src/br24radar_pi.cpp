@@ -1896,7 +1896,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
                     );
     }
 
-    if(m_heading_source != HEADING_NONE) {
+    if(m_heading_source != HEADING_NONE && !blackout[settings.selectRadarB]) {
         double heading = MOD_DEGREES( rad2deg(vp->rotation)        // viewport rotation
                                       + 270.0                        // difference between compass and OpenGL rotation
                                       + settings.heading_correction  // fix any radome rotation fault
