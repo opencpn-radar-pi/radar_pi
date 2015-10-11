@@ -49,6 +49,9 @@
 
  */
 
+// for shaders
+#include "shaderutil.h"
+
 
 #ifdef _WINDOWS
 # include <WinSock2.h>
@@ -64,7 +67,7 @@
 
 #include <wx/socket.h>
 #include "wx/apptrait.h"
-#include <wx/glcanvas.h>
+//#include <wx/glcanvas.h>
 #include "wx/sckaddr.h"
 #include "wx/datetime.h"
 #include <wx/fileconf.h>
@@ -184,9 +187,6 @@ static GLfloat vertices[2048][SIZE_VERTICES];
 static int colors_index[2048];
 static time_t vertices_time_stamp[2048];
 static int vertices_index[2048];
-
-// for shaders
-#include "shaderutil.h"
 
 static bool can_use_shader = false;
 static unsigned char *shader_data;

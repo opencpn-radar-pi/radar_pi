@@ -6,6 +6,12 @@
 extern "C" {
 #endif
 
+#ifdef __APPLE__
+# include <OpenGL/gl3.h>
+#else
+# include <GL/gl.h>
+# include <GL/glext.h>
+#endif
 
 struct uniform_info
 {
@@ -85,7 +91,7 @@ extern PFNGLLINKPROGRAMPROC LinkProgram;
 extern PFNGLUSEPROGRAMPROC UseProgram;
 extern PFNGLGETPROGRAMIVPROC GetProgramiv;
 extern PFNGLGETPROGRAMINFOLOGPROC GetProgramInfoLog;
-extern PFNGLVALIDATEPROGRAMARBPROC ValidateProgramARB;
+extern PFNGLVALIDATEPROGRAMPROC ValidateProgram;
 extern PFNGLUNIFORM1IPROC Uniform1i;
 extern PFNGLUNIFORM1FVPROC Uniform1fv;
 extern PFNGLUNIFORM2FVPROC Uniform2fv;

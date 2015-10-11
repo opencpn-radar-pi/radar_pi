@@ -6,21 +6,16 @@
  * 9 April 2008
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <GL/gl.h>
-
 #include "shaderutil.h"
-
-/** time to compile previous shader */
-static GLdouble CompileTime = 0.0;
-
-/** time to linke previous program */
-static GLdouble LinkTime = 0.0;
 
 PFNGLCREATESHADERPROC CreateShader = NULL;
 PFNGLDELETESHADERPROC DeleteShader = NULL;
@@ -29,12 +24,12 @@ PFNGLGETSHADERIVPROC GetShaderiv = NULL;
 PFNGLGETSHADERINFOLOGPROC GetShaderInfoLog = NULL;
 PFNGLCREATEPROGRAMPROC CreateProgram = NULL;
 PFNGLDELETEPROGRAMPROC DeleteProgram = NULL;
-PFNGLATTACHSHADERPROC AttachShader = NULL;
+//PFNGLATTACHSHADERPROC AttachShader = NULL;
 PFNGLLINKPROGRAMPROC LinkProgram = NULL;
 PFNGLUSEPROGRAMPROC UseProgram = NULL;
 PFNGLGETPROGRAMIVPROC GetProgramiv = NULL;
 PFNGLGETPROGRAMINFOLOGPROC GetProgramInfoLog = NULL;
-PFNGLVALIDATEPROGRAMARBPROC ValidateProgramARB = NULL;
+PFNGLVALIDATEPROGRAMPROC ValidateProgram = NULL;
 PFNGLUNIFORM1IPROC Uniform1i = NULL;
 PFNGLUNIFORM1FVPROC Uniform1fv = NULL;
 PFNGLUNIFORM2FVPROC Uniform2fv = NULL;
@@ -43,12 +38,17 @@ PFNGLUNIFORM4FVPROC Uniform4fv = NULL;
 PFNGLUNIFORMMATRIX4FVPROC UniformMatrix4fv = NULL;
 PFNGLGETACTIVEATTRIBPROC GetActiveAttrib = NULL;
 PFNGLGETATTRIBLOCATIONPROC GetAttribLocation = NULL;
+PFNGLGETUNIFORMLOCATIONPROC GetUniformLocation = NULL;
+PFNGLGETACTIVEUNIFORMPROC GetActiveUniform = NULL;
+PFNGLCOMPILESHADERPROC CompileShader = NULL;
 
+#if 0
 static void GLAPIENTRY
 fake_ValidateProgram(GLuint prog)
 {
    (void) prog;
 }
+#endif
 
 #if defined(__WXMSW__)
 #define systemGetProcAddress(ADDR) wglGetProcAddress(ADDR)
@@ -70,12 +70,12 @@ ShadersSupported(void)
     GetShaderInfoLog = systemGetProcAddress("glGetShaderInfoLog");
     CreateProgram = systemGetProcAddress("glCreateProgram");
     DeleteProgram = systemGetProcAddress("glDeleteProgram");
-    AttachShader = systemGetProcAddress("glAttachShader");
+    //AttachShader = systemGetProcAddress("glAttachShader");
     LinkProgram = systemGetProcAddress("glLinkProgram");
     UseProgram = systemGetProcAddress("glUseProgram");
     GetProgramiv = systemGetProcAddress("glGetProgramiv");
     GetProgramInfoLog = systemGetProcAddress("glGetProgramInfoLog");
-    ValidateProgramARB =  systemGetProcAddress("glValidateProgramARB");
+    ValidateProgram =  systemGetProcAddress("glValidateProgram");
     Uniform1i = systemGetProcAddress("glUniform1i");
     Uniform1fv = systemGetProcAddress("glUniform1fv");
     Uniform2fv = systemGetProcAddress("glUniform2fv");
@@ -84,26 +84,23 @@ ShadersSupported(void)
     UniformMatrix4fv = systemGetProcAddress("glUniformMatrix4fv");
     GetActiveAttrib = systemGetProcAddress("glGetActiveAttrib");
     GetAttribLocation = systemGetProcAddress("glGetAttribLocation");
+    GetUniformLocation = systemGetProcAddress("glGetUniformLocation");
+    GetActiveUniform = systemGetProcAddress("glGetActiveUniform");
+    CompileShader = systemGetProcAddress("glCompileShader");
 
-    return UseProgram;
+    return UseProgram != 0;
 }
-
 
 GLuint
 CompileShaderText(GLenum shaderType, const char *text)
 {
    GLuint shader;
    GLint stat;
-   GLdouble t0, t1;
 
    shader = CreateShader(shaderType);
    ShaderSource(shader, 1, (const GLchar **) &text, NULL);
 
-//   t0 = glutGet(GLUT_ELAPSED_TIME) * 0.001;
-   glCompileShader(shader);
-//   t1 = glutGet(GLUT_ELAPSED_TIME) * 0.001;
-
-   CompileTime = t1 - t0;
+   CompileShader(shader);
 
    GetShaderiv(shader, GL_COMPILE_STATUS, &stat);
    if (!stat) {
@@ -164,12 +161,11 @@ LinkShaders(GLuint vertShader, GLuint fragShader)
    return LinkShaders3(vertShader, 0, fragShader);
 }
 
-
+#if 0
 GLuint
 LinkShaders3(GLuint vertShader, GLuint geomShader, GLuint fragShader)
 {
    GLuint program = CreateProgram();
-   GLdouble t0, t1;
 
    assert(vertShader || fragShader);
 
@@ -180,11 +176,7 @@ LinkShaders3(GLuint vertShader, GLuint geomShader, GLuint fragShader)
    if (fragShader)
       AttachShader(program, fragShader);
 
-//   t0 = glutGet(GLUT_ELAPSED_TIME) * 0.001;
    LinkProgram(program);
-//   t1 = glutGet(GLUT_ELAPSED_TIME) * 0.001;
-
-   LinkTime = t1 - t0;
 
    /* check link */
    {
@@ -208,7 +200,6 @@ LinkShaders3WithGeometryInfo(GLuint vertShader, GLuint geomShader, GLuint fragSh
                              GLint verticesOut, GLenum inputType, GLenum outputType)
 {
   GLuint program = CreateProgram();
-  GLdouble t0, t1;
 
   assert(vertShader || fragShader);
 
@@ -216,18 +207,15 @@ LinkShaders3WithGeometryInfo(GLuint vertShader, GLuint geomShader, GLuint fragSh
     AttachShader(program, vertShader);
   if (geomShader) {
     AttachShader(program, geomShader);
-    glProgramParameteriARB(program, GL_GEOMETRY_VERTICES_OUT_ARB, verticesOut);
-    glProgramParameteriARB(program, GL_GEOMETRY_INPUT_TYPE_ARB, inputType);
-    glProgramParameteriARB(program, GL_GEOMETRY_OUTPUT_TYPE_ARB, outputType);
+    ProgramParameteriARB(program, GL_GEOMETRY_VERTICES_OUT_ARB, verticesOut);
+    ProgramParameteriARB(program, GL_GEOMETRY_INPUT_TYPE_ARB, inputType);
+    ProgramParameteriARB(program, GL_GEOMETRY_OUTPUT_TYPE_ARB, outputType);
   }
   if (fragShader)
     AttachShader(program, fragShader);
 
-//  t0 = glutGet(GLUT_ELAPSED_TIME) * 0.001;
   LinkProgram(program);
-//  t1 = glutGet(GLUT_ELAPSED_TIME) * 0.001;
 
-  LinkTime = t1 - t0;
 
   /* check link */
   {
@@ -244,13 +232,14 @@ LinkShaders3WithGeometryInfo(GLuint vertShader, GLuint geomShader, GLuint fragSh
 
   return program;
 }
+#endif
 
 
 GLboolean
 ValidateShaderProgram(GLuint program)
 {
    GLint stat;
-   ValidateProgramARB(program);
+   ValidateProgram(program);
    GetProgramiv(program, GL_VALIDATE_STATUS, &stat);
 
    if (!stat) {
@@ -264,21 +253,6 @@ ValidateShaderProgram(GLuint program)
    return (GLboolean) stat;
 }
 
-
-GLdouble
-GetShaderCompileTime(void)
-{
-   return CompileTime;
-}
-
-
-GLdouble
-GetShaderLinkTime(void)
-{
-   return LinkTime;
-}
-
-
 void
 SetUniformValues(GLuint program, struct uniform_info uniforms[])
 {
@@ -286,7 +260,7 @@ SetUniformValues(GLuint program, struct uniform_info uniforms[])
 
    for (i = 0; uniforms[i].name; i++) {
       uniforms[i].location
-         = glGetUniformLocation(program, uniforms[i].name);
+         = GetUniformLocation(program, uniforms[i].name);
 
       switch (uniforms[i].type) {
       case GL_INT:
@@ -294,7 +268,7 @@ SetUniformValues(GLuint program, struct uniform_info uniforms[])
       case GL_SAMPLER_2D:
       case GL_SAMPLER_3D:
       case GL_SAMPLER_CUBE:
-      case GL_SAMPLER_2D_RECT_ARB:
+      case GL_SAMPLER_2D_RECT:
       case GL_SAMPLER_1D_SHADOW:
       case GL_SAMPLER_2D_SHADOW:
       case GL_SAMPLER_1D_ARRAY:
@@ -349,12 +323,12 @@ GetUniforms(GLuint program, struct uniform_info uniforms[])
       GLenum type;
       char name[100];
 
-      glGetActiveUniform(program, i, 100, &len, &size, &type, name);
+      GetActiveUniform(program, i, 100, &len, &size, &type, name);
 
       uniforms[i].name = strdup(name);
       uniforms[i].size = size;
       uniforms[i].type = type;
-      uniforms[i].location = glGetUniformLocation(program, name);
+      uniforms[i].location = GetUniformLocation(program, name);
    }
 
    uniforms[i].name = NULL; /* end of list */
@@ -429,3 +403,7 @@ PrintAttribs(const struct attrib_info attribs[])
              attribs[i].location);
    }
 }
+
+#ifdef __cplusplus
+}
+#endif
