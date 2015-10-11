@@ -118,3 +118,4 @@ The plugin was started by @cowelld, who took @bdbcat's Garmin radar plugin and t
 
 @douwefokkema implemented the heading on radar functionality, optimised the OpenGL drawing and implemented the refresh rate code.
 
+@seandepagnier shader support and some optimizations
