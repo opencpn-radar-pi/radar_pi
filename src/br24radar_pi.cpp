@@ -6,6 +6,7 @@
  *           Dave Cowell
  *           Kees Verruijt
  *           Douwe Fokkema
+ *           Sean D'Epagnier
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -47,6 +48,8 @@
  - Many tests
  - Translation files
 
+ Sean D'Epagnier
+ - shader support
  */
 
 
@@ -64,7 +67,7 @@
 
 #include <wx/socket.h>
 #include "wx/apptrait.h"
-#include <wx/glcanvas.h>
+//#include <wx/glcanvas.h>
 #include "wx/sckaddr.h"
 #include "wx/datetime.h"
 #include <wx/fileconf.h>
@@ -86,6 +89,9 @@ using namespace std;
 #ifdef __WXMSW__
 # include "GL/glu.h"
 #endif
+
+// for shaders
+#include "shaderutil.h"
 
 #include "br24radar_pi.h"
 //#include "ocpndc.h"
@@ -111,6 +117,7 @@ enum {
     ID_SELECT_SOUND,
     ID_TEST_SOUND,
     ID_PASS_HEADING,
+    ID_USE_SHADER,
     ID_SELECT_AB,
     ID_EMULATOR
 };
@@ -183,6 +190,42 @@ static GLfloat vertices[2048][SIZE_VERTICES];
 static int colors_index[2048];
 static time_t vertices_time_stamp[2048];
 static int vertices_index[2048];
+
+static bool can_use_shader = false;
+static unsigned char *shader_data;
+static int shader_start_line, shader_end_line;
+// identity vertex program (does nothing special)
+static const char *VertShaderText =
+   "void main() \n"
+   "{ \n"
+   "   gl_TexCoord[0] = gl_MultiTexCoord0; \n"
+   "   gl_Position = ftransform(); \n"
+   "} \n";
+
+// Convert to rectangular to polar coordinates for radar image in texture
+static const char *FragShaderText =
+   "uniform sampler2D tex2d; \n"
+   "void main() \n"
+   "{ \n"
+   "   float d = length(gl_TexCoord[0].xy);\n"
+   "   if (d >= 1.0) \n"
+   "      discard; \n"
+   "   float a = atan(gl_TexCoord[0].y, gl_TexCoord[0].x) / 6.28318; \n"
+   "   gl_FragColor = vec4(1, 0, 0, texture2D(tex2d, vec2(d, a)).x); \n"
+   "} \n";
+
+static const char *FragShaderColorText =
+   "uniform sampler2D tex2d; \n"
+   "void main() \n"
+   "{ \n"
+   "   float d = length(gl_TexCoord[0].xy);\n"
+   "   if (d >= 1.0) \n"
+   "      discard; \n"
+   "   float a = atan(gl_TexCoord[0].y, gl_TexCoord[0].x) / 6.28318; \n"
+   "   gl_FragColor = texture2D(tex2d, vec2(d, a)); \n"
+   "} \n";
+
+static GLuint shader_tex, fragShader, vertShader, programShader;
 
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 #define     TIMER_NOT_ELAPSED(watchdog) (now < watchdog + WATCHDOG_TIMEOUT)
@@ -854,6 +897,39 @@ void logBinaryData(const wxString& what, const UINT8 * data, int size)
     wxLogMessage(explain);
 }
 
+#if 0
+static GLboolean QueryExtension( const char *extName )
+{
+    /*
+     ** Search for extName in the extensions string. Use of strstr()
+     ** is not sufficient because extension names can be prefixes of
+     ** other extension names. Could use strtok() but the constant
+     ** string returned by glGetString might be in read-only memory.
+     */
+    char *p;
+    char *end;
+    int extNameLen;
+
+    extNameLen = strlen( extName );
+
+    p = (char *) glGetString( GL_EXTENSIONS );
+    if( NULL == p ) {
+        return GL_FALSE;
+    }
+
+    end = p + strlen( p );
+
+    while( p < end ) {
+        int n = strcspn( p, " " );
+        if( ( extNameLen == n ) && ( strncmp( extName, p, n ) == 0 ) ) {
+            return GL_TRUE;
+        }
+        p += ( n + 1 );
+    }
+    return GL_FALSE;
+}
+#endif
+
 //*********************************************************************************
 // Display Preferences Dialog
 //*********************************************************************************
@@ -1013,6 +1089,12 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                              wxCommandEventHandler(BR24DisplayOptionsDialog::OnPassHeadingClick), NULL, this);
 
+    cbUseShader = new wxCheckBox(this, ID_USE_SHADER, _("Use gpu shader for rendering (nicer picture and less cpu)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    itemStaticBoxSizerOptions->Add(cbUseShader, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+    cbUseShader->SetValue(pPlugIn->settings.useShader);
+    cbUseShader->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                             wxCommandEventHandler(BR24DisplayOptionsDialog::OnUseShaderClick), NULL, this);
+
     cbEnableDualRadar = new wxCheckBox(this, ID_SELECT_AB, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     itemStaticBoxSizerOptions->Add(cbEnableDualRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
     cbEnableDualRadar->SetValue(pPlugIn->settings.enable_dual_radar ? true : false);
@@ -1024,7 +1106,6 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     cbEmulator->SetValue(pPlugIn->settings.emulator_on ? true : false);
     cbEmulator->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
         wxCommandEventHandler(BR24DisplayOptionsDialog::OnEmulatorClick), NULL, this);
-
 
 
     // Accept/Reject button
@@ -1096,6 +1177,11 @@ void BR24DisplayOptionsDialog::OnHeading_Calibration_Value(wxCommandEvent &event
 void BR24DisplayOptionsDialog::OnPassHeadingClick(wxCommandEvent &event)
 {
     pPlugIn->settings.passHeadingToOCPN = cbPassHeading->GetValue();
+}
+
+void BR24DisplayOptionsDialog::OnUseShaderClick(wxCommandEvent &event)
+{
+    pPlugIn->settings.useShader = cbUseShader->GetValue();
 }
 
 void BR24DisplayOptionsDialog::OnEmulatorClick(wxCommandEvent &event)
@@ -1620,6 +1706,47 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     // this is expected to be called at least once per second
     // but if we are scrolling or otherwise it can be MUCH more often!
 
+    // Determine if we can use shaders for rendering
+    static bool last_color;
+    bool color = settings.display_option;
+    if(settings.useShader && (!can_use_shader || color != last_color)) {
+        if (ShadersSupported()) {
+            last_color = color;
+
+            DeleteShader(vertShader);
+            DeleteShader(fragShader);
+            DeleteProgram(programShader);
+
+            vertShader = CompileShaderText(GL_VERTEX_SHADER, VertShaderText);
+            fragShader = CompileShaderText(GL_FRAGMENT_SHADER, color ? FragShaderColorText : FragShaderText);
+            programShader = LinkShaders(vertShader, fragShader);
+
+            int channels = 4; // for now always allocate for 4 colors as it's simpler to avoid crash in other thread
+            if(!shader_data)
+                shader_data = (unsigned char*)malloc(channels*LINES_PER_ROTATION*RETURNS_PER_LINE);
+
+            memset(shader_data, 0, channels*LINES_PER_ROTATION*RETURNS_PER_LINE);
+
+            if(!shader_tex)
+                glGenTextures(1, &shader_tex);
+            glBindTexture(GL_TEXTURE_2D, shader_tex);
+            glTexImage2D(GL_TEXTURE_2D, 0, color ? GL_RGBA : GL_LUMINANCE,
+                         RETURNS_PER_LINE, LINES_PER_ROTATION, 0,
+                         color ? GL_RGBA : GL_LUMINANCE, GL_UNSIGNED_BYTE, shader_data);
+            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+            shader_start_line = 0;
+            shader_end_line = 0;
+
+            can_use_shader = true;
+            wxLogMessage(wxT("BR24radar_pi: OpenGL supports shader programs"));
+        } else {
+            wxLogMessage(wxT("BR24radar_pi: OpenGL does not support shader programs"));
+            settings.useShader = false;
+        }
+    }
+
     // Always compute br_auto_range_meters, possibly needed by SendState() called from DoTick().
     double max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
     // max_distance is the length of the diagonal of the viewport. If the boat were centered, the
@@ -1632,7 +1759,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     }
     blackout[settings.selectRadarB] = settings.showRadar == 1 && br_data_seen && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
     DoTick(); // update timers and watchdogs
-    UpdateState(); // update the toolbar
+
     wxPoint center_screen(vp->pix_width / 2, vp->pix_height / 2);
     wxPoint boat_center, pp;
     if (br_bpos_set) {
@@ -1751,6 +1878,9 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     else {
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        if(settings.useShader)
+            glEnable(GL_BLEND);
     }
     glPushMatrix();
     glTranslated(radar_center.x, radar_center.y, 0);
@@ -1766,12 +1896,14 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
                     );
     }
 
-    double heading = MOD_DEGREES( rad2deg(vp->rotation)        // viewport rotation
-                                + 270.0                        // difference between compass and OpenGL rotation
-                                + settings.heading_correction  // fix any radome rotation fault
-                                - vp->skew * settings.skew_factor
-                                );
-    glRotatef(heading, 0, 0, 1);
+    if(m_heading_source != HEADING_NONE && !blackout[settings.selectRadarB]) {
+        double heading = MOD_DEGREES( rad2deg(vp->rotation)        // viewport rotation
+                                      + 270.0                        // difference between compass and OpenGL rotation
+                                      + settings.heading_correction  // fix any radome rotation fault
+                                      - vp->skew * settings.skew_factor
+            );
+        glRotatef(heading, 0, 0, 1);
+    }
 
     // scaling...
     int meters = br_range_meters[settings.selectRadarB];
@@ -1829,6 +1961,43 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
 void br24radar_pi::DrawRadarImage()
 {
+    if (settings.useShader) {
+        UseProgram(programShader);
+
+        glBindTexture(GL_TEXTURE_2D, shader_tex);
+
+        int type, channels;
+        if(settings.display_option)
+            type = GL_RGBA, channels = 4;
+        else
+            type = GL_LUMINANCE, channels = 1;
+
+        // if the new data wraps past the end of the texture
+        if(shader_end_line < shader_start_line) {
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, RETURNS_PER_LINE, shader_end_line,
+                            type, GL_UNSIGNED_BYTE, shader_data);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, shader_start_line, RETURNS_PER_LINE, LINES_PER_ROTATION - shader_start_line,
+                            type, GL_UNSIGNED_BYTE, shader_data + shader_start_line * RETURNS_PER_LINE * channels);
+        } else
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, shader_start_line, RETURNS_PER_LINE, shader_end_line - shader_start_line,
+                            type, GL_UNSIGNED_BYTE, shader_data + shader_start_line * RETURNS_PER_LINE * channels);
+        shader_start_line = -1;
+
+        float scale = 512;
+        glBegin(GL_QUADS);
+        glTexCoord2f(-1, -1);  glVertex2f(-scale, -scale);
+        glTexCoord2f( 1, -1);  glVertex2f( scale, -scale);
+        glTexCoord2f( 1,  1);  glVertex2f( scale,  scale);
+        glTexCoord2f(-1,  1);  glVertex2f(-scale,  scale);
+        glEnd();
+
+        UseProgram(0);
+        if (settings.verbose >= 2) {
+            wxLogMessage(wxT("BR24radar_pi: used shader"));
+        }
+        return;
+    }
+
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
     glEnable(GL_BLEND);
@@ -1846,6 +2015,7 @@ void br24radar_pi::DrawRadarImage()
     }
     glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
     glDisableClientState(GL_COLOR_ARRAY);
+
 }        // end of DrawRadarImage
 
 
@@ -1858,7 +2028,28 @@ void br24radar_pi::PrepareRadarImage(int angle)
     //    UINT32 skipped = 0;
     //    wxLongLong max_age = 0; // Age in millis
 
-    GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
+    if (settings.useShader) {
+        if(!can_use_shader) // buffers not yet allocated for us
+            return;
+        
+        if (shader_start_line == -1) {
+            shader_start_line = angle;
+        }
+        shader_end_line = angle;
+
+        // zero out texture data
+        if(settings.display_option)
+            memset(shader_data + 4*angle*RETURNS_PER_LINE, 0, 4*RETURNS_PER_LINE);
+        else
+            memset(shader_data + angle*RETURNS_PER_LINE, 0, RETURNS_PER_LINE);
+    }
+
+    GLubyte alpha;
+
+    if (blackout[settings.selectRadarB])
+        alpha = 255;
+    else
+        alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
 
     vertices_index[angle] = 0;
     colors_index[angle] = 0;
@@ -1939,8 +2130,21 @@ void br24radar_pi::PrepareRadarImage(int angle)
                 break;
             }
 
-            draw_blob_gl_i(angle, r_begin, r_end, red, green, blue, alpha);
-            drawn_blobs++;
+            if (settings.useShader) {
+                if(settings.display_option) {
+                    unsigned char *d = shader_data + (angle*RETURNS_PER_LINE + r_begin)*4;
+                    for(int j=r_begin; j<r_end; j++) {
+                        for(int k=0; k<4; k++)
+                            d[0] = red, d[1] = green, d[2] = blue, d[3] = alpha;
+                        d+=4;
+                    }
+                } else
+                    memset(shader_data + angle*RETURNS_PER_LINE + r_begin, ((int)red*alpha)>>8, r_end - r_begin);
+            } else {
+                draw_blob_gl_i(angle, r_begin, r_end, red, green, blue, alpha);
+                drawn_blobs++;
+            }
+
             previous_color = actual_color;
             if (actual_color != BLOB_NONE) {            // change of color, start new blob
                 r_begin = (double)radius;
@@ -1952,7 +2156,6 @@ void br24radar_pi::PrepareRadarImage(int angle)
         }
     }   // end of loop over radius
 }        // end of PrepareRadarImage
-
 
 
 void br24radar_pi::Guard(int max_range, int AB)
@@ -2205,6 +2408,7 @@ bool br24radar_pi::LoadConfig(void)
         br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
 
         pConf->Read(wxT("PassHeadingToOCPN"), &settings.passHeadingToOCPN, 0);
+        pConf->Read(wxT("UseShader"), &settings.useShader, true);
         pConf->Read(wxT("selectRadarB"), &settings.selectRadarB, 0);
     /*    if (settings.emulator_on) {
             settings.selectRadarB = 0;
@@ -2280,6 +2484,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
         pConf->Write(wxT("Refreshrate"), settings.refreshrate);
         pConf->Write(wxT("PassHeadingToOCPN"), settings.passHeadingToOCPN);
+        pConf->Write(wxT("UseShader"), settings.useShader);
         pConf->Write(wxT("selectRadarB"), settings.selectRadarB);
         pConf->Write(wxT("ShowRadar"), settings.showRadar);
         pConf->Write(wxT("RadarAlertAudioFile"), settings.alert_audio_file);
@@ -3239,7 +3444,7 @@ void *RadarDataReceiveThread::Entry(void)
             if (pPlugIn->m_pMessageBox) {
                 wxString ip;
                 ip << _("emulator");
-                pPlugIn->m_pMessageBox->SetRadarIPAddress(ip);
+//                pPlugIn->m_pMessageBox->SetRadarIPAddress(ip);
             }
         }
         else {
@@ -3310,6 +3515,8 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     br_data_watchdog = now;
 
     // wxCriticalSectionLocker locker(br_scanLock);
+
+    bool need_history = pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.selectRadarB][2];
 
     static unsigned int i_display = 0;  // used in radar reive thread for display operation
     static int next_scan_number[2] = { -1, -1 };
@@ -3419,12 +3626,14 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         UINT8 *dest_data1 = pPlugIn->m_scan_line[AB][angle_raw].data;
         memcpy(dest_data1, line->data, RETURNS_PER_LINE);
 
-        // now add this line to the history
-        UINT8 *hist_data = pPlugIn->m_scan_line[AB][angle_raw].history;
-        for (int i = 0; i < RETURNS_PER_LINE - 1; i++) {
-            hist_data[i] = hist_data[i] << 1;     // shift left history byte 1 bit
-            if (dest_data1[i] > displaysetting_threshold[pPlugIn->settings.display_option]) {
-                hist_data[i] = hist_data[i] | 1;    // and add 1 if above threshold
+        if (need_history) {
+            // now add this line to the history
+            UINT8 *hist_data = pPlugIn->m_scan_line[AB][angle_raw].history;
+            for (int i = 0; i < RETURNS_PER_LINE - 1; i++) {
+                hist_data[i] = hist_data[i] << 1;     // shift left history byte 1 bit
+                if (dest_data1[i] > displaysetting_threshold[pPlugIn->settings.display_option]) {
+                    hist_data[i] = hist_data[i] | 1;    // and add 1 if above threshold
+                }
             }
         }
 
@@ -3461,7 +3670,9 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             if (i_display >= br_refresh_rate) {   //    display every "refreshrate time"
                 if (br_refresh_rate != 10) { // for 10 no refresh at all
                     br_refresh_busy_or_queued = true;   // no further calls until br_refresh_busy_or_queued has been cleared by RenderGLOverlay
-                    GetOCPNCanvasWindow()->Refresh(true);
+                    // Very important to pass "false" to refresh for high refresh rate
+                    // radar so that opencpn doesn't invalidate the cached chart image
+                    GetOCPNCanvasWindow()->Refresh(false);
                     if (pPlugIn->settings.verbose >= 4) {
                         wxLogMessage(wxT("BR24radar_pi:  refresh issued"));
                     }

@@ -6,6 +6,7 @@
  *           Dave Cowell
  *           Kees Verruijt
  *           Douwe Fokkema
+ *           Sean D'Epagnier
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -33,7 +34,7 @@
 
 #include <stdint.h>
 #include "wx/wxprec.h"
-#include <wx/glcanvas.h>
+//#include <wx/glcanvas.h>
 
 #ifndef  WX_PRECOMP
 #include "wx/wx.h"
@@ -276,6 +277,7 @@ struct pi_control_settings {
     int      selectRadarB;
     int      showRadar;
     bool     emulator_on;
+    bool     useShader;
     wxString alert_audio_file;
 };
 
@@ -633,9 +635,9 @@ private:
     void OnSelectSoundClick(wxCommandEvent& event);
     void OnTestSoundClick(wxCommandEvent& event);
     void OnPassHeadingClick(wxCommandEvent& event);
+    void OnUseShaderClick(wxCommandEvent& event);
     void OnEnableDualRadarClick(wxCommandEvent& event);
     void OnEmulatorClick(wxCommandEvent& event);
-
 
     wxWindow          *pParent;
     br24radar_pi      *pPlugIn;
@@ -648,6 +650,7 @@ private:
     wxSlider          *pIntervalSlider;
     wxTextCtrl        *pText_Heading_Correction_Value;
     wxCheckBox        *cbPassHeading;
+    wxCheckBox        *cbUseShader;
     wxCheckBox        *cbEnableDualRadar;
     wxCheckBox        *cbEmulator;
 };
