@@ -10,6 +10,7 @@
 extern "C" {
 #endif
 
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,30 +18,25 @@ extern "C" {
 
 #include "shaderutil.h"
 
-PFNGLCREATESHADERPROC CreateShader = NULL;
-PFNGLDELETESHADERPROC DeleteShader = NULL;
-PFNGLSHADERSOURCEPROC ShaderSource = NULL;
-PFNGLGETSHADERIVPROC GetShaderiv = NULL;
-PFNGLGETSHADERINFOLOGPROC GetShaderInfoLog = NULL;
-PFNGLCREATEPROGRAMPROC CreateProgram = NULL;
-PFNGLDELETEPROGRAMPROC DeleteProgram = NULL;
-PFNGLATTACHSHADERPROC AttachShader = NULL;
-PFNGLLINKPROGRAMPROC LinkProgram = NULL;
-PFNGLUSEPROGRAMPROC UseProgram = NULL;
-PFNGLGETPROGRAMIVPROC GetProgramiv = NULL;
-PFNGLGETPROGRAMINFOLOGPROC GetProgramInfoLog = NULL;
-PFNGLVALIDATEPROGRAMPROC ValidateProgram = NULL;
-PFNGLUNIFORM1IPROC Uniform1i = NULL;
-PFNGLUNIFORM1FVPROC Uniform1fv = NULL;
-PFNGLUNIFORM2FVPROC Uniform2fv = NULL;
-PFNGLUNIFORM3FVPROC Uniform3fv = NULL;
-PFNGLUNIFORM4FVPROC Uniform4fv = NULL;
-PFNGLUNIFORMMATRIX4FVPROC UniformMatrix4fv = NULL;
-PFNGLGETACTIVEATTRIBPROC GetActiveAttrib = NULL;
-PFNGLGETATTRIBLOCATIONPROC GetAttribLocation = NULL;
-PFNGLGETUNIFORMLOCATIONPROC GetUniformLocation = NULL;
-PFNGLGETACTIVEUNIFORMPROC GetActiveUniform = NULL;
-PFNGLCOMPILESHADERPROC CompileShader = NULL;
+#if defined(WIN32)
+# define SET_FUNCTION_POINTER(name) wglGetProcAddress(name)
+typedef PROC FunctionPointer;
+#elif defined(__WXOSX__)
+# include <dlfcn.h>
+# define SET_FUNCTION_POINTER(name) dlsym(RTLD_DEFAULT, name)
+typedef void * (*FunctionPointer)(void);
+#else
+# include <GL/glx.h>
+# define SET_FUNCTION_POINTER(name) glXGetProcAddress((const GLubyte *) name)
+typedef __GLXextFuncPtr FunctionPointer;
+#endif
+
+
+#define SHADER_FUNCTION_LIST(proc, name) \
+          proc name;
+#include "shaderutil.h"
+#undef SHADER_FUNCTION_LIST
+
 
 #if 0
 static void GLAPIENTRY
@@ -50,45 +46,17 @@ fake_ValidateProgram(GLuint prog)
 }
 #endif
 
-#if defined(WIN32)
-# define systemGetProcAddress(ADDR) wglGetProcAddress(ADDR)
-#elif defined(__WXOSX__)
-# include <dlfcn.h>
-# define systemGetProcAddress(ADDR) dlsym( RTLD_DEFAULT, ADDR)
-#else
-# include <GL/glx.h>
-# define systemGetProcAddress(ADDR) glXGetProcAddress((const GLubyte*)ADDR)
-#endif
-
 GLboolean
 ShadersSupported(void)
 {
-    CreateShader = systemGetProcAddress("glCreateShader");
-    DeleteShader = systemGetProcAddress("glDeleteShader");
-    ShaderSource = systemGetProcAddress("glShaderSource");
-    GetShaderiv = systemGetProcAddress("glGetShaderiv");
-    GetShaderInfoLog = systemGetProcAddress("glGetShaderInfoLog");
-    CreateProgram = systemGetProcAddress("glCreateProgram");
-    DeleteProgram = systemGetProcAddress("glDeleteProgram");
-    AttachShader = systemGetProcAddress("glAttachShader");
-    LinkProgram = systemGetProcAddress("glLinkProgram");
-    UseProgram = systemGetProcAddress("glUseProgram");
-    GetProgramiv = systemGetProcAddress("glGetProgramiv");
-    GetProgramInfoLog = systemGetProcAddress("glGetProgramInfoLog");
-    ValidateProgram =  systemGetProcAddress("glValidateProgram");
-    Uniform1i = systemGetProcAddress("glUniform1i");
-    Uniform1fv = systemGetProcAddress("glUniform1fv");
-    Uniform2fv = systemGetProcAddress("glUniform2fv");
-    Uniform3fv = systemGetProcAddress("glUniform3fv");
-    Uniform4fv = systemGetProcAddress("glUniform4fv");
-    UniformMatrix4fv = systemGetProcAddress("glUniformMatrix4fv");
-    GetActiveAttrib = systemGetProcAddress("glGetActiveAttrib");
-    GetAttribLocation = systemGetProcAddress("glGetAttribLocation");
-    GetUniformLocation = systemGetProcAddress("glGetUniformLocation");
-    GetActiveUniform = systemGetProcAddress("glGetActiveUniform");
-    CompileShader = systemGetProcAddress("glCompileShader");
+    GLboolean ok = 1;
 
-    return UseProgram != 0;
+#define SHADER_FUNCTION_LIST(proc, name) \
+    { union { proc f; FunctionPointer p; } u; u.p = SET_FUNCTION_POINTER("gl" #name); if (!u.p) ok = 0; name = u.f; }
+#include "shaderutil.h"
+#undef SHADER_FUNCTION_LIST
+
+    return ok;
 }
 
 GLuint
