@@ -1707,9 +1707,9 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     // but if we are scrolling or otherwise it can be MUCH more often!
 
     // Determine if we can use shaders for rendering
-    static bool last_color;
-    bool color = settings.display_option;
-    if(settings.useShader && (!can_use_shader || color != last_color)) {
+    static bool last_color = false;
+    bool color = settings.display_option > 0;
+    if(settings.useShader && (!can_use_shader || (color != last_color))) {
         if (ShadersSupported()) {
             last_color = color;
 
@@ -2031,7 +2031,7 @@ void br24radar_pi::PrepareRadarImage(int angle)
     if (settings.useShader) {
         if(!can_use_shader) // buffers not yet allocated for us
             return;
-        
+
         if (shader_start_line == -1) {
             shader_start_line = angle;
         }
@@ -3516,7 +3516,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
     // wxCriticalSectionLocker locker(br_scanLock);
 
-    bool need_history = pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.selectRadarB][2];
+    bool need_history = pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.selectRadarB][2] != 0;
 
     static unsigned int i_display = 0;  // used in radar reive thread for display operation
     static int next_scan_number[2] = { -1, -1 };
