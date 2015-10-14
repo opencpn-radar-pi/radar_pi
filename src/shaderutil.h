@@ -20,7 +20,7 @@ extern "C" {
 # include <windows.h>
 # include "GL/gl.h"
 # include "GL/glu.h"
-# include "GL/glext.h"
+# include "opengl/GL/glext.h"
 #endif
 
 struct uniform_info
