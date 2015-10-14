@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 #ifdef WIN32
-# include <windows.h>
+# define GL_GLEXT_LEGACY
 # include "GL/gl.h"
 # include "GL/glu.h"
 # include "opengl/GL/glext.h"
