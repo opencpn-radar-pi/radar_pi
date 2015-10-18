@@ -147,6 +147,21 @@ using namespace std;
 #define displaysetting2_threshold_blue (20)  // should be < 100
 
 enum {
+    // process ID's
+    ID_OK,
+    ID_RANGE_UNITS,
+    ID_OVERLAYDISPLAYOPTION,
+    ID_DISPLAYTYPE,
+    ID_HEADINGSLIDER,
+    ID_SELECT_SOUND,
+    ID_TEST_SOUND,
+    ID_PASS_HEADING,
+    ID_USE_SHADER,
+    ID_SELECT_AB,
+    ID_EMULATOR
+};
+
+enum {
     BM_ID_RED,
     BM_ID_RED_SLAVE,
     BM_ID_GREEN,

@@ -33,6 +33,7 @@ SET(SRC_br24radar
             src/shaderutil.cpp
             src/br24radarcontrol.cpp
             src/br24messagebox.cpp
+            src/br24displayoptions.cpp
             src/GuardZoneControls.cpp
             src/GuardZoneBogey.cpp
             src/Idle_Dialog.cpp
