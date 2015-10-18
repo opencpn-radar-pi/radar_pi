@@ -59,7 +59,17 @@
 //#include "../../opencpn_sf/opencpn/include/ocpn_plugin.h"
 #endif
 
+#ifdef __WXOSX__
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Woverloaded-virtual"
+#endif
+
 #include "ocpn_plugin.h"
+
+#ifdef __WXOSX__
+# pragma clang diagnostic pop
+#endif
+
 #include "nmea0183/nmea0183.h"
 
 
