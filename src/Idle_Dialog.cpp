@@ -28,24 +28,6 @@
  ***************************************************************************
  */
 
-#include "wx/wxprec.h"
-
-#ifndef  WX_PRECOMP
-#include "wx/wx.h"
-#endif                          //precompiled headers
-
-#include <wx/socket.h>
-#include "wx/apptrait.h"
-#include <wx/glcanvas.h>
-#include "wx/sckaddr.h"
-#include "wx/datetime.h"
-#include <wx/fileconf.h>
-
-#include <math.h>
-#include <fstream>
-
-using namespace std;
-
 #include "br24radar_pi.h"
 
 enum {
@@ -142,7 +124,7 @@ void Idle_Dialog::SetIdleTimes(int IdleMode, int IdleTime, int IdleTimeLeft)
 {
     wxString Timelabel, t, Timeleftlabel, t2;
     if (IdleMode == 1) Timelabel_1 = _("Now Idle for");
-    if (IdleMode == 2) Timelabel_1 = _("Now Transmit for");    
+    if (IdleMode == 2) Timelabel_1 = _("Now Transmit for");
     t.Printf(_T("%d"), IdleTime);
     t2.Printf(_T("%d"), IdleTimeLeft + 1);
     Timelabel << Timelabel_1 << _T(" ") << t << _T(" ") << Timelabel_2;
@@ -167,10 +149,10 @@ void Idle_Dialog::OnIdStopIdleClick(wxCommandEvent &event)
 
 void Idle_Dialog::OnMove(wxMoveEvent& event)
 {
-    //    Record the dialog position if not deafault   
+    //    Record the dialog position if not deafault
     wxPoint p =  GetPosition();
     if (p.x > 0) pPlugIn->SetTimedTrIdleDialogX(p.x);
     if (p.y > 0) pPlugIn->SetTimedTrIdleDialogY(p.y);
-    
+
     event.Skip();
 }

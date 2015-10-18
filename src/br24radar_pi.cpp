@@ -53,48 +53,7 @@
  */
 
 
-#ifdef _WINDOWS
-# include <WinSock2.h>
-# include <ws2tcpip.h>
-# pragma comment (lib, "Ws2_32.lib")
-#endif
-
-#include "wx/wxprec.h"
-
-#ifndef  WX_PRECOMP
-#include "wx/wx.h"
-#endif                          //precompiled headers
-
-#include <wx/socket.h>
-#include "wx/apptrait.h"
-//#include <wx/glcanvas.h>
-#include "wx/sckaddr.h"
-#include "wx/datetime.h"
-#include <wx/fileconf.h>
-#include <fstream>
-
-using namespace std;
-
-#ifdef __WXGTK__
-# include <netinet/in.h>
-# include <sys/ioctl.h>
-#endif
-
-#ifdef __WXOSX__
-# include <sys/types.h>
-# include <sys/socket.h>
-# include <netdb.h>
-#endif
-
-#ifdef __WXMSW__
-# include "GL/glu.h"
-#endif
-
-// for shaders
-#include "shaderutil.h"
-
 #include "br24radar_pi.h"
-//#include "ocpndc.h"
 
 
 // A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration)

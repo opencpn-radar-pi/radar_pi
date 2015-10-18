@@ -28,34 +28,6 @@
  ***************************************************************************
  */
 
-#include "wx/wxprec.h"
-
-#ifndef  WX_PRECOMP
-#include "wx/wx.h"
-#endif                          //precompiled headers
-
-#include <wx/socket.h>
-#include "wx/apptrait.h"
-#include <wx/glcanvas.h>
-#include "wx/sckaddr.h"
-#include "wx/datetime.h"
-#include <wx/fileconf.h>
-//#include "chart1.h"
-
-#include <math.h>
-#include <fstream>
-
-using namespace std;
-
-#ifdef __WXGTK__
-#include <netinet/in.h>
-#include <sys/ioctl.h>
-#endif
-
-#ifdef __WXMSW__
-#include "GL/glu.h"
-#endif
-
 #include "br24radar_pi.h"
 
 enum {                                      // process ID's

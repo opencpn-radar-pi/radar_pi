@@ -28,30 +28,6 @@
  ***************************************************************************
  */
 
-#include "wx/wxprec.h"
-
-#ifndef  WX_PRECOMP
-#include "wx/wx.h"
-#endif                          //precompiled headers
-
-#include <wx/socket.h>
-#include "wx/apptrait.h"
-//#include <wx/glcanvas.h>
-#include "wx/datetime.h"
-//#include <wx/fileconf.h>
-//#include <fstream>
-//#include "chart1.h"
-using namespace std;
-
-#ifdef __WXGTK__
-#include <netinet/in.h>
-#include <sys/ioctl.h>
-#endif
-
-#ifdef __WXMSW__
-#include "GL/glu.h"
-#endif
-
 #include "br24radar_pi.h"
 
 

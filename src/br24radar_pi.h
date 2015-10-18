@@ -32,14 +32,41 @@
 #ifndef _BR24RADARPI_H_
 #define _BR24RADARPI_H_
 
-#include <stdint.h>
-#include "wx/wxprec.h"
-//#include <wx/glcanvas.h>
+#ifdef _WINDOWS
+# include <WinSock2.h>
+# include <ws2tcpip.h>
+# pragma comment (lib, "Ws2_32.lib")
+#endif
 
+#include "wx/wxprec.h"
 #ifndef  WX_PRECOMP
 #include "wx/wx.h"
-#endif //precompiled headers
+#endif
 
+#include <wx/socket.h>
+#include "wx/apptrait.h"
+//#include <wx/glcanvas.h>
+#include "wx/sckaddr.h"
+#include "wx/datetime.h"
+#include <wx/fileconf.h>
+#include <fstream>
+#include <stdint.h>
+
+using namespace std;
+
+#ifdef __WXGTK__
+# include <netinet/in.h>
+# include <sys/ioctl.h>
+#endif
+
+#ifdef __WXOSX__
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <netdb.h>
+#endif
+
+// OpenGL includes resolved in shaderutil.h
+#include "shaderutil.h"
 #include "jsonreader.h"
 
 #include "version.h"
@@ -49,14 +76,6 @@
 
 #ifndef PI
 #define PI        3.1415926535897931160E0      /* pi */
-#endif
-
-#ifdef __WXGTK__
-//#include "/home/dsr/Projects/opencpn_sf/opencpn/include/ocpn_plugin.h"
-#endif
-
-#ifdef __WXMSW__
-//#include "../../opencpn_sf/opencpn/include/ocpn_plugin.h"
 #endif
 
 #ifdef __WXOSX__
