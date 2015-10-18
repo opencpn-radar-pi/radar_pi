@@ -690,7 +690,7 @@ void BR24ControlsDialog::CreateControls()
     bBearingAlignment->maxValue = 180;
 
     // The ANTENNA HEIGHT button
-    bAntennaHeight = new RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Antenna height"), pPlugIn,
+    bAntennaHeight = new RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Antenna height (m)"), pPlugIn,
         CT_ANTENNA_HEIGHT, false, pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].antenna_height.button);
     installationBox->Add(bAntennaHeight, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bAntennaHeight->minValue = 0;
