@@ -47,11 +47,8 @@ struct attrib_info
 extern GLboolean
 ShadersSupported(void);
 
-extern GLuint
-CompileShaderText(GLenum shaderType, const char *text);
-
-extern GLuint
-CompileShaderFile(GLenum shaderType, const char *filename);
+extern bool
+CompileShaderText(GLuint * shader, GLenum shaderType, const char *text);
 
 extern GLuint
 LinkShaders(GLuint vertShader, GLuint fragShader);
@@ -74,18 +71,6 @@ GetShaderLinkTime(void);
 
 extern void
 SetUniformValues(GLuint program, struct uniform_info uniforms[]);
-
-extern GLuint
-GetUniforms(GLuint program, struct uniform_info uniforms[]);
-
-extern void
-PrintUniforms(const struct uniform_info uniforms[]);
-
-extern GLuint
-GetAttribs(GLuint program, struct attrib_info attribs[]);
-
-extern void
-PrintAttribs(const struct attrib_info attribs[]);
 
 /* These pointers are only valid after calling ShadersSupported.
  */

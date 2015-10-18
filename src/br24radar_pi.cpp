@@ -247,6 +247,8 @@ static sockaddr_in * br_mcast_addr = 0; // One of the threads finds out where th
 static sockaddr_in * br_radar_addr = 0; // One of the threads finds out where the radar lives and writes its IP here
 // static wxCriticalSection br_scanLock;
 
+static void DeleteShaders( void );
+
 // the class factories, used to create and destroy instances of the PlugIn
 
 extern "C" DECL_EXP opencpn_plugin* create_pi(void *ppimgr)
@@ -824,6 +826,8 @@ bool br24radar_pi::DeInit(void)
     OnBR24ControlDialogClose();
     OnBR24MessageBoxClose();
 
+    DeleteShaders();
+
     return true;
 }
 
@@ -1089,7 +1093,7 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                              wxCommandEventHandler(BR24DisplayOptionsDialog::OnPassHeadingClick), NULL, this);
 
-    cbUseShader = new wxCheckBox(this, ID_USE_SHADER, _("Use gpu shader for rendering (nicer picture and less cpu)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    cbUseShader = new wxCheckBox(this, ID_USE_SHADER, _("Use GPU shader for rendering"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     itemStaticBoxSizerOptions->Add(cbUseShader, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
     cbUseShader->SetValue(pPlugIn->settings.useShader);
     cbUseShader->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
@@ -1697,6 +1701,68 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
     return true;
 }
 
+static bool haveShaders = false;
+
+static void DeleteShaders( void )
+{
+    if (haveShaders) {
+        haveShaders = false;
+        DeleteProgram(programShader); // Reverse order of creation, maybe won't matter but it seems cleaner
+        DeleteShader(vertShader);
+        DeleteShader(fragShader);
+    }
+
+    if (shader_data) {
+        free(shader_data);
+    }
+}
+
+static bool SetupShaders( int colorOption )
+{
+    static int lastColorOption = -1;
+
+    if (haveShaders && lastColorOption == colorOption) {
+        return true;
+    }
+
+    if (!CompileShader && !ShadersSupported()) {
+        wxLogMessage(wxT("BR24radar_pi: the OpenGL system of this computer does not support shader programs"));
+        return false;
+    }
+
+    lastColorOption = colorOption;
+
+    if (!CompileShaderText(&vertShader, GL_VERTEX_SHADER, VertShaderText)
+     || !CompileShaderText(&fragShader, GL_FRAGMENT_SHADER, colorOption > 0 ? FragShaderColorText : FragShaderText)) {
+        return false;
+    }
+
+    programShader = LinkShaders(vertShader, fragShader);
+
+    static int channels = 4; // for now always allocate for 4 colors as it's simpler to avoid crash in other thread
+    if (!shader_data) {
+        shader_data = (unsigned char *) malloc(channels * LINES_PER_ROTATION * RETURNS_PER_LINE);
+    }
+    memset(shader_data, 0, channels * LINES_PER_ROTATION * RETURNS_PER_LINE);
+
+    if (!shader_tex) {
+        glGenTextures(1, &shader_tex);
+    }
+    glBindTexture(GL_TEXTURE_2D, shader_tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, colorOption > 0 ? GL_RGBA : GL_LUMINANCE,
+                 RETURNS_PER_LINE, LINES_PER_ROTATION, 0,
+                 colorOption > 0 ? GL_RGBA : GL_LUMINANCE, GL_UNSIGNED_BYTE, shader_data);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    wxLogMessage(wxT("BR24radar_pi: Fast OpenGL shader for %d colours loaded"), (colorOption > 0) ? 4 : 1);
+    shader_start_line = 0;
+    shader_end_line = 0;
+
+    haveShaders = true;
+    return true;
+}
+
 // Called by Plugin Manager on main system process cycle
 
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
@@ -1707,42 +1773,11 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     // but if we are scrolling or otherwise it can be MUCH more often!
 
     // Determine if we can use shaders for rendering
-    static bool last_color = false;
-    bool color = settings.display_option > 0;
-    if(settings.useShader && (!can_use_shader || (color != last_color))) {
-        if (ShadersSupported()) {
-            last_color = color;
-
-            DeleteShader(vertShader);
-            DeleteShader(fragShader);
-            DeleteProgram(programShader);
-
-            vertShader = CompileShaderText(GL_VERTEX_SHADER, VertShaderText);
-            fragShader = CompileShaderText(GL_FRAGMENT_SHADER, color ? FragShaderColorText : FragShaderText);
-            programShader = LinkShaders(vertShader, fragShader);
-
-            int channels = 4; // for now always allocate for 4 colors as it's simpler to avoid crash in other thread
-            if(!shader_data)
-                shader_data = (unsigned char*)malloc(channels*LINES_PER_ROTATION*RETURNS_PER_LINE);
-
-            memset(shader_data, 0, channels*LINES_PER_ROTATION*RETURNS_PER_LINE);
-
-            if(!shader_tex)
-                glGenTextures(1, &shader_tex);
-            glBindTexture(GL_TEXTURE_2D, shader_tex);
-            glTexImage2D(GL_TEXTURE_2D, 0, color ? GL_RGBA : GL_LUMINANCE,
-                         RETURNS_PER_LINE, LINES_PER_ROTATION, 0,
-                         color ? GL_RGBA : GL_LUMINANCE, GL_UNSIGNED_BYTE, shader_data);
-            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-            shader_start_line = 0;
-            shader_end_line = 0;
-
+    if (settings.useShader) {
+        if (SetupShaders(settings.display_option))
+        {
             can_use_shader = true;
-            wxLogMessage(wxT("BR24radar_pi: OpenGL supports shader programs"));
         } else {
-            wxLogMessage(wxT("BR24radar_pi: OpenGL does not support shader programs"));
             settings.useShader = false;
         }
     }
@@ -1966,23 +2001,52 @@ void br24radar_pi::DrawRadarImage()
 
         glBindTexture(GL_TEXTURE_2D, shader_tex);
 
-        int type, channels;
+        int format, channels;
         if(settings.display_option)
-            type = GL_RGBA, channels = 4;
+            format = GL_RGBA, channels = 4;
         else
-            type = GL_LUMINANCE, channels = 1;
+            format = GL_LUMINANCE, channels = 1;
 
-        // if the new data wraps past the end of the texture
-        if(shader_end_line < shader_start_line) {
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, RETURNS_PER_LINE, shader_end_line,
-                            type, GL_UNSIGNED_BYTE, shader_data);
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, shader_start_line, RETURNS_PER_LINE, LINES_PER_ROTATION - shader_start_line,
-                            type, GL_UNSIGNED_BYTE, shader_data + shader_start_line * RETURNS_PER_LINE * channels);
-        } else
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, shader_start_line, RETURNS_PER_LINE, shader_end_line - shader_start_line,
-                            type, GL_UNSIGNED_BYTE, shader_data + shader_start_line * RETURNS_PER_LINE * channels);
+        // Set texture to the returned radar returns
+        if (shader_end_line < shader_start_line) {
+            // if the new data wraps past the end of the texture
+            // tell it the two parts separately
+            glTexSubImage2D( /* target =   */ GL_TEXTURE_2D
+                           , /* level =    */ 0
+                           , /* x-offset = */ 0
+                           , /* y-offset = */ 0
+                           , /* width =    */ RETURNS_PER_LINE
+                           , /* height =   */ shader_end_line
+                           , /* format =   */ format
+                           , /* type =     */ GL_UNSIGNED_BYTE
+                           , /* pixels =   */ shader_data
+                           );
+            glTexSubImage2D( /* target =   */ GL_TEXTURE_2D
+                           , /* level =    */ 0
+                           , /* x-offset = */ 0
+                           , /* y-offset = */ shader_start_line
+                           , /* width =    */ RETURNS_PER_LINE
+                           , /* height =   */ LINES_PER_ROTATION - shader_start_line
+                           , /* format =   */ format
+                           , /* type =     */ GL_UNSIGNED_BYTE
+                           , /* pixels =   */ shader_data + shader_start_line * RETURNS_PER_LINE * channels
+                           );
+        } else {
+            glTexSubImage2D( /* target =   */ GL_TEXTURE_2D
+                           , /* level =    */ 0
+                           , /* x-offset = */ 0
+                           , /* y-offset = */ shader_start_line
+                           , /* width =    */ RETURNS_PER_LINE
+                           , /* height =   */ shader_end_line - shader_start_line
+                           , /* format =   */ format
+                           , /* type =     */ GL_UNSIGNED_BYTE
+                           , /* pixels =   */ shader_data + shader_start_line * RETURNS_PER_LINE * channels
+                           );
+        }
         shader_start_line = -1;
 
+        // We tell the GPU to draw a square from (-512,-512) to (+512,+512).
+        // The shader morphs this into a circle.
         float scale = 512;
         glBegin(GL_QUADS);
         glTexCoord2f(-1, -1);  glVertex2f(-scale, -scale);
@@ -1993,7 +2057,7 @@ void br24radar_pi::DrawRadarImage()
 
         UseProgram(0);
         if (settings.verbose >= 2) {
-            wxLogMessage(wxT("BR24radar_pi: used shader"));
+            wxLogMessage(wxT("BR24radar_pi: used shader %d"), programShader);
         }
         return;
     }
@@ -2408,7 +2472,7 @@ bool br24radar_pi::LoadConfig(void)
         br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
 
         pConf->Read(wxT("PassHeadingToOCPN"), &settings.passHeadingToOCPN, 0);
-        pConf->Read(wxT("UseShader"), &settings.useShader, true);
+        pConf->Read(wxT("UseShader"), &settings.useShader, false);
         pConf->Read(wxT("selectRadarB"), &settings.selectRadarB, 0);
     /*    if (settings.emulator_on) {
             settings.selectRadarB = 0;
