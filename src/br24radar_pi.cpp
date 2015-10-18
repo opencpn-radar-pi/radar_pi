@@ -780,51 +780,52 @@ int br24radar_pi::Init(void)
 
 bool br24radar_pi::DeInit(void)
 {
+    OnBR24ControlDialogClose();
+    OnBR24MessageBoxClose();
     SaveConfig();
+
     m_quit = true; // Signal quit to any of the threads. Takes up to 1s.
+
     if (m_dataReceiveThreadA) {
         m_dataReceiveThreadA->Wait();
         delete m_dataReceiveThreadA;
+        wxLogMessage(wxT("BR24radar_pi: dataReceiveThreadA stopped"));
     }
 
     if (m_dataReceiveThreadB) {
         m_dataReceiveThreadB->Wait();
         delete m_dataReceiveThreadB;
-        wxLogMessage(wxT("BR24radar_pi: m_dataReceiveThreadA stopped in DeInit"));
+        wxLogMessage(wxT("BR24radar_pi: dataReceiveThreadB stopped"));
     }
 
     if (m_commandReceiveThreadA) {
         m_commandReceiveThreadA->Wait();
         delete m_commandReceiveThreadA;
-        wxLogMessage(wxT("BR24radar_pi: m_dataReceiveThreadB stopped in DeInit"));
+        wxLogMessage(wxT("BR24radar_pi: commandReceiveThreadA stopped"));
     }
 
     if (m_commandReceiveThreadB) {
         m_commandReceiveThreadB->Wait();
         delete m_commandReceiveThreadB;
-        wxLogMessage(wxT("BR24radar_pi: m_commandReceiveThreadA stopped in DeInit"));
+        wxLogMessage(wxT("BR24radar_pi: commandReceiveThreadB stopped"));
     }
 
     if (m_reportReceiveThreadA) {
         m_reportReceiveThreadA->Wait();
         delete m_reportReceiveThreadA;
-        wxLogMessage(wxT("BR24radar_pi: m_commandReceiveThreadB stopped in DeInit"));
+        wxLogMessage(wxT("BR24radar_pi: reportReceiveThreadA stopped"));
     }
 
     if (m_reportReceiveThreadB) {
         m_reportReceiveThreadB->Wait();
         delete m_reportReceiveThreadB;
-        wxLogMessage(wxT("BR24radar_pi: m_reportReceiveThreadA stopped in DeInit"));
+        wxLogMessage(wxT("BR24radar_pi: reportReceiveThreadB stopped"));
     }
 
     if (m_radar_socket != INVALID_SOCKET) {
         closesocket(m_radar_socket);
-        wxLogMessage(wxT("BR24radar_pi: m_reportReceiveThreadB stopped in DeInit"));
+        wxLogMessage(wxT("BR24radar_pi: socket closed"));
     }
-
-    // I think we need to destroy any windows here
-    OnBR24ControlDialogClose();
-    OnBR24MessageBoxClose();
 
     DeleteShaders();
 
