@@ -37,6 +37,7 @@ SET(SRC_br24radar
             src/GuardZoneControls.cpp
             src/GuardZoneBogey.cpp
             src/Idle_Dialog.cpp
+            src/RadarWindow.cpp
 )
 SET(SRC_NMEA0183
         src/nmea0183/nmea0183.cpp
@@ -63,6 +64,10 @@ SET(SRC_JSON
 INCLUDE_DIRECTORIES(src/nmea0183)
 INCLUDE_DIRECTORIES(src/wxJSON)
 INCLUDE_DIRECTORIES(src)
+
+IF(WIN32)
+  SET(wxWidgets_USE_LIBS ${wxWidgets_USE_LIBS} gl)
+ENDIF(WIN32)
 
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_br24radar} ${SRC_NMEA0183} ${SRC_JSON})
 

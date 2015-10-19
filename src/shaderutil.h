@@ -22,6 +22,7 @@ extern "C" {
 # include "GL/gl.h"
 # include "GL/glu.h"
 # include "opengl/GL/glext.h"
+# include <wx/glcanvas.h>
 #endif
 
 struct uniform_info

@@ -45,10 +45,9 @@
 
 #include <wx/socket.h>
 #include "wx/apptrait.h"
-//#include <wx/glcanvas.h>
 #include "wx/sckaddr.h"
 #include "wx/datetime.h"
-#include <wx/fileconf.h>
+#include "wx/fileconf.h"
 #include <fstream>
 #include <stdint.h>
 
@@ -376,6 +375,7 @@ class GuardZoneDialog;
 class GuardZoneBogey;
 class BR24DisplayOptionsDialog;
 class Idle_Dialog;
+class RadarWindow;
 
 //ofstream outfile("C:/ProgramData/opencpn/BR24DataDump.dat",ofstream::binary);
 
@@ -474,6 +474,10 @@ public:
     long GetOptimalRangeMeters();
     void SetRangeMeters(long range);
 
+    void DrawRadarImage();
+    void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, int AB);
+    void RefreshRadarWindow();
+
     pi_control_settings settings;
     radar_control_setting radar_setting[2];
 
@@ -488,7 +492,8 @@ public:
     GuardZoneDialog          *m_pGuardZoneDialog;
     GuardZoneBogey           *m_pGuardZoneBogey;
     Idle_Dialog              *m_pIdleDialog;
-    receive_statistics          m_statistics[2];
+
+    receive_statistics        m_statistics[2];
 
 private:
     bool TransmitCmd(UINT8 * msg, int size);
@@ -501,16 +506,15 @@ private:
     void DoTick(void);
     void Select_Clutter(int req_clutter_index);
     void Select_Rejection(int req_rejection_index);
-    void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp);
     void Guard(int max_range, int AB);
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
-    void DrawRadarImage();
-    void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp, int AB);
+    void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, double rotation);
     void HandleBogeyCount(int *bogey_count);
     void draw_histogram_column(int x, int y);
 
     void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
     void ShowRadarControl(bool show = true);
+    void ShowRadarWindow(void);
 
     wxFileConfig             *m_pconfig;
     wxWindow                 *m_parent_window;
@@ -532,6 +536,10 @@ private:
 
     SOCKET                    m_radar_socket;
 
+    wxFrame                  *m_RadarFrame;
+    RadarWindow              *m_RadarWindow;
+    wxGLContext              *m_RadarContext;
+
     int                       m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
     int                       m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
 
@@ -544,6 +552,9 @@ private:
     int                       m_Guard_dialog_x, m_Guard_dialog_y ;
 
     int                       m_TimedTrIdle_dialog_x, m_TimedTrIdle_dialog_y;
+
+    int                       m_RadarWindow_sx, m_RadarWindow_sy ;
+    int                       m_RadarWindow_x, m_RadarWindow_y ;
 
     wxBitmap                 *m_ptemp_icon;
     //    wxLogWindow              *m_plogwin;
@@ -1132,5 +1143,7 @@ private:
     wxButton *m_btnStopIdle;
 
 };
+
+#include "RadarWindow.h"
 
 #endif

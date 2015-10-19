@@ -530,6 +530,8 @@ int br24radar_pi::Init(void)
 
     m_pControlDialog = NULL;
     m_pMessageBox = NULL;
+    m_RadarWindow = NULL;
+
     settings.selectRadarB = 0;   // temp setting until loadded from ini file
 
     br_scanner_state = RADAR_OFF;                 // Radar scanner is off
@@ -727,6 +729,15 @@ bool br24radar_pi::DeInit(void)
 {
     OnBR24ControlDialogClose();
     OnBR24MessageBoxClose();
+    if (m_RadarContext) {
+        delete m_RadarContext;
+    }
+    if (m_RadarFrame) {
+        m_RadarFrame->GetPosition(&m_RadarWindow_x, &m_RadarWindow_y);
+        m_RadarFrame->GetSize(&m_RadarWindow_sx, &m_RadarWindow_sy);
+        delete m_RadarFrame;
+    }
+
     SaveConfig();
 
     m_quit = true; // Signal quit to any of the threads. Takes up to 1s.
@@ -1044,6 +1055,25 @@ void br24radar_pi::UpdateDisplayParameters(void)
     RequestRefresh(GetOCPNCanvasWindow());
 }
 
+void br24radar_pi::ShowRadarWindow(void)
+{
+    if (!m_RadarWindow) {
+        wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+        m_RadarFrame = new wxFrame(0, -1,  wxT("RADAR"), wxPoint(m_RadarWindow_x, m_RadarWindow_y), wxSize(m_RadarWindow_sx, m_RadarWindow_sy));
+
+        int args[] = {WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0};
+
+        m_RadarWindow = new RadarWindow(this, m_RadarFrame, args);
+        sizer->Add(m_RadarWindow, 1, wxEXPAND);
+        m_RadarFrame->SetSizer(sizer);
+        m_RadarFrame->SetAutoLayout(true);
+
+        m_RadarContext = new wxGLContext(m_RadarWindow);
+    }
+    m_RadarFrame->Show();
+}
+
+
 //*******************************************************************************
 // ToolBar Actions
 
@@ -1074,6 +1104,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         if (settings.verbose) {
         }
         ShowRadarControl(true);
+        ShowRadarWindow();
     }
     else if (toolbar_button == GREEN) {
         if (id == 999 && settings.timed_idle != 0) { // Disable Timed Transmit
@@ -1456,6 +1487,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         }
     }
 
+
     // Always compute br_auto_range_meters, possibly needed by SendState() called from DoTick().
     double max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
     // max_distance is the length of the diagonal of the viewport. If the boat were centered, the
@@ -1565,17 +1597,40 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         v_scale_ppm = vp->pix_height / dist_y ;    // pixel height of screen div by equivalent meters
     }
 
+    if (settings.verbose >= 4) {
+        wxLogMessage(wxT("BR24radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g rotation=%g skew=%g scale=%f")
+                    , vp->clat
+                    , vp->clon
+                    , vp->view_scale_ppm
+                    , vp->rotation
+                    , vp->skew
+                    , vp->chart_scale
+                    );
+    }
+
     switch (settings.display_mode[settings.selectRadarB]) {
         case DM_CHART_OVERLAY:
         case DM_CHART_BLACKOUT:
-            RenderRadarOverlay(boat_center, v_scale_ppm, vp);
+            RenderRadarOverlay(boat_center, v_scale_ppm, rad2deg(vp->rotation + vp->skew * settings.skew_factor));
             break;
     }
+
     br_refresh_busy_or_queued = false;
     return true;
 }
 
-void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp)
+void br24radar_pi::RefreshRadarWindow()
+{
+    if (!m_RadarWindow) {
+        // ShowRadarWindow();
+    }
+
+    if (m_RadarWindow) {
+        m_RadarWindow->Refresh(false);
+    }
+}
+
+void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, double rotation)
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
     blackout[settings.selectRadarB] = settings.showRadar == 1 && br_data_seen && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
@@ -1594,23 +1649,11 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     glPushMatrix();
     glTranslated(radar_center.x, radar_center.y, 0);
 
-    if (settings.verbose >= 4) {
-        wxLogMessage(wxT("BR24radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g rotation=%g skew=%g scale=%f")
-                    , vp->clat
-                    , vp->clon
-                    , vp->view_scale_ppm
-                    , vp->rotation
-                    , vp->skew
-                    , vp->chart_scale
-                    );
-    }
-
     if(m_heading_source != HEADING_NONE && !blackout[settings.selectRadarB]) {
-        double heading = MOD_DEGREES( rad2deg(vp->rotation)        // viewport rotation
+        double heading = MOD_DEGREES( rotation                       // viewport rotation + skew (in degrees now)
                                       + 270.0                        // difference between compass and OpenGL rotation
                                       + settings.heading_correction  // fix any radome rotation fault
-                                      - vp->skew * settings.skew_factor
-            );
+                                    );
         glRotatef(heading, 0, 0, 1);
     }
 
@@ -1638,7 +1681,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
             if (settings.showRadar == RADAR_ON && metersA != 0) {
                 Guard(metersA, 0);
             }
-            if (settings.showRadar && metersB != 0) {
+            if (settings.showRadar == RADAR_ON && metersB != 0) {
                 Guard(metersB, 1);
             }
             DrawRadarImage();
@@ -1647,10 +1690,10 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
         HandleBogeyCount(bogey_count);
         // Guard Zone image and heading line for radar only
         if (settings.showRadar) {
-            double rotation = -settings.heading_correction + vp->skew * settings.skew_factor;
-            if (!blackout[settings.selectRadarB]) rotation += br_hdt;
-                glRotatef(rotation, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
-                if (blackout[settings.selectRadarB]) {    // draw heading line
+            double rotBack = -settings.heading_correction;
+            if (!blackout[settings.selectRadarB]) rotBack += br_hdt;
+            glRotatef(rotBack, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
+            if (blackout[settings.selectRadarB]) {    // draw heading line
                 glColor4ub(200, 0, 0, 50);
                 glLineWidth(1);
                 glBegin(GL_LINES);
@@ -1658,8 +1701,8 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
                 glVertex2d(br_range_meters[settings.selectRadarB] * v_scale_ppm, 0);
                 glEnd();
             }
-                if (guardZones[settings.selectRadarB][0].type != GZ_OFF || guardZones[settings.selectRadarB][1].type != GZ_OFF) {
-                    RenderGuardZone(radar_center, v_scale_ppm, vp, settings.selectRadarB);
+            if (guardZones[settings.selectRadarB][0].type != GZ_OFF || guardZones[settings.selectRadarB][1].type != GZ_OFF) {
+                RenderGuardZone(radar_center, v_scale_ppm, settings.selectRadarB);
             }
         }
     }
@@ -1984,7 +2027,7 @@ void br24radar_pi::draw_histogram_column(int x, int y)  // x=0->255 => 0->1020, 
 
 
 //****************************************************************************
-void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, PlugIn_ViewPort *vp, int AB)
+void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, int AB)
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
     glEnable(GL_BLEND);
@@ -2164,6 +2207,11 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(wxT("GuardZonePosX"), &m_GuardZoneBogey_x, 20L);
         pConf->Read(wxT("GuardZonePosY"), &m_GuardZoneBogey_y, 170L);
 
+        pConf->Read(wxT("RadarWindowSizeX"),  &m_RadarWindow_sx, 512L);
+        pConf->Read(wxT("RadarWindowSizeY"),  &m_RadarWindow_sy, 512L);
+        pConf->Read(wxT("RadarWindowPosX"),   &m_RadarWindow_x, 100L);
+        pConf->Read(wxT("RadarWindowPosY"),   &m_RadarWindow_y, 100L);
+
         pConf->Read(wxT("Zone1StBrng"), &guardZones[0][0].start_bearing, 0.0);
         pConf->Read(wxT("Zone1EndBrng"), &guardZones[0][0].end_bearing, 0.0);
         pConf->Read(wxT("Zone1OuterRng"), &guardZones[0][0].outer_range, 0);
@@ -2242,6 +2290,11 @@ bool br24radar_pi::SaveConfig(void)
 
         pConf->Write(wxT("GuardZonePosX"),   m_GuardZoneBogey_x);
         pConf->Write(wxT("GuardZonePosY"),   m_GuardZoneBogey_y);
+
+        pConf->Write(wxT("RadarWindowSizeX"),  m_RadarWindow_sx);
+        pConf->Write(wxT("RadarWindowSizeY"),  m_RadarWindow_sy);
+        pConf->Write(wxT("RadarWindowPosX"),   m_RadarWindow_x);
+        pConf->Write(wxT("RadarWindowPosY"),   m_RadarWindow_y);
 
         pConf->Write(wxT("Zone1StBrng"), guardZones[0][0].start_bearing);
         pConf->Write(wxT("Zone1EndBrng"), guardZones[0][0].end_bearing);
@@ -3415,6 +3468,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                         wxLogMessage(wxT("BR24radar_pi:  refresh issued"));
                     }
                 }
+                pPlugIn->RefreshRadarWindow();
                 i_display = 0;
             }
             i_display++;
