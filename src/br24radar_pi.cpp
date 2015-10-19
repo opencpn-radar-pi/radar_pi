@@ -177,12 +177,15 @@ static time_t      br_radar_watchdog;
 static time_t      br_data_watchdog;
 static time_t      br_var_watchdog;
 static bool blackout[2] = { false, false };         //  will force display to blackout and north up
+static int heading_correction_raw = 0;
 
 #define     SIZE_VERTICES (3072)
 static GLfloat vertices[2048][SIZE_VERTICES];
 static int colors_index[2048];
 static time_t vertices_time_stamp[2048];
 static int vertices_index[2048];
+static int angle_correction_raw = 0;  // to be used in PrepareRadarImage to rotate image
+static int angle_correction = 0;
 
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 #define     TIMER_NOT_ELAPSED(watchdog) (now < watchdog + WATCHDOG_TIMEOUT)
@@ -589,6 +592,14 @@ int br24radar_pi::Init(void)
     m_pGuardZoneDialog = 0;
     m_pGuardZoneBogey = 0;
     m_pIdleDialog = 0;
+
+    angle_correction =
+        +270.0;                        // difference between compass and OpenGL rotation
+                                       // heading correction already applied after receive
+                                      //      - vp->skew * settings.skew_factor   not yet known here
+         
+    angle_correction_raw = (angle_correction * LINES_PER_ROTATION) / 360;
+    wxLogMessage(wxT("BR24radar_pi: XXX angle correction =%d"), angle_correction_raw);
 
     memset(&guardZones[0][0], 0, sizeof(guardZones));
 
@@ -1383,6 +1394,8 @@ void br24radar_pi::DoTick(void)
         settings.enable_dual_radar = 0;
     }
 
+    heading_correction_raw = (settings.heading_correction * LINES_PER_ROTATION) / 360;
+
     br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];  // set actual refresh rate
 
     if (br_bpos_set && TIMER_ELAPSED(br_bpos_watchdog)) {
@@ -1766,12 +1779,11 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
                     );
     }
 
-    double heading = MOD_DEGREES( rad2deg(vp->rotation)        // viewport rotation
-                                + 270.0                        // difference between compass and OpenGL rotation
-                                + settings.heading_correction  // fix any radome rotation fault
-                                - vp->skew * settings.skew_factor
-                                );
-    glRotatef(heading, 0, 0, 1);
+    angle_correction =
+        +270.0                        // difference between compass and OpenGL rotation
+        // heading correction already applied after receive
+        - vp->skew * settings.skew_factor;
+    angle_correction_raw = (angle_correction * LINES_PER_ROTATION) / 360;  // angle_correction will be used in PrepareRadarImage to position image right
 
     // scaling...
     int meters = br_range_meters[settings.selectRadarB];
@@ -1780,8 +1792,6 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     double radar_pixels_per_meter = ((double) RETURNS_PER_LINE) / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
 
-//    if (settings.showRadar && ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode[settings.selectRadarB] == DM_EMULATOR
-//        || blackout[settings.selectRadarB])) {
     if (blackout[settings.selectRadarB] || (settings.showRadar == 1 && br_bpos_set && m_heading_source != HEADING_NONE && br_data_seen) ||
         (settings.emulator_on && settings.showRadar)) {
         glPushMatrix();
@@ -1807,18 +1817,16 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
         // Guard Zone image and heading line for radar only
         if (settings.showRadar) {
             double rotation = -settings.heading_correction + vp->skew * settings.skew_factor;
-            if (!blackout[settings.selectRadarB]) rotation += br_hdt;
-                glRotatef(rotation, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
-                if (blackout[settings.selectRadarB]) {    // draw heading line
-                glColor4ub(200, 0, 0, 50);
-                glLineWidth(1);
+            if (blackout[settings.selectRadarB]) {    // draw heading line
+                glColor4ub(200, 0, 0, 200);
+                glLineWidth(2);
                 glBegin(GL_LINES);
                 glVertex2d(0, 0);
-                glVertex2d(br_range_meters[settings.selectRadarB] * v_scale_ppm, 0);
+                glVertex2d(0, - br_range_meters[settings.selectRadarB] * v_scale_ppm - sin(deg2rad(rotation))); // correct for rotation
                 glEnd();
             }
-                if (guardZones[settings.selectRadarB][0].type != GZ_OFF || guardZones[settings.selectRadarB][1].type != GZ_OFF) {
-                    RenderGuardZone(radar_center, v_scale_ppm, vp, settings.selectRadarB);
+            if (guardZones[settings.selectRadarB][0].type != GZ_OFF || guardZones[settings.selectRadarB][1].type != GZ_OFF) {
+                RenderGuardZone(radar_center, v_scale_ppm, vp, settings.selectRadarB);
             }
         }
     }
@@ -1850,8 +1858,8 @@ void br24radar_pi::DrawRadarImage()
 
 
 
-void br24radar_pi::PrepareRadarImage(int angle)
-{
+void br24radar_pi::PrepareRadarImage(int angle, UINT8 * data)   // angle in spokes 0 <= angle < 2048
+{                                                 // prepares one line (spoke) of the image in the vertex buffer
     //    wxLongLong now = wxGetLocalTimeMillis();
     UINT32 drawn_spokes = 0;
     UINT32 drawn_blobs = 0;
@@ -1859,20 +1867,28 @@ void br24radar_pi::PrepareRadarImage(int angle)
     //    wxLongLong max_age = 0; // Age in millis
 
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
-
-    vertices_index[angle] = 0;
-    colors_index[angle] = 0;
-    vertices_time_stamp[angle] = time(0);
-    scan_line * scan = &m_scan_line[settings.selectRadarB][angle];
+    int angle1 = MOD_ROTATION2048(angle + angle_correction_raw);
+    vertices_index[angle1] = 0;
+    colors_index[angle1] = 0;
+    vertices_time_stamp[angle1] = time(0);
+    scan_line * scan = &m_scan_line[settings.selectRadarB][angle1];
 
     int r_begin = 0, r_end = 0;
     enum colors { BLOB_NONE, BLOB_BLUE, BLOB_GREEN, BLOB_RED };
     colors actual_color = BLOB_NONE, previous_color = BLOB_NONE;
     drawn_spokes++;
-    scan->data[RETURNS_PER_LINE] = 0;  // make sure this element is initialized (just outside the range)
-
-    for (int radius = 0; radius <= RETURNS_PER_LINE; ++radius) {   // loop 1 more time as only the previous one will be displayed
-        GLubyte strength = scan->data[radius];
+    //scan->data[RETURNS_PER_LINE] = 0;  // make sure this element is initialized (just outside the range)
+    GLubyte strength;
+    for (int radius = 0; radius < RETURNS_PER_LINE + 1; ++radius) {   // loop 1 more time as only the previous one will be displayed
+        if (radius < RETURNS_PER_LINE - 1) {
+            strength = data[radius];
+        }
+        else if (radius == RETURNS_PER_LINE - 1){
+            strength = 255;
+        }
+        else{
+            strength = 0;
+        }
         GLubyte hist = scan->history[radius];
         hist = hist & 7;  // check only last 3 bits
 
@@ -1939,7 +1955,7 @@ void br24radar_pi::PrepareRadarImage(int angle)
                 break;
             }
 
-            draw_blob_gl_i(angle, r_begin, r_end, red, green, blue, alpha);
+            draw_blob_gl_i(MOD_ROTATION2048(angle1), r_begin, r_end, red, green, blue, alpha);
             drawn_blobs++;
             previous_color = actual_color;
             if (actual_color != BLOB_NONE) {            // change of color, start new blob
@@ -2007,8 +2023,12 @@ void br24radar_pi::Guard(int max_range, int AB)
                             }                   // so go to next radius
                         }
                     else {   // multi sweep filter off
-                        GLubyte strength = scan->data[radius];
-                        if (strength <= displaysetting_threshold[settings.display_option]) continue;
+                        GLubyte hist = scan->history[radius] & 1;
+                        if (!hist){   //filter off,  check only the last sweep 
+                            continue;
+                        }
+                   //     GLubyte strength = scan->data[radius];
+                   //     if (strength <= displaysetting_threshold[settings.display_option]) continue;
                         }
                     int index = z + 2 * AB;
                     bogey_count[index]++;
@@ -2059,9 +2079,15 @@ void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, Plu
                 start_bearing = 0;
                 end_bearing = 359;
             } else {
-                start_bearing = guardZones[AB][z].start_bearing;
-                end_bearing = guardZones[AB][z].end_bearing;
+                start_bearing = guardZones[AB][z].start_bearing + angle_correction;
+                end_bearing = guardZones[AB][z].end_bearing + angle_correction;
             }
+            if (!blackout[settings.selectRadarB]) {    // make guardzone bearing relative to heading
+                start_bearing = start_bearing + br_hdt;
+                end_bearing = end_bearing + br_hdt;
+            }
+            start_bearing = MOD_DEGREES(start_bearing);
+            end_bearing = MOD_DEGREES(end_bearing);
             switch (settings.guard_zone_render_style) {
                 case 1:
                     glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
@@ -3414,16 +3440,18 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         }
         // until here all is based on 4096 scanlines
 
-        angle_raw = MOD_ROTATION2048(angle_raw / 2);   // divide by 2 to map on 2048 scanlines
+        angle_raw = angle_raw / 2;   // divide by 2 to map on 2048 scanlines
+        angle_raw += heading_correction_raw;  // apply heading correction immediately on the received image
+        angle_raw = MOD_ROTATION2048(angle_raw);
 
         UINT8 *dest_data1 = pPlugIn->m_scan_line[AB][angle_raw].data;
-        memcpy(dest_data1, line->data, RETURNS_PER_LINE);
+ //       memcpy(dest_data1, line->data, RETURNS_PER_LINE);
 
         // now add this line to the history
         UINT8 *hist_data = pPlugIn->m_scan_line[AB][angle_raw].history;
         for (int i = 0; i < RETURNS_PER_LINE - 1; i++) {
             hist_data[i] = hist_data[i] << 1;     // shift left history byte 1 bit
-            if (dest_data1[i] > displaysetting_threshold[pPlugIn->settings.display_option]) {
+            if (line->data[i] > displaysetting_threshold[pPlugIn->settings.display_option]) {
                 hist_data[i] = hist_data[i] | 1;    // and add 1 if above threshold
             }
         }
@@ -3435,7 +3463,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         pPlugIn->m_scan_line[AB][angle_raw].range = range_meters;
         pPlugIn->m_scan_line[AB][angle_raw].age = nowMillis;
         if (AB == pPlugIn->settings.selectRadarB) {
-            pPlugIn->PrepareRadarImage(angle_raw);   // prepare the vertex array for this line
+            pPlugIn->PrepareRadarImage(angle_raw, line->data);   // prepare the vertex array for this line
         }                                            // but only do this for the active radar
     }
 
@@ -3461,7 +3489,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             if (i_display >= br_refresh_rate) {   //    display every "refreshrate time"
                 if (br_refresh_rate != 10) { // for 10 no refresh at all
                     br_refresh_busy_or_queued = true;   // no further calls until br_refresh_busy_or_queued has been cleared by RenderGLOverlay
-                    GetOCPNCanvasWindow()->Refresh(true);
+                    GetOCPNCanvasWindow()->Refresh(false);
                     if (pPlugIn->settings.verbose >= 4) {
                         wxLogMessage(wxT("BR24radar_pi:  refresh issued"));
                     }
@@ -3522,7 +3550,7 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
         dest_data1[RETURNS_PER_LINE - 1] = 0xff;
         pPlugIn->m_scan_line[AB][angle_raw].range = range_meters;
         pPlugIn->m_scan_line[AB][angle_raw].age = nowMillis;
-        pPlugIn->PrepareRadarImage(angle_raw);
+        pPlugIn->PrepareRadarImage(angle_raw, 0);
     }
     if (pPlugIn->settings.verbose >= 2) {
         wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" emulating %d spokes at range %d with %d spots"), nowMillis, scanlines_in_packet, range_meters, spots);

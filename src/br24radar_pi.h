@@ -343,7 +343,7 @@ class br24radar_pi : public opencpn_plugin_110
 {
 public:
     br24radar_pi(void *ppimgr);
-    void PrepareRadarImage(int angle);
+    void PrepareRadarImage(int angle, UINT8* data);
 
     //    The required PlugIn Methods
     int Init(void);
