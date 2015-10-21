@@ -1871,7 +1871,7 @@ void br24radar_pi::PrepareRadarImage(int angle, UINT8 * data)   // angle in spok
     vertices_index[angle1] = 0;
     colors_index[angle1] = 0;
     vertices_time_stamp[angle1] = time(0);
-    scan_line * scan = &m_scan_line[settings.selectRadarB][angle1];
+    scan_line * scan = &m_scan_line[settings.selectRadarB][angle];  // use angle (not angle1) as angle points to the corresponding line
 
     int r_begin = 0, r_end = 0;
     enum colors { BLOB_NONE, BLOB_BLUE, BLOB_GREEN, BLOB_RED };
