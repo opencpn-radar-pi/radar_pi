@@ -1136,8 +1136,9 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
 
 void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
 {
-    if (topSizer->IsShown(controlBox)) {
-        // first update the range
+         // Control Box
+
+        // range
         if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod || refreshAll) {
             if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.button == -1) {
                 bRange->SetAutoX();
@@ -1172,8 +1173,8 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
             }
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.mod = false;
         }
-    }
-    if (topSizer->IsShown(advancedBox)) {
+ 
+        //    Advanced box 
 
         //   target_boost
         if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.mod || refreshAll)) {
@@ -1204,8 +1205,7 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
             bScanSpeed->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.button);
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.mod = false;
         }
-    }
-    if (topSizer->IsShown(installationBox)) {
+                 // Installation box
 
         //   antenna height
         if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].antenna_height.mod || refreshAll)) {
@@ -1235,8 +1235,6 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
             }
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.mod = false;
         }
-    }
-
 }
 
 
