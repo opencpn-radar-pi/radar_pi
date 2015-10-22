@@ -180,9 +180,18 @@ static bool blackout[2] = { false, false };         //  will force display to bl
 static int heading_correction_raw = 0;
 
 #define     SIZE_VERTICES (3072)
-static GLfloat vertices[2048][SIZE_VERTICES];
+//static GLfloat vertices[2048][SIZE_VERTICES];
 static int colors_index[2048];
 static time_t vertices_time_stamp[2048];
+struct vert {
+    GLfloat x;
+    GLfloat y;
+    GLfloat red;
+    GLfloat green;
+    GLfloat blue;
+    GLfloat alfa;
+};
+static vert vertices[2048][512];
 static int vertices_index[2048];
 static int angle_correction_raw = 0;  // to be used in PrepareRadarImage to rotate image
 static int angle_correction = 0;
@@ -284,90 +293,54 @@ static void draw_blob_gl_i(int arc, int radius, int radius_end, GLubyte red, GLu
     if (arc_end >= 2048) {
         arc_end = arc_end - 2048;
     }
-    vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc][radius];   // A
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc][radius];
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of A
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)green;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)blue;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
+    vertices[arc][vertices_index[arc]].x = polar_to_cart_x[arc][radius];   // A
+    vertices[arc][vertices_index[arc]].y = polar_to_cart_y[arc][radius];
+    vertices[arc][vertices_index[arc]].red = red;    // colors of A
+    vertices[arc][vertices_index[arc]].green = green;
+    vertices[arc][vertices_index[arc]].blue = blue;
+    vertices[arc][vertices_index[arc]].alfa = alpha;
     vertices_index[arc]++;
 
-    vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc][radius_end];  // B
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc][radius_end];
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of B
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)green;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)blue;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
+    vertices[arc][vertices_index[arc]].x = polar_to_cart_x[arc][radius_end];  // B
+    vertices[arc][vertices_index[arc]].y = polar_to_cart_y[arc][radius_end];
+    vertices[arc][vertices_index[arc]].red = red;    // colors of B
+    vertices[arc][vertices_index[arc]].green = green;
+    vertices[arc][vertices_index[arc]].blue = blue;
+    vertices[arc][vertices_index[arc]].alfa = alpha;
     vertices_index[arc]++;
 
-    vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc_end][radius];  //  C
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc_end][radius];
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of C
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)green;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)blue;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
+    vertices[arc][vertices_index[arc]].x = polar_to_cart_x[arc_end][radius];  //  C
+    vertices[arc][vertices_index[arc]].y = polar_to_cart_y[arc_end][radius];
+    vertices[arc][vertices_index[arc]].red = red;    // colors of C
+    vertices[arc][vertices_index[arc]].green = green;
+    vertices[arc][vertices_index[arc]].blue = blue;
+    vertices[arc][vertices_index[arc]].alfa = alpha;
     vertices_index[arc]++;
 
     //  next triangle follows ----------------------------------------------------------------
 
-    vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc][radius_end];  //B
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc][radius_end];
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of B
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)green;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)blue;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
+    vertices[arc][vertices_index[arc]].x = polar_to_cart_x[arc][radius_end];  // B
+    vertices[arc][vertices_index[arc]].y = polar_to_cart_y[arc][radius_end];
+    vertices[arc][vertices_index[arc]].red = red;    // colors of B
+    vertices[arc][vertices_index[arc]].green = green;
+    vertices[arc][vertices_index[arc]].blue = blue;
+    vertices[arc][vertices_index[arc]].alfa = alpha;
     vertices_index[arc]++;
 
-    vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc_end][radius];  //  C
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc_end][radius];
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of C
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)green;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)blue;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
+    vertices[arc][vertices_index[arc]].x = polar_to_cart_x[arc_end][radius];  //  C
+    vertices[arc][vertices_index[arc]].y = polar_to_cart_y[arc_end][radius];
+    vertices[arc][vertices_index[arc]].red = red;    // colors of C
+    vertices[arc][vertices_index[arc]].green = green;
+    vertices[arc][vertices_index[arc]].blue = blue;
+    vertices[arc][vertices_index[arc]].alfa = alpha;
     vertices_index[arc]++;
 
-    vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc_end][radius_end];  // D
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc_end][radius_end];
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of D
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)green;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)blue;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
+    vertices[arc][vertices_index[arc]].x = polar_to_cart_x[arc_end][radius_end];  // D
+    vertices[arc][vertices_index[arc]].y = polar_to_cart_y[arc_end][radius_end];
+    vertices[arc][vertices_index[arc]].red = red;    // colors of D
+    vertices[arc][vertices_index[arc]].green = green;
+    vertices[arc][vertices_index[arc]].blue = blue;
+    vertices[arc][vertices_index[arc]].alfa = alpha;
     vertices_index[arc]++;
 
     if (vertices_index[arc]> SIZE_VERTICES - 36) {
@@ -1842,14 +1815,14 @@ void br24radar_pi::DrawRadarImage()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     time_t now = time(0);
-    int step = 6 * sizeof(GLfloat);
+    int step = 2 * sizeof(GLfloat) + 4 * sizeof(GLfloat);
     for (int i = 0; i < 2048; i++) {
         if (now - vertices_time_stamp[i] > settings.max_age) {
             continue;            // outdated line, do not display
         }
         glVertexPointer(2, GL_FLOAT, step, vertices[i]);
-        glColorPointer(4, GL_FLOAT, step, vertices[i] + 2);
-        int number_of_points = vertices_index[i] / 6;
+        glColorPointer(4, GL_FLOAT, step, vertices[i] + 4);
+        int number_of_points = vertices_index[i];
         glDrawArrays(GL_TRIANGLES, 0, number_of_points);
     }
     glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
