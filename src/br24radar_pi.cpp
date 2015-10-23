@@ -3420,9 +3420,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         angle_raw += heading_correction_raw;  // apply heading correction immediately on the received image
         angle_raw = MOD_ROTATION2048(angle_raw);
 
-        UINT8 *dest_data1 = pPlugIn->m_scan_line[AB][angle_raw].data;
- //       memcpy(dest_data1, line->data, RETURNS_PER_LINE);
-
         // now add this line to the history
         UINT8 *hist_data = pPlugIn->m_scan_line[AB][angle_raw].history;
         for (int i = 0; i < RETURNS_PER_LINE - 1; i++) {
@@ -3432,10 +3429,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
             }
         }
 
-        // The following line is a quick hack to confirm on-screen where the range ends, by putting a 'ring' of
-        // returned radar energy at the max range line.
-        // TODO: create nice actual range circles.
-        dest_data1[RETURNS_PER_LINE - 1] = 0xff;
         pPlugIn->m_scan_line[AB][angle_raw].range = range_meters;
         pPlugIn->m_scan_line[AB][angle_raw].age = nowMillis;
         if (AB == pPlugIn->settings.selectRadarB) {
