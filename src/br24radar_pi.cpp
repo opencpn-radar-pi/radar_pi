@@ -186,12 +186,12 @@ static time_t vertices_time_stamp[2048];
 struct vert {
     GLfloat x;
     GLfloat y;
-    GLfloat red;
-    GLfloat green;
-    GLfloat blue;
-    GLfloat alfa;
+    GLubyte red;
+    GLubyte green;
+    GLubyte blue;
+    GLubyte alfa;
 };
-static vert vertices[2048][512];
+static vert vertices[2048][3000];
 static int vertices_index[2048];
 static int angle_correction_raw = 0;  // to be used in PrepareRadarImage to rotate image
 static int angle_correction = 0;
@@ -343,9 +343,9 @@ static void draw_blob_gl_i(int arc, int radius, int radius_end, GLubyte red, GLu
     vertices[arc][vertices_index[arc]].alfa = alpha;
     vertices_index[arc]++;
 
-    if (vertices_index[arc]> SIZE_VERTICES - 36) {
-        vertices_index[arc] = SIZE_VERTICES - 36;
+    if (vertices_index[arc]> SIZE_VERTICES - 8) {
         wxLogMessage(wxT("BR24radar_pi: vertices array limit overflow vertices_index=%d arc=%d"), vertices_index[arc], arc);
+        vertices_index[arc] = SIZE_VERTICES - 8;
     }
 }
 
@@ -499,7 +499,6 @@ int br24radar_pi::Init(void)
         return 0;
     }
 #endif
-
 
     // initialise polar_to_cart_y[arc + 1][radius] arrays
 
@@ -1815,13 +1814,17 @@ void br24radar_pi::DrawRadarImage()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     time_t now = time(0);
-    int step = 2 * sizeof(GLfloat) + 4 * sizeof(GLfloat);
+    GLubyte test;
+    GLfloat test1;
+    test = 0;
+    test1 = 0;   // to avoid compiler warnings
+    int step = 2 * sizeof(test1) + 4 * sizeof(test);
     for (int i = 0; i < 2048; i++) {
         if (now - vertices_time_stamp[i] > settings.max_age) {
             continue;            // outdated line, do not display
         }
-        glVertexPointer(2, GL_FLOAT, step, vertices[i]);
-        glColorPointer(4, GL_FLOAT, step, vertices[i] + 4);
+        glVertexPointer(2, GL_FLOAT, step, &vertices[i][0].x);
+        glColorPointer(4, GL_UNSIGNED_BYTE, step, &vertices[i][0].red);
         int number_of_points = vertices_index[i];
         glDrawArrays(GL_TRIANGLES, 0, number_of_points);
     }
