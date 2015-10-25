@@ -1816,7 +1816,7 @@ void br24radar_pi::PrepareRadarImage(int angle)
         if (shader_start_line == -1) {
             shader_start_line = angle;
         }
-        shader_end_line = angle;
+        shader_end_line = angle + 1;
 
         // zero out texture data
         if(settings.display_option)
