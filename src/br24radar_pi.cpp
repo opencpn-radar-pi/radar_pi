@@ -691,13 +691,9 @@ bool br24radar_pi::DeInit(void)
 {
     OnBR24ControlDialogClose();
     OnBR24MessageBoxClose();
-    if (m_RadarContext) {
-        delete m_RadarContext;
-    }
     if (m_RadarFrame) {
         m_RadarFrame->GetPosition(&m_RadarWindow_x, &m_RadarWindow_y);
         m_RadarFrame->GetSize(&m_RadarWindow_sx, &m_RadarWindow_sy);
-        delete m_RadarFrame;
     }
 
     SaveConfig();
@@ -743,6 +739,13 @@ bool br24radar_pi::DeInit(void)
     if (m_radar_socket != INVALID_SOCKET) {
         closesocket(m_radar_socket);
         wxLogMessage(wxT("BR24radar_pi: socket closed"));
+    }
+
+    if (m_RadarContext) {
+        delete m_RadarContext;
+    }
+    if (m_RadarFrame) {
+        delete m_RadarFrame;
     }
 
     if (m_shader) {
