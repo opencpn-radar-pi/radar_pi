@@ -1714,6 +1714,11 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 void br24radar_pi::DrawRadarImage()
 {
     if (settings.useShader) {
+
+        if (shader_start_line == -1) {
+            return;
+        }
+
         UseProgram(programShader);
 
         glBindTexture(GL_TEXTURE_2D, shader_tex);
@@ -1760,7 +1765,6 @@ void br24radar_pi::DrawRadarImage()
                            , /* pixels =   */ shader_data + shader_start_line * RETURNS_PER_LINE * channels
                            );
         }
-        shader_start_line = -1;
 
         // We tell the GPU to draw a square from (-512,-512) to (+512,+512).
         // The shader morphs this into a circle.
@@ -1774,8 +1778,10 @@ void br24radar_pi::DrawRadarImage()
 
         UseProgram(0);
         if (settings.verbose >= 2) {
-            wxLogMessage(wxT("BR24radar_pi: used shader %d"), programShader);
+            wxLogMessage(wxT("BR24radar_pi: used shader %d line %d-%d"), programShader, shader_start_line, shader_end_line);
         }
+        shader_start_line = -1;
+        shader_end_line = 0;
         return;
     }
 
