@@ -9,7 +9,7 @@ class RadarWindow : public wxGLCanvas
     //DECLARE_CLASS(RadarWindow)
     DECLARE_EVENT_TABLE()
 
-    wxGLContext*        m_context;
+    wxGLContext       * m_context;
 
 public:
     RadarWindow(br24radar_pi *ppi, wxFrame* parent, int* args);

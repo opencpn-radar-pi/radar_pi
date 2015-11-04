@@ -136,42 +136,6 @@ static int colors_index[2048];
 static time_t vertices_time_stamp[2048];
 static int vertices_index[2048];
 
-static bool can_use_shader = false;
-static unsigned char *shader_data;
-static int shader_start_line, shader_end_line;
-// identity vertex program (does nothing special)
-static const char *VertShaderText =
-   "void main() \n"
-   "{ \n"
-   "   gl_TexCoord[0] = gl_MultiTexCoord0; \n"
-   "   gl_Position = ftransform(); \n"
-   "} \n";
-
-// Convert to rectangular to polar coordinates for radar image in texture
-static const char *FragShaderText =
-   "uniform sampler2D tex2d; \n"
-   "void main() \n"
-   "{ \n"
-   "   float d = length(gl_TexCoord[0].xy);\n"
-   "   if (d >= 1.0) \n"
-   "      discard; \n"
-   "   float a = atan(gl_TexCoord[0].y, gl_TexCoord[0].x) / 6.28318; \n"
-   "   gl_FragColor = vec4(1, 0, 0, texture2D(tex2d, vec2(d, a)).x); \n"
-   "} \n";
-
-static const char *FragShaderColorText =
-   "uniform sampler2D tex2d; \n"
-   "void main() \n"
-   "{ \n"
-   "   float d = length(gl_TexCoord[0].xy);\n"
-   "   if (d >= 1.0) \n"
-   "      discard; \n"
-   "   float a = atan(gl_TexCoord[0].y, gl_TexCoord[0].x) / 6.28318; \n"
-   "   gl_FragColor = texture2D(tex2d, vec2(d, a)); \n"
-   "} \n";
-
-static GLuint shader_tex, fragShader, vertShader, programShader;
-
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 #define     TIMER_NOT_ELAPSED(watchdog) (now < watchdog + WATCHDOG_TIMEOUT)
 #define     TIMER_ELAPSED(watchdog) (!TIMER_NOT_ELAPSED(watchdog))
@@ -191,8 +155,6 @@ time_t      br_alarm_sound_last;
 static sockaddr_in * br_mcast_addr = 0; // One of the threads finds out where the radar lives and writes our IP here
 static sockaddr_in * br_radar_addr = 0; // One of the threads finds out where the radar lives and writes its IP here
 // static wxCriticalSection br_scanLock;
-
-static void DeleteShaders( void );
 
 // the class factories, used to create and destroy instances of the PlugIn
 
@@ -783,7 +745,9 @@ bool br24radar_pi::DeInit(void)
         wxLogMessage(wxT("BR24radar_pi: socket closed"));
     }
 
-    DeleteShaders();
+    if (m_shader) {
+       delete m_shader;
+    }
 
     return true;
 }
@@ -1406,68 +1370,6 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
     return true;
 }
 
-static bool haveShaders = false;
-
-static void DeleteShaders( void )
-{
-    if (haveShaders) {
-        haveShaders = false;
-        DeleteProgram(programShader); // Reverse order of creation, maybe won't matter but it seems cleaner
-        DeleteShader(vertShader);
-        DeleteShader(fragShader);
-    }
-
-    if (shader_data) {
-        free(shader_data);
-    }
-}
-
-static bool SetupShaders( int colorOption )
-{
-    static int lastColorOption = -1;
-
-    if (haveShaders && lastColorOption == colorOption) {
-        return true;
-    }
-
-    if (!CompileShader && !ShadersSupported()) {
-        wxLogMessage(wxT("BR24radar_pi: the OpenGL system of this computer does not support shader programs"));
-        return false;
-    }
-
-    lastColorOption = colorOption;
-
-    if (!CompileShaderText(&vertShader, GL_VERTEX_SHADER, VertShaderText)
-     || !CompileShaderText(&fragShader, GL_FRAGMENT_SHADER, colorOption > 0 ? FragShaderColorText : FragShaderText)) {
-        return false;
-    }
-
-    programShader = LinkShaders(vertShader, fragShader);
-
-    static int channels = 4; // for now always allocate for 4 colors as it's simpler to avoid crash in other thread
-    if (!shader_data) {
-        shader_data = (unsigned char *) malloc(channels * LINES_PER_ROTATION * RETURNS_PER_LINE);
-    }
-    memset(shader_data, 0, channels * LINES_PER_ROTATION * RETURNS_PER_LINE);
-
-    if (!shader_tex) {
-        glGenTextures(1, &shader_tex);
-    }
-    glBindTexture(GL_TEXTURE_2D, shader_tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, colorOption > 0 ? GL_RGBA : GL_LUMINANCE,
-                 RETURNS_PER_LINE, LINES_PER_ROTATION, 0,
-                 colorOption > 0 ? GL_RGBA : GL_LUMINANCE, GL_UNSIGNED_BYTE, shader_data);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    wxLogMessage(wxT("BR24radar_pi: Fast OpenGL shader for %d colours loaded"), (colorOption > 0) ? 4 : 1);
-    shader_start_line = 0;
-    shader_end_line = 0;
-
-    haveShaders = true;
-    return true;
-}
-
 // Called by Plugin Manager on main system process cycle
 
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
@@ -1478,15 +1380,16 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     // but if we are scrolling or otherwise it can be MUCH more often!
 
     // Determine if we can use shaders for rendering
-    if (settings.useShader) {
-        if (SetupShaders(settings.display_option))
+    if (settings.useShader && !m_shader) {
+        br24Shader * newShader = new br24Shader(this);
+        if (newShader->Init(settings.display_option))
         {
-            can_use_shader = true;
+            m_shader = newShader;
         } else {
             settings.useShader = false;
+            delete newShader;
         }
     }
-
 
     // Always compute br_auto_range_meters, possibly needed by SendState() called from DoTick().
     double max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
@@ -1713,75 +1616,8 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
 void br24radar_pi::DrawRadarImage()
 {
-    if (settings.useShader) {
-
-        if (shader_start_line == -1) {
-            return;
-        }
-
-        UseProgram(programShader);
-
-        glBindTexture(GL_TEXTURE_2D, shader_tex);
-
-        int format, channels;
-        if(settings.display_option)
-            format = GL_RGBA, channels = 4;
-        else
-            format = GL_LUMINANCE, channels = 1;
-
-        // Set texture to the returned radar returns
-        if (shader_end_line < shader_start_line) {
-            // if the new data wraps past the end of the texture
-            // tell it the two parts separately
-            glTexSubImage2D( /* target =   */ GL_TEXTURE_2D
-                           , /* level =    */ 0
-                           , /* x-offset = */ 0
-                           , /* y-offset = */ 0
-                           , /* width =    */ RETURNS_PER_LINE
-                           , /* height =   */ shader_end_line
-                           , /* format =   */ format
-                           , /* type =     */ GL_UNSIGNED_BYTE
-                           , /* pixels =   */ shader_data
-                           );
-            glTexSubImage2D( /* target =   */ GL_TEXTURE_2D
-                           , /* level =    */ 0
-                           , /* x-offset = */ 0
-                           , /* y-offset = */ shader_start_line
-                           , /* width =    */ RETURNS_PER_LINE
-                           , /* height =   */ LINES_PER_ROTATION - shader_start_line
-                           , /* format =   */ format
-                           , /* type =     */ GL_UNSIGNED_BYTE
-                           , /* pixels =   */ shader_data + shader_start_line * RETURNS_PER_LINE * channels
-                           );
-        } else {
-            glTexSubImage2D( /* target =   */ GL_TEXTURE_2D
-                           , /* level =    */ 0
-                           , /* x-offset = */ 0
-                           , /* y-offset = */ shader_start_line
-                           , /* width =    */ RETURNS_PER_LINE
-                           , /* height =   */ shader_end_line - shader_start_line
-                           , /* format =   */ format
-                           , /* type =     */ GL_UNSIGNED_BYTE
-                           , /* pixels =   */ shader_data + shader_start_line * RETURNS_PER_LINE * channels
-                           );
-        }
-
-        // We tell the GPU to draw a square from (-512,-512) to (+512,+512).
-        // The shader morphs this into a circle.
-        float scale = 512;
-        glBegin(GL_QUADS);
-        glTexCoord2f(-1, -1);  glVertex2f(-scale, -scale);
-        glTexCoord2f( 1, -1);  glVertex2f( scale, -scale);
-        glTexCoord2f( 1,  1);  glVertex2f( scale,  scale);
-        glTexCoord2f(-1,  1);  glVertex2f(-scale,  scale);
-        glEnd();
-
-        UseProgram(0);
-        if (settings.verbose >= 2) {
-            wxLogMessage(wxT("BR24radar_pi: used shader %d line %d-%d"), programShader, shader_start_line, shader_end_line);
-        }
-        shader_start_line = -1;
-        shader_end_line = 0;
+    if (m_shader) {
+        m_shader->DrawRadarImage();
         return;
     }
 
@@ -1815,20 +1651,8 @@ void br24radar_pi::PrepareRadarImage(int angle)
     //    UINT32 skipped = 0;
     //    wxLongLong max_age = 0; // Age in millis
 
-    if (settings.useShader) {
-        if(!can_use_shader) // buffers not yet allocated for us
-            return;
-
-        if (shader_start_line == -1) {
-            shader_start_line = angle;
-        }
-        shader_end_line = angle + 1;
-
-        // zero out texture data
-        if(settings.display_option)
-            memset(shader_data + 4*angle*RETURNS_PER_LINE, 0, 4*RETURNS_PER_LINE);
-        else
-            memset(shader_data + angle*RETURNS_PER_LINE, 0, RETURNS_PER_LINE);
+    if (m_shader) {
+        m_shader->ClearSpoke(angle);
     }
 
     GLubyte alpha;
@@ -1917,16 +1741,8 @@ void br24radar_pi::PrepareRadarImage(int angle)
                 break;
             }
 
-            if (settings.useShader) {
-                if(settings.display_option) {
-                    unsigned char *d = shader_data + (angle*RETURNS_PER_LINE + r_begin)*4;
-                    for(int j=r_begin; j<r_end; j++) {
-                        for(int k=0; k<4; k++)
-                            d[0] = red, d[1] = green, d[2] = blue, d[3] = alpha;
-                        d+=4;
-                    }
-                } else
-                    memset(shader_data + angle*RETURNS_PER_LINE + r_begin, ((int)red*alpha)>>8, r_end - r_begin);
+            if (m_shader) {
+                m_shader->SetBlob(angle, r_begin, r_end, red, green, blue, alpha);
             } else {
                 draw_blob_gl_i(angle, r_begin, r_end, red, green, blue, alpha);
                 drawn_blobs++;

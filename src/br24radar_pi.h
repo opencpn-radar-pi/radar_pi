@@ -376,6 +376,7 @@ class GuardZoneBogey;
 class BR24DisplayOptionsDialog;
 class Idle_Dialog;
 class RadarWindow;
+class br24Shader;
 
 //ofstream outfile("C:/ProgramData/opencpn/BR24DataDump.dat",ofstream::binary);
 
@@ -533,6 +534,7 @@ private:
     RadarDataReceiveThread   *m_dataReceiveThreadB;
     RadarCommandReceiveThread *m_commandReceiveThreadB;
     RadarReportReceiveThread *m_reportReceiveThreadB;
+    br24Shader               *m_shader;
 
     SOCKET                    m_radar_socket;
 
@@ -1145,5 +1147,6 @@ private:
 };
 
 #include "RadarWindow.h"
+#include "br24Shader.h"
 
 #endif
