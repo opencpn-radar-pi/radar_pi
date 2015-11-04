@@ -21,6 +21,7 @@ public:
     int getHeight();
 
     void render(wxPaintEvent& evt);
+    void close(wxCloseEvent& evt);
 
     // events
     void mouseMoved(wxMouseEvent& event);

@@ -32,8 +32,9 @@
 #include <br24radar_pi.h>
 
 BEGIN_EVENT_TABLE(RadarWindow, wxGLCanvas)
-EVT_SIZE(RadarWindow::resized)
-EVT_PAINT(RadarWindow::render)
+    EVT_CLOSE(RadarWindow::close)
+    EVT_SIZE(RadarWindow::resized)
+    EVT_PAINT(RadarWindow::render)
 END_EVENT_TABLE()
 
 // some useful events to use
@@ -71,9 +72,12 @@ RadarWindow::~RadarWindow()
 
 void RadarWindow::resized(wxSizeEvent& evt)
 {
-//      wxGLCanvas::OnSize(evt);
-
     Refresh();
+}
+
+void RadarWindow::close(wxCloseEvent& evt)
+{
+    this->Hide();
 }
 
 void RadarWindow::prepare2DViewport(int x, int y, int width, int height)
