@@ -98,7 +98,7 @@ bool br24Shader::Init( int newColorOption )
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     wxLogMessage(wxT("BR24radar_pi: GPU oriented OpenGL shader for %d colours loaded"), (colorOption > 0) ? 4 : 1);
-    start_line = 0;
+    start_line = LINES_PER_ROTATION;
     end_line = 0;
 
     return true;
@@ -106,7 +106,7 @@ bool br24Shader::Init( int newColorOption )
 
 void br24Shader::DrawRadarImage()
 {
-    if (start_line == -1) {
+    if (start_line == LINES_PER_ROTATION) {
         return;
     }
 
@@ -171,8 +171,8 @@ void br24Shader::DrawRadarImage()
     if (pPlugin->settings.verbose >= 2) {
         wxLogMessage(wxT("BR24radar_pi: used shader %d line %d-%d"), program, start_line, end_line);
     }
-    start_line = -1;
-    end_line = 0;
+    // start_line = -1;
+    // end_line = 0;
     return;
 }
 
@@ -181,10 +181,12 @@ void br24Shader::ClearSpoke(int angle)
     if (!data) // buffers not yet allocated for us, should not happen
         return;
 
-    if (start_line == -1) {
+    if (start_line > angle) {
         start_line = angle;
     }
-    end_line = angle + 1;
+    if (end_line < angle + 1) {
+      end_line = angle + 1;
+    }
 
     // zero out texture data
     if (colorOption)

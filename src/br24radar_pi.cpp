@@ -741,9 +741,6 @@ bool br24radar_pi::DeInit(void)
         wxLogMessage(wxT("BR24radar_pi: socket closed"));
     }
 
-    if (m_RadarContext) {
-        delete m_RadarContext;
-    }
     if (m_RadarFrame) {
         delete m_RadarFrame;
     }
@@ -1034,8 +1031,6 @@ void br24radar_pi::ShowRadarWindow(void)
         sizer->Add(m_RadarWindow, 1, wxEXPAND);
         m_RadarFrame->SetSizer(sizer);
         m_RadarFrame->SetAutoLayout(true);
-
-        m_RadarContext = new wxGLContext(m_RadarWindow);
     }
     m_RadarFrame->Show();
 }
@@ -1055,6 +1050,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         // radar is off (not seen), but obviously we want to see it
         if (settings.showRadar == false) {
             settings.showRadar = true;  // but we don't send the transmit command, no use as radar is off
+            ShowRadarWindow();
         }
         else{
             settings.showRadar = false;  // toggle showRadar on RED
@@ -1067,8 +1063,6 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         }
         if (id != 999999 && settings.timed_idle != 0) {
             m_pControlDialog->SetTimedIdleIndex(0); // Disable Timed Transmit if user click the icon while idle
-        }
-        if (settings.verbose) {
         }
         ShowRadarControl(true);
         ShowRadarWindow();
@@ -1516,8 +1510,9 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
 
     switch (settings.display_mode[settings.selectRadarB]) {
         case DM_CHART_OVERLAY:
-        case DM_CHART_BLACKOUT:
             RenderRadarOverlay(boat_center, v_scale_ppm, rad2deg(vp->rotation + vp->skew * settings.skew_factor));
+            break;
+        case DM_CHART_BLACKOUT:
             break;
     }
 
@@ -1572,7 +1567,8 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
 //    if (settings.showRadar && ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode[settings.selectRadarB] == DM_EMULATOR
 //        || blackout[settings.selectRadarB])) {
-    if (blackout[settings.selectRadarB] || (settings.showRadar == 1 && br_bpos_set && m_heading_source != HEADING_NONE && br_data_seen) ||
+    //if (blackout[settings.selectRadarB] || (settings.showRadar == 1 && br_bpos_set && m_heading_source != HEADING_NONE && br_data_seen) ||
+    if ((settings.showRadar == 1 && br_bpos_set && m_heading_source != HEADING_NONE && br_data_seen) ||
         (settings.emulator_on && settings.showRadar)) {
         glPushMatrix();
         glScaled(scale_factor, scale_factor, 1.);
@@ -1624,6 +1620,8 @@ void br24radar_pi::DrawRadarImage()
         return;
     }
 
+    // Else draw using vertexes
+
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
     glEnable(GL_BLEND);
@@ -1641,8 +1639,7 @@ void br24radar_pi::DrawRadarImage()
     }
     glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
     glDisableClientState(GL_COLOR_ARRAY);
-
-}        // end of DrawRadarImage
+}
 
 
 

@@ -540,7 +540,6 @@ private:
 
     wxFrame                  *m_RadarFrame;
     RadarWindow              *m_RadarWindow;
-    wxGLContext              *m_RadarContext;
 
     int                       m_BR24Controls_dialog_sx, m_BR24Controls_dialog_sy ;
     int                       m_BR24Controls_dialog_x, m_BR24Controls_dialog_y ;
