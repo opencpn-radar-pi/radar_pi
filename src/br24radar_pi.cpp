@@ -846,7 +846,6 @@ BEGIN_EVENT_TABLE(BR24DisplayOptionsDialog, wxDialog)
 
 EVT_CLOSE(BR24DisplayOptionsDialog::OnClose)
 EVT_BUTTON(ID_OK, BR24DisplayOptionsDialog::OnIdOKClick)
-EVT_RADIOBUTTON(ID_DISPLAYTYPE, BR24DisplayOptionsDialog::OnDisplayModeClick)
 EVT_RADIOBUTTON(ID_OVERLAYDISPLAYOPTION, BR24DisplayOptionsDialog::OnDisplayOptionClick)
 
 END_EVENT_TABLE()
@@ -926,18 +925,6 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
 
     pOverlayDisplayOptions->SetSelection(pPlugIn->settings.display_option);
 
-    /*
-    pDisplayMode = new wxRadioBox(this, ID_DISPLAYTYPE, _("Radar Display"),
-                                  wxDefaultPosition, wxDefaultSize,
-                                  ARRAY_SIZE(DisplayModeStrings), DisplayModeStrings, 1, wxRA_SPECIFY_COLS);
-
-    DisplayOptionsBox->Add(pDisplayMode, 0, wxALL | wxEXPAND, 2);
-
-    pDisplayMode->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
-                          wxCommandEventHandler(BR24DisplayOptionsDialog::OnDisplayModeClick), NULL, this);
-
-    pDisplayMode->SetSelection(pPlugIn->settings.display_mode[0]);
-    */
     wxString GuardZoneStyleStrings[] = {
         _("Shading"),
         _("Outline"),
@@ -1030,11 +1017,6 @@ void BR24DisplayOptionsDialog::OnRangeUnitsClick(wxCommandEvent &event)
 void BR24DisplayOptionsDialog::OnDisplayOptionClick(wxCommandEvent &event)
 {
     pPlugIn->settings.display_option = pOverlayDisplayOptions->GetSelection();
-}
-
-void BR24DisplayOptionsDialog::OnDisplayModeClick(wxCommandEvent &event)
-{
-    pPlugIn->SetDisplayMode((DisplayModeType) pDisplayMode->GetSelection());
 }
 
 void BR24DisplayOptionsDialog::OnGuardZoneStyleClick(wxCommandEvent &event)
@@ -1248,10 +1230,6 @@ void br24radar_pi::Select_Guard_Zones(int zone)
     }
 }
 
-void br24radar_pi::SetDisplayMode(DisplayModeType mode)
-{
-    settings.display_mode[settings.selectRadarB] = mode;
-}
 
 long br24radar_pi::GetRangeMeters()
 {

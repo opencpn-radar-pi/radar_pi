@@ -380,7 +380,6 @@ public:
 
     void OnBR24ControlDialogClose();
     void OnBR24MessageBoxClose();
-    void SetDisplayMode(DisplayModeType mode);
     void UpdateDisplayParameters(void);
 
     void SetBR24ControlsDialogX(long x) {
@@ -627,7 +626,6 @@ private:
     void OnRangeUnitsClick(wxCommandEvent& event);
     void OnDisplayOptionClick(wxCommandEvent& event);
     void OnIntervalSlider(wxCommandEvent& event);
-    void OnDisplayModeClick(wxCommandEvent& event);
     void OnGuardZoneStyleClick(wxCommandEvent& event);
     void OnHeading_Calibration_Value(wxCommandEvent& event);
     void OnSelectSoundClick(wxCommandEvent& event);
