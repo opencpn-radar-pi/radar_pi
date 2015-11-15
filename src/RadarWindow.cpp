@@ -132,7 +132,8 @@ void RadarWindow::render( wxPaintEvent& evt )
 
     glRotatef(270.0, 0, 0, 1);
     pPlugIn->RenderGuardZone(wxPoint(0,0), 1.0, 0);
-    glRotatef(180.0, 0, 0, 1); // Works for my demo situation but I don't see why...
+    // Below is wrong, data should be HU (Head Up) for now
+    // glRotatef(180.0, 0, 0, 1); // Works for my demo situation but I don't see why...
     pPlugIn->DrawRadarImage();
 
     glFlush();
