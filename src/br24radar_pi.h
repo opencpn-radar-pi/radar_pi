@@ -511,7 +511,6 @@ private:
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, double rotation);
     void HandleBogeyCount(int *bogey_count);
-    void draw_histogram_column(int x, int y);
 
     void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
     void ShowRadarControl(bool show = true);

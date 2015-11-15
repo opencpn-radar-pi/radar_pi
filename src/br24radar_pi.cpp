@@ -1828,25 +1828,6 @@ void br24radar_pi::Guard(int max_range, int AB)
 
 
 
-void br24radar_pi::draw_histogram_column(int x, int y)  // x=0->255 => 0->1020, y=0->100 =>0->400
-{
-    int xa = 5 * x;
-    int xb = xa + 5;
-    y = 4 * y;
-
-    glBegin(GL_TRIANGLES);        // draw blob in two triangles
-    glVertex2i(xa, 0);
-    glVertex2i(xb, 0);
-    glVertex2i(xa, y);
-
-    glVertex2i(xb, 0);
-    glVertex2i(xb, y);
-    glVertex2i(xa, y);
-
-    glEnd();
-
-}
-
 
 //****************************************************************************
 void br24radar_pi::RenderGuardZone(wxPoint radar_center, double v_scale_ppm, int AB)
