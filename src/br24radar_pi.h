@@ -320,7 +320,7 @@ struct pi_control_settings {
     int      selectRadarB;
     int      showRadar;
     bool     emulator_on;
-    bool     useShader;
+    int      useShader;
     wxString alert_audio_file;
 };
 
@@ -376,7 +376,7 @@ class GuardZoneBogey;
 class BR24DisplayOptionsDialog;
 class Idle_Dialog;
 class RadarWindow;
-class br24Shader;
+class br24Draw;
 
 //ofstream outfile("C:/ProgramData/opencpn/BR24DataDump.dat",ofstream::binary);
 
@@ -475,7 +475,6 @@ public:
     long GetOptimalRangeMeters();
     void SetRangeMeters(long range);
 
-    void DrawRadarImage();
     void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, int AB);
     void RefreshRadarWindow();
 
@@ -483,6 +482,11 @@ public:
     radar_control_setting radar_setting[2];
 
     scan_line                 m_scan_line[2][LINES_PER_ROTATION];
+
+    // OpenGL drawing
+    br24Draw                 *m_draw;
+    int                       m_OldUseShader;
+    int                       m_OldDisplayOption;
 
 #define GUARD_ZONES (2)
     guard_zone_settings guardZones[2][GUARD_ZONES];
@@ -533,7 +537,6 @@ private:
     RadarDataReceiveThread   *m_dataReceiveThreadB;
     RadarCommandReceiveThread *m_commandReceiveThreadB;
     RadarReportReceiveThread *m_reportReceiveThreadB;
-    br24Shader               *m_shader;
 
     SOCKET                    m_radar_socket;
 
@@ -1145,6 +1148,8 @@ private:
 };
 
 #include "RadarWindow.h"
+#include "br24Draw.h"
+#include "br24Vertex.h"
 #include "br24Shader.h"
 
 #endif

@@ -130,12 +130,6 @@ static time_t      br_data_watchdog;
 static time_t      br_var_watchdog;
 static bool blackout[2] = { false, false };         //  will force display to blackout and north up
 
-#define     SIZE_VERTICES (3072)
-static GLfloat vertices[2048][SIZE_VERTICES];
-static int colors_index[2048];
-static time_t vertices_time_stamp[2048];
-static int vertices_index[2048];
-
 #define     WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 #define     TIMER_NOT_ELAPSED(watchdog) (now < watchdog + WATCHDOG_TIMEOUT)
 #define     TIMER_ELAPSED(watchdog) (!TIMER_NOT_ELAPSED(watchdog))
@@ -144,9 +138,6 @@ time_t      br_dt_stayalive;
 
 int   br_radar_control_id = 0, br_guard_zone_id = 0;
 bool  br_guard_context_mode;
-
-static GLfloat polar_to_cart_x[2049][513];
-static GLfloat polar_to_cart_y[2049][513];
 
 bool        br_guard_bogey_confirmed = false;
 time_t      br_alarm_sound_last;
@@ -224,105 +215,6 @@ static double local_bearing (double lat1, double lon1, double lat2, double lon2)
     angle = rad2deg(angle);
     angle = MOD_DEGREES(90.0 - rad2deg(angle));
     return angle;
-}
-
-
-static void draw_blob_gl_i(int arc, int radius, int radius_end, GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha)
-{
-    int arc_end = arc + 1;
-    if (arc_end >= 2048) {
-        arc_end = arc_end - 2048;
-    }
-    vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc][radius];   // A
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc][radius];
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of A
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)green;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)blue;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc][radius_end];  // B
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc][radius_end];
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of B
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)green;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)blue;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc_end][radius];  //  C
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc_end][radius];
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of C
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)green;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)blue;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
-    vertices_index[arc]++;
-
-    //  next triangle follows ----------------------------------------------------------------
-
-    vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc][radius_end];  //B
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc][radius_end];
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of B
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)green;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)blue;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc_end][radius];  //  C
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc_end][radius];
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of C
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)green;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)blue;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = polar_to_cart_x[arc_end][radius_end];  // D
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = polar_to_cart_y[arc_end][radius_end];
-    vertices_index[arc]++;
-
-    vertices[arc][vertices_index[arc]] = (GLfloat)red;    // colors of D
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)green;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)blue;
-    vertices_index[arc]++;
-    vertices[arc][vertices_index[arc]] = (GLfloat)((GLfloat)alpha) / 255.;
-    vertices_index[arc]++;
-
-    if (vertices_index[arc]> SIZE_VERTICES - 36) {
-        vertices_index[arc] = SIZE_VERTICES - 36;
-        wxLogMessage(wxT("BR24radar_pi: vertices array limit overflow vertices_index=%d arc=%d"), vertices_index[arc], arc);
-    }
 }
 
 static void draw_blob_gl(double ca, double sa, double radius, double arc_width, double blob_heigth)
@@ -477,17 +369,6 @@ int br24radar_pi::Init(void)
 #endif
 
 
-    // initialise polar_to_cart_y[arc + 1][radius] arrays
-
-    for (int arc = 0; arc < 2049; arc++) {
-        double sine = sin(arc * PI / 1024);
-        double cosine = cos(arc * PI / 1024);
-        for (int radius = 0; radius < 513; radius++) {
-            polar_to_cart_y[arc][radius] = (GLfloat) radius * sine;
-            polar_to_cart_x[arc][radius] = (GLfloat) radius * cosine;
-        }
-    }
-    wxLogMessage(wxT("BR24radar_pi:Position initialized  xa = %f"), polar_to_cart_x[100][150]);
     AddLocaleCatalog( _T("opencpn-br24radar_pi") );
 
     m_pControlDialog = NULL;
@@ -745,8 +626,8 @@ bool br24radar_pi::DeInit(void)
         delete m_RadarFrame;
     }
 
-    if (m_shader) {
-       delete m_shader;
+    if (m_draw) {
+       delete m_draw;
     }
 
     return true;
@@ -1376,15 +1257,26 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
     // this is expected to be called at least once per second
     // but if we are scrolling or otherwise it can be MUCH more often!
 
-    // Determine if we can use shaders for rendering
-    if (settings.useShader && !m_shader) {
-        br24Shader * newShader = new br24Shader(this);
-        if (newShader->Init(settings.display_option))
-        {
-            m_shader = newShader;
+    // Determine if a new draw method is required
+    if (!m_draw || (settings.useShader != m_OldUseShader) || (settings.display_option != m_OldDisplayOption)) {
+        br24Draw * newDraw = br24Draw::make_Draw(settings.useShader);
+        if (!newDraw) {
+            wxLogMessage(wxT("BR24radar_pi: out of memory"));
+            return true;
+        }
+        else if (newDraw->Init(this, settings.display_option)) {
+            if (m_draw) {
+                delete m_draw;
+            }
+            m_draw = newDraw;
+            m_OldUseShader = settings.useShader;
+            m_OldDisplayOption = settings.display_option;
         } else {
             settings.useShader = false;
-            delete newShader;
+            delete newDraw;
+        }
+        if (!m_draw) {
+            return true;
         }
     }
 
@@ -1533,29 +1425,17 @@ void br24radar_pi::RefreshRadarWindow()
 
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, double rotation)
 {
-    glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);      //Save state
     blackout[settings.selectRadarB] = settings.showRadar == 1 && br_data_seen && settings.display_mode[settings.selectRadarB] == DM_CHART_BLACKOUT;
-                //  radar only mode, will be head up, operate also without heading or position
-    if (!blackout[settings.selectRadarB]) {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    bool overlay = !blackout[settings.selectRadarB];
+
+    double heading;
+    if (m_heading_source != HEADING_NONE) {
+        heading = MOD_DEGREES( rotation                       // viewport rotation + skew (in degrees now)
+                             + settings.heading_correction  // fix any radome rotation fault
+                             );
     }
     else {
-        glClearColor(0, 0, 0, 1);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        if(settings.useShader)
-            glEnable(GL_BLEND);
-    }
-    glPushMatrix();
-    glTranslated(radar_center.x, radar_center.y, 0);
-
-    if(m_heading_source != HEADING_NONE && !blackout[settings.selectRadarB]) {
-        double heading = MOD_DEGREES( rotation                       // viewport rotation + skew (in degrees now)
-                                      + 270.0                        // difference between compass and OpenGL rotation
-                                      + settings.heading_correction  // fix any radome rotation fault
-                                    );
-        glRotatef(heading, 0, 0, 1);
+        heading = settings.heading_correction;
     }
 
     // scaling...
@@ -1565,13 +1445,8 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     double radar_pixels_per_meter = ((double) RETURNS_PER_LINE) / meters;
     double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
 
-//    if (settings.showRadar && ((br_bpos_set && m_heading_source != HEADING_NONE) || settings.display_mode[settings.selectRadarB] == DM_EMULATOR
-//        || blackout[settings.selectRadarB])) {
-    //if (blackout[settings.selectRadarB] || (settings.showRadar == 1 && br_bpos_set && m_heading_source != HEADING_NONE && br_data_seen) ||
     if ((settings.showRadar == 1 && br_bpos_set && m_heading_source != HEADING_NONE && br_data_seen) ||
         (settings.emulator_on && settings.showRadar)) {
-        glPushMatrix();
-        glScaled(scale_factor, scale_factor, 1.);
         if (br_range_meters[settings.selectRadarB] > 0 && br_scanner_state == RADAR_ON) {
             // Guard Section
             for (int i = 0; i < 4; i++) {
@@ -1586,73 +1461,30 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
             if (settings.showRadar == RADAR_ON && metersB != 0) {
                 Guard(metersB, 1);
             }
-            DrawRadarImage();
+            m_draw->DrawRadarImage(radar_center, heading, scale_factor, overlay);
         }
-        glPopMatrix();
         HandleBogeyCount(bogey_count);
+
+#ifdef TODO
+        /* TODO -- INTEGRATE GUARD ZONE RENDERING INTO PrepareRadarImage */
         // Guard Zone image and heading line for radar only
         if (settings.showRadar) {
-            double rotBack = -settings.heading_correction;
-            if (!blackout[settings.selectRadarB]) rotBack += br_hdt;
-            glRotatef(rotBack, 0, 0, 1); //  Undo heading correction, and add heading to get relative zones
-            if (blackout[settings.selectRadarB]) {    // draw heading line
-                glColor4ub(200, 0, 0, 50);
-                glLineWidth(1);
-                glBegin(GL_LINES);
-                glVertex2d(0, 0);
-                glVertex2d(br_range_meters[settings.selectRadarB] * v_scale_ppm, 0);
-                glEnd();
-            }
             if (guardZones[settings.selectRadarB][0].type != GZ_OFF || guardZones[settings.selectRadarB][1].type != GZ_OFF) {
                 RenderGuardZone(radar_center, v_scale_ppm, settings.selectRadarB);
             }
         }
+#endif
+
     }
-    glPopMatrix();
-    glPopAttrib();
 }        // end of RenderRadarOverlay
 
-
-void br24radar_pi::DrawRadarImage()
-{
-    if (m_shader) {
-        m_shader->DrawRadarImage();
-        return;
-    }
-
-    // Else draw using vertexes
-
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    time_t now = time(0);
-    int step = 6 * sizeof(GLfloat);
-    for (int i = 0; i < 2048; i++) {
-        if (now - vertices_time_stamp[i] > settings.max_age) {
-            continue;            // outdated line, do not display
-        }
-        glVertexPointer(2, GL_FLOAT, step, vertices[i]);
-        glColorPointer(4, GL_FLOAT, step, vertices[i] + 2);
-        int number_of_points = vertices_index[i] / 6;
-        glDrawArrays(GL_TRIANGLES, 0, number_of_points);
-    }
-    glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
-    glDisableClientState(GL_COLOR_ARRAY);
-}
 
 
 
 void br24radar_pi::PrepareRadarImage(int angle)
 {
-    //    wxLongLong now = wxGetLocalTimeMillis();
-    UINT32 drawn_spokes = 0;
-    UINT32 drawn_blobs = 0;
-    //    UINT32 skipped = 0;
-    //    wxLongLong max_age = 0; // Age in millis
-
-    if (m_shader) {
-        m_shader->ClearSpoke(angle);
+    if (m_draw) {
+        m_draw->ClearSpoke(angle);
     }
 
     GLubyte alpha;
@@ -1662,15 +1494,11 @@ void br24radar_pi::PrepareRadarImage(int angle)
     else
         alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
 
-    vertices_index[angle] = 0;
-    colors_index[angle] = 0;
-    vertices_time_stamp[angle] = time(0);
     scan_line * scan = &m_scan_line[settings.selectRadarB][angle];
 
     int r_begin = 0, r_end = 0;
     enum colors { BLOB_NONE, BLOB_BLUE, BLOB_GREEN, BLOB_RED };
     colors actual_color = BLOB_NONE, previous_color = BLOB_NONE;
-    drawn_spokes++;
     scan->data[RETURNS_PER_LINE] = 0;  // make sure this element is initialized (just outside the range)
 
     for (int radius = 0; radius <= RETURNS_PER_LINE; ++radius) {   // loop 1 more time as only the previous one will be displayed
@@ -1741,11 +1569,8 @@ void br24radar_pi::PrepareRadarImage(int angle)
                 break;
             }
 
-            if (m_shader) {
-                m_shader->SetBlob(angle, r_begin, r_end, red, green, blue, alpha);
-            } else {
-                draw_blob_gl_i(angle, r_begin, r_end, red, green, blue, alpha);
-                drawn_blobs++;
+            if (m_draw) {
+                m_draw->SetBlob(angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
             }
 
             previous_color = actual_color;

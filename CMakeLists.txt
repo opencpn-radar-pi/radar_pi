@@ -38,8 +38,12 @@ SET(SRC_br24radar
             src/GuardZoneBogey.cpp
             src/Idle_Dialog.cpp
             src/RadarWindow.cpp
+            src/br24Draw.h
+            src/br24Draw.cpp
             src/br24Shader.h
             src/br24Shader.cpp
+            src/br24Vertex.h
+            src/br24Vertex.cpp
 )
 SET(SRC_NMEA0183
         src/nmea0183/nmea0183.cpp

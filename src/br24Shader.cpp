@@ -62,20 +62,15 @@ static const char *FragmentShaderColorText =
    "   gl_FragColor = texture2D(tex2d, vec2(d, a)); \n"
    "} \n";
 
-bool br24Shader::Init( int newColorOption )
+bool br24Shader::Init( br24radar_pi * ppi, int newColorOption )
 {
+    pPlugin = ppi;
     colorOption = newColorOption;
-
-    if (lastColorOption == colorOption) {
-        return true;
-    }
 
     if (!CompileShader && !ShadersSupported()) {
         wxLogMessage(wxT("BR24radar_pi: the OpenGL system of this computer does not support shader programs"));
         return false;
     }
-
-    lastColorOption = colorOption;
 
     if (!CompileShaderText(&vertex, GL_VERTEX_SHADER, VertexShaderText)
      || !CompileShaderText(&fragment, GL_FRAGMENT_SHADER, colorOption > 0 ? FragmentShaderColorText : FragmentShaderText)) {
@@ -104,11 +99,27 @@ bool br24Shader::Init( int newColorOption )
     return true;
 }
 
-void br24Shader::DrawRadarImage()
+void br24Shader::DrawRadarImage( wxPoint center, double heading, double scale, bool overlay )
 {
     if (start_line == LINES_PER_ROTATION) {
         return;
     }
+
+    glPushMatrix();
+    glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);
+
+    glTranslated(center.x, center.y, 0);
+    glScaled(scale, scale, 1.);
+
+    if (overlay) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+    else {
+        glClearColor(0, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+    glRotatef(heading + 270, 0, 0, 1); // OpenGL rotation is different to North = 0 = Up.
 
     UseProgram(program);
 
@@ -159,24 +170,27 @@ void br24Shader::DrawRadarImage()
 
     // We tell the GPU to draw a square from (-512,-512) to (+512,+512).
     // The shader morphs this into a circle.
-    float scale = 512;
+    float fullscale = 512;
     glBegin(GL_QUADS);
-    glTexCoord2f(-1, -1);  glVertex2f(-scale, -scale);
-    glTexCoord2f( 1, -1);  glVertex2f( scale, -scale);
-    glTexCoord2f( 1,  1);  glVertex2f( scale,  scale);
-    glTexCoord2f(-1,  1);  glVertex2f(-scale,  scale);
+    glTexCoord2f(-1, -1);  glVertex2f(-fullscale, -fullscale);
+    glTexCoord2f( 1, -1);  glVertex2f( fullscale, -fullscale);
+    glTexCoord2f( 1,  1);  glVertex2f( fullscale,  fullscale);
+    glTexCoord2f(-1,  1);  glVertex2f(-fullscale,  fullscale);
     glEnd();
 
     UseProgram(0);
+    glPopAttrib();
+    glPopMatrix();
     if (pPlugin->settings.verbose >= 2) {
         wxLogMessage(wxT("BR24radar_pi: used shader %d line %d-%d"), program, start_line, end_line);
     }
     // start_line = -1;
     // end_line = 0;
+
     return;
 }
 
-void br24Shader::ClearSpoke(int angle)
+void br24Shader::ClearSpoke( int angle )
 {
     if (!data) // buffers not yet allocated for us, should not happen
         return;
@@ -195,20 +209,23 @@ void br24Shader::ClearSpoke(int angle)
         memset(data + angle*RETURNS_PER_LINE, 0, RETURNS_PER_LINE);
 }
 
-void br24Shader::SetBlob( int angle, int r_begin, int r_end, GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha )
+void br24Shader::SetBlob( int angle_begin, int angle_end, int r_begin, int r_end, GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha )
 {
-    if (colorOption) {
-        unsigned char *d = data + (angle * RETURNS_PER_LINE + r_begin) * 4;
-        for (int j = r_begin; j < r_end; j++) {
-            for (int k = 0; k < 4; k++) {
-                d[0] = red;
-                d[1] = green;
-                d[2] = blue;
-                d[3] = alpha;
+    for (int arc = angle_begin; arc < angle_end; arc++) {
+        int angle = MOD_ROTATION2048(arc);
+        if (colorOption) {
+            unsigned char *d = data + (angle * RETURNS_PER_LINE + r_begin) * 4;
+            for (int j = r_begin; j < r_end; j++) {
+                for (int k = 0; k < 4; k++) {
+                    d[0] = red;
+                    d[1] = green;
+                    d[2] = blue;
+                    d[3] = alpha;
+                }
+                d += 4;
             }
-            d += 4;
+        } else {
+            memset(data + angle * RETURNS_PER_LINE + r_begin, ((int)red * alpha) >> 8, r_end - r_begin);
         }
-    } else {
-        memset(data + angle * RETURNS_PER_LINE + r_begin, ((int)red * alpha) >> 8, r_end - r_begin);
     }
 }

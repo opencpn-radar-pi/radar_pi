@@ -128,13 +128,10 @@ void RadarWindow::render( wxPaintEvent& evt )
 
     double scale_factor = 1.0 / 512.0; // Radar image is in 0..511 range
 
-    glScaled(scale_factor, scale_factor, 1.);
-
-    glRotatef(270.0, 0, 0, 1);
     pPlugIn->RenderGuardZone(wxPoint(0,0), 1.0, 0);
-    // Below is wrong, data should be HU (Head Up) for now
-    // glRotatef(180.0, 0, 0, 1); // Works for my demo situation but I don't see why...
-    pPlugIn->DrawRadarImage();
+    if (pPlugIn->m_draw) {
+        pPlugIn->m_draw->DrawRadarImage(wxPoint(0,0), 0.0, scale_factor, false);
+    }
 
     glFlush();
     SwapBuffers();
