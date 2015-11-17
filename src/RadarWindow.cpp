@@ -49,12 +49,12 @@ void RadarWindow::keyReleased(wxKeyEvent& event) {}
 
 static int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
 
-RadarWindow::RadarWindow(br24radar_pi * ppi, wxFrame* parent, int* args) :
+RadarWindow::RadarWindow( br24radar_pi * ppi, wxFrame * parent, int * args ) :
 #if !wxCHECK_VERSION(3,0,0)
-    wxGLCanvas( parent, wxID_ANY, wxDefaultPosition, wxSize( 256, 256 ),
+    wxGLCanvas( parent, wxID_ANY, wxDefaultPosition, wxSize(256, 256),
                 wxFULL_REPAINT_ON_RESIZE | wxBG_STYLE_CUSTOM, _T(""), attribs )
 #else
-    wxGLCanvas( parent, wxID_ANY, attribs, wxDefaultPosition, wxSize( 256, 256 ),
+    wxGLCanvas( parent, wxID_ANY, attribs, wxDefaultPosition, wxSize(256, 256),
                 wxFULL_REPAINT_ON_RESIZE | wxBG_STYLE_CUSTOM, _T("") )
 #endif
 {
@@ -70,17 +70,17 @@ RadarWindow::~RadarWindow()
     delete m_context;
 }
 
-void RadarWindow::resized(wxSizeEvent& evt)
+void RadarWindow::resized( wxSizeEvent& evt )
 {
     Refresh();
 }
 
-void RadarWindow::close(wxCloseEvent& evt)
+void RadarWindow::close( wxCloseEvent& evt )
 {
     this->Hide();
 }
 
-void RadarWindow::prepare2DViewport(int x, int y, int width, int height)
+void RadarWindow::prepare2DViewport( int x, int y, int width, int height )
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black Background
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -126,7 +126,7 @@ void RadarWindow::render( wxPaintEvent& evt )
 
     prepare2DViewport(0, 0, w, h);
 
-    double scale_factor = 1.0 / 512.0; // Radar image is in 0..511 range
+    double scale_factor = 1.0 / RETURNS_PER_LINE; // Radar image is in 0..511 range
 
     pPlugIn->RenderGuardZone(wxPoint(0,0), 1.0, 0);
     if (pPlugIn->m_draw) {
