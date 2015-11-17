@@ -1981,8 +1981,6 @@ void br24radar_pi::Guard(int max_range, int AB)
                         if (!hist){   //filter off,  check only the last sweep 
                             continue;
                         }
-                   //     GLubyte strength = scan->data[radius];
-                   //     if (strength <= displaysetting_threshold[settings.display_option]) continue;
                         }
                     int index = z + 2 * AB;
                     bogey_count[index]++;
@@ -1994,26 +1992,6 @@ void br24radar_pi::Guard(int max_range, int AB)
 //wxLogMessage(wxT("BR24radar: Guard return, AB= %d bogeycount %d %d %d %d"), AB, bogey_count[0], bogey_count[1], bogey_count[2], bogey_count[3]);
     }
 
-
-
-void br24radar_pi::draw_histogram_column(int x, int y)  // x=0->255 => 0->1020, y=0->100 =>0->400
-{
-    int xa = 5 * x;
-    int xb = xa + 5;
-    y = 4 * y;
-
-    glBegin(GL_TRIANGLES);        // draw blob in two triangles
-    glVertex2i(xa, 0);
-    glVertex2i(xb, 0);
-    glVertex2i(xa, y);
-
-    glVertex2i(xb, 0);
-    glVertex2i(xb, y);
-    glVertex2i(xa, y);
-
-    glEnd();
-
-}
 
 
 //****************************************************************************
@@ -3306,7 +3284,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
     for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
         radar_line * line = &packet->line[scanline];
-
         // Validate the spoke
         scan_number[AB] = line->br24.scan_number[0] | (line->br24.scan_number[1] << 8);
         pPlugIn->m_statistics[AB].spokes++;
@@ -3457,6 +3434,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
 void RadarDataReceiveThread::emulate_fake_buffer(void)
 {
+    radar_line line;
     wxLongLong nowMillis = wxGetLocalTimeMillis();
     time_t now = time(0);
     static int next_scan_number = 0;
@@ -3480,12 +3458,11 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
         pPlugIn->m_statistics[AB].spokes++;
 
         // Invent a pattern. Outermost ring, then a square pattern
-        UINT8 *dest_data1 = pPlugIn->m_scan_line[AB][angle_raw].data;
         for (int range = 0; range < RETURNS_PER_LINE; range++) {
             int bit = range >> 5;
             // use bit 'bit' of angle_raw
             UINT8 color = ((angle_raw >> 3) & (2 << bit)) > 0 ? 200 : 0;
-            dest_data1[range] = color;
+            line.data[range] = color;
             if (color > 0) {
                 spots++;
             }
@@ -3494,10 +3471,10 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
         // The following line is a quick hack to confirm on-screen where the range ends, by putting a 'ring' of
         // returned radar energy at the max range line.
         // TODO: create nice actual range circles.
-        dest_data1[RETURNS_PER_LINE - 1] = 0xff;
+        line.data[RETURNS_PER_LINE - 1] = 0xff;
         pPlugIn->m_scan_line[AB][angle_raw].range = range_meters;
         pPlugIn->m_scan_line[AB][angle_raw].age = nowMillis;
-        pPlugIn->PrepareRadarImage(angle_raw, 0);
+        pPlugIn->PrepareRadarImage(angle_raw, line.data);
     }
     if (pPlugIn->settings.verbose >= 2) {
         wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" emulating %d spokes at range %d with %d spots"), nowMillis, scanlines_in_packet, range_meters, spots);

@@ -314,7 +314,6 @@ struct guard_zone_settings {
 struct scan_line {
     int range;                        // range of this scan line in decimeters
     wxLongLong age;                   // how old this scan line is. We keep old scans on-screen for a while
-    UINT8 data[RETURNS_PER_LINE + 1]; // radar return strength, data[512] is an additional element, accessed in drawing the spokes
     UINT8 history[RETURNS_PER_LINE + 1]; // contains per bit the history of previous scans.
        //Each scan this byte is left shifted one bit. If the strength (=level) of a return is above the threshold
        // a 1 is added in the rightmost position, if below threshold, a 0.
