@@ -99,7 +99,7 @@ bool br24Shader::Init( br24radar_pi * ppi, int newColorOption )
     return true;
 }
 
-void br24Shader::DrawRadarImage( wxPoint center, double heading, double scale, bool overlay )
+void br24Shader::DrawRadarImage( wxPoint center, double scale, bool overlay )
 {
     if (start_line == LINES_PER_ROTATION) {
         return;
@@ -119,7 +119,6 @@ void br24Shader::DrawRadarImage( wxPoint center, double heading, double scale, b
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
     }
-    glRotatef(heading + 270, 0, 0, 1); // OpenGL rotation is different to North = 0 = Up.
 
     UseProgram(program);
 

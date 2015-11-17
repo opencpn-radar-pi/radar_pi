@@ -130,7 +130,7 @@ void RadarWindow::render( wxPaintEvent& evt )
 
     pPlugIn->RenderGuardZone(wxPoint(0,0), 1.0, 0);
     if (pPlugIn->m_draw) {
-        pPlugIn->m_draw->DrawRadarImage(wxPoint(0,0), 0.0, scale_factor, false);
+        pPlugIn->m_draw->DrawRadarImage(wxPoint(0,0), scale_factor, false);
     }
 
     glFlush();

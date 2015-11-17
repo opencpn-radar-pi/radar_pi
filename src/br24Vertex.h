@@ -12,7 +12,7 @@ public:
     }
 
     bool Init( br24radar_pi * ppi, int colorOption );
-    void DrawRadarImage( wxPoint center, double heading, double scale, bool overlay );
+    void DrawRadarImage( wxPoint center, double scale, bool overlay );
     void ClearSpoke( int angle );
     void SetBlob( int angle_begin, int angle_end, int r_begin, int r_end, GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha );
 

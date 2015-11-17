@@ -103,7 +103,7 @@ void br24Vertex::SetBlob(int angle_begin, int angle_end, int r1, int r2, GLubyte
     wxLogMessage(wxT("BR24radar_pi: < vertices array n=%d arc=%d"), spokes[arc1].n, arc1);
 }
 
-void br24Vertex::DrawRadarImage( wxPoint center, double heading, double scale, bool overlay )
+void br24Vertex::DrawRadarImage( wxPoint center, double scale, bool overlay )
 {
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);
 
@@ -118,7 +118,6 @@ void br24Vertex::DrawRadarImage( wxPoint center, double heading, double scale, b
 
     glPushMatrix();
     glTranslated(center.x, center.y, 0);
-    glRotatef(heading + 270, 0, 0, 1); // OpenGL rotation is different to North = 0 = Up.
 
     glPushMatrix();
     glScaled(scale, scale, 1.);
