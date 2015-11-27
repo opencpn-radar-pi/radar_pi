@@ -28,7 +28,7 @@
  ***************************************************************************
  */
 
-#include "br24radar_pi.h"
+#include "GuardZoneBogey.h"
 
 enum {                                      // process ID's
     ID_CONFIRM,
@@ -58,12 +58,12 @@ void GuardZoneBogey::Init()
 {
 }
 
-bool GuardZoneBogey::Create(wxWindow *parent, br24radar_pi *pPI, wxWindowID id,
+bool GuardZoneBogey::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id,
                             const wxString  &m_caption, const wxPoint   &pos,
                             const wxSize    &size, long style)
 {
-    pParent = parent;
-    pPlugIn = pPI;
+    m_parent = parent;
+    m_pi = pi;
 
 #ifdef wxMSW
     long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
@@ -112,7 +112,8 @@ void GuardZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm)
     static wxString previous_text;
     wxString t;
 
-    if (pPlugIn->data_seenAB[0] == RADAR_ON) {
+#ifdef TODO
+    if (m_pi->data_seenAB[0] == RADAR_ON) {
         t.Printf(_("Radar A:\n"));
         text << t;
         for (int z = 0; z < GUARD_ZONES; z++) {
@@ -124,7 +125,7 @@ void GuardZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm)
         t.Printf(_("\n"));
         text += t;
     }
-    if (pPlugIn->data_seenAB[1] == RADAR_ON) {
+    if (m_pi->data_seenAB[1] == RADAR_ON) {
         t.Printf(_("Radar B:\n"));
         text << t;
         for (int z = 0; z < GUARD_ZONES; z++) {
@@ -133,6 +134,7 @@ void GuardZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm)
             text += t;
         }
     }
+#endif
 
     if (next_alarm >= 0) {
         t.Printf(_("Next alarm in %d s"), next_alarm);
@@ -152,18 +154,18 @@ void GuardZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm)
 
 void GuardZoneBogey::OnClose(wxCloseEvent &event)
 {
-    pPlugIn->OnGuardZoneBogeyClose();
+    m_pi->OnGuardZoneBogeyClose();
     event.Skip();
 }
 
 void GuardZoneBogey::OnIdConfirmClick(wxCommandEvent &event)
 {
-    pPlugIn->OnGuardZoneBogeyConfirm();
+    m_pi->OnGuardZoneBogeyConfirm();
     event.Skip();
 }
 
 void GuardZoneBogey::OnIdCloseClick(wxCommandEvent &event)
 {
-    pPlugIn->OnGuardZoneBogeyClose();
+    m_pi->OnGuardZoneBogeyClose();
     event.Skip();
 }

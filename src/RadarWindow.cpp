@@ -49,7 +49,7 @@ void RadarWindow::keyReleased(wxKeyEvent& event) {}
 
 static int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
 
-RadarWindow::RadarWindow( br24radar_pi * ppi, wxFrame * parent, int * args ) :
+RadarWindow::RadarWindow( RadarInfo * ri, wxFrame * parent, int * args ) :
 #if !wxCHECK_VERSION(3,0,0)
     wxGLCanvas( parent, wxID_ANY, wxDefaultPosition, wxSize(256, 256),
                 wxFULL_REPAINT_ON_RESIZE | wxBG_STYLE_CUSTOM, _T(""), attribs )
@@ -58,7 +58,7 @@ RadarWindow::RadarWindow( br24radar_pi * ppi, wxFrame * parent, int * args ) :
                 wxFULL_REPAINT_ON_RESIZE | wxBG_STYLE_CUSTOM, _T("") )
 #endif
 {
-    pPlugIn = ppi;
+    m_ri = ri;
     m_context = new wxGLContext(this);
 
     // To avoid flashing on MSW
@@ -128,9 +128,11 @@ void RadarWindow::render( wxPaintEvent& evt )
 
     double scale_factor = 1.0 / RETURNS_PER_LINE; // Radar image is in 0..511 range
 
-    pPlugIn->RenderGuardZone(wxPoint(0,0), 1.0, 0);
-    if (pPlugIn->m_draw) {
-        pPlugIn->m_draw->DrawRadarImage(wxPoint(0,0), scale_factor, false);
+    // TODO
+    // m_pi->RenderGuardZone(wxPoint(0,0), 1.0, 0);
+    double rotation = 0.0; // Or HU then -m_pi->m_hdt;
+    if (m_ri->draw) {
+        m_ri->draw->DrawRadarImage(wxPoint(0,0), scale_factor, rotation, false);
     }
 
     glFlush();

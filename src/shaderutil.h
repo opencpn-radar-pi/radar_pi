@@ -1,6 +1,5 @@
-#ifndef SHADER_UTIL_H
-#define SHADER_UTIL_H
-
+#ifndef _SHADER_UTIL_H_
+#define _SHADER_UTIL_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,7 +73,9 @@ GetShaderLinkTime(void);
 extern void
 SetUniformValues(GLuint program, struct uniform_info uniforms[]);
 
-/* These pointers are only valid after calling ShadersSupported.
+/*
+ * These pointers are only valid after calling ShadersSupported.
+ * Note that this includes this same header file recursively in a different mode!
  */
 #define SHADER_FUNCTION_LIST(proc, name) \
           extern proc name;

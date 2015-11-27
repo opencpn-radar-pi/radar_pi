@@ -27,23 +27,43 @@ INCLUDE("cmake/PluginConfigure.cmake")
 # header files and cpp/c files and CMake will sort them out
 
 SET(SRC_br24radar
-            src/br24radar_pi.h
-            src/br24radar_pi.cpp
+            src/pi_common.h
             src/shaderutil.h
             src/shaderutil.cpp
-            src/br24radarcontrol.cpp
-            src/br24messagebox.cpp
-            src/br24displayoptions.cpp
-            src/GuardZoneControls.cpp
+            src/socketutil.h
+            src/socketutil.cpp
+            src/drawutil.h
+            src/drawutil.cpp
+            src/br24radar_pi.h
+            src/br24radar_pi.cpp
+            src/br24ControlsDialog.h
+            src/br24ControlsDialog.cpp
+            src/br24MessageBox.h
+            src/br24MessageBox.cpp
+            src/br24OptionsDialog.h
+            src/br24OptionsDialog.cpp
+            src/br24Receive.h
+            src/br24Receive.cpp
+            src/br24Transmit.h
+            src/br24Transmit.cpp
+            src/IdleDialog.h
+            src/IdleDialog.cpp
+            src/GuardZone.h
+            src/GuardZone.cpp
+            src/GuardZoneDialog.h
+            src/GuardZoneDialog.cpp
+            src/GuardZoneBogey.h
             src/GuardZoneBogey.cpp
-            src/Idle_Dialog.cpp
+            src/RadarInfo.h
+            src/RadarInfo.cpp
+            src/RadarWindow.h
             src/RadarWindow.cpp
-            src/br24Draw.h
-            src/br24Draw.cpp
-            src/br24Shader.h
-            src/br24Shader.cpp
-            src/br24Vertex.h
-            src/br24Vertex.cpp
+            src/RadarDraw.h
+            src/RadarDraw.cpp
+            src/RadarDrawShader.h
+            src/RadarDrawShader.cpp
+            src/RadarDrawVertex.h
+            src/RadarDrawVertex.cpp
 )
 SET(SRC_NMEA0183
         src/nmea0183/nmea0183.cpp

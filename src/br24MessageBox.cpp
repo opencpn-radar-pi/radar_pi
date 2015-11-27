@@ -28,8 +28,7 @@
  ***************************************************************************
  */
 
-#include "br24radar_pi.h"
-
+#include "br24MessageBox.h"
 
 enum {                                      // process ID's
     ID_MSG_BACK,
@@ -45,47 +44,47 @@ enum message_status {HIDE, SHOW, SHOW_NO_NMEA, SHOW_BACK};
 //---------------------------------------------------------------------------------------
 //          Radar Control Implementation
 //---------------------------------------------------------------------------------------
-IMPLEMENT_CLASS(BR24MessageBox, wxDialog)
+IMPLEMENT_CLASS(br24MessageBox, wxDialog)
 
-BEGIN_EVENT_TABLE(BR24MessageBox, wxDialog)
+BEGIN_EVENT_TABLE(br24MessageBox, wxDialog)
 
-EVT_CLOSE(BR24MessageBox::OnClose)
-EVT_BUTTON(ID_MSG_BACK, BR24MessageBox::OnMessageBackButtonClick)
+EVT_CLOSE(br24MessageBox::OnClose)
+EVT_BUTTON(ID_MSG_BACK, br24MessageBox::OnMessageBackButtonClick)
 
-EVT_MOVE(BR24MessageBox::OnMove)
-EVT_SIZE(BR24MessageBox::OnSize)
+EVT_MOVE(br24MessageBox::OnMove)
+EVT_SIZE(br24MessageBox::OnSize)
 
 END_EVENT_TABLE()
 
 
 
-BR24MessageBox::BR24MessageBox()
+br24MessageBox::br24MessageBox()
 {
     Init();
 }
 
-BR24MessageBox::~BR24MessageBox()
+br24MessageBox::~br24MessageBox()
 {
 }
 
 
-void BR24MessageBox::Init()
+void br24MessageBox::Init()
 {
     // Initialize all members that need initialization
 }
 
-void BR24MessageBox::OnClose(wxCloseEvent& event)
+void br24MessageBox::OnClose(wxCloseEvent& event)
 {
-    pPlugIn->OnBR24MessageBoxClose();
+    m_pi->OnMessageBoxClose();
 }
 
-bool BR24MessageBox::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID id,
+bool br24MessageBox::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id,
                                 const wxString& caption,
                                 const wxPoint& pos, const wxSize& size, long style)
 {
 
-    pParent = parent;
-    pPlugIn = ppi;
+    m_parent = parent;
+    m_pi = pi;
 
 #ifdef wxMSW
     long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
@@ -103,7 +102,7 @@ bool BR24MessageBox::Create(wxWindow *parent, br24radar_pi *ppi, wxWindowID id,
 }
 
 
-void BR24MessageBox::CreateControls()
+void br24MessageBox::CreateControls()
 {
     static int BORDER = 0;
     wxFont fatFont = g_font;
@@ -197,45 +196,30 @@ void BR24MessageBox::CreateControls()
 }
 
 
-void BR24MessageBox::OnMove(wxMoveEvent& event)
+void br24MessageBox::OnMove(wxMoveEvent& event)
 {
-    //    Record the dialog position
-    wxPoint p =  GetPosition();
-    pPlugIn->SetBR24MessageBoxX(p.x);
-    pPlugIn->SetBR24MessageBoxY(p.y);
-
     event.Skip();
 }
 
-void BR24MessageBox::OnSize(wxSizeEvent& event)
+void br24MessageBox::OnSize(wxSizeEvent& event)
 {
-    //    Record the dialog size
-    wxSize p = event.GetSize();
-    pPlugIn->SetBR24MessageBoxSizeX(p.GetWidth());
-    pPlugIn->SetBR24MessageBoxSizeY(p.GetHeight());
     event.Skip();
 }
 
-void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool radarSeen, bool haveData)
+void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool radarSeen, bool haveData)
 {
     static message_status message_state = HIDE;
     message_status new_message_state = HIDE;
     static bool old_radarSeen = false;
-    if (!pPlugIn->m_pMessageBox) {
+    if (!m_pi->m_pMessageBox) {
         wxLogMessage(wxT("BR24radar_pi: ERROR UpdateMessage m_pMessageBox not existent"));
         return;
     }
 
     bool radarOn = haveOpenGL && radarSeen;
     bool navOn = haveGPS && haveHeading && haveVariation;
-    bool black = pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT;
-    bool want_message = false;
-    if (pPlugIn->m_pControlDialog) {
-        if (pPlugIn->m_pControlDialog->wantShowMessage) {
-            want_message = true;
-        }
-    }
-
+    bool black = false; // Need to optimize this away
+    bool want_message = m_pi->m_want_message_box;
 
     /*
     Decision table to select the state of the message box
@@ -256,7 +240,7 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 
     */
 
-    if (!pPlugIn->settings.showRadar) {
+    if (!m_pi->m_settings.showRadar) {
         new_message_state = HIDE;
     }
     else if (!haveOpenGL) {
@@ -284,21 +268,21 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
     cbVariation->SetValue(haveVariation);
     cbRadar->SetValue(radarSeen);
     cbData->SetValue(haveData);
-    if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: messagebox switch, case=%d"), new_message_state);
+    if (m_pi->m_settings.verbose) {
+        wxLogMessage(wxT("BR24radar_pi: messagebox switch, case=%d"), new_message_state);
+    }
     if (message_state != new_message_state || old_radarSeen != radarSeen) {
         switch (new_message_state) {
 
         case HIDE:
-            if(pPlugIn->settings.verbose) wxLogMessage(wxT("BR24radar_pi: case hide"));
-            if (pPlugIn->m_pMessageBox->IsShown()) {
-                pPlugIn->m_pMessageBox->Hide();
+            if (m_pi->m_pMessageBox->IsShown()) {
+                m_pi->m_pMessageBox->Hide();
             }
             break;
 
         case SHOW:
-            if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: case show"));
-            if (!pPlugIn->m_pMessageBox-> IsShown()) {
-                pPlugIn->m_pMessageBox->Show();
+            if (!m_pi->m_pMessageBox-> IsShown()) {
+                m_pi->m_pMessageBox->Show();
             }
             if (!radarSeen) {
                 offMessage->Show();
@@ -311,9 +295,8 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
             break;
 
         case SHOW_NO_NMEA:
-            if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: case show no nmea"));
-            if (!pPlugIn->m_pMessageBox->IsShown()) {
-                pPlugIn->m_pMessageBox->Show();
+            if (!m_pi->m_pMessageBox->IsShown()) {
+                m_pi->m_pMessageBox->Show();
             }
             if (!radarSeen) {
                 offMessage->Show();
@@ -326,9 +309,8 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
             break;
 
         case SHOW_BACK:
-            if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: case show back"));
-            if (!pPlugIn->m_pMessageBox->IsShown()) {
-                pPlugIn->m_pMessageBox->Show();
+            if (!m_pi->m_pMessageBox->IsShown()) {
+                m_pi->m_pMessageBox->Show();
             }
             offMessage->Hide();
             messageBox->Show(nmeaSizer);
@@ -343,19 +325,14 @@ void BR24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 }
 
 
-void BR24MessageBox::OnMessageBackButtonClick(wxCommandEvent& event)
+void br24MessageBox::OnMessageBackButtonClick(wxCommandEvent& event)
 {
-    pPlugIn->m_pControlDialog->wantShowMessage = false;
+    m_pi->m_want_message_box = false;
 
-    if (pPlugIn->m_pMessageBox)
-    {
-        pPlugIn->m_pMessageBox->Hide();
-    }
-    Fit();
-    topSizeM->Layout();
+    Hide();
 }
 
-void BR24MessageBox::SetRadarIPAddress(wxString &msg)
+void br24MessageBox::SetRadarIPAddress(wxString &msg)
 {
     if (cbRadar) {
         wxString label;
@@ -365,7 +342,7 @@ void BR24MessageBox::SetRadarIPAddress(wxString &msg)
     }
 }
 
-void BR24MessageBox::SetErrorMessage(wxString &msg)
+void br24MessageBox::SetErrorMessage(wxString &msg)
 {
     tMessage->SetLabel(msg);
     topSizeM->Show(messageBox);
@@ -375,7 +352,7 @@ void BR24MessageBox::SetErrorMessage(wxString &msg)
 }
 
 
-void BR24MessageBox::SetMcastIPAddress(wxString &msg)
+void br24MessageBox::SetMcastIPAddress(wxString &msg)
 {
     if (ipBox) {
         wxString label;
@@ -385,7 +362,7 @@ void BR24MessageBox::SetMcastIPAddress(wxString &msg)
     }
 }
 
-void BR24MessageBox::SetHeadingInfo(wxString &msg)
+void br24MessageBox::SetHeadingInfo(wxString &msg)
 {
     if (cbHeading && topSizeM->IsShown(messageBox)) {
         wxString label;
@@ -395,7 +372,7 @@ void BR24MessageBox::SetHeadingInfo(wxString &msg)
     }
 }
 
-void BR24MessageBox::SetVariationInfo(wxString &msg)
+void br24MessageBox::SetVariationInfo(wxString &msg)
 {
     if (cbVariation && topSizeM->IsShown(messageBox)) {
         wxString label;
@@ -405,9 +382,11 @@ void BR24MessageBox::SetVariationInfo(wxString &msg)
     }
 }
 
-void BR24MessageBox::SetRadarInfo(wxString &msg)
+void br24MessageBox::SetRadarInfo(wxString &msg)
 {
     if (tStatistics && topSizeM->IsShown(messageBox)) {
         tStatistics->SetLabel(msg);
     }
 }
+
+// vim: sw=4:ts=8:

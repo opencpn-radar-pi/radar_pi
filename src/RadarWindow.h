@@ -12,7 +12,7 @@ class RadarWindow : public wxGLCanvas
     wxGLContext       * m_context;
 
 public:
-    RadarWindow(br24radar_pi *ppi, wxFrame* parent, int* args);
+    RadarWindow(RadarInfo *ri, wxFrame* parent, int* args);
     virtual ~RadarWindow();
 
     void resized(wxSizeEvent& evt);
@@ -35,6 +35,6 @@ public:
 
 private:
     void prepare2DViewport(int topleft_x, int topleft_y, int bottomright_x, int bottomright_y);
-    br24radar_pi *pPlugIn;
+    RadarInfo *m_ri;
 };
 #endif
