@@ -106,7 +106,7 @@ enum {
     BM_ID_BLANK_SLAVE
 };
 
-enum {
+enum RadarState {
     RADAR_OFF,
     RADAR_ON,
 };
@@ -235,7 +235,7 @@ struct PersistentSettings {
     int      refreshrate;
     int      pass_heading_to_opencpn;
     int      enable_dual_radar;       // Should the dual radar be enabled for 4G?
-    int      show_radar;
+    RadarState show_radar;
     bool     emulator_on;
     int      useShader;
     int      threshold_red;
@@ -423,7 +423,7 @@ private:
     int                       m_TimedTransmit_IdleBoxMode;
     int                       m_idle_time_left;
 
-    int                       m_scanner_state;
+    RadarState                m_scanner_state;
 
     bool                      m_opengl_mode;
     time_t                    m_idle_watchdog;

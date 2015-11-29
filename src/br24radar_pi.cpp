@@ -217,7 +217,7 @@ int br24radar_pi::Init( void )
     int radar_control_id = AddCanvasContextMenuItem(pmi, this);
     SetCanvasContextMenuItemViz(radar_control_id, true);
 
-    ShowRadarControl(0, false);   //prepare radar control but don't show it
+    ShowRadarControl(0, m_settings.show_radar);
 
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
@@ -318,13 +318,17 @@ void br24radar_pi::ShowPreferencesDialog( wxWindow* parent )
 
 void br24radar_pi::ShowRadarControl( int radar, bool show )
 {
+    if (m_settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: ShowRadarControl(%d, %d)"), radar, (int) show);
+    }
+
     if (!m_pMessageBox) {
         m_pMessageBox = new br24MessageBox;
         m_pMessageBox->Create(m_parent_window, this);
         m_pMessageBox->SetPosition(m_dialogLocation[DL_MESSAGE].pos);
         m_pMessageBox->Fit();
+        m_pMessageBox->Hide();
     }
-    m_pMessageBox->Hide();
 
     if (!m_radar[radar]->control_dialog) {
         m_radar[radar]->control_dialog = new br24ControlsDialog;
@@ -338,6 +342,11 @@ void br24radar_pi::ShowRadarControl( int radar, bool show )
         m_radar[radar]->range.Update(idx);
         m_radar[radar]->control_dialog->Hide();
     }
+
+    if (show) {
+        m_radar[radar]->control_box_closed = false;
+    }
+    m_radar[radar]->control_box_opened = show;
 
     m_radar[radar]->control_dialog->UpdateControl(m_opengl_mode
         , m_bpos_set
@@ -354,13 +363,10 @@ void br24radar_pi::ShowRadarControl( int radar, bool show )
         , m_radar[radar]->radar_seen
         , m_radar[radar]->data_seen
         );
-    m_radar[radar]->control_box_closed = false;
 }
 
 void br24radar_pi::OnContextMenuItemCallback( int id )
 {
-    m_radar[0]->control_box_closed = false;
-    m_radar[0]->control_box_opened = true;
     ShowRadarControl(0, true);
     /* TODO show radar B? */
 }
@@ -565,7 +571,7 @@ void br24radar_pi::DoTick( void )
     }
     previousTicks = now;
 
-    if (m_settings.show_radar) {
+    if (m_settings.show_radar == RADAR_ON) {
         if (!m_radar[0]->receive) {
             m_radar[0]->StartReceive();
         }
@@ -631,7 +637,7 @@ void br24radar_pi::DoTick( void )
     if (any_data_seen) { // Something coming from radar unit?
         m_data_watchdog = now;
         m_scanner_state = RADAR_ON;
-        if (m_settings.show_radar) {   // if not, radar will time out and go standby
+        if (m_settings.show_radar == RADAR_ON) {   // if not, radar will time out and go standby
             if (TIMER_ELAPSED(now, m_dt_stayalive)) {
                 m_dt_stayalive = now + STAYALIVE_TIMEOUT;
                 m_radar[0]->transmit->RadarStayAlive();
@@ -727,7 +733,7 @@ void br24radar_pi::DoTick( void )
                 TimedTransmit_IdleBoxMode = 2;
                 if (TT_now > (m_idle_watchdog + (m_settings.idle_run_time * 60)) || m_idle_dialog_time_left == 999) {
                     RadarTxOff();                 //Stop radar scanning
-                    m_settings.show_radar = 0;
+                    m_settings.show_radar = RADAR_OFF;
                     m_idle_watchdog = TT_now;
                 }
             }
@@ -799,7 +805,7 @@ void br24radar_pi::UpdateState( void )
         m_toolbar_button = TB_RED;
         CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_RED);
     }
-    else if (data_seen && m_settings.show_radar) {
+    else if (data_seen && m_settings.show_radar == RADAR_ON) {
         m_toolbar_button = TB_GREEN;
         CacheSetToolbarToolBitmaps(BM_ID_GREEN, BM_ID_GREEN);
     }
@@ -847,7 +853,7 @@ bool br24radar_pi::RenderGLOverlay( wxGLContext *pcontext, PlugIn_ViewPort *vp )
     }
     DoTick(); // update timers and watchdogs
 
-    if (m_settings.chart_overlay < 0 || !m_settings.show_radar) {  // No overlay desired
+    if (m_settings.chart_overlay < 0 || m_settings.show_radar == RADAR_OFF) {  // No overlay desired
         return true;
     }
     if (!m_bpos_set) {                   // No overlay possible (yet)
@@ -1050,14 +1056,14 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
         // We have bogeys and there is no objection to showing the dialog
         if (m_settings.timed_idle != 0) m_radar[radar]->control_dialog->SetTimedIdleIndex(0); //Disable Timed Idle if set
 
-        if (!m_pGuardZoneBogey && m_settings.show_radar) {
+        if (!m_pGuardZoneBogey && m_settings.show_radar == RADAR_ON) {
             // If this is the first time we have a bogey create & show the dialog immediately
             m_pGuardZoneBogey = new GuardZoneBogey;
             m_pGuardZoneBogey->Create(m_parent_window, this);
             m_pGuardZoneBogey->Show();
             m_pGuardZoneBogey->SetPosition(m_dialogLocation[DL_BOGEY].pos);
         }
-        else if (!m_guard_bogey_confirmed && (m_settings.show_radar)) {
+        else if (!m_guard_bogey_confirmed && (m_settings.show_radar == RADAR_ON)) {
             m_pGuardZoneBogey->Show();
         }
         time_t now = time(0);
@@ -1072,7 +1078,7 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
             else {
                 wxBell();
             }
-            if (m_pGuardZoneBogey && m_settings.show_radar) {
+            if (m_pGuardZoneBogey && m_settings.show_radar == RADAR_ON) {
                 m_pGuardZoneBogey->Show();
             }
             delta_t = ALARM_TIMEOUT;
@@ -1098,6 +1104,7 @@ void br24radar_pi::HandleBogeyCount(int *bogey_count)
 bool br24radar_pi::LoadConfig(void)
 {
     wxFileConfig *pConf = m_pconfig;
+    int intValue;
 
     if (pConf) {
 
@@ -1109,7 +1116,8 @@ bool br24radar_pi::LoadConfig(void)
         }
         m_settings.range_unit_meters = (m_settings.range_units == 1) ? 1000 : 1852;
         pConf->Read(wxT("ChartOverlay"),  &m_settings.chart_overlay, -1);
-        pConf->Read(wxT("EmulatorOn"), (int *)&m_settings.emulator_on, 0);
+        pConf->Read(wxT("EmulatorOn"), &intValue, 0);
+        m_settings.emulator_on = intValue;
         pConf->Read(wxT("VerboseLog"),  &m_settings.verbose, 0);
         pConf->Read(wxT("Transparency"),  &m_settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
         pConf->Read(wxT("RangeCalibration"),  &m_settings.range_calibration, 1.0);
@@ -1171,6 +1179,10 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(wxT("ThresholdBlue"), &m_settings.threshold_blue, 50);
         pConf->Read(wxT("ThresholdMultiSweep"), &m_settings.threshold_multi_sweep, 20);
 
+
+        pConf->Read(wxT("ShowRadar"), &intValue, 0);
+        m_settings.show_radar = intValue ? RADAR_ON : RADAR_OFF;
+
         SaveConfig();
         return true;
     }
@@ -1199,7 +1211,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("Refreshrate"), m_settings.refreshrate);
         pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
         pConf->Write(wxT("UseShader"), m_settings.useShader);
-        pConf->Write(wxT("ShowRadar"), m_settings.show_radar);
+        pConf->Write(wxT("ShowRadar"), (int) m_settings.show_radar);
         pConf->Write(wxT("RadarAlertAudioFile"), m_settings.alert_audio_file);
         pConf->Write(wxT("EnableDualRadar"), m_settings.enable_dual_radar);
 
@@ -1561,8 +1573,8 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
 
 #if TODO
     /* TODO - GuardZone handling */
-    if ((m_settings.show_radar && m_bpos_set && m_heading_source != HEADING_NONE && m_data_seen) ||
-        (m_settings.emulator_on && m_settings.show_radar)) {
+    if ((m_settings.show_radar == RADAR_ON && m_bpos_set && m_heading_source != HEADING_NONE && m_data_seen) ||
+        (m_settings.emulator_on && m_settings.show_radar == RADAR_ON)) {
         if (m_range_meters[m_settings.selectRadarB] > 0 && m_scanner_state == RADAR_ON) {
             // Guard Section
             for (int i = 0; i < 4; i++) {
@@ -1585,7 +1597,7 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
 #ifdef TODO
         /* TODO -- INTEGRATE GUARD ZONE RENDERING INTO PrepareRadarImage */
         // Guard Zone image and heading line for radar only
-        if (m_settings.show_radar) {
+        if (m_settings.show_radar == RADAR_ON) {
             if (m_radar[m_settings.selectRadarB]->guard_zone[0]->type != GZ_OFF || m_radar[m_settings.selectRadarB]->guard_zone[1]->type != GZ_OFF) {
                 RenderGuardZone(radar_center, v_scale_ppm, m_settings.selectRadarB);
             }

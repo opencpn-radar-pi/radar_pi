@@ -218,10 +218,12 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 
     bool radarOn = haveOpenGL && radarSeen;
     bool navOn = haveGPS && haveHeading && haveVariation;
-    bool black = false; // Need to optimize this away
+    bool stand_alone = m_pi->m_settings.chart_overlay < 0;
     bool want_message = m_pi->m_want_message_box;
 
     /*
+    TODO
+    Below is old, I think this is not correct -- Kees
     Decision table to select the state of the message box
     - means not relevant
 
@@ -230,7 +232,7 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
     _________________________________________________________
     radarOn        0   0   0   0   1   1   1   1   1   1   1
     navOn          0   1   0   1   0   1   0   1   1   0   1
-    black          0   0   1   1   0   0   1   1   0   1   1
+    stand_alone    0   0   1   1   0   0   1   1   0   1   1
     want_message   -   -   -   -   -   0   0   0   1   1   1
 
     m     message box
@@ -240,25 +242,32 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 
     */
 
-    if (!m_pi->m_settings.show_radar) {
+    if (m_pi->m_settings.show_radar == RADAR_OFF) {
+        wxLogMessage(wxT("BR24radar_pi: messagebox show_radar = RADAR_OFF"));
         new_message_state = HIDE;
     }
     else if (!haveOpenGL) {
+        wxLogMessage(wxT("BR24radar_pi: messagebox no OpenGL"));
         new_message_state = SHOW;
     }
     else if (want_message) {
+        wxLogMessage(wxT("BR24radar_pi: messagebox explicit want message"));
         new_message_state = SHOW_BACK;
     }
-    else if (!black && (!navOn || !radarOn)) {
+    else if (!stand_alone && (!navOn || !radarOn)) {
+        wxLogMessage(wxT("BR24radar_pi: messagebox overlay needs not met"));
         new_message_state = SHOW;
     }
-    else if (black && !radarOn) {
+    else if (stand_alone && !radarOn) {
+        wxLogMessage(wxT("BR24radar_pi: messagebox standalone needs not met"));
         new_message_state = SHOW_NO_NMEA;
     }
-    else if ((black || navOn) && radarOn) {
+    else if ((stand_alone || navOn) && radarOn) {
+        wxLogMessage(wxT("BR24radar_pi: messagebox needs met"));
         new_message_state = HIDE;
     }
     else {
+        wxLogMessage(wxT("BR24radar_pi: messagebox give up, show it"));
         new_message_state = SHOW;
     }
 

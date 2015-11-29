@@ -1195,36 +1195,34 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll)
 
 void br24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData)
 {
-    if (m_ri->control_box_closed ||    // manually closed
-       (m_pi->m_pGuardZoneDialog && m_pi->m_pGuardZoneDialog->IsShown()) // Guard zone shown
-       ) {
+    if (m_ri->control_box_closed) {
+        if (m_pi->m_settings.verbose) {
+            wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateControl explicit closed: Hidden"), m_ri->name);
+        }
         Hide();
         return;
+    }
+    if (m_pi->m_pGuardZoneDialog && m_pi->m_pGuardZoneDialog->IsShown()) {
+        if (m_pi->m_settings.verbose) {
+            wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateControl Hidden because GuardZoneDialog is shown"), m_ri->name);
+        }
+        Hide();
     }
 
     if (m_ri->control_box_opened) {  // manually opened from context menu
-        if (!topSizer->IsShown(controlBox) && !topSizer->IsShown(advancedBox) && !topSizer->IsShown(editBox) && !topSizer->IsShown(installationBox)) {
-            topSizer->Show(controlBox);
+        if (m_pi->m_settings.verbose) {
+            wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateControl manually opened"), m_ri->name);
         }
-        controlBox->Layout();
-        Fit();
-        topSizer->Layout();
-        return;
-    }
-
-    if (!m_pi->m_settings.show_radar || !haveRadar ||
-        (m_pi->m_pGuardZoneDialog && m_pi->m_pGuardZoneDialog->IsShown())) {           // don'want to see the radar, hide control box
         Hide();
-    } else { // want to show the radar and radar is seen
-        Show();
-
         if (!topSizer->IsShown(controlBox) && !topSizer->IsShown(advancedBox) && !topSizer->IsShown(editBox) && !topSizer->IsShown(installationBox)) {
             topSizer->Show(controlBox);
         }
         controlBox->Layout();
         Fit();
         topSizer->Layout();
+        Show();
     }
+
     editBox->Layout();
     topSizer->Layout();
 
