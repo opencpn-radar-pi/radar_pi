@@ -91,11 +91,13 @@ RadarInfo::~RadarInfo( )
 
 bool RadarInfo::Init( int verbose )
 {
-    bool succeeded = true;
+    bool succeeded;
 
     m_verbose = verbose;
 
-    succeeded &= transmit->Init(verbose);
+    succeeded = transmit->Init(verbose);
+    // succeeded &= some other init
+    // succeeded &= some other init
 
     return succeeded;
 }
