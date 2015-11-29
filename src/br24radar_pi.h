@@ -127,7 +127,6 @@ struct receive_statistics {
     int missing_spokes;
 };
 
-static wxFont g_font;
 static wxSize g_buttonSize;
 
 typedef enum ControlType {

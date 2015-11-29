@@ -68,13 +68,12 @@ public:
     void UpdateControl(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
     void UpdateControlValues(bool refreshAll);
     void SetErrorMessage(wxString &msg);
-    bool wantShowMessage; // If true, don't hide messagebox automatically
 
-    br24RadarControlButton *bRadarAB;
-    wxBoxSizer         *topSizer;
-    wxBoxSizer         *controlBox;
-    RadarInfo          *m_ri;
-    br24radar_pi       *m_pi;
+    br24radar_pi           *m_pi;
+    RadarInfo              *m_ri;
+    wxFont                  m_font;
+    wxBoxSizer             *m_top_sizer;
+    wxBoxSizer             *m_control_sizer;
 
 private:
     void OnClose(wxCloseEvent& event);
@@ -109,58 +108,52 @@ private:
 
     void EnterEditMode(br24RadarControlButton * button);
 
-    wxWindow               *pParent;
-    wxBoxSizer             *advanced4gBox;
-    wxBoxSizer             *advancedBox;
-    wxBoxSizer             *editBox;
-    wxBoxSizer             *installationBox;
-    wxBoxSizer             *fromBox; // If on edit control, this is where the button is from
+    wxWindow               *m_parent;
+    wxBoxSizer             *m_advanced_4G_sizer;
+    wxBoxSizer             *m_advanced_sizer;
+    wxBoxSizer             *m_edit_sizer;
+    wxBoxSizer             *m_installation_sizer;
+    wxBoxSizer             *m_from_sizer; // If on edit control, this is where the button is from
 
     // Edit Controls
 
-    br24RadarControlButton *fromControl; // Only set when in edit mode
+    br24RadarControlButton *m_from_control; // Only set when in edit mode
 
     // The 'edit' control has these buttons:
-    wxButton               *bBack;
-    wxButton               *bPlusTen;
-    wxButton               *bPlus;
-    wxStaticText           *tValue;
-    wxButton               *bMinus;
-    wxButton               *bMinusTen;
-    wxButton               *bAuto;
-    wxButton               *bMultiSweep;
+    wxButton               *m_plus_ten_button;
+    wxButton               *m_plus_button;
+    wxStaticText           *m_value_text;
+    wxButton               *m_minus_button;
+    wxButton               *m_minus_ten_button;
+    wxButton               *m_auto_button;
+    wxButton               *m_multi_sweep_button;
 
     // Advanced controls
-    wxButton               *bAdvancedBack;
-    wxButton               *bInstallationBack;
-    br24RadarControlButton *bTransparency;
-    br24RadarControlButton *bInterferenceRejection;
-    br24RadarControlButton *bTargetSeparation;
-    br24RadarControlButton *bNoiseRejection;
-    br24RadarControlButton *bTargetBoost;
-    br24RadarControlButton *bRefreshrate;
-    br24RadarControlButton *bScanSpeed;
-    br24RadarControlButton *bTimedIdle;
+    br24RadarControlButton *m_interference_rejection_button;
+    br24RadarControlButton *m_target_separation_button;
+    br24RadarControlButton *m_noise_rejection_button;
+    br24RadarControlButton *m_target_boost_button;
+    br24RadarControlButton *m_scan_speed_button;
+    br24RadarControlButton *m_timed_idle_button;
 
     // Installation controls
-    br24RadarControlButton *bBearingAlignment;
-    br24RadarControlButton *bAntennaHeight;
-    br24RadarControlButton *bLocalInterferenceRejection;
-    br24RadarControlButton *bSideLobeSuppression;
+    br24RadarControlButton *m_bearing_alignment_button;
+    br24RadarControlButton *m_antenna_height_button;
+    br24RadarControlButton *m_local_interference_rejection_button;
+    br24RadarControlButton *m_side_lobe_suppression_button;
 
     // Show Controls
 
-    wxButton               *bRadarState;
-    wxButton               *bOverlay;
-    br24RadarRangeControlButton *bRange;
-    br24RadarControlButton *bGain;
-    br24RadarControlButton *bSea;
-    br24RadarControlButton *bRain;
-    wxButton               *bAdvanced;
-    wxButton               *bInstallation;
-    wxButton               *bGuard1;
-    wxButton               *bGuard2;
-    wxButton               *bMessage;
+    wxButton               *m_radar_state;
+    wxButton               *m_overlay_button;
+    br24RadarRangeControlButton *m_range_button;
+    br24RadarControlButton *m_transparency_button; // TODO: Set it on change
+    br24RadarControlButton *m_refresh_rate_button; // TODO: Set it on change
+    br24RadarControlButton *m_gain_button;
+    br24RadarControlButton *m_sea_button;
+    br24RadarControlButton *m_rain_button;
+    wxButton               *m_guard_1_button;
+    wxButton               *m_guard_2_button;
 };
 
 #endif

@@ -165,7 +165,7 @@ public:
             SetLocalValue(newValue);
         }
 
-        this->SetFont(g_font);
+        this->SetFont(m_parent->m_font);
     }
 
     virtual void SetValue(int value);
@@ -207,7 +207,7 @@ public:
         names = 0;
         controlType = CT_RANGE;
 
-        this->SetFont(g_font);
+        this->SetFont(m_parent->m_font);
     }
 
     virtual void SetValue(int value);
@@ -446,7 +446,7 @@ bool br24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, RadarInfo *
                                 wxWindowID id, const wxString& caption,
                                 const wxPoint& pos, const wxSize& size, long style)
 {
-    pParent = parent;
+    m_parent = parent;
     m_pi = ppi;
     m_ri = ri;
 
@@ -459,7 +459,7 @@ bool br24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, RadarInfo *
     if (!wxDialog::Create(parent, id, caption, pos, wxDefaultSize, wstyle)) {
         return false;
     }
-    g_font = *OCPNGetFont(_("Dialog"), 12);
+    m_font = *OCPNGetFont(_("Dialog"), 12);
 
     CreateControls();
     return true;
@@ -469,13 +469,13 @@ bool br24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, RadarInfo *
 void br24ControlsDialog::CreateControls()
 {
     static int BORDER = 0;
-    wxFont fatFont = g_font;
+    wxFont fatFont = m_font;
     fatFont.SetWeight(wxFONTWEIGHT_BOLD);
-    fatFont.SetPointSize(g_font.GetPointSize() + 1);
+    fatFont.SetPointSize(m_font.GetPointSize() + 1);
 
     // A top-level sizer
-    topSizer = new wxBoxSizer(wxVERTICAL);
-    SetSizer(topSizer);
+    m_top_sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(m_top_sizer);
 
     /*
      * Here be dragons... Since I haven't been able to create buttons that adapt up, and at the same time
@@ -486,7 +486,7 @@ void br24ControlsDialog::CreateControls()
      */
 
     wxBoxSizer * testBox = new wxBoxSizer(wxVERTICAL);
-    topSizer->Add(testBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+    m_top_sizer->Add(testBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
     wxString label;
     label << _("Transparency") << wxT("\n");
@@ -505,11 +505,11 @@ void br24ControlsDialog::CreateControls()
 
     wxStaticText * testMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     testBox->Add(testMessage, 0, wxALL, 2);
-    testMessage->SetFont(g_font);
+    testMessage->SetFont(m_font);
 
-    topSizer->Fit(this);
-    topSizer->Layout();
-    int width = topSizer->GetSize().GetWidth() + 10;
+    m_top_sizer->Fit(this);
+    m_top_sizer->Layout();
+    int width = m_top_sizer->GetSize().GetWidth() + 10;
     wxSize bestSize = GetBestSize();
     if (width < bestSize.GetWidth()) {
         width = bestSize.GetWidth();
@@ -524,84 +524,85 @@ void br24ControlsDialog::CreateControls()
     if (m_pi->m_settings.verbose) {
         wxLogMessage(wxT("br24radar_pi: Dynamic button width = %d"), g_buttonSize.GetWidth());
     }
-    topSizer->Hide(testBox);
-    topSizer->Remove(testBox);
+    m_top_sizer->Hide(testBox);
+    m_top_sizer->Remove(testBox);
+    delete testBox;
     // Determined desired button width
 
     g_buttonSize = wxSize(width, 50);
     //**************** EDIT BOX ******************//
      // A box sizer to contain RANGE button
-    editBox = new wxBoxSizer(wxVERTICAL);
-    topSizer->Add(editBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+    m_edit_sizer = new wxBoxSizer(wxVERTICAL);
+    m_top_sizer->Add(m_edit_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
     // A box sizer to contain RANGE button
-    editBox = new wxBoxSizer(wxVERTICAL);
-    topSizer->Add(editBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+    m_edit_sizer = new wxBoxSizer(wxVERTICAL);
+    m_top_sizer->Add(m_edit_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
     // The <<Back button
-    bBack = new wxButton(this, ID_BACK, _("<<\nBack"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bBack, 0, wxALL, BORDER);
-    bBack->SetFont(g_font);
+    wxButton * back_button = new wxButton(this, ID_BACK, _("<<\nBack"), wxDefaultPosition, g_buttonSize, 0);
+    m_edit_sizer->Add(back_button, 0, wxALL, BORDER);
+    back_button->SetFont(m_font);
 
     // The +10 button
-    bPlusTen = new wxButton(this, ID_PLUS_TEN, _("+10"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bPlusTen, 0, wxALL, BORDER);
-    bPlusTen->SetFont(g_font);
+    m_plus_ten_button = new wxButton(this, ID_PLUS_TEN, _("+10"), wxDefaultPosition, g_buttonSize, 0);
+    m_edit_sizer->Add(m_plus_ten_button, 0, wxALL, BORDER);
+    m_plus_ten_button->SetFont(m_font);
 
     // The + button
-    bPlus = new wxButton(this, ID_PLUS, _("+"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bPlus, 0, wxALL, BORDER);
-    bPlus->SetFont(g_font);
+    m_plus_button = new wxButton(this, ID_PLUS, _("+"), wxDefaultPosition, g_buttonSize, 0);
+    m_edit_sizer->Add(m_plus_button, 0, wxALL, BORDER);
+    m_plus_button->SetFont(m_font);
 
     // The VALUE button
-    tValue = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, g_buttonSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    editBox->Add(tValue, 0, wxALL, BORDER);
-    tValue->SetFont(fatFont);
-    tValue->SetBackgroundColour(*wxLIGHT_GREY);
+    m_value_text = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, g_buttonSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    m_edit_sizer->Add(m_value_text, 0, wxALL, BORDER);
+    m_value_text->SetFont(fatFont);
+    m_value_text->SetBackgroundColour(*wxLIGHT_GREY);
 
     // The - button
-    bMinus = new wxButton(this, ID_MINUS, _("-"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bMinus, 0, wxALL, BORDER);
-    bMinus->SetFont(g_font);
+    m_minus_button = new wxButton(this, ID_MINUS, _("-"), wxDefaultPosition, g_buttonSize, 0);
+    m_edit_sizer->Add(m_minus_button, 0, wxALL, BORDER);
+    m_minus_button->SetFont(m_font);
 
     // The -10 button
-    bMinusTen = new wxButton(this, ID_MINUS_TEN, _("-10"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bMinusTen, 0, wxALL, BORDER);
-    bMinusTen->SetFont(g_font);
+    m_minus_ten_button = new wxButton(this, ID_MINUS_TEN, _("-10"), wxDefaultPosition, g_buttonSize, 0);
+    m_edit_sizer->Add(m_minus_ten_button, 0, wxALL, BORDER);
+    m_minus_ten_button->SetFont(m_font);
 
     // The Auto button
-    bAuto = new wxButton(this, ID_AUTO, _("Auto"), wxDefaultPosition, g_buttonSize, 0);
-    editBox->Add(bAuto, 0, wxALL, BORDER);
-    bAuto->SetFont(g_font);
+    m_auto_button = new wxButton(this, ID_AUTO, _("Auto"), wxDefaultPosition, g_buttonSize, 0);
+    m_edit_sizer->Add(m_auto_button, 0, wxALL, BORDER);
+    m_auto_button->SetFont(m_font);
 
     // The Multi Sweep Filter button
     wxString labelMS;
     labelMS << _("Multi Sweep Filter") << wxT("\n") << _("Off");
-    bMultiSweep = new wxButton(this, ID_MULTISWEEP, labelMS, wxDefaultPosition, wxSize(width, 40), 0);
-    editBox->Add(bMultiSweep, 0, wxALL, BORDER);
-    bMultiSweep->SetFont(g_font);
+    m_multi_sweep_button = new wxButton(this, ID_MULTISWEEP, labelMS, wxDefaultPosition, wxSize(width, 40), 0);
+    m_edit_sizer->Add(m_multi_sweep_button, 0, wxALL, BORDER);
+    m_multi_sweep_button->SetFont(m_font);
 
-    topSizer->Hide(editBox);
+    m_top_sizer->Hide(m_edit_sizer);
 
 
     //**************** ADVANCED BOX ******************//
     // These are the controls that the users sees when the Advanced button is selected
 
-    advancedBox = new wxBoxSizer(wxVERTICAL);
-    topSizer->Add(advancedBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+    m_advanced_sizer = new wxBoxSizer(wxVERTICAL);
+    m_top_sizer->Add(m_advanced_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
     // The Back button
     wxString backButtonStr;
     backButtonStr << wxT("<<\n") << _("Back");
-    bAdvancedBack = new wxButton(this, ID_ADVANCED_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
-    advancedBox->Add(bAdvancedBack, 0, wxALL, BORDER);
-    bAdvancedBack->SetFont(g_font);
+    wxButton * bAdvancedBack = new wxButton(this, ID_ADVANCED_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
+    m_advanced_sizer->Add(bAdvancedBack, 0, wxALL, BORDER);
+    bAdvancedBack->SetFont(m_font);
 
     // The TRANSPARENCY button
-    bTransparency = new br24RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), CT_TRANSPARENCY, false, m_pi->m_settings.overlay_transparency);
-    advancedBox->Add(bTransparency, 0, wxALL, BORDER);
-    bTransparency->minValue = MIN_OVERLAY_TRANSPARENCY;
-    bTransparency->maxValue = MAX_OVERLAY_TRANSPARENCY;
+    m_transparency_button = new br24RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), CT_TRANSPARENCY, false, m_pi->m_settings.overlay_transparency);
+    m_advanced_sizer->Add(m_transparency_button, 0, wxALL, BORDER);
+    m_transparency_button->minValue = MIN_OVERLAY_TRANSPARENCY;
+    m_transparency_button->maxValue = MAX_OVERLAY_TRANSPARENCY;
 
     // The REJECTION button
 
@@ -610,25 +611,25 @@ void br24ControlsDialog::CreateControls()
     interference_rejection_names[2] = _("Medium");
     interference_rejection_names[3] = _("High");
 
-    bInterferenceRejection = new br24RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"),
+    m_interference_rejection_button = new br24RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"),
         CT_INTERFERENCE_REJECTION, false, m_ri->interference_rejection.button);
-    advancedBox->Add(bInterferenceRejection, 0, wxALL, BORDER);
-    bInterferenceRejection->minValue = 0;
-    bInterferenceRejection->maxValue = ARRAY_SIZE(interference_rejection_names) - 1;
-    bInterferenceRejection->names = interference_rejection_names;
-    bInterferenceRejection->SetLocalValue(m_ri->interference_rejection.button); // redraw after adding names
+    m_advanced_sizer->Add(m_interference_rejection_button, 0, wxALL, BORDER);
+    m_interference_rejection_button->minValue = 0;
+    m_interference_rejection_button->maxValue = ARRAY_SIZE(interference_rejection_names) - 1;
+    m_interference_rejection_button->names = interference_rejection_names;
+    m_interference_rejection_button->SetLocalValue(m_ri->interference_rejection.button); // redraw after adding names
 
     // The TARGET BOOST button
     target_boost_names[0] = _("Off");
     target_boost_names[1] = _("Low");
     target_boost_names[2] = _("High");
-    bTargetBoost = new br24RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), CT_TARGET_BOOST, false,
+    m_target_boost_button = new br24RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), CT_TARGET_BOOST, false,
         m_ri->target_boost.button);
-    advancedBox->Add(bTargetBoost, 0, wxALL, BORDER);
-    bTargetBoost->minValue = 0;
-    bTargetBoost->maxValue = ARRAY_SIZE(target_boost_names) - 1;
-    bTargetBoost->names = target_boost_names;
-    bTargetBoost->SetLocalValue(m_ri->target_boost.button); // redraw after adding names
+    m_advanced_sizer->Add(m_target_boost_button, 0, wxALL, BORDER);
+    m_target_boost_button->minValue = 0;
+    m_target_boost_button->maxValue = ARRAY_SIZE(target_boost_names) - 1;
+    m_target_boost_button->names = target_boost_names;
+    m_target_boost_button->SetLocalValue(m_ri->target_boost.button); // redraw after adding names
 
 
     // The NOISE REJECTION button
@@ -636,16 +637,16 @@ void br24ControlsDialog::CreateControls()
     noise_rejection_names[1] = _("Low");
     noise_rejection_names[2] = _("High");
 
-    bNoiseRejection = new br24RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), CT_NOISE_REJECTION, false,
+    m_noise_rejection_button = new br24RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), CT_NOISE_REJECTION, false,
         m_ri->noise_rejection.button);
-    advancedBox->Add(bNoiseRejection, 0, wxALL, BORDER);
-    bNoiseRejection->minValue = 0;
-    bNoiseRejection->maxValue = ARRAY_SIZE(noise_rejection_names) - 1;
-    bNoiseRejection->names = noise_rejection_names;
-    bNoiseRejection->SetLocalValue(m_ri->noise_rejection.button); // redraw after adding names
+    m_advanced_sizer->Add(m_noise_rejection_button, 0, wxALL, BORDER);
+    m_noise_rejection_button->minValue = 0;
+    m_noise_rejection_button->maxValue = ARRAY_SIZE(noise_rejection_names) - 1;
+    m_noise_rejection_button->names = noise_rejection_names;
+    m_noise_rejection_button->SetLocalValue(m_ri->noise_rejection.button); // redraw after adding names
 
-    advanced4gBox = new wxBoxSizer(wxVERTICAL);
-    advancedBox->Add(advanced4gBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+    m_advanced_4G_sizer = new wxBoxSizer(wxVERTICAL);
+    m_advanced_sizer->Add(m_advanced_4G_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
 
     // The TARGET SEPARATION button
 
@@ -654,34 +655,34 @@ void br24ControlsDialog::CreateControls()
     target_separation_names[2] = _("Medium");
     target_separation_names[3] = _("High");
 
-    bTargetSeparation = new br24RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"), CT_TARGET_SEPARATION, false,
+    m_target_separation_button = new br24RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"), CT_TARGET_SEPARATION, false,
         m_ri->target_separation.button);
-    advanced4gBox->Add(bTargetSeparation, 0, wxALL, BORDER);
-    bTargetSeparation->minValue = 0;
-    bTargetSeparation->maxValue = ARRAY_SIZE(target_separation_names) - 1;
-    bTargetSeparation->names = target_separation_names;
-    bTargetSeparation->SetLocalValue(m_ri->target_separation.button); // redraw after adding names
+    m_advanced_4G_sizer->Add(m_target_separation_button, 0, wxALL, BORDER);
+    m_target_separation_button->minValue = 0;
+    m_target_separation_button->maxValue = ARRAY_SIZE(target_separation_names) - 1;
+    m_target_separation_button->names = target_separation_names;
+    m_target_separation_button->SetLocalValue(m_ri->target_separation.button); // redraw after adding names
 
     // The SCAN SPEED button
     scan_speed_names[0] = _("Normal");
     scan_speed_names[1] = _("Fast");
-    bScanSpeed = new br24RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), CT_SCAN_SPEED, false, m_ri->scan_speed.button);
-    advancedBox->Add(bScanSpeed, 0, wxALL, BORDER);
-    bScanSpeed->minValue = 0;
-    bScanSpeed->maxValue = ARRAY_SIZE(scan_speed_names) - 1;
-    bScanSpeed->names = scan_speed_names;
-    bScanSpeed->SetLocalValue(m_ri->scan_speed.button); // redraw after adding names
+    m_scan_speed_button = new br24RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), CT_SCAN_SPEED, false, m_ri->scan_speed.button);
+    m_advanced_sizer->Add(m_scan_speed_button, 0, wxALL, BORDER);
+    m_scan_speed_button->minValue = 0;
+    m_scan_speed_button->maxValue = ARRAY_SIZE(scan_speed_names) - 1;
+    m_scan_speed_button->names = scan_speed_names;
+    m_scan_speed_button->SetLocalValue(m_ri->scan_speed.button); // redraw after adding names
 
     // The REFRESHRATE button
-    bRefreshrate = new br24RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), CT_REFRESHRATE, false, m_pi->m_refresh_rate);
-    advancedBox->Add(bRefreshrate, 0, wxALL, BORDER);
-    bRefreshrate->minValue = 1;
-    bRefreshrate->maxValue = 5;
+    m_refresh_rate_button = new br24RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), CT_REFRESHRATE, false, m_pi->m_refresh_rate);
+    m_advanced_sizer->Add(m_refresh_rate_button, 0, wxALL, BORDER);
+    m_refresh_rate_button->minValue = 1;
+    m_refresh_rate_button->maxValue = 5;
 
     // The INSTALLATION button
-    bInstallation = new wxButton(this, ID_INSTALLATION, _("Installation"), wxDefaultPosition, g_buttonSize, 0);
-    advancedBox->Add(bInstallation, 0, wxALL, BORDER);
-    bInstallation->SetFont(g_font);
+    wxButton * bInstallation = new wxButton(this, ID_INSTALLATION, _("Installation"), wxDefaultPosition, g_buttonSize, 0);
+    m_advanced_sizer->Add(bInstallation, 0, wxALL, BORDER);
+    bInstallation->SetFont(m_font);
 
     // The TIMED TRANSMIT button
     timed_idle_times[0] = _("Off");
@@ -698,120 +699,119 @@ void br24ControlsDialog::CreateControls()
         timed_idle_times[i] << TT_Label;
     }
 
-    bTimedIdle = new br24RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), CT_TIMED_IDLE, false, m_pi->m_settings.timed_idle); //HakanToDo new setting
-    advancedBox->Add(bTimedIdle, 0, wxALL, BORDER);
-    bTimedIdle->minValue = 0;
-    bTimedIdle->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
-    bTimedIdle->names = timed_idle_times;
-    bTimedIdle->SetValue(m_pi->m_settings.timed_idle); // redraw after adding names
+    m_timed_idle_button = new br24RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), CT_TIMED_IDLE, false, m_pi->m_settings.timed_idle); //HakanToDo new setting
+    m_advanced_sizer->Add(m_timed_idle_button, 0, wxALL, BORDER);
+    m_timed_idle_button->minValue = 0;
+    m_timed_idle_button->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
+    m_timed_idle_button->names = timed_idle_times;
+    m_timed_idle_button->SetValue(m_pi->m_settings.timed_idle); // redraw after adding names
 
-    topSizer->Hide(advancedBox);
+    m_top_sizer->Hide(m_advanced_sizer);
 
     //**************** Installation BOX ******************//
     // These are the controls that the users sees when the Installation button is selected
 
-    installationBox = new wxBoxSizer(wxVERTICAL);
-    topSizer->Add(installationBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+    m_installation_sizer = new wxBoxSizer(wxVERTICAL);
+    m_top_sizer->Add(m_installation_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
     // The Back button
     wxString instBackButtonStr;
     instBackButtonStr << wxT("<<\n") << _("Back");
-    bInstallationBack = new wxButton(this, ID_INSTALLATION_BACK, instBackButtonStr, wxDefaultPosition, g_buttonSize, 0);
-    installationBox->Add(bInstallationBack, 0, wxALL, BORDER);
-    bInstallationBack->SetFont(g_font);
+    wxButton * bInstallationBack = new wxButton(this, ID_INSTALLATION_BACK, instBackButtonStr, wxDefaultPosition, g_buttonSize, 0);
+    m_installation_sizer->Add(bInstallationBack, 0, wxALL, BORDER);
+    bInstallationBack->SetFont(m_font);
 
     // The BEARING ALIGNMENT button
-    bBearingAlignment = new br24RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"), CT_BEARING_ALIGNMENT,
+    m_bearing_alignment_button = new br24RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"), CT_BEARING_ALIGNMENT,
         false, m_ri->bearing_alignment.button);
-    installationBox->Add(bBearingAlignment, 0, wxALL, BORDER);
-    bBearingAlignment->SetFont(g_font);    // this bearing alignment work opposite to the one defined in the pi!
-    bBearingAlignment->minValue = -179;
-    bBearingAlignment->maxValue = 180;
+    m_installation_sizer->Add(m_bearing_alignment_button, 0, wxALL, BORDER);
+    m_bearing_alignment_button->SetFont(m_font);    // this bearing alignment work opposite to the one defined in the pi!
+    m_bearing_alignment_button->minValue = -179;
+    m_bearing_alignment_button->maxValue = 180;
 
     // The ANTENNA HEIGHT button
-    bAntennaHeight = new br24RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Antenna height"),
+    m_antenna_height_button = new br24RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Antenna height"),
         CT_ANTENNA_HEIGHT, false, m_ri->antenna_height.button);
-    installationBox->Add(bAntennaHeight, 0, wxALL, BORDER);
-    bAntennaHeight->minValue = 0;
-    bAntennaHeight->maxValue = 30;
+    m_installation_sizer->Add(m_antenna_height_button, 0, wxALL, BORDER);
+    m_antenna_height_button->minValue = 0;
+    m_antenna_height_button->maxValue = 30;
 
     // The LOCAL INTERFERENCE REJECTION button
-    bLocalInterferenceRejection = new br24RadarControlButton(this, ID_LOCAL_INTERFERENCE_REJECTION, _("Local interference rejection"),
+    m_local_interference_rejection_button = new br24RadarControlButton(this, ID_LOCAL_INTERFERENCE_REJECTION, _("Local interference rejection"),
         CT_LOCAL_INTERFERENCE_REJECTION, false, m_ri->local_interference_rejection.button);
-    installationBox->Add(bLocalInterferenceRejection, 0, wxALL, BORDER);
-    bLocalInterferenceRejection->minValue = 0;
-    bLocalInterferenceRejection->maxValue = ARRAY_SIZE(target_separation_names) - 1;   // off, low, medium, high, same as target separation
-    bLocalInterferenceRejection->names = target_separation_names;
-    bLocalInterferenceRejection->SetLocalValue(m_ri->local_interference_rejection.button);
+    m_installation_sizer->Add(m_local_interference_rejection_button, 0, wxALL, BORDER);
+    m_local_interference_rejection_button->minValue = 0;
+    m_local_interference_rejection_button->maxValue = ARRAY_SIZE(target_separation_names) - 1;   // off, low, medium, high, same as target separation
+    m_local_interference_rejection_button->names = target_separation_names;
+    m_local_interference_rejection_button->SetLocalValue(m_ri->local_interference_rejection.button);
 
     // The SIDE LOBE SUPPRESSION button
-    bSideLobeSuppression = new br24RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"), CT_SIDE_LOBE_SUPPRESSION, true,
+    m_side_lobe_suppression_button = new br24RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"), CT_SIDE_LOBE_SUPPRESSION, true,
         m_ri->side_lobe_suppression.button);
-    installationBox->Add(bSideLobeSuppression, 0, wxALL, BORDER);
-    bSideLobeSuppression->minValue = 0;
-    bSideLobeSuppression->maxValue = 100;
-    bSideLobeSuppression->SetLocalValue(m_ri->side_lobe_suppression.button); // redraw after adding names
+    m_installation_sizer->Add(m_side_lobe_suppression_button, 0, wxALL, BORDER);
+    m_side_lobe_suppression_button->minValue = 0;
+    m_side_lobe_suppression_button->maxValue = 100;
+    m_side_lobe_suppression_button->SetLocalValue(m_ri->side_lobe_suppression.button); // redraw after adding names
 
-    topSizer->Hide(installationBox);
+    m_top_sizer->Hide(m_installation_sizer);
 
 
     //**************** CONTROL BOX ******************//
     // These are the controls that the users sees when the dialog is started
 
     // A box sizer to contain RANGE, GAIN etc button
-    controlBox = new wxBoxSizer(wxVERTICAL);
-    topSizer->Add(controlBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+    m_control_sizer = new wxBoxSizer(wxVERTICAL);
+    m_top_sizer->Add(m_control_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
     // The Transmit button
-    bRadarState = new wxButton(this, ID_RADAR_STATE, _("Off"), wxDefaultPosition, g_buttonSize, 0);
-    controlBox->Add(bRadarState, 0, wxALL, BORDER);
-    bRadarState->SetFont(g_font);
+    m_radar_state = new wxButton(this, ID_RADAR_STATE, _("Off"), wxDefaultPosition, g_buttonSize, 0);
+    m_control_sizer->Add(m_radar_state, 0, wxALL, BORDER);
+    m_radar_state->SetFont(m_font);
     // Updated when we receive data
 
     // The RADAR ONLY / OVERLAY button
-    bOverlay = new wxButton(this, ID_RADAR_OVERLAY, _("Overlay\nOff"), wxDefaultPosition, g_buttonSize, 0);
-    controlBox->Add(bOverlay, 0, wxALL, BORDER);
-    bOverlay->SetFont(g_font);
+    m_overlay_button = new wxButton(this, ID_RADAR_OVERLAY, _("Overlay\nOff"), wxDefaultPosition, g_buttonSize, 0);
+    m_control_sizer->Add(m_overlay_button, 0, wxALL, BORDER);
+    m_overlay_button->SetFont(m_font);
 
     // The RANGE button
-    bRange = new br24RadarRangeControlButton(this, ID_RANGE, _("Range"));
-    controlBox->Add(bRange, 0, wxALL, BORDER);
+    m_range_button = new br24RadarRangeControlButton(this, ID_RANGE, _("Range"));
+    m_control_sizer->Add(m_range_button, 0, wxALL, BORDER);
 
     // The GAIN button
-    bGain = new br24RadarControlButton(this, ID_GAIN, _("Gain"), CT_GAIN, true, m_ri->gain.button);
-    controlBox->Add(bGain, 0, wxALL, BORDER);
+    m_gain_button = new br24RadarControlButton(this, ID_GAIN, _("Gain"), CT_GAIN, true, m_ri->gain.button);
+    m_control_sizer->Add(m_gain_button, 0, wxALL, BORDER);
 
     // The SEA button
-    bSea = new br24RadarControlButton(this, ID_SEA, _("Sea clutter"), CT_SEA, true, m_ri->sea.button);
-    controlBox->Add(bSea, 0, wxALL, BORDER);
+    m_sea_button = new br24RadarControlButton(this, ID_SEA, _("Sea clutter"), CT_SEA, true, m_ri->sea.button);
+    m_control_sizer->Add(m_sea_button, 0, wxALL, BORDER);
 
     // The RAIN button
-    bRain = new br24RadarControlButton(this, ID_RAIN, _("Rain clutter"), CT_RAIN, false, m_ri->rain.button);
-    controlBox->Add(bRain, 0, wxALL, BORDER);
+    m_rain_button = new br24RadarControlButton(this, ID_RAIN, _("Rain clutter"), CT_RAIN, false, m_ri->rain.button);
+    m_control_sizer->Add(m_rain_button, 0, wxALL, BORDER);
 
     // The ADVANCED button
-    bAdvanced = new wxButton(this, ID_ADVANCED, _("Advanced\ncontrols"), wxDefaultPosition, g_buttonSize, 0);
-    controlBox->Add(bAdvanced, 0, wxALL, BORDER);
-    bAdvanced->SetFont(g_font);
+    wxButton * bAdvanced = new wxButton(this, ID_ADVANCED, _("Advanced\ncontrols"), wxDefaultPosition, g_buttonSize, 0);
+    m_control_sizer->Add(bAdvanced, 0, wxALL, BORDER);
+    bAdvanced->SetFont(m_font);
 
     // The GUARD ZONE 1 button
-    bGuard1 = new wxButton(this, ID_ZONE1, wxT(""), wxDefaultPosition, g_buttonSize, 0);
-    controlBox->Add(bGuard1, 0, wxALL, BORDER);
-    bGuard1->SetFont(g_font);
+    m_guard_1_button = new wxButton(this, ID_ZONE1, wxT(""), wxDefaultPosition, g_buttonSize, 0);
+    m_control_sizer->Add(m_guard_1_button, 0, wxALL, BORDER);
+    m_guard_1_button->SetFont(m_font);
 
     // The GUARD ZONE 2 button
-    bGuard2 = new wxButton(this, ID_ZONE2, wxT(""), wxDefaultPosition, g_buttonSize, 0);
-    controlBox->Add(bGuard2, 0, wxALL, BORDER);
-    bGuard2->SetFont(g_font);
+    m_guard_2_button = new wxButton(this, ID_ZONE2, wxT(""), wxDefaultPosition, g_buttonSize, 0);
+    m_control_sizer->Add(m_guard_2_button, 0, wxALL, BORDER);
+    m_guard_2_button->SetFont(m_font);
 
     // The INFO button
-    bMessage = new wxButton(this, ID_MESSAGE, _("Info"), wxDefaultPosition, wxSize(width, 25), 0);
-    controlBox->Add(bMessage, 0, wxALL, BORDER);
-    bMessage->SetFont(g_font);
-    wantShowMessage = false;
+    wxButton * bMessage = new wxButton(this, ID_MESSAGE, _("Info"), wxDefaultPosition, wxSize(width, 25), 0);
+    m_control_sizer->Add(bMessage, 0, wxALL, BORDER);
+    bMessage->SetFont(m_font);
 
-    fromBox = controlBox;
-    topSizer->Hide(controlBox);
+    m_from_sizer = m_control_sizer;
+    m_top_sizer->Hide(m_control_sizer);
 
     UpdateGuardZoneState();
 
@@ -834,27 +834,27 @@ void br24ControlsDialog::UpdateGuardZoneState()
     };
 
     label1 << _("Guard zone") << wxT(" 1\n") << GuardZoneNames[m_ri->guard_zone[0]->type];
-    bGuard1->SetLabel(label1);
+    m_guard_1_button->SetLabel(label1);
 
     label2 << _("Guard zone") << wxT(" 2\n") << GuardZoneNames[m_ri->guard_zone[1]->type];
-    bGuard2->SetLabel(label2);
+    m_guard_2_button->SetLabel(label2);
 }
 
 void br24ControlsDialog::SetRemoteRangeIndex(size_t index)
 {
-    bRange->isRemote = true;
-    bRange->SetValueInt(index); // set and recompute the range label
+    m_range_button->isRemote = true;
+    m_range_button->SetValueInt(index); // set and recompute the range label
 }
 
 void br24ControlsDialog::SetRangeIndex(size_t index)
 {
-    bRange->isRemote = false;
-//    bRange->SetValueInt(index); // set and recompute the range label
+    m_range_button->isRemote = false;
+//    m_range_button->SetValueInt(index); // set and recompute the range label
 }
 
 void br24ControlsDialog::SetTimedIdleIndex(int index)
 {
-    bTimedIdle->SetValue(index) ; // set and recompute the Timed Idle label
+    m_timed_idle_button->SetValue(index) ; // set and recompute the Timed Idle label
     if (m_pi->m_pIdleDialog && index == 0) m_pi->m_pIdleDialog->Close();
 }
 
@@ -881,40 +881,37 @@ void br24ControlsDialog::OnIdOKClick(wxCommandEvent& event)
 
 void br24ControlsDialog::OnPlusTenClick(wxCommandEvent& event)
 {
-    fromControl->SetValue(fromControl->value + 10);
-    wxString label = fromControl->GetLabel();
+    m_from_control->SetValue(m_from_control->value + 10);
+    wxString label = m_from_control->GetLabel();
 
-    tValue->SetLabel(label);
+    m_value_text->SetLabel(label);
 }
 
 void br24ControlsDialog::OnPlusClick(wxCommandEvent& event)
 {
-    fromControl->SetValue(fromControl->value + 1);
-    wxString label = fromControl->GetLabel();
+    m_from_control->SetValue(m_from_control->value + 1);
+    wxString label = m_from_control->GetLabel();
 
-    tValue->SetLabel(label);
+    m_value_text->SetLabel(label);
 }
 
 void br24ControlsDialog::OnBackClick(wxCommandEvent &event)
 {
-    topSizer->Hide(editBox);
-    topSizer->Show(fromBox);
-    if (fromBox == advancedBox) {
+    m_top_sizer->Hide(m_edit_sizer);
+    m_top_sizer->Show(m_from_sizer);
+    if (m_from_sizer == m_advanced_sizer) {
         if (m_ri->radar_type == RT_4G) {
-            advancedBox->Show(advanced4gBox);
+            m_advanced_sizer->Show(m_advanced_4G_sizer);
         } else {
-            advancedBox->Hide(advanced4gBox);
+            m_advanced_sizer->Hide(m_advanced_4G_sizer);
         }
     }
-    if (fromBox == controlBox) {
-        bRadarAB->Hide();
-    }
-    topSizer->Layout();
+    m_top_sizer->Layout();
 }
 
 void br24ControlsDialog::OnAutoClick(wxCommandEvent &event)
 {
-    fromControl->SetAuto();
+    m_from_control->SetAuto();
     OnBackClick(event);
 }
 
@@ -928,122 +925,121 @@ void br24ControlsDialog::OnMultiSweepClick(wxCommandEvent &event)
         labelSweep << _("Multi Sweep Filter") << wxT("\n") << _("Off");
         m_ri->multi_sweep_filter = 0;
     }
-    bMultiSweep->SetLabel(labelSweep);
+    m_multi_sweep_button->SetLabel(labelSweep);
 }
 
 void br24ControlsDialog::OnMinusClick(wxCommandEvent& event)
 {
-    fromControl->SetValue(fromControl->value - 1);
+    m_from_control->SetValue(m_from_control->value - 1);
 
-    wxString label = fromControl->GetLabel();
-    tValue->SetLabel(label);
+    wxString label = m_from_control->GetLabel();
+    m_value_text->SetLabel(label);
 }
 
 void br24ControlsDialog::OnMinusTenClick(wxCommandEvent& event)
 {
-    fromControl->SetValue(fromControl->value - 10);
+    m_from_control->SetValue(m_from_control->value - 10);
 
-    wxString label = fromControl->GetLabel();
-    tValue->SetLabel(label);
+    wxString label = m_from_control->GetLabel();
+    m_value_text->SetLabel(label);
 }
 
 void br24ControlsDialog::OnAdvancedBackButtonClick(wxCommandEvent& event)
 {
-    fromBox = controlBox;
-    topSizer->Hide(advancedBox);
-    topSizer->Show(controlBox);
-    advancedBox->Layout();
+    m_from_sizer = m_control_sizer;
+    m_top_sizer->Hide(m_advanced_sizer);
+    m_top_sizer->Show(m_control_sizer);
+    m_advanced_sizer->Layout();
     Fit();
-    topSizer->Layout();
+    m_top_sizer->Layout();
 }
 
 void br24ControlsDialog::OnInstallationBackButtonClick(wxCommandEvent& event)
 {
-    fromBox = advancedBox;
-    topSizer->Show(advancedBox);
-    topSizer->Hide(installationBox);
+    m_from_sizer = m_advanced_sizer;
+    m_top_sizer->Show(m_advanced_sizer);
+    m_top_sizer->Hide(m_installation_sizer);
     if (m_ri->radar_type == RT_4G) {
-        advancedBox->Show(advanced4gBox);
+        m_advanced_sizer->Show(m_advanced_4G_sizer);
     }
     else {
-        advancedBox->Hide(advanced4gBox);
+        m_advanced_sizer->Hide(m_advanced_4G_sizer);
     }
-    advancedBox->Layout();
+    m_advanced_sizer->Layout();
     Fit();
-    topSizer->Layout();
+    m_top_sizer->Layout();
 }
 
 void br24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event)
 {
-    fromBox = advancedBox;
-    topSizer->Show(advancedBox);
-    topSizer->Hide(installationBox);
+    m_from_sizer = m_advanced_sizer;
+    m_top_sizer->Show(m_advanced_sizer);
+    m_top_sizer->Hide(m_installation_sizer);
     if (m_ri->radar_type == RT_4G) {
-        advancedBox->Show(advanced4gBox);
+        m_advanced_sizer->Show(m_advanced_4G_sizer);
     } else {
-        advancedBox->Hide(advanced4gBox);
+        m_advanced_sizer->Hide(m_advanced_4G_sizer);
     }
-    advancedBox->Layout();
-    topSizer->Hide(controlBox);
-    controlBox->Layout();
+    m_advanced_sizer->Layout();
+    m_top_sizer->Hide(m_control_sizer);
+    m_control_sizer->Layout();
     Fit();
-    topSizer->Layout();
+    m_top_sizer->Layout();
 }
 
 void br24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event)
 {
-    fromBox = installationBox;
-    topSizer->Hide(advancedBox);
-    topSizer->Show(installationBox);
-    advancedBox->Layout();
-    topSizer->Hide(controlBox);
-    controlBox->Layout();
+    m_from_sizer = m_installation_sizer;
+    m_top_sizer->Hide(m_advanced_sizer);
+    m_top_sizer->Show(m_installation_sizer);
+    m_advanced_sizer->Layout();
+    m_top_sizer->Hide(m_control_sizer);
+    m_control_sizer->Layout();
     Fit();
-    topSizer->Layout();
+    m_top_sizer->Layout();
 }
 
 void br24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event)
 {
-    wantShowMessage = true;
-//    topSizer->Hide(controlBox);
+//    m_top_sizer->Hide(m_control_sizer);
     if (m_pi->m_pMessageBox) {
         m_pi->m_pMessageBox->Show();
     }
  //   Fit();
- //   topSizer->Layout();
+ //   m_top_sizer->Layout();
 }
 
 void br24ControlsDialog::EnterEditMode(br24RadarControlButton * button)
 {
-    fromControl = button; // Keep a record of which button was clicked
-    tValue->SetLabel(button->GetLabel());
-    topSizer->Hide(controlBox);
-    topSizer->Hide(advancedBox);
-    topSizer->Hide(installationBox);
+    m_from_control = button; // Keep a record of which button was clicked
+    m_value_text->SetLabel(button->GetLabel());
+    m_top_sizer->Hide(m_control_sizer);
+    m_top_sizer->Hide(m_advanced_sizer);
+    m_top_sizer->Hide(m_installation_sizer);
 //    Fit();   //  solves the "partial refresh issue" for the control box
-    topSizer->Show(editBox);
-    if (fromControl->hasAuto) {
-        bAuto->Show();
+    m_top_sizer->Show(m_edit_sizer);
+    if (m_from_control->hasAuto) {
+        m_auto_button->Show();
     }
     else {
-        bAuto->Hide();
+        m_auto_button->Hide();
     }
-    if (fromControl == bGain) {
-        bMultiSweep->Show();
+    if (m_from_control == m_gain_button) {
+        m_multi_sweep_button->Show();
     }
     else{
-        bMultiSweep->Hide();
+        m_multi_sweep_button->Hide();
     }
-    if (fromControl->maxValue > 20) {
-        bPlusTen->Show();
-        bMinusTen->Show();
+    if (m_from_control->maxValue > 20) {
+        m_plus_ten_button->Show();
+        m_minus_ten_button->Show();
     }
     else {
-        bPlusTen->Hide();
-        bMinusTen->Hide();
+        m_plus_ten_button->Hide();
+        m_minus_ten_button->Hide();
     }
-    editBox->Layout();
-    topSizer->Layout();
+    m_edit_sizer->Layout();
+    m_top_sizer->Layout();
 }
 
 
@@ -1058,13 +1054,13 @@ void br24ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event)
         m_pi->m_settings.chart_overlay = m_ri->radar;
         wxString label ;
         label << _("Overlay") << wxT("\n") << _("On");
-        bOverlay->SetLabel(label);
+        m_overlay_button->SetLabel(label);
     }
     else {
         m_pi->m_settings.chart_overlay = -1;
         wxString label;
         label << _("Overlay") << wxT("\n") << _("Off") ;
-        bOverlay->SetLabel(label);
+        m_overlay_button->SetLabel(label);
     }
 }
 
@@ -1090,11 +1086,11 @@ void br24ControlsDialog::OnSize(wxSizeEvent& event)
 
 void br24ControlsDialog::UpdateControlValues(bool refreshAll)
 {
-    if (topSizer->IsShown(controlBox)) {
+    if (m_top_sizer->IsShown(m_control_sizer)) {
         // first update the range
         if (m_ri->range.mod || refreshAll) {
             if (m_ri->range.button == -1) {
-                bRange->SetLocalAuto();
+                m_range_button->SetLocalAuto();
             }
             SetRangeIndex(m_ri->range.button);
             m_ri->range.mod = false;
@@ -1103,89 +1099,89 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll)
         // gain
         if (m_ri->gain.mod || refreshAll) {
             if (m_ri->gain.button == -1) {
-                bGain->SetLocalAuto();
+                m_gain_button->SetLocalAuto();
             }
             else{
-                bGain->SetLocalValue(m_ri->gain.button);
+                m_gain_button->SetLocalValue(m_ri->gain.button);
             }
         }
 
         //  rain
-        if ((m_ri->rain.mod || refreshAll)) {
-            bRain->SetLocalValue(m_ri->rain.button);
+        if (m_ri->rain.mod || refreshAll) {
+            m_rain_button->SetLocalValue(m_ri->rain.button);
             m_ri->rain.mod = false;
         }
 
         //   sea
-        if ((m_ri->sea.mod || refreshAll)) {
+        if (m_ri->sea.mod || refreshAll) {
             if (m_ri->sea.button == -1) {
-                bSea->SetLocalAuto();
+                m_sea_button->SetLocalAuto();
             }
             else{
-                bSea->SetLocalValue(m_ri->sea.button);
+                m_sea_button->SetLocalValue(m_ri->sea.button);
             }
             m_ri->sea.mod = false;
         }
     }
-    if (topSizer->IsShown(advancedBox)) {
+    if (m_top_sizer->IsShown(m_advanced_sizer)) {
 
         //   target_boost
-        if ((m_ri->target_boost.mod || refreshAll)) {
-            bTargetBoost->SetLocalValue(m_ri->target_boost.button);
+        if (m_ri->target_boost.mod || refreshAll) {
+            m_target_boost_button->SetLocalValue(m_ri->target_boost.button);
             m_ri->target_boost.mod = false;
         }
 
         //  noise_rejection
-            if ((m_ri->noise_rejection.mod || refreshAll)) {
-        bNoiseRejection->SetLocalValue(m_ri->noise_rejection.button);
-        m_ri->noise_rejection.mod = false;
-            }
+        if (m_ri->noise_rejection.mod || refreshAll) {
+            m_noise_rejection_button->SetLocalValue(m_ri->noise_rejection.button);
+            m_ri->noise_rejection.mod = false;
+        }
 
         //  target_separation
-        if ((m_ri->target_separation.mod || refreshAll)) {
-            bTargetSeparation->SetLocalValue(m_ri->target_separation.button);
+        if (m_ri->target_separation.mod || refreshAll) {
+            m_target_separation_button->SetLocalValue(m_ri->target_separation.button);
             m_ri->target_separation.mod = false;
         }
 
         //  interference_rejection
-        if ((m_ri->interference_rejection.mod || refreshAll)) {
-            bInterferenceRejection->SetLocalValue(m_ri->interference_rejection.button);
+        if (m_ri->interference_rejection.mod || refreshAll) {
+            m_interference_rejection_button->SetLocalValue(m_ri->interference_rejection.button);
             m_ri->interference_rejection.mod = false;
         }
 
         // scanspeed
-        if ((m_ri->scan_speed.mod || refreshAll)) {
-            bScanSpeed->SetLocalValue(m_ri->scan_speed.button);
+        if (m_ri->scan_speed.mod || refreshAll) {
+            m_scan_speed_button->SetLocalValue(m_ri->scan_speed.button);
             m_ri->scan_speed.mod = false;
         }
     }
-    if (topSizer->IsShown(installationBox)) {
+    if (m_top_sizer->IsShown(m_installation_sizer)) {
 
         //   antenna height
-        if ((m_ri->antenna_height.mod || refreshAll)) {
-            bAntennaHeight->SetLocalValue(m_ri->antenna_height.button);
+        if (m_ri->antenna_height.mod || refreshAll) {
+            m_antenna_height_button->SetLocalValue(m_ri->antenna_height.button);
             m_ri->antenna_height.mod = false;
         }
 
         //  bearing alignment
-        if ((m_ri->bearing_alignment.mod || refreshAll)) {
-            bBearingAlignment->SetLocalValue(m_ri->bearing_alignment.button);
+        if (m_ri->bearing_alignment.mod || refreshAll) {
+            m_bearing_alignment_button->SetLocalValue(m_ri->bearing_alignment.button);
             m_ri->bearing_alignment.mod = false;
         }
 
         //  local interference rejection
-        if ((m_ri->local_interference_rejection.mod || refreshAll)) {
-            bLocalInterferenceRejection->SetLocalValue(m_ri->local_interference_rejection.button);
+        if (m_ri->local_interference_rejection.mod || refreshAll) {
+            m_local_interference_rejection_button->SetLocalValue(m_ri->local_interference_rejection.button);
             m_ri->local_interference_rejection.mod = false;
         }
 
         // side lobe suppression  // same for A and B
-        if ((m_ri->side_lobe_suppression.mod || refreshAll)) {
+        if (m_ri->side_lobe_suppression.mod || refreshAll) {
             if (m_ri->side_lobe_suppression.button == -1) {
-                bSideLobeSuppression->SetLocalAuto();
+                m_side_lobe_suppression_button->SetLocalAuto();
             }
             else{
-                bSideLobeSuppression->SetLocalValue(m_ri->side_lobe_suppression.button);
+                m_side_lobe_suppression_button->SetLocalValue(m_ri->side_lobe_suppression.button);
             }
             m_ri->side_lobe_suppression.mod = false;
         }
@@ -1213,18 +1209,17 @@ void br24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
         if (m_pi->m_settings.verbose) {
             wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateControl manually opened"), m_ri->name);
         }
-        Hide();
-        if (!topSizer->IsShown(controlBox) && !topSizer->IsShown(advancedBox) && !topSizer->IsShown(editBox) && !topSizer->IsShown(installationBox)) {
-            topSizer->Show(controlBox);
+        if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_edit_sizer) && !m_top_sizer->IsShown(m_installation_sizer)) {
+            m_top_sizer->Show(m_control_sizer);
         }
-        controlBox->Layout();
+        m_control_sizer->Layout();
         Fit();
-        topSizer->Layout();
+        m_top_sizer->Layout();
         Show();
     }
 
-    editBox->Layout();
-    topSizer->Layout();
+    m_edit_sizer->Layout();
+    m_top_sizer->Layout();
 
     wxString title;
 
@@ -1241,4 +1236,5 @@ void br24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
     SetTitle(title);
 }
 
+// vim: sw=4:ts=8:
 

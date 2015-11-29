@@ -95,7 +95,6 @@ bool br24MessageBox::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id,
     if (!wxDialog::Create(parent, id, caption, pos, wxDefaultSize, wstyle)) {
         return false;
     }
-    g_font = *OCPNGetFont(_("Dialog"), 12);
 
     CreateControls();
     return true;
@@ -105,9 +104,10 @@ bool br24MessageBox::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id,
 void br24MessageBox::CreateControls()
 {
     static int BORDER = 0;
-    wxFont fatFont = g_font;
+    wxFont normalFont = *OCPNGetFont(_("Dialog"), 12);
+    wxFont fatFont = normalFont;
     fatFont.SetWeight(wxFONTWEIGHT_BOLD);
-    fatFont.SetPointSize(g_font.GetPointSize() + 1);
+    fatFont.SetPointSize(normalFont.GetPointSize() + 1);
 
     // A top-level sizer
     m_top_sizer = new wxBoxSizer(wxVERTICAL);
@@ -124,40 +124,40 @@ void br24MessageBox::CreateControls()
     m_radar_off = new wxStaticText(this, ID_OFF, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     m_message_sizer->Add(m_radar_off, 0, wxALL, 2);
     m_radar_off->SetLabel(_("Can not switch radar on as\nit is not connected or off\n Switch radar on when button is amber"));
-    m_radar_off->SetFont(g_font);
+    m_radar_off->SetFont(normalFont);
 
     m_error_message = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     m_message_sizer->Add(m_error_message, 0, wxALL, 2);
     m_error_message->SetLabel(_("Radar requires the following"));
-    m_error_message->SetFont(g_font);
+    m_error_message->SetFont(normalFont);
 
     wxStaticBox* optionsBox = new wxStaticBox(this, wxID_ANY, _("OpenCPN options"));
-    optionsBox->SetFont(g_font);
+    optionsBox->SetFont(normalFont);
     wxStaticBoxSizer* optionsSizer = new wxStaticBoxSizer(optionsBox, wxVERTICAL);
     m_message_sizer->Add(optionsSizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
     m_have_open_gl = new wxCheckBox(this, ID_BPOS, _("Accelerated Graphics (OpenGL)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     optionsSizer->Add(m_have_open_gl, 0, wxALL, BORDER);
-    m_have_open_gl->SetFont(g_font);
+    m_have_open_gl->SetFont(normalFont);
     m_have_open_gl->Disable();
 
     m_ip_box = new wxStaticBox(this, wxID_ANY, _("ZeroConf via Ethernet"));
-    m_ip_box->SetFont(g_font);
+    m_ip_box->SetFont(normalFont);
     wxStaticBoxSizer* ipSizer = new wxStaticBoxSizer(m_ip_box, wxVERTICAL);
     m_message_sizer->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
     m_have_radar = new wxCheckBox(this, ID_RADAR, _("Radar present"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     ipSizer->Add(m_have_radar, 0, wxALL, BORDER);
-    m_have_radar->SetFont(g_font);
+    m_have_radar->SetFont(normalFont);
     m_have_radar->Disable();
 
     m_have_data = new wxCheckBox(this, ID_DATA, _("Radar sending data"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     ipSizer->Add(m_have_data, 0, wxALL, BORDER);
-    m_have_data->SetFont(g_font);
+    m_have_data->SetFont(normalFont);
     m_have_data->Disable();
 
     wxStaticBox * nmeaBox = new wxStaticBox(this, wxID_ANY, _("For radar overlay also required"));
-    nmeaBox->SetFont(g_font);
+    nmeaBox->SetFont(normalFont);
 
     m_nmea_sizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
     m_message_sizer->Add(m_nmea_sizer, 0, wxEXPAND | wxALL, BORDER * 2);
@@ -165,21 +165,21 @@ void br24MessageBox::CreateControls()
 
     m_have_boat_pos = new wxCheckBox(this, ID_BPOS, _("Boat position"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     m_nmea_sizer->Add(m_have_boat_pos, 0, wxALL, BORDER);
-    m_have_boat_pos->SetFont(g_font);
+    m_have_boat_pos->SetFont(normalFont);
     m_have_boat_pos->Disable();
 
     m_have_heading = new wxCheckBox(this, ID_HEADING, _("Heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     m_nmea_sizer->Add(m_have_heading, 0, wxALL, BORDER);
-    m_have_heading->SetFont(g_font);
+    m_have_heading->SetFont(normalFont);
     m_have_heading->Disable();
 
     m_have_variation = new wxCheckBox(this, ID_HEADING, _("Variation"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     m_nmea_sizer->Add(m_have_variation, 0, wxALL, BORDER);
-    m_have_variation->SetFont(g_font);
+    m_have_variation->SetFont(normalFont);
     m_have_variation->Disable();
 
     wxStaticBox * infoBox = new wxStaticBox(this, wxID_ANY, _("Statistics"));
-    infoBox->SetFont(g_font);
+    infoBox->SetFont(normalFont);
     m_info_sizer = new wxStaticBoxSizer(infoBox, wxVERTICAL);
     m_message_sizer->Add(m_info_sizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
@@ -190,7 +190,7 @@ void br24MessageBox::CreateControls()
     // The <Close> button
     m_back_button = new wxButton(this, ID_MSG_BACK, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
     m_message_sizer->Add(m_back_button, 0, wxALL, BORDER);
-    m_back_button->SetFont(g_font);
+    m_back_button->SetFont(normalFont);
     m_message_sizer->Hide(m_back_button);
 }
 
