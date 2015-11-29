@@ -152,7 +152,6 @@ int br24radar_pi::Init( void )
     memset(m_bogey_count, 0, sizeof(m_bogey_count));   // set bogey count 0
     memset(m_scan_line, 0, sizeof(m_scan_line));
     memset(m_dialogLocation, 0, sizeof(m_dialogLocation));
-    memset(&m_settings, 0, sizeof(m_settings));
 
     m_radar[0] = new RadarInfo(this, _("Radar"), 0);
     m_radar[1] = new RadarInfo(this, _("Radar B"), 0);
@@ -1110,7 +1109,7 @@ bool br24radar_pi::LoadConfig(void)
         }
         m_settings.range_unit_meters = (m_settings.range_units == 1) ? 1000 : 1852;
         pConf->Read(wxT("ChartOverlay"),  &m_settings.chart_overlay, -1);
-    //    pConf->Read(wxT("EmulatorOn"), (int *)&m_settings.emulator_on, 0);
+        pConf->Read(wxT("EmulatorOn"), (int *)&m_settings.emulator_on, 0);
         pConf->Read(wxT("VerboseLog"),  &m_settings.verbose, 0);
         pConf->Read(wxT("Transparency"),  &m_settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
         pConf->Read(wxT("RangeCalibration"),  &m_settings.range_calibration, 1.0);
@@ -1238,6 +1237,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("ThresholdMultiSweep"), m_settings.threshold_multi_sweep);
 
         pConf->Flush();
+        wxLogMessage(wxT("BR24radar_pi: Saved settings"));
         return true;
     }
 
