@@ -49,6 +49,9 @@ public:
     {
         Create(1024 * 1024); // Stack size, be liberal
         m_next_spoke = -1;
+        if (m_pi->m_settings.verbose >= 2) {
+            wxLogMessage(wxT("BR24radar_pi: br24Receive ctor"));
+        }
     };
 
     ~br24Receive(void);

@@ -412,6 +412,11 @@ void *br24Receive::Entry(void)
     SOCKET commandSocket = INVALID_SOCKET;
     SOCKET reportSocket = INVALID_SOCKET;
 
+    if (m_pi->m_settings.verbose) {
+        wxLogMessage(wxT("BR24radar_pi: br24Receive thread %s starting"), m_ri->name);
+    }
+    // Do not draw something with this...
+
     while (!*m_quit) {
 
         if (m_pi->m_settings.emulator_on) {
