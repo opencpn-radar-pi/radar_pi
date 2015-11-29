@@ -169,7 +169,7 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi)
 
     cbPassHeading = new wxCheckBox(this, ID_PASS_HEADING, _("Pass radar heading to OpenCPN"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     itemStaticBoxSizerOptions->Add(cbPassHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-    cbPassHeading->SetValue(m_pi->m_settings.passHeadingToOCPN ? true : false);
+    cbPassHeading->SetValue(m_pi->m_settings.pass_heading_to_opencpn ? true : false);
     cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                              wxCommandEventHandler(br24OptionsDialog::OnPassHeadingClick), NULL, this);
 
@@ -256,7 +256,7 @@ void br24OptionsDialog::OnHeading_Calibration_Value(wxCommandEvent &event)
 
 void br24OptionsDialog::OnPassHeadingClick(wxCommandEvent &event)
 {
-    m_pi->m_settings.passHeadingToOCPN = cbPassHeading->GetValue();
+    m_pi->m_settings.pass_heading_to_opencpn = cbPassHeading->GetValue();
 }
 
 void br24OptionsDialog::OnUseShaderClick(wxCommandEvent &event)

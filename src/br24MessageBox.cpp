@@ -240,7 +240,7 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 
     */
 
-    if (!m_pi->m_settings.showRadar) {
+    if (!m_pi->m_settings.show_radar) {
         new_message_state = HIDE;
     }
     else if (!haveOpenGL) {

@@ -1212,7 +1212,7 @@ void br24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
         return;
     }
 
-    if (!m_pi->m_settings.showRadar || !haveRadar ||
+    if (!m_pi->m_settings.show_radar || !haveRadar ||
         (m_pi->m_pGuardZoneDialog && m_pi->m_pGuardZoneDialog->IsShown())) {           // don'want to see the radar, hide control box
         Hide();
     } else { // want to show the radar and radar is seen
