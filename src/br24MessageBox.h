@@ -61,7 +61,6 @@ public:
     void SetHeadingInfo(wxString &msg);
     void SetVariationInfo(wxString &msg);
     void SetRadarInfo(wxString &msg);
-    wxBoxSizer        *topSizeM;
 
 private:
     void OnClose(wxCloseEvent& event);
@@ -73,28 +72,25 @@ private:
 
     wxWindow           *m_parent;
     br24radar_pi       *m_pi;
-    wxBoxSizer         *nmeaSizer;
-    wxBoxSizer         *infoSizer;
+    wxBoxSizer         *m_top_sizer;
+    wxBoxSizer         *m_nmea_sizer;
+    wxBoxSizer         *m_info_sizer;
 
 
-    wxBoxSizer         *messageBox;   // Contains NO HDG and/or NO GPS
-    wxStaticBox        *ipBox;
-    wxStaticBox        *nmeaBox;
-    wxStaticBox        *infoBox;
-
-    bool                wantShowMessage; // If true, don't hide messagebox automatically
+    wxBoxSizer         *m_message_sizer;   // Contains NO HDG and/or NO GPS
+    wxStaticBox        *m_ip_box;
 
     // MessageBox
-    wxButton           *bMsgBack;
-    wxStaticText       *tMessage;
-    wxStaticText       *offMessage;
-    wxCheckBox         *cbOpenGL;
-    wxCheckBox         *cbBoatPos;
-    wxCheckBox         *cbHeading;
-    wxCheckBox         *cbVariation;
-    wxCheckBox         *cbRadar;
-    wxCheckBox         *cbData;
-    wxStaticText       *tStatistics;
+    wxButton           *m_back_button;
+    wxStaticText       *m_error_message;
+    wxStaticText       *m_radar_off;
+    wxCheckBox         *m_have_open_gl;
+    wxCheckBox         *m_have_boat_pos;
+    wxCheckBox         *m_have_heading;
+    wxCheckBox         *m_have_variation;
+    wxCheckBox         *m_have_radar;
+    wxCheckBox         *m_have_data;
+    wxStaticText       *m_statistics;
 
 };
 

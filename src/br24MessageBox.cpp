@@ -110,89 +110,88 @@ void br24MessageBox::CreateControls()
     fatFont.SetPointSize(g_font.GetPointSize() + 1);
 
     // A top-level sizer
-    topSizeM = new wxBoxSizer(wxVERTICAL);
-    SetSizer(topSizeM);
+    m_top_sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(m_top_sizer);
 
     //**************** MESSAGE BOX ******************//
     // A box sizer to contain warnings
 
     wxString label;
 
-    messageBox = new wxBoxSizer(wxVERTICAL);
-    topSizeM->Add(messageBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+    m_message_sizer = new wxBoxSizer(wxVERTICAL);
+    m_top_sizer->Add(m_message_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
-    offMessage = new wxStaticText(this, ID_OFF, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    messageBox->Add(offMessage, 0, wxALL, 2);
-    offMessage->SetLabel(_("Can not switch radar on as\nit is not connected or off\n Switch radar on when button is amber"));
-    offMessage->SetFont(g_font);
+    m_radar_off = new wxStaticText(this, ID_OFF, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    m_message_sizer->Add(m_radar_off, 0, wxALL, 2);
+    m_radar_off->SetLabel(_("Can not switch radar on as\nit is not connected or off\n Switch radar on when button is amber"));
+    m_radar_off->SetFont(g_font);
 
-    tMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    messageBox->Add(tMessage, 0, wxALL, 2);
-    tMessage->SetLabel(_("Radar requires the following"));
-    tMessage->SetFont(g_font);
+    m_error_message = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    m_message_sizer->Add(m_error_message, 0, wxALL, 2);
+    m_error_message->SetLabel(_("Radar requires the following"));
+    m_error_message->SetFont(g_font);
 
     wxStaticBox* optionsBox = new wxStaticBox(this, wxID_ANY, _("OpenCPN options"));
     optionsBox->SetFont(g_font);
     wxStaticBoxSizer* optionsSizer = new wxStaticBoxSizer(optionsBox, wxVERTICAL);
-    messageBox->Add(optionsSizer, 0, wxEXPAND | wxALL, BORDER * 2);
+    m_message_sizer->Add(optionsSizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
-    cbOpenGL = new wxCheckBox(this, ID_BPOS, _("Accelerated Graphics (OpenGL)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    optionsSizer->Add(cbOpenGL, 0, wxALL, BORDER);
-    cbOpenGL->SetFont(g_font);
-    cbOpenGL->Disable();
+    m_have_open_gl = new wxCheckBox(this, ID_BPOS, _("Accelerated Graphics (OpenGL)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    optionsSizer->Add(m_have_open_gl, 0, wxALL, BORDER);
+    m_have_open_gl->SetFont(g_font);
+    m_have_open_gl->Disable();
 
-    ipBox = new wxStaticBox(this, wxID_ANY, _("ZeroConf via Ethernet"));
-    ipBox->SetFont(g_font);
-    wxStaticBoxSizer* ipSizer = new wxStaticBoxSizer(ipBox, wxVERTICAL);
-    messageBox->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);
+    m_ip_box = new wxStaticBox(this, wxID_ANY, _("ZeroConf via Ethernet"));
+    m_ip_box->SetFont(g_font);
+    wxStaticBoxSizer* ipSizer = new wxStaticBoxSizer(m_ip_box, wxVERTICAL);
+    m_message_sizer->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
-    cbRadar = new wxCheckBox(this, ID_RADAR, _("Radar present"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    ipSizer->Add(cbRadar, 0, wxALL, BORDER);
-    cbRadar->SetFont(g_font);
-    cbRadar->Disable();
+    m_have_radar = new wxCheckBox(this, ID_RADAR, _("Radar present"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    ipSizer->Add(m_have_radar, 0, wxALL, BORDER);
+    m_have_radar->SetFont(g_font);
+    m_have_radar->Disable();
 
-    cbData = new wxCheckBox(this, ID_DATA, _("Radar sending data"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    ipSizer->Add(cbData, 0, wxALL, BORDER);
-    cbData->SetFont(g_font);
-    cbData->Disable();
+    m_have_data = new wxCheckBox(this, ID_DATA, _("Radar sending data"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    ipSizer->Add(m_have_data, 0, wxALL, BORDER);
+    m_have_data->SetFont(g_font);
+    m_have_data->Disable();
 
-    nmeaBox = new wxStaticBox(this, wxID_ANY, _("For radar overlay also required"));
+    wxStaticBox * nmeaBox = new wxStaticBox(this, wxID_ANY, _("For radar overlay also required"));
     nmeaBox->SetFont(g_font);
 
-    nmeaSizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
-    messageBox->Add(nmeaSizer, 0, wxEXPAND | wxALL, BORDER * 2);
-    messageBox->Hide(nmeaSizer);
+    m_nmea_sizer = new wxStaticBoxSizer(nmeaBox, wxVERTICAL);
+    m_message_sizer->Add(m_nmea_sizer, 0, wxEXPAND | wxALL, BORDER * 2);
+    m_message_sizer->Hide(m_nmea_sizer);
 
-    cbBoatPos = new wxCheckBox(this, ID_BPOS, _("Boat position"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    nmeaSizer->Add(cbBoatPos, 0, wxALL, BORDER);
-    cbBoatPos->SetFont(g_font);
-    cbBoatPos->Disable();
+    m_have_boat_pos = new wxCheckBox(this, ID_BPOS, _("Boat position"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    m_nmea_sizer->Add(m_have_boat_pos, 0, wxALL, BORDER);
+    m_have_boat_pos->SetFont(g_font);
+    m_have_boat_pos->Disable();
 
-    cbHeading = new wxCheckBox(this, ID_HEADING, _("Heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    nmeaSizer->Add(cbHeading, 0, wxALL, BORDER);
-    cbHeading->SetFont(g_font);
-    cbHeading->Disable();
+    m_have_heading = new wxCheckBox(this, ID_HEADING, _("Heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    m_nmea_sizer->Add(m_have_heading, 0, wxALL, BORDER);
+    m_have_heading->SetFont(g_font);
+    m_have_heading->Disable();
 
-    cbVariation = new wxCheckBox(this, ID_HEADING, _("Variation"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    nmeaSizer->Add(cbVariation, 0, wxALL, BORDER);
-    cbVariation->SetFont(g_font);
-    cbVariation->Disable();
+    m_have_variation = new wxCheckBox(this, ID_HEADING, _("Variation"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    m_nmea_sizer->Add(m_have_variation, 0, wxALL, BORDER);
+    m_have_variation->SetFont(g_font);
+    m_have_variation->Disable();
 
-    infoBox = new wxStaticBox(this, wxID_ANY, _("Statistics"));
+    wxStaticBox * infoBox = new wxStaticBox(this, wxID_ANY, _("Statistics"));
     infoBox->SetFont(g_font);
+    m_info_sizer = new wxStaticBoxSizer(infoBox, wxVERTICAL);
+    m_message_sizer->Add(m_info_sizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
-    infoSizer = new wxStaticBoxSizer(infoBox, wxVERTICAL);
-    messageBox->Add(infoSizer, 0, wxEXPAND | wxALL, BORDER * 2);
-
-    tStatistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, wxDefaultSize, 0);
-    tStatistics->SetFont(*OCPNGetFont(_("Dialog"), 8));
-    infoSizer->Add(tStatistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
+    m_statistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, wxDefaultSize, 0);
+    m_statistics->SetFont(*OCPNGetFont(_("Dialog"), 8));
+    m_info_sizer->Add(m_statistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
 
     // The <Close> button
-    bMsgBack = new wxButton(this, ID_MSG_BACK, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
-    messageBox->Add(bMsgBack, 0, wxALL, BORDER);
-    bMsgBack->SetFont(g_font);
-    messageBox->Hide(bMsgBack);
+    m_back_button = new wxButton(this, ID_MSG_BACK, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
+    m_message_sizer->Add(m_back_button, 0, wxALL, BORDER);
+    m_back_button->SetFont(g_font);
+    m_message_sizer->Hide(m_back_button);
 }
 
 
@@ -271,12 +270,12 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
         new_message_state = SHOW;
     }
 
-    cbOpenGL->SetValue(haveOpenGL);
-    cbBoatPos->SetValue(haveGPS);
-    cbHeading->SetValue(haveHeading);
-    cbVariation->SetValue(haveVariation);
-    cbRadar->SetValue(radarSeen);
-    cbData->SetValue(haveData);
+    m_have_open_gl->SetValue(haveOpenGL);
+    m_have_boat_pos->SetValue(haveGPS);
+    m_have_heading->SetValue(haveHeading);
+    m_have_variation->SetValue(haveVariation);
+    m_have_radar->SetValue(radarSeen);
+    m_have_data->SetValue(haveData);
     if (m_pi->m_settings.verbose) {
         wxLogMessage(wxT("BR24radar_pi: messagebox switch, case=%d"), new_message_state);
     }
@@ -294,13 +293,13 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
                 m_pi->m_pMessageBox->Show();
             }
             if (!radarSeen) {
-                offMessage->Show();
+                m_radar_off->Show();
             }
             else{
-                offMessage->Hide();
+                m_radar_off->Hide();
             }
-            messageBox->Show(nmeaSizer);
-            bMsgBack->Hide();
+            m_message_sizer->Show(m_nmea_sizer);
+            m_back_button->Hide();
             break;
 
         case SHOW_NO_NMEA:
@@ -308,27 +307,27 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
                 m_pi->m_pMessageBox->Show();
             }
             if (!radarSeen) {
-                offMessage->Show();
+                m_radar_off->Show();
             }
             else{
-                offMessage->Hide();
+                m_radar_off->Hide();
             }
-            messageBox->Hide(nmeaSizer);
-            messageBox->Hide(bMsgBack);
+            m_message_sizer->Hide(m_nmea_sizer);
+            m_message_sizer->Hide(m_back_button);
             break;
 
         case SHOW_BACK:
             if (!m_pi->m_pMessageBox->IsShown()) {
                 m_pi->m_pMessageBox->Show();
             }
-            offMessage->Hide();
-            messageBox->Show(nmeaSizer);
-            bMsgBack->Show();
+            m_radar_off->Hide();
+            m_message_sizer->Show(m_nmea_sizer);
+            m_back_button->Show();
             break;
         }
     }
     Fit();
-    topSizeM->Layout();
+    m_top_sizer->Layout();
     old_radarSeen = radarSeen;
     message_state = new_message_state;
 }
@@ -343,58 +342,58 @@ void br24MessageBox::OnMessageBackButtonClick(wxCommandEvent& event)
 
 void br24MessageBox::SetRadarIPAddress(wxString &msg)
 {
-    if (cbRadar) {
+    if (m_have_radar) {
         wxString label;
 
         label << _("Radar IP") << wxT(" ") << msg;
-        cbRadar->SetLabel(label);
+        m_have_radar->SetLabel(label);
     }
 }
 
 void br24MessageBox::SetErrorMessage(wxString &msg)
 {
-    tMessage->SetLabel(msg);
-    topSizeM->Show(messageBox);
-    messageBox->Layout();
+    m_error_message->SetLabel(msg);
+    m_top_sizer->Show(m_message_sizer);
+    m_message_sizer->Layout();
     Fit();
-    topSizeM->Layout();
+    m_top_sizer->Layout();
 }
 
 
 void br24MessageBox::SetMcastIPAddress(wxString &msg)
 {
-    if (ipBox) {
+    if (m_ip_box) {
         wxString label;
 
         label << _("ZeroConf E'net") << wxT(" ") << msg;
-        ipBox->SetLabel(label);
+        m_ip_box->SetLabel(label);
     }
 }
 
 void br24MessageBox::SetHeadingInfo(wxString &msg)
 {
-    if (cbHeading && topSizeM->IsShown(messageBox)) {
+    if (m_have_heading && m_top_sizer->IsShown(m_message_sizer)) {
         wxString label;
 
         label << _("Heading") << wxT(" ") << msg;
-        cbHeading->SetLabel(label);
+        m_have_heading->SetLabel(label);
     }
 }
 
 void br24MessageBox::SetVariationInfo(wxString &msg)
 {
-    if (cbVariation && topSizeM->IsShown(messageBox)) {
+    if (m_have_variation && m_top_sizer->IsShown(m_message_sizer)) {
         wxString label;
 
         label << _("Variation") << wxT(" ") << msg;
-        cbVariation->SetLabel(label);
+        m_have_variation->SetLabel(label);
     }
 }
 
 void br24MessageBox::SetRadarInfo(wxString &msg)
 {
-    if (tStatistics && topSizeM->IsShown(messageBox)) {
-        tStatistics->SetLabel(msg);
+    if (m_statistics && m_top_sizer->IsShown(m_message_sizer)) {
+        m_statistics->SetLabel(msg);
     }
 }
 
