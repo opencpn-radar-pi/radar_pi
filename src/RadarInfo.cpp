@@ -108,6 +108,7 @@ void RadarInfo::SetName( wxString name )
 void RadarInfo::StartReceive( )
 {
     if (!receive) {
+        wxLogMessage(wxT("BR24radar_pi: Starting receive thread for %s"), name.c_str());
         receive = new br24Receive(m_pi, &m_quit, this);
         receive->Run();
     }

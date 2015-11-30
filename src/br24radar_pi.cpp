@@ -1300,7 +1300,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
     }
     if (m_heading_on_radar && TIMER_NOT_ELAPSED(now, m_var_watchdog) && m_settings.show_radar) {
         if (m_heading_source != HEADING_RADAR) {
-           if (m_settings.verbose) wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f \n"), m_hdt);
+            wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f"), m_hdt);
             m_heading_source = HEADING_RADAR;
         }
         if (m_pMessageBox) {

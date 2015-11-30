@@ -97,11 +97,11 @@ struct radar_frame_pkt {
 
 br24Receive::~br24Receive()
 {
+    wxLogMessage(wxT("BR24radar_pi: %s thread is stopping"), m_ri->name);
 }
 
 void br24Receive::OnExit()
 {
-    //  wxLogMessage(wxT("BR24radar_pi: radar thread is stopping."));
 }
 
 void br24Receive::logBinaryData( const wxString& what, const UINT8 * data, int size )
@@ -134,6 +134,10 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
     m_radar_watchdog = now;
     m_data_seen = true;
     m_data_watchdog = now;
+
+    if (m_pi->m_settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: %s ProcessFrame"), m_ri->name);
+    }
 
     int spoke = 0;
     m_ri->statistics.packets++;

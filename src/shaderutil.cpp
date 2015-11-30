@@ -103,7 +103,7 @@ CompileShaderText(GLuint *shader, GLenum shaderType, const char *text)
       GLchar log[1000];
       GLsizei len;
       GetShaderInfoLog(*shader, 1000, &len, log);
-      wxLogMessage(wxT("BR24radar_pi: problem compiling shader: %s\n"), log);
+      wxLogMessage(wxT("BR24radar_pi: problem compiling shader: %s"), log);
       return false;
    }
    return true;
@@ -139,7 +139,7 @@ LinkShaders3(GLuint vertShader, GLuint geomShader, GLuint fragShader)
          GLchar log[1000];
          GLsizei len;
          GetProgramInfoLog(program, 1000, &len, log);
-         wxLogMessage(wxT("BR24radar_pi: problem linking program: %s\n"), log);
+         wxLogMessage(wxT("BR24radar_pi: problem linking program: %s"), log);
          return 0;
       }
    }
@@ -179,7 +179,7 @@ LinkShaders3WithGeometryInfo(GLuint vertShader, GLuint geomShader, GLuint fragSh
       GLchar log[1000];
       GLsizei len;
       GetProgramInfoLog(program, 1000, &len, log);
-      wxLogMessage(wxT("BR24radar_pi: problem linking shader: %s\n"), log);
+      wxLogMessage(wxT("BR24radar_pi: problem linking shader: %s"), log);
       return 0;
     }
   }
@@ -200,7 +200,7 @@ ValidateShaderProgram(GLuint program)
       GLchar log[1000];
       GLsizei len;
       GetProgramInfoLog(program, 1000, &len, log);
-      wxLogMessage(wxT("BR24radar_pi: program validation error: %s\n"), log);
+      wxLogMessage(wxT("BR24radar_pi: program validation error: %s"), log);
       return 0;
    }
 

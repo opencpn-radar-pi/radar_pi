@@ -150,7 +150,7 @@ bool br24Transmit::SetRange(int meters)
             , (UINT8) ((decimeters >> 24) & 0XFFL)
             };
         if (m_verbose) {
-            wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: range %d meters\n"), meters);
+            wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: range %d meters"), meters);
         }
         return TransmitCmd(pck, sizeof(pck));
     }
