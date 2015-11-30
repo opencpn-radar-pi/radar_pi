@@ -49,6 +49,14 @@ public:
     {
         Create(1024 * 1024); // Stack size, be liberal
         m_next_spoke = -1;
+        m_mcast_addr = 0;
+        m_radar_addr = 0;
+        m_radar_seen = false;
+        m_data_seen = false;
+        m_radar_type = RT_UNKNOWN;
+        m_range_meters = 0;
+        m_updated_range = false;
+
         if (m_pi->m_settings.verbose >= 2) {
             wxLogMessage(wxT("BR24radar_pi: br24Receive ctor"));
         }
