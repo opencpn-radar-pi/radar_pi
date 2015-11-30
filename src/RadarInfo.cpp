@@ -56,6 +56,8 @@ RadarInfo::RadarInfo( br24radar_pi *pi, wxString name, int radar )
     this->transmit = new br24Transmit(name, radar);
     this->receive = 0;
     this->draw = 0;
+    this->radar_frame = 0;
+    this->control_dialog = 0;
 
     for (size_t z = 0; z < GUARD_ZONES; z++) {
         guard_zone[z] = new GuardZone(pi);
@@ -185,6 +187,8 @@ void RadarInfo::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_t len,
 
     if (draw) {
         draw->ProcessRadarSpoke(angle, data, len);
+    } else {
+        wxLogMessage(wxT("BR24radar_pi: ignore spoke %d -- no draw method"), angle);
     }
 
 }
