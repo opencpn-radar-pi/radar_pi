@@ -482,35 +482,33 @@ int br24radar_pi::GetToolbarToolCount( void )
 
 /*
  * The radar icon is clicked. In previous versions all sorts of behavior was linked to clicking
- * on the button, which wasn't very 'discoverable'. So now it just shows all radar
+ * on the button, which wasn't very 'discoverable'. So now it just shows/hides all radar
  * windows.
  */
 void br24radar_pi::OnToolbarToolCallback( int id )
 {
-    bool anyShown = false;
-
-    for (int r = 0; r < RADARS; r++) {
-        if (m_radar[r]->control_dialog && m_radar[r]->control_dialog->IsShown()) {
-            anyShown = true;
-        }
-    }
-
-    if (anyShown) {
+    if (m_settings.show_radar == RADAR_ON) {
+        m_settings.show_radar = RADAR_OFF;
         for (int r = 0; r < RADARS; r++) {
-            if (m_radar[r]->control_dialog) {
-                m_radar[r]->control_dialog->Hide();
-            }
+            ShowRadarControl(r, false);
             if (m_radar[r]->radar_frame) {
                 m_radar[r]->radar_frame->Hide();
             }
         }
+    } else {
+        m_settings.show_radar = RADAR_ON;
+        ShowRadarControl(0, true);
+        if (m_settings.enable_dual_radar) {
+            ShowRadarControl(1, true);
+        }
+        for (int r = 0; r < RADARS; r++) {
+            if (m_radar[r]->radar_frame) {
+                m_radar[r]->radar_frame->Show();
+            }
+        }
     }
 
-    ShowRadarControl(0, true);
-    if (m_settings.enable_dual_radar) {
-        ShowRadarControl(1, true);
-    }
-
+/*
     if (m_pMessageBox) {
         m_pMessageBox->UpdateMessage(m_opengl_mode
             , m_bpos_set
@@ -523,6 +521,7 @@ void br24radar_pi::OnToolbarToolCallback( int id )
     if (m_pGuardZoneBogey) {
         m_pGuardZoneBogey->Hide();
     }
+*/
     UpdateState();
 }
 
