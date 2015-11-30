@@ -61,7 +61,16 @@ public:
 
     GuardZone( br24radar_pi * pi )
     {
-      m_pi = pi;
+        m_pi = pi;
+
+        type = GZ_OFF;
+        start_bearing = 0;
+        end_bearing = 0;
+        inner_range = 0;
+        outer_range = 0;
+        multi_sweep_filter = 0;
+
+        ResetBogeys();
     }
 
 private:

@@ -32,7 +32,7 @@
 
 void GuardZone::ResetBogeys( )
 {
-    for (size_t r = 0; r < sizeof(bogeyCount); r++) {
+    for (size_t r = 0; r < ARRAY_SIZE(bogeyCount); r++) {
         bogeyCount[r] = 0;
     }
 }
