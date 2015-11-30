@@ -32,7 +32,14 @@
 
 #include "wx/wxprec.h"
 #ifndef  WX_PRECOMP
-#include "wx/wx.h"
+# ifdef __WXOSX__
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wpotentially-evaluated-expression"
+# endif
+# include "wx/wx.h"
+# ifdef __WXOSX__
+#  pragma clang diagnostic pop
+# endif
 #endif
 
 #ifdef __cplusplus
