@@ -66,8 +66,6 @@ RadarInfo::RadarInfo( br24radar_pi *pi, wxString name, int radar )
 
 RadarInfo::~RadarInfo( )
 {
-    delete transmit;
-
     m_quit = true;
 
     delete transmit;

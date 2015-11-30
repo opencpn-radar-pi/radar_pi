@@ -71,7 +71,6 @@ public:
 
     br24radar_pi           *m_pi;
     RadarInfo              *m_ri;
-    wxFont                  m_font;
     wxBoxSizer             *m_top_sizer;
     wxBoxSizer             *m_control_sizer;
 

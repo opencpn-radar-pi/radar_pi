@@ -120,6 +120,11 @@ int br24radar_pi::Init( void )
 
     AddLocaleCatalog( _T("opencpn-br24radar_pi") );
 
+    m_font = *OCPNGetFont(_("Dialog"), 12);
+    m_fat_font = m_font;
+    m_fat_font.SetWeight(wxFONTWEIGHT_BOLD);
+    m_fat_font.SetPointSize(m_font.GetPointSize() + 1);
+
     m_pMessageBox = NULL;
 
     m_refresh_rate = 1;

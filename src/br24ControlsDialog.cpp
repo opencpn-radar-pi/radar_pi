@@ -165,7 +165,7 @@ public:
             SetLocalValue(newValue);
         }
 
-        this->SetFont(m_parent->m_font);
+        this->SetFont(m_parent->m_pi->m_font);
     }
 
     virtual void SetValue(int value);
@@ -207,7 +207,7 @@ public:
         names = 0;
         controlType = CT_RANGE;
 
-        this->SetFont(m_parent->m_font);
+        this->SetFont(m_parent->m_pi->m_font);
     }
 
     virtual void SetValue(int value);
@@ -459,7 +459,6 @@ bool br24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, RadarInfo *
     if (!wxDialog::Create(parent, id, caption, pos, wxDefaultSize, wstyle)) {
         return false;
     }
-    m_font = *OCPNGetFont(_("Dialog"), 12);
 
     CreateControls();
     return true;
@@ -469,9 +468,6 @@ bool br24ControlsDialog::Create(wxWindow *parent, br24radar_pi *ppi, RadarInfo *
 void br24ControlsDialog::CreateControls()
 {
     static int BORDER = 0;
-    wxFont fatFont = m_font;
-    fatFont.SetWeight(wxFONTWEIGHT_BOLD);
-    fatFont.SetPointSize(m_font.GetPointSize() + 1);
 
     // A top-level sizer
     m_top_sizer = new wxBoxSizer(wxVERTICAL);
@@ -505,7 +501,7 @@ void br24ControlsDialog::CreateControls()
 
     wxStaticText * testMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     testBox->Add(testMessage, 0, wxALL, 2);
-    testMessage->SetFont(m_font);
+    testMessage->SetFont(m_pi->m_font);
 
     m_top_sizer->Fit(this);
     m_top_sizer->Layout();
@@ -526,7 +522,7 @@ void br24ControlsDialog::CreateControls()
     }
     m_top_sizer->Hide(testBox);
     m_top_sizer->Remove(testBox);
-    delete testBox;
+    // delete testBox; -- this core dumps!
     // Determined desired button width
 
     g_buttonSize = wxSize(width, 50);
@@ -542,45 +538,45 @@ void br24ControlsDialog::CreateControls()
     // The <<Back button
     wxButton * back_button = new wxButton(this, ID_BACK, _("<<\nBack"), wxDefaultPosition, g_buttonSize, 0);
     m_edit_sizer->Add(back_button, 0, wxALL, BORDER);
-    back_button->SetFont(m_font);
+    back_button->SetFont(m_pi->m_font);
 
     // The +10 button
     m_plus_ten_button = new wxButton(this, ID_PLUS_TEN, _("+10"), wxDefaultPosition, g_buttonSize, 0);
     m_edit_sizer->Add(m_plus_ten_button, 0, wxALL, BORDER);
-    m_plus_ten_button->SetFont(m_font);
+    m_plus_ten_button->SetFont(m_pi->m_font);
 
     // The + button
     m_plus_button = new wxButton(this, ID_PLUS, _("+"), wxDefaultPosition, g_buttonSize, 0);
     m_edit_sizer->Add(m_plus_button, 0, wxALL, BORDER);
-    m_plus_button->SetFont(m_font);
+    m_plus_button->SetFont(m_pi->m_font);
 
     // The VALUE button
     m_value_text = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, g_buttonSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     m_edit_sizer->Add(m_value_text, 0, wxALL, BORDER);
-    m_value_text->SetFont(fatFont);
+    m_value_text->SetFont(m_pi->m_fat_font);
     m_value_text->SetBackgroundColour(*wxLIGHT_GREY);
 
     // The - button
     m_minus_button = new wxButton(this, ID_MINUS, _("-"), wxDefaultPosition, g_buttonSize, 0);
     m_edit_sizer->Add(m_minus_button, 0, wxALL, BORDER);
-    m_minus_button->SetFont(m_font);
+    m_minus_button->SetFont(m_pi->m_font);
 
     // The -10 button
     m_minus_ten_button = new wxButton(this, ID_MINUS_TEN, _("-10"), wxDefaultPosition, g_buttonSize, 0);
     m_edit_sizer->Add(m_minus_ten_button, 0, wxALL, BORDER);
-    m_minus_ten_button->SetFont(m_font);
+    m_minus_ten_button->SetFont(m_pi->m_font);
 
     // The Auto button
     m_auto_button = new wxButton(this, ID_AUTO, _("Auto"), wxDefaultPosition, g_buttonSize, 0);
     m_edit_sizer->Add(m_auto_button, 0, wxALL, BORDER);
-    m_auto_button->SetFont(m_font);
+    m_auto_button->SetFont(m_pi->m_font);
 
     // The Multi Sweep Filter button
     wxString labelMS;
     labelMS << _("Multi Sweep Filter") << wxT("\n") << _("Off");
     m_multi_sweep_button = new wxButton(this, ID_MULTISWEEP, labelMS, wxDefaultPosition, wxSize(width, 40), 0);
     m_edit_sizer->Add(m_multi_sweep_button, 0, wxALL, BORDER);
-    m_multi_sweep_button->SetFont(m_font);
+    m_multi_sweep_button->SetFont(m_pi->m_font);
 
     m_top_sizer->Hide(m_edit_sizer);
 
@@ -596,7 +592,7 @@ void br24ControlsDialog::CreateControls()
     backButtonStr << wxT("<<\n") << _("Back");
     wxButton * bAdvancedBack = new wxButton(this, ID_ADVANCED_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
     m_advanced_sizer->Add(bAdvancedBack, 0, wxALL, BORDER);
-    bAdvancedBack->SetFont(m_font);
+    bAdvancedBack->SetFont(m_pi->m_font);
 
     // The TRANSPARENCY button
     m_transparency_button = new br24RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), CT_TRANSPARENCY, false, m_pi->m_settings.overlay_transparency);
@@ -682,7 +678,7 @@ void br24ControlsDialog::CreateControls()
     // The INSTALLATION button
     wxButton * bInstallation = new wxButton(this, ID_INSTALLATION, _("Installation"), wxDefaultPosition, g_buttonSize, 0);
     m_advanced_sizer->Add(bInstallation, 0, wxALL, BORDER);
-    bInstallation->SetFont(m_font);
+    bInstallation->SetFont(m_pi->m_font);
 
     // The TIMED TRANSMIT button
     timed_idle_times[0] = _("Off");
@@ -719,13 +715,13 @@ void br24ControlsDialog::CreateControls()
     instBackButtonStr << wxT("<<\n") << _("Back");
     wxButton * bInstallationBack = new wxButton(this, ID_INSTALLATION_BACK, instBackButtonStr, wxDefaultPosition, g_buttonSize, 0);
     m_installation_sizer->Add(bInstallationBack, 0, wxALL, BORDER);
-    bInstallationBack->SetFont(m_font);
+    bInstallationBack->SetFont(m_pi->m_font);
 
     // The BEARING ALIGNMENT button
     m_bearing_alignment_button = new br24RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"), CT_BEARING_ALIGNMENT,
         false, m_ri->bearing_alignment.button);
     m_installation_sizer->Add(m_bearing_alignment_button, 0, wxALL, BORDER);
-    m_bearing_alignment_button->SetFont(m_font);    // this bearing alignment work opposite to the one defined in the pi!
+    m_bearing_alignment_button->SetFont(m_pi->m_font);    // this bearing alignment work opposite to the one defined in the pi!
     m_bearing_alignment_button->minValue = -179;
     m_bearing_alignment_button->maxValue = 180;
 
@@ -766,13 +762,13 @@ void br24ControlsDialog::CreateControls()
     // The Transmit button
     m_radar_state = new wxButton(this, ID_RADAR_STATE, _("Off"), wxDefaultPosition, g_buttonSize, 0);
     m_control_sizer->Add(m_radar_state, 0, wxALL, BORDER);
-    m_radar_state->SetFont(m_font);
+    m_radar_state->SetFont(m_pi->m_font);
     // Updated when we receive data
 
     // The RADAR ONLY / OVERLAY button
     m_overlay_button = new wxButton(this, ID_RADAR_OVERLAY, _("Overlay\nOff"), wxDefaultPosition, g_buttonSize, 0);
     m_control_sizer->Add(m_overlay_button, 0, wxALL, BORDER);
-    m_overlay_button->SetFont(m_font);
+    m_overlay_button->SetFont(m_pi->m_font);
 
     // The RANGE button
     m_range_button = new br24RadarRangeControlButton(this, ID_RANGE, _("Range"));
@@ -793,22 +789,22 @@ void br24ControlsDialog::CreateControls()
     // The ADVANCED button
     wxButton * bAdvanced = new wxButton(this, ID_ADVANCED, _("Advanced\ncontrols"), wxDefaultPosition, g_buttonSize, 0);
     m_control_sizer->Add(bAdvanced, 0, wxALL, BORDER);
-    bAdvanced->SetFont(m_font);
+    bAdvanced->SetFont(m_pi->m_font);
 
     // The GUARD ZONE 1 button
     m_guard_1_button = new wxButton(this, ID_ZONE1, wxT(""), wxDefaultPosition, g_buttonSize, 0);
     m_control_sizer->Add(m_guard_1_button, 0, wxALL, BORDER);
-    m_guard_1_button->SetFont(m_font);
+    m_guard_1_button->SetFont(m_pi->m_font);
 
     // The GUARD ZONE 2 button
     m_guard_2_button = new wxButton(this, ID_ZONE2, wxT(""), wxDefaultPosition, g_buttonSize, 0);
     m_control_sizer->Add(m_guard_2_button, 0, wxALL, BORDER);
-    m_guard_2_button->SetFont(m_font);
+    m_guard_2_button->SetFont(m_pi->m_font);
 
     // The INFO button
     wxButton * bMessage = new wxButton(this, ID_MESSAGE, _("Info"), wxDefaultPosition, wxSize(width, 25), 0);
     m_control_sizer->Add(bMessage, 0, wxALL, BORDER);
-    bMessage->SetFont(m_font);
+    bMessage->SetFont(m_pi->m_font);
 
     m_from_sizer = m_control_sizer;
     m_top_sizer->Hide(m_control_sizer);

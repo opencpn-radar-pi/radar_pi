@@ -319,6 +319,9 @@ public:
     void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, int AB);
     void RefreshRadarWindow(int radar);
 
+    wxFont                    m_font;      // The dialog font at a normal size
+    wxFont                    m_fat_font;  // The dialog font at a bigger size, bold
+
     PersistentSettings        m_settings;
     RadarInfo                *m_radar[RADARS];
     scan_line                 m_scan_line[RADARS][LINES_PER_ROTATION];
