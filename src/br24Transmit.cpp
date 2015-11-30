@@ -91,6 +91,9 @@ bool br24Transmit::Init( int verbose )
         return false;
     }
 
+    if (m_verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: %s transmit socket open"), m_name);
+    }
     return true;
 }
 
@@ -101,12 +104,19 @@ bool br24Transmit::TransmitCmd(UINT8 * msg, int size)
         wxLogError(wxT("BR24radar_pi: Unable to transmit command to %s"), m_name);
         return false;
     }
+    if (m_verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: %s transmit cmd len=%d"), m_name, size);
+    }
     return true;
 }
 
 void br24Transmit::RadarTxOff()
 {
     UINT8 pck[3] = {0x00, 0xc1, 0x01};
+
+    if (m_verbose) {
+        wxLogMessage(wxT("BR24radar_pi: %s transmit: turn Off"), m_name);
+    }
     TransmitCmd(pck, sizeof(pck));
     pck[0] = 0x01;
     pck[2] = 0x00;
@@ -118,7 +128,7 @@ void br24Transmit::RadarTxOn()
     UINT8 pck[3] = { 0x00, 0xc1, 0x01 };               // ON
 
     if (m_verbose) {
-        wxLogMessage(wxT("BR24radar_pi: Turn %s on (send TRANSMIT request)"), m_name);
+        wxLogMessage(wxT("BR24radar_pi: %s transmit: turn on"), m_name);
     }
     TransmitCmd(pck, sizeof(pck));
     pck[0] = 0x01;
@@ -127,6 +137,10 @@ void br24Transmit::RadarTxOn()
 
 bool br24Transmit::RadarStayAlive()
 {
+    if (m_verbose) {
+        wxLogMessage(wxT("BR24radar_pi: %s transmit: stay alive"), m_name);
+    }
+
     UINT8 pck[] = {0xA0, 0xc1};
     TransmitCmd(pck, sizeof(pck));
     UINT8 pck2[] = { 0x03, 0xc2 };
@@ -150,7 +164,7 @@ bool br24Transmit::SetRange(int meters)
             , (UINT8) ((decimeters >> 24) & 0XFFL)
             };
         if (m_verbose) {
-            wxLogMessage(wxT("BR24radar_pi: SetRangeMeters: range %d meters"), meters);
+            wxLogMessage(wxT("BR24radar_pi: %s transmit: range %d meters"), m_name, meters);
         }
         return TransmitCmd(pck, sizeof(pck));
     }
