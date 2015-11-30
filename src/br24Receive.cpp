@@ -194,6 +194,9 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
             range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
             angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
             range_meters = (int) ((double)range_raw * 10.0 / sqrt(2.0));
+            if (m_ri->radar_type != RT_BR24) {
+                wxLogMessage(wxT("BR24radar_pi: %s is Navico type BR24 or 3G"), m_ri->name);
+            }
             m_ri->radar_type = RT_BR24;
         } else {
             // 4G mode
@@ -210,6 +213,9 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
                 range_raw = large_range * 256;
             }
             range_meters = range_raw / 4;
+            if (m_ri->radar_type != RT_4G) {
+                wxLogMessage(wxT("BR24radar_pi: %s is Navico type 4G"), m_ri->name);
+            }
             m_ri->radar_type = RT_4G;
         }
 
@@ -229,6 +235,9 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
 
         hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
         if (hdm_raw != INT16_MIN && TIMER_NOT_ELAPSED(now, m_pi->m_var_watchdog) && m_ri->radar_type == RT_4G) {
+            if (!m_pi->m_heading_on_radar) {
+                wxLogMessage(wxT("BR24radar_pi: %s transmits heading, using that as best source of heading"), m_ri->name);
+            }
             m_pi->m_heading_on_radar = true;                            // heading on radar
             hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(m_pi->m_var));
             m_pi->m_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(hdt_raw));
@@ -248,7 +257,6 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
     //  all scanlines ready now, refresh section follows
 
     m_ri->ProcessRadarPacket(now);
-
 }
 
 /*
@@ -353,6 +361,10 @@ SOCKET br24Receive::GetNewDataSocket()
     SOCKET socket;
     wxString error;
 
+    if (!m_mcast_addr) {
+        return INVALID_SOCKET;
+    }
+
     if (m_ri->radar == 1) {
         socket = startUDPMulticastReceiveSocket(m_mcast_addr, 6657, "236.6.7.13", error);
     }
@@ -377,6 +389,10 @@ SOCKET br24Receive::GetNewCommandSocket()
     SOCKET socket;
     wxString error;
 
+    if (!m_mcast_addr) {
+        return INVALID_SOCKET;
+    }
+
     if (m_ri->radar == 1) {
         socket = startUDPMulticastReceiveSocket(m_mcast_addr, 6658, "236.6.7.14", error);
     }
@@ -399,7 +415,7 @@ SOCKET br24Receive::GetNewCommandSocket()
 void *br24Receive::Entry(void)
 {
     int r = 0;
-    int count = 0;
+    int no_data_timeout = 0;
     union {
         sockaddr_storage addr;
         sockaddr_in      ipv4;
@@ -432,7 +448,7 @@ void *br24Receive::Entry(void)
         if (reportSocket == INVALID_SOCKET) {
             reportSocket = PickNextEthernetCard();
             if (reportSocket != INVALID_SOCKET) {
-                count = 0;
+                no_data_timeout = 0;
             }
         }
         else {
@@ -444,13 +460,10 @@ void *br24Receive::Entry(void)
             }
         }
 
-        fd_set fdin;
         struct timeval tv = { (long) 1, (long) 0 };
-        FD_ZERO(&fdin);
 
-#ifndef MAX
-# define MAX(x,y) ((x) > (y) ? (x) : (y))
-#endif
+        fd_set fdin;
+        FD_ZERO(&fdin);
 
         int maxFd = INVALID_SOCKET;
         if (reportSocket != INVALID_SOCKET) {
@@ -466,23 +479,40 @@ void *br24Receive::Entry(void)
             maxFd = MAX(dataSocket, maxFd);
         }
 
-        r = select(maxFd + 1, &fdin, 0, &fdin, &tv);
+        if (m_pi->m_settings.verbose >= 2) {
+            wxLogMessage(wxT("BR24radar_pi: %s receive %d waiting for socket %d,%d,%d"), m_ri->name, maxFd + 1, reportSocket, commandSocket, dataSocket);
+        }
+
+        r = select(maxFd + 1, &fdin, 0, 0, &tv);
+
+        if (m_pi->m_settings.verbose >= 2) {
+            wxLogMessage(wxT("BR24radar_pi: %s select r=%d reportFound=%d"), m_ri->name, r, FD_ISSET(reportSocket, &fdin));
+        }
 
         if (r > 0) {
             if (dataSocket != INVALID_SOCKET && FD_ISSET(dataSocket, &fdin)) {
                 rx_len = sizeof(rx_addr);
                 r = recvfrom(dataSocket, (char *) data, sizeof(data), 0, (struct sockaddr *) &rx_addr, &rx_len);
                 if (r > 0) {
+                    //UINT8 * a = (UINT8 *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
+                    //wxLogMessage(wxT("%s at %u.%u.%u.%u received frame"), m_ri->name, a[0] , a[1] , a[2] , a[3]);
                     ProcessFrame(data, r);
+                } else {
+                    closesocket(dataSocket);
+                    dataSocket = INVALID_SOCKET;
+                    m_data_seen = false;
                 }
             }
 
             if (commandSocket != INVALID_SOCKET && FD_ISSET(commandSocket, &fdin)) {
                 rx_len = sizeof(rx_addr);
-                r = recvfrom(commandSocket, (char * ) data, sizeof(data), 0, (struct sockaddr *) &rx_addr, &rx_len);
+                r = recvfrom(commandSocket, (char *) data, sizeof(data), 0, (struct sockaddr *) &rx_addr, &rx_len);
                 if (r > 0 && rx_addr.addr.ss_family == AF_INET && m_pi->m_settings.verbose) {
                     UINT8 * a = (UINT8 *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
                     logBinaryData(wxString::Format(wxT("%s at %u.%u.%u.%u received command"), m_ri->name, a[0] , a[1] , a[2] , a[3]), data, r);
+                } else {
+                    closesocket(commandSocket);
+                    commandSocket = INVALID_SOCKET;
                 }
             }
 
@@ -508,26 +538,35 @@ void *br24Receive::Entry(void)
                         m_radar_seen = true;
                         m_radar_watchdog = time(0);
                     }
+                } else {
+                    wxLogMessage(wxT("BR24radar_pi: %s report socket failed"), m_ri->name);
+                    closesocket(reportSocket);
+                    reportSocket = INVALID_SOCKET;
+                    m_radar_seen = false;
                 }
             }
 
-        } else if (count >= 2 && !m_radar_seen) {
-            if (dataSocket != INVALID_SOCKET) {
-                closesocket(dataSocket);
-                dataSocket = INVALID_SOCKET;
+        } else if (no_data_timeout >= 2) {
+            no_data_timeout = 0;
+            if (m_data_seen) {
+                if (dataSocket != INVALID_SOCKET) {
+                    closesocket(dataSocket);
+                    dataSocket = INVALID_SOCKET;
+                }
+                if (commandSocket != INVALID_SOCKET) {
+                    closesocket(commandSocket);
+                    commandSocket = INVALID_SOCKET;
+                }
             }
-            if (commandSocket != INVALID_SOCKET) {
-                closesocket(commandSocket);
-                commandSocket = INVALID_SOCKET;
-            }
-            if (reportSocket != INVALID_SOCKET) {
+            else if (reportSocket != INVALID_SOCKET) {
                 closesocket(reportSocket);
                 reportSocket = INVALID_SOCKET;
+                m_radar_seen = false;
+                m_mcast_addr = 0;
+                m_radar_addr = 0;
             }
-            m_mcast_addr = 0;
-            m_radar_addr = 0;
         } else {
-            count++;
+            no_data_timeout++;
         }
     }
 
@@ -630,6 +669,10 @@ struct radar_state08_18 {  //08 c4  length 18
 bool br24Receive::ProcessReport( UINT8 * report, int len )
 {
     static char prevStatus = 0;
+
+    if (m_pi->m_settings.verbose) {
+        logBinaryData(wxT("ProcessReport"), report, len);
+    }
 
     if (report[1] == 0xC4) {
         // Looks like a radar report. Is it a known one?
