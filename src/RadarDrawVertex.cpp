@@ -31,22 +31,14 @@
 
 #include "RadarDrawVertex.h"
 
-bool RadarDrawVertex::Init( br24radar_pi * pi, int newColorOption )
+bool RadarDrawVertex::Init( int newColorOption )
 {
-    m_pi = pi;
-
     if (newColorOption) {
         // Don't care in vertex mode
     }
 
-    // initialise polar_to_cart_y[arc + 1][radius] arrays
-    for (int arc = 0; arc < LINES_PER_ROTATION + 1; arc++) {
-        GLfloat sine = sinf((GLfloat) arc * PI * 2 / LINES_PER_ROTATION);
-        GLfloat cosine = cosf((GLfloat) arc * PI * 2 / LINES_PER_ROTATION);
-        for (int radius = 0; radius < RETURNS_PER_LINE + 1; radius++) {
-            polar_to_cart_y[arc][radius] = (GLfloat) radius * sine;
-            polar_to_cart_x[arc][radius] = (GLfloat) radius * cosine;
-        }
+    for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
+        spokes[i].n = 0;
     }
 
     wxLogMessage(wxT("BR24radar_pi: CPU oriented OpenGL vertex draw loaded"));

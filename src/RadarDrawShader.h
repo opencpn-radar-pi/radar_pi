@@ -34,14 +34,14 @@
 
 #include "br24radar_pi.h"
 
-#define SHADER_COLOR_CHANNELS (4) // RGB + 2lpha
+#define SHADER_COLOR_CHANNELS (4) // RGB + Alpha
 
 class RadarDrawShader : public RadarDraw
 {
 public:
-    RadarDrawShader()
+    RadarDrawShader( br24radar_pi * pi )
     {
-        m_pi = 0;
+        m_pi = pi;
         m_start_line = LINES_PER_ROTATION;
         m_end_line = 0;
         m_texture = 0;
@@ -52,9 +52,9 @@ public:
         memset(m_data, 0, sizeof(m_data));
     }
 
-    bool Init( br24radar_pi * pi, int color_option );
-    void DrawRadarImage( wxPoint center, double scale, double rotation, bool overlay );
-    void ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_t len );
+    bool Init(int color_option);
+    void DrawRadarImage(wxPoint center, double scale, double rotation, bool overlay);
+    void ProcessRadarSpoke(SpokeBearing angle, UINT8 * data, size_t len);
 
     ~RadarDrawShader()
     {

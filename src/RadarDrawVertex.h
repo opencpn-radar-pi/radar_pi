@@ -37,15 +37,32 @@
 class RadarDrawVertex : public RadarDraw
 {
 public:
-    RadarDrawVertex()
+    RadarDrawVertex( br24radar_pi * pi )
     {
-      m_pi = 0;
-      start_line = LINES_PER_ROTATION;
-      end_line = 0;
+        m_pi = pi;
+        start_line = LINES_PER_ROTATION;
+        end_line = 0;
+
+        for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
+            spokes[i].n = 0;
+        }
+
+        // initialise polar_to_cart_y[arc + 1][radius] arrays
+        for (int arc = 0; arc < LINES_PER_ROTATION + 1; arc++) {
+            GLfloat sine = sinf((GLfloat) arc * PI * 2 / LINES_PER_ROTATION);
+            GLfloat cosine = cosf((GLfloat) arc * PI * 2 / LINES_PER_ROTATION);
+            for (int radius = 0; radius < RETURNS_PER_LINE + 1; radius++) {
+                polar_to_cart_y[arc][radius] = (GLfloat) radius * sine;
+                polar_to_cart_x[arc][radius] = (GLfloat) radius * cosine;
+            }
+        }
+
+        wxLogMessage(wxT("BR24radar_pi: CPU oriented OpenGL vertex draw ctor"));
+        start_line = LINES_PER_ROTATION;
+        end_line = 0;
     }
 
-    bool Init(br24radar_pi * pi, int color_option);
-
+    bool Init(int color_option);
     void DrawRadarImage(wxPoint center, double scale, double rotation, bool overlay);
     void ProcessRadarSpoke(SpokeBearing angle, UINT8 * data, size_t len);
 

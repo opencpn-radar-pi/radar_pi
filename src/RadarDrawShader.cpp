@@ -62,9 +62,8 @@ static const char *FragmentShaderColorText =
    "   gl_FragColor = texture2D(tex2d, vec2(d, a)); \n"
    "} \n";
 
-bool RadarDrawShader::Init( br24radar_pi * pi, int color_option )
+bool RadarDrawShader::Init( int color_option )
 {
-    m_pi = pi;
     m_color_option = color_option;
 
     if (!CompileShader && !ShadersSupported()) {
@@ -101,7 +100,7 @@ bool RadarDrawShader::Init( br24radar_pi * pi, int color_option )
 
 void RadarDrawShader::DrawRadarImage( wxPoint center, double scale, double rotation, bool overlay )
 {
-    if (m_start_line == LINES_PER_ROTATION) {
+    if (m_start_line == LINES_PER_ROTATION || !m_program) {
         return;
     }
 

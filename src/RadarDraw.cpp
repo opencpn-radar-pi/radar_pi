@@ -34,13 +34,16 @@
 #include "RadarDrawShader.h"
 
 // Factory to generate a particular draw implementation
-RadarDraw * RadarDraw::make_Draw( int useShader )
+RadarDraw * RadarDraw::make_Draw( br24radar_pi * pi, int useShader )
 {
+    if (pi->m_settings.verbose >= 2) {
+        wxLogMessage(wxT("Creating new %s draw method"), useShader ? "Shader" : "Vertex");
+    }
     if (useShader) {
-        return new RadarDrawShader;
+        return new RadarDrawShader(pi);
     }
     else {
-        return new RadarDrawVertex;
+        return new RadarDrawVertex(pi);
     }
 }
 
