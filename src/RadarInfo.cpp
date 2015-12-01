@@ -80,8 +80,11 @@ RadarInfo::~RadarInfo( )
         wxLogMessage(wxT("BR24radar_pi: %s thread stopped"), name);
     }
     if (radar_frame) {
-        m_pi->m_dialogLocation[DL_RADARWINDOW + radar].pos = radar_frame->GetPosition();
-        m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size = radar_frame->GetSize();
+        wxLogMessage(wxT("BR24radar_pi: %s DL_RADARWINDOW %u pos(%d,%d) size(%d,%d)"), name, DL_RADARWINDOW + radar,
+                m_pi->m_dialogLocation[DL_RADARWINDOW + radar].pos.x,
+                m_pi->m_dialogLocation[DL_RADARWINDOW + radar].pos.y,
+                m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size.x,
+                m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size.y);
         delete radar_frame;
     }
     if (draw) {
@@ -288,15 +291,15 @@ bool RadarInfo::SetControlValue( ControlType controlType, int value )
 void RadarInfo::ShowRadarWindow( )
 {
     if (!radar_frame) {
-        wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+        //wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
         radar_frame = new wxFrame(0, -1,  wxT("RADAR"), m_pi->m_dialogLocation[DL_RADARWINDOW + radar].pos, m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
 
-        int args[] = {WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0};
-
-        RadarWindow * radarWindow = new RadarWindow(this, radar_frame, args);
-        sizer->Add(radarWindow, 1, wxEXPAND);
-        radar_frame->SetSizer(sizer);
-        radar_frame->SetAutoLayout(true);
+        radar_window = new RadarWindow(m_pi, this, radar_frame, m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
+        //sizer->Add(radar_window, 1, wxEXPAND);
+        //radar_frame->SetSizer(sizer);
+        //radar_window->SetSize(m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
+        radar_window->Fit();
+        //radar_frame->SetAutoLayout(true);
     }
     radar_frame->Show();
 }

@@ -34,6 +34,7 @@
 
 BEGIN_EVENT_TABLE(RadarWindow, wxGLCanvas)
     EVT_CLOSE(RadarWindow::close)
+    EVT_MOVE(RadarWindow::moved)
     EVT_SIZE(RadarWindow::resized)
     EVT_PAINT(RadarWindow::render)
 END_EVENT_TABLE()
@@ -50,15 +51,17 @@ void RadarWindow::keyReleased(wxKeyEvent& event) {}
 
 static int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
 
-RadarWindow::RadarWindow( RadarInfo * ri, wxFrame * parent, int * args ) :
+RadarWindow::RadarWindow( br24radar_pi * pi, RadarInfo * ri, wxFrame * parent, wxSize size ) :
 #if !wxCHECK_VERSION(3,0,0)
-    wxGLCanvas( parent, wxID_ANY, wxDefaultPosition, wxSize(256, 256),
+    wxGLCanvas( parent, wxID_ANY, wxDefaultPosition, size,
                 wxFULL_REPAINT_ON_RESIZE | wxBG_STYLE_CUSTOM, _T(""), attribs )
 #else
-    wxGLCanvas( parent, wxID_ANY, attribs, wxDefaultPosition, wxSize(256, 256),
+    wxGLCanvas( parent, wxID_ANY, attribs, wxDefaultPosition, size,
                 wxFULL_REPAINT_ON_RESIZE | wxBG_STYLE_CUSTOM, _T("") )
 #endif
 {
+    m_parent = parent;
+    m_pi = pi;
     m_ri = ri;
     m_context = new wxGLContext(this);
 
@@ -71,8 +74,24 @@ RadarWindow::~RadarWindow()
     delete m_context;
 }
 
+void RadarWindow::moved( wxMoveEvent& evt )
+{
+    m_pi->m_dialogLocation[DL_RADARWINDOW + m_ri->radar].pos = m_parent->GetPosition();
+}
+
 void RadarWindow::resized( wxSizeEvent& evt )
 {
+    wxSize s = GetSize();
+    wxSize n;
+    n.x = MIN(s.x, s.y);
+    n.y = s.x;
+
+    if (n.x != s.x || n.y != s.y) {
+        SetSize(n);
+        //m_parent->Layout();
+    }
+    m_pi->m_dialogLocation[DL_RADARWINDOW + m_ri->radar].size = n;
+
     Refresh();
 }
 
@@ -99,16 +118,6 @@ void RadarWindow::prepare2DViewport( int x, int y, int width, int height )
     glScaled(1.0, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-}
-
-int RadarWindow::getWidth()
-{
-    return GetSize().x;
-}
-
-int RadarWindow::getHeight()
-{
-    return GetSize().y;
 }
 
 void RadarWindow::render( wxPaintEvent& evt )

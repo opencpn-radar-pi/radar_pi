@@ -73,6 +73,7 @@ public:
     br24Receive            *receive;
     br24ControlsDialog     *control_dialog;
     wxFrame                *radar_frame;
+    RadarWindow            *radar_window;
     RadarDraw              *draw;               // Abstract painting method
 
     /* Abstractions of our own */
