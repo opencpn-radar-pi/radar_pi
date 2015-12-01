@@ -2,7 +2,7 @@
  *
  * Project:  OpenCPN
  * Purpose:  Navico BR24 Radar Plugin
- * Author:   David Register
+ * Authors:  David Register
  *           Dave Cowell
  *           Kees Verruijt
  *           Douwe Fokkema
@@ -10,7 +10,7 @@
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
- *   Copyright (C) 2012-2013 by Kees Verruijt         canboat@verruijt.net *
+ *   Copyright (C) 2012-2015 by Kees Verruijt         canboat@verruijt.net *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -29,51 +29,50 @@
  ***************************************************************************
  */
 
-#ifndef _RADARDRAWSHADER_H_
-#define _RADARDRAWSHADER_H_
+#include "RadarFrame.h"
 
-#include "RadarDraw.h"
+BEGIN_EVENT_TABLE(RadarFrame, wxFrame)
+    EVT_CLOSE(RadarFrame::close)
+    EVT_MOVE(RadarFrame::moved)
+    EVT_SIZE(RadarFrame::resized)
+END_EVENT_TABLE()
 
-#define SHADER_COLOR_CHANNELS (4) // RGB + Alpha
-
-class RadarDrawShader : public RadarDraw
+RadarFrame::RadarFrame( br24radar_pi * pi, RadarInfo * ri, wxWindow * parent ) :
+    wxFrame(parent, wxID_ANY, _("RADAR"))
 {
-public:
-    RadarDrawShader( br24radar_pi * pi )
-    {
-        m_pi = pi;
-        m_start_line = LINES_PER_ROTATION;
-        m_end_line = 0;
-        m_texture = 0;
-        m_fragment = 0;
-        m_vertex = 0;
-        m_program = 0;
-        m_color_option = 0;
-        memset(m_data, 0, sizeof(m_data));
+    m_parent = parent;
+    m_pi = pi;
+    m_ri = ri;
+}
+
+RadarFrame::~RadarFrame()
+{
+}
+
+void RadarFrame::moved( wxMoveEvent& evt )
+{
+    m_pi->m_dialogLocation[DL_RADARWINDOW + m_ri->radar].pos = GetPosition();
+}
+
+void RadarFrame::resized( wxSizeEvent& evt )
+{
+    wxSize s = GetClientSize();
+    wxSize n;
+    n.x = MIN(s.x, s.y);
+    n.y = s.x;
+
+    if (n.x != s.x || n.y != s.y) {
+        SetClientSize(n);
+        //m_parent->Layout();
     }
+    m_pi->m_dialogLocation[DL_RADARWINDOW + m_ri->radar].size = GetSize();
+    Fit();
+}
 
-    bool Init(int color_option);
-    void DrawRadarImage(wxPoint center, double scale, double rotation, bool overlay);
-    void ProcessRadarSpoke(SpokeBearing angle, UINT8 * data, size_t len);
-
-    ~RadarDrawShader()
-    {
-    }
-
-private:
-    br24radar_pi  * m_pi;
-    unsigned char   m_data[SHADER_COLOR_CHANNELS * LINES_PER_ROTATION * RETURNS_PER_LINE];
-    int             m_start_line;
-    int             m_end_line;
-
-    int             m_color_option;
-
-    GLuint          m_texture;
-    GLuint          m_fragment;
-    GLuint          m_vertex;
-    GLuint          m_program;
-};
-
-#endif /* _RADARDRAWSHADER_H_ */
+void RadarFrame::close( wxCloseEvent& evt )
+{
+    this->Hide();
+    evt.Skip();
+}
 
 // vim: sw=4:ts=8:

@@ -34,6 +34,8 @@
 #include "br24Receive.h"
 #include "br24Transmit.h"
 #include "RadarDraw.h"
+#include "RadarCanvas.h"
+#include "RadarFrame.h"
 
 void radar_control_item::Update(int v)
 {
@@ -288,18 +290,29 @@ bool RadarInfo::SetControlValue( ControlType controlType, int value )
     return transmit->SetControlValue(controlType, value);
 }
 
+void RadarInfo::ShowRadarWindow( bool show )
+{
+    if (radar_frame) {
+        if (show) {
+            radar_frame->Show();
+        } else {
+            radar_frame->Hide();
+        }
+    }
+}
+
 void RadarInfo::ShowRadarWindow( )
 {
     if (!radar_frame) {
         //wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
-        radar_frame = new wxFrame(0, -1,  wxT("RADAR"), m_pi->m_dialogLocation[DL_RADARWINDOW + radar].pos, m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
-
-        radar_window = new RadarWindow(m_pi, this, radar_frame, m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
+        radar_frame = new RadarFrame(m_pi, this, GetOCPNCanvasWindow());
+        radar_canvas = new RadarCanvas(m_pi, this, radar_frame, m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
         //sizer->Add(radar_window, 1, wxEXPAND);
         //radar_frame->SetSizer(sizer);
         //radar_window->SetSize(m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
-        radar_window->Fit();
         //radar_frame->SetAutoLayout(true);
+
+        // radar_frame->Fit();
     }
     radar_frame->Show();
 }

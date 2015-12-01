@@ -56,8 +56,10 @@ SET(SRC_br24radar
             src/GuardZoneBogey.cpp
             src/RadarInfo.h
             src/RadarInfo.cpp
-            src/RadarWindow.h
-            src/RadarWindow.cpp
+            src/RadarCanvas.h
+            src/RadarCanvas.cpp
+            src/RadarFrame.h
+            src/RadarFrame.cpp
             src/RadarDraw.h
             src/RadarDraw.cpp
             src/RadarDrawShader.h

@@ -29,29 +29,29 @@
  ***************************************************************************
  */
 
-#include "br24radar_pi.h"
+#include "RadarCanvas.h"
 #include "drawutil.h"
 
-BEGIN_EVENT_TABLE(RadarWindow, wxGLCanvas)
-    EVT_CLOSE(RadarWindow::close)
-    EVT_MOVE(RadarWindow::moved)
-    EVT_SIZE(RadarWindow::resized)
-    EVT_PAINT(RadarWindow::render)
+BEGIN_EVENT_TABLE(RadarCanvas, wxGLCanvas)
+    EVT_CLOSE(RadarCanvas::close)
+    EVT_MOVE(RadarCanvas::moved)
+    EVT_SIZE(RadarCanvas::resized)
+    EVT_PAINT(RadarCanvas::render)
 END_EVENT_TABLE()
 
 // some useful events to use
-void RadarWindow::mouseMoved(wxMouseEvent& event) {}
-void RadarWindow::mouseDown(wxMouseEvent& event) {}
-void RadarWindow::mouseWheelMoved(wxMouseEvent& event) {}
-void RadarWindow::mouseReleased(wxMouseEvent& event) {}
-void RadarWindow::rightClick(wxMouseEvent& event) {}
-void RadarWindow::mouseLeftWindow(wxMouseEvent& event) {}
-void RadarWindow::keyPressed(wxKeyEvent& event) {}
-void RadarWindow::keyReleased(wxKeyEvent& event) {}
+void RadarCanvas::mouseMoved(wxMouseEvent& event) {}
+void RadarCanvas::mouseDown(wxMouseEvent& event) {}
+void RadarCanvas::mouseWheelMoved(wxMouseEvent& event) {}
+void RadarCanvas::mouseReleased(wxMouseEvent& event) {}
+void RadarCanvas::rightClick(wxMouseEvent& event) {}
+void RadarCanvas::mouseLeftWindow(wxMouseEvent& event) {}
+void RadarCanvas::keyPressed(wxKeyEvent& event) {}
+void RadarCanvas::keyReleased(wxKeyEvent& event) {}
 
 static int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
 
-RadarWindow::RadarWindow( br24radar_pi * pi, RadarInfo * ri, wxFrame * parent, wxSize size ) :
+RadarCanvas::RadarCanvas( br24radar_pi * pi, RadarInfo * ri, wxFrame * parent, wxSize size ) :
 #if !wxCHECK_VERSION(3,0,0)
     wxGLCanvas( parent, wxID_ANY, wxDefaultPosition, size,
                 wxFULL_REPAINT_ON_RESIZE | wxBG_STYLE_CUSTOM, _T(""), attribs )
@@ -69,18 +69,19 @@ RadarWindow::RadarWindow( br24radar_pi * pi, RadarInfo * ri, wxFrame * parent, w
     SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 }
 
-RadarWindow::~RadarWindow()
+RadarCanvas::~RadarCanvas()
 {
     delete m_context;
 }
 
-void RadarWindow::moved( wxMoveEvent& evt )
+void RadarCanvas::moved( wxMoveEvent& evt )
 {
     m_pi->m_dialogLocation[DL_RADARWINDOW + m_ri->radar].pos = m_parent->GetPosition();
 }
 
-void RadarWindow::resized( wxSizeEvent& evt )
+void RadarCanvas::resized( wxSizeEvent& evt )
 {
+#if 0
     wxSize s = GetSize();
     wxSize n;
     n.x = MIN(s.x, s.y);
@@ -93,15 +94,16 @@ void RadarWindow::resized( wxSizeEvent& evt )
     m_pi->m_dialogLocation[DL_RADARWINDOW + m_ri->radar].size = n;
 
     Refresh();
+#endif
 }
 
-void RadarWindow::close( wxCloseEvent& evt )
+void RadarCanvas::close( wxCloseEvent& evt )
 {
     this->Hide();
     evt.Skip();
 }
 
-void RadarWindow::prepare2DViewport( int x, int y, int width, int height )
+void RadarCanvas::prepare2DViewport( int x, int y, int width, int height )
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black Background
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -120,7 +122,7 @@ void RadarWindow::prepare2DViewport( int x, int y, int width, int height )
     glLoadIdentity();
 }
 
-void RadarWindow::render( wxPaintEvent& evt )
+void RadarCanvas::render( wxPaintEvent& evt )
 {
     int w, h;
 
@@ -130,7 +132,7 @@ void RadarWindow::render( wxPaintEvent& evt )
 
     GetClientSize(&w, &h);
 
-    wxLogMessage(wxT("RadarWindow: rendering %d by %d"), w, h);
+    wxLogMessage(wxT("RadarCanvas: rendering %d by %d"), w, h);
 
     wxGLCanvas::SetCurrent(*m_context);
     wxPaintDC(this); // only to be used in paint events. use wxClientDC to paint outside the paint event

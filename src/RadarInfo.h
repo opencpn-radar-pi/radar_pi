@@ -34,6 +34,10 @@
 
 #include "br24radar_pi.h"
 
+class RadarDraw;
+class RadarCanvas;
+class RadarFrame;
+
 class radar_control_item
 {
 public:
@@ -72,8 +76,8 @@ public:
     br24Transmit           *transmit;
     br24Receive            *receive;
     br24ControlsDialog     *control_dialog;
-    wxFrame                *radar_frame;
-    RadarWindow            *radar_window;
+    RadarFrame             *radar_frame;
+    RadarCanvas            *radar_canvas;
     RadarDraw              *draw;               // Abstract painting method
 
     /* Abstractions of our own */
@@ -112,6 +116,7 @@ public:
     void RenderGuardZone(wxPoint radar_center, double v_scale_ppm);
     void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
     void ShowRadarWindow();
+    void ShowRadarWindow(bool show);
 
 private:
     br24radar_pi           *m_pi;

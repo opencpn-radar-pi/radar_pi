@@ -2,7 +2,7 @@
  *
  * Project:  OpenCPN
  * Purpose:  Navico BR24 Radar Plugin
- * Author:   David Register
+ * Authors:  David Register
  *           Dave Cowell
  *           Kees Verruijt
  *           Douwe Fokkema
@@ -10,7 +10,7 @@
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
- *   Copyright (C) 2012-2013 by Kees Verruijt         canboat@verruijt.net *
+ *   Copyright (C) 2012-2015 by Kees Verruijt         canboat@verruijt.net *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -29,51 +29,30 @@
  ***************************************************************************
  */
 
-#ifndef _RADARDRAWSHADER_H_
-#define _RADARDRAWSHADER_H_
+#ifndef _RADAR_FRAME_H_
+#define _RADAR_FRAME_H_
 
-#include "RadarDraw.h"
+#include "br24radar_pi.h"
 
-#define SHADER_COLOR_CHANNELS (4) // RGB + Alpha
-
-class RadarDrawShader : public RadarDraw
+class RadarFrame : public wxFrame
 {
+    DECLARE_EVENT_TABLE()
+
 public:
-    RadarDrawShader( br24radar_pi * pi )
-    {
-        m_pi = pi;
-        m_start_line = LINES_PER_ROTATION;
-        m_end_line = 0;
-        m_texture = 0;
-        m_fragment = 0;
-        m_vertex = 0;
-        m_program = 0;
-        m_color_option = 0;
-        memset(m_data, 0, sizeof(m_data));
-    }
+    RadarFrame(br24radar_pi * pi, RadarInfo *ri, wxWindow * parent);
+    virtual ~RadarFrame();
 
-    bool Init(int color_option);
-    void DrawRadarImage(wxPoint center, double scale, double rotation, bool overlay);
-    void ProcessRadarSpoke(SpokeBearing angle, UINT8 * data, size_t len);
+    void moved(wxMoveEvent& evt);
+    void resized(wxSizeEvent& evt);
 
-    ~RadarDrawShader()
-    {
-    }
+    void close(wxCloseEvent& evt);
 
 private:
+    wxWindow      * m_parent;
     br24radar_pi  * m_pi;
-    unsigned char   m_data[SHADER_COLOR_CHANNELS * LINES_PER_ROTATION * RETURNS_PER_LINE];
-    int             m_start_line;
-    int             m_end_line;
-
-    int             m_color_option;
-
-    GLuint          m_texture;
-    GLuint          m_fragment;
-    GLuint          m_vertex;
-    GLuint          m_program;
+    RadarInfo     * m_ri;
 };
 
-#endif /* _RADARDRAWSHADER_H_ */
+#endif
 
 // vim: sw=4:ts=8:

@@ -499,20 +499,15 @@ void br24radar_pi::OnToolbarToolCallback( int id )
         m_settings.show_radar = RADAR_OFF;
         for (int r = 0; r < RADARS; r++) {
             ShowRadarControl(r, false);
-            if (m_radar[r]->radar_frame) {
-                m_radar[r]->radar_frame->Hide();
-            }
+            m_radar[r]->ShowRadarWindow(false);
         }
     } else {
         m_settings.show_radar = RADAR_ON;
         ShowRadarControl(0, true);
+        m_radar[0]->ShowRadarWindow(true);
         if (m_settings.enable_dual_radar) {
             ShowRadarControl(1, true);
-        }
-        for (int r = 0; r < RADARS; r++) {
-            if (m_radar[r]->radar_frame) {
-                m_radar[r]->radar_frame->Show();
-            }
+            m_radar[1]->ShowRadarWindow(true);
         }
     }
 
@@ -956,13 +951,6 @@ bool br24radar_pi::RenderGLOverlay( wxGLContext *pcontext, PlugIn_ViewPort *vp )
 
     m_refresh_busy_or_queued = false;
     return true;
-}
-
-void br24radar_pi::RefreshRadarWindow(int radar)
-{
-    if (m_radar[radar]->radar_frame) {
-        m_radar[radar]->radar_frame->Refresh(false);
-    }
 }
 
 void br24radar_pi::RenderRadarOverlay( wxPoint radar_center, double v_scale_ppm, double rotation )

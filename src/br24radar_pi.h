@@ -45,8 +45,6 @@ class GuardZone;
 class GuardZoneBogey;
 class GuardZoneDialog;
 class IdleDialog;
-class RadarDraw;
-class RadarWindow;
 class RadarInfo;
 
 class br24ControlsDialog;
@@ -317,7 +315,6 @@ public:
     long GetOptimalRangeMeters();
 
     void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, int AB);
-    void RefreshRadarWindow(int radar);
 
     wxFont                    m_font;      // The dialog font at a normal size
     wxFont                    m_fat_font;  // The dialog font at a bigger size, bold
@@ -449,8 +446,6 @@ private:
 #include "GuardZoneDialog.h"
 #include "GuardZoneBogey.h"
 #include "IdleDialog.h"
-#include "RadarWindow.h"
-#include "RadarDraw.h"
 #include "RadarInfo.h"
 
 #endif /* _BRRADAR_PI_H_ */

@@ -32,7 +32,7 @@
 #ifndef _RADARDRAWVERTEX_H_
 #define _RADARDRAWVERTEX_H_
 
-#include "br24radar_pi.h"
+#include "RadarDraw.h"
 
 class RadarDrawVertex : public RadarDraw
 {
