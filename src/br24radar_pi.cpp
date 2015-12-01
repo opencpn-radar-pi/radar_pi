@@ -448,30 +448,24 @@ void br24radar_pi::ComputeColorMap( )
     {
     case 0:
         for (int i = 0; i <= UINT8_MAX; i++) {
-            m_color_map_red[i] = (i >= m_settings.threshold_blue) ? 255 : 0;
-            m_color_map_green[i] = 0;
-            m_color_map_blue[i] = 0;
             m_color_map[i] = (i >= m_settings.threshold_blue) ? BLOB_RED : BLOB_NONE;
         }
         break;
     case 1:
         for (int i = 0; i <= UINT8_MAX; i++) {
-            m_color_map_red[i] = 0;
-            m_color_map_green[i] = 0;
-            m_color_map_blue[i] = 0;
-            if (i >= m_settings.threshold_red) {
-                m_color_map_red[i] = 255;
-            } else if (i >= m_settings.threshold_green) {
-                m_color_map_green[i] = 255;
-            } else if (i >= m_settings.threshold_blue) {
-                m_color_map_blue[i] = 255;
-            }
             m_color_map[i] = (i >= m_settings.threshold_red) ? BLOB_RED :
                              (i >= m_settings.threshold_green) ? BLOB_GREEN :
                              (i >= m_settings.threshold_blue) ? BLOB_BLUE : BLOB_NONE;
         }
         break;
     }
+
+    memset(m_color_map_red, 0, sizeof(m_color_map_red));
+    memset(m_color_map_green, 0, sizeof(m_color_map_green));
+    memset(m_color_map_blue, 0, sizeof(m_color_map_blue));
+    m_color_map_red[BLOB_RED] = 255;
+    m_color_map_green[BLOB_GREEN] = 255;
+    m_color_map_blue[BLOB_BLUE] = 255;
 }
 
 void br24radar_pi::UpdateDisplayParameters( void )

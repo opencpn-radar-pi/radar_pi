@@ -358,9 +358,9 @@ public:
     WindowLocation            m_dialogLocation[DIALOG_MAX];
 
     // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
-    GLubyte                   m_color_map_red[UINT8_MAX + 1];
-    GLubyte                   m_color_map_green[UINT8_MAX + 1];
-    GLubyte                   m_color_map_blue[UINT8_MAX + 1];
+    GLubyte                   m_color_map_red[BLOB_RED + 1];
+    GLubyte                   m_color_map_green[BLOB_RED + 1];
+    GLubyte                   m_color_map_blue[BLOB_RED + 1];
     BlobColor                 m_color_map[UINT8_MAX + 1];
 
 private:

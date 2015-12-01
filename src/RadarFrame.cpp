@@ -62,11 +62,11 @@ void RadarFrame::resized( wxSizeEvent& evt )
     n.y = s.x;
 
     if (n.x != s.x || n.y != s.y) {
-        SetClientSize(n);
+        //SetClientSize(n);
         //m_parent->Layout();
     }
     m_pi->m_dialogLocation[DL_RADARWINDOW + m_ri->radar].size = GetSize();
-    Fit();
+    //Fit();
 }
 
 void RadarFrame::close( wxCloseEvent& evt )

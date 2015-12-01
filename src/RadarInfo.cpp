@@ -196,7 +196,7 @@ void RadarInfo::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_t len,
     if (draw) {
         draw->ProcessRadarSpoke(angle, data, len);
     } else {
-        wxLogMessage(wxT("BR24radar_pi: ignore spoke %d -- no draw method"), angle);
+        // wxLogMessage(wxT("BR24radar_pi: ignore spoke %d -- no draw method"), angle);
     }
 
 }

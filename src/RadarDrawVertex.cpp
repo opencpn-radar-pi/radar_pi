@@ -113,9 +113,9 @@ void RadarDrawVertex::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_
             previous_color = actual_color;            // new color
         }
         else if (previous_color != BLOB_NONE && (previous_color != actual_color)) {
-            red   = m_pi->m_color_map_red[strength];
-            green = m_pi->m_color_map_green[strength];
-            blue  = m_pi->m_color_map_blue[strength];
+            red   = m_pi->m_color_map_red[previous_color];
+            green = m_pi->m_color_map_green[previous_color];
+            blue  = m_pi->m_color_map_blue[previous_color];
 
             SetBlob(angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
             m_blobs++;
@@ -129,9 +129,9 @@ void RadarDrawVertex::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_
     }
 
     if (previous_color != BLOB_NONE) { // Draw final blob
-        red = m_pi->m_color_map_red[strength];
-        green = m_pi->m_color_map_green[strength];
-        blue = m_pi->m_color_map_blue[strength];
+        red = m_pi->m_color_map_red[previous_color];
+        green = m_pi->m_color_map_green[previous_color];
+        blue = m_pi->m_color_map_blue[previous_color];
 
         SetBlob(angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
         m_blobs++;

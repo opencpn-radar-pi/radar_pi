@@ -135,7 +135,7 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
     m_data_seen = true;
     m_data_watchdog = now;
 
-    if (m_pi->m_settings.verbose >= 2) {
+    if (m_pi->m_settings.verbose >= 5) {
         wxLogMessage(wxT("BR24radar_pi: %s ProcessFrame"), m_ri->name);
     }
 
@@ -244,6 +244,7 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
         }
         else {                                // no heading on radar
             m_pi->m_heading_on_radar = false;
+            hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt);
         }
         angle_raw += hdt_raw;
         angle_raw += SCALE_DEGREES_TO_RAW(270); // Compensate openGL rotation compared to North UP
@@ -479,7 +480,7 @@ void *br24Receive::Entry(void)
             maxFd = MAX(dataSocket, maxFd);
         }
 
-        if (m_pi->m_settings.verbose >= 2) {
+        if (m_pi->m_settings.verbose >= 4) {
             wxLogMessage(wxT("BR24radar_pi: %s receive %d waiting for socket %d,%d,%d"), m_ri->name, maxFd + 1, reportSocket, commandSocket, dataSocket);
         }
 

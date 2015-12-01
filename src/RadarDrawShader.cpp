@@ -196,9 +196,10 @@ void RadarDrawShader::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_
         unsigned char * d = m_data + (angle * RETURNS_PER_LINE) * 4;
         for (size_t r = 0; r < len; r++) {
             GLubyte strength = data[r];
-            d[0] = m_pi->m_color_map_red[strength];
-            d[1] = m_pi->m_color_map_green[strength];
-            d[2] = m_pi->m_color_map_blue[strength];
+            BlobColor color = m_pi->m_color_map[strength];
+            d[0] = m_pi->m_color_map_red[color];
+            d[1] = m_pi->m_color_map_green[color];
+            d[2] = m_pi->m_color_map_blue[color];
             d[3] = alpha;
             d += 4;
         }
@@ -206,7 +207,8 @@ void RadarDrawShader::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_
         unsigned char * d = m_data + (angle * RETURNS_PER_LINE);
         for (size_t r = 0; r < len; r++) {
             GLubyte strength = data[r];
-            *d++ = (m_pi->m_color_map_red[strength] * alpha) >> 8;
+            BlobColor color = m_pi->m_color_map[strength];
+            *d++ = (m_pi->m_color_map_red[color] * alpha) >> 8;
         }
     }
 }
