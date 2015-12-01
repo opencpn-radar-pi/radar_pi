@@ -131,11 +131,11 @@ void RadarWindow::render( wxPaintEvent& evt )
     // TODO
     // m_pi->RenderGuardZone(wxPoint(0,0), 1.0, 0);
     double rotation = 0.0; // Or HU then -m_pi->m_hdt;
-    if (m_ri->draw) {
-        m_ri->draw->DrawRadarImage(wxPoint(0,0), scale_factor, rotation, false);
-    }
+
+    m_ri->RenderRadarImage(wxPoint(0,0), scale_factor, rotation, false);
 
     glFlush();
     SwapBuffers();
 }
 
+// vim: sw=4:ts=8:

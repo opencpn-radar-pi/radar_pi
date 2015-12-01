@@ -33,6 +33,7 @@
 #include "drawutil.h"
 #include "br24Receive.h"
 #include "br24Transmit.h"
+#include "RadarDraw.h"
 
 void radar_control_item::Update(int v)
 {
@@ -64,6 +65,8 @@ RadarInfo::RadarInfo( br24radar_pi *pi, wxString name, int radar )
     }
 
     m_quit = false;
+    m_color_option = false;
+    m_use_shader = false;
 }
 
 RadarInfo::~RadarInfo( )
@@ -296,6 +299,37 @@ void RadarInfo::ShowRadarWindow( )
         radar_frame->SetAutoLayout(true);
     }
     radar_frame->Show();
+}
+
+void RadarInfo::RenderRadarImage( wxPoint center, double scale, double rotation, bool overlay )
+{
+    bool useShader = m_pi->m_settings.useShader;
+    bool colorOption = m_pi->m_settings.display_option > 0;
+
+    // Determine if a new draw method is required
+    if (!draw || (useShader != m_use_shader) || (colorOption != m_color_option)) {
+        RadarDraw * newDraw = RadarDraw::make_Draw(m_pi, useShader);
+        if (!newDraw) {
+            wxLogMessage(wxT("BR24radar_pi: out of memory"));
+            return;
+        }
+        else if (newDraw->Init(colorOption)) {
+            if (draw) {
+                delete draw;
+            }
+            draw = newDraw;
+            m_use_shader = useShader;
+            m_color_option = colorOption;
+        } else {
+            m_pi->m_settings.useShader = false;
+            delete newDraw;
+        }
+        if (!draw) {
+            return;
+        }
+    }
+
+    draw->DrawRadarImage(center, scale, rotation, overlay);
 }
 
 // vim: sw=4:ts=8:

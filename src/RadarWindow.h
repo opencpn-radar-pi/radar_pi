@@ -38,3 +38,5 @@ private:
     RadarInfo *m_ri;
 };
 #endif
+
+// vim: sw=4:ts=8:

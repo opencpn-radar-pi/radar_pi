@@ -699,6 +699,10 @@ void br24radar_pi::DoTick( void )
                 );
             m_radar[r]->control_dialog->UpdateControlValues(false);
         }
+
+        if (m_radar[r]->data_seen) {
+            m_radar[r]->ShowRadarWindow();
+        }
     }
 
     if (m_pMessageBox) {
@@ -968,11 +972,8 @@ void br24radar_pi::RenderRadarOverlay( wxPoint radar_center, double v_scale_ppm,
         double radar_pixels_per_meter = ((double) RETURNS_PER_LINE) / meters;
         double scale_factor =  v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
 
-        if (ri->draw) {
-            ri->draw->DrawRadarImage(radar_center, scale_factor, rotation, true);
-        }
+        ri->RenderRadarImage(radar_center, scale_factor, rotation, true);
     }
-
 }
 
 
@@ -1593,7 +1594,7 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
             if (m_settings.show_radar == RADAR_ON && metersB != 0) {
                 ScanGuardZones(metersB, 1);
             }
-            m_draw->DrawRadarImage(radar_center, scale_factor, 0.0, true);
+            m_draw->RenderRadarImage(radar_center, scale_factor, 0.0, true);
         }
         HandleBogeyCount(m_bogey_count);
 #endif
