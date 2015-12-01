@@ -253,13 +253,18 @@ bool br24radar_pi::DeInit( void )
         delete m_pGuardZoneBogey;
     }
 
+    ShowRadarControl(0, false);
+    ShowRadarControl(1, false);
+    m_radar[0]->ShowRadarWindow(false);
+    m_radar[1]->ShowRadarWindow(false);
+
+    SaveConfig();
+
     for (int r = 0; r < RADARS; r++) {
         if (m_radar[r]) {
             delete m_radar[r];
         }
     }
-
-    SaveConfig();
 
     return true;
 }
@@ -328,47 +333,50 @@ void br24radar_pi::ShowRadarControl( int radar, bool show )
         wxLogMessage(wxT("BR24radar_pi: ShowRadarControl(%d, %d)"), radar, (int) show);
     }
 
-    if (!m_pMessageBox) {
-        m_pMessageBox = new br24MessageBox;
-        m_pMessageBox->Create(m_parent_window, this);
-        m_pMessageBox->SetPosition(m_dialogLocation[DL_MESSAGE].pos);
-        m_pMessageBox->Fit();
-        m_pMessageBox->Hide();
-    }
-
-    if (!m_radar[radar]->control_dialog) {
-        m_radar[radar]->control_dialog = new br24ControlsDialog;
-        m_radar[radar]->control_dialog->Create(m_parent_window, this, m_radar[radar]);
-        m_radar[radar]->control_dialog->SetPosition(m_dialogLocation[DL_CONTROL + radar].pos);
-        m_radar[radar]->control_dialog->Fit();
-        m_radar[radar]->control_dialog->Hide();
-        int range = m_radar[radar]->range_meters;
-        int idx = convertMetersToRadarAllowedValue(&range, m_settings.range_units, m_radar[radar]->radar_type);
-        m_radar[radar]->control_dialog->SetRangeIndex(idx);
-        m_radar[radar]->range.Update(idx);
-        m_radar[radar]->control_dialog->Hide();
-    }
-
+    m_radar[radar]->control_box_opened = show;
     if (show) {
         m_radar[radar]->control_box_closed = false;
+        if (!m_pMessageBox) {
+            m_pMessageBox = new br24MessageBox;
+            m_pMessageBox->Create(m_parent_window, this);
+            m_pMessageBox->SetPosition(m_dialogLocation[DL_MESSAGE].pos);
+            m_pMessageBox->Fit();
+            m_pMessageBox->Hide();
+        }
+        if (!m_radar[radar]->control_dialog) {
+            m_radar[radar]->control_dialog = new br24ControlsDialog;
+            m_radar[radar]->control_dialog->Create(m_parent_window, this, m_radar[radar]);
+            m_radar[radar]->control_dialog->SetPosition(m_dialogLocation[DL_CONTROL + radar].pos);
+            m_radar[radar]->control_dialog->Fit();
+            m_radar[radar]->control_dialog->Hide();
+            int range = m_radar[radar]->range_meters;
+            int idx = convertMetersToRadarAllowedValue(&range, m_settings.range_units, m_radar[radar]->radar_type);
+            m_radar[radar]->control_dialog->SetRangeIndex(idx);
+            m_radar[radar]->range.Update(idx);
+            m_radar[radar]->control_dialog->Show();
+        }
     }
-    m_radar[radar]->control_box_opened = show;
 
-    m_radar[radar]->control_dialog->UpdateControl(m_opengl_mode
-        , m_bpos_set
-        , m_heading_source != HEADING_NONE
-        , m_var_source != VARIATION_SOURCE_NONE
-        , m_radar[radar]->radar_seen
-        , m_radar[radar]->data_seen
-        );
-    m_radar[radar]->control_dialog->UpdateControlValues(true);
-    m_pMessageBox->UpdateMessage(m_opengl_mode
-        , m_bpos_set
-        , m_heading_source != HEADING_NONE
-        , m_var_source != VARIATION_SOURCE_NONE
-        , m_radar[radar]->radar_seen
-        , m_radar[radar]->data_seen
-        );
+    if (m_radar[radar]->control_dialog) {
+        m_radar[radar]->control_dialog->UpdateControl(m_opengl_mode
+            , m_bpos_set
+            , m_heading_source != HEADING_NONE
+            , m_var_source != VARIATION_SOURCE_NONE
+            , m_radar[radar]->radar_seen
+            , m_radar[radar]->data_seen
+            );
+        m_radar[radar]->control_dialog->UpdateControlValues(true);
+        m_pMessageBox->UpdateMessage(m_opengl_mode
+            , m_bpos_set
+            , m_heading_source != HEADING_NONE
+            , m_var_source != VARIATION_SOURCE_NONE
+            , m_radar[radar]->radar_seen
+            , m_radar[radar]->data_seen
+            );
+        if (!show) {
+            m_radar[radar]->control_dialog->Hide();
+        }
+    }
 }
 
 void br24radar_pi::OnContextMenuItemCallback( int id )

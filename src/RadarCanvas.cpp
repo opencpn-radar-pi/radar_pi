@@ -99,8 +99,8 @@ void RadarCanvas::resized( wxSizeEvent& evt )
 
 void RadarCanvas::close( wxCloseEvent& evt )
 {
-    this->Hide();
-    evt.Skip();
+    //this->Hide();
+    //evt.Skip();
 }
 
 void RadarCanvas::prepare2DViewport( int x, int y, int width, int height )
