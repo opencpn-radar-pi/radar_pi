@@ -51,9 +51,6 @@ public:
         m_next_spoke = -1;
         m_mcast_addr = 0;
         m_radar_addr = 0;
-        m_radar_seen = false;
-        m_data_seen = false;
-        m_radar_type = RT_UNKNOWN;
         m_range_meters = 0;
         m_updated_range = false;
 
@@ -71,11 +68,6 @@ public:
     wxIPV4address      m_ip_addr;
     bool               m_new_ip_addr;
 
-    bool               m_radar_seen;            // Has this radar been seen?
-    time_t             m_radar_watchdog;        // Timestamp of last time it was seen
-    bool               m_data_seen;             // Has this radar sent data?
-    time_t             m_data_watchdog;         // Timestamp of when data was seen
-    RadarType          m_radar_type;            // BR24, 3G or 4G
     int                m_range_meters;          // Last received range in meters
     bool               m_updated_range;         // m_range_meters has changed
 

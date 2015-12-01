@@ -80,10 +80,12 @@ public:
     RadarCanvas            *radar_canvas;
     RadarDraw              *draw;               // Abstract painting method
 
-    /* Abstractions of our own */
+    /* Abstractions of our own. Some filled by br24Receive. */
 
     bool                    data_seen;
+    time_t                  radar_watchdog;        // Timestamp of last time it was seen
     bool                    radar_seen;
+    time_t                  data_watchdog;         // Timestamp of when data was seen
     int                     range_meters;
     int                     commanded_range_meters;
     RadarType               radar_type;

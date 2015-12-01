@@ -130,10 +130,10 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
     time_t now = time(0);
     radar_frame_pkt * packet = (radar_frame_pkt *) data;
 
-    m_radar_seen = true;
-    m_radar_watchdog = now;
-    m_data_seen = true;
-    m_data_watchdog = now;
+    m_ri->radar_seen = true;
+    m_ri->radar_watchdog = now;
+    m_ri->data_seen = true;
+    m_ri->data_watchdog = now;
 
     if (m_pi->m_settings.verbose >= 5) {
         wxLogMessage(wxT("BR24radar_pi: %s ProcessFrame"), m_ri->name);
@@ -274,8 +274,8 @@ void br24Receive::EmulateFakeBuffer(void)
     UINT8 data[RETURNS_PER_LINE];
 
     m_ri->statistics.packets++;
-    m_radar_seen = true;
-    m_radar_watchdog = now;
+    m_ri->radar_seen = true;
+    m_ri->radar_watchdog = now;
     int scanlines_in_packet = 2048 * 24 / 60;
     int range_meters = 4000;
     int spots = 0;
@@ -501,7 +501,7 @@ void *br24Receive::Entry(void)
                 } else {
                     closesocket(dataSocket);
                     dataSocket = INVALID_SOCKET;
-                    m_data_seen = false;
+                    m_ri->data_seen = false;
                 }
             }
 
@@ -531,25 +531,25 @@ void *br24Receive::Entry(void)
                         addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
                         m_pi->m_ip_address = addr;
                         m_pi->m_update_address_control = true;   //signals to RenderGLOverlay that the control box should be updated
-                        if (!m_radar_seen) {
+                        if (!m_ri->radar_seen) {
                             if (m_pi->m_settings.verbose) {
                                 wxLogMessage(wxT("BR24radar_pi: %s detected at %s"), m_ri->name, addr.c_str());
                             }
                         }
-                        m_radar_seen = true;
-                        m_radar_watchdog = time(0);
+                        m_ri->radar_seen = true;
+                        m_ri->radar_watchdog = time(0);
                     }
                 } else {
                     wxLogMessage(wxT("BR24radar_pi: %s report socket failed"), m_ri->name);
                     closesocket(reportSocket);
                     reportSocket = INVALID_SOCKET;
-                    m_radar_seen = false;
+                    m_ri->radar_seen = false;
                 }
             }
 
         } else if (no_data_timeout >= 2) {
             no_data_timeout = 0;
-            if (m_data_seen) {
+            if (m_ri->data_seen) {
                 if (dataSocket != INVALID_SOCKET) {
                     closesocket(dataSocket);
                     dataSocket = INVALID_SOCKET;
@@ -562,7 +562,7 @@ void *br24Receive::Entry(void)
             else if (reportSocket != INVALID_SOCKET) {
                 closesocket(reportSocket);
                 reportSocket = INVALID_SOCKET;
-                m_radar_seen = false;
+                m_ri->radar_seen = false;
                 m_mcast_addr = 0;
                 m_radar_addr = 0;
             }

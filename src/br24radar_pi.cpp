@@ -134,7 +134,6 @@ int br24radar_pi::Init( void )
     m_var_source = VARIATION_SOURCE_NONE;
     m_heading_on_radar = false;
     m_refresh_busy_or_queued = false;
-    m_old_data_seen = false;
     m_bpos_set = false;
     m_auto_range_meters = 0;
     m_previous_auto_range_meters = 0;
@@ -151,8 +150,6 @@ int br24radar_pi::Init( void )
     m_bpos_watchdog = 0;
     m_hdt_watchdog  = 0;
     m_var_watchdog = 0;
-    m_radar_watchdog = 0;
-    m_data_watchdog = 0;
     m_idle_watchdog = 0;
     memset(m_bogey_count, 0, sizeof(m_bogey_count));   // set bogey count 0
     memset(m_scan_line, 0, sizeof(m_scan_line));
@@ -627,7 +624,7 @@ void br24radar_pi::DoTick( void )
     // This area is stil a mess, not sure what was intended here
     for (size_t r = 0; r < RADARS; r++) {
         if (m_radar[r]->radar_seen) {
-            if (TIMER_ELAPSED(now, m_radar_watchdog)) {
+            if (TIMER_ELAPSED(now, m_radar[r].radar_watchdog)) {
                 m_radar[r]->radar_seen = false;
                 wxLogMessage(wxT("BR24radar_pi: Lost %s presence"), m_radar[r]->name);
             }
@@ -640,11 +637,9 @@ void br24radar_pi::DoTick( void )
 
     bool any_data_seen = false;
     for (size_t r = 0; r < RADARS; r++) {
-        m_radar[r]->data_seen = m_radar[r]->statistics.spokes > m_radar[r]->statistics.broken_spokes;
         any_data_seen |= m_radar[r]->data_seen;
     }
     if (any_data_seen) { // Something coming from radar unit?
-        m_data_watchdog = now;
         m_scanner_state = RADAR_ON;
         if (m_settings.show_radar == RADAR_ON) {   // if not, radar will time out and go standby
             if (TIMER_ELAPSED(now, m_dt_stayalive)) {
@@ -658,11 +653,7 @@ void br24radar_pi::DoTick( void )
     }
     else {
         m_scanner_state = RADAR_OFF;
-        if (m_old_data_seen && TIMER_ELAPSED(now, m_data_watchdog)) {
-            m_old_data_seen = false;
-            m_heading_on_radar = false;
-            wxLogMessage(wxT("BR24radar_pi: Lost radar data"));
-        }
+        m_heading_on_radar = false;
     }
 
     if (m_settings.pass_heading_to_opencpn && m_heading_on_radar) {
@@ -731,7 +722,6 @@ void br24radar_pi::DoTick( void )
     if (m_settings.emulator_on) {
         m_radar[0]->radar_seen = true;
         m_radar[1]->radar_seen = true;
-        m_radar_watchdog = time(0);
     }
 
 #ifdef TODO
