@@ -308,7 +308,7 @@ public:
     void OnGuardZoneBogeyConfirm();
 
     void SetControlValue(int radar, ControlType controlType, int value);
-    void ComputeColorMap(int display_option);
+    void ComputeColorMap();
 
     bool LoadConfig(void);
     bool SaveConfig(void);

@@ -191,6 +191,7 @@ int br24radar_pi::Init( void )
         wxLogMessage(wxT("BR24radar_pi: configuration file values initialisation failed"));
         return 0; // give up
     }
+    ComputeColorMap();
 
     for (size_t r = 0; r < RADARS; r++) {
         if (!m_radar[r]->Init(m_settings.verbose)) {
@@ -441,23 +442,30 @@ void br24radar_pi::ShowGuardZoneDialog( int radar, int zone )
     }
 }
 
-void br24radar_pi::ComputeColorMap( int display_option )
+void br24radar_pi::ComputeColorMap( )
 {
-    switch (display_option)
+    switch (m_settings.display_option)
     {
     case 0:
         for (int i = 0; i <= UINT8_MAX; i++) {
-            m_color_map_red[i] = (i >= m_settings.threshold_red) ? 255 : 0;
+            m_color_map_red[i] = (i >= m_settings.threshold_blue) ? 255 : 0;
             m_color_map_green[i] = 0;
             m_color_map_blue[i] = 0;
-            m_color_map[i] = (i >= m_settings.threshold_red) ? BLOB_RED : BLOB_NONE;
+            m_color_map[i] = (i >= m_settings.threshold_blue) ? BLOB_RED : BLOB_NONE;
         }
         break;
     case 1:
         for (int i = 0; i <= UINT8_MAX; i++) {
-            m_color_map_red[i] = (i >= m_settings.threshold_red) ? 255 : 0;
-            m_color_map_green[i] = (i >= m_settings.threshold_green) ? 255 : 0;
-            m_color_map_blue[i] = (i >= m_settings.threshold_blue) ? 255 : 0;
+            m_color_map_red[i] = 0;
+            m_color_map_green[i] = 0;
+            m_color_map_blue[i] = 0;
+            if (i >= m_settings.threshold_red) {
+                m_color_map_red[i] = 255;
+            } else if (i >= m_settings.threshold_green) {
+                m_color_map_green[i] = 255;
+            } else if (i >= m_settings.threshold_blue) {
+                m_color_map_blue[i] = 255;
+            }
             m_color_map[i] = (i >= m_settings.threshold_red) ? BLOB_RED :
                              (i >= m_settings.threshold_green) ? BLOB_GREEN :
                              (i >= m_settings.threshold_blue) ? BLOB_BLUE : BLOB_NONE;

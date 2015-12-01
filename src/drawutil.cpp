@@ -140,3 +140,27 @@ void DrawFilledArc( double r1, double r2, double a1, double a2 )
         draw_blob_gl(cos(nr), sin(nr), r2, deg2rad(0.5), r1 - r2);
     }
 }
+
+void CheckOpenGLError( )
+{
+    GLenum errLast = GL_NO_ERROR;
+
+    for (;;) {
+        GLenum err = glGetError();
+
+        if (err == GL_NO_ERROR) {
+            return;
+        }
+
+        if (err == errLast) {
+            wxLogMessage(wxT("BR24radar_pi: OpenGL error could not be reset"));
+            return;
+        }
+
+        errLast = err;
+
+        wxLogMessage(wxT("BR24radar_pi: OpenGL error %d"), err);
+    }
+}
+
+// vim: sw=4:ts=8:

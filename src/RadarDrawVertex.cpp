@@ -66,8 +66,6 @@ void RadarDrawVertex::SetBlob( int angle_begin, int angle_end, int r1, int r2, G
 
     vertex_point * p = &spokes[arc1].points[spokes[arc1].n];
 
-    wxLogMessage(wxT("BR24radar_pi: > vertices array n=%d arc=%d"), spokes[arc1].n, arc1);
-
     // First triangle
 
     ADD_VERTEX_POINT(arc1, r1, red, green, blue, alpha);
@@ -86,8 +84,6 @@ void RadarDrawVertex::SetBlob( int angle_begin, int angle_end, int r1, int r2, G
         wxLogMessage(wxT("BR24radar_pi: vertices array limit overflow n=%d arc=%d"), spokes[arc1].n, arc1);
         spokes[arc1].n = VERTEX_MAX - VERTEX_PER_QUAD; // Make room for last vertex of all, to make sure we draw outer border
     }
-
-    wxLogMessage(wxT("BR24radar_pi: < vertices array n=%d arc=%d"), spokes[arc1].n, arc1);
 }
 
 void RadarDrawVertex::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_t len )
@@ -122,6 +118,7 @@ void RadarDrawVertex::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_
             blue  = m_pi->m_color_map_blue[strength];
 
             SetBlob(angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
+            m_blobs++;
 
             previous_color = actual_color;
             if (actual_color != BLOB_NONE) {            // change of color, start new blob
@@ -137,21 +134,25 @@ void RadarDrawVertex::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_
         blue = m_pi->m_color_map_blue[strength];
 
         SetBlob(angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
+        m_blobs++;
     }
+    m_spokes++;
 }
 
 void RadarDrawVertex::DrawRadarImage( wxPoint center, double scale, double rotation, bool overlay )
 {
+    size_t total_points = 0;
+
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);
 
-    if (overlay) {
+    //if (overlay) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    }
-    else {
-        glClearColor(0, 0, 0, 1);
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
+    //}
+    //else {
+        //glClearColor(0, 0, 0, 1);
+        //glClear(GL_COLOR_BUFFER_BIT);
+    //}
 
     glPushMatrix();
     glTranslated(center.x, center.y, 0);
@@ -165,7 +166,7 @@ void RadarDrawVertex::DrawRadarImage( wxPoint center, double scale, double rotat
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    for (int i = 0; i < LINES_PER_ROTATION; i++) {
+    for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
         int number_of_points = spokes[i].n;
         if (number_of_points > 0)
         {
@@ -173,6 +174,7 @@ void RadarDrawVertex::DrawRadarImage( wxPoint center, double scale, double rotat
             glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex_point), &spokes[i].points[0].red);
             glDrawArrays(GL_TRIANGLES, 0, number_of_points);
         }
+        total_points += number_of_points;
     }
     glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
     glDisableClientState(GL_COLOR_ARRAY);
@@ -181,6 +183,12 @@ void RadarDrawVertex::DrawRadarImage( wxPoint center, double scale, double rotat
     glPopMatrix(); // Undo translated
 
     glPopAttrib(); // Undo blend
+
+    if (m_pi->m_settings.verbose >= 4) {
+        wxLogMessage(wxT("BR24radar_pi: RadarDrawVertex::DrawRadarImage drawn %u points for %u spokes with %u blobs"), total_points, m_spokes, m_blobs);
+    }
+    m_blobs = 0;
+    m_spokes = 0;
 }
 
 // vim: sw=4:ts=8:

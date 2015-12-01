@@ -29,7 +29,8 @@
  ***************************************************************************
  */
 
-#include <br24radar_pi.h>
+#include "br24radar_pi.h"
+#include "drawutil.h"
 
 BEGIN_EVENT_TABLE(RadarWindow, wxGLCanvas)
     EVT_CLOSE(RadarWindow::close)
@@ -78,6 +79,7 @@ void RadarWindow::resized( wxSizeEvent& evt )
 void RadarWindow::close( wxCloseEvent& evt )
 {
     this->Hide();
+    evt.Skip();
 }
 
 void RadarWindow::prepare2DViewport( int x, int y, int width, int height )
@@ -128,11 +130,17 @@ void RadarWindow::render( wxPaintEvent& evt )
 
     double scale_factor = 1.0 / RETURNS_PER_LINE; // Radar image is in 0..511 range
 
+    DrawOutlineArc(0.25, 1.00, 0.0, 359.0, true);
+    DrawOutlineArc(0.50, 0.75, 0.0, 359.0, true);
+    CheckOpenGLError();
+
     // TODO
     // m_pi->RenderGuardZone(wxPoint(0,0), 1.0, 0);
     double rotation = 0.0; // Or HU then -m_pi->m_hdt;
 
+
     m_ri->RenderRadarImage(wxPoint(0,0), scale_factor, rotation, false);
+    CheckOpenGLError();
 
     glFlush();
     SwapBuffers();

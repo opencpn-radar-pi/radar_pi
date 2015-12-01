@@ -212,7 +212,7 @@ void br24OptionsDialog::OnRangeUnitsClick(wxCommandEvent &event)
 void br24OptionsDialog::OnDisplayOptionClick(wxCommandEvent &event)
 {
     m_pi->m_settings.display_option = pOverlayDisplayOptions->GetSelection();
-    m_pi->ComputeColorMap(m_pi->m_settings.display_option);
+    m_pi->ComputeColorMap();
 }
 
 void br24OptionsDialog::OnGuardZoneStyleClick(wxCommandEvent &event)

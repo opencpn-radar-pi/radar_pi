@@ -42,6 +42,8 @@ public:
         m_pi = pi;
         start_line = LINES_PER_ROTATION;
         end_line = 0;
+        m_blobs = 0;
+        m_spokes = 0;
 
         for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
             spokes[i].n = 0;
@@ -90,7 +92,7 @@ private:
 
     struct vertex_spoke {
         vertex_point    points[VERTEX_MAX];
-        int             n;
+        size_t          n;
     };
 
     vertex_spoke    spokes[LINES_PER_ROTATION];
@@ -100,6 +102,9 @@ private:
 
     int             start_line;
     int             end_line;
+
+    unsigned int    m_blobs;
+    unsigned int    m_spokes;
 };
 
 #endif /* _RADARDRAWVERTEX_H_ */
