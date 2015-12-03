@@ -108,21 +108,20 @@ void RadarCanvas::keyReleased(wxKeyEvent& event) {}
 
 void RadarCanvas::prepare2DViewport( int x, int y, int width, int height )
 {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black Background
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_TEXTURE_2D);   // textures
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);               // Black Background
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the canvas
+    glEnable(GL_TEXTURE_2D);                            // Enable textures
     glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_BLEND);
     glDisable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
     glViewport(x, y, width, height);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
+    glMatrixMode(GL_PROJECTION);                        // Next two operations on the project matrix stack
+    glLoadIdentity();                                   // Reset projection matrix stack
     glScaled(1.0, -1.0, 1.0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);                         // Reset matrick stack target back to GL_MODELVIEW
+    glLoadIdentity();                                   // Reset modelview matrix stack
 }
 
 void RadarCanvas::render( wxPaintEvent& evt )
@@ -154,7 +153,7 @@ void RadarCanvas::render( wxPaintEvent& evt )
     glColor3ub(200, 255, 200);
     DrawOutlineArc(0.25, 1.00, 0.0, 359.0, true);
     DrawOutlineArc(0.50, 0.75, 0.0, 359.0, true);
-    CheckOpenGLError();
+    CheckOpenGLError(wxT("range circles"));
 
     // TODO
     // m_pi->RenderGuardZone(wxPoint(0,0), 1.0, 0);
@@ -162,19 +161,19 @@ void RadarCanvas::render( wxPaintEvent& evt )
 
 
     m_ri->RenderRadarImage(wxPoint(0,0), scale_factor, rotation, false);
-    CheckOpenGLError();
+    CheckOpenGLError(wxT("radar image"));
 
     glLineWidth(1);
     glColor3ub(200, 255, 200);
     glEnable(GL_TEXTURE_2D);
     m_FontBig.RenderString(_("HU / No"), 0, 0);
+    CheckOpenGLError(wxT("font render"));
     glDisable(GL_TEXTURE_2D);
 
-    CheckOpenGLError();
 
     glFlush();
     glPopAttrib();
-    CheckOpenGLError();
+    CheckOpenGLError(wxT("finalize"));
     SwapBuffers();
 }
 

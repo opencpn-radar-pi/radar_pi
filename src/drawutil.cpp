@@ -141,7 +141,7 @@ void DrawFilledArc( double r1, double r2, double a1, double a2 )
     }
 }
 
-void CheckOpenGLError( )
+void CheckOpenGLError( const wxString & after )
 {
     GLenum errLast = GL_NO_ERROR;
 
@@ -159,7 +159,7 @@ void CheckOpenGLError( )
 
         errLast = err;
 
-        wxLogMessage(wxT("BR24radar_pi: OpenGL error %d"), err);
+        wxLogMessage(wxT("BR24radar_pi: OpenGL error %d after %s"), err, after.c_str());
     }
 }
 
