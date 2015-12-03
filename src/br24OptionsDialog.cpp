@@ -30,6 +30,22 @@
  */
 
 #include "br24radar_pi.h"
+#include "RadarDraw.h"
+
+enum {
+    // process ID's
+    ID_OK,
+    ID_RANGE_UNITS,
+    ID_OVERLAYDISPLAYOPTION,
+    ID_DISPLAYTYPE,
+    ID_HEADINGSLIDER,
+    ID_SELECT_SOUND,
+    ID_TEST_SOUND,
+    ID_PASS_HEADING,
+    ID_DRAW_METHOD,
+    ID_SELECT_AB,
+    ID_EMULATOR
+};
 
 IMPLEMENT_CLASS(br24OptionsDialog, wxDialog)
 
@@ -106,7 +122,7 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi)
 
     pOverlayDisplayOptions = new wxRadioBox(this, ID_OVERLAYDISPLAYOPTION, _("Overlay Display Options"),
                                             wxDefaultPosition, wxDefaultSize,
-                                            2, Overlay_Display_Options, 1, wxRA_SPECIFY_COLS);
+                                            ARRAY_SIZE(Overlay_Display_Options), Overlay_Display_Options, 1, wxRA_SPECIFY_COLS);
 
     DisplayOptionsBox->Add(pOverlayDisplayOptions, 0, wxALL | wxEXPAND, 2);
 
@@ -122,7 +138,7 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi)
     };
     pGuardZoneStyle = new wxRadioBox(this, ID_DISPLAYTYPE, _("Guard Zone Styling"),
                                      wxDefaultPosition, wxDefaultSize,
-                                     3, GuardZoneStyleStrings, 1, wxRA_SPECIFY_COLS);
+                                     ARRAY_SIZE(GuardZoneStyleStrings), GuardZoneStyleStrings, 1, wxRA_SPECIFY_COLS);
 
     DisplayOptionsBox->Add(pGuardZoneStyle, 0, wxALL | wxEXPAND, 2);
     pGuardZoneStyle->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
@@ -162,6 +178,23 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi)
                         wxCommandEventHandler(br24OptionsDialog::OnTestSoundClick), NULL, this);
     guardZoneSizer->Add(pTestSound, 0, wxALL, border_size);
 
+    // Drawing Method
+
+    wxStaticBox* drawingMethodBox = new wxStaticBox(this, wxID_ANY, _("GPU drawing method"));
+    wxStaticBoxSizer* drawingMethodSizer = new wxStaticBoxSizer(drawingMethodBox, wxVERTICAL);
+    DisplayOptionsBox->Add(drawingMethodSizer, 0, wxEXPAND | wxALL, border_size);
+
+    wxArrayString DrawingMethods;
+    RadarDraw::GetDrawingMethods(DrawingMethods);
+    cbDrawingMethod = new wxComboBox(this, ID_DRAW_METHOD, DrawingMethods[m_pi->m_settings.drawing_method],
+                            wxDefaultPosition, wxDefaultSize,
+                            DrawingMethods,
+                            wxALIGN_CENTRE | wxST_NO_AUTORESIZE,
+                            wxDefaultValidator, _("Drawing Method"));
+    drawingMethodSizer->Add(cbDrawingMethod, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+    cbDrawingMethod->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED,
+                             wxCommandEventHandler(br24OptionsDialog::OnDrawingMethodClick), NULL, this);
+
     //  Options
     wxStaticBox* itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
     wxStaticBoxSizer* itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
@@ -172,12 +205,6 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi)
     cbPassHeading->SetValue(m_pi->m_settings.pass_heading_to_opencpn);
     cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                              wxCommandEventHandler(br24OptionsDialog::OnPassHeadingClick), NULL, this);
-
-    cbUseShader = new wxCheckBox(this, ID_USE_SHADER, _("Use GPU shader for rendering"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    itemStaticBoxSizerOptions->Add(cbUseShader, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-    cbUseShader->SetValue(m_pi->m_settings.use_shader ? 1 : 0);
-    cbUseShader->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
-                             wxCommandEventHandler(br24OptionsDialog::OnUseShaderClick), NULL, this);
 
     cbEnableDualRadar = new wxCheckBox(this, ID_SELECT_AB, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     itemStaticBoxSizerOptions->Add(cbEnableDualRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
@@ -259,9 +286,10 @@ void br24OptionsDialog::OnPassHeadingClick(wxCommandEvent &event)
     m_pi->m_settings.pass_heading_to_opencpn = cbPassHeading->GetValue();
 }
 
-void br24OptionsDialog::OnUseShaderClick(wxCommandEvent &event)
+void br24OptionsDialog::OnDrawingMethodClick(wxCommandEvent &event)
 {
-    m_pi->m_settings.use_shader = (bool) cbUseShader->GetValue();
+    m_pi->m_settings.drawing_method = cbDrawingMethod->GetSelection();
+    wxLogMessage(wxT("BR24radar_pi: new drawing method %d selected"), m_pi->m_settings.drawing_method);
 }
 
 void br24OptionsDialog::OnEmulatorClick(wxCommandEvent &event)

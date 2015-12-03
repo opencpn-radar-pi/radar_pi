@@ -62,7 +62,7 @@ private:
     void OnSelectSoundClick(wxCommandEvent& event);
     void OnTestSoundClick(wxCommandEvent& event);
     void OnPassHeadingClick(wxCommandEvent& event);
-    void OnUseShaderClick(wxCommandEvent& event);
+    void OnDrawingMethodClick(wxCommandEvent& event);
     void OnEnableDualRadarClick(wxCommandEvent& event);
     void OnEmulatorClick(wxCommandEvent& event);
 
@@ -77,7 +77,7 @@ private:
     wxSlider          *pIntervalSlider;
     wxTextCtrl        *pText_Heading_Correction_Value;
     wxCheckBox        *cbPassHeading;
-    wxCheckBox        *cbUseShader;
+    wxComboBox        *cbDrawingMethod;
     wxCheckBox        *cbEnableDualRadar;
     wxCheckBox        *cbEmulator;
 };

@@ -1138,8 +1138,7 @@ bool br24radar_pi::LoadConfig(void)
 
         pConf->Read(wxT("PassHeadingToOCPN"), &intValue, 0);
         m_settings.pass_heading_to_opencpn = intValue != 0;
-        pConf->Read(wxT("UseShader"), &intValue, 0);
-        m_settings.use_shader = intValue != 0;
+        pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
 
         for (size_t i = 0; i < ARRAY_SIZE(m_dialogLocation); i++) {
            int x, y, sx, sy;
@@ -1206,7 +1205,7 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("DrawAlgorithm"), m_settings.draw_algorithm);
         pConf->Write(wxT("Refreshrate"), m_settings.refreshrate);
         pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
-        pConf->Write(wxT("UseShader"), (int) m_settings.use_shader);
+        pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
         pConf->Write(wxT("EmulatorOn"), (int) m_settings.emulator_on);
         pConf->Write(wxT("ShowRadar"), (int) m_settings.show_radar);
         pConf->Write(wxT("RadarAlertAudioFile"), m_settings.alert_audio_file);
@@ -1599,32 +1598,6 @@ void br24radar_pi::SetNMEASentence( wxString &sentence )
                 RenderGuardZone(radar_center, v_scale_ppm, m_settings.selectRadarB);
             }
         }
-#endif
-
-#if TODO
-    // Keep this around, drawer should be reset somewhere in draw code
-    // Determine if a new draw method is required
-    if (!m_draw || (m_settings.useShader != m_OldUseShader) || (m_settings.display_option != m_OldDisplayOption)) {
-        br24Draw * newDraw = br24Draw::make_Draw(m_settings.useShader);
-        if (!newDraw) {
-            wxLogMessage(wxT("BR24radar_pi: out of memory"));
-            return true;
-        }
-        else if (newDraw->Init(this, m_settings.display_option)) {
-            if (m_draw) {
-                delete m_draw;
-            }
-            m_draw = newDraw;
-            m_OldUseShader = m_settings.useShader;
-            m_OldDisplayOption = m_settings.display_option;
-        } else {
-            m_settings.useShader = false;
-            delete newDraw;
-        }
-        if (!m_draw) {
-            return true;
-        }
-    }
 #endif
 
 // vim: sw=4:ts=8:

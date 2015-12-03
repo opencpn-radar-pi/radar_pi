@@ -79,21 +79,6 @@ typedef int SpokeBearing;          // A value from 0 -- LINES_PER_ROTATION indic
 #define TIMER_ELAPSED(t, watchdog) (!TIMER_NOT_ELAPSED(t, watchdog))
 
 enum {
-    // process ID's
-    ID_OK,
-    ID_RANGE_UNITS,
-    ID_OVERLAYDISPLAYOPTION,
-    ID_DISPLAYTYPE,
-    ID_HEADINGSLIDER,
-    ID_SELECT_SOUND,
-    ID_TEST_SOUND,
-    ID_PASS_HEADING,
-    ID_USE_SHADER,
-    ID_SELECT_AB,
-    ID_EMULATOR
-};
-
-enum {
     BM_ID_RED,
     BM_ID_RED_SLAVE,
     BM_ID_GREEN,
@@ -234,7 +219,7 @@ struct PersistentSettings {
     bool     pass_heading_to_opencpn;
     bool     enable_dual_radar;       // Should the dual radar be enabled for 4G?
     bool     emulator_on;
-    bool     use_shader;
+    int      drawing_method;          // VertexBuffer, Shader, etc.
     int      threshold_red;
     int      threshold_green;
     int      threshold_blue;

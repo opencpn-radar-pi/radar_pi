@@ -33,22 +33,29 @@
 #include "RadarDrawVertex.h"
 #include "RadarDrawShader.h"
 
+
 // Factory to generate a particular draw implementation
-RadarDraw * RadarDraw::make_Draw( br24radar_pi * pi, int useShader )
+RadarDraw * RadarDraw::make_Draw( br24radar_pi * pi, int draw_method )
 {
-    if (pi->m_settings.verbose >= 2) {
-        wxLogMessage(wxT("Creating new %s draw method"), useShader ? "Shader" : "Vertex");
+    switch (draw_method) {
+        case 0:
+            return new RadarDrawVertex(pi);
+        case 1:
+            return new RadarDrawShader(pi);
+        default:
+            wxLogMessage(wxT("BR24radar_pi: unsupported draw method %d"), draw_method);
     }
-    if (useShader) {
-        return new RadarDrawShader(pi);
-    }
-    else {
-        return new RadarDrawVertex(pi);
-    }
+    return 0;
 }
 
 RadarDraw::~RadarDraw()
 {
 }
 
+void RadarDraw::GetDrawingMethods( wxArrayString & methods )
+{
+    wxString m[] = { _("Vertex Array"), _("Shader") };
+
+    methods = wxArrayString(ARRAY_SIZE(m), m);
+}
 // vim: sw=4:ts=8:

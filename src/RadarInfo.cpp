@@ -69,7 +69,7 @@ RadarInfo::RadarInfo( br24radar_pi *pi, wxString name, int radar )
 
     m_quit = false;
     m_color_option = false;
-    m_use_shader = false;
+    m_drawing_method = -1;
 }
 
 RadarInfo::~RadarInfo( )
@@ -83,7 +83,7 @@ RadarInfo::~RadarInfo( )
         wxLogMessage(wxT("BR24radar_pi: %s thread stopped"), name);
     }
     if (radar_panel) {
-        wxLogMessage(wxT("BR24radar_pi: %s DL_RADARWINDOW %u pos(%d,%d) size(%d,%d)"), name, DL_RADARWINDOW + radar,
+        wxLogMessage(wxT("BR24radar_pi: %s DL_RADARWINDOW %u pos(%d,%d) size(%d,%d)"), name.c_str(), DL_RADARWINDOW + radar,
                 m_pi->m_dialogLocation[DL_RADARWINDOW + radar].pos.x,
                 m_pi->m_dialogLocation[DL_RADARWINDOW + radar].pos.y,
                 m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size.x,
@@ -329,25 +329,28 @@ void RadarInfo::UpdateControlState( bool all )
 
 void RadarInfo::RenderRadarImage( wxPoint center, double scale, double rotation, bool overlay )
 {
-    bool useShader = m_pi->m_settings.use_shader;
+    int drawing_method = m_pi->m_settings.drawing_method;
     bool colorOption = m_pi->m_settings.display_option > 0;
 
     // Determine if a new draw method is required
-    if (!draw || (useShader != m_use_shader) || (colorOption != m_color_option)) {
-        RadarDraw * newDraw = RadarDraw::make_Draw(m_pi, useShader);
+    if (!draw || (drawing_method != m_drawing_method) || (colorOption != m_color_option)) {
+        RadarDraw * newDraw = RadarDraw::make_Draw(m_pi, drawing_method);
         if (!newDraw) {
             wxLogMessage(wxT("BR24radar_pi: out of memory"));
             return;
         }
         else if (newDraw->Init(colorOption)) {
+            wxArrayString methods;
+            RadarDraw::GetDrawingMethods(methods);
+            wxLogMessage(wxT("BR24radar_pi: new drawing method %s for %s"), methods[drawing_method].c_str(), name.c_str());
             if (draw) {
                 delete draw;
             }
             draw = newDraw;
-            m_use_shader = useShader;
+            m_drawing_method = drawing_method;
             m_color_option = colorOption;
         } else {
-            m_pi->m_settings.use_shader = false;
+            m_pi->m_settings.drawing_method = 0;
             delete newDraw;
         }
         if (!draw) {
