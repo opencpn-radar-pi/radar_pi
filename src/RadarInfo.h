@@ -126,7 +126,7 @@ private:
     br24radar_pi           *m_pi;
     int                     m_verbose;
     int                     m_refresh_countdown;
-    bool                    m_drawing_method;
+    int                     m_drawing_method;
     bool                    m_color_option;
 };
 
