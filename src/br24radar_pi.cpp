@@ -155,7 +155,7 @@ int br24radar_pi::Init( void )
     memset(m_dialogLocation, 0, sizeof(m_dialogLocation));
 
     m_radar[0] = new RadarInfo(this, _("Radar"), 0);
-    m_radar[1] = new RadarInfo(this, _("Radar B"), 0);
+    m_radar[1] = new RadarInfo(this, _("Radar B"), 1);
 
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;

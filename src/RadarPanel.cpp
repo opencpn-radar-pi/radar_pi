@@ -37,14 +37,14 @@ RadarPanel::RadarPanel( br24radar_pi * pi, RadarInfo * ri, wxWindow * parent ) :
     m_parent = parent;
     m_pi = pi;
     m_ri = ri;
-
-    m_aui_mgr = GetFrameAuiManager();
 }
 
 void RadarPanel::Create( )
 {
+    m_aui_mgr = GetFrameAuiManager();
+    m_aui_name = wxString::Format(wxT("BR24radar_pi-%d"), m_ri->radar);
     wxAuiPaneInfo p = wxAuiPaneInfo()
-                        .Name(wxString::Format(wxT("BR24radar_pi-%d"), m_ri->radar))
+                        .Name(m_aui_name)
                         .Caption(m_ri->name)
                         .CaptionVisible(true)  // Show caption even when docked
                         .Dockable(true)        // Dockable everywhere
@@ -56,6 +56,7 @@ void RadarPanel::Create( )
     m_aui_mgr->AddPane(this, p);
     m_aui_mgr->Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(RadarPanel::close), NULL, this);
     m_aui_mgr->Update();
+    wxLogMessage(wxT("BR24radar_pi: Added panel %s to AUI control manager"), m_aui_name.c_str());
 }
 
 RadarPanel::~RadarPanel()

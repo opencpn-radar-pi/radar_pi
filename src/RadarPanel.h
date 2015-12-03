@@ -53,6 +53,7 @@ private:
     br24radar_pi  * m_pi;
     RadarInfo     * m_ri;
     wxAuiManager  * m_aui_mgr;
+    wxString        m_aui_name;
 };
 
 #endif
