@@ -766,7 +766,9 @@ void br24ControlsDialog::CreateControls()
     // Updated when we receive data
 
     // The RADAR ONLY / OVERLAY button
-    m_overlay_button = new wxButton(this, ID_RADAR_OVERLAY, _("Overlay\nOff"), wxDefaultPosition, g_buttonSize, 0);
+    wxString overlay = _("Overlay");
+    overlay << wxT("\n?");
+    m_overlay_button = new wxButton(this, ID_RADAR_OVERLAY, overlay, wxDefaultPosition, g_buttonSize, 0);
     m_control_sizer->Add(m_overlay_button, 0, wxALL, BORDER);
     m_overlay_button->SetFont(m_pi->m_font);
 
@@ -1048,16 +1050,12 @@ void br24ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event)
 {
     if (m_pi->m_settings.chart_overlay != m_ri->radar) {
         m_pi->m_settings.chart_overlay = m_ri->radar;
-        wxString label ;
-        label << _("Overlay") << wxT("\n") << _("On");
-        m_overlay_button->SetLabel(label);
     }
     else {
         m_pi->m_settings.chart_overlay = -1;
-        wxString label;
-        label << _("Overlay") << wxT("\n") << _("Off") ;
-        m_overlay_button->SetLabel(label);
     }
+    m_ri->overlay.Update(m_pi->m_settings.chart_overlay == m_ri->radar);
+    UpdateControlValues(true);
 }
 
 void br24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event)
@@ -1082,105 +1080,117 @@ void br24ControlsDialog::OnSize(wxSizeEvent& event)
 
 void br24ControlsDialog::UpdateControlValues(bool refreshAll)
 {
-    if (m_top_sizer->IsShown(m_control_sizer)) {
-        // first update the range
-        if (m_ri->range.mod || refreshAll) {
-            if (m_ri->range.button == -1) {
-                m_range_button->SetLocalAuto();
-            }
-            SetRangeIndex(m_ri->range.button);
-            m_ri->range.mod = false;
-        }  // don't set the actual range here, is still handled elsewhere
+    if (m_ri->state.mod || refreshAll) {
+        wxString o = m_ri->state.button ? _("On") : _("Off");
+        m_radar_state->SetLabel(o);
+        m_ri->overlay.mod = false;
+    }
 
-        // gain
-        if (m_ri->gain.mod || refreshAll) {
-            if (m_ri->gain.button == -1) {
-                m_gain_button->SetLocalAuto();
-            }
-            else{
-                m_gain_button->SetLocalValue(m_ri->gain.button);
-            }
+    if (m_ri->overlay.mod || ((m_pi->m_settings.chart_overlay == m_ri->radar) != (m_ri->overlay.button != 0)) || refreshAll) {
+        wxString o = _("Overlay");
+        o << wxT("\n");
+        if (m_ri->overlay.button > 0) {
+            o << _("On");
+        } else {
+            o << _("Off");
         }
+        m_overlay_button->SetLabel(o);
+        m_ri->overlay.mod = false;
+    }
 
-        //  rain
-        if (m_ri->rain.mod || refreshAll) {
-            m_rain_button->SetLocalValue(m_ri->rain.button);
-            m_ri->rain.mod = false;
+    // first update the range
+    if (m_ri->range.mod || refreshAll) {
+        if (m_ri->range.button == -1) {
+            m_range_button->SetLocalAuto();
         }
+        SetRangeIndex(m_ri->range.button);
+        m_ri->range.mod = false;
+    }  // don't set the actual range here, is still handled elsewhere
 
-        //   sea
-        if (m_ri->sea.mod || refreshAll) {
-            if (m_ri->sea.button == -1) {
-                m_sea_button->SetLocalAuto();
-            }
-            else{
-                m_sea_button->SetLocalValue(m_ri->sea.button);
-            }
-            m_ri->sea.mod = false;
+    // gain
+    if (m_ri->gain.mod || refreshAll) {
+        if (m_ri->gain.button == -1) {
+            m_gain_button->SetLocalAuto();
+        }
+        else{
+            m_gain_button->SetLocalValue(m_ri->gain.button);
         }
     }
-    if (m_top_sizer->IsShown(m_advanced_sizer)) {
 
-        //   target_boost
-        if (m_ri->target_boost.mod || refreshAll) {
-            m_target_boost_button->SetLocalValue(m_ri->target_boost.button);
-            m_ri->target_boost.mod = false;
-        }
-
-        //  noise_rejection
-        if (m_ri->noise_rejection.mod || refreshAll) {
-            m_noise_rejection_button->SetLocalValue(m_ri->noise_rejection.button);
-            m_ri->noise_rejection.mod = false;
-        }
-
-        //  target_separation
-        if (m_ri->target_separation.mod || refreshAll) {
-            m_target_separation_button->SetLocalValue(m_ri->target_separation.button);
-            m_ri->target_separation.mod = false;
-        }
-
-        //  interference_rejection
-        if (m_ri->interference_rejection.mod || refreshAll) {
-            m_interference_rejection_button->SetLocalValue(m_ri->interference_rejection.button);
-            m_ri->interference_rejection.mod = false;
-        }
-
-        // scanspeed
-        if (m_ri->scan_speed.mod || refreshAll) {
-            m_scan_speed_button->SetLocalValue(m_ri->scan_speed.button);
-            m_ri->scan_speed.mod = false;
-        }
+    //  rain
+    if (m_ri->rain.mod || refreshAll) {
+        m_rain_button->SetLocalValue(m_ri->rain.button);
+        m_ri->rain.mod = false;
     }
-    if (m_top_sizer->IsShown(m_installation_sizer)) {
 
-        //   antenna height
-        if (m_ri->antenna_height.mod || refreshAll) {
-            m_antenna_height_button->SetLocalValue(m_ri->antenna_height.button);
-            m_ri->antenna_height.mod = false;
+    //   sea
+    if (m_ri->sea.mod || refreshAll) {
+        if (m_ri->sea.button == -1) {
+            m_sea_button->SetLocalAuto();
         }
+        else{
+            m_sea_button->SetLocalValue(m_ri->sea.button);
+        }
+        m_ri->sea.mod = false;
+    }
 
-        //  bearing alignment
-        if (m_ri->bearing_alignment.mod || refreshAll) {
-            m_bearing_alignment_button->SetLocalValue(m_ri->bearing_alignment.button);
-            m_ri->bearing_alignment.mod = false;
-        }
+    //   target_boost
+    if (m_ri->target_boost.mod || refreshAll) {
+        m_target_boost_button->SetLocalValue(m_ri->target_boost.button);
+        m_ri->target_boost.mod = false;
+    }
 
-        //  local interference rejection
-        if (m_ri->local_interference_rejection.mod || refreshAll) {
-            m_local_interference_rejection_button->SetLocalValue(m_ri->local_interference_rejection.button);
-            m_ri->local_interference_rejection.mod = false;
-        }
+    //  noise_rejection
+    if (m_ri->noise_rejection.mod || refreshAll) {
+        m_noise_rejection_button->SetLocalValue(m_ri->noise_rejection.button);
+        m_ri->noise_rejection.mod = false;
+    }
 
-        // side lobe suppression  // same for A and B
-        if (m_ri->side_lobe_suppression.mod || refreshAll) {
-            if (m_ri->side_lobe_suppression.button == -1) {
-                m_side_lobe_suppression_button->SetLocalAuto();
-            }
-            else{
-                m_side_lobe_suppression_button->SetLocalValue(m_ri->side_lobe_suppression.button);
-            }
-            m_ri->side_lobe_suppression.mod = false;
+    //  target_separation
+    if (m_ri->target_separation.mod || refreshAll) {
+        m_target_separation_button->SetLocalValue(m_ri->target_separation.button);
+        m_ri->target_separation.mod = false;
+    }
+
+    //  interference_rejection
+    if (m_ri->interference_rejection.mod || refreshAll) {
+        m_interference_rejection_button->SetLocalValue(m_ri->interference_rejection.button);
+        m_ri->interference_rejection.mod = false;
+    }
+
+    // scanspeed
+    if (m_ri->scan_speed.mod || refreshAll) {
+        m_scan_speed_button->SetLocalValue(m_ri->scan_speed.button);
+        m_ri->scan_speed.mod = false;
+    }
+
+    //   antenna height
+    if (m_ri->antenna_height.mod || refreshAll) {
+        m_antenna_height_button->SetLocalValue(m_ri->antenna_height.button);
+        m_ri->antenna_height.mod = false;
+    }
+
+    //  bearing alignment
+    if (m_ri->bearing_alignment.mod || refreshAll) {
+        m_bearing_alignment_button->SetLocalValue(m_ri->bearing_alignment.button);
+        m_ri->bearing_alignment.mod = false;
+    }
+
+    //  local interference rejection
+    if (m_ri->local_interference_rejection.mod || refreshAll) {
+        m_local_interference_rejection_button->SetLocalValue(m_ri->local_interference_rejection.button);
+        m_ri->local_interference_rejection.mod = false;
+    }
+
+    // side lobe suppression  // same for A and B
+    if (m_ri->side_lobe_suppression.mod || refreshAll) {
+        if (m_ri->side_lobe_suppression.button == -1) {
+            m_side_lobe_suppression_button->SetLocalAuto();
         }
+        else{
+            m_side_lobe_suppression_button->SetLocalValue(m_ri->side_lobe_suppression.button);
+        }
+        m_ri->side_lobe_suppression.mod = false;
     }
 
 }

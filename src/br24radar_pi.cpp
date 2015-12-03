@@ -376,14 +376,7 @@ void br24radar_pi::ShowRadarControl( int radar, bool show )
     }
 
     if (m_radar[radar]->control_dialog) {
-        m_radar[radar]->control_dialog->UpdateControl(m_opengl_mode
-            , m_bpos_set
-            , m_heading_source != HEADING_NONE
-            , m_var_source != VARIATION_SOURCE_NONE
-            , m_radar[radar]->radar_seen
-            , m_radar[radar]->data_seen
-            );
-        m_radar[radar]->control_dialog->UpdateControlValues(true);
+        m_radar[radar]->UpdateControlState(true);
         m_pMessageBox->UpdateMessage(m_opengl_mode
             , m_bpos_set
             , m_heading_source != HEADING_NONE
@@ -647,6 +640,7 @@ void br24radar_pi::DoTick( void )
         if (m_radar[r]->radar_seen) {
             if (TIMER_ELAPSED(now, m_radar[r].radar_watchdog)) {
                 m_radar[r]->radar_seen = false;
+                m_radar[r]->state.Update(RADAR_OFF);
                 wxLogMessage(wxT("BR24radar_pi: Lost %s presence"), m_radar[r]->name);
             }
             else (m_radar[0]->radar_seen) {
@@ -706,16 +700,7 @@ void br24radar_pi::DoTick( void )
     }
 
     for (size_t r = 0; r < RADARS; r++) {
-        if (m_radar[r]->control_dialog) {
-            m_radar[r]->control_dialog->UpdateControl(m_opengl_mode
-                , m_bpos_set
-                , m_heading_source != HEADING_NONE
-                , m_var_source != VARIATION_SOURCE_NONE
-                , m_radar[r]->radar_seen
-                , m_radar[r]->data_seen
-                );
-            m_radar[r]->control_dialog->UpdateControlValues(false);
-        }
+        m_radar[r]->UpdateControlState(false);
 
         if (m_radar[r]->data_seen) {
             m_radar[r]->ShowRadarWindow();
@@ -738,11 +723,6 @@ void br24radar_pi::DoTick( void )
         m_radar[r]->statistics.missing_spokes = 0;
         m_radar[r]->statistics.packets = 0;
         m_radar[r]->statistics.spokes = 0;
-    }
-
-    if (m_settings.emulator_on) {
-        m_radar[0]->radar_seen = true;
-        m_radar[1]->radar_seen = true;
     }
 
 #ifdef TODO

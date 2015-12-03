@@ -348,6 +348,9 @@ public:
     VariationSource           m_var_source;
     time_t                    m_var_watchdog;
 
+    HeadingSource             m_heading_source;
+    bool                      m_opengl_mode;
+    bool                      m_bpos_set;
     time_t                    m_bpos_watchdog;
 
     wxString                  m_ip_address; // Current IP address of the ethernet interface that we're doing multicast receive on.
@@ -393,7 +396,6 @@ private:
     int                       m_sent_bm_id_normal;
     int                       m_sent_bm_id_rollover;
 
-    HeadingSource             m_heading_source;
 
     br_NMEA0183               m_NMEA0183;
 
@@ -403,7 +405,6 @@ private:
     int                       m_bogey_count[4];
 
     ToolbarIconColor          m_toolbar_button;
-    bool                      m_bpos_set;
     double                    m_ownship_lat, m_ownship_lon;
 
     double                    m_hdm;
@@ -424,7 +425,6 @@ private:
 
     RadarState                m_scanner_state;
 
-    bool                      m_opengl_mode;
     time_t                    m_idle_watchdog;
     time_t                    m_hdt_watchdog;
     time_t                    m_radar_watchdog;

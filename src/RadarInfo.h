@@ -56,7 +56,8 @@ public:
 
     /* User radar settings */
 
-    bool                    mod;
+    radar_control_item      state;
+    radar_control_item      overlay;
     radar_control_item      range;
     radar_control_item      gain;
     radar_control_item      interference_rejection;
@@ -119,6 +120,7 @@ public:
     void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
     void ShowRadarWindow();
     void ShowRadarWindow(bool show);
+    void UpdateControlState(bool all);
 
 private:
     br24radar_pi           *m_pi;

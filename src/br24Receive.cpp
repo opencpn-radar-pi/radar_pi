@@ -134,6 +134,7 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
     m_ri->radar_watchdog = now;
     m_ri->data_seen = true;
     m_ri->data_watchdog = now;
+    m_ri->state.Update(RADAR_ON);
 
     if (m_pi->m_settings.verbose >= 5) {
         wxLogMessage(wxT("BR24radar_pi: %s ProcessFrame"), m_ri->name);
@@ -276,6 +277,7 @@ void br24Receive::EmulateFakeBuffer(void)
     m_ri->statistics.packets++;
     m_ri->radar_seen = true;
     m_ri->radar_watchdog = now;
+    m_ri->state.Update(RADAR_ON);
     int scanlines_in_packet = 2048 * 24 / 60;
     int range_meters = 4000;
     int spots = 0;
@@ -535,6 +537,7 @@ void *br24Receive::Entry(void)
                             if (m_pi->m_settings.verbose) {
                                 wxLogMessage(wxT("BR24radar_pi: %s detected at %s"), m_ri->name, addr.c_str());
                             }
+                            m_ri->state.Update(RADAR_ON);
                         }
                         m_ri->radar_seen = true;
                         m_ri->radar_watchdog = time(0);

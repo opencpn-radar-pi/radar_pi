@@ -43,6 +43,7 @@ void radar_control_item::Update(int v)
         mod = true;
         button = v;
     }
+    value = v;
 };
 
 RadarInfo::RadarInfo( br24radar_pi *pi, wxString name, int radar )
@@ -305,6 +306,23 @@ void RadarInfo::ShowRadarWindow( )
         radar_panel->Create(); // Add to AUI manager
     }
     radar_panel->ShowFrame(true);
+}
+
+void RadarInfo::UpdateControlState( bool all )
+{
+    state.Update(radar_seen || data_seen);
+    overlay.Update(m_pi->m_settings.chart_overlay == radar);
+
+    if (control_dialog) {
+        control_dialog->UpdateControl(m_pi->m_opengl_mode
+            , m_pi->m_bpos_set
+            , m_pi->m_heading_source != HEADING_NONE
+            , m_pi->m_var_source != VARIATION_SOURCE_NONE
+            , radar_seen
+            , data_seen
+            );
+        control_dialog->UpdateControlValues(all);
+    }
 }
 
 void RadarInfo::RenderRadarImage( wxPoint center, double scale, double rotation, bool overlay )
