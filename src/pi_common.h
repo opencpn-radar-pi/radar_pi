@@ -43,16 +43,15 @@
 #endif
 
 #include "wx/wxprec.h"
-#ifndef  WX_PRECOMP
-# ifdef __WXOSX__
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wpotentially-evaluated-expression"
-# endif
-# include "wx/wx.h"
-# include "wx/aui/aui.h"
-# ifdef __WXOSX__
-#  pragma clang diagnostic pop
-# endif
+#ifdef __WXOSX__
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wpotentially-evaluated-expression"
+#endif
+#include "wx/wx.h"
+#include "wx/aui/aui.h"
+#include "wx/aui/framemanager.h"
+#ifdef __WXOSX__
+# pragma clang diagnostic pop
 #endif
 
 #include <wx/socket.h>

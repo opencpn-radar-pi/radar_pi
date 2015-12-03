@@ -110,10 +110,10 @@ void DrawOutlineArc( double r1, double r2, double a1, double a2, bool stippled )
 
     if (stippled) {
         glEnable (GL_LINE_STIPPLE);
-        glLineStipple (1, 0x0F0F);
-        glLineWidth(2.0);
+        glLineStipple (1, 0x000F);
+        glLineWidth(1.0);
     } else {
-        glLineWidth(3.0);
+        glLineWidth(1.0);
     }
 
     DrawArc(0.0, 0.0, r1, a1, a2 - a1, segments);

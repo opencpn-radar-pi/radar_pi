@@ -169,19 +169,19 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi)
 
     cbPassHeading = new wxCheckBox(this, ID_PASS_HEADING, _("Pass radar heading to OpenCPN"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     itemStaticBoxSizerOptions->Add(cbPassHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-    cbPassHeading->SetValue(m_pi->m_settings.pass_heading_to_opencpn ? true : false);
+    cbPassHeading->SetValue(m_pi->m_settings.pass_heading_to_opencpn);
     cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                              wxCommandEventHandler(br24OptionsDialog::OnPassHeadingClick), NULL, this);
 
     cbUseShader = new wxCheckBox(this, ID_USE_SHADER, _("Use GPU shader for rendering"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     itemStaticBoxSizerOptions->Add(cbUseShader, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-    cbUseShader->SetValue(m_pi->m_settings.useShader ? 1 : 0);
+    cbUseShader->SetValue(m_pi->m_settings.use_shader ? 1 : 0);
     cbUseShader->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                              wxCommandEventHandler(br24OptionsDialog::OnUseShaderClick), NULL, this);
 
     cbEnableDualRadar = new wxCheckBox(this, ID_SELECT_AB, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     itemStaticBoxSizerOptions->Add(cbEnableDualRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-    cbEnableDualRadar->SetValue(m_pi->m_settings.enable_dual_radar ? true : false);
+    cbEnableDualRadar->SetValue(m_pi->m_settings.enable_dual_radar);
     cbEnableDualRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
         wxCommandEventHandler(br24OptionsDialog::OnEnableDualRadarClick), NULL, this);
 
@@ -261,7 +261,7 @@ void br24OptionsDialog::OnPassHeadingClick(wxCommandEvent &event)
 
 void br24OptionsDialog::OnUseShaderClick(wxCommandEvent &event)
 {
-    m_pi->m_settings.useShader = cbUseShader->GetValue();
+    m_pi->m_settings.use_shader = (bool) cbUseShader->GetValue();
 }
 
 void br24OptionsDialog::OnEmulatorClick(wxCommandEvent &event)

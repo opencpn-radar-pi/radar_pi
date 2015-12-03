@@ -31,6 +31,7 @@
 
 #include "RadarCanvas.h"
 #include "drawutil.h"
+#include "TextureFont.h"
 
 BEGIN_EVENT_TABLE(RadarCanvas, wxGLCanvas)
 //    EVT_CLOSE(RadarCanvas::close)
@@ -139,10 +140,18 @@ void RadarCanvas::render( wxPaintEvent& evt )
     wxGLCanvas::SetCurrent(*m_context);
     wxPaintDC(this); // only to be used in paint events. use wxClientDC to paint outside the paint event
 
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+    wxFont font( 14, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL );
+    m_FontNormal.Build(font);
+    wxFont bigFont( 24, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL );
+    m_FontBig.Build(bigFont);
+
     prepare2DViewport(0, 0, w, h);
 
     double scale_factor = 1.0 / RETURNS_PER_LINE; // Radar image is in 0..511 range
 
+    glColor3ub(200, 255, 200);
     DrawOutlineArc(0.25, 1.00, 0.0, 359.0, true);
     DrawOutlineArc(0.50, 0.75, 0.0, 359.0, true);
     CheckOpenGLError();
@@ -155,7 +164,17 @@ void RadarCanvas::render( wxPaintEvent& evt )
     m_ri->RenderRadarImage(wxPoint(0,0), scale_factor, rotation, false);
     CheckOpenGLError();
 
+    glLineWidth(1);
+    glColor3ub(200, 255, 200);
+    glEnable(GL_TEXTURE_2D);
+    m_FontBig.RenderString(_("HU / No"), 0, 0);
+    glDisable(GL_TEXTURE_2D);
+
+    CheckOpenGLError();
+
     glFlush();
+    glPopAttrib();
+    CheckOpenGLError();
     SwapBuffers();
 }
 

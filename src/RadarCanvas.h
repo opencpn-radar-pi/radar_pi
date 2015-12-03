@@ -33,6 +33,7 @@
 #define _RADAR_CANVAS_H_
 
 #include "br24radar_pi.h"
+#include "TextureFont.h"
 
 class RadarCanvas : public wxGLCanvas
 {
@@ -65,10 +66,14 @@ public:
 
 private:
     void prepare2DViewport(int topleft_x, int topleft_y, int bottomright_x, int bottomright_y);
+    void RenderText(wxPoint p, wxString text);
 
     wxWindow      * m_parent;
     br24radar_pi  * m_pi;
     RadarInfo     * m_ri;
+
+    TextureFont     m_FontNormal;
+    TextureFont     m_FontBig;
 };
 
 #endif

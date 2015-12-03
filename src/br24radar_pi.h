@@ -230,11 +230,11 @@ struct PersistentSettings {
     int      idle_run_time;
     int      draw_algorithm;
     int      refreshrate;
-    int      pass_heading_to_opencpn;
-    int      enable_dual_radar;       // Should the dual radar be enabled for 4G?
     RadarState show_radar;
+    bool     pass_heading_to_opencpn;
+    bool     enable_dual_radar;       // Should the dual radar be enabled for 4G?
     bool     emulator_on;
-    int      useShader;
+    bool     use_shader;
     int      threshold_red;
     int      threshold_green;
     int      threshold_blue;

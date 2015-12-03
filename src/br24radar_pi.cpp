@@ -219,7 +219,7 @@ int br24radar_pi::Init( void )
     int radar_control_id = AddCanvasContextMenuItem(pmi, this);
     SetCanvasContextMenuItemViz(radar_control_id, true);
 
-    ShowRadarControl(0, m_settings.show_radar);
+    ShowRadarControl(0, m_settings.show_radar == RADAR_ON);
 
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
@@ -1131,7 +1131,7 @@ bool br24radar_pi::LoadConfig(void)
         m_settings.range_unit_meters = (m_settings.range_units == 1) ? 1000 : 1852;
         pConf->Read(wxT("ChartOverlay"),  &m_settings.chart_overlay, -1);
         pConf->Read(wxT("EmulatorOn"), &intValue, 0);
-        m_settings.emulator_on = intValue;
+        m_settings.emulator_on = intValue != 0;
         pConf->Read(wxT("VerboseLog"),  &m_settings.verbose, 0);
         pConf->Read(wxT("Transparency"),  &m_settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
         pConf->Read(wxT("RangeCalibration"),  &m_settings.range_calibration, 1.0);
@@ -1156,8 +1156,10 @@ bool br24radar_pi::LoadConfig(void)
         }
         m_refresh_rate = REFRESHMAPPING[m_settings.refreshrate - 1];
 
-        pConf->Read(wxT("PassHeadingToOCPN"), &m_settings.pass_heading_to_opencpn, 0);
-        pConf->Read(wxT("UseShader"), &m_settings.useShader, false);
+        pConf->Read(wxT("PassHeadingToOCPN"), &intValue, 0);
+        m_settings.pass_heading_to_opencpn = intValue != 0;
+        pConf->Read(wxT("UseShader"), &intValue, 0);
+        m_settings.use_shader = intValue != 0;
 
         for (size_t i = 0; i < ARRAY_SIZE(m_dialogLocation); i++) {
            int x, y, sx, sy;
@@ -1224,7 +1226,8 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("DrawAlgorithm"), m_settings.draw_algorithm);
         pConf->Write(wxT("Refreshrate"), m_settings.refreshrate);
         pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
-        pConf->Write(wxT("UseShader"), m_settings.useShader);
+        pConf->Write(wxT("UseShader"), (int) m_settings.use_shader);
+        pConf->Write(wxT("EmulatorOn"), (int) m_settings.emulator_on);
         pConf->Write(wxT("ShowRadar"), (int) m_settings.show_radar);
         pConf->Write(wxT("RadarAlertAudioFile"), m_settings.alert_audio_file);
         pConf->Write(wxT("EnableDualRadar"), m_settings.enable_dual_radar);

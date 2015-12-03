@@ -309,7 +309,7 @@ void RadarInfo::ShowRadarWindow( )
 
 void RadarInfo::RenderRadarImage( wxPoint center, double scale, double rotation, bool overlay )
 {
-    bool useShader = m_pi->m_settings.useShader;
+    bool useShader = m_pi->m_settings.use_shader;
     bool colorOption = m_pi->m_settings.display_option > 0;
 
     // Determine if a new draw method is required
@@ -327,7 +327,7 @@ void RadarInfo::RenderRadarImage( wxPoint center, double scale, double rotation,
             m_use_shader = useShader;
             m_color_option = colorOption;
         } else {
-            m_pi->m_settings.useShader = false;
+            m_pi->m_settings.use_shader = false;
             delete newDraw;
         }
         if (!draw) {

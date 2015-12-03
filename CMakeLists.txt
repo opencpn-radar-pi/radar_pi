@@ -66,6 +66,8 @@ SET(SRC_br24radar
             src/RadarDrawShader.cpp
             src/RadarDrawVertex.h
             src/RadarDrawVertex.cpp
+            src/TextureFont.h
+            src/TextureFont.cpp
 )
 SET(SRC_NMEA0183
         src/nmea0183/nmea0183.cpp
@@ -94,7 +96,9 @@ INCLUDE_DIRECTORIES(src/wxJSON)
 INCLUDE_DIRECTORIES(src)
 
 IF(WIN32)
-  SET(wxWidgets_USE_LIBS ${wxWidgets_USE_LIBS} gl)
+  SET(wxWidgets_USE_LIBS base core net adv gl aui)
+  SET(BUILD_SHARED_LIBS TRUE)
+  FIND_PACKAGE(wxWidgets REQUIRED)
 ENDIF(WIN32)
 
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_br24radar} ${SRC_NMEA0183} ${SRC_JSON})
