@@ -33,25 +33,15 @@
 #include "drawutil.h"
 
 BEGIN_EVENT_TABLE(RadarCanvas, wxGLCanvas)
-    EVT_CLOSE(RadarCanvas::close)
-    EVT_MOVE(RadarCanvas::moved)
-    EVT_SIZE(RadarCanvas::resized)
+//    EVT_CLOSE(RadarCanvas::close)
+//    EVT_MOVE(RadarCanvas::moved)
+//    EVT_SIZE(RadarCanvas::resized)
     EVT_PAINT(RadarCanvas::render)
 END_EVENT_TABLE()
 
-// some useful events to use
-void RadarCanvas::mouseMoved(wxMouseEvent& event) {}
-void RadarCanvas::mouseDown(wxMouseEvent& event) {}
-void RadarCanvas::mouseWheelMoved(wxMouseEvent& event) {}
-void RadarCanvas::mouseReleased(wxMouseEvent& event) {}
-void RadarCanvas::rightClick(wxMouseEvent& event) {}
-void RadarCanvas::mouseLeftWindow(wxMouseEvent& event) {}
-void RadarCanvas::keyPressed(wxKeyEvent& event) {}
-void RadarCanvas::keyReleased(wxKeyEvent& event) {}
-
 static int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
 
-RadarCanvas::RadarCanvas( br24radar_pi * pi, RadarInfo * ri, wxFrame * parent, wxSize size ) :
+RadarCanvas::RadarCanvas( br24radar_pi * pi, RadarInfo * ri, wxWindow * parent, wxSize size ) :
 #if !wxCHECK_VERSION(3,0,0)
     wxGLCanvas( parent, wxID_ANY, wxDefaultPosition, size,
                 wxFULL_REPAINT_ON_RESIZE | wxBG_STYLE_CUSTOM, _T(""), attribs )
@@ -74,6 +64,7 @@ RadarCanvas::~RadarCanvas()
     delete m_context;
 }
 
+#if 0
 void RadarCanvas::moved( wxMoveEvent& evt )
 {
     m_pi->m_dialogLocation[DL_RADARWINDOW + m_ri->radar].pos = m_parent->GetPosition();
@@ -102,6 +93,17 @@ void RadarCanvas::close( wxCloseEvent& evt )
     //this->Hide();
     //evt.Skip();
 }
+
+// some useful events to use
+void RadarCanvas::mouseMoved(wxMouseEvent& event) {}
+void RadarCanvas::mouseDown(wxMouseEvent& event) {}
+void RadarCanvas::mouseWheelMoved(wxMouseEvent& event) {}
+void RadarCanvas::mouseReleased(wxMouseEvent& event) {}
+void RadarCanvas::rightClick(wxMouseEvent& event) {}
+void RadarCanvas::mouseLeftWindow(wxMouseEvent& event) {}
+void RadarCanvas::keyPressed(wxKeyEvent& event) {}
+void RadarCanvas::keyReleased(wxKeyEvent& event) {}
+#endif
 
 void RadarCanvas::prepare2DViewport( int x, int y, int width, int height )
 {

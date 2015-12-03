@@ -42,16 +42,17 @@ class RadarCanvas : public wxGLCanvas
     wxGLContext       * m_context;
 
 public:
-    RadarCanvas(br24radar_pi * pi, RadarInfo *ri, wxFrame* parent, wxSize size);
+    RadarCanvas(br24radar_pi * pi, RadarInfo *ri, wxWindow * parent, wxSize size);
     virtual ~RadarCanvas();
 
+    void render(wxPaintEvent& evt);
+
+
+#if 0
+    // events
     void moved(wxMoveEvent& evt);
     void resized(wxSizeEvent& evt);
-
-    void render(wxPaintEvent& evt);
     void close(wxCloseEvent& evt);
-
-    // events
     void mouseMoved(wxMouseEvent& event);
     void mouseDown(wxMouseEvent& event);
     void mouseWheelMoved(wxMouseEvent& event);
@@ -60,14 +61,16 @@ public:
     void mouseLeftWindow(wxMouseEvent& event);
     void keyPressed(wxKeyEvent& event);
     void keyReleased(wxKeyEvent& event);
+#endif
 
 private:
     void prepare2DViewport(int topleft_x, int topleft_y, int bottomright_x, int bottomright_y);
 
-    wxFrame       * m_parent;
+    wxWindow      * m_parent;
     br24radar_pi  * m_pi;
     RadarInfo     * m_ri;
 };
+
 #endif
 
 // vim: sw=4:ts=8:

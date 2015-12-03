@@ -58,8 +58,8 @@ SET(SRC_br24radar
             src/RadarInfo.cpp
             src/RadarCanvas.h
             src/RadarCanvas.cpp
-            src/RadarFrame.h
-            src/RadarFrame.cpp
+            src/RadarPanel.h
+            src/RadarPanel.cpp
             src/RadarDraw.h
             src/RadarDraw.cpp
             src/RadarDrawShader.h

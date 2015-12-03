@@ -291,6 +291,7 @@ public:
     void SetDefaults(void);
     int GetToolbarToolCount(void);
     void OnToolbarToolCallback(int id);
+    void UpdateAuiStatus(void);
     void ShowPreferencesDialog(wxWindow* parent);
 
     // Other public methods

@@ -36,7 +36,7 @@
 
 class RadarDraw;
 class RadarCanvas;
-class RadarFrame;
+class RadarPanel;
 
 class radar_control_item
 {
@@ -76,7 +76,7 @@ public:
     br24Transmit           *transmit;
     br24Receive            *receive;
     br24ControlsDialog     *control_dialog;
-    RadarFrame             *radar_frame;
+    RadarPanel             *radar_panel;
     RadarCanvas            *radar_canvas;
     RadarDraw              *draw;               // Abstract painting method
 

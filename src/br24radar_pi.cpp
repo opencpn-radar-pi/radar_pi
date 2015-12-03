@@ -227,6 +227,7 @@ int br24radar_pi::Init( void )
             WANTS_TOOLBAR_CALLBACK     |
             INSTALLS_TOOLBAR_TOOL      |
             INSTALLS_CONTEXTMENU_ITEMS |
+            USES_AUI_MANAGER           |
             WANTS_CONFIG               |
             WANTS_NMEA_EVENTS          |
             WANTS_NMEA_SENTENCES       |
@@ -318,6 +319,27 @@ void br24radar_pi::ShowPreferencesDialog( wxWindow* parent )
     m_pOptionsDialog = new br24OptionsDialog;
     m_pOptionsDialog->Create(m_parent_window, this);
     m_pOptionsDialog->ShowModal();
+}
+
+void br24radar_pi::UpdateAuiStatus( void )
+{
+    //    This method is called after the PlugIn is initialized
+    //    and the frame has done its initial layout, possibly from a saved wxAuiManager "Perspective"
+    //    It is a chance for the PlugIn to syncronize itself internally with the state of any Panes that
+    //    were added to the frame in the PlugIn ctor.
+
+    // Walk all wxAuiPane
+#if 0
+    for (size_t i = 0; i < RADARS; i++ ) {
+        DashboardWindowContainer *cont = m_ArrayOfDashboardWindow.Item( i );
+        wxAuiPaneInfo &pane = m_pauimgr->GetPane( cont->m_pDashboardWindow );
+        // Initialize visible state as perspective is loaded now
+        cont->m_bIsVisible = ( pane.IsOk() && pane.IsShown() );
+    }
+#endif
+
+    // Maybe update toolbar button?
+
 }
 
 //********************************************************************************

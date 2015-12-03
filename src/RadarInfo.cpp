@@ -35,7 +35,7 @@
 #include "br24Transmit.h"
 #include "RadarDraw.h"
 #include "RadarCanvas.h"
-#include "RadarFrame.h"
+#include "RadarPanel.h"
 
 void radar_control_item::Update(int v)
 {
@@ -59,7 +59,7 @@ RadarInfo::RadarInfo( br24radar_pi *pi, wxString name, int radar )
     this->transmit = new br24Transmit(name, radar);
     this->receive = 0;
     this->draw = 0;
-    this->radar_frame = 0;
+    this->radar_panel = 0;
     this->control_dialog = 0;
 
     for (size_t z = 0; z < GUARD_ZONES; z++) {
@@ -81,13 +81,13 @@ RadarInfo::~RadarInfo( )
         delete receive;
         wxLogMessage(wxT("BR24radar_pi: %s thread stopped"), name);
     }
-    if (radar_frame) {
+    if (radar_panel) {
         wxLogMessage(wxT("BR24radar_pi: %s DL_RADARWINDOW %u pos(%d,%d) size(%d,%d)"), name, DL_RADARWINDOW + radar,
                 m_pi->m_dialogLocation[DL_RADARWINDOW + radar].pos.x,
                 m_pi->m_dialogLocation[DL_RADARWINDOW + radar].pos.y,
                 m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size.x,
                 m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size.y);
-        delete radar_frame;
+        delete radar_panel;
     }
     if (draw) {
         delete draw;
@@ -203,8 +203,8 @@ void RadarInfo::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_t len,
 
 void RadarInfo::ProcessRadarPacket( time_t now )
 {
-    if (radar_frame && radar_frame->IsShown()) {
-        radar_frame->Refresh(false);
+    if (radar_panel && radar_panel->IsShown()) {
+        radar_panel->Refresh(false);
     }
 
     if (m_pi->m_settings.chart_overlay == this->radar) {
@@ -292,29 +292,19 @@ bool RadarInfo::SetControlValue( ControlType controlType, int value )
 
 void RadarInfo::ShowRadarWindow( bool show )
 {
-    if (radar_frame) {
-        if (show) {
-            radar_frame->Show();
-        } else {
-            radar_frame->Hide();
-        }
+    if (radar_panel) {
+        radar_panel->ShowFrame(show);
     }
 }
 
 void RadarInfo::ShowRadarWindow( )
 {
-    if (!radar_frame) {
-        //wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
-        radar_frame = new RadarFrame(m_pi, this, GetOCPNCanvasWindow());
-        radar_canvas = new RadarCanvas(m_pi, this, radar_frame, m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
-        //sizer->Add(radar_window, 1, wxEXPAND);
-        //radar_frame->SetSizer(sizer);
-        //radar_window->SetSize(m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
-        //radar_frame->SetAutoLayout(true);
-
-        // radar_frame->Fit();
+    if (!radar_panel) {
+        radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
+        radar_canvas = new RadarCanvas(m_pi, this, radar_panel, wxSize(512,512)); //m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
+        radar_panel->Create(); // Add to AUI manager
     }
-    radar_frame->Show();
+    radar_panel->ShowFrame(true);
 }
 
 void RadarInfo::RenderRadarImage( wxPoint center, double scale, double rotation, bool overlay )

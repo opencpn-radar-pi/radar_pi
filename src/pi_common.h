@@ -49,6 +49,7 @@
 #  pragma clang diagnostic ignored "-Wpotentially-evaluated-expression"
 # endif
 # include "wx/wx.h"
+# include "wx/aui/aui.h"
 # ifdef __WXOSX__
 #  pragma clang diagnostic pop
 # endif

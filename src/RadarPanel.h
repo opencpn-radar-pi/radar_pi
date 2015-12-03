@@ -29,50 +29,33 @@
  ***************************************************************************
  */
 
-#include "RadarFrame.h"
+#ifndef _RADAR_FRAME_H_
+#define _RADAR_FRAME_H_
 
-BEGIN_EVENT_TABLE(RadarFrame, wxFrame)
-    EVT_CLOSE(RadarFrame::close)
-    EVT_MOVE(RadarFrame::moved)
-    EVT_SIZE(RadarFrame::resized)
-END_EVENT_TABLE()
+#include "br24radar_pi.h"
 
-RadarFrame::RadarFrame( br24radar_pi * pi, RadarInfo * ri, wxWindow * parent ) :
-    wxFrame(parent, wxID_ANY, _("RADAR"))
+class RadarPanel : public wxPanel
 {
-    m_parent = parent;
-    m_pi = pi;
-    m_ri = ri;
-}
+public:
+    RadarPanel(br24radar_pi * pi, RadarInfo *ri, wxWindow * parent);
+    void Create();
+    virtual ~RadarPanel();
 
-RadarFrame::~RadarFrame()
-{
-}
+    void ShowFrame( bool visible );
 
-void RadarFrame::moved( wxMoveEvent& evt )
-{
-    m_pi->m_dialogLocation[DL_RADARWINDOW + m_ri->radar].pos = GetPosition();
-}
+    void moved(wxMoveEvent& evt);
+    void resized(wxSizeEvent& evt);
 
-void RadarFrame::resized( wxSizeEvent& evt )
-{
-    wxSize s = GetClientSize();
-    wxSize n;
-    n.x = MIN(s.x, s.y);
-    n.y = s.x;
+    void close(wxAuiManagerEvent& event);
 
-    if (n.x != s.x || n.y != s.y) {
-        //SetClientSize(n);
-        //m_parent->Layout();
-    }
-    m_pi->m_dialogLocation[DL_RADARWINDOW + m_ri->radar].size = GetSize();
-    //Fit();
-}
 
-void RadarFrame::close( wxCloseEvent& evt )
-{
-    this->Hide();
-    evt.Skip();
-}
+private:
+    wxWindow      * m_parent;
+    br24radar_pi  * m_pi;
+    RadarInfo     * m_ri;
+    wxAuiManager  * m_aui_mgr;
+};
+
+#endif
 
 // vim: sw=4:ts=8:
