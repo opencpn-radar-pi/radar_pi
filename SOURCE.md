@@ -43,30 +43,30 @@ The flow of data from the radar to the internal data structures is as follows:
                   +---------------------------+
                                |
                                V
-                  +---------------------------+
-                  | br24Process::ProcessSpoke |
-                  | br24Process::Process      |
-                  +---------------------------+
+                +-------------------------------+
+                | RadarInfo::ProcessRadarSpoke  |
+                | RadarInfo::ProcessRadarPacket |
+                +-------------------------------+
                                |
                                +---------------------------------------------+
                                |                                             |
                                V                                             V
-                  +---------------------------+               +-----------------------------+
-                  | br24Draw interface        |               | br24GuardZone::ProcessSpoke |
-                  | either Vertex or Shader   |               +-----------------------------+
+                  +---------------------------+                 +-------------------------+
+                  | RadarDraw interface       |                 | GuardZone::ProcessSpoke |
+                  | either Vertex or Shader   |                 +-------------------------+
                   +---------------------------+                              |
                                |                                             |
                   /---------------------------\               /-----------------------------\
-                  |    draw specific  data    |               | RadarInfo.bogeyCount[spoke] |
+                  |    draw specific  data    |               | GuardZone.bogeyCount[spoke] |
                   \---------------------------/               \-----------------------------/
 ```
 
 The above data runs in a separate thread per radar. You'd think that most people would have only one radar, but a 4G radar behaves as two radars so for 4G this (can) run twice.
-Also, the design of the code is such that only br24Receive is really BR24 specific.
+Also, the design of the code is such that only the classes named br24... are really Navico specific. The RadarDraw, RadarDrawVertex, RadarDrawShader and GuardZone should be quite portable to other radars. RadarInfo will need some massaging.
 
 2. Render process
 -----------------
 The other thread that runs is the main OpenCPN 'draw' thread which at some point calls RenderGLOverlay. This is normally called once a second, but more often if the user
-is scrolling or zooming, or if something else called `GetOCPNCanvasWindow()->Refresh(false)`. This happens to be called by br24Process:Process when it finds that it has waited enough. This way the radar updates in a 'radary' way with new spokes appearing on the screen all the time.
+is scrolling or zooming, or if something else called `GetOCPNCanvasWindow()->Refresh(false)`. This happens to be called by RadarInfo::ProcessRadarPacket when it finds that it has waited enough. This way the radar updates in a 'radary' way with new spokes appearing on the screen all the time.
 
 There is a (possible) radar window per active radar and possibly a radar overlay over the main chart window. Also the final guard zone check runs and it calculates whether there are enough bogeys in the guard zones.
