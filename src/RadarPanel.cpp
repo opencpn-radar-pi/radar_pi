@@ -54,6 +54,7 @@ void RadarPanel::Create( )
                         .FloatingPosition(100, 100)
                         .Show(true)
                         .CloseButton(true)
+                        .Float()
                         .Gripper(false);
     m_aui_mgr->AddPane(this, p);
     m_aui_mgr->Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(RadarPanel::close), NULL, this);
