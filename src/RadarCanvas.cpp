@@ -139,6 +139,7 @@ void RadarCanvas::render( wxPaintEvent& evt )
     wxGLCanvas::SetCurrent(*m_context);
     wxPaintDC(this); // only to be used in paint events. use wxClientDC to paint outside the paint event
 
+    glPushMatrix();
     glPushAttrib(GL_ALL_ATTRIB_BITS);
 
     wxFont font( 14, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL );
@@ -163,16 +164,30 @@ void RadarCanvas::render( wxPaintEvent& evt )
     m_ri->RenderRadarImage(wxPoint(0,0), scale_factor, rotation, false);
     CheckOpenGLError(wxT("radar image"));
 
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);                        // Next two operations on the project matrix stack
+    glLoadIdentity();                                   // Reset projection matrix stack
+    glOrtho(0.0, w, h, 0.0, -1.0, 1.0);
+    glMatrixMode(GL_MODELVIEW);                         // Reset matrick stack target back to GL_MODELVIEW
+    glLoadIdentity();                                   // Reset modelview matrix stack
+
+
     glLineWidth(1);
     glColor3ub(200, 255, 200);
     glEnable(GL_TEXTURE_2D);
-    m_FontBig.RenderString(_("HU / No"), 0, 0);
+
+    wxString s;
+    s << _("HU");
+    s << wxT("\n");
+    s << _("Range");
+    s << wxT(": something");
+    m_FontBig.RenderString(s, 0, 0);
     CheckOpenGLError(wxT("font render"));
     glDisable(GL_TEXTURE_2D);
 
-
-    glFlush();
     glPopAttrib();
+    glPopMatrix();
+    glFlush();
     CheckOpenGLError(wxT("finalize"));
     SwapBuffers();
 }
