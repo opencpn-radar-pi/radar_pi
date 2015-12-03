@@ -321,7 +321,6 @@ public:
 
     PersistentSettings        m_settings;
     RadarInfo                *m_radar[RADARS];
-    scan_line                 m_scan_line[RADARS][LINES_PER_ROTATION];
 
     int                       m_OldUseShader;
     int                       m_OldDisplayOption;

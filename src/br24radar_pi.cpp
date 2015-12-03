@@ -152,7 +152,6 @@ int br24radar_pi::Init( void )
     m_var_watchdog = 0;
     m_idle_watchdog = 0;
     memset(m_bogey_count, 0, sizeof(m_bogey_count));   // set bogey count 0
-    memset(m_scan_line, 0, sizeof(m_scan_line));
     memset(m_dialogLocation, 0, sizeof(m_dialogLocation));
 
     m_radar[0] = new RadarInfo(this, _("Radar"), 0);
