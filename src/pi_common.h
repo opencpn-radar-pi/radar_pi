@@ -137,14 +137,6 @@ using namespace std;
 # define rad2deg(x) ((x) * 360.0 / (2 * PI))
 #endif
 
-#ifndef MIN
-# define MIN(x,y) ((x) < (y) ? (x) : (y))
-#endif
-
-#ifndef MAX
-# define MAX(x,y) ((x) > (y) ? (x) : (y))
-#endif
-
 #endif
 
 // vim: sw=4:ts=8:
