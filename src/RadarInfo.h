@@ -48,6 +48,14 @@ public:
     void Update(int v);
 };
 
+struct DrawInfo
+{
+    RadarDraw   * draw;
+    int           drawing_method;
+    bool          color_option;
+};
+
+
 class RadarInfo {
 
 public:
@@ -57,6 +65,7 @@ public:
     /* User radar settings */
 
     radar_control_item      state;
+    radar_control_item      rotation;
     radar_control_item      overlay;
     radar_control_item      range;
     radar_control_item      gain;
@@ -79,9 +88,10 @@ public:
     br24ControlsDialog     *control_dialog;
     RadarPanel             *radar_panel;
     RadarCanvas            *radar_canvas;
-    RadarDraw              *draw;               // Abstract painting method
 
     /* Abstractions of our own. Some filled by br24Receive. */
+
+    double                  viewpoint_rotation;
 
     bool                    data_seen;
     time_t                  radar_watchdog;        // Timestamp of last time it was seen
@@ -114,7 +124,7 @@ public:
     void SetRangeMeters(int range);
     bool SetControlValue(ControlType controlType, int value);
     void ResetSpokes();
-    void ProcessRadarSpoke(SpokeBearing angle, UINT8 * data, size_t len, int range_meters, wxLongLong nowMillis);
+    void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 * data, size_t len, int range_meters, wxLongLong nowMillis);
     void ProcessRadarPacket(time_t now);
     void RenderGuardZone(wxPoint radar_center, double v_scale_ppm);
     void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
@@ -122,12 +132,18 @@ public:
     void ShowRadarWindow(bool show);
     void UpdateControlState(bool all);
 
+    wxString GetCanvasText(); // For now, top left text. Want Bottom Left, Top Right, etc?
+
 private:
+
+    void RenderRadarImage(wxPoint center, double scale, DrawInfo * di);
+
+    DrawInfo                m_draw_panel;         // Draw onto our own panel
+    DrawInfo                m_draw_overlay;       // Abstract painting method
+
     br24radar_pi           *m_pi;
     int                     m_verbose;
     int                     m_refresh_countdown;
-    int                     m_drawing_method;
-    bool                    m_color_option;
 };
 
 #endif

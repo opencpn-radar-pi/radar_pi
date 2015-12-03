@@ -139,7 +139,7 @@ void RadarDrawVertex::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_
     m_spokes++;
 }
 
-void RadarDrawVertex::DrawRadarImage( wxPoint center, double scale, double rotation, bool overlay )
+void RadarDrawVertex::DrawRadarImage( wxPoint center, double scale )
 {
     size_t total_points = 0;
 

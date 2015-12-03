@@ -242,18 +242,21 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
             m_pi->m_heading_on_radar = true;                            // heading on radar
             hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(m_pi->m_var));
             m_pi->m_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(hdt_raw));
+            hdt_raw += SCALE_DEGREES_TO_RAW(m_ri->viewpoint_rotation);
         }
         else {                                // no heading on radar
             m_pi->m_heading_on_radar = false;
-            hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt);
+            hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt + m_ri->viewpoint_rotation);
         }
-        angle_raw += hdt_raw;
+
         angle_raw += SCALE_DEGREES_TO_RAW(270); // Compensate openGL rotation compared to North UP
+        int bearing_raw = angle_raw + hdt_raw;
         // until here all is based on 4096 (SPOKES) scanlines
 
-        SpokeBearing b = MOD_ROTATION2048(angle_raw / 2);   // divide by 2 to map on 2048 scanlines
+        SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);   // divide by 2 to map on 2048 scanlines
+        SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);   // divide by 2 to map on 2048 scanlines
 
-        m_ri->ProcessRadarSpoke(b, line->data, RETURNS_PER_LINE, range_meters, nowMillis);
+        m_ri->ProcessRadarSpoke(a, b, line->data, RETURNS_PER_LINE, range_meters, nowMillis);
     }
 
     //  all scanlines ready now, refresh section follows
@@ -301,7 +304,14 @@ void br24Receive::EmulateFakeBuffer(void)
             }
         }
 
-        m_ri->ProcessRadarSpoke(angle_raw, data, sizeof(data), range_meters, nowMillis);
+        int hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt);
+        int bearing_raw = angle_raw + hdt_raw;
+        bearing_raw += SCALE_DEGREES_TO_RAW(270); // Compensate openGL rotation compared to North UP
+
+        SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);   // divide by 2 to map on 2048 scanlines
+        SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);   // divide by 2 to map on 2048 scanlines
+
+        m_ri->ProcessRadarSpoke(a, b, data, sizeof(data), range_meters, nowMillis);
     }
 
     //  all scanlines ready now, refresh section follows

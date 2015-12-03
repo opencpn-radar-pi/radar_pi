@@ -176,11 +176,7 @@ void RadarCanvas::render( wxPaintEvent& evt )
     glColor3ub(200, 255, 200);
     glEnable(GL_TEXTURE_2D);
 
-    wxString s;
-    s << _("HU");
-    s << wxT("\n");
-    s << _("Range");
-    s << wxT(": something");
+    wxString s = m_ri->GetCanvasText();
     m_FontBig.RenderString(s, 0, 0);
     CheckOpenGLError(wxT("font render"));
     glDisable(GL_TEXTURE_2D);

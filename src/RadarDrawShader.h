@@ -53,7 +53,7 @@ public:
     }
 
     bool Init(int color_option);
-    void DrawRadarImage(wxPoint center, double scale, double rotation, bool overlay);
+    void DrawRadarImage(wxPoint center, double scale);
     void ProcessRadarSpoke(SpokeBearing angle, UINT8 * data, size_t len);
 
     ~RadarDrawShader()

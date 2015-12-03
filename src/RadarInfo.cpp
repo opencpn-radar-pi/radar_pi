@@ -59,7 +59,8 @@ RadarInfo::RadarInfo( br24radar_pi *pi, wxString name, int radar )
 
     this->transmit = new br24Transmit(name, radar);
     this->receive = 0;
-    this->draw = 0;
+    this->m_draw_panel.draw = 0;
+    this->m_draw_overlay.draw = 0;
     this->radar_panel = 0;
     this->control_dialog = 0;
 
@@ -68,8 +69,6 @@ RadarInfo::RadarInfo( br24radar_pi *pi, wxString name, int radar )
     }
 
     m_quit = false;
-    m_color_option = false;
-    m_drawing_method = -1;
 }
 
 RadarInfo::~RadarInfo( )
@@ -90,8 +89,11 @@ RadarInfo::~RadarInfo( )
                 m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size.y);
         delete radar_panel;
     }
-    if (draw) {
-        delete draw;
+    if (m_draw_panel.draw) {
+        delete m_draw_panel.draw;
+    }
+    if (m_draw_overlay.draw) {
+        delete m_draw_overlay.draw;
     }
     for (size_t z = 0; z < GUARD_ZONES; z++) {
         delete guard_zone[z];
@@ -134,14 +136,20 @@ void RadarInfo::StartReceive( )
 
 void RadarInfo::ResetSpokes()
 {
-    if (draw) {
-        UINT8 zap[RETURNS_PER_LINE];
-        memset(zap, 0, sizeof(zap));
+    UINT8 zap[RETURNS_PER_LINE];
+
+    memset(zap, 0, sizeof(zap));
+
+    if (m_draw_panel.draw) {
         for (size_t r = 0; r < LINES_PER_ROTATION; r++) {
-            draw->ProcessRadarSpoke(r, zap, sizeof(zap));
+            m_draw_panel.draw->ProcessRadarSpoke(r, zap, sizeof(zap));
         }
     }
-
+    if (m_draw_overlay.draw) {
+        for (size_t r = 0; r < LINES_PER_ROTATION; r++) {
+            m_draw_overlay.draw->ProcessRadarSpoke(r, zap, sizeof(zap));
+        }
+    }
     for (size_t z = 0; z < GUARD_ZONES; z++) {
         // Zap them anyway just to be sure
         guard_zone[z]->ResetBogeys();
@@ -152,13 +160,14 @@ void RadarInfo::ResetSpokes()
  * A spoke of data has been received by the receive thread and it calls this (in the context of
  * the receive thread, so no UI actions can be performed here.)
  *
- * @param angle                 Bearing at which the spoke is seen.
+ * @param angle                 Bearing (relative to Boat)  at which the spoke is seen.
+ * @param bearing               Bearing (relative to North) at which the spoke is seen.
  * @param data                  A line of len bytes, each byte represents strength at that distance.
  * @param len                   Number of returns
  * @param range                 Range (in meters) of this data
  * @param nowMillis             Timestamp when this was received
  */
-void RadarInfo::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_t len, int range_meters, wxLongLong nowMillis )
+void RadarInfo::ProcessRadarSpoke( SpokeBearing angle, SpokeBearing bearing, UINT8 * data, size_t len, int range_meters, wxLongLong nowMillis )
 {
     UINT8 * hist_data = history[angle];
     bool calc_history = multi_sweep_filter;
@@ -167,6 +176,7 @@ void RadarInfo::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_t len,
         // Wipe ALL spokes
         ResetSpokes();
         this->range_meters = range_meters;
+        this->range.Update(range_meters);
     }
     //spoke[angle].age = nowMillis;
 
@@ -201,10 +211,11 @@ void RadarInfo::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_t len,
         }
     }
 
-    if (draw) {
-        draw->ProcessRadarSpoke(angle, data, len);
-    } else {
-        // wxLogMessage(wxT("BR24radar_pi: ignore spoke %d -- no draw method"), angle);
+    if (m_draw_panel.draw) {
+        m_draw_panel.draw->ProcessRadarSpoke(rotation.value ? bearing : angle, data, len);
+    }
+    if (m_draw_overlay.draw) {
+        m_draw_overlay.draw->ProcessRadarSpoke(bearing, data, len);
     }
 
 }
@@ -314,6 +325,10 @@ void RadarInfo::UpdateControlState( bool all )
 {
     state.Update(radar_seen || data_seen);
     overlay.Update(m_pi->m_settings.chart_overlay == radar);
+    if (overlay.value == 0 && m_draw_overlay.draw) {
+        delete m_draw_overlay.draw;
+        m_draw_overlay.draw = 0;
+    }
 
     if (control_dialog) {
         control_dialog->UpdateControl(m_pi->m_opengl_mode
@@ -327,13 +342,13 @@ void RadarInfo::UpdateControlState( bool all )
     }
 }
 
-void RadarInfo::RenderRadarImage( wxPoint center, double scale, double rotation, bool overlay )
+void RadarInfo::RenderRadarImage( wxPoint center, double scale, DrawInfo * di )
 {
     int drawing_method = m_pi->m_settings.drawing_method;
     bool colorOption = m_pi->m_settings.display_option > 0;
 
     // Determine if a new draw method is required
-    if (!draw || (drawing_method != m_drawing_method) || (colorOption != m_color_option)) {
+    if (!di->draw || (drawing_method != di->drawing_method) || (colorOption != di->color_option)) {
         RadarDraw * newDraw = RadarDraw::make_Draw(m_pi, drawing_method);
         if (!newDraw) {
             wxLogMessage(wxT("BR24radar_pi: out of memory"));
@@ -343,22 +358,56 @@ void RadarInfo::RenderRadarImage( wxPoint center, double scale, double rotation,
             wxArrayString methods;
             RadarDraw::GetDrawingMethods(methods);
             wxLogMessage(wxT("BR24radar_pi: new drawing method %s for %s"), methods[drawing_method].c_str(), name.c_str());
-            if (draw) {
-                delete draw;
+            if (di->draw) {
+                delete di->draw;
             }
-            draw = newDraw;
-            m_drawing_method = drawing_method;
-            m_color_option = colorOption;
+            di->draw = newDraw;
+            di->drawing_method = drawing_method;
+            di->color_option = colorOption;
         } else {
             m_pi->m_settings.drawing_method = 0;
             delete newDraw;
         }
-        if (!draw) {
+        if (!di->draw) {
             return;
         }
     }
 
-    draw->DrawRadarImage(center, scale, rotation, overlay);
+    di->draw->DrawRadarImage(center, scale);
+}
+
+void RadarInfo::RenderRadarImage( wxPoint center, double scale, double rotation, bool overlay )
+{
+    viewpoint_rotation = rotation; // Will be picked up by next spoke calls
+
+    if (overlay) {
+        RenderRadarImage(center, scale, &m_draw_overlay);
+    } else {
+        RenderRadarImage(center, scale, &m_draw_panel);
+    }
+}
+
+wxString RadarInfo::GetCanvasText( )
+{
+    wxString s;
+
+    if (!radar_seen) {
+        s << _("No radar");
+    } else if (!data_seen) {
+        s << _("No data");
+    } else if (!m_draw_panel.draw) {
+        s << _("No valid drawing method");
+    } else {
+        if (rotation.value > 0) {
+            s << _("North Up");
+        } else {
+            s << _("Head Up");
+        }
+        s << wxT("\n");
+        s << range_meters;
+    }
+
+    return s;
 }
 
 // vim: sw=4:ts=8:

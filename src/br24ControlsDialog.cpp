@@ -62,6 +62,7 @@ enum {                                      // process ID's
     ID_SIDE_LOBE_SUPPRESSION,
 
     ID_RADAR_STATE,
+    ID_ROTATION,
     ID_RADAR_OVERLAY,
     ID_RANGE,
     ID_GAIN,
@@ -114,6 +115,7 @@ EVT_BUTTON(ID_LOCAL_INTERFERENCE_REJECTION, br24ControlsDialog::OnRadarControlBu
 EVT_BUTTON(ID_SIDE_LOBE_SUPPRESSION, br24ControlsDialog::OnRadarControlButtonClick)
 
 EVT_BUTTON(ID_RADAR_STATE, br24ControlsDialog::OnRadarStateButtonClick)
+EVT_BUTTON(ID_ROTATION, br24ControlsDialog::OnRotationButtonClick)
 EVT_BUTTON(ID_RADAR_OVERLAY, br24ControlsDialog::OnRadarOverlayButtonClick)
 EVT_BUTTON(ID_RANGE, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_GAIN, br24ControlsDialog::OnRadarGainButtonClick)
@@ -765,6 +767,12 @@ void br24ControlsDialog::CreateControls()
     m_radar_state->SetFont(m_pi->m_font);
     // Updated when we receive data
 
+    // The Rotation button
+    m_rotation_button = new wxButton(this, ID_ROTATION, _("Rotation"), wxDefaultPosition, g_buttonSize, 0);
+    m_control_sizer->Add(m_rotation_button, 0, wxALL, BORDER);
+    m_rotation_button->SetFont(m_pi->m_font);
+    // Updated when we receive data
+
     // The RADAR ONLY / OVERLAY button
     wxString overlay = _("Overlay");
     overlay << wxT("\n?");
@@ -1068,6 +1076,12 @@ void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event)
     UpdateControlValues(true);   // update control values on the buttons
 }
 
+void br24ControlsDialog::OnRotationButtonClick(wxCommandEvent& event)
+{
+    m_ri->rotation.Update(1 - m_ri->rotation.value);
+    UpdateControlValues(false);   // update control values on the buttons
+}
+
 void br24ControlsDialog::OnMove(wxMoveEvent& event)
 {
     event.Skip();
@@ -1084,6 +1098,12 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll)
         wxString o = m_ri->state.button ? _("On") : _("Off");
         m_radar_state->SetLabel(o);
         m_ri->overlay.mod = false;
+    }
+
+    if (m_ri->rotation.mod || refreshAll) {
+        wxString o = m_ri->rotation.button ? _("North Up") : _("Head Up");
+        m_rotation_button->SetLabel(o);
+        m_ri->rotation.mod = false;
     }
 
     if (m_ri->overlay.mod || ((m_pi->m_settings.chart_overlay == m_ri->radar) != (m_ri->overlay.button != 0)) || refreshAll) {

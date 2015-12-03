@@ -220,6 +220,7 @@ int br24radar_pi::Init( void )
     SetCanvasContextMenuItemViz(radar_control_id, true);
 
     ShowRadarControl(0, m_settings.show_radar == RADAR_ON);
+    ShowRadarControl(1, m_settings.show_radar == RADAR_ON);
 
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
@@ -375,18 +376,17 @@ void br24radar_pi::ShowRadarControl( int radar, bool show )
         }
     }
 
-    if (m_radar[radar]->control_dialog) {
-        m_radar[radar]->UpdateControlState(true);
-        m_pMessageBox->UpdateMessage(m_opengl_mode
-            , m_bpos_set
-            , m_heading_source != HEADING_NONE
-            , m_var_source != VARIATION_SOURCE_NONE
-            , m_radar[radar]->radar_seen
-            , m_radar[radar]->data_seen
-            );
-        if (!show) {
-            m_radar[radar]->control_dialog->Hide();
-        }
+    m_radar[radar]->UpdateControlState(true);
+    m_pMessageBox->UpdateMessage(m_opengl_mode
+        , m_bpos_set
+        , m_heading_source != HEADING_NONE
+        , m_var_source != VARIATION_SOURCE_NONE
+        , m_radar[radar]->radar_seen
+        , m_radar[radar]->data_seen
+        );
+
+    if (!show && m_radar[radar]->control_dialog) {
+        m_radar[radar]->control_dialog->Hide();
     }
 }
 
@@ -1152,6 +1152,7 @@ bool br24radar_pi::LoadConfig(void)
         }
 
         for (int r = 0; r < RADARS; r++) {
+            pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &m_radar[r]->rotation.value, 0);
             for (int i = 0; i < GUARD_ZONES; i++) {
                 int v;
                 pConf->Read(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), &m_radar[r]->guard_zone[i]->start_bearing, 0.0);
@@ -1227,6 +1228,7 @@ bool br24radar_pi::SaveConfig(void)
         }
 
         for (size_t r = 0; r < RADARS; r++) {
+            pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->rotation.value);
             for (size_t i = 0; i < GUARD_ZONES; i++) {
                 pConf->Write(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), m_radar[r]->guard_zone[i]->start_bearing);
                 pConf->Write(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), m_radar[r]->guard_zone[i]->end_bearing);

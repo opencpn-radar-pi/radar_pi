@@ -98,7 +98,7 @@ bool RadarDrawShader::Init( int color_option )
     return true;
 }
 
-void RadarDrawShader::DrawRadarImage( wxPoint center, double scale, double rotation, bool overlay )
+void RadarDrawShader::DrawRadarImage( wxPoint center, double scale )
 {
     if (m_start_line == LINES_PER_ROTATION || !m_program) {
         return;
@@ -109,15 +109,6 @@ void RadarDrawShader::DrawRadarImage( wxPoint center, double scale, double rotat
 
     glTranslated(center.x, center.y, 0);
     glScaled(scale, scale, 1.);
-
-    if (overlay) {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    }
-    else {
-        glClearColor(0, 0, 0, 1);
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
 
     UseProgram(m_program);
 

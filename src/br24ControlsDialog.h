@@ -97,6 +97,7 @@ private:
     void OnRadarABButtonClick(wxCommandEvent& event);
 
     void OnRadarStateButtonClick(wxCommandEvent& event);
+    void OnRotationButtonClick(wxCommandEvent& event);
     void OnRadarOverlayButtonClick(wxCommandEvent& event);
     void OnMessageButtonClick(wxCommandEvent& event);
 
@@ -144,6 +145,7 @@ private:
     // Show Controls
 
     wxButton               *m_radar_state;
+    wxButton               *m_rotation_button;
     wxButton               *m_overlay_button;
     br24RadarRangeControlButton *m_range_button;
     br24RadarControlButton *m_transparency_button; // TODO: Set it on change
