@@ -44,17 +44,14 @@ RadarPanel::RadarPanel( br24radar_pi * pi, RadarInfo * ri, wxWindow * parent ) :
 void RadarPanel::Create( )
 {
     wxAuiPaneInfo p = wxAuiPaneInfo()
-                        .Name(wxT("BR24radar_pi"))
-                        .Caption(_("RADAR"))
+                        .Name(wxString::Format(wxT("BR24radar_pi-%d"), m_ri->radar))
+                        .Caption(m_ri->name)
                         .CaptionVisible(true)  // Show caption even when docked
                         .Dockable(true)        // Dockable everywhere
                         .MinSize(wxSize(256,256))
                         .BestSize(wxSize(512,512))
                         .FloatingSize(wxSize(512,512))
-                        .FloatingPosition(100, 100)
-                        .Show(true)
                         .CloseButton(true)
-                        .Float()
                         .Gripper(false);
     m_aui_mgr->AddPane(this, p);
     m_aui_mgr->Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(RadarPanel::close), NULL, this);
@@ -63,11 +60,6 @@ void RadarPanel::Create( )
 
 RadarPanel::~RadarPanel()
 {
-}
-
-void RadarPanel::moved( wxMoveEvent& evt )
-{
-    m_pi->m_dialogLocation[DL_RADARWINDOW + m_ri->radar].pos = GetPosition();
 }
 
 void RadarPanel::resized( wxSizeEvent& evt )
@@ -81,7 +73,6 @@ void RadarPanel::resized( wxSizeEvent& evt )
         //SetClientSize(n);
         //m_parent->Layout();
     }
-    m_pi->m_dialogLocation[DL_RADARWINDOW + m_ri->radar].size = GetSize();
     //Fit();
 }
 

@@ -108,6 +108,13 @@ bool RadarInfo::Init( int verbose )
     // succeeded &= some other init
     // succeeded &= some other init
 
+    radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
+    radar_canvas = new RadarCanvas(m_pi, this, radar_panel, wxSize(512,512)); //m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
+    radar_panel->Create(); // Add to AUI manager
+
+    succeeded &= (radar_panel != 0);
+    succeeded &= (radar_canvas != 0);
+
     return succeeded;
 }
 
@@ -204,7 +211,7 @@ void RadarInfo::ProcessRadarSpoke( SpokeBearing angle, UINT8 * data, size_t len,
 
 void RadarInfo::ProcessRadarPacket( time_t now )
 {
-    if (radar_panel && radar_panel->IsShown()) {
+    if (radar_panel->IsShown()) {
         radar_panel->Refresh(false);
     }
 
@@ -300,11 +307,6 @@ void RadarInfo::ShowRadarWindow( bool show )
 
 void RadarInfo::ShowRadarWindow( )
 {
-    if (!radar_panel) {
-        radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
-        radar_canvas = new RadarCanvas(m_pi, this, radar_panel, wxSize(512,512)); //m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
-        radar_panel->Create(); // Add to AUI manager
-    }
     radar_panel->ShowFrame(true);
 }
 

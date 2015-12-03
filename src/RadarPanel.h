@@ -43,7 +43,6 @@ public:
 
     void ShowFrame( bool visible );
 
-    void moved(wxMoveEvent& evt);
     void resized(wxSizeEvent& evt);
 
     void close(wxAuiManagerEvent& event);
