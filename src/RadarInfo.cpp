@@ -107,8 +107,6 @@ bool RadarInfo::Init( int verbose )
     m_verbose = verbose;
 
     succeeded = transmit->Init(verbose);
-    // succeeded &= some other init
-    // succeeded &= some other init
 
     radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
     radar_canvas = new RadarCanvas(m_pi, this, radar_panel, wxSize(512,512)); //m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
@@ -311,9 +309,7 @@ bool RadarInfo::SetControlValue( ControlType controlType, int value )
 
 void RadarInfo::ShowRadarWindow( bool show )
 {
-    if (radar_panel) {
-        radar_panel->ShowFrame(show);
-    }
+    radar_panel->ShowFrame(show);
 }
 
 void RadarInfo::ShowRadarWindow( )
@@ -326,8 +322,14 @@ void RadarInfo::UpdateControlState( bool all )
     state.Update(radar_seen || data_seen);
     overlay.Update(m_pi->m_settings.chart_overlay == radar);
     if (overlay.value == 0 && m_draw_overlay.draw) {
+        wxLogMessage(wxT("BR24radar_pi: Removing draw method as radar overlay is not shown"));
         delete m_draw_overlay.draw;
         m_draw_overlay.draw = 0;
+    }
+    if (!radar_panel->IsShown() && m_draw_panel.draw) {
+        wxLogMessage(wxT("BR24radar_pi: Removing draw method as radar window is not shown"));
+        delete m_draw_panel.draw;
+        m_draw_panel.draw = 0;
     }
 
     if (control_dialog) {
@@ -357,7 +359,11 @@ void RadarInfo::RenderRadarImage( wxPoint center, double scale, DrawInfo * di )
         else if (newDraw->Init(colorOption)) {
             wxArrayString methods;
             RadarDraw::GetDrawingMethods(methods);
-            wxLogMessage(wxT("BR24radar_pi: new drawing method %s for %s"), methods[drawing_method].c_str(), name.c_str());
+            if (di == &m_draw_overlay) {
+                wxLogMessage(wxT("BR24radar_pi: new drawing method %s for %s overlay"), methods[drawing_method].c_str(), name.c_str());
+            } else {
+                wxLogMessage(wxT("BR24radar_pi: new drawing method %s for %s panel"), methods[drawing_method].c_str(), name.c_str());
+            }
             if (di->draw) {
                 delete di->draw;
             }
@@ -403,8 +409,14 @@ wxString RadarInfo::GetCanvasText( )
         } else {
             s << _("Head Up");
         }
-        s << wxT("\n");
-        s << range_meters;
+        if (m_pi->m_settings.emulator_on) {
+            s << wxT(" (");
+            s << _("Emulator");
+            s << wxT(")");
+        } else {
+            s << wxT("\n");
+            s << range_meters;
+        }
     }
 
     return s;
