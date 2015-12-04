@@ -65,7 +65,6 @@ public:
 #endif
 
 private:
-    void prepare2DViewport(int topleft_x, int topleft_y, int bottomright_x, int bottomright_y);
     void RenderText(wxPoint p, wxString text);
 
     wxWindow      * m_parent;

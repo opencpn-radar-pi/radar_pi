@@ -106,24 +106,6 @@ void RadarCanvas::keyPressed(wxKeyEvent& event) {}
 void RadarCanvas::keyReleased(wxKeyEvent& event) {}
 #endif
 
-void RadarCanvas::prepare2DViewport( int x, int y, int width, int height )
-{
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);               // Black Background
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the canvas
-    glEnable(GL_TEXTURE_2D);                            // Enable textures
-    glEnable(GL_COLOR_MATERIAL);
-    glEnable(GL_BLEND);
-    glDisable(GL_DEPTH_TEST);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-
-    glViewport(x, y, width, height);
-    glMatrixMode(GL_PROJECTION);                        // Next two operations on the project matrix stack
-    glLoadIdentity();                                   // Reset projection matrix stack
-    glScaled(1.0, -1.0, 1.0);
-    glMatrixMode(GL_MODELVIEW);                         // Reset matrick stack target back to GL_MODELVIEW
-    glLoadIdentity();                                   // Reset modelview matrix stack
-}
-
 void RadarCanvas::render( wxPaintEvent& evt )
 {
     int w, h;
@@ -136,8 +118,8 @@ void RadarCanvas::render( wxPaintEvent& evt )
 
     wxLogMessage(wxT("RadarCanvas: rendering %d by %d"), w, h);
 
-    wxGLCanvas::SetCurrent(*m_context);
     wxPaintDC(this); // only to be used in paint events. use wxClientDC to paint outside the paint event
+    wxGLCanvas::SetCurrent(*m_context);
 
     glPushMatrix();
     glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -147,7 +129,20 @@ void RadarCanvas::render( wxPaintEvent& evt )
     wxFont bigFont( 24, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL );
     m_FontBig.Build(bigFont);
 
-    prepare2DViewport(0, 0, w, h);
+    glClearColor(0.0f, 0.1f, 0.0f, 1.0f);               // Black Background
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the canvas
+    glEnable(GL_TEXTURE_2D);                            // Enable textures
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_BLEND);
+    // glDisable(GL_DEPTH_TEST);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+#if 0
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);                        // Next two operations on the project matrix stack
+    glLoadIdentity();                                   // Reset projection matrix stack
+    glScaled(1.0, -1.0, 1.0);
+    glMatrixMode(GL_MODELVIEW);                         // Reset matrick stack target back to GL_MODELVIEW
 
     double scale_factor = 1.0 / RETURNS_PER_LINE; // Radar image is in 0..511 range
 
@@ -160,19 +155,18 @@ void RadarCanvas::render( wxPaintEvent& evt )
     // m_pi->RenderGuardZone(wxPoint(0,0), 1.0, 0);
     double rotation = 0.0; // Or HU then -m_pi->m_hdt;
 
-
     m_ri->RenderRadarImage(wxPoint(0,0), scale_factor, rotation, false);
     CheckOpenGLError(wxT("radar image"));
 
+#endif
+
     glViewport(0, 0, w, h);
+
     glMatrixMode(GL_PROJECTION);                        // Next two operations on the project matrix stack
     glLoadIdentity();                                   // Reset projection matrix stack
-    glOrtho(0.0, w, h, 0.0, -1.0, 1.0);
+    glOrtho(0, w, h, 0, -1, 1);
     glMatrixMode(GL_MODELVIEW);                         // Reset matrick stack target back to GL_MODELVIEW
-    glLoadIdentity();                                   // Reset modelview matrix stack
 
-
-    glLineWidth(1);
     glColor3ub(200, 255, 200);
     glEnable(GL_TEXTURE_2D);
 
@@ -181,11 +175,17 @@ void RadarCanvas::render( wxPaintEvent& evt )
     CheckOpenGLError(wxT("font render"));
     glDisable(GL_TEXTURE_2D);
 
+    glMatrixMode(GL_PROJECTION);                        // Next two operations on the project matrix stack
+    glLoadIdentity();                                   // Reset projection matrix stack
+    glMatrixMode(GL_MODELVIEW);                         // Reset matrick stack target back to GL_MODELVIEW
+
     glPopAttrib();
     glPopMatrix();
     glFlush();
     CheckOpenGLError(wxT("finalize"));
+    glFinish();
     SwapBuffers();
+
 }
 
 // vim: sw=4:ts=8:
