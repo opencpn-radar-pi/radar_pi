@@ -76,6 +76,7 @@ bool RadarDrawShader::Init( int color_option )
         return false;
     }
 
+    wxLogMessage(wxT("BR24radar_pi: GPU oriented OpenGL vertex shader %ld fragment shader %ld"), (long int) m_vertex, (long int) m_fragment);
     m_program = LinkShaders(m_vertex, m_fragment);
     if (!m_program) {
         return false;
@@ -91,11 +92,27 @@ bool RadarDrawShader::Init( int color_option )
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    wxLogMessage(wxT("BR24radar_pi: GPU oriented OpenGL shader for %d colours loaded"), (m_color_option > 0) ? 4 : 1);
+    wxLogMessage(wxT("BR24radar_pi: GPU oriented OpenGL shader %ld for %d colours loaded"), (long int) m_program, (m_color_option > 0) ? 4 : 1);
     m_start_line = LINES_PER_ROTATION;
     m_end_line = 0;
 
     return true;
+}
+
+RadarDrawShader::~RadarDrawShader( )
+{
+    if (m_vertex) {
+        DeleteShader(m_vertex);
+    }
+    if (m_fragment) {
+        DeleteShader(m_fragment);
+    }
+    if (m_program) {
+        DeleteProgram(m_program);
+    }
+    if (m_texture) {
+        glDeleteTextures(1, &m_texture);
+    }
 }
 
 void RadarDrawShader::DrawRadarImage( wxPoint center, double scale )
@@ -113,6 +130,11 @@ void RadarDrawShader::DrawRadarImage( wxPoint center, double scale )
     UseProgram(m_program);
 
     glBindTexture(GL_TEXTURE_2D, m_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, m_color_option > 0 ? GL_RGBA : GL_LUMINANCE,
+                 RETURNS_PER_LINE, LINES_PER_ROTATION, 0,
+                 m_color_option > 0 ? GL_RGBA : GL_LUMINANCE, GL_UNSIGNED_BYTE, m_data);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     int format, channels;
     if (m_color_option)

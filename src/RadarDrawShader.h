@@ -52,13 +52,12 @@ public:
         memset(m_data, 0, sizeof(m_data));
     }
 
+    ~RadarDrawShader();
+
     bool Init(int color_option);
     void DrawRadarImage(wxPoint center, double scale);
     void ProcessRadarSpoke(SpokeBearing angle, UINT8 * data, size_t len);
 
-    ~RadarDrawShader()
-    {
-    }
 
 private:
     br24radar_pi  * m_pi;
