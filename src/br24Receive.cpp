@@ -136,10 +136,6 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
     m_ri->data_watchdog = now;
     m_ri->state.Update(RADAR_ON);
 
-    if (m_pi->m_settings.verbose >= 5) {
-        wxLogMessage(wxT("BR24radar_pi: %s ProcessFrame"), m_ri->name);
-    }
-
     int spoke = 0;
     m_ri->statistics.packets++;
     if (len < (int) sizeof(packet->frame_hdr)) {
@@ -280,8 +276,11 @@ void br24Receive::EmulateFakeBuffer(void)
     m_ri->statistics.packets++;
     m_ri->radar_seen = true;
     m_ri->radar_watchdog = now;
+    m_ri->data_seen = true;
+    m_ri->data_watchdog = now;
     m_ri->state.Update(RADAR_ON);
-    int scanlines_in_packet = 2048 * 24 / 60;
+
+    int scanlines_in_packet = SPOKES * 24 / 60;
     int range_meters = 4000;
     int spots = 0;
     m_ri->radar_type = RT_BR24;
@@ -290,7 +289,7 @@ void br24Receive::EmulateFakeBuffer(void)
     }
     for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
         int angle_raw = m_next_spoke;
-        m_next_spoke = (m_next_spoke + 1) % LINES_PER_ROTATION;
+        m_next_spoke = (m_next_spoke + 1) % SPOKES;
         m_ri->statistics.spokes++;
 
         // Invent a pattern. Outermost ring, then a square pattern
@@ -492,15 +491,7 @@ void *br24Receive::Entry(void)
             maxFd = MAX(dataSocket, maxFd);
         }
 
-        if (m_pi->m_settings.verbose >= 4) {
-            wxLogMessage(wxT("BR24radar_pi: %s receive %d waiting for socket %d,%d,%d"), m_ri->name, maxFd + 1, reportSocket, commandSocket, dataSocket);
-        }
-
         r = select(maxFd + 1, &fdin, 0, 0, &tv);
-
-        if (m_pi->m_settings.verbose >= 2) {
-            wxLogMessage(wxT("BR24radar_pi: %s select r=%d reportFound=%d"), m_ri->name, r, FD_ISSET(reportSocket, &fdin));
-        }
 
         if (r > 0) {
             if (dataSocket != INVALID_SOCKET && FD_ISSET(dataSocket, &fdin)) {
