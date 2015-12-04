@@ -219,6 +219,12 @@ int br24radar_pi::Init( void )
     int radar_control_id = AddCanvasContextMenuItem(pmi, this);
     SetCanvasContextMenuItemViz(radar_control_id, true);
 
+    m_pMessageBox = new br24MessageBox;
+    m_pMessageBox->Create(m_parent_window, this);
+    m_pMessageBox->SetPosition(m_dialogLocation[DL_MESSAGE].pos);
+    m_pMessageBox->Fit();
+    m_pMessageBox->Hide();
+
     ShowRadarControl(0, m_settings.show_radar == RADAR_ON);
     ShowRadarControl(1, m_settings.show_radar == RADAR_ON);
 
@@ -355,13 +361,7 @@ void br24radar_pi::ShowRadarControl( int radar, bool show )
     m_radar[radar]->control_box_opened = show;
     if (show) {
         m_radar[radar]->control_box_closed = false;
-        if (!m_pMessageBox) {
-            m_pMessageBox = new br24MessageBox;
-            m_pMessageBox->Create(m_parent_window, this);
-            m_pMessageBox->SetPosition(m_dialogLocation[DL_MESSAGE].pos);
-            m_pMessageBox->Fit();
-            m_pMessageBox->Hide();
-        }
+
         if (!m_radar[radar]->control_dialog) {
             m_radar[radar]->control_dialog = new br24ControlsDialog;
             m_radar[radar]->control_dialog->Create(m_parent_window, this, m_radar[radar]);
@@ -508,6 +508,8 @@ int br24radar_pi::GetToolbarToolCount( void )
  */
 void br24radar_pi::OnToolbarToolCallback( int id )
 {
+    wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback(%d)"), id);
+
     if (m_settings.show_radar == RADAR_ON) {
         m_settings.show_radar = RADAR_OFF;
         for (int r = 0; r < RADARS; r++) {
@@ -701,10 +703,6 @@ void br24radar_pi::DoTick( void )
 
     for (size_t r = 0; r < RADARS; r++) {
         m_radar[r]->UpdateControlState(false);
-
-        if (m_radar[r]->data_seen) {
-            m_radar[r]->ShowRadarWindow();
-        }
     }
 
     if (m_pMessageBox) {
