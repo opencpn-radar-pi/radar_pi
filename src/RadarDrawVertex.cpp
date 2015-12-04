@@ -156,8 +156,6 @@ void RadarDrawVertex::DrawRadarImage( wxPoint center, double scale )
 
     glPushMatrix();
     glTranslated(center.x, center.y, 0);
-
-    glPushMatrix();
     glScaled(scale, scale, 1.);
 
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -179,9 +177,7 @@ void RadarDrawVertex::DrawRadarImage( wxPoint center, double scale )
     glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
     glDisableClientState(GL_COLOR_ARRAY);
 
-    glPopMatrix(); // Undo scaled
-    glPopMatrix(); // Undo translated
-
+    glPopMatrix(); // Undo translated/scaled
     glPopAttrib(); // Undo blend
 
     if (m_pi->m_settings.verbose >= 4) {
