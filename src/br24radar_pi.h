@@ -319,6 +319,7 @@ public:
     IdleDialog               *m_pIdleDialog;
 
     wxGLContext              *m_opencpn_gl_context;
+    bool                      m_opencpn_gl_context_broken;
 
 
     int                       m_refresh_rate;

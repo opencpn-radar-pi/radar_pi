@@ -111,7 +111,9 @@ void RadarCanvas::render( wxPaintEvent& evt )
     if (!IsShown()) {
         return;
     }
-    if (!m_pi->m_opencpn_gl_context) {
+
+    if (!m_pi->m_opencpn_gl_context && !m_pi->m_opencpn_gl_context_broken) {
+        wxLogMessage(wxT("Skip %s render as no context known yet"), m_ri->name);
         return;
     }
 
@@ -184,7 +186,9 @@ void RadarCanvas::render( wxPaintEvent& evt )
     glFinish();
     SwapBuffers();
 
-    // SetCurrent(*m_pi->m_opencpn_gl_context);
+    if (m_pi->m_opencpn_gl_context) {
+        SetCurrent(*m_pi->m_opencpn_gl_context);
+    }
 }
 
 // vim: sw=4:ts=8:

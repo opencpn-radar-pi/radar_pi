@@ -127,6 +127,7 @@ int br24radar_pi::Init( void )
 
     m_pMessageBox = NULL;
     m_opencpn_gl_context = 0;
+    m_opencpn_gl_context_broken = false;
 
     m_refresh_rate = 1;
 
@@ -839,6 +840,11 @@ bool br24radar_pi::RenderOverlay( wxDC &dc, PlugIn_ViewPort *vp )
 bool br24radar_pi::RenderGLOverlay( wxGLContext *pcontext, PlugIn_ViewPort *vp )
 {
     m_opencpn_gl_context = pcontext;
+    if (!m_opencpn_gl_context && !m_opencpn_gl_context_broken) {
+        wxLogMessage(wxT("BR24radar_pi: OpenCPN does not pass OpenGL context. Resize of OpenCPN window may be broken!"));
+    }
+    m_opencpn_gl_context_broken = m_opencpn_gl_context == 0;
+
     m_refresh_busy_or_queued = true;   //  the receive thread should not queue another refresh (through refresh canvas) this when it is busy
     m_opengl_mode = true;
 

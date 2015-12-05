@@ -65,6 +65,12 @@ bool RadarPanel::Create( )
                         .CloseButton(true)
                         .Gripper(false);
 
+    m_ri->radar_canvas = new RadarCanvas(m_pi, m_ri, this, wxSize(256,256)); //m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
+    if (!m_ri->radar_canvas) {
+        wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarCanvas"), m_ri->name);
+        return false;
+    }
+
     //wxBoxSizer *Sizer = new wxBoxSizer(wxHORIZONTAL);
     //Sizer->Add(radar_canvas, 0, wxEXPAND | wxALL, 0);
     //SetSizer(Sizer);
