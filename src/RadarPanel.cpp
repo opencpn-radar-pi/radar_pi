@@ -54,30 +54,36 @@ bool RadarPanel::Create( )
                         .FloatingSize(wxSize(512,512))
                         .CloseButton(true)
                         .Gripper(false);
-    m_aui_mgr->AddPane(this, p);
-    m_aui_mgr->Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(RadarPanel::close), NULL, this);
 
-    RadarCanvas * radar_canvas = new RadarCanvas(m_pi, m_ri, this, wxSize(512,512)); //m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
+    RadarCanvas * radar_canvas = new RadarCanvas(m_pi, m_ri, this, wxSize(256,256)); //m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
     if (!radar_canvas) {
         return false;
     }
 
-    wxBoxSizer *Sizer = new wxBoxSizer(wxHORIZONTAL);
-    Sizer->Add(radar_canvas, 0, wxEXPAND | wxALL, 0);
-    SetSizer(Sizer);
+    //wxBoxSizer *Sizer = new wxBoxSizer(wxHORIZONTAL);
+    //Sizer->Add(radar_canvas, 0, wxEXPAND | wxALL, 0);
+    //SetSizer(Sizer);
 
-    DimeWindow(this);
-    Fit();
-    SetMinSize(GetBestSize());
+    m_aui_mgr->AddPane(this, p);
+    m_aui_mgr->Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(RadarPanel::close), NULL, this);
 
     m_aui_mgr->Update();
     wxLogMessage(wxT("BR24radar_pi: Added panel %s to AUI control manager"), m_aui_name.c_str());
+
+    //DimeWindow(this);
+    //Fit();
+    //SetMinSize(GetBestSize());
 
     return true;
 }
 
 RadarPanel::~RadarPanel()
 {
+}
+
+void RadarPanel::SetCaption( wxString name )
+{
+    m_aui_mgr->GetPane(this).Caption(name);
 }
 
 void RadarPanel::resized( wxSizeEvent& evt )

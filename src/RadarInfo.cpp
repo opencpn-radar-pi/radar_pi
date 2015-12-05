@@ -122,7 +122,11 @@ bool RadarInfo::Init( int verbose )
 
 void RadarInfo::SetName( wxString name )
 {
-    this->name = name;
+    if (name != this->name) {
+        wxLogMessage(wxT("BR24radar_pi: Changing name of radar #%d from '%s' to '%s'"), radar, this->name, name);
+        this->name = name;
+        radar_panel->SetCaption(name);
+    }
 }
 
 void RadarInfo::StartReceive( )
@@ -177,6 +181,9 @@ void RadarInfo::ProcessRadarSpoke( SpokeBearing angle, SpokeBearing bearing, UIN
         ResetSpokes();
         this->range_meters = range_meters;
         this->range.Update(range_meters);
+        if (m_pi->m_settings.verbose) {
+            wxLogMessage(wxT("BR24radar_pi: %s detected range %d"), name, range_meters);
+        }
     }
     //spoke[angle].age = nowMillis;
 

@@ -140,7 +140,6 @@ void RadarCanvas::render( wxPaintEvent& evt )
     // glDisable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-#if 0
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);                        // Next two operations on the project matrix stack
     glLoadIdentity();                                   // Reset projection matrix stack
@@ -160,8 +159,6 @@ void RadarCanvas::render( wxPaintEvent& evt )
 
     m_ri->RenderRadarImage(wxPoint(0,0), scale_factor, rotation, false);
     CheckOpenGLError(wxT("radar image"));
-
-#endif
 
     glViewport(0, 0, w, h);
 

@@ -41,7 +41,8 @@ public:
     bool Create();
     virtual ~RadarPanel();
 
-    void ShowFrame( bool visible );
+    void SetCaption(wxString name);  // Set the AUI caption
+    void ShowFrame(bool visible);
 
     void resized(wxSizeEvent& evt);
 
