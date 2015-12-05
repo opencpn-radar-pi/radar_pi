@@ -36,8 +36,8 @@
 BEGIN_EVENT_TABLE(RadarCanvas, wxGLCanvas)
 //    EVT_CLOSE(RadarCanvas::close)
 //    EVT_MOVE(RadarCanvas::moved)
-//    EVT_SIZE(RadarCanvas::resized)
-    EVT_PAINT(RadarCanvas::render)
+    EVT_SIZE(RadarCanvas::OnSize)
+    EVT_PAINT(RadarCanvas::Render)
 END_EVENT_TABLE()
 
 static int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
@@ -51,42 +51,31 @@ RadarCanvas::RadarCanvas( br24radar_pi * pi, RadarInfo * ri, wxWindow * parent, 
     m_ri = ri;
     m_context = new wxGLContext(this);
     if (m_pi->m_settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: create %s OpenGL canvas"), m_ri->name);
+        wxLogMessage(wxT("BR24radar_pi: %s create OpenGL canvas"), m_ri->name);
     }
 }
 
 RadarCanvas::~RadarCanvas()
 {
     if (m_pi->m_settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: destroy %s OpenGL canvas"), m_ri->name);
+        wxLogMessage(wxT("BR24radar_pi: %s destroy OpenGL canvas"), m_ri->name);
     }
     delete m_context;
 }
 
-#if 0
-void RadarCanvas::moved( wxMoveEvent& evt )
+void RadarCanvas::OnSize( wxSizeEvent& evt )
 {
-    m_pi->m_dialogLocation[DL_RADARWINDOW + m_ri->radar].pos = m_parent->GetPosition();
-}
-
-void RadarCanvas::resized( wxSizeEvent& evt )
-{
-#if 0
-    wxSize s = GetSize();
-    wxSize n;
-    n.x = MIN(s.x, s.y);
-    n.y = s.x;
-
-    if (n.x != s.x || n.y != s.y) {
-        SetSize(n);
-        //m_parent->Layout();
+    if (m_pi->m_settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: %s resize OpenGL canvas"), m_ri->name);
     }
-    m_pi->m_dialogLocation[DL_RADARWINDOW + m_ri->radar].size = n;
-
+    SetCurrent(*m_context);
     Refresh();
-#endif
+    if (GetSize() != m_parent->GetSize()) {
+        SetSize(m_parent->GetSize());
+    }
 }
 
+#if 0
 void RadarCanvas::close( wxCloseEvent& evt )
 {
     //this->Hide();
@@ -104,7 +93,7 @@ void RadarCanvas::keyPressed(wxKeyEvent& event) {}
 void RadarCanvas::keyReleased(wxKeyEvent& event) {}
 #endif
 
-void RadarCanvas::render( wxPaintEvent& evt )
+void RadarCanvas::Render( wxPaintEvent& evt )
 {
     int w, h;
 
@@ -113,13 +102,15 @@ void RadarCanvas::render( wxPaintEvent& evt )
     }
 
     if (!m_pi->m_opencpn_gl_context && !m_pi->m_opencpn_gl_context_broken) {
-        wxLogMessage(wxT("Skip %s render as no context known yet"), m_ri->name);
+        wxLogMessage(wxT("BR24radar_pi: %s skip render as no context known yet"), m_ri->name);
         return;
     }
 
     GetClientSize(&w, &h);
 
-    wxLogMessage(wxT("RadarCanvas: rendering %d by %d"), w, h);
+    if (m_pi->m_settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: %s render OpenGL canvas %d by %d "), m_ri->name, w, h);
+    }
 
     wxPaintDC(this); // only to be used in paint events. use wxClientDC to paint outside the paint event
     SetCurrent(*m_context);
@@ -151,14 +142,13 @@ void RadarCanvas::render( wxPaintEvent& evt )
     glColor3ub(200, 255, 200);
     DrawOutlineArc(0.25, 1.00, 0.0, 359.0, true);
     DrawOutlineArc(0.50, 0.75, 0.0, 359.0, true);
-    CheckOpenGLError(wxT("range circles"));
+    // CheckOpenGLError(wxT("range circles"));
 
     // TODO
     // m_pi->RenderGuardZone(wxPoint(0,0), 1.0, 0);
     double rotation = 0.0; // Or HU then -m_pi->m_hdt;
 
     m_ri->RenderRadarImage(wxPoint(0,0), scale_factor, rotation, false);
-    CheckOpenGLError(wxT("radar image"));
 
     glViewport(0, 0, w, h);
 
@@ -172,7 +162,6 @@ void RadarCanvas::render( wxPaintEvent& evt )
 
     wxString s = m_ri->GetCanvasText();
     m_FontBig.RenderString(s, 0, 0);
-    CheckOpenGLError(wxT("font render"));
     glDisable(GL_TEXTURE_2D);
 
     glMatrixMode(GL_PROJECTION);                        // Next two operations on the project matrix stack
@@ -182,7 +171,6 @@ void RadarCanvas::render( wxPaintEvent& evt )
     glPopAttrib();
     glPopMatrix();
     glFlush();
-    CheckOpenGLError(wxT("finalize"));
     glFinish();
     SwapBuffers();
 

@@ -46,13 +46,12 @@ public:
     RadarCanvas(br24radar_pi * pi, RadarInfo *ri, wxWindow * parent, wxSize size);
     virtual ~RadarCanvas();
 
-    void render(wxPaintEvent& evt);
-
+    void Render(wxPaintEvent& evt);
+    void OnSize(wxSizeEvent& evt);
 
 #if 0
     // events
     void moved(wxMoveEvent& evt);
-    void resized(wxSizeEvent& evt);
     void close(wxCloseEvent& evt);
     void mouseMoved(wxMouseEvent& event);
     void mouseDown(wxMouseEvent& event);

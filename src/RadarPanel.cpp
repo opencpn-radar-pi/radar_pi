@@ -71,19 +71,21 @@ bool RadarPanel::Create( )
         return false;
     }
 
-    //wxBoxSizer *Sizer = new wxBoxSizer(wxHORIZONTAL);
-    //Sizer->Add(radar_canvas, 0, wxEXPAND | wxALL, 0);
-    //SetSizer(Sizer);
+    wxBoxSizer *Sizer = new wxBoxSizer(wxHORIZONTAL);
+    Sizer->Add(m_ri->radar_canvas, 0, wxEXPAND | wxALL, 0);
+    SetSizer(Sizer);
+
+    DimeWindow(this);
+    Fit();
+    Layout();
+    SetMinSize(GetBestSize());
+    Refresh();
 
     m_aui_mgr->AddPane(this, p);
     m_aui_mgr->Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(RadarPanel::close), NULL, this);
 
     m_aui_mgr->Update();
     wxLogMessage(wxT("BR24radar_pi: Added panel %s to AUI control manager"), m_aui_name.c_str());
-
-    //DimeWindow(this);
-    //Fit();
-    //SetMinSize(GetBestSize());
 
     return true;
 }

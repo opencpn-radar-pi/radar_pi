@@ -230,9 +230,9 @@ void RadarInfo::ProcessRadarSpoke( SpokeBearing angle, SpokeBearing bearing, UIN
 
 void RadarInfo::ProcessRadarPacket( time_t now )
 {
-    if (radar_panel->IsShown()) {
+    // if (radar_panel->IsShown()) {
         radar_panel->Refresh(false);
-    }
+    // }
 
     if (m_pi->m_settings.chart_overlay == this->radar) {
         int pos_age = difftime(now, m_pi->m_bpos_watchdog);   // the age of the postion, last call of SetPositionFixEx
