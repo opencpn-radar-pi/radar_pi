@@ -108,12 +108,14 @@ bool RadarInfo::Init( int verbose )
 
     succeeded = transmit->Init(verbose);
 
-    radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
-    radar_canvas = new RadarCanvas(m_pi, this, radar_panel, wxSize(512,512)); //m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
-    radar_panel->Create(); // Add to AUI manager
-
-    succeeded &= (radar_panel != 0);
-    succeeded &= (radar_canvas != 0);
+    if (succeeded) {
+        radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
+        if (radar_panel) {
+            succeeded = radar_panel->Create(); // Two step create
+        } else {
+            succeeded = false;
+        }
+    }
 
     return succeeded;
 }

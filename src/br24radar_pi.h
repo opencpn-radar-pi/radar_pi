@@ -317,6 +317,8 @@ public:
     GuardZoneBogey           *m_pGuardZoneBogey;
     IdleDialog               *m_pIdleDialog;
 
+    wxGLContext              *m_opencpn_gl_context;
+
 
     int                       m_refresh_rate;
     bool                      m_want_message_box;

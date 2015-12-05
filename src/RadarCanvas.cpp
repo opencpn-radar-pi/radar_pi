@@ -113,13 +113,16 @@ void RadarCanvas::render( wxPaintEvent& evt )
     if (!IsShown()) {
         return;
     }
+    if (!m_pi->m_opencpn_gl_context) {
+        return;
+    }
 
     GetClientSize(&w, &h);
 
     wxLogMessage(wxT("RadarCanvas: rendering %d by %d"), w, h);
 
     wxPaintDC(this); // only to be used in paint events. use wxClientDC to paint outside the paint event
-    wxGLCanvas::SetCurrent(*m_context);
+    SetCurrent(*m_context);
 
     glPushMatrix();
     glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -186,6 +189,7 @@ void RadarCanvas::render( wxPaintEvent& evt )
     glFinish();
     SwapBuffers();
 
+    SetCurrent(*m_pi->m_opencpn_gl_context);
 }
 
 // vim: sw=4:ts=8:

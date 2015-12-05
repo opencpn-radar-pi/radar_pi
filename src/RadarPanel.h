@@ -38,7 +38,7 @@ class RadarPanel : public wxPanel
 {
 public:
     RadarPanel(br24radar_pi * pi, RadarInfo *ri, wxWindow * parent);
-    void Create();
+    bool Create();
     virtual ~RadarPanel();
 
     void ShowFrame( bool visible );

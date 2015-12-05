@@ -126,6 +126,7 @@ int br24radar_pi::Init( void )
     m_fat_font.SetPointSize(m_font.GetPointSize() + 1);
 
     m_pMessageBox = NULL;
+    m_opencpn_gl_context = 0;
 
     m_refresh_rate = 1;
 
@@ -837,6 +838,7 @@ bool br24radar_pi::RenderOverlay( wxDC &dc, PlugIn_ViewPort *vp )
 
 bool br24radar_pi::RenderGLOverlay( wxGLContext *pcontext, PlugIn_ViewPort *vp )
 {
+    m_opencpn_gl_context = pcontext;
     m_refresh_busy_or_queued = true;   //  the receive thread should not queue another refresh (through refresh canvas) this when it is busy
     m_opengl_mode = true;
 
