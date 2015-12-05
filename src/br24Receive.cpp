@@ -38,6 +38,30 @@
  * The rest of the plugin uses a (slightly) abstract definition of the radar.
  */
 
+
+// There are two radars in every 4G radome. They send and listen on different addresses
+
+struct ListenAddress
+{
+    uint16_t     port;
+    const char * address;
+};
+
+static const ListenAddress LISTEN_DATA[2] =
+            { { 6678, "236.6.7.8" }
+            , { 6657, "236.6.7.13" }
+            };
+
+static const ListenAddress LISTEN_REPORT[2] =
+            { { 6679, "236.6.7.9" }
+            , { 6659, "236.6.7.15" }
+            };
+
+static const ListenAddress LISTEN_COMMAND[2] =
+            { { 6680, "236.6.7.10" }
+            , { 6658, "236.6.7.14" }
+            };
+
 // A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration)
 // Note that 3G scanners are BR24's with better power, so they are more BR23+ than 4G-.
 // As far as we know they 3G's use exactly the same command set.
@@ -283,7 +307,7 @@ void br24Receive::EmulateFakeBuffer(void)
     int scanlines_in_packet = SPOKES * 24 / 60;
     int range_meters = 4000;
     int spots = 0;
-    m_ri->radar_type = RT_BR24;
+    m_ri->radar_type = RT_4G;
     if (range_meters != m_range_meters) {
         m_range_meters = range_meters;
     }
@@ -296,7 +320,7 @@ void br24Receive::EmulateFakeBuffer(void)
         for (size_t range = 0; range < sizeof(data); range++) {
             size_t bit = range >> 5;
             // use bit 'bit' of angle_raw
-            UINT8 color = ((angle_raw >> 3) & (2 << bit)) > 0 ? 200 : 0;
+            UINT8 color = ((angle_raw >> (3 + m_ri->radar)) & (2 << bit)) > 0 ? 200 : 0;
             data[range] = color;
             if (color > 0) {
                 spots++;
@@ -349,7 +373,10 @@ SOCKET br24Receive::PickNextEthernetCard()
     }
     if (VALID_IPV4_ADDRESS(m_interface)) {
         wxString error;
-        socket = startUDPMulticastReceiveSocket((struct sockaddr_in *)m_interface->ifa_addr, 6679, "236.6.7.9", error);
+        socket = startUDPMulticastReceiveSocket( (struct sockaddr_in *)m_interface->ifa_addr
+                                               , LISTEN_REPORT[m_ri->radar].port
+                                               , LISTEN_REPORT[m_ri->radar].address
+                                               , error);
         if (socket != INVALID_SOCKET) {
             wxString addr;
             UINT8 * a = (UINT8 *)&((struct sockaddr_in *)m_interface->ifa_addr)->sin_addr; // sin_addr is in network layout
@@ -377,12 +404,11 @@ SOCKET br24Receive::GetNewDataSocket()
         return INVALID_SOCKET;
     }
 
-    if (m_ri->radar == 1) {
-        socket = startUDPMulticastReceiveSocket(m_mcast_addr, 6657, "236.6.7.13", error);
-    }
-    else {
-        socket = startUDPMulticastReceiveSocket(m_mcast_addr, 6678, "236.6.7.8", error);
-    }
+    socket = startUDPMulticastReceiveSocket( m_mcast_addr
+                                           , LISTEN_DATA[m_ri->radar].port
+                                           , LISTEN_DATA[m_ri->radar].address
+                                           , error
+                                           );
     if (socket != INVALID_SOCKET) {
         wxString addr;
         UINT8 * a = (UINT8 *) &m_mcast_addr->sin_addr; // sin_addr is in network layout
@@ -405,12 +431,11 @@ SOCKET br24Receive::GetNewCommandSocket()
         return INVALID_SOCKET;
     }
 
-    if (m_ri->radar == 1) {
-        socket = startUDPMulticastReceiveSocket(m_mcast_addr, 6658, "236.6.7.14", error);
-    }
-    else {
-        socket = startUDPMulticastReceiveSocket(m_mcast_addr, 6680, "236.6.7.10", error);
-    }
+    socket = startUDPMulticastReceiveSocket( m_mcast_addr
+                                           , LISTEN_COMMAND[m_ri->radar].port
+                                           , LISTEN_COMMAND[m_ri->radar].address
+                                           , error
+                                           );
     if (socket != INVALID_SOCKET) {
         wxString addr;
         UINT8 * a = (UINT8 *) &m_mcast_addr->sin_addr; // sin_addr is in network layout
