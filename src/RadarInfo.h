@@ -87,6 +87,7 @@ public:
     br24Receive            *receive;
     br24ControlsDialog     *control_dialog;
     RadarPanel             *radar_panel;
+    RadarCanvas            *radar_canvas;
 
     /* Abstractions of our own. Some filled by br24Receive. */
 

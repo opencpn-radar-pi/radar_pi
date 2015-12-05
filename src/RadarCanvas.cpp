@@ -43,25 +43,23 @@ END_EVENT_TABLE()
 static int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
 
 RadarCanvas::RadarCanvas( br24radar_pi * pi, RadarInfo * ri, wxWindow * parent, wxSize size ) :
-#if !wxCHECK_VERSION(3,0,0)
-    wxGLCanvas( parent, wxID_ANY, wxDefaultPosition, size,
-                wxFULL_REPAINT_ON_RESIZE | wxBG_STYLE_CUSTOM, _T(""), attribs )
-#else
     wxGLCanvas( parent, wxID_ANY, attribs, wxDefaultPosition, size,
                 wxFULL_REPAINT_ON_RESIZE | wxBG_STYLE_CUSTOM, _T("") )
-#endif
 {
     m_parent = parent;
     m_pi = pi;
     m_ri = ri;
     m_context = new wxGLContext(this);
-
-    // To avoid flashing on MSW
-    SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+    if (m_pi->m_settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: create %s OpenGL canvas"), m_ri->name);
+    }
 }
 
 RadarCanvas::~RadarCanvas()
 {
+    if (m_pi->m_settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: destroy %s OpenGL canvas"), m_ri->name);
+    }
     delete m_context;
 }
 
@@ -186,7 +184,7 @@ void RadarCanvas::render( wxPaintEvent& evt )
     glFinish();
     SwapBuffers();
 
-    SetCurrent(*m_pi->m_opencpn_gl_context);
+    // SetCurrent(*m_pi->m_opencpn_gl_context);
 }
 
 // vim: sw=4:ts=8:

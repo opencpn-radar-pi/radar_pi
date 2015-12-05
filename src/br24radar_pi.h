@@ -286,6 +286,7 @@ public:
     void SetDisplayMode(DisplayModeType mode);
     void UpdateDisplayParameters(void);
 
+    void ShowRadarControl(int radar, bool show = true);
     void ShowGuardZoneDialog(int radar, int zone);
     void OnGuardZoneDialogClose(RadarInfo * ri);
     void OnGuardZoneBogeyClose();
@@ -365,7 +366,6 @@ private:
     //void HandleBogeyCount(int *bogey_count);
 
     void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
-    void ShowRadarControl(int radar, bool show = true);
     void ShowRadarWindow(int radar);
 
     wxFileConfig             *m_pconfig;

@@ -102,22 +102,29 @@ RadarInfo::~RadarInfo( )
 
 bool RadarInfo::Init( int verbose )
 {
-    bool succeeded;
-
     m_verbose = verbose;
 
-    succeeded = transmit->Init(verbose);
-
-    if (succeeded) {
-        radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
-        if (radar_panel) {
-            succeeded = radar_panel->Create(); // Two step create
-        } else {
-            succeeded = false;
-        }
+    if (!transmit->Init(verbose)) {
+        wxLogMessage(wxT("BR24radar_pi %s: Unable to create transmit socket"), name);
+        return false;
     }
 
-    return succeeded;
+    radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
+    if (!radar_panel) {
+        wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarPanel"), name);
+        return false;
+    }
+    radar_canvas = new RadarCanvas(m_pi, this, radar_panel, wxSize(512,512)); //m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
+    if (!radar_canvas) {
+        wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarCanvas"), name);
+        return false;
+    }
+    radar_canvas->Show();
+    if (!radar_panel->Create()) {
+        wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarCanvas"), name);
+        return false;
+    }
+    return true;
 }
 
 void RadarInfo::SetName( wxString name )

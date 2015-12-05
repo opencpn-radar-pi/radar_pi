@@ -46,6 +46,7 @@ public:
 
     void resized(wxSizeEvent& evt);
 
+    void OnMouseClick(wxMouseEvent& event);
     void close(wxAuiManagerEvent& event);
 
 
@@ -55,6 +56,8 @@ private:
     RadarInfo     * m_ri;
     wxAuiManager  * m_aui_mgr;
     wxString        m_aui_name;
+
+    wxDECLARE_EVENT_TABLE();
 };
 
 #endif

@@ -32,6 +32,16 @@
 #include "RadarPanel.h"
 #include "RadarCanvas.h"
 
+enum {                                      // process ID's
+    ID_CONFIRM,
+    ID_CLOSE
+};
+
+BEGIN_EVENT_TABLE(RadarPanel, wxPanel)
+    EVT_LEFT_UP(RadarPanel::OnMouseClick)
+END_EVENT_TABLE()
+
+
 RadarPanel::RadarPanel( br24radar_pi * pi, RadarInfo * ri, wxWindow * parent ) :
     wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("RADAR"))
 {
@@ -54,11 +64,6 @@ bool RadarPanel::Create( )
                         .FloatingSize(wxSize(512,512))
                         .CloseButton(true)
                         .Gripper(false);
-
-    RadarCanvas * radar_canvas = new RadarCanvas(m_pi, m_ri, this, wxSize(256,256)); //m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
-    if (!radar_canvas) {
-        return false;
-    }
 
     //wxBoxSizer *Sizer = new wxBoxSizer(wxHORIZONTAL);
     //Sizer->Add(radar_canvas, 0, wxEXPAND | wxALL, 0);
@@ -111,6 +116,12 @@ void RadarPanel::ShowFrame( bool visible )
     m_aui_mgr->GetPane(this).Show(visible);
     // m_visible = visible;
     m_aui_mgr->Update();
+}
+
+void RadarPanel::OnMouseClick( wxMouseEvent& event )
+{
+    m_pi->ShowRadarControl(m_ri->radar, true);
+    event.Skip();
 }
 
 // vim: sw=4:ts=8:
