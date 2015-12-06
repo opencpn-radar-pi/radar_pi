@@ -96,6 +96,7 @@ void RadarCanvas::keyReleased(wxKeyEvent& event) {}
 void RadarCanvas::Render( wxPaintEvent& evt )
 {
     int w, h;
+    int sq;      // square size, minimum of w, h.
 
     if (!IsShown()) {
         return;
@@ -107,6 +108,7 @@ void RadarCanvas::Render( wxPaintEvent& evt )
     }
 
     GetClientSize(&w, &h);
+    sq = wxMin(w, h);
 
     if (m_pi->m_settings.verbose >= 2) {
         wxLogMessage(wxT("BR24radar_pi: %s render OpenGL canvas %d by %d "), m_ri->name, w, h);
@@ -131,7 +133,7 @@ void RadarCanvas::Render( wxPaintEvent& evt )
     // glDisable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glViewport(0, 0, w, h);
+    glViewport((w - sq) / 2, (h - sq) / 2, sq, sq);
     glMatrixMode(GL_PROJECTION);                        // Next two operations on the project matrix stack
     glLoadIdentity();                                   // Reset projection matrix stack
     glScaled(1.0, -1.0, 1.0);
@@ -149,6 +151,7 @@ void RadarCanvas::Render( wxPaintEvent& evt )
     double rotation = 0.0; // Or HU then -m_pi->m_hdt;
 
     m_ri->RenderRadarImage(wxPoint(0,0), scale_factor, rotation, false);
+
 
     glViewport(0, 0, w, h);
 
