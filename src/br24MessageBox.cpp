@@ -338,6 +338,8 @@ void br24MessageBox::OnMessageBackButtonClick(wxCommandEvent& event)
 
 void br24MessageBox::SetRadarIPAddress(wxString &msg)
 {
+    wxMutexLocker lock(m_mutex);
+
     if (m_have_radar) {
         wxString label;
 
@@ -348,6 +350,8 @@ void br24MessageBox::SetRadarIPAddress(wxString &msg)
 
 void br24MessageBox::SetErrorMessage(wxString &msg)
 {
+    wxMutexLocker lock(m_mutex);
+
     m_error_message->SetLabel(msg);
     m_top_sizer->Show(m_message_sizer);
     m_message_sizer->Layout();
@@ -368,6 +372,8 @@ void br24MessageBox::SetMcastIPAddress(wxString &msg)
 
 void br24MessageBox::SetHeadingInfo(wxString &msg)
 {
+    wxMutexLocker lock(m_mutex);
+
     if (m_have_heading && m_top_sizer->IsShown(m_message_sizer)) {
         wxString label;
 
@@ -378,6 +384,8 @@ void br24MessageBox::SetHeadingInfo(wxString &msg)
 
 void br24MessageBox::SetVariationInfo(wxString &msg)
 {
+    wxMutexLocker lock(m_mutex);
+
     if (m_have_variation && m_top_sizer->IsShown(m_message_sizer)) {
         wxString label;
 
@@ -388,6 +396,8 @@ void br24MessageBox::SetVariationInfo(wxString &msg)
 
 void br24MessageBox::SetRadarInfo(wxString &msg)
 {
+    wxMutexLocker lock(m_mutex);
+
     if (m_statistics && m_top_sizer->IsShown(m_message_sizer)) {
         m_statistics->SetLabel(msg);
     }

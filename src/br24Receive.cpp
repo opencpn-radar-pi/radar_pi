@@ -384,8 +384,7 @@ SOCKET br24Receive::PickNextEthernetCard()
             if (m_pi->m_settings.verbose >= 1) {
                 wxLogMessage(wxT("BR24radar_pi: Listening for %s reports on %s"), m_ri->name, addr.c_str());
             }
-            m_pi->m_ip_address = addr;
-            m_pi->m_update_address_control = true;
+            m_pi->m_pMessageBox->SetMcastIPAddress(addr);
         } else {
             wxLogMessage(wxT("BR24radar_pi: Unable to listen to socket: %s"), error.c_str());
         }
@@ -557,8 +556,7 @@ void *br24Receive::Entry(void)
                         wxString addr;
                         UINT8 * a = (UINT8 *) &m_radar_addr->sin_addr; // sin_addr is in network layout
                         addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
-                        m_pi->m_ip_address = addr;
-                        m_pi->m_update_address_control = true;   //signals to RenderGLOverlay that the control box should be updated
+                        m_pi->m_pMessageBox->SetRadarIPAddress(addr);
                         if (!m_ri->radar_seen) {
                             if (m_pi->m_settings.verbose) {
                                 wxLogMessage(wxT("BR24radar_pi: %s detected at %s"), m_ri->name, addr.c_str());

@@ -125,7 +125,6 @@ int br24radar_pi::Init( void )
     m_fat_font.SetWeight(wxFONTWEIGHT_BOLD);
     m_fat_font.SetPointSize(m_font.GetPointSize() + 1);
 
-    m_pMessageBox = NULL;
     m_opencpn_gl_context = 0;
     m_opencpn_gl_context_broken = false;
 
@@ -139,7 +138,6 @@ int br24radar_pi::Init( void )
     m_bpos_set = false;
     m_auto_range_meters = 0;
     m_previous_auto_range_meters = 0;
-    m_update_address_control = false;
     m_update_error_control = false;
     m_idle_dialog_time_left = 999; // Secret value, I hate secret values!
     m_TimedTransmit_IdleBoxMode = 0;
@@ -165,7 +163,6 @@ int br24radar_pi::Init( void )
 
     m_heading_source = HEADING_NONE;
     m_pOptionsDialog = 0;
-    m_pMessageBox = 0;
     m_pGuardZoneDialog = 0;
     m_pGuardZoneBogey = 0;
     m_pIdleDialog = 0;
@@ -271,6 +268,8 @@ bool br24radar_pi::DeInit( void )
             delete m_radar[r];
         }
     }
+
+    delete m_pMessageBox;
 
     return true;
 }
@@ -567,14 +566,6 @@ void br24radar_pi::DoTick( void )
             if (m_pMessageBox->IsShown()) {
                 m_pMessageBox->SetErrorMessage(m_error_msg);
                 m_update_error_control = false;
-            }
-        }
-    }
-    if (m_update_address_control) {
-        if (m_pMessageBox) {
-            if (m_pMessageBox->IsShown()) {
-                m_pMessageBox->SetMcastIPAddress(m_ip_address);
-                m_update_address_control = false;
             }
         }
     }

@@ -70,6 +70,9 @@ private:
 
     void OnMessageBackButtonClick(wxCommandEvent& event);
 
+
+    wxMutex             m_mutex;
+
     wxWindow           *m_parent;
     br24radar_pi       *m_pi;
     wxBoxSizer         *m_top_sizer;

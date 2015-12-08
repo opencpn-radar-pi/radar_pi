@@ -342,9 +342,6 @@ public:
     bool                      m_bpos_set;
     time_t                    m_bpos_watchdog;
 
-    wxString                  m_ip_address; // Current IP address of the ethernet interface that we're doing multicast receive on.
-    bool                      m_update_address_control;
-
     volatile bool             m_refresh_busy_or_queued;
 
     WindowLocation            m_dialogLocation[DIALOG_MAX];
