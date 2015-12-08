@@ -873,32 +873,6 @@ bool br24radar_pi::RenderGLOverlay( wxGLContext *pcontext, PlugIn_ViewPort *vp )
     wxPoint boat_center;
     GetCanvasPixLL(vp, &boat_center, m_ownship_lat, m_ownship_lon);
 
-    // now set a new value in the range control if an unsollicited range change has been received.
-    // not for range change that the pi has initialized. For these the control was updated immediately
-#if TODO
-    if (m_update_range_control[m_settings.selectRadarB]) {
-        m_update_range_control[m_settings.selectRadarB] = false;
-        int radar_range = m_range_meters[m_settings.selectRadarB];
-        int idx = convertRadarMetersToIndex(&radar_range, m_settings.range_units, m_radar_type);
-        m_radar[m_settings.selectRadarB]->range.Update(idx);
-        // above also updates radar_range to be a display value (lower, rounded number)
-        if (m_radar[radar]->control_dialog) {
-            if (radar_range != m_radar[radar]->commanded_range_meters) { // this range change was not initiated by the pi
-                m_radar[radar]->control_dialog->SetRemoteRangeIndex(idx);
-                if (m_settings.verbose) {
-                    wxLogMessage(wxT("BR24radar_pi: remote range change to %d meters = %d (plugin commanded %d meters)"), m_range_meters[m_settings.selectRadarB], radar_range, m_radar[radar]->commanded_range_meters);
-                }
-            }
-            else {
-                m_radar[radar]->control_dialog->SetRangeIndex(idx);
-                if (m_settings.verbose) {
-                    wxLogMessage(wxT("BR24radar_pi: final range change to %d meters = %d"), m_range_meters[m_settings.selectRadarB], radar_range);
-                }
-            }
-        }
-    }
-#endif
-
     // Calculate the "optimum" radar range setting in meters so the radar image just fills the screen
 
     if (m_radar[m_settings.chart_overlay]->auto_range_mode) {
