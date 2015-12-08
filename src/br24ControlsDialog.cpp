@@ -216,9 +216,13 @@ public:
     virtual void SetAuto();
     int SetValueInt(int value);
 
-    br24ControlsDialog * m_parent;
+    wxString& GetRangeText();
     bool isRemote; // Set by some other computer or MFD
+
+private:
+    br24ControlsDialog * m_parent;
     int auto_range_index;
+    wxString m_text;
 };
 
 struct RadarRanges {
@@ -364,7 +368,7 @@ void br24RadarControlButton::SetAuto()
 }
 
 void br24RadarControlButton::SetLocalAuto()
-{      // sets auto in the button without sending new value to the radar
+{   // sets auto in the button without sending new value to the radar
     wxString label;
 
     label << firstLine << wxT("\n") << _("Auto");
@@ -393,15 +397,17 @@ int br24RadarRangeControlButton::SetValueInt(int newValue)
     wxString label;
     wxString rangeText = value < 0 ? wxT("?") : wxString::FromUTF8(units ? g_ranges_metric[value].name : g_ranges_nautic[value].name);
     if (isRemote) {
-        label << firstLine << wxT("\n") << _("Remote") << wxT(" (") << rangeText << wxT(")");
+        m_text = _("Remote");
+        m_text << wxT(" (") << rangeText << wxT(")");
     }
     else if (m_parent->m_ri->auto_range_mode) {
-        label << firstLine << wxT("\n") << _("Auto") << wxT(" (") << rangeText << wxT(")");
+        m_text = _("Auto");
+        m_text << wxT(" (") << rangeText << wxT(")");
     }
     else {
-        label << firstLine << wxT("\n") << rangeText;
+        m_text = rangeText;
     }
-    this->SetLabel(label);
+    this->SetLabel(firstLine + wxT("\n") + m_text);
     if (m_parent->m_pi->m_settings.verbose > 0) {
         wxLogMessage(wxT("br24radar_pi: Range label '%s' auto=%d remote=%d unit=%d max=%d new=%d old=%d"),
             rangeText.c_str(), m_parent->m_ri->auto_range_mode, isRemote, units, maxValue, newValue, oldValue);
@@ -410,7 +416,10 @@ int br24RadarRangeControlButton::SetValueInt(int newValue)
     return meters;
 }
 
-
+wxString& br24RadarRangeControlButton::GetRangeText( )
+{
+    return m_text;
+}
 
 void br24RadarRangeControlButton::SetValue(int newValue)
 {
@@ -1260,6 +1269,11 @@ void br24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
     }
 
     SetTitle(title);
+}
+
+wxString& br24ControlsDialog::GetRangeText()
+{
+    return m_range_button->GetRangeText();
 }
 
 // vim: sw=4:ts=8:

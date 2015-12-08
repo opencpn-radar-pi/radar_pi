@@ -447,8 +447,9 @@ wxString RadarInfo::GetCanvasText( )
             s << _("Emulator");
             s << wxT(")");
         } else {
-            s << wxT("\n");
-            s << range_meters;
+            if (control_dialog) {
+                s << wxT("\n") << control_dialog->GetRangeText();
+            }
         }
     }
 

@@ -63,6 +63,7 @@ public:
     void CreateControls();
     void SetRemoteRangeIndex(size_t index);
     void SetRangeIndex(size_t index);
+    wxString& GetRangeText();
     void SetTimedIdleIndex(int index);
     void UpdateGuardZoneState();
     void UpdateControl(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
