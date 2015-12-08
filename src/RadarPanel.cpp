@@ -62,6 +62,7 @@ bool RadarPanel::Create( )
                         .MinSize(wxSize(256,256))
                         .BestSize(wxSize(512,512))
                         .FloatingSize(wxSize(512,512))
+                        .Float()
                         .CloseButton(true)
                         .Gripper(false);
 
