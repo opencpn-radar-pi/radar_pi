@@ -142,8 +142,8 @@ void RadarCanvas::Render( wxPaintEvent& evt )
     double scale_factor = 1.0 / RETURNS_PER_LINE; // Radar image is in 0..511 range
 
     glColor3ub(200, 255, 200);
-    DrawOutlineArc(0.25, 1.00, 0.0, 359.0, true);
-    DrawOutlineArc(0.50, 0.75, 0.0, 359.0, true);
+    DrawOutlineArc(0.25, 1.00, 0.0, 360.0, false);
+    DrawOutlineArc(0.50, 0.75, 0.0, 360.0, false);
     // CheckOpenGLError(wxT("range circles"));
 
     // TODO

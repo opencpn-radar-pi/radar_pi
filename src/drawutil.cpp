@@ -99,7 +99,7 @@ void DrawOutlineArc( double r1, double r2, double a1, double a2, bool stippled )
         a2 += 360.0;
     }
     int  segments = (a2 - a1) * 4;
-    bool circle = (a1 == 0.0 && a2 == 359.0);
+    bool circle = (a1 == 0.0 && a2 == 360.0);
 
     if (!circle) {
         a1 -= 0.5;
