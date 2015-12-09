@@ -227,6 +227,14 @@ int br24radar_pi::Init( void )
     ShowRadarControl(0, m_settings.show_radar == RADAR_ON);
     ShowRadarControl(1, m_settings.show_radar == RADAR_ON);
 
+    if (!m_radar[0]->receive) {
+        m_radar[0]->StartReceive();
+    }
+    if (!m_radar[1]->receive && m_settings.enable_dual_radar && m_radar[0]->radar_type == RT_4G) {
+        m_radar[1]->StartReceive();
+        m_radar[0]->SetName(_("Radar A"));
+    }
+
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
             WANTS_OVERLAY_CALLBACK     |
@@ -629,21 +637,29 @@ void br24radar_pi::DoTick( void )
         }
     }
 
-#if TODO
-    // This area is stil a mess, not sure what was intended here
+
+    // Check the age of "radar_seen", if too old radar_seen = false
+    time_t now1 = time(0);
     for (size_t r = 0; r < RADARS; r++) {
         if (m_radar[r]->radar_seen) {
-            if (TIMER_ELAPSED(now, m_radar[r].radar_watchdog)) {
+            if (now1 - m_radar[r]->radar_watchdog > ALARM_TIMEOUT) {   
                 m_radar[r]->radar_seen = false;
                 m_radar[r]->state.Update(RADAR_OFF);
                 wxLogMessage(wxT("BR24radar_pi: Lost %s presence"), m_radar[r]->name);
             }
-            else (m_radar[0]->radar_seen) {
-                if (m_radar[0]->transmit.RadarStayAlive()) {      // send stay alive to obtain control blocks from radar
-                    m_previous_radar_seen = true;
-                }
             }
-#endif
+        }
+
+    // Check the age of "data_seen", if too old data_seen = false
+    for (size_t r = 0; r < RADARS; r++) {
+        if (m_radar[r]->data_seen) {
+            if (now1 - m_radar[r]->data_watchdog > ALARM_TIMEOUT) {
+                m_radar[r]->data_seen = false;
+                
+                wxLogMessage(wxT("BR24radar_pi: Data Lost %s "), m_radar[r]->name);
+            }
+        }
+    }
 
     bool any_data_seen = false;
     for (size_t r = 0; r < RADARS; r++) {
@@ -651,6 +667,7 @@ void br24radar_pi::DoTick( void )
     }
     if (any_data_seen) { // Something coming from radar unit?
         m_scanner_state = RADAR_ON;
+        now = time(0);
         if (m_settings.show_radar == RADAR_ON) {   // if not, radar will time out and go standby
             if (TIMER_ELAPSED(now, m_dt_stayalive)) {
                 m_dt_stayalive = now + STAYALIVE_TIMEOUT;
@@ -795,7 +812,6 @@ void br24radar_pi::UpdateState( void )
         radar_seen |= m_radar[r]->radar_seen;
         data_seen |= m_radar[r]->data_seen;
     }
-
     if (!radar_seen || !m_opengl_mode) {
         m_toolbar_button = TB_RED;
         CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_RED);
@@ -910,9 +926,9 @@ bool br24radar_pi::RenderGLOverlay( wxGLContext *pcontext, PlugIn_ViewPort *vp )
                     , vp->chart_scale
                     );
     }
-
-    RenderRadarOverlay(boat_center, v_scale_ppm, rad2deg(vp->rotation + vp->skew * m_settings.skew_factor));
-
+    if (m_radar[m_settings.chart_overlay]->data_seen){
+        RenderRadarOverlay(boat_center, v_scale_ppm, rad2deg(vp->rotation + vp->skew * m_settings.skew_factor));
+    }
     m_refresh_busy_or_queued = false;
     return true;
 }
