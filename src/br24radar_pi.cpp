@@ -227,6 +227,14 @@ int br24radar_pi::Init( void )
     ShowRadarControl(0, m_settings.show_radar == RADAR_ON);
     ShowRadarControl(1, m_settings.show_radar == RADAR_ON);
 
+    if (!m_radar[0]->receive) {
+        m_radar[0]->StartReceive();
+    }
+    if (!m_radar[1]->receive && m_settings.enable_dual_radar && m_radar[0]->radar_type == RT_4G) {
+        m_radar[1]->StartReceive();
+        m_radar[0]->SetName(_("Radar A"));
+    }
+
     return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK |
             WANTS_OPENGL_OVERLAY_CALLBACK |
             WANTS_OVERLAY_CALLBACK     |
