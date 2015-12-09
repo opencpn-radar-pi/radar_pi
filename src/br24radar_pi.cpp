@@ -637,21 +637,18 @@ void br24radar_pi::DoTick( void )
         }
     }
 
-#if TODO
-    // This area is stil a mess, not sure what was intended here
+
+    // Check the age of "radar_seen", if too old radar_seen = false
+    time_t now1 = time(0);
     for (size_t r = 0; r < RADARS; r++) {
         if (m_radar[r]->radar_seen) {
-            if (TIMER_ELAPSED(now, m_radar[r].radar_watchdog)) {
+            if (now1 - m_radar[r]->radar_watchdog > ALARM_TIMEOUT) {   
                 m_radar[r]->radar_seen = false;
                 m_radar[r]->state.Update(RADAR_OFF);
                 wxLogMessage(wxT("BR24radar_pi: Lost %s presence"), m_radar[r]->name);
             }
-            else (m_radar[0]->radar_seen) {
-                if (m_radar[0]->transmit.RadarStayAlive()) {      // send stay alive to obtain control blocks from radar
-                    m_previous_radar_seen = true;
-                }
             }
-#endif
+        }
 
     bool any_data_seen = false;
     for (size_t r = 0; r < RADARS; r++) {
@@ -803,7 +800,7 @@ void br24radar_pi::UpdateState( void )
         radar_seen |= m_radar[r]->radar_seen;
         data_seen |= m_radar[r]->data_seen;
     }
-
+    wxLogMessage(wxT("BR24radar_pi: XXX update state %d  %d  %d"), m_radar[0]->radar_seen, m_radar[1]->radar_seen, radar_seen);
     if (!radar_seen || !m_opengl_mode) {
         m_toolbar_button = TB_RED;
         CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_RED);

@@ -420,7 +420,7 @@ private:
 
     bool                      m_guard_bogey_confirmed;
     time_t                    m_alarm_sound_last;
-#define     ALARM_TIMEOUT (10)
+#define     ALARM_TIMEOUT (5)
 };
 
 #include "br24OptionsDialog.h"
