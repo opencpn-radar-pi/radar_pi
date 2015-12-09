@@ -650,12 +650,24 @@ void br24radar_pi::DoTick( void )
             }
         }
 
+    // Check the age of "data_seen", if too old data_seen = false
+    for (size_t r = 0; r < RADARS; r++) {
+        if (m_radar[r]->data_seen) {
+            if (now1 - m_radar[r]->data_watchdog > ALARM_TIMEOUT) {
+                m_radar[r]->data_seen = false;
+                
+                wxLogMessage(wxT("BR24radar_pi: Data Lost %s "), m_radar[r]->name);
+            }
+        }
+    }
+
     bool any_data_seen = false;
     for (size_t r = 0; r < RADARS; r++) {
         any_data_seen |= m_radar[r]->data_seen;
     }
     if (any_data_seen) { // Something coming from radar unit?
         m_scanner_state = RADAR_ON;
+        now = time(0);
         if (m_settings.show_radar == RADAR_ON) {   // if not, radar will time out and go standby
             if (TIMER_ELAPSED(now, m_dt_stayalive)) {
                 m_dt_stayalive = now + STAYALIVE_TIMEOUT;
@@ -800,7 +812,6 @@ void br24radar_pi::UpdateState( void )
         radar_seen |= m_radar[r]->radar_seen;
         data_seen |= m_radar[r]->data_seen;
     }
-    wxLogMessage(wxT("BR24radar_pi: XXX update state %d  %d  %d"), m_radar[0]->radar_seen, m_radar[1]->radar_seen, radar_seen);
     if (!radar_seen || !m_opengl_mode) {
         m_toolbar_button = TB_RED;
         CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_RED);
@@ -915,9 +926,9 @@ bool br24radar_pi::RenderGLOverlay( wxGLContext *pcontext, PlugIn_ViewPort *vp )
                     , vp->chart_scale
                     );
     }
-
-    RenderRadarOverlay(boat_center, v_scale_ppm, rad2deg(vp->rotation + vp->skew * m_settings.skew_factor));
-
+    if (m_radar[m_settings.chart_overlay]->data_seen){
+        RenderRadarOverlay(boat_center, v_scale_ppm, rad2deg(vp->rotation + vp->skew * m_settings.skew_factor));
+    }
     m_refresh_busy_or_queued = false;
     return true;
 }
