@@ -38,8 +38,6 @@ class RadarDrawVertex : public RadarDraw {
  public:
   RadarDrawVertex(br24radar_pi* pi) {
     m_pi = pi;
-    start_line = LINES_PER_ROTATION;
-    end_line = 0;
     m_blobs = 0;
     m_spokes = 0;
 
@@ -58,8 +56,6 @@ class RadarDrawVertex : public RadarDraw {
     }
 
     wxLogMessage(wxT("BR24radar_pi: CPU oriented OpenGL vertex draw ctor"));
-    start_line = LINES_PER_ROTATION;
-    end_line = 0;
   }
 
   bool Init(int color_option);
@@ -91,14 +87,11 @@ class RadarDrawVertex : public RadarDraw {
     size_t n;
   };
 
-  vertex_spoke spokes[LINES_PER_ROTATION];
-
   GLfloat polar_to_cart_x[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
   GLfloat polar_to_cart_y[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
 
-  int start_line;
-  int end_line;
-
+  wxMutex m_mutex;  // protects the following three
+  vertex_spoke spokes[LINES_PER_ROTATION];
   unsigned int m_blobs;
   unsigned int m_spokes;
 };

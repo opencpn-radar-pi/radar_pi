@@ -41,9 +41,6 @@ bool RadarDrawVertex::Init(int newColorOption) {
   }
 
   wxLogMessage(wxT("BR24radar_pi: CPU oriented OpenGL vertex draw loaded"));
-  start_line = LINES_PER_ROTATION;
-  end_line = 0;
-
   return true;
 }
 
@@ -92,6 +89,7 @@ void RadarDrawVertex::ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t 
   GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - m_pi->m_settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
   BlobColor previous_color = BLOB_NONE;
   GLubyte strength = 0;
+  wxMutexLocker lock(m_mutex);
 
   spokes[angle].n = 0;  // Reset the spoke
 
@@ -161,25 +159,25 @@ void RadarDrawVertex::DrawRadarImage(wxPoint center, double scale) {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
-    int number_of_points = spokes[i].n;
-    if (number_of_points > 0) {
-      glVertexPointer(2, GL_FLOAT, sizeof(vertex_point), &spokes[i].points[0].x);
-      glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex_point), &spokes[i].points[0].red);
-      glDrawArrays(GL_TRIANGLES, 0, number_of_points);
+  {
+    wxMutexLocker lock(m_mutex);
+
+    for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
+      int number_of_points = spokes[i].n;
+      if (number_of_points > 0) {
+        glVertexPointer(2, GL_FLOAT, sizeof(vertex_point), &spokes[i].points[0].x);
+        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex_point), &spokes[i].points[0].red);
+        glDrawArrays(GL_TRIANGLES, 0, number_of_points);
+      }
+      total_points += number_of_points;
     }
-    total_points += number_of_points;
+    m_blobs = 0;
+    m_spokes = 0;
   }
+
   glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
   glDisableClientState(GL_COLOR_ARRAY);
 
   glPopMatrix();  // Undo translated/scaled
   glPopAttrib();  // Undo blend
-
-  if (m_pi->m_settings.verbose >= 4) {
-    wxLogMessage(wxT("BR24radar_pi: RadarDrawVertex::DrawRadarImage drawn %u points for %u spokes with %u blobs"), total_points,
-                 m_spokes, m_blobs);
-  }
-  m_blobs = 0;
-  m_spokes = 0;
 }
