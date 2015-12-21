@@ -73,3 +73,7 @@ struct ifaddrs_storage {
 
 extern int getifaddrs(struct ifaddrs **ifap);
 extern void freeifaddrs(struct ifaddrs *ifa);
+
+#endif
+
+#endif
