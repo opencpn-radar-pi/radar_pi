@@ -32,8 +32,8 @@
 #ifndef _BR24RADARPI_H_
 #define _BR24RADARPI_H_
 
-#define  MY_API_VERSION_MAJOR    1
-#define  MY_API_VERSION_MINOR    10
+#define MY_API_VERSION_MAJOR 1
+#define MY_API_VERSION_MINOR 10
 
 #include "pi_common.h"
 #include "jsonreader.h"
@@ -54,31 +54,31 @@ class br24Receive;
 class br24Transmit;
 class br24radar_pi;
 
-#define SPOKES              (4096) // BR radars can generate up to 4096 spokes per rotation,
-#define LINES_PER_ROTATION  (2048) // but use only half that in practice
-#define RETURNS_PER_LINE     (512) // BR radars generate 512 separate values per range, at 8 bits each
+#define SPOKES (4096)              // BR radars can generate up to 4096 spokes per rotation,
+#define LINES_PER_ROTATION (2048)  // but use only half that in practice
+#define RETURNS_PER_LINE (512)     // BR radars generate 512 separate values per range, at 8 bits each
 #define DEGREES_PER_ROTATION (360) // Classical math
-#define RADARS                 (2) // Number of radars supported by this PI. 2 since 4G supports 2. More work
+#define RADARS (2)                 // Number of radars supported by this PI. 2 since 4G supports 2. More work
                                    // needed if you intend to add multiple radomes to network!
-#define GUARD_ZONES            (2) // Could be increased if wanted
+#define GUARD_ZONES (2)            // Could be increased if wanted
 
-typedef int SpokeBearing;          // A value from 0 -- LINES_PER_ROTATION indicating a bearing (? = North, +ve = clockwise)
+typedef int SpokeBearing; // A value from 0 -- LINES_PER_ROTATION indicating a bearing (? = North, +ve = clockwise)
 
 // Use the above to convert from 'raw' headings sent by the radar (0..4095) into classical degrees (0..359) and back
 #define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double) DEGREES_PER_ROTATION / SPOKES)
 #define SCALE_RAW_TO_DEGREES2048(raw) ((raw) * (double) DEGREES_PER_ROTATION / LINES_PER_ROTATION)
-#define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double) SPOKES / DEGREES_PER_ROTATION))
-#define SCALE_DEGREES_TO_RAW2048(angle) ((int)((angle) * (double) LINES_PER_ROTATION / DEGREES_PER_ROTATION))
+#define SCALE_DEGREES_TO_RAW(angle) ((int) ((angle) * (double) SPOKES / DEGREES_PER_ROTATION))
+#define SCALE_DEGREES_TO_RAW2048(angle) ((int) ((angle) * (double) LINES_PER_ROTATION / DEGREES_PER_ROTATION))
 #define MOD_DEGREES(angle) (fmod(angle + 2 * DEGREES_PER_ROTATION, DEGREES_PER_ROTATION))
 #define MOD_ROTATION(raw) (((raw) + 2 * SPOKES) % SPOKES)
 #define MOD_ROTATION2048(raw) (((raw) + 2 * LINES_PER_ROTATION) % LINES_PER_ROTATION)
 
-
-#define WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
+#define WATCHDOG_TIMEOUT (10) // After 10s assume GPS and heading data is invalid
 #define TIMER_NOT_ELAPSED(t, watchdog) (t < watchdog + WATCHDOG_TIMEOUT)
 #define TIMER_ELAPSED(t, watchdog) (!TIMER_NOT_ELAPSED(t, watchdog))
 
-enum {
+enum
+{
     BM_ID_RED,
     BM_ID_RED_SLAVE,
     BM_ID_GREEN,
@@ -89,12 +89,14 @@ enum {
     BM_ID_BLANK_SLAVE
 };
 
-enum RadarState {
+enum RadarState
+{
     RADAR_OFF,
     RADAR_ON,
 };
 
-enum HeadingSource {
+enum HeadingSource
+{
     HEADING_NONE,
     HEADING_HDM,
     HEADING_HDT,
@@ -102,7 +104,8 @@ enum HeadingSource {
     HEADING_RADAR
 };
 
-struct receive_statistics {
+struct receive_statistics
+{
     int packets;
     int broken_packets;
     int spokes;
@@ -133,11 +136,7 @@ typedef enum ControlType {
     CT_LOCAL_INTERFERENCE_REJECTION
 } ControlType;
 
-typedef enum GuardZoneType {
-    GZ_OFF,
-    GZ_ARC,
-    GZ_CIRCLE
-} GuardZoneType;
+typedef enum GuardZoneType { GZ_OFF, GZ_ARC, GZ_CIRCLE } GuardZoneType;
 
 typedef enum RadarType {
     RT_UNKNOWN,
@@ -145,7 +144,8 @@ typedef enum RadarType {
     RT_4G
 } RadarType;
 
-enum BlobColor {
+enum BlobColor
+{
     BLOB_NONE,
     BLOB_BLUE,
     BLOB_GREEN,
@@ -155,30 +155,50 @@ enum BlobColor {
 extern size_t convertRadarMetersToIndex(int *range_meters, int units, RadarType radar_type);
 extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, RadarType radar_type);
 
-enum DisplayModeType { DM_CHART_OVERLAY, DM_CHART_NONE };
-enum ToolbarIconColor { TB_RED, TB_AMBER, TB_GREEN };
-enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_SOURCE_FIX, VARIATION_SOURCE_WMM };
+enum DisplayModeType
+{
+    DM_CHART_OVERLAY,
+    DM_CHART_NONE
+};
+enum ToolbarIconColor
+{
+    TB_RED,
+    TB_AMBER,
+    TB_GREEN
+};
+enum VariationSource
+{
+    VARIATION_SOURCE_NONE,
+    VARIATION_SOURCE_NMEA,
+    VARIATION_SOURCE_FIX,
+    VARIATION_SOURCE_WMM
+};
 
-enum DialogLocationID { DL_MESSAGE, DL_BOGEY, DL_TIMEDTRANSMIT, DL_RADARWINDOW, DL_CONTROL };
+enum DialogLocationID
+{
+    DL_MESSAGE,
+    DL_BOGEY,
+    DL_TIMEDTRANSMIT,
+    DL_RADARWINDOW,
+    DL_CONTROL
+};
 #define DIALOG_MAX (DL_CONTROL + RADARS)
 
-static const int RangeUnitsToMeters[2] = {
-    1852,
-    1000
-};
+static const int RangeUnitsToMeters[2] = {1852, 1000};
 
 static const bool HasBitCount2[8] = {
-    false,          // 000
-    false,          // 001
-    false,          // 010
-    true,           // 011
-    false,          // 100
-    true,           // 101
-    true,           // 110
-    true,           // 111
+    false, // 000
+    false, // 001
+    false, // 010
+    true,  // 011
+    false, // 100
+    true,  // 101
+    true,  // 110
+    true,  // 111
 };
 
-static const unsigned int REFRESHMAPPING[] = { 10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
+static const unsigned int REFRESHMAPPING[]
+    = {10, 9, 3, 1, 0}; // translation table for the refreshrate, interval between received frames
 // user values 1 to 5 mapped to these values for refrehs interval
 // user 1 - no additional refresh, 2 - interval between frames 9, so on.
 
@@ -188,65 +208,68 @@ static const unsigned int REFRESHMAPPING[] = { 10, 9, 3, 1, 0}; // translation t
 #define MIN_AGE (4)
 #define MAX_AGE (12)
 
-struct WindowLocation { // Position and size of a particular window, possibly only pos is set, or nothing.
-    wxPoint  pos;
-    wxSize   size;
+struct WindowLocation
+{ // Position and size of a particular window, possibly only pos is set, or nothing.
+    wxPoint pos;
+    wxSize size;
 };
 
 /**
  * The data that is stored in the opencpn.ini file. Most of this is set in the OptionsDialog,
  * some of it is 'secret' and can only be set by manipulating the ini file directly.
  */
-struct PersistentSettings {
-    int      overlay_transparency;
-    int      range_index;
-    int      verbose;                 // Loglevel 0..4.
-    int      display_option;
-    int      chart_overlay;           // -1 = none, otherwise = radar number
-    int      guard_zone_threshold;    // How many blobs must be sent by radar before we fire alarm
-    int      guard_zone_render_style;
-    double   range_calibration;
-    double   heading_correction;
-    double   skew_factor;
-    int      range_units;             // 0 = Nautical miles, 1 = Kilometers
-    int      range_unit_meters;       // ... 1852 or 1000, depending on range_units
-    int      max_age;
-    int      timed_idle;
-    int      idle_run_time;
-    int      draw_algorithm;
-    int      refreshrate;
+struct PersistentSettings
+{
+    int overlay_transparency;
+    int range_index;
+    int verbose; // Loglevel 0..4.
+    int display_option;
+    int chart_overlay;        // -1 = none, otherwise = radar number
+    int guard_zone_threshold; // How many blobs must be sent by radar before we fire alarm
+    int guard_zone_render_style;
+    double range_calibration;
+    double heading_correction;
+    double skew_factor;
+    int range_units;       // 0 = Nautical miles, 1 = Kilometers
+    int range_unit_meters; // ... 1852 or 1000, depending on range_units
+    int max_age;
+    int timed_idle;
+    int idle_run_time;
+    int draw_algorithm;
+    int refreshrate;
     RadarState show_radar;
-    bool     pass_heading_to_opencpn;
-    bool     enable_dual_radar;       // Should the dual radar be enabled for 4G?
-    bool     emulator_on;
-    int      drawing_method;          // VertexBuffer, Shader, etc.
-    int      threshold_red;
-    int      threshold_green;
-    int      threshold_blue;
-    int      threshold_multi_sweep;
+    bool pass_heading_to_opencpn;
+    bool enable_dual_radar; // Should the dual radar be enabled for 4G?
+    bool emulator_on;
+    int drawing_method; // VertexBuffer, Shader, etc.
+    int threshold_red;
+    int threshold_green;
+    int threshold_blue;
+    int threshold_multi_sweep;
     wxString alert_audio_file;
 };
 
 #include "GuardZone.h"
 
-struct scan_line {
+struct scan_line
+{
     int range;                        // range of this scan line in decimeters
     wxLongLong age;                   // how old this scan line is. We keep old scans on-screen for a while
     UINT8 data[RETURNS_PER_LINE + 1]; // radar return strength, data[512] is an additional element, accessed in drawing the spokes
     UINT8 history[RETURNS_PER_LINE + 1]; // contains per bit the history of previous scans.
-       //Each scan this byte is left shifted one bit. If the strength (=level) of a return is above the threshold
-       // a 1 is added in the rightmost position, if below threshold, a 0.
+    // Each scan this byte is left shifted one bit. If the strength (=level) of a return is above the threshold
+    // a 1 is added in the rightmost position, if below threshold, a 0.
 };
 
 //----------------------------------------------------------------------------------------------------------
 //    The PlugIn Class Definition
 //----------------------------------------------------------------------------------------------------------
 
-#define BR24RADAR_TOOL_POSITION    -1          // Request default positioning of toolbar tool
+#define BR24RADAR_TOOL_POSITION -1 // Request default positioning of toolbar tool
 
 class br24radar_pi : public opencpn_plugin_110
 {
-public:
+   public:
     br24radar_pi(void *ppimgr);
     void PrepareRadarImage(int angle);
 
@@ -277,18 +300,18 @@ public:
     int GetToolbarToolCount(void);
     void OnToolbarToolCallback(int id);
     void UpdateAuiStatus(void);
-    void ShowPreferencesDialog(wxWindow* parent);
+    void ShowPreferencesDialog(wxWindow *parent);
 
     // Other public methods
 
-    void OnControlDialogClose(RadarInfo * ri);
+    void OnControlDialogClose(RadarInfo *ri);
     void OnMessageBoxClose();
     void SetDisplayMode(DisplayModeType mode);
     void UpdateDisplayParameters(void);
 
     void ShowRadarControl(int radar, bool show = true);
     void ShowGuardZoneDialog(int radar, int zone);
-    void OnGuardZoneDialogClose(RadarInfo * ri);
+    void OnGuardZoneDialogClose(RadarInfo *ri);
     void OnGuardZoneBogeyClose();
     void OnGuardZoneBogeyConfirm();
 
@@ -303,124 +326,120 @@ public:
 
     void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, int AB);
 
-    wxFont                    m_font;      // The dialog font at a normal size
-    wxFont                    m_fat_font;  // The dialog font at a bigger size, bold
+    wxFont m_font;     // The dialog font at a normal size
+    wxFont m_fat_font; // The dialog font at a bigger size, bold
 
-    PersistentSettings        m_settings;
-    RadarInfo                *m_radar[RADARS];
+    PersistentSettings m_settings;
+    RadarInfo *m_radar[RADARS];
 
-    int                       m_OldUseShader;
-    int                       m_OldDisplayOption;
+    int m_OldUseShader;
+    int m_OldDisplayOption;
 
-    br24OptionsDialog        *m_pOptionsDialog;
-    br24MessageBox           *m_pMessageBox;
-    GuardZoneDialog          *m_pGuardZoneDialog;
-    GuardZoneBogey           *m_pGuardZoneBogey;
-    IdleDialog               *m_pIdleDialog;
+    br24OptionsDialog *m_pOptionsDialog;
+    br24MessageBox *m_pMessageBox;
+    GuardZoneDialog *m_pGuardZoneDialog;
+    GuardZoneBogey *m_pGuardZoneBogey;
+    IdleDialog *m_pIdleDialog;
 
-    wxGLContext              *m_opencpn_gl_context;
-    bool                      m_opencpn_gl_context_broken;
+    wxGLContext *m_opencpn_gl_context;
+    bool m_opencpn_gl_context_broken;
 
-
-    int                       m_refresh_rate;
-    bool                      m_want_message_box;
-    bool                      m_heading_on_radar;
-    double                    m_hdt;     // this is the heading that the pi is using for all heading operations, in degrees.
-                                         // m_hdt will come from the radar if available else from the NMEA stream.
+    int m_refresh_rate;
+    bool m_want_message_box;
+    bool m_heading_on_radar;
+    double m_hdt; // this is the heading that the pi is using for all heading operations, in degrees.
+                  // m_hdt will come from the radar if available else from the NMEA stream.
 
     // Variation. Used to convert magnetic into true heading.
     // Can come from SetPositionFixEx, which may hail from the WMM plugin
     // and is thus to be preferred, or GPS or a NMEA sentence. The latter will probably
     // have an outdated variation model, so is less preferred. Besides, some devices
     // transmit invalid (zero) values. So we also let non-zero values prevail.
-    double                    m_var;     // local magnetic variation, in degrees
-    VariationSource           m_var_source;
-    time_t                    m_var_watchdog;
+    double m_var; // local magnetic variation, in degrees
+    VariationSource m_var_source;
+    time_t m_var_watchdog;
 
-    HeadingSource             m_heading_source;
-    bool                      m_opengl_mode;
-    bool                      m_bpos_set;
-    time_t                    m_bpos_watchdog;
+    HeadingSource m_heading_source;
+    bool m_opengl_mode;
+    bool m_bpos_set;
+    time_t m_bpos_watchdog;
 
-    volatile bool             m_refresh_busy_or_queued;
+    volatile bool m_refresh_busy_or_queued;
 
-    WindowLocation            m_dialogLocation[DIALOG_MAX];
+    WindowLocation m_dialogLocation[DIALOG_MAX];
 
     // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
-    GLubyte                   m_color_map_red[BLOB_RED + 1];
-    GLubyte                   m_color_map_green[BLOB_RED + 1];
-    GLubyte                   m_color_map_blue[BLOB_RED + 1];
-    BlobColor                 m_color_map[UINT8_MAX + 1];
+    GLubyte m_color_map_red[BLOB_RED + 1];
+    GLubyte m_color_map_green[BLOB_RED + 1];
+    GLubyte m_color_map_blue[BLOB_RED + 1];
+    BlobColor m_color_map[UINT8_MAX + 1];
 
-private:
+   private:
     void RadarSendState(void);
     void UpdateState(void);
     void DoTick(void);
     void Select_Clutter(int req_clutter_index);
     void Select_Rejection(int req_rejection_index);
-    //void ScanGuardZones(int max_range, int AB);
+    // void ScanGuardZones(int max_range, int AB);
     void RenderRadarBuffer(wxDC *pdc, int width, int height);
     void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, double rotation);
-    //void HandleBogeyCount(int *bogey_count);
+    // void HandleBogeyCount(int *bogey_count);
 
     void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
     void ShowRadarWindow(int radar);
 
-    wxFileConfig             *m_pconfig;
-    wxWindow                 *m_parent_window;
-    wxMenu                   *m_pmenu;
+    wxFileConfig *m_pconfig;
+    wxWindow *m_parent_window;
+    wxMenu *m_pmenu;
 
-    int                       m_display_width, m_display_height;
-    int                       m_tool_id;
-    wxBitmap                 *m_pdeficon;
+    int m_display_width, m_display_height;
+    int m_tool_id;
+    wxBitmap *m_pdeficon;
 
     //    Controls added to Preferences panel
-    wxCheckBox               *m_pShowIcon;
+    wxCheckBox *m_pShowIcon;
 
-    wxBitmap                 *m_ptemp_icon;
-    int                       m_sent_bm_id_normal;
-    int                       m_sent_bm_id_rollover;
+    wxBitmap *m_ptemp_icon;
+    int m_sent_bm_id_normal;
+    int m_sent_bm_id_rollover;
 
+    br_NMEA0183 m_NMEA0183;
 
-    br_NMEA0183               m_NMEA0183;
+    double llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
 
-    double                    llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
+    int m_bogey_count[4];
 
+    ToolbarIconColor m_toolbar_button;
+    double m_ownship_lat, m_ownship_lon;
 
-    int                       m_bogey_count[4];
+    double m_hdm;
 
-    ToolbarIconColor          m_toolbar_button;
-    double                    m_ownship_lat, m_ownship_lon;
+    bool m_old_data_seen;
 
-    double                    m_hdm;
+    int m_auto_range_meters; // What the range should be, at least, when AUTO mode is selected
+    int m_previous_auto_range_meters;
+    bool m_update_error_control;
+    wxString m_error_msg;
 
+    // Timed Transmit
+    bool m_init_timed_transmit;
+    int m_idle_dialog_time_left;
+    int m_TimedTransmit_IdleBoxMode;
+    int m_idle_time_left;
 
-    bool                      m_old_data_seen;
+    RadarState m_scanner_state;
 
-    int                       m_auto_range_meters;      // What the range should be, at least, when AUTO mode is selected
-    int                       m_previous_auto_range_meters;
-    bool                      m_update_error_control;
-    wxString                  m_error_msg;
+    time_t m_idle_watchdog;
+    time_t m_hdt_watchdog;
+    time_t m_radar_watchdog;
+    time_t m_data_watchdog;
 
-    //Timed Transmit
-    bool                      m_init_timed_transmit;
-    int                       m_idle_dialog_time_left;
-    int                       m_TimedTransmit_IdleBoxMode;
-    int                       m_idle_time_left;
+    time_t m_dt_stayalive;
+#define STAYALIVE_TIMEOUT (5) // Send data every 5 seconds to ping radar
 
-    RadarState                m_scanner_state;
-
-    time_t                    m_idle_watchdog;
-    time_t                    m_hdt_watchdog;
-    time_t                    m_radar_watchdog;
-    time_t                    m_data_watchdog;
-
-    time_t                    m_dt_stayalive;
-#define     STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
-
-    bool                      m_guard_bogey_confirmed;
-    time_t                    m_alarm_sound_last;
-#define     ALARM_TIMEOUT (5)
+    bool m_guard_bogey_confirmed;
+    time_t m_alarm_sound_last;
+#define ALARM_TIMEOUT (5)
 };
 
 #include "br24OptionsDialog.h"

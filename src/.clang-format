@@ -1,0 +1,52 @@
+#
+# See http://clang.llvm.org/docs/ClangFormatStyleOptions.html
+#
+BasedOnStyle:                                   Google
+IndentWidth:                                    4
+TabWidth:                                       8
+UseTab:                                         Never
+ColumnLimit:                                    132
+
+AlignAfterOpenBracket:                          true
+AlignConsecutiveAssignments:                    true
+#AlignConsecutiveDeclarations:                  true
+AlignEscapedNewlinesLeft:                       true
+AlignOperands:                                  true
+AlignTrailingComments:                          true
+
+# Braces and blocks
+BreakBeforeBraces:                              Mozilla
+AllowShortBlocksOnASingleLine:                  false
+AllowShortCaseLabelsOnASingleLine:              false
+AllowShortFunctionsOnASingleLine:               false
+AllowShortIfStatementsOnASingleLine:            false
+AllowShortLoopsOnASingleLine:                   false
+AlwaysBreakAfterDefinitionReturnType:           false
+AlwaysBreakBeforeMultilineStrings:              true
+BinPackArguments:                               false
+BinPackParameters:                              false
+BreakBeforeBinaryOperators:                     true
+BreakBeforeTernaryOperators:                    true
+BreakConstructorInitializersBeforeComma:        true
+IndentCaseLabels:                               true
+KeepEmptyLinesAtTheStartOfBlocks:               false
+
+
+# Spaces
+SpaceAfterCStyleCast:                           true
+SpaceBeforeAssignmentOperators:                 true
+SpaceBeforeParens:                              ControlStatements
+SpaceInEmptyParentheses:                        false
+SpacesBeforeTrailingComments:                   1
+SpacesInCStyleCastParentheses:                  false
+SpacesInParentheses:                            false
+SpacesInSquareBrackets:                         false
+
+# Empty lines
+KeepEmptyLinesAtTheStartOfBlocks:               false
+MaxEmptyLinesToKeep:                            1
+
+
+PointerAlignment:                               Middle
+
+

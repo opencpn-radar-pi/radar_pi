@@ -36,29 +36,31 @@
 #define NUM_GLYPHS (MAX_GLYPH - MIN_GLYPH)
 
 #define COLS_GLYPHS 16
-#define ROWS_GLYPHS ((NUM_GLYPHS / COLS_GLYPHS)+1)
+#define ROWS_GLYPHS ((NUM_GLYPHS / COLS_GLYPHS) + 1)
 
-struct TexGlyphInfo {
+struct TexGlyphInfo
+{
     int x, y, width, height;
     float advance;
 };
 
-class TextureFont {
-public:
+class TextureFont
+{
+   public:
     TextureFont()
     {
         texobj = 0;
         m_blur = false;
     }
 
-    void Build( wxFont &font, bool blur = false, bool luminance = false );
+    void Build(wxFont &font, bool blur = false, bool luminance = false);
     void Delete();
 
-    void GetTextExtent( const wxString &string, int *width, int *height);
-    void RenderString( const wxString &string, int x=0, int y=0 );
+    void GetTextExtent(const wxString &string, int *width, int *height);
+    void RenderString(const wxString &string, int x = 0, int y = 0);
 
-private:
-    void RenderGlyph( wchar_t c );
+   private:
+    void RenderGlyph(wchar_t c);
 
     wxFont m_font;
     bool m_blur;
@@ -69,4 +71,4 @@ private:
     int tex_w, tex_h;
 };
 
-#endif  //guard
+#endif // guard

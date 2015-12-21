@@ -34,52 +34,51 @@
 
 #include "br24radar_pi.h"
 
-class br24OptionsDialog: public wxDialog
+class br24OptionsDialog : public wxDialog
 {
     DECLARE_CLASS(br24OptionsDialog)
     DECLARE_EVENT_TABLE()
 
-public:
-
+   public:
     br24OptionsDialog();
 
     ~br24OptionsDialog();
     void Init();
 
-    bool Create(wxWindow *parent, br24radar_pi *pi);
+    bool Create(wxWindow * parent, br24radar_pi * pi);
 
     void CreateDisplayOptions();
 
-private:
-    void OnClose(wxCloseEvent& event);
-    void OnIdOKClick(wxCommandEvent& event);
-    void OnRangeUnitsClick(wxCommandEvent& event);
-    void OnDisplayOptionClick(wxCommandEvent& event);
-    void OnIntervalSlider(wxCommandEvent& event);
-    void OnDisplayModeClick(wxCommandEvent& event);
-    void OnGuardZoneStyleClick(wxCommandEvent& event);
-    void OnHeading_Calibration_Value(wxCommandEvent& event);
-    void OnSelectSoundClick(wxCommandEvent& event);
-    void OnTestSoundClick(wxCommandEvent& event);
-    void OnPassHeadingClick(wxCommandEvent& event);
-    void OnDrawingMethodClick(wxCommandEvent& event);
-    void OnEnableDualRadarClick(wxCommandEvent& event);
-    void OnEmulatorClick(wxCommandEvent& event);
+   private:
+    void OnClose(wxCloseEvent & event);
+    void OnIdOKClick(wxCommandEvent & event);
+    void OnRangeUnitsClick(wxCommandEvent & event);
+    void OnDisplayOptionClick(wxCommandEvent & event);
+    void OnIntervalSlider(wxCommandEvent & event);
+    void OnDisplayModeClick(wxCommandEvent & event);
+    void OnGuardZoneStyleClick(wxCommandEvent & event);
+    void OnHeading_Calibration_Value(wxCommandEvent & event);
+    void OnSelectSoundClick(wxCommandEvent & event);
+    void OnTestSoundClick(wxCommandEvent & event);
+    void OnPassHeadingClick(wxCommandEvent & event);
+    void OnDrawingMethodClick(wxCommandEvent & event);
+    void OnEnableDualRadarClick(wxCommandEvent & event);
+    void OnEmulatorClick(wxCommandEvent & event);
 
-    wxWindow          *m_parent;
-    br24radar_pi      *m_pi;
+    wxWindow * m_parent;
+    br24radar_pi * m_pi;
 
     // DisplayOptions
-    wxRadioBox        *pRangeUnits;
-    wxRadioBox        *pOverlayDisplayOptions;
-    wxRadioBox        *pDisplayMode;
-    wxRadioBox        *pGuardZoneStyle;
-    wxSlider          *pIntervalSlider;
-    wxTextCtrl        *pText_Heading_Correction_Value;
-    wxCheckBox        *cbPassHeading;
-    wxComboBox        *cbDrawingMethod;
-    wxCheckBox        *cbEnableDualRadar;
-    wxCheckBox        *cbEmulator;
+    wxRadioBox * pRangeUnits;
+    wxRadioBox * pOverlayDisplayOptions;
+    wxRadioBox * pDisplayMode;
+    wxRadioBox * pGuardZoneStyle;
+    wxSlider * pIntervalSlider;
+    wxTextCtrl * pText_Heading_Correction_Value;
+    wxCheckBox * cbPassHeading;
+    wxComboBox * cbDrawingMethod;
+    wxCheckBox * cbEnableDualRadar;
+    wxCheckBox * cbEmulator;
 };
 
 #endif /* _BR24OPTIONSDIALOG_H_ */

@@ -36,22 +36,17 @@
 #include "socketutil.h"
 #include "RadarInfo.h"
 
-class br24Receive: public wxThread
+class br24Receive : public wxThread
 {
-
-public:
-
-    br24Receive(br24radar_pi *pi, volatile bool * quit, RadarInfo * ri)
-    : wxThread(wxTHREAD_JOINABLE)
-    , m_pi(pi)
-    , m_ri(ri)
-    , m_quit(quit)
+   public:
+    br24Receive(br24radar_pi *pi, volatile bool *quit, RadarInfo *ri)
+        : wxThread(wxTHREAD_JOINABLE), m_pi(pi), m_ri(ri), m_quit(quit)
     {
         Create(1024 * 1024); // Stack size, be liberal
-        m_next_spoke = -1;
-        m_mcast_addr = 0;
-        m_radar_addr = 0;
-        m_range_meters = 0;
+        m_next_spoke    = -1;
+        m_mcast_addr    = 0;
+        m_radar_addr    = 0;
+        m_range_meters  = 0;
         m_updated_range = false;
 
         if (m_pi->m_settings.verbose >= 2) {
@@ -63,34 +58,34 @@ public:
     void *Entry(void);
     void OnExit(void);
 
-    sockaddr_in      * m_mcast_addr;
-    sockaddr_in      * m_radar_addr;
-    wxIPV4address      m_ip_addr;
-    bool               m_new_ip_addr;
+    sockaddr_in *m_mcast_addr;
+    sockaddr_in *m_radar_addr;
+    wxIPV4address m_ip_addr;
+    bool m_new_ip_addr;
 
-    int                m_range_meters;          // Last received range in meters
-    bool               m_updated_range;         // m_range_meters has changed
+    int m_range_meters;   // Last received range in meters
+    bool m_updated_range; // m_range_meters has changed
 
-private:
-    void logBinaryData(const wxString& what, const UINT8 * data, int size);
+   private:
+    void logBinaryData(const wxString &what, const UINT8 *data, int size);
 
-    void ProcessFrame(UINT8 * data, int len);
-    bool ProcessReport(UINT8 * data, int len);
+    void ProcessFrame(UINT8 *data, int len);
+    bool ProcessReport(UINT8 *data, int len);
 
     void EmulateFakeBuffer(void);
     SOCKET PickNextEthernetCard();
     SOCKET GetNewDataSocket();
     SOCKET GetNewCommandSocket();
 
-    br24radar_pi      *m_pi;
-    wxString           m_ip;
-    RadarInfo        * m_ri;                 // All transfer of data passes back through this.
-    volatile bool    * m_quit;
+    br24radar_pi *m_pi;
+    wxString m_ip;
+    RadarInfo *m_ri; // All transfer of data passes back through this.
+    volatile bool *m_quit;
 
-    struct ifaddrs   * m_interface_array;
-    struct ifaddrs   * m_interface;
+    struct ifaddrs *m_interface_array;
+    struct ifaddrs *m_interface;
 
-    int                m_next_spoke;
+    int m_next_spoke;
 };
 
 #endif /* _BR24RECEIVE_H_ */

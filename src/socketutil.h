@@ -35,24 +35,23 @@
 
 #include "pi_common.h"
 
-#define VALID_IPV4_ADDRESS(i) \
-(  i \
-&& i->ifa_addr \
-&& i->ifa_addr->sa_family == AF_INET \
-&& (i->ifa_flags & IFF_UP) > 0 \
-&& (i->ifa_flags & IFF_LOOPBACK) == 0 \
-&& (i->ifa_flags & IFF_MULTICAST) > 0 )
+#define VALID_IPV4_ADDRESS(i)                                                                                                   \
+    (i && i->ifa_addr && i->ifa_addr->sa_family == AF_INET && (i->ifa_flags & IFF_UP) > 0 && (i->ifa_flags & IFF_LOOPBACK) == 0 \
+     && (i->ifa_flags & IFF_MULTICAST) > 0)
 
 extern bool socketReady(SOCKET sockfd, int timeout);
 
 extern int br24_inet_aton(const char *cp, struct in_addr *addr);
-extern SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in * addr, UINT16 port, const char * mcast_address, wxString & error_message);
+extern SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in *addr,
+                                             UINT16 port,
+                                             const char *mcast_address,
+                                             wxString &error_message);
 
 #ifndef __WXMSW__
 
 // Mac and Linux have ifaddrs.
-# include <ifaddrs.h>
-# include <net/if.h>
+#include <ifaddrs.h>
+#include <net/if.h>
 
 #else
 
@@ -63,18 +62,18 @@ extern SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in * addr, UINT16 p
 
 struct ifaddrs
 {
-    struct ifaddrs  * ifa_next;
-    struct sockaddr * ifa_addr;
-    ULONG             ifa_flags;
+    struct ifaddrs *ifa_next;
+    struct sockaddr *ifa_addr;
+    ULONG ifa_flags;
 };
 
 struct ifaddrs_storage
 {
-    struct ifaddrs           ifa;
-    struct sockaddr_storage  addr;
+    struct ifaddrs ifa;
+    struct sockaddr_storage addr;
 };
 
-extern int getifaddrs(struct ifaddrs ** ifap);
+extern int getifaddrs(struct ifaddrs **ifap);
 extern void freeifaddrs(struct ifaddrs *ifa);
 
 #endif

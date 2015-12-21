@@ -38,16 +38,16 @@
 
 class RadarDrawShader : public RadarDraw
 {
-public:
-    RadarDrawShader( br24radar_pi * pi )
+   public:
+    RadarDrawShader(br24radar_pi * pi)
     {
-        m_pi = pi;
-        m_start_line = LINES_PER_ROTATION;
-        m_end_line = 0;
-        m_texture = 0;
-        m_fragment = 0;
-        m_vertex = 0;
-        m_program = 0;
+        m_pi           = pi;
+        m_start_line   = LINES_PER_ROTATION;
+        m_end_line     = 0;
+        m_texture      = 0;
+        m_fragment     = 0;
+        m_vertex       = 0;
+        m_program      = 0;
         m_color_option = 0;
         memset(m_data, 0, sizeof(m_data));
     }
@@ -58,19 +58,18 @@ public:
     void DrawRadarImage(wxPoint center, double scale);
     void ProcessRadarSpoke(SpokeBearing angle, UINT8 * data, size_t len);
 
+   private:
+    br24radar_pi * m_pi;
+    unsigned char m_data[SHADER_COLOR_CHANNELS * LINES_PER_ROTATION * RETURNS_PER_LINE];
+    int m_start_line;
+    int m_end_line;
 
-private:
-    br24radar_pi  * m_pi;
-    unsigned char   m_data[SHADER_COLOR_CHANNELS * LINES_PER_ROTATION * RETURNS_PER_LINE];
-    int             m_start_line;
-    int             m_end_line;
+    int m_color_option;
 
-    int             m_color_option;
-
-    GLuint          m_texture;
-    GLuint          m_fragment;
-    GLuint          m_vertex;
-    GLuint          m_program;
+    GLuint m_texture;
+    GLuint m_fragment;
+    GLuint m_vertex;
+    GLuint m_program;
 };
 
 #endif /* _RADARDRAWSHADER_H_ */

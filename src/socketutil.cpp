@@ -30,7 +30,6 @@
  ***************************************************************************
  */
 
-
 #include "socketutil.h"
 
 int br24_inet_aton(const char *cp, struct in_addr *addr)
@@ -51,7 +50,7 @@ int br24_inet_aton(const char *cp, struct in_addr *addr)
         if (!isdigit(c)) {
             return (0);
         }
-        val = 0;
+        val  = 0;
         base = 10;
         if (c == '0') {
             c = *++cp;
@@ -65,11 +64,9 @@ int br24_inet_aton(const char *cp, struct in_addr *addr)
             if (isascii(c) && isdigit(c)) {
                 val = (val * base) + (c - '0');
                 c = *++cp;
-            }
-            else if (base == 16 && isascii(c) && isxdigit(c)) {
-                val = (val << 4) |
-                (c + 10 - (islower(c) ? 'a' : 'A'));
-                c = *++cp;
+            } else if (base == 16 && isascii(c) && isxdigit(c)) {
+                val = (val << 4) | (c + 10 - (islower(c) ? 'a' : 'A'));
+                c   = *++cp;
             } else {
                 break;
             }
@@ -85,7 +82,7 @@ int br24_inet_aton(const char *cp, struct in_addr *addr)
                 return 0;
             }
             *pp++ = val;
-            c = *++cp;
+            c     = *++cp;
         } else {
             break;
         }
@@ -102,28 +99,27 @@ int br24_inet_aton(const char *cp, struct in_addr *addr)
      */
     n = pp - parts + 1;
     switch (n) {
-
         case 0:
-            return 0;        /* initial nondigit */
+            return 0; /* initial nondigit */
 
-        case 1:                /* a -- 32 bits */
+        case 1: /* a -- 32 bits */
             break;
 
-        case 2:                /* a.b -- 8.24 bits */
+        case 2: /* a.b -- 8.24 bits */
             if (val > 0xffffff) {
                 return 0;
             }
             val |= parts[0] << 24;
             break;
 
-        case 3:                /* a.b.c -- 8.8.16 bits */
+        case 3: /* a.b.c -- 8.8.16 bits */
             if (val > 0xffff) {
                 return 0;
             }
             val |= (parts[0] << 24) | (parts[1] << 16);
             break;
 
-        case 4:                /* a.b.c.d -- 8.8.8.8 bits */
+        case 4: /* a.b.c.d -- 8.8.8.8 bits */
             if (val > 0xff) {
                 return 0;
             }
@@ -136,11 +132,12 @@ int br24_inet_aton(const char *cp, struct in_addr *addr)
     return 1;
 }
 
-bool socketReady( SOCKET sockfd, int timeout )
+bool socketReady(SOCKET sockfd, int timeout)
 {
     int r = 0;
     fd_set fdin;
-    struct timeval tv = { (long) timeout / MILLISECONDS_PER_SECOND, (long) (timeout % MILLISECONDS_PER_SECOND) * MILLISECONDS_PER_SECOND };
+    struct timeval tv
+        = {(long) timeout / MILLISECONDS_PER_SECOND, (long) (timeout % MILLISECONDS_PER_SECOND) * MILLISECONDS_PER_SECOND};
 
     FD_ZERO(&fdin);
     if (sockfd != INVALID_SOCKET) {
@@ -160,7 +157,7 @@ bool socketReady( SOCKET sockfd, int timeout )
     return r > 0;
 }
 
-SOCKET startUDPMulticastReceiveSocket( struct sockaddr_in * addr, UINT16 port, const char * mcast_address, wxString & error_message )
+SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in *addr, UINT16 port, const char *mcast_address, wxString &error_message)
 {
     SOCKET rx_socket;
     struct sockaddr_in adr;
@@ -172,14 +169,14 @@ SOCKET startUDPMulticastReceiveSocket( struct sockaddr_in * addr, UINT16 port, c
         return INVALID_SOCKET;
     }
 
-    UINT8 * a = (UINT8 *) &addr->sin_addr; // sin_addr is in network layout
+    UINT8 *a = (UINT8 *) &addr->sin_addr; // sin_addr is in network layout
     wxString address;
-    address.Printf(wxT(" %u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
+    address.Printf(wxT(" %u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
 
     memset(&adr, 0, sizeof(adr));
-    adr.sin_family = AF_INET;
+    adr.sin_family      = AF_INET;
     adr.sin_addr.s_addr = htonl(INADDR_ANY); // I know, htonl is unnecessary here
-    adr.sin_port = htons(port);
+    adr.sin_port        = htons(port);
     rx_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (rx_socket == INVALID_SOCKET) {
         error_message << _("Cannot create UDP socket");
@@ -222,7 +219,7 @@ fail:
 
 #ifdef __WXMSW__
 
-int getifaddrs( struct ifaddrs ** ifap )
+int getifaddrs(struct ifaddrs **ifap)
 {
     char buf[2048];
     DWORD bytesReturned;
@@ -246,45 +243,45 @@ int getifaddrs( struct ifaddrs ** ifap )
 
     if (0 == bytesReturned % sizeof(INTERFACE_INFO)) {
         iilen = bytesReturned / sizeof(INTERFACE_INFO);
-        ii    = (INTERFACE_INFO*) buf;
+        ii    = (INTERFACE_INFO *) buf;
         iix   = NULL;
     } else {
-        iilen  = bytesReturned / sizeof(INTERFACE_INFO_EX);
-        ii     = NULL;
-        iix    = (INTERFACE_INFO_EX*)buf;
+        iilen = bytesReturned / sizeof(INTERFACE_INFO_EX);
+        ii    = NULL;
+        iix   = (INTERFACE_INFO_EX *) buf;
     }
 
     /* alloc a contiguous block for entire list */
-    unsigned n = iilen, k =0;
-    struct ifaddrs_storage * ifa = (struct ifaddrs_storage *) malloc(n * sizeof(struct ifaddrs_storage));
+    unsigned n = iilen, k = 0;
+    struct ifaddrs_storage *ifa = (struct ifaddrs_storage *) malloc(n * sizeof(struct ifaddrs_storage));
     memset(ifa, 0, n * sizeof(struct ifaddrs_storage));
 
     /* foreach interface */
-    struct ifaddrs_storage * ift = ifa;
+    struct ifaddrs_storage *ift = ifa;
 
     for (unsigned i = 0; i < iilen; i++) {
         ift->ifa.ifa_addr = (sockaddr *) &ift->addr;
         if (ii) {
-            memcpy (ift->ifa.ifa_addr, &ii[i].iiAddress.AddressIn, sizeof(struct sockaddr_in));
+            memcpy(ift->ifa.ifa_addr, &ii[i].iiAddress.AddressIn, sizeof(struct sockaddr_in));
             ift->ifa.ifa_flags = ii[i].iiFlags;
         } else {
-            memcpy (ift->ifa.ifa_addr, iix[i].iiAddress.lpSockaddr, iix[i].iiAddress.iSockaddrLength);
+            memcpy(ift->ifa.ifa_addr, iix[i].iiAddress.lpSockaddr, iix[i].iiAddress.iSockaddrLength);
             ift->ifa.ifa_flags = iix[i].iiFlags;
         }
 
         k++;
         if (k < n) {
-            ift->ifa.ifa_next = (struct ifaddrs *)(ift + 1);
-            ift = (struct ifaddrs_storage *)(ift->ifa.ifa_next);
+            ift->ifa.ifa_next = (struct ifaddrs *) (ift + 1);
+            ift               = (struct ifaddrs_storage *) (ift->ifa.ifa_next);
         }
     }
 
-    *ifap = (struct ifaddrs*) ifa;
+    *ifap = (struct ifaddrs *) ifa;
     closesocket(sock);
     return 0;
 }
 
-void freeifaddrs( struct ifaddrs *ifa)
+void freeifaddrs(struct ifaddrs *ifa)
 {
     free(ifa);
 }

@@ -38,70 +38,64 @@
  * The rest of the plugin uses a (slightly) abstract definition of the radar.
  */
 
-
 // There are two radars in every 4G radome. They send and listen on different addresses
 
 struct ListenAddress
 {
-    uint16_t     port;
-    const char * address;
+    uint16_t port;
+    const char *address;
 };
 
-static const ListenAddress LISTEN_DATA[2] =
-            { { 6678, "236.6.7.8" }
-            , { 6657, "236.6.7.13" }
-            };
+static const ListenAddress LISTEN_DATA[2] = {{6678, "236.6.7.8"}, {6657, "236.6.7.13"}};
 
-static const ListenAddress LISTEN_REPORT[2] =
-            { { 6679, "236.6.7.9" }
-            , { 6659, "236.6.7.15" }
-            };
+static const ListenAddress LISTEN_REPORT[2] = {{6679, "236.6.7.9"}, {6659, "236.6.7.15"}};
 
-static const ListenAddress LISTEN_COMMAND[2] =
-            { { 6680, "236.6.7.10" }
-            , { 6658, "236.6.7.14" }
-            };
+static const ListenAddress LISTEN_COMMAND[2] = {{6680, "236.6.7.10"}, {6658, "236.6.7.14"}};
 
 // A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration)
 // Note that 3G scanners are BR24's with better power, so they are more BR23+ than 4G-.
 // As far as we know they 3G's use exactly the same command set.
 
 // If BR24MARK is found, we switch to BR24 mode, otherwise 4G.
-static UINT8 BR24MARK[] = { 0x00, 0x44, 0x0d, 0x0e };
+static UINT8 BR24MARK[] = {0x00, 0x44, 0x0d, 0x0e};
 
-#pragma pack(push,1)
+#pragma pack(push, 1)
 
-struct br24_header {
-    UINT8 headerLen;       //1 bytes
-    UINT8 status;          //1 bytes
-    UINT8 scan_number[2];  //2 bytes, 0-4095
-    UINT8 mark[4];         //4 bytes 0x00, 0x44, 0x0d, 0x0e
-    UINT8 angle[2];        //2 bytes
-    UINT8 heading[2];      //2 bytes heading with RI-10/11?
-    UINT8 range[4];        //4 bytes
-    UINT8 u01[2];          //2 bytes blank
-    UINT8 u02[2];          //2 bytes
-    UINT8 u03[4];          //4 bytes blank
+struct br24_header
+{
+    UINT8 headerLen; // 1 bytes
+    UINT8 status; // 1 bytes
+    UINT8 scan_number[2]; // 2 bytes, 0-4095
+    UINT8 mark[4]; // 4 bytes 0x00, 0x44, 0x0d, 0x0e
+    UINT8 angle[2]; // 2 bytes
+    UINT8 heading[2]; // 2 bytes heading with RI-10/11?
+    UINT8 range[4]; // 4 bytes
+    UINT8 u01[2]; // 2 bytes blank
+    UINT8 u02[2]; // 2 bytes
+    UINT8 u03[4]; // 4 bytes blank
 }; /* total size = 24 */
 
-struct br4g_header {
-    UINT8 headerLen;       //1 bytes
-    UINT8 status;          //1 bytes
-    UINT8 scan_number[2];  //2 bytes, 0-4095
-    UINT8 u00[2];          //Always 0x4400 (integer)
-    UINT8 largerange[2];   //2 bytes or -1
-    UINT8 angle[2];        //2 bytes
-    UINT8 heading[2];      //2 bytes heading with RI-10/11 or -1
-    UINT8 smallrange[2];   //2 bytes or -1
-    UINT8 rotation[2];     //2 bytes, rotation/angle
-    UINT8 u02[4];          //4 bytes signed integer, always -1
-    UINT8 u03[4];          //4 bytes signed integer, mostly -1 (0x80 in last byte) or 0xa0 in last byte
+struct br4g_header
+{
+    UINT8 headerLen; // 1 bytes
+    UINT8 status; // 1 bytes
+    UINT8 scan_number[2]; // 2 bytes, 0-4095
+    UINT8 u00[2]; // Always 0x4400 (integer)
+    UINT8 largerange[2]; // 2 bytes or -1
+    UINT8 angle[2]; // 2 bytes
+    UINT8 heading[2]; // 2 bytes heading with RI-10/11 or -1
+    UINT8 smallrange[2]; // 2 bytes or -1
+    UINT8 rotation[2]; // 2 bytes, rotation/angle
+    UINT8 u02[4]; // 4 bytes signed integer, always -1
+    UINT8 u03[4]; // 4 bytes signed integer, mostly -1 (0x80 in last byte) or 0xa0 in last byte
 }; /* total size = 24 */
 
-struct radar_line {
-    union {
-        br24_header   br24;
-        br4g_header   br4g;
+struct radar_line
+{
+    union
+    {
+        br24_header br24;
+        br4g_header br4g;
     };
     UINT8 data[RETURNS_PER_LINE];
 };
@@ -111,9 +105,10 @@ struct radar_line {
  * 64kB.
  */
 
-struct radar_frame_pkt {
-    UINT8      frame_hdr[8];
-    radar_line line[120];    //  scan lines, or spokes
+struct radar_frame_pkt
+{
+    UINT8 frame_hdr[8];
+    radar_line line[120]; //  scan lines, or spokes
 };
 #pragma pack(pop)
 
@@ -128,7 +123,7 @@ void br24Receive::OnExit()
 {
 }
 
-void br24Receive::logBinaryData( const wxString& what, const UINT8 * data, int size )
+void br24Receive::logBinaryData(const wxString &what, const UINT8 *data, int size)
 {
     wxString explain;
     int i = 0;
@@ -148,15 +143,15 @@ void br24Receive::logBinaryData( const wxString& what, const UINT8 * data, int s
 // Process one radar frame packet, which can contain up to 32 'spokes' or lines extending outwards
 // from the radar up to the range indicated in the packet.
 //
-void br24Receive::ProcessFrame( UINT8 * data, int len )
+void br24Receive::ProcessFrame(UINT8 *data, int len)
 {
-    wxLongLong nowMillis = wxGetLocalTimeMillis();
-    time_t now = time(0);
-    radar_frame_pkt * packet = (radar_frame_pkt *) data;
+    wxLongLong nowMillis    = wxGetLocalTimeMillis();
+    time_t now              = time(0);
+    radar_frame_pkt *packet = (radar_frame_pkt *) data;
 
-    m_ri->radar_seen = true;
+    m_ri->radar_seen     = true;
     m_ri->radar_watchdog = now;
-    m_ri->data_seen = true;
+    m_ri->data_seen      = true;
     m_ri->data_watchdog = now;
     m_ri->state.Update(RADAR_ON);
 
@@ -173,7 +168,7 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
     }
 
     for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
-        radar_line * line = &packet->line[scanline];
+        radar_line *line = &packet->line[scanline];
 
         // Validate the spoke
         spoke = line->br24.scan_number[0] | (line->br24.scan_number[1] << 8);
@@ -202,19 +197,19 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
         }
         m_next_spoke = (spoke + 1) % SPOKES;
 
-        int range_raw = 0;
-        int angle_raw = 0;
-        short int hdm_raw = 0;
-        short int hdt_raw = 0;
+        int range_raw         = 0;
+        int angle_raw         = 0;
+        short int hdm_raw     = 0;
+        short int hdt_raw     = 0;
         short int large_range = 0;
         short int small_range = 0;
-        int range_meters = 0;
+        int range_meters      = 0;
 
         if (memcmp(line->br24.mark, BR24MARK, sizeof(BR24MARK)) == 0) {
             // BR24 and 3G mode
-            range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
-            angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
-            range_meters = (int) ((double)range_raw * 10.0 / sqrt(2.0));
+            range_raw    = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
+            angle_raw    = (line->br24.angle[1] << 8) | line->br24.angle[0];
+            range_meters = (int) ((double) range_raw * 10.0 / sqrt(2.0));
             if (m_ri->radar_type != RT_BR24) {
                 wxLogMessage(wxT("BR24radar_pi: %s is Navico type BR24 or 3G"), m_ri->name);
             }
@@ -245,12 +240,12 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
             if (m_pi->m_settings.verbose >= 1) {
                 if (range_meters == 0) {
                     wxLogMessage(wxT("BR24radar_pi: Invalid range received, keeping %d meters"), m_range_meters);
-                }
-                else {
-                    wxLogMessage(wxT("BR24radar_pi: Radar now scanning with range %d meters (was %d meters)"), range_meters, m_range_meters);
+                } else {
+                    wxLogMessage(
+                        wxT("BR24radar_pi: Radar now scanning with range %d meters (was %d meters)"), range_meters, m_range_meters);
                 }
             }
-            m_range_meters = range_meters;
+            m_range_meters  = range_meters;
             m_updated_range = true;
         }
 
@@ -259,14 +254,13 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
             if (!m_pi->m_heading_on_radar) {
                 wxLogMessage(wxT("BR24radar_pi: %s transmits heading, using that as best source of heading"), m_ri->name);
             }
-            m_pi->m_heading_on_radar = true;                            // heading on radar
-            hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(m_pi->m_var));
+            m_pi->m_heading_on_radar = true; // heading on radar
+            hdt_raw                  = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(m_pi->m_var));
             m_pi->m_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(hdt_raw));
             hdt_raw += SCALE_DEGREES_TO_RAW(m_ri->viewpoint_rotation);
-        }
-        else {                                // no heading on radar
+        } else { // no heading on radar
             m_pi->m_heading_on_radar = false;
-            hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt + m_ri->viewpoint_rotation);
+            hdt_raw                  = SCALE_DEGREES_TO_RAW(m_pi->m_hdt + m_ri->viewpoint_rotation);
         }
 
         angle_raw += SCALE_DEGREES_TO_RAW(270); // Compensate openGL rotation compared to North UP
@@ -274,7 +268,7 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
         // until here all is based on 4096 (SPOKES) scanlines
 
         SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);   // divide by 2 to map on 2048 scanlines
-        SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);   // divide by 2 to map on 2048 scanlines
+        SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2); // divide by 2 to map on 2048 scanlines
 
         m_ri->ProcessRadarSpoke(a, b, line->data, RETURNS_PER_LINE, range_meters, nowMillis);
     }
@@ -294,26 +288,26 @@ void br24Receive::ProcessFrame( UINT8 * data, int len )
 void br24Receive::EmulateFakeBuffer(void)
 {
     wxLongLong nowMillis = wxGetLocalTimeMillis();
-    time_t now = time(0);
+    time_t now           = time(0);
     UINT8 data[RETURNS_PER_LINE];
 
     m_ri->statistics.packets++;
-    m_ri->radar_seen = true;
+    m_ri->radar_seen     = true;
     m_ri->radar_watchdog = now;
-    m_ri->data_seen = true;
+    m_ri->data_seen      = true;
     m_ri->data_watchdog = now;
     m_ri->state.Update(RADAR_ON);
 
     int scanlines_in_packet = SPOKES * 24 / 60;
-    int range_meters = 4000;
-    int spots = 0;
+    int range_meters        = 4000;
+    int spots               = 0;
     m_ri->radar_type = RT_4G;
     if (range_meters != m_range_meters) {
         m_range_meters = range_meters;
     }
     for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
         int angle_raw = m_next_spoke;
-        m_next_spoke = (m_next_spoke + 1) % SPOKES;
+        m_next_spoke  = (m_next_spoke + 1) % SPOKES;
         m_ri->statistics.spokes++;
 
         // Invent a pattern. Outermost ring, then a square pattern
@@ -327,12 +321,12 @@ void br24Receive::EmulateFakeBuffer(void)
             }
         }
 
-        int hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt);
+        int hdt_raw     = SCALE_DEGREES_TO_RAW(m_pi->m_hdt);
         int bearing_raw = angle_raw + hdt_raw;
         bearing_raw += SCALE_DEGREES_TO_RAW(270); // Compensate openGL rotation compared to North UP
 
         SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);   // divide by 2 to map on 2048 scanlines
-        SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);   // divide by 2 to map on 2048 scanlines
+        SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2); // divide by 2 to map on 2048 scanlines
 
         m_ri->ProcessRadarSpoke(a, b, data, sizeof(data), range_meters, nowMillis);
     }
@@ -341,7 +335,11 @@ void br24Receive::EmulateFakeBuffer(void)
 
     m_ri->ProcessRadarPacket(now);
     if (m_pi->m_settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" emulating %d spokes at range %d with %d spots"), nowMillis, scanlines_in_packet, range_meters, spots);
+        wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" emulating %d spokes at range %d with %d spots"),
+                     nowMillis,
+                     scanlines_in_packet,
+                     range_meters,
+                     spots);
     }
 }
 
@@ -373,13 +371,13 @@ SOCKET br24Receive::PickNextEthernetCard()
     }
     if (VALID_IPV4_ADDRESS(m_interface)) {
         wxString error;
-        socket = startUDPMulticastReceiveSocket( (struct sockaddr_in *)m_interface->ifa_addr
-                                               , LISTEN_REPORT[m_ri->radar].port
-                                               , LISTEN_REPORT[m_ri->radar].address
-                                               , error);
+        socket = startUDPMulticastReceiveSocket((struct sockaddr_in *) m_interface->ifa_addr,
+                                                LISTEN_REPORT[m_ri->radar].port,
+                                                LISTEN_REPORT[m_ri->radar].address,
+                                                error);
         if (socket != INVALID_SOCKET) {
             wxString addr;
-            UINT8 * a = (UINT8 *)&((struct sockaddr_in *)m_interface->ifa_addr)->sin_addr; // sin_addr is in network layout
+            UINT8 *a = (UINT8 *) &((struct sockaddr_in *) m_interface->ifa_addr)->sin_addr; // sin_addr is in network layout
             addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
             if (m_pi->m_settings.verbose >= 1) {
                 wxLogMessage(wxT("BR24radar_pi: Listening for %s reports on %s"), m_ri->name, addr.c_str());
@@ -393,7 +391,6 @@ SOCKET br24Receive::PickNextEthernetCard()
     return socket;
 }
 
-
 SOCKET br24Receive::GetNewDataSocket()
 {
     SOCKET socket;
@@ -403,15 +400,11 @@ SOCKET br24Receive::GetNewDataSocket()
         return INVALID_SOCKET;
     }
 
-    socket = startUDPMulticastReceiveSocket( m_mcast_addr
-                                           , LISTEN_DATA[m_ri->radar].port
-                                           , LISTEN_DATA[m_ri->radar].address
-                                           , error
-                                           );
+    socket = startUDPMulticastReceiveSocket(m_mcast_addr, LISTEN_DATA[m_ri->radar].port, LISTEN_DATA[m_ri->radar].address, error);
     if (socket != INVALID_SOCKET) {
         wxString addr;
-        UINT8 * a = (UINT8 *) &m_mcast_addr->sin_addr; // sin_addr is in network layout
-        addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
+        UINT8 *a = (UINT8 *) &m_mcast_addr->sin_addr; // sin_addr is in network layout
+        addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
         if (m_pi->m_settings.verbose) {
             wxLogMessage(wxT("BR24radar_pi: %s listening for data on %s"), m_ri->name, addr.c_str());
         }
@@ -430,15 +423,12 @@ SOCKET br24Receive::GetNewCommandSocket()
         return INVALID_SOCKET;
     }
 
-    socket = startUDPMulticastReceiveSocket( m_mcast_addr
-                                           , LISTEN_COMMAND[m_ri->radar].port
-                                           , LISTEN_COMMAND[m_ri->radar].address
-                                           , error
-                                           );
+    socket = startUDPMulticastReceiveSocket(
+        m_mcast_addr, LISTEN_COMMAND[m_ri->radar].port, LISTEN_COMMAND[m_ri->radar].address, error);
     if (socket != INVALID_SOCKET) {
         wxString addr;
-        UINT8 * a = (UINT8 *) &m_mcast_addr->sin_addr; // sin_addr is in network layout
-        addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
+        UINT8 *a = (UINT8 *) &m_mcast_addr->sin_addr; // sin_addr is in network layout
+        addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
         if (m_pi->m_settings.verbose) {
             wxLogMessage(wxT("BR24radar_pi: %s listening for command on %s"), m_ri->name, addr.c_str());
         }
@@ -450,23 +440,24 @@ SOCKET br24Receive::GetNewCommandSocket()
 
 void *br24Receive::Entry(void)
 {
-    int r = 0;
+    int r               = 0;
     int no_data_timeout = 0;
-    union {
+    union
+    {
         sockaddr_storage addr;
-        sockaddr_in      ipv4;
+        sockaddr_in ipv4;
     } rx_addr;
-    socklen_t        rx_len;
+    socklen_t rx_len;
 
     UINT8 data[sizeof(radar_frame_pkt)];
     m_interface_array = 0;
-    m_interface = 0;
+    m_interface       = 0;
     static struct sockaddr_in mcastFoundAddr;
     static struct sockaddr_in radarFoundAddr;
 
-    SOCKET dataSocket = INVALID_SOCKET;
+    SOCKET dataSocket    = INVALID_SOCKET;
     SOCKET commandSocket = INVALID_SOCKET;
-    SOCKET reportSocket = INVALID_SOCKET;
+    SOCKET reportSocket  = INVALID_SOCKET;
 
     if (m_pi->m_settings.verbose) {
         wxLogMessage(wxT("BR24radar_pi: br24Receive thread %s starting"), m_ri->name);
@@ -474,7 +465,6 @@ void *br24Receive::Entry(void)
     // Do not draw something with this...
 
     while (!*m_quit) {
-
         if (m_pi->m_settings.emulator_on) {
             socketReady(INVALID_SOCKET, 1000); // sleep for 1s
             EmulateFakeBuffer();
@@ -486,17 +476,15 @@ void *br24Receive::Entry(void)
             if (reportSocket != INVALID_SOCKET) {
                 no_data_timeout = 0;
             }
-        }
-        else {
+        } else {
             if (dataSocket == INVALID_SOCKET) {
                 dataSocket = GetNewDataSocket();
-            }
-            else if (commandSocket == INVALID_SOCKET) {
+            } else if (commandSocket == INVALID_SOCKET) {
                 commandSocket = GetNewCommandSocket();
             }
         }
 
-        struct timeval tv = { (long) 1, (long) 0 };
+        struct timeval tv = {(long) 1, (long) 0};
 
         fd_set fdin;
         FD_ZERO(&fdin);
@@ -522,12 +510,12 @@ void *br24Receive::Entry(void)
                 rx_len = sizeof(rx_addr);
                 r = recvfrom(dataSocket, (char *) data, sizeof(data), 0, (struct sockaddr *) &rx_addr, &rx_len);
                 if (r > 0) {
-                    //UINT8 * a = (UINT8 *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
-                    //wxLogMessage(wxT("%s at %u.%u.%u.%u received frame"), m_ri->name, a[0] , a[1] , a[2] , a[3]);
+                    // UINT8 * a = (UINT8 *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
+                    // wxLogMessage(wxT("%s at %u.%u.%u.%u received frame"), m_ri->name, a[0] , a[1] , a[2] , a[3]);
                     ProcessFrame(data, r);
                 } else {
                     closesocket(dataSocket);
-                    dataSocket = INVALID_SOCKET;
+                    dataSocket      = INVALID_SOCKET;
                     m_ri->data_seen = false;
                 }
             }
@@ -536,8 +524,9 @@ void *br24Receive::Entry(void)
                 rx_len = sizeof(rx_addr);
                 r = recvfrom(commandSocket, (char *) data, sizeof(data), 0, (struct sockaddr *) &rx_addr, &rx_len);
                 if (r > 0 && rx_addr.addr.ss_family == AF_INET && m_pi->m_settings.verbose) {
-                    UINT8 * a = (UINT8 *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
-                    logBinaryData(wxString::Format(wxT("%s at %u.%u.%u.%u received command"), m_ri->name, a[0] , a[1] , a[2] , a[3]), data, r);
+                    UINT8 *a = (UINT8 *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
+                    logBinaryData(
+                        wxString::Format(wxT("%s at %u.%u.%u.%u received command"), m_ri->name, a[0], a[1], a[2], a[3]), data, r);
                 } else {
                     closesocket(commandSocket);
                     commandSocket = INVALID_SOCKET;
@@ -546,7 +535,7 @@ void *br24Receive::Entry(void)
 
             if (reportSocket != INVALID_SOCKET && FD_ISSET(reportSocket, &fdin)) {
                 rx_len = sizeof(rx_addr);
-                r = recvfrom(reportSocket, (char * ) data, sizeof(data), 0, (struct sockaddr *) &rx_addr, &rx_len);
+                r = recvfrom(reportSocket, (char *) data, sizeof(data), 0, (struct sockaddr *) &rx_addr, &rx_len);
                 if (r > 0) {
                     if (ProcessReport(data, r)) {
                         memcpy(&mcastFoundAddr, m_interface->ifa_addr, sizeof(mcastFoundAddr));
@@ -554,8 +543,8 @@ void *br24Receive::Entry(void)
                         memcpy(&radarFoundAddr, &rx_addr, sizeof(radarFoundAddr));
                         m_radar_addr = &radarFoundAddr;
                         wxString addr;
-                        UINT8 * a = (UINT8 *) &m_radar_addr->sin_addr; // sin_addr is in network layout
-                        addr.Printf(wxT("%u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
+                        UINT8 *a = (UINT8 *) &m_radar_addr->sin_addr; // sin_addr is in network layout
+                        addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
                         m_pi->m_pMessageBox->SetRadarIPAddress(addr);
                         if (!m_ri->radar_seen) {
                             if (m_pi->m_settings.verbose) {
@@ -563,13 +552,13 @@ void *br24Receive::Entry(void)
                             }
                             m_ri->state.Update(RADAR_ON);
                         }
-                        m_ri->radar_seen = true;
+                        m_ri->radar_seen     = true;
                         m_ri->radar_watchdog = time(0);
                     }
                 } else {
                     wxLogMessage(wxT("BR24radar_pi: %s report socket failed"), m_ri->name);
                     closesocket(reportSocket);
-                    reportSocket = INVALID_SOCKET;
+                    reportSocket     = INVALID_SOCKET;
                     m_ri->radar_seen = false;
                 }
             }
@@ -585,13 +574,12 @@ void *br24Receive::Entry(void)
                     closesocket(commandSocket);
                     commandSocket = INVALID_SOCKET;
                 }
-            }
-            else if (reportSocket != INVALID_SOCKET) {
+            } else if (reportSocket != INVALID_SOCKET) {
                 closesocket(reportSocket);
-                reportSocket = INVALID_SOCKET;
+                reportSocket     = INVALID_SOCKET;
                 m_ri->radar_seen = false;
-                m_mcast_addr = 0;
-                m_radar_addr = 0;
+                m_mcast_addr     = 0;
+                m_radar_addr     = 0;
             }
         } else {
             no_data_timeout++;
@@ -618,34 +606,35 @@ void *br24Receive::Entry(void)
 // The following is the received radar state. It sends this regularly
 // but especially after something sends it a state change.
 //
-#pragma pack(push,1)
-struct radar_state02 {
-    UINT8  what;     // 0   0x02
-    UINT8  command;  // 1 0xC4
-    UINT16 range;    //  2-3   0x06 0x09
-    UINT32 field4;   // 4-7    0
-    UINT32 field8;   // 8-11
-    UINT8  gain;     // 12
-    UINT8  field13;  // 13  ==1 for sea auto
-    UINT8  field14;  // 14
-    UINT16 field15;  // 15-16
-    UINT32 sea;      // 17-20   sea state (17)
-    UINT8  field21;  // 21
-    UINT8  rain;     // 22   rain clutter
-    UINT8  field23;  // 23
-    UINT32 field24;  //24-27
-    UINT32 field28;  //28-31
-    UINT8  field32;  //32
-    UINT8  field33;  //33
-    UINT8  interference_rejection;  //34
-    UINT8  field35;  //35
-    UINT8  field36;  //36
-    UINT8  field37;  //37
-    UINT8  field38;  //38
-    UINT8  field39;  //39
-    UINT8  field40;  //40
-    UINT8  field41;  //41
-    UINT8  target_boost;  //42
+#pragma pack(push, 1)
+struct radar_state02
+{
+    UINT8 what;     // 0   0x02
+    UINT8 command;  // 1 0xC4
+    UINT16 range;   //  2-3   0x06 0x09
+    UINT32 field4;  // 4-7    0
+    UINT32 field8;  // 8-11
+    UINT8 gain;     // 12
+    UINT8 field13;  // 13  ==1 for sea auto
+    UINT8 field14;  // 14
+    UINT16 field15; // 15-16
+    UINT32 sea;     // 17-20   sea state (17)
+    UINT8 field21;  // 21
+    UINT8 rain;     // 22   rain clutter
+    UINT8 field23;  // 23
+    UINT32 field24; // 24-27
+    UINT32 field28; // 28-31
+    UINT8 field32; // 32
+    UINT8 field33; // 33
+    UINT8 interference_rejection; // 34
+    UINT8 field35; // 35
+    UINT8 field36; // 36
+    UINT8 field37; // 37
+    UINT8 field38; // 38
+    UINT8 field39; // 39
+    UINT8 field40; // 40
+    UINT8 field41; // 41
+    UINT8 target_boost; // 42
     UINT16 field8a;
     UINT32 field8b;
     UINT32 field9;
@@ -656,45 +645,48 @@ struct radar_state02 {
     UINT32 field14x;
 };
 
-struct radar_state04_66 {  // 04 C4 with length 66
-    UINT8  what;     // 0   0x04
-    UINT8  command;  // 1   0xC4
-    UINT32 field2;   // 2-5
-    UINT16 bearing_alignment;    // 6-7
-    UINT16 field8;   // 8-9
-    UINT16 antenna_height;       // 10-11
+struct radar_state04_66
+{                             // 04 C4 with length 66
+    UINT8 what;               // 0   0x04
+    UINT8 command;            // 1   0xC4
+    UINT32 field2;            // 2-5
+    UINT16 bearing_alignment; // 6-7
+    UINT16 field8;            // 8-9
+    UINT16 antenna_height;    // 10-11
 };
 
-struct radar_state01_18 {  // 04 C4 with length 66
-    UINT8  what;      // 0   0x01
-    UINT8  command;   // 1   0xC4
-    UINT8  radar_status;    // 2
-    UINT8  field3;    // 3
-    UINT8  field4;    // 4
-    UINT8  field5;    // 5
-    UINT16 field6;    // 6-7
-    UINT16 field8;    // 8-9
-    UINT16 field10;   // 10-11
-};
-
-struct radar_state08_18 {  //08 c4  length 18
-    UINT8  what;        // 0  0x08
-    UINT8  command;     // 1  0xC4
-    UINT8  field2;      // 2
-    UINT8  local_interference_rejection;   // 3
-    UINT8  scan_speed;  // 4
-    UINT8  sls_auto;    // 5 installation: sidelobe suppression auto
-    UINT8  field6;      // 6
-    UINT8  field7;      // 7
-    UINT8  field8;      // 8
-    UINT8  side_lobe_suppression;      // 9 installation: sidelobe suppression
+struct radar_state01_18
+{                       // 04 C4 with length 66
+    UINT8 what;         // 0   0x01
+    UINT8 command;      // 1   0xC4
+    UINT8 radar_status; // 2
+    UINT8 field3;       // 3
+    UINT8 field4;       // 4
+    UINT8 field5;       // 5
+    UINT16 field6;      // 6-7
+    UINT16 field8;      // 8-9
     UINT16 field10;     // 10-11
-    UINT8  noise_rejection;       // 12    noise rejection
-    UINT8  target_sep;  // 13
+};
+
+struct radar_state08_18
+{ // 08 c4  length 18
+    UINT8 what;                         // 0  0x08
+    UINT8 command;                      // 1  0xC4
+    UINT8 field2;                       // 2
+    UINT8 local_interference_rejection; // 3
+    UINT8 scan_speed;                   // 4
+    UINT8 sls_auto;                     // 5 installation: sidelobe suppression auto
+    UINT8 field6;                       // 6
+    UINT8 field7;                       // 7
+    UINT8 field8;                       // 8
+    UINT8 side_lobe_suppression;        // 9 installation: sidelobe suppression
+    UINT16 field10;                     // 10-11
+    UINT8 noise_rejection;              // 12    noise rejection
+    UINT8 target_sep;                   // 13
 };
 #pragma pack(pop)
 
-bool br24Receive::ProcessReport( UINT8 * report, int len )
+bool br24Receive::ProcessReport(UINT8 *report, int len)
 {
     static char prevStatus = 0;
 
@@ -706,48 +698,46 @@ bool br24Receive::ProcessReport( UINT8 * report, int len )
         // Looks like a radar report. Is it a known one?
         switch ((len << 8) + report[0]) {
             case (18 << 8) + 0x01: { //  length 18, 01 C4
-                radar_state01_18 * s = (radar_state01_18 *)report;
+                radar_state01_18 *s = (radar_state01_18 *) report;
                 // Radar status in byte 2
                 if (s->radar_status != prevStatus) {
-                    prevStatus = report[2];
-                    m_ri->radar_type = RT_4G;   // only 4G Tx on channel B
+                    prevStatus       = report[2];
+                    m_ri->radar_type = RT_4G; // only 4G Tx on channel B
                 }
                 break;
             }
 
-            case (99 << 8) + 0x02: {  // length 99, 08 C4
-                radar_state02 * s = (radar_state02 *)report;
-                if (s->field8 == 1) {   // 1 for auto
-                    m_ri->gain.Update(-1);  // auto gain
-                }
-                else {
+            case (99 << 8) + 0x02: { // length 99, 08 C4
+                radar_state02 *s = (radar_state02 *) report;
+                if (s->field8 == 1) {      // 1 for auto
+                    m_ri->gain.Update(-1); // auto gain
+                } else {
                     m_ri->gain.Update(s->gain * 100 / 255);
                 }
                 m_ri->rain.Update(s->rain * 100 / 255);
                 if (s->field13 == 0x01) {
                     m_ri->sea.Update(-1); // auto sea
-                }
-                else{
+                } else {
                     m_ri->sea.Update(s->sea * 100 / 255);
                 }
                 m_ri->target_boost.Update(s->target_boost);
                 m_ri->interference_rejection.Update(s->interference_rejection);
 
                 if (m_pi->m_settings.verbose) {
-                    wxLogMessage(wxT("BR24radar_pi: %s state range=%u gain=%u sea=%u rain=%u interference_rejection=%u target_boost=%u ")
-                    , m_ri->name
-                    , s->range
-                    , s->gain
-                    , s->sea
-                    , s->rain
-                    , s->interference_rejection
-                    , s->target_boost
-                    );
+                    wxLogMessage(
+                        wxT("BR24radar_pi: %s state range=%u gain=%u sea=%u rain=%u interference_rejection=%u target_boost=%u "),
+                        m_ri->name,
+                        s->range,
+                        s->gain,
+                        s->sea,
+                        s->rain,
+                        s->interference_rejection,
+                        s->target_boost);
                 }
                 break;
             }
 
-            case (564 << 8) + 0x05: {    // length 564, 05 C4
+            case (564 << 8) + 0x05: { // length 564, 05 C4
                 // Content unknown, but we know that BR24 radomes send this
                 if (m_pi->m_settings.verbose) {
                     logBinaryData(wxT("received familiar BR24 report"), report, len);
@@ -756,22 +746,23 @@ bool br24Receive::ProcessReport( UINT8 * report, int len )
                 break;
             }
 
-            case (18 << 8) + 0x08: {  // length 18, 08 C4
+            case (18 << 8) + 0x08: { // length 18, 08 C4
                 // contains scan speed, noise rejection and target_separation and sidelobe suppression
-                radar_state08_18 * s08 = (radar_state08_18 *)report;
+                radar_state08_18 *s08 = (radar_state08_18 *) report;
 
                 if (m_pi->m_settings.verbose) {
-                    logBinaryData(wxString::Format(wxT("scanspeed= %d, noise = %u target_sep %u")
-                                          , s08->scan_speed, s08->noise_rejection, s08->target_sep
-                                          ), report, len);
+                    logBinaryData(
+                        wxString::Format(
+                            wxT("scanspeed= %d, noise = %u target_sep %u"), s08->scan_speed, s08->noise_rejection, s08->target_sep),
+                        report,
+                        len);
                 }
                 m_ri->scan_speed.Update(s08->scan_speed);
                 m_ri->noise_rejection.Update(s08->noise_rejection);
                 m_ri->target_separation.Update(s08->target_sep);
                 if (s08->sls_auto == 1) {
                     m_ri->side_lobe_suppression.Update(-1);
-                }
-                else{
+                } else {
                     m_ri->side_lobe_suppression.Update(s08->side_lobe_suppression * 100 / 255);
                 }
                 m_ri->local_interference_rejection.Update(s08->local_interference_rejection);
@@ -782,14 +773,14 @@ bool br24Receive::ProcessReport( UINT8 * report, int len )
                 break;
             }
 
-            case (66 << 8) + 0x04: {     // 66 bytes starting with 04 C4
+            case (66 << 8) + 0x04: { // 66 bytes starting with 04 C4
                 if (m_pi->m_settings.verbose) {
                     logBinaryData(wxT("received report_04"), report, len);
                 }
-                radar_state04_66 * s04_66 = (radar_state04_66 *)report;
+                radar_state04_66 *s04_66 = (radar_state04_66 *) report;
 
                 // bearing alignment
-                int ba = (int)s04_66->bearing_alignment / 10;
+                int ba = (int) s04_66->bearing_alignment / 10;
                 if (ba > 180) {
                     ba = ba - 360;
                 }
@@ -806,11 +797,9 @@ bool br24Receive::ProcessReport( UINT8 * report, int len )
                 }
                 break;
             }
-
         }
         return true;
-    }
-    else if (report[1] == 0xF5) {
+    } else if (report[1] == 0xF5) {
         // Looks like a radar report. Is it a known one?
         switch ((len << 8) + report[0]) {
             case (16 << 8) + 0x0f:
@@ -834,7 +823,6 @@ bool br24Receive::ProcessReport( UINT8 * report, int len )
                     logBinaryData(wxT("received unknown report"), report, len);
                 }
                 break;
-
         }
         return true;
     }

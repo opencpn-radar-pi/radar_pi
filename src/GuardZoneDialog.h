@@ -34,57 +34,53 @@
 
 #include "br24radar_pi.h"
 
-class GuardZoneDialog :    public wxDialog
+class GuardZoneDialog : public wxDialog
 {
     DECLARE_CLASS(GuardZoneDialog)
     DECLARE_EVENT_TABLE()
 
-public:
+   public:
     GuardZoneDialog();
 
     ~GuardZoneDialog();
-    void    Init();
+    void Init();
 
-    bool    Create
-    (
-     wxWindow        *parent,
-     br24radar_pi    *pi,
-     wxWindowID      id = wxID_ANY,
-     const wxString  &m_caption = _(" Guard Zone Control"),
-     const wxPoint   &pos = wxDefaultPosition,
-     const wxSize    &size = wxDefaultSize,
-     long            style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU
-    );
+    bool Create(wxWindow *parent,
+                br24radar_pi *pi,
+                wxWindowID id             = wxID_ANY,
+                const wxString &m_caption = _(" Guard Zone Control"),
+                const wxPoint &pos        = wxDefaultPosition,
+                const wxSize &size        = wxDefaultSize,
+                long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
 
+    void CreateControls();
+    void OnContextMenuGuardCallback(double mark_rng, double mark_brg);
+    void OnGuardZoneDialogShow(RadarInfo *ri, int zone);
 
-    void            CreateControls();
-    void            OnContextMenuGuardCallback(double mark_rng, double mark_brg);
-    void            OnGuardZoneDialogShow(RadarInfo * ri, int zone);
+   private:
+    void SetVisibility();
+    void OnGuardZoneModeClick(wxCommandEvent &event);
+    void OnInner_Range_Value(wxCommandEvent &event);
+    void OnOuter_Range_Value(wxCommandEvent &event);
+    void OnStart_Bearing_Value(wxCommandEvent &event);
+    void OnEnd_Bearing_Value(wxCommandEvent &event);
+    void OnFilterClick(wxCommandEvent &event);
+    void OnClose(wxCloseEvent &event);
+    void OnIdOKClick(wxCommandEvent &event);
 
-private:
-    void            SetVisibility();
-    void            OnGuardZoneModeClick(wxCommandEvent &event);
-    void            OnInner_Range_Value(wxCommandEvent &event);
-    void            OnOuter_Range_Value(wxCommandEvent &event);
-    void            OnStart_Bearing_Value(wxCommandEvent &event);
-    void            OnEnd_Bearing_Value(wxCommandEvent &event);
-    void            OnFilterClick(wxCommandEvent &event);
-    void            OnClose(wxCloseEvent &event);
-    void            OnIdOKClick(wxCommandEvent &event);
-
-    wxWindow        *m_parent;
-    br24radar_pi    *m_pi;
-    RadarInfo       *m_ri;
-    GuardZone       *m_guard_zone;
+    wxWindow *m_parent;
+    br24radar_pi *m_pi;
+    RadarInfo *m_ri;
+    GuardZone *m_guard_zone;
 
     /* Controls */
-    wxStaticBox     *pBoxGuardZone;
-    wxRadioBox      *pGuardZoneType;
-    wxTextCtrl      *pInner_Range;
-    wxTextCtrl      *pOuter_Range;
-    wxTextCtrl      *pStart_Bearing_Value;
-    wxTextCtrl      *pEnd_Bearing_Value;
-    wxCheckBox      *cbFilter;
+    wxStaticBox *pBoxGuardZone;
+    wxRadioBox *pGuardZoneType;
+    wxTextCtrl *pInner_Range;
+    wxTextCtrl *pOuter_Range;
+    wxTextCtrl *pStart_Bearing_Value;
+    wxTextCtrl *pEnd_Bearing_Value;
+    wxCheckBox *cbFilter;
 };
 
 #endif /* _GUARDZONEDIALOG_H_ */

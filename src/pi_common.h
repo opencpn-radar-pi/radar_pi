@@ -37,21 +37,21 @@
 #define _PI_COMMON_H_
 
 #ifdef _WINDOWS
-# include <WinSock2.h>
-# include <ws2tcpip.h>
-# pragma comment (lib, "Ws2_32.lib")
+#include <WinSock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "Ws2_32.lib")
 #endif
 
 #include "wx/wxprec.h"
 #ifdef __WXOSX__
-# pragma clang diagnostic push
-# pragma clang diagnostic ignored "-Wpotentially-evaluated-expression"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpotentially-evaluated-expression"
 #endif
 #include "wx/wx.h"
 #include "wx/aui/aui.h"
 #include "wx/aui/framemanager.h"
 #ifdef __WXOSX__
-# pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 
 #include <wx/socket.h>
@@ -65,76 +65,76 @@
 using namespace std;
 
 #ifdef __WXGTK__
-# include <netinet/in.h>
-# include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <sys/ioctl.h>
 #endif
 
 #ifdef __WXOSX__
-# include <sys/types.h>
-# include <sys/socket.h>
-# include <netdb.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 #endif
 
 #include "shaderutil.h"
 
 #ifdef __WXOSX__
-# pragma clang diagnostic push
-# pragma clang diagnostic ignored "-Woverloaded-virtual"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Woverloaded-virtual"
 #endif
 #include "ocpn_plugin.h"
 #ifdef __WXOSX__
-# pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 
 #ifndef SOCKET
-# define SOCKET int
+#define SOCKET int
 #endif
 #ifndef INVALID_SOCKET
-# define INVALID_SOCKET ((SOCKET)~0)
+#define INVALID_SOCKET ((SOCKET) ~0)
 #endif
 
 #ifdef __WXMSW__
-# define SOCKETERRSTR (strerror(WSAGetLastError()))
+#define SOCKETERRSTR (strerror(WSAGetLastError()))
 #else
-# include <errno.h>
-# define SOCKETERRSTR (strerror(errno))
-# define closesocket(fd) close(fd)
+#include <errno.h>
+#define SOCKETERRSTR (strerror(errno))
+#define closesocket(fd) close(fd)
 #endif
 
 #ifndef __WXMSW__
-# ifndef UINT8
-#  define UINT8 uint8_t
-# endif
-# ifndef UINT16
-#  define UINT16 uint16_t
-# endif
-# ifndef UINT32
-#  define UINT32 uint32_t
-# endif
-# define wxTPRId64 wxT("ld")
+#ifndef UINT8
+#define UINT8 uint8_t
+#endif
+#ifndef UINT16
+#define UINT16 uint16_t
+#endif
+#ifndef UINT32
+#define UINT32 uint32_t
+#endif
+#define wxTPRId64 wxT("ld")
 #else
-# define wxTPRId64 wxT("I64d")
+#define wxTPRId64 wxT("I64d")
 #endif
 
 #ifndef INT16_MIN
-# define INT16_MIN (-32768)
+#define INT16_MIN (-32768)
 #endif
 #ifndef UINT8_MAX
-# define UINT8_MAX (255)
+#define UINT8_MAX (255)
 #endif
 
-# define ARRAY_SIZE(x)   (sizeof(x)/sizeof(x[0]))
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 
-# define MILLISECONDS_PER_SECOND (1000)
+#define MILLISECONDS_PER_SECOND (1000)
 
 #ifndef PI
-# define PI        (3.1415926535897931160E0)
+#define PI (3.1415926535897931160E0)
 #endif
 #ifndef deg2rad
-# define deg2rad(x) ((x) * 2 * PI / 360.0)
+#define deg2rad(x) ((x) *2 * PI / 360.0)
 #endif
 #ifndef rad2deg
-# define rad2deg(x) ((x) * 360.0 / (2 * PI))
+#define rad2deg(x) ((x) *360.0 / (2 * PI))
 #endif
 
 #endif

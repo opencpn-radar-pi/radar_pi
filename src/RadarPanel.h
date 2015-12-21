@@ -36,12 +36,12 @@
 
 class RadarPanel : public wxPanel
 {
-public:
-    RadarPanel(br24radar_pi * pi, RadarInfo *ri, wxWindow * parent);
+   public:
+    RadarPanel(br24radar_pi* pi, RadarInfo* ri, wxWindow* parent);
     bool Create();
     virtual ~RadarPanel();
 
-    void SetCaption(wxString name);  // Set the AUI caption
+    void SetCaption(wxString name); // Set the AUI caption
     void ShowFrame(bool visible);
 
     void resized(wxSizeEvent& evt);
@@ -49,13 +49,12 @@ public:
     void OnMouseClick(wxMouseEvent& event);
     void close(wxAuiManagerEvent& event);
 
-
-private:
-    wxWindow      * m_parent;
-    br24radar_pi  * m_pi;
-    RadarInfo     * m_ri;
-    wxAuiManager  * m_aui_mgr;
-    wxString        m_aui_name;
+   private:
+    wxWindow* m_parent;
+    br24radar_pi* m_pi;
+    RadarInfo* m_ri;
+    wxAuiManager* m_aui_mgr;
+    wxString m_aui_name;
 
     wxDECLARE_EVENT_TABLE();
 };

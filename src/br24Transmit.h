@@ -38,7 +38,7 @@
 
 class br24Transmit
 {
-public:
+   public:
     br24Transmit(wxString name, int radar);
     ~br24Transmit();
 
@@ -49,11 +49,11 @@ public:
     bool SetRange(int meters);
     bool SetControlValue(ControlType controlType, int value);
 
-private:
-    int                m_verbose;
+   private:
+    int m_verbose;
     struct sockaddr_in m_addr;
-    SOCKET             m_radar_socket;
-    wxString           m_name;
+    SOCKET m_radar_socket;
+    wxString m_name;
 
     bool TransmitCmd(UINT8 * msg, int size);
 };

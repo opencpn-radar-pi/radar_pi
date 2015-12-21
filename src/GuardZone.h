@@ -36,18 +36,18 @@
 
 class GuardZone
 {
-public:
+   public:
     GuardZoneType type;
-    SpokeBearing  start_bearing;
-    SpokeBearing  end_bearing;
-    int           inner_range;            // now in meters
-    int           outer_range;            // now in meters
-    int           multi_sweep_filter;
+    SpokeBearing start_bearing;
+    SpokeBearing end_bearing;
+    int inner_range; // now in meters
+    int outer_range; // now in meters
+    int multi_sweep_filter;
 
     /*
      * Check if data is in this GuardZone, if so update bogeyCount
      */
-    void ProcessSpoke(SpokeBearing angle, UINT8 * data, UINT8 * hist, size_t len, int range);
+    void ProcessSpoke(SpokeBearing angle, UINT8 *data, UINT8 *hist, size_t len, int range);
 
     /*
      * Return total bogeyCount over all spokes
@@ -59,23 +59,23 @@ public:
      */
     void ResetBogeys();
 
-    GuardZone( br24radar_pi * pi )
+    GuardZone(br24radar_pi *pi)
     {
         m_pi = pi;
 
-        type = GZ_OFF;
-        start_bearing = 0;
-        end_bearing = 0;
-        inner_range = 0;
-        outer_range = 0;
+        type               = GZ_OFF;
+        start_bearing      = 0;
+        end_bearing        = 0;
+        inner_range        = 0;
+        outer_range        = 0;
         multi_sweep_filter = 0;
 
         ResetBogeys();
     }
 
-private:
-    br24radar_pi      *m_pi;
-    int                bogeyCount[LINES_PER_ROTATION];
+   private:
+    br24radar_pi *m_pi;
+    int bogeyCount[LINES_PER_ROTATION];
 };
 
 #endif /* _GUARDZONE_H_ */

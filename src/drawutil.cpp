@@ -31,10 +31,10 @@
 
 #include "drawutil.h"
 
-static void draw_blob_gl( double ca, double sa, double radius, double arc_width, double blob_heigth )
+static void draw_blob_gl(double ca, double sa, double radius, double arc_width, double blob_heigth)
 {
     const double blob_start = 0.0;
-    const double blob_end = blob_heigth;
+    const double blob_end   = blob_heigth;
 
     double xm1 = (radius + blob_start) * ca;
     double ym1 = (radius + blob_start) * sa;
@@ -42,7 +42,7 @@ static void draw_blob_gl( double ca, double sa, double radius, double arc_width,
     double ym2 = (radius + blob_end) * sa;
 
     double arc_width_start2 = (radius + blob_start) * arc_width;
-    double arc_width_end2 = (radius + blob_end) * arc_width;
+    double arc_width_end2   = (radius + blob_end) * arc_width;
 
     double xa = xm1 + arc_width_start2 * sa;
     double ya = ym1 - arc_width_start2 * ca;
@@ -67,12 +67,12 @@ static void draw_blob_gl( double ca, double sa, double radius, double arc_width,
     glEnd();
 }
 
-void DrawArc( float cx, float cy, float r, float start_angle, float arc_angle, int num_segments )
+void DrawArc(float cx, float cy, float r, float start_angle, float arc_angle, int num_segments)
 {
     float theta = arc_angle / float(num_segments - 1); // - 1 comes from the fact that the arc is open
 
     float tangential_factor = tanf(theta);
-    float radial_factor = cosf(theta);
+    float radial_factor     = cosf(theta);
 
     float x = r * cosf(start_angle);
     float y = r * sinf(start_angle);
@@ -93,13 +93,13 @@ void DrawArc( float cx, float cy, float r, float start_angle, float arc_angle, i
     glEnd();
 }
 
-void DrawOutlineArc( double r1, double r2, double a1, double a2, bool stippled )
+void DrawOutlineArc(double r1, double r2, double a1, double a2, bool stippled)
 {
     if (a1 > a2) {
         a2 += 360.0;
     }
-    int  segments = (a2 - a1) * 4;
-    bool circle = (a1 == 0.0 && a2 == 360.0);
+    int segments = (a2 - a1) * 4;
+    bool circle  = (a1 == 0.0 && a2 == 360.0);
 
     if (!circle) {
         a1 -= 0.5;
@@ -109,8 +109,8 @@ void DrawOutlineArc( double r1, double r2, double a1, double a2, bool stippled )
     a2 = deg2rad(a2);
 
     if (stippled) {
-        glEnable (GL_LINE_STIPPLE);
-        glLineStipple (1, 0x000F);
+        glEnable(GL_LINE_STIPPLE);
+        glLineStipple(1, 0x000F);
         glLineWidth(1.0);
     } else {
         glLineWidth(1.0);
@@ -129,19 +129,19 @@ void DrawOutlineArc( double r1, double r2, double a1, double a2, bool stippled )
     }
 }
 
-void DrawFilledArc( double r1, double r2, double a1, double a2 )
+void DrawFilledArc(double r1, double r2, double a1, double a2)
 {
     if (a1 > a2) {
         a2 += 360.0;
     }
 
-    for (double n = a1; n <= a2; ++n ) {
+    for (double n = a1; n <= a2; ++n) {
         double nr = deg2rad(n);
         draw_blob_gl(cos(nr), sin(nr), r2, deg2rad(0.5), r1 - r2);
     }
 }
 
-void CheckOpenGLError( const wxString & after )
+void CheckOpenGLError(const wxString & after)
 {
     GLenum errLast = GL_NO_ERROR;
 

@@ -37,13 +37,13 @@
 
 class RadarCanvas : public wxGLCanvas
 {
-    //DECLARE_CLASS(RadarCanvas)
+    // DECLARE_CLASS(RadarCanvas)
     DECLARE_EVENT_TABLE()
 
-    wxGLContext       * m_context;
+    wxGLContext* m_context;
 
-public:
-    RadarCanvas(br24radar_pi * pi, RadarInfo *ri, wxWindow * parent, wxSize size);
+   public:
+    RadarCanvas(br24radar_pi* pi, RadarInfo* ri, wxWindow* parent, wxSize size);
     virtual ~RadarCanvas();
 
     void Render(wxPaintEvent& evt);
@@ -63,15 +63,15 @@ public:
     void keyReleased(wxKeyEvent& event);
 #endif
 
-private:
+   private:
     void RenderText(wxPoint p, wxString text);
 
-    wxWindow      * m_parent;
-    br24radar_pi  * m_pi;
-    RadarInfo     * m_ri;
+    wxWindow* m_parent;
+    br24radar_pi* m_pi;
+    RadarInfo* m_ri;
 
-    TextureFont     m_FontNormal;
-    TextureFont     m_FontBig;
+    TextureFont m_FontNormal;
+    TextureFont m_FontBig;
 };
 
 #endif
