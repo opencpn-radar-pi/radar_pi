@@ -45,6 +45,9 @@ class radar_control_item {
   bool mod;
 
   void Update(int v);
+
+ private:
+  wxMutex m_mutex;
 };
 
 struct DrawInfo {
@@ -120,8 +123,7 @@ class RadarInfo {
   void SetRangeMeters(int range);
   bool SetControlValue(ControlType controlType, int value);
   void ResetSpokes();
-  void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len,
-                         int range_meters, wxLongLong nowMillis);
+  void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong nowMillis);
   void ProcessRadarPacket(time_t now);
   void RenderGuardZone(wxPoint radar_center, double v_scale_ppm);
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);

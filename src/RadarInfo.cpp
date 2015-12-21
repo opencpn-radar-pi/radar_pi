@@ -38,6 +38,8 @@
 #include "RadarPanel.h"
 
 void radar_control_item::Update(int v) {
+  wxMutexLocker lock(m_mutex);
+
   if (v != button) {
     mod = true;
     button = v;
@@ -439,10 +441,8 @@ wxString RadarInfo::GetCanvasText() {
       s << wxT(" (");
       s << _("Emulator");
       s << wxT(")");
-    } else {
-      if (control_dialog) {
-        s << wxT("\n") << control_dialog->GetRangeText();
-      }
+    } else if (control_dialog) {
+      s << wxT("\n") << control_dialog->GetRangeText();
     }
   }
 
