@@ -40,7 +40,7 @@ class RadarPanel;
 
 class radar_control_item
 {
-public:
+   public:
     int value;
     int button;
     bool mod;
@@ -50,68 +50,67 @@ public:
 
 struct DrawInfo
 {
-    RadarDraw   * draw;
-    int           drawing_method;
-    bool          color_option;
+    RadarDraw *draw;
+    int drawing_method;
+    bool color_option;
 };
 
-
-class RadarInfo {
-
-public:
-    wxString                name; // Either "Radar", "Radar A", "Radar B".
-    int                     radar; // Which radar this is (0..., max 2 for now)
+class RadarInfo
+{
+   public:
+    wxString name; // Either "Radar", "Radar A", "Radar B".
+    int radar;     // Which radar this is (0..., max 2 for now)
 
     /* User radar settings */
 
-    radar_control_item      state;
-    radar_control_item      rotation;
-    radar_control_item      overlay;
-    radar_control_item      range;
-    radar_control_item      gain;
-    radar_control_item      interference_rejection;
-    radar_control_item      target_separation;
-    radar_control_item      noise_rejection;
-    radar_control_item      target_boost;
-    radar_control_item      sea;
-    radar_control_item      rain;
-    radar_control_item      scan_speed;
-    radar_control_item      bearing_alignment;
-    radar_control_item      antenna_height;
-    radar_control_item      local_interference_rejection;
-    radar_control_item      side_lobe_suppression;
+    radar_control_item state;
+    radar_control_item rotation;
+    radar_control_item overlay;
+    radar_control_item range;
+    radar_control_item gain;
+    radar_control_item interference_rejection;
+    radar_control_item target_separation;
+    radar_control_item noise_rejection;
+    radar_control_item target_boost;
+    radar_control_item sea;
+    radar_control_item rain;
+    radar_control_item scan_speed;
+    radar_control_item bearing_alignment;
+    radar_control_item antenna_height;
+    radar_control_item local_interference_rejection;
+    radar_control_item side_lobe_suppression;
 
     /* Per radar objects */
 
-    br24Transmit           *transmit;
-    br24Receive            *receive;
-    br24ControlsDialog     *control_dialog;
-    RadarPanel             *radar_panel;
-    RadarCanvas            *radar_canvas;
+    br24Transmit *transmit;
+    br24Receive *receive;
+    br24ControlsDialog *control_dialog;
+    RadarPanel *radar_panel;
+    RadarCanvas *radar_canvas;
 
     /* Abstractions of our own. Some filled by br24Receive. */
 
-    double                  viewpoint_rotation;
+    double viewpoint_rotation;
 
-    bool                    data_seen;
-    time_t                  radar_watchdog;        // Timestamp of last time it was seen
-    bool                    radar_seen;
-    time_t                  data_watchdog;         // Timestamp of when data was seen
-    int                     range_meters;
-    int                     commanded_range_meters;
-    RadarType               radar_type;
-    bool                    auto_range_mode;
-    bool                    control_box_closed;
-    bool                    control_box_opened;
+    bool data_seen;
+    time_t radar_watchdog; // Timestamp of last time it was seen
+    bool radar_seen;
+    time_t data_watchdog; // Timestamp of when data was seen
+    int range_meters;
+    int commanded_range_meters;
+    RadarType radar_type;
+    bool auto_range_mode;
+    bool control_box_closed;
+    bool control_box_opened;
 
-    GuardZone              *guard_zone[GUARD_ZONES];
-    receive_statistics      statistics;
+    GuardZone *guard_zone[GUARD_ZONES];
+    receive_statistics statistics;
 
-    bool                    multi_sweep_filter;
-    UINT8                   history[LINES_PER_ROTATION][RETURNS_PER_LINE];
-#define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x) & 7])
+    bool multi_sweep_filter;
+    UINT8 history[LINES_PER_ROTATION][RETURNS_PER_LINE];
+#define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x) &7])
 
-    volatile bool           m_quit;
+    volatile bool m_quit;
 
     /* Methods */
 
@@ -124,7 +123,8 @@ public:
     void SetRangeMeters(int range);
     bool SetControlValue(ControlType controlType, int value);
     void ResetSpokes();
-    void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 * data, size_t len, int range_meters, wxLongLong nowMillis);
+    void ProcessRadarSpoke(
+        SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong nowMillis);
     void ProcessRadarPacket(time_t now);
     void RenderGuardZone(wxPoint radar_center, double v_scale_ppm);
     void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
@@ -134,16 +134,15 @@ public:
 
     wxString GetCanvasText(); // For now, top left text. Want Bottom Left, Top Right, etc?
 
-private:
+   private:
+    void RenderRadarImage(wxPoint center, double scale, DrawInfo *di);
 
-    void RenderRadarImage(wxPoint center, double scale, DrawInfo * di);
+    DrawInfo m_draw_panel;   // Draw onto our own panel
+    DrawInfo m_draw_overlay; // Abstract painting method
 
-    DrawInfo                m_draw_panel;         // Draw onto our own panel
-    DrawInfo                m_draw_overlay;       // Abstract painting method
-
-    br24radar_pi           *m_pi;
-    int                     m_verbose;
-    int                     m_refresh_countdown;
+    br24radar_pi *m_pi;
+    int m_verbose;
+    int m_refresh_countdown;
 };
 
 #endif

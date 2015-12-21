@@ -39,19 +39,19 @@ class br24MessageBox : public wxDialog
     DECLARE_CLASS(br24MessageBox)
     DECLARE_EVENT_TABLE()
 
-public:
-
+   public:
     br24MessageBox();
 
     ~br24MessageBox();
     void Init();
 
-    bool Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id = wxID_ANY,
-        const wxString& caption = _("Radar"),
-        const wxPoint& pos = wxDefaultPosition,
-        const wxSize& size = wxDefaultSize,
-        long style = wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX)
-        );
+    bool Create(wxWindow *parent,
+                br24radar_pi *pi,
+                wxWindowID id           = wxID_ANY,
+                const wxString &caption = _("Radar"),
+                const wxPoint &pos      = wxDefaultPosition,
+                const wxSize &size      = wxDefaultSize,
+                long style              = wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX));
 
     void CreateControls();
     void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
@@ -62,39 +62,36 @@ public:
     void SetVariationInfo(wxString &msg);
     void SetRadarInfo(wxString &msg);
 
-private:
-    void OnClose(wxCloseEvent& event);
-    void OnIdOKClick(wxCommandEvent& event);
-    void OnMove(wxMoveEvent& event);
-    void OnSize(wxSizeEvent& event);
+   private:
+    void OnClose(wxCloseEvent &event);
+    void OnIdOKClick(wxCommandEvent &event);
+    void OnMove(wxMoveEvent &event);
+    void OnSize(wxSizeEvent &event);
 
-    void OnMessageBackButtonClick(wxCommandEvent& event);
+    void OnMessageBackButtonClick(wxCommandEvent &event);
 
+    wxMutex m_mutex;
 
-    wxMutex             m_mutex;
+    wxWindow *m_parent;
+    br24radar_pi *m_pi;
+    wxBoxSizer *m_top_sizer;
+    wxBoxSizer *m_nmea_sizer;
+    wxBoxSizer *m_info_sizer;
 
-    wxWindow           *m_parent;
-    br24radar_pi       *m_pi;
-    wxBoxSizer         *m_top_sizer;
-    wxBoxSizer         *m_nmea_sizer;
-    wxBoxSizer         *m_info_sizer;
-
-
-    wxBoxSizer         *m_message_sizer;   // Contains NO HDG and/or NO GPS
-    wxStaticBox        *m_ip_box;
+    wxBoxSizer *m_message_sizer; // Contains NO HDG and/or NO GPS
+    wxStaticBox *m_ip_box;
 
     // MessageBox
-    wxButton           *m_back_button;
-    wxStaticText       *m_error_message;
-    wxStaticText       *m_radar_off;
-    wxCheckBox         *m_have_open_gl;
-    wxCheckBox         *m_have_boat_pos;
-    wxCheckBox         *m_have_heading;
-    wxCheckBox         *m_have_variation;
-    wxCheckBox         *m_have_radar;
-    wxCheckBox         *m_have_data;
-    wxStaticText       *m_statistics;
-
+    wxButton *m_back_button;
+    wxStaticText *m_error_message;
+    wxStaticText *m_radar_off;
+    wxCheckBox *m_have_open_gl;
+    wxCheckBox *m_have_boat_pos;
+    wxCheckBox *m_have_heading;
+    wxCheckBox *m_have_variation;
+    wxCheckBox *m_have_radar;
+    wxCheckBox *m_have_data;
+    wxStaticText *m_statistics;
 };
 
 #endif
