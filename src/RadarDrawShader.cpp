@@ -72,6 +72,7 @@ bool RadarDrawShader::Init(int color_option) {
 
   if (!CompileShaderText(&m_vertex, GL_VERTEX_SHADER, VertexShaderText) ||
       !CompileShaderText(&m_fragment, GL_FRAGMENT_SHADER, m_color_option > 0 ? FragmentShaderColorText : FragmentShaderText)) {
+    wxLogMessage(wxT("BR24radar_pi: the OpenGL system of this computer failed to compile shader programs"));
     return false;
   }
 
@@ -79,6 +80,7 @@ bool RadarDrawShader::Init(int color_option) {
                (long int)m_fragment);
   m_program = LinkShaders(m_vertex, m_fragment);
   if (!m_program) {
+    wxLogMessage(wxT("BR24radar_pi: GPU oriented OpenGL failed to link shader program"));
     return false;
   }
 
@@ -86,14 +88,22 @@ bool RadarDrawShader::Init(int color_option) {
     glGenTextures(1, &m_texture);
   }
   glBindTexture(GL_TEXTURE_2D, m_texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, m_color_option > 0 ? GL_RGBA : GL_LUMINANCE, RETURNS_PER_LINE, LINES_PER_ROTATION, 0,
-               m_color_option > 0 ? GL_RGBA : GL_LUMINANCE, GL_UNSIGNED_BYTE, m_data);
+  // Tell the GPU the size of the texture:
+  glTexImage2D(/* target = */ GL_TEXTURE_2D,
+               /* level  = */ 0,
+               /* internal_format = */ m_color_option > 0 ? GL_RGBA : GL_LUMINANCE,
+               /* width           = */ RETURNS_PER_LINE,
+               /* heigth          = */ LINES_PER_ROTATION,
+               /* border          = */ 0,
+               /* format          = */ m_color_option > 0 ? GL_RGBA : GL_LUMINANCE,
+               /* type            = */ GL_UNSIGNED_BYTE,
+               /* data            = */ m_data);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   wxLogMessage(wxT("BR24radar_pi: GPU oriented OpenGL shader %ld for %d colours loaded"), (long int)m_program,
                (m_color_option > 0) ? 4 : 1);
-  m_start_line = LINES_PER_ROTATION;
+  m_start_line = -1;
   m_end_line = 0;
 
   return true;
@@ -115,12 +125,17 @@ RadarDrawShader::~RadarDrawShader() {
 }
 
 void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
-  if (m_start_line == LINES_PER_ROTATION || !m_program) {
+  wxLogMessage(wxT("BR24radar_pi: shader %d line %d-%d"), m_program, m_start_line, m_end_line);
+  if (m_start_line == -1 || !m_program || !m_texture) {
+    wxLogMessage(wxT("BR24radar_pi: Shader not set up yet, skip draw"));
     return;
   }
 
   glPushMatrix();
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   glTranslated(center.x, center.y, 0);
   glScaled(scale, scale, 1.);
@@ -128,49 +143,58 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
   UseProgram(m_program);
 
   glBindTexture(GL_TEXTURE_2D, m_texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, m_color_option > 0 ? GL_RGBA : GL_LUMINANCE, RETURNS_PER_LINE, LINES_PER_ROTATION, 0,
-               m_color_option > 0 ? GL_RGBA : GL_LUMINANCE, GL_UNSIGNED_BYTE, m_data);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   int format, channels;
-  if (m_color_option)
-    format = GL_RGBA, channels = 4;
-  else
-    format = GL_LUMINANCE, channels = 1;
-
-  // Set texture to the returned radar returns
-  if (m_end_line < m_start_line) {
-    // if the new data wraps past the end of the texture
-    // tell it the two parts separately
-    glTexSubImage2D(/* target =   */ GL_TEXTURE_2D,
-                    /* level =    */ 0,
-                    /* x-offset = */ 0,
-                    /* y-offset = */ 0,
-                    /* width =    */ RETURNS_PER_LINE,
-                    /* height =   */ m_end_line,
-                    /* format =   */ format,
-                    /* type =     */ GL_UNSIGNED_BYTE,
-                    /* pixels =   */ m_data);
-    glTexSubImage2D(/* target =   */ GL_TEXTURE_2D,
-                    /* level =    */ 0,
-                    /* x-offset = */ 0,
-                    /* y-offset = */ m_start_line,
-                    /* width =    */ RETURNS_PER_LINE,
-                    /* height =   */ LINES_PER_ROTATION - m_start_line,
-                    /* format =   */ format,
-                    /* type =     */ GL_UNSIGNED_BYTE,
-                    /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * channels);
+  if (m_color_option) {
+    format = GL_RGBA;
+    channels = 4;
   } else {
-    glTexSubImage2D(/* target =   */ GL_TEXTURE_2D,
-                    /* level =    */ 0,
-                    /* x-offset = */ 0,
-                    /* y-offset = */ m_start_line,
-                    /* width =    */ RETURNS_PER_LINE,
-                    /* height =   */ m_end_line - m_start_line,
-                    /* format =   */ format,
-                    /* type =     */ GL_UNSIGNED_BYTE,
-                    /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * channels);
+    format = GL_LUMINANCE;
+    channels = 1;
+  }
+
+  {
+    wxMutexLocker lock(m_mutex);
+
+    // Since the last time we have received data from [m_start_line, m_end_line>
+    // so we only need to update the texture for those data lines.
+    if (m_end_line < m_start_line) {
+      // if the new data wraps past the end of the texture
+      // tell it the two parts separately
+      // First remap [0, m_end_line>
+      glTexSubImage2D(/* target =   */ GL_TEXTURE_2D,
+                      /* level =    */ 0,
+                      /* x-offset = */ 0,
+                      /* y-offset = */ 0,
+                      /* width =    */ RETURNS_PER_LINE,
+                      /* height =   */ m_end_line,
+                      /* format =   */ format,
+                      /* type =     */ GL_UNSIGNED_BYTE,
+                      /* pixels =   */ m_data);
+      // And then remap [m_start_line, LINES_PER_ROTATION>
+      glTexSubImage2D(/* target =   */ GL_TEXTURE_2D,
+                      /* level =    */ 0,
+                      /* x-offset = */ 0,
+                      /* y-offset = */ m_start_line,
+                      /* width =    */ RETURNS_PER_LINE,
+                      /* height =   */ LINES_PER_ROTATION - m_start_line,
+                      /* format =   */ format,
+                      /* type =     */ GL_UNSIGNED_BYTE,
+                      /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * channels);
+    } else {
+      // Remap [m_start_line, m_end_line>
+      glTexSubImage2D(/* target =   */ GL_TEXTURE_2D,
+                      /* level =    */ 0,
+                      /* x-offset = */ 0,
+                      /* y-offset = */ m_start_line,
+                      /* width =    */ RETURNS_PER_LINE,
+                      /* height =   */ m_end_line - m_start_line,
+                      /* format =   */ format,
+                      /* type =     */ GL_UNSIGNED_BYTE,
+                      /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * channels);
+    }
+    m_start_line = -1;
+    m_end_line = 0;
   }
 
   // We tell the GPU to draw a square from (-512,-512) to (+512,+512).
@@ -193,14 +217,18 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
   if (m_pi->m_settings.verbose >= 2) {
     wxLogMessage(wxT("BR24radar_pi: used shader %d line %d-%d"), m_program, m_start_line, m_end_line);
   }
-  // m_start_line = -1;
-  // m_end_line = 0;
 
   return;
 }
 
 void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t len) {
   GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - m_pi->m_settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
+  wxMutexLocker lock(m_mutex);
+
+  if (m_start_line == -1) {
+    m_start_line = angle;  // Note that this only runs once after each draw,
+  }
+  m_end_line = angle + 1;  // whereas this keeps running every draw operation
 
   if (m_color_option) {
     unsigned char *d = m_data + (angle * RETURNS_PER_LINE) * 4;

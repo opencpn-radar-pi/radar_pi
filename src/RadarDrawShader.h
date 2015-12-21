@@ -58,6 +58,8 @@ class RadarDrawShader : public RadarDraw {
 
  private:
   br24radar_pi* m_pi;
+
+  wxMutex m_mutex;  // Mutex protects the following three data structures
   unsigned char m_data[SHADER_COLOR_CHANNELS * LINES_PER_ROTATION * RETURNS_PER_LINE];
   int m_start_line;
   int m_end_line;
