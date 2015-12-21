@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 #ifdef __WXOSX__
-#include <OpenGL/gl3.h> // from ..../Frameworks/OpenGL.framework/Headers/gl.h
+#include <OpenGL/gl3.h>  // from ..../Frameworks/OpenGL.framework/Headers/gl.h
 #define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
 #endif
 
@@ -24,26 +24,22 @@ extern "C" {
 #include <wx/glcanvas.h>
 #endif
 
-struct uniform_info
-{
-    const char *name;
-    GLuint size; /**< number of value[] elements: 1, 2, 3 or 4 */
-    GLenum type; /**< GL_FLOAT, GL_FLOAT_VEC4, GL_INT, GL_FLOAT_MAT4, etc */
-    GLfloat value[16];
-    GLint location; /**< filled in by InitUniforms() */
+struct uniform_info {
+  const char *name;
+  GLuint size; /**< number of value[] elements: 1, 2, 3 or 4 */
+  GLenum type; /**< GL_FLOAT, GL_FLOAT_VEC4, GL_INT, GL_FLOAT_MAT4, etc */
+  GLfloat value[16];
+  GLint location; /**< filled in by InitUniforms() */
 };
 
-#define END_OF_UNIFORMS                    \
-    {                                      \
-        NULL, 0, GL_NONE, {0, 0, 0, 0}, -1 \
-    }
+#define END_OF_UNIFORMS \
+  { NULL, 0, GL_NONE, {0, 0, 0, 0}, -1 }
 
-struct attrib_info
-{
-    const char *name;
-    GLuint size; /**< number of value[] elements: 1, 2, 3 or 4 */
-    GLenum type; /**< GL_FLOAT, GL_FLOAT_VEC4, GL_INT, etc */
-    GLint location;
+struct attrib_info {
+  const char *name;
+  GLuint size; /**< number of value[] elements: 1, 2, 3 or 4 */
+  GLenum type; /**< GL_FLOAT, GL_FLOAT_VEC4, GL_INT, etc */
+  GLint location;
 };
 
 extern GLboolean ShadersSupported(void);
@@ -54,8 +50,8 @@ extern GLuint LinkShaders(GLuint vertShader, GLuint fragShader);
 
 extern GLuint LinkShaders3(GLuint vertShader, GLuint geomShader, GLuint fragShader);
 
-extern GLuint LinkShaders3WithGeometryInfo(
-    GLuint vertShader, GLuint geomShader, GLuint fragShader, GLint verticesOut, GLenum inputType, GLenum outputType);
+extern GLuint LinkShaders3WithGeometryInfo(GLuint vertShader, GLuint geomShader, GLuint fragShader,
+                                           GLint verticesOut, GLenum inputType, GLenum outputType);
 
 extern GLboolean ValidateShaderProgram(GLuint program);
 

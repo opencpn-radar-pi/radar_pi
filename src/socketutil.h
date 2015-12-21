@@ -35,17 +35,15 @@
 
 #include "pi_common.h"
 
-#define VALID_IPV4_ADDRESS(i)                                                                                                   \
-    (i && i->ifa_addr && i->ifa_addr->sa_family == AF_INET && (i->ifa_flags & IFF_UP) > 0 && (i->ifa_flags & IFF_LOOPBACK) == 0 \
-     && (i->ifa_flags & IFF_MULTICAST) > 0)
+#define VALID_IPV4_ADDRESS(i)                                                              \
+  (i && i->ifa_addr && i->ifa_addr->sa_family == AF_INET && (i->ifa_flags & IFF_UP) > 0 && \
+   (i->ifa_flags & IFF_LOOPBACK) == 0 && (i->ifa_flags & IFF_MULTICAST) > 0)
 
 extern bool socketReady(SOCKET sockfd, int timeout);
 
 extern int br24_inet_aton(const char *cp, struct in_addr *addr);
-extern SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in *addr,
-                                             UINT16 port,
-                                             const char *mcast_address,
-                                             wxString &error_message);
+extern SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in *addr, UINT16 port,
+                                             const char *mcast_address, wxString &error_message);
 
 #ifndef __WXMSW__
 
@@ -56,21 +54,21 @@ extern SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in *addr,
 #else
 
 // Emulate (just enough of) ifaddrs on Windows
-// Thanks to https://code.google.com/p/openpgm/source/browse/trunk/openpgm/pgm/getifaddrs.c?r=496&spec=svn496
-// Although that file has interesting new APIs the old ioctl works fine with XP and W7, and does enough
+// Thanks to
+// https://code.google.com/p/openpgm/source/browse/trunk/openpgm/pgm/getifaddrs.c?r=496&spec=svn496
+// Although that file has interesting new APIs the old ioctl works fine with XP and W7, and does
+// enough
 // for what we want to do.
 
-struct ifaddrs
-{
-    struct ifaddrs *ifa_next;
-    struct sockaddr *ifa_addr;
-    ULONG ifa_flags;
+struct ifaddrs {
+  struct ifaddrs *ifa_next;
+  struct sockaddr *ifa_addr;
+  ULONG ifa_flags;
 };
 
-struct ifaddrs_storage
-{
-    struct ifaddrs ifa;
-    struct sockaddr_storage addr;
+struct ifaddrs_storage {
+  struct ifaddrs ifa;
+  struct sockaddr_storage addr;
 };
 
 extern int getifaddrs(struct ifaddrs **ifap);

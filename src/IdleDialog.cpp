@@ -30,10 +30,7 @@
 
 #include "IdleDialog.h"
 
-enum
-{
-    ID_STOPIDLE
-};
+enum { ID_STOPIDLE };
 
 IMPLEMENT_CLASS(IdleDialog, wxDialog)
 
@@ -45,115 +42,90 @@ EVT_MOVE(IdleDialog::OnMove)
 
 END_EVENT_TABLE()
 
-IdleDialog::IdleDialog()
-{
-    Init();
-}
-IdleDialog::~IdleDialog()
-{
-}
+IdleDialog::IdleDialog() { Init(); }
+IdleDialog::~IdleDialog() {}
 
-void IdleDialog::Init()
-{
-}
+void IdleDialog::Init() {}
 
-bool IdleDialog::Create(wxWindow *parent,
-                        br24radar_pi *pi,
-                        wxWindowID id,
-                        const wxString &m_caption,
-                        const wxPoint &pos,
-                        const wxSize &size,
-                        long style)
-{
-    m_parent = parent;
-    m_pi     = pi;
+bool IdleDialog::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, const wxString &m_caption, const wxPoint &pos,
+                        const wxSize &size, long style) {
+  m_parent = parent;
+  m_pi = pi;
 #ifdef wxMSW
-    long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
+  long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
 #else
-    long wstyle = wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
+  long wstyle = wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
 #endif
 
-    wxSize size_min = size;
+  wxSize size_min = size;
 
-    if (!wxDialog::Create(parent, id, m_caption, pos, size_min, wstyle))
-        return false;
+  if (!wxDialog::Create(parent, id, m_caption, pos, size_min, wstyle)) return false;
 
-    CreateControls();
+  CreateControls();
 
-    DimeWindow(this);
+  DimeWindow(this);
 
-    Fit();
-    SetMinSize(GetBestSize());
+  Fit();
+  SetMinSize(GetBestSize());
 
-    return true;
+  return true;
 }
 
 // Foresee translated text to fit into the IdleDialog
-wxString Timelabel_1     = _("Now Transmit for");
-wxString Timelabel_2     = _("minutes");
+wxString Timelabel_1 = _("Now Transmit for");
+wxString Timelabel_2 = _("minutes");
 wxString Timeleftlabel_1 = _T("<");
 wxString Timeleftlabel_2 = _("minutes to shifting");
 
-void IdleDialog::CreateControls()
-{
-    const int border = 5;
-    wxString Label_1, Label_2;
-    Label_1 << Timelabel_1 << _T(" 15 ") << Timelabel_2;
-    Label_2 << Timeleftlabel_1 << _T(" 15 ") << Timeleftlabel_2;
+void IdleDialog::CreateControls() {
+  const int border = 5;
+  wxString Label_1, Label_2;
+  Label_1 << Timelabel_1 << _T(" 15 ") << Timelabel_2;
+  Label_2 << Timeleftlabel_1 << _T(" 15 ") << Timeleftlabel_2;
 
-    wxBoxSizer *sbIdleDialogSizer;
-    sbIdleDialogSizer = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Timed transmit is active")), wxVERTICAL);
-    this->SetSizer(sbIdleDialogSizer);
+  wxBoxSizer *sbIdleDialogSizer;
+  sbIdleDialogSizer = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Timed transmit is active")), wxVERTICAL);
+  this->SetSizer(sbIdleDialogSizer);
 
-    p_Idle_Mode = new wxStaticText(this, wxID_ANY, Label_1, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
-    p_Idle_Mode->Wrap(-1);
-    sbIdleDialogSizer->Add(p_Idle_Mode, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, border);
+  p_Idle_Mode = new wxStaticText(this, wxID_ANY, Label_1, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
+  p_Idle_Mode->Wrap(-1);
+  sbIdleDialogSizer->Add(p_Idle_Mode, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, border);
 
-    p_IdleTimeLeft = new wxStaticText(this, wxID_ANY, Label_2, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
-    p_IdleTimeLeft->Wrap(-1);
-    sbIdleDialogSizer->Add(p_IdleTimeLeft, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, border);
+  p_IdleTimeLeft = new wxStaticText(this, wxID_ANY, Label_2, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
+  p_IdleTimeLeft->Wrap(-1);
+  sbIdleDialogSizer->Add(p_IdleTimeLeft, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, border);
 
-    m_Idle_gauge = new wxGauge(this, wxID_ANY, 100, wxDefaultPosition, wxSize(-1, 12), wxGA_HORIZONTAL);
-    m_Idle_gauge->SetValue(0);
-    sbIdleDialogSizer->Add(m_Idle_gauge, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, border);
+  m_Idle_gauge = new wxGauge(this, wxID_ANY, 100, wxDefaultPosition, wxSize(-1, 12), wxGA_HORIZONTAL);
+  m_Idle_gauge->SetValue(0);
+  sbIdleDialogSizer->Add(m_Idle_gauge, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, border);
 
-    m_btnStopIdle = new wxButton(this, ID_STOPIDLE, _("Turn Radar always ON"), wxDefaultPosition, wxDefaultSize, 0);
-    sbIdleDialogSizer->Add(m_btnStopIdle, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, border);
+  m_btnStopIdle = new wxButton(this, ID_STOPIDLE, _("Turn Radar always ON"), wxDefaultPosition, wxDefaultSize, 0);
+  sbIdleDialogSizer->Add(m_btnStopIdle, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, border);
 
-    this->Layout();
-    sbIdleDialogSizer->Fit(this);
+  this->Layout();
+  sbIdleDialogSizer->Fit(this);
 }
 
-void IdleDialog::SetIdleTimes(int IdleMode, int IdleTime, int IdleTimeLeft)
-{
-    wxString Timelabel, t, Timeleftlabel, t2;
-    if (IdleMode == 1)
-        Timelabel_1 = _("Now Idle for");
-    if (IdleMode == 2)
-        Timelabel_1 = _("Now Transmit for");
-    t.Printf(_T("%d"), IdleTime);
-    t2.Printf(_T("%d"), IdleTimeLeft + 1);
-    Timelabel << Timelabel_1 << _T(" ") << t << _T(" ") << Timelabel_2;
-    Timeleftlabel << Timeleftlabel_1 << _T(" ") << t2 << _T(" ") << Timeleftlabel_2;
-    int GaugeValue = 100 - (IdleTimeLeft >= 0.9 * IdleTime ? 99 : (100 * (IdleTimeLeft + 1) / IdleTime));
-    p_Idle_Mode->SetLabel(Timelabel);
-    p_IdleTimeLeft->SetLabel(Timeleftlabel);
-    m_Idle_gauge->SetValue(GaugeValue);
+void IdleDialog::SetIdleTimes(int IdleMode, int IdleTime, int IdleTimeLeft) {
+  wxString Timelabel, t, Timeleftlabel, t2;
+  if (IdleMode == 1) Timelabel_1 = _("Now Idle for");
+  if (IdleMode == 2) Timelabel_1 = _("Now Transmit for");
+  t.Printf(_T("%d"), IdleTime);
+  t2.Printf(_T("%d"), IdleTimeLeft + 1);
+  Timelabel << Timelabel_1 << _T(" ") << t << _T(" ") << Timelabel_2;
+  Timeleftlabel << Timeleftlabel_1 << _T(" ") << t2 << _T(" ") << Timeleftlabel_2;
+  int GaugeValue = 100 - (IdleTimeLeft >= 0.9 * IdleTime ? 99 : (100 * (IdleTimeLeft + 1) / IdleTime));
+  p_Idle_Mode->SetLabel(Timelabel);
+  p_IdleTimeLeft->SetLabel(Timeleftlabel);
+  m_Idle_gauge->SetValue(GaugeValue);
 }
 
-void IdleDialog::OnClose(wxCloseEvent &event)
-{
-    event.Skip();
+void IdleDialog::OnClose(wxCloseEvent &event) { event.Skip(); }
+
+void IdleDialog::OnIdStopIdleClick(wxCommandEvent &event) {
+  IdleDialog::Close();
+  event.Skip();
+  m_pi->br24radar_pi::OnToolbarToolCallback(999);  // Start radar scanning and set Timed Idle off
 }
 
-void IdleDialog::OnIdStopIdleClick(wxCommandEvent &event)
-{
-    IdleDialog::Close();
-    event.Skip();
-    m_pi->br24radar_pi::OnToolbarToolCallback(999); // Start radar scanning and set Timed Idle off
-}
-
-void IdleDialog::OnMove(wxMoveEvent &event)
-{
-    event.Skip();
-}
+void IdleDialog::OnMove(wxMoveEvent &event) { event.Skip(); }

@@ -34,44 +34,40 @@
 
 #include "br24radar_pi.h"
 
-class IdleDialog : public wxDialog
-{
-    DECLARE_CLASS(IdleDialog)
-    DECLARE_EVENT_TABLE()
+class IdleDialog : public wxDialog {
+  DECLARE_CLASS(IdleDialog)
+  DECLARE_EVENT_TABLE()
 
-   public:
-    IdleDialog();
+ public:
+  IdleDialog();
 
-    ~IdleDialog();
+  ~IdleDialog();
 
-    void Init();
+  void Init();
 
-    bool Create(wxWindow *parent,
-                br24radar_pi *pi,
-                wxWindowID id             = wxID_ANY,
-                const wxString &m_caption = _("Timed Transmit"),
-                const wxPoint &pos        = wxPoint(0, 0),
-                const wxSize &size        = wxDefaultSize,
-                long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
+  bool Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id = wxID_ANY,
+              const wxString &m_caption = _("Timed Transmit"), const wxPoint &pos = wxPoint(0, 0),
+              const wxSize &size = wxDefaultSize,
+              long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
 
-    void CreateControls();
-    void SetIdleTimes(int IdleMode, int IdleTime, int IdleTimeLeft);
+  void CreateControls();
+  void SetIdleTimes(int IdleMode, int IdleTime, int IdleTimeLeft);
 
-   private:
-    void OnClose(wxCloseEvent &event);
-    void OnMove(wxMoveEvent &event);
-    void OnSize(wxSizeEvent &event);
-    void OnIdStopIdleClick(wxCommandEvent &event);
+ private:
+  void OnClose(wxCloseEvent &event);
+  void OnMove(wxMoveEvent &event);
+  void OnSize(wxSizeEvent &event);
+  void OnIdStopIdleClick(wxCommandEvent &event);
 
-    wxWindow *m_parent;
+  wxWindow *m_parent;
 
-    br24radar_pi *m_pi;
+  br24radar_pi *m_pi;
 
-    /* Controls  */
-    wxStaticText *p_Idle_Mode;
-    wxStaticText *p_IdleTimeLeft;
-    wxGauge *m_Idle_gauge;
-    wxButton *m_btnStopIdle;
+  /* Controls  */
+  wxStaticText *p_Idle_Mode;
+  wxStaticText *p_IdleTimeLeft;
+  wxGauge *m_Idle_gauge;
+  wxButton *m_btnStopIdle;
 };
 
 #endif

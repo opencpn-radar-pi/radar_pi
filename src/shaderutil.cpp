@@ -62,7 +62,7 @@ typedef PROC FunctionPointer;
 typedef void *FunctionPointer;
 #else
 #include <GL/glx.h>
-#define SET_FUNCTION_POINTER(name) glXGetProcAddress((const GLubyte *) name)
+#define SET_FUNCTION_POINTER(name) glXGetProcAddress((const GLubyte *)name)
 typedef __GLXextFuncPtr FunctionPointer;
 #endif
 
@@ -78,82 +78,71 @@ fake_ValidateProgram(GLuint prog)
 }
 #endif
 
-GLboolean ShadersSupported(void)
-{
-    GLboolean ok = 1;
+GLboolean ShadersSupported(void) {
+  GLboolean ok = 1;
 
-#define SHADER_FUNCTION_LIST(proc, name)        \
-    {                                           \
-        union                                   \
-        {                                       \
-            proc f;                             \
-            FunctionPointer p;                  \
-        } u;                                    \
-        u.p = SET_FUNCTION_POINTER("gl" #name); \
-        if (!u.p)                               \
-            ok = 0;                             \
-        name   = u.f;                           \
-    }
+#define SHADER_FUNCTION_LIST(proc, name)    \
+  {                                         \
+    union {                                 \
+      proc f;                               \
+      FunctionPointer p;                    \
+    } u;                                    \
+    u.p = SET_FUNCTION_POINTER("gl" #name); \
+    if (!u.p) ok = 0;                       \
+    name = u.f;                             \
+  }
 #include "shaderutil.h"
 #undef SHADER_FUNCTION_LIST
 
-    return ok;
+  return ok;
 }
 
-bool CompileShaderText(GLuint *shader, GLenum shaderType, const char *text)
-{
+bool CompileShaderText(GLuint *shader, GLenum shaderType, const char *text) {
+  GLint stat;
+
+  *shader = CreateShader(shaderType);
+  ShaderSource(*shader, 1, (const GLchar **)&text, NULL);
+
+  CompileShader(*shader);
+
+  GetShaderiv(*shader, GL_COMPILE_STATUS, &stat);
+  if (!stat) {
+    GLchar log[1000];
+    GLsizei len;
+    GetShaderInfoLog(*shader, 1000, &len, log);
+    wxLogMessage(wxT("BR24radar_pi: problem compiling shader: %s"), log);
+    return false;
+  }
+  return true;
+}
+
+GLuint LinkShaders(GLuint vertShader, GLuint fragShader) { return LinkShaders3(vertShader, 0, fragShader); }
+
+GLuint LinkShaders3(GLuint vertShader, GLuint geomShader, GLuint fragShader) {
+  GLuint program = CreateProgram();
+
+  assert(vertShader || fragShader);
+
+  if (vertShader) AttachShader(program, vertShader);
+  if (geomShader) AttachShader(program, geomShader);
+  if (fragShader) AttachShader(program, fragShader);
+
+  LinkProgram(program);
+
+  /* check link */
+  {
     GLint stat;
-
-    *shader = CreateShader(shaderType);
-    ShaderSource(*shader, 1, (const GLchar **) &text, NULL);
-
-    CompileShader(*shader);
-
-    GetShaderiv(*shader, GL_COMPILE_STATUS, &stat);
+    GetProgramiv(program, GL_LINK_STATUS, &stat);
     if (!stat) {
-        GLchar log[1000];
-        GLsizei len;
-        GetShaderInfoLog(*shader, 1000, &len, log);
-        wxLogMessage(wxT("BR24radar_pi: problem compiling shader: %s"), log);
-        return false;
+      GLchar log[1000];
+      GLsizei len;
+      GetProgramInfoLog(program, 1000, &len, log);
+      wxLogMessage(wxT("BR24radar_pi: problem linking program: %s"), log);
+      return 0;
     }
-    return true;
-}
+  }
 
-GLuint LinkShaders(GLuint vertShader, GLuint fragShader)
-{
-    return LinkShaders3(vertShader, 0, fragShader);
-}
-
-GLuint LinkShaders3(GLuint vertShader, GLuint geomShader, GLuint fragShader)
-{
-    GLuint program = CreateProgram();
-
-    assert(vertShader || fragShader);
-
-    if (vertShader)
-        AttachShader(program, vertShader);
-    if (geomShader)
-        AttachShader(program, geomShader);
-    if (fragShader)
-        AttachShader(program, fragShader);
-
-    LinkProgram(program);
-
-    /* check link */
-    {
-        GLint stat;
-        GetProgramiv(program, GL_LINK_STATUS, &stat);
-        if (!stat) {
-            GLchar log[1000];
-            GLsizei len;
-            GetProgramInfoLog(program, 1000, &len, log);
-            wxLogMessage(wxT("BR24radar_pi: problem linking program: %s"), log);
-            return 0;
-        }
-    }
-
-    return program;
+  return program;
 }
 
 #if 0
@@ -196,21 +185,20 @@ LinkShaders3WithGeometryInfo(GLuint vertShader, GLuint geomShader, GLuint fragSh
 }
 #endif
 
-GLboolean ValidateShaderProgram(GLuint program)
-{
-    GLint stat;
-    ValidateProgram(program);
-    GetProgramiv(program, GL_VALIDATE_STATUS, &stat);
+GLboolean ValidateShaderProgram(GLuint program) {
+  GLint stat;
+  ValidateProgram(program);
+  GetProgramiv(program, GL_VALIDATE_STATUS, &stat);
 
-    if (!stat) {
-        GLchar log[1000];
-        GLsizei len;
-        GetProgramInfoLog(program, 1000, &len, log);
-        wxLogMessage(wxT("BR24radar_pi: program validation error: %s"), log);
-        return 0;
-    }
+  if (!stat) {
+    GLchar log[1000];
+    GLsizei len;
+    GetProgramInfoLog(program, 1000, &len, log);
+    wxLogMessage(wxT("BR24radar_pi: program validation error: %s"), log);
+    return 0;
+  }
 
-    return (GLboolean) stat;
+  return (GLboolean)stat;
 }
 
 #ifdef __cplusplus

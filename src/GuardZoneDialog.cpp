@@ -30,10 +30,9 @@
 
 #include "br24radar_pi.h"
 
-enum
-{ // process ID's
-    ID_OK_Z,
-    ID_ALARMZONES
+enum {  // process ID's
+  ID_OK_Z,
+  ID_ALARMZONES
 };
 
 bool outer_set;
@@ -53,257 +52,224 @@ EVT_BUTTON(ID_OK_Z, GuardZoneDialog::OnIdOKClick)
 
 END_EVENT_TABLE()
 
-GuardZoneDialog::GuardZoneDialog()
-{
-    Init();
-}
+GuardZoneDialog::GuardZoneDialog() { Init(); }
 
-GuardZoneDialog::~GuardZoneDialog()
-{
-}
+GuardZoneDialog::~GuardZoneDialog() {}
 
-void GuardZoneDialog::Init()
-{
-}
+void GuardZoneDialog::Init() {}
 
-bool GuardZoneDialog::Create(wxWindow *parent,
-                             br24radar_pi *pi,
-                             wxWindowID id,
-                             const wxString &m_caption,
-                             const wxPoint &pos,
-                             const wxSize &size,
-                             long style)
-{
-    m_parent = parent;
-    m_pi     = pi;
+bool GuardZoneDialog::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, const wxString &m_caption, const wxPoint &pos,
+                             const wxSize &size, long style) {
+  m_parent = parent;
+  m_pi = pi;
 
 #ifdef wxMSW
-    long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
+  long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
 #else
-    long wstyle = wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
+  long wstyle = wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
 #endif
 
-    wxSize size_min = wxSize(200, 200);
+  wxSize size_min = wxSize(200, 200);
 
-    if (!wxDialog::Create(parent, id, m_caption, pos, size_min, wstyle))
-        return false;
+  if (!wxDialog::Create(parent, id, m_caption, pos, size_min, wstyle)) return false;
 
-    CreateControls();
+  CreateControls();
 
-    DimeWindow(this);
+  DimeWindow(this);
 
-    Fit();
-    SetMinSize(GetBestSize());
+  Fit();
+  SetMinSize(GetBestSize());
 
-    return true;
+  return true;
 }
 
-void GuardZoneDialog::CreateControls()
-{
-    static const int border_size = 4;
+void GuardZoneDialog::CreateControls() {
+  static const int border_size = 4;
 
-    wxBoxSizer *GuardZoneSizer = new wxBoxSizer(wxVERTICAL);
-    SetSizer(GuardZoneSizer);
+  wxBoxSizer *GuardZoneSizer = new wxBoxSizer(wxVERTICAL);
+  SetSizer(GuardZoneSizer);
 
-    // Guard Zone options
-    pBoxGuardZone                       = new wxStaticBox(this, wxID_ANY, _("Guard zones"));
-    wxStaticBoxSizer *BoxGuardZoneSizer = new wxStaticBoxSizer(pBoxGuardZone, wxVERTICAL);
-    GuardZoneSizer->Add(BoxGuardZoneSizer, 0, wxEXPAND | wxALL, border_size);
+  // Guard Zone options
+  pBoxGuardZone = new wxStaticBox(this, wxID_ANY, _("Guard zones"));
+  wxStaticBoxSizer *BoxGuardZoneSizer = new wxStaticBoxSizer(pBoxGuardZone, wxVERTICAL);
+  GuardZoneSizer->Add(BoxGuardZoneSizer, 0, wxEXPAND | wxALL, border_size);
 
-    GuardZoneNames[0] = _("Off");
-    GuardZoneNames[1] = _("Arc");
-    GuardZoneNames[2] = _("Circle");
-    pGuardZoneType    = new wxRadioBox(this,
-                                    ID_ALARMZONES,
-                                    _("Zone type:"),
-                                    wxDefaultPosition,
-                                    wxDefaultSize,
-                                    ARRAY_SIZE(GuardZoneNames),
-                                    GuardZoneNames,
-                                    1,
-                                    wxRA_SPECIFY_COLS);
+  GuardZoneNames[0] = _("Off");
+  GuardZoneNames[1] = _("Arc");
+  GuardZoneNames[2] = _("Circle");
+  pGuardZoneType = new wxRadioBox(this, ID_ALARMZONES, _("Zone type:"), wxDefaultPosition, wxDefaultSize,
+                                  ARRAY_SIZE(GuardZoneNames), GuardZoneNames, 1, wxRA_SPECIFY_COLS);
 
-    BoxGuardZoneSizer->Add(pGuardZoneType, 0, wxALL | wxEXPAND, 2);
+  BoxGuardZoneSizer->Add(pGuardZoneType, 0, wxALL | wxEXPAND, 2);
 
-    pGuardZoneType->Connect(
-        wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(GuardZoneDialog::OnGuardZoneModeClick), NULL, this);
+  pGuardZoneType->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(GuardZoneDialog::OnGuardZoneModeClick), NULL,
+                          this);
 
-    // Inner and Outer Ranges
-    wxString m_temp;
-    wxStaticText *pInner_Range_Text = new wxStaticText(this, wxID_ANY, _("Inner range"), wxDefaultPosition, wxDefaultSize, 0);
-    BoxGuardZoneSizer->Add(pInner_Range_Text, 0, wxALIGN_LEFT | wxALL, 0);
+  // Inner and Outer Ranges
+  wxString m_temp;
+  wxStaticText *pInner_Range_Text = new wxStaticText(this, wxID_ANY, _("Inner range"), wxDefaultPosition, wxDefaultSize, 0);
+  BoxGuardZoneSizer->Add(pInner_Range_Text, 0, wxALIGN_LEFT | wxALL, 0);
 
-    pInner_Range = new wxTextCtrl(this, wxID_ANY);
-    BoxGuardZoneSizer->Add(pInner_Range, 1, wxALIGN_LEFT | wxALL, 5);
-    pInner_Range->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(GuardZoneDialog::OnInner_Range_Value), NULL, this);
-    ///   start of copy
-    wxStaticText *pOuter_Range_Text = new wxStaticText(this, wxID_ANY, _("Outer range"), wxDefaultPosition, wxDefaultSize, 0);
-    BoxGuardZoneSizer->Add(pOuter_Range_Text, 0, wxALIGN_LEFT | wxALL, 0);
+  pInner_Range = new wxTextCtrl(this, wxID_ANY);
+  BoxGuardZoneSizer->Add(pInner_Range, 1, wxALIGN_LEFT | wxALL, 5);
+  pInner_Range->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(GuardZoneDialog::OnInner_Range_Value), NULL, this);
+  ///   start of copy
+  wxStaticText *pOuter_Range_Text = new wxStaticText(this, wxID_ANY, _("Outer range"), wxDefaultPosition, wxDefaultSize, 0);
+  BoxGuardZoneSizer->Add(pOuter_Range_Text, 0, wxALIGN_LEFT | wxALL, 0);
 
-    pOuter_Range = new wxTextCtrl(this, wxID_ANY);
-    BoxGuardZoneSizer->Add(pOuter_Range, 1, wxALIGN_LEFT | wxALL, 5);
-    pOuter_Range->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(GuardZoneDialog::OnOuter_Range_Value), NULL, this);
+  pOuter_Range = new wxTextCtrl(this, wxID_ANY);
+  BoxGuardZoneSizer->Add(pOuter_Range, 1, wxALIGN_LEFT | wxALL, 5);
+  pOuter_Range->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(GuardZoneDialog::OnOuter_Range_Value), NULL, this);
 
-    // 1st and 2nd Arc Subtending Bearings
-    wxStaticText *pStart_Bearing = new wxStaticText(this, wxID_ANY, _("Start bearing"), wxDefaultPosition, wxDefaultSize, 0);
-    BoxGuardZoneSizer->Add(pStart_Bearing, 0, wxALIGN_LEFT | wxALL, 0);
+  // 1st and 2nd Arc Subtending Bearings
+  wxStaticText *pStart_Bearing = new wxStaticText(this, wxID_ANY, _("Start bearing"), wxDefaultPosition, wxDefaultSize, 0);
+  BoxGuardZoneSizer->Add(pStart_Bearing, 0, wxALIGN_LEFT | wxALL, 0);
 
-    pStart_Bearing_Value = new wxTextCtrl(this, wxID_ANY);
-    BoxGuardZoneSizer->Add(pStart_Bearing_Value, 1, wxALIGN_LEFT | wxALL, 5);
-    pStart_Bearing_Value->Connect(
-        wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(GuardZoneDialog::OnStart_Bearing_Value), NULL, this);
+  pStart_Bearing_Value = new wxTextCtrl(this, wxID_ANY);
+  BoxGuardZoneSizer->Add(pStart_Bearing_Value, 1, wxALIGN_LEFT | wxALL, 5);
+  pStart_Bearing_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(GuardZoneDialog::OnStart_Bearing_Value), NULL,
+                                this);
 
-    /////////////////////////////////////////
-    wxStaticText *pEnd_Bearing = new wxStaticText(this, wxID_ANY, _("End bearing"), wxDefaultPosition, wxDefaultSize, 0);
-    BoxGuardZoneSizer->Add(pEnd_Bearing, 0, wxALIGN_LEFT | wxALL, 0);
+  /////////////////////////////////////////
+  wxStaticText *pEnd_Bearing = new wxStaticText(this, wxID_ANY, _("End bearing"), wxDefaultPosition, wxDefaultSize, 0);
+  BoxGuardZoneSizer->Add(pEnd_Bearing, 0, wxALIGN_LEFT | wxALL, 0);
 
-    pEnd_Bearing_Value = new wxTextCtrl(this, wxID_ANY);
-    BoxGuardZoneSizer->Add(pEnd_Bearing_Value, 1, wxALIGN_LEFT | wxALL, 5);
-    pEnd_Bearing_Value->Connect(
-        wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(GuardZoneDialog::OnEnd_Bearing_Value), NULL, this);
+  pEnd_Bearing_Value = new wxTextCtrl(this, wxID_ANY);
+  BoxGuardZoneSizer->Add(pEnd_Bearing_Value, 1, wxALIGN_LEFT | wxALL, 5);
+  pEnd_Bearing_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(GuardZoneDialog::OnEnd_Bearing_Value), NULL, this);
 
-    //  Options
-    //   wxString label;
-    //   label << _("Warning: Targets may be") << wxT("\n\r") << _("lost with filter on");
-    wxStaticBox *itemStaticBoxOptions           = new wxStaticBox(this, wxID_ANY, _("Filter"));
-    wxStaticBoxSizer *itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
-    GuardZoneSizer->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
+  //  Options
+  //   wxString label;
+  //   label << _("Warning: Targets may be") << wxT("\n\r") << _("lost with filter on");
+  wxStaticBox *itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Filter"));
+  wxStaticBoxSizer *itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
+  GuardZoneSizer->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
 
-    wxStaticText *pStatic_Warning = new wxStaticText(this, wxID_ANY, _("Warning: Targets may be\nmissed with filter on"));
-    itemStaticBoxSizerOptions->Add(pStatic_Warning, 1, wxALIGN_LEFT | wxALL, 2);
+  wxStaticText *pStatic_Warning = new wxStaticText(this, wxID_ANY, _("Warning: Targets may be\nmissed with filter on"));
+  itemStaticBoxSizerOptions->Add(pStatic_Warning, 1, wxALIGN_LEFT | wxALL, 2);
 
-    // added check box to control multi swep filtering
-    cbFilter = new wxCheckBox(
-        this, wxID_ANY, _("Multi Sweep Filter On"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-    itemStaticBoxSizerOptions->Add(cbFilter, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-    //    int test = m_pi->settings.PassHeadingToOCPN;
-    //    cbFilter->SetValue(m_pi->settings.PassHeadingToOCPN ? true : false);
-    cbFilter->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(GuardZoneDialog::OnFilterClick), NULL, this);
+  // added check box to control multi swep filtering
+  cbFilter = new wxCheckBox(this, wxID_ANY, _("Multi Sweep Filter On"), wxDefaultPosition, wxDefaultSize,
+                            wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  itemStaticBoxSizerOptions->Add(cbFilter, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  //    int test = m_pi->settings.PassHeadingToOCPN;
+  //    cbFilter->SetValue(m_pi->settings.PassHeadingToOCPN ? true : false);
+  cbFilter->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(GuardZoneDialog::OnFilterClick), NULL, this);
 
-    // The Close button
-    wxButton *bClose = new wxButton(this, ID_OK_Z, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
-    GuardZoneSizer->Add(bClose, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+  // The Close button
+  wxButton *bClose = new wxButton(this, ID_OK_Z, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
+  GuardZoneSizer->Add(bClose, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 }
 
 //*********************************************************************************************************************
 
-void GuardZoneDialog::SetVisibility()
-{
-    GuardZoneType zoneType = (GuardZoneType) pGuardZoneType->GetSelection();
+void GuardZoneDialog::SetVisibility() {
+  GuardZoneType zoneType = (GuardZoneType)pGuardZoneType->GetSelection();
 
-    m_guard_zone->type = zoneType;
+  m_guard_zone->type = zoneType;
 
-    if (zoneType == GZ_OFF) {
-        pStart_Bearing_Value->Enable();
-        pEnd_Bearing_Value->Enable();
-        pInner_Range->Enable();
-        pOuter_Range->Enable();
+  if (zoneType == GZ_OFF) {
+    pStart_Bearing_Value->Enable();
+    pEnd_Bearing_Value->Enable();
+    pInner_Range->Enable();
+    pOuter_Range->Enable();
 
-    } else if (pGuardZoneType->GetSelection() == GZ_CIRCLE) {
-        pStart_Bearing_Value->Disable();
-        pEnd_Bearing_Value->Disable();
-        pInner_Range->Enable();
-        pOuter_Range->Enable();
+  } else if (pGuardZoneType->GetSelection() == GZ_CIRCLE) {
+    pStart_Bearing_Value->Disable();
+    pEnd_Bearing_Value->Disable();
+    pInner_Range->Enable();
+    pOuter_Range->Enable();
 
-    } else {
-        pStart_Bearing_Value->Enable();
-        pEnd_Bearing_Value->Enable();
-        pInner_Range->Enable();
-        pOuter_Range->Enable();
-    }
+  } else {
+    pStart_Bearing_Value->Enable();
+    pEnd_Bearing_Value->Enable();
+    pInner_Range->Enable();
+    pOuter_Range->Enable();
+  }
 }
 
-void GuardZoneDialog::OnGuardZoneDialogShow(RadarInfo *ri, int zone)
-{
-    double conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
+void GuardZoneDialog::OnGuardZoneDialogShow(RadarInfo *ri, int zone) {
+  double conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
 
-    m_ri         = ri;
-    m_guard_zone = ri->guard_zone[zone];
+  m_ri = ri;
+  m_guard_zone = ri->guard_zone[zone];
 
-    wxString GuardZoneText;
-    wxString t;
-    t.Printf(_T(" %d"), zone + 1);
-    GuardZoneText << _("Guard Zone") << t;
-    pBoxGuardZone->SetLabel(GuardZoneText);
+  wxString GuardZoneText;
+  wxString t;
+  t.Printf(_T(" %d"), zone + 1);
+  GuardZoneText << _("Guard Zone") << t;
+  pBoxGuardZone->SetLabel(GuardZoneText);
 
-    pGuardZoneType->SetSelection(m_guard_zone->type);
+  pGuardZoneType->SetSelection(m_guard_zone->type);
 
-    GuardZoneText.Printf(wxT("%2.2f"), m_guard_zone->inner_range / conversionFactor);
-    pInner_Range->SetValue(GuardZoneText);
+  GuardZoneText.Printf(wxT("%2.2f"), m_guard_zone->inner_range / conversionFactor);
+  pInner_Range->SetValue(GuardZoneText);
 
-    GuardZoneText.Printf(wxT("%2.2f"), m_guard_zone->outer_range / conversionFactor);
-    pOuter_Range->SetValue(GuardZoneText);
+  GuardZoneText.Printf(wxT("%2.2f"), m_guard_zone->outer_range / conversionFactor);
+  pOuter_Range->SetValue(GuardZoneText);
 
-    GuardZoneText.Printf(wxT("%3.1f"), SCALE_RAW_TO_DEGREES2048(m_guard_zone->start_bearing));
-    pStart_Bearing_Value->SetValue(GuardZoneText);
-    GuardZoneText.Printf(wxT("%3.1f"), SCALE_RAW_TO_DEGREES2048(m_guard_zone->end_bearing));
-    pEnd_Bearing_Value->SetValue(GuardZoneText);
+  GuardZoneText.Printf(wxT("%3.1f"), SCALE_RAW_TO_DEGREES2048(m_guard_zone->start_bearing));
+  pStart_Bearing_Value->SetValue(GuardZoneText);
+  GuardZoneText.Printf(wxT("%3.1f"), SCALE_RAW_TO_DEGREES2048(m_guard_zone->end_bearing));
+  pEnd_Bearing_Value->SetValue(GuardZoneText);
 
-    cbFilter->SetValue(m_guard_zone->multi_sweep_filter ? 1 : 0);
+  cbFilter->SetValue(m_guard_zone->multi_sweep_filter ? 1 : 0);
 
-    SetVisibility();
+  SetVisibility();
 }
 
-void GuardZoneDialog::OnGuardZoneModeClick(wxCommandEvent &event)
-{
-    SetVisibility();
-    outer_set = false;
+void GuardZoneDialog::OnGuardZoneModeClick(wxCommandEvent &event) {
+  SetVisibility();
+  outer_set = false;
 }
 
-void GuardZoneDialog::OnInner_Range_Value(wxCommandEvent &event)
-{
-    wxString temp = pInner_Range->GetValue();
-    double t;
-    temp.ToDouble(&t);
+void GuardZoneDialog::OnInner_Range_Value(wxCommandEvent &event) {
+  wxString temp = pInner_Range->GetValue();
+  double t;
+  temp.ToDouble(&t);
 
-    int conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
+  int conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
 
-    m_guard_zone->inner_range = (int) (t * conversionFactor);
+  m_guard_zone->inner_range = (int)(t * conversionFactor);
 }
 
-void GuardZoneDialog::OnOuter_Range_Value(wxCommandEvent &event)
-{
-    wxString temp = pOuter_Range->GetValue();
-    double t;
-    temp.ToDouble(&t);
+void GuardZoneDialog::OnOuter_Range_Value(wxCommandEvent &event) {
+  wxString temp = pOuter_Range->GetValue();
+  double t;
+  temp.ToDouble(&t);
 
-    int conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
+  int conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
 
-    m_guard_zone->outer_range = (int) (t * conversionFactor);
+  m_guard_zone->outer_range = (int)(t * conversionFactor);
 }
 
-void GuardZoneDialog::OnStart_Bearing_Value(wxCommandEvent &event)
-{
-    wxString temp = pStart_Bearing_Value->GetValue();
-    double t;
+void GuardZoneDialog::OnStart_Bearing_Value(wxCommandEvent &event) {
+  wxString temp = pStart_Bearing_Value->GetValue();
+  double t;
 
-    temp.ToDouble(&t);
-    m_guard_zone->start_bearing = SCALE_DEGREES_TO_RAW2048(t);
+  temp.ToDouble(&t);
+  m_guard_zone->start_bearing = SCALE_DEGREES_TO_RAW2048(t);
 }
 
-void GuardZoneDialog::OnEnd_Bearing_Value(wxCommandEvent &event)
-{
-    wxString temp = pEnd_Bearing_Value->GetValue();
-    double t;
+void GuardZoneDialog::OnEnd_Bearing_Value(wxCommandEvent &event) {
+  wxString temp = pEnd_Bearing_Value->GetValue();
+  double t;
 
-    temp.ToDouble(&t);
-    m_guard_zone->end_bearing = SCALE_DEGREES_TO_RAW2048(t);
+  temp.ToDouble(&t);
+  m_guard_zone->end_bearing = SCALE_DEGREES_TO_RAW2048(t);
 }
 
-void GuardZoneDialog::OnFilterClick(wxCommandEvent &event)
-{
-    int filt                         = cbFilter->GetValue();
-    m_guard_zone->multi_sweep_filter = filt;
+void GuardZoneDialog::OnFilterClick(wxCommandEvent &event) {
+  int filt = cbFilter->GetValue();
+  m_guard_zone->multi_sweep_filter = filt;
 }
 
-void GuardZoneDialog::OnClose(wxCloseEvent &event)
-{
-    m_pi->OnGuardZoneDialogClose(m_ri);
-    event.Skip();
+void GuardZoneDialog::OnClose(wxCloseEvent &event) {
+  m_pi->OnGuardZoneDialogClose(m_ri);
+  event.Skip();
 }
 
-void GuardZoneDialog::OnIdOKClick(wxCommandEvent &event)
-{
-    m_pi->OnGuardZoneDialogClose(m_ri);
-    event.Skip();
+void GuardZoneDialog::OnIdOKClick(wxCommandEvent &event) {
+  m_pi->OnGuardZoneDialogClose(m_ri);
+  event.Skip();
 }

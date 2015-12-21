@@ -34,79 +34,75 @@
 
 #include "RadarDraw.h"
 
-class RadarDrawVertex : public RadarDraw
-{
-   public:
-    RadarDrawVertex(br24radar_pi * pi)
-    {
-        m_pi       = pi;
-        start_line = LINES_PER_ROTATION;
-        end_line   = 0;
-        m_blobs    = 0;
-        m_spokes   = 0;
+class RadarDrawVertex : public RadarDraw {
+ public:
+  RadarDrawVertex(br24radar_pi* pi) {
+    m_pi = pi;
+    start_line = LINES_PER_ROTATION;
+    end_line = 0;
+    m_blobs = 0;
+    m_spokes = 0;
 
-        for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
-            spokes[i].n = 0;
-        }
-
-        // initialise polar_to_cart_y[arc + 1][radius] arrays
-        for (int arc = 0; arc < LINES_PER_ROTATION + 1; arc++) {
-            GLfloat sine   = sinf((GLfloat) arc * PI * 2 / LINES_PER_ROTATION);
-            GLfloat cosine = cosf((GLfloat) arc * PI * 2 / LINES_PER_ROTATION);
-            for (int radius = 0; radius < RETURNS_PER_LINE + 1; radius++) {
-                polar_to_cart_y[arc][radius] = (GLfloat) radius * sine;
-                polar_to_cart_x[arc][radius] = (GLfloat) radius * cosine;
-            }
-        }
-
-        wxLogMessage(wxT("BR24radar_pi: CPU oriented OpenGL vertex draw ctor"));
-        start_line = LINES_PER_ROTATION;
-        end_line   = 0;
+    for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
+      spokes[i].n = 0;
     }
 
-    bool Init(int color_option);
-    void DrawRadarImage(wxPoint center, double scale);
-    void ProcessRadarSpoke(SpokeBearing angle, UINT8 * data, size_t len);
-
-    ~RadarDrawVertex()
-    {
+    // initialise polar_to_cart_y[arc + 1][radius] arrays
+    for (int arc = 0; arc < LINES_PER_ROTATION + 1; arc++) {
+      GLfloat sine = sinf((GLfloat)arc * PI * 2 / LINES_PER_ROTATION);
+      GLfloat cosine = cosf((GLfloat)arc * PI * 2 / LINES_PER_ROTATION);
+      for (int radius = 0; radius < RETURNS_PER_LINE + 1; radius++) {
+        polar_to_cart_y[arc][radius] = (GLfloat)radius * sine;
+        polar_to_cart_x[arc][radius] = (GLfloat)radius * cosine;
+      }
     }
 
-   private:
-    void SetBlob(int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha);
+    wxLogMessage(wxT("BR24radar_pi: CPU oriented OpenGL vertex draw ctor"));
+    start_line = LINES_PER_ROTATION;
+    end_line = 0;
+  }
 
-    br24radar_pi * m_pi;
+  bool Init(int color_option);
+  void DrawRadarImage(wxPoint center, double scale);
+  void ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t len);
 
-    static const int VERTEX_PER_TRIANGLE = 3;
-    static const int VERTEX_PER_QUAD     = 2 * VERTEX_PER_TRIANGLE;
-    static const int VERTEX_MAX          = 100 * VERTEX_PER_QUAD; // Assume picture is no more complicated than this
+  ~RadarDrawVertex() {}
 
-    struct vertex_point
-    {
-        GLfloat x;
-        GLfloat y;
-        GLubyte red;
-        GLubyte green;
-        GLubyte blue;
-        GLubyte alpha;
-    };
+ private:
+  void SetBlob(int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green,
+               GLubyte blue, GLubyte alpha);
 
-    struct vertex_spoke
-    {
-        vertex_point points[VERTEX_MAX];
-        size_t n;
-    };
+  br24radar_pi* m_pi;
 
-    vertex_spoke spokes[LINES_PER_ROTATION];
+  static const int VERTEX_PER_TRIANGLE = 3;
+  static const int VERTEX_PER_QUAD = 2 * VERTEX_PER_TRIANGLE;
+  static const int VERTEX_MAX =
+      100 * VERTEX_PER_QUAD;  // Assume picture is no more complicated than this
 
-    GLfloat polar_to_cart_x[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
-    GLfloat polar_to_cart_y[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
+  struct vertex_point {
+    GLfloat x;
+    GLfloat y;
+    GLubyte red;
+    GLubyte green;
+    GLubyte blue;
+    GLubyte alpha;
+  };
 
-    int start_line;
-    int end_line;
+  struct vertex_spoke {
+    vertex_point points[VERTEX_MAX];
+    size_t n;
+  };
 
-    unsigned int m_blobs;
-    unsigned int m_spokes;
+  vertex_spoke spokes[LINES_PER_ROTATION];
+
+  GLfloat polar_to_cart_x[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
+  GLfloat polar_to_cart_y[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
+
+  int start_line;
+  int end_line;
+
+  unsigned int m_blobs;
+  unsigned int m_spokes;
 };
 
 #endif /* _RADARDRAWVERTEX_H_ */

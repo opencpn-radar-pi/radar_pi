@@ -34,18 +34,17 @@
 
 #include "br24radar_pi.h"
 
-class RadarDraw
-{
-   public:
-    static RadarDraw* make_Draw(br24radar_pi* pi, int draw_method);
+class RadarDraw {
+ public:
+  static RadarDraw* make_Draw(br24radar_pi* pi, int draw_method);
 
-    virtual bool Init(int color_option) = 0;
-    virtual void DrawRadarImage(wxPoint center, double scale) = 0;
-    virtual void ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t len) = 0;
+  virtual bool Init(int color_option) = 0;
+  virtual void DrawRadarImage(wxPoint center, double scale) = 0;
+  virtual void ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t len) = 0;
 
-    virtual ~RadarDraw() = 0;
+  virtual ~RadarDraw() = 0;
 
-    static void GetDrawingMethods(wxArrayString& methods);
+  static void GetDrawingMethods(wxArrayString& methods);
 };
 
 #endif

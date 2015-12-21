@@ -36,26 +36,25 @@
 #include "socketutil.h"
 #include "RadarInfo.h"
 
-class br24Transmit
-{
-   public:
-    br24Transmit(wxString name, int radar);
-    ~br24Transmit();
+class br24Transmit {
+ public:
+  br24Transmit(wxString name, int radar);
+  ~br24Transmit();
 
-    bool Init(int verbose);
-    void RadarTxOff();
-    void RadarTxOn();
-    bool RadarStayAlive();
-    bool SetRange(int meters);
-    bool SetControlValue(ControlType controlType, int value);
+  bool Init(int verbose);
+  void RadarTxOff();
+  void RadarTxOn();
+  bool RadarStayAlive();
+  bool SetRange(int meters);
+  bool SetControlValue(ControlType controlType, int value);
 
-   private:
-    int m_verbose;
-    struct sockaddr_in m_addr;
-    SOCKET m_radar_socket;
-    wxString m_name;
+ private:
+  int m_verbose;
+  struct sockaddr_in m_addr;
+  SOCKET m_radar_socket;
+  wxString m_name;
 
-    bool TransmitCmd(UINT8 * msg, int size);
+  bool TransmitCmd(UINT8* msg, int size);
 };
 
 #endif /* _BR24TRANSMIT_H_ */

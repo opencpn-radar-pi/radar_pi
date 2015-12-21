@@ -30,73 +30,70 @@
 
 #include "br24radar_pi.h"
 
-void GuardZone::ResetBogeys()
-{
-    for (size_t r = 0; r < ARRAY_SIZE(bogeyCount); r++) {
-        bogeyCount[r] = 0;
-    }
+void GuardZone::ResetBogeys() {
+  for (size_t r = 0; r < ARRAY_SIZE(bogeyCount); r++) {
+    bogeyCount[r] = 0;
+  }
 }
 
-void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8 * data, UINT8 * hist, size_t len, int range)
-{
-    int bogeys = 0;
-    size_t range_start, range_end;
+void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_t len, int range) {
+  int bogeys = 0;
+  size_t range_start, range_end;
 
-    // We can't check whether the data is in the correct angle here since the boat may be changing
-    // course. So we store it anyway (if the guard zone is active, but we're not called otherwise)
-    if (type != GZ_OFF) {
-        range_start = inner_range * RETURNS_PER_LINE / range; // Convert from meters to 0..511
-        range_end = outer_range * RETURNS_PER_LINE / range;   // Convert from meters to 0..511
-        if (range_start < RETURNS_PER_LINE) {
-            if (range_end > RETURNS_PER_LINE) {
-                range_end = RETURNS_PER_LINE;
-            }
+  // We can't check whether the data is in the correct angle here since the boat may be changing
+  // course. So we store it anyway (if the guard zone is active, but we're not called otherwise)
+  if (type != GZ_OFF) {
+    range_start = inner_range * RETURNS_PER_LINE / range;  // Convert from meters to 0..511
+    range_end = outer_range * RETURNS_PER_LINE / range;    // Convert from meters to 0..511
+    if (range_start < RETURNS_PER_LINE) {
+      if (range_end > RETURNS_PER_LINE) {
+        range_end = RETURNS_PER_LINE;
+      }
 
-            for (size_t r = range_start; r <= range_end; r++) {
-                if (!multi_sweep_filter || HISTORY_FILTER_ALLOW(hist[r])) {
-                    if (m_pi->m_color_map[data[r]] != BLOB_NONE) {
-                        bogeys++;
-                    }
-                }
-            }
+      for (size_t r = range_start; r <= range_end; r++) {
+        if (!multi_sweep_filter || HISTORY_FILTER_ALLOW(hist[r])) {
+          if (m_pi->m_color_map[data[r]] != BLOB_NONE) {
+            bogeys++;
+          }
         }
+      }
     }
+  }
 
-    bogeyCount[angle] = bogeys;
+  bogeyCount[angle] = bogeys;
 }
 
-int GuardZone::GetBogeyCount(SpokeBearing current_hdt)
-{
-    int bogeys = 0;
-    SpokeBearing begin_arc, end_arc, arc, angle;
+int GuardZone::GetBogeyCount(SpokeBearing current_hdt) {
+  int bogeys = 0;
+  SpokeBearing begin_arc, end_arc, arc, angle;
 
-    switch (type) {
-        case GZ_CIRCLE:
-            begin_arc = 0;
-            end_arc   = LINES_PER_ROTATION;
-            break;
-        case GZ_ARC:
-            begin_arc = MOD_ROTATION2048(start_bearing + current_hdt);
-            end_arc   = MOD_ROTATION2048(end_bearing + current_hdt);
-            break;
-        case GZ_OFF:
-        default:
-            begin_arc = 0;
-            end_arc   = 0;
-            break;
-    }
+  switch (type) {
+    case GZ_CIRCLE:
+      begin_arc = 0;
+      end_arc = LINES_PER_ROTATION;
+      break;
+    case GZ_ARC:
+      begin_arc = MOD_ROTATION2048(start_bearing + current_hdt);
+      end_arc = MOD_ROTATION2048(end_bearing + current_hdt);
+      break;
+    case GZ_OFF:
+    default:
+      begin_arc = 0;
+      end_arc = 0;
+      break;
+  }
 
-    if (begin_arc > end_arc) {
-        end_arc += LINES_PER_ROTATION; // now end_arc may be larger than LINES_PER_ROTATION!
-    }
+  if (begin_arc > end_arc) {
+    end_arc += LINES_PER_ROTATION;  // now end_arc may be larger than LINES_PER_ROTATION!
+  }
 
-    for (arc = begin_arc; arc < end_arc; arc++) {
-        angle = MOD_ROTATION2048(arc);
+  for (arc = begin_arc; arc < end_arc; arc++) {
+    angle = MOD_ROTATION2048(arc);
 
-        bogeys += bogeyCount[angle];
-    }
+    bogeys += bogeyCount[angle];
+  }
 
-    return bogeys;
+  return bogeys;
 }
 
 // vim: sw=4:ts=8:

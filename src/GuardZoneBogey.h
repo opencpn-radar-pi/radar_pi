@@ -34,38 +34,34 @@
 
 #include "br24radar_pi.h"
 
-class GuardZoneBogey : public wxDialog
-{
-    DECLARE_CLASS(GuardZoneBogey)
-    DECLARE_EVENT_TABLE()
+class GuardZoneBogey : public wxDialog {
+  DECLARE_CLASS(GuardZoneBogey)
+  DECLARE_EVENT_TABLE()
 
-   public:
-    GuardZoneBogey();
+ public:
+  GuardZoneBogey();
 
-    ~GuardZoneBogey();
-    void Init();
+  ~GuardZoneBogey();
+  void Init();
 
-    bool Create(wxWindow *parent,
-                br24radar_pi *pi,
-                wxWindowID id             = wxID_ANY,
-                const wxString &m_caption = _("Guard Zone Active"),
-                const wxPoint &pos        = wxDefaultPosition,
-                const wxSize &size        = wxDefaultSize,
-                long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
+  bool Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id = wxID_ANY,
+              const wxString &m_caption = _("Guard Zone Active"),
+              const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize,
+              long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
 
-    void CreateControls();
-    void SetBogeyCount(int *bogey_count, int next_alarm);
+  void CreateControls();
+  void SetBogeyCount(int *bogey_count, int next_alarm);
 
-   private:
-    void OnClose(wxCloseEvent &event);
-    void OnIdConfirmClick(wxCommandEvent &event);
-    void OnIdCloseClick(wxCommandEvent &event);
+ private:
+  void OnClose(wxCloseEvent &event);
+  void OnIdConfirmClick(wxCommandEvent &event);
+  void OnIdCloseClick(wxCommandEvent &event);
 
-    wxWindow *m_parent;
-    br24radar_pi *m_pi;
+  wxWindow *m_parent;
+  br24radar_pi *m_pi;
 
-    /* Controls */
-    wxStaticText *pBogeyCountText;
+  /* Controls */
+  wxStaticText *pBogeyCountText;
 };
 
 #endif /* GUARDZONEBOGEY_H_ */
