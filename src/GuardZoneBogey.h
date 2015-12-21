@@ -44,8 +44,7 @@ class GuardZoneBogey : public wxDialog {
   ~GuardZoneBogey();
   void Init();
 
-  bool Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id = wxID_ANY,
-              const wxString &m_caption = _("Guard Zone Active"),
+  bool Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id = wxID_ANY, const wxString &m_caption = _("Guard Zone Active"),
               const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize,
               long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
 
@@ -65,5 +64,3 @@ class GuardZoneBogey : public wxDialog {
 };
 
 #endif /* GUARDZONEBOGEY_H_ */
-
-// vim: sw=4:ts=8:

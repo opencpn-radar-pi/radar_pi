@@ -1468,5 +1468,3 @@ if ((m_settings.show_radar == RADAR_ON && m_bpos_set && m_heading_source != HEAD
     }
   }
 #endif
-
-// vim: sw=4:ts=8:

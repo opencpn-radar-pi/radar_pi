@@ -121,5 +121,3 @@ void RadarPanel::OnMouseClick(wxMouseEvent& event) {
   m_pi->ShowRadarControl(m_ri->radar, true);
   event.Skip();
 }
-
-// vim: sw=4:ts=8:

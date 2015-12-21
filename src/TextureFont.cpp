@@ -289,5 +289,3 @@ void TextureFont::RenderString(const wxString &string, int x, int y) {
   glPopAttrib();
   glPopMatrix();
 }
-
-// vim: sw=4:ts=8:

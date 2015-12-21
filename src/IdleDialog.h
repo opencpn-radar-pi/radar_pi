@@ -45,9 +45,8 @@ class IdleDialog : public wxDialog {
 
   void Init();
 
-  bool Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id = wxID_ANY,
-              const wxString &m_caption = _("Timed Transmit"), const wxPoint &pos = wxPoint(0, 0),
-              const wxSize &size = wxDefaultSize,
+  bool Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id = wxID_ANY, const wxString &m_caption = _("Timed Transmit"),
+              const wxPoint &pos = wxPoint(0, 0), const wxSize &size = wxDefaultSize,
               long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
 
   void CreateControls();
@@ -71,5 +70,3 @@ class IdleDialog : public wxDialog {
 };
 
 #endif
-
-// vim: sw=4:ts=8:

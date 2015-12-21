@@ -35,15 +35,15 @@
 
 #include "pi_common.h"
 
-#define VALID_IPV4_ADDRESS(i)                                                              \
-  (i && i->ifa_addr && i->ifa_addr->sa_family == AF_INET && (i->ifa_flags & IFF_UP) > 0 && \
-   (i->ifa_flags & IFF_LOOPBACK) == 0 && (i->ifa_flags & IFF_MULTICAST) > 0)
+#define VALID_IPV4_ADDRESS(i)                                                                                                    \
+  (i && i->ifa_addr && i->ifa_addr->sa_family == AF_INET && (i->ifa_flags & IFF_UP) > 0 && (i->ifa_flags & IFF_LOOPBACK) == 0 && \
+   (i->ifa_flags & IFF_MULTICAST) > 0)
 
 extern bool socketReady(SOCKET sockfd, int timeout);
 
 extern int br24_inet_aton(const char *cp, struct in_addr *addr);
-extern SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in *addr, UINT16 port,
-                                             const char *mcast_address, wxString &error_message);
+extern SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in *addr, UINT16 port, const char *mcast_address,
+                                             wxString &error_message);
 
 #ifndef __WXMSW__
 
@@ -73,9 +73,3 @@ struct ifaddrs_storage {
 
 extern int getifaddrs(struct ifaddrs **ifap);
 extern void freeifaddrs(struct ifaddrs *ifa);
-
-#endif
-
-#endif
-
-// vim: sw=4:ts=8:

@@ -69,15 +69,13 @@ class RadarDrawVertex : public RadarDraw {
   ~RadarDrawVertex() {}
 
  private:
-  void SetBlob(int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green,
-               GLubyte blue, GLubyte alpha);
+  void SetBlob(int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha);
 
   br24radar_pi* m_pi;
 
   static const int VERTEX_PER_TRIANGLE = 3;
   static const int VERTEX_PER_QUAD = 2 * VERTEX_PER_TRIANGLE;
-  static const int VERTEX_MAX =
-      100 * VERTEX_PER_QUAD;  // Assume picture is no more complicated than this
+  static const int VERTEX_MAX = 100 * VERTEX_PER_QUAD;  // Assume picture is no more complicated than this
 
   struct vertex_point {
     GLfloat x;
@@ -106,5 +104,3 @@ class RadarDrawVertex : public RadarDraw {
 };
 
 #endif /* _RADARDRAWVERTEX_H_ */
-
-// vim: sw=4:ts=8:

@@ -448,5 +448,3 @@ wxString RadarInfo::GetCanvasText() {
 
   return s;
 }
-
-// vim: sw=4:ts=8:

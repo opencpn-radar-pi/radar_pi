@@ -157,5 +157,3 @@ void CheckOpenGLError(const wxString& after) {
     wxLogMessage(wxT("BR24radar_pi: OpenGL error %d after %s"), err, after.c_str());
   }
 }
-
-// vim: sw=4:ts=8:

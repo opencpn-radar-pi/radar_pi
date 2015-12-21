@@ -44,14 +44,12 @@ class br24MessageBox : public wxDialog {
   ~br24MessageBox();
   void Init();
 
-  bool Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id = wxID_ANY,
-              const wxString &caption = _("Radar"), const wxPoint &pos = wxDefaultPosition,
-              const wxSize &size = wxDefaultSize,
+  bool Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id = wxID_ANY, const wxString &caption = _("Radar"),
+              const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize,
               long style = wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX));
 
   void CreateControls();
-  void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation,
-                     bool haveRadar, bool haveData);
+  void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
   void SetErrorMessage(wxString &msg);
   void SetRadarIPAddress(wxString &msg);
   void SetMcastIPAddress(wxString &msg);
@@ -92,5 +90,3 @@ class br24MessageBox : public wxDialog {
 };
 
 #endif
-
-// vim: sw=4:ts=8:

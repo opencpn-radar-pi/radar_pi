@@ -71,5 +71,3 @@ class RadarDrawShader : public RadarDraw {
 };
 
 #endif /* _RADARDRAWSHADER_H_ */
-
-// vim: sw=4:ts=8:

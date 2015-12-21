@@ -53,4 +53,3 @@ void RadarDraw::GetDrawingMethods(wxArrayString& methods) {
 
   methods = wxArrayString(ARRAY_SIZE(m), m);
 }
-// vim: sw=4:ts=8:

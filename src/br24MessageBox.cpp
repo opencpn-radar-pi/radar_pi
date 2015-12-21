@@ -368,5 +368,3 @@ void br24MessageBox::SetRadarInfo(wxString &msg) {
     m_statistics->SetLabel(msg);
   }
 }
-
-// vim: sw=4:ts=8:

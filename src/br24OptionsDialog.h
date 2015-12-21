@@ -81,5 +81,3 @@ class br24OptionsDialog : public wxDialog {
 };
 
 #endif /* _BR24OPTIONSDIALOG_H_ */
-
-// vim: sw=4:ts=8:

@@ -50,9 +50,8 @@ class br24ControlsDialog : public wxDialog {
   ~br24ControlsDialog();
   void Init();
 
-  bool Create(wxWindow *parent, br24radar_pi *pi, RadarInfo *ri, wxWindowID id = wxID_ANY,
-              const wxString &caption = _("Radar"), const wxPoint &pos = wxDefaultPosition,
-              const wxSize &size = wxDefaultSize,
+  bool Create(wxWindow *parent, br24radar_pi *pi, RadarInfo *ri, wxWindowID id = wxID_ANY, const wxString &caption = _("Radar"),
+              const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize,
               long style = wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX));
 
   void CreateControls();
@@ -61,8 +60,7 @@ class br24ControlsDialog : public wxDialog {
   wxString &GetRangeText();
   void SetTimedIdleIndex(int index);
   void UpdateGuardZoneState();
-  void UpdateControl(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation,
-                     bool haveRadar, bool haveData);
+  void UpdateControl(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
   void UpdateControlValues(bool refreshAll);
   void SetErrorMessage(wxString &msg);
 
@@ -155,5 +153,3 @@ class br24ControlsDialog : public wxDialog {
 };
 
 #endif
-
-// vim: sw=4:ts=8:

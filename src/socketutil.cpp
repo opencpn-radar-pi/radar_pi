@@ -280,5 +280,3 @@ int getifaddrs(struct ifaddrs **ifap) {
 void freeifaddrs(struct ifaddrs *ifa) { free(ifa); }
 
 #endif
-
-// vim: sw=4:ts=8:

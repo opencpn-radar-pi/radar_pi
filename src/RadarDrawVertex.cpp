@@ -183,5 +183,3 @@ void RadarDrawVertex::DrawRadarImage(wxPoint center, double scale) {
   m_blobs = 0;
   m_spokes = 0;
 }
-
-// vim: sw=4:ts=8:

@@ -326,5 +326,3 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
 
   return r;
 }
-
-// vim: sw=4:ts=8:

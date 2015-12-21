@@ -222,5 +222,3 @@ void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t 
     }
   }
 }
-
-// vim: sw=4:ts=8:

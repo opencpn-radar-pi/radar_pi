@@ -87,5 +87,3 @@ class br24Receive : public wxThread {
 };
 
 #endif /* _BR24RECEIVE_H_ */
-
-// vim: sw=4:ts=8:

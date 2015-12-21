@@ -793,5 +793,3 @@ bool br24Receive::ProcessReport(UINT8 *report, int len) {
   }
   return false;
 }
-
-// vim: sw=4:ts=8:

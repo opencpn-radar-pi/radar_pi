@@ -77,5 +77,3 @@ class GuardZone {
 };
 
 #endif /* _GUARDZONE_H_ */
-
-// vim: sw=4:ts=8:

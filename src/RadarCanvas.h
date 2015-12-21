@@ -74,5 +74,3 @@ class RadarCanvas : public wxGLCanvas {
 };
 
 #endif
-
-// vim: sw=4:ts=8:

@@ -95,5 +95,3 @@ int GuardZone::GetBogeyCount(SpokeBearing current_hdt) {
 
   return bogeys;
 }
-
-// vim: sw=4:ts=8:

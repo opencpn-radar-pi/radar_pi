@@ -48,5 +48,3 @@ class RadarDraw {
 };
 
 #endif
-
-// vim: sw=4:ts=8:

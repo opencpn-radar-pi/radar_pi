@@ -179,5 +179,3 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     SetCurrent(*m_pi->m_opencpn_gl_context);
   }
 }
-
-// vim: sw=4:ts=8:

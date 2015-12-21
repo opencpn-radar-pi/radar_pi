@@ -58,5 +58,3 @@ class br24Transmit {
 };
 
 #endif /* _BR24TRANSMIT_H_ */
-
-// vim: sw=4:ts=8:

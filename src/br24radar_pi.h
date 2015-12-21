@@ -54,13 +54,13 @@ class br24Receive;
 class br24Transmit;
 class br24radar_pi;
 
-#define SPOKES (4096)              // BR radars can generate up to 4096 spokes per rotation,
-#define LINES_PER_ROTATION (2048)  // but use only half that in practice
-#define RETURNS_PER_LINE (512)  // BR radars generate 512 separate values per range, at 8 bits each
+#define SPOKES (4096)               // BR radars can generate up to 4096 spokes per rotation,
+#define LINES_PER_ROTATION (2048)   // but use only half that in practice
+#define RETURNS_PER_LINE (512)      // BR radars generate 512 separate values per range, at 8 bits each
 #define DEGREES_PER_ROTATION (360)  // Classical math
-#define RADARS (2)       // Number of radars supported by this PI. 2 since 4G supports 2. More work
-                         // needed if you intend to add multiple radomes to network!
-#define GUARD_ZONES (2)  // Could be increased if wanted
+#define RADARS (2)                  // Number of radars supported by this PI. 2 since 4G supports 2. More work
+                                    // needed if you intend to add multiple radomes to network!
+#define GUARD_ZONES (2)             // Could be increased if wanted
 
 typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a bearing (? = North,
                            // +ve = clockwise)
@@ -70,8 +70,7 @@ typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a 
 #define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double)DEGREES_PER_ROTATION / SPOKES)
 #define SCALE_RAW_TO_DEGREES2048(raw) ((raw) * (double)DEGREES_PER_ROTATION / LINES_PER_ROTATION)
 #define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double)SPOKES / DEGREES_PER_ROTATION))
-#define SCALE_DEGREES_TO_RAW2048(angle) \
-  ((int)((angle) * (double)LINES_PER_ROTATION / DEGREES_PER_ROTATION))
+#define SCALE_DEGREES_TO_RAW2048(angle) ((int)((angle) * (double)LINES_PER_ROTATION / DEGREES_PER_ROTATION))
 #define MOD_DEGREES(angle) (fmod(angle + 2 * DEGREES_PER_ROTATION, DEGREES_PER_ROTATION))
 #define MOD_ROTATION(raw) (((raw) + 2 * SPOKES) % SPOKES)
 #define MOD_ROTATION2048(raw) (((raw) + 2 * LINES_PER_ROTATION) % LINES_PER_ROTATION)
@@ -80,16 +79,7 @@ typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a 
 #define TIMER_NOT_ELAPSED(t, watchdog) (t < watchdog + WATCHDOG_TIMEOUT)
 #define TIMER_ELAPSED(t, watchdog) (!TIMER_NOT_ELAPSED(t, watchdog))
 
-enum {
-  BM_ID_RED,
-  BM_ID_RED_SLAVE,
-  BM_ID_GREEN,
-  BM_ID_GREEN_SLAVE,
-  BM_ID_AMBER,
-  BM_ID_AMBER_SLAVE,
-  BM_ID_BLANK,
-  BM_ID_BLANK_SLAVE
-};
+enum { BM_ID_RED, BM_ID_RED_SLAVE, BM_ID_GREEN, BM_ID_GREEN_SLAVE, BM_ID_AMBER, BM_ID_AMBER_SLAVE, BM_ID_BLANK, BM_ID_BLANK_SLAVE };
 
 enum RadarState {
   RADAR_OFF,
@@ -144,12 +134,7 @@ extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, Rad
 
 enum DisplayModeType { DM_CHART_OVERLAY, DM_CHART_NONE };
 enum ToolbarIconColor { TB_RED, TB_AMBER, TB_GREEN };
-enum VariationSource {
-  VARIATION_SOURCE_NONE,
-  VARIATION_SOURCE_NMEA,
-  VARIATION_SOURCE_FIX,
-  VARIATION_SOURCE_WMM
-};
+enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_SOURCE_FIX, VARIATION_SOURCE_WMM };
 
 enum DialogLocationID { DL_MESSAGE, DL_BOGEY, DL_TIMEDTRANSMIT, DL_RADARWINDOW, DL_CONTROL };
 #define DIALOG_MAX (DL_CONTROL + RADARS)
@@ -167,8 +152,8 @@ static const bool HasBitCount2[8] = {
     true,   // 111
 };
 
-static const unsigned int REFRESHMAPPING[] = {
-    10, 9, 3, 1, 0};  // translation table for the refreshrate, interval between received frames
+static const unsigned int REFRESHMAPPING[] = {10, 9, 3, 1,
+                                              0};  // translation table for the refreshrate, interval between received frames
 // user values 1 to 5 mapped to these values for refrehs interval
 // user 1 - no additional refresh, 2 - interval between frames 9, so on.
 
@@ -221,10 +206,10 @@ struct PersistentSettings {
 #include "GuardZone.h"
 
 struct scan_line {
-  int range;       // range of this scan line in decimeters
-  wxLongLong age;  // how old this scan line is. We keep old scans on-screen for a while
-  UINT8 data[RETURNS_PER_LINE + 1];  // radar return strength, data[512] is an additional element,
-                                     // accessed in drawing the spokes
+  int range;                            // range of this scan line in decimeters
+  wxLongLong age;                       // how old this scan line is. We keep old scans on-screen for a while
+  UINT8 data[RETURNS_PER_LINE + 1];     // radar return strength, data[512] is an additional element,
+                                        // accessed in drawing the spokes
   UINT8 history[RETURNS_PER_LINE + 1];  // contains per bit the history of previous scans.
   // Each scan this byte is left shifted one bit. If the strength (=level) of a return is above the
   // threshold
@@ -422,5 +407,3 @@ class br24radar_pi : public opencpn_plugin_110 {
 #include "RadarInfo.h"
 
 #endif /* _BRRADAR_PI_H_ */
-
-// vim: sw=4:ts=8:
