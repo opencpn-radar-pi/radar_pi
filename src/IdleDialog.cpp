@@ -129,3 +129,5 @@ void IdleDialog::OnIdStopIdleClick(wxCommandEvent &event) {
 }
 
 void IdleDialog::OnMove(wxMoveEvent &event) { event.Skip(); }
+
+#include "pi_trail.h"

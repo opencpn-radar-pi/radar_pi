@@ -29,29 +29,32 @@
  ***************************************************************************
  */
 
-#include "RadarDraw.h"
-#include "RadarDrawVertex.h"
-#include "RadarDrawShader.h"
+/*
+ * This file is included multiple times to work with defining externally
+ * loaded functions from a shared library.
+ */
 
-// Factory to generate a particular draw implementation
-RadarDraw* RadarDraw::make_Draw(br24radar_pi* pi, int draw_method) {
-  switch (draw_method) {
-    case 0:
-      return new RadarDrawVertex(pi);
-    case 1:
-      return new RadarDrawShader(pi);
-    default:
-      wxLogMessage(wxT("BR24radar_pi: unsupported draw method %d"), draw_method);
-  }
-  return 0;
-}
-
-RadarDraw::~RadarDraw() {}
-
-void RadarDraw::GetDrawingMethods(wxArrayString& methods) {
-  wxString m[] = {_("Vertex Array"), _("Shader")};
-
-  methods = wxArrayString(ARRAY_SIZE(m), m);
-}
-
-#include "pi_trail.h"
+SHADER_FUNCTION_LIST(PFNGLCREATESHADERPROC, CreateShader)
+SHADER_FUNCTION_LIST(PFNGLDELETESHADERPROC, DeleteShader)
+SHADER_FUNCTION_LIST(PFNGLSHADERSOURCEPROC, ShaderSource)
+SHADER_FUNCTION_LIST(PFNGLGETSHADERIVPROC, GetShaderiv)
+SHADER_FUNCTION_LIST(PFNGLGETSHADERINFOLOGPROC, GetShaderInfoLog)
+SHADER_FUNCTION_LIST(PFNGLCREATEPROGRAMPROC, CreateProgram)
+SHADER_FUNCTION_LIST(PFNGLDELETEPROGRAMPROC, DeleteProgram)
+SHADER_FUNCTION_LIST(PFNGLATTACHSHADERPROC, AttachShader)
+SHADER_FUNCTION_LIST(PFNGLLINKPROGRAMPROC, LinkProgram)
+SHADER_FUNCTION_LIST(PFNGLUSEPROGRAMPROC, UseProgram)
+SHADER_FUNCTION_LIST(PFNGLGETPROGRAMIVPROC, GetProgramiv)
+SHADER_FUNCTION_LIST(PFNGLGETPROGRAMINFOLOGPROC, GetProgramInfoLog)
+SHADER_FUNCTION_LIST(PFNGLVALIDATEPROGRAMPROC, ValidateProgram)
+SHADER_FUNCTION_LIST(PFNGLUNIFORM1IPROC, Uniform1i)
+SHADER_FUNCTION_LIST(PFNGLUNIFORM1FVPROC, Uniform1fv)
+SHADER_FUNCTION_LIST(PFNGLUNIFORM2FVPROC, Uniform2fv)
+SHADER_FUNCTION_LIST(PFNGLUNIFORM3FVPROC, Uniform3fv)
+SHADER_FUNCTION_LIST(PFNGLUNIFORM4FVPROC, Uniform4fv)
+SHADER_FUNCTION_LIST(PFNGLUNIFORMMATRIX4FVPROC, UniformMatrix4fv)
+SHADER_FUNCTION_LIST(PFNGLGETACTIVEATTRIBPROC, GetActiveAttrib)
+SHADER_FUNCTION_LIST(PFNGLGETATTRIBLOCATIONPROC, GetAttribLocation)
+SHADER_FUNCTION_LIST(PFNGLGETUNIFORMLOCATIONPROC, GetUniformLocation)
+SHADER_FUNCTION_LIST(PFNGLGETACTIVEUNIFORMPROC, GetActiveUniform)
+SHADER_FUNCTION_LIST(PFNGLCOMPILESHADERPROC, CompileShader)

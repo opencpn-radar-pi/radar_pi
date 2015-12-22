@@ -274,3 +274,5 @@ void br24OptionsDialog::OnIdOKClick(wxCommandEvent &event) {
   m_pi->SaveConfig();
   this->Hide();
 }
+
+#include "pi_trail.h"

@@ -157,3 +157,5 @@ void CheckOpenGLError(const wxString& after) {
     wxLogMessage(wxT("BR24radar_pi: OpenGL error %d after %s"), err, after.c_str());
   }
 }
+
+#include "pi_trail.h"

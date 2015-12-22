@@ -273,3 +273,5 @@ void GuardZoneDialog::OnIdOKClick(wxCommandEvent &event) {
   m_pi->OnGuardZoneDialogClose(m_ri);
   event.Skip();
 }
+
+#include "pi_trail.h"

@@ -154,3 +154,5 @@ void GuardZoneBogey::OnIdCloseClick(wxCommandEvent &event) {
   m_pi->OnGuardZoneBogeyClose();
   event.Skip();
 }
+
+#include "pi_trail.h"

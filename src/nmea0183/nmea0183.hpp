@@ -29,9 +29,10 @@
  *         "It is BSD license, do with it what you will"                   *
  */
 
-
-#if ! defined( NMEA_0183_CLASS_HEADER )
+#if !defined(NMEA_0183_CLASS_HEADER)
 #define NMEA_0183_CLASS_HEADER
+
+#include "pi_common.h"
 
 /*
 ** Author: Samuel R. Blackburn
@@ -58,52 +59,47 @@
 
 WX_DECLARE_LIST(RESPONSE, MRL);
 
-class br_NMEA0183
-{
+class NMEA0183 {
+ private:
+  SENTENCE sentence;
 
-   private:
+  void initialize(void);
 
-      SENTENCE sentence;
+ protected:
+  MRL response_table;
 
-      void initialize( void );
+  void set_container_pointers(void);
+  void sort_response_table(void);
 
-   protected:
+ public:
+  NMEA0183();
+  virtual ~NMEA0183();
 
-      MRL response_table;
+  wxArrayString GetRecognizedArray(void);
 
-      void set_container_pointers( void );
-      void sort_response_table( void );
+  /*
+  ** NMEA 0183 Sentences we understand
+  */
 
-   public:
+  HDM Hdm;
+  HDG Hdg;
+  HDT Hdt;
 
-      br_NMEA0183();
-      virtual ~br_NMEA0183();
+  wxString ErrorMessage;            // Filled when Parse returns FALSE
+  wxString LastSentenceIDParsed;    // ID of the lst sentence successfully parsed
+  wxString LastSentenceIDReceived;  // ID of the last sentence received, may not have parsed successfully
 
-      wxArrayString GetRecognizedArray(void);
-      
-      /*
-      ** NMEA 0183 Sentences we understand
-      */
+  wxString TalkerID;
+  wxString ExpandedTalkerID;
 
-       HDM Hdm;
-       HDG Hdg;
-       HDT Hdt;
+  //      MANUFACTURER_LIST Manufacturers;
 
-      wxString ErrorMessage; // Filled when Parse returns FALSE
-      wxString LastSentenceIDParsed; // ID of the lst sentence successfully parsed
-      wxString LastSentenceIDReceived; // ID of the last sentence received, may not have parsed successfully
+  virtual bool IsGood(void) const;
+  virtual bool Parse(void);
+  virtual bool PreParse(void);
 
-      wxString TalkerID;
-      wxString ExpandedTalkerID;
-
-//      MANUFACTURER_LIST Manufacturers;
-
-      virtual bool IsGood( void ) const;
-      virtual bool Parse( void );
-      virtual bool PreParse( void );
-
-      br_NMEA0183& operator << ( wxString& source );
-      br_NMEA0183& operator >> ( wxString& destination );
+  NMEA0183& operator<<(wxString& source);
+  NMEA0183& operator>>(wxString& destination);
 };
 
-#endif // NMEA_0183_CLASS_HEADER
+#endif  // NMEA_0183_CLASS_HEADER

@@ -29,7 +29,6 @@
  *         "It is BSD license, do with it what you will"                   *
  */
 
-
 #include "nmea0183.h"
 
 /*
@@ -43,274 +42,239 @@
 #include <wx/listimpl.cpp>
 WX_DEFINE_LIST(MRL);
 
+NMEA0183::NMEA0183() {
+  initialize();
 
-br_NMEA0183::br_NMEA0183()
-{
-   initialize();
+  response_table.Append((RESPONSE *)&Hdm);
+  response_table.Append((RESPONSE *)&Hdg);
+  response_table.Append((RESPONSE *)&Hdt);
 
-   response_table.Append( (RESPONSE *) &Hdm );
-   response_table.Append( (RESPONSE *) &Hdg );
-   response_table.Append( (RESPONSE *) &Hdt );
-   
-   sort_response_table();
-   set_container_pointers();
+  sort_response_table();
+  set_container_pointers();
 }
 
-br_NMEA0183::~br_NMEA0183()
-{
-   initialize();
+NMEA0183::~NMEA0183() { initialize(); }
+
+void NMEA0183::initialize(void) {
+  //   ASSERT_VALID( this );
+
+  ErrorMessage.Empty();
 }
 
-void br_NMEA0183::initialize( void )
-{
-//   ASSERT_VALID( this );
+void NMEA0183::set_container_pointers(void) {
+  //   ASSERT_VALID( this );
 
-   ErrorMessage.Empty();
+  int index = 0;
+  int number_of_entries_in_table = response_table.GetCount();
+
+  RESPONSE *this_response = (RESPONSE *)NULL;
+
+  index = 0;
+
+  while (index < number_of_entries_in_table) {
+    this_response = (RESPONSE *)response_table[index];
+
+    this_response->SetContainer(this);
+
+    index++;
+  }
 }
 
-void br_NMEA0183::set_container_pointers( void )
-{
-//   ASSERT_VALID( this );
+void NMEA0183::sort_response_table(void) {
+  //   ASSERT_VALID( this );
 
-   int index = 0;
-   int number_of_entries_in_table = response_table.GetCount();
+  /*
+     int index = 0;
+     int number_of_entries_in_table = response_table.GetSize();
 
-   RESPONSE *this_response = (RESPONSE *) NULL;
+     RESPONSE *this_response = (RESPONSE *) NULL;
+     RESPONSE *that_response = (RESPONSE *) NULL;
 
-   index = 0;
+     bool sorted = FALSE;
 
-   while( index < number_of_entries_in_table )
-   {
-      this_response = (RESPONSE *) response_table[ index ];
+     while( sorted == FALSE )
+     {
+        sorted = TRUE;
 
-      this_response->SetContainer( this );
+        index = 0;
 
-      index++;
-   }
-}
+        while( index < number_of_entries_in_table )
+        {
+           this_response = (RESPONSE *) response_table.Item( index     );
+           that_response = (RESPONSE *) response_table.Item( index + 1 );
 
-void br_NMEA0183::sort_response_table( void )
-{
-//   ASSERT_VALID( this );
+           if ( this_response->Mnemonic.Compare( that_response->Mnemonic ) > 0 )
+           {
+              response_table[ index     ] = that_response;
+              response_table[ index + 1 ] = this_response;
 
-/*
-   int index = 0;
-   int number_of_entries_in_table = response_table.GetSize();
+              sorted = FALSE;
+           }
 
-   RESPONSE *this_response = (RESPONSE *) NULL;
-   RESPONSE *that_response = (RESPONSE *) NULL;
-
-   bool sorted = FALSE;
-
-   while( sorted == FALSE )
-   {
-      sorted = TRUE;
-
-      index = 0;
-
-      while( index < number_of_entries_in_table )
-      {
-         this_response = (RESPONSE *) response_table.Item( index     );
-         that_response = (RESPONSE *) response_table.Item( index + 1 );
-
-         if ( this_response->Mnemonic.Compare( that_response->Mnemonic ) > 0 )
-         {
-            response_table[ index     ] = that_response;
-            response_table[ index + 1 ] = this_response;
-
-            sorted = FALSE;
-         }
-
-         index++;
-      }
-   }
-*/
+           index++;
+        }
+     }
+  */
 }
 
 /*
 ** Public Interface
 */
 
-bool br_NMEA0183::IsGood( void ) const
-{
-//   ASSERT_VALID( this );
+bool NMEA0183::IsGood(void) const {
+  //   ASSERT_VALID( this );
 
-   /*
-   ** NMEA 0183 sentences begin with $ and and with CR LF
-   */
+  /*
+  ** NMEA 0183 sentences begin with $ and and with CR LF
+  */
 
-   if ( sentence.Sentence[ 0 ] != '$' )
-   {
-      return( FALSE );
-   }
+  if (sentence.Sentence[0] != '$') {
+    return (FALSE);
+  }
 
-   /*
-   ** Next to last character must be a CR
-   */
+  /*
+  ** Next to last character must be a CR
+  */
 
-   /*  This seems too harsh for cross platform work
+  /*  This seems too harsh for cross platform work
 
-   Relax requirement to line ending of either CR or LF
+  Relax requirement to line ending of either CR or LF
 
-   if ( sentence.Sentence.Mid( sentence.Sentence.Len() - 2, 1 ) != wxString(_T("\r")) )
-   {
-      return( FALSE );
-   }
+  if ( sentence.Sentence.Mid( sentence.Sentence.Len() - 2, 1 ) != wxString(_T("\r")) )
+  {
+     return( FALSE );
+  }
 
-   if ( sentence.Sentence.Right( 1 ) != _T("\n") )
-   {
-      return( FALSE );
-   }
-   */
+  if ( sentence.Sentence.Right( 1 ) != _T("\n") )
+  {
+     return( FALSE );
+  }
+  */
 
-//TODO: GPSD messages are not terminated with CR/LF   if ( (sentence.Sentence.Right( 1 ) != _T("\n") ) && (sentence.Sentence.Right( 1 ) != _T("\r") ))
-//      return false;
+  // TODO: GPSD messages are not terminated with CR/LF   if ( (sentence.Sentence.Right( 1 ) != _T("\n") ) &&
+  // (sentence.Sentence.Right( 1 ) != _T("\r") ))
+  //      return false;
 
-   return( TRUE );
+  return (TRUE);
 }
 
+bool NMEA0183::PreParse(void) {
+  if (IsGood()) {
+    wxString mnemonic = sentence.Field(0);
 
-bool br_NMEA0183::PreParse( void )
-{
-      if ( IsGood() )
-      {
-            wxString mnemonic = sentence.Field( 0 );
+    /*
+          ** See if this is a proprietary field
+    */
 
-      /*
-            ** See if this is a proprietary field
-      */
+    if (mnemonic.Left(1) == 'P')
+      mnemonic = _T("P");
 
-            if ( mnemonic.Left( 1 ) == 'P' )
-                  mnemonic = _T("P");
+    else
+      mnemonic = mnemonic.Right(3);
 
-            else
-                  mnemonic = mnemonic.Right( 3 );
+    LastSentenceIDReceived = mnemonic;
 
-
-            LastSentenceIDReceived = mnemonic;
-
-            return true;
-      }
-      else
-            return false;
+    return true;
+  } else
+    return false;
 }
 
+bool NMEA0183::Parse(void) {
+  bool return_value = FALSE;
 
-bool br_NMEA0183::Parse( void )
-{
-   bool return_value = FALSE;
+  if (PreParse()) {
+    wxString mnemonic = sentence.Field(0);
 
-   if(PreParse())
-   {
+    /*
+    ** See if this is a proprietary field
+    */
 
-      wxString mnemonic = sentence.Field( 0 );
-
-      /*
-      ** See if this is a proprietary field
-      */
-
-      if ( mnemonic.Left( 1 ) == 'P' )
-      {
-          mnemonic = _T("P");
-      }
-      else
-      {
-         mnemonic = mnemonic.Right( 3 );
-      }
-
-      /*
-      ** Set up our default error message
-      */
-
-      ErrorMessage = mnemonic;
-      ErrorMessage += _T(" is an unknown type of sentence");
-
-      LastSentenceIDReceived = mnemonic;
-
-      RESPONSE *response_p = (RESPONSE *) NULL;
-
-
-//          Traverse the response list to find a mnemonic match
-
-       wxMRLNode *node = response_table.GetFirst();
-
-       int comparison  = 0;
-
-        while(node)
-        {
-           RESPONSE *resp = node->GetData();
-
-            comparison = mnemonic.Cmp( resp->Mnemonic );
-
-            if ( comparison == 0 )
-            {
-                        response_p = (RESPONSE *) resp;
-                        return_value = response_p->Parse( sentence );
-
-                        /*
-                        ** Set your ErrorMessage
-                        */
-
-                        if ( return_value == TRUE )
-                        {
-                           ErrorMessage = _T("No Error");
-                           LastSentenceIDParsed = response_p->Mnemonic;
-                           TalkerID = talker_id( sentence );
-                           ExpandedTalkerID = expand_talker_id( TalkerID );
-                        }
-                        else
-                        {
-                           ErrorMessage = response_p->ErrorMessage;
-                        }
-
-                        break;
-                   }
-
-              node = node->GetNext();
-        }
-
-   }
-   else
-   {
-      return_value = FALSE;
-   }
-
-   return( return_value );
-}
-
-wxArrayString br_NMEA0183::GetRecognizedArray(void)
-{
-    wxArrayString ret;
-    
-    wxMRLNode *node = response_table.GetFirst();
-    
-    while(node)
-    {
-        RESPONSE *resp = node->GetData();
-        ret.Add( resp->Mnemonic );
-        node = node->GetNext();
+    if (mnemonic.Left(1) == 'P') {
+      mnemonic = _T("P");
+    } else {
+      mnemonic = mnemonic.Right(3);
     }
 
-    return ret;
+    /*
+    ** Set up our default error message
+    */
+
+    ErrorMessage = mnemonic;
+    ErrorMessage += _T(" is an unknown type of sentence");
+
+    LastSentenceIDReceived = mnemonic;
+
+    RESPONSE *response_p = (RESPONSE *)NULL;
+
+    //          Traverse the response list to find a mnemonic match
+
+    wxMRLNode *node = response_table.GetFirst();
+
+    int comparison = 0;
+
+    while (node) {
+      RESPONSE *resp = node->GetData();
+
+      comparison = mnemonic.Cmp(resp->Mnemonic);
+
+      if (comparison == 0) {
+        response_p = (RESPONSE *)resp;
+        return_value = response_p->Parse(sentence);
+
+        /*
+        ** Set your ErrorMessage
+        */
+
+        if (return_value == TRUE) {
+          ErrorMessage = _T("No Error");
+          LastSentenceIDParsed = response_p->Mnemonic;
+          TalkerID = talker_id(sentence);
+          ExpandedTalkerID = expand_talker_id(TalkerID);
+        } else {
+          ErrorMessage = response_p->ErrorMessage;
+        }
+
+        break;
+      }
+
+      node = node->GetNext();
+    }
+
+  } else {
+    return_value = FALSE;
+  }
+
+  return (return_value);
 }
 
-    
-    
-    
-br_NMEA0183& br_NMEA0183::operator << ( wxString & source )
-{
-//   ASSERT_VALID( this );
+wxArrayString NMEA0183::GetRecognizedArray(void) {
+  wxArrayString ret;
 
-   sentence = source;
+  wxMRLNode *node = response_table.GetFirst();
 
-   return( *this );
+  while (node) {
+    RESPONSE *resp = node->GetData();
+    ret.Add(resp->Mnemonic);
+    node = node->GetNext();
+  }
+
+  return ret;
 }
 
-br_NMEA0183& br_NMEA0183::operator >> ( wxString& destination )
-{
-//   ASSERT_VALID( this );
+NMEA0183 &NMEA0183::operator<<(wxString &source) {
+  //   ASSERT_VALID( this );
 
-   destination = sentence;
+  sentence = source;
 
-   return( *this );
+  return (*this);
 }
+
+NMEA0183 &NMEA0183::operator>>(wxString &destination) {
+  //   ASSERT_VALID( this );
+
+  destination = sentence;
+
+  return (*this);
+}
+
+#include "pi_trail.h"

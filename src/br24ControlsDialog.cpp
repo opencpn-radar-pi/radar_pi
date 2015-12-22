@@ -1161,3 +1161,5 @@ void br24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
 }
 
 wxString& br24ControlsDialog::GetRangeText() { return m_range_button->GetRangeText(); }
+
+#include "pi_trail.h"

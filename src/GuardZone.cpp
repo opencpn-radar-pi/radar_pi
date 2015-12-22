@@ -95,3 +95,5 @@ int GuardZone::GetBogeyCount(SpokeBearing current_hdt) {
 
   return bogeys;
 }
+
+#include "pi_trail.h"

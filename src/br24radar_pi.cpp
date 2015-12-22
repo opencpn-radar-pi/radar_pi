@@ -31,6 +31,8 @@
 
 #include "br24radar_pi.h"
 
+#include "nmea0183/nmea0183.h"
+
 // the class factories, used to create and destroy instances of the PlugIn
 
 extern "C" DECL_EXP opencpn_plugin *create_pi(void *ppimgr) { return new br24radar_pi(ppimgr); }
@@ -80,7 +82,6 @@ static double radar_distance(double lat1, double lon1, double lat2, double lon2,
 
 #include "icons.h"
 //#include "default_pi.xpm"
-#include "icons.cpp"
 
 //---------------------------------------------------------------------------------------------------------
 //
@@ -1027,7 +1028,7 @@ bool br24radar_pi::LoadConfig(void) {
     m_settings.pass_heading_to_opencpn = intValue != 0;
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
 
-    for (size_t i = 0; i < ARRAY_SIZE(m_dialogLocation); i++) {
+    for (int i = 0; i < ARRAY_SIZE(m_dialogLocation); i++) {
       int x, y, sx, sy;
 
       pConf->Read(wxString::Format(wxT("Control%dPosX"), i), &x, 300);
@@ -1096,7 +1097,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("RadarAlertAudioFile"), m_settings.alert_audio_file);
     pConf->Write(wxT("EnableDualRadar"), m_settings.enable_dual_radar);
 
-    for (size_t i = 0; i < ARRAY_SIZE(m_dialogLocation); i++) {
+    for (int i = 0; i < ARRAY_SIZE(m_dialogLocation); i++) {
       if (m_dialogLocation[i].pos.x) {
         pConf->Write(wxString::Format(wxT("Control%dPosX"), i), m_dialogLocation[i].pos.x);
       }
@@ -1111,9 +1112,9 @@ bool br24radar_pi::SaveConfig(void) {
       }
     }
 
-    for (size_t r = 0; r < RADARS; r++) {
+    for (int r = 0; r < RADARS; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->rotation.value);
-      for (size_t i = 0; i < GUARD_ZONES; i++) {
+      for (int i = 0; i < GUARD_ZONES; i++) {
         pConf->Write(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), m_radar[r]->guard_zone[i]->start_bearing);
         pConf->Write(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), m_radar[r]->guard_zone[i]->end_bearing);
         pConf->Write(wxString::Format(wxT("Radar%dZone%dOuterRange"), r, i), m_radar[r]->guard_zone[i]->outer_range);
@@ -1468,3 +1469,5 @@ if ((m_settings.show_radar == RADAR_ON && m_bpos_set && m_heading_source != HEAD
     }
   }
 #endif
+
+#include "pi_trail.h"

@@ -2127,5 +2127,6 @@ wxJSONReader::DoStrto_ll( const wxString& str, wxUint64* ui64, wxChar* sign )
 }
 */
 
+#include "pi_trail.h"
 
 

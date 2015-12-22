@@ -280,3 +280,5 @@ int getifaddrs(struct ifaddrs **ifap) {
 void freeifaddrs(struct ifaddrs *ifa) { free(ifa); }
 
 #endif
+
+#include "pi_trail.h"

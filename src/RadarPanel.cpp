@@ -121,3 +121,5 @@ void RadarPanel::OnMouseClick(wxMouseEvent& event) {
   m_pi->ShowRadarControl(m_ri->radar, true);
   event.Skip();
 }
+
+#include "pi_trail.h"

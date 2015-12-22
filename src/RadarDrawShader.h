@@ -32,6 +32,7 @@
 #ifndef _RADARDRAWSHADER_H_
 #define _RADARDRAWSHADER_H_
 
+#include "shaderutil.h"
 #include "RadarDraw.h"
 
 #define SHADER_COLOR_CHANNELS (4)  // RGB + Alpha

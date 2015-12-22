@@ -30,27 +30,6 @@
  ***************************************************************************
  */
 
-#include "wx/wxprec.h"
-#ifndef WX_PRECOMP
-#ifdef __WXOSX__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wpotentially-evaluated-expression"
-#endif
-#include "wx/wx.h"
-#ifdef __WXOSX__
-#pragma clang diagnostic pop
-#endif
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "shaderutil.h"
 
 #if defined(WIN32)
@@ -67,16 +46,8 @@ typedef __GLXextFuncPtr FunctionPointer;
 #endif
 
 #define SHADER_FUNCTION_LIST(proc, name) proc name;
-#include "shaderutil.h"
+#include "shaderutil.inc"
 #undef SHADER_FUNCTION_LIST
-
-#if 0
-static void GLAPIENTRY
-fake_ValidateProgram(GLuint prog)
-{
-   (void) prog;
-}
-#endif
 
 GLboolean ShadersSupported(void) {
   GLboolean ok = 1;
@@ -91,7 +62,7 @@ GLboolean ShadersSupported(void) {
     if (!u.p) ok = 0;                       \
     name = u.f;                             \
   }
-#include "shaderutil.h"
+#include "shaderutil.inc"
 #undef SHADER_FUNCTION_LIST
 
   return ok;
@@ -201,6 +172,8 @@ GLboolean ValidateShaderProgram(GLuint program) {
   return (GLboolean)stat;
 }
 
-#ifdef __cplusplus
+#ifdef __cplusplusXXX
 }
 #endif
+
+#include "pi_trail.h"

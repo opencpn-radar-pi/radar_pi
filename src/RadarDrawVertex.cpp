@@ -181,3 +181,5 @@ void RadarDrawVertex::DrawRadarImage(wxPoint center, double scale) {
   glPopMatrix();  // Undo translated/scaled
   glPopAttrib();  // Undo blend
 }
+
+#include "pi_trail.h"

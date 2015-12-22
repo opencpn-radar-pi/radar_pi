@@ -368,3 +368,5 @@ void br24MessageBox::SetRadarInfo(wxString &msg) {
     m_statistics->SetLabel(msg);
   }
 }
+
+#include "pi_trail.h"

@@ -29,8 +29,7 @@
  *         "It is BSD license, do with it what you will"                   *
  */
 
-
-#if ! defined( RESPONSE_CLASS_HEADER )
+#if !defined(RESPONSE_CLASS_HEADER)
 #define RESPONSE_CLASS_HEADER
 
 /*
@@ -41,40 +40,34 @@
 ** You can use it any way you like.
 */
 
-class br_NMEA0183;
+class NMEA0183;
 
-class RESPONSE 
-{
+class RESPONSE {
+ private:
+  NMEA0183* container_p;
 
-   private:
+ public:
+  RESPONSE();
+  virtual ~RESPONSE();
 
-      br_NMEA0183 *container_p;
+  /*
+  ** Data
+  */
 
-   public:
+  wxString ErrorMessage;
+  wxString Mnemonic;
+  wxString Talker;
 
-      RESPONSE();
-      virtual ~RESPONSE();
+  /*
+  ** Methods
+  */
 
-      /*
-      ** Data
-      */
-
-      wxString ErrorMessage;
-      wxString Mnemonic;
-      wxString Talker;
-
-      /*
-      ** Methods
-      */
-
-      virtual void Empty( void ) = 0;
-      virtual bool Parse( const SENTENCE& sentence ) = 0;
-      virtual const wxString& PlainEnglish( void );
-      virtual void SetErrorMessage( const wxString& );
-      virtual void SetContainer( br_NMEA0183 *container );
-      virtual bool Write( SENTENCE& sentence );
+  virtual void Empty(void) = 0;
+  virtual bool Parse(const SENTENCE& sentence) = 0;
+  virtual const wxString& PlainEnglish(void);
+  virtual void SetErrorMessage(const wxString&);
+  virtual void SetContainer(NMEA0183* container);
+  virtual bool Write(SENTENCE& sentence);
 };
 
-
- 
-#endif // RESPONSE_CLASS_HEADER
+#endif  // RESPONSE_CLASS_HEADER

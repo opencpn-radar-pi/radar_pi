@@ -326,3 +326,5 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
 
   return r;
 }
+
+#include "pi_trail.h"

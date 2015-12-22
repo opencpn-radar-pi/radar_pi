@@ -179,3 +179,5 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     SetCurrent(*m_pi->m_opencpn_gl_context);
   }
 }
+
+#include "pi_trail.h"

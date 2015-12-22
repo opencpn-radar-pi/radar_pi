@@ -793,3 +793,5 @@ bool br24Receive::ProcessReport(UINT8 *report, int len) {
   }
   return false;
 }
+
+#include "pi_trail.h"

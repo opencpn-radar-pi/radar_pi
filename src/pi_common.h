@@ -36,11 +36,34 @@
 #ifndef _PI_COMMON_H_
 #define _PI_COMMON_H_
 
-#ifdef _WINDOWS
+#define PLUGIN_NAMESPACE br24
+
+// For OpenGL
+extern "C" {
+
+#ifdef __WXGTK__
+#include "GL/gl.h"
+#include "GL/glu.h"
+#include "GL/glext.h"
+#endif
+
+#ifdef __WXOSX__
+#include <OpenGL/gl3.h>  // from ..../Frameworks/OpenGL.framework/Headers/gl.h
+#define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
+#endif
+
+#ifdef WIN32
 #include <WinSock2.h>
 #include <ws2tcpip.h>
 #pragma comment(lib, "Ws2_32.lib")
+#include <windows.h>
+#define GL_GLEXT_LEGACY
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <opengl/GL/glext.h>
 #endif
+
+}  // end "extern C"
 
 #include "wx/wxprec.h"
 #ifdef __WXOSX__
@@ -55,10 +78,12 @@
 #endif
 
 #include <wx/socket.h>
-#include "wx/apptrait.h"
-#include "wx/sckaddr.h"
-#include "wx/datetime.h"
-#include "wx/fileconf.h"
+#include <wx/apptrait.h>
+#include <wx/sckaddr.h>
+#include <wx/datetime.h>
+#include <wx/fileconf.h>
+#include <wx/glcanvas.h>
+#include <wx/mstream.h>
 #include <fstream>
 #include <stdint.h>
 
@@ -75,8 +100,7 @@ using namespace std;
 #include <netdb.h>
 #endif
 
-#include "shaderutil.h"
-
+// Load the ocpn_plugin. On OS X this generates many warnings, suppress these.
 #ifdef __WXOSX__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Woverloaded-virtual"
@@ -136,5 +160,7 @@ using namespace std;
 #ifndef rad2deg
 #define rad2deg(x) ((x)*360.0 / (2 * PI))
 #endif
+
+namespace PLUGIN_NAMESPACE {
 
 #endif

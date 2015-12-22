@@ -1,11 +1,16 @@
-/***************************************************************************
+/******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  NMEA0183 Support Classes
- * Author:   Samuel R. Blackburn, David S. Register
- *
+ * Purpose:  Navico BR24 Radar Plugin
+ * Author:   David Register
+ *           Dave Cowell
+ *           Kees Verruijt
+ *           Douwe Fokkema
+ *           Sean D'Epagnier
  ***************************************************************************
- *   Copyright (C) 2010 by Samuel R. Blackburn, David S Register           *
+ *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
+ *   Copyright (C) 2012-2013 by Dave Cowell                                *
+ *   Copyright (C) 2012-2013 by Kees Verruijt         canboat@verruijt.net *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,37 +25,18 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program; if not, write to the                         *
  *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,  USA.             *
+ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************
- *
- *   S Blackburn's original source license:                                *
- *         "You can use it any way you like."                              *
- *   More recent (2010) license statement:                                 *
- *         "It is BSD license, do with it what you will"                   *
  */
 
-#include "nmea0183.h"
-
 /*
-** Author: Samuel R. Blackburn
-** CI$: 76300,326
-** Internet: sammy@sed.csc.com
-**
-** You can use it any way you like.
-*/
+ * This header should be used at the end of all source code files.
+ *
+ * It ends the PLUGIN_NAMESPACE.
+ */
 
-wxString& talker_id(const wxString& sentence) {
-  static wxString return_string;
-
-  return_string.Empty();
-
-  if (sentence.Len() >= 3) {
-    if (sentence[0] == '$') {
-      return_string = sentence.Mid(1, 2);
-    }
-  }
-
-  return (return_string);
+#ifndef PLUGIN_NAMESPACE
+#error You must start all header files with #include "pi_common.h"
+#error and end all header files with #include "pi_trail.h"
+#endif
 }
-
-#include "pi_trail.h"

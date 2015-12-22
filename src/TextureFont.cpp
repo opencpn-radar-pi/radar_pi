@@ -289,3 +289,5 @@ void TextureFont::RenderString(const wxString &string, int x, int y) {
   glPopAttrib();
   glPopMatrix();
 }
+
+#include "pi_trail.h"

@@ -357,7 +357,7 @@ class br24radar_pi : public opencpn_plugin_110 {
   int m_sent_bm_id_normal;
   int m_sent_bm_id_rollover;
 
-  br_NMEA0183 m_NMEA0183;
+  NMEA0183 m_NMEA0183;
 
   double llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
 

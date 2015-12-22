@@ -250,3 +250,5 @@ void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t 
     }
   }
 }
+
+#include "pi_trail.h"

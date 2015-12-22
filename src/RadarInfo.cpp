@@ -448,3 +448,5 @@ wxString RadarInfo::GetCanvasText() {
 
   return s;
 }
+
+#include "pi_trail.h"
