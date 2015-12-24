@@ -428,7 +428,10 @@ wxString RadarInfo::GetCanvasText() {
   if (!radar_seen) {
     s << _("No radar");
   } else if (!data_seen) {
-    s << _("No data");
+    s << _("Standby");
+    if (this->radar_type == RT_4G) {
+      s << wxT(" 4G");
+    }
   } else if (!m_draw_panel.draw) {
     s << _("No valid drawing method");
   } else {
