@@ -982,6 +982,13 @@ void br24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
+  if (m_ri->state.button) {
+    m_ri->state.Update(0);
+    m_ri->transmit->RadarTxOn();
+  } else {
+    m_ri->state.Update(1);
+    m_ri->transmit->RadarTxOff();
+  }
   UpdateControlValues(true);  // update control values on the buttons
 }
 
