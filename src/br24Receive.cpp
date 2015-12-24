@@ -423,6 +423,7 @@ void *br24Receive::Entry(void) {
     sockaddr_in ipv4;
   } rx_addr;
   socklen_t rx_len;
+  UINT8 *a = (UINT8 *)&rx_addr.ipv4.sin_addr;  // sin_addr is in network layout
 
   UINT8 data[sizeof(radar_frame_pkt)];
   m_interface_array = 0;
@@ -485,14 +486,13 @@ void *br24Receive::Entry(void) {
         rx_len = sizeof(rx_addr);
         r = recvfrom(dataSocket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
         if (r > 0) {
-          // UINT8 * a = (UINT8 *) &rx_addr.ipv4.sin_addr; // sin_addr is in network layout
-          // wxLogMessage(wxT("%s at %u.%u.%u.%u received frame"), m_ri->name, a[0] , a[1] , a[2] ,
-          // a[3]);
           ProcessFrame(data, r);
+          no_data_timeout = -15;
         } else {
           closesocket(dataSocket);
           dataSocket = INVALID_SOCKET;
           m_ri->data_seen = false;
+          wxLogMessage(wxT("BR24radar_pi: %s at %u.%u.%u.%u illegal frame"), m_ri->name, a[0], a[1], a[2], a[3]);
         }
       }
 
@@ -500,11 +500,12 @@ void *br24Receive::Entry(void) {
         rx_len = sizeof(rx_addr);
         r = recvfrom(commandSocket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
         if (r > 0 && rx_addr.addr.ss_family == AF_INET && m_pi->m_settings.verbose) {
-          UINT8 *a = (UINT8 *)&rx_addr.ipv4.sin_addr;  // sin_addr is in network layout
           logBinaryData(wxString::Format(wxT("%s at %u.%u.%u.%u received command"), m_ri->name, a[0], a[1], a[2], a[3]), data, r);
+          no_data_timeout = -15;
         } else {
           closesocket(commandSocket);
           commandSocket = INVALID_SOCKET;
+          wxLogMessage(wxT("BR24radar_pi: %s at %u.%u.%u.%u illegal command"), m_ri->name, a[0], a[1], a[2], a[3]);
         }
       }
 
@@ -518,7 +519,6 @@ void *br24Receive::Entry(void) {
             memcpy(&radarFoundAddr, &rx_addr, sizeof(radarFoundAddr));
             m_radar_addr = &radarFoundAddr;
             wxString addr;
-            UINT8 *a = (UINT8 *)&m_radar_addr->sin_addr;  // sin_addr is in network layout
             addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
             m_pi->m_pMessageBox->SetRadarIPAddress(addr);
             if (!m_ri->radar_seen) {
@@ -528,10 +528,11 @@ void *br24Receive::Entry(void) {
               m_ri->state.Update(RADAR_ON);
             }
             m_ri->radar_seen = true;
-            m_ri->radar_watchdog = time(0);
+            m_ri->radar_watchdog = time(0) + 10;
+            no_data_timeout = -15;
           }
         } else {
-          wxLogMessage(wxT("BR24radar_pi: %s report socket failed"), m_ri->name);
+          wxLogMessage(wxT("BR24radar_pi: %s at %u.%u.%u.%u illegal command"), m_ri->name, a[0], a[1], a[2], a[3]);
           closesocket(reportSocket);
           reportSocket = INVALID_SOCKET;
           m_ri->radar_seen = false;
