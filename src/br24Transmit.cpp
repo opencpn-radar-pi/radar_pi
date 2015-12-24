@@ -32,7 +32,6 @@
 #include "br24Transmit.h"
 
 br24Transmit::br24Transmit(wxString name, int radar) {
-  struct sockaddr_in m_addr;
   memset(&m_addr, 0, sizeof(m_addr));
   m_addr.sin_family = AF_INET;
 
@@ -89,7 +88,7 @@ bool br24Transmit::Init(int verbose) {
 
 bool br24Transmit::TransmitCmd(UINT8 *msg, int size) {
   if (sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&m_addr, sizeof(m_addr)) < size) {
-    wxLogError(wxT("BR24radar_pi: Unable to transmit command to %s"), m_name);
+    wxLogError(wxT("BR24radar_pi: Unable to transmit command to %s: %s"), m_name, SOCKETERRSTR);
     return false;
   }
   if (m_verbose >= 2) {
