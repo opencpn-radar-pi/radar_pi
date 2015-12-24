@@ -46,6 +46,7 @@ class br24Receive : public wxThread {
     m_radar_addr = 0;
     m_range_meters = 0;
     m_updated_range = false;
+    m_radar_status = 0;
 
     if (m_pi->m_settings.verbose >= 2) {
       wxLogMessage(wxT("BR24radar_pi: br24Receive ctor"));
@@ -84,6 +85,8 @@ class br24Receive : public wxThread {
   struct ifaddrs *m_interface;
 
   int m_next_spoke;
+
+  char m_radar_status;
 };
 
 #endif /* _BR24RECEIVE_H_ */

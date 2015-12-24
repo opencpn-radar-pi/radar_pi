@@ -659,8 +659,6 @@ struct radar_state08_18 {              // 08 c4  length 18
 #pragma pack(pop)
 
 bool br24Receive::ProcessReport(UINT8 *report, int len) {
-  static char prevStatus = 0;
-
   if (m_pi->m_settings.verbose) {
     logBinaryData(wxT("ProcessReport"), report, len);
   }
@@ -671,8 +669,8 @@ bool br24Receive::ProcessReport(UINT8 *report, int len) {
       case (18 << 8) + 0x01: {  //  length 18, 01 C4
         radar_state01_18 *s = (radar_state01_18 *)report;
         // Radar status in byte 2
-        if (s->radar_status != prevStatus) {
-          prevStatus = report[2];
+        if (s->radar_status != m_radar_status) {
+          m_radar_status = report[2];
           m_ri->radar_type = RT_4G;  // only 4G Tx on channel B
         }
         break;
