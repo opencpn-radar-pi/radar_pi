@@ -100,8 +100,6 @@ class RadarInfo {
   int commanded_range_meters;
   RadarType radar_type;
   bool auto_range_mode;
-  bool control_box_closed;
-  bool control_box_opened;
 
   GuardZone *guard_zone[GUARD_ZONES];
   receive_statistics statistics;

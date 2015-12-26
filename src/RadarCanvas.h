@@ -36,9 +36,6 @@
 #include "TextureFont.h"
 
 class RadarCanvas : public wxGLCanvas {
-  // DECLARE_CLASS(RadarCanvas)
-  DECLARE_EVENT_TABLE()
-
   wxGLContext* m_context;
 
  public:
@@ -47,6 +44,7 @@ class RadarCanvas : public wxGLCanvas {
 
   void Render(wxPaintEvent& evt);
   void OnSize(wxSizeEvent& evt);
+  void OnMouseClick(wxMouseEvent& event);
 
 #if 0
     // events
@@ -71,6 +69,8 @@ class RadarCanvas : public wxGLCanvas {
 
   TextureFont m_FontNormal;
   TextureFont m_FontBig;
+
+  DECLARE_EVENT_TABLE();
 };
 
 #endif

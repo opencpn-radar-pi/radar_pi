@@ -54,8 +54,6 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
 
   this->radar_type = RT_UNKNOWN;
   this->auto_range_mode = true;
-  this->control_box_closed = false;
-  this->control_box_opened = false;
 
   this->transmit = new br24Transmit(name, radar);
   this->receive = 0;
@@ -362,9 +360,8 @@ void RadarInfo::UpdateControlState(bool all) {
   }
 
   if (control_dialog) {
-    control_dialog->UpdateControl(m_pi->m_opengl_mode, m_pi->m_bpos_set, m_pi->m_heading_source != HEADING_NONE,
-                                  m_pi->m_var_source != VARIATION_SOURCE_NONE, radar_seen, data_seen);
     control_dialog->UpdateControlValues(all);
+    control_dialog->UpdateDialogShown();
   }
 
   if (radar_panel->IsShown()) {

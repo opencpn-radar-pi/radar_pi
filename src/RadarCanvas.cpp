@@ -38,6 +38,7 @@ BEGIN_EVENT_TABLE(RadarCanvas, wxGLCanvas)
 //    EVT_MOVE(RadarCanvas::moved)
 EVT_SIZE(RadarCanvas::OnSize)
 EVT_PAINT(RadarCanvas::Render)
+EVT_LEFT_DOWN(RadarCanvas::OnMouseClick)
 END_EVENT_TABLE()
 
 static int attribs[] = {WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0};
@@ -178,6 +179,12 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   if (m_pi->m_opencpn_gl_context) {
     SetCurrent(*m_pi->m_opencpn_gl_context);
   }
+}
+
+void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
+  wxLogMessage(wxT("BR24radar_pi: Mouse clicked in %s"), m_ri->name);
+  m_pi->ShowRadarControl(m_ri->radar, true);
+  event.Skip();
 }
 
 #include "pi_trail.h"

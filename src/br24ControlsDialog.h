@@ -60,9 +60,14 @@ class br24ControlsDialog : public wxDialog {
   wxString &GetRangeText();
   void SetTimedIdleIndex(int index);
   void UpdateGuardZoneState();
-  void UpdateControl(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
+  void UpdateDialogShown();
   void UpdateControlValues(bool refreshAll);
   void SetErrorMessage(wxString &msg);
+
+  void HideTemporarily();  // When a second dialog (which is not a child class) takes over -- aka GuardZone
+  void UnHideTemporarily();
+  void ShowDialog();
+  void HideDialog();
 
   br24radar_pi *m_pi;
   RadarInfo *m_ri;
@@ -109,6 +114,9 @@ class br24ControlsDialog : public wxDialog {
   wxBoxSizer *m_edit_sizer;
   wxBoxSizer *m_installation_sizer;
   wxBoxSizer *m_from_sizer;  // If on edit control, this is where the button is from
+
+  bool m_hide;
+  bool m_hide_temporarily;
 
   // Edit Controls
 

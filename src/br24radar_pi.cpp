@@ -213,9 +213,6 @@ int br24radar_pi::Init(void) {
   m_pMessageBox->Fit();
   m_pMessageBox->Hide();
 
-  ShowRadarControl(0, m_settings.show_radar == RADAR_ON);
-  ShowRadarControl(1, m_settings.show_radar == RADAR_ON);
-
   if (!m_radar[0]->receive) {
     m_radar[0]->StartReceive();
   }
@@ -315,10 +312,7 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
     wxLogMessage(wxT("BR24radar_pi: ShowRadarControl(%d, %d)"), radar, (int)show);
   }
 
-  m_radar[radar]->control_box_opened = show;
   if (show) {
-    m_radar[radar]->control_box_closed = false;
-
     if (!m_radar[radar]->control_dialog) {
       m_radar[radar]->control_dialog = new br24ControlsDialog;
       m_radar[radar]->control_dialog->Create(m_parent_window, this, m_radar[radar]);
@@ -329,8 +323,10 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
       int idx = convertMetersToRadarAllowedValue(&range, m_settings.range_units, m_radar[radar]->radar_type);
       m_radar[radar]->control_dialog->SetRangeIndex(idx);
       m_radar[radar]->range.Update(idx);
-      m_radar[radar]->control_dialog->Show();
     }
+    m_radar[radar]->control_dialog->ShowDialog();
+  } else {
+    m_radar[radar]->control_dialog->HideDialog();
   }
 
   m_radar[radar]->UpdateControlState(true);
@@ -344,16 +340,16 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
 
 void br24radar_pi::OnContextMenuItemCallback(int id) {
   ShowRadarControl(0, true);
-  /* TODO show radar B? */
+  if (m_settings.enable_dual_radar) {
+    ShowRadarControl(1, true);
+  }
 }
 
 void br24radar_pi::OnControlDialogClose(RadarInfo *ri) {
   if (ri->control_dialog) {
     m_dialogLocation[DL_CONTROL + ri->radar].pos = ri->control_dialog->GetPosition();
-    ri->control_dialog->Hide();
+    ri->control_dialog->HideDialog();
   }
-  ri->control_box_closed = true;
-  ri->control_box_opened = false;
 }
 
 void br24radar_pi::OnMessageBoxClose() {
@@ -371,9 +367,7 @@ void br24radar_pi::OnGuardZoneDialogClose(RadarInfo *ri) {
   }
   if (ri->control_dialog) {
     ri->control_dialog->UpdateGuardZoneState();
-    if (!ri->control_box_closed) {
-      ri->control_dialog->Show();
-    }
+    ri->control_dialog->UnHideTemporarily();
   }
 }
 
@@ -396,12 +390,13 @@ void br24radar_pi::ShowGuardZoneDialog(int radar, int zone) {
   }
   if (zone >= 0) {
     m_dialogLocation[DL_CONTROL + radar].pos = m_radar[radar]->control_dialog->GetPosition();
+    m_radar[radar]->control_dialog->HideTemporarily();
     m_pGuardZoneDialog->Show();
-    m_radar[radar]->control_dialog->Hide();
     m_pGuardZoneDialog->SetPosition(m_dialogLocation[DL_CONTROL + radar].pos);
     m_pGuardZoneDialog->OnGuardZoneDialogShow(m_radar[radar], zone);
   } else {
     m_pGuardZoneDialog->Hide();
+    m_radar[radar]->control_dialog->UnHideTemporarily();
   }
 }
 
@@ -572,6 +567,7 @@ void br24radar_pi::DoTick(void) {
       static wxString empty;
 
       m_radar[r]->radar_seen = false;
+      m_radar[r]->data_seen = false;
       m_radar[r]->state.Update(RADAR_OFF);
       m_pMessageBox->SetRadarIPAddress(empty);
       wxLogMessage(wxT("BR24radar_pi: Lost %s presence"), m_radar[r]->name);

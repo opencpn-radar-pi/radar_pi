@@ -37,10 +37,6 @@ enum {  // process ID's
   ID_CLOSE
 };
 
-BEGIN_EVENT_TABLE(RadarPanel, wxPanel)
-EVT_LEFT_UP(RadarPanel::OnMouseClick)
-END_EVENT_TABLE()
-
 RadarPanel::RadarPanel(br24radar_pi* pi, RadarInfo* ri, wxWindow* parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("RADAR")) {
   m_parent = parent;
@@ -115,11 +111,6 @@ void RadarPanel::ShowFrame(bool visible) {
   m_aui_mgr->GetPane(this).Show(visible);
   // m_visible = visible;
   m_aui_mgr->Update();
-}
-
-void RadarPanel::OnMouseClick(wxMouseEvent& event) {
-  m_pi->ShowRadarControl(m_ri->radar, true);
-  event.Skip();
 }
 
 #include "pi_trail.h"

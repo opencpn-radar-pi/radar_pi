@@ -400,10 +400,13 @@ bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* 
   m_pi = ppi;
   m_ri = ri;
 
+  m_hide = false;
+  m_hide_temporarily = false;
+
 #ifdef wxMSW
-  long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
+  long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN | wxSTAY_ON_TOP | wxFRAME_FLOAT_ON_PARENT;
 #else
-  long wstyle = wxCLOSE_BOX | wxCAPTION | wxRESIZE_BORDER;
+  long wstyle = wxCLOSE_BOX | wxCAPTION | wxRESIZE_BORDER | wxSTAY_ON_TOP | wxFRAME_FLOAT_ON_PARENT;
 #endif
 
   if (!wxDialog::Create(parent, id, caption, pos, wxDefaultSize, wstyle)) {
@@ -1119,35 +1122,35 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 }
 
-void br24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar,
-                                       bool haveData) {
-  if (m_ri->control_box_closed) {
+void br24ControlsDialog::UpdateDialogShown() {
+  if (m_hide) {
     if (m_pi->m_settings.verbose) {
-      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateControl explicit closed: Hidden"), m_ri->name);
+      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown explicit closed: Hidden"), m_ri->name);
     }
     Hide();
     return;
   }
+
   if (m_pi->m_pGuardZoneDialog && m_pi->m_pGuardZoneDialog->IsShown()) {
     if (m_pi->m_settings.verbose) {
-      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateControl Hidden because GuardZoneDialog is shown"), m_ri->name);
+      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown Hidden because GuardZoneDialog is shown"), m_ri->name);
     }
+    m_hide_temporarily = true;
     Hide();
+    return;
   }
 
-  if (m_ri->control_box_opened) {  // manually opened from context menu
-    if (m_pi->m_settings.verbose) {
-      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateControl manually opened"), m_ri->name);
-    }
-    if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_edit_sizer) &&
-        !m_top_sizer->IsShown(m_installation_sizer)) {
-      m_top_sizer->Show(m_control_sizer);
-    }
-    m_control_sizer->Layout();
-    Fit();
-    m_top_sizer->Layout();
-    Show();
+  if (m_pi->m_settings.verbose) {
+    wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown manually opened"), m_ri->name);
   }
+  if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_edit_sizer) &&
+      !m_top_sizer->IsShown(m_installation_sizer)) {
+    m_top_sizer->Show(m_control_sizer);
+  }
+  m_control_sizer->Layout();
+  Fit();
+  m_top_sizer->Layout();
+  Show();
 
   m_edit_sizer->Layout();
   m_top_sizer->Layout();
@@ -1165,6 +1168,26 @@ void br24ControlsDialog::UpdateControl(bool haveOpenGL, bool haveGPS, bool haveH
   }
 
   SetTitle(title);
+}
+
+void br24ControlsDialog::HideTemporarily() {
+  m_hide_temporarily = true;
+  Hide();
+}
+
+void br24ControlsDialog::UnHideTemporarily() {
+  m_hide_temporarily = false;
+  UpdateDialogShown();
+}
+
+void br24ControlsDialog::ShowDialog() {
+  m_hide = false;
+  UpdateDialogShown();
+}
+
+void br24ControlsDialog::HideDialog() {
+  m_hide = true;
+  UpdateDialogShown();
 }
 
 wxString& br24ControlsDialog::GetRangeText() { return m_range_button->GetRangeText(); }
