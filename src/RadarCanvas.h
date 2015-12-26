@@ -43,6 +43,7 @@ class RadarCanvas : public wxGLCanvas {
   virtual ~RadarCanvas();
 
   void Render(wxPaintEvent& evt);
+  void OnMove(wxMoveEvent& evt);
   void OnSize(wxSizeEvent& evt);
   void OnMouseClick(wxMouseEvent& event);
 

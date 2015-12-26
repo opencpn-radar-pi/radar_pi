@@ -201,6 +201,7 @@ struct PersistentSettings {
   int threshold_blue;
   int threshold_multi_sweep;
   wxString alert_audio_file;
+  int automatic_dialog_location;
 };
 
 #include "GuardZone.h"

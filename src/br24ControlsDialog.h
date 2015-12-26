@@ -108,6 +108,9 @@ class br24ControlsDialog : public wxDialog {
 
   void EnterEditMode(br24RadarControlButton *button);
 
+  void OnMouseLeftDown(wxMouseEvent &event);
+  void BindLeftDown(wxWindow *component);
+
   wxWindow *m_parent;
   wxBoxSizer *m_advanced_4G_sizer;
   wxBoxSizer *m_advanced_sizer;
@@ -117,6 +120,8 @@ class br24ControlsDialog : public wxDialog {
 
   bool m_hide;
   bool m_hide_temporarily;
+  wxPoint m_panel_position;
+  time_t m_auto_hide;
 
   // Edit Controls
 

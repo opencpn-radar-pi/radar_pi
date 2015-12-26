@@ -43,9 +43,8 @@ class RadarPanel : public wxPanel {
   void SetCaption(wxString name);  // Set the AUI caption
   void ShowFrame(bool visible);
 
-  void resized(wxSizeEvent& evt);
-
   void close(wxAuiManagerEvent& event);
+  wxPoint GetPos();
 
  private:
   wxWindow* m_parent;

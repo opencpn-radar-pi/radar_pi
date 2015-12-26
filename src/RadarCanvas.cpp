@@ -35,7 +35,7 @@
 
 BEGIN_EVENT_TABLE(RadarCanvas, wxGLCanvas)
 //    EVT_CLOSE(RadarCanvas::close)
-//    EVT_MOVE(RadarCanvas::moved)
+EVT_MOVE(RadarCanvas::OnMove)
 EVT_SIZE(RadarCanvas::OnSize)
 EVT_PAINT(RadarCanvas::Render)
 EVT_LEFT_DOWN(RadarCanvas::OnMouseClick)
@@ -62,13 +62,21 @@ RadarCanvas::~RadarCanvas() {
 }
 
 void RadarCanvas::OnSize(wxSizeEvent &evt) {
+  wxSize parentSize = m_parent->GetSize();
   if (m_pi->m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: %s resize OpenGL canvas"), m_ri->name);
+    wxLogMessage(wxT("BR24radar_pi: %s resize OpenGL canvas to %d, %d"), m_ri->name, parentSize.x, parentSize.y);
   }
   SetCurrent(*m_context);
-  Refresh();
-  if (GetSize() != m_parent->GetSize()) {
-    SetSize(m_parent->GetSize());
+  Refresh(false);
+  if (GetSize() != parentSize) {
+    SetSize(parentSize);
+  }
+}
+
+void RadarCanvas::OnMove(wxMoveEvent &evt) {
+  wxPoint pos = m_parent->GetPosition();
+  if (m_pi->m_settings.verbose >= 2) {
+    wxLogMessage(wxT("BR24radar_pi: %s move OpenGL canvas to %d, %d"), m_ri->name, pos.x, pos.y);
   }
 }
 

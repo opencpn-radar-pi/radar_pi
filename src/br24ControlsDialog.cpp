@@ -29,6 +29,7 @@
  */
 
 #include "br24ControlsDialog.h"
+#include "RadarPanel.h"
 
 enum {  // process ID's
   ID_TEXTCTRL1 = 10000,
@@ -394,6 +395,18 @@ void br24ControlsDialog::Init() {
   // Initialize all members that need initialization
 }
 
+void br24ControlsDialog::BindLeftDown(wxWindow* component) {
+  wxWindowListNode* node;
+
+  if (component) {
+    component->Bind(wxEVT_LEFT_DOWN, &br24ControlsDialog::OnMouseLeftDown, this);
+    for (node = component->GetChildren().GetFirst(); node; node = node->GetNext()) {
+      wxWindow* child = node->GetData();
+      BindLeftDown(child);
+    }
+  }
+}
+
 bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* ri, wxWindowID id, const wxString& caption,
                                 const wxPoint& pos, const wxSize& size, long style) {
   m_parent = parent;
@@ -414,6 +427,9 @@ bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* 
   }
 
   CreateControls();
+
+  BindLeftDown(this);
+
   return true;
 }
 
@@ -1140,6 +1156,21 @@ void br24ControlsDialog::UpdateDialogShown() {
     return;
   }
 
+  if (m_pi->m_settings.automatic_dialog_location && TIMER_ELAPSED(time(0), m_auto_hide)) {
+    if (!m_top_sizer->IsShown(m_control_sizer)) {
+      // If we're somewhere in the sub-window, don't close the dialog
+      m_auto_hide += WATCHDOG_TIMEOUT;
+    } else {
+      if (IsShown()) {
+        if (m_pi->m_settings.verbose) {
+          wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown auto-hide"), m_ri->name);
+        }
+        Hide();
+      }
+      return;
+    }
+  }
+
   if (m_pi->m_settings.verbose) {
     wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown manually opened"), m_ri->name);
   }
@@ -1182,12 +1213,46 @@ void br24ControlsDialog::UnHideTemporarily() {
 
 void br24ControlsDialog::ShowDialog() {
   m_hide = false;
-  UpdateDialogShown();
+  if (!IsShown() && m_pi->m_settings.automatic_dialog_location) {
+    // If the corresponding radar panel is now in a different position from what we remembered
+    // then reset the dialog to the left or right of the radar panel.
+
+    UpdateDialogShown();
+
+    wxPoint panelPos = m_ri->radar_panel->GetPos();
+    if (panelPos != m_panel_position) {
+      wxSize mySize = this->GetSize();
+      // wxLogMessage(wxT(">>> ShowDialog with radar panel at new position %d,%d and our sh"), panelPos.x, panelPos.y);
+
+      bool showOnLeft = (panelPos.x > mySize.x);
+
+      wxPoint newPos = panelPos;
+
+      if (showOnLeft) {
+        newPos.x = panelPos.x - mySize.x;
+      } else {
+        newPos.x = panelPos.x + m_ri->radar_panel->GetSize().x;
+      }
+      SetPosition(newPos);
+
+      m_panel_position = panelPos;
+    } else {
+      UpdateDialogShown();
+    }
+  }
+  m_auto_hide = time(0);
 }
 
 void br24ControlsDialog::HideDialog() {
   m_hide = true;
   UpdateDialogShown();
+}
+
+void br24ControlsDialog::OnMouseLeftDown(wxMouseEvent& event) {
+  m_auto_hide = time(0);
+  wxLogMessage(wxT(">>> OnMouseLeftDown"));
+
+  event.Skip();
 }
 
 wxString& br24ControlsDialog::GetRangeText() { return m_range_button->GetRangeText(); }

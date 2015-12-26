@@ -47,17 +47,17 @@ RadarPanel::RadarPanel(br24radar_pi* pi, RadarInfo* ri, wxWindow* parent)
 bool RadarPanel::Create() {
   m_aui_mgr = GetFrameAuiManager();
   m_aui_name = wxString::Format(wxT("BR24radar_pi-%d"), m_ri->radar);
-  wxAuiPaneInfo p = wxAuiPaneInfo()
-                        .Name(m_aui_name)
-                        .Caption(m_ri->name)
-                        .CaptionVisible(true)  // Show caption even when docked
-                        .Dockable(true)        // Dockable everywhere
-                        .MinSize(wxSize(256, 256))
-                        .BestSize(wxSize(512, 512))
-                        .FloatingSize(wxSize(512, 512))
-                        .Float()
-                        .CloseButton(true)
-                        .Gripper(false);
+  wxAuiPaneInfo pane = wxAuiPaneInfo()
+                           .Name(m_aui_name)
+                           .Caption(m_ri->name)
+                           .CaptionVisible(true)  // Show caption even when docked
+                           .Dockable(true)        // Dockable everywhere
+                           .MinSize(wxSize(256, 256))
+                           .BestSize(wxSize(512, 512))
+                           .FloatingSize(wxSize(512, 512))
+                           .Float()
+                           .CloseButton(true)
+                           .Gripper(false);
 
   m_ri->radar_canvas =
       new RadarCanvas(m_pi, m_ri, this, wxSize(256, 256));  // m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
@@ -76,7 +76,7 @@ bool RadarPanel::Create() {
   SetMinSize(GetBestSize());
   Refresh();
 
-  m_aui_mgr->AddPane(this, p);
+  m_aui_mgr->AddPane(this, pane);
   m_aui_mgr->Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(RadarPanel::close), NULL, this);
 
   m_aui_mgr->Update();
@@ -89,19 +89,6 @@ RadarPanel::~RadarPanel() {}
 
 void RadarPanel::SetCaption(wxString name) { m_aui_mgr->GetPane(this).Caption(name); }
 
-void RadarPanel::resized(wxSizeEvent& evt) {
-  wxSize s = GetClientSize();
-  wxSize n;
-  n.x = MIN(s.x, s.y);
-  n.y = s.x;
-
-  if (n.x != s.x || n.y != s.y) {
-    // SetClientSize(n);
-    // m_parent->Layout();
-  }
-  // Fit();
-}
-
 void RadarPanel::close(wxAuiManagerEvent& event) {
   // m_visible = false;
   event.Skip();
@@ -111,6 +98,13 @@ void RadarPanel::ShowFrame(bool visible) {
   m_aui_mgr->GetPane(this).Show(visible);
   // m_visible = visible;
   m_aui_mgr->Update();
+}
+
+wxPoint RadarPanel::GetPos() {
+  if (m_aui_mgr->GetPane(this).IsFloating()) {
+    return GetParent()->GetScreenPosition();
+  }
+  return GetScreenPosition();
 }
 
 #include "pi_trail.h"

@@ -238,8 +238,6 @@ bool br24radar_pi::DeInit(void) {
     delete m_pGuardZoneBogey;
   }
 
-  ShowRadarControl(0, false);
-  ShowRadarControl(1, false);
   m_radar[0]->ShowRadarWindow(false);
   m_radar[1]->ShowRadarWindow(false);
 
@@ -1062,6 +1060,8 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("ShowRadar"), &intValue, 0);
     m_settings.show_radar = intValue ? RADAR_ON : RADAR_OFF;
 
+    pConf->Read(wxT("AutomaticDialogLocation"), &m_settings.automatic_dialog_location, 1);
+
     SaveConfig();
     return true;
   }
@@ -1126,6 +1126,8 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ThresholdGreen"), m_settings.threshold_green);
     pConf->Write(wxT("ThresholdBlue"), m_settings.threshold_blue);
     pConf->Write(wxT("ThresholdMultiSweep"), m_settings.threshold_multi_sweep);
+
+    pConf->Write(wxT("AutomaticDialogLocation"), m_settings.automatic_dialog_location);
 
     pConf->Flush();
     wxLogMessage(wxT("BR24radar_pi: Saved settings"));
