@@ -223,9 +223,15 @@ struct scan_line {
 
 #define BR24RADAR_TOOL_POSITION -1  // Request default positioning of toolbar tool
 
+#define PLUGIN_OPTIONS                                                                                                       \
+  (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK | WANTS_OPENGL_OVERLAY_CALLBACK | WANTS_OVERLAY_CALLBACK | WANTS_TOOLBAR_CALLBACK | \
+   INSTALLS_TOOLBAR_TOOL | INSTALLS_CONTEXTMENU_ITEMS | USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS |                \
+   WANTS_NMEA_SENTENCES | WANTS_PREFERENCES | WANTS_PLUGIN_MESSAGING)
+
 class br24radar_pi : public opencpn_plugin_110 {
  public:
   br24radar_pi(void *ppimgr);
+  ~br24radar_pi();
   void PrepareRadarImage(int angle);
 
   //    The required PlugIn Methods
@@ -286,6 +292,7 @@ class br24radar_pi : public opencpn_plugin_110 {
 
   PersistentSettings m_settings;
   RadarInfo *m_radar[RADARS];
+  wxString m_perspective[RADARS];  // Temporary storage of window location when plugin is disabled
 
   int m_OldUseShader;
   int m_OldDisplayOption;
@@ -320,6 +327,8 @@ class br24radar_pi : public opencpn_plugin_110 {
   time_t m_bpos_watchdog;
 
   volatile bool m_refresh_busy_or_queued;
+  bool m_initialized;  // True if Init() succeeded and DeInit() not called yet.
+  bool m_first_init;   // True in first Init() call.
 
   WindowLocation m_dialogLocation[DIALOG_MAX];
 

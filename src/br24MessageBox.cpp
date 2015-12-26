@@ -40,7 +40,6 @@ enum {  // process ID's
   ID_OFF
 };
 
-enum message_status { HIDE, SHOW, SHOW_NO_NMEA, SHOW_BACK };
 //---------------------------------------------------------------------------------------
 //          Radar Control Implementation
 //---------------------------------------------------------------------------------------
@@ -62,6 +61,12 @@ br24MessageBox::~br24MessageBox() {}
 
 void br24MessageBox::Init() {
   // Initialize all members that need initialization
+  m_parent = 0;
+  m_top_sizer = 0;
+  m_nmea_sizer = 0;
+  m_info_sizer = 0;
+  m_message_sizer = 0;
+  m_ip_box = 0;
 }
 
 void br24MessageBox::OnClose(wxCloseEvent &event) { m_pi->OnMessageBoxClose(); }
@@ -82,6 +87,12 @@ bool br24MessageBox::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, c
   }
 
   CreateControls();
+
+  m_message_state = HIDE;
+  m_old_radar_seen = false;
+
+  wxLogMessage(wxT("BR24radar_pi: MessageBox created"));
+
   return true;
 }
 
@@ -187,13 +198,7 @@ void br24MessageBox::OnSize(wxSizeEvent &event) { event.Skip(); }
 
 void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool radarSeen,
                                    bool haveData) {
-  static message_status message_state = HIDE;
   message_status new_message_state = HIDE;
-  static bool old_radarSeen = false;
-  if (!m_pi->m_pMessageBox) {
-    wxLogMessage(wxT("BR24radar_pi: ERROR UpdateMessage m_pMessageBox not existent"));
-    return;
-  }
 
   bool radarOn = haveOpenGL && radarSeen;
   bool navOn = haveGPS && haveHeading && haveVariation;
@@ -253,7 +258,7 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
   if (m_pi->m_settings.verbose) {
     wxLogMessage(wxT("BR24radar_pi: messagebox switch, case=%d"), new_message_state);
   }
-  if (message_state != new_message_state || old_radarSeen != radarSeen) {
+  if (m_message_state != new_message_state || m_old_radar_seen != radarSeen) {
     switch (new_message_state) {
       case HIDE:
         if (m_pi->m_pMessageBox->IsShown()) {
@@ -299,8 +304,8 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
   }
   Fit();
   m_top_sizer->Layout();
-  old_radarSeen = radarSeen;
-  message_state = new_message_state;
+  m_old_radar_seen = radarSeen;
+  m_message_state = new_message_state;
 }
 
 void br24MessageBox::OnMessageBackButtonClick(wxCommandEvent &event) {
@@ -331,10 +336,12 @@ void br24MessageBox::SetErrorMessage(wxString &msg) {
 }
 
 void br24MessageBox::SetMcastIPAddress(wxString &msg) {
+  wxMutexLocker lock(m_mutex);
+
   if (m_ip_box) {
     wxString label;
 
-    label << _("ZeroConf E'net") << wxT(" ") << msg;
+    label << _("Ethernet card") << wxT(" ") << msg;
     m_ip_box->SetLabel(label);
   }
 }

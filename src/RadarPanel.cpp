@@ -77,15 +77,28 @@ bool RadarPanel::Create() {
   Refresh();
 
   m_aui_mgr->AddPane(this, pane);
+  m_aui_mgr->Update();
   m_aui_mgr->Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(RadarPanel::close), NULL, this);
 
-  m_aui_mgr->Update();
-  wxLogMessage(wxT("BR24radar_pi: Added panel %s to AUI control manager"), m_aui_name.c_str());
+  if (m_pi->m_perspective[m_ri->radar].length()) {
+    // Do this first and it doesn't work if the pane starts docked.
+    wxLogMessage(wxT("BR24radar_pi: Restoring panel %s to AUI control manager: %s"), m_aui_name.c_str(),
+                 m_pi->m_perspective[m_ri->radar].c_str());
+    m_aui_mgr->LoadPaneInfo(m_pi->m_perspective[m_ri->radar], pane);
+    pane.Show(true);
+    m_aui_mgr->GetPane(this).SafeSet(pane);
+    m_aui_mgr->Update();
+  } else {
+    wxLogMessage(wxT("BR24radar_pi: Added panel %s to AUI control manager"), m_aui_name.c_str());
+  }
 
   return true;
 }
 
-RadarPanel::~RadarPanel() {}
+RadarPanel::~RadarPanel() {
+  m_pi->m_perspective[m_ri->radar] = m_aui_mgr->SavePaneInfo(m_aui_mgr->GetPane(this));
+  m_aui_mgr->DetachPane(this);
+}
 
 void RadarPanel::SetCaption(wxString name) { m_aui_mgr->GetPane(this).Caption(name); }
 

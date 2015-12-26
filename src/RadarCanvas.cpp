@@ -85,7 +85,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
   int sq;  // square size, minimum of w, h.
 
-  if (!IsShown()) {
+  if (!IsShown() || !m_pi->m_initialized) {
     return;
   }
 

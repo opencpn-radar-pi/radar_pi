@@ -90,33 +90,55 @@ static double radar_distance(double lat1, double lon1, double lat2, double lon2,
 //---------------------------------------------------------------------------------------------------------
 
 br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_110(ppimgr) {
+  m_initialized = false;
   // Create the PlugIn icons
   initialize_images();
   m_pdeficon = new wxBitmap(*_img_radar_blank);
+
+  m_opencpn_gl_context = 0;
+  m_opencpn_gl_context_broken = false;
+
+  m_first_init = true;
 }
 
-int br24radar_pi::Init(void) {
-#ifdef __WXMSW__
-  WSADATA wsaData;
+br24radar_pi::~br24radar_pi() {}
 
-  // Initialize Winsock
-  DWORD r = WSAStartup(MAKEWORD(2, 2), &wsaData);
-  if (r != 0) {
-    wxLogError(wxT("BR24radar_pi: Unable to initialise Windows Sockets, error %d"), r);
-    // Might as well give up now
-    return 0;
+/*
+ * Init() is called -every- time that the plugin is enabled. If a user is being nasty
+ * they can enable/disable multiple times in the overview. Grrr!
+ *
+ */
+
+int br24radar_pi::Init(void) {
+  if (m_initialized) {
+    // Whoops, shouldn't happen
+    return PLUGIN_OPTIONS;
   }
+
+  if (m_first_init) {
+#ifdef __WXMSW__
+    WSADATA wsaData;
+
+    // Initialize Winsock
+    DWORD r = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (r != 0) {
+      wxLogError(wxT("BR24radar_pi: Unable to initialise Windows Sockets, error %d"), r);
+      // Might as well give up now
+      return 0;
+    }
 #endif
 
-  AddLocaleCatalog(_T("opencpn-br24radar_pi"));
+    AddLocaleCatalog(_T("opencpn-br24radar_pi"));
 
+    m_pconfig = GetOCPNConfigObject();
+    m_first_init = false;
+  }
+
+  // Font can change so initialize every time
   m_font = *OCPNGetFont(_("Dialog"), 12);
   m_fat_font = m_font;
   m_fat_font.SetWeight(wxFONTWEIGHT_BOLD);
   m_fat_font.SetPointSize(m_font.GetPointSize() + 1);
-
-  m_opencpn_gl_context = 0;
-  m_opencpn_gl_context_broken = false;
 
   m_refresh_rate = 1;
 
@@ -163,10 +185,6 @@ int br24radar_pi::Init(void) {
 
   ::wxDisplaySize(&m_display_width, &m_display_height);
 
-  //****************************************************************************************
-  //    Get a pointer to the opencpn configuration object
-  m_pconfig = GetOCPNConfigObject();
-
   //    And load the configuration items
   if (LoadConfig()) {
     wxLogMessage(wxT("BR24radar_pi: Configuration file values initialised"));
@@ -175,7 +193,7 @@ int br24radar_pi::Init(void) {
     wxLogMessage(wxT("BR24radar_pi: configuration file values initialisation failed"));
     return 0;  // give up
   }
-  ComputeColorMap();
+  ComputeColorMap();  // After load config
 
   for (size_t r = 0; r < RADARS; r++) {
     if (!m_radar[r]->Init(m_settings.verbose)) {
@@ -213,43 +231,62 @@ int br24radar_pi::Init(void) {
   m_pMessageBox->Fit();
   m_pMessageBox->Hide();
 
-  if (!m_radar[0]->receive) {
-    m_radar[0]->StartReceive();
-  }
-  if (!m_radar[1]->receive && m_settings.enable_dual_radar && m_radar[0]->radar_type == RT_4G) {
-    m_radar[1]->StartReceive();
+  m_radar[0]->StartReceive();
+  if (m_settings.enable_dual_radar) {
     m_radar[0]->SetName(_("Radar A"));
+    m_radar[1]->StartReceive();
   }
 
-  return (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK | WANTS_OPENGL_OVERLAY_CALLBACK | WANTS_OVERLAY_CALLBACK | WANTS_TOOLBAR_CALLBACK |
-          INSTALLS_TOOLBAR_TOOL | INSTALLS_CONTEXTMENU_ITEMS | USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS |
-          WANTS_NMEA_SENTENCES | WANTS_PREFERENCES | WANTS_PLUGIN_MESSAGING);
+  m_initialized = true;
+  wxLogMessage(wxT("BR24radar_pi: Initialized plugin"));
+  return PLUGIN_OPTIONS;
 }
 
-bool br24radar_pi::DeInit(void) {
-  OnControlDialogClose(m_radar[0]);
-  OnControlDialogClose(m_radar[1]);
-  OnMessageBoxClose();
+/**
+ * DeInit() is called when OpenCPN is quitting or when the user disables the plugin.
+ *
+ * This should get rid of all on-screen objects and deallocate memory.
+ */
 
+bool br24radar_pi::DeInit(void) {
+  if (!m_initialized) {
+    return false;
+  }
+  m_initialized = false;
+  wxLogMessage(wxT("BR24radar_pi: DeInit of plugin"));
+
+  // First close everything that the user can have open
+  OnMessageBoxClose();
+  for (int r = 0; r < RADARS; r++) {
+    OnControlDialogClose(m_radar[r]);
+    m_radar[r]->ShowRadarWindow(false);
+  }
   if (m_pGuardZoneDialog) {
     m_pGuardZoneDialog->Close();
   }
-  if (m_pGuardZoneBogey) {
-    delete m_pGuardZoneBogey;
-  }
 
-  m_radar[0]->ShowRadarWindow(false);
-  m_radar[1]->ShowRadarWindow(false);
-
+  // Save our config
   SaveConfig();
 
+  // Delete all 'new'ed objects
+  if (m_pGuardZoneBogey) {
+    delete m_pGuardZoneBogey;
+    m_pGuardZoneBogey = 0;
+  }
   for (int r = 0; r < RADARS; r++) {
     if (m_radar[r]) {
       delete m_radar[r];
+      m_radar[r] = 0;
     }
   }
-
+  // Do this later than the radar loop: MessageBox is updated by RadarInfo.
   delete m_pMessageBox;
+  m_pMessageBox = 0;
+
+  if (m_pOptionsDialog) {
+    delete m_pOptionsDialog;
+    m_pOptionsDialog = 0;
+  }
 
   return true;
 }
@@ -276,8 +313,11 @@ void br24radar_pi::SetDefaults(void) {
 }
 
 void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
-  m_pOptionsDialog = new br24OptionsDialog;
-  m_pOptionsDialog->Create(m_parent_window, this);
+  wxLogMessage(wxT("BR24radar_pi: ShowPreferencesDialog"));
+  if (!m_pOptionsDialog) {
+    m_pOptionsDialog = new br24OptionsDialog;
+    m_pOptionsDialog->Create(parent, this);
+  }
   m_pOptionsDialog->ShowModal();
 }
 
@@ -437,6 +477,9 @@ int br24radar_pi::GetToolbarToolCount(void) { return 1; }
  */
 void br24radar_pi::OnToolbarToolCallback(int id) {
   wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback(%d)"), id);
+  if (!m_initialized) {
+    return;
+  }
 
   if (m_settings.show_radar == RADAR_ON) {
     m_settings.show_radar = RADAR_OFF;
@@ -517,8 +560,8 @@ void br24radar_pi::DoTick(void) {
       m_radar[0]->StartReceive();
     }
     if (!m_radar[1]->receive && m_settings.enable_dual_radar && m_radar[0]->radar_type == RT_4G) {
-      m_radar[1]->StartReceive();
       m_radar[0]->SetName(_("Radar A"));
+      m_radar[1]->StartReceive();
     }
   }
 
@@ -617,7 +660,7 @@ void br24radar_pi::DoTick(void) {
     if (m_pMessageBox && m_pMessageBox->IsShown()) {
       m_pMessageBox->SetRadarInfo(t);
     }
-    if (m_settings.verbose >= 1) {
+    if (m_settings.verbose >= 1 && t.length() > 0) {
       t.Replace(wxT("\n"), wxT(" "));
       wxLogMessage(wxT("BR24radar_pi: %s"), t.c_str());
     }
@@ -733,6 +776,9 @@ void br24radar_pi::UpdateState(void) {
 //**************************************************************************************************
 
 bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
+  if (!m_initialized) {
+    return true;
+  }
   m_opengl_mode = false;
 
   DoTick();  // update timers and watchdogs
@@ -745,6 +791,9 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 // Called by Plugin Manager on main system process cycle
 
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
+  if (!m_initialized) {
+    return true;
+  }
   m_opencpn_gl_context = pcontext;
   if (!m_opencpn_gl_context && !m_opencpn_gl_context_broken) {
     wxLogMessage(wxT("BR24radar_pi: OpenCPN does not pass OpenGL context. Resize of OpenCPN window may be broken!"));

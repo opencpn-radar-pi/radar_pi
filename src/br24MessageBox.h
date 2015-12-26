@@ -34,6 +34,8 @@
 
 #include "br24radar_pi.h"
 
+enum message_status { HIDE, SHOW, SHOW_NO_NMEA, SHOW_BACK };
+
 class br24MessageBox : public wxDialog {
   DECLARE_CLASS(br24MessageBox)
   DECLARE_EVENT_TABLE()
@@ -69,6 +71,10 @@ class br24MessageBox : public wxDialog {
 
   wxWindow *m_parent;
   br24radar_pi *m_pi;
+
+  message_status m_message_state;
+  bool m_old_radar_seen;
+
   wxBoxSizer *m_top_sizer;
   wxBoxSizer *m_nmea_sizer;
   wxBoxSizer *m_info_sizer;
