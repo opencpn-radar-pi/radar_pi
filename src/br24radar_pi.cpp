@@ -323,8 +323,6 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
       m_radar[radar]->range.Update(idx);
     }
     m_radar[radar]->control_dialog->ShowDialog();
-  } else {
-    m_radar[radar]->control_dialog->HideDialog();
   }
 
   m_radar[radar]->UpdateControlState(true);

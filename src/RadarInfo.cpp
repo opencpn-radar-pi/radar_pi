@@ -415,6 +415,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, 
   if (overlay) {
     RenderRadarImage(center, scale, &m_draw_overlay);
   } else {
+    RenderGuardZone(center, scale);
     RenderRadarImage(center, scale, &m_draw_panel);
   }
 }

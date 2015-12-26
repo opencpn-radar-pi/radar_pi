@@ -151,8 +151,6 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   DrawOutlineArc(0.50, 0.75, 0.0, 360.0, false);
   // CheckOpenGLError(wxT("range circles"));
 
-  // TODO
-  // m_pi->RenderGuardZone(wxPoint(0,0), 1.0, 0);
   double rotation = 0.0;  // Or HU then -m_pi->m_hdt;
 
   m_ri->RenderRadarImage(wxPoint(0, 0), scale_factor, rotation, false);
