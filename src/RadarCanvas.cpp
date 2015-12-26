@@ -81,24 +81,6 @@ void RadarCanvas::OnMove(wxMoveEvent &evt) {
   }
 }
 
-#if 0
-void RadarCanvas::close( wxCloseEvent& evt )
-{
-    //this->Hide();
-    //evt.Skip();
-}
-
-// some useful events to use
-void RadarCanvas::mouseMoved(wxMouseEvent& event) {}
-void RadarCanvas::mouseDown(wxMouseEvent& event) {}
-void RadarCanvas::mouseWheelMoved(wxMouseEvent& event) {}
-void RadarCanvas::mouseReleased(wxMouseEvent& event) {}
-void RadarCanvas::rightClick(wxMouseEvent& event) {}
-void RadarCanvas::mouseLeftWindow(wxMouseEvent& event) {}
-void RadarCanvas::keyPressed(wxKeyEvent& event) {}
-void RadarCanvas::keyReleased(wxKeyEvent& event) {}
-#endif
-
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
   int sq;  // square size, minimum of w, h.
