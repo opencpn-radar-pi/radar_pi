@@ -49,6 +49,7 @@ RadarCanvas::RadarCanvas(br24radar_pi *pi, RadarInfo *ri, wxWindow *parent, wxSi
   m_pi = pi;
   m_ri = ri;
   m_context = new wxGLContext(this);
+  m_zero_context = new wxGLContext(this);
   if (m_pi->m_settings.verbose >= 2) {
     wxLogMessage(wxT("BR24radar_pi: %s create OpenGL canvas"), m_ri->name);
   }
@@ -59,6 +60,7 @@ RadarCanvas::~RadarCanvas() {
     wxLogMessage(wxT("BR24radar_pi: %s destroy OpenGL canvas"), m_ri->name);
   }
   delete m_context;
+  delete m_zero_context;
 }
 
 void RadarCanvas::OnSize(wxSizeEvent &evt) {
@@ -66,7 +68,6 @@ void RadarCanvas::OnSize(wxSizeEvent &evt) {
   if (m_pi->m_settings.verbose >= 2) {
     wxLogMessage(wxT("BR24radar_pi: %s resize OpenGL canvas to %d, %d"), m_ri->name, parentSize.x, parentSize.y);
   }
-  SetCurrent(*m_context);
   Refresh(false);
   if (GetSize() != parentSize) {
     SetSize(parentSize);
@@ -184,6 +185,8 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   }
   if (m_pi->m_opencpn_gl_context) {
     SetCurrent(*m_pi->m_opencpn_gl_context);
+  } else {
+    SetCurrent(*m_zero_context);  // Make sure OpenCPN -at least- doesn't overwrite our context info
   }
 }
 

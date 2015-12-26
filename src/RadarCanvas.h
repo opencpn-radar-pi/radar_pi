@@ -36,8 +36,6 @@
 #include "TextureFont.h"
 
 class RadarCanvas : public wxGLCanvas {
-  wxGLContext* m_context;
-
  public:
   RadarCanvas(br24radar_pi* pi, RadarInfo* ri, wxWindow* parent, wxSize size);
   virtual ~RadarCanvas();
@@ -67,6 +65,9 @@ class RadarCanvas : public wxGLCanvas {
   wxWindow* m_parent;
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
+
+  wxGLContext* m_context;       // Our GL context
+  wxGLContext* m_zero_context;  // Set OpenGL back to this after using m_context so O doesn't accidentally use ours
 
   TextureFont m_FontNormal;
   TextureFont m_FontBig;
