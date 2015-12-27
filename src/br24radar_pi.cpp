@@ -1084,7 +1084,7 @@ bool br24radar_pi::LoadConfig(void) {
     m_settings.pass_heading_to_opencpn = intValue != 0;
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
 
-    for (int i = 0; i < ARRAY_SIZE(m_dialogLocation); i++) {
+    for (int i = 0; i < (int)ARRAY_SIZE(m_dialogLocation); i++) {
       int x, y, sx, sy;
 
       pConf->Read(wxString::Format(wxT("Control%dPosX"), i), &x, 300);
@@ -1155,7 +1155,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("RadarAlertAudioFile"), m_settings.alert_audio_file);
     pConf->Write(wxT("EnableDualRadar"), m_settings.enable_dual_radar);
 
-    for (int i = 0; i < ARRAY_SIZE(m_dialogLocation); i++) {
+    for (int i = 0; i < (int)ARRAY_SIZE(m_dialogLocation); i++) {
       if (m_dialogLocation[i].pos.x) {
         pConf->Write(wxString::Format(wxT("Control%dPosX"), i), m_dialogLocation[i].pos.x);
       }
