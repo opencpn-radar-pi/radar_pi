@@ -32,6 +32,7 @@
 #if !defined(HDG_CLASS_HEADER)
 #define HDG_CLASS_HEADER
 
+PLUGIN_BEGIN_NAMESPACE
 /*
 ** Author: Samuel R. Blackburn
 ** CI$: 76300,326
@@ -69,5 +70,7 @@ class HDG : public RESPONSE {
 
   virtual const HDG& operator=(const HDG& source);
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif  // HDG_CLASS_HEADER

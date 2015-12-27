@@ -31,6 +31,8 @@
 #if !defined(HDT_CLASS_HEADER)
 #define HDT_CLASS_HEADER
 
+PLUGIN_BEGIN_NAMESPACE
+
 class HDT : public RESPONSE {
  public:
   HDT();
@@ -56,5 +58,7 @@ class HDT : public RESPONSE {
 
   virtual const HDT& operator=(const HDT& source);
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif  // HDT_CLASS_HEADER

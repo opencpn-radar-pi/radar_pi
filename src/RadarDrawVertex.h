@@ -34,6 +34,8 @@
 
 #include "RadarDraw.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 class RadarDrawVertex : public RadarDraw {
  public:
   RadarDrawVertex(br24radar_pi* pi) {
@@ -95,5 +97,7 @@ class RadarDrawVertex : public RadarDraw {
   unsigned int m_blobs;
   unsigned int m_spokes;
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif /* _RADARDRAWVERTEX_H_ */

@@ -32,6 +32,8 @@
 
 #include "shaderutil.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 #if defined(WIN32)
 #define SET_FUNCTION_POINTER(name) wglGetProcAddress(name)
 typedef PROC FunctionPointer;
@@ -172,8 +174,4 @@ GLboolean ValidateShaderProgram(GLuint program) {
   return (GLboolean)stat;
 }
 
-#ifdef __cplusplusXXX
-}
-#endif
-
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

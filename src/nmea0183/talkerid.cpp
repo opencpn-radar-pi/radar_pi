@@ -31,6 +31,8 @@
 
 #include "nmea0183.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 /*
 ** Author: Samuel R. Blackburn
 ** CI$: 76300,326
@@ -53,4 +55,4 @@ wxString& talker_id(const wxString& sentence) {
   return (return_string);
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

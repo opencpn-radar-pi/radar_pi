@@ -31,6 +31,8 @@
 
 #include "nmea0183.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 /*
 ** Author: Samuel R. Blackburn
 ** CI$: 76300,326
@@ -120,4 +122,4 @@ const HDG& HDG::operator=(const HDG& source) {
   return (*this);
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

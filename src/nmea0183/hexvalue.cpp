@@ -31,6 +31,8 @@
 
 #include "nmea0183.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 /*
 ** Author: Samuel R. Blackburn
 ** CI$: 76300,326
@@ -50,4 +52,4 @@ int HexValue(const wxString& hex_string) {
   return (return_value);
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

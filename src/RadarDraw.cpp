@@ -33,6 +33,8 @@
 #include "RadarDrawVertex.h"
 #include "RadarDrawShader.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 // Factory to generate a particular draw implementation
 RadarDraw* RadarDraw::make_Draw(br24radar_pi* pi, int draw_method) {
   switch (draw_method) {
@@ -54,4 +56,4 @@ void RadarDraw::GetDrawingMethods(wxArrayString& methods) {
   methods = wxArrayString(ARRAY_SIZE(m), m);
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

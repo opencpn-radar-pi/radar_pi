@@ -34,6 +34,8 @@
 
 #include "br24radar_pi.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 class RadarPanel : public wxPanel {
  public:
   RadarPanel(br24radar_pi* pi, RadarInfo* ri, wxWindow* parent);
@@ -53,5 +55,7 @@ class RadarPanel : public wxPanel {
   wxAuiManager* m_aui_mgr;
   wxString m_aui_name;
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif

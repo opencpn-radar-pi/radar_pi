@@ -35,6 +35,8 @@
 
 #include "pi_common.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 /*
 ** Author: Samuel R. Blackburn
 ** CI$: 76300,326
@@ -102,6 +104,8 @@ int HexValue(const wxString& hex_string);
 wxString& expand_talker_id(const wxString&);
 wxString& Hex(int value);
 wxString& talker_id(const wxString& sentence);
+
+PLUGIN_END_NAMESPACE
 
 #include "nmea0183.hpp"
 

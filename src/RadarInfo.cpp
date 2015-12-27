@@ -37,6 +37,8 @@
 #include "RadarCanvas.h"
 #include "RadarPanel.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 void radar_control_item::Update(int v) {
   wxMutexLocker lock(m_mutex);
 
@@ -450,4 +452,4 @@ wxString RadarInfo::GetCanvasText() {
   return s;
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

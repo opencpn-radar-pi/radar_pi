@@ -34,9 +34,13 @@
 
 #include "pi_common.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 extern void DrawArc(float cx, float cy, float r, float start_angle, float arc_angle, int num_segments);
 extern void DrawOutlineArc(double r1, double r2, double a1, double a2, bool stippled);
 extern void DrawFilledArc(double r1, double r2, double a1, double a2);
 extern void CheckOpenGLError(const wxString& after);
+
+PLUGIN_END_NAMESPACE
 
 #endif

@@ -34,6 +34,8 @@
 
 #include "br24radar_pi.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 class IdleDialog : public wxDialog {
   DECLARE_CLASS(IdleDialog)
   DECLARE_EVENT_TABLE()
@@ -68,5 +70,7 @@ class IdleDialog : public wxDialog {
   wxGauge *m_Idle_gauge;
   wxButton *m_btnStopIdle;
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif

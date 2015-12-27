@@ -57,6 +57,8 @@
 #include "hdg.hpp"
 #include "hdt.hpp"
 
+PLUGIN_BEGIN_NAMESPACE
+
 WX_DECLARE_LIST(RESPONSE, MRL);
 
 class NMEA0183 {
@@ -101,5 +103,7 @@ class NMEA0183 {
   NMEA0183& operator<<(wxString& source);
   NMEA0183& operator>>(wxString& destination);
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif  // NMEA_0183_CLASS_HEADER

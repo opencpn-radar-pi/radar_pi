@@ -31,6 +31,8 @@
 
 #include "drawutil.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 static void draw_blob_gl(double ca, double sa, double radius, double arc_width, double blob_heigth) {
   const double blob_start = 0.0;
   const double blob_end = blob_heigth;
@@ -158,4 +160,4 @@ void CheckOpenGLError(const wxString& after) {
   }
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

@@ -28,15 +28,3 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************
  */
-
-/*
- * This header should be used at the end of all source code files.
- *
- * It ends the PLUGIN_NAMESPACE.
- */
-
-#ifndef PLUGIN_NAMESPACE
-#error You must start all header files with #include "pi_common.h"
-#error and end all header files with #include "pi_trail.h"
-#endif
-}

@@ -34,6 +34,8 @@
 
 #include "br24radar_pi.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 class RadarDraw {
  public:
   static RadarDraw* make_Draw(br24radar_pi* pi, int draw_method);
@@ -46,5 +48,7 @@ class RadarDraw {
 
   static void GetDrawingMethods(wxArrayString& methods);
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif

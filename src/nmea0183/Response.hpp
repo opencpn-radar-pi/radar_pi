@@ -32,6 +32,8 @@
 #if !defined(RESPONSE_CLASS_HEADER)
 #define RESPONSE_CLASS_HEADER
 
+PLUGIN_BEGIN_NAMESPACE
+
 /*
 ** Author: Samuel R. Blackburn
 ** CI$: 76300,326
@@ -69,5 +71,7 @@ class RESPONSE {
   virtual void SetContainer(NMEA0183* container);
   virtual bool Write(SENTENCE& sentence);
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif  // RESPONSE_CLASS_HEADER

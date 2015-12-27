@@ -30,6 +30,8 @@
 
 #include "br24radar_pi.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 enum {  // process ID's
   ID_OK_Z,
   ID_ALARMZONES
@@ -274,4 +276,4 @@ void GuardZoneDialog::OnIdOKClick(wxCommandEvent &event) {
   event.Skip();
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

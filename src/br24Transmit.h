@@ -36,6 +36,8 @@
 #include "socketutil.h"
 #include "RadarInfo.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 class br24Transmit {
  public:
   br24Transmit(wxString name, int radar);
@@ -56,5 +58,7 @@ class br24Transmit {
 
   bool TransmitCmd(UINT8* msg, int size);
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif /* _BR24TRANSMIT_H_ */

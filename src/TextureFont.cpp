@@ -25,6 +25,8 @@
 
 #include "TextureFont.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 void TextureFont::Build(wxFont &font, bool blur, bool luminance) {
   /* avoid rebuilding if the parameters are the same */
   if (font == m_font && blur == m_blur) return;
@@ -290,4 +292,4 @@ void TextureFont::RenderString(const wxString &string, int x, int y) {
   glPopMatrix();
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

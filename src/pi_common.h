@@ -37,6 +37,8 @@
 #define _PI_COMMON_H_
 
 #define PLUGIN_NAMESPACE br24
+#define PLUGIN_BEGIN_NAMESPACE namespace PLUGIN_NAMESPACE {
+#define PLUGIN_END_NAMESPACE }
 
 // For OpenGL
 extern "C" {
@@ -160,7 +162,5 @@ using namespace std;
 #ifndef rad2deg
 #define rad2deg(x) ((x)*360.0 / (2 * PI))
 #endif
-
-namespace PLUGIN_NAMESPACE {
 
 #endif

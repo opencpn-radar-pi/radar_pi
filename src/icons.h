@@ -6,6 +6,8 @@
 
 #include "pi_common.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 extern void initialize_images(void);
 
 extern wxBitmap *_img_radar_amber;
@@ -16,5 +18,7 @@ extern wxBitmap *_img_radar_green;
 extern wxBitmap *_img_radar_green_slave;
 extern wxBitmap *_img_radar_red;
 extern wxBitmap *_img_radar_red_slave;
+
+PLUGIN_END_NAMESPACE
 
 #endif /* ICONS_H */

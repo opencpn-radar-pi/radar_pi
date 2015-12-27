@@ -28,6 +28,8 @@
 
 #include "pi_common.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 /* support ascii plus degree symbol for now pack font in a single texture 16x8 */
 #define DEGREE_GLYPH 127
 #define MIN_GLYPH 32
@@ -67,5 +69,7 @@ class TextureFont {
   unsigned int texobj;
   int tex_w, tex_h;
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif  // guard

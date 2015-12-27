@@ -34,6 +34,8 @@
 
 #include "br24radar_pi.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 class br24RadarControlButton;
 class br24RadarRangeControlButton;
 
@@ -164,5 +166,7 @@ class br24ControlsDialog : public wxDialog {
   wxButton *m_guard_1_button;
   wxButton *m_guard_2_button;
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif

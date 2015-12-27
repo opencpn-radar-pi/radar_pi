@@ -36,6 +36,8 @@
 #include "socketutil.h"
 #include "RadarInfo.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 class br24Receive : public wxThread {
  public:
   br24Receive(br24radar_pi *pi, volatile bool *quit, RadarInfo *ri)
@@ -88,5 +90,7 @@ class br24Receive : public wxThread {
 
   char m_radar_status;
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif /* _BR24RECEIVE_H_ */

@@ -34,6 +34,8 @@
 
 #include "br24radar_pi.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 class GuardZoneBogey : public wxDialog {
   DECLARE_CLASS(GuardZoneBogey)
   DECLARE_EVENT_TABLE()
@@ -62,5 +64,7 @@ class GuardZoneBogey : public wxDialog {
   /* Controls */
   wxStaticText *pBogeyCountText;
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif /* GUARDZONEBOGEY_H_ */

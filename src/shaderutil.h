@@ -3,6 +3,8 @@
 
 #include "pi_common.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 struct uniform_info {
   const char *name;
   GLuint size; /**< number of value[] elements: 1, 2, 3 or 4 */
@@ -46,5 +48,7 @@ extern void SetUniformValues(GLuint program, struct uniform_info uniforms[]);
 #define SHADER_FUNCTION_LIST(proc, name) extern proc name;
 #include "shaderutil.inc"
 #undef SHADER_FUNCTION_LIST
+
+PLUGIN_END_NAMESPACE
 
 #endif /* SHADER_UTIL_H */

@@ -35,6 +35,8 @@
 #include "shaderutil.h"
 #include "RadarDraw.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 #define SHADER_COLOR_CHANNELS (4)  // RGB + Alpha
 
 class RadarDrawShader : public RadarDraw {
@@ -72,5 +74,7 @@ class RadarDrawShader : public RadarDraw {
   GLuint m_vertex;
   GLuint m_program;
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif /* _RADARDRAWSHADER_H_ */

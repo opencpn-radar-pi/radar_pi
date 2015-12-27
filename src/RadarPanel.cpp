@@ -32,6 +32,8 @@
 #include "RadarPanel.h"
 #include "RadarCanvas.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 enum {  // process ID's
   ID_CONFIRM,
   ID_CLOSE
@@ -97,7 +99,7 @@ bool RadarPanel::Create() {
 
 RadarPanel::~RadarPanel() {
   m_pi->m_perspective[m_ri->radar] = m_aui_mgr->SavePaneInfo(m_aui_mgr->GetPane(this));
-  m_aui_mgr->DetachPane(this);
+  // m_aui_mgr->DetachPane(this);
 }
 
 void RadarPanel::SetCaption(wxString name) { m_aui_mgr->GetPane(this).Caption(name); }
@@ -120,4 +122,4 @@ wxPoint RadarPanel::GetPos() {
   return GetScreenPosition();
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

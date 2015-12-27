@@ -32,6 +32,8 @@
 #include "nmea0183.h"
 #include <math.h>
 
+PLUGIN_BEGIN_NAMESPACE
+
 #if !defined(NAN)
 
 // static const long long lNaN = 0x7fffffffffffffff;
@@ -555,4 +557,4 @@ const SENTENCE& SENTENCE::operator+=(NMEA0183_BOOLEAN boolean) {
   return (*this);
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

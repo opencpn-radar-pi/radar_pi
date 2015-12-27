@@ -31,6 +31,8 @@
 
 #include "RadarDrawVertex.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 bool RadarDrawVertex::Init(int newColorOption) {
   if (newColorOption) {
     // Don't care in vertex mode
@@ -182,4 +184,4 @@ void RadarDrawVertex::DrawRadarImage(wxPoint center, double scale) {
   glPopAttrib();  // Undo blend
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

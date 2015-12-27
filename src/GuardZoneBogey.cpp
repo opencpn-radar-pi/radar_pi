@@ -30,6 +30,8 @@
 
 #include "GuardZoneBogey.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 enum {  // process ID's
   ID_CONFIRM,
   ID_CLOSE
@@ -155,4 +157,4 @@ void GuardZoneBogey::OnIdCloseClick(wxCommandEvent &event) {
   event.Skip();
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

@@ -30,6 +30,8 @@
 
 #include "br24radar_pi.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 void GuardZone::ResetBogeys() {
   for (size_t r = 0; r < ARRAY_SIZE(bogeyCount); r++) {
     bogeyCount[r] = 0;
@@ -96,4 +98,4 @@ int GuardZone::GetBogeyCount(SpokeBearing current_hdt) {
   return bogeys;
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

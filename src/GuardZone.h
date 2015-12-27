@@ -34,6 +34,8 @@
 
 #include "br24radar_pi.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 class GuardZone {
  public:
   GuardZoneType type;
@@ -75,5 +77,7 @@ class GuardZone {
   br24radar_pi *m_pi;
   int bogeyCount[LINES_PER_ROTATION];
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif /* _GUARDZONE_H_ */

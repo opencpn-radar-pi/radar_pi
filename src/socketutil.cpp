@@ -32,6 +32,8 @@
 
 #include "socketutil.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 int br24_inet_aton(const char *cp, struct in_addr *addr) {
   register u_long val;
   register int base, n;
@@ -281,4 +283,4 @@ void freeifaddrs(struct ifaddrs *ifa) { free(ifa); }
 
 #endif
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

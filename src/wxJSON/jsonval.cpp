@@ -23,6 +23,8 @@
 
 #include "jsonval.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 WX_DEFINE_OBJARRAY(wxJSONInternalArray);
 
 // the trace mask used in wxLogTrace() function
@@ -3155,9 +3157,4 @@ wxJSONValue& wxJSONValue::operator=(wxUint64 ui) {
 
 #endif  // defined( wxJSON_64BIT_INT )
 
-/*
-{
-}
-*/
-
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

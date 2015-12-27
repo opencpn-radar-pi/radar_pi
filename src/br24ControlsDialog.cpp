@@ -31,6 +31,8 @@
 #include "br24ControlsDialog.h"
 #include "RadarPanel.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 enum {  // process ID's
   ID_TEXTCTRL1 = 10000,
   ID_BACK,
@@ -1257,4 +1259,4 @@ void br24ControlsDialog::OnMouseLeftDown(wxMouseEvent& event) {
 
 wxString& br24ControlsDialog::GetRangeText() { return m_range_button->GetRangeText(); }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

@@ -34,6 +34,8 @@
 
 #include "br24radar_pi.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 class GuardZoneDialog : public wxDialog {
   DECLARE_CLASS(GuardZoneDialog)
   DECLARE_EVENT_TABLE()
@@ -77,5 +79,7 @@ class GuardZoneDialog : public wxDialog {
   wxTextCtrl *pEnd_Bearing_Value;
   wxCheckBox *cbFilter;
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif /* _GUARDZONEDIALOG_H_ */

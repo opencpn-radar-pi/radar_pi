@@ -32,6 +32,8 @@
 
 #include "br24Receive.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 /*
  * This file not only contains the radar receive threads, it is also
  * the only unit that understands what the radar returned data looks like.
@@ -135,6 +137,10 @@ void br24Receive::ProcessFrame(UINT8 *data, int len) {
   wxLongLong nowMillis = wxGetLocalTimeMillis();
   time_t now = time(0);
   radar_frame_pkt *packet = (radar_frame_pkt *)data;
+
+  if (*m_quit || !m_pi->m_initialized) {
+    return;
+  }
 
   m_ri->radar_seen = true;
   m_ri->radar_watchdog = now;
@@ -481,6 +487,10 @@ void *br24Receive::Entry(void) {
 
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
 
+    if (*m_quit) {
+      break;
+    }
+
     if (r > 0) {
       if (dataSocket != INVALID_SOCKET && FD_ISSET(dataSocket, &fdin)) {
         rx_len = sizeof(rx_addr);
@@ -793,4 +803,4 @@ bool br24Receive::ProcessReport(UINT8 *report, int len) {
   return false;
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

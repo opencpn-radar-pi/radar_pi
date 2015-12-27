@@ -34,6 +34,8 @@
 
 #include "br24radar_pi.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 class RadarDraw;
 class RadarCanvas;
 class RadarPanel;
@@ -141,5 +143,7 @@ class RadarInfo {
   int m_verbose;
   int m_refresh_countdown;
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif

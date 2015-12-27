@@ -32,6 +32,8 @@
 #if !defined(HDM_CLASS_HEADER)
 #define HDM_CLASS_HEADER
 
+PLUGIN_BEGIN_NAMESPACE
+
 /*
 ** Author: Samuel R. Blackburn
 ** CI$: 76300,326
@@ -65,5 +67,7 @@ class HDM : public RESPONSE {
 
   virtual const HDM& operator=(const HDM& source);
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif  // HDM_CLASS_HEADER

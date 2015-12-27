@@ -31,6 +31,8 @@
 
 #include "br24Transmit.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 br24Transmit::br24Transmit(wxString name, int radar) {
   memset(&m_addr, 0, sizeof(m_addr));
   m_addr.sin_family = AF_INET;
@@ -326,4 +328,4 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
   return r;
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

@@ -33,6 +33,8 @@
 #include "drawutil.h"
 #include "TextureFont.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 BEGIN_EVENT_TABLE(RadarCanvas, wxGLCanvas)
 //    EVT_CLOSE(RadarCanvas::close)
 EVT_MOVE(RadarCanvas::OnMove)
@@ -178,4 +180,4 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
   event.Skip();
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

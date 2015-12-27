@@ -32,6 +32,8 @@
 #include "br24radar_pi.h"
 #include "RadarDraw.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 enum {
   // process ID's
   ID_OK,
@@ -275,4 +277,4 @@ void br24OptionsDialog::OnIdOKClick(wxCommandEvent &event) {
   this->Hide();
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

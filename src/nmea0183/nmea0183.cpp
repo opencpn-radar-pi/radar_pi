@@ -30,6 +30,9 @@
  */
 
 #include "nmea0183.h"
+#include <wx/listimpl.cpp>
+
+PLUGIN_BEGIN_NAMESPACE
 
 /*
 ** Author: Samuel R. Blackburn
@@ -39,7 +42,6 @@
 ** You can use it any way you like.
 */
 
-#include <wx/listimpl.cpp>
 WX_DEFINE_LIST(MRL);
 
 NMEA0183::NMEA0183() {
@@ -277,4 +279,4 @@ NMEA0183 &NMEA0183::operator>>(wxString &destination) {
   return (*this);
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

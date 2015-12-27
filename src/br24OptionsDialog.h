@@ -34,6 +34,8 @@
 
 #include "br24radar_pi.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 class br24OptionsDialog : public wxDialog {
   DECLARE_CLASS(br24OptionsDialog)
   DECLARE_EVENT_TABLE()
@@ -79,5 +81,7 @@ class br24OptionsDialog : public wxDialog {
   wxCheckBox* cbEnableDualRadar;
   wxCheckBox* cbEmulator;
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif /* _BR24OPTIONSDIALOG_H_ */

@@ -31,6 +31,8 @@
 
 #include "RadarDrawShader.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 // identity vertex program (does nothing special)
 static const char *VertexShaderText =
     "void main() \n"
@@ -260,4 +262,4 @@ void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t 
   }
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

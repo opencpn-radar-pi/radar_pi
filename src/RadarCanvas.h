@@ -35,6 +35,8 @@
 #include "br24radar_pi.h"
 #include "TextureFont.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 class RadarCanvas : public wxGLCanvas {
  public:
   RadarCanvas(br24radar_pi* pi, RadarInfo* ri, wxWindow* parent, wxSize size);
@@ -74,5 +76,7 @@ class RadarCanvas : public wxGLCanvas {
 
   DECLARE_EVENT_TABLE();
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif

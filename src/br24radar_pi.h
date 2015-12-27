@@ -40,6 +40,8 @@
 #include "version.h"
 #include "nmea0183/nmea0183.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 //    Forward definitions
 class GuardZone;
 class GuardZoneBogey;
@@ -203,8 +205,6 @@ struct PersistentSettings {
   wxString alert_audio_file;
   int automatic_dialog_location;
 };
-
-#include "GuardZone.h"
 
 struct scan_line {
   int range;                            // range of this scan line in decimeters
@@ -406,6 +406,8 @@ class br24radar_pi : public opencpn_plugin_110 {
   time_t m_alarm_sound_last;
 #define ALARM_TIMEOUT (5)
 };
+
+PLUGIN_END_NAMESPACE
 
 #include "br24OptionsDialog.h"
 #include "br24ControlsDialog.h"

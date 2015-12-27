@@ -30,6 +30,8 @@
 
 #include "IdleDialog.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 enum { ID_STOPIDLE };
 
 IMPLEMENT_CLASS(IdleDialog, wxDialog)
@@ -130,4 +132,4 @@ void IdleDialog::OnIdStopIdleClick(wxCommandEvent &event) {
 
 void IdleDialog::OnMove(wxMoveEvent &event) { event.Skip(); }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

@@ -31,6 +31,8 @@
 #include "json_defs.h"
 #include "jsonval.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 // The flags of the parser
 enum {
   wxJSONREADER_STRICT = 0,
@@ -136,5 +138,7 @@ class WXDLLIMPEXP_JSON wxJSONReader {
   //! ANSI: do not convert UTF-8 strings
   bool m_noUtf8;
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif  // not defined _WX_JSONREADER_H

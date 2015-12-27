@@ -34,6 +34,8 @@
 
 #include "br24radar_pi.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 enum message_status { HIDE, SHOW, SHOW_NO_NMEA, SHOW_BACK };
 
 class br24MessageBox : public wxDialog {
@@ -94,5 +96,7 @@ class br24MessageBox : public wxDialog {
   wxCheckBox *m_have_data;
   wxStaticText *m_statistics;
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif

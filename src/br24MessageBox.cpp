@@ -30,6 +30,8 @@
 
 #include "br24MessageBox.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 enum {  // process ID's
   ID_MSG_BACK,
   ID_RADAR,
@@ -376,4 +378,4 @@ void br24MessageBox::SetRadarInfo(wxString &msg) {
   }
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

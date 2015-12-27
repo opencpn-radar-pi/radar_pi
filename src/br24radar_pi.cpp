@@ -30,8 +30,10 @@
  */
 
 #include "br24radar_pi.h"
-
+#include "icons.h"
 #include "nmea0183/nmea0183.h"
+
+PLUGIN_BEGIN_NAMESPACE
 
 // the class factories, used to create and destroy instances of the PlugIn
 
@@ -80,7 +82,6 @@ static double radar_distance(double lat1, double lon1, double lat2, double lon2,
 //
 //---------------------------------------------------------------------------------------------------------
 
-#include "icons.h"
 //#include "default_pi.xpm"
 
 //---------------------------------------------------------------------------------------------------------
@@ -1530,4 +1531,4 @@ if ((m_settings.show_radar == RADAR_ON && m_bpos_set && m_heading_source != HEAD
   }
 #endif
 
-#include "pi_trail.h"
+  PLUGIN_END_NAMESPACE

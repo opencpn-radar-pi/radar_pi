@@ -9,6 +9,8 @@
 #include <wx/mstream.h>
 #include "icons.h"
 
+PLUGIN_BEGIN_NAMESPACE
+
 wxBitmap *_img_radar_amber;
 wxBitmap *_img_radar_amber_slave;
 wxBitmap *_img_radar_blank;
@@ -610,4 +612,4 @@ void initialize_images(void) {
   return;
 }
 
-#include "pi_trail.h"
+PLUGIN_END_NAMESPACE

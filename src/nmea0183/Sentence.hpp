@@ -32,6 +32,8 @@
 #if !defined(SENTENCE_CLASS_HEADER)
 #define SENTENCE_CLASS_HEADER
 
+PLUGIN_BEGIN_NAMESPACE
+
 /*
 ** Author: Samuel R. Blackburn
 ** CI$: 76300,326
@@ -88,5 +90,7 @@ class SENTENCE {
   virtual const SENTENCE& operator+=(TRANSDUCER_TYPE transducer);
   virtual const SENTENCE& operator+=(NMEA0183_BOOLEAN boolean);
 };
+
+PLUGIN_END_NAMESPACE
 
 #endif  // SENTENCE_CLASS_HEADER
