@@ -110,23 +110,30 @@ bool RadarDrawShader::Init(int color_option) {
 }
 
 RadarDrawShader::~RadarDrawShader() {
+  wxMutexLocker lock(m_mutex);
+
   if (m_vertex) {
     DeleteShader(m_vertex);
+    m_vertex = 0;
   }
   if (m_fragment) {
     DeleteShader(m_fragment);
+    m_fragment = 0;
   }
   if (m_program) {
     DeleteProgram(m_program);
+    m_program = 0;
   }
   if (m_texture) {
     glDeleteTextures(1, &m_texture);
+    m_texture = 0;
   }
 }
 
 void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
-  wxLogMessage(wxT("BR24radar_pi: shader %d line %d-%d"), m_program, m_start_line, m_end_line);
-  if (m_start_line == -1 || !m_program || !m_texture) {
+  wxMutexLocker lock(m_mutex);
+
+  if (!m_program || !m_texture) {
     wxLogMessage(wxT("BR24radar_pi: Shader not set up yet, skip draw"));
     return;
   }
@@ -153,9 +160,7 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
     channels = 1;
   }
 
-  {
-    wxMutexLocker lock(m_mutex);
-
+  if (m_start_line > -1) {
     // Since the last time we have received data from [m_start_line, m_end_line>
     // so we only need to update the texture for those data lines.
     if (m_end_line < m_start_line) {
@@ -193,8 +198,15 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
                       /* type =     */ GL_UNSIGNED_BYTE,
                       /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * channels);
     }
+    if (m_pi->m_settings.verbose >= 2) {
+      wxLogMessage(wxT("BR24radar_pi: using shader %d with new data in line %d-%d"), m_program, m_start_line, m_end_line);
+    }
     m_start_line = -1;
     m_end_line = 0;
+  } else {
+    if (m_pi->m_settings.verbose >= 2) {
+      wxLogMessage(wxT("BR24radar_pi: using shader %d without new data"), m_program);
+    }
   }
 
   // We tell the GPU to draw a square from (-512,-512) to (+512,+512).
@@ -214,9 +226,6 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
   UseProgram(0);
   glPopAttrib();
   glPopMatrix();
-  if (m_pi->m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: used shader %d line %d-%d"), m_program, m_start_line, m_end_line);
-  }
 
   return;
 }
