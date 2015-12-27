@@ -514,6 +514,23 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
   UpdateState();
 }
 
+void br24radar_pi::PassHeadingToOpenCPN() {
+  wxString nmea;
+  char sentence[40];
+  char checksum = 0;
+  char *p;
+
+  snprintf(sentence, sizeof(sentence), "APHDT,%.1f,M", m_hdt);
+
+  for (p = sentence; *p; p++) {
+    checksum ^= *p;
+  }
+
+  nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
+  wxLogMessage(wxT("BR24radar_pi: Added checksum %d: %s"), checksum, nmea.c_str());
+  PushNMEABuffer(nmea);
+}
+
 // DoTick
 // ------
 // Called on every RenderGLOverlay call, i.e. once a second.
@@ -643,9 +660,7 @@ void br24radar_pi::DoTick(void) {
   }
 
   if (m_settings.pass_heading_to_opencpn && m_heading_on_radar) {
-    wxString nmeastring;
-    nmeastring.Printf(_T("$APHDT,%05.1f,M\r\n"), m_hdt);
-    PushNMEABuffer(nmeastring);
+    PassHeadingToOpenCPN();
   }
 
   if ((m_pMessageBox && m_pMessageBox->IsShown()) || (m_settings.verbose >= 1)) {
