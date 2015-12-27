@@ -39,6 +39,12 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+enum { TIMER_ID = 1 };
+
+BEGIN_EVENT_TABLE(RadarInfo, wxEvtHandler)
+EVT_TIMER(TIMER_ID, RadarInfo::RefreshDisplay)
+END_EVENT_TABLE()
+
 void radar_control_item::Update(int v) {
   wxMutexLocker lock(m_mutex);
 
@@ -68,17 +74,24 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
     guard_zone[z] = new GuardZone(pi);
   }
 
+  m_timer = new wxTimer(this, TIMER_ID);
+  m_refreshes_queued = 0;
+  m_refresh_millis = 1000;
+  m_timer->Start(m_refresh_millis);
+
   m_quit = false;
 }
 
 RadarInfo::~RadarInfo() {
   m_quit = true;
 
+  m_timer->Stop();
+
   delete transmit;
   if (receive) {
     receive->Wait();
     delete receive;
-    wxLogMessage(wxT("BR24radar_pi: %s thread stopped"), name);
+    wxLogMessage(wxT("BR24radar_pi: %s thread stopped"), name.c_str());
   }
   if (radar_panel) {
     wxLogMessage(wxT("BR24radar_pi: %s DL_RADARWINDOW %u pos(%d,%d) size(%d,%d)"), name.c_str(), DL_RADARWINDOW + radar,
@@ -101,17 +114,17 @@ bool RadarInfo::Init(int verbose) {
   m_verbose = verbose;
 
   if (!transmit->Init(verbose)) {
-    wxLogMessage(wxT("BR24radar_pi %s: Unable to create transmit socket"), name);
+    wxLogMessage(wxT("BR24radar_pi %s: Unable to create transmit socket"), name.c_str());
     return false;
   }
 
   radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
   if (!radar_panel) {
-    wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarPanel"), name);
+    wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarPanel"), name.c_str());
     return false;
   }
   if (!radar_panel->Create()) {
-    wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarCanvas"), name);
+    wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarCanvas"), name.c_str());
     return false;
   }
   return true;
@@ -119,7 +132,7 @@ bool RadarInfo::Init(int verbose) {
 
 void RadarInfo::SetName(wxString name) {
   if (name != this->name) {
-    wxLogMessage(wxT("BR24radar_pi: Changing name of radar #%d from '%s' to '%s'"), radar, this->name, name);
+    wxLogMessage(wxT("BR24radar_pi: Changing name of radar #%d from '%s' to '%s'"), radar, this->name.c_str(), name.c_str());
     this->name = name;
     radar_panel->SetCaption(name);
   }
@@ -127,7 +140,7 @@ void RadarInfo::SetName(wxString name) {
 
 void RadarInfo::StartReceive() {
   if (!receive) {
-    wxLogMessage(wxT("BR24radar_pi: Starting receive thread for %s"), name.c_str());
+    wxLogMessage(wxT("BR24radar_pi: %s starting receive thread"), name.c_str());
     receive = new br24Receive(m_pi, &m_quit, this);
     receive->Run();
   }
@@ -180,7 +193,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     this->range_meters = range_meters;
     this->range.Update(range_meters);
     if (m_pi->m_settings.verbose) {
-      wxLogMessage(wxT("BR24radar_pi: %s detected range %d"), name, range_meters);
+      wxLogMessage(wxT("BR24radar_pi: %s detected range %d"), name.c_str(), range_meters);
     }
   }
   // spoke[angle].age = nowMillis;
@@ -225,40 +238,40 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
 }
 
-void RadarInfo::ProcessRadarPacket(time_t now) {
-  radar_panel->Refresh(false);
+void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
+  time_t now = time(0);
+  int pos_age = difftime(now, m_pi->m_bpos_watchdog);  // the age of the
+                                                       // postion, last call of
+                                                       // SetPositionFixEx
+  if (m_refreshes_queued > 0 || pos_age >= 2) {
+    // don't do additional refresh and reset the refresh conter
+    // this will also balance performance, if too busy skip refresh
+    // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
+    // so skip next refresh
+    if (m_verbose >= 2) {
+      wxLogMessage(wxT("BR24radar_pi: %s busy encountered, pos_age = %d, refreshes_queued=%d"), name.c_str(), pos_age,
+                   m_refreshes_queued);
+    }
+  } else {
+    if (m_pi->m_settings.chart_overlay == this->radar) {
+      m_refreshes_queued++;
+      GetOCPNCanvasWindow()->Refresh(false);
+    }
+    m_refreshes_queued++;
+    radar_panel->Refresh(false);
+    if (m_verbose >= 4) {
+      wxLogMessage(wxT("BR24radar_pi: %s refresh issued, queued = %d"), name.c_str(), m_refreshes_queued);
+    }
+  }
 
-  if (m_pi->m_settings.chart_overlay == this->radar) {
-    int pos_age = difftime(now, m_pi->m_bpos_watchdog);  // the age of the
-                                                         // postion, last call of
-                                                         // SetPositionFixEx
-    if (m_pi->m_refresh_busy_or_queued || pos_age >= 2) {
-      // don't do additional refresh and reset the refresh conter
-      m_refresh_countdown = m_pi->m_refresh_rate;  // rendering ongoing, reset
-                                                   // the counter, don't refresh
-                                                   // now
-      // this will also balance performance, if too busy skip refresh
-      // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
-      // so skip next refresh
-      if (m_verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: busy encountered, pos_age = %d, refresh_busy_or_queued=%d"), pos_age,
-                     m_pi->m_refresh_busy_or_queued);
-      }
-    } else {
-      m_refresh_countdown--;
-      if (m_refresh_countdown <= 0) {             // display every "refreshrate time"
-        if (m_pi->m_refresh_rate != 10) {         // for 10 no refresh at all
-          m_pi->m_refresh_busy_or_queued = true;  // no further calls until br_refresh_busy_or_queued has been
-                                                  // cleared by RenderGLOverlay
-          // Very important to pass "false" to refresh for high refresh rate
-          // radar so that opencpn doesn't invalidate the cached chart image
-          GetOCPNCanvasWindow()->Refresh(false);
-          if (m_verbose >= 4) {
-            wxLogMessage(wxT("BR24radar_pi: refresh issued"));
-          }
-        }
-        m_refresh_countdown = m_pi->m_refresh_rate;
-      }
+  // Calculate refresh speed
+  if (m_pi->m_settings.refreshrate) {
+    int millis = 1000 / m_pi->m_settings.refreshrate;
+
+    if (millis != m_refresh_millis) {
+      m_refresh_millis = millis;
+      m_timer->Start(m_refresh_millis);
+      wxLogMessage(wxT("BR24radar_pi: %s changed timer interval to %d milliseconds"), name.c_str(), m_refresh_millis);
     }
   }
 }
@@ -389,9 +402,9 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, DrawInfo *di) {
       wxArrayString methods;
       RadarDraw::GetDrawingMethods(methods);
       if (di == &m_draw_overlay) {
-        wxLogMessage(wxT("BR24radar_pi: new drawing method %s for %s overlay"), methods[drawing_method].c_str(), name.c_str());
+        wxLogMessage(wxT("BR24radar_pi: %s new drawing method %s for overlay"), name.c_str(), methods[drawing_method].c_str());
       } else {
-        wxLogMessage(wxT("BR24radar_pi: new drawing method %s for %s panel"), methods[drawing_method].c_str(), name.c_str());
+        wxLogMessage(wxT("BR24radar_pi: %s new drawing method %s for panel"), name.c_str(), methods[drawing_method].c_str());
       }
       if (di->draw) {
         delete di->draw;
@@ -419,6 +432,10 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, 
   } else {
     RenderGuardZone(center, scale);
     RenderRadarImage(center, scale, &m_draw_panel);
+  }
+
+  if (m_refreshes_queued > 0) {
+    m_refreshes_queued--;
   }
 }
 

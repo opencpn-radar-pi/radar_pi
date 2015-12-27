@@ -300,7 +300,7 @@ extern size_t convertMetersToRadarAllowedValue(int* range_meters, int units, Rad
 
 void br24RadarControlButton::SetValue(int newValue) {
   SetLocalValue(newValue);
-  m_parent->m_ri->SetControlValue(controlType, value);
+  m_parent->m_pi->SetControlValue(m_parent->m_ri->radar, controlType, value);
 }
 
 void br24RadarControlButton::SetLocalValue(int newValue) {  // sets value in the button without sending new value to the radar
@@ -644,7 +644,7 @@ void br24ControlsDialog::CreateControls() {
 
   // The REFRESHRATE button
   m_refresh_rate_button =
-      new br24RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), CT_REFRESHRATE, false, m_pi->m_refresh_rate);
+      new br24RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), CT_REFRESHRATE, false, m_pi->m_settings.refreshrate);
   m_advanced_sizer->Add(m_refresh_rate_button, 0, wxALL, BORDER);
   m_refresh_rate_button->minValue = 1;
   m_refresh_rate_button->maxValue = 5;
@@ -1143,7 +1143,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
 void br24ControlsDialog::UpdateDialogShown() {
   if (m_hide) {
     if (m_pi->m_settings.verbose) {
-      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown explicit closed: Hidden"), m_ri->name);
+      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown explicit closed: Hidden"), m_ri->name.c_str());
     }
     Hide();
     return;
@@ -1151,7 +1151,8 @@ void br24ControlsDialog::UpdateDialogShown() {
 
   if (m_pi->m_pGuardZoneDialog && m_pi->m_pGuardZoneDialog->IsShown()) {
     if (m_pi->m_settings.verbose) {
-      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown Hidden because GuardZoneDialog is shown"), m_ri->name);
+      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown Hidden because GuardZoneDialog is shown"),
+                   m_ri->name.c_str());
     }
     m_hide_temporarily = true;
     Hide();
@@ -1165,7 +1166,7 @@ void br24ControlsDialog::UpdateDialogShown() {
     } else {
       if (IsShown()) {
         if (m_pi->m_settings.verbose) {
-          wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown auto-hide"), m_ri->name);
+          wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown auto-hide"), m_ri->name.c_str());
         }
         Hide();
       }
@@ -1174,7 +1175,7 @@ void br24ControlsDialog::UpdateDialogShown() {
   }
 
   if (m_pi->m_settings.verbose) {
-    wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown manually opened"), m_ri->name);
+    wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown manually opened"), m_ri->name.c_str());
   }
   if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_edit_sizer) &&
       !m_top_sizer->IsShown(m_installation_sizer)) {
@@ -1252,7 +1253,6 @@ void br24ControlsDialog::HideDialog() {
 
 void br24ControlsDialog::OnMouseLeftDown(wxMouseEvent& event) {
   m_auto_hide = time(0);
-  wxLogMessage(wxT(">>> OnMouseLeftDown"));
 
   event.Skip();
 }

@@ -228,8 +228,6 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
   UseProgram(0);
   glPopAttrib();
   glPopMatrix();
-
-  return;
 }
 
 void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t len) {

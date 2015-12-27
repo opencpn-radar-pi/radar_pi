@@ -64,7 +64,7 @@ bool RadarPanel::Create() {
   m_ri->radar_canvas =
       new RadarCanvas(m_pi, m_ri, this, wxSize(256, 256));  // m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
   if (!m_ri->radar_canvas) {
-    wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarCanvas"), m_ri->name);
+    wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarCanvas"), m_ri->name.c_str());
     return false;
   }
 

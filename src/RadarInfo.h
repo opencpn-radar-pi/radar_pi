@@ -58,7 +58,7 @@ struct DrawInfo {
   bool color_option;
 };
 
-class RadarInfo {
+class RadarInfo : public wxEvtHandler {
  public:
   wxString name;  // Either "Radar", "Radar A", "Radar B".
   int radar;      // Which radar this is (0..., max 2 for now)
@@ -102,6 +102,8 @@ class RadarInfo {
   int commanded_range_meters;
   RadarType radar_type;
   bool auto_range_mode;
+  int m_refreshes_queued;
+  int m_refresh_millis;
 
   GuardZone *guard_zone[GUARD_ZONES];
   receive_statistics statistics;
@@ -124,7 +126,7 @@ class RadarInfo {
   bool SetControlValue(ControlType controlType, int value);
   void ResetSpokes();
   void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong nowMillis);
-  void ProcessRadarPacket(time_t now);
+  void RefreshDisplay(wxTimerEvent &event);
   void RenderGuardZone(wxPoint radar_center, double v_scale_ppm);
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow();
@@ -141,7 +143,9 @@ class RadarInfo {
 
   br24radar_pi *m_pi;
   int m_verbose;
-  int m_refresh_countdown;
+  wxTimer *m_timer;
+
+  DECLARE_EVENT_TABLE()
 };
 
 PLUGIN_END_NAMESPACE

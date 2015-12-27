@@ -141,13 +141,10 @@ int br24radar_pi::Init(void) {
   m_fat_font.SetWeight(wxFONTWEIGHT_BOLD);
   m_fat_font.SetPointSize(m_font.GetPointSize() + 1);
 
-  m_refresh_rate = 1;
-
   m_scanner_state = RADAR_OFF;  // Radar scanner is off
   m_var = 0.0;
   m_var_source = VARIATION_SOURCE_NONE;
   m_heading_on_radar = false;
-  m_refresh_busy_or_queued = false;
   m_bpos_set = false;
   m_auto_range_meters = 0;
   m_previous_auto_range_meters = 0;
@@ -285,7 +282,7 @@ bool br24radar_pi::DeInit(void) {
   m_pMessageBox = 0;
 
   if (m_pOptionsDialog) {
-    delete m_pOptionsDialog;
+    delete m_pOptionsDialog;  // TODO: Possible core dump here ???
     m_pOptionsDialog = 0;
   }
 
@@ -583,8 +580,6 @@ void br24radar_pi::DoTick(void) {
     }
   }
 
-  m_refresh_rate = REFRESHMAPPING[m_settings.refreshrate - 1];  // set actual refresh rate
-
   if (m_bpos_set && TIMER_ELAPSED(now, m_bpos_watchdog)) {
     // If the position data is 10s old reset our heading.
     // Note that the watchdog is continuously reset every time we receive a
@@ -816,9 +811,6 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   }
   m_opencpn_gl_context_broken = m_opencpn_gl_context == 0;
 
-  m_refresh_busy_or_queued = true;  //  the receive thread should not queue
-                                    //  another refresh (through refresh canvas)
-                                    //  this when it is busy
   m_opengl_mode = true;
 
   // this is expected to be called at least once per second
@@ -894,7 +886,6 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   if (m_radar[m_settings.chart_overlay]->data_seen) {
     RenderRadarOverlay(boat_center, v_scale_ppm, rad2deg(vp->rotation + vp->skew * m_settings.skew_factor));
   }
-  m_refresh_busy_or_queued = false;
   return true;
 }
 
@@ -1073,13 +1064,8 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
     pConf->Read(wxT("GuardZonesRenderStyle"), &m_settings.guard_zone_render_style, 0);
     pConf->Read(wxT("Refreshrate"), &m_settings.refreshrate, 1);
-    if (m_settings.refreshrate < 1) {
-      m_settings.refreshrate = 1;  // not allowed
-    }
-    if (m_settings.refreshrate > 5) {
-      m_settings.refreshrate = 5;  // not allowed
-    }
-    m_refresh_rate = REFRESHMAPPING[m_settings.refreshrate - 1];
+    m_settings.refreshrate = wxMin(m_settings.refreshrate, 5);
+    m_settings.refreshrate = wxMax(m_settings.refreshrate, 1);
 
     pConf->Read(wxT("PassHeadingToOCPN"), &intValue, 0);
     m_settings.pass_heading_to_opencpn = intValue != 0;
@@ -1330,6 +1316,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
 }
 
 void br24radar_pi::SetControlValue(int radar, ControlType controlType, int value) {  // sends the command to the radar
+  wxLogMessage(wxT("BR24radar_pi: %s set %s = %d"), m_radar[radar]->name.c_str(), ControlTypeNames[controlType].c_str(), value);
   switch (controlType) {
     case CT_TRANSPARENCY: {
       m_settings.overlay_transparency = value;

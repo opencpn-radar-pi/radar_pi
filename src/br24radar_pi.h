@@ -118,8 +118,29 @@ typedef enum ControlType {
   CT_BEARING_ALIGNMENT,
   CT_SIDE_LOBE_SUPPRESSION,
   CT_ANTENNA_HEIGHT,
-  CT_LOCAL_INTERFERENCE_REJECTION
+  CT_LOCAL_INTERFERENCE_REJECTION,
+  CT_MAX  // Keep this last, see below
 } ControlType;
+
+// The following are only for logging, so don't care about translations.
+static string ControlTypeNames[CT_MAX] = {"Range",
+                                          "Gain",
+                                          "Sea",
+                                          "Rain",
+                                          "Transparency",
+                                          "Interference rejection",
+                                          "Target separation",
+                                          "Noise rejection",
+                                          "Target boost",
+                                          "Refresh rate",
+                                          "Pass heading",
+                                          "Scan speed",
+                                          "Scan age",
+                                          "Timed idle",
+                                          "Bearing alignment",
+                                          "Side lobe suppression",
+                                          "Antenna height",
+                                          "Local interference rejection"};
 
 typedef enum GuardZoneType { GZ_OFF, GZ_ARC, GZ_CIRCLE } GuardZoneType;
 
@@ -153,11 +174,6 @@ static const bool HasBitCount2[8] = {
     true,   // 110
     true,   // 111
 };
-
-static const unsigned int REFRESHMAPPING[] = {10, 9, 3, 1,
-                                              0};  // translation table for the refreshrate, interval between received frames
-// user values 1 to 5 mapped to these values for refrehs interval
-// user 1 - no additional refresh, 2 - interval between frames 9, so on.
 
 #define DEFAULT_OVERLAY_TRANSPARENCY (5)
 #define MIN_OVERLAY_TRANSPARENCY (0)
@@ -306,7 +322,6 @@ class br24radar_pi : public opencpn_plugin_110 {
   wxGLContext *m_opencpn_gl_context;
   bool m_opencpn_gl_context_broken;
 
-  int m_refresh_rate;
   bool m_want_message_box;
   bool m_heading_on_radar;
   double m_hdt;  // this is the heading that the pi is using for all heading operations, in degrees.
@@ -326,7 +341,6 @@ class br24radar_pi : public opencpn_plugin_110 {
   bool m_bpos_set;
   time_t m_bpos_watchdog;
 
-  volatile bool m_refresh_busy_or_queued;
   bool m_initialized;  // True if Init() succeeded and DeInit() not called yet.
   bool m_first_init;   // True in first Init() call.
 

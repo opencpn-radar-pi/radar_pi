@@ -53,13 +53,13 @@ RadarCanvas::RadarCanvas(br24radar_pi *pi, RadarInfo *ri, wxWindow *parent, wxSi
   m_context = new wxGLContext(this);
   m_zero_context = new wxGLContext(this);
   if (m_pi->m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: %s create OpenGL canvas"), m_ri->name);
+    wxLogMessage(wxT("BR24radar_pi: %s create OpenGL canvas"), m_ri->name.c_str());
   }
 }
 
 RadarCanvas::~RadarCanvas() {
   if (m_pi->m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: %s destroy OpenGL canvas"), m_ri->name);
+    wxLogMessage(wxT("BR24radar_pi: %s destroy OpenGL canvas"), m_ri->name.c_str());
   }
   delete m_context;
   delete m_zero_context;
@@ -68,7 +68,7 @@ RadarCanvas::~RadarCanvas() {
 void RadarCanvas::OnSize(wxSizeEvent &evt) {
   wxSize parentSize = m_parent->GetSize();
   if (m_pi->m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: %s resize OpenGL canvas to %d, %d"), m_ri->name, parentSize.x, parentSize.y);
+    wxLogMessage(wxT("BR24radar_pi: %s resize OpenGL canvas to %d, %d"), m_ri->name.c_str(), parentSize.x, parentSize.y);
   }
   Refresh(false);
   if (GetSize() != parentSize) {
@@ -79,7 +79,7 @@ void RadarCanvas::OnSize(wxSizeEvent &evt) {
 void RadarCanvas::OnMove(wxMoveEvent &evt) {
   wxPoint pos = m_parent->GetPosition();
   if (m_pi->m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: %s move OpenGL canvas to %d, %d"), m_ri->name, pos.x, pos.y);
+    wxLogMessage(wxT("BR24radar_pi: %s move OpenGL canvas to %d, %d"), m_ri->name.c_str(), pos.x, pos.y);
   }
 }
 
@@ -92,7 +92,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   }
 
   if (!m_pi->m_opencpn_gl_context && !m_pi->m_opencpn_gl_context_broken) {
-    wxLogMessage(wxT("BR24radar_pi: %s skip render as no context known yet"), m_ri->name);
+    wxLogMessage(wxT("BR24radar_pi: %s skip render as no context known yet"), m_ri->name.c_str());
     return;
   }
 
@@ -100,7 +100,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   sq = wxMin(w, h);
 
   if (m_pi->m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: %s render OpenGL canvas %d by %d "), m_ri->name, w, h);
+    wxLogMessage(wxT("BR24radar_pi: %s render OpenGL canvas %d by %d "), m_ri->name.c_str(), w, h);
   }
 
   wxPaintDC(this);  // only to be used in paint events. use wxClientDC to paint
@@ -165,7 +165,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   SwapBuffers();
 
   if (m_pi->m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: %s drawn canvas"), m_ri->name);
+    wxLogMessage(wxT("BR24radar_pi: %s drawn canvas"), m_ri->name.c_str());
   }
   if (m_pi->m_opencpn_gl_context) {
     SetCurrent(*m_pi->m_opencpn_gl_context);
@@ -175,7 +175,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
 }
 
 void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
-  wxLogMessage(wxT("BR24radar_pi: Mouse clicked in %s"), m_ri->name);
+  wxLogMessage(wxT("BR24radar_pi: %s Mouse clicked"), m_ri->name.c_str());
   m_pi->ShowRadarControl(m_ri->radar, true);
   event.Skip();
 }
