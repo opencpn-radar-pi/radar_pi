@@ -83,11 +83,6 @@ typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a 
 
 enum { BM_ID_RED, BM_ID_RED_SLAVE, BM_ID_GREEN, BM_ID_GREEN_SLAVE, BM_ID_AMBER, BM_ID_AMBER_SLAVE, BM_ID_BLANK, BM_ID_BLANK_SLAVE };
 
-enum RadarState {
-  RADAR_OFF,
-  RADAR_ON,
-};
-
 enum HeadingSource { HEADING_NONE, HEADING_HDM, HEADING_HDT, HEADING_COG, HEADING_RADAR };
 
 struct receive_statistics {
@@ -209,7 +204,7 @@ struct PersistentSettings {
   int idle_run_time;
   int draw_algorithm;
   int refreshrate;
-  RadarState show_radar;
+  int show_radar;
   bool pass_heading_to_opencpn;
   bool enable_dual_radar;  // Should the dual radar be enabled for 4G?
   bool emulator_on;
@@ -406,15 +401,8 @@ class br24radar_pi : public opencpn_plugin_110 {
   int m_TimedTransmit_IdleBoxMode;
   int m_idle_time_left;
 
-  RadarState m_scanner_state;
-
   time_t m_idle_watchdog;
   time_t m_hdt_watchdog;
-  time_t m_radar_watchdog;
-  time_t m_data_watchdog;
-
-  time_t m_dt_stayalive;
-#define STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
 
   bool m_guard_bogey_confirmed;
   time_t m_alarm_sound_last;

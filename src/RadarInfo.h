@@ -40,6 +40,8 @@ class RadarDraw;
 class RadarCanvas;
 class RadarPanel;
 
+enum RadarState { RADAR_OFF, RADAR_STANDBY, RADAR_TRANSMIT };
+
 class radar_control_item {
  public:
   int value;
@@ -65,8 +67,9 @@ class RadarInfo : public wxEvtHandler {
 
   /* User radar settings */
 
-  radar_control_item state;
-  radar_control_item rotation;
+  radar_control_item state_request;  // RadarState (commanded)
+  radar_control_item state;          // RadarState (observed)
+  radar_control_item rotation;       // 0 = Heading Up, 1 = North Up
   radar_control_item overlay;
   radar_control_item range;
   radar_control_item gain;
@@ -94,10 +97,11 @@ class RadarInfo : public wxEvtHandler {
 
   double viewpoint_rotation;
 
-  bool data_seen;
-  time_t radar_watchdog;  // Timestamp of last time it was seen
-  bool radar_seen;
-  time_t data_watchdog;  // Timestamp of when data was seen
+  time_t radar_watchdog;        // Timestamp of last time it was seen
+  time_t data_watchdog;         // Timestamp of when data was seen
+  time_t m_stayalive_watchdog;  // Timestamp of when data was seen
+#define STAYALIVE_TIMEOUT (5)   // Send data every 5 seconds to ping radar
+
   int range_meters;
   int commanded_range_meters;
   RadarType radar_type;

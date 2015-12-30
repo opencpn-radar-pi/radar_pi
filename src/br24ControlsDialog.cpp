@@ -1193,9 +1193,9 @@ void br24ControlsDialog::UpdateDialogShown() {
 
   title << m_ri->name << wxT(" - ");
 
-  if (m_ri->data_seen) {
+  if (m_ri->state.value == RADAR_TRANSMIT) {
     title << _("On");
-  } else if (m_ri->radar_seen) {
+  } else if (m_ri->state.value == RADAR_STANDBY) {
     title << _("Standby");
   } else {
     title << _("Off");

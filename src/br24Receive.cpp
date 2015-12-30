@@ -142,11 +142,9 @@ void br24Receive::ProcessFrame(UINT8 *data, int len) {
     return;
   }
 
-  m_ri->radar_seen = true;
   m_ri->radar_watchdog = now;
-  m_ri->data_seen = true;
   m_ri->data_watchdog = now;
-  m_ri->state.Update(RADAR_ON);
+  m_ri->state.Update(RADAR_TRANSMIT);
 
   int spoke = 0;
   m_ri->statistics.packets++;
@@ -234,7 +232,8 @@ void br24Receive::ProcessFrame(UINT8 *data, int len) {
         if (range_meters == 0) {
           wxLogMessage(wxT("BR24radar_pi: %s Invalid range received, keeping %d meters"), m_ri->name.c_str(), m_range_meters);
         } else {
-          wxLogMessage(wxT("BR24radar_pi: %s now scanning with range %d meters (was %d meters)"), m_ri->name.c_str(), range_meters, m_range_meters);
+          wxLogMessage(wxT("BR24radar_pi: %s now scanning with range %d meters (was %d meters)"), m_ri->name.c_str(), range_meters,
+                       m_range_meters);
         }
       }
       m_range_meters = range_meters;
@@ -279,11 +278,9 @@ void br24Receive::EmulateFakeBuffer(void) {
   UINT8 data[RETURNS_PER_LINE];
 
   m_ri->statistics.packets++;
-  m_ri->radar_seen = true;
   m_ri->radar_watchdog = now;
-  m_ri->data_seen = true;
   m_ri->data_watchdog = now;
-  m_ri->state.Update(RADAR_ON);
+  m_ri->state.Update(RADAR_TRANSMIT);
 
   int scanlines_in_packet = SPOKES * 24 / 60;
   int range_meters = 4000;
@@ -494,7 +491,7 @@ void *br24Receive::Entry(void) {
         } else {
           closesocket(dataSocket);
           dataSocket = INVALID_SOCKET;
-          m_ri->data_seen = false;
+          m_ri->state.Update(RADAR_STANDBY);
           wxLogMessage(wxT("BR24radar_pi: %s at %u.%u.%u.%u illegal frame"), m_ri->name.c_str(), a[0], a[1], a[2], a[3]);
         }
       }
@@ -503,7 +500,8 @@ void *br24Receive::Entry(void) {
         rx_len = sizeof(rx_addr);
         r = recvfrom(commandSocket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
         if (r > 0 && rx_addr.addr.ss_family == AF_INET && m_pi->m_settings.verbose) {
-          logBinaryData(wxString::Format(wxT("%s at %u.%u.%u.%u received command"), m_ri->name.c_str(), a[0], a[1], a[2], a[3]), data, r);
+          logBinaryData(wxString::Format(wxT("%s at %u.%u.%u.%u received command"), m_ri->name.c_str(), a[0], a[1], a[2], a[3]),
+                        data, r);
           no_data_timeout = -15;
         } else {
           closesocket(commandSocket);
@@ -524,13 +522,12 @@ void *br24Receive::Entry(void) {
             wxString addr;
             addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
             m_pi->m_pMessageBox->SetRadarIPAddress(addr);
-            if (!m_ri->radar_seen) {
+            if (m_ri->state.value == RADAR_OFF) {
               if (m_pi->m_settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: %s detected at %s"), m_ri->name.c_str(), addr.c_str());
               }
-              m_ri->state.Update(RADAR_ON);
+              m_ri->state.Update(RADAR_STANDBY);
             }
-            m_ri->radar_seen = true;
             m_ri->radar_watchdog = time(0) + 10;
             no_data_timeout = -15;
           }
@@ -538,13 +535,13 @@ void *br24Receive::Entry(void) {
           wxLogMessage(wxT("BR24radar_pi: %s at %u.%u.%u.%u illegal command"), m_ri->name.c_str(), a[0], a[1], a[2], a[3]);
           closesocket(reportSocket);
           reportSocket = INVALID_SOCKET;
-          m_ri->radar_seen = false;
+          m_ri->state.Update(RADAR_OFF);
         }
       }
 
     } else if (no_data_timeout >= 2) {
       no_data_timeout = 0;
-      if (m_ri->data_seen) {
+      if (m_ri->state.value == RADAR_TRANSMIT) {
         if (dataSocket != INVALID_SOCKET) {
           closesocket(dataSocket);
           dataSocket = INVALID_SOCKET;
@@ -556,7 +553,7 @@ void *br24Receive::Entry(void) {
       } else if (reportSocket != INVALID_SOCKET) {
         closesocket(reportSocket);
         reportSocket = INVALID_SOCKET;
-        m_ri->radar_seen = false;
+        m_ri->state.Update(RADAR_OFF);
         m_mcast_addr = 0;
         m_radar_addr = 0;
       }
