@@ -617,15 +617,15 @@ void br24radar_pi::DoTick(void) {
     if (m_radar[r]->state.value == RADAR_STANDBY && TIMER_ELAPSED(now, m_radar[r]->radar_watchdog)) {
       static wxString empty;
 
-      m_radar[r]->state.Update(RADAR_OFF);
+      m_radar[r]->state.value = RADAR_OFF;
       m_pMessageBox->SetRadarIPAddress(empty);
       wxLogMessage(wxT("BR24radar_pi: Lost %s presence"), m_radar[r]->name);
     }
     if (m_radar[r]->state.value == RADAR_TRANSMIT && TIMER_ELAPSED(now, m_radar[r]->data_watchdog)) {
-      m_radar[r]->state.Update(RADAR_STANDBY);
+      m_radar[r]->state.value = RADAR_STANDBY;
       wxLogMessage(wxT("BR24radar_pi: Data Lost %s "), m_radar[r]->name);
     }
-    if (m_radar[r]->state_request.value == RADAR_TRANSMIT) {
+    if (m_radar[r]->state.value == RADAR_TRANSMIT) {
       if (TIMER_ELAPSED(now, m_radar[r]->m_stayalive_watchdog)) {
         m_radar[r]->m_stayalive_watchdog = now + STAYALIVE_TIMEOUT;
         m_radar[r]->transmit->RadarStayAlive();

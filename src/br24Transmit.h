@@ -38,6 +38,17 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+static const UINT8 COMMAND_TX_OFF_A[3] = {0x00, 0xc1, 0x01};  // OFF part 1, note same as TX ON part 1
+static const UINT8 COMMAND_TX_OFF_B[3] = {0x01, 0xc1, 0x00};  // OFF part 1, note same as TX ON part 1
+
+static const UINT8 COMMAND_TX_ON_A[3] = {0x00, 0xc1, 0x01};  // ON part 1
+static const UINT8 COMMAND_TX_ON_B[3] = {0x01, 0xc1, 0x01};  // ON part 2
+
+static const UINT8 COMMAND_STAY_ON_A[2] = {0xA0, 0xc1};
+static const UINT8 COMMAND_STAY_ON_B[2] = {0x03, 0xc2};
+static const UINT8 COMMAND_STAY_ON_C[2] = {0x04, 0xc2};
+static const UINT8 COMMAND_STAY_ON_D[2] = {0x05, 0xc2};
+
 class br24Transmit {
  public:
   br24Transmit(wxString name, int radar);
@@ -56,7 +67,8 @@ class br24Transmit {
   SOCKET m_radar_socket;
   wxString m_name;
 
-  bool TransmitCmd(UINT8* msg, int size);
+  bool TransmitCmd(const UINT8 *msg, int size);
+  void logBinaryData(const wxString &what, const UINT8 *data, int size);
 };
 
 PLUGIN_END_NAMESPACE

@@ -133,7 +133,7 @@ void br24Receive::logBinaryData(const wxString &what, const UINT8 *data, int siz
 // Process one radar frame packet, which can contain up to 32 'spokes' or lines extending outwards
 // from the radar up to the range indicated in the packet.
 //
-void br24Receive::ProcessFrame(UINT8 *data, int len) {
+void br24Receive::ProcessFrame(const UINT8 *data, int len) {
   wxLongLong nowMillis = wxGetLocalTimeMillis();
   time_t now = time(0);
   radar_frame_pkt *packet = (radar_frame_pkt *)data;
@@ -144,7 +144,7 @@ void br24Receive::ProcessFrame(UINT8 *data, int len) {
 
   m_ri->radar_watchdog = now;
   m_ri->data_watchdog = now;
-  m_ri->state.Update(RADAR_TRANSMIT);
+  m_ri->state.value = RADAR_TRANSMIT;
 
   int spoke = 0;
   m_ri->statistics.packets++;
@@ -280,7 +280,7 @@ void br24Receive::EmulateFakeBuffer(void) {
   m_ri->statistics.packets++;
   m_ri->radar_watchdog = now;
   m_ri->data_watchdog = now;
-  m_ri->state.Update(RADAR_TRANSMIT);
+  m_ri->state.value = RADAR_TRANSMIT;
 
   int scanlines_in_packet = SPOKES * 24 / 60;
   int range_meters = 4000;
@@ -491,7 +491,6 @@ void *br24Receive::Entry(void) {
         } else {
           closesocket(dataSocket);
           dataSocket = INVALID_SOCKET;
-          m_ri->state.Update(RADAR_STANDBY);
           wxLogMessage(wxT("BR24radar_pi: %s at %u.%u.%u.%u illegal frame"), m_ri->name.c_str(), a[0], a[1], a[2], a[3]);
         }
       }
@@ -499,9 +498,13 @@ void *br24Receive::Entry(void) {
       if (commandSocket != INVALID_SOCKET && FD_ISSET(commandSocket, &fdin)) {
         rx_len = sizeof(rx_addr);
         r = recvfrom(commandSocket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
-        if (r > 0 && rx_addr.addr.ss_family == AF_INET && m_pi->m_settings.verbose) {
-          logBinaryData(wxString::Format(wxT("%s at %u.%u.%u.%u received command"), m_ri->name.c_str(), a[0], a[1], a[2], a[3]),
-                        data, r);
+        if (r > 0 && rx_addr.addr.ss_family == AF_INET) {
+          wxString addr;
+          addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
+          if (m_pi->m_settings.verbose >= 2) {
+            logBinaryData(wxString::Format(wxT("%s sent command"), addr.c_str()), data, r);
+          }
+          ProcessCommand(addr, data, r);
           no_data_timeout = -15;
         } else {
           closesocket(commandSocket);
@@ -526,16 +529,15 @@ void *br24Receive::Entry(void) {
               if (m_pi->m_settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: %s detected at %s"), m_ri->name.c_str(), addr.c_str());
               }
-              m_ri->state.Update(RADAR_STANDBY);
+              m_ri->state.value = RADAR_STANDBY;
             }
             m_ri->radar_watchdog = time(0) + 10;
             no_data_timeout = -15;
           }
         } else {
-          wxLogMessage(wxT("BR24radar_pi: %s at %u.%u.%u.%u illegal command"), m_ri->name.c_str(), a[0], a[1], a[2], a[3]);
+          wxLogMessage(wxT("BR24radar_pi: %s at %u.%u.%u.%u illegal report"), m_ri->name.c_str(), a[0], a[1], a[2], a[3]);
           closesocket(reportSocket);
           reportSocket = INVALID_SOCKET;
-          m_ri->state.Update(RADAR_OFF);
         }
       }
 
@@ -553,7 +555,7 @@ void *br24Receive::Entry(void) {
       } else if (reportSocket != INVALID_SOCKET) {
         closesocket(reportSocket);
         reportSocket = INVALID_SOCKET;
-        m_ri->state.Update(RADAR_OFF);
+        m_ri->state.value = RADAR_OFF;
         m_mcast_addr = 0;
         m_radar_addr = 0;
       }
@@ -658,8 +660,8 @@ struct radar_state08_18 {              // 08 c4  length 18
 };
 #pragma pack(pop)
 
-bool br24Receive::ProcessReport(UINT8 *report, int len) {
-  if (m_pi->m_settings.verbose) {
+bool br24Receive::ProcessReport(const UINT8 *report, int len) {
+  if (m_pi->m_settings.verbose >= 3) {
     logBinaryData(wxT("ProcessReport"), report, len);
   }
 
@@ -692,7 +694,7 @@ bool br24Receive::ProcessReport(UINT8 *report, int len) {
         m_ri->target_boost.Update(s->target_boost);
         m_ri->interference_rejection.Update(s->interference_rejection);
 
-        if (m_pi->m_settings.verbose) {
+        if (m_pi->m_settings.verbose >= 2) {
           wxLogMessage(wxT("BR24radar_pi: %s state range=%u gain=%u sea=%u rain=%u interference_rejection=%u target_boost=%u "),
                        m_ri->name.c_str(), s->range, s->gain, s->sea, s->rain, s->interference_rejection, s->target_boost);
         }
@@ -701,7 +703,7 @@ bool br24Receive::ProcessReport(UINT8 *report, int len) {
 
       case (564 << 8) + 0x05: {  // length 564, 05 C4
         // Content unknown, but we know that BR24 radomes send this
-        if (m_pi->m_settings.verbose) {
+        if (m_pi->m_settings.verbose >= 2) {
           logBinaryData(wxT("received familiar BR24 report"), report, len);
         }
         m_ri->radar_type = RT_BR24;
@@ -712,7 +714,7 @@ bool br24Receive::ProcessReport(UINT8 *report, int len) {
         // contains scan speed, noise rejection and target_separation and sidelobe suppression
         radar_state08_18 *s08 = (radar_state08_18 *)report;
 
-        if (m_pi->m_settings.verbose) {
+        if (m_pi->m_settings.verbose >= 2) {
           logBinaryData(wxString::Format(wxT("scanspeed= %d, noise = %u target_sep %u"), s08->scan_speed, s08->noise_rejection,
                                          s08->target_sep),
                         report, len);
@@ -727,14 +729,14 @@ bool br24Receive::ProcessReport(UINT8 *report, int len) {
         }
         m_ri->local_interference_rejection.Update(s08->local_interference_rejection);
 
-        if (m_pi->m_settings.verbose) {
+        if (m_pi->m_settings.verbose >= 2) {
           logBinaryData(wxT("received report_08"), report, len);
         }
         break;
       }
 
       case (66 << 8) + 0x04: {  // 66 bytes starting with 04 C4
-        if (m_pi->m_settings.verbose) {
+        if (m_pi->m_settings.verbose >= 2) {
           logBinaryData(wxT("received report_04"), report, len);
         }
         radar_state04_66 *s04_66 = (radar_state04_66 *)report;
@@ -752,7 +754,7 @@ bool br24Receive::ProcessReport(UINT8 *report, int len) {
       }
 
       default: {
-        if (m_pi->m_settings.verbose) {
+        if (m_pi->m_settings.verbose >= 2) {
           logBinaryData(wxT("received unknown report"), report, len);
         }
         break;
@@ -763,7 +765,7 @@ bool br24Receive::ProcessReport(UINT8 *report, int len) {
     // Looks like a radar report. Is it a known one?
     switch ((len << 8) + report[0]) {
       case (16 << 8) + 0x0f:
-        if (m_pi->m_settings.verbose) {
+        if (m_pi->m_settings.verbose >= 2) {
           logBinaryData(wxT("received BR24 report"), report, len);
         }
         m_ri->radar_type = RT_BR24;
@@ -773,13 +775,13 @@ bool br24Receive::ProcessReport(UINT8 *report, int len) {
       case (10 << 8) + 0x12:
       case (46 << 8) + 0x13:
         // Content unknown, but we know that BR24 radomes send this
-        if (m_pi->m_settings.verbose) {
+        if (m_pi->m_settings.verbose >= 2) {
           logBinaryData(wxT("received familiar report"), report, len);
         }
         break;
 
       default:
-        if (m_pi->m_settings.verbose) {
+        if (m_pi->m_settings.verbose >= 2) {
           logBinaryData(wxT("received unknown report"), report, len);
         }
         break;
@@ -787,10 +789,24 @@ bool br24Receive::ProcessReport(UINT8 *report, int len) {
     return true;
   }
 
-  if (m_pi->m_settings.verbose) {
+  if (m_pi->m_settings.verbose >= 2) {
     logBinaryData(wxT("received unknown message"), report, len);
   }
   return false;
+}
+
+void br24Receive::ProcessCommand(wxString &addr, const UINT8 *command, int len) {
+  if (m_pi->m_settings.verbose >= 2) {
+    logBinaryData(wxT("ProcessCommand"), command, len);
+  }
+
+  if (len == 3 && memcmp(command, COMMAND_TX_ON_B, sizeof(COMMAND_TX_ON_B)) == 0) {
+    wxLogMessage(wxT("BR24radar_pi: %s received transmit on from %s"), m_ri->name.c_str(), addr.c_str());
+    m_ri->state.value = RADAR_TRANSMIT;
+  } else if (len == 3 && memcmp(command, COMMAND_TX_OFF_B, sizeof(COMMAND_TX_OFF_B)) == 0) {
+    wxLogMessage(wxT("BR24radar_pi: %s received transmit off from %s"), m_ri->name.c_str(), addr.c_str());
+    m_ri->state.value = RADAR_STANDBY;
+  }
 }
 
 PLUGIN_END_NAMESPACE

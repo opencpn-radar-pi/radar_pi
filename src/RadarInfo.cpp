@@ -334,7 +334,6 @@ void RadarInfo::ShowRadarWindow(bool show) { radar_panel->ShowFrame(show); }
 void RadarInfo::ShowRadarWindow() { radar_panel->ShowFrame(true); }
 
 void RadarInfo::UpdateControlState(bool all) {
-  state_request.Update(state.value);
   overlay.Update(m_pi->m_settings.chart_overlay == radar);
   if (overlay.value == 0 && m_draw_overlay.draw) {
     wxLogMessage(wxT("BR24radar_pi: Removing draw method as radar overlay is not shown"));
@@ -388,7 +387,11 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, DrawInfo *di) {
   int drawing_method = m_pi->m_settings.drawing_method;
   bool colorOption = m_pi->m_settings.display_option > 0;
 
-  if (state.value != RADAR_TRANSMIT) {
+  if (state.button != RADAR_TRANSMIT) {
+    if (range_meters) {
+      ResetSpokes();
+      range_meters = 0;
+    }
     return;
   }
 

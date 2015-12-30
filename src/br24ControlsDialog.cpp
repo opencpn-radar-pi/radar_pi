@@ -736,7 +736,7 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_control_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The Transmit button
-  m_radar_state = new wxButton(this, ID_RADAR_STATE, _("Off"), wxDefaultPosition, g_buttonSize, 0);
+  m_radar_state = new wxButton(this, ID_RADAR_STATE, _("Unknown"), wxDefaultPosition, g_buttonSize, 0);
   m_control_sizer->Add(m_radar_state, 0, wxALL, BORDER);
   m_radar_state->SetFont(m_pi->m_font);
   // Updated when we receive data
@@ -1003,14 +1003,17 @@ void br24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
-  if (m_ri->state.button) {
-    m_ri->state.Update(0);
+  if (m_ri->state.button == RADAR_STANDBY) {
     m_ri->transmit->RadarTxOn();
+    m_ri->state.button = RADAR_TRANSMIT;
+    m_ri->state.mod = true;
   } else {
-    m_ri->state.Update(1);
     m_ri->transmit->RadarTxOff();
+    m_ri->data_watchdog = 0;
+    m_ri->state.button = RADAR_STANDBY;
+    m_ri->state.mod = true;
   }
-  UpdateControlValues(true);  // update control values on the buttons
+  UpdateControlValues(false);  // update control values on the buttons
 }
 
 void br24ControlsDialog::OnRotationButtonClick(wxCommandEvent& event) {
@@ -1024,9 +1027,20 @@ void br24ControlsDialog::OnSize(wxSizeEvent& event) { event.Skip(); }
 
 void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_ri->state.mod || refreshAll) {
-    wxString o = m_ri->state.button ? _("On") : _("Off");
+    wxString o;
+
+    // What follows is rather subtle.
+
+    // If the user clicked on the transmit or receive button mod is true and button
+    // reflects the desired state. When we actually receive data, we reset mod.
+    if (m_ri->state.button == m_ri->state.value) m_ri->state.mod = false;
+
+    // If the state reflected the user's decision or he did not click anything then
+    // let the state reflect the data coming from other MFDs or the radar.
+    if (!m_ri->state.mod) m_ri->state.button = m_ri->state.value;
+
+    o = (m_ri->state.button == RADAR_TRANSMIT) ? _("Standby") : _("Transmit");
     m_radar_state->SetLabel(o);
-    m_ri->overlay.mod = false;
   }
 
   if (m_ri->rotation.mod || refreshAll) {
