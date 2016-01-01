@@ -266,7 +266,7 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
 
   // Calculate refresh speed
   if (m_pi->m_settings.refreshrate) {
-    int millis = 1000 / m_pi->m_settings.refreshrate;
+    int millis = 1000 / (1 + ((m_pi->m_settings.refreshrate) -1) * 5);
 
     if (millis != m_refresh_millis) {
       m_refresh_millis = millis;
