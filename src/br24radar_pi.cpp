@@ -275,14 +275,8 @@ bool br24radar_pi::DeInit(void) {
       m_radar[r] = 0;
     }
   }
-  // Do this later than the radar loop: MessageBox is updated by RadarInfo.
-  delete m_pMessageBox;
-  m_pMessageBox = 0;
 
-  if (m_pOptionsDialog) {
-    delete m_pOptionsDialog;  // TODO: Possible core dump here ???
-    m_pOptionsDialog = 0;
-  }
+  // No need to delete wxWindow stuff, wxWidgets does this for us.
 
   return true;
 }
