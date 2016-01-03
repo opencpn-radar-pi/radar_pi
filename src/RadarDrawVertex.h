@@ -36,7 +36,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-#define BUFFER_SIZE (2000000)  
+#define BUFFER_SIZE (2000000)
 
 class RadarDrawVertex : public RadarDraw {
  public:
@@ -75,7 +75,7 @@ class RadarDrawVertex : public RadarDraw {
 
   static const int VERTEX_PER_TRIANGLE = 3;
   static const int VERTEX_PER_QUAD = 2 * VERTEX_PER_TRIANGLE;
-  static const int MAX_BLOBS_PER_LINE = 100; // Assume picture is no more complicated than this
+  static const int MAX_BLOBS_PER_LINE = 100;  // Assume picture is no more complicated than this
 
   struct vertex_point {
     GLfloat x;
@@ -98,7 +98,6 @@ class RadarDrawVertex : public RadarDraw {
   int end_pointer;
   int line_index;
   int end_end_pointer;
-
 };
 
 PLUGIN_END_NAMESPACE
