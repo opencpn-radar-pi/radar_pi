@@ -70,8 +70,9 @@ class br24Receive : public wxThread {
  private:
   void logBinaryData(const wxString &what, const UINT8 *data, int size);
 
-  void ProcessFrame(UINT8 *data, int len);
-  bool ProcessReport(UINT8 *data, int len);
+  void ProcessFrame(const UINT8 *data, int len);
+  bool ProcessReport(const UINT8 *data, int len);
+  void ProcessCommand(wxString &addr, const UINT8 *data, int len);
 
   void EmulateFakeBuffer(void);
   SOCKET PickNextEthernetCard();

@@ -61,7 +61,13 @@ END_EVENT_TABLE()
 
 br24OptionsDialog::br24OptionsDialog() { Init(); }
 
-br24OptionsDialog::~br24OptionsDialog() {}
+/**
+ * wxWidgets will delete the window, no delete is necessary.
+ */
+br24OptionsDialog::~br24OptionsDialog() {
+  wxLogMessage(wxT("BR24radar_pi: delete of OptionsDialog"));
+  m_pi->m_pOptionsDialog = 0;
+}
 
 void br24OptionsDialog::Init() {}
 

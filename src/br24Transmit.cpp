@@ -37,9 +37,9 @@ br24Transmit::br24Transmit(wxString name, int radar) {
   memset(&m_addr, 0, sizeof(m_addr));
   m_addr.sin_family = AF_INET;
 
-  static UINT8 radar_mcast_send_addr[2][4] = {{236, 6, 7, 14}, {236, 6, 7, 10}};
+  static UINT8 radar_mcast_send_addr[2][4] = {{236, 6, 7, 10}, {236, 6, 7, 14}};
 
-  static unsigned short radar_mcast_send_port[2] = {6658, 6680};
+  static unsigned short radar_mcast_send_port[2] = {6680, 6658};
 
   memcpy(&m_addr.sin_addr.s_addr, radar_mcast_send_addr[radar % 2], sizeof(m_addr.sin_addr.s_addr));
   m_addr.sin_port = htons(radar_mcast_send_port[radar % 2]);
@@ -88,38 +88,45 @@ bool br24Transmit::Init(int verbose) {
   return true;
 }
 
-bool br24Transmit::TransmitCmd(UINT8 *msg, int size) {
+void br24Transmit::logBinaryData(const wxString &what, const UINT8 *data, int size) {
+  wxString explain;
+  int i = 0;
+
+  explain.Alloc(size * 3 + 50);
+  explain += wxT("BR24radar_pi: ") + m_name + wxT(" ");
+  explain += what;
+  explain += wxString::Format(wxT(" %d bytes: "), size);
+  for (i = 0; i < size; i++) {
+    explain += wxString::Format(wxT(" %02X"), data[i]);
+  }
+  wxLogMessage(explain);
+}
+
+bool br24Transmit::TransmitCmd(const UINT8 *msg, int size) {
   if (sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&m_addr, sizeof(m_addr)) < size) {
     wxLogError(wxT("BR24radar_pi: Unable to transmit command to %s: %s"), m_name, SOCKETERRSTR);
     return false;
   }
   if (m_verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: %s transmit cmd len=%d"), m_name, size);
+    logBinaryData(wxT("transmit"), msg, size);
   }
   return true;
 }
 
 void br24Transmit::RadarTxOff() {
-  UINT8 pck[3] = {0x00, 0xc1, 0x01};
-
   if (m_verbose) {
     wxLogMessage(wxT("BR24radar_pi: %s transmit: turn Off"), m_name);
   }
-  TransmitCmd(pck, sizeof(pck));
-  pck[0] = 0x01;
-  pck[2] = 0x00;
-  TransmitCmd(pck, sizeof(pck));
+  TransmitCmd(COMMAND_TX_OFF_A, sizeof(COMMAND_TX_OFF_A));
+  TransmitCmd(COMMAND_TX_OFF_B, sizeof(COMMAND_TX_OFF_B));
 }
 
 void br24Transmit::RadarTxOn() {
-  UINT8 pck[3] = {0x00, 0xc1, 0x01};  // ON
-
   if (m_verbose) {
     wxLogMessage(wxT("BR24radar_pi: %s transmit: turn on"), m_name);
   }
-  TransmitCmd(pck, sizeof(pck));
-  pck[0] = 0x01;
-  TransmitCmd(pck, sizeof(pck));
+  TransmitCmd(COMMAND_TX_ON_A, sizeof(COMMAND_TX_ON_A));
+  TransmitCmd(COMMAND_TX_ON_B, sizeof(COMMAND_TX_ON_B));
 }
 
 bool br24Transmit::RadarStayAlive() {
@@ -127,14 +134,10 @@ bool br24Transmit::RadarStayAlive() {
     wxLogMessage(wxT("BR24radar_pi: %s transmit: stay alive"), m_name);
   }
 
-  UINT8 pck[] = {0xA0, 0xc1};
-  TransmitCmd(pck, sizeof(pck));
-  UINT8 pck2[] = {0x03, 0xc2};
-  TransmitCmd(pck2, sizeof(pck2));
-  UINT8 pck3[] = {0x04, 0xc2};
-  TransmitCmd(pck3, sizeof(pck3));
-  UINT8 pck4[] = {0x05, 0xc2};
-  return TransmitCmd(pck4, sizeof(pck4));
+  TransmitCmd(COMMAND_STAY_ON_A, sizeof(COMMAND_STAY_ON_A));
+  TransmitCmd(COMMAND_STAY_ON_B, sizeof(COMMAND_STAY_ON_B));
+  TransmitCmd(COMMAND_STAY_ON_C, sizeof(COMMAND_STAY_ON_C));
+  return TransmitCmd(COMMAND_STAY_ON_D, sizeof(COMMAND_STAY_ON_D));
 }
 
 bool br24Transmit::SetRange(int meters) {
