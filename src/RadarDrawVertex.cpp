@@ -38,9 +38,9 @@ bool RadarDrawVertex::Init(int newColorOption) {
     // Don't care in vertex mode
   }
 
-  for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
+ /* for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
     spokes[i].n = 0;
-  }
+  }*/
 
   wxLogMessage(wxT("BR24radar_pi: CPU oriented OpenGL vertex draw loaded"));
   return true;
@@ -48,24 +48,21 @@ bool RadarDrawVertex::Init(int newColorOption) {
 
 #define ADD_VERTEX_POINT(angle, radius, r, g, b, a) \
   {                                                 \
-    p->x = polar_to_cart_x[angle][radius];          \
-    p->y = polar_to_cart_y[angle][radius];          \
-    p->red = r;                                     \
-    p->green = g;                                   \
-    p->blue = b;                                    \
-    p->alpha = a;                                   \
-    p++;                                            \
+    vertex_buffer[end_pointer].x = polar_to_cart_x[angle][radius];          \
+    vertex_buffer[end_pointer].y = polar_to_cart_y[angle][radius];          \
+    vertex_buffer[end_pointer].red = r;                                     \
+    vertex_buffer[end_pointer].green = g;                                   \
+    vertex_buffer[end_pointer].blue = b;                                    \
+    vertex_buffer[end_pointer].alpha = a;                                   \
+    end_pointer++;                                    \
   }
 
 void RadarDrawVertex::SetBlob(int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green, GLubyte blue,
                               GLubyte alpha) {
   int arc1 = MOD_ROTATION2048(angle_begin);
   int arc2 = MOD_ROTATION2048(angle_end);
-
-  vertex_point* p = &spokes[arc1].points[spokes[arc1].n];
-
+  if (r2 == 0) return;
   // First triangle
-
   ADD_VERTEX_POINT(arc1, r1, red, green, blue, alpha);
   ADD_VERTEX_POINT(arc1, r2, red, green, blue, alpha);
   ADD_VERTEX_POINT(arc2, r1, red, green, blue, alpha);
@@ -76,13 +73,10 @@ void RadarDrawVertex::SetBlob(int angle_begin, int angle_end, int r1, int r2, GL
   ADD_VERTEX_POINT(arc1, r2, red, green, blue, alpha);
   ADD_VERTEX_POINT(arc2, r2, red, green, blue, alpha);
 
-  spokes[arc1].n += 6;
-
-  if (spokes[arc1].n >= VERTEX_MAX - VERTEX_PER_QUAD) {
-    wxLogMessage(wxT("BR24radar_pi: vertices array limit overflow n=%d arc=%d"), spokes[arc1].n, arc1);
-    spokes[arc1].n = VERTEX_MAX - VERTEX_PER_QUAD;  // Make room for last vertex
-                                                    // of all, to make sure we
-                                                    // draw outer border
+ 
+  if (end_pointer + 6 > BUFFER_SIZE ){
+      end_pointer -= 6;     // keep room for the next point
+      wxLogError(wxT("BR24radar_pi: Buffer overflow in RadarDrawVertex::SetBlob"));
   }
 }
 
@@ -92,9 +86,7 @@ void RadarDrawVertex::ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t 
   BlobColor previous_color = BLOB_NONE;
   GLubyte strength = 0;
   wxMutexLocker lock(m_mutex);
-
-  spokes[angle].n = 0;  // Reset the spoke
-
+  
   int r_begin = 0;
   int r_end = 0;
 
@@ -134,22 +126,31 @@ void RadarDrawVertex::ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t 
     SetBlob(angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
     m_blobs++;
   }
+
+  //  all blobs of the spoke are done
+ 
   m_spokes++;
+  start_pointer = buffer_index[line_index];  // shift start_pointer to next line
+  if (end_pointer > BUFFER_SIZE - MAX_BLOBS_PER_LINE * 6){  // next line might not fit, start from beginning
+      end_end_pointer = end_pointer;
+      end_pointer = 0;
+  }
+  buffer_index[line_index] = end_pointer;
+  line_index++;    // one line added
+  if (line_index == LINES_PER_ROTATION){
+      line_index = 0;
+  }
+  wxMutexLocker unlock(m_mutex);
 }
 
 void RadarDrawVertex::DrawRadarImage(wxPoint center, double scale) {
   size_t total_points = 0;
-
+  
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);
 
   // if (overlay) {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  //}
-  // else {
-  // glClearColor(0, 0, 0, 1);
-  // glClear(GL_COLOR_BUFFER_BIT);
-  //}
 
   glPushMatrix();
   glTranslated(center.x, center.y, 0);
@@ -162,21 +163,38 @@ void RadarDrawVertex::DrawRadarImage(wxPoint center, double scale) {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   {
-    wxMutexLocker lock(m_mutex);
+   wxMutexLocker lock(m_mutex);
 
-    for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
-      int number_of_points = spokes[i].n;
-      if (number_of_points > 0) {
-        glVertexPointer(2, GL_FLOAT, sizeof(vertex_point), &spokes[i].points[0].x);
-        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex_point), &spokes[i].points[0].red);
+    int number_of_points;
+    if (end_pointer >= start_pointer){
+        // one block to display
+        number_of_points = (end_pointer - start_pointer) ;
+        
+        glVertexPointer(2, GL_FLOAT, sizeof(vertex_point), &vertex_buffer[start_pointer].x);
+        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex_point), &vertex_buffer[start_pointer].red);
         glDrawArrays(GL_TRIANGLES, 0, number_of_points);
-      }
-      total_points += number_of_points;
     }
+    else{
+        // 2 blocks blocks to display
+        // block1
+       
+        number_of_points = (end_end_pointer - start_pointer) ;
+        glVertexPointer(2, GL_FLOAT, sizeof(vertex_point), &vertex_buffer[start_pointer].x);
+        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex_point), &vertex_buffer[start_pointer].red);
+        glDrawArrays(GL_TRIANGLES, 0, number_of_points);
+
+        // block2
+        
+        number_of_points = end_pointer ;
+        glVertexPointer(2, GL_FLOAT, sizeof(vertex_point), &vertex_buffer[0].x);
+        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex_point), &vertex_buffer[0].red);
+        glDrawArrays(GL_TRIANGLES, 0, number_of_points);
+    }
+    total_points += number_of_points;
     m_blobs = 0;
     m_spokes = 0;
   }
-
+  wxMutexLocker unlock(m_mutex);
   glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
   glDisableClientState(GL_COLOR_ARRAY);
 
