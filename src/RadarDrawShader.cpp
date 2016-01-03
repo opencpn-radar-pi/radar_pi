@@ -65,7 +65,13 @@ static const char *FragmentShaderColorText =
     "} \n";
 
 bool RadarDrawShader::Init(int color_option) {
-  m_color_option = color_option;
+  if (color_option) {
+    m_format = GL_RGBA;
+    m_channels = SHADER_COLOR_CHANNELS;
+  } else {
+    m_format = GL_LUMINANCE;
+    m_channels = 1;
+  }
 
   if (!CompileShader && !ShadersSupported()) {
     wxLogMessage(wxT("BR24radar_pi: the OpenGL system of this computer does not support shader m_programs"));
@@ -73,7 +79,7 @@ bool RadarDrawShader::Init(int color_option) {
   }
 
   if (!CompileShaderText(&m_vertex, GL_VERTEX_SHADER, VertexShaderText) ||
-      !CompileShaderText(&m_fragment, GL_FRAGMENT_SHADER, m_color_option > 0 ? FragmentShaderColorText : FragmentShaderText)) {
+      !CompileShaderText(&m_fragment, GL_FRAGMENT_SHADER, color_option > 0 ? FragmentShaderColorText : FragmentShaderText)) {
     wxLogMessage(wxT("BR24radar_pi: the OpenGL system of this computer failed to compile shader programs"));
     return false;
   }
@@ -93,18 +99,17 @@ bool RadarDrawShader::Init(int color_option) {
   // Tell the GPU the size of the texture:
   glTexImage2D(/* target = */ GL_TEXTURE_2D,
                /* level  = */ 0,
-               /* internal_format = */ m_color_option > 0 ? GL_RGBA : GL_LUMINANCE,
+               /* internal_format = */ m_format,
                /* width           = */ RETURNS_PER_LINE,
                /* heigth          = */ LINES_PER_ROTATION,
                /* border          = */ 0,
-               /* format          = */ m_color_option > 0 ? GL_RGBA : GL_LUMINANCE,
+               /* format          = */ m_format,
                /* type            = */ GL_UNSIGNED_BYTE,
                /* data            = */ m_data);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  wxLogMessage(wxT("BR24radar_pi: GPU oriented OpenGL shader %ld for %d colours loaded"), (long int)m_program,
-               (m_color_option > 0) ? 4 : 1);
+  wxLogMessage(wxT("BR24radar_pi: GPU oriented OpenGL shader %ld for %d colours loaded"), (long int)m_program, m_channels);
   m_start_line = -1;
   m_end_line = 0;
 
@@ -144,7 +149,7 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);
 
   glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   glTranslated(center.x, center.y, 0);
   glScaled(scale, scale, 1.);
@@ -152,15 +157,6 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
   UseProgram(m_program);
 
   glBindTexture(GL_TEXTURE_2D, m_texture);
-
-  int format, channels;
-  if (m_color_option) {
-    format = GL_RGBA;
-    channels = 4;
-  } else {
-    format = GL_LUMINANCE;
-    channels = 1;
-  }
 
   if (m_start_line > -1) {
     // Since the last time we have received data from [m_start_line, m_end_line>
@@ -175,7 +171,7 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
                       /* y-offset = */ 0,
                       /* width =    */ RETURNS_PER_LINE,
                       /* height =   */ m_end_line,
-                      /* format =   */ format,
+                      /* format =   */ m_format,
                       /* type =     */ GL_UNSIGNED_BYTE,
                       /* pixels =   */ m_data);
       // And then remap [m_start_line, LINES_PER_ROTATION>
@@ -185,9 +181,9 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
                       /* y-offset = */ m_start_line,
                       /* width =    */ RETURNS_PER_LINE,
                       /* height =   */ LINES_PER_ROTATION - m_start_line,
-                      /* format =   */ format,
+                      /* format =   */ m_format,
                       /* type =     */ GL_UNSIGNED_BYTE,
-                      /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * channels);
+                      /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * m_channels);
     } else {
       // Remap [m_start_line, m_end_line>
       glTexSubImage2D(/* target =   */ GL_TEXTURE_2D,
@@ -196,9 +192,9 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
                       /* y-offset = */ m_start_line,
                       /* width =    */ RETURNS_PER_LINE,
                       /* height =   */ m_end_line - m_start_line,
-                      /* format =   */ format,
+                      /* format =   */ m_format,
                       /* type =     */ GL_UNSIGNED_BYTE,
-                      /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * channels);
+                      /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * m_channels);
     }
     if (m_pi->m_settings.verbose >= 2) {
       wxLogMessage(wxT("BR24radar_pi: using shader %d with new data in line %d-%d"), m_program, m_start_line, m_end_line);
@@ -239,8 +235,8 @@ void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t 
   }
   m_end_line = angle + 1;  // whereas this keeps running every draw operation
 
-  if (m_color_option) {
-    unsigned char *d = m_data + (angle * RETURNS_PER_LINE) * 4;
+  if (m_channels == SHADER_COLOR_CHANNELS) {
+    unsigned char *d = m_data + (angle * RETURNS_PER_LINE) * m_channels;
     for (size_t r = 0; r < len; r++) {
       GLubyte strength = data[r];
       BlobColor color = m_pi->m_color_map[strength];
@@ -248,7 +244,7 @@ void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t 
       d[1] = m_pi->m_color_map_green[color];
       d[2] = m_pi->m_color_map_blue[color];
       d[3] = alpha;
-      d += 4;
+      d += m_channels;
     }
   } else {
     unsigned char *d = m_data + (angle * RETURNS_PER_LINE);

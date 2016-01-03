@@ -49,7 +49,6 @@ class RadarDrawShader : public RadarDraw {
     m_fragment = 0;
     m_vertex = 0;
     m_program = 0;
-    m_color_option = 0;
     memset(m_data, 0, sizeof(m_data));
   }
 
@@ -67,7 +66,8 @@ class RadarDrawShader : public RadarDraw {
   int m_start_line;
   int m_end_line;
 
-  int m_color_option;
+  int m_format;
+  int m_channels;
 
   GLuint m_texture;
   GLuint m_fragment;
