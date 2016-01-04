@@ -30,7 +30,7 @@ SET(SRC_br24radar
             src/br24radar_pi.h
             src/br24radar_pi.cpp
             src/br24radarcontrol.cpp
-            src/br24messagebox.cpp
+            src/br24MessageBox.cpp
             src/GuardZoneControls.cpp
             src/GuardZoneBogey.cpp
             src/Idle_Dialog.cpp
