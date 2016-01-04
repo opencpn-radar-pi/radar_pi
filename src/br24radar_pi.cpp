@@ -179,10 +179,6 @@ static time_t      br_var_watchdog;
 static bool blackout[2] = { false, false };         //  will force display to blackout and north up
 static int heading_correction_raw = 0;
 
-#define     SIZE_VERTICES (3072)
-//static GLfloat vertices[2048][SIZE_VERTICES];
-static int colors_index[2048];
-static time_t vertices_time_stamp[2048];
 struct vert {
     GLfloat x;
     GLfloat y;
@@ -191,8 +187,6 @@ struct vert {
     GLubyte blue;
     GLubyte alfa;
 };
-static vert vertices[2048][3000];
-static int vertices_index[2048];
 static int angle_correction_raw = 0;  // to be used in PrepareRadarImage to rotate image
 static int angle_correction = 0;
 
@@ -230,9 +224,6 @@ int end_end_pointer;
 
 static sockaddr_in * br_mcast_addr = 0; // One of the threads finds out where the radar lives and writes our IP here
 static sockaddr_in * br_radar_addr = 0; // One of the threads finds out where the radar lives and writes its IP here
-// static wxCriticalSection br_scanLock;
-
-// the class factories, used to create and destroy instances of the PlugIn
 
 extern "C" DECL_EXP opencpn_plugin* create_pi(void *ppimgr)
 {
@@ -334,67 +325,6 @@ void SetBlob(int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyt
         wxLogError(wxT("BR24radar_pi: Buffer overflow in RadarDrawVertex::SetBlob"));
     }
 }
-//static void draw_blob_gl_i(int arc, int radius, int radius_end, GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha)
-//{
-//    int arc_end = arc + 1;
-//    if (arc_end >= 2048) {
-//        arc_end = arc_end - 2048;
-//    }
-//    vertices[arc][vertices_index[arc]].x = polar_to_cart_x[arc][radius];   // A
-//    vertices[arc][vertices_index[arc]].y = polar_to_cart_y[arc][radius];
-//    vertices[arc][vertices_index[arc]].red = red;    // colors of A
-//    vertices[arc][vertices_index[arc]].green = green;
-//    vertices[arc][vertices_index[arc]].blue = blue;
-//    vertices[arc][vertices_index[arc]].alfa = alpha;
-//    vertices_index[arc]++;
-//
-//    vertices[arc][vertices_index[arc]].x = polar_to_cart_x[arc][radius_end];  // B
-//    vertices[arc][vertices_index[arc]].y = polar_to_cart_y[arc][radius_end];
-//    vertices[arc][vertices_index[arc]].red = red;    // colors of B
-//    vertices[arc][vertices_index[arc]].green = green;
-//    vertices[arc][vertices_index[arc]].blue = blue;
-//    vertices[arc][vertices_index[arc]].alfa = alpha;
-//    vertices_index[arc]++;
-//
-//    vertices[arc][vertices_index[arc]].x = polar_to_cart_x[arc_end][radius];  //  C
-//    vertices[arc][vertices_index[arc]].y = polar_to_cart_y[arc_end][radius];
-//    vertices[arc][vertices_index[arc]].red = red;    // colors of C
-//    vertices[arc][vertices_index[arc]].green = green;
-//    vertices[arc][vertices_index[arc]].blue = blue;
-//    vertices[arc][vertices_index[arc]].alfa = alpha;
-//    vertices_index[arc]++;
-//
-//    //  next triangle follows ----------------------------------------------------------------
-//
-//    vertices[arc][vertices_index[arc]].x = polar_to_cart_x[arc][radius_end];  // B
-//    vertices[arc][vertices_index[arc]].y = polar_to_cart_y[arc][radius_end];
-//    vertices[arc][vertices_index[arc]].red = red;    // colors of B
-//    vertices[arc][vertices_index[arc]].green = green;
-//    vertices[arc][vertices_index[arc]].blue = blue;
-//    vertices[arc][vertices_index[arc]].alfa = alpha;
-//    vertices_index[arc]++;
-//
-//    vertices[arc][vertices_index[arc]].x = polar_to_cart_x[arc_end][radius];  //  C
-//    vertices[arc][vertices_index[arc]].y = polar_to_cart_y[arc_end][radius];
-//    vertices[arc][vertices_index[arc]].red = red;    // colors of C
-//    vertices[arc][vertices_index[arc]].green = green;
-//    vertices[arc][vertices_index[arc]].blue = blue;
-//    vertices[arc][vertices_index[arc]].alfa = alpha;
-//    vertices_index[arc]++;
-//
-//    vertices[arc][vertices_index[arc]].x = polar_to_cart_x[arc_end][radius_end];  // D
-//    vertices[arc][vertices_index[arc]].y = polar_to_cart_y[arc_end][radius_end];
-//    vertices[arc][vertices_index[arc]].red = red;    // colors of D
-//    vertices[arc][vertices_index[arc]].green = green;
-//    vertices[arc][vertices_index[arc]].blue = blue;
-//    vertices[arc][vertices_index[arc]].alfa = alpha;
-//    vertices_index[arc]++;
-//
-//    if (vertices_index[arc]> SIZE_VERTICES - 8) {
-//        wxLogMessage(wxT("BR24radar_pi: vertices array limit overflow vertices_index=%d arc=%d"), vertices_index[arc], arc);
-//        vertices_index[arc] = SIZE_VERTICES - 8;
-//    }
-//}
 
 static void draw_blob_gl(double ca, double sa, double radius, double arc_width, double blob_heigth)
 {
@@ -1876,25 +1806,6 @@ void br24radar_pi::DrawRadarImage()
         glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex_point), &vertex_buffer[0].red);
         glDrawArrays(GL_TRIANGLES, 0, number_of_points);
     }
-  //  total_points += number_of_points;
- //   m_blobs = 0;
- //   m_spokes = 0;
-
-
-    //GLubyte test;
-    //GLfloat test1;
-    //test = 0;
-    //test1 = 0;   // to avoid compiler warnings
-    //int step = 2 * sizeof(test1) + 4 * sizeof(test);
-    //for (int i = 0; i < 2048; i++) {
-    //    if (now - vertices_time_stamp[i] > settings.max_age) {
-    //        continue;            // outdated line, do not display
-    //    }
-    //    glVertexPointer(2, GL_FLOAT, step, &vertices[i][0].x);
-    //    glColorPointer(4, GL_UNSIGNED_BYTE, step, &vertices[i][0].red);
-    //    int number_of_points = vertices_index[i];
-    //    glDrawArrays(GL_TRIANGLES, 0, number_of_points);
-    //}
     glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
     glDisableClientState(GL_COLOR_ARRAY);
 }        // end of DrawRadarImage
@@ -1903,17 +1814,11 @@ void br24radar_pi::DrawRadarImage()
 
 void br24radar_pi::PrepareRadarImage(int angle, UINT8 * data)   // angle in spokes 0 <= angle < 2048
 {                                                 // prepares one line (spoke) of the image in the vertex buffer
-    //    wxLongLong now = wxGetLocalTimeMillis();
     UINT32 drawn_spokes = 0;
     UINT32 drawn_blobs = 0;
-    //    UINT32 skipped = 0;
-    //    wxLongLong max_age = 0; // Age in millis
 
     GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
     int angle1 = MOD_ROTATION2048(angle + angle_correction_raw);
-    vertices_index[angle1] = 0;
-    colors_index[angle1] = 0;
-    vertices_time_stamp[angle1] = time(0);
     scan_line * scan = &m_scan_line[settings.selectRadarB][angle];  // use angle (not angle1) as angle points to the corresponding line
 
     int r_begin = 0, r_end = 0;
