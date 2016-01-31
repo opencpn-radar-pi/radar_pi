@@ -459,13 +459,18 @@ void br24radar_pi::UpdateDisplayParameters(void) { m_parent_window->Refresh(fals
 int br24radar_pi::GetToolbarToolCount(void) { return 1; }
 
 /*
- * The radar icon is clicked. In previous versions all sorts of behavior was
- * linked to clicking
- * on the button, which wasn't very 'discoverable'. So now it just shows/hides
- * all radar
- * windows.
+ * The radar icon is clicked. In previous versions all sorts of behavior was linked to clicking on the button, which wasn't very
+ * 'discoverable' -- hard to find out what your options are.
+ * In this version there are two behaviors.
+ * If the radar windows are not shown, and you click and there is an overlay defined we show the single radar control for the
+ * overlay.
+ * If the radar windows are not shown and this is the 2nd click within 4 seconds, we show the radar windows.
+ * If the radar windows are shown this closes all radar windows.
  */
 void br24radar_pi::OnToolbarToolCallback(int id) {
+  time_t now = time(0);
+  static time_t previousTicks = 0;
+
   wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback(%d)"), id);
   if (!m_initialized) {
     return;
@@ -477,6 +482,10 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
       ShowRadarControl(r, false);
       m_radar[r]->ShowRadarWindow(false);
     }
+    previousTicks = 0;
+  } else if ((previousTicks + 4 >= now) && (m_settings.chart_overlay >= 0)) {
+    ShowRadarControl(m_settings.chart_overlay, true);
+    previousTicks = now;
   } else {
     m_settings.show_radar = true;
     ShowRadarControl(0, true);
@@ -485,22 +494,9 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
       ShowRadarControl(1, true);
       m_radar[1]->ShowRadarWindow(true);
     }
+    previousTicks = 0;
   }
 
-  /*
-      if (m_pMessageBox) {
-          m_pMessageBox->UpdateMessage(m_opengl_mode
-              , m_bpos_set
-              , m_heading_source != HEADING_NONE
-              , m_var_source != VARIATION_SOURCE_NONE
-              , m_radar[0]->radar_seen || m_radar[1]->radar_seen
-              , m_radar[0]->data_seen || m_radar[1]->data_seen
-              );
-      }
-      if (m_pGuardZoneBogey) {
-          m_pGuardZoneBogey->Hide();
-      }
-  */
   UpdateState();
 }
 

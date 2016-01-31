@@ -1225,6 +1225,7 @@ void br24ControlsDialog::HideTemporarily() {
 
 void br24ControlsDialog::UnHideTemporarily() {
   m_hide_temporarily = false;
+  m_auto_hide = time(0);  // Reset hide timeout
   UpdateDialogShown();
 }
 
@@ -1262,12 +1263,12 @@ void br24ControlsDialog::ShowDialog() {
 
 void br24ControlsDialog::HideDialog() {
   m_hide = true;
+  m_auto_hide = 0;
   UpdateDialogShown();
 }
 
 void br24ControlsDialog::OnMouseLeftDown(wxMouseEvent& event) {
   m_auto_hide = time(0);
-
   event.Skip();
 }
 
