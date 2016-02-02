@@ -31,7 +31,7 @@ IF(NOT MSVC)
   ADD_DEFINITIONS( "-Wall -g -fprofile-arcs -ftest-coverage -fexceptions" )
  ELSE(PROFILING)
 #  ADD_DEFINITIONS( "-Wall -g -fexceptions" )
- ADD_DEFINITIONS( "-Wall -Wno-unused-result -g -O2 -fexceptions" )
+#  ADD_DEFINITIONS( "-Wall -Wno-unused-result -g -O2 -fexceptions" )
  ENDIF(PROFILING)
 
  IF(NOT APPLE)
@@ -50,6 +50,12 @@ ENDIF(MSVC)
 
 SET(wxWidgets_USE_LIBS base core net xml html adv gl)
 SET(BUILD_SHARED_LIBS TRUE)
+
+SET( wxWidgets_USE_DEBUG OFF)
+SET( wxWidgets_USE_UNICODE ON)
+SET( wxWidgets_USE_UNIVERSAL OFF)
+SET( wxWidgets_USE_STATIC OFF)
+ADD_DEFINITIONS(-DwxDEBUG_LEVEL=0)
 
 FIND_PACKAGE(wxWidgets REQUIRED)
 
