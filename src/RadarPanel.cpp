@@ -87,12 +87,11 @@ bool RadarPanel::Create() {
     wxLogMessage(wxT("BR24radar_pi: Restoring panel %s to AUI control manager: %s"), m_aui_name.c_str(),
                  m_pi->m_perspective[m_ri->radar].c_str());
     m_aui_mgr->LoadPaneInfo(m_pi->m_perspective[m_ri->radar], pane);
-    pane.Show(true);
-    m_aui_mgr->GetPane(this).SafeSet(pane);
-    m_aui_mgr->Update();
   } else {
     wxLogMessage(wxT("BR24radar_pi: Added panel %s to AUI control manager"), m_aui_name.c_str());
   }
+  m_aui_mgr->GetPane(this).SafeSet(pane);
+  ShowFrame(false);
 
   return true;
 }
@@ -110,8 +109,8 @@ void RadarPanel::close(wxAuiManagerEvent& event) {
 }
 
 void RadarPanel::ShowFrame(bool visible) {
+  wxLogMessage(wxT("BR24radar_pi %s: visible %d"), m_ri->name.c_str(), visible);
   m_aui_mgr->GetPane(this).Show(visible);
-  // m_visible = visible;
   m_aui_mgr->Update();
 }
 
