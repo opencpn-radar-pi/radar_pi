@@ -19,8 +19,6 @@ SET(CPACK_PACKAGE_CONTACT "kees@verruijt.net")
 SET(VERSION_MAJOR "1")
 SET(VERSION_MINOR "3")
 
-#SET(CMAKE_BUILD_TYPE Debug)
-
 INCLUDE("cmake/PluginConfigure.cmake")
 
 # For convenience we define the sources as a variable. You can add
