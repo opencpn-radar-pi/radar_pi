@@ -241,14 +241,14 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
   time_t now = time(0);
   int pos_age = difftime(now, m_pi->m_bpos_watchdog);  // the age of the
-                                                       // postion, last call of
+                                                       // position, last call of
                                                        // SetPositionFixEx
   if (m_refreshes_queued > 0 || pos_age >= 2) {
     // don't do additional refresh and reset the refresh conter
     // this will also balance performance, if too busy skip refresh
     // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
     // so skip next refresh
-    if (m_verbose >= 2) {
+    if (m_verbose >= 5) {
       wxLogMessage(wxT("BR24radar_pi: %s busy encountered, pos_age = %d, refreshes_queued=%d"), name.c_str(), pos_age,
                    m_refreshes_queued);
     }
@@ -266,7 +266,7 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
 
   // Calculate refresh speed
   if (m_pi->m_settings.refreshrate) {
-    int millis = 1000 / (1 + ((m_pi->m_settings.refreshrate) -1) * 5);
+    int millis = 1000 / (1 + ((m_pi->m_settings.refreshrate) - 1) * 5);
 
     if (millis != m_refresh_millis) {
       m_refresh_millis = millis;
@@ -330,8 +330,6 @@ void RadarInfo::SetRangeMeters(int meters) {
 bool RadarInfo::SetControlValue(ControlType controlType, int value) { return transmit->SetControlValue(controlType, value); }
 
 void RadarInfo::ShowRadarWindow(bool show) { radar_panel->ShowFrame(show); }
-
-void RadarInfo::ShowRadarWindow() { radar_panel->ShowFrame(true); }
 
 void RadarInfo::UpdateControlState(bool all) {
   overlay.Update(m_pi->m_settings.chart_overlay == radar);

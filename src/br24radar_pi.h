@@ -271,7 +271,7 @@ class br24radar_pi : public opencpn_plugin_110 {
   void SetDefaults(void);
   int GetToolbarToolCount(void);
   void OnToolbarToolCallback(int id);
-  void UpdateAuiStatus(void);
+  bool SetRadarWindowViz(bool show);
   void ShowPreferencesDialog(wxWindow *parent);
 
   // Other public methods
@@ -360,8 +360,7 @@ class br24radar_pi : public opencpn_plugin_110 {
   void PassHeadingToOpenCPN();
 
   void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
-  void ShowRadarWindow(int radar);
-
+  
   wxFileConfig *m_pconfig;
   wxWindow *m_parent_window;
   wxMenu *m_pmenu;
@@ -376,6 +375,11 @@ class br24radar_pi : public opencpn_plugin_110 {
   wxBitmap *m_ptemp_icon;
   int m_sent_bm_id_normal;
   int m_sent_bm_id_rollover;
+
+  // Control id's of Context Menu Items
+  int m_context_menu_control_id;
+  int m_context_menu_show_window_id;
+  int m_context_menu_hide_window_id;
 
   NMEA0183 m_NMEA0183;
 

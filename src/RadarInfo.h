@@ -133,7 +133,6 @@ class RadarInfo : public wxEvtHandler {
   void RefreshDisplay(wxTimerEvent &event);
   void RenderGuardZone(wxPoint radar_center, double v_scale_ppm);
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
-  void ShowRadarWindow();
   void ShowRadarWindow(bool show);
   void UpdateControlState(bool all);
 

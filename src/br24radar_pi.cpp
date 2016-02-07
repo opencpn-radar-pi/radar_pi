@@ -218,8 +218,22 @@ int br24radar_pi::Init(void) {
   wxFont *qFont = OCPNGetFont(_("Menu"), 10);
   pmi->SetFont(*qFont);
 #endif
-  int radar_control_id = AddCanvasContextMenuItem(pmi, this);
-  SetCanvasContextMenuItemViz(radar_control_id, true);
+  int m_context_menu_control_id = AddCanvasContextMenuItem(pmi, this);
+  SetCanvasContextMenuItemViz(m_context_menu_control_id, true);
+
+  pmi = new wxMenuItem(m_pmenu, -1, _("Show Radar"));
+#ifdef __WXMSW__
+  wxFont *qFont = OCPNGetFont(_("Menu"), 10);
+  pmi->SetFont(*qFont);
+#endif
+  m_context_menu_show_window_id = AddCanvasContextMenuItem(pmi, this);
+
+  pmi = new wxMenuItem(m_pmenu, -1, _("Hide Radar"));
+#ifdef __WXMSW__
+  wxFont *qFont = OCPNGetFont(_("Menu"), 10);
+  pmi->SetFont(*qFont);
+#endif
+  m_context_menu_hide_window_id = AddCanvasContextMenuItem(pmi, this);
 
   m_pMessageBox = new br24MessageBox;
   m_pMessageBox->Create(m_parent_window, this);
@@ -235,6 +249,9 @@ int br24radar_pi::Init(void) {
 
   m_initialized = true;
   wxLogMessage(wxT("BR24radar_pi: Initialized plugin"));
+
+  SetRadarWindowViz(m_settings.show_radar);
+
   return PLUGIN_OPTIONS;
 }
 
@@ -311,25 +328,32 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
   m_pOptionsDialog->ShowModal();
 }
 
-void br24radar_pi::UpdateAuiStatus(void) {
-//    This method is called after the PlugIn is initialized
-//    and the frame has done its initial layout, possibly from a saved
-//    wxAuiManager "Perspective"
-//    It is a chance for the PlugIn to syncronize itself internally with the
-//    state of any Panes that
-//    were added to the frame in the PlugIn ctor.
+/**
+ * Set the radar window visibility.
+ *
+ * To toggle visibility call this as SetRadarWindowViz(!m_settings.show_radar);
+ *
+ * New state set in m_settings.show_radar.
+ *
+ * @param show        desired visibility state
+ * @return            whether state was changed
+ */
+bool br24radar_pi::SetRadarWindowViz(bool show) {
+  m_radar[0]->ShowRadarWindow(show);
+  ShowRadarControl(0, show);
+  if (m_settings.enable_dual_radar) {
+    m_radar[1]->ShowRadarWindow(show);
+    ShowRadarControl(1, show);
+  }
+  m_settings.show_radar = show;
+  SetCanvasContextMenuItemViz(m_context_menu_show_window_id, !show);
+  SetCanvasContextMenuItemViz(m_context_menu_hide_window_id, show);
+  wxLogMessage(wxT("BR24radar_pi: RadarWindow visibility = %d"), (int)show);
 
-// Walk all wxAuiPane
-#if 0
-    for (size_t i = 0; i < RADARS; i++ ) {
-        DashboardWindowContainer *cont = m_ArrayOfDashboardWindow.Item( i );
-        wxAuiPaneInfo &pane = m_pauimgr->GetPane( cont->m_pDashboardWindow );
-        // Initialize visible state as perspective is loaded now
-        cont->m_bIsVisible = ( pane.IsOk() && pane.IsShown() );
-    }
-#endif
-
-  // Maybe update toolbar button?
+  if (show != m_settings.show_radar) {
+    return true;
+  }
+  return false;
 }
 
 //********************************************************************************
@@ -353,22 +377,34 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
       m_radar[radar]->range.Update(idx);
     }
     m_radar[radar]->control_dialog->ShowDialog();
+  } else {
+    if (m_radar[radar]->control_dialog) {
+      m_radar[radar]->control_dialog->HideDialog();
+    }
   }
 
   m_radar[radar]->UpdateControlState(true);
   m_pMessageBox->UpdateMessage(m_opengl_mode, m_bpos_set, m_heading_source != HEADING_NONE, m_var_source != VARIATION_SOURCE_NONE,
                                m_radar[radar]->state.value != RADAR_OFF, m_radar[radar]->state.value == RADAR_TRANSMIT);
-
-  if (!show && m_radar[radar]->control_dialog) {
-    m_radar[radar]->control_dialog->Hide();
-  }
 }
 
 void br24radar_pi::OnContextMenuItemCallback(int id) {
-  ShowRadarControl(0, true);
-  if (m_settings.enable_dual_radar) {
-    ShowRadarControl(1, true);
+  if (!m_initialized) {
+    return;
   }
+
+  if (id == m_context_menu_control_id) {
+    ShowRadarControl(0, true);
+    if (m_settings.enable_dual_radar) {
+      ShowRadarControl(1, true);
+    }
+  } else if (id == m_context_menu_show_window_id) {
+    SetRadarWindowViz(true);
+  } else if (id == m_context_menu_hide_window_id) {
+    SetRadarWindowViz(false);
+  }
+
+  UpdateState();
 }
 
 void br24radar_pi::OnControlDialogClose(RadarInfo *ri) {
@@ -477,25 +513,14 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
   }
 
   if (m_settings.show_radar) {
-    m_settings.show_radar = false;
-    for (int r = 0; r < RADARS; r++) {
-      ShowRadarControl(r, false);
-      m_radar[r]->ShowRadarWindow(false);
-    }
-    previousTicks = 0;
-  } else if ((previousTicks + 4 >= now) && (m_settings.chart_overlay >= 0)) {
-    ShowRadarControl(m_settings.chart_overlay, true);
-    previousTicks = now;
+    SetRadarWindowViz(false);
+  } else if ((previousTicks + 4 >= now) || (m_settings.chart_overlay < 0)) {
+    SetRadarWindowViz(true);
   } else {
-    m_settings.show_radar = true;
-    ShowRadarControl(0, true);
-    m_radar[0]->ShowRadarWindow(true);
-    if (m_settings.enable_dual_radar) {
-      ShowRadarControl(1, true);
-      m_radar[1]->ShowRadarWindow(true);
-    }
-    previousTicks = 0;
+    ShowRadarControl(m_settings.chart_overlay, true);
   }
+
+  previousTicks = now;
 
   UpdateState();
 }
@@ -632,32 +657,31 @@ void br24radar_pi::DoTick(void) {
     PassHeadingToOpenCPN();
   }
 
-  if ((m_pMessageBox && m_pMessageBox->IsShown()) || (m_settings.verbose >= 1)) {
-    wxString t;
-    for (size_t r = 0; r < RADARS; r++) {
-      if (m_radar[r]->state.value != RADAR_OFF) {
-        t << wxString::Format(wxT("%s\npackets %d/%d\nspokes %d/%d/%d\n"), m_radar[r]->name, m_radar[r]->statistics.packets,
-                              m_radar[r]->statistics.broken_packets, m_radar[r]->statistics.spokes,
-                              m_radar[r]->statistics.broken_spokes, m_radar[r]->statistics.missing_spokes);
+  if (m_pMessageBox) {
+    if (m_pMessageBox->IsShown() || (m_settings.verbose >= 1)) {
+      wxString t;
+      for (size_t r = 0; r < RADARS; r++) {
+        if (m_radar[r]->state.value != RADAR_OFF) {
+          t << wxString::Format(wxT("%s\npackets %d/%d\nspokes %d/%d/%d\n"), m_radar[r]->name, m_radar[r]->statistics.packets,
+                                m_radar[r]->statistics.broken_packets, m_radar[r]->statistics.spokes,
+                                m_radar[r]->statistics.broken_spokes, m_radar[r]->statistics.missing_spokes);
+        }
+      }
+      if (m_pMessageBox->IsShown()) {
+        m_pMessageBox->SetRadarInfo(t);
+      }
+      if (m_settings.verbose >= 1 && t.length() > 0) {
+        t.Replace(wxT("\n"), wxT(" "));
+        wxLogMessage(wxT("BR24radar_pi: %s"), t.c_str());
       }
     }
-    if (m_pMessageBox && m_pMessageBox->IsShown()) {
-      m_pMessageBox->SetRadarInfo(t);
-    }
-    if (m_settings.verbose >= 1 && t.length() > 0) {
-      t.Replace(wxT("\n"), wxT(" "));
-      wxLogMessage(wxT("BR24radar_pi: %s"), t.c_str());
-    }
+    m_pMessageBox->UpdateMessage(m_opengl_mode, m_bpos_set, m_heading_source != HEADING_NONE, m_var_source != VARIATION_SOURCE_NONE,
+                                 m_radar[0]->state.value != RADAR_OFF || m_radar[1]->state.value != RADAR_OFF,
+                                 m_radar[0]->state.value == RADAR_TRANSMIT || m_radar[1]->state.value == RADAR_TRANSMIT);
   }
 
   for (size_t r = 0; r < RADARS; r++) {
     m_radar[r]->UpdateControlState(false);
-  }
-
-  if (m_pMessageBox) {
-    m_pMessageBox->UpdateMessage(m_opengl_mode, m_bpos_set, m_heading_source != HEADING_NONE, m_var_source != VARIATION_SOURCE_NONE,
-                                 m_radar[0]->state.value != RADAR_OFF || m_radar[1]->state.value != RADAR_OFF,
-                                 m_radar[0]->state.value == RADAR_TRANSMIT || m_radar[1]->state.value == RADAR_TRANSMIT);
   }
 
   for (int r = 0; r < RADARS; r++) {

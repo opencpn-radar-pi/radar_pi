@@ -1152,14 +1152,30 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     }
     m_ri->side_lobe_suppression.mod = false;
   }
+
+  wxString title;
+
+  title << m_ri->name << wxT(" - ");
+
+  if (m_ri->state.value == RADAR_TRANSMIT) {
+    title << _("On");
+  } else if (m_ri->state.value == RADAR_STANDBY) {
+    title << _("Standby");
+  } else {
+    title << _("Off");
+  }
+
+  SetTitle(title);
 }
 
 void br24ControlsDialog::UpdateDialogShown() {
   if (m_hide) {
-    if (m_pi->m_settings.verbose) {
-      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown explicit closed: Hidden"), m_ri->name.c_str());
+    if (IsShown()) {
+      if (m_pi->m_settings.verbose) {
+        wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown explicit closed: Hidden"), m_ri->name.c_str());
+      }
+      Hide();
     }
-    Hide();
     return;
   }
 
@@ -1169,7 +1185,15 @@ void br24ControlsDialog::UpdateDialogShown() {
                    m_ri->name.c_str());
     }
     m_hide_temporarily = true;
-    Hide();
+  }
+
+  if (m_hide_temporarily) {
+    if (IsShown()) {
+      if (m_pi->m_settings.verbose) {
+        wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown temporarily hidden"), m_ri->name.c_str());
+      }
+      Hide();
+    }
     return;
   }
 
@@ -1188,44 +1212,32 @@ void br24ControlsDialog::UpdateDialogShown() {
     }
   }
 
-  if (m_pi->m_settings.verbose) {
-    wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown manually opened"), m_ri->name.c_str());
+  if (!IsShown()) {
+    if (m_pi->m_settings.verbose) {
+      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown manually opened"), m_ri->name.c_str());
+    }
+    if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_edit_sizer) &&
+        !m_top_sizer->IsShown(m_installation_sizer)) {
+      m_top_sizer->Show(m_control_sizer);
+    }
+    m_control_sizer->Layout();
+    Fit();
+    m_top_sizer->Layout();
+    Show();
+
+    m_edit_sizer->Layout();
+    m_top_sizer->Layout();
   }
-  if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_edit_sizer) &&
-      !m_top_sizer->IsShown(m_installation_sizer)) {
-    m_top_sizer->Show(m_control_sizer);
-  }
-  m_control_sizer->Layout();
-  Fit();
-  m_top_sizer->Layout();
-  Show();
-
-  m_edit_sizer->Layout();
-  m_top_sizer->Layout();
-
-  wxString title;
-
-  title << m_ri->name << wxT(" - ");
-
-  if (m_ri->state.value == RADAR_TRANSMIT) {
-    title << _("On");
-  } else if (m_ri->state.value == RADAR_STANDBY) {
-    title << _("Standby");
-  } else {
-    title << _("Off");
-  }
-
-  SetTitle(title);
 }
 
 void br24ControlsDialog::HideTemporarily() {
   m_hide_temporarily = true;
-  Hide();
+  UpdateDialogShown();
 }
 
 void br24ControlsDialog::UnHideTemporarily() {
   m_hide_temporarily = false;
-  m_auto_hide = time(0);  // Reset hide timeout
+  m_auto_hide = time(0);  // Start auto hide timeout
   UpdateDialogShown();
 }
 
@@ -1235,12 +1247,9 @@ void br24ControlsDialog::ShowDialog() {
     // If the corresponding radar panel is now in a different position from what we remembered
     // then reset the dialog to the left or right of the radar panel.
 
-    UpdateDialogShown();
-
     wxPoint panelPos = m_ri->radar_panel->GetPos();
     if (panelPos != m_panel_position) {
       wxSize mySize = this->GetSize();
-      // wxLogMessage(wxT(">>> ShowDialog with radar panel at new position %d,%d and our sh"), panelPos.x, panelPos.y);
 
       bool showOnLeft = (panelPos.x > mySize.x);
 
@@ -1254,11 +1263,9 @@ void br24ControlsDialog::ShowDialog() {
       SetPosition(newPos);
 
       m_panel_position = panelPos;
-    } else {
-      UpdateDialogShown();
     }
   }
-  m_auto_hide = time(0);
+  UnHideTemporarily();
 }
 
 void br24ControlsDialog::HideDialog() {
