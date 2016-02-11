@@ -290,8 +290,8 @@ void RadarInfo::RenderGuardZone(wxPoint radar_center, double v_scale_ppm) {
         start_bearing = 0;
         end_bearing = 359;
       } else {
-        start_bearing = guard_zone[z]->start_bearing;
-        end_bearing = guard_zone[z]->end_bearing;
+        start_bearing = SCALE_RAW_TO_DEGREES2048(guard_zone[z]->start_bearing) - 90;
+        end_bearing = SCALE_RAW_TO_DEGREES2048(guard_zone[z]->end_bearing) - 90;
       }
       switch (m_pi->m_settings.guard_zone_render_style) {
         case 1:
