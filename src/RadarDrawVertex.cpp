@@ -145,8 +145,6 @@ void RadarDrawVertex::DrawRadarImage(wxPoint center, double scale) {
   size_t total_points = 0;
 
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);
-
-  // if (overlay) {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -156,9 +154,6 @@ void RadarDrawVertex::DrawRadarImage(wxPoint center, double scale) {
 
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
-
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   {
     wxMutexLocker lock(m_mutex);

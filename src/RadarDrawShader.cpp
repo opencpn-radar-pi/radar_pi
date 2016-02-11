@@ -145,12 +145,11 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
     return;
   }
 
-  glPushMatrix();
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);
-
   glEnable(GL_BLEND);
-  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+  glPushMatrix();
   glTranslated(center.x, center.y, 0);
   glScaled(scale, scale, 1.);
 
@@ -222,8 +221,8 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
   glEnd();
 
   UseProgram(0);
-  glPopAttrib();
   glPopMatrix();
+  glPopAttrib();
 }
 
 void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t len) {
@@ -243,7 +242,7 @@ void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t 
       d[0] = m_pi->m_color_map_red[color];
       d[1] = m_pi->m_color_map_green[color];
       d[2] = m_pi->m_color_map_blue[color];
-      d[3] = alpha;
+      d[3] = color != BLOB_NONE ? alpha : 0;
       d += m_channels;
     }
   } else {
