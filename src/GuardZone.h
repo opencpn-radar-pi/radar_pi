@@ -54,6 +54,7 @@ class GuardZone {
    * Return total bogeyCount over all spokes
    */
   int GetBogeyCount(SpokeBearing current_hdt);
+  int m_bogey_count; // updated on every call of GetBogeyCount.
 
   /*
    * Reset the bogey count for all spokes

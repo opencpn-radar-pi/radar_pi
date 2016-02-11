@@ -51,7 +51,7 @@ class GuardZoneBogey : public wxDialog {
               long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
 
   void CreateControls();
-  void SetBogeyCount(int *bogey_count, int next_alarm);
+  void SetBogeyCount(int bogey_count, int next_alarm);
 
  private:
   void OnClose(wxCloseEvent &event);

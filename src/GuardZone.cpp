@@ -95,6 +95,7 @@ int GuardZone::GetBogeyCount(SpokeBearing current_hdt) {
     bogeys += bogeyCount[angle];
   }
 
+  m_bogey_count = bogeys;
   return bogeys;
 }
 

@@ -353,14 +353,14 @@ class br24radar_pi : public opencpn_plugin_110 {
   void DoTick(void);
   void Select_Clutter(int req_clutter_index);
   void Select_Rejection(int req_rejection_index);
-  // void ScanGuardZones(int max_range, int AB);
+  void CheckGuardZoneBogeys(void);
   void RenderRadarBuffer(wxDC *pdc, int width, int height);
   void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, double rotation);
   // void HandleBogeyCount(int *bogey_count);
   void PassHeadingToOpenCPN();
 
   void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
-  
+
   wxFileConfig *m_pconfig;
   wxWindow *m_parent_window;
   wxMenu *m_pmenu;

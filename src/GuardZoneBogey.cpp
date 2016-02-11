@@ -97,44 +97,27 @@ void GuardZoneBogey::CreateControls() {
 
 //*********************************************************************************************************************
 
-void GuardZoneBogey::SetBogeyCount(int *bogey_count, int next_alarm) {
+void GuardZoneBogey::SetBogeyCount(int bogey_count, int next_alarm) {
   wxString text;
   static wxString previous_text;
   wxString t;
 
-#ifdef TODO
-  if (m_pi->data_seenAB[0] == RADAR_ON) {
-    t.Printf(_("Radar A:\n"));
-    text << t;
+  for (size_t r = 0; r < RADARS; r++) {
+    t.Printf(_("Radar %c:\n"), 'A' + r);
+    text += t;
     for (int z = 0; z < GUARD_ZONES; z++) {
       text << _("Zone");
-      t.Printf(wxT(" %d: %d\n"), z + 1, bogey_count[z]);
-      //        wxLogMessage(wxT("BR24radar_pi: XXset bogeycount z=%d, bogey_count[z]= %d"),z,
-      //        bogey_count[z]);
+      t.Printf(wxT(" %d: %d\n"), z + 1, m_pi->m_radar[r]->guard_zone[z]->m_bogey_count);
       text += t;
     }
     t.Printf(_("\n"));
     text += t;
   }
-  if (m_pi->data_seenAB[1] == RADAR_ON) {
-    t.Printf(_("Radar B:\n"));
-    text << t;
-    for (int z = 0; z < GUARD_ZONES; z++) {
-      text << _("Zone");
-      t.Printf(wxT(" %d: %d\n"), z + 1, bogey_count[z + 2]);
-      text += t;
-    }
-  }
-#endif
 
   if (next_alarm >= 0) {
     t.Printf(_("Next alarm in %d s"), next_alarm);
     text += t;
   }
-  /*    else{
-          t.Printf(_("\n"));
-          text += t;
-      }*/
   if (previous_text != text) {
     pBogeyCountText->SetLabel(text);
   }

@@ -542,6 +542,72 @@ void br24radar_pi::PassHeadingToOpenCPN() {
   PushNMEABuffer(nmea);
 }
 
+/**
+ * Check any guard zones
+ *
+ */
+void br24radar_pi::CheckGuardZoneBogeys(void) {
+  SpokeBearing current_hdt = SCALE_DEGREES_TO_RAW2048(m_hdt);
+  bool bogeys_found = false;
+  int bogey_count = 0;
+  time_t now = time(0);
+
+  for (size_t r = 0; r < RADARS; r++) {
+    if (m_radar[r]->state.value == RADAR_TRANSMIT) {
+      for (size_t z = 0; z < GUARD_ZONES; z++) {
+        int bogeys = m_radar[r]->guard_zone[z]->GetBogeyCount(current_hdt);
+        bogey_count += bogeys;
+        if (bogeys > m_settings.guard_zone_threshold) {
+          bogeys_found = true;
+        }
+      }
+    }
+  }
+
+  if (m_settings.verbose >= 2) {
+    wxLogMessage(wxT("BR24radar_pi: handle bogeys found %d count %d"), bogeys_found, bogey_count);
+  }
+
+  if (bogeys_found) {
+    // We have bogeys and there is no objection to showing the dialog
+    // if (m_settings.timed_idle != 0) m_radar[radar]->control_dialog->SetTimedIdleIndex(0);  // Disable Timed Idle if set
+
+    if (!m_pGuardZoneBogey) {
+      // If this is the first time we have a bogey create & show the dialog
+      // immediately
+      m_pGuardZoneBogey = new GuardZoneBogey;
+      m_pGuardZoneBogey->Create(m_parent_window, this);
+      m_pGuardZoneBogey->Show();
+      m_pGuardZoneBogey->SetPosition(m_dialogLocation[DL_BOGEY].pos);
+    } else if (!m_guard_bogey_confirmed) {
+      m_pGuardZoneBogey->Show();
+    }
+    if (!m_guard_bogey_confirmed && TIMER_ELAPSED(now, m_alarm_sound_last)) {
+      // If the last time is 10 seconds ago we ping a sound, unless the user
+      // confirmed
+      m_alarm_sound_last = now;
+
+      if (!m_settings.alert_audio_file.IsEmpty()) {
+        PlugInPlaySound(m_settings.alert_audio_file);
+      } else {
+        wxBell();
+      }
+      if (m_pGuardZoneBogey) {
+        m_pGuardZoneBogey->Show();
+      }
+    }
+    if (m_pGuardZoneBogey) {
+      m_pGuardZoneBogey->SetBogeyCount(bogey_count, m_guard_bogey_confirmed ? -1 : m_alarm_sound_last + WATCHDOG_TIMEOUT - now);
+    }
+  }
+
+  if (!bogeys_found && m_pGuardZoneBogey) {
+    m_pGuardZoneBogey->SetBogeyCount(bogey_count, -1);  // with -1 "next alarm in... "will not be displayed
+    m_guard_bogey_confirmed = false;                    // Reset for next time we see bogeys
+                                                        // keep showing the bogey dialogue with 0 bogeys
+  }
+}
+
 // DoTick
 // ------
 // Called on every RenderGLOverlay call, i.e. once a second.
@@ -651,6 +717,8 @@ void br24radar_pi::DoTick(void) {
 
   if (!any_data_seen) {  // Something coming from radar unit?
     m_heading_on_radar = false;
+  } else {
+    CheckGuardZoneBogeys();
   }
 
   if (m_settings.pass_heading_to_opencpn && m_heading_on_radar) {
@@ -902,130 +970,6 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
     ri->RenderRadarImage(radar_center, scale_factor, rotation, true);
   }
 }
-
-#ifdef TODO
-// scan image for bogeys
-void br24radar_pi::ScanGuardZones(int max_range, int AB) {
-  int begin_arc, end_arc = 0;
-  for (size_t z = 0; z < GUARD_ZONES; z++) {
-    switch (m_radar[AB]->guard_zone[z]->type) {
-      case GZ_CIRCLE:
-        begin_arc = 0;
-        end_arc = LINES_PER_ROTATION;
-        break;
-      case GZ_ARC:
-        begin_arc = m_radar[AB]->guard_zone[z]->start_bearing;
-        end_arc = m_radar[AB]->guard_zone[z]->end_bearing;
-        if (true /*!blackout[AB]*/) {
-          begin_arc += m_hdt;  // arc still in degrees!
-          end_arc += m_hdt;
-        }
-        begin_arc = SCALE_DEGREES_TO_RAW2048(begin_arc);  // m_hdt added to
-                                                          // provide guard zone
-                                                          // relative to heading
-        end_arc = SCALE_DEGREES_TO_RAW2048(end_arc);      // now arc in lines
-
-        begin_arc = MOD_ROTATION2048(begin_arc);
-        end_arc = MOD_ROTATION2048(end_arc);
-        break;
-      case GZ_OFF:
-      default:
-        begin_arc = 0;
-        end_arc = 0;
-        break;
-    }
-
-    if (begin_arc > end_arc) {
-      end_arc += LINES_PER_ROTATION;  // now end_arc may be larger than
-                                      // LINES_PER_ROTATION!
-    }
-    for (int angle = begin_arc; angle < end_arc; angle++) {
-      unsigned int angle1 = MOD_ROTATION2048(angle);
-      scan_line *scan = &m_scan_line[AB][angle1];
-      if (!scan) return;  // No or old data
-      for (int radius = 0; radius <= RETURNS_PER_LINE - 2; ++radius) {
-        // - 2 added, -1 contains the range circle, should not raise alarm
-        //           if (guard_zone[z][angle]) {
-        int inner_range = m_radar[AB]->guard_zone[z]->inner_range;  // now in meters
-        int outer_range = m_radar[AB]->guard_zone[z]->outer_range;  // now in meters
-        int bogey_range = radius * max_range / RETURNS_PER_LINE;
-        if (bogey_range > inner_range && bogey_range < outer_range) {  // within range, now check requirement for alarm
-          if ((m_settings.multi_sweep_filter[AB][z]) != 0) {           // multi sweep filter on for this z
-            GLubyte hist = scan->history[radius] & 7;                  // check only last 3 bits
-            if (!(hist == 3 || hist >= 5)) {                           // corresponds to the patterns 011, 101, 110, 111
-              continue;                                                // multi sweep filter on, no valid bogeys
-            }                                                          // so go to next radius
-          } else {                                                     // multi sweep filter off
-            GLubyte strength = scan->data[radius];
-            if (strength <= displaysetting_threshold[m_settings.display_option]) continue;
-          }
-          int index = z + 2 * AB;
-          m_bogey_count[index]++;
-        }
-      }
-    }
-  }
-}
-#endif
-
-#ifdef TODO
-
-void br24radar_pi::HandleBogeyCount(int *bogey_count) {
-  bool bogeysFound;
-
-  for (int z = 0; z < 2 * GUARD_ZONES; z++) {
-    if (bogey_count[z] > m_settings.guard_zone_threshold) {
-      bogeysFound = true;
-      break;
-    }
-  }
-  if (m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: handle bogeycount bogeysFound %d"), bogeysFound);
-  }
-
-  if (bogeysFound) {
-    // We have bogeys and there is no objection to showing the dialog
-    if (m_settings.timed_idle != 0) m_radar[radar]->control_dialog->SetTimedIdleIndex(0);  // Disable Timed Idle if set
-
-    if (!m_pGuardZoneBogey && m_settings.show_radar == RADAR_ON) {
-      // If this is the first time we have a bogey create & show the dialog
-      // immediately
-      m_pGuardZoneBogey = new GuardZoneBogey;
-      m_pGuardZoneBogey->Create(m_parent_window, this);
-      m_pGuardZoneBogey->Show();
-      m_pGuardZoneBogey->SetPosition(m_dialogLocation[DL_BOGEY].pos);
-    } else if (!m_guard_bogey_confirmed && (m_settings.show_radar == RADAR_ON)) {
-      m_pGuardZoneBogey->Show();
-    }
-    time_t now = time(0);
-    int delta_t = now - m_alarm_sound_last;
-    if (!m_guard_bogey_confirmed && delta_t >= ALARM_TIMEOUT && bogeysFound) {
-      // If the last time is 10 seconds ago we ping a sound, unless the user
-      // confirmed
-      m_alarm_sound_last = now;
-
-      if (!m_settings.alert_audio_file.IsEmpty()) {
-        PlugInPlaySound(m_settings.alert_audio_file);
-      } else {
-        wxBell();
-      }
-      if (m_pGuardZoneBogey && m_settings.show_radar == RADAR_ON) {
-        m_pGuardZoneBogey->Show();
-      }
-      delta_t = ALARM_TIMEOUT;
-    }
-    if (m_pGuardZoneBogey) {
-      m_pGuardZoneBogey->SetBogeyCount(bogey_count, m_guard_bogey_confirmed ? -1 : ALARM_TIMEOUT - delta_t);
-    }
-  }
-
-  if (!bogeysFound && m_pGuardZoneBogey) {
-    m_pGuardZoneBogey->SetBogeyCount(bogey_count, -1);  // with -1 "next alarm in... "will not be displayed
-    m_guard_bogey_confirmed = false;                    // Reset for next time we see bogeys
-    // keep showing the bogey dialogue with 0 bogeys
-  }
-}
-#endif
 
 //****************************************************************************
 
@@ -1475,40 +1419,5 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
     }
   }
 }
-
-#if TODO
-/* TODO - GuardZone handling */
-if ((m_settings.show_radar == RADAR_ON && m_bpos_set && m_heading_source != HEADING_NONE && m_data_seen) ||
-    (m_settings.emulator_on && m_settings.show_radar == RADAR_ON)) {
-  if (m_range_meters[m_settings.selectRadarB] > 0 && m_scanner_state == RADAR_ON) {
-    // Guard Section
-    for (int i = 0; i < 4; i++) {
-      m_bogey_count[i] = 0;
-    }
-    static int metersA, metersB;
-    if (m_settings.selectRadarB == 0) metersA = meters;
-    if (m_settings.selectRadarB == 1) metersB = meters;
-    if (m_settings.show_radar == RADAR_ON && metersA != 0) {
-      ScanGuardZones(metersA, 0);
-    }
-    if (m_settings.show_radar == RADAR_ON && metersB != 0) {
-      ScanGuardZones(metersB, 1);
-    }
-    m_draw->RenderRadarImage(radar_center, scale_factor, 0.0, true);
-  }
-  HandleBogeyCount(m_bogey_count);
-}
-#endif
-
-#ifdef TODO
-/* TODO -- INTEGRATE GUARD ZONE RENDERING INTO PrepareRadarImage */
-// Guard Zone image and heading line for radar only
-if (m_settings.show_radar == RADAR_ON) {
-  if (m_radar[m_settings.selectRadarB]->guard_zone[0]->type != GZ_OFF ||
-      m_radar[m_settings.selectRadarB]->guard_zone[1]->type != GZ_OFF) {
-    RenderGuardZone(radar_center, v_scale_ppm, m_settings.selectRadarB);
-  }
-}
-#endif
 
 PLUGIN_END_NAMESPACE
