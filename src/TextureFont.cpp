@@ -275,6 +275,7 @@ void TextureFont::RenderString(const wxString &string, int x, int y) {
 
   glPushAttrib(GL_TEXTURE_BIT);
   glBindTexture(GL_TEXTURE_2D, texobj);
+  glPushMatrix();
 
   for (unsigned int i = 0; i < string.size(); i++) {
     wchar_t x = string[i];
@@ -288,6 +289,7 @@ void TextureFont::RenderString(const wxString &string, int x, int y) {
     RenderGlyph(x);
   }
 
+  glPopMatrix();
   glPopAttrib();
   glPopMatrix();
 }
