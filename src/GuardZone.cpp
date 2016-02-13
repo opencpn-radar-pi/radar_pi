@@ -36,6 +36,7 @@ void GuardZone::ResetBogeys() {
   for (size_t r = 0; r < ARRAY_SIZE(bogeyCount); r++) {
     bogeyCount[r] = 0;
   }
+  m_bogey_count = -1;
 }
 
 void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_t len, int range) {
@@ -77,16 +78,15 @@ int GuardZone::GetBogeyCount(SpokeBearing current_hdt) {
     case GZ_ARC:
       begin_arc = MOD_ROTATION2048(start_bearing + current_hdt);
       end_arc = MOD_ROTATION2048(end_bearing + current_hdt);
+      if (begin_arc > end_arc) {
+        end_arc += LINES_PER_ROTATION;  // now end_arc may be larger than LINES_PER_ROTATION!
+      }
       break;
     case GZ_OFF:
     default:
-      begin_arc = 0;
-      end_arc = 0;
-      break;
-  }
-
-  if (begin_arc > end_arc) {
-    end_arc += LINES_PER_ROTATION;  // now end_arc may be larger than LINES_PER_ROTATION!
+      bogeys = -1;
+      m_bogey_count = bogeys;
+      return bogeys;
   }
 
   for (arc = begin_arc; arc < end_arc; arc++) {

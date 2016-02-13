@@ -83,6 +83,21 @@ void RadarCanvas::OnMove(wxMoveEvent &evt) {
   }
 }
 
+void RadarCanvas::RenderTexts() {
+  int x, y, w, h;
+
+  GetClientSize(&w, &h);
+
+  wxString s;
+
+  s = m_ri->GetCanvasTextTopLeft();
+  m_FontBig.RenderString(s, 0, 0);
+
+  s = m_ri->GetCanvasTextBottomLeft();
+  m_FontBig.GetTextExtent(s, &x, &y);
+  m_FontBig.RenderString(s, 0, h - y);
+}
+
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
   int sq;  // square size, minimum of w, h.
@@ -150,8 +165,8 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glColor3ub(200, 255, 200);
   glEnable(GL_TEXTURE_2D);
 
-  wxString s = m_ri->GetCanvasText();
-  m_FontBig.RenderString(s, 0, 0);
+  RenderTexts();
+
   glDisable(GL_TEXTURE_2D);
 
   glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack

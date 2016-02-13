@@ -440,7 +440,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, 
   }
 }
 
-wxString RadarInfo::GetCanvasText() {
+wxString RadarInfo::GetCanvasTextTopLeft() {
   wxString s;
 
   if (state.value == RADAR_OFF) {
@@ -468,6 +468,10 @@ wxString RadarInfo::GetCanvasText() {
   }
 
   return s;
+}
+
+wxString RadarInfo::GetCanvasTextBottomLeft() {
+  return m_pi->GetGuardZoneText(this, false);
 }
 
 PLUGIN_END_NAMESPACE

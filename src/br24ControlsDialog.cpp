@@ -75,6 +75,8 @@ enum {  // process ID's
   ID_ZONE1,
   ID_ZONE2,
 
+  ID_CONFIRM_BOGEY,
+
   ID_MESSAGE,
   ID_BPOS,
   ID_HEADING,
@@ -128,6 +130,8 @@ EVT_BUTTON(ID_ADVANCED, br24ControlsDialog::OnAdvancedButtonClick)
 EVT_BUTTON(ID_ZONE1, br24ControlsDialog::OnZone1ButtonClick)
 EVT_BUTTON(ID_ZONE2, br24ControlsDialog::OnZone2ButtonClick)
 EVT_BUTTON(ID_MESSAGE, br24ControlsDialog::OnMessageButtonClick)
+
+EVT_BUTTON(ID_CONFIRM_BOGEY, br24ControlsDialog::OnConfirmBogeyButtonClick)
 
 EVT_MOVE(br24ControlsDialog::OnMove)
 EVT_SIZE(br24ControlsDialog::OnSize)
@@ -728,6 +732,19 @@ void br24ControlsDialog::CreateControls() {
 
   m_top_sizer->Hide(m_installation_sizer);
 
+  //***************** GUARD ZONE BOX *************//
+  m_bogey_sizer = new wxBoxSizer(wxVERTICAL);
+  m_top_sizer->Add(m_bogey_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
+  m_bogey_text =
+      new wxStaticText(this, wxID_ANY, _("Zone 1: unknown\nZone 2: unknown\nTimeout\n"), wxDefaultPosition, wxDefaultSize, 0);
+  m_bogey_sizer->Add(m_bogey_text, 0, wxALIGN_LEFT | wxALL, BORDER);
+
+  m_bogey_confirm = new wxButton(this, ID_CONFIRM_BOGEY, _("&Confirm"), wxDefaultPosition, wxDefaultSize, 0);
+  m_bogey_sizer->Add(m_bogey_confirm, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+
+  m_top_sizer->Hide(m_bogey_sizer);
+
   //**************** CONTROL BOX ******************//
   // These are the controls that the users sees when the dialog is started
 
@@ -1021,6 +1038,14 @@ void br24ControlsDialog::OnRotationButtonClick(wxCommandEvent& event) {
   UpdateControlValues(false);  // update control values on the buttons
 }
 
+void br24ControlsDialog::OnConfirmBogeyButtonClick(wxCommandEvent& event) {
+  m_pi->ConfirmGuardZoneBogeys();
+  m_top_sizer->Hide(m_bogey_sizer);
+  m_top_sizer->Show(m_control_sizer);
+  m_control_sizer->Layout();
+  UpdateDialogShown();
+}
+
 void br24ControlsDialog::OnMove(wxMoveEvent& event) { event.Skip(); }
 
 void br24ControlsDialog::OnSize(wxSizeEvent& event) { event.Skip(); }
@@ -1212,16 +1237,17 @@ void br24ControlsDialog::UpdateDialogShown() {
     }
   }
 
-  if (!IsShown()) {
+  // if (!IsShown())
+  {
     if (m_pi->m_settings.verbose) {
       wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown manually opened"), m_ri->name.c_str());
     }
     if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_edit_sizer) &&
-        !m_top_sizer->IsShown(m_installation_sizer)) {
+        !m_top_sizer->IsShown(m_installation_sizer) && !m_top_sizer->IsShown(m_bogey_sizer)) {
       m_top_sizer->Show(m_control_sizer);
+      Fit();
     }
     m_control_sizer->Layout();
-    Fit();
     m_top_sizer->Layout();
     Show();
 
@@ -1266,6 +1292,22 @@ void br24ControlsDialog::ShowDialog() {
     }
   }
   UnHideTemporarily();
+}
+
+void br24ControlsDialog::ShowBogeys(wxString text) {
+  if (m_top_sizer->IsShown(m_control_sizer)) {
+    m_top_sizer->Hide(m_control_sizer);
+    m_top_sizer->Show(m_bogey_sizer);
+    if (!m_hide) {
+      UnHideTemporarily();
+    } else {
+      ShowDialog();
+    }
+  }
+  if (m_top_sizer->IsShown(m_bogey_sizer)) {
+    m_bogey_text->SetLabel(text);
+    m_bogey_sizer->Layout();
+  }
 }
 
 void br24ControlsDialog::HideDialog() {

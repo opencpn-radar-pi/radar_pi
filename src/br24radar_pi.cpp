@@ -159,7 +159,6 @@ int br24radar_pi::Init(void) {
   m_hdt_watchdog = 0;
   m_var_watchdog = 0;
   m_idle_watchdog = 0;
-  memset(m_bogey_count, 0, sizeof(m_bogey_count));  // set bogey count 0
   memset(m_dialogLocation, 0, sizeof(m_dialogLocation));
 
   m_radar[0] = new RadarInfo(this, _("Radar"), 0);
@@ -172,7 +171,6 @@ int br24radar_pi::Init(void) {
   m_heading_source = HEADING_NONE;
   m_pOptionsDialog = 0;
   m_pGuardZoneDialog = 0;
-  m_pGuardZoneBogey = 0;
   m_pIdleDialog = 0;
 
   m_settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
@@ -282,10 +280,6 @@ bool br24radar_pi::DeInit(void) {
   SaveConfig();
 
   // Delete all 'new'ed objects
-  if (m_pGuardZoneBogey) {
-    delete m_pGuardZoneBogey;
-    m_pGuardZoneBogey = 0;
-  }
   for (int r = 0; r < RADARS; r++) {
     if (m_radar[r]) {
       delete m_radar[r];
@@ -433,16 +427,8 @@ void br24radar_pi::OnGuardZoneDialogClose(RadarInfo *ri) {
   }
 }
 
-void br24radar_pi::OnGuardZoneBogeyConfirm() {
+void br24radar_pi::ConfirmGuardZoneBogeys() {
   m_guard_bogey_confirmed = true;  // This will stop the sound being repeated
-}
-
-void br24radar_pi::OnGuardZoneBogeyClose() {
-  m_guard_bogey_confirmed = true;  // This will stop the sound being repeated
-  if (m_pGuardZoneBogey) {
-    m_dialogLocation[DL_BOGEY].pos = m_pGuardZoneBogey->GetPosition();
-    m_pGuardZoneBogey->Hide();
-  }
 }
 
 void br24radar_pi::ShowGuardZoneDialog(int radar, int zone) {
@@ -542,6 +528,30 @@ void br24radar_pi::PassHeadingToOpenCPN() {
   PushNMEABuffer(nmea);
 }
 
+wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
+  wxString text;
+
+  for (int z = 0; z < GUARD_ZONES; z++) {
+    int bogeys = ri->guard_zone[z]->m_bogey_count;
+    if (bogeys >= 0) {
+      if (text.length() > 0) {
+        text << wxT("\n");
+      }
+      text << _("Zone") << wxT(" ") << z + 1 << wxT(": ") << ri->guard_zone[z]->m_bogey_count;
+    }
+  }
+  if (withTimeout) {
+    time_t now = time(0);
+
+    if (m_alarm_sound_last > 0) {
+      text << wxT("\n");
+      text << wxString::Format(_("Next alarm in %d s"), m_alarm_sound_last + WATCHDOG_TIMEOUT - now);
+    }
+  }
+
+  return text;
+}
+
 /**
  * Check any guard zones
  *
@@ -549,39 +559,27 @@ void br24radar_pi::PassHeadingToOpenCPN() {
 void br24radar_pi::CheckGuardZoneBogeys(void) {
   SpokeBearing current_hdt = SCALE_DEGREES_TO_RAW2048(m_hdt);
   bool bogeys_found = false;
-  int bogey_count = 0;
   time_t now = time(0);
 
   for (size_t r = 0; r < RADARS; r++) {
+    bool bogeys_found_this_radar = false;
     if (m_radar[r]->state.value == RADAR_TRANSMIT) {
       for (size_t z = 0; z < GUARD_ZONES; z++) {
         int bogeys = m_radar[r]->guard_zone[z]->GetBogeyCount(current_hdt);
-        bogey_count += bogeys;
         if (bogeys > m_settings.guard_zone_threshold) {
           bogeys_found = true;
+          bogeys_found_this_radar = true;
         }
+      }
+      if (bogeys_found_this_radar && !m_guard_bogey_confirmed) {
+        m_radar[r]->control_dialog->ShowBogeys(GetGuardZoneText(m_radar[r], true));
       }
     }
   }
 
-  if (m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: handle bogeys found %d count %d"), bogeys_found, bogey_count);
-  }
-
   if (bogeys_found) {
     // We have bogeys and there is no objection to showing the dialog
-    // if (m_settings.timed_idle != 0) m_radar[radar]->control_dialog->SetTimedIdleIndex(0);  // Disable Timed Idle if set
 
-    if (!m_pGuardZoneBogey) {
-      // If this is the first time we have a bogey create & show the dialog
-      // immediately
-      m_pGuardZoneBogey = new GuardZoneBogey;
-      m_pGuardZoneBogey->Create(m_parent_window, this);
-      m_pGuardZoneBogey->Show();
-      m_pGuardZoneBogey->SetPosition(m_dialogLocation[DL_BOGEY].pos);
-    } else if (!m_guard_bogey_confirmed) {
-      m_pGuardZoneBogey->Show();
-    }
     if (!m_guard_bogey_confirmed && TIMER_ELAPSED(now, m_alarm_sound_last)) {
       // If the last time is 10 seconds ago we ping a sound, unless the user
       // confirmed
@@ -592,19 +590,9 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
       } else {
         wxBell();
       }
-      if (m_pGuardZoneBogey) {
-        m_pGuardZoneBogey->Show();
-      }
     }
-    if (m_pGuardZoneBogey) {
-      m_pGuardZoneBogey->SetBogeyCount(bogey_count, m_guard_bogey_confirmed ? -1 : m_alarm_sound_last + WATCHDOG_TIMEOUT - now);
-    }
-  }
-
-  if (!bogeys_found && m_pGuardZoneBogey) {
-    m_pGuardZoneBogey->SetBogeyCount(bogey_count, -1);  // with -1 "next alarm in... "will not be displayed
-    m_guard_bogey_confirmed = false;                    // Reset for next time we see bogeys
-                                                        // keep showing the bogey dialogue with 0 bogeys
+  } else {
+    m_guard_bogey_confirmed = false;  // Reset for next time we see bogeys
   }
 }
 

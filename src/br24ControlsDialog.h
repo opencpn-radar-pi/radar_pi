@@ -65,6 +65,7 @@ class br24ControlsDialog : public wxDialog {
   void UpdateDialogShown();
   void UpdateControlValues(bool refreshAll);
   void SetErrorMessage(wxString &msg);
+  void ShowBogeys(wxString text);
 
   void HideTemporarily();  // When a second dialog (which is not a child class) takes over -- aka GuardZone
   void UnHideTemporarily();
@@ -108,6 +109,8 @@ class br24ControlsDialog : public wxDialog {
   void OnZone1ButtonClick(wxCommandEvent &event);
   void OnZone2ButtonClick(wxCommandEvent &event);
 
+  void OnConfirmBogeyButtonClick(wxCommandEvent &event);
+
   void EnterEditMode(br24RadarControlButton *button);
 
   void OnMouseLeftDown(wxMouseEvent &event);
@@ -118,6 +121,7 @@ class br24ControlsDialog : public wxDialog {
   wxBoxSizer *m_advanced_sizer;
   wxBoxSizer *m_edit_sizer;
   wxBoxSizer *m_installation_sizer;
+  wxBoxSizer *m_bogey_sizer;
   wxBoxSizer *m_from_sizer;  // If on edit control, this is where the button is from
 
   bool m_hide;
@@ -165,6 +169,11 @@ class br24ControlsDialog : public wxDialog {
   br24RadarControlButton *m_rain_button;
   wxButton *m_guard_1_button;
   wxButton *m_guard_2_button;
+
+  // Guard Zone Bogey Display
+
+  wxStaticText *m_bogey_text;
+  wxButton *m_bogey_confirm;
 };
 
 PLUGIN_END_NAMESPACE

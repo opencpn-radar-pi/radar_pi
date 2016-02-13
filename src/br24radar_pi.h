@@ -44,7 +44,6 @@ PLUGIN_BEGIN_NAMESPACE
 
 //    Forward definitions
 class GuardZone;
-class GuardZoneBogey;
 class GuardZoneDialog;
 class IdleDialog;
 class RadarInfo;
@@ -284,8 +283,7 @@ class br24radar_pi : public opencpn_plugin_110 {
   void ShowRadarControl(int radar, bool show = true);
   void ShowGuardZoneDialog(int radar, int zone);
   void OnGuardZoneDialogClose(RadarInfo *ri);
-  void OnGuardZoneBogeyClose();
-  void OnGuardZoneBogeyConfirm();
+  void ConfirmGuardZoneBogeys();
 
   void SetControlValue(int radar, ControlType controlType, int value);
   void ComputeColorMap();
@@ -297,6 +295,7 @@ class br24radar_pi : public opencpn_plugin_110 {
   long GetOptimalRangeMeters();
 
   void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, int AB);
+  wxString GetGuardZoneText(RadarInfo *ri, bool withTimeout);
 
   wxFont m_font;      // The dialog font at a normal size
   wxFont m_fat_font;  // The dialog font at a bigger size, bold
@@ -311,7 +310,6 @@ class br24radar_pi : public opencpn_plugin_110 {
   br24OptionsDialog *m_pOptionsDialog;
   br24MessageBox *m_pMessageBox;
   GuardZoneDialog *m_pGuardZoneDialog;
-  GuardZoneBogey *m_pGuardZoneBogey;
   IdleDialog *m_pIdleDialog;
 
   wxGLContext *m_opencpn_gl_context;
@@ -385,8 +383,6 @@ class br24radar_pi : public opencpn_plugin_110 {
 
   double llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
 
-  int m_bogey_count[4];
-
   ToolbarIconColor m_toolbar_button;
   double m_ownship_lat, m_ownship_lon;
 
@@ -421,7 +417,6 @@ PLUGIN_END_NAMESPACE
 #include "br24Transmit.h"
 #include "GuardZone.h"
 #include "GuardZoneDialog.h"
-#include "GuardZoneBogey.h"
 #include "IdleDialog.h"
 #include "RadarInfo.h"
 

@@ -62,7 +62,8 @@ class RadarCanvas : public wxGLCanvas {
 #endif
 
  private:
-  void RenderText(wxPoint p, wxString text);
+  // void RenderText(wxPoint p, wxString text);
+  void RenderTexts();
 
   wxWindow* m_parent;
   br24radar_pi* m_pi;

@@ -136,7 +136,8 @@ class RadarInfo : public wxEvtHandler {
   void ShowRadarWindow(bool show);
   void UpdateControlState(bool all);
 
-  wxString GetCanvasText();  // For now, top left text. Want Bottom Left, Top Right, etc?
+  wxString GetCanvasTextTopLeft();
+  wxString GetCanvasTextBottomLeft();
 
  private:
   void RenderRadarImage(wxPoint center, double scale, DrawInfo *di);
