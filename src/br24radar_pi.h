@@ -44,7 +44,6 @@ PLUGIN_BEGIN_NAMESPACE
 
 //    Forward definitions
 class GuardZone;
-class GuardZoneDialog;
 class IdleDialog;
 class RadarInfo;
 
@@ -309,7 +308,6 @@ class br24radar_pi : public opencpn_plugin_110 {
 
   br24OptionsDialog *m_pOptionsDialog;
   br24MessageBox *m_pMessageBox;
-  GuardZoneDialog *m_pGuardZoneDialog;
   IdleDialog *m_pIdleDialog;
 
   wxGLContext *m_opencpn_gl_context;
@@ -416,7 +414,6 @@ PLUGIN_END_NAMESPACE
 #include "br24MessageBox.h"
 #include "br24Transmit.h"
 #include "GuardZone.h"
-#include "GuardZoneDialog.h"
 #include "IdleDialog.h"
 #include "RadarInfo.h"
 

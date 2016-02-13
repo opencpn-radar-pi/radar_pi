@@ -91,13 +91,10 @@ class br24ControlsDialog : public wxDialog {
   void OnAutoClick(wxCommandEvent &event);
   void OnMultiSweepClick(wxCommandEvent &event);
 
-  void OnAdvancedBackButtonClick(wxCommandEvent &event);
-  void OnInstallationBackButtonClick(wxCommandEvent &event);
   void OnAdvancedButtonClick(wxCommandEvent &event);
   void OnInstallationButtonClick(wxCommandEvent &event);
 
   void OnRadarGainButtonClick(wxCommandEvent &event);
-  void OnRadarABButtonClick(wxCommandEvent &event);
 
   void OnRadarStateButtonClick(wxCommandEvent &event);
   void OnRotationButtonClick(wxCommandEvent &event);
@@ -116,12 +113,16 @@ class br24ControlsDialog : public wxDialog {
   void OnMouseLeftDown(wxMouseEvent &event);
   void BindLeftDown(wxWindow *component);
 
+  void SwitchTo(wxBoxSizer *to);
+  void UpdateAdvanced4GState();
+
   wxWindow *m_parent;
   wxBoxSizer *m_advanced_4G_sizer;
   wxBoxSizer *m_advanced_sizer;
   wxBoxSizer *m_edit_sizer;
   wxBoxSizer *m_installation_sizer;
   wxBoxSizer *m_bogey_sizer;
+  wxBoxSizer *m_guard_sizer;
   wxBoxSizer *m_from_sizer;  // If on edit control, this is where the button is from
 
   bool m_hide;
@@ -174,6 +175,27 @@ class br24ControlsDialog : public wxDialog {
 
   wxStaticText *m_bogey_text;
   wxButton *m_bogey_confirm;
+
+  // Guard Zone Edit
+
+  GuardZone *m_guard_zone;
+
+  wxStaticText *m_guard_zone_text;
+  wxRadioBox *m_guard_zone_type;
+  wxTextCtrl *m_outer_range;
+  wxTextCtrl *m_inner_range;
+  wxTextCtrl *m_start_bearing;
+  wxTextCtrl *m_end_bearing;
+  wxCheckBox *m_filter;
+
+  void ShowGuardZone(int zone);
+  void SetGuardZoneVisibility();
+  void OnGuardZoneModeClick(wxCommandEvent &event);
+  void OnInner_Range_Value(wxCommandEvent &event);
+  void OnOuter_Range_Value(wxCommandEvent &event);
+  void OnStart_Bearing_Value(wxCommandEvent &event);
+  void OnEnd_Bearing_Value(wxCommandEvent &event);
+  void OnFilterClick(wxCommandEvent &event);
 };
 
 PLUGIN_END_NAMESPACE

@@ -170,7 +170,6 @@ int br24radar_pi::Init(void) {
 
   m_heading_source = HEADING_NONE;
   m_pOptionsDialog = 0;
-  m_pGuardZoneDialog = 0;
   m_pIdleDialog = 0;
 
   m_settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
@@ -271,9 +270,6 @@ bool br24radar_pi::DeInit(void) {
   for (int r = 0; r < RADARS; r++) {
     OnControlDialogClose(m_radar[r]);
     m_radar[r]->ShowRadarWindow(false);
-  }
-  if (m_pGuardZoneDialog) {
-    m_pGuardZoneDialog->Close();
   }
 
   // Save our config
@@ -415,37 +411,8 @@ void br24radar_pi::OnMessageBoxClose() {
   }
 }
 
-void br24radar_pi::OnGuardZoneDialogClose(RadarInfo *ri) {
-  if (m_pGuardZoneDialog) {
-    m_pGuardZoneDialog->Hide();
-    m_guard_bogey_confirmed = false;
-    SaveConfig();  // Extra so that if O crashes we don't lose the config
-  }
-  if (ri->control_dialog) {
-    ri->control_dialog->UpdateGuardZoneState();
-    ri->control_dialog->UnHideTemporarily();
-  }
-}
-
 void br24radar_pi::ConfirmGuardZoneBogeys() {
   m_guard_bogey_confirmed = true;  // This will stop the sound being repeated
-}
-
-void br24radar_pi::ShowGuardZoneDialog(int radar, int zone) {
-  if (!m_pGuardZoneDialog) {
-    m_pGuardZoneDialog = new GuardZoneDialog;
-    m_pGuardZoneDialog->Create(m_parent_window, this, wxID_ANY, _(" Guard Zone Control"), m_dialogLocation[DL_CONTROL].pos);
-  }
-  if (zone >= 0) {
-    m_dialogLocation[DL_CONTROL + radar].pos = m_radar[radar]->control_dialog->GetPosition();
-    m_radar[radar]->control_dialog->HideTemporarily();
-    m_pGuardZoneDialog->Show();
-    m_pGuardZoneDialog->SetPosition(m_dialogLocation[DL_CONTROL + radar].pos);
-    m_pGuardZoneDialog->OnGuardZoneDialogShow(m_radar[radar], zone);
-  } else {
-    m_pGuardZoneDialog->Hide();
-    m_radar[radar]->control_dialog->UnHideTemporarily();
-  }
 }
 
 void br24radar_pi::ComputeColorMap() {

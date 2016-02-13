@@ -101,9 +101,6 @@ EVT_BUTTON(ID_MINUS_TEN, br24ControlsDialog::OnMinusTenClick)
 EVT_BUTTON(ID_AUTO, br24ControlsDialog::OnAutoClick)
 EVT_BUTTON(ID_MULTISWEEP, br24ControlsDialog::OnMultiSweepClick)
 
-EVT_BUTTON(ID_ADVANCED_BACK, br24ControlsDialog::OnAdvancedBackButtonClick)
-
-EVT_BUTTON(ID_INSTALLATION_BACK, br24ControlsDialog::OnInstallationBackButtonClick)
 EVT_BUTTON(ID_TRANSPARENCY, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_INTERFERENCE_REJECTION, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_TARGET_BOOST, br24ControlsDialog::OnRadarControlButtonClick)
@@ -259,6 +256,7 @@ wxString noise_rejection_names[3];
 wxString target_boost_names[3];
 wxString scan_speed_names[2];
 wxString timed_idle_times[8];
+wxString guard_zone_names[3];
 
 extern size_t convertRadarMetersToIndex(int* range_meters, int units, RadarType radarType) {
   const RadarRanges* ranges;
@@ -441,6 +439,8 @@ bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* 
 
 void br24ControlsDialog::CreateControls() {
   static int BORDER = 0;
+  wxString backButtonStr;
+  backButtonStr << wxT("<<\n") << _("Back");
 
   // A top-level sizer
   m_top_sizer = new wxBoxSizer(wxVERTICAL);
@@ -512,7 +512,7 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_edit_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The <<Back button
-  wxButton* back_button = new wxButton(this, ID_BACK, _("<<\nBack"), wxDefaultPosition, g_buttonSize, 0);
+  wxButton* back_button = new wxButton(this, ID_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
   m_edit_sizer->Add(back_button, 0, wxALL, BORDER);
   back_button->SetFont(m_pi->m_font);
 
@@ -563,9 +563,7 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_advanced_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The Back button
-  wxString backButtonStr;
-  backButtonStr << wxT("<<\n") << _("Back");
-  wxButton* bAdvancedBack = new wxButton(this, ID_ADVANCED_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
+  wxButton* bAdvancedBack = new wxButton(this, ID_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
   m_advanced_sizer->Add(bAdvancedBack, 0, wxALL, BORDER);
   bAdvancedBack->SetFont(m_pi->m_font);
 
@@ -690,9 +688,7 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_installation_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The Back button
-  wxString instBackButtonStr;
-  instBackButtonStr << wxT("<<\n") << _("Back");
-  wxButton* bInstallationBack = new wxButton(this, ID_INSTALLATION_BACK, instBackButtonStr, wxDefaultPosition, g_buttonSize, 0);
+  wxButton* bInstallationBack = new wxButton(this, ID_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
   m_installation_sizer->Add(bInstallationBack, 0, wxALL, BORDER);
   bInstallationBack->SetFont(m_pi->m_font);
 
@@ -732,7 +728,7 @@ void br24ControlsDialog::CreateControls() {
 
   m_top_sizer->Hide(m_installation_sizer);
 
-  //***************** GUARD ZONE BOX *************//
+  //***************** GUARD ZONE BOGEY BOX *************//
   m_bogey_sizer = new wxBoxSizer(wxVERTICAL);
   m_top_sizer->Add(m_bogey_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
@@ -744,6 +740,67 @@ void br24ControlsDialog::CreateControls() {
   m_bogey_sizer->Add(m_bogey_confirm, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 
   m_top_sizer->Hide(m_bogey_sizer);
+
+  //***************** GUARD ZONE EDIT BOX *************//
+
+  m_guard_sizer = new wxBoxSizer(wxVERTICAL);
+  m_top_sizer->Add(m_guard_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
+  m_guard_zone_text = new wxStaticText(this, wxID_ANY, _("Guard zones"));
+  m_guard_sizer->Add(m_guard_zone_text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
+  guard_zone_names[0] = _("Off");
+  guard_zone_names[1] = _("Arc");
+  guard_zone_names[2] = _("Circle");
+  m_guard_zone_type = new wxRadioBox(this, wxID_ANY, _("Zone type:"), wxDefaultPosition, wxDefaultSize,
+                                     ARRAY_SIZE(guard_zone_names), guard_zone_names, 1, wxRA_SPECIFY_COLS);
+  m_guard_sizer->Add(m_guard_zone_type, 0, wxALIGN_CENTER_HORIZONTAL | wxALL | wxEXPAND, BORDER);
+
+  m_guard_zone_type->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24ControlsDialog::OnGuardZoneModeClick), NULL,
+                             this);
+
+  // Inner and Outer Ranges
+  wxStaticText* inner_range_Text = new wxStaticText(this, wxID_ANY, _("Inner range"), wxDefaultPosition, wxDefaultSize, 0);
+  m_guard_sizer->Add(inner_range_Text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
+  m_inner_range = new wxTextCtrl(this, wxID_ANY);
+  m_guard_sizer->Add(m_inner_range, 1, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+  m_inner_range->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24ControlsDialog::OnInner_Range_Value), NULL, this);
+  ///   start of copy
+  wxStaticText* outer_range_Text = new wxStaticText(this, wxID_ANY, _("Outer range"), wxDefaultPosition, wxDefaultSize, 0);
+  m_guard_sizer->Add(outer_range_Text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+
+  m_outer_range = new wxTextCtrl(this, wxID_ANY);
+  m_guard_sizer->Add(m_outer_range, 1, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+  m_outer_range->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24ControlsDialog::OnOuter_Range_Value), NULL, this);
+
+  wxStaticText* pStart_Bearing = new wxStaticText(this, wxID_ANY, _("Start bearing"), wxDefaultPosition, wxDefaultSize, 0);
+  m_guard_sizer->Add(pStart_Bearing, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+
+  m_start_bearing = new wxTextCtrl(this, wxID_ANY);
+  m_guard_sizer->Add(m_start_bearing, 1, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+  m_start_bearing->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24ControlsDialog::OnStart_Bearing_Value), NULL,
+                           this);
+
+  wxStaticText* pEnd_Bearing = new wxStaticText(this, wxID_ANY, _("End bearing"), wxDefaultPosition, wxDefaultSize, 0);
+  m_guard_sizer->Add(pEnd_Bearing, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+
+  m_end_bearing = new wxTextCtrl(this, wxID_ANY);
+  m_guard_sizer->Add(m_end_bearing, 1, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+  m_end_bearing->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24ControlsDialog::OnEnd_Bearing_Value), NULL, this);
+
+  // added check box to control multi swep filtering
+  m_filter = new wxCheckBox(this, wxID_ANY, _("Sweep Filter"), wxDefaultPosition, wxDefaultSize,
+                            wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE);
+  m_guard_sizer->Add(m_filter, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+  m_filter->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnFilterClick), NULL, this);
+
+  // The <<Back button
+  wxButton* guard_back_button = new wxButton(this, ID_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
+  m_guard_sizer->Add(guard_back_button, 0, wxALL, BORDER);
+  guard_back_button->SetFont(m_pi->m_font);
+
+  m_top_sizer->Hide(m_guard_sizer);
 
   //**************** CONTROL BOX ******************//
   // These are the controls that the users sees when the dialog is started
@@ -820,15 +877,38 @@ void br24ControlsDialog::CreateControls() {
   // SetSize(size_min);
 }
 
+void br24ControlsDialog::SwitchTo(wxBoxSizer* to) {
+  m_top_sizer->Hide(m_from_sizer);
+  m_top_sizer->Show(to);
+
+  UpdateAdvanced4GState();
+  UpdateGuardZoneState();
+
+  if (to != m_edit_sizer) {
+    m_from_sizer = to;
+  }
+
+  to->Layout();
+  m_top_sizer->Layout();
+}
+
+void br24ControlsDialog::UpdateAdvanced4GState() {
+  if (m_top_sizer->IsShown(m_advanced_sizer)) {
+    if (m_ri->radar_type == RT_4G) {
+      m_advanced_sizer->Show(m_advanced_4G_sizer);
+    } else {
+      m_advanced_sizer->Hide(m_advanced_4G_sizer);
+    }
+  }
+}
+
 void br24ControlsDialog::UpdateGuardZoneState() {
   wxString label1, label2;
 
-  wxString GuardZoneNames[] = {_("Off"), _("Arc"), _("Circle")};
-
-  label1 << _("Guard zone") << wxT(" 1\n") << GuardZoneNames[m_ri->guard_zone[0]->type];
+  label1 << _("Guard zone") << wxT(" 1\n") << guard_zone_names[m_ri->guard_zone[0]->type];
   m_guard_1_button->SetLabel(label1);
 
-  label2 << _("Guard zone") << wxT(" 2\n") << GuardZoneNames[m_ri->guard_zone[1]->type];
+  label2 << _("Guard zone") << wxT(" 2\n") << guard_zone_names[m_ri->guard_zone[1]->type];
   m_guard_2_button->SetLabel(label2);
 }
 
@@ -837,19 +917,16 @@ void br24ControlsDialog::SetRemoteRangeIndex(size_t index) {
   m_range_button->SetValueInt(index);  // set and recompute the range label
 }
 
-void br24ControlsDialog::SetRangeIndex(size_t index) {
-  m_range_button->isRemote = false;
-  //    m_range_button->SetValueInt(index); // set and recompute the range label
-}
+void br24ControlsDialog::SetRangeIndex(size_t index) { m_range_button->isRemote = false; }
 
 void br24ControlsDialog::SetTimedIdleIndex(int index) {
   m_timed_idle_button->SetValue(index);  // set and recompute the Timed Idle label
   if (m_pi->m_pIdleDialog && index == 0) m_pi->m_pIdleDialog->Close();
 }
 
-void br24ControlsDialog::OnZone1ButtonClick(wxCommandEvent& event) { m_pi->ShowGuardZoneDialog(m_ri->radar, 0); }
+void br24ControlsDialog::OnZone1ButtonClick(wxCommandEvent& event) { ShowGuardZone(0); }
 
-void br24ControlsDialog::OnZone2ButtonClick(wxCommandEvent& event) { m_pi->ShowGuardZoneDialog(m_ri->radar, 1); }
+void br24ControlsDialog::OnZone2ButtonClick(wxCommandEvent& event) { ShowGuardZone(1); }
 
 void br24ControlsDialog::OnClose(wxCloseEvent& event) { m_pi->OnControlDialogClose(m_ri); }
 
@@ -870,16 +947,14 @@ void br24ControlsDialog::OnPlusClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnBackClick(wxCommandEvent& event) {
-  m_top_sizer->Hide(m_edit_sizer);
-  m_top_sizer->Show(m_from_sizer);
-  if (m_from_sizer == m_advanced_sizer) {
-    if (m_ri->radar_type == RT_4G) {
-      m_advanced_sizer->Show(m_advanced_4G_sizer);
-    } else {
-      m_advanced_sizer->Hide(m_advanced_4G_sizer);
-    }
+  if (m_top_sizer->IsShown(m_edit_sizer)) {
+    m_top_sizer->Hide(m_edit_sizer);
+    SwitchTo(m_from_sizer);
+  } else if (m_top_sizer->IsShown(m_installation_sizer)) {
+    SwitchTo(m_advanced_sizer);
+  } else {
+    SwitchTo(m_control_sizer);
   }
-  m_top_sizer->Layout();
 }
 
 void br24ControlsDialog::OnAutoClick(wxCommandEvent& event) {
@@ -913,73 +988,20 @@ void br24ControlsDialog::OnMinusTenClick(wxCommandEvent& event) {
   m_value_text->SetLabel(label);
 }
 
-void br24ControlsDialog::OnAdvancedBackButtonClick(wxCommandEvent& event) {
-  m_from_sizer = m_control_sizer;
-  m_top_sizer->Hide(m_advanced_sizer);
-  m_top_sizer->Show(m_control_sizer);
-  m_advanced_sizer->Layout();
-  Fit();
-  m_top_sizer->Layout();
-}
+void br24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event) { SwitchTo(m_advanced_sizer); }
 
-void br24ControlsDialog::OnInstallationBackButtonClick(wxCommandEvent& event) {
-  m_from_sizer = m_advanced_sizer;
-  m_top_sizer->Show(m_advanced_sizer);
-  m_top_sizer->Hide(m_installation_sizer);
-  if (m_ri->radar_type == RT_4G) {
-    m_advanced_sizer->Show(m_advanced_4G_sizer);
-  } else {
-    m_advanced_sizer->Hide(m_advanced_4G_sizer);
-  }
-  m_advanced_sizer->Layout();
-  Fit();
-  m_top_sizer->Layout();
-}
-
-void br24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event) {
-  m_from_sizer = m_advanced_sizer;
-  m_top_sizer->Show(m_advanced_sizer);
-  m_top_sizer->Hide(m_installation_sizer);
-  if (m_ri->radar_type == RT_4G) {
-    m_advanced_sizer->Show(m_advanced_4G_sizer);
-  } else {
-    m_advanced_sizer->Hide(m_advanced_4G_sizer);
-  }
-  m_advanced_sizer->Layout();
-  m_top_sizer->Hide(m_control_sizer);
-  m_control_sizer->Layout();
-  Fit();
-  m_top_sizer->Layout();
-}
-
-void br24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event) {
-  m_from_sizer = m_installation_sizer;
-  m_top_sizer->Hide(m_advanced_sizer);
-  m_top_sizer->Show(m_installation_sizer);
-  m_advanced_sizer->Layout();
-  m_top_sizer->Hide(m_control_sizer);
-  m_control_sizer->Layout();
-  Fit();
-  m_top_sizer->Layout();
-}
+void br24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event) { SwitchTo(m_installation_sizer); }
 
 void br24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event) {
-  //    m_top_sizer->Hide(m_control_sizer);
   if (m_pi->m_pMessageBox) {
     m_pi->m_pMessageBox->Show();
   }
-  //   Fit();
-  //   m_top_sizer->Layout();
 }
 
 void br24ControlsDialog::EnterEditMode(br24RadarControlButton* button) {
   m_from_control = button;  // Keep a record of which button was clicked
   m_value_text->SetLabel(button->GetLabel());
-  m_top_sizer->Hide(m_control_sizer);
-  m_top_sizer->Hide(m_advanced_sizer);
-  m_top_sizer->Hide(m_installation_sizer);
-  //    Fit();   //  solves the "partial refresh issue" for the control box
-  m_top_sizer->Show(m_edit_sizer);
+
   if (m_from_control->hasAuto) {
     m_auto_button->Show();
   } else {
@@ -997,8 +1019,7 @@ void br24ControlsDialog::EnterEditMode(br24RadarControlButton* button) {
     m_plus_ten_button->Hide();
     m_minus_ten_button->Hide();
   }
-  m_edit_sizer->Layout();
-  m_top_sizer->Layout();
+  SwitchTo(m_edit_sizer);
 }
 
 void br24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
@@ -1040,9 +1061,7 @@ void br24ControlsDialog::OnRotationButtonClick(wxCommandEvent& event) {
 
 void br24ControlsDialog::OnConfirmBogeyButtonClick(wxCommandEvent& event) {
   m_pi->ConfirmGuardZoneBogeys();
-  m_top_sizer->Hide(m_bogey_sizer);
-  m_top_sizer->Show(m_control_sizer);
-  m_control_sizer->Layout();
+  SwitchTo(m_control_sizer);
   UpdateDialogShown();
 }
 
@@ -1168,7 +1187,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_ri->local_interference_rejection.mod = false;
   }
 
-  // side lobe suppression  // same for A and B
+  // side lobe suppression
   if (m_ri->side_lobe_suppression.mod || refreshAll) {
     if (m_ri->side_lobe_suppression.button == -1) {
       m_side_lobe_suppression_button->SetLocalAuto();
@@ -1204,14 +1223,6 @@ void br24ControlsDialog::UpdateDialogShown() {
     return;
   }
 
-  if (m_pi->m_pGuardZoneDialog && m_pi->m_pGuardZoneDialog->IsShown()) {
-    if (m_pi->m_settings.verbose) {
-      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown Hidden because GuardZoneDialog is shown"),
-                   m_ri->name.c_str());
-    }
-    m_hide_temporarily = true;
-  }
-
   if (m_hide_temporarily) {
     if (IsShown()) {
       if (m_pi->m_settings.verbose) {
@@ -1237,13 +1248,13 @@ void br24ControlsDialog::UpdateDialogShown() {
     }
   }
 
-  // if (!IsShown())
-  {
+  if (!IsShown()) {
     if (m_pi->m_settings.verbose) {
       wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown manually opened"), m_ri->name.c_str());
     }
     if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_edit_sizer) &&
-        !m_top_sizer->IsShown(m_installation_sizer) && !m_top_sizer->IsShown(m_bogey_sizer)) {
+        !m_top_sizer->IsShown(m_installation_sizer) && !m_top_sizer->IsShown(m_bogey_sizer) &&
+        !m_top_sizer->IsShown(m_guard_sizer)) {
       m_top_sizer->Show(m_control_sizer);
       Fit();
     }
@@ -1296,8 +1307,7 @@ void br24ControlsDialog::ShowDialog() {
 
 void br24ControlsDialog::ShowBogeys(wxString text) {
   if (m_top_sizer->IsShown(m_control_sizer)) {
-    m_top_sizer->Hide(m_control_sizer);
-    m_top_sizer->Show(m_bogey_sizer);
+    SwitchTo(m_bogey_sizer);
     if (!m_hide) {
       UnHideTemporarily();
     } else {
@@ -1322,5 +1332,97 @@ void br24ControlsDialog::OnMouseLeftDown(wxMouseEvent& event) {
 }
 
 wxString& br24ControlsDialog::GetRangeText() { return m_range_button->GetRangeText(); }
+
+void br24ControlsDialog::ShowGuardZone(int zone) {
+  double conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
+
+  m_guard_zone = m_ri->guard_zone[zone];
+
+  wxString GuardZoneText;
+  GuardZoneText << _("Guard Zone") << wxString::Format(wxT(" %d"), zone + 1);
+  m_guard_zone_text->SetLabel(GuardZoneText);
+
+  m_guard_zone_type->SetSelection(m_guard_zone->type);
+  m_inner_range->SetValue(wxString::Format(wxT("%2.2f"), m_guard_zone->inner_range / conversionFactor));
+  m_outer_range->SetValue(wxString::Format(wxT("%2.2f"), m_guard_zone->outer_range / conversionFactor));
+
+  m_start_bearing->SetValue(wxString::Format(wxT("%3.1f"), SCALE_RAW_TO_DEGREES2048(m_guard_zone->start_bearing)));
+  m_end_bearing->SetValue(wxString::Format(wxT("%3.1f"), SCALE_RAW_TO_DEGREES2048(m_guard_zone->end_bearing)));
+  m_filter->SetValue(m_guard_zone->multi_sweep_filter ? 1 : 0);
+
+  m_top_sizer->Hide(m_control_sizer);
+  SwitchTo(m_guard_sizer);
+  SetGuardZoneVisibility();
+  UpdateDialogShown();
+}
+
+void br24ControlsDialog::SetGuardZoneVisibility() {
+  GuardZoneType zoneType = (GuardZoneType)m_guard_zone_type->GetSelection();
+
+  m_guard_zone->type = zoneType;
+
+  if (zoneType == GZ_OFF) {
+    m_start_bearing->Enable();
+    m_end_bearing->Enable();
+    m_inner_range->Enable();
+    m_outer_range->Enable();
+
+  } else if (zoneType == GZ_CIRCLE) {
+    m_start_bearing->Disable();
+    m_end_bearing->Disable();
+    m_inner_range->Enable();
+    m_outer_range->Enable();
+
+  } else {
+    m_start_bearing->Enable();
+    m_end_bearing->Enable();
+    m_inner_range->Enable();
+    m_outer_range->Enable();
+  }
+  m_guard_sizer->Layout();
+}
+
+void br24ControlsDialog::OnGuardZoneModeClick(wxCommandEvent& event) { SetGuardZoneVisibility(); }
+
+void br24ControlsDialog::OnInner_Range_Value(wxCommandEvent& event) {
+  wxString temp = m_inner_range->GetValue();
+  double t;
+  temp.ToDouble(&t);
+
+  int conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
+
+  m_guard_zone->inner_range = (int)(t * conversionFactor);
+}
+
+void br24ControlsDialog::OnOuter_Range_Value(wxCommandEvent& event) {
+  wxString temp = m_outer_range->GetValue();
+  double t;
+  temp.ToDouble(&t);
+
+  int conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
+
+  m_guard_zone->outer_range = (int)(t * conversionFactor);
+}
+
+void br24ControlsDialog::OnStart_Bearing_Value(wxCommandEvent& event) {
+  wxString temp = m_start_bearing->GetValue();
+  double t;
+
+  temp.ToDouble(&t);
+  m_guard_zone->start_bearing = SCALE_DEGREES_TO_RAW2048(t);
+}
+
+void br24ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
+  wxString temp = m_end_bearing->GetValue();
+  double t;
+
+  temp.ToDouble(&t);
+  m_guard_zone->end_bearing = SCALE_DEGREES_TO_RAW2048(t);
+}
+
+void br24ControlsDialog::OnFilterClick(wxCommandEvent& event) {
+  int filt = m_filter->GetValue();
+  m_guard_zone->multi_sweep_filter = filt;
+}
 
 PLUGIN_END_NAMESPACE

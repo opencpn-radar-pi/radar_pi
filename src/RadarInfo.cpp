@@ -385,7 +385,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, DrawInfo *di) {
   int drawing_method = m_pi->m_settings.drawing_method;
   bool colorOption = m_pi->m_settings.display_option > 0;
 
-  if (state.button != RADAR_TRANSMIT) {
+  if (state.value != RADAR_TRANSMIT) {
     if (range_meters) {
       ResetSpokes();
       range_meters = 0;
@@ -470,8 +470,6 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
   return s;
 }
 
-wxString RadarInfo::GetCanvasTextBottomLeft() {
-  return m_pi->GetGuardZoneText(this, false);
-}
+wxString RadarInfo::GetCanvasTextBottomLeft() { return m_pi->GetGuardZoneText(this, false); }
 
 PLUGIN_END_NAMESPACE

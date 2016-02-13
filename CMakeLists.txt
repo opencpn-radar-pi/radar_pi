@@ -50,10 +50,6 @@ SET(SRC_br24radar
             src/IdleDialog.cpp
             src/GuardZone.h
             src/GuardZone.cpp
-            src/GuardZoneDialog.h
-            src/GuardZoneDialog.cpp
-            src/GuardZoneBogey.h
-            src/GuardZoneBogey.cpp
             src/RadarInfo.h
             src/RadarInfo.cpp
             src/RadarCanvas.h
