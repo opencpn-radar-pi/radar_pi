@@ -747,13 +747,16 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_guard_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   m_guard_zone_text = new wxStaticText(this, wxID_ANY, _("Guard zones"));
-  m_guard_sizer->Add(m_guard_zone_text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+  m_guard_sizer->Add(m_guard_zone_text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+
+  wxStaticText* type_Text = new wxStaticText(this, wxID_ANY, _("Zone type"), wxDefaultPosition, wxDefaultSize, 0);
+  m_guard_sizer->Add(type_Text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   guard_zone_names[0] = _("Off");
   guard_zone_names[1] = _("Arc");
   guard_zone_names[2] = _("Circle");
-  m_guard_zone_type = new wxRadioBox(this, wxID_ANY, _("Zone type:"), wxDefaultPosition, wxDefaultSize,
-                                     ARRAY_SIZE(guard_zone_names), guard_zone_names, 1, wxRA_SPECIFY_COLS);
+  m_guard_zone_type = new wxRadioBox(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, ARRAY_SIZE(guard_zone_names),
+                                     guard_zone_names, 1, wxRA_SPECIFY_COLS);
   m_guard_sizer->Add(m_guard_zone_type, 0, wxALIGN_CENTER_HORIZONTAL | wxALL | wxEXPAND, BORDER);
 
   m_guard_zone_type->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24ControlsDialog::OnGuardZoneModeClick), NULL,
@@ -792,7 +795,7 @@ void br24ControlsDialog::CreateControls() {
   // added check box to control multi swep filtering
   m_filter = new wxCheckBox(this, wxID_ANY, _("Sweep Filter"), wxDefaultPosition, wxDefaultSize,
                             wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE);
-  m_guard_sizer->Add(m_filter, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+  m_guard_sizer->Add(m_filter, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
   m_filter->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnFilterClick), NULL, this);
 
   // The <<Back button
