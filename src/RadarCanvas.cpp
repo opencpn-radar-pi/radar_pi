@@ -94,8 +94,16 @@ void RadarCanvas::RenderTexts() {
   m_FontBig.RenderString(s, 0, 0);
 
   s = m_ri->GetCanvasTextBottomLeft();
-  m_FontBig.GetTextExtent(s, &x, &y);
-  m_FontBig.RenderString(s, 0, h - y);
+  if (s.length()) {
+    m_FontBig.GetTextExtent(s, &x, &y);
+    m_FontBig.RenderString(s, 0, h - y);
+  }
+
+  s = m_ri->GetCanvasTextCenter();
+  if (s.length()) {
+    m_FontBig.GetTextExtent(s, &x, &y);
+    m_FontBig.RenderString(s, (w - x) / 2, (h - y) / 2);
+  }
 }
 
 void RadarCanvas::Render(wxPaintEvent &evt) {

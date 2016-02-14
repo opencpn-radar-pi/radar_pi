@@ -40,8 +40,6 @@ class RadarDraw;
 class RadarCanvas;
 class RadarPanel;
 
-enum RadarState { RADAR_OFF, RADAR_STANDBY, RADAR_TRANSMIT };
-
 class radar_control_item {
  public:
   int value;
@@ -135,9 +133,11 @@ class RadarInfo : public wxEvtHandler {
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
   void UpdateControlState(bool all);
+  void FlipRadarState();
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
+  wxString GetCanvasTextCenter();
 
  private:
   void RenderRadarImage(wxPoint center, double scale, DrawInfo *di);

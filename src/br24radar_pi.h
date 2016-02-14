@@ -83,6 +83,8 @@ enum { BM_ID_RED, BM_ID_RED_SLAVE, BM_ID_GREEN, BM_ID_GREEN_SLAVE, BM_ID_AMBER, 
 
 enum HeadingSource { HEADING_NONE, HEADING_HDM, HEADING_HDT, HEADING_COG, HEADING_RADAR };
 
+enum RadarState { RADAR_OFF, RADAR_STANDBY, RADAR_TRANSMIT };
+
 struct receive_statistics {
   int packets;
   int broken_packets;
@@ -352,10 +354,10 @@ class br24radar_pi : public opencpn_plugin_110 {
   void CheckGuardZoneBogeys(void);
   void RenderRadarBuffer(wxDC *pdc, int width, int height);
   void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, double rotation);
-  // void HandleBogeyCount(int *bogey_count);
   void PassHeadingToOpenCPN();
-
   void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
+  void CheckTimedTransmit(RadarState state);
+  void SetDesiredStateAllRadars(RadarState desiredState);
 
   wxFileConfig *m_pconfig;
   wxWindow *m_parent_window;

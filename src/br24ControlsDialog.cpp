@@ -665,11 +665,6 @@ void br24ControlsDialog::CreateControls() {
   timed_idle_times[5] = _("25 min");
   timed_idle_times[6] = _("30 min");
   timed_idle_times[7] = _("35 min");
-  wxString TT_Label;
-  TT_Label << wxT("\n") << _("Back to activate");
-  for (int i = 1; i < 8; i++) {
-    timed_idle_times[i] << TT_Label;
-  }
 
   m_timed_idle_button = new br24RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), CT_TIMED_IDLE, false,
                                                    m_pi->m_settings.timed_idle);  // HakanToDo new setting
@@ -1044,16 +1039,7 @@ void br24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
-  if (m_ri->state.button == RADAR_STANDBY) {
-    m_ri->transmit->RadarTxOn();
-    m_ri->state.button = RADAR_TRANSMIT;
-    m_ri->state.mod = true;
-  } else {
-    m_ri->transmit->RadarTxOff();
-    m_ri->data_watchdog = 0;
-    m_ri->state.button = RADAR_STANDBY;
-    m_ri->state.mod = true;
-  }
+  m_ri->FlipRadarState();
   UpdateControlValues(false);  // update control values on the buttons
 }
 

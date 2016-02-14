@@ -440,7 +440,41 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, 
   }
 }
 
+void RadarInfo::FlipRadarState() {
+  if (state.button == RADAR_STANDBY) {
+    transmit->RadarTxOn();
+    state.button = RADAR_TRANSMIT;
+    state.mod = true;
+  } else {
+    transmit->RadarTxOff();
+    data_watchdog = 0;
+    state.button = RADAR_STANDBY;
+    state.mod = true;
+  }
+}
+
 wxString RadarInfo::GetCanvasTextTopLeft() {
+  wxString s;
+
+  if (rotation.value > 0) {
+    s << _("North Up");
+  } else {
+    s << _("Head Up");
+  }
+  if (m_pi->m_settings.emulator_on) {
+    s << wxT(" (");
+    s << _("Emulator");
+    s << wxT(")");
+  } else if (control_dialog) {
+    s << wxT("\n") << control_dialog->GetRangeText();
+  }
+
+  return s;
+}
+
+wxString RadarInfo::GetCanvasTextBottomLeft() { return m_pi->GetGuardZoneText(this, false); }
+
+wxString RadarInfo::GetCanvasTextCenter() {
   wxString s;
 
   if (state.value == RADAR_OFF) {
@@ -452,24 +486,9 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
     }
   } else if (!m_draw_panel.draw) {
     s << _("No valid drawing method");
-  } else {
-    if (rotation.value > 0) {
-      s << _("North Up");
-    } else {
-      s << _("Head Up");
-    }
-    if (m_pi->m_settings.emulator_on) {
-      s << wxT(" (");
-      s << _("Emulator");
-      s << wxT(")");
-    } else if (control_dialog) {
-      s << wxT("\n") << control_dialog->GetRangeText();
-    }
   }
 
   return s;
 }
-
-wxString RadarInfo::GetCanvasTextBottomLeft() { return m_pi->GetGuardZoneText(this, false); }
 
 PLUGIN_END_NAMESPACE
