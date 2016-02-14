@@ -10,7 +10,7 @@
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
- *   Copyright (C) 2012-2013 by Kees Verruijt         canboat@verruijt.net *
+ *   Copyright (C) 2012-2016 by Kees Verruijt         canboat@verruijt.net *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -54,7 +54,7 @@ class GuardZone {
    * Return total bogeyCount over all spokes
    */
   int GetBogeyCount(SpokeBearing current_hdt);
-  int m_bogey_count; // updated on every call of GetBogeyCount.
+  int m_bogey_count;  // updated on every call of GetBogeyCount.
 
   /*
    * Reset the bogey count for all spokes
