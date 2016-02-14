@@ -240,9 +240,9 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
 void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
   time_t now = time(0);
-  int pos_age = difftime(now, m_pi->m_bpos_watchdog);  // the age of the
-                                                       // position, last call of
-                                                       // SetPositionFixEx
+  int pos_age = difftime(now, m_pi->m_bpos_timestamp);  // the age of the
+                                                        // position, last call of
+                                                        // SetPositionFixEx
   if (m_refreshes_queued > 0 || pos_age >= 2) {
     // don't do additional refresh and reset the refresh conter
     // this will also balance performance, if too busy skip refresh
@@ -447,7 +447,7 @@ void RadarInfo::FlipRadarState() {
     state.mod = true;
   } else {
     transmit->RadarTxOff();
-    data_watchdog = 0;
+    m_data_timeout = 0;
     state.button = RADAR_STANDBY;
     state.mod = true;
   }

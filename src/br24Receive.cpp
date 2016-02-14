@@ -142,8 +142,8 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     return;
   }
 
-  m_ri->radar_watchdog = now;
-  m_ri->data_watchdog = now;
+  m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
+  m_ri->m_data_timeout = now + DATA_TIMEOUT;
   m_ri->state.value = RADAR_TRANSMIT;
 
   int spoke = 0;
@@ -241,7 +241,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     }
 
     hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
-    if (hdm_raw != INT16_MIN && TIMER_NOT_ELAPSED(now, m_pi->m_var_watchdog) && m_ri->radar_type == RT_4G) {
+    if (hdm_raw != INT16_MIN && TIMED_OUT(now, m_pi->m_var_timeout) && m_ri->radar_type == RT_4G) {
       if (!m_pi->m_heading_on_radar) {
         wxLogMessage(wxT("BR24radar_pi: %s transmits heading, using that as best source of heading"), m_ri->name.c_str());
       }
@@ -278,8 +278,8 @@ void br24Receive::EmulateFakeBuffer(void) {
   UINT8 data[RETURNS_PER_LINE];
 
   m_ri->statistics.packets++;
-  m_ri->radar_watchdog = now;
-  m_ri->data_watchdog = now;
+  m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
+  m_ri->m_data_timeout = now + WATCHDOG_TIMEOUT;
   m_ri->state.value = RADAR_TRANSMIT;
 
   int scanlines_in_packet = SPOKES * 24 / 60;
@@ -531,7 +531,7 @@ void *br24Receive::Entry(void) {
               }
               m_ri->state.value = RADAR_STANDBY;
             }
-            m_ri->radar_watchdog = time(0) + 10;
+            m_ri->m_radar_timeout = time(0) + WATCHDOG_TIMEOUT;
             no_data_timeout = -15;
           }
         } else {

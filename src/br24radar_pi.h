@@ -44,7 +44,6 @@ PLUGIN_BEGIN_NAMESPACE
 
 //    Forward definitions
 class GuardZone;
-class IdleDialog;
 class RadarInfo;
 
 class br24ControlsDialog;
@@ -76,8 +75,9 @@ typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a 
 #define MOD_ROTATION2048(raw) (((raw) + 2 * LINES_PER_ROTATION) % LINES_PER_ROTATION)
 
 #define WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
-#define TIMER_NOT_ELAPSED(t, watchdog) (t < watchdog + WATCHDOG_TIMEOUT)
-#define TIMER_ELAPSED(t, watchdog) (!TIMER_NOT_ELAPSED(t, watchdog))
+
+#define TIMED_OUT(t, timeout) (t >= timeout)
+#define NOT_TIMED_OUT(t, timeout) (!TIMED_OUT(t, timeout))
 
 enum { BM_ID_RED, BM_ID_RED_SLAVE, BM_ID_GREEN, BM_ID_GREEN_SLAVE, BM_ID_AMBER, BM_ID_AMBER_SLAVE, BM_ID_BLANK, BM_ID_BLANK_SLAVE };
 
@@ -310,7 +310,6 @@ class br24radar_pi : public opencpn_plugin_110 {
 
   br24OptionsDialog *m_pOptionsDialog;
   br24MessageBox *m_pMessageBox;
-  IdleDialog *m_pIdleDialog;
 
   wxGLContext *m_opencpn_gl_context;
   bool m_opencpn_gl_context_broken;
@@ -327,12 +326,12 @@ class br24radar_pi : public opencpn_plugin_110 {
   // transmit invalid (zero) values. So we also let non-zero values prevail.
   double m_var;  // local magnetic variation, in degrees
   VariationSource m_var_source;
-  time_t m_var_watchdog;
+  time_t m_var_timeout;
 
   HeadingSource m_heading_source;
   bool m_opengl_mode;
   bool m_bpos_set;
-  time_t m_bpos_watchdog;
+  time_t m_bpos_timestamp;
 
   bool m_initialized;  // True if Init() succeeded and DeInit() not called yet.
   bool m_first_init;   // True in first Init() call.
@@ -401,12 +400,13 @@ class br24radar_pi : public opencpn_plugin_110 {
   int m_TimedTransmit_IdleBoxMode;
   int m_idle_time_left;
 
-  time_t m_idle_watchdog;
-  time_t m_hdt_watchdog;
+  time_t m_idle_timeout;  // When we will flip transmit/standby in automatic Timed Transmit
+  time_t m_hdt_timeout;   // When we consider heading is lost
+#define HEADING_TIMEOUT (5)
 
   bool m_guard_bogey_confirmed;
-  time_t m_alarm_sound_last;
-#define ALARM_TIMEOUT (5)
+  time_t m_alarm_sound_timeout;
+#define ALARM_TIMEOUT (10)
 };
 
 PLUGIN_END_NAMESPACE
@@ -416,7 +416,6 @@ PLUGIN_END_NAMESPACE
 #include "br24MessageBox.h"
 #include "br24Transmit.h"
 #include "GuardZone.h"
-#include "IdleDialog.h"
 #include "RadarInfo.h"
 
 #endif /* _BRRADAR_PI_H_ */

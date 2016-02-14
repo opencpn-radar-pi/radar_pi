@@ -128,7 +128,7 @@ class br24ControlsDialog : public wxDialog {
   bool m_hide;
   bool m_hide_temporarily;
   wxPoint m_panel_position;
-  time_t m_auto_hide;
+  time_t m_auto_hide_timeout;  // At what time do we hide the dialog
 
   // Edit Controls
 

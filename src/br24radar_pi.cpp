@@ -154,11 +154,11 @@ int br24radar_pi::Init(void) {
   m_guard_bogey_confirmed = false;
   m_want_message_box = false;
 
-  m_alarm_sound_last = time(0);
-  m_bpos_watchdog = 0;
-  m_hdt_watchdog = 0;
-  m_var_watchdog = 0;
-  m_idle_watchdog = 0;
+  m_alarm_sound_timeout = 0;
+  m_bpos_timestamp = 0;
+  m_hdt_timeout = 0;
+  m_var_timeout = 0;
+  m_idle_timeout = 0;
   memset(m_dialogLocation, 0, sizeof(m_dialogLocation));
 
   m_radar[0] = new RadarInfo(this, _("Radar"), 0);
@@ -170,7 +170,6 @@ int br24radar_pi::Init(void) {
 
   m_heading_source = HEADING_NONE;
   m_pOptionsDialog = 0;
-  m_pIdleDialog = 0;
 
   m_settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
   m_settings.refreshrate = 1;
@@ -500,7 +499,7 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
 
   if (m_settings.timed_idle) {
     time_t now = time(0);
-    int left = now - m_idle_watchdog;
+    int left = now - m_idle_timeout;
     if (left > 0) {
       text << wxString::Format("%02d:%02d", left / 60, left % 60);
     }
@@ -518,9 +517,9 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
   if (withTimeout) {
     time_t now = time(0);
 
-    if (m_alarm_sound_last > 0) {
+    if (m_alarm_sound_timeout > 0) {
       text << wxT("\n");
-      text << wxString::Format(_("Next alarm in %d s"), m_alarm_sound_last + WATCHDOG_TIMEOUT - now);
+      text << wxString::Format(_("Next alarm in %d s"), m_alarm_sound_timeout + ALARM_TIMEOUT - now);
     }
   }
 
@@ -555,10 +554,10 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
   if (bogeys_found) {
     // We have bogeys and there is no objection to showing the dialog
 
-    if (!m_guard_bogey_confirmed && TIMER_ELAPSED(now, m_alarm_sound_last)) {
+    if (!m_guard_bogey_confirmed && TIMED_OUT(now, m_alarm_sound_timeout)) {
       // If the last time is 10 seconds ago we ping a sound, unless the user
       // confirmed
-      m_alarm_sound_last = now;
+      m_alarm_sound_timeout = now + ALARM_TIMEOUT;
 
       if (!m_settings.alert_audio_file.IsEmpty()) {
         PlugInPlaySound(m_settings.alert_audio_file);
@@ -603,14 +602,14 @@ void br24radar_pi::CheckTimedTransmit(RadarState state) {
   time_t now = time(0);
 
   if (state == RADAR_TRANSMIT) {
-    if (TIMER_ELAPSED(now, m_idle_watchdog)) {
+    if (TIMED_OUT(now, m_idle_timeout)) {
       SetDesiredStateAllRadars(RADAR_STANDBY);
-      m_idle_watchdog = now + m_settings.timed_idle * SECONDS_PER_TIMED_IDLE_SETTING;
+      m_idle_timeout = now + m_settings.timed_idle * SECONDS_PER_TIMED_IDLE_SETTING;
     }
   } else {
-    if (TIMER_ELAPSED(now, m_idle_watchdog)) {
+    if (TIMED_OUT(now, m_idle_timeout)) {
       SetDesiredStateAllRadars(RADAR_TRANSMIT);
-      m_idle_watchdog = now + SECONDS_PER_TRANSMIT_BURST;
+      m_idle_timeout = now + SECONDS_PER_TRANSMIT_BURST;
     }
   }
 }
@@ -666,7 +665,7 @@ void br24radar_pi::DoTick(void) {
     }
   }
 
-  if (m_bpos_set && TIMER_ELAPSED(now, m_bpos_watchdog)) {
+  if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
     // If the position data is 10s old reset our heading.
     // Note that the watchdog is continuously reset every time we receive a
     // heading.
@@ -674,7 +673,7 @@ void br24radar_pi::DoTick(void) {
     wxLogMessage(wxT("BR24radar_pi: Lost Boat Position data"));
   }
 
-  if (m_heading_source != HEADING_NONE && TIMER_ELAPSED(now, m_hdt_watchdog)) {
+  if (m_heading_source != HEADING_NONE && TIMED_OUT(now, m_hdt_timeout)) {
     // If the position data is 10s old reset our heading.
     // Note that the watchdog is continuously reset every time we receive a
     // heading
@@ -688,7 +687,7 @@ void br24radar_pi::DoTick(void) {
     }
   }
 
-  if (m_var_source != VARIATION_SOURCE_NONE && TIMER_ELAPSED(now, m_var_watchdog)) {
+  if (m_var_source != VARIATION_SOURCE_NONE && TIMED_OUT(now, m_var_timeout)) {
     m_var_source = VARIATION_SOURCE_NONE;
     wxLogMessage(wxT("BR24radar_pi: Lost Variation source"));
     if (m_pMessageBox) {
@@ -702,20 +701,20 @@ void br24radar_pi::DoTick(void) {
   // Check the age of "radar_seen", if too old radar_seen = false
   bool any_data_seen = false;
   for (size_t r = 0; r < RADARS; r++) {
-    if (m_radar[r]->state.value == RADAR_STANDBY && TIMER_ELAPSED(now, m_radar[r]->radar_watchdog)) {
+    if (m_radar[r]->state.value == RADAR_STANDBY && TIMED_OUT(now, m_radar[r]->m_radar_timeout)) {
       static wxString empty;
 
       m_radar[r]->state.value = RADAR_OFF;
       m_pMessageBox->SetRadarIPAddress(empty);
       wxLogMessage(wxT("BR24radar_pi: Lost %s presence"), m_radar[r]->name);
     }
-    if (m_radar[r]->state.value == RADAR_TRANSMIT && TIMER_ELAPSED(now, m_radar[r]->data_watchdog)) {
+    if (m_radar[r]->state.value == RADAR_TRANSMIT && TIMED_OUT(now, m_radar[r]->m_data_timeout)) {
       m_radar[r]->state.value = RADAR_STANDBY;
       wxLogMessage(wxT("BR24radar_pi: Data Lost %s "), m_radar[r]->name);
     }
     if (m_radar[r]->state.value == RADAR_TRANSMIT) {
-      if (TIMER_ELAPSED(now, m_radar[r]->m_stayalive_watchdog)) {
-        m_radar[r]->m_stayalive_watchdog = now + STAYALIVE_TIMEOUT;
+      if (TIMED_OUT(now, m_radar[r]->m_stayalive_timeout)) {
+        m_radar[r]->m_stayalive_timeout = now + STAYALIVE_TIMEOUT;
         m_radar[r]->transmit->RadarStayAlive();
       }
       any_data_seen = true;
@@ -1096,14 +1095,14 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     }
     m_var = pfix.Var;
     m_var_source = VARIATION_SOURCE_FIX;
-    m_var_watchdog = now;
+    m_var_timeout = now + WATCHDOG_TIMEOUT;
   }
 
   if (m_settings.verbose >= 2) {
     wxLogMessage(wxT("BR24radar_pi: SetPositionFixEx var=%f heading_on_radar=%d var_wd=%d"), pfix.Var, m_heading_on_radar,
-                 TIMER_NOT_ELAPSED(now, m_var_watchdog));
+                 NOT_TIMED_OUT(now, m_var_timeout));
   }
-  if (m_heading_on_radar && TIMER_NOT_ELAPSED(now, m_var_watchdog)) {
+  if (m_heading_on_radar && NOT_TIMED_OUT(now, m_var_timeout)) {
     if (m_heading_source != HEADING_RADAR) {
       wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f"), m_hdt);
       m_heading_source = HEADING_RADAR;
@@ -1115,8 +1114,8 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
         m_pMessageBox->SetHeadingInfo(info);
       }
     }
-    m_hdt_watchdog = now;
-  } else if (!wxIsNaN(pfix.Hdm) && TIMER_NOT_ELAPSED(now, m_var_watchdog)) {
+    m_hdt_timeout = now + HEADING_TIMEOUT;
+  } else if (!wxIsNaN(pfix.Hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
     m_hdt = pfix.Hdm + m_var;
     if (m_heading_source != HEADING_HDM) {
       wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM %f"), m_hdt);
@@ -1129,7 +1128,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
         m_pMessageBox->SetHeadingInfo(info);
       }
     }
-    m_hdt_watchdog = now;
+    m_hdt_timeout = now + HEADING_TIMEOUT;
   } else if (!wxIsNaN(pfix.Hdt)) {
     m_hdt = pfix.Hdt;
     if (m_heading_source != HEADING_HDT) {
@@ -1143,7 +1142,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
         m_pMessageBox->SetHeadingInfo(info);
       }
     }
-    m_hdt_watchdog = now;
+    m_hdt_timeout = now + HEADING_TIMEOUT;
   } else if (!wxIsNaN(pfix.Cog)) {
     m_hdt = pfix.Cog;
     if (m_heading_source != HEADING_COG) {
@@ -1157,17 +1156,17 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
         m_pMessageBox->SetHeadingInfo(info);
       }
     }
-    m_hdt_watchdog = now;
+    m_hdt_timeout = now + HEADING_TIMEOUT;
   }
 
-  if (pfix.FixTime && TIMER_NOT_ELAPSED(now, pfix.FixTime)) {
+  if (pfix.FixTime > 0 && NOT_TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT)) {
     m_ownship_lat = pfix.Lat;
     m_ownship_lon = pfix.Lon;
     if (!m_bpos_set) {
       wxLogMessage(wxT("BR24radar_pi: GPS position is now known"));
     }
     m_bpos_set = true;
-    m_bpos_watchdog = now;
+    m_bpos_timestamp = now;
   }
 }  // end of br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 
@@ -1186,7 +1185,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
         }
         m_var = variation;
         m_var_source = VARIATION_SOURCE_WMM;
-        m_var_watchdog = time(0);
+        m_var_timeout = time(0) + WATCHDOG_TIMEOUT;
         if (m_pMessageBox) {
           if (m_pMessageBox->IsShown()) {
             wxString info = _("WMM");
@@ -1341,7 +1340,7 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
         }
         m_var = newVar;
         m_var_source = VARIATION_SOURCE_NMEA;
-        m_var_watchdog = now;
+        m_var_timeout = now + WATCHDOG_TIMEOUT;
         if (m_pMessageBox) {
           if (m_pMessageBox->IsShown()) {
             wxString info = _("NMEA");
@@ -1352,16 +1351,16 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
       }
       if (m_heading_source == HEADING_HDM && !wxIsNaN(m_NMEA0183.Hdg.MagneticSensorHeadingDegrees)) {
         m_hdt = m_NMEA0183.Hdg.MagneticSensorHeadingDegrees + m_var;
-        m_hdt_watchdog = now;
+        m_hdt_timeout = now + HEADING_TIMEOUT;
       }
     } else if (m_heading_source == HEADING_HDM && m_NMEA0183.LastSentenceIDReceived == _T("HDM") && m_NMEA0183.Parse() &&
                !wxIsNaN(m_NMEA0183.Hdm.DegreesMagnetic)) {
       m_hdt = m_NMEA0183.Hdm.DegreesMagnetic + m_var;
-      m_hdt_watchdog = now;
+      m_hdt_timeout = now + HEADING_TIMEOUT;
     } else if (m_heading_source == HEADING_HDT && m_NMEA0183.LastSentenceIDReceived == _T("HDT") && m_NMEA0183.Parse() &&
                !wxIsNaN(m_NMEA0183.Hdt.DegreesTrue)) {
       m_hdt = m_NMEA0183.Hdt.DegreesTrue;
-      m_hdt_watchdog = now;
+      m_hdt_timeout = now + HEADING_TIMEOUT;
     }
   }
 }

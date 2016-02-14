@@ -95,10 +95,11 @@ class RadarInfo : public wxEvtHandler {
 
   double viewpoint_rotation;
 
-  time_t radar_watchdog;        // Timestamp of last time it was seen
-  time_t data_watchdog;         // Timestamp of when data was seen
-  time_t m_stayalive_watchdog;  // Timestamp of when data was seen
-#define STAYALIVE_TIMEOUT (5)   // Send data every 5 seconds to ping radar
+  time_t m_radar_timeout;      // When we consider the radar no longer valid
+  time_t m_data_timeout;       // When we consider the data to be obsolete (radar no longer sending data)
+  time_t m_stayalive_timeout;  // When we will send another stayalive ping
+#define STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
+#define DATA_TIMEOUT (5)
 
   int range_meters;
   int commanded_range_meters;

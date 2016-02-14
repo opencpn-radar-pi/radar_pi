@@ -919,7 +919,6 @@ void br24ControlsDialog::SetRangeIndex(size_t index) { m_range_button->isRemote 
 
 void br24ControlsDialog::SetTimedIdleIndex(int index) {
   m_timed_idle_button->SetValue(index);  // set and recompute the Timed Idle label
-  if (m_pi->m_pIdleDialog && index == 0) m_pi->m_pIdleDialog->Close();
 }
 
 void br24ControlsDialog::OnZone1ButtonClick(wxCommandEvent& event) { ShowGuardZone(0); }
@@ -1222,10 +1221,10 @@ void br24ControlsDialog::UpdateDialogShown() {
     return;
   }
 
-  if (m_pi->m_settings.automatic_dialog_location && TIMER_ELAPSED(time(0), m_auto_hide)) {
+  if (m_pi->m_settings.automatic_dialog_location && TIMED_OUT(time(0), m_auto_hide_timeout)) {
     if (!m_top_sizer->IsShown(m_control_sizer)) {
       // If we're somewhere in the sub-window, don't close the dialog
-      m_auto_hide += WATCHDOG_TIMEOUT;
+      m_auto_hide_timeout += WATCHDOG_TIMEOUT;
     } else {
       if (IsShown()) {
         if (m_pi->m_settings.verbose) {
@@ -1263,7 +1262,7 @@ void br24ControlsDialog::HideTemporarily() {
 
 void br24ControlsDialog::UnHideTemporarily() {
   m_hide_temporarily = false;
-  m_auto_hide = time(0);  // Start auto hide timeout
+  m_auto_hide_timeout = time(0) + WATCHDOG_TIMEOUT;  // Start auto hide timeout
   UpdateDialogShown();
 }
 
@@ -1311,12 +1310,12 @@ void br24ControlsDialog::ShowBogeys(wxString text) {
 
 void br24ControlsDialog::HideDialog() {
   m_hide = true;
-  m_auto_hide = 0;
+  m_auto_hide_timeout = 0;
   UpdateDialogShown();
 }
 
 void br24ControlsDialog::OnMouseLeftDown(wxMouseEvent& event) {
-  m_auto_hide = time(0);
+  m_auto_hide_timeout = time(0) + WATCHDOG_TIMEOUT;
   event.Skip();
 }
 
