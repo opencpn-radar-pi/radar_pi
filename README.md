@@ -6,28 +6,6 @@ WORK IN PROGRESS
 ----------------
 This is the 'radarwindow' branch. I'm reworking most of the plugin to be more modular.
 
-
-At the moment it is able to:
-
-- Display the emulator or real radar data.
-- Most actual radar controls (gain, sea state, etc.) should work.
-- Radar state controls (on/off/overlay/position) are still a big mess.
-
-To be worked on:
-
-- Improve the current 'shoddy' radar window. In particular:
-  - Add text such as "HU" and range data
-- Rethink the radar controls that are used often (range, gain). Dockable? Show them only when needed?
-
-Completely broken:
-
-- Guard zone checking, calculation, display
-- Alarms on guard zones
-
-
-
-
-
 Downloads
 ---------
 
