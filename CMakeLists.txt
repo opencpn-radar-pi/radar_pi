@@ -46,8 +46,6 @@ SET(SRC_br24radar
             src/br24Transmit.cpp
             src/icons.h
             src/icons.cpp
-            src/IdleDialog.h
-            src/IdleDialog.cpp
             src/GuardZone.h
             src/GuardZone.cpp
             src/RadarInfo.h

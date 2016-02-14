@@ -103,5 +103,3 @@ const HDT& HDT::operator=(const HDT& source) {
 }
 
 PLUGIN_END_NAMESPACE
-
-#include "pi_trail.h"
