@@ -83,10 +83,8 @@ void RadarCanvas::OnMove(wxMoveEvent &evt) {
   }
 }
 
-void RadarCanvas::RenderTexts() {
-  int x, y, w, h;
-
-  GetClientSize(&w, &h);
+void RadarCanvas::RenderTexts(int w, int h) {
+  int x, y;
 
   wxString s;
 
@@ -106,6 +104,58 @@ void RadarCanvas::RenderTexts() {
   }
 }
 
+void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, int range) {
+  // Max range ringe
+  float r = wxMax(w, h) / 2.0;
+
+  // Position of the range texts
+  float x = sinf(0.25 * PI) * r * 0.25;
+  float y = cosf(0.25 * PI) * r * 0.25;
+  float center_x = w / 2.0;
+  float center_y = h / 2.0;
+
+  // Size of rendered string in pixels
+  int px;
+  int py;
+
+  glColor3ub(200, 255, 200);
+  glLineWidth(1.0);
+
+  for (int i = 1; i <= 4; i++) {
+    DrawArc(w / 2.0, h / 2.0, r * i * 0.25, 0.0, 2.0 * PI, 360);
+    if (range) {
+      const char *s = convertRadarToString(range, m_pi->m_settings.range_units, i - 1);
+      if (s) {
+        m_FontNormal.RenderString(wxString::Format(wxT("%s"), s), center_x + x * (float)i, center_y + y * (float)i);
+      }
+    }
+  }
+
+  wxLogMessage(wxT("BR24radar_pi: m_hdt=%f rot=%d"), m_pi->m_hdt, m_ri->rotation.value);
+  double rot = m_ri->rotation.value ? m_pi->m_hdt : 0.0;
+
+  for (int i = 0; i < 360; i += 5) {
+    x = -sinf(deg2rad(i + rot)) * (r * 1.00 - 1);
+    y = cosf(deg2rad(i + rot)) * (r * 1.00 - 1);
+
+    wxString s;
+    if (i % 90 == 0) {
+      static char nesw[4] = {'N', 'E', 'S', 'W'};
+      s = wxString::Format(wxT("%c"), nesw[i / 90]);
+    } else if (i % 15 == 0) {
+      s = wxString::Format(wxT("%u"), i);
+    }
+    m_FontNormal.GetTextExtent(s, &px, &py);
+    if (x > 0) {
+      x -= px;
+    }
+    if (y > 0) {
+      y -= py;
+    }
+    m_FontNormal.RenderString(s, center_x + x, center_y + y);
+  }
+}
+
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
   int sq;  // square size, minimum of w, h.
@@ -120,7 +170,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   }
 
   GetClientSize(&w, &h);
-  sq = wxMin(w, h);
+  sq = wxMax(w, h);
 
   if (m_pi->m_settings.verbose >= 2) {
     wxLogMessage(wxT("BR24radar_pi: %s render OpenGL canvas %d by %d "), m_ri->name.c_str(), w, h);
@@ -146,17 +196,25 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   // glDisable(GL_DEPTH_TEST);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+  glViewport(0, 0, w, h);
+
+  glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
+  glLoadIdentity();             // Reset projection matrix stack
+  glOrtho(0, w, h, 0, -1, 1);
+  glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
+
+  glEnable(GL_TEXTURE_2D);
+
+  RenderRangeRingsAndHeading(w, h, m_ri->range_meters);
+
   glViewport((w - sq) / 2, (h - sq) / 2, sq, sq);
   glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
   glLoadIdentity();             // Reset projection matrix stack
   glScaled(1.0, -1.0, 1.0);
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
 
-  double scale_factor = 1.0 / RETURNS_PER_LINE;  // Radar image is in 0..511 range
+  double scale_factor = 2.0 / RETURNS_PER_LINE;  // Radar image is in 0..511 range
 
-  glColor3ub(200, 255, 200);
-  DrawOutlineArc(0.25, 1.00, 0.0, 360.0, false);
-  DrawOutlineArc(0.50, 0.75, 0.0, 360.0, false);
   // CheckOpenGLError(wxT("range circles"));
 
   double rotation = 0.0;  // Or HU then -m_pi->m_hdt;
@@ -173,7 +231,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glColor3ub(200, 255, 200);
   glEnable(GL_TEXTURE_2D);
 
-  RenderTexts();
+  RenderTexts(w, h);
 
   glDisable(GL_TEXTURE_2D);
 

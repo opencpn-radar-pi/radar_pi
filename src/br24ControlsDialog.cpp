@@ -218,32 +218,49 @@ struct RadarRanges {
   int meters;
   int actual_meters;
   const char* name;
+  const char* range1;
+  const char* range2;
+  const char* range3;
 };
 
 static const RadarRanges g_ranges_metric[] = {
     /* Nautical (mixed) first */
-    {50, 98, "50 m"},        {75, 146, "75 m"},       {100, 195, "100 m"},    {250, 488, "1/4 km"},    {500, 808, "1/2 km"},
-    {750, 1154, "3/4 km"},   {1000, 1616, "1 km"},    {1500, 2308, "1.5 km"}, {2000, 3366, "2 km"},    {3000, 4713, "3 km"},
-    {4000, 5655, "4 km"},    {6000, 9408, "6 km"},    {8000, 12096, "8 km"},  {12000, 18176, "12 km"}, {16000, 26240, "16 km"},
-    {24000, 36352, "24 km"}, {36000, 52480, "36 km"}, {48000, 72704, "48 km"}};
+    {50, 98, "50 m", 0, 0, 0},
+    {75, 146, "75 m", 0, 0, 0},
+    {100, 195, "100 m", "25", "50", "75"},
+    {250, 488, "250 m", 0, "125", 0},
+    {500, 808, "500 m", "125", "250", "375"},
+    {750, 1154, "750 m", 0, "375", 0},
+    {1000, 1616, "1 km", "250", "500", "750"},
+    {1500, 2308, "1.5 km", 0, "750", 0},
+    {2000, 3366, "2 km", "500", "1000", "1500"},
+    {3000, 4713, "3 km", 0, "1500", 0},
+    {4000, 5655, "4 km", "1", "2", "3"},
+    {6000, 9408, "6 km", "1.5", "3.0", "4.5"},
+    {8000, 12096, "8 km", "2", "4", "6"},
+    {12000, 18176, "12 km", "3", "6", "9"},
+    {16000, 26240, "16 km", "4", "8", "12"},
+    {24000, 36352, "24 km", "6", "12", "18"},
+    {36000, 52480, "36 km", "9", "18", "27"},
+    {48000, 72704, "48 km", "12", "24", "36"}};
 
-static const RadarRanges g_ranges_nautic[] = {{50, 98, "50 m"},
-                                              {75, 146, "75 m"},
-                                              {100, 195, "100 m"},
-                                              {1852 / 8, 451, "1/8 NM"},
-                                              {1852 / 4, 673, "1/4 NM"},
-                                              {1852 / 2, 1346, "1/2 NM"},
-                                              {1852 * 3 / 4, 2020, "3/4 NM"},
-                                              {1852 * 1, 2693, "1 NM"},
-                                              {1852 * 3 / 2, 4039, "1.5 NM"},
-                                              {1852 * 2, 5655, "2 NM"},
-                                              {1852 * 3, 8079, "3 NM"},
-                                              {1852 * 4, 10752, "4 NM"},
-                                              {1852 * 6, 16128, "6 NM"},
-                                              {1852 * 8, 22208, "8 NM"},
-                                              {1852 * 12, 36352, "12 NM"},
-                                              {1852 * 16, 44416, "16 NM"},
-                                              {1852 * 24, 72704, "24 NM"}};
+static const RadarRanges g_ranges_nautic[] = {{50, 98, "50 m", 0, 0, 0},
+                                              {75, 146, "75 m", 0, 0, 0},
+                                              {100, 195, "100 m", "25", "50", "75"},
+                                              {1852 / 8, 451, "1/8 NM", 0, "1/16", 0},
+                                              {1852 / 4, 673, "1/4 NM", "1/32", "1/8", 0},
+                                              {1852 / 2, 1346, "1/2 NM", "1/8", "1/4", "3/8"},
+                                              {1852 * 3 / 4, 2020, "3/4 NM", 0, "3/8", 0},
+                                              {1852 * 1, 2693, "1 NM", "1/4", "1/2", "3/4"},
+                                              {1852 * 3 / 2, 4039, "1.5 NM", "3/8", "3/4", 0},
+                                              {1852 * 2, 5655, "2 NM", "0.5", "1.0", "1.5"},
+                                              {1852 * 3, 8079, "3 NM", "0.75", "1.5", "2.25"},
+                                              {1852 * 4, 10752, "4 NM", "1", "2", "3"},
+                                              {1852 * 6, 16128, "6 NM", "1.5", "3", "4.5"},
+                                              {1852 * 8, 22208, "8 NM", "2", "4", "6"},
+                                              {1852 * 12, 36352, "12 NM", "3", "6", "9"},
+                                              {1852 * 16, 44416, "16 NM", "4", "8", "12"},
+                                              {1852 * 24, 72704, "24 NM", "6", "12", "18"}};
 
 static const int METRIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_metric);
 static const int NAUTIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_nautic);
@@ -257,6 +274,20 @@ wxString target_boost_names[3];
 wxString scan_speed_names[2];
 wxString timed_idle_times[8];
 wxString guard_zone_names[3];
+
+extern const char* convertRadarToString(int range_meters, int units, int index) {
+  const RadarRanges* ranges = units ? g_ranges_metric : g_ranges_nautic;
+
+  size_t n;
+
+  n = g_range_maxValue[units];
+  for (; n > 0; n--) {
+    if (ranges[n].actual_meters <= range_meters) {  // step down until past the right range value
+      break;
+    }
+  }
+  return (&ranges[n].name)[(index + 1) % 4];
+}
 
 extern size_t convertRadarMetersToIndex(int* range_meters, int units, RadarType radarType) {
   const RadarRanges* ranges;
