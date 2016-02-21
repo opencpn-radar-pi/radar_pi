@@ -54,15 +54,12 @@ bool RadarPanel::Create() {
                            .Caption(m_ri->name)
                            .CaptionVisible(true)  // Show caption even when docked
                            .Dockable(true)        // Dockable everywhere
-                           .MinSize(wxSize(256, 256))
-                           .BestSize(wxSize(512, 512))
-                           .FloatingSize(wxSize(512, 512))
                            .Float()
                            .CloseButton(true)
                            .Gripper(false);
 
   m_ri->radar_canvas =
-      new RadarCanvas(m_pi, m_ri, this, wxSize(256, 256));  // m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
+      new RadarCanvas(m_pi, m_ri, this, wxSize(512, 512));  // m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
   if (!m_ri->radar_canvas) {
     wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarCanvas"), m_ri->name.c_str());
     return false;
@@ -75,8 +72,18 @@ bool RadarPanel::Create() {
   DimeWindow(this);
   Fit();
   Layout();
-  SetMinSize(GetBestSize());
+  // SetMinSize(GetBestSize());
   Refresh();
+
+  wxSize screen_size = ::wxGetDisplaySize();
+  int best_size = wxMin(screen_size.x, screen_size.y) / 2;
+  int min_size = wxMin(best_size, 256);
+
+  pane.MinSize(wxSize(min_size, min_size));
+  pane.BestSize(wxSize(best_size, best_size));
+  pane.FloatingSize(wxSize(best_size, best_size));
+
+  //m_aui_mgr->SetArtProvider(wxAuiDockArt *artProvider)
 
   m_aui_mgr->AddPane(this, pane);
   m_aui_mgr->Update();
