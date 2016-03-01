@@ -276,6 +276,7 @@ struct pi_control_settings {
     int      selectRadarB;
     int      showRadar;
     bool     emulator_on;
+    bool     enable_COG_heading;
     wxString alert_audio_file;
 };
 
@@ -630,6 +631,7 @@ private:
     void OnSelectSoundClick(wxCommandEvent& event);
     void OnTestSoundClick(wxCommandEvent& event);
     void OnPassHeadingClick(wxCommandEvent& event);
+    void OnEnableCOGClick(wxCommandEvent& event);
     void OnEnableDualRadarClick(wxCommandEvent& event);
     void OnEmulatorClick(wxCommandEvent& event);
 
@@ -644,7 +646,8 @@ private:
     wxRadioBox        *pGuardZoneStyle;
     wxSlider          *pIntervalSlider;
     wxTextCtrl        *pText_Heading_Correction_Value;
-    wxCheckBox        *cbPassHeading;
+    wxCheckBox        *cbPassHeading; 
+    wxCheckBox        *cbEnableCOG;
     wxCheckBox        *cbEnableDualRadar;
     wxCheckBox        *cbEmulator;
 };

@@ -111,6 +111,7 @@ enum {
     ID_SELECT_SOUND,
     ID_TEST_SOUND,
     ID_PASS_HEADING,
+    ID_ENABLE_COG,
     ID_SELECT_AB,
     ID_EMULATOR
 };
@@ -983,6 +984,12 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
     cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                              wxCommandEventHandler(BR24DisplayOptionsDialog::OnPassHeadingClick), NULL, this);
 
+    cbEnableCOG = new wxCheckBox(this, ID_ENABLE_COG, _("Enable COG as heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+    itemStaticBoxSizerOptions->Add(cbEnableCOG, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+    cbEnableCOG->SetValue(pPlugIn->settings.enable_COG_heading ? true : false);
+    cbEnableCOG->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
+        wxCommandEventHandler(BR24DisplayOptionsDialog::OnEnableCOGClick), NULL, this);
+
     cbEnableDualRadar = new wxCheckBox(this, ID_SELECT_AB, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     itemStaticBoxSizerOptions->Add(cbEnableDualRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
     cbEnableDualRadar->SetValue(pPlugIn->settings.enable_dual_radar ? true : false);
@@ -1061,6 +1068,11 @@ void BR24DisplayOptionsDialog::OnHeading_Calibration_Value(wxCommandEvent &event
 void BR24DisplayOptionsDialog::OnPassHeadingClick(wxCommandEvent &event)
 {
     pPlugIn->settings.passHeadingToOCPN = cbPassHeading->GetValue();
+}
+
+void BR24DisplayOptionsDialog::OnEnableCOGClick(wxCommandEvent &event)
+{
+    pPlugIn->settings.enable_COG_heading = cbEnableCOG->GetValue();
 }
 
 void BR24DisplayOptionsDialog::OnEmulatorClick(wxCommandEvent &event)
@@ -2163,10 +2175,8 @@ bool br24radar_pi::LoadConfig(void)
         br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];
 
         pConf->Read(wxT("PassHeadingToOCPN"), &settings.passHeadingToOCPN, 0);
-        pConf->Read(wxT("selectRadarB"), &settings.selectRadarB, 0);
-    /*    if (settings.emulator_on) {
-            settings.selectRadarB = 0;
-        }*/
+        pConf->Read(wxT("selectRadarB"), &settings.selectRadarB, 0); 
+        pConf->Read(wxT("Enable_COG_heading"), &settings.enable_COG_heading, 0);
         pConf->Read(wxT("ControlsDialogSizeX"), &m_BR24Controls_dialog_sx, 300L);
         pConf->Read(wxT("ControlsDialogSizeY"), &m_BR24Controls_dialog_sy, 540L);
         pConf->Read(wxT("ControlsDialogPosX"), &m_BR24Controls_dialog_x, 20L);
@@ -2237,7 +2247,8 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("RunTimeOnIdle"), settings.idle_run_time);
         pConf->Write(wxT("DrawAlgorithm"), settings.draw_algorithm);
         pConf->Write(wxT("Refreshrate"), settings.refreshrate);
-        pConf->Write(wxT("PassHeadingToOCPN"), settings.passHeadingToOCPN);
+        pConf->Write(wxT("PassHeadingToOCPN"), settings.passHeadingToOCPN); 
+        pConf->Write(wxT("Enable_COG_heading"), settings.enable_COG_heading);
         pConf->Write(wxT("selectRadarB"), settings.selectRadarB);
         pConf->Write(wxT("ShowRadar"), settings.showRadar);
         pConf->Write(wxT("RadarAlertAudioFile"), settings.alert_audio_file);
@@ -2372,7 +2383,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         }
         br_hdt_watchdog = now;
     }
-    else if (!wxIsNaN(pfix.Cog)) {
+    else if (!wxIsNaN(pfix.Cog) && settings.enable_COG_heading) {
         br_hdt = pfix.Cog;
         if (m_heading_source != HEADING_COG) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
