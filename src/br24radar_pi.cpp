@@ -511,6 +511,7 @@ int br24radar_pi::Init(void)
             polar_to_cart_x[arc][radius] = (GLfloat) radius * cosine;
         }
     }
+    wxLogMessage(wxT("BR24radar_pi: Beta Version 1.304"));
     wxLogMessage(wxT("BR24radar_pi:Position initialized  xa = %f"), polar_to_cart_x[100][150]);
     AddLocaleCatalog( _T("opencpn-br24radar_pi") );
 
