@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-17 11:38-0500\n"
-"PO-Revision-Date: 2015-05-23 05:01-0400\n"
+"POT-Creation-Date: 2016-03-06 21:24+0100\n"
+"PO-Revision-Date: 2016-02-28 17:40-0500\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Catalan\n"
 "Language: ca_ES\n"
@@ -15,499 +15,470 @@ msgstr ""
 "X-Crowdin-Project: opencpn\n"
 "X-Crowdin-Language: ca\n"
 "X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
-
-#: src/GuardZoneBogey.cpp:124
-msgid "Zone 1: unknown\n"
-"Zone 2: unknown\n"
-"Timeout"
-msgstr "Zona 1: desconegut\n"
-"Zona 2:desconegut\n"
-"Interrupció"
-
-#: src/GuardZoneBogey.cpp:127
+#
+msgid "\n"
+msgstr "\n"
+#
+msgid " Guard Zone Control"
+msgstr " Control de la Zona de Vigilància"
+#
+msgid "&Close"
+msgstr "&Tanca"
+#
 msgid "&Confirm"
 msgstr "&Confirmar"
-
-#: src/GuardZoneBogey.cpp:130
+#
+msgid "+"
+msgstr "+"
+#
+msgid "+10"
+msgstr "+10"
+#
+msgid "-"
+msgstr "-"
+#
+msgid "-10"
+msgstr "-10"
+#
+msgid "10 min"
+msgstr "10 min"
+#
+msgid "15 min"
+msgstr "15 min"
+#
+msgid "20 min"
+msgstr "20 min"
+#
+msgid "25 min"
+msgstr "25 min"
+#
+msgid "30 min"
+msgstr "30 min"
+#
+msgid "35 min"
+msgstr "35 min"
+#
+msgid "5 min"
+msgstr "5 min"
+#
+msgid ""
+"<<\n"
+"Back"
+msgstr ""
+"<<\n"
+"Endarrere"
+#
+msgid "Accelerated Graphics (OpenGL)"
+msgstr ""
+#
+msgid ""
+"Advanced\n"
+"controls"
+msgstr ""
+"Avançats\n"
+"controls"
+#
+msgid "Antenna height (m)"
+msgstr ""
+#
+msgid "Arc"
+msgstr "Sector"
+#
+msgid "Auto"
+msgstr "Automàtic"
+#
+msgid "BR24 Target Display Preferences"
+msgstr "Preferències de visualització d'objectiu BR24"
+#
+msgid "Back"
+msgstr "Endarrere"
+#
+msgid "Back to activate"
+msgstr "Tornar a activar"
+#
+msgid "Bearing alignment"
+msgstr "Alineació de rumb"
+#
+msgid "Boat position"
+msgstr ""
+#
 msgid "C&onfirm + Close"
 msgstr "C&onfirmeu + Tancar"
-
-#: src/GuardZoneBogey.cpp:142
-msgid "Zone"
-msgstr "Zona"
-
-#: src/GuardZoneBogey.cpp:148
+#
+msgid "COG"
+msgstr "COG"
+#
+msgid "Calibration"
+msgstr "Calibració"
+#
+msgid ""
+"Can not switch radar on as\n"
+"it is not connected or off\n"
+" Switch radar on when button is amber"
+msgstr ""
+#
+msgid "Cannot bind UDP socket to port "
+msgstr "No es pot unir la connexió UDP al port "
+#
+msgid "Cannot create UDP socket"
+msgstr "No es pot crear la connexió UDP"
+#
+msgid "Cannot set reuse address option on socket"
+msgstr "No es pot posar l'opció de reutilitzar l'adreça en la connexió"
+#
+msgid "Circle"
+msgstr "Cercle"
+#
+msgid "Dialog"
+msgstr "Diàleg"
+#
+msgid "Emulator mode"
+msgstr "Mode d'emulador"
+#
+msgid "Enable dual radar, 4G only"
+msgstr "Activar radar doble, només 4G"
+#
+msgid "End bearing"
+msgstr "Acabar rumb"
+#
+msgid "Fast"
+msgstr "Ràpid"
+#
+msgid "Filter"
+msgstr "Filtre"
+#
+msgid "For radar overlay also required"
+msgstr ""
+#
+msgid "GPS"
+msgstr ""
+#
+msgid "Gain"
+msgstr "Guany"
+#
+msgid "Guard Zone"
+msgstr "Zona de vigilància"
+#
+msgid "Guard Zone Active"
+msgstr "Zona de Vigilància Activa"
+#
+msgid "Guard Zone Sound"
+msgstr "So de la zona de vigilància"
+#
+msgid "Guard Zone Styling"
+msgstr "Estil de la Zona de Vigilància"
+#
+msgid "Guard zone"
+msgstr "Zona de Vigilància"
+#
+msgid "Guard zones"
+msgstr "Zones de vigilància"
+#
+msgid "HDM"
+msgstr "HDM"
+#
+msgid "HDT"
+msgstr "HDT"
+#
+msgid "Heading"
+msgstr ""
+#
+msgid ""
+"Heading correction\n"
+"(-180 to +180)"
+msgstr ""
+"Correcció de rumb\n"
+"(-180 a +180)"
+#
+msgid "High"
+msgstr "Alt"
+#
+msgid "Info"
+msgstr "Info"
+#
+msgid "Inner range"
+msgstr "Rang interior"
+#
+msgid "Installation"
+msgstr "Instal·lació"
+#
+msgid "Interference rejection"
+msgstr "Rebuig de la interferència"
+#
+msgid "Invalid IP address for UDP multicast"
+msgstr "Adreça IP invàlida pel multicast UDP"
+#
+msgid "Invalid multicast address"
+msgstr "Adreça multicast invàlida"
+#
+msgid "Kilometers"
+msgstr "Kilòmetres"
+#
+msgid "Local interference rejection"
+msgstr "Rebuig d'interferència local"
+#
+msgid "Low"
+msgstr "Baix"
+#
+msgid "Medium"
+msgstr "Mitjà"
+#
+msgid "Menu"
+msgstr "Menu"
+#
+msgid "Monocolor-Red"
+msgstr "Vermel-monocolor"
+#
+msgid "Multi Sweep Filter"
+msgstr "Filtre multi-escombrat"
+#
+msgid "Multi Sweep Filter On"
+msgstr "Filtre multi-escombrat actiu"
+#
+msgid "Multi-color"
+msgstr "Multicolor"
+#
+msgid "Multi-color 2"
+msgstr "Multi-color 2"
+#
+msgid "NMEA"
+msgstr "NMEA"
+#
+msgid "Nautical Miles"
+msgstr "Milles nàutiques"
+#
+msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+msgstr "Connector de radar Navico BR32/3G/4G per a OpenCPN\n"
+#
+msgid "Navico Radar PlugIn for OpenCPN"
+msgstr "Connector de Radar Navico per a OpenCPN"
+#
 #, c-format
 msgid "Next alarm in %d s"
 msgstr "Nova alarma a %d s"
-
-#: src/GuardZoneControls.cpp:133
-msgid "Guard zones"
-msgstr "Zones de vigilància"
-
-#: src/GuardZoneControls.cpp:137 src/br24radarcontrol.cpp:603
-#: src/br24radarcontrol.cpp:616 src/br24radarcontrol.cpp:628
-#: src/br24radarcontrol.cpp:644 src/br24radarcontrol.cpp:684
-#: src/br24radarcontrol.cpp:768
-msgid "Off"
-msgstr "Apagat"
-
-#: src/GuardZoneControls.cpp:138 src/br24radarcontrol.cpp:769
-msgid "Arc"
-msgstr "Sector"
-
-#: src/GuardZoneControls.cpp:139 src/br24radarcontrol.cpp:770
-msgid "Circle"
-msgstr "Cercle"
-
-#: src/GuardZoneControls.cpp:140
-msgid "Zone type:"
-msgstr "Tipus de zona:"
-
-#: src/GuardZoneControls.cpp:152
-msgid "Inner range"
-msgstr "Rang interior"
-
-#: src/GuardZoneControls.cpp:161
-msgid "Outer range"
-msgstr "Rang exterior"
-
-#: src/GuardZoneControls.cpp:171
-msgid "Start bearing"
-msgstr "Iniciar rumb"
-
-#: src/GuardZoneControls.cpp:181
-msgid "End bearing"
-msgstr "Acabar rumb"
-
-#: src/GuardZoneControls.cpp:192 src/br24radarcontrol.cpp:532
-msgid "&Close"
-msgstr "&Tanca"
-
-#: src/GuardZoneControls.cpp:233
-msgid "Guard Zone"
-msgstr "Zona de vigilància"
-
-#: src/br24radar_pi.cpp:528
-msgid "Radar Control..."
-msgstr "Control de Radar..."
-
-#: src/br24radar_pi.cpp:530
-msgid "Menu"
-msgstr "Menu"
-
-#: src/br24radar_pi.cpp:537
-msgid "Set Guard Point"
-msgstr "Definir Punt de Vigilància"
-
-#: src/br24radar_pi.cpp:635
-msgid "Navico Radar PlugIn for OpenCPN"
-msgstr "Connector de Radar Navico per a OpenCPN"
-
-#: src/br24radar_pi.cpp:641
-msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
-msgstr "Connector de radar Navico BR32/3G/4G per a OpenCPN\n"
-
-#: src/br24radar_pi.cpp:706
-msgid "BR24 Target Display Preferences"
-msgstr "Preferències de visualització d'objectiu BR24"
-
-#: src/br24radar_pi.cpp:729
-msgid "Nautical Miles"
-msgstr "Milles nàutiques"
-
-#: src/br24radar_pi.cpp:730
-msgid "Kilometers"
-msgstr "Kilòmetres"
-
-#: src/br24radar_pi.cpp:733
-msgid "Range Units"
-msgstr "Unitats de distància"
-
-#: src/br24radar_pi.cpp:745
-msgid "Monocolor-Red"
-msgstr "Vermel-monocolor"
-
-#: src/br24radar_pi.cpp:746
-msgid "Multi-color"
-msgstr "Multicolor"
-
-#: src/br24radar_pi.cpp:747
-msgid "Multi-color 2"
-msgstr "Multi-color 2"
-
-#: src/br24radar_pi.cpp:750
-msgid "Overlay Display Options"
-msgstr "Opcións de visualització de pantalla"
-
-#: src/br24radar_pi.cpp:761
-msgid "Radar Display"
-msgstr "Pantalla Radar"
-
-#: src/br24radar_pi.cpp:773
-msgid "Shading"
-msgstr "Ombrejat"
-
-#: src/br24radar_pi.cpp:774
-msgid "Outline"
-msgstr "Contorn"
-
-#: src/br24radar_pi.cpp:775
-msgid "Shading + Outline"
-msgstr "Ombrejat + contorn"
-
-#: src/br24radar_pi.cpp:777
-msgid "Guard Zone Styling"
-msgstr "Estil de la Zona de Vigilància"
-
-#: src/br24radar_pi.cpp:788
-msgid "Calibration"
-msgstr "Calibració"
-
-#: src/br24radar_pi.cpp:793
-msgid "Heading correction\n"
-"(-180 to +180)"
-msgstr "Correcció de rumb\n"
-"(-180 a +180)"
-
-#: src/br24radar_pi.cpp:805
-msgid "Guard Zone Sound"
-msgstr "So de la zona de vigilància"
-
-#: src/br24radar_pi.cpp:809
-msgid "Select Alert Sound"
-msgstr "So d'alerta seleccionat"
-
-#: src/br24radar_pi.cpp:814
-msgid "Test Alert Sound"
-msgstr "Comprova so d'alerta"
-
-#: src/br24radar_pi.cpp:820
-msgid "Options"
-msgstr ""
-
-#: src/br24radar_pi.cpp:824
-msgid "Pass radar heading to OpenCPN"
-msgstr ""
-
-#: src/br24radar_pi.cpp:870
-msgid "Select Sound File"
-msgstr "Selecciona fitxer de so"
-
-#: src/br24radar_pi.cpp:871
-msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
-msgstr "Arxius WAV (*.wav)|*.wav|Tots els fitxers (*.*)|*.*"
-
-#: src/br24radar_pi.cpp:992 src/br24radar_pi.h:823
-msgid " Guard Zone Control"
-msgstr " Control de la Zona de Vigilància"
-
-#: src/br24radar_pi.cpp:2019
-msgid "GPS"
-msgstr ""
-
-#: src/br24radar_pi.cpp:2039
-msgid "radar"
-msgstr ""
-
-#: src/br24radar_pi.cpp:2052
-msgid "HDM"
-msgstr ""
-
-#: src/br24radar_pi.cpp:2065
-msgid "HDT"
-msgstr ""
-
-#: src/br24radar_pi.cpp:2078
-msgid "COG"
-msgstr ""
-
-#: src/br24radar_pi.cpp:2114
-msgid "WMM"
-msgstr ""
-
-#: src/br24radar_pi.cpp:2525
-msgid "NMEA"
-msgstr ""
-
-#: src/br24radar_pi.cpp:2713
-msgid "Cannot create UDP socket"
-msgstr "No es pot crear la connexió UDP"
-
-#: src/br24radar_pi.cpp:2717
-msgid "Cannot set reuse address option on socket"
-msgstr "No es pot posar l'opció de reutilitzar l'adreça en la connexió"
-
-#: src/br24radar_pi.cpp:2722
-msgid "Cannot bind UDP socket to port "
-msgstr "No es pot unir la connexió UDP al port "
-
-#: src/br24radar_pi.cpp:2731
-msgid "Invalid multicast address"
-msgstr "Adreça multicast invàlida"
-
-#: src/br24radar_pi.cpp:2736
-msgid "Invalid IP address for UDP multicast"
-msgstr "Adreça IP invàlida pel multicast UDP"
-
-#: src/br24radar_pi.cpp:2770
-msgid "emulator"
-msgstr "emulador"
-
-#: src/br24radar_pi.h:229
-msgid "Radar Chart Overlay"
-msgstr "Sobreposició de la carta del radar"
-
-#: src/br24radar_pi.h:230
-msgid "Radar Standalone"
-msgstr "Radar independent"
-
-#: src/br24radar_pi.h:231
-msgid "Spectrum"
-msgstr "Espectre"
-
-#: src/br24radar_pi.h:232
-msgid "Emulator"
-msgstr "Emulador"
-
-#: src/br24radar_pi.h:693
-msgid "Radar"
-msgstr "Radar"
-
-#: src/br24radar_pi.h:877
-msgid "Guard Zone Active"
-msgstr "Zona de Vigilància Activa"
-
-#: src/br24radar_pi.h:923 src/br24radarcontrol.cpp:439
-#: src/br24radarcontrol.cpp:693
-msgid "Timed Transmit"
-msgstr "Transmissió a intervals"
-
-#: src/br24radarcontrol.cpp:309 src/br24radarcontrol.cpp:337
-#: src/br24radarcontrol.cpp:443 src/br24radarcontrol.cpp:576
-msgid "Auto"
-msgstr "Automàtic"
-
-#: src/br24radarcontrol.cpp:402 src/br24radarcontrol.cpp:528
-msgid "Dialog"
-msgstr "Diàleg"
-
-#: src/br24radarcontrol.cpp:431 src/br24radarcontrol.cpp:596
-msgid "Transparency"
-msgstr "Transparència"
-
-#: src/br24radarcontrol.cpp:432 src/br24radarcontrol.cpp:608
-msgid "Interference rejection"
-msgstr "Rebuig de la interferència"
-
-#: src/br24radarcontrol.cpp:433 src/br24radarcontrol.cpp:649
-msgid "Target separation"
-msgstr "Separar ecos, objectius"
-
-#: src/br24radarcontrol.cpp:434 src/br24radarcontrol.cpp:632
+#
 msgid "Noise rejection"
 msgstr "Eliminar soroll"
-
-#: src/br24radarcontrol.cpp:435 src/br24radarcontrol.cpp:619
-msgid "Target boost"
-msgstr "Impuls de destinació"
-
-#: src/br24radarcontrol.cpp:436 src/br24radarcontrol.cpp:667
-msgid "Downsample"
-msgstr "Disminuir resolució"
-
-#: src/br24radarcontrol.cpp:437 src/br24radarcontrol.cpp:659
-msgid "Scan speed"
-msgstr "Velocitat d'escaneig"
-
-#: src/br24radarcontrol.cpp:438 src/br24radarcontrol.cpp:679
-msgid "Scan age"
-msgstr "Durabilitat de la imatge"
-
-#: src/br24radarcontrol.cpp:440 src/br24radarcontrol.cpp:714
-msgid "Gain"
-msgstr "Guany"
-
-#: src/br24radarcontrol.cpp:441 src/br24radarcontrol.cpp:718
-msgid "Sea clutter"
-msgstr "Soroll de mar"
-
-#: src/br24radarcontrol.cpp:442 src/br24radarcontrol.cpp:722
-msgid "Rain clutter"
-msgstr "Soroll de pluja"
-
-#: src/br24radarcontrol.cpp:479
-msgid "Radar overlay requires the following data"
-msgstr "La superposició de radar requereix les següents dades"
-
-#: src/br24radarcontrol.cpp:482
-msgid "OpenCPN options"
-msgstr "Opcions d'OpenCPN"
-
-#: src/br24radarcontrol.cpp:487
-msgid "Accelerated Graphics (OpenGL)"
-msgstr "Acceleració de gràfics (OpenGL)"
-
-#: src/br24radarcontrol.cpp:492
-msgid "Data sources"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:497
-msgid "Boat position"
-msgstr "Posició del vaixell"
-
-#: src/br24radarcontrol.cpp:502 src/br24radarcontrol.cpp:1050
-msgid "Heading"
-msgstr "Encapçalament"
-
-#: src/br24radarcontrol.cpp:507 src/br24radarcontrol.cpp:1060
-msgid "Variation"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:512 src/br24radarcontrol.cpp:1040
-msgid "ZeroConf via (wired) Ethernet"
-msgstr "ZeroConf via Ethernet (connectat per cable)"
-
-#: src/br24radarcontrol.cpp:517
-msgid "Radar present"
-msgstr "Radar connectat"
-
-#: src/br24radarcontrol.cpp:522
-msgid "Radar sending data"
-msgstr "Radar enviant dades"
-
-#: src/br24radarcontrol.cpp:527
-msgid "Statistics"
-msgstr "Estadístiques"
-
-#: src/br24radarcontrol.cpp:545
-msgid "<<\n"
-"Back"
-msgstr "<<\n"
-"Endarrere"
-
-#: src/br24radarcontrol.cpp:550
-msgid "+10"
-msgstr "+10"
-
-#: src/br24radarcontrol.cpp:555
-msgid "+"
-msgstr "+"
-
-#: src/br24radarcontrol.cpp:560
-msgid "Value"
-msgstr "Valor"
-
-#: src/br24radarcontrol.cpp:566
-msgid "-"
-msgstr "-"
-
-#: src/br24radarcontrol.cpp:571
-msgid "-10"
-msgstr "-10"
-
-#: src/br24radarcontrol.cpp:590
-msgid "Back"
-msgstr "Endarrere"
-
-#: src/br24radarcontrol.cpp:604 src/br24radarcontrol.cpp:617
-#: src/br24radarcontrol.cpp:629 src/br24radarcontrol.cpp:645
-msgid "Low"
-msgstr "Baix"
-
-#: src/br24radarcontrol.cpp:605 src/br24radarcontrol.cpp:646
-msgid "Medium"
-msgstr "Mitjà"
-
-#: src/br24radarcontrol.cpp:606 src/br24radarcontrol.cpp:618
-#: src/br24radarcontrol.cpp:630 src/br24radarcontrol.cpp:647
-msgid "High"
-msgstr "Alt"
-
-#: src/br24radarcontrol.cpp:657
+#
 msgid "Normal"
 msgstr "Normal"
-
-#: src/br24radarcontrol.cpp:658
-msgid "Fast"
-msgstr "Ràpid"
-
-#: src/br24radarcontrol.cpp:673
-msgid "Refresh rate"
-msgstr "Índex d'actualització"
-
-#: src/br24radarcontrol.cpp:685
-msgid "5 min"
-msgstr "5 min"
-
-#: src/br24radarcontrol.cpp:686
-msgid "10 min"
-msgstr "10 min"
-
-#: src/br24radarcontrol.cpp:687
-msgid "15 min"
-msgstr "15 min"
-
-#: src/br24radarcontrol.cpp:688
-msgid "20 min"
-msgstr "20 min"
-
-#: src/br24radarcontrol.cpp:689
-msgid "25 min"
-msgstr "25 min"
-
-#: src/br24radarcontrol.cpp:690
-msgid "30 min"
-msgstr "30 min"
-
-#: src/br24radarcontrol.cpp:691
-msgid "35 min"
-msgstr "35 min"
-
-#: src/br24radarcontrol.cpp:710
+#
+msgid "Now Idle for"
+msgstr "Ara inactiu durant"
+#
+msgid "Now Transmit for"
+msgstr "Transmetre ara per a"
+#
+msgid "OFF"
+msgstr "Desactivat"
+#
+msgid "ON"
+msgstr "Activat"
+#
+msgid "Off"
+msgstr "Apagat"
+#
+msgid "OpenCPN options"
+msgstr ""
+#
+msgid "Options"
+msgstr "Opcions"
+#
+msgid "Outer range"
+msgstr "Rang exterior"
+#
+msgid "Outline"
+msgstr "Contorn"
+#
+msgid "Overlay / Radar"
+msgstr "Superposició / Radar"
+#
+msgid "Overlay Display Options"
+msgstr "Opcións de visualització de pantalla"
+#
+msgid "Pass radar heading to OpenCPN"
+msgstr "Enviar el rumb del radar al OpenCPN"
+#
+msgid "Radar"
+msgstr "Radar"
+#
+msgid "Radar A"
+msgstr "Radar A"
+#
+msgid "Radar A - OFF"
+msgstr "Radar A - apagat"
+#
+msgid "Radar A - ON"
+msgstr "Radar A - Actiu"
+#
+msgid "Radar A - Stby"
+msgstr "Radar A - Esperant"
+#
+msgid "Radar A / B"
+msgstr "Radar A / B"
+#
+msgid "Radar A:\n"
+msgstr "Radar A:\n"
+#
+msgid "Radar B"
+msgstr "Radar B"
+#
+msgid "Radar B - OFF"
+msgstr "Radar B - apagat"
+#
+msgid "Radar B - ON"
+msgstr "Radar B - Actiu"
+#
+msgid "Radar B - Stby"
+msgstr "Radar B - Esperant"
+#
+msgid "Radar B:\n"
+msgstr "Radar B:\n"
+#
+msgid "Radar Control..."
+msgstr "Control de Radar..."
+#
+msgid "Radar IP"
+msgstr ""
+#
+msgid "Radar Only / Overlay"
+msgstr "Només radar / sobreposat"
+#
+msgid "Radar Only, Head Up"
+msgstr "Només Radar, proa amunt"
+#
+msgid "Radar Only, Head Up\n"
+msgstr "Només Radar, proa amunt\n"
+#
+msgid "Radar Overlay"
+msgstr "Superposició de radar"
+#
+msgid "Radar present"
+msgstr ""
+#
+msgid "Radar requires the following"
+msgstr ""
+#
+msgid "Radar sending data"
+msgstr ""
+#
+msgid "Rain clutter"
+msgstr "Soroll de pluja"
+#
 msgid "Range"
 msgstr "Distància"
-
-#: src/br24radarcontrol.cpp:726
-msgid "Advanced\n"
-"controls"
-msgstr "Avançats\n"
-"controls"
-
-#: src/br24radarcontrol.cpp:732 src/br24radarcontrol.cpp:739
-#: src/br24radarcontrol.cpp:773 src/br24radarcontrol.cpp:776
-msgid "Guard zone"
-msgstr "Zona de Vigilància"
-
-#: src/br24radarcontrol.cpp:745
-msgid "Info"
+#
+msgid "Range Units"
+msgstr "Unitats de distància"
+#
+msgid "Refresh rate"
+msgstr "Índex d'actualització"
+#
+msgid "Remote"
+msgstr "Remot"
+#
+msgid "Scan age"
+msgstr "Durabilitat de la imatge"
+#
+msgid "Scan speed"
+msgstr "Velocitat d'escaneig"
+#
+msgid "Sea clutter"
+msgstr "Soroll de mar"
+#
+msgid "Select Alert Sound"
+msgstr "So d'alerta seleccionat"
+#
+msgid "Select Sound File"
+msgstr "Selecciona fitxer de so"
+#
+msgid "Set Guard Point"
+msgstr "Definir Punt de Vigilància"
+#
+msgid "Shading"
+msgstr "Ombrejat"
+#
+msgid "Shading + Outline"
+msgstr "Ombrejat + contorn"
+#
+msgid "Side lobe suppression"
+msgstr "Supressió del lòbul lateral"
+#
+msgid "Start bearing"
+msgstr "Iniciar rumb"
+#
+msgid "Statistics"
 msgstr ""
-
-#: src/br24radarcontrol.cpp:1030
-msgid "Radar IP"
-msgstr "IP del radar"
-
-#: src/Idle_Dialog.cpp:105
-msgid "Idle time is set to"
-msgstr "Temps d'inactivitat definit per"
-
-#: src/Idle_Dialog.cpp:106
-msgid "minutes"
-msgstr "minuts"
-
-#: src/Idle_Dialog.cpp:107
-msgid "ca."
-msgstr "ca."
-
-#: src/Idle_Dialog.cpp:108
-msgid "minutes until next run"
-msgstr "minuts fins la propera execució"
-
-#: src/Idle_Dialog.cpp:118
-msgid "Radar scanner is Idling"
-msgstr "El Ràdar de l'escanner està inactiu"
-
-#: src/Idle_Dialog.cpp:133
+#
+msgid "Target boost"
+msgstr "Impuls de destinació"
+#
+msgid "Target separation"
+msgstr "Separar ecos, objectius"
+#
+msgid "Test Alert Sound"
+msgstr "Comprova so d'alerta"
+#
+msgid "Timed Transmit"
+msgstr "Transmissió a intervals"
+#
+msgid "Timed transmit is active"
+msgstr "Activada la transmissió a intervals"
+#
+msgid "Transparency"
+msgstr "Transparència"
+#
 msgid "Turn Radar always ON"
 msgstr "Engegar Radar sempre"
-
+#
+msgid "Value"
+msgstr "Valor"
+#
+msgid "Variation"
+msgstr ""
+#
+msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+msgstr "Arxius WAV (*.wav)|*.wav|Tots els fitxers (*.*)|*.*"
+#
+msgid "WMM"
+msgstr "WMM"
+#
+msgid ""
+"Warning: Targets may be\n"
+"missed with filter on"
+msgstr ""
+"Avís: Els Objectius poden\n"
+"desaparèixer a l'activar el filtre"
+#
+msgid "ZeroConf E'net"
+msgstr ""
+#
+msgid "ZeroConf via Ethernet"
+msgstr ""
+#
+msgid "Zone"
+msgstr "Zona"
+#
+msgid ""
+"Zone 1: unknown\n"
+"Zone 2: unknown\n"
+"Timeout\n"
+msgstr ""
+"Zona 1: desconegut\n"
+"Zona 2: desconegut\n"
+"Temps esgotat\n"
+#
+msgid "Zone type:"
+msgstr "Tipus de zona:"
+#
+msgid "emulator"
+msgstr "emulador"
+#
+msgid "minutes"
+msgstr "minuts"
+#
+msgid "minutes to shifting"
+msgstr "minuts pel desplaçament"
+#
+msgid "radar"
+msgstr "radar"
