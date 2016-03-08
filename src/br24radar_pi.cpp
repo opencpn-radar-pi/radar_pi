@@ -571,7 +571,6 @@ int br24radar_pi::Init(void)
                                       //      - vp->skew * settings.skew_factor   not yet known here
          
     angle_correction_raw = (angle_correction * LINES_PER_ROTATION) / 360;
-    wxLogMessage(wxT("BR24radar_pi: Version 1.301"));
 
     memset(&guardZones[0][0], 0, sizeof(guardZones));
 
