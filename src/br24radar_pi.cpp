@@ -219,14 +219,12 @@ int br24radar_pi::Init(void) {
 
   pmi = new wxMenuItem(m_pmenu, -1, _("Show Radar"));
 #ifdef __WXMSW__
-  wxFont *qFont = OCPNGetFont(_("Menu"), 10);
   pmi->SetFont(*qFont);
 #endif
   m_context_menu_show_window_id = AddCanvasContextMenuItem(pmi, this);
 
   pmi = new wxMenuItem(m_pmenu, -1, _("Hide Radar"));
 #ifdef __WXMSW__
-  wxFont *qFont = OCPNGetFont(_("Menu"), 10);
   pmi->SetFont(*qFont);
 #endif
   m_context_menu_hide_window_id = AddCanvasContextMenuItem(pmi, this);
@@ -246,7 +244,7 @@ int br24radar_pi::Init(void) {
   m_initialized = true;
   wxLogMessage(wxT("BR24radar_pi: Initialized plugin"));
 
-  SetRadarWindowViz(m_settings.show_radar);
+  SetRadarWindowViz(m_settings.show_radar != 0);
 
   return PLUGIN_OPTIONS;
 }
@@ -339,7 +337,7 @@ bool br24radar_pi::SetRadarWindowViz(bool show) {
   SetCanvasContextMenuItemViz(m_context_menu_hide_window_id, show);
   wxLogMessage(wxT("BR24radar_pi: RadarWindow visibility = %d"), (int)show);
 
-  if (show != m_settings.show_radar) {
+  if (show != (m_settings.show_radar != 0)) {
     return true;
   }
   return false;

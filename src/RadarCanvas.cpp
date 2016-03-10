@@ -109,8 +109,8 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, int range) {
   float r = wxMax(w, h) / 2.0;
 
   // Position of the range texts
-  float x = sinf(0.25 * PI) * r * 0.25;
-  float y = cosf(0.25 * PI) * r * 0.25;
+  float x = sinf((float)(0.25 * PI)) * r * 0.25;
+  float y = cosf((float)(0.25 * PI)) * r * 0.25;
   float center_x = w / 2.0;
   float center_y = h / 2.0;
 
@@ -122,7 +122,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, int range) {
   glLineWidth(1.0);
 
   for (int i = 1; i <= 4; i++) {
-    DrawArc(w / 2.0, h / 2.0, r * i * 0.25, 0.0, 2.0 * PI, 360);
+    DrawArc(w / 2.0, h / 2.0, r * i * 0.25, 0.0, 2.0 * (float)PI, 360);
     if (range) {
       const char *s = convertRadarToString(range, m_pi->m_settings.range_units, i - 1);
       if (s) {
