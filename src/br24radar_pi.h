@@ -372,7 +372,6 @@ public:
     void SetPluginMessage(wxString &message_id, wxString &message_body);
     void SetCursorLatLon(double lat, double lon);
     void OnContextMenuItemCallback(int id);
-    void SetNMEASentence(wxString &sentence);
     bool data_seenAB[2];
 
     void SetDefaults(void);

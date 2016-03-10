@@ -4,3 +4,4 @@ src/br24radar_pi.cpp
 src/br24radar_pi.h
 src/br24radarcontrol.cpp
 src/Idle_Dialog.cpp
+src/br24MessageBox.cpp

@@ -14,10 +14,12 @@ PROJECT(br24radar_pi)
 SET(PACKAGE_NAME br24radar_pi)
 SET(VERBOSE_NAME BR24Radar)
 SET(TITLE_NAME BR24Radar)
-SET(CPACK_PACKAGE_CONTACT "kees@verruijt.net")
+SET(CPACK_PACKAGE_CONTACT "df@percussion.nl")
 
 SET(VERSION_MAJOR "1")
-SET(VERSION_MINOR "303")
+SET(VERSION_MINOR "31")
+
+#SET(CMAKE_BUILD_TYPE Debug)
 
 INCLUDE("cmake/PluginConfigure.cmake")
 
@@ -25,13 +27,13 @@ INCLUDE("cmake/PluginConfigure.cmake")
 # header files and cpp/c files and CMake will sort them out
 
 SET(SRC_br24radar
-        src/GuardZoneBogey.cpp
-        src/GuardZoneControls.cpp
-        src/Idle_Dialog.cpp
-        src/br24MessageBox.cpp
-        src/br24radar_pi.cpp
-        src/br24radar_pi.h
-        src/br24radarcontrol.cpp
+            src/br24radar_pi.h
+            src/br24radar_pi.cpp
+            src/br24radarcontrol.cpp
+            src/br24MessageBox.cpp
+            src/GuardZoneControls.cpp
+            src/GuardZoneBogey.cpp
+            src/Idle_Dialog.cpp
 )
 SET(SRC_NMEA0183
         src/nmea0183/nmea0183.cpp
