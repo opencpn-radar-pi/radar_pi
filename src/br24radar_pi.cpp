@@ -573,7 +573,6 @@ int br24radar_pi::Init(void)
                                       //      - vp->skew * settings.skew_factor   not yet known here
          
     angle_correction_raw = (angle_correction * LINES_PER_ROTATION) / 360;
-    wxLogMessage(wxT("BR24radar_pi: XXX angle correction =%d"), angle_correction_raw);
 
     memset(&guardZones[0][0], 0, sizeof(guardZones));
 
@@ -2930,70 +2929,6 @@ void br24radar_pi::CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollov
 }
 
 
-/*
-   SetNMEASentence is used to speed up rotation and variation
-   detection if SetPositionEx() is not called very often. This will
-   be the case if you have a high speed heading sensor (for instance, 2 to 20 Hz)
-   but only a 1 Hz GPS update.
-
-   Note that the type of heading source is only updated in SetPositionEx().
-*/
-
-void br24radar_pi::SetNMEASentence( wxString &sentence )
-{
-    m_NMEA0183 << sentence;
-    time_t now = time(0);
-
-    if (m_NMEA0183.PreParse()) {
-        if (m_NMEA0183.LastSentenceIDReceived == _T("HDG") && m_NMEA0183.Parse()) {
-            if (settings.verbose >= 2) {
-                wxLogMessage(wxT("BR24radar_pi: received HDG variation=%f var_source=%d br_var=%f"), m_NMEA0183.Hdg.MagneticVariationDegrees, br_var_source, br_var);
-            }
-            if (!wxIsNaN(m_NMEA0183.Hdg.MagneticVariationDegrees) &&
-                (br_var_source <= VARIATION_SOURCE_NMEA || (br_var == 0.0 && m_NMEA0183.Hdg.MagneticVariationDegrees > 0.0))) {
-                double newVar;
-                if (m_NMEA0183.Hdg.MagneticVariationDirection == East) {
-                    newVar = +m_NMEA0183.Hdg.MagneticVariationDegrees;
-                }
-                else {
-                    newVar = -m_NMEA0183.Hdg.MagneticVariationDegrees;
-                }
-                if (fabs(newVar - br_var) >= 0.1) {
-                    if (settings.verbose)wxLogMessage(wxT("BR24radar_pi: NMEA provides new magnetic variation %f"), newVar);
-                }
-                br_var = newVar;
-                br_var_source = VARIATION_SOURCE_NMEA;
-                br_var_watchdog = now;
-                if (m_pMessageBox) {
-                    if (m_pMessageBox->IsShown()) {
-                        wxString info = _("NMEA");
-                        info << wxT(" ") << br_var;
-                        m_pMessageBox->SetVariationInfo(info);
-                    }
-                }
-            }
-            if (m_heading_source == HEADING_HDM && !wxIsNaN(m_NMEA0183.Hdg.MagneticSensorHeadingDegrees)) {
-                br_hdt = m_NMEA0183.Hdg.MagneticSensorHeadingDegrees + br_var;
-                br_hdt_watchdog = now;
-            }
-        }
-        else if (m_heading_source == HEADING_HDM
-              && m_NMEA0183.LastSentenceIDReceived == _T("HDM")
-              && m_NMEA0183.Parse()
-              && !wxIsNaN(m_NMEA0183.Hdm.DegreesMagnetic)) {
-            br_hdt = m_NMEA0183.Hdm.DegreesMagnetic + br_var;
-            br_hdt_watchdog = now;
-        }
-        else if (m_heading_source == HEADING_HDT
-              && m_NMEA0183.LastSentenceIDReceived == _T("HDT")
-              && m_NMEA0183.Parse()
-              && !wxIsNaN(m_NMEA0183.Hdt.DegreesTrue)) {
-            br_hdt = m_NMEA0183.Hdt.DegreesTrue;
-            br_hdt_watchdog = now;
-        }
-    }
-}
-
 
 // Ethernet packet stuff *************************************************************
 
@@ -3206,11 +3141,11 @@ void *RadarDataReceiveThread::Entry(void)
         if (pPlugIn->settings.emulator_on) {
             socketReady(INVALID_SOCKET, 1000); // sleep for 1s
             emulate_fake_buffer();
-            if (pPlugIn->m_pMessageBox) {
+            /*if (pPlugIn->m_pMessageBox) {
                 wxString ip;
                 ip << _("emulator");
                 pPlugIn->m_pMessageBox->SetRadarIPAddress(ip);
-            }
+            }*/
         }
         else {
             if (rx_socket == INVALID_SOCKET) {
@@ -3460,9 +3395,9 @@ void RadarDataReceiveThread::emulate_fake_buffer(void)
     if (range_meters != br_range_meters[AB]) {
         br_range_meters[AB] = range_meters;
         // Set the control's value to the real range that we received, not a table idea
-        if (pPlugIn->m_pControlDialog) {
+       /* if (pPlugIn->m_pControlDialog) {
             pPlugIn->m_pControlDialog->SetRangeIndex(convertMetersToRadarAllowedValue(&range_meters, pPlugIn->settings.range_units, br_radar_type));
-        }
+        }*/
     }
     for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
         int angle_raw = next_scan_number;
