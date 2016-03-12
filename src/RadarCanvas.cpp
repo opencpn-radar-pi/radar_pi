@@ -159,6 +159,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, int range) {
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
   int sq;  // square size, minimum of w, h.
+  double proportion;
 
   if (!IsShown() || !m_pi->m_initialized) {
     return;
@@ -170,7 +171,10 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   }
 
   GetClientSize(&w, &h);
-  sq = wxMax(w, h);
+  proportion = (double)w / (double)h;
+  proportion = wxMin(proportion, 1.33);
+  proportion = wxMax(proportion, 0.75);
+  sq = (int)((double)wxMax(w, h) / proportion);
 
   if (m_pi->m_settings.verbose >= 2) {
     wxLogMessage(wxT("BR24radar_pi: %s render OpenGL canvas %d by %d "), m_ri->name.c_str(), w, h);

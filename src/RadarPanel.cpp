@@ -48,13 +48,16 @@ RadarPanel::RadarPanel(br24radar_pi* pi, RadarInfo* ri, wxWindow* parent)
 
 bool RadarPanel::Create() {
   m_aui_mgr = GetFrameAuiManager();
+
   m_aui_name = wxString::Format(wxT("BR24radar_pi-%d"), m_ri->radar);
   wxAuiPaneInfo pane = wxAuiPaneInfo()
                            .Name(m_aui_name)
                            .Caption(m_ri->name)
                            .CaptionVisible(true)  // Show caption even when docked
-                           .Dockable(true)        // Dockable everywhere
-                           .Float()
+                           .TopDockable(false)
+                           .BottomDockable(false)
+                           .RightDockable(true)
+                           .LeftDockable(true)
                            .CloseButton(true)
                            .Gripper(false);
 
@@ -76,14 +79,16 @@ bool RadarPanel::Create() {
   Refresh();
 
   wxSize screen_size = ::wxGetDisplaySize();
-  int best_size = wxMin(screen_size.x, screen_size.y) / 2;
-  int min_size = wxMin(best_size, 256);
 
-  pane.MinSize(wxSize(min_size, min_size));
-  pane.BestSize(wxSize(best_size, best_size));
-  pane.FloatingSize(wxSize(best_size, best_size));
+  wxSize best_size;
+  best_size.x = screen_size.x / 2;
+  best_size.y = screen_size.y / 2;
 
-  //m_aui_mgr->SetArtProvider(wxAuiDockArt *artProvider)
+  pane.MinSize(wxSize(256, 256));
+  pane.BestSize(best_size);
+  pane.FloatingSize(wxSize(512, 512));
+  pane.Float();
+  pane.dock_proportion = 100000;  // Secret sauce to get panels to use entire bar
 
   m_aui_mgr->AddPane(this, pane);
   m_aui_mgr->Update();
@@ -110,10 +115,7 @@ RadarPanel::~RadarPanel() {
 
 void RadarPanel::SetCaption(wxString name) { m_aui_mgr->GetPane(this).Caption(name); }
 
-void RadarPanel::close(wxAuiManagerEvent& event) {
-  // m_visible = false;
-  event.Skip();
-}
+void RadarPanel::close(wxAuiManagerEvent& event) { event.Skip(); }
 
 void RadarPanel::ShowFrame(bool visible) {
   wxLogMessage(wxT("BR24radar_pi %s: visible %d"), m_ri->name.c_str(), visible);

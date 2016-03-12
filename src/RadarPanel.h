@@ -46,6 +46,7 @@ class RadarPanel : public wxPanel {
   void ShowFrame(bool visible);
 
   void close(wxAuiManagerEvent& event);
+
   wxPoint GetPos();
 
  private:
