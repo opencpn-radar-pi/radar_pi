@@ -280,7 +280,6 @@ class br24radar_pi : public opencpn_plugin_110 {
   void OnControlDialogClose(RadarInfo *ri);
   void OnMessageBoxClose();
   void SetDisplayMode(DisplayModeType mode);
-  void UpdateDisplayParameters(void);
 
   void ShowRadarControl(int radar, bool show = true);
   void ShowGuardZoneDialog(int radar, int zone);

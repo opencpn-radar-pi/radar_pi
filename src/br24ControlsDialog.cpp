@@ -449,7 +449,7 @@ bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* 
   m_ri = ri;
 
   m_hide = false;
-  m_hide_temporarily = false;
+  m_hide_temporarily = true;
 
 #ifdef wxMSW
   long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN | wxSTAY_ON_TOP | wxFRAME_FLOAT_ON_PARENT;
@@ -898,7 +898,6 @@ void br24ControlsDialog::CreateControls() {
 
   UpdateGuardZoneState();
 
-  m_pi->UpdateDisplayParameters();
   DimeWindow(this);  // Call OpenCPN to change colours depending on day/night mode
   Fit();
   // wxSize size_min = GetBestSize();

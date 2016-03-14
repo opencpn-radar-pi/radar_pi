@@ -437,8 +437,6 @@ void br24radar_pi::ComputeColorMap() {
   m_color_map_blue[BLOB_BLUE] = 255;
 }
 
-void br24radar_pi::UpdateDisplayParameters(void) { m_parent_window->Refresh(false); }
-
 //*******************************************************************************
 // ToolBar Actions
 
