@@ -83,6 +83,8 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
 }
 
 RadarInfo::~RadarInfo() {
+  wxMutexLocker lock(m_mutex);
+
   m_quit = true;
 
   m_timer->Stop();
@@ -101,9 +103,11 @@ RadarInfo::~RadarInfo() {
   }
   if (m_draw_panel.draw) {
     delete m_draw_panel.draw;
+    m_draw_panel.draw = 0;
   }
   if (m_draw_overlay.draw) {
     delete m_draw_overlay.draw;
+    m_draw_overlay.draw = 0;
   }
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     delete guard_zone[z];
@@ -186,6 +190,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
                                   wxLongLong nowMillis) {
   UINT8 *hist_data = history[angle];
   bool calc_history = multi_sweep_filter;
+  wxMutexLocker lock(m_mutex);
 
   if (this->range_meters != range_meters) {
     // Wipe ALL spokes
@@ -332,6 +337,8 @@ bool RadarInfo::SetControlValue(ControlType controlType, int value) { return tra
 void RadarInfo::ShowRadarWindow(bool show) { radar_panel->ShowFrame(show); }
 
 void RadarInfo::UpdateControlState(bool all) {
+  wxMutexLocker lock(m_mutex);
+
   overlay.Update(m_pi->m_settings.chart_overlay == radar);
   if (overlay.value == 0 && m_draw_overlay.draw) {
     wxLogMessage(wxT("BR24radar_pi: Removing draw method as radar overlay is not shown"));
@@ -382,6 +389,7 @@ void RadarInfo::UpdateControlState(bool all) {
 }
 
 void RadarInfo::RenderRadarImage(wxPoint center, double scale, DrawInfo *di) {
+  wxMutexLocker lock(m_mutex);
   int drawing_method = m_pi->m_settings.drawing_method;
   bool colorOption = m_pi->m_settings.display_option > 0;
 

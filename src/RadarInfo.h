@@ -143,6 +143,7 @@ class RadarInfo : public wxEvtHandler {
  private:
   void RenderRadarImage(wxPoint center, double scale, DrawInfo *di);
 
+  wxMutex m_mutex;          // protects the following two
   DrawInfo m_draw_panel;    // Draw onto our own panel
   DrawInfo m_draw_overlay;  // Abstract painting method
 
