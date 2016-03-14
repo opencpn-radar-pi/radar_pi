@@ -1251,7 +1251,7 @@ void br24ControlsDialog::UpdateDialogShown() {
     return;
   }
 
-  if (m_pi->m_settings.automatic_dialog_location && TIMED_OUT(time(0), m_auto_hide_timeout)) {
+  if (TIMED_OUT(time(0), m_auto_hide_timeout)) {
     if (!m_top_sizer->IsShown(m_control_sizer)) {
       // If we're somewhere in the sub-window, don't close the dialog
       m_auto_hide_timeout += WATCHDOG_TIMEOUT;
@@ -1298,7 +1298,7 @@ void br24ControlsDialog::UnHideTemporarily() {
 
 void br24ControlsDialog::ShowDialog() {
   m_hide = false;
-  if (!IsShown() && m_pi->m_settings.automatic_dialog_location) {
+  if (!IsShown()) {
     // If the corresponding radar panel is now in a different position from what we remembered
     // then reset the dialog to the left or right of the radar panel.
 

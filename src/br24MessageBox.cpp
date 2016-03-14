@@ -29,6 +29,7 @@
  */
 
 #include "br24MessageBox.h"
+#include "RadarPanel.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -198,6 +199,23 @@ void br24MessageBox::OnMove(wxMoveEvent &event) { event.Skip(); }
 
 void br24MessageBox::OnSize(wxSizeEvent &event) { event.Skip(); }
 
+bool br24MessageBox::Show() {
+  // Come up with a good message box location
+  // If the corresponding radar panel is now in a different position from what we remembered
+  // then reset the dialog to the left or right of the radar panel.
+
+  wxPoint parentPos = m_parent->GetPosition();
+  wxSize parentSize = m_parent->GetSize();
+  wxSize mySize = this->GetSize();
+  wxPoint newPos;
+
+  newPos.x = parentPos.x + parentSize.x / 2 - mySize.x / 2;
+  newPos.y = parentPos.y + parentSize.y / 2 - mySize.y / 2;
+  SetPosition(newPos);
+
+  return wxDialog::Show();
+}
+
 void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool radarSeen,
                                    bool haveData) {
   message_status new_message_state = HIDE;
@@ -269,8 +287,8 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
         break;
 
       case SHOW:
-        if (!m_pi->m_pMessageBox->IsShown()) {
-          m_pi->m_pMessageBox->Show();
+        if (IsShown()) {
+          Show();
         }
         if (!radarSeen) {
           m_radar_off->Show();

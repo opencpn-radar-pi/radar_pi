@@ -155,9 +155,6 @@ enum DisplayModeType { DM_CHART_OVERLAY, DM_CHART_NONE };
 enum ToolbarIconColor { TB_RED, TB_AMBER, TB_GREEN };
 enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_SOURCE_FIX, VARIATION_SOURCE_WMM };
 
-enum DialogLocationID { DL_MESSAGE, DL_BOGEY, DL_TIMEDTRANSMIT, DL_RADARWINDOW, DL_CONTROL };
-#define DIALOG_MAX (DL_CONTROL + RADARS)
-
 static const int RangeUnitsToMeters[2] = {1852, 1000};
 
 static const bool HasBitCount2[8] = {
@@ -176,12 +173,6 @@ static const bool HasBitCount2[8] = {
 #define MAX_OVERLAY_TRANSPARENCY (10)
 #define MIN_AGE (4)
 #define MAX_AGE (12)
-
-struct WindowLocation {  // Position and size of a particular window, possibly only pos is set, or
-                         // nothing.
-  wxPoint pos;
-  wxSize size;
-};
 
 /**
  * The data that is stored in the opencpn.ini file. Most of this is set in the OptionsDialog,
@@ -215,7 +206,6 @@ struct PersistentSettings {
   int threshold_blue;
   int threshold_multi_sweep;
   wxString alert_audio_file;
-  int automatic_dialog_location;
 };
 
 struct scan_line {
@@ -335,8 +325,6 @@ class br24radar_pi : public opencpn_plugin_110 {
 
   bool m_initialized;  // True if Init() succeeded and DeInit() not called yet.
   bool m_first_init;   // True in first Init() call.
-
-  WindowLocation m_dialogLocation[DIALOG_MAX];
 
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
   GLubyte m_color_map_red[BLOB_RED + 1];

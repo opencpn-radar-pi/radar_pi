@@ -159,7 +159,6 @@ int br24radar_pi::Init(void) {
   m_hdt_timeout = 0;
   m_var_timeout = 0;
   m_idle_timeout = 0;
-  memset(m_dialogLocation, 0, sizeof(m_dialogLocation));
 
   m_radar[0] = new RadarInfo(this, _("Radar"), 0);
   m_radar[1] = new RadarInfo(this, _("Radar B"), 1);
@@ -231,7 +230,6 @@ int br24radar_pi::Init(void) {
 
   m_pMessageBox = new br24MessageBox;
   m_pMessageBox->Create(m_parent_window, this);
-  m_pMessageBox->SetPosition(m_dialogLocation[DL_MESSAGE].pos);
   m_pMessageBox->Fit();
   m_pMessageBox->Hide();
 
@@ -244,7 +242,7 @@ int br24radar_pi::Init(void) {
   m_initialized = true;
   wxLogMessage(wxT("BR24radar_pi: Initialized plugin"));
 
-  SetRadarWindowViz(m_settings.show_radar != 0);
+  // SetRadarWindowViz(m_settings.show_radar != 0);
 
   return PLUGIN_OPTIONS;
 }
@@ -355,7 +353,6 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
     if (!m_radar[radar]->control_dialog) {
       m_radar[radar]->control_dialog = new br24ControlsDialog;
       m_radar[radar]->control_dialog->Create(m_parent_window, this, m_radar[radar]);
-      m_radar[radar]->control_dialog->SetPosition(m_dialogLocation[DL_CONTROL + radar].pos);
       m_radar[radar]->control_dialog->Fit();
       m_radar[radar]->control_dialog->Hide();
       int range = m_radar[radar]->range_meters;
@@ -396,14 +393,12 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
 
 void br24radar_pi::OnControlDialogClose(RadarInfo *ri) {
   if (ri->control_dialog) {
-    m_dialogLocation[DL_CONTROL + ri->radar].pos = ri->control_dialog->GetPosition();
     ri->control_dialog->HideDialog();
   }
 }
 
 void br24radar_pi::OnMessageBoxClose() {
   if (m_pMessageBox) {
-    m_dialogLocation[DL_MESSAGE].pos = m_pMessageBox->GetPosition();
     m_pMessageBox->Hide();
   }
 }
@@ -952,17 +947,6 @@ bool br24radar_pi::LoadConfig(void) {
     m_settings.pass_heading_to_opencpn = intValue != 0;
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
 
-    for (int i = 0; i < (int)ARRAY_SIZE(m_dialogLocation); i++) {
-      int x, y, sx, sy;
-
-      pConf->Read(wxString::Format(wxT("Control%dPosX"), i), &x, 300);
-      pConf->Read(wxString::Format(wxT("Control%dPosY"), i), &y, 300);
-      pConf->Read(wxString::Format(wxT("Control%dSizeX"), i), &sx, 0);
-      pConf->Read(wxString::Format(wxT("Control%dSizeY"), i), &sy, 0);
-      m_dialogLocation[i].pos = wxPoint(x, y);
-      m_dialogLocation[i].size = wxSize(x, y);
-    }
-
     for (int r = 0; r < RADARS; r++) {
       pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &m_radar[r]->rotation.value, 0);
       for (int i = 0; i < GUARD_ZONES; i++) {
@@ -987,8 +971,6 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("ThresholdGreen"), &m_settings.threshold_green, 100);
     pConf->Read(wxT("ThresholdBlue"), &m_settings.threshold_blue, 50);
     pConf->Read(wxT("ThresholdMultiSweep"), &m_settings.threshold_multi_sweep, 20);
-
-    pConf->Read(wxT("AutomaticDialogLocation"), &m_settings.automatic_dialog_location, 1);
 
     SaveConfig();
     return true;
@@ -1021,21 +1003,6 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("RadarAlertAudioFile"), m_settings.alert_audio_file);
     pConf->Write(wxT("EnableDualRadar"), m_settings.enable_dual_radar);
 
-    for (int i = 0; i < (int)ARRAY_SIZE(m_dialogLocation); i++) {
-      if (m_dialogLocation[i].pos.x) {
-        pConf->Write(wxString::Format(wxT("Control%dPosX"), i), m_dialogLocation[i].pos.x);
-      }
-      if (m_dialogLocation[i].pos.y) {
-        pConf->Write(wxString::Format(wxT("Control%dPosY"), i), m_dialogLocation[i].pos.y);
-      }
-      if (m_dialogLocation[i].size.x) {
-        pConf->Write(wxString::Format(wxT("Control%dSizeX"), i), m_dialogLocation[i].size.x);
-      }
-      if (m_dialogLocation[i].size.y) {
-        pConf->Write(wxString::Format(wxT("Control%dSizeY"), i), m_dialogLocation[i].size.y);
-      }
-    }
-
     for (int r = 0; r < RADARS; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->rotation.value);
       for (int i = 0; i < GUARD_ZONES; i++) {
@@ -1054,8 +1021,6 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ThresholdGreen"), m_settings.threshold_green);
     pConf->Write(wxT("ThresholdBlue"), m_settings.threshold_blue);
     pConf->Write(wxT("ThresholdMultiSweep"), m_settings.threshold_multi_sweep);
-
-    pConf->Write(wxT("AutomaticDialogLocation"), m_settings.automatic_dialog_location);
 
     pConf->Flush();
     wxLogMessage(wxT("BR24radar_pi: Saved settings"));

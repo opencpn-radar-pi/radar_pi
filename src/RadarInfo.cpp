@@ -93,12 +93,8 @@ RadarInfo::~RadarInfo() {
   if (receive) {
     receive->Wait();
     delete receive;
-    wxLogMessage(wxT("BR24radar_pi: %s thread stopped"), name.c_str());
   }
   if (radar_panel) {
-    wxLogMessage(wxT("BR24radar_pi: %s DL_RADARWINDOW %u pos(%d,%d) size(%d,%d)"), name.c_str(), DL_RADARWINDOW + radar,
-                 m_pi->m_dialogLocation[DL_RADARWINDOW + radar].pos.x, m_pi->m_dialogLocation[DL_RADARWINDOW + radar].pos.y,
-                 m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size.x, m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size.y);
     delete radar_panel;
   }
   if (m_draw_panel.draw) {
