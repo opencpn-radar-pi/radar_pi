@@ -1145,7 +1145,7 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
             }
             SetRangeIndex(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.button);
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod = false;
-        }  // don't set the actual range here, is still handled elsewhere
+        }  
 
         // gain
         if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.mod || refreshAll) {
