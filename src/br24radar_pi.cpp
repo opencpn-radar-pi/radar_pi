@@ -3441,7 +3441,7 @@ void *RadarCommandReceiveThread::Entry(void)
 
     //    Loop until we quit
     while (!*m_quit) {
-        if (rx_socket == INVALID_SOCKET && pPlugIn->settings.emulator_on) {
+        if (rx_socket == INVALID_SOCKET && !pPlugIn->settings.emulator_on) {
             if (AB == 1) {
                 rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6658, "236.6.7.14");
                 //  B radar
