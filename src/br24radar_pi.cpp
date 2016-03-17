@@ -2380,6 +2380,11 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
     }
 }    // end of br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 
+void br24radar_pi::ClearImage()
+{
+    memset(&vertices_index, 0, sizeof(vertices_index));
+}
+
 void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
 {
     static const wxString WMM_VARIATION_BOAT = wxString(_T("WMM_VARIATION_BOAT"));
@@ -3263,7 +3268,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
 
         // Range change received from radar?
         if (range_meters != br_range_meters[AB]) {
-
+            pPlugIn->ClearImage();
             if (pPlugIn->settings.verbose >= 1) {
                 if (range_meters == 0) {
                     if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: Invalid range received, keeping %d meters"), br_range_meters[AB]);

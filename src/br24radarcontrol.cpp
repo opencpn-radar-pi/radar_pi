@@ -1077,6 +1077,7 @@ void BR24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event)
 
 void BR24ControlsDialog::OnRadarABButtonClick(wxCommandEvent& event)
 {
+    pPlugIn->ClearImage();
     if (pPlugIn->settings.selectRadarB == 0) {
         wxString labels;
         pPlugIn->settings.selectRadarB = 1;

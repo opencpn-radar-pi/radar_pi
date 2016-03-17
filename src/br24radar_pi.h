@@ -365,6 +365,7 @@ public:
     void SetPositionFix(PlugIn_Position_Fix &pfix);
     void SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix);
     void SetPluginMessage(wxString &message_id, wxString &message_body);
+    void ClearImage();
     void SetCursorLatLon(double lat, double lon);
     void OnContextMenuItemCallback(int id);
     bool data_seenAB[2];
