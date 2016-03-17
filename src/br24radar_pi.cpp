@@ -3040,6 +3040,8 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     UINT8 * a = (UINT8 *) &addr->sin_addr; // sin_addr is in network layout
     wxString address;
     address.Printf(wxT(" %u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
+    wxLogMessage(wxT("BR24radar_pi: local network adress %s"),address);
+    
 
     memset(&adr, 0, sizeof(adr));
     adr.sin_family = AF_INET;
