@@ -150,7 +150,6 @@ int br_range_meters[2] = { 0, 0 };           // current range for radar
 int br_commanded_range_meters = 0; // Range that the plugin to the radar
 int br_auto_range_meters = 0;      // What the range should be, at least, when AUTO mode is selected
 int br_previous_auto_range_meters = 0;
-bool br_update_range_control[2] = { false, false };
 bool br_update_address_control = false;
 bool br_update_error_control = false;
 wxString br_ip_address; // Current IP address of the ethernet interface that we're doing multicast receive on.
@@ -1640,33 +1639,6 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         br_update_address_control = false;
     }
 
-
-    // now set a new value in the range control if an unsollicited range change has been received.
-    // not for range change that the pi has initialized. For these the control was updated immediately
-
-    if (br_update_range_control[settings.selectRadarB]) {
-        br_update_range_control[settings.selectRadarB] = false;
-        int radar_range = br_range_meters[settings.selectRadarB];
-        int idx = convertRadarMetersToIndex(&radar_range, settings.range_units, br_radar_type);
-        radar_setting[settings.selectRadarB].range.Update(idx);
-        // above also updates radar_range to be a display value (lower, rounded number)
-        if (m_pControlDialog) {
-            if (radar_range != br_commanded_range_meters) { // this range change was not initiated by the pi
-                m_pControlDialog->SetRemoteRangeIndex(idx);
-                if (settings.verbose) {
-                    wxLogMessage(wxT("BR24radar_pi: remote range change to %d meters = %d (plugin commanded %d meters)"), br_range_meters[settings.selectRadarB], radar_range, br_commanded_range_meters);
-                }
-            }
-            else {
-                m_pControlDialog->SetRangeIndex(idx);
-                if (settings.verbose) {
-                    wxLogMessage(wxT("BR24radar_pi: final range change to %d meters = %d"), br_range_meters[settings.selectRadarB], radar_range);
-                }
-            }
-        }
-    }
-
-
     // Calculate the "optimum" radar range setting in meters so the radar image just fills the screen
 
     if (settings.auto_range_mode[settings.selectRadarB] && settings.showRadar) {
@@ -1683,10 +1655,8 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
             int displayedRange = br_auto_range_meters;
             size_t idx = convertMetersToRadarAllowedValue(&displayedRange, settings.range_units, br_radar_type);
             if (displayedRange != br_commanded_range_meters) {
-                if (m_pControlDialog) {
-                    m_pControlDialog->SetRangeIndex(idx);
-                }
                 SetRangeMeters(displayedRange);
+                // auto range does not update the button, this is done by update control when the range change has been received
             }
         }
     }
@@ -2529,13 +2499,13 @@ void br24radar_pi::RadarTxOn(void)
     else{                               // turn A and B both on
     UINT8 pck[3] = { 0x00, 0xc1, 0x01 };               // ON
     TransmitCmd(0, pck, sizeof(pck));
-    if (settings.verbose)wxLogMessage(wxT("BR24radar_pi: Turn radar %d on (send TRANSMIT request)"), settings.selectRadarB);
+    if (settings.verbose)wxLogMessage(wxT("BR24radar_pi: Turn radar %d on (send TRANSMIT request)"), 0);
     pck[0] = 0x01;
     TransmitCmd(0, pck, sizeof(pck));
 
     UINT8 pckb[3] = { 0x00, 0xc1, 0x01 };               // ON
     TransmitCmd(1, pckb, sizeof(pck));
-    if (settings.verbose)wxLogMessage(wxT("BR24radar_pi: Turn radar %d on (send TRANSMIT request)"), settings.selectRadarB);
+    if (settings.verbose)wxLogMessage(wxT("BR24radar_pi: Turn radar %d on (send TRANSMIT request)"), 1);
     pckb[0] = 0x01;
     TransmitCmd(1, pckb, sizeof(pck));
     }
@@ -3082,6 +3052,8 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     UINT8 * a = (UINT8 *) &addr->sin_addr; // sin_addr is in network layout
     wxString address;
     address.Printf(wxT(" %u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
+    wxLogMessage(wxT("BR24radar_pi: local network adress %s"),address);
+    
 
     memset(&adr, 0, sizeof(adr));
     adr.sin_family = AF_INET;
@@ -3301,7 +3273,8 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
                 }
             }
             br_range_meters[AB] = range_meters;
-            br_update_range_control[AB] = true;  // signal rendering code to change control value
+            int idx = convertRadarMetersToIndex(&range_meters, pPlugIn->settings.range_units, br_radar_type);
+            pPlugIn->radar_setting[AB].range.Update(idx);
         }
 
         hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
@@ -3453,7 +3426,7 @@ void *RadarCommandReceiveThread::Entry(void)
 
     //    Loop until we quit
     while (!*m_quit) {
-        if (rx_socket == INVALID_SOCKET && pPlugIn->settings.emulator_on) {
+        if (rx_socket == INVALID_SOCKET && !pPlugIn->settings.emulator_on) {
             if (AB == 1) {
                 rx_socket = startUDPMulticastReceiveSocket(pPlugIn, br_mcast_addr, 6658, "236.6.7.14");
                 //  B radar
@@ -3767,11 +3740,11 @@ void *RadarReportReceiveThread::Entry(void)
 // but especially after something sends it a state change.
 //
 #pragma pack(push,1)
-struct radar_state02 {
+struct radar_state02 {     // length 99, 02 C4
     UINT8  what;     // 0   0x02
     UINT8  command;  // 1 0xC4
-    UINT16 range;    //  2-3   0x06 0x09
-    UINT32 field4;   // 4-7    0
+    UINT32 range;    //  2-3-4   
+    UINT16 field4;   // 6-7    0
     UINT32 field8;   // 8-11
     UINT8  gain;     // 12
     UINT8  field13;  // 13  ==1 for sea auto
@@ -3813,7 +3786,7 @@ struct radar_state04_66 {  // 04 C4 with length 66
     UINT16 antenna_height;       // 10-11
 };
 
-struct radar_state01_18 {  // 04 C4 with length 66
+struct radar_state01_18 {  // 04 C4 with length 18
     UINT8  what;      // 0   0x01
     UINT8  command;   // 1   0xC4
     UINT8  radar_status;    // 2
@@ -3868,7 +3841,7 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
             break;
         }
 
-        case (99 << 8) + 0x02:   // length 99, 08 C4
+        case (99 << 8) + 0x02:   // length 99, 02 C4
         {
             radar_state02 * s = (radar_state02 *)command;
             if (s->field8 == 1) {   // 1 for auto

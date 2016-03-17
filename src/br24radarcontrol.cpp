@@ -1023,7 +1023,6 @@ void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
     topSizer->Hide(controlBox);
     topSizer->Hide(advancedBox);
     topSizer->Hide(installationBox);
-//    Fit();   //  solves the "partial refresh issue" for the control box
     topSizer->Show(editBox);
     if (fromControl->hasAuto) {
         bAuto->Show();
@@ -1137,7 +1136,7 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
 void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
 {
          // Control Box
-
+    refreshAll = true;  // for test only
         // range
         if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod || refreshAll) {
             if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.button == -1) {
@@ -1145,7 +1144,7 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
             }
             SetRangeIndex(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.button);
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod = false;
-        }  // don't set the actual range here, is still handled elsewhere
+        }  
 
         // gain
         if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.mod || refreshAll) {
