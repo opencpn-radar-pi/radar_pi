@@ -773,7 +773,7 @@ public:
     void SetTimedIdleIndex(int index);
     void UpdateGuardZoneState();
     void UpdateControl(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
-    void UpdateControlValues(bool refreshAll);
+    void UpdateControlValues();
     void SetErrorMessage(wxString &msg);
     bool wantShowMessage; // If true, don't hide messagebox automatically
 

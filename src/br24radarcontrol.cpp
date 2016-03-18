@@ -1087,7 +1087,7 @@ void BR24ControlsDialog::OnRadarABButtonClick(wxCommandEvent& event)
         pPlugIn->m_pControlDialog->SetTitle(labelx);
         pPlugIn->m_pControlDialog->SetLabel(labelx);
     }
-    UpdateControlValues(true);   // update control values on the buttons
+    UpdateControlValues();   // update control values on the buttons
                            // and update the button text on A / B select
     UpdateGuardZoneState();
     if (pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_OVERLAY) {
@@ -1122,37 +1122,29 @@ void BR24ControlsDialog::OnSize(wxSizeEvent& event)
     event.Skip();
 }
 
-void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
+void BR24ControlsDialog::UpdateControlValues()
 {
          // Control Box
-    refreshAll = true;  // for test only
         // range
-        if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod || refreshAll) {
             if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.button == -1) {
                 bRange->SetAutoX();
             }
             SetRangeIndex(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.button);
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].range.mod = false;
-        }  
 
         // gain
-        if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.mod || refreshAll) {
             if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button == -1) {
                 bGain->SetAutoX();
             }
             else{
                 bGain->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button);
             }
-        }
 
         //  rain
-        if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].rain.mod || refreshAll)) {
             bRain->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].rain.button);
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].rain.mod = false;
-        }
 
         //   sea
-        if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.mod || refreshAll)) {
             if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.button == -1) {
                 bSea->SetAutoX();
             }
@@ -1160,61 +1152,43 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
                 bSea->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.button);
             }
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].sea.mod = false;
-        }
  
         //    Advanced box 
 
         //   target_boost
-        if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.mod || refreshAll)) {
             bTargetBoost->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.button);
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.mod = false;
-        }
 
         //  noise_rejection
-            if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.mod || refreshAll)) {
         bNoiseRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.button);
         pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.mod = false;
-            }
 
         //  target_separation
-        if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.mod || refreshAll)) {
             bTargetSeparation->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.button);
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.mod = false;
-        }
 
         //  interference_rejection
-        if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].interference_rejection.mod || refreshAll)) {
             bInterferenceRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].interference_rejection.button);
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].interference_rejection.mod = false;
-        }
 
         // scanspeed
-        if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.mod || refreshAll)) {
             bScanSpeed->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.button);
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].scan_speed.mod = false;
-        }
                  // Installation box
 
         //   antenna height
-        if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].antenna_height.mod || refreshAll)) {
             bAntennaHeight->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].antenna_height.button);
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].antenna_height.mod = false;
-        }
 
         //  bearing alignment
-        if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].bearing_alignment.mod || refreshAll)) {
             bBearingAlignment->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].bearing_alignment.button);
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].bearing_alignment.mod = false;
-        }
 
         //  local interference rejection
-        if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].local_interference_rejection.mod || refreshAll)) {
             bLocalInterferenceRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].local_interference_rejection.button);
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].local_interference_rejection.mod = false;
-        }
 
         // side lobe suppression  // same for A and B
-        if ((pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.mod || refreshAll)) {
             if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.button == -1) {
                 bSideLobeSuppression->SetAutoX();
             }
@@ -1222,7 +1196,6 @@ void BR24ControlsDialog::UpdateControlValues(bool refreshAll)
                 bSideLobeSuppression->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.button);
             }
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].side_lobe_suppression.mod = false;
-        }
 }
 
 

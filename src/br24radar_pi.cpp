@@ -1130,7 +1130,7 @@ void br24radar_pi::ShowRadarControl(bool show)
         , br_radar_seen
         , br_data_seen
         );
-    m_pControlDialog->UpdateControlValues(true);
+    m_pControlDialog->UpdateControlValues();
     m_pMessageBox->UpdateMessage(br_opengl_mode
         , br_bpos_set
         , m_heading_source != HEADING_NONE
@@ -1460,7 +1460,7 @@ void br24radar_pi::DoTick(void)
             , br_radar_seen
             , br_data_seen
             );
-        m_pControlDialog->UpdateControlValues(false);
+        m_pControlDialog->UpdateControlValues();
     }
 
     if (m_pMessageBox) {
