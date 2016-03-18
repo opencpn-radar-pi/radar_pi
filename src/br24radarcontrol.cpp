@@ -349,10 +349,7 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     int meters = units ? g_ranges_metric[value].meters : g_ranges_nautic[value].meters;
     wxString label;
     wxString rangeText = value < 0 ? wxT("?") : wxString::FromUTF8(units ? g_ranges_metric[value].name : g_ranges_nautic[value].name);
-    if (isRemote) {
-        label << firstLine << wxT("\n") << _("Remote") << wxT(" (") << rangeText << wxT(")");
-    }
-    else if (pPlugIn->settings.auto_range_mode[pPlugIn->settings.selectRadarB]) {
+    if (pPlugIn->settings.auto_range_mode[pPlugIn->settings.selectRadarB]) {
         label << firstLine << wxT("\n") << _("Auto") << wxT(" (") << rangeText << wxT(")");
     }
     else {
@@ -360,8 +357,8 @@ int RadarRangeControlButton::SetValueInt(int newValue)
     }
     this->SetLabel(label);
     if (pPlugIn->settings.verbose > 0) {
-        wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d remote=%d unit=%d max=%d new=%d old=%d"),
-            rangeText.c_str(), pPlugIn->settings.auto_range_mode[pPlugIn->settings.selectRadarB], isRemote, units, maxValue, newValue, oldValue);
+        wxLogMessage(wxT("BR24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d old=%d"),
+            rangeText.c_str(), pPlugIn->settings.auto_range_mode[pPlugIn->settings.selectRadarB], units, maxValue, newValue, oldValue);
     }
 
     return meters;
@@ -373,10 +370,8 @@ void RadarRangeControlButton::SetValue(int newValue)
 {
     // newValue is the index of the new range
     // sends the command for the new range to the radar
-    isRemote = false;
     pPlugIn->settings.auto_range_mode[pPlugIn->settings.selectRadarB] = false;
-
-    int meters = SetValueInt(newValue);   // do not display the new value now, will be done by receive thread when frame with new range is received
+    int meters = SetValueInt(newValue);   // calculate new range value and set new value in the button
     pPlugIn->SetRangeMeters(meters);        // send new value to the radar
 }
 
@@ -819,15 +814,8 @@ void BR24ControlsDialog::UpdateGuardZoneState()
     bGuard2->SetLabel(label2);
 }
 
-void BR24ControlsDialog::SetRemoteRangeIndex(size_t index)
-{
-    bRange->isRemote = true;
-    bRange->SetValueInt(index); // set and recompute the range label
-}
-
 void BR24ControlsDialog::SetRangeIndex(size_t index)
 {
-    bRange->isRemote = false;
     bRange->SetValueInt(index); // set and recompute the range label
 }
 

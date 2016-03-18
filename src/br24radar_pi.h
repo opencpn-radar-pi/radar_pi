@@ -743,7 +743,6 @@ public:
 
     int SetValueInt(int value);
 
-    bool isRemote; // Set by some other computer or MFD
     int auto_range_index;
 };
 
@@ -770,7 +769,6 @@ public:
                 );
 
     void CreateControls();
-    void SetRemoteRangeIndex(size_t index);
     void SetRangeIndex(size_t index);
     void SetTimedIdleIndex(int index);
     void UpdateGuardZoneState();
