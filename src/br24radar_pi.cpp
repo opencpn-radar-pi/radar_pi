@@ -230,8 +230,6 @@ int br24radar_pi::Init(void) {
 
   m_pMessageBox = new br24MessageBox;
   m_pMessageBox->Create(m_parent_window, this);
-  m_pMessageBox->Fit();
-  m_pMessageBox->Hide();
 
   m_radar[0]->StartReceive();
   if (m_settings.enable_dual_radar) {
@@ -261,7 +259,7 @@ bool br24radar_pi::DeInit(void) {
   wxLogMessage(wxT("BR24radar_pi: DeInit of plugin"));
 
   // First close everything that the user can have open
-  OnMessageBoxClose();
+  m_pMessageBox->Close();
   for (int r = 0; r < RADARS; r++) {
     OnControlDialogClose(m_radar[r]);
     m_radar[r]->ShowRadarWindow(false);
@@ -333,12 +331,10 @@ bool br24radar_pi::SetRadarWindowViz(bool show) {
   m_settings.show_radar = show;
   SetCanvasContextMenuItemViz(m_context_menu_show_window_id, !show);
   SetCanvasContextMenuItemViz(m_context_menu_hide_window_id, show);
+  m_pMessageBox->UpdateMessage(false);
   wxLogMessage(wxT("BR24radar_pi: RadarWindow visibility = %d"), (int)show);
 
-  if (show != (m_settings.show_radar != 0)) {
-    return true;
-  }
-  return false;
+  return show != (m_settings.show_radar != 0);
 }
 
 //********************************************************************************
@@ -368,8 +364,7 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
   }
 
   m_radar[radar]->UpdateControlState(true);
-  m_pMessageBox->UpdateMessage(m_opengl_mode, m_bpos_set, m_heading_source != HEADING_NONE, m_var_source != VARIATION_SOURCE_NONE,
-                               m_radar[radar]->state.value != RADAR_OFF, m_radar[radar]->state.value == RADAR_TRANSMIT);
+  m_pMessageBox->UpdateMessage(false);
 }
 
 void br24radar_pi::OnContextMenuItemCallback(int id) {
@@ -394,12 +389,6 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
 void br24radar_pi::OnControlDialogClose(RadarInfo *ri) {
   if (ri->control_dialog) {
     ri->control_dialog->HideDialog();
-  }
-}
-
-void br24radar_pi::OnMessageBoxClose() {
-  if (m_pMessageBox) {
-    m_pMessageBox->Hide();
   }
 }
 
@@ -460,7 +449,11 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
   } else if ((previousTicks + 4 >= now) || (m_settings.chart_overlay < 0)) {
     SetRadarWindowViz(true);
   } else {
-    ShowRadarControl(m_settings.chart_overlay, true);
+    m_pMessageBox->UpdateMessage(true);
+    wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback allOK=%s"), m_pMessageBox->IsShown() ? "no" : "yes");
+    if (!m_pMessageBox->IsShown()) {
+      ShowRadarControl(m_settings.chart_overlay, true);
+    }
   }
 
   previousTicks = now;
@@ -622,12 +615,8 @@ void br24radar_pi::DoTick(void) {
   }
 
   if (m_update_error_control) {
-    if (m_pMessageBox) {
-      if (m_pMessageBox->IsShown()) {
-        m_pMessageBox->SetErrorMessage(m_error_msg);
-        m_update_error_control = false;
-      }
-    }
+    m_pMessageBox->SetErrorMessage(m_error_msg);
+    m_update_error_control = false;
   }
 
   if (m_settings.verbose >= 2) {
@@ -670,23 +659,11 @@ void br24radar_pi::DoTick(void) {
     // heading
     m_heading_source = HEADING_NONE;
     wxLogMessage(wxT("BR24radar_pi: Lost Heading data"));
-    if (m_pMessageBox) {
-      if (m_pMessageBox->IsShown()) {
-        wxString info = wxT("");
-        m_pMessageBox->SetHeadingInfo(info);
-      }
-    }
   }
 
   if (m_var_source != VARIATION_SOURCE_NONE && TIMED_OUT(now, m_var_timeout)) {
     m_var_source = VARIATION_SOURCE_NONE;
     wxLogMessage(wxT("BR24radar_pi: Lost Variation source"));
-    if (m_pMessageBox) {
-      if (m_pMessageBox->IsShown()) {
-        wxString info = wxT("");
-        m_pMessageBox->SetVariationInfo(info);
-      }
-    }
   }
 
   // Check the age of "radar_seen", if too old radar_seen = false
@@ -722,28 +699,24 @@ void br24radar_pi::DoTick(void) {
     PassHeadingToOpenCPN();
   }
 
-  if (m_pMessageBox) {
-    if (m_pMessageBox->IsShown() || (m_settings.verbose >= 1)) {
-      wxString t;
-      for (size_t r = 0; r < RADARS; r++) {
-        if (m_radar[r]->state.value != RADAR_OFF) {
-          t << wxString::Format(wxT("%s\npackets %d/%d\nspokes %d/%d/%d\n"), m_radar[r]->name, m_radar[r]->statistics.packets,
-                                m_radar[r]->statistics.broken_packets, m_radar[r]->statistics.spokes,
-                                m_radar[r]->statistics.broken_spokes, m_radar[r]->statistics.missing_spokes);
-        }
-      }
-      if (m_pMessageBox->IsShown()) {
-        m_pMessageBox->SetRadarInfo(t);
-      }
-      if (m_settings.verbose >= 1 && t.length() > 0) {
-        t.Replace(wxT("\n"), wxT(" "));
-        wxLogMessage(wxT("BR24radar_pi: %s"), t.c_str());
+  if (m_pMessageBox->IsShown() || (m_settings.verbose >= 1)) {
+    wxString t;
+    for (size_t r = 0; r < RADARS; r++) {
+      if (m_radar[r]->state.value != RADAR_OFF) {
+        t << wxString::Format(wxT("%s\npackets %d/%d\nspokes %d/%d/%d\n"), m_radar[r]->name, m_radar[r]->statistics.packets,
+                              m_radar[r]->statistics.broken_packets, m_radar[r]->statistics.spokes,
+                              m_radar[r]->statistics.broken_spokes, m_radar[r]->statistics.missing_spokes);
       }
     }
-    m_pMessageBox->UpdateMessage(m_opengl_mode, m_bpos_set, m_heading_source != HEADING_NONE, m_var_source != VARIATION_SOURCE_NONE,
-                                 m_radar[0]->state.value != RADAR_OFF || m_radar[1]->state.value != RADAR_OFF,
-                                 m_radar[0]->state.value == RADAR_TRANSMIT || m_radar[1]->state.value == RADAR_TRANSMIT);
+    if (m_pMessageBox->IsShown()) {
+      m_pMessageBox->SetRadarInfo(t);
+    }
+    if (m_settings.verbose >= 1 && t.length() > 0) {
+      t.Replace(wxT("\n"), wxT(" "));
+      wxLogMessage(wxT("BR24radar_pi: %s"), t.c_str());
+    }
   }
+  m_pMessageBox->UpdateMessage(false);
 
   for (size_t r = 0; r < RADARS; r++) {
     m_radar[r]->UpdateControlState(false);
@@ -1046,12 +1019,10 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   if (m_var_source <= VARIATION_SOURCE_FIX && !wxIsNaN(pfix.Var) && (fabs(pfix.Var) > 0.0 || m_var == 0.0)) {
     if (m_var_source < VARIATION_SOURCE_FIX || fabs(pfix.Var - m_var) > 0.05) {
       wxLogMessage(wxT("BR24radar_pi: Position fix provides new magnetic variation %f"), pfix.Var);
-      if (m_pMessageBox) {
-        if (m_pMessageBox->IsShown()) {
-          info = _("GPS");
-          info << wxT(" ") << m_var;
-          m_pMessageBox->SetVariationInfo(info);
-        }
+      if (m_pMessageBox->IsShown()) {
+        info = _("GPS");
+        info << wxT(" ") << m_var;
+        m_pMessageBox->SetVariationInfo(info);
       }
     }
     m_var = pfix.Var;
@@ -1068,12 +1039,10 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f"), m_hdt);
       m_heading_source = HEADING_RADAR;
     }
-    if (m_pMessageBox) {
-      if (m_pMessageBox->IsShown()) {
-        info = _("radar");
-        info << wxT(" ") << m_hdt;
-        m_pMessageBox->SetHeadingInfo(info);
-      }
+    if (m_pMessageBox->IsShown()) {
+      info = _("Radar");
+      info << wxT(" ") << m_hdt;
+      m_pMessageBox->SetHeadingInfo(info);
     }
     m_hdt_timeout = now + HEADING_TIMEOUT;
   } else if (!wxIsNaN(pfix.Hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
@@ -1082,12 +1051,10 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM %f"), m_hdt);
       m_heading_source = HEADING_HDM;
     }
-    if (m_pMessageBox) {
-      if (m_pMessageBox->IsShown()) {
-        info = _("HDM");
-        info << wxT(" ") << m_hdt;
-        m_pMessageBox->SetHeadingInfo(info);
-      }
+    if (m_pMessageBox->IsShown()) {
+      info = _("HDM");
+      info << wxT(" ") << m_hdt;
+      m_pMessageBox->SetHeadingInfo(info);
     }
     m_hdt_timeout = now + HEADING_TIMEOUT;
   } else if (!wxIsNaN(pfix.Hdt)) {
@@ -1096,12 +1063,10 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
       m_heading_source = HEADING_HDT;
     }
-    if (m_pMessageBox) {
-      if (m_pMessageBox->IsShown()) {
-        info = _("HDT");
-        info << wxT(" ") << m_hdt;
-        m_pMessageBox->SetHeadingInfo(info);
-      }
+    if (m_pMessageBox->IsShown()) {
+      info = _("HDT");
+      info << wxT(" ") << m_hdt;
+      m_pMessageBox->SetHeadingInfo(info);
     }
     m_hdt_timeout = now + HEADING_TIMEOUT;
   } else if (!wxIsNaN(pfix.Cog)) {
@@ -1110,12 +1075,10 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
       m_heading_source = HEADING_COG;
     }
-    if (m_pMessageBox) {
-      if (m_pMessageBox->IsShown()) {
-        info = _("COG");
-        info << wxT(" ") << m_hdt;
-        m_pMessageBox->SetHeadingInfo(info);
-      }
+    if (m_pMessageBox->IsShown()) {
+      info = _("COG");
+      info << wxT(" ") << m_hdt;
+      m_pMessageBox->SetHeadingInfo(info);
     }
     m_hdt_timeout = now + HEADING_TIMEOUT;
   }
@@ -1147,12 +1110,10 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
         m_var = variation;
         m_var_source = VARIATION_SOURCE_WMM;
         m_var_timeout = time(0) + WATCHDOG_TIMEOUT;
-        if (m_pMessageBox) {
-          if (m_pMessageBox->IsShown()) {
-            wxString info = _("WMM");
-            info << wxT(" ") << m_var;
-            m_pMessageBox->SetVariationInfo(info);
-          }
+        if (m_pMessageBox->IsShown()) {
+          wxString info = _("WMM");
+          info << wxT(" ") << m_var;
+          m_pMessageBox->SetVariationInfo(info);
         }
       }
     }
@@ -1302,12 +1263,10 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
         m_var = newVar;
         m_var_source = VARIATION_SOURCE_NMEA;
         m_var_timeout = now + WATCHDOG_TIMEOUT;
-        if (m_pMessageBox) {
-          if (m_pMessageBox->IsShown()) {
-            wxString info = _("NMEA");
-            info << wxT(" ") << m_var;
-            m_pMessageBox->SetVariationInfo(info);
-          }
+        if (m_pMessageBox->IsShown()) {
+          wxString info = _("NMEA");
+          info << wxT(" ") << m_var;
+          m_pMessageBox->SetVariationInfo(info);
         }
       }
       if (m_heading_source == HEADING_HDM && !wxIsNaN(m_NMEA0183.Hdg.MagneticSensorHeadingDegrees)) {

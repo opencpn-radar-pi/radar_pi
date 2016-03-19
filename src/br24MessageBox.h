@@ -54,7 +54,7 @@ class br24MessageBox : public wxDialog {
               long style = wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX));
 
   void CreateControls();
-  void UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
+  void UpdateMessage(bool showIfOff);
   void SetErrorMessage(wxString &msg);
   void SetRadarIPAddress(wxString &msg);
   void SetMcastIPAddress(wxString &msg);
@@ -62,8 +62,9 @@ class br24MessageBox : public wxDialog {
   void SetVariationInfo(wxString &msg);
   void SetRadarInfo(wxString &msg);
 
- private:
   void OnClose(wxCloseEvent &event);
+
+ private:
   void OnIdOKClick(wxCommandEvent &event);
   void OnMove(wxMoveEvent &event);
   void OnSize(wxSizeEvent &event);
@@ -77,6 +78,7 @@ class br24MessageBox : public wxDialog {
 
   message_status m_message_state;
   bool m_old_radar_seen;
+  bool m_allow_hide;
 
   wxBoxSizer *m_top_sizer;
   wxBoxSizer *m_nmea_sizer;

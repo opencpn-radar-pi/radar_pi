@@ -268,7 +268,6 @@ class br24radar_pi : public opencpn_plugin_110 {
   // Other public methods
 
   void OnControlDialogClose(RadarInfo *ri);
-  void OnMessageBoxClose();
   void SetDisplayMode(DisplayModeType mode);
 
   void ShowRadarControl(int radar, bool show = true);
@@ -406,4 +405,4 @@ PLUGIN_END_NAMESPACE
 #include "GuardZone.h"
 #include "RadarInfo.h"
 
-#endif /* _BRRADAR_PI_H_ */
+#endif /* _BR24RADAR_PI_H_ */

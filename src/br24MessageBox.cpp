@@ -72,8 +72,6 @@ void br24MessageBox::Init() {
   m_ip_box = 0;
 }
 
-void br24MessageBox::OnClose(wxCloseEvent &event) { m_pi->OnMessageBoxClose(); }
-
 bool br24MessageBox::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, const wxString &caption, const wxPoint &pos,
                             const wxSize &size, long style) {
   m_parent = parent;
@@ -91,8 +89,12 @@ bool br24MessageBox::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, c
 
   CreateControls();
 
+  Fit();
+  Hide();
+
   m_message_state = HIDE;
   m_old_radar_seen = false;
+  m_allow_hide = true;
 
   wxLogMessage(wxT("BR24radar_pi: MessageBox created"));
 
@@ -199,10 +201,13 @@ void br24MessageBox::OnMove(wxMoveEvent &event) { event.Skip(); }
 
 void br24MessageBox::OnSize(wxSizeEvent &event) { event.Skip(); }
 
+void br24MessageBox::OnClose(wxCloseEvent &event) {
+  m_allow_hide = true;
+  Hide();
+}
+
 bool br24MessageBox::Show() {
-  // Come up with a good message box location
-  // If the corresponding radar panel is now in a different position from what we remembered
-  // then reset the dialog to the left or right of the radar panel.
+  // Come up with a good message box location: straight in the center of the chart window
 
   wxPoint parentPos = m_parent->GetPosition();
   wxSize parentSize = m_parent->GetSize();
@@ -216,9 +221,27 @@ bool br24MessageBox::Show() {
   return wxDialog::Show();
 }
 
-void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool radarSeen,
-                                   bool haveData) {
+void br24MessageBox::UpdateMessage(bool showIfOff) {
   message_status new_message_state = HIDE;
+
+  bool haveOpenGL = m_pi->m_opengl_mode;
+  bool haveGPS = m_pi->m_bpos_set;
+  bool haveHeading = m_pi->m_heading_source != HEADING_NONE;
+  bool haveVariation = m_pi->m_var_source != VARIATION_SOURCE_NONE;
+  bool radarSeen = false;
+  bool haveData = false;
+
+  if (showIfOff) {
+    m_allow_hide = false;
+  }
+  for (int r = 0; r < RADARS; r++) {
+    if (m_pi->m_radar[r]->state.value != RADAR_OFF) {
+      radarSeen = true;
+    }
+    if (m_pi->m_radar[r]->state.value == RADAR_TRANSMIT) {
+      haveData = true;
+    }
+  }
 
   bool radarOn = haveOpenGL && radarSeen;
   bool navOn = haveGPS && haveHeading && haveVariation;
@@ -246,7 +269,7 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
 
   */
 
-  if (m_pi->m_settings.show_radar == RADAR_OFF) {
+  if (m_pi->m_settings.show_radar == RADAR_OFF && m_allow_hide) {
     wxLogMessage(wxT("BR24radar_pi: messagebox show_radar = RADAR_OFF"));
     new_message_state = HIDE;
   } else if (!haveOpenGL) {
@@ -269,6 +292,10 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
     new_message_state = SHOW;
   }
 
+  if (new_message_state == HIDE) {
+    m_allow_hide = true;
+  }
+
   m_have_open_gl->SetValue(haveOpenGL);
   m_have_boat_pos->SetValue(haveGPS);
   m_have_heading->SetValue(haveHeading);
@@ -281,13 +308,13 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
   if (m_message_state != new_message_state || m_old_radar_seen != radarSeen) {
     switch (new_message_state) {
       case HIDE:
-        if (m_pi->m_pMessageBox->IsShown()) {
-          m_pi->m_pMessageBox->Hide();
+        if (IsShown()) {
+          Hide();
         }
         break;
 
       case SHOW:
-        if (IsShown()) {
+        if (!IsShown()) {
           Show();
         }
         if (!radarSeen) {
@@ -300,8 +327,8 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
         break;
 
       case SHOW_NO_NMEA:
-        if (!m_pi->m_pMessageBox->IsShown()) {
-          m_pi->m_pMessageBox->Show();
+        if (!IsShown()) {
+          Show();
         }
         if (!radarSeen) {
           m_radar_off->Show();
@@ -313,8 +340,8 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
         break;
 
       case SHOW_BACK:
-        if (!m_pi->m_pMessageBox->IsShown()) {
-          m_pi->m_pMessageBox->Show();
+        if (!IsShown()) {
+          Show();
         }
         m_radar_off->Hide();
         m_message_sizer->Show(m_nmea_sizer);
@@ -324,6 +351,7 @@ void br24MessageBox::UpdateMessage(bool haveOpenGL, bool haveGPS, bool haveHeadi
   }
   Fit();
   m_top_sizer->Layout();
+  Fit();
   m_old_radar_seen = radarSeen;
   m_message_state = new_message_state;
 }
