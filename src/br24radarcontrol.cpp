@@ -457,7 +457,7 @@ void BR24ControlsDialog::CreateControls()
     label << _("Sea clutter") << wxT("\n");
     label << _("Rain clutter") << wxT("\n");
     label << _("Auto") << wxT(" (1/20 NM)\n");
-    label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up\n");
+    label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up\n") << wxT("\n") << _("Warning: Turn off AIS");
 
     wxStaticText * testMessage = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     testBox->Add(testMessage, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
@@ -734,7 +734,7 @@ void BR24ControlsDialog::CreateControls()
     controlBox->Add(bRadarOnly_Overlay, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     if (pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] == DM_CHART_BLACKOUT) {
         wxString label;
-        label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up");
+        label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") << wxT("\n") << _("Warning: Turn off AIS");
         bRadarOnly_Overlay->SetLabel(label);
     }
     else {
@@ -986,7 +986,7 @@ void BR24ControlsDialog::OnRdrOnlyButtonClick(wxCommandEvent& event)
     pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] = DM_CHART_BLACKOUT;
 //    messageBox->Hide(bRdrOnly);
     wxString label;
-    label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") ;
+    label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") << wxT("\n") << _("Warning: Turn off AIS");
     bRadarOnly_Overlay->SetLabel(label);
  //   Fit();
  //   topSizer->Layout();
@@ -1053,7 +1053,7 @@ void BR24ControlsDialog::OnRadarOnlyButtonClick(wxCommandEvent& event)
     else {
         pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] = DM_CHART_BLACKOUT;
         wxString label;
-        label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") ;
+        label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") << wxT("\n") << _("Warning: Turn off AIS");
         bRadarOnly_Overlay->SetLabel(label);
     }
 }
@@ -1097,7 +1097,7 @@ void BR24ControlsDialog::OnRadarABButtonClick(wxCommandEvent& event)
     }
     else {
         wxString label;
-        label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up");
+        label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") << wxT("\n") << _("Warning: Turn off AIS");
         bRadarOnly_Overlay->SetLabel(label);
     }
 }
