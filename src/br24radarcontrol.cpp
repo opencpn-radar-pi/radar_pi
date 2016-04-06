@@ -120,8 +120,6 @@ EVT_BUTTON(ID_MINUS_TEN, BR24ControlsDialog::OnMinusTenClick)
 EVT_BUTTON(ID_AUTO,  BR24ControlsDialog::OnAutoClick)
 EVT_BUTTON(ID_MULTISWEEP,  BR24ControlsDialog::OnMultiSweepClick)
 
-EVT_BUTTON(ID_RDRONLY, BR24ControlsDialog::OnRdrOnlyButtonClick)
-
 EVT_BUTTON(ID_ADVANCED_BACK,  BR24ControlsDialog::OnAdvancedBackButtonClick)
 
 EVT_BUTTON(ID_INSTALLATION_BACK, BR24ControlsDialog::OnInstallationBackButtonClick)
@@ -978,30 +976,12 @@ void BR24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event)
     topSizer->Layout();
 }
 
-
-
-
-void BR24ControlsDialog::OnRdrOnlyButtonClick(wxCommandEvent& event)
-{
-    pPlugIn->settings.display_mode[pPlugIn->settings.selectRadarB] = DM_CHART_BLACKOUT;
-//    messageBox->Hide(bRdrOnly);
-    wxString label;
-    label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") << wxT("\n") << _("Warning: Turn off AIS");
-    bRadarOnly_Overlay->SetLabel(label);
- //   Fit();
- //   topSizer->Layout();
-
-}
-
 void BR24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event)
 {
     wantShowMessage = true;
-//    topSizer->Hide(controlBox);
     if (pPlugIn->m_pMessageBox) {
         pPlugIn->m_pMessageBox->Show();
     }
- //   Fit();
- //   topSizer->Layout();
 }
 
 void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
@@ -1056,6 +1036,7 @@ void BR24ControlsDialog::OnRadarOnlyButtonClick(wxCommandEvent& event)
         label << _("Overlay / Radar") << wxT("\n") << _("Radar Only, Head Up") << wxT("\n") << _("Warning: Turn off AIS");
         bRadarOnly_Overlay->SetLabel(label);
     }
+    pPlugIn->ClearImage();
 }
 
 void BR24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event)
