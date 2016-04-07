@@ -538,11 +538,10 @@ int br24radar_pi::Init(void)
         memset(&m_scan_line[1][i].history, 0, sizeof(m_scan_line[1][i].history));
         }
 
-   if (settings.verbose)wxLogMessage(wxT("BR24radar_pi: size of scanline %d"), sizeof(m_scan_line[0][1].history));
-     memset(&m_scan_line[0][LINES_PER_ROTATION - 1].history, 1, sizeof(m_scan_line[0][LINES_PER_ROTATION].history));
-     memset(&m_scan_line[1][LINES_PER_ROTATION - 1].history, 1, sizeof(m_scan_line[1][LINES_PER_ROTATION].history));
+     //memset(&m_scan_line[0][LINES_PER_ROTATION - 1].history, 1, sizeof(m_scan_line[0][LINES_PER_ROTATION].history));
+     //memset(&m_scan_line[1][LINES_PER_ROTATION - 1].history, 1, sizeof(m_scan_line[1][LINES_PER_ROTATION].history));
 
-     // last ones on 1 to display range circle    does not seem to work ???
+     //// last ones on 1 to display range circle    does not seem to work ???
     m_ptemp_icon = NULL;
     m_sent_bm_id_normal = -1;
     m_sent_bm_id_rollover =  -1;
@@ -2388,7 +2387,11 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 
 void br24radar_pi::ClearImage()
 {
-    memset(&vertices_index, 0, sizeof(vertices_index));
+    memset(&vertices_index, 0, sizeof(vertices_index));   // reset image
+    for (int i = 0; i < LINES_PER_ROTATION - 1; i++) {   // reset history bytes
+        memset(&m_scan_line[0][i].history, 0, sizeof(m_scan_line[0][i].history));
+        memset(&m_scan_line[1][i].history, 0, sizeof(m_scan_line[1][i].history));
+    }
 }
 
 void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
