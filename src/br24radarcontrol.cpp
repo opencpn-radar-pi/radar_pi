@@ -323,7 +323,6 @@ void RadarControlButton::SetAutoX()
 
     label << firstLine << wxT("\n") << _("Auto");
     this->SetLabel(label);
-
 }
 
 
@@ -987,7 +986,14 @@ void BR24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event)
 void BR24ControlsDialog::EnterEditMode(RadarControlButton * button)
 {
     fromControl = button; // Keep a record of which button was clicked
-    tValue->SetLabel(button->GetLabel());
+    if (fromControl == bGain) {   // seperate, to remove "Filter = ON")
+        fromControl->SetValueX(fromControl->value);
+        wxString label = fromControl->GetLabel();
+        tValue->SetLabel(label);
+    }
+    else{
+        tValue->SetLabel(button->GetLabel());
+    }
     topSizer->Hide(controlBox);
     topSizer->Hide(advancedBox);
     topSizer->Hide(installationBox);
@@ -1120,6 +1126,12 @@ void BR24ControlsDialog::UpdateControlValues()
             else{
                 bGain->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].gain.button);
             }
+            if (pPlugIn->settings.multi_sweep_filter[pPlugIn->settings.selectRadarB][2]){
+                wxString label = bGain->GetLabel();
+                label << wxT("\n") << _("Filter = ON");
+                bGain->SetLabel(label);
+            }
+
 
         //  rain
             bRain->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].rain.button);
