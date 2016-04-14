@@ -1269,6 +1269,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
     else if (toolbar_button == AMBER) {
         settings.showRadar = true;   // switch radar on and show it
         if (!data_seenAB[settings.selectRadarB]) {
+            ClearImage();
             RadarTxOn();
         }
         if (id != 999999 && settings.timed_idle != 0) {
@@ -1285,6 +1286,7 @@ void br24radar_pi::OnToolbarToolCallback(int id)
         }
         settings.showRadar = 0;
         RadarTxOff();
+        ClearImage();
         if (id != 999999 && settings.timed_idle != 0) {
             m_pControlDialog->SetTimedIdleIndex(0); // Disable Timed Transmit if user click the icon while idle
         }
