@@ -1425,15 +1425,13 @@ void br24radar_pi::DoTick(void)
 
     if ((settings.passHeadingToOCPN && br_heading_on_radar && !blackout[settings.selectRadarB])) {
         wxString nmeastring;
-        nmeastring.Printf(_T("$APHDT,%05.1f,M\r\n"), br_hdt);
+        nmeastring.Printf(_T("$APHDT,%05.1f,T\r\n"), br_hdt);
         PushNMEABuffer(nmeastring);
     }
 
     if (blackout[settings.selectRadarB]) {  // heads up in blackout mode
-        wxString nmeastring;
-        double hdt = 0;
-        nmeastring.Printf(_T("$APHDT,%05.1f,M\r\n"), hdt);
-        PushNMEABuffer(nmeastring);
+        PushNMEABuffer(_T("$APHDT,0.0,T\r\n"));
+        PushNMEABuffer(_T("$GPVTG,0.0,T,,M,,N,,K\r\n"));
     }
 
     wxString t;
