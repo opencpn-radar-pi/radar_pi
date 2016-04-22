@@ -177,7 +177,6 @@ static time_t      br_radar_watchdog;
 static time_t      br_data_watchdog;
 static time_t      br_var_watchdog;
 static bool blackout[2] = { false, false };         //  will force display to blackout and north up
-static int heading_correction_raw = 0;
 
 #define     SIZE_VERTICES (3072)
 //static GLfloat vertices[2048][SIZE_VERTICES];
@@ -1351,7 +1350,7 @@ void br24radar_pi::DoTick(void)
         settings.enable_dual_radar = 0;
     }
 
-    heading_correction_raw = (settings.heading_correction * LINES_PER_ROTATION) / 360;
+  //  heading_correction_raw4096 = (settings.heading_correction * 4096) / 360;
 
     br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];  // set actual refresh rate
 
@@ -1430,7 +1429,6 @@ void br24radar_pi::DoTick(void)
 
     if (blackout[settings.selectRadarB]) {  // heads up in blackout mode
         PushNMEABuffer(_T("$APHDT,0.0,T\r\n"));
-        PushNMEABuffer(_T("$GPVTG,0.0,T,,M,,N,,K\r\n"));
     }
 
     wxString t;
@@ -1748,13 +1746,12 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
         HandleBogeyCount(bogey_count);
         // Guard Zone image and heading line for radar only
         if (settings.showRadar) {
-            double rotation = -settings.heading_correction + vp->skew * settings.skew_factor;
             if (blackout[settings.selectRadarB]) {    // draw heading line
                 glColor4ub(200, 0, 0, 200);
-                glLineWidth(2);
+                glLineWidth(3);
                 glBegin(GL_LINES);
                 glVertex2d(0, 0);
-                glVertex2d(0, - br_range_meters[settings.selectRadarB] * v_scale_ppm - sin(deg2rad(rotation))); // correct for rotation
+                glVertex2d(0, -br_range_meters[settings.selectRadarB] * v_scale_ppm); 
                 glEnd();
             }
             if (guardZones[settings.selectRadarB][0].type != GZ_OFF || guardZones[settings.selectRadarB][1].type != GZ_OFF) {
@@ -2324,7 +2321,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         br_hdt_watchdog = now;
     }
     else if (!wxIsNaN(pfix.Hdm) && TIMER_NOT_ELAPSED(br_var_watchdog)) {
-        br_hdt = pfix.Hdm + br_var;
+        br_hdt = MOD_DEGREES(pfix.Hdm + br_var + settings.heading_correction);
         if (m_heading_source != HEADING_HDM) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM %f"), br_hdt);
             m_heading_source = HEADING_HDM;
@@ -2339,7 +2336,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         br_hdt_watchdog = now;
     }
     else if (!wxIsNaN(pfix.Hdt)) {
-        br_hdt = pfix.Hdt;
+        br_hdt = MOD_DEGREES(pfix.Hdt + settings.heading_correction);
         if (m_heading_source != HEADING_HDT) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
             m_heading_source = HEADING_HDT;
@@ -3194,10 +3191,9 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     br_radar_watchdog = now;
     br_data_seen = true;   // added here, otherwise loose image while data is present
     br_data_watchdog = now;
+    int heading_correction_raw4096 = (pPlugIn->settings.heading_correction * 4096) / 360;
 
-    // wxCriticalSectionLocker locker(br_scanLock);
-
-    static unsigned int i_display = 0;  // used in radar reive thread for display operation
+    static unsigned int i_display = 0;  // used in radar receive thread for display operation
     static int next_scan_number[2] = { -1, -1 };
     int scan_number[2] = { 0, 0 };
     pPlugIn->m_statistics[AB].packets++;
@@ -3289,7 +3285,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
         if (hdm_raw != INT16_MIN && TIMER_NOT_ELAPSED(br_var_watchdog) && br_radar_type == RT_4G) {
             br_heading_on_radar = true;                            // heading on radar
-            br_hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(br_var));
+            br_hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(br_var) + heading_correction_raw4096);
             br_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(br_hdt_raw));
             if (!blackout[AB]) angle_raw += br_hdt_raw;
         }
@@ -3301,7 +3297,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         // until here all is based on 4096 scanlines
 
         angle_raw = angle_raw / 2;   // divide by 2 to map on 2048 scanlines
-        angle_raw += heading_correction_raw;  // apply heading correction immediately on the received image
         angle_raw = MOD_ROTATION2048(angle_raw);
 
         // now add this line to the history
