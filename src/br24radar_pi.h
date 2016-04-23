@@ -257,7 +257,6 @@ struct pi_control_settings {
     int      guard_zone_render_style;
  //   int      filter_process;
     double   range_calibration;
-    double   heading_correction;
     double   skew_factor;
     int      range_units;       // 0 = Nautical miles, 1 = Kilometers
     int      range_unit_meters; // ... 1852 or 1000, depending on range_units
@@ -627,7 +626,6 @@ private:
     void OnDisplayOptionClick(wxCommandEvent& event);
     void OnIntervalSlider(wxCommandEvent& event);
     void OnGuardZoneStyleClick(wxCommandEvent& event);
-    void OnHeading_Calibration_Value(wxCommandEvent& event);
     void OnSelectSoundClick(wxCommandEvent& event);
     void OnTestSoundClick(wxCommandEvent& event);
     void OnPassHeadingClick(wxCommandEvent& event);

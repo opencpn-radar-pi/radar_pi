@@ -932,23 +932,6 @@ bool BR24DisplayOptionsDialog::Create(wxWindow *parent, br24radar_pi *ppi)
                              wxCommandEventHandler(BR24DisplayOptionsDialog::OnGuardZoneStyleClick), NULL, this);
     pGuardZoneStyle->SetSelection(pPlugIn->settings.guard_zone_render_style);
 
-
-    //  Calibration
-    wxStaticBox* itemStaticBoxCalibration = new wxStaticBox(this, wxID_ANY, _("Calibration"));
-    wxStaticBoxSizer* itemStaticBoxSizerCalibration = new wxStaticBoxSizer(itemStaticBoxCalibration, wxVERTICAL);
-    DisplayOptionsBox->Add(itemStaticBoxSizerCalibration, 0, wxEXPAND | wxALL, border_size);
-
-    // Heading correction
-    wxStaticText *pStatic_Heading_Correction = new wxStaticText(this, wxID_ANY, _("Heading correction\n(-180 to +180)"));
-    itemStaticBoxSizerCalibration->Add(pStatic_Heading_Correction, 1, wxALIGN_LEFT | wxALL, 2);
-
-    pText_Heading_Correction_Value = new wxTextCtrl(this, wxID_ANY);
-    itemStaticBoxSizerCalibration->Add(pText_Heading_Correction_Value, 1, wxALIGN_LEFT | wxALL, border_size);
-    m_temp.Printf(wxT("%2.1f"), pPlugIn->settings.heading_correction);
-    pText_Heading_Correction_Value->SetValue(m_temp);
-    pText_Heading_Correction_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
-                                            wxCommandEventHandler(BR24DisplayOptionsDialog::OnHeading_Calibration_Value), NULL, this);
-
     // Guard Zone Alarm
 
     wxStaticBox* guardZoneBox = new wxStaticBox(this, wxID_ANY, _("Guard Zone Sound"));
@@ -1049,12 +1032,6 @@ void BR24DisplayOptionsDialog::OnTestSoundClick(wxCommandEvent &event)
     if (!pPlugIn->settings.alert_audio_file.IsEmpty()) {
         PlugInPlaySound(pPlugIn->settings.alert_audio_file);
     }
-}
-
-void BR24DisplayOptionsDialog::OnHeading_Calibration_Value(wxCommandEvent &event)
-{
-    wxString temp = pText_Heading_Correction_Value->GetValue();
-    temp.ToDouble(&pPlugIn->settings.heading_correction);
 }
 
 void BR24DisplayOptionsDialog::OnPassHeadingClick(wxCommandEvent &event)
@@ -1349,9 +1326,7 @@ void br24radar_pi::DoTick(void)
         settings.selectRadarB = 0;
         settings.enable_dual_radar = 0;
     }
-
-  //  heading_correction_raw4096 = (settings.heading_correction * 4096) / 360;
-
+    
     br_refresh_rate = REFRESHMAPPING[settings.refreshrate - 1];  // set actual refresh rate
 
     if (br_bpos_set && TIMER_ELAPSED(br_bpos_watchdog)) {
@@ -2117,7 +2092,6 @@ bool br24radar_pi::LoadConfig(void)
         pConf->Read(wxT("VerboseLog"),  &settings.verbose, 0);
         pConf->Read(wxT("Transparency"),  &settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
         pConf->Read(wxT("RangeCalibration"),  &settings.range_calibration, 1.0);
-        pConf->Read(wxT("HeadingCorrection"),  &settings.heading_correction, 0);
         pConf->Read(wxT("ScanMaxAge"), &settings.max_age, 6);   // default 6
         if (settings.max_age < MIN_AGE) {
             settings.max_age = MIN_AGE;
@@ -2207,7 +2181,6 @@ bool br24radar_pi::SaveConfig(void)
         pConf->Write(wxT("VerboseLog"), settings.verbose);
         pConf->Write(wxT("Transparency"), settings.overlay_transparency);
         pConf->Write(wxT("RangeCalibration"),  settings.range_calibration);
-        pConf->Write(wxT("HeadingCorrection"),  settings.heading_correction);
         pConf->Write(wxT("GuardZonesThreshold"), settings.guard_zone_threshold);
         pConf->Write(wxT("GuardZonesRenderStyle"), settings.guard_zone_render_style);
         pConf->Write(wxT("ScanMaxAge"), settings.max_age);
@@ -2321,7 +2294,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         br_hdt_watchdog = now;
     }
     else if (!wxIsNaN(pfix.Hdm) && TIMER_NOT_ELAPSED(br_var_watchdog)) {
-        br_hdt = MOD_DEGREES(pfix.Hdm + br_var + settings.heading_correction);
+        br_hdt = MOD_DEGREES(pfix.Hdm + br_var);
         if (m_heading_source != HEADING_HDM) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM %f"), br_hdt);
             m_heading_source = HEADING_HDM;
@@ -2336,7 +2309,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
         br_hdt_watchdog = now;
     }
     else if (!wxIsNaN(pfix.Hdt)) {
-        br_hdt = MOD_DEGREES(pfix.Hdt + settings.heading_correction);
+        br_hdt = MOD_DEGREES(pfix.Hdt);
         if (m_heading_source != HEADING_HDT) {
             wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
             m_heading_source = HEADING_HDT;
@@ -3191,7 +3164,6 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
     br_radar_watchdog = now;
     br_data_seen = true;   // added here, otherwise loose image while data is present
     br_data_watchdog = now;
-    int heading_correction_raw4096 = (pPlugIn->settings.heading_correction * 4096) / 360;
 
     static unsigned int i_display = 0;  // used in radar receive thread for display operation
     static int next_scan_number[2] = { -1, -1 };
@@ -3285,7 +3257,7 @@ void RadarDataReceiveThread::process_buffer(radar_frame_pkt * packet, int len)
         hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
         if (hdm_raw != INT16_MIN && TIMER_NOT_ELAPSED(br_var_watchdog) && br_radar_type == RT_4G) {
             br_heading_on_radar = true;                            // heading on radar
-            br_hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(br_var) + heading_correction_raw4096);
+            br_hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(br_var));
             br_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(br_hdt_raw));
             if (!blackout[AB]) angle_raw += br_hdt_raw;
         }
