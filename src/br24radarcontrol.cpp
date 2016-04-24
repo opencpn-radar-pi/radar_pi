@@ -583,6 +583,8 @@ void BR24ControlsDialog::CreateControls()
     bTargetBoost->names = target_boost_names;
     bTargetBoost->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.button); // redraw after adding names
 
+    advanced4gBox = new wxBoxSizer(wxVERTICAL);
+    advancedBox->Add(advanced4gBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
 
     // The NOISE REJECTION button
     noise_rejection_names[0] = _("Off");
@@ -591,14 +593,11 @@ void BR24ControlsDialog::CreateControls()
 
     bNoiseRejection = new RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), pPlugIn, CT_NOISE_REJECTION, false,
         pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.button);
-    advancedBox->Add(bNoiseRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+    advanced4gBox->Add(bNoiseRejection, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
     bNoiseRejection->minValue = 0;
     bNoiseRejection->maxValue = ARRAY_SIZE(noise_rejection_names) - 1;
     bNoiseRejection->names = noise_rejection_names;
     bNoiseRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.button); // redraw after adding names
-
-    advanced4gBox = new wxBoxSizer(wxVERTICAL);
-    advancedBox->Add(advanced4gBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
 
     // The TARGET SEPARATION button
 
