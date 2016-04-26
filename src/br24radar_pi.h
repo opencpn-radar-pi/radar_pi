@@ -257,7 +257,6 @@ struct pi_control_settings {
     int      guard_zone_render_style;
  //   int      filter_process;
     double   range_calibration;
-    double   heading_correction;
     double   skew_factor;
     int      range_units;       // 0 = Nautical miles, 1 = Kilometers
     int      range_unit_meters; // ... 1852 or 1000, depending on range_units
@@ -276,6 +275,7 @@ struct pi_control_settings {
     int      selectRadarB;
     int      showRadar;
     bool     emulator_on;
+    bool     enable_COG_heading;
     wxString alert_audio_file;
 };
 
@@ -364,6 +364,7 @@ public:
     void SetPositionFix(PlugIn_Position_Fix &pfix);
     void SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix);
     void SetPluginMessage(wxString &message_id, wxString &message_body);
+    void ClearImage();
     void SetCursorLatLon(double lat, double lon);
     void OnContextMenuItemCallback(int id);
     bool data_seenAB[2];
@@ -625,10 +626,10 @@ private:
     void OnDisplayOptionClick(wxCommandEvent& event);
     void OnIntervalSlider(wxCommandEvent& event);
     void OnGuardZoneStyleClick(wxCommandEvent& event);
-    void OnHeading_Calibration_Value(wxCommandEvent& event);
     void OnSelectSoundClick(wxCommandEvent& event);
     void OnTestSoundClick(wxCommandEvent& event);
     void OnPassHeadingClick(wxCommandEvent& event);
+    void OnEnableCOGClick(wxCommandEvent& event);
     void OnEnableDualRadarClick(wxCommandEvent& event);
     void OnEmulatorClick(wxCommandEvent& event);
 
@@ -643,7 +644,8 @@ private:
     wxRadioBox        *pGuardZoneStyle;
     wxSlider          *pIntervalSlider;
     wxTextCtrl        *pText_Heading_Correction_Value;
-    wxCheckBox        *cbPassHeading;
+    wxCheckBox        *cbPassHeading; 
+    wxCheckBox        *cbEnableCOG;
     wxCheckBox        *cbEnableDualRadar;
     wxCheckBox        *cbEmulator;
 };
@@ -739,7 +741,6 @@ public:
 
     int SetValueInt(int value);
 
-    bool isRemote; // Set by some other computer or MFD
     int auto_range_index;
 };
 
@@ -766,12 +767,11 @@ public:
                 );
 
     void CreateControls();
-    void SetRemoteRangeIndex(size_t index);
     void SetRangeIndex(size_t index);
     void SetTimedIdleIndex(int index);
     void UpdateGuardZoneState();
     void UpdateControl(bool haveOpenGL, bool haveGPS, bool haveHeading, bool haveVariation, bool haveRadar, bool haveData);
-    void UpdateControlValues(bool refreshAll);
+    void UpdateControlValues();
     void SetErrorMessage(wxString &msg);
     bool wantShowMessage; // If true, don't hide messagebox automatically
 
