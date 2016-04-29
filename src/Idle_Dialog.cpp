@@ -145,8 +145,8 @@ void Idle_Dialog::SetIdleTimes(int IdleMode, int IdleTime, int IdleTimeLeft)
     if (IdleMode == 2) Timelabel_1 = _("Now Transmit for");    
     t.Printf(_T("%d"), IdleTime);
     t2.Printf(_T("%d"), IdleTimeLeft + 1);
-    Timelabel << Timelabel_1 << _T(" ") << t << _T(" ") << Timelabel_2;
-    Timeleftlabel << Timeleftlabel_1 << _T(" ") << t2 << _T(" ") << Timeleftlabel_2;
+    Timelabel << Timelabel_1 << _T(" ") << t << _T(" ") << _("minutes");
+    Timeleftlabel << Timeleftlabel_1 << _T(" ") << t2 << _T(" ") << _("minutes to shifting");
     int GaugeValue = 100 - (IdleTimeLeft >= 0.9 * IdleTime ? 99 : (100 * (IdleTimeLeft+1)/IdleTime));
     p_Idle_Mode->SetLabel(Timelabel);
     p_IdleTimeLeft->SetLabel(Timeleftlabel);
