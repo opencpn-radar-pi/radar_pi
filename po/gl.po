@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-06 21:24+0100\n"
-"PO-Revision-Date: 2016-02-07 02:50-0500\n"
+"POT-Creation-Date: 2016-04-24 00:01+0200\n"
+"PO-Revision-Date: 2016-04-28 02:09-0400\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Galician\n"
 "Language: gl_ES\n"
@@ -15,463 +15,614 @@ msgstr ""
 "X-Crowdin-Project: opencpn\n"
 "X-Crowdin-Language: gl\n"
 "X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
-#
-msgid "\n"
-msgstr "\n"
-#
-msgid " Guard Zone Control"
-msgstr ""
-#
-msgid "&Close"
-msgstr "&Pechar"
-#
-msgid "&Confirm"
-msgstr "&Confirmar"
-#
-msgid "+"
-msgstr "+"
-#
-msgid "+10"
-msgstr "+10"
-#
-msgid "-"
-msgstr "-"
-#
-msgid "-10"
-msgstr "-10"
-#
-msgid "10 min"
-msgstr "10 min"
-#
-msgid "15 min"
-msgstr "15 min"
-#
-msgid "20 min"
-msgstr "20 min"
-#
-msgid "25 min"
-msgstr "25 min"
-#
-msgid "30 min"
-msgstr "30 min"
-#
-msgid "35 min"
-msgstr "35 min"
-#
-msgid "5 min"
-msgstr "5 min"
-#
-msgid ""
-"<<\n"
-"Back"
-msgstr ""
-"<<\n"
-"Atrás"
-#
-msgid "Accelerated Graphics (OpenGL)"
-msgstr ""
-#
-msgid ""
-"Advanced\n"
-"controls"
-msgstr ""
-"Controis\n"
-"avanzados"
-#
-msgid "Antenna height (m)"
-msgstr ""
-#
-msgid "Arc"
-msgstr ""
-#
-msgid "Auto"
-msgstr "Auto"
-#
-msgid "BR24 Target Display Preferences"
-msgstr ""
-#
-msgid "Back"
-msgstr "Atrás"
-#
-msgid "Back to activate"
-msgstr ""
-#
-msgid "Bearing alignment"
-msgstr ""
-#
-msgid "Boat position"
-msgstr ""
-#
-msgid "C&onfirm + Close"
-msgstr "&Confirmar + Pechar"
-#
-msgid "COG"
-msgstr "COG"
-#
-msgid "Calibration"
-msgstr ""
-#
-msgid ""
-"Can not switch radar on as\n"
-"it is not connected or off\n"
-" Switch radar on when button is amber"
-msgstr ""
-#
-msgid "Cannot bind UDP socket to port "
-msgstr ""
-#
-msgid "Cannot create UDP socket"
-msgstr ""
-#
-msgid "Cannot set reuse address option on socket"
-msgstr ""
-#
-msgid "Circle"
-msgstr "Círculo"
-#
-msgid "Dialog"
-msgstr "Diálogo"
-#
-msgid "Emulator mode"
-msgstr "Modo emulador"
-#
-msgid "Enable dual radar, 4G only"
-msgstr ""
-#
-msgid "End bearing"
-msgstr ""
-#
-msgid "Fast"
-msgstr "Rápido"
-#
-msgid "Filter"
-msgstr "Filtro"
-#
-msgid "For radar overlay also required"
-msgstr ""
-#
-msgid "GPS"
-msgstr ""
-#
-msgid "Gain"
-msgstr "Ganancia"
-#
-msgid "Guard Zone"
-msgstr ""
-#
-msgid "Guard Zone Active"
-msgstr ""
-#
-msgid "Guard Zone Sound"
-msgstr ""
-#
-msgid "Guard Zone Styling"
-msgstr ""
-#
-msgid "Guard zone"
-msgstr ""
-#
-msgid "Guard zones"
-msgstr ""
-#
-msgid "HDM"
-msgstr "HDM"
-#
-msgid "HDT"
-msgstr "HDT"
-#
-msgid "Heading"
-msgstr ""
-#
-msgid ""
-"Heading correction\n"
-"(-180 to +180)"
-msgstr ""
-#
-msgid "High"
-msgstr "Alto"
-#
-msgid "Info"
-msgstr "Info"
-#
-msgid "Inner range"
-msgstr ""
-#
-msgid "Installation"
-msgstr "Instalación"
-#
-msgid "Interference rejection"
-msgstr "Rexeitamento de interferencias"
-#
-msgid "Invalid IP address for UDP multicast"
-msgstr "Enderezo IP inválido para multicast UDP"
-#
-msgid "Invalid multicast address"
-msgstr "Enderezo multicast inválido"
-#
-msgid "Kilometers"
-msgstr "Kilómetros"
-#
-msgid "Local interference rejection"
-msgstr ""
-#
-msgid "Low"
-msgstr "Baixo"
-#
-msgid "Medium"
-msgstr "Medio"
-#
-msgid "Menu"
-msgstr "Menú"
-#
-msgid "Monocolor-Red"
-msgstr "Monocromo-vermello"
-#
-msgid "Multi Sweep Filter"
-msgstr ""
-#
-msgid "Multi Sweep Filter On"
-msgstr ""
-#
-msgid "Multi-color"
-msgstr "Multicor"
-#
-msgid "Multi-color 2"
-msgstr "Multicor 2"
-#
-msgid "NMEA"
-msgstr "NMEA"
-#
-msgid "Nautical Miles"
-msgstr "Millas náuticas"
-#
-msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
-msgstr ""
-#
-msgid "Navico Radar PlugIn for OpenCPN"
-msgstr ""
-#
-#, c-format
-msgid "Next alarm in %d s"
-msgstr "Próxima alarma en %d s"
-#
-msgid "Noise rejection"
-msgstr "Rexeitamento de ruído"
-#
-msgid "Normal"
-msgstr "Normal"
-#
-msgid "Now Idle for"
-msgstr ""
-#
-msgid "Now Transmit for"
-msgstr "Agora a transmitir para"
-#
-msgid "OFF"
-msgstr "APAGADO"
-#
-msgid "ON"
-msgstr "ACTIVO"
-#
-msgid "Off"
-msgstr "Apagado"
-#
-msgid "OpenCPN options"
-msgstr ""
-#
-msgid "Options"
-msgstr "Opcións"
-#
-msgid "Outer range"
-msgstr ""
-#
-msgid "Outline"
-msgstr ""
-#
-msgid "Overlay / Radar"
-msgstr "Superposición / Radar"
-#
-msgid "Overlay Display Options"
-msgstr ""
-#
-msgid "Pass radar heading to OpenCPN"
-msgstr ""
-#
-msgid "Radar"
-msgstr "Radar"
-#
-msgid "Radar A"
-msgstr "Radar A"
-#
-msgid "Radar A - OFF"
-msgstr "Radar A - apagado"
-#
-msgid "Radar A - ON"
-msgstr "Radar A - activo"
-#
-msgid "Radar A - Stby"
-msgstr "Radar A - en espera"
-#
-msgid "Radar A / B"
-msgstr "Radar A / B"
-#
-msgid "Radar A:\n"
-msgstr "Radar A:\n"
-#
-msgid "Radar B"
-msgstr "Radar B"
-#
-msgid "Radar B - OFF"
-msgstr "Radar B - apagado"
-#
-msgid "Radar B - ON"
-msgstr "Radar B - activo"
-#
-msgid "Radar B - Stby"
-msgstr "Radar B - en espera"
-#
-msgid "Radar B:\n"
-msgstr "Radar B:\n"
-#
-msgid "Radar Control..."
-msgstr "Control do Radar..."
-#
-msgid "Radar IP"
-msgstr ""
-#
-msgid "Radar Only / Overlay"
-msgstr ""
-#
-msgid "Radar Only, Head Up"
-msgstr ""
-#
-msgid "Radar Only, Head Up\n"
-msgstr "Só radar, proa arriba\n"
-#
-msgid "Radar Overlay"
-msgstr ""
-#
-msgid "Radar present"
-msgstr ""
-#
-msgid "Radar requires the following"
-msgstr ""
-#
-msgid "Radar sending data"
-msgstr ""
-#
-msgid "Rain clutter"
-msgstr ""
-#
-msgid "Range"
-msgstr "Alcance"
-#
-msgid "Range Units"
-msgstr "Unidades do alcance"
-#
-msgid "Refresh rate"
-msgstr "Frecuencia de actualización"
-#
-msgid "Remote"
-msgstr "Remoto"
-#
-msgid "Scan age"
-msgstr "Duración do escaneo"
-#
-msgid "Scan speed"
-msgstr "Velocidade de escaneo"
-#
-msgid "Sea clutter"
-msgstr ""
-#
-msgid "Select Alert Sound"
-msgstr ""
-#
-msgid "Select Sound File"
-msgstr "Seleccionar ficheiro de son"
-#
-msgid "Set Guard Point"
-msgstr ""
-#
-msgid "Shading"
-msgstr ""
-#
-msgid "Shading + Outline"
-msgstr ""
-#
-msgid "Side lobe suppression"
-msgstr ""
-#
-msgid "Start bearing"
-msgstr ""
-#
-msgid "Statistics"
-msgstr ""
-#
-msgid "Target boost"
-msgstr ""
-#
-msgid "Target separation"
-msgstr "Separación do branco"
-#
-msgid "Test Alert Sound"
-msgstr ""
-#
-msgid "Timed Transmit"
-msgstr ""
-#
-msgid "Timed transmit is active"
-msgstr ""
-#
-msgid "Transparency"
-msgstr "Transparencia"
-#
-msgid "Turn Radar always ON"
-msgstr "Ter o Radar sempre encendido"
-#
-msgid "Value"
-msgstr "Valor"
-#
-msgid "Variation"
-msgstr ""
-#
-msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
-msgstr "Ficheiros WAV (*.wav)|*.wav|Todos os ficheiros (*.*)|*.*"
-#
-msgid "WMM"
-msgstr "WMM"
-#
-msgid ""
-"Warning: Targets may be\n"
-"missed with filter on"
-msgstr ""
-#
-msgid "ZeroConf E'net"
-msgstr ""
-#
-msgid "ZeroConf via Ethernet"
-msgstr ""
-#
-msgid "Zone"
-msgstr "Zona"
-#
-msgid ""
-"Zone 1: unknown\n"
+
+#: src/GuardZoneBogey.cpp:124
+msgid "Zone 1: unknown\n"
 "Zone 2: unknown\n"
 "Timeout\n"
 msgstr ""
-#
+
+#: src/GuardZoneBogey.cpp:128
+msgid "&Confirm"
+msgstr "&Confirmar"
+
+#: src/GuardZoneBogey.cpp:131
+msgid "C&onfirm + Close"
+msgstr "&Confirmar + Pechar"
+
+#: src/GuardZoneBogey.cpp:144
+msgid "Radar A:\n"
+msgstr "Radar A:\n"
+
+#: src/GuardZoneBogey.cpp:147 src/GuardZoneBogey.cpp:159
+msgid "Zone"
+msgstr "Zona"
+
+#: src/GuardZoneBogey.cpp:152
+msgid "\n"
+msgstr "\n"
+
+#: src/GuardZoneBogey.cpp:156
+msgid "Radar B:\n"
+msgstr "Radar B:\n"
+
+#: src/GuardZoneBogey.cpp:166
+#, c-format
+msgid "Next alarm in %d s"
+msgstr "Próxima alarma en %d s"
+
+#: src/GuardZoneControls.cpp:133
+msgid "Guard zones"
+msgstr ""
+
+#: src/GuardZoneControls.cpp:137 src/br24radarcontrol.cpp:561
+#: src/br24radarcontrol.cpp:575 src/br24radarcontrol.cpp:588
+#: src/br24radarcontrol.cpp:605 src/br24radarcontrol.cpp:640
+#: src/br24radarcontrol.cpp:802
+msgid "Off"
+msgstr "Apagado"
+
+#: src/GuardZoneControls.cpp:138 src/br24radarcontrol.cpp:803
+msgid "Arc"
+msgstr ""
+
+#: src/GuardZoneControls.cpp:139 src/br24radarcontrol.cpp:804
+msgid "Circle"
+msgstr "Círculo"
+
+#: src/GuardZoneControls.cpp:140
 msgid "Zone type:"
 msgstr "Tipo de zona:"
-#
-msgid "emulator"
-msgstr "emulador"
-#
-msgid "minutes"
-msgstr "minutos"
-#
-msgid "minutes to shifting"
-msgstr "minutos ata cambio"
-#
+
+#: src/GuardZoneControls.cpp:152
+msgid "Inner range"
+msgstr ""
+
+#: src/GuardZoneControls.cpp:161
+msgid "Outer range"
+msgstr ""
+
+#: src/GuardZoneControls.cpp:171
+msgid "Start bearing"
+msgstr ""
+
+#: src/GuardZoneControls.cpp:181
+msgid "End bearing"
+msgstr ""
+
+#: src/GuardZoneControls.cpp:193
+msgid "Filter"
+msgstr "Filtro"
+
+#: src/GuardZoneControls.cpp:197
+msgid "Warning: Targets may be\n"
+"missed with filter on"
+msgstr ""
+
+#: src/GuardZoneControls.cpp:201
+msgid "Multi Sweep Filter On"
+msgstr ""
+
+#: src/GuardZoneControls.cpp:209 src/br24MessageBox.cpp:217
+msgid "&Close"
+msgstr "&Pechar"
+
+#: src/GuardZoneControls.cpp:252
+msgid "Guard Zone"
+msgstr ""
+
+#: src/br24radar_pi.cpp:655
+msgid "Radar Control..."
+msgstr "Control do Radar..."
+
+#: src/br24radar_pi.cpp:657
+msgid "Menu"
+msgstr "Menú"
+
+#: src/br24radar_pi.cpp:664
+msgid "Set Guard Point"
+msgstr ""
+
+#: src/br24radar_pi.cpp:796
+msgid "Navico Radar PlugIn for OpenCPN"
+msgstr ""
+
+#: src/br24radar_pi.cpp:802
+msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+msgstr ""
+
+#: src/br24radar_pi.cpp:866
+msgid "BR24 Target Display Preferences"
+msgstr ""
+
+#: src/br24radar_pi.cpp:889
+msgid "Nautical Miles"
+msgstr "Millas náuticas"
+
+#: src/br24radar_pi.cpp:890
+msgid "Kilometers"
+msgstr "Kilómetros"
+
+#: src/br24radar_pi.cpp:893
+msgid "Range Units"
+msgstr "Unidades do alcance"
+
+#: src/br24radar_pi.cpp:905
+msgid "Monocolor-Red"
+msgstr "Monocromo-vermello"
+
+#: src/br24radar_pi.cpp:906
+msgid "Multi-color"
+msgstr "Multicor"
+
+#: src/br24radar_pi.cpp:907
+msgid "Multi-color 2"
+msgstr "Multicor 2"
+
+#: src/br24radar_pi.cpp:910
+msgid "Overlay Display Options"
+msgstr ""
+
+#: src/br24radar_pi.cpp:922
+msgid "Shading"
+msgstr ""
+
+#: src/br24radar_pi.cpp:923
+msgid "Outline"
+msgstr ""
+
+#: src/br24radar_pi.cpp:924
+msgid "Shading + Outline"
+msgstr ""
+
+#: src/br24radar_pi.cpp:926
+msgid "Guard Zone Styling"
+msgstr ""
+
+#: src/br24radar_pi.cpp:937
+msgid "Guard Zone Sound"
+msgstr ""
+
+#: src/br24radar_pi.cpp:941
+msgid "Select Alert Sound"
+msgstr ""
+
+#: src/br24radar_pi.cpp:946
+msgid "Test Alert Sound"
+msgstr ""
+
+#: src/br24radar_pi.cpp:952
+msgid "Options"
+msgstr "Opcións"
+
+#: src/br24radar_pi.cpp:956
+msgid "Pass radar heading to OpenCPN"
+msgstr ""
+
+#: src/br24radar_pi.cpp:962
+msgid "Enable COG as heading"
+msgstr ""
+
+#: src/br24radar_pi.cpp:968
+msgid "Enable dual radar, 4G only"
+msgstr ""
+
+#: src/br24radar_pi.cpp:974
+msgid "Emulator mode"
+msgstr "Modo emulador"
+
+#: src/br24radar_pi.cpp:1017
+msgid "Select Sound File"
+msgstr "Seleccionar ficheiro de son"
+
+#: src/br24radar_pi.cpp:1018
+msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+msgstr "Ficheiros WAV (*.wav)|*.wav|Todos os ficheiros (*.*)|*.*"
+
+#: src/br24radar_pi.cpp:1194 src/br24radar_pi.h:955
+msgid " Guard Zone Control"
+msgstr ""
+
+#: src/br24radar_pi.cpp:2263
+msgid "GPS"
+msgstr ""
+
+#: src/br24radar_pi.cpp:2289
 msgid "radar"
 msgstr "radar"
+
+#: src/br24radar_pi.cpp:2304
+msgid "HDM"
+msgstr "HDM"
+
+#: src/br24radar_pi.cpp:2319
+msgid "HDT"
+msgstr "HDT"
+
+#: src/br24radar_pi.cpp:2334
+msgid "COG"
+msgstr "COG"
+
+#: src/br24radar_pi.cpp:2381
+msgid "WMM"
+msgstr "WMM"
+
+#: src/br24radar_pi.cpp:3043
+msgid "Cannot create UDP socket"
+msgstr ""
+
+#: src/br24radar_pi.cpp:3047
+msgid "Cannot set reuse address option on socket"
+msgstr ""
+
+#: src/br24radar_pi.cpp:3052
+msgid "Cannot bind UDP socket to port "
+msgstr ""
+
+#: src/br24radar_pi.cpp:3061
+msgid "Invalid multicast address"
+msgstr "Enderezo multicast inválido"
+
+#: src/br24radar_pi.cpp:3066
+msgid "Invalid IP address for UDP multicast"
+msgstr "Enderezo IP inválido para multicast UDP"
+
+#: src/br24radar_pi.h:763 src/br24radar_pi.h:883
+msgid "Radar"
+msgstr "Radar"
+
+#: src/br24radar_pi.h:1011
+msgid "Guard Zone Active"
+msgstr ""
+
+#: src/br24radar_pi.h:1057 src/br24radarcontrol.cpp:452
+#: src/br24radarcontrol.cpp:654
+msgid "Timed Transmit"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:315 src/br24radarcontrol.cpp:324
+#: src/br24radarcontrol.cpp:350 src/br24radarcontrol.cpp:456
+#: src/br24radarcontrol.cpp:526
+msgid "Auto"
+msgstr "Auto"
+
+#: src/br24radarcontrol.cpp:414 src/br24MessageBox.cpp:123
+#: src/br24MessageBox.cpp:213
+msgid "Dialog"
+msgstr "Diálogo"
+
+#: src/br24radarcontrol.cpp:445 src/br24radarcontrol.cpp:554
+msgid "Transparency"
+msgstr "Transparencia"
+
+#: src/br24radarcontrol.cpp:446 src/br24radarcontrol.cpp:566
+msgid "Interference rejection"
+msgstr "Rexeitamento de interferencias"
+
+#: src/br24radarcontrol.cpp:447 src/br24radarcontrol.cpp:610
+msgid "Target separation"
+msgstr "Separación do branco"
+
+#: src/br24radarcontrol.cpp:448 src/br24radarcontrol.cpp:592
+msgid "Noise rejection"
+msgstr "Rexeitamento de ruído"
+
+#: src/br24radarcontrol.cpp:449 src/br24radarcontrol.cpp:578
+msgid "Target boost"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:450 src/br24radarcontrol.cpp:621
+msgid "Scan speed"
+msgstr "Velocidade de escaneo"
+
+#: src/br24radarcontrol.cpp:451
+msgid "Scan age"
+msgstr "Duración do escaneo"
+
+#: src/br24radarcontrol.cpp:453 src/br24radarcontrol.cpp:748
+msgid "Gain"
+msgstr "Ganancia"
+
+#: src/br24radarcontrol.cpp:454 src/br24radarcontrol.cpp:752
+msgid "Sea clutter"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:455 src/br24radarcontrol.cpp:756
+msgid "Rain clutter"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:457 src/br24radarcontrol.cpp:734
+#: src/br24radarcontrol.cpp:739 src/br24radarcontrol.cpp:1036
+#: src/br24radarcontrol.cpp:1042 src/br24radarcontrol.cpp:1082
+#: src/br24radarcontrol.cpp:1087
+msgid "Overlay / Radar"
+msgstr "Superposición / Radar"
+
+#: src/br24radarcontrol.cpp:457
+msgid "Radar Only, Head Up\n"
+msgstr "Só radar, proa arriba\n"
+
+#: src/br24radarcontrol.cpp:457 src/br24radarcontrol.cpp:734
+#: src/br24radarcontrol.cpp:1042 src/br24radarcontrol.cpp:1087
+msgid "Warning: Turn off AIS"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:495
+msgid "<<\n"
+"Back"
+msgstr "<<\n"
+"Atrás"
+
+#: src/br24radarcontrol.cpp:500
+msgid "+10"
+msgstr "+10"
+
+#: src/br24radarcontrol.cpp:505
+msgid "+"
+msgstr "+"
+
+#: src/br24radarcontrol.cpp:510
+msgid "Value"
+msgstr "Valor"
+
+#: src/br24radarcontrol.cpp:516
+msgid "-"
+msgstr "-"
+
+#: src/br24radarcontrol.cpp:521
+msgid "-10"
+msgstr "-10"
+
+#: src/br24radarcontrol.cpp:532 src/br24radarcontrol.cpp:891
+#: src/br24radarcontrol.cpp:896
+msgid "Multi Sweep Filter"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:532 src/br24radarcontrol.cpp:896
+msgid "OFF"
+msgstr "APAGADO"
+
+#: src/br24radarcontrol.cpp:548 src/br24radarcontrol.cpp:671
+msgid "Back"
+msgstr "Atrás"
+
+#: src/br24radarcontrol.cpp:562 src/br24radarcontrol.cpp:576
+#: src/br24radarcontrol.cpp:589 src/br24radarcontrol.cpp:606
+msgid "Low"
+msgstr "Baixo"
+
+#: src/br24radarcontrol.cpp:563 src/br24radarcontrol.cpp:607
+msgid "Medium"
+msgstr "Medio"
+
+#: src/br24radarcontrol.cpp:564 src/br24radarcontrol.cpp:577
+#: src/br24radarcontrol.cpp:590 src/br24radarcontrol.cpp:608
+msgid "High"
+msgstr "Alto"
+
+#: src/br24radarcontrol.cpp:619
+msgid "Normal"
+msgstr "Normal"
+
+#: src/br24radarcontrol.cpp:620
+msgid "Fast"
+msgstr "Rápido"
+
+#: src/br24radarcontrol.cpp:629
+msgid "Refresh rate"
+msgstr "Frecuencia de actualización"
+
+#: src/br24radarcontrol.cpp:635
+msgid "Installation"
+msgstr "Instalación"
+
+#: src/br24radarcontrol.cpp:641
+msgid "5 min"
+msgstr "5 min"
+
+#: src/br24radarcontrol.cpp:642
+msgid "10 min"
+msgstr "10 min"
+
+#: src/br24radarcontrol.cpp:643
+msgid "15 min"
+msgstr "15 min"
+
+#: src/br24radarcontrol.cpp:644
+msgid "20 min"
+msgstr "20 min"
+
+#: src/br24radarcontrol.cpp:645
+msgid "25 min"
+msgstr "25 min"
+
+#: src/br24radarcontrol.cpp:646
+msgid "30 min"
+msgstr "30 min"
+
+#: src/br24radarcontrol.cpp:647
+msgid "35 min"
+msgstr "35 min"
+
+#: src/br24radarcontrol.cpp:649
+msgid "Back to activate"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:677
+msgid "Bearing alignment"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:685
+msgid "Antenna height (m)"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:692
+msgid "Local interference rejection"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:701
+msgid "Side lobe suppression"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:720 src/br24radarcontrol.cpp:725
+#: src/br24radarcontrol.cpp:1059 src/br24radarcontrol.cpp:1070
+msgid "Radar A / B"
+msgstr "Radar A / B"
+
+#: src/br24radarcontrol.cpp:720 src/br24radarcontrol.cpp:1070
+#: src/br24radarcontrol.cpp:1073
+msgid "Radar A"
+msgstr "Radar A"
+
+#: src/br24radarcontrol.cpp:725 src/br24radarcontrol.cpp:1059
+#: src/br24radarcontrol.cpp:1062
+msgid "Radar B"
+msgstr "Radar B"
+
+#: src/br24radarcontrol.cpp:730
+msgid "Radar Only / Overlay"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:734 src/br24radarcontrol.cpp:1042
+#: src/br24radarcontrol.cpp:1087
+msgid "Radar Only, Head Up"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:739 src/br24radarcontrol.cpp:1036
+#: src/br24radarcontrol.cpp:1082
+msgid "Radar Overlay"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:744
+msgid "Range"
+msgstr "Alcance"
+
+#: src/br24radarcontrol.cpp:760
+msgid "Advanced\n"
+"controls"
+msgstr "Controis\n"
+"avanzados"
+
+#: src/br24radarcontrol.cpp:766 src/br24radarcontrol.cpp:773
+#: src/br24radarcontrol.cpp:807 src/br24radarcontrol.cpp:810
+msgid "Guard zone"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:779
+msgid "Info"
+msgstr "Info"
+
+#: src/br24radarcontrol.cpp:891
+msgid "ON"
+msgstr "ACTIVO"
+
+#: src/br24radarcontrol.cpp:1131
+msgid "Filter = ON"
+msgstr ""
+
+#: src/br24radarcontrol.cpp:1276
+msgid "Radar A - ON"
+msgstr "Radar A - activo"
+
+#: src/br24radarcontrol.cpp:1279
+msgid "Radar A - Stby"
+msgstr "Radar A - en espera"
+
+#: src/br24radarcontrol.cpp:1282
+msgid "Radar A - OFF"
+msgstr "Radar A - apagado"
+
+#: src/br24radarcontrol.cpp:1287
+msgid "Radar B - ON"
+msgstr "Radar B - activo"
+
+#: src/br24radarcontrol.cpp:1290
+msgid "Radar B - Stby"
+msgstr "Radar B - en espera"
+
+#: src/br24radarcontrol.cpp:1293
+msgid "Radar B - OFF"
+msgstr "Radar B - apagado"
+
+#: src/Idle_Dialog.cpp:106 src/Idle_Dialog.cpp:145
+msgid "Now Transmit for"
+msgstr "Agora a transmitir para"
+
+#: src/Idle_Dialog.cpp:107
+msgid "minutes"
+msgstr "minutos"
+
+#: src/Idle_Dialog.cpp:109
+msgid "minutes to shifting"
+msgstr "minutos ata cambio"
+
+#: src/Idle_Dialog.cpp:119
+msgid "Timed transmit is active"
+msgstr ""
+
+#: src/Idle_Dialog.cpp:134
+msgid "Turn Radar always ON"
+msgstr "Ter o Radar sempre encendido"
+
+#: src/Idle_Dialog.cpp:144
+msgid "Now Idle for"
+msgstr ""
+
+#: src/br24MessageBox.cpp:151
+msgid "Can not switch radar on as\n"
+"it is not connected or off\n"
+" Switch radar on when button is amber"
+msgstr ""
+
+#: src/br24MessageBox.cpp:156
+msgid "Radar requires the following"
+msgstr ""
+
+#: src/br24MessageBox.cpp:159
+msgid "OpenCPN options"
+msgstr ""
+
+#: src/br24MessageBox.cpp:164
+msgid "Accelerated Graphics (OpenGL)"
+msgstr ""
+
+#: src/br24MessageBox.cpp:169
+msgid "ZeroConf via Ethernet"
+msgstr ""
+
+#: src/br24MessageBox.cpp:174
+msgid "Radar present"
+msgstr ""
+
+#: src/br24MessageBox.cpp:179
+msgid "Radar sending data"
+msgstr ""
+
+#: src/br24MessageBox.cpp:184
+msgid "For radar overlay also required"
+msgstr ""
+
+#: src/br24MessageBox.cpp:191
+msgid "Boat position"
+msgstr ""
+
+#: src/br24MessageBox.cpp:196 src/br24MessageBox.cpp:417
+msgid "Heading"
+msgstr ""
+
+#: src/br24MessageBox.cpp:201 src/br24MessageBox.cpp:427
+msgid "Variation"
+msgstr ""
+
+#: src/br24MessageBox.cpp:206 src/br24MessageBox.cpp:212
+msgid "Statistics"
+msgstr ""
+
+#: src/br24MessageBox.cpp:387
+msgid "Radar IP"
+msgstr ""
+
+#: src/br24MessageBox.cpp:407
+msgid "ZeroConf E'net"
+msgstr ""
+

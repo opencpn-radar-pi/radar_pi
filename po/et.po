@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-06 21:24+0100\n"
-"PO-Revision-Date: 2016-02-29 08:54-0500\n"
+"POT-Creation-Date: 2016-04-24 00:01+0200\n"
+"PO-Revision-Date: 2016-04-28 02:09-0400\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Estonian\n"
 "Language: et_EE\n"
@@ -15,473 +15,619 @@ msgstr ""
 "X-Crowdin-Project: opencpn\n"
 "X-Crowdin-Language: et\n"
 "X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
-#
-msgid "\n"
-msgstr "\n"
-#
-msgid " Guard Zone Control"
-msgstr " Valvetsooni ohje"
-#
-msgid "&Close"
-msgstr "%Sulge"
-#
+
+#: src/GuardZoneBogey.cpp:124
+msgid "Zone 1: unknown\n"
+"Zone 2: unknown\n"
+"Timeout\n"
+msgstr "1 tsoon: tundmatu\n"
+"2 tsoon: tundmatu\n"
+"Aegumine\n"
+
+#: src/GuardZoneBogey.cpp:128
 msgid "&Confirm"
 msgstr "&Kinnita"
-#
-msgid "+"
-msgstr "+"
-#
-msgid "+10"
-msgstr "+ 10"
-#
-msgid "-"
-msgstr "-"
-#
-msgid "-10"
-msgstr "-10"
-#
-msgid "10 min"
-msgstr "10 min"
-#
-msgid "15 min"
-msgstr "15 min"
-#
-msgid "20 min"
-msgstr "20 min"
-#
-msgid "25 min"
-msgstr "25 min"
-#
-msgid "30 min"
-msgstr "30 min"
-#
-msgid "35 min"
-msgstr "35 min"
-#
-msgid "5 min"
-msgstr "5 min"
-#
-msgid ""
-"<<\n"
-"Back"
-msgstr ""
-"<< \n"
-"Tagasi"
-#
-msgid "Accelerated Graphics (OpenGL)"
-msgstr "Graafikakiirendi (OpenGL)"
-#
-msgid ""
-"Advanced\n"
-"controls"
-msgstr ""
-"Lisa\n"
-"-ohjed"
-#
-msgid "Antenna height (m)"
-msgstr "Antenni kõrgus (m)"
-#
-msgid "Arc"
-msgstr "Kaar"
-#
-msgid "Auto"
-msgstr "Automaatne"
-#
-msgid "BR24 Target Display Preferences"
-msgstr "BR24 märgi kuvamise eelistused"
-#
-msgid "Back"
-msgstr "Tagasi"
-#
-msgid "Back to activate"
-msgstr "Tagasi aktiveerimiseks"
-#
-msgid "Bearing alignment"
-msgstr "Kursi joondamine"
-#
-msgid "Boat position"
-msgstr "Aluse asukoht"
-#
+
+#: src/GuardZoneBogey.cpp:131
 msgid "C&onfirm + Close"
 msgstr "K&innita + sule"
-#
-msgid "COG"
-msgstr "COG"
-#
-msgid "Calibration"
-msgstr "Kalibreerimine"
-#
-msgid ""
-"Can not switch radar on as\n"
-"it is not connected or off\n"
-" Switch radar on when button is amber"
-msgstr ""
-"Ei saa radarit sisse lülitada,\n"
-"sest ta ei ole ühendatud või on väljas\n"
-" Lülita radar tööle kui nupp helendab"
-#
-msgid "Cannot bind UDP socket to port "
-msgstr "Ei suuda siduda UDP-soklit pordiga "
-#
-msgid "Cannot create UDP socket"
-msgstr "Ei suuda luua UDP-sokkelit"
-#
-msgid "Cannot set reuse address option on socket"
-msgstr "Ei suuda luua korduvkasutamise aadressi valikut soklis"
-#
-msgid "Circle"
-msgstr "Ring"
-#
-msgid "Dialog"
-msgstr "Dialoog"
-#
-msgid "Emulator mode"
-msgstr "Emulaatorrežiim"
-#
-msgid "Enable dual radar, 4G only"
-msgstr "Topelt-radari võimaldamine, 4G ainult"
-#
-msgid "End bearing"
-msgstr "Lõpp-peiling"
-#
-msgid "Fast"
-msgstr "Kiire"
-#
-msgid "Filter"
-msgstr "Filtreeri"
-#
-msgid "For radar overlay also required"
-msgstr "Radari ülekatte jaoks on ka vaja"
-#
-msgid "GPS"
-msgstr "GPS"
-#
-msgid "Gain"
-msgstr "Võimendus"
-#
-msgid "Guard Zone"
-msgstr "Valvetsoon"
-#
-msgid "Guard Zone Active"
-msgstr "Aktiivne valvetsoon"
-#
-msgid "Guard Zone Sound"
-msgstr "Valvetsooni heli"
-#
-msgid "Guard Zone Styling"
-msgstr "Valvetsooni stiil"
-#
-msgid "Guard zone"
-msgstr "Valvetsoon"
-#
-msgid "Guard zones"
-msgstr "Valvetsoonid"
-#
-msgid "HDM"
-msgstr "HDM"
-#
-msgid "HDT"
-msgstr "HDT"
-#
-msgid "Heading"
-msgstr "Suund"
-#
-msgid ""
-"Heading correction\n"
-"(-180 to +180)"
-msgstr ""
-"kursi parandus\n"
-"(-180 kuni +180)"
-#
-msgid "High"
-msgstr "Kõrge"
-#
-msgid "Info"
-msgstr "Info"
-#
-msgid "Inner range"
-msgstr "Sisemine ulatus"
-#
-msgid "Installation"
-msgstr "Paigaldamine"
-#
-msgid "Interference rejection"
-msgstr "Häiringute tagasilükkamine"
-#
-msgid "Invalid IP address for UDP multicast"
-msgstr "UDP-multisaate IP-aadress on kehtetu"
-#
-msgid "Invalid multicast address"
-msgstr "Kehtetu multisaate aadress"
-#
-msgid "Kilometers"
-msgstr "kilomeetrid"
-#
-msgid "Local interference rejection"
-msgstr "Kohalike häitete tagasilükkamine"
-#
-msgid "Low"
-msgstr "Madal"
-#
-msgid "Medium"
-msgstr "Keskmine"
-#
-msgid "Menu"
-msgstr "Menüü"
-#
-msgid "Monocolor-Red"
-msgstr "ühevärviline-punane"
-#
-msgid "Multi Sweep Filter"
-msgstr "Multilaotuse filter"
-#
-msgid "Multi Sweep Filter On"
-msgstr "Multilaotuse filter sees"
-#
-msgid "Multi-color"
-msgstr "mitmevärviline"
-#
-msgid "Multi-color 2"
-msgstr "mitmevärviline 2"
-#
-msgid "NMEA"
-msgstr "NMEA"
-#
-msgid "Nautical Miles"
-msgstr "meremiilid"
-#
-msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
-msgstr "Navico BR24/3G/4G lairibaradari plugin OpenCPN'i jaoks\n"
-#
-msgid "Navico Radar PlugIn for OpenCPN"
-msgstr "Navico radari plugIn OpenCPN'i jaoks"
-#
+
+#: src/GuardZoneBogey.cpp:144
+msgid "Radar A:\n"
+msgstr "Radar A:\n"
+
+#: src/GuardZoneBogey.cpp:147 src/GuardZoneBogey.cpp:159
+msgid "Zone"
+msgstr "Tsoon"
+
+#: src/GuardZoneBogey.cpp:152
+msgid "\n"
+msgstr "\n"
+
+#: src/GuardZoneBogey.cpp:156
+msgid "Radar B:\n"
+msgstr "Radar B:\n"
+
+#: src/GuardZoneBogey.cpp:166
 #, c-format
 msgid "Next alarm in %d s"
 msgstr "Järgmine häire %d s"
-#
-msgid "Noise rejection"
-msgstr "Müra tagasilükkamine"
-#
-msgid "Normal"
-msgstr "Tavaline"
-#
-msgid "Now Idle for"
-msgstr "Nüüd jõudeolekus"
-#
-msgid "Now Transmit for"
-msgstr "Nüüd edasta"
-#
-msgid "OFF"
-msgstr "VÄLJA"
-#
-msgid "ON"
-msgstr "SEES"
-#
+
+#: src/GuardZoneControls.cpp:133
+msgid "Guard zones"
+msgstr "Valvetsoonid"
+
+#: src/GuardZoneControls.cpp:137 src/br24radarcontrol.cpp:561
+#: src/br24radarcontrol.cpp:575 src/br24radarcontrol.cpp:588
+#: src/br24radarcontrol.cpp:605 src/br24radarcontrol.cpp:640
+#: src/br24radarcontrol.cpp:802
 msgid "Off"
 msgstr "Väljas"
-#
-msgid "OpenCPN options"
-msgstr "OpenCPN'i valikud"
-#
-msgid "Options"
-msgstr "Valikud"
-#
-msgid "Outer range"
-msgstr "Välimine ulatus"
-#
-msgid "Outline"
-msgstr "kontuur"
-#
-msgid "Overlay / Radar"
-msgstr "Ülekate / radar"
-#
-msgid "Overlay Display Options"
-msgstr "Ülekatte kuvamise valikud"
-#
-msgid "Pass radar heading to OpenCPN"
-msgstr "Saada radari kurss edasi OpenCPN'i"
-#
-msgid "Radar"
-msgstr "Radar"
-#
-msgid "Radar A"
-msgstr "Radar A"
-#
-msgid "Radar A - OFF"
-msgstr "Radar A - VÄLJAS"
-#
-msgid "Radar A - ON"
-msgstr "Radar A - SEES"
-#
-msgid "Radar A - Stby"
-msgstr "Radar A - ootel"
-#
-msgid "Radar A / B"
-msgstr "Radar A / B"
-#
-msgid "Radar A:\n"
-msgstr "Radar A:\n"
-#
-msgid "Radar B"
-msgstr "Radar B"
-#
-msgid "Radar B - OFF"
-msgstr "Radar B - VÄLJAS"
-#
-msgid "Radar B - ON"
-msgstr "Radar B - SEES"
-#
-msgid "Radar B - Stby"
-msgstr "Radar B - ootel"
-#
-msgid "Radar B:\n"
-msgstr "Radar B:\n"
-#
-msgid "Radar Control..."
-msgstr "Radari kontroll..."
-#
-msgid "Radar IP"
-msgstr "Radari IP"
-#
-msgid "Radar Only / Overlay"
-msgstr "Ainult radar / ülekate"
-#
-msgid "Radar Only, Head Up"
-msgstr "Ainut radar, vöör üleval"
-#
-msgid "Radar Only, Head Up\n"
-msgstr "Ainult radar, vöör üleval\n"
-#
-msgid "Radar Overlay"
-msgstr "Radari ülekate"
-#
-msgid "Radar present"
-msgstr "Radar on olemas"
-#
-msgid "Radar requires the following"
-msgstr "Radar nõuab järgmist"
-#
-msgid "Radar sending data"
-msgstr "Radar saadab andmeid"
-#
-msgid "Rain clutter"
-msgstr "Sademesäri"
-#
-msgid "Range"
-msgstr "Ulatus"
-#
-msgid "Range Units"
-msgstr "Ulatuse ühikud"
-#
-msgid "Refresh rate"
-msgstr "Värskenduse kiirus"
-#
-msgid "Remote"
-msgstr "Eemal asuv"
-#
-msgid "Scan age"
-msgstr "Pildi püsimisaeg"
-#
-msgid "Scan speed"
-msgstr "Skaneerimise kiirus"
-#
-msgid "Sea clutter"
-msgstr "Meresäri"
-#
-msgid "Select Alert Sound"
-msgstr "Vali häire heli"
-#
-msgid "Select Sound File"
-msgstr "Vali helifail"
-#
-msgid "Set Guard Point"
-msgstr "Sea valvepunkt"
-#
-msgid "Shading"
-msgstr "varjustus"
-#
-msgid "Shading + Outline"
-msgstr "varjustus + kontuur"
-#
-msgid "Side lobe suppression"
-msgstr "Külgsagara summutamine"
-#
-msgid "Start bearing"
-msgstr "Alguspeiling"
-#
-msgid "Statistics"
-msgstr "Statistika"
-#
-msgid "Target boost"
-msgstr "Märgi suurendamine"
-#
-msgid "Target separation"
-msgstr "Märgi eraldamine"
-#
-msgid "Test Alert Sound"
-msgstr "Testi häire heli"
-#
-msgid "Timed Transmit"
-msgstr "Ajastatud kiirgamine"
-#
-msgid "Timed transmit is active"
-msgstr "Ajastatud edastamine on aktiivne"
-#
-msgid "Transparency"
-msgstr "Läbipaistvus"
-#
-msgid "Turn Radar always ON"
-msgstr "Lülita radar alati SISSE"
-#
-msgid "Value"
-msgstr "Väärtus"
-#
-msgid "Variation"
-msgstr "Variatsioon"
-#
-msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
-msgstr "WAV-failid (*.wav)|*.wav|Kõik failid (*.*)|*.*"
-#
-msgid "WMM"
-msgstr "WMM"
-#
-msgid ""
-"Warning: Targets may be\n"
-"missed with filter on"
-msgstr ""
-"Hoiatus: märgid võivad puududa\n"
-"kui filter on sisselülitatud"
-#
-msgid "ZeroConf E'net"
-msgstr "ZeroConf E'net"
-#
-msgid "ZeroConf via Ethernet"
-msgstr "ZeroConf üle võrgu"
-#
-msgid "Zone"
-msgstr "Tsoon"
-#
-msgid ""
-"Zone 1: unknown\n"
-"Zone 2: unknown\n"
-"Timeout\n"
-msgstr ""
-"1 tsoon: tundmatu\n"
-"2 tsoon: tundmatu\n"
-"Aegumine\n"
-#
+
+#: src/GuardZoneControls.cpp:138 src/br24radarcontrol.cpp:803
+msgid "Arc"
+msgstr "Kaar"
+
+#: src/GuardZoneControls.cpp:139 src/br24radarcontrol.cpp:804
+msgid "Circle"
+msgstr "Ring"
+
+#: src/GuardZoneControls.cpp:140
 msgid "Zone type:"
 msgstr "Tsooni liigid:"
-#
-msgid "emulator"
-msgstr "emulaator"
-#
-msgid "minutes"
-msgstr "minutit"
-#
-msgid "minutes to shifting"
-msgstr "minutit nihkesse"
-#
+
+#: src/GuardZoneControls.cpp:152
+msgid "Inner range"
+msgstr "Sisemine ulatus"
+
+#: src/GuardZoneControls.cpp:161
+msgid "Outer range"
+msgstr "Välimine ulatus"
+
+#: src/GuardZoneControls.cpp:171
+msgid "Start bearing"
+msgstr "Alguspeiling"
+
+#: src/GuardZoneControls.cpp:181
+msgid "End bearing"
+msgstr "Lõpp-peiling"
+
+#: src/GuardZoneControls.cpp:193
+msgid "Filter"
+msgstr "Filtreeri"
+
+#: src/GuardZoneControls.cpp:197
+msgid "Warning: Targets may be\n"
+"missed with filter on"
+msgstr "Hoiatus: märgid võivad puududa\n"
+"kui filter on sisselülitatud"
+
+#: src/GuardZoneControls.cpp:201
+msgid "Multi Sweep Filter On"
+msgstr "Multilaotuse filter sees"
+
+#: src/GuardZoneControls.cpp:209 src/br24MessageBox.cpp:217
+msgid "&Close"
+msgstr "%Sulge"
+
+#: src/GuardZoneControls.cpp:252
+msgid "Guard Zone"
+msgstr "Valvetsoon"
+
+#: src/br24radar_pi.cpp:655
+msgid "Radar Control..."
+msgstr "Radari kontroll..."
+
+#: src/br24radar_pi.cpp:657
+msgid "Menu"
+msgstr "Menüü"
+
+#: src/br24radar_pi.cpp:664
+msgid "Set Guard Point"
+msgstr "Sea valvepunkt"
+
+#: src/br24radar_pi.cpp:796
+msgid "Navico Radar PlugIn for OpenCPN"
+msgstr "Navico radari plugIn OpenCPN'i jaoks"
+
+#: src/br24radar_pi.cpp:802
+msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+msgstr "Navico BR24/3G/4G lairibaradari plugin OpenCPN'i jaoks\n"
+
+#: src/br24radar_pi.cpp:866
+msgid "BR24 Target Display Preferences"
+msgstr "BR24 märgi kuvamise eelistused"
+
+#: src/br24radar_pi.cpp:889
+msgid "Nautical Miles"
+msgstr "meremiilid"
+
+#: src/br24radar_pi.cpp:890
+msgid "Kilometers"
+msgstr "kilomeetrid"
+
+#: src/br24radar_pi.cpp:893
+msgid "Range Units"
+msgstr "Ulatuse ühikud"
+
+#: src/br24radar_pi.cpp:905
+msgid "Monocolor-Red"
+msgstr "ühevärviline-punane"
+
+#: src/br24radar_pi.cpp:906
+msgid "Multi-color"
+msgstr "mitmevärviline"
+
+#: src/br24radar_pi.cpp:907
+msgid "Multi-color 2"
+msgstr "mitmevärviline 2"
+
+#: src/br24radar_pi.cpp:910
+msgid "Overlay Display Options"
+msgstr "Ülekatte kuvamise valikud"
+
+#: src/br24radar_pi.cpp:922
+msgid "Shading"
+msgstr "varjustus"
+
+#: src/br24radar_pi.cpp:923
+msgid "Outline"
+msgstr "kontuur"
+
+#: src/br24radar_pi.cpp:924
+msgid "Shading + Outline"
+msgstr "varjustus + kontuur"
+
+#: src/br24radar_pi.cpp:926
+msgid "Guard Zone Styling"
+msgstr "Valvetsooni stiil"
+
+#: src/br24radar_pi.cpp:937
+msgid "Guard Zone Sound"
+msgstr "Valvetsooni heli"
+
+#: src/br24radar_pi.cpp:941
+msgid "Select Alert Sound"
+msgstr "Vali häire heli"
+
+#: src/br24radar_pi.cpp:946
+msgid "Test Alert Sound"
+msgstr "Testi häire heli"
+
+#: src/br24radar_pi.cpp:952
+msgid "Options"
+msgstr "Valikud"
+
+#: src/br24radar_pi.cpp:956
+msgid "Pass radar heading to OpenCPN"
+msgstr "Saada radari kurss edasi OpenCPN'i"
+
+#: src/br24radar_pi.cpp:962
+msgid "Enable COG as heading"
+msgstr "Võimalda COG kursina"
+
+#: src/br24radar_pi.cpp:968
+msgid "Enable dual radar, 4G only"
+msgstr "Topelt-radari võimaldamine, 4G ainult"
+
+#: src/br24radar_pi.cpp:974
+msgid "Emulator mode"
+msgstr "Emulaatorrežiim"
+
+#: src/br24radar_pi.cpp:1017
+msgid "Select Sound File"
+msgstr "Vali helifail"
+
+#: src/br24radar_pi.cpp:1018
+msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+msgstr "WAV-failid (*.wav)|*.wav|Kõik failid (*.*)|*.*"
+
+#: src/br24radar_pi.cpp:1194 src/br24radar_pi.h:955
+msgid " Guard Zone Control"
+msgstr " Valvetsooni ohje"
+
+#: src/br24radar_pi.cpp:2263
+msgid "GPS"
+msgstr "GPS"
+
+#: src/br24radar_pi.cpp:2289
 msgid "radar"
 msgstr "radar"
+
+#: src/br24radar_pi.cpp:2304
+msgid "HDM"
+msgstr "HDM"
+
+#: src/br24radar_pi.cpp:2319
+msgid "HDT"
+msgstr "HDT"
+
+#: src/br24radar_pi.cpp:2334
+msgid "COG"
+msgstr "COG"
+
+#: src/br24radar_pi.cpp:2381
+msgid "WMM"
+msgstr "WMM"
+
+#: src/br24radar_pi.cpp:3043
+msgid "Cannot create UDP socket"
+msgstr "Ei suuda luua UDP-sokkelit"
+
+#: src/br24radar_pi.cpp:3047
+msgid "Cannot set reuse address option on socket"
+msgstr "Ei suuda luua korduvkasutamise aadressi valikut soklis"
+
+#: src/br24radar_pi.cpp:3052
+msgid "Cannot bind UDP socket to port "
+msgstr "Ei suuda siduda UDP-soklit pordiga "
+
+#: src/br24radar_pi.cpp:3061
+msgid "Invalid multicast address"
+msgstr "Kehtetu multisaate aadress"
+
+#: src/br24radar_pi.cpp:3066
+msgid "Invalid IP address for UDP multicast"
+msgstr "UDP-multisaate IP-aadress on kehtetu"
+
+#: src/br24radar_pi.h:763 src/br24radar_pi.h:883
+msgid "Radar"
+msgstr "Radar"
+
+#: src/br24radar_pi.h:1011
+msgid "Guard Zone Active"
+msgstr "Aktiivne valvetsoon"
+
+#: src/br24radar_pi.h:1057 src/br24radarcontrol.cpp:452
+#: src/br24radarcontrol.cpp:654
+msgid "Timed Transmit"
+msgstr "Ajastatud kiirgamine"
+
+#: src/br24radarcontrol.cpp:315 src/br24radarcontrol.cpp:324
+#: src/br24radarcontrol.cpp:350 src/br24radarcontrol.cpp:456
+#: src/br24radarcontrol.cpp:526
+msgid "Auto"
+msgstr "Automaatne"
+
+#: src/br24radarcontrol.cpp:414 src/br24MessageBox.cpp:123
+#: src/br24MessageBox.cpp:213
+msgid "Dialog"
+msgstr "Dialoog"
+
+#: src/br24radarcontrol.cpp:445 src/br24radarcontrol.cpp:554
+msgid "Transparency"
+msgstr "Läbipaistvus"
+
+#: src/br24radarcontrol.cpp:446 src/br24radarcontrol.cpp:566
+msgid "Interference rejection"
+msgstr "Häiringute tagasilükkamine"
+
+#: src/br24radarcontrol.cpp:447 src/br24radarcontrol.cpp:610
+msgid "Target separation"
+msgstr "Märgi eraldamine"
+
+#: src/br24radarcontrol.cpp:448 src/br24radarcontrol.cpp:592
+msgid "Noise rejection"
+msgstr "Müra tagasilükkamine"
+
+#: src/br24radarcontrol.cpp:449 src/br24radarcontrol.cpp:578
+msgid "Target boost"
+msgstr "Märgi suurendamine"
+
+#: src/br24radarcontrol.cpp:450 src/br24radarcontrol.cpp:621
+msgid "Scan speed"
+msgstr "Skaneerimise kiirus"
+
+#: src/br24radarcontrol.cpp:451
+msgid "Scan age"
+msgstr "Pildi püsimisaeg"
+
+#: src/br24radarcontrol.cpp:453 src/br24radarcontrol.cpp:748
+msgid "Gain"
+msgstr "Võimendus"
+
+#: src/br24radarcontrol.cpp:454 src/br24radarcontrol.cpp:752
+msgid "Sea clutter"
+msgstr "Meresäri"
+
+#: src/br24radarcontrol.cpp:455 src/br24radarcontrol.cpp:756
+msgid "Rain clutter"
+msgstr "Sademesäri"
+
+#: src/br24radarcontrol.cpp:457 src/br24radarcontrol.cpp:734
+#: src/br24radarcontrol.cpp:739 src/br24radarcontrol.cpp:1036
+#: src/br24radarcontrol.cpp:1042 src/br24radarcontrol.cpp:1082
+#: src/br24radarcontrol.cpp:1087
+msgid "Overlay / Radar"
+msgstr "Ülekate / radar"
+
+#: src/br24radarcontrol.cpp:457
+msgid "Radar Only, Head Up\n"
+msgstr "Ainult radar, vöör üleval\n"
+
+#: src/br24radarcontrol.cpp:457 src/br24radarcontrol.cpp:734
+#: src/br24radarcontrol.cpp:1042 src/br24radarcontrol.cpp:1087
+msgid "Warning: Turn off AIS"
+msgstr "Hoiatus: lülita AIS välja"
+
+#: src/br24radarcontrol.cpp:495
+msgid "<<\n"
+"Back"
+msgstr "<< \n"
+"Tagasi"
+
+#: src/br24radarcontrol.cpp:500
+msgid "+10"
+msgstr "+ 10"
+
+#: src/br24radarcontrol.cpp:505
+msgid "+"
+msgstr "+"
+
+#: src/br24radarcontrol.cpp:510
+msgid "Value"
+msgstr "Väärtus"
+
+#: src/br24radarcontrol.cpp:516
+msgid "-"
+msgstr "-"
+
+#: src/br24radarcontrol.cpp:521
+msgid "-10"
+msgstr "-10"
+
+#: src/br24radarcontrol.cpp:532 src/br24radarcontrol.cpp:891
+#: src/br24radarcontrol.cpp:896
+msgid "Multi Sweep Filter"
+msgstr "Multilaotuse filter"
+
+#: src/br24radarcontrol.cpp:532 src/br24radarcontrol.cpp:896
+msgid "OFF"
+msgstr "VÄLJA"
+
+#: src/br24radarcontrol.cpp:548 src/br24radarcontrol.cpp:671
+msgid "Back"
+msgstr "Tagasi"
+
+#: src/br24radarcontrol.cpp:562 src/br24radarcontrol.cpp:576
+#: src/br24radarcontrol.cpp:589 src/br24radarcontrol.cpp:606
+msgid "Low"
+msgstr "Madal"
+
+#: src/br24radarcontrol.cpp:563 src/br24radarcontrol.cpp:607
+msgid "Medium"
+msgstr "Keskmine"
+
+#: src/br24radarcontrol.cpp:564 src/br24radarcontrol.cpp:577
+#: src/br24radarcontrol.cpp:590 src/br24radarcontrol.cpp:608
+msgid "High"
+msgstr "Kõrge"
+
+#: src/br24radarcontrol.cpp:619
+msgid "Normal"
+msgstr "Tavaline"
+
+#: src/br24radarcontrol.cpp:620
+msgid "Fast"
+msgstr "Kiire"
+
+#: src/br24radarcontrol.cpp:629
+msgid "Refresh rate"
+msgstr "Värskenduse kiirus"
+
+#: src/br24radarcontrol.cpp:635
+msgid "Installation"
+msgstr "Paigaldamine"
+
+#: src/br24radarcontrol.cpp:641
+msgid "5 min"
+msgstr "5 min"
+
+#: src/br24radarcontrol.cpp:642
+msgid "10 min"
+msgstr "10 min"
+
+#: src/br24radarcontrol.cpp:643
+msgid "15 min"
+msgstr "15 min"
+
+#: src/br24radarcontrol.cpp:644
+msgid "20 min"
+msgstr "20 min"
+
+#: src/br24radarcontrol.cpp:645
+msgid "25 min"
+msgstr "25 min"
+
+#: src/br24radarcontrol.cpp:646
+msgid "30 min"
+msgstr "30 min"
+
+#: src/br24radarcontrol.cpp:647
+msgid "35 min"
+msgstr "35 min"
+
+#: src/br24radarcontrol.cpp:649
+msgid "Back to activate"
+msgstr "Tagasi aktiveerimiseks"
+
+#: src/br24radarcontrol.cpp:677
+msgid "Bearing alignment"
+msgstr "Kursi joondamine"
+
+#: src/br24radarcontrol.cpp:685
+msgid "Antenna height (m)"
+msgstr "Antenni kõrgus (m)"
+
+#: src/br24radarcontrol.cpp:692
+msgid "Local interference rejection"
+msgstr "Kohalike häitete tagasilükkamine"
+
+#: src/br24radarcontrol.cpp:701
+msgid "Side lobe suppression"
+msgstr "Külgsagara summutamine"
+
+#: src/br24radarcontrol.cpp:720 src/br24radarcontrol.cpp:725
+#: src/br24radarcontrol.cpp:1059 src/br24radarcontrol.cpp:1070
+msgid "Radar A / B"
+msgstr "Radar A / B"
+
+#: src/br24radarcontrol.cpp:720 src/br24radarcontrol.cpp:1070
+#: src/br24radarcontrol.cpp:1073
+msgid "Radar A"
+msgstr "Radar A"
+
+#: src/br24radarcontrol.cpp:725 src/br24radarcontrol.cpp:1059
+#: src/br24radarcontrol.cpp:1062
+msgid "Radar B"
+msgstr "Radar B"
+
+#: src/br24radarcontrol.cpp:730
+msgid "Radar Only / Overlay"
+msgstr "Ainult radar / ülekate"
+
+#: src/br24radarcontrol.cpp:734 src/br24radarcontrol.cpp:1042
+#: src/br24radarcontrol.cpp:1087
+msgid "Radar Only, Head Up"
+msgstr "Ainut radar, vöör üleval"
+
+#: src/br24radarcontrol.cpp:739 src/br24radarcontrol.cpp:1036
+#: src/br24radarcontrol.cpp:1082
+msgid "Radar Overlay"
+msgstr "Radari ülekate"
+
+#: src/br24radarcontrol.cpp:744
+msgid "Range"
+msgstr "Ulatus"
+
+#: src/br24radarcontrol.cpp:760
+msgid "Advanced\n"
+"controls"
+msgstr "Lisa\n"
+"-ohjed"
+
+#: src/br24radarcontrol.cpp:766 src/br24radarcontrol.cpp:773
+#: src/br24radarcontrol.cpp:807 src/br24radarcontrol.cpp:810
+msgid "Guard zone"
+msgstr "Valvetsoon"
+
+#: src/br24radarcontrol.cpp:779
+msgid "Info"
+msgstr "Info"
+
+#: src/br24radarcontrol.cpp:891
+msgid "ON"
+msgstr "SEES"
+
+#: src/br24radarcontrol.cpp:1131
+msgid "Filter = ON"
+msgstr "Filter = SEES"
+
+#: src/br24radarcontrol.cpp:1276
+msgid "Radar A - ON"
+msgstr "Radar A - SEES"
+
+#: src/br24radarcontrol.cpp:1279
+msgid "Radar A - Stby"
+msgstr "Radar A - ootel"
+
+#: src/br24radarcontrol.cpp:1282
+msgid "Radar A - OFF"
+msgstr "Radar A - VÄLJAS"
+
+#: src/br24radarcontrol.cpp:1287
+msgid "Radar B - ON"
+msgstr "Radar B - SEES"
+
+#: src/br24radarcontrol.cpp:1290
+msgid "Radar B - Stby"
+msgstr "Radar B - ootel"
+
+#: src/br24radarcontrol.cpp:1293
+msgid "Radar B - OFF"
+msgstr "Radar B - VÄLJAS"
+
+#: src/Idle_Dialog.cpp:106 src/Idle_Dialog.cpp:145
+msgid "Now Transmit for"
+msgstr "Nüüd edasta"
+
+#: src/Idle_Dialog.cpp:107
+msgid "minutes"
+msgstr "minutit"
+
+#: src/Idle_Dialog.cpp:109
+msgid "minutes to shifting"
+msgstr "minutit nihkesse"
+
+#: src/Idle_Dialog.cpp:119
+msgid "Timed transmit is active"
+msgstr "Ajastatud edastamine on aktiivne"
+
+#: src/Idle_Dialog.cpp:134
+msgid "Turn Radar always ON"
+msgstr "Lülita radar alati SISSE"
+
+#: src/Idle_Dialog.cpp:144
+msgid "Now Idle for"
+msgstr "Nüüd jõudeolekus"
+
+#: src/br24MessageBox.cpp:151
+msgid "Can not switch radar on as\n"
+"it is not connected or off\n"
+" Switch radar on when button is amber"
+msgstr "Ei saa radarit sisse lülitada,\n"
+"sest ta ei ole ühendatud või on väljas\n"
+" Lülita radar tööle kui nupp helendab"
+
+#: src/br24MessageBox.cpp:156
+msgid "Radar requires the following"
+msgstr "Radar nõuab järgmist"
+
+#: src/br24MessageBox.cpp:159
+msgid "OpenCPN options"
+msgstr "OpenCPN'i valikud"
+
+#: src/br24MessageBox.cpp:164
+msgid "Accelerated Graphics (OpenGL)"
+msgstr "Graafikakiirendi (OpenGL)"
+
+#: src/br24MessageBox.cpp:169
+msgid "ZeroConf via Ethernet"
+msgstr "ZeroConf üle võrgu"
+
+#: src/br24MessageBox.cpp:174
+msgid "Radar present"
+msgstr "Radar on olemas"
+
+#: src/br24MessageBox.cpp:179
+msgid "Radar sending data"
+msgstr "Radar saadab andmeid"
+
+#: src/br24MessageBox.cpp:184
+msgid "For radar overlay also required"
+msgstr "Radari ülekatte jaoks on ka vaja"
+
+#: src/br24MessageBox.cpp:191
+msgid "Boat position"
+msgstr "Aluse asukoht"
+
+#: src/br24MessageBox.cpp:196 src/br24MessageBox.cpp:417
+msgid "Heading"
+msgstr "Suund"
+
+#: src/br24MessageBox.cpp:201 src/br24MessageBox.cpp:427
+msgid "Variation"
+msgstr "Variatsioon"
+
+#: src/br24MessageBox.cpp:206 src/br24MessageBox.cpp:212
+msgid "Statistics"
+msgstr "Statistika"
+
+#: src/br24MessageBox.cpp:387
+msgid "Radar IP"
+msgstr "Radari IP"
+
+#: src/br24MessageBox.cpp:407
+msgid "ZeroConf E'net"
+msgstr "ZeroConf E'net"
+
