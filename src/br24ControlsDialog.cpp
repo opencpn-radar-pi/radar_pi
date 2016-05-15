@@ -187,10 +187,11 @@ class br24RadarControlButton : public wxButton {
 
 class br24RadarRangeControlButton : public br24RadarControlButton {
  public:
-  br24RadarRangeControlButton(br24ControlsDialog* parent, wxWindowID id, const wxString& label) {
+  br24RadarRangeControlButton(br24ControlsDialog* parent, RadarInfo* ri, wxWindowID id, const wxString& label) {
     Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
 
     m_parent = parent;
+    m_ri = ri;
     minValue = 0;
     maxValue = 0;
     auto_range_index = 0;
@@ -205,12 +206,14 @@ class br24RadarRangeControlButton : public br24RadarControlButton {
 
   virtual void SetValue(int value);
   virtual void SetAuto();
-  int SetValueInt(int value);
+  void SetRangeMeters(int range_meters);
+  int GetRangeMeters(int index);
 
   wxString& GetRangeText();
 
  private:
   br24ControlsDialog* m_parent;
+  RadarInfo* m_ri;
   int auto_range_index;
   wxString m_text;
 };
@@ -370,13 +373,29 @@ void br24RadarControlButton::SetLocalAuto() {  // sets auto in the button withou
   this->SetLabel(label);
 }
 
-int br24RadarRangeControlButton::SetValueInt(int newValue) {
-  // newValue is the new range index number
-  // sets the new range label in the button and returns the new range in meters
+int br24RadarRangeControlButton::GetRangeMeters(int index) {
+  // returns the range in meters for a particular range index
   int units = m_parent->m_pi->m_settings.range_units;
 
   maxValue = g_range_maxValue[units];
-  int oldValue = value;  // for debugging only
+  if (index > maxValue) {
+    index = maxValue;
+  } else if (index < minValue) {
+    index = minValue;
+  }
+
+  int meters = units ? g_ranges_metric[index].meters : g_ranges_nautic[index].meters;
+
+  return meters;
+}
+
+void br24RadarRangeControlButton::SetRangeMeters(int range_meters) {
+  int meters = range_meters;
+  int units = m_parent->m_pi->m_settings.range_units;
+  int oldValue = value;
+  int newValue = convertRadarMetersToIndex(&meters, units, m_ri->radar_type);
+
+  maxValue = g_range_maxValue[units];
   if (newValue >= minValue && newValue <= maxValue) {
     value = newValue;
   } else if (m_parent->m_ri->auto_range_mode) {
@@ -385,8 +404,6 @@ int br24RadarRangeControlButton::SetValueInt(int newValue) {
     value = maxValue;
   }
 
-  int meters = units ? g_ranges_metric[value].meters : g_ranges_nautic[value].meters;
-  wxString label;
   wxString rangeText = value < 0 ? wxT("?") : wxString::FromUTF8(units ? g_ranges_metric[value].name : g_ranges_nautic[value].name);
   if (m_parent->m_ri->auto_range_mode) {
     m_text = _("Auto");
@@ -396,11 +413,9 @@ int br24RadarRangeControlButton::SetValueInt(int newValue) {
   }
   this->SetLabel(firstLine + wxT("\n") + m_text);
   if (m_parent->m_pi->m_settings.verbose > 0) {
-    wxLogMessage(wxT("br24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d old=%d"), rangeText.c_str(),
+    wxLogMessage(wxT("br24radar_pi: range label '%s' auto=%d unit=%d max=%d new=%d old=%d"), rangeText.c_str(),
                  m_parent->m_ri->auto_range_mode, units, maxValue, newValue, oldValue);
   }
-
-  return meters;
 }
 
 wxString& br24RadarRangeControlButton::GetRangeText() { return m_text; }
@@ -408,17 +423,15 @@ wxString& br24RadarRangeControlButton::GetRangeText() { return m_text; }
 void br24RadarRangeControlButton::SetValue(int newValue) {
   // newValue is the index of the new range
   // sends the command for the new range to the radar
+  // but depends on radar feedback to update the actual value
   m_parent->m_ri->auto_range_mode = false;
 
-  int meters = SetValueInt(newValue);      // do not display the new value now, will be done by receive
-                                           // thread when frame with new range is received
+  int meters = GetRangeMeters(newValue);
+  wxLogMessage(wxT("br24radar_pi: range change request meters=%d new=%d old=%d"), meters, newValue, value);
   m_parent->m_ri->SetRangeMeters(meters);  // send new value to the radar
 }
 
-void br24RadarRangeControlButton::SetAuto() {
-  m_parent->m_ri->auto_range_mode = true;
-  /*discard*/ SetValueInt(-1);
-}
+void br24RadarRangeControlButton::SetAuto() { m_parent->m_ri->auto_range_mode = true; }
 
 br24ControlsDialog::br24ControlsDialog() { Init(); }
 
@@ -448,6 +461,8 @@ bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* 
 
   m_hide = false;
   m_hide_temporarily = true;
+
+  m_from_control = 0;
 
 #ifdef wxMSW
   long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN | wxSTAY_ON_TOP | wxFRAME_FLOAT_ON_PARENT;
@@ -867,7 +882,7 @@ void br24ControlsDialog::CreateControls() {
   m_overlay_button->SetFont(m_pi->m_font);
 
   // The RANGE button
-  m_range_button = new br24RadarRangeControlButton(this, ID_RANGE, _("Range"));
+  m_range_button = new br24RadarRangeControlButton(this, m_ri, ID_RANGE, _("Range"));
   m_control_sizer->Add(m_range_button, 0, wxALL, BORDER);
 
   // The GAIN button
@@ -949,10 +964,6 @@ void br24ControlsDialog::UpdateGuardZoneState() {
   m_guard_2_button->SetLabel(label2);
 }
 
-void br24ControlsDialog::SetRangeIndex(size_t index) {
-  m_range_button->SetValueInt(index);  // set and recompute the range label
-}
-
 void br24ControlsDialog::SetTimedIdleIndex(int index) {
   m_timed_idle_button->SetValue(index);  // set and recompute the Timed Idle label
 }
@@ -967,15 +978,15 @@ void br24ControlsDialog::OnIdOKClick(wxCommandEvent& event) { m_pi->OnControlDia
 
 void br24ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
   m_from_control->SetValue(m_from_control->value + 10);
-  wxString label = m_from_control->GetLabel();
 
+  wxString label = m_from_control->GetLabel();
   m_value_text->SetLabel(label);
 }
 
 void br24ControlsDialog::OnPlusClick(wxCommandEvent& event) {
   m_from_control->SetValue(m_from_control->value + 1);
-  wxString label = m_from_control->GetLabel();
 
+  wxString label = m_from_control->GetLabel();
   m_value_text->SetLabel(label);
 }
 
@@ -983,6 +994,7 @@ void br24ControlsDialog::OnBackClick(wxCommandEvent& event) {
   if (m_top_sizer->IsShown(m_edit_sizer)) {
     m_top_sizer->Hide(m_edit_sizer);
     SwitchTo(m_from_sizer);
+    m_from_control = 0;
   } else if (m_top_sizer->IsShown(m_installation_sizer)) {
     SwitchTo(m_advanced_sizer);
   } else {
@@ -1035,24 +1047,34 @@ void br24ControlsDialog::EnterEditMode(br24RadarControlButton* button) {
   m_from_control = button;  // Keep a record of which button was clicked
   m_value_text->SetLabel(button->GetLabel());
 
+  wxLogMessage(wxT("br24radar_pi: ControlsDialog::EnterEditMode for control %s"), button->firstLine.c_str());
+
+  SwitchTo(m_edit_sizer);
+
   if (m_from_control->hasAuto) {
+    wxLogMessage(wxT("br24radar_pi: ControlsDialog::EnterEditMode Show Auto"));
     m_auto_button->Show();
   } else {
+    wxLogMessage(wxT("br24radar_pi: ControlsDialog::EnterEditMode Hide Auto"));
     m_auto_button->Hide();
   }
   if (m_from_control == m_gain_button) {
+    wxLogMessage(wxT("br24radar_pi: ControlsDialog::EnterEditMode Show MultiSweep"));
     m_multi_sweep_button->Show();
   } else {
+    wxLogMessage(wxT("br24radar_pi: ControlsDialog::EnterEditMode Hide MultiSweep"));
     m_multi_sweep_button->Hide();
   }
   if (m_from_control->maxValue > 20) {
+    wxLogMessage(wxT("br24radar_pi: ControlsDialog::EnterEditMode Show +10/-10 (max %d)"), m_from_control->maxValue);
     m_plus_ten_button->Show();
     m_minus_ten_button->Show();
   } else {
+    wxLogMessage(wxT("br24radar_pi: ControlsDialog::EnterEditMode Hide +10/-10 (max %d)"), m_from_control->maxValue);
     m_plus_ten_button->Hide();
     m_minus_ten_button->Hide();
   }
-  SwitchTo(m_edit_sizer);
+  m_edit_sizer->Layout();
 }
 
 void br24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
@@ -1131,12 +1153,11 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   // first update the range
   if (m_ri->range.mod || refreshAll) {
-    if (m_ri->range.button == -1) {
-      m_range_button->SetLocalAuto();
-    } else {
-      m_range_button->SetLocalValue(m_ri->range.button);
-    }
-  }  // don't set the actual range here, is still handled elsewhere
+    m_range_button->SetRangeMeters(m_ri->range.button);
+    m_ri->range.mod = false;
+  } else {
+    m_range_button->SetRangeMeters(m_ri->range.button);
+  }
 
   // gain
   if (m_ri->gain.mod || refreshAll) {
@@ -1225,6 +1246,11 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
       m_side_lobe_suppression_button->SetLocalValue(m_ri->side_lobe_suppression.button);
     }
     m_ri->side_lobe_suppression.mod = false;
+  }
+
+  if (m_from_control) {
+    wxString label = m_from_control->GetLabel();
+    m_value_text->SetLabel(label);
   }
 
   wxString title;

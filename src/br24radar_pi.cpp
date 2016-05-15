@@ -352,9 +352,7 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
       m_radar[radar]->control_dialog->Fit();
       m_radar[radar]->control_dialog->Hide();
       int range = m_radar[radar]->range_meters;
-      int idx = convertMetersToRadarAllowedValue(&range, m_settings.range_units, m_radar[radar]->radar_type);
-      m_radar[radar]->control_dialog->SetRangeIndex(idx);
-      m_radar[radar]->range.Update(idx);
+      m_radar[radar]->range.Update(range);
     }
     m_radar[radar]->control_dialog->ShowDialog();
   } else {
@@ -829,11 +827,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
       m_previous_auto_range_meters = m_auto_range_meters;
       // Compute a 'standard' distance. This will be slightly smaller.
       int displayedRange = m_auto_range_meters;
-      size_t idx =
-          convertMetersToRadarAllowedValue(&displayedRange, m_settings.range_units, m_radar[m_settings.chart_overlay]->radar_type);
-      if (m_radar[m_settings.chart_overlay]->control_dialog) {
-        m_radar[m_settings.chart_overlay]->control_dialog->SetRangeIndex(idx);
-      }
+      convertMetersToRadarAllowedValue(&displayedRange, m_settings.range_units, m_radar[m_settings.chart_overlay]->radar_type);
       m_radar[m_settings.chart_overlay]->SetRangeMeters(displayedRange);
     }
   }
