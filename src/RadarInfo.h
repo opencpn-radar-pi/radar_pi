@@ -75,6 +75,7 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item target_separation;
   radar_control_item noise_rejection;
   radar_control_item target_boost;
+  radar_control_item target_expansion;
   radar_control_item sea;
   radar_control_item rain;
   radar_control_item scan_speed;

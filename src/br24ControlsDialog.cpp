@@ -52,6 +52,7 @@ enum {  // process ID's
   ID_TRANSPARENCY,
   ID_INTERFERENCE_REJECTION,
   ID_TARGET_BOOST,
+  ID_TARGET_EXPANSION,
   ID_NOISE_REJECTION,
   ID_TARGET_SEPARATION,
   ID_REFRESHRATE,
@@ -104,6 +105,7 @@ EVT_BUTTON(ID_MULTISWEEP, br24ControlsDialog::OnMultiSweepClick)
 EVT_BUTTON(ID_TRANSPARENCY, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_INTERFERENCE_REJECTION, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_TARGET_BOOST, br24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_TARGET_EXPANSION, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_NOISE_REJECTION, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_TARGET_SEPARATION, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_REFRESHRATE, br24ControlsDialog::OnRadarControlButtonClick)
@@ -271,6 +273,7 @@ wxString interference_rejection_names[4];
 wxString target_separation_names[4];
 wxString noise_rejection_names[3];
 wxString target_boost_names[3];
+wxString target_expansion_names[2];
 wxString scan_speed_names[2];
 wxString timed_idle_times[8];
 wxString guard_zone_names[3];
@@ -496,6 +499,7 @@ void br24ControlsDialog::CreateControls() {
   label << _("Target separation") << wxT("\n");
   label << _("Noise rejection") << wxT("\n");
   label << _("Target boost") << wxT("\n");
+  label << _("Target expansion") << wxT("\n");
   label << _("Scan speed") << wxT("\n");
   label << _("Scan age") << wxT("\n");
   label << _("Timed Transmit") << wxT("\n");
@@ -632,6 +636,17 @@ void br24ControlsDialog::CreateControls() {
   m_target_boost_button->maxValue = ARRAY_SIZE(target_boost_names) - 1;
   m_target_boost_button->names = target_boost_names;
   m_target_boost_button->SetLocalValue(m_ri->target_boost.button);  // redraw after adding names
+
+  // The TARGET EXPANSION button
+  target_expansion_names[0] = _("Off");
+  target_expansion_names[1] = _("On");
+  m_target_expansion_button = new br24RadarControlButton(this, ID_TARGET_EXPANSION, _("Target expansion"), CT_TARGET_EXPANSION,
+                                                         false, m_ri->target_expansion.button);
+  m_advanced_sizer->Add(m_target_expansion_button, 0, wxALL, BORDER);
+  m_target_expansion_button->minValue = 0;
+  m_target_expansion_button->maxValue = ARRAY_SIZE(target_expansion_names) - 1;
+  m_target_expansion_button->names = target_expansion_names;
+  m_target_expansion_button->SetLocalValue(m_ri->target_expansion.button);  // redraw after adding names
 
   // The NOISE REJECTION button
   noise_rejection_names[0] = _("Off");
@@ -1161,6 +1176,12 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_ri->target_boost.mod || refreshAll) {
     m_target_boost_button->SetLocalValue(m_ri->target_boost.button);
     m_ri->target_boost.mod = false;
+  }
+
+  //   target_expansion
+  if (m_ri->target_expansion.mod || refreshAll) {
+    m_target_expansion_button->SetLocalValue(m_ri->target_expansion.button);
+    m_ri->target_expansion.mod = false;
   }
 
   //  noise_rejection

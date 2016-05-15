@@ -607,11 +607,11 @@ struct radar_state02 {
   UINT8 field35;                 // 35
   UINT8 field36;                 // 36
   UINT8 field37;                 // 37
-  UINT8 field38;                 // 38
-  UINT8 field39;                 // 39
-  UINT8 field40;                 // 40
-  UINT8 field41;                 // 41
-  UINT8 target_boost;            // 42
+  UINT8 target_expansion;
+  UINT8 field39;       // 39
+  UINT8 field40;       // 40
+  UINT8 field41;       // 41
+  UINT8 target_boost;  // 42
   UINT16 field8a;
   UINT32 field8b;
   UINT32 field9;
@@ -693,10 +693,12 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
         }
         m_ri->target_boost.Update(s->target_boost);
         m_ri->interference_rejection.Update(s->interference_rejection);
+        m_ri->target_expansion.Update(s->target_expansion);
 
         if (m_pi->m_settings.verbose >= 2) {
-          wxLogMessage(wxT("BR24radar_pi: %s state range=%u gain=%u sea=%u rain=%u interference_rejection=%u target_boost=%u "),
-                       m_ri->name.c_str(), s->range, s->gain, s->sea, s->rain, s->interference_rejection, s->target_boost);
+          wxLogMessage(wxT("BR24radar_pi: %s state range=%u gain=%u sea=%u rain=%u if_rejection=%u tgt_boost=%u tgt_expansion=%u"),
+                       m_ri->name.c_str(), s->range, s->gain, s->sea, s->rain, s->interference_rejection, s->target_boost,
+                       s->target_expansion);
         }
         break;
       }

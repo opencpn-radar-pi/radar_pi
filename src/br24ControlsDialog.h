@@ -148,6 +148,7 @@ class br24ControlsDialog : public wxDialog {
   br24RadarControlButton *m_target_separation_button;
   br24RadarControlButton *m_noise_rejection_button;
   br24RadarControlButton *m_target_boost_button;
+  br24RadarControlButton *m_target_expansion_button;
   br24RadarControlButton *m_scan_speed_button;
   br24RadarControlButton *m_timed_idle_button;
 
