@@ -670,12 +670,12 @@ void br24radar_pi::DoTick(void) {
     if (m_radar[r]->state.value == RADAR_STANDBY && TIMED_OUT(now, m_radar[r]->m_radar_timeout)) {
       static wxString empty;
 
-      m_radar[r]->state.value = RADAR_OFF;
+      m_radar[r]->state.Update(RADAR_OFF);
       m_pMessageBox->SetRadarIPAddress(empty);
       wxLogMessage(wxT("BR24radar_pi: Lost %s presence"), m_radar[r]->name);
     }
     if (m_radar[r]->state.value == RADAR_TRANSMIT && TIMED_OUT(now, m_radar[r]->m_data_timeout)) {
-      m_radar[r]->state.value = RADAR_STANDBY;
+      m_radar[r]->state.Update(RADAR_STANDBY);
       wxLogMessage(wxT("BR24radar_pi: Data Lost %s "), m_radar[r]->name);
     }
     if (m_radar[r]->state.value == RADAR_TRANSMIT) {

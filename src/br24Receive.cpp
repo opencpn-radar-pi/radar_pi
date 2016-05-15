@@ -144,7 +144,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
 
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
   m_ri->m_data_timeout = now + DATA_TIMEOUT;
-  m_ri->state.value = RADAR_TRANSMIT;
+  m_ri->state.Update(RADAR_TRANSMIT);
 
   int spoke = 0;
   m_ri->statistics.packets++;
@@ -280,7 +280,7 @@ void br24Receive::EmulateFakeBuffer(void) {
   m_ri->statistics.packets++;
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
   m_ri->m_data_timeout = now + WATCHDOG_TIMEOUT;
-  m_ri->state.value = RADAR_TRANSMIT;
+  m_ri->state.Update(RADAR_TRANSMIT);
 
   int scanlines_in_packet = SPOKES * 24 / 60;
   int range_meters = 4000;
@@ -529,7 +529,7 @@ void *br24Receive::Entry(void) {
               if (m_pi->m_settings.verbose) {
                 wxLogMessage(wxT("BR24radar_pi: %s detected at %s"), m_ri->name.c_str(), addr.c_str());
               }
-              m_ri->state.value = RADAR_STANDBY;
+              m_ri->state.Update(RADAR_STANDBY);
             }
             m_ri->m_radar_timeout = time(0) + WATCHDOG_TIMEOUT;
             no_data_timeout = -15;
@@ -555,7 +555,7 @@ void *br24Receive::Entry(void) {
       } else if (reportSocket != INVALID_SOCKET) {
         closesocket(reportSocket);
         reportSocket = INVALID_SOCKET;
-        m_ri->state.value = RADAR_OFF;
+        m_ri->state.Update(RADAR_OFF);
         m_mcast_addr = 0;
         m_radar_addr = 0;
       }
@@ -804,10 +804,10 @@ void br24Receive::ProcessCommand(wxString &addr, const UINT8 *command, int len) 
 
   if (len == 3 && memcmp(command, COMMAND_TX_ON_B, sizeof(COMMAND_TX_ON_B)) == 0) {
     wxLogMessage(wxT("BR24radar_pi: %s received transmit on from %s"), m_ri->name.c_str(), addr.c_str());
-    m_ri->state.value = RADAR_TRANSMIT;
+    m_ri->state.Update(RADAR_TRANSMIT);
   } else if (len == 3 && memcmp(command, COMMAND_TX_OFF_B, sizeof(COMMAND_TX_OFF_B)) == 0) {
     wxLogMessage(wxT("BR24radar_pi: %s received transmit off from %s"), m_ri->name.c_str(), addr.c_str());
-    m_ri->state.value = RADAR_STANDBY;
+    m_ri->state.Update(RADAR_STANDBY);
   }
 }
 

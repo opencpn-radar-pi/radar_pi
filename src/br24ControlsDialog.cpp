@@ -1102,15 +1102,9 @@ void br24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) {
   EnterEditMode((br24RadarControlButton*)event.GetEventObject());
 }
 
-void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
-  m_ri->FlipRadarState();
-  UpdateControlValues(false);  // update control values on the buttons
-}
+void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) { m_ri->FlipRadarState(); }
 
-void br24ControlsDialog::OnRotationButtonClick(wxCommandEvent& event) {
-  m_ri->rotation.Update(1 - m_ri->rotation.value);
-  UpdateControlValues(false);  // update control values on the buttons
-}
+void br24ControlsDialog::OnRotationButtonClick(wxCommandEvent& event) { m_ri->rotation.Update(1 - m_ri->rotation.value); }
 
 void br24ControlsDialog::OnConfirmBogeyButtonClick(wxCommandEvent& event) {
   m_pi->ConfirmGuardZoneBogeys();
@@ -1124,140 +1118,126 @@ void br24ControlsDialog::OnSize(wxSizeEvent& event) { event.Skip(); }
 
 void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_ri->state.mod || refreshAll) {
-    wxString o;
+    RadarState state = (RadarState)m_ri->state.GetButton();
 
-    // What follows is rather subtle.
-
-    // If the user clicked on the transmit or receive button mod is true and button
-    // reflects the desired state. When we actually receive data, we reset mod.
-    if (m_ri->state.button == m_ri->state.value) m_ri->state.mod = false;
-
-    // If the state reflected the user's decision or he did not click anything then
-    // let the state reflect the data coming from other MFDs or the radar.
-    if (!m_ri->state.mod) m_ri->state.button = m_ri->state.value;
-
-    o = (m_ri->state.button == RADAR_TRANSMIT) ? _("Standby") : _("Transmit");
+    // If state changed
+    wxString o = (state == RADAR_TRANSMIT) ? _("Standby") : _("Transmit");
     m_radar_state->SetLabel(o);
 
-    m_transmit_sizer->Show(m_ri->state.button == RADAR_TRANSMIT);
+    if (state == RADAR_TRANSMIT) {
+      m_control_sizer->Show(m_transmit_sizer);
+    } else {
+      m_control_sizer->Hide(m_transmit_sizer);
+    }
+    m_transmit_sizer->Layout();
     m_control_sizer->Layout();
+    m_top_sizer->Layout();
   }
 
   if (m_ri->rotation.mod || refreshAll) {
-    wxString o = m_ri->rotation.button ? _("North Up") : _("Head Up");
+    wxString o = m_ri->rotation.GetButton() ? _("North Up") : _("Head Up");
     m_rotation_button->SetLabel(o);
-    m_ri->rotation.mod = false;
   }
 
   if (m_ri->overlay.mod || ((m_pi->m_settings.chart_overlay == m_ri->radar) != (m_ri->overlay.button != 0)) || refreshAll) {
     wxString o = _("Overlay");
     o << wxT("\n");
-    if (m_ri->overlay.button > 0) {
+    if (m_ri->overlay.GetButton() > 0) {
       o << _("On");
     } else {
       o << _("Off");
     }
     m_overlay_button->SetLabel(o);
-    m_ri->overlay.mod = false;
   }
 
   // first update the range
   if (m_ri->range.mod || refreshAll) {
-    m_range_button->SetRangeMeters(m_ri->range.button);
-    m_ri->range.mod = false;
+    m_range_button->SetRangeMeters(m_ri->range.GetButton());
   } else {
     m_range_button->SetRangeMeters(m_ri->range.button);
   }
 
   // gain
   if (m_ri->gain.mod || refreshAll) {
-    if (m_ri->gain.button == -1) {
+    int button = m_ri->gain.GetButton();
+    if (button == -1) {
       m_gain_button->SetLocalAuto();
     } else {
-      m_gain_button->SetLocalValue(m_ri->gain.button);
+      m_gain_button->SetLocalValue(button);
     }
   }
 
   //  rain
   if (m_ri->rain.mod || refreshAll) {
-    m_rain_button->SetLocalValue(m_ri->rain.button);
-    m_ri->rain.mod = false;
+    m_rain_button->SetLocalValue(m_ri->rain.GetButton());
   }
 
   //   sea
   if (m_ri->sea.mod || refreshAll) {
-    if (m_ri->sea.button == -1) {
+    int button = m_ri->sea.GetButton();
+    if (button == -1) {
       m_sea_button->SetLocalAuto();
     } else {
-      m_sea_button->SetLocalValue(m_ri->sea.button);
+      m_sea_button->SetLocalValue(button);
     }
-    m_ri->sea.mod = false;
   }
 
   //   target_boost
   if (m_ri->target_boost.mod || refreshAll) {
-    m_target_boost_button->SetLocalValue(m_ri->target_boost.button);
-    m_ri->target_boost.mod = false;
+    m_target_boost_button->SetLocalValue(m_ri->target_boost.GetButton());
   }
 
   //   target_expansion
   if (m_ri->target_expansion.mod || refreshAll) {
-    m_target_expansion_button->SetLocalValue(m_ri->target_expansion.button);
-    m_ri->target_expansion.mod = false;
+    m_target_expansion_button->SetLocalValue(m_ri->target_expansion.GetButton());
   }
 
   //  noise_rejection
   if (m_ri->noise_rejection.mod || refreshAll) {
-    m_noise_rejection_button->SetLocalValue(m_ri->noise_rejection.button);
-    m_ri->noise_rejection.mod = false;
+    m_noise_rejection_button->SetLocalValue(m_ri->noise_rejection.GetButton());
   }
 
   //  target_separation
   if (m_ri->target_separation.mod || refreshAll) {
-    m_target_separation_button->SetLocalValue(m_ri->target_separation.button);
-    m_ri->target_separation.mod = false;
+    m_target_separation_button->SetLocalValue(m_ri->target_separation.GetButton());
   }
 
   //  interference_rejection
   if (m_ri->interference_rejection.mod || refreshAll) {
-    m_interference_rejection_button->SetLocalValue(m_ri->interference_rejection.button);
-    m_ri->interference_rejection.mod = false;
+    m_interference_rejection_button->SetLocalValue(m_ri->interference_rejection.GetButton());
   }
 
   // scanspeed
   if (m_ri->scan_speed.mod || refreshAll) {
-    m_scan_speed_button->SetLocalValue(m_ri->scan_speed.button);
-    m_ri->scan_speed.mod = false;
+    m_scan_speed_button->SetLocalValue(m_ri->scan_speed.GetButton());
   }
 
   //   antenna height
   if (m_ri->antenna_height.mod || refreshAll) {
-    m_antenna_height_button->SetLocalValue(m_ri->antenna_height.button);
-    m_ri->antenna_height.mod = false;
+    m_antenna_height_button->SetLocalValue(m_ri->antenna_height.GetButton());
   }
 
   //  bearing alignment
   if (m_ri->bearing_alignment.mod || refreshAll) {
-    m_bearing_alignment_button->SetLocalValue(m_ri->bearing_alignment.button);
-    m_ri->bearing_alignment.mod = false;
+    m_bearing_alignment_button->SetLocalValue(m_ri->bearing_alignment.GetButton());
   }
 
   //  local interference rejection
   if (m_ri->local_interference_rejection.mod || refreshAll) {
-    m_local_interference_rejection_button->SetLocalValue(m_ri->local_interference_rejection.button);
-    m_ri->local_interference_rejection.mod = false;
+    m_local_interference_rejection_button->SetLocalValue(m_ri->local_interference_rejection.GetButton());
   }
 
   // side lobe suppression
   if (m_ri->side_lobe_suppression.mod || refreshAll) {
-    if (m_ri->side_lobe_suppression.button == -1) {
+    int button = m_ri->side_lobe_suppression.GetButton();
+    if (button == -1) {
       m_side_lobe_suppression_button->SetLocalAuto();
     } else {
-      m_side_lobe_suppression_button->SetLocalValue(m_ri->side_lobe_suppression.button);
+      m_side_lobe_suppression_button->SetLocalValue(button);
     }
-    m_ri->side_lobe_suppression.mod = false;
   }
 
+  // Update the text that is currently shown in the edit box, this is a copy of the button itself
   if (m_from_control) {
     wxString label = m_from_control->GetLabel();
     m_value_text->SetLabel(label);

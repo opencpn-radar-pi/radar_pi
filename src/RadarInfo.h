@@ -47,6 +47,7 @@ class radar_control_item {
   bool mod;
 
   void Update(int v);
+  int GetButton();
 
  private:
   wxMutex m_mutex;

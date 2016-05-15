@@ -55,6 +55,13 @@ void radar_control_item::Update(int v) {
   value = v;
 };
 
+int radar_control_item::GetButton() {
+  wxMutexLocker lock(m_mutex);
+
+  mod = false;
+  return button;
+}
+
 RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
   this->m_pi = pi;
   this->name = name;
@@ -418,13 +425,11 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, 
 void RadarInfo::FlipRadarState() {
   if (state.button == RADAR_STANDBY) {
     transmit->RadarTxOn();
-    state.button = RADAR_TRANSMIT;
-    state.mod = true;
+    state.Update(RADAR_TRANSMIT);
   } else {
     transmit->RadarTxOff();
     m_data_timeout = 0;
-    state.button = RADAR_STANDBY;
-    state.mod = true;
+    state.Update(RADAR_STANDBY);
   }
 }
 
