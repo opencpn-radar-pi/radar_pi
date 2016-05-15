@@ -805,6 +805,11 @@ void br24ControlsDialog::CreateControls() {
   m_guard_sizer = new wxBoxSizer(wxVERTICAL);
   m_top_sizer->Add(m_guard_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
+  // The <<Back button
+  wxButton* guard_back_button = new wxButton(this, ID_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
+  m_guard_sizer->Add(guard_back_button, 0, wxALL, BORDER);
+  guard_back_button->SetFont(m_pi->m_font);
+
   m_guard_zone_text = new wxStaticText(this, wxID_ANY, _("Guard zones"));
   m_guard_sizer->Add(m_guard_zone_text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 
@@ -856,11 +861,6 @@ void br24ControlsDialog::CreateControls() {
                             wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE);
   m_guard_sizer->Add(m_filter, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
   m_filter->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnFilterClick), NULL, this);
-
-  // The <<Back button
-  wxButton* guard_back_button = new wxButton(this, ID_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
-  m_guard_sizer->Add(guard_back_button, 0, wxALL, BORDER);
-  guard_back_button->SetFont(m_pi->m_font);
 
   m_top_sizer->Hide(m_guard_sizer);
 
