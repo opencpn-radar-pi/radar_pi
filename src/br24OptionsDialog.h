@@ -55,10 +55,8 @@ class br24OptionsDialog : public wxDialog {
   void OnIdOKClick(wxCommandEvent& event);
   void OnRangeUnitsClick(wxCommandEvent& event);
   void OnDisplayOptionClick(wxCommandEvent& event);
-  void OnIntervalSlider(wxCommandEvent& event);
   void OnDisplayModeClick(wxCommandEvent& event);
   void OnGuardZoneStyleClick(wxCommandEvent& event);
-  void OnHeading_Calibration_Value(wxCommandEvent& event);
   void OnSelectSoundClick(wxCommandEvent& event);
   void OnTestSoundClick(wxCommandEvent& event);
   void OnPassHeadingClick(wxCommandEvent& event);
@@ -74,8 +72,6 @@ class br24OptionsDialog : public wxDialog {
   wxRadioBox* pOverlayDisplayOptions;
   wxRadioBox* pDisplayMode;
   wxRadioBox* pGuardZoneStyle;
-  wxSlider* pIntervalSlider;
-  wxTextCtrl* pText_Heading_Correction_Value;
   wxCheckBox* cbPassHeading;
   wxComboBox* cbDrawingMethod;
   wxCheckBox* cbEnableDualRadar;

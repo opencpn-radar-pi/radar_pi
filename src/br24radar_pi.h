@@ -188,7 +188,6 @@ struct PersistentSettings {
   int guard_zone_threshold;  // How many blobs must be sent by radar before we fire alarm
   int guard_zone_render_style;
   double range_calibration;
-  double heading_correction;
   double skew_factor;
   int range_units;        // 0 = Nautical miles, 1 = Kilometers
   int range_unit_meters;  // ... 1852 or 1000, depending on range_units

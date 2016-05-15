@@ -857,10 +857,6 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, double rotation) {
   RadarInfo *ri = m_radar[m_settings.chart_overlay];
 
-  rotation = MOD_DEGREES(rotation                         // viewport rotation + skew (in degrees now)
-                         + m_settings.heading_correction  // fix any radome rotation fault
-                         );
-
   // scaling...
   int meters = ri->range_meters;
 
@@ -892,7 +888,6 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
     pConf->Read(wxT("Transparency"), &m_settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
     pConf->Read(wxT("RangeCalibration"), &m_settings.range_calibration, 1.0);
-    pConf->Read(wxT("HeadingCorrection"), &m_settings.heading_correction, 0);
     pConf->Read(wxT("ScanMaxAge"), &m_settings.max_age, 6);  // default 6
     if (m_settings.max_age < MIN_AGE) {
       m_settings.max_age = MIN_AGE;
@@ -954,7 +949,6 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("VerboseLog"), m_settings.verbose);
     pConf->Write(wxT("Transparency"), m_settings.overlay_transparency);
     pConf->Write(wxT("RangeCalibration"), m_settings.range_calibration);
-    pConf->Write(wxT("HeadingCorrection"), m_settings.heading_correction);
     pConf->Write(wxT("GuardZonesThreshold"), m_settings.guard_zone_threshold);
     pConf->Write(wxT("GuardZonesRenderStyle"), m_settings.guard_zone_render_style);
     pConf->Write(wxT("ScanMaxAge"), m_settings.max_age);

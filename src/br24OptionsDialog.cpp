@@ -40,7 +40,6 @@ enum {
   ID_RANGE_UNITS,
   ID_OVERLAYDISPLAYOPTION,
   ID_DISPLAYTYPE,
-  ID_HEADINGSLIDER,
   ID_SELECT_SOUND,
   ID_TEST_SOUND,
   ID_PASS_HEADING,
@@ -139,22 +138,6 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi) {
   pGuardZoneStyle->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnGuardZoneStyleClick), NULL,
                            this);
   pGuardZoneStyle->SetSelection(m_pi->m_settings.guard_zone_render_style);
-
-  //  Calibration
-  wxStaticBox *itemStaticBoxCalibration = new wxStaticBox(this, wxID_ANY, _("Calibration"));
-  wxStaticBoxSizer *itemStaticBoxSizerCalibration = new wxStaticBoxSizer(itemStaticBoxCalibration, wxVERTICAL);
-  DisplayOptionsBox->Add(itemStaticBoxSizerCalibration, 0, wxEXPAND | wxALL, border_size);
-
-  // Heading correction
-  wxStaticText *pStatic_Heading_Correction = new wxStaticText(this, wxID_ANY, _("Heading correction\n(-180 to +180)"));
-  itemStaticBoxSizerCalibration->Add(pStatic_Heading_Correction, 1, wxALIGN_LEFT | wxALL, 2);
-
-  pText_Heading_Correction_Value = new wxTextCtrl(this, wxID_ANY);
-  itemStaticBoxSizerCalibration->Add(pText_Heading_Correction_Value, 1, wxALIGN_LEFT | wxALL, border_size);
-  m_temp.Printf(wxT("%2.1f"), m_pi->m_settings.heading_correction);
-  pText_Heading_Correction_Value->SetValue(m_temp);
-  pText_Heading_Correction_Value->Connect(wxEVT_COMMAND_TEXT_UPDATED,
-                                          wxCommandEventHandler(br24OptionsDialog::OnHeading_Calibration_Value), NULL, this);
 
   // Guard Zone Alarm
 
@@ -255,11 +238,6 @@ void br24OptionsDialog::OnTestSoundClick(wxCommandEvent &event) {
   if (!m_pi->m_settings.alert_audio_file.IsEmpty()) {
     PlugInPlaySound(m_pi->m_settings.alert_audio_file);
   }
-}
-
-void br24OptionsDialog::OnHeading_Calibration_Value(wxCommandEvent &event) {
-  wxString temp = pText_Heading_Correction_Value->GetValue();
-  temp.ToDouble(&m_pi->m_settings.heading_correction);
 }
 
 void br24OptionsDialog::OnPassHeadingClick(wxCommandEvent &event) {
