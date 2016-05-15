@@ -131,7 +131,9 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, int range) {
     }
   }
 
-  wxLogMessage(wxT("BR24radar_pi: m_hdt=%f rot=%d"), m_pi->m_hdt, m_ri->rotation.value);
+  if (m_pi->m_settings.verbose >= 2) {
+    wxLogMessage(wxT("BR24radar_pi: m_hdt=%f rot=%d"), m_pi->m_hdt, m_ri->rotation.value);
+  }
   double rot = m_ri->rotation.value ? m_pi->m_hdt : 0.0;
 
   for (int i = 0; i < 360; i += 5) {

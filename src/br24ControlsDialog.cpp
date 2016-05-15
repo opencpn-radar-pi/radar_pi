@@ -337,8 +337,16 @@ extern size_t convertMetersToRadarAllowedValue(int* range_meters, int units, Rad
 }
 
 void br24RadarControlButton::SetValue(int newValue) {
+  if (newValue < minValue) {
+    newValue = minValue;
+  } else if (newValue > maxValue) {
+    newValue = maxValue;
+  }
+
   // SetLocalValue(newValue);
-  m_parent->m_pi->SetControlValue(m_parent->m_ri->radar, controlType, value);
+  if (m_parent->m_pi->SetControlValue(m_parent->m_ri->radar, controlType, newValue)) {
+    SetLocalValue(newValue);
+  }
 }
 
 void br24RadarControlButton::SetLocalValue(int newValue) {  // sets value in the button without sending new value to the radar
@@ -349,6 +357,7 @@ void br24RadarControlButton::SetLocalValue(int newValue) {  // sets value in the
   } else {
     value = newValue;
   }
+
   wxString label;
 
   if (names) {
@@ -977,6 +986,8 @@ void br24ControlsDialog::OnClose(wxCloseEvent& event) { m_pi->OnControlDialogClo
 void br24ControlsDialog::OnIdOKClick(wxCommandEvent& event) { m_pi->OnControlDialogClose(m_ri); }
 
 void br24ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
+  wxLogMessage(wxT("br24radar_pi: OnPlustTenClick for %s value %d"), m_from_control->GetLabel().c_str(),
+               m_from_control->value + 10);
   m_from_control->SetValue(m_from_control->value + 10);
 
   wxString label = m_from_control->GetLabel();
@@ -1047,30 +1058,22 @@ void br24ControlsDialog::EnterEditMode(br24RadarControlButton* button) {
   m_from_control = button;  // Keep a record of which button was clicked
   m_value_text->SetLabel(button->GetLabel());
 
-  wxLogMessage(wxT("br24radar_pi: ControlsDialog::EnterEditMode for control %s"), button->firstLine.c_str());
-
   SwitchTo(m_edit_sizer);
 
   if (m_from_control->hasAuto) {
-    wxLogMessage(wxT("br24radar_pi: ControlsDialog::EnterEditMode Show Auto"));
     m_auto_button->Show();
   } else {
-    wxLogMessage(wxT("br24radar_pi: ControlsDialog::EnterEditMode Hide Auto"));
     m_auto_button->Hide();
   }
   if (m_from_control == m_gain_button) {
-    wxLogMessage(wxT("br24radar_pi: ControlsDialog::EnterEditMode Show MultiSweep"));
     m_multi_sweep_button->Show();
   } else {
-    wxLogMessage(wxT("br24radar_pi: ControlsDialog::EnterEditMode Hide MultiSweep"));
     m_multi_sweep_button->Hide();
   }
   if (m_from_control->maxValue > 20) {
-    wxLogMessage(wxT("br24radar_pi: ControlsDialog::EnterEditMode Show +10/-10 (max %d)"), m_from_control->maxValue);
     m_plus_ten_button->Show();
     m_minus_ten_button->Show();
   } else {
-    wxLogMessage(wxT("br24radar_pi: ControlsDialog::EnterEditMode Hide +10/-10 (max %d)"), m_from_control->maxValue);
     m_plus_ten_button->Hide();
     m_minus_ten_button->Hide();
   }

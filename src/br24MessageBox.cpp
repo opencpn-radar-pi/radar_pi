@@ -270,25 +270,39 @@ void br24MessageBox::UpdateMessage(bool showIfOff) {
   */
 
   if (m_pi->m_settings.show_radar == RADAR_OFF && m_allow_hide) {
-    wxLogMessage(wxT("BR24radar_pi: messagebox show_radar = RADAR_OFF"));
+    if (m_pi->m_settings.verbose >= 2) {
+      wxLogMessage(wxT("BR24radar_pi: messagebox show_radar = RADAR_OFF"));
+    }
     new_message_state = HIDE;
   } else if (!haveOpenGL) {
-    wxLogMessage(wxT("BR24radar_pi: messagebox no OpenGL"));
+    if (m_pi->m_settings.verbose >= 2) {
+      wxLogMessage(wxT("BR24radar_pi: messagebox no OpenGL"));
+    }
     new_message_state = SHOW;
   } else if (want_message) {
-    wxLogMessage(wxT("BR24radar_pi: messagebox explicit want message"));
+    if (m_pi->m_settings.verbose >= 2) {
+      wxLogMessage(wxT("BR24radar_pi: messagebox explicit want message"));
+    }
     new_message_state = SHOW_BACK;
   } else if (!stand_alone && (!navOn || !radarOn)) {
-    wxLogMessage(wxT("BR24radar_pi: messagebox overlay needs not met"));
+    if (m_pi->m_settings.verbose >= 2) {
+      wxLogMessage(wxT("BR24radar_pi: messagebox overlay needs not met"));
+    }
     new_message_state = SHOW;
   } else if (stand_alone && !radarOn) {
-    wxLogMessage(wxT("BR24radar_pi: messagebox standalone needs not met"));
+    if (m_pi->m_settings.verbose >= 2) {
+      wxLogMessage(wxT("BR24radar_pi: messagebox standalone needs not met"));
+    }
     new_message_state = SHOW_NO_NMEA;
   } else if ((stand_alone || navOn) && radarOn) {
-    wxLogMessage(wxT("BR24radar_pi: messagebox needs met"));
+    if (m_pi->m_settings.verbose >= 2) {
+      wxLogMessage(wxT("BR24radar_pi: messagebox needs met"));
+    }
     new_message_state = HIDE;
   } else {
-    wxLogMessage(wxT("BR24radar_pi: messagebox give up, show it"));
+    if (m_pi->m_settings.verbose >= 2) {
+      wxLogMessage(wxT("BR24radar_pi: messagebox give up, show it"));
+    }
     new_message_state = SHOW;
   }
 
@@ -302,7 +316,7 @@ void br24MessageBox::UpdateMessage(bool showIfOff) {
   m_have_variation->SetValue(haveVariation);
   m_have_radar->SetValue(radarSeen);
   m_have_data->SetValue(haveData);
-  if (m_pi->m_settings.verbose) {
+  if (m_pi->m_settings.verbose >= 2) {
     wxLogMessage(wxT("BR24radar_pi: messagebox switch, case=%d"), new_message_state);
   }
   if (m_message_state != new_message_state || m_old_radar_seen != radarSeen) {

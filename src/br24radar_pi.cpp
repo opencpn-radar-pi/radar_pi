@@ -709,7 +709,7 @@ void br24radar_pi::DoTick(void) {
     if (m_pMessageBox->IsShown()) {
       m_pMessageBox->SetRadarInfo(t);
     }
-    if (m_settings.verbose >= 1 && t.length() > 0) {
+    if (m_settings.verbose >= 2 && t.length() > 0) {
       t.Replace(wxT("\n"), wxT(" "));
       wxLogMessage(wxT("BR24radar_pi: %s"), t.c_str());
     }
@@ -1112,24 +1112,24 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
   }
 }
 
-void br24radar_pi::SetControlValue(int radar, ControlType controlType, int value) {  // sends the command to the radar
+bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value) {  // sends the command to the radar
   wxLogMessage(wxT("BR24radar_pi: %s set %s = %d"), m_radar[radar]->name.c_str(), ControlTypeNames[controlType].c_str(), value);
   switch (controlType) {
     case CT_TRANSPARENCY: {
       m_settings.overlay_transparency = value;
-      break;
+      return true;
     }
     case CT_SCAN_AGE: {
       m_settings.max_age = value;
-      break;
+      return true;
     }
     case CT_TIMED_IDLE: {
       m_settings.timed_idle = value;
-      break;
+      return true;
     }
     case CT_REFRESHRATE: {
       m_settings.refreshrate = value;
-      break;
+      return true;
     }
 
     default: {
@@ -1138,6 +1138,7 @@ void br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
       }
     }
   }
+  return false;
 }
 
 //*****************************************************************************************************

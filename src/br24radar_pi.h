@@ -276,7 +276,7 @@ class br24radar_pi : public opencpn_plugin_110 {
   void OnGuardZoneDialogClose(RadarInfo *ri);
   void ConfirmGuardZoneBogeys();
 
-  void SetControlValue(int radar, ControlType controlType, int value);
+  bool SetControlValue(int radar, ControlType controlType, int value);
   void ComputeColorMap();
 
   bool LoadConfig(void);
