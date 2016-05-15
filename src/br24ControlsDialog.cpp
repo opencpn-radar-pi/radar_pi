@@ -877,9 +877,12 @@ void br24ControlsDialog::CreateControls() {
   m_radar_state->SetFont(m_pi->m_font);
   // Updated when we receive data
 
+  m_transmit_sizer = new wxBoxSizer(wxVERTICAL);
+  m_control_sizer->Add(m_transmit_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
   // The Rotation button
   m_rotation_button = new wxButton(this, ID_ROTATION, _("Rotation"), wxDefaultPosition, g_buttonSize, 0);
-  m_control_sizer->Add(m_rotation_button, 0, wxALL, BORDER);
+  m_transmit_sizer->Add(m_rotation_button, 0, wxALL, BORDER);
   m_rotation_button->SetFont(m_pi->m_font);
   // Updated when we receive data
 
@@ -887,38 +890,38 @@ void br24ControlsDialog::CreateControls() {
   wxString overlay = _("Overlay");
   overlay << wxT("\n?");
   m_overlay_button = new wxButton(this, ID_RADAR_OVERLAY, overlay, wxDefaultPosition, g_buttonSize, 0);
-  m_control_sizer->Add(m_overlay_button, 0, wxALL, BORDER);
+  m_transmit_sizer->Add(m_overlay_button, 0, wxALL, BORDER);
   m_overlay_button->SetFont(m_pi->m_font);
 
   // The RANGE button
   m_range_button = new br24RadarRangeControlButton(this, m_ri, ID_RANGE, _("Range"));
-  m_control_sizer->Add(m_range_button, 0, wxALL, BORDER);
+  m_transmit_sizer->Add(m_range_button, 0, wxALL, BORDER);
 
   // The GAIN button
   m_gain_button = new br24RadarControlButton(this, ID_GAIN, _("Gain"), CT_GAIN, true, m_ri->gain.button);
-  m_control_sizer->Add(m_gain_button, 0, wxALL, BORDER);
+  m_transmit_sizer->Add(m_gain_button, 0, wxALL, BORDER);
 
   // The SEA button
   m_sea_button = new br24RadarControlButton(this, ID_SEA, _("Sea clutter"), CT_SEA, true, m_ri->sea.button);
-  m_control_sizer->Add(m_sea_button, 0, wxALL, BORDER);
+  m_transmit_sizer->Add(m_sea_button, 0, wxALL, BORDER);
 
   // The RAIN button
   m_rain_button = new br24RadarControlButton(this, ID_RAIN, _("Rain clutter"), CT_RAIN, false, m_ri->rain.button);
-  m_control_sizer->Add(m_rain_button, 0, wxALL, BORDER);
+  m_transmit_sizer->Add(m_rain_button, 0, wxALL, BORDER);
 
   // The ADVANCED button
   wxButton* bAdvanced = new wxButton(this, ID_ADVANCED, _("Advanced\ncontrols"), wxDefaultPosition, g_buttonSize, 0);
-  m_control_sizer->Add(bAdvanced, 0, wxALL, BORDER);
+  m_transmit_sizer->Add(bAdvanced, 0, wxALL, BORDER);
   bAdvanced->SetFont(m_pi->m_font);
 
   // The GUARD ZONE 1 button
   m_guard_1_button = new wxButton(this, ID_ZONE1, wxT(""), wxDefaultPosition, g_buttonSize, 0);
-  m_control_sizer->Add(m_guard_1_button, 0, wxALL, BORDER);
+  m_transmit_sizer->Add(m_guard_1_button, 0, wxALL, BORDER);
   m_guard_1_button->SetFont(m_pi->m_font);
 
   // The GUARD ZONE 2 button
   m_guard_2_button = new wxButton(this, ID_ZONE2, wxT(""), wxDefaultPosition, g_buttonSize, 0);
-  m_control_sizer->Add(m_guard_2_button, 0, wxALL, BORDER);
+  m_transmit_sizer->Add(m_guard_2_button, 0, wxALL, BORDER);
   m_guard_2_button->SetFont(m_pi->m_font);
 
   // The INFO button
@@ -927,6 +930,7 @@ void br24ControlsDialog::CreateControls() {
   bMessage->SetFont(m_pi->m_font);
 
   m_from_sizer = m_control_sizer;
+  m_control_sizer->Hide(m_transmit_sizer);
   m_top_sizer->Hide(m_control_sizer);
 
   UpdateGuardZoneState();
@@ -1134,6 +1138,9 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
 
     o = (m_ri->state.button == RADAR_TRANSMIT) ? _("Standby") : _("Transmit");
     m_radar_state->SetLabel(o);
+
+    m_transmit_sizer->Show(m_ri->state.button == RADAR_TRANSMIT);
+    m_control_sizer->Layout();
   }
 
   if (m_ri->rotation.mod || refreshAll) {

@@ -122,7 +122,8 @@ class br24ControlsDialog : public wxDialog {
   wxBoxSizer *m_installation_sizer;
   wxBoxSizer *m_bogey_sizer;
   wxBoxSizer *m_guard_sizer;
-  wxBoxSizer *m_from_sizer;  // If on edit control, this is where the button is from
+  wxBoxSizer *m_transmit_sizer;  // Controls disabled if not transmitting
+  wxBoxSizer *m_from_sizer;      // If on edit control, this is where the button is from
 
   bool m_hide;
   bool m_hide_temporarily;
