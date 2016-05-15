@@ -208,7 +208,6 @@ class br24RadarRangeControlButton : public br24RadarControlButton {
   int SetValueInt(int value);
 
   wxString& GetRangeText();
-  bool isRemote;  // Set by some other computer or MFD
 
  private:
   br24ControlsDialog* m_parent;
@@ -335,7 +334,7 @@ extern size_t convertMetersToRadarAllowedValue(int* range_meters, int units, Rad
 }
 
 void br24RadarControlButton::SetValue(int newValue) {
-  SetLocalValue(newValue);
+  // SetLocalValue(newValue);
   m_parent->m_pi->SetControlValue(m_parent->m_ri->radar, controlType, value);
 }
 
@@ -389,10 +388,7 @@ int br24RadarRangeControlButton::SetValueInt(int newValue) {
   int meters = units ? g_ranges_metric[value].meters : g_ranges_nautic[value].meters;
   wxString label;
   wxString rangeText = value < 0 ? wxT("?") : wxString::FromUTF8(units ? g_ranges_metric[value].name : g_ranges_nautic[value].name);
-  if (isRemote) {
-    m_text = _("Remote");
-    m_text << wxT(" (") << rangeText << wxT(")");
-  } else if (m_parent->m_ri->auto_range_mode) {
+  if (m_parent->m_ri->auto_range_mode) {
     m_text = _("Auto");
     m_text << wxT(" (") << rangeText << wxT(")");
   } else {
@@ -400,8 +396,8 @@ int br24RadarRangeControlButton::SetValueInt(int newValue) {
   }
   this->SetLabel(firstLine + wxT("\n") + m_text);
   if (m_parent->m_pi->m_settings.verbose > 0) {
-    wxLogMessage(wxT("br24radar_pi: Range label '%s' auto=%d remote=%d unit=%d max=%d new=%d old=%d"), rangeText.c_str(),
-                 m_parent->m_ri->auto_range_mode, isRemote, units, maxValue, newValue, oldValue);
+    wxLogMessage(wxT("br24radar_pi: Range label '%s' auto=%d unit=%d max=%d new=%d old=%d"), rangeText.c_str(),
+                 m_parent->m_ri->auto_range_mode, units, maxValue, newValue, oldValue);
   }
 
   return meters;
@@ -412,7 +408,6 @@ wxString& br24RadarRangeControlButton::GetRangeText() { return m_text; }
 void br24RadarRangeControlButton::SetValue(int newValue) {
   // newValue is the index of the new range
   // sends the command for the new range to the radar
-  isRemote = false;
   m_parent->m_ri->auto_range_mode = false;
 
   int meters = SetValueInt(newValue);      // do not display the new value now, will be done by receive
@@ -481,12 +476,11 @@ void br24ControlsDialog::CreateControls() {
   SetSizer(m_top_sizer);
 
   /*
-   * Here be dragons... Since I haven't been able to create buttons that adapt up, and at the same
-   * time
-   * calculate the biggest button, and I want all buttons to be the same width I use a trick.
+   * Here be dragons...
+   * Since I haven't been able to create buttons that adapt up, and at the same
+   * time calculate the biggest button, and I want all buttons to be the same width I use a trick.
    * I generate a multiline StaticText containing all the (long) button labels and find out what the
-   * width
-   * of that is, and then generate the buttons using that width.
+   * width of that is, and then generate the buttons using that width.
    * I know, this is a hack, but this way it works relatively nicely even with translations.
    */
 
@@ -955,12 +949,9 @@ void br24ControlsDialog::UpdateGuardZoneState() {
   m_guard_2_button->SetLabel(label2);
 }
 
-void br24ControlsDialog::SetRemoteRangeIndex(size_t index) {
-  m_range_button->isRemote = true;
+void br24ControlsDialog::SetRangeIndex(size_t index) {
   m_range_button->SetValueInt(index);  // set and recompute the range label
 }
-
-void br24ControlsDialog::SetRangeIndex(size_t index) { m_range_button->isRemote = false; }
 
 void br24ControlsDialog::SetTimedIdleIndex(int index) {
   m_timed_idle_button->SetValue(index);  // set and recompute the Timed Idle label
@@ -1142,9 +1133,9 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_ri->range.mod || refreshAll) {
     if (m_ri->range.button == -1) {
       m_range_button->SetLocalAuto();
+    } else {
+      m_range_button->SetLocalValue(m_ri->range.button);
     }
-    SetRangeIndex(m_ri->range.button);
-    m_ri->range.mod = false;
   }  // don't set the actual range here, is still handled elsewhere
 
   // gain

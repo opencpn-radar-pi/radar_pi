@@ -831,12 +831,10 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
       int displayedRange = m_auto_range_meters;
       size_t idx =
           convertMetersToRadarAllowedValue(&displayedRange, m_settings.range_units, m_radar[m_settings.chart_overlay]->radar_type);
-      if (displayedRange != m_radar[m_settings.chart_overlay]->commanded_range_meters) {
-        if (m_radar[m_settings.chart_overlay]->control_dialog) {
-          m_radar[m_settings.chart_overlay]->control_dialog->SetRangeIndex(idx);
-        }
-        m_radar[m_settings.chart_overlay]->SetRangeMeters(displayedRange);
+      if (m_radar[m_settings.chart_overlay]->control_dialog) {
+        m_radar[m_settings.chart_overlay]->control_dialog->SetRangeIndex(idx);
       }
+      m_radar[m_settings.chart_overlay]->SetRangeMeters(displayedRange);
     }
   }
 

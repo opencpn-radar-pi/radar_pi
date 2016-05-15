@@ -57,7 +57,6 @@ class br24ControlsDialog : public wxDialog {
               long style = wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX));
 
   void CreateControls();
-  void SetRemoteRangeIndex(size_t index);
   void SetRangeIndex(size_t index);
   wxString &GetRangeText();
   void SetTimedIdleIndex(int index);

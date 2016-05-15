@@ -65,9 +65,8 @@ class RadarInfo : public wxEvtHandler {
 
   /* User radar settings */
 
-  radar_control_item state_request;  // RadarState (commanded)
-  radar_control_item state;          // RadarState (observed)
-  radar_control_item rotation;       // 0 = Heading Up, 1 = North Up
+  radar_control_item state;     // RadarState (observed)
+  radar_control_item rotation;  // 0 = Heading Up, 1 = North Up
   radar_control_item overlay;
   radar_control_item range;
   radar_control_item gain;
@@ -103,7 +102,6 @@ class RadarInfo : public wxEvtHandler {
 #define DATA_TIMEOUT (5)
 
   int range_meters;
-  int commanded_range_meters;
   RadarType radar_type;
   bool auto_range_mode;
   int m_refreshes_queued;

@@ -322,9 +322,7 @@ void RadarInfo::RenderGuardZone(wxPoint radar_center, double v_scale_ppm) {
 
 void RadarInfo::SetRangeMeters(int meters) {
   if (state.value == RADAR_TRANSMIT) {
-    if (transmit->SetRange(meters)) {
-      commanded_range_meters = meters;
-    }
+    transmit->SetRange(meters);
   }
 }
 
@@ -345,33 +343,6 @@ void RadarInfo::UpdateControlState(bool all) {
     wxLogMessage(wxT("BR24radar_pi: Removing draw method as radar window is not shown"));
     delete m_draw_panel.draw;
     m_draw_panel.draw = 0;
-  }
-
-  // now set a new value in the range control if an unsollicited range change
-  // has been received.
-  // not for range change that the pi has initialized. For these the control was
-  // updated immediately
-  if (range_meters != commanded_range_meters) {
-    int radar_range = range_meters;
-    int idx = convertRadarMetersToIndex(&radar_range, m_pi->m_settings.range_units, radar_type);
-    range.Update(idx);
-    // above also updates radar_range to be a display value (lower, rounded
-    // number)
-    if (control_dialog) {
-      if (radar_range != commanded_range_meters) {  // this range change was not
-                                                    // initiated by the pi
-        control_dialog->SetRemoteRangeIndex(idx);
-        if (m_pi->m_settings.verbose) {
-          wxLogMessage(wxT("BR24radar_pi: remote range change to %d meters = %d (plugin commanded %d meters)"), range_meters,
-                       radar_range, commanded_range_meters);
-        }
-      } else {
-        control_dialog->SetRangeIndex(idx);
-        if (m_pi->m_settings.verbose) {
-          wxLogMessage(wxT("BR24radar_pi: final range change to %d meters = %d"), range_meters, radar_range);
-        }
-      }
-    }
   }
 
   if (control_dialog) {
