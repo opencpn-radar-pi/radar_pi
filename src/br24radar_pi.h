@@ -202,6 +202,7 @@ typedef enum ControlType {
     CT_TARGET_SEPARATION,
     CT_NOISE_REJECTION,
     CT_TARGET_BOOST,
+	CT_TARGET_EXPANSION,
     CT_REFRESHRATE,
     CT_PASSHEADING,
     CT_SCAN_SPEED,
@@ -295,6 +296,7 @@ struct radar_control_setting{
     radar_control_item      target_separation;
     radar_control_item      noise_rejection;
     radar_control_item      target_boost;
+	radar_control_item      target_expansion;
     radar_control_item      sea;
     radar_control_item      rain;
     radar_control_item      scan_speed;
@@ -792,6 +794,7 @@ private:
     void OnMinusTenClick(wxCommandEvent& event);
     void OnAutoClick(wxCommandEvent& event);
     void OnMultiSweepClick(wxCommandEvent& event);
+	void OnTargetExpansionClick(wxCommandEvent& event);
 
     void OnAdvancedBackButtonClick(wxCommandEvent& event);
     void OnInstallationBackButtonClick(wxCommandEvent& event);
@@ -843,6 +846,7 @@ private:
     RadarControlButton *bTargetSeparation;
     RadarControlButton *bNoiseRejection;
     RadarControlButton *bTargetBoost;
+	RadarControlButton *bTargetExpansion;
     RadarControlButton *bRefreshrate;
     RadarControlButton *bScanSpeed;
     RadarControlButton *bTimedIdle;
