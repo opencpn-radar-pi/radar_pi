@@ -622,7 +622,7 @@ wxString &RadarInfo::GetRangeText(int range_meters, int *index) {
   int meters = range_meters;
   int units = m_pi->m_settings.range_units;
   int value = convertRadarMetersToIndex(&meters);
-  bool auto_range = auto_range_mode > 0 && overlay.button > 0;
+  bool auto_range = auto_range_mode && (overlay.button > 0);
 
   int maxValue = g_range_maxValue[units];
   static const int minValue = 0;
