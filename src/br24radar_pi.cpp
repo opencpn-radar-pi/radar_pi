@@ -434,13 +434,16 @@ int br24radar_pi::GetToolbarToolCount(void) { return 1; }
  * If the radar windows are shown this closes all radar windows.
  */
 void br24radar_pi::OnToolbarToolCallback(int id) {
-  time_t now = time(0);
-  static time_t previousTicks = 0;
-
   wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback(%d)"), id);
   if (!m_initialized) {
     return;
   }
+
+  /*
+  SetRadarWindowViz(m_settings.show_radar == 0);
+  */
+  time_t now = time(0);
+  static time_t previousTicks = 0;
 
   if (m_settings.show_radar) {
     SetRadarWindowViz(false);
@@ -481,7 +484,7 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
 
   if (m_settings.timed_idle) {
     time_t now = time(0);
-    int left = now - m_idle_timeout;
+    int left = m_idle_timeout - now;
     if (left > 0) {
       text << wxString::Format("%02d:%02d", left / 60, left % 60);
     }
@@ -500,7 +503,9 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
     time_t now = time(0);
 
     if (m_alarm_sound_timeout > 0) {
-      text << wxT("\n");
+      if (text.length() > 0) {
+        text << wxT("\n");
+      }
       text << wxString::Format(_("Next alarm in %d s"), m_alarm_sound_timeout + ALARM_TIMEOUT - now);
     }
   }
