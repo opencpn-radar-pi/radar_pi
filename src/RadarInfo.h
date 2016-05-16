@@ -105,6 +105,7 @@ class RadarInfo : public wxEvtHandler {
   int range_meters;
   RadarType radar_type;
   bool auto_range_mode;
+  int m_overlay_refreshes_queued;
   int m_refreshes_queued;
   int m_refresh_millis;
 

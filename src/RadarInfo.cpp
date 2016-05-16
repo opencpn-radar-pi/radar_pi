@@ -193,6 +193,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
   }
 
   m_timer = new wxTimer(this, TIMER_ID);
+  m_overlay_refreshes_queued = 0;
   m_refreshes_queued = 0;
   m_refresh_millis = 1000;
   m_timer->Start(m_refresh_millis);
@@ -368,6 +369,20 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
   int pos_age = difftime(now, m_pi->m_bpos_timestamp);  // the age of the
                                                         // position, last call of
                                                         // SetPositionFixEx
+
+  if (m_overlay_refreshes_queued > 0 || pos_age >= 2) {
+    // don't do additional refresh when too busy
+    // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
+    // so skip next refresh
+    if (m_verbose >= 5) {
+      wxLogMessage(wxT("BR24radar_pi: %s busy encountered, pos_age = %d, overlay_refreshes_queued=%d"), name.c_str(), pos_age,
+                   m_refreshes_queued);
+    }
+  } else if (m_pi->m_settings.chart_overlay == this->radar) {
+    m_overlay_refreshes_queued++;
+    GetOCPNCanvasWindow()->Refresh(false);
+  }
+
   if (m_refreshes_queued > 0 || pos_age >= 2) {
     // don't do additional refresh and reset the refresh conter
     // this will also balance performance, if too busy skip refresh
@@ -377,11 +392,7 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
       wxLogMessage(wxT("BR24radar_pi: %s busy encountered, pos_age = %d, refreshes_queued=%d"), name.c_str(), pos_age,
                    m_refreshes_queued);
     }
-  } else {
-    if (m_pi->m_settings.chart_overlay == this->radar) {
-      m_refreshes_queued++;
-      GetOCPNCanvasWindow()->Refresh(false);
-    }
+  } else if (radar_panel->IsShown()) {
     m_refreshes_queued++;
     radar_panel->Refresh(false);
     if (m_verbose >= 4) {
@@ -395,8 +406,8 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
 
     if (millis != m_refresh_millis) {
       m_refresh_millis = millis;
-      m_timer->Start(m_refresh_millis);
       wxLogMessage(wxT("BR24radar_pi: %s changed timer interval to %d milliseconds"), name.c_str(), m_refresh_millis);
+      m_timer->Start(m_refresh_millis);
     }
   }
 }
@@ -471,6 +482,11 @@ void RadarInfo::UpdateControlState(bool all) {
   wxMutexLocker lock(m_mutex);
 
   overlay.Update(m_pi->m_settings.chart_overlay == radar);
+
+#ifdef OPENCPN_NO_LONGER_MIXES_GL_CONTEXT
+  //
+  // Once OpenCPN doesn't mess up with OpenGL context anymore we can do this
+  //
   if (overlay.value == 0 && m_draw_overlay.draw) {
     wxLogMessage(wxT("BR24radar_pi: Removing draw method as radar overlay is not shown"));
     delete m_draw_overlay.draw;
@@ -481,6 +497,7 @@ void RadarInfo::UpdateControlState(bool all) {
     delete m_draw_panel.draw;
     m_draw_panel.draw = 0;
   }
+#endif
 
   if (control_dialog) {
     control_dialog->UpdateControlValues(all);
@@ -542,13 +559,15 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, 
 
   if (overlay) {
     RenderRadarImage(center, scale, &m_draw_overlay);
+    if (m_overlay_refreshes_queued > 0) {
+      m_overlay_refreshes_queued--;
+    }
   } else {
     RenderGuardZone(center, scale);
     RenderRadarImage(center, scale, &m_draw_panel);
-  }
-
-  if (m_refreshes_queued > 0) {
-    m_refreshes_queued--;
+    if (m_refreshes_queued > 0) {
+      m_refreshes_queued--;
+    }
   }
 }
 

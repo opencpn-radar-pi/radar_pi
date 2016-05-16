@@ -110,6 +110,10 @@ bool RadarPanel::Create() {
 
 RadarPanel::~RadarPanel() {
   m_pi->m_perspective[m_ri->radar] = m_aui_mgr->SavePaneInfo(m_aui_mgr->GetPane(this));
+  if (m_ri->radar_canvas) {
+    delete m_ri->radar_canvas;
+    m_ri->radar_canvas = 0;
+  }
   // m_aui_mgr->DetachPane(this);
 }
 
