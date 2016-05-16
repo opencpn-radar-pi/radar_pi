@@ -62,20 +62,131 @@ int radar_control_item::GetButton() {
   return button;
 }
 
+struct RadarRanges {
+  int meters;
+  int actual_meters;
+  const char *name;
+  const char *range1;
+  const char *range2;
+  const char *range3;
+};
+
+static const RadarRanges g_ranges_metric[] = {
+    /* Nautical (mixed) first */
+    {50, 98, "50 m", 0, 0, 0},
+    {75, 146, "75 m", 0, 0, 0},
+    {100, 195, "100 m", "25", "50", "75"},
+    {250, 488, "250 m", 0, "125", 0},
+    {500, 808, "500 m", "125", "250", "375"},
+    {750, 1154, "750 m", 0, "375", 0},
+    {1000, 1616, "1 km", "250", "500", "750"},
+    {1500, 2308, "1.5 km", 0, "750", 0},
+    {2000, 3366, "2 km", "500", "1000", "1500"},
+    {3000, 4713, "3 km", 0, "1500", 0},
+    {4000, 5655, "4 km", "1", "2", "3"},
+    {6000, 9408, "6 km", "1.5", "3.0", "4.5"},
+    {8000, 12096, "8 km", "2", "4", "6"},
+    {12000, 18176, "12 km", "3", "6", "9"},
+    {16000, 26240, "16 km", "4", "8", "12"},
+    {24000, 36352, "24 km", "6", "12", "18"},
+    {36000, 52480, "36 km", "9", "18", "27"},
+    {48000, 72704, "48 km", "12", "24", "36"}};
+
+static const RadarRanges g_ranges_nautic[] = {{50, 98, "50 m", 0, 0, 0},
+                                              {75, 146, "75 m", 0, 0, 0},
+                                              {100, 195, "100 m", "25", "50", "75"},
+                                              {1852 / 8, 451, "1/8 NM", 0, "1/16", 0},
+                                              {1852 / 4, 673, "1/4 NM", "1/32", "1/8", 0},
+                                              {1852 / 2, 1346, "1/2 NM", "1/8", "1/4", "3/8"},
+                                              {1852 * 3 / 4, 2020, "3/4 NM", 0, "3/8", 0},
+                                              {1852 * 1, 2693, "1 NM", "1/4", "1/2", "3/4"},
+                                              {1852 * 3 / 2, 4039, "1.5 NM", "3/8", "3/4", 0},
+                                              {1852 * 2, 5655, "2 NM", "0.5", "1.0", "1.5"},
+                                              {1852 * 3, 8079, "3 NM", "0.75", "1.5", "2.25"},
+                                              {1852 * 4, 10752, "4 NM", "1", "2", "3"},
+                                              {1852 * 6, 16128, "6 NM", "1.5", "3", "4.5"},
+                                              {1852 * 8, 22208, "8 NM", "2", "4", "6"},
+                                              {1852 * 12, 36352, "12 NM", "3", "6", "9"},
+                                              {1852 * 16, 44416, "16 NM", "4", "8", "12"},
+                                              {1852 * 24, 72704, "24 NM", "6", "12", "18"}};
+
+static const int METRIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_metric);
+static const int NAUTIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_nautic);
+
+static const int g_range_maxValue[2] = {NAUTIC_RANGE_COUNT - 1, METRIC_RANGE_COUNT - 1};
+
+extern const char *convertRadarToString(int range_meters, int units, int index) {
+  const RadarRanges *ranges = units ? g_ranges_metric : g_ranges_nautic;
+
+  size_t n;
+
+  n = g_range_maxValue[units];
+  for (; n > 0; n--) {
+    if (ranges[n].actual_meters <= range_meters) {  // step down until past the right range value
+      break;
+    }
+  }
+  return (&ranges[n].name)[(index + 1) % 4];
+}
+
+size_t RadarInfo::convertRadarMetersToIndex(int *range_meters) {
+  const RadarRanges *ranges;
+  int units = m_pi->m_settings.range_units;
+  int myrange = *range_meters;
+  size_t n;
+
+  n = g_range_maxValue[units];
+  ranges = units ? g_ranges_metric : g_ranges_nautic;
+
+  if (radar_type != RT_4G) {
+    n--;  // only 4G has longest ranges
+  }
+  for (; n > 0; n--) {
+    if (ranges[n].actual_meters <= myrange) {  // step down until past the right range value
+      break;
+    }
+  }
+  *range_meters = ranges[n].meters;
+
+  return n;
+}
+
+extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, RadarType radarType) {
+  const RadarRanges *ranges;
+  int myrange = *range_meters;
+  size_t n;
+
+  n = g_range_maxValue[units];
+  ranges = units ? g_ranges_metric : g_ranges_nautic;
+
+  if (radarType != RT_4G) {
+    n--;  // only 4G has longest ranges
+  }
+  for (; n > 0; n--) {
+    if (ranges[n].meters <= myrange) {  // step down until past the right range value
+      break;
+    }
+  }
+  *range_meters = ranges[n].meters;
+
+  return n;
+}
+
 RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
-  this->m_pi = pi;
+  m_pi = pi;
   this->name = name;
   this->radar = radar;
 
-  this->radar_type = RT_UNKNOWN;
-  this->auto_range_mode = true;
+  radar_type = RT_UNKNOWN;
+  auto_range_mode = true;
+  range_meters = 0;
 
-  this->transmit = new br24Transmit(name, radar);
-  this->receive = 0;
-  this->m_draw_panel.draw = 0;
-  this->m_draw_overlay.draw = 0;
-  this->radar_panel = 0;
-  this->control_dialog = 0;
+  transmit = new br24Transmit(name, radar);
+  receive = 0;
+  m_draw_panel.draw = 0;
+  m_draw_overlay.draw = 0;
+  radar_panel = 0;
+  control_dialog = 0;
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     guard_zone[z] = new GuardZone(pi);
@@ -134,6 +245,7 @@ bool RadarInfo::Init(int verbose) {
     wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarCanvas"), name.c_str());
     return false;
   }
+
   return true;
 }
 
@@ -193,6 +305,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
                                   wxLongLong nowMillis) {
   UINT8 *hist_data = history[angle];
   bool calc_history = multi_sweep_filter;
+
   wxMutexLocker lock(m_mutex);
 
   if (this->range_meters != range_meters) {
@@ -203,7 +316,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     if (m_pi->m_settings.verbose) {
       wxLogMessage(wxT("BR24radar_pi: %s detected range %d"), name.c_str(), range_meters);
     }
+  } else if (rotation.mod) {
+    ResetSpokes();
   }
+  int north_up = rotation.GetButton();
+
   // spoke[angle].age = nowMillis;
 
   if (!calc_history) {
@@ -239,7 +356,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
 
   if (m_draw_panel.draw) {
-    m_draw_panel.draw->ProcessRadarSpoke(rotation.value ? bearing : angle, data, len);
+    m_draw_panel.draw->ProcessRadarSpoke(north_up ? bearing : angle, data, len);
   }
   if (m_draw_overlay.draw) {
     m_draw_overlay.draw->ProcessRadarSpoke(bearing, data, len);
@@ -329,6 +446,19 @@ void RadarInfo::RenderGuardZone(wxPoint radar_center, double v_scale_ppm) {
 
 void RadarInfo::SetRangeMeters(int meters) {
   if (state.value == RADAR_TRANSMIT) {
+    convertMetersToRadarAllowedValue(&meters, m_pi->m_settings.range_units, radar_type);
+    transmit->SetRange(meters);
+  }
+}
+
+void RadarInfo::SetRangeIndex(int newValue) {
+  if (state.value == RADAR_TRANSMIT) {
+    // newValue is the index of the new range
+    // sends the command for the new range to the radar
+    // but depends on radar feedback to update the actual value
+    auto_range_mode = false;
+    int meters = GetRangeMeters(newValue);
+    wxLogMessage(wxT("br24radar_pi: range change request meters=%d new=%d"), meters, newValue);
     transmit->SetRange(meters);
   }
 }
@@ -435,6 +565,7 @@ void RadarInfo::FlipRadarState() {
 
 wxString RadarInfo::GetCanvasTextTopLeft() {
   wxString s;
+  int index;
 
   if (rotation.value > 0) {
     s << _("North Up");
@@ -445,8 +576,8 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
     s << wxT(" (");
     s << _("Emulator");
     s << wxT(")");
-  } else if (control_dialog) {
-    s << wxT("\n") << control_dialog->GetRangeText();
+  } else if (range_meters) {
+    s << wxT("\n") << GetRangeText(range_meters, &index);
   }
 
   return s;
@@ -469,6 +600,58 @@ wxString RadarInfo::GetCanvasTextCenter() {
   }
 
   return s;
+}
+
+int RadarInfo::GetRangeMeters(int index) {
+  // returns the range in meters for a particular range index
+  int units = m_pi->m_settings.range_units;
+  int maxValue = g_range_maxValue[units];
+  static const int minValue = 0;
+  if (index > maxValue) {
+    index = maxValue;
+  } else if (index < minValue) {
+    index = minValue;
+  }
+
+  int meters = units ? g_ranges_metric[index].meters : g_ranges_nautic[index].meters;
+
+  return meters;
+}
+
+wxString &RadarInfo::GetRangeText(int range_meters, int *index) {
+  int meters = range_meters;
+  int units = m_pi->m_settings.range_units;
+  int value = convertRadarMetersToIndex(&meters);
+  bool auto_range = auto_range_mode > 0 && overlay.button > 0;
+
+  int maxValue = g_range_maxValue[units];
+  static const int minValue = 0;
+
+  if (value < minValue) {
+    value = minValue;
+  } else if (value > maxValue) {
+    value = maxValue;
+  }
+
+  m_range_text = wxT("");
+  if (auto_range) {
+    m_range_text = _("Auto");
+    m_range_text << wxT(" (");
+  }
+  if (value < 0) {
+    m_range_text << wxT("?");
+  } else {
+    m_range_text << wxString::FromUTF8(units ? g_ranges_metric[value].name : g_ranges_nautic[value].name);
+  }
+  if (auto_range) {
+    m_range_text << wxT(")");
+  }
+  if (m_pi->m_settings.verbose > 0) {
+    wxLogMessage(wxT("br24radar_pi: range label '%s' for meters=%d range=%d auto=%d unit=%d max=%d idx=%d"), m_range_text.c_str(),
+                 range_meters, meters, auto_range_mode, units, maxValue, value);
+  }
+  *index = value;
+  return m_range_text;
 }
 
 PLUGIN_END_NAMESPACE

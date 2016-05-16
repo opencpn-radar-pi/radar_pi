@@ -148,7 +148,6 @@ typedef enum RadarType {
 
 enum BlobColor { BLOB_NONE, BLOB_BLUE, BLOB_GREEN, BLOB_RED };
 
-extern size_t convertRadarMetersToIndex(int *range_meters, int units, RadarType radar_type);
 extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, RadarType radar_type);
 extern const char *convertRadarToString(int range_meters, int units, int index);
 

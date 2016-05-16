@@ -125,6 +125,7 @@ class RadarInfo : public wxEvtHandler {
   bool Init(int verbose);
   void StartReceive();
   void SetName(wxString name);
+  void SetRangeIndex(int newValue);
   void SetRangeMeters(int range);
   bool SetControlValue(ControlType controlType, int value);
   void ResetSpokes();
@@ -135,6 +136,7 @@ class RadarInfo : public wxEvtHandler {
   void ShowRadarWindow(bool show);
   void UpdateControlState(bool all);
   void FlipRadarState();
+  wxString &GetRangeText(int range_meters, int *index);
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
@@ -142,6 +144,8 @@ class RadarInfo : public wxEvtHandler {
 
  private:
   void RenderRadarImage(wxPoint center, double scale, DrawInfo *di);
+  int GetRangeMeters(int index);
+  size_t convertRadarMetersToIndex(int *range_meters);
 
   wxMutex m_mutex;          // protects the following two
   DrawInfo m_draw_panel;    // Draw onto our own panel
@@ -150,6 +154,8 @@ class RadarInfo : public wxEvtHandler {
   br24radar_pi *m_pi;
   int m_verbose;
   wxTimer *m_timer;
+
+  wxString m_range_text;
 
   DECLARE_EVENT_TABLE()
 };
