@@ -160,8 +160,6 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, int range) {
 
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
-  int sq;  // square size, minimum of w, h.
-  double proportion;
 
   if (!IsShown() || !m_pi->m_initialized) {
     return;
@@ -173,10 +171,6 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   }
 
   GetClientSize(&w, &h);
-  proportion = (double)w / (double)h;
-  proportion = wxMin(proportion, 1.33);
-  proportion = wxMax(proportion, 0.75);
-  sq = (int)((double)wxMax(w, h) / proportion);
 
   if (m_pi->m_settings.verbose >= 2) {
     wxLogMessage(wxT("BR24radar_pi: %s render OpenGL canvas %d by %d "), m_ri->name.c_str(), w, h);
@@ -213,17 +207,21 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
 
   RenderRangeRingsAndHeading(w, h, m_ri->range_meters);
 
-  glViewport((w - sq) / 2, (h - sq) / 2, sq, sq);
+  glViewport(0, 0, w, h);
   glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
   glLoadIdentity();             // Reset projection matrix stack
-  glScaled(1.0, -1.0, 1.0);
+  if (w >= h) {
+    glScaled(1.0, (float)-w / h, 1.0);
+  } else {
+    glScaled((float)h / w, -1.0, 1.0);
+  }
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
 
   double scale_factor = 2.0 / RETURNS_PER_LINE;  // Radar image is in 0..511 range
 
   // CheckOpenGLError(wxT("range circles"));
 
-  double rotation = 0.0;  // Or HU then -m_pi->m_hdt;
+  double rotation = 0.0;
 
   m_ri->RenderRadarImage(wxPoint(0, 0), scale_factor, rotation, false);
 
