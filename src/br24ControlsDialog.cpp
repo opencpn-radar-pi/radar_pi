@@ -964,12 +964,14 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_radar_state->SetLabel(o);
 
     if (state == RADAR_TRANSMIT) {
-      m_control_sizer->Show(m_transmit_sizer);
+      if (m_top_sizer->IsShown(m_control_sizer)) {
+        m_control_sizer->Show(m_transmit_sizer);
+        m_control_sizer->Layout();
+      }
     } else {
       m_control_sizer->Hide(m_transmit_sizer);
+      m_control_sizer->Layout();
     }
-    m_transmit_sizer->Layout();
-    m_control_sizer->Layout();
     m_top_sizer->Layout();
   }
 
