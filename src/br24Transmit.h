@@ -54,7 +54,7 @@ class br24Transmit {
   br24Transmit(wxString name, int radar);
   ~br24Transmit();
 
-  bool Init(int verbose);
+  bool Init(int verbose, struct sockaddr_in *address);
   void RadarTxOff();
   void RadarTxOn();
   bool RadarStayAlive();

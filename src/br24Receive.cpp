@@ -522,6 +522,9 @@ void *br24Receive::Entry(void) {
             m_mcast_addr = &mcastFoundAddr;
             memcpy(&radarFoundAddr, &rx_addr, sizeof(radarFoundAddr));
             m_radar_addr = &radarFoundAddr;
+
+            m_ri->SetNetworkCardAddress(m_mcast_addr);
+
             wxString addr;
             addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
             m_pi->m_pMessageBox->SetRadarIPAddress(addr);

@@ -232,11 +232,6 @@ RadarInfo::~RadarInfo() {
 bool RadarInfo::Init(int verbose) {
   m_verbose = verbose;
 
-  if (!transmit->Init(verbose)) {
-    wxLogMessage(wxT("BR24radar_pi %s: Unable to create transmit socket"), name.c_str());
-    return false;
-  }
-
   radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
   if (!radar_panel) {
     wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarPanel"), name.c_str());
@@ -248,6 +243,12 @@ bool RadarInfo::Init(int verbose) {
   }
 
   return true;
+}
+
+void RadarInfo::SetNetworkCardAddress(struct sockaddr_in *address) {
+  if (!transmit->Init(m_verbose, address)) {
+    wxLogMessage(wxT("BR24radar_pi %s: Unable to create transmit socket"), name.c_str());
+  }
 }
 
 void RadarInfo::SetName(wxString name) {

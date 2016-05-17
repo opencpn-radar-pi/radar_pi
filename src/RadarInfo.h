@@ -138,6 +138,7 @@ class RadarInfo : public wxEvtHandler {
   void UpdateControlState(bool all);
   void FlipRadarState();
   wxString &GetRangeText(int range_meters, int *index);
+  void SetNetworkCardAddress(struct sockaddr_in *address);
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();

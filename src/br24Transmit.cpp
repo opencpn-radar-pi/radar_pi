@@ -54,17 +54,15 @@ br24Transmit::~br24Transmit() {
   }
 }
 
-bool br24Transmit::Init(int verbose) {
+bool br24Transmit::Init(int verbose, struct sockaddr_in *adr) {
   int r;
   int one = 1;
-  struct sockaddr_in adr;
 
   m_verbose = verbose;
 
-  memset(&adr, 0, sizeof(adr));
-  adr.sin_family = AF_INET;
-  adr.sin_addr.s_addr = htonl(INADDR_ANY);
-  adr.sin_port = htons(0);
+  if (m_radar_socket != INVALID_SOCKET) {
+    closesocket(m_radar_socket);
+  }
   m_radar_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
   if (m_radar_socket == INVALID_SOCKET) {
     r = -1;
@@ -73,7 +71,7 @@ bool br24Transmit::Init(int verbose) {
   }
 
   if (!r) {
-    r = bind(m_radar_socket, (struct sockaddr *)&adr, sizeof(adr));
+    r = bind(m_radar_socket, (struct sockaddr *)adr, sizeof(*adr));
   }
 
   if (r) {
@@ -103,6 +101,10 @@ void br24Transmit::logBinaryData(const wxString &what, const UINT8 *data, int si
 }
 
 bool br24Transmit::TransmitCmd(const UINT8 *msg, int size) {
+  if (m_radar_socket == INVALID_SOCKET) {
+    wxLogError(wxT("BR24radar_pi: Unable to transmit command to unknown radar"));
+    return false;
+  }
   if (sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&m_addr, sizeof(m_addr)) < size) {
     wxLogError(wxT("BR24radar_pi: Unable to transmit command to %s: %s"), m_name, SOCKETERRSTR);
     return false;
