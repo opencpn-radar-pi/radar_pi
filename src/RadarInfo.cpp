@@ -366,39 +366,27 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 }
 
 void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
-  time_t now = time(0);
-  int pos_age = difftime(now, m_pi->m_bpos_timestamp);  // the age of the
-                                                        // position, last call of
-                                                        // SetPositionFixEx
-
-  if (m_overlay_refreshes_queued > 0 || pos_age >= 2) {
+  wxLogMessage(wxT("BR24radar_pi: timer elapsed overlay_refreshes_queued=%d refreshes_queued=%d"), m_overlay_refreshes_queued,
+               m_refreshes_queued);
+  if (m_overlay_refreshes_queued > 0) {
     // don't do additional refresh when too busy
-    // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
-    // so skip next refresh
-    if (m_verbose >= 5) {
-      wxLogMessage(wxT("BR24radar_pi: %s busy encountered, pos_age = %d, overlay_refreshes_queued=%d"), name.c_str(), pos_age,
-                   m_refreshes_queued);
+    if (m_verbose >= 1) {
+      wxLogMessage(wxT("BR24radar_pi: %s busy encountered, overlay_refreshes_queued=%d"), name.c_str(), m_overlay_refreshes_queued);
     }
   } else if (m_pi->m_settings.chart_overlay == this->radar) {
     m_overlay_refreshes_queued++;
     GetOCPNCanvasWindow()->Refresh(false);
   }
 
-  if (m_refreshes_queued > 0 || pos_age >= 2) {
+  if (m_refreshes_queued > 0) {
     // don't do additional refresh and reset the refresh conter
     // this will also balance performance, if too busy skip refresh
-    // pos_age>=2 : OCPN too busy to pass position to pi, system overloaded
-    // so skip next refresh
-    if (m_verbose >= 5) {
-      wxLogMessage(wxT("BR24radar_pi: %s busy encountered, pos_age = %d, refreshes_queued=%d"), name.c_str(), pos_age,
-                   m_refreshes_queued);
+    if (m_verbose >= 1) {
+      wxLogMessage(wxT("BR24radar_pi: %s busy encountered, refreshes_queued=%d"), name.c_str(), m_refreshes_queued);
     }
   } else if (radar_panel->IsShown()) {
     m_refreshes_queued++;
     radar_panel->Refresh(false);
-    if (m_verbose >= 4) {
-      wxLogMessage(wxT("BR24radar_pi: %s refresh issued, queued = %d"), name.c_str(), m_refreshes_queued);
-    }
   }
 
   // Calculate refresh speed
