@@ -518,21 +518,23 @@ void *br24Receive::Entry(void) {
         r = recvfrom(reportSocket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
         if (r > 0) {
           if (ProcessReport(data, r)) {
-            memcpy(&mcastFoundAddr, m_interface->ifa_addr, sizeof(mcastFoundAddr));
-            m_mcast_addr = &mcastFoundAddr;
-            memcpy(&radarFoundAddr, &rx_addr, sizeof(radarFoundAddr));
-            m_radar_addr = &radarFoundAddr;
+            if (!m_mcast_addr) {
+              memcpy(&mcastFoundAddr, m_interface->ifa_addr, sizeof(mcastFoundAddr));
+              m_mcast_addr = &mcastFoundAddr;
+              memcpy(&radarFoundAddr, &rx_addr, sizeof(radarFoundAddr));
+              m_radar_addr = &radarFoundAddr;
 
-            m_ri->SetNetworkCardAddress(m_mcast_addr);
+              m_ri->SetNetworkCardAddress(m_mcast_addr);
 
-            wxString addr;
-            addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
-            m_pi->m_pMessageBox->SetRadarIPAddress(addr);
-            if (m_ri->state.value == RADAR_OFF) {
-              if (m_pi->m_settings.verbose) {
-                wxLogMessage(wxT("BR24radar_pi: %s detected at %s"), m_ri->name.c_str(), addr.c_str());
+              wxString addr;
+              addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
+              m_pi->m_pMessageBox->SetRadarIPAddress(addr);
+              if (m_ri->state.value == RADAR_OFF) {
+                if (m_pi->m_settings.verbose) {
+                  wxLogMessage(wxT("BR24radar_pi: %s detected at %s"), m_ri->name.c_str(), addr.c_str());
+                }
+                m_ri->state.Update(RADAR_STANDBY);
               }
-              m_ri->state.Update(RADAR_STANDBY);
             }
             m_ri->m_radar_timeout = time(0) + WATCHDOG_TIMEOUT;
             no_data_timeout = -15;
