@@ -366,8 +366,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 }
 
 void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
-  wxLogMessage(wxT("BR24radar_pi: timer elapsed overlay_refreshes_queued=%d refreshes_queued=%d"), m_overlay_refreshes_queued,
-               m_refreshes_queued);
   if (m_overlay_refreshes_queued > 0) {
     // don't do additional refresh when too busy
     if (m_verbose >= 1) {
@@ -654,7 +652,7 @@ wxString &RadarInfo::GetRangeText(int range_meters, int *index) {
   if (auto_range) {
     m_range_text << wxT(")");
   }
-  if (m_pi->m_settings.verbose > 0) {
+  if (m_pi->m_settings.verbose > 3) {
     wxLogMessage(wxT("br24radar_pi: range label '%s' for meters=%d range=%d auto=%d unit=%d max=%d idx=%d"), m_range_text.c_str(),
                  range_meters, meters, auto_range_mode, units, maxValue, value);
   }
