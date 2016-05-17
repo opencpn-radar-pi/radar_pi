@@ -145,7 +145,7 @@ class RadarInfo : public wxEvtHandler {
   wxString GetCanvasTextCenter();
 
  private:
-  void RenderRadarImage(wxPoint center, double scale, DrawInfo *di);
+  void RenderRadarImage(wxPoint center, double scale, double rotation, DrawInfo *di);
   int GetRangeMeters(int index);
   size_t convertRadarMetersToIndex(int *range_meters);
 

@@ -137,7 +137,7 @@ RadarDrawShader::~RadarDrawShader() {
   }
 }
 
-void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
+void RadarDrawShader::DrawRadarImage(wxPoint center, double scale, double rotation) {
   wxMutexLocker lock(m_mutex);
 
   if (!m_program || !m_texture) {
@@ -151,6 +151,9 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale) {
 
   glPushMatrix();
   glTranslated(center.x, center.y, 0);
+  if (rotation != 0.0) {
+    glRotated(rotation, 0.0, 0.0, 1.0);
+  }
   glScaled(scale, scale, 1.);
 
   UseProgram(m_program);

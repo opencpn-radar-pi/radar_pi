@@ -141,7 +141,7 @@ void RadarDrawVertex::ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t 
   }
 }
 
-void RadarDrawVertex::DrawRadarImage(wxPoint center, double scale) {
+void RadarDrawVertex::DrawRadarImage(wxPoint center, double scale, double rotation) {
   size_t total_points = 0;
 
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);
@@ -150,6 +150,9 @@ void RadarDrawVertex::DrawRadarImage(wxPoint center, double scale) {
 
   glPushMatrix();
   glTranslated(center.x, center.y, 0);
+  if (rotation != 0.0) {
+    glRotated(rotation, 0.0, 0.0, 1.0);
+  }
   glScaled(scale, scale, 1.);
 
   glEnableClientState(GL_VERTEX_ARRAY);

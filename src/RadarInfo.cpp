@@ -496,7 +496,7 @@ void RadarInfo::UpdateControlState(bool all) {
   }
 }
 
-void RadarInfo::RenderRadarImage(wxPoint center, double scale, DrawInfo *di) {
+void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, DrawInfo *di) {
   wxMutexLocker lock(m_mutex);
   int drawing_method = m_pi->m_settings.drawing_method;
   bool colorOption = m_pi->m_settings.display_option > 0;
@@ -538,20 +538,18 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, DrawInfo *di) {
     }
   }
 
-  di->draw->DrawRadarImage(center, scale);
+  di->draw->DrawRadarImage(center, scale, rotation);
 }
 
 void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay) {
-  viewpoint_rotation = rotation;  // Will be picked up by next spoke calls
-
   if (overlay) {
-    RenderRadarImage(center, scale, &m_draw_overlay);
+    RenderRadarImage(center, scale, rotation, &m_draw_overlay);
     if (m_overlay_refreshes_queued > 0) {
       m_overlay_refreshes_queued--;
     }
   } else {
     RenderGuardZone(center, scale);
-    RenderRadarImage(center, scale, &m_draw_panel);
+    RenderRadarImage(center, scale, rotation, &m_draw_panel);
     if (m_refreshes_queued > 0) {
       m_refreshes_queued--;
     }

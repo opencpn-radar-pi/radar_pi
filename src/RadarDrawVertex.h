@@ -63,7 +63,7 @@ class RadarDrawVertex : public RadarDraw {
   }
 
   bool Init(int color_option);
-  void DrawRadarImage(wxPoint center, double scale);
+  void DrawRadarImage(wxPoint center, double scale, double rotation);
   void ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t len);
 
   ~RadarDrawVertex() {}

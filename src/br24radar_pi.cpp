@@ -849,12 +849,14 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     v_scale_ppm = vp->pix_height / dist_y;  // pixel height of screen div by equivalent meters
   }
 
-  if (m_settings.verbose >= 4) {
-    wxLogMessage(wxT("BR24radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g rotation=%g skew=%g scale=%f"), vp->clat,
-                 vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale);
-  }
   if (m_radar[m_settings.chart_overlay]->state.value == RADAR_TRANSMIT) {
-    RenderRadarOverlay(boat_center, v_scale_ppm, rad2deg(vp->rotation + vp->skew * m_settings.skew_factor));
+    double rotation = fmod(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor) + 720.0, 360);
+
+    if (m_settings.verbose >= 3) {
+      wxLogMessage(wxT("BR24radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"),
+                   vp->clat, vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale, rotation);
+    }
+    RenderRadarOverlay(boat_center, v_scale_ppm, rotation);
   }
   return true;
 }
