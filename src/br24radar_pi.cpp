@@ -278,6 +278,7 @@ bool br24radar_pi::DeInit(void) {
 
   // No need to delete wxWindow stuff, wxWidgets does this for us.
 
+  wxLogMessage(wxT("BR24radar_pi: DeInit of plugin done"));
   return true;
 }
 

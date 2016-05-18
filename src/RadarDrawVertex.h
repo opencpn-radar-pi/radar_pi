@@ -42,15 +42,11 @@ class RadarDrawVertex : public RadarDraw {
  public:
   RadarDrawVertex(br24radar_pi* pi) {
     m_pi = pi;
-    m_blobs = 0;
-    m_spokes = 0;
 
-    memset(buffer_index, 0, sizeof(buffer_index));
-    memset(vertex_buffer, 0, sizeof(vertex_buffer));
-    line_index = 0;
-    start_pointer = 0;
-    end_pointer = 0;
-    end_end_pointer = 0;
+    memset(m_vertices, 0, sizeof(m_vertices));
+    m_count = 0;
+    m_oom = false;
+
     // initialise polar_to_cart_y[arc + 1][radius] arrays
     for (int arc = 0; arc < LINES_PER_ROTATION + 1; arc++) {
       GLfloat sine = sinf((GLfloat)arc * PI * 2 / LINES_PER_ROTATION);
@@ -66,18 +62,24 @@ class RadarDrawVertex : public RadarDraw {
   void DrawRadarImage(wxPoint center, double scale, double rotation);
   void ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t len);
 
-  ~RadarDrawVertex() {}
+  ~RadarDrawVertex() {
+    wxMutexLocker lock(m_mutex);
+
+    for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
+      if (m_vertices[i].points) {
+        free(m_vertices[i].points);
+      }
+    }
+  }
 
  private:
-  void SetBlob(int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha);
-
   br24radar_pi* m_pi;
 
   static const int VERTEX_PER_TRIANGLE = 3;
   static const int VERTEX_PER_QUAD = 2 * VERTEX_PER_TRIANGLE;
-  static const int MAX_BLOBS_PER_LINE = 100;  // Assume picture is no more complicated than this
+  static const int MAX_BLOBS_PER_LINE = RETURNS_PER_LINE;
 
-  struct vertex_point {
+  struct VertexPoint {
     GLfloat x;
     GLfloat y;
     GLubyte red;
@@ -89,15 +91,20 @@ class RadarDrawVertex : public RadarDraw {
   GLfloat polar_to_cart_x[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
   GLfloat polar_to_cart_y[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
 
-  wxMutex m_mutex;  // protects the following three
-  unsigned int m_blobs;
-  unsigned int m_spokes;
-  vertex_point vertex_buffer[BUFFER_SIZE];
-  int buffer_index[LINES_PER_ROTATION];
-  int start_pointer;
-  int end_pointer;
-  int line_index;
-  int end_end_pointer;
+  struct VertexLine {
+    VertexPoint* points;
+    time_t lastSeen;
+    size_t count;
+    size_t allocated;
+  };
+
+  wxMutex m_mutex;  // protects the following
+  VertexLine m_vertices[LINES_PER_ROTATION];
+  unsigned int m_count;
+  bool m_oom;
+
+  void SetBlob(VertexLine* line, int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green, GLubyte blue,
+               GLubyte alpha);
 };
 
 PLUGIN_END_NAMESPACE

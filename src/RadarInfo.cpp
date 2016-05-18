@@ -208,9 +208,10 @@ RadarInfo::~RadarInfo() {
 
   m_timer->Stop();
 
-  delete transmit;
+  if (transmit) {
+    delete transmit;
+  }
   if (receive) {
-    receive->Wait();
     delete receive;
   }
   if (radar_panel) {
