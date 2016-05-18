@@ -465,7 +465,7 @@ void br24ControlsDialog::CreateControls() {
   interference_rejection_names[3] = _("High");
 
   m_interference_rejection_button =
-      new br24RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"), CT_INTERFERENCE_REJECTION, false,
+      new br24RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rej."), CT_INTERFERENCE_REJECTION, false,
                                  m_ri->interference_rejection.button);
   m_advanced_sizer->Add(m_interference_rejection_button, 0, wxALL, BORDER);
   m_interference_rejection_button->minValue = 0;
