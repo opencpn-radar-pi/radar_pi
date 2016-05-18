@@ -83,7 +83,7 @@ class RadarDrawVertex : public RadarDraw {
 
   struct VertexLine {
     VertexPoint* points;
-    time_t lastSeen;
+    time_t timeout;
     size_t count;
     size_t allocated;
   };

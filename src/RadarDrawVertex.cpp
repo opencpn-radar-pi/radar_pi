@@ -125,7 +125,7 @@ void RadarDrawVertex::ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t 
     }
   }
   line->count = 0;
-  line->lastSeen = now;
+  line->timeout = now + m_pi->m_settings.max_age;
 
   for (size_t radius = 0; radius < len; radius++) {
     strength = data[radius];
@@ -184,7 +184,7 @@ void RadarDrawVertex::DrawRadarImage(wxPoint center, double scale, double rotati
 
     for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
       VertexLine* line = &m_vertices[i];
-      if (now - line->lastSeen > m_pi->m_settings.max_age) {
+      if (TIMED_OUT(now, line->timeout)) {
         continue;
       }
 
