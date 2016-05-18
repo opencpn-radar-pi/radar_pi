@@ -204,30 +204,6 @@ int br24radar_pi::Init(void) {
 
   CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_BLANK);
 
-  // Context Menu Items (Right click on chart screen)
-
-  m_pmenu = new wxMenu();  // this is a dummy menu
-  // required by Windows as parent to item created
-  wxMenuItem *pmi = new wxMenuItem(m_pmenu, -1, _("Radar Control..."));
-#ifdef __WXMSW__
-  wxFont *qFont = OCPNGetFont(_("Menu"), 10);
-  pmi->SetFont(*qFont);
-#endif
-  int m_context_menu_control_id = AddCanvasContextMenuItem(pmi, this);
-  SetCanvasContextMenuItemViz(m_context_menu_control_id, true);
-
-  pmi = new wxMenuItem(m_pmenu, -1, _("Show Radar"));
-#ifdef __WXMSW__
-  pmi->SetFont(*qFont);
-#endif
-  m_context_menu_show_window_id = AddCanvasContextMenuItem(pmi, this);
-
-  pmi = new wxMenuItem(m_pmenu, -1, _("Hide Radar"));
-#ifdef __WXMSW__
-  pmi->SetFont(*qFont);
-#endif
-  m_context_menu_hide_window_id = AddCanvasContextMenuItem(pmi, this);
-
   m_pMessageBox = new br24MessageBox;
   m_pMessageBox->Create(m_parent_window, this);
 
@@ -330,8 +306,6 @@ bool br24radar_pi::SetRadarWindowViz(bool show) {
     ShowRadarControl(1, show);
   }
   m_settings.show_radar = show;
-  SetCanvasContextMenuItemViz(m_context_menu_show_window_id, !show);
-  SetCanvasContextMenuItemViz(m_context_menu_hide_window_id, show);
   m_pMessageBox->UpdateMessage(false);
   wxLogMessage(wxT("BR24radar_pi: RadarWindow visibility = %d"), (int)show);
 
@@ -364,25 +338,6 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
 
   m_radar[radar]->UpdateControlState(true);
   m_pMessageBox->UpdateMessage(false);
-}
-
-void br24radar_pi::OnContextMenuItemCallback(int id) {
-  if (!m_initialized) {
-    return;
-  }
-
-  if (id == m_context_menu_control_id) {
-    ShowRadarControl(0, true);
-    if (m_settings.enable_dual_radar) {
-      ShowRadarControl(1, true);
-    }
-  } else if (id == m_context_menu_show_window_id) {
-    SetRadarWindowViz(true);
-  } else if (id == m_context_menu_hide_window_id) {
-    SetRadarWindowViz(false);
-  }
-
-  UpdateState();
 }
 
 void br24radar_pi::OnControlDialogClose(RadarInfo *ri) {

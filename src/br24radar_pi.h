@@ -227,8 +227,8 @@ struct scan_line {
 
 #define PLUGIN_OPTIONS                                                                                                       \
   (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK | WANTS_OPENGL_OVERLAY_CALLBACK | WANTS_OVERLAY_CALLBACK | WANTS_TOOLBAR_CALLBACK | \
-   INSTALLS_TOOLBAR_TOOL | INSTALLS_CONTEXTMENU_ITEMS | USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS |                \
-   WANTS_NMEA_SENTENCES | WANTS_PREFERENCES | WANTS_PLUGIN_MESSAGING)
+   INSTALLS_TOOLBAR_TOOL | USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS | WANTS_NMEA_SENTENCES | WANTS_PREFERENCES |  \
+   WANTS_PLUGIN_MESSAGING)
 
 class br24radar_pi : public opencpn_plugin_110 {
  public:
@@ -256,7 +256,6 @@ class br24radar_pi : public opencpn_plugin_110 {
   void SetPositionFix(PlugIn_Position_Fix &pfix);
   void SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix);
   void SetPluginMessage(wxString &message_id, wxString &message_body);
-  void OnContextMenuItemCallback(int id);
   void SetNMEASentence(wxString &sentence);
 
   void SetDefaults(void);
@@ -359,11 +358,6 @@ class br24radar_pi : public opencpn_plugin_110 {
   wxBitmap *m_ptemp_icon;
   int m_sent_bm_id_normal;
   int m_sent_bm_id_rollover;
-
-  // Control id's of Context Menu Items
-  int m_context_menu_control_id;
-  int m_context_menu_show_window_id;
-  int m_context_menu_hide_window_id;
 
   NMEA0183 m_NMEA0183;
 
