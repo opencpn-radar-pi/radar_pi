@@ -891,7 +891,7 @@ void br24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event) { Swit
 
 void br24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event) {
   if (m_pi->m_pMessageBox) {
-    m_pi->m_pMessageBox->Show();
+    m_pi->m_pMessageBox->UpdateMessage(true);
   }
 }
 

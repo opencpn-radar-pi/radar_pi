@@ -34,7 +34,7 @@
 PLUGIN_BEGIN_NAMESPACE
 
 enum {  // process ID's
-  ID_MSG_BACK,
+  ID_MSG_CLOSE,
   ID_RADAR,
   ID_DATA,
   ID_HEADING,
@@ -51,7 +51,7 @@ IMPLEMENT_CLASS(br24MessageBox, wxDialog)
 BEGIN_EVENT_TABLE(br24MessageBox, wxDialog)
 
 EVT_CLOSE(br24MessageBox::OnClose)
-EVT_BUTTON(ID_MSG_BACK, br24MessageBox::OnMessageBackButtonClick)
+EVT_BUTTON(ID_MSG_CLOSE, br24MessageBox::OnMessageCloseButtonClick)
 
 EVT_MOVE(br24MessageBox::OnMove)
 EVT_SIZE(br24MessageBox::OnSize)
@@ -94,7 +94,7 @@ bool br24MessageBox::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, c
 
   m_message_state = HIDE;
   m_old_radar_seen = false;
-  m_allow_hide = true;
+  m_allow_auto_hide = true;
 
   wxLogMessage(wxT("BR24radar_pi: MessageBox created"));
 
@@ -118,9 +118,7 @@ void br24MessageBox::CreateControls() {
 
   m_radar_off = new wxStaticText(this, ID_OFF, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   m_message_sizer->Add(m_radar_off, 0, wxALL, 2);
-  m_radar_off->SetLabel(
-      _("Can not switch radar on as\nit is not connected or "
-        "off\n Switch radar on when button is amber"));
+  m_radar_off->SetLabel(_("Cannot switch radar on as\nit is not connected or off"));
   m_radar_off->SetFont(m_pi->m_font);
 
   m_error_message = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
@@ -191,10 +189,10 @@ void br24MessageBox::CreateControls() {
   m_info_sizer->Add(m_statistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
 
   // The <Close> button
-  m_back_button = new wxButton(this, ID_MSG_BACK, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
-  m_message_sizer->Add(m_back_button, 0, wxALL, BORDER);
-  m_back_button->SetFont(m_pi->m_font);
-  m_message_sizer->Hide(m_back_button);
+  m_close_button = new wxButton(this, ID_MSG_CLOSE, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
+  m_message_sizer->Add(m_close_button, 0, wxALL, BORDER);
+  m_close_button->SetFont(m_pi->m_font);
+  m_message_sizer->Hide(m_close_button);
 }
 
 void br24MessageBox::OnMove(wxMoveEvent &event) { event.Skip(); }
@@ -202,7 +200,7 @@ void br24MessageBox::OnMove(wxMoveEvent &event) { event.Skip(); }
 void br24MessageBox::OnSize(wxSizeEvent &event) { event.Skip(); }
 
 void br24MessageBox::OnClose(wxCloseEvent &event) {
-  m_allow_hide = true;
+  m_allow_auto_hide = true;
   Hide();
 }
 
@@ -221,7 +219,7 @@ bool br24MessageBox::Show() {
   return wxDialog::Show();
 }
 
-void br24MessageBox::UpdateMessage(bool showIfOff) {
+void br24MessageBox::UpdateMessage(bool force) {
   message_status new_message_state = HIDE;
 
   bool haveOpenGL = m_pi->m_opengl_mode;
@@ -231,9 +229,10 @@ void br24MessageBox::UpdateMessage(bool showIfOff) {
   bool radarSeen = false;
   bool haveData = false;
 
-  if (showIfOff) {
-    m_allow_hide = false;
+  if (force) {
+    m_allow_auto_hide = false;
   }
+
   for (int r = 0; r < RADARS; r++) {
     if (m_pi->m_radar[r]->state.value != RADAR_OFF) {
       radarSeen = true;
@@ -245,69 +244,56 @@ void br24MessageBox::UpdateMessage(bool showIfOff) {
 
   bool radarOn = haveOpenGL && radarSeen;
   bool navOn = haveGPS && haveHeading && haveVariation;
-  bool stand_alone = m_pi->m_settings.chart_overlay < 0;
-  bool want_message = m_pi->m_want_message_box;
+  bool no_overlay = m_pi->m_settings.chart_overlay < 0;
+
+  wxLogMessage(wxT("BR24radar_pi: messagebox decision: show=%d overlay=%d auto_hide=%d opengl=%d radarOn=%d navOn=%d"),
+               m_pi->m_settings.show_radar, m_pi->m_settings.chart_overlay, m_allow_auto_hide, haveOpenGL, radarOn, navOn);
 
   /*
-  TODO
-  Below is old, I think this is not correct -- Kees
-  Decision table to select the state of the message box
-  - means not relevant
-
-  case nr        1   2   3   4   5   6   7   8   9   10  11
-  box type       m   m   m1  m1  m   H   H   H   mb  mb  mb
-  _________________________________________________________
-  radarOn        0   0   0   0   1   1   1   1   1   1   1
-  navOn          0   1   0   1   0   1   0   1   1   0   1
-  stand_alone    0   0   1   1   0   0   1   1   0   1   1
-  want_message   -   -   -   -   -   0   0   0   1   1   1
-
-  m     message box
-  m1    message box without NMEA (no buttons)
-  H     hide messagebox
-  mb    message box with back button
-
+    if (m_pi->m_settings.show_radar == RADAR_OFF && no_overlay && m_allow_hide) {
+      if (m_pi->m_settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: messagebox show_radar = RADAR_OFF"));
+      }
+      new_message_state = HIDE;
+    } else
   */
 
-  if (m_pi->m_settings.show_radar == RADAR_OFF && m_allow_hide) {
+  if (!m_allow_auto_hide) {
     if (m_pi->m_settings.verbose >= 2) {
-      wxLogMessage(wxT("BR24radar_pi: messagebox show_radar = RADAR_OFF"));
+      wxLogMessage(wxT("BR24radar_pi: messagebox explicit wanted"));
     }
-    new_message_state = HIDE;
+    new_message_state = SHOW_CLOSE;
   } else if (!haveOpenGL) {
     if (m_pi->m_settings.verbose >= 2) {
       wxLogMessage(wxT("BR24radar_pi: messagebox no OpenGL"));
     }
-    new_message_state = SHOW;
-  } else if (want_message) {
-    if (m_pi->m_settings.verbose >= 2) {
-      wxLogMessage(wxT("BR24radar_pi: messagebox explicit want message"));
+    m_pi->m_settings.chart_overlay = -1;
+    m_pi->m_settings.show_radar = RADAR_OFF;
+    new_message_state = SHOW_CLOSE;
+  } else if (no_overlay) {
+    if (radarOn || m_pi->m_settings.show_radar == RADAR_OFF) {
+      if (m_pi->m_settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: messagebox radar window needs met"));
+      }
+      new_message_state = HIDE;
+    } else {
+      if (m_pi->m_settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: messagebox radar window needs not met"));
+      }
+      new_message_state = SHOW_NO_NMEA;
     }
-    new_message_state = SHOW_BACK;
-  } else if (!stand_alone && (!navOn || !radarOn)) {
-    if (m_pi->m_settings.verbose >= 2) {
-      wxLogMessage(wxT("BR24radar_pi: messagebox overlay needs not met"));
+  } else {  // overlay
+    if (navOn && radarOn) {
+      if (m_pi->m_settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: messagebox overlay needs met"));
+      }
+      new_message_state = HIDE;
+    } else {
+      if (m_pi->m_settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: messagebox needs not met"));
+      }
+      new_message_state = SHOW;
     }
-    new_message_state = SHOW;
-  } else if (stand_alone && !radarOn) {
-    if (m_pi->m_settings.verbose >= 2) {
-      wxLogMessage(wxT("BR24radar_pi: messagebox standalone needs not met"));
-    }
-    new_message_state = SHOW_NO_NMEA;
-  } else if ((stand_alone || navOn) && radarOn) {
-    if (m_pi->m_settings.verbose >= 2) {
-      wxLogMessage(wxT("BR24radar_pi: messagebox needs met"));
-    }
-    new_message_state = HIDE;
-  } else {
-    if (m_pi->m_settings.verbose >= 2) {
-      wxLogMessage(wxT("BR24radar_pi: messagebox give up, show it"));
-    }
-    new_message_state = SHOW;
-  }
-
-  if (new_message_state == HIDE) {
-    m_allow_hide = true;
   }
 
   m_have_open_gl->SetValue(haveOpenGL);
@@ -319,47 +305,35 @@ void br24MessageBox::UpdateMessage(bool showIfOff) {
   if (m_pi->m_settings.verbose >= 2) {
     wxLogMessage(wxT("BR24radar_pi: messagebox switch, case=%d"), new_message_state);
   }
+
   if (m_message_state != new_message_state || m_old_radar_seen != radarSeen) {
+    if (!radarSeen) {
+      m_radar_off->Show();
+    } else {
+      m_radar_off->Hide();
+    }
+
     switch (new_message_state) {
       case HIDE:
-        if (IsShown()) {
-          Hide();
-        }
+        Hide();
         break;
 
       case SHOW:
-        if (!IsShown()) {
-          Show();
-        }
-        if (!radarSeen) {
-          m_radar_off->Show();
-        } else {
-          m_radar_off->Hide();
-        }
+        Show();
         m_message_sizer->Show(m_nmea_sizer);
-        m_back_button->Hide();
+        m_close_button->Hide();
         break;
 
       case SHOW_NO_NMEA:
-        if (!IsShown()) {
-          Show();
-        }
-        if (!radarSeen) {
-          m_radar_off->Show();
-        } else {
-          m_radar_off->Hide();
-        }
+        Show();
         m_message_sizer->Hide(m_nmea_sizer);
-        m_message_sizer->Hide(m_back_button);
+        m_close_button->Hide();
         break;
 
-      case SHOW_BACK:
-        if (!IsShown()) {
-          Show();
-        }
-        m_radar_off->Hide();
+      case SHOW_CLOSE:
+        Show();
         m_message_sizer->Show(m_nmea_sizer);
-        m_back_button->Show();
+        m_close_button->Show();
         break;
     }
   }
@@ -370,11 +344,7 @@ void br24MessageBox::UpdateMessage(bool showIfOff) {
   m_message_state = new_message_state;
 }
 
-void br24MessageBox::OnMessageBackButtonClick(wxCommandEvent &event) {
-  m_pi->m_want_message_box = false;
-
-  Hide();
-}
+void br24MessageBox::OnMessageCloseButtonClick(wxCommandEvent &event) { Hide(); }
 
 void br24MessageBox::SetRadarIPAddress(wxString &msg) {
   wxMutexLocker lock(m_mutex);

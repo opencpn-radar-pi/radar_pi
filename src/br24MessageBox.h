@@ -36,7 +36,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-enum message_status { HIDE, SHOW, SHOW_NO_NMEA, SHOW_BACK };
+enum message_status { HIDE, SHOW, SHOW_NO_NMEA, SHOW_CLOSE };
 
 class br24MessageBox : public wxDialog {
   DECLARE_CLASS(br24MessageBox)
@@ -54,7 +54,7 @@ class br24MessageBox : public wxDialog {
               long style = wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX));
 
   void CreateControls();
-  void UpdateMessage(bool showIfOff);
+  void UpdateMessage(bool force);
   void SetErrorMessage(wxString &msg);
   void SetRadarIPAddress(wxString &msg);
   void SetMcastIPAddress(wxString &msg);
@@ -69,7 +69,7 @@ class br24MessageBox : public wxDialog {
   void OnMove(wxMoveEvent &event);
   void OnSize(wxSizeEvent &event);
 
-  void OnMessageBackButtonClick(wxCommandEvent &event);
+  void OnMessageCloseButtonClick(wxCommandEvent &event);
 
   wxMutex m_mutex;
 
@@ -78,7 +78,7 @@ class br24MessageBox : public wxDialog {
 
   message_status m_message_state;
   bool m_old_radar_seen;
-  bool m_allow_hide;
+  bool m_allow_auto_hide;
 
   wxBoxSizer *m_top_sizer;
   wxBoxSizer *m_nmea_sizer;
@@ -88,7 +88,7 @@ class br24MessageBox : public wxDialog {
   wxStaticBox *m_ip_box;
 
   // MessageBox
-  wxButton *m_back_button;
+  wxButton *m_close_button;
   wxStaticText *m_error_message;
   wxStaticText *m_radar_off;
   wxCheckBox *m_have_open_gl;

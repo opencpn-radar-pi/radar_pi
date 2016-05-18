@@ -302,7 +302,6 @@ class br24radar_pi : public opencpn_plugin_110 {
   wxGLContext *m_opencpn_gl_context;
   bool m_opencpn_gl_context_broken;
 
-  bool m_want_message_box;
   bool m_heading_on_radar;
   double m_hdt;  // this is the heading that the pi is using for all heading operations, in degrees.
                  // m_hdt will come from the radar if available else from the NMEA stream.

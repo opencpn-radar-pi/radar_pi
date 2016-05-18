@@ -152,7 +152,6 @@ int br24radar_pi::Init(void) {
   m_TimedTransmit_IdleBoxMode = 0;
   m_idle_time_left = 0;
   m_guard_bogey_confirmed = false;
-  m_want_message_box = false;
 
   m_alarm_sound_timeout = 0;
   m_bpos_timestamp = 0;
@@ -214,7 +213,7 @@ int br24radar_pi::Init(void) {
   }
 
   m_initialized = true;
-  wxLogMessage(wxT("BR24radar_pi: Initialized plugin"));
+  wxLogMessage(wxT("BR24radar_pi: Initialized plugin show_radar=%d overlay=%d"), m_settings.show_radar, m_settings.chart_overlay);
 
   // SetRadarWindowViz(m_settings.show_radar != 0);
 
