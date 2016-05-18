@@ -46,15 +46,15 @@ bool RadarDrawVertex::Init(int newColorOption) {
   return true;
 }
 
-#define ADD_VERTEX_POINT(angle, radius, r, g, b, a)         \
-  {                                                         \
-    line->points[count].x = polar_to_cart_x[angle][radius]; \
-    line->points[count].y = polar_to_cart_y[angle][radius]; \
-    line->points[count].red = r;                            \
-    line->points[count].green = g;                          \
-    line->points[count].blue = b;                           \
-    line->points[count].alpha = a;                          \
-    count++;                                                \
+#define ADD_VERTEX_POINT(angle, radius, r, g, b, a)          \
+  {                                                          \
+    line->points[count].x = m_polarLookup->x[angle][radius]; \
+    line->points[count].y = m_polarLookup->y[angle][radius]; \
+    line->points[count].red = r;                             \
+    line->points[count].green = g;                           \
+    line->points[count].blue = b;                            \
+    line->points[count].alpha = a;                           \
+    count++;                                                 \
   }
 
 void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green,

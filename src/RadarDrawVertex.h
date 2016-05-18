@@ -33,6 +33,7 @@
 #define _RADARDRAWVERTEX_H_
 
 #include "RadarDraw.h"
+#include "drawutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -47,15 +48,7 @@ class RadarDrawVertex : public RadarDraw {
     m_count = 0;
     m_oom = false;
 
-    // initialise polar_to_cart_y[arc + 1][radius] arrays
-    for (int arc = 0; arc < LINES_PER_ROTATION + 1; arc++) {
-      GLfloat sine = sinf((GLfloat)arc * PI * 2 / LINES_PER_ROTATION);
-      GLfloat cosine = cosf((GLfloat)arc * PI * 2 / LINES_PER_ROTATION);
-      for (int radius = 0; radius < RETURNS_PER_LINE + 1; radius++) {
-        polar_to_cart_y[arc][radius] = (GLfloat)radius * sine;
-        polar_to_cart_x[arc][radius] = (GLfloat)radius * cosine;
-      }
-    }
+    m_polarLookup = GetPolarToCartesianLookupTable();
   }
 
   bool Init(int color_option);
@@ -88,15 +81,14 @@ class RadarDrawVertex : public RadarDraw {
     GLubyte alpha;
   };
 
-  GLfloat polar_to_cart_x[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
-  GLfloat polar_to_cart_y[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
-
   struct VertexLine {
     VertexPoint* points;
     time_t lastSeen;
     size_t count;
     size_t allocated;
   };
+
+  PolarToCartesianLookupTable* m_polarLookup;
 
   wxMutex m_mutex;  // protects the following
   VertexLine m_vertices[LINES_PER_ROTATION];

@@ -41,6 +41,13 @@ extern void DrawOutlineArc(double r1, double r2, double a1, double a2, bool stip
 extern void DrawFilledArc(double r1, double r2, double a1, double a2);
 extern void CheckOpenGLError(const wxString& after);
 
+struct PolarToCartesianLookupTable {
+  GLfloat x[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
+  GLfloat y[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
+};
+
+extern PolarToCartesianLookupTable* GetPolarToCartesianLookupTable();
+
 PLUGIN_END_NAMESPACE
 
 #endif

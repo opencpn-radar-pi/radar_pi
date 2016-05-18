@@ -29,6 +29,7 @@
  ***************************************************************************
  */
 
+#include "br24radar_pi.h"
 #include "drawutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
@@ -158,6 +159,33 @@ void CheckOpenGLError(const wxString& after) {
 
     wxLogMessage(wxT("BR24radar_pi: OpenGL error %d after %s"), err, after.c_str());
   }
+}
+
+PolarToCartesianLookupTable* lookupTable = 0;
+
+PolarToCartesianLookupTable* GetPolarToCartesianLookupTable() {
+  if (!lookupTable) {
+    lookupTable = (PolarToCartesianLookupTable*)malloc(sizeof(PolarToCartesianLookupTable));
+
+    if (!lookupTable) {
+      wxLogError(wxT("BR24radar_pi: Out Of Memory, fatal!"));
+      wxAbort();
+    }
+
+    // initialise polar_to_cart_y[arc + 1][radius] arrays
+    for (int arc = 0; arc < LINES_PER_ROTATION + 1; arc++) {
+      GLfloat sine = sinf((GLfloat)arc * PI * 2 / LINES_PER_ROTATION);
+      GLfloat cosine = cosf((GLfloat)arc * PI * 2 / LINES_PER_ROTATION);
+      for (int radius = 0; radius < RETURNS_PER_LINE + 1; radius++) {
+        lookupTable->x[arc][radius] = (GLfloat)radius * cosine;
+        lookupTable->y[arc][radius] = (GLfloat)radius * sine;
+      }
+    }
+    wxLogMessage(wxT("Initial PolarToCartesianLookupTable"));
+  } else {
+    wxLogMessage(wxT("Reusing PolarToCartesianLookupTable"));
+  }
+  return lookupTable;
 }
 
 PLUGIN_END_NAMESPACE
