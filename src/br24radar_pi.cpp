@@ -429,36 +429,39 @@ int br24radar_pi::GetToolbarToolCount(void) { return 1; }
  * The radar icon is clicked. In previous versions all sorts of behavior was linked to clicking on the button, which wasn't very
  * 'discoverable' -- hard to find out what your options are.
  * In this version there are two behaviors.
- * If the radar windows are not shown, and you click and there is an overlay defined we show the single radar control for the
- * overlay.
- * If the radar windows are not shown and this is the 2nd click within 4 seconds, we show the radar windows.
- * If the radar windows are shown this closes all radar windows.
+ * - If the radar windows are not shown:
+ *    - If the radar overlay is active and the radar control dialog is not shown, we show that control dialog only.
+ *    - Else show the radar windows.
+ * - Else close all radar windows and control dialogs.
+ *
+ * that way all state decisions are visual, without extra timers.
+ *
  */
 void br24radar_pi::OnToolbarToolCallback(int id) {
-  wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback(%d)"), id);
   if (!m_initialized) {
     return;
   }
 
-  /*
-  SetRadarWindowViz(m_settings.show_radar == 0);
-  */
-  time_t now = time(0);
-  static time_t previousTicks = 0;
-
-  if (m_settings.show_radar) {
-    SetRadarWindowViz(false);
-  } else if ((previousTicks + 4 >= now) || (m_settings.chart_overlay < 0)) {
-    SetRadarWindowViz(true);
-  } else {
-    m_pMessageBox->UpdateMessage(true);
-    wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback allOK=%s"), m_pMessageBox->IsShown() ? "no" : "yes");
-    if (!m_pMessageBox->IsShown()) {
-      ShowRadarControl(m_settings.chart_overlay, true);
-    }
+  m_pMessageBox->UpdateMessage(false);
+  wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback allOK=%s"), m_pMessageBox->IsShown() ? "no" : "yes");
+  if (m_pMessageBox->IsShown()) {
+    return;
   }
 
-  previousTicks = now;
+  if (m_settings.show_radar == 0) {
+    if (m_settings.chart_overlay >= 0 &&
+        (!m_radar[m_settings.chart_overlay]->control_dialog || !m_radar[m_settings.chart_overlay]->control_dialog->IsShown())) {
+      wxLogMessage(
+          wxT("BR24radar_pi: OnToolbarToolCallback: No radar windows shown, overlay is active and no control -> show control"));
+      ShowRadarControl(m_settings.chart_overlay, true);
+    } else {
+      wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback: No radar windows shown -> show radar windows"));
+      SetRadarWindowViz(true);
+    }
+  } else {
+    wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback: Radar windows shown -> hide radar windows"));
+    SetRadarWindowViz(false);
+  }
 
   UpdateState();
 }
