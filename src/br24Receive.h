@@ -40,8 +40,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 class br24Receive : public wxThread {
  public:
-  br24Receive(br24radar_pi *pi, volatile bool *quit, RadarInfo *ri)
-      : wxThread(wxTHREAD_JOINABLE), m_pi(pi), m_ri(ri), m_quit(quit) {
+  br24Receive(br24radar_pi *pi, RadarInfo *ri) : wxThread(wxTHREAD_JOINABLE), m_pi(pi), m_ri(ri) {
     Create(1024 * 1024);  // Stack size, be liberal
     m_next_spoke = -1;
     m_mcast_addr = 0;
@@ -82,7 +81,6 @@ class br24Receive : public wxThread {
   br24radar_pi *m_pi;
   wxString m_ip;
   RadarInfo *m_ri;  // All transfer of data passes back through this.
-  volatile bool *m_quit;
 
   struct ifaddrs *m_interface_array;
   struct ifaddrs *m_interface;

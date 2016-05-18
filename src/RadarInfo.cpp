@@ -197,14 +197,10 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
   m_refreshes_queued = 0;
   m_refresh_millis = 1000;
   m_timer->Start(m_refresh_millis);
-
-  m_quit = false;
 }
 
 RadarInfo::~RadarInfo() {
   wxMutexLocker lock(m_mutex);
-
-  m_quit = true;
 
   m_timer->Stop();
 
@@ -212,6 +208,7 @@ RadarInfo::~RadarInfo() {
     delete transmit;
   }
   if (receive) {
+    receive->Delete();
     delete receive;
   }
   if (radar_panel) {
@@ -263,7 +260,7 @@ void RadarInfo::SetName(wxString name) {
 void RadarInfo::StartReceive() {
   if (!receive) {
     wxLogMessage(wxT("BR24radar_pi: %s starting receive thread"), name.c_str());
-    receive = new br24Receive(m_pi, &m_quit, this);
+    receive = new br24Receive(m_pi, this);
     receive->Run();
   }
 }

@@ -138,10 +138,6 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
   time_t now = time(0);
   radar_frame_pkt *packet = (radar_frame_pkt *)data;
 
-  if (*m_quit || !m_pi->m_initialized) {
-    return;
-  }
-
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
   m_ri->m_data_timeout = now + DATA_TIMEOUT;
   m_ri->state.Update(RADAR_TRANSMIT);
@@ -436,7 +432,7 @@ void *br24Receive::Entry(void) {
   }
   socketReady(INVALID_SOCKET, 1000);  // sleep for 1s so that other stuff is set up (fixes Windows core on startup)
 
-  while (!*m_quit) {
+  while (!TestDestroy()) {
     if (m_pi->m_settings.emulator_on) {
       socketReady(INVALID_SOCKET, 1000);  // sleep for 1s
       EmulateFakeBuffer();
@@ -477,7 +473,7 @@ void *br24Receive::Entry(void) {
 
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
 
-    if (*m_quit) {
+    if (TestDestroy()) {
       break;
     }
 
