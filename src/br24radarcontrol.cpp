@@ -74,6 +74,7 @@ enum {                                      // process ID's
     ID_TRANSPARENCY,
     ID_INTERFERENCE_REJECTION,
     ID_TARGET_BOOST,
+	ID_TARGET_EXPANSION,
     ID_NOISE_REJECTION,
     ID_TARGET_SEPARATION,
     ID_REFRESHRATE,
@@ -126,6 +127,7 @@ EVT_BUTTON(ID_INSTALLATION_BACK, BR24ControlsDialog::OnInstallationBackButtonCli
 EVT_BUTTON(ID_TRANSPARENCY, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_INTERFERENCE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_TARGET_BOOST, BR24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_TARGET_EXPANSION, BR24ControlsDialog::OnTargetExpansionClick)
 EVT_BUTTON(ID_NOISE_REJECTION, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_TARGET_SEPARATION, BR24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_REFRESHRATE, BR24ControlsDialog::OnRadarControlButtonClick)
@@ -215,6 +217,7 @@ wxString interference_rejection_names[4];
 wxString target_separation_names[4];
 wxString noise_rejection_names[3];
 wxString target_boost_names[3];
+wxString target_expansion_names[2];
 wxString scan_speed_names[2];
 wxString timed_idle_times[8];
 
@@ -583,6 +586,18 @@ void BR24ControlsDialog::CreateControls()
     bTargetBoost->names = target_boost_names;
     bTargetBoost->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.button); // redraw after adding names
 
+	// The TARGET EXPANSION button
+	target_expansion_names[0] = _("Off");
+	target_expansion_names[1] = _("On");
+	bTargetExpansion = new RadarControlButton(this, ID_TARGET_EXPANSION, _("Target Expansion"), pPlugIn, CT_TARGET_EXPANSION, false,
+		pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_expansion.button);
+	advancedBox->Add(bTargetExpansion, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
+	bTargetExpansion->minValue = 0;
+	bTargetExpansion->maxValue = ARRAY_SIZE(target_expansion_names) - 1;
+	bTargetExpansion->names = target_expansion_names;
+	bTargetExpansion->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_expansion.button); // redraw after adding names
+
+
     advanced4gBox = new wxBoxSizer(wxVERTICAL);
     advancedBox->Add(advanced4gBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
 
@@ -900,6 +915,25 @@ void BR24ControlsDialog::OnMultiSweepClick(wxCommandEvent &event)
     bMultiSweep->SetFont(g_font);
 }
 
+void BR24ControlsDialog::OnTargetExpansionClick(wxCommandEvent &event)
+{
+	wxString labelExpansion;
+	if (pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_expansion.button != 1)
+	{
+		labelExpansion << _("Target Expansion") << wxT("\n") << _("On");
+		pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_expansion.button = 1;
+	}
+	else
+	{
+		labelExpansion << _("Target Expansion") << wxT("\n") << _("OFF");
+		pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_expansion.button = 0;
+		wxLogMessage(wxT("BR24radar_pi: Target expansion Off %d"), pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_expansion.button);
+	}
+	bTargetExpansion->SetLabel(labelExpansion);
+	bTargetExpansion->SetFont(g_font);
+	bTargetExpansion->SetValue(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_expansion.button);
+}
+
 
 void BR24ControlsDialog::OnMinusClick(wxCommandEvent& event)
 {
@@ -1151,9 +1185,13 @@ void BR24ControlsDialog::UpdateControlValues()
             bTargetBoost->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.button);
             pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_boost.mod = false;
 
+		//  target_expansion
+			bTargetExpansion->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_expansion.button);
+			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_expansion.mod = false;
+
         //  noise_rejection
-        bNoiseRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.button);
-        pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.mod = false;
+			bNoiseRejection->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.button);
+			pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].noise_rejection.mod = false;
 
         //  target_separation
             bTargetSeparation->SetValueX(pPlugIn->radar_setting[pPlugIn->settings.selectRadarB].target_separation.button);

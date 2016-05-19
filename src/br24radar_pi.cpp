@@ -529,7 +529,8 @@ int br24radar_pi::Init(void)
     settings.emulator_on = false;
     memset(bogey_count, 0, sizeof(bogey_count));   // set bogey count 0
     memset(&radar_setting[0], 0, sizeof(radar_setting));   // radar settings all to 0
-    // memset(&settings, 0, sizeof(settings));             // pi settings all 0   // will crash under VC 2010!! OK with 2013
+	radar_setting[0].gain.button = 40;
+	radar_setting[1].gain.button = 40;  // default manual gain 40
 
     for (int i = 0; i < LINES_PER_ROTATION - 1; i++) {   // initialise history bytes
         memset(&m_scan_line[0][i].history, 0, sizeof(m_scan_line[0][i].history));
@@ -2553,7 +2554,6 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
     if (br_radar_seen || controlType == CT_TRANSPARENCY || controlType == CT_SCAN_AGE || CT_REFRESHRATE) {
         switch (controlType) {
             case CT_GAIN: {
-      //          settings.gain = value;
                 if (value < 0) {                // AUTO gain
                     UINT8 cmd[] = {
                         0x06,
@@ -2686,6 +2686,20 @@ void br24radar_pi::SetControlValue(ControlType controlType, int value)
                 TransmitCmd(cmd, sizeof(cmd));
                 break;
             }
+
+			case CT_TARGET_EXPANSION: {
+				UINT8 cmd[] = {
+					0x09,
+					0xc1,
+					(UINT8)value
+				};
+				if (settings.verbose) {
+					wxLogMessage(wxT("BR24radar_pi: Target expansion: %d"), value);
+				}
+				TransmitCmd(cmd, sizeof(cmd));
+				break;
+			}
+
             case CT_SCAN_SPEED: {
                 UINT8 cmd[] = {
                     0x0f,
@@ -3738,7 +3752,7 @@ struct radar_state02 {     // length 99, 02 C4
     UINT8  field35;  //35
     UINT8  field36;  //36
     UINT8  field37;  //37
-    UINT8  field38;  //38
+    UINT8  target_expansion;  //38
     UINT8  field39;  //39
     UINT8  field40;  //40
     UINT8  field41;  //41
@@ -3836,14 +3850,16 @@ bool RadarReportReceiveThread::ProcessIncomingReport( UINT8 * command, int len )
             }
             pPlugIn->radar_setting[AB].target_boost.Update(s->target_boost);
             pPlugIn->radar_setting[AB].interference_rejection.Update(s->interference_rejection);
+			pPlugIn->radar_setting[AB].target_expansion.Update(s->target_expansion);
 
-            if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: radar AB = %d state range=%u gain=%u sea=%u rain=%u interference_rejection=%u target_boost=%u ")
+            if (pPlugIn->settings.verbose)wxLogMessage(wxT("BR24radar_pi: radar AB = %d state range=%u gain=%u sea=%u rain=%u interference_rejection=%u target_expansion=%u target_boost=%u ")
                 , AB
                 , s->range
                 , s->gain
                 , s->sea
                 , s->rain
                 , s->interference_rejection
+				, s->target_expansion
                 , s->target_boost
                 );
             //       logBinaryData(wxT("state"), command, len);
