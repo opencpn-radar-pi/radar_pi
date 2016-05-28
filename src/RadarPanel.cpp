@@ -114,7 +114,8 @@ RadarPanel::~RadarPanel() {
     delete m_ri->radar_canvas;
     m_ri->radar_canvas = 0;
   }
-  // m_aui_mgr->DetachPane(this);
+  m_aui_mgr->DetachPane(this);
+  m_aui_mgr->Update();
 }
 
 void RadarPanel::SetCaption(wxString name) { m_aui_mgr->GetPane(this).Caption(name); }
