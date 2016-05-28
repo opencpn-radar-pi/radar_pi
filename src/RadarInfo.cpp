@@ -200,16 +200,14 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
 }
 
 RadarInfo::~RadarInfo() {
-  wxMutexLocker lock(m_mutex);
-
   m_timer->Stop();
 
-  if (transmit) {
-    delete transmit;
-  }
   if (receive) {
     receive->Delete();
     delete receive;
+  }
+  if (transmit) {
+    delete transmit;
   }
   if (radar_panel) {
     delete radar_panel;
