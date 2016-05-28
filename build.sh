@@ -24,6 +24,11 @@ case $host in
     PACKAGE="*.pkg"
     ;;
 
+  openplotter)      # 'Raspian/Openplotter' on real RPi3 or Qemu 
+    BUILDDIR=build-linux-armhf
+    PACKAGE="*.deb *.rpm *.bz2"
+    ;;
+
   debian7)      # 'Debian 7' VirtualBox vm
     BUILDDIR=build-linux-x86_64
     PACKAGE="*.deb *.rpm *.bz2"
