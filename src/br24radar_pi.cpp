@@ -398,9 +398,6 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
 
   m_pMessageBox->UpdateMessage(false);
   wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback allOK=%s"), m_pMessageBox->IsShown() ? "no" : "yes");
-  if (m_pMessageBox->IsShown()) {
-    return;
-  }
 
   if (m_settings.show_radar == 0) {
     if (m_settings.chart_overlay >= 0 &&
