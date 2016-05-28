@@ -271,7 +271,12 @@ void br24MessageBox::UpdateMessage(bool force) {
     m_pi->m_settings.show_radar = RADAR_OFF;
     new_message_state = SHOW_CLOSE;
   } else if (no_overlay) {
-    if (radarOn || m_pi->m_settings.show_radar == RADAR_OFF) {
+    if (m_pi->m_settings.show_radar == RADAR_OFF) {
+      if (m_pi->m_settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi: messagebox no radar wanted"));
+      }
+      new_message_state = HIDE;
+    } else if (radarOn) {
       if (m_pi->m_settings.verbose >= 2) {
         wxLogMessage(wxT("BR24radar_pi: messagebox radar window needs met"));
       }
@@ -290,7 +295,7 @@ void br24MessageBox::UpdateMessage(bool force) {
       new_message_state = HIDE;
     } else {
       if (m_pi->m_settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: messagebox needs not met"));
+        wxLogMessage(wxT("BR24radar_pi: messagebox overlay needs not met"));
       }
       new_message_state = SHOW;
     }
