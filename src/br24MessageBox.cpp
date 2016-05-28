@@ -77,11 +77,7 @@ bool br24MessageBox::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, c
   m_parent = parent;
   m_pi = pi;
 
-#ifdef wxMSW
-  long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN | wxSTAY_ON_TOP | wxFRAME_FLOAT_ON_PARENT;
-#else
-  long wstyle = wxCLOSE_BOX | wxCAPTION | wxRESIZE_BORDER | wxSTAY_ON_TOP | wxFRAME_FLOAT_ON_PARENT;
-#endif
+  long wstyle = wxCLOSE_BOX | wxCAPTION | wxSTAY_ON_TOP | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR | wxCLIP_CHILDREN;
 
   if (!wxDialog::Create(parent, id, caption, pos, wxDefaultSize, wstyle)) {
     return false;
