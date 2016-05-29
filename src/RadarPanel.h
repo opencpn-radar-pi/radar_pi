@@ -44,6 +44,7 @@ class RadarPanel : public wxPanel {
 
   void SetCaption(wxString name);  // Set the AUI caption
   void ShowFrame(bool visible);
+  bool IsShown();
 
   void close(wxAuiManagerEvent& event);
 

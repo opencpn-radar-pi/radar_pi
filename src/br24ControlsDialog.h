@@ -96,8 +96,9 @@ class br24ControlsDialog : public wxDialog {
   void OnRadarGainButtonClick(wxCommandEvent &event);
 
   void OnRadarStateButtonClick(wxCommandEvent &event);
-  void OnRotationButtonClick(wxCommandEvent &event);
+  void OnRadarShowButtonClick(wxCommandEvent &event);
   void OnRadarOverlayButtonClick(wxCommandEvent &event);
+  void OnRotationButtonClick(wxCommandEvent &event);
   void OnMessageButtonClick(wxCommandEvent &event);
 
   void OnRadarControlButtonClick(wxCommandEvent &event);
@@ -114,6 +115,8 @@ class br24ControlsDialog : public wxDialog {
 
   void SwitchTo(wxBoxSizer *to);
   void UpdateAdvanced4GState();
+
+  void SetMenuAutoHideTimeout();
 
   wxWindow *m_parent;
   wxBoxSizer *m_advanced_4G_sizer;
@@ -161,8 +164,9 @@ class br24ControlsDialog : public wxDialog {
   // Show Controls
 
   wxButton *m_radar_state;
-  wxButton *m_rotation_button;
   wxButton *m_overlay_button;
+  wxButton *m_window_button;
+  wxButton *m_rotation_button;
   br24RadarRangeControlButton *m_range_button;
   br24RadarControlButton *m_transparency_button;  // TODO: Set it on change
   br24RadarControlButton *m_refresh_rate_button;  // TODO: Set it on change

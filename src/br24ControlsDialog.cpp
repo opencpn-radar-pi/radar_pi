@@ -66,8 +66,9 @@ enum {  // process ID's
   ID_SIDE_LOBE_SUPPRESSION,
 
   ID_RADAR_STATE,
-  ID_ROTATION,
+  ID_SHOW_RADAR,
   ID_RADAR_OVERLAY,
+  ID_ROTATION,
   ID_RANGE,
   ID_GAIN,
   ID_SEA,
@@ -119,6 +120,7 @@ EVT_BUTTON(ID_LOCAL_INTERFERENCE_REJECTION, br24ControlsDialog::OnRadarControlBu
 EVT_BUTTON(ID_SIDE_LOBE_SUPPRESSION, br24ControlsDialog::OnRadarControlButtonClick)
 
 EVT_BUTTON(ID_RADAR_STATE, br24ControlsDialog::OnRadarStateButtonClick)
+EVT_BUTTON(ID_SHOW_RADAR, br24ControlsDialog::OnRadarShowButtonClick)
 EVT_BUTTON(ID_ROTATION, br24ControlsDialog::OnRotationButtonClick)
 EVT_BUTTON(ID_RADAR_OVERLAY, br24ControlsDialog::OnRadarOverlayButtonClick)
 EVT_BUTTON(ID_RANGE, br24ControlsDialog::OnRadarControlButtonClick)
@@ -136,6 +138,9 @@ EVT_MOVE(br24ControlsDialog::OnMove)
 EVT_SIZE(br24ControlsDialog::OnSize)
 
 END_EVENT_TABLE()
+
+static wxSize g_buttonSize;
+static wxSize g_smallButtonSize;
 
 class br24RadarControlButton : public wxButton {
  public:
@@ -379,6 +384,8 @@ void br24ControlsDialog::CreateControls() {
     width = 300;
   }
   g_buttonSize = wxSize(width, 40);  // was 50, buttons a bit lower now
+  g_smallButtonSize = wxSize(width, 25);
+
   if (m_pi->m_settings.verbose) {
     wxLogMessage(wxT("br24radar_pi: Dynamic button width = %d"), g_buttonSize.GetWidth());
   }
@@ -387,7 +394,6 @@ void br24ControlsDialog::CreateControls() {
   // delete testBox; -- this core dumps!
   // Determined desired button width
 
-  g_buttonSize = wxSize(width, 50);
   //**************** EDIT BOX ******************//
   // A box sizer to contain RANGE button
   m_edit_sizer = new wxBoxSizer(wxVERTICAL);
@@ -436,7 +442,7 @@ void br24ControlsDialog::CreateControls() {
   // The Multi Sweep Filter button
   wxString labelMS;
   labelMS << _("Multi Sweep Filter") << wxT("\n") << _("Off");
-  m_multi_sweep_button = new wxButton(this, ID_MULTISWEEP, labelMS, wxDefaultPosition, wxSize(width, 40), 0);
+  m_multi_sweep_button = new wxButton(this, ID_MULTISWEEP, labelMS, wxDefaultPosition, g_buttonSize, 0);
   m_edit_sizer->Add(m_multi_sweep_button, 0, wxALL, BORDER);
   m_multi_sweep_button->SetFont(m_pi->m_font);
 
@@ -705,26 +711,32 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_control_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The Transmit button
-  m_radar_state = new wxButton(this, ID_RADAR_STATE, _("Unknown"), wxDefaultPosition, g_buttonSize, 0);
+  m_radar_state = new wxButton(this, ID_RADAR_STATE, _("Unknown"), wxDefaultPosition, g_smallButtonSize, 0);
   m_control_sizer->Add(m_radar_state, 0, wxALL, BORDER);
   m_radar_state->SetFont(m_pi->m_font);
   // Updated when we receive data
+
+  // The SHOW / HIDE RADAR button
+  m_window_button = new wxButton(this, ID_SHOW_RADAR, _("Show Radar"), wxDefaultPosition, g_smallButtonSize, 0);
+  m_control_sizer->Add(m_window_button, 0, wxALL, BORDER);
+  m_window_button->SetFont(m_pi->m_font);
+
+  // The RADAR ONLY / OVERLAY button
+  wxString overlay = _("Overlay");
+  m_overlay_button = new wxButton(this, ID_RADAR_OVERLAY, overlay, wxDefaultPosition, g_smallButtonSize, 0);
+  m_control_sizer->Add(m_overlay_button, 0, wxALL, BORDER);
+  m_overlay_button->SetFont(m_pi->m_font);
+
+  //***************** TRANSMIT SIZER, items hidden when not transmitting ****************//
 
   m_transmit_sizer = new wxBoxSizer(wxVERTICAL);
   m_control_sizer->Add(m_transmit_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The Rotation button
-  m_rotation_button = new wxButton(this, ID_ROTATION, _("Rotation"), wxDefaultPosition, g_buttonSize, 0);
+  m_rotation_button = new wxButton(this, ID_ROTATION, _("Rotation"), wxDefaultPosition, g_smallButtonSize, 0);
   m_transmit_sizer->Add(m_rotation_button, 0, wxALL, BORDER);
   m_rotation_button->SetFont(m_pi->m_font);
   // Updated when we receive data
-
-  // The RADAR ONLY / OVERLAY button
-  wxString overlay = _("Overlay");
-  overlay << wxT("\n?");
-  m_overlay_button = new wxButton(this, ID_RADAR_OVERLAY, overlay, wxDefaultPosition, g_buttonSize, 0);
-  m_transmit_sizer->Add(m_overlay_button, 0, wxALL, BORDER);
-  m_overlay_button->SetFont(m_pi->m_font);
 
   // The RANGE button
   m_range_button = new br24RadarRangeControlButton(this, m_ri, ID_RANGE, _("Range"));
@@ -758,7 +770,7 @@ void br24ControlsDialog::CreateControls() {
   m_guard_2_button->SetFont(m_pi->m_font);
 
   // The INFO button
-  wxButton* bMessage = new wxButton(this, ID_MESSAGE, _("Info"), wxDefaultPosition, wxSize(width, 25), 0);
+  wxButton* bMessage = new wxButton(this, ID_MESSAGE, _("Info"), wxDefaultPosition, g_smallButtonSize, 0);
   m_control_sizer->Add(bMessage, 0, wxALL, BORDER);
   bMessage->SetFont(m_pi->m_font);
 
@@ -921,6 +933,11 @@ void br24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
   EnterEditMode((br24RadarControlButton*)event.GetEventObject());
 }
 
+void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
+  // m_ri->ShowRadarWindow(!m_ri->IsShown());
+  m_pi->SetRadarWindowViz(!m_ri->IsShown());
+}
+
 void br24ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
   if (m_pi->m_settings.chart_overlay != m_ri->radar) {
     m_pi->m_settings.chart_overlay = m_ri->radar;
@@ -950,13 +967,15 @@ void br24ControlsDialog::OnMove(wxMoveEvent& event) { event.Skip(); }
 void br24ControlsDialog::OnSize(wxSizeEvent& event) { event.Skip(); }
 
 void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
+  wxString o;
+
   if (m_ri->state.mod || refreshAll) {
     RadarState state = (RadarState)m_ri->state.GetButton();
 
     // If state changed then refresh all controls
     refreshAll = true;
 
-    wxString o = (state == RADAR_TRANSMIT) ? _("Standby") : _("Transmit");
+    o = (state == RADAR_TRANSMIT) ? _("Standby") : _("Transmit");
     m_radar_state->SetLabel(o);
 
     if (state == RADAR_TRANSMIT) {
@@ -971,19 +990,20 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_top_sizer->Layout();
   }
 
+  if (m_pi->m_settings.enable_dual_radar) {
+    o = (m_ri->IsShown()) ? _("Hide Radars") : _("Show Radars");
+  } else {
+    o = (m_ri->IsShown()) ? _("Hide Radar") : _("Show Radar");
+  }
+  m_window_button->SetLabel(o);
+
   if (m_ri->rotation.mod || refreshAll) {
-    wxString o = m_ri->rotation.GetButton() ? _("North Up") : _("Head Up");
+    o = m_ri->rotation.GetButton() ? _("North Up") : _("Head Up");
     m_rotation_button->SetLabel(o);
   }
 
   if (m_ri->overlay.mod || ((m_pi->m_settings.chart_overlay == m_ri->radar) != (m_ri->overlay.button != 0)) || refreshAll) {
-    wxString o = _("Overlay");
-    o << wxT("\n");
-    if (m_ri->overlay.GetButton() > 0) {
-      o << _("On");
-    } else {
-      o << _("Off");
-    }
+    o = (m_ri->overlay.GetButton() > 0) ? _("Overlay on") : _("Overlay off");
     m_overlay_button->SetLabel(o);
   }
 
@@ -1076,20 +1096,6 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     wxString label = m_from_control->GetLabel();
     m_value_text->SetLabel(label);
   }
-
-  wxString title;
-
-  title << m_ri->name << wxT(" - ");
-
-  if (m_ri->state.value == RADAR_TRANSMIT) {
-    title << _("On");
-  } else if (m_ri->state.value == RADAR_STANDBY) {
-    title << _("Standby");
-  } else {
-    title << _("Off");
-  }
-
-  SetTitle(title);
 }
 
 void br24ControlsDialog::UpdateDialogShown() {
@@ -1113,10 +1119,10 @@ void br24ControlsDialog::UpdateDialogShown() {
     return;
   }
 
-  if (TIMED_OUT(time(0), m_auto_hide_timeout)) {
+  if (m_auto_hide_timeout && TIMED_OUT(time(0), m_auto_hide_timeout)) {
     if (!m_top_sizer->IsShown(m_control_sizer)) {
       // If we're somewhere in the sub-window, don't close the dialog
-      m_auto_hide_timeout += WATCHDOG_TIMEOUT;
+      SetMenuAutoHideTimeout();
     } else {
       if (IsShown()) {
         if (m_pi->m_settings.verbose) {
@@ -1154,7 +1160,7 @@ void br24ControlsDialog::HideTemporarily() {
 
 void br24ControlsDialog::UnHideTemporarily() {
   m_hide_temporarily = false;
-  m_auto_hide_timeout = time(0) + WATCHDOG_TIMEOUT;  // Start auto hide timeout
+  SetMenuAutoHideTimeout();
   UpdateDialogShown();
 }
 
@@ -1207,8 +1213,22 @@ void br24ControlsDialog::HideDialog() {
   UpdateDialogShown();
 }
 
+void br24ControlsDialog::SetMenuAutoHideTimeout() {
+  switch (m_pi->m_settings.menu_auto_hide) {
+    case 1:
+      m_auto_hide_timeout = time(0) + 10;
+      break;
+    case 2:
+      m_auto_hide_timeout = time(0) + 30;
+      break;
+    default:
+      m_auto_hide_timeout = 0;
+      break;
+  }
+}
+
 void br24ControlsDialog::OnMouseLeftDown(wxMouseEvent& event) {
-  m_auto_hide_timeout = time(0) + WATCHDOG_TIMEOUT;
+  SetMenuAutoHideTimeout();
   event.Skip();
 }
 

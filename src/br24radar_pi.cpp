@@ -213,9 +213,9 @@ int br24radar_pi::Init(void) {
   }
 
   m_initialized = true;
-  wxLogMessage(wxT("BR24radar_pi: Initialized plugin show_radar=%d overlay=%d"), m_settings.show_radar, m_settings.chart_overlay);
+  wxLogMessage(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.chart_overlay);
 
-  // SetRadarWindowViz(m_settings.show_radar != 0);
+  SetRadarWindowViz(m_settings.show_radar != 0);
 
   return PLUGIN_OPTIONS;
 }
@@ -230,6 +230,10 @@ bool br24radar_pi::DeInit(void) {
   if (!m_initialized) {
     return false;
   }
+
+  // Save our config, first, as it contains state regarding what is open.
+  SaveConfig();
+
   m_initialized = false;
   wxLogMessage(wxT("BR24radar_pi: DeInit of plugin"));
 
@@ -239,9 +243,6 @@ bool br24radar_pi::DeInit(void) {
     OnControlDialogClose(m_radar[r]);
     m_radar[r]->ShowRadarWindow(false);
   }
-
-  // Save our config
-  SaveConfig();
 
   // Delete all 'new'ed objects
   for (int r = 0; r < RADARS; r++) {
@@ -290,25 +291,24 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
 /**
  * Set the radar window visibility.
  *
- * To toggle visibility call this as SetRadarWindowViz(!m_settings.show_radar);
- *
- * New state set in m_settings.show_radar.
- *
  * @param show        desired visibility state
- * @return            whether state was changed
  */
-bool br24radar_pi::SetRadarWindowViz(bool show) {
+void br24radar_pi::SetRadarWindowViz(bool show) {
   m_radar[0]->ShowRadarWindow(show);
-  ShowRadarControl(0, show);
+  if (!show)
+  {
+    ShowRadarControl(0, show);
+  }
   if (m_settings.enable_dual_radar) {
     m_radar[1]->ShowRadarWindow(show);
-    ShowRadarControl(1, show);
+    if (!show)
+    {
+      ShowRadarControl(1, show);
+    }
   }
-  m_settings.show_radar = show;
+  m_settings.show_radar = show ? 1 : 0;
   m_pMessageBox->UpdateMessage(false);
   wxLogMessage(wxT("BR24radar_pi: RadarWindow visibility = %d"), (int)show);
-
-  return show != (m_settings.show_radar != 0);
 }
 
 //********************************************************************************
@@ -322,11 +322,12 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
   if (show) {
     if (!m_radar[radar]->control_dialog) {
       m_radar[radar]->control_dialog = new br24ControlsDialog;
-      m_radar[radar]->control_dialog->Create(m_parent_window, this, m_radar[radar]);
+      m_radar[radar]->control_dialog->Create(m_parent_window, this, m_radar[radar], wxID_ANY, m_radar[radar]->name);
       m_radar[radar]->control_dialog->Fit();
       m_radar[radar]->control_dialog->Hide();
       int range = m_radar[radar]->range_meters;
       m_radar[radar]->range.Update(range);
+
     }
     m_radar[radar]->control_dialog->ShowDialog();
   } else {
@@ -399,9 +400,18 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
   m_pMessageBox->UpdateMessage(false);
   wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback allOK=%s"), m_pMessageBox->IsShown() ? "no" : "yes");
 
-  if (m_settings.show_radar == 0) {
-    if (m_settings.chart_overlay >= 0 &&
-        (!m_radar[m_settings.chart_overlay]->control_dialog || !m_radar[m_settings.chart_overlay]->control_dialog->IsShown())) {
+  bool isViz = false;
+
+  for (int r = 0; r < RADARS; r++) {
+    if (m_radar[r]->control_dialog && m_radar[r]->control_dialog->IsShown()) {
+      isViz = true;
+    }
+    if (m_radar[r]->IsShown()) {
+      isViz = true;
+    }
+  }
+  if (!isViz) {
+    if (m_settings.chart_overlay >= 0) {
       wxLogMessage(
           wxT("BR24radar_pi: OnToolbarToolCallback: No radar windows shown, overlay is active and no control -> show control"));
       ShowRadarControl(m_settings.chart_overlay, true);
@@ -592,16 +602,6 @@ void br24radar_pi::DoTick(void) {
     return;
   }
   previousTicks = now;
-
-  if (m_settings.show_radar) {
-    if (!m_radar[0]->receive) {
-      m_radar[0]->StartReceive();
-    }
-    if (!m_radar[1]->receive && m_settings.enable_dual_radar && m_radar[0]->radar_type == RT_4G) {
-      m_radar[0]->SetName(_("Radar A"));
-      m_radar[1]->StartReceive();
-    }
-  }
 
   if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
     // If the position data is 10s old reset our heading.
@@ -871,6 +871,7 @@ bool br24radar_pi::LoadConfig(void) {
 
     for (int r = 0; r < RADARS; r++) {
       pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &m_radar[r]->rotation.value, 0);
+      pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), (int *) &m_radar[r]->wantedState, 0);
       for (int i = 0; i < GUARD_ZONES; i++) {
         int v;
         pConf->Read(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), &m_radar[r]->guard_zone[i]->start_bearing, 0.0);
@@ -885,6 +886,8 @@ bool br24radar_pi::LoadConfig(void) {
 
     pConf->Read(wxT("RadarAlertAudioFile"), &m_settings.alert_audio_file);
     pConf->Read(wxT("ShowRadar"), &m_settings.show_radar, 0);
+    pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 1);
+
     pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, 0);
 
     pConf->Read(wxT("SkewFactor"), &m_settings.skew_factor, 1);
@@ -921,11 +924,13 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
     pConf->Write(wxT("EmulatorOn"), (int)m_settings.emulator_on);
     pConf->Write(wxT("ShowRadar"), m_settings.show_radar);
+    pConf->Write(wxT("MenuAutoHide"), m_settings.menu_auto_hide);
     pConf->Write(wxT("RadarAlertAudioFile"), m_settings.alert_audio_file);
     pConf->Write(wxT("EnableDualRadar"), m_settings.enable_dual_radar);
 
     for (int r = 0; r < RADARS; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->rotation.value);
+      pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->state.value);
       for (int i = 0; i < GUARD_ZONES; i++) {
         pConf->Write(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), m_radar[r]->guard_zone[i]->start_bearing);
         pConf->Write(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), m_radar[r]->guard_zone[i]->end_bearing);

@@ -252,6 +252,9 @@ void RadarInfo::SetName(wxString name) {
     wxLogMessage(wxT("BR24radar_pi: Changing name of radar #%d from '%s' to '%s'"), radar, this->name.c_str(), name.c_str());
     this->name = name;
     radar_panel->SetCaption(name);
+    if (control_dialog) {
+      control_dialog->SetTitle(name);
+    }
   }
 }
 
@@ -378,7 +381,7 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
     if (m_verbose >= 1) {
       wxLogMessage(wxT("BR24radar_pi: %s busy encountered, refreshes_queued=%d"), name.c_str(), m_refreshes_queued);
     }
-  } else if (radar_panel->IsShown()) {
+  } else if (IsShown()) {
     m_refreshes_queued++;
     radar_panel->Refresh(false);
   }
@@ -461,6 +464,8 @@ bool RadarInfo::SetControlValue(ControlType controlType, int value) { return tra
 
 void RadarInfo::ShowRadarWindow(bool show) { radar_panel->ShowFrame(show); }
 
+bool RadarInfo::IsShown() { return radar_panel->IsShown(); }
+
 void RadarInfo::UpdateControlState(bool all) {
   wxMutexLocker lock(m_mutex);
 
@@ -475,7 +480,7 @@ void RadarInfo::UpdateControlState(bool all) {
     delete m_draw_overlay.draw;
     m_draw_overlay.draw = 0;
   }
-  if (!radar_panel->IsShown() && m_draw_panel.draw) {
+  if (!IsShown() && m_draw_panel.draw) {
     wxLogMessage(wxT("BR24radar_pi: Removing draw method as radar window is not shown"));
     delete m_draw_panel.draw;
     m_draw_panel.draw = 0;
@@ -487,7 +492,12 @@ void RadarInfo::UpdateControlState(bool all) {
     control_dialog->UpdateDialogShown();
   }
 
-  if (radar_panel->IsShown()) {
+  if (wantedState != state.value && state.value != RADAR_OFF)
+  {
+    FlipRadarState();
+  }
+
+  if (IsShown()) {
     radar_panel->Refresh(false);
   }
 }
@@ -556,10 +566,12 @@ void RadarInfo::FlipRadarState() {
   if (state.button == RADAR_STANDBY) {
     transmit->RadarTxOn();
     state.Update(RADAR_TRANSMIT);
+    wantedState = RADAR_TRANSMIT;
   } else {
     transmit->RadarTxOff();
     m_data_timeout = 0;
     state.Update(RADAR_STANDBY);
+    wantedState = RADAR_STANDBY;
   }
 }
 

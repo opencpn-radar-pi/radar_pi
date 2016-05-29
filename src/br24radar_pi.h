@@ -93,8 +93,6 @@ struct receive_statistics {
   int missing_spokes;
 };
 
-static wxSize g_buttonSize;
-
 typedef enum ControlType {
   CT_RANGE,
   CT_GAIN,
@@ -196,7 +194,8 @@ struct PersistentSettings {
   int idle_run_time;
   int draw_algorithm;
   int refreshrate;
-  int show_radar;
+  int show_radar; // whether to show radar window(s)
+  int menu_auto_hide;
   bool pass_heading_to_opencpn;
   bool enable_dual_radar;  // Should the dual radar be enabled for 4G?
   bool emulator_on;
@@ -261,7 +260,7 @@ class br24radar_pi : public opencpn_plugin_110 {
   void SetDefaults(void);
   int GetToolbarToolCount(void);
   void OnToolbarToolCallback(int id);
-  bool SetRadarWindowViz(bool show);
+  void SetRadarWindowViz(bool show);
   void ShowPreferencesDialog(wxWindow *parent);
 
   // Other public methods

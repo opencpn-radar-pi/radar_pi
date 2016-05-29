@@ -44,7 +44,8 @@ enum {
   ID_TEST_SOUND,
   ID_PASS_HEADING,
   ID_DRAW_METHOD,
-  ID_SELECT_AB,
+  ID_MENU_AUTO_HIDE,
+  ID_DUAL_RADAR,
   ID_EMULATOR
 };
 
@@ -168,6 +169,23 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi) {
   cbDrawingMethod->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnDrawingMethodClick), NULL,
                            this);
 
+  // Menu options
+
+  wxStaticBox *menuOptionsBox = new wxStaticBox(this, wxID_ANY, _("Control Menu Auto Hide"));
+  wxStaticBoxSizer *menuOptionsSizer = new wxStaticBoxSizer(menuOptionsBox, wxVERTICAL);
+  DisplayOptionsBox->Add(menuOptionsSizer, 0, wxEXPAND | wxALL, border_size);
+
+  wxString MenuAutoHideStrings[] = {
+    _("Never"), _("10 sec"), _("30 sec")
+  };
+  cbMenuAutoHide =
+  new wxComboBox(this, ID_MENU_AUTO_HIDE, MenuAutoHideStrings[m_pi->m_settings.menu_auto_hide], wxDefaultPosition, wxDefaultSize,
+                 ARRAY_SIZE(MenuAutoHideStrings), MenuAutoHideStrings, wxALIGN_CENTRE | wxST_NO_AUTORESIZE, wxDefaultValidator, _("Auto hide after"));
+  menuOptionsSizer->Add(cbMenuAutoHide, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  cbMenuAutoHide->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnMenuAutoHideClick), NULL,
+                           this);
+
+
   //  Options
   wxStaticBox *itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
   wxStaticBoxSizer *itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
@@ -179,7 +197,7 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi) {
   cbPassHeading->SetValue(m_pi->m_settings.pass_heading_to_opencpn);
   cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnPassHeadingClick), NULL, this);
 
-  cbEnableDualRadar = new wxCheckBox(this, ID_SELECT_AB, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize,
+  cbEnableDualRadar = new wxCheckBox(this, ID_DUAL_RADAR, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize,
                                      wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   itemStaticBoxSizerOptions->Add(cbEnableDualRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
   cbEnableDualRadar->SetValue(m_pi->m_settings.enable_dual_radar);
@@ -243,6 +261,12 @@ void br24OptionsDialog::OnTestSoundClick(wxCommandEvent &event) {
 void br24OptionsDialog::OnPassHeadingClick(wxCommandEvent &event) {
   m_pi->m_settings.pass_heading_to_opencpn = cbPassHeading->GetValue();
 }
+
+void br24OptionsDialog::OnMenuAutoHideClick(wxCommandEvent &event) {
+  m_pi->m_settings.menu_auto_hide = cbMenuAutoHide->GetSelection();
+  wxLogMessage(wxT("BR24radar_pi: new menu auto hide %d selected"), m_pi->m_settings.menu_auto_hide);
+}
+
 
 void br24OptionsDialog::OnDrawingMethodClick(wxCommandEvent &event) {
   m_pi->m_settings.drawing_method = cbDrawingMethod->GetSelection();

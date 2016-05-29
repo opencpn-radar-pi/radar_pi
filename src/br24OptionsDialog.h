@@ -61,6 +61,7 @@ class br24OptionsDialog : public wxDialog {
   void OnTestSoundClick(wxCommandEvent& event);
   void OnPassHeadingClick(wxCommandEvent& event);
   void OnDrawingMethodClick(wxCommandEvent& event);
+  void OnMenuAutoHideClick(wxCommandEvent& event);
   void OnEnableDualRadarClick(wxCommandEvent& event);
   void OnEmulatorClick(wxCommandEvent& event);
 
@@ -74,6 +75,7 @@ class br24OptionsDialog : public wxDialog {
   wxRadioBox* pGuardZoneStyle;
   wxCheckBox* cbPassHeading;
   wxComboBox* cbDrawingMethod;
+  wxComboBox* cbMenuAutoHide;
   wxCheckBox* cbEnableDualRadar;
   wxCheckBox* cbEmulator;
 };

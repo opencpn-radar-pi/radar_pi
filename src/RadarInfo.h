@@ -108,6 +108,7 @@ class RadarInfo : public wxEvtHandler {
   int m_overlay_refreshes_queued;
   int m_refreshes_queued;
   int m_refresh_millis;
+  RadarState wantedState;
 
   GuardZone *guard_zone[GUARD_ZONES];
   receive_statistics statistics;
@@ -135,6 +136,8 @@ class RadarInfo : public wxEvtHandler {
   void RenderGuardZone(wxPoint radar_center, double v_scale_ppm);
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
+  bool IsShown();
+
   void UpdateControlState(bool all);
   void FlipRadarState();
   wxString &GetRangeText(int range_meters, int *index);
