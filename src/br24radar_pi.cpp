@@ -295,14 +295,12 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
  */
 void br24radar_pi::SetRadarWindowViz(bool show) {
   m_radar[0]->ShowRadarWindow(show);
-  if (!show)
-  {
+  if (!show) {
     ShowRadarControl(0, show);
   }
   if (m_settings.enable_dual_radar) {
     m_radar[1]->ShowRadarWindow(show);
-    if (!show)
-    {
+    if (!show) {
       ShowRadarControl(1, show);
     }
   }
@@ -327,7 +325,6 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
       m_radar[radar]->control_dialog->Hide();
       int range = m_radar[radar]->range_meters;
       m_radar[radar]->range.Update(range);
-
     }
     m_radar[radar]->control_dialog->ShowDialog();
   } else {
@@ -871,7 +868,7 @@ bool br24radar_pi::LoadConfig(void) {
 
     for (int r = 0; r < RADARS; r++) {
       pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &m_radar[r]->rotation.value, 0);
-      pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), (int *) &m_radar[r]->wantedState, 0);
+      pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), (int *)&m_radar[r]->wantedState, 0);
       for (int i = 0; i < GUARD_ZONES; i++) {
         int v;
         pConf->Read(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), &m_radar[r]->guard_zone[i]->start_bearing, 0.0);

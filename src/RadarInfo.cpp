@@ -492,8 +492,7 @@ void RadarInfo::UpdateControlState(bool all) {
     control_dialog->UpdateDialogShown();
   }
 
-  if (wantedState != state.value && state.value != RADAR_OFF)
-  {
+  if (wantedState != state.value && state.value != RADAR_OFF) {
     FlipRadarState();
   }
 

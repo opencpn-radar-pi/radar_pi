@@ -128,9 +128,7 @@ void RadarPanel::ShowFrame(bool visible) {
   m_aui_mgr->Update();
 }
 
-bool RadarPanel::IsShown() {
-  return m_aui_mgr->GetPane(this).IsShown();
-}
+bool RadarPanel::IsShown() { return m_aui_mgr->GetPane(this).IsShown(); }
 
 wxPoint RadarPanel::GetPos() {
   if (m_aui_mgr->GetPane(this).IsFloating()) {

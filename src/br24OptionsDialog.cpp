@@ -175,16 +175,13 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi) {
   wxStaticBoxSizer *menuOptionsSizer = new wxStaticBoxSizer(menuOptionsBox, wxVERTICAL);
   DisplayOptionsBox->Add(menuOptionsSizer, 0, wxEXPAND | wxALL, border_size);
 
-  wxString MenuAutoHideStrings[] = {
-    _("Never"), _("10 sec"), _("30 sec")
-  };
-  cbMenuAutoHide =
-  new wxComboBox(this, ID_MENU_AUTO_HIDE, MenuAutoHideStrings[m_pi->m_settings.menu_auto_hide], wxDefaultPosition, wxDefaultSize,
-                 ARRAY_SIZE(MenuAutoHideStrings), MenuAutoHideStrings, wxALIGN_CENTRE | wxST_NO_AUTORESIZE, wxDefaultValidator, _("Auto hide after"));
+  wxString MenuAutoHideStrings[] = {_("Never"), _("10 sec"), _("30 sec")};
+  cbMenuAutoHide = new wxComboBox(this, ID_MENU_AUTO_HIDE, MenuAutoHideStrings[m_pi->m_settings.menu_auto_hide], wxDefaultPosition,
+                                  wxDefaultSize, ARRAY_SIZE(MenuAutoHideStrings), MenuAutoHideStrings,
+                                  wxALIGN_CENTRE | wxST_NO_AUTORESIZE, wxDefaultValidator, _("Auto hide after"));
   menuOptionsSizer->Add(cbMenuAutoHide, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
   cbMenuAutoHide->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnMenuAutoHideClick), NULL,
-                           this);
-
+                          this);
 
   //  Options
   wxStaticBox *itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
@@ -266,7 +263,6 @@ void br24OptionsDialog::OnMenuAutoHideClick(wxCommandEvent &event) {
   m_pi->m_settings.menu_auto_hide = cbMenuAutoHide->GetSelection();
   wxLogMessage(wxT("BR24radar_pi: new menu auto hide %d selected"), m_pi->m_settings.menu_auto_hide);
 }
-
 
 void br24OptionsDialog::OnDrawingMethodClick(wxCommandEvent &event) {
   m_pi->m_settings.drawing_method = cbDrawingMethod->GetSelection();

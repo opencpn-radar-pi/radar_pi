@@ -954,7 +954,10 @@ void br24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) {
 
 void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) { m_ri->FlipRadarState(); }
 
-void br24ControlsDialog::OnRotationButtonClick(wxCommandEvent& event) { m_ri->rotation.Update(1 - m_ri->rotation.value); UpdateControlValues(false);}
+void br24ControlsDialog::OnRotationButtonClick(wxCommandEvent& event) {
+  m_ri->rotation.Update(1 - m_ri->rotation.value);
+  UpdateControlValues(false);
+}
 
 void br24ControlsDialog::OnConfirmBogeyButtonClick(wxCommandEvent& event) {
   m_pi->ConfirmGuardZoneBogeys();
