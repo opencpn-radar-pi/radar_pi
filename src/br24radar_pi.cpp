@@ -143,7 +143,6 @@ int br24radar_pi::Init(void) {
 
   m_var = 0.0;
   m_var_source = VARIATION_SOURCE_NONE;
-  m_heading_on_radar = false;
   m_bpos_set = false;
   m_auto_range_meters = 0;
   m_previous_auto_range_meters = 0;
@@ -600,6 +599,14 @@ void br24radar_pi::DoTick(void) {
   }
   previousTicks = now;
 
+  if (m_heading_source == HEADING_RADAR) {
+    if (m_pMessageBox->IsShown()) {
+      wxString info = _("Radar");
+      info << wxT(" ") << m_hdt;
+      m_pMessageBox->SetHeadingInfo(info);
+    }
+  }
+
   if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
     // If the position data is 10s old reset our heading.
     // Note that the watchdog is continuously reset every time we receive a
@@ -645,12 +652,14 @@ void br24radar_pi::DoTick(void) {
   }
 
   if (!any_data_seen) {  // Something coming from radar unit?
-    m_heading_on_radar = false;
+    if (m_heading_source == HEADING_RADAR) {
+      m_heading_source = HEADING_NONE;
+    }
   } else {
     CheckGuardZoneBogeys();
   }
 
-  if (m_settings.pass_heading_to_opencpn && m_heading_on_radar) {
+  if (m_settings.pass_heading_to_opencpn && m_heading_source == HEADING_RADAR) {
     PassHeadingToOpenCPN();
   }
 
@@ -960,12 +969,6 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   time_t now = time(0);
   wxString info;
 
-  // PushNMEABuffer
-  // (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,,230394,003.1,W"));  //
-  // only for test, position without heading
-  // PushNMEABuffer
-  // (_("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A"));
-  // //with heading for test
   if (m_var_source <= VARIATION_SOURCE_FIX && !wxIsNaN(pfix.Var) && (fabs(pfix.Var) > 0.0 || m_var == 0.0)) {
     if (m_var_source < VARIATION_SOURCE_FIX || fabs(pfix.Var - m_var) > 0.05) {
       wxLogMessage(wxT("BR24radar_pi: Position fix provides new magnetic variation %f"), pfix.Var);
@@ -981,21 +984,12 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   }
 
   if (m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: SetPositionFixEx var=%f heading_on_radar=%d var_wd=%d"), pfix.Var, m_heading_on_radar,
+    wxLogMessage(wxT("BR24radar_pi: SetPositionFixEx var=%f var_wd=%d"), pfix.Var,
                  NOT_TIMED_OUT(now, m_var_timeout));
   }
-  if (m_heading_on_radar && NOT_TIMED_OUT(now, m_var_timeout)) {
-    if (m_heading_source != HEADING_RADAR) {
-      wxLogMessage(wxT("BR24radar_pi: Heading source is now Radar %f"), m_hdt);
-      m_heading_source = HEADING_RADAR;
-    }
-    if (m_pMessageBox->IsShown()) {
-      info = _("Radar");
-      info << wxT(" ") << m_hdt;
-      m_pMessageBox->SetHeadingInfo(info);
-    }
-    m_hdt_timeout = now + HEADING_TIMEOUT;
-  } else if (!wxIsNaN(pfix.Hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
+
+  if (m_heading_source != HEADING_RADAR) {
+    if (!wxIsNaN(pfix.Hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
     m_hdt = pfix.Hdm + m_var;
     if (m_heading_source != HEADING_HDM) {
       wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM %f"), m_hdt);
@@ -1032,6 +1026,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     }
     m_hdt_timeout = now + HEADING_TIMEOUT;
   }
+  }
 
   if (pfix.FixTime > 0 && NOT_TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT)) {
     m_ownship_lat = pfix.Lat;
@@ -1046,6 +1041,8 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
 
 void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
   static const wxString WMM_VARIATION_BOAT = wxString(_T("WMM_VARIATION_BOAT"));
+  wxString info;
+
   if (message_id.Cmp(WMM_VARIATION_BOAT) == 0) {
     wxJSONReader reader;
     wxJSONValue message;
@@ -1061,7 +1058,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
         m_var_source = VARIATION_SOURCE_WMM;
         m_var_timeout = time(0) + WATCHDOG_TIMEOUT;
         if (m_pMessageBox->IsShown()) {
-          wxString info = _("WMM");
+          info = _("WMM");
           info << wxT(" ") << m_var;
           m_pMessageBox->SetVariationInfo(info);
         }

@@ -134,7 +134,6 @@ void br24Receive::logBinaryData(const wxString &what, const UINT8 *data, int siz
 // from the radar up to the range indicated in the packet.
 //
 void br24Receive::ProcessFrame(const UINT8 *data, int len) {
-  wxLongLong nowMillis = wxGetLocalTimeMillis();
   time_t now = time(0);
   radar_frame_pkt *packet = (radar_frame_pkt *)data;
 
@@ -237,16 +236,20 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     }
 
     hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
-    if (hdm_raw != INT16_MIN && TIMED_OUT(now, m_pi->m_var_timeout) && m_ri->radar_type == RT_4G) {
-      if (!m_pi->m_heading_on_radar) {
+    if (hdm_raw != INT16_MIN && NOT_TIMED_OUT(now, m_pi->m_var_timeout) && m_ri->radar_type == RT_4G) {
+      if (m_pi->m_heading_source != HEADING_RADAR) {
         wxLogMessage(wxT("BR24radar_pi: %s transmits heading, using that as best source of heading"), m_ri->name.c_str());
       }
-      m_pi->m_heading_on_radar = true;  // heading on radar
+      m_pi->m_heading_source = HEADING_RADAR;
       hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(m_pi->m_var));
       m_pi->m_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(hdt_raw));
       hdt_raw += SCALE_DEGREES_TO_RAW(m_ri->viewpoint_rotation);
+      m_pi->m_hdt_timeout = now + HEADING_TIMEOUT;
+
     } else {  // no heading on radar
-      m_pi->m_heading_on_radar = false;
+      if (m_pi->m_heading_source == HEADING_RADAR) {
+        m_pi->m_heading_source = HEADING_NONE;  // let other part override
+      }
       hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt + m_ri->viewpoint_rotation);
     }
 
@@ -257,7 +260,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
     SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
 
-    m_ri->ProcessRadarSpoke(a, b, line->data, RETURNS_PER_LINE, range_meters, nowMillis);
+    m_ri->ProcessRadarSpoke(a, b, line->data, RETURNS_PER_LINE, range_meters);
   }
 }
 
@@ -269,7 +272,6 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
  */
 
 void br24Receive::EmulateFakeBuffer(void) {
-  wxLongLong nowMillis = wxGetLocalTimeMillis();
   time_t now = time(0);
   UINT8 data[RETURNS_PER_LINE];
 
@@ -308,12 +310,11 @@ void br24Receive::EmulateFakeBuffer(void) {
     SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
     SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
 
-    m_ri->ProcessRadarSpoke(a, b, data, sizeof(data), range_meters, nowMillis);
+    m_ri->ProcessRadarSpoke(a, b, data, sizeof(data), range_meters);
   }
 
   if (m_pi->m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: %") wxTPRId64 wxT(" emulating %d spokes at range %d with %d spots"), nowMillis,
-                 scanlines_in_packet, range_meters, spots);
+    wxLogMessage(wxT("BR24radar_pi: emulating %d spokes at range %d with %d spots"), scanlines_in_packet, range_meters, spots);
   }
 }
 

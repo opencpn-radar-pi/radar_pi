@@ -300,10 +300,8 @@ void RadarInfo::ResetSpokes() {
  * strength at that distance.
  * @param len                   Number of returns
  * @param range                 Range (in meters) of this data
- * @param nowMillis             Timestamp when this was received
  */
-void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters,
-                                  wxLongLong nowMillis) {
+void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters) {
   UINT8 *hist_data = history[angle];
   bool calc_history = multi_sweep_filter;
 
@@ -321,8 +319,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     ResetSpokes();
   }
   int north_up = rotation.GetButton();
-
-  // spoke[angle].age = nowMillis;
 
   if (!calc_history) {
     for (size_t z = 0; z < GUARD_ZONES; z++) {
@@ -578,7 +574,7 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
   wxString s;
   int index;
 
-  if (rotation.value > 0) {
+  if (rotation.value > 0 && m_pi->m_heading_source != HEADING_NONE) {
     s << _("North Up");
   } else {
     s << _("Head Up");

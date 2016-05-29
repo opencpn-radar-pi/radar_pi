@@ -301,9 +301,9 @@ class br24radar_pi : public opencpn_plugin_110 {
   wxGLContext *m_opencpn_gl_context;
   bool m_opencpn_gl_context_broken;
 
-  bool m_heading_on_radar;
   double m_hdt;  // this is the heading that the pi is using for all heading operations, in degrees.
                  // m_hdt will come from the radar if available else from the NMEA stream.
+  time_t m_hdt_timeout;   // When we consider heading is lost
 
   // Variation. Used to convert magnetic into true heading.
   // Can come from SetPositionFixEx, which may hail from the WMM plugin
@@ -380,7 +380,6 @@ class br24radar_pi : public opencpn_plugin_110 {
   int m_idle_time_left;
 
   time_t m_idle_timeout;  // When we will flip transmit/standby in automatic Timed Transmit
-  time_t m_hdt_timeout;   // When we consider heading is lost
 #define HEADING_TIMEOUT (5)
 
   bool m_guard_bogey_confirmed;

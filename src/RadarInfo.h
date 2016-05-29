@@ -131,7 +131,7 @@ class RadarInfo : public wxEvtHandler {
   void SetRangeMeters(int range);
   bool SetControlValue(ControlType controlType, int value);
   void ResetSpokes();
-  void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong nowMillis);
+  void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters);
   void RefreshDisplay(wxTimerEvent &event);
   void RenderGuardZone(wxPoint radar_center, double v_scale_ppm);
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
