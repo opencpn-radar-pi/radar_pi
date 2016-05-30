@@ -51,10 +51,10 @@ static const UINT8 COMMAND_STAY_ON_D[2] = {0x05, 0xc2};
 
 class br24Transmit {
  public:
-  br24Transmit(wxString name, int radar);
+  br24Transmit(br24radar_pi * pi, wxString name, int radar);
   ~br24Transmit();
 
-  bool Init(int verbose, struct sockaddr_in *address);
+  bool Init(struct sockaddr_in *address);
   void RadarTxOff();
   void RadarTxOn();
   bool RadarStayAlive();
@@ -62,7 +62,7 @@ class br24Transmit {
   bool SetControlValue(ControlType controlType, int value);
 
  private:
-  int m_verbose;
+  br24radar_pi * m_pi;
   struct sockaddr_in m_addr;
   SOCKET m_radar_socket;
   wxString m_name;

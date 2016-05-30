@@ -275,6 +275,12 @@ void br24Receive::EmulateFakeBuffer(void) {
   time_t now = time(0);
   UINT8 data[RETURNS_PER_LINE];
 
+  if (m_ri->wantedState != RADAR_TRANSMIT) {
+    m_ri->state.Update(RADAR_STANDBY);
+    m_ri->m_radar_timeout = time(0) + WATCHDOG_TIMEOUT;
+    return;
+  }
+
   m_ri->statistics.packets++;
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
   m_ri->m_data_timeout = now + WATCHDOG_TIMEOUT;

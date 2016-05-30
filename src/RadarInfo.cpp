@@ -181,7 +181,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
   auto_range_mode = true;
   range_meters = 0;
 
-  transmit = new br24Transmit(name, radar);
+  transmit = new br24Transmit(pi, name, radar);
   receive = 0;
   m_draw_panel.draw = 0;
   m_draw_overlay.draw = 0;
@@ -242,7 +242,7 @@ bool RadarInfo::Init(int verbose) {
 }
 
 void RadarInfo::SetNetworkCardAddress(struct sockaddr_in *address) {
-  if (!transmit->Init(m_verbose, address)) {
+  if (!transmit->Init(address)) {
     wxLogMessage(wxT("BR24radar_pi %s: Unable to create transmit socket"), name.c_str());
   }
 }

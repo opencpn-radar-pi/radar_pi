@@ -78,10 +78,8 @@ bool RadarPanel::Create() {
   // SetMinSize(GetBestSize());
   Refresh();
 
-  wxSize screen_size = ::wxGetDisplaySize();
-
-  m_best_size.x = screen_size.x / 2;
-  m_best_size.y = screen_size.y / 2;
+  m_best_size.x = m_pi->m_display_width / 2;
+  m_best_size.y = m_pi->m_display_height / 2;
 
   pane.MinSize(wxSize(256, 256));
   pane.BestSize(m_best_size);

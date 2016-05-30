@@ -287,13 +287,11 @@ class br24radar_pi : public opencpn_plugin_110 {
 
   wxFont m_font;      // The dialog font at a normal size
   wxFont m_fat_font;  // The dialog font at a bigger size, bold
+  int m_display_width, m_display_height;
 
   PersistentSettings m_settings;
   RadarInfo *m_radar[RADARS];
   wxString m_perspective[RADARS];  // Temporary storage of window location when plugin is disabled
-
-  int m_OldUseShader;
-  int m_OldDisplayOption;
 
   br24OptionsDialog *m_pOptionsDialog;
   br24MessageBox *m_pMessageBox;
@@ -346,7 +344,6 @@ class br24radar_pi : public opencpn_plugin_110 {
   wxWindow *m_parent_window;
   wxMenu *m_pmenu;
 
-  int m_display_width, m_display_height;
   int m_tool_id;
   wxBitmap *m_pdeficon;
 
