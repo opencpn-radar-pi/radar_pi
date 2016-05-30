@@ -128,9 +128,15 @@ void RadarPanel::ShowFrame(bool visible) {
   wxLogMessage(wxT("BR24radar_pi %s: set visible %d"), m_ri->name.c_str(), visible);
 
   wxAuiPaneInfo& pane = m_aui_mgr->GetPane(this);
+
+  // What should have been a simple 'pane.Show(visible)' has devolved into a terrible hack.
+  // When the entire dock row disappears because we're removing the last pane from it then the
+  // next time we restore the dock gets its original size again. This is not want customers want.
+  // So we store the size of the dock just before hiding the pane. This is done via parsing of the
+  // perspective string, as there is no other way to access the dock information through wxAUI.
+
   if (!visible) {
     m_dock_size = 0;
-    wxLogMessage(wxT("BR24radar_pi: %s: size = %d,%d"), m_ri->name.c_str(), GetSize().x, GetSize().y);
     if (pane.IsDocked()) {
       m_dock = wxString::Format(wxT("|dock_size(%d,%d,%d)="), pane.dock_direction, pane.dock_layer, pane.dock_row);
       wxString perspective = m_aui_mgr->SavePerspective();
@@ -140,8 +146,10 @@ void RadarPanel::ShowFrame(bool visible) {
         perspective = perspective.Mid(p + m_dock.length());
         perspective = perspective.BeforeFirst(wxT('|'));
         m_dock_size = wxAtoi(perspective);
-        wxLogMessage(wxT("BR24radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->name.c_str(), perspective.c_str(),
-                     m_dock_size);
+        if (m_pi->m_settings.verbose >= 2) {
+          wxLogMessage(wxT("BR24radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->name.c_str(), perspective.c_str(),
+                       m_dock_size);
+        }
       }
     }
   } else {
@@ -152,8 +160,9 @@ void RadarPanel::ShowFrame(bool visible) {
   m_aui_mgr->Update();
 
   if (visible && (m_dock_size > 0)) {
+    // Now the reverse: take the new perspective string and replace the dock size of the dock that our pane is in and
+    // reset it to the width it was before the hide.
     wxString perspective = m_aui_mgr->SavePerspective();
-    wxLogMessage(wxT("BR24radar_pi: %s: old perspective %s"), m_ri->name.c_str(), perspective.c_str());
 
     int p = perspective.Find(m_dock);
     if (p != wxNOT_FOUND) {
@@ -165,7 +174,7 @@ void RadarPanel::ShowFrame(bool visible) {
       newPerspective << perspective.AfterFirst(wxT('|'));
 
       m_aui_mgr->LoadPerspective(newPerspective);
-      if (m_pi->m_settings.verbose >= 1) {
+      if (m_pi->m_settings.verbose >= 2) {
         wxLogMessage(wxT("BR24radar_pi: %s: new perspective %s"), m_ri->name.c_str(), newPerspective.c_str());
       }
     }
