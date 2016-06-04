@@ -180,9 +180,8 @@ static const bool HasBitCount2[8] = {
 struct PersistentSettings {
   int overlay_transparency;
   int range_index;
-  int verbose;  // Loglevel 0..4.
-  int display_option;
-  int chart_overlay;         // -1 = none, otherwise = radar number
+  int verbose;               // Loglevel 0..4.
+  int display_option;        // Monocolor-red or Multi-color
   int guard_zone_threshold;  // How many blobs must be sent by radar before we fire alarm
   int guard_zone_render_style;
   double range_calibration;
@@ -194,8 +193,10 @@ struct PersistentSettings {
   int idle_run_time;
   int draw_algorithm;
   int refreshrate;
-  int show_radar; // whether to show radar window(s)
-  int menu_auto_hide;
+  int show;            // whether to show any radar (overlay or window)
+  int show_radar;      // whether to show radar window
+  int chart_overlay;   // -1 = none, otherwise = radar number
+  int menu_auto_hide;  // 0 = none, 1 = 10s, 2 = 30s
   bool pass_heading_to_opencpn;
   bool enable_dual_radar;  // Should the dual radar be enabled for 4G?
   bool emulator_on;
@@ -299,9 +300,9 @@ class br24radar_pi : public opencpn_plugin_110 {
   wxGLContext *m_opencpn_gl_context;
   bool m_opencpn_gl_context_broken;
 
-  double m_hdt;  // this is the heading that the pi is using for all heading operations, in degrees.
-                 // m_hdt will come from the radar if available else from the NMEA stream.
-  time_t m_hdt_timeout;   // When we consider heading is lost
+  double m_hdt;          // this is the heading that the pi is using for all heading operations, in degrees.
+                         // m_hdt will come from the radar if available else from the NMEA stream.
+  time_t m_hdt_timeout;  // When we consider heading is lost
 
   // Variation. Used to convert magnetic into true heading.
   // Can come from SetPositionFixEx, which may hail from the WMM plugin

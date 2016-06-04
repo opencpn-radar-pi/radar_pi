@@ -244,19 +244,10 @@ void br24MessageBox::UpdateMessage(bool force) {
 
   bool radarOn = haveOpenGL && radarSeen;
   bool navOn = haveGPS && haveHeading && haveVariation;
-  bool no_overlay = m_pi->m_settings.chart_overlay < 0;
+  bool no_overlay = !(m_pi->m_settings.show && m_pi->m_settings.chart_overlay >= 0);
 
   wxLogMessage(wxT("BR24radar_pi: messagebox decision: transmit=%d overlay=%d auto_hide=%d opengl=%d radarOn=%d navOn=%d"),
                wantTransmit, m_pi->m_settings.chart_overlay, m_allow_auto_hide, haveOpenGL, radarOn, navOn);
-
-  /*
-    if (m_pi->m_settings.show_radar == RADAR_OFF && no_overlay && m_allow_hide) {
-      if (m_pi->m_settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: messagebox show_radar = RADAR_OFF"));
-      }
-      new_message_state = HIDE;
-    } else
-  */
 
   if (!m_allow_auto_hide) {
     if (m_pi->m_settings.verbose >= 2) {

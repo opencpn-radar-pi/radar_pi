@@ -366,7 +366,7 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
     if (m_verbose >= 1) {
       wxLogMessage(wxT("BR24radar_pi: %s busy encountered, overlay_refreshes_queued=%d"), name.c_str(), m_overlay_refreshes_queued);
     }
-  } else if (m_pi->m_settings.chart_overlay == this->radar) {
+  } else if (m_pi->m_settings.show && m_pi->m_settings.chart_overlay == this->radar) {
     m_overlay_refreshes_queued++;
     GetOCPNCanvasWindow()->Refresh(false);
   }

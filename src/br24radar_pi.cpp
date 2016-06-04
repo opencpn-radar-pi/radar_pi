@@ -206,15 +206,17 @@ int br24radar_pi::Init(void) {
   m_pMessageBox->Create(m_parent_window, this);
 
   m_radar[0]->StartReceive();
+
   if (m_settings.enable_dual_radar) {
     m_radar[0]->SetName(_("Radar A"));
     m_radar[1]->StartReceive();
   }
 
   m_initialized = true;
+
   wxLogMessage(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.chart_overlay);
 
-  SetRadarWindowViz(m_settings.show_radar != 0);
+  SetRadarWindowViz(m_settings.show && m_settings.show_radar);
 
   return PLUGIN_OPTIONS;
 }
@@ -293,17 +295,12 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
  * @param show        desired visibility state
  */
 void br24radar_pi::SetRadarWindowViz(bool show) {
-  m_radar[0]->ShowRadarWindow(show);
-  if (!show) {
-    ShowRadarControl(0, show);
-  }
-  if (m_settings.enable_dual_radar) {
-    m_radar[1]->ShowRadarWindow(show);
+  for (int r = 0; r <= m_settings.enable_dual_radar; r++) {
+    m_radar[r]->ShowRadarWindow(show);
     if (!show) {
-      ShowRadarControl(1, show);
+      ShowRadarControl(r, show);
     }
   }
-  m_settings.show_radar = show ? 1 : 0;
   m_pMessageBox->UpdateMessage(false);
   wxLogMessage(wxT("BR24radar_pi: RadarWindow visibility = %d"), (int)show);
 }
@@ -396,18 +393,10 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
   m_pMessageBox->UpdateMessage(false);
   wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback allOK=%s"), m_pMessageBox->IsShown() ? "no" : "yes");
 
-  bool isViz = false;
+  m_settings.show = 1 - m_settings.show;
 
-  for (int r = 0; r < RADARS; r++) {
-    if (m_radar[r]->control_dialog && m_radar[r]->control_dialog->IsShown()) {
-      isViz = true;
-    }
-    if (m_radar[r]->IsShown()) {
-      isViz = true;
-    }
-  }
-  if (!isViz) {
-    if (m_settings.chart_overlay >= 0) {
+  if (m_settings.show) {
+    if (m_settings.chart_overlay >= 0 && !m_settings.show_radar) {
       wxLogMessage(
           wxT("BR24radar_pi: OnToolbarToolCallback: No radar windows shown, overlay is active and no control -> show control"));
       ShowRadarControl(m_settings.chart_overlay, true);
@@ -708,7 +697,7 @@ void br24radar_pi::UpdateState(void) {
   if (state == RADAR_OFF || !m_opengl_mode) {
     m_toolbar_button = TB_RED;
     CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_RED);
-  } else if (state == RADAR_TRANSMIT) {
+  } else if (state == RADAR_TRANSMIT && m_settings.show) {
     m_toolbar_button = TB_GREEN;
     CacheSetToolbarToolBitmaps(BM_ID_GREEN, BM_ID_GREEN);
   } else {
@@ -753,6 +742,16 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   // this is expected to be called at least once per second
   // but if we are scrolling or otherwise it can be MUCH more often!
 
+  DoTick();  // update timers and watchdogs
+
+  if (!m_settings.show || m_settings.chart_overlay < 0 ||
+      m_radar[m_settings.chart_overlay]->state.value != RADAR_TRANSMIT) {  // No overlay desired
+    return true;
+  }
+  if (!m_bpos_set) {  // No overlay possible (yet)
+    return true;
+  }
+
   // Always compute m_auto_range_meters, possibly needed by SendState() called
   // from DoTick().
   double max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
@@ -763,14 +762,6 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   m_auto_range_meters = (int)edge_distance;
   if (m_auto_range_meters < 50) {
     m_auto_range_meters = 50;
-  }
-  DoTick();  // update timers and watchdogs
-
-  if (m_settings.chart_overlay < 0 || m_radar[m_settings.chart_overlay]->state.value != RADAR_TRANSMIT) {  // No overlay desired
-    return true;
-  }
-  if (!m_bpos_set) {  // No overlay possible (yet)
-    return true;
   }
 
   wxPoint boat_center;
@@ -891,6 +882,7 @@ bool br24radar_pi::LoadConfig(void) {
     }
 
     pConf->Read(wxT("RadarAlertAudioFile"), &m_settings.alert_audio_file);
+    pConf->Read(wxT("Show"), &m_settings.show, 0);
     pConf->Read(wxT("ShowRadar"), &m_settings.show_radar, 0);
     pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 1);
 
@@ -929,6 +921,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
     pConf->Write(wxT("EmulatorOn"), (int)m_settings.emulator_on);
+    pConf->Write(wxT("Show"), m_settings.show);
     pConf->Write(wxT("ShowRadar"), m_settings.show_radar);
     pConf->Write(wxT("MenuAutoHide"), m_settings.menu_auto_hide);
     pConf->Write(wxT("RadarAlertAudioFile"), m_settings.alert_audio_file);
@@ -984,48 +977,47 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   }
 
   if (m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: SetPositionFixEx var=%f var_wd=%d"), pfix.Var,
-                 NOT_TIMED_OUT(now, m_var_timeout));
+    wxLogMessage(wxT("BR24radar_pi: SetPositionFixEx var=%f var_wd=%d"), pfix.Var, NOT_TIMED_OUT(now, m_var_timeout));
   }
 
   if (m_heading_source != HEADING_RADAR) {
     if (!wxIsNaN(pfix.Hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
-    m_hdt = pfix.Hdm + m_var;
-    if (m_heading_source != HEADING_HDM) {
-      wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM %f"), m_hdt);
-      m_heading_source = HEADING_HDM;
+      m_hdt = pfix.Hdm + m_var;
+      if (m_heading_source != HEADING_HDM) {
+        wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM %f"), m_hdt);
+        m_heading_source = HEADING_HDM;
+      }
+      if (m_pMessageBox->IsShown()) {
+        info = _("HDM");
+        info << wxT(" ") << m_hdt;
+        m_pMessageBox->SetHeadingInfo(info);
+      }
+      m_hdt_timeout = now + HEADING_TIMEOUT;
+    } else if (!wxIsNaN(pfix.Hdt)) {
+      m_hdt = pfix.Hdt;
+      if (m_heading_source != HEADING_HDT) {
+        wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
+        m_heading_source = HEADING_HDT;
+      }
+      if (m_pMessageBox->IsShown()) {
+        info = _("HDT");
+        info << wxT(" ") << m_hdt;
+        m_pMessageBox->SetHeadingInfo(info);
+      }
+      m_hdt_timeout = now + HEADING_TIMEOUT;
+    } else if (!wxIsNaN(pfix.Cog)) {
+      m_hdt = pfix.Cog;
+      if (m_heading_source != HEADING_COG) {
+        wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
+        m_heading_source = HEADING_COG;
+      }
+      if (m_pMessageBox->IsShown()) {
+        info = _("COG");
+        info << wxT(" ") << m_hdt;
+        m_pMessageBox->SetHeadingInfo(info);
+      }
+      m_hdt_timeout = now + HEADING_TIMEOUT;
     }
-    if (m_pMessageBox->IsShown()) {
-      info = _("HDM");
-      info << wxT(" ") << m_hdt;
-      m_pMessageBox->SetHeadingInfo(info);
-    }
-    m_hdt_timeout = now + HEADING_TIMEOUT;
-  } else if (!wxIsNaN(pfix.Hdt)) {
-    m_hdt = pfix.Hdt;
-    if (m_heading_source != HEADING_HDT) {
-      wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
-      m_heading_source = HEADING_HDT;
-    }
-    if (m_pMessageBox->IsShown()) {
-      info = _("HDT");
-      info << wxT(" ") << m_hdt;
-      m_pMessageBox->SetHeadingInfo(info);
-    }
-    m_hdt_timeout = now + HEADING_TIMEOUT;
-  } else if (!wxIsNaN(pfix.Cog)) {
-    m_hdt = pfix.Cog;
-    if (m_heading_source != HEADING_COG) {
-      wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
-      m_heading_source = HEADING_COG;
-    }
-    if (m_pMessageBox->IsShown()) {
-      info = _("COG");
-      info << wxT(" ") << m_hdt;
-      m_pMessageBox->SetHeadingInfo(info);
-    }
-    m_hdt_timeout = now + HEADING_TIMEOUT;
-  }
   }
 
   if (pfix.FixTime > 0 && NOT_TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT)) {
