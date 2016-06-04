@@ -867,10 +867,13 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
 
     for (int r = 0; r < RADARS; r++) {
-      pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &m_radar[r]->rotation.value, 0);
-      pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), (int *)&m_radar[r]->wantedState, 0);
+      int v;
+
+      pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
+      m_radar[r]->rotation.Update(v);
+      pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
+      m_radar[r]->wantedState = (RadarState) v;
       for (int i = 0; i < GUARD_ZONES; i++) {
-        int v;
         pConf->Read(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), &m_radar[r]->guard_zone[i]->start_bearing, 0.0);
         pConf->Read(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), &m_radar[r]->guard_zone[i]->end_bearing, 0.0);
         pConf->Read(wxString::Format(wxT("Radar%dZone%dOuterRange"), r, i), &m_radar[r]->guard_zone[i]->outer_range, 0);
