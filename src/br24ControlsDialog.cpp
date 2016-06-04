@@ -213,7 +213,6 @@ class br24RadarRangeControlButton : public br24RadarControlButton {
   void SetRangeMeters(int range_meters);
 
  private:
-  br24ControlsDialog* m_parent;
   RadarInfo* m_ri;
 };
 
@@ -304,7 +303,7 @@ void br24ControlsDialog::BindLeftDown(wxWindow* component) {
 }
 
 bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* ri, wxWindowID id, const wxString& caption,
-                                const wxPoint& pos, const wxSize& size, long style) {
+                                const wxPoint& pos) {
   m_parent = parent;
   m_pi = ppi;
   m_ri = ri;

@@ -41,13 +41,12 @@ void GuardZone::ResetBogeys() {
 
 void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_t len, int range) {
   int bogeys = 0;
-  size_t range_start, range_end;
 
   // We can't check whether the data is in the correct angle here since the boat may be changing
   // course. So we store it anyway (if the guard zone is active, but we're not called otherwise)
   if (type != GZ_OFF) {
-    range_start = inner_range * RETURNS_PER_LINE / range;  // Convert from meters to 0..511
-    range_end = outer_range * RETURNS_PER_LINE / range;    // Convert from meters to 0..511
+    size_t range_start = inner_range * RETURNS_PER_LINE / range;  // Convert from meters to 0..511
+    size_t range_end = outer_range * RETURNS_PER_LINE / range;    // Convert from meters to 0..511
     if (range_start < RETURNS_PER_LINE) {
       if (range_end > RETURNS_PER_LINE) {
         range_end = RETURNS_PER_LINE;
@@ -68,7 +67,7 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
 
 int GuardZone::GetBogeyCount(SpokeBearing current_hdt) {
   int bogeys = 0;
-  SpokeBearing begin_arc, end_arc, arc, angle;
+  SpokeBearing begin_arc, end_arc, arc;
 
   switch (type) {
     case GZ_CIRCLE:
@@ -90,7 +89,7 @@ int GuardZone::GetBogeyCount(SpokeBearing current_hdt) {
   }
 
   for (arc = begin_arc; arc < end_arc; arc++) {
-    angle = MOD_ROTATION2048(arc);
+    SpokeBearing angle = MOD_ROTATION2048(arc);
 
     bogeys += bogeyCount[angle];
   }

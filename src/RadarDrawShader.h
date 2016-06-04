@@ -49,6 +49,8 @@ class RadarDrawShader : public RadarDraw {
     m_fragment = 0;
     m_vertex = 0;
     m_program = 0;
+    m_format = GL_RGBA;
+    m_channels = SHADER_COLOR_CHANNELS;
     memset(m_data, 0, sizeof(m_data));
   }
 

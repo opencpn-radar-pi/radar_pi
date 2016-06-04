@@ -35,13 +35,11 @@
 PLUGIN_BEGIN_NAMESPACE
 
 int br24_inet_aton(const char *cp, struct in_addr *addr) {
-  register u_long val;
-  register int base, n;
-  register char c;
+  u_long val;
   u_int parts[4];
-  register u_int *pp = parts;
+  u_int *pp = parts;
 
-  c = *cp;
+  char c = *cp;
   for (;;) {
     /*
      * Collect number up to ``.''.
@@ -49,10 +47,10 @@ int br24_inet_aton(const char *cp, struct in_addr *addr) {
      * 0x=hex, 0=octal, isdigit=decimal.
      */
     if (!isdigit(c)) {
-      return (0);
+      return 0;
     }
     val = 0;
-    base = 10;
+    int base = 10;
     if (c == '0') {
       c = *++cp;
       if (c == 'x' || c == 'X') {
@@ -98,7 +96,7 @@ int br24_inet_aton(const char *cp, struct in_addr *addr) {
    * Concoct the address according to
    * the number of parts specified.
    */
-  n = pp - parts + 1;
+  int n = pp - parts + 1;
   switch (n) {
     case 0:
       return 0; /* initial nondigit */

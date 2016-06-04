@@ -391,8 +391,10 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
   }
 
   m_pMessageBox->UpdateMessage(false);
-  wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback allOK=%s"), m_pMessageBox->IsShown() ? "no" : "yes");
-
+  if (m_settings.verbose >= 2) {
+    wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback"));
+  }
+  
   m_settings.show = 1 - m_settings.show;
 
   if (m_settings.show) {
@@ -473,8 +475,9 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
   time_t now = time(0);
 
   for (size_t r = 0; r < RADARS; r++) {
-    bool bogeys_found_this_radar = false;
     if (m_radar[r]->state.value == RADAR_TRANSMIT) {
+      bool bogeys_found_this_radar = false;
+
       for (size_t z = 0; z < GUARD_ZONES; z++) {
         int bogeys = m_radar[r]->guard_zone[z]->GetBogeyCount(current_hdt);
         if (bogeys > m_settings.guard_zone_threshold) {

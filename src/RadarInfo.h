@@ -117,8 +117,6 @@ class RadarInfo : public wxEvtHandler {
   UINT8 history[LINES_PER_ROTATION][RETURNS_PER_LINE];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
-  volatile bool m_quit;
-
   /* Methods */
 
   RadarInfo(br24radar_pi *pi, wxString name, int radar);

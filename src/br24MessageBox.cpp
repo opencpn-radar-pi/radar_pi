@@ -72,8 +72,7 @@ void br24MessageBox::Init() {
   m_ip_box = 0;
 }
 
-bool br24MessageBox::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, const wxString &caption, const wxPoint &pos,
-                            const wxSize &size, long style) {
+bool br24MessageBox::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, const wxString &caption, const wxPoint &pos) {
   m_parent = parent;
   m_pi = pi;
 

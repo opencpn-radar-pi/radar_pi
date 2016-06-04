@@ -53,8 +53,7 @@ class br24ControlsDialog : public wxDialog {
   void Init();
 
   bool Create(wxWindow *parent, br24radar_pi *pi, RadarInfo *ri, wxWindowID id = wxID_ANY, const wxString &caption = _("Radar"),
-              const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize,
-              long style = wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX));
+              const wxPoint &pos = wxDefaultPosition);
 
   void CreateControls();
   void SetRangeIndex(size_t index);

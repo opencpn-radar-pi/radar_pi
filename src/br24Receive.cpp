@@ -141,7 +141,6 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
   m_ri->m_data_timeout = now + DATA_TIMEOUT;
   m_ri->state.Update(RADAR_TRANSMIT);
 
-  int spoke = 0;
   m_ri->statistics.packets++;
   if (len < (int)sizeof(packet->frame_hdr)) {
     // The packet is so small it contains no scan_lines, quit!
@@ -157,7 +156,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     radar_line *line = &packet->line[scanline];
 
     // Validate the spoke
-    spoke = line->br24.scan_number[0] | (line->br24.scan_number[1] << 8);
+    int spoke = line->br24.scan_number[0] | (line->br24.scan_number[1] << 8);
     m_ri->statistics.spokes++;
     if (line->br24.headerLen != 0x18) {
       if (m_pi->m_settings.verbose) {
@@ -187,8 +186,6 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     int angle_raw = 0;
     short int hdm_raw = 0;
     short int hdt_raw = 0;
-    short int large_range = 0;
-    short int small_range = 0;
     int range_meters = 0;
 
     if (memcmp(line->br24.mark, BR24MARK, sizeof(BR24MARK)) == 0) {
@@ -202,8 +199,8 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       m_ri->radar_type = RT_BR24;
     } else {
       // 4G mode
-      large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
-      small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
+      short int large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
+      short int small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
       angle_raw = (line->br4g.angle[1] << 8) | line->br4g.angle[0];
       if (large_range == 0x80) {
         if (small_range == -1) {
