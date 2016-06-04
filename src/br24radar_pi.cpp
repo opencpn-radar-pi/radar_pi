@@ -483,14 +483,13 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
         }
       }
       if (bogeys_found_this_radar && !m_guard_bogey_confirmed) {
+        ShowRadarControl(r);
         m_radar[r]->control_dialog->ShowBogeys(GetGuardZoneText(m_radar[r], true));
       }
     }
   }
 
   if (bogeys_found) {
-    // We have bogeys and there is no objection to showing the dialog
-
     if (!m_guard_bogey_confirmed && TIMED_OUT(now, m_alarm_sound_timeout)) {
       // If the last time is 10 seconds ago we ping a sound, unless the user
       // confirmed
