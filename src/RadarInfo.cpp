@@ -115,20 +115,6 @@ static const int NAUTIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_nautic);
 
 static const int g_range_maxValue[2] = {NAUTIC_RANGE_COUNT - 1, METRIC_RANGE_COUNT - 1};
 
-extern const char *convertRadarToString(int range_meters, int units, int index) {
-  const RadarRanges *ranges = units ? g_ranges_metric : g_ranges_nautic;
-
-  size_t n;
-
-  n = g_range_maxValue[units];
-  for (; n > 0; n--) {
-    if (ranges[n].actual_meters <= range_meters) {  // step down until past the right range value
-      break;
-    }
-  }
-  return (&ranges[n].name)[(index + 1) % 4];
-}
-
 size_t RadarInfo::convertRadarMetersToIndex(int *range_meters) {
   const RadarRanges *ranges;
   int units = m_pi->m_settings.range_units;
@@ -179,7 +165,11 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
 
   radar_type = RT_UNKNOWN;
   auto_range_mode = true;
-  range_meters = 0;
+  m_range_meters = 0;
+  m_range_index = 0;
+  m_display_meters = 0;
+  m_auto_range_meters = 0;
+  m_previous_auto_range_meters = 1;
 
   transmit = new br24Transmit(pi, name, radar);
   receive = 0;
@@ -307,11 +297,13 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   wxMutexLocker lock(m_mutex);
 
-  if (this->range_meters != range_meters) {
+  if (m_range_meters != range_meters) {
     // Wipe ALL spokes
     ResetSpokes();
-    this->range_meters = range_meters;
-    this->range.Update(range_meters);
+    m_range_meters = range_meters;
+    m_display_meters = range_meters;
+    m_range_index = convertRadarMetersToIndex(&m_display_meters);
+    range.Update(range_meters);
     if (m_pi->m_settings.verbose) {
       wxLogMessage(wxT("BR24radar_pi: %s detected range %d"), name.c_str(), range_meters);
     }
@@ -395,10 +387,6 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
 }
 
 void RadarInfo::RenderGuardZone(wxPoint radar_center, double v_scale_ppm) {
-  glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);  // Save state
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
   int start_bearing = 0, end_bearing = 0;
   GLubyte red = 0, green = 200, blue = 0, alpha = 50;
 
@@ -433,14 +421,14 @@ void RadarInfo::RenderGuardZone(wxPoint radar_center, double v_scale_ppm) {
     green = 0;
     blue = 200;
   }
-
-  glPopAttrib();
 }
 
 void RadarInfo::SetRangeMeters(int meters) {
   if (state.value == RADAR_TRANSMIT) {
     convertMetersToRadarAllowedValue(&meters, m_pi->m_settings.range_units, radar_type);
-    transmit->SetRange(meters);
+    if (meters != m_range_meters) {
+      transmit->SetRange(meters);
+    }
   }
 }
 
@@ -449,10 +437,35 @@ void RadarInfo::SetRangeIndex(int newValue) {
     // newValue is the index of the new range
     // sends the command for the new range to the radar
     // but depends on radar feedback to update the actual value
-    auto_range_mode = false;
-    int meters = GetRangeMeters(newValue);
-    wxLogMessage(wxT("br24radar_pi: range change request meters=%d new=%d"), meters, newValue);
-    transmit->SetRange(meters);
+    if (newValue < 0) {
+      auto_range_mode = true;
+      wxLogMessage(wxT("br24radar_pi: range change request to AUTO"));
+    } else {
+      auto_range_mode = false;
+      int meters = GetRangeMeters(newValue);
+      wxLogMessage(wxT("br24radar_pi: range change request meters=%d new=%d"), meters, newValue);
+      transmit->SetRange(meters);
+    }
+  }
+}
+
+void RadarInfo::SetAutoRangeMeters(int meters) {
+  if (state.value == RADAR_TRANSMIT && auto_range_mode) {
+    m_auto_range_meters = meters;
+    // Don't adjust auto range meters continuously when it is oscillating a little bit (< 5%)
+    int test = 100 * m_previous_auto_range_meters / m_auto_range_meters;
+    if (test < 95 || test > 105) {  //   range change required
+      // Compute a 'standard' distance. This will be slightly smaller.
+      convertMetersToRadarAllowedValue(&meters, m_pi->m_settings.range_units, radar_type);
+      if (meters != m_range_meters) {
+        if (m_pi->m_settings.verbose) {
+          wxLogMessage(wxT("BR24radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters,
+                       m_auto_range_meters);
+        }
+        transmit->SetRange(meters);
+        m_previous_auto_range_meters = m_auto_range_meters;
+      }
+    }
   }
 }
 
@@ -503,9 +516,11 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, 
   bool colorOption = m_pi->m_settings.display_option > 0;
 
   if (state.value != RADAR_TRANSMIT) {
-    if (range_meters) {
+    if (m_range_meters) {
       ResetSpokes();
-      range_meters = 0;
+      m_range_meters = 0;
+      m_display_meters = 0;
+      m_range_index = 0;
     }
     return;
   }
@@ -544,13 +559,18 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, 
 
 void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay) {
   if (overlay) {
+    double radar_pixels_per_meter = ((double)RETURNS_PER_LINE) / m_range_meters;
+    scale /= radar_pixels_per_meter;
+
     RenderRadarImage(center, scale, rotation, &m_draw_overlay);
     if (m_overlay_refreshes_queued > 0) {
       m_overlay_refreshes_queued--;
     }
   } else {
-    RenderGuardZone(center, scale);
-    RenderRadarImage(center, scale, rotation, &m_draw_panel);
+    double overscan = (double)m_range_meters / (double)m_display_meters;
+
+    RenderGuardZone(center, 1.0 / m_display_meters);
+    RenderRadarImage(center, overscan / m_display_meters, rotation, &m_draw_panel);
     if (m_refreshes_queued > 0) {
       m_refreshes_queued--;
     }
@@ -583,8 +603,8 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
     s << wxT(" (");
     s << _("Emulator");
     s << wxT(")");
-  } else if (range_meters) {
-    s << wxT("\n") << GetRangeText(range_meters, &index);
+  } else if (m_range_meters) {
+    s << wxT("\n") << GetRangeText(m_range_meters, &index);
   }
 
   return s;
@@ -659,6 +679,16 @@ wxString &RadarInfo::GetRangeText(int range_meters, int *index) {
   }
   *index = value;
   return m_range_text;
+}
+
+const char *RadarInfo::GetDisplayRangeStr(size_t idx) {
+  if (m_range_index > 0) {
+    const RadarRanges *ranges = m_pi->m_settings.range_units ? g_ranges_metric : g_ranges_nautic;
+
+    return (&ranges[m_range_index].name)[(idx + 1) % 4];
+  }
+
+  return 0;
 }
 
 PLUGIN_END_NAMESPACE

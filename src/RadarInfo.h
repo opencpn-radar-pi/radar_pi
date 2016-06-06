@@ -102,7 +102,6 @@ class RadarInfo : public wxEvtHandler {
 #define STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
 #define DATA_TIMEOUT (5)
 
-  int range_meters;
   RadarType radar_type;
   bool auto_range_mode;
   int m_overlay_refreshes_queued;
@@ -127,6 +126,7 @@ class RadarInfo : public wxEvtHandler {
   void SetName(wxString name);
   void SetRangeIndex(int newValue);
   void SetRangeMeters(int range);
+  void SetAutoRangeMeters(int meters);
   bool SetControlValue(ControlType controlType, int value);
   void ResetSpokes();
   void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters);
@@ -139,6 +139,7 @@ class RadarInfo : public wxEvtHandler {
   void UpdateControlState(bool all);
   void FlipRadarState();
   wxString &GetRangeText(int range_meters, int *index);
+  const char *GetDisplayRangeStr(size_t idx);
   void SetNetworkCardAddress(struct sockaddr_in *address);
 
   wxString GetCanvasTextTopLeft();
@@ -149,6 +150,13 @@ class RadarInfo : public wxEvtHandler {
   void RenderRadarImage(wxPoint center, double scale, double rotation, DrawInfo *di);
   int GetRangeMeters(int index);
   size_t convertRadarMetersToIndex(int *range_meters);
+
+  int m_range_index;     // index into range array
+  int m_range_meters;    // what radar told us is the range
+  int m_display_meters;  // what the display size is (slightly less than m_range_meters)
+
+  int m_previous_auto_range_meters;
+  int m_auto_range_meters;
 
   wxMutex m_mutex;          // protects the following two
   DrawInfo m_draw_panel;    // Draw onto our own panel

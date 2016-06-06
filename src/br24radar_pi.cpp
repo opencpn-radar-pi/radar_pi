@@ -319,8 +319,6 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
       m_radar[radar]->control_dialog->Create(m_parent_window, this, m_radar[radar], wxID_ANY, m_radar[radar]->name);
       m_radar[radar]->control_dialog->Fit();
       m_radar[radar]->control_dialog->Hide();
-      int range = m_radar[radar]->range_meters;
-      m_radar[radar]->range.Update(range);
     }
     m_radar[radar]->control_dialog->ShowDialog();
   } else {
@@ -394,7 +392,7 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
   if (m_settings.verbose >= 2) {
     wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback"));
   }
-  
+
   m_settings.show = 1 - m_settings.show;
 
   if (m_settings.show) {
@@ -769,27 +767,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   wxPoint boat_center;
   GetCanvasPixLL(vp, &boat_center, m_ownship_lat, m_ownship_lon);
 
-  // Calculate the "optimum" radar range setting in meters so the radar image
-  // just fills the screen
-
-  if (m_radar[m_settings.chart_overlay]->auto_range_mode) {
-    // Don't adjust auto range meters continuously when it is oscillating a
-    // little bit (< 5%)
-    // This also prevents the radar from issuing a range command after a remote
-    // range change
-    int test = 100 * m_previous_auto_range_meters / m_auto_range_meters;
-    if (test < 95 || test > 105) {  //   range change required
-      if (m_settings.verbose) {
-        wxLogMessage(wxT("BR24radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters,
-                     m_auto_range_meters);
-      }
-      m_previous_auto_range_meters = m_auto_range_meters;
-      // Compute a 'standard' distance. This will be slightly smaller.
-      int displayedRange = m_auto_range_meters;
-      convertMetersToRadarAllowedValue(&displayedRange, m_settings.range_units, m_radar[m_settings.chart_overlay]->radar_type);
-      m_radar[m_settings.chart_overlay]->SetRangeMeters(displayedRange);
-    }
-  }
+  m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(m_auto_range_meters);
 
   //    Calculate image scale factor
 
@@ -818,15 +796,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
 void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, double rotation) {
   RadarInfo *ri = m_radar[m_settings.chart_overlay];
 
-  // scaling...
-  int meters = ri->range_meters;
-
-  if (meters) {
-    double radar_pixels_per_meter = ((double)RETURNS_PER_LINE) / meters;
-    double scale_factor = v_scale_ppm / radar_pixels_per_meter;  // screen pix/radar pix
-
-    ri->RenderRadarImage(radar_center, scale_factor, rotation, true);
-  }
+  ri->RenderRadarImage(radar_center, v_scale_ppm, rotation, true);
 }
 
 //****************************************************************************
@@ -874,7 +844,7 @@ bool br24radar_pi::LoadConfig(void) {
       pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
       m_radar[r]->rotation.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
-      m_radar[r]->wantedState = (RadarState) v;
+      m_radar[r]->wantedState = (RadarState)v;
       for (int i = 0; i < GUARD_ZONES; i++) {
         pConf->Read(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), &m_radar[r]->guard_zone[i]->start_bearing, 0.0);
         pConf->Read(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), &m_radar[r]->guard_zone[i]->end_bearing, 0.0);

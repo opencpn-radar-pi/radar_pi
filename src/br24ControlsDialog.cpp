@@ -280,7 +280,7 @@ void br24RadarRangeControlButton::SetValue(int newValue) {
   m_parent->m_ri->SetRangeIndex(newValue);  // send new value to the radar
 }
 
-void br24RadarRangeControlButton::SetAuto() { m_parent->m_ri->auto_range_mode = true; }
+void br24RadarRangeControlButton::SetAuto() { m_parent->m_ri->SetRangeIndex(-1); }
 
 br24ControlsDialog::br24ControlsDialog() { Init(); }
 

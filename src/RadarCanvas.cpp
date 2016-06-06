@@ -104,7 +104,7 @@ void RadarCanvas::RenderTexts(int w, int h) {
   }
 }
 
-void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, int range) {
+void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   // Max range ringe
   float r = wxMax(w, h) / 2.0;
 
@@ -123,11 +123,9 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, int range) {
 
   for (int i = 1; i <= 4; i++) {
     DrawArc(w / 2.0, h / 2.0, r * i * 0.25, 0.0, 2.0 * (float)PI, 360);
-    if (range) {
-      const char *s = convertRadarToString(range, m_pi->m_settings.range_units, i - 1);
-      if (s) {
-        m_FontNormal.RenderString(wxString::Format(wxT("%s"), s), center_x + x * (float)i, center_y + y * (float)i);
-      }
+    const char *s = m_ri->GetDisplayRangeStr(i - 1);
+    if (s) {
+      m_FontNormal.RenderString(wxString::Format(wxT("%s"), s), center_x + x * (float)i, center_y + y * (float)i);
     }
   }
 
@@ -205,7 +203,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
 
   glEnable(GL_TEXTURE_2D);
 
-  RenderRangeRingsAndHeading(w, h, m_ri->range_meters);
+  RenderRangeRingsAndHeading(w, h);
 
   glViewport(0, 0, w, h);
   glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
@@ -217,7 +215,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   }
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
 
-  double scale_factor = 2.0 / RETURNS_PER_LINE;  // Radar image is in 0..511 range
+  double scale_factor = 1.0;
 
   // CheckOpenGLError(wxT("range circles"));
 
