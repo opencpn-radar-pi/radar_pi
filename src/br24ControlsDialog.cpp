@@ -659,7 +659,7 @@ void br24ControlsDialog::CreateControls() {
   guard_zone_names[2] = _("Circle");
   m_guard_zone_type = new wxRadioBox(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, ARRAY_SIZE(guard_zone_names),
                                      guard_zone_names, 1, wxRA_SPECIFY_COLS);
-  m_guard_sizer->Add(m_guard_zone_type, 0, wxALIGN_CENTER_HORIZONTAL | wxALL | wxEXPAND, BORDER);
+  m_guard_sizer->Add(m_guard_zone_type, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   m_guard_zone_type->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24ControlsDialog::OnGuardZoneModeClick), NULL,
                              this);
@@ -1264,10 +1264,10 @@ void br24ControlsDialog::SetGuardZoneVisibility() {
   m_guard_zone->type = zoneType;
 
   if (zoneType == GZ_OFF) {
-    m_start_bearing->Enable();
-    m_end_bearing->Enable();
-    m_inner_range->Enable();
-    m_outer_range->Enable();
+    m_start_bearing->Disable();
+    m_end_bearing->Disable();
+    m_inner_range->Disable();
+    m_outer_range->Disable();
 
   } else if (zoneType == GZ_CIRCLE) {
     m_start_bearing->Disable();
