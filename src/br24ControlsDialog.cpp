@@ -361,17 +361,27 @@ void br24ControlsDialog::CreateControls() {
   label << _("Gain") << wxT("\n");
   label << _("Sea clutter") << wxT("\n");
   label << _("Rain clutter") << wxT("\n");
-  label << _("Auto") << wxT(" (1/20 NM)\n");
-  label << _("Overlay") << wxT("\n") << _("Off\n");
 
   wxStaticText* testMessage =
       new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  testBox->Add(testMessage, 0, wxALL, 2);
   testMessage->SetFont(m_pi->m_font);
+  testBox->Add(testMessage, 0, wxALL, 2);
+
+  wxStaticText* testButtonText =
+  new wxStaticText(this, ID_BPOS, wxT("Button"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  testButtonText->SetFont(m_pi->m_font);
+  testBox->Add(testButtonText, 0, wxALL, 2);
+
+  wxStaticText* testButton2Text =
+  new wxStaticText(this, ID_BPOS, wxT("Button\ndata"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  testButton2Text->SetFont(m_pi->m_font);
+  testBox->Add(testButton2Text, 0, wxALL, 2);
+
 
   m_top_sizer->Fit(this);
   m_top_sizer->Layout();
   int width = m_top_sizer->GetSize().GetWidth() + 10;
+
   wxSize bestSize = GetBestSize();
   if (width < bestSize.GetWidth()) {
     width = bestSize.GetWidth();
@@ -382,11 +392,13 @@ void br24ControlsDialog::CreateControls() {
   if (width > 300) {
     width = 300;
   }
-  g_buttonSize = wxSize(width, 40);  // was 50, buttons a bit lower now
-  g_smallButtonSize = wxSize(width, 25);
+
+
+  g_smallButtonSize = wxSize(width, testButtonText->GetSize().y + 5);
+  g_buttonSize = wxSize(width, testButton2Text->GetSize().y * 1.9 - testButtonText->GetSize().y + 5);
 
   if (m_pi->m_settings.verbose) {
-    wxLogMessage(wxT("br24radar_pi: Dynamic button width = %d"), g_buttonSize.GetWidth());
+    wxLogMessage(wxT("br24radar_pi: Dynamic button width = %d height = %d, %d"), g_buttonSize.x, g_buttonSize.y, g_smallButtonSize.y);
   }
   m_top_sizer->Hide(testBox);
   m_top_sizer->Remove(testBox);
@@ -406,6 +418,7 @@ void br24ControlsDialog::CreateControls() {
   wxButton* back_button = new wxButton(this, ID_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
   m_edit_sizer->Add(back_button, 0, wxALL, BORDER);
   back_button->SetFont(m_pi->m_font);
+
 
   // The +10 button
   m_plus_ten_button = new wxButton(this, ID_PLUS_TEN, _("+10"), wxDefaultPosition, g_buttonSize, 0);
