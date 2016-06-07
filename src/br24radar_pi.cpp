@@ -720,6 +720,9 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 
   DoTick();  // update timers and watchdogs
 
+  SetRadarWindowViz(false);
+  m_settings.show = 0;
+
   UpdateState();  // update the toolbar
 
   return true;
