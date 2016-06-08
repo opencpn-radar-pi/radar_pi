@@ -199,7 +199,9 @@ void br24MessageBox::OnClose(wxCloseEvent &event) {
   Hide();
 }
 
-bool br24MessageBox::Show() {
+bool br24MessageBox::Show(bool show) {
+
+  if (show) {
   // Come up with a good message box location: straight in the center of the chart window
 
   wxPoint parentPos = m_parent->GetPosition();
@@ -210,8 +212,8 @@ bool br24MessageBox::Show() {
   newPos.x = parentPos.x + parentSize.x / 2 - mySize.x / 2;
   newPos.y = parentPos.y + parentSize.y / 2 - mySize.y / 2;
   SetPosition(newPos);
-
-  return wxDialog::Show();
+  }
+  return wxDialog::Show(show);
 }
 
 void br24MessageBox::UpdateMessage(bool force) {

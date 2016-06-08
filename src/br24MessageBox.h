@@ -47,7 +47,7 @@ class br24MessageBox : public wxDialog {
 
   ~br24MessageBox();
   void Init();
-  bool Show();
+  bool Show(bool show = true);
 
   bool Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id = wxID_ANY, const wxString &caption = _("Radar"),
               const wxPoint &pos = wxDefaultPosition);
