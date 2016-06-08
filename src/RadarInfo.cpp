@@ -369,7 +369,7 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
     if (m_verbose >= 1) {
       wxLogMessage(wxT("BR24radar_pi: %s busy encountered, refreshes_queued=%d"), name.c_str(), m_refreshes_queued);
     }
-  } else if (IsShown()) {
+  } else if (IsPaneShown()) {
     m_refreshes_queued++;
     radar_panel->Refresh(false);
   }
@@ -473,7 +473,7 @@ bool RadarInfo::SetControlValue(ControlType controlType, int value) { return tra
 
 void RadarInfo::ShowRadarWindow(bool show) { radar_panel->ShowFrame(show); }
 
-bool RadarInfo::IsShown() { return radar_panel->IsShown(); }
+bool RadarInfo::IsPaneShown() { return radar_panel->IsPaneShown(); }
 
 void RadarInfo::UpdateControlState(bool all) {
   wxMutexLocker lock(m_mutex);
@@ -505,7 +505,7 @@ void RadarInfo::UpdateControlState(bool all) {
     FlipRadarState();
   }
 
-  if (IsShown()) {
+  if (IsPaneShown()) {
     radar_panel->Refresh(false);
   }
 }

@@ -1014,9 +1014,9 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   if (m_pi->m_settings.enable_dual_radar) {
-    o = (m_ri->IsShown()) ? _("Hide Radars") : _("Show Radars");
+    o = (m_ri->IsPaneShown()) ? _("Hide Radars") : _("Show Radars");
   } else {
-    o = (m_ri->IsShown()) ? _("Hide Radar") : _("Show Radar");
+    o = (m_ri->IsPaneShown()) ? _("Hide Radar") : _("Show Radar");
   }
   m_window_button->SetLabel(o);
 

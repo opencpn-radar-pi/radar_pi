@@ -134,7 +134,7 @@ class RadarInfo : public wxEvtHandler {
   void RenderGuardZone(wxPoint radar_center, double v_scale_ppm);
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
-  bool IsShown();
+  bool IsPaneShown();
 
   void UpdateControlState(bool all);
   void FlipRadarState();
