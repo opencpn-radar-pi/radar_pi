@@ -393,9 +393,15 @@ void br24ControlsDialog::CreateControls() {
     width = 300;
   }
 
+#define BUTTON_BORDER 4
+#ifdef __WXMAC__
+# define BUTTON_HEIGTH_FUDGE 1 + BUTTON_BORDER
+#else
+# define BUTTON_HEIGTH_FUDGE 1 + 2 * BUTTON_BORDER
+#endif
 
-  g_smallButtonSize = wxSize(width, testButtonText->GetSize().y + 5);
-  g_buttonSize = wxSize(width, testButton2Text->GetSize().y * 1.9 - testButtonText->GetSize().y + 5);
+  g_smallButtonSize = wxSize(width, testButtonText->GetSize().y + BUTTON_BORDER);
+  g_buttonSize = wxSize(width, testButton2Text->GetSize().y * BUTTON_HEIGTH_FUDGE);
 
   if (m_pi->m_settings.verbose) {
     wxLogMessage(wxT("br24radar_pi: Dynamic button width = %d height = %d, %d"), g_buttonSize.x, g_buttonSize.y, g_smallButtonSize.y);
@@ -559,11 +565,6 @@ void br24ControlsDialog::CreateControls() {
   m_refresh_rate_button->minValue = 1;
   m_refresh_rate_button->maxValue = 5;
 
-  // The INSTALLATION button
-  wxButton* bInstallation = new wxButton(this, ID_INSTALLATION, _("Installation"), wxDefaultPosition, g_buttonSize, 0);
-  m_advanced_sizer->Add(bInstallation, 0, wxALL, BORDER);
-  bInstallation->SetFont(m_pi->m_font);
-
   // The TIMED TRANSMIT button
   timed_idle_times[0] = _("Off");
   timed_idle_times[1] = _("5 min");
@@ -581,6 +582,12 @@ void br24ControlsDialog::CreateControls() {
   m_timed_idle_button->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
   m_timed_idle_button->names = timed_idle_times;
   m_timed_idle_button->SetValue(m_pi->m_settings.timed_idle);  // redraw after adding names
+
+
+  // The INSTALLATION button
+  wxButton* bInstallation = new wxButton(this, ID_INSTALLATION, _("Installation"), wxDefaultPosition, g_smallButtonSize, 0);
+  m_advanced_sizer->Add(bInstallation, 0, wxALL, BORDER);
+  bInstallation->SetFont(m_pi->m_font);
 
   m_top_sizer->Hide(m_advanced_sizer);
 
