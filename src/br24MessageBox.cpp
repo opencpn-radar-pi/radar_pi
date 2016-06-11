@@ -76,6 +76,11 @@ bool br24MessageBox::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, c
   m_parent = parent;
   m_pi = pi;
 
+  if (m_parent->GetParent())
+  {
+    m_parent = m_parent->GetParent();
+  }
+
   long wstyle = wxCLOSE_BOX | wxCAPTION | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR | wxCLIP_CHILDREN;
 #ifdef __WXMAC__
   wstyle |= wxSTAY_ON_TOP;  // FLOAT_ON_PARENT is broken on Mac, I know this is not optimal
@@ -205,16 +210,24 @@ void br24MessageBox::OnClose(wxCloseEvent &event) {
 bool br24MessageBox::Show(bool show) {
 
   if (show) {
-  // Come up with a good message box location: straight in the center of the chart window
+    CenterOnParent();
 
-  wxPoint parentPos = m_parent->GetPosition();
-  wxSize parentSize = m_parent->GetSize();
-  wxSize mySize = this->GetSize();
-  wxPoint newPos;
-
-  newPos.x = parentPos.x + parentSize.x / 2 - mySize.x / 2;
-  newPos.y = parentPos.y + parentSize.y / 2 - mySize.y / 2;
-  SetPosition(newPos);
+    const wxWindowList children = m_parent->GetChildren();
+    if (!children.IsEmpty()) {
+      for (wxWindowList::const_iterator iter = children.begin(); iter != children.end(); iter++) {
+        const wxWindow *win = *iter;
+        if (win->IsShown() && win->GetName().IsSameAs(wxT("dialog")))
+        {
+          wxDialog * dialog = (wxDialog *) win;
+          if (dialog->IsModal()) {
+            if (m_pi->m_settings.verbose >= 2) {
+              wxLogMessage(wxT("BR24radar_pi: Not showing message box when modal dialog is shown"));
+            }
+            return !IsShown();
+          }
+        }
+      }
+    }
   }
   return wxDialog::Show(show);
 }

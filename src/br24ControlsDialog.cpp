@@ -1160,6 +1160,15 @@ void br24ControlsDialog::UpdateDialogShown() {
     }
   }
 
+  // Following helps on OSX where the control is SHOW_ON_TOP to not show when no part of OCPN is focused
+  wxWindow * focused = FindFocus();
+  if (!focused) {
+    if (m_pi->m_settings.verbose >= 2) {
+      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown app not focused"), m_ri->name.c_str());
+    }
+    return;
+  }
+
   if (!IsShown()) {
     if (m_pi->m_settings.verbose) {
       wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown manually opened"), m_ri->name.c_str());
