@@ -295,13 +295,12 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
  * @param show        desired visibility state
  */
 void br24radar_pi::SetRadarWindowViz(bool show) {
-  for (int r = 0; r <= m_settings.enable_dual_radar; r++) {
+  for (int r = 0; r <= (int) m_settings.enable_dual_radar; r++) {
     m_radar[r]->ShowRadarWindow(show);
     if (!show) {
       ShowRadarControl(r, show);
     }
   }
-  m_pMessageBox->UpdateMessage(false);
   wxLogMessage(wxT("BR24radar_pi: RadarWindow visibility = %d"), (int)show);
 }
 
@@ -328,7 +327,6 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
   }
 
   m_radar[radar]->UpdateControlState(true);
-  m_pMessageBox->UpdateMessage(false);
 }
 
 void br24radar_pi::OnControlDialogClose(RadarInfo *ri) {
@@ -388,9 +386,14 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
     return;
   }
 
-  m_pMessageBox->UpdateMessage(false);
   if (m_settings.verbose >= 2) {
     wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback"));
+  }
+
+  if (m_pMessageBox->UpdateMessage(false)) {
+    SetRadarWindowViz(false);
+    m_settings.show = 0;
+    return;
   }
 
   m_settings.show = 1 - m_settings.show;
@@ -644,7 +647,7 @@ void br24radar_pi::DoTick(void) {
     if (m_heading_source == HEADING_RADAR) {
       m_heading_source = HEADING_NONE;
     }
-  } else {
+  } else if (m_settings.show) {
     CheckGuardZoneBogeys();
   }
 
@@ -716,7 +719,13 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
   if (!m_initialized) {
     return true;
   }
+
+  if (m_settings.verbose >= 2) {
+    wxLogMessage(wxT("BR24radar_pi: RenderOverlay"));
+  }
+
   m_opengl_mode = false;
+  m_in_setup_dialog = false;
 
   DoTick();  // update timers and watchdogs
 
@@ -734,6 +743,10 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   if (!m_initialized) {
     return true;
   }
+
+  if (m_settings.verbose >= 2) {
+    wxLogMessage(wxT("BR24radar_pi: RenderGLOverlay"));
+  }
   m_opencpn_gl_context = pcontext;
   if (!m_opencpn_gl_context && !m_opencpn_gl_context_broken) {
     wxLogMessage(wxT("BR24radar_pi: OpenCPN does not pass OpenGL context. Resize of OpenCPN window may be broken!"));
@@ -741,6 +754,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   m_opencpn_gl_context_broken = m_opencpn_gl_context == 0;
 
   m_opengl_mode = true;
+  m_in_setup_dialog = false;
 
   // this is expected to be called at least once per second
   // but if we are scrolling or otherwise it can be MUCH more often!

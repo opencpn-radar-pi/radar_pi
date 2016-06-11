@@ -317,6 +317,7 @@ class br24radar_pi : public opencpn_plugin_110 {
   bool m_opengl_mode;
   bool m_bpos_set;
   time_t m_bpos_timestamp;
+  bool m_in_setup_dialog; // When this is true don't show message dialog on errors
 
   bool m_initialized;  // True if Init() succeeded and DeInit() not called yet.
   bool m_first_init;   // True in first Init() call.

@@ -314,7 +314,10 @@ bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* 
 
   m_from_control = 0;
 
-  long wstyle = wxCLOSE_BOX | wxCAPTION | wxSTAY_ON_TOP | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR | wxCLIP_CHILDREN;
+  long wstyle = wxCLOSE_BOX | wxCAPTION | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR | wxCLIP_CHILDREN;
+#ifdef __WXMAC__
+  wstyle |= wxSTAY_ON_TOP;  // FLOAT_ON_PARENT is broken on Mac, I know this is not optimal
+#endif
 
   if (!wxDialog::Create(parent, id, caption, pos, wxDefaultSize, wstyle)) {
     return false;
@@ -955,7 +958,7 @@ void br24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
 void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
   // m_ri->ShowRadarWindow(!m_ri->IsShown());
   m_pi->m_settings.show_radar = 1 - m_pi->m_settings.show_radar;
-  m_pi->SetRadarWindowViz(m_pi->m_settings.show_radar);
+  m_pi->SetRadarWindowViz(m_pi->m_settings.show_radar != 0);
 }
 
 void br24ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {

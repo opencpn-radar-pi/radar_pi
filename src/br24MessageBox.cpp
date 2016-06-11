@@ -76,7 +76,10 @@ bool br24MessageBox::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, c
   m_parent = parent;
   m_pi = pi;
 
-  long wstyle = wxCLOSE_BOX | wxCAPTION | wxSTAY_ON_TOP | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR | wxCLIP_CHILDREN;
+  long wstyle = wxCLOSE_BOX | wxCAPTION | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR | wxCLIP_CHILDREN;
+#ifdef __WXMAC__
+  wstyle |= wxSTAY_ON_TOP;  // FLOAT_ON_PARENT is broken on Mac, I know this is not optimal
+#endif
 
   if (!wxDialog::Create(parent, id, caption, pos, wxDefaultSize, wstyle)) {
     return false;
@@ -216,7 +219,7 @@ bool br24MessageBox::Show(bool show) {
   return wxDialog::Show(show);
 }
 
-void br24MessageBox::UpdateMessage(bool force) {
+bool br24MessageBox::UpdateMessage(bool force) {
   message_status new_message_state = HIDE;
 
   bool haveOpenGL = m_pi->m_opengl_mode;
@@ -226,6 +229,7 @@ void br24MessageBox::UpdateMessage(bool force) {
   bool radarSeen = false;
   bool haveData = false;
   bool wantTransmit = false;
+  bool ret = false;
 
   if (force) {
     m_allow_auto_hide = false;
@@ -260,6 +264,7 @@ void br24MessageBox::UpdateMessage(bool force) {
       wxLogMessage(wxT("BR24radar_pi: messagebox no OpenGL"));
     }
     new_message_state = SHOW_CLOSE;
+    ret = true;
   } else if (no_overlay) {
     if (!wantTransmit) {
       if (m_pi->m_settings.verbose >= 2) {
@@ -337,6 +342,8 @@ void br24MessageBox::UpdateMessage(bool force) {
   Fit();
   m_old_radar_seen = radarSeen;
   m_message_state = new_message_state;
+
+  return ret;
 }
 
 void br24MessageBox::OnMessageCloseButtonClick(wxCommandEvent &event) { Hide(); }
