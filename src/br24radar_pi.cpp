@@ -154,6 +154,7 @@ bool br_update_address_control = false;
 bool br_update_error_control = false;
 wxString br_ip_address; // Current IP address of the ethernet interface that we're doing multicast receive on.
 wxString br_error_msg;
+wxString br_last_ip_address; // Local IP adress to test
 
 //Timed Transmit
 bool br_init_timed_transmit;
@@ -3045,8 +3046,10 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     UINT8 * a = (UINT8 *) &addr->sin_addr; // sin_addr is in network layout
     wxString address;
     address.Printf(wxT(" %u.%u.%u.%u"), a[0] , a[1] , a[2] , a[3]);
-    wxLogMessage(wxT("BR24radar_pi: local network adress %s"),address);
-    
+    if (br_last_ip_address != address) { // Print to log when new or changed
+        wxLogMessage(wxT("BR24radar_pi: Searching for a radar at local network adress: %s"), address);
+        br_last_ip_address = address;
+    }
 
     memset(&adr, 0, sizeof(adr));
     adr.sin_family = AF_INET;
@@ -3082,6 +3085,7 @@ static SOCKET startUDPMulticastReceiveSocket( br24radar_pi *pPlugIn, struct sock
     }
 
     // Hurrah! Success!
+    if (pPlugIn->settings.verbose) wxLogMessage(wxT("BR24radar_pi: local UDP multicast network adress %s"), address);
     return rx_socket;
 
 fail:
