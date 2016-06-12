@@ -79,9 +79,8 @@ typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a 
 #define TIMED_OUT(t, timeout) (t >= timeout)
 #define NOT_TIMED_OUT(t, timeout) (!TIMED_OUT(t, timeout))
 
-
 #ifndef M_SETTINGS
-# define M_SETTINGS m_pi->m_settings
+#define M_SETTINGS m_pi->m_settings
 #endif
 #define LOGLEVEL_INFO 0
 #define LOGLEVEL_VERBOSE 1
@@ -89,12 +88,15 @@ typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a 
 #define LOGLEVEL_TRANSMIT 4
 #define LOGLEVEL_RECEIVE 8
 #define IF_LOG_AT_LEVEL(x) if ((M_SETTINGS.verbose & x) != 0)
-#define IF_LOG_AT(x, y) do { IF_LOG_AT_LEVEL(x) { y; } } while(0)
+#define IF_LOG_AT(x, y)       \
+  do {                        \
+    IF_LOG_AT_LEVEL(x) { y; } \
+  } while (0)
 #define LOG_INFO wxLogMessage
-#define LOG_VERBOSE  IF_LOG_AT_LEVEL(LOGLEVEL_VERBOSE) wxLogMessage
-#define LOG_DIALOG   IF_LOG_AT_LEVEL(LOGLEVEL_DIALOG) wxLogMessage
+#define LOG_VERBOSE IF_LOG_AT_LEVEL(LOGLEVEL_VERBOSE) wxLogMessage
+#define LOG_DIALOG IF_LOG_AT_LEVEL(LOGLEVEL_DIALOG) wxLogMessage
 #define LOG_TRANSMIT IF_LOG_AT_LEVEL(LOGLEVEL_TRANSMIT) wxLogMessage
-#define LOG_RECEIVE  IF_LOG_AT_LEVEL(LOGLEVEL_RECEIVE) wxLogMessage
+#define LOG_RECEIVE IF_LOG_AT_LEVEL(LOGLEVEL_RECEIVE) wxLogMessage
 
 enum { BM_ID_RED, BM_ID_RED_SLAVE, BM_ID_GREEN, BM_ID_GREEN_SLAVE, BM_ID_AMBER, BM_ID_AMBER_SLAVE, BM_ID_BLANK, BM_ID_BLANK_SLAVE };
 
@@ -196,33 +198,33 @@ static const bool HasBitCount2[8] = {
  */
 struct PersistentSettings {
   int overlay_transparency;
-  int range_index;
-  int verbose;               // Loglevel 0..4.
-  int display_option;        // Monocolor-red or Multi-color
-  int guard_zone_threshold;  // How many blobs must be sent by radar before we fire alarm
-  int guard_zone_render_style;
-  double range_calibration;
-  double skew_factor;
-  int range_units;        // 0 = Nautical miles, 1 = Kilometers
-  int range_unit_meters;  // ... 1852 or 1000, depending on range_units
-  int max_age;
-  int timed_idle;
-  int idle_run_time;
+  int range_index;              // index into range array, see RadarInfo.cpp
+  int verbose;                  // Loglevel 0..4.
+  int display_option;           // Monocolor-red or Multi-color
+  int guard_zone_threshold;     // How many blobs must be sent by radar before we fire alarm
+  int guard_zone_render_style;  // 0 = Shading, 1 = Outline, 2 = Shading + Outline
+  double skew_factor;           // Set to -1 or other value to correct skewing
+  int range_units;              // 0 = Nautical miles, 1 = Kilometers
+  int range_unit_meters;        // ... 1852 or 1000, depending on range_units
+  int max_age;                  // Scans older than this in seconds will be removed
+  int timed_idle;               // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
+  int idle_run_time;            // how long, in seconds, should a idle run be? Value < 30 is ignored set to 30.
   int draw_algorithm;
   int refreshrate;
-  int show;            // whether to show any radar (overlay or window)
-  int show_radar;      // whether to show radar window
-  int chart_overlay;   // -1 = none, otherwise = radar number
-  int menu_auto_hide;  // 0 = none, 1 = 10s, 2 = 30s
-  bool pass_heading_to_opencpn;
-  bool enable_dual_radar;  // Should the dual radar be enabled for 4G?
-  bool emulator_on;
-  int drawing_method;  // VertexBuffer, Shader, etc.
+  int show;                      // whether to show any radar (overlay or window)
+  int show_radar[RADARS];        // whether to show radar window
+  int chart_overlay;             // -1 = none, otherwise = radar number
+  int menu_auto_hide;            // 0 = none, 1 = 10s, 2 = 30s
+  bool pass_heading_to_opencpn;  //
+  bool enable_dual_radar;        // Should the dual radar be enabled for 4G?
+  bool emulator_on;              // Emulator, useful when debugging without radar
+  int drawing_method;            // VertexBuffer, Shader, etc.
   int threshold_red;
   int threshold_green;
   int threshold_blue;
   int threshold_multi_sweep;
   wxString alert_audio_file;
+  wxString mcast_address;
 };
 
 struct scan_line {
@@ -304,6 +306,8 @@ class br24radar_pi : public opencpn_plugin_110 {
   void RenderGuardZone(wxPoint radar_center, double v_scale_ppm, int AB);
   wxString GetGuardZoneText(RadarInfo *ri, bool withTimeout);
 
+  void SetMcastIPAddress(wxString &msg);
+
   wxFont m_font;      // The dialog font at a normal size
   wxFont m_fat_font;  // The dialog font at a bigger size, bold
   int m_display_width, m_display_height;
@@ -335,7 +339,7 @@ class br24radar_pi : public opencpn_plugin_110 {
   bool m_opengl_mode;
   bool m_bpos_set;
   time_t m_bpos_timestamp;
-  bool m_in_setup_dialog; // When this is true don't show message dialog on errors
+  bool m_in_setup_dialog;  // When this is true don't show message dialog on errors
 
   bool m_initialized;  // True if Init() succeeded and DeInit() not called yet.
   bool m_first_init;   // True in first Init() call.

@@ -34,11 +34,6 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-enum {  // process ID's
-  ID_CONFIRM,
-  ID_CLOSE
-};
-
 RadarPanel::RadarPanel(br24radar_pi* pi, RadarInfo* ri, wxWindow* parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("RADAR")) {
   m_parent = parent;
@@ -115,7 +110,19 @@ RadarPanel::~RadarPanel() {
 
 void RadarPanel::SetCaption(wxString name) { m_aui_mgr->GetPane(this).Caption(name); }
 
-void RadarPanel::close(wxAuiManagerEvent& event) { event.Skip(); }
+void RadarPanel::close(wxAuiManagerEvent& event) {
+  event.Skip();
+
+  wxAuiPaneInfo* pane = event.GetPane();
+
+  if (pane->window == this) {
+    m_pi->m_settings.show_radar[m_ri->radar] = 0;
+    LOG_DIALOG(wxT("BR24radar_pi: RadarPanel::close: show_radar[%d]=%d"), m_ri->radar, 0);
+  } else {
+    LOG_DIALOG(wxT("BR24radar_pi: RadarPanel::close: ignore close of window %s in window %s"), pane->name.c_str(),
+               m_aui_name.c_str());
+  }
+}
 
 void RadarPanel::ShowFrame(bool visible) {
   LOG_DIALOG(wxT("BR24radar_pi %s: set visible %d"), m_ri->name.c_str(), visible);
@@ -147,6 +154,11 @@ void RadarPanel::ShowFrame(bool visible) {
         Layout();
       }
     }
+  }
+
+  if (visible) {
+    m_pi->m_settings.show_radar[m_ri->radar] = 1;
+    LOG_DIALOG(wxT("BR24radar_pi: RadarPanel::ShowFrame: show_radar[%d]=%d"), m_ri->radar, 1);
   }
 
   // What should have been a simple 'pane.Show(visible)' has devolved into a terrible hack.

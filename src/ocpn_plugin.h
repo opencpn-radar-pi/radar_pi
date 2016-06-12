@@ -456,8 +456,8 @@ class DECL_EXP opencpn_plugin_112 : public opencpn_plugin_111 {
   virtual ~opencpn_plugin_112();
 
   virtual bool MouseEventHook(wxMouseEvent &event);
-  virtual void SendVectorChartObjectInfo(wxString &chart, wxString &feature, wxString &objname,
-                                         double lat, double lon, double scale, int nativescale);
+  virtual void SendVectorChartObjectInfo(wxString &chart, wxString &feature, wxString &objname, double lat, double lon,
+                                         double scale, int nativescale);
 };
 
 //------------------------------------------------------------------
@@ -477,8 +477,7 @@ WX_DECLARE_LIST(Plugin_Hyperlink, Plugin_HyperlinkList);
 class DECL_EXP PlugIn_Waypoint {
  public:
   PlugIn_Waypoint();
-  PlugIn_Waypoint(double lat, double lon, const wxString &icon_ident, const wxString &wp_name,
-                  const wxString &GUID = _T(""));
+  PlugIn_Waypoint(double lat, double lon, const wxString &icon_ident, const wxString &wp_name, const wxString &GUID = _T(""));
   ~PlugIn_Waypoint();
 
   double m_lat;
@@ -531,20 +530,17 @@ class DECL_EXP PlugIn_Track {
 //
 //----------------------------------------------------------------------------------------------------------
 
-extern "C" DECL_EXP int InsertPlugInTool(wxString label, wxBitmap *bitmap, wxBitmap *bmpDisabled,
-                                         wxItemKind kind, wxString shortHelp, wxString longHelp,
-                                         wxObject *clientData, int position, int tool_sel,
+extern "C" DECL_EXP int InsertPlugInTool(wxString label, wxBitmap *bitmap, wxBitmap *bmpDisabled, wxItemKind kind,
+                                         wxString shortHelp, wxString longHelp, wxObject *clientData, int position, int tool_sel,
                                          opencpn_plugin *pplugin);
 extern "C" DECL_EXP void RemovePlugInTool(int tool_id);
-extern "C" DECL_EXP void SetToolbarToolViz(int item,
-                                           bool viz);  // Temporarily change toolbar tool viz
+extern "C" DECL_EXP void SetToolbarToolViz(int item, bool viz);  // Temporarily change toolbar tool viz
 extern "C" DECL_EXP void SetToolbarItemState(int item, bool toggle);
 extern "C" DECL_EXP void SetToolbarToolBitmaps(int item, wxBitmap *bitmap, wxBitmap *bmpDisabled);
 
 extern "C" DECL_EXP int AddCanvasContextMenuItem(wxMenuItem *pitem, opencpn_plugin *pplugin);
-extern "C" DECL_EXP void RemoveCanvasContextMenuItem(int item);  // Fully remove this item
-extern "C" DECL_EXP void SetCanvasContextMenuItemViz(
-    int item, bool viz);  // Temporarily change context menu ptions
+extern "C" DECL_EXP void RemoveCanvasContextMenuItem(int item);            // Fully remove this item
+extern "C" DECL_EXP void SetCanvasContextMenuItemViz(int item, bool viz);  // Temporarily change context menu ptions
 extern "C" DECL_EXP void SetCanvasContextMenuItemGrey(int item, bool grey);
 
 extern "C" DECL_EXP wxFileConfig *GetOCPNConfigObject(void);
@@ -571,8 +567,7 @@ extern "C" DECL_EXP void PushNMEABuffer(wxString str);
 
 extern DECL_EXP wxXmlDocument GetChartDatabaseEntryXML(int dbIndex, bool b_getGeom);
 
-extern DECL_EXP bool UpdateChartDBInplace(wxArrayString dir_array, bool b_force_update,
-                                          bool b_ProgressDialog);
+extern DECL_EXP bool UpdateChartDBInplace(wxArrayString dir_array, bool b_force_update, bool b_ProgressDialog);
 extern DECL_EXP wxArrayString GetChartDBDirArrayString();
 
 extern "C" DECL_EXP void SendPluginMessage(wxString message_id, wxString message_body);
@@ -584,29 +579,20 @@ extern "C" DECL_EXP void JumpToPosition(double lat, double lon, double scale);
 /* API 1.9  adds some common cartographic functions to avoid unnecessary code duplication */
 /* Study the original OpenCPN source (georef.c) for functional definitions  */
 
-extern "C" DECL_EXP void PositionBearingDistanceMercator_Plugin(double lat, double lon, double brg,
-                                                                double dist, double *dlat,
+extern "C" DECL_EXP void PositionBearingDistanceMercator_Plugin(double lat, double lon, double brg, double dist, double *dlat,
                                                                 double *dlon);
-extern "C" DECL_EXP void DistanceBearingMercator_Plugin(double lat0, double lon0, double lat1,
-                                                        double lon1, double *brg, double *dist);
-extern "C" DECL_EXP double DistGreatCircle_Plugin(double slat, double slon, double dlat,
-                                                  double dlon);
+extern "C" DECL_EXP void DistanceBearingMercator_Plugin(double lat0, double lon0, double lat1, double lon1, double *brg,
+                                                        double *dist);
+extern "C" DECL_EXP double DistGreatCircle_Plugin(double slat, double slon, double dlat, double dlon);
 
-extern "C" DECL_EXP void toTM_Plugin(float lat, float lon, float lat0, float lon0, double *x,
-                                     double *y);
-extern "C" DECL_EXP void fromTM_Plugin(double x, double y, double lat0, double lon0, double *lat,
-                                       double *lon);
-extern "C" DECL_EXP void toSM_Plugin(double lat, double lon, double lat0, double lon0, double *x,
-                                     double *y);
-extern "C" DECL_EXP void fromSM_Plugin(double x, double y, double lat0, double lon0, double *lat,
-                                       double *lon);
-extern "C" DECL_EXP void toSM_ECC_Plugin(double lat, double lon, double lat0, double lon0,
-                                         double *x, double *y);
-extern "C" DECL_EXP void fromSM_ECC_Plugin(double x, double y, double lat0, double lon0,
-                                           double *lat, double *lon);
+extern "C" DECL_EXP void toTM_Plugin(float lat, float lon, float lat0, float lon0, double *x, double *y);
+extern "C" DECL_EXP void fromTM_Plugin(double x, double y, double lat0, double lon0, double *lat, double *lon);
+extern "C" DECL_EXP void toSM_Plugin(double lat, double lon, double lat0, double lon0, double *x, double *y);
+extern "C" DECL_EXP void fromSM_Plugin(double x, double y, double lat0, double lon0, double *lat, double *lon);
+extern "C" DECL_EXP void toSM_ECC_Plugin(double lat, double lon, double lat0, double lon0, double *x, double *y);
+extern "C" DECL_EXP void fromSM_ECC_Plugin(double x, double y, double lat0, double lon0, double *lat, double *lon);
 
-extern "C" DECL_EXP bool DecodeSingleVDOMessage(const wxString &str, PlugIn_Position_Fix_Ex *pos,
-                                                wxString *acc);
+extern "C" DECL_EXP bool DecodeSingleVDOMessage(const wxString &str, PlugIn_Position_Fix_Ex *pos, wxString *acc);
 extern "C" DECL_EXP int GetChartbarHeight(void);
 extern "C" DECL_EXP bool GetActiveRoutepointGPX(char *buffer, unsigned int buffer_length);
 
@@ -633,8 +619,7 @@ extern "C" DECL_EXP double fromUsrSpeed_Plugin(double usr_speed, int unit = -1);
 extern DECL_EXP wxString getUsrDistanceUnit_Plugin(int unit = -1);
 extern DECL_EXP wxString getUsrSpeedUnit_Plugin(int unit = -1);
 extern DECL_EXP wxString GetNewGUID();
-extern "C" DECL_EXP bool PlugIn_GSHHS_CrossesLand(double lat1, double lon1, double lat2,
-                                                  double lon2);
+extern "C" DECL_EXP bool PlugIn_GSHHS_CrossesLand(double lat1, double lon1, double lat2, double lon2);
 extern DECL_EXP void PlugInPlaySound(wxString &sound_file);
 
 // API 1.10 Route and Waypoint Support
@@ -657,9 +642,8 @@ extern DECL_EXP bool UpdatePlugInTrack(PlugIn_Track *ptrack);
 
 /* API 1.11  adds some more common functions to avoid unnecessary code duplication */
 wxColour DECL_EXP GetBaseGlobalColor(wxString colorName);
-int DECL_EXP OCPNMessageBox_PlugIn(wxWindow *parent, const wxString &message,
-                                   const wxString &caption = _T("Message"), int style = wxOK,
-                                   int x = -1, int y = -1);
+int DECL_EXP OCPNMessageBox_PlugIn(wxWindow *parent, const wxString &message, const wxString &caption = _T("Message"),
+                                   int style = wxOK, int x = -1, int y = -1);
 
 extern DECL_EXP wxString toSDMM_PlugIn(int NEflag, double a, bool hi_precision = true);
 
@@ -696,11 +680,10 @@ class DECL_EXP PlugInChartBaseGL : public PlugInChartBase {
   PlugInChartBaseGL();
   virtual ~PlugInChartBaseGL();
 
-  virtual int RenderRegionViewOnGL(const wxGLContext &glc, const PlugIn_ViewPort &VPoint,
-                                   const wxRegion &Region, bool b_use_stencil);
+  virtual int RenderRegionViewOnGL(const wxGLContext &glc, const PlugIn_ViewPort &VPoint, const wxRegion &Region,
+                                   bool b_use_stencil);
 
-  virtual ListOfPI_S57Obj *GetObjRuleListAtLatLon(float lat, float lon, float select_radius,
-                                                  PlugIn_ViewPort *VPoint);
+  virtual ListOfPI_S57Obj *GetObjRuleListAtLatLon(float lat, float lon, float select_radius, PlugIn_ViewPort *VPoint);
   virtual wxString CreateObjDescriptions(ListOfPI_S57Obj *obj_list);
 
   virtual int GetNoCOVREntries();
@@ -852,8 +835,7 @@ int DECL_EXP PI_GetPLIBSymbolStyle();
 int DECL_EXP PI_GetPLIBBoundaryStyle();
 int DECL_EXP PI_GetPLIBStateHash();
 double DECL_EXP PI_GetPLIBMarinerSafetyContour();
-bool DECL_EXP PI_GetObjectRenderBox(PI_S57Obj *pObj, double *lat_min, double *lat_max,
-                                    double *lon_min, double *lon_max);
+bool DECL_EXP PI_GetObjectRenderBox(PI_S57Obj *pObj, double *lat_min, double *lat_max, double *lon_min, double *lon_max);
 void DECL_EXP PI_UpdateContext(PI_S57Obj *pObj);
 
 bool DECL_EXP PI_PLIBObjectRenderCheck(PI_S57Obj *pObj, PlugIn_ViewPort *vp);
@@ -868,14 +850,11 @@ void DECL_EXP PI_PLIBSetRenderCaps(unsigned int flags);
 bool DECL_EXP PI_PLIBSetContext(PI_S57Obj *pObj);
 
 int DECL_EXP PI_PLIBRenderObjectToDC(wxDC *pdc, PI_S57Obj *pObj, PlugIn_ViewPort *vp);
-int DECL_EXP PI_PLIBRenderAreaToDC(wxDC *pdc, PI_S57Obj *pObj, PlugIn_ViewPort *vp, wxRect rect,
-                                   unsigned char *pixbuf);
+int DECL_EXP PI_PLIBRenderAreaToDC(wxDC *pdc, PI_S57Obj *pObj, PlugIn_ViewPort *vp, wxRect rect, unsigned char *pixbuf);
 
-int DECL_EXP PI_PLIBRenderAreaToGL(const wxGLContext &glcc, PI_S57Obj *pObj, PlugIn_ViewPort *vp,
-                                   wxRect &render_rect);
+int DECL_EXP PI_PLIBRenderAreaToGL(const wxGLContext &glcc, PI_S57Obj *pObj, PlugIn_ViewPort *vp, wxRect &render_rect);
 
-int DECL_EXP PI_PLIBRenderObjectToGL(const wxGLContext &glcc, PI_S57Obj *pObj, PlugIn_ViewPort *vp,
-                                     wxRect &render_rect);
+int DECL_EXP PI_PLIBRenderObjectToGL(const wxGLContext &glcc, PI_S57Obj *pObj, PlugIn_ViewPort *vp, wxRect &render_rect);
 
 /* API 1.11 OpenGL Display List and vertex buffer object routines
 
@@ -907,7 +886,6 @@ extern DECL_EXP void PlugInMultMatrixViewport(PlugIn_ViewPort *vp);
 extern DECL_EXP void PlugInNormalizeViewport(PlugIn_ViewPort *vp);
 
 class wxPoint2DDouble;
-extern "C" DECL_EXP void GetDoubleCanvasPixLL(PlugIn_ViewPort *vp, wxPoint2DDouble *pp, double lat,
-                                              double lon);
+extern "C" DECL_EXP void GetDoubleCanvasPixLL(PlugIn_ViewPort *vp, wxPoint2DDouble *pp, double lat, double lon);
 
 #endif  //_PLUGIN_H_

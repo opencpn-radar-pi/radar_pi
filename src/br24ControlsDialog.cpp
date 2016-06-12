@@ -136,6 +136,7 @@ EVT_BUTTON(ID_CONFIRM_BOGEY, br24ControlsDialog::OnConfirmBogeyButtonClick)
 
 EVT_MOVE(br24ControlsDialog::OnMove)
 EVT_SIZE(br24ControlsDialog::OnSize)
+EVT_CLOSE(br24ControlsDialog::OnClose)
 
 END_EVENT_TABLE()
 
@@ -371,15 +372,14 @@ void br24ControlsDialog::CreateControls() {
   testBox->Add(testMessage, 0, wxALL, 2);
 
   wxStaticText* testButtonText =
-  new wxStaticText(this, ID_BPOS, wxT("Button"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+      new wxStaticText(this, ID_BPOS, wxT("Button"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   testButtonText->SetFont(m_pi->m_font);
   testBox->Add(testButtonText, 0, wxALL, 2);
 
   wxStaticText* testButton2Text =
-  new wxStaticText(this, ID_BPOS, wxT("Button\ndata"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+      new wxStaticText(this, ID_BPOS, wxT("Button\ndata"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   testButton2Text->SetFont(m_pi->m_font);
   testBox->Add(testButton2Text, 0, wxALL, 2);
-
 
   m_top_sizer->Fit(this);
   m_top_sizer->Layout();
@@ -398,9 +398,9 @@ void br24ControlsDialog::CreateControls() {
 
 #define BUTTON_BORDER 4
 #ifdef __WXMAC__
-# define BUTTON_HEIGTH_FUDGE 1 + BUTTON_BORDER
+#define BUTTON_HEIGTH_FUDGE 1 + BUTTON_BORDER
 #else
-# define BUTTON_HEIGTH_FUDGE 1 + 2 * BUTTON_BORDER
+#define BUTTON_HEIGTH_FUDGE 1 + 2 * BUTTON_BORDER
 #endif
 
   g_smallButtonSize = wxSize(width, testButtonText->GetSize().y + BUTTON_BORDER);
@@ -426,7 +426,6 @@ void br24ControlsDialog::CreateControls() {
   wxButton* back_button = new wxButton(this, ID_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
   m_edit_sizer->Add(back_button, 0, wxALL, BORDER);
   back_button->SetFont(m_pi->m_font);
-
 
   // The +10 button
   m_plus_ten_button = new wxButton(this, ID_PLUS_TEN, _("+10"), wxDefaultPosition, g_buttonSize, 0);
@@ -585,7 +584,6 @@ void br24ControlsDialog::CreateControls() {
   m_timed_idle_button->names = timed_idle_times;
   m_timed_idle_button->SetValue(m_pi->m_settings.timed_idle);  // redraw after adding names
 
-
   // The INSTALLATION button
   wxButton* bInstallation = new wxButton(this, ID_INSTALLATION, _("Installation"), wxDefaultPosition, g_smallButtonSize, 0);
   m_advanced_sizer->Add(bInstallation, 0, wxALL, BORDER);
@@ -738,7 +736,7 @@ void br24ControlsDialog::CreateControls() {
   // Updated when we receive data
 
   // The SHOW / HIDE RADAR button
-  m_window_button = new wxButton(this, ID_SHOW_RADAR, _("Show Radar"), wxDefaultPosition, g_smallButtonSize, 0);
+  m_window_button = new wxButton(this, ID_SHOW_RADAR, _("Show radar windows"), wxDefaultPosition, g_smallButtonSize, 0);
   m_control_sizer->Add(m_window_button, 0, wxALL, BORDER);
   m_window_button->SetFont(m_pi->m_font);
 
@@ -856,8 +854,7 @@ void br24ControlsDialog::OnClose(wxCloseEvent& event) { m_pi->OnControlDialogClo
 void br24ControlsDialog::OnIdOKClick(wxCommandEvent& event) { m_pi->OnControlDialogClose(m_ri); }
 
 void br24ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
-  LOG_DIALOG(wxT("br24radar_pi: OnPlustTenClick for %s value %d"), m_from_control->GetLabel().c_str(),
-               m_from_control->value + 10);
+  LOG_DIALOG(wxT("br24radar_pi: OnPlustTenClick for %s value %d"), m_from_control->GetLabel().c_str(), m_from_control->value + 10);
   m_from_control->SetValue(m_from_control->value + 10);
 
   wxString label = m_from_control->GetLabel();
@@ -955,9 +952,13 @@ void br24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
-  // m_ri->ShowRadarWindow(!m_ri->IsShown());
-  m_pi->m_settings.show_radar = 1 - m_pi->m_settings.show_radar;
-  m_pi->SetRadarWindowViz(m_pi->m_settings.show_radar != 0);
+  int show = 1 - m_pi->m_settings.show_radar[m_ri->radar];
+
+  for (int r = 0; r < RADARS; r++) {
+    m_pi->m_settings.show_radar[r] = show;
+    LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), r, show);
+  }
+  m_pi->SetRadarWindowViz(show);
 }
 
 void br24ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
@@ -1016,9 +1017,9 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   if (m_pi->m_settings.enable_dual_radar) {
-    o = (m_ri->IsPaneShown()) ? _("Hide Radars") : _("Show Radars");
+    o = (m_ri->IsPaneShown()) ? _("Hide radar windows") : _("Show Radar windows");
   } else {
-    o = (m_ri->IsPaneShown()) ? _("Hide Radar") : _("Show Radar");
+    o = (m_ri->IsPaneShown()) ? _("Hide radar windows") : _("Show radar window");
   }
   m_window_button->SetLabel(o);
 
@@ -1154,7 +1155,7 @@ void br24ControlsDialog::UpdateDialogShown() {
   }
 
   // Following helps on OSX where the control is SHOW_ON_TOP to not show when no part of OCPN is focused
-  wxWindow * focused = FindFocus();
+  wxWindow* focused = FindFocus();
   if (!focused) {
     LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown app not focused"), m_ri->name.c_str());
     return;
@@ -1174,7 +1175,6 @@ void br24ControlsDialog::UpdateDialogShown() {
 
     m_edit_sizer->Layout();
     m_top_sizer->Layout();
-
   }
   if (m_top_sizer->IsShown(m_control_sizer)) {
     Fit();

@@ -44,10 +44,32 @@ class br24Receive : public wxThread {
     Create(1024 * 1024);  // Stack size, be liberal
     m_next_spoke = -1;
     m_mcast_addr = 0;
-    m_radar_addr = 0;
     m_range_meters = 0;
     m_updated_range = false;
     m_radar_status = 0;
+
+    LOG_VERBOSE(wxT("BR24radar_pi: old mcast %s"), m_pi->m_settings.mcast_address.c_str());
+
+    if (m_pi->m_settings.mcast_address.length()) {
+      int b[4];
+      union {
+        uint8_t b[4];
+        uint32_t addr;
+      } mcast;
+
+      if (sscanf(m_pi->m_settings.mcast_address.c_str(), "%u.%u.%u.%u", &b[0], &b[1], &b[2], &b[3]) == 4) {
+        mcast.b[0] = (uint8_t)b[0];
+        mcast.b[1] = (uint8_t)b[1];
+        mcast.b[2] = (uint8_t)b[2];
+        mcast.b[3] = (uint8_t)b[3];
+        m_initial_mcast_addr.sin_len = sizeof(sockaddr_in);
+        m_initial_mcast_addr.sin_addr.s_addr = mcast.addr;
+        m_initial_mcast_addr.sin_port = 0;
+        m_initial_mcast_addr.sin_family = AF_INET;
+        m_mcast_addr = &m_initial_mcast_addr;
+        LOG_VERBOSE(wxT("BR24radar_pi: assuming radar is still reachable via %s"), m_pi->m_settings.mcast_address.c_str());
+      }
+    }
 
     LOG_RECEIVE(wxT("BR24radar_pi: br24Receive ctor"));
   };
@@ -56,8 +78,8 @@ class br24Receive : public wxThread {
   void *Entry(void);
   void OnExit(void);
 
+  sockaddr_in m_initial_mcast_addr;
   sockaddr_in *m_mcast_addr;
-  sockaddr_in *m_radar_addr;
   wxIPV4address m_ip_addr;
   bool m_new_ip_addr;
 

@@ -53,7 +53,7 @@ class br24MessageBox : public wxDialog {
               const wxPoint &pos = wxDefaultPosition);
 
   void CreateControls();
-  bool UpdateMessage(bool force); // Check whether message box needs to be visible, return true if shown
+  bool UpdateMessage(bool force);  // Check whether message box needs to be visible, return true if shown
   void SetErrorMessage(wxString &msg);
   void SetRadarIPAddress(wxString &msg);
   void SetMcastIPAddress(wxString &msg);

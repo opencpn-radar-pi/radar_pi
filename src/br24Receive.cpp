@@ -317,39 +317,48 @@ void br24Receive::EmulateFakeBuffer(void) {
 
 SOCKET br24Receive::PickNextEthernetCard() {
   SOCKET socket = INVALID_SOCKET;
+  struct sockaddr_in *mcast_address = m_mcast_addr;
 
-  // Pick the next ethernet card
-  // If set, we used this one last time. Go to the next card.
-  if (m_interface) {
-    m_interface = m_interface->ifa_next;
-  }
-  // Loop until card with a valid IPv4 address
-  while (m_interface && !VALID_IPV4_ADDRESS(m_interface)) {
-    m_interface = m_interface->ifa_next;
-  }
-  if (!m_interface) {
-    if (m_interface_array) {
-      freeifaddrs(m_interface_array);
-      m_interface_array = 0;
-    }
-    if (!getifaddrs(&m_interface_array)) {
-      m_interface = m_interface_array;
+  if (mcast_address) {
+    UINT8 *a = (UINT8 *)&mcast_address->sin_addr;  // sin_addr is in network layout
+    LOG_RECEIVE(wxT("BR24radar_pi: Retry-ing radar interface %u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
+  } else {
+    // Pick the next ethernet card
+    // If set, we used this one last time. Go to the next card.
+    if (m_interface) {
+      m_interface = m_interface->ifa_next;
     }
     // Loop until card with a valid IPv4 address
     while (m_interface && !VALID_IPV4_ADDRESS(m_interface)) {
       m_interface = m_interface->ifa_next;
     }
+    if (!m_interface) {
+      if (m_interface_array) {
+        freeifaddrs(m_interface_array);
+        m_interface_array = 0;
+      }
+      if (!getifaddrs(&m_interface_array)) {
+        m_interface = m_interface_array;
+      }
+      // Loop until card with a valid IPv4 address
+      while (m_interface && !VALID_IPV4_ADDRESS(m_interface)) {
+        m_interface = m_interface->ifa_next;
+      }
+    }
+    if (VALID_IPV4_ADDRESS(m_interface)) {
+      mcast_address = (struct sockaddr_in *)m_interface->ifa_addr;
+    }
   }
-  if (VALID_IPV4_ADDRESS(m_interface)) {
+  if (mcast_address) {
     wxString error;
-    socket = startUDPMulticastReceiveSocket((struct sockaddr_in *)m_interface->ifa_addr, LISTEN_REPORT[m_ri->radar].port,
-                                            LISTEN_REPORT[m_ri->radar].address, error);
+    socket =
+        startUDPMulticastReceiveSocket(mcast_address, LISTEN_REPORT[m_ri->radar].port, LISTEN_REPORT[m_ri->radar].address, error);
     if (socket != INVALID_SOCKET) {
       wxString addr;
-      UINT8 *a = (UINT8 *)&((struct sockaddr_in *)m_interface->ifa_addr)->sin_addr;  // sin_addr is in network layout
+      UINT8 *a = (UINT8 *)&mcast_address->sin_addr;  // sin_addr is in network layout
       addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
       LOG_RECEIVE(wxT("BR24radar_pi: Listening for %s reports on %s"), m_ri->name.c_str(), addr.c_str());
-      m_pi->m_pMessageBox->SetMcastIPAddress(addr);
+      m_pi->SetMcastIPAddress(addr);
     } else {
       wxLogError(wxT("BR24radar_pi: Unable to listen to socket: %s"), error.c_str());
     }
@@ -412,8 +421,8 @@ void *br24Receive::Entry(void) {
   UINT8 data[sizeof(radar_frame_pkt)];
   m_interface_array = 0;
   m_interface = 0;
-  static struct sockaddr_in mcastFoundAddr;
-  static struct sockaddr_in radarFoundAddr;
+  struct sockaddr_in radarFoundAddr;
+  sockaddr_in *radar_addr = 0;
 
   SOCKET dataSocket = INVALID_SOCKET;
   SOCKET commandSocket = INVALID_SOCKET;
@@ -502,15 +511,14 @@ void *br24Receive::Entry(void) {
         r = recvfrom(reportSocket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
         if (r > 0) {
           if (ProcessReport(data, r)) {
-            if (!m_mcast_addr) {
-              memcpy(&mcastFoundAddr, m_interface->ifa_addr, sizeof(mcastFoundAddr));
-              m_mcast_addr = &mcastFoundAddr;
-              memcpy(&radarFoundAddr, &rx_addr, sizeof(radarFoundAddr));
-              m_radar_addr = &radarFoundAddr;
+            if (!radar_addr) {
+              wxString addr;
+
+              radarFoundAddr = rx_addr.ipv4;
+              radar_addr = &radarFoundAddr;
 
               m_ri->SetNetworkCardAddress(m_mcast_addr);
 
-              wxString addr;
               addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
               m_pi->m_pMessageBox->SetRadarIPAddress(addr);
               if (m_ri->state.value == RADAR_OFF) {
@@ -544,7 +552,7 @@ void *br24Receive::Entry(void) {
         reportSocket = INVALID_SOCKET;
         m_ri->state.Update(RADAR_OFF);
         m_mcast_addr = 0;
-        m_radar_addr = 0;
+        radar_addr = 0;
       }
     } else {
       no_data_timeout++;

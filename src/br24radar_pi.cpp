@@ -226,7 +226,7 @@ int br24radar_pi::Init(void) {
 
   LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.chart_overlay);
 
-  SetRadarWindowViz(m_settings.show && m_settings.show_radar);
+  SetRadarWindowViz(m_settings.show);
 
   return PLUGIN_OPTIONS;
 }
@@ -306,7 +306,7 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
  */
 void br24radar_pi::SetRadarWindowViz(bool show) {
   for (int r = 0; r <= (int)m_settings.enable_dual_radar; r++) {
-    m_radar[r]->ShowRadarWindow(show);
+    m_radar[r]->ShowRadarWindow(show && (m_settings.show_radar[r] != 0));
     if (!show) {
       ShowRadarControl(r, show);
     }
@@ -405,20 +405,25 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
     return;
   }
 
-  m_settings.show = 1 - m_settings.show;
+  bool anyRadarWindowShow = false;
+  for (int r = 0; r < RADARS; r++) {
+    anyRadarWindowShow |= m_settings.show_radar[r] != 0;
+  }
 
   if (m_settings.show) {
-    if (m_settings.chart_overlay >= 0 && !m_settings.show_radar) {
-      LOG_DIALOG(
-          wxT("BR24radar_pi: OnToolbarToolCallback: No radar windows shown, overlay is active and no control -> show control"));
+    if (m_settings.chart_overlay >= 0 && !anyRadarWindowShow &&
+        (!m_radar[m_settings.chart_overlay]->control_dialog || !m_radar[m_settings.chart_overlay]->control_dialog->IsShown())) {
+      LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: Show control"));
       ShowRadarControl(m_settings.chart_overlay, true);
     } else {
-      LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: No radar windows shown -> show radar windows"));
-      SetRadarWindowViz(true);
+      LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: Hide radar windows"));
+      m_settings.show = 0;
+      SetRadarWindowViz(false);
     }
   } else {
-    LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: Radar windows shown -> hide radar windows"));
-    SetRadarWindowViz(false);
+    LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: Show radar windows"));
+    m_settings.show = 1;
+    SetRadarWindowViz(true);
   }
 
   UpdateState();
@@ -426,17 +431,26 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
 
 void br24radar_pi::OnContextMenuItemCallback(int id) {
   if (id == m_context_menu_control_id) {
+    bool done = false;
     if (m_settings.chart_overlay >= 0) {
-      LOG_DIALOG(
-          wxT("BR24radar_pi: OnToolbarToolCallback: No radar windows shown, overlay is active and no control -> show control"));
+      LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: overlay is active -> show control"));
       ShowRadarControl(m_settings.chart_overlay, true);
-    }
-    if (m_settings.show && m_settings.show_radar) {
+      done = true;
+    } else {
+      LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: show controls of visible radars"));
       for (int r = 0; r < RADARS; r++) {
-        if (m_radar[r]->IsPaneShown()) {
+        if (m_settings.show_radar[r]) {
           ShowRadarControl(r, true);
+          done = true;
         }
       }
+    }
+    if (!done) {
+      for (int r = 0; r < RADARS; r++) {
+        m_settings.show_radar[r] = 1;
+        LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: nothing visible, show_radar[%d]=%d"), r, 1);
+      }
+      SetRadarWindowViz(true);
     }
   } else if (id == m_context_menu_hide_id) {
     m_settings.show = 0;
@@ -583,7 +597,8 @@ void br24radar_pi::CheckTimedTransmit(RadarState state) {
   } else {
     if (TIMED_OUT(now, m_idle_timeout)) {
       SetDesiredStateAllRadars(RADAR_TRANSMIT);
-      m_idle_timeout = now + SECONDS_PER_TRANSMIT_BURST;
+      int burst = wxMax(m_settings.idle_run_time, SECONDS_PER_TRANSMIT_BURST);
+      m_idle_timeout = now + burst;
     }
   }
 }
@@ -758,7 +773,7 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 
   if (m_opengl_mode) {
     m_opengl_mode = false;
-    SetRadarWindowViz(m_settings.show_radar != 0);  // Give panels chance to remove GL canvases
+    SetRadarWindowViz(m_settings.show);  // Give panels chance to remove GL canvases
   }
 
   DoTick();  // update timers and watchdogs
@@ -784,7 +799,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
 
   if (!m_opengl_mode) {
     m_opengl_mode = true;
-    SetRadarWindowViz(m_settings.show_radar != 0);  // Give panels chance to create GL canvases
+    SetRadarWindowViz(m_settings.show);  // Give panels chance to create GL canvases
   }
 
   // this is expected to be called at least once per second
@@ -864,7 +879,6 @@ bool br24radar_pi::LoadConfig(void) {
     m_settings.emulator_on = intValue != 0;
     pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
     pConf->Read(wxT("Transparency"), &m_settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
-    pConf->Read(wxT("RangeCalibration"), &m_settings.range_calibration, 1.0);
     pConf->Read(wxT("ScanMaxAge"), &m_settings.max_age, 6);  // default 6
     if (m_settings.max_age < MIN_AGE) {
       m_settings.max_age = MIN_AGE;
@@ -891,6 +905,9 @@ bool br24radar_pi::LoadConfig(void) {
       m_radar[r]->rotation.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
       m_radar[r]->wantedState = (RadarState)v;
+      pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &v, 0);
+      m_settings.show_radar[r] = v;
+      LOG_DIALOG(wxT("BR24radar_pi: LoadConfig: show_radar[%d]=%d"), r, v);
       for (int i = 0; i < GUARD_ZONES; i++) {
         pConf->Read(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), &m_radar[r]->guard_zone[i]->start_bearing, 0.0);
         pConf->Read(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), &m_radar[r]->guard_zone[i]->end_bearing, 0.0);
@@ -904,10 +921,10 @@ bool br24radar_pi::LoadConfig(void) {
 
     pConf->Read(wxT("RadarAlertAudioFile"), &m_settings.alert_audio_file);
     pConf->Read(wxT("Show"), &m_settings.show, 0);
-    pConf->Read(wxT("ShowRadar"), &m_settings.show_radar, 0);
     pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 1);
 
     pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, 0);
+    pConf->Read(wxT("RadarInterface"), &m_settings.mcast_address);
 
     pConf->Read(wxT("SkewFactor"), &m_settings.skew_factor, 1);
 
@@ -932,7 +949,6 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ChartOverlay"), m_settings.chart_overlay);
     pConf->Write(wxT("VerboseLog"), m_settings.verbose);
     pConf->Write(wxT("Transparency"), m_settings.overlay_transparency);
-    pConf->Write(wxT("RangeCalibration"), m_settings.range_calibration);
     pConf->Write(wxT("GuardZonesThreshold"), m_settings.guard_zone_threshold);
     pConf->Write(wxT("GuardZonesRenderStyle"), m_settings.guard_zone_render_style);
     pConf->Write(wxT("ScanMaxAge"), m_settings.max_age);
@@ -943,14 +959,16 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
     pConf->Write(wxT("EmulatorOn"), (int)m_settings.emulator_on);
     pConf->Write(wxT("Show"), m_settings.show);
-    pConf->Write(wxT("ShowRadar"), m_settings.show_radar);
     pConf->Write(wxT("MenuAutoHide"), m_settings.menu_auto_hide);
     pConf->Write(wxT("RadarAlertAudioFile"), m_settings.alert_audio_file);
     pConf->Write(wxT("EnableDualRadar"), m_settings.enable_dual_radar);
+    pConf->Write(wxT("RadarInterface"), m_settings.mcast_address);
 
     for (int r = 0; r < RADARS; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->rotation.value);
       pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->state.value);
+      pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
+      LOG_DIALOG(wxT("BR24radar_pi: SaveConfig: show_radar[%d]=%d"), r, m_settings.show_radar[r]);
       for (int i = 0; i < GUARD_ZONES; i++) {
         pConf->Write(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), m_radar[r]->guard_zone[i]->start_bearing);
         pConf->Write(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), m_radar[r]->guard_zone[i]->end_bearing);
@@ -974,6 +992,13 @@ bool br24radar_pi::SaveConfig(void) {
   }
 
   return false;
+}
+
+void br24radar_pi::SetMcastIPAddress(wxString &address) {
+  m_settings.mcast_address = address;
+  if (m_pMessageBox) {
+    m_pMessageBox->SetMcastIPAddress(address);
+  }
 }
 
 // Positional Data passed from NMEA to plugin
