@@ -79,6 +79,23 @@ typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a 
 #define TIMED_OUT(t, timeout) (t >= timeout)
 #define NOT_TIMED_OUT(t, timeout) (!TIMED_OUT(t, timeout))
 
+
+#ifndef M_SETTINGS
+# define M_SETTINGS m_pi->m_settings
+#endif
+#define LOGLEVEL_INFO 0
+#define LOGLEVEL_VERBOSE 1
+#define LOGLEVEL_DIALOG 2
+#define LOGLEVEL_TRANSMIT 4
+#define LOGLEVEL_RECEIVE 8
+#define IF_LOG_AT_LEVEL(x) if ((M_SETTINGS.verbose & x) != 0)
+#define IF_LOG_AT(x, y) do { IF_LOG_AT_LEVEL(x) { y; } } while(0)
+#define LOG_INFO wxLogMessage
+#define LOG_VERBOSE  IF_LOG_AT_LEVEL(LOGLEVEL_VERBOSE) wxLogMessage
+#define LOG_DIALOG   IF_LOG_AT_LEVEL(LOGLEVEL_DIALOG) wxLogMessage
+#define LOG_TRANSMIT IF_LOG_AT_LEVEL(LOGLEVEL_TRANSMIT) wxLogMessage
+#define LOG_RECEIVE  IF_LOG_AT_LEVEL(LOGLEVEL_RECEIVE) wxLogMessage
+
 enum { BM_ID_RED, BM_ID_RED_SLAVE, BM_ID_GREEN, BM_ID_GREEN_SLAVE, BM_ID_AMBER, BM_ID_AMBER_SLAVE, BM_ID_BLANK, BM_ID_BLANK_SLAVE };
 
 enum HeadingSource { HEADING_NONE, HEADING_HDM, HEADING_HDT, HEADING_COG, HEADING_RADAR };

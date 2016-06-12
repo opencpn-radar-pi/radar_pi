@@ -90,12 +90,12 @@ bool RadarPanel::Create() {
 
   if (m_pi->m_perspective[m_ri->radar].length()) {
     // Do this first and it doesn't work if the pane starts docked.
-    wxLogMessage(wxT("BR24radar_pi: Restoring panel %s to AUI control manager: %s"), m_aui_name.c_str(),
-                 m_pi->m_perspective[m_ri->radar].c_str());
+    LOG_DIALOG(wxT("BR24radar_pi: Restoring panel %s to AUI control manager: %s"), m_aui_name.c_str(),
+               m_pi->m_perspective[m_ri->radar].c_str());
     m_aui_mgr->LoadPaneInfo(m_pi->m_perspective[m_ri->radar], pane);
     m_aui_mgr->Update();
   } else {
-    wxLogMessage(wxT("BR24radar_pi: Added panel %s to AUI control manager"), m_aui_name.c_str());
+    LOG_DIALOG(wxT("BR24radar_pi: Added panel %s to AUI control manager"), m_aui_name.c_str());
   }
 
   return true;
@@ -110,7 +110,7 @@ RadarPanel::~RadarPanel() {
   }
   m_aui_mgr->DetachPane(this);
   m_aui_mgr->Update();
-  wxLogMessage(wxT("BR24radar_pi: %s panel removed"), m_ri->name.c_str());
+  LOG_DIALOG(wxT("BR24radar_pi: %s panel removed"), m_ri->name.c_str());
 }
 
 void RadarPanel::SetCaption(wxString name) { m_aui_mgr->GetPane(this).Caption(name); }
@@ -118,7 +118,7 @@ void RadarPanel::SetCaption(wxString name) { m_aui_mgr->GetPane(this).Caption(na
 void RadarPanel::close(wxAuiManagerEvent& event) { event.Skip(); }
 
 void RadarPanel::ShowFrame(bool visible) {
-  wxLogMessage(wxT("BR24radar_pi %s: set visible %d"), m_ri->name.c_str(), visible);
+  LOG_DIALOG(wxT("BR24radar_pi %s: set visible %d"), m_ri->name.c_str(), visible);
 
   wxAuiPaneInfo& pane = m_aui_mgr->GetPane(this);
 
@@ -134,15 +134,12 @@ void RadarPanel::ShowFrame(bool visible) {
   }
   if (visible) {
     if (m_pi->m_opengl_mode && !m_ri->radar_canvas) {
-      if (m_pi->m_settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi %s: creating OpenGL canvas"), m_ri->name.c_str());
-      }
+      LOG_DIALOG(wxT("BR24radar_pi %s: creating OpenGL canvas"), m_ri->name.c_str());
       m_ri->radar_canvas = new RadarCanvas(m_pi, m_ri, this, wxSize(512, 512));
       if (!m_ri->radar_canvas) {
         m_text->SetLabel(_("Unable to create OpenGL canvas"));
         m_sizer->Show(m_text);
-      }
-      else {
+      } else {
         m_sizer->Hide(m_text);
         m_sizer->Add(m_ri->radar_canvas, 0, wxEXPAND | wxALL, 0);
 
@@ -169,10 +166,8 @@ void RadarPanel::ShowFrame(bool visible) {
         perspective = perspective.Mid(p + m_dock.length());
         perspective = perspective.BeforeFirst(wxT('|'));
         m_dock_size = wxAtoi(perspective);
-        if (m_pi->m_settings.verbose >= 2) {
-          wxLogMessage(wxT("BR24radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->name.c_str(), perspective.c_str(),
-                       m_dock_size);
-        }
+        LOG_DIALOG(wxT("BR24radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->name.c_str(), perspective.c_str(),
+                   m_dock_size);
       }
     }
   } else {
@@ -180,7 +175,7 @@ void RadarPanel::ShowFrame(bool visible) {
   }
 
   pane.Show(visible);
-  m_aui_mgr->Update(); // causes recursive calls on OS X when not in OpenGL mode
+  m_aui_mgr->Update();  // causes recursive calls on OS X when not in OpenGL mode
 
   if (visible && (m_dock_size > 0)) {
     // Now the reverse: take the new perspective string and replace the dock size of the dock that our pane is in and
@@ -197,9 +192,7 @@ void RadarPanel::ShowFrame(bool visible) {
       newPerspective << perspective.AfterFirst(wxT('|'));
 
       m_aui_mgr->LoadPerspective(newPerspective);
-      if (m_pi->m_settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: %s: new perspective %s"), m_ri->name.c_str(), newPerspective.c_str());
-      }
+      LOG_DIALOG(wxT("BR24radar_pi: %s: new perspective %s"), m_ri->name.c_str(), newPerspective.c_str());
     }
   }
 }

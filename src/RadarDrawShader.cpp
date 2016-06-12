@@ -74,21 +74,21 @@ bool RadarDrawShader::Init(int color_option) {
   }
 
   if (!CompileShader && !ShadersSupported()) {
-    wxLogMessage(wxT("BR24radar_pi: the OpenGL system of this computer does not support shader m_programs"));
+    wxLogError(wxT("BR24radar_pi: the OpenGL system of this computer does not support shader m_programs"));
     return false;
   }
 
   if (!CompileShaderText(&m_vertex, GL_VERTEX_SHADER, VertexShaderText) ||
       !CompileShaderText(&m_fragment, GL_FRAGMENT_SHADER, color_option > 0 ? FragmentShaderColorText : FragmentShaderText)) {
-    wxLogMessage(wxT("BR24radar_pi: the OpenGL system of this computer failed to compile shader programs"));
+    wxLogError(wxT("BR24radar_pi: the OpenGL system of this computer failed to compile shader programs"));
     return false;
   }
 
-  wxLogMessage(wxT("BR24radar_pi: GPU oriented OpenGL vertex shader %ld fragment shader %ld"), (long int)m_vertex,
-               (long int)m_fragment);
+  LOG_DIALOG(wxT("BR24radar_pi: GPU oriented OpenGL vertex shader %ld fragment shader %ld"), (long int)m_vertex,
+             (long int)m_fragment);
   m_program = LinkShaders(m_vertex, m_fragment);
   if (!m_program) {
-    wxLogMessage(wxT("BR24radar_pi: GPU oriented OpenGL failed to link shader program"));
+    wxLogError(wxT("BR24radar_pi: GPU oriented OpenGL failed to link shader program"));
     return false;
   }
 
@@ -109,7 +109,7 @@ bool RadarDrawShader::Init(int color_option) {
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  wxLogMessage(wxT("BR24radar_pi: GPU oriented OpenGL shader %ld for %d colours loaded"), (long int)m_program, m_channels);
+  LOG_DIALOG(wxT("BR24radar_pi: GPU oriented OpenGL shader %ld for %d colours loaded"), (long int)m_program, m_channels);
   m_start_line = -1;
   m_end_line = 0;
 
@@ -141,7 +141,7 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale, double rotati
   wxMutexLocker lock(m_mutex);
 
   if (!m_program || !m_texture) {
-    wxLogMessage(wxT("BR24radar_pi: Shader not set up yet, skip draw"));
+    LOG_DIALOG(wxT("BR24radar_pi: Shader not set up yet, skip draw"));
     return;
   }
 
@@ -198,15 +198,11 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale, double rotati
                       /* type =     */ GL_UNSIGNED_BYTE,
                       /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * m_channels);
     }
-    if (m_pi->m_settings.verbose >= 2) {
-      wxLogMessage(wxT("BR24radar_pi: using shader %d with new data in line %d-%d"), m_program, m_start_line, m_end_line);
-    }
+    LOG_RECEIVE(wxT("BR24radar_pi: using shader %d with new data in line %d-%d"), m_program, m_start_line, m_end_line);
     m_start_line = -1;
     m_end_line = 0;
   } else {
-    if (m_pi->m_settings.verbose >= 2) {
-      wxLogMessage(wxT("BR24radar_pi: using shader %d without new data"), m_program);
-    }
+    LOG_RECEIVE(wxT("BR24radar_pi: using shader %d without new data"), m_program);
   }
 
   // We tell the GPU to draw a square from (-512,-512) to (+512,+512).

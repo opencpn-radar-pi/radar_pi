@@ -42,7 +42,7 @@ bool RadarDrawVertex::Init(int newColorOption) {
      spokes[i].n = 0;
    }*/
 
-  wxLogMessage(wxT("BR24radar_pi: CPU oriented OpenGL vertex draw loaded"));
+  LOG_DIALOG(wxT("BR24radar_pi: CPU oriented OpenGL vertex draw loaded"));
   return true;
 }
 
@@ -78,10 +78,8 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
     }
     line->allocated += extra;
     m_count += extra;
-    if (m_pi->m_settings.verbose >= 2) {
-      wxLogMessage(wxT("BR24radar_pi: increased vertex array allocation to %u points, %u bytes"), line->allocated,
-                   m_count * sizeof(VertexPoint));
-    }
+    LOG_DIALOG(wxT("BR24radar_pi: increased vertex array allocation to %u points, %u bytes"), line->allocated,
+               m_count * sizeof(VertexPoint));
   }
 
   // First triangle

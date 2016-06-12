@@ -65,7 +65,7 @@ br24OptionsDialog::br24OptionsDialog() { Init(); }
  * wxWidgets will delete the window, no delete is necessary.
  */
 br24OptionsDialog::~br24OptionsDialog() {
-  wxLogMessage(wxT("BR24radar_pi: delete of OptionsDialog"));
+  LOG_DIALOG(wxT("BR24radar_pi: delete of OptionsDialog"));
   m_pi->m_pOptionsDialog = 0;
 }
 
@@ -261,12 +261,12 @@ void br24OptionsDialog::OnPassHeadingClick(wxCommandEvent &event) {
 
 void br24OptionsDialog::OnMenuAutoHideClick(wxCommandEvent &event) {
   m_pi->m_settings.menu_auto_hide = cbMenuAutoHide->GetSelection();
-  wxLogMessage(wxT("BR24radar_pi: new menu auto hide %d selected"), m_pi->m_settings.menu_auto_hide);
+  LOG_DIALOG(wxT("BR24radar_pi: new menu auto hide %d selected"), m_pi->m_settings.menu_auto_hide);
 }
 
 void br24OptionsDialog::OnDrawingMethodClick(wxCommandEvent &event) {
   m_pi->m_settings.drawing_method = cbDrawingMethod->GetSelection();
-  wxLogMessage(wxT("BR24radar_pi: new drawing method %d selected"), m_pi->m_settings.drawing_method);
+  LOG_DIALOG(wxT("BR24radar_pi: new drawing method %d selected"), m_pi->m_settings.drawing_method);
 }
 
 void br24OptionsDialog::OnEmulatorClick(wxCommandEvent &event) { m_pi->m_settings.emulator_on = cbEmulator->GetValue(); }

@@ -151,13 +151,13 @@ void CheckOpenGLError(const wxString& after) {
     }
 
     if (err == errLast) {
-      wxLogMessage(wxT("BR24radar_pi: OpenGL error could not be reset"));
+      wxLogError(wxT("BR24radar_pi: OpenGL error could not be reset"));
       return;
     }
 
     errLast = err;
 
-    wxLogMessage(wxT("BR24radar_pi: OpenGL error %d after %s"), err, after.c_str());
+    wxLogError(wxT("BR24radar_pi: OpenGL error %d after %s"), err, after.c_str());
   }
 }
 
@@ -181,9 +181,6 @@ PolarToCartesianLookupTable* GetPolarToCartesianLookupTable() {
         lookupTable->y[arc][radius] = (GLfloat)radius * sine;
       }
     }
-    wxLogMessage(wxT("Initial PolarToCartesianLookupTable"));
-  } else {
-    wxLogMessage(wxT("Reusing PolarToCartesianLookupTable"));
   }
   return lookupTable;
 }

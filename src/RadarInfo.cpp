@@ -219,12 +219,8 @@ bool RadarInfo::Init(int verbose) {
   m_verbose = verbose;
 
   radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
-  if (!radar_panel) {
-    wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarPanel"), name.c_str());
-    return false;
-  }
-  if (!radar_panel->Create()) {
-    wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarCanvas"), name.c_str());
+  if (!radar_panel || !radar_panel->Create()) {
+    wxLogError(wxT("BR24radar_pi %s: Unable to create RadarPanel"), name.c_str());
     return false;
   }
 
@@ -233,13 +229,13 @@ bool RadarInfo::Init(int verbose) {
 
 void RadarInfo::SetNetworkCardAddress(struct sockaddr_in *address) {
   if (!transmit->Init(address)) {
-    wxLogMessage(wxT("BR24radar_pi %s: Unable to create transmit socket"), name.c_str());
+    wxLogError(wxT("BR24radar_pi %s: Unable to create transmit socket"), name.c_str());
   }
 }
 
 void RadarInfo::SetName(wxString name) {
   if (name != this->name) {
-    wxLogMessage(wxT("BR24radar_pi: Changing name of radar #%d from '%s' to '%s'"), radar, this->name.c_str(), name.c_str());
+    LOG_DIALOG(wxT("BR24radar_pi: Changing name of radar #%d from '%s' to '%s'"), radar, this->name.c_str(), name.c_str());
     this->name = name;
     radar_panel->SetCaption(name);
     if (control_dialog) {
@@ -250,7 +246,7 @@ void RadarInfo::SetName(wxString name) {
 
 void RadarInfo::StartReceive() {
   if (!receive) {
-    wxLogMessage(wxT("BR24radar_pi: %s starting receive thread"), name.c_str());
+    LOG_RECEIVE(wxT("BR24radar_pi: %s starting receive thread"), name.c_str());
     receive = new br24Receive(m_pi, this);
     receive->Run();
   }
@@ -304,9 +300,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     m_display_meters = range_meters;
     m_range_index = convertRadarMetersToIndex(&m_display_meters);
     range.Update(range_meters);
-    if (m_pi->m_settings.verbose) {
-      wxLogMessage(wxT("BR24radar_pi: %s detected range %d"), name.c_str(), range_meters);
-    }
+    LOG_RECEIVE(wxT("BR24radar_pi: %s detected range %d"), name.c_str(), range_meters);
   } else if (rotation.mod) {
     ResetSpokes();
   }
@@ -355,9 +349,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
   if (m_overlay_refreshes_queued > 0) {
     // don't do additional refresh when too busy
-    if (m_verbose >= 1) {
-      wxLogMessage(wxT("BR24radar_pi: %s busy encountered, overlay_refreshes_queued=%d"), name.c_str(), m_overlay_refreshes_queued);
-    }
+    LOG_VERBOSE(wxT("BR24radar_pi: %s busy encountered, overlay_refreshes_queued=%d"), name.c_str(), m_overlay_refreshes_queued);
   } else if (m_pi->m_settings.show && m_pi->m_settings.chart_overlay == this->radar) {
     m_overlay_refreshes_queued++;
     GetOCPNCanvasWindow()->Refresh(false);
@@ -366,9 +358,7 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
   if (m_refreshes_queued > 0) {
     // don't do additional refresh and reset the refresh conter
     // this will also balance performance, if too busy skip refresh
-    if (m_verbose >= 1) {
-      wxLogMessage(wxT("BR24radar_pi: %s busy encountered, refreshes_queued=%d"), name.c_str(), m_refreshes_queued);
-    }
+    LOG_VERBOSE(wxT("BR24radar_pi: %s busy encountered, refreshes_queued=%d"), name.c_str(), m_refreshes_queued);
   } else if (IsPaneShown()) {
     m_refreshes_queued++;
     radar_panel->Refresh(false);
@@ -380,7 +370,7 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
 
     if (millis != m_refresh_millis) {
       m_refresh_millis = millis;
-      wxLogMessage(wxT("BR24radar_pi: %s changed timer interval to %d milliseconds"), name.c_str(), m_refresh_millis);
+      LOG_VERBOSE(wxT("BR24radar_pi: %s changed timer interval to %d milliseconds"), name.c_str(), m_refresh_millis);
       m_timer->Start(m_refresh_millis);
     }
   }
@@ -439,11 +429,11 @@ void RadarInfo::SetRangeIndex(int newValue) {
     // but depends on radar feedback to update the actual value
     if (newValue < 0) {
       auto_range_mode = true;
-      wxLogMessage(wxT("br24radar_pi: range change request to AUTO"));
+      LOG_VERBOSE(wxT("br24radar_pi: range change request to AUTO"));
     } else {
       auto_range_mode = false;
       int meters = GetRangeMeters(newValue);
-      wxLogMessage(wxT("br24radar_pi: range change request meters=%d new=%d"), meters, newValue);
+      LOG_VERBOSE(wxT("br24radar_pi: range change request meters=%d new=%d"), meters, newValue);
       transmit->SetRange(meters);
     }
   }
@@ -459,8 +449,8 @@ void RadarInfo::SetAutoRangeMeters(int meters) {
       convertMetersToRadarAllowedValue(&meters, m_pi->m_settings.range_units, radar_type);
       if (meters != m_range_meters) {
         if (m_pi->m_settings.verbose) {
-          wxLogMessage(wxT("BR24radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters,
-                       m_auto_range_meters);
+          LOG_VERBOSE(wxT("BR24radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters,
+                      m_auto_range_meters);
         }
         transmit->SetRange(meters);
         m_previous_auto_range_meters = m_auto_range_meters;
@@ -485,12 +475,12 @@ void RadarInfo::UpdateControlState(bool all) {
   // Once OpenCPN doesn't mess up with OpenGL context anymore we can do this
   //
   if (overlay.value == 0 && m_draw_overlay.draw) {
-    wxLogMessage(wxT("BR24radar_pi: Removing draw method as radar overlay is not shown"));
+    LOG_DIALOG(wxT("BR24radar_pi: Removing draw method as radar overlay is not shown"));
     delete m_draw_overlay.draw;
     m_draw_overlay.draw = 0;
   }
   if (!IsShown() && m_draw_panel.draw) {
-    wxLogMessage(wxT("BR24radar_pi: Removing draw method as radar window is not shown"));
+    LOG_DIALOG(wxT("BR24radar_pi: Removing draw method as radar window is not shown"));
     delete m_draw_panel.draw;
     m_draw_panel.draw = 0;
   }
@@ -529,15 +519,15 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, 
   if (!di->draw || (drawing_method != di->drawing_method) || (colorOption != di->color_option)) {
     RadarDraw *newDraw = RadarDraw::make_Draw(m_pi, drawing_method);
     if (!newDraw) {
-      wxLogMessage(wxT("BR24radar_pi: out of memory"));
+      wxLogError(wxT("BR24radar_pi: out of memory"));
       return;
     } else if (newDraw->Init(colorOption)) {
       wxArrayString methods;
       RadarDraw::GetDrawingMethods(methods);
       if (di == &m_draw_overlay) {
-        wxLogMessage(wxT("BR24radar_pi: %s new drawing method %s for overlay"), name.c_str(), methods[drawing_method].c_str());
+        LOG_VERBOSE(wxT("BR24radar_pi: %s new drawing method %s for overlay"), name.c_str(), methods[drawing_method].c_str());
       } else {
-        wxLogMessage(wxT("BR24radar_pi: %s new drawing method %s for panel"), name.c_str(), methods[drawing_method].c_str());
+        LOG_VERBOSE(wxT("BR24radar_pi: %s new drawing method %s for panel"), name.c_str(), methods[drawing_method].c_str());
       }
       if (di->draw) {
         delete di->draw;
@@ -673,10 +663,8 @@ wxString &RadarInfo::GetRangeText(int range_meters, int *index) {
   if (auto_range) {
     m_range_text << wxT(")");
   }
-  if (m_pi->m_settings.verbose > 3) {
-    wxLogMessage(wxT("br24radar_pi: range label '%s' for meters=%d range=%d auto=%d unit=%d max=%d idx=%d"), m_range_text.c_str(),
-                 range_meters, meters, auto_range_mode, units, maxValue, value);
-  }
+  LOG_DIALOG(wxT("br24radar_pi: range label '%s' for meters=%d range=%d auto=%d unit=%d max=%d idx=%d"), m_range_text.c_str(),
+             range_meters, meters, auto_range_mode, units, maxValue, value);
   *index = value;
   return m_range_text;
 }

@@ -29,6 +29,8 @@
  ***************************************************************************
  */
 
+#define M_SETTINGS m_settings
+
 #include "br24radar_pi.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
@@ -176,17 +178,17 @@ int br24radar_pi::Init(void) {
 
   //    And load the configuration items
   if (LoadConfig()) {
-    wxLogMessage(wxT("BR24radar_pi: Configuration file values initialised"));
-    wxLogMessage(wxT("BR24radar_pi: Log verbosity = %d (to modify, set VerboseLog to 0..4)"), m_settings.verbose);
+    LOG_INFO(wxT("BR24radar_pi: Configuration file values initialised"));
+    LOG_INFO(wxT("BR24radar_pi: Log verbosity = %d (to modify, set VerboseLog to 0..4)"), m_settings.verbose);
   } else {
-    wxLogMessage(wxT("BR24radar_pi: configuration file values initialisation failed"));
+    wxLogError(wxT("BR24radar_pi: configuration file values initialisation failed"));
     return 0;  // give up
   }
   ComputeColorMap();  // After load config
 
   for (size_t r = 0; r < RADARS; r++) {
     if (!m_radar[r]->Init(m_settings.verbose)) {
-      wxLogMessage(wxT("BR24radar_pi: initialisation failed"));
+      wxLogError(wxT("BR24radar_pi: initialisation failed"));
       return 0;
     }
   }
@@ -215,14 +217,14 @@ int br24radar_pi::Init(void) {
   m_initialized = true;
 
   m_context_menu = new wxMenu();
-  wxMenuItem * mi1 = new wxMenuItem(m_context_menu, -1, _("Show radar"));
+  wxMenuItem *mi1 = new wxMenuItem(m_context_menu, -1, _("Show radar"));
   m_context_menu_show_id = AddCanvasContextMenuItem(mi1, this);
-  wxMenuItem * mi2 = new wxMenuItem(m_context_menu, -1, _("Hide radar"));
+  wxMenuItem *mi2 = new wxMenuItem(m_context_menu, -1, _("Hide radar"));
   m_context_menu_hide_id = AddCanvasContextMenuItem(mi2, this);
-  wxMenuItem * mi3 = new wxMenuItem(m_context_menu, -1, _("Radar Control..."));
+  wxMenuItem *mi3 = new wxMenuItem(m_context_menu, -1, _("Radar Control..."));
   m_context_menu_control_id = AddCanvasContextMenuItem(mi3, this);
 
-  wxLogMessage(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.chart_overlay);
+  LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.chart_overlay);
 
   SetRadarWindowViz(m_settings.show && m_settings.show_radar);
 
@@ -244,7 +246,7 @@ bool br24radar_pi::DeInit(void) {
   SaveConfig();
 
   m_initialized = false;
-  wxLogMessage(wxT("BR24radar_pi: DeInit of plugin"));
+  LOG_VERBOSE(wxT("BR24radar_pi: DeInit of plugin"));
 
   // First close everything that the user can have open
   m_pMessageBox->Close();
@@ -263,7 +265,7 @@ bool br24radar_pi::DeInit(void) {
 
   // No need to delete wxWindow stuff, wxWidgets does this for us.
 
-  wxLogMessage(wxT("BR24radar_pi: DeInit of plugin done"));
+  LOG_VERBOSE(wxT("BR24radar_pi: DeInit of plugin done"));
   return true;
 }
 
@@ -289,7 +291,7 @@ void br24radar_pi::SetDefaults(void) {
 }
 
 void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
-  wxLogMessage(wxT("BR24radar_pi: ShowPreferencesDialog"));
+  LOG_DIALOG(wxT("BR24radar_pi: ShowPreferencesDialog"));
   if (!m_pOptionsDialog) {
     m_pOptionsDialog = new br24OptionsDialog;
     m_pOptionsDialog->Create(parent, this);
@@ -303,7 +305,7 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
  * @param show        desired visibility state
  */
 void br24radar_pi::SetRadarWindowViz(bool show) {
-  for (int r = 0; r <= (int) m_settings.enable_dual_radar; r++) {
+  for (int r = 0; r <= (int)m_settings.enable_dual_radar; r++) {
     m_radar[r]->ShowRadarWindow(show);
     if (!show) {
       ShowRadarControl(r, show);
@@ -312,16 +314,14 @@ void br24radar_pi::SetRadarWindowViz(bool show) {
   SetCanvasContextMenuItemViz(m_context_menu_show_id, !show);
   SetCanvasContextMenuItemViz(m_context_menu_hide_id, show);
   SetCanvasContextMenuItemGrey(m_context_menu_control_id, !show);
-  wxLogMessage(wxT("BR24radar_pi: RadarWindow visibility = %d"), (int)show);
+  LOG_DIALOG(wxT("BR24radar_pi: RadarWindow visibility = %d"), (int)show);
 }
 
 //********************************************************************************
 // Operation Dialogs - Control, Manual, and Options
 
 void br24radar_pi::ShowRadarControl(int radar, bool show) {
-  if (m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: ShowRadarControl(%d, %d)"), radar, (int)show);
-  }
+  LOG_DIALOG(wxT("BR24radar_pi: ShowRadarControl(%d, %d)"), radar, (int)show);
 
   if (show) {
     if (!m_radar[radar]->control_dialog) {
@@ -397,9 +397,7 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
     return;
   }
 
-  if (m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback"));
-  }
+  LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback"));
 
   if (m_pMessageBox->UpdateMessage(false)) {
     SetRadarWindowViz(false);
@@ -411,15 +409,15 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
 
   if (m_settings.show) {
     if (m_settings.chart_overlay >= 0 && !m_settings.show_radar) {
-      wxLogMessage(
+      LOG_DIALOG(
           wxT("BR24radar_pi: OnToolbarToolCallback: No radar windows shown, overlay is active and no control -> show control"));
       ShowRadarControl(m_settings.chart_overlay, true);
     } else {
-      wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback: No radar windows shown -> show radar windows"));
+      LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: No radar windows shown -> show radar windows"));
       SetRadarWindowViz(true);
     }
   } else {
-    wxLogMessage(wxT("BR24radar_pi: OnToolbarToolCallback: Radar windows shown -> hide radar windows"));
+    LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: Radar windows shown -> hide radar windows"));
     SetRadarWindowViz(false);
   }
 
@@ -429,8 +427,8 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
 void br24radar_pi::OnContextMenuItemCallback(int id) {
   if (id == m_context_menu_control_id) {
     if (m_settings.chart_overlay >= 0) {
-      wxLogMessage(
-                   wxT("BR24radar_pi: OnToolbarToolCallback: No radar windows shown, overlay is active and no control -> show control"));
+      LOG_DIALOG(
+          wxT("BR24radar_pi: OnToolbarToolCallback: No radar windows shown, overlay is active and no control -> show control"));
       ShowRadarControl(m_settings.chart_overlay, true);
     }
     if (m_settings.show && m_settings.show_radar) {
@@ -464,7 +462,7 @@ void br24radar_pi::PassHeadingToOpenCPN() {
   }
 
   nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
-  wxLogMessage(wxT("BR24radar_pi: Added checksum %d: %s"), checksum, nmea.c_str());
+  LOG_TRANSMIT(wxT("BR24radar_pi: Passing heading '%s'"), nmea.c_str());
   PushNMEABuffer(nmea);
 }
 
@@ -617,7 +615,7 @@ void br24radar_pi::DoTick(void) {
     performance_counter++;
     if (now - refresh_indicator >= 1) {
       refresh_indicator = now;
-      wxLogMessage(wxT("BR24radar_pi: number of refreshes last second = %d"), performance_counter);
+      LOG_VERBOSE(wxT("BR24radar_pi: number of refreshes last second = %d"), performance_counter);
       performance_counter = 0;
     }
   }
@@ -640,7 +638,7 @@ void br24radar_pi::DoTick(void) {
     // Note that the watchdog is continuously reset every time we receive a
     // heading.
     m_bpos_set = false;
-    wxLogMessage(wxT("BR24radar_pi: Lost Boat Position data"));
+    LOG_VERBOSE(wxT("BR24radar_pi: Lost Boat Position data"));
   }
 
   if (m_heading_source != HEADING_NONE && TIMED_OUT(now, m_hdt_timeout)) {
@@ -648,12 +646,12 @@ void br24radar_pi::DoTick(void) {
     // Note that the watchdog is continuously reset every time we receive a
     // heading
     m_heading_source = HEADING_NONE;
-    wxLogMessage(wxT("BR24radar_pi: Lost Heading data"));
+    LOG_VERBOSE(wxT("BR24radar_pi: Lost Heading data"));
   }
 
   if (m_var_source != VARIATION_SOURCE_NONE && TIMED_OUT(now, m_var_timeout)) {
     m_var_source = VARIATION_SOURCE_NONE;
-    wxLogMessage(wxT("BR24radar_pi: Lost Variation source"));
+    LOG_VERBOSE(wxT("BR24radar_pi: Lost Variation source"));
   }
 
   // Check the age of "radar_seen", if too old radar_seen = false
@@ -664,11 +662,11 @@ void br24radar_pi::DoTick(void) {
 
       m_radar[r]->state.Update(RADAR_OFF);
       m_pMessageBox->SetRadarIPAddress(empty);
-      wxLogMessage(wxT("BR24radar_pi: Lost %s presence"), m_radar[r]->name);
+      LOG_INFO(wxT("BR24radar_pi: Lost %s presence"), m_radar[r]->name);
     }
     if (m_radar[r]->state.value == RADAR_TRANSMIT && TIMED_OUT(now, m_radar[r]->m_data_timeout)) {
       m_radar[r]->state.Update(RADAR_STANDBY);
-      wxLogMessage(wxT("BR24radar_pi: Data Lost %s "), m_radar[r]->name);
+      LOG_INFO(wxT("BR24radar_pi: Data Lost %s "), m_radar[r]->name);
     }
     if (m_radar[r]->state.value == RADAR_TRANSMIT) {
       if (TIMED_OUT(now, m_radar[r]->m_stayalive_timeout)) {
@@ -691,7 +689,7 @@ void br24radar_pi::DoTick(void) {
     PassHeadingToOpenCPN();
   }
 
-  if (m_pMessageBox->IsShown() || (m_settings.verbose >= 1)) {
+  if (m_pMessageBox->IsShown() || (m_settings.verbose != 0)) {
     wxString t;
     for (size_t r = 0; r < RADARS; r++) {
       if (m_radar[r]->state.value != RADAR_OFF) {
@@ -703,9 +701,9 @@ void br24radar_pi::DoTick(void) {
     if (m_pMessageBox->IsShown()) {
       m_pMessageBox->SetRadarInfo(t);
     }
-    if (m_settings.verbose >= 2 && t.length() > 0) {
+    if (t.length() > 0) {
       t.Replace(wxT("\n"), wxT(" "));
-      wxLogMessage(wxT("BR24radar_pi: %s"), t.c_str());
+      LOG_RECEIVE(wxT("BR24radar_pi: %s"), t.c_str());
     }
   }
   m_pMessageBox->UpdateMessage(false);
@@ -756,13 +754,11 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
     return true;
   }
 
-  if (m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: RenderOverlay"));
-  }
+  LOG_DIALOG(wxT("BR24radar_pi: RenderOverlay"));
 
   if (m_opengl_mode) {
     m_opengl_mode = false;
-    SetRadarWindowViz(m_settings.show_radar != 0); // Give panels chance to remove GL canvases
+    SetRadarWindowViz(m_settings.show_radar != 0);  // Give panels chance to remove GL canvases
   }
 
   DoTick();  // update timers and watchdogs
@@ -779,18 +775,16 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     return true;
   }
 
-  if (m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: RenderGLOverlay"));
-  }
+  LOG_DIALOG(wxT("BR24radar_pi: RenderGLOverlay"));
   m_opencpn_gl_context = pcontext;
   if (!m_opencpn_gl_context && !m_opencpn_gl_context_broken) {
-    wxLogMessage(wxT("BR24radar_pi: OpenCPN does not pass OpenGL context. Resize of OpenCPN window may be broken!"));
+    LOG_INFO(wxT("BR24radar_pi: OpenCPN does not pass OpenGL context. Resize of OpenCPN window may be broken!"));
   }
   m_opencpn_gl_context_broken = m_opencpn_gl_context == 0;
 
   if (!m_opengl_mode) {
     m_opengl_mode = true;
-    SetRadarWindowViz(m_settings.show_radar != 0); // Give panels chance to create GL canvases
+    SetRadarWindowViz(m_settings.show_radar != 0);  // Give panels chance to create GL canvases
   }
 
   // this is expected to be called at least once per second
@@ -838,10 +832,8 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   if (m_radar[m_settings.chart_overlay]->state.value == RADAR_TRANSMIT) {
     double rotation = fmod(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor) + 720.0, 360);
 
-    if (m_settings.verbose >= 3) {
-      wxLogMessage(wxT("BR24radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"),
-                   vp->clat, vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale, rotation);
-    }
+    LOG_DIALOG(wxT("BR24radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"),
+               vp->clat, vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale, rotation);
     RenderRadarOverlay(boat_center, v_scale_ppm, rotation);
   }
   return true;
@@ -977,7 +969,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ThresholdMultiSweep"), m_settings.threshold_multi_sweep);
 
     pConf->Flush();
-    wxLogMessage(wxT("BR24radar_pi: Saved settings"));
+    LOG_VERBOSE(wxT("BR24radar_pi: Saved settings"));
     return true;
   }
 
@@ -993,7 +985,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
 
   if (m_var_source <= VARIATION_SOURCE_FIX && !wxIsNaN(pfix.Var) && (fabs(pfix.Var) > 0.0 || m_var == 0.0)) {
     if (m_var_source < VARIATION_SOURCE_FIX || fabs(pfix.Var - m_var) > 0.05) {
-      wxLogMessage(wxT("BR24radar_pi: Position fix provides new magnetic variation %f"), pfix.Var);
+      LOG_VERBOSE(wxT("BR24radar_pi: Position fix provides new magnetic variation %f"), pfix.Var);
       if (m_pMessageBox->IsShown()) {
         info = _("GPS");
         info << wxT(" ") << m_var;
@@ -1005,15 +997,13 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     m_var_timeout = now + WATCHDOG_TIMEOUT;
   }
 
-  if (m_settings.verbose >= 2) {
-    wxLogMessage(wxT("BR24radar_pi: SetPositionFixEx var=%f var_wd=%d"), pfix.Var, NOT_TIMED_OUT(now, m_var_timeout));
-  }
+  LOG_VERBOSE(wxT("BR24radar_pi: SetPositionFixEx var=%f var_wd=%d"), pfix.Var, NOT_TIMED_OUT(now, m_var_timeout));
 
   if (m_heading_source != HEADING_RADAR) {
     if (!wxIsNaN(pfix.Hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
       m_hdt = pfix.Hdm + m_var;
       if (m_heading_source != HEADING_HDM) {
-        wxLogMessage(wxT("BR24radar_pi: Heading source is now HDM %f"), m_hdt);
+        LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f"), m_hdt);
         m_heading_source = HEADING_HDM;
       }
       if (m_pMessageBox->IsShown()) {
@@ -1025,7 +1015,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     } else if (!wxIsNaN(pfix.Hdt)) {
       m_hdt = pfix.Hdt;
       if (m_heading_source != HEADING_HDT) {
-        wxLogMessage(wxT("BR24radar_pi: Heading source is now HDT"));
+        LOG_INFO(wxT("BR24radar_pi: Heading source is now HDT"));
         m_heading_source = HEADING_HDT;
       }
       if (m_pMessageBox->IsShown()) {
@@ -1037,7 +1027,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     } else if (!wxIsNaN(pfix.Cog)) {
       m_hdt = pfix.Cog;
       if (m_heading_source != HEADING_COG) {
-        wxLogMessage(wxT("BR24radar_pi: Heading source is now COG"));
+        LOG_INFO(wxT("BR24radar_pi: Heading source is now COG"));
         m_heading_source = HEADING_COG;
       }
       if (m_pMessageBox->IsShown()) {
@@ -1053,7 +1043,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     m_ownship_lat = pfix.Lat;
     m_ownship_lon = pfix.Lon;
     if (!m_bpos_set) {
-      wxLogMessage(wxT("BR24radar_pi: GPS position is now known"));
+      LOG_INFO(wxT("BR24radar_pi: GPS position is now known"));
     }
     m_bpos_set = true;
     m_bpos_timestamp = now;
@@ -1073,7 +1063,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
 
       if (variation != 360.0) {
         if (m_var_source != VARIATION_SOURCE_WMM) {
-          wxLogMessage(wxT("BR24radar_pi: WMM plugin provides new magnetic variation %f"), variation);
+          LOG_INFO(wxT("BR24radar_pi: WMM plugin provides new magnetic variation %f"), variation);
         }
         m_var = variation;
         m_var_source = VARIATION_SOURCE_WMM;
@@ -1089,7 +1079,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
 }
 
 bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value) {  // sends the command to the radar
-  wxLogMessage(wxT("BR24radar_pi: %s set %s = %d"), m_radar[radar]->name.c_str(), ControlTypeNames[controlType].c_str(), value);
+  LOG_TRANSMIT(wxT("BR24radar_pi: %s set %s = %d"), m_radar[radar]->name.c_str(), ControlTypeNames[controlType].c_str(), value);
   switch (controlType) {
     case CT_TRANSPARENCY: {
       m_settings.overlay_transparency = value;
@@ -1110,7 +1100,7 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
 
     default: {
       if (!m_radar[radar]->SetControlValue(controlType, value)) {
-        wxLogMessage(wxT("BR24radar_pi: %s unhandled control setting for control %d"), m_radar[radar]->name, controlType);
+        wxLogError(wxT("BR24radar_pi: %s unhandled control setting for control %d"), m_radar[radar]->name, controlType);
       }
     }
   }
@@ -1214,10 +1204,8 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
 
   if (m_NMEA0183.PreParse()) {
     if (m_NMEA0183.LastSentenceIDReceived == _T("HDG") && m_NMEA0183.Parse()) {
-      if (m_settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: received HDG variation=%f var_source=%d m_var=%f"), m_NMEA0183.Hdg.MagneticVariationDegrees,
-                     m_var_source, m_var);
-      }
+      LOG_RECEIVE(wxT("BR24radar_pi: received HDG variation=%f var_source=%d m_var=%f"), m_NMEA0183.Hdg.MagneticVariationDegrees,
+                  m_var_source, m_var);
       if (!wxIsNaN(m_NMEA0183.Hdg.MagneticVariationDegrees) &&
           (m_var_source <= VARIATION_SOURCE_NMEA || (m_var == 0.0 && m_NMEA0183.Hdg.MagneticVariationDegrees > 0.0))) {
         double newVar;
@@ -1226,8 +1214,8 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
         } else {
           newVar = -m_NMEA0183.Hdg.MagneticVariationDegrees;
         }
-        if (m_settings.verbose && fabs(newVar - m_var) >= 0.1) {
-          wxLogMessage(wxT("BR24radar_pi: NMEA provides new magnetic variation %f"), newVar);
+        if (fabs(newVar - m_var) >= 0.1) {
+          LOG_VERBOSE(wxT("BR24radar_pi: NMEA provides new magnetic variation %f"), newVar);
         }
         m_var = newVar;
         m_var_source = VARIATION_SOURCE_NMEA;

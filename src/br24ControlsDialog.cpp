@@ -406,9 +406,8 @@ void br24ControlsDialog::CreateControls() {
   g_smallButtonSize = wxSize(width, testButtonText->GetSize().y + BUTTON_BORDER);
   g_buttonSize = wxSize(width, testButton2Text->GetSize().y * BUTTON_HEIGTH_FUDGE);
 
-  if (m_pi->m_settings.verbose) {
-    wxLogMessage(wxT("br24radar_pi: Dynamic button width = %d height = %d, %d"), g_buttonSize.x, g_buttonSize.y, g_smallButtonSize.y);
-  }
+  LOG_DIALOG(wxT("BR24radar_pi: Dynamic button width = %d height = %d, %d"), g_buttonSize.x, g_buttonSize.y, g_smallButtonSize.y);
+
   m_top_sizer->Hide(testBox);
   m_top_sizer->Remove(testBox);
   // delete testBox; -- this core dumps!
@@ -857,7 +856,7 @@ void br24ControlsDialog::OnClose(wxCloseEvent& event) { m_pi->OnControlDialogClo
 void br24ControlsDialog::OnIdOKClick(wxCommandEvent& event) { m_pi->OnControlDialogClose(m_ri); }
 
 void br24ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
-  wxLogMessage(wxT("br24radar_pi: OnPlustTenClick for %s value %d"), m_from_control->GetLabel().c_str(),
+  LOG_DIALOG(wxT("br24radar_pi: OnPlustTenClick for %s value %d"), m_from_control->GetLabel().c_str(),
                m_from_control->value + 10);
   m_from_control->SetValue(m_from_control->value + 10);
 
@@ -1127,9 +1126,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
 void br24ControlsDialog::UpdateDialogShown() {
   if (m_hide) {
     if (IsShown()) {
-      if (m_pi->m_settings.verbose) {
-        wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown explicit closed: Hidden"), m_ri->name.c_str());
-      }
+      LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown explicit closed: Hidden"), m_ri->name.c_str());
       Hide();
     }
     return;
@@ -1137,9 +1134,7 @@ void br24ControlsDialog::UpdateDialogShown() {
 
   if (m_hide_temporarily) {
     if (IsShown()) {
-      if (m_pi->m_settings.verbose) {
-        wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown temporarily hidden"), m_ri->name.c_str());
-      }
+      LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown temporarily hidden"), m_ri->name.c_str());
       Hide();
     }
     return;
@@ -1151,9 +1146,7 @@ void br24ControlsDialog::UpdateDialogShown() {
       SetMenuAutoHideTimeout();
     } else {
       if (IsShown()) {
-        if (m_pi->m_settings.verbose) {
-          wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown auto-hide"), m_ri->name.c_str());
-        }
+        LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown auto-hide"), m_ri->name.c_str());
         Hide();
       }
       return;
@@ -1163,16 +1156,12 @@ void br24ControlsDialog::UpdateDialogShown() {
   // Following helps on OSX where the control is SHOW_ON_TOP to not show when no part of OCPN is focused
   wxWindow * focused = FindFocus();
   if (!focused) {
-    if (m_pi->m_settings.verbose >= 2) {
-      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown app not focused"), m_ri->name.c_str());
-    }
+    LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown app not focused"), m_ri->name.c_str());
     return;
   }
 
   if (!IsShown()) {
-    if (m_pi->m_settings.verbose) {
-      wxLogMessage(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown manually opened"), m_ri->name.c_str());
-    }
+    LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown manually opened"), m_ri->name.c_str());
     if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_edit_sizer) &&
         !m_top_sizer->IsShown(m_installation_sizer) && !m_top_sizer->IsShown(m_bogey_sizer) &&
         !m_top_sizer->IsShown(m_guard_sizer)) {

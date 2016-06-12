@@ -43,7 +43,7 @@ RadarDraw* RadarDraw::make_Draw(br24radar_pi* pi, int draw_method) {
     case 1:
       return new RadarDrawShader(pi);
     default:
-      wxLogMessage(wxT("BR24radar_pi: unsupported draw method %d"), draw_method);
+      wxLogError(wxT("BR24radar_pi: unsupported draw method %d"), draw_method);
   }
   return 0;
 }

@@ -83,7 +83,7 @@ bool CompileShaderText(GLuint *shader, GLenum shaderType, const char *text) {
     GLchar log[1000];
     GLsizei len;
     GetShaderInfoLog(*shader, 1000, &len, log);
-    wxLogMessage(wxT("BR24radar_pi: problem compiling shader: %s"), log);
+    wxLogError(wxT("BR24radar_pi: problem compiling shader: %s"), log);
     return false;
   }
   return true;
@@ -110,53 +110,13 @@ GLuint LinkShaders3(GLuint vertShader, GLuint geomShader, GLuint fragShader) {
       GLchar log[1000];
       GLsizei len;
       GetProgramInfoLog(program, 1000, &len, log);
-      wxLogMessage(wxT("BR24radar_pi: problem linking program: %s"), log);
+      wxLogError(wxT("BR24radar_pi: problem linking program: %s"), log);
       return 0;
     }
   }
 
   return program;
 }
-
-#if 0
-GLuint
-LinkShaders3WithGeometryInfo(GLuint vertShader, GLuint geomShader, GLuint fragShader,
-                             GLint verticesOut, GLenum inputType, GLenum outputType)
-{
-  GLuint program = CreateProgram();
-
-  assert(vertShader || fragShader);
-
-  if (vertShader)
-    AttachShader(program, vertShader);
-  if (geomShader) {
-    AttachShader(program, geomShader);
-    ProgramParameteriARB(program, GL_GEOMETRY_VERTICES_OUT_ARB, verticesOut);
-    ProgramParameteriARB(program, GL_GEOMETRY_INPUT_TYPE_ARB, inputType);
-    ProgramParameteriARB(program, GL_GEOMETRY_OUTPUT_TYPE_ARB, outputType);
-  }
-  if (fragShader)
-    AttachShader(program, fragShader);
-
-  LinkProgram(program);
-
-
-  /* check link */
-  {
-    GLint stat;
-    GetProgramiv(program, GL_LINK_STATUS, &stat);
-    if (!stat) {
-      GLchar log[1000];
-      GLsizei len;
-      GetProgramInfoLog(program, 1000, &len, log);
-      wxLogMessage(wxT("BR24radar_pi: problem linking shader: %s"), log);
-      return 0;
-    }
-  }
-
-  return program;
-}
-#endif
 
 GLboolean ValidateShaderProgram(GLuint program) {
   GLint stat;
@@ -167,7 +127,7 @@ GLboolean ValidateShaderProgram(GLuint program) {
     GLchar log[1000];
     GLsizei len;
     GetProgramInfoLog(program, 1000, &len, log);
-    wxLogMessage(wxT("BR24radar_pi: program validation error: %s"), log);
+    wxLogError(wxT("BR24radar_pi: program validation error: %s"), log);
     return 0;
   }
 

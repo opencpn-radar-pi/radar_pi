@@ -49,9 +49,7 @@ class br24Receive : public wxThread {
     m_updated_range = false;
     m_radar_status = 0;
 
-    if (m_pi->m_settings.verbose >= 2) {
-      wxLogMessage(wxT("BR24radar_pi: br24Receive ctor"));
-    }
+    LOG_RECEIVE(wxT("BR24radar_pi: br24Receive ctor"));
   };
 
   ~br24Receive(void);
