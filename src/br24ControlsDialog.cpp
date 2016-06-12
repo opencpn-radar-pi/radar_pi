@@ -1186,9 +1186,9 @@ void br24ControlsDialog::UpdateDialogShown() {
     m_edit_sizer->Layout();
     m_top_sizer->Layout();
 
-    if (m_top_sizer->IsShown(m_control_sizer)) {
-      Fit();
-    }
+  }
+  if (m_top_sizer->IsShown(m_control_sizer)) {
+    Fit();
   }
 }
 
