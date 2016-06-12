@@ -226,7 +226,7 @@ int br24radar_pi::Init(void) {
 
   LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.chart_overlay);
 
-  SetRadarWindowViz(m_settings.show);
+  SetRadarWindowViz(m_settings.show != 0);
 
   return PLUGIN_OPTIONS;
 }
@@ -773,7 +773,7 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 
   if (m_opengl_mode) {
     m_opengl_mode = false;
-    SetRadarWindowViz(m_settings.show);  // Give panels chance to remove GL canvases
+    SetRadarWindowViz(m_settings.show != 0);  // Give panels chance to remove GL canvases
   }
 
   DoTick();  // update timers and watchdogs
@@ -799,7 +799,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
 
   if (!m_opengl_mode) {
     m_opengl_mode = true;
-    SetRadarWindowViz(m_settings.show);  // Give panels chance to create GL canvases
+    SetRadarWindowViz(m_settings.show != 0);  // Give panels chance to create GL canvases
   }
 
   // this is expected to be called at least once per second

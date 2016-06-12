@@ -62,7 +62,10 @@ class br24Receive : public wxThread {
         mcast.b[1] = (uint8_t)b[1];
         mcast.b[2] = (uint8_t)b[2];
         mcast.b[3] = (uint8_t)b[3];
+
+#ifdef __WXMAC__
         m_initial_mcast_addr.sin_len = sizeof(sockaddr_in);
+#endif
         m_initial_mcast_addr.sin_addr.s_addr = mcast.addr;
         m_initial_mcast_addr.sin_port = 0;
         m_initial_mcast_addr.sin_family = AF_INET;

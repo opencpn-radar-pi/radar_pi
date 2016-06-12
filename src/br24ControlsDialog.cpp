@@ -958,7 +958,7 @@ void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
     m_pi->m_settings.show_radar[r] = show;
     LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), r, show);
   }
-  m_pi->SetRadarWindowViz(show);
+  m_pi->SetRadarWindowViz(show != 0);
 }
 
 void br24ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
