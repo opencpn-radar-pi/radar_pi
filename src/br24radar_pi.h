@@ -346,7 +346,9 @@ class br24radar_pi : public opencpn_plugin_110 {
   wxFileConfig *m_pconfig;
   wxWindow *m_parent_window;
   wxMenu *m_context_menu;
-  int m_context_menu_id;
+  int m_context_menu_control_id;
+  int m_context_menu_show_id;
+  int m_context_menu_hide_id;
 
   int m_tool_id;
   wxBitmap *m_pdeficon;
