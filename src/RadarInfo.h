@@ -49,6 +49,12 @@ class radar_control_item {
   void Update(int v);
   int GetButton();
 
+  radar_control_item() {
+    value = 0;
+    button = 0;
+    mod = false;
+  }
+
  private:
   wxMutex m_mutex;
 };
