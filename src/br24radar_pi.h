@@ -257,14 +257,15 @@ class br24radar_pi : public opencpn_plugin_110 {
   void SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix);
   void SetPluginMessage(wxString &message_id, wxString &message_body);
   void SetNMEASentence(wxString &sentence);
-
   void SetDefaults(void);
   int GetToolbarToolCount(void);
   void OnToolbarToolCallback(int id);
-  void SetRadarWindowViz(bool show);
+  void OnContextMenuItemCallback(int id);
   void ShowPreferencesDialog(wxWindow *parent);
 
   // Other public methods
+
+  void SetRadarWindowViz(bool show);
 
   void OnControlDialogClose(RadarInfo *ri);
   void SetDisplayMode(DisplayModeType mode);
@@ -344,7 +345,8 @@ class br24radar_pi : public opencpn_plugin_110 {
 
   wxFileConfig *m_pconfig;
   wxWindow *m_parent_window;
-  wxMenu *m_pmenu;
+  wxMenu *m_context_menu;
+  int m_context_menu_id;
 
   int m_tool_id;
   wxBitmap *m_pdeficon;

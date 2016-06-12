@@ -47,20 +47,6 @@ class RadarCanvas : public wxGLCanvas {
   void OnSize(wxSizeEvent& evt);
   void OnMouseClick(wxMouseEvent& event);
 
-#if 0
-    // events
-    void moved(wxMoveEvent& evt);
-    void close(wxCloseEvent& evt);
-    void mouseMoved(wxMouseEvent& event);
-    void mouseDown(wxMouseEvent& event);
-    void mouseWheelMoved(wxMouseEvent& event);
-    void mouseReleased(wxMouseEvent& event);
-    void rightClick(wxMouseEvent& event);
-    void mouseLeftWindow(wxMouseEvent& event);
-    void keyPressed(wxKeyEvent& event);
-    void keyReleased(wxKeyEvent& event);
-#endif
-
  private:
   // void RenderText(wxPoint p, wxString text);
   void RenderTexts(int w, int h);

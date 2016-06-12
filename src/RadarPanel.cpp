@@ -61,22 +61,16 @@ bool RadarPanel::Create() {
                            .CloseButton(true)
                            .Gripper(false);
 
-  m_ri->radar_canvas =
-      new RadarCanvas(m_pi, m_ri, this, wxSize(512, 512));  // m_pi->m_dialogLocation[DL_RADARWINDOW + radar].size);
-  if (!m_ri->radar_canvas) {
-    wxLogMessage(wxT("BR24radar_pi %s: Unable to create RadarCanvas"), m_ri->name.c_str());
-    return false;
-  }
+  m_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-  wxBoxSizer* Sizer = new wxBoxSizer(wxHORIZONTAL);
-  Sizer->Add(m_ri->radar_canvas, 0, wxEXPAND | wxALL, 0);
-  SetSizer(Sizer);
+  m_text = new wxStaticText(this, 0, _("OpenGL mode required"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
+  m_sizer->Add(m_text, 0, wxEXPAND | wxALL, 0);
+  SetSizer(m_sizer);
 
   DimeWindow(this);
   Fit();
   Layout();
   // SetMinSize(GetBestSize());
-  Refresh();
 
   m_best_size.x = m_pi->m_display_width / 2;
   m_best_size.y = m_pi->m_display_height / 2;
@@ -110,6 +104,7 @@ bool RadarPanel::Create() {
 RadarPanel::~RadarPanel() {
   m_pi->m_perspective[m_ri->radar] = m_aui_mgr->SavePaneInfo(m_aui_mgr->GetPane(this));
   if (m_ri->radar_canvas) {
+    m_sizer->Detach(m_ri->radar_canvas);
     delete m_ri->radar_canvas;
     m_ri->radar_canvas = 0;
   }
@@ -126,6 +121,36 @@ void RadarPanel::ShowFrame(bool visible) {
   wxLogMessage(wxT("BR24radar_pi %s: set visible %d"), m_ri->name.c_str(), visible);
 
   wxAuiPaneInfo& pane = m_aui_mgr->GetPane(this);
+
+  if (!m_pi->m_opengl_mode && m_ri->radar_canvas) {
+    m_sizer->Detach(m_ri->radar_canvas);
+    delete m_ri->radar_canvas;
+    m_ri->radar_canvas = 0;
+    m_text->SetLabel(_("OpenGL mode required"));
+    m_sizer->Show(m_text);
+    DimeWindow(this);
+    Fit();
+    Layout();
+  }
+  if (visible) {
+    if (m_pi->m_opengl_mode && !m_ri->radar_canvas) {
+      if (m_pi->m_settings.verbose >= 2) {
+        wxLogMessage(wxT("BR24radar_pi %s: creating OpenGL canvas"), m_ri->name.c_str());
+      }
+      m_ri->radar_canvas = new RadarCanvas(m_pi, m_ri, this, wxSize(512, 512));
+      if (!m_ri->radar_canvas) {
+        m_text->SetLabel(_("Unable to create OpenGL canvas"));
+        m_sizer->Show(m_text);
+      }
+      else {
+        m_sizer->Hide(m_text);
+        m_sizer->Add(m_ri->radar_canvas, 0, wxEXPAND | wxALL, 0);
+
+        Fit();
+        Layout();
+      }
+    }
+  }
 
   // What should have been a simple 'pane.Show(visible)' has devolved into a terrible hack.
   // When the entire dock row disappears because we're removing the last pane from it then the
@@ -155,7 +180,7 @@ void RadarPanel::ShowFrame(bool visible) {
   }
 
   pane.Show(visible);
-  m_aui_mgr->Update();
+  m_aui_mgr->Update(); // causes recursive calls on OS X when not in OpenGL mode
 
   if (visible && (m_dock_size > 0)) {
     // Now the reverse: take the new perspective string and replace the dock size of the dock that our pane is in and

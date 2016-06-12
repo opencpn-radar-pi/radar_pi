@@ -163,19 +163,26 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     return;
   }
 
-  if (!m_pi->m_opencpn_gl_context && !m_pi->m_opencpn_gl_context_broken) {
-    wxLogMessage(wxT("BR24radar_pi: %s skip render as no context known yet"), m_ri->name.c_str());
+  GetClientSize(&w, &h);
+  wxPaintDC(this);  // only to be used in paint events. use wxClientDC to paint
+                    // outside the paint event
+
+  if (!m_pi->m_opengl_mode) {
+    if (m_pi->m_settings.verbose >= 2) {
+      wxLogMessage(wxT("BR24radar_pi: %s cannot render non-OpenGL mode"), m_ri->name.c_str());
+    }
     return;
   }
-
-  GetClientSize(&w, &h);
-
+  if (!m_pi->m_opencpn_gl_context && !m_pi->m_opencpn_gl_context_broken) {
+    if (m_pi->m_settings.verbose >= 2) {
+      wxLogMessage(wxT("BR24radar_pi: %s skip render as no context known yet"), m_ri->name.c_str());
+    }
+    return;
+  }
   if (m_pi->m_settings.verbose >= 2) {
     wxLogMessage(wxT("BR24radar_pi: %s render OpenGL canvas %d by %d "), m_ri->name.c_str(), w, h);
   }
 
-  wxPaintDC(this);  // only to be used in paint events. use wxClientDC to paint
-                    // outside the paint event
   SetCurrent(*m_context);
 
   glPushMatrix();

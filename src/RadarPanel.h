@@ -56,6 +56,8 @@ class RadarPanel : public wxPanel {
   RadarInfo* m_ri;
   wxAuiManager* m_aui_mgr;
   wxString m_aui_name;
+  wxBoxSizer * m_sizer;
+  wxStaticText * m_text;
   wxSize m_best_size;
   wxString m_dock;
   int m_dock_size;

@@ -208,6 +208,9 @@ void br24MessageBox::OnClose(wxCloseEvent &event) {
 }
 
 bool br24MessageBox::Show(bool show) {
+  if (m_pi->m_settings.verbose >= 2) {
+    wxLogMessage(wxT("BR24radar_pi: message box show = %d"), (int) show);
+  }
 
   if (show) {
     CenterOnParent();
@@ -229,6 +232,7 @@ bool br24MessageBox::Show(bool show) {
       }
     }
   }
+
   return wxDialog::Show(show);
 }
 
@@ -269,41 +273,41 @@ bool br24MessageBox::UpdateMessage(bool force) {
 
   if (!m_allow_auto_hide) {
     if (m_pi->m_settings.verbose >= 2) {
-      wxLogMessage(wxT("BR24radar_pi: messagebox explicit wanted"));
+      wxLogMessage(wxT("BR24radar_pi: messagebox explicit wanted: SHOW_CLOSE"));
     }
     new_message_state = SHOW_CLOSE;
   } else if (!haveOpenGL) {
     if (m_pi->m_settings.verbose >= 2) {
-      wxLogMessage(wxT("BR24radar_pi: messagebox no OpenGL"));
+      wxLogMessage(wxT("BR24radar_pi: messagebox no OpenGL: SHOW_CLOSE"));
     }
     new_message_state = SHOW_CLOSE;
     ret = true;
   } else if (no_overlay) {
     if (!wantTransmit) {
       if (m_pi->m_settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: messagebox no radar wanted"));
+        wxLogMessage(wxT("BR24radar_pi: messagebox no radar wanted: HIDE"));
       }
       new_message_state = HIDE;
     } else if (radarOn) {
       if (m_pi->m_settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: messagebox radar window needs met"));
+        wxLogMessage(wxT("BR24radar_pi: messagebox radar window needs met: HIDE"));
       }
       new_message_state = HIDE;
     } else {
       if (m_pi->m_settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: messagebox radar window needs not met"));
+        wxLogMessage(wxT("BR24radar_pi: messagebox radar window needs not met: SHOW_NO_NMEA"));
       }
       new_message_state = SHOW_NO_NMEA;
     }
   } else {  // overlay
     if (navOn && radarOn) {
       if (m_pi->m_settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: messagebox overlay needs met"));
+        wxLogMessage(wxT("BR24radar_pi: messagebox overlay needs met: HIDE"));
       }
       new_message_state = HIDE;
     } else {
       if (m_pi->m_settings.verbose >= 2) {
-        wxLogMessage(wxT("BR24radar_pi: messagebox overlay needs not met"));
+        wxLogMessage(wxT("BR24radar_pi: messagebox overlay needs not met: SHOW"));
       }
       new_message_state = SHOW;
     }
@@ -328,25 +332,28 @@ bool br24MessageBox::UpdateMessage(bool force) {
 
     switch (new_message_state) {
       case HIDE:
-        Hide();
+        Show(false);
         break;
 
       case SHOW:
-        Show();
+        Show(true);
         m_message_sizer->Show(m_nmea_sizer);
         m_close_button->Hide();
         break;
 
       case SHOW_NO_NMEA:
-        Show();
+        Show(true);
         m_message_sizer->Hide(m_nmea_sizer);
         m_close_button->Hide();
         break;
 
       case SHOW_CLOSE:
-        Show();
+        Show(true);
         m_message_sizer->Show(m_nmea_sizer);
         m_close_button->Show();
+        if (m_pi->m_settings.verbose >= 2) {
+          wxLogMessage(wxT("BR24radar_pi: messagebox SHOW_CLOSE done"));
+        }
         break;
     }
   }

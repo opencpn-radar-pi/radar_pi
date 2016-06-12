@@ -214,6 +214,11 @@ int br24radar_pi::Init(void) {
 
   m_initialized = true;
 
+  m_context_menu = new wxMenu();
+  wxMenuItem * mi  = new wxMenuItem(m_context_menu, -1, _("Radar Control..."));
+  m_context_menu_id = AddCanvasContextMenuItem(mi, this);
+  SetCanvasContextMenuItemViz(m_context_menu_id, true);
+
   wxLogMessage(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.chart_overlay);
 
   SetRadarWindowViz(m_settings.show && m_settings.show_radar);
@@ -301,6 +306,7 @@ void br24radar_pi::SetRadarWindowViz(bool show) {
       ShowRadarControl(r, show);
     }
   }
+  SetCanvasContextMenuItemGrey(m_context_menu_id, m_settings.chart_overlay >= 0);
   wxLogMessage(wxT("BR24radar_pi: RadarWindow visibility = %d"), (int)show);
 }
 
@@ -413,6 +419,12 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
   }
 
   UpdateState();
+}
+
+void br24radar_pi::OnContextMenuItemCallback(int id) {
+  if (m_settings.chart_overlay >= 0) {
+    ShowRadarControl(m_settings.chart_overlay);
+  }
 }
 
 void br24radar_pi::PassHeadingToOpenCPN() {
@@ -724,13 +736,12 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
     wxLogMessage(wxT("BR24radar_pi: RenderOverlay"));
   }
 
-  m_opengl_mode = false;
-  m_in_setup_dialog = false;
+  if (m_opengl_mode) {
+    m_opengl_mode = false;
+    SetRadarWindowViz(m_settings.show_radar != 0); // Give panels chance to remove GL canvases
+  }
 
   DoTick();  // update timers and watchdogs
-
-  SetRadarWindowViz(false);
-  m_settings.show = 0;
 
   UpdateState();  // update the toolbar
 
@@ -753,8 +764,10 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   }
   m_opencpn_gl_context_broken = m_opencpn_gl_context == 0;
 
-  m_opengl_mode = true;
-  m_in_setup_dialog = false;
+  if (!m_opengl_mode) {
+    m_opengl_mode = true;
+    SetRadarWindowViz(m_settings.show_radar != 0); // Give panels chance to create GL canvases
+  }
 
   // this is expected to be called at least once per second
   // but if we are scrolling or otherwise it can be MUCH more often!
