@@ -173,6 +173,8 @@ int br24radar_pi::Init(void) {
   m_settings.refreshrate = 1;
   m_settings.timed_idle = 0;
 
+  m_settings.mcast_address = wxT("");
+
   ::wxDisplaySize(&m_display_width, &m_display_height);
 
   //    And load the configuration items
@@ -902,7 +904,7 @@ bool br24radar_pi::LoadConfig(void) {
 
     pConf->Read(wxT("RadarAlertAudioFile"), &m_settings.alert_audio_file);
     pConf->Read(wxT("Show"), &m_settings.show, 0);
-    pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 1);
+    pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 0);
 
     pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, 0);
     pConf->Read(wxT("RadarInterface"), &m_settings.mcast_address);
