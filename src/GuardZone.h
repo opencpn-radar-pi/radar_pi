@@ -41,8 +41,8 @@ class GuardZone {
   GuardZoneType type;
   SpokeBearing start_bearing;
   SpokeBearing end_bearing;
-  int inner_range;  // now in meters
-  int outer_range;  // now in meters
+  int inner_range;  // start in meters
+  int outer_range;  // end   in meters
   int multi_sweep_filter;
 
   /*

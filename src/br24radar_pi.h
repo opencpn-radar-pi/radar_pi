@@ -87,6 +87,7 @@ typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a 
 #define LOGLEVEL_DIALOG 2
 #define LOGLEVEL_TRANSMIT 4
 #define LOGLEVEL_RECEIVE 8
+#define LOGLEVEL_GUARD 16
 #define IF_LOG_AT_LEVEL(x) if ((M_SETTINGS.verbose & x) != 0)
 #define IF_LOG_AT(x, y)       \
   do {                        \
@@ -97,6 +98,7 @@ typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a 
 #define LOG_DIALOG IF_LOG_AT_LEVEL(LOGLEVEL_DIALOG) wxLogMessage
 #define LOG_TRANSMIT IF_LOG_AT_LEVEL(LOGLEVEL_TRANSMIT) wxLogMessage
 #define LOG_RECEIVE IF_LOG_AT_LEVEL(LOGLEVEL_RECEIVE) wxLogMessage
+#define LOG_GUARD IF_LOG_AT_LEVEL(LOGLEVEL_GUARD) wxLogMessage
 
 enum { BM_ID_RED, BM_ID_RED_SLAVE, BM_ID_GREEN, BM_ID_GREEN_SLAVE, BM_ID_AMBER, BM_ID_AMBER_SLAVE, BM_ID_BLANK, BM_ID_BLANK_SLAVE };
 

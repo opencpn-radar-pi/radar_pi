@@ -295,15 +295,18 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   wxMutexLocker lock(m_mutex);
 
   if (m_range_meters != range_meters) {
-    // Wipe ALL spokes
     ResetSpokes();
+    LOG_VERBOSE(wxT("BR24radar_pi: %s detected range change from %d to %d meters"), name.c_str(), m_range_meters, range_meters);
     m_range_meters = range_meters;
+
+    // compute m_display_meters, changed by convert method
     m_display_meters = range_meters;
     m_range_index = convertRadarMetersToIndex(&m_display_meters);
     range.Update(range_meters);
-    LOG_RECEIVE(wxT("BR24radar_pi: %s detected range %d"), name.c_str(), range_meters);
+    LOG_VERBOSE(wxT("BR24radar_pi: %s detected range change to range #%d, display_meters=%d"), name.c_str(), m_range_index, m_display_meters);
   } else if (rotation.mod) {
     ResetSpokes();
+    LOG_VERBOSE(wxT("BR24radar_pi: %s HeadUp/NorthUp change"));
   }
   int north_up = rotation.GetButton();
 
@@ -560,8 +563,10 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, 
   } else {
     double overscan = (double)m_range_meters / (double)m_display_meters;
 
+    LOG_VERBOSE(wxT("BR24radar_pi: %s render overscan=%g range=%d"), name.c_str(), overscan, m_display_meters);
+
     RenderGuardZone(center, 1.0 / m_display_meters);
-    RenderRadarImage(center, overscan / m_display_meters, rotation, &m_draw_panel);
+    RenderRadarImage(center, overscan/ RETURNS_PER_LINE, rotation, &m_draw_panel);
     if (m_refreshes_queued > 0) {
       m_refreshes_queued--;
     }
@@ -591,10 +596,9 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
     s << _("Head Up");
   }
   if (m_pi->m_settings.emulator_on) {
-    s << wxT(" (");
-    s << _("Emulator");
-    s << wxT(")");
-  } else if (m_range_meters) {
+    s << wxT("\n") << _("Emulator");
+  }
+  if (m_range_meters) {
     s << wxT("\n") << GetRangeText(m_range_meters, &index);
   }
 
@@ -610,8 +614,16 @@ wxString RadarInfo::GetCanvasTextCenter() {
     s << _("No radar");
   } else if (state.value == RADAR_STANDBY) {
     s << _("Standby");
-    if (this->radar_type == RT_4G) {
-      s << wxT(" 4G");
+    switch (radar_type) {
+      case RT_BR24:
+        s << wxT(" BR24");
+        break;
+      case RT_4G:
+        s << wxT(" 4G");
+        break;
+      case RT_UNKNOWN:
+      default:
+        break;
     }
   } else if (!m_draw_panel.draw) {
     s << _("No valid drawing method");

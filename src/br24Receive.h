@@ -44,8 +44,6 @@ class br24Receive : public wxThread {
     Create(1024 * 1024);  // Stack size, be liberal
     m_next_spoke = -1;
     m_mcast_addr = 0;
-    m_range_meters = 0;
-    m_updated_range = false;
     m_radar_status = 0;
 
     LOG_VERBOSE(wxT("BR24radar_pi: old mcast %s"), m_pi->m_settings.mcast_address.c_str());
@@ -85,9 +83,6 @@ class br24Receive : public wxThread {
   sockaddr_in *m_mcast_addr;
   wxIPV4address m_ip_addr;
   bool m_new_ip_addr;
-
-  int m_range_meters;    // Last received range in meters
-  bool m_updated_range;  // m_range_meters has changed
 
  private:
   void logBinaryData(const wxString &what, const UINT8 *data, int size);

@@ -214,20 +214,6 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       }
     }
 
-    // Range change received from radar?
-    if (range_meters != m_range_meters) {
-      if (m_pi->m_settings.verbose >= 1) {
-        if (range_meters == 0) {
-          LOG_VERBOSE(wxT("BR24radar_pi: %s Invalid range received, keeping %d meters"), m_ri->name.c_str(), m_range_meters);
-        } else {
-          LOG_VERBOSE(wxT("BR24radar_pi: %s now scanning with range %d meters (was %d meters)"), m_ri->name.c_str(), range_meters,
-                      m_range_meters);
-        }
-      }
-      m_range_meters = range_meters;
-      m_updated_range = true;
-    }
-
     hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
     if (hdm_raw != INT16_MIN && NOT_TIMED_OUT(now, m_pi->m_var_timeout) && m_ri->radar_type == RT_4G) {
       if (m_pi->m_heading_source != HEADING_RADAR) {
@@ -280,12 +266,10 @@ void br24Receive::EmulateFakeBuffer(void) {
   m_ri->state.Update(RADAR_TRANSMIT);
 
   int scanlines_in_packet = SPOKES * 24 / 60;
-  int range_meters = 4000;
+  int range_meters = 2500;
   int spots = 0;
   m_ri->radar_type = RT_4G;
-  if (range_meters != m_range_meters) {
-    m_range_meters = range_meters;
-  }
+
   for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
     int angle_raw = m_next_spoke;
     m_next_spoke = (m_next_spoke + 1) % SPOKES;

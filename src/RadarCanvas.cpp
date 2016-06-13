@@ -238,7 +238,6 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glFinish();
   SwapBuffers();
 
-  LOG_DIALOG(wxT("BR24radar_pi: %s drawn canvas"), m_ri->name.c_str());
   if (m_pi->m_opencpn_gl_context) {
     SetCurrent(*m_pi->m_opencpn_gl_context);
   } else {
