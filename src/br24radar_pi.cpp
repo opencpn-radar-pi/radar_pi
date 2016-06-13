@@ -414,13 +414,8 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
     return;
   }
 
-  bool anyRadarWindowShow = false;
-  for (int r = 0; r < RADARS; r++) {
-    anyRadarWindowShow |= m_settings.show_radar[r] != 0;
-  }
-
   if (m_settings.show) {
-    if (m_settings.chart_overlay >= 0 && !anyRadarWindowShow &&
+    if (m_settings.chart_overlay >= 0 && m_settings.show_radar[m_settings.chart_overlay] == 0 &&
         (!m_radar[m_settings.chart_overlay]->control_dialog || !m_radar[m_settings.chart_overlay]->control_dialog->IsShown())) {
       LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: Show control"));
       ShowRadarControl(m_settings.chart_overlay, true);
