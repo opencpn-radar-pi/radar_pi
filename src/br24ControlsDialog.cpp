@@ -66,7 +66,7 @@ enum {  // process ID's
   ID_RAIN,
   ID_ADVANCED,
 
-  ID_RESET_CURSOR,
+  ID_CLEAR_CURSOR,
 
   ID_RADAR_STATE,
   ID_SHOW_RADAR,
@@ -85,7 +85,7 @@ enum {  // process ID's
   ID_RADAR,
   ID_DATA,
 
-  ID_BEARING_SET = 1000, // next one should be BEARING_LINES higher
+  ID_BEARING_SET = 1000,  // next one should be BEARING_LINES higher
 
 };
 
@@ -138,7 +138,7 @@ EVT_BUTTON(ID_MESSAGE, br24ControlsDialog::OnMessageButtonClick)
 EVT_BUTTON(ID_CONFIRM_BOGEY, br24ControlsDialog::OnConfirmBogeyButtonClick)
 
 EVT_BUTTON(ID_BEARING_SET, br24ControlsDialog::OnBearingSetButtonClick)
-EVT_BUTTON(ID_RESET_CURSOR, br24ControlsDialog::OnResetCursorButtonClick)
+EVT_BUTTON(ID_CLEAR_CURSOR, br24ControlsDialog::OnClearCursorButtonClick)
 EVT_BUTTON(ID_BEARING, br24ControlsDialog::OnBearingButtonClick)
 
 EVT_MOVE(br24ControlsDialog::OnMove)
@@ -772,21 +772,21 @@ void br24ControlsDialog::CreateControls() {
   m_bearing_sizer->Add(bBearingBack, 0, wxALL, BORDER);
   bBearingBack->SetFont(m_pi->m_font);
 
+  // The CLEAR CURSOR button
+  m_clear_cursor = new wxButton(this, ID_CLEAR_CURSOR, _("Clear cursor"), wxDefaultPosition, g_smallButtonSize, 0);
+  m_bearing_sizer->Add(m_clear_cursor, 0, wxALL, BORDER);
+  m_clear_cursor->SetFont(m_pi->m_font);
+
   for (int b = 0; b < BEARING_LINES; b++) {
     // The BEARING button
     wxString label = wxString::Format(_("Place EVL/VRM%d"), b + 1);
     m_bearing_buttons[b] = new wxButton(this, ID_BEARING_SET + b, label, wxDefaultPosition, g_smallButtonSize, 0);
     m_bearing_sizer->Add(m_bearing_buttons[b], 0, wxALL, BORDER);
-    m_bearing_buttons[b]->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnBearingSetButtonClick), 0, this);
+    m_bearing_buttons[b]->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnBearingSetButtonClick),
+                                  0, this);
   }
 
-  // The Transmit button
-  m_reset_cursor = new wxButton(this, ID_RESET_CURSOR, _("Reset cursor"), wxDefaultPosition, g_smallButtonSize, 0);
-  m_bearing_sizer->Add(m_reset_cursor, 0, wxALL, BORDER);
-  m_reset_cursor->SetFont(m_pi->m_font);
-
   m_top_sizer->Hide(m_bearing_sizer);
-
 
   //**************** CONTROL BOX ******************//
   // These are the controls that the users sees when the dialog is started
@@ -875,6 +875,7 @@ void br24ControlsDialog::SwitchTo(wxBoxSizer* to) {
 
   to->Layout();
   m_top_sizer->Layout();
+  Fit();
 }
 
 void br24ControlsDialog::UpdateAdvanced4GState() {
@@ -1073,8 +1074,10 @@ void br24ControlsDialog::OnBearingSetButtonClick(wxCommandEvent& event) {
   m_ri->SetBearing(bearing);
 }
 
-void br24ControlsDialog::OnResetCursorButtonClick(wxCommandEvent& event) {
-  LOG_DIALOG(wxT("br24radar_pi: OnResetCursorButtonClick"));
+void br24ControlsDialog::OnClearCursorButtonClick(wxCommandEvent& event) {
+  LOG_DIALOG(wxT("br24radar_pi: OnClearCursorButtonClick"));
+  m_ri->SetMouseVrmEbl(0., 0.);
+  SwitchTo(m_control_sizer);
 }
 
 void br24ControlsDialog::OnMove(wxMoveEvent& event) { event.Skip(); }

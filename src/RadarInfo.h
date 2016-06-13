@@ -151,14 +151,14 @@ class RadarInfo : public wxEvtHandler {
   int GetDisplayRange() { return m_display_meters; };
   void SetNetworkCardAddress(struct sockaddr_in *address);
   void SetMouseLatLon(double lat, double lon);
+  void SetMouseVrmEbl(double vrm, double ebl);
   void SetBearing(int bearing);
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
   wxString GetCanvasTextCenter();
 
-  double m_mouse_lat;
-  double m_mouse_lon;
+  double m_mouse_lat, m_mouse_lon, m_mouse_vrm, m_mouse_ebl;
 
  private:
   void RenderRadarImage(DrawInfo *di);

@@ -62,7 +62,6 @@ class br24radar_pi;
 #define GUARD_ZONES (2)             // Could be increased if wanted
 #define BEARING_LINES (2)           // And these as well
 
-
 typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a bearing (? = North,
                            // +ve = clockwise)
 

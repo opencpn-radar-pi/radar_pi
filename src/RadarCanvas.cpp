@@ -110,7 +110,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   int px;
   int py;
 
-  glColor3ub(0, 126, 29); // same color as HDS
+  glColor3ub(0, 126, 29);  // same color as HDS
   glLineWidth(1.0);
 
   for (int i = 1; i <= 4; i++) {
@@ -148,13 +148,22 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
 
 void RadarCanvas::RenderLollipop(int w, int h) {
   static const double LOLLIPOP_SIZE = 20.0;
+  double distance;
+  double bearing;
 
-  if ((m_ri->m_mouse_lat == 0.0 && m_ri->m_mouse_lon == 0.0) || !m_pi->m_bpos_set) {
-    return;
+  if (m_ri->m_mouse_vrm != 0.0) {
+    distance = m_ri->m_mouse_vrm * 1852.;
+    bearing = m_ri->m_mouse_ebl;
+    LOG_DIALOG(wxT("BR24radar_pi: Radar Mouse vrm=%f ebl=%f"), distance / 1852.0, bearing);
+  } else {
+    if ((m_ri->m_mouse_lat == 0.0 && m_ri->m_mouse_lon == 0.0) || !m_pi->m_bpos_set) {
+      return;
+    }
+    // Can't compute this upfront, ownship may move...
+    distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon) * 1852.;
+    bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon);
+    LOG_DIALOG(wxT("BR24radar_pi: Chart Mouse vrm=%f ebl=%f"), distance / 1852.0, bearing);
   }
-  // Can't compute this upfront, ownship may move...
-  double distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon) * 1852.;
-  double bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon);
   double full_range = wxMax(w, h) / 2.0;
 
   double rot = (m_ri->rotation.value && m_pi->m_heading_source != HEADING_NONE) ? m_pi->m_hdt : 0.0;
@@ -181,11 +190,7 @@ void RadarCanvas::RenderLollipop(int w, int h) {
 }
 
 void RadarCanvas::Render_EBL_VRM(int w, int h) {
-
-  static const uint8_t rgb[BEARING_LINES][3] = {
-    { 22, 129, 154 }
-    , { 45, 255, 254 }
-  };
+  static const uint8_t rgb[BEARING_LINES][3] = {{22, 129, 154}, {45, 255, 254}};
 
   double full_range = wxMax(w, h) / 2.0;
   double center_x = w / 2.0;
@@ -194,13 +199,12 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
   double rot = (m_ri->rotation.value && m_pi->m_heading_source != HEADING_NONE) ? m_pi->m_hdt : 0.0;
   int display_range = m_ri->GetDisplayRange();
 
-  for (int b = 0; b < BEARING_LINES; b++)
-  {
+  for (int b = 0; b < BEARING_LINES; b++) {
     if (m_ri->m_vrm[b] != 0.0) {
       double scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
       double angle = deg2rad(m_ri->m_ebl[b] - rot);
-      double x = center_x - sin(angle) * full_range;
-      double y = center_y + cos(angle) * full_range;
+      double x = center_x - sin(angle) * full_range * 2.;
+      double y = center_y + cos(angle) * full_range * 2.;
 
       glColor3ub(rgb[b][0], rgb[b][1], rgb[b][2]);
       glLineWidth(1.0);
@@ -313,8 +317,33 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
 }
 
 void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
-  LOG_DIALOG(wxT("BR24radar_pi: %s Mouse clicked"), m_ri->name.c_str());
+  int x, y, w, h;
+
+  event.GetPosition(&x, &y);
+  GetClientSize(&w, &h);
+
+  LOG_DIALOG(wxT("BR24radar_pi: %s Mouse clicked at %d, %d"), m_ri->name.c_str(), x, y);
+
+  int center_x = w / 2;
+  int center_y = h / 2;
+
+  double delta_x = x - center_x;
+  double delta_y = y - center_y;
+
+  double distance = sqrt(delta_x * delta_x + delta_y * delta_y);
+
+  double rot = (m_ri->rotation.value && m_pi->m_heading_source != HEADING_NONE) ? m_pi->m_hdt : 0.0;
+  double angle = fmod(rad2deg(atan2(delta_y, delta_x)) - rot + 720. - 90., 360.0);
+
+  int display_range = m_ri->GetDisplayRange();
+  double full_range = wxMax(w, h) / 2.0;
+
+  double scale = distance / (1852.0 * full_range / display_range);
+
+  m_ri->SetMouseVrmEbl(scale, angle);
+
   m_pi->ShowRadarControl(m_ri->radar, true);
+
   event.Skip();
 }
 

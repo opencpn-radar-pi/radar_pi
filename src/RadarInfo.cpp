@@ -173,8 +173,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
 
   m_mouse_lat = 0;
   m_mouse_lon = 0;
-  for (int b = 0; b < BEARING_LINES; b++)
-  {
+  for (int b = 0; b < BEARING_LINES; b++) {
     m_ebl[b] = 0.0;
     m_vrm[b] = 0.0;
   }
@@ -643,15 +642,21 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
 
 wxString RadarInfo::GetCanvasTextBottomLeft() {
   wxString s = m_pi->GetGuardZoneText(this, false);
+  double distance = 0.0, bearing;
 
-  if ((m_mouse_lat != 0.0 || m_mouse_lon != 0.0) && m_pi->m_bpos_set) {
+  if (m_mouse_vrm != 0.0) {
+    distance = m_mouse_vrm;
+    bearing = m_mouse_ebl;
+  } else if ((m_mouse_lat != 0.0 || m_mouse_lon != 0.0) && m_pi->m_bpos_set) {
+    // Can't compute this upfront, ownship may move...
+    distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
+    bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
+  }
+
+  if (distance != 0.0) {
     if (s.length()) {
       s << wxT("\n");
     }
-
-    // Can't compute this upfront, ownship may move...
-    double distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
-    double bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
 
     if (m_pi->m_settings.range_units > 0) {
       distance *= 1.852;
@@ -766,11 +771,27 @@ const char *RadarInfo::GetDisplayRangeStr(size_t idx) {
 void RadarInfo::SetMouseLatLon(double lat, double lon) {
   m_mouse_lat = lat;
   m_mouse_lon = lon;
+  m_mouse_ebl = 0.0;
+  m_mouse_vrm = 0.0;
+  LOG_DIALOG(wxT("BR24radar_pi: SetMouseLatLon(%f, %f)"), lat, lon);
+}
+
+void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
+  m_mouse_vrm = vrm;
+  m_mouse_ebl = ebl;
+  m_mouse_lat = 0.0;
+  m_mouse_lon = 0.0;
+  LOG_DIALOG(wxT("BR24radar_pi: SetMouseVrmEbl(%f, %f)"), vrm, ebl);
 }
 
 void RadarInfo::SetBearing(int bearing) {
-  m_vrm[bearing] = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
-  m_ebl[bearing] = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
+  if (m_mouse_vrm != 0.0) {
+    m_vrm[bearing] = m_mouse_vrm;
+    m_ebl[bearing] = m_mouse_ebl;
+  } else if (m_mouse_lat != 0.0 || m_mouse_lon != 0.0) {
+    m_vrm[bearing] = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
+    m_ebl[bearing] = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
+  }
 }
 
 PLUGIN_END_NAMESPACE

@@ -106,7 +106,7 @@ class br24ControlsDialog : public wxDialog {
   void OnZone1ButtonClick(wxCommandEvent &event);
   void OnZone2ButtonClick(wxCommandEvent &event);
 
-  void OnResetCursorButtonClick(wxCommandEvent &event);
+  void OnClearCursorButtonClick(wxCommandEvent &event);
   void OnBearingSetButtonClick(wxCommandEvent &event);
   void OnBearingButtonClick(wxCommandEvent &event);
 
@@ -169,7 +169,7 @@ class br24ControlsDialog : public wxDialog {
 
   // Bearing controls
   wxButton *m_bearing_buttons[BEARING_LINES];
-  wxButton *m_reset_cursor;
+  wxButton *m_clear_cursor;
 
   // Show Controls
 
