@@ -146,8 +146,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   }
 }
 
-void RadarCanvas::RenderLollipop(int w, int h) {
-  static const double LOLLIPOP_SIZE = 20.0;
+void RadarCanvas::RenderCursor(int w, int h) {
   double distance;
   double bearing;
 
@@ -175,18 +174,35 @@ void RadarCanvas::RenderLollipop(int w, int h) {
   double angle = deg2rad(bearing - rot);
   double x = center_x - sin(angle) * scale;
   double y = center_y + cos(angle) * scale;
-  double l_x = x + sin(angle) * LOLLIPOP_SIZE;
-  double l_y = y - cos(angle) * LOLLIPOP_SIZE;
 
-  glColor3ub(150, 150, 150);
-  glLineWidth(1.0);
+  glColor3ub(0, 0, 0);
+  glLineWidth(3.0);
 
   glBegin(GL_LINES);
-  glVertex2f(center_x, center_y);
-  glVertex2f(l_x, l_y);
+  glVertex2f(x - 4, y);
+  glVertex2f(x + 4, y);
+  glVertex2f(x, y - 4);
+  glVertex2f(x, y + 4);
   glEnd();
 
-  DrawArc(x, y, LOLLIPOP_SIZE, 0.0, 2.0 * (float)PI, 36);
+  glColor3ub(255, 255, 255);
+  glLineWidth(1.0);
+
+  glBegin(GL_LINE_STRIP);
+  glVertex2f(x - 6, y - 2);
+  glVertex2f(x - 6, y + 2);
+  glVertex2f(x - 2, y + 2);
+  glVertex2f(x - 2, y + 6);
+  glVertex2f(x + 2, y + 6);
+  glVertex2f(x + 2, y + 2);
+  glVertex2f(x + 6, y + 2);
+  glVertex2f(x + 6, y - 2);
+  glVertex2f(x + 2, y - 2);
+  glVertex2f(x + 2, y - 6);
+  glVertex2f(x - 2, y - 6);
+  glVertex2f(x - 2, y - 2);
+  glVertex2f(x - 6, y - 2);
+  glEnd();
 }
 
 void RadarCanvas::Render_EBL_VRM(int w, int h) {
@@ -250,7 +266,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   wxFont bigFont(24, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
   m_FontBig.Build(bigFont);
 
-  glClearColor(0.0f, 0.1f, 0.0f, 1.0f);                // Black Background
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                // Black Background
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // Clear the canvas
   glEnable(GL_TEXTURE_2D);                             // Enable textures
   glEnable(GL_COLOR_MATERIAL);
@@ -268,7 +284,6 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glEnable(GL_TEXTURE_2D);
 
   RenderRangeRingsAndHeading(w, h);
-  RenderLollipop(w, h);
   Render_EBL_VRM(w, h);
 
   glViewport(0, 0, w, h);
@@ -296,6 +311,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glEnable(GL_TEXTURE_2D);
 
   RenderTexts(w, h);
+  RenderCursor(w, h);
 
   glDisable(GL_TEXTURE_2D);
 
