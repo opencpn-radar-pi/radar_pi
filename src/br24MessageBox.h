@@ -69,6 +69,9 @@ class br24MessageBox : public wxDialog {
   void OnSize(wxSizeEvent &event);
 
   void OnMessageCloseButtonClick(wxCommandEvent &event);
+  void OnMessageHideRadarClick(wxCommandEvent &event);
+
+  bool IsModalDialogShown();
 
   wxMutex m_mutex;
 
@@ -88,6 +91,7 @@ class br24MessageBox : public wxDialog {
 
   // MessageBox
   wxButton *m_close_button;
+  wxButton *m_hide_radar;
   wxStaticText *m_error_message;
   wxStaticText *m_radar_off;
   wxCheckBox *m_have_open_gl;

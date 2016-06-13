@@ -399,12 +399,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_110 {
 
   int m_auto_range_meters;  // What the range should be, at least, when AUTO mode is selected
   int m_previous_auto_range_meters;
-  bool m_update_error_control;
-  wxString m_error_msg;
 
-  // DoTick timer
-  wxTimer *m_timer;
-  
   // Timed Transmit
   bool m_init_timed_transmit;
   int m_idle_dialog_time_left;

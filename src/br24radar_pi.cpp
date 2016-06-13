@@ -148,7 +148,6 @@ int br24radar_pi::Init(void) {
   m_bpos_set = false;
   m_auto_range_meters = 0;
   m_previous_auto_range_meters = 0;
-  m_update_error_control = false;
   m_idle_dialog_time_left = 999;  // Secret value, I hate secret values!
   m_TimedTransmit_IdleBoxMode = 0;
   m_idle_time_left = 0;
@@ -226,7 +225,7 @@ int br24radar_pi::Init(void) {
 
   LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.chart_overlay);
 
-  Start(1000, wxTIMER_CONTINUOUS); // inherited from wxTimer
+  Start(1000, wxTIMER_CONTINUOUS);  // inherited from wxTimer
 
   SetRadarWindowViz(m_settings.show != 0);
 
@@ -244,7 +243,7 @@ bool br24radar_pi::DeInit(void) {
     return false;
   }
 
-  Stop(); // inherited from wxTimer
+  Stop();  // inherited from wxTimer
 
   // Save our config, first, as it contains state regarding what is open.
   SaveConfig();
@@ -309,12 +308,18 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
  * @param show        desired visibility state
  */
 void br24radar_pi::SetRadarWindowViz(bool show) {
-  for (int r = 0; r <= (int)m_settings.enable_dual_radar; r++) {
+  int r;
+  for (r = 0; r <= (int)m_settings.enable_dual_radar; r++) {
     m_radar[r]->ShowRadarWindow(show && (m_settings.show_radar[r] != 0));
     if (!show) {
       ShowRadarControl(r, show);
     }
   }
+  for (; r < RADARS; r++) {  // Hide remaining radar if enable_dual_radar was on but now off
+    m_radar[r]->ShowRadarWindow(false);
+    ShowRadarControl(r, false);
+  }
+
   SetCanvasContextMenuItemViz(m_context_menu_show_id, !show);
   SetCanvasContextMenuItemViz(m_context_menu_hide_id, show);
   SetCanvasContextMenuItemGrey(m_context_menu_control_id, !show);
@@ -618,11 +623,6 @@ void br24radar_pi::Notify(void) {
 
   if (m_radar[0]->radar_type == RT_BR24) {
     m_settings.enable_dual_radar = 0;
-  }
-
-  if (m_update_error_control) {
-    m_pMessageBox->SetErrorMessage(m_error_msg);
-    m_update_error_control = false;
   }
 
   if (m_opengl_mode_changed) {

@@ -176,6 +176,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
   m_draw_panel.draw = 0;
   m_draw_overlay.draw = 0;
   radar_panel = 0;
+  radar_canvas = 0;
   control_dialog = 0;
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
