@@ -146,6 +146,48 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   }
 }
 
+void RadarCanvas::RenderLollipop(int w, int h) {
+
+  const double LOLLIPOP_SIZE = 20.0;
+
+  if (m_ri->m_mouse_lat == 0.0 && m_ri->m_mouse_lon == 0.0) {
+    return;
+  }
+  // Can't compute this upfront, ownship may move...
+  double distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon) * 1852.;
+  double bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon);
+  double full_range = wxMax(w, h) / 2.0;
+
+  double rot = (m_ri->rotation.value && m_pi->m_heading_source != HEADING_NONE) ? m_pi->m_hdt : 0.0;
+  int display_range = m_ri->GetDisplayRange();
+  double scale = distance * full_range / display_range;
+
+  double center_x = w / 2.0;
+  double center_y = h / 2.0;
+  double angle = deg2rad(bearing - rot);
+  double x = center_x - sin(angle) * scale;
+  double y = center_y + cos(angle) * scale;
+  double l_x = x + sin(angle) * LOLLIPOP_SIZE;
+  double l_y = y - cos(angle) * LOLLIPOP_SIZE;
+
+  LOG_VERBOSE(wxT("BR24radar_pi: LOLLIPOP brg=%f rot=%f sin=%f cos=%f"), bearing, rot, sin(deg2rad(bearing - rot)), cos(deg2rad(bearing - rot)));
+  glColor3ub(150, 150, 150);
+  glLineWidth(1.0);
+
+  glBegin(GL_LINES);
+  glVertex2f(center_x, center_y);
+  glVertex2f(l_x, l_y);
+  glEnd();
+
+
+  DrawArc(x, y, LOLLIPOP_SIZE, 0.0, 2.0 * (float)PI, 36);
+
+  LOG_DIALOG(wxT("BR24radar_pi: Lollipop at %f, %f"), x, y);
+
+}
+
+
+
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
 
@@ -195,6 +237,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glEnable(GL_TEXTURE_2D);
 
   RenderRangeRingsAndHeading(w, h);
+  RenderLollipop(w, h);
 
   glViewport(0, 0, w, h);
   glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack

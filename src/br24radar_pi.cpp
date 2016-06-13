@@ -47,7 +47,7 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin *p) { delete p; }
 //   Distance measurement for simple sphere
 /********************************************************************************************************/
 
-static double local_distance(double lat1, double lon1, double lat2, double lon2) {
+double local_distance(double lat1, double lon1, double lat2, double lon2) {
   // Spherical Law of Cosines
   double theta, dist;
 
@@ -57,6 +57,19 @@ static double local_distance(double lat1, double lon1, double lat2, double lon2)
   dist = rad2deg(dist);
   dist = fabs(dist) * 60;  // nautical miles/degree
   return (dist);
+}
+
+double local_bearing(double lat1, double lon1, double lat2, double lon2) {
+  double s1 = deg2rad(lat1);
+  double l1 = deg2rad(lon1);
+  double s2 = deg2rad(lat2);
+  double l2 = deg2rad(lon2);
+
+  double y = sin(l2 - l1) * cos(s2);
+  double x = cos(s1) * sin(s2) - sin(s1) * cos(s2) * cos(l2 - l1);
+
+  double brg = fmod(rad2deg(atan2(y, x)) + 360.0, 360.0);
+  return brg;
 }
 
 static double radar_distance(double lat1, double lon1, double lat2, double lon2, char unit) {
@@ -92,7 +105,7 @@ static double radar_distance(double lat1, double lon1, double lat2, double lon2,
 //
 //---------------------------------------------------------------------------------------------------------
 
-br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_110(ppimgr) {
+br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_112(ppimgr) {
   m_initialized = false;
   // Create the PlugIn icons
   initialize_images();
@@ -1248,6 +1261,20 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
       m_hdt_timeout = now + HEADING_TIMEOUT;
     }
   }
+}
+
+void br24radar_pi::SetCursorLatLon(double lat, double lon) {
+  m_cursor_lat = lat;
+  m_cursor_lon = lon;
+}
+
+bool br24radar_pi::MouseEventHook(wxMouseEvent &event) {
+  if (event.LeftDown()) {
+    for (int r = 0; r < RADARS; r++) {
+      m_radar[r]->SetMouseLatLon(m_cursor_lat, m_cursor_lon);
+    }
+  }
+  return false;
 }
 
 PLUGIN_END_NAMESPACE

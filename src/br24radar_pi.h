@@ -33,7 +33,7 @@
 #define _BR24RADARPI_H_
 
 #define MY_API_VERSION_MAJOR 1
-#define MY_API_VERSION_MINOR 10
+#define MY_API_VERSION_MINOR 12
 
 #include "pi_common.h"
 #include "jsonreader.h"
@@ -170,6 +170,8 @@ enum BlobColor { BLOB_NONE, BLOB_BLUE, BLOB_GREEN, BLOB_RED };
 
 extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, RadarType radar_type);
 extern const char *convertRadarToString(int range_meters, int units, int index);
+extern double local_distance(double lat1, double lon1, double lat2, double lon2);
+extern double local_bearing(double lat1, double lon1, double lat2, double lon2);
 
 enum DisplayModeType { DM_CHART_OVERLAY, DM_CHART_NONE };
 enum ToolbarIconColor { TB_RED, TB_AMBER, TB_GREEN };
@@ -249,9 +251,9 @@ struct scan_line {
 #define PLUGIN_OPTIONS                                                                                                       \
   (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK | WANTS_OPENGL_OVERLAY_CALLBACK | WANTS_OVERLAY_CALLBACK | WANTS_TOOLBAR_CALLBACK | \
    INSTALLS_TOOLBAR_TOOL | USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS | WANTS_NMEA_SENTENCES | WANTS_PREFERENCES |  \
-   WANTS_PLUGIN_MESSAGING)
+   WANTS_PLUGIN_MESSAGING | WANTS_CURSOR_LATLON | WANTS_MOUSE_EVENTS)
 
-class br24radar_pi : public wxTimer, public opencpn_plugin_110 {
+class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
  public:
   br24radar_pi(void *ppimgr);
   ~br24radar_pi();
@@ -283,6 +285,8 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_110 {
   void OnToolbarToolCallback(int id);
   void OnContextMenuItemCallback(int id);
   void ShowPreferencesDialog(wxWindow *parent);
+  void SetCursorLatLon(double lat, double lon);
+  bool MouseEventHook(wxMouseEvent &event);
 
   // The wxTimer overrides
 
@@ -345,7 +349,10 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_110 {
   volatile bool m_opengl_mode_changed;
   bool m_bpos_set;
   time_t m_bpos_timestamp;
-  bool m_in_setup_dialog;  // When this is true don't show message dialog on errors
+
+  // Cursor position. Used to show position in radar window
+  double m_cursor_lat, m_cursor_lon;
+  double m_ownship_lat, m_ownship_lon;
 
   bool m_initialized;  // True if Init() succeeded and DeInit() not called yet.
   bool m_first_init;   // True in first Init() call.
@@ -392,7 +399,6 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_110 {
   double llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
 
   ToolbarIconColor m_toolbar_button;
-  double m_ownship_lat, m_ownship_lon;
 
   double m_hdm;
 

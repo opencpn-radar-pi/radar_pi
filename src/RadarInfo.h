@@ -146,11 +146,16 @@ class RadarInfo : public wxEvtHandler {
   void FlipRadarState();
   wxString &GetRangeText(int range_meters, int *index);
   const char *GetDisplayRangeStr(size_t idx);
+  int GetDisplayRange(){return m_display_meters;};
   void SetNetworkCardAddress(struct sockaddr_in *address);
+  void SetMouseLatLon(double lat, double lon);
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
   wxString GetCanvasTextCenter();
+
+  double m_mouse_lat;
+  double m_mouse_lon;
 
  private:
   void RenderRadarImage(DrawInfo *di);

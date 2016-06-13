@@ -171,6 +171,9 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
   m_auto_range_meters = 0;
   m_previous_auto_range_meters = 1;
 
+  m_mouse_lat = 0;
+  m_mouse_lon = 0;
+
   transmit = new br24Transmit(pi, name, radar);
   receive = 0;
   m_draw_panel.draw = 0;
@@ -633,7 +636,47 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
   return s;
 }
 
-wxString RadarInfo::GetCanvasTextBottomLeft() { return m_pi->GetGuardZoneText(this, false); }
+wxString RadarInfo::GetCanvasTextBottomLeft() {
+  wxString s = m_pi->GetGuardZoneText(this, false);
+
+  if (m_mouse_lat != 0.0 || m_mouse_lon != 0.0) {
+    if (s.length()) {
+    s << wxT("\n");
+    }
+    
+    // Can't compute this upfront, ownship may move...
+    double distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
+    double bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
+
+    if (m_pi->m_settings.range_units > 0) {
+      distance *= 1.852;
+
+      if (distance < 1.000) {
+        int meters = distance * 1000.0;
+        s << meters;
+        s << "m";
+      }
+      else {
+        s << wxString::Format(wxT("%.2fkm"), distance);
+      }
+    }
+    else {
+      if (distance < 0.25 * 1.852) {
+        int meters = distance * 1852.0;
+        s << meters;
+        s << "m";
+      }
+      else {
+        s << wxString::Format(wxT("%.2fnm"), distance);
+      }
+    }
+
+    s << wxString::Format(wxT(" %.1f"), bearing);
+
+    s << wxT("°");
+  }
+  return s;
+}
 
 wxString RadarInfo::GetCanvasTextCenter() {
   wxString s;
@@ -719,5 +762,12 @@ const char *RadarInfo::GetDisplayRangeStr(size_t idx) {
 
   return 0;
 }
+
+void RadarInfo::SetMouseLatLon(double lat, double lon)
+{
+  m_mouse_lat = lat;
+  m_mouse_lon = lon;
+}
+
 
 PLUGIN_END_NAMESPACE
