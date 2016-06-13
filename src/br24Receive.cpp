@@ -293,9 +293,9 @@ void br24Receive::EmulateFakeBuffer(void) {
 
     // Invent a pattern. Outermost ring, then a square pattern
     for (size_t range = 0; range < sizeof(data); range++) {
-      size_t bit = range >> 5;
+      size_t bit = range >> 7;
       // use bit 'bit' of angle_raw
-      UINT8 color = ((angle_raw >> (3 + m_ri->radar)) & (2 << bit)) > 0 ? 200 : 0;
+      UINT8 color = ((angle_raw >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
       data[range] = color;
       if (color > 0) {
         spots++;
