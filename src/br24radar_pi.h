@@ -249,7 +249,7 @@ struct scan_line {
    INSTALLS_TOOLBAR_TOOL | USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS | WANTS_NMEA_SENTENCES | WANTS_PREFERENCES |  \
    WANTS_PLUGIN_MESSAGING)
 
-class br24radar_pi : public opencpn_plugin_110 {
+class br24radar_pi : public wxTimer, public opencpn_plugin_110 {
  public:
   br24radar_pi(void *ppimgr);
   ~br24radar_pi();
@@ -281,6 +281,10 @@ class br24radar_pi : public opencpn_plugin_110 {
   void OnToolbarToolCallback(int id);
   void OnContextMenuItemCallback(int id);
   void ShowPreferencesDialog(wxWindow *parent);
+
+  // The wxTimer overrides
+
+  void Notify();
 
   // Other public methods
 
@@ -337,6 +341,7 @@ class br24radar_pi : public opencpn_plugin_110 {
 
   HeadingSource m_heading_source;
   bool m_opengl_mode;
+  volatile bool m_opengl_mode_changed;
   bool m_bpos_set;
   time_t m_bpos_timestamp;
   bool m_in_setup_dialog;  // When this is true don't show message dialog on errors
@@ -397,6 +402,9 @@ class br24radar_pi : public opencpn_plugin_110 {
   bool m_update_error_control;
   wxString m_error_msg;
 
+  // DoTick timer
+  wxTimer *m_timer;
+  
   // Timed Transmit
   bool m_init_timed_transmit;
   int m_idle_dialog_time_left;

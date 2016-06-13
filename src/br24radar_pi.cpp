@@ -226,6 +226,8 @@ int br24radar_pi::Init(void) {
 
   LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.chart_overlay);
 
+  Start(1000, wxTIMER_CONTINUOUS); // inherited from wxTimer
+
   SetRadarWindowViz(m_settings.show != 0);
 
   return PLUGIN_OPTIONS;
@@ -241,6 +243,8 @@ bool br24radar_pi::DeInit(void) {
   if (!m_initialized) {
     return false;
   }
+
+  Stop(); // inherited from wxTimer
 
   // Save our config, first, as it contains state regarding what is open.
   SaveConfig();
@@ -603,17 +607,14 @@ void br24radar_pi::CheckTimedTransmit(RadarState state) {
   }
 }
 
-// DoTick
+// Notify
 // ------
-// Called on every RenderGLOverlay call, i.e. once a second.
+// Called once a second by the timer.
 //
 // This checks if we need to ping the radar to keep it alive (or make it alive)
-//*********************************************************************************
-// Keeps Radar scanner on line if master and radar on -  run by RenderGLOverlay
 
-void br24radar_pi::DoTick(void) {
+void br24radar_pi::Notify(void) {
   time_t now = time(0);
-  static time_t previousTicks = 0;
 
   if (m_radar[0]->radar_type == RT_BR24) {
     m_settings.enable_dual_radar = 0;
@@ -624,22 +625,12 @@ void br24radar_pi::DoTick(void) {
     m_update_error_control = false;
   }
 
-  if (m_settings.verbose >= 2) {
-    static time_t refresh_indicator = 0;
-    static int performance_counter = 0;
-    performance_counter++;
-    if (now - refresh_indicator >= 1) {
-      refresh_indicator = now;
-      LOG_VERBOSE(wxT("BR24radar_pi: number of refreshes last second = %d"), performance_counter);
-      performance_counter = 0;
-    }
+  if (m_opengl_mode_changed) {
+    m_opengl_mode_changed = false;
+    SetRadarWindowViz(m_settings.show != 0);
   }
-  if (now == previousTicks) {
-    // Repeated call during scroll, do not do Tick processing
-    return;
-  }
-  previousTicks = now;
 
+  // Move this
   if (m_heading_source == HEADING_RADAR) {
     if (m_pMessageBox->IsShown()) {
       wxString info = _("Radar");
@@ -773,13 +764,10 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 
   if (m_opengl_mode) {
     m_opengl_mode = false;
-    SetRadarWindowViz(m_settings.show != 0);  // Give panels chance to remove GL canvases
+    // Can't hide/show the windows from here, this becomes recursive because the Chart display
+    // is managed by wxAuiManager as well.
+    m_opengl_mode_changed = true;
   }
-
-  DoTick();  // update timers and watchdogs
-
-  UpdateState();  // update the toolbar
-
   return true;
 }
 
@@ -799,13 +787,10 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
 
   if (!m_opengl_mode) {
     m_opengl_mode = true;
-    SetRadarWindowViz(m_settings.show != 0);  // Give panels chance to create GL canvases
+    // Can't hide/show the windows from here, this becomes recursive because the Chart display
+    // is managed by wxAuiManager as well.
+    m_opengl_mode_changed = true;
   }
-
-  // this is expected to be called at least once per second
-  // but if we are scrolling or otherwise it can be MUCH more often!
-
-  DoTick();  // update timers and watchdogs
 
   if (!m_settings.show || m_settings.chart_overlay < 0 ||
       m_radar[m_settings.chart_overlay]->state.value != RADAR_TRANSMIT) {  // No overlay desired
