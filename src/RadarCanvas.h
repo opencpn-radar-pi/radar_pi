@@ -52,6 +52,7 @@ class RadarCanvas : public wxGLCanvas {
   void RenderTexts(int w, int h);
   void RenderRangeRingsAndHeading(int w, int h);
   void RenderLollipop(int w, int h);
+  void Render_EBL_VRM(int w, int h);
 
   wxWindow* m_parent;
   br24radar_pi* m_pi;

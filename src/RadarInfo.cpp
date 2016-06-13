@@ -173,6 +173,11 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
 
   m_mouse_lat = 0;
   m_mouse_lon = 0;
+  for (int b = 0; b < BEARING_LINES; b++)
+  {
+    m_ebl[b] = 0.0;
+    m_vrm[b] = 0.0;
+  }
 
   transmit = new br24Transmit(pi, name, radar);
   receive = 0;
@@ -639,7 +644,7 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
 wxString RadarInfo::GetCanvasTextBottomLeft() {
   wxString s = m_pi->GetGuardZoneText(this, false);
 
-  if (m_mouse_lat != 0.0 || m_mouse_lon != 0.0) {
+  if ((m_mouse_lat != 0.0 || m_mouse_lon != 0.0) && m_pi->m_bpos_set) {
     if (s.length()) {
       s << wxT("\n");
     }
@@ -668,9 +673,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
       }
     }
 
-    s << wxString::Format(wxT(" %.1f"), bearing);
-
-    s << wxT("°");
+    s << wxString::Format(wxT(", %.1f\u00B0T"), bearing);
   }
   return s;
 }
@@ -763,6 +766,11 @@ const char *RadarInfo::GetDisplayRangeStr(size_t idx) {
 void RadarInfo::SetMouseLatLon(double lat, double lon) {
   m_mouse_lat = lat;
   m_mouse_lon = lon;
+}
+
+void RadarInfo::SetBearing(int bearing) {
+  m_vrm[bearing] = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
+  m_ebl[bearing] = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
 }
 
 PLUGIN_END_NAMESPACE

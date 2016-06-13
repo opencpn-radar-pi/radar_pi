@@ -89,6 +89,7 @@ class br24ControlsDialog : public wxDialog {
   void OnAutoClick(wxCommandEvent &event);
   void OnMultiSweepClick(wxCommandEvent &event);
 
+  void OnAdjustButtonClick(wxCommandEvent &event);
   void OnAdvancedButtonClick(wxCommandEvent &event);
   void OnInstallationButtonClick(wxCommandEvent &event);
 
@@ -104,6 +105,10 @@ class br24ControlsDialog : public wxDialog {
 
   void OnZone1ButtonClick(wxCommandEvent &event);
   void OnZone2ButtonClick(wxCommandEvent &event);
+
+  void OnResetCursorButtonClick(wxCommandEvent &event);
+  void OnBearingSetButtonClick(wxCommandEvent &event);
+  void OnBearingButtonClick(wxCommandEvent &event);
 
   void OnConfirmBogeyButtonClick(wxCommandEvent &event);
 
@@ -124,6 +129,8 @@ class br24ControlsDialog : public wxDialog {
   wxBoxSizer *m_installation_sizer;
   wxBoxSizer *m_bogey_sizer;
   wxBoxSizer *m_guard_sizer;
+  wxBoxSizer *m_adjust_sizer;
+  wxBoxSizer *m_bearing_sizer;
   wxBoxSizer *m_transmit_sizer;  // Controls disabled if not transmitting
   wxBoxSizer *m_from_sizer;      // If on edit control, this is where the button is from
 
@@ -160,6 +167,10 @@ class br24ControlsDialog : public wxDialog {
   br24RadarControlButton *m_local_interference_rejection_button;
   br24RadarControlButton *m_side_lobe_suppression_button;
 
+  // Bearing controls
+  wxButton *m_bearing_buttons[BEARING_LINES];
+  wxButton *m_reset_cursor;
+
   // Show Controls
 
   wxButton *m_radar_state;
@@ -172,6 +183,8 @@ class br24ControlsDialog : public wxDialog {
   br24RadarControlButton *m_gain_button;
   br24RadarControlButton *m_sea_button;
   br24RadarControlButton *m_rain_button;
+  wxButton *m_adjust_button;
+  wxButton *m_bearing_button;
   wxButton *m_guard_1_button;
   wxButton *m_guard_2_button;
 

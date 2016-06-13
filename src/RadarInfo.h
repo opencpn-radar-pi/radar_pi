@@ -116,6 +116,8 @@ class RadarInfo : public wxEvtHandler {
   RadarState wantedState;
 
   GuardZone *guard_zone[GUARD_ZONES];
+  double m_ebl[BEARING_LINES];
+  double m_vrm[BEARING_LINES];
   receive_statistics statistics;
 
   bool multi_sweep_filter;
@@ -149,6 +151,7 @@ class RadarInfo : public wxEvtHandler {
   int GetDisplayRange() { return m_display_meters; };
   void SetNetworkCardAddress(struct sockaddr_in *address);
   void SetMouseLatLon(double lat, double lon);
+  void SetBearing(int bearing);
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();

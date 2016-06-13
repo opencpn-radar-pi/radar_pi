@@ -60,6 +60,8 @@ class br24radar_pi;
 #define RADARS (2)                  // Number of radars supported by this PI. 2 since 4G supports 2. More work
                                     // needed if you intend to add multiple radomes to network!
 #define GUARD_ZONES (2)             // Could be increased if wanted
+#define BEARING_LINES (2)           // And these as well
+
 
 typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a bearing (? = North,
                            // +ve = clockwise)

@@ -110,7 +110,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   int px;
   int py;
 
-  glColor3ub(200, 255, 200);
+  glColor3ub(0, 126, 29); // same color as HDS
   glLineWidth(1.0);
 
   for (int i = 1; i <= 4; i++) {
@@ -149,7 +149,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
 void RadarCanvas::RenderLollipop(int w, int h) {
   static const double LOLLIPOP_SIZE = 20.0;
 
-  if (m_ri->m_mouse_lat == 0.0 && m_ri->m_mouse_lon == 0.0) {
+  if ((m_ri->m_mouse_lat == 0.0 && m_ri->m_mouse_lon == 0.0) || !m_pi->m_bpos_set) {
     return;
   }
   // Can't compute this upfront, ownship may move...
@@ -178,6 +178,41 @@ void RadarCanvas::RenderLollipop(int w, int h) {
   glEnd();
 
   DrawArc(x, y, LOLLIPOP_SIZE, 0.0, 2.0 * (float)PI, 36);
+}
+
+void RadarCanvas::Render_EBL_VRM(int w, int h) {
+
+  static const uint8_t rgb[BEARING_LINES][3] = {
+    { 22, 129, 154 }
+    , { 45, 255, 254 }
+  };
+
+  double full_range = wxMax(w, h) / 2.0;
+  double center_x = w / 2.0;
+  double center_y = h / 2.0;
+
+  double rot = (m_ri->rotation.value && m_pi->m_heading_source != HEADING_NONE) ? m_pi->m_hdt : 0.0;
+  int display_range = m_ri->GetDisplayRange();
+
+  for (int b = 0; b < BEARING_LINES; b++)
+  {
+    if (m_ri->m_vrm[b] != 0.0) {
+      double scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
+      double angle = deg2rad(m_ri->m_ebl[b] - rot);
+      double x = center_x - sin(angle) * full_range;
+      double y = center_y + cos(angle) * full_range;
+
+      glColor3ub(rgb[b][0], rgb[b][1], rgb[b][2]);
+      glLineWidth(1.0);
+
+      glBegin(GL_LINES);
+      glVertex2f(center_x, center_y);
+      glVertex2f(x, y);
+      glEnd();
+
+      DrawArc(center_x, center_y, scale, 0.0, 2.0 * (float)PI, 360);
+    }
+  }
 }
 
 void RadarCanvas::Render(wxPaintEvent &evt) {
@@ -230,6 +265,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
 
   RenderRangeRingsAndHeading(w, h);
   RenderLollipop(w, h);
+  Render_EBL_VRM(w, h);
 
   glViewport(0, 0, w, h);
   glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
