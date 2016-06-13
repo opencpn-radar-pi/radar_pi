@@ -137,7 +137,7 @@ class RadarInfo : public wxEvtHandler {
   void ResetSpokes();
   void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters);
   void RefreshDisplay(wxTimerEvent &event);
-  void RenderGuardZone(wxPoint radar_center, double v_scale_ppm);
+  void RenderGuardZone();
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
   bool IsPaneShown();
@@ -153,7 +153,7 @@ class RadarInfo : public wxEvtHandler {
   wxString GetCanvasTextCenter();
 
  private:
-  void RenderRadarImage(wxPoint center, double scale, double rotation, DrawInfo *di);
+  void RenderRadarImage(DrawInfo *di);
   int GetRangeMeters(int index);
   size_t convertRadarMetersToIndex(int *range_meters);
 

@@ -303,7 +303,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     m_display_meters = range_meters;
     m_range_index = convertRadarMetersToIndex(&m_display_meters);
     range.Update(range_meters);
-    LOG_VERBOSE(wxT("BR24radar_pi: %s detected range change to range #%d, display_meters=%d"), name.c_str(), m_range_index, m_display_meters);
+    LOG_VERBOSE(wxT("BR24radar_pi: %s detected range change to range #%d, display_meters=%d"), name.c_str(), m_range_index,
+                m_display_meters);
   } else if (rotation.mod) {
     ResetSpokes();
     LOG_VERBOSE(wxT("BR24radar_pi: %s HeadUp/NorthUp change"));
@@ -380,7 +381,7 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
   }
 }
 
-void RadarInfo::RenderGuardZone(wxPoint radar_center, double v_scale_ppm) {
+void RadarInfo::RenderGuardZone() {
   int start_bearing = 0, end_bearing = 0;
   GLubyte red = 0, green = 200, blue = 0, alpha = 50;
 
@@ -396,18 +397,15 @@ void RadarInfo::RenderGuardZone(wxPoint radar_center, double v_scale_ppm) {
       switch (m_pi->m_settings.guard_zone_render_style) {
         case 1:
           glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
-          DrawOutlineArc(guard_zone[z]->outer_range * v_scale_ppm, guard_zone[z]->inner_range * v_scale_ppm, start_bearing,
-                         end_bearing, true);
+          DrawOutlineArc(guard_zone[z]->outer_range, guard_zone[z]->inner_range, start_bearing, end_bearing, true);
           break;
         case 2:
           glColor4ub(red, green, blue, alpha);
-          DrawOutlineArc(guard_zone[z]->outer_range * v_scale_ppm, guard_zone[z]->inner_range * v_scale_ppm, start_bearing,
-                         end_bearing, false);
+          DrawOutlineArc(guard_zone[z]->outer_range, guard_zone[z]->inner_range, start_bearing, end_bearing, false);
         // fall thru
         default:
           glColor4ub(red, green, blue, alpha);
-          DrawFilledArc(guard_zone[z]->outer_range * v_scale_ppm, guard_zone[z]->inner_range * v_scale_ppm, start_bearing,
-                        end_bearing);
+          DrawFilledArc(guard_zone[z]->outer_range, guard_zone[z]->inner_range, start_bearing, end_bearing);
       }
     }
 
@@ -504,7 +502,7 @@ void RadarInfo::UpdateControlState(bool all) {
   }
 }
 
-void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, DrawInfo *di) {
+void RadarInfo::RenderRadarImage(DrawInfo *di) {
   wxMutexLocker lock(m_mutex);
   int drawing_method = m_pi->m_settings.drawing_method;
   bool colorOption = m_pi->m_settings.display_option > 0;
@@ -548,29 +546,59 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, 
     }
   }
 
-  di->draw->DrawRadarImage(center, scale, rotation);
+  di->draw->DrawRadarImage();
 }
 
 void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay) {
-  if (overlay) {
-    double radar_pixels_per_meter = ((double)RETURNS_PER_LINE) / m_range_meters;
-    scale /= radar_pixels_per_meter;
+  glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);  // Save state
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    RenderRadarImage(center, scale, rotation, &m_draw_overlay);
+  if (overlay) {
+    if (m_pi->m_settings.guard_zone_on_overlay) {
+      glPushMatrix();
+      glTranslated(center.x, center.y, 0);
+      glRotated(rotation + m_pi->m_hdt, 0.0, 0.0, 1.0);
+      glScaled(scale, scale, 1.);
+
+      LOG_VERBOSE(wxT("BR24radar_pi: %s render guard zone on overlay"), name.c_str());
+
+      RenderGuardZone();
+      glPopMatrix();
+    }
+    double radar_pixels_per_meter = ((double)RETURNS_PER_LINE) / m_range_meters;
+    scale = scale / radar_pixels_per_meter;
+    glPushMatrix();
+    glTranslated(center.x, center.y, 0);
+    if (rotation != 0.0) {
+      glRotated(rotation, 0.0, 0.0, 1.0);
+    }
+    glScaled(scale, scale, 1.);
+
+    RenderRadarImage(&m_draw_overlay);
     if (m_overlay_refreshes_queued > 0) {
       m_overlay_refreshes_queued--;
     }
   } else {
+    glPushMatrix();
+    scale = 1.0 / m_display_meters;
+    glScaled(scale, scale, 1.);
+    RenderGuardZone();
+    glPopMatrix();
+
+    glPushMatrix();
     double overscan = (double)m_range_meters / (double)m_display_meters;
-
+    scale = overscan / RETURNS_PER_LINE;
+    glScaled(scale, scale, 1.);
     LOG_VERBOSE(wxT("BR24radar_pi: %s render overscan=%g range=%d"), name.c_str(), overscan, m_display_meters);
-
-    RenderGuardZone(center, 1.0 / m_display_meters);
-    RenderRadarImage(center, overscan/ RETURNS_PER_LINE, rotation, &m_draw_panel);
+    RenderRadarImage(&m_draw_panel);
     if (m_refreshes_queued > 0) {
       m_refreshes_queued--;
     }
   }
+
+  glPopMatrix();
+  glPopAttrib();
 }
 
 void RadarInfo::FlipRadarState() {

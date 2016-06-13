@@ -48,7 +48,8 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
     size_t range_start = inner_range * RETURNS_PER_LINE / range;  // Convert from meters to 0..511
     size_t range_end = outer_range * RETURNS_PER_LINE / range;    // Convert from meters to 0..511
     if (angle < 2) {
-      LOG_GUARD(wxT("BR24radar_pi: GUARD: range=%d guardzone=%d..%d (%g - %g)"), range, range_start, range_end, inner_range, outer_range);
+      LOG_GUARD(wxT("BR24radar_pi: GUARD: range=%d guardzone=%d..%d (%d - %d)"), range, range_start, range_end, inner_range,
+                outer_range);
     }
 
     if (range_start < RETURNS_PER_LINE) {

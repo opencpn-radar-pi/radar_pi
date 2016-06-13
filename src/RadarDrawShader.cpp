@@ -137,24 +137,13 @@ RadarDrawShader::~RadarDrawShader() {
   }
 }
 
-void RadarDrawShader::DrawRadarImage(wxPoint center, double scale, double rotation) {
+void RadarDrawShader::DrawRadarImage() {
   wxMutexLocker lock(m_mutex);
 
   if (!m_program || !m_texture) {
     LOG_DIALOG(wxT("BR24radar_pi: Shader not set up yet, skip draw"));
     return;
   }
-
-  glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  glPushMatrix();
-  glTranslated(center.x, center.y, 0);
-  if (rotation != 0.0) {
-    glRotated(rotation, 0.0, 0.0, 1.0);
-  }
-  glScaled(scale, scale, 1.);
 
   UseProgram(m_program);
 
@@ -220,8 +209,6 @@ void RadarDrawShader::DrawRadarImage(wxPoint center, double scale, double rotati
   glEnd();
 
   UseProgram(0);
-  glPopMatrix();
-  glPopAttrib();
 }
 
 void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t len) {

@@ -161,18 +161,7 @@ void RadarDrawVertex::ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t 
   }
 }
 
-void RadarDrawVertex::DrawRadarImage(wxPoint center, double scale, double rotation) {
-  glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  glPushMatrix();
-  glTranslated(center.x, center.y, 0);
-  if (rotation != 0.0) {
-    glRotated(rotation, 0.0, 0.0, 1.0);
-  }
-  glScaled(scale, scale, 1.);
-
+void RadarDrawVertex::DrawRadarImage() {
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
 
@@ -193,9 +182,6 @@ void RadarDrawVertex::DrawRadarImage(wxPoint center, double scale, double rotati
   }
   glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
   glDisableClientState(GL_COLOR_ARRAY);
-
-  glPopMatrix();  // Undo translated/scaled
-  glPopAttrib();  // Undo blend
 }
 
 PLUGIN_END_NAMESPACE

@@ -39,6 +39,7 @@ enum {
   ID_OK,
   ID_RANGE_UNITS,
   ID_OVERLAYDISPLAYOPTION,
+  ID_STYLINGTYPE,
   ID_DISPLAYTYPE,
   ID_SELECT_SOUND,
   ID_TEST_SOUND,
@@ -105,40 +106,51 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi) {
       _("Nautical Miles"), _("Kilometers"),
   };
 
-  pRangeUnits = new wxRadioBox(this, ID_RANGE_UNITS, _("Range Units"), wxDefaultPosition, wxDefaultSize, 2, RangeModeStrings, 1,
-                               wxRA_SPECIFY_COLS);
-  DisplayOptionsBox->Add(pRangeUnits, 0, wxALL | wxEXPAND, 2);
+  m_RangeUnits = new wxRadioBox(this, ID_RANGE_UNITS, _("Range Units"), wxDefaultPosition, wxDefaultSize, 2, RangeModeStrings, 1,
+                                wxRA_SPECIFY_COLS);
+  DisplayOptionsBox->Add(m_RangeUnits, 0, wxALL | wxEXPAND, 2);
 
-  pRangeUnits->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnRangeUnitsClick), NULL, this);
+  m_RangeUnits->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnRangeUnitsClick), NULL, this);
 
-  pRangeUnits->SetSelection(m_pi->m_settings.range_units);
+  m_RangeUnits->SetSelection(m_pi->m_settings.range_units);
 
   /// Option m_settings
   wxString Overlay_Display_Options[] = {
       _("Monocolor-Red"), _("Multi-color"),
   };
 
-  pOverlayDisplayOptions =
+  m_OverlayDisplayOptions =
       new wxRadioBox(this, ID_OVERLAYDISPLAYOPTION, _("Overlay Display Options"), wxDefaultPosition, wxDefaultSize,
                      ARRAY_SIZE(Overlay_Display_Options), Overlay_Display_Options, 1, wxRA_SPECIFY_COLS);
 
-  DisplayOptionsBox->Add(pOverlayDisplayOptions, 0, wxALL | wxEXPAND, 2);
+  DisplayOptionsBox->Add(m_OverlayDisplayOptions, 0, wxALL | wxEXPAND, 2);
 
-  pOverlayDisplayOptions->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnDisplayOptionClick),
-                                  NULL, this);
+  m_OverlayDisplayOptions->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnDisplayOptionClick),
+                                   NULL, this);
 
-  pOverlayDisplayOptions->SetSelection(m_pi->m_settings.display_option);
+  m_OverlayDisplayOptions->SetSelection(m_pi->m_settings.display_option);
 
   wxString GuardZoneStyleStrings[] = {
-      _("Shading"), _("Outline"), _("Shading + Outline"),
+    _("Shading"), _("Outline"), _("Shading + Outline"),
   };
-  pGuardZoneStyle = new wxRadioBox(this, ID_DISPLAYTYPE, _("Guard Zone Styling"), wxDefaultPosition, wxDefaultSize,
-                                   ARRAY_SIZE(GuardZoneStyleStrings), GuardZoneStyleStrings, 1, wxRA_SPECIFY_COLS);
+  m_GuardZoneStyle = new wxRadioBox(this, ID_STYLINGTYPE, _("Guard Zone Styling"), wxDefaultPosition, wxDefaultSize,
+                                    ARRAY_SIZE(GuardZoneStyleStrings), GuardZoneStyleStrings, 1, wxRA_SPECIFY_COLS);
 
-  DisplayOptionsBox->Add(pGuardZoneStyle, 0, wxALL | wxEXPAND, 2);
-  pGuardZoneStyle->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnGuardZoneStyleClick), NULL,
-                           this);
-  pGuardZoneStyle->SetSelection(m_pi->m_settings.guard_zone_render_style);
+  DisplayOptionsBox->Add(m_GuardZoneStyle, 0, wxALL | wxEXPAND, 2);
+  m_GuardZoneStyle->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnGuardZoneStyleClick), NULL,
+                            this);
+  m_GuardZoneStyle->SetSelection(m_pi->m_settings.guard_zone_render_style);
+
+  wxString GuardZoneOnOverlayStrings[] = {
+    _("Radar window only"), _("Radar window and overlay"),
+  };
+  m_GuardZoneOnOverlay = new wxRadioBox(this, ID_DISPLAYTYPE, _("Guard Zone Display"), wxDefaultPosition, wxDefaultSize,
+                                    ARRAY_SIZE(GuardZoneOnOverlayStrings), GuardZoneOnOverlayStrings, 1, wxRA_SPECIFY_COLS);
+
+  DisplayOptionsBox->Add(m_GuardZoneOnOverlay, 0, wxALL | wxEXPAND, 2);
+  m_GuardZoneOnOverlay->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnGuardZoneOnOverlayClick), NULL,
+                            this);
+  m_GuardZoneOnOverlay->SetSelection(m_pi->m_settings.guard_zone_on_overlay);
 
   // Guard Zone Alarm
 
@@ -146,13 +158,13 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi) {
   wxStaticBoxSizer *guardZoneSizer = new wxStaticBoxSizer(guardZoneBox, wxVERTICAL);
   DisplayOptionsBox->Add(guardZoneSizer, 0, wxEXPAND | wxALL, border_size);
 
-  wxButton *pSelectSound = new wxButton(this, ID_SELECT_SOUND, _("Select Alert Sound"), wxDefaultPosition, small_button_size, 0);
-  pSelectSound->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnSelectSoundClick), NULL, this);
-  guardZoneSizer->Add(pSelectSound, 0, wxALL, border_size);
+  wxButton *select_sound = new wxButton(this, ID_SELECT_SOUND, _("Select Alert Sound"), wxDefaultPosition, small_button_size, 0);
+  select_sound->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnSelectSoundClick), NULL, this);
+  guardZoneSizer->Add(select_sound, 0, wxALL, border_size);
 
-  wxButton *pTestSound = new wxButton(this, ID_TEST_SOUND, _("Test Alert Sound"), wxDefaultPosition, small_button_size, 0);
-  pTestSound->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnTestSoundClick), NULL, this);
-  guardZoneSizer->Add(pTestSound, 0, wxALL, border_size);
+  wxButton *test_sound = new wxButton(this, ID_TEST_SOUND, _("Test Alert Sound"), wxDefaultPosition, small_button_size, 0);
+  test_sound->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnTestSoundClick), NULL, this);
+  guardZoneSizer->Add(test_sound, 0, wxALL, border_size);
 
   // Drawing Method
 
@@ -162,11 +174,11 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi) {
 
   wxArrayString DrawingMethods;
   RadarDraw::GetDrawingMethods(DrawingMethods);
-  cbDrawingMethod =
+  m_DrawingMethod =
       new wxComboBox(this, ID_DRAW_METHOD, DrawingMethods[m_pi->m_settings.drawing_method], wxDefaultPosition, wxDefaultSize,
                      DrawingMethods, wxALIGN_CENTRE | wxST_NO_AUTORESIZE, wxDefaultValidator, _("Drawing Method"));
-  drawingMethodSizer->Add(cbDrawingMethod, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-  cbDrawingMethod->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnDrawingMethodClick), NULL,
+  drawingMethodSizer->Add(m_DrawingMethod, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  m_DrawingMethod->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnDrawingMethodClick), NULL,
                            this);
 
   // Menu options
@@ -176,11 +188,11 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi) {
   DisplayOptionsBox->Add(menuOptionsSizer, 0, wxEXPAND | wxALL, border_size);
 
   wxString MenuAutoHideStrings[] = {_("Never"), _("10 sec"), _("30 sec")};
-  cbMenuAutoHide = new wxComboBox(this, ID_MENU_AUTO_HIDE, MenuAutoHideStrings[m_pi->m_settings.menu_auto_hide], wxDefaultPosition,
+  m_MenuAutoHide = new wxComboBox(this, ID_MENU_AUTO_HIDE, MenuAutoHideStrings[m_pi->m_settings.menu_auto_hide], wxDefaultPosition,
                                   wxDefaultSize, ARRAY_SIZE(MenuAutoHideStrings), MenuAutoHideStrings,
                                   wxALIGN_CENTRE | wxST_NO_AUTORESIZE, wxDefaultValidator, _("Auto hide after"));
-  menuOptionsSizer->Add(cbMenuAutoHide, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-  cbMenuAutoHide->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnMenuAutoHideClick), NULL,
+  menuOptionsSizer->Add(m_MenuAutoHide, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  m_MenuAutoHide->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnMenuAutoHideClick), NULL,
                           this);
 
   //  Options
@@ -188,24 +200,24 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi) {
   wxStaticBoxSizer *itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
   topSizer->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
 
-  cbPassHeading = new wxCheckBox(this, ID_PASS_HEADING, _("Pass radar heading to OpenCPN"), wxDefaultPosition, wxDefaultSize,
+  m_PassHeading = new wxCheckBox(this, ID_PASS_HEADING, _("Pass radar heading to OpenCPN"), wxDefaultPosition, wxDefaultSize,
                                  wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  itemStaticBoxSizerOptions->Add(cbPassHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-  cbPassHeading->SetValue(m_pi->m_settings.pass_heading_to_opencpn);
-  cbPassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnPassHeadingClick), NULL, this);
+  itemStaticBoxSizerOptions->Add(m_PassHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  m_PassHeading->SetValue(m_pi->m_settings.pass_heading_to_opencpn);
+  m_PassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnPassHeadingClick), NULL, this);
 
-  cbEnableDualRadar = new wxCheckBox(this, ID_DUAL_RADAR, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize,
+  m_EnableDualRadar = new wxCheckBox(this, ID_DUAL_RADAR, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize,
                                      wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  itemStaticBoxSizerOptions->Add(cbEnableDualRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-  cbEnableDualRadar->SetValue(m_pi->m_settings.enable_dual_radar);
-  cbEnableDualRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEnableDualRadarClick), NULL,
+  itemStaticBoxSizerOptions->Add(m_EnableDualRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  m_EnableDualRadar->SetValue(m_pi->m_settings.enable_dual_radar);
+  m_EnableDualRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEnableDualRadarClick), NULL,
                              this);
 
-  cbEmulator =
+  m_Emulator =
       new wxCheckBox(this, ID_EMULATOR, _("Emulator mode"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  itemStaticBoxSizerOptions->Add(cbEmulator, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-  cbEmulator->SetValue(m_pi->m_settings.emulator_on ? true : false);
-  cbEmulator->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEmulatorClick), NULL, this);
+  itemStaticBoxSizerOptions->Add(m_Emulator, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  m_Emulator->SetValue(m_pi->m_settings.emulator_on ? true : false);
+  m_Emulator->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEmulatorClick), NULL, this);
 
   // Accept/Reject button
   wxStdDialogButtonSizer *DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
@@ -219,15 +231,19 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi) {
   return true;
 }
 
-void br24OptionsDialog::OnRangeUnitsClick(wxCommandEvent &event) { m_pi->m_settings.range_units = pRangeUnits->GetSelection(); }
+void br24OptionsDialog::OnRangeUnitsClick(wxCommandEvent &event) { m_pi->m_settings.range_units = m_RangeUnits->GetSelection(); }
 
 void br24OptionsDialog::OnDisplayOptionClick(wxCommandEvent &event) {
-  m_pi->m_settings.display_option = pOverlayDisplayOptions->GetSelection();
+  m_pi->m_settings.display_option = m_OverlayDisplayOptions->GetSelection();
   m_pi->ComputeColorMap();
 }
 
 void br24OptionsDialog::OnGuardZoneStyleClick(wxCommandEvent &event) {
-  m_pi->m_settings.guard_zone_render_style = pGuardZoneStyle->GetSelection();
+  m_pi->m_settings.guard_zone_render_style = m_GuardZoneStyle->GetSelection();
+}
+
+void br24OptionsDialog::OnGuardZoneOnOverlayClick(wxCommandEvent &event) {
+  m_pi->m_settings.guard_zone_on_overlay = m_GuardZoneOnOverlay->GetSelection();
 }
 
 void br24OptionsDialog::OnSelectSoundClick(wxCommandEvent &event) {
@@ -246,7 +262,7 @@ void br24OptionsDialog::OnSelectSoundClick(wxCommandEvent &event) {
 }
 
 void br24OptionsDialog::OnEnableDualRadarClick(wxCommandEvent &event) {
-  m_pi->m_settings.enable_dual_radar = cbEnableDualRadar->GetValue();
+  m_pi->m_settings.enable_dual_radar = m_EnableDualRadar->GetValue();
 }
 
 void br24OptionsDialog::OnTestSoundClick(wxCommandEvent &event) {
@@ -256,20 +272,20 @@ void br24OptionsDialog::OnTestSoundClick(wxCommandEvent &event) {
 }
 
 void br24OptionsDialog::OnPassHeadingClick(wxCommandEvent &event) {
-  m_pi->m_settings.pass_heading_to_opencpn = cbPassHeading->GetValue();
+  m_pi->m_settings.pass_heading_to_opencpn = m_PassHeading->GetValue();
 }
 
 void br24OptionsDialog::OnMenuAutoHideClick(wxCommandEvent &event) {
-  m_pi->m_settings.menu_auto_hide = cbMenuAutoHide->GetSelection();
+  m_pi->m_settings.menu_auto_hide = m_MenuAutoHide->GetSelection();
   LOG_DIALOG(wxT("BR24radar_pi: new menu auto hide %d selected"), m_pi->m_settings.menu_auto_hide);
 }
 
 void br24OptionsDialog::OnDrawingMethodClick(wxCommandEvent &event) {
-  m_pi->m_settings.drawing_method = cbDrawingMethod->GetSelection();
+  m_pi->m_settings.drawing_method = m_DrawingMethod->GetSelection();
   LOG_DIALOG(wxT("BR24radar_pi: new drawing method %d selected"), m_pi->m_settings.drawing_method);
 }
 
-void br24OptionsDialog::OnEmulatorClick(wxCommandEvent &event) { m_pi->m_settings.emulator_on = cbEmulator->GetValue(); }
+void br24OptionsDialog::OnEmulatorClick(wxCommandEvent &event) { m_pi->m_settings.emulator_on = m_Emulator->GetValue(); }
 
 void br24OptionsDialog::OnClose(wxCloseEvent &event) {
   m_pi->SaveConfig();

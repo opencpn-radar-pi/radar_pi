@@ -206,13 +206,9 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   }
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
 
-  double scale_factor = 1.0;
-
   // CheckOpenGLError(wxT("range circles"));
 
-  double rotation = 0.0;
-
-  m_ri->RenderRadarImage(wxPoint(0, 0), scale_factor, rotation, false);
+  m_ri->RenderRadarImage(wxPoint(0, 0), 1.0, 0.0, false);
 
   glViewport(0, 0, w, h);
 

@@ -57,6 +57,7 @@ class br24OptionsDialog : public wxDialog {
   void OnDisplayOptionClick(wxCommandEvent& event);
   void OnDisplayModeClick(wxCommandEvent& event);
   void OnGuardZoneStyleClick(wxCommandEvent& event);
+  void OnGuardZoneOnOverlayClick(wxCommandEvent& event);
   void OnSelectSoundClick(wxCommandEvent& event);
   void OnTestSoundClick(wxCommandEvent& event);
   void OnPassHeadingClick(wxCommandEvent& event);
@@ -69,15 +70,16 @@ class br24OptionsDialog : public wxDialog {
   br24radar_pi* m_pi;
 
   // DisplayOptions
-  wxRadioBox* pRangeUnits;
-  wxRadioBox* pOverlayDisplayOptions;
-  wxRadioBox* pDisplayMode;
-  wxRadioBox* pGuardZoneStyle;
-  wxCheckBox* cbPassHeading;
-  wxComboBox* cbDrawingMethod;
-  wxComboBox* cbMenuAutoHide;
-  wxCheckBox* cbEnableDualRadar;
-  wxCheckBox* cbEmulator;
+  wxRadioBox* m_RangeUnits;
+  wxRadioBox* m_OverlayDisplayOptions;
+  wxRadioBox* m_DisplayMode;
+  wxRadioBox* m_GuardZoneStyle;
+  wxRadioBox* m_GuardZoneOnOverlay;
+  wxCheckBox* m_PassHeading;
+  wxComboBox* m_DrawingMethod;
+  wxComboBox* m_MenuAutoHide;
+  wxCheckBox* m_EnableDualRadar;
+  wxCheckBox* m_Emulator;
 };
 
 PLUGIN_END_NAMESPACE

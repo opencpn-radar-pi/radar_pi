@@ -870,7 +870,7 @@ bool br24radar_pi::LoadConfig(void) {
     }
     pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 2);
 
-    pConf->Read(wxT("DrawAlgorithm"), &m_settings.draw_algorithm, 1);
+    pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, 1);
     pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
     pConf->Read(wxT("GuardZonesRenderStyle"), &m_settings.guard_zone_render_style, 0);
     pConf->Read(wxT("Refreshrate"), &m_settings.refreshrate, 1);
@@ -936,7 +936,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("GuardZonesRenderStyle"), m_settings.guard_zone_render_style);
     pConf->Write(wxT("ScanMaxAge"), m_settings.max_age);
     pConf->Write(wxT("RunTimeOnIdle"), m_settings.idle_run_time);
-    pConf->Write(wxT("DrawAlgorithm"), m_settings.draw_algorithm);
+    pConf->Write(wxT("GuardZoneOnOverlay"), m_settings.guard_zone_on_overlay);
     pConf->Write(wxT("Refreshrate"), m_settings.refreshrate);
     pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
