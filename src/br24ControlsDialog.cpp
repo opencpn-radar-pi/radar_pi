@@ -955,10 +955,10 @@ void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
   int show = 1;
 
   if (m_pi->m_settings.enable_dual_radar) {
-    if (m_ri->IsPaneShown()) {
-      RadarInfo * other_radar = m_pi->m_radar[1 - m_ri->radar];
-      if (other_radar->IsPaneShown()) {
-        // o = _("Hide both windows");
+    if (m_pi->m_settings.show_radar[m_ri->radar]) {
+      int show_other_radar = m_pi->m_settings.show_radar[1 - m_ri->radar];
+      if (show_other_radar) {
+        // Hide both windows
         show = 0;
       }
     }
@@ -974,9 +974,7 @@ void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
     LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), 0, show);
   }
 
-  if (m_pi->m_settings.chart_overlay < 0) {
-    m_pi->SetRadarWindowViz(show != 0);
-  }
+  m_pi->SetRadarWindowViz(show != 0);
 }
 
 void br24ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
@@ -1035,19 +1033,23 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   if (m_pi->m_settings.enable_dual_radar) {
-    if (m_ri->IsPaneShown()) {
-      RadarInfo * other_radar = m_pi->m_radar[1 - m_ri->radar];
-      if (other_radar->IsPaneShown()) {
+    int show_other_radar = m_pi->m_settings.show_radar[1 - m_ri->radar];
+    if (m_pi->m_settings.show_radar[m_ri->radar]) {
+      if (show_other_radar) {
         o = _("Hide both windows");
       }
       else {
         o = _("Show other window");
       }
     } else {
-      o = _("Show both windows");
+      if (show_other_radar) {
+        o = _("Show this window"); // can happen if this window hidden but control is for overlay
+      } else {
+        o = _("Show both windows");
+      }
     }
   } else {
-    o = (m_ri->IsPaneShown()) ? _("Hide window") : _("Show window");
+    o = (m_pi->m_settings.show_radar[m_ri->radar]) ? _("Hide window") : _("Show window");
   }
   m_window_button->SetLabel(o);
 

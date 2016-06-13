@@ -310,9 +310,10 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
 void br24radar_pi::SetRadarWindowViz(bool show) {
   int r;
   for (r = 0; r <= (int)m_settings.enable_dual_radar; r++) {
-    m_radar[r]->ShowRadarWindow(show && (m_settings.show_radar[r] != 0));
-    if (!show) {
-      ShowRadarControl(r, show);
+    bool showThisRadar = show && (m_settings.show_radar[r] != 0);
+    m_radar[r]->ShowRadarWindow(showThisRadar);
+    if (!showThisRadar) {
+      ShowRadarControl(r, false);
     }
   }
   for (; r < RADARS; r++) {  // Hide remaining radar if enable_dual_radar was on but now off
@@ -415,8 +416,7 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
   }
 
   if (m_settings.show) {
-    if (m_settings.chart_overlay >= 0 && m_settings.show_radar[m_settings.chart_overlay] == 0 &&
-        (!m_radar[m_settings.chart_overlay]->control_dialog || !m_radar[m_settings.chart_overlay]->control_dialog->IsShown())) {
+    if (m_settings.chart_overlay >= 0 && (!m_radar[m_settings.chart_overlay]->control_dialog || !m_radar[m_settings.chart_overlay]->control_dialog->IsShown())) {
       LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: Show control"));
       ShowRadarControl(m_settings.chart_overlay, true);
     } else {
