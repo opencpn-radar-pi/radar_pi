@@ -641,9 +641,9 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
 
   if (m_mouse_lat != 0.0 || m_mouse_lon != 0.0) {
     if (s.length()) {
-    s << wxT("\n");
+      s << wxT("\n");
     }
-    
+
     // Can't compute this upfront, ownship may move...
     double distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
     double bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
@@ -655,18 +655,15 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
         int meters = distance * 1000.0;
         s << meters;
         s << "m";
-      }
-      else {
+      } else {
         s << wxString::Format(wxT("%.2fkm"), distance);
       }
-    }
-    else {
+    } else {
       if (distance < 0.25 * 1.852) {
         int meters = distance * 1852.0;
         s << meters;
         s << "m";
-      }
-      else {
+      } else {
         s << wxString::Format(wxT("%.2fnm"), distance);
       }
     }
@@ -763,11 +760,9 @@ const char *RadarInfo::GetDisplayRangeStr(size_t idx) {
   return 0;
 }
 
-void RadarInfo::SetMouseLatLon(double lat, double lon)
-{
+void RadarInfo::SetMouseLatLon(double lat, double lon) {
   m_mouse_lat = lat;
   m_mouse_lon = lon;
 }
-
 
 PLUGIN_END_NAMESPACE

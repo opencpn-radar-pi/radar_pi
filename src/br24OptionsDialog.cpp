@@ -131,7 +131,7 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi) {
   m_OverlayDisplayOptions->SetSelection(m_pi->m_settings.display_option);
 
   wxString GuardZoneStyleStrings[] = {
-    _("Shading"), _("Outline"), _("Shading + Outline"),
+      _("Shading"), _("Outline"), _("Shading + Outline"),
   };
   m_GuardZoneStyle = new wxRadioBox(this, ID_STYLINGTYPE, _("Guard Zone Styling"), wxDefaultPosition, wxDefaultSize,
                                     ARRAY_SIZE(GuardZoneStyleStrings), GuardZoneStyleStrings, 1, wxRA_SPECIFY_COLS);
@@ -142,14 +142,14 @@ bool br24OptionsDialog::Create(wxWindow *parent, br24radar_pi *pi) {
   m_GuardZoneStyle->SetSelection(m_pi->m_settings.guard_zone_render_style);
 
   wxString GuardZoneOnOverlayStrings[] = {
-    _("Radar window only"), _("Radar window and overlay"),
+      _("Radar window only"), _("Radar window and overlay"),
   };
   m_GuardZoneOnOverlay = new wxRadioBox(this, ID_DISPLAYTYPE, _("Guard Zone Display"), wxDefaultPosition, wxDefaultSize,
-                                    ARRAY_SIZE(GuardZoneOnOverlayStrings), GuardZoneOnOverlayStrings, 1, wxRA_SPECIFY_COLS);
+                                        ARRAY_SIZE(GuardZoneOnOverlayStrings), GuardZoneOnOverlayStrings, 1, wxRA_SPECIFY_COLS);
 
   DisplayOptionsBox->Add(m_GuardZoneOnOverlay, 0, wxALL | wxEXPAND, 2);
-  m_GuardZoneOnOverlay->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnGuardZoneOnOverlayClick), NULL,
-                            this);
+  m_GuardZoneOnOverlay->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
+                                wxCommandEventHandler(br24OptionsDialog::OnGuardZoneOnOverlayClick), NULL, this);
   m_GuardZoneOnOverlay->SetSelection(m_pi->m_settings.guard_zone_on_overlay);
 
   // Guard Zone Alarm

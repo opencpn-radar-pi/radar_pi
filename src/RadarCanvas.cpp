@@ -147,8 +147,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
 }
 
 void RadarCanvas::RenderLollipop(int w, int h) {
-
-  const double LOLLIPOP_SIZE = 20.0;
+  static const double LOLLIPOP_SIZE = 20.0;
 
   if (m_ri->m_mouse_lat == 0.0 && m_ri->m_mouse_lon == 0.0) {
     return;
@@ -170,7 +169,6 @@ void RadarCanvas::RenderLollipop(int w, int h) {
   double l_x = x + sin(angle) * LOLLIPOP_SIZE;
   double l_y = y - cos(angle) * LOLLIPOP_SIZE;
 
-  LOG_VERBOSE(wxT("BR24radar_pi: LOLLIPOP brg=%f rot=%f sin=%f cos=%f"), bearing, rot, sin(deg2rad(bearing - rot)), cos(deg2rad(bearing - rot)));
   glColor3ub(150, 150, 150);
   glLineWidth(1.0);
 
@@ -179,14 +177,8 @@ void RadarCanvas::RenderLollipop(int w, int h) {
   glVertex2f(l_x, l_y);
   glEnd();
 
-
   DrawArc(x, y, LOLLIPOP_SIZE, 0.0, 2.0 * (float)PI, 36);
-
-  LOG_DIALOG(wxT("BR24radar_pi: Lollipop at %f, %f"), x, y);
-
 }
-
-
 
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
