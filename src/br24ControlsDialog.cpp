@@ -736,7 +736,7 @@ void br24ControlsDialog::CreateControls() {
   // Updated when we receive data
 
   // The SHOW / HIDE RADAR button
-  m_window_button = new wxButton(this, ID_SHOW_RADAR, _("Show radar windows"), wxDefaultPosition, g_smallButtonSize, 0);
+  m_window_button = new wxButton(this, ID_SHOW_RADAR, wxT(""), wxDefaultPosition, g_smallButtonSize, 0);
   m_control_sizer->Add(m_window_button, 0, wxALL, BORDER);
   m_window_button->SetFont(m_pi->m_font);
 
@@ -952,13 +952,31 @@ void br24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
-  int show = 1 - m_pi->m_settings.show_radar[m_ri->radar];
+  int show = 1;
 
-  for (int r = 0; r < RADARS; r++) {
-    m_pi->m_settings.show_radar[r] = show;
-    LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), r, show);
+  if (m_pi->m_settings.enable_dual_radar) {
+    if (m_ri->IsPaneShown()) {
+      RadarInfo * other_radar = m_pi->m_radar[1 - m_ri->radar];
+      if (other_radar->IsPaneShown()) {
+        // o = _("Hide both windows");
+        show = 0;
+      }
+    }
+    m_pi->m_settings.show_radar[0] = show;
+    m_pi->m_settings.show_radar[1] = show;
+    LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), 0, show);
+    LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), 1, show);
+  } else {
+    if (m_ri->IsPaneShown()) {
+      show = 0;
+    }
+    m_pi->m_settings.show_radar[0] = show;
+    LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), 0, show);
   }
-  m_pi->SetRadarWindowViz(show != 0);
+
+  if (m_pi->m_settings.chart_overlay < 0) {
+    m_pi->SetRadarWindowViz(show != 0);
+  }
 }
 
 void br24ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
@@ -1017,9 +1035,19 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   if (m_pi->m_settings.enable_dual_radar) {
-    o = (m_ri->IsPaneShown()) ? _("Hide radar windows") : _("Show Radar windows");
+    if (m_ri->IsPaneShown()) {
+      RadarInfo * other_radar = m_pi->m_radar[1 - m_ri->radar];
+      if (other_radar->IsPaneShown()) {
+        o = _("Hide both windows");
+      }
+      else {
+        o = _("Show other window");
+      }
+    } else {
+      o = _("Show both windows");
+    }
   } else {
-    o = (m_ri->IsPaneShown()) ? _("Hide radar windows") : _("Show radar window");
+    o = (m_ri->IsPaneShown()) ? _("Hide window") : _("Show window");
   }
   m_window_button->SetLabel(o);
 
