@@ -1037,13 +1037,12 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     if (m_pi->m_settings.show_radar[m_ri->radar]) {
       if (show_other_radar) {
         o = _("Hide both windows");
-      }
-      else {
+      } else {
         o = _("Show other window");
       }
     } else {
       if (show_other_radar) {
-        o = _("Show this window"); // can happen if this window hidden but control is for overlay
+        o = _("Show this window");  // can happen if this window hidden but control is for overlay
       } else {
         o = _("Show both windows");
       }
