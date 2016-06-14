@@ -164,6 +164,7 @@ class RadarInfo : public wxEvtHandler {
   void RenderRadarImage(DrawInfo *di);
   int GetRangeMeters(int index);
   size_t convertRadarMetersToIndex(int *range_meters);
+  wxString FormatDistance(double distance);
 
   int m_range_index;     // index into range array
   int m_range_meters;    // what radar told us is the range

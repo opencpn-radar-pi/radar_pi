@@ -640,9 +640,48 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
   return s;
 }
 
+wxString RadarInfo::FormatDistance(double distance) {
+  wxString s;
+
+  if (m_pi->m_settings.range_units > 0) {
+    distance *= 1.852;
+
+    if (distance < 1.000) {
+      int meters = distance * 1000.0;
+      s << meters;
+      s << "m";
+    } else {
+      s << wxString::Format(wxT("%.2fkm"), distance);
+    }
+  } else {
+    if (distance < 0.25 * 1.852) {
+      int meters = distance * 1852.0;
+      s << meters;
+      s << "m";
+    } else {
+      s << wxString::Format(wxT("%.2fnm"), distance);
+    }
+  }
+
+  return s;
+}
+
 wxString RadarInfo::GetCanvasTextBottomLeft() {
   wxString s = m_pi->GetGuardZoneText(this, false);
   double distance = 0.0, bearing;
+
+  // Add VRM/EBLs
+
+  for (int b = 0; b < BEARING_LINES; b++) {
+    if (m_vrm[b] != 0.0) {
+      if (s.length()) {
+        s << wxT("\n");
+      }
+      s << wxString::Format(wxT("VRM%d=%s EBL%d=%.1f\u00B0T"), b + 1, FormatDistance(m_vrm[b]), b + 1, m_ebl[b]);
+    }
+  }
+
+  // Add in mouse cursor location
 
   if (m_mouse_vrm != 0.0) {
     distance = m_mouse_vrm;
@@ -657,28 +696,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
     if (s.length()) {
       s << wxT("\n");
     }
-
-    if (m_pi->m_settings.range_units > 0) {
-      distance *= 1.852;
-
-      if (distance < 1.000) {
-        int meters = distance * 1000.0;
-        s << meters;
-        s << "m";
-      } else {
-        s << wxString::Format(wxT("%.2fkm"), distance);
-      }
-    } else {
-      if (distance < 0.25 * 1.852) {
-        int meters = distance * 1852.0;
-        s << meters;
-        s << "m";
-      } else {
-        s << wxString::Format(wxT("%.2fnm"), distance);
-      }
-    }
-
-    s << wxString::Format(wxT(", %.1f\u00B0T"), bearing);
+    s << FormatDistance(distance) << wxString::Format(wxT(", %.1f\u00B0T"), bearing);
   }
   return s;
 }
@@ -785,7 +803,10 @@ void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
 }
 
 void RadarInfo::SetBearing(int bearing) {
-  if (m_mouse_vrm != 0.0) {
+  if (m_vrm[bearing] != 0.0) {
+    m_vrm[bearing] = 0.0;
+    m_ebl[bearing] = 0.0;
+  } else if (m_mouse_vrm != 0.0) {
     m_vrm[bearing] = m_mouse_vrm;
     m_ebl[bearing] = m_mouse_ebl;
   } else if (m_mouse_lat != 0.0 || m_mouse_lon != 0.0) {

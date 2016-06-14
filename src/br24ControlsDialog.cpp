@@ -1128,6 +1128,15 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
   m_window_button->SetLabel(o);
 
+  for (int b = 0; b < BEARING_LINES; b++) {
+    if (m_ri->m_vrm[b] != 0.0) {
+      o = wxString::Format(_("Clear EVL/VRM%d"), b + 1);
+    } else {
+      o = wxString::Format(_("Place EVL/VRM%d"), b + 1);
+    }
+    m_bearing_buttons[b]->SetLabel(o);
+  }
+
   if (m_ri->rotation.mod || refreshAll) {
     o = m_ri->rotation.GetButton() ? _("North Up") : _("Head Up");
     m_rotation_button->SetLabel(o);
