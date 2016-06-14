@@ -996,6 +996,8 @@ bool br24radar_pi::SaveConfig(void) {
 }
 
 void br24radar_pi::SetMcastIPAddress(wxString &address) {
+  wxMutexLocker lock(m_mutex);
+
   m_settings.mcast_address = address;
   if (m_pMessageBox) {
     m_pMessageBox->SetMcastIPAddress(address);
