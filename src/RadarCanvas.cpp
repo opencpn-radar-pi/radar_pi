@@ -334,13 +334,10 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   glViewport(0, 0, w, h);
-
   glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
   glLoadIdentity();             // Reset projection matrix stack
   glOrtho(0, w, h, 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
-
-  glEnable(GL_TEXTURE_2D);
 
   RenderRangeRingsAndHeading(w, h);
   Render_EBL_VRM(w, h);
@@ -355,12 +352,9 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   }
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
 
-  // CheckOpenGLError(wxT("range circles"));
-
   m_ri->RenderRadarImage(wxPoint(0, 0), 1.0, 0.0, false);
 
   glViewport(0, 0, w, h);
-
   glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
   glLoadIdentity();             // Reset projection matrix stack
   glOrtho(0, w, h, 0, -1, 1);
@@ -370,8 +364,6 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glEnable(GL_TEXTURE_2D);
 
   RenderTexts(w, h);
-  // glBlendFunc(GL_ONE, GL_ZERO);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   RenderCursor(w, h);
 
   glDisable(GL_TEXTURE_2D);
