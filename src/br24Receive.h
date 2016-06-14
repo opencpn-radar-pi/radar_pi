@@ -93,6 +93,7 @@ class br24Receive : public wxThread {
 
   void EmulateFakeBuffer(void);
   SOCKET PickNextEthernetCard();
+  SOCKET GetNewReportSocket();
   SOCKET GetNewDataSocket();
   SOCKET GetNewCommandSocket();
 
