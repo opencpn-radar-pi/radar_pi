@@ -111,6 +111,8 @@ br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_112(ppimgr) {
   initialize_images();
   m_pdeficon = new wxBitmap(*_img_radar_blank);
 
+  m_opengl_mode = false;
+  m_opengl_mode_changed = false;
   m_opencpn_gl_context = 0;
   m_opencpn_gl_context_broken = false;
 
@@ -165,6 +167,7 @@ int br24radar_pi::Init(void) {
 
   m_alarm_sound_timeout = 0;
   m_bpos_timestamp = 0;
+  m_hdt = 0.0;
   m_hdt_timeout = 0;
   m_var_timeout = 0;
   m_idle_timeout = 0;

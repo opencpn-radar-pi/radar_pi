@@ -61,7 +61,7 @@ RadarCanvas::~RadarCanvas() {
   delete m_context;
   delete m_zero_context;
   if (m_cursor_texture) {
-    glDeleteTextures(2, &m_cursor_texture);
+    glDeleteTextures(1, &m_cursor_texture);
     m_cursor_texture = 0;
   }
 }

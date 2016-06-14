@@ -170,9 +170,14 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
   m_display_meters = 0;
   m_auto_range_meters = 0;
   m_previous_auto_range_meters = 1;
+  m_stayalive_timeout = 0;
 
-  m_mouse_lat = 0;
-  m_mouse_lon = 0;
+  memset(&statistics, sizeof(statistics), 0);
+
+  m_mouse_lat = 0.0;
+  m_mouse_lon = 0.0;
+  m_mouse_vrm = 0.0;
+  m_mouse_ebl = 0.0;
   for (int b = 0; b < BEARING_LINES; b++) {
     m_ebl[b] = 0.0;
     m_vrm[b] = 0.0;
@@ -297,7 +302,7 @@ void RadarInfo::ResetSpokes() {
  */
 void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters) {
   UINT8 *hist_data = history[angle];
-  bool calc_history = multi_sweep_filter;
+  bool calc_history = false;
 
   wxMutexLocker lock(m_mutex);
 
@@ -341,6 +346,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     }
   }
 
+  // TODO: Add history filter the way that plotters do (with "white/grey" blobs)
+  /*
   if (multi_sweep_filter) {
     for (size_t radius = 0; radius < len; radius++) {
       if (data[radius] && !HISTORY_FILTER_ALLOW(hist_data[radius])) {
@@ -349,6 +356,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       }
     }
   }
+  */
 
   if (m_draw_panel.draw) {
     m_draw_panel.draw->ProcessRadarSpoke(north_up ? bearing : angle, data, len);

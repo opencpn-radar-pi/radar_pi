@@ -342,7 +342,7 @@ SOCKET br24Receive::PickNextEthernetCard() {
       UINT8 *a = (UINT8 *)&mcast_address->sin_addr;  // sin_addr is in network layout
       addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
       LOG_RECEIVE(wxT("BR24radar_pi: Listening for %s reports on %s"), m_ri->name.c_str(), addr.c_str());
-      m_pi->SetMcastIPAddress(addr);
+      m_pi->qIPAddress(addr);
     } else {
       wxLogError(wxT("BR24radar_pi: Unable to listen to socket: %s"), error.c_str());
     }
