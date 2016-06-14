@@ -129,17 +129,18 @@ EVT_BUTTON(ID_RANGE, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_GAIN, br24ControlsDialog::OnRadarGainButtonClick)
 EVT_BUTTON(ID_SEA, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_RAIN, br24ControlsDialog::OnRadarControlButtonClick)
+
 EVT_BUTTON(ID_ADJUST, br24ControlsDialog::OnAdjustButtonClick)
 EVT_BUTTON(ID_ADVANCED, br24ControlsDialog::OnAdvancedButtonClick)
+EVT_BUTTON(ID_BEARING, br24ControlsDialog::OnBearingButtonClick)
 EVT_BUTTON(ID_ZONE1, br24ControlsDialog::OnZone1ButtonClick)
 EVT_BUTTON(ID_ZONE2, br24ControlsDialog::OnZone2ButtonClick)
-EVT_BUTTON(ID_MESSAGE, br24ControlsDialog::OnMessageButtonClick)
 
+EVT_BUTTON(ID_MESSAGE, br24ControlsDialog::OnMessageButtonClick)
 EVT_BUTTON(ID_CONFIRM_BOGEY, br24ControlsDialog::OnConfirmBogeyButtonClick)
 
 EVT_BUTTON(ID_BEARING_SET, br24ControlsDialog::OnBearingSetButtonClick)
 EVT_BUTTON(ID_CLEAR_CURSOR, br24ControlsDialog::OnClearCursorButtonClick)
-EVT_BUTTON(ID_BEARING, br24ControlsDialog::OnBearingButtonClick)
 
 EVT_MOVE(br24ControlsDialog::OnMove)
 EVT_SIZE(br24ControlsDialog::OnSize)
@@ -485,45 +486,6 @@ void br24ControlsDialog::CreateControls() {
   m_advanced_sizer->Add(bAdvancedBack, 0, wxALL, BORDER);
   bAdvancedBack->SetFont(m_pi->m_font);
 
-  // The REJECTION button
-
-  interference_rejection_names[0] = _("Off");
-  interference_rejection_names[1] = _("Low");
-  interference_rejection_names[2] = _("Medium");
-  interference_rejection_names[3] = _("High");
-
-  m_interference_rejection_button =
-      new br24RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rej."), CT_INTERFERENCE_REJECTION, false,
-                                 m_ri->interference_rejection.button);
-  m_advanced_sizer->Add(m_interference_rejection_button, 0, wxALL, BORDER);
-  m_interference_rejection_button->minValue = 0;
-  m_interference_rejection_button->maxValue = ARRAY_SIZE(interference_rejection_names) - 1;
-  m_interference_rejection_button->names = interference_rejection_names;
-  m_interference_rejection_button->SetLocalValue(m_ri->interference_rejection.button);  // redraw after adding names
-
-  // The TARGET BOOST button
-  target_boost_names[0] = _("Off");
-  target_boost_names[1] = _("Low");
-  target_boost_names[2] = _("High");
-  m_target_boost_button =
-      new br24RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), CT_TARGET_BOOST, false, m_ri->target_boost.button);
-  m_advanced_sizer->Add(m_target_boost_button, 0, wxALL, BORDER);
-  m_target_boost_button->minValue = 0;
-  m_target_boost_button->maxValue = ARRAY_SIZE(target_boost_names) - 1;
-  m_target_boost_button->names = target_boost_names;
-  m_target_boost_button->SetLocalValue(m_ri->target_boost.button);  // redraw after adding names
-
-  // The TARGET EXPANSION button
-  target_expansion_names[0] = _("Off");
-  target_expansion_names[1] = _("On");
-  m_target_expansion_button = new br24RadarControlButton(this, ID_TARGET_EXPANSION, _("Target expansion"), CT_TARGET_EXPANSION,
-                                                         false, m_ri->target_expansion.button);
-  m_advanced_sizer->Add(m_target_expansion_button, 0, wxALL, BORDER);
-  m_target_expansion_button->minValue = 0;
-  m_target_expansion_button->maxValue = ARRAY_SIZE(target_expansion_names) - 1;
-  m_target_expansion_button->names = target_expansion_names;
-  m_target_expansion_button->SetLocalValue(m_ri->target_expansion.button);  // redraw after adding names
-
   // The NOISE REJECTION button
   noise_rejection_names[0] = _("Off");
   noise_rejection_names[1] = _("Low");
@@ -539,6 +501,33 @@ void br24ControlsDialog::CreateControls() {
 
   m_advanced_4G_sizer = new wxBoxSizer(wxVERTICAL);
   m_advanced_sizer->Add(m_advanced_4G_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+
+  // The TARGET EXPANSION button
+  target_expansion_names[0] = _("Off");
+  target_expansion_names[1] = _("On");
+  m_target_expansion_button = new br24RadarControlButton(this, ID_TARGET_EXPANSION, _("Target expansion"), CT_TARGET_EXPANSION,
+                                                         false, m_ri->target_expansion.button);
+  m_advanced_sizer->Add(m_target_expansion_button, 0, wxALL, BORDER);
+  m_target_expansion_button->minValue = 0;
+  m_target_expansion_button->maxValue = ARRAY_SIZE(target_expansion_names) - 1;
+  m_target_expansion_button->names = target_expansion_names;
+  m_target_expansion_button->SetLocalValue(m_ri->target_expansion.button);  // redraw after adding names
+
+  // The REJECTION button
+
+  interference_rejection_names[0] = _("Off");
+  interference_rejection_names[1] = _("Low");
+  interference_rejection_names[2] = _("Medium");
+  interference_rejection_names[3] = _("High");
+
+  m_interference_rejection_button =
+      new br24RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rej."), CT_INTERFERENCE_REJECTION, false,
+                                 m_ri->interference_rejection.button);
+  m_advanced_sizer->Add(m_interference_rejection_button, 0, wxALL, BORDER);
+  m_interference_rejection_button->minValue = 0;
+  m_interference_rejection_button->maxValue = ARRAY_SIZE(interference_rejection_names) - 1;
+  m_interference_rejection_button->names = interference_rejection_names;
+  m_interference_rejection_button->SetLocalValue(m_ri->interference_rejection.button);  // redraw after adding names
 
   // The TARGET SEPARATION button
 
@@ -566,30 +555,24 @@ void br24ControlsDialog::CreateControls() {
   m_scan_speed_button->names = scan_speed_names;
   m_scan_speed_button->SetLocalValue(m_ri->scan_speed.button);  // redraw after adding names
 
+  // The TARGET BOOST button
+  target_boost_names[0] = _("Off");
+  target_boost_names[1] = _("Low");
+  target_boost_names[2] = _("High");
+  m_target_boost_button =
+      new br24RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), CT_TARGET_BOOST, false, m_ri->target_boost.button);
+  m_advanced_sizer->Add(m_target_boost_button, 0, wxALL, BORDER);
+  m_target_boost_button->minValue = 0;
+  m_target_boost_button->maxValue = ARRAY_SIZE(target_boost_names) - 1;
+  m_target_boost_button->names = target_boost_names;
+  m_target_boost_button->SetLocalValue(m_ri->target_boost.button);  // redraw after adding names
+
   // The REFRESHRATE button
   m_refresh_rate_button =
       new br24RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), CT_REFRESHRATE, false, m_pi->m_settings.refreshrate);
   m_advanced_sizer->Add(m_refresh_rate_button, 0, wxALL, BORDER);
   m_refresh_rate_button->minValue = 1;
   m_refresh_rate_button->maxValue = 5;
-
-  // The TIMED TRANSMIT button
-  timed_idle_times[0] = _("Off");
-  timed_idle_times[1] = _("5 min");
-  timed_idle_times[2] = _("10 min");
-  timed_idle_times[3] = _("15 min");
-  timed_idle_times[4] = _("20 min");
-  timed_idle_times[5] = _("25 min");
-  timed_idle_times[6] = _("30 min");
-  timed_idle_times[7] = _("35 min");
-
-  m_timed_idle_button = new br24RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), CT_TIMED_IDLE, false,
-                                                   m_pi->m_settings.timed_idle);  // HakanToDo new setting
-  m_advanced_sizer->Add(m_timed_idle_button, 0, wxALL, BORDER);
-  m_timed_idle_button->minValue = 0;
-  m_timed_idle_button->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
-  m_timed_idle_button->names = timed_idle_times;
-  m_timed_idle_button->SetValue(m_pi->m_settings.timed_idle);  // redraw after adding names
 
   // The INSTALLATION button
   wxButton* bInstallation = new wxButton(this, ID_INSTALLATION, _("Installation"), wxDefaultPosition, g_smallButtonSize, 0);
@@ -755,11 +738,6 @@ void br24ControlsDialog::CreateControls() {
   m_rain_button = new br24RadarControlButton(this, ID_RAIN, _("Rain clutter"), CT_RAIN, false, m_ri->rain.button);
   m_adjust_sizer->Add(m_rain_button, 0, wxALL, BORDER);
 
-  // The ADVANCED button
-  wxButton* bAdvanced = new wxButton(this, ID_ADVANCED, _("Advanced\ncontrols"), wxDefaultPosition, g_buttonSize, 0);
-  m_adjust_sizer->Add(bAdvanced, 0, wxALL, BORDER);
-  bAdvanced->SetFont(m_pi->m_font);
-
   m_top_sizer->Hide(m_adjust_sizer);
 
   //**************** BEARING BOX ******************//
@@ -828,6 +806,11 @@ void br24ControlsDialog::CreateControls() {
   m_transmit_sizer->Add(m_adjust_button, 0, wxALL, BORDER);
   m_adjust_button->SetFont(m_pi->m_font);
 
+  // The ADVANCED button
+  wxButton* bAdvanced = new wxButton(this, ID_ADVANCED, _("Advanced"), wxDefaultPosition, g_smallButtonSize, 0);
+  m_transmit_sizer->Add(bAdvanced, 0, wxALL, BORDER);
+  bAdvanced->SetFont(m_pi->m_font);
+
   // The BEARING button
   m_bearing_button = new wxButton(this, ID_BEARING, _("EBL/VRM"), wxDefaultPosition, g_smallButtonSize, 0);
   m_transmit_sizer->Add(m_bearing_button, 0, wxALL, BORDER);
@@ -842,6 +825,24 @@ void br24ControlsDialog::CreateControls() {
   m_guard_2_button = new wxButton(this, ID_ZONE2, wxT(""), wxDefaultPosition, g_buttonSize, 0);
   m_transmit_sizer->Add(m_guard_2_button, 0, wxALL, BORDER);
   m_guard_2_button->SetFont(m_pi->m_font);
+
+  // The TIMED TRANSMIT button
+  timed_idle_times[0] = _("Off");
+  timed_idle_times[1] = _("5 min");
+  timed_idle_times[2] = _("10 min");
+  timed_idle_times[3] = _("15 min");
+  timed_idle_times[4] = _("20 min");
+  timed_idle_times[5] = _("25 min");
+  timed_idle_times[6] = _("30 min");
+  timed_idle_times[7] = _("35 min");
+
+  m_timed_idle_button =
+      new br24RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), CT_TIMED_IDLE, false, m_pi->m_settings.timed_idle);
+  m_transmit_sizer->Add(m_timed_idle_button, 0, wxALL, BORDER);
+  m_timed_idle_button->minValue = 0;
+  m_timed_idle_button->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
+  m_timed_idle_button->names = timed_idle_times;
+  m_timed_idle_button->SetValue(m_pi->m_settings.timed_idle);
 
   // The INFO button
   wxButton* bMessage = new wxButton(this, ID_MESSAGE, _("Info"), wxDefaultPosition, g_smallButtonSize, 0);
@@ -932,8 +933,6 @@ void br24ControlsDialog::OnBackClick(wxCommandEvent& event) {
     m_from_control = 0;
   } else if (m_top_sizer->IsShown(m_installation_sizer)) {
     SwitchTo(m_advanced_sizer);
-  } else if (m_top_sizer->IsShown(m_advanced_sizer)) {
-    SwitchTo(m_adjust_sizer);
   } else {
     SwitchTo(m_control_sizer);
   }

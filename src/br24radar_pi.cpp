@@ -507,8 +507,13 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
     time_t now = time(0);
     int left = m_idle_timeout - now;
     if (left > 0) {
-      text << wxString::Format("%02d:%02d", left / 60, left % 60);
+      if (m_radar[0]->state.value == RADAR_TRANSMIT || m_radar[1]->state.value == RADAR_TRANSMIT) {
+        text << wxString::Format(_("Standby in %02dm %02ds"), left / 60, left % 60);
+      } else {
+        text << wxString::Format(_("Transmit in %02dm %02ds"), left / 60, left % 60);
+      }
     }
+    return text;
   }
 
   for (int z = 0; z < GUARD_ZONES; z++) {

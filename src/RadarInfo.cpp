@@ -668,35 +668,38 @@ wxString RadarInfo::FormatDistance(double distance) {
 
 wxString RadarInfo::GetCanvasTextBottomLeft() {
   wxString s = m_pi->GetGuardZoneText(this, false);
-  double distance = 0.0, bearing;
 
-  // Add VRM/EBLs
+  if (state.value == RADAR_TRANSMIT) {
+    double distance = 0.0, bearing;
 
-  for (int b = 0; b < BEARING_LINES; b++) {
-    if (m_vrm[b] != 0.0) {
+    // Add VRM/EBLs
+
+    for (int b = 0; b < BEARING_LINES; b++) {
+      if (m_vrm[b] != 0.0) {
+        if (s.length()) {
+          s << wxT("\n");
+        }
+        s << wxString::Format(wxT("VRM%d=%s EBL%d=%.1f\u00B0T"), b + 1, FormatDistance(m_vrm[b]), b + 1, m_ebl[b]);
+      }
+    }
+
+    // Add in mouse cursor location
+
+    if (m_mouse_vrm != 0.0) {
+      distance = m_mouse_vrm;
+      bearing = m_mouse_ebl;
+    } else if ((m_mouse_lat != 0.0 || m_mouse_lon != 0.0) && m_pi->m_bpos_set) {
+      // Can't compute this upfront, ownship may move...
+      distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
+      bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
+    }
+
+    if (distance != 0.0) {
       if (s.length()) {
         s << wxT("\n");
       }
-      s << wxString::Format(wxT("VRM%d=%s EBL%d=%.1f\u00B0T"), b + 1, FormatDistance(m_vrm[b]), b + 1, m_ebl[b]);
+      s << FormatDistance(distance) << wxString::Format(wxT(", %.1f\u00B0T"), bearing);
     }
-  }
-
-  // Add in mouse cursor location
-
-  if (m_mouse_vrm != 0.0) {
-    distance = m_mouse_vrm;
-    bearing = m_mouse_ebl;
-  } else if ((m_mouse_lat != 0.0 || m_mouse_lon != 0.0) && m_pi->m_bpos_set) {
-    // Can't compute this upfront, ownship may move...
-    distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
-    bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
-  }
-
-  if (distance != 0.0) {
-    if (s.length()) {
-      s << wxT("\n");
-    }
-    s << FormatDistance(distance) << wxString::Format(wxT(", %.1f\u00B0T"), bearing);
   }
   return s;
 }
@@ -707,13 +710,13 @@ wxString RadarInfo::GetCanvasTextCenter() {
   if (state.value == RADAR_OFF) {
     s << _("No radar");
   } else if (state.value == RADAR_STANDBY) {
-    s << _("Standby");
+    s << _("Radar is in Standby");
     switch (radar_type) {
       case RT_BR24:
-        s << wxT(" BR24");
+        s << wxT("\nBR24");
         break;
       case RT_4G:
-        s << wxT(" 4G");
+        s << wxT("\n4G");
         break;
       case RT_UNKNOWN:
       default:
