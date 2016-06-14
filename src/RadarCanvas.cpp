@@ -207,7 +207,6 @@ void RadarCanvas::FillCursorTexture() {
     }
   }
 
-
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -251,7 +250,6 @@ void RadarCanvas::RenderCursor(int w, int h) {
     FillCursorTexture();
     LOG_DIALOG(wxT("BR24radar_pi: generated cursor texture # %u"), m_cursor_texture);
   }
-
 
   glBindTexture(GL_TEXTURE_2D, m_cursor_texture);
   glBegin(GL_QUADS);

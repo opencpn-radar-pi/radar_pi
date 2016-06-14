@@ -779,7 +779,7 @@ void br24ControlsDialog::CreateControls() {
 
   for (int b = 0; b < BEARING_LINES; b++) {
     // The BEARING button
-    wxString label = wxString::Format(_("Place EVL/VRM%d"), b + 1);
+    wxString label = wxString::Format(_("Place EBL/VRM%d"), b + 1);
     m_bearing_buttons[b] = new wxButton(this, ID_BEARING_SET + b, label, wxDefaultPosition, g_smallButtonSize, 0);
     m_bearing_sizer->Add(m_bearing_buttons[b], 0, wxALL, BORDER);
     m_bearing_buttons[b]->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnBearingSetButtonClick),
@@ -829,7 +829,7 @@ void br24ControlsDialog::CreateControls() {
   m_adjust_button->SetFont(m_pi->m_font);
 
   // The BEARING button
-  m_bearing_button = new wxButton(this, ID_BEARING, _("VRM/EBL"), wxDefaultPosition, g_smallButtonSize, 0);
+  m_bearing_button = new wxButton(this, ID_BEARING, _("EBL/VRM"), wxDefaultPosition, g_smallButtonSize, 0);
   m_transmit_sizer->Add(m_bearing_button, 0, wxALL, BORDER);
   m_bearing_button->SetFont(m_pi->m_font);
 
@@ -1130,9 +1130,9 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   for (int b = 0; b < BEARING_LINES; b++) {
     if (m_ri->m_vrm[b] != 0.0) {
-      o = wxString::Format(_("Clear EVL/VRM%d"), b + 1);
+      o = wxString::Format(_("Clear EBL/VRM%d"), b + 1);
     } else {
-      o = wxString::Format(_("Place EVL/VRM%d"), b + 1);
+      o = wxString::Format(_("Place EBL/VRM%d"), b + 1);
     }
     m_bearing_buttons[b]->SetLabel(o);
   }
@@ -1279,9 +1279,8 @@ void br24ControlsDialog::UpdateDialogShown() {
     LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown manually opened"), m_ri->name.c_str());
     if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_edit_sizer) &&
         !m_top_sizer->IsShown(m_installation_sizer) && !m_top_sizer->IsShown(m_bogey_sizer) &&
-        !m_top_sizer->IsShown(m_guard_sizer)) {
-      m_top_sizer->Show(m_control_sizer);
-      Fit();
+        !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_bearing_sizer)) {
+      SwitchTo(m_control_sizer);
     }
     m_control_sizer->Layout();
     m_top_sizer->Layout();
