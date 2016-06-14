@@ -1053,7 +1053,10 @@ void br24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) {
   EnterEditMode((br24RadarControlButton*)event.GetEventObject());
 }
 
-void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) { m_ri->FlipRadarState(); }
+void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
+  m_pi->m_settings.timed_idle = 0;
+  m_ri->FlipRadarState();
+}
 
 void br24ControlsDialog::OnRotationButtonClick(wxCommandEvent& event) {
   m_ri->rotation.Update(1 - m_ri->rotation.value);
@@ -1105,6 +1108,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
       m_control_sizer->Layout();
     }
     m_top_sizer->Layout();
+    Layout();
   }
 
   if (m_pi->m_settings.enable_dual_radar) {

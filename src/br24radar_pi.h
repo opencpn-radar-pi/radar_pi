@@ -409,12 +409,8 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   int m_previous_auto_range_meters;
 
   // Timed Transmit
-  bool m_init_timed_transmit;
-  int m_idle_dialog_time_left;
-  int m_TimedTransmit_IdleBoxMode;
-  int m_idle_time_left;
-
   time_t m_idle_timeout;  // When we will flip transmit/standby in automatic Timed Transmit
+
 #define HEADING_TIMEOUT (5)
 
   bool m_guard_bogey_confirmed;

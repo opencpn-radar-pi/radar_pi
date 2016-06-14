@@ -161,9 +161,6 @@ int br24radar_pi::Init(void) {
   m_bpos_set = false;
   m_auto_range_meters = 0;
   m_previous_auto_range_meters = 0;
-  m_idle_dialog_time_left = 999;  // Secret value, I hate secret values!
-  m_TimedTransmit_IdleBoxMode = 0;
-  m_idle_time_left = 0;
   m_guard_bogey_confirmed = false;
 
   m_alarm_sound_timeout = 0;
@@ -511,9 +508,9 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
         text << wxString::Format(_("Standby in %02dm %02ds"), left / 60, left % 60);
       } else {
         text << wxString::Format(_("Transmit in %02dm %02ds"), left / 60, left % 60);
+        return text;
       }
     }
-    return text;
   }
 
   for (int z = 0; z < GUARD_ZONES; z++) {
