@@ -52,6 +52,7 @@ RadarCanvas::RadarCanvas(br24radar_pi *pi, RadarInfo *ri, wxWindow *parent, wxSi
   m_ri = ri;
   m_context = new wxGLContext(this);
   m_zero_context = new wxGLContext(this);
+  m_cursor_texture = 0;
   LOG_DIALOG(wxT("BR24radar_pi: %s create OpenGL canvas"), m_ri->name.c_str());
 }
 
@@ -59,6 +60,10 @@ RadarCanvas::~RadarCanvas() {
   LOG_DIALOG(wxT("BR24radar_pi: %s destroy OpenGL canvas"), m_ri->name.c_str());
   delete m_context;
   delete m_zero_context;
+  if (m_cursor_texture) {
+    glDeleteTextures(2, &m_cursor_texture);
+    m_cursor_texture = 0;
+  }
 }
 
 void RadarCanvas::OnSize(wxSizeEvent &evt) {
@@ -146,6 +151,69 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   }
 }
 
+void RadarCanvas::FillCursorTexture() {
+#define CURSOR_WIDTH 16
+#define CURSOR_HEIGHT 16
+
+  // clang-format off
+  const static char *cursor[CURSOR_HEIGHT] = {
+    "................",
+    "......*****.....",
+    "......*---*.....",
+    "......*---*.....",
+    "......*---*.....",
+    "..*****---*****.",
+    "..*-----------*.",
+    "..*-----------*.",
+    "..*-----------*.",
+    "..*****---*****.",
+    "......*---*.....",
+    "......*---*.....",
+    "......*---*.....",
+    "......*****.....",
+    "................",
+    "................",
+  };
+  // clang-format on
+
+  GLubyte cursorTexture[CURSOR_HEIGHT][CURSOR_WIDTH][4];
+  GLubyte *loc;
+  int s, t;
+
+  /* Setup RGB image for the texture. */
+  loc = (GLubyte *)cursorTexture;
+  for (t = 0; t < CURSOR_HEIGHT; t++) {
+    for (s = 0; s < CURSOR_WIDTH; s++) {
+      switch (cursor[t][s]) {
+        case '*': /* White */
+          loc[0] = 0xff;
+          loc[1] = 0xff;
+          loc[2] = 0xff;
+          loc[3] = 0xff;
+          break;
+        case '-': /* black */
+          loc[0] = 0x00;
+          loc[1] = 0x00;
+          loc[2] = 0x00;
+          loc[3] = 0xff;
+          break;
+        default: /* transparent */
+          loc[0] = 0x00;
+          loc[1] = 0x00;
+          loc[2] = 0x00;
+          loc[3] = 0x00;
+      }
+      loc += 4;
+    }
+  }
+
+
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE, cursorTexture);
+}
+
 void RadarCanvas::RenderCursor(int w, int h) {
   double distance;
   double bearing;
@@ -169,39 +237,32 @@ void RadarCanvas::RenderCursor(int w, int h) {
   int display_range = m_ri->GetDisplayRange();
   double scale = distance * full_range / display_range;
 
+#define CURSOR_SCALE 1
+
   double center_x = w / 2.0;
   double center_y = h / 2.0;
   double angle = deg2rad(bearing - rot);
-  double x = center_x - sin(angle) * scale;
-  double y = center_y + cos(angle) * scale;
+  double x = center_x - sin(angle) * scale - CURSOR_WIDTH * CURSOR_SCALE / 2;
+  double y = center_y + cos(angle) * scale - CURSOR_WIDTH * CURSOR_SCALE / 2;
 
-  glColor3ub(0, 0, 0);
-  glLineWidth(3.0);
+  if (!m_cursor_texture) {
+    glGenTextures(1, &m_cursor_texture);
+    glBindTexture(GL_TEXTURE_2D, m_cursor_texture);
+    FillCursorTexture();
+    LOG_DIALOG(wxT("BR24radar_pi: generated cursor texture # %u"), m_cursor_texture);
+  }
 
-  glBegin(GL_LINES);
-  glVertex2f(x - 4, y);
-  glVertex2f(x + 4, y);
-  glVertex2f(x, y - 4);
-  glVertex2f(x, y + 4);
-  glEnd();
 
-  glColor3ub(255, 255, 255);
-  glLineWidth(1.0);
-
-  glBegin(GL_LINE_STRIP);
-  glVertex2f(x - 6, y - 2);
-  glVertex2f(x - 6, y + 2);
-  glVertex2f(x - 2, y + 2);
-  glVertex2f(x - 2, y + 6);
-  glVertex2f(x + 2, y + 6);
-  glVertex2f(x + 2, y + 2);
-  glVertex2f(x + 6, y + 2);
-  glVertex2f(x + 6, y - 2);
-  glVertex2f(x + 2, y - 2);
-  glVertex2f(x + 2, y - 6);
-  glVertex2f(x - 2, y - 6);
-  glVertex2f(x - 2, y - 2);
-  glVertex2f(x - 6, y - 2);
+  glBindTexture(GL_TEXTURE_2D, m_cursor_texture);
+  glBegin(GL_QUADS);
+  glTexCoord2i(0, 0);
+  glVertex2i(x, y);
+  glTexCoord2i(1, 0);
+  glVertex2i(x + CURSOR_SCALE * CURSOR_WIDTH, y);
+  glTexCoord2i(1, 1);
+  glVertex2i(x + CURSOR_SCALE * CURSOR_WIDTH, y + CURSOR_SCALE * CURSOR_HEIGHT);
+  glTexCoord2i(0, 1);
+  glVertex2i(x, y + CURSOR_SCALE * CURSOR_HEIGHT);
   glEnd();
 }
 
@@ -311,6 +372,8 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glEnable(GL_TEXTURE_2D);
 
   RenderTexts(w, h);
+  // glBlendFunc(GL_ONE, GL_ZERO);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   RenderCursor(w, h);
 
   glDisable(GL_TEXTURE_2D);

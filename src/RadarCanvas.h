@@ -48,7 +48,7 @@ class RadarCanvas : public wxGLCanvas {
   void OnMouseClick(wxMouseEvent& event);
 
  private:
-  // void RenderText(wxPoint p, wxString text);
+  void FillCursorTexture();
   void RenderTexts(int w, int h);
   void RenderRangeRingsAndHeading(int w, int h);
   void RenderCursor(int w, int h);
@@ -63,6 +63,8 @@ class RadarCanvas : public wxGLCanvas {
 
   TextureFont m_FontNormal;
   TextureFont m_FontBig;
+
+  unsigned int m_cursor_texture;
 
   DECLARE_EVENT_TABLE();
 };
