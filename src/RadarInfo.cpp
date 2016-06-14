@@ -556,7 +556,7 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
   di->draw->DrawRadarImage();
 }
 
-void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay) {
+void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bool overlay) {
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);  // Save state
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -565,7 +565,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, 
     if (m_pi->m_settings.guard_zone_on_overlay) {
       glPushMatrix();
       glTranslated(center.x, center.y, 0);
-      glRotated(rotation + m_pi->m_hdt, 0.0, 0.0, 1.0);
+      glRotated(rotate + m_pi->m_hdt, 0.0, 0.0, 1.0);
       glScaled(scale, scale, 1.);
 
       LOG_VERBOSE(wxT("BR24radar_pi: %s render guard zone on overlay"), name.c_str());
@@ -577,8 +577,8 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, 
     scale = scale / radar_pixels_per_meter;
     glPushMatrix();
     glTranslated(center.x, center.y, 0);
-    if (rotation != 0.0) {
-      glRotated(rotation, 0.0, 0.0, 1.0);
+    if (rotate != 0.0) {
+      glRotated(rotate, 0.0, 0.0, 1.0);
     }
     glScaled(scale, scale, 1.);
 
@@ -590,6 +590,9 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotation, 
     glPushMatrix();
     scale = 1.0 / m_display_meters;
     glScaled(scale, scale, 1.);
+    if (rotation.value) {
+      glRotated(m_pi->m_hdt, 0.0, 0.0, 1.0);
+    }
     RenderGuardZone();
     glPopMatrix();
 
