@@ -126,28 +126,31 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
     }
   }
 
-  LOG_DIALOG(wxT("BR24radar_pi: m_hdt=%f rot=%d"), m_pi->m_hdt, m_ri->rotation.value);
-  double rot = (m_ri->rotation.value && m_pi->m_heading_source != HEADING_NONE) ? m_pi->m_hdt : 0.0;
+  if (m_pi->m_heading_source != HEADING_NONE) {
+    LOG_DIALOG(wxT("BR24radar_pi: m_hdt=%f rot=%d"), m_pi->m_hdt, m_ri->rotation.value);
 
-  for (int i = 0; i < 360; i += 5) {
-    x = -sinf(deg2rad(i + rot)) * (r * 1.00 - 1);
-    y = cosf(deg2rad(i + rot)) * (r * 1.00 - 1);
+    double rot = ((m_ri->rotation.value == ROTATION_NORTH_UP) ? 0. : -m_pi->m_hdt) + 180.;
 
-    wxString s;
-    if (i % 90 == 0) {
-      static char nesw[4] = {'N', 'E', 'S', 'W'};
-      s = wxString::Format(wxT("%c"), nesw[i / 90]);
-    } else if (i % 15 == 0) {
-      s = wxString::Format(wxT("%u"), i);
+    for (int i = 0; i < 360; i += 5) {
+      x = -sinf(deg2rad(i + rot)) * (r * 1.00 - 1);
+      y = cosf(deg2rad(i + rot)) * (r * 1.00 - 1);
+
+      wxString s;
+      if (i % 90 == 0) {
+        static char nesw[4] = {'N', 'E', 'S', 'W'};
+        s = wxString::Format(wxT("%c"), nesw[i / 90]);
+      } else if (i % 15 == 0) {
+        s = wxString::Format(wxT("%u"), i);
+      }
+      m_FontNormal.GetTextExtent(s, &px, &py);
+      if (x > 0) {
+        x -= px;
+      }
+      if (y > 0) {
+        y -= py;
+      }
+      m_FontNormal.RenderString(s, center_x + x, center_y + y);
     }
-    m_FontNormal.GetTextExtent(s, &px, &py);
-    if (x > 0) {
-      x -= px;
-    }
-    if (y > 0) {
-      y -= py;
-    }
-    m_FontNormal.RenderString(s, center_x + x, center_y + y);
   }
 }
 
@@ -232,7 +235,7 @@ void RadarCanvas::RenderCursor(int w, int h) {
   }
   double full_range = wxMax(w, h) / 2.0;
 
-  double rot = (m_ri->rotation.value && m_pi->m_heading_source != HEADING_NONE) ? m_pi->m_hdt : 0.0;
+  double heading = GetHeading();
   int display_range = m_ri->GetDisplayRange();
   double scale = distance * full_range / display_range;
 
@@ -240,7 +243,7 @@ void RadarCanvas::RenderCursor(int w, int h) {
 
   double center_x = w / 2.0;
   double center_y = h / 2.0;
-  double angle = deg2rad(bearing - rot);
+  double angle = deg2rad(bearing - heading);
   double x = center_x - sin(angle) * scale - CURSOR_WIDTH * CURSOR_SCALE / 2;
   double y = center_y + cos(angle) * scale - CURSOR_WIDTH * CURSOR_SCALE / 2;
 
@@ -271,13 +274,13 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
   double center_x = w / 2.0;
   double center_y = h / 2.0;
 
-  double rot = (m_ri->rotation.value && m_pi->m_heading_source != HEADING_NONE) ? m_pi->m_hdt : 0.0;
+  double heading = GetHeading();
   int display_range = m_ri->GetDisplayRange();
 
   for (int b = 0; b < BEARING_LINES; b++) {
     if (m_ri->m_vrm[b] != 0.0) {
       double scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
-      double angle = deg2rad(m_ri->m_ebl[b] - rot);
+      double angle = deg2rad(m_ri->m_ebl[b] - heading);
       double x = center_x - sin(angle) * full_range * 2.;
       double y = center_y + cos(angle) * full_range * 2.;
 
@@ -401,8 +404,8 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
 
   double distance = sqrt(delta_x * delta_x + delta_y * delta_y);
 
-  double rot = (m_ri->rotation.value && m_pi->m_heading_source != HEADING_NONE) ? m_pi->m_hdt : 0.0;
-  double angle = fmod(rad2deg(atan2(delta_y, delta_x)) - rot + 720. - 90., 360.0);
+  double heading = GetHeading();
+  double angle = fmod(rad2deg(atan2(delta_y, delta_x)) - heading + 720. - 90., 360.0);
 
   int display_range = m_ri->GetDisplayRange();
   double full_range = wxMax(w, h) / 2.0;

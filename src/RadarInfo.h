@@ -74,6 +74,8 @@ class RadarInfo : public wxEvtHandler {
 
   radar_control_item state;     // RadarState (observed)
   radar_control_item rotation;  // 0 = Heading Up, 1 = North Up
+#define ROTATION_HEAD_UP (0)
+#define ROTATION_NORTH_UP (1)
   radar_control_item overlay;
   radar_control_item range;
   radar_control_item gain;

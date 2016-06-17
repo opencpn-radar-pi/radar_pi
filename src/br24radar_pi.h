@@ -224,6 +224,7 @@ struct PersistentSettings {
   bool enable_dual_radar;        // Should the dual radar be enabled for 4G?
   bool emulator_on;              // Emulator, useful when debugging without radar
   int drawing_method;            // VertexBuffer, Shader, etc.
+  int ignore_radar_heading;      // For testing purposes
   int threshold_red;
   int threshold_green;
   int threshold_blue;
@@ -311,9 +312,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   bool IsRadarOnScreen(int radar) {
     return m_settings.show > 0 && (m_settings.show_radar[radar] || m_settings.chart_overlay == radar);
   }
-  bool IsOverlayOnScreen(int radar) {
-    return m_settings.show > 0 && m_settings.chart_overlay == radar;
-  }
+  bool IsOverlayOnScreen(int radar) { return m_settings.show > 0 && m_settings.chart_overlay == radar; }
 
   void ComputeColorMap();
 

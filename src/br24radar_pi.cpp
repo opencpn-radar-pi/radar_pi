@@ -900,6 +900,7 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("PassHeadingToOCPN"), &intValue, 0);
     m_settings.pass_heading_to_opencpn = intValue != 0;
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
+    pConf->Read(wxT("IgnoreRadarHeading"), &m_settings.ignore_radar_heading, 0);
 
     for (int r = 0; r < RADARS; r++) {
       int v;
