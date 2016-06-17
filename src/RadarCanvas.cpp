@@ -129,11 +129,11 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   if (m_pi->m_heading_source != HEADING_NONE) {
     LOG_DIALOG(wxT("BR24radar_pi: m_hdt=%f rot=%d"), m_pi->m_hdt, m_ri->rotation.value);
 
-    double rot = ((m_ri->rotation.value == ROTATION_NORTH_UP) ? 0. : -m_pi->m_hdt) + 180.;
+    double heading = GetHeading();
 
     for (int i = 0; i < 360; i += 5) {
-      x = -sinf(deg2rad(i + rot)) * (r * 1.00 - 1);
-      y = cosf(deg2rad(i + rot)) * (r * 1.00 - 1);
+      x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
+      y = cosf(deg2rad(i - heading)) * (r * 1.00 - 1);
 
       wxString s;
       if (i % 90 == 0) {
