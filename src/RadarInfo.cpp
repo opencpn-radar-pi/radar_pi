@@ -369,8 +369,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
   if (m_overlay_refreshes_queued > 0) {
     // don't do additional refresh when too busy
-    LOG_VERBOSE(wxT("BR24radar_pi: %s busy encountered, overlay_refreshes_queued=%d"), name.c_str(), m_overlay_refreshes_queued);
-  } else if (m_pi->m_settings.show && m_pi->m_settings.chart_overlay == this->radar) {
+    LOG_DIALOG(wxT("BR24radar_pi: %s busy encountered, overlay_refreshes_queued=%d"), name.c_str(), m_overlay_refreshes_queued);
+  } else if (m_pi->IsOverlayOnScreen(radar)) {
     m_overlay_refreshes_queued++;
     GetOCPNCanvasWindow()->Refresh(false);
   }
@@ -378,7 +378,7 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
   if (m_refreshes_queued > 0) {
     // don't do additional refresh and reset the refresh conter
     // this will also balance performance, if too busy skip refresh
-    LOG_VERBOSE(wxT("BR24radar_pi: %s busy encountered, refreshes_queued=%d"), name.c_str(), m_refreshes_queued);
+    LOG_DIALOG(wxT("BR24radar_pi: %s busy encountered, refreshes_queued=%d"), name.c_str(), m_refreshes_queued);
   } else if (IsPaneShown()) {
     m_refreshes_queued++;
     radar_panel->Refresh(false);
@@ -576,7 +576,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
       glRotated(rotate + m_pi->m_hdt, 0.0, 0.0, 1.0);
       glScaled(scale, scale, 1.);
 
-      LOG_VERBOSE(wxT("BR24radar_pi: %s render guard zone on overlay"), name.c_str());
+      LOG_DIALOG(wxT("BR24radar_pi: %s render guard zone on overlay"), name.c_str());
 
       RenderGuardZone();
       glPopMatrix();
@@ -608,7 +608,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
     double overscan = (double)m_range_meters / (double)m_display_meters;
     scale = overscan / RETURNS_PER_LINE;
     glScaled(scale, scale, 1.);
-    LOG_VERBOSE(wxT("BR24radar_pi: %s render overscan=%g range=%d"), name.c_str(), overscan, m_display_meters);
+    LOG_DIALOG(wxT("BR24radar_pi: %s render overscan=%g range=%d"), name.c_str(), overscan, m_display_meters);
     RenderRadarImage(&m_draw_panel);
     if (m_refreshes_queued > 0) {
       m_refreshes_queued--;
@@ -620,15 +620,17 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
 }
 
 void RadarInfo::FlipRadarState() {
-  if (state.button == RADAR_STANDBY) {
-    transmit->RadarTxOn();
-    state.Update(RADAR_TRANSMIT);
-    wantedState = RADAR_TRANSMIT;
-  } else {
-    transmit->RadarTxOff();
-    m_data_timeout = 0;
-    state.Update(RADAR_STANDBY);
-    wantedState = RADAR_STANDBY;
+  if (m_pi->IsRadarOnScreen(radar)) {
+    if (state.button == RADAR_STANDBY) {
+      transmit->RadarTxOn();
+      state.Update(RADAR_TRANSMIT);
+      wantedState = RADAR_TRANSMIT;
+    } else {
+      transmit->RadarTxOff();
+      m_data_timeout = 0;
+      state.Update(RADAR_STANDBY);
+      wantedState = RADAR_STANDBY;
+    }
   }
 }
 

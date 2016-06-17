@@ -425,6 +425,7 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
   LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback"));
 
   if (m_pMessageBox->UpdateMessage(false)) {
+    // Conditions for radar not satisfied, hide radar windows
     SetRadarWindowViz(false);
     m_settings.show = 0;
     return;
@@ -690,8 +691,9 @@ void br24radar_pi::Notify(void) {
       m_radar[r]->state.Update(RADAR_STANDBY);
       LOG_INFO(wxT("BR24radar_pi: Data Lost %s "), m_radar[r]->name);
     }
+
     if (m_radar[r]->state.value == RADAR_TRANSMIT) {
-      if (TIMED_OUT(now, m_radar[r]->m_stayalive_timeout)) {
+      if (IsRadarOnScreen(r) && TIMED_OUT(now, m_radar[r]->m_stayalive_timeout)) {
         m_radar[r]->m_stayalive_timeout = now + STAYALIVE_TIMEOUT;
         m_radar[r]->transmit->RadarStayAlive();
       }
@@ -753,10 +755,10 @@ void br24radar_pi::UpdateState(void) {
   for (int r = 0; r < RADARS; r++) {
     state = wxMax(state, (RadarState)m_radar[r]->state.value);
   }
-  if (state == RADAR_OFF || !m_opengl_mode) {
+  if (state == RADAR_OFF) {
     m_toolbar_button = TB_RED;
     CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_RED);
-  } else if (state == RADAR_TRANSMIT && m_settings.show) {
+  } else if (state == RADAR_TRANSMIT) {
     m_toolbar_button = TB_GREEN;
     CacheSetToolbarToolBitmaps(BM_ID_GREEN, BM_ID_GREEN);
   } else {

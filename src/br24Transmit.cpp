@@ -117,13 +117,13 @@ bool br24Transmit::TransmitCmd(const UINT8 *msg, int size) {
 }
 
 void br24Transmit::RadarTxOff() {
-  LOG_VERBOSE(wxT("BR24radar_pi: %s transmit: turn Off"), m_name);
+  IF_LOG_AT(LOGLEVEL_VERBOSE | LOGLEVEL_TRANSMIT, wxLogMessage(wxT("BR24radar_pi: %s transmit: turn Off"), m_name));
   TransmitCmd(COMMAND_TX_OFF_A, sizeof(COMMAND_TX_OFF_A));
   TransmitCmd(COMMAND_TX_OFF_B, sizeof(COMMAND_TX_OFF_B));
 }
 
 void br24Transmit::RadarTxOn() {
-  LOG_VERBOSE(wxT("BR24radar_pi: %s transmit: turn on"), m_name);
+  IF_LOG_AT(LOGLEVEL_VERBOSE | LOGLEVEL_TRANSMIT, wxLogMessage(wxT("BR24radar_pi: %s transmit: turn on"), m_name));
   TransmitCmd(COMMAND_TX_ON_A, sizeof(COMMAND_TX_ON_A));
   TransmitCmd(COMMAND_TX_ON_B, sizeof(COMMAND_TX_ON_B));
 }

@@ -306,6 +306,15 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   void ConfirmGuardZoneBogeys();
 
   bool SetControlValue(int radar, ControlType controlType, int value);
+
+  // Various state decisions
+  bool IsRadarOnScreen(int radar) {
+    return m_settings.show > 0 && (m_settings.show_radar[radar] || m_settings.chart_overlay == radar);
+  }
+  bool IsOverlayOnScreen(int radar) {
+    return m_settings.show > 0 && m_settings.chart_overlay == radar;
+  }
+
   void ComputeColorMap();
 
   bool LoadConfig(void);
@@ -378,7 +387,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   void CheckTimedTransmit(RadarState state);
   void SetDesiredStateAllRadars(RadarState desiredState);
 
-  wxMutex m_mutex;          // protects callbacks that come from multiple radars
+  wxMutex m_mutex;  // protects callbacks that come from multiple radars
 
   wxFileConfig *m_pconfig;
   wxWindow *m_parent_window;
