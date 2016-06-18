@@ -193,7 +193,17 @@ int br24radar_pi::Init(void) {
   //    And load the configuration items
   if (LoadConfig()) {
     LOG_INFO(wxT("BR24radar_pi: Configuration file values initialised"));
-    LOG_INFO(wxT("BR24radar_pi: Log verbosity = %d (to modify, set VerboseLog to 0..4)"), m_settings.verbose);
+    LOG_INFO(wxT("BR24radar_pi: Log verbosity = %d (to modify, set VerboseLog to sum of:"), m_settings.verbose);
+    LOG_INFO(wxT("BR24radar_pi: VERBOSE  = %d"), LOGLEVEL_VERBOSE);
+    LOG_INFO(wxT("BR24radar_pi: DIALOG   = %d"), LOGLEVEL_DIALOG);
+    LOG_INFO(wxT("BR24radar_pi: TRANSMIT = %d"), LOGLEVEL_TRANSMIT);
+    LOG_INFO(wxT("BR24radar_pi: RECEIVE  = %d"), LOGLEVEL_RECEIVE);
+    LOG_INFO(wxT("BR24radar_pi: GUARD    = %d"), LOGLEVEL_GUARD);
+    LOG_VERBOSE(wxT("BR24radar_pi: VERBOSE  log is enabled"));
+    LOG_DIALOG(wxT("BR24radar_pi: DIALOG   log is enabled"));
+    LOG_TRANSMIT(wxT("BR24radar_pi: TRANSMIT log is enabled"));
+    LOG_RECEIVE(wxT("BR24radar_pi: RECEIVE  log is enabled"));
+    LOG_GUARD(wxT("BR24radar_pi: GUARD    log is enabled"));
   } else {
     wxLogError(wxT("BR24radar_pi: configuration file values initialisation failed"));
     return 0;  // give up
@@ -329,6 +339,9 @@ void br24radar_pi::SetRadarWindowViz(bool show) {
     m_radar[r]->ShowRadarWindow(showThisRadar);
     if (!showThisRadar) {
       ShowRadarControl(r, false);
+    }
+    if (show && m_radar[r]->wantedState == RADAR_TRANSMIT) {
+      m_radar[r]->transmit->RadarTxOn();
     }
   }
   for (; r < RADARS; r++) {  // Hide remaining radar if enable_dual_radar was on but now off

@@ -127,7 +127,6 @@ typedef enum ControlType {
   CT_TARGET_BOOST,
   CT_TARGET_EXPANSION,
   CT_REFRESHRATE,
-  CT_PASSHEADING,
   CT_SCAN_SPEED,
   CT_SCAN_AGE,
   CT_TIMED_IDLE,
@@ -150,7 +149,6 @@ static string ControlTypeNames[CT_MAX] = {"Range",
                                           "Target boost",
                                           "Target expansion",
                                           "Refresh rate",
-                                          "Pass heading",
                                           "Scan speed",
                                           "Scan age",
                                           "Timed idle",
@@ -203,14 +201,16 @@ static const bool HasBitCount2[8] = {
  */
 struct PersistentSettings {
   int overlay_transparency;
-  int range_index;               // index into range array, see RadarInfo.cpp
-  int verbose;                   // Loglevel 0..4.
-  int display_option;            // Monocolor-red or Multi-color
-  int guard_zone_threshold;      // How many blobs must be sent by radar before we fire alarm
-  int guard_zone_render_style;   // 0 = Shading, 1 = Outline, 2 = Shading + Outline
-  int guard_zone_on_overlay;     // 0 = false, 1 = true
-  double skew_factor;            // Set to -1 or other value to correct skewing
-  int range_units;               // 0 = Nautical miles, 1 = Kilometers
+  int range_index;              // index into range array, see RadarInfo.cpp
+  int verbose;                  // Loglevel 0..4.
+  int display_option;           // Monocolor-red or Multi-color
+  int guard_zone_threshold;     // How many blobs must be sent by radar before we fire alarm
+  int guard_zone_render_style;  // 0 = Shading, 1 = Outline, 2 = Shading + Outline
+  int guard_zone_on_overlay;    // 0 = false, 1 = true
+  double skew_factor;           // Set to -1 or other value to correct skewing
+  int range_units;              // 0 = Nautical miles, 1 = Kilometers
+#define RANGE_NAUTICAL (0)
+#define RANGE_METRIC (1)
   int range_unit_meters;         // ... 1852 or 1000, depending on range_units
   int max_age;                   // Scans older than this in seconds will be removed
   int timed_idle;                // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
@@ -218,6 +218,7 @@ struct PersistentSettings {
   int refreshrate;               // How quickly to refresh the display
   int show;                      // whether to show any radar (overlay or window)
   int show_radar[RADARS];        // whether to show radar window
+  int transmit_radar[RADARS];    // whether radar should be transmitting (persistent)
   int chart_overlay;             // -1 = none, otherwise = radar number
   int menu_auto_hide;            // 0 = none, 1 = 10s, 2 = 30s
   bool pass_heading_to_opencpn;  //

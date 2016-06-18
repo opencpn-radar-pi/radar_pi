@@ -46,8 +46,22 @@ class radar_control_item {
   int button;
   bool mod;
 
-  void Update(int v);
-  int GetButton();
+  void Update(int v) {
+    wxMutexLocker lock(m_mutex);
+
+    if (v != button) {
+      mod = true;
+      button = v;
+    }
+    value = v;
+  };
+
+  int GetButton() {
+    wxMutexLocker lock(m_mutex);
+
+    mod = false;
+    return button;
+  }
 
   radar_control_item() {
     value = 0;
@@ -65,6 +79,15 @@ struct DrawInfo {
   bool color_option;
 };
 
+struct RadarRange {
+  int meters;
+  int actual_meters;
+  const char *name;
+  const char *range1;
+  const char *range2;
+  const char *range3;
+};
+
 class RadarInfo : public wxEvtHandler {
  public:
   wxString name;  // Either "Radar", "Radar A", "Radar B".
@@ -77,7 +100,7 @@ class RadarInfo : public wxEvtHandler {
 #define ROTATION_HEAD_UP (0)
 #define ROTATION_NORTH_UP (1)
   radar_control_item overlay;
-  radar_control_item range;
+  radar_control_item range;  // value in meters
   radar_control_item gain;
   radar_control_item interference_rejection;
   radar_control_item target_separation;
@@ -134,8 +157,7 @@ class RadarInfo : public wxEvtHandler {
   bool Init(int verbose);
   void StartReceive();
   void SetName(wxString name);
-  void SetRangeIndex(int newValue);
-  void SetRangeMeters(int range);
+  void AdjustRange(int adjustment);
   void SetAutoRangeMeters(int meters);
   bool SetControlValue(ControlType controlType, int value);
   void ResetSpokes();
@@ -148,9 +170,9 @@ class RadarInfo : public wxEvtHandler {
 
   void UpdateControlState(bool all);
   void FlipRadarState();
-  wxString &GetRangeText(int range_meters, int *index);
+  wxString &GetRangeText();
   const char *GetDisplayRangeStr(size_t idx);
-  int GetDisplayRange() { return m_display_meters; };
+  int GetDisplayRange() { return range.value; };
   void SetNetworkCardAddress(struct sockaddr_in *address);
   void SetMouseLatLon(double lat, double lon);
   void SetMouseVrmEbl(double vrm, double ebl);
@@ -164,13 +186,12 @@ class RadarInfo : public wxEvtHandler {
 
  private:
   void RenderRadarImage(DrawInfo *di);
-  int GetRangeMeters(int index);
-  size_t convertRadarMetersToIndex(int *range_meters);
+  // int GetRangeMeters(int index);
+  // size_t convertRadarMetersToIndex(int *range_meters);
   wxString FormatDistance(double distance);
 
-  int m_range_index;     // index into range array
-  int m_range_meters;    // what radar told us is the range
-  int m_display_meters;  // what the display size is (slightly less than m_range_meters)
+  int m_range_meters;                 // what radar told us is the range in the last received spoke
+  const RadarRange *m_current_range;  // Current range, if known range
 
   int m_previous_auto_range_meters;
   int m_auto_range_meters;

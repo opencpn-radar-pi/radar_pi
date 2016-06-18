@@ -576,9 +576,9 @@ void *br24Receive::Entry(void) {
 struct radar_state02 {
   UINT8 what;                    // 0   0x02
   UINT8 command;                 // 1 0xC4
-  UINT16 range;                  //  2-3   0x06 0x09
-  UINT32 field4;                 // 4-7    0
-  UINT32 field8;                 // 8-11
+  UINT32 range;                  //  2-3   0x06 0x09
+  UINT16 field4;                 // 6-7    0
+  UINT32 field8;                 // 8-11   1
   UINT8 gain;                    // 12
   UINT8 field13;                 // 13  ==1 for sea auto
   UINT8 field14;                 // 14
@@ -680,6 +680,7 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
         m_ri->target_boost.Update(s->target_boost);
         m_ri->interference_rejection.Update(s->interference_rejection);
         m_ri->target_expansion.Update(s->target_expansion);
+        m_ri->range.Update(s->range / 10);
 
         LOG_RECEIVE(wxT("BR24radar_pi: %s state range=%u gain=%u sea=%u rain=%u if_rejection=%u tgt_boost=%u tgt_expansion=%u"),
                     m_ri->name.c_str(), s->range, s->gain, s->sea, s->rain, s->interference_rejection, s->target_boost,
@@ -786,6 +787,9 @@ void br24Receive::ProcessCommand(wxString &addr, const UINT8 *command, int len) 
   } else if (len == 3 && memcmp(command, COMMAND_TX_OFF_B, sizeof(COMMAND_TX_OFF_B)) == 0) {
     LOG_VERBOSE(wxT("BR24radar_pi: %s received transmit off from %s"), m_ri->name.c_str(), addr.c_str());
     m_ri->state.Update(RADAR_STANDBY);
+  } else if (len == 6 && command[0] == 0x03 && command[1] == 0xc1) {
+    UINT32 range = *((UINT32 *)&command[2]);
+    LOG_VERBOSE(wxT("BR24radar_pi: %s received range request for %u meters from %s"), m_ri->name.c_str(), range / 10, addr.c_str());
   }
 }
 

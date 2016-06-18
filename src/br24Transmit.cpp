@@ -156,10 +156,8 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
   bool r = false;
 
   switch (controlType) {
-
     case CT_RANGE:
     case CT_TIMED_IDLE:
-    case CT_PASSHEADING:
     case CT_SCAN_AGE:
     case CT_TRANSPARENCY:
     case CT_REFRESHRATE:
@@ -184,7 +182,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
-      
+
     case CT_GAIN: {
       if (value < 0) {  // AUTO gain
         UINT8 cmd[] = {
@@ -236,7 +234,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
     case CT_SIDE_LOBE_SUPPRESSION: {
       if (value < 0) {
         UINT8 cmd[] = {// SIDE_LOBE_SUPPRESSION auto
-          0x06, 0xc1, 0x05, 0, 0, 0, 0x01, 0, 0, 0, 0xc0};
+                       0x06, 0xc1, 0x05, 0, 0, 0, 0x01, 0, 0, 0, 0xc0};
         LOG_VERBOSE(wxT("BR24radar_pi: %s command Tx CT_SIDE_LOBE_SUPPRESSION Auto"), m_name);
         r = TransmitCmd(cmd, sizeof(cmd));
       } else {
@@ -250,7 +248,6 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
       }
       break;
     }
-
 
     // What would command 7 be?
 
@@ -312,7 +309,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
     // What would command 23 through 2f be?
 
     case CT_ANTENNA_HEIGHT: {
-      int v = value * 1000; // radar wants millimeters, not meters :-)
+      int v = value * 1000;  // radar wants millimeters, not meters :-)
       int v1 = v / 256;
       int v2 = v & 255;
       UINT8 cmd[10] = {0x30, 0xc1, 0x01, 0, 0, 0, (UINT8)v2, (UINT8)v1, 0, 0};

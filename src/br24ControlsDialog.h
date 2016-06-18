@@ -56,7 +56,7 @@ class br24ControlsDialog : public wxDialog {
               const wxPoint &pos = wxDefaultPosition);
 
   void CreateControls();
-  void SetRangeIndex(size_t index);
+  void AdjustRange(int adjustment);
   wxString &GetRangeText();
   void SetTimedIdleIndex(int index);
   void UpdateGuardZoneState();

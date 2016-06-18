@@ -36,10 +36,10 @@
 PLUGIN_BEGIN_NAMESPACE
 
 BEGIN_EVENT_TABLE(RadarCanvas, wxGLCanvas)
-//    EVT_CLOSE(RadarCanvas::close)
 EVT_MOVE(RadarCanvas::OnMove)
 EVT_SIZE(RadarCanvas::OnSize)
 EVT_PAINT(RadarCanvas::Render)
+EVT_MOUSEWHEEL(RadarCanvas::OnMouseWheel)
 EVT_LEFT_DOWN(RadarCanvas::OnMouseClick)
 END_EVENT_TABLE()
 
@@ -53,6 +53,8 @@ RadarCanvas::RadarCanvas(br24radar_pi *pi, RadarInfo *ri, wxWindow *parent, wxSi
   m_context = new wxGLContext(this);
   m_zero_context = new wxGLContext(this);
   m_cursor_texture = 0;
+  m_last_mousewheel_zoom_in = 0;
+  m_last_mousewheel_zoom_out = 0;
   LOG_DIALOG(wxT("BR24radar_pi: %s create OpenGL canvas"), m_ri->name.c_str());
 }
 
@@ -417,6 +419,32 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
   m_pi->ShowRadarControl(m_ri->radar, true);
 
   event.Skip();
+}
+
+void RadarCanvas::OnMouseWheel(wxMouseEvent &event) {
+  int delta = event.GetWheelDelta();
+  int rotation = event.GetWheelRotation();
+
+  if (!m_ri->control_dialog) {
+    LOG_DIALOG(wxT("BR24radar_pi: ignore mousewheel for non existing control dialog"));
+    return;
+  }
+
+  time_t now = time(0);
+
+  LOG_INFO(wxT("BR24radar_pi: %s Mouse range %d wheel %d / %d"), m_ri->name.c_str(), index, rotation, delta);
+
+  if (delta) {
+    if (rotation > delta && index > 0 && m_last_mousewheel_zoom_in < now) {
+      LOG_INFO(wxT("BR24radar_pi: %s Mouse zoom in"), m_ri->name.c_str());
+      m_ri->AdjustRange(-1);
+      m_last_mousewheel_zoom_in = now;
+    } else if (rotation < -delta && m_last_mousewheel_zoom_out < now) {
+      LOG_INFO(wxT("BR24radar_pi: %s Mouse zoom out"), m_ri->name.c_str());
+      m_ri->AdjustRange(+1);
+      m_last_mousewheel_zoom_out = now;
+    }
+  }
 }
 
 PLUGIN_END_NAMESPACE
