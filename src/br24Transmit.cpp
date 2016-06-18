@@ -156,6 +156,35 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
   bool r = false;
 
   switch (controlType) {
+
+    case CT_RANGE:
+    case CT_TIMED_IDLE:
+    case CT_PASSHEADING:
+    case CT_SCAN_AGE:
+    case CT_TRANSPARENCY:
+    case CT_REFRESHRATE:
+    case CT_MAX:
+      // The above are not settings that are not radar commands. Made them explicit so the
+      // compiler can catch missing control types.
+      break;
+
+    // Ordering the radar commands by the first byte value.
+    // Some interesting holes here, seems there could be more commands!
+
+    case CT_BEARING_ALIGNMENT: {  // to be consistent with the local bearing alignment of the pi
+                                  // this bearing alignment works opposite to the one an a Lowrance display
+      if (value < 0) {
+        value += 360;
+      }
+      int v = value * 10;
+      int v1 = v / 256;
+      int v2 = v & 255;
+      UINT8 cmd[4] = {0x05, 0xc1, (UINT8)v2, (UINT8)v1};
+      LOG_VERBOSE(wxT("BR24radar_pi: %s Bearing alignment: %d"), m_name, v);
+      r = TransmitCmd(cmd, sizeof(cmd));
+      break;
+    }
+      
     case CT_GAIN: {
       if (value < 0) {  // AUTO gain
         UINT8 cmd[] = {
@@ -176,17 +205,6 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
       break;
     }
 
-    case CT_RAIN: {  // Rain Clutter - Manual. Range is 0x01 to 0x50
-      int v = (value + 1) * 255 / 100;
-      if (v > 255) {
-        v = 255;
-      }
-      UINT8 cmd[] = {0x06, 0xc1, 0x04, 0, 0, 0, 0, 0, 0, 0, (UINT8)v};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Rain: %d"), m_name, value);
-      r = TransmitCmd(cmd, sizeof(cmd));
-      break;
-    }
-
     case CT_SEA: {
       if (value < 0) {  // Sea Clutter - Auto
         UINT8 cmd[11] = {0x06, 0xc1, 0x02, 0, 0, 0, 0x01, 0, 0, 0, 0xd3};
@@ -204,61 +222,13 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
       break;
     }
 
-    case CT_INTERFERENCE_REJECTION: {
-      UINT8 cmd[] = {0x08, 0xc1, (UINT8)value};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Rejection: %d"), m_name, value);
-      r = TransmitCmd(cmd, sizeof(cmd));
-      break;
-    }
-
-    case CT_TARGET_SEPARATION: {
-      UINT8 cmd[] = {0x22, 0xc1, (UINT8)value};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Target separation: %d"), m_name, value);
-      r = TransmitCmd(cmd, sizeof(cmd));
-      break;
-    }
-
-    case CT_NOISE_REJECTION: {
-      UINT8 cmd[] = {0x21, 0xc1, (UINT8)value};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Noise rejection: %d"), m_name, value);
-      r = TransmitCmd(cmd, sizeof(cmd));
-      break;
-    }
-
-    case CT_TARGET_BOOST: {
-      UINT8 cmd[] = {0x0a, 0xc1, (UINT8)value};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Target boost: %d"), m_name, value);
-      r = TransmitCmd(cmd, sizeof(cmd));
-      break;
-    }
-
-    case CT_SCAN_SPEED: {
-      UINT8 cmd[] = {0x0f, 0xc1, (UINT8)value};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Scan speed: %d"), m_name, value);
-      r = TransmitCmd(cmd, sizeof(cmd));
-      break;
-    }
-
-    case CT_ANTENNA_HEIGHT: {
-      int v = value * 1000;
-      int v1 = v / 256;
-      int v2 = v - 256 * v1;
-      UINT8 cmd[10] = {0x30, 0xc1, 0x01, 0, 0, 0, (UINT8)v2, (UINT8)v1, 0, 0};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Antenna height: %d"), m_name, v);
-      r = TransmitCmd(cmd, sizeof(cmd));
-      break;
-    }
-
-    case CT_BEARING_ALIGNMENT: {  // to be consistent with the local bearing alignment of the pi
-      // this bearing alignment works opposite to the one an a Lowrance display
-      if (value < 0) {
-        value += 360;
+    case CT_RAIN: {  // Rain Clutter - Manual. Range is 0x01 to 0x50
+      int v = (value + 1) * 255 / 100;
+      if (v > 255) {
+        v = 255;
       }
-      int v = value * 10;
-      int v1 = v / 256;
-      int v2 = v - 256 * v1;
-      UINT8 cmd[4] = {0x05, 0xc1, (UINT8)v2, (UINT8)v1};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Bearing alignment: %d"), m_name, v);
+      UINT8 cmd[] = {0x06, 0xc1, 0x04, 0, 0, 0, 0, 0, 0, 0, (UINT8)v};
+      LOG_VERBOSE(wxT("BR24radar_pi: %s Rain: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
@@ -266,7 +236,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
     case CT_SIDE_LOBE_SUPPRESSION: {
       if (value < 0) {
         UINT8 cmd[] = {// SIDE_LOBE_SUPPRESSION auto
-                       0x06, 0xc1, 0x05, 0, 0, 0, 0x01, 0, 0, 0, 0xc0};
+          0x06, 0xc1, 0x05, 0, 0, 0, 0x01, 0, 0, 0, 0xc0};
         LOG_VERBOSE(wxT("BR24radar_pi: %s command Tx CT_SIDE_LOBE_SUPPRESSION Auto"), m_name);
         r = TransmitCmd(cmd, sizeof(cmd));
       } else {
@@ -281,6 +251,32 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
       break;
     }
 
+
+    // What would command 7 be?
+
+    case CT_INTERFERENCE_REJECTION: {
+      UINT8 cmd[] = {0x08, 0xc1, (UINT8)value};
+      LOG_VERBOSE(wxT("BR24radar_pi: %s Rejection: %d"), m_name, value);
+      r = TransmitCmd(cmd, sizeof(cmd));
+      break;
+    }
+
+    case CT_TARGET_EXPANSION: {
+      UINT8 cmd[] = {0x09, 0xc1, (UINT8)value};
+      LOG_VERBOSE(wxT("BR24radar_pi: %s Target expansion: %d"), m_name, value);
+      r = TransmitCmd(cmd, sizeof(cmd));
+      break;
+    }
+
+    case CT_TARGET_BOOST: {
+      UINT8 cmd[] = {0x0a, 0xc1, (UINT8)value};
+      LOG_VERBOSE(wxT("BR24radar_pi: %s Target boost: %d"), m_name, value);
+      r = TransmitCmd(cmd, sizeof(cmd));
+      break;
+    }
+
+    // What would command b through d be?
+
     case CT_LOCAL_INTERFERENCE_REJECTION: {
       if (value < 0) value = 0;
       if (value > 3) value = 3;
@@ -290,7 +286,40 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
       break;
     }
 
-    default: { r = false; }
+    case CT_SCAN_SPEED: {
+      UINT8 cmd[] = {0x0f, 0xc1, (UINT8)value};
+      LOG_VERBOSE(wxT("BR24radar_pi: %s Scan speed: %d"), m_name, value);
+      r = TransmitCmd(cmd, sizeof(cmd));
+      break;
+    }
+
+    // What would command 10 through 20 be?
+
+    case CT_NOISE_REJECTION: {
+      UINT8 cmd[] = {0x21, 0xc1, (UINT8)value};
+      LOG_VERBOSE(wxT("BR24radar_pi: %s Noise rejection: %d"), m_name, value);
+      r = TransmitCmd(cmd, sizeof(cmd));
+      break;
+    }
+
+    case CT_TARGET_SEPARATION: {
+      UINT8 cmd[] = {0x22, 0xc1, (UINT8)value};
+      LOG_VERBOSE(wxT("BR24radar_pi: %s Target separation: %d"), m_name, value);
+      r = TransmitCmd(cmd, sizeof(cmd));
+      break;
+    }
+
+    // What would command 23 through 2f be?
+
+    case CT_ANTENNA_HEIGHT: {
+      int v = value * 1000; // radar wants millimeters, not meters :-)
+      int v1 = v / 256;
+      int v2 = v & 255;
+      UINT8 cmd[10] = {0x30, 0xc1, 0x01, 0, 0, 0, (UINT8)v2, (UINT8)v1, 0, 0};
+      LOG_VERBOSE(wxT("BR24radar_pi: %s Antenna height: %d"), m_name, v);
+      r = TransmitCmd(cmd, sizeof(cmd));
+      break;
+    }
   }
 
   return r;

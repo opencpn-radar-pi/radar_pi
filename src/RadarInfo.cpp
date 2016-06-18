@@ -198,7 +198,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
   m_timer = new wxTimer(this, TIMER_ID);
   m_overlay_refreshes_queued = 0;
   m_refreshes_queued = 0;
-  m_refresh_millis = 1000;
+  m_refresh_millis = 50;
   m_timer->Start(m_refresh_millis);
 }
 
