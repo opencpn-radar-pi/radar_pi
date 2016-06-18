@@ -134,6 +134,7 @@ typedef enum ControlType {
   CT_SIDE_LOBE_SUPPRESSION,
   CT_ANTENNA_HEIGHT,
   CT_LOCAL_INTERFERENCE_REJECTION,
+  CT_TARGET_TRAILS,
   CT_MAX  // Keep this last, see below
 } ControlType;
 
@@ -155,7 +156,8 @@ static string ControlTypeNames[CT_MAX] = {"Range",
                                           "Bearing alignment",
                                           "Side lobe suppression",
                                           "Antenna height",
-                                          "Local interference rejection"};
+                                          "Local interference rejection",
+                                          "Target trails"};
 
 typedef enum GuardZoneType { GZ_OFF, GZ_ARC, GZ_CIRCLE } GuardZoneType;
 
@@ -165,7 +167,22 @@ typedef enum RadarType {
   RT_4G
 } RadarType;
 
-enum BlobColor { BLOB_NONE, BLOB_BLUE, BLOB_GREEN, BLOB_RED };
+enum BlobColor {
+  BLOB_NONE,
+  BLOB_HISTORY_0,
+  BLOB_HISTORY_1,
+  BLOB_HISTORY_2,
+  BLOB_HISTORY_3,
+  BLOB_HISTORY_4,
+  BLOB_HISTORY_5,
+  BLOB_HISTORY_6,
+  BLOB_HISTORY_7,
+  BLOB_HISTORY_8,
+  BLOB_HISTORY_9,
+  BLOB_BLUE,
+  BLOB_GREEN,
+  BLOB_RED
+};
 
 extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, RadarType radar_type);
 extern const char *convertRadarToString(int range_meters, int units, int index);

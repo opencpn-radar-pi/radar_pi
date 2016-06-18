@@ -411,6 +411,16 @@ void br24radar_pi::ComputeColorMap() {
   m_color_map_red[BLOB_RED] = 255;
   m_color_map_green[BLOB_GREEN] = 255;
   m_color_map_blue[BLOB_BLUE] = 255;
+
+  if (m_settings.display_option == 1) {
+
+  for (BlobColor history = BLOB_HISTORY_0; history <= BLOB_HISTORY_9; history = (BlobColor)(history + 1)) {
+    m_color_map[history] = history;
+    m_color_map_red[history] = 255;
+    m_color_map_green[history] = 255;
+    m_color_map_blue[history] = 255;
+  }
+}
 }
 
 //*******************************************************************************
@@ -919,9 +929,11 @@ bool br24radar_pi::LoadConfig(void) {
       int v;
 
       pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
-      m_radar[r]->rotation.Update(v);
+      m_radar[r]->orientation.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
       m_radar[r]->wantedState = (RadarState)v;
+      pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
+      SetControlValue(r, CT_TARGET_TRAILS, v);
       pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &v, 0);
       m_settings.show_radar[r] = v;
       LOG_DIALOG(wxT("BR24radar_pi: LoadConfig: show_radar[%d]=%d"), r, v);
@@ -982,9 +994,11 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("RadarInterface"), m_settings.mcast_address);
 
     for (int r = 0; r < RADARS; r++) {
-      pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->rotation.value);
+      pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->orientation.value);
       pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->state.value);
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
+      pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->target_trails.value);
+
       LOG_DIALOG(wxT("BR24radar_pi: SaveConfig: show_radar[%d]=%d"), r, m_settings.show_radar[r]);
       for (int i = 0; i < GUARD_ZONES; i++) {
         pConf->Write(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), m_radar[r]->guard_zone[i]->start_bearing);
@@ -1140,6 +1154,10 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
     case CT_REFRESHRATE: {
       m_settings.refreshrate = value;
       return true;
+    }
+    case CT_TARGET_TRAILS: {
+      m_radar[radar]->target_trails.Update(value);
+      m_radar[radar]->ComputeTargetTrails();
     }
 
     default: {

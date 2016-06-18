@@ -161,6 +161,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
     case CT_SCAN_AGE:
     case CT_TRANSPARENCY:
     case CT_REFRESHRATE:
+    case CT_TARGET_TRAILS:
     case CT_MAX:
       // The above are not settings that are not radar commands. Made them explicit so the
       // compiler can catch missing control types.

@@ -88,6 +88,10 @@ struct RadarRange {
   const char *range3;
 };
 
+typedef UINT8 TrailRevolutionsAge;
+#define SECONDS_TO_REVOLUTIONS(x) (x * 2 / 5)
+#define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(300)
+
 class RadarInfo : public wxEvtHandler {
  public:
   wxString name;  // Either "Radar", "Radar A", "Radar B".
@@ -95,10 +99,10 @@ class RadarInfo : public wxEvtHandler {
 
   /* User radar settings */
 
-  radar_control_item state;     // RadarState (observed)
-  radar_control_item rotation;  // 0 = Heading Up, 1 = North Up
-#define ROTATION_HEAD_UP (0)
-#define ROTATION_NORTH_UP (1)
+  radar_control_item state;        // RadarState (observed)
+  radar_control_item orientation;  // 0 = Heading Up, 1 = North Up
+#define ORIENTATION_HEAD_UP (0)
+#define ORIENTATION_NORTH_UP (1)
   radar_control_item overlay;
   radar_control_item range;  // value in meters
   radar_control_item gain;
@@ -114,6 +118,7 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item antenna_height;
   radar_control_item local_interference_rejection;
   radar_control_item side_lobe_suppression;
+  radar_control_item target_trails;
 
   /* Per radar objects */
 
@@ -149,6 +154,8 @@ class RadarInfo : public wxEvtHandler {
   UINT8 history[LINES_PER_ROTATION][RETURNS_PER_LINE];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
+  TrailRevolutionsAge trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
+
   /* Methods */
 
   RadarInfo(br24radar_pi *pi, wxString name, int radar);
@@ -169,6 +176,7 @@ class RadarInfo : public wxEvtHandler {
   bool IsPaneShown();
 
   void UpdateControlState(bool all);
+  void ComputeTargetTrails();
   void FlipRadarState();
   wxString &GetRangeText();
   const char *GetDisplayRangeStr(size_t idx);
@@ -177,6 +185,7 @@ class RadarInfo : public wxEvtHandler {
   void SetMouseLatLon(double lat, double lon);
   void SetMouseVrmEbl(double vrm, double ebl);
   void SetBearing(int bearing);
+  void ClearTrails();
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
@@ -205,6 +214,8 @@ class RadarInfo : public wxEvtHandler {
   wxTimer *m_timer;
 
   wxString m_range_text;
+
+  BlobColor m_trail_color[TRAIL_MAX_REVOLUTIONS + 1];
 
   DECLARE_EVENT_TABLE()
 };

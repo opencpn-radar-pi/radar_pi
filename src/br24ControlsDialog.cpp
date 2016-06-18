@@ -64,15 +64,19 @@ enum {  // process ID's
   ID_GAIN,
   ID_SEA,
   ID_RAIN,
-  ID_ADVANCED,
 
   ID_CLEAR_CURSOR,
+
+  ID_TARGET_TRAILS,
+  ID_CLEAR_TRAILS,
+  ID_ORIENTATION,
 
   ID_RADAR_STATE,
   ID_SHOW_RADAR,
   ID_RADAR_OVERLAY,
-  ID_ROTATION,
   ID_ADJUST,
+  ID_ADVANCED,
+  ID_VIEW,
   ID_BEARING,
   ID_ZONE1,
   ID_ZONE2,
@@ -123,15 +127,20 @@ EVT_BUTTON(ID_SIDE_LOBE_SUPPRESSION, br24ControlsDialog::OnRadarControlButtonCli
 
 EVT_BUTTON(ID_RADAR_STATE, br24ControlsDialog::OnRadarStateButtonClick)
 EVT_BUTTON(ID_SHOW_RADAR, br24ControlsDialog::OnRadarShowButtonClick)
-EVT_BUTTON(ID_ROTATION, br24ControlsDialog::OnRotationButtonClick)
 EVT_BUTTON(ID_RADAR_OVERLAY, br24ControlsDialog::OnRadarOverlayButtonClick)
 EVT_BUTTON(ID_RANGE, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_GAIN, br24ControlsDialog::OnRadarGainButtonClick)
 EVT_BUTTON(ID_SEA, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_RAIN, br24ControlsDialog::OnRadarControlButtonClick)
 
+EVT_BUTTON(ID_TARGET_TRAILS, br24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_CLEAR_TRAILS, br24ControlsDialog::OnClearTrailsButtonClick)
+EVT_BUTTON(ID_ORIENTATION, br24ControlsDialog::OnOrientationButtonClick)
+
 EVT_BUTTON(ID_ADJUST, br24ControlsDialog::OnAdjustButtonClick)
 EVT_BUTTON(ID_ADVANCED, br24ControlsDialog::OnAdvancedButtonClick)
+EVT_BUTTON(ID_VIEW, br24ControlsDialog::OnViewButtonClick)
+
 EVT_BUTTON(ID_BEARING, br24ControlsDialog::OnBearingButtonClick)
 EVT_BUTTON(ID_ZONE1, br24ControlsDialog::OnZone1ButtonClick)
 EVT_BUTTON(ID_ZONE2, br24ControlsDialog::OnZone2ButtonClick)
@@ -191,7 +200,7 @@ class br24RadarControlButton : public wxButton {
   wxString firstLine;
 
   br24ControlsDialog* m_parent;
-  br24radar_pi * m_pi;
+  br24radar_pi* m_pi;
 
   int value;
 
@@ -236,6 +245,7 @@ wxString target_expansion_names[2];
 wxString scan_speed_names[2];
 wxString timed_idle_times[8];
 wxString guard_zone_names[3];
+wxString target_trail_names[6];
 
 void br24RadarControlButton::AdjustValue(int adjustment) {
   int newValue = value + adjustment;
@@ -247,7 +257,7 @@ void br24RadarControlButton::AdjustValue(int adjustment) {
   }
   if (newValue != value) {
     LOG_VERBOSE(wxT("BR24radar_pi: Adjusting %s by %d from %d to %d"), GetName(), adjustment, value, newValue);
-    if (m_parent->m_pi->SetControlValue(m_parent->m_ri->radar, controlType, newValue)) {
+    if (m_pi->SetControlValue(m_parent->m_ri->radar, controlType, newValue)) {
       SetLocalValue(newValue);
     }
   }
@@ -454,7 +464,8 @@ void br24ControlsDialog::CreateControls() {
   m_plus_button->SetFont(m_pi->m_font);
 
   // The VALUE button
-  m_value_text = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, g_buttonSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  wxSize valueSize =  wxSize(g_buttonSize.x, g_buttonSize.y + 20);
+  m_value_text = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, valueSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   m_edit_sizer->Add(m_value_text, 0, wxALL, BORDER);
   m_value_text->SetFont(m_pi->m_fat_font);
   m_value_text->SetBackgroundColour(*wxLIGHT_GREY);
@@ -774,6 +785,46 @@ void br24ControlsDialog::CreateControls() {
 
   m_top_sizer->Hide(m_bearing_sizer);
 
+  //**************** VIEW BOX ******************//
+  // These are the controls that the users sees when the View button is selected
+
+  m_view_sizer = new wxBoxSizer(wxVERTICAL);
+  m_top_sizer->Add(m_view_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
+  // The Back button
+  wxButton* bMenuBack = new wxButton(this, ID_BACK, backButtonStr, wxDefaultPosition, g_buttonSize, 0);
+  m_view_sizer->Add(bMenuBack, 0, wxALL, BORDER);
+  bMenuBack->SetFont(m_pi->m_font);
+
+  // The TARGET_TRAIL button
+  target_trail_names[0] = _("Off");
+  target_trail_names[1] = _("15 sec");
+  target_trail_names[2] = _("30 sec");
+  target_trail_names[3] = _("1 min");
+  target_trail_names[4] = _("3 min");
+  target_trail_names[5] = _("Continuous");
+
+  m_target_trails_button =
+      new br24RadarControlButton(this, ID_TARGET_TRAILS, _("Target trails"), CT_TARGET_TRAILS, false, m_ri->target_trails.button);
+  m_view_sizer->Add(m_target_trails_button, 0, wxALL, BORDER);
+  m_target_trails_button->minValue = 0;
+  m_target_trails_button->maxValue = ARRAY_SIZE(target_trail_names) - 1;
+  m_target_trails_button->names = target_trail_names;
+  m_target_trails_button->SetLocalValue(m_ri->target_trails.button);  // redraw after adding names
+
+  // The Clear Trails button
+  m_clear_trails_button = new wxButton(this, ID_CLEAR_TRAILS, _("Clear trails"), wxDefaultPosition, g_smallButtonSize, 0);
+  m_view_sizer->Add(m_clear_trails_button, 0, wxALL, BORDER);
+  m_clear_trails_button->SetFont(m_pi->m_font);
+
+  // The Rotation button
+  m_orientation_button = new wxButton(this, ID_ORIENTATION, _("Orientation"), wxDefaultPosition, g_buttonSize, 0);
+  m_view_sizer->Add(m_orientation_button, 0, wxALL, BORDER);
+  m_orientation_button->SetFont(m_pi->m_font);
+  // Updated when we receive data
+
+  m_top_sizer->Hide(m_view_sizer);
+
   //**************** CONTROL BOX ******************//
   // These are the controls that the users sees when the dialog is started
 
@@ -803,12 +854,6 @@ void br24ControlsDialog::CreateControls() {
   m_transmit_sizer = new wxBoxSizer(wxVERTICAL);
   m_control_sizer->Add(m_transmit_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
-  // The Rotation button
-  m_rotation_button = new wxButton(this, ID_ROTATION, _("Rotation"), wxDefaultPosition, g_smallButtonSize, 0);
-  m_transmit_sizer->Add(m_rotation_button, 0, wxALL, BORDER);
-  m_rotation_button->SetFont(m_pi->m_font);
-  // Updated when we receive data
-
   // The ADJUST button
   m_adjust_button = new wxButton(this, ID_ADJUST, _("Adjust"), wxDefaultPosition, g_smallButtonSize, 0);
   m_transmit_sizer->Add(m_adjust_button, 0, wxALL, BORDER);
@@ -818,6 +863,11 @@ void br24ControlsDialog::CreateControls() {
   wxButton* bAdvanced = new wxButton(this, ID_ADVANCED, _("Advanced"), wxDefaultPosition, g_smallButtonSize, 0);
   m_transmit_sizer->Add(bAdvanced, 0, wxALL, BORDER);
   bAdvanced->SetFont(m_pi->m_font);
+
+  // The VIEW menu
+  wxButton* bView = new wxButton(this, ID_VIEW, _("View"), wxDefaultPosition, g_smallButtonSize, 0);
+  m_transmit_sizer->Add(bView, 0, wxALL, BORDER);
+  bView->SetFont(m_pi->m_font);
 
   // The BEARING button
   m_bearing_button = new wxButton(this, ID_BEARING, _("EBL/VRM"), wxDefaultPosition, g_smallButtonSize, 0);
@@ -983,6 +1033,8 @@ void br24ControlsDialog::OnAdjustButtonClick(wxCommandEvent& event) { SwitchTo(m
 
 void br24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event) { SwitchTo(m_advanced_sizer); }
 
+void br24ControlsDialog::OnViewButtonClick(wxCommandEvent& event) { SwitchTo(m_view_sizer); }
+
 void br24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event) { SwitchTo(m_installation_sizer); }
 
 void br24ControlsDialog::OnBearingButtonClick(wxCommandEvent& event) { SwitchTo(m_bearing_sizer); }
@@ -1068,8 +1120,13 @@ void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
   m_ri->FlipRadarState();
 }
 
-void br24ControlsDialog::OnRotationButtonClick(wxCommandEvent& event) {
-  m_ri->rotation.Update(1 - m_ri->rotation.value);
+void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) {
+  m_ri->ClearTrails();
+}
+
+
+void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
+  m_ri->orientation.Update(1 - m_ri->orientation.value);
   UpdateControlValues(false);
 }
 
@@ -1150,9 +1207,15 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_bearing_buttons[b]->SetLabel(o);
   }
 
-  if (m_ri->rotation.mod || refreshAll) {
-    o = m_ri->rotation.GetButton() ? _("North Up") : _("Head Up");
-    m_rotation_button->SetLabel(o);
+  if (m_ri->target_trails.mod || refreshAll) {
+    m_target_trails_button->SetLocalValue(m_ri->target_trails.GetButton());
+  }
+
+  if (m_ri->orientation.mod || refreshAll) {
+    o = _("Orientation");
+    o << wxT("\n");
+    o << ((m_ri->orientation.GetButton()) ? _("North Up") : _("Head Up"));
+    m_orientation_button->SetLabel(o);
   }
 
   if (m_ri->overlay.mod || ((m_pi->m_settings.chart_overlay == m_ri->radar) != (m_ri->overlay.button != 0)) || refreshAll) {
@@ -1291,9 +1354,10 @@ void br24ControlsDialog::UpdateDialogShown() {
 
   if (!IsShown()) {
     LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown manually opened"), m_ri->name.c_str());
-    if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_edit_sizer) &&
-        !m_top_sizer->IsShown(m_installation_sizer) && !m_top_sizer->IsShown(m_bogey_sizer) &&
-        !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_bearing_sizer)) {
+    if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_view_sizer) &&
+        !m_top_sizer->IsShown(m_edit_sizer) && !m_top_sizer->IsShown(m_installation_sizer) &&
+        !m_top_sizer->IsShown(m_bogey_sizer) && !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) &&
+        !m_top_sizer->IsShown(m_bearing_sizer)) {
       SwitchTo(m_control_sizer);
     }
     m_control_sizer->Layout();

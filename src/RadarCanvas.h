@@ -56,7 +56,7 @@ class RadarCanvas : public wxGLCanvas {
   void Render_EBL_VRM(int w, int h);
 
   double GetHeading() {
-    return ((m_pi->m_heading_source != HEADING_NONE && m_ri->rotation.value == ROTATION_HEAD_UP) ? m_pi->m_hdt : 0.) + 180.;
+    return ((m_pi->m_heading_source != HEADING_NONE && m_ri->orientation.value == ORIENTATION_HEAD_UP) ? m_pi->m_hdt : 0.) + 180.;
   }
 
   wxWindow* m_parent;

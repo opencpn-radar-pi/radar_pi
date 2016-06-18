@@ -228,7 +228,12 @@ void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t 
       d[0] = m_pi->m_color_map_red[color];
       d[1] = m_pi->m_color_map_green[color];
       d[2] = m_pi->m_color_map_blue[color];
-      d[3] = color != BLOB_NONE ? alpha : 0;
+      if (color >= BLOB_HISTORY_0 && color <= BLOB_HISTORY_9) {
+        int extra_transparancy = (int)(color - BLOB_HISTORY_0);
+        d[3] = 255 * (10 - extra_transparancy) / 10;
+      } else {
+        d[3] = color != BLOB_NONE ? alpha : 0;
+      }
       d += m_channels;
     }
   } else {

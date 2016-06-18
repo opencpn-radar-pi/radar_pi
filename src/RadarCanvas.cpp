@@ -129,7 +129,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   }
 
   if (m_pi->m_heading_source != HEADING_NONE) {
-    LOG_DIALOG(wxT("BR24radar_pi: m_hdt=%f rot=%d"), m_pi->m_hdt, m_ri->rotation.value);
+    // LOG_DIALOG(wxT("BR24radar_pi: m_hdt=%f orientation=%d"), m_pi->m_hdt, m_ri->orientation.value);
 
     double heading = GetHeading();
 
