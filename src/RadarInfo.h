@@ -91,6 +91,7 @@ struct RadarRange {
 typedef UINT8 TrailRevolutionsAge;
 #define SECONDS_TO_REVOLUTIONS(x) (x * 2 / 5)
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(300)
+#define TRAIL_CONTINUOUS (TRAIL_MAX_REVOLUTIONS + 1)
 
 class RadarInfo : public wxEvtHandler {
  public:
@@ -195,8 +196,6 @@ class RadarInfo : public wxEvtHandler {
 
  private:
   void RenderRadarImage(DrawInfo *di);
-  // int GetRangeMeters(int index);
-  // size_t convertRadarMetersToIndex(int *range_meters);
   wxString FormatDistance(double distance);
 
   int m_range_meters;                 // what radar told us is the range in the last received spoke

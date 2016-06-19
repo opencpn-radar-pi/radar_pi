@@ -402,10 +402,10 @@ void RadarInfo::AdjustRange(int adjustment) {
   // the plotter in NM, and it chose the last range, we start using nautic miles as well.
 
   if (m_current_range) {
-    if (m_current_range > g_ranges_nautic & m_current_range < g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic)) {
+    if (m_current_range > g_ranges_nautic && m_current_range < g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic)) {
       min = g_ranges_nautic;
       max = g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic) - 1;
-    } else if (m_current_range > g_ranges_metric & m_current_range < g_ranges_metric + ARRAY_SIZE(g_ranges_metric)) {
+    } else if (m_current_range > g_ranges_metric && m_current_range < g_ranges_metric + ARRAY_SIZE(g_ranges_metric)) {
       min = g_ranges_metric;
       max = g_ranges_metric + ARRAY_SIZE(g_ranges_metric) - 1;
     }
@@ -804,7 +804,7 @@ void RadarInfo::ClearTrails() {
 
 void RadarInfo::ComputeTargetTrails() {
   static TrailRevolutionsAge maxRevs[6] = {SECONDS_TO_REVOLUTIONS(0),  SECONDS_TO_REVOLUTIONS(15),  SECONDS_TO_REVOLUTIONS(30),
-                                           SECONDS_TO_REVOLUTIONS(60), SECONDS_TO_REVOLUTIONS(180), SECONDS_TO_REVOLUTIONS(1800)};
+                                           SECONDS_TO_REVOLUTIONS(60), SECONDS_TO_REVOLUTIONS(180), TRAIL_CONTINUOUS};
 
   TrailRevolutionsAge maxRev = maxRevs[target_trails.value];
   TrailRevolutionsAge revolution;
@@ -816,7 +816,9 @@ void RadarInfo::ComputeTargetTrails() {
   // Disperse the ten BLOB_HISTORY values over 0..maxrev
   // with maxrev
   for (revolution = 0; revolution <= TRAIL_MAX_REVOLUTIONS; revolution++) {
-    if (revolution >= 1 && revolution <= maxRev) {
+    if (target_trails.value == 5) {
+      m_trail_color[revolution] = BLOB_HISTORY_0;
+    } else if (revolution >= 1 && revolution <= maxRev) {
       m_trail_color[revolution] = (BlobColor)(BLOB_HISTORY_0 + (int)color);
       color += colorsPerRevolution;
     } else {

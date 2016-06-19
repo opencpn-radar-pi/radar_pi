@@ -432,10 +432,10 @@ void RadarCanvas::OnMouseWheel(wxMouseEvent &event) {
 
   time_t now = time(0);
 
-  LOG_INFO(wxT("BR24radar_pi: %s Mouse range %d wheel %d / %d"), m_ri->name.c_str(), index, rotation, delta);
+  LOG_INFO(wxT("BR24radar_pi: %s Mouse range wheel %d / %d"), m_ri->name.c_str(), rotation, delta);
 
   if (delta) {
-    if (rotation > delta && index > 0 && m_last_mousewheel_zoom_in < now) {
+    if (rotation > delta && m_last_mousewheel_zoom_in < now) {
       LOG_INFO(wxT("BR24radar_pi: %s Mouse zoom in"), m_ri->name.c_str());
       m_ri->AdjustRange(-1);
       m_last_mousewheel_zoom_in = now;
