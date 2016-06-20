@@ -243,6 +243,7 @@ struct PersistentSettings {
   bool emulator_on;              // Emulator, useful when debugging without radar
   int drawing_method;            // VertexBuffer, Shader, etc.
   int ignore_radar_heading;      // For testing purposes
+  int reverse_zoom;              // 0 = normal, 1 = reverse
   int threshold_red;
   int threshold_green;
   int threshold_blue;

@@ -71,8 +71,8 @@ class RadarCanvas : public wxGLCanvas {
 
   unsigned int m_cursor_texture;
 
-  time_t m_last_mousewheel_zoom_in;
-  time_t m_last_mousewheel_zoom_out;
+  wxLongLong m_last_mousewheel_zoom_in;
+  wxLongLong m_last_mousewheel_zoom_out;
 
   DECLARE_EVENT_TABLE();
 };

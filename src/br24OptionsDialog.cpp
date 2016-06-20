@@ -161,12 +161,18 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   m_EnableDualRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEnableDualRadarClick), NULL,
                              this);
 
-  m_Emulator =
+      m_Emulator =
       new wxCheckBox(this, wxID_ANY, _("Emulator mode"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  itemStaticBoxSizerOptions->Add(m_Emulator, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-  m_Emulator->SetValue(m_settings.emulator_on ? true : false);
-  m_Emulator->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEmulatorClick), NULL, this);
-
+      itemStaticBoxSizerOptions->Add(m_Emulator, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+      m_Emulator->SetValue(m_settings.emulator_on ? true : false);
+      m_Emulator->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEmulatorClick), NULL, this);
+      
+      m_ReverseZoom =
+      new wxCheckBox(this, wxID_ANY, _("Reverse mouse wheel zoom direction"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+      itemStaticBoxSizerOptions->Add(m_ReverseZoom, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+      m_ReverseZoom->SetValue(m_settings.reverse_zoom ? true : false);
+      m_ReverseZoom->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnReverseZoomClick), NULL, this);
+      
   // Accept/Reject button
   wxStdDialogButtonSizer *DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
   topSizer->Add(DialogButtonSizer, 0, wxALIGN_RIGHT | wxALL, border_size);
@@ -225,5 +231,6 @@ void br24OptionsDialog::OnMenuAutoHideClick(wxCommandEvent &event) { m_settings.
 void br24OptionsDialog::OnDrawingMethodClick(wxCommandEvent &event) { m_settings.drawing_method = m_DrawingMethod->GetSelection(); }
 
 void br24OptionsDialog::OnEmulatorClick(wxCommandEvent &event) { m_settings.emulator_on = m_Emulator->GetValue(); }
+void br24OptionsDialog::OnReverseZoomClick(wxCommandEvent &event) { m_settings.reverse_zoom = m_ReverseZoom->GetValue(); }
 
 PLUGIN_END_NAMESPACE

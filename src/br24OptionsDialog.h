@@ -56,6 +56,7 @@ class br24OptionsDialog : public wxDialog {
   void OnMenuAutoHideClick(wxCommandEvent& event);
   void OnEnableDualRadarClick(wxCommandEvent& event);
   void OnEmulatorClick(wxCommandEvent& event);
+  void OnReverseZoomClick(wxCommandEvent& event);
 
   PersistentSettings m_settings;
 
@@ -70,6 +71,8 @@ class br24OptionsDialog : public wxDialog {
   wxComboBox* m_MenuAutoHide;
   wxCheckBox* m_EnableDualRadar;
   wxCheckBox* m_Emulator;
+  wxCheckBox* m_ReverseZoom;
+  
 };
 
 PLUGIN_END_NAMESPACE

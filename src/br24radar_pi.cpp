@@ -968,6 +968,8 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("ThresholdBlue"), &m_settings.threshold_blue, 50);
     pConf->Read(wxT("ThresholdMultiSweep"), &m_settings.threshold_multi_sweep, 20);
 
+    pConf->Read(wxT("ReverseZoom"), &m_settings.reverse_zoom, 0);
+
     SaveConfig();
     return true;
   }
@@ -1022,6 +1024,8 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ThresholdGreen"), m_settings.threshold_green);
     pConf->Write(wxT("ThresholdBlue"), m_settings.threshold_blue);
     pConf->Write(wxT("ThresholdMultiSweep"), m_settings.threshold_multi_sweep);
+
+    pConf->Write(wxT("ReverseZoom"), m_settings.reverse_zoom);
 
     pConf->Flush();
     LOG_VERBOSE(wxT("BR24radar_pi: Saved settings"));
