@@ -37,18 +37,9 @@
 PLUGIN_BEGIN_NAMESPACE
 
 class br24OptionsDialog : public wxDialog {
-  DECLARE_CLASS(br24OptionsDialog)
-  DECLARE_EVENT_TABLE()
-
  public:
-  br24OptionsDialog();
-
-  ~br24OptionsDialog();
-  void Init();
-
-  bool Create(wxWindow* parent, br24radar_pi* pi);
-
-  void CreateDisplayOptions();
+  br24OptionsDialog(wxWindow* parent, PersistentSettings &settings);
+  PersistentSettings GetSettings() { return m_settings; };
 
  private:
   void OnClose(wxCloseEvent& event);
@@ -66,8 +57,7 @@ class br24OptionsDialog : public wxDialog {
   void OnEnableDualRadarClick(wxCommandEvent& event);
   void OnEmulatorClick(wxCommandEvent& event);
 
-  wxWindow* m_parent;
-  br24radar_pi* m_pi;
+  PersistentSettings m_settings;
 
   // DisplayOptions
   wxRadioBox* m_RangeUnits;

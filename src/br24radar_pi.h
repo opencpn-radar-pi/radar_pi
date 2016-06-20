@@ -334,8 +334,8 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
 
   void ComputeColorMap();
 
-  bool LoadConfig(void);
-  bool SaveConfig(void);
+  bool LoadConfig();
+  bool SaveConfig();
 
   long GetRangeMeters();
   long GetOptimalRangeMeters();
@@ -352,7 +352,6 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   RadarInfo *m_radar[RADARS];
   wxString m_perspective[RADARS];  // Temporary storage of window location when plugin is disabled
 
-  br24OptionsDialog *m_pOptionsDialog;
   br24MessageBox *m_pMessageBox;
 
   wxGLContext *m_opencpn_gl_context;

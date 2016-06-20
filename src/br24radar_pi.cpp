@@ -180,7 +180,6 @@ int br24radar_pi::Init(void) {
   m_sent_bm_id_rollover = -1;
 
   m_heading_source = HEADING_NONE;
-  m_pOptionsDialog = 0;
 
   m_settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
   m_settings.refreshrate = 1;
@@ -320,11 +319,22 @@ void br24radar_pi::SetDefaults(void) {
 
 void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
   LOG_DIALOG(wxT("BR24radar_pi: ShowPreferencesDialog"));
-  if (!m_pOptionsDialog) {
-    m_pOptionsDialog = new br24OptionsDialog;
-    m_pOptionsDialog->Create(parent, this);
+
+  br24OptionsDialog dlg(parent, m_settings);
+  if (dlg.ShowModal() == wxID_OK)
+  {
+    m_settings = dlg.GetSettings();
+    ComputeColorMap();
+    SaveConfig();
+    if (m_settings.enable_dual_radar) {
+      m_radar[0]->SetName(_("Radar A"));
+      m_radar[1]->StartReceive();
+    }
+    else {
+      m_radar[1]->ShowRadarWindow(false);
+      ShowRadarControl(1, false);
+    }
   }
-  m_pOptionsDialog->ShowModal();
 }
 
 /**
@@ -343,10 +353,6 @@ void br24radar_pi::SetRadarWindowViz(bool show) {
     if (show && m_radar[r]->wantedState == RADAR_TRANSMIT) {
       m_radar[r]->transmit->RadarTxOn();
     }
-  }
-  for (; r < RADARS; r++) {  // Hide remaining radar if enable_dual_radar was on but now off
-    m_radar[r]->ShowRadarWindow(false);
-    ShowRadarControl(r, false);
   }
 
   SetCanvasContextMenuItemViz(m_context_menu_show_id, !show);
