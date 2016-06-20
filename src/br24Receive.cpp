@@ -266,10 +266,13 @@ void br24Receive::EmulateFakeBuffer(void) {
   m_ri->m_data_timeout = now + WATCHDOG_TIMEOUT;
   m_ri->state.Update(RADAR_TRANSMIT);
 
+
   int scanlines_in_packet = SPOKES * 24 / 60;
-  int range_meters = 2500;
+  int range_meters = 2308;
+  int display_range_meters = 1500;
   int spots = 0;
   m_ri->radar_type = RT_4G;
+  m_ri->range.Update(display_range_meters);
 
   for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
     int angle_raw = m_next_spoke;

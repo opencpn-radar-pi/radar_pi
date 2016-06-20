@@ -269,14 +269,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
                 range_meters);
     m_range_meters = range_meters;
 
-#if 0
-    // m_display_meters is now range.value and is set by radar report...
-    m_display_meters = range_meters;
-    m_range_index = convertRadarMetersToIndex(&m_display_meters);
-    range.Update(range_meters);
-    LOG_VERBOSE(wxT("BR24radar_pi: %s detected range change to range #%d, display_meters=%d"), name.c_str(), m_range_index,
-                m_display_meters);
-#endif
   } else if (orientation.mod) {
     ResetSpokes();
     LOG_VERBOSE(wxT("BR24radar_pi: %s HeadUp/NorthUp change"));
