@@ -422,6 +422,7 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
 }
 
 #define ZOOM_TIME 333 // 3 zooms per second
+#define ZOOM_SENSITIVITY 0 // Increase to make less sensitive
 
 void RadarCanvas::OnMouseWheel(wxMouseEvent &event) {
   int delta = event.GetWheelDelta();
@@ -436,15 +437,15 @@ void RadarCanvas::OnMouseWheel(wxMouseEvent &event) {
 
   LOG_INFO(wxT("BR24radar_pi: %s Mouse range wheel %d / %d"), m_ri->name.c_str(), rotation, delta);
 
-  if (delta) {
+  if (rotation) {
     if (m_pi->m_settings.reverse_zoom) {
       rotation = -rotation;
     }
-    if (rotation > delta && m_last_mousewheel_zoom_in < now - ZOOM_TIME) {
+    if (rotation > ZOOM_SENSITIVITY && m_last_mousewheel_zoom_in < now - ZOOM_TIME) {
       LOG_INFO(wxT("BR24radar_pi: %s Mouse zoom in"), m_ri->name.c_str());
       m_ri->AdjustRange(-1);
       m_last_mousewheel_zoom_in = now;
-    } else if (rotation < -delta && m_last_mousewheel_zoom_out < now - ZOOM_TIME) {
+    } else if (rotation < -1 * ZOOM_SENSITIVITY && m_last_mousewheel_zoom_out < now - ZOOM_TIME) {
       LOG_INFO(wxT("BR24radar_pi: %s Mouse zoom out"), m_ri->name.c_str());
       m_ri->AdjustRange(+1);
       m_last_mousewheel_zoom_out = now;
