@@ -188,7 +188,7 @@ void br24MessageBox::CreateControls() {
   m_message_sizer->Add(m_info_sizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
   m_statistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, wxDefaultSize, 0);
-  m_statistics->SetFont(*OCPNGetFont(_("Dialog"), 8));
+  m_statistics->SetFont(GetOCPNGUIScaledFont_PlugIn(_T("StatusBar")));
   m_info_sizer->Add(m_statistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
 
   // The <Close> button

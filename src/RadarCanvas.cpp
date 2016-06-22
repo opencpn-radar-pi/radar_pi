@@ -55,6 +55,7 @@ RadarCanvas::RadarCanvas(br24radar_pi *pi, RadarInfo *ri, wxWindow *parent, wxSi
   m_cursor_texture = 0;
   m_last_mousewheel_zoom_in = 0;
   m_last_mousewheel_zoom_out = 0;
+
   LOG_DIALOG(wxT("BR24radar_pi: %s create OpenGL canvas"), m_ri->name.c_str());
 }
 
@@ -325,9 +326,10 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glPushMatrix();
   glPushAttrib(GL_ALL_ATTRIB_BITS);
 
-  wxFont font(14, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+  wxFont font = GetOCPNGUIScaledFont_PlugIn(_T("StatusBar"));
   m_FontNormal.Build(font);
-  wxFont bigFont(24, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+  wxFont bigFont = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
+  bigFont.SetPointSize(bigFont.GetPointSize() + 2);
   m_FontBig.Build(bigFont);
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                // Black Background
@@ -421,8 +423,8 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
   event.Skip();
 }
 
-#define ZOOM_TIME 333 // 3 zooms per second
-#define ZOOM_SENSITIVITY 0 // Increase to make less sensitive
+#define ZOOM_TIME 333       // 3 zooms per second
+#define ZOOM_SENSITIVITY 0  // Increase to make less sensitive
 
 void RadarCanvas::OnMouseWheel(wxMouseEvent &event) {
   int delta = event.GetWheelDelta();

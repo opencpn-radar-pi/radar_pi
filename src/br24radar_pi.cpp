@@ -153,7 +153,7 @@ int br24radar_pi::Init(void) {
   }
 
   // Font can change so initialize every time
-  m_font = *OCPNGetFont(_("Dialog"), 12);
+  m_font = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
   m_fat_font = m_font;
   m_fat_font.SetWeight(wxFONTWEIGHT_BOLD);
   m_fat_font.SetPointSize(m_font.GetPointSize() + 1);
@@ -367,7 +367,8 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
   if (show) {
     if (!m_radar[radar]->control_dialog) {
       m_radar[radar]->control_dialog = new br24ControlsDialog;
-      m_radar[radar]->control_dialog->Create((wxWindow *) (m_radar[radar]->radar_panel), this, m_radar[radar], wxID_ANY, m_radar[radar]->name);
+      m_radar[radar]->control_dialog->Create((wxWindow *)(m_radar[radar]->radar_panel), this, m_radar[radar], wxID_ANY,
+                                             m_radar[radar]->name);
       m_radar[radar]->control_dialog->Fit();
       m_radar[radar]->control_dialog->Hide();
     }
