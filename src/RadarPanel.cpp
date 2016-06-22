@@ -118,7 +118,7 @@ void RadarPanel::close(wxAuiManagerEvent& event) {
   if (pane->window == this) {
     m_pi->m_settings.show_radar[m_ri->radar] = 0;
     LOG_DIALOG(wxT("BR24radar_pi: RadarPanel::close: show_radar[%d]=%d"), m_ri->radar, 0);
-    m_pi->SetRadarWindowViz(m_pi->m_settings.show != 0);
+    m_pi->SetRadarWindowViz();
   } else {
     LOG_DIALOG(wxT("BR24radar_pi: RadarPanel::close: ignore close of window %s in window %s"), pane->name.c_str(),
                m_aui_name.c_str());

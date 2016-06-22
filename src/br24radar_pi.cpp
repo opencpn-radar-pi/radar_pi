@@ -251,7 +251,7 @@ int br24radar_pi::Init(void) {
 
   Start(1000, wxTIMER_CONTINUOUS);  // inherited from wxTimer
 
-  SetRadarWindowViz(m_settings.show != 0);
+  SetRadarWindowViz();
 
   return PLUGIN_OPTIONS;
 }
@@ -342,23 +342,23 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
  *
  * @param show        desired visibility state
  */
-void br24radar_pi::SetRadarWindowViz(bool show) {
+void br24radar_pi::SetRadarWindowViz() {
   int r;
   for (r = 0; r <= (int)m_settings.enable_dual_radar; r++) {
-    bool showThisRadar = show && (m_settings.show_radar[r] != 0);
+    bool showThisRadar = (m_settings.show != 0) && (m_settings.show_radar[r] != 0);
     m_radar[r]->ShowRadarWindow(showThisRadar);
-    if (!showThisRadar) {
+    if (m_settings.show == 0 || (!showThisRadar && m_settings.chart_overlay != r)) {
       ShowRadarControl(r, false);
     }
-    if (show && m_radar[r]->wantedState == RADAR_TRANSMIT) {
+    if (m_settings.show == 1 && m_radar[r]->wantedState == RADAR_TRANSMIT) {
       m_radar[r]->transmit->RadarTxOn();
     }
   }
 
-  SetCanvasContextMenuItemViz(m_context_menu_show_id, !show);
-  SetCanvasContextMenuItemViz(m_context_menu_hide_id, show);
-  SetCanvasContextMenuItemGrey(m_context_menu_control_id, !show);
-  LOG_DIALOG(wxT("BR24radar_pi: RadarWindow visibility = %d"), (int)show);
+  SetCanvasContextMenuItemViz(m_context_menu_show_id, m_settings.show == 0);
+  SetCanvasContextMenuItemViz(m_context_menu_hide_id, m_settings.show != 0);
+  SetCanvasContextMenuItemGrey(m_context_menu_control_id, m_settings.show == 0);
+  LOG_DIALOG(wxT("BR24radar_pi: RadarWindow show = %d window0=%d window1=%d"), m_settings.show, m_settings.show_radar[0], m_settings.show_radar[1]);
 }
 
 //********************************************************************************
@@ -455,8 +455,8 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
 
   if (m_pMessageBox->UpdateMessage(false)) {
     // Conditions for radar not satisfied, hide radar windows
-    SetRadarWindowViz(false);
     m_settings.show = 0;
+    SetRadarWindowViz();
     return;
   }
 
@@ -468,12 +468,12 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
     } else {
       LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: Hide radar windows"));
       m_settings.show = 0;
-      SetRadarWindowViz(false);
+      SetRadarWindowViz();
     }
   } else {
     LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: Show radar windows"));
     m_settings.show = 1;
-    SetRadarWindowViz(true);
+    SetRadarWindowViz();
   }
 
   UpdateState();
@@ -500,14 +500,14 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
         m_settings.show_radar[r] = 1;
         LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: nothing visible, show_radar[%d]=%d"), r, 1);
       }
-      SetRadarWindowViz(true);
+      SetRadarWindowViz();
     }
   } else if (id == m_context_menu_hide_id) {
     m_settings.show = 0;
-    SetRadarWindowViz(false);
+    SetRadarWindowViz();
   } else if (id == m_context_menu_show_id) {
     m_settings.show = 1;
-    SetRadarWindowViz(true);
+    SetRadarWindowViz();
   } else {
     wxLogError(wxT("BR24radar_pi: Unknown context menu item callback"));
   }
@@ -673,7 +673,7 @@ void br24radar_pi::Notify(void) {
 
   if (m_opengl_mode_changed) {
     m_opengl_mode_changed = false;
-    SetRadarWindowViz(m_settings.show != 0);
+    SetRadarWindowViz();
   }
 
   // Move this

@@ -382,7 +382,7 @@ void br24MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
   wxMutexLocker lock(m_mutex);
 
   m_pi->m_settings.show = 0;
-  m_pi->SetRadarWindowViz(false);
+  m_pi->SetRadarWindowViz();
   m_allow_auto_hide = true;
   m_message_state = HIDE;
   Hide();
