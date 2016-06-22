@@ -143,7 +143,7 @@ void RadarPanel::ShowFrame(bool visible) {
   if (visible) {
     if (m_pi->m_opengl_mode && !m_ri->radar_canvas) {
       LOG_DIALOG(wxT("BR24radar_pi %s: creating OpenGL canvas"), m_ri->name.c_str());
-      m_ri->radar_canvas = new RadarCanvas(m_pi, m_ri, this, wxSize(512, 512));
+      m_ri->radar_canvas = new RadarCanvas(m_pi, m_ri, this, GetSize());
       if (!m_ri->radar_canvas) {
         m_text->SetLabel(_("Unable to create OpenGL canvas"));
         m_sizer->Show(m_text);
