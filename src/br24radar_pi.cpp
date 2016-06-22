@@ -222,10 +222,14 @@ int br24radar_pi::Init(void) {
 
   //    This PlugIn needs a toolbar icon
 
-  m_tool_id = InsertPlugInTool(wxT(""), _img_radar_red, _img_radar_red, wxITEM_NORMAL, wxT("BR24Radar"), wxT(""), NULL,
+  wxString svg_normal = wxT("/tmp/radar_active.svg");
+  wxString svg_rollover = wxT("/tmp/radar_standby.svg");
+  wxString svg_toggled = wxT("/tmp/radar_toggled.svg");
+  m_tool_id = InsertPlugInToolSVG(wxT("Navico"), svg_normal, svg_rollover, svg_toggled, wxITEM_NORMAL, wxT("BR24Radar"),
+                                  _("Navico BR24, 3G and 4G RADAR"), NULL,
                                BR24RADAR_TOOL_POSITION, 0, this);
 
-  CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_BLANK);
+  // CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_BLANK);
 
   m_pMessageBox = new br24MessageBox;
   m_pMessageBox->Create(m_parent_window, this);
@@ -347,7 +351,7 @@ void br24radar_pi::SetRadarWindowViz(bool show) {
   for (r = 0; r <= (int)m_settings.enable_dual_radar; r++) {
     bool showThisRadar = show && (m_settings.show_radar[r] != 0);
     m_radar[r]->ShowRadarWindow(showThisRadar);
-    if (!showThisRadar) {
+    if (!showThisRadar && m_settings.chart_overlay) {
       ShowRadarControl(r, false);
     }
     if (show && m_radar[r]->wantedState == RADAR_TRANSMIT) {
@@ -786,13 +790,13 @@ void br24radar_pi::UpdateState(void) {
   }
   if (state == RADAR_OFF) {
     m_toolbar_button = TB_RED;
-    CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_RED);
+    //CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_RED);
   } else if (state == RADAR_TRANSMIT) {
     m_toolbar_button = TB_GREEN;
-    CacheSetToolbarToolBitmaps(BM_ID_GREEN, BM_ID_GREEN);
+    //CacheSetToolbarToolBitmaps(BM_ID_GREEN, BM_ID_GREEN);
   } else {
     m_toolbar_button = TB_AMBER;
-    CacheSetToolbarToolBitmaps(BM_ID_AMBER, BM_ID_AMBER);
+    //CacheSetToolbarToolBitmaps(BM_ID_AMBER, BM_ID_AMBER);
   }
 
   CheckTimedTransmit(state);
