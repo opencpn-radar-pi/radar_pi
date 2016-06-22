@@ -171,10 +171,6 @@ int br24radar_pi::Init(void) {
   m_hdt_timeout = 0;
   m_var_timeout = 0;
   m_idle_timeout = 0;
-
-  m_radar[0] = new RadarInfo(this, _("Radar"), 0);
-  m_radar[1] = new RadarInfo(this, _("Radar B"), 1);
-
   m_ptemp_icon = NULL;
   m_sent_bm_id_normal = -1;
   m_sent_bm_id_rollover = -1;
@@ -188,6 +184,16 @@ int br24radar_pi::Init(void) {
   m_settings.mcast_address = wxT("");
 
   ::wxDisplaySize(&m_display_width, &m_display_height);
+  // Get a pointer to the opencpn display canvas, to use as a parent for the UI
+  // dialog
+  m_parent_window = GetOCPNCanvasWindow();
+
+  m_pMessageBox = new br24MessageBox;
+  m_pMessageBox->Create(m_parent_window, this);
+
+  // before config, so config can set data in it
+  m_radar[0] = new RadarInfo(this, 0);
+  m_radar[1] = new RadarInfo(this, 1);
 
   //    And load the configuration items
   if (LoadConfig()) {
@@ -209,16 +215,8 @@ int br24radar_pi::Init(void) {
   }
   ComputeColorMap();  // After load config
 
-  for (size_t r = 0; r < RADARS; r++) {
-    if (!m_radar[r]->Init(m_settings.verbose)) {
-      wxLogError(wxT("BR24radar_pi: initialisation failed"));
-      return 0;
-    }
-  }
-
-  // Get a pointer to the opencpn display canvas, to use as a parent for the UI
-  // dialog
-  m_parent_window = GetOCPNCanvasWindow();
+  m_radar[0]->Init(m_settings.enable_dual_radar ? _("Radar A") : _("Radar"), m_settings.verbose);
+  m_radar[1]->Init(_("Radar B"), m_settings.verbose);
 
   //    This PlugIn needs a toolbar icon
 
@@ -226,9 +224,6 @@ int br24radar_pi::Init(void) {
                                BR24RADAR_TOOL_POSITION, 0, this);
 
   CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_BLANK);
-
-  m_pMessageBox = new br24MessageBox;
-  m_pMessageBox->Create(m_parent_window, this);
 
   m_radar[0]->StartReceive();
 
@@ -372,7 +367,7 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
   if (show) {
     if (!m_radar[radar]->control_dialog) {
       m_radar[radar]->control_dialog = new br24ControlsDialog;
-      m_radar[radar]->control_dialog->Create(m_parent_window, this, m_radar[radar], wxID_ANY, m_radar[radar]->name);
+      m_radar[radar]->control_dialog->Create((wxWindow *) (m_radar[radar]->radar_panel), this, m_radar[radar], wxID_ANY, m_radar[radar]->name);
       m_radar[radar]->control_dialog->Fit();
       m_radar[radar]->control_dialog->Hide();
     }

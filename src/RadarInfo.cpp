@@ -111,9 +111,8 @@ extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, Rad
   return n;
 }
 
-RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
+RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_pi = pi;
-  this->name = name;
   this->radar = radar;
 
   radar_type = RT_UNKNOWN;
@@ -135,7 +134,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
     m_vrm[b] = 0.0;
   }
 
-  transmit = new br24Transmit(pi, name, radar);
+  transmit = 0;
   receive = 0;
   m_draw_panel.draw = 0;
   m_draw_overlay.draw = 0;
@@ -153,7 +152,6 @@ RadarInfo::RadarInfo(br24radar_pi *pi, wxString name, int radar) {
   m_overlay_refreshes_queued = 0;
   m_refreshes_queued = 0;
   m_refresh_millis = 50;
-  m_timer->Start(m_refresh_millis);
 }
 
 RadarInfo::~RadarInfo() {
@@ -182,8 +180,12 @@ RadarInfo::~RadarInfo() {
   }
 }
 
-bool RadarInfo::Init(int verbose) {
+bool RadarInfo::Init(wxString name, int verbose) {
   m_verbose = verbose;
+
+  this->name = name;
+
+  transmit = new br24Transmit(m_pi, name, radar);
 
   radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
   if (!radar_panel || !radar_panel->Create()) {
@@ -191,6 +193,7 @@ bool RadarInfo::Init(int verbose) {
     return false;
   }
 
+  m_timer->Start(m_refresh_millis);
   return true;
 }
 

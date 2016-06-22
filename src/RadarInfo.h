@@ -159,10 +159,10 @@ class RadarInfo : public wxEvtHandler {
 
   /* Methods */
 
-  RadarInfo(br24radar_pi *pi, wxString name, int radar);
+  RadarInfo(br24radar_pi *pi,int radar);
   ~RadarInfo();
 
-  bool Init(int verbose);
+  bool Init(wxString name, int verbose);
   void StartReceive();
   void SetName(wxString name);
   void AdjustRange(int adjustment);
