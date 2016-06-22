@@ -224,6 +224,7 @@ struct PersistentSettings {
   int guard_zone_threshold;     // How many blobs must be sent by radar before we fire alarm
   int guard_zone_render_style;  // 0 = Shading, 1 = Outline, 2 = Shading + Outline
   int guard_zone_on_overlay;    // 0 = false, 1 = true
+  int trails_on_overlay;        // 0 = false, 1 = true
   double skew_factor;           // Set to -1 or other value to correct skewing
   int range_units;              // 0 = Nautical miles, 1 = Kilometers
 #define RANGE_NAUTICAL (0)

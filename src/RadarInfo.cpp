@@ -298,11 +298,12 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     }
   }
 
-  if (m_draw_overlay.draw) {
+  bool draw_trails_on_overlay = (m_pi->m_settings.display_option == 1) && (m_pi->m_settings.trails_on_overlay == 1);
+  if (m_draw_overlay.draw && !draw_trails_on_overlay) {
     m_draw_overlay.draw->ProcessRadarSpoke(bearing, data, len);
   }
 
-  if (target_trails.value != 0) {
+  if (target_trails.value != 0 && m_pi->m_settings.display_option == 1) {
     for (size_t radius = 0; radius < len; radius++) {
       BlobColor pixel = m_pi->m_color_map[data[radius]];
       UINT8 *trail = &trails[angle][radius];
@@ -316,6 +317,10 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
         data[radius] = m_trail_color[*trail];
       }
     }
+  }
+
+  if (m_draw_overlay.draw && draw_trails_on_overlay) {
+    m_draw_overlay.draw->ProcessRadarSpoke(bearing, data, len);
   }
 
   if (m_draw_panel.draw) {
@@ -790,9 +795,7 @@ void RadarInfo::SetBearing(int bearing) {
   }
 }
 
-void RadarInfo::ClearTrails() {
-  memset(trails, 0, sizeof(trails));
-}
+void RadarInfo::ClearTrails() { memset(trails, 0, sizeof(trails)); }
 
 void RadarInfo::ComputeTargetTrails() {
   static TrailRevolutionsAge maxRevs[6] = {SECONDS_TO_REVOLUTIONS(0),  SECONDS_TO_REVOLUTIONS(15),  SECONDS_TO_REVOLUTIONS(30),
@@ -800,7 +803,7 @@ void RadarInfo::ComputeTargetTrails() {
 
   TrailRevolutionsAge maxRev = maxRevs[target_trails.value];
   TrailRevolutionsAge revolution;
-  double colorsPerRevolution = ((int) BLOB_HISTORY_9 - BLOB_HISTORY_0 + 1 )/ (double)maxRev;
+  double colorsPerRevolution = ((int)BLOB_HISTORY_9 - BLOB_HISTORY_0 + 1) / (double)maxRev;
   double color = 0.;
 
   LOG_VERBOSE(wxT("BR24radar_pi: Target trail value %d = %d revolutions"), target_trails.value, maxRev);

@@ -321,18 +321,19 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
   LOG_DIALOG(wxT("BR24radar_pi: ShowPreferencesDialog"));
 
   br24OptionsDialog dlg(parent, m_settings);
-  if (dlg.ShowModal() == wxID_OK)
-  {
+  if (dlg.ShowModal() == wxID_OK) {
     m_settings = dlg.GetSettings();
     ComputeColorMap();
     SaveConfig();
     if (m_settings.enable_dual_radar) {
       m_radar[0]->SetName(_("Radar A"));
       m_radar[1]->StartReceive();
-    }
-    else {
+    } else {
       m_radar[1]->ShowRadarWindow(false);
       ShowRadarControl(1, false);
+    }
+    for (size_t r = 0; r < RADARS; r++) {
+      m_radar[r]->UpdateControlState(true);
     }
   }
 }
@@ -358,7 +359,8 @@ void br24radar_pi::SetRadarWindowViz() {
   SetCanvasContextMenuItemViz(m_context_menu_show_id, m_settings.show == 0);
   SetCanvasContextMenuItemViz(m_context_menu_hide_id, m_settings.show != 0);
   SetCanvasContextMenuItemGrey(m_context_menu_control_id, m_settings.show == 0);
-  LOG_DIALOG(wxT("BR24radar_pi: RadarWindow show = %d window0=%d window1=%d"), m_settings.show, m_settings.show_radar[0], m_settings.show_radar[1]);
+  LOG_DIALOG(wxT("BR24radar_pi: RadarWindow show = %d window0=%d window1=%d"), m_settings.show, m_settings.show_radar[0],
+             m_settings.show_radar[1]);
 }
 
 //********************************************************************************
@@ -419,14 +421,13 @@ void br24radar_pi::ComputeColorMap() {
   m_color_map_blue[BLOB_BLUE] = 255;
 
   if (m_settings.display_option == 1) {
-
-  for (BlobColor history = BLOB_HISTORY_0; history <= BLOB_HISTORY_9; history = (BlobColor)(history + 1)) {
-    m_color_map[history] = history;
-    m_color_map_red[history] = 255;
-    m_color_map_green[history] = 255;
-    m_color_map_blue[history] = 255;
+    for (BlobColor history = BLOB_HISTORY_0; history <= BLOB_HISTORY_9; history = (BlobColor)(history + 1)) {
+      m_color_map[history] = history;
+      m_color_map_red[history] = 255;
+      m_color_map_green[history] = 255;
+      m_color_map_blue[history] = 255;
+    }
   }
-}
 }
 
 //*******************************************************************************
@@ -919,6 +920,7 @@ bool br24radar_pi::LoadConfig(void) {
     }
     pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 2);
 
+    pConf->Read(wxT("TrailsOnOverlay"), &m_settings.trails_on_overlay, 0);
     pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, 1);
     pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
     pConf->Read(wxT("GuardZonesRenderStyle"), &m_settings.guard_zone_render_style, 0);
@@ -991,6 +993,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ScanMaxAge"), m_settings.max_age);
     pConf->Write(wxT("RunTimeOnIdle"), m_settings.idle_run_time);
     pConf->Write(wxT("GuardZoneOnOverlay"), m_settings.guard_zone_on_overlay);
+    pConf->Write(wxT("TrailsOnOverlay"), m_settings.trails_on_overlay);
     pConf->Write(wxT("Refreshrate"), m_settings.refreshrate);
     pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
