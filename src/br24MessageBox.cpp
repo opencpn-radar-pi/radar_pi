@@ -242,7 +242,7 @@ bool br24MessageBox::Show(bool show) {
 }
 
 bool br24MessageBox::UpdateMessage(bool force) {
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   message_status new_message_state = HIDE;
 
@@ -371,7 +371,7 @@ bool br24MessageBox::UpdateMessage(bool force) {
 }
 
 void br24MessageBox::OnMessageCloseButtonClick(wxCommandEvent &event) {
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   m_allow_auto_hide = true;
   m_message_state = HIDE;
@@ -379,7 +379,7 @@ void br24MessageBox::OnMessageCloseButtonClick(wxCommandEvent &event) {
 }
 
 void br24MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   m_pi->m_settings.show = 0;
   m_pi->SetRadarWindowViz();
@@ -389,7 +389,7 @@ void br24MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
 }
 
 void br24MessageBox::SetRadarIPAddress(wxString &msg) {
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   if (m_have_radar) {
     wxString label;
@@ -400,7 +400,7 @@ void br24MessageBox::SetRadarIPAddress(wxString &msg) {
 }
 
 void br24MessageBox::SetMcastIPAddress(wxString &msg) {
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   if (m_ip_box) {
     wxString label;
@@ -411,7 +411,7 @@ void br24MessageBox::SetMcastIPAddress(wxString &msg) {
 }
 
 void br24MessageBox::SetHeadingInfo(wxString &msg) {
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   if (m_have_heading) {
     wxString label;
@@ -422,7 +422,7 @@ void br24MessageBox::SetHeadingInfo(wxString &msg) {
 }
 
 void br24MessageBox::SetVariationInfo(wxString &msg) {
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   if (m_have_variation) {
     wxString label;
@@ -433,7 +433,7 @@ void br24MessageBox::SetVariationInfo(wxString &msg) {
 }
 
 void br24MessageBox::SetRadarInfo(wxString &msg) {
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   if (m_statistics) {
     m_statistics->SetLabel(msg);

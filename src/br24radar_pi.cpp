@@ -225,13 +225,6 @@ int br24radar_pi::Init(void) {
 
   CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_BLANK);
 
-  m_radar[0]->StartReceive();
-
-  if (m_settings.enable_dual_radar) {
-    m_radar[0]->SetName(_("Radar A"));
-    m_radar[1]->StartReceive();
-  }
-
   m_initialized = true;
 
   m_context_menu = new wxMenu();
@@ -242,12 +235,17 @@ int br24radar_pi::Init(void) {
   wxMenuItem *mi3 = new wxMenuItem(m_context_menu, -1, _("Radar Control..."));
   m_context_menu_control_id = AddCanvasContextMenuItem(mi3, this);
 
-  LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.chart_overlay);
-
-  Start(1000, wxTIMER_CONTINUOUS);  // inherited from wxTimer
+  LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.show_radar[0], m_settings.show_radar[1],
+              m_settings.chart_overlay);
 
   SetRadarWindowViz();
+  Notify();
+  m_radar[0]->StartReceive();
+  if (m_settings.enable_dual_radar) {
+    m_radar[1]->StartReceive();
+  }
 
+  Start(1000, wxTIMER_CONTINUOUS);  // inherited from wxTimer
   return PLUGIN_OPTIONS;
 }
 
@@ -1035,9 +1033,11 @@ bool br24radar_pi::SaveConfig(void) {
 }
 
 void br24radar_pi::SetMcastIPAddress(wxString &address) {
-  wxMutexLocker lock(m_mutex);
+  {
+    wxCriticalSectionLocker lock(m_exclusive);
 
-  m_settings.mcast_address = address;
+    m_settings.mcast_address = address;
+  }
   if (m_pMessageBox) {
     m_pMessageBox->SetMcastIPAddress(address);
   }

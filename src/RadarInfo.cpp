@@ -264,7 +264,7 @@ void RadarInfo::ResetSpokes() {
 void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters) {
   bool calc_history = false;
 
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   if (m_range_meters != range_meters) {
     ResetSpokes();
@@ -453,7 +453,7 @@ void RadarInfo::ShowRadarWindow(bool show) { radar_panel->ShowFrame(show); }
 bool RadarInfo::IsPaneShown() { return radar_panel->IsPaneShown(); }
 
 void RadarInfo::UpdateControlState(bool all) {
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   overlay.Update(m_pi->m_settings.chart_overlay == radar);
 
@@ -491,7 +491,7 @@ void RadarInfo::UpdateControlState(bool all) {
 }
 
 void RadarInfo::RenderRadarImage(DrawInfo *di) {
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
   int drawing_method = m_pi->m_settings.drawing_method;
   bool colorOption = m_pi->m_settings.display_option > 0;
 

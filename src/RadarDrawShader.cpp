@@ -117,7 +117,7 @@ bool RadarDrawShader::Init(int color_option) {
 }
 
 RadarDrawShader::~RadarDrawShader() {
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   if (m_vertex) {
     DeleteShader(m_vertex);
@@ -138,7 +138,7 @@ RadarDrawShader::~RadarDrawShader() {
 }
 
 void RadarDrawShader::DrawRadarImage() {
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   if (!m_program || !m_texture) {
     LOG_DIALOG(wxT("BR24radar_pi: Shader not set up yet, skip draw"));
@@ -213,7 +213,7 @@ void RadarDrawShader::DrawRadarImage() {
 
 void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t len) {
   GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - m_pi->m_settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   if (m_start_line == -1) {
     m_start_line = angle;  // Note that this only runs once after each draw,

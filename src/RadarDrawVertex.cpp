@@ -103,7 +103,7 @@ void RadarDrawVertex::ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t 
   GLubyte strength = 0;
   time_t now = time(0);
 
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   int r_begin = 0;
   int r_end = 0;
@@ -181,7 +181,7 @@ void RadarDrawVertex::DrawRadarImage() {
 
   time_t now = time(0);
   {
-    wxMutexLocker lock(m_mutex);
+    wxCriticalSectionLocker lock(m_exclusive);
 
     for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
       VertexLine* line = &m_vertices[i];

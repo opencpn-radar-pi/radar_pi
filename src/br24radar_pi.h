@@ -405,7 +405,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   void CheckTimedTransmit(RadarState state);
   void SetDesiredStateAllRadars(RadarState desiredState);
 
-  wxMutex m_mutex;  // protects callbacks that come from multiple radars
+  wxCriticalSection m_exclusive;  // protects callbacks that come from multiple radars
 
   wxFileConfig *m_pconfig;
   wxWindow *m_parent_window;

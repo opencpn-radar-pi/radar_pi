@@ -47,7 +47,7 @@ class radar_control_item {
   bool mod;
 
   void Update(int v) {
-    wxMutexLocker lock(m_mutex);
+    wxCriticalSectionLocker lock(m_exclusive);
 
     if (v != button) {
       mod = true;
@@ -57,7 +57,7 @@ class radar_control_item {
   };
 
   int GetButton() {
-    wxMutexLocker lock(m_mutex);
+    wxCriticalSectionLocker lock(m_exclusive);
 
     mod = false;
     return button;
@@ -70,7 +70,7 @@ class radar_control_item {
   }
 
  private:
-  wxMutex m_mutex;
+  wxCriticalSection m_exclusive;
 };
 
 struct DrawInfo {
@@ -159,7 +159,7 @@ class RadarInfo : public wxEvtHandler {
 
   /* Methods */
 
-  RadarInfo(br24radar_pi *pi,int radar);
+  RadarInfo(br24radar_pi *pi, int radar);
   ~RadarInfo();
 
   bool Init(wxString name, int verbose);
@@ -204,9 +204,9 @@ class RadarInfo : public wxEvtHandler {
   int m_previous_auto_range_meters;
   int m_auto_range_meters;
 
-  wxMutex m_mutex;          // protects the following two
-  DrawInfo m_draw_panel;    // Draw onto our own panel
-  DrawInfo m_draw_overlay;  // Abstract painting method
+  wxCriticalSection m_exclusive;  // protects the following two
+  DrawInfo m_draw_panel;          // Draw onto our own panel
+  DrawInfo m_draw_overlay;        // Abstract painting method
 
   br24radar_pi *m_pi;
   int m_verbose;

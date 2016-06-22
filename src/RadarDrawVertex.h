@@ -56,7 +56,7 @@ class RadarDrawVertex : public RadarDraw {
   void ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t len);
 
   ~RadarDrawVertex() {
-    wxMutexLocker lock(m_mutex);
+    wxCriticalSectionLocker lock(m_exclusive);
 
     for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
       if (m_vertices[i].points) {
@@ -90,7 +90,7 @@ class RadarDrawVertex : public RadarDraw {
 
   PolarToCartesianLookupTable* m_polarLookup;
 
-  wxMutex m_mutex;  // protects the following
+  wxCriticalSection m_exclusive;  // protects the following
   VertexLine m_vertices[LINES_PER_ROTATION];
   unsigned int m_count;
   bool m_oom;
