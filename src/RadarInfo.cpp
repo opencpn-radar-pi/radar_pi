@@ -296,10 +296,10 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
         hist_data[radius] = hist_data[radius] | 1;  // and add 1 if above threshold
       }
     }
-    for (size_t z = 0; z < GUARD_ZONES; z++) {
-      if (guard_zone[z]->type != GZ_OFF) {
-        guard_zone[z]->ProcessSpoke(angle, data, hist_data, len, range_meters);
-      }
+  }
+  for (size_t z = 0; z < GUARD_ZONES; z++) {
+    if (guard_zone[z]->type != GZ_OFF) {
+      guard_zone[z]->ProcessSpoke(angle, data, history[angle], len, range_meters);
     }
   }
 
