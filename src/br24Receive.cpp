@@ -440,6 +440,7 @@ void *br24Receive::Entry(void) {
         no_data_timeout = 0;
       }
     } else {
+      // reportSocket is still valid, open data and command sockets as well if they are closed
       if (dataSocket == INVALID_SOCKET) {
         dataSocket = GetNewDataSocket();
       } else if (commandSocket == INVALID_SOCKET) {
@@ -510,7 +511,8 @@ void *br24Receive::Entry(void) {
             if (!radar_addr) {
               wxString addr;
 
-              m_ri->SetNetworkCardAddress(m_mcast_addr);
+              m_ri->SetNetworkCardAddress(m_mcast_addr); // enables transmit data
+              // the dataSocket and commandSocket are opened in the next loop
 
               radarFoundAddr = rx_addr.ipv4;
               radar_addr = &radarFoundAddr;
@@ -534,16 +536,7 @@ void *br24Receive::Entry(void) {
 
     } else if (no_data_timeout >= 2) {
       no_data_timeout = 0;
-      if (m_ri->state.value == RADAR_TRANSMIT) {
-        if (dataSocket != INVALID_SOCKET) {
-          closesocket(dataSocket);
-          dataSocket = INVALID_SOCKET;
-        }
-        if (commandSocket != INVALID_SOCKET) {
-          closesocket(commandSocket);
-          commandSocket = INVALID_SOCKET;
-        }
-      } else if (reportSocket != INVALID_SOCKET) {
+      if (reportSocket != INVALID_SOCKET) {
         closesocket(reportSocket);
         reportSocket = INVALID_SOCKET;
         m_ri->state.Update(RADAR_OFF);
@@ -553,7 +546,20 @@ void *br24Receive::Entry(void) {
     } else {
       no_data_timeout++;
     }
-  }
+
+    if (reportSocket == INVALID_SOCKET) {
+      // If we closed the reportSocket then close the command and data socket
+      if (dataSocket != INVALID_SOCKET) {
+        closesocket(dataSocket);
+        dataSocket = INVALID_SOCKET;
+      }
+      if (commandSocket != INVALID_SOCKET) {
+        closesocket(commandSocket);
+        commandSocket = INVALID_SOCKET;
+      }
+    }
+
+  } // endless loop until thread destroy
 
   if (dataSocket != INVALID_SOCKET) {
     closesocket(dataSocket);
