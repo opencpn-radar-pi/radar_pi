@@ -73,8 +73,6 @@ class br24MessageBox : public wxDialog {
 
   bool IsModalDialogShown();
 
-  wxCriticalSection m_exclusive;
-
   wxWindow *m_parent;
   br24radar_pi *m_pi;
 

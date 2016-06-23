@@ -33,6 +33,9 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+wxCriticalSection g_csMessageBox;
+#define SERIALIZE_PER_PROCESS wxCriticalSectionLocker lock(g_csMessageBox)
+
 enum {  // process ID's
   ID_MSG_CLOSE,
   ID_MSG_HIDE,
@@ -242,7 +245,7 @@ bool br24MessageBox::Show(bool show) {
 }
 
 bool br24MessageBox::UpdateMessage(bool force) {
-  wxCriticalSectionLocker lock(m_exclusive);
+  SERIALIZE_PER_PROCESS;
 
   message_status new_message_state = HIDE;
 
@@ -371,7 +374,7 @@ bool br24MessageBox::UpdateMessage(bool force) {
 }
 
 void br24MessageBox::OnMessageCloseButtonClick(wxCommandEvent &event) {
-  wxCriticalSectionLocker lock(m_exclusive);
+  SERIALIZE_PER_PROCESS;
 
   m_allow_auto_hide = true;
   m_message_state = HIDE;
@@ -379,7 +382,7 @@ void br24MessageBox::OnMessageCloseButtonClick(wxCommandEvent &event) {
 }
 
 void br24MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
-  wxCriticalSectionLocker lock(m_exclusive);
+  SERIALIZE_PER_PROCESS;
 
   m_pi->m_settings.show = 0;
   m_pi->SetRadarWindowViz();
@@ -389,7 +392,7 @@ void br24MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
 }
 
 void br24MessageBox::SetRadarIPAddress(wxString &msg) {
-  wxCriticalSectionLocker lock(m_exclusive);
+  SERIALIZE_PER_PROCESS;
 
   if (m_have_radar) {
     wxString label;
@@ -400,7 +403,7 @@ void br24MessageBox::SetRadarIPAddress(wxString &msg) {
 }
 
 void br24MessageBox::SetMcastIPAddress(wxString &msg) {
-  wxCriticalSectionLocker lock(m_exclusive);
+  SERIALIZE_PER_PROCESS;
 
   if (m_ip_box) {
     wxString label;
@@ -411,7 +414,7 @@ void br24MessageBox::SetMcastIPAddress(wxString &msg) {
 }
 
 void br24MessageBox::SetHeadingInfo(wxString &msg) {
-  wxCriticalSectionLocker lock(m_exclusive);
+  SERIALIZE_PER_PROCESS;
 
   if (m_have_heading) {
     wxString label;
@@ -422,7 +425,7 @@ void br24MessageBox::SetHeadingInfo(wxString &msg) {
 }
 
 void br24MessageBox::SetVariationInfo(wxString &msg) {
-  wxCriticalSectionLocker lock(m_exclusive);
+  SERIALIZE_PER_PROCESS;
 
   if (m_have_variation) {
     wxString label;
@@ -433,7 +436,7 @@ void br24MessageBox::SetVariationInfo(wxString &msg) {
 }
 
 void br24MessageBox::SetRadarInfo(wxString &msg) {
-  wxCriticalSectionLocker lock(m_exclusive);
+  SERIALIZE_PER_PROCESS;
 
   if (m_statistics) {
     m_statistics->SetLabel(msg);
