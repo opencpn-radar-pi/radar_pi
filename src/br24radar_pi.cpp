@@ -214,8 +214,9 @@ int br24radar_pi::Init(void) {
     wxLogError(wxT("BR24radar_pi: configuration file values initialisation failed"));
     return 0;  // give up
   }
-  ComputeColorMap();  // After load config
 
+
+  // After load config
   m_radar[0]->Init(m_settings.enable_dual_radar ? _("Radar A") : _("Radar"), m_settings.verbose);
   m_radar[1]->Init(_("Radar B"), m_settings.verbose);
 
@@ -319,7 +320,6 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
   br24OptionsDialog dlg(parent, m_settings);
   if (dlg.ShowModal() == wxID_OK) {
     m_settings = dlg.GetSettings();
-    ComputeColorMap();
     SaveConfig();
     if (m_settings.enable_dual_radar) {
       m_radar[0]->SetName(_("Radar A"));
@@ -329,6 +329,7 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
       ShowRadarControl(1, false);
     }
     for (size_t r = 0; r < RADARS; r++) {
+      m_radar[r]->ComputeColorMap();
       m_radar[r]->UpdateControlState(true);
     }
   }
@@ -393,39 +394,6 @@ void br24radar_pi::ConfirmGuardZoneBogeys() {
   m_guard_bogey_confirmed = true;  // This will stop the sound being repeated
 }
 
-void br24radar_pi::ComputeColorMap() {
-  switch (m_settings.display_option) {
-    case 0:
-      for (int i = 0; i <= UINT8_MAX; i++) {
-        m_color_map[i] = (i >= m_settings.threshold_blue) ? BLOB_RED : BLOB_NONE;
-      }
-      break;
-    case 1:
-      for (int i = 0; i <= UINT8_MAX; i++) {
-        m_color_map[i] =
-            (i >= m_settings.threshold_red) ? BLOB_RED : (i >= m_settings.threshold_green)
-                                                             ? BLOB_GREEN
-                                                             : (i >= m_settings.threshold_blue) ? BLOB_BLUE : BLOB_NONE;
-      }
-      break;
-  }
-
-  memset(m_color_map_red, 0, sizeof(m_color_map_red));
-  memset(m_color_map_green, 0, sizeof(m_color_map_green));
-  memset(m_color_map_blue, 0, sizeof(m_color_map_blue));
-  m_color_map_red[BLOB_RED] = 255;
-  m_color_map_green[BLOB_GREEN] = 255;
-  m_color_map_blue[BLOB_BLUE] = 255;
-
-  if (m_settings.display_option == 1) {
-    for (BlobColor history = BLOB_HISTORY_0; history <= BLOB_HISTORY_9; history = (BlobColor)(history + 1)) {
-      m_color_map[history] = history;
-      m_color_map_red[history] = 255;
-      m_color_map_green[history] = 255;
-      m_color_map_blue[history] = 255;
-    }
-  }
-}
 
 //*******************************************************************************
 // ToolBar Actions
@@ -1167,7 +1135,9 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
     }
     case CT_TARGET_TRAILS: {
       m_radar[radar]->target_trails.Update(value);
+      m_radar[radar]->ComputeColorMap();
       m_radar[radar]->ComputeTargetTrails();
+      return true;
     }
 
     default: {

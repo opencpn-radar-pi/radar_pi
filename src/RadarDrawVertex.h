@@ -41,8 +41,8 @@ PLUGIN_BEGIN_NAMESPACE
 
 class RadarDrawVertex : public RadarDraw {
  public:
-  RadarDrawVertex(br24radar_pi* pi) {
-    m_pi = pi;
+  RadarDrawVertex(RadarInfo *ri) {
+    m_ri = ri;
 
     memset(m_vertices, 0, sizeof(m_vertices));
     m_count = 0;
@@ -53,7 +53,7 @@ class RadarDrawVertex : public RadarDraw {
 
   bool Init(int color_option);
   void DrawRadarImage();
-  void ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t len);
+  void ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8* data, size_t len);
 
   ~RadarDrawVertex() {
     wxCriticalSectionLocker lock(m_exclusive);
@@ -66,7 +66,7 @@ class RadarDrawVertex : public RadarDraw {
   }
 
  private:
-  br24radar_pi* m_pi;
+  RadarInfo *m_ri;
 
   static const int VERTEX_PER_TRIANGLE = 3;
   static const int VERTEX_PER_QUAD = 2 * VERTEX_PER_TRIANGLE;

@@ -187,6 +187,8 @@ bool RadarInfo::Init(wxString name, int verbose) {
 
   this->name = name;
 
+  ComputeColorMap();
+
   transmit = new br24Transmit(m_pi, name, radar);
 
   radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
@@ -224,6 +226,40 @@ void RadarInfo::StartReceive() {
   }
 }
 
+void RadarInfo::ComputeColorMap() {
+  switch (m_pi->m_settings.display_option) {
+    case 0:
+      for (int i = 0; i <= UINT8_MAX; i++) {
+        m_color_map[i] = (i >= m_pi->m_settings.threshold_blue) ? BLOB_RED : BLOB_NONE;
+      }
+      break;
+    case 1:
+      for (int i = 0; i <= UINT8_MAX; i++) {
+        m_color_map[i] =
+        (i >= m_pi->m_settings.threshold_red) ? BLOB_RED : (i >= m_pi->m_settings.threshold_green)
+        ? BLOB_GREEN
+        : (i >= m_pi->m_settings.threshold_blue) ? BLOB_BLUE : BLOB_NONE;
+      }
+      break;
+  }
+
+  memset(m_color_map_red, 0, sizeof(m_color_map_red));
+  memset(m_color_map_green, 0, sizeof(m_color_map_green));
+  memset(m_color_map_blue, 0, sizeof(m_color_map_blue));
+  m_color_map_red[BLOB_RED] = 255;
+  m_color_map_green[BLOB_GREEN] = 255;
+  m_color_map_blue[BLOB_BLUE] = 255;
+
+  if (m_pi->m_settings.display_option == 1 && target_trails.value > 0) {
+    for (BlobColor history = BLOB_HISTORY_0; history <= BLOB_HISTORY_9; history = (BlobColor)(history + 1)) {
+      m_color_map[history] = history;
+      m_color_map_red[history] = 255;
+      m_color_map_green[history] = 255;
+      m_color_map_blue[history] = 255;
+    }
+  }
+}
+
 void RadarInfo::ResetSpokes() {
   UINT8 zap[RETURNS_PER_LINE];
 
@@ -235,12 +271,12 @@ void RadarInfo::ResetSpokes() {
 
   if (m_draw_panel.draw) {
     for (size_t r = 0; r < LINES_PER_ROTATION; r++) {
-      m_draw_panel.draw->ProcessRadarSpoke(r, zap, sizeof(zap));
+      m_draw_panel.draw->ProcessRadarSpoke(0, r, zap, sizeof(zap));
     }
   }
   if (m_draw_overlay.draw) {
     for (size_t r = 0; r < LINES_PER_ROTATION; r++) {
-      m_draw_overlay.draw->ProcessRadarSpoke(r, zap, sizeof(zap));
+      m_draw_overlay.draw->ProcessRadarSpoke(0, r, zap, sizeof(zap));
     }
   }
   for (size_t z = 0; z < GUARD_ZONES; z++) {
@@ -279,6 +315,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     LOG_VERBOSE(wxT("BR24radar_pi: %s HeadUp/NorthUp change"));
   }
   int north_up = orientation.GetButton() == ORIENTATION_NORTH_UP;
+  uint8_t weakest_normal_blob = m_pi->m_settings.threshold_blue;
 
   if (!calc_history) {
     for (size_t z = 0; z < GUARD_ZONES; z++) {
@@ -288,11 +325,12 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     }
   }
 
+
   if (calc_history) {
     UINT8 *hist_data = history[angle];
     for (size_t radius = 0; radius < len; radius++) {
       hist_data[radius] = hist_data[radius] << 1;  // shift left history byte 1 bit
-      if (m_pi->m_color_map[data[radius]] >= BLOB_BLUE) {
+      if (data[radius] >= weakest_normal_blob) {
         hist_data[radius] = hist_data[radius] | 1;  // and add 1 if above threshold
       }
     }
@@ -303,17 +341,18 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     }
   }
 
+
   bool draw_trails_on_overlay = (m_pi->m_settings.display_option == 1) && (m_pi->m_settings.trails_on_overlay == 1);
   if (m_draw_overlay.draw && !draw_trails_on_overlay) {
-    m_draw_overlay.draw->ProcessRadarSpoke(bearing, data, len);
+    // next loop to prevent artefacts where radar data is very weak and maps exactly on BLOB_HISTORY values
+    m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
   if (target_trails.value != 0 && m_pi->m_settings.display_option == 1) {
     for (size_t radius = 0; radius < len; radius++) {
-      BlobColor pixel = m_pi->m_color_map[data[radius]];
       UINT8 *trail = &trails[angle][radius];
 
-      if (pixel >= BLOB_BLUE) {
+      if (data[radius] >= weakest_normal_blob) {
         *trail = 1;
       } else {
         if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
@@ -325,11 +364,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
-    m_draw_overlay.draw->ProcessRadarSpoke(bearing, data, len);
+    m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
   if (m_draw_panel.draw) {
-    m_draw_panel.draw->ProcessRadarSpoke(north_up ? bearing : angle, data, len);
+    m_draw_panel.draw->ProcessRadarSpoke(3, north_up ? bearing : angle, data, len);
   }
 }
 
@@ -507,7 +546,7 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
 
   // Determine if a new draw method is required
   if (!di->draw || (drawing_method != di->drawing_method) || (colorOption != di->color_option)) {
-    RadarDraw *newDraw = RadarDraw::make_Draw(m_pi, drawing_method);
+    RadarDraw *newDraw = RadarDraw::make_Draw(this, drawing_method);
     if (!newDraw) {
       wxLogError(wxT("BR24radar_pi: out of memory"));
       return;

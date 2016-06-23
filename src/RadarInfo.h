@@ -96,6 +96,7 @@ typedef UINT8 TrailRevolutionsAge;
 class RadarInfo : public wxEvtHandler {
  public:
   wxString name;  // Either "Radar", "Radar A", "Radar B".
+  br24radar_pi *m_pi;
   int radar;      // Which radar this is (0..., max 2 for now)
 
   /* User radar settings */
@@ -177,6 +178,7 @@ class RadarInfo : public wxEvtHandler {
   bool IsPaneShown();
 
   void UpdateControlState(bool all);
+  void ComputeColorMap();
   void ComputeTargetTrails();
   void FlipRadarState();
   wxString &GetRangeText();
@@ -194,6 +196,12 @@ class RadarInfo : public wxEvtHandler {
 
   double m_mouse_lat, m_mouse_lon, m_mouse_vrm, m_mouse_ebl;
 
+  // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
+  GLubyte m_color_map_red[BLOB_RED + 1];
+  GLubyte m_color_map_green[BLOB_RED + 1];
+  GLubyte m_color_map_blue[BLOB_RED + 1];
+  BlobColor m_color_map[UINT8_MAX + 1];
+
  private:
   void RenderRadarImage(DrawInfo *di);
   wxString FormatDistance(double distance);
@@ -208,7 +216,6 @@ class RadarInfo : public wxEvtHandler {
   DrawInfo m_draw_panel;          // Draw onto our own panel
   DrawInfo m_draw_overlay;        // Abstract painting method
 
-  br24radar_pi *m_pi;
   int m_verbose;
   wxTimer *m_timer;
 

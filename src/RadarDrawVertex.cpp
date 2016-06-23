@@ -38,11 +38,6 @@ bool RadarDrawVertex::Init(int newColorOption) {
     // Don't care in vertex mode
   }
 
-  /* for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
-     spokes[i].n = 0;
-   }*/
-
-  LOG_DIALOG(wxT("BR24radar_pi: CPU oriented OpenGL vertex draw loaded"));
   return true;
 }
 
@@ -78,8 +73,6 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
     }
     line->allocated += extra;
     m_count += extra;
-    LOG_DIALOG(wxT("BR24radar_pi: increased vertex array allocation to %u points, %u bytes"), line->allocated,
-               m_count * sizeof(VertexPoint));
   }
 
   // First triangle
@@ -96,9 +89,9 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
   line->count = count;
 }
 
-void RadarDrawVertex::ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t len) {
+void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8* data, size_t len) {
   GLubyte red, green, blue, alpha;
-  GLubyte default_alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - m_pi->m_settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
+  GLubyte default_alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
   BlobColor previous_color = BLOB_NONE;
   GLubyte strength = 0;
   time_t now = time(0);
@@ -123,11 +116,11 @@ void RadarDrawVertex::ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t 
     }
   }
   line->count = 0;
-  line->timeout = now + m_pi->m_settings.max_age;
+  line->timeout = now + m_ri->m_pi->m_settings.max_age;
 
   for (size_t radius = 0; radius < len; radius++) {
     strength = data[radius];
-    BlobColor actual_color = m_pi->m_color_map[strength];
+    BlobColor actual_color = m_ri->m_color_map[strength];
 
     if (actual_color == previous_color) {
       // continue with same color, just register it
@@ -138,9 +131,9 @@ void RadarDrawVertex::ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t 
       r_end = r_begin + 1;
       previous_color = actual_color;  // new color
     } else if (previous_color != BLOB_NONE && (previous_color != actual_color)) {
-      red = m_pi->m_color_map_red[previous_color];
-      green = m_pi->m_color_map_green[previous_color];
-      blue = m_pi->m_color_map_blue[previous_color];
+      red = m_ri->m_color_map_red[previous_color];
+      green = m_ri->m_color_map_green[previous_color];
+      blue = m_ri->m_color_map_blue[previous_color];
 
       if (previous_color >= BLOB_HISTORY_0 && previous_color <= BLOB_HISTORY_9) {
         int extra_transparancy = (int)(previous_color - BLOB_HISTORY_0);
@@ -160,13 +153,13 @@ void RadarDrawVertex::ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t 
   }
 
   if (previous_color != BLOB_NONE) {  // Draw final blob
-    red = m_pi->m_color_map_red[previous_color];
-    green = m_pi->m_color_map_green[previous_color];
-    blue = m_pi->m_color_map_blue[previous_color];
+    red = m_ri->m_color_map_red[previous_color];
+    green = m_ri->m_color_map_green[previous_color];
+    blue = m_ri->m_color_map_blue[previous_color];
 
     if (previous_color >= BLOB_HISTORY_0 && previous_color <= BLOB_HISTORY_9) {
       int extra_transparancy = (int)(previous_color - BLOB_HISTORY_0);
-      alpha = 255 * (10 - extra_transparancy) / 10;
+      alpha = (alpha * 255 * (10 - extra_transparancy) / 10) >> 8;
     } else {
       alpha = default_alpha;
     }

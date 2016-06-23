@@ -334,8 +334,6 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   }
   bool IsOverlayOnScreen(int radar) { return m_settings.show > 0 && m_settings.chart_overlay == radar; }
 
-  void ComputeColorMap();
-
   bool LoadConfig();
   bool SaveConfig();
 
@@ -386,11 +384,6 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   bool m_first_init;       // True in first Init() call.
   wxLongLong m_boot_time;  // millis when started
 
-  // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
-  GLubyte m_color_map_red[BLOB_RED + 1];
-  GLubyte m_color_map_green[BLOB_RED + 1];
-  GLubyte m_color_map_blue[BLOB_RED + 1];
-  BlobColor m_color_map[UINT8_MAX + 1];
 
  private:
   void RadarSendState(void);

@@ -41,8 +41,8 @@ PLUGIN_BEGIN_NAMESPACE
 
 class RadarDrawShader : public RadarDraw {
  public:
-  RadarDrawShader(br24radar_pi* pi) {
-    m_pi = pi;
+  RadarDrawShader(RadarInfo * ri) {
+    m_ri = ri;
     m_start_line = LINES_PER_ROTATION;
     m_end_line = 0;
     m_texture = 0;
@@ -58,10 +58,10 @@ class RadarDrawShader : public RadarDraw {
 
   bool Init(int color_option);
   void DrawRadarImage();
-  void ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t len);
+  void ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8* data, size_t len);
 
  private:
-  br24radar_pi* m_pi;
+  RadarInfo* m_ri;
 
   wxCriticalSection m_exclusive;  // protects the following three data structures
   unsigned char m_data[SHADER_COLOR_CHANNELS * LINES_PER_ROTATION * RETURNS_PER_LINE];
