@@ -39,6 +39,8 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+bool g_first_render = true;
+
 enum { TIMER_ID = 1 };
 
 BEGIN_EVENT_TABLE(RadarInfo, wxEvtHandler)
@@ -533,6 +535,11 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
   }
 
   di->draw->DrawRadarImage();
+  if (g_first_render) {
+    g_first_render = false;
+    wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->m_boot_time;
+    LOG_INFO(wxT("BR24radar_pi: First radar image rendered after %llu ms\n"), startup_elapsed);
+  }
 }
 
 void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bool overlay) {

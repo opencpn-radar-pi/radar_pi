@@ -185,7 +185,7 @@ void RadarDrawVertex::DrawRadarImage() {
 
     for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
       VertexLine* line = &m_vertices[i];
-      if (TIMED_OUT(now, line->timeout)) {
+      if (!line->points || TIMED_OUT(now, line->timeout)) {
         continue;
       }
 

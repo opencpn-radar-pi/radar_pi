@@ -106,6 +106,7 @@ static double radar_distance(double lat1, double lon1, double lat2, double lon2,
 //---------------------------------------------------------------------------------------------------------
 
 br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_112(ppimgr) {
+  m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
   // Create the PlugIn icons
   initialize_images();
@@ -246,6 +247,8 @@ int br24radar_pi::Init(void) {
   }
 
   Start(1000, wxTIMER_CONTINUOUS);  // inherited from wxTimer
+  m_parent_window->Refresh(false);
+  
   return PLUGIN_OPTIONS;
 }
 
@@ -746,9 +749,7 @@ void br24radar_pi::Notify(void) {
                               m_radar[r]->statistics.broken_spokes, m_radar[r]->statistics.missing_spokes);
       }
     }
-    if (m_pMessageBox->IsShown()) {
-      m_pMessageBox->SetRadarInfo(t);
-    }
+    m_pMessageBox->SetStatisticsInfo(t);
     if (t.length() > 0) {
       t.Replace(wxT("\n"), wxT(" "));
       LOG_RECEIVE(wxT("BR24radar_pi: %s"), t.c_str());

@@ -33,9 +33,6 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-wxCriticalSection g_csMessageBox;
-#define SERIALIZE_PER_PROCESS wxCriticalSectionLocker lock(g_csMessageBox)
-
 enum {  // process ID's
   ID_MSG_CLOSE,
   ID_MSG_HIDE,
@@ -245,7 +242,6 @@ bool br24MessageBox::Show(bool show) {
 }
 
 bool br24MessageBox::UpdateMessage(bool force) {
-  SERIALIZE_PER_PROCESS;
 
   message_status new_message_state = HIDE;
 
@@ -317,6 +313,26 @@ bool br24MessageBox::UpdateMessage(bool force) {
   m_have_radar->SetValue(radarSeen);
   m_have_data->SetValue(haveData);
 
+
+  wxString * label;
+
+  if ((label = m_radar_addr_info.GetValue()) != 0) {
+    m_have_radar->SetLabel(*label);
+  }
+  if ((label = m_mcast_addr_info.GetValue()) != 0) {
+    m_ip_box->SetLabel(*label);
+  }
+  if ((label = m_heading_info.GetValue()) != 0) {
+    m_have_heading->SetLabel(*label);
+  }
+  if ((label = m_variation_info.GetValue()) != 0) {
+    m_have_variation->SetLabel(*label);
+  }
+  if ((label = m_statistics_info.GetValue()) != 0) {
+    m_statistics->SetLabel(*label);
+  }
+
+
   if (m_message_state != new_message_state || m_old_radar_seen != radarSeen) {
     if (!radarSeen) {
       m_radar_off->Show();
@@ -374,16 +390,12 @@ bool br24MessageBox::UpdateMessage(bool force) {
 }
 
 void br24MessageBox::OnMessageCloseButtonClick(wxCommandEvent &event) {
-  SERIALIZE_PER_PROCESS;
-
   m_allow_auto_hide = true;
   m_message_state = HIDE;
   Hide();
 }
 
 void br24MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
-  SERIALIZE_PER_PROCESS;
-
   m_pi->m_settings.show = 0;
   m_pi->SetRadarWindowViz();
   m_allow_auto_hide = true;
@@ -392,55 +404,34 @@ void br24MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
 }
 
 void br24MessageBox::SetRadarIPAddress(wxString &msg) {
-  SERIALIZE_PER_PROCESS;
-
-  if (m_have_radar) {
-    wxString label;
-
-    label << _("Radar IP") << wxT(" ") << msg;
-    m_have_radar->SetLabel(label);
-  }
+  wxString label;
+  label << _("Radar IP") << wxT(" ") << msg;
+  m_radar_addr_info.Update(label);
 }
 
 void br24MessageBox::SetMcastIPAddress(wxString &msg) {
-  SERIALIZE_PER_PROCESS;
+  wxString label;
 
-  if (m_ip_box) {
-    wxString label;
-
-    label << _("Ethernet card") << wxT(" ") << msg;
-    m_ip_box->SetLabel(label);
-  }
+  label << _("Ethernet card") << wxT(" ") << msg;
+  m_mcast_addr_info.Update(label);
 }
 
 void br24MessageBox::SetHeadingInfo(wxString &msg) {
-  SERIALIZE_PER_PROCESS;
-
-  if (m_have_heading) {
     wxString label;
 
     label << _("Heading") << wxT(" ") << msg;
-    m_have_heading->SetLabel(label);
-  }
-}
+    m_heading_info.Update(label);
+ }
 
 void br24MessageBox::SetVariationInfo(wxString &msg) {
-  SERIALIZE_PER_PROCESS;
-
-  if (m_have_variation) {
     wxString label;
 
     label << _("Variation") << wxT(" ") << msg;
-    m_have_variation->SetLabel(label);
-  }
+    m_variation_info.Update(label);
 }
 
-void br24MessageBox::SetRadarInfo(wxString &msg) {
-  SERIALIZE_PER_PROCESS;
-
-  if (m_statistics) {
-    m_statistics->SetLabel(msg);
-  }
+void br24MessageBox::SetStatisticsInfo(wxString &msg) {
+  m_statistics_info.Update(msg);
 }
 
 PLUGIN_END_NAMESPACE

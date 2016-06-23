@@ -382,8 +382,9 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   double m_cursor_lat, m_cursor_lon;
   double m_ownship_lat, m_ownship_lon;
 
-  bool m_initialized;  // True if Init() succeeded and DeInit() not called yet.
-  bool m_first_init;   // True in first Init() call.
+  bool m_initialized;      // True if Init() succeeded and DeInit() not called yet.
+  bool m_first_init;       // True in first Init() call.
+  wxLongLong m_boot_time;  // millis when started
 
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
   GLubyte m_color_map_red[BLOB_RED + 1];
