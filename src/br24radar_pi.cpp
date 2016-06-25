@@ -216,7 +216,6 @@ int br24radar_pi::Init(void) {
     return 0;  // give up
   }
 
-
   // After load config
   m_radar[0]->Init(m_settings.enable_dual_radar ? _("Radar A") : _("Radar"), m_settings.verbose);
   m_radar[1]->Init(_("Radar B"), m_settings.verbose);
@@ -250,7 +249,7 @@ int br24radar_pi::Init(void) {
 
   Start(1000, wxTIMER_CONTINUOUS);  // inherited from wxTimer
   m_parent_window->Refresh(false);
-  
+
   return PLUGIN_OPTIONS;
 }
 
@@ -395,7 +394,6 @@ void br24radar_pi::ConfirmGuardZoneBogeys() {
   m_guard_bogey_confirmed = true;  // This will stop the sound being repeated
 }
 
-
 //*******************************************************************************
 // ToolBar Actions
 
@@ -504,11 +502,11 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
     time_t now = time(0);
     int left = m_idle_standby - now;
     if (left >= 0) {
-      text << wxString::Format(_("Standby in %02dm %02ds"), left / 60, left % 60);
+      text << wxString::Format(_("Standby in %2d:%02d"), left / 60, left % 60);
     } else {
       left = m_idle_transmit - now;
       if (left >= 0) {
-        text << wxString::Format(_("Transmit in %02dm %02ds"), left / 60, left % 60);
+        text << wxString::Format(_("Transmit in %2d:%02d"), left / 60, left % 60);
         return text;
       }
     }
@@ -555,7 +553,7 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
         if (bogeys > m_settings.guard_zone_threshold) {
           bogeys_found = true;
           bogeys_found_this_radar = true;
-          m_settings.timed_idle = 0; // reset timed idle to off
+          m_settings.timed_idle = 0;  // reset timed idle to off
         }
       }
       if (bogeys_found_this_radar && !m_guard_bogey_confirmed) {
