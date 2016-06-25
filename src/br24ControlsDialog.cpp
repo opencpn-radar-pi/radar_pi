@@ -586,13 +586,6 @@ void br24ControlsDialog::CreateControls() {
   m_target_boost_button->names = target_boost_names;
   m_target_boost_button->SetLocalValue(m_ri->target_boost.button);  // redraw after adding names
 
-  // The REFRESHRATE button
-  m_refresh_rate_button =
-      new br24RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), CT_REFRESHRATE, false, m_pi->m_settings.refreshrate);
-  m_advanced_sizer->Add(m_refresh_rate_button, 0, wxALL, BORDER);
-  m_refresh_rate_button->minValue = 1;
-  m_refresh_rate_button->maxValue = 5;
-
   // The INSTALLATION button
   wxButton* bInstallation = new wxButton(this, ID_INSTALLATION, _("Installation"), wxDefaultPosition, g_smallButtonSize, 0);
   m_advanced_sizer->Add(bInstallation, 0, wxALL, BORDER);
@@ -822,6 +815,13 @@ void br24ControlsDialog::CreateControls() {
   m_view_sizer->Add(m_orientation_button, 0, wxALL, BORDER);
   m_orientation_button->SetFont(m_pi->m_font);
   // Updated when we receive data
+
+  // The REFRESHRATE button
+  m_refresh_rate_button =
+  new br24RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), CT_REFRESHRATE, false, m_pi->m_settings.refreshrate);
+  m_view_sizer->Add(m_refresh_rate_button, 0, wxALL, BORDER);
+  m_refresh_rate_button->minValue = 1;
+  m_refresh_rate_button->maxValue = 5;
 
   m_top_sizer->Hide(m_view_sizer);
 
