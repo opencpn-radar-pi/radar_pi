@@ -384,6 +384,9 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   bool m_first_init;       // True in first Init() call.
   wxLongLong m_boot_time;  // millis when started
 
+  // Timed Transmit
+  time_t m_idle_standby;  // When we will change to standby
+  time_t m_idle_transmit; // When we will change to transmit
 
  private:
   void RadarSendState(void);
@@ -431,8 +434,6 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   int m_auto_range_meters;  // What the range should be, at least, when AUTO mode is selected
   int m_previous_auto_range_meters;
 
-  // Timed Transmit
-  time_t m_idle_timeout;  // When we will flip transmit/standby in automatic Timed Transmit
 
 #define HEADING_TIMEOUT (5)
 

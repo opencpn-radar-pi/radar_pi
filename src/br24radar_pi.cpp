@@ -171,7 +171,8 @@ int br24radar_pi::Init(void) {
   m_hdt = 0.0;
   m_hdt_timeout = 0;
   m_var_timeout = 0;
-  m_idle_timeout = 0;
+  m_idle_standby = 0;
+  m_idle_transmit = 0;
   m_ptemp_icon = NULL;
   m_sent_bm_id_normal = -1;
   m_sent_bm_id_rollover = -1;
@@ -501,11 +502,12 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
 
   if (m_settings.timed_idle) {
     time_t now = time(0);
-    int left = m_idle_timeout - now;
-    if (left > 0) {
-      if (m_radar[0]->state.value == RADAR_TRANSMIT || m_radar[1]->state.value == RADAR_TRANSMIT) {
-        text << wxString::Format(_("Standby in %02dm %02ds"), left / 60, left % 60);
-      } else {
+    int left = m_idle_standby - now;
+    if (left >= 0) {
+      text << wxString::Format(_("Standby in %02dm %02ds"), left / 60, left % 60);
+    } else {
+      left = m_idle_transmit - now;
+      if (left >= 0) {
         text << wxString::Format(_("Transmit in %02dm %02ds"), left / 60, left % 60);
         return text;
       }
@@ -553,6 +555,7 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
         if (bogeys > m_settings.guard_zone_threshold) {
           bogeys_found = true;
           bogeys_found_this_radar = true;
+          m_settings.timed_idle = 0; // reset timed idle to off
         }
       }
       if (bogeys_found_this_radar && !m_guard_bogey_confirmed) {
@@ -611,15 +614,15 @@ void br24radar_pi::CheckTimedTransmit(RadarState state) {
   time_t now = time(0);
 
   if (state == RADAR_TRANSMIT) {
-    if (TIMED_OUT(now, m_idle_timeout)) {
+    if (TIMED_OUT(now, m_idle_standby)) {
       SetDesiredStateAllRadars(RADAR_STANDBY);
-      m_idle_timeout = now + m_settings.timed_idle * SECONDS_PER_TIMED_IDLE_SETTING;
+      m_idle_transmit = now + m_settings.timed_idle * SECONDS_PER_TIMED_IDLE_SETTING;
     }
   } else {
-    if (TIMED_OUT(now, m_idle_timeout)) {
+    if (TIMED_OUT(now, m_idle_transmit)) {
       SetDesiredStateAllRadars(RADAR_TRANSMIT);
       int burst = wxMax(m_settings.idle_run_time, SECONDS_PER_TRANSMIT_BURST);
-      m_idle_timeout = now + burst;
+      m_idle_standby = now + burst;
     }
   }
 }
@@ -1127,6 +1130,9 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
     }
     case CT_TIMED_IDLE: {
       m_settings.timed_idle = value;
+      m_idle_standby = time(0) + 5;
+      m_idle_transmit = 0;
+      CheckTimedTransmit(RADAR_TRANSMIT);
       return true;
     }
     case CT_REFRESHRATE: {

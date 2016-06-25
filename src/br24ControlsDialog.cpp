@@ -896,7 +896,7 @@ void br24ControlsDialog::CreateControls() {
 
   m_timed_idle_button =
       new br24RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), CT_TIMED_IDLE, false, m_pi->m_settings.timed_idle);
-  m_transmit_sizer->Add(m_timed_idle_button, 0, wxALL, BORDER);
+  m_control_sizer->Add(m_timed_idle_button, 0, wxALL, BORDER);
   m_timed_idle_button->minValue = 0;
   m_timed_idle_button->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
   m_timed_idle_button->names = timed_idle_times;
@@ -1156,27 +1156,50 @@ void br24ControlsDialog::OnSize(wxSizeEvent& event) { event.Skip(); }
 void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   wxString o;
 
-  if (m_ri->state.mod || refreshAll) {
-    RadarState state = (RadarState)m_ri->state.GetButton();
-
-    // If state changed then refresh all controls
+  if (m_ri->state.mod) {
     refreshAll = true;
+  }
 
-    o = (state == RADAR_TRANSMIT) ? _("Standby") : _("Transmit");
-    m_radar_state->SetLabel(o);
+  RadarState state = (RadarState)m_ri->state.GetButton();
 
-    if (state == RADAR_TRANSMIT) {
-      if (m_top_sizer->IsShown(m_control_sizer)) {
-        m_control_sizer->Show(m_transmit_sizer);
-        m_control_sizer->Layout();
+  o = (state == RADAR_TRANSMIT) ? _("Standby") : _("Transmit");
+  if (m_pi->m_settings.timed_idle == 0)
+  {
+    m_timed_idle_button->SetLocalValue(0);
+  }
+  else
+  {
+    time_t now = time(0);
+    int left = m_pi->m_idle_standby - now;
+    if (left > 0) {
+      o = wxString::Format(_("Standby in %d:%02d"), left / 60, left % 60);
+    }
+    else {
+      left = m_pi->m_idle_transmit - now;
+      if (left >= 0) {
+        o = wxString::Format(_("Transmit in %d:%02d"), left / 60, left % 60);
       }
-    } else {
-      m_control_sizer->Hide(m_transmit_sizer);
+    }
+  }
+  m_radar_state->SetLabel(o);
+
+  if (state == RADAR_TRANSMIT) {
+    if (m_top_sizer->IsShown(m_control_sizer)) {
+      m_control_sizer->Show(m_transmit_sizer);
+      m_top_sizer->Show(m_timed_idle_button);
       m_control_sizer->Layout();
     }
-    m_top_sizer->Layout();
-    Layout();
+  } else {
+    m_control_sizer->Hide(m_transmit_sizer);
+    if (m_pi->m_settings.timed_idle) {
+      m_top_sizer->Show(m_timed_idle_button);
+    } else {
+      m_top_sizer->Hide(m_timed_idle_button);
+    }
+    m_control_sizer->Layout();
   }
+  m_top_sizer->Layout();
+  Layout();
 
   if (m_pi->m_settings.enable_dual_radar) {
     int show_other_radar = m_pi->m_settings.show_radar[1 - m_ri->radar];
@@ -1219,7 +1242,9 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   if (m_ri->overlay.mod || ((m_pi->m_settings.chart_overlay == m_ri->radar) != (m_ri->overlay.button != 0)) || refreshAll) {
-    o = (m_ri->overlay.GetButton() > 0) ? _("Overlay on") : _("Overlay off");
+    o = _("Overlay");
+    o << wxT("\n");
+    o << ((m_ri->overlay.GetButton() > 0) ? _("on") : _("off"));
     m_overlay_button->SetLabel(o);
   }
 
