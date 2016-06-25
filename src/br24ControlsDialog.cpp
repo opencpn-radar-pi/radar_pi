@@ -662,7 +662,7 @@ void br24ControlsDialog::CreateControls() {
       new wxStaticText(this, wxID_ANY, _("Zone 1: unknown\nZone 2: unknown\nTimeout\n"), wxDefaultPosition, wxDefaultSize, 0);
   m_bogey_sizer->Add(m_bogey_text, 0, wxALIGN_LEFT | wxALL, BORDER);
 
-  m_bogey_confirm = new wxButton(this, ID_CONFIRM_BOGEY, _("&Confirm"), wxDefaultPosition, wxDefaultSize, 0);
+  m_bogey_confirm = new wxButton(this, ID_CONFIRM_BOGEY, _("&Confirm"), wxDefaultPosition, g_smallButtonSize, 0);
   m_bogey_sizer->Add(m_bogey_confirm, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 
   m_top_sizer->Hide(m_bogey_sizer);
@@ -1456,6 +1456,8 @@ void br24ControlsDialog::ShowBogeys(wxString text) {
   if (m_top_sizer->IsShown(m_bogey_sizer)) {
     m_bogey_text->SetLabel(text);
     m_bogey_sizer->Layout();
+    Layout();
+    Fit();
   }
 }
 
@@ -1510,7 +1512,7 @@ void br24ControlsDialog::ShowGuardZone(int zone) {
 void br24ControlsDialog::SetGuardZoneVisibility() {
   GuardZoneType zoneType = (GuardZoneType)m_guard_zone_type->GetSelection();
 
-  m_guard_zone->type = zoneType;
+  m_guard_zone->SetType(zoneType);
 
   if (zoneType == GZ_OFF) {
     m_start_bearing->Disable();
@@ -1542,7 +1544,7 @@ void br24ControlsDialog::OnInner_Range_Value(wxCommandEvent& event) {
 
   int conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
 
-  m_guard_zone->inner_range = (int)(t * conversionFactor);
+  m_guard_zone->SetInnerRange((int)(t * conversionFactor));
 }
 
 void br24ControlsDialog::OnOuter_Range_Value(wxCommandEvent& event) {
@@ -1552,7 +1554,7 @@ void br24ControlsDialog::OnOuter_Range_Value(wxCommandEvent& event) {
 
   int conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
 
-  m_guard_zone->outer_range = (int)(t * conversionFactor);
+  m_guard_zone->SetOuterRange((int)(t * conversionFactor));
 }
 
 void br24ControlsDialog::OnStart_Bearing_Value(wxCommandEvent& event) {
@@ -1560,7 +1562,7 @@ void br24ControlsDialog::OnStart_Bearing_Value(wxCommandEvent& event) {
   double t;
 
   temp.ToDouble(&t);
-  m_guard_zone->start_bearing = SCALE_DEGREES_TO_RAW2048(t);
+  m_guard_zone->SetStartBearing(SCALE_DEGREES_TO_RAW2048(t));
 }
 
 void br24ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
@@ -1568,12 +1570,12 @@ void br24ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
   double t;
 
   temp.ToDouble(&t);
-  m_guard_zone->end_bearing = SCALE_DEGREES_TO_RAW2048(t);
+  m_guard_zone->SetEndBearing(SCALE_DEGREES_TO_RAW2048(t));
 }
 
 void br24ControlsDialog::OnFilterClick(wxCommandEvent& event) {
   int filt = m_filter->GetValue();
-  m_guard_zone->multi_sweep_filter = filt;
+  m_guard_zone->SetMultiSweepFilter(filt);
 }
 
 PLUGIN_END_NAMESPACE

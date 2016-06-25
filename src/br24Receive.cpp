@@ -233,7 +233,6 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt + m_ri->viewpoint_rotation);
     }
 
-    angle_raw += SCALE_DEGREES_TO_RAW(270);  // Compensate openGL rotation compared to North UP
     int bearing_raw = angle_raw + hdt_raw;
     // until here all is based on 4096 (SPOKES) scanlines
 

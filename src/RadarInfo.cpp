@@ -287,21 +287,15 @@ void RadarInfo::ResetSpokes() {
 
 /*
  * A spoke of data has been received by the receive thread and it calls this (in
- * the context of
- * the receive thread, so no UI actions can be performed here.)
+ * the context of the receive thread, so no UI actions can be performed here.)
  *
- * @param angle                 Bearing (relative to Boat)  at which the spoke
- * is seen.
- * @param bearing               Bearing (relative to North) at which the spoke
- * is seen.
- * @param data                  A line of len bytes, each byte represents
- * strength at that distance.
+ * @param angle                 Bearing (relative to Boat)  at which the spoke is seen.
+ * @param bearing               Bearing (relative to North) at which the spoke is seen.
+ * @param data                  A line of len bytes, each byte represents strength at that distance.
  * @param len                   Number of returns
  * @param range                 Range (in meters) of this data
  */
 void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters) {
-  bool calc_history = false;
-
   wxCriticalSectionLocker lock(m_exclusive);
 
   if (m_range_meters != range_meters) {
@@ -317,15 +311,12 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   int north_up = orientation.GetButton() == ORIENTATION_NORTH_UP;
   uint8_t weakest_normal_blob = m_pi->m_settings.threshold_blue;
 
-  if (!calc_history) {
-    for (size_t z = 0; z < GUARD_ZONES; z++) {
-      if (guard_zone[z]->type != GZ_OFF && guard_zone[z]->multi_sweep_filter) {
-        calc_history = true;
-      }
+  bool calc_history = false;
+  for (size_t z = 0; z < GUARD_ZONES; z++) {
+    if (guard_zone[z]->type != GZ_OFF && guard_zone[z]->multi_sweep_filter) {
+      calc_history = true;
     }
   }
-
-
   if (calc_history) {
     UINT8 *hist_data = history[angle];
     for (size_t radius = 0; radius < len; radius++) {
@@ -335,6 +326,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       }
     }
   }
+
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     if (guard_zone[z]->type != GZ_OFF) {
       guard_zone[z]->ProcessSpoke(angle, data, history[angle], len, range_meters);
@@ -344,7 +336,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   bool draw_trails_on_overlay = (m_pi->m_settings.display_option == 1) && (m_pi->m_settings.trails_on_overlay == 1);
   if (m_draw_overlay.draw && !draw_trails_on_overlay) {
-    // next loop to prevent artefacts where radar data is very weak and maps exactly on BLOB_HISTORY values
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
@@ -412,8 +403,8 @@ void RadarInfo::RenderGuardZone() {
         start_bearing = 0;
         end_bearing = 359;
       } else {
-        start_bearing = SCALE_RAW_TO_DEGREES2048(guard_zone[z]->start_bearing) - 90;
-        end_bearing = SCALE_RAW_TO_DEGREES2048(guard_zone[z]->end_bearing) - 90;
+        start_bearing = SCALE_RAW_TO_DEGREES2048(guard_zone[z]->start_bearing);
+        end_bearing = SCALE_RAW_TO_DEGREES2048(guard_zone[z]->end_bearing);
       }
       switch (m_pi->m_settings.guard_zone_render_style) {
         case 1:
@@ -586,14 +577,21 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+  rotate -= 90.0;  // Difference between OpenGL and compass + radar
+  double guard_rotate = rotate;
+  if (overlay || orientation.value)
+  {
+    guard_rotate += m_pi->m_hdt;
+  }
+
   if (overlay) {
     if (m_pi->m_settings.guard_zone_on_overlay) {
       glPushMatrix();
       glTranslated(center.x, center.y, 0);
-      glRotated(rotate + m_pi->m_hdt, 0.0, 0.0, 1.0);
+      glRotated(guard_rotate, 0.0, 0.0, 1.0);
       glScaled(scale, scale, 1.);
 
-      LOG_DIALOG(wxT("BR24radar_pi: %s render guard zone on overlay"), name.c_str());
+      // LOG_DIALOG(wxT("BR24radar_pi: %s render guard zone on overlay"), name.c_str());
 
       RenderGuardZone();
       glPopMatrix();
@@ -615,9 +613,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
     glPushMatrix();
     scale = 1.0 / range.value;
     glScaled(scale, scale, 1.);
-    if (orientation.value) {
-      glRotated(m_pi->m_hdt, 0.0, 0.0, 1.0);
-    }
+    glRotated(guard_rotate, 0.0, 0.0, 1.0);
     RenderGuardZone();
     glPopMatrix();
 
@@ -625,6 +621,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
     double overscan = (double)m_range_meters / (double)range.value;
     scale = overscan / RETURNS_PER_LINE;
     glScaled(scale, scale, 1.);
+    glRotated(rotate, 0.0, 0.0, 1.0);
     LOG_DIALOG(wxT("BR24radar_pi: %s render overscan=%g range=%d"), name.c_str(), overscan, range.value);
     RenderRadarImage(&m_draw_panel);
     if (m_refreshes_queued > 0) {

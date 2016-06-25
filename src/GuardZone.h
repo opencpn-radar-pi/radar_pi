@@ -45,21 +45,20 @@ class GuardZone {
   int outer_range;  // end   in meters
   int multi_sweep_filter;
 
+  void ResetBogeys() { m_bogey_count = 0; m_running_count = 0; };
+  void SetType(GuardZoneType type) { this->type = type; ResetBogeys();};
+  void SetStartBearing(SpokeBearing start_bearing) { this->start_bearing = start_bearing; ResetBogeys();};
+  void SetEndBearing(SpokeBearing end_bearing) { this->end_bearing = end_bearing; ResetBogeys();};
+  void SetInnerRange(int inner_range) { this->inner_range = inner_range; ResetBogeys(); };
+  void SetOuterRange(int outer_range) { this->outer_range = outer_range; ResetBogeys(); };
+  void SetMultiSweepFilter(int filter) { this->multi_sweep_filter = filter; ResetBogeys(); };
+
   /*
    * Check if data is in this GuardZone, if so update bogeyCount
    */
   void ProcessSpoke(SpokeBearing angle, UINT8 *data, UINT8 *hist, size_t len, int range);
 
-  /*
-   * Return total bogeyCount over all spokes
-   */
-  int GetBogeyCount(SpokeBearing current_hdt);
-  int m_bogey_count;  // updated on every call of GetBogeyCount.
-
-  /*
-   * Reset the bogey count for all spokes
-   */
-  void ResetBogeys();
+  int GetBogeyCount() { return m_bogey_count; };
 
   GuardZone(br24radar_pi *pi) {
     m_pi = pi;
@@ -76,7 +75,11 @@ class GuardZone {
 
  private:
   br24radar_pi *m_pi;
-  int bogeyCount[LINES_PER_ROTATION];
+  SpokeBearing m_last_angle;
+  int m_bogey_count;    // complete cycle
+  int m_running_count;  // current swipe
+
+  void UpdateSettings();
 };
 
 PLUGIN_END_NAMESPACE

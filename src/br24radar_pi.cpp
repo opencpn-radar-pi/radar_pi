@@ -513,12 +513,12 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
   }
 
   for (int z = 0; z < GUARD_ZONES; z++) {
-    int bogeys = ri->guard_zone[z]->m_bogey_count;
+    int bogeys = ri->guard_zone[z]->GetBogeyCount();
     if (bogeys >= 0) {
       if (text.length() > 0) {
         text << wxT("\n");
       }
-      text << _("Zone") << wxT(" ") << z + 1 << wxT(": ") << ri->guard_zone[z]->m_bogey_count;
+      text << _("Zone") << wxT(" ") << z + 1 << wxT(": ") << bogeys;
     }
   }
   if (withTimeout) {
@@ -540,7 +540,6 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
  *
  */
 void br24radar_pi::CheckGuardZoneBogeys(void) {
-  SpokeBearing current_hdt = SCALE_DEGREES_TO_RAW2048(m_hdt);
   bool bogeys_found = false;
   time_t now = time(0);
 
@@ -549,7 +548,7 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
       bool bogeys_found_this_radar = false;
 
       for (size_t z = 0; z < GUARD_ZONES; z++) {
-        int bogeys = m_radar[r]->guard_zone[z]->GetBogeyCount(current_hdt);
+        int bogeys = m_radar[r]->guard_zone[z]->GetBogeyCount();
         if (bogeys > m_settings.guard_zone_threshold) {
           bogeys_found = true;
           bogeys_found_this_radar = true;
@@ -914,9 +913,9 @@ bool br24radar_pi::LoadConfig(void) {
         pConf->Read(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), &m_radar[r]->guard_zone[i]->end_bearing, 0.0);
         pConf->Read(wxString::Format(wxT("Radar%dZone%dOuterRange"), r, i), &m_radar[r]->guard_zone[i]->outer_range, 0);
         pConf->Read(wxString::Format(wxT("Radar%dZone%dInnerRange"), r, i), &m_radar[r]->guard_zone[i]->inner_range, 0);
-        pConf->Read(wxString::Format(wxT("Radar%dZone%dType"), r, i), &v, 0);
-        m_radar[r]->guard_zone[i]->type = (GuardZoneType)v;
         pConf->Read(wxString::Format(wxT("Radar%dZone%dFilter"), r, i), &m_radar[r]->guard_zone[i]->multi_sweep_filter, 0);
+        pConf->Read(wxString::Format(wxT("Radar%dZone%dType"), r, i), &v, 0);
+        m_radar[r]->guard_zone[i]->SetType((GuardZoneType)v);
       }
     }
 
