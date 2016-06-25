@@ -200,7 +200,7 @@ int br24radar_pi::Init(void) {
   //    And load the configuration items
   if (LoadConfig()) {
     LOG_INFO(wxT("BR24radar_pi: Configuration file values initialised"));
-    LOG_INFO(wxT("BR24radar_pi: Log verbosity = %d (to modify, set VerboseLog to sum of:"), m_settings.verbose);
+    LOG_INFO(wxT("BR24radar_pi: Log verbosity = %d. To modify, set VerboseLog to sum of:"), m_settings.verbose);
     LOG_INFO(wxT("BR24radar_pi: VERBOSE  = %d"), LOGLEVEL_VERBOSE);
     LOG_INFO(wxT("BR24radar_pi: DIALOG   = %d"), LOGLEVEL_DIALOG);
     LOG_INFO(wxT("BR24radar_pi: TRANSMIT = %d"), LOGLEVEL_TRANSMIT);
@@ -740,8 +740,6 @@ void br24radar_pi::Notify(void) {
   UpdateState();
 }
 
-// UpdateState
-// run by RenderGLOverlay  updates the color of the toolbar button
 void br24radar_pi::UpdateState(void) {
   RadarState state = RADAR_OFF;
 
@@ -863,6 +861,10 @@ bool br24radar_pi::LoadConfig(void) {
   int intValue;
 
   if (pConf) {
+    pConf->SetPath(wxT("Settings"));
+    pConf->Read(wxT("OpenGL"), &intValue, 0);
+    m_opengl_mode = (bool) intValue;
+
     pConf->SetPath(wxT("/Plugins/BR24Radar"));
     pConf->Read(wxT("DisplayOption"), &m_settings.display_option, 0);
     pConf->Read(wxT("RangeUnits"), &m_settings.range_units, 0);  // 0 = "Nautical miles"), 1 = "Kilometers"

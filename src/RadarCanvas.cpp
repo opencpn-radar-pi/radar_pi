@@ -57,6 +57,7 @@ RadarCanvas::RadarCanvas(br24radar_pi *pi, RadarInfo *ri, wxWindow *parent, wxSi
   m_last_mousewheel_zoom_out = 0;
 
   LOG_DIALOG(wxT("BR24radar_pi: %s create OpenGL canvas"), m_ri->name.c_str());
+  Refresh(false);
 }
 
 RadarCanvas::~RadarCanvas() {

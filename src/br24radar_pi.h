@@ -184,7 +184,6 @@ enum BlobColor {
   BLOB_RED
 };
 
-extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, RadarType radar_type);
 extern const char *convertRadarToString(int range_meters, int units, int index);
 extern double local_distance(double lat1, double lon1, double lat2, double lon2);
 extern double local_bearing(double lat1, double lon1, double lat2, double lon2);

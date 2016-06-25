@@ -672,7 +672,7 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
         break;
       }
 
-      case (99 << 8) + 0x02: {  // length 99, 08 C4
+      case (99 << 8) + 0x02: {  // length 99, 02 C4
         radar_state02 *s = (radar_state02 *)report;
         if (s->field8 == 1) {     // 1 for auto
           m_ri->gain.Update(-1);  // auto gain

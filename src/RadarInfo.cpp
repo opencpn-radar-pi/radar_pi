@@ -92,7 +92,7 @@ static const int NAUTIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_nautic);
 
 static const int g_range_maxValue[2] = {NAUTIC_RANGE_COUNT - 1, METRIC_RANGE_COUNT - 1};
 
-extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, RadarType radarType) {
+static size_t convertMetersToRadarAllowedValue(int *range_meters, int units, RadarType radarType) {
   const RadarRange *ranges;
   int myrange = *range_meters;
   size_t n;
@@ -113,6 +113,45 @@ extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, Rad
   return n;
 }
 
+static int convertSpokeMetersToRangeMeters(int value) {
+  int g;
+
+  for (g = 0; g < ARRAY_SIZE(g_ranges_nautic); g++) {
+    if (g_ranges_nautic[g].actual_meters == value) {
+      return g_ranges_nautic[g].meters;
+    }
+  }
+  for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++) {
+    if (g_ranges_metric[g].actual_meters == value) {
+      return g_ranges_metric[g].meters;
+    }
+  }
+  return 0;
+}
+
+void radar_range_control_item::Update(int v) {
+  radar_control_item::Update(v);
+
+  int g;
+
+  range = 0;
+  for (g = 0; g < ARRAY_SIZE(g_ranges_nautic); g++) {
+    if (g_ranges_nautic[g].meters == value) {
+      range = &g_ranges_nautic[g];
+      break;
+    }
+  }
+  if (!range) {
+    for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++) {
+      if (g_ranges_metric[g].meters == value) {
+        range = &g_ranges_metric[g];
+        break;
+      }
+    }
+  }
+}
+
+
 RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_pi = pi;
   this->radar = radar;
@@ -120,7 +159,6 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   radar_type = RT_UNKNOWN;
   auto_range_mode = true;
   m_range_meters = 0;
-  m_current_range = 0;
   m_auto_range_meters = 0;
   m_previous_auto_range_meters = 1;
   m_stayalive_timeout = 0;
@@ -303,6 +341,9 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     LOG_VERBOSE(wxT("BR24radar_pi: %s detected spoke range change from %d to %d meters"), name.c_str(), m_range_meters,
                 range_meters);
     m_range_meters = range_meters;
+    if (!range.value) {
+      range.Update(convertSpokeMetersToRangeMeters(range_meters));
+    }
 
   } else if (orientation.mod) {
     ResetSpokes();
@@ -433,11 +474,11 @@ void RadarInfo::AdjustRange(int adjustment) {
   // Note that we don't actually use m_settings.units here, so that if we are metric and
   // the plotter in NM, and it chose the last range, we start using nautic miles as well.
 
-  if (m_current_range) {
-    if (m_current_range > g_ranges_nautic && m_current_range < g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic)) {
+  if (range.range) {
+    if (range.range > g_ranges_nautic && range.range < g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic)) {
       min = g_ranges_nautic;
       max = g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic) - 1;
-    } else if (m_current_range > g_ranges_metric && m_current_range < g_ranges_metric + ARRAY_SIZE(g_ranges_metric)) {
+    } else if (range.range > g_ranges_metric && range.range < g_ranges_metric + ARRAY_SIZE(g_ranges_metric)) {
       min = g_ranges_metric;
       max = g_ranges_metric + ARRAY_SIZE(g_ranges_metric) - 1;
     }
@@ -446,14 +487,14 @@ void RadarInfo::AdjustRange(int adjustment) {
       max--;  // only 4G has longest ranges
     }
 
-    if (adjustment < 0 && m_current_range > min) {
-      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), m_current_range[0].meters,
-                  m_current_range[0].actual_meters, m_current_range[-1].meters, m_current_range[-1].actual_meters);
-      transmit->SetRange(m_current_range[-1].meters);
-    } else if (adjustment > 0 && m_current_range < max) {
-      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), m_current_range[0].meters,
-                  m_current_range[0].actual_meters, m_current_range[+1].meters, m_current_range[+1].actual_meters);
-      transmit->SetRange(m_current_range[+1].meters);
+    if (adjustment < 0 && range.range > min) {
+      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), range.range[0].meters,
+                  range.range[0].actual_meters, range.range[-1].meters, range.range[-1].actual_meters);
+      transmit->SetRange(range.range[-1].meters);
+    } else if (adjustment > 0 && range.range < max) {
+      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), range.range[0].meters,
+                  range.range[0].actual_meters, range.range[+1].meters, range.range[+1].actual_meters);
+      transmit->SetRange(range.range[+1].meters);
     }
   }
 }
@@ -609,7 +650,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
     if (m_overlay_refreshes_queued > 0) {
       m_overlay_refreshes_queued--;
     }
-  } else {
+  } else if (m_range_meters && range.value) {
     glPushMatrix();
     scale = 1.0 / range.value;
     glScaled(scale, scale, 1.);
@@ -756,30 +797,12 @@ wxString RadarInfo::GetCanvasTextCenter() {
 }
 
 wxString &RadarInfo::GetRangeText() {
+  const RadarRange *r = range.range;
   int meters = range.value;
 
-  if (meters == 0) {
-    m_current_range = 0;
+  if (!r) {
     m_range_text = wxT("");
     return m_range_text;
-  }
-
-  const RadarRange *r = 0;
-  int g;
-
-  for (g = 0; g < ARRAY_SIZE(g_ranges_nautic); g++) {
-    if (g_ranges_nautic[g].meters == meters) {
-      r = &g_ranges_nautic[g];
-      break;
-    }
-  }
-  if (!r) {
-    for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++) {
-      if (g_ranges_metric[g].meters == meters) {
-        r = &g_ranges_metric[g];
-        break;
-      }
-    }
   }
 
   bool auto_range = auto_range_mode && (overlay.button > 0);
@@ -794,7 +817,6 @@ wxString &RadarInfo::GetRangeText() {
   } else {
     m_range_text << wxString::Format(wxT("/%d m/"), meters);
   }
-  m_current_range = r;
 
   if (auto_range) {
     m_range_text << wxT(")");
@@ -805,8 +827,8 @@ wxString &RadarInfo::GetRangeText() {
 }
 
 const char *RadarInfo::GetDisplayRangeStr(size_t idx) {
-  if (m_current_range) {
-    return (&m_current_range->name)[(idx + 1) % 4];
+  if (range.range) {
+    return (&range.range->name)[(idx + 1) % 4];
   }
 
   return 0;

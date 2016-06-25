@@ -40,6 +40,15 @@ class RadarDraw;
 class RadarCanvas;
 class RadarPanel;
 
+struct RadarRange {
+  int meters;
+  int actual_meters;
+  const char *name;
+  const char *range1;
+  const char *range2;
+  const char *range3;
+};
+
 class radar_control_item {
  public:
   int value;
@@ -69,23 +78,28 @@ class radar_control_item {
     mod = false;
   }
 
- private:
+protected:
   wxCriticalSection m_exclusive;
+};
+
+class radar_range_control_item : public radar_control_item {
+public:
+  const RadarRange * range;
+
+  void Update(int v);
+
+  radar_range_control_item() {
+    value = 0;
+    button = 0;
+    mod = false;
+    range = 0;
+  }
 };
 
 struct DrawInfo {
   RadarDraw *draw;
   int drawing_method;
   bool color_option;
-};
-
-struct RadarRange {
-  int meters;
-  int actual_meters;
-  const char *name;
-  const char *range1;
-  const char *range2;
-  const char *range3;
 };
 
 typedef UINT8 TrailRevolutionsAge;
@@ -106,7 +120,7 @@ class RadarInfo : public wxEvtHandler {
 #define ORIENTATION_HEAD_UP (0)
 #define ORIENTATION_NORTH_UP (1)
   radar_control_item overlay;
-  radar_control_item range;  // value in meters
+  radar_range_control_item range;  // value in meters
   radar_control_item gain;
   radar_control_item interference_rejection;
   radar_control_item target_separation;
@@ -207,7 +221,6 @@ class RadarInfo : public wxEvtHandler {
   wxString FormatDistance(double distance);
 
   int m_range_meters;                 // what radar told us is the range in the last received spoke
-  const RadarRange *m_current_range;  // Current range, if known range
 
   int m_previous_auto_range_meters;
   int m_auto_range_meters;
