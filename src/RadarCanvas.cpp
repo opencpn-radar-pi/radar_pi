@@ -89,16 +89,24 @@ void RadarCanvas::RenderTexts(int w, int h) {
 
   wxString s;
 
+#define MENU_BORDER 8
+#define MENU_EXTRA_WIDTH 32
   s = "Menu";
-  glColor3ub(100, 255, 255);
-  m_FontMenu.GetTextExtent(s, &m_menu_size.x, &m_menu_size.y);
-  m_menu_size.x += 8;
-  m_menu_size.y += 8;
-  m_FontMenu.RenderString(s, w - m_menu_size.x, 8);
-  m_menu_size.x += 8;
-  m_menu_size.y += 8;
+  m_FontMenu.GetTextExtent(s, &x, &y);
 
-  glColor3ub(200, 255, 200);
+  // Calculate the size of the rounded rect, this is also where you can 'click'...
+  m_menu_size.x = x + 2 * (MENU_BORDER + MENU_EXTRA_WIDTH);
+  m_menu_size.y = y + 2 * (MENU_BORDER);
+
+  glColor4ub(40, 40, 100, 128);
+
+  DrawRoundRect(w - m_menu_size.x, 0, m_menu_size.x, m_menu_size.y, 4);
+
+  glColor4ub(100, 255, 255, 255);
+  // The Menu text is slightly inside the rect
+  m_FontMenu.RenderString(s, w - m_menu_size.x + MENU_BORDER + MENU_EXTRA_WIDTH, MENU_BORDER);
+
+  glColor4ub(200, 255, 200, 255);
 
   s = m_ri->GetCanvasTextTopLeft();
   m_FontBig.RenderString(s, 0, 0);
@@ -269,6 +277,7 @@ void RadarCanvas::RenderCursor(int w, int h) {
     LOG_DIALOG(wxT("BR24radar_pi: generated cursor texture # %u"), m_cursor_texture);
   }
 
+  glColor3f(1.0f, 1.0f, 1.0f);
   glBindTexture(GL_TEXTURE_2D, m_cursor_texture);
   glBegin(GL_QUADS);
   glTexCoord2i(0, 0);
@@ -387,11 +396,13 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   RenderTexts(w, h);
   RenderCursor(w, h);
 
+#ifdef NEVER
   glDisable(GL_TEXTURE_2D);
 
   glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
   glLoadIdentity();             // Reset projection matrix stack
   glMatrixMode(GL_MODELVIEW);   // Reset matrick stack target back to GL_MODELVIEW
+#endif
 
   glPopAttrib();
   glPopMatrix();
@@ -416,8 +427,7 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
 
   if (x >= w - m_menu_size.x && y < m_menu_size.y) {
     m_pi->ShowRadarControl(m_ri->radar, true);
-  }
-  else {
+  } else {
     int center_x = w / 2;
     int center_y = h / 2;
 

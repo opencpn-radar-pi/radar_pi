@@ -1410,7 +1410,7 @@ void br24ControlsDialog::ShowDialog() {
   if (!IsShown()) {
     // If the corresponding radar panel is now in a different position from what we remembered
     // then reset the dialog to the left or right of the radar panel.
-    UnHideTemporarily(); // Do this first so that the size of the control dialog is correct
+    UnHideTemporarily();  // Do this first so that the size of the control dialog is correct
 
     wxPoint panelPos = m_ri->radar_panel->GetPos();
     if (panelPos != m_panel_position) {

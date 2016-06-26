@@ -141,6 +141,8 @@ void RadarDrawShader::DrawRadarImage() {
     return;
   }
 
+  glPushAttrib(GL_TEXTURE_BIT);
+
   UseProgram(m_program);
 
   glBindTexture(GL_TEXTURE_2D, m_texture);
@@ -202,6 +204,7 @@ void RadarDrawShader::DrawRadarImage() {
   glEnd();
 
   UseProgram(0);
+  glPopAttrib();
 }
 
 void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8 *data, size_t len) {

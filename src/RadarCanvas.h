@@ -69,7 +69,7 @@ class RadarCanvas : public wxGLCanvas {
   TextureFont m_FontNormal;
   TextureFont m_FontBig;
   TextureFont m_FontMenu;
-  wxSize      m_menu_size;
+  wxSize m_menu_size;
 
   unsigned int m_cursor_texture;
 
