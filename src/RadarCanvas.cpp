@@ -89,6 +89,17 @@ void RadarCanvas::RenderTexts(int w, int h) {
 
   wxString s;
 
+  s = "Menu";
+  glColor3ub(100, 255, 255);
+  m_FontMenu.GetTextExtent(s, &m_menu_size.x, &m_menu_size.y);
+  m_menu_size.x += 8;
+  m_menu_size.y += 8;
+  m_FontMenu.RenderString(s, w - m_menu_size.x, 8);
+  m_menu_size.x += 8;
+  m_menu_size.y += 8;
+
+  glColor3ub(200, 255, 200);
+
   s = m_ri->GetCanvasTextTopLeft();
   m_FontBig.RenderString(s, 0, 0);
 
@@ -331,7 +342,10 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   m_FontNormal.Build(font);
   wxFont bigFont = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
   bigFont.SetPointSize(bigFont.GetPointSize() + 2);
+  bigFont.SetStyle(wxFONTSTYLE_MAX);
   m_FontBig.Build(bigFont);
+  bigFont.SetPointSize(bigFont.GetPointSize() + 2);
+  m_FontMenu.Build(bigFont);
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                // Black Background
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // Clear the canvas
@@ -368,7 +382,6 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glOrtho(0, w, h, 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
 
-  glColor3ub(200, 255, 200);
   glEnable(GL_TEXTURE_2D);
 
   RenderTexts(w, h);
@@ -401,26 +414,28 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
 
   LOG_DIALOG(wxT("BR24radar_pi: %s Mouse clicked at %d, %d"), m_ri->name.c_str(), x, y);
 
-  int center_x = w / 2;
-  int center_y = h / 2;
+  if (x >= w - m_menu_size.x && y < m_menu_size.y) {
+    m_pi->ShowRadarControl(m_ri->radar, true);
+  }
+  else {
+    int center_x = w / 2;
+    int center_y = h / 2;
 
-  double delta_x = x - center_x;
-  double delta_y = y - center_y;
+    double delta_x = x - center_x;
+    double delta_y = y - center_y;
 
-  double distance = sqrt(delta_x * delta_x + delta_y * delta_y);
+    double distance = sqrt(delta_x * delta_x + delta_y * delta_y);
 
-  double heading = GetHeading();
-  double angle = fmod(rad2deg(atan2(delta_y, delta_x)) - heading + 720. - 90., 360.0);
+    double heading = GetHeading();
+    double angle = fmod(rad2deg(atan2(delta_y, delta_x)) - heading + 720. - 90., 360.0);
 
-  int display_range = m_ri->GetDisplayRange();
-  double full_range = wxMax(w, h) / 2.0;
+    int display_range = m_ri->GetDisplayRange();
+    double full_range = wxMax(w, h) / 2.0;
 
-  double scale = distance / (1852.0 * full_range / display_range);
+    double scale = distance / (1852.0 * full_range / display_range);
 
-  m_ri->SetMouseVrmEbl(scale, angle);
-
-  m_pi->ShowRadarControl(m_ri->radar, true);
-
+    m_ri->SetMouseVrmEbl(scale, angle);
+  }
   event.Skip();
 }
 

@@ -1410,26 +1410,23 @@ void br24ControlsDialog::ShowDialog() {
   if (!IsShown()) {
     // If the corresponding radar panel is now in a different position from what we remembered
     // then reset the dialog to the left or right of the radar panel.
+    UnHideTemporarily(); // Do this first so that the size of the control dialog is correct
 
     wxPoint panelPos = m_ri->radar_panel->GetPos();
     if (panelPos != m_panel_position) {
+      wxSize panelSize = m_ri->radar_panel->GetSize();
       wxSize mySize = this->GetSize();
 
-      bool showOnLeft = (panelPos.x > mySize.x);
-
-      wxPoint newPos = panelPos;
-
-      if (showOnLeft) {
-        newPos.x = panelPos.x - mySize.x;
-      } else {
-        newPos.x = panelPos.x + m_ri->radar_panel->GetSize().x;
-      }
+      wxPoint newPos;
+      newPos.x = panelPos.x + panelSize.x - mySize.x;
+      newPos.y = panelPos.y;
       SetPosition(newPos);
 
       m_panel_position = panelPos;
     }
+  } else {
+    UnHideTemporarily();
   }
-  UnHideTemporarily();
 }
 
 void br24ControlsDialog::ShowBogeys(wxString text) {

@@ -917,43 +917,37 @@ bool br24radar_pi::LoadConfig(void) {
       }
     }
 
+    pConf->Read(wxT("ChartOverlay"), &m_settings.chart_overlay, 0);
     pConf->Read(wxT("DisplayOption"), &m_settings.display_option, 1);
-    m_settings.display_option = wxMax(wxMin(m_settings.display_option, 1), 0);
+    pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
+    pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
+    pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, 0);
+    pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, true);
+    pConf->Read(wxT("GuardZonesRenderStyle"), &m_settings.guard_zone_render_style, 0);
+    pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
+    pConf->Read(wxT("IgnoreRadarHeading"), &m_settings.ignore_radar_heading, 0);
+    pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 0);
+    pConf->Read(wxT("PassHeadingToOCPN"), &m_settings.pass_heading_to_opencpn, false);
+    pConf->Read(wxT("RadarAlertAudioFile"), &m_settings.alert_audio_file);
+    pConf->Read(wxT("RadarInterface"), &m_settings.mcast_address);
     pConf->Read(wxT("RangeUnits"), &m_settings.range_units, 0);  // 0 = "Nautical miles"), 1 = "Kilometers"
+    pConf->Read(wxT("Refreshrate"), &m_settings.refreshrate, 1);
+    pConf->Read(wxT("ReverseZoom"), &m_settings.reverse_zoom, false);
+    pConf->Read(wxT("ScanMaxAge"), &m_settings.max_age, 6);
+    pConf->Read(wxT("Show"), &m_settings.show, true);
+    pConf->Read(wxT("SkewFactor"), &m_settings.skew_factor, 1);
+    pConf->Read(wxT("ThresholdBlue"), &m_settings.threshold_blue, 50);
+    pConf->Read(wxT("ThresholdGreen"), &m_settings.threshold_green, 100);
+    pConf->Read(wxT("ThresholdMultiSweep"), &m_settings.threshold_multi_sweep, 20);
+    pConf->Read(wxT("ThresholdRed"), &m_settings.threshold_red, 200);
+    pConf->Read(wxT("TrailsOnOverlay"), &m_settings.trails_on_overlay, false);
+    pConf->Read(wxT("Transparency"), &m_settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
+
+    m_settings.display_option = wxMax(wxMin(m_settings.display_option, 1), 0);
+    m_settings.max_age = wxMax(wxMin(m_settings.max_age, MAX_AGE), MIN_AGE);
     m_settings.range_units = wxMax(wxMin(m_settings.range_units, 1), 0);
     m_settings.range_unit_meters = (m_settings.range_units == 1) ? 1000 : 1852;
-    pConf->Read(wxT("ChartOverlay"), &m_settings.chart_overlay, 0);
-    pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
-    pConf->Read(wxT("Transparency"), &m_settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
-    pConf->Read(wxT("ScanMaxAge"), &m_settings.max_age, 6);
-    m_settings.max_age = wxMax(wxMin(m_settings.max_age, MAX_AGE), MIN_AGE);
-
-    pConf->Read(wxT("TrailsOnOverlay"), &m_settings.trails_on_overlay, false);
-    pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, true);
-    pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
-    pConf->Read(wxT("GuardZonesRenderStyle"), &m_settings.guard_zone_render_style, 0);
-    pConf->Read(wxT("Refreshrate"), &m_settings.refreshrate, 1);
     m_settings.refreshrate = wxMax(wxMin(m_settings.refreshrate, 5), 1);
-
-    pConf->Read(wxT("PassHeadingToOCPN"), &m_settings.pass_heading_to_opencpn, false);
-    pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
-    pConf->Read(wxT("IgnoreRadarHeading"), &m_settings.ignore_radar_heading, 0);
-
-    pConf->Read(wxT("RadarAlertAudioFile"), &m_settings.alert_audio_file);
-    pConf->Read(wxT("Show"), &m_settings.show, true);
-    pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 0);
-
-    pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, 0);
-    pConf->Read(wxT("RadarInterface"), &m_settings.mcast_address);
-
-    pConf->Read(wxT("SkewFactor"), &m_settings.skew_factor, 1);
-
-    pConf->Read(wxT("ThresholdRed"), &m_settings.threshold_red, 200);
-    pConf->Read(wxT("ThresholdGreen"), &m_settings.threshold_green, 100);
-    pConf->Read(wxT("ThresholdBlue"), &m_settings.threshold_blue, 50);
-    pConf->Read(wxT("ThresholdMultiSweep"), &m_settings.threshold_multi_sweep, 20);
-
-    pConf->Read(wxT("ReverseZoom"), &m_settings.reverse_zoom, false);
 
     SaveConfig();
     return true;
@@ -967,26 +961,34 @@ bool br24radar_pi::SaveConfig(void) {
   if (pConf) {
     pConf->DeleteGroup(wxT("/Plugins/BR24Radar"));
     pConf->SetPath(wxT("/Plugins/BR24Radar"));
-    pConf->Write(wxT("DisplayOption"), m_settings.display_option);
-    pConf->Write(wxT("RangeUnits"), m_settings.range_units);
+
     pConf->Write(wxT("ChartOverlay"), m_settings.chart_overlay);
-    pConf->Write(wxT("VerboseLog"), m_settings.verbose);
-    pConf->Write(wxT("Transparency"), m_settings.overlay_transparency);
-    pConf->Write(wxT("GuardZonesThreshold"), m_settings.guard_zone_threshold);
-    pConf->Write(wxT("GuardZonesRenderStyle"), m_settings.guard_zone_render_style);
-    pConf->Write(wxT("ScanMaxAge"), m_settings.max_age);
-    pConf->Write(wxT("RunTimeOnIdle"), m_settings.idle_run_time);
-    pConf->Write(wxT("GuardZoneOnOverlay"), m_settings.guard_zone_on_overlay);
-    pConf->Write(wxT("TrailsOnOverlay"), m_settings.trails_on_overlay);
-    pConf->Write(wxT("Refreshrate"), m_settings.refreshrate);
-    pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
+    pConf->Write(wxT("DisplayOption"), m_settings.display_option);
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
-    pConf->Write(wxT("EmulatorOn"), (int)m_settings.emulator_on);
-    pConf->Write(wxT("Show"), m_settings.show);
-    pConf->Write(wxT("MenuAutoHide"), m_settings.menu_auto_hide);
-    pConf->Write(wxT("RadarAlertAudioFile"), m_settings.alert_audio_file);
+    pConf->Write(wxT("EmulatorOn"), m_settings.emulator_on);
     pConf->Write(wxT("EnableDualRadar"), m_settings.enable_dual_radar);
+    pConf->Write(wxT("GuardZoneOnOverlay"), m_settings.guard_zone_on_overlay);
+    pConf->Write(wxT("GuardZonesRenderStyle"), m_settings.guard_zone_render_style);
+    pConf->Write(wxT("GuardZonesThreshold"), m_settings.guard_zone_threshold);
+    pConf->Write(wxT("IgnoreRadarHeading"), m_settings.ignore_radar_heading);
+    pConf->Write(wxT("MenuAutoHide"), m_settings.menu_auto_hide);
+    pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
+    pConf->Write(wxT("RadarAlertAudioFile"), m_settings.alert_audio_file);
     pConf->Write(wxT("RadarInterface"), m_settings.mcast_address);
+    pConf->Write(wxT("RangeUnits"), m_settings.range_units);
+    pConf->Write(wxT("Refreshrate"), m_settings.refreshrate);
+    pConf->Write(wxT("ReverseZoom"), m_settings.reverse_zoom);
+    pConf->Write(wxT("RunTimeOnIdle"), m_settings.idle_run_time);
+    pConf->Write(wxT("ScanMaxAge"), m_settings.max_age);
+    pConf->Write(wxT("Show"), m_settings.show);
+    pConf->Write(wxT("SkewFactor"), m_settings.skew_factor);
+    pConf->Write(wxT("ThresholdBlue"), m_settings.threshold_blue);
+    pConf->Write(wxT("ThresholdGreen"), m_settings.threshold_green);
+    pConf->Write(wxT("ThresholdMultiSweep"), m_settings.threshold_multi_sweep);
+    pConf->Write(wxT("ThresholdRed"), m_settings.threshold_red);
+    pConf->Write(wxT("TrailsOnOverlay"), m_settings.trails_on_overlay);
+    pConf->Write(wxT("Transparency"), m_settings.overlay_transparency);
+    pConf->Write(wxT("VerboseLog"), m_settings.verbose);
 
     for (int r = 0; r < RADARS; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->orientation.value);
@@ -1004,15 +1006,6 @@ bool br24radar_pi::SaveConfig(void) {
         pConf->Write(wxString::Format(wxT("Radar%dZone%dFilter"), r, i), m_radar[r]->guard_zone[i]->multi_sweep_filter);
       }
     }
-
-    pConf->Write(wxT("SkewFactor"), m_settings.skew_factor);
-
-    pConf->Write(wxT("ThresholdRed"), m_settings.threshold_red);
-    pConf->Write(wxT("ThresholdGreen"), m_settings.threshold_green);
-    pConf->Write(wxT("ThresholdBlue"), m_settings.threshold_blue);
-    pConf->Write(wxT("ThresholdMultiSweep"), m_settings.threshold_multi_sweep);
-
-    pConf->Write(wxT("ReverseZoom"), m_settings.reverse_zoom);
 
     pConf->Flush();
     LOG_VERBOSE(wxT("BR24radar_pi: Saved settings"));
