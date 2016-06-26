@@ -62,6 +62,8 @@ class br24radar_pi;
 #define GUARD_ZONES (2)             // Could be increased if wanted
 #define BEARING_LINES (2)           // And these as well
 
+#define OPENGL_ROTATION (-90.0)  // Difference between 'up' and OpenGL 'up'...
+
 typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a bearing (? = North,
                            // +ve = clockwise)
 
@@ -222,8 +224,8 @@ struct PersistentSettings {
   int display_option;           // Monocolor-red or Multi-color
   int guard_zone_threshold;     // How many blobs must be sent by radar before we fire alarm
   int guard_zone_render_style;  // 0 = Shading, 1 = Outline, 2 = Shading + Outline
-  bool guard_zone_on_overlay;    // 0 = false, 1 = true
-  bool trails_on_overlay;        // 0 = false, 1 = true
+  bool guard_zone_on_overlay;   // 0 = false, 1 = true
+  bool trails_on_overlay;       // 0 = false, 1 = true
   double skew_factor;           // Set to -1 or other value to correct skewing
   int range_units;              // 0 = Nautical miles, 1 = Kilometers
 #define RANGE_NAUTICAL (0)
@@ -233,9 +235,9 @@ struct PersistentSettings {
   int timed_idle;                // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
   int idle_run_time;             // how long, in seconds, should a idle run be? Value < 30 is ignored set to 30.
   int refreshrate;               // How quickly to refresh the display
-  bool show;                      // whether to show any radar (overlay or window)
-  bool show_radar[RADARS];        // whether to show radar window
-  bool transmit_radar[RADARS];    // whether radar should be transmitting (persistent)
+  bool show;                     // whether to show any radar (overlay or window)
+  bool show_radar[RADARS];       // whether to show radar window
+  bool transmit_radar[RADARS];   // whether radar should be transmitting (persistent)
   int chart_overlay;             // -1 = none, otherwise = radar number
   int menu_auto_hide;            // 0 = none, 1 = 10s, 2 = 30s
   bool pass_heading_to_opencpn;  //
@@ -328,9 +330,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   bool SetControlValue(int radar, ControlType controlType, int value);
 
   // Various state decisions
-  bool IsRadarOnScreen(int radar) {
-    return m_settings.show && (m_settings.show_radar[radar] || m_settings.chart_overlay == radar);
-  }
+  bool IsRadarOnScreen(int radar) { return m_settings.show && (m_settings.show_radar[radar] || m_settings.chart_overlay == radar); }
   bool IsOverlayOnScreen(int radar) { return m_settings.show && m_settings.chart_overlay == radar; }
 
   bool LoadConfig();
@@ -384,8 +384,8 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   wxLongLong m_boot_time;  // millis when started
 
   // Timed Transmit
-  time_t m_idle_standby;  // When we will change to standby
-  time_t m_idle_transmit; // When we will change to transmit
+  time_t m_idle_standby;   // When we will change to standby
+  time_t m_idle_transmit;  // When we will change to transmit
 
  private:
   void RadarSendState(void);
@@ -432,7 +432,6 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
 
   int m_auto_range_meters;  // What the range should be, at least, when AUTO mode is selected
   int m_previous_auto_range_meters;
-
 
 #define HEADING_TIMEOUT (5)
 

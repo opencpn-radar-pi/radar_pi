@@ -626,7 +626,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  rotate -= 90.0;  // Difference between OpenGL and compass + radar
+  rotate += OPENGL_ROTATION;  // Difference between OpenGL and compass + radar
   double guard_rotate = rotate;
   if (overlay || orientation.value)
   {
