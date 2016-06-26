@@ -211,11 +211,11 @@ void br24OptionsDialog::OnGuardZoneStyleClick(wxCommandEvent &event) {
 }
 
 void br24OptionsDialog::OnGuardZoneOnOverlayClick(wxCommandEvent &event) {
-  m_settings.guard_zone_on_overlay = m_GuardZoneOnOverlay->GetSelection();
+  m_settings.guard_zone_on_overlay = m_GuardZoneOnOverlay->GetSelection() != 0;
 }
 
 void br24OptionsDialog::OnTrailsOnOverlayClick(wxCommandEvent &event) {
-  m_settings.trails_on_overlay = m_TrailsOnOverlay->GetSelection();
+  m_settings.trails_on_overlay = m_TrailsOnOverlay->GetSelection() != 0;
 }
 
 void br24OptionsDialog::OnSelectSoundClick(wxCommandEvent &event) {

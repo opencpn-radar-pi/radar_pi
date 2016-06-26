@@ -1076,14 +1076,14 @@ void br24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
-  int show = 1;
+  bool show = true;
 
   if (m_pi->m_settings.enable_dual_radar) {
     if (m_pi->m_settings.show_radar[m_ri->radar]) {
       int show_other_radar = m_pi->m_settings.show_radar[1 - m_ri->radar];
       if (show_other_radar) {
         // Hide both windows
-        show = 0;
+        show = false;
       }
     }
     m_pi->m_settings.show_radar[0] = show;
@@ -1092,7 +1092,7 @@ void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
     LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), 1, show);
   } else {
     if (m_ri->IsPaneShown()) {
-      show = 0;
+      show = false;
     }
     m_pi->m_settings.show_radar[0] = show;
     LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), 0, show);

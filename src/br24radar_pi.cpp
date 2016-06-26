@@ -858,71 +858,91 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
 bool br24radar_pi::LoadConfig(void) {
   wxFileConfig *pConf = m_pconfig;
-  int intValue;
+  int v;
 
   if (pConf) {
     pConf->SetPath(wxT("Settings"));
-    pConf->Read(wxT("OpenGL"), &intValue, 0);
-    m_opengl_mode = (bool) intValue;
+    pConf->Read(wxT("OpenGL"), &m_opengl_mode, false);
 
     pConf->SetPath(wxT("/Plugins/BR24Radar"));
-    pConf->Read(wxT("DisplayOption"), &m_settings.display_option, 0);
-    pConf->Read(wxT("RangeUnits"), &m_settings.range_units, 0);  // 0 = "Nautical miles"), 1 = "Kilometers"
-    if (m_settings.range_units >= 2) {
-      m_settings.range_units = 1;
+
+    if (pConf->Read(wxT("DisplayMode"), &v, 0)) { // v1.3
+      wxLogMessage(wxT("BR24radar_pi: Upgrading settings from v1.3 or lower"));
+      pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
+      m_settings.verbose = wxMin(m_settings.verbose, 1); // Values over 1 are different now
+      pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 2); // Now is in seconds, not minutes
+      m_settings.idle_run_time *= 60;
+
+      for (int r = 0; r < RADARS; r++) {
+        m_radar[r]->orientation.Update(0);
+        m_radar[r]->wantedState = (RadarState)0;
+        SetControlValue(r, CT_TARGET_TRAILS, 0);
+        m_settings.show_radar[r] = true;
+        LOG_DIALOG(wxT("BR24radar_pi: LoadConfig: show_radar[%d]=%d"), r, v);
+        wxString s = (r) ? wxT("B") : wxT("");
+
+        for (int i = 0; i < GUARD_ZONES; i++)
+        {
+          double bearing;
+          pConf->Read(wxString::Format(wxT("Zone%dStBrng%s"), i + 1, s), &bearing, 0.0);
+          m_radar[r]->guard_zone[i]->start_bearing = SCALE_DEGREES_TO_RAW2048(bearing);
+          pConf->Read(wxString::Format(wxT("Zone%dEndBrng%s"), i + 1, s), &bearing, 0.0);
+          m_radar[r]->guard_zone[i]->end_bearing = SCALE_DEGREES_TO_RAW2048(bearing);
+          pConf->Read(wxString::Format(wxT("Zone%dOuterRng%s"), i + 1, s), &m_radar[r]->guard_zone[i]->outer_range, 0);
+          pConf->Read(wxString::Format(wxT("Zone%dInnerRng%s"), i + 1, s), &m_radar[r]->guard_zone[i]->inner_range, 0);
+          pConf->Read(wxString::Format(wxT("Zone%dArcCirc%s"), i + 1, s), &v, 0);
+          m_radar[r]->guard_zone[i]->SetType((GuardZoneType)v);
+        }
+      }
     }
-    m_settings.range_unit_meters = (m_settings.range_units == 1) ? 1000 : 1852;
-    pConf->Read(wxT("ChartOverlay"), &m_settings.chart_overlay, -1);
-    pConf->Read(wxT("EmulatorOn"), &intValue, 0);
-    m_settings.emulator_on = intValue != 0;
-    pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
-    pConf->Read(wxT("Transparency"), &m_settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
-    pConf->Read(wxT("ScanMaxAge"), &m_settings.max_age, 6);  // default 6
-    if (m_settings.max_age < MIN_AGE) {
-      m_settings.max_age = MIN_AGE;
-    } else if (m_settings.max_age > MAX_AGE) {
-      m_settings.max_age = MAX_AGE;
-    }
-    pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 2);
-
-    pConf->Read(wxT("TrailsOnOverlay"), &m_settings.trails_on_overlay, 0);
-    pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, 1);
-    pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
-    pConf->Read(wxT("GuardZonesRenderStyle"), &m_settings.guard_zone_render_style, 0);
-    pConf->Read(wxT("Refreshrate"), &m_settings.refreshrate, 1);
-    m_settings.refreshrate = wxMin(m_settings.refreshrate, 5);
-    m_settings.refreshrate = wxMax(m_settings.refreshrate, 1);
-
-    pConf->Read(wxT("PassHeadingToOCPN"), &intValue, 0);
-    m_settings.pass_heading_to_opencpn = intValue != 0;
-    pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
-    pConf->Read(wxT("IgnoreRadarHeading"), &m_settings.ignore_radar_heading, 0);
-
-    for (int r = 0; r < RADARS; r++) {
-      int v;
-
-      pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
-      m_radar[r]->orientation.Update(v);
-      pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
-      m_radar[r]->wantedState = (RadarState)v;
-      pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
-      SetControlValue(r, CT_TARGET_TRAILS, v);
-      pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &v, 0);
-      m_settings.show_radar[r] = v;
-      LOG_DIALOG(wxT("BR24radar_pi: LoadConfig: show_radar[%d]=%d"), r, v);
-      for (int i = 0; i < GUARD_ZONES; i++) {
-        pConf->Read(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), &m_radar[r]->guard_zone[i]->start_bearing, 0.0);
-        pConf->Read(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), &m_radar[r]->guard_zone[i]->end_bearing, 0.0);
-        pConf->Read(wxString::Format(wxT("Radar%dZone%dOuterRange"), r, i), &m_radar[r]->guard_zone[i]->outer_range, 0);
-        pConf->Read(wxString::Format(wxT("Radar%dZone%dInnerRange"), r, i), &m_radar[r]->guard_zone[i]->inner_range, 0);
-        pConf->Read(wxString::Format(wxT("Radar%dZone%dFilter"), r, i), &m_radar[r]->guard_zone[i]->multi_sweep_filter, 0);
-        pConf->Read(wxString::Format(wxT("Radar%dZone%dType"), r, i), &v, 0);
-        m_radar[r]->guard_zone[i]->SetType((GuardZoneType)v);
+    else {
+      pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
+      pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 120);
+      for (int r = 0; r < RADARS; r++) {
+        pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
+        m_radar[r]->orientation.Update(v);
+        pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
+        m_radar[r]->wantedState = (RadarState)v;
+        pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
+        SetControlValue(r, CT_TARGET_TRAILS, v);
+        pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[r], false);
+        LOG_DIALOG(wxT("BR24radar_pi: LoadConfig: show_radar[%d]=%d"), r, v);
+        for (int i = 0; i < GUARD_ZONES; i++) {
+          pConf->Read(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), &m_radar[r]->guard_zone[i]->start_bearing, 0);
+          pConf->Read(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), &m_radar[r]->guard_zone[i]->end_bearing, 0);
+          pConf->Read(wxString::Format(wxT("Radar%dZone%dOuterRange"), r, i), &m_radar[r]->guard_zone[i]->outer_range, 0);
+          pConf->Read(wxString::Format(wxT("Radar%dZone%dInnerRange"), r, i), &m_radar[r]->guard_zone[i]->inner_range, 0);
+          pConf->Read(wxString::Format(wxT("Radar%dZone%dFilter"), r, i), &m_radar[r]->guard_zone[i]->multi_sweep_filter, 0);
+          pConf->Read(wxString::Format(wxT("Radar%dZone%dType"), r, i), &v, 0);
+          m_radar[r]->guard_zone[i]->SetType((GuardZoneType)v);
+        }
       }
     }
 
+    pConf->Read(wxT("DisplayOption"), &m_settings.display_option, 1);
+    m_settings.display_option = wxMax(wxMin(m_settings.display_option, 1), 0);
+    pConf->Read(wxT("RangeUnits"), &m_settings.range_units, 0);  // 0 = "Nautical miles"), 1 = "Kilometers"
+    m_settings.range_units = wxMax(wxMin(m_settings.range_units, 1), 0);
+    m_settings.range_unit_meters = (m_settings.range_units == 1) ? 1000 : 1852;
+    pConf->Read(wxT("ChartOverlay"), &m_settings.chart_overlay, 0);
+    pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
+    pConf->Read(wxT("Transparency"), &m_settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
+    pConf->Read(wxT("ScanMaxAge"), &m_settings.max_age, 6); 
+    m_settings.max_age = wxMax(wxMin(m_settings.max_age, MAX_AGE), MIN_AGE);
+
+    pConf->Read(wxT("TrailsOnOverlay"), &m_settings.trails_on_overlay, false);
+    pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, true);
+    pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
+    pConf->Read(wxT("GuardZonesRenderStyle"), &m_settings.guard_zone_render_style, 0);
+    pConf->Read(wxT("Refreshrate"), &m_settings.refreshrate, 1);
+    m_settings.refreshrate = wxMax(wxMin(m_settings.refreshrate, 5), 1);
+
+    pConf->Read(wxT("PassHeadingToOCPN"), &m_settings.pass_heading_to_opencpn, false);
+    pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
+    pConf->Read(wxT("IgnoreRadarHeading"), &m_settings.ignore_radar_heading, 0);
+
     pConf->Read(wxT("RadarAlertAudioFile"), &m_settings.alert_audio_file);
-    pConf->Read(wxT("Show"), &m_settings.show, 0);
+    pConf->Read(wxT("Show"), &m_settings.show, true);
     pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 0);
 
     pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, 0);
@@ -935,7 +955,7 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("ThresholdBlue"), &m_settings.threshold_blue, 50);
     pConf->Read(wxT("ThresholdMultiSweep"), &m_settings.threshold_multi_sweep, 20);
 
-    pConf->Read(wxT("ReverseZoom"), &m_settings.reverse_zoom, 0);
+	pConf->Read(wxT("ReverseZoom"), &m_settings.reverse_zoom, false);
 
     SaveConfig();
     return true;
@@ -947,6 +967,7 @@ bool br24radar_pi::SaveConfig(void) {
   wxFileConfig *pConf = m_pconfig;
 
   if (pConf) {
+    pConf->DeleteGroup(wxT("/Plugins/BR24Radar"));
     pConf->SetPath(wxT("/Plugins/BR24Radar"));
     pConf->Write(wxT("DisplayOption"), m_settings.display_option);
     pConf->Write(wxT("RangeUnits"), m_settings.range_units);
