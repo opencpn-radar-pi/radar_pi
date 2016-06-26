@@ -350,9 +350,9 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     LOG_VERBOSE(wxT("BR24radar_pi: %s HeadUp/NorthUp change"));
   }
   int north_up = orientation.GetButton() == ORIENTATION_NORTH_UP;
-  uint8_t weakest_normal_blob = m_pi->m_settings.threshold_blue;
+  uint8_t weakest_normal_blob = (m_pi->m_settings.display_option ? m_pi->m_settings.threshold_blue : m_pi->m_settings.threshold_red);
 
-  bool calc_history = false;
+  bool calc_history = m_multi_sweep_filter;
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     if (guard_zone[z]->type != GZ_OFF && guard_zone[z]->multi_sweep_filter) {
       calc_history = true;
@@ -374,6 +374,13 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     }
   }
 
+  if (m_multi_sweep_filter) {
+    for (size_t radius = 0; radius < len; radius++) {
+      if (!HISTORY_FILTER_ALLOW(history[angle][radius])) {
+        data[radius] = 0;
+      }
+    }
+  }
 
   bool draw_trails_on_overlay = (m_pi->m_settings.display_option == 1) && (m_pi->m_settings.trails_on_overlay == 1);
   if (m_draw_overlay.draw && !draw_trails_on_overlay) {
@@ -394,6 +401,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       }
     }
   }
+
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);

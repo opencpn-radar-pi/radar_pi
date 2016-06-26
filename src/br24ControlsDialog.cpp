@@ -485,13 +485,6 @@ void br24ControlsDialog::CreateControls() {
   m_edit_sizer->Add(m_auto_button, 0, wxALL, BORDER);
   m_auto_button->SetFont(m_pi->m_font);
 
-  // The Multi Sweep Filter button
-  wxString labelMS;
-  labelMS << _("Multi Sweep Filter") << wxT("\n") << _("Off");
-  m_multi_sweep_button = new wxButton(this, ID_MULTISWEEP, labelMS, wxDefaultPosition, g_buttonSize, 0);
-  m_edit_sizer->Add(m_multi_sweep_button, 0, wxALL, BORDER);
-  m_multi_sweep_button->SetFont(m_pi->m_font);
-
   m_top_sizer->Hide(m_edit_sizer);
 
   //**************** ADVANCED BOX ******************//
@@ -810,6 +803,13 @@ void br24ControlsDialog::CreateControls() {
   m_view_sizer->Add(m_clear_trails_button, 0, wxALL, BORDER);
   m_clear_trails_button->SetFont(m_pi->m_font);
 
+  // The Multi Sweep Filter button
+  wxString labelMS;
+  labelMS << _("Multi Sweep Filter") << wxT("\n") << _("Off");
+  m_multi_sweep_button = new wxButton(this, ID_MULTISWEEP, labelMS, wxDefaultPosition, g_buttonSize, 0);
+  m_view_sizer->Add(m_multi_sweep_button, 0, wxALL, BORDER);
+  m_multi_sweep_button->SetFont(m_pi->m_font);
+
   // The Rotation button
   m_orientation_button = new wxButton(this, ID_ORIENTATION, _("Orientation"), wxDefaultPosition, g_buttonSize, 0);
   m_view_sizer->Add(m_orientation_button, 0, wxALL, BORDER);
@@ -1005,12 +1005,12 @@ void br24ControlsDialog::OnAutoClick(wxCommandEvent& event) {
 
 void br24ControlsDialog::OnMultiSweepClick(wxCommandEvent& event) {
   wxString labelSweep;
-  if (m_ri->multi_sweep_filter == 0) {
-    labelSweep << _("Multi Sweep Filter") << wxT("\n") << _("ON");
-    m_ri->multi_sweep_filter = 1;
+  if (m_ri->m_multi_sweep_filter == false) {
+    labelSweep << _("Multi Sweep Filter") << wxT("\n") << _("On");
+    m_ri->m_multi_sweep_filter = true;
   } else {
     labelSweep << _("Multi Sweep Filter") << wxT("\n") << _("Off");
-    m_ri->multi_sweep_filter = 0;
+    m_ri->m_multi_sweep_filter = false;
   }
   m_multi_sweep_button->SetLabel(labelSweep);
 }
@@ -1055,11 +1055,6 @@ void br24ControlsDialog::EnterEditMode(br24RadarControlButton* button) {
     m_auto_button->Show();
   } else {
     m_auto_button->Hide();
-  }
-  if (m_from_control == m_gain_button) {
-    m_multi_sweep_button->Show();
-  } else {
-    m_multi_sweep_button->Hide();
   }
   if (m_from_control->maxValue > 20) {
     m_plus_ten_button->Show();
@@ -1244,7 +1239,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_ri->overlay.mod || ((m_pi->m_settings.chart_overlay == m_ri->radar) != (m_ri->overlay.button != 0)) || refreshAll) {
     o = _("Overlay");
     o << wxT("\n");
-    o << ((m_ri->overlay.GetButton() > 0) ? _("on") : _("off"));
+    o << ((m_ri->overlay.GetButton() > 0) ? _("On") : _("Off"));
     m_overlay_button->SetLabel(o);
   }
 
