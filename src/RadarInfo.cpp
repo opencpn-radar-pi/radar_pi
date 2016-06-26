@@ -627,7 +627,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
 
   rotate += OPENGL_ROTATION;  // Difference between OpenGL and compass + radar
   double guard_rotate = rotate;
-  if (overlay || orientation.value) {
+  if (overlay || IsDisplayNorthUp()) {
     guard_rotate += m_pi->m_hdt;
   }
 
@@ -698,7 +698,7 @@ void RadarInfo::FlipRadarState() {
 wxString RadarInfo::GetCanvasTextTopLeft() {
   wxString s;
 
-  if (orientation.value == ORIENTATION_NORTH_UP && m_pi->m_heading_source != HEADING_NONE) {
+  if (IsDisplayNorthUp()) {
     s << _("North Up");
   } else {
     s << _("Head Up");
@@ -739,6 +739,24 @@ wxString RadarInfo::FormatDistance(double distance) {
   return s;
 }
 
+wxString RadarInfo::FormatAngle(double angle) {
+  wxString s;
+
+  wxString relative;
+  if (IsDisplayNorthUp()) {
+    relative = wxT("T");
+  } else {
+    if (angle > 180.0) {
+      angle = -(360.0 - angle);
+    }
+    relative = wxT("R");
+  }
+  s << wxString::Format(wxT("%.1f\u00B0%s"), angle, relative);
+
+  return s;
+}
+
+
 wxString RadarInfo::GetCanvasTextBottomLeft() {
   wxString s = m_pi->GetGuardZoneText(this, false);
 
@@ -752,7 +770,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
         if (s.length()) {
           s << wxT("\n");
         }
-        s << wxString::Format(wxT("VRM%d=%s EBL%d=%.1f\u00B0T"), b + 1, FormatDistance(m_vrm[b]), b + 1, m_ebl[b]);
+        s << wxString::Format(wxT("VRM%d=%s EBL%d=%s"), b + 1, FormatDistance(m_vrm[b]), b + 1, FormatAngle(m_ebl[b]));
       }
     }
 
@@ -771,7 +789,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
       if (s.length()) {
         s << wxT("\n");
       }
-      s << FormatDistance(distance) << wxString::Format(wxT(", %.1f\u00B0T"), bearing);
+      s << FormatDistance(distance) << wxT(", ") << FormatAngle(bearing);
     }
   }
   return s;
@@ -841,10 +859,10 @@ const char *RadarInfo::GetDisplayRangeStr(size_t idx) {
 }
 
 void RadarInfo::SetMouseLatLon(double lat, double lon) {
+  m_mouse_vrm = 0.0;
+  m_mouse_ebl = 0.0;
   m_mouse_lat = lat;
   m_mouse_lon = lon;
-  m_mouse_ebl = 0.0;
-  m_mouse_vrm = 0.0;
   LOG_DIALOG(wxT("BR24radar_pi: SetMouseLatLon(%f, %f)"), lat, lon);
 }
 
@@ -862,7 +880,7 @@ void RadarInfo::SetBearing(int bearing) {
     m_ebl[bearing] = 0.0;
   } else if (m_mouse_vrm != 0.0) {
     m_vrm[bearing] = m_mouse_vrm;
-    m_ebl[bearing] = m_mouse_ebl;
+    m_ebl[bearing] = m_mouse_ebl - m_pi->m_hdt;
   } else if (m_mouse_lat != 0.0 || m_mouse_lon != 0.0) {
     m_vrm[bearing] = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
     m_ebl[bearing] = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);

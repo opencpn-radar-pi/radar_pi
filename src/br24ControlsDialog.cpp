@@ -1225,7 +1225,17 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_ri->orientation.mod || refreshAll) {
     o = _("Orientation");
     o << wxT("\n");
-    o << ((m_ri->orientation.GetButton()) ? _("North Up") : _("Head Up"));
+    switch (m_ri->orientation.GetButton())
+    {
+      case ORIENTATION_NORTH_UP:
+        o << _("North up");
+        break;
+      case ORIENTATION_HEAD_UP:
+        o << _("Head up");
+        break;
+      default:
+        o << _("???");
+    }
     m_orientation_button->SetLabel(o);
   }
 

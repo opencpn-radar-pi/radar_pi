@@ -203,6 +203,7 @@ class RadarInfo : public wxEvtHandler {
   void SetMouseVrmEbl(double vrm, double ebl);
   void SetBearing(int bearing);
   void ClearTrails();
+  bool IsDisplayNorthUp() { return orientation.value == ORIENTATION_NORTH_UP && m_pi->m_heading_source != HEADING_NONE; }
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
@@ -219,6 +220,8 @@ class RadarInfo : public wxEvtHandler {
  private:
   void RenderRadarImage(DrawInfo *di);
   wxString FormatDistance(double distance);
+  wxString FormatAngle(double angle);
+
 
   int m_range_meters;  // what radar told us is the range in the last received spoke
 
