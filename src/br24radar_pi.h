@@ -436,6 +436,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
 
 #define HEADING_TIMEOUT (5)
 
+  bool m_guard_bogey_seen; // Saw guardzone bogeys on last check
   bool m_guard_bogey_confirmed;
   time_t m_alarm_sound_timeout;
 #define ALARM_TIMEOUT (10)
