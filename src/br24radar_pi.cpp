@@ -370,7 +370,7 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
     if (!m_radar[radar]->control_dialog) {
       m_radar[radar]->control_dialog = new br24ControlsDialog;
       m_radar[radar]->control_dialog->Create((wxWindow *)(m_radar[radar]->radar_panel), this, m_radar[radar], wxID_ANY,
-                                             m_radar[radar]->name);
+                                             m_radar[radar]->name, m_settings.control_pos[radar]);
       m_radar[radar]->control_dialog->Fit();
       m_radar[radar]->control_dialog->Hide();
     }
@@ -858,7 +858,7 @@ void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, 
 
 bool br24radar_pi::LoadConfig(void) {
   wxFileConfig *pConf = m_pconfig;
-  int v;
+  int v, x, y;
 
   if (pConf) {
     pConf->SetPath(wxT("Settings"));
@@ -904,6 +904,9 @@ bool br24radar_pi::LoadConfig(void) {
         pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
         SetControlValue(r, CT_TARGET_TRAILS, v);
         pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[r], false);
+        pConf->Read(wxString::Format(wxT("Radar%dControlPosX"), r), &x, OFFSCREEN_CONTROL_X);
+        pConf->Read(wxString::Format(wxT("Radar%dControlPosY"), r), &y, OFFSCREEN_CONTROL_Y);
+        m_settings.control_pos[r] = wxPoint(x, y);
         LOG_DIALOG(wxT("BR24radar_pi: LoadConfig: show_radar[%d]=%d"), r, v);
         for (int i = 0; i < GUARD_ZONES; i++) {
           pConf->Read(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), &m_radar[r]->guard_zone[i]->start_bearing, 0);
@@ -995,6 +998,11 @@ bool br24radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->state.value);
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
       pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->target_trails.value);
+      if (m_radar[r]->control_dialog) {
+        m_settings.control_pos[r] = m_radar[r]->control_dialog->GetPosition();
+      }
+      pConf->Write(wxString::Format(wxT("Radar%dControlPosX"), r), m_settings.control_pos[r].x);
+      pConf->Write(wxString::Format(wxT("Radar%dControlPosY"), r), m_settings.control_pos[r].y);
 
       LOG_DIALOG(wxT("BR24radar_pi: SaveConfig: show_radar[%d]=%d"), r, m_settings.show_radar[r]);
       for (int i = 0; i < GUARD_ZONES; i++) {
