@@ -269,7 +269,7 @@ void RadarCanvas::RenderCursor(int w, int h) {
   double x = center_x + sin(angle) * range - CURSOR_WIDTH * CURSOR_SCALE / 2;
   double y = center_y - cos(angle) * range - CURSOR_WIDTH * CURSOR_SCALE / 2;
 
-  //LOG_DIALOG(wxT("BR24radar_pi: draw cursor angle=%.1f bearing=%.1f"), rad2deg(angle), bearing);
+  // LOG_DIALOG(wxT("BR24radar_pi: draw cursor angle=%.1f bearing=%.1f"), rad2deg(angle), bearing);
 
   if (!m_cursor_texture) {
     glGenTextures(1, &m_cursor_texture);

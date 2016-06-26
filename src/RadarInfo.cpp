@@ -162,7 +162,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_previous_auto_range_meters = 1;
   m_stayalive_timeout = 0;
 
-  memset(&statistics, sizeof(statistics), 0);
+  memset(&statistics, 0, sizeof(statistics));
 
   m_mouse_lat = 0.0;
   m_mouse_lon = 0.0;
@@ -755,7 +755,6 @@ wxString RadarInfo::FormatAngle(double angle) {
 
   return s;
 }
-
 
 wxString RadarInfo::GetCanvasTextBottomLeft() {
   wxString s = m_pi->GetGuardZoneText(this, false);

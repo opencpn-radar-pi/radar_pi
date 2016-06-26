@@ -1225,8 +1225,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_ri->orientation.mod || refreshAll) {
     o = _("Orientation");
     o << wxT("\n");
-    switch (m_ri->orientation.GetButton())
-    {
+    switch (m_ri->orientation.GetButton()) {
       case ORIENTATION_NORTH_UP:
         o << _("North up");
         break;
@@ -1433,8 +1432,7 @@ void br24ControlsDialog::ShowDialog() {
         newPos.y = panelPos.y;
         SetPosition(newPos);
       }
-    }
-    else {
+    } else {
       if (GetPosition() == OFFSCREEN_CONTROL) {
         SetPosition(wxDefaultPosition);
       }

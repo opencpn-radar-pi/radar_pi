@@ -576,11 +576,11 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
       }
     }
     m_guard_bogey_seen = true;
-  } else if (m_guard_bogey_seen) { // First time here after bogey disappeared. Start timer.
+  } else if (m_guard_bogey_seen) {  // First time here after bogey disappeared. Start timer.
     m_alarm_sound_timeout = now + ALARM_TIMEOUT;
     m_guard_bogey_seen = false;
-  } else if (TIMED_OUT(now, m_alarm_sound_timeout)) { // No bogeys and timer elapsed, now reset confirmed
-    m_guard_bogey_confirmed = false;  // Reset for next time we see bogeys
+  } else if (TIMED_OUT(now, m_alarm_sound_timeout)) {  // No bogeys and timer elapsed, now reset confirmed
+    m_guard_bogey_confirmed = false;                   // Reset for next time we see bogeys
   }
 }
 

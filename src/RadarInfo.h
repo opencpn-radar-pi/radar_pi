@@ -222,7 +222,6 @@ class RadarInfo : public wxEvtHandler {
   wxString FormatDistance(double distance);
   wxString FormatAngle(double angle);
 
-
   int m_range_meters;  // what radar told us is the range in the last received spoke
 
   int m_previous_auto_range_meters;
