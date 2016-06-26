@@ -200,10 +200,9 @@ void br24OptionsDialog::OnDisplayOptionClick(wxCommandEvent &event) {
   m_settings.display_option = m_OverlayDisplayOptions->GetSelection();
   if (m_settings.display_option == 0) {
     m_TrailsOnOverlay->Disable();
-  } else{
+  } else {
     m_TrailsOnOverlay->Enable();
   }
-
 }
 
 void br24OptionsDialog::OnGuardZoneStyleClick(wxCommandEvent &event) {

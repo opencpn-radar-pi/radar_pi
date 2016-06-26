@@ -41,7 +41,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 class RadarDrawVertex : public RadarDraw {
  public:
-  RadarDrawVertex(RadarInfo *ri) {
+  RadarDrawVertex(RadarInfo* ri) {
     m_ri = ri;
 
     memset(m_vertices, 0, sizeof(m_vertices));
@@ -66,7 +66,7 @@ class RadarDrawVertex : public RadarDraw {
   }
 
  private:
-  RadarInfo *m_ri;
+  RadarInfo* m_ri;
 
   static const int VERTEX_PER_TRIANGLE = 3;
   static const int VERTEX_PER_QUAD = 2 * VERTEX_PER_TRIANGLE;

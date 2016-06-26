@@ -41,7 +41,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 class RadarDrawShader : public RadarDraw {
  public:
-  RadarDrawShader(RadarInfo * ri) {
+  RadarDrawShader(RadarInfo* ri) {
     m_ri = ri;
     m_start_line = LINES_PER_ROTATION;
     m_end_line = 0;

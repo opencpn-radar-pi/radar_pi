@@ -464,7 +464,7 @@ void br24ControlsDialog::CreateControls() {
   m_plus_button->SetFont(m_pi->m_font);
 
   // The VALUE button
-  wxSize valueSize =  wxSize(g_buttonSize.x, g_buttonSize.y + 20);
+  wxSize valueSize = wxSize(g_buttonSize.x, g_buttonSize.y + 20);
   m_value_text = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, valueSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   m_edit_sizer->Add(m_value_text, 0, wxALL, BORDER);
   m_value_text->SetFont(m_pi->m_fat_font);
@@ -818,7 +818,7 @@ void br24ControlsDialog::CreateControls() {
 
   // The REFRESHRATE button
   m_refresh_rate_button =
-  new br24RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), CT_REFRESHRATE, false, m_pi->m_settings.refreshrate);
+      new br24RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), CT_REFRESHRATE, false, m_pi->m_settings.refreshrate);
   m_view_sizer->Add(m_refresh_rate_button, 0, wxALL, BORDER);
   m_refresh_rate_button->minValue = 1;
   m_refresh_rate_button->maxValue = 5;
@@ -1115,10 +1115,7 @@ void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
   m_ri->FlipRadarState();
 }
 
-void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) {
-  m_ri->ClearTrails();
-}
-
+void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) { m_ri->ClearTrails(); }
 
 void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
   m_ri->orientation.Update(1 - m_ri->orientation.value);
@@ -1158,18 +1155,14 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   RadarState state = (RadarState)m_ri->state.GetButton();
 
   o = (state == RADAR_TRANSMIT) ? _("Standby") : _("Transmit");
-  if (m_pi->m_settings.timed_idle == 0)
-  {
+  if (m_pi->m_settings.timed_idle == 0) {
     m_timed_idle_button->SetLocalValue(0);
-  }
-  else
-  {
+  } else {
     time_t now = time(0);
     int left = m_pi->m_idle_standby - now;
     if (left > 0) {
       o = wxString::Format(_("Standby in %d:%02d"), left / 60, left % 60);
-    }
-    else {
+    } else {
       left = m_pi->m_idle_transmit - now;
       if (left >= 0) {
         o = wxString::Format(_("Transmit in %d:%02d"), left / 60, left % 60);

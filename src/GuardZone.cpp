@@ -33,7 +33,6 @@
 PLUGIN_BEGIN_NAMESPACE
 
 void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_t len, int range) {
-
   size_t range_start = inner_range * RETURNS_PER_LINE / range;  // Convert from meters to 0..511
   size_t range_end = outer_range * RETURNS_PER_LINE / range;    // Convert from meters to 0..511
 
@@ -45,7 +44,8 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
   }
   m_last_angle = angle;
 
-  if ((angle >= start_bearing && angle < end_bearing) || (start_bearing >= end_bearing && (angle >= start_bearing || angle < end_bearing))) {
+  if ((angle >= start_bearing && angle < end_bearing) ||
+      (start_bearing >= end_bearing && (angle >= start_bearing || angle < end_bearing))) {
     if (range_start < RETURNS_PER_LINE) {
       if (range_end > RETURNS_PER_LINE) {
         range_end = RETURNS_PER_LINE;

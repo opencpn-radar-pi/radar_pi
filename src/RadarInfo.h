@@ -78,13 +78,13 @@ class radar_control_item {
     mod = false;
   }
 
-protected:
+ protected:
   wxCriticalSection m_exclusive;
 };
 
 class radar_range_control_item : public radar_control_item {
-public:
-  const RadarRange * range;
+ public:
+  const RadarRange *range;
 
   void Update(int v);
 
@@ -111,7 +111,7 @@ class RadarInfo : public wxEvtHandler {
  public:
   wxString name;  // Either "Radar", "Radar A", "Radar B".
   br24radar_pi *m_pi;
-  int radar;      // Which radar this is (0..., max 2 for now)
+  int radar;  // Which radar this is (0..., max 2 for now)
 
   /* User radar settings */
 
@@ -220,7 +220,7 @@ class RadarInfo : public wxEvtHandler {
   void RenderRadarImage(DrawInfo *di);
   wxString FormatDistance(double distance);
 
-  int m_range_meters;                 // what radar told us is the range in the last received spoke
+  int m_range_meters;  // what radar told us is the range in the last received spoke
 
   int m_previous_auto_range_meters;
   int m_auto_range_meters;

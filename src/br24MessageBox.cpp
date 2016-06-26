@@ -242,7 +242,6 @@ bool br24MessageBox::Show(bool show) {
 }
 
 bool br24MessageBox::UpdateMessage(bool force) {
-
   message_status new_message_state = HIDE;
 
   bool haveOpenGL = m_pi->m_opengl_mode;
@@ -313,8 +312,7 @@ bool br24MessageBox::UpdateMessage(bool force) {
   m_have_radar->SetValue(radarSeen);
   m_have_data->SetValue(haveData);
 
-
-  wxString * label;
+  wxString *label;
 
   if ((label = m_radar_addr_info.GetValue()) != 0) {
     m_have_radar->SetLabel(*label);
@@ -331,7 +329,6 @@ bool br24MessageBox::UpdateMessage(bool force) {
   if ((label = m_statistics_info.GetValue()) != 0) {
     m_statistics->SetLabel(*label);
   }
-
 
   if (m_message_state != new_message_state || m_old_radar_seen != radarSeen) {
     if (!radarSeen) {
@@ -417,21 +414,19 @@ void br24MessageBox::SetMcastIPAddress(wxString &msg) {
 }
 
 void br24MessageBox::SetHeadingInfo(wxString &msg) {
-    wxString label;
+  wxString label;
 
-    label << _("Heading") << wxT(" ") << msg;
-    m_heading_info.Update(label);
- }
+  label << _("Heading") << wxT(" ") << msg;
+  m_heading_info.Update(label);
+}
 
 void br24MessageBox::SetVariationInfo(wxString &msg) {
-    wxString label;
+  wxString label;
 
-    label << _("Variation") << wxT(" ") << msg;
-    m_variation_info.Update(label);
+  label << _("Variation") << wxT(" ") << msg;
+  m_variation_info.Update(label);
 }
 
-void br24MessageBox::SetStatisticsInfo(wxString &msg) {
-  m_statistics_info.Update(msg);
-}
+void br24MessageBox::SetStatisticsInfo(wxString &msg) { m_statistics_info.Update(msg); }
 
 PLUGIN_END_NAMESPACE

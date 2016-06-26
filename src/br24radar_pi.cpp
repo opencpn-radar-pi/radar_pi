@@ -866,11 +866,11 @@ bool br24radar_pi::LoadConfig(void) {
 
     pConf->SetPath(wxT("/Plugins/BR24Radar"));
 
-    if (pConf->Read(wxT("DisplayMode"), &v, 0)) { // v1.3
+    if (pConf->Read(wxT("DisplayMode"), &v, 0)) {  // v1.3
       wxLogMessage(wxT("BR24radar_pi: Upgrading settings from v1.3 or lower"));
       pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
-      m_settings.verbose = wxMin(m_settings.verbose, 1); // Values over 1 are different now
-      pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 2); // Now is in seconds, not minutes
+      m_settings.verbose = wxMin(m_settings.verbose, 1);                // Values over 1 are different now
+      pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 2);  // Now is in seconds, not minutes
       m_settings.idle_run_time *= 60;
 
       for (int r = 0; r < RADARS; r++) {
@@ -881,8 +881,7 @@ bool br24radar_pi::LoadConfig(void) {
         LOG_DIALOG(wxT("BR24radar_pi: LoadConfig: show_radar[%d]=%d"), r, v);
         wxString s = (r) ? wxT("B") : wxT("");
 
-        for (int i = 0; i < GUARD_ZONES; i++)
-        {
+        for (int i = 0; i < GUARD_ZONES; i++) {
           double bearing;
           pConf->Read(wxString::Format(wxT("Zone%dStBrng%s"), i + 1, s), &bearing, 0.0);
           m_radar[r]->guard_zone[i]->start_bearing = SCALE_DEGREES_TO_RAW2048(bearing);
@@ -894,8 +893,7 @@ bool br24radar_pi::LoadConfig(void) {
           m_radar[r]->guard_zone[i]->SetType((GuardZoneType)v);
         }
       }
-    }
-    else {
+    } else {
       pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
       pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 120);
       for (int r = 0; r < RADARS; r++) {
@@ -927,7 +925,7 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("ChartOverlay"), &m_settings.chart_overlay, 0);
     pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
     pConf->Read(wxT("Transparency"), &m_settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
-    pConf->Read(wxT("ScanMaxAge"), &m_settings.max_age, 6); 
+    pConf->Read(wxT("ScanMaxAge"), &m_settings.max_age, 6);
     m_settings.max_age = wxMax(wxMin(m_settings.max_age, MAX_AGE), MIN_AGE);
 
     pConf->Read(wxT("TrailsOnOverlay"), &m_settings.trails_on_overlay, false);
@@ -955,7 +953,7 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("ThresholdBlue"), &m_settings.threshold_blue, 50);
     pConf->Read(wxT("ThresholdMultiSweep"), &m_settings.threshold_multi_sweep, 20);
 
-	pConf->Read(wxT("ReverseZoom"), &m_settings.reverse_zoom, false);
+    pConf->Read(wxT("ReverseZoom"), &m_settings.reverse_zoom, false);
 
     SaveConfig();
     return true;

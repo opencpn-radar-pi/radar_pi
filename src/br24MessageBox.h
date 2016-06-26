@@ -38,10 +38,8 @@ PLUGIN_BEGIN_NAMESPACE
 
 enum message_status { HIDE, SHOW, SHOW_NO_NMEA, SHOW_CLOSE };
 
-
 class radar_info_item {
-public:
-
+ public:
   void Update(wxString &v) {
     wxCriticalSectionLocker lock(m_exclusive);
 
@@ -49,9 +47,8 @@ public:
     value = v;
   };
 
-  wxString * GetValue() {
-    if (mod)
-    {
+  wxString *GetValue() {
+    if (mod) {
       wxCriticalSectionLocker lock(m_exclusive);
 
       mod = false;
@@ -60,17 +57,13 @@ public:
     return 0;
   }
 
-  radar_info_item() {
-    mod = false;
-  }
+  radar_info_item() { mod = false; }
 
-private:
+ private:
   wxCriticalSection m_exclusive;
   wxString value;
   bool mod;
 };
-
-
 
 class br24MessageBox : public wxDialog {
   DECLARE_CLASS(br24MessageBox)
@@ -88,7 +81,7 @@ class br24MessageBox : public wxDialog {
 
   void CreateControls();
   bool UpdateMessage(bool force);  // Check whether message box needs to be visible, return true if shown
-  //void SetErrorMessage(wxString &msg);
+  // void SetErrorMessage(wxString &msg);
   void SetRadarIPAddress(wxString &msg);
   void SetMcastIPAddress(wxString &msg);
   void SetHeadingInfo(wxString &msg);
@@ -110,7 +103,7 @@ class br24MessageBox : public wxDialog {
   wxWindow *m_parent;
   br24radar_pi *m_pi;
 
-  //radar_info_item m_error_message_info;
+  // radar_info_item m_error_message_info;
   radar_info_item m_radar_addr_info;
   radar_info_item m_mcast_addr_info;
   radar_info_item m_heading_info;

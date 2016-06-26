@@ -45,13 +45,34 @@ class GuardZone {
   int outer_range;  // end   in meters
   int multi_sweep_filter;
 
-  void ResetBogeys() { m_bogey_count = 0; m_running_count = 0; };
-  void SetType(GuardZoneType type) { this->type = type; ResetBogeys();};
-  void SetStartBearing(SpokeBearing start_bearing) { this->start_bearing = start_bearing; ResetBogeys();};
-  void SetEndBearing(SpokeBearing end_bearing) { this->end_bearing = end_bearing; ResetBogeys();};
-  void SetInnerRange(int inner_range) { this->inner_range = inner_range; ResetBogeys(); };
-  void SetOuterRange(int outer_range) { this->outer_range = outer_range; ResetBogeys(); };
-  void SetMultiSweepFilter(int filter) { this->multi_sweep_filter = filter; ResetBogeys(); };
+  void ResetBogeys() {
+    m_bogey_count = 0;
+    m_running_count = 0;
+  };
+  void SetType(GuardZoneType type) {
+    this->type = type;
+    ResetBogeys();
+  };
+  void SetStartBearing(SpokeBearing start_bearing) {
+    this->start_bearing = start_bearing;
+    ResetBogeys();
+  };
+  void SetEndBearing(SpokeBearing end_bearing) {
+    this->end_bearing = end_bearing;
+    ResetBogeys();
+  };
+  void SetInnerRange(int inner_range) {
+    this->inner_range = inner_range;
+    ResetBogeys();
+  };
+  void SetOuterRange(int outer_range) {
+    this->outer_range = outer_range;
+    ResetBogeys();
+  };
+  void SetMultiSweepFilter(int filter) {
+    this->multi_sweep_filter = filter;
+    ResetBogeys();
+  };
 
   /*
    * Check if data is in this GuardZone, if so update bogeyCount

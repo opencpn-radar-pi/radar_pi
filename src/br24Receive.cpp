@@ -265,7 +265,6 @@ void br24Receive::EmulateFakeBuffer(void) {
   m_ri->m_data_timeout = now + WATCHDOG_TIMEOUT;
   m_ri->state.Update(RADAR_TRANSMIT);
 
-
   int scanlines_in_packet = SPOKES * 24 / 60;
   int range_meters = 2308;
   int display_range_meters = 1500;
@@ -510,7 +509,7 @@ void *br24Receive::Entry(void) {
             if (!radar_addr) {
               wxString addr;
 
-              m_ri->SetNetworkCardAddress(m_mcast_addr); // enables transmit data
+              m_ri->SetNetworkCardAddress(m_mcast_addr);  // enables transmit data
               // the dataSocket and commandSocket are opened in the next loop
 
               radarFoundAddr = rx_addr.ipv4;
@@ -558,7 +557,7 @@ void *br24Receive::Entry(void) {
       }
     }
 
-  } // endless loop until thread destroy
+  }  // endless loop until thread destroy
 
   if (dataSocket != INVALID_SOCKET) {
     closesocket(dataSocket);

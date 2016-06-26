@@ -151,7 +151,6 @@ void radar_range_control_item::Update(int v) {
   }
 }
 
-
 RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_pi = pi;
   this->radar = radar;
@@ -274,9 +273,9 @@ void RadarInfo::ComputeColorMap() {
     case 1:
       for (int i = 0; i <= UINT8_MAX; i++) {
         m_color_map[i] =
-        (i >= m_pi->m_settings.threshold_red) ? BLOB_RED : (i >= m_pi->m_settings.threshold_green)
-        ? BLOB_GREEN
-        : (i >= m_pi->m_settings.threshold_blue) ? BLOB_BLUE : BLOB_NONE;
+            (i >= m_pi->m_settings.threshold_red) ? BLOB_RED : (i >= m_pi->m_settings.threshold_green)
+                                                                   ? BLOB_GREEN
+                                                                   : (i >= m_pi->m_settings.threshold_blue) ? BLOB_BLUE : BLOB_NONE;
       }
       break;
   }
@@ -350,7 +349,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     LOG_VERBOSE(wxT("BR24radar_pi: %s HeadUp/NorthUp change"));
   }
   int north_up = orientation.GetButton() == ORIENTATION_NORTH_UP;
-  uint8_t weakest_normal_blob = (m_pi->m_settings.display_option ? m_pi->m_settings.threshold_blue : m_pi->m_settings.threshold_red);
+  uint8_t weakest_normal_blob =
+      (m_pi->m_settings.display_option ? m_pi->m_settings.threshold_blue : m_pi->m_settings.threshold_red);
 
   bool calc_history = m_multi_sweep_filter;
   for (size_t z = 0; z < GUARD_ZONES; z++) {
@@ -401,7 +401,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       }
     }
   }
-
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
@@ -496,12 +495,12 @@ void RadarInfo::AdjustRange(int adjustment) {
     }
 
     if (adjustment < 0 && range.range > min) {
-      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), range.range[0].meters,
-                  range.range[0].actual_meters, range.range[-1].meters, range.range[-1].actual_meters);
+      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), range.range[0].meters, range.range[0].actual_meters,
+                  range.range[-1].meters, range.range[-1].actual_meters);
       transmit->SetRange(range.range[-1].meters);
     } else if (adjustment > 0 && range.range < max) {
-      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), range.range[0].meters,
-                  range.range[0].actual_meters, range.range[+1].meters, range.range[+1].actual_meters);
+      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), range.range[0].meters, range.range[0].actual_meters,
+                  range.range[+1].meters, range.range[+1].actual_meters);
       transmit->SetRange(range.range[+1].meters);
     }
   }
@@ -628,8 +627,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
 
   rotate += OPENGL_ROTATION;  // Difference between OpenGL and compass + radar
   double guard_rotate = rotate;
-  if (overlay || orientation.value)
-  {
+  if (overlay || orientation.value) {
     guard_rotate += m_pi->m_hdt;
   }
 
