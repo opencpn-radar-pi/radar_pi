@@ -529,7 +529,7 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
       if (text.length() > 0) {
         text << wxT("\n");
       }
-      text << wxString::Format(_("Next alarm in %d s"), m_alarm_sound_timeout + ALARM_TIMEOUT - now);
+      text << wxString::Format(_("Next alarm in %d s"), m_alarm_sound_timeout - now);
     }
   }
 
