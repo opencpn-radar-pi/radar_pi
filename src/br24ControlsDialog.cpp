@@ -1404,9 +1404,9 @@ void br24ControlsDialog::UpdateDialogShown() {
     bool panelShown = m_ri->radar_panel->IsShown();
     bool panelMoved = m_panel_position.IsFullySpecified() && panelPos != m_panel_position;
 
-    if (panelShown                                           // if the radar pane is shown and
-        && (panelMoved  // has moved this session, or
-            || controlInitialShow)) {                                   // the position has never been set at all, ever
+    if (panelShown                     // if the radar pane is shown and
+        && (panelMoved                 // has moved this session, or
+            || controlInitialShow)) {  // the position has never been set at all, ever
       wxSize panelSize = m_ri->radar_panel->GetSize();
       wxSize mySize = this->GetSize();
 
