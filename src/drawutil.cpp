@@ -206,12 +206,12 @@ void DrawRoundRect(float x, float y, float width, float height, float radius) {
 
   if (radius == 0.0) {
     radius = min(width, height);
-    radius *= 0.10;  // 10%
+    radius *= 0.10f;  // 10%
   }
 
   int i;
   float x_offset, y_offset;
-  float step = (2.0f * PI) / (ROUNDING_POINT_COUNT * 4);
+  float step = (float)(2.0f * PI) / (ROUNDING_POINT_COUNT * 4.f);
   float angle = 0.0f;
   float inner_width = width - radius * 2.0f;
   float inner_height = height - radius * 2.0f;

@@ -295,18 +295,18 @@ void RadarCanvas::RenderCursor(int w, int h) {
 void RadarCanvas::Render_EBL_VRM(int w, int h) {
   static const uint8_t rgb[BEARING_LINES][3] = {{22, 129, 154}, {45, 255, 254}};
 
-  double full_range = wxMax(w, h) / 2.0;
-  double center_x = w / 2.0;
-  double center_y = h / 2.0;
+  float full_range = wxMax(w, h) / 2.0;
+  float center_x = w / 2.0;
+  float center_y = h / 2.0;
 
   int display_range = m_ri->GetDisplayRange();
 
   for (int b = 0; b < BEARING_LINES; b++) {
     if (m_ri->m_vrm[b] != 0.0) {
-      double scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
-      double angle = deg2rad(m_ri->m_ebl[b]);
-      double x = center_x + sin(angle) * full_range * 2.;
-      double y = center_y - cos(angle) * full_range * 2.;
+      float scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
+      float angle = (float)deg2rad(m_ri->m_ebl[b]);
+      float x = center_x + sinf(angle) * full_range * 2.;
+      float y = center_y - cosf(angle) * full_range * 2.;
 
       glColor3ubv(rgb[b]);
       glLineWidth(1.0);
@@ -316,7 +316,7 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
       glVertex2f(x, y);
       glEnd();
 
-      DrawArc(center_x, center_y, scale, 0.0, 2.0 * PI, 360);
+      DrawArc(center_x, center_y, scale, 0.f, 2.f * (float)PI, 360);
     }
   }
 }
