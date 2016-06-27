@@ -1396,10 +1396,36 @@ void br24ControlsDialog::UpdateDialogShown() {
 
     m_edit_sizer->Layout();
     m_top_sizer->Layout();
+
+    // If the corresponding radar panel is now in a different position from what we remembered
+    // then reset the dialog to the left or right of the radar panel.
+    wxPoint panelPos = m_ri->radar_panel->GetPos();
+    bool controlInitialShow = m_pi->m_settings.control_pos[m_ri->radar] == OFFSCREEN_CONTROL;
+    bool panelShown = m_ri->radar_panel->IsShown();
+    bool panelMoved = m_panel_position.IsFullySpecified() && panelPos != m_panel_position;
+
+    if (panelShown                                           // if the radar pane is shown and
+        && (panelMoved  // has moved this session, or
+            || controlInitialShow)) {                                   // the position has never been set at all, ever
+      wxSize panelSize = m_ri->radar_panel->GetSize();
+      wxSize mySize = this->GetSize();
+
+      wxPoint newPos;
+      newPos.x = panelPos.x + panelSize.x - mySize.x;
+      newPos.y = panelPos.y;
+      SetPosition(newPos);
+      LOG_DIALOG(wxT("BR24radar_pi: %s: show control menu over menu button"), m_ri->name);
+    } else if (controlInitialShow) {  // When all else fails set it to default position
+      SetPosition(wxPoint(100 + m_ri->radar * 100, 100));
+      LOG_DIALOG(wxT("BR24radar_pi: %s: show control menu at initial location"), m_ri->name);
+    }
+    m_pi->m_settings.control_pos[m_ri->radar] = GetPosition();
+    m_panel_position = panelPos;
   }
   if (m_top_sizer->IsShown(m_control_sizer)) {
     Fit();
   }
+  Raise();
 }
 
 void br24ControlsDialog::HideTemporarily() {
@@ -1415,32 +1441,7 @@ void br24ControlsDialog::UnHideTemporarily() {
 
 void br24ControlsDialog::ShowDialog() {
   m_hide = false;
-
-  if (!IsShown()) {
-    // If the corresponding radar panel is now in a different position from what we remembered
-    // then reset the dialog to the left or right of the radar panel.
-    UnHideTemporarily();  // Do this first so that the size of the control dialog is correct
-    wxPoint panelPos = m_ri->radar_panel->GetPos();
-
-    if (m_ri->radar_panel->IsPaneShown() && m_panel_position.IsFullySpecified()) {
-      if (panelPos != m_panel_position) {
-        wxSize panelSize = m_ri->radar_panel->GetSize();
-        wxSize mySize = this->GetSize();
-
-        wxPoint newPos;
-        newPos.x = panelPos.x + panelSize.x - mySize.x;
-        newPos.y = panelPos.y;
-        SetPosition(newPos);
-      }
-    } else {
-      if (GetPosition() == OFFSCREEN_CONTROL) {
-        SetPosition(wxDefaultPosition);
-      }
-    }
-    m_panel_position = panelPos;
-  } else {
-    UnHideTemporarily();
-  }
+  UnHideTemporarily();
 }
 
 void br24ControlsDialog::ShowBogeys(wxString text) {
