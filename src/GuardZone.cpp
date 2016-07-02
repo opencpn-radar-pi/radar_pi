@@ -62,8 +62,7 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
     }
     if (type == GZ_ARC) {
       in_guard_zone = true;
-    }
-    else if (type == GZ_CIRCLE) {
+    } else if (type == GZ_CIRCLE) {
       if (angle < m_last_angle) {
         in_guard_zone = true;
       }
@@ -71,12 +70,13 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
   }
 
   if (m_last_in_guard_zone && !in_guard_zone) {
-    LOG_GUARD(wxT("BR24radar_pi: GUARD: last_in=%d in=%d angle=%d last_angle=%d"), m_last_in_guard_zone, in_guard_zone, angle, m_last_angle);
+    LOG_GUARD(wxT("BR24radar_pi: GUARD: last_in=%d in=%d angle=%d last_angle=%d"), m_last_in_guard_zone, in_guard_zone, angle,
+              m_last_angle);
     // last bearing that could add to m_running_count, so store as bogey_count;
     m_bogey_count = m_running_count;
     m_running_count = 0;
-    LOG_GUARD(wxT("BR24radar_pi: GUARD: range=%d guardzone=%d..%d (%d - %d) bogey_count=%d"), range, range_start, range_end, inner_range,
-              outer_range, m_bogey_count);
+    LOG_GUARD(wxT("BR24radar_pi: GUARD: range=%d guardzone=%d..%d (%d - %d) bogey_count=%d"), range, range_start, range_end,
+              inner_range, outer_range, m_bogey_count);
 
     // When debugging with a static ship it is hard to find moving targets, so move
     // the guard zone instead. This slowly rotates the guard zone.

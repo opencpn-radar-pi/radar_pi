@@ -1582,8 +1582,7 @@ void br24ControlsDialog::OnStart_Bearing_Value(wxCommandEvent& event) {
 
   temp.ToDouble(&t);
   t = fmod(t, 360.);
-  if (t < 0.)
-  {
+  if (t < 0.) {
     t += 360.;
   }
   m_guard_zone->SetStartBearing(SCALE_DEGREES_TO_RAW2048(t));
@@ -1595,8 +1594,7 @@ void br24ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
 
   temp.ToDouble(&t);
   t = fmod(t, 360.);
-  if (t < 0.)
-  {
+  if (t < 0.) {
     t += 360.;
   }
   m_guard_zone->SetEndBearing(SCALE_DEGREES_TO_RAW2048(t));
