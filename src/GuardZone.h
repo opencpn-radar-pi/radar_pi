@@ -48,7 +48,10 @@ class GuardZone {
   void ResetBogeys() {
     m_bogey_count = 0;
     m_running_count = 0;
+    m_last_in_guard_zone = false;
+    m_last_angle = 0;
   };
+  
   void SetType(GuardZoneType type) {
     this->type = type;
     ResetBogeys();
@@ -79,7 +82,10 @@ class GuardZone {
    */
   void ProcessSpoke(SpokeBearing angle, UINT8 *data, UINT8 *hist, size_t len, int range);
 
-  int GetBogeyCount() { return m_bogey_count; };
+  int GetBogeyCount() {
+    LOG_GUARD(wxT("BR24radar_pi: GUARD: reporting bogey_count=%d"), m_bogey_count);
+    return m_bogey_count;
+  };
 
   GuardZone(br24radar_pi *pi) {
     m_pi = pi;
@@ -96,6 +102,7 @@ class GuardZone {
 
  private:
   br24radar_pi *m_pi;
+  bool m_last_in_guard_zone;
   SpokeBearing m_last_angle;
   int m_bogey_count;    // complete cycle
   int m_running_count;  // current swipe

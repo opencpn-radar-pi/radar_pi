@@ -226,6 +226,7 @@ struct PersistentSettings {
   int guard_zone_render_style;  // 0 = Shading, 1 = Outline, 2 = Shading + Outline
   bool guard_zone_on_overlay;   // 0 = false, 1 = true
   bool trails_on_overlay;       // 0 = false, 1 = true
+  int guard_zone_debug_inc;     // Value to add on every cycle to guard zone bearings, for testing.
   double skew_factor;           // Set to -1 or other value to correct skewing
   int range_units;              // 0 = Nautical miles, 1 = Kilometers
 #define RANGE_NAUTICAL (0)

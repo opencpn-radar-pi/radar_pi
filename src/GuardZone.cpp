@@ -32,17 +32,12 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+#undef TEST_GUARD_ZONE_LOCATION
+
 void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_t len, int range) {
   size_t range_start = inner_range * RETURNS_PER_LINE / range;  // Convert from meters to 0..511
   size_t range_end = outer_range * RETURNS_PER_LINE / range;    // Convert from meters to 0..511
-
-  if (angle < m_last_angle) {
-    // new sweep starts
-    LOG_GUARD(wxT("BR24radar_pi: GUARD: range=%d guardzone=%d..%d (%d - %d)"), range, range_start, range_end, inner_range,
-              outer_range);
-    m_bogey_count = m_running_count;
-  }
-  m_last_angle = angle;
+  bool in_guard_zone = false;
 
   if ((angle >= start_bearing && angle < end_bearing) ||
       (start_bearing >= end_bearing && (angle >= start_bearing || angle < end_bearing))) {
@@ -54,7 +49,7 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
       for (size_t r = range_start; r <= range_end; r++) {
         if (!multi_sweep_filter || HISTORY_FILTER_ALLOW(hist[r])) {
           if (data[r] >= m_pi->m_settings.threshold_blue) {
-            m_bogey_count++;
+            m_running_count++;
           }
 #ifdef TEST_GUARD_ZONE_LOCATION
           // Zap guard zone computation location to green so this is visible on screen
@@ -65,7 +60,36 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
         }
       }
     }
+    if (type == GZ_ARC) {
+      in_guard_zone = true;
+    }
+    else if (type == GZ_CIRCLE) {
+      if (angle < m_last_angle) {
+        in_guard_zone = true;
+      }
+    }
   }
+
+  if (m_last_in_guard_zone && !in_guard_zone) {
+    LOG_GUARD(wxT("BR24radar_pi: GUARD: last_in=%d in=%d angle=%d last_angle=%d"), m_last_in_guard_zone, in_guard_zone, angle, m_last_angle);
+    // last bearing that could add to m_running_count, so store as bogey_count;
+    m_bogey_count = m_running_count;
+    m_running_count = 0;
+    LOG_GUARD(wxT("BR24radar_pi: GUARD: range=%d guardzone=%d..%d (%d - %d) bogey_count=%d"), range, range_start, range_end, inner_range,
+              outer_range, m_bogey_count);
+
+    // When debugging with a static ship it is hard to find moving targets, so move
+    // the guard zone instead. This slowly rotates the guard zone.
+    if (m_pi->m_settings.guard_zone_debug_inc && type == GZ_ARC) {
+      start_bearing += LINES_PER_ROTATION - m_pi->m_settings.guard_zone_debug_inc;
+      end_bearing += LINES_PER_ROTATION - m_pi->m_settings.guard_zone_debug_inc;
+      start_bearing %= LINES_PER_ROTATION;
+      end_bearing %= LINES_PER_ROTATION;
+    }
+  }
+
+  m_last_in_guard_zone = in_guard_zone;
+  m_last_angle = angle;
 }
 
 PLUGIN_END_NAMESPACE

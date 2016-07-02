@@ -29,13 +29,14 @@
  ***************************************************************************
  */
 
-#define M_SETTINGS m_settings
-
 #include "br24radar_pi.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
 
 PLUGIN_BEGIN_NAMESPACE
+
+#undef M_SETTINGS
+#define M_SETTINGS m_settings
 
 // the class factories, used to create and destroy instances of the PlugIn
 
@@ -930,6 +931,7 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
     pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
     pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, 0);
+    pConf->Read(wxT("GuardZoneDebugInc"), &m_settings.guard_zone_debug_inc, 0);
     pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, true);
     pConf->Read(wxT("GuardZonesRenderStyle"), &m_settings.guard_zone_render_style, 0);
     pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
@@ -975,6 +977,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
     pConf->Write(wxT("EmulatorOn"), m_settings.emulator_on);
     pConf->Write(wxT("EnableDualRadar"), m_settings.enable_dual_radar);
+    pConf->Write(wxT("GuardZoneDebugInc"), m_settings.guard_zone_debug_inc);
     pConf->Write(wxT("GuardZoneOnOverlay"), m_settings.guard_zone_on_overlay);
     pConf->Write(wxT("GuardZonesRenderStyle"), m_settings.guard_zone_render_style);
     pConf->Write(wxT("GuardZonesThreshold"), m_settings.guard_zone_threshold);
