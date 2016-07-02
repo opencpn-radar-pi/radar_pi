@@ -1499,8 +1499,19 @@ void br24ControlsDialog::ShowGuardZone(int zone) {
   m_inner_range->SetValue(wxString::Format(wxT("%2.2f"), m_guard_zone->inner_range / conversionFactor));
   m_outer_range->SetValue(wxString::Format(wxT("%2.2f"), m_guard_zone->outer_range / conversionFactor));
 
-  m_start_bearing->SetValue(wxString::Format(wxT("%3.1f"), SCALE_RAW_TO_DEGREES2048(m_guard_zone->start_bearing)));
-  m_end_bearing->SetValue(wxString::Format(wxT("%3.1f"), SCALE_RAW_TO_DEGREES2048(m_guard_zone->end_bearing)));
+  double bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone->start_bearing);
+  if (bearing >= 180.0) {
+    bearing -= 360.;
+  }
+  bearing = round(bearing);
+  m_start_bearing->SetValue(wxString::Format(wxT("%3.0f"), bearing));
+
+  bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone->end_bearing);
+  if (bearing >= 180.0) {
+    bearing -= 360.;
+  }
+  bearing = round(bearing);
+  m_end_bearing->SetValue(wxString::Format(wxT("%3.0f"), bearing));
   m_filter->SetValue(m_guard_zone->multi_sweep_filter ? 1 : 0);
 
   m_top_sizer->Hide(m_control_sizer);
@@ -1562,6 +1573,11 @@ void br24ControlsDialog::OnStart_Bearing_Value(wxCommandEvent& event) {
   double t;
 
   temp.ToDouble(&t);
+  t = fmod(t, 360.);
+  if (t < 0.)
+  {
+    t += 360.;
+  }
   m_guard_zone->SetStartBearing(SCALE_DEGREES_TO_RAW2048(t));
 }
 
@@ -1570,6 +1586,11 @@ void br24ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
   double t;
 
   temp.ToDouble(&t);
+  t = fmod(t, 360.);
+  if (t < 0.)
+  {
+    t += 360.;
+  }
   m_guard_zone->SetEndBearing(SCALE_DEGREES_TO_RAW2048(t));
 }
 
