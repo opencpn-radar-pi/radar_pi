@@ -1445,19 +1445,27 @@ void br24ControlsDialog::ShowDialog() {
 }
 
 void br24ControlsDialog::ShowBogeys(wxString text) {
-  if (m_top_sizer->IsShown(m_control_sizer)) {
-    SwitchTo(m_bogey_sizer);
-    if (!m_hide) {
-      UnHideTemporarily();
-    } else {
-      ShowDialog();
+  if (m_top_sizer && m_bogey_sizer) {
+    if (m_top_sizer->IsShown(m_control_sizer)) {
+      SwitchTo(m_bogey_sizer);
+      if (!m_hide) {
+        UnHideTemporarily();
+      } else {
+        ShowDialog();
+      }
+    }
+    if (m_top_sizer->IsShown(m_bogey_sizer)) {
+      m_bogey_text->SetLabel(text);
+      m_bogey_sizer->Layout();
+      Layout();
+      Fit();
     }
   }
-  if (m_top_sizer->IsShown(m_bogey_sizer)) {
-    m_bogey_text->SetLabel(text);
-    m_bogey_sizer->Layout();
-    Layout();
-    Fit();
+}
+
+void br24ControlsDialog::HideBogeys() {
+  if (m_top_sizer && m_control_sizer && m_top_sizer->IsShown(m_bogey_sizer)) {
+    SwitchTo(m_control_sizer);
   }
 }
 

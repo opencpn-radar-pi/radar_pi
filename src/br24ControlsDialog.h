@@ -69,6 +69,7 @@ class br24ControlsDialog : public wxDialog {
   void UpdateControlValues(bool refreshAll);
   void SetErrorMessage(wxString &msg);
   void ShowBogeys(wxString text);
+  void HideBogeys();
 
   void HideTemporarily();  // When a second dialog (which is not a child class) takes over -- aka GuardZone
   void UnHideTemporarily();

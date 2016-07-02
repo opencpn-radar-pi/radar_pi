@@ -440,6 +440,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
   bool m_guard_bogey_confirmed;
   time_t m_alarm_sound_timeout;
+  time_t m_guard_bogey_timeout; // If we haven't seen bogeys for this long we reset confirm
 #define ALARM_TIMEOUT (10)
 };
 

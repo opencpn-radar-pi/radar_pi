@@ -169,6 +169,7 @@ int br24radar_pi::Init(void) {
   m_guard_bogey_confirmed = false;
 
   m_alarm_sound_timeout = 0;
+  m_guard_bogey_timeout = 0;
   m_bpos_timestamp = 0;
   m_hdt = 0.0;
   m_hdt_timeout = 0;
@@ -516,11 +517,14 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
 
   for (int z = 0; z < GUARD_ZONES; z++) {
     int bogeys = ri->guard_zone[z]->GetBogeyCount();
-    if (bogeys >= 0) {
+    if (bogeys > 0 || (m_guard_bogey_confirmed && bogeys == 0)) {
       if (text.length() > 0) {
         text << wxT("\n");
       }
       text << _("Zone") << wxT(" ") << z + 1 << wxT(": ") << bogeys;
+      if (m_guard_bogey_confirmed) {
+        text << wxT(" ") << _("(Confirmed)");
+      }
     }
   }
   if (withTimeout) {
@@ -560,6 +564,8 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
       if (bogeys_found_this_radar && !m_guard_bogey_confirmed) {
         ShowRadarControl(r);
         m_radar[r]->control_dialog->ShowBogeys(GetGuardZoneText(m_radar[r], true));
+      } else {
+        m_radar[r]->control_dialog->HideBogeys();
       }
     }
   }
@@ -577,10 +583,11 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
       }
     }
     m_guard_bogey_seen = true;
+    m_guard_bogey_timeout = 0;
   } else if (m_guard_bogey_seen) {  // First time here after bogey disappeared. Start timer.
-    m_alarm_sound_timeout = now + ALARM_TIMEOUT;
+    m_guard_bogey_timeout = now + ALARM_TIMEOUT;
     m_guard_bogey_seen = false;
-  } else if (TIMED_OUT(now, m_alarm_sound_timeout)) {  // No bogeys and timer elapsed, now reset confirmed
+  } else if (TIMED_OUT(now, m_guard_bogey_timeout)) {  // No bogeys and timer elapsed, now reset confirmed
     m_guard_bogey_confirmed = false;                   // Reset for next time we see bogeys
   }
 }
