@@ -370,13 +370,6 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
   LOG_DIALOG(wxT("BR24radar_pi: ShowRadarControl(%d, %d)"), radar, (int)show);
 
   if (show) {
-    if (!m_radar[radar]->control_dialog) {
-      m_radar[radar]->control_dialog = new br24ControlsDialog;
-      m_radar[radar]->control_dialog->Create((wxWindow *)(m_radar[radar]->radar_panel), this, m_radar[radar], wxID_ANY,
-                                             m_radar[radar]->name, m_settings.control_pos[radar]);
-      m_radar[radar]->control_dialog->Fit();
-      m_radar[radar]->control_dialog->Hide();
-    }
     m_radar[radar]->control_dialog->ShowDialog();
   } else {
     if (m_radar[radar]->control_dialog) {

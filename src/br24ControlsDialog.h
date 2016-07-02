@@ -131,6 +131,8 @@ class br24ControlsDialog : public wxDialog {
 
   void SetMenuAutoHideTimeout();
 
+  void EnsureWindowNearOpenCPNWindow();
+
   wxWindow *m_parent;
   wxBoxSizer *m_advanced_4G_sizer;
   wxBoxSizer *m_advanced_sizer;

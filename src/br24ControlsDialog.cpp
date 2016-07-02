@@ -1393,6 +1393,7 @@ void br24ControlsDialog::UpdateDialogShown() {
     m_control_sizer->Layout();
     m_top_sizer->Layout();
     Show();
+	Raise();
 
     m_edit_sizer->Layout();
     m_top_sizer->Layout();
@@ -1419,13 +1420,58 @@ void br24ControlsDialog::UpdateDialogShown() {
       SetPosition(wxPoint(100 + m_ri->radar * 100, 100));
       LOG_DIALOG(wxT("BR24radar_pi: %s: show control menu at initial location"), m_ri->name);
     }
+    EnsureWindowNearOpenCPNWindow(); // If the position is really weird, move it
     m_pi->m_settings.control_pos[m_ri->radar] = GetPosition();
     m_panel_position = panelPos;
   }
   if (m_top_sizer->IsShown(m_control_sizer)) {
     Fit();
   }
-  Raise();
+}
+
+#define PROXIMITY_MARGIN 32
+
+void br24ControlsDialog::EnsureWindowNearOpenCPNWindow() {
+	wxWindow * parent = m_pi->m_parent_window;
+	while (parent->GetParent())
+	{
+		parent = parent->GetParent();
+	}
+  wxPoint oPos = parent->GetScreenPosition();
+  wxSize oSize = parent->GetSize();
+  oSize.x += PROXIMITY_MARGIN;
+  oSize.y += PROXIMITY_MARGIN;
+
+  wxPoint mPos = GetPosition();
+  wxSize mSize = GetSize();
+  mSize.x += PROXIMITY_MARGIN;
+  mSize.y += PROXIMITY_MARGIN;
+
+  bool move = false;
+
+  // LOG_DIALOG(wxT("BR24radar_pi: control %d,%d is near OpenCPN at %d,%d to %d,%d?"), mPos.x, mPos.y, oPos.x, oPos.y, oPos.x + oSize.x, oPos.y + oSize.y);
+
+  if (mPos.x + mSize.x < oPos.x) {
+    mPos.x = oPos.x;
+    move = true;
+  }
+  if (oPos.x + oSize.x < mPos.x) {
+    mPos.x = oPos.x + oSize.x - mSize.x;
+    move = true;
+  }
+  if (mPos.y + mSize.y < oPos.y) {
+    mPos.y = oPos.y;
+    move = true;
+  }
+  if (oPos.y + oSize.y < mPos.y) {
+    mPos.y = oPos.y + oSize.y - mSize.y;
+    move = true;
+  }
+  if (move) {
+    LOG_DIALOG(wxT("BR24radar_pi: Move control dialog to %d,%d to be near OpenCPN at %d,%d to %d,%d"), mPos.x, mPos.y, oPos.x, oPos.y, oPos.x + oSize.x, oPos.y + oSize.y);
+  }
+  move = true;
+  SetPosition(mPos);
 }
 
 void br24ControlsDialog::HideTemporarily() {

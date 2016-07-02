@@ -354,7 +354,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   wxString m_perspective[RADARS];  // Temporary storage of window location when plugin is disabled
 
   br24MessageBox *m_pMessageBox;
-
+  wxWindow *m_parent_window;
   wxGLContext *m_opencpn_gl_context;
   bool m_opencpn_gl_context_broken;
 
@@ -406,7 +406,6 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   wxCriticalSection m_exclusive;  // protects callbacks that come from multiple radars
 
   wxFileConfig *m_pconfig;
-  wxWindow *m_parent_window;
   wxMenu *m_context_menu;
   int m_context_menu_control_id;
   int m_context_menu_show_id;

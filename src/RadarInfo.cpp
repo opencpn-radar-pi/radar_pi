@@ -233,6 +233,11 @@ bool RadarInfo::Init(wxString name, int verbose) {
     wxLogError(wxT("BR24radar_pi %s: Unable to create RadarPanel"), name.c_str());
     return false;
   }
+  control_dialog = new br24ControlsDialog;
+  control_dialog->Create((wxWindow *)radar_panel, m_pi, this, wxID_ANY,
+		  name, m_pi->m_settings.control_pos[radar]);
+  control_dialog->Fit();
+  control_dialog->Hide();
 
   m_timer->Start(m_refresh_millis);
   return true;
