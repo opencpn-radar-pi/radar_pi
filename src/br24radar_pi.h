@@ -231,22 +231,23 @@ struct PersistentSettings {
   int range_units;              // 0 = Nautical miles, 1 = Kilometers
 #define RANGE_NAUTICAL (0)
 #define RANGE_METRIC (1)
-  int range_unit_meters;         // ... 1852 or 1000, depending on range_units
-  int max_age;                   // Scans older than this in seconds will be removed
-  int timed_idle;                // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
-  int idle_run_time;             // how long, in seconds, should a idle run be? Value < 30 is ignored set to 30.
-  int refreshrate;               // How quickly to refresh the display
-  bool show;                     // whether to show any radar (overlay or window)
-  bool show_radar[RADARS];       // whether to show radar window
-  bool transmit_radar[RADARS];   // whether radar should be transmitting (persistent)
-  int chart_overlay;             // -1 = none, otherwise = radar number
-  int menu_auto_hide;            // 0 = none, 1 = 10s, 2 = 30s
-  bool pass_heading_to_opencpn;  //
-  bool enable_dual_radar;        // Should the dual radar be enabled for 4G?
-  bool emulator_on;              // Emulator, useful when debugging without radar
-  int drawing_method;            // VertexBuffer, Shader, etc.
-  bool ignore_radar_heading;     // For testing purposes
-  bool reverse_zoom;             // false = normal, true = reverse
+  int range_unit_meters;            // ... 1852 or 1000, depending on range_units
+  int max_age;                      // Scans older than this in seconds will be removed
+  int timed_idle;                   // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
+  int idle_run_time;                // how long, in seconds, should a idle run be? Value < 30 is ignored set to 30.
+  int refreshrate;                  // How quickly to refresh the display
+  bool show;                        // whether to show any radar (overlay or window)
+  bool show_radar[RADARS];          // whether to show radar window
+  bool show_radar_control[RADARS];  // whether to show radar window
+  bool transmit_radar[RADARS];      // whether radar should be transmitting (persistent)
+  int chart_overlay;                // -1 = none, otherwise = radar number
+  int menu_auto_hide;               // 0 = none, 1 = 10s, 2 = 30s
+  bool pass_heading_to_opencpn;     //
+  bool enable_dual_radar;           // Should the dual radar be enabled for 4G?
+  bool emulator_on;                 // Emulator, useful when debugging without radar
+  int drawing_method;               // VertexBuffer, Shader, etc.
+  bool ignore_radar_heading;        // For testing purposes
+  bool reverse_zoom;                // false = normal, true = reverse
   int threshold_red;
   int threshold_green;
   int threshold_blue;
@@ -319,7 +320,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
 
   // Other public methods
 
-  void SetRadarWindowViz();
+  void NotifyRadarWindowViz();
 
   void OnControlDialogClose(RadarInfo *ri);
   void SetDisplayMode(DisplayModeType mode);
@@ -402,6 +403,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
   void CheckTimedTransmit(RadarState state);
   void SetDesiredStateAllRadars(RadarState desiredState);
+  void SetRadarWindowViz();
 
   wxCriticalSection m_exclusive;  // protects callbacks that come from multiple radars
 
@@ -430,6 +432,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   double m_hdm;
 
   bool m_old_data_seen;
+  bool m_notify_radar_window_viz;
 
   int m_auto_range_meters;  // What the range should be, at least, when AUTO mode is selected
   int m_previous_auto_range_meters;

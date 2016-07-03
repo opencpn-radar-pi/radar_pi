@@ -1093,7 +1093,7 @@ void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
     LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), 0, show);
   }
 
-  m_pi->SetRadarWindowViz();
+  m_pi->NotifyRadarWindowViz();
 }
 
 void br24ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
@@ -1351,6 +1351,7 @@ void br24ControlsDialog::UpdateDialogShown() {
       LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown explicit closed: Hidden"), m_ri->name.c_str());
       Hide();
     }
+    m_pi->m_settings.show_radar_control[m_ri->radar] = false;
     return;
   }
 
@@ -1422,6 +1423,7 @@ void br24ControlsDialog::UpdateDialogShown() {
     }
     EnsureWindowNearOpenCPNWindow();  // If the position is really weird, move it
     m_pi->m_settings.control_pos[m_ri->radar] = GetPosition();
+    m_pi->m_settings.show_radar_control[m_ri->radar] = true;
     m_panel_position = panelPos;
   }
   if (m_top_sizer->IsShown(m_control_sizer)) {

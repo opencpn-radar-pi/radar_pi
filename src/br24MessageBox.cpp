@@ -394,10 +394,10 @@ void br24MessageBox::OnMessageCloseButtonClick(wxCommandEvent &event) {
 
 void br24MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
   m_pi->m_settings.show = 0;
-  m_pi->SetRadarWindowViz();
   m_allow_auto_hide = true;
   m_message_state = HIDE;
   Hide();
+  m_pi->NotifyRadarWindowViz();
 }
 
 void br24MessageBox::SetRadarIPAddress(wxString &msg) {

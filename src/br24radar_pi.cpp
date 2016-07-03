@@ -338,19 +338,21 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
   }
 }
 
-/**
- * Set the radar window visibility.
- *
- * @param show        desired visibility state
- */
+// A different thread (or even the control dialog itself) has changed state and now
+// the radar window and control visibility needs to be reset. It can't call SetRadarWindowViz()
+// directly so we redirect via flag and main thread.
+void br24radar_pi::NotifyRadarWindowViz() {
+  m_notify_radar_window_viz = true;
+  Start(0, wxTIMER_ONE_SHOT);
+}
+
 void br24radar_pi::SetRadarWindowViz() {
   int r;
   for (r = 0; r <= (int)m_settings.enable_dual_radar; r++) {
-    bool showThisRadar = (m_settings.show != 0) && (m_settings.show_radar[r] != 0);
+    bool showThisRadar = m_settings.show && m_settings.show_radar[r];
+    bool showThisControl = m_settings.show && m_settings.show_radar_control[r];
     m_radar[r]->ShowRadarWindow(showThisRadar);
-    if (m_settings.show == 0 || (!showThisRadar && m_settings.chart_overlay != r)) {
-      ShowRadarControl(r, false);
-    }
+    m_radar[r]->ShowControlDialog(showThisControl);
     if (m_settings.show == 1 && m_radar[r]->wantedState == RADAR_TRANSMIT) {
       m_radar[r]->transmit->RadarTxOn();
     }
@@ -368,11 +370,12 @@ void br24radar_pi::SetRadarWindowViz() {
 
 void br24radar_pi::ShowRadarControl(int radar, bool show) {
   LOG_DIALOG(wxT("BR24radar_pi: ShowRadarControl(%d, %d)"), radar, (int)show);
-
+  m_settings.show_radar_control[radar] = show;
   m_radar[radar]->ShowControlDialog(show);
 }
 
 void br24radar_pi::OnControlDialogClose(RadarInfo *ri) {
+  m_settings.show_radar_control[ri->radar] = false;
   if (ri->control_dialog) {
     ri->control_dialog->HideDialog();
   }
@@ -629,16 +632,22 @@ void br24radar_pi::CheckTimedTransmit(RadarState state) {
 // This checks if we need to ping the radar to keep it alive (or make it alive)
 
 void br24radar_pi::Notify(void) {
+  if (IsOneShot()) {
+    Start(1000, wxTIMER_CONTINUOUS);
+  }
+
   time_t now = time(0);
 
   if (m_radar[0]->radar_type == RT_BR24) {
     m_settings.enable_dual_radar = 0;
   }
 
-  if (m_opengl_mode_changed) {
+  if (m_opengl_mode_changed || m_notify_radar_window_viz) {
     m_opengl_mode_changed = false;
+    m_notify_radar_window_viz = false;
     SetRadarWindowViz();
   }
+
 
   // Move this
   if (m_heading_source == HEADING_RADAR) {
@@ -902,6 +911,7 @@ bool br24radar_pi::LoadConfig(void) {
         pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
         SetControlValue(r, CT_TARGET_TRAILS, v);
         pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[r], false);
+        pConf->Read(wxString::Format(wxT("Radar%dControlShow"), r), &m_settings.show_radar_control[r], false);
         pConf->Read(wxString::Format(wxT("Radar%dControlPosX"), r), &x, OFFSCREEN_CONTROL_X);
         pConf->Read(wxString::Format(wxT("Radar%dControlPosY"), r), &y, OFFSCREEN_CONTROL_Y);
         m_settings.control_pos[r] = wxPoint(x, y);
@@ -997,6 +1007,7 @@ bool br24radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->orientation.value);
       pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->state.value);
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
+      pConf->Write(wxString::Format(wxT("Radar%dControlShow"), r), m_settings.show_radar_control[r]);
       pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->target_trails.value);
       if (m_radar[r]->control_dialog) {
         m_settings.control_pos[r] = m_radar[r]->control_dialog->GetPosition();
