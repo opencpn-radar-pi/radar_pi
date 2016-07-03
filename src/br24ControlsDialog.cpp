@@ -1354,7 +1354,6 @@ void br24ControlsDialog::UpdateDialogShown() {
       LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown explicit closed: Hidden"), m_ri->name.c_str());
       Hide();
     }
-    m_pi->m_settings.show_radar_control[m_ri->radar] = false;
     return;
   }
 
