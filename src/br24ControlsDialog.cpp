@@ -343,7 +343,7 @@ bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* 
 
   long wstyle = wxCLOSE_BOX | wxCAPTION | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR | wxCLIP_CHILDREN;
 #ifdef __WXMAC__
-  wstyle |= wxSTAY_ON_TOP;  // FLOAT_ON_PARENT is broken on Mac, I know this is not optimal
+  wstyle |= wxSTAY_ON_TOP;  // FLOAT_ON_PARENT doesn't work well for AUI frames on MAC.
 #endif
 
   if (!wxDialog::Create(parent, id, caption, pos, wxDefaultSize, wstyle)) {
@@ -1081,10 +1081,13 @@ void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
         show = false;
       }
     }
-    m_pi->m_settings.show_radar[0] = show;
-    m_pi->m_settings.show_radar[1] = show;
-    LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), 0, show);
-    LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), 1, show);
+    for (int r = 0; r < RADARS; r++) {
+      m_pi->m_settings.show_radar[r] = show;
+      if (!show && m_pi->m_settings.chart_overlay != r) {
+        m_pi->m_settings.show_radar_control[r] = false;
+      }
+      LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), r, show);
+    }
   } else {
     if (m_ri->IsPaneShown()) {
       show = false;

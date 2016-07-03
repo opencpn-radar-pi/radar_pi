@@ -457,11 +457,6 @@ void RadarCanvas::OnMouseWheel(wxMouseEvent &event) {
   int delta = event.GetWheelDelta();
   int rotation = event.GetWheelRotation();
 
-  if (!m_ri->control_dialog) {
-    LOG_DIALOG(wxT("BR24radar_pi: ignore mousewheel for non existing control dialog"));
-    return;
-  }
-
   wxLongLong now = wxGetUTCTimeMillis();
 
   LOG_INFO(wxT("BR24radar_pi: %s Mouse range wheel %d / %d"), m_ri->name.c_str(), rotation, delta);

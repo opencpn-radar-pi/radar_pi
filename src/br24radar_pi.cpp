@@ -343,7 +343,9 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
 // directly so we redirect via flag and main thread.
 void br24radar_pi::NotifyRadarWindowViz() {
   m_notify_radar_window_viz = true;
+#ifdef __WXMSW__
   Start(0, wxTIMER_ONE_SHOT);
+#endif
 }
 
 void br24radar_pi::SetRadarWindowViz() {
@@ -551,8 +553,10 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
       }
       if (bogeys_found_this_radar && !m_guard_bogey_confirmed) {
         ShowRadarControl(r);
-        m_radar[r]->control_dialog->ShowBogeys(GetGuardZoneText(m_radar[r], true));
-      } else {
+        if (m_radar[r]->control_dialog) {
+          m_radar[r]->control_dialog->ShowBogeys(GetGuardZoneText(m_radar[r], true));
+        }
+      } else if (m_radar[r]->control_dialog) {
         m_radar[r]->control_dialog->HideBogeys();
       }
     }
