@@ -369,15 +369,7 @@ void br24radar_pi::SetRadarWindowViz() {
 void br24radar_pi::ShowRadarControl(int radar, bool show) {
   LOG_DIALOG(wxT("BR24radar_pi: ShowRadarControl(%d, %d)"), radar, (int)show);
 
-  if (show) {
-    m_radar[radar]->control_dialog->ShowDialog();
-  } else {
-    if (m_radar[radar]->control_dialog) {
-      m_radar[radar]->control_dialog->HideDialog();
-    }
-  }
-
-  m_radar[radar]->UpdateControlState(true);
+  m_radar[radar]->ShowControlDialog(show);
 }
 
 void br24radar_pi::OnControlDialogClose(RadarInfo *ri) {

@@ -233,14 +233,24 @@ bool RadarInfo::Init(wxString name, int verbose) {
     wxLogError(wxT("BR24radar_pi %s: Unable to create RadarPanel"), name.c_str());
     return false;
   }
-  control_dialog = new br24ControlsDialog;
-  control_dialog->Create((wxWindow *)radar_panel, m_pi, this, wxID_ANY,
-		  name, m_pi->m_settings.control_pos[radar]);
-  control_dialog->Fit();
-  control_dialog->Hide();
-
   m_timer->Start(m_refresh_millis);
   return true;
+}
+
+void RadarInfo::ShowControlDialog(bool show) {
+  if (show) {
+    if (control_dialog) {
+      delete control_dialog;
+    }
+    control_dialog = new br24ControlsDialog;
+    control_dialog->Create((wxWindow *)radar_panel, m_pi, this, wxID_ANY, name, m_pi->m_settings.control_pos[radar]);
+    control_dialog->ShowDialog();
+    UpdateControlState(true);
+  } else {
+    if (control_dialog) {
+      control_dialog->HideDialog();
+    }
+  }
 }
 
 void RadarInfo::SetNetworkCardAddress(struct sockaddr_in *address) {
@@ -562,13 +572,6 @@ void RadarInfo::UpdateControlState(bool all) {
     control_dialog->UpdateControlValues(all);
     control_dialog->UpdateDialogShown();
   }
-
-/* Don't do this, it interferes with a 2nd device */
-#if 0
-  if (wantedState != state.value && state.value != RADAR_OFF) {
-    FlipRadarState();
-  }
-#endif
 
   if (IsPaneShown()) {
     radar_panel->Refresh(false);

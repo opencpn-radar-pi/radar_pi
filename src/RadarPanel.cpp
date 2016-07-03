@@ -76,7 +76,6 @@ bool RadarPanel::Create() {
   pane.FloatingPosition(30 + 540 * m_ri->radar, 120);  // Besides each other, below the icon bar
   pane.Float();
   pane.dock_proportion = 100000;  // Secret sauce to get panels to use entire bar
-  pane.Hide();
 
   m_aui_mgr->AddPane(this, pane);
   m_aui_mgr->Update();
