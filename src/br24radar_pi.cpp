@@ -652,7 +652,6 @@ void br24radar_pi::Notify(void) {
     SetRadarWindowViz();
   }
 
-
   // Move this
   if (m_heading_source == HEADING_RADAR) {
     if (m_pMessageBox->IsShown()) {
