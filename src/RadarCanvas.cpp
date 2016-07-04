@@ -89,9 +89,13 @@ void RadarCanvas::RenderTexts(int w, int h) {
 
   wxString s;
 
+#define MENU_ROUNDING 4
 #define MENU_BORDER 8
 #define MENU_EXTRA_WIDTH 32
-  s = "Menu";
+
+  // Draw Menu in the top right
+
+  s = _("Menu");
   m_FontMenu.GetTextExtent(s, &x, &y);
 
   // Calculate the size of the rounded rect, this is also where you can 'click'...
@@ -105,6 +109,23 @@ void RadarCanvas::RenderTexts(int w, int h) {
   glColor4ub(100, 255, 255, 255);
   // The Menu text is slightly inside the rect
   m_FontMenu.RenderString(s, w - m_menu_size.x + MENU_BORDER + MENU_EXTRA_WIDTH, MENU_BORDER);
+
+  // Draw - + in mid bottom
+
+  s = wxT("  -   + ");
+  m_FontMenuBold.GetTextExtent(s, &x, &y);
+
+  // Calculate the size of the rounded rect, this is also where you can 'click'...
+  m_zoom_size.x = x + 2 * (MENU_BORDER);
+  m_zoom_size.y = y + 2 * (MENU_BORDER);
+
+  glColor4ub(80, 80, 80, 128);
+
+  DrawRoundRect(w / 2 - m_zoom_size.x / 2, h - m_zoom_size.y + MENU_ROUNDING, m_zoom_size.x, m_zoom_size.y, MENU_ROUNDING);
+
+  glColor4ub(200, 200, 200, 255);
+  // The Menu text is slightly inside the rect
+  m_FontMenuBold.RenderString(s, w / 2 - m_zoom_size.x / 2 + MENU_BORDER, h - m_zoom_size.y + MENU_BORDER);
 
   glColor4ub(200, 255, 200, 255);
 
@@ -351,10 +372,14 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   m_FontNormal.Build(font);
   wxFont bigFont = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
   bigFont.SetPointSize(bigFont.GetPointSize() + 2);
-  bigFont.SetStyle(wxFONTSTYLE_MAX);
+  bigFont.SetStyle(wxFONTWEIGHT_BOLD);
   m_FontBig.Build(bigFont);
   bigFont.SetPointSize(bigFont.GetPointSize() + 2);
+  bigFont.SetStyle(wxFONTWEIGHT_NORMAL);
   m_FontMenu.Build(bigFont);
+  bigFont.SetPointSize(bigFont.GetPointSize() + 10);
+  bigFont.SetStyle(wxFONTWEIGHT_BOLD);
+  m_FontMenuBold.Build(bigFont);
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                // Black Background
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // Clear the canvas
@@ -423,14 +448,22 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
   event.GetPosition(&x, &y);
   GetClientSize(&w, &h);
 
+  int center_x = w / 2;
+  int center_y = h / 2;
+
   LOG_DIALOG(wxT("BR24radar_pi: %s Mouse clicked at %d, %d"), m_ri->name.c_str(), x, y);
 
   if (x >= w - m_menu_size.x && y < m_menu_size.y) {
     m_pi->ShowRadarControl(m_ri->radar, true);
-  } else {
-    int center_x = w / 2;
-    int center_y = h / 2;
+  } else if ((x >= center_x - m_zoom_size.x / 2) && (x <= center_x + m_zoom_size.x / 2) &&
+             (y > h - m_zoom_size.y + MENU_ROUNDING)) {
+    if (x > center_x) {
+      m_ri->AdjustRange(-1);
+    } else {
+      m_ri->AdjustRange(+1);
+    }
 
+  } else {
     double delta_x = x - center_x;
     double delta_y = y - center_y;
 
