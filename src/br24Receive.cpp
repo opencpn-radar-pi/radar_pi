@@ -265,6 +265,8 @@ void br24Receive::EmulateFakeBuffer(void) {
   m_ri->m_data_timeout = now + WATCHDOG_TIMEOUT;
   m_ri->state.Update(RADAR_TRANSMIT);
 
+  m_next_rotation = (m_next_rotation + 1) % SPOKES;
+
   int scanlines_in_packet = SPOKES * 24 / 60;
   int range_meters = 2308;
   int display_range_meters = 1500;
@@ -281,7 +283,7 @@ void br24Receive::EmulateFakeBuffer(void) {
     for (size_t range = 0; range < sizeof(data); range++) {
       size_t bit = range >> 7;
       // use bit 'bit' of angle_raw
-      UINT8 color = ((angle_raw >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
+      UINT8 color = (((angle_raw + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
       data[range] = color;
       if (color > 0) {
         spots++;
