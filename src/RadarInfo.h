@@ -40,6 +40,15 @@ class RadarDraw;
 class RadarCanvas;
 class RadarPanel;
 
+struct RadarRange {
+  int meters;
+  int actual_meters;
+  const char *name;
+  const char *range1;
+  const char *range2;
+  const char *range3;
+};
+
 class radar_control_item {
  public:
   int value;
@@ -47,7 +56,7 @@ class radar_control_item {
   bool mod;
 
   void Update(int v) {
-    wxMutexLocker lock(m_mutex);
+    wxCriticalSectionLocker lock(m_exclusive);
 
     if (v != button) {
       mod = true;
@@ -57,7 +66,7 @@ class radar_control_item {
   };
 
   int GetButton() {
-    wxMutexLocker lock(m_mutex);
+    wxCriticalSectionLocker lock(m_exclusive);
 
     mod = false;
     return button;
@@ -69,8 +78,22 @@ class radar_control_item {
     mod = false;
   }
 
- private:
-  wxMutex m_mutex;
+ protected:
+  wxCriticalSection m_exclusive;
+};
+
+class radar_range_control_item : public radar_control_item {
+ public:
+  const RadarRange *range;
+
+  void Update(int v);
+
+  radar_range_control_item() {
+    value = 0;
+    button = 0;
+    mod = false;
+    range = 0;
+  }
 };
 
 struct DrawInfo {
@@ -79,24 +102,16 @@ struct DrawInfo {
   bool color_option;
 };
 
-struct RadarRange {
-  int meters;
-  int actual_meters;
-  const char *name;
-  const char *range1;
-  const char *range2;
-  const char *range3;
-};
-
 typedef UINT8 TrailRevolutionsAge;
-#define SECONDS_TO_REVOLUTIONS(x) (x * 2 / 5)
-#define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(300)
-#define TRAIL_CONTINUOUS (TRAIL_MAX_REVOLUTIONS + 1)
+#define SECONDS_TO_REVOLUTIONS(x) ((x)*2 / 5)
+#define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(180)
+#define TRAIL_CONTINUOUS SECONDS_TO_REVOLUTIONS(180 + 18)
 
 class RadarInfo : public wxEvtHandler {
  public:
   wxString name;  // Either "Radar", "Radar A", "Radar B".
-  int radar;      // Which radar this is (0..., max 2 for now)
+  br24radar_pi *m_pi;
+  int radar;  // Which radar this is (0..., max 2 for now)
 
   /* User radar settings */
 
@@ -105,7 +120,7 @@ class RadarInfo : public wxEvtHandler {
 #define ORIENTATION_HEAD_UP (0)
 #define ORIENTATION_NORTH_UP (1)
   radar_control_item overlay;
-  radar_control_item range;  // value in meters
+  radar_range_control_item range;  // value in meters
   radar_control_item gain;
   radar_control_item interference_rejection;
   radar_control_item target_separation;
@@ -151,7 +166,7 @@ class RadarInfo : public wxEvtHandler {
   double m_vrm[BEARING_LINES];
   receive_statistics statistics;
 
-  bool multi_sweep_filter;
+  bool m_multi_sweep_filter;
   UINT8 history[LINES_PER_ROTATION][RETURNS_PER_LINE];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
@@ -159,10 +174,10 @@ class RadarInfo : public wxEvtHandler {
 
   /* Methods */
 
-  RadarInfo(br24radar_pi *pi, wxString name, int radar);
+  RadarInfo(br24radar_pi *pi, int radar);
   ~RadarInfo();
 
-  bool Init(int verbose);
+  bool Init(wxString name, int verbose);
   void StartReceive();
   void SetName(wxString name);
   void AdjustRange(int adjustment);
@@ -174,9 +189,12 @@ class RadarInfo : public wxEvtHandler {
   void RenderGuardZone();
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
+  void ShowControlDialog(bool show);
+
   bool IsPaneShown();
 
   void UpdateControlState(bool all);
+  void ComputeColorMap();
   void ComputeTargetTrails();
   void FlipRadarState();
   wxString &GetRangeText();
@@ -187,6 +205,7 @@ class RadarInfo : public wxEvtHandler {
   void SetMouseVrmEbl(double vrm, double ebl);
   void SetBearing(int bearing);
   void ClearTrails();
+  bool IsDisplayNorthUp() { return orientation.value == ORIENTATION_NORTH_UP && m_pi->m_heading_source != HEADING_NONE; }
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
@@ -194,21 +213,26 @@ class RadarInfo : public wxEvtHandler {
 
   double m_mouse_lat, m_mouse_lon, m_mouse_vrm, m_mouse_ebl;
 
+  // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
+  GLubyte m_color_map_red[BLOB_RED + 1];
+  GLubyte m_color_map_green[BLOB_RED + 1];
+  GLubyte m_color_map_blue[BLOB_RED + 1];
+  BlobColor m_color_map[UINT8_MAX + 1];
+
  private:
   void RenderRadarImage(DrawInfo *di);
   wxString FormatDistance(double distance);
+  wxString FormatAngle(double angle);
 
-  int m_range_meters;                 // what radar told us is the range in the last received spoke
-  const RadarRange *m_current_range;  // Current range, if known range
+  int m_range_meters;  // what radar told us is the range in the last received spoke
 
   int m_previous_auto_range_meters;
   int m_auto_range_meters;
 
-  wxMutex m_mutex;          // protects the following two
-  DrawInfo m_draw_panel;    // Draw onto our own panel
-  DrawInfo m_draw_overlay;  // Abstract painting method
+  wxCriticalSection m_exclusive;  // protects the following two
+  DrawInfo m_draw_panel;          // Draw onto our own panel
+  DrawInfo m_draw_overlay;        // Abstract painting method
 
-  br24radar_pi *m_pi;
   int m_verbose;
   wxTimer *m_timer;
 

@@ -62,6 +62,8 @@ class br24radar_pi;
 #define GUARD_ZONES (2)             // Could be increased if wanted
 #define BEARING_LINES (2)           // And these as well
 
+#define OPENGL_ROTATION (-90.0)  // Difference between 'up' and OpenGL 'up'...
+
 typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a bearing (? = North,
                            // +ve = clockwise)
 
@@ -184,7 +186,6 @@ enum BlobColor {
   BLOB_RED
 };
 
-extern size_t convertMetersToRadarAllowedValue(int *range_meters, int units, RadarType radar_type);
 extern const char *convertRadarToString(int range_meters, int units, int index);
 extern double local_distance(double lat1, double lon1, double lat2, double lon2);
 extern double local_bearing(double lat1, double lon1, double lat2, double lon2);
@@ -223,31 +224,35 @@ struct PersistentSettings {
   int display_option;           // Monocolor-red or Multi-color
   int guard_zone_threshold;     // How many blobs must be sent by radar before we fire alarm
   int guard_zone_render_style;  // 0 = Shading, 1 = Outline, 2 = Shading + Outline
-  int guard_zone_on_overlay;    // 0 = false, 1 = true
+  bool guard_zone_on_overlay;   // 0 = false, 1 = true
+  bool trails_on_overlay;       // 0 = false, 1 = true
+  int guard_zone_debug_inc;     // Value to add on every cycle to guard zone bearings, for testing.
   double skew_factor;           // Set to -1 or other value to correct skewing
   int range_units;              // 0 = Nautical miles, 1 = Kilometers
 #define RANGE_NAUTICAL (0)
 #define RANGE_METRIC (1)
-  int range_unit_meters;         // ... 1852 or 1000, depending on range_units
-  int max_age;                   // Scans older than this in seconds will be removed
-  int timed_idle;                // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
-  int idle_run_time;             // how long, in seconds, should a idle run be? Value < 30 is ignored set to 30.
-  int refreshrate;               // How quickly to refresh the display
-  int show;                      // whether to show any radar (overlay or window)
-  int show_radar[RADARS];        // whether to show radar window
-  int transmit_radar[RADARS];    // whether radar should be transmitting (persistent)
-  int chart_overlay;             // -1 = none, otherwise = radar number
-  int menu_auto_hide;            // 0 = none, 1 = 10s, 2 = 30s
-  bool pass_heading_to_opencpn;  //
-  bool enable_dual_radar;        // Should the dual radar be enabled for 4G?
-  bool emulator_on;              // Emulator, useful when debugging without radar
-  int drawing_method;            // VertexBuffer, Shader, etc.
-  int ignore_radar_heading;      // For testing purposes
-  int reverse_zoom;              // 0 = normal, 1 = reverse
+  int range_unit_meters;            // ... 1852 or 1000, depending on range_units
+  int max_age;                      // Scans older than this in seconds will be removed
+  int timed_idle;                   // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
+  int idle_run_time;                // how long, in seconds, should a idle run be? Value < 30 is ignored set to 30.
+  int refreshrate;                  // How quickly to refresh the display
+  bool show;                        // whether to show any radar (overlay or window)
+  bool show_radar[RADARS];          // whether to show radar window
+  bool show_radar_control[RADARS];  // whether to show radar window
+  bool transmit_radar[RADARS];      // whether radar should be transmitting (persistent)
+  int chart_overlay;                // -1 = none, otherwise = radar number
+  int menu_auto_hide;               // 0 = none, 1 = 10s, 2 = 30s
+  bool pass_heading_to_opencpn;     //
+  bool enable_dual_radar;           // Should the dual radar be enabled for 4G?
+  bool emulator_on;                 // Emulator, useful when debugging without radar
+  int drawing_method;               // VertexBuffer, Shader, etc.
+  bool ignore_radar_heading;        // For testing purposes
+  bool reverse_zoom;                // false = normal, true = reverse
   int threshold_red;
   int threshold_green;
   int threshold_blue;
   int threshold_multi_sweep;
+  wxPoint control_pos[RADARS];
   wxString alert_audio_file;
   wxString mcast_address;
 };
@@ -315,7 +320,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
 
   // Other public methods
 
-  void SetRadarWindowViz(bool show);
+  void NotifyRadarWindowViz();
 
   void OnControlDialogClose(RadarInfo *ri);
   void SetDisplayMode(DisplayModeType mode);
@@ -328,12 +333,8 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   bool SetControlValue(int radar, ControlType controlType, int value);
 
   // Various state decisions
-  bool IsRadarOnScreen(int radar) {
-    return m_settings.show > 0 && (m_settings.show_radar[radar] || m_settings.chart_overlay == radar);
-  }
-  bool IsOverlayOnScreen(int radar) { return m_settings.show > 0 && m_settings.chart_overlay == radar; }
-
-  void ComputeColorMap();
+  bool IsRadarOnScreen(int radar) { return m_settings.show && (m_settings.show_radar[radar] || m_settings.chart_overlay == radar); }
+  bool IsOverlayOnScreen(int radar) { return m_settings.show && m_settings.chart_overlay == radar; }
 
   bool LoadConfig();
   bool SaveConfig();
@@ -354,7 +355,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   wxString m_perspective[RADARS];  // Temporary storage of window location when plugin is disabled
 
   br24MessageBox *m_pMessageBox;
-
+  wxWindow *m_parent_window;
   wxGLContext *m_opencpn_gl_context;
   bool m_opencpn_gl_context_broken;
 
@@ -381,14 +382,13 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   double m_cursor_lat, m_cursor_lon;
   double m_ownship_lat, m_ownship_lon;
 
-  bool m_initialized;  // True if Init() succeeded and DeInit() not called yet.
-  bool m_first_init;   // True in first Init() call.
+  bool m_initialized;      // True if Init() succeeded and DeInit() not called yet.
+  bool m_first_init;       // True in first Init() call.
+  wxLongLong m_boot_time;  // millis when started
 
-  // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
-  GLubyte m_color_map_red[BLOB_RED + 1];
-  GLubyte m_color_map_green[BLOB_RED + 1];
-  GLubyte m_color_map_blue[BLOB_RED + 1];
-  BlobColor m_color_map[UINT8_MAX + 1];
+  // Timed Transmit
+  time_t m_idle_standby;   // When we will change to standby
+  time_t m_idle_transmit;  // When we will change to transmit
 
  private:
   void RadarSendState(void);
@@ -403,12 +403,11 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
   void CheckTimedTransmit(RadarState state);
   void SetDesiredStateAllRadars(RadarState desiredState);
+  void SetRadarWindowViz();
 
-  wxMutex m_mutex;  // protects callbacks that come from multiple radars
+  wxCriticalSection m_exclusive;  // protects callbacks that come from multiple radars
 
   wxFileConfig *m_pconfig;
-  wxWindow *m_parent_window;
-  wxMenu *m_context_menu;
   int m_context_menu_control_id;
   int m_context_menu_show_id;
   int m_context_menu_hide_id;
@@ -432,17 +431,17 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   double m_hdm;
 
   bool m_old_data_seen;
+  bool m_notify_radar_window_viz;
 
   int m_auto_range_meters;  // What the range should be, at least, when AUTO mode is selected
   int m_previous_auto_range_meters;
 
-  // Timed Transmit
-  time_t m_idle_timeout;  // When we will flip transmit/standby in automatic Timed Transmit
-
 #define HEADING_TIMEOUT (5)
 
+  bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
   bool m_guard_bogey_confirmed;
   time_t m_alarm_sound_timeout;
+  time_t m_guard_bogey_timeout;  // If we haven't seen bogeys for this long we reset confirm
 #define ALARM_TIMEOUT (10)
 };
 

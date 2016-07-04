@@ -185,4 +185,84 @@ PolarToCartesianLookupTable* GetPolarToCartesianLookupTable() {
   return lookupTable;
 }
 
+typedef struct {
+  float x;
+  float y;
+} Vector2f;
+
+//
+//  Draws rounded rectangle.
+//
+//  Slightly tuned version of http://stackoverflow.com/questions/5369507/opengles-1-0-2d-rounded-rectangle
+//
+//  Terminology of the corners is wrong because this thinks y++ is up but it is down...
+//
+#define ROUNDING_POINT_COUNT 8  // Larger values makes circle smoother.
+void DrawRoundRect(float x, float y, float width, float height, float radius) {
+  Vector2f top_left[ROUNDING_POINT_COUNT];
+  Vector2f bottom_left[ROUNDING_POINT_COUNT];
+  Vector2f top_right[ROUNDING_POINT_COUNT];
+  Vector2f bottom_right[ROUNDING_POINT_COUNT];
+
+  if (radius == 0.0) {
+    radius = min(width, height);
+    radius *= 0.10f;  // 10%
+  }
+
+  int i;
+  float x_offset, y_offset;
+  float step = (float)(2.0f * PI) / (ROUNDING_POINT_COUNT * 4.f);
+  float angle = 0.0f;
+  float inner_width = width - radius * 2.0f;
+  float inner_height = height - radius * 2.0f;
+
+  const unsigned int segment_count = ROUNDING_POINT_COUNT;
+  Vector2f top_left_corner = {x + radius, y + radius};
+
+  for (i = 0; i < segment_count; i++) {
+    x_offset = cosf(angle);
+    y_offset = sinf(angle);
+
+    top_left[i].x = top_left_corner.x - (x_offset * radius);
+    top_left[i].y = top_left_corner.y - (y_offset * radius);
+
+    top_right[i].x = top_left_corner.x + (x_offset * radius) + inner_width;
+    top_right[i].y = top_left_corner.y - (y_offset * radius);
+
+    bottom_right[i].x = top_left_corner.x + (x_offset * radius) + inner_width;
+    bottom_right[i].y = top_left_corner.y + (y_offset * radius) + inner_height;
+
+    bottom_left[i].x = top_left_corner.x - (x_offset * radius);
+    bottom_left[i].y = top_left_corner.y + (y_offset * radius) + inner_height;
+
+    angle += step;
+  }
+
+  glBegin(GL_TRIANGLE_STRIP);
+  {
+    // Top
+    for (i = segment_count - 1; i >= 0; i--) {
+      glVertex2f(top_right[i].x, top_right[i].y);
+      glVertex2f(top_left[i].x, top_left[i].y);
+    }
+
+    // In order to stop and restart the strip.
+    glVertex2f(top_right[0].x, top_right[0].y);
+    glVertex2f(top_right[0].x, top_right[0].y);
+
+    // Center
+    glVertex2f(top_right[0].x, top_right[0].y);
+    glVertex2f(top_left[0].x, top_left[0].y);
+    glVertex2f(bottom_right[0].x, bottom_right[0].y);
+    glVertex2f(bottom_left[0].x, bottom_left[0].y);
+
+    // Bottom
+    for (i = 0; i < segment_count; i++) {
+      glVertex2f(bottom_right[i].x, bottom_right[i].y);
+      glVertex2f(bottom_left[i].x, bottom_left[i].y);
+    }
+  }
+  glEnd();
+}  // DrawRoundRect
+
 PLUGIN_END_NAMESPACE

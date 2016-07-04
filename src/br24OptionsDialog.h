@@ -38,7 +38,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 class br24OptionsDialog : public wxDialog {
  public:
-  br24OptionsDialog(wxWindow* parent, PersistentSettings &settings);
+  br24OptionsDialog(wxWindow* parent, PersistentSettings& settings);
   PersistentSettings GetSettings() { return m_settings; };
 
  private:
@@ -49,6 +49,7 @@ class br24OptionsDialog : public wxDialog {
   void OnDisplayModeClick(wxCommandEvent& event);
   void OnGuardZoneStyleClick(wxCommandEvent& event);
   void OnGuardZoneOnOverlayClick(wxCommandEvent& event);
+  void OnTrailsOnOverlayClick(wxCommandEvent& event);
   void OnSelectSoundClick(wxCommandEvent& event);
   void OnTestSoundClick(wxCommandEvent& event);
   void OnPassHeadingClick(wxCommandEvent& event);
@@ -66,13 +67,13 @@ class br24OptionsDialog : public wxDialog {
   wxRadioBox* m_DisplayMode;
   wxRadioBox* m_GuardZoneStyle;
   wxRadioBox* m_GuardZoneOnOverlay;
+  wxRadioBox* m_TrailsOnOverlay;
   wxCheckBox* m_PassHeading;
   wxComboBox* m_DrawingMethod;
   wxComboBox* m_MenuAutoHide;
   wxCheckBox* m_EnableDualRadar;
   wxCheckBox* m_Emulator;
   wxCheckBox* m_ReverseZoom;
-  
 };
 
 PLUGIN_END_NAMESPACE

@@ -48,6 +48,8 @@ struct PolarToCartesianLookupTable {
 
 extern PolarToCartesianLookupTable* GetPolarToCartesianLookupTable();
 
+extern void DrawRoundRect(float x, float y, float width, float height, float radius = 0.0);
+
 PLUGIN_END_NAMESPACE
 
 #endif

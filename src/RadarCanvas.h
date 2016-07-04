@@ -55,10 +55,6 @@ class RadarCanvas : public wxGLCanvas {
   void RenderCursor(int w, int h);
   void Render_EBL_VRM(int w, int h);
 
-  double GetHeading() {
-    return ((m_pi->m_heading_source != HEADING_NONE && m_ri->orientation.value == ORIENTATION_HEAD_UP) ? m_pi->m_hdt : 0.) + 180.;
-  }
-
   wxWindow* m_parent;
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
@@ -68,6 +64,10 @@ class RadarCanvas : public wxGLCanvas {
 
   TextureFont m_FontNormal;
   TextureFont m_FontBig;
+  TextureFont m_FontMenu;
+  TextureFont m_FontMenuBold;
+  wxSize m_menu_size;
+  wxSize m_zoom_size;
 
   unsigned int m_cursor_texture;
 

@@ -337,13 +337,13 @@ bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* 
 
   m_hide = false;
   m_hide_temporarily = true;
-  m_panel_position = wxPoint(0, 0);
+  m_panel_position = wxDefaultPosition;
 
   m_from_control = 0;
 
   long wstyle = wxCLOSE_BOX | wxCAPTION | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR | wxCLIP_CHILDREN;
 #ifdef __WXMAC__
-  wstyle |= wxSTAY_ON_TOP;  // FLOAT_ON_PARENT is broken on Mac, I know this is not optimal
+  wstyle |= wxSTAY_ON_TOP;  // FLOAT_ON_PARENT doesn't work well for AUI frames on MAC.
 #endif
 
   if (!wxDialog::Create(parent, id, caption, pos, wxDefaultSize, wstyle)) {
@@ -464,7 +464,7 @@ void br24ControlsDialog::CreateControls() {
   m_plus_button->SetFont(m_pi->m_font);
 
   // The VALUE button
-  wxSize valueSize =  wxSize(g_buttonSize.x, g_buttonSize.y + 20);
+  wxSize valueSize = wxSize(g_buttonSize.x, g_buttonSize.y + 20);
   m_value_text = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, valueSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   m_edit_sizer->Add(m_value_text, 0, wxALL, BORDER);
   m_value_text->SetFont(m_pi->m_fat_font);
@@ -484,13 +484,6 @@ void br24ControlsDialog::CreateControls() {
   m_auto_button = new wxButton(this, ID_AUTO, _("Auto"), wxDefaultPosition, g_buttonSize, 0);
   m_edit_sizer->Add(m_auto_button, 0, wxALL, BORDER);
   m_auto_button->SetFont(m_pi->m_font);
-
-  // The Multi Sweep Filter button
-  wxString labelMS;
-  labelMS << _("Multi Sweep Filter") << wxT("\n") << _("Off");
-  m_multi_sweep_button = new wxButton(this, ID_MULTISWEEP, labelMS, wxDefaultPosition, g_buttonSize, 0);
-  m_edit_sizer->Add(m_multi_sweep_button, 0, wxALL, BORDER);
-  m_multi_sweep_button->SetFont(m_pi->m_font);
 
   m_top_sizer->Hide(m_edit_sizer);
 
@@ -586,13 +579,6 @@ void br24ControlsDialog::CreateControls() {
   m_target_boost_button->names = target_boost_names;
   m_target_boost_button->SetLocalValue(m_ri->target_boost.button);  // redraw after adding names
 
-  // The REFRESHRATE button
-  m_refresh_rate_button =
-      new br24RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), CT_REFRESHRATE, false, m_pi->m_settings.refreshrate);
-  m_advanced_sizer->Add(m_refresh_rate_button, 0, wxALL, BORDER);
-  m_refresh_rate_button->minValue = 1;
-  m_refresh_rate_button->maxValue = 5;
-
   // The INSTALLATION button
   wxButton* bInstallation = new wxButton(this, ID_INSTALLATION, _("Installation"), wxDefaultPosition, g_smallButtonSize, 0);
   m_advanced_sizer->Add(bInstallation, 0, wxALL, BORDER);
@@ -662,7 +648,7 @@ void br24ControlsDialog::CreateControls() {
       new wxStaticText(this, wxID_ANY, _("Zone 1: unknown\nZone 2: unknown\nTimeout\n"), wxDefaultPosition, wxDefaultSize, 0);
   m_bogey_sizer->Add(m_bogey_text, 0, wxALIGN_LEFT | wxALL, BORDER);
 
-  m_bogey_confirm = new wxButton(this, ID_CONFIRM_BOGEY, _("&Confirm"), wxDefaultPosition, wxDefaultSize, 0);
+  m_bogey_confirm = new wxButton(this, ID_CONFIRM_BOGEY, _("&Confirm"), wxDefaultPosition, g_smallButtonSize, 0);
   m_bogey_sizer->Add(m_bogey_confirm, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
 
   m_top_sizer->Hide(m_bogey_sizer);
@@ -817,11 +803,25 @@ void br24ControlsDialog::CreateControls() {
   m_view_sizer->Add(m_clear_trails_button, 0, wxALL, BORDER);
   m_clear_trails_button->SetFont(m_pi->m_font);
 
+  // The Multi Sweep Filter button
+  wxString labelMS;
+  labelMS << _("Multi Sweep Filter") << wxT("\n") << _("Off");
+  m_multi_sweep_button = new wxButton(this, ID_MULTISWEEP, labelMS, wxDefaultPosition, g_buttonSize, 0);
+  m_view_sizer->Add(m_multi_sweep_button, 0, wxALL, BORDER);
+  m_multi_sweep_button->SetFont(m_pi->m_font);
+
   // The Rotation button
   m_orientation_button = new wxButton(this, ID_ORIENTATION, _("Orientation"), wxDefaultPosition, g_buttonSize, 0);
   m_view_sizer->Add(m_orientation_button, 0, wxALL, BORDER);
   m_orientation_button->SetFont(m_pi->m_font);
   // Updated when we receive data
+
+  // The REFRESHRATE button
+  m_refresh_rate_button =
+      new br24RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), CT_REFRESHRATE, false, m_pi->m_settings.refreshrate);
+  m_view_sizer->Add(m_refresh_rate_button, 0, wxALL, BORDER);
+  m_refresh_rate_button->minValue = 1;
+  m_refresh_rate_button->maxValue = 5;
 
   m_top_sizer->Hide(m_view_sizer);
 
@@ -896,7 +896,7 @@ void br24ControlsDialog::CreateControls() {
 
   m_timed_idle_button =
       new br24RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), CT_TIMED_IDLE, false, m_pi->m_settings.timed_idle);
-  m_transmit_sizer->Add(m_timed_idle_button, 0, wxALL, BORDER);
+  m_control_sizer->Add(m_timed_idle_button, 0, wxALL, BORDER);
   m_timed_idle_button->minValue = 0;
   m_timed_idle_button->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
   m_timed_idle_button->names = timed_idle_times;
@@ -1005,12 +1005,12 @@ void br24ControlsDialog::OnAutoClick(wxCommandEvent& event) {
 
 void br24ControlsDialog::OnMultiSweepClick(wxCommandEvent& event) {
   wxString labelSweep;
-  if (m_ri->multi_sweep_filter == 0) {
-    labelSweep << _("Multi Sweep Filter") << wxT("\n") << _("ON");
-    m_ri->multi_sweep_filter = 1;
+  if (m_ri->m_multi_sweep_filter == false) {
+    labelSweep << _("Multi Sweep Filter") << wxT("\n") << _("On");
+    m_ri->m_multi_sweep_filter = true;
   } else {
     labelSweep << _("Multi Sweep Filter") << wxT("\n") << _("Off");
-    m_ri->multi_sweep_filter = 0;
+    m_ri->m_multi_sweep_filter = false;
   }
   m_multi_sweep_button->SetLabel(labelSweep);
 }
@@ -1056,11 +1056,6 @@ void br24ControlsDialog::EnterEditMode(br24RadarControlButton* button) {
   } else {
     m_auto_button->Hide();
   }
-  if (m_from_control == m_gain_button) {
-    m_multi_sweep_button->Show();
-  } else {
-    m_multi_sweep_button->Hide();
-  }
   if (m_from_control->maxValue > 20) {
     m_plus_ten_button->Show();
     m_minus_ten_button->Show();
@@ -1076,29 +1071,32 @@ void br24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
-  int show = 1;
+  bool show = true;
 
   if (m_pi->m_settings.enable_dual_radar) {
     if (m_pi->m_settings.show_radar[m_ri->radar]) {
       int show_other_radar = m_pi->m_settings.show_radar[1 - m_ri->radar];
       if (show_other_radar) {
         // Hide both windows
-        show = 0;
+        show = false;
       }
     }
-    m_pi->m_settings.show_radar[0] = show;
-    m_pi->m_settings.show_radar[1] = show;
-    LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), 0, show);
-    LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), 1, show);
+    for (int r = 0; r < RADARS; r++) {
+      m_pi->m_settings.show_radar[r] = show;
+      if (!show && m_pi->m_settings.chart_overlay != r) {
+        m_pi->m_settings.show_radar_control[r] = false;
+      }
+      LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), r, show);
+    }
   } else {
     if (m_ri->IsPaneShown()) {
-      show = 0;
+      show = false;
     }
     m_pi->m_settings.show_radar[0] = show;
     LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), 0, show);
   }
 
-  m_pi->SetRadarWindowViz(show != 0);
+  m_pi->NotifyRadarWindowViz();
 }
 
 void br24ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
@@ -1120,10 +1118,7 @@ void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
   m_ri->FlipRadarState();
 }
 
-void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) {
-  m_ri->ClearTrails();
-}
-
+void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) { m_ri->ClearTrails(); }
 
 void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
   m_ri->orientation.Update(1 - m_ri->orientation.value);
@@ -1156,27 +1151,46 @@ void br24ControlsDialog::OnSize(wxSizeEvent& event) { event.Skip(); }
 void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   wxString o;
 
-  if (m_ri->state.mod || refreshAll) {
-    RadarState state = (RadarState)m_ri->state.GetButton();
-
-    // If state changed then refresh all controls
+  if (m_ri->state.mod) {
     refreshAll = true;
+  }
 
-    o = (state == RADAR_TRANSMIT) ? _("Standby") : _("Transmit");
-    m_radar_state->SetLabel(o);
+  RadarState state = (RadarState)m_ri->state.GetButton();
 
-    if (state == RADAR_TRANSMIT) {
-      if (m_top_sizer->IsShown(m_control_sizer)) {
-        m_control_sizer->Show(m_transmit_sizer);
-        m_control_sizer->Layout();
-      }
+  o = (state == RADAR_TRANSMIT) ? _("Standby") : _("Transmit");
+  if (m_pi->m_settings.timed_idle == 0) {
+    m_timed_idle_button->SetLocalValue(0);
+  } else {
+    time_t now = time(0);
+    int left = m_pi->m_idle_standby - now;
+    if (left > 0) {
+      o = wxString::Format(_("Standby in %d:%02d"), left / 60, left % 60);
     } else {
-      m_control_sizer->Hide(m_transmit_sizer);
+      left = m_pi->m_idle_transmit - now;
+      if (left >= 0) {
+        o = wxString::Format(_("Transmit in %d:%02d"), left / 60, left % 60);
+      }
+    }
+  }
+  m_radar_state->SetLabel(o);
+
+  if (state == RADAR_TRANSMIT) {
+    if (m_top_sizer->IsShown(m_control_sizer)) {
+      m_control_sizer->Show(m_transmit_sizer);
+      m_top_sizer->Show(m_timed_idle_button);
       m_control_sizer->Layout();
     }
-    m_top_sizer->Layout();
-    Layout();
+  } else {
+    m_control_sizer->Hide(m_transmit_sizer);
+    if (m_pi->m_settings.timed_idle) {
+      m_top_sizer->Show(m_timed_idle_button);
+    } else {
+      m_top_sizer->Hide(m_timed_idle_button);
+    }
+    m_control_sizer->Layout();
   }
+  m_top_sizer->Layout();
+  Layout();
 
   if (m_pi->m_settings.enable_dual_radar) {
     int show_other_radar = m_pi->m_settings.show_radar[1 - m_ri->radar];
@@ -1214,12 +1228,23 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_ri->orientation.mod || refreshAll) {
     o = _("Orientation");
     o << wxT("\n");
-    o << ((m_ri->orientation.GetButton()) ? _("North Up") : _("Head Up"));
+    switch (m_ri->orientation.GetButton()) {
+      case ORIENTATION_NORTH_UP:
+        o << _("North up");
+        break;
+      case ORIENTATION_HEAD_UP:
+        o << _("Head up");
+        break;
+      default:
+        o << _("???");
+    }
     m_orientation_button->SetLabel(o);
   }
 
   if (m_ri->overlay.mod || ((m_pi->m_settings.chart_overlay == m_ri->radar) != (m_ri->overlay.button != 0)) || refreshAll) {
-    o = (m_ri->overlay.GetButton() > 0) ? _("Overlay on") : _("Overlay off");
+    o = _("Overlay");
+    o << wxT("\n");
+    o << ((m_ri->overlay.GetButton() > 0) ? _("On") : _("Off"));
     m_overlay_button->SetLabel(o);
   }
 
@@ -1308,6 +1333,14 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     }
   }
 
+  if (m_pi->m_settings.display_option == 1) {
+    m_target_trails_button->Enable();
+    m_clear_trails_button->Enable();
+  } else {
+    m_target_trails_button->Disable();
+    m_clear_trails_button->Disable();
+  }
+
   // Update the text that is currently shown in the edit box, this is a copy of the button itself
   if (m_from_control) {
     wxString label = m_from_control->GetLabel();
@@ -1363,13 +1396,87 @@ void br24ControlsDialog::UpdateDialogShown() {
     m_control_sizer->Layout();
     m_top_sizer->Layout();
     Show();
+    Raise();
 
     m_edit_sizer->Layout();
     m_top_sizer->Layout();
+
+    // If the corresponding radar panel is now in a different position from what we remembered
+    // then reset the dialog to the left or right of the radar panel.
+    wxPoint panelPos = m_ri->radar_panel->GetPos();
+    bool controlInitialShow = m_pi->m_settings.control_pos[m_ri->radar] == OFFSCREEN_CONTROL;
+    bool panelShown = m_ri->radar_panel->IsShown();
+    bool panelMoved = m_panel_position.IsFullySpecified() && panelPos != m_panel_position;
+
+    if (panelShown                     // if the radar pane is shown and
+        && (panelMoved                 // has moved this session, or
+            || controlInitialShow)) {  // the position has never been set at all, ever
+      wxSize panelSize = m_ri->radar_panel->GetSize();
+      wxSize mySize = this->GetSize();
+
+      wxPoint newPos;
+      newPos.x = panelPos.x + panelSize.x - mySize.x;
+      newPos.y = panelPos.y;
+      SetPosition(newPos);
+      LOG_DIALOG(wxT("BR24radar_pi: %s: show control menu over menu button"), m_ri->name);
+    } else if (controlInitialShow) {  // When all else fails set it to default position
+      SetPosition(wxPoint(100 + m_ri->radar * 100, 100));
+      LOG_DIALOG(wxT("BR24radar_pi: %s: show control menu at initial location"), m_ri->name);
+    }
+    EnsureWindowNearOpenCPNWindow();  // If the position is really weird, move it
+    m_pi->m_settings.control_pos[m_ri->radar] = GetPosition();
+    m_pi->m_settings.show_radar_control[m_ri->radar] = true;
+    m_panel_position = panelPos;
   }
   if (m_top_sizer->IsShown(m_control_sizer)) {
     Fit();
   }
+}
+
+#define PROXIMITY_MARGIN 32
+
+void br24ControlsDialog::EnsureWindowNearOpenCPNWindow() {
+  wxWindow* parent = m_pi->m_parent_window;
+  while (parent->GetParent()) {
+    parent = parent->GetParent();
+  }
+  wxPoint oPos = parent->GetScreenPosition();
+  wxSize oSize = parent->GetSize();
+  oSize.x += PROXIMITY_MARGIN;
+  oSize.y += PROXIMITY_MARGIN;
+
+  wxPoint mPos = GetPosition();
+  wxSize mSize = GetSize();
+  mSize.x += PROXIMITY_MARGIN;
+  mSize.y += PROXIMITY_MARGIN;
+
+  bool move = false;
+
+  // LOG_DIALOG(wxT("BR24radar_pi: control %d,%d is near OpenCPN at %d,%d to %d,%d?"), mPos.x, mPos.y, oPos.x, oPos.y, oPos.x +
+  // oSize.x, oPos.y + oSize.y);
+
+  if (mPos.x + mSize.x < oPos.x) {
+    mPos.x = oPos.x;
+    move = true;
+  }
+  if (oPos.x + oSize.x < mPos.x) {
+    mPos.x = oPos.x + oSize.x - mSize.x;
+    move = true;
+  }
+  if (mPos.y + mSize.y < oPos.y) {
+    mPos.y = oPos.y;
+    move = true;
+  }
+  if (oPos.y + oSize.y < mPos.y) {
+    mPos.y = oPos.y + oSize.y - mSize.y;
+    move = true;
+  }
+  if (move) {
+    LOG_DIALOG(wxT("BR24radar_pi: Move control dialog to %d,%d to be near OpenCPN at %d,%d to %d,%d"), mPos.x, mPos.y, oPos.x,
+               oPos.y, oPos.x + oSize.x, oPos.y + oSize.y);
+  }
+  move = true;
+  SetPosition(mPos);
 }
 
 void br24ControlsDialog::HideTemporarily() {
@@ -1385,51 +1492,39 @@ void br24ControlsDialog::UnHideTemporarily() {
 
 void br24ControlsDialog::ShowDialog() {
   m_hide = false;
-
-  if (!IsShown()) {
-    // If the corresponding radar panel is now in a different position from what we remembered
-    // then reset the dialog to the left or right of the radar panel.
-
-    wxPoint panelPos = m_ri->radar_panel->GetPos();
-    if (panelPos != m_panel_position) {
-      wxSize mySize = this->GetSize();
-
-      bool showOnLeft = (panelPos.x > mySize.x);
-
-      wxPoint newPos = panelPos;
-
-      if (showOnLeft) {
-        newPos.x = panelPos.x - mySize.x;
-      } else {
-        newPos.x = panelPos.x + m_ri->radar_panel->GetSize().x;
-      }
-      SetPosition(newPos);
-
-      m_panel_position = panelPos;
-    }
-  }
   UnHideTemporarily();
-}
-
-void br24ControlsDialog::ShowBogeys(wxString text) {
-  if (m_top_sizer->IsShown(m_control_sizer)) {
-    SwitchTo(m_bogey_sizer);
-    if (!m_hide) {
-      UnHideTemporarily();
-    } else {
-      ShowDialog();
-    }
-  }
-  if (m_top_sizer->IsShown(m_bogey_sizer)) {
-    m_bogey_text->SetLabel(text);
-    m_bogey_sizer->Layout();
-  }
+  UpdateControlValues(true);
 }
 
 void br24ControlsDialog::HideDialog() {
   m_hide = true;
   m_auto_hide_timeout = 0;
   UpdateDialogShown();
+}
+
+void br24ControlsDialog::ShowBogeys(wxString text) {
+  if (m_top_sizer && m_bogey_sizer) {
+    if (m_top_sizer->IsShown(m_control_sizer)) {
+      SwitchTo(m_bogey_sizer);
+      if (!m_hide) {
+        UnHideTemporarily();
+      } else {
+        ShowDialog();
+      }
+    }
+    if (m_top_sizer->IsShown(m_bogey_sizer)) {
+      m_bogey_text->SetLabel(text);
+      m_bogey_sizer->Layout();
+      Layout();
+      Fit();
+    }
+  }
+}
+
+void br24ControlsDialog::HideBogeys() {
+  if (m_top_sizer && m_control_sizer && m_top_sizer->IsShown(m_bogey_sizer)) {
+    SwitchTo(m_control_sizer);
+  }
 }
 
 void br24ControlsDialog::SetMenuAutoHideTimeout() {
@@ -1464,8 +1559,19 @@ void br24ControlsDialog::ShowGuardZone(int zone) {
   m_inner_range->SetValue(wxString::Format(wxT("%2.2f"), m_guard_zone->inner_range / conversionFactor));
   m_outer_range->SetValue(wxString::Format(wxT("%2.2f"), m_guard_zone->outer_range / conversionFactor));
 
-  m_start_bearing->SetValue(wxString::Format(wxT("%3.1f"), SCALE_RAW_TO_DEGREES2048(m_guard_zone->start_bearing)));
-  m_end_bearing->SetValue(wxString::Format(wxT("%3.1f"), SCALE_RAW_TO_DEGREES2048(m_guard_zone->end_bearing)));
+  double bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone->start_bearing);
+  if (bearing >= 180.0) {
+    bearing -= 360.;
+  }
+  bearing = round(bearing);
+  m_start_bearing->SetValue(wxString::Format(wxT("%3.0f"), bearing));
+
+  bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone->end_bearing);
+  if (bearing >= 180.0) {
+    bearing -= 360.;
+  }
+  bearing = round(bearing);
+  m_end_bearing->SetValue(wxString::Format(wxT("%3.0f"), bearing));
   m_filter->SetValue(m_guard_zone->multi_sweep_filter ? 1 : 0);
 
   m_top_sizer->Hide(m_control_sizer);
@@ -1477,7 +1583,7 @@ void br24ControlsDialog::ShowGuardZone(int zone) {
 void br24ControlsDialog::SetGuardZoneVisibility() {
   GuardZoneType zoneType = (GuardZoneType)m_guard_zone_type->GetSelection();
 
-  m_guard_zone->type = zoneType;
+  m_guard_zone->SetType(zoneType);
 
   if (zoneType == GZ_OFF) {
     m_start_bearing->Disable();
@@ -1509,7 +1615,7 @@ void br24ControlsDialog::OnInner_Range_Value(wxCommandEvent& event) {
 
   int conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
 
-  m_guard_zone->inner_range = (int)(t * conversionFactor);
+  m_guard_zone->SetInnerRange((int)(t * conversionFactor));
 }
 
 void br24ControlsDialog::OnOuter_Range_Value(wxCommandEvent& event) {
@@ -1519,7 +1625,7 @@ void br24ControlsDialog::OnOuter_Range_Value(wxCommandEvent& event) {
 
   int conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
 
-  m_guard_zone->outer_range = (int)(t * conversionFactor);
+  m_guard_zone->SetOuterRange((int)(t * conversionFactor));
 }
 
 void br24ControlsDialog::OnStart_Bearing_Value(wxCommandEvent& event) {
@@ -1527,7 +1633,11 @@ void br24ControlsDialog::OnStart_Bearing_Value(wxCommandEvent& event) {
   double t;
 
   temp.ToDouble(&t);
-  m_guard_zone->start_bearing = SCALE_DEGREES_TO_RAW2048(t);
+  t = fmod(t, 360.);
+  if (t < 0.) {
+    t += 360.;
+  }
+  m_guard_zone->SetStartBearing(SCALE_DEGREES_TO_RAW2048(t));
 }
 
 void br24ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
@@ -1535,12 +1645,16 @@ void br24ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
   double t;
 
   temp.ToDouble(&t);
-  m_guard_zone->end_bearing = SCALE_DEGREES_TO_RAW2048(t);
+  t = fmod(t, 360.);
+  if (t < 0.) {
+    t += 360.;
+  }
+  m_guard_zone->SetEndBearing(SCALE_DEGREES_TO_RAW2048(t));
 }
 
 void br24ControlsDialog::OnFilterClick(wxCommandEvent& event) {
   int filt = m_filter->GetValue();
-  m_guard_zone->multi_sweep_filter = filt;
+  m_guard_zone->SetMultiSweepFilter(filt);
 }
 
 PLUGIN_END_NAMESPACE

@@ -55,7 +55,9 @@ RadarCanvas::RadarCanvas(br24radar_pi *pi, RadarInfo *ri, wxWindow *parent, wxSi
   m_cursor_texture = 0;
   m_last_mousewheel_zoom_in = 0;
   m_last_mousewheel_zoom_out = 0;
+
   LOG_DIALOG(wxT("BR24radar_pi: %s create OpenGL canvas"), m_ri->name.c_str());
+  Refresh(false);
 }
 
 RadarCanvas::~RadarCanvas() {
@@ -86,6 +88,46 @@ void RadarCanvas::RenderTexts(int w, int h) {
   int x, y;
 
   wxString s;
+
+#define MENU_ROUNDING 4
+#define MENU_BORDER 8
+#define MENU_EXTRA_WIDTH 32
+
+  // Draw Menu in the top right
+
+  s = _("Menu");
+  m_FontMenu.GetTextExtent(s, &x, &y);
+
+  // Calculate the size of the rounded rect, this is also where you can 'click'...
+  m_menu_size.x = x + 2 * (MENU_BORDER + MENU_EXTRA_WIDTH);
+  m_menu_size.y = y + 2 * (MENU_BORDER);
+
+  glColor4ub(40, 40, 100, 128);
+
+  DrawRoundRect(w - m_menu_size.x, 0, m_menu_size.x, m_menu_size.y, 4);
+
+  glColor4ub(100, 255, 255, 255);
+  // The Menu text is slightly inside the rect
+  m_FontMenu.RenderString(s, w - m_menu_size.x + MENU_BORDER + MENU_EXTRA_WIDTH, MENU_BORDER);
+
+  // Draw - + in mid bottom
+
+  s = wxT("  -   + ");
+  m_FontMenuBold.GetTextExtent(s, &x, &y);
+
+  // Calculate the size of the rounded rect, this is also where you can 'click'...
+  m_zoom_size.x = x + 2 * (MENU_BORDER);
+  m_zoom_size.y = y + 2 * (MENU_BORDER);
+
+  glColor4ub(80, 80, 80, 128);
+
+  DrawRoundRect(w / 2 - m_zoom_size.x / 2, h - m_zoom_size.y + MENU_ROUNDING, m_zoom_size.x, m_zoom_size.y, MENU_ROUNDING);
+
+  glColor4ub(200, 200, 200, 255);
+  // The Menu text is slightly inside the rect
+  m_FontMenuBold.RenderString(s, w / 2 - m_zoom_size.x / 2 + MENU_BORDER, h - m_zoom_size.y + MENU_BORDER);
+
+  glColor4ub(200, 255, 200, 255);
 
   s = m_ri->GetCanvasTextTopLeft();
   m_FontBig.RenderString(s, 0, 0);
@@ -129,9 +171,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   }
 
   if (m_pi->m_heading_source != HEADING_NONE) {
-    // LOG_DIALOG(wxT("BR24radar_pi: m_hdt=%f orientation=%d"), m_pi->m_hdt, m_ri->orientation.value);
-
-    double heading = GetHeading();
+    double heading = (m_ri->IsDisplayNorthUp() ? 0 : m_pi->m_hdt) + 180.;
 
     for (int i = 0; i < 360; i += 5) {
       x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
@@ -225,7 +265,6 @@ void RadarCanvas::RenderCursor(int w, int h) {
   if (m_ri->m_mouse_vrm != 0.0) {
     distance = m_ri->m_mouse_vrm * 1852.;
     bearing = m_ri->m_mouse_ebl;
-    LOG_DIALOG(wxT("BR24radar_pi: Radar Mouse vrm=%f ebl=%f"), distance / 1852.0, bearing);
   } else {
     if ((m_ri->m_mouse_lat == 0.0 && m_ri->m_mouse_lon == 0.0) || !m_pi->m_bpos_set) {
       return;
@@ -233,21 +272,25 @@ void RadarCanvas::RenderCursor(int w, int h) {
     // Can't compute this upfront, ownship may move...
     distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon) * 1852.;
     bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon);
-    LOG_DIALOG(wxT("BR24radar_pi: Chart Mouse vrm=%f ebl=%f"), distance / 1852.0, bearing);
+    if (!m_ri->IsDisplayNorthUp()) {
+      bearing -= m_pi->m_hdt;
+    }
+    // LOG_DIALOG(wxT("BR24radar_pi: Chart Mouse vrm=%f ebl=%f"), distance / 1852.0, bearing);
   }
   double full_range = wxMax(w, h) / 2.0;
 
-  double heading = GetHeading();
   int display_range = m_ri->GetDisplayRange();
-  double scale = distance * full_range / display_range;
+  double range = distance * full_range / display_range;
 
 #define CURSOR_SCALE 1
 
   double center_x = w / 2.0;
   double center_y = h / 2.0;
-  double angle = deg2rad(bearing - heading);
-  double x = center_x - sin(angle) * scale - CURSOR_WIDTH * CURSOR_SCALE / 2;
-  double y = center_y + cos(angle) * scale - CURSOR_WIDTH * CURSOR_SCALE / 2;
+  double angle = deg2rad(bearing);
+  double x = center_x + sin(angle) * range - CURSOR_WIDTH * CURSOR_SCALE / 2;
+  double y = center_y - cos(angle) * range - CURSOR_WIDTH * CURSOR_SCALE / 2;
+
+  // LOG_DIALOG(wxT("BR24radar_pi: draw cursor angle=%.1f bearing=%.1f"), rad2deg(angle), bearing);
 
   if (!m_cursor_texture) {
     glGenTextures(1, &m_cursor_texture);
@@ -256,6 +299,7 @@ void RadarCanvas::RenderCursor(int w, int h) {
     LOG_DIALOG(wxT("BR24radar_pi: generated cursor texture # %u"), m_cursor_texture);
   }
 
+  glColor3f(1.0f, 1.0f, 1.0f);
   glBindTexture(GL_TEXTURE_2D, m_cursor_texture);
   glBegin(GL_QUADS);
   glTexCoord2i(0, 0);
@@ -272,21 +316,20 @@ void RadarCanvas::RenderCursor(int w, int h) {
 void RadarCanvas::Render_EBL_VRM(int w, int h) {
   static const uint8_t rgb[BEARING_LINES][3] = {{22, 129, 154}, {45, 255, 254}};
 
-  double full_range = wxMax(w, h) / 2.0;
-  double center_x = w / 2.0;
-  double center_y = h / 2.0;
+  float full_range = wxMax(w, h) / 2.0;
+  float center_x = w / 2.0;
+  float center_y = h / 2.0;
 
-  double heading = GetHeading();
   int display_range = m_ri->GetDisplayRange();
 
   for (int b = 0; b < BEARING_LINES; b++) {
     if (m_ri->m_vrm[b] != 0.0) {
-      double scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
-      double angle = deg2rad(m_ri->m_ebl[b] - heading);
-      double x = center_x - sin(angle) * full_range * 2.;
-      double y = center_y + cos(angle) * full_range * 2.;
+      float scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
+      float angle = (float)deg2rad(m_ri->m_ebl[b]);
+      float x = center_x + sinf(angle) * full_range * 2.;
+      float y = center_y - cosf(angle) * full_range * 2.;
 
-      glColor3ub(rgb[b][0], rgb[b][1], rgb[b][2]);
+      glColor3ubv(rgb[b]);
       glLineWidth(1.0);
 
       glBegin(GL_LINES);
@@ -294,7 +337,7 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
       glVertex2f(x, y);
       glEnd();
 
-      DrawArc(center_x, center_y, scale, 0.0, 2.0 * (float)PI, 360);
+      DrawArc(center_x, center_y, scale, 0.f, 2.f * (float)PI, 360);
     }
   }
 }
@@ -325,10 +368,18 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glPushMatrix();
   glPushAttrib(GL_ALL_ATTRIB_BITS);
 
-  wxFont font(14, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+  wxFont font = GetOCPNGUIScaledFont_PlugIn(_T("StatusBar"));
   m_FontNormal.Build(font);
-  wxFont bigFont(24, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+  wxFont bigFont = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
+  bigFont.SetPointSize(bigFont.GetPointSize() + 2);
+  bigFont.SetStyle(wxFONTWEIGHT_BOLD);
   m_FontBig.Build(bigFont);
+  bigFont.SetPointSize(bigFont.GetPointSize() + 2);
+  bigFont.SetStyle(wxFONTWEIGHT_NORMAL);
+  m_FontMenu.Build(bigFont);
+  bigFont.SetPointSize(bigFont.GetPointSize() + 10);
+  bigFont.SetStyle(wxFONTWEIGHT_BOLD);
+  m_FontMenuBold.Build(bigFont);
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                // Black Background
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // Clear the canvas
@@ -365,17 +416,18 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glOrtho(0, w, h, 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
 
-  glColor3ub(200, 255, 200);
   glEnable(GL_TEXTURE_2D);
 
   RenderTexts(w, h);
   RenderCursor(w, h);
 
+#ifdef NEVER
   glDisable(GL_TEXTURE_2D);
 
   glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
   glLoadIdentity();             // Reset projection matrix stack
   glMatrixMode(GL_MODELVIEW);   // Reset matrick stack target back to GL_MODELVIEW
+#endif
 
   glPopAttrib();
   glPopMatrix();
@@ -396,42 +448,47 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
   event.GetPosition(&x, &y);
   GetClientSize(&w, &h);
 
-  LOG_DIALOG(wxT("BR24radar_pi: %s Mouse clicked at %d, %d"), m_ri->name.c_str(), x, y);
-
   int center_x = w / 2;
   int center_y = h / 2;
 
-  double delta_x = x - center_x;
-  double delta_y = y - center_y;
+  LOG_DIALOG(wxT("BR24radar_pi: %s Mouse clicked at %d, %d"), m_ri->name.c_str(), x, y);
 
-  double distance = sqrt(delta_x * delta_x + delta_y * delta_y);
+  if (x >= w - m_menu_size.x && y < m_menu_size.y) {
+    m_pi->ShowRadarControl(m_ri->radar, true);
+  } else if ((x >= center_x - m_zoom_size.x / 2) && (x <= center_x + m_zoom_size.x / 2) &&
+             (y > h - m_zoom_size.y + MENU_ROUNDING)) {
+    if (x > center_x) {
+      m_ri->AdjustRange(-1);
+    } else {
+      m_ri->AdjustRange(+1);
+    }
 
-  double heading = GetHeading();
-  double angle = fmod(rad2deg(atan2(delta_y, delta_x)) - heading + 720. - 90., 360.0);
+  } else {
+    double delta_x = x - center_x;
+    double delta_y = y - center_y;
 
-  int display_range = m_ri->GetDisplayRange();
-  double full_range = wxMax(w, h) / 2.0;
+    double distance = sqrt(delta_x * delta_x + delta_y * delta_y);
 
-  double scale = distance / (1852.0 * full_range / display_range);
+    int display_range = m_ri->GetDisplayRange();
 
-  m_ri->SetMouseVrmEbl(scale, angle);
+    double angle = fmod(rad2deg(atan2(delta_y, delta_x)) + 720. + 90., 360.0);
 
-  m_pi->ShowRadarControl(m_ri->radar, true);
+    double full_range = wxMax(w, h) / 2.0;
 
+    double range = distance / (1852.0 * full_range / display_range);
+
+    LOG_VERBOSE(wxT("BR24radar_pi: cursor in PPI at angle=%.1f range=%f heading=%.1f"), angle, range);
+    m_ri->SetMouseVrmEbl(range, angle);
+  }
   event.Skip();
 }
 
-#define ZOOM_TIME 333 // 3 zooms per second
-#define ZOOM_SENSITIVITY 0 // Increase to make less sensitive
+#define ZOOM_TIME 333       // 3 zooms per second
+#define ZOOM_SENSITIVITY 0  // Increase to make less sensitive
 
 void RadarCanvas::OnMouseWheel(wxMouseEvent &event) {
   int delta = event.GetWheelDelta();
   int rotation = event.GetWheelRotation();
-
-  if (!m_ri->control_dialog) {
-    LOG_DIALOG(wxT("BR24radar_pi: ignore mousewheel for non existing control dialog"));
-    return;
-  }
 
   wxLongLong now = wxGetUTCTimeMillis();
 

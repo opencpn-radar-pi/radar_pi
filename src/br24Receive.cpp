@@ -233,7 +233,6 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt + m_ri->viewpoint_rotation);
     }
 
-    angle_raw += SCALE_DEGREES_TO_RAW(270);  // Compensate openGL rotation compared to North UP
     int bearing_raw = angle_raw + hdt_raw;
     // until here all is based on 4096 (SPOKES) scanlines
 
@@ -266,6 +265,7 @@ void br24Receive::EmulateFakeBuffer(void) {
   m_ri->m_data_timeout = now + WATCHDOG_TIMEOUT;
   m_ri->state.Update(RADAR_TRANSMIT);
 
+  m_next_rotation = (m_next_rotation + 1) % SPOKES;
 
   int scanlines_in_packet = SPOKES * 24 / 60;
   int range_meters = 2308;
@@ -283,7 +283,7 @@ void br24Receive::EmulateFakeBuffer(void) {
     for (size_t range = 0; range < sizeof(data); range++) {
       size_t bit = range >> 7;
       // use bit 'bit' of angle_raw
-      UINT8 color = ((angle_raw >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
+      UINT8 color = (((angle_raw + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
       data[range] = color;
       if (color > 0) {
         spots++;
@@ -440,6 +440,7 @@ void *br24Receive::Entry(void) {
         no_data_timeout = 0;
       }
     } else {
+      // reportSocket is still valid, open data and command sockets as well if they are closed
       if (dataSocket == INVALID_SOCKET) {
         dataSocket = GetNewDataSocket();
       } else if (commandSocket == INVALID_SOCKET) {
@@ -510,7 +511,8 @@ void *br24Receive::Entry(void) {
             if (!radar_addr) {
               wxString addr;
 
-              m_ri->SetNetworkCardAddress(m_mcast_addr);
+              m_ri->SetNetworkCardAddress(m_mcast_addr);  // enables transmit data
+              // the dataSocket and commandSocket are opened in the next loop
 
               radarFoundAddr = rx_addr.ipv4;
               radar_addr = &radarFoundAddr;
@@ -534,16 +536,7 @@ void *br24Receive::Entry(void) {
 
     } else if (no_data_timeout >= 2) {
       no_data_timeout = 0;
-      if (m_ri->state.value == RADAR_TRANSMIT) {
-        if (dataSocket != INVALID_SOCKET) {
-          closesocket(dataSocket);
-          dataSocket = INVALID_SOCKET;
-        }
-        if (commandSocket != INVALID_SOCKET) {
-          closesocket(commandSocket);
-          commandSocket = INVALID_SOCKET;
-        }
-      } else if (reportSocket != INVALID_SOCKET) {
+      if (reportSocket != INVALID_SOCKET) {
         closesocket(reportSocket);
         reportSocket = INVALID_SOCKET;
         m_ri->state.Update(RADAR_OFF);
@@ -553,7 +546,20 @@ void *br24Receive::Entry(void) {
     } else {
       no_data_timeout++;
     }
-  }
+
+    if (reportSocket == INVALID_SOCKET) {
+      // If we closed the reportSocket then close the command and data socket
+      if (dataSocket != INVALID_SOCKET) {
+        closesocket(dataSocket);
+        dataSocket = INVALID_SOCKET;
+      }
+      if (commandSocket != INVALID_SOCKET) {
+        closesocket(commandSocket);
+        commandSocket = INVALID_SOCKET;
+      }
+    }
+
+  }  // endless loop until thread destroy
 
   if (dataSocket != INVALID_SOCKET) {
     closesocket(dataSocket);
@@ -667,7 +673,7 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
         break;
       }
 
-      case (99 << 8) + 0x02: {  // length 99, 08 C4
+      case (99 << 8) + 0x02: {  // length 99, 02 C4
         radar_state02 *s = (radar_state02 *)report;
         if (s->field8 == 1) {     // 1 for auto
           m_ri->gain.Update(-1);  // auto gain

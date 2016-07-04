@@ -39,6 +39,11 @@ PLUGIN_BEGIN_NAMESPACE
 class br24RadarControlButton;
 class br24RadarRangeControlButton;
 
+#define OFFSCREEN_CONTROL_X (-10000)
+#define OFFSCREEN_CONTROL_Y (-10000)
+
+const static wxPoint OFFSCREEN_CONTROL = wxPoint(OFFSCREEN_CONTROL_X, OFFSCREEN_CONTROL_Y);
+
 //----------------------------------------------------------------------------------------------------------
 //    BR24Radar Control Dialog Specification
 //----------------------------------------------------------------------------------------------------------
@@ -53,7 +58,7 @@ class br24ControlsDialog : public wxDialog {
   void Init();
 
   bool Create(wxWindow *parent, br24radar_pi *pi, RadarInfo *ri, wxWindowID id = wxID_ANY, const wxString &caption = _("Radar"),
-              const wxPoint &pos = wxDefaultPosition);
+              const wxPoint &pos = OFFSCREEN_CONTROL);
 
   void CreateControls();
   void AdjustRange(int adjustment);
@@ -64,6 +69,7 @@ class br24ControlsDialog : public wxDialog {
   void UpdateControlValues(bool refreshAll);
   void SetErrorMessage(wxString &msg);
   void ShowBogeys(wxString text);
+  void HideBogeys();
 
   void HideTemporarily();  // When a second dialog (which is not a child class) takes over -- aka GuardZone
   void UnHideTemporarily();
@@ -124,6 +130,8 @@ class br24ControlsDialog : public wxDialog {
   void UpdateAdvanced4GState();
 
   void SetMenuAutoHideTimeout();
+
+  void EnsureWindowNearOpenCPNWindow();
 
   wxWindow *m_parent;
   wxBoxSizer *m_advanced_4G_sizer;

@@ -41,8 +41,8 @@ PLUGIN_BEGIN_NAMESPACE
 
 class RadarDrawVertex : public RadarDraw {
  public:
-  RadarDrawVertex(br24radar_pi* pi) {
-    m_pi = pi;
+  RadarDrawVertex(RadarInfo* ri) {
+    m_ri = ri;
 
     memset(m_vertices, 0, sizeof(m_vertices));
     m_count = 0;
@@ -53,10 +53,10 @@ class RadarDrawVertex : public RadarDraw {
 
   bool Init(int color_option);
   void DrawRadarImage();
-  void ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t len);
+  void ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8* data, size_t len);
 
   ~RadarDrawVertex() {
-    wxMutexLocker lock(m_mutex);
+    wxCriticalSectionLocker lock(m_exclusive);
 
     for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
       if (m_vertices[i].points) {
@@ -66,7 +66,7 @@ class RadarDrawVertex : public RadarDraw {
   }
 
  private:
-  br24radar_pi* m_pi;
+  RadarInfo* m_ri;
 
   static const int VERTEX_PER_TRIANGLE = 3;
   static const int VERTEX_PER_QUAD = 2 * VERTEX_PER_TRIANGLE;
@@ -90,7 +90,7 @@ class RadarDrawVertex : public RadarDraw {
 
   PolarToCartesianLookupTable* m_polarLookup;
 
-  wxMutex m_mutex;  // protects the following
+  wxCriticalSection m_exclusive;  // protects the following
   VertexLine m_vertices[LINES_PER_ROTATION];
   unsigned int m_count;
   bool m_oom;

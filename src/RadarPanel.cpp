@@ -70,12 +70,12 @@ bool RadarPanel::Create() {
   m_best_size.x = m_pi->m_display_width / 2;
   m_best_size.y = m_pi->m_display_height / 2;
 
-  pane.MinSize(wxSize(256, 256));
+  pane.MinSize(256, 256);
   pane.BestSize(m_best_size);
-  pane.FloatingSize(wxSize(512, 512));
+  pane.FloatingSize(512, 512);
+  pane.FloatingPosition(30 + 540 * m_ri->radar, 120);  // Besides each other, below the icon bar
   pane.Float();
   pane.dock_proportion = 100000;  // Secret sauce to get panels to use entire bar
-  pane.Hide();
 
   m_aui_mgr->AddPane(this, pane);
   m_aui_mgr->Update();
@@ -118,7 +118,7 @@ void RadarPanel::close(wxAuiManagerEvent& event) {
   if (pane->window == this) {
     m_pi->m_settings.show_radar[m_ri->radar] = 0;
     LOG_DIALOG(wxT("BR24radar_pi: RadarPanel::close: show_radar[%d]=%d"), m_ri->radar, 0);
-    m_pi->SetRadarWindowViz(m_pi->m_settings.show != 0);
+    m_pi->NotifyRadarWindowViz();
   } else {
     LOG_DIALOG(wxT("BR24radar_pi: RadarPanel::close: ignore close of window %s in window %s"), pane->name.c_str(),
                m_aui_name.c_str());
@@ -143,7 +143,7 @@ void RadarPanel::ShowFrame(bool visible) {
   if (visible) {
     if (m_pi->m_opengl_mode && !m_ri->radar_canvas) {
       LOG_DIALOG(wxT("BR24radar_pi %s: creating OpenGL canvas"), m_ri->name.c_str());
-      m_ri->radar_canvas = new RadarCanvas(m_pi, m_ri, this, wxSize(512, 512));
+      m_ri->radar_canvas = new RadarCanvas(m_pi, m_ri, this, GetSize());
       if (!m_ri->radar_canvas) {
         m_text->SetLabel(_("Unable to create OpenGL canvas"));
         m_sizer->Show(m_text);

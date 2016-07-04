@@ -84,8 +84,6 @@ bool RadarDrawShader::Init(int color_option) {
     return false;
   }
 
-  LOG_DIALOG(wxT("BR24radar_pi: GPU oriented OpenGL vertex shader %ld fragment shader %ld"), (long int)m_vertex,
-             (long int)m_fragment);
   m_program = LinkShaders(m_vertex, m_fragment);
   if (!m_program) {
     wxLogError(wxT("BR24radar_pi: GPU oriented OpenGL failed to link shader program"));
@@ -109,7 +107,6 @@ bool RadarDrawShader::Init(int color_option) {
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  LOG_DIALOG(wxT("BR24radar_pi: GPU oriented OpenGL shader %ld for %d colours loaded"), (long int)m_program, m_channels);
   m_start_line = -1;
   m_end_line = 0;
 
@@ -117,7 +114,7 @@ bool RadarDrawShader::Init(int color_option) {
 }
 
 RadarDrawShader::~RadarDrawShader() {
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   if (m_vertex) {
     DeleteShader(m_vertex);
@@ -138,12 +135,13 @@ RadarDrawShader::~RadarDrawShader() {
 }
 
 void RadarDrawShader::DrawRadarImage() {
-  wxMutexLocker lock(m_mutex);
+  wxCriticalSectionLocker lock(m_exclusive);
 
   if (!m_program || !m_texture) {
-    LOG_DIALOG(wxT("BR24radar_pi: Shader not set up yet, skip draw"));
     return;
   }
+
+  glPushAttrib(GL_TEXTURE_BIT);
 
   UseProgram(m_program);
 
@@ -187,11 +185,8 @@ void RadarDrawShader::DrawRadarImage() {
                       /* type =     */ GL_UNSIGNED_BYTE,
                       /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * m_channels);
     }
-    LOG_RECEIVE(wxT("BR24radar_pi: using shader %d with new data in line %d-%d"), m_program, m_start_line, m_end_line);
     m_start_line = -1;
     m_end_line = 0;
-  } else {
-    LOG_RECEIVE(wxT("BR24radar_pi: using shader %d without new data"), m_program);
   }
 
   // We tell the GPU to draw a square from (-512,-512) to (+512,+512).
@@ -209,11 +204,12 @@ void RadarDrawShader::DrawRadarImage() {
   glEnd();
 
   UseProgram(0);
+  glPopAttrib();
 }
 
-void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t len) {
-  GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - m_pi->m_settings.overlay_transparency) / MAX_OVERLAY_TRANSPARENCY;
-  wxMutexLocker lock(m_mutex);
+void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8 *data, size_t len) {
+  GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
+  wxCriticalSectionLocker lock(m_exclusive);
 
   if (m_start_line == -1) {
     m_start_line = angle;  // Note that this only runs once after each draw,
@@ -224,13 +220,13 @@ void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t 
     unsigned char *d = m_data + (angle * RETURNS_PER_LINE) * m_channels;
     for (size_t r = 0; r < len; r++) {
       GLubyte strength = data[r];
-      BlobColor color = m_pi->m_color_map[strength];
-      d[0] = m_pi->m_color_map_red[color];
-      d[1] = m_pi->m_color_map_green[color];
-      d[2] = m_pi->m_color_map_blue[color];
+      BlobColor color = m_ri->m_color_map[strength];
+      d[0] = m_ri->m_color_map_red[color];
+      d[1] = m_ri->m_color_map_green[color];
+      d[2] = m_ri->m_color_map_blue[color];
       if (color >= BLOB_HISTORY_0 && color <= BLOB_HISTORY_9) {
         int extra_transparancy = (int)(color - BLOB_HISTORY_0);
-        d[3] = 255 * (10 - extra_transparancy) / 10;
+        d[3] = (alpha * 255 * (10 - extra_transparancy) / 10) >> 8;
       } else {
         d[3] = color != BLOB_NONE ? alpha : 0;
       }
@@ -240,8 +236,8 @@ void RadarDrawShader::ProcessRadarSpoke(SpokeBearing angle, UINT8 *data, size_t 
     unsigned char *d = m_data + (angle * RETURNS_PER_LINE);
     for (size_t r = 0; r < len; r++) {
       GLubyte strength = data[r];
-      BlobColor color = m_pi->m_color_map[strength];
-      *d++ = (m_pi->m_color_map_red[color] * alpha) >> 8;
+      BlobColor color = m_ri->m_color_map[strength];
+      *d++ = (m_ri->m_color_map_red[color] * alpha) >> 8;
     }
   }
 }

@@ -36,12 +36,12 @@
 PLUGIN_BEGIN_NAMESPACE
 
 // Factory to generate a particular draw implementation
-RadarDraw* RadarDraw::make_Draw(br24radar_pi* pi, int draw_method) {
+RadarDraw* RadarDraw::make_Draw(RadarInfo* ri, int draw_method) {
   switch (draw_method) {
     case 0:
-      return new RadarDrawVertex(pi);
+      return new RadarDrawVertex(ri);
     case 1:
-      return new RadarDrawShader(pi);
+      return new RadarDrawShader(ri);
     default:
       wxLogError(wxT("BR24radar_pi: unsupported draw method %d"), draw_method);
   }

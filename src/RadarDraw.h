@@ -38,11 +38,11 @@ PLUGIN_BEGIN_NAMESPACE
 
 class RadarDraw {
  public:
-  static RadarDraw* make_Draw(br24radar_pi* pi, int draw_method);
+  static RadarDraw* make_Draw(RadarInfo* ri, int draw_method);
 
   virtual bool Init(int color_option) = 0;
   virtual void DrawRadarImage() = 0;
-  virtual void ProcessRadarSpoke(SpokeBearing angle, UINT8* data, size_t len) = 0;
+  virtual void ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8* data, size_t len) = 0;
 
   virtual ~RadarDraw() = 0;
 

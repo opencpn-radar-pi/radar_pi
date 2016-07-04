@@ -188,7 +188,7 @@ void br24MessageBox::CreateControls() {
   m_message_sizer->Add(m_info_sizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
   m_statistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, wxDefaultSize, 0);
-  m_statistics->SetFont(*OCPNGetFont(_("Dialog"), 8));
+  m_statistics->SetFont(GetOCPNGUIScaledFont_PlugIn(_T("StatusBar")));
   m_info_sizer->Add(m_statistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
 
   // The <Close> button
@@ -242,8 +242,6 @@ bool br24MessageBox::Show(bool show) {
 }
 
 bool br24MessageBox::UpdateMessage(bool force) {
-  wxMutexLocker lock(m_mutex);
-
   message_status new_message_state = HIDE;
 
   bool haveOpenGL = m_pi->m_opengl_mode;
@@ -314,6 +312,24 @@ bool br24MessageBox::UpdateMessage(bool force) {
   m_have_radar->SetValue(radarSeen);
   m_have_data->SetValue(haveData);
 
+  wxString *label;
+
+  if ((label = m_radar_addr_info.GetValue()) != 0) {
+    m_have_radar->SetLabel(*label);
+  }
+  if ((label = m_mcast_addr_info.GetValue()) != 0) {
+    m_ip_box->SetLabel(*label);
+  }
+  if ((label = m_heading_info.GetValue()) != 0) {
+    m_have_heading->SetLabel(*label);
+  }
+  if ((label = m_variation_info.GetValue()) != 0) {
+    m_have_variation->SetLabel(*label);
+  }
+  if ((label = m_statistics_info.GetValue()) != 0) {
+    m_statistics->SetLabel(*label);
+  }
+
   if (m_message_state != new_message_state || m_old_radar_seen != radarSeen) {
     if (!radarSeen) {
       m_radar_off->Show();
@@ -371,73 +387,46 @@ bool br24MessageBox::UpdateMessage(bool force) {
 }
 
 void br24MessageBox::OnMessageCloseButtonClick(wxCommandEvent &event) {
-  wxMutexLocker lock(m_mutex);
-
   m_allow_auto_hide = true;
   m_message_state = HIDE;
   Hide();
 }
 
 void br24MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
-  wxMutexLocker lock(m_mutex);
-
   m_pi->m_settings.show = 0;
-  m_pi->SetRadarWindowViz(false);
   m_allow_auto_hide = true;
   m_message_state = HIDE;
   Hide();
+  m_pi->NotifyRadarWindowViz();
 }
 
 void br24MessageBox::SetRadarIPAddress(wxString &msg) {
-  wxMutexLocker lock(m_mutex);
-
-  if (m_have_radar) {
-    wxString label;
-
-    label << _("Radar IP") << wxT(" ") << msg;
-    m_have_radar->SetLabel(label);
-  }
+  wxString label;
+  label << _("Radar IP") << wxT(" ") << msg;
+  m_radar_addr_info.Update(label);
 }
 
 void br24MessageBox::SetMcastIPAddress(wxString &msg) {
-  wxMutexLocker lock(m_mutex);
+  wxString label;
 
-  if (m_ip_box) {
-    wxString label;
-
-    label << _("Ethernet card") << wxT(" ") << msg;
-    m_ip_box->SetLabel(label);
-  }
+  label << _("Ethernet card") << wxT(" ") << msg;
+  m_mcast_addr_info.Update(label);
 }
 
 void br24MessageBox::SetHeadingInfo(wxString &msg) {
-  wxMutexLocker lock(m_mutex);
+  wxString label;
 
-  if (m_have_heading) {
-    wxString label;
-
-    label << _("Heading") << wxT(" ") << msg;
-    m_have_heading->SetLabel(label);
-  }
+  label << _("Heading") << wxT(" ") << msg;
+  m_heading_info.Update(label);
 }
 
 void br24MessageBox::SetVariationInfo(wxString &msg) {
-  wxMutexLocker lock(m_mutex);
+  wxString label;
 
-  if (m_have_variation) {
-    wxString label;
-
-    label << _("Variation") << wxT(" ") << msg;
-    m_have_variation->SetLabel(label);
-  }
+  label << _("Variation") << wxT(" ") << msg;
+  m_variation_info.Update(label);
 }
 
-void br24MessageBox::SetRadarInfo(wxString &msg) {
-  wxMutexLocker lock(m_mutex);
-
-  if (m_statistics) {
-    m_statistics->SetLabel(msg);
-  }
-}
+void br24MessageBox::SetStatisticsInfo(wxString &msg) { m_statistics_info.Update(msg); }
 
 PLUGIN_END_NAMESPACE

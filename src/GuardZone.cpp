@@ -32,26 +32,15 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-void GuardZone::ResetBogeys() {
-  for (size_t r = 0; r < ARRAY_SIZE(bogeyCount); r++) {
-    bogeyCount[r] = 0;
-  }
-  m_bogey_count = -1;
-}
+#undef TEST_GUARD_ZONE_LOCATION
 
 void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_t len, int range) {
-  int bogeys = 0;
+  size_t range_start = inner_range * RETURNS_PER_LINE / range;  // Convert from meters to 0..511
+  size_t range_end = outer_range * RETURNS_PER_LINE / range;    // Convert from meters to 0..511
+  bool in_guard_zone = false;
 
-  // We can't check whether the data is in the correct angle here since the boat may be changing
-  // course. So we store it anyway (if the guard zone is active, but we're not called otherwise)
-  if (type != GZ_OFF) {
-    size_t range_start = inner_range * RETURNS_PER_LINE / range;  // Convert from meters to 0..511
-    size_t range_end = outer_range * RETURNS_PER_LINE / range;    // Convert from meters to 0..511
-    if (angle < 2) {
-      LOG_GUARD(wxT("BR24radar_pi: GUARD: range=%d guardzone=%d..%d (%d - %d)"), range, range_start, range_end, inner_range,
-                outer_range);
-    }
-
+  if ((angle >= start_bearing && angle < end_bearing) ||
+      (start_bearing >= end_bearing && (angle >= start_bearing || angle < end_bearing))) {
     if (range_start < RETURNS_PER_LINE) {
       if (range_end > RETURNS_PER_LINE) {
         range_end = RETURNS_PER_LINE;
@@ -59,48 +48,48 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
 
       for (size_t r = range_start; r <= range_end; r++) {
         if (!multi_sweep_filter || HISTORY_FILTER_ALLOW(hist[r])) {
-          if (m_pi->m_color_map[data[r]] != BLOB_NONE) {
-            bogeys++;
+          if (data[r] >= m_pi->m_settings.threshold_blue) {
+            m_running_count++;
           }
+#ifdef TEST_GUARD_ZONE_LOCATION
+          // Zap guard zone computation location to green so this is visible on screen
+          else {
+            data[r] = m_pi->m_settings.threshold_green;
+          }
+#endif
         }
+      }
+    }
+    if (type == GZ_ARC) {
+      in_guard_zone = true;
+    } else if (type == GZ_CIRCLE) {
+      if (angle < m_last_angle) {
+        in_guard_zone = true;
       }
     }
   }
 
-  bogeyCount[angle] = bogeys;
-}
+  if (m_last_in_guard_zone && !in_guard_zone) {
+    LOG_GUARD(wxT("BR24radar_pi: GUARD: last_in=%d in=%d angle=%d last_angle=%d"), m_last_in_guard_zone, in_guard_zone, angle,
+              m_last_angle);
+    // last bearing that could add to m_running_count, so store as bogey_count;
+    m_bogey_count = m_running_count;
+    m_running_count = 0;
+    LOG_GUARD(wxT("BR24radar_pi: GUARD: range=%d guardzone=%d..%d (%d - %d) bogey_count=%d"), range, range_start, range_end,
+              inner_range, outer_range, m_bogey_count);
 
-int GuardZone::GetBogeyCount(SpokeBearing current_hdt) {
-  int bogeys = 0;
-  SpokeBearing begin_arc, end_arc, arc;
-
-  switch (type) {
-    case GZ_CIRCLE:
-      begin_arc = 0;
-      end_arc = LINES_PER_ROTATION;
-      break;
-    case GZ_ARC:
-      begin_arc = MOD_ROTATION2048(start_bearing + current_hdt);
-      end_arc = MOD_ROTATION2048(end_bearing + current_hdt);
-      if (begin_arc > end_arc) {
-        end_arc += LINES_PER_ROTATION;  // now end_arc may be larger than LINES_PER_ROTATION!
-      }
-      break;
-    case GZ_OFF:
-    default:
-      bogeys = -1;
-      m_bogey_count = bogeys;
-      return bogeys;
+    // When debugging with a static ship it is hard to find moving targets, so move
+    // the guard zone instead. This slowly rotates the guard zone.
+    if (m_pi->m_settings.guard_zone_debug_inc && type == GZ_ARC) {
+      start_bearing += LINES_PER_ROTATION - m_pi->m_settings.guard_zone_debug_inc;
+      end_bearing += LINES_PER_ROTATION - m_pi->m_settings.guard_zone_debug_inc;
+      start_bearing %= LINES_PER_ROTATION;
+      end_bearing %= LINES_PER_ROTATION;
+    }
   }
 
-  for (arc = begin_arc; arc < end_arc; arc++) {
-    SpokeBearing angle = MOD_ROTATION2048(arc);
-
-    bogeys += bogeyCount[angle];
-  }
-
-  m_bogey_count = bogeys;
-  return bogeys;
+  m_last_in_guard_zone = in_guard_zone;
+  m_last_angle = angle;
 }
 
 PLUGIN_END_NAMESPACE
