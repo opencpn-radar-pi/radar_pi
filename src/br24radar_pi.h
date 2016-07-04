@@ -408,7 +408,6 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   wxCriticalSection m_exclusive;  // protects callbacks that come from multiple radars
 
   wxFileConfig *m_pconfig;
-  wxMenu *m_context_menu;
   int m_context_menu_control_id;
   int m_context_menu_show_id;
   int m_context_menu_hide_id;

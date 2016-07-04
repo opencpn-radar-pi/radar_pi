@@ -230,16 +230,25 @@ int br24radar_pi::Init(void) {
 
   CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_BLANK);
 
-  m_initialized = true;
+  //    In order to avoid an ASSERT on msw debug builds,
+  //    we need to create a dummy menu to act as a surrogate parent of the created MenuItems
+  //    The Items will be re-parented when added to the real context meenu
+  wxMenu dummy_menu;
 
-  m_context_menu = new wxMenu();
-  wxMenuItem *mi1 = new wxMenuItem(m_context_menu, -1, _("Show radar"));
+  wxMenuItem *mi1 = new wxMenuItem(&dummy_menu, -1, _("Show radar"));
+  wxMenuItem *mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
+  wxMenuItem *mi3 = new wxMenuItem(&dummy_menu, -1, _("Radar Control..."));
+#ifdef __WXMSW__
+  wxFont *qFont = OCPNGetFont(_("Menu"), 10);
+  mi1->SetFont(*qFont);
+  mi2->SetFont(*qFont);
+  mi3->SetFont(*qFont);
+#endif
   m_context_menu_show_id = AddCanvasContextMenuItem(mi1, this);
-  wxMenuItem *mi2 = new wxMenuItem(m_context_menu, -1, _("Hide radar"));
   m_context_menu_hide_id = AddCanvasContextMenuItem(mi2, this);
-  wxMenuItem *mi3 = new wxMenuItem(m_context_menu, -1, _("Radar Control..."));
   m_context_menu_control_id = AddCanvasContextMenuItem(mi3, this);
 
+  m_initialized = true;
   LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.show_radar[0], m_settings.show_radar[1],
               m_settings.chart_overlay);
 

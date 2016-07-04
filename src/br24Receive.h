@@ -104,8 +104,8 @@ class br24Receive : public wxThread {
   struct ifaddrs *m_interface_array;
   struct ifaddrs *m_interface;
 
-  int m_next_spoke; // emulator next spoke
-  int m_next_rotation; // slowly rotate emulator
+  int m_next_spoke;     // emulator next spoke
+  int m_next_rotation;  // slowly rotate emulator
 
   char m_radar_status;
 };

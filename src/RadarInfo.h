@@ -103,7 +103,7 @@ struct DrawInfo {
 };
 
 typedef UINT8 TrailRevolutionsAge;
-#define SECONDS_TO_REVOLUTIONS(x) ((x) * 2 / 5)
+#define SECONDS_TO_REVOLUTIONS(x) ((x)*2 / 5)
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(180)
 #define TRAIL_CONTINUOUS SECONDS_TO_REVOLUTIONS(180 + 18)
 
