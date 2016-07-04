@@ -915,9 +915,7 @@ void RadarInfo::ComputeTargetTrails() {
   // Disperse the ten BLOB_HISTORY values over 0..maxrev
   // with maxrev
   for (revolution = 0; revolution <= TRAIL_MAX_REVOLUTIONS; revolution++) {
-    if (target_trails.value == 5) {
-      m_trail_color[revolution] = BLOB_HISTORY_0;
-    } else if (revolution >= 1 && revolution <= maxRev) {
+    if (revolution >= 1 && revolution <= maxRev) {
       m_trail_color[revolution] = (BlobColor)(BLOB_HISTORY_0 + (int)color);
       color += colorsPerRevolution;
     } else {
