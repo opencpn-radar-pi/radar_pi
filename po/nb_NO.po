@@ -1,0 +1,636 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: opencpn\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-07-09 16:59+0200\n"
+"PO-Revision-Date: 2015-05-19 07:22-0400\n"
+"Last-Translator: nohal <pavel@kalian.cz>\n"
+"Language-Team: Norwegian Bokmal\n"
+"Language: nb_NO\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: opencpn\n"
+"X-Crowdin-Language: nb\n"
+"X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
+#
+msgid "&Close"
+msgstr "&Lukk"
+#
+msgid "&Confirm"
+msgstr "&Bekreft"
+#
+#, fuzzy
+msgid "&Hide Radar"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "(Confirmed)"
+msgstr "&Bekreft"
+#
+msgid "+"
+msgstr "+"
+#
+msgid "+10"
+msgstr "+10"
+#
+msgid "-"
+msgstr "-"
+#
+msgid "-10"
+msgstr "-10"
+#
+#, fuzzy
+msgid "1 min"
+msgstr "10 min"
+#
+msgid "10 min"
+msgstr "10 min"
+#
+msgid "10 sec"
+msgstr ""
+#
+msgid "15 min"
+msgstr "15 min"
+#
+msgid "15 sec"
+msgstr ""
+#
+msgid "20 min"
+msgstr "20 min"
+#
+msgid "25 min"
+msgstr "25 min"
+#
+#, fuzzy
+msgid "3 min"
+msgstr "30 min"
+#
+msgid "30 min"
+msgstr "30 min"
+#
+msgid "30 sec"
+msgstr ""
+#
+msgid "35 min"
+msgstr "35 min"
+#
+msgid "5 min"
+msgstr "5 min"
+#
+msgid "???"
+msgstr ""
+#
+msgid "Accelerated Graphics (OpenGL)"
+msgstr "Akselerert grafikk (OpenGL)"
+#
+msgid "Adjust"
+msgstr ""
+#
+#, fuzzy
+msgid "Advanced"
+msgstr ""
+"Avanserte\n"
+"kontroller"
+#
+msgid "Antenna height"
+msgstr ""
+#
+msgid "Arc"
+msgstr "Bue"
+#
+msgid "Auto"
+msgstr "Auto"
+#
+msgid "Auto hide after"
+msgstr ""
+#
+#, fuzzy
+msgid "BR24 Display Preferences"
+msgstr "BR24 Målvisnings innstillinger"
+#
+msgid "Back"
+msgstr "Tilbake"
+#
+msgid "Bearing alignment"
+msgstr ""
+#
+msgid "Boat position"
+msgstr "Båtposisjon"
+#
+msgid "COG"
+msgstr "COG"
+#
+msgid "Cannot bind UDP socket to port "
+msgstr "Kan ikke tilknytte socket til port "
+#
+msgid "Cannot create UDP socket"
+msgstr "Kan ikke opprette UDP-socket"
+#
+msgid "Cannot set reuse address option on socket"
+msgstr "Kan ikke bruke adressevalg for socket på nytt"
+#
+msgid ""
+"Cannot switch radar on as\n"
+"it is not connected or off"
+msgstr ""
+#
+msgid "Circle"
+msgstr "Sirkel"
+#
+#, c-format
+msgid "Clear EBL/VRM%d"
+msgstr ""
+#
+msgid "Clear cursor"
+msgstr ""
+#
+msgid "Clear trails"
+msgstr ""
+#
+msgid "Continuous"
+msgstr ""
+#
+msgid "Control Menu Auto Hide"
+msgstr ""
+#
+msgid "Drawing Method"
+msgstr ""
+#
+msgid "EBL/VRM"
+msgstr ""
+#
+msgid "Emulator"
+msgstr "Emulator"
+#
+#, fuzzy
+msgid "Emulator mode"
+msgstr "Emulator"
+#
+msgid "Enable dual radar, 4G only"
+msgstr ""
+#
+msgid "End bearing"
+msgstr "Sluttkurs"
+#
+msgid "Ethernet card"
+msgstr ""
+#
+msgid "Fast"
+msgstr "Rask"
+#
+msgid "For radar overlay also required"
+msgstr ""
+#
+msgid "GPS"
+msgstr "GPS"
+#
+msgid "GPU drawing method"
+msgstr ""
+#
+msgid "Gain"
+msgstr "Styrke"
+#
+msgid "Guard Zone"
+msgstr "Vaktsone"
+#
+#, fuzzy
+msgid "Guard Zone Display"
+msgstr "Vaktsone"
+#
+msgid "Guard Zone Sound"
+msgstr "Vaktsone lyd"
+#
+msgid "Guard Zone Styling"
+msgstr "Vaktsone utseende"
+#
+msgid "Guard zone"
+msgstr "Vaktsone"
+#
+msgid "Guard zones"
+msgstr "Vaktsoner"
+#
+msgid "HDM"
+msgstr "HDM"
+#
+msgid "HDT"
+msgstr "HDT"
+#
+msgid "Head Up"
+msgstr ""
+#
+msgid "Head up"
+msgstr ""
+#
+msgid "Heading"
+msgstr "Kurs"
+#
+msgid "Hide both windows"
+msgstr ""
+#
+#, fuzzy
+msgid "Hide radar"
+msgstr "radar"
+#
+msgid "Hide window"
+msgstr ""
+#
+msgid "High"
+msgstr "Høy"
+#
+msgid "Info"
+msgstr "Info"
+#
+msgid "Inner range"
+msgstr "Indre rekkevidde"
+#
+#, fuzzy
+msgid "Installation"
+msgstr "Kalibrering"
+#
+#, fuzzy
+msgid "Interference rej."
+msgstr "IR filter"
+#
+msgid "Interference rejection"
+msgstr "IR filter"
+#
+msgid "Invalid IP address for UDP multicast"
+msgstr "Ugyldig IP-adresse for UDP-multicast"
+#
+msgid "Invalid multicast address"
+msgstr "Ugyldig multicast adresse"
+#
+msgid "Kilometers"
+msgstr "Kilometer"
+#
+#, fuzzy
+msgid "Local interference rejection"
+msgstr "IR filter"
+#
+msgid "Low"
+msgstr "Lav"
+#
+msgid "Medium"
+msgstr "Middels"
+#
+msgid "Menu"
+msgstr "Meny"
+#
+msgid "Monocolor-Red"
+msgstr "Enfarge-Rød"
+#
+msgid "Multi Sweep Filter"
+msgstr ""
+#
+msgid "Multi-color"
+msgstr "Flerfarget"
+#
+msgid "NMEA"
+msgstr "NMEA"
+#
+msgid "Nautical Miles"
+msgstr "Nautisk mil"
+#
+msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+msgstr "Navico Bredbånds BR24/3G/4G Radar utvidelse for OpenCPN\n"
+#
+msgid "Navico Radar PlugIn for OpenCPN"
+msgstr "Navico Radarutvidelse for OpenCPN"
+#
+msgid "Never"
+msgstr ""
+#
+#, c-format
+msgid "Next alarm in %d s"
+msgstr "Neste alarm om %d s"
+#
+#, fuzzy
+msgid "No radar"
+msgstr "radar"
+#
+msgid "No valid drawing method"
+msgstr ""
+#
+msgid "Noise rejection"
+msgstr "Støyfilter"
+#
+msgid "Normal"
+msgstr "Normal"
+#
+msgid "North Up"
+msgstr ""
+#
+msgid "North up"
+msgstr ""
+#
+msgid "Off"
+msgstr "Av"
+#
+msgid "On"
+msgstr ""
+#
+msgid "OpenCPN options"
+msgstr "OpenCPN alternativer"
+#
+msgid "OpenGL mode required"
+msgstr ""
+#
+msgid "Options"
+msgstr "Alternativer"
+#
+#, fuzzy
+msgid "Orientation"
+msgstr "Variasjon"
+#
+msgid "Outer range"
+msgstr "Ytre rekkevidde"
+#
+msgid "Outline"
+msgstr "Fremhev"
+#
+msgid "Overlay"
+msgstr ""
+#
+msgid "Overlay Display Options"
+msgstr "Alternativer for overlegg visning"
+#
+msgid "Pass radar heading to OpenCPN"
+msgstr "Send radarkurs til OpenCPN"
+#
+#, c-format
+msgid "Place EBL/VRM%d"
+msgstr ""
+#
+msgid "RADAR"
+msgstr ""
+#
+msgid "Radar"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "Radar A"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "Radar B"
+msgstr "Radar"
+#
+msgid "Radar Control..."
+msgstr "Radarkontroll..."
+#
+msgid "Radar IP"
+msgstr "Radar IP"
+#
+#, fuzzy
+msgid "Radar is in Standby"
+msgstr "Radar sender data"
+#
+msgid "Radar present"
+msgstr "Radar tilstede"
+#
+#, fuzzy
+msgid "Radar requirements OK:"
+msgstr "Radar tilstede"
+#
+#, fuzzy
+msgid "Radar requires the following"
+msgstr "Radar overlegg krever følgende data"
+#
+msgid "Radar sending data"
+msgstr "Radar sender data"
+#
+#, fuzzy
+msgid "Radar window and overlay"
+msgstr "Radar kartoverlegg"
+#
+#, fuzzy
+msgid "Radar window only"
+msgstr "Frittstående radar"
+#
+msgid "Rain clutter"
+msgstr "Regnfilter"
+#
+msgid "Range"
+msgstr "Rekkevidde"
+#
+msgid "Range Units"
+msgstr "Avstandsenheter"
+#
+msgid "Refresh rate"
+msgstr "Oppdateringsfrekvens"
+#
+msgid "Reverse mouse wheel zoom direction"
+msgstr ""
+#
+msgid "Scan age"
+msgstr "Sveip alder"
+#
+msgid "Scan speed"
+msgstr "Skanner hastighet"
+#
+msgid "Sea clutter"
+msgstr "Sjøfilter"
+#
+msgid "Select Alert Sound"
+msgstr "Velg alarmlyd"
+#
+msgid "Select Sound File"
+msgstr "Velg lydfil"
+#
+#, fuzzy
+msgid "Shader"
+msgstr "Skygge"
+#
+msgid "Shading"
+msgstr "Skygge"
+#
+msgid "Shading + Outline"
+msgstr "Skygge + Fremhev"
+#
+msgid "Show both windows"
+msgstr ""
+#
+msgid "Show other window"
+msgstr ""
+#
+#, fuzzy
+msgid "Show radar"
+msgstr "radar"
+#
+msgid "Show this window"
+msgstr ""
+#
+msgid "Show window"
+msgstr ""
+#
+msgid "Side lobe suppression"
+msgstr ""
+#
+msgid "Standby"
+msgstr ""
+#
+#, c-format
+msgid "Standby in %2d:%02d"
+msgstr ""
+#
+#, c-format
+msgid "Standby in %d:%02d"
+msgstr ""
+#
+msgid "Start bearing"
+msgstr "Startkurs"
+#
+msgid "Statistics"
+msgstr "Statistikk"
+#
+msgid "Sweep Filter"
+msgstr ""
+#
+msgid "Target boost"
+msgstr "Ekkoforsterkning"
+#
+#, fuzzy
+msgid "Target expansion"
+msgstr "Ekko separasjon"
+#
+msgid "Target separation"
+msgstr "Ekko separasjon"
+#
+#, fuzzy
+msgid "Target trails"
+msgstr "Ekko separasjon"
+#
+msgid "Test Alert Sound"
+msgstr "Test alarm lyd"
+#
+msgid "Timed Transmit"
+msgstr "Tidsbestemt sending"
+#
+#, fuzzy
+msgid "Trail Display"
+msgstr "Radarvisning"
+#
+#, fuzzy
+msgid "Transmit"
+msgstr "Tidsbestemt sending"
+#
+#, c-format
+msgid "Transmit in %2d:%02d"
+msgstr ""
+#
+#, c-format
+msgid "Transmit in %d:%02d"
+msgstr ""
+#
+msgid "Transparency"
+msgstr "Gjennomsiktighet"
+#
+msgid "Unable to create OpenGL canvas"
+msgstr ""
+#
+msgid "Unknown"
+msgstr ""
+#
+msgid "Value"
+msgstr "Verdi"
+#
+msgid "Variation"
+msgstr "Variasjon"
+#
+msgid "Vertex Array"
+msgstr ""
+#
+msgid "View"
+msgstr ""
+#
+msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+msgstr "WAV filer (*.wav)|*.wav|Alle filer (*.*)|*.*"
+#
+msgid "WMM"
+msgstr "WMM"
+#
+#, fuzzy
+msgid "ZeroConf via Ethernet"
+msgstr "ZeroConf via kablet nettverk"
+#
+msgid "Zone"
+msgstr "Sone"
+#
+#, fuzzy
+msgid ""
+"Zone 1: unknown\n"
+"Zone 2: unknown\n"
+"Timeout\n"
+msgstr ""
+"Sone 1: ukjent\n"
+"Sone 2: ukjent\n"
+"Tidsavbrudd"
+#
+#, fuzzy
+msgid "Zone type"
+msgstr "Sonetype:"
+#
+#~ msgid " Guard Zone Control"
+#~ msgstr " Vaktsone kontroll"
+#
+#~ msgid ""
+#~ "<<\n"
+#~ "Back"
+#~ msgstr ""
+#~ "<<\n"
+#~ "Tilbake"
+#
+#~ msgid "C&onfirm + Close"
+#~ msgstr "B&ekreft + Lukk"
+#
+#~ msgid "Data sources"
+#~ msgstr "Datakilder"
+#
+#~ msgid "Dialog"
+#~ msgstr "Dialog"
+#
+#~ msgid "Downsample"
+#~ msgstr "Nedsampling"
+#
+#~ msgid "Guard Zone Active"
+#~ msgstr "Aktiv vaktsone"
+#
+#~ msgid ""
+#~ "Heading correction\n"
+#~ "(-180 to +180)"
+#~ msgstr ""
+#~ "Kurskorreksjon\n"
+#~ "(-180 til +180)"
+#
+#~ msgid "Idle time is set to"
+#~ msgstr "Tid uten aktivitet er satt til"
+#
+#~ msgid "Multi-color 2"
+#~ msgstr "Flerfarge 2"
+#
+#~ msgid "Radar scanner is Idling"
+#~ msgstr "Radarscanner er i tomgangsmodus"
+#
+#~ msgid "Set Guard Point"
+#~ msgstr "Sett vaktpunkt"
+#
+#~ msgid "Spectrum"
+#~ msgstr "Spektrum"
+#
+#~ msgid "Turn Radar always ON"
+#~ msgstr "Alltid slå radar på"
+#
+#~ msgid "ca."
+#~ msgstr "ca."
+#
+#~ msgid "emulator"
+#~ msgstr "emulator"
+#
+#~ msgid "minutes"
+#~ msgstr "minutter"
+#
+#~ msgid "minutes until next run"
+#~ msgstr "minutter til neste kjøring"

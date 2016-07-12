@@ -1,0 +1,549 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: opencpn\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-07-09 16:59+0200\n"
+"PO-Revision-Date: 2015-05-17 12:43-0400\n"
+"Last-Translator: nohal <pavel@kalian.cz>\n"
+"Language-Team: Greek\n"
+"Language: el_GR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: opencpn\n"
+"X-Crowdin-Language: el\n"
+"X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
+#
+msgid "&Close"
+msgstr "&Κλείσιμο"
+#
+msgid "&Confirm"
+msgstr "&Επιβεβαίωση"
+#
+msgid "&Hide Radar"
+msgstr ""
+#
+#, fuzzy
+msgid "(Confirmed)"
+msgstr "&Επιβεβαίωση"
+#
+msgid "+"
+msgstr ""
+#
+msgid "+10"
+msgstr ""
+#
+msgid "-"
+msgstr ""
+#
+msgid "-10"
+msgstr ""
+#
+msgid "1 min"
+msgstr ""
+#
+msgid "10 min"
+msgstr ""
+#
+msgid "10 sec"
+msgstr ""
+#
+msgid "15 min"
+msgstr ""
+#
+msgid "15 sec"
+msgstr ""
+#
+msgid "20 min"
+msgstr ""
+#
+msgid "25 min"
+msgstr ""
+#
+msgid "3 min"
+msgstr ""
+#
+msgid "30 min"
+msgstr ""
+#
+msgid "30 sec"
+msgstr ""
+#
+msgid "35 min"
+msgstr ""
+#
+msgid "5 min"
+msgstr ""
+#
+msgid "???"
+msgstr ""
+#
+msgid "Accelerated Graphics (OpenGL)"
+msgstr ""
+#
+msgid "Adjust"
+msgstr ""
+#
+msgid "Advanced"
+msgstr ""
+#
+msgid "Antenna height"
+msgstr ""
+#
+msgid "Arc"
+msgstr "Τόξο"
+#
+msgid "Auto"
+msgstr ""
+#
+msgid "Auto hide after"
+msgstr ""
+#
+msgid "BR24 Display Preferences"
+msgstr ""
+#
+msgid "Back"
+msgstr ""
+#
+msgid "Bearing alignment"
+msgstr ""
+#
+msgid "Boat position"
+msgstr ""
+#
+msgid "COG"
+msgstr ""
+#
+msgid "Cannot bind UDP socket to port "
+msgstr ""
+#
+msgid "Cannot create UDP socket"
+msgstr ""
+#
+msgid "Cannot set reuse address option on socket"
+msgstr ""
+#
+msgid ""
+"Cannot switch radar on as\n"
+"it is not connected or off"
+msgstr ""
+#
+msgid "Circle"
+msgstr "Κύκλος"
+#
+#, c-format
+msgid "Clear EBL/VRM%d"
+msgstr ""
+#
+msgid "Clear cursor"
+msgstr ""
+#
+msgid "Clear trails"
+msgstr ""
+#
+msgid "Continuous"
+msgstr ""
+#
+msgid "Control Menu Auto Hide"
+msgstr ""
+#
+msgid "Drawing Method"
+msgstr ""
+#
+msgid "EBL/VRM"
+msgstr ""
+#
+msgid "Emulator"
+msgstr ""
+#
+msgid "Emulator mode"
+msgstr ""
+#
+msgid "Enable dual radar, 4G only"
+msgstr ""
+#
+msgid "End bearing"
+msgstr "Τέλος μέτρησης"
+#
+msgid "Ethernet card"
+msgstr ""
+#
+msgid "Fast"
+msgstr ""
+#
+msgid "For radar overlay also required"
+msgstr ""
+#
+msgid "GPS"
+msgstr ""
+#
+msgid "GPU drawing method"
+msgstr ""
+#
+msgid "Gain"
+msgstr ""
+#
+msgid "Guard Zone"
+msgstr "Ζώνν επιφυλακής"
+#
+#, fuzzy
+msgid "Guard Zone Display"
+msgstr "Ζώνν επιφυλακής"
+#
+msgid "Guard Zone Sound"
+msgstr ""
+#
+msgid "Guard Zone Styling"
+msgstr ""
+#
+msgid "Guard zone"
+msgstr ""
+#
+msgid "Guard zones"
+msgstr "Ζώνες επιφυλακής"
+#
+msgid "HDM"
+msgstr ""
+#
+msgid "HDT"
+msgstr ""
+#
+msgid "Head Up"
+msgstr ""
+#
+msgid "Head up"
+msgstr ""
+#
+msgid "Heading"
+msgstr ""
+#
+msgid "Hide both windows"
+msgstr ""
+#
+msgid "Hide radar"
+msgstr ""
+#
+msgid "Hide window"
+msgstr ""
+#
+msgid "High"
+msgstr ""
+#
+msgid "Info"
+msgstr ""
+#
+msgid "Inner range"
+msgstr "Εσωτερική περιοχή"
+#
+msgid "Installation"
+msgstr ""
+#
+msgid "Interference rej."
+msgstr ""
+#
+msgid "Interference rejection"
+msgstr ""
+#
+msgid "Invalid IP address for UDP multicast"
+msgstr ""
+#
+msgid "Invalid multicast address"
+msgstr ""
+#
+msgid "Kilometers"
+msgstr ""
+#
+msgid "Local interference rejection"
+msgstr ""
+#
+msgid "Low"
+msgstr ""
+#
+msgid "Medium"
+msgstr ""
+#
+msgid "Menu"
+msgstr "Menu"
+#
+msgid "Monocolor-Red"
+msgstr ""
+#
+msgid "Multi Sweep Filter"
+msgstr ""
+#
+msgid "Multi-color"
+msgstr ""
+#
+msgid "NMEA"
+msgstr ""
+#
+msgid "Nautical Miles"
+msgstr ""
+#
+msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+msgstr ""
+#
+msgid "Navico Radar PlugIn for OpenCPN"
+msgstr ""
+#
+msgid "Never"
+msgstr ""
+#
+#, c-format
+msgid "Next alarm in %d s"
+msgstr "Επόμενος συναγερμός σε %d s"
+#
+msgid "No radar"
+msgstr ""
+#
+msgid "No valid drawing method"
+msgstr ""
+#
+msgid "Noise rejection"
+msgstr ""
+#
+msgid "Normal"
+msgstr ""
+#
+msgid "North Up"
+msgstr ""
+#
+msgid "North up"
+msgstr ""
+#
+msgid "Off"
+msgstr "Οff"
+#
+msgid "On"
+msgstr ""
+#
+msgid "OpenCPN options"
+msgstr ""
+#
+msgid "OpenGL mode required"
+msgstr ""
+#
+msgid "Options"
+msgstr ""
+#
+msgid "Orientation"
+msgstr ""
+#
+msgid "Outer range"
+msgstr "Εξωτερική περιοχή"
+#
+msgid "Outline"
+msgstr ""
+#
+msgid "Overlay"
+msgstr ""
+#
+msgid "Overlay Display Options"
+msgstr ""
+#
+msgid "Pass radar heading to OpenCPN"
+msgstr ""
+#
+#, c-format
+msgid "Place EBL/VRM%d"
+msgstr ""
+#
+msgid "RADAR"
+msgstr ""
+#
+msgid "Radar"
+msgstr ""
+#
+msgid "Radar A"
+msgstr ""
+#
+msgid "Radar B"
+msgstr ""
+#
+msgid "Radar Control..."
+msgstr "Έλεγχος ραντάρ..."
+#
+msgid "Radar IP"
+msgstr ""
+#
+msgid "Radar is in Standby"
+msgstr ""
+#
+msgid "Radar present"
+msgstr ""
+#
+msgid "Radar requirements OK:"
+msgstr ""
+#
+msgid "Radar requires the following"
+msgstr ""
+#
+msgid "Radar sending data"
+msgstr ""
+#
+msgid "Radar window and overlay"
+msgstr ""
+#
+msgid "Radar window only"
+msgstr ""
+#
+msgid "Rain clutter"
+msgstr ""
+#
+msgid "Range"
+msgstr ""
+#
+msgid "Range Units"
+msgstr ""
+#
+msgid "Refresh rate"
+msgstr ""
+#
+msgid "Reverse mouse wheel zoom direction"
+msgstr ""
+#
+msgid "Scan age"
+msgstr ""
+#
+msgid "Scan speed"
+msgstr ""
+#
+msgid "Sea clutter"
+msgstr ""
+#
+msgid "Select Alert Sound"
+msgstr ""
+#
+msgid "Select Sound File"
+msgstr ""
+#
+msgid "Shader"
+msgstr ""
+#
+msgid "Shading"
+msgstr ""
+#
+msgid "Shading + Outline"
+msgstr ""
+#
+msgid "Show both windows"
+msgstr ""
+#
+msgid "Show other window"
+msgstr ""
+#
+msgid "Show radar"
+msgstr ""
+#
+msgid "Show this window"
+msgstr ""
+#
+msgid "Show window"
+msgstr ""
+#
+msgid "Side lobe suppression"
+msgstr ""
+#
+msgid "Standby"
+msgstr ""
+#
+#, c-format
+msgid "Standby in %2d:%02d"
+msgstr ""
+#
+#, c-format
+msgid "Standby in %d:%02d"
+msgstr ""
+#
+msgid "Start bearing"
+msgstr "Αρχή μέτρησης"
+#
+msgid "Statistics"
+msgstr ""
+#
+msgid "Sweep Filter"
+msgstr ""
+#
+msgid "Target boost"
+msgstr ""
+#
+msgid "Target expansion"
+msgstr ""
+#
+msgid "Target separation"
+msgstr ""
+#
+msgid "Target trails"
+msgstr ""
+#
+msgid "Test Alert Sound"
+msgstr ""
+#
+msgid "Timed Transmit"
+msgstr ""
+#
+msgid "Trail Display"
+msgstr ""
+#
+msgid "Transmit"
+msgstr ""
+#
+#, c-format
+msgid "Transmit in %2d:%02d"
+msgstr ""
+#
+#, c-format
+msgid "Transmit in %d:%02d"
+msgstr ""
+#
+msgid "Transparency"
+msgstr ""
+#
+msgid "Unable to create OpenGL canvas"
+msgstr ""
+#
+msgid "Unknown"
+msgstr ""
+#
+msgid "Value"
+msgstr ""
+#
+msgid "Variation"
+msgstr ""
+#
+msgid "Vertex Array"
+msgstr ""
+#
+msgid "View"
+msgstr ""
+#
+msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+msgstr ""
+#
+msgid "WMM"
+msgstr ""
+#
+msgid "ZeroConf via Ethernet"
+msgstr ""
+#
+msgid "Zone"
+msgstr "Ζώνη"
+#
+#, fuzzy
+msgid ""
+"Zone 1: unknown\n"
+"Zone 2: unknown\n"
+"Timeout\n"
+msgstr ""
+"Ζώνη 1: άγνωστο\n"
+"Zone 2: άγνωστο\n"
+"Τέλος χρόνου"
+#
+#, fuzzy
+msgid "Zone type"
+msgstr "Τύπος Ζώνης:"
+#
+#~ msgid "C&onfirm + Close"
+#~ msgstr "Ε&πιβεβαίωση + Κλείσιμο"

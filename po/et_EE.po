@@ -1,0 +1,636 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: opencpn\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-07-09 16:59+0200\n"
+"PO-Revision-Date: 2015-05-19 07:22-0400\n"
+"Last-Translator: nohal <pavel@kalian.cz>\n"
+"Language-Team: Estonian\n"
+"Language: et_EE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: opencpn\n"
+"X-Crowdin-Language: et\n"
+"X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
+#
+msgid "&Close"
+msgstr "%Sulge"
+#
+msgid "&Confirm"
+msgstr "&Kinnita"
+#
+#, fuzzy
+msgid "&Hide Radar"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "(Confirmed)"
+msgstr "&Kinnita"
+#
+msgid "+"
+msgstr "+"
+#
+msgid "+10"
+msgstr "+ 10"
+#
+msgid "-"
+msgstr "-"
+#
+msgid "-10"
+msgstr "-10"
+#
+#, fuzzy
+msgid "1 min"
+msgstr "10 min"
+#
+msgid "10 min"
+msgstr "10 min"
+#
+msgid "10 sec"
+msgstr ""
+#
+msgid "15 min"
+msgstr "15 min"
+#
+msgid "15 sec"
+msgstr ""
+#
+msgid "20 min"
+msgstr "20 min"
+#
+msgid "25 min"
+msgstr "25 min"
+#
+#, fuzzy
+msgid "3 min"
+msgstr "30 min"
+#
+msgid "30 min"
+msgstr "30 min"
+#
+msgid "30 sec"
+msgstr ""
+#
+msgid "35 min"
+msgstr "35 min"
+#
+msgid "5 min"
+msgstr "5 min"
+#
+msgid "???"
+msgstr ""
+#
+msgid "Accelerated Graphics (OpenGL)"
+msgstr "Graafikakiirendi (OpenGL)"
+#
+msgid "Adjust"
+msgstr ""
+#
+#, fuzzy
+msgid "Advanced"
+msgstr ""
+"Lisa\n"
+"-ohjed"
+#
+msgid "Antenna height"
+msgstr ""
+#
+msgid "Arc"
+msgstr "Kaar"
+#
+msgid "Auto"
+msgstr "Automaatne"
+#
+msgid "Auto hide after"
+msgstr ""
+#
+#, fuzzy
+msgid "BR24 Display Preferences"
+msgstr "BR24 märgi kuvamise eelistused"
+#
+msgid "Back"
+msgstr "Tagasi"
+#
+msgid "Bearing alignment"
+msgstr ""
+#
+msgid "Boat position"
+msgstr "Aluse asukoht"
+#
+msgid "COG"
+msgstr "COG"
+#
+msgid "Cannot bind UDP socket to port "
+msgstr "Ei suuda siduda UDP-soklit pordiga "
+#
+msgid "Cannot create UDP socket"
+msgstr "Ei suuda luua UDP-sokkelit"
+#
+msgid "Cannot set reuse address option on socket"
+msgstr "Ei suuda luua korduvkasutamise aadressi valikut soklis"
+#
+msgid ""
+"Cannot switch radar on as\n"
+"it is not connected or off"
+msgstr ""
+#
+msgid "Circle"
+msgstr "Ring"
+#
+#, c-format
+msgid "Clear EBL/VRM%d"
+msgstr ""
+#
+msgid "Clear cursor"
+msgstr ""
+#
+msgid "Clear trails"
+msgstr ""
+#
+msgid "Continuous"
+msgstr ""
+#
+msgid "Control Menu Auto Hide"
+msgstr ""
+#
+msgid "Drawing Method"
+msgstr ""
+#
+msgid "EBL/VRM"
+msgstr ""
+#
+msgid "Emulator"
+msgstr "emulaator"
+#
+#, fuzzy
+msgid "Emulator mode"
+msgstr "emulaator"
+#
+msgid "Enable dual radar, 4G only"
+msgstr ""
+#
+msgid "End bearing"
+msgstr "Lõpp-peiling"
+#
+msgid "Ethernet card"
+msgstr ""
+#
+msgid "Fast"
+msgstr "Kiire"
+#
+msgid "For radar overlay also required"
+msgstr ""
+#
+msgid "GPS"
+msgstr "GPS"
+#
+msgid "GPU drawing method"
+msgstr ""
+#
+msgid "Gain"
+msgstr "Võimendus"
+#
+msgid "Guard Zone"
+msgstr "Valvetsoon"
+#
+#, fuzzy
+msgid "Guard Zone Display"
+msgstr "Valvetsoon"
+#
+msgid "Guard Zone Sound"
+msgstr "Valvetsooni heli"
+#
+msgid "Guard Zone Styling"
+msgstr "Valvetsooni stiil"
+#
+msgid "Guard zone"
+msgstr "Valvetsoon"
+#
+msgid "Guard zones"
+msgstr "Valvetsoonid"
+#
+msgid "HDM"
+msgstr "HDM"
+#
+msgid "HDT"
+msgstr "HDT"
+#
+msgid "Head Up"
+msgstr ""
+#
+msgid "Head up"
+msgstr ""
+#
+msgid "Heading"
+msgstr "Suund"
+#
+msgid "Hide both windows"
+msgstr ""
+#
+#, fuzzy
+msgid "Hide radar"
+msgstr "radar"
+#
+msgid "Hide window"
+msgstr ""
+#
+msgid "High"
+msgstr "Kõrge"
+#
+msgid "Info"
+msgstr "Info"
+#
+msgid "Inner range"
+msgstr "Sisemine ulatus"
+#
+#, fuzzy
+msgid "Installation"
+msgstr "Kalibreerimine"
+#
+#, fuzzy
+msgid "Interference rej."
+msgstr "Häiringute tagasilükkamine"
+#
+msgid "Interference rejection"
+msgstr "Häiringute tagasilükkamine"
+#
+msgid "Invalid IP address for UDP multicast"
+msgstr "UDP-multisaate IP-aadress on kehtetu"
+#
+msgid "Invalid multicast address"
+msgstr "Kehtetu multisaate aadress"
+#
+msgid "Kilometers"
+msgstr "kilomeetrid"
+#
+#, fuzzy
+msgid "Local interference rejection"
+msgstr "Häiringute tagasilükkamine"
+#
+msgid "Low"
+msgstr "Madal"
+#
+msgid "Medium"
+msgstr "Keskmine"
+#
+msgid "Menu"
+msgstr "Menüü"
+#
+msgid "Monocolor-Red"
+msgstr "ühevärviline-punane"
+#
+msgid "Multi Sweep Filter"
+msgstr ""
+#
+msgid "Multi-color"
+msgstr "mitmevärviline"
+#
+msgid "NMEA"
+msgstr "NMEA"
+#
+msgid "Nautical Miles"
+msgstr "meremiilid"
+#
+msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+msgstr "Navico BR24/3G/4G lairibaradari plugin OpenCPN'i jaoks\n"
+#
+msgid "Navico Radar PlugIn for OpenCPN"
+msgstr "Navico radari plugIn OpenCPN'i jaoks"
+#
+msgid "Never"
+msgstr ""
+#
+#, c-format
+msgid "Next alarm in %d s"
+msgstr "Järgmine häire %d s"
+#
+#, fuzzy
+msgid "No radar"
+msgstr "radar"
+#
+msgid "No valid drawing method"
+msgstr ""
+#
+msgid "Noise rejection"
+msgstr "Müra tagasilükkamine"
+#
+msgid "Normal"
+msgstr "Tavaline"
+#
+msgid "North Up"
+msgstr ""
+#
+msgid "North up"
+msgstr ""
+#
+msgid "Off"
+msgstr "Väljas"
+#
+msgid "On"
+msgstr ""
+#
+msgid "OpenCPN options"
+msgstr "OpenCPN'i valikud"
+#
+msgid "OpenGL mode required"
+msgstr ""
+#
+msgid "Options"
+msgstr "Valikud"
+#
+#, fuzzy
+msgid "Orientation"
+msgstr "Variatsioon"
+#
+msgid "Outer range"
+msgstr "Välimine ulatus"
+#
+msgid "Outline"
+msgstr "kontuur"
+#
+msgid "Overlay"
+msgstr ""
+#
+msgid "Overlay Display Options"
+msgstr "Ülekatte kuvamise valikud"
+#
+msgid "Pass radar heading to OpenCPN"
+msgstr "Saada radari kurss edasi OpenCPN'i"
+#
+#, c-format
+msgid "Place EBL/VRM%d"
+msgstr ""
+#
+msgid "RADAR"
+msgstr ""
+#
+msgid "Radar"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "Radar A"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "Radar B"
+msgstr "Radar"
+#
+msgid "Radar Control..."
+msgstr "Radari kontroll..."
+#
+msgid "Radar IP"
+msgstr "Radari IP"
+#
+#, fuzzy
+msgid "Radar is in Standby"
+msgstr "Radar saadab andmeid"
+#
+msgid "Radar present"
+msgstr "Radar on olemas"
+#
+#, fuzzy
+msgid "Radar requirements OK:"
+msgstr "Radar on olemas"
+#
+#, fuzzy
+msgid "Radar requires the following"
+msgstr "Radari ülekate vajab järgmisi andmeid"
+#
+msgid "Radar sending data"
+msgstr "Radar saadab andmeid"
+#
+#, fuzzy
+msgid "Radar window and overlay"
+msgstr "radari ülekate kaardil"
+#
+#, fuzzy
+msgid "Radar window only"
+msgstr "radar eraldiseisvana"
+#
+msgid "Rain clutter"
+msgstr "Sademesäri"
+#
+msgid "Range"
+msgstr "Ulatus"
+#
+msgid "Range Units"
+msgstr "Ulatuse ühikud"
+#
+msgid "Refresh rate"
+msgstr "Värskenduse kiirus"
+#
+msgid "Reverse mouse wheel zoom direction"
+msgstr ""
+#
+msgid "Scan age"
+msgstr "Pildi püsimisaeg"
+#
+msgid "Scan speed"
+msgstr "Skaneerimise kiirus"
+#
+msgid "Sea clutter"
+msgstr "Meresäri"
+#
+msgid "Select Alert Sound"
+msgstr "Vali häire heli"
+#
+msgid "Select Sound File"
+msgstr "Vali helifail"
+#
+#, fuzzy
+msgid "Shader"
+msgstr "varjustus"
+#
+msgid "Shading"
+msgstr "varjustus"
+#
+msgid "Shading + Outline"
+msgstr "varjustus + kontuur"
+#
+msgid "Show both windows"
+msgstr ""
+#
+msgid "Show other window"
+msgstr ""
+#
+#, fuzzy
+msgid "Show radar"
+msgstr "radar"
+#
+msgid "Show this window"
+msgstr ""
+#
+msgid "Show window"
+msgstr ""
+#
+msgid "Side lobe suppression"
+msgstr ""
+#
+msgid "Standby"
+msgstr ""
+#
+#, c-format
+msgid "Standby in %2d:%02d"
+msgstr ""
+#
+#, c-format
+msgid "Standby in %d:%02d"
+msgstr ""
+#
+msgid "Start bearing"
+msgstr "Alguspeiling"
+#
+msgid "Statistics"
+msgstr "Statistika"
+#
+msgid "Sweep Filter"
+msgstr ""
+#
+msgid "Target boost"
+msgstr "Märgi suurendamine"
+#
+#, fuzzy
+msgid "Target expansion"
+msgstr "Märgi eraldamine"
+#
+msgid "Target separation"
+msgstr "Märgi eraldamine"
+#
+#, fuzzy
+msgid "Target trails"
+msgstr "Märgi eraldamine"
+#
+msgid "Test Alert Sound"
+msgstr "Testi häire heli"
+#
+msgid "Timed Transmit"
+msgstr "Ajastatud kiirgamine"
+#
+#, fuzzy
+msgid "Trail Display"
+msgstr "Radari kuvamine"
+#
+#, fuzzy
+msgid "Transmit"
+msgstr "Ajastatud kiirgamine"
+#
+#, c-format
+msgid "Transmit in %2d:%02d"
+msgstr ""
+#
+#, c-format
+msgid "Transmit in %d:%02d"
+msgstr ""
+#
+msgid "Transparency"
+msgstr "Läbipaistvus"
+#
+msgid "Unable to create OpenGL canvas"
+msgstr ""
+#
+msgid "Unknown"
+msgstr ""
+#
+msgid "Value"
+msgstr "Väärtus"
+#
+msgid "Variation"
+msgstr "Variatsioon"
+#
+msgid "Vertex Array"
+msgstr ""
+#
+msgid "View"
+msgstr ""
+#
+msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+msgstr "WAV-failid (*.wav)|*.wav|Kõik failid (*.*)|*.*"
+#
+msgid "WMM"
+msgstr "WMM"
+#
+#, fuzzy
+msgid "ZeroConf via Ethernet"
+msgstr "Zeroconf üle (traadiga) võrgu"
+#
+msgid "Zone"
+msgstr "Tsoon"
+#
+#, fuzzy
+msgid ""
+"Zone 1: unknown\n"
+"Zone 2: unknown\n"
+"Timeout\n"
+msgstr ""
+"1 tsoon: tundmatu\n"
+"2 tsoon: tundmatu\n"
+"Aegumine"
+#
+#, fuzzy
+msgid "Zone type"
+msgstr "Tsooni liigid:"
+#
+#~ msgid " Guard Zone Control"
+#~ msgstr " Valvetsooni ohje"
+#
+#~ msgid ""
+#~ "<<\n"
+#~ "Back"
+#~ msgstr ""
+#~ "<< \n"
+#~ "Tagasi"
+#
+#~ msgid "C&onfirm + Close"
+#~ msgstr "K&innita + sule"
+#
+#~ msgid "Data sources"
+#~ msgstr "Andmete allikad"
+#
+#~ msgid "Dialog"
+#~ msgstr "Dialoog"
+#
+#~ msgid "Downsample"
+#~ msgstr "Diskreedi vähemaks"
+#
+#~ msgid "Guard Zone Active"
+#~ msgstr "Aktiivne valvetsoon"
+#
+#~ msgid ""
+#~ "Heading correction\n"
+#~ "(-180 to +180)"
+#~ msgstr ""
+#~ "kursi parandus\n"
+#~ "(-180 kuni +180)"
+#
+#~ msgid "Idle time is set to"
+#~ msgstr "Ooteaeg on seatud"
+#
+#~ msgid "Multi-color 2"
+#~ msgstr "mitmevärviline 2"
+#
+#~ msgid "Radar scanner is Idling"
+#~ msgstr "Radari skänner on jõude"
+#
+#~ msgid "Set Guard Point"
+#~ msgstr "Sea valvepunkt"
+#
+#~ msgid "Spectrum"
+#~ msgstr "spekter"
+#
+#~ msgid "Turn Radar always ON"
+#~ msgstr "Lülita radar alati SISSE"
+#
+#~ msgid "ca."
+#~ msgstr "ca"
+#
+#~ msgid "emulator"
+#~ msgstr "emulaator"
+#
+#~ msgid "minutes"
+#~ msgstr "minutit"
+#
+#~ msgid "minutes until next run"
+#~ msgstr "minutit kuni järgmise käituseni"

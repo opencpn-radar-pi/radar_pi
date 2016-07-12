@@ -1,0 +1,641 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: opencpn\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-07-09 16:59+0200\n"
+"PO-Revision-Date: 2015-05-23 05:01-0400\n"
+"Last-Translator: nohal <pavel@kalian.cz>\n"
+"Language-Team: French\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: opencpn\n"
+"X-Crowdin-Language: fr\n"
+"X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
+#
+msgid "&Close"
+msgstr "Fermer"
+#
+msgid "&Confirm"
+msgstr "Confirmer"
+#
+#, fuzzy
+msgid "&Hide Radar"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "(Confirmed)"
+msgstr "Confirmer"
+#
+msgid "+"
+msgstr "+"
+#
+msgid "+10"
+msgstr "+10"
+#
+msgid "-"
+msgstr "-"
+#
+msgid "-10"
+msgstr "-10"
+#
+#, fuzzy
+msgid "1 min"
+msgstr "10 min"
+#
+msgid "10 min"
+msgstr "10 min"
+#
+msgid "10 sec"
+msgstr ""
+#
+msgid "15 min"
+msgstr "15 min"
+#
+msgid "15 sec"
+msgstr ""
+#
+msgid "20 min"
+msgstr "20 min"
+#
+msgid "25 min"
+msgstr "25 min"
+#
+#, fuzzy
+msgid "3 min"
+msgstr "30 min"
+#
+msgid "30 min"
+msgstr "30 min"
+#
+msgid "30 sec"
+msgstr ""
+#
+msgid "35 min"
+msgstr "35 min"
+#
+msgid "5 min"
+msgstr "5 min"
+#
+msgid "???"
+msgstr ""
+#
+msgid "Accelerated Graphics (OpenGL)"
+msgstr "Graphisme accéléré (OpenGL)"
+#
+msgid "Adjust"
+msgstr ""
+#
+#, fuzzy
+msgid "Advanced"
+msgstr ""
+"Commandes\n"
+"avancées"
+#
+msgid "Antenna height"
+msgstr ""
+#
+msgid "Arc"
+msgstr "Arc"
+#
+msgid "Auto"
+msgstr "Auto"
+#
+msgid "Auto hide after"
+msgstr ""
+#
+#, fuzzy
+msgid "BR24 Display Preferences"
+msgstr "Préférences d'affichage pour les radars BR24/3G/4G"
+#
+msgid "Back"
+msgstr "Retour"
+#
+msgid "Bearing alignment"
+msgstr ""
+#
+msgid "Boat position"
+msgstr "Position du bateau"
+#
+msgid "COG"
+msgstr "COG"
+#
+msgid "Cannot bind UDP socket to port "
+msgstr "Impossible de lier la connexion UDP à ce port "
+#
+msgid "Cannot create UDP socket"
+msgstr "Impossible de créer la connexion UDP"
+#
+msgid "Cannot set reuse address option on socket"
+msgstr ""
+"Impossible de définir la réutilisation option d'adresse sur l'interface de "
+"connexion"
+#
+msgid ""
+"Cannot switch radar on as\n"
+"it is not connected or off"
+msgstr ""
+#
+msgid "Circle"
+msgstr "Cercle"
+#
+#, c-format
+msgid "Clear EBL/VRM%d"
+msgstr ""
+#
+msgid "Clear cursor"
+msgstr ""
+#
+msgid "Clear trails"
+msgstr ""
+#
+msgid "Continuous"
+msgstr ""
+#
+msgid "Control Menu Auto Hide"
+msgstr ""
+#
+msgid "Drawing Method"
+msgstr ""
+#
+msgid "EBL/VRM"
+msgstr ""
+#
+msgid "Emulator"
+msgstr "Emulateur"
+#
+#, fuzzy
+msgid "Emulator mode"
+msgstr "Emulateur"
+#
+msgid "Enable dual radar, 4G only"
+msgstr ""
+#
+msgid "End bearing"
+msgstr "Gisement final"
+#
+msgid "Ethernet card"
+msgstr ""
+#
+msgid "Fast"
+msgstr "Rapide"
+#
+msgid "For radar overlay also required"
+msgstr ""
+#
+msgid "GPS"
+msgstr "GPS"
+#
+msgid "GPU drawing method"
+msgstr ""
+#
+msgid "Gain"
+msgstr "Gain"
+#
+msgid "Guard Zone"
+msgstr "Zone de garde"
+#
+#, fuzzy
+msgid "Guard Zone Display"
+msgstr "Zone de garde"
+#
+msgid "Guard Zone Sound"
+msgstr "Choix du son de l'alarme"
+#
+msgid "Guard Zone Styling"
+msgstr "Style de la zone de garde"
+#
+msgid "Guard zone"
+msgstr "Zone de garde"
+#
+msgid "Guard zones"
+msgstr "Zones de garde"
+#
+msgid "HDM"
+msgstr "HDM"
+#
+msgid "HDT"
+msgstr "HDT"
+#
+msgid "Head Up"
+msgstr ""
+#
+msgid "Head up"
+msgstr ""
+#
+msgid "Heading"
+msgstr "Cap instantané"
+#
+msgid "Hide both windows"
+msgstr ""
+#
+#, fuzzy
+msgid "Hide radar"
+msgstr "radar"
+#
+msgid "Hide window"
+msgstr ""
+#
+msgid "High"
+msgstr "Élevé"
+#
+msgid "Info"
+msgstr "Info"
+#
+msgid "Inner range"
+msgstr "Rayon intérieur"
+#
+#, fuzzy
+msgid "Installation"
+msgstr "Étalonnage"
+#
+#, fuzzy
+msgid "Interference rej."
+msgstr "Rejet des interférences"
+#
+msgid "Interference rejection"
+msgstr "Rejet des interférences"
+#
+msgid "Invalid IP address for UDP multicast"
+msgstr "Adresse IP de multidiffusion UDP invalide"
+#
+msgid "Invalid multicast address"
+msgstr "Adresse de multidiffusion invalide"
+#
+msgid "Kilometers"
+msgstr "Kilomètres"
+#
+#, fuzzy
+msgid "Local interference rejection"
+msgstr "Rejet des interférences"
+#
+msgid "Low"
+msgstr "Bas"
+#
+msgid "Medium"
+msgstr "Moyen"
+#
+msgid "Menu"
+msgstr "Menu"
+#
+msgid "Monocolor-Red"
+msgstr "Monocolore - Rouge"
+#
+msgid "Multi Sweep Filter"
+msgstr ""
+#
+msgid "Multi-color"
+msgstr "Multicolore"
+#
+msgid "NMEA"
+msgstr "NMEA"
+#
+msgid "Nautical Miles"
+msgstr "Miles nautiques"
+#
+msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+msgstr ""
+"Complément Radar, pour openCPN, pour radar NAVICO Broadband BR24/3G/4G\n"
+#
+msgid "Navico Radar PlugIn for OpenCPN"
+msgstr "Complément radar, pour OpenCPN, pour les radar Navico"
+#
+msgid "Never"
+msgstr ""
+#
+#, c-format
+msgid "Next alarm in %d s"
+msgstr "Prochaine alarme dans %d s"
+#
+#, fuzzy
+msgid "No radar"
+msgstr "radar"
+#
+msgid "No valid drawing method"
+msgstr ""
+#
+msgid "Noise rejection"
+msgstr "Rejet du bruit"
+#
+msgid "Normal"
+msgstr "Normal"
+#
+msgid "North Up"
+msgstr ""
+#
+msgid "North up"
+msgstr ""
+#
+msgid "Off"
+msgstr "OFF"
+#
+msgid "On"
+msgstr ""
+#
+msgid "OpenCPN options"
+msgstr "Options OpenCPN"
+#
+msgid "OpenGL mode required"
+msgstr ""
+#
+msgid "Options"
+msgstr "Options"
+#
+#, fuzzy
+msgid "Orientation"
+msgstr "Variation"
+#
+msgid "Outer range"
+msgstr "Rayon extérieur"
+#
+msgid "Outline"
+msgstr "Silhouette"
+#
+msgid "Overlay"
+msgstr ""
+#
+msgid "Overlay Display Options"
+msgstr "Options d'affichage de la superposition"
+#
+msgid "Pass radar heading to OpenCPN"
+msgstr "Passer la rubrique radar à OpenCPN"
+#
+#, c-format
+msgid "Place EBL/VRM%d"
+msgstr ""
+#
+msgid "RADAR"
+msgstr ""
+#
+msgid "Radar"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "Radar A"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "Radar B"
+msgstr "Radar"
+#
+msgid "Radar Control..."
+msgstr "Commandes radar ..."
+#
+msgid "Radar IP"
+msgstr "Adresse IP du Radar"
+#
+#, fuzzy
+msgid "Radar is in Standby"
+msgstr "Le radar émet des données"
+#
+msgid "Radar present"
+msgstr "Radar présent"
+#
+#, fuzzy
+msgid "Radar requirements OK:"
+msgstr "Radar présent"
+#
+#, fuzzy
+msgid "Radar requires the following"
+msgstr ""
+"L'exploitation des données radar nécessite l'acquisition des données "
+"suivantes :"
+#
+msgid "Radar sending data"
+msgstr "Le radar émet des données"
+#
+#, fuzzy
+msgid "Radar window and overlay"
+msgstr "Superposition sur la zone de carte"
+#
+#, fuzzy
+msgid "Radar window only"
+msgstr "Affichage des données radar uniquement"
+#
+msgid "Rain clutter"
+msgstr "Atténuation pluie"
+#
+msgid "Range"
+msgstr "Portée"
+#
+msgid "Range Units"
+msgstr "Unités de portée"
+#
+msgid "Refresh rate"
+msgstr "Taux de rafraîchissement"
+#
+msgid "Reverse mouse wheel zoom direction"
+msgstr ""
+#
+msgid "Scan age"
+msgstr "Age du scan"
+#
+msgid "Scan speed"
+msgstr "Vitesse de scan"
+#
+msgid "Sea clutter"
+msgstr "Atténuation retour vagues"
+#
+msgid "Select Alert Sound"
+msgstr "Sélectionner l'alarme"
+#
+msgid "Select Sound File"
+msgstr "Sélectionner le fichier sonore"
+#
+#, fuzzy
+msgid "Shader"
+msgstr "Ombrage"
+#
+msgid "Shading"
+msgstr "Ombrage"
+#
+msgid "Shading + Outline"
+msgstr "Ombrage + Silhouette"
+#
+msgid "Show both windows"
+msgstr ""
+#
+msgid "Show other window"
+msgstr ""
+#
+#, fuzzy
+msgid "Show radar"
+msgstr "radar"
+#
+msgid "Show this window"
+msgstr ""
+#
+msgid "Show window"
+msgstr ""
+#
+msgid "Side lobe suppression"
+msgstr ""
+#
+msgid "Standby"
+msgstr ""
+#
+#, c-format
+msgid "Standby in %2d:%02d"
+msgstr ""
+#
+#, c-format
+msgid "Standby in %d:%02d"
+msgstr ""
+#
+msgid "Start bearing"
+msgstr "Gisement initial"
+#
+msgid "Statistics"
+msgstr "Statistiques"
+#
+msgid "Sweep Filter"
+msgstr ""
+#
+msgid "Target boost"
+msgstr "Renforcer les cibles"
+#
+#, fuzzy
+msgid "Target expansion"
+msgstr "Séparation de cible"
+#
+msgid "Target separation"
+msgstr "Séparation de cible"
+#
+#, fuzzy
+msgid "Target trails"
+msgstr "Séparation de cible"
+#
+msgid "Test Alert Sound"
+msgstr "Test de l'alarme"
+#
+msgid "Timed Transmit"
+msgstr "Transmission chronométrée"
+#
+#, fuzzy
+msgid "Trail Display"
+msgstr "Image radar"
+#
+#, fuzzy
+msgid "Transmit"
+msgstr "Transmission chronométrée"
+#
+#, c-format
+msgid "Transmit in %2d:%02d"
+msgstr ""
+#
+#, c-format
+msgid "Transmit in %d:%02d"
+msgstr ""
+#
+msgid "Transparency"
+msgstr "Transparence"
+#
+msgid "Unable to create OpenGL canvas"
+msgstr ""
+#
+msgid "Unknown"
+msgstr ""
+#
+msgid "Value"
+msgstr "Valeur"
+#
+msgid "Variation"
+msgstr "Variation"
+#
+msgid "Vertex Array"
+msgstr ""
+#
+msgid "View"
+msgstr ""
+#
+msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+msgstr "Fichiers WAV (*.Wav); All Files (*.*); *.*"
+#
+msgid "WMM"
+msgstr "WMM"
+#
+#, fuzzy
+msgid "ZeroConf via Ethernet"
+msgstr "Pas de configuration par l'adresse"
+#
+msgid "Zone"
+msgstr "Zone"
+#
+#, fuzzy
+msgid ""
+"Zone 1: unknown\n"
+"Zone 2: unknown\n"
+"Timeout\n"
+msgstr ""
+"Zone 1 : Inconnu\n"
+"Zone 2 : Inconnu\n"
+"Pause"
+#
+#, fuzzy
+msgid "Zone type"
+msgstr "Type de zone :"
+#
+#~ msgid " Guard Zone Control"
+#~ msgstr " Contrôle de zone de garde"
+#
+#~ msgid ""
+#~ "<<\n"
+#~ "Back"
+#~ msgstr ""
+#~ "<<\n"
+#~ "Retour"
+#
+#~ msgid "C&onfirm + Close"
+#~ msgstr "Confirmer + fermer"
+#
+#~ msgid "Data sources"
+#~ msgstr "Source de données"
+#
+#~ msgid "Dialog"
+#~ msgstr "Dialogue"
+#
+#~ msgid "Downsample"
+#~ msgstr "Sous-échantillonner"
+#
+#~ msgid "Guard Zone Active"
+#~ msgstr "Zone de garde active"
+#
+#~ msgid ""
+#~ "Heading correction\n"
+#~ "(-180 to +180)"
+#~ msgstr ""
+#~ "Correction de cap\n"
+#~ "(-180 to +180)"
+#
+#~ msgid "Idle time is set to"
+#~ msgstr "Le temps d'inactivité est défini à"
+#
+#~ msgid "Multi-color 2"
+#~ msgstr "Multicolore 2"
+#
+#~ msgid "Radar scanner is Idling"
+#~ msgstr "Le module de balayage du radar est ralenti"
+#
+#~ msgid "Set Guard Point"
+#~ msgstr "Définir le point de garde"
+#
+#~ msgid "Spectrum"
+#~ msgstr "Spectre"
+#
+#~ msgid "Turn Radar always ON"
+#~ msgstr "Lancer le radar en permanence"
+#
+#~ msgid "ca."
+#~ msgstr "ca."
+#
+#~ msgid "emulator"
+#~ msgstr "émulateur"
+#
+#~ msgid "minutes"
+#~ msgstr "minutes"
+#
+#~ msgid "minutes until next run"
+#~ msgstr "Durée en minutes jusqu'à la prochaine exécution"
