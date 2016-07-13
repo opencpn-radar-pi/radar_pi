@@ -191,7 +191,7 @@ extern double local_distance(double lat1, double lon1, double lat2, double lon2)
 extern double local_bearing(double lat1, double lon1, double lat2, double lon2);
 
 enum DisplayModeType { DM_CHART_OVERLAY, DM_CHART_NONE };
-enum ToolbarIconColor { TB_RED, TB_AMBER, TB_GREEN };
+enum ToolbarIconColor { TB_HIDDEN, TB_SEARCHING, TB_SEEN, TB_STANDBY, TB_ACTIVE };
 enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_SOURCE_FIX, VARIATION_SOURCE_WMM };
 
 static const int RangeUnitsToMeters[2] = {1852, 1000};
@@ -400,7 +400,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   void RenderRadarBuffer(wxDC *pdc, int width, int height);
   void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, double rotation);
   void PassHeadingToOpenCPN();
-  void CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover);
+  void CacheSetToolbarToolBitmaps();
   void CheckTimedTransmit(RadarState state);
   void SetDesiredStateAllRadars(RadarState desiredState);
   void SetRadarWindowViz();
@@ -418,15 +418,16 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   //    Controls added to Preferences panel
   wxCheckBox *m_pShowIcon;
 
-  wxBitmap *m_ptemp_icon;
-  int m_sent_bm_id_normal;
-  int m_sent_bm_id_rollover;
+  // Icons
+  wxString m_shareLocn;
+  // wxBitmap *m_ptemp_icon;
 
   NMEA0183 m_NMEA0183;
 
   double llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
 
   ToolbarIconColor m_toolbar_button;
+  ToolbarIconColor m_sent_toolbar_button;
 
   double m_hdm;
 
