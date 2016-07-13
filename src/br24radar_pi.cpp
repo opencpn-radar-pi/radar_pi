@@ -176,9 +176,6 @@ int br24radar_pi::Init(void) {
   m_var_timeout = 0;
   m_idle_standby = 0;
   m_idle_transmit = 0;
-  m_ptemp_icon = NULL;
-  m_sent_bm_id_normal = -1;
-  m_sent_bm_id_rollover = -1;
 
   m_heading_source = HEADING_NONE;
 
@@ -192,6 +189,10 @@ int br24radar_pi::Init(void) {
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
   m_parent_window = GetOCPNCanvasWindow();
+  m_shareLocn = *GetpSharedDataLocation() +
+  _T("plugins") + wxFileName::GetPathSeparator() +
+  _T("br24radar_pi") + wxFileName::GetPathSeparator() +
+  _T("data") + wxFileName::GetPathSeparator();
 
   m_pMessageBox = new br24MessageBox;
   m_pMessageBox->Create(m_parent_window, this);
@@ -225,9 +226,9 @@ int br24radar_pi::Init(void) {
 
   //    This PlugIn needs a toolbar icon
 
-  wxString svg_normal = wxT("/tmp/radar_active.svg");
-  wxString svg_rollover = wxT("/tmp/radar_standby.svg");
-  wxString svg_toggled = wxT("/tmp/radar_toggled.svg");
+  wxString svg_normal = m_shareLocn + wxT("radar_standby.svg");
+  wxString svg_rollover = m_shareLocn + wxT("radar_searching.svg");
+  wxString svg_toggled = m_shareLocn + wxT("radar_active.svg");
   m_tool_id = InsertPlugInToolSVG(wxT("Navico"), svg_normal, svg_rollover, svg_toggled, wxITEM_NORMAL, wxT("BR24Radar"),
                                   _("Navico BR24, 3G and 4G RADAR"), NULL, BR24RADAR_TOOL_POSITION, 0, this);
 
@@ -769,15 +770,17 @@ void br24radar_pi::UpdateState(void) {
     state = wxMax(state, (RadarState)m_radar[r]->state.value);
   }
   if (state == RADAR_OFF) {
-    m_toolbar_button = TB_RED;
-    // CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_RED);
+    m_toolbar_button = TB_SEARCHING;
+  } else if (m_settings.show == false) {
+    m_toolbar_button = TB_HIDDEN;
   } else if (state == RADAR_TRANSMIT) {
-    m_toolbar_button = TB_GREEN;
-    // CacheSetToolbarToolBitmaps(BM_ID_GREEN, BM_ID_GREEN);
+    m_toolbar_button = TB_ACTIVE;
+  } else if (m_settings.timed_idle) {
+    m_toolbar_button = TB_SEEN;
   } else {
-    m_toolbar_button = TB_AMBER;
-    // CacheSetToolbarToolBitmaps(BM_ID_AMBER, BM_ID_AMBER);
+    m_toolbar_button = TB_STANDBY;
   }
+  CacheSetToolbarToolBitmaps();
 
   CheckTimedTransmit(state);
 }
@@ -1201,84 +1204,37 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
 }
 
 //*****************************************************************************************************
-void br24radar_pi::CacheSetToolbarToolBitmaps(int bm_id_normal, int bm_id_rollover) {
-  if ((bm_id_normal == m_sent_bm_id_normal) && (bm_id_rollover == m_sent_bm_id_rollover)) {
+void br24radar_pi::CacheSetToolbarToolBitmaps() {
+  if (m_toolbar_button == m_sent_toolbar_button) {
     return;  // no change needed
   }
 
-  if ((bm_id_normal == -1) || (bm_id_rollover == -1)) {  // don't do anything, caller's responsibility
-    m_sent_bm_id_normal = bm_id_normal;
-    m_sent_bm_id_rollover = bm_id_rollover;
-    return;
-  }
+  wxString icon;
 
-  m_sent_bm_id_normal = bm_id_normal;
-  m_sent_bm_id_rollover = bm_id_rollover;
+  switch (m_toolbar_button)
+  {
+    case TB_HIDDEN:
+      icon = m_shareLocn + wxT("radar_hidden.svg");
+      break;
 
-  wxBitmap *pnormal = NULL;
-  wxBitmap *prollover = NULL;
+    case TB_SEEN:
+      icon = m_shareLocn + wxT("radar_seen.svg");
+      break;
 
-  switch (bm_id_normal) {
-    case BM_ID_RED:
-      pnormal = _img_radar_red;
+    case TB_STANDBY:
+      icon = m_shareLocn + wxT("radar_standby.svg");
       break;
-    case BM_ID_RED_SLAVE:
-      pnormal = _img_radar_red_slave;
+
+    case TB_SEARCHING:
+      icon = m_shareLocn + wxT("radar_searching.svg");
       break;
-    case BM_ID_GREEN:
-      pnormal = _img_radar_green;
-      break;
-    case BM_ID_GREEN_SLAVE:
-      pnormal = _img_radar_green_slave;
-      break;
-    case BM_ID_AMBER:
-      pnormal = _img_radar_amber;
-      break;
-    case BM_ID_AMBER_SLAVE:
-      pnormal = _img_radar_amber_slave;
-      break;
-    case BM_ID_BLANK:
-      pnormal = _img_radar_blank;
-      break;
-    case BM_ID_BLANK_SLAVE:
-      pnormal = _img_radar_blank_slave;
-      break;
-    default:
+
+    case TB_ACTIVE:
+      icon = m_shareLocn + wxT("radar_active.svg");
       break;
   }
-
-  switch (bm_id_rollover) {
-    case BM_ID_RED:
-      prollover = _img_radar_red;
-      break;
-    case BM_ID_RED_SLAVE:
-      prollover = _img_radar_red_slave;
-      break;
-    case BM_ID_GREEN:
-      prollover = _img_radar_green;
-      break;
-    case BM_ID_GREEN_SLAVE:
-      prollover = _img_radar_green_slave;
-      break;
-    case BM_ID_AMBER:
-      prollover = _img_radar_amber;
-      break;
-    case BM_ID_AMBER_SLAVE:
-      prollover = _img_radar_amber_slave;
-      break;
-    case BM_ID_BLANK:
-      prollover = _img_radar_blank;
-      break;
-    case BM_ID_BLANK_SLAVE:
-      prollover = _img_radar_blank_slave;
-      break;
-    default:
-      break;
-  }
-
-  if ((pnormal) && (prollover)) {
-    SetToolbarToolBitmaps(m_tool_id, pnormal, prollover);
-  }
+  SetToolbarToolBitmapsSVG(m_tool_id, icon, icon, icon);
+  m_sent_toolbar_button = m_toolbar_button;
 }
 
 /*
