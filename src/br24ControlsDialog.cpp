@@ -341,9 +341,19 @@ bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* 
 
   m_from_control = 0;
 
-  long wstyle = wxCLOSE_BOX | wxCAPTION | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR | wxCLIP_CHILDREN;
+#ifdef __WXMSW__
+  long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
+#endif
 #ifdef __WXMAC__
-  wstyle |= wxSTAY_ON_TOP;  // FLOAT_ON_PARENT doesn't work well for AUI frames on MAC.
+  long wstyle = wxCLOSE_BOX | wxCAPTION;
+  // long wstyle = wxCLOSE_BOX | wxCAPTION | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR | wxSTAY_ON_TOP;
+
+  wstyle |= wxSTAY_ON_TOP;  // Radar AUI windows, when float, are already FLOAT_ON_PARENT and we don't seem to be on top of those.
+  wstyle |= wxFRAME_FLOAT_ON_PARENT;  // Float on our parent
+  wstyle |= wxFRAME_TOOL_WINDOW;      // This causes window to hide when OpenCPN is not activated, but this doesn't wo
+#endif
+#ifdef __WXGTK__
+  long wstyle = wxCLOSE_BOX | wxCAPTION | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR;
 #endif
 
   if (!wxDialog::Create(parent, id, caption, pos, wxDefaultSize, wstyle)) {
@@ -1217,10 +1227,9 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   for (int b = 0; b < BEARING_LINES; b++) {
     if (m_ri->m_vrm[b] != 0.0) {
-        wxString s_cltxt = _("Clear EBL/VRM");
-        o = wxString::Format(wxT("%s%d"), s_cltxt, b + 1);
-    }
-    else {
+      wxString s_cltxt = _("Clear EBL/VRM");
+      o = wxString::Format(wxT("%s%d"), s_cltxt, b + 1);
+    } else {
       wxString s_pltxt = _("Place EBL/VRM");
       o = wxString::Format(wxT("%s%d"), s_pltxt, b + 1);
     }

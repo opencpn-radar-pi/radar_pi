@@ -239,12 +239,12 @@ bool RadarInfo::Init(wxString name, int verbose) {
 
 void RadarInfo::ShowControlDialog(bool show) {
   if (show) {
-#ifdef __WXMSW__
+    //#ifdef __WXMSW__
     if (control_dialog) {
       delete control_dialog;
       control_dialog = 0;
     }
-#endif
+    //#endif
     if (!control_dialog) {
       control_dialog = new br24ControlsDialog;
       control_dialog->Create((wxWindow *)radar_panel, m_pi, this, wxID_ANY, name, m_pi->m_settings.control_pos[radar]);
