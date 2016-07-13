@@ -1,0 +1,630 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: opencpn\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-07-09 16:59+0200\n"
+"PO-Revision-Date: 2015-05-23 05:01-0400\n"
+"Last-Translator: nohal <pavel@kalian.cz>\n"
+"Language-Team: Catalan\n"
+"Language: ca_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: opencpn\n"
+"X-Crowdin-Language: ca\n"
+"X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
+#
+msgid "&Close"
+msgstr "&Tanca"
+#
+msgid "&Confirm"
+msgstr "&Confirmar"
+#
+#, fuzzy
+msgid "&Hide Radar"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "(Confirmed)"
+msgstr "&Confirmar"
+#
+msgid "+"
+msgstr "+"
+#
+msgid "+10"
+msgstr "+10"
+#
+msgid "-"
+msgstr "-"
+#
+msgid "-10"
+msgstr "-10"
+#
+#, fuzzy
+msgid "1 min"
+msgstr "10 min"
+#
+msgid "10 min"
+msgstr "10 min"
+#
+msgid "10 sec"
+msgstr ""
+#
+msgid "15 min"
+msgstr "15 min"
+#
+msgid "15 sec"
+msgstr ""
+#
+msgid "20 min"
+msgstr "20 min"
+#
+msgid "25 min"
+msgstr "25 min"
+#
+#, fuzzy
+msgid "3 min"
+msgstr "30 min"
+#
+msgid "30 min"
+msgstr "30 min"
+#
+msgid "30 sec"
+msgstr ""
+#
+msgid "35 min"
+msgstr "35 min"
+#
+msgid "5 min"
+msgstr "5 min"
+#
+msgid "???"
+msgstr ""
+#
+msgid "Accelerated Graphics (OpenGL)"
+msgstr "Acceleració de gràfics (OpenGL)"
+#
+msgid "Adjust"
+msgstr ""
+#
+#, fuzzy
+msgid "Advanced"
+msgstr ""
+"Avançats\n"
+"controls"
+#
+msgid "Antenna height"
+msgstr ""
+#
+msgid "Arc"
+msgstr "Sector"
+#
+msgid "Auto"
+msgstr "Automàtic"
+#
+msgid "Auto hide after"
+msgstr ""
+#
+#, fuzzy
+msgid "BR24 Display Preferences"
+msgstr "Preferències de visualització d'objectiu BR24"
+#
+msgid "Back"
+msgstr "Endarrere"
+#
+msgid "Bearing alignment"
+msgstr ""
+#
+msgid "Boat position"
+msgstr "Posició del vaixell"
+#
+msgid "COG"
+msgstr ""
+#
+msgid "Cannot bind UDP socket to port "
+msgstr "No es pot unir la connexió UDP al port "
+#
+msgid "Cannot create UDP socket"
+msgstr "No es pot crear la connexió UDP"
+#
+msgid "Cannot set reuse address option on socket"
+msgstr "No es pot posar l'opció de reutilitzar l'adreça en la connexió"
+#
+msgid ""
+"Cannot switch radar on as\n"
+"it is not connected or off"
+msgstr ""
+#
+msgid "Circle"
+msgstr "Cercle"
+#
+#, c-format
+msgid "Clear EBL/VRM%d"
+msgstr ""
+#
+msgid "Clear cursor"
+msgstr ""
+#
+msgid "Clear trails"
+msgstr ""
+#
+msgid "Continuous"
+msgstr ""
+#
+msgid "Control Menu Auto Hide"
+msgstr ""
+#
+msgid "Drawing Method"
+msgstr ""
+#
+msgid "EBL/VRM"
+msgstr ""
+#
+msgid "Emulator"
+msgstr "Emulador"
+#
+#, fuzzy
+msgid "Emulator mode"
+msgstr "Emulador"
+#
+msgid "Enable dual radar, 4G only"
+msgstr ""
+#
+msgid "End bearing"
+msgstr "Acabar rumb"
+#
+msgid "Ethernet card"
+msgstr ""
+#
+msgid "Fast"
+msgstr "Ràpid"
+#
+msgid "For radar overlay also required"
+msgstr ""
+#
+msgid "GPS"
+msgstr ""
+#
+msgid "GPU drawing method"
+msgstr ""
+#
+msgid "Gain"
+msgstr "Guany"
+#
+msgid "Guard Zone"
+msgstr "Zona de vigilància"
+#
+#, fuzzy
+msgid "Guard Zone Display"
+msgstr "Zona de vigilància"
+#
+msgid "Guard Zone Sound"
+msgstr "So de la zona de vigilància"
+#
+msgid "Guard Zone Styling"
+msgstr "Estil de la Zona de Vigilància"
+#
+msgid "Guard zone"
+msgstr "Zona de Vigilància"
+#
+msgid "Guard zones"
+msgstr "Zones de vigilància"
+#
+msgid "HDM"
+msgstr ""
+#
+msgid "HDT"
+msgstr ""
+#
+msgid "Head Up"
+msgstr ""
+#
+msgid "Head up"
+msgstr ""
+#
+msgid "Heading"
+msgstr "Encapçalament"
+#
+msgid "Hide both windows"
+msgstr ""
+#
+msgid "Hide radar"
+msgstr ""
+#
+msgid "Hide window"
+msgstr ""
+#
+msgid "High"
+msgstr "Alt"
+#
+msgid "Info"
+msgstr ""
+#
+msgid "Inner range"
+msgstr "Rang interior"
+#
+#, fuzzy
+msgid "Installation"
+msgstr "Calibració"
+#
+#, fuzzy
+msgid "Interference rej."
+msgstr "Rebuig de la interferència"
+#
+msgid "Interference rejection"
+msgstr "Rebuig de la interferència"
+#
+msgid "Invalid IP address for UDP multicast"
+msgstr "Adreça IP invàlida pel multicast UDP"
+#
+msgid "Invalid multicast address"
+msgstr "Adreça multicast invàlida"
+#
+msgid "Kilometers"
+msgstr "Kilòmetres"
+#
+#, fuzzy
+msgid "Local interference rejection"
+msgstr "Rebuig de la interferència"
+#
+msgid "Low"
+msgstr "Baix"
+#
+msgid "Medium"
+msgstr "Mitjà"
+#
+msgid "Menu"
+msgstr "Menu"
+#
+msgid "Monocolor-Red"
+msgstr "Vermel-monocolor"
+#
+msgid "Multi Sweep Filter"
+msgstr ""
+#
+msgid "Multi-color"
+msgstr "Multicolor"
+#
+msgid "NMEA"
+msgstr ""
+#
+msgid "Nautical Miles"
+msgstr "Milles nàutiques"
+#
+msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+msgstr "Connector de radar Navico BR32/3G/4G per a OpenCPN\n"
+#
+msgid "Navico Radar PlugIn for OpenCPN"
+msgstr "Connector de Radar Navico per a OpenCPN"
+#
+msgid "Never"
+msgstr ""
+#
+#, c-format
+msgid "Next alarm in %d s"
+msgstr "Nova alarma a %d s"
+#
+#, fuzzy
+msgid "No radar"
+msgstr "Radar"
+#
+msgid "No valid drawing method"
+msgstr ""
+#
+msgid "Noise rejection"
+msgstr "Eliminar soroll"
+#
+msgid "Normal"
+msgstr "Normal"
+#
+msgid "North Up"
+msgstr ""
+#
+msgid "North up"
+msgstr ""
+#
+msgid "Off"
+msgstr "Apagat"
+#
+msgid "On"
+msgstr ""
+#
+msgid "OpenCPN options"
+msgstr "Opcions d'OpenCPN"
+#
+msgid "OpenGL mode required"
+msgstr ""
+#
+msgid "Options"
+msgstr ""
+#
+msgid "Orientation"
+msgstr ""
+#
+msgid "Outer range"
+msgstr "Rang exterior"
+#
+msgid "Outline"
+msgstr "Contorn"
+#
+msgid "Overlay"
+msgstr ""
+#
+msgid "Overlay Display Options"
+msgstr "Opcións de visualització de pantalla"
+#
+msgid "Pass radar heading to OpenCPN"
+msgstr ""
+#
+#, c-format
+msgid "Place EBL/VRM%d"
+msgstr ""
+#
+msgid "RADAR"
+msgstr ""
+#
+msgid "Radar"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "Radar A"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "Radar B"
+msgstr "Radar"
+#
+msgid "Radar Control..."
+msgstr "Control de Radar..."
+#
+msgid "Radar IP"
+msgstr "IP del radar"
+#
+#, fuzzy
+msgid "Radar is in Standby"
+msgstr "Radar enviant dades"
+#
+msgid "Radar present"
+msgstr "Radar connectat"
+#
+#, fuzzy
+msgid "Radar requirements OK:"
+msgstr "Radar connectat"
+#
+#, fuzzy
+msgid "Radar requires the following"
+msgstr "La superposició de radar requereix les següents dades"
+#
+msgid "Radar sending data"
+msgstr "Radar enviant dades"
+#
+#, fuzzy
+msgid "Radar window and overlay"
+msgstr "Sobreposició de la carta del radar"
+#
+#, fuzzy
+msgid "Radar window only"
+msgstr "Radar independent"
+#
+msgid "Rain clutter"
+msgstr "Soroll de pluja"
+#
+msgid "Range"
+msgstr "Distància"
+#
+msgid "Range Units"
+msgstr "Unitats de distància"
+#
+msgid "Refresh rate"
+msgstr "Índex d'actualització"
+#
+msgid "Reverse mouse wheel zoom direction"
+msgstr ""
+#
+msgid "Scan age"
+msgstr "Durabilitat de la imatge"
+#
+msgid "Scan speed"
+msgstr "Velocitat d'escaneig"
+#
+msgid "Sea clutter"
+msgstr "Soroll de mar"
+#
+msgid "Select Alert Sound"
+msgstr "So d'alerta seleccionat"
+#
+msgid "Select Sound File"
+msgstr "Selecciona fitxer de so"
+#
+#, fuzzy
+msgid "Shader"
+msgstr "Ombrejat"
+#
+msgid "Shading"
+msgstr "Ombrejat"
+#
+msgid "Shading + Outline"
+msgstr "Ombrejat + contorn"
+#
+msgid "Show both windows"
+msgstr ""
+#
+msgid "Show other window"
+msgstr ""
+#
+msgid "Show radar"
+msgstr ""
+#
+msgid "Show this window"
+msgstr ""
+#
+msgid "Show window"
+msgstr ""
+#
+msgid "Side lobe suppression"
+msgstr ""
+#
+msgid "Standby"
+msgstr ""
+#
+#, c-format
+msgid "Standby in %2d:%02d"
+msgstr ""
+#
+#, c-format
+msgid "Standby in %d:%02d"
+msgstr ""
+#
+msgid "Start bearing"
+msgstr "Iniciar rumb"
+#
+msgid "Statistics"
+msgstr "Estadístiques"
+#
+msgid "Sweep Filter"
+msgstr ""
+#
+msgid "Target boost"
+msgstr "Impuls de destinació"
+#
+#, fuzzy
+msgid "Target expansion"
+msgstr "Separar ecos, objectius"
+#
+msgid "Target separation"
+msgstr "Separar ecos, objectius"
+#
+#, fuzzy
+msgid "Target trails"
+msgstr "Separar ecos, objectius"
+#
+msgid "Test Alert Sound"
+msgstr "Comprova so d'alerta"
+#
+msgid "Timed Transmit"
+msgstr "Transmissió a intervals"
+#
+#, fuzzy
+msgid "Trail Display"
+msgstr "Pantalla Radar"
+#
+#, fuzzy
+msgid "Transmit"
+msgstr "Transmissió a intervals"
+#
+#, c-format
+msgid "Transmit in %2d:%02d"
+msgstr ""
+#
+#, c-format
+msgid "Transmit in %d:%02d"
+msgstr ""
+#
+msgid "Transparency"
+msgstr "Transparència"
+#
+msgid "Unable to create OpenGL canvas"
+msgstr ""
+#
+msgid "Unknown"
+msgstr ""
+#
+msgid "Value"
+msgstr "Valor"
+#
+msgid "Variation"
+msgstr ""
+#
+msgid "Vertex Array"
+msgstr ""
+#
+msgid "View"
+msgstr ""
+#
+msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+msgstr "Arxius WAV (*.wav)|*.wav|Tots els fitxers (*.*)|*.*"
+#
+msgid "WMM"
+msgstr ""
+#
+#, fuzzy
+msgid "ZeroConf via Ethernet"
+msgstr "ZeroConf via Ethernet (connectat per cable)"
+#
+msgid "Zone"
+msgstr "Zona"
+#
+#, fuzzy
+msgid ""
+"Zone 1: unknown\n"
+"Zone 2: unknown\n"
+"Timeout\n"
+msgstr ""
+"Zona 1: desconegut\n"
+"Zona 2:desconegut\n"
+"Interrupció"
+#
+#, fuzzy
+msgid "Zone type"
+msgstr "Tipus de zona:"
+#
+#~ msgid " Guard Zone Control"
+#~ msgstr " Control de la Zona de Vigilància"
+#
+#~ msgid ""
+#~ "<<\n"
+#~ "Back"
+#~ msgstr ""
+#~ "<<\n"
+#~ "Endarrere"
+#
+#~ msgid "C&onfirm + Close"
+#~ msgstr "C&onfirmeu + Tancar"
+#
+#~ msgid "Dialog"
+#~ msgstr "Diàleg"
+#
+#~ msgid "Downsample"
+#~ msgstr "Disminuir resolució"
+#
+#~ msgid "Guard Zone Active"
+#~ msgstr "Zona de Vigilància Activa"
+#
+#~ msgid ""
+#~ "Heading correction\n"
+#~ "(-180 to +180)"
+#~ msgstr ""
+#~ "Correcció de rumb\n"
+#~ "(-180 a +180)"
+#
+#~ msgid "Idle time is set to"
+#~ msgstr "Temps d'inactivitat definit per"
+#
+#~ msgid "Multi-color 2"
+#~ msgstr "Multi-color 2"
+#
+#~ msgid "Radar scanner is Idling"
+#~ msgstr "El Ràdar de l'escanner està inactiu"
+#
+#~ msgid "Set Guard Point"
+#~ msgstr "Definir Punt de Vigilància"
+#
+#~ msgid "Spectrum"
+#~ msgstr "Espectre"
+#
+#~ msgid "Turn Radar always ON"
+#~ msgstr "Engegar Radar sempre"
+#
+#~ msgid "ca."
+#~ msgstr "ca."
+#
+#~ msgid "emulator"
+#~ msgstr "emulador"
+#
+#~ msgid "minutes"
+#~ msgstr "minuts"
+#
+#~ msgid "minutes until next run"
+#~ msgstr "minuts fins la propera execució"

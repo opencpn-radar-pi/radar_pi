@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: br24radar_pi 1.3\n"
+"Project-Id-Version: br24radar_pi 2.626\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-10 21:39+0200\n"
+"POT-Creation-Date: 2016-07-09 16:59+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,564 +17,705 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/GuardZoneBogey.cpp:124
+#: src\br24ControlsDialog.cpp:295 src\br24ControlsDialog.cpp:484
+#: src\RadarInfo.cpp:848
+msgid "Auto"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:363
+msgid "Back"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:382 src\br24ControlsDialog.cpp:601
+msgid "Transparency"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:383
+msgid "Interference rejection"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:384 src\br24ControlsDialog.cpp:551
+msgid "Target separation"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:385 src\br24ControlsDialog.cpp:506
+msgid "Noise rejection"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:386 src\br24ControlsDialog.cpp:575
+msgid "Target boost"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:387 src\br24ControlsDialog.cpp:520
+msgid "Target expansion"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:388 src\br24ControlsDialog.cpp:563
+msgid "Scan speed"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:389
+msgid "Scan age"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:390 src\br24ControlsDialog.cpp:898
+msgid "Timed Transmit"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:391 src\br24ControlsDialog.cpp:735
+msgid "Gain"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:392 src\br24ControlsDialog.cpp:739
+msgid "Sea clutter"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:393 src\br24ControlsDialog.cpp:743
+msgid "Rain clutter"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:457
+msgid "+10"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:462
+msgid "+"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:468
+msgid "Value"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:474
+msgid "-"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:479
+msgid "-10"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:502 src\br24ControlsDialog.cpp:518
+#: src\br24ControlsDialog.cpp:530 src\br24ControlsDialog.cpp:546
+#: src\br24ControlsDialog.cpp:571 src\br24ControlsDialog.cpp:672
+#: src\br24ControlsDialog.cpp:786 src\br24ControlsDialog.cpp:808
+#: src\br24ControlsDialog.cpp:888 src\br24ControlsDialog.cpp:1012
+#: src\br24ControlsDialog.cpp:1247
+msgid "Off"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:503 src\br24ControlsDialog.cpp:531
+#: src\br24ControlsDialog.cpp:547 src\br24ControlsDialog.cpp:572
+msgid "Low"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:504 src\br24ControlsDialog.cpp:533
+#: src\br24ControlsDialog.cpp:549 src\br24ControlsDialog.cpp:573
+msgid "High"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:519 src\br24ControlsDialog.cpp:1009
+#: src\br24ControlsDialog.cpp:1247
+msgid "On"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:532 src\br24ControlsDialog.cpp:548
+msgid "Medium"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:536
+msgid "Interference rej."
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:560
+msgid "Normal"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:561
+msgid "Fast"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:583
+msgid "Installation"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:608
+msgid "Bearing alignment"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:616
+msgid "Antenna height"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:624
+msgid "Local interference rejection"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:634
+msgid "Side lobe suppression"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:648
 msgid ""
 "Zone 1: unknown\n"
 "Zone 2: unknown\n"
 "Timeout\n"
 msgstr ""
 
-#: src/GuardZoneBogey.cpp:128
+#: src\br24ControlsDialog.cpp:651
 msgid "&Confirm"
 msgstr ""
 
-#: src/GuardZoneBogey.cpp:131
-msgid "C&onfirm + Close"
+#: src\br24ControlsDialog.cpp:666
+msgid "Guard zones"
 msgstr ""
 
-#: src/GuardZoneBogey.cpp:144
-msgid "Radar A:\n"
+#: src\br24ControlsDialog.cpp:669
+msgid "Zone type"
 msgstr ""
 
-#: src/GuardZoneBogey.cpp:147 src/GuardZoneBogey.cpp:159
+#: src\br24ControlsDialog.cpp:673
+msgid "Arc"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:674
+msgid "Circle"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:683
+msgid "Inner range"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:690
+msgid "Outer range"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:697
+msgid "Start bearing"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:705
+msgid "End bearing"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:713
+msgid "Sweep Filter"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:731
+msgid "Range"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:759
+msgid "Clear cursor"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:765 src\br24ControlsDialog.cpp:1219
+#, c-format
+msgid "Place EBL/VRM%d"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:787
+msgid "15 sec"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:788 src\br24OptionsDialog.cpp:145
+msgid "30 sec"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:789
+msgid "1 min"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:790
+msgid "3 min"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:791
+msgid "Continuous"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:794
+msgid "Target trails"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:802
+msgid "Clear trails"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:808 src\br24ControlsDialog.cpp:1009
+#: src\br24ControlsDialog.cpp:1012
+msgid "Multi Sweep Filter"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:814 src\br24ControlsDialog.cpp:1229
+msgid "Orientation"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:821
+msgid "Refresh rate"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:836
+msgid "Unknown"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:847 src\br24ControlsDialog.cpp:1245
+msgid "Overlay"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:858
+msgid "Adjust"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:863
+msgid "Advanced"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:868
+msgid "View"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:873
+msgid "EBL/VRM"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:889
+msgid "5 min"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:890
+msgid "10 min"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:891
+msgid "15 min"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:892
+msgid "20 min"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:893
+msgid "25 min"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:894
+msgid "30 min"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:895
+msgid "35 min"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:906
+msgid "Info"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:953 src\br24ControlsDialog.cpp:956
+msgid "Guard zone"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1160
+msgid "Standby"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1160
+msgid "Transmit"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1167
+#, c-format
+msgid "Standby in %d:%02d"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1171
+#, c-format
+msgid "Transmit in %d:%02d"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1199
+msgid "Hide both windows"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1201
+msgid "Show other window"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1205
+msgid "Show this window"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1207
+msgid "Show both windows"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1211
+msgid "Hide window"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1211
+msgid "Show window"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1217
+#, c-format
+msgid "Clear EBL/VRM%d"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1233
+msgid "North up"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1236
+msgid "Head up"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1239
+msgid "???"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1555
+msgid "Guard Zone"
+msgstr ""
+
+#: src\br24ControlsDialog.h:60 src\br24MessageBox.h:79 src\br24radar_pi.cpp:223
+#: src\br24radar_pi.cpp:667
+msgid "Radar"
+msgstr ""
+
+#: src\br24MessageBox.cpp:125
+msgid ""
+"Cannot switch radar on as\n"
+"it is not connected or off"
+msgstr ""
+
+#: src\br24MessageBox.cpp:132
+msgid "OpenCPN options"
+msgstr ""
+
+#: src\br24MessageBox.cpp:137
+msgid "Accelerated Graphics (OpenGL)"
+msgstr ""
+
+#: src\br24MessageBox.cpp:143
+msgid "ZeroConf via Ethernet"
+msgstr ""
+
+#: src\br24MessageBox.cpp:149
+msgid "Radar present"
+msgstr ""
+
+#: src\br24MessageBox.cpp:155
+msgid "Radar sending data"
+msgstr ""
+
+#: src\br24MessageBox.cpp:160
+msgid "For radar overlay also required"
+msgstr ""
+
+#: src\br24MessageBox.cpp:168
+msgid "Boat position"
+msgstr ""
+
+#: src\br24MessageBox.cpp:174 src\br24MessageBox.cpp:419
+msgid "Heading"
+msgstr ""
+
+#: src\br24MessageBox.cpp:180 src\br24MessageBox.cpp:426
+msgid "Variation"
+msgstr ""
+
+#: src\br24MessageBox.cpp:185 src\br24MessageBox.cpp:190
+msgid "Statistics"
+msgstr ""
+
+#: src\br24MessageBox.cpp:195
+msgid "&Close"
+msgstr ""
+
+#: src\br24MessageBox.cpp:201
+msgid "&Hide Radar"
+msgstr ""
+
+#: src\br24MessageBox.cpp:340
+msgid "Radar requirements OK:"
+msgstr ""
+
+#: src\br24MessageBox.cpp:342
+msgid "Radar requires the following"
+msgstr ""
+
+#: src\br24MessageBox.cpp:405
+msgid "Radar IP"
+msgstr ""
+
+#: src\br24MessageBox.cpp:412
+msgid "Ethernet card"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:38
+msgid "BR24 Display Preferences"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:58
+msgid "Nautical Miles"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:58
+msgid "Kilometers"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:62
+msgid "Range Units"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:71
+msgid "Monocolor-Red"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:71
+msgid "Multi-color"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:74
+msgid "Overlay Display Options"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:82
+msgid "Shading"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:82
+msgid "Outline"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:82
+msgid "Shading + Outline"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:84
+msgid "Guard Zone Styling"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:93
+msgid "Radar window only"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:93
+msgid "Radar window and overlay"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:95
+msgid "Guard Zone Display"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:105
+msgid "Guard Zone Sound"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:109
+msgid "Select Alert Sound"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:113
+msgid "Test Alert Sound"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:117
+msgid "Trail Display"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:127
+msgid "GPU drawing method"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:134
+msgid "Drawing Method"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:141
+msgid "Control Menu Auto Hide"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:145
+msgid "Never"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:145
+msgid "10 sec"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:148
+msgid "Auto hide after"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:154
+msgid "Options"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:158
+msgid "Pass radar heading to OpenCPN"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:164
+msgid "Enable dual radar, 4G only"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:172
+msgid "Emulator mode"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:177
+msgid "Reverse mouse wheel zoom direction"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:227
+msgid "Select Sound File"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:228
+msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+msgstr ""
+
+#: src\br24radar_pi.cpp:223 src\br24radar_pi.cpp:337
+msgid "Radar A"
+msgstr ""
+
+#: src\br24radar_pi.cpp:224
+msgid "Radar B"
+msgstr ""
+
+#: src\br24radar_pi.cpp:238
+msgid "Show radar"
+msgstr ""
+
+#: src\br24radar_pi.cpp:239
+msgid "Hide radar"
+msgstr ""
+
+#: src\br24radar_pi.cpp:240
+msgid "Radar Control..."
+msgstr ""
+
+#: src\br24radar_pi.cpp:242 src\RadarCanvas.cpp:98
+msgid "Menu"
+msgstr ""
+
+#: src\br24radar_pi.cpp:320
+msgid "Navico Radar PlugIn for OpenCPN"
+msgstr ""
+
+#: src\br24radar_pi.cpp:322
+msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+msgstr ""
+
+#: src\br24radar_pi.cpp:507
+#, c-format
+msgid "Standby in %2d:%02d"
+msgstr ""
+
+#: src\br24radar_pi.cpp:511
+#, c-format
+msgid "Transmit in %2d:%02d"
+msgstr ""
+
+#: src\br24radar_pi.cpp:523
 msgid "Zone"
 msgstr ""
 
-#: src/GuardZoneBogey.cpp:152
-msgid "\n"
+#: src\br24radar_pi.cpp:525
+msgid "(Confirmed)"
 msgstr ""
 
-#: src/GuardZoneBogey.cpp:156
-msgid "Radar B:\n"
-msgstr ""
-
-#: src/GuardZoneBogey.cpp:166
+#: src\br24radar_pi.cpp:536
 #, c-format
 msgid "Next alarm in %d s"
 msgstr ""
 
-#: src/GuardZoneControls.cpp:133
-msgid "Guard zones"
-msgstr ""
-
-#: src/GuardZoneControls.cpp:137 src/br24radarcontrol.cpp:569
-#: src/br24radarcontrol.cpp:583 src/br24radarcontrol.cpp:596
-#: src/br24radarcontrol.cpp:613 src/br24radarcontrol.cpp:648
-#: src/br24radarcontrol.cpp:810
-msgid "Off"
-msgstr ""
-
-#: src/GuardZoneControls.cpp:138 src/br24radarcontrol.cpp:811
-msgid "Arc"
-msgstr ""
-
-#: src/GuardZoneControls.cpp:139 src/br24radarcontrol.cpp:812
-msgid "Circle"
-msgstr ""
-
-#: src/GuardZoneControls.cpp:140
-msgid "Zone type:"
-msgstr ""
-
-#: src/GuardZoneControls.cpp:152
-msgid "Inner range"
-msgstr ""
-
-#: src/GuardZoneControls.cpp:161
-msgid "Outer range"
-msgstr ""
-
-#: src/GuardZoneControls.cpp:171
-msgid "Start bearing"
-msgstr ""
-
-#: src/GuardZoneControls.cpp:181
-msgid "End bearing"
-msgstr ""
-
-#: src/GuardZoneControls.cpp:193
-msgid "Filter"
-msgstr ""
-
-#: src/GuardZoneControls.cpp:197
-msgid ""
-"Warning: Targets may be\n"
-"missed with filter on"
-msgstr ""
-
-#: src/GuardZoneControls.cpp:201
-msgid "Multi Sweep Filter On"
-msgstr ""
-
-#: src/GuardZoneControls.cpp:209
-msgid "&Close"
-msgstr ""
-
-#: src/GuardZoneControls.cpp:252
-msgid "Guard Zone"
-msgstr ""
-
-#: src/br24radar_pi.cpp:679
-msgid "Radar Control..."
-msgstr ""
-
-#: src/br24radar_pi.cpp:681
-msgid "Menu"
-msgstr ""
-
-#: src/br24radar_pi.cpp:688
-msgid "Set Guard Point"
-msgstr ""
-
-#: src/br24radar_pi.cpp:820
-msgid "Navico Radar PlugIn for OpenCPN"
-msgstr ""
-
-#: src/br24radar_pi.cpp:826
-msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
-msgstr ""
-
-#: src/br24radar_pi.cpp:891
-msgid "BR24 Target Display Preferences"
-msgstr ""
-
-#: src/br24radar_pi.cpp:914
-msgid "Nautical Miles"
-msgstr ""
-
-#: src/br24radar_pi.cpp:915
-msgid "Kilometers"
-msgstr ""
-
-#: src/br24radar_pi.cpp:918
-msgid "Range Units"
-msgstr ""
-
-#: src/br24radar_pi.cpp:930
-msgid "Monocolor-Red"
-msgstr ""
-
-#: src/br24radar_pi.cpp:931
-msgid "Multi-color"
-msgstr ""
-
-#: src/br24radar_pi.cpp:932
-msgid "Multi-color 2"
-msgstr ""
-
-#: src/br24radar_pi.cpp:935
-msgid "Overlay Display Options"
-msgstr ""
-
-#: src/br24radar_pi.cpp:959
-msgid "Shading"
-msgstr ""
-
-#: src/br24radar_pi.cpp:960
-msgid "Outline"
-msgstr ""
-
-#: src/br24radar_pi.cpp:961
-msgid "Shading + Outline"
-msgstr ""
-
-#: src/br24radar_pi.cpp:963
-msgid "Guard Zone Styling"
-msgstr ""
-
-#: src/br24radar_pi.cpp:974
-msgid "Calibration"
-msgstr ""
-
-#: src/br24radar_pi.cpp:979
-msgid ""
-"Heading correction\n"
-"(-180 to +180)"
-msgstr ""
-
-#: src/br24radar_pi.cpp:991
-msgid "Guard Zone Sound"
-msgstr ""
-
-#: src/br24radar_pi.cpp:995
-msgid "Select Alert Sound"
-msgstr ""
-
-#: src/br24radar_pi.cpp:1000
-msgid "Test Alert Sound"
-msgstr ""
-
-#: src/br24radar_pi.cpp:1006
-msgid "Options"
-msgstr ""
-
-#: src/br24radar_pi.cpp:1010
-msgid "Pass radar heading to OpenCPN"
-msgstr ""
-
-#: src/br24radar_pi.cpp:1016
-msgid "Enable dual radar, 4G only"
-msgstr ""
-
-#: src/br24radar_pi.cpp:1022
-msgid "Emulator mode"
-msgstr ""
-
-#: src/br24radar_pi.cpp:1070
-msgid "Select Sound File"
-msgstr ""
-
-#: src/br24radar_pi.cpp:1071
-msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
-msgstr ""
-
-#: src/br24radar_pi.cpp:1248 src/br24radar_pi.h:959
-msgid " Guard Zone Control"
-msgstr ""
-
-#: src/br24radar_pi.cpp:2354
+#: src\br24radar_pi.cpp:1071
 msgid "GPS"
 msgstr ""
 
-#: src/br24radar_pi.cpp:2380
-msgid "radar"
-msgstr ""
-
-#: src/br24radar_pi.cpp:2395
+#: src\br24radar_pi.cpp:1091
 msgid "HDM"
 msgstr ""
 
-#: src/br24radar_pi.cpp:2410
+#: src\br24radar_pi.cpp:1103
 msgid "HDT"
 msgstr ""
 
-#: src/br24radar_pi.cpp:2425
+#: src\br24radar_pi.cpp:1115
 msgid "COG"
 msgstr ""
 
-#: src/br24radar_pi.cpp:2463
+#: src\br24radar_pi.cpp:1153
 msgid "WMM"
 msgstr ""
 
-#: src/br24radar_pi.cpp:2999
+#: src\br24radar_pi.cpp:1314
 msgid "NMEA"
 msgstr ""
 
-#: src/br24radar_pi.cpp:3187
+#: src\RadarDraw.cpp:54
+msgid "Vertex Array"
+msgstr ""
+
+#: src\RadarDraw.cpp:54
+msgid "Shader"
+msgstr ""
+
+#: src\RadarInfo.cpp:715
+msgid "North Up"
+msgstr ""
+
+#: src\RadarInfo.cpp:717
+msgid "Head Up"
+msgstr ""
+
+#: src\RadarInfo.cpp:720
+msgid "Emulator"
+msgstr ""
+
+#: src\RadarInfo.cpp:814
+msgid "No radar"
+msgstr ""
+
+#: src\RadarInfo.cpp:816
+msgid "Radar is in Standby"
+msgstr ""
+
+#: src\RadarInfo.cpp:829
+msgid "No valid drawing method"
+msgstr ""
+
+#: src\RadarPanel.cpp:38
+msgid "RADAR"
+msgstr ""
+
+#: src\RadarPanel.cpp:61 src\RadarPanel.cpp:137
+msgid "OpenGL mode required"
+msgstr ""
+
+#: src\RadarPanel.cpp:148
+msgid "Unable to create OpenGL canvas"
+msgstr ""
+
+#: src\socketutil.cpp:179
 msgid "Cannot create UDP socket"
 msgstr ""
 
-#: src/br24radar_pi.cpp:3191
+#: src\socketutil.cpp:183
 msgid "Cannot set reuse address option on socket"
 msgstr ""
 
-#: src/br24radar_pi.cpp:3196
+#: src\socketutil.cpp:188
 msgid "Cannot bind UDP socket to port "
 msgstr ""
 
-#: src/br24radar_pi.cpp:3205
+#: src\socketutil.cpp:197
 msgid "Invalid multicast address"
 msgstr ""
 
-#: src/br24radar_pi.cpp:3210
+#: src\socketutil.cpp:202
 msgid "Invalid IP address for UDP multicast"
-msgstr ""
-
-#: src/br24radar_pi.cpp:3241
-msgid "emulator"
-msgstr ""
-
-#: src/br24radar_pi.h:766 src/br24radar_pi.h:887
-msgid "Radar"
-msgstr ""
-
-#: src/br24radar_pi.h:1015
-msgid "Guard Zone Active"
-msgstr ""
-
-#: src/br24radar_pi.h:1061 src/br24radarcontrol.cpp:460
-#: src/br24radarcontrol.cpp:662
-msgid "Timed Transmit"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:317 src/br24radarcontrol.cpp:326
-#: src/br24radarcontrol.cpp:356 src/br24radarcontrol.cpp:464
-#: src/br24radarcontrol.cpp:534
-msgid "Auto"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:353
-msgid "Remote"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:422
-msgid "Dialog"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:453 src/br24radarcontrol.cpp:562
-msgid "Transparency"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:454 src/br24radarcontrol.cpp:574
-msgid "Interference rejection"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:455 src/br24radarcontrol.cpp:618
-msgid "Target separation"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:456 src/br24radarcontrol.cpp:600
-msgid "Noise rejection"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:457 src/br24radarcontrol.cpp:586
-msgid "Target boost"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:458 src/br24radarcontrol.cpp:629
-msgid "Scan speed"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:459
-msgid "Scan age"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:461 src/br24radarcontrol.cpp:756
-msgid "Gain"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:462 src/br24radarcontrol.cpp:760
-msgid "Sea clutter"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:463 src/br24radarcontrol.cpp:764
-msgid "Rain clutter"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:465 src/br24radarcontrol.cpp:742
-#: src/br24radarcontrol.cpp:747 src/br24radarcontrol.cpp:1001
-#: src/br24radarcontrol.cpp:1063 src/br24radarcontrol.cpp:1069
-#: src/br24radarcontrol.cpp:1107 src/br24radarcontrol.cpp:1112
-msgid "Overlay / Radar"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:465
-msgid "Radar Only, Head Up\n"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:503
-msgid ""
-"<<\n"
-"Back"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:508
-msgid "+10"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:513
-msgid "+"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:518
-msgid "Value"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:524
-msgid "-"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:529
-msgid "-10"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:540 src/br24radarcontrol.cpp:906
-#: src/br24radarcontrol.cpp:911
-msgid "Multi Sweep Filter"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:540 src/br24radarcontrol.cpp:911
-msgid "OFF"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:556 src/br24radarcontrol.cpp:679
-msgid "Back"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:570 src/br24radarcontrol.cpp:584
-#: src/br24radarcontrol.cpp:597 src/br24radarcontrol.cpp:614
-msgid "Low"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:571 src/br24radarcontrol.cpp:615
-msgid "Medium"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:572 src/br24radarcontrol.cpp:585
-#: src/br24radarcontrol.cpp:598 src/br24radarcontrol.cpp:616
-msgid "High"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:627
-msgid "Normal"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:628
-msgid "Fast"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:637
-msgid "Refresh rate"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:643
-msgid "Installation"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:649
-msgid "5 min"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:650
-msgid "10 min"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:651
-msgid "15 min"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:652
-msgid "20 min"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:653
-msgid "25 min"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:654
-msgid "30 min"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:655
-msgid "35 min"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:657
-msgid "Back to activate"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:685
-msgid "Bearing alignment"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:693
-msgid "Antenna height"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:700
-msgid "Local interference rejection"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:709
-msgid "Side lobe suppression"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:728 src/br24radarcontrol.cpp:733
-#: src/br24radarcontrol.cpp:1084 src/br24radarcontrol.cpp:1095
-msgid "Radar A / B"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:728 src/br24radarcontrol.cpp:1095
-#: src/br24radarcontrol.cpp:1098
-msgid "Radar A"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:733 src/br24radarcontrol.cpp:1084
-#: src/br24radarcontrol.cpp:1087
-msgid "Radar B"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:738
-msgid "Radar Only / Overlay"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:742 src/br24radarcontrol.cpp:1001
-#: src/br24radarcontrol.cpp:1069 src/br24radarcontrol.cpp:1112
-msgid "Radar Only, Head Up"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:747 src/br24radarcontrol.cpp:1063
-#: src/br24radarcontrol.cpp:1107
-msgid "Radar Overlay"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:752
-msgid "Range"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:768
-msgid ""
-"Advanced\n"
-"controls"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:774 src/br24radarcontrol.cpp:781
-#: src/br24radarcontrol.cpp:815 src/br24radarcontrol.cpp:818
-msgid "Guard zone"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:787
-msgid "Info"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:906
-msgid "ON"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:1324
-msgid "Radar A - ON"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:1327
-msgid "Radar A - Stby"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:1330
-msgid "Radar A - OFF"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:1335
-msgid "Radar B - ON"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:1338
-msgid "Radar B - Stby"
-msgstr ""
-
-#: src/br24radarcontrol.cpp:1341
-msgid "Radar B - OFF"
-msgstr ""
-
-#: src/Idle_Dialog.cpp:106 src/Idle_Dialog.cpp:145
-msgid "Now Transmit for"
-msgstr ""
-
-#: src/Idle_Dialog.cpp:107
-msgid "minutes"
-msgstr ""
-
-#: src/Idle_Dialog.cpp:109
-msgid "minutes to shifting"
-msgstr ""
-
-#: src/Idle_Dialog.cpp:119
-msgid "Timed transmit is active"
-msgstr ""
-
-#: src/Idle_Dialog.cpp:134
-msgid "Turn Radar always ON"
-msgstr ""
-
-#: src/Idle_Dialog.cpp:144
-msgid "Now Idle for"
 msgstr ""

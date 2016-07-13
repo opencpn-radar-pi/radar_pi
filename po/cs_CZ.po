@@ -1,0 +1,636 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: opencpn\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-07-09 16:59+0200\n"
+"PO-Revision-Date: 2015-05-23 05:01-0400\n"
+"Last-Translator: nohal <pavel@kalian.cz>\n"
+"Language-Team: Czech\n"
+"Language: cs_CZ\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: opencpn\n"
+"X-Crowdin-Language: cs\n"
+"X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
+#
+msgid "&Close"
+msgstr "&Stäng"
+#
+msgid "&Confirm"
+msgstr "&Potvrdit"
+#
+#, fuzzy
+msgid "&Hide Radar"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "(Confirmed)"
+msgstr "&Potvrdit"
+#
+msgid "+"
+msgstr "+"
+#
+msgid "+10"
+msgstr "+10"
+#
+msgid "-"
+msgstr "-"
+#
+msgid "-10"
+msgstr "-10"
+#
+#, fuzzy
+msgid "1 min"
+msgstr "10 min"
+#
+msgid "10 min"
+msgstr "10 min"
+#
+msgid "10 sec"
+msgstr ""
+#
+msgid "15 min"
+msgstr "15 min"
+#
+msgid "15 sec"
+msgstr ""
+#
+msgid "20 min"
+msgstr "20 min"
+#
+msgid "25 min"
+msgstr "25 min"
+#
+#, fuzzy
+msgid "3 min"
+msgstr "30 min"
+#
+msgid "30 min"
+msgstr "30 min"
+#
+msgid "30 sec"
+msgstr ""
+#
+msgid "35 min"
+msgstr "35 min"
+#
+msgid "5 min"
+msgstr "5 min"
+#
+msgid "???"
+msgstr ""
+#
+msgid "Accelerated Graphics (OpenGL)"
+msgstr "Akcelerovaná grafika (OpenGL)"
+#
+msgid "Adjust"
+msgstr ""
+#
+#, fuzzy
+msgid "Advanced"
+msgstr ""
+"Pokročilé\n"
+"nastavení"
+#
+msgid "Antenna height"
+msgstr ""
+#
+msgid "Arc"
+msgstr "Sektor"
+#
+msgid "Auto"
+msgstr "Auto"
+#
+msgid "Auto hide after"
+msgstr ""
+#
+#, fuzzy
+msgid "BR24 Display Preferences"
+msgstr "BR24 Inställningar Målvisning"
+#
+msgid "Back"
+msgstr "Zpět"
+#
+msgid "Bearing alignment"
+msgstr ""
+#
+msgid "Boat position"
+msgstr "Pozice lodí"
+#
+msgid "COG"
+msgstr "COG"
+#
+msgid "Cannot bind UDP socket to port "
+msgstr "Nelze vytvořit vazbu soketu UDP na portu "
+#
+msgid "Cannot create UDP socket"
+msgstr "Nelze vytvořit soket protokolu UDP"
+#
+msgid "Cannot set reuse address option on socket"
+msgstr "Nelze nastavit možnost opětovného použití adresy na socketu"
+#
+msgid ""
+"Cannot switch radar on as\n"
+"it is not connected or off"
+msgstr ""
+#
+msgid "Circle"
+msgstr "Cirkel"
+#
+#, c-format
+msgid "Clear EBL/VRM%d"
+msgstr ""
+#
+msgid "Clear cursor"
+msgstr ""
+#
+msgid "Clear trails"
+msgstr ""
+#
+msgid "Continuous"
+msgstr ""
+#
+msgid "Control Menu Auto Hide"
+msgstr ""
+#
+msgid "Drawing Method"
+msgstr ""
+#
+msgid "EBL/VRM"
+msgstr ""
+#
+msgid "Emulator"
+msgstr "Emulátor"
+#
+#, fuzzy
+msgid "Emulator mode"
+msgstr "Emulátor"
+#
+msgid "Enable dual radar, 4G only"
+msgstr ""
+#
+msgid "End bearing"
+msgstr "Konečný směr"
+#
+msgid "Ethernet card"
+msgstr ""
+#
+msgid "Fast"
+msgstr "Rychlé"
+#
+msgid "For radar overlay also required"
+msgstr ""
+#
+msgid "GPS"
+msgstr ""
+#
+msgid "GPU drawing method"
+msgstr ""
+#
+msgid "Gain"
+msgstr "Förstärkning"
+#
+msgid "Guard Zone"
+msgstr "Strážní zóna"
+#
+#, fuzzy
+msgid "Guard Zone Display"
+msgstr "Strážní zóna"
+#
+msgid "Guard Zone Sound"
+msgstr "Zvuk strážní zóny"
+#
+msgid "Guard Zone Styling"
+msgstr "Styl strážní zóny"
+#
+msgid "Guard zone"
+msgstr "Strážní zóna"
+#
+msgid "Guard zones"
+msgstr "Strážní zóny"
+#
+msgid "HDM"
+msgstr "HDM"
+#
+msgid "HDT"
+msgstr "HDT"
+#
+msgid "Head Up"
+msgstr ""
+#
+msgid "Head up"
+msgstr ""
+#
+msgid "Heading"
+msgstr "Kurs"
+#
+msgid "Hide both windows"
+msgstr ""
+#
+#, fuzzy
+msgid "Hide radar"
+msgstr "radar"
+#
+msgid "Hide window"
+msgstr ""
+#
+msgid "High"
+msgstr "Vysoký"
+#
+msgid "Info"
+msgstr "Info"
+#
+msgid "Inner range"
+msgstr "Vnitřní hranice"
+#
+#, fuzzy
+msgid "Installation"
+msgstr "Kalibrering"
+#
+#, fuzzy
+msgid "Interference rej."
+msgstr "Potlačení rušení"
+#
+msgid "Interference rejection"
+msgstr "Potlačení rušení"
+#
+msgid "Invalid IP address for UDP multicast"
+msgstr "Neplatná adresa IP pro UDP multicast"
+#
+msgid "Invalid multicast address"
+msgstr "Neplatná multicast adresa"
+#
+msgid "Kilometers"
+msgstr "Kilometer"
+#
+#, fuzzy
+msgid "Local interference rejection"
+msgstr "Potlačení rušení"
+#
+msgid "Low"
+msgstr "Nízký"
+#
+msgid "Medium"
+msgstr "Střední"
+#
+msgid "Menu"
+msgstr "Nabídka"
+#
+msgid "Monocolor-Red"
+msgstr "Enfärgad-Röd"
+#
+msgid "Multi Sweep Filter"
+msgstr ""
+#
+msgid "Multi-color"
+msgstr "Flerfärgad"
+#
+msgid "NMEA"
+msgstr "NMEA"
+#
+msgid "Nautical Miles"
+msgstr "Nautisk Mil"
+#
+msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+msgstr "Navico Broadband BR24/3G/4G Radarmodul för OpenCPN\n"
+#
+msgid "Navico Radar PlugIn for OpenCPN"
+msgstr "Navico Radarmodul för OpenCPN"
+#
+msgid "Never"
+msgstr ""
+#
+#, c-format
+msgid "Next alarm in %d s"
+msgstr "Další alarm za %d s"
+#
+#, fuzzy
+msgid "No radar"
+msgstr "radar"
+#
+msgid "No valid drawing method"
+msgstr ""
+#
+msgid "Noise rejection"
+msgstr "Potlačení šumu"
+#
+msgid "Normal"
+msgstr "Normální"
+#
+msgid "North Up"
+msgstr ""
+#
+msgid "North up"
+msgstr ""
+#
+msgid "Off"
+msgstr "Av"
+#
+msgid "On"
+msgstr ""
+#
+msgid "OpenCPN options"
+msgstr "Možnosti OpenCPN"
+#
+msgid "OpenGL mode required"
+msgstr ""
+#
+msgid "Options"
+msgstr "Nastavení"
+#
+#, fuzzy
+msgid "Orientation"
+msgstr "Variace"
+#
+msgid "Outer range"
+msgstr "Vnější hranice"
+#
+msgid "Outline"
+msgstr "Obrys"
+#
+msgid "Overlay"
+msgstr ""
+#
+msgid "Overlay Display Options"
+msgstr "Alternativ överlagrad visning"
+#
+msgid "Pass radar heading to OpenCPN"
+msgstr "Předávat směr z radaru do OpenCPN"
+#
+#, c-format
+msgid "Place EBL/VRM%d"
+msgstr ""
+#
+msgid "RADAR"
+msgstr ""
+#
+msgid "Radar"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "Radar A"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "Radar B"
+msgstr "Radar"
+#
+msgid "Radar Control..."
+msgstr "Radar Inställningar..."
+#
+msgid "Radar IP"
+msgstr "IP radaru"
+#
+#, fuzzy
+msgid "Radar is in Standby"
+msgstr "Radar odesílající data"
+#
+msgid "Radar present"
+msgstr "Připojený radar"
+#
+#, fuzzy
+msgid "Radar requirements OK:"
+msgstr "Připojený radar"
+#
+#, fuzzy
+msgid "Radar requires the following"
+msgstr "Překrytí radarem vyžaduje následující údaje"
+#
+msgid "Radar sending data"
+msgstr "Radar odesílající data"
+#
+#, fuzzy
+msgid "Radar window and overlay"
+msgstr "Kortöverlagrad radar"
+#
+#, fuzzy
+msgid "Radar window only"
+msgstr "Självständing radarbild"
+#
+msgid "Rain clutter"
+msgstr "Rušení deštěm"
+#
+msgid "Range"
+msgstr "Räckvidd"
+#
+msgid "Range Units"
+msgstr "Räckvidd -Enhet"
+#
+msgid "Refresh rate"
+msgstr "Obnovovací frekvence"
+#
+msgid "Reverse mouse wheel zoom direction"
+msgstr ""
+#
+msgid "Scan age"
+msgstr "Stáří skenování"
+#
+msgid "Scan speed"
+msgstr "Rychlost skenování"
+#
+msgid "Sea clutter"
+msgstr "Rušení mořem"
+#
+msgid "Select Alert Sound"
+msgstr "Vybrat zvuk výstrah"
+#
+msgid "Select Sound File"
+msgstr "Vybrat zvukový soubor"
+#
+#, fuzzy
+msgid "Shader"
+msgstr "Stínování"
+#
+msgid "Shading"
+msgstr "Stínování"
+#
+msgid "Shading + Outline"
+msgstr "Stínování + obrys"
+#
+msgid "Show both windows"
+msgstr ""
+#
+msgid "Show other window"
+msgstr ""
+#
+#, fuzzy
+msgid "Show radar"
+msgstr "radar"
+#
+msgid "Show this window"
+msgstr ""
+#
+msgid "Show window"
+msgstr ""
+#
+msgid "Side lobe suppression"
+msgstr ""
+#
+msgid "Standby"
+msgstr ""
+#
+#, c-format
+msgid "Standby in %2d:%02d"
+msgstr ""
+#
+#, c-format
+msgid "Standby in %d:%02d"
+msgstr ""
+#
+msgid "Start bearing"
+msgstr "Počáteční směr"
+#
+msgid "Statistics"
+msgstr "Statistika"
+#
+msgid "Sweep Filter"
+msgstr ""
+#
+msgid "Target boost"
+msgstr "Zvýraznění cílů"
+#
+#, fuzzy
+msgid "Target expansion"
+msgstr "Oddělení cílů"
+#
+msgid "Target separation"
+msgstr "Oddělení cílů"
+#
+#, fuzzy
+msgid "Target trails"
+msgstr "Oddělení cílů"
+#
+msgid "Test Alert Sound"
+msgstr "Otestovat zvuk výstrahy"
+#
+msgid "Timed Transmit"
+msgstr "Časované vysílání"
+#
+#, fuzzy
+msgid "Trail Display"
+msgstr "Radarvisning"
+#
+#, fuzzy
+msgid "Transmit"
+msgstr "Časované vysílání"
+#
+#, c-format
+msgid "Transmit in %2d:%02d"
+msgstr ""
+#
+#, c-format
+msgid "Transmit in %d:%02d"
+msgstr ""
+#
+msgid "Transparency"
+msgstr "Transparent"
+#
+msgid "Unable to create OpenGL canvas"
+msgstr ""
+#
+msgid "Unknown"
+msgstr ""
+#
+msgid "Value"
+msgstr "Hodnota"
+#
+msgid "Variation"
+msgstr "Variace"
+#
+msgid "Vertex Array"
+msgstr ""
+#
+msgid "View"
+msgstr ""
+#
+msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+msgstr "Soubory WAV(*.wav)|*.wav|Všechny soubory(*.*)|*.*"
+#
+msgid "WMM"
+msgstr "WMM"
+#
+#, fuzzy
+msgid "ZeroConf via Ethernet"
+msgstr "ZeroConf přes (kabelový) Ethernet"
+#
+msgid "Zone"
+msgstr "Oblast"
+#
+#, fuzzy
+msgid ""
+"Zone 1: unknown\n"
+"Zone 2: unknown\n"
+"Timeout\n"
+msgstr ""
+"Oblast 1: neznámá\n"
+"Oblast 2: neznámá\n"
+"Čas vypršel"
+#
+#, fuzzy
+msgid "Zone type"
+msgstr "Typ zóny:"
+#
+#~ msgid " Guard Zone Control"
+#~ msgstr " Nastavení strážních zón"
+#
+#~ msgid ""
+#~ "<<\n"
+#~ "Back"
+#~ msgstr ""
+#~ "<< \n"
+#~ "Zpět"
+#
+#~ msgid "C&onfirm + Close"
+#~ msgstr "P&otvrdit + zavřít"
+#
+#~ msgid "Data sources"
+#~ msgstr "Zdroje dat"
+#
+#~ msgid "Dialog"
+#~ msgstr "Dialogové okno"
+#
+#~ msgid "Downsample"
+#~ msgstr "Převzorkovat dolů"
+#
+#~ msgid "Guard Zone Active"
+#~ msgstr "Aktivní strážní zóna"
+#
+#~ msgid ""
+#~ "Heading correction\n"
+#~ "(-180 to +180)"
+#~ msgstr ""
+#~ "Korekce směru\n"
+#~ " (-180 až + 180)"
+#
+#~ msgid "Idle time is set to"
+#~ msgstr "Doba nečinnosti nastavena na"
+#
+#~ msgid "Multi-color 2"
+#~ msgstr "Vícebarva 2"
+#
+#~ msgid "Radar scanner is Idling"
+#~ msgstr "Radarový skener je nečinný"
+#
+#~ msgid "Set Guard Point"
+#~ msgstr "Nastavit strážní bod"
+#
+#~ msgid "Spectrum"
+#~ msgstr "Spektrum"
+#
+#~ msgid "Turn Radar always ON"
+#~ msgstr "Zapnout radar nepřetržitě"
+#
+#~ msgid "ca."
+#~ msgstr "ca."
+#
+#~ msgid "emulator"
+#~ msgstr "emulátor"
+#
+#~ msgid "minutes"
+#~ msgstr "minut"
+#
+#~ msgid "minutes until next run"
+#~ msgstr "minut do příštího spuštění"

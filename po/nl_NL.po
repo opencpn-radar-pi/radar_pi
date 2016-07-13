@@ -1,0 +1,609 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: opencpn\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-07-09 16:59+0200\n"
+"PO-Revision-Date: 2015-05-17 12:43-0400\n"
+"Last-Translator: nohal <pavel@kalian.cz>\n"
+"Language-Team: Dutch\n"
+"Language: nl_NL\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: opencpn\n"
+"X-Crowdin-Language: nl\n"
+"X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
+#
+msgid "&Close"
+msgstr "&Sluiten"
+#
+msgid "&Confirm"
+msgstr "&Bevestigen"
+#
+#, fuzzy
+msgid "&Hide Radar"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "(Confirmed)"
+msgstr "&Bevestigen"
+#
+msgid "+"
+msgstr "+"
+#
+msgid "+10"
+msgstr "+10"
+#
+msgid "-"
+msgstr "-"
+#
+msgid "-10"
+msgstr "-10"
+#
+msgid "1 min"
+msgstr ""
+#
+msgid "10 min"
+msgstr ""
+#
+msgid "10 sec"
+msgstr ""
+#
+msgid "15 min"
+msgstr ""
+#
+msgid "15 sec"
+msgstr ""
+#
+msgid "20 min"
+msgstr ""
+#
+msgid "25 min"
+msgstr ""
+#
+msgid "3 min"
+msgstr ""
+#
+msgid "30 min"
+msgstr ""
+#
+msgid "30 sec"
+msgstr ""
+#
+msgid "35 min"
+msgstr ""
+#
+msgid "5 min"
+msgstr ""
+#
+msgid "???"
+msgstr ""
+#
+msgid "Accelerated Graphics (OpenGL)"
+msgstr "'Accelerated Graphics' (OpenGL)"
+#
+msgid "Adjust"
+msgstr ""
+#
+#, fuzzy
+msgid "Advanced"
+msgstr ""
+"Geavanceerde\n"
+"instellingen"
+#
+msgid "Antenna height"
+msgstr ""
+#
+msgid "Arc"
+msgstr "Boog"
+#
+msgid "Auto"
+msgstr "Auto"
+#
+msgid "Auto hide after"
+msgstr ""
+#
+#, fuzzy
+msgid "BR24 Display Preferences"
+msgstr "BR24 echo-weergavevoorkeuren"
+#
+msgid "Back"
+msgstr "Terug"
+#
+msgid "Bearing alignment"
+msgstr ""
+#
+msgid "Boat position"
+msgstr "Vaartuigpositie"
+#
+msgid "COG"
+msgstr ""
+#
+msgid "Cannot bind UDP socket to port "
+msgstr "Kan UDP socket niet aan poort binden "
+#
+msgid "Cannot create UDP socket"
+msgstr "Kan geen UDP socket aanmaken"
+#
+msgid "Cannot set reuse address option on socket"
+msgstr "Kan hergebruik-optie van socket niet aanzetten"
+#
+msgid ""
+"Cannot switch radar on as\n"
+"it is not connected or off"
+msgstr ""
+#
+msgid "Circle"
+msgstr "Cirkel"
+#
+#, c-format
+msgid "Clear EBL/VRM%d"
+msgstr ""
+#
+msgid "Clear cursor"
+msgstr ""
+#
+msgid "Clear trails"
+msgstr ""
+#
+msgid "Continuous"
+msgstr ""
+#
+msgid "Control Menu Auto Hide"
+msgstr ""
+#
+msgid "Drawing Method"
+msgstr ""
+#
+msgid "EBL/VRM"
+msgstr ""
+#
+msgid "Emulator"
+msgstr "Emulatie"
+#
+#, fuzzy
+msgid "Emulator mode"
+msgstr "Emulatie"
+#
+msgid "Enable dual radar, 4G only"
+msgstr ""
+#
+msgid "End bearing"
+msgstr "Eindpeiling"
+#
+msgid "Ethernet card"
+msgstr ""
+#
+msgid "Fast"
+msgstr "Snel"
+#
+msgid "For radar overlay also required"
+msgstr ""
+#
+msgid "GPS"
+msgstr ""
+#
+msgid "GPU drawing method"
+msgstr ""
+#
+msgid "Gain"
+msgstr "Versterking"
+#
+msgid "Guard Zone"
+msgstr "Bewakingszone"
+#
+#, fuzzy
+msgid "Guard Zone Display"
+msgstr "Bewakingszone"
+#
+msgid "Guard Zone Sound"
+msgstr "Bewakingszone geluid"
+#
+msgid "Guard Zone Styling"
+msgstr "Stilering van zone"
+#
+msgid "Guard zone"
+msgstr "Bewakingszone"
+#
+msgid "Guard zones"
+msgstr "Bewakingszones"
+#
+msgid "HDM"
+msgstr ""
+#
+msgid "HDT"
+msgstr ""
+#
+msgid "Head Up"
+msgstr ""
+#
+msgid "Head up"
+msgstr ""
+#
+msgid "Heading"
+msgstr "Koers"
+#
+msgid "Hide both windows"
+msgstr ""
+#
+msgid "Hide radar"
+msgstr ""
+#
+msgid "Hide window"
+msgstr ""
+#
+msgid "High"
+msgstr "Hoog"
+#
+msgid "Info"
+msgstr ""
+#
+msgid "Inner range"
+msgstr "Minste afstand"
+#
+#, fuzzy
+msgid "Installation"
+msgstr "Calibratie"
+#
+#, fuzzy
+msgid "Interference rej."
+msgstr "Interferentie onderdr."
+#
+msgid "Interference rejection"
+msgstr "Interferentie onderdr."
+#
+msgid "Invalid IP address for UDP multicast"
+msgstr "Ongeldig IP-adres voor multicast-UDP"
+#
+msgid "Invalid multicast address"
+msgstr "Ongeldig multicast-adres"
+#
+msgid "Kilometers"
+msgstr "kilometer"
+#
+#, fuzzy
+msgid "Local interference rejection"
+msgstr "Interferentie onderdr."
+#
+msgid "Low"
+msgstr "Laag"
+#
+msgid "Medium"
+msgstr "Gemiddeld"
+#
+msgid "Menu"
+msgstr "Menu"
+#
+msgid "Monocolor-Red"
+msgstr "Monochrome-rood"
+#
+msgid "Multi Sweep Filter"
+msgstr ""
+#
+msgid "Multi-color"
+msgstr "Multikleur"
+#
+msgid "NMEA"
+msgstr ""
+#
+msgid "Nautical Miles"
+msgstr "zeemijl"
+#
+msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+msgstr "Navico breedband BR24/3G/4G Radar PlugIn voor OpenCPN\n"
+#
+msgid "Navico Radar PlugIn for OpenCPN"
+msgstr "Navico Radar PlugIn voor OpenCPN"
+#
+msgid "Never"
+msgstr ""
+#
+#, c-format
+msgid "Next alarm in %d s"
+msgstr "Alarm herhalen over %d s"
+#
+#, fuzzy
+msgid "No radar"
+msgstr "Radar"
+#
+msgid "No valid drawing method"
+msgstr ""
+#
+msgid "Noise rejection"
+msgstr "Ruisonderdrukking"
+#
+msgid "Normal"
+msgstr "Normaal"
+#
+msgid "North Up"
+msgstr ""
+#
+msgid "North up"
+msgstr ""
+#
+msgid "Off"
+msgstr "Uit"
+#
+msgid "On"
+msgstr ""
+#
+msgid "OpenCPN options"
+msgstr "OpenCPN opties"
+#
+msgid "OpenGL mode required"
+msgstr ""
+#
+msgid "Options"
+msgstr ""
+#
+msgid "Orientation"
+msgstr ""
+#
+msgid "Outer range"
+msgstr "Grootste afstand"
+#
+msgid "Outline"
+msgstr "Omlijning"
+#
+msgid "Overlay"
+msgstr ""
+#
+msgid "Overlay Display Options"
+msgstr "Overlay-weergaveopties"
+#
+msgid "Pass radar heading to OpenCPN"
+msgstr ""
+#
+#, c-format
+msgid "Place EBL/VRM%d"
+msgstr ""
+#
+msgid "RADAR"
+msgstr ""
+#
+msgid "Radar"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "Radar A"
+msgstr "Radar"
+#
+#, fuzzy
+msgid "Radar B"
+msgstr "Radar"
+#
+msgid "Radar Control..."
+msgstr "Radarbesturing ..."
+#
+msgid "Radar IP"
+msgstr "Radar IP"
+#
+#, fuzzy
+msgid "Radar is in Standby"
+msgstr "Radar stuurt beeld"
+#
+msgid "Radar present"
+msgstr "Radar aanwezig"
+#
+#, fuzzy
+msgid "Radar requirements OK:"
+msgstr "Radar aanwezig"
+#
+#, fuzzy
+msgid "Radar requires the following"
+msgstr "Radarbeeld heeft de volgende data nodig"
+#
+msgid "Radar sending data"
+msgstr "Radar stuurt beeld"
+#
+#, fuzzy
+msgid "Radar window and overlay"
+msgstr "Radar kaartoverlay"
+#
+#, fuzzy
+msgid "Radar window only"
+msgstr "Radar alleen"
+#
+msgid "Rain clutter"
+msgstr "Regenonderdrukking"
+#
+msgid "Range"
+msgstr "Afstand"
+#
+msgid "Range Units"
+msgstr "Afstandeenheid"
+#
+msgid "Refresh rate"
+msgstr ""
+#
+msgid "Reverse mouse wheel zoom direction"
+msgstr ""
+#
+msgid "Scan age"
+msgstr "Echo timeout"
+#
+msgid "Scan speed"
+msgstr "Rotatiesnelheid"
+#
+msgid "Sea clutter"
+msgstr "Golfonderdrukking"
+#
+msgid "Select Alert Sound"
+msgstr "Kies waarschuwinggeluid"
+#
+msgid "Select Sound File"
+msgstr "Selecteer geluidbestand"
+#
+#, fuzzy
+msgid "Shader"
+msgstr "Egale kleur"
+#
+msgid "Shading"
+msgstr "Egale kleur"
+#
+msgid "Shading + Outline"
+msgstr "Egale kleur met rand"
+#
+msgid "Show both windows"
+msgstr ""
+#
+msgid "Show other window"
+msgstr ""
+#
+msgid "Show radar"
+msgstr ""
+#
+msgid "Show this window"
+msgstr ""
+#
+msgid "Show window"
+msgstr ""
+#
+msgid "Side lobe suppression"
+msgstr ""
+#
+msgid "Standby"
+msgstr ""
+#
+#, c-format
+msgid "Standby in %2d:%02d"
+msgstr ""
+#
+#, c-format
+msgid "Standby in %d:%02d"
+msgstr ""
+#
+msgid "Start bearing"
+msgstr "Startpeiling"
+#
+msgid "Statistics"
+msgstr "Statistieken"
+#
+msgid "Sweep Filter"
+msgstr ""
+#
+msgid "Target boost"
+msgstr "Echovergroting"
+#
+#, fuzzy
+msgid "Target expansion"
+msgstr "Echoverscherping"
+#
+msgid "Target separation"
+msgstr "Echoverscherping"
+#
+#, fuzzy
+msgid "Target trails"
+msgstr "Echoverscherping"
+#
+msgid "Test Alert Sound"
+msgstr "Test waarschuwinggeluid"
+#
+msgid "Timed Transmit"
+msgstr ""
+#
+#, fuzzy
+msgid "Trail Display"
+msgstr "Radarweergave"
+#
+msgid "Transmit"
+msgstr ""
+#
+#, c-format
+msgid "Transmit in %2d:%02d"
+msgstr ""
+#
+#, c-format
+msgid "Transmit in %d:%02d"
+msgstr ""
+#
+msgid "Transparency"
+msgstr "Transparantie"
+#
+msgid "Unable to create OpenGL canvas"
+msgstr ""
+#
+msgid "Unknown"
+msgstr ""
+#
+msgid "Value"
+msgstr "Waarde"
+#
+msgid "Variation"
+msgstr ""
+#
+msgid "Vertex Array"
+msgstr ""
+#
+msgid "View"
+msgstr ""
+#
+msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+msgstr "WAV bestanden (*.wav)|*.wav|Alle bestanden (*.*)|*.*"
+#
+msgid "WMM"
+msgstr ""
+#
+#, fuzzy
+msgid "ZeroConf via Ethernet"
+msgstr "ZeroConf via (bekabeld) Ethernet"
+#
+msgid "Zone"
+msgstr "Zone"
+#
+#, fuzzy
+msgid ""
+"Zone 1: unknown\n"
+"Zone 2: unknown\n"
+"Timeout\n"
+msgstr ""
+"Zone 1: onbekend\n"
+"Zone 2: onbekend\n"
+"Timeout"
+#
+#, fuzzy
+msgid "Zone type"
+msgstr "Zone type:"
+#
+#~ msgid " Guard Zone Control"
+#~ msgstr " bewakingszone instellen"
+#
+#~ msgid ""
+#~ "<<\n"
+#~ "Back"
+#~ msgstr ""
+#~ "<<\n"
+#~ "Terug"
+#
+#~ msgid "C&onfirm + Close"
+#~ msgstr "Bevestigen + &Sluiten"
+#
+#~ msgid "Dialog"
+#~ msgstr "Dialoog"
+#
+#~ msgid "Downsample"
+#~ msgstr "Beeldversimpeling"
+#
+#~ msgid "Guard Zone Active"
+#~ msgstr "Object in bewakingszone"
+#
+#~ msgid ""
+#~ "Heading correction\n"
+#~ "(-180 to +180)"
+#~ msgstr ""
+#~ "Rotatiecorrectie\n"
+#~ "(-180 tot +180)"
+#
+#~ msgid "Multi-color 2"
+#~ msgstr "Multikleur 2"
+#
+#~ msgid "Set Guard Point"
+#~ msgstr "Zet bewakingshoekpunt"
+#
+#~ msgid "Spectrum"
+#~ msgstr "Spectrum"
+#
+#~ msgid "emulator"
+#~ msgstr "emulator"
