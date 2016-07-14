@@ -501,18 +501,18 @@ void br24radar_pi::PassHeadingToOpenCPN() {
 
 wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
   wxString text;
-  wxString s_stb = _("Standby in");
-  wxString s_trm = _("Transmit in");
 
   if (m_settings.timed_idle) {
     time_t now = time(0);
     int left = m_idle_standby - now;
     if (left >= 0) {
-      text << wxString::Format(wxT("%s %2d:%02d"), s_stb, left / 60, left % 60);
+      text = _("Standby in");
+      text << wxString::Format(wxT(" %2d:%02d"), left / 60, left % 60);
     } else {
       left = m_idle_transmit - now;
       if (left >= 0) {
-        text << wxString::Format(wxT("%s %2d:%02d"), s_trm, left / 60, left % 60);
+        text = _("Transmit in");
+        text << wxString::Format(wxT(" %2d:%02d"), left / 60, left % 60);
         return text;
       }
     }
@@ -537,8 +537,8 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
       if (text.length() > 0) {
         text << wxT("\n");
       }
-      wxString s_nxt = _("Next alarm in");
-      text << wxString::Format(wxT("%s %d s"), s_nxt, m_alarm_sound_timeout - now);
+      text << _("Next alarm in");
+      text << wxString::Format(wxT(" %d s"), m_alarm_sound_timeout - now);
     }
   }
 
