@@ -1128,13 +1128,19 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   }
 
   if (pfix.FixTime > 0 && NOT_TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT)) {
-    m_ownship_lat = pfix.Lat;
-    m_ownship_lon = pfix.Lon;
-    if (!m_bpos_set) {
-      LOG_INFO(wxT("BR24radar_pi: GPS position is now known"));
-    }
-    m_bpos_set = true;
-    m_bpos_timestamp = now;
+      if (!wxIsNaN(pfix.Cog)) {
+          m_cog = pfix.Cog;
+      }
+      if (!wxIsNaN(pfix.Sog)) {
+          m_sog = pfix.Sog;
+      }
+      m_ownship_lat = pfix.Lat;
+      m_ownship_lon = pfix.Lon;
+      if (!m_bpos_set) {
+          LOG_INFO(wxT("BR24radar_pi: GPS position is now known"));
+      }
+      m_bpos_set = true;
+      m_bpos_timestamp = now;
   }
 }  // end of br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 

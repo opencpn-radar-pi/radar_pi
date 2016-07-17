@@ -363,6 +363,9 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
                          // m_hdt will come from the radar if available else from the NMEA stream.
   time_t m_hdt_timeout;  // When we consider heading is lost
 
+  double m_cog = 1000.;          // current COG, used for the interpolation of positions in the translation of trails
+  double m_sog = 1000.;          // current SOG, used for the interpolation of positions in the translation of trails
+
   // Variation. Used to convert magnetic into true heading.
   // Can come from SetPositionFixEx, which may hail from the WMM plugin
   // and is thus to be preferred, or GPS or a NMEA sentence. The latter will probably

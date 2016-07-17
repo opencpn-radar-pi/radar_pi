@@ -324,7 +324,7 @@ void RadarInfo::ResetSpokes() {
 
   memset(zap, 0, sizeof(zap));
   memset(history, 0, sizeof(history));
-  memset(trails, 0, sizeof(trails));
+  memset(trails.trails, 0, sizeof(trails));
 
   if (m_draw_panel.draw) {
     for (size_t r = 0; r < LINES_PER_ROTATION; r++) {
@@ -407,20 +407,30 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
-  if (target_trails.value != 0 && m_pi->m_settings.display_option == 1) {
-    for (size_t radius = 0; radius < len; radius++) {
-      UINT8 *trail = &trails[angle][radius];
+  // Trail section follows
 
-      if (data[radius] >= weakest_normal_blob) {
-        *trail = 1;
-      } else {
-        if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-          (*trail)++;
-        }
-        data[radius] = m_trail_color[*trail];
+  if (target_trails.value != 0 && m_pi->m_settings.display_option == 1) {
+      PolarToCartesianLookupTable* m_polarLookup;
+      m_polarLookup = GetPolarToCartesianLookupTable();
+      // shift trails to current position now
+      UpdateTrailPosition();
+
+      for (size_t radius = 0; radius < len; radius++) {
+          UINT8 *trail = &trails.trails[m_polarLookup->intx[angle][radius]][m_polarLookup->inty[angle][radius]];
+
+          if (data[radius] >= weakest_normal_blob) {
+              *trail = 1;
+          }
+          else {
+              if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+                  (*trail)++;
+              }
+                  data[radius] = m_trail_color[*trail];
+           }
       }
-    }
   }
+
+  // end of trail section
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
@@ -430,6 +440,24 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     m_draw_panel.draw->ProcessRadarSpoke(3, north_up ? bearing : angle, data, len);
   }
 }
+
+void RadarInfo::UpdateTrailPosition(){
+    if (!m_pi->m_bpos_set) return;
+    time_t now = time(0);
+    static long dif_lat = 0;
+    static long dif_lon = 0;
+    if (trails.lat != m_pi->m_ownship_lat || trails.lon != m_pi->m_ownship_lon){  // new position received
+        dif_lat = trails.lat - m_pi->m_ownship_lat;
+        dif_lon = trails.lon - m_pi->m_ownship_lon;
+        trails.lat = m_pi->m_ownship_lat;
+        trails.lon = m_pi->m_ownship_lon;
+        trails.time = m_pi->m_bpos_timestamp;       // update position and time
+    }
+    if (m_pi->m_cog != 1000. && m_pi->m_sog != 1000.){    // interpolate current position using COG and SOG
+
+    }
+}
+
 
 void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
   if (m_overlay_refreshes_queued > 0) {
@@ -899,7 +927,7 @@ void RadarInfo::SetBearing(int bearing) {
   }
 }
 
-void RadarInfo::ClearTrails() { memset(trails, 0, sizeof(trails)); }
+void RadarInfo::ClearTrails() { memset(trails.trails, 0, sizeof(trails)); }
 
 void RadarInfo::ComputeTargetTrails() {
   static TrailRevolutionsAge maxRevs[6] = {SECONDS_TO_REVOLUTIONS(0),  SECONDS_TO_REVOLUTIONS(15),  SECONDS_TO_REVOLUTIONS(30),

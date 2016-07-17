@@ -170,7 +170,13 @@ class RadarInfo : public wxEvtHandler {
   UINT8 history[LINES_PER_ROTATION][RETURNS_PER_LINE];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
-  TrailRevolutionsAge trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
+  
+  struct TrailBuffer{
+      TrailRevolutionsAge trails[RETURNS_PER_LINE * 2][RETURNS_PER_LINE * 2];
+      long lat, lon;
+      time_t time;
+  };
+  TrailBuffer trails;
 
   /* Methods */
 
@@ -186,6 +192,7 @@ class RadarInfo : public wxEvtHandler {
   void ResetSpokes();
   void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters);
   void RefreshDisplay(wxTimerEvent &event);
+  void UpdateTrailPosition();
   void RenderGuardZone();
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
