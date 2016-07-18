@@ -170,9 +170,9 @@ class RadarInfo : public wxEvtHandler {
   UINT8 history[LINES_PER_ROTATION][RETURNS_PER_LINE];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
-  
+#define TRAILS_SIZE (RETURNS_PER_LINE * 2)  
   struct TrailBuffer{
-      TrailRevolutionsAge trails[RETURNS_PER_LINE * 2][RETURNS_PER_LINE * 2];
+	  TrailRevolutionsAge trails[TRAILS_SIZE][TRAILS_SIZE];
       long lat, lon;
       time_t time;
   };

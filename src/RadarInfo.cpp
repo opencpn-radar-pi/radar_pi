@@ -442,21 +442,59 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 }
 
 void RadarInfo::UpdateTrailPosition(){
-    if (!m_pi->m_bpos_set) return;
-    time_t now = time(0);
-    static long dif_lat = 0;
-    static long dif_lon = 0;
-    if (trails.lat != m_pi->m_ownship_lat || trails.lon != m_pi->m_ownship_lon){  // new position received
-        dif_lat = trails.lat - m_pi->m_ownship_lat;
-        dif_lon = trails.lon - m_pi->m_ownship_lon;
-        trails.lat = m_pi->m_ownship_lat;
-        trails.lon = m_pi->m_ownship_lon;
-        trails.time = m_pi->m_bpos_timestamp;       // update position and time
-    }
-    if (m_pi->m_cog != 1000. && m_pi->m_sog != 1000.){    // interpolate current position using COG and SOG
+	if (!m_pi->m_bpos_set) return;
+	//	time_t now = time(0);
+	static long dif_lat = 0;
+	static long dif_lon = 0;
+	if (trails.lat != m_pi->m_ownship_lat || trails.lon != m_pi->m_ownship_lon){  // new position received
+		dif_lat = trails.lat - m_pi->m_ownship_lat;
+		dif_lon = trails.lon - m_pi->m_ownship_lon;
+		trails.lat = m_pi->m_ownship_lat;
+		trails.lon = m_pi->m_ownship_lon;
+		trails.time = m_pi->m_bpos_timestamp;       // update position and time
+	}
+	else{
+		return;
+	}
+	int shift_lat = dif_lat * 111120 / m_range_meters * TRAILS_SIZE;
+	int shift_lon = dif_lon * 111120 / m_range_meters * TRAILS_SIZE;
+	// number of units that the trail image should be shifted 
+	if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE){
+		memset(trails.trails, 0, sizeof(trails.trails));
+		dif_lat = 0;
+		dif_lon = 0;
+		return;
+	}
 
-    }
+	if (shift_lat > 0){
+		for (int i = 0; i < TRAILS_SIZE; i++){
+			memmove(&trails.trails[0][i], &trails.trails[shift_lat][i], TRAILS_SIZE - shift_lat);
+			memset(&trails.trails[0][i], 0, shift_lat);
+			dif_lat = 0;
+		}
+	}
+	if (shift_lat < 0){
+		for (int i = 0; i < TRAILS_SIZE; i++){
+			memmove(&trails.trails[shift_lat][i], &trails.trails[0][i], TRAILS_SIZE - shift_lat);
+			memset(&trails.trails[TRAILS_SIZE - shift_lat][i], 0, shift_lat);
+			dif_lat = 0;
+		}
+	}
+
+	if (shift_lon > 0){
+		memmove(&trails.trails[0][0], &trails.trails[0][shift_lon], TRAILS_SIZE * (TRAILS_SIZE - shift_lon));
+		memset(&trails.trails[0][0], 0, TRAILS_SIZE * shift_lon);
+	//	wxLogMessage(wxT("BR24radar_pi $$$ shift lon=%i, "));
+		dif_lon = 0;
+	}
+	if (shift_lon > 0){
+		memmove(&trails.trails[0][TRAILS_SIZE - shift_lon], &trails.trails[0][TRAILS_SIZE - shift_lon], TRAILS_SIZE * (TRAILS_SIZE - shift_lon));
+		memset(&trails.trails[0][TRAILS_SIZE - shift_lon], 0, TRAILS_SIZE * shift_lon);
+		wxLogMessage(wxT("BR24radar_pi $$$ shift lon=%i, "));
+		dif_lon = 0;
+	}
 }
+
 
 
 void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
