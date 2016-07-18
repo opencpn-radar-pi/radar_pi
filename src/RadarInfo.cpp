@@ -897,7 +897,7 @@ void RadarInfo::SetBearing(int bearing) {
     m_ebl[bearing] = 0.0;
   } else if (m_mouse_vrm != 0.0) {
     m_vrm[bearing] = m_mouse_vrm;
-    m_ebl[bearing] = m_mouse_ebl - m_pi->m_hdt;
+    m_ebl[bearing] = m_mouse_ebl;
   } else if (m_mouse_lat != 0.0 || m_mouse_lon != 0.0) {
     m_vrm[bearing] = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
     m_ebl[bearing] = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
