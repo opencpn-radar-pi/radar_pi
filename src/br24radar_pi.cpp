@@ -1034,7 +1034,7 @@ bool br24radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dControlPosX"), r), m_settings.control_pos[r].x);
       pConf->Write(wxString::Format(wxT("Radar%dControlPosY"), r), m_settings.control_pos[r].y);
 
-      LOG_DIALOG(wxT("BR24radar_pi: SaveConfig: show_radar[%d]=%d"), r, m_settings.show_radar[r]);
+      // LOG_DIALOG(wxT("BR24radar_pi: SaveConfig: show_radar[%d]=%d"), r, m_settings.show_radar[r]);
       for (int i = 0; i < GUARD_ZONES; i++) {
         pConf->Write(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), m_radar[r]->guard_zone[i]->start_bearing);
         pConf->Write(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), m_radar[r]->guard_zone[i]->end_bearing);
@@ -1046,7 +1046,7 @@ bool br24radar_pi::SaveConfig(void) {
     }
 
     pConf->Flush();
-    LOG_VERBOSE(wxT("BR24radar_pi: Saved settings"));
+    // LOG_VERBOSE(wxT("BR24radar_pi: Saved settings"));
     return true;
   }
 

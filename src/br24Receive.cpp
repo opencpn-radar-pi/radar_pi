@@ -448,7 +448,7 @@ void *br24Receive::Entry(void) {
       }
     }
 
-    struct timeval tv = {(long)1, (long)0};
+    struct timeval tv = {(long)0, (long)250000};
 
     fd_set fdin;
     FD_ZERO(&fdin);
@@ -560,6 +560,8 @@ void *br24Receive::Entry(void) {
     }
 
   }  // endless loop until thread destroy
+
+  LOG_INFO(wxT("BR24radar_pi: receive quit"));
 
   if (dataSocket != INVALID_SOCKET) {
     closesocket(dataSocket);

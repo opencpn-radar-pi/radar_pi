@@ -194,11 +194,16 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
 }
 
 RadarInfo::~RadarInfo() {
+
   m_timer->Stop();
 
   if (receive) {
     receive->Delete();
     delete receive;
+  }
+  if (control_dialog) {
+    delete control_dialog;
+    control_dialog = 0;
   }
   if (transmit) {
     delete transmit;
