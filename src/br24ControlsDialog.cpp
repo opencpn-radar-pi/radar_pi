@@ -844,7 +844,7 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_control_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The Transmit button
-  m_radar_state = new wxButton(this, ID_RADAR_STATE, _("Unknown"), wxDefaultPosition, g_smallButtonSize, 0);
+  m_radar_state = new wxButton(this, ID_RADAR_STATE, _("Unknown"), wxDefaultPosition, g_buttonSize, 0);
   m_control_sizer->Add(m_radar_state, 0, wxALL, BORDER);
   m_radar_state->SetFont(m_pi->m_font);
   // Updated when we receive data
@@ -1168,20 +1168,22 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   RadarState state = (RadarState)m_ri->state.GetButton();
 
-  o = (state == RADAR_TRANSMIT) ? _("Standby") : _("Transmit");
+  o = _("Standby / Transmit");
+  o << wxT("\n");
   if (m_pi->m_settings.timed_idle == 0) {
+    o << ((state == RADAR_TRANSMIT) ? _("Transmit") : _("Standby"));
     m_timed_idle_button->SetLocalValue(0);
   } else {
     time_t now = time(0);
     int left = m_pi->m_idle_standby - now;
     if (left > 0) {
-      wxString s_stb = _("Standby in");
-      o = wxString::Format(wxT("%s %d:%02d"), s_stb, left / 60, left % 60);
+      o << _("Standby in");
+      o << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
     } else {
       left = m_pi->m_idle_transmit - now;
       if (left >= 0) {
-        wxString s_trm = _("Transmit in");
-        o = wxString::Format(wxT("%s %d:%02d"), s_trm, left / 60, left % 60);
+        o << _("Transmit in");
+        o << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
       }
     }
   }
