@@ -412,12 +412,15 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   if (target_trails.value != 0 && m_pi->m_settings.display_option == 1) {
       PolarToCartesianLookupTable* m_polarLookup;
       m_polarLookup = GetPolarToCartesianLookupTable();
-      // shift trails to current position now
-      UpdateTrailPosition();
+      static UINT8 timer = 0;
+      if (timer % 128 == 0){
+          UpdateTrailPosition();
+      }
+      timer++;
 
       for (size_t radius = 0; radius < len; radius++) {
-          UINT8 *trail = &trails.trails[m_polarLookup->intx[angle][radius]][m_polarLookup->inty[angle][radius]];
-
+          UINT8 *trail = &trails.trails[m_polarLookup->inty[angle][radius] + RETURNS_PER_LINE][m_polarLookup->intx[angle][radius] + RETURNS_PER_LINE];
+          // map the origin in the middle of the trails image
           if (data[radius] >= weakest_normal_blob) {
               *trail = 1;
           }
@@ -443,12 +446,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
 void RadarInfo::UpdateTrailPosition(){
 	if (!m_pi->m_bpos_set) return;
+    
 	//	time_t now = time(0);
-	static long dif_lat = 0;
-	static long dif_lon = 0;
 	if (trails.lat != m_pi->m_ownship_lat || trails.lon != m_pi->m_ownship_lon){  // new position received
-		dif_lat = trails.lat - m_pi->m_ownship_lat;
-		dif_lon = trails.lon - m_pi->m_ownship_lon;
+		m_dif_lat -= trails.lat - m_pi->m_ownship_lat;
+		m_dif_lon -= trails.lon - m_pi->m_ownship_lon;
 		trails.lat = m_pi->m_ownship_lat;
 		trails.lon = m_pi->m_ownship_lon;
 		trails.time = m_pi->m_bpos_timestamp;       // update position and time
@@ -456,42 +458,44 @@ void RadarInfo::UpdateTrailPosition(){
 	else{
 		return;
 	}
-	int shift_lat = dif_lat * 111120 / m_range_meters * TRAILS_SIZE;
-	int shift_lon = dif_lon * 111120 / m_range_meters * TRAILS_SIZE;
+	int shift_lat = (int) (m_dif_lat * 111120. / (float)m_range_meters * (float)(TRAILS_SIZE / 2));
+        int shift_lon = (int) (cos(deg2rad(m_pi->m_ownship_lat)) * m_dif_lon * 111120. / (float)m_range_meters * (float)(TRAILS_SIZE / 2));
+        
 	// number of units that the trail image should be shifted 
 	if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE){
 		memset(trails.trails, 0, sizeof(trails.trails));
-		dif_lat = 0;
-		dif_lon = 0;
+		m_dif_lat = 0;
+		m_dif_lon = 0;
+                total_m_dif_lon = 0;
 		return;
+	}
+        
+	if (shift_lon > 0){
+		for (int i = 0; i < TRAILS_SIZE; i++){
+                    memmove(&trails.trails[i][shift_lon], &trails.trails[i][0], TRAILS_SIZE - shift_lon);
+			memset(&trails.trails[i][0], 0, shift_lon);
+                        total_m_dif_lon += m_dif_lon;
+			m_dif_lon = 0;
+		}
+	}
+	if (shift_lon < 0){
+            for (int i = 0; i < TRAILS_SIZE; i++){
+                    memmove(&trails.trails[i][0], &trails.trails[i][-shift_lon], TRAILS_SIZE + shift_lon);
+                    memset(&trails.trails[i][TRAILS_SIZE + shift_lon], 0, -shift_lon);
+                    total_m_dif_lon += m_dif_lon;
+			m_dif_lon = 0;
+		}
 	}
 
 	if (shift_lat > 0){
-		for (int i = 0; i < TRAILS_SIZE; i++){
-			memmove(&trails.trails[0][i], &trails.trails[shift_lat][i], TRAILS_SIZE - shift_lat);
-			memset(&trails.trails[0][i], 0, shift_lat);
-			dif_lat = 0;
-		}
+            memmove(&trails.trails[shift_lat][0], &trails.trails[0][0], TRAILS_SIZE * (TRAILS_SIZE - shift_lat));
+		memset(&trails.trails[0][0], 0, TRAILS_SIZE * shift_lat);
+		m_dif_lat = 0;
 	}
 	if (shift_lat < 0){
-		for (int i = 0; i < TRAILS_SIZE; i++){
-			memmove(&trails.trails[shift_lat][i], &trails.trails[0][i], TRAILS_SIZE - shift_lat);
-			memset(&trails.trails[TRAILS_SIZE - shift_lat][i], 0, shift_lat);
-			dif_lat = 0;
-		}
-	}
-
-	if (shift_lon > 0){
-		memmove(&trails.trails[0][0], &trails.trails[0][shift_lon], TRAILS_SIZE * (TRAILS_SIZE - shift_lon));
-		memset(&trails.trails[0][0], 0, TRAILS_SIZE * shift_lon);
-	//	wxLogMessage(wxT("BR24radar_pi $$$ shift lon=%i, "));
-		dif_lon = 0;
-	}
-	if (shift_lon > 0){
-		memmove(&trails.trails[0][TRAILS_SIZE - shift_lon], &trails.trails[0][TRAILS_SIZE - shift_lon], TRAILS_SIZE * (TRAILS_SIZE - shift_lon));
-		memset(&trails.trails[0][TRAILS_SIZE - shift_lon], 0, TRAILS_SIZE * shift_lon);
-		wxLogMessage(wxT("BR24radar_pi $$$ shift lon=%i, "));
-		dif_lon = 0;
+            memmove(&trails.trails[0][0], &trails.trails[-shift_lat][0], TRAILS_SIZE * (TRAILS_SIZE + shift_lat));
+            memset(&trails.trails[TRAILS_SIZE + shift_lat][0], 0, -TRAILS_SIZE * shift_lat);
+		m_dif_lat = 0;
 	}
 }
 

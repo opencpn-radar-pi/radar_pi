@@ -173,7 +173,7 @@ class RadarInfo : public wxEvtHandler {
 #define TRAILS_SIZE (RETURNS_PER_LINE * 2)  
   struct TrailBuffer{
 	  TrailRevolutionsAge trails[TRAILS_SIZE][TRAILS_SIZE];
-      long lat, lon;
+      double lat, lon;
       time_t time;
   };
   TrailBuffer trails;
@@ -230,7 +230,8 @@ class RadarInfo : public wxEvtHandler {
   void RenderRadarImage(DrawInfo *di);
   wxString FormatDistance(double distance);
   wxString FormatAngle(double angle);
-
+  double m_dif_lat = 0, m_dif_lon = 0;
+  float total_m_dif_lat = 0, total_m_dif_lon = 0;   // remove, test only
   int m_range_meters;  // what radar told us is the range in the last received spoke
 
   int m_previous_auto_range_meters;
