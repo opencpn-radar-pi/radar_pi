@@ -94,6 +94,7 @@ class br24ControlsDialog : public wxDialog {
   void OnMinusTenClick(wxCommandEvent &event);
   void OnAutoClick(wxCommandEvent &event);
   void OnMultiSweepClick(wxCommandEvent &event);
+  void OnTrueMotionClick(wxCommandEvent &event);
 
   void OnAdjustButtonClick(wxCommandEvent &event);
   void OnAdvancedButtonClick(wxCommandEvent &event);
@@ -186,6 +187,7 @@ class br24ControlsDialog : public wxDialog {
   // View controls
   br24RadarControlButton *m_target_trails_button;
   wxButton *m_clear_trails_button;
+  wxButton *m_true_motion_button;
   wxButton *m_orientation_button;
 
   // Show Controls

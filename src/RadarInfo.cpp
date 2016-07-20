@@ -36,6 +36,7 @@
 #include "RadarDraw.h"
 #include "RadarCanvas.h"
 #include "RadarPanel.h"
+#include "br24ControlsDialog.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -414,7 +415,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       m_polarLookup = GetPolarToCartesianLookupTable();
       static UINT8 timer = 0;
       if (timer % 128 == 0){
-          UpdateTrailPosition();
+          if (m_true_motion) UpdateTrailPosition();
       }
       timer++;
 

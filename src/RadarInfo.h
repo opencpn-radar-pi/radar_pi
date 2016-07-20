@@ -167,6 +167,7 @@ class RadarInfo : public wxEvtHandler {
   receive_statistics statistics;
 
   bool m_multi_sweep_filter;
+  bool m_true_motion;
   UINT8 history[LINES_PER_ROTATION][RETURNS_PER_LINE];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
