@@ -450,10 +450,10 @@ void RadarInfo::UpdateTrailPosition(){
     
 	//	time_t now = time(0);
 	if (trails.lat != m_pi->m_ownship_lat || trails.lon != m_pi->m_ownship_lon){  // new position received
-		m_dif_lat -= trails.lat - m_pi->m_ownship_lat;
-		m_dif_lon -= trails.lon - m_pi->m_ownship_lon;
-		trails.lat = m_pi->m_ownship_lat;
-		trails.lon = m_pi->m_ownship_lon;
+		m_dif_lat = -trails.lat + m_pi->m_ownship_lat;
+		m_dif_lon = -trails.lon + m_pi->m_ownship_lon;
+		/*trails.lat = m_pi->m_ownship_lat;
+		trails.lon = m_pi->m_ownship_lon;*/
 		trails.time = m_pi->m_bpos_timestamp;       // update position and time
 	}
 	else{
@@ -465,9 +465,8 @@ void RadarInfo::UpdateTrailPosition(){
 	// number of units that the trail image should be shifted 
 	if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE){
 		memset(trails.trails, 0, sizeof(trails.trails));
-		m_dif_lat = 0;
-		m_dif_lon = 0;
-                total_m_dif_lon = 0;
+                trails.lat = m_pi->m_ownship_lat;
+                trails.lon = m_pi->m_ownship_lon;
 		return;
 	}
         
@@ -475,28 +474,28 @@ void RadarInfo::UpdateTrailPosition(){
 		for (int i = 0; i < TRAILS_SIZE; i++){
                     memmove(&trails.trails[i][shift_lon], &trails.trails[i][0], TRAILS_SIZE - shift_lon);
 			memset(&trails.trails[i][0], 0, shift_lon);
-                        total_m_dif_lon += m_dif_lon;
-			m_dif_lon = 0;
+                        trails.lon = m_pi->m_ownship_lon;
 		}
 	}
 	if (shift_lon < 0){
             for (int i = 0; i < TRAILS_SIZE; i++){
                     memmove(&trails.trails[i][0], &trails.trails[i][-shift_lon], TRAILS_SIZE + shift_lon);
                     memset(&trails.trails[i][TRAILS_SIZE + shift_lon], 0, -shift_lon);
-                    total_m_dif_lon += m_dif_lon;
-			m_dif_lon = 0;
+                    trails.lon = m_pi->m_ownship_lon;
 		}
 	}
 
 	if (shift_lat > 0){
             memmove(&trails.trails[shift_lat][0], &trails.trails[0][0], TRAILS_SIZE * (TRAILS_SIZE - shift_lat));
 		memset(&trails.trails[0][0], 0, TRAILS_SIZE * shift_lat);
-		m_dif_lat = 0;
+		//m_dif_lat = 0;
+                trails.lat = m_pi->m_ownship_lat;
 	}
 	if (shift_lat < 0){
             memmove(&trails.trails[0][0], &trails.trails[-shift_lat][0], TRAILS_SIZE * (TRAILS_SIZE + shift_lat));
             memset(&trails.trails[TRAILS_SIZE + shift_lat][0], 0, -TRAILS_SIZE * shift_lat);
-		m_dif_lat = 0;
+		//m_dif_lat = 0;
+            trails.lat = m_pi->m_ownship_lat;
 	}
 }
 
