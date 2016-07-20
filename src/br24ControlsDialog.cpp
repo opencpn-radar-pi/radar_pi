@@ -772,8 +772,8 @@ void br24ControlsDialog::CreateControls() {
 
   for (int b = 0; b < BEARING_LINES; b++) {
     // The BEARING button
-    wxString s_txt = _("Place EBL/VRM");
-    wxString label = wxString::Format(wxT("%s%d"), s_txt, b + 1);
+    wxString label = _("Place EBL/VRM");
+    label << wxString::Format(wxT("%d"), b + 1);
     m_bearing_buttons[b] = new wxButton(this, ID_BEARING_SET + b, label, wxDefaultPosition, g_smallButtonSize, 0);
     m_bearing_sizer->Add(m_bearing_buttons[b], 0, wxALL, BORDER);
     m_bearing_buttons[b]->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnBearingSetButtonClick),
@@ -1177,12 +1177,12 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     time_t now = time(0);
     int left = m_pi->m_idle_standby - now;
     if (left > 0) {
-      o << _("Standby in");
+      o = _("Standby in");
       o << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
     } else {
       left = m_pi->m_idle_transmit - now;
       if (left >= 0) {
-        o << _("Transmit in");
+        o = _("Transmit in");
         o << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
       }
     }
@@ -1229,11 +1229,11 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   for (int b = 0; b < BEARING_LINES; b++) {
     if (m_ri->m_vrm[b] != 0.0) {
-      wxString s_cltxt = _("Clear EBL/VRM");
-      o = wxString::Format(wxT("%s%d"), s_cltxt, b + 1);
+      o = _("Clear EBL/VRM");
+      o << wxString::Format(wxT("%d"), b + 1);
     } else {
-      wxString s_pltxt = _("Place EBL/VRM");
-      o = wxString::Format(wxT("%s%d"), s_pltxt, b + 1);
+      o = _("Place EBL/VRM");
+      o << wxString::Format(wxT("%d"), b + 1);
     }
     m_bearing_buttons[b]->SetLabel(o);
   }
