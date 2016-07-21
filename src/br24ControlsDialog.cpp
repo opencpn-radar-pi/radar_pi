@@ -389,6 +389,7 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(testBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   wxString label;
+  label << _("Standby / Transmit") << wxT("\n");
   label << _("Transparency") << wxT("\n");
   label << _("Interference rejection") << wxT("\n");
   label << _("Target separation") << wxT("\n");
@@ -428,8 +429,8 @@ void br24ControlsDialog::CreateControls() {
   if (width < 100) {
     width = 100;
   }
-  if (width > 300) {
-    width = 300;
+  if (width > 500) {
+    width = 500;
   }
 
 #define BUTTON_BORDER 4
