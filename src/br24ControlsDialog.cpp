@@ -1038,13 +1038,13 @@ void br24ControlsDialog::OnMultiSweepClick(wxCommandEvent& event) {
 void br24ControlsDialog::OnTrueMotionClick(wxCommandEvent& event) {
     wxString labelTrueMotion;
     m_ri->ClearTrails();
-    if (m_ri->m_true_motion == false) {
+    if (m_ri->true_motion.value == 0) {
         labelTrueMotion << _("True / Relative Motion") << wxT("\n") << _("True Motion");
-        m_ri->m_true_motion = true;
+        m_ri->true_motion.value = 1;
     }
     else {
         labelTrueMotion << _("True / Relative Motion") << wxT("\n") << _("Relative Motion");
-        m_ri->m_true_motion = false;
+        m_ri->true_motion.value = 0;
     }
     m_true_motion_button->SetLabel(labelTrueMotion);
 }
@@ -1261,6 +1261,17 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   if (m_ri->target_trails.mod || refreshAll) {
     m_target_trails_button->SetLocalValue(m_ri->target_trails.GetButton());
+  }
+
+  if (m_ri->true_motion.mod ) {
+      wxString labelTrueMotion;
+      if (m_ri->true_motion.value == 1) {
+          labelTrueMotion << _("True / Relative Motion") << wxT("\n") << _("True Motion");
+      }
+      else {
+          labelTrueMotion << _("True / Relative Motion") << wxT("\n") << _("Relative Motion");
+      }
+      m_true_motion_button->SetLabel(labelTrueMotion);
   }
 
   if (m_ri->orientation.mod || refreshAll) {

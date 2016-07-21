@@ -137,6 +137,7 @@ typedef enum ControlType {
   CT_ANTENNA_HEIGHT,
   CT_LOCAL_INTERFERENCE_REJECTION,
   CT_TARGET_TRAILS,
+  CT_TRUE_MOTION,
   CT_MAX  // Keep this last, see below
 } ControlType;
 

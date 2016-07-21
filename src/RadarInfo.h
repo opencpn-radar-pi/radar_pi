@@ -135,6 +135,7 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item local_interference_rejection;
   radar_control_item side_lobe_suppression;
   radar_control_item target_trails;
+  radar_control_item true_motion;     // value 0 = relative motion, 1 = true motion
 
   /* Per radar objects */
 
@@ -167,7 +168,6 @@ class RadarInfo : public wxEvtHandler {
   receive_statistics statistics;
 
   bool m_multi_sweep_filter;
-  bool m_true_motion;
   UINT8 history[LINES_PER_ROTATION][RETURNS_PER_LINE];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
@@ -175,7 +175,6 @@ class RadarInfo : public wxEvtHandler {
   struct TrailBuffer{
 	  TrailRevolutionsAge trails[TRAILS_SIZE][TRAILS_SIZE];
       double lat, lon;
-      time_t time;
   };
   TrailBuffer trails;
 
@@ -232,6 +231,7 @@ class RadarInfo : public wxEvtHandler {
   wxString FormatDistance(double distance);
   wxString FormatAngle(double angle);
   double m_dif_lat = 0, m_dif_lon = 0;
+  double m_fraction_dif_lat = 0, m_fraction_dif_lon = 0;
   float total_m_dif_lat = 0;   
   int m_range_meters;  // what radar told us is the range in the last received spoke
 

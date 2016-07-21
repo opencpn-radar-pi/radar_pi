@@ -414,8 +414,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       PolarToCartesianLookupTable* m_polarLookup;
       m_polarLookup = GetPolarToCartesianLookupTable();
       static UINT8 timer = 0;
-      if (timer % 128 == 0){
-          if (m_true_motion) UpdateTrailPosition();
+      if (timer % 16 == 0){      // run 1 out of 16 spokes
+          if (true_motion.value) UpdateTrailPosition();
       }
       timer++;
 
@@ -429,74 +429,73 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
               if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
                   (*trail)++;
               }
-                  data[radius] = m_trail_color[*trail];
-           }
+              data[radius] = m_trail_color[*trail];
+          }
       }
   }
 
   // end of trail section
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
-    m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
+      m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
   if (m_draw_panel.draw) {
-    m_draw_panel.draw->ProcessRadarSpoke(3, north_up ? bearing : angle, data, len);
+      m_draw_panel.draw->ProcessRadarSpoke(3, north_up ? bearing : angle, data, len);
   }
 }
 
 void RadarInfo::UpdateTrailPosition(){
-	if (!m_pi->m_bpos_set) return;
-    
-	//	time_t now = time(0);
-	if (trails.lat != m_pi->m_ownship_lat || trails.lon != m_pi->m_ownship_lon){  // new position received
-		m_dif_lat = -trails.lat + m_pi->m_ownship_lat;
-		m_dif_lon = -trails.lon + m_pi->m_ownship_lon;
-		/*trails.lat = m_pi->m_ownship_lat;
-		trails.lon = m_pi->m_ownship_lon;*/
-		trails.time = m_pi->m_bpos_timestamp;       // update position and time
-	}
-	else{
-		return;
-	}
-	int shift_lat = (int) (m_dif_lat * 111120. / (float)m_range_meters * (float)(TRAILS_SIZE / 2));
-        int shift_lon = (int) (cos(deg2rad(m_pi->m_ownship_lat)) * m_dif_lon * 111120. / (float)m_range_meters * (float)(TRAILS_SIZE / 2));
-        
-	// number of units that the trail image should be shifted 
-	if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE){
-		memset(trails.trails, 0, sizeof(trails.trails));
-                trails.lat = m_pi->m_ownship_lat;
-                trails.lon = m_pi->m_ownship_lon;
-		return;
-	}
-        
-	if (shift_lon > 0){
-		for (int i = 0; i < TRAILS_SIZE; i++){
-                    memmove(&trails.trails[i][shift_lon], &trails.trails[i][0], TRAILS_SIZE - shift_lon);
-			memset(&trails.trails[i][0], 0, shift_lon);
-                        trails.lon = m_pi->m_ownship_lon;
-		}
-	}
-	if (shift_lon < 0){
-            for (int i = 0; i < TRAILS_SIZE; i++){
-                    memmove(&trails.trails[i][0], &trails.trails[i][-shift_lon], TRAILS_SIZE + shift_lon);
-                    memset(&trails.trails[i][TRAILS_SIZE + shift_lon], 0, -shift_lon);
-                    trails.lon = m_pi->m_ownship_lon;
-		}
-	}
+    if (!m_pi->m_bpos_set) return;
 
-	if (shift_lat > 0){
-            memmove(&trails.trails[shift_lat][0], &trails.trails[0][0], TRAILS_SIZE * (TRAILS_SIZE - shift_lat));
-		memset(&trails.trails[0][0], 0, TRAILS_SIZE * shift_lat);
-		//m_dif_lat = 0;
-                trails.lat = m_pi->m_ownship_lat;
-	}
-	if (shift_lat < 0){
-            memmove(&trails.trails[0][0], &trails.trails[-shift_lat][0], TRAILS_SIZE * (TRAILS_SIZE + shift_lat));
-            memset(&trails.trails[TRAILS_SIZE + shift_lat][0], 0, -TRAILS_SIZE * shift_lat);
-		//m_dif_lat = 0;
-            trails.lat = m_pi->m_ownship_lat;
-	}
+    //	time_t now = time(0);
+    if (trails.lat != m_pi->m_ownship_lat || trails.lon != m_pi->m_ownship_lon){  // new position received
+        m_dif_lat = -trails.lat + m_pi->m_ownship_lat;
+        m_dif_lon = -trails.lon + m_pi->m_ownship_lon;
+        trails.lat = m_pi->m_ownship_lat;
+        trails.lon = m_pi->m_ownship_lon;
+    }
+    else{
+        return;
+    }
+    double fshift_lat = m_dif_lat * 111120. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
+    double fshift_lon = cos(deg2rad(m_pi->m_ownship_lat)) * m_dif_lon * 111120. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
+    int shift_lat = (int)(fshift_lat + m_fraction_dif_lat);
+    int shift_lon = (int)(fshift_lon + m_fraction_dif_lon);
+    m_fraction_dif_lat = fshift_lat + m_fraction_dif_lat - (double)shift_lat;  // save the rounding fraction and appy it next time
+    m_fraction_dif_lon = fshift_lon + m_fraction_dif_lon - (double)shift_lon;
+
+    // number of units that the trail image should be shifted 
+    if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE){
+        memset(trails.trails, 0, sizeof(trails.trails));
+        trails.lat = m_pi->m_ownship_lat;
+        trails.lon = m_pi->m_ownship_lon;
+        m_fraction_dif_lat = 0.;
+        m_fraction_dif_lon = 0.;
+        return;
+    }
+
+    if (shift_lon > 0){
+        for (int i = 0; i < TRAILS_SIZE; i++){
+            memmove(&trails.trails[i][shift_lon], &trails.trails[i][0], TRAILS_SIZE - shift_lon);
+            memset(&trails.trails[i][0], 0, shift_lon);
+        }
+    }
+    if (shift_lon < 0){
+        for (int i = 0; i < TRAILS_SIZE; i++){
+            memmove(&trails.trails[i][0], &trails.trails[i][-shift_lon], TRAILS_SIZE + shift_lon);
+            memset(&trails.trails[i][TRAILS_SIZE + shift_lon], 0, -shift_lon);
+        }
+    }
+
+    if (shift_lat > 0){
+        memmove(&trails.trails[shift_lat][0], &trails.trails[0][0], TRAILS_SIZE * (TRAILS_SIZE - shift_lat));
+        memset(&trails.trails[0][0], 0, TRAILS_SIZE * shift_lat);
+    }
+    if (shift_lat < 0){
+        memmove(&trails.trails[0][0], &trails.trails[-shift_lat][0], TRAILS_SIZE * (TRAILS_SIZE + shift_lat));
+        memset(&trails.trails[TRAILS_SIZE + shift_lat][0], 0, -TRAILS_SIZE * shift_lat);
+    }
 }
 
 

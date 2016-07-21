@@ -929,6 +929,8 @@ bool br24radar_pi::LoadConfig(void) {
         m_radar[r]->wantedState = (RadarState)v;
         pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
         SetControlValue(r, CT_TARGET_TRAILS, v);
+        pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);
+        SetControlValue(r, CT_TRUE_MOTION, v);
         pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[r], false);
         pConf->Read(wxString::Format(wxT("Radar%dControlShow"), r), &m_settings.show_radar_control[r], false);
         pConf->Read(wxString::Format(wxT("Radar%dControlPosX"), r), &x, OFFSCREEN_CONTROL_X);
@@ -1028,6 +1030,7 @@ bool br24radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
       pConf->Write(wxString::Format(wxT("Radar%dControlShow"), r), m_settings.show_radar_control[r]);
       pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->target_trails.value);
+      pConf->Write(wxString::Format(wxT("Radar%dTrueMotion"), r), m_radar[r]->true_motion.value);
       if (m_radar[r]->control_dialog) {
         m_settings.control_pos[r] = m_radar[r]->control_dialog->GetPosition();
       }
@@ -1198,6 +1201,10 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
       m_radar[radar]->target_trails.Update(value);
       m_radar[radar]->ComputeColorMap();
       m_radar[radar]->ComputeTargetTrails();
+      return true;
+    }
+    case CT_TRUE_MOTION: {
+      m_radar[radar]->true_motion.Update(value);
       return true;
     }
 
