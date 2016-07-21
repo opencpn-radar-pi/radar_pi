@@ -189,11 +189,11 @@ class RadarInfo : public wxEvtHandler {
   void AdjustRange(int adjustment);
   void SetAutoRangeMeters(int meters);
   bool SetControlValue(ControlType controlType, int value);
-  void ResetSpokes();
   void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters);
   void RefreshDisplay(wxTimerEvent &event);
   void UpdateTrailPosition();
   void RenderGuardZone();
+  void ResetRadarImage();
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
   void ShowControlDialog(bool show);
@@ -227,6 +227,7 @@ class RadarInfo : public wxEvtHandler {
   BlobColor m_color_map[UINT8_MAX + 1];
 
  private:
+  void ResetSpokes();
   void RenderRadarImage(DrawInfo *di);
   wxString FormatDistance(double distance);
   wxString FormatAngle(double angle);

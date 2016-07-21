@@ -195,11 +195,16 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
 }
 
 RadarInfo::~RadarInfo() {
+
   m_timer->Stop();
 
   if (receive) {
     receive->Delete();
     delete receive;
+  }
+  if (control_dialog) {
+    delete control_dialog;
+    control_dialog = 0;
   }
   if (transmit) {
     delete transmit;
@@ -660,16 +665,20 @@ void RadarInfo::UpdateControlState(bool all) {
   }
 }
 
+void RadarInfo::ResetRadarImage() {
+  if (m_range_meters) {
+    ResetSpokes();
+    m_range_meters = 0;
+  }
+}
+
 void RadarInfo::RenderRadarImage(DrawInfo *di) {
   wxCriticalSectionLocker lock(m_exclusive);
   int drawing_method = m_pi->m_settings.drawing_method;
   bool colorOption = m_pi->m_settings.display_option > 0;
 
   if (state.value != RADAR_TRANSMIT) {
-    if (m_range_meters) {
-      ResetSpokes();
-      m_range_meters = 0;
-    }
+    ResetRadarImage();
     return;
   }
 
@@ -969,7 +978,7 @@ void RadarInfo::SetBearing(int bearing) {
     m_ebl[bearing] = 0.0;
   } else if (m_mouse_vrm != 0.0) {
     m_vrm[bearing] = m_mouse_vrm;
-    m_ebl[bearing] = m_mouse_ebl - m_pi->m_hdt;
+    m_ebl[bearing] = m_mouse_ebl;
   } else if (m_mouse_lat != 0.0 || m_mouse_lon != 0.0) {
     m_vrm[bearing] = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
     m_ebl[bearing] = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);

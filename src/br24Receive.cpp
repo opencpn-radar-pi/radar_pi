@@ -400,9 +400,13 @@ SOCKET br24Receive::GetNewCommandSocket() {
   return socket;
 }
 
+#define MILLIS_PER_SELECT 250
+#define SECONDS_SELECT(x) ((x) * 1000 / MILLIS_PER_SELECT)
+
 void *br24Receive::Entry(void) {
   int r = 0;
   int no_data_timeout = 0;
+  int no_spoke_timeout = 0;
   union {
     sockaddr_storage addr;
     sockaddr_in ipv4;
@@ -438,6 +442,7 @@ void *br24Receive::Entry(void) {
       reportSocket = PickNextEthernetCard();
       if (reportSocket != INVALID_SOCKET) {
         no_data_timeout = 0;
+        no_spoke_timeout = 0;
       }
     } else {
       // reportSocket is still valid, open data and command sockets as well if they are closed
@@ -448,7 +453,7 @@ void *br24Receive::Entry(void) {
       }
     }
 
-    struct timeval tv = {(long)1, (long)0};
+    struct timeval tv = {(long)0, (long)(MILLIS_PER_SELECT * 1000)};
 
     fd_set fdin;
     FD_ZERO(&fdin);
@@ -480,6 +485,7 @@ void *br24Receive::Entry(void) {
         if (r > 0) {
           ProcessFrame(data, r);
           no_data_timeout = -15;
+          no_spoke_timeout = -5;
         } else {
           closesocket(dataSocket);
           dataSocket = INVALID_SOCKET;
@@ -495,7 +501,7 @@ void *br24Receive::Entry(void) {
           addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
           IF_LOG_AT(LOGLEVEL_RECEIVE, logBinaryData(wxString::Format(wxT("%s sent command"), addr.c_str()), data, r));
           ProcessCommand(addr, data, r);
-          no_data_timeout = -15;
+          no_data_timeout = SECONDS_SELECT(-15);
         } else {
           closesocket(commandSocket);
           commandSocket = INVALID_SOCKET;
@@ -525,7 +531,7 @@ void *br24Receive::Entry(void) {
               }
             }
             m_ri->m_radar_timeout = time(0) + WATCHDOG_TIMEOUT;
-            no_data_timeout = -15;
+            no_data_timeout = SECONDS_SELECT(-15);
           }
         } else {
           wxLogError(wxT("BR24radar_pi: %s at %u.%u.%u.%u illegal report"), m_ri->name.c_str(), a[0], a[1], a[2], a[3]);
@@ -534,17 +540,27 @@ void *br24Receive::Entry(void) {
         }
       }
 
-    } else if (no_data_timeout >= 2) {
-      no_data_timeout = 0;
-      if (reportSocket != INVALID_SOCKET) {
-        closesocket(reportSocket);
-        reportSocket = INVALID_SOCKET;
-        m_ri->state.Update(RADAR_OFF);
-        m_mcast_addr = 0;
-        radar_addr = 0;
+    } else { // no data received -> select timeout
+
+      if (no_data_timeout >= SECONDS_SELECT(2) ) {
+        no_data_timeout = 0;
+        if (reportSocket != INVALID_SOCKET) {
+          closesocket(reportSocket);
+          reportSocket = INVALID_SOCKET;
+          m_ri->state.Update(RADAR_OFF);
+          m_mcast_addr = 0;
+          radar_addr = 0;
+        }
+      } else {
+        no_data_timeout++;
       }
-    } else {
-      no_data_timeout++;
+
+      if (no_spoke_timeout >= SECONDS_SELECT(2)) {
+        no_spoke_timeout = 0;
+        m_ri->ResetRadarImage();
+      } else {
+        no_spoke_timeout++;
+      }
     }
 
     if (reportSocket == INVALID_SOCKET) {
@@ -560,6 +576,8 @@ void *br24Receive::Entry(void) {
     }
 
   }  // endless loop until thread destroy
+
+  LOG_INFO(wxT("BR24radar_pi: receive quit"));
 
   if (dataSocket != INVALID_SOCKET) {
     closesocket(dataSocket);
