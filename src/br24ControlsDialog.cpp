@@ -1264,6 +1264,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   if (m_ri->true_motion.mod ) {
+      wxLogMessage(wxT("$$$ upfate button value =%i"), m_ri->true_motion.value);
       wxString labelTrueMotion;
       if (m_ri->true_motion.value == 1) {
           labelTrueMotion << _("True / Relative Motion") << wxT("\n") << _("True Motion");

@@ -421,7 +421,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
       for (size_t radius = 0; radius < len; radius++) {
       //    UINT8 *trail = &trails.trails[m_polarLookup->inty[angle][radius] + RETURNS_PER_LINE][m_polarLookup->intx[angle][radius] + RETURNS_PER_LINE];
-          UINT8 *trail = &m_trails.trails[polarLookup->intx[bearing][radius] + RETURNS_PER_LINE][polarLookup->inty[bearing][radius] + RETURNS_PER_LINE];
+          UINT8 *trail = &trails.trails[polarLookup->intx[bearing][radius] + RETURNS_PER_LINE][polarLookup->inty[bearing][radius] + RETURNS_PER_LINE];
           // map the origin in the middle of the trails image
           if (data[radius] >= weakest_normal_blob) {
               *trail = 1;
@@ -449,16 +449,19 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 void RadarInfo::UpdateTrailPosition(){
     if (!m_pi->m_bpos_set || m_pi->m_heading_source == HEADING_NONE){
         // no position or heading, true motion not possible, so turn off the control
-        true_motion.Update(0);   // but no warning for the user....
+         // but no warning for the user....
+        true_motion.value = 0;
+        true_motion.mod = 1;
+        wxLogMessage(wxT("$$$ no heading true motion value %i"), true_motion.value);
         return;
     }
 
     //	time_t now = time(0);
-    if (m_trails.lat != m_pi->m_ownship_lat || m_trails.lon != m_pi->m_ownship_lon){  // new position received
-        m_dif_lat = m_trails.lat - m_pi->m_ownship_lat;
-        m_dif_lon = m_trails.lon - m_pi->m_ownship_lon;
-        m_trails.lat = m_pi->m_ownship_lat;
-        m_trails.lon = m_pi->m_ownship_lon;
+    if (trails.lat != m_pi->m_ownship_lat || trails.lon != m_pi->m_ownship_lon){  // new position received
+        m_dif_lat = trails.lat - m_pi->m_ownship_lat;
+        m_dif_lon = trails.lon - m_pi->m_ownship_lon;
+        trails.lat = m_pi->m_ownship_lat;
+        trails.lon = m_pi->m_ownship_lon;
     }
     else{
         return;
@@ -472,9 +475,9 @@ void RadarInfo::UpdateTrailPosition(){
 
     // number of units that the trail image should be shifted 
     if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE){
-        memset(m_trails.trails, 0, sizeof(m_trails.trails));
-        m_trails.lat = m_pi->m_ownship_lat;
-        m_trails.lon = m_pi->m_ownship_lon;
+        memset(trails.trails, 0, sizeof(trails.trails));
+        trails.lat = m_pi->m_ownship_lat;
+        trails.lon = m_pi->m_ownship_lon;
         m_fraction_dif_lat = 0.;
         m_fraction_dif_lon = 0.;
         return;
@@ -482,24 +485,24 @@ void RadarInfo::UpdateTrailPosition(){
 
     if (shift_lon > 0){
         for (int i = 0; i < TRAILS_SIZE; i++){
-            memmove(&m_trails.trails[i][shift_lon], &m_trails.trails[i][0], TRAILS_SIZE - shift_lon);
-            memset(&m_trails.trails[i][0], 0, shift_lon);
+            memmove(&trails.trails[i][shift_lon], &trails.trails[i][0], TRAILS_SIZE - shift_lon);
+            memset(&trails.trails[i][0], 0, shift_lon);
         }
     }
     if (shift_lon < 0){
         for (int i = 0; i < TRAILS_SIZE; i++){
-            memmove(&m_trails.trails[i][0], &m_trails.trails[i][-shift_lon], TRAILS_SIZE + shift_lon);
-            memset(&m_trails.trails[i][TRAILS_SIZE + shift_lon], 0, -shift_lon);
+            memmove(&trails.trails[i][0], &trails.trails[i][-shift_lon], TRAILS_SIZE + shift_lon);
+            memset(&trails.trails[i][TRAILS_SIZE + shift_lon], 0, -shift_lon);
         }
     }
 
     if (shift_lat > 0){
-        memmove(&m_trails.trails[shift_lat][0], &m_trails.trails[0][0], TRAILS_SIZE * (TRAILS_SIZE - shift_lat));
-        memset(&m_trails.trails[0][0], 0, TRAILS_SIZE * shift_lat);
+        memmove(&trails.trails[shift_lat][0], &trails.trails[0][0], TRAILS_SIZE * (TRAILS_SIZE - shift_lat));
+        memset(&trails.trails[0][0], 0, TRAILS_SIZE * shift_lat);
     }
     if (shift_lat < 0){
-        memmove(&m_trails.trails[0][0], &m_trails.trails[-shift_lat][0], TRAILS_SIZE * (TRAILS_SIZE + shift_lat));
-        memset(&m_trails.trails[TRAILS_SIZE + shift_lat][0], 0, -TRAILS_SIZE * shift_lat);
+        memmove(&trails.trails[0][0], &trails.trails[-shift_lat][0], TRAILS_SIZE * (TRAILS_SIZE + shift_lat));
+        memset(&trails.trails[TRAILS_SIZE + shift_lat][0], 0, -TRAILS_SIZE * shift_lat);
     }
 }
 
