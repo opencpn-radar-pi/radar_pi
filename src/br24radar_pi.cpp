@@ -827,11 +827,10 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     m_opengl_mode_changed = true;
   }
 
-  if (!m_settings.show || m_settings.chart_overlay < 0 ||
-      m_radar[m_settings.chart_overlay]->state.value != RADAR_TRANSMIT) {  // No overlay desired
-    return true;
-  }
-  if (!m_bpos_set) {  // No overlay possible (yet)
+  if (!m_settings.show              // No radar shown
+    || m_settings.chart_overlay < 0 // No overlay desired
+    || m_radar[m_settings.chart_overlay]->state.value != RADAR_TRANSMIT  // Radar not transmitting
+    || !m_bpos_set) {  // No overlay possible (yet)
     return true;
   }
 

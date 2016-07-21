@@ -588,16 +588,20 @@ void RadarInfo::UpdateControlState(bool all) {
   }
 }
 
+void RadarInfo::ResetRadarImage() {
+  if (m_range_meters) {
+    ResetSpokes();
+    m_range_meters = 0;
+  }
+}
+
 void RadarInfo::RenderRadarImage(DrawInfo *di) {
   wxCriticalSectionLocker lock(m_exclusive);
   int drawing_method = m_pi->m_settings.drawing_method;
   bool colorOption = m_pi->m_settings.display_option > 0;
 
   if (state.value != RADAR_TRANSMIT) {
-    if (m_range_meters) {
-      ResetSpokes();
-      m_range_meters = 0;
-    }
+    ResetRadarImage();
     return;
   }
 
