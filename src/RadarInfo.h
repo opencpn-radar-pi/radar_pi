@@ -176,7 +176,7 @@ class RadarInfo : public wxEvtHandler {
 	  TrailRevolutionsAge trails[TRAILS_SIZE][TRAILS_SIZE];
       double lat, lon;
   };
-  TrailBuffer trails;
+  TrailBuffer m_trails;
 
   /* Methods */
 
