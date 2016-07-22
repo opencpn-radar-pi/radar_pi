@@ -366,8 +366,8 @@ void br24radar_pi::SetRadarWindowViz() {
     bool showThisControl = m_settings.show && m_settings.show_radar_control[r];
     m_radar[r]->ShowRadarWindow(showThisRadar);
     m_radar[r]->ShowControlDialog(showThisControl);
-    if (m_settings.show == 1 && m_radar[r]->wantedState == RADAR_TRANSMIT) {
-      m_radar[r]->transmit->RadarTxOn();
+    if (m_settings.show == 1 && m_radar[r]->m_wantedState == RADAR_TRANSMIT) {
+      m_radar[r]->m_transmit->RadarTxOn();
     }
   }
 
@@ -388,9 +388,9 @@ void br24radar_pi::ShowRadarControl(int radar, bool show) {
 }
 
 void br24radar_pi::OnControlDialogClose(RadarInfo *ri) {
-  m_settings.show_radar_control[ri->radar] = false;
-  if (ri->control_dialog) {
-    ri->control_dialog->HideDialog();
+  m_settings.show_radar_control[ri->m_radar] = false;
+  if (ri->m_control_dialog) {
+    ri->m_control_dialog->HideDialog();
   }
 }
 
@@ -431,7 +431,7 @@ void br24radar_pi::OnToolbarToolCallback(int id) {
 
   if (m_settings.show) {
     if (m_settings.chart_overlay >= 0 &&
-        (!m_radar[m_settings.chart_overlay]->control_dialog || !m_radar[m_settings.chart_overlay]->control_dialog->IsShown())) {
+        (!m_radar[m_settings.chart_overlay]->m_control_dialog || !m_radar[m_settings.chart_overlay]->m_control_dialog->IsShown())) {
       LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: Show control"));
       ShowRadarControl(m_settings.chart_overlay, true);
     } else {
@@ -554,7 +554,7 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
   time_t now = time(0);
 
   for (size_t r = 0; r < RADARS; r++) {
-    if (m_radar[r]->state.value == RADAR_TRANSMIT) {
+    if (m_radar[r]->m_state.value == RADAR_TRANSMIT) {
       bool bogeys_found_this_radar = false;
 
       for (size_t z = 0; z < GUARD_ZONES; z++) {
@@ -567,11 +567,11 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
       }
       if (bogeys_found_this_radar && !m_guard_bogey_confirmed) {
         ShowRadarControl(r);
-        if (m_radar[r]->control_dialog) {
-          m_radar[r]->control_dialog->ShowBogeys(GetGuardZoneText(m_radar[r], true));
+        if (m_radar[r]->m_control_dialog) {
+          m_radar[r]->m_control_dialog->ShowBogeys(GetGuardZoneText(m_radar[r], true));
         }
-      } else if (m_radar[r]->control_dialog) {
-        m_radar[r]->control_dialog->HideBogeys();
+      } else if (m_radar[r]->m_control_dialog) {
+        m_radar[r]->m_control_dialog->HideBogeys();
       }
     }
   }
@@ -600,7 +600,7 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
 
 void br24radar_pi::SetDesiredStateAllRadars(RadarState desiredState) {
   for (size_t r = 0; r < RADARS; r++) {
-    RadarState state = (RadarState)m_radar[r]->state.value;
+    RadarState state = (RadarState)m_radar[r]->m_state.value;
     if (state != RADAR_OFF) {
       if (state != desiredState) {
         m_radar[r]->FlipRadarState();
@@ -656,7 +656,7 @@ void br24radar_pi::Notify(void) {
 
   time_t now = time(0);
 
-  if (m_radar[0]->radar_type == RT_BR24) {
+  if (m_radar[0]->m_radar_type == RT_BR24) {
     m_settings.enable_dual_radar = 0;
   }
 
@@ -699,22 +699,22 @@ void br24radar_pi::Notify(void) {
   // Check the age of "radar_seen", if too old radar_seen = false
   bool any_data_seen = false;
   for (size_t r = 0; r < RADARS; r++) {
-    if (m_radar[r]->state.value == RADAR_STANDBY && TIMED_OUT(now, m_radar[r]->m_radar_timeout)) {
+    if (m_radar[r]->m_state.value == RADAR_STANDBY && TIMED_OUT(now, m_radar[r]->m_radar_timeout)) {
       static wxString empty;
 
-      m_radar[r]->state.Update(RADAR_OFF);
+      m_radar[r]->m_state.Update(RADAR_OFF);
       m_pMessageBox->SetRadarIPAddress(empty);
-      LOG_INFO(wxT("BR24radar_pi: Lost %s presence"), m_radar[r]->name);
+      LOG_INFO(wxT("BR24radar_pi: Lost %s presence"), m_radar[r]->m_name.c_str());
     }
-    if (m_radar[r]->state.value == RADAR_TRANSMIT && TIMED_OUT(now, m_radar[r]->m_data_timeout)) {
-      m_radar[r]->state.Update(RADAR_STANDBY);
-      LOG_INFO(wxT("BR24radar_pi: Data Lost %s "), m_radar[r]->name);
+    if (m_radar[r]->m_state.value == RADAR_TRANSMIT && TIMED_OUT(now, m_radar[r]->m_data_timeout)) {
+      m_radar[r]->m_state.Update(RADAR_STANDBY);
+      LOG_INFO(wxT("BR24radar_pi: Data Lost %s "), m_radar[r]->m_name.c_str());
     }
 
-    if (m_radar[r]->state.value == RADAR_TRANSMIT) {
+    if (m_radar[r]->m_state.value == RADAR_TRANSMIT) {
       if (IsRadarOnScreen(r) && TIMED_OUT(now, m_radar[r]->m_stayalive_timeout)) {
         m_radar[r]->m_stayalive_timeout = now + STAYALIVE_TIMEOUT;
-        m_radar[r]->transmit->RadarStayAlive();
+        m_radar[r]->m_transmit->RadarStayAlive();
       }
       any_data_seen = true;
     }
@@ -735,10 +735,10 @@ void br24radar_pi::Notify(void) {
   if (m_pMessageBox->IsShown() || (m_settings.verbose != 0)) {
     wxString t;
     for (size_t r = 0; r < RADARS; r++) {
-      if (m_radar[r]->state.value != RADAR_OFF) {
-        t << wxString::Format(wxT("%s\npackets %d/%d\nspokes %d/%d/%d\n"), m_radar[r]->name, m_radar[r]->statistics.packets,
-                              m_radar[r]->statistics.broken_packets, m_radar[r]->statistics.spokes,
-                              m_radar[r]->statistics.broken_spokes, m_radar[r]->statistics.missing_spokes);
+      if (m_radar[r]->m_state.value != RADAR_OFF) {
+        t << wxString::Format(wxT("%s\npackets %d/%d\nspokes %d/%d/%d\n"), m_radar[r]->m_name.c_str(), m_radar[r]->m_statistics.packets,
+                              m_radar[r]->m_statistics.broken_packets, m_radar[r]->m_statistics.spokes,
+                              m_radar[r]->m_statistics.broken_spokes, m_radar[r]->m_statistics.missing_spokes);
       }
     }
     m_pMessageBox->SetStatisticsInfo(t);
@@ -754,11 +754,11 @@ void br24radar_pi::Notify(void) {
   }
 
   for (int r = 0; r < RADARS; r++) {
-    m_radar[r]->statistics.broken_packets = 0;
-    m_radar[r]->statistics.broken_spokes = 0;
-    m_radar[r]->statistics.missing_spokes = 0;
-    m_radar[r]->statistics.packets = 0;
-    m_radar[r]->statistics.spokes = 0;
+    m_radar[r]->m_statistics.broken_packets = 0;
+    m_radar[r]->m_statistics.broken_spokes = 0;
+    m_radar[r]->m_statistics.missing_spokes = 0;
+    m_radar[r]->m_statistics.packets = 0;
+    m_radar[r]->m_statistics.spokes = 0;
   }
 
   UpdateState();
@@ -768,7 +768,7 @@ void br24radar_pi::UpdateState(void) {
   RadarState state = RADAR_OFF;
 
   for (int r = 0; r < RADARS; r++) {
-    state = wxMax(state, (RadarState)m_radar[r]->state.value);
+    state = wxMax(state, (RadarState)m_radar[r]->m_state.value);
   }
   if (state == RADAR_OFF) {
     m_toolbar_button = TB_SEARCHING;
@@ -829,7 +829,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
 
   if (!m_settings.show              // No radar shown
     || m_settings.chart_overlay < 0 // No overlay desired
-    || m_radar[m_settings.chart_overlay]->state.value != RADAR_TRANSMIT  // Radar not transmitting
+    || m_radar[m_settings.chart_overlay]->m_state.value != RADAR_TRANSMIT  // Radar not transmitting
     || !m_bpos_set) {  // No overlay possible (yet)
     return true;
   }
@@ -863,7 +863,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     v_scale_ppm = vp->pix_height / dist_y;  // pixel height of screen div by equivalent meters
   }
 
-  if (m_radar[m_settings.chart_overlay]->state.value == RADAR_TRANSMIT) {
+  if (m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT) {
     double rotation = fmod(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor) + 720.0, 360);
 
     LOG_DIALOG(wxT("BR24radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"),
@@ -899,8 +899,8 @@ bool br24radar_pi::LoadConfig(void) {
       m_settings.idle_run_time *= 60;
 
       for (int r = 0; r < RADARS; r++) {
-        m_radar[r]->orientation.Update(0);
-        m_radar[r]->wantedState = (RadarState)0;
+        m_radar[r]->m_orientation.Update(0);
+        m_radar[r]->m_wantedState = (RadarState)0;
         SetControlValue(r, CT_TARGET_TRAILS, 0);
         m_settings.show_radar[r] = true;
         LOG_DIALOG(wxT("BR24radar_pi: LoadConfig: show_radar[%d]=%d"), r, v);
@@ -923,9 +923,9 @@ bool br24radar_pi::LoadConfig(void) {
       pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 120);
       for (int r = 0; r < RADARS; r++) {
         pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
-        m_radar[r]->orientation.Update(v);
+        m_radar[r]->m_orientation.Update(v);
         pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
-        m_radar[r]->wantedState = (RadarState)v;
+        m_radar[r]->m_wantedState = (RadarState)v;
         pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
         SetControlValue(r, CT_TARGET_TRAILS, v);
         pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[r], false);
@@ -1022,13 +1022,13 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("VerboseLog"), m_settings.verbose);
 
     for (int r = 0; r < RADARS; r++) {
-      pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->orientation.value);
-      pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->state.value);
+      pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.value);
+      pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->m_state.value);
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
       pConf->Write(wxString::Format(wxT("Radar%dControlShow"), r), m_settings.show_radar_control[r]);
-      pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->target_trails.value);
-      if (m_radar[r]->control_dialog) {
-        m_settings.control_pos[r] = m_radar[r]->control_dialog->GetPosition();
+      pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->m_target_trails.value);
+      if (m_radar[r]->m_control_dialog) {
+        m_settings.control_pos[r] = m_radar[r]->m_control_dialog->GetPosition();
       }
       pConf->Write(wxString::Format(wxT("Radar%dControlPosX"), r), m_settings.control_pos[r].x);
       pConf->Write(wxString::Format(wxT("Radar%dControlPosY"), r), m_settings.control_pos[r].y);
@@ -1166,7 +1166,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
 }
 
 bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value) {  // sends the command to the radar
-  LOG_TRANSMIT(wxT("BR24radar_pi: %s set %s = %d"), m_radar[radar]->name.c_str(), ControlTypeNames[controlType].c_str(), value);
+  LOG_TRANSMIT(wxT("BR24radar_pi: %s set %s = %d"), m_radar[radar]->m_name.c_str(), ControlTypeNames[controlType].c_str(), value);
   switch (controlType) {
     case CT_TRANSPARENCY: {
       m_settings.overlay_transparency = value;
@@ -1188,7 +1188,7 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
       return true;
     }
     case CT_TARGET_TRAILS: {
-      m_radar[radar]->target_trails.Update(value);
+      m_radar[radar]->m_target_trails.Update(value);
       m_radar[radar]->ComputeColorMap();
       m_radar[radar]->ComputeTargetTrails();
       return true;
@@ -1196,7 +1196,7 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
 
     default: {
       if (!m_radar[radar]->SetControlValue(controlType, value)) {
-        wxLogError(wxT("BR24radar_pi: %s unhandled control setting for control %d"), m_radar[radar]->name, controlType);
+        wxLogError(wxT("BR24radar_pi: %s unhandled control setting for control %d"), m_radar[radar]->m_name.c_str(), controlType);
       }
     }
   }

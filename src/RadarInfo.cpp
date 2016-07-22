@@ -153,16 +153,16 @@ void radar_range_control_item::Update(int v) {
 
 RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_pi = pi;
-  this->radar = radar;
+  m_radar = radar;
 
-  radar_type = RT_UNKNOWN;
-  auto_range_mode = true;
+  m_radar_type = RT_UNKNOWN;
+  m_auto_range_mode = true;
   m_range_meters = 0;
   m_auto_range_meters = 0;
   m_previous_auto_range_meters = 1;
   m_stayalive_timeout = 0;
 
-  memset(&statistics, 0, sizeof(statistics));
+  memset(&m_statistics, 0, sizeof(m_statistics));
 
   m_mouse_lat = 0.0;
   m_mouse_lon = 0.0;
@@ -173,13 +173,13 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
     m_vrm[b] = 0.0;
   }
 
-  transmit = 0;
-  receive = 0;
+  m_transmit = 0;
+  m_receive = 0;
   m_draw_panel.draw = 0;
   m_draw_overlay.draw = 0;
-  radar_panel = 0;
-  radar_canvas = 0;
-  control_dialog = 0;
+  m_radar_panel = 0;
+  m_radar_canvas = 0;
+  m_control_dialog = 0;
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     m_guard_zone[z] = new GuardZone(pi);
@@ -197,19 +197,19 @@ RadarInfo::~RadarInfo() {
 
   m_timer->Stop();
 
-  if (receive) {
-    receive->Delete();
-    delete receive;
+  if (m_receive) {
+    m_receive->Delete();
+    delete m_receive;
   }
-  if (control_dialog) {
-    delete control_dialog;
-    control_dialog = 0;
+  if (m_control_dialog) {
+    delete m_control_dialog;
+    m_control_dialog = 0;
   }
-  if (transmit) {
-    delete transmit;
+  if (m_transmit) {
+    delete m_transmit;
   }
-  if (radar_panel) {
-    delete radar_panel;
+  if (m_radar_panel) {
+    delete m_radar_panel;
   }
   if (m_draw_panel.draw) {
     delete m_draw_panel.draw;
@@ -227,14 +227,14 @@ RadarInfo::~RadarInfo() {
 bool RadarInfo::Init(wxString name, int verbose) {
   m_verbose = verbose;
 
-  this->name = name;
+  m_name = name;
 
   ComputeColorMap();
 
-  transmit = new br24Transmit(m_pi, name, radar);
+  m_transmit = new br24Transmit(m_pi, name, m_radar);
 
-  radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
-  if (!radar_panel || !radar_panel->Create()) {
+  m_radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
+  if (!m_radar_panel || !m_radar_panel->Create()) {
     wxLogError(wxT("BR24radar_pi %s: Unable to create RadarPanel"), name.c_str());
     return false;
   }
@@ -245,46 +245,46 @@ bool RadarInfo::Init(wxString name, int verbose) {
 void RadarInfo::ShowControlDialog(bool show) {
   if (show) {
     //#ifdef __WXMSW__
-    if (control_dialog) {
-      delete control_dialog;
-      control_dialog = 0;
+    if (m_control_dialog) {
+      delete m_control_dialog;
+      m_control_dialog = 0;
     }
     //#endif
-    if (!control_dialog) {
-      control_dialog = new br24ControlsDialog;
-      control_dialog->Create((wxWindow *)radar_panel, m_pi, this, wxID_ANY, name, m_pi->m_settings.control_pos[radar]);
+    if (!m_control_dialog) {
+      m_control_dialog = new br24ControlsDialog;
+      m_control_dialog->Create((wxWindow *)m_radar_panel, m_pi, this, wxID_ANY, m_name, m_pi->m_settings.control_pos[m_radar]);
     }
-    control_dialog->ShowDialog();
+    m_control_dialog->ShowDialog();
     UpdateControlState(true);
   } else {
-    if (control_dialog) {
-      control_dialog->HideDialog();
+    if (m_control_dialog) {
+      m_control_dialog->HideDialog();
     }
   }
 }
 
 void RadarInfo::SetNetworkCardAddress(struct sockaddr_in *address) {
-  if (!transmit->Init(address)) {
-    wxLogError(wxT("BR24radar_pi %s: Unable to create transmit socket"), name.c_str());
+  if (!m_transmit->Init(address)) {
+    wxLogError(wxT("BR24radar_pi %s: Unable to create transmit socket"), m_name.c_str());
   }
 }
 
 void RadarInfo::SetName(wxString name) {
-  if (name != this->name) {
-    LOG_DIALOG(wxT("BR24radar_pi: Changing name of radar #%d from '%s' to '%s'"), radar, this->name.c_str(), name.c_str());
-    this->name = name;
-    radar_panel->SetCaption(name);
-    if (control_dialog) {
-      control_dialog->SetTitle(name);
+  if (name != m_name) {
+    LOG_DIALOG(wxT("BR24radar_pi: Changing name of radar #%d from '%s' to '%s'"), m_radar, m_name.c_str(), name.c_str());
+    m_name = name;
+    m_radar_panel->SetCaption(name);
+    if (m_control_dialog) {
+      m_control_dialog->SetTitle(name);
     }
   }
 }
 
 void RadarInfo::StartReceive() {
-  if (!receive) {
-    LOG_RECEIVE(wxT("BR24radar_pi: %s starting receive thread"), name.c_str());
-    receive = new br24Receive(m_pi, this);
-    receive->Run();
+  if (!m_receive) {
+    LOG_RECEIVE(wxT("BR24radar_pi: %s starting receive thread"), m_name.c_str());
+    m_receive = new br24Receive(m_pi, this);
+    m_receive->Run();
   }
 }
 
@@ -312,7 +312,7 @@ void RadarInfo::ComputeColorMap() {
   m_color_map_green[BLOB_GREEN] = 255;
   m_color_map_blue[BLOB_BLUE] = 255;
 
-  if (m_pi->m_settings.display_option == 1 && target_trails.value > 0) {
+  if (m_pi->m_settings.display_option == 1 && m_target_trails.value > 0) {
     for (BlobColor history = BLOB_HISTORY_0; history <= BLOB_HISTORY_9; history = (BlobColor)(history + 1)) {
       m_color_map[history] = history;
       m_color_map_red[history] = 255;
@@ -328,8 +328,8 @@ void RadarInfo::ResetSpokes() {
   LOG_VERBOSE(wxT("BR24radar_pi: reset spokes, history and trails"));
 
   memset(zap, 0, sizeof(zap));
-  memset(history, 0, sizeof(history));
-  memset(trails, 0, sizeof(trails));
+  memset(m_history, 0, sizeof(m_history));
+  memset(m_trails, 0, sizeof(m_trails));
 
   if (m_draw_panel.draw) {
     for (size_t r = 0; r < LINES_PER_ROTATION; r++) {
@@ -362,18 +362,18 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   if (m_range_meters != range_meters) {
     ResetSpokes();
-    LOG_VERBOSE(wxT("BR24radar_pi: %s detected spoke range change from %d to %d meters"), name.c_str(), m_range_meters,
+    LOG_VERBOSE(wxT("BR24radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters,
                 range_meters);
     m_range_meters = range_meters;
-    if (!range.value) {
-      range.Update(convertSpokeMetersToRangeMeters(range_meters));
+    if (!m_range.value) {
+      m_range.Update(convertSpokeMetersToRangeMeters(range_meters));
     }
 
-  } else if (orientation.mod) {
+  } else if (m_orientation.mod) {
     ResetSpokes();
     LOG_VERBOSE(wxT("BR24radar_pi: %s HeadUp/NorthUp change"));
   }
-  int north_up = orientation.GetButton() == ORIENTATION_NORTH_UP;
+  int north_up = m_orientation.GetButton() == ORIENTATION_NORTH_UP;
   uint8_t weakest_normal_blob =
       (m_pi->m_settings.display_option ? m_pi->m_settings.threshold_blue : m_pi->m_settings.threshold_red);
 
@@ -384,7 +384,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     }
   }
   if (calc_history) {
-    UINT8 *hist_data = history[angle];
+    UINT8 *hist_data = m_history[angle];
     for (size_t radius = 0; radius < len; radius++) {
       hist_data[radius] = hist_data[radius] << 1;  // shift left history byte 1 bit
       if (data[radius] >= weakest_normal_blob) {
@@ -395,13 +395,13 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     if (m_guard_zone[z]->type != GZ_OFF) {
-      m_guard_zone[z]->ProcessSpoke(angle, data, history[angle], len, range_meters);
+      m_guard_zone[z]->ProcessSpoke(angle, data, m_history[angle], len, range_meters);
     }
   }
 
   if (m_multi_sweep_filter) {
     for (size_t radius = 0; radius < len; radius++) {
-      if (!HISTORY_FILTER_ALLOW(history[angle][radius])) {
+      if (!HISTORY_FILTER_ALLOW(m_history[angle][radius])) {
         data[radius] = 0;
       }
     }
@@ -412,9 +412,9 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
-  if (target_trails.value != 0 && m_pi->m_settings.display_option == 1) {
+  if (m_target_trails.value != 0 && m_pi->m_settings.display_option == 1) {
     for (size_t radius = 0; radius < len; radius++) {
-      UINT8 *trail = &trails[angle][radius];
+      UINT8 *trail = &m_trails[angle][radius];
 
       if (data[radius] >= weakest_normal_blob) {
         *trail = 1;
@@ -439,8 +439,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
   if (m_overlay_refreshes_queued > 0) {
     // don't do additional refresh when too busy
-    LOG_DIALOG(wxT("BR24radar_pi: %s busy encountered, overlay_refreshes_queued=%d"), name.c_str(), m_overlay_refreshes_queued);
-  } else if (m_pi->IsOverlayOnScreen(radar)) {
+    LOG_DIALOG(wxT("BR24radar_pi: %s busy encountered, overlay_refreshes_queued=%d"), m_name.c_str(), m_overlay_refreshes_queued);
+  } else if (m_pi->IsOverlayOnScreen(m_radar)) {
     m_overlay_refreshes_queued++;
     GetOCPNCanvasWindow()->Refresh(false);
   }
@@ -448,10 +448,10 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
   if (m_refreshes_queued > 0) {
     // don't do additional refresh and reset the refresh conter
     // this will also balance performance, if too busy skip refresh
-    LOG_DIALOG(wxT("BR24radar_pi: %s busy encountered, refreshes_queued=%d"), name.c_str(), m_refreshes_queued);
+    LOG_DIALOG(wxT("BR24radar_pi: %s busy encountered, refreshes_queued=%d"), m_name.c_str(), m_refreshes_queued);
   } else if (IsPaneShown()) {
     m_refreshes_queued++;
-    radar_panel->Refresh(false);
+    m_radar_panel->Refresh(false);
   }
 
   // Calculate refresh speed
@@ -460,7 +460,7 @@ void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
 
     if (millis != m_refresh_millis) {
       m_refresh_millis = millis;
-      LOG_VERBOSE(wxT("BR24radar_pi: %s changed timer interval to %d milliseconds"), name.c_str(), m_refresh_millis);
+      LOG_VERBOSE(wxT("BR24radar_pi: %s changed timer interval to %d milliseconds"), m_name.c_str(), m_refresh_millis);
       m_timer->Start(m_refresh_millis);
     }
   }
@@ -506,67 +506,67 @@ void RadarInfo::AdjustRange(int adjustment) {
   // Note that we don't actually use m_settings.units here, so that if we are metric and
   // the plotter in NM, and it chose the last range, we start using nautic miles as well.
 
-  if (range.range) {
-    if (range.range > g_ranges_nautic && range.range < g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic)) {
+  if (m_range.range) {
+    if (m_range.range > g_ranges_nautic && m_range.range < g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic)) {
       min = g_ranges_nautic;
       max = g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic) - 1;
-    } else if (range.range > g_ranges_metric && range.range < g_ranges_metric + ARRAY_SIZE(g_ranges_metric)) {
+    } else if (m_range.range > g_ranges_metric && m_range.range < g_ranges_metric + ARRAY_SIZE(g_ranges_metric)) {
       min = g_ranges_metric;
       max = g_ranges_metric + ARRAY_SIZE(g_ranges_metric) - 1;
     }
 
-    if (radar_type != RT_4G) {
+    if (m_radar_type != RT_4G) {
       max--;  // only 4G has longest ranges
     }
 
-    if (adjustment < 0 && range.range > min) {
-      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), range.range[0].meters, range.range[0].actual_meters,
-                  range.range[-1].meters, range.range[-1].actual_meters);
-      transmit->SetRange(range.range[-1].meters);
-    } else if (adjustment > 0 && range.range < max) {
-      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), range.range[0].meters, range.range[0].actual_meters,
-                  range.range[+1].meters, range.range[+1].actual_meters);
-      transmit->SetRange(range.range[+1].meters);
+    if (adjustment < 0 && m_range.range > min) {
+      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), m_range.range[0].meters, m_range.range[0].actual_meters,
+                  m_range.range[-1].meters, m_range.range[-1].actual_meters);
+      m_transmit->SetRange(m_range.range[-1].meters);
+    } else if (adjustment > 0 && m_range.range < max) {
+      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), m_range.range[0].meters, m_range.range[0].actual_meters,
+                  m_range.range[+1].meters, m_range.range[+1].actual_meters);
+      m_transmit->SetRange(m_range.range[+1].meters);
     }
   }
 }
 
 void RadarInfo::SetAutoRangeMeters(int meters) {
-  if (state.value == RADAR_TRANSMIT && auto_range_mode) {
+  if (m_state.value == RADAR_TRANSMIT && m_auto_range_mode) {
     m_auto_range_meters = meters;
     // Don't adjust auto range meters continuously when it is oscillating a little bit (< 5%)
     int test = 100 * m_previous_auto_range_meters / m_auto_range_meters;
     if (test < 95 || test > 105) {  //   range change required
       // Compute a 'standard' distance. This will be slightly smaller.
-      convertMetersToRadarAllowedValue(&meters, m_pi->m_settings.range_units, radar_type);
+      convertMetersToRadarAllowedValue(&meters, m_pi->m_settings.range_units, m_radar_type);
       if (meters != m_range_meters) {
         if (m_pi->m_settings.verbose) {
           LOG_VERBOSE(wxT("BR24radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters,
                       m_auto_range_meters);
         }
-        transmit->SetRange(meters);
+        m_transmit->SetRange(meters);
         m_previous_auto_range_meters = m_auto_range_meters;
       }
     }
   }
 }
 
-bool RadarInfo::SetControlValue(ControlType controlType, int value) { return transmit->SetControlValue(controlType, value); }
+bool RadarInfo::SetControlValue(ControlType controlType, int value) { return m_transmit->SetControlValue(controlType, value); }
 
-void RadarInfo::ShowRadarWindow(bool show) { radar_panel->ShowFrame(show); }
+void RadarInfo::ShowRadarWindow(bool show) { m_radar_panel->ShowFrame(show); }
 
-bool RadarInfo::IsPaneShown() { return radar_panel->IsPaneShown(); }
+bool RadarInfo::IsPaneShown() { return m_radar_panel->IsPaneShown(); }
 
 void RadarInfo::UpdateControlState(bool all) {
   wxCriticalSectionLocker lock(m_exclusive);
 
-  overlay.Update(m_pi->m_settings.chart_overlay == radar);
+  m_overlay.Update(m_pi->m_settings.chart_overlay == m_radar);
 
 #ifdef OPENCPN_NO_LONGER_MIXES_GL_CONTEXT
   //
   // Once OpenCPN doesn't mess up with OpenGL context anymore we can do this
   //
-  if (overlay.value == 0 && m_draw_overlay.draw) {
+  if (m_overlay.value == 0 && m_draw_overlay.draw) {
     LOG_DIALOG(wxT("BR24radar_pi: Removing draw method as radar overlay is not shown"));
     delete m_draw_overlay.draw;
     m_draw_overlay.draw = 0;
@@ -578,13 +578,13 @@ void RadarInfo::UpdateControlState(bool all) {
   }
 #endif
 
-  if (control_dialog) {
-    control_dialog->UpdateControlValues(all);
-    control_dialog->UpdateDialogShown();
+  if (m_control_dialog) {
+    m_control_dialog->UpdateControlValues(all);
+    m_control_dialog->UpdateDialogShown();
   }
 
   if (IsPaneShown()) {
-    radar_panel->Refresh(false);
+    m_radar_panel->Refresh(false);
   }
 }
 
@@ -600,7 +600,7 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
   int drawing_method = m_pi->m_settings.drawing_method;
   bool colorOption = m_pi->m_settings.display_option > 0;
 
-  if (state.value != RADAR_TRANSMIT) {
+  if (m_state.value != RADAR_TRANSMIT) {
     ResetRadarImage();
     return;
   }
@@ -615,9 +615,9 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
       wxArrayString methods;
       RadarDraw::GetDrawingMethods(methods);
       if (di == &m_draw_overlay) {
-        LOG_VERBOSE(wxT("BR24radar_pi: %s new drawing method %s for overlay"), name.c_str(), methods[drawing_method].c_str());
+        LOG_VERBOSE(wxT("BR24radar_pi: %s new drawing method %s for overlay"), m_name.c_str(), methods[drawing_method].c_str());
       } else {
-        LOG_VERBOSE(wxT("BR24radar_pi: %s new drawing method %s for panel"), name.c_str(), methods[drawing_method].c_str());
+        LOG_VERBOSE(wxT("BR24radar_pi: %s new drawing method %s for panel"), m_name.c_str(), methods[drawing_method].c_str());
       }
       if (di->draw) {
         delete di->draw;
@@ -678,20 +678,20 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
     if (m_overlay_refreshes_queued > 0) {
       m_overlay_refreshes_queued--;
     }
-  } else if (m_range_meters && range.value) {
+  } else if (m_range_meters && m_range.value) {
     glPushMatrix();
-    scale = 1.0 / range.value;
+    scale = 1.0 / m_range.value;
     glScaled(scale, scale, 1.);
     glRotated(guard_rotate, 0.0, 0.0, 1.0);
     RenderGuardZone();
     glPopMatrix();
 
     glPushMatrix();
-    double overscan = (double)m_range_meters / (double)range.value;
+    double overscan = (double)m_range_meters / (double)m_range.value;
     scale = overscan / RETURNS_PER_LINE;
     glScaled(scale, scale, 1.);
     glRotated(rotate, 0.0, 0.0, 1.0);
-    LOG_DIALOG(wxT("BR24radar_pi: %s render overscan=%g range=%d"), name.c_str(), overscan, range.value);
+    LOG_DIALOG(wxT("BR24radar_pi: %s render overscan=%g range=%d"), m_name.c_str(), overscan, m_range.value);
     RenderRadarImage(&m_draw_panel);
     if (m_refreshes_queued > 0) {
       m_refreshes_queued--;
@@ -703,16 +703,16 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
 }
 
 void RadarInfo::FlipRadarState() {
-  if (m_pi->IsRadarOnScreen(radar)) {
-    if (state.button == RADAR_STANDBY) {
-      transmit->RadarTxOn();
-      state.Update(RADAR_TRANSMIT);
-      wantedState = RADAR_TRANSMIT;
+  if (m_pi->IsRadarOnScreen(m_radar)) {
+    if (m_state.button == RADAR_STANDBY) {
+      m_transmit->RadarTxOn();
+      m_state.Update(RADAR_TRANSMIT);
+      m_wantedState = RADAR_TRANSMIT;
     } else {
-      transmit->RadarTxOff();
+      m_transmit->RadarTxOff();
       m_data_timeout = 0;
-      state.Update(RADAR_STANDBY);
-      wantedState = RADAR_STANDBY;
+      m_state.Update(RADAR_STANDBY);
+      m_wantedState = RADAR_STANDBY;
     }
   }
 }
@@ -781,7 +781,7 @@ wxString RadarInfo::FormatAngle(double angle) {
 wxString RadarInfo::GetCanvasTextBottomLeft() {
   wxString s = m_pi->GetGuardZoneText(this, false);
 
-  if (state.value == RADAR_TRANSMIT) {
+  if (m_state.value == RADAR_TRANSMIT) {
     double distance = 0.0, bearing;
 
     // Add VRM/EBLs
@@ -819,11 +819,11 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
 wxString RadarInfo::GetCanvasTextCenter() {
   wxString s;
 
-  if (state.value == RADAR_OFF) {
+  if (m_state.value == RADAR_OFF) {
     s << _("No radar");
-  } else if (state.value == RADAR_STANDBY) {
+  } else if (m_state.value == RADAR_STANDBY) {
     s << _("Radar is in Standby");
-    switch (radar_type) {
+    switch (m_radar_type) {
       case RT_BR24:
         s << wxT("\nBR24");
         break;
@@ -842,15 +842,15 @@ wxString RadarInfo::GetCanvasTextCenter() {
 }
 
 wxString &RadarInfo::GetRangeText() {
-  const RadarRange *r = range.range;
-  int meters = range.value;
+  const RadarRange *r = m_range.range;
+  int meters = m_range.value;
 
   if (!r) {
     m_range_text = wxT("");
     return m_range_text;
   }
 
-  bool auto_range = auto_range_mode && (overlay.button > 0);
+  bool auto_range = m_auto_range_mode && (m_overlay.button > 0);
 
   m_range_text = wxT("");
   if (auto_range) {
@@ -867,13 +867,13 @@ wxString &RadarInfo::GetRangeText() {
     m_range_text << wxT(")");
   }
   LOG_DIALOG(wxT("br24radar_pi: range label '%s' for spokerange=%d range=%d auto=%d"), m_range_text.c_str(), m_range_meters, meters,
-             auto_range_mode);
+             m_auto_range_mode);
   return m_range_text;
 }
 
 const char *RadarInfo::GetDisplayRangeStr(size_t idx) {
-  if (range.range) {
-    return (&range.range->name)[(idx + 1) % 4];
+  if (m_range.range) {
+    return (&m_range.range->name)[(idx + 1) % 4];
   }
 
   return 0;
@@ -908,18 +908,18 @@ void RadarInfo::SetBearing(int bearing) {
   }
 }
 
-void RadarInfo::ClearTrails() { memset(trails, 0, sizeof(trails)); }
+void RadarInfo::ClearTrails() { memset(m_trails, 0, sizeof(m_trails)); }
 
 void RadarInfo::ComputeTargetTrails() {
   static TrailRevolutionsAge maxRevs[6] = {SECONDS_TO_REVOLUTIONS(0),  SECONDS_TO_REVOLUTIONS(15),  SECONDS_TO_REVOLUTIONS(30),
                                            SECONDS_TO_REVOLUTIONS(60), SECONDS_TO_REVOLUTIONS(180), TRAIL_CONTINUOUS};
 
-  TrailRevolutionsAge maxRev = maxRevs[target_trails.value];
+  TrailRevolutionsAge maxRev = maxRevs[m_target_trails.value];
   TrailRevolutionsAge revolution;
   double colorsPerRevolution = ((int)BLOB_HISTORY_9 - BLOB_HISTORY_0 + 1) / (double)maxRev;
   double color = 0.;
 
-  LOG_VERBOSE(wxT("BR24radar_pi: Target trail value %d = %d revolutions"), target_trails.value, maxRev);
+  LOG_VERBOSE(wxT("BR24radar_pi: Target trail value %d = %d revolutions"), m_target_trails.value, maxRev);
 
   // Disperse the ten BLOB_HISTORY values over 0..maxrev
   // with maxrev
