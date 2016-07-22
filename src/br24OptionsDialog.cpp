@@ -108,11 +108,20 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
 
   wxButton *select_sound = new wxButton(this, wxID_ANY, _("Select Alert Sound"), wxDefaultPosition, small_button_size, 0);
   select_sound->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnSelectSoundClick), NULL, this);
-  guardZoneSizer->Add(select_sound, 0, wxALL, border_size);
+  guardZoneSizer->Add(select_sound, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, border_size);
 
   wxButton *test_sound = new wxButton(this, wxID_ANY, _("Test Alert Sound"), wxDefaultPosition, small_button_size, 0);
   test_sound->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnTestSoundClick), NULL, this);
-  guardZoneSizer->Add(test_sound, 0, wxALL, border_size);
+  guardZoneSizer->Add(test_sound, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, border_size);
+
+  wxStaticText* guardZoneTimeout = new wxStaticText(this, wxID_ANY, _("Repeat alarm after (sec)"), wxDefaultPosition, wxDefaultSize, 0);
+  guardZoneSizer->Add(guardZoneTimeout, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, border_size);
+
+  m_GuardZoneTimeout = new wxTextCtrl(this, wxID_ANY);
+  guardZoneSizer->Add(m_GuardZoneTimeout, 1, wxALIGN_CENTER_HORIZONTAL | wxALL, border_size);
+  m_GuardZoneTimeout->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24OptionsDialog::OnGuardZoneTimeoutClick), NULL, this);
+  m_GuardZoneTimeout->SetValue(wxString::Format(wxT("%d"), m_settings.guard_zone_timeout));
+
 
   m_TrailsOnOverlay = new wxRadioBox(this, wxID_ANY, _("Trail Display"), wxDefaultPosition, wxDefaultSize,
                                      ARRAY_SIZE(GuardZoneOnOverlayStrings), GuardZoneOnOverlayStrings, 1, wxRA_SPECIFY_COLS);
@@ -231,6 +240,13 @@ void br24OptionsDialog::OnSelectSoundClick(wxCommandEvent &event) {
     m_settings.alert_audio_file = openDialog->GetPath();
   }
 }
+
+void br24OptionsDialog::OnGuardZoneTimeoutClick(wxCommandEvent& event) {
+  wxString temp = m_GuardZoneTimeout->GetValue();
+
+  m_settings.guard_zone_timeout = strtol(temp.c_str(), 0, 0);
+}
+
 
 void br24OptionsDialog::OnEnableDualRadarClick(wxCommandEvent &event) {
   m_settings.enable_dual_radar = m_EnableDualRadar->GetValue();

@@ -49,6 +49,7 @@ class br24OptionsDialog : public wxDialog {
   void OnDisplayModeClick(wxCommandEvent& event);
   void OnGuardZoneStyleClick(wxCommandEvent& event);
   void OnGuardZoneOnOverlayClick(wxCommandEvent& event);
+  void OnGuardZoneTimeoutClick(wxCommandEvent& event);
   void OnTrailsOnOverlayClick(wxCommandEvent& event);
   void OnSelectSoundClick(wxCommandEvent& event);
   void OnTestSoundClick(wxCommandEvent& event);
@@ -67,6 +68,7 @@ class br24OptionsDialog : public wxDialog {
   wxRadioBox* m_DisplayMode;
   wxRadioBox* m_GuardZoneStyle;
   wxRadioBox* m_GuardZoneOnOverlay;
+  wxTextCtrl* m_GuardZoneTimeout;
   wxRadioBox* m_TrailsOnOverlay;
   wxCheckBox* m_PassHeading;
   wxComboBox* m_DrawingMethod;

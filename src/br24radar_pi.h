@@ -224,6 +224,7 @@ struct PersistentSettings {
   int display_option;           // Monocolor-red or Multi-color
   int guard_zone_threshold;     // How many blobs must be sent by radar before we fire alarm
   int guard_zone_render_style;  // 0 = Shading, 1 = Outline, 2 = Shading + Outline
+  int guard_zone_timeout;       // How long before we warn again when bogeys are found
   bool guard_zone_on_overlay;   // 0 = false, 1 = true
   bool trails_on_overlay;       // 0 = false, 1 = true
   int guard_zone_debug_inc;     // Value to add on every cycle to guard zone bearings, for testing.
@@ -441,7 +442,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   bool m_guard_bogey_confirmed;
   time_t m_alarm_sound_timeout;
   time_t m_guard_bogey_timeout;  // If we haven't seen bogeys for this long we reset confirm
-#define ALARM_TIMEOUT (10)
+#define CONFIRM_RESET_TIMEOUT (15)
 };
 
 PLUGIN_END_NAMESPACE

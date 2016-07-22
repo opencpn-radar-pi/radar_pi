@@ -346,6 +346,9 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
       m_radar[r]->ComputeColorMap();
       m_radar[r]->UpdateControlState(true);
     }
+    if (!m_guard_bogey_confirmed && m_alarm_sound_timeout && m_settings.guard_zone_timeout) {
+      m_alarm_sound_timeout = time(0) + m_settings.guard_zone_timeout;
+    }
   }
 }
 
@@ -576,10 +579,10 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
   }
 
   if (bogeys_found) {
-    if (!m_guard_bogey_confirmed && TIMED_OUT(now, m_alarm_sound_timeout)) {
+    if (!m_guard_bogey_confirmed && TIMED_OUT(now, m_alarm_sound_timeout) && m_settings.guard_zone_timeout) {
       // If the last time is 10 seconds ago we ping a sound, unless the user
       // confirmed
-      m_alarm_sound_timeout = now + ALARM_TIMEOUT;
+      m_alarm_sound_timeout = now + m_settings.guard_zone_timeout;
 
       if (!m_settings.alert_audio_file.IsEmpty()) {
         PlugInPlaySound(m_settings.alert_audio_file);
@@ -590,10 +593,12 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
     m_guard_bogey_seen = true;
     m_guard_bogey_timeout = 0;
   } else if (m_guard_bogey_seen) {  // First time here after bogey disappeared. Start timer.
-    m_guard_bogey_timeout = now + ALARM_TIMEOUT;
+    m_guard_bogey_timeout = now + CONFIRM_RESET_TIMEOUT;
     m_guard_bogey_seen = false;
+    m_alarm_sound_timeout = 0;
   } else if (TIMED_OUT(now, m_guard_bogey_timeout)) {  // No bogeys and timer elapsed, now reset confirmed
     m_guard_bogey_confirmed = false;                   // Reset for next time we see bogeys
+    m_alarm_sound_timeout = 0;
   }
 }
 
@@ -954,6 +959,7 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, 0);
     pConf->Read(wxT("GuardZoneDebugInc"), &m_settings.guard_zone_debug_inc, 0);
     pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, true);
+    pConf->Read(wxT("GuardZoneTimeout"), &m_settings.guard_zone_timeout, 30);
     pConf->Read(wxT("GuardZonesRenderStyle"), &m_settings.guard_zone_render_style, 0);
     pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
     pConf->Read(wxT("IgnoreRadarHeading"), &m_settings.ignore_radar_heading, 0);
@@ -1000,6 +1006,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("EnableDualRadar"), m_settings.enable_dual_radar);
     pConf->Write(wxT("GuardZoneDebugInc"), m_settings.guard_zone_debug_inc);
     pConf->Write(wxT("GuardZoneOnOverlay"), m_settings.guard_zone_on_overlay);
+    pConf->Write(wxT("GuardZoneTimeout"), m_settings.guard_zone_timeout);
     pConf->Write(wxT("GuardZonesRenderStyle"), m_settings.guard_zone_render_style);
     pConf->Write(wxT("GuardZonesThreshold"), m_settings.guard_zone_threshold);
     pConf->Write(wxT("IgnoreRadarHeading"), m_settings.ignore_radar_heading);
