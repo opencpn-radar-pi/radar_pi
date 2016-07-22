@@ -52,6 +52,7 @@ class br24OptionsDialog;
 class br24Receive;
 class br24Transmit;
 class br24radar_pi;
+class GuardZoneBogey;
 
 #define SPOKES (4096)               // BR radars can generate up to 4096 spokes per rotation,
 #define LINES_PER_ROTATION (2048)   // but use only half that in practice
@@ -254,6 +255,7 @@ struct PersistentSettings {
   int threshold_blue;
   int threshold_multi_sweep;
   wxPoint control_pos[RADARS];
+  wxPoint alarm_pos;
   wxString alert_audio_file;
   wxString mcast_address;
 };
@@ -343,7 +345,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   long GetRangeMeters();
   long GetOptimalRangeMeters();
 
-  wxString GetGuardZoneText(RadarInfo *ri, bool withTimeout);
+  wxString GetGuardZoneText(RadarInfo *ri);
 
   void SetMcastIPAddress(wxString &msg);
 
@@ -438,6 +440,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
 
 #define HEADING_TIMEOUT (5)
 
+  GuardZoneBogey *m_bogey_dialog;
   bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
   bool m_guard_bogey_confirmed;
   time_t m_alarm_sound_timeout;

@@ -32,6 +32,7 @@
 #include "br24radar_pi.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
+#include "GuardZoneBogey.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -168,6 +169,7 @@ int br24radar_pi::Init(void) {
   m_guard_bogey_seen = false;
   m_guard_bogey_confirmed = false;
 
+  m_bogey_dialog = 0;
   m_alarm_sound_timeout = 0;
   m_guard_bogey_timeout = 0;
   m_bpos_timestamp = 0;
@@ -285,6 +287,11 @@ bool br24radar_pi::DeInit(void) {
 
   m_initialized = false;
   LOG_VERBOSE(wxT("BR24radar_pi: DeInit of plugin"));
+
+  if (m_bogey_dialog) {
+    delete m_bogey_dialog;
+    m_bogey_dialog = 0;
+  }
 
   // First close everything that the user can have open
   m_pMessageBox->Close();
@@ -502,7 +509,7 @@ void br24radar_pi::PassHeadingToOpenCPN() {
   PushNMEABuffer(nmea);
 }
 
-wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
+wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri) {
   wxString text;
 
   if (m_settings.timed_idle) {
@@ -533,17 +540,6 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
       }
     }
   }
-  if (withTimeout) {
-    time_t now = time(0);
-
-    if (m_alarm_sound_timeout > 0) {
-      if (text.length() > 0) {
-        text << wxT("\n");
-      }
-      text << _("Next alarm in");
-      text << wxString::Format(wxT(" %d s"), m_alarm_sound_timeout - now);
-    }
-  }
 
   return text;
 }
@@ -555,8 +551,13 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri, bool withTimeout) {
 void br24radar_pi::CheckGuardZoneBogeys(void) {
   bool bogeys_found = false;
   time_t now = time(0);
+  wxString text;
 
   for (size_t r = 0; r < RADARS; r++) {
+    if (m_settings.enable_dual_radar) {
+      text << m_radar[r]->m_name;
+      text << wxT(":\n");
+    }
     if (m_radar[r]->m_state.value == RADAR_TRANSMIT) {
       bool bogeys_found_this_radar = false;
 
@@ -567,14 +568,20 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
           bogeys_found_this_radar = true;
           m_settings.timed_idle = 0;  // reset timed idle to off
         }
+        text << _(" Zone") << wxT(" ") << z + 1 << wxT(": ");
+        if (bogeys > m_settings.guard_zone_threshold ) {
+          text << bogeys;
+        } else if (bogeys >= 0) {
+          text << wxT("(");
+          text << bogeys;
+          text << wxT(")");
+        } else {
+          text << wxT("-");
+        }
+        text << wxT("\n");
       }
       LOG_GUARD(wxT("BR24radar_pi: Radar %c: CheckGuardZoneBogeys found=%d confirmed=%d"), r + 'A', bogeys_found_this_radar,
                 m_guard_bogey_confirmed);
-      if (bogeys_found_this_radar && !m_guard_bogey_confirmed) {
-        m_radar[r]->ShowBogeys(GetGuardZoneText(m_radar[r], true));
-      } else {
-        m_radar[r]->HideBogeys();
-      }
     }
   }
 
@@ -599,6 +606,22 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
   } else if (TIMED_OUT(now, m_guard_bogey_timeout)) {  // No bogeys and timer elapsed, now reset confirmed
     m_guard_bogey_confirmed = false;                   // Reset for next time we see bogeys
     m_alarm_sound_timeout = 0;
+  }
+
+  if (!m_guard_bogey_confirmed && m_alarm_sound_timeout > 0) {
+    if (text.length() > 0) {
+      text << wxT("\n");
+    }
+    text << _("Next alarm in");
+    text << wxString::Format(wxT(" %d s"), m_alarm_sound_timeout - now);
+  }
+
+  if (bogeys_found && !m_bogey_dialog) {
+    m_bogey_dialog = new GuardZoneBogey;
+    m_bogey_dialog->Create(m_parent_window, this);
+  }
+  if (m_bogey_dialog) {
+    m_bogey_dialog->ShowBogeys(text, bogeys_found, m_guard_bogey_confirmed);
   }
 }
 
@@ -924,6 +947,9 @@ bool br24radar_pi::LoadConfig(void) {
           m_radar[r]->m_guard_zone[i]->SetType((GuardZoneType)v);
         }
       }
+      pConf->Read(wxT("GuardZonePosX"), &x, 20);
+      pConf->Read(wxT("GuardZonePosY"), &y, 170);
+      m_settings.alarm_pos = wxPoint(x, y);
     } else {
       pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
       pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 120);
@@ -950,6 +976,9 @@ bool br24radar_pi::LoadConfig(void) {
           m_radar[r]->m_guard_zone[i]->SetType((GuardZoneType)v);
         }
       }
+      pConf->Read(wxT("AlarmZonePosX"), &x, 20);
+      pConf->Read(wxT("AlarmZonePosY"), &y, 170);
+      m_settings.alarm_pos = wxPoint(x, y);
     }
 
     pConf->Read(wxT("ChartOverlay"), &m_settings.chart_overlay, 0);
@@ -999,6 +1028,8 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->DeleteGroup(wxT("/Plugins/BR24Radar"));
     pConf->SetPath(wxT("/Plugins/BR24Radar"));
 
+    pConf->Write(wxT("AlarmPosX"), m_settings.alarm_pos.x);
+    pConf->Write(wxT("AlarmPosY"), m_settings.alarm_pos.y);
     pConf->Write(wxT("ChartOverlay"), m_settings.chart_overlay);
     pConf->Write(wxT("DisplayOption"), m_settings.display_option);
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);

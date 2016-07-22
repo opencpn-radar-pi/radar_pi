@@ -39,6 +39,7 @@ PLUGIN_BEGIN_NAMESPACE
 class RadarDraw;
 class RadarCanvas;
 class RadarPanel;
+class GuardZoneBogey;
 
 struct RadarRange {
   int meters;
@@ -190,8 +191,6 @@ class RadarInfo : public wxEvtHandler {
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
   void ShowControlDialog(bool show, bool reparent);
-  void ShowBogeys(wxString text);
-  void HideBogeys();
 
   bool IsPaneShown();
 

@@ -262,17 +262,6 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
   }
 }
 
-void RadarInfo::ShowBogeys(wxString text) {
-  ShowControlDialog(true, false);
-  m_control_dialog->ShowBogeys(text);
-}
-
-void RadarInfo::HideBogeys() {
-  if (m_control_dialog) {
-    m_control_dialog->HideBogeys();
-  }
-}
-
 void RadarInfo::SetNetworkCardAddress(struct sockaddr_in *address) {
   if (!m_transmit->Init(address)) {
     wxLogError(wxT("BR24radar_pi %s: Unable to create transmit socket"), m_name.c_str());
@@ -789,7 +778,7 @@ wxString RadarInfo::FormatAngle(double angle) {
 }
 
 wxString RadarInfo::GetCanvasTextBottomLeft() {
-  wxString s = m_pi->GetGuardZoneText(this, false);
+  wxString s = m_pi->GetGuardZoneText(this);
 
   if (m_state.value == RADAR_TRANSMIT) {
     double distance = 0.0, bearing;

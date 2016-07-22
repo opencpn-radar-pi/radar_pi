@@ -68,7 +68,7 @@ class br24ControlsDialog : public wxDialog {
   void UpdateDialogShown();
   void UpdateControlValues(bool refreshAll);
   void SetErrorMessage(wxString &msg);
-  void ShowBogeys(wxString text);
+  void ShowBogeys(wxString text, bool confirmed);
   void HideBogeys();
 
   void HideTemporarily();  // When a second dialog (which is not a child class) takes over -- aka GuardZone
@@ -140,7 +140,6 @@ class br24ControlsDialog : public wxDialog {
   wxBoxSizer *m_view_sizer;
   wxBoxSizer *m_edit_sizer;
   wxBoxSizer *m_installation_sizer;
-  wxBoxSizer *m_bogey_sizer;
   wxBoxSizer *m_guard_sizer;
   wxBoxSizer *m_adjust_sizer;
   wxBoxSizer *m_bearing_sizer;
@@ -204,11 +203,6 @@ class br24ControlsDialog : public wxDialog {
   wxButton *m_bearing_button;
   wxButton *m_guard_1_button;
   wxButton *m_guard_2_button;
-
-  // Guard Zone Bogey Display
-
-  wxStaticText *m_bogey_text;
-  wxButton *m_bogey_confirm;
 
   // Guard Zone Edit
 

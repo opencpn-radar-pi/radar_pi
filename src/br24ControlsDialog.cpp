@@ -146,7 +146,6 @@ EVT_BUTTON(ID_ZONE1, br24ControlsDialog::OnZone1ButtonClick)
 EVT_BUTTON(ID_ZONE2, br24ControlsDialog::OnZone2ButtonClick)
 
 EVT_BUTTON(ID_MESSAGE, br24ControlsDialog::OnMessageButtonClick)
-EVT_BUTTON(ID_CONFIRM_BOGEY, br24ControlsDialog::OnConfirmBogeyButtonClick)
 
 EVT_BUTTON(ID_BEARING_SET, br24ControlsDialog::OnBearingSetButtonClick)
 EVT_BUTTON(ID_CLEAR_CURSOR, br24ControlsDialog::OnClearCursorButtonClick)
@@ -654,19 +653,6 @@ void br24ControlsDialog::CreateControls() {
 
   m_top_sizer->Hide(m_installation_sizer);
 
-  //***************** GUARD ZONE BOGEY BOX *************//
-  m_bogey_sizer = new wxBoxSizer(wxVERTICAL);
-  m_top_sizer->Add(m_bogey_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-
-  m_bogey_text =
-      new wxStaticText(this, wxID_ANY, _("Zone 1: unknown\nZone 2: unknown\nTimeout\n"), wxDefaultPosition, wxDefaultSize, 0);
-  m_bogey_sizer->Add(m_bogey_text, 0, wxALIGN_LEFT | wxALL, BORDER);
-
-  m_bogey_confirm = new wxButton(this, ID_CONFIRM_BOGEY, _("&Confirm"), wxDefaultPosition, g_smallButtonSize, 0);
-  m_bogey_sizer->Add(m_bogey_confirm, 0, wxALIGN_CENTER_VERTICAL | wxALL, BORDER);
-
-  m_top_sizer->Hide(m_bogey_sizer);
-
   //***************** GUARD ZONE EDIT BOX *************//
 
   m_guard_sizer = new wxBoxSizer(wxVERTICAL);
@@ -1142,12 +1128,6 @@ void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
   UpdateControlValues(false);
 }
 
-void br24ControlsDialog::OnConfirmBogeyButtonClick(wxCommandEvent& event) {
-  m_pi->ConfirmGuardZoneBogeys();
-  SwitchTo(m_control_sizer, wxT("main (confirm bogey)"));
-  UpdateDialogShown();
-}
-
 void br24ControlsDialog::OnBearingSetButtonClick(wxCommandEvent& event) {
   int bearing = event.GetId() - ID_BEARING_SET;
   LOG_DIALOG(wxT("%s OnBearingSetButtonClick for bearing #%d"), m_log_name.c_str(), bearing + 1);
@@ -1412,8 +1392,7 @@ void br24ControlsDialog::UpdateDialogShown() {
     LOG_DIALOG(wxT("%s UpdateDialogShown manually opened"), m_log_name.c_str());
     if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_view_sizer) &&
         !m_top_sizer->IsShown(m_edit_sizer) && !m_top_sizer->IsShown(m_installation_sizer) &&
-        !m_top_sizer->IsShown(m_bogey_sizer) && !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) &&
-        !m_top_sizer->IsShown(m_bearing_sizer)) {
+        !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_bearing_sizer)) {
       SwitchTo(m_control_sizer, wxT("main (manual open)"));
     }
     m_control_sizer->Layout();
@@ -1525,31 +1504,6 @@ void br24ControlsDialog::HideDialog() {
   UpdateDialogShown();
 }
 
-void br24ControlsDialog::ShowBogeys(wxString text) {
-  if (m_top_sizer && m_bogey_sizer) {
-    if (m_top_sizer->IsShown(m_control_sizer)) {
-      SwitchTo(m_bogey_sizer, wxT("bogey"));
-      if (!m_hide) {
-        UnHideTemporarily();
-      } else {
-        ShowDialog();
-      }
-    }
-    if (m_top_sizer->IsShown(m_bogey_sizer)) {
-      m_bogey_text->SetLabel(text);
-      m_bogey_sizer->Layout();
-      Layout();
-      Fit();
-    }
-  }
-}
-
-void br24ControlsDialog::HideBogeys() {
-  if (m_top_sizer && m_control_sizer && m_top_sizer->IsShown(m_bogey_sizer)) {
-    SwitchTo(m_control_sizer, wxT("main (hide bogeys)"));
-  }
-}
-
 void br24ControlsDialog::SetMenuAutoHideTimeout() {
   switch (m_pi->m_settings.menu_auto_hide) {
     case 1:
@@ -1566,7 +1520,8 @@ void br24ControlsDialog::SetMenuAutoHideTimeout() {
 
 void br24ControlsDialog::OnMouseLeftDown(wxMouseEvent& event) {
   SetMenuAutoHideTimeout();
-  event.Skip();
+  LOG_VERBOSE(wxT("%s mouse left down"), m_log_name.c_str());
+  // event.Skip();
 }
 
 void br24ControlsDialog::ShowGuardZone(int zone) {
