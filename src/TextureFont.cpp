@@ -50,10 +50,10 @@ void TextureFont::Build(wxFont &font, bool blur, bool luminance) {
     wxCoord descent, exlead;
     dc.GetTextExtent(text, &gw, &gh, &descent, &exlead, &font);  // measure the text
 
-    tgi[i].width = gw;
-    tgi[i].height = gh;
+    m_tgi[i].width = gw;
+    m_tgi[i].height = gh;
 
-    tgi[i].advance = gw;
+    m_tgi[i].advance = gw;
 
     maxglyphw = wxMax(gw, maxglyphw);
     maxglyphh = wxMax(gh, maxglyphh);
@@ -92,8 +92,8 @@ void TextureFont::Build(wxFont &font, bool blur, bool luminance) {
       row++;
     }
 
-    tgi[i].x = col * maxglyphw;
-    tgi[i].y = row * maxglyphh;
+    m_tgi[i].x = col * maxglyphw;
+    m_tgi[i].y = row * maxglyphh;
 
     wxString text;
     if (i == DEGREE_GLYPH)
@@ -101,7 +101,7 @@ void TextureFont::Build(wxFont &font, bool blur, bool luminance) {
     else
       text = wxString::Format(_T("%c"), i);
 
-    dc.DrawText(text, tgi[i].x, tgi[i].y);
+    dc.DrawText(text, m_tgi[i].x, m_tgi[i].y);
     col++;
   }
 
@@ -129,10 +129,10 @@ void TextureFont::Build(wxFont &font, bool blur, bool luminance) {
     for (int j = 0; j < tex_w * tex_h; j++)
       for (int k = 0; k < stride; k++) teximage[j * stride + k] = imgdata[3 * j];
   }
-  if (texobj) Delete();
+  if (m_texobj) Delete();
 
-  glGenTextures(1, &texobj);
-  glBindTexture(GL_TEXTURE_2D, texobj);
+  glGenTextures(1, &m_texobj);
+  glBindTexture(GL_TEXTURE_2D, m_texobj);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -145,8 +145,8 @@ void TextureFont::Build(wxFont &font, bool blur, bool luminance) {
 }
 
 void TextureFont::Delete() {
-  glDeleteTextures(1, &texobj);
-  texobj = 0;
+  glDeleteTextures(1, &m_texobj);
+  m_texobj = 0;
 }
 
 void TextureFont::GetTextExtent(const wxString &string, int *width, int *height) {
@@ -155,7 +155,7 @@ void TextureFont::GetTextExtent(const wxString &string, int *width, int *height)
   for (unsigned int i = 0; i < string.size(); i++) {
     wchar_t c = string[i];
     if (c == '\n') {
-      h += tgi[(int)'A'].height;
+      h += m_tgi[(int)'A'].height;
       w1 = wxMax(w0, w1);
       w0 = 0;
       continue;
@@ -174,7 +174,7 @@ void TextureFont::GetTextExtent(const wxString &string, int *width, int *height)
       continue;
     }
 
-    TexGlyphInfo &tgisi = tgi[c];
+    TexGlyphInfo &tgisi = m_tgi[c];
 
     w0 += tgisi.advance;
     if (tgisi.height > h) h = tgisi.height;
@@ -238,14 +238,14 @@ void TextureFont::RenderGlyph(wchar_t c) {
     glVertex2i(0, gh);
     glEnd();
 
-    glBindTexture(GL_TEXTURE_2D, texobj);
+    glBindTexture(GL_TEXTURE_2D, m_texobj);
     delete[] data;
 
     glTranslatef(gw, 0.0, 0.0);
     return;
   }
 
-  TexGlyphInfo &tgic = tgi[c];
+  TexGlyphInfo &tgic = m_tgi[c];
 
   int x = tgic.x, y = tgic.y;
   float w = tgic.width, h = tgic.height;
@@ -274,7 +274,7 @@ void TextureFont::RenderString(const wxString &string, int x, int y) {
   glTranslatef(x, y, 0);
 
   glPushAttrib(GL_TEXTURE_BIT);
-  glBindTexture(GL_TEXTURE_2D, texobj);
+  glBindTexture(GL_TEXTURE_2D, m_texobj);
   glPushMatrix();
 
   for (unsigned int i = 0; i < string.size(); i++) {
@@ -282,7 +282,7 @@ void TextureFont::RenderString(const wxString &string, int x, int y) {
 
     if (x == '\n') {
       glPopMatrix();
-      glTranslatef(0, tgi[(int)'A'].height, 0);
+      glTranslatef(0, m_tgi[(int)'A'].height, 0);
       glPushMatrix();
       continue;
     }
