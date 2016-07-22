@@ -161,7 +161,7 @@ class RadarInfo : public wxEvtHandler {
   int m_refresh_millis;
   RadarState wantedState;
 
-  GuardZone *guard_zone[GUARD_ZONES];
+  GuardZone *m_guard_zone[GUARD_ZONES];
   double m_ebl[BEARING_LINES];
   double m_vrm[BEARING_LINES];
   receive_statistics statistics;

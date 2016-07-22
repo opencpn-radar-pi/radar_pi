@@ -962,10 +962,10 @@ void br24ControlsDialog::UpdateAdvanced4GState() {
 void br24ControlsDialog::UpdateGuardZoneState() {
   wxString label1, label2;
 
-  label1 << _("Guard zone") << wxT(" 1\n") << guard_zone_names[m_ri->guard_zone[0]->type];
+  label1 << _("Guard zone") << wxT(" 1\n") << guard_zone_names[m_ri->m_guard_zone[0]->type];
   m_guard_1_button->SetLabel(label1);
 
-  label2 << _("Guard zone") << wxT(" 2\n") << guard_zone_names[m_ri->guard_zone[1]->type];
+  label2 << _("Guard zone") << wxT(" 2\n") << guard_zone_names[m_ri->m_guard_zone[1]->type];
   m_guard_2_button->SetLabel(label2);
 }
 
@@ -1567,7 +1567,7 @@ void br24ControlsDialog::OnMouseLeftDown(wxMouseEvent& event) {
 void br24ControlsDialog::ShowGuardZone(int zone) {
   double conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
 
-  m_guard_zone = m_ri->guard_zone[zone];
+  m_guard_zone = m_ri->m_guard_zone[zone];
 
   wxString GuardZoneText;
   GuardZoneText << _("Guard Zone") << wxString::Format(wxT(" %d"), zone + 1);

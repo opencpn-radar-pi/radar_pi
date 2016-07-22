@@ -182,7 +182,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   control_dialog = 0;
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
-    guard_zone[z] = new GuardZone(pi);
+    m_guard_zone[z] = new GuardZone(pi);
   }
 
   ComputeTargetTrails();
@@ -220,7 +220,7 @@ RadarInfo::~RadarInfo() {
     m_draw_overlay.draw = 0;
   }
   for (size_t z = 0; z < GUARD_ZONES; z++) {
-    delete guard_zone[z];
+    delete m_guard_zone[z];
   }
 }
 
@@ -343,7 +343,7 @@ void RadarInfo::ResetSpokes() {
   }
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     // Zap them anyway just to be sure
-    guard_zone[z]->ResetBogeys();
+    m_guard_zone[z]->ResetBogeys();
   }
 }
 
@@ -379,7 +379,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   bool calc_history = m_multi_sweep_filter;
   for (size_t z = 0; z < GUARD_ZONES; z++) {
-    if (guard_zone[z]->type != GZ_OFF && guard_zone[z]->multi_sweep_filter) {
+    if (m_guard_zone[z]->type != GZ_OFF && m_guard_zone[z]->multi_sweep_filter) {
       calc_history = true;
     }
   }
@@ -394,8 +394,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
-    if (guard_zone[z]->type != GZ_OFF) {
-      guard_zone[z]->ProcessSpoke(angle, data, history[angle], len, range_meters);
+    if (m_guard_zone[z]->type != GZ_OFF) {
+      m_guard_zone[z]->ProcessSpoke(angle, data, history[angle], len, range_meters);
     }
   }
 
@@ -471,26 +471,26 @@ void RadarInfo::RenderGuardZone() {
   GLubyte red = 0, green = 200, blue = 0, alpha = 50;
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
-    if (guard_zone[z]->type != GZ_OFF) {
-      if (guard_zone[z]->type == GZ_CIRCLE) {
+    if (m_guard_zone[z]->type != GZ_OFF) {
+      if (m_guard_zone[z]->type == GZ_CIRCLE) {
         start_bearing = 0;
         end_bearing = 359;
       } else {
-        start_bearing = SCALE_RAW_TO_DEGREES2048(guard_zone[z]->start_bearing);
-        end_bearing = SCALE_RAW_TO_DEGREES2048(guard_zone[z]->end_bearing);
+        start_bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone[z]->start_bearing);
+        end_bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone[z]->end_bearing);
       }
       switch (m_pi->m_settings.guard_zone_render_style) {
         case 1:
           glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
-          DrawOutlineArc(guard_zone[z]->outer_range, guard_zone[z]->inner_range, start_bearing, end_bearing, true);
+          DrawOutlineArc(m_guard_zone[z]->outer_range, m_guard_zone[z]->inner_range, start_bearing, end_bearing, true);
           break;
         case 2:
           glColor4ub(red, green, blue, alpha);
-          DrawOutlineArc(guard_zone[z]->outer_range, guard_zone[z]->inner_range, start_bearing, end_bearing, false);
+          DrawOutlineArc(m_guard_zone[z]->outer_range, m_guard_zone[z]->inner_range, start_bearing, end_bearing, false);
         // fall thru
         default:
           glColor4ub(red, green, blue, alpha);
-          DrawFilledArc(guard_zone[z]->outer_range, guard_zone[z]->inner_range, start_bearing, end_bearing);
+          DrawFilledArc(m_guard_zone[z]->outer_range, m_guard_zone[z]->inner_range, start_bearing, end_bearing);
       }
     }
 
