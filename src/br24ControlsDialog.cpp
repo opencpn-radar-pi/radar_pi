@@ -962,10 +962,10 @@ void br24ControlsDialog::UpdateAdvanced4GState() {
 void br24ControlsDialog::UpdateGuardZoneState() {
   wxString label1, label2;
 
-  label1 << _("Guard zone") << wxT(" 1\n") << guard_zone_names[m_ri->m_guard_zone[0]->type];
+  label1 << _("Guard zone") << wxT(" 1\n") << guard_zone_names[m_ri->m_guard_zone[0]->m_type];
   m_guard_1_button->SetLabel(label1);
 
-  label2 << _("Guard zone") << wxT(" 2\n") << guard_zone_names[m_ri->m_guard_zone[1]->type];
+  label2 << _("Guard zone") << wxT(" 2\n") << guard_zone_names[m_ri->m_guard_zone[1]->m_type];
   m_guard_2_button->SetLabel(label2);
 }
 
@@ -1573,24 +1573,24 @@ void br24ControlsDialog::ShowGuardZone(int zone) {
   GuardZoneText << _("Guard Zone") << wxString::Format(wxT(" %d"), zone + 1);
   m_guard_zone_text->SetLabel(GuardZoneText);
 
-  m_guard_zone_type->SetSelection(m_guard_zone->type);
-  m_inner_range->SetValue(wxString::Format(wxT("%2.2f"), m_guard_zone->inner_range / conversionFactor));
-  m_outer_range->SetValue(wxString::Format(wxT("%2.2f"), m_guard_zone->outer_range / conversionFactor));
+  m_guard_zone_type->SetSelection(m_guard_zone->m_type);
+  m_inner_range->SetValue(wxString::Format(wxT("%2.2f"), m_guard_zone->m_inner_range / conversionFactor));
+  m_outer_range->SetValue(wxString::Format(wxT("%2.2f"), m_guard_zone->m_outer_range / conversionFactor));
 
-  double bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone->start_bearing);
+  double bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone->m_start_bearing);
   if (bearing >= 180.0) {
     bearing -= 360.;
   }
   bearing = round(bearing);
   m_start_bearing->SetValue(wxString::Format(wxT("%3.0f"), bearing));
 
-  bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone->end_bearing);
+  bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone->m_end_bearing);
   if (bearing >= 180.0) {
     bearing -= 360.;
   }
   bearing = round(bearing);
   m_end_bearing->SetValue(wxString::Format(wxT("%3.0f"), bearing));
-  m_filter->SetValue(m_guard_zone->multi_sweep_filter ? 1 : 0);
+  m_filter->SetValue(m_guard_zone->m_multi_sweep_filter ? 1 : 0);
 
   m_top_sizer->Hide(m_control_sizer);
   SwitchTo(m_guard_sizer);

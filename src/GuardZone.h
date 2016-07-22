@@ -38,12 +38,12 @@ PLUGIN_BEGIN_NAMESPACE
 
 class GuardZone {
  public:
-  GuardZoneType type;
-  SpokeBearing start_bearing;
-  SpokeBearing end_bearing;
-  int inner_range;  // start in meters
-  int outer_range;  // end   in meters
-  int multi_sweep_filter;
+  GuardZoneType m_type;
+  SpokeBearing m_start_bearing;
+  SpokeBearing m_end_bearing;
+  int m_inner_range;  // start in meters
+  int m_outer_range;  // end   in meters
+  int m_multi_sweep_filter;
 
   void ResetBogeys() {
     m_bogey_count = -1;
@@ -53,27 +53,27 @@ class GuardZone {
   };
 
   void SetType(GuardZoneType type) {
-    this->type = type;
+    m_type = type;
     ResetBogeys();
   };
   void SetStartBearing(SpokeBearing start_bearing) {
-    this->start_bearing = start_bearing;
+    m_start_bearing = start_bearing;
     ResetBogeys();
   };
   void SetEndBearing(SpokeBearing end_bearing) {
-    this->end_bearing = end_bearing;
+    m_end_bearing = end_bearing;
     ResetBogeys();
   };
   void SetInnerRange(int inner_range) {
-    this->inner_range = inner_range;
+    m_inner_range = inner_range;
     ResetBogeys();
   };
   void SetOuterRange(int outer_range) {
-    this->outer_range = outer_range;
+    m_outer_range = outer_range;
     ResetBogeys();
   };
   void SetMultiSweepFilter(int filter) {
-    this->multi_sweep_filter = filter;
+    m_multi_sweep_filter = filter;
     ResetBogeys();
   };
 
@@ -90,12 +90,12 @@ class GuardZone {
   GuardZone(br24radar_pi *pi) {
     m_pi = pi;
 
-    type = GZ_OFF;
-    start_bearing = 0;
-    end_bearing = 0;
-    inner_range = 0;
-    outer_range = 0;
-    multi_sweep_filter = 0;
+    m_type = GZ_OFF;
+    m_start_bearing = 0;
+    m_end_bearing = 0;
+    m_inner_range = 0;
+    m_outer_range = 0;
+    m_multi_sweep_filter = 0;
 
     ResetBogeys();
   }

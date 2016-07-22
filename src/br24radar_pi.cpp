@@ -852,6 +852,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(m_auto_range_meters);
 
   //    Calculate image scale factor
+  double llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
 
   GetCanvasLLPix(vp, wxPoint(0, vp->pix_height - 1), &ulat, &ulon);  // is pix_height a mapable coordinate?
   GetCanvasLLPix(vp, wxPoint(0, 0), &llat, &llon);
@@ -909,11 +910,11 @@ bool br24radar_pi::LoadConfig(void) {
         for (int i = 0; i < GUARD_ZONES; i++) {
           double bearing;
           pConf->Read(wxString::Format(wxT("Zone%dStBrng%s"), i + 1, s), &bearing, 0.0);
-          m_radar[r]->m_guard_zone[i]->start_bearing = SCALE_DEGREES_TO_RAW2048(bearing);
+          m_radar[r]->m_guard_zone[i]->m_start_bearing = SCALE_DEGREES_TO_RAW2048(bearing);
           pConf->Read(wxString::Format(wxT("Zone%dEndBrng%s"), i + 1, s), &bearing, 0.0);
-          m_radar[r]->m_guard_zone[i]->end_bearing = SCALE_DEGREES_TO_RAW2048(bearing);
-          pConf->Read(wxString::Format(wxT("Zone%dOuterRng%s"), i + 1, s), &m_radar[r]->m_guard_zone[i]->outer_range, 0);
-          pConf->Read(wxString::Format(wxT("Zone%dInnerRng%s"), i + 1, s), &m_radar[r]->m_guard_zone[i]->inner_range, 0);
+          m_radar[r]->m_guard_zone[i]->m_end_bearing = SCALE_DEGREES_TO_RAW2048(bearing);
+          pConf->Read(wxString::Format(wxT("Zone%dOuterRng%s"), i + 1, s), &m_radar[r]->m_guard_zone[i]->m_outer_range, 0);
+          pConf->Read(wxString::Format(wxT("Zone%dInnerRng%s"), i + 1, s), &m_radar[r]->m_guard_zone[i]->m_inner_range, 0);
           pConf->Read(wxString::Format(wxT("Zone%dArcCirc%s"), i + 1, s), &v, 0);
           m_radar[r]->m_guard_zone[i]->SetType((GuardZoneType)v);
         }
@@ -935,11 +936,11 @@ bool br24radar_pi::LoadConfig(void) {
         m_settings.control_pos[r] = wxPoint(x, y);
         LOG_DIALOG(wxT("BR24radar_pi: LoadConfig: show_radar[%d]=%d control=%d,%d"), r, v, x, y);
         for (int i = 0; i < GUARD_ZONES; i++) {
-          pConf->Read(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), &m_radar[r]->m_guard_zone[i]->start_bearing, 0);
-          pConf->Read(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), &m_radar[r]->m_guard_zone[i]->end_bearing, 0);
-          pConf->Read(wxString::Format(wxT("Radar%dZone%dOuterRange"), r, i), &m_radar[r]->m_guard_zone[i]->outer_range, 0);
-          pConf->Read(wxString::Format(wxT("Radar%dZone%dInnerRange"), r, i), &m_radar[r]->m_guard_zone[i]->inner_range, 0);
-          pConf->Read(wxString::Format(wxT("Radar%dZone%dFilter"), r, i), &m_radar[r]->m_guard_zone[i]->multi_sweep_filter, 0);
+          pConf->Read(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), &m_radar[r]->m_guard_zone[i]->m_start_bearing, 0);
+          pConf->Read(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), &m_radar[r]->m_guard_zone[i]->m_end_bearing, 0);
+          pConf->Read(wxString::Format(wxT("Radar%dZone%dOuterRange"), r, i), &m_radar[r]->m_guard_zone[i]->m_outer_range, 0);
+          pConf->Read(wxString::Format(wxT("Radar%dZone%dInnerRange"), r, i), &m_radar[r]->m_guard_zone[i]->m_inner_range, 0);
+          pConf->Read(wxString::Format(wxT("Radar%dZone%dFilter"), r, i), &m_radar[r]->m_guard_zone[i]->m_multi_sweep_filter, 0);
           pConf->Read(wxString::Format(wxT("Radar%dZone%dType"), r, i), &v, 0);
           m_radar[r]->m_guard_zone[i]->SetType((GuardZoneType)v);
         }
@@ -1035,12 +1036,12 @@ bool br24radar_pi::SaveConfig(void) {
 
       // LOG_DIALOG(wxT("BR24radar_pi: SaveConfig: show_radar[%d]=%d"), r, m_settings.show_radar[r]);
       for (int i = 0; i < GUARD_ZONES; i++) {
-        pConf->Write(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), m_radar[r]->m_guard_zone[i]->start_bearing);
-        pConf->Write(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), m_radar[r]->m_guard_zone[i]->end_bearing);
-        pConf->Write(wxString::Format(wxT("Radar%dZone%dOuterRange"), r, i), m_radar[r]->m_guard_zone[i]->outer_range);
-        pConf->Write(wxString::Format(wxT("Radar%dZone%dInnerRange"), r, i), m_radar[r]->m_guard_zone[i]->inner_range);
-        pConf->Write(wxString::Format(wxT("Radar%dZone%dType"), r, i), (int)m_radar[r]->m_guard_zone[i]->type);
-        pConf->Write(wxString::Format(wxT("Radar%dZone%dFilter"), r, i), m_radar[r]->m_guard_zone[i]->multi_sweep_filter);
+        pConf->Write(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), m_radar[r]->m_guard_zone[i]->m_start_bearing);
+        pConf->Write(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), m_radar[r]->m_guard_zone[i]->m_end_bearing);
+        pConf->Write(wxString::Format(wxT("Radar%dZone%dOuterRange"), r, i), m_radar[r]->m_guard_zone[i]->m_outer_range);
+        pConf->Write(wxString::Format(wxT("Radar%dZone%dInnerRange"), r, i), m_radar[r]->m_guard_zone[i]->m_inner_range);
+        pConf->Write(wxString::Format(wxT("Radar%dZone%dType"), r, i), (int)m_radar[r]->m_guard_zone[i]->m_type);
+        pConf->Write(wxString::Format(wxT("Radar%dZone%dFilter"), r, i), m_radar[r]->m_guard_zone[i]->m_multi_sweep_filter);
       }
     }
 

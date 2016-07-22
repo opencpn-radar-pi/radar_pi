@@ -48,7 +48,7 @@ struct TexGlyphInfo {
 class TextureFont {
  public:
   TextureFont() {
-    texobj = 0;
+    m_texobj = 0;
     m_blur = false;
   }
 
@@ -64,9 +64,9 @@ class TextureFont {
   wxFont m_font;
   bool m_blur;
 
-  TexGlyphInfo tgi[MAX_GLYPH];
+  TexGlyphInfo m_tgi[MAX_GLYPH];
 
-  unsigned int texobj;
+  unsigned int m_texobj;
   int tex_w, tex_h;
 };
 

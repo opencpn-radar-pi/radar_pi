@@ -424,7 +424,6 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
 
   NMEA0183 m_NMEA0183;
 
-  double llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
 
   ToolbarIconColor m_toolbar_button;
   ToolbarIconColor m_sent_toolbar_button;
