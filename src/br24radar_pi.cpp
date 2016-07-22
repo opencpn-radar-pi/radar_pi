@@ -365,7 +365,7 @@ void br24radar_pi::SetRadarWindowViz() {
     bool showThisRadar = m_settings.show && m_settings.show_radar[r];
     bool showThisControl = m_settings.show && m_settings.show_radar_control[r];
     m_radar[r]->ShowRadarWindow(showThisRadar);
-    m_radar[r]->ShowControlDialog(showThisControl);
+    m_radar[r]->ShowControlDialog(showThisControl, false);
     if (m_settings.show == 1 && m_radar[r]->m_wantedState == RADAR_TRANSMIT) {
       m_radar[r]->m_transmit->RadarTxOn();
     }
@@ -381,10 +381,10 @@ void br24radar_pi::SetRadarWindowViz() {
 //********************************************************************************
 // Operation Dialogs - Control, Manual, and Options
 
-void br24radar_pi::ShowRadarControl(int radar, bool show) {
+void br24radar_pi::ShowRadarControl(int radar, bool show, bool reparent) {
   LOG_DIALOG(wxT("BR24radar_pi: ShowRadarControl(%d, %d)"), radar, (int)show);
   m_settings.show_radar_control[radar] = show;
-  m_radar[radar]->ShowControlDialog(show);
+  m_radar[radar]->ShowControlDialog(show, reparent);
 }
 
 void br24radar_pi::OnControlDialogClose(RadarInfo *ri) {
@@ -565,13 +565,11 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
           m_settings.timed_idle = 0;  // reset timed idle to off
         }
       }
+      LOG_GUARD(wxT("BR24radar_pi: Radar %c: CheckGuardZoneBogeys found=%d confirmed=%d"), r + 'A', bogeys_found_this_radar, m_guard_bogey_confirmed);
       if (bogeys_found_this_radar && !m_guard_bogey_confirmed) {
-        ShowRadarControl(r);
-        if (m_radar[r]->m_control_dialog) {
-          m_radar[r]->m_control_dialog->ShowBogeys(GetGuardZoneText(m_radar[r], true));
-        }
-      } else if (m_radar[r]->m_control_dialog) {
-        m_radar[r]->m_control_dialog->HideBogeys();
+        m_radar[r]->ShowBogeys(GetGuardZoneText(m_radar[r], true));
+      } else {
+        m_radar[r]->HideBogeys();
       }
     }
   }

@@ -325,7 +325,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   void OnControlDialogClose(RadarInfo *ri);
   void SetDisplayMode(DisplayModeType mode);
 
-  void ShowRadarControl(int radar, bool show = true);
+  void ShowRadarControl(int radar, bool show = true, bool reparent = true);
   void ShowGuardZoneDialog(int radar, int zone);
   void OnGuardZoneDialogClose(RadarInfo *ri);
   void ConfirmGuardZoneBogeys();

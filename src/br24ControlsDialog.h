@@ -78,6 +78,7 @@ class br24ControlsDialog : public wxDialog {
 
   br24radar_pi *m_pi;
   RadarInfo *m_ri;
+  wxString m_log_name;
   wxBoxSizer *m_top_sizer;
   wxBoxSizer *m_control_sizer;
 
@@ -126,7 +127,7 @@ class br24ControlsDialog : public wxDialog {
   void OnMouseLeftDown(wxMouseEvent &event);
   void BindLeftDown(wxWindow *component);
 
-  void SwitchTo(wxBoxSizer *to);
+  void SwitchTo(wxBoxSizer *to, const wxChar * name);
   void UpdateAdvanced4GState();
 
   void SetMenuAutoHideTimeout();

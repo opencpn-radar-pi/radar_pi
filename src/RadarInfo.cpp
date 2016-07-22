@@ -182,7 +182,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_control_dialog = 0;
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
-    m_guard_zone[z] = new GuardZone(pi);
+    m_guard_zone[z] = new GuardZone(pi, radar, z);
   }
 
   ComputeTargetTrails();
@@ -242,10 +242,10 @@ bool RadarInfo::Init(wxString name, int verbose) {
   return true;
 }
 
-void RadarInfo::ShowControlDialog(bool show) {
+void RadarInfo::ShowControlDialog(bool show, bool reparent) {
   if (show) {
     //#ifdef __WXMSW__
-    if (m_control_dialog) {
+    if (m_control_dialog && reparent) {
       delete m_control_dialog;
       m_control_dialog = 0;
     }
@@ -262,6 +262,20 @@ void RadarInfo::ShowControlDialog(bool show) {
     }
   }
 }
+
+void RadarInfo::ShowBogeys(wxString text)
+{
+  ShowControlDialog(true, false);
+  m_control_dialog->ShowBogeys(text);
+}
+
+void RadarInfo::HideBogeys()
+{
+  if (m_control_dialog) {
+    m_control_dialog->HideBogeys();
+  }
+}
+
 
 void RadarInfo::SetNetworkCardAddress(struct sockaddr_in *address) {
   if (!m_transmit->Init(address)) {

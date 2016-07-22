@@ -189,7 +189,10 @@ class RadarInfo : public wxEvtHandler {
   void ResetRadarImage();
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
-  void ShowControlDialog(bool show);
+  void ShowControlDialog(bool show, bool reparent);
+  void ShowBogeys(wxString text);
+  void HideBogeys();
+
 
   bool IsPaneShown();
 

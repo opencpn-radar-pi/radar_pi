@@ -83,12 +83,16 @@ class GuardZone {
   void ProcessSpoke(SpokeBearing angle, UINT8 *data, UINT8 *hist, size_t len, int range);
 
   int GetBogeyCount() {
-    // LOG_GUARD(wxT("BR24radar_pi: GUARD: reporting bogey_count=%d"), m_bogey_count);
+    if (m_bogey_count > -1) {
+      LOG_GUARD(wxT("%s reporting bogey_count=%d"), m_log_name.c_str(), m_bogey_count);
+    }
     return m_bogey_count;
   };
 
-  GuardZone(br24radar_pi *pi) {
+  GuardZone(br24radar_pi *pi, int radar, int zone) {
     m_pi = pi;
+
+    m_log_name = wxString::Format(wxT("BR24radar_pi: Radar %c GuardZone %d:"), radar + 'A', zone + 1);
 
     m_type = GZ_OFF;
     m_start_bearing = 0;
@@ -102,6 +106,7 @@ class GuardZone {
 
  private:
   br24radar_pi *m_pi;
+  wxString m_log_name;
   bool m_last_in_guard_zone;
   SpokeBearing m_last_angle;
   int m_bogey_count;    // complete cycle

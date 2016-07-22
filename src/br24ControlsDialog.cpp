@@ -256,7 +256,7 @@ void br24RadarControlButton::AdjustValue(int adjustment) {
     newValue = maxValue;
   }
   if (newValue != value) {
-    LOG_VERBOSE(wxT("BR24radar_pi: Adjusting %s by %d from %d to %d"), GetName(), adjustment, value, newValue);
+    LOG_VERBOSE(wxT("%s Adjusting %s by %d from %d to %d"), m_parent->m_log_name.c_str(), GetName(), adjustment, value, newValue);
     if (m_pi->SetControlValue(m_parent->m_ri->m_radar, controlType, newValue)) {
       SetLocalValue(newValue);
     }
@@ -302,7 +302,7 @@ void br24RadarRangeControlButton::SetRangeLabel() {
 }
 
 void br24RadarRangeControlButton::AdjustValue(int adjustment) {
-  LOG_VERBOSE(wxT("BR24radar_pi: Adjusting %s by %d"), GetName(), adjustment);
+  LOG_VERBOSE(wxT("%s Adjusting %s by %d"), m_parent->m_log_name.c_str(), GetName(), adjustment);
 
   m_parent->m_ri->AdjustRange(adjustment);  // send new value to the radar
 }
@@ -334,6 +334,8 @@ bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* 
   m_parent = parent;
   m_pi = ppi;
   m_ri = ri;
+
+  m_log_name = wxString::Format(wxT("BR24radar_pi: Radar %c ControlDialog:"), ri->m_radar + 'A');
 
   m_hide = false;
   m_hide_temporarily = true;
@@ -443,7 +445,7 @@ void br24ControlsDialog::CreateControls() {
   g_smallButtonSize = wxSize(width, testButtonText->GetSize().y + BUTTON_BORDER);
   g_buttonSize = wxSize(width, testButton2Text->GetSize().y * BUTTON_HEIGTH_FUDGE);
 
-  LOG_DIALOG(wxT("BR24radar_pi: Dynamic button width = %d height = %d, %d"), g_buttonSize.x, g_buttonSize.y, g_smallButtonSize.y);
+  LOG_DIALOG(wxT("%s Dynamic button width = %d height = %d, %d"), m_log_name.c_str(), g_buttonSize.x, g_buttonSize.y, g_smallButtonSize.y);
 
   m_top_sizer->Hide(testBox);
   m_top_sizer->Remove(testBox);
@@ -933,9 +935,10 @@ void br24ControlsDialog::CreateControls() {
   // SetSize(size_min);
 }
 
-void br24ControlsDialog::SwitchTo(wxBoxSizer* to) {
+void br24ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar * name) {
   m_top_sizer->Hide(m_from_sizer);
   m_top_sizer->Show(to);
+  LOG_VERBOSE(wxT("%s switch to control view %s"), m_log_name.c_str(), name);
 
   UpdateAdvanced4GState();
   UpdateGuardZoneState();
@@ -984,7 +987,7 @@ void br24ControlsDialog::OnClose(wxCloseEvent& event) { m_pi->OnControlDialogClo
 void br24ControlsDialog::OnIdOKClick(wxCommandEvent& event) { m_pi->OnControlDialogClose(m_ri); }
 
 void br24ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
-  LOG_DIALOG(wxT("br24radar_pi: OnPlustTenClick for %s value %d"), m_from_control->GetLabel().c_str(), m_from_control->value + 10);
+  LOG_DIALOG(wxT("%s OnPlustTenClick for %s value %d"), m_log_name.c_str(), m_from_control->GetLabel().c_str(), m_from_control->value + 10);
   m_from_control->AdjustValue(+10);
 
   wxString label = m_from_control->GetLabel();
@@ -1001,12 +1004,12 @@ void br24ControlsDialog::OnPlusClick(wxCommandEvent& event) {
 void br24ControlsDialog::OnBackClick(wxCommandEvent& event) {
   if (m_top_sizer->IsShown(m_edit_sizer)) {
     m_top_sizer->Hide(m_edit_sizer);
-    SwitchTo(m_from_sizer);
+    SwitchTo(m_from_sizer, wxT("from (back click)"));
     m_from_control = 0;
   } else if (m_top_sizer->IsShown(m_installation_sizer)) {
-    SwitchTo(m_advanced_sizer);
+    SwitchTo(m_advanced_sizer, wxT("advanced (back click)"));
   } else {
-    SwitchTo(m_control_sizer);
+    SwitchTo(m_control_sizer, wxT("main (back click)"));
   }
 }
 
@@ -1041,15 +1044,15 @@ void br24ControlsDialog::OnMinusTenClick(wxCommandEvent& event) {
   m_value_text->SetLabel(label);
 }
 
-void br24ControlsDialog::OnAdjustButtonClick(wxCommandEvent& event) { SwitchTo(m_adjust_sizer); }
+void br24ControlsDialog::OnAdjustButtonClick(wxCommandEvent& event) { SwitchTo(m_adjust_sizer, wxT("adjust")); }
 
-void br24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event) { SwitchTo(m_advanced_sizer); }
+void br24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event) { SwitchTo(m_advanced_sizer, wxT("advanced")); }
 
-void br24ControlsDialog::OnViewButtonClick(wxCommandEvent& event) { SwitchTo(m_view_sizer); }
+void br24ControlsDialog::OnViewButtonClick(wxCommandEvent& event) { SwitchTo(m_view_sizer, wxT("view")); }
 
-void br24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event) { SwitchTo(m_installation_sizer); }
+void br24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event) { SwitchTo(m_installation_sizer, wxT("installation")); }
 
-void br24ControlsDialog::OnBearingButtonClick(wxCommandEvent& event) { SwitchTo(m_bearing_sizer); }
+void br24ControlsDialog::OnBearingButtonClick(wxCommandEvent& event) { SwitchTo(m_bearing_sizer, wxT("bearing")); }
 
 void br24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event) {
   if (m_pi->m_pMessageBox) {
@@ -1061,7 +1064,7 @@ void br24ControlsDialog::EnterEditMode(br24RadarControlButton* button) {
   m_from_control = button;  // Keep a record of which button was clicked
   m_value_text->SetLabel(button->GetLabel());
 
-  SwitchTo(m_edit_sizer);
+  SwitchTo(m_edit_sizer, wxT("edit"));
 
   if (m_from_control->hasAuto) {
     m_auto_button->Show();
@@ -1098,14 +1101,14 @@ void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
       if (!show && m_pi->m_settings.chart_overlay != r) {
         m_pi->m_settings.show_radar_control[r] = false;
       }
-      LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), r, show);
+      LOG_DIALOG(wxT("%s OnRadarShowButton: show_radar[%d]=%d"), m_log_name.c_str(), r, show);
     }
   } else {
     if (m_ri->IsPaneShown()) {
       show = false;
     }
     m_pi->m_settings.show_radar[0] = show;
-    LOG_DIALOG(wxT("BR24radar_pi: OnRadarShowButton: show_radar[%d]=%d"), 0, show);
+    LOG_DIALOG(wxT("%s OnRadarShowButton: show_radar[%d]=%d"), m_log_name.c_str(), 0, show);
   }
 
   m_pi->NotifyRadarWindowViz();
@@ -1139,21 +1142,21 @@ void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
 
 void br24ControlsDialog::OnConfirmBogeyButtonClick(wxCommandEvent& event) {
   m_pi->ConfirmGuardZoneBogeys();
-  SwitchTo(m_control_sizer);
+  SwitchTo(m_control_sizer, wxT("main (confirm bogey)"));
   UpdateDialogShown();
 }
 
 void br24ControlsDialog::OnBearingSetButtonClick(wxCommandEvent& event) {
   int bearing = event.GetId() - ID_BEARING_SET;
-  LOG_DIALOG(wxT("br24radar_pi: OnBearingSetButtonClick for bearing #%d"), bearing + 1);
+  LOG_DIALOG(wxT("%s OnBearingSetButtonClick for bearing #%d"), m_log_name.c_str(), bearing + 1);
 
   m_ri->SetBearing(bearing);
 }
 
 void br24ControlsDialog::OnClearCursorButtonClick(wxCommandEvent& event) {
-  LOG_DIALOG(wxT("br24radar_pi: OnClearCursorButtonClick"));
+  LOG_DIALOG(wxT("%s OnClearCursorButtonClick"), m_log_name.c_str());
   m_ri->SetMouseVrmEbl(0., 0.);
-  SwitchTo(m_control_sizer);
+  SwitchTo(m_control_sizer, wxT("main (clear cursor)"));
 }
 
 void br24ControlsDialog::OnMove(wxMoveEvent& event) { event.Skip(); }
@@ -1369,7 +1372,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
 void br24ControlsDialog::UpdateDialogShown() {
   if (m_hide) {
     if (IsShown()) {
-      LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown explicit closed: Hidden"), m_ri->m_name.c_str());
+      LOG_DIALOG(wxT("%s UpdateDialogShown explicit closed: Hidden"), m_log_name.c_str());
       Hide();
     }
     return;
@@ -1377,7 +1380,7 @@ void br24ControlsDialog::UpdateDialogShown() {
 
   if (m_hide_temporarily) {
     if (IsShown()) {
-      LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown temporarily hidden"), m_ri->m_name.c_str());
+      LOG_DIALOG(wxT("%s UpdateDialogShown temporarily hidden"), m_log_name.c_str());
       Hide();
     }
     return;
@@ -1389,7 +1392,7 @@ void br24ControlsDialog::UpdateDialogShown() {
       SetMenuAutoHideTimeout();
     } else {
       if (IsShown()) {
-        LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown auto-hide"), m_ri->m_name.c_str());
+        LOG_DIALOG(wxT("%s UpdateDialogShown auto-hide"), m_log_name.c_str());
         Hide();
       }
       return;
@@ -1399,17 +1402,17 @@ void br24ControlsDialog::UpdateDialogShown() {
   // Following helps on OSX where the control is SHOW_ON_TOP to not show when no part of OCPN is focused
   wxWindow* focused = FindFocus();
   if (!focused) {
-    LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown app not focused"), m_ri->m_name.c_str());
+    LOG_DIALOG(wxT("%s UpdateDialogShown app not focused"), m_log_name.c_str());
     return;
   }
 
   if (!IsShown()) {
-    LOG_DIALOG(wxT("br24radar_pi: %s ControlsDialog::UpdateDialogShown manually opened"), m_ri->m_name.c_str());
+    LOG_DIALOG(wxT("%s UpdateDialogShown manually opened"), m_log_name.c_str());
     if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_view_sizer) &&
         !m_top_sizer->IsShown(m_edit_sizer) && !m_top_sizer->IsShown(m_installation_sizer) &&
         !m_top_sizer->IsShown(m_bogey_sizer) && !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) &&
         !m_top_sizer->IsShown(m_bearing_sizer)) {
-      SwitchTo(m_control_sizer);
+      SwitchTo(m_control_sizer, wxT("main (manual open)"));
     }
     m_control_sizer->Layout();
     m_top_sizer->Layout();
@@ -1436,10 +1439,10 @@ void br24ControlsDialog::UpdateDialogShown() {
       newPos.x = panelPos.x + panelSize.x - mySize.x;
       newPos.y = panelPos.y;
       SetPosition(newPos);
-      LOG_DIALOG(wxT("BR24radar_pi: %s: show control menu over menu button"), m_ri->m_name.c_str());
+      LOG_DIALOG(wxT("%s show control menu over menu button"), m_log_name.c_str());
     } else if (controlInitialShow) {  // When all else fails set it to default position
       SetPosition(wxPoint(100 + m_ri->m_radar * 100, 100));
-      LOG_DIALOG(wxT("BR24radar_pi: %s: show control menu at initial location"), m_ri->m_name.c_str());
+      LOG_DIALOG(wxT("%s show control menu at initial location"), m_log_name.c_str());
     }
     EnsureWindowNearOpenCPNWindow();  // If the position is really weird, move it
     m_pi->m_settings.control_pos[m_ri->m_radar] = GetPosition();
@@ -1470,8 +1473,8 @@ void br24ControlsDialog::EnsureWindowNearOpenCPNWindow() {
 
   bool move = false;
 
-  // LOG_DIALOG(wxT("BR24radar_pi: control %d,%d is near OpenCPN at %d,%d to %d,%d?"), mPos.x, mPos.y, oPos.x, oPos.y, oPos.x +
-  // oSize.x, oPos.y + oSize.y);
+  // LOG_DIALOG(wxT("%s control %d,%d is near OpenCPN at %d,%d to %d,%d?"), m_log_name.c_str(), mPos.x, mPos.y, oPos.x, oPos.y
+  // , oPos.x + oSize.x, oPos.y + oSize.y);
 
   if (mPos.x + mSize.x < oPos.x) {
     mPos.x = oPos.x;
@@ -1490,7 +1493,7 @@ void br24ControlsDialog::EnsureWindowNearOpenCPNWindow() {
     move = true;
   }
   if (move) {
-    LOG_DIALOG(wxT("BR24radar_pi: Move control dialog to %d,%d to be near OpenCPN at %d,%d to %d,%d"), mPos.x, mPos.y, oPos.x,
+    LOG_DIALOG(wxT("%s Move control dialog to %d,%d to be near OpenCPN at %d,%d to %d,%d"), m_log_name.c_str(), mPos.x, mPos.y, oPos.x,
                oPos.y, oPos.x + oSize.x, oPos.y + oSize.y);
   }
   move = true;
@@ -1523,7 +1526,7 @@ void br24ControlsDialog::HideDialog() {
 void br24ControlsDialog::ShowBogeys(wxString text) {
   if (m_top_sizer && m_bogey_sizer) {
     if (m_top_sizer->IsShown(m_control_sizer)) {
-      SwitchTo(m_bogey_sizer);
+      SwitchTo(m_bogey_sizer, wxT("bogey"));
       if (!m_hide) {
         UnHideTemporarily();
       } else {
@@ -1541,7 +1544,7 @@ void br24ControlsDialog::ShowBogeys(wxString text) {
 
 void br24ControlsDialog::HideBogeys() {
   if (m_top_sizer && m_control_sizer && m_top_sizer->IsShown(m_bogey_sizer)) {
-    SwitchTo(m_control_sizer);
+    SwitchTo(m_control_sizer, wxT("main (hide bogeys)"));
   }
 }
 
@@ -1593,7 +1596,7 @@ void br24ControlsDialog::ShowGuardZone(int zone) {
   m_filter->SetValue(m_guard_zone->m_multi_sweep_filter ? 1 : 0);
 
   m_top_sizer->Hide(m_control_sizer);
-  SwitchTo(m_guard_sizer);
+  SwitchTo(m_guard_sizer, wxT("guard"));
   SetGuardZoneVisibility();
   UpdateDialogShown();
 }
