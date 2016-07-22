@@ -51,7 +51,11 @@ END_EVENT_TABLE()
 
 GuardZoneBogey::GuardZoneBogey() {}
 
-GuardZoneBogey::~GuardZoneBogey() {}
+GuardZoneBogey::~GuardZoneBogey() {
+  if (IsShown()) {
+    m_pi->m_settings.alarm_pos = GetPosition();
+  }
+}
 
 bool GuardZoneBogey::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, const wxString &m_caption, const wxPoint &pos,
                             const wxSize &size, long style) {
@@ -75,7 +79,7 @@ bool GuardZoneBogey::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, c
 
   wxSize size_min = size;
 
-  if (!wxDialog::Create(parent, id, m_caption, pos, size_min, wstyle)) {
+  if (!wxDialog::Create(parent, id, m_caption, m_pi->m_settings.alarm_pos, size_min, wstyle)) {
     return false;
   }
 
@@ -98,7 +102,6 @@ bool GuardZoneBogey::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, c
   Fit();
   SetMinSize(GetBestSize());
   Show();
-  SetPosition(m_pi->m_settings.alarm_pos);
 
   return true;
 }

@@ -282,16 +282,16 @@ bool br24radar_pi::DeInit(void) {
 
   Stop();  // inherited from wxTimer
 
+  if (m_bogey_dialog) {
+    delete m_bogey_dialog;
+    m_bogey_dialog = 0;
+  }
+
   // Save our config, first, as it contains state regarding what is open.
   SaveConfig();
 
   m_initialized = false;
   LOG_VERBOSE(wxT("BR24radar_pi: DeInit of plugin"));
-
-  if (m_bogey_dialog) {
-    delete m_bogey_dialog;
-    m_bogey_dialog = 0;
-  }
 
   // First close everything that the user can have open
   m_pMessageBox->Close();
@@ -569,7 +569,7 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
           m_settings.timed_idle = 0;  // reset timed idle to off
         }
         text << _(" Zone") << wxT(" ") << z + 1 << wxT(": ");
-        if (bogeys > m_settings.guard_zone_threshold ) {
+        if (bogeys > m_settings.guard_zone_threshold) {
           text << bogeys;
         } else if (bogeys >= 0) {
           text << wxT("(");
@@ -976,8 +976,8 @@ bool br24radar_pi::LoadConfig(void) {
           m_radar[r]->m_guard_zone[i]->SetType((GuardZoneType)v);
         }
       }
-      pConf->Read(wxT("AlarmZonePosX"), &x, 20);
-      pConf->Read(wxT("AlarmZonePosY"), &y, 170);
+      pConf->Read(wxT("AlarmPosX"), &x, 25);
+      pConf->Read(wxT("AlarmPosY"), &y, 175);
       m_settings.alarm_pos = wxPoint(x, y);
     }
 
