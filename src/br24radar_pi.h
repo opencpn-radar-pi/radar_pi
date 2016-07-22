@@ -424,7 +424,6 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
 
   NMEA0183 m_NMEA0183;
 
-
   ToolbarIconColor m_toolbar_button;
   ToolbarIconColor m_sent_toolbar_button;
 

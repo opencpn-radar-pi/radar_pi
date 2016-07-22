@@ -445,7 +445,8 @@ void br24ControlsDialog::CreateControls() {
   g_smallButtonSize = wxSize(width, testButtonText->GetSize().y + BUTTON_BORDER);
   g_buttonSize = wxSize(width, testButton2Text->GetSize().y * BUTTON_HEIGTH_FUDGE);
 
-  LOG_DIALOG(wxT("%s Dynamic button width = %d height = %d, %d"), m_log_name.c_str(), g_buttonSize.x, g_buttonSize.y, g_smallButtonSize.y);
+  LOG_DIALOG(wxT("%s Dynamic button width = %d height = %d, %d"), m_log_name.c_str(), g_buttonSize.x, g_buttonSize.y,
+             g_smallButtonSize.y);
 
   m_top_sizer->Hide(testBox);
   m_top_sizer->Remove(testBox);
@@ -935,7 +936,7 @@ void br24ControlsDialog::CreateControls() {
   // SetSize(size_min);
 }
 
-void br24ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar * name) {
+void br24ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar* name) {
   m_top_sizer->Hide(m_from_sizer);
   m_top_sizer->Show(to);
   LOG_VERBOSE(wxT("%s switch to control view %s"), m_log_name.c_str(), name);
@@ -987,7 +988,8 @@ void br24ControlsDialog::OnClose(wxCloseEvent& event) { m_pi->OnControlDialogClo
 void br24ControlsDialog::OnIdOKClick(wxCommandEvent& event) { m_pi->OnControlDialogClose(m_ri); }
 
 void br24ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
-  LOG_DIALOG(wxT("%s OnPlustTenClick for %s value %d"), m_log_name.c_str(), m_from_control->GetLabel().c_str(), m_from_control->value + 10);
+  LOG_DIALOG(wxT("%s OnPlustTenClick for %s value %d"), m_log_name.c_str(), m_from_control->GetLabel().c_str(),
+             m_from_control->value + 10);
   m_from_control->AdjustValue(+10);
 
   wxString label = m_from_control->GetLabel();
@@ -1493,8 +1495,8 @@ void br24ControlsDialog::EnsureWindowNearOpenCPNWindow() {
     move = true;
   }
   if (move) {
-    LOG_DIALOG(wxT("%s Move control dialog to %d,%d to be near OpenCPN at %d,%d to %d,%d"), m_log_name.c_str(), mPos.x, mPos.y, oPos.x,
-               oPos.y, oPos.x + oSize.x, oPos.y + oSize.y);
+    LOG_DIALOG(wxT("%s Move control dialog to %d,%d to be near OpenCPN at %d,%d to %d,%d"), m_log_name.c_str(), mPos.x, mPos.y,
+               oPos.x, oPos.y, oPos.x + oSize.x, oPos.y + oSize.y);
   }
   move = true;
   SetPosition(mPos);

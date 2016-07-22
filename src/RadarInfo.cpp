@@ -194,7 +194,6 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
 }
 
 RadarInfo::~RadarInfo() {
-
   m_timer->Stop();
 
   if (m_receive) {
@@ -263,19 +262,16 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
   }
 }
 
-void RadarInfo::ShowBogeys(wxString text)
-{
+void RadarInfo::ShowBogeys(wxString text) {
   ShowControlDialog(true, false);
   m_control_dialog->ShowBogeys(text);
 }
 
-void RadarInfo::HideBogeys()
-{
+void RadarInfo::HideBogeys() {
   if (m_control_dialog) {
     m_control_dialog->HideBogeys();
   }
 }
-
 
 void RadarInfo::SetNetworkCardAddress(struct sockaddr_in *address) {
   if (!m_transmit->Init(address)) {
@@ -534,12 +530,12 @@ void RadarInfo::AdjustRange(int adjustment) {
     }
 
     if (adjustment < 0 && m_range.range > min) {
-      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), m_range.range[0].meters, m_range.range[0].actual_meters,
-                  m_range.range[-1].meters, m_range.range[-1].actual_meters);
+      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), m_range.range[0].meters,
+                  m_range.range[0].actual_meters, m_range.range[-1].meters, m_range.range[-1].actual_meters);
       m_transmit->SetRange(m_range.range[-1].meters);
     } else if (adjustment > 0 && m_range.range < max) {
-      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), m_range.range[0].meters, m_range.range[0].actual_meters,
-                  m_range.range[+1].meters, m_range.range[+1].actual_meters);
+      LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), m_range.range[0].meters,
+                  m_range.range[0].actual_meters, m_range.range[+1].meters, m_range.range[+1].actual_meters);
       m_transmit->SetRange(m_range.range[+1].meters);
     }
   }

@@ -193,7 +193,6 @@ class RadarInfo : public wxEvtHandler {
   void ShowBogeys(wxString text);
   void HideBogeys();
 
-
   bool IsPaneShown();
 
   void UpdateControlState(bool all);

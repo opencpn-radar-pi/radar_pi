@@ -565,7 +565,8 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
           m_settings.timed_idle = 0;  // reset timed idle to off
         }
       }
-      LOG_GUARD(wxT("BR24radar_pi: Radar %c: CheckGuardZoneBogeys found=%d confirmed=%d"), r + 'A', bogeys_found_this_radar, m_guard_bogey_confirmed);
+      LOG_GUARD(wxT("BR24radar_pi: Radar %c: CheckGuardZoneBogeys found=%d confirmed=%d"), r + 'A', bogeys_found_this_radar,
+                m_guard_bogey_confirmed);
       if (bogeys_found_this_radar && !m_guard_bogey_confirmed) {
         m_radar[r]->ShowBogeys(GetGuardZoneText(m_radar[r], true));
       } else {
@@ -734,9 +735,10 @@ void br24radar_pi::Notify(void) {
     wxString t;
     for (size_t r = 0; r < RADARS; r++) {
       if (m_radar[r]->m_state.value != RADAR_OFF) {
-        t << wxString::Format(wxT("%s\npackets %d/%d\nspokes %d/%d/%d\n"), m_radar[r]->m_name.c_str(), m_radar[r]->m_statistics.packets,
-                              m_radar[r]->m_statistics.broken_packets, m_radar[r]->m_statistics.spokes,
-                              m_radar[r]->m_statistics.broken_spokes, m_radar[r]->m_statistics.missing_spokes);
+        t << wxString::Format(wxT("%s\npackets %d/%d\nspokes %d/%d/%d\n"), m_radar[r]->m_name.c_str(),
+                              m_radar[r]->m_statistics.packets, m_radar[r]->m_statistics.broken_packets,
+                              m_radar[r]->m_statistics.spokes, m_radar[r]->m_statistics.broken_spokes,
+                              m_radar[r]->m_statistics.missing_spokes);
       }
     }
     m_pMessageBox->SetStatisticsInfo(t);
@@ -825,10 +827,10 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     m_opengl_mode_changed = true;
   }
 
-  if (!m_settings.show              // No radar shown
-    || m_settings.chart_overlay < 0 // No overlay desired
-    || m_radar[m_settings.chart_overlay]->m_state.value != RADAR_TRANSMIT  // Radar not transmitting
-    || !m_bpos_set) {  // No overlay possible (yet)
+  if (!m_settings.show                                                       // No radar shown
+      || m_settings.chart_overlay < 0                                        // No overlay desired
+      || m_radar[m_settings.chart_overlay]->m_state.value != RADAR_TRANSMIT  // Radar not transmitting
+      || !m_bpos_set) {                                                      // No overlay possible (yet)
     return true;
   }
 

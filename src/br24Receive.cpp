@@ -346,7 +346,8 @@ SOCKET br24Receive::GetNewReportSocket() {
     return INVALID_SOCKET;
   }
 
-  socket = startUDPMulticastReceiveSocket(m_mcast_addr, LISTEN_REPORT[m_ri->m_radar].port, LISTEN_REPORT[m_ri->m_radar].address, error);
+  socket =
+      startUDPMulticastReceiveSocket(m_mcast_addr, LISTEN_REPORT[m_ri->m_radar].port, LISTEN_REPORT[m_ri->m_radar].address, error);
   if (socket != INVALID_SOCKET) {
     wxString addr;
     UINT8 *a = (UINT8 *)&m_mcast_addr->sin_addr;  // sin_addr is in network layout
@@ -387,8 +388,8 @@ SOCKET br24Receive::GetNewCommandSocket() {
     return INVALID_SOCKET;
   }
 
-  socket =
-      startUDPMulticastReceiveSocket(m_mcast_addr, LISTEN_COMMAND[m_ri->m_radar].port, LISTEN_COMMAND[m_ri->m_radar].address, error);
+  socket = startUDPMulticastReceiveSocket(m_mcast_addr, LISTEN_COMMAND[m_ri->m_radar].port, LISTEN_COMMAND[m_ri->m_radar].address,
+                                          error);
   if (socket != INVALID_SOCKET) {
     wxString addr;
     UINT8 *a = (UINT8 *)&m_mcast_addr->sin_addr;  // sin_addr is in network layout
@@ -401,7 +402,7 @@ SOCKET br24Receive::GetNewCommandSocket() {
 }
 
 #define MILLIS_PER_SELECT 250
-#define SECONDS_SELECT(x) ((x) * 1000 / MILLIS_PER_SELECT)
+#define SECONDS_SELECT(x) ((x)*1000 / MILLIS_PER_SELECT)
 
 void *br24Receive::Entry(void) {
   int r = 0;
@@ -540,9 +541,9 @@ void *br24Receive::Entry(void) {
         }
       }
 
-    } else { // no data received -> select timeout
+    } else {  // no data received -> select timeout
 
-      if (no_data_timeout >= SECONDS_SELECT(2) ) {
+      if (no_data_timeout >= SECONDS_SELECT(2)) {
         no_data_timeout = 0;
         if (reportSocket != INVALID_SOCKET) {
           closesocket(reportSocket);
@@ -693,7 +694,7 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
 
       case (99 << 8) + 0x02: {  // length 99, 02 C4
         radar_state02 *s = (radar_state02 *)report;
-        if (s->field8 == 1) {     // 1 for auto
+        if (s->field8 == 1) {       // 1 for auto
           m_ri->m_gain.Update(-1);  // auto gain
         } else {
           m_ri->m_gain.Update(s->gain * 100 / 255);
@@ -816,7 +817,8 @@ void br24Receive::ProcessCommand(wxString &addr, const UINT8 *command, int len) 
     m_ri->m_state.Update(RADAR_STANDBY);
   } else if (len == 6 && command[0] == 0x03 && command[1] == 0xc1) {
     UINT32 range = *((UINT32 *)&command[2]);
-    LOG_VERBOSE(wxT("BR24radar_pi: %s received range request for %u meters from %s"), m_ri->m_name.c_str(), range / 10, addr.c_str());
+    LOG_VERBOSE(wxT("BR24radar_pi: %s received range request for %u meters from %s"), m_ri->m_name.c_str(), range / 10,
+                addr.c_str());
   }
 }
 
