@@ -280,32 +280,29 @@ bool br24radar_pi::DeInit(void) {
     return false;
   }
 
-  Stop();  // inherited from wxTimer
+  LOG_VERBOSE(wxT("BR24radar_pi: DeInit of plugin"));
 
+  Stop();  // inherited from wxTimer
+  m_initialized = false;
+
+  // New style objects save position in destructor.
   if (m_bogey_dialog) {
     delete m_bogey_dialog;
     m_bogey_dialog = 0;
   }
 
-  // Save our config, first, as it contains state regarding what is open.
-  SaveConfig();
-
-  m_initialized = false;
-  LOG_VERBOSE(wxT("BR24radar_pi: DeInit of plugin"));
-
-  // First close everything that the user can have open
-  m_pMessageBox->Close();
+  // Delete all dialogs
   for (int r = 0; r < RADARS; r++) {
-    OnControlDialogClose(m_radar[r]);
-    m_radar[r]->ShowRadarWindow(false);
+    m_radar[r]->DeleteDialogs();
   }
+
+
+  SaveConfig();
 
   // Delete all 'new'ed objects
   for (int r = 0; r < RADARS; r++) {
-    if (m_radar[r]) {
       delete m_radar[r];
       m_radar[r] = 0;
-    }
   }
 
   // No need to delete wxWindow stuff, wxWidgets does this for us.
@@ -398,6 +395,9 @@ void br24radar_pi::ShowRadarControl(int radar, bool show, bool reparent) {
 }
 
 void br24radar_pi::OnControlDialogClose(RadarInfo *ri) {
+  if (ri->m_control_dialog) {
+    m_settings.control_pos[ri->m_radar] = ri->m_control_dialog->GetPosition();
+  }
   m_settings.show_radar_control[ri->m_radar] = false;
   if (ri->m_control_dialog) {
     ri->m_control_dialog->HideDialog();
@@ -961,6 +961,9 @@ bool br24radar_pi::LoadConfig(void) {
         pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
         SetControlValue(r, CT_TARGET_TRAILS, v);
         pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[r], false);
+        pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * r);
+        pConf->Read(wxString::Format(wxT("Radar%dWindowPosY"), r), &y, 120);
+        m_settings.window_pos[r] = wxPoint(x, y);
         pConf->Read(wxString::Format(wxT("Radar%dControlShow"), r), &m_settings.show_radar_control[r], false);
         pConf->Read(wxString::Format(wxT("Radar%dControlPosX"), r), &x, OFFSCREEN_CONTROL_X);
         pConf->Read(wxString::Format(wxT("Radar%dControlPosY"), r), &y, OFFSCREEN_CONTROL_Y);
@@ -1066,9 +1069,8 @@ bool br24radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
       pConf->Write(wxString::Format(wxT("Radar%dControlShow"), r), m_settings.show_radar_control[r]);
       pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->m_target_trails.value);
-      if (m_radar[r]->m_control_dialog) {
-        m_settings.control_pos[r] = m_radar[r]->m_control_dialog->GetPosition();
-      }
+      pConf->Write(wxString::Format(wxT("Radar%dWindowPosX"), r), m_settings.window_pos[r].x);
+      pConf->Write(wxString::Format(wxT("Radar%dWindowPosY"), r), m_settings.window_pos[r].y);
       pConf->Write(wxString::Format(wxT("Radar%dControlPosX"), r), m_settings.control_pos[r].x);
       pConf->Write(wxString::Format(wxT("Radar%dControlPosY"), r), m_settings.control_pos[r].y);
 

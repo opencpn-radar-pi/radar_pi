@@ -193,22 +193,14 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_refresh_millis = 50;
 }
 
-RadarInfo::~RadarInfo() {
-  m_timer->Stop();
-
-  if (m_receive) {
-    m_receive->Delete();
-    delete m_receive;
-  }
+void RadarInfo::DeleteDialogs() {
   if (m_control_dialog) {
     delete m_control_dialog;
     m_control_dialog = 0;
   }
-  if (m_transmit) {
-    delete m_transmit;
-  }
   if (m_radar_panel) {
     delete m_radar_panel;
+    m_radar_panel = 0;
   }
   if (m_draw_panel.draw) {
     delete m_draw_panel.draw;
@@ -218,8 +210,23 @@ RadarInfo::~RadarInfo() {
     delete m_draw_overlay.draw;
     m_draw_overlay.draw = 0;
   }
+}
+
+RadarInfo::~RadarInfo() {
+  m_timer->Stop();
+
+  if (m_receive) {
+    m_receive->Delete();
+    delete m_receive;
+  }
+  DeleteDialogs();
+  if (m_transmit) {
+    delete m_transmit;
+    m_transmit = 0;
+  }
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     delete m_guard_zone[z];
+    m_guard_zone[z] = 0;
   }
 }
 

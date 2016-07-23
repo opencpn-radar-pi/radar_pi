@@ -73,7 +73,7 @@ bool RadarPanel::Create() {
   pane.MinSize(256, 256);
   pane.BestSize(m_best_size);
   pane.FloatingSize(512, 512);
-  pane.FloatingPosition(30 + 540 * m_ri->m_radar, 120);  // Besides each other, below the icon bar
+  pane.FloatingPosition(m_pi->m_settings.window_pos[m_ri->m_radar]);
   pane.Float();
   pane.dock_proportion = 100000;  // Secret sauce to get panels to use entire bar
 
@@ -97,7 +97,29 @@ bool RadarPanel::Create() {
 }
 
 RadarPanel::~RadarPanel() {
-  m_pi->m_perspective[m_ri->m_radar] = m_aui_mgr->SavePaneInfo(m_aui_mgr->GetPane(this));
+
+  wxAuiPaneInfo &pane = m_aui_mgr->GetPane(this);
+
+  bool wasFloating = pane.IsFloating();
+  if (!wasFloating)
+  {
+    pane.Float();
+    m_aui_mgr->Update();
+    pane = m_aui_mgr->GetPane(this);
+  }
+
+  wxPoint pos = pane.floating_pos;
+  LOG_DIALOG(wxT("%s saved position %d,%d"), m_aui_name.c_str(), pos.x, pos.y);
+  m_pi->m_settings.window_pos[m_ri->m_radar] = pos;
+
+  if (!wasFloating)
+  {
+    pane.Dock();
+    m_aui_mgr->Update();
+    pane = m_aui_mgr->GetPane(this);
+  }
+
+  m_pi->m_perspective[m_ri->m_radar] = m_aui_mgr->SavePaneInfo(pane);
   if (m_ri->m_radar_canvas) {
     m_sizer->Detach(m_ri->m_radar_canvas);
     delete m_ri->m_radar_canvas;

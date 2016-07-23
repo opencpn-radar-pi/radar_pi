@@ -310,7 +310,12 @@ void br24RadarRangeControlButton::SetAuto() { m_parent->m_ri->m_auto_range_mode 
 
 br24ControlsDialog::br24ControlsDialog() { Init(); }
 
-br24ControlsDialog::~br24ControlsDialog() {}
+br24ControlsDialog::~br24ControlsDialog() {
+  wxPoint pos = GetPosition();
+
+  LOG_DIALOG(wxT("%s saved position %d,%d"), m_log_name.c_str(), pos.x, pos.y);
+  m_pi->m_settings.control_pos[m_ri->m_radar] = pos;
+}
 
 void br24ControlsDialog::Init() {
   // Initialize all members that need initialization

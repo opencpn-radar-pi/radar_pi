@@ -255,6 +255,7 @@ struct PersistentSettings {
   int threshold_blue;
   int threshold_multi_sweep;
   wxPoint control_pos[RADARS];
+  wxPoint window_pos[RADARS];
   wxPoint alarm_pos;
   wxString alert_audio_file;
   wxString mcast_address;
