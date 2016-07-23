@@ -124,9 +124,6 @@ class br24ControlsDialog : public wxDialog {
 
   void EnterEditMode(br24RadarControlButton *button);
 
-  void OnMouseLeftDown(wxMouseEvent &event);
-  void BindLeftDown(wxWindow *component);
-
   void SwitchTo(wxBoxSizer *to, const wxChar *name);
   void UpdateAdvanced4GState();
 

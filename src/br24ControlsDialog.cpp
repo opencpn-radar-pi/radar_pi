@@ -321,18 +321,6 @@ void br24ControlsDialog::Init() {
   // Initialize all members that need initialization
 }
 
-void br24ControlsDialog::BindLeftDown(wxWindow* component) {
-  wxWindowListNode* node;
-
-  if (component) {
-    component->Bind(wxEVT_LEFT_DOWN, &br24ControlsDialog::OnMouseLeftDown, this);
-    for (node = component->GetChildren().GetFirst(); node; node = node->GetNext()) {
-      wxWindow* child = node->GetData();
-      BindLeftDown(child);
-    }
-  }
-}
-
 bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* ri, wxWindowID id, const wxString& caption,
                                 const wxPoint& pos) {
   m_parent = parent;
@@ -367,8 +355,6 @@ bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* 
   }
 
   CreateControls();
-
-  BindLeftDown(this);
 
   return true;
 }
@@ -934,6 +920,7 @@ void br24ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar* name) {
 
   UpdateAdvanced4GState();
   UpdateGuardZoneState();
+  SetMenuAutoHideTimeout();
 
   if (to != m_edit_sizer) {
     m_from_sizer = to;
@@ -1048,6 +1035,8 @@ void br24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event) { Swit
 void br24ControlsDialog::OnBearingButtonClick(wxCommandEvent& event) { SwitchTo(m_bearing_sizer, wxT("bearing")); }
 
 void br24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event) {
+  SetMenuAutoHideTimeout();
+
   if (m_pi->m_pMessageBox) {
     m_pi->m_pMessageBox->UpdateMessage(true);
   }
@@ -1079,6 +1068,8 @@ void br24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
+  SetMenuAutoHideTimeout();
+
   bool show = true;
 
   if (m_pi->m_settings.enable_dual_radar) {
@@ -1108,6 +1099,8 @@ void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
+  SetMenuAutoHideTimeout();
+
   if (m_pi->m_settings.chart_overlay != m_ri->m_radar) {
     m_pi->m_settings.chart_overlay = m_ri->m_radar;
   } else {
@@ -1122,6 +1115,7 @@ void br24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
+  SetMenuAutoHideTimeout();
   m_pi->m_settings.timed_idle = 0;
   m_ri->FlipRadarState();
 }
@@ -1373,17 +1367,17 @@ void br24ControlsDialog::UpdateDialogShown() {
     return;
   }
 
-  if (m_auto_hide_timeout && TIMED_OUT(time(0), m_auto_hide_timeout)) {
-    if (!m_top_sizer->IsShown(m_control_sizer)) {
-      // If we're somewhere in the sub-window, don't close the dialog
-      SetMenuAutoHideTimeout();
-    } else {
+  if (m_top_sizer->IsShown(m_control_sizer)) {
+    if (m_auto_hide_timeout && TIMED_OUT(time(0), m_auto_hide_timeout)) {
       if (IsShown()) {
         LOG_DIALOG(wxT("%s UpdateDialogShown auto-hide"), m_log_name.c_str());
         Hide();
       }
       return;
     }
+  } else {
+    // If we're somewhere in the sub-window, don't close the dialog
+    m_auto_hide_timeout = 0;
   }
 
   // Following helps on OSX where the control is SHOW_ON_TOP to not show when no part of OCPN is focused
@@ -1510,6 +1504,7 @@ void br24ControlsDialog::HideDialog() {
 }
 
 void br24ControlsDialog::SetMenuAutoHideTimeout() {
+  if (m_top_sizer->IsShown(m_control_sizer)) {
   switch (m_pi->m_settings.menu_auto_hide) {
     case 1:
       m_auto_hide_timeout = time(0) + 10;
@@ -1521,12 +1516,9 @@ void br24ControlsDialog::SetMenuAutoHideTimeout() {
       m_auto_hide_timeout = 0;
       break;
   }
-}
-
-void br24ControlsDialog::OnMouseLeftDown(wxMouseEvent& event) {
-  SetMenuAutoHideTimeout();
-  LOG_VERBOSE(wxT("%s mouse left down"), m_log_name.c_str());
-  // event.Skip();
+  } else {
+    m_auto_hide_timeout = 0;
+  }
 }
 
 void br24ControlsDialog::ShowGuardZone(int zone) {
