@@ -1505,17 +1505,17 @@ void br24ControlsDialog::HideDialog() {
 
 void br24ControlsDialog::SetMenuAutoHideTimeout() {
   if (m_top_sizer->IsShown(m_control_sizer)) {
-  switch (m_pi->m_settings.menu_auto_hide) {
-    case 1:
-      m_auto_hide_timeout = time(0) + 10;
-      break;
-    case 2:
-      m_auto_hide_timeout = time(0) + 30;
-      break;
-    default:
-      m_auto_hide_timeout = 0;
-      break;
-  }
+    switch (m_pi->m_settings.menu_auto_hide) {
+      case 1:
+        m_auto_hide_timeout = time(0) + 10;
+        break;
+      case 2:
+        m_auto_hide_timeout = time(0) + 30;
+        break;
+      default:
+        m_auto_hide_timeout = 0;
+        break;
+    }
   } else {
     m_auto_hide_timeout = 0;
   }

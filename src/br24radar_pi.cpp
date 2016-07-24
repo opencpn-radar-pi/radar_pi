@@ -296,13 +296,12 @@ bool br24radar_pi::DeInit(void) {
     m_radar[r]->DeleteDialogs();
   }
 
-
   SaveConfig();
 
   // Delete all 'new'ed objects
   for (int r = 0; r < RADARS; r++) {
-      delete m_radar[r];
-      m_radar[r] = 0;
+    delete m_radar[r];
+    m_radar[r] = 0;
   }
 
   // No need to delete wxWindow stuff, wxWidgets does this for us.

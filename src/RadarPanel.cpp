@@ -97,12 +97,10 @@ bool RadarPanel::Create() {
 }
 
 RadarPanel::~RadarPanel() {
-
-  wxAuiPaneInfo &pane = m_aui_mgr->GetPane(this);
+  wxAuiPaneInfo& pane = m_aui_mgr->GetPane(this);
 
   bool wasFloating = pane.IsFloating();
-  if (!wasFloating)
-  {
+  if (!wasFloating) {
     pane.Float();
     m_aui_mgr->Update();
     pane = m_aui_mgr->GetPane(this);
@@ -112,8 +110,7 @@ RadarPanel::~RadarPanel() {
   LOG_DIALOG(wxT("%s saved position %d,%d"), m_aui_name.c_str(), pos.x, pos.y);
   m_pi->m_settings.window_pos[m_ri->m_radar] = pos;
 
-  if (!wasFloating)
-  {
+  if (!wasFloating) {
     pane.Dock();
     m_aui_mgr->Update();
     pane = m_aui_mgr->GetPane(this);
