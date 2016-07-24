@@ -776,11 +776,8 @@ void br24radar_pi::Notify(void) {
   }
   m_pMessageBox->UpdateMessage(false);
 
-  for (size_t r = 0; r < RADARS; r++) {
-    m_radar[r]->UpdateControlState(false);
-  }
-
   for (int r = 0; r < RADARS; r++) {
+    m_radar[r]->UpdateControlState(false);
     m_radar[r]->m_statistics.broken_packets = 0;
     m_radar[r]->m_statistics.broken_spokes = 0;
     m_radar[r]->m_statistics.missing_spokes = 0;
