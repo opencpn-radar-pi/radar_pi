@@ -474,11 +474,9 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
       }
     }
     if (!done) {
-      for (int r = 0; r < RADARS; r++) {
-        m_settings.show_radar[r] = 1;
-        LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: nothing visible, show_radar[%d]=%d"), r, 1);
-      }
-      SetRadarWindowViz();
+      LOG_DIALOG(wxT("BR24radar_pi: OnToolbarToolCallback: nothing visible, make radar A overlay"));
+      m_settings.chart_overlay = 0;
+      ShowRadarControl(m_settings.chart_overlay, true);
     }
   } else if (id == m_context_menu_hide_id) {
     m_settings.show = 0;

@@ -65,6 +65,9 @@ class GuardZoneBogey;
 
 #define OPENGL_ROTATION (-90.0)  // Difference between 'up' and OpenGL 'up'...
 
+#define ALL_RADARS(var, value) (((var)[0] == (value)) && ((var)[1] == (value)))
+#define ANY_RADAR(var, value) (((var)[0] == (value)) || ((var)[1] == (value)))
+
 typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a bearing (? = North,
                            // +ve = clockwise)
 

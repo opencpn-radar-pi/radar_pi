@@ -1101,12 +1101,29 @@ void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
 void br24ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
 
-  if (m_pi->m_settings.chart_overlay != m_ri->m_radar) {
-    m_pi->m_settings.chart_overlay = m_ri->m_radar;
+  int this_radar = m_ri->m_radar;
+  int other_radar = 1 - this_radar;
+
+  if (m_pi->m_settings.chart_overlay != this_radar) {
+    m_pi->m_settings.chart_overlay = this_radar;
+  } else if (m_pi->m_settings.enable_dual_radar && ALL_RADARS(m_pi->m_settings.show_radar, 0)) {
+    // If no radar window shown, toggle overlay to different radar
+    m_pi->m_settings.chart_overlay = other_radar;
+
+    wxPoint pos = m_pi->m_radar[this_radar]->m_control_dialog->GetPosition();
+
+    // Flip which control is visible.
+    m_pi->ShowRadarControl(this_radar, false);
+
+    if (!m_pi->m_radar[other_radar]->m_control_dialog || !m_pi->m_radar[other_radar]->m_control_dialog->IsShown()) {
+      m_pi->ShowRadarControl(other_radar, true);
+      m_pi->m_radar[other_radar]->m_control_dialog->SetPosition(pos);
+    }
   } else {
+    // If a radar window is shown, switch overlay off
     m_pi->m_settings.chart_overlay = -1;
   }
-  m_ri->m_overlay.Update(m_pi->m_settings.chart_overlay == m_ri->m_radar);
+  m_ri->m_overlay.Update(m_pi->m_settings.chart_overlay == this_radar);
   UpdateControlValues(true);
 }
 
@@ -1246,7 +1263,11 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_ri->m_overlay.mod || ((m_pi->m_settings.chart_overlay == m_ri->m_radar) != (m_ri->m_overlay.button != 0)) || refreshAll) {
     o = _("Overlay");
     o << wxT("\n");
-    o << ((m_ri->m_overlay.GetButton() > 0) ? _("On") : _("Off"));
+    if (m_pi->m_settings.enable_dual_radar && ALL_RADARS(m_pi->m_settings.show_radar, 0)) {
+      o << ((m_ri->m_overlay.GetButton() > 0) ? m_ri->m_name : _("Off"));
+    } else {
+      o << ((m_ri->m_overlay.GetButton() > 0) ? _("On") : _("Off"));
+    }
     m_overlay_button->SetLabel(o);
   }
 
