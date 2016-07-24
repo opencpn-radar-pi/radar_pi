@@ -81,12 +81,13 @@ class br24ControlsDialog : public wxDialog {
   wxString m_log_name;
   wxBoxSizer *m_top_sizer;
   wxBoxSizer *m_control_sizer;
+  wxPoint m_panel_position;
+  bool m_manually_positioned;
 
  private:
   void OnClose(wxCloseEvent &event);
   void OnIdOKClick(wxCommandEvent &event);
   void OnMove(wxMoveEvent &event);
-  void OnSize(wxSizeEvent &event);
 
   void OnPlusTenClick(wxCommandEvent &event);
   void OnPlusClick(wxCommandEvent &event);
@@ -145,7 +146,6 @@ class br24ControlsDialog : public wxDialog {
 
   bool m_hide;
   bool m_hide_temporarily;
-  wxPoint m_panel_position;
   time_t m_auto_hide_timeout;  // At what time do we hide the dialog
 
   // Edit Controls

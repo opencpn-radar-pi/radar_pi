@@ -151,7 +151,6 @@ EVT_BUTTON(ID_BEARING_SET, br24ControlsDialog::OnBearingSetButtonClick)
 EVT_BUTTON(ID_CLEAR_CURSOR, br24ControlsDialog::OnClearCursorButtonClick)
 
 EVT_MOVE(br24ControlsDialog::OnMove)
-EVT_SIZE(br24ControlsDialog::OnSize)
 EVT_CLOSE(br24ControlsDialog::OnClose)
 
 END_EVENT_TABLE()
@@ -319,6 +318,13 @@ br24ControlsDialog::~br24ControlsDialog() {
 
 void br24ControlsDialog::Init() {
   // Initialize all members that need initialization
+  m_hide = false;
+  m_hide_temporarily = true;
+
+  m_from_control = 0;
+
+  m_panel_position = wxDefaultPosition;
+  m_manually_positioned = false;
 }
 
 bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* ri, wxWindowID id, const wxString& caption,
@@ -328,12 +334,6 @@ bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* 
   m_ri = ri;
 
   m_log_name = wxString::Format(wxT("BR24radar_pi: Radar %c ControlDialog:"), ri->m_radar + 'A');
-
-  m_hide = false;
-  m_hide_temporarily = true;
-  m_panel_position = wxDefaultPosition;
-
-  m_from_control = 0;
 
 #ifdef __WXMSW__
   long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
@@ -1157,9 +1157,10 @@ void br24ControlsDialog::OnClearCursorButtonClick(wxCommandEvent& event) {
   SwitchTo(m_control_sizer, wxT("main (clear cursor)"));
 }
 
-void br24ControlsDialog::OnMove(wxMoveEvent& event) { event.Skip(); }
-
-void br24ControlsDialog::OnSize(wxSizeEvent& event) { event.Skip(); }
+void br24ControlsDialog::OnMove(wxMoveEvent& event) {
+  m_manually_positioned = true;
+  event.Skip();
+}
 
 void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   wxString o;
@@ -1430,9 +1431,9 @@ void br24ControlsDialog::UpdateDialogShown() {
     bool panelShown = m_ri->m_radar_panel->IsShown();
     bool panelMoved = m_panel_position.IsFullySpecified() && panelPos != m_panel_position;
 
-    if (panelShown                     // if the radar pane is shown and
-        && (panelMoved                 // has moved this session, or
-            || controlInitialShow)) {  // the position has never been set at all, ever
+    if (panelShown                                  // if the radar pane is shown and
+        && ((panelMoved && !m_manually_positioned)  // has moved this session and user did not touch pos, or
+            || controlInitialShow)) {               // the position has never been set at all, ever
       wxSize panelSize = m_ri->m_radar_panel->GetSize();
       wxSize mySize = this->GetSize();
 

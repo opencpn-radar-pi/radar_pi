@@ -250,14 +250,19 @@ bool RadarInfo::Init(wxString name, int verbose) {
 
 void RadarInfo::ShowControlDialog(bool show, bool reparent) {
   if (show) {
-    //#ifdef __WXMSW__
+    wxPoint panel_pos = wxDefaultPosition;
+    bool manually_positioned = false;
+
     if (m_control_dialog && reparent) {
+      panel_pos = m_control_dialog->m_panel_position;
+      manually_positioned = m_control_dialog->m_manually_positioned;
       delete m_control_dialog;
       m_control_dialog = 0;
     }
-    //#endif
     if (!m_control_dialog) {
       m_control_dialog = new br24ControlsDialog;
+      m_control_dialog->m_panel_position = panel_pos;
+      m_control_dialog->m_manually_positioned = manually_positioned;
       m_control_dialog->Create((wxWindow *)m_radar_panel, m_pi, this, wxID_ANY, m_name, m_pi->m_settings.control_pos[m_radar]);
     }
     m_control_dialog->ShowDialog();
@@ -810,6 +815,9 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
       // Can't compute this upfront, ownship may move...
       distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
       bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
+      if (!IsDisplayNorthUp()) {
+        bearing -= m_pi->m_hdt;
+      }
     }
 
     if (distance != 0.0) {
