@@ -444,7 +444,7 @@ void br24ControlsDialog::CreateControls() {
 
   g_smallButtonSize = wxSize(width, testButtonText->GetSize().y + BUTTON_BORDER);
   g_buttonSize = wxSize(width, testButton2Text->GetSize().y * BUTTON_HEIGTH_FUDGE);
-  g_smallButtonSize = g_buttonSize;
+//  g_smallButtonSize = g_buttonSize;  nicer ??
 
   LOG_DIALOG(wxT("BR24radar_pi: Dynamic button width = %d height = %d, %d"), g_buttonSize.x, g_buttonSize.y, g_smallButtonSize.y);
 
