@@ -258,10 +258,10 @@ bool br24MessageBox::UpdateMessage(bool force) {
   }
 
   for (int r = 0; r < RADARS; r++) {
-    if (m_pi->m_radar[r]->state.value != RADAR_OFF) {
+    if (m_pi->m_radar[r]->m_state.value != RADAR_OFF) {
       radarSeen = true;
     }
-    if (m_pi->m_radar[r]->state.value == RADAR_TRANSMIT) {
+    if (m_pi->m_radar[r]->m_state.value == RADAR_TRANSMIT) {
       haveData = true;
     }
   }

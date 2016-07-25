@@ -109,45 +109,46 @@ typedef UINT8 TrailRevolutionsAge;
 
 class RadarInfo : public wxEvtHandler {
  public:
-  wxString name;  // Either "Radar", "Radar A", "Radar B".
+  wxString m_name;  // Either "Radar", "Radar A", "Radar B".
   br24radar_pi *m_pi;
-  int radar;  // Which radar this is (0..., max 2 for now)
+  int m_radar;  // Which radar this is (0..., max 2 for now)
 
   /* User radar settings */
 
-  radar_control_item state;        // RadarState (observed)
-  radar_control_item orientation;  // 0 = Heading Up, 1 = North Up
+  radar_control_item m_state;        // RadarState (observed)
+  radar_control_item m_orientation;  // 0 = Heading Up, 1 = North Up
 #define ORIENTATION_HEAD_UP (0)
 #define ORIENTATION_NORTH_UP (1)
-  radar_control_item overlay;
-  radar_range_control_item range;  // value in meters
-  radar_control_item gain;
-  radar_control_item interference_rejection;
-  radar_control_item target_separation;
-  radar_control_item noise_rejection;
-  radar_control_item target_boost;
-  radar_control_item target_expansion;
-  radar_control_item sea;
-  radar_control_item rain;
-  radar_control_item scan_speed;
-  radar_control_item bearing_alignment;
-  radar_control_item antenna_height;
-  radar_control_item local_interference_rejection;
-  radar_control_item side_lobe_suppression;
-  radar_control_item target_trails;
-  radar_control_item true_motion;     // value 0 = relative motion, 1 = true motion
+
+  radar_control_item m_overlay;
+  radar_range_control_item m_range;  // value in meters
+  radar_control_item m_gain;
+  radar_control_item m_interference_rejection;
+  radar_control_item m_target_separation;
+  radar_control_item m_noise_rejection;
+  radar_control_item m_target_boost;
+  radar_control_item m_target_expansion;
+  radar_control_item m_sea;
+  radar_control_item m_rain;
+  radar_control_item m_scan_speed;
+  radar_control_item m_bearing_alignment;
+  radar_control_item m_antenna_height;
+  radar_control_item m_local_interference_rejection;
+  radar_control_item m_side_lobe_suppression;
+  radar_control_item m_target_trails;
+  radar_control_item m_true_motion;     // value 0 = relative motion, 1 = true motion
 
   /* Per radar objects */
 
-  br24Transmit *transmit;
-  br24Receive *receive;
-  br24ControlsDialog *control_dialog;
-  RadarPanel *radar_panel;
-  RadarCanvas *radar_canvas;
+  br24Transmit *m_transmit;
+  br24Receive *m_receive;
+  br24ControlsDialog *m_control_dialog;
+  RadarPanel *m_radar_panel;
+  RadarCanvas *m_radar_canvas;
 
   /* Abstractions of our own. Some filled by br24Receive. */
 
-  double viewpoint_rotation;
+  double m_viewpoint_rotation;
 
   time_t m_radar_timeout;      // When we consider the radar no longer valid
   time_t m_data_timeout;       // When we consider the data to be obsolete (radar no longer sending data)
@@ -155,20 +156,20 @@ class RadarInfo : public wxEvtHandler {
 #define STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
 #define DATA_TIMEOUT (5)
 
-  RadarType radar_type;
-  bool auto_range_mode;
+  RadarType m_radar_type;
+  bool m_auto_range_mode;
   int m_overlay_refreshes_queued;
   int m_refreshes_queued;
   int m_refresh_millis;
-  RadarState wantedState;
+  RadarState m_wantedState;
 
-  GuardZone *guard_zone[GUARD_ZONES];
+  GuardZone *m_guard_zone[GUARD_ZONES];
   double m_ebl[BEARING_LINES];
   double m_vrm[BEARING_LINES];
-  receive_statistics statistics;
+  receive_statistics m_statistics;
 
   bool m_multi_sweep_filter;
-  UINT8 history[LINES_PER_ROTATION][RETURNS_PER_LINE];
+  UINT8 m_history[LINES_PER_ROTATION][RETURNS_PER_LINE];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
 #define TRAILS_SIZE (RETURNS_PER_LINE * 2)  
@@ -176,7 +177,7 @@ class RadarInfo : public wxEvtHandler {
 	  TrailRevolutionsAge trails[TRAILS_SIZE][TRAILS_SIZE];
       double lat, lon;
   };
-  TrailBuffer trails;
+  TrailBuffer m_trails;
 
   /* Methods */
 
@@ -206,13 +207,13 @@ class RadarInfo : public wxEvtHandler {
   void FlipRadarState();
   wxString &GetRangeText();
   const char *GetDisplayRangeStr(size_t idx);
-  int GetDisplayRange() { return range.value; };
+  int GetDisplayRange() { return m_range.value; };
   void SetNetworkCardAddress(struct sockaddr_in *address);
   void SetMouseLatLon(double lat, double lon);
   void SetMouseVrmEbl(double vrm, double ebl);
   void SetBearing(int bearing);
   void ClearTrails();
-  bool IsDisplayNorthUp() { return orientation.value == ORIENTATION_NORTH_UP && m_pi->m_heading_source != HEADING_NONE; }
+  bool IsDisplayNorthUp() { return m_orientation.value == ORIENTATION_NORTH_UP && m_pi->m_heading_source != HEADING_NONE; }
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
