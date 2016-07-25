@@ -89,7 +89,8 @@ enum {  // process ID's
   ID_RADAR,
   ID_DATA,
 
-  ID_BEARING_SET = 1000,  // next one should be BEARING_LINES higher
+  ID_BEARING_SET,  // next one should be BEARING_LINES higher
+  ID_NEXT = ID_BEARING_SET + BEARING_LINES,
 
 };
 
@@ -893,7 +894,7 @@ void br24ControlsDialog::CreateControls() {
   m_timed_idle_button->minValue = 0;
   m_timed_idle_button->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
   m_timed_idle_button->names = timed_idle_times;
-  m_timed_idle_button->value = m_pi->m_settings.timed_idle;
+  m_timed_idle_button->SetLocalValue(m_pi->m_settings.timed_idle);
 
   // The INFO button
   wxButton* bMessage = new wxButton(this, ID_MESSAGE, _("Info"), wxDefaultPosition, g_smallButtonSize, 0);
