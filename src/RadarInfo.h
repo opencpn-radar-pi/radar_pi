@@ -120,6 +120,7 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item m_orientation;  // 0 = Heading Up, 1 = North Up
 #define ORIENTATION_HEAD_UP (0)
 #define ORIENTATION_NORTH_UP (1)
+
   radar_control_item m_overlay;
   radar_range_control_item m_range;  // value in meters
   radar_control_item m_gain;
@@ -136,6 +137,7 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item m_local_interference_rejection;
   radar_control_item m_side_lobe_suppression;
   radar_control_item m_target_trails;
+  radar_control_item m_true_motion;     // value 0 = relative motion, 1 = true motion
 
   /* Per radar objects */
 
@@ -171,7 +173,12 @@ class RadarInfo : public wxEvtHandler {
   UINT8 m_history[LINES_PER_ROTATION][RETURNS_PER_LINE];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
-  TrailRevolutionsAge m_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
+#define TRAILS_SIZE (RETURNS_PER_LINE * 2)  
+  struct TrailBuffer{
+	  TrailRevolutionsAge trails[TRAILS_SIZE][TRAILS_SIZE];
+      double lat, lon;
+  };
+  TrailBuffer m_trails;
 
   /* Methods */
 
@@ -186,6 +193,7 @@ class RadarInfo : public wxEvtHandler {
   bool SetControlValue(ControlType controlType, int value);
   void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters);
   void RefreshDisplay(wxTimerEvent &event);
+  void UpdateTrailPosition();
   void RenderGuardZone();
   void ResetRadarImage();
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
@@ -226,7 +234,9 @@ class RadarInfo : public wxEvtHandler {
   void RenderRadarImage(DrawInfo *di);
   wxString FormatDistance(double distance);
   wxString FormatAngle(double angle);
-
+  double m_dif_lat = 0, m_dif_lon = 0;
+  double m_fraction_dif_lat = 0, m_fraction_dif_lon = 0;
+  float total_m_dif_lat = 0;   
   int m_range_meters;  // what radar told us is the range in the last received spoke
 
   int m_previous_auto_range_meters;

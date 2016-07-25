@@ -141,6 +141,7 @@ typedef enum ControlType {
   CT_ANTENNA_HEIGHT,
   CT_LOCAL_INTERFERENCE_REJECTION,
   CT_TARGET_TRAILS,
+  CT_TRUE_MOTION,
   CT_MAX  // Keep this last, see below
 } ControlType;
 
@@ -369,6 +370,9 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   double m_hdt;          // this is the heading that the pi is using for all heading operations, in degrees.
                          // m_hdt will come from the radar if available else from the NMEA stream.
   time_t m_hdt_timeout;  // When we consider heading is lost
+
+  double m_cog = 1000.;          // current COG, used for the interpolation of positions in the translation of trails
+  double m_sog = 1000.;          // current SOG, used for the interpolation of positions in the translation of trails
 
   // Variation. Used to convert magnetic into true heading.
   // Can come from SetPositionFixEx, which may hail from the WMM plugin

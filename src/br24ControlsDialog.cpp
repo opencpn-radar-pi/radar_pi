@@ -43,6 +43,7 @@ enum {  // process ID's
   ID_MINUS_TEN,
   ID_AUTO,
   ID_MULTISWEEP,
+  ID_TRUE_MOTION,
 
   ID_TRANSPARENCY,
   ID_INTERFERENCE_REJECTION,
@@ -109,6 +110,7 @@ EVT_BUTTON(ID_MINUS, br24ControlsDialog::OnMinusClick)
 EVT_BUTTON(ID_MINUS_TEN, br24ControlsDialog::OnMinusTenClick)
 EVT_BUTTON(ID_AUTO, br24ControlsDialog::OnAutoClick)
 EVT_BUTTON(ID_MULTISWEEP, br24ControlsDialog::OnMultiSweepClick)
+EVT_BUTTON(ID_TRUE_MOTION, br24ControlsDialog::OnTrueMotionClick)
 
 EVT_BUTTON(ID_TRANSPARENCY, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_INTERFERENCE_REJECTION, br24ControlsDialog::OnRadarControlButtonClick)
@@ -435,6 +437,7 @@ void br24ControlsDialog::CreateControls() {
 
   g_smallButtonSize = wxSize(width, testButtonText->GetSize().y + BUTTON_BORDER);
   g_buttonSize = wxSize(width, testButton2Text->GetSize().y * BUTTON_HEIGTH_FUDGE);
+//  g_smallButtonSize = g_buttonSize;  nicer ??
 
   LOG_DIALOG(wxT("%s Dynamic button width = %d height = %d, %d"), m_log_name.c_str(), g_buttonSize.x, g_buttonSize.y,
              g_smallButtonSize.y);
@@ -797,6 +800,13 @@ void br24ControlsDialog::CreateControls() {
   m_view_sizer->Add(m_clear_trails_button, 0, wxALL, BORDER);
   m_clear_trails_button->SetFont(m_pi->m_font);
 
+  // The True Motion button
+  wxString labelTM;
+  labelTM << _("True / Relative Motion") << wxT("\n") << _("Relative");
+  m_true_motion_button = new wxButton(this, ID_TRUE_MOTION, labelTM, wxDefaultPosition, g_buttonSize, 0);
+  m_view_sizer->Add(m_true_motion_button, 0, wxALL, BORDER);
+  m_true_motion_button->SetFont(m_pi->m_font);
+
   // The Multi Sweep Filter button
   wxString labelMS;
   labelMS << _("Multi Sweep Filter") << wxT("\n") << _("Off");
@@ -1010,6 +1020,20 @@ void br24ControlsDialog::OnMultiSweepClick(wxCommandEvent& event) {
     m_ri->m_multi_sweep_filter = false;
   }
   m_multi_sweep_button->SetLabel(labelSweep);
+}
+
+void br24ControlsDialog::OnTrueMotionClick(wxCommandEvent& event) {
+    wxString labelTrueMotion;
+    m_ri->ClearTrails();
+    if (m_ri->m_true_motion.value == 0) {
+        labelTrueMotion << _("Trails") << wxT("\n") << _("True Motion");
+        m_ri->m_true_motion.value = 1;
+    }
+    else {
+        labelTrueMotion << _("Trails") << wxT("\n") << _("Relative Motion");
+        m_ri->m_true_motion.value = 0;
+    }
+    m_true_motion_button->SetLabel(labelTrueMotion);
 }
 
 void br24ControlsDialog::OnMinusClick(wxCommandEvent& event) {
@@ -1247,6 +1271,18 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_target_trails_button->SetLocalValue(m_ri->m_target_trails.GetButton());
   }
 
+  if (m_ri->m_true_motion.mod ) {
+      wxString labelTrueMotion;
+      if (m_ri->m_true_motion.value == 1) {
+          labelTrueMotion << _("Trails") << wxT("\n") << _("True Motion");
+      }
+      else {
+          labelTrueMotion << _("Trails") << wxT("\n") << _("Relative Motion");
+      }
+      m_true_motion_button->SetLabel(labelTrueMotion);
+  }
+
+  
   if (m_ri->m_orientation.mod || refreshAll) {
     o = _("Orientation");
     o << wxT("\n");

@@ -44,6 +44,8 @@ extern void CheckOpenGLError(const wxString& after);
 struct PolarToCartesianLookupTable {
   GLfloat x[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
   GLfloat y[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
+  int intx[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
+  int inty[LINES_PER_ROTATION + 1][RETURNS_PER_LINE + 1];
 };
 
 extern PolarToCartesianLookupTable* GetPolarToCartesianLookupTable();
