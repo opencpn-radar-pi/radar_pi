@@ -179,6 +179,8 @@ PolarToCartesianLookupTable* GetPolarToCartesianLookupTable() {
       for (int radius = 0; radius < RETURNS_PER_LINE + 1; radius++) {
         lookupTable->x[arc][radius] = (GLfloat)radius * cosine;
         lookupTable->y[arc][radius] = (GLfloat)radius * sine;
+        lookupTable->intx[arc][radius] = (int)lookupTable->x[arc][radius];
+        lookupTable->inty[arc][radius] = (int)lookupTable->y[arc][radius];
       }
     }
   }
