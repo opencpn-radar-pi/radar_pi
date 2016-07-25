@@ -259,12 +259,17 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
       manually_positioned = m_control_dialog->m_manually_positioned;
       delete m_control_dialog;
       m_control_dialog = 0;
+      LOG_VERBOSE(wxT("BR24radar_pi %s: Reparenting control dialog"), m_name.c_str());
     }
     if (!m_control_dialog) {
       m_control_dialog = new br24ControlsDialog;
       m_control_dialog->m_panel_position = panel_pos;
       m_control_dialog->m_manually_positioned = manually_positioned;
-      m_control_dialog->Create((wxWindow *)m_radar_panel, m_pi, this, wxID_ANY, m_name, m_pi->m_settings.control_pos[m_radar]);
+      wxWindow *parent = (wxWindow *)m_radar_panel;
+      if (!m_pi->m_settings.show_radar[m_radar]) {
+        parent = GetOCPNCanvasWindow();
+      }
+      m_control_dialog->Create(parent, m_pi, this, wxID_ANY, m_name, m_pi->m_settings.control_pos[m_radar]);
     }
     m_control_dialog->ShowDialog();
     UpdateControlState(true);

@@ -414,7 +414,7 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   void CacheSetToolbarToolBitmaps();
   void CheckTimedTransmit(RadarState state);
   void SetDesiredStateAllRadars(RadarState desiredState);
-  void SetRadarWindowViz();
+  void SetRadarWindowViz(bool reparent = false);
 
   wxCriticalSection m_exclusive;  // protects callbacks that come from multiple radars
 

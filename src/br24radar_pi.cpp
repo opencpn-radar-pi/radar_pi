@@ -365,13 +365,13 @@ void br24radar_pi::NotifyRadarWindowViz() {
 #endif
 }
 
-void br24radar_pi::SetRadarWindowViz() {
+void br24radar_pi::SetRadarWindowViz(bool reparent) {
   int r;
   for (r = 0; r <= (int)m_settings.enable_dual_radar; r++) {
     bool showThisRadar = m_settings.show && m_settings.show_radar[r];
     bool showThisControl = m_settings.show && m_settings.show_radar_control[r];
     m_radar[r]->ShowRadarWindow(showThisRadar);
-    m_radar[r]->ShowControlDialog(showThisControl, false);
+    m_radar[r]->ShowControlDialog(showThisControl, reparent);
     if (m_settings.show == 1 && m_radar[r]->m_wantedState == RADAR_TRANSMIT) {
       m_radar[r]->m_transmit->RadarTxOn();
     }
@@ -687,7 +687,7 @@ void br24radar_pi::Notify(void) {
   if (m_opengl_mode_changed || m_notify_radar_window_viz) {
     m_opengl_mode_changed = false;
     m_notify_radar_window_viz = false;
-    SetRadarWindowViz();
+    SetRadarWindowViz(true);
   }
 
   // Move this
