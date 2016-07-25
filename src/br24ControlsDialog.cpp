@@ -756,6 +756,7 @@ void br24ControlsDialog::CreateControls() {
     wxString label = _("Place EBL/VRM");
     label << wxString::Format(wxT("%d"), b + 1);
     m_bearing_buttons[b] = new wxButton(this, ID_BEARING_SET + b, label, wxDefaultPosition, g_smallButtonSize, 0);
+    m_bearing_buttons[b]->SetFont(m_pi->m_font);
     m_bearing_sizer->Add(m_bearing_buttons[b], 0, wxALL, BORDER);
     m_bearing_buttons[b]->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnBearingSetButtonClick),
                                   0, this);
