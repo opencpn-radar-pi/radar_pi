@@ -203,14 +203,6 @@ void RadarInfo::DeleteDialogs() {
     delete m_radar_panel;
     m_radar_panel = 0;
   }
-  if (m_draw_panel.draw) {
-    delete m_draw_panel.draw;
-    m_draw_panel.draw = 0;
-  }
-  if (m_draw_overlay.draw) {
-    delete m_draw_overlay.draw;
-    m_draw_overlay.draw = 0;
-  }
 }
 
 RadarInfo::~RadarInfo() {
@@ -221,6 +213,14 @@ RadarInfo::~RadarInfo() {
     delete m_receive;
   }
   DeleteDialogs();
+  if (m_draw_panel.draw) {
+    delete m_draw_panel.draw;
+    m_draw_panel.draw = 0;
+  }
+  if (m_draw_overlay.draw) {
+    delete m_draw_overlay.draw;
+    m_draw_overlay.draw = 0;
+  }
   if (m_transmit) {
     delete m_transmit;
     m_transmit = 0;
