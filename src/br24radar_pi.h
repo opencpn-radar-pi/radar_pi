@@ -443,9 +443,6 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   bool m_old_data_seen;
   bool m_notify_radar_window_viz;
 
-  int m_auto_range_meters;  // What the range should be, at least, when AUTO mode is selected
-  int m_previous_auto_range_meters;
-
 #define HEADING_TIMEOUT (5)
 
   GuardZoneBogey *m_bogey_dialog;

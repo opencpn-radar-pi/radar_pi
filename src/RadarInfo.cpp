@@ -160,7 +160,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_auto_range_mode = true;
   m_range_meters = 0;
   m_auto_range_meters = 0;
-  m_previous_auto_range_meters = 1;
+  m_previous_auto_range_meters = 0;
   m_stayalive_timeout = 0;
 
   memset(&m_statistics, 0, sizeof(m_statistics));
@@ -480,13 +480,13 @@ void RadarInfo::UpdateTrailPosition() {
   m_trails.lon = m_pi->m_ownship_lon;
   double fshift_lat = dif_lat * 60. * 1852. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
   double fshift_lon = dif_lon * 60. * 1852. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
-  fshift_lon *= cos(deg2rad(m_pi->m_ownship_lat)); // at higher latitudes a degree of longitude is fewer meters
+  fshift_lon *= cos(deg2rad(m_pi->m_ownship_lat));  // at higher latitudes a degree of longitude is fewer meters
   int shift_lat = (int)(fshift_lat + m_fraction_dif_lat);
   int shift_lon = (int)(fshift_lon + m_fraction_dif_lon);
   m_fraction_dif_lat = fshift_lat + m_fraction_dif_lat - (double)shift_lat;  // save the rounding fraction and appy it next time
   m_fraction_dif_lon = fshift_lon + m_fraction_dif_lon - (double)shift_lon;
 
-  if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE) { // huge shift, reset trails
+  if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE) {  // huge shift, reset trails
     memset(m_trails.trails, 0, sizeof(m_trails.trails));
     m_trails.lat = m_pi->m_ownship_lat;
     m_trails.lon = m_pi->m_ownship_lon;
@@ -586,6 +586,7 @@ void RadarInfo::AdjustRange(int adjustment) {
   const RadarRange *min, *max;
 
   m_auto_range_mode = false;
+  m_previous_auto_range_meters = 0;
 
   // Note that we don't actually use m_settings.units here, so that if we are metric and
   // the plotter in NM, and it chose the last range, we start using nautic miles as well.
@@ -632,6 +633,8 @@ void RadarInfo::SetAutoRangeMeters(int meters) {
         m_previous_auto_range_meters = m_auto_range_meters;
       }
     }
+  } else {
+    m_previous_auto_range_meters = 0;
   }
 }
 

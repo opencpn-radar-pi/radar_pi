@@ -164,8 +164,6 @@ int br24radar_pi::Init(void) {
   m_var = 0.0;
   m_var_source = VARIATION_SOURCE_NONE;
   m_bpos_set = false;
-  m_auto_range_meters = 0;
-  m_previous_auto_range_meters = 0;
   m_guard_bogey_seen = false;
   m_guard_bogey_confirmed = false;
 
@@ -860,18 +858,17 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   // from DoTick().
   double max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
   // max_distance is the length of the diagonal of the viewport. If the boat
-  // were centered, the
-  // max length to the edge of the screen is exactly half that.
+  // were centered, the max length to the edge of the screen is exactly half that.
   double edge_distance = max_distance / 2.0;
-  m_auto_range_meters = (int)edge_distance;
-  if (m_auto_range_meters < 50) {
-    m_auto_range_meters = 50;
+  int auto_range_meters = (int)edge_distance;
+  if (auto_range_meters < 50) {
+    auto_range_meters = 50;
   }
 
   wxPoint boat_center;
   GetCanvasPixLL(vp, &boat_center, m_ownship_lat, m_ownship_lon);
 
-  m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(m_auto_range_meters);
+  m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
 
   //    Calculate image scale factor
   double llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;

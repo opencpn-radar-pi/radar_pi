@@ -180,6 +180,7 @@ class br24RadarControlButton : public wxButton {
       value = 50;
     }
     hasAuto = newHasAuto;
+    isAuto = false;
     firstLine = label;
     names = 0;
     controlType = ct;
@@ -208,6 +209,7 @@ class br24RadarControlButton : public wxButton {
   int minValue;
   int maxValue;
   bool hasAuto;
+  bool isAuto;
   ControlType controlType;
 };
 
@@ -223,6 +225,7 @@ class br24RadarRangeControlButton : public br24RadarControlButton {
     maxValue = 0;
     value = -1;  // means: never set
     hasAuto = true;
+    isAuto = false;
     firstLine = label;
     names = 0;
     controlType = CT_RANGE;
@@ -272,6 +275,7 @@ void br24RadarControlButton::SetLocalValue(int newValue) {  // sets value in the
   } else {
     value = newValue;
   }
+  isAuto = false;
 
   wxString label;
 
@@ -293,6 +297,7 @@ void br24RadarControlButton::SetLocalAuto() {  // sets auto in the button withou
                                                // to the radar
   wxString label;
 
+  isAuto = true;
   label << firstLine << wxT("\n") << _("Auto");
   this->SetLabel(label);
 }
@@ -304,11 +309,14 @@ void br24RadarRangeControlButton::SetRangeLabel() {
 
 void br24RadarRangeControlButton::AdjustValue(int adjustment) {
   LOG_VERBOSE(wxT("%s Adjusting %s by %d"), m_parent->m_log_name.c_str(), GetName(), adjustment);
-
+  isAuto = false;
   m_parent->m_ri->AdjustRange(adjustment);  // send new value to the radar
 }
 
-void br24RadarRangeControlButton::SetAuto() { m_parent->m_ri->m_auto_range_mode = true; }
+void br24RadarRangeControlButton::SetAuto() {
+  isAuto = true;
+  m_parent->m_ri->m_auto_range_mode = true;
+}
 
 br24ControlsDialog::br24ControlsDialog() { Init(); }
 
@@ -985,6 +993,7 @@ void br24ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
   LOG_DIALOG(wxT("%s OnPlustTenClick for %s value %d"), m_log_name.c_str(), m_from_control->GetLabel().c_str(),
              m_from_control->value + 10);
   m_from_control->AdjustValue(+10);
+  m_auto_button->Enable();
 
   wxString label = m_from_control->GetLabel();
   m_value_text->SetLabel(label);
@@ -992,6 +1001,7 @@ void br24ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
 
 void br24ControlsDialog::OnPlusClick(wxCommandEvent& event) {
   m_from_control->AdjustValue(+1);
+  m_auto_button->Enable();
 
   wxString label = m_from_control->GetLabel();
   m_value_text->SetLabel(label);
@@ -1011,6 +1021,8 @@ void br24ControlsDialog::OnBackClick(wxCommandEvent& event) {
 
 void br24ControlsDialog::OnAutoClick(wxCommandEvent& event) {
   m_from_control->SetAuto();
+  m_auto_button->Disable();
+
   OnBackClick(event);
 }
 
@@ -1041,6 +1053,7 @@ void br24ControlsDialog::OnTrueMotionClick(wxCommandEvent& event) {
 
 void br24ControlsDialog::OnMinusClick(wxCommandEvent& event) {
   m_from_control->AdjustValue(-1);
+  m_auto_button->Enable();
 
   wxString label = m_from_control->GetLabel();
   m_value_text->SetLabel(label);
@@ -1048,6 +1061,7 @@ void br24ControlsDialog::OnMinusClick(wxCommandEvent& event) {
 
 void br24ControlsDialog::OnMinusTenClick(wxCommandEvent& event) {
   m_from_control->AdjustValue(-10);
+  m_auto_button->Enable();
 
   wxString label = m_from_control->GetLabel();
   m_value_text->SetLabel(label);
@@ -1079,6 +1093,11 @@ void br24ControlsDialog::EnterEditMode(br24RadarControlButton* button) {
 
   if (m_from_control->hasAuto) {
     m_auto_button->Show();
+    if (m_from_control->isAuto) {
+      m_auto_button->Disable();
+    } else {
+      m_auto_button->Enable();
+    }
   } else {
     m_auto_button->Hide();
   }
