@@ -802,7 +802,12 @@ void br24ControlsDialog::CreateControls() {
 
   // The True Motion button
   wxString labelTM;
-  labelTM << _("True / Relative Motion") << wxT("\n") << _("Relative");
+  if (m_ri->m_true_motion.value == 1) {
+	  labelTM << _("Trails") << wxT("\n") << _("True Motion");
+  }
+  else{
+	  labelTM << _("Trails") << wxT("\n") << _("Relative Motion");
+  }
   m_true_motion_button = new wxButton(this, ID_TRUE_MOTION, labelTM, wxDefaultPosition, g_buttonSize, 0);
   m_view_sizer->Add(m_true_motion_button, 0, wxALL, BORDER);
   m_true_motion_button->SetFont(m_pi->m_font);
