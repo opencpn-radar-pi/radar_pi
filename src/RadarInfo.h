@@ -137,7 +137,9 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item m_local_interference_rejection;
   radar_control_item m_side_lobe_suppression;
   radar_control_item m_target_trails;
-  radar_control_item m_true_motion;  // value 0 = relative motion, 1 = true motion
+  radar_control_item m_trails_motion;
+#define TARGET_MOTION_RELATIVE (0)
+#define TARGET_MOTION_TRUE (1)
 
   /* Per radar objects */
 

@@ -437,7 +437,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     PolarToCartesianLookupTable *polarLookup;
     polarLookup = GetPolarToCartesianLookupTable();
     if (angle % 32 == 0) {  // run 1 out of 32 spokes
-      if (m_true_motion.value) UpdateTrailPosition();
+      if (m_trails_motion.value) UpdateTrailPosition();
     }
 
     for (size_t radius = 0; radius < len; radius++) {

@@ -952,7 +952,7 @@ bool br24radar_pi::LoadConfig(void) {
         pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
         SetControlValue(r, CT_TARGET_TRAILS, v);
         pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);
-        SetControlValue(r, CT_TRUE_MOTION, v);
+        SetControlValue(r, CT_TRAILS_MOTION, v);
         pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[r], false);
         pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * r);
         pConf->Read(wxString::Format(wxT("Radar%dWindowPosY"), r), &y, 120);
@@ -1062,7 +1062,7 @@ bool br24radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
       pConf->Write(wxString::Format(wxT("Radar%dControlShow"), r), m_settings.show_radar_control[r]);
       pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->m_target_trails.value);
-      pConf->Write(wxString::Format(wxT("Radar%dTrueMotion"), r), m_radar[r]->m_true_motion.value);
+      pConf->Write(wxString::Format(wxT("Radar%dTrueMotion"), r), m_radar[r]->m_trails_motion.value);
       pConf->Write(wxString::Format(wxT("Radar%dWindowPosX"), r), m_settings.window_pos[r].x);
       pConf->Write(wxString::Format(wxT("Radar%dWindowPosY"), r), m_settings.window_pos[r].y);
       pConf->Write(wxString::Format(wxT("Radar%dControlPosX"), r), m_settings.control_pos[r].x);
@@ -1234,8 +1234,8 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
       m_radar[radar]->ComputeTargetTrails();
       return true;
     }
-    case CT_TRUE_MOTION: {
-      m_radar[radar]->m_true_motion.Update(value);
+    case CT_TRAILS_MOTION: {
+      m_radar[radar]->m_trails_motion.Update(value);
       return true;
     }
 
