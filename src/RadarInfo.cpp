@@ -436,11 +436,9 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   if (m_target_trails.value != 0 && m_pi->m_settings.display_option == 1) {
     PolarToCartesianLookupTable *polarLookup;
     polarLookup = GetPolarToCartesianLookupTable();
-    static UINT8 timer = 0;
-    if (timer % 16 == 0) {  // run 1 out of 16 spokes
+    if (angle % 32 == 0) {  // run 1 out of 32 spokes
       if (m_true_motion.value) UpdateTrailPosition();
     }
-    timer++;
 
     for (size_t radius = 0; radius < len; radius++) {
       UINT8 *trail = &m_trails.trails[polarLookup->intx[bearing][radius] + RETURNS_PER_LINE][polarLookup->inty[bearing][radius] +
@@ -472,25 +470,23 @@ void RadarInfo::UpdateTrailPosition() {
   if (!m_pi->m_bpos_set || m_pi->m_heading_source == HEADING_NONE) {
     return;
   }
-
-  //	time_t now = time(0);
-  if (m_trails.lat != m_pi->m_ownship_lat || m_trails.lon != m_pi->m_ownship_lon) {  // new position received
-    m_dif_lat = m_trails.lat - m_pi->m_ownship_lat;
-    m_dif_lon = m_trails.lon - m_pi->m_ownship_lon;
-    m_trails.lat = m_pi->m_ownship_lat;
-    m_trails.lon = m_pi->m_ownship_lon;
-  } else {
+  if (m_trails.lat == m_pi->m_ownship_lat && m_trails.lon == m_pi->m_ownship_lon) {  // don't do anything until position changes
     return;
   }
-  double fshift_lat = m_dif_lat * 111120. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
-  double fshift_lon = cos(deg2rad(m_pi->m_ownship_lat)) * m_dif_lon * 111120. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
+
+  double dif_lat = m_trails.lat - m_pi->m_ownship_lat;
+  double dif_lon = m_trails.lon - m_pi->m_ownship_lon;
+  m_trails.lat = m_pi->m_ownship_lat;
+  m_trails.lon = m_pi->m_ownship_lon;
+  double fshift_lat = dif_lat * 60. * 1852. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
+  double fshift_lon = dif_lon * 60. * 1852. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
+  fshift_lon *= cos(deg2rad(m_pi->m_ownship_lat)); // at higher latitudes a degree of longitude is fewer meters
   int shift_lat = (int)(fshift_lat + m_fraction_dif_lat);
   int shift_lon = (int)(fshift_lon + m_fraction_dif_lon);
   m_fraction_dif_lat = fshift_lat + m_fraction_dif_lat - (double)shift_lat;  // save the rounding fraction and appy it next time
   m_fraction_dif_lon = fshift_lon + m_fraction_dif_lon - (double)shift_lon;
 
-  // number of units that the trail image should be shifted
-  if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE) {
+  if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE) { // huge shift, reset trails
     memset(m_trails.trails, 0, sizeof(m_trails.trails));
     m_trails.lat = m_pi->m_ownship_lat;
     m_trails.lon = m_pi->m_ownship_lon;

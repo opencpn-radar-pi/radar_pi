@@ -234,9 +234,10 @@ class RadarInfo : public wxEvtHandler {
   void RenderRadarImage(DrawInfo *di);
   wxString FormatDistance(double distance);
   wxString FormatAngle(double angle);
-  double m_dif_lat = 0, m_dif_lon = 0;
-  double m_fraction_dif_lat = 0, m_fraction_dif_lon = 0;
-  float total_m_dif_lat = 0;
+
+  double m_fraction_dif_lat = 0;  // Fraction of a pixel expressed in lat/lon for True Motion Target Trails
+  double m_fraction_dif_lon = 0;
+
   int m_range_meters;  // what radar told us is the range in the last received spoke
 
   int m_previous_auto_range_meters;
