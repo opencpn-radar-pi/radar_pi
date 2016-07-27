@@ -585,6 +585,8 @@ void RadarInfo::RenderGuardZone() {
 void RadarInfo::AdjustRange(int adjustment) {
   const RadarRange *min, *max;
 
+  m_auto_range_mode = false;
+
   // Note that we don't actually use m_settings.units here, so that if we are metric and
   // the plotter in NM, and it chose the last range, we start using nautic miles as well.
 
