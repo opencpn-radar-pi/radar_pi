@@ -347,8 +347,8 @@ void RadarInfo::ResetSpokes() {
   memset(zap, 0, sizeof(zap));
   memset(m_history, 0, sizeof(m_history));
   memset(m_trails.trails, 0, sizeof(m_trails));
-  
-//  memset(m_trails, 0, sizeof(m_trails));
+
+  //  memset(m_trails, 0, sizeof(m_trails));
 
   if (m_draw_panel.draw) {
     for (size_t r = 0; r < LINES_PER_ROTATION; r++) {
@@ -434,98 +434,93 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   // Trail section follows
 
   if (m_target_trails.value != 0 && m_pi->m_settings.display_option == 1) {
-      PolarToCartesianLookupTable* polarLookup;
-      polarLookup = GetPolarToCartesianLookupTable();
-      static UINT8 timer = 0;
-      if (timer % 16 == 0){      // run 1 out of 16 spokes
-          if (m_true_motion.value) UpdateTrailPosition();
-      }
-      timer++;
+    PolarToCartesianLookupTable *polarLookup;
+    polarLookup = GetPolarToCartesianLookupTable();
+    static UINT8 timer = 0;
+    if (timer % 16 == 0) {  // run 1 out of 16 spokes
+      if (m_true_motion.value) UpdateTrailPosition();
+    }
+    timer++;
 
-      for (size_t radius = 0; radius < len; radius++) {
-          UINT8 *trail = &m_trails.trails[polarLookup->intx[bearing][radius] + RETURNS_PER_LINE][polarLookup->inty[bearing][radius] + RETURNS_PER_LINE];
-          // map the origin in the middle of the trails image
-          if (data[radius] >= weakest_normal_blob) {
-              *trail = 1;
-          }
-          else {
-              if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-                  (*trail)++;
-              }
-              data[radius] = m_trail_color[*trail];
-          }
+    for (size_t radius = 0; radius < len; radius++) {
+      UINT8 *trail = &m_trails.trails[polarLookup->intx[bearing][radius] + RETURNS_PER_LINE][polarLookup->inty[bearing][radius] +
+                                                                                             RETURNS_PER_LINE];
+      // map the origin in the middle of the trails image
+      if (data[radius] >= weakest_normal_blob) {
+        *trail = 1;
+      } else {
+        if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+          (*trail)++;
+        }
+        data[radius] = m_trail_color[*trail];
       }
+    }
   }
 
   // end of trail section
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
-      m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
+    m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
   if (m_draw_panel.draw) {
-      m_draw_panel.draw->ProcessRadarSpoke(3, north_up ? bearing : angle, data, len);
+    m_draw_panel.draw->ProcessRadarSpoke(3, north_up ? bearing : angle, data, len);
   }
 }
 
-void RadarInfo::UpdateTrailPosition(){
-    if (!m_pi->m_bpos_set || m_pi->m_heading_source == HEADING_NONE){
-        
-        
-        return;
-    }
+void RadarInfo::UpdateTrailPosition() {
+  if (!m_pi->m_bpos_set || m_pi->m_heading_source == HEADING_NONE) {
+    return;
+  }
 
-    //	time_t now = time(0);
-    if (m_trails.lat != m_pi->m_ownship_lat || m_trails.lon != m_pi->m_ownship_lon){  // new position received
-        m_dif_lat = m_trails.lat - m_pi->m_ownship_lat;
-        m_dif_lon = m_trails.lon - m_pi->m_ownship_lon;
-        m_trails.lat = m_pi->m_ownship_lat;
-        m_trails.lon = m_pi->m_ownship_lon;
-    }
-    else{
-        return;
-    }
-    double fshift_lat = m_dif_lat * 111120. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
-    double fshift_lon = cos(deg2rad(m_pi->m_ownship_lat)) * m_dif_lon * 111120. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
-    int shift_lat = (int)(fshift_lat + m_fraction_dif_lat);
-    int shift_lon = (int)(fshift_lon + m_fraction_dif_lon);
-    m_fraction_dif_lat = fshift_lat + m_fraction_dif_lat - (double)shift_lat;  // save the rounding fraction and appy it next time
-    m_fraction_dif_lon = fshift_lon + m_fraction_dif_lon - (double)shift_lon;
+  //	time_t now = time(0);
+  if (m_trails.lat != m_pi->m_ownship_lat || m_trails.lon != m_pi->m_ownship_lon) {  // new position received
+    m_dif_lat = m_trails.lat - m_pi->m_ownship_lat;
+    m_dif_lon = m_trails.lon - m_pi->m_ownship_lon;
+    m_trails.lat = m_pi->m_ownship_lat;
+    m_trails.lon = m_pi->m_ownship_lon;
+  } else {
+    return;
+  }
+  double fshift_lat = m_dif_lat * 111120. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
+  double fshift_lon = cos(deg2rad(m_pi->m_ownship_lat)) * m_dif_lon * 111120. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
+  int shift_lat = (int)(fshift_lat + m_fraction_dif_lat);
+  int shift_lon = (int)(fshift_lon + m_fraction_dif_lon);
+  m_fraction_dif_lat = fshift_lat + m_fraction_dif_lat - (double)shift_lat;  // save the rounding fraction and appy it next time
+  m_fraction_dif_lon = fshift_lon + m_fraction_dif_lon - (double)shift_lon;
 
-    // number of units that the trail image should be shifted 
-    if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE){
-        memset(m_trails.trails, 0, sizeof(m_trails.trails));
-        m_trails.lat = m_pi->m_ownship_lat;
-        m_trails.lon = m_pi->m_ownship_lon;
-        m_fraction_dif_lat = 0.;
-        m_fraction_dif_lon = 0.;
-        return;
-    }
+  // number of units that the trail image should be shifted
+  if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE) {
+    memset(m_trails.trails, 0, sizeof(m_trails.trails));
+    m_trails.lat = m_pi->m_ownship_lat;
+    m_trails.lon = m_pi->m_ownship_lon;
+    m_fraction_dif_lat = 0.;
+    m_fraction_dif_lon = 0.;
+    return;
+  }
 
-    if (shift_lon > 0){
-        for (int i = 0; i < TRAILS_SIZE; i++){
-            memmove(&m_trails.trails[i][shift_lon], &m_trails.trails[i][0], TRAILS_SIZE - shift_lon);
-            memset(&m_trails.trails[i][0], 0, shift_lon);
-        }
+  if (shift_lon > 0) {
+    for (int i = 0; i < TRAILS_SIZE; i++) {
+      memmove(&m_trails.trails[i][shift_lon], &m_trails.trails[i][0], TRAILS_SIZE - shift_lon);
+      memset(&m_trails.trails[i][0], 0, shift_lon);
     }
-    if (shift_lon < 0){
-        for (int i = 0; i < TRAILS_SIZE; i++){
-            memmove(&m_trails.trails[i][0], &m_trails.trails[i][-shift_lon], TRAILS_SIZE + shift_lon);
-            memset(&m_trails.trails[i][TRAILS_SIZE + shift_lon], 0, -shift_lon);
-        }
+  }
+  if (shift_lon < 0) {
+    for (int i = 0; i < TRAILS_SIZE; i++) {
+      memmove(&m_trails.trails[i][0], &m_trails.trails[i][-shift_lon], TRAILS_SIZE + shift_lon);
+      memset(&m_trails.trails[i][TRAILS_SIZE + shift_lon], 0, -shift_lon);
     }
+  }
 
-    if (shift_lat > 0){
-        memmove(&m_trails.trails[shift_lat][0], &m_trails.trails[0][0], TRAILS_SIZE * (TRAILS_SIZE - shift_lat));
-        memset(&m_trails.trails[0][0], 0, TRAILS_SIZE * shift_lat);
-    }
-    if (shift_lat < 0){
-        memmove(&m_trails.trails[0][0], &m_trails.trails[-shift_lat][0], TRAILS_SIZE * (TRAILS_SIZE + shift_lat));
-        memset(&m_trails.trails[TRAILS_SIZE + shift_lat][0], 0, -TRAILS_SIZE * shift_lat);
-    }
+  if (shift_lat > 0) {
+    memmove(&m_trails.trails[shift_lat][0], &m_trails.trails[0][0], TRAILS_SIZE * (TRAILS_SIZE - shift_lat));
+    memset(&m_trails.trails[0][0], 0, TRAILS_SIZE * shift_lat);
+  }
+  if (shift_lat < 0) {
+    memmove(&m_trails.trails[0][0], &m_trails.trails[-shift_lat][0], TRAILS_SIZE * (TRAILS_SIZE + shift_lat));
+    memset(&m_trails.trails[TRAILS_SIZE + shift_lat][0], 0, -TRAILS_SIZE * shift_lat);
+  }
 }
-
-
 
 void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
   if (m_overlay_refreshes_queued > 0) {
@@ -1002,9 +997,7 @@ void RadarInfo::SetBearing(int bearing) {
   }
 }
 
-
 void RadarInfo::ClearTrails() { memset(m_trails.trails, 0, sizeof(m_trails)); }
-
 
 void RadarInfo::ComputeTargetTrails() {
   static TrailRevolutionsAge maxRevs[6] = {SECONDS_TO_REVOLUTIONS(0),  SECONDS_TO_REVOLUTIONS(15),  SECONDS_TO_REVOLUTIONS(30),
