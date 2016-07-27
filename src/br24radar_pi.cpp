@@ -977,6 +977,7 @@ bool br24radar_pi::LoadConfig(void) {
       m_settings.alarm_pos = wxPoint(x, y);
     }
 
+    pConf->Read(wxT("AlertAudioFile"), &m_settings.alert_audio_file, m_shareLocn + wxT("alarm.wav"));
     pConf->Read(wxT("ChartOverlay"), &m_settings.chart_overlay, 0);
     pConf->Read(wxT("DisplayOption"), &m_settings.display_option, 1);
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
@@ -990,7 +991,6 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("IgnoreRadarHeading"), &m_settings.ignore_radar_heading, 0);
     pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 0);
     pConf->Read(wxT("PassHeadingToOCPN"), &m_settings.pass_heading_to_opencpn, false);
-    pConf->Read(wxT("RadarAlertAudioFile"), &m_settings.alert_audio_file);
     pConf->Read(wxT("RadarInterface"), &m_settings.mcast_address);
     pConf->Read(wxT("RangeUnits"), &m_settings.range_units, 0);  // 0 = "Nautical miles"), 1 = "Kilometers"
     pConf->Read(wxT("Refreshrate"), &m_settings.refreshrate, 1);
@@ -1026,6 +1026,7 @@ bool br24radar_pi::SaveConfig(void) {
 
     pConf->Write(wxT("AlarmPosX"), m_settings.alarm_pos.x);
     pConf->Write(wxT("AlarmPosY"), m_settings.alarm_pos.y);
+    pConf->Write(wxT("AlertAudioFile"), m_settings.alert_audio_file);
     pConf->Write(wxT("ChartOverlay"), m_settings.chart_overlay);
     pConf->Write(wxT("DisplayOption"), m_settings.display_option);
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
@@ -1039,7 +1040,6 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("IgnoreRadarHeading"), m_settings.ignore_radar_heading);
     pConf->Write(wxT("MenuAutoHide"), m_settings.menu_auto_hide);
     pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
-    pConf->Write(wxT("RadarAlertAudioFile"), m_settings.alert_audio_file);
     pConf->Write(wxT("RadarInterface"), m_settings.mcast_address);
     pConf->Write(wxT("RangeUnits"), m_settings.range_units);
     pConf->Write(wxT("Refreshrate"), m_settings.refreshrate);
