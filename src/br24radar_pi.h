@@ -278,15 +278,15 @@ struct PersistentSettings {
   int drawing_method;               // VertexBuffer, Shader, etc.
   bool ignore_radar_heading;        // For testing purposes
   bool reverse_zoom;                // false = normal, true = reverse
-  int threshold_red;
-  int threshold_green;
-  int threshold_blue;
-  int threshold_multi_sweep;
-  wxPoint control_pos[RADARS];
-  wxPoint window_pos[RADARS];
-  wxPoint alarm_pos;
-  wxString alert_audio_file;
-  wxString mcast_address;
+  int threshold_red;                // Radar data has to be this strong to show as STRONG
+  int threshold_green;              // Radar data has to be this strong to show as INTERMEDIATE
+  int threshold_blue;               // Radar data has to be this strong to show as WEAK
+  int threshold_multi_sweep;        // Radar data has to be this strong not to be ignored in multisweep
+  wxPoint control_pos[RADARS];      // Saved position of control menu windows
+  wxPoint window_pos[RADARS];       // Saved position of radar windows, when floating and not docked
+  wxPoint alarm_pos;                // Saved position of alarm window
+  wxString alert_audio_file;        // Filepath of alarm audio file. Must be WAV.
+  wxString mcast_address;           // Saved address of radar. Used to speed up next boot.
 };
 
 struct scan_line {
