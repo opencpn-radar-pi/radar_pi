@@ -60,6 +60,7 @@ enum {  // process ID's
   ID_ANTENNA_HEIGHT,
   ID_LOCAL_INTERFERENCE_REJECTION,
   ID_SIDE_LOBE_SUPPRESSION,
+  ID_MAIN_BANG_SIZE,
 
   ID_RANGE,
   ID_GAIN,
@@ -127,6 +128,7 @@ EVT_BUTTON(ID_BEARING_ALIGNMENT, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_ANTENNA_HEIGHT, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_LOCAL_INTERFERENCE_REJECTION, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_SIDE_LOBE_SUPPRESSION, br24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_MAIN_BANG_SIZE, br24ControlsDialog::OnRadarControlButtonClick)
 
 EVT_BUTTON(ID_RADAR_STATE, br24ControlsDialog::OnRadarStateButtonClick)
 EVT_BUTTON(ID_SHOW_RADAR, br24ControlsDialog::OnRadarShowButtonClick)
@@ -653,6 +655,13 @@ void br24ControlsDialog::CreateControls() {
   m_side_lobe_suppression_button->minValue = 0;
   m_side_lobe_suppression_button->maxValue = 100;
   m_side_lobe_suppression_button->SetLocalValue(m_ri->m_side_lobe_suppression.button);  // redraw after adding names
+
+  // The MAIN BANG SIZE button
+  m_main_bang_size_button = new br24RadarControlButton(this, ID_MAIN_BANG_SIZE, _("Main bang size"),
+                                                              CT_MAIN_BANG_SIZE, false, m_pi->m_settings.main_bang_size);
+  m_installation_sizer->Add(m_main_bang_size_button, 0, wxALL, BORDER);
+  m_main_bang_size_button->minValue = 0;
+  m_main_bang_size_button->maxValue = 10;
 
   m_top_sizer->Hide(m_installation_sizer);
 

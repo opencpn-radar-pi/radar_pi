@@ -121,6 +121,9 @@ struct receive_statistics {
   int missing_spokes;
 };
 
+// WARNING
+// WARNING If you add to ControlType, make sure to add strings to ControlTypeNames as well!
+// WARNING
 typedef enum ControlType {
   CT_RANGE,
   CT_GAIN,
@@ -142,6 +145,7 @@ typedef enum ControlType {
   CT_LOCAL_INTERFERENCE_REJECTION,
   CT_TARGET_TRAILS,
   CT_TRAILS_MOTION,
+  CT_MAIN_BANG_SIZE,
   CT_MAX  // Keep this last, see below
 } ControlType;
 
@@ -164,7 +168,9 @@ static string ControlTypeNames[CT_MAX] = {"Range",
                                           "Side lobe suppression",
                                           "Antenna height",
                                           "Local interference rejection",
-                                          "Target trails"};
+                                          "Target trails",
+                                          "Target trails motion",
+                                          "Main bang size"};
 
 typedef enum GuardZoneType { GZ_OFF, GZ_ARC, GZ_CIRCLE } GuardZoneType;
 
@@ -282,6 +288,7 @@ struct PersistentSettings {
   int threshold_green;              // Radar data has to be this strong to show as INTERMEDIATE
   int threshold_blue;               // Radar data has to be this strong to show as WEAK
   int threshold_multi_sweep;        // Radar data has to be this strong not to be ignored in multisweep
+  int main_bang_size;               // Pixels at center to ignore
   wxPoint control_pos[RADARS];      // Saved position of control menu windows
   wxPoint window_pos[RADARS];       // Saved position of radar windows, when floating and not docked
   wxPoint alarm_pos;                // Saved position of alarm window

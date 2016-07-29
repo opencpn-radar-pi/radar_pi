@@ -176,6 +176,7 @@ class br24ControlsDialog : public wxDialog {
   br24RadarControlButton *m_antenna_height_button;
   br24RadarControlButton *m_local_interference_rejection_button;
   br24RadarControlButton *m_side_lobe_suppression_button;
+  br24RadarControlButton *m_main_bang_size_button;
 
   // Bearing controls
   wxButton *m_bearing_buttons[BEARING_LINES];

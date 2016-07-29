@@ -383,6 +383,10 @@ void RadarInfo::ResetSpokes() {
 void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters) {
   wxCriticalSectionLocker lock(m_exclusive);
 
+  for (int i = 0; i < m_pi->m_settings.main_bang_size; i++) {
+    data[i] = 0;
+  }
+  
   if (m_range_meters != range_meters) {
     ResetSpokes();
     LOG_VERBOSE(wxT("BR24radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters,

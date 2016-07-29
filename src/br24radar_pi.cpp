@@ -989,6 +989,7 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("GuardZonesRenderStyle"), &m_settings.guard_zone_render_style, 0);
     pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
     pConf->Read(wxT("IgnoreRadarHeading"), &m_settings.ignore_radar_heading, 0);
+    pConf->Read(wxT("MainBangSize"), &m_settings.main_bang_size, 0);
     pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 0);
     pConf->Read(wxT("PassHeadingToOCPN"), &m_settings.pass_heading_to_opencpn, false);
     pConf->Read(wxT("RadarInterface"), &m_settings.mcast_address);
@@ -1040,6 +1041,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("GuardZonesRenderStyle"), m_settings.guard_zone_render_style);
     pConf->Write(wxT("GuardZonesThreshold"), m_settings.guard_zone_threshold);
     pConf->Write(wxT("IgnoreRadarHeading"), m_settings.ignore_radar_heading);
+    pConf->Write(wxT("MainBangSize"), m_settings.main_bang_size);
     pConf->Write(wxT("MenuAutoHide"), m_settings.menu_auto_hide);
     pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
     pConf->Write(wxT("RadarInterface"), m_settings.mcast_address);
@@ -1238,6 +1240,10 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
     }
     case CT_TRAILS_MOTION: {
       m_radar[radar]->m_trails_motion.Update(value);
+      return true;
+    }
+    case CT_MAIN_BANG_SIZE: {
+      m_settings.main_bang_size = value;
       return true;
     }
 
