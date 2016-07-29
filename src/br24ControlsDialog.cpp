@@ -1213,7 +1213,12 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   o = _("Standby / Transmit");
   o << wxT("\n");
   if (m_pi->m_settings.timed_idle == 0) {
-    o << ((state == RADAR_TRANSMIT) ? _("Transmit") : _("Standby"));
+    if (m_ri->m_wantedState != state) {
+      o << _("Requested") << wxT(" ");
+      o << ((m_ri->m_wantedState == RADAR_TRANSMIT) ? _("Transmit") : _("Standby"));
+    } else {
+      o << ((state == RADAR_TRANSMIT) ? _("Transmit") : _("Standby"));
+    }
     m_timed_idle_button->SetLocalValue(0);
   } else {
     time_t now = time(0);

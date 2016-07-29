@@ -370,7 +370,7 @@ void br24radar_pi::SetRadarWindowViz(bool reparent) {
     bool showThisControl = m_settings.show && m_settings.show_radar_control[r];
     m_radar[r]->ShowRadarWindow(showThisRadar);
     m_radar[r]->ShowControlDialog(showThisControl, reparent);
-    if (m_settings.show == 1 && m_radar[r]->m_wantedState == RADAR_TRANSMIT) {
+    if (m_settings.show == 1 && m_radar[r]->m_wantedState == RADAR_TRANSMIT && m_radar[r]->m_state.value != RADAR_TRANSMIT) {
       m_radar[r]->m_transmit->RadarTxOn();
     }
   }
