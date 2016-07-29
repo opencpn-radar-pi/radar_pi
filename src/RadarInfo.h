@@ -183,7 +183,10 @@ class RadarInfo : public wxEvtHandler {
       TrailRevolutionsAge true_trails[TRAILS_SIZE][TRAILS_SIZE];
       TrailRevolutionsAge relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
     };
-    double lat, lon;
+    double lat;
+    double lon;
+    double dif_lat;  // Fraction of a pixel expressed in lat/lon for True Motion Target Trails
+    double dif_lon;
   };
   TrailBuffer m_trails;
 
@@ -241,9 +244,6 @@ class RadarInfo : public wxEvtHandler {
   void RenderRadarImage(DrawInfo *di);
   wxString FormatDistance(double distance);
   wxString FormatAngle(double angle);
-
-  double m_fraction_dif_lat = 0;  // Fraction of a pixel expressed in lat/lon for True Motion Target Trails
-  double m_fraction_dif_lon = 0;
 
   int m_range_meters;  // what radar told us is the range in the last received spoke
 

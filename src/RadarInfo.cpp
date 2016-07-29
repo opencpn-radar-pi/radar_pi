@@ -499,17 +499,17 @@ void RadarInfo::UpdateTrailPosition() {
   double fshift_lat = dif_lat * 60. * 1852. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
   double fshift_lon = dif_lon * 60. * 1852. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
   fshift_lon *= cos(deg2rad(m_pi->m_ownship_lat));  // at higher latitudes a degree of longitude is fewer meters
-  int shift_lat = (int)(fshift_lat + m_fraction_dif_lat);
-  int shift_lon = (int)(fshift_lon + m_fraction_dif_lon);
-  m_fraction_dif_lat = fshift_lat + m_fraction_dif_lat - (double)shift_lat;  // save the rounding fraction and appy it next time
-  m_fraction_dif_lon = fshift_lon + m_fraction_dif_lon - (double)shift_lon;
+  int shift_lat = (int)(fshift_lat + m_trails.dif_lat);
+  int shift_lon = (int)(fshift_lon + m_trails.dif_lon);
+  m_trails.dif_lat = fshift_lat + m_trails.dif_lat - (double)shift_lat;  // save the rounding fraction and appy it next time
+  m_trails.dif_lon = fshift_lon + m_trails.dif_lon - (double)shift_lon;
 
   if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE) {  // huge shift, reset trails
     ClearTrails();
     m_trails.lat = m_pi->m_ownship_lat;
     m_trails.lon = m_pi->m_ownship_lon;
-    m_fraction_dif_lat = 0.;
-    m_fraction_dif_lon = 0.;
+    m_trails.dif_lat = 0.;
+    m_trails.dif_lon = 0.;
     return;
   }
 
