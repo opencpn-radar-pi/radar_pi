@@ -992,7 +992,9 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 0);
     pConf->Read(wxT("PassHeadingToOCPN"), &m_settings.pass_heading_to_opencpn, false);
     pConf->Read(wxT("RadarInterface"), &m_settings.mcast_address);
-    pConf->Read(wxT("RangeUnits"), &m_settings.range_units, 0);  // 0 = "Nautical miles"), 1 = "Kilometers"
+    pConf->Read(wxT("RangeUnits"), &v, 0);
+    m_settings.range_units = (RangeUnits)wxMax(wxMin(v, 1), 0);
+    m_settings.range_unit_meters = (m_settings.range_units == RANGE_METRIC) ? 1000 : 1852;
     pConf->Read(wxT("Refreshrate"), &m_settings.refreshrate, 1);
     pConf->Read(wxT("ReverseZoom"), &m_settings.reverse_zoom, false);
     pConf->Read(wxT("ScanMaxAge"), &m_settings.max_age, 6);
@@ -1009,8 +1011,6 @@ bool br24radar_pi::LoadConfig(void) {
 
     m_settings.display_option = wxMax(wxMin(m_settings.display_option, 1), 0);
     m_settings.max_age = wxMax(wxMin(m_settings.max_age, MAX_AGE), MIN_AGE);
-    m_settings.range_units = wxMax(wxMin(m_settings.range_units, 1), 0);
-    m_settings.range_unit_meters = (m_settings.range_units == 1) ? 1000 : 1852;
     m_settings.refreshrate = wxMax(wxMin(m_settings.refreshrate, 5), 1);
 
     SaveConfig();
@@ -1043,7 +1043,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("MenuAutoHide"), m_settings.menu_auto_hide);
     pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
     pConf->Write(wxT("RadarInterface"), m_settings.mcast_address);
-    pConf->Write(wxT("RangeUnits"), m_settings.range_units);
+    pConf->Write(wxT("RangeUnits"), (int)m_settings.range_units);
     pConf->Write(wxT("Refreshrate"), m_settings.refreshrate);
     pConf->Write(wxT("ReverseZoom"), m_settings.reverse_zoom);
     pConf->Write(wxT("RunTimeOnIdle"), m_settings.idle_run_time);

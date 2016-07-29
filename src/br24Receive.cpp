@@ -110,7 +110,7 @@ struct radar_frame_pkt {
 
 // Ethernet packet stuff *************************************************************
 
-br24Receive::~br24Receive() { LOG_RECEIVE(wxT("BR24radar_pi: %s thread is stopping"), m_ri->m_name.c_str()); }
+br24Receive::~br24Receive() { LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopped"), m_ri->m_name.c_str()); }
 
 void br24Receive::OnExit() {}
 

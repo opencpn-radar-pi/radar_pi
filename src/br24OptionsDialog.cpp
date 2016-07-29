@@ -204,7 +204,9 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   SetMinSize(GetBestSize());
 }
 
-void br24OptionsDialog::OnRangeUnitsClick(wxCommandEvent &event) { m_settings.range_units = m_RangeUnits->GetSelection(); }
+void br24OptionsDialog::OnRangeUnitsClick(wxCommandEvent &event) {
+  m_settings.range_units = (RangeUnits)m_RangeUnits->GetSelection();
+}
 
 void br24OptionsDialog::OnDisplayOptionClick(wxCommandEvent &event) {
   m_settings.display_option = m_OverlayDisplayOptions->GetSelection();

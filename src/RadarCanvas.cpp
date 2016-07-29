@@ -56,12 +56,12 @@ RadarCanvas::RadarCanvas(br24radar_pi *pi, RadarInfo *ri, wxWindow *parent, wxSi
   m_last_mousewheel_zoom_in = 0;
   m_last_mousewheel_zoom_out = 0;
 
-  LOG_DIALOG(wxT("BR24radar_pi: %s create OpenGL canvas"), m_ri->m_name.c_str());
+  LOG_VERBOSE(wxT("BR24radar_pi: %s create OpenGL canvas"), m_ri->m_name.c_str());
   Refresh(false);
 }
 
 RadarCanvas::~RadarCanvas() {
-  LOG_DIALOG(wxT("BR24radar_pi: %s destroy OpenGL canvas"), m_ri->m_name.c_str());
+  LOG_VERBOSE(wxT("BR24radar_pi: %s destroy OpenGL canvas"), m_ri->m_name.c_str());
   delete m_context;
   delete m_zero_context;
   if (m_cursor_texture) {

@@ -104,6 +104,8 @@ class GuardZone {
     ResetBogeys();
   }
 
+  ~GuardZone() { LOG_VERBOSE(wxT("%s destroyed"), m_log_name.c_str()); }
+
  private:
   br24radar_pi *m_pi;
   wxString m_log_name;

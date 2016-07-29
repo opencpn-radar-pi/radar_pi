@@ -52,8 +52,9 @@ br24Transmit::br24Transmit(br24radar_pi *pi, wxString name, int radar) {
 br24Transmit::~br24Transmit() {
   if (m_radar_socket != INVALID_SOCKET) {
     closesocket(m_radar_socket);
-    LOG_TRANSMIT(wxT("BR24radar_pi: %s transmit socket closed"), m_name);
+    LOG_TRANSMIT(wxT("BR24radar_pi: %s transmit socket closed"), m_name.c_str());
   }
+  LOG_VERBOSE(wxT("BR24radar_pi: %s transmit object destroyed"), m_name.c_str());
 }
 
 bool br24Transmit::Init(struct sockaddr_in *adr) {

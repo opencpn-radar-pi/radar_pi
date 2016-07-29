@@ -211,6 +211,7 @@ RadarInfo::~RadarInfo() {
   if (m_receive) {
     m_receive->Delete();
     delete m_receive;
+    m_receive = 0;
   }
   DeleteDialogs();
   if (m_draw_panel.draw) {
@@ -336,9 +337,9 @@ void RadarInfo::ComputeColorMap() {
     for (BlobColor history = BLOB_HISTORY_0; history <= BLOB_HISTORY_MAX; history = (BlobColor)(history + 1)) {
       m_color_map[history] = history;
 
-      m_color_map_red[history] = (GLubyte) gray;
-      m_color_map_green[history] = (GLubyte) gray;
-      m_color_map_blue[history] = (GLubyte) gray;
+      m_color_map_red[history] = (GLubyte)gray;
+      m_color_map_green[history] = (GLubyte)gray;
+      m_color_map_blue[history] = (GLubyte)gray;
       gray -= dec_gray;
     }
   }
@@ -443,8 +444,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       }
 
       for (size_t radius = 0; radius < len; radius++) {
-        UINT8 *trail = &m_trails.true_trails[polarLookup->intx[bearing][radius] + RETURNS_PER_LINE][polarLookup->inty[bearing][radius] +
-                                                                                               RETURNS_PER_LINE];
+        UINT8 *trail = &m_trails.true_trails[polarLookup->intx[bearing][radius] +
+                                             RETURNS_PER_LINE][polarLookup->inty[bearing][radius] + RETURNS_PER_LINE];
         if (data[radius] >= weakest_normal_blob) {
           *trail = 1;
         } else {
