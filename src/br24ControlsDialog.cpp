@@ -249,7 +249,7 @@ wxString target_expansion_names[2];
 wxString scan_speed_names[2];
 wxString timed_idle_times[8];
 wxString guard_zone_names[3];
-wxString target_trail_names[6];
+wxString target_trail_names[TRAIL_ARRAY_SIZE];
 
 void br24RadarControlButton::AdjustValue(int adjustment) {
   int newValue = value + adjustment;
@@ -788,12 +788,13 @@ void br24ControlsDialog::CreateControls() {
   bMenuBack->SetFont(m_pi->m_font);
 
   // The TARGET_TRAIL button
-  target_trail_names[0] = _("Off");
-  target_trail_names[1] = _("15 sec");
-  target_trail_names[2] = _("30 sec");
-  target_trail_names[3] = _("1 min");
-  target_trail_names[4] = _("3 min");
-  target_trail_names[5] = _("Continuous");
+  target_trail_names[TRAIL_OFF] = _("Off");
+  target_trail_names[TRAIL_15SEC] = _("15 sec");
+  target_trail_names[TRAIL_30SEC] = _("30 sec");
+  target_trail_names[TRAIL_1MIN] = _("1 min");
+  target_trail_names[TRAIL_3MIN] = _("3 min");
+  target_trail_names[TRAIL_10MIN] = _("10 min");
+  target_trail_names[TRAIL_CONTINUOUS] = _("Continuous");
 
   m_target_trails_button =
       new br24RadarControlButton(this, ID_TARGET_TRAILS, _("Target trails"), CT_TARGET_TRAILS, false, m_ri->m_target_trails.button);

@@ -330,11 +330,16 @@ void RadarInfo::ComputeColorMap() {
   m_color_map_blue[BLOB_BLUE] = 255;
 
   if (m_pi->m_settings.display_option == 1 && m_target_trails.value > 0) {
-    for (BlobColor history = BLOB_HISTORY_0; history <= BLOB_HISTORY_9; history = (BlobColor)(history + 1)) {
+    GLubyte gray = 255;
+    static const GLubyte end_gray = 63;
+    static const GLubyte dec_gray = (gray - end_gray) / BLOB_HISTORY_COLORS;
+    for (BlobColor history = BLOB_HISTORY_0; history <= BLOB_HISTORY_MAX; history = (BlobColor)(history + 1)) {
       m_color_map[history] = history;
-      m_color_map_red[history] = 255;
-      m_color_map_green[history] = 255;
-      m_color_map_blue[history] = 255;
+
+      m_color_map_red[history] = (GLubyte) gray;
+      m_color_map_green[history] = (GLubyte) gray;
+      m_color_map_blue[history] = (GLubyte) gray;
+      gray -= dec_gray;
     }
   }
 }
@@ -346,9 +351,7 @@ void RadarInfo::ResetSpokes() {
 
   memset(zap, 0, sizeof(zap));
   memset(m_history, 0, sizeof(m_history));
-  memset(m_trails.trails, 0, sizeof(m_trails));
-
-  //  memset(m_trails, 0, sizeof(m_trails));
+  ClearTrails();
 
   if (m_draw_panel.draw) {
     for (size_t r = 0; r < LINES_PER_ROTATION; r++) {
@@ -431,31 +434,41 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
-  // Trail section follows
-
   if (m_target_trails.value != 0 && m_pi->m_settings.display_option == 1) {
-    PolarToCartesianLookupTable *polarLookup;
-    polarLookup = GetPolarToCartesianLookupTable();
-    if (angle % 32 == 0) {  // run 1 out of 32 spokes
-      if (m_trails_motion.value) UpdateTrailPosition();
-    }
+    if (m_trails_motion.value == TARGET_MOTION_TRUE) {
+      PolarToCartesianLookupTable *polarLookup;
+      polarLookup = GetPolarToCartesianLookupTable();
+      if (angle % 32 == 0) {  // run 1 out of 32 spokes
+        UpdateTrailPosition();
+      }
 
-    for (size_t radius = 0; radius < len; radius++) {
-      UINT8 *trail = &m_trails.trails[polarLookup->intx[bearing][radius] + RETURNS_PER_LINE][polarLookup->inty[bearing][radius] +
-                                                                                             RETURNS_PER_LINE];
-      // map the origin in the middle of the trails image
-      if (data[radius] >= weakest_normal_blob) {
-        *trail = 1;
-      } else {
-        if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-          (*trail)++;
+      for (size_t radius = 0; radius < len; radius++) {
+        UINT8 *trail = &m_trails.true_trails[polarLookup->intx[bearing][radius] + RETURNS_PER_LINE][polarLookup->inty[bearing][radius] +
+                                                                                               RETURNS_PER_LINE];
+        if (data[radius] >= weakest_normal_blob) {
+          *trail = 1;
+        } else {
+          if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+            (*trail)++;
+          }
+          data[radius] = m_trail_color[*trail];
         }
-        data[radius] = m_trail_color[*trail];
+      }
+    } else if (m_trails_motion.value == TARGET_MOTION_RELATIVE) {
+      UINT8 *trail = m_trails.relative_trails[angle];
+      for (size_t radius = 0; radius < len; radius++) {
+        if (data[radius] >= weakest_normal_blob) {
+          *trail = 1;
+        } else {
+          if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+            (*trail)++;
+          }
+          data[radius] = m_trail_color[*trail];
+        }
+        trail++;
       }
     }
   }
-
-  // end of trail section
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
@@ -487,7 +500,7 @@ void RadarInfo::UpdateTrailPosition() {
   m_fraction_dif_lon = fshift_lon + m_fraction_dif_lon - (double)shift_lon;
 
   if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE) {  // huge shift, reset trails
-    memset(m_trails.trails, 0, sizeof(m_trails.trails));
+    ClearTrails();
     m_trails.lat = m_pi->m_ownship_lat;
     m_trails.lon = m_pi->m_ownship_lon;
     m_fraction_dif_lat = 0.;
@@ -497,24 +510,24 @@ void RadarInfo::UpdateTrailPosition() {
 
   if (shift_lon > 0) {
     for (int i = 0; i < TRAILS_SIZE; i++) {
-      memmove(&m_trails.trails[i][shift_lon], &m_trails.trails[i][0], TRAILS_SIZE - shift_lon);
-      memset(&m_trails.trails[i][0], 0, shift_lon);
+      memmove(&m_trails.true_trails[i][shift_lon], &m_trails.true_trails[i][0], TRAILS_SIZE - shift_lon);
+      memset(&m_trails.true_trails[i][0], 0, shift_lon);
     }
   }
   if (shift_lon < 0) {
     for (int i = 0; i < TRAILS_SIZE; i++) {
-      memmove(&m_trails.trails[i][0], &m_trails.trails[i][-shift_lon], TRAILS_SIZE + shift_lon);
-      memset(&m_trails.trails[i][TRAILS_SIZE + shift_lon], 0, -shift_lon);
+      memmove(&m_trails.true_trails[i][0], &m_trails.true_trails[i][-shift_lon], TRAILS_SIZE + shift_lon);
+      memset(&m_trails.true_trails[i][TRAILS_SIZE + shift_lon], 0, -shift_lon);
     }
   }
 
   if (shift_lat > 0) {
-    memmove(&m_trails.trails[shift_lat][0], &m_trails.trails[0][0], TRAILS_SIZE * (TRAILS_SIZE - shift_lat));
-    memset(&m_trails.trails[0][0], 0, TRAILS_SIZE * shift_lat);
+    memmove(&m_trails.true_trails[shift_lat][0], &m_trails.true_trails[0][0], TRAILS_SIZE * (TRAILS_SIZE - shift_lat));
+    memset(&m_trails.true_trails[0][0], 0, TRAILS_SIZE * shift_lat);
   }
   if (shift_lat < 0) {
-    memmove(&m_trails.trails[0][0], &m_trails.trails[-shift_lat][0], TRAILS_SIZE * (TRAILS_SIZE + shift_lat));
-    memset(&m_trails.trails[TRAILS_SIZE + shift_lat][0], 0, -TRAILS_SIZE * shift_lat);
+    memmove(&m_trails.true_trails[0][0], &m_trails.true_trails[-shift_lat][0], TRAILS_SIZE * (TRAILS_SIZE + shift_lat));
+    memset(&m_trails.true_trails[TRAILS_SIZE + shift_lat][0], 0, -TRAILS_SIZE * shift_lat);
   }
 }
 
@@ -818,6 +831,16 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
   if (m_range_meters) {
     s << wxT("\n") << GetRangeText();
   }
+  if (m_target_trails.value > 0) {
+    if (s.Right(1) != wxT("\n")) {
+      s << wxT("\n");
+    }
+    if (m_trails_motion.value == TARGET_MOTION_TRUE) {
+      s << _("TM");
+    } else {
+      s << _("RM");
+    }
+  }
 
   return s;
 }
@@ -998,21 +1021,30 @@ void RadarInfo::SetBearing(int bearing) {
   }
 }
 
-void RadarInfo::ClearTrails() { memset(m_trails.trails, 0, sizeof(m_trails)); }
+void RadarInfo::ClearTrails() { memset(&m_trails, 0, sizeof(m_trails)); }
 
 void RadarInfo::ComputeTargetTrails() {
-  static TrailRevolutionsAge maxRevs[6] = {SECONDS_TO_REVOLUTIONS(0),  SECONDS_TO_REVOLUTIONS(15),  SECONDS_TO_REVOLUTIONS(30),
-                                           SECONDS_TO_REVOLUTIONS(60), SECONDS_TO_REVOLUTIONS(180), TRAIL_CONTINUOUS};
+  static TrailRevolutionsAge maxRevs[TRAIL_ARRAY_SIZE] = {SECONDS_TO_REVOLUTIONS(0),
+                                                          SECONDS_TO_REVOLUTIONS(15),
+                                                          SECONDS_TO_REVOLUTIONS(30),
+                                                          SECONDS_TO_REVOLUTIONS(60),
+                                                          SECONDS_TO_REVOLUTIONS(180),
+                                                          SECONDS_TO_REVOLUTIONS(600),
+                                                          255};
 
   TrailRevolutionsAge maxRev = maxRevs[m_target_trails.value];
   TrailRevolutionsAge revolution;
-  double colorsPerRevolution = ((int)BLOB_HISTORY_9 - BLOB_HISTORY_0 + 1) / (double)maxRev;
+  double colorsPerRevolution = BLOB_HISTORY_COLORS / (double)maxRev;
   double color = 0.;
+
+  // Like plotter, continuous trails are all very white (non transparent)
+  if (m_target_trails.value == TRAIL_CONTINUOUS) {
+    colorsPerRevolution = 0.;
+  }
 
   LOG_VERBOSE(wxT("BR24radar_pi: Target trail value %d = %d revolutions"), m_target_trails.value, maxRev);
 
-  // Disperse the ten BLOB_HISTORY values over 0..maxrev
-  // with maxrev
+  // Disperse the BLOB_HISTORY values over 0..maxrev
   for (revolution = 0; revolution <= TRAIL_MAX_REVOLUTIONS; revolution++) {
     if (revolution >= 1 && revolution <= maxRev) {
       m_trail_color[revolution] = (BlobColor)(BLOB_HISTORY_0 + (int)color);
@@ -1021,8 +1053,6 @@ void RadarInfo::ComputeTargetTrails() {
       m_trail_color[revolution] = BLOB_NONE;
     }
   }
-
-  ClearTrails();
 }
 
 PLUGIN_END_NAMESPACE

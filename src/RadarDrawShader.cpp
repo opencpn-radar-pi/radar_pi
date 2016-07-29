@@ -30,6 +30,8 @@
  */
 
 #include "RadarDrawShader.h"
+#include "shaderutil.h"
+#include "drawutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -224,12 +226,7 @@ void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
       d[0] = m_ri->m_color_map_red[color];
       d[1] = m_ri->m_color_map_green[color];
       d[2] = m_ri->m_color_map_blue[color];
-      if (color >= BLOB_HISTORY_0 && color <= BLOB_HISTORY_9) {
-        int extra_transparancy = (int)(color - BLOB_HISTORY_0);
-        d[3] = (alpha * 255 * (10 - extra_transparancy) / 10) >> 8;
-      } else {
-        d[3] = color != BLOB_NONE ? alpha : 0;
-      }
+      d[3] = color != BLOB_NONE ? alpha : 0;
       d += m_channels;
     }
   } else {

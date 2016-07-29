@@ -32,7 +32,6 @@
 #ifndef _RADARDRAWSHADER_H_
 #define _RADARDRAWSHADER_H_
 
-#include "shaderutil.h"
 #include "RadarDraw.h"
 
 PLUGIN_BEGIN_NAMESPACE

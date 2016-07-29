@@ -90,8 +90,8 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
 }
 
 void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8* data, size_t len) {
-  GLubyte red, green, blue, alpha;
-  GLubyte default_alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
+  GLubyte red, green, blue;
+  GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
   BlobColor previous_color = BLOB_NONE;
   GLubyte strength = 0;
   time_t now = time(0);
@@ -135,13 +135,6 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
       green = m_ri->m_color_map_green[previous_color];
       blue = m_ri->m_color_map_blue[previous_color];
 
-      if (previous_color >= BLOB_HISTORY_0 && previous_color <= BLOB_HISTORY_9) {
-        int extra_transparancy = (int)(previous_color - BLOB_HISTORY_0);
-        alpha = 255 * (10 - extra_transparancy) / 10;
-      } else {
-        alpha = default_alpha;
-      }
-
       SetBlob(line, angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
 
       previous_color = actual_color;
@@ -156,13 +149,6 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
     red = m_ri->m_color_map_red[previous_color];
     green = m_ri->m_color_map_green[previous_color];
     blue = m_ri->m_color_map_blue[previous_color];
-
-    if (previous_color >= BLOB_HISTORY_0 && previous_color <= BLOB_HISTORY_9) {
-      int extra_transparancy = (int)(previous_color - BLOB_HISTORY_0);
-      alpha = (alpha * 255 * (10 - extra_transparancy) / 10) >> 8;
-    } else {
-      alpha = default_alpha;
-    }
 
     SetBlob(line, angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
   }

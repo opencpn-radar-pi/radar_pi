@@ -105,8 +105,8 @@ struct DrawInfo {
 
 typedef UINT8 TrailRevolutionsAge;
 #define SECONDS_TO_REVOLUTIONS(x) ((x)*2 / 5)
-#define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(180)
-#define TRAIL_CONTINUOUS SECONDS_TO_REVOLUTIONS(180 + 18)
+#define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(300)
+enum { TRAIL_OFF, TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_10MIN, TRAIL_CONTINUOUS, TRAIL_ARRAY_SIZE };
 
 class RadarInfo : public wxEvtHandler {
  public:
@@ -176,8 +176,13 @@ class RadarInfo : public wxEvtHandler {
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
 #define TRAILS_SIZE (RETURNS_PER_LINE * 2)
+#define TRAILS_MIDDLE (TRAILS_SIZE / 2)
+
   struct TrailBuffer {
-    TrailRevolutionsAge trails[TRAILS_SIZE][TRAILS_SIZE];
+    union {
+      TrailRevolutionsAge true_trails[TRAILS_SIZE][TRAILS_SIZE];
+      TrailRevolutionsAge relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
+    };
     double lat, lon;
   };
   TrailBuffer m_trails;

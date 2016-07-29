@@ -999,6 +999,8 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("Show"), &m_settings.show, true);
     pConf->Read(wxT("SkewFactor"), &m_settings.skew_factor, 1);
     pConf->Read(wxT("ThresholdBlue"), &m_settings.threshold_blue, 50);
+    // Make room for BLOB_HISTORY_MAX history values
+    m_settings.threshold_blue = MAX(m_settings.threshold_blue, BLOB_HISTORY_MAX + 1);
     pConf->Read(wxT("ThresholdGreen"), &m_settings.threshold_green, 100);
     pConf->Read(wxT("ThresholdMultiSweep"), &m_settings.threshold_multi_sweep, 20);
     pConf->Read(wxT("ThresholdRed"), &m_settings.threshold_red, 200);
