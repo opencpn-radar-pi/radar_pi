@@ -17,7 +17,7 @@ SET(TITLE_NAME BR24Radar)
 SET(CPACK_PACKAGE_CONTACT "kees@verruijt.net")
 
 SET(VERSION_MAJOR "2")
-SET(VERSION_MINOR "724")
+SET(VERSION_MINOR "804")
 
 INCLUDE("cmake/PluginConfigure.cmake")
 
