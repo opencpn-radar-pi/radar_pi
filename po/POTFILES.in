@@ -4,6 +4,8 @@ src\br24MessageBox.cpp
 src\br24MessageBox.h
 src\br24OptionsDialog.cpp
 src\br24radar_pi.cpp
+src\GuardZoneBogey.cpp
+src\GuardZoneBogey.h
 src\ocpn_plugin.h
 src\RadarCanvas.cpp
 src\RadarDraw.cpp
