@@ -385,6 +385,12 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
 
   void SetMcastIPAddress(wxString &msg);
 
+  void SetRadarHeading(double heading = nan(""), time_t timeout = 0) {
+    wxCriticalSectionLocker lock(m_exclusive);
+    m_radar_heading = heading;
+    m_radar_heading_timeout = timeout;
+  }
+
   wxFont m_font;      // The dialog font at a normal size
   wxFont m_fat_font;  // The dialog font at a bigger size, bold
   int m_display_width, m_display_height;
@@ -398,9 +404,11 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   wxGLContext *m_opencpn_gl_context;
   bool m_opencpn_gl_context_broken;
 
-  double m_hdt;          // this is the heading that the pi is using for all heading operations, in degrees.
-                         // m_hdt will come from the radar if available else from the NMEA stream.
-  time_t m_hdt_timeout;  // When we consider heading is lost
+  double m_hdt;            // this is the heading that the pi is using for all heading operations, in degrees.
+                           // m_hdt will come from the radar if available else from the NMEA stream.
+  time_t m_hdt_timeout;    // When we consider heading is lost
+  double m_radar_heading;  // Last heading obtained from radar, or nan if none
+  time_t m_radar_heading_timeout; // When last heading was obtained from radar, or 0 if not
 
   double m_cog;  // current COG, used for the interpolation of positions in the translation of trails
   double m_sog;  // current SOG, used for the interpolation of positions in the translation of trails

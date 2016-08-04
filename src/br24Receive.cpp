@@ -215,19 +215,11 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
     if (hdm_raw != INT16_MIN && m_ri->m_radar_type == RT_4G && !m_pi->m_settings.ignore_radar_heading &&
         NOT_TIMED_OUT(now, m_pi->m_var_timeout)) {
-      if (m_pi->m_heading_source != HEADING_RADAR) {
-        LOG_INFO(wxT("BR24radar_pi: %s transmits heading, using that as best source of heading"), m_ri->m_name.c_str());
-      }
-      m_pi->m_heading_source = HEADING_RADAR;
       hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(m_pi->m_var));
-      m_pi->m_hdt = MOD_DEGREES(SCALE_RAW_TO_DEGREES(hdt_raw));
+      m_pi->SetRadarHeading(MOD_DEGREES(SCALE_RAW_TO_DEGREES(hdt_raw)), now + HEADING_TIMEOUT);
       hdt_raw += SCALE_DEGREES_TO_RAW(m_ri->m_viewpoint_rotation);
-      m_pi->m_hdt_timeout = now + HEADING_TIMEOUT;
-
     } else {  // no heading on radar
-      if (m_pi->m_heading_source == HEADING_RADAR) {
-        m_pi->m_heading_source = HEADING_NONE;  // let other part override
-      }
+      m_pi->SetRadarHeading();
       hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt + m_ri->m_viewpoint_rotation);
     }
 
