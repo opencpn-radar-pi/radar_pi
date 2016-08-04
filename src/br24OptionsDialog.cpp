@@ -78,6 +78,28 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   m_OverlayDisplayOptions->SetSelection(m_settings.display_option);
   DisplayOptionsBox->Add(m_OverlayDisplayOptions, 0, wxALL | wxEXPAND, 2);
 
+      wxString GuardZoneOnOverlayStrings[] = {
+        _("Radar window only"), _("Radar window and overlay"),
+      };
+      m_GuardZoneOnOverlay = new wxRadioBox(this, wxID_ANY, _("Guard Zone Display"), wxDefaultPosition, wxDefaultSize,
+                                            ARRAY_SIZE(GuardZoneOnOverlayStrings), GuardZoneOnOverlayStrings, 1, wxRA_SPECIFY_COLS);
+
+      DisplayOptionsBox->Add(m_GuardZoneOnOverlay, 0, wxALL | wxEXPAND, 2);
+      m_GuardZoneOnOverlay->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
+                                    wxCommandEventHandler(br24OptionsDialog::OnGuardZoneOnOverlayClick), NULL, this);
+      m_GuardZoneOnOverlay->SetSelection(m_settings.guard_zone_on_overlay);
+      
+
+
+      m_TrailsOnOverlay = new wxRadioBox(this, wxID_ANY, _("Trail Display"), wxDefaultPosition, wxDefaultSize,
+                                         ARRAY_SIZE(GuardZoneOnOverlayStrings), GuardZoneOnOverlayStrings, 1, wxRA_SPECIFY_COLS);
+
+      DisplayOptionsBox->Add(m_TrailsOnOverlay, 0, wxALL | wxEXPAND, 2);
+      m_TrailsOnOverlay->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnTrailsOnOverlayClick),
+                                 NULL, this);
+      m_TrailsOnOverlay->SetSelection(m_settings.trails_on_overlay);
+      
+
   wxString GuardZoneStyleStrings[] = {
       _("Shading"), _("Outline"), _("Shading + Outline"),
   };
@@ -88,17 +110,6 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   m_GuardZoneStyle->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnGuardZoneStyleClick), NULL,
                             this);
   m_GuardZoneStyle->SetSelection(m_settings.guard_zone_render_style);
-
-  wxString GuardZoneOnOverlayStrings[] = {
-      _("Radar window only"), _("Radar window and overlay"),
-  };
-  m_GuardZoneOnOverlay = new wxRadioBox(this, wxID_ANY, _("Guard Zone Display"), wxDefaultPosition, wxDefaultSize,
-                                        ARRAY_SIZE(GuardZoneOnOverlayStrings), GuardZoneOnOverlayStrings, 1, wxRA_SPECIFY_COLS);
-
-  DisplayOptionsBox->Add(m_GuardZoneOnOverlay, 0, wxALL | wxEXPAND, 2);
-  m_GuardZoneOnOverlay->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
-                                wxCommandEventHandler(br24OptionsDialog::OnGuardZoneOnOverlayClick), NULL, this);
-  m_GuardZoneOnOverlay->SetSelection(m_settings.guard_zone_on_overlay);
 
   // Guard Zone Alarm
 
@@ -123,14 +134,6 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   m_GuardZoneTimeout->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24OptionsDialog::OnGuardZoneTimeoutClick), NULL,
                               this);
   m_GuardZoneTimeout->SetValue(wxString::Format(wxT("%d"), m_settings.guard_zone_timeout));
-
-  m_TrailsOnOverlay = new wxRadioBox(this, wxID_ANY, _("Trail Display"), wxDefaultPosition, wxDefaultSize,
-                                     ARRAY_SIZE(GuardZoneOnOverlayStrings), GuardZoneOnOverlayStrings, 1, wxRA_SPECIFY_COLS);
-
-  DisplayOptionsBox->Add(m_TrailsOnOverlay, 0, wxALL | wxEXPAND, 2);
-  m_TrailsOnOverlay->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnTrailsOnOverlayClick),
-                             NULL, this);
-  m_TrailsOnOverlay->SetSelection(m_settings.trails_on_overlay);
 
   // Drawing Method
 
