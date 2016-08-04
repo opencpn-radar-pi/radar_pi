@@ -278,7 +278,8 @@ struct PersistentSettings {
   bool transmit_radar[RADARS];      // whether radar should be transmitting (persistent)
   int chart_overlay;                // -1 = none, otherwise = radar number
   int menu_auto_hide;               // 0 = none, 1 = 10s, 2 = 30s
-  bool pass_heading_to_opencpn;     //
+  bool pass_heading_to_opencpn;     // Pass heading coming from radar as NMEA data to OpenCPN
+  bool enable_cog_heading;          // Allow COG as heading. Should be taken out back and shot.
   bool enable_dual_radar;           // Should the dual radar be enabled for 4G?
   bool emulator_on;                 // Emulator, useful when debugging without radar
   int drawing_method;               // VertexBuffer, Shader, etc.

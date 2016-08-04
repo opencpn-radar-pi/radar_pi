@@ -56,6 +56,7 @@ class br24OptionsDialog : public wxDialog {
   void OnPassHeadingClick(wxCommandEvent& event);
   void OnDrawingMethodClick(wxCommandEvent& event);
   void OnMenuAutoHideClick(wxCommandEvent& event);
+  void OnEnableCOGHeadingClick(wxCommandEvent& event);
   void OnEnableDualRadarClick(wxCommandEvent& event);
   void OnEmulatorClick(wxCommandEvent& event);
   void OnReverseZoomClick(wxCommandEvent& event);
@@ -71,6 +72,7 @@ class br24OptionsDialog : public wxDialog {
   wxTextCtrl* m_GuardZoneTimeout;
   wxRadioBox* m_TrailsOnOverlay;
   wxCheckBox* m_PassHeading;
+  wxCheckBox* m_COGHeading;
   wxComboBox* m_DrawingMethod;
   wxComboBox* m_MenuAutoHide;
   wxCheckBox* m_EnableDualRadar;

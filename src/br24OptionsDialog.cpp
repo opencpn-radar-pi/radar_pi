@@ -171,6 +171,12 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   m_PassHeading->SetValue(m_settings.pass_heading_to_opencpn);
   m_PassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnPassHeadingClick), NULL, this);
 
+  m_COGHeading = new wxCheckBox(this, wxID_ANY, _("Enable COG as heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  itemStaticBoxSizerOptions->Add(m_COGHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  m_COGHeading->SetValue(m_settings.enable_cog_heading);
+  m_COGHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                           wxCommandEventHandler(br24OptionsDialog::OnEnableCOGHeadingClick), NULL, this);
+
   m_EnableDualRadar = new wxCheckBox(this, wxID_ANY, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize,
                                      wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   itemStaticBoxSizerOptions->Add(m_EnableDualRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
@@ -248,6 +254,10 @@ void br24OptionsDialog::OnGuardZoneTimeoutClick(wxCommandEvent &event) {
   wxString temp = m_GuardZoneTimeout->GetValue();
 
   m_settings.guard_zone_timeout = strtol(temp.c_str(), 0, 0);
+}
+
+void br24OptionsDialog::OnEnableCOGHeadingClick(wxCommandEvent &event) {
+  m_settings.enable_cog_heading = m_COGHeading->GetValue();
 }
 
 void br24OptionsDialog::OnEnableDualRadarClick(wxCommandEvent &event) {

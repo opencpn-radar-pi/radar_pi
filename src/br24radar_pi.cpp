@@ -978,6 +978,7 @@ bool br24radar_pi::LoadConfig(void) {
       pConf->Read(wxT("GuardZonePosX"), &x, 20);
       pConf->Read(wxT("GuardZonePosY"), &y, 170);
       m_settings.alarm_pos = wxPoint(x, y);
+      pConf->Read(wxT("Enable_COG_heading"), &m_settings.enable_cog_heading, false);
     } else {
       pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
       pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 120);
@@ -1012,6 +1013,7 @@ bool br24radar_pi::LoadConfig(void) {
       pConf->Read(wxT("AlarmPosX"), &x, 25);
       pConf->Read(wxT("AlarmPosY"), &y, 175);
       m_settings.alarm_pos = wxPoint(x, y);
+      pConf->Read(wxT("EnableCOGHeading"), &m_settings.enable_cog_heading, false);
     }
 
     pConf->Read(wxT("AlertAudioFile"), &m_settings.alert_audio_file, m_shareLocn + wxT("alarm.wav"));
@@ -1071,6 +1073,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("DisplayOption"), m_settings.display_option);
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
     pConf->Write(wxT("EmulatorOn"), m_settings.emulator_on);
+    pConf->Write(wxT("EnableCOGHeading"), m_settings.enable_cog_heading);
     pConf->Write(wxT("EnableDualRadar"), m_settings.enable_dual_radar);
     pConf->Write(wxT("GuardZoneDebugInc"), m_settings.guard_zone_debug_inc);
     pConf->Write(wxT("GuardZoneOnOverlay"), m_settings.guard_zone_on_overlay);
@@ -1190,7 +1193,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       m_heading_source = HEADING_HDT;
     }
     m_hdt_timeout = now + HEADING_TIMEOUT;
-  } else if (!wxIsNaN(pfix.Cog)) {
+  } else if (!wxIsNaN(pfix.Cog) && m_settings.enable_cog_heading) {
     m_hdt = pfix.Cog;
     if (m_heading_source != HEADING_COG) {
       LOG_INFO(wxT("BR24radar_pi: Heading source is now COG"));
