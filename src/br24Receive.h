@@ -45,8 +45,8 @@ class br24Receive : public wxThread {
     m_next_spoke = -1;
     m_mcast_addr = 0;
     m_radar_status = 0;
-
-    LOG_VERBOSE(wxT("BR24radar_pi: old mcast %s"), m_pi->m_settings.mcast_address.c_str());
+    m_new_ip_addr = false;
+    m_next_rotation = 0;
 
     if (m_pi->m_settings.mcast_address.length()) {
       int b[4];
@@ -72,10 +72,11 @@ class br24Receive : public wxThread {
       }
     }
 
-    LOG_RECEIVE(wxT("BR24radar_pi: br24Receive ctor"));
+    LOG_RECEIVE(wxT("BR24radar_pi: %s receive thread created"), m_ri->m_name.c_str());
   };
 
-  ~br24Receive(void);
+  ~br24Receive() { LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopped"), m_ri->m_name.c_str()); }
+
   void *Entry(void);
   void OnExit(void);
 

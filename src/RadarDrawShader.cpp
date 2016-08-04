@@ -97,8 +97,8 @@ bool RadarDrawShader::Init(int color_option) {
   }
   glBindTexture(GL_TEXTURE_2D, m_texture);
   // Tell the GPU the size of the texture:
-  glTexImage2D(/* target = */ GL_TEXTURE_2D,
-               /* level  = */ 0,
+  glTexImage2D(/* target          = */ GL_TEXTURE_2D,
+               /* level           = */ 0,
                /* internal_format = */ m_format,
                /* width           = */ RETURNS_PER_LINE,
                /* heigth          = */ LINES_PER_ROTATION,
