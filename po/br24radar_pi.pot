@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: br24radar_pi 2.626\n"
+"Project-Id-Version: br24radar_pi 2.724\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-09 16:59+0200\n"
+"POT-Creation-Date: 2016-07-27 22:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,369 +17,370 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src\br24ControlsDialog.cpp:295 src\br24ControlsDialog.cpp:484
-#: src\RadarInfo.cpp:848
+#: src\br24ControlsDialog.cpp:301 src\br24ControlsDialog.cpp:500
+#: src\RadarInfo.cpp:947
 msgid "Auto"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:363
+#: src\br24ControlsDialog.cpp:376
 msgid "Back"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:382 src\br24ControlsDialog.cpp:601
+#: src\br24ControlsDialog.cpp:395 src\br24ControlsDialog.cpp:1213
+msgid "Standby / Transmit"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:396 src\br24ControlsDialog.cpp:617
 msgid "Transparency"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:383
+#: src\br24ControlsDialog.cpp:397
 msgid "Interference rejection"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:384 src\br24ControlsDialog.cpp:551
+#: src\br24ControlsDialog.cpp:398 src\br24ControlsDialog.cpp:567
 msgid "Target separation"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:385 src\br24ControlsDialog.cpp:506
+#: src\br24ControlsDialog.cpp:399 src\br24ControlsDialog.cpp:522
 msgid "Noise rejection"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:386 src\br24ControlsDialog.cpp:575
+#: src\br24ControlsDialog.cpp:400 src\br24ControlsDialog.cpp:591
 msgid "Target boost"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:387 src\br24ControlsDialog.cpp:520
+#: src\br24ControlsDialog.cpp:401 src\br24ControlsDialog.cpp:536
 msgid "Target expansion"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:388 src\br24ControlsDialog.cpp:563
+#: src\br24ControlsDialog.cpp:402 src\br24ControlsDialog.cpp:579
 msgid "Scan speed"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:389
+#: src\br24ControlsDialog.cpp:403
 msgid "Scan age"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:390 src\br24ControlsDialog.cpp:898
+#: src\br24ControlsDialog.cpp:404 src\br24ControlsDialog.cpp:908
 msgid "Timed Transmit"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:391 src\br24ControlsDialog.cpp:735
+#: src\br24ControlsDialog.cpp:405 src\br24ControlsDialog.cpp:738
 msgid "Gain"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:392 src\br24ControlsDialog.cpp:739
+#: src\br24ControlsDialog.cpp:406 src\br24ControlsDialog.cpp:742
 msgid "Sea clutter"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:393 src\br24ControlsDialog.cpp:743
+#: src\br24ControlsDialog.cpp:407 src\br24ControlsDialog.cpp:746
 msgid "Rain clutter"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:457
+#: src\br24ControlsDialog.cpp:473
 msgid "+10"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:462
+#: src\br24ControlsDialog.cpp:478
 msgid "+"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:468
+#: src\br24ControlsDialog.cpp:484
 msgid "Value"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:474
+#: src\br24ControlsDialog.cpp:490
 msgid "-"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:479
+#: src\br24ControlsDialog.cpp:495
 msgid "-10"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:502 src\br24ControlsDialog.cpp:518
-#: src\br24ControlsDialog.cpp:530 src\br24ControlsDialog.cpp:546
-#: src\br24ControlsDialog.cpp:571 src\br24ControlsDialog.cpp:672
-#: src\br24ControlsDialog.cpp:786 src\br24ControlsDialog.cpp:808
-#: src\br24ControlsDialog.cpp:888 src\br24ControlsDialog.cpp:1012
-#: src\br24ControlsDialog.cpp:1247
+#: src\br24ControlsDialog.cpp:518 src\br24ControlsDialog.cpp:534
+#: src\br24ControlsDialog.cpp:546 src\br24ControlsDialog.cpp:562
+#: src\br24ControlsDialog.cpp:587 src\br24ControlsDialog.cpp:675
+#: src\br24ControlsDialog.cpp:791 src\br24ControlsDialog.cpp:818
+#: src\br24ControlsDialog.cpp:898 src\br24ControlsDialog.cpp:1029
+#: src\br24ControlsDialog.cpp:1318 src\br24ControlsDialog.cpp:1320
 msgid "Off"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:503 src\br24ControlsDialog.cpp:531
-#: src\br24ControlsDialog.cpp:547 src\br24ControlsDialog.cpp:572
+#: src\br24ControlsDialog.cpp:519 src\br24ControlsDialog.cpp:547
+#: src\br24ControlsDialog.cpp:563 src\br24ControlsDialog.cpp:588
 msgid "Low"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:504 src\br24ControlsDialog.cpp:533
-#: src\br24ControlsDialog.cpp:549 src\br24ControlsDialog.cpp:573
+#: src\br24ControlsDialog.cpp:520 src\br24ControlsDialog.cpp:549
+#: src\br24ControlsDialog.cpp:565 src\br24ControlsDialog.cpp:589
 msgid "High"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:519 src\br24ControlsDialog.cpp:1009
-#: src\br24ControlsDialog.cpp:1247
+#: src\br24ControlsDialog.cpp:535 src\br24ControlsDialog.cpp:1026
+#: src\br24ControlsDialog.cpp:1320
 msgid "On"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:532 src\br24ControlsDialog.cpp:548
+#: src\br24ControlsDialog.cpp:548 src\br24ControlsDialog.cpp:564
 msgid "Medium"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:536
+#: src\br24ControlsDialog.cpp:552
 msgid "Interference rej."
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:560
+#: src\br24ControlsDialog.cpp:576
 msgid "Normal"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:561
+#: src\br24ControlsDialog.cpp:577
 msgid "Fast"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:583
+#: src\br24ControlsDialog.cpp:599
 msgid "Installation"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:608
+#: src\br24ControlsDialog.cpp:624
 msgid "Bearing alignment"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:616
+#: src\br24ControlsDialog.cpp:632
 msgid "Antenna height"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:624
+#: src\br24ControlsDialog.cpp:640
 msgid "Local interference rejection"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:634
+#: src\br24ControlsDialog.cpp:650
 msgid "Side lobe suppression"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:648
-msgid ""
-"Zone 1: unknown\n"
-"Zone 2: unknown\n"
-"Timeout\n"
-msgstr ""
-
-#: src\br24ControlsDialog.cpp:651
-msgid "&Confirm"
-msgstr ""
-
-#: src\br24ControlsDialog.cpp:666
+#: src\br24ControlsDialog.cpp:669
 msgid "Guard zones"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:669
+#: src\br24ControlsDialog.cpp:672
 msgid "Zone type"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:673
+#: src\br24ControlsDialog.cpp:676
 msgid "Arc"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:674
+#: src\br24ControlsDialog.cpp:677
 msgid "Circle"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:683
+#: src\br24ControlsDialog.cpp:686
 msgid "Inner range"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:690
+#: src\br24ControlsDialog.cpp:693
 msgid "Outer range"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:697
+#: src\br24ControlsDialog.cpp:700
 msgid "Start bearing"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:705
+#: src\br24ControlsDialog.cpp:708
 msgid "End bearing"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:713
+#: src\br24ControlsDialog.cpp:716
 msgid "Sweep Filter"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:731
+#: src\br24ControlsDialog.cpp:734
 msgid "Range"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:759
+#: src\br24ControlsDialog.cpp:762
 msgid "Clear cursor"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:765 src\br24ControlsDialog.cpp:1219
-#, c-format
-msgid "Place EBL/VRM%d"
+#: src\br24ControlsDialog.cpp:768 src\br24ControlsDialog.cpp:1277
+msgid "Place EBL/VRM"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:787
+#: src\br24ControlsDialog.cpp:792
 msgid "15 sec"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:788 src\br24OptionsDialog.cpp:145
+#: src\br24ControlsDialog.cpp:793 src\br24OptionsDialog.cpp:155
 msgid "30 sec"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:789
+#: src\br24ControlsDialog.cpp:794
 msgid "1 min"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:790
+#: src\br24ControlsDialog.cpp:795
 msgid "3 min"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:791
+#: src\br24ControlsDialog.cpp:796
 msgid "Continuous"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:794
+#: src\br24ControlsDialog.cpp:799
 msgid "Target trails"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:802
+#: src\br24ControlsDialog.cpp:807 src\br24ControlsDialog.cpp:1288
+msgid "Target trails motion"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:812
 msgid "Clear trails"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:808 src\br24ControlsDialog.cpp:1009
-#: src\br24ControlsDialog.cpp:1012
+#: src\br24ControlsDialog.cpp:818 src\br24ControlsDialog.cpp:1026
+#: src\br24ControlsDialog.cpp:1029
 msgid "Multi Sweep Filter"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:814 src\br24ControlsDialog.cpp:1229
+#: src\br24ControlsDialog.cpp:824 src\br24ControlsDialog.cpp:1299
 msgid "Orientation"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:821
+#: src\br24ControlsDialog.cpp:831
 msgid "Refresh rate"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:836
+#: src\br24ControlsDialog.cpp:846
 msgid "Unknown"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:847 src\br24ControlsDialog.cpp:1245
+#: src\br24ControlsDialog.cpp:857 src\br24ControlsDialog.cpp:1315
 msgid "Overlay"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:858
+#: src\br24ControlsDialog.cpp:868
 msgid "Adjust"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:863
+#: src\br24ControlsDialog.cpp:873
 msgid "Advanced"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:868
+#: src\br24ControlsDialog.cpp:878
 msgid "View"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:873
+#: src\br24ControlsDialog.cpp:883
 msgid "EBL/VRM"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:889
+#: src\br24ControlsDialog.cpp:899
 msgid "5 min"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:890
+#: src\br24ControlsDialog.cpp:900
 msgid "10 min"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:891
+#: src\br24ControlsDialog.cpp:901
 msgid "15 min"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:892
+#: src\br24ControlsDialog.cpp:902
 msgid "20 min"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:893
+#: src\br24ControlsDialog.cpp:903
 msgid "25 min"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:894
+#: src\br24ControlsDialog.cpp:904
 msgid "30 min"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:895
+#: src\br24ControlsDialog.cpp:905
 msgid "35 min"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:906
+#: src\br24ControlsDialog.cpp:916
 msgid "Info"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:953 src\br24ControlsDialog.cpp:956
+#: src\br24ControlsDialog.cpp:965 src\br24ControlsDialog.cpp:968
 msgid "Guard zone"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1160
-msgid "Standby"
-msgstr ""
-
-#: src\br24ControlsDialog.cpp:1160
+#: src\br24ControlsDialog.cpp:1216
 msgid "Transmit"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1167
-#, c-format
-msgid "Standby in %d:%02d"
+#: src\br24ControlsDialog.cpp:1216
+msgid "Standby"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1171
-#, c-format
-msgid "Transmit in %d:%02d"
+#: src\br24ControlsDialog.cpp:1222 src\br24radar_pi.cpp:514
+msgid "Standby in"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1199
+#: src\br24ControlsDialog.cpp:1227 src\br24radar_pi.cpp:519
+msgid "Transmit in"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1256
 msgid "Hide both windows"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1201
+#: src\br24ControlsDialog.cpp:1258
 msgid "Show other window"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1205
+#: src\br24ControlsDialog.cpp:1262
 msgid "Show this window"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1207
+#: src\br24ControlsDialog.cpp:1264
 msgid "Show both windows"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1211
+#: src\br24ControlsDialog.cpp:1268
 msgid "Hide window"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1211
+#: src\br24ControlsDialog.cpp:1268
 msgid "Show window"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1217
-#, c-format
-msgid "Clear EBL/VRM%d"
+#: src\br24ControlsDialog.cpp:1274
+msgid "Clear EBL/VRM"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1233
+#: src\br24ControlsDialog.cpp:1291
+msgid "True"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1293
+msgid "Relative"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1303
 msgid "North up"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1236
+#: src\br24ControlsDialog.cpp:1306
 msgid "Head up"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1239
+#: src\br24ControlsDialog.cpp:1309
 msgid "???"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1555
+#: src\br24ControlsDialog.cpp:1602
 msgid "Guard Zone"
 msgstr ""
 
-#: src\br24ControlsDialog.h:60 src\br24MessageBox.h:79 src\br24radar_pi.cpp:223
-#: src\br24radar_pi.cpp:667
+#: src\br24ControlsDialog.h:60 src\br24MessageBox.h:79 src\br24radar_pi.cpp:222
+#: src\br24radar_pi.cpp:694
 msgid "Radar"
 msgstr ""
 
@@ -521,139 +522,152 @@ msgstr ""
 msgid "Test Alert Sound"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:117
-msgid "Trail Display"
+#: src\br24OptionsDialog.cpp:118
+msgid "Repeat alarm after (sec)"
 msgstr ""
 
 #: src\br24OptionsDialog.cpp:127
+msgid "Trail Display"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:137
 msgid "GPU drawing method"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:134
+#: src\br24OptionsDialog.cpp:144
 msgid "Drawing Method"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:141
+#: src\br24OptionsDialog.cpp:151
 msgid "Control Menu Auto Hide"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:145
+#: src\br24OptionsDialog.cpp:155
 msgid "Never"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:145
+#: src\br24OptionsDialog.cpp:155
 msgid "10 sec"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:148
+#: src\br24OptionsDialog.cpp:158
 msgid "Auto hide after"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:154
+#: src\br24OptionsDialog.cpp:164
 msgid "Options"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:158
+#: src\br24OptionsDialog.cpp:168
 msgid "Pass radar heading to OpenCPN"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:164
+#: src\br24OptionsDialog.cpp:174
 msgid "Enable dual radar, 4G only"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:172
+#: src\br24OptionsDialog.cpp:182
 msgid "Emulator mode"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:177
+#: src\br24OptionsDialog.cpp:187
 msgid "Reverse mouse wheel zoom direction"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:227
+#: src\br24OptionsDialog.cpp:237
 msgid "Select Sound File"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:228
+#: src\br24OptionsDialog.cpp:238
 msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
 msgstr ""
 
-#: src\br24radar_pi.cpp:223 src\br24radar_pi.cpp:337
+#: src\br24radar_pi.cpp:222 src\br24radar_pi.cpp:340
 msgid "Radar A"
 msgstr ""
 
-#: src\br24radar_pi.cpp:224
+#: src\br24radar_pi.cpp:223
 msgid "Radar B"
 msgstr ""
 
-#: src\br24radar_pi.cpp:238
-msgid "Show radar"
-msgstr ""
-
-#: src\br24radar_pi.cpp:239
-msgid "Hide radar"
+#: src\br24radar_pi.cpp:231
+msgid "Navico BR24, 3G and 4G RADAR"
 msgstr ""
 
 #: src\br24radar_pi.cpp:240
+msgid "Show radar"
+msgstr ""
+
+#: src\br24radar_pi.cpp:241
+msgid "Hide radar"
+msgstr ""
+
+#: src\br24radar_pi.cpp:242
 msgid "Radar Control..."
 msgstr ""
 
-#: src\br24radar_pi.cpp:242 src\RadarCanvas.cpp:98
+#: src\br24radar_pi.cpp:244 src\RadarCanvas.cpp:98
 msgid "Menu"
 msgstr ""
 
-#: src\br24radar_pi.cpp:320
+#: src\br24radar_pi.cpp:323
 msgid "Navico Radar PlugIn for OpenCPN"
 msgstr ""
 
-#: src\br24radar_pi.cpp:322
+#: src\br24radar_pi.cpp:325
 msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
 msgstr ""
 
-#: src\br24radar_pi.cpp:507
-#, c-format
-msgid "Standby in %2d:%02d"
-msgstr ""
-
-#: src\br24radar_pi.cpp:511
-#, c-format
-msgid "Transmit in %2d:%02d"
-msgstr ""
-
-#: src\br24radar_pi.cpp:523
+#: src\br24radar_pi.cpp:532
 msgid "Zone"
 msgstr ""
 
-#: src\br24radar_pi.cpp:525
+#: src\br24radar_pi.cpp:534
 msgid "(Confirmed)"
 msgstr ""
 
-#: src\br24radar_pi.cpp:536
-#, c-format
-msgid "Next alarm in %d s"
+#: src\br24radar_pi.cpp:566
+msgid " Zone"
 msgstr ""
 
-#: src\br24radar_pi.cpp:1071
+#: src\br24radar_pi.cpp:610
+msgid "Next alarm in"
+msgstr ""
+
+#: src\br24radar_pi.cpp:1112
 msgid "GPS"
 msgstr ""
 
-#: src\br24radar_pi.cpp:1091
+#: src\br24radar_pi.cpp:1132
 msgid "HDM"
 msgstr ""
 
-#: src\br24radar_pi.cpp:1103
+#: src\br24radar_pi.cpp:1144
 msgid "HDT"
 msgstr ""
 
-#: src\br24radar_pi.cpp:1115
+#: src\br24radar_pi.cpp:1156
 msgid "COG"
 msgstr ""
 
-#: src\br24radar_pi.cpp:1153
+#: src\br24radar_pi.cpp:1200
 msgid "WMM"
 msgstr ""
 
-#: src\br24radar_pi.cpp:1314
+#: src\br24radar_pi.cpp:1317
 msgid "NMEA"
+msgstr ""
+
+#: src\GuardZoneBogey.cpp:94
+msgid "Confirm"
+msgstr ""
+
+#: src\GuardZoneBogey.cpp:97
+msgid "Close"
+msgstr ""
+
+#: src\GuardZoneBogey.h:53
+msgid "Alarm"
 msgstr ""
 
 #: src\RadarDraw.cpp:54
@@ -664,27 +678,27 @@ msgstr ""
 msgid "Shader"
 msgstr ""
 
-#: src\RadarInfo.cpp:715
+#: src\RadarInfo.cpp:811
 msgid "North Up"
 msgstr ""
 
-#: src\RadarInfo.cpp:717
+#: src\RadarInfo.cpp:813
 msgid "Head Up"
 msgstr ""
 
-#: src\RadarInfo.cpp:720
+#: src\RadarInfo.cpp:816
 msgid "Emulator"
 msgstr ""
 
-#: src\RadarInfo.cpp:814
+#: src\RadarInfo.cpp:913
 msgid "No radar"
 msgstr ""
 
-#: src\RadarInfo.cpp:816
+#: src\RadarInfo.cpp:915
 msgid "Radar is in Standby"
 msgstr ""
 
-#: src\RadarInfo.cpp:829
+#: src\RadarInfo.cpp:928
 msgid "No valid drawing method"
 msgstr ""
 
@@ -692,11 +706,11 @@ msgstr ""
 msgid "RADAR"
 msgstr ""
 
-#: src\RadarPanel.cpp:61 src\RadarPanel.cpp:137
+#: src\RadarPanel.cpp:61 src\RadarPanel.cpp:156
 msgid "OpenGL mode required"
 msgstr ""
 
-#: src\RadarPanel.cpp:148
+#: src\RadarPanel.cpp:167
 msgid "Unable to create OpenGL canvas"
 msgstr ""
 
