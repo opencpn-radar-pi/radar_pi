@@ -155,6 +155,7 @@ int br24radar_pi::Init(void) {
     m_first_init = false;
   }
 
+
   // Font can change so initialize every time
   m_font = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
   m_fat_font = m_font;
@@ -168,6 +169,10 @@ int br24radar_pi::Init(void) {
   m_bpos_set = false;
   m_guard_bogey_seen = false;
   m_guard_bogey_confirmed = false;
+  m_sent_toolbar_button = TB_NONE;
+  m_toolbar_button = TB_NONE;
+  m_opengl_mode_changed = false;
+  m_notify_radar_window_viz = false;
 
   m_bogey_dialog = 0;
   m_alarm_sound_timeout = 0;
@@ -181,10 +186,16 @@ int br24radar_pi::Init(void) {
 
   m_heading_source = HEADING_NONE;
 
+  // Set default settings before we load config. Prevents random behavior on uninitalized behavior.
+  // For instance, LOG_XXX messages before config is loaded.
+  m_settings.verbose = 0;
   m_settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
   m_settings.refreshrate = 1;
   m_settings.timed_idle = 0;
-
+  m_settings.display_option = 0;
+  m_settings.threshold_blue = 255;
+  m_settings.threshold_red = 255;
+  m_settings.threshold_green = 255;
   m_settings.mcast_address = wxT("");
 
   ::wxDisplaySize(&m_display_width, &m_display_height);
@@ -1267,6 +1278,7 @@ void br24radar_pi::CacheSetToolbarToolBitmaps() {
   wxString icon;
 
   switch (m_toolbar_button) {
+    case TB_NONE:
     case TB_HIDDEN:
       icon = m_shareLocn + wxT("radar_hidden.svg");
       break;

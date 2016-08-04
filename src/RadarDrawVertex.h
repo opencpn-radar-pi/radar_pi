@@ -42,9 +42,16 @@ PLUGIN_BEGIN_NAMESPACE
 class RadarDrawVertex : public RadarDraw {
  public:
   RadarDrawVertex(RadarInfo* ri) {
+    wxCriticalSectionLocker lock(m_exclusive);
+
     m_ri = ri;
 
-    memset(m_vertices, 0, sizeof(m_vertices));
+    for (size_t i = 0; i < ARRAY_SIZE(m_vertices); i++) {
+      m_vertices[i].count = 0;
+      m_vertices[i].allocated = 0;
+      m_vertices[i].timeout = 0;
+      m_vertices[i].points = 0;
+    }
     m_count = 0;
     m_oom = false;
 

@@ -226,7 +226,7 @@ extern double local_distance(double lat1, double lon1, double lat2, double lon2)
 extern double local_bearing(double lat1, double lon1, double lat2, double lon2);
 
 enum DisplayModeType { DM_CHART_OVERLAY, DM_CHART_NONE };
-enum ToolbarIconColor { TB_HIDDEN, TB_SEARCHING, TB_SEEN, TB_STANDBY, TB_ACTIVE };
+enum ToolbarIconColor { TB_NONE, TB_HIDDEN, TB_SEARCHING, TB_SEEN, TB_STANDBY, TB_ACTIVE };
 enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_SOURCE_FIX, VARIATION_SOURCE_WMM };
 
 static const int RangeUnitsToMeters[2] = {1852, 1000};

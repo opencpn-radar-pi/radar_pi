@@ -101,6 +101,11 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
   int r_begin = 0;
   int r_end = 0;
 
+  if (angle < 0 || angle >= LINES_PER_ROTATION)
+  {
+    return;
+  }
+
   VertexLine* line = &m_vertices[angle];
 
   if (!line->points) {
@@ -109,7 +114,10 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
     m_count += INITIAL_ALLOCATION * VERTEX_PER_QUAD;
     line->points = (VertexPoint*)malloc(line->allocated * sizeof(VertexPoint));
     if (!line->points) {
-      wxLogError(wxT("BR24radar_pi: Out of memory"));
+      if (!m_oom) {
+        wxLogError(wxT("BR24radar_pi: Out of memory"));
+        m_oom = true;
+      }
       line->allocated = 0;
       line->count = 0;
       return;
@@ -164,7 +172,7 @@ void RadarDrawVertex::DrawRadarImage() {
 
     for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
       VertexLine* line = &m_vertices[i];
-      if (!line->points || TIMED_OUT(now, line->timeout)) {
+      if (!line->count || TIMED_OUT(now, line->timeout)) {
         continue;
       }
 

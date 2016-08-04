@@ -162,6 +162,9 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_auto_range_meters = 0;
   m_previous_auto_range_meters = 0;
   m_stayalive_timeout = 0;
+  m_radar_timeout = 0; 
+  m_data_timeout = 0;
+  m_multi_sweep_filter = false;
 
   memset(&m_statistics, 0, sizeof(m_statistics));
 
@@ -181,6 +184,9 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_radar_panel = 0;
   m_radar_canvas = 0;
   m_control_dialog = 0;
+  m_state.value = 0;
+  m_state.mod = false;
+  m_state.button = 0;
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     m_guard_zone[z] = new GuardZone(pi, radar, z);
