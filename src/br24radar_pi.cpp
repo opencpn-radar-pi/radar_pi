@@ -155,7 +155,6 @@ int br24radar_pi::Init(void) {
     m_first_init = false;
   }
 
-
   // Font can change so initialize every time
   m_font = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
   m_fat_font = m_font;

@@ -162,7 +162,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_auto_range_meters = 0;
   m_previous_auto_range_meters = 0;
   m_stayalive_timeout = 0;
-  m_radar_timeout = 0; 
+  m_radar_timeout = 0;
   m_data_timeout = 0;
   m_multi_sweep_filter = false;
 
@@ -392,7 +392,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   for (int i = 0; i < m_pi->m_settings.main_bang_size; i++) {
     data[i] = 0;
   }
-  
+
   if (m_range_meters != range_meters) {
     ResetSpokes();
     LOG_VERBOSE(wxT("BR24radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters,

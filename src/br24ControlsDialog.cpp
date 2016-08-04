@@ -657,8 +657,8 @@ void br24ControlsDialog::CreateControls() {
   m_side_lobe_suppression_button->SetLocalValue(m_ri->m_side_lobe_suppression.button);  // redraw after adding names
 
   // The MAIN BANG SIZE button
-  m_main_bang_size_button = new br24RadarControlButton(this, ID_MAIN_BANG_SIZE, _("Main bang size"),
-                                                              CT_MAIN_BANG_SIZE, false, m_pi->m_settings.main_bang_size);
+  m_main_bang_size_button = new br24RadarControlButton(this, ID_MAIN_BANG_SIZE, _("Main bang size"), CT_MAIN_BANG_SIZE, false,
+                                                       m_pi->m_settings.main_bang_size);
   m_installation_sizer->Add(m_main_bang_size_button, 0, wxALL, BORDER);
   m_main_bang_size_button->minValue = 0;
   m_main_bang_size_button->maxValue = 10;

@@ -101,8 +101,7 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
   int r_begin = 0;
   int r_end = 0;
 
-  if (angle < 0 || angle >= LINES_PER_ROTATION)
-  {
+  if (angle < 0 || angle >= LINES_PER_ROTATION) {
     return;
   }
 
