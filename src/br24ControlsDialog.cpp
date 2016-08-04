@@ -615,13 +615,6 @@ void br24ControlsDialog::CreateControls() {
   m_installation_sizer->Add(bInstallationBack, 0, wxALL, BORDER);
   bInstallationBack->SetFont(m_pi->m_font);
 
-  // The TRANSPARENCY button
-  m_transparency_button = new br24RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), CT_TRANSPARENCY, false,
-                                                     m_pi->m_settings.overlay_transparency);
-  m_installation_sizer->Add(m_transparency_button, 0, wxALL, BORDER);
-  m_transparency_button->minValue = MIN_OVERLAY_TRANSPARENCY;
-  m_transparency_button->maxValue = MAX_OVERLAY_TRANSPARENCY;
-
   // The BEARING ALIGNMENT button
   m_bearing_alignment_button = new br24RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"), CT_BEARING_ALIGNMENT,
                                                           false, m_ri->m_bearing_alignment.button);
@@ -842,6 +835,13 @@ void br24ControlsDialog::CreateControls() {
   m_view_sizer->Add(m_refresh_rate_button, 0, wxALL, BORDER);
   m_refresh_rate_button->minValue = 1;
   m_refresh_rate_button->maxValue = 5;
+
+  // The TRANSPARENCY button
+  m_transparency_button = new br24RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), CT_TRANSPARENCY, false,
+                                                     m_pi->m_settings.overlay_transparency);
+  m_view_sizer->Add(m_transparency_button, 0, wxALL, BORDER);
+  m_transparency_button->minValue = MIN_OVERLAY_TRANSPARENCY;
+  m_transparency_button->maxValue = MAX_OVERLAY_TRANSPARENCY;
 
   m_top_sizer->Hide(m_view_sizer);
 
