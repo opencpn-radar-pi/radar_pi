@@ -110,8 +110,6 @@ struct radar_frame_pkt {
 
 // Ethernet packet stuff *************************************************************
 
-void br24Receive::OnExit() {}
-
 void br24Receive::logBinaryData(const wxString &what, const UINT8 *data, int size) {
   wxString explain;
   int i = 0;
@@ -583,6 +581,8 @@ void *br24Receive::Entry(void) {
   if (m_interface_array) {
     freeifaddrs(m_interface_array);
   }
+
+  LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopping"), m_ri->m_name.c_str());
   return 0;
 }
 

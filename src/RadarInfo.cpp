@@ -216,11 +216,18 @@ RadarInfo::~RadarInfo() {
 
   if (m_receive) {
     if (m_receive->IsRunning()) {
-      m_receive->Delete();
-      m_receive->Wait();
+      // Delete() will set the status such that TestDestroy() returns true, and then wait for the thread to stop.
+      if (m_receive->Delete() != wxTHREAD_NO_ERROR) {
+        LOG_INFO(wxT("BR24radar_pi: Unable to stop running receive thread"));
+        m_receive = 0; // don't delete object if we have an error
+      }
+      // According to the docs, and also the source, the thread is really stopped when we get here.
     }
-    delete m_receive;
-    m_receive = 0;
+    if (m_receive) {
+      // Since this is a joinable thread we must delete the C++ object ourselves, the thread doesn't do this.
+      delete m_receive;
+      m_receive = 0;
+    }
   }
   DeleteDialogs();
   if (m_draw_panel.draw) {
@@ -311,7 +318,10 @@ void RadarInfo::StartReceive() {
   if (!m_receive) {
     LOG_RECEIVE(wxT("BR24radar_pi: %s starting receive thread"), m_name.c_str());
     m_receive = new br24Receive(m_pi, this);
-    m_receive->Run();
+    if (!m_receive || (m_receive->Run() != wxTHREAD_NO_ERROR)) {
+      LOG_INFO(wxT("BR24radar_pi: %s unable to start receive thread."), m_name.c_str());
+      m_receive = 0;
+    }
   }
 }
 

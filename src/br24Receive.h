@@ -75,10 +75,7 @@ class br24Receive : public wxThread {
     LOG_RECEIVE(wxT("BR24radar_pi: %s receive thread created"), m_ri->m_name.c_str());
   };
 
-  ~br24Receive() { LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopped"), m_ri->m_name.c_str()); }
-
   void *Entry(void);
-  void OnExit(void);
 
   sockaddr_in m_initial_mcast_addr;
   sockaddr_in *m_mcast_addr;
