@@ -215,7 +215,10 @@ RadarInfo::~RadarInfo() {
   m_timer->Stop();
 
   if (m_receive) {
-    m_receive->Delete();
+    if (m_receive->IsRunning()) {
+      m_receive->Delete();
+      m_receive->Wait();
+    }
     delete m_receive;
     m_receive = 0;
   }
