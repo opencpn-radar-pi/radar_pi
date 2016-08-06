@@ -411,9 +411,6 @@ class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
   double m_radar_heading;          // Last heading obtained from radar, or nan if none
   time_t m_radar_heading_timeout;  // When last heading was obtained from radar, or 0 if not
 
-  double m_cog;  // current COG, used for the interpolation of positions in the translation of trails
-  double m_sog;  // current SOG, used for the interpolation of positions in the translation of trails
-
   // Variation. Used to convert magnetic into true heading.
   // Can come from SetPositionFixEx, which may hail from the WMM plugin
   // and is thus to be preferred, or GPS or a NMEA sentence. The latter will probably

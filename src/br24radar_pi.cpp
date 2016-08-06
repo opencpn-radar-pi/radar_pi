@@ -163,8 +163,6 @@ int br24radar_pi::Init(void) {
 
   m_var = 0.0;
   m_var_source = VARIATION_SOURCE_NONE;
-  m_sog = 0.;
-  m_cog = 0.;
   m_bpos_set = false;
   m_guard_bogey_seen = false;
   m_guard_bogey_confirmed = false;
@@ -1203,12 +1201,6 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   }
 
   if (pfix.FixTime > 0 && NOT_TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT)) {
-    if (!wxIsNaN(pfix.Cog)) {
-      m_cog = pfix.Cog;
-    }
-    if (!wxIsNaN(pfix.Sog)) {
-      m_sog = pfix.Sog;
-    }
     m_ownship_lat = pfix.Lat;
     m_ownship_lon = pfix.Lon;
     if (!m_bpos_set) {
