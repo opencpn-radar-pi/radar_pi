@@ -378,9 +378,9 @@ void br24radar_pi::NotifyRadarWindowViz() {
 
 void br24radar_pi::SetRadarWindowViz(bool reparent) {
   int r;
-  for (r = 0; r <= (int)m_settings.enable_dual_radar; r++) {
-    bool showThisRadar = m_settings.show && m_settings.show_radar[r];
-    bool showThisControl = m_settings.show && m_settings.show_radar_control[r];
+  for (r = 0; r < RADARS; r++) {
+    bool showThisRadar = m_settings.show && m_settings.show_radar[r] && (r == 0 || m_settings.enable_dual_radar);
+    bool showThisControl = m_settings.show && m_settings.show_radar_control[r] && (r == 0 || m_settings.enable_dual_radar);
     m_radar[r]->ShowRadarWindow(showThisRadar);
     m_radar[r]->ShowControlDialog(showThisControl, reparent);
     if (m_settings.show == 1 && m_radar[r]->m_wantedState == RADAR_TRANSMIT && m_radar[r]->m_state.value != RADAR_TRANSMIT) {
@@ -991,7 +991,7 @@ bool br24radar_pi::LoadConfig(void) {
         SetControlValue(r, CT_TARGET_TRAILS, v);
         pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);
         SetControlValue(r, CT_TRAILS_MOTION, v);
-        pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[r], false);
+        pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[r], r ? false : true);
         pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * r);
         pConf->Read(wxString::Format(wxT("Radar%dWindowPosY"), r), &y, 120);
         m_settings.window_pos[r] = wxPoint(x, y);
@@ -1021,7 +1021,7 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("DisplayOption"), &m_settings.display_option, 1);
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
     pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
-    pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, 0);
+    pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, false);
     pConf->Read(wxT("GuardZoneDebugInc"), &m_settings.guard_zone_debug_inc, 0);
     pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, true);
     pConf->Read(wxT("GuardZoneTimeout"), &m_settings.guard_zone_timeout, 30);
@@ -1035,7 +1035,7 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("RangeUnits"), &v, 0);
     m_settings.range_units = (RangeUnits)wxMax(wxMin(v, 1), 0);
     m_settings.range_unit_meters = (m_settings.range_units == RANGE_METRIC) ? 1000 : 1852;
-    pConf->Read(wxT("Refreshrate"), &m_settings.refreshrate, 1);
+    pConf->Read(wxT("Refreshrate"), &m_settings.refreshrate, 3);
     pConf->Read(wxT("ReverseZoom"), &m_settings.reverse_zoom, false);
     pConf->Read(wxT("ScanMaxAge"), &m_settings.max_age, 6);
     pConf->Read(wxT("Show"), &m_settings.show, true);
