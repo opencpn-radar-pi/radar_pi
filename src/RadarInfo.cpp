@@ -219,7 +219,7 @@ RadarInfo::~RadarInfo() {
       // Delete() will set the status such that TestDestroy() returns true, and then wait for the thread to stop.
       if (m_receive->Delete() != wxTHREAD_NO_ERROR) {
         LOG_INFO(wxT("BR24radar_pi: Unable to stop running receive thread"));
-        m_receive = 0; // don't delete object if we have an error
+        m_receive = 0;  // don't delete object if we have an error
       }
       // According to the docs, and also the source, the thread is really stopped when we get here.
     }

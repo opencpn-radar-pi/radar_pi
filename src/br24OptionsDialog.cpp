@@ -34,7 +34,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &settings)
+br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &settings, RadarType radar_type)
     : wxDialog(parent, wxID_ANY, _("BR24 Display Preferences"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE) {
   wxString m_temp;
 
@@ -78,27 +78,24 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   m_OverlayDisplayOptions->SetSelection(m_settings.display_option);
   DisplayOptionsBox->Add(m_OverlayDisplayOptions, 0, wxALL | wxEXPAND, 2);
 
-      wxString GuardZoneOnOverlayStrings[] = {
-        _("Radar window only"), _("Radar window and overlay"),
-      };
-      m_GuardZoneOnOverlay = new wxRadioBox(this, wxID_ANY, _("Guard Zone Display"), wxDefaultPosition, wxDefaultSize,
-                                            ARRAY_SIZE(GuardZoneOnOverlayStrings), GuardZoneOnOverlayStrings, 1, wxRA_SPECIFY_COLS);
+  wxString GuardZoneOnOverlayStrings[] = {
+      _("Radar window only"), _("Radar window and overlay"),
+  };
+  m_GuardZoneOnOverlay = new wxRadioBox(this, wxID_ANY, _("Guard Zone Display"), wxDefaultPosition, wxDefaultSize,
+                                        ARRAY_SIZE(GuardZoneOnOverlayStrings), GuardZoneOnOverlayStrings, 1, wxRA_SPECIFY_COLS);
 
-      DisplayOptionsBox->Add(m_GuardZoneOnOverlay, 0, wxALL | wxEXPAND, 2);
-      m_GuardZoneOnOverlay->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
-                                    wxCommandEventHandler(br24OptionsDialog::OnGuardZoneOnOverlayClick), NULL, this);
-      m_GuardZoneOnOverlay->SetSelection(m_settings.guard_zone_on_overlay);
-      
+  DisplayOptionsBox->Add(m_GuardZoneOnOverlay, 0, wxALL | wxEXPAND, 2);
+  m_GuardZoneOnOverlay->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
+                                wxCommandEventHandler(br24OptionsDialog::OnGuardZoneOnOverlayClick), NULL, this);
+  m_GuardZoneOnOverlay->SetSelection(m_settings.guard_zone_on_overlay);
 
+  m_TrailsOnOverlay = new wxRadioBox(this, wxID_ANY, _("Trail Display"), wxDefaultPosition, wxDefaultSize,
+                                     ARRAY_SIZE(GuardZoneOnOverlayStrings), GuardZoneOnOverlayStrings, 1, wxRA_SPECIFY_COLS);
 
-      m_TrailsOnOverlay = new wxRadioBox(this, wxID_ANY, _("Trail Display"), wxDefaultPosition, wxDefaultSize,
-                                         ARRAY_SIZE(GuardZoneOnOverlayStrings), GuardZoneOnOverlayStrings, 1, wxRA_SPECIFY_COLS);
-
-      DisplayOptionsBox->Add(m_TrailsOnOverlay, 0, wxALL | wxEXPAND, 2);
-      m_TrailsOnOverlay->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnTrailsOnOverlayClick),
-                                 NULL, this);
-      m_TrailsOnOverlay->SetSelection(m_settings.trails_on_overlay);
-      
+  DisplayOptionsBox->Add(m_TrailsOnOverlay, 0, wxALL | wxEXPAND, 2);
+  m_TrailsOnOverlay->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnTrailsOnOverlayClick),
+                             NULL, this);
+  m_TrailsOnOverlay->SetSelection(m_settings.trails_on_overlay);
 
   wxString GuardZoneStyleStrings[] = {
       _("Shading"), _("Outline"), _("Shading + Outline"),
@@ -168,17 +165,11 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   wxStaticBoxSizer *itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
   topSizer->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
 
-  m_PassHeading = new wxCheckBox(this, wxID_ANY, _("Pass radar heading to OpenCPN"), wxDefaultPosition, wxDefaultSize,
+  m_PassHeading = new wxCheckBox(this, wxID_ANY, _("Pass radar heading to OpenCPN, 4G only"), wxDefaultPosition, wxDefaultSize,
                                  wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   itemStaticBoxSizerOptions->Add(m_PassHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
   m_PassHeading->SetValue(m_settings.pass_heading_to_opencpn);
   m_PassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnPassHeadingClick), NULL, this);
-
-  m_COGHeading = new wxCheckBox(this, wxID_ANY, _("Enable COG as heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  itemStaticBoxSizerOptions->Add(m_COGHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-  m_COGHeading->SetValue(m_settings.enable_cog_heading);
-  m_COGHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
-                           wxCommandEventHandler(br24OptionsDialog::OnEnableCOGHeadingClick), NULL, this);
 
   m_EnableDualRadar = new wxCheckBox(this, wxID_ANY, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize,
                                      wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
@@ -186,6 +177,20 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   m_EnableDualRadar->SetValue(m_settings.enable_dual_radar);
   m_EnableDualRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEnableDualRadarClick), NULL,
                              this);
+  if (radar_type == RT_4G) {
+    m_PassHeading->Enable();
+    m_EnableDualRadar->Enable();
+  } else {
+    m_PassHeading->Disable();
+    m_EnableDualRadar->Disable();
+  }
+
+  m_COGHeading = new wxCheckBox(this, wxID_ANY, _("Enable COG as heading"), wxDefaultPosition, wxDefaultSize,
+                                wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  itemStaticBoxSizerOptions->Add(m_COGHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  m_COGHeading->SetValue(m_settings.enable_cog_heading);
+  m_COGHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEnableCOGHeadingClick), NULL,
+                        this);
 
   m_Emulator =
       new wxCheckBox(this, wxID_ANY, _("Emulator mode"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
@@ -259,9 +264,7 @@ void br24OptionsDialog::OnGuardZoneTimeoutClick(wxCommandEvent &event) {
   m_settings.guard_zone_timeout = strtol(temp.c_str(), 0, 0);
 }
 
-void br24OptionsDialog::OnEnableCOGHeadingClick(wxCommandEvent &event) {
-  m_settings.enable_cog_heading = m_COGHeading->GetValue();
-}
+void br24OptionsDialog::OnEnableCOGHeadingClick(wxCommandEvent &event) { m_settings.enable_cog_heading = m_COGHeading->GetValue(); }
 
 void br24OptionsDialog::OnEnableDualRadarClick(wxCommandEvent &event) {
   m_settings.enable_dual_radar = m_EnableDualRadar->GetValue();

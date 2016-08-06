@@ -54,7 +54,7 @@ static const ListenAddress LISTEN_REPORT[2] = {{6679, "236.6.7.9"}, {6659, "236.
 static const ListenAddress LISTEN_COMMAND[2] = {{6680, "236.6.7.10"}, {6658, "236.6.7.14"}};
 
 // A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration)
-// Note that 3G scanners are BR24's with better power, so they are more BR23+ than 4G-.
+// Note that 3G scanners are BR24's with better power, so they are more BR24+ than 4G-.
 // As far as we know they 3G's use exactly the same command set.
 
 // If BR24MARK is found, we switch to BR24 mode, otherwise 4G.

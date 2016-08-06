@@ -345,7 +345,7 @@ void br24radar_pi::SetDefaults(void) {
 void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
   LOG_DIALOG(wxT("BR24radar_pi: ShowPreferencesDialog"));
 
-  br24OptionsDialog dlg(parent, m_settings);
+  br24OptionsDialog dlg(parent, m_settings, m_radar[0]->m_radar_type);
   if (dlg.ShowModal() == wxID_OK) {
     m_settings = dlg.GetSettings();
     SaveConfig();
@@ -1370,7 +1370,6 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
   } else if (m_NMEA0183.LastSentenceIDReceived == _T("HDT") && m_NMEA0183.Parse() && !wxIsNaN(m_NMEA0183.Hdt.DegreesTrue)) {
     hdt = m_NMEA0183.Hdt.DegreesTrue;
   }
-
 
   double radar_heading;
   time_t radar_timeout;

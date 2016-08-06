@@ -38,7 +38,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 class br24OptionsDialog : public wxDialog {
  public:
-  br24OptionsDialog(wxWindow* parent, PersistentSettings& settings);
+  br24OptionsDialog(wxWindow* parent, PersistentSettings& settings, RadarType radar_type);
   PersistentSettings GetSettings() { return m_settings; };
 
  private:
