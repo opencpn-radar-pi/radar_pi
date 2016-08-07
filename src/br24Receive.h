@@ -40,7 +40,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 class br24Receive : public wxThread {
  public:
-  br24Receive(br24radar_pi *pi, RadarInfo *ri) : wxThread(wxTHREAD_JOINABLE), m_pi(pi), m_ri(ri) {
+  br24Receive(br24radar_pi *pi, RadarInfo *ri) : wxThread(wxTHREAD_DETACHED), m_pi(pi), m_ri(ri) {
     Create(1024 * 1024);  // Stack size, be liberal
     m_next_spoke = -1;
     m_mcast_addr = 0;
@@ -72,10 +72,24 @@ class br24Receive : public wxThread {
       }
     }
 
+    m_receive_socket = GetLocalhostServerTCPSocket();
+    m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
+
     LOG_RECEIVE(wxT("BR24radar_pi: %s receive thread created"), m_ri->m_name.c_str());
   };
 
+  ~br24Receive() {
+    m_ri->DeleteReceive();
+    if (m_send_socket != INVALID_SOCKET) {
+      closesocket(m_send_socket);
+    }
+    if (m_receive_socket != INVALID_SOCKET) {
+      closesocket(m_receive_socket);
+    }
+  }
+
   void *Entry(void);
+  void Shutdown(void);
 
   sockaddr_in m_initial_mcast_addr;
   sockaddr_in *m_mcast_addr;
@@ -98,6 +112,9 @@ class br24Receive : public wxThread {
   br24radar_pi *m_pi;
   wxString m_ip;
   RadarInfo *m_ri;  // All transfer of data passes back through this.
+
+  SOCKET m_receive_socket;  // Where we listen for message from m_send_socket
+  SOCKET m_send_socket;     // A message to this socket will interrupt select() and allow immediate shutdown
 
   struct ifaddrs *m_interface_array;
   struct ifaddrs *m_interface;

@@ -214,6 +214,56 @@ fail:
   return INVALID_SOCKET;
 }
 
+SOCKET GetLocalhostServerTCPSocket() {
+  SOCKET server = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  struct sockaddr_in adr;
+
+  memset(&adr, 0, sizeof(adr));
+  adr.sin_family = AF_INET;
+  adr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);  // I know, htonl is unnecessary here
+  adr.sin_port = htons(0);
+
+  if (server == INVALID_SOCKET) {
+    wxLogError(wxT("BR24radar_pi: cannot get socket"));
+    return INVALID_SOCKET;
+  }
+
+  if (bind(server, (struct sockaddr *)&adr, sizeof(adr))) {
+    wxLogError(wxT("BR24radar_pi: cannot bind socket to loopback address"));
+    closesocket(server);
+    return INVALID_SOCKET;
+  }
+
+  return server;
+}
+
+SOCKET GetLocalhostSendTCPSocket(SOCKET server) {
+  SOCKET client = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  struct sockaddr_in adr;
+  socklen_t adrlen;
+
+  memset(&adr, 0, sizeof(adr));
+  adrlen = sizeof(adr);
+
+  if (client == INVALID_SOCKET) {
+    wxLogError(wxT("BR24radar_pi: cannot get socket"));
+    return INVALID_SOCKET;
+  }
+
+  if (getsockname(server, (struct sockaddr *)&adr, &adrlen)) {
+    wxLogError(wxT("BR24radar_pi: cannot get sockname"));
+    closesocket(client);
+    return INVALID_SOCKET;
+  }
+
+  if (connect(client, (struct sockaddr *)&adr, adrlen)) {
+    wxLogError(wxT("BR24radar_pi: cannot connect socket"));
+    closesocket(client);
+    return INVALID_SOCKET;
+  }
+  return client;
+}
+
 #ifdef __WXMSW__
 
 int getifaddrs(struct ifaddrs **ifap) {

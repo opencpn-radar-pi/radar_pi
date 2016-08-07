@@ -46,6 +46,8 @@ extern bool socketReady(SOCKET sockfd, int timeout);
 extern int br24_inet_aton(const char *cp, struct in_addr *addr);
 extern SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in *addr, UINT16 port, const char *mcast_address,
                                              wxString &error_message);
+extern SOCKET GetLocalhostServerTCPSocket();
+extern SOCKET GetLocalhostSendTCPSocket(SOCKET receive_socket);
 
 #ifndef __WXMSW__
 

@@ -210,6 +210,7 @@ class RadarInfo : public wxEvtHandler {
   void ShowRadarWindow(bool show);
   void ShowControlDialog(bool show, bool reparent);
   void DeleteDialogs();
+  void DeleteReceive();
 
   bool IsPaneShown();
 

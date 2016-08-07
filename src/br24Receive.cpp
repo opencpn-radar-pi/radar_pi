@@ -40,6 +40,9 @@ PLUGIN_BEGIN_NAMESPACE
  * The rest of the plugin uses a (slightly) abstract definition of the radar.
  */
 
+#define MILLIS_PER_SELECT 250
+#define SECONDS_SELECT(x) ((x)*MILLISECONDS_PER_SECOND / MILLIS_PER_SELECT)
+
 // There are two radars in every 4G radome. They send and listen on different addresses
 
 struct ListenAddress {
@@ -255,7 +258,7 @@ void br24Receive::EmulateFakeBuffer(void) {
 
   m_next_rotation = (m_next_rotation + 1) % SPOKES;
 
-  int scanlines_in_packet = SPOKES * 24 / 60;
+  int scanlines_in_packet = SPOKES * 24 / 60 * MILLIS_PER_SELECT / MILLISECONDS_PER_SECOND;
   int range_meters = 2308;
   int display_range_meters = 1500;
   int spots = 0;
@@ -389,9 +392,6 @@ SOCKET br24Receive::GetNewCommandSocket() {
   return socket;
 }
 
-#define MILLIS_PER_SELECT 250
-#define SECONDS_SELECT(x) ((x)*1000 / MILLIS_PER_SELECT)
-
 void *br24Receive::Entry(void) {
   int r = 0;
   int no_data_timeout = 0;
@@ -420,25 +420,21 @@ void *br24Receive::Entry(void) {
     reportSocket = GetNewReportSocket();
   }
 
-  while (!TestDestroy()) {
-    if (m_pi->m_settings.emulator_on) {
-      socketReady(INVALID_SOCKET, 1000);  // sleep for 1s
-      EmulateFakeBuffer();
-      continue;
-    }
-
-    if (reportSocket == INVALID_SOCKET) {
-      reportSocket = PickNextEthernetCard();
-      if (reportSocket != INVALID_SOCKET) {
-        no_data_timeout = 0;
-        no_spoke_timeout = 0;
-      }
-    } else {
-      // reportSocket is still valid, open data and command sockets as well if they are closed
-      if (dataSocket == INVALID_SOCKET) {
-        dataSocket = GetNewDataSocket();
-      } else if (commandSocket == INVALID_SOCKET) {
-        commandSocket = GetNewCommandSocket();
+  while (true) {
+    if (!m_pi->m_settings.emulator_on) {
+      if (reportSocket == INVALID_SOCKET) {
+        reportSocket = PickNextEthernetCard();
+        if (reportSocket != INVALID_SOCKET) {
+          no_data_timeout = 0;
+          no_spoke_timeout = 0;
+        }
+      } else {
+        // reportSocket is still valid, open data and command sockets as well if they are closed
+        if (dataSocket == INVALID_SOCKET) {
+          dataSocket = GetNewDataSocket();
+        } else if (commandSocket == INVALID_SOCKET) {
+          commandSocket = GetNewCommandSocket();
+        }
       }
     }
 
@@ -448,6 +444,10 @@ void *br24Receive::Entry(void) {
     FD_ZERO(&fdin);
 
     int maxFd = INVALID_SOCKET;
+    if (m_receive_socket != INVALID_SOCKET) {
+      FD_SET(m_receive_socket, &fdin);
+      maxFd = MAX(m_receive_socket, maxFd);
+    }
     if (reportSocket != INVALID_SOCKET) {
       FD_SET(reportSocket, &fdin);
       maxFd = MAX(reportSocket, maxFd);
@@ -463,11 +463,15 @@ void *br24Receive::Entry(void) {
 
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
 
-    if (TestDestroy()) {
-      break;
-    }
-
     if (r > 0) {
+      if (m_receive_socket != INVALID_SOCKET && FD_ISSET(m_receive_socket, &fdin)) {
+        rx_len = sizeof(rx_addr);
+        r = recvfrom(m_receive_socket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
+        if (r > 0) {
+          break;
+        }
+      }
+
       if (dataSocket != INVALID_SOCKET && FD_ISSET(dataSocket, &fdin)) {
         rx_len = sizeof(rx_addr);
         r = recvfrom(dataSocket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
@@ -529,6 +533,8 @@ void *br24Receive::Entry(void) {
         }
       }
 
+    } else if (m_pi->m_settings.emulator_on) {
+      EmulateFakeBuffer();
     } else {  // no data received -> select timeout
 
       if (no_data_timeout >= SECONDS_SELECT(2)) {
@@ -811,6 +817,13 @@ void br24Receive::ProcessCommand(wxString &addr, const UINT8 *command, int len) 
     UINT32 range = *((UINT32 *)&command[2]);
     LOG_VERBOSE(wxT("BR24radar_pi: %s received range request for %u meters from %s"), m_ri->m_name.c_str(), range / 10,
                 addr.c_str());
+  }
+}
+
+// Called from the main thread to stop this thread.
+void br24Receive::Shutdown() {
+  if (m_send_socket != INVALID_SOCKET) {
+    send(m_send_socket, "!", 1, MSG_DONTROUTE);
   }
 }
 
