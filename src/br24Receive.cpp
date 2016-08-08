@@ -65,13 +65,22 @@ static UINT8 BR24MARK[] = {0x00, 0x44, 0x0d, 0x0e};
 
 #pragma pack(push, 1)
 
+struct common_header {
+  UINT8 headerLen;       // 1 bytes
+  UINT8 status;          // 1 bytes
+  UINT8 scan_number[2];  // 2 bytes, 0-4095
+  UINT8 u00[4];          // 4 bytes
+  UINT8 angle[2];        // 2 bytes
+  UINT8 heading[2];      // 2 bytes heading with RI-10/11
+};
+
 struct br24_header {
   UINT8 headerLen;       // 1 bytes
   UINT8 status;          // 1 bytes
   UINT8 scan_number[2];  // 2 bytes, 0-4095
   UINT8 mark[4];         // 4 bytes 0x00, 0x44, 0x0d, 0x0e
   UINT8 angle[2];        // 2 bytes
-  UINT8 heading[2];      // 2 bytes heading with RI-10/11?
+  UINT8 heading[2];      // 2 bytes heading with RI-10/11
   UINT8 range[4];        // 4 bytes
   UINT8 u01[2];          // 2 bytes blank
   UINT8 u02[2];          // 2 bytes
@@ -94,6 +103,7 @@ struct br4g_header {
 
 struct radar_line {
   union {
+    common_header common;
     br24_header br24;
     br4g_header br4g;
   };
@@ -155,17 +165,17 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     radar_line *line = &packet->line[scanline];
 
     // Validate the spoke
-    int spoke = line->br24.scan_number[0] | (line->br24.scan_number[1] << 8);
+    int spoke = line->common.scan_number[0] | (line->common.scan_number[1] << 8);
     m_ri->m_statistics.spokes++;
-    if (line->br24.headerLen != 0x18) {
-      LOG_RECEIVE(wxT("BR24radar_pi: strange header length %d"), line->br24.headerLen);
+    if (line->common.headerLen != 0x18) {
+      LOG_RECEIVE(wxT("BR24radar_pi: strange header length %d"), line->common.headerLen);
       // Do not draw something with this...
       m_ri->m_statistics.missing_spokes++;
       m_next_spoke = (spoke + 1) % SPOKES;
       continue;
     }
-    if (line->br24.status != 0x02 && line->br24.status != 0x12) {
-      LOG_RECEIVE(wxT("BR24radar_pi: strange status %02x"), line->br24.status);
+    if (line->common.status != 0x02 && line->common.status != 0x12) {
+      LOG_RECEIVE(wxT("BR24radar_pi: strange status %02x"), line->common.status);
       m_ri->m_statistics.broken_spokes++;
     }
     if (m_next_spoke >= 0 && spoke != m_next_spoke) {
@@ -213,9 +223,8 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       }
     }
 
-    hdm_raw = (line->br4g.heading[1] << 8) | line->br4g.heading[0];
-    if (hdm_raw != INT16_MIN && m_ri->m_radar_type == RT_4G && !m_pi->m_settings.ignore_radar_heading &&
-        NOT_TIMED_OUT(now, m_pi->m_var_timeout)) {
+    hdm_raw = (line->common.heading[1] << 8) | line->common.heading[0];
+    if (hdm_raw != INT16_MIN && !m_pi->m_settings.ignore_radar_heading &&  NOT_TIMED_OUT(now, m_pi->m_var_timeout)) {
       hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(m_pi->m_var));
       m_pi->SetRadarHeading(MOD_DEGREES(SCALE_RAW_TO_DEGREES(hdt_raw)), now + HEADING_TIMEOUT);
       hdt_raw += SCALE_DEGREES_TO_RAW(m_ri->m_viewpoint_rotation);
@@ -595,7 +604,7 @@ void *br24Receive::Entry(void) {
     freeifaddrs(m_interface_array);
   }
 
-#if 0
+#if 1
   LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread sleeping"), m_ri->m_name.c_str());
   wxMilliSleep(2000);
 #endif

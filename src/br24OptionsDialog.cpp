@@ -165,7 +165,14 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   wxStaticBoxSizer *itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
   topSizer->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
 
-  m_PassHeading = new wxCheckBox(this, wxID_ANY, _("Pass radar heading to OpenCPN, 4G only"), wxDefaultPosition, wxDefaultSize,
+  m_IgnoreHeading = new wxCheckBox(this, wxID_ANY, _("Ignore radar heading"), wxDefaultPosition, wxDefaultSize,
+                                     wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  itemStaticBoxSizerOptions->Add(m_IgnoreHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  m_IgnoreHeading->SetValue(m_settings.ignore_radar_heading);
+  m_IgnoreHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnIgnoreHeadingClick), NULL, this);
+      
+
+  m_PassHeading = new wxCheckBox(this, wxID_ANY, _("Pass radar heading to OpenCPN"), wxDefaultPosition, wxDefaultSize,
                                  wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   itemStaticBoxSizerOptions->Add(m_PassHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
   m_PassHeading->SetValue(m_settings.pass_heading_to_opencpn);
@@ -178,10 +185,8 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   m_EnableDualRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEnableDualRadarClick), NULL,
                              this);
   if (radar_type == RT_4G) {
-    m_PassHeading->Enable();
     m_EnableDualRadar->Enable();
   } else {
-    m_PassHeading->Disable();
     m_EnableDualRadar->Disable();
   }
 
@@ -274,6 +279,10 @@ void br24OptionsDialog::OnTestSoundClick(wxCommandEvent &event) {
   if (!m_settings.alert_audio_file.IsEmpty()) {
     PlugInPlaySound(m_settings.alert_audio_file);
   }
+}
+
+void br24OptionsDialog::OnIgnoreHeadingClick(wxCommandEvent &event) {
+  m_settings.ignore_radar_heading = m_IgnoreHeading->GetValue();
 }
 
 void br24OptionsDialog::OnPassHeadingClick(wxCommandEvent &event) {

@@ -53,6 +53,7 @@ class br24OptionsDialog : public wxDialog {
   void OnTrailsOnOverlayClick(wxCommandEvent& event);
   void OnSelectSoundClick(wxCommandEvent& event);
   void OnTestSoundClick(wxCommandEvent& event);
+  void OnIgnoreHeadingClick(wxCommandEvent& event);
   void OnPassHeadingClick(wxCommandEvent& event);
   void OnDrawingMethodClick(wxCommandEvent& event);
   void OnMenuAutoHideClick(wxCommandEvent& event);
@@ -71,6 +72,7 @@ class br24OptionsDialog : public wxDialog {
   wxRadioBox* m_GuardZoneOnOverlay;
   wxTextCtrl* m_GuardZoneTimeout;
   wxRadioBox* m_TrailsOnOverlay;
+  wxCheckBox* m_IgnoreHeading;
   wxCheckBox* m_PassHeading;
   wxCheckBox* m_COGHeading;
   wxComboBox* m_DrawingMethod;
