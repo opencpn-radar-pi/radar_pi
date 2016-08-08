@@ -88,8 +88,6 @@ class br24Receive : public wxThread {
   wxIPV4address m_ip_addr;
   bool m_new_ip_addr;
 
-  bool m_receive_stopped = true;
-
  private:
   void logBinaryData(const wxString &what, const UINT8 *data, int size);
 
