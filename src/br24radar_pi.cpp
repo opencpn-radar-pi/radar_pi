@@ -897,15 +897,9 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
 
   LOG_DIALOG(wxT("BR24radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat,
              vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale, rotation);
-  RenderRadarOverlay(boat_center, v_scale_ppm, rotation);
+  m_radar[m_settings.chart_overlay]->RenderRadarImage(boat_center, v_scale_ppm, rotation, true);
 
   return true;
-}
-
-void br24radar_pi::RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, double rotation) {
-  RadarInfo *ri = m_radar[m_settings.chart_overlay];
-
-  ri->RenderRadarImage(radar_center, v_scale_ppm, rotation, true);
 }
 
 //****************************************************************************

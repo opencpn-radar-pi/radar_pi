@@ -812,6 +812,10 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
 }
 
 void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bool overlay) {
+
+  if (!m_range_meters) {
+    return;
+  }
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);  // Save state
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -847,7 +851,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
     if (m_overlay_refreshes_queued > 0) {
       m_overlay_refreshes_queued--;
     }
-  } else if (m_range_meters && m_range.value) {
+  } else if (m_range.value) {
     glPushMatrix();
     scale = 1.0 / m_range.value;
     glScaled(scale, scale, 1.);

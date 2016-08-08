@@ -446,7 +446,6 @@ class br24radar_pi : public opencpn_plugin_112 {
   void Select_Rejection(int req_rejection_index);
   void CheckGuardZoneBogeys(void);
   void RenderRadarBuffer(wxDC *pdc, int width, int height);
-  void RenderRadarOverlay(wxPoint radar_center, double v_scale_ppm, double rotation);
   void PassHeadingToOpenCPN();
   void CacheSetToolbarToolBitmaps();
   void CheckTimedTransmit(RadarState state);
