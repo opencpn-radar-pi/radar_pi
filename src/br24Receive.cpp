@@ -224,7 +224,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     }
 
     hdm_raw = (line->common.heading[1] << 8) | line->common.heading[0];
-    if (hdm_raw != INT16_MIN && !m_pi->m_settings.ignore_radar_heading &&  NOT_TIMED_OUT(now, m_pi->m_var_timeout)) {
+    if (hdm_raw != INT16_MIN && !m_pi->m_settings.ignore_radar_heading && NOT_TIMED_OUT(now, m_pi->m_var_timeout)) {
       hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(m_pi->m_var));
       m_pi->SetRadarHeading(MOD_DEGREES(SCALE_RAW_TO_DEGREES(hdt_raw)), now + HEADING_TIMEOUT);
       hdt_raw += SCALE_DEGREES_TO_RAW(m_ri->m_viewpoint_rotation);
@@ -604,7 +604,7 @@ void *br24Receive::Entry(void) {
     freeifaddrs(m_interface_array);
   }
 
-#if 1
+#if 0
   LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread sleeping"), m_ri->m_name.c_str());
   wxMilliSleep(2000);
 #endif

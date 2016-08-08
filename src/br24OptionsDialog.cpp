@@ -166,11 +166,11 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   topSizer->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
 
   m_IgnoreHeading = new wxCheckBox(this, wxID_ANY, _("Ignore radar heading"), wxDefaultPosition, wxDefaultSize,
-                                     wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+                                   wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   itemStaticBoxSizerOptions->Add(m_IgnoreHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
   m_IgnoreHeading->SetValue(m_settings.ignore_radar_heading);
-  m_IgnoreHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnIgnoreHeadingClick), NULL, this);
-      
+  m_IgnoreHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnIgnoreHeadingClick), NULL,
+                           this);
 
   m_PassHeading = new wxCheckBox(this, wxID_ANY, _("Pass radar heading to OpenCPN"), wxDefaultPosition, wxDefaultSize,
                                  wxALIGN_CENTRE | wxST_NO_AUTORESIZE);

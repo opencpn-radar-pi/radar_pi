@@ -78,8 +78,7 @@ class br24Receive : public wxThread {
     LOG_RECEIVE(wxT("BR24radar_pi: %s receive thread created"), m_ri->m_name.c_str());
   };
 
-  ~br24Receive() {
-  }
+  ~br24Receive() {}
 
   void *Entry(void);
   void Shutdown(void);

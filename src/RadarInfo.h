@@ -164,6 +164,7 @@ class RadarInfo : public wxEvtHandler {
   int m_overlay_refreshes_queued;
   int m_refreshes_queued;
   int m_refresh_millis;
+  int m_main_timer_timeout;
   RadarState m_wantedState;
 
   GuardZone *m_guard_zone[GUARD_ZONES];
@@ -211,6 +212,7 @@ class RadarInfo : public wxEvtHandler {
   void ShowControlDialog(bool show, bool reparent);
   void DeleteDialogs();
   void DeleteReceive();
+  void UpdateTransmitState();
 
   bool IsPaneShown();
 

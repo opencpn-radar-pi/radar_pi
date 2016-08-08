@@ -272,9 +272,6 @@ int br24radar_pi::Init(void) {
     m_radar[1]->StartReceive();
   }
 
-  Start(1000, wxTIMER_CONTINUOUS);  // inherited from wxTimer
-  m_parent_window->Refresh(false);
-
   return PLUGIN_OPTIONS;
 }
 
@@ -291,7 +288,6 @@ bool br24radar_pi::DeInit(void) {
 
   LOG_VERBOSE(wxT("BR24radar_pi: DeInit of plugin"));
 
-  Stop();  // inherited from wxTimer
   m_initialized = false;
 
   // New style objects save position in destructor.
@@ -369,9 +365,7 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
 // directly so we redirect via flag and main thread.
 void br24radar_pi::NotifyRadarWindowViz() {
   m_notify_radar_window_viz = true;
-#ifdef __WXMSW__
-  Start(0, wxTIMER_ONE_SHOT);
-#endif
+  m_radar[0]->m_main_timer_timeout = 0;
 }
 
 void br24radar_pi::SetRadarWindowViz(bool reparent) {
@@ -381,9 +375,7 @@ void br24radar_pi::SetRadarWindowViz(bool reparent) {
     bool showThisControl = m_settings.show && m_settings.show_radar_control[r] && (r == 0 || m_settings.enable_dual_radar);
     m_radar[r]->ShowRadarWindow(showThisRadar);
     m_radar[r]->ShowControlDialog(showThisControl, reparent);
-    if (m_settings.show == 1 && m_radar[r]->m_wantedState == RADAR_TRANSMIT && m_radar[r]->m_state.value != RADAR_TRANSMIT) {
-      m_radar[r]->m_transmit->RadarTxOn();
-    }
+    m_radar[r]->UpdateTransmitState();
   }
 
   SetCanvasContextMenuItemViz(m_context_menu_show_id, m_settings.show == 0);
@@ -678,14 +670,12 @@ void br24radar_pi::CheckTimedTransmit(RadarState state) {
 
 // Notify
 // ------
-// Called once a second by the timer.
+// Called once a second by the timer on radar[0].
 //
 // This checks if we need to ping the radar to keep it alive (or make it alive)
 
 void br24radar_pi::Notify(void) {
-  if (IsOneShot()) {
-    Start(1000, wxTIMER_CONTINUOUS);
-  }
+  LOG_VERBOSE(wxT("BR24radar_pi: main timer"));
 
   time_t now = time(0);
 
@@ -739,25 +729,10 @@ void br24radar_pi::Notify(void) {
   // Check the age of "radar_seen", if too old radar_seen = false
   bool any_data_seen = false;
   for (size_t r = 0; r < RADARS; r++) {
-    if (m_radar[r]->m_state.value == RADAR_STANDBY && TIMED_OUT(now, m_radar[r]->m_radar_timeout)) {
-      static wxString empty;
-
-      m_radar[r]->m_state.Update(RADAR_OFF);
-      m_pMessageBox->SetRadarIPAddress(empty);
-      LOG_INFO(wxT("BR24radar_pi: Lost %s presence"), m_radar[r]->m_name.c_str());
-    }
-    if (m_radar[r]->m_state.value == RADAR_TRANSMIT && TIMED_OUT(now, m_radar[r]->m_data_timeout)) {
-      m_radar[r]->m_state.Update(RADAR_STANDBY);
-      LOG_INFO(wxT("BR24radar_pi: Data Lost %s "), m_radar[r]->m_name.c_str());
-    }
-
     if (m_radar[r]->m_state.value == RADAR_TRANSMIT) {
-      if (IsRadarOnScreen(r) && TIMED_OUT(now, m_radar[r]->m_stayalive_timeout)) {
-        m_radar[r]->m_stayalive_timeout = now + STAYALIVE_TIMEOUT;
-        m_radar[r]->m_transmit->RadarStayAlive();
-      }
       any_data_seen = true;
     }
+    m_radar[r]->UpdateTransmitState();
   }
 
   if (any_data_seen && m_settings.show) {
@@ -918,13 +893,12 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     v_scale_ppm = vp->pix_height / dist_y;  // pixel height of screen div by equivalent meters
   }
 
-  if (m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT) {
-    double rotation = fmod(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor) + 720.0, 360);
+  double rotation = fmod(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor) + 720.0, 360);
 
-    LOG_DIALOG(wxT("BR24radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"),
-               vp->clat, vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale, rotation);
-    RenderRadarOverlay(boat_center, v_scale_ppm, rotation);
-  }
+  LOG_DIALOG(wxT("BR24radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat,
+             vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale, rotation);
+  RenderRadarOverlay(boat_center, v_scale_ppm, rotation);
+
   return true;
 }
 
@@ -1277,11 +1251,13 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
     }
 
     default: {
-      if (!m_radar[radar]->SetControlValue(controlType, value)) {
-        wxLogError(wxT("BR24radar_pi: %s unhandled control setting for control %d"), m_radar[radar]->m_name.c_str(), controlType);
+      if (m_radar[radar]->SetControlValue(controlType, value)) {
+        return true;
       }
     }
   }
+  wxLogError(wxT("BR24radar_pi: %s unhandled control setting for control %s"), m_radar[radar]->m_name.c_str(),
+             ControlTypeNames[controlType].c_str());
   return false;
 }
 

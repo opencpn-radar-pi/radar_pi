@@ -319,7 +319,7 @@ struct scan_line {
    INSTALLS_TOOLBAR_TOOL | USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS | WANTS_NMEA_SENTENCES | WANTS_PREFERENCES |  \
    WANTS_PLUGIN_MESSAGING | WANTS_CURSOR_LATLON | WANTS_MOUSE_EVENTS)
 
-class br24radar_pi : public wxTimer, public opencpn_plugin_112 {
+class br24radar_pi : public opencpn_plugin_112 {
  public:
   br24radar_pi(void *ppimgr);
   ~br24radar_pi();

@@ -295,6 +295,8 @@ void RadarInfo::SetNetworkCardAddress(struct sockaddr_in *address) {
   if (!m_transmit->Init(address)) {
     wxLogError(wxT("BR24radar_pi %s: Unable to create transmit socket"), m_name.c_str());
   }
+  m_stayalive_timeout = 0;  // Allow immediate restart of any TxOn or TxOff command
+  m_pi->NotifyRadarWindowViz();
 }
 
 void RadarInfo::SetName(wxString name) {
@@ -497,6 +499,47 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
 }
 
+void RadarInfo::UpdateTransmitState() {
+  time_t now = time(0);
+
+  if (m_state.value == RADAR_STANDBY && TIMED_OUT(now, m_radar_timeout)) {
+    static wxString empty;
+
+    m_state.Update(RADAR_OFF);
+    m_pi->m_pMessageBox->SetRadarIPAddress(empty);
+    LOG_INFO(wxT("BR24radar_pi: Lost %s presence"), m_name.c_str());
+  }
+  if (m_state.value == RADAR_TRANSMIT && TIMED_OUT(now, m_data_timeout)) {
+    m_state.Update(RADAR_STANDBY);
+    LOG_INFO(wxT("BR24radar_pi: Data Lost %s "), m_name.c_str());
+  }
+
+  if (!TIMED_OUT(now, m_stayalive_timeout) || !m_pi->IsRadarOnScreen(m_radar)) {
+    return;
+  }
+
+  if (m_wantedState == RADAR_TRANSMIT) {
+    if (m_state.value == RADAR_TRANSMIT) {
+      m_transmit->RadarStayAlive();
+    } else {
+      m_transmit->RadarTxOn();
+
+      // Refresh radar immediately so that we generate draw mechanisms
+      if (m_pi->m_settings.chart_overlay == m_radar) {
+        GetOCPNCanvasWindow()->Refresh(false);
+      }
+      if (m_radar_panel) {
+        m_radar_panel->Refresh();
+      }
+    }
+  } else {
+    if (m_state.value == RADAR_TRANSMIT) {
+      m_transmit->RadarTxOff();
+    }
+  }
+  m_stayalive_timeout = now + STAYALIVE_TIMEOUT;
+}
+
 void RadarInfo::UpdateTrailPosition() {
   if (!m_pi->m_bpos_set || m_pi->m_heading_source == HEADING_NONE) {
     return;
@@ -550,6 +593,14 @@ void RadarInfo::UpdateTrailPosition() {
 }
 
 void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
+  if (m_radar == 0) {
+    time_t now = time(0);
+    if (TIMED_OUT(now, m_main_timer_timeout)) {
+      m_pi->Notify();
+      m_main_timer_timeout = now + 1;
+    }
+  }
+
   if (m_overlay_refreshes_queued > 0) {
     // don't do additional refresh when too busy
     LOG_DIALOG(wxT("BR24radar_pi: %s busy encountered, overlay_refreshes_queued=%d"), m_name.c_str(), m_overlay_refreshes_queued);
@@ -822,16 +873,14 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
 
 void RadarInfo::FlipRadarState() {
   if (m_pi->IsRadarOnScreen(m_radar)) {
+    m_stayalive_timeout = 0;
     if (m_state.button == RADAR_STANDBY) {
-      m_transmit->RadarTxOn();
-      m_state.Update(RADAR_TRANSMIT);
       m_wantedState = RADAR_TRANSMIT;
     } else {
-      m_transmit->RadarTxOff();
-      m_data_timeout = 0;
-      m_state.Update(RADAR_STANDBY);
       m_wantedState = RADAR_STANDBY;
     }
+    LOG_VERBOSE(wxT("BR24radar_pi: %s flip state to %d"), m_name.c_str(), m_wantedState);
+    UpdateTransmitState();
   }
 }
 
