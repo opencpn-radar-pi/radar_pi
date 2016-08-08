@@ -211,30 +211,17 @@ void RadarInfo::DeleteDialogs() {
   }
 }
 
-void RadarInfo::DeleteReceive() {
-  wxCriticalSectionLocker lock(m_exclusive);
-
-  m_receive = 0;
-}
-
 RadarInfo::~RadarInfo() {
   m_timer->Stop();
-
   if (m_receive) {
+    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread request stop"), m_name.c_str());
     m_receive->Shutdown();
-
-    // Wait for the thread to disappear. It will zero out the m_receive variable
-    while (true) {
-      {
-        wxCriticalSectionLocker lock(m_exclusive);
-
-        if (!m_receive) {
-          break;
-        }
-      }
-      wxMilliSleep(5);
-      wxYield();
-    }
+    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopped"), m_name.c_str());
+    m_receive->Wait();
+    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread delete"), m_name.c_str());
+    delete m_receive;
+    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread deleted"), m_name.c_str());
+    m_receive = 0;
   }
   DeleteDialogs();
   if (m_draw_panel.draw) {

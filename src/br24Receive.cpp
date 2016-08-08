@@ -583,6 +583,13 @@ void *br24Receive::Entry(void) {
   if (reportSocket != INVALID_SOCKET) {
     closesocket(reportSocket);
   }
+  if (m_send_socket != INVALID_SOCKET) {
+    closesocket(m_send_socket);
+    m_send_socket = INVALID_SOCKET;
+  }
+  if (m_receive_socket != INVALID_SOCKET) {
+    closesocket(m_receive_socket);
+  }
 
   if (m_interface_array) {
     freeifaddrs(m_interface_array);

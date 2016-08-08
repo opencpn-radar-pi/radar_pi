@@ -40,7 +40,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 class br24Receive : public wxThread {
  public:
-  br24Receive(br24radar_pi *pi, RadarInfo *ri) : wxThread(wxTHREAD_DETACHED), m_pi(pi), m_ri(ri) {
+  br24Receive(br24radar_pi *pi, RadarInfo *ri) : wxThread(wxTHREAD_JOINABLE), m_pi(pi), m_ri(ri) {
     Create(1024 * 1024);  // Stack size, be liberal
     m_next_spoke = -1;
     m_mcast_addr = 0;
@@ -79,13 +79,6 @@ class br24Receive : public wxThread {
   };
 
   ~br24Receive() {
-    m_ri->DeleteReceive();
-    if (m_send_socket != INVALID_SOCKET) {
-      closesocket(m_send_socket);
-    }
-    if (m_receive_socket != INVALID_SOCKET) {
-      closesocket(m_receive_socket);
-    }
   }
 
   void *Entry(void);
@@ -95,6 +88,8 @@ class br24Receive : public wxThread {
   sockaddr_in *m_mcast_addr;
   wxIPV4address m_ip_addr;
   bool m_new_ip_addr;
+
+  bool m_receive_stopped = true;
 
  private:
   void logBinaryData(const wxString &what, const UINT8 *data, int size);
