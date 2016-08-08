@@ -595,6 +595,10 @@ void *br24Receive::Entry(void) {
     freeifaddrs(m_interface_array);
   }
 
+#if 0
+  LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread sleeping"), m_ri->m_name.c_str());
+  wxMilliSleep(2000);
+#endif
   LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopping"), m_ri->m_name.c_str());
   return 0;
 }
