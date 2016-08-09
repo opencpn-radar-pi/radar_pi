@@ -395,18 +395,45 @@ void br24ControlsDialog::CreateControls() {
 
   wxString label;
   label << _("Standby / Transmit") << wxT("\n");
-  label << _("Transparency") << wxT("\n");
+  label << _("Noise rejection") << wxT("\n");
+  label << _("Target expansion") << wxT("\n");
   label << _("Interference rejection") << wxT("\n");
   label << _("Target separation") << wxT("\n");
-  label << _("Noise rejection") << wxT("\n");
-  label << _("Target boost") << wxT("\n");
-  label << _("Target expansion") << wxT("\n");
   label << _("Scan speed") << wxT("\n");
-  label << _("Scan age") << wxT("\n");
-  label << _("Timed Transmit") << wxT("\n");
+  label << _("Target boost") << wxT("\n");
+  label << _("Installation") << wxT("\n");
+  label << _("Bearing alignment") << wxT("\n");
+  label << _("Antenna height") << wxT("\n");
+  label << _("Local interference rej.") << wxT("\n");
+  label << _("Side lobe suppression") << wxT("\n");
+  label << _("Main bang size") << wxT("\n");
+  label << _("Guard zones") << wxT("\n");
+  label << _("Zone type") << wxT("\n");
+  label << _("Guard zones") << wxT("\n");
+  label << _("Inner range") << wxT("\n");
+  label << _("Outer range") << wxT("\n");
+  label << _("Start bearing") << wxT("\n");
+  label << _("End bearing") << wxT("\n");
+  label << _("Multi sweep filter") << wxT("\n");
+  label << _("Range") << wxT("\n");
   label << _("Gain") << wxT("\n");
   label << _("Sea clutter") << wxT("\n");
   label << _("Rain clutter") << wxT("\n");
+  label << _("Clear cursor") << wxT("\n");
+  label << _("Place EBL/VRM") << wxT("\n");
+  label << _("Target trails") << wxT("\n");
+  label << _("Target trails motion") << wxT("\n");
+  label << _("Clear trails") << wxT("\n");
+  label << _("Orientation") << wxT("\n");
+  label << _("Refresh rate") << wxT("\n");
+  label << _("Transparency") << wxT("\n");
+  label << _("Overlay") << wxT("\n");
+  label << _("Adjust") << wxT("\n");
+  label << _("Advanced") << wxT("\n");
+  label << _("View") << wxT("\n");
+  label << _("EBL/VRM") << wxT("\n");
+  label << _("Timed Transmit") << wxT("\n");
+  label << _("Info") << wxT("\n");
 
   wxStaticText* testMessage =
       new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
@@ -551,7 +578,7 @@ void br24ControlsDialog::CreateControls() {
   interference_rejection_names[3] = _("High");
 
   m_interference_rejection_button =
-      new br24RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rej."), CT_INTERFERENCE_REJECTION, false,
+      new br24RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"), CT_INTERFERENCE_REJECTION, false,
                                  m_ri->m_interference_rejection.button);
   m_advanced_sizer->Add(m_interference_rejection_button, 0, wxALL, BORDER);
   m_interference_rejection_button->minValue = 0;
@@ -632,7 +659,7 @@ void br24ControlsDialog::CreateControls() {
 
   // The LOCAL INTERFERENCE REJECTION button
   m_local_interference_rejection_button =
-      new br24RadarControlButton(this, ID_LOCAL_INTERFERENCE_REJECTION, _("Local interference rejection"),
+      new br24RadarControlButton(this, ID_LOCAL_INTERFERENCE_REJECTION, _("Local interference rej."),
                                  CT_LOCAL_INTERFERENCE_REJECTION, false, m_ri->m_local_interference_rejection.button);
   m_installation_sizer->Add(m_local_interference_rejection_button, 0, wxALL, BORDER);
   m_local_interference_rejection_button->minValue = 0;
@@ -715,7 +742,7 @@ void br24ControlsDialog::CreateControls() {
   m_end_bearing->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24ControlsDialog::OnEnd_Bearing_Value), NULL, this);
 
   // added check box to control multi swep filtering
-  m_filter = new wxCheckBox(this, wxID_ANY, _("Sweep Filter"), wxDefaultPosition, wxDefaultSize,
+  m_filter = new wxCheckBox(this, wxID_ANY, _("Multi Sweep Filter"), wxDefaultPosition, wxDefaultSize,
                             wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE);
   m_guard_sizer->Add(m_filter, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
   m_filter->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnFilterClick), NULL, this);
