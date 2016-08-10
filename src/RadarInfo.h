@@ -66,7 +66,7 @@ class radar_control_item {
     value = v;
   };
 
-  bool GetButton(int * value) {
+  bool GetButton(int *value) {
     wxCriticalSectionLocker lock(m_exclusive);
     bool changed = mod;
     if (value) {
@@ -127,7 +127,7 @@ class RadarInfo : public wxEvtHandler {
 
   /* User radar settings */
 
-  radar_control_item m_state;        // RadarState (observed)
+  radar_control_item m_state;  // RadarState (observed)
   radar_control_item m_wanted_state;
 
   radar_control_item m_orientation;  // 0 = Heading Up, 1 = North Up

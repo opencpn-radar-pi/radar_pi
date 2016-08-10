@@ -519,18 +519,25 @@ void RadarInfo::UpdateTransmitState() {
   }
 
   if (m_wanted_state.value == RADAR_TRANSMIT) {
-    if (m_state.value == RADAR_TRANSMIT) {
-      m_transmit->RadarStayAlive();
-    } else {
-      m_transmit->RadarTxOn();
+    switch (m_state.value) {
+      case RADAR_OFF:
+      case RADAR_WAKING_UP:
+        break;
 
-      // Refresh radar immediately so that we generate draw mechanisms
-      if (m_pi->m_settings.chart_overlay == m_radar) {
-        GetOCPNCanvasWindow()->Refresh(false);
-      }
-      if (m_radar_panel) {
-        m_radar_panel->Refresh();
-      }
+      case RADAR_TRANSMIT:
+        m_transmit->RadarStayAlive();
+        break;
+
+      case RADAR_STANDBY:
+        m_transmit->RadarTxOn();
+        // Refresh radar immediately so that we generate draw mechanisms
+        if (m_pi->m_settings.chart_overlay == m_radar) {
+          GetOCPNCanvasWindow()->Refresh(false);
+        }
+        if (m_radar_panel) {
+          m_radar_panel->Refresh();
+        }
+        break;
     }
   } else {
     if (m_state.value == RADAR_TRANSMIT) {

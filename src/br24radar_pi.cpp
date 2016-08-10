@@ -627,7 +627,7 @@ void br24radar_pi::SetDesiredStateAllRadars(RadarState desiredState) {
   for (size_t r = 0; r < RADARS; r++) {
     RadarState state = (RadarState)m_radar[r]->m_state.value;
     if (state != RADAR_OFF) {
-      if (state != desiredState) {
+      if (state != desiredState && !(state == RADAR_WAKING_UP && desiredState == RADAR_TRANSMIT)) {
         m_radar[r]->FlipRadarState();
       }
     }
