@@ -170,12 +170,13 @@ void br24MessageBox::CreateControls() {
   m_have_boat_pos->SetFont(m_pi->m_font);
   m_have_boat_pos->Disable();
 
-  wxStaticText *t = new wxStaticText(this, wxID_ANY, _("and"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  wxStaticText *t =
+      new wxStaticText(this, wxID_ANY, _("and"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   m_nmea_sizer->Add(t, 0, wxALL, 2);
   t->SetFont(m_pi->m_font);
 
   m_have_true_heading =
-  new wxCheckBox(this, ID_HEADING, _("True Heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+      new wxCheckBox(this, ID_HEADING, _("True Heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   m_nmea_sizer->Add(m_have_true_heading, 0, wxALL, BORDER);
   m_have_true_heading->SetFont(m_pi->m_font);
   m_have_true_heading->Disable();
@@ -184,8 +185,8 @@ void br24MessageBox::CreateControls() {
   m_nmea_sizer->Add(t, 0, wxALL, 2);
   t->SetFont(m_pi->m_font);
 
-  m_have_mag_heading =
-  new wxCheckBox(this, ID_HEADING, _("Magnetic heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  m_have_mag_heading = new wxCheckBox(this, ID_HEADING, _("Magnetic heading"), wxDefaultPosition, wxDefaultSize,
+                                      wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   m_nmea_sizer->Add(m_have_mag_heading, 0, wxALL, BORDER);
   m_have_mag_heading->SetFont(m_pi->m_font);
   m_have_mag_heading->Disable();
