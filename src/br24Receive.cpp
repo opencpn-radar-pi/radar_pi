@@ -663,7 +663,7 @@ struct radar_state04_66 {    // 04 C4 with length 66
   UINT16 antenna_height;     // 10-11
 };
 
-struct radar_state01_18 {  // 04 C4 with length 66
+struct radar_state01_18 {  // 04 C4 with length 18
   UINT8 what;              // 0   0x01
   UINT8 command;           // 1   0xC4
   UINT8 radar_status;      // 2
