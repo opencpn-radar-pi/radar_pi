@@ -923,7 +923,7 @@ bool br24radar_pi::LoadConfig(void) {
 
       for (int r = 0; r < RADARS; r++) {
         m_radar[r]->m_orientation.Update(0);
-        m_radar[r]->m_wantedState = (RadarState)0;
+        m_radar[r]->m_wanted_state.Update(0);
         SetControlValue(r, CT_TARGET_TRAILS, 0);
         m_settings.show_radar[r] = true;
         LOG_DIALOG(wxT("BR24radar_pi: LoadConfig: show_radar[%d]=%d"), r, v);
@@ -952,7 +952,7 @@ bool br24radar_pi::LoadConfig(void) {
         pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
         m_radar[r]->m_orientation.Update(v);
         pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
-        m_radar[r]->m_wantedState = (RadarState)v;
+        m_radar[r]->m_wanted_state.Update(v);
         pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
         SetControlValue(r, CT_TARGET_TRAILS, v);
         pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);

@@ -518,7 +518,7 @@ void RadarInfo::UpdateTransmitState() {
     return;
   }
 
-  if (m_wantedState == RADAR_TRANSMIT) {
+  if (m_wanted_state.value == RADAR_TRANSMIT) {
     if (m_state.value == RADAR_TRANSMIT) {
       m_transmit->RadarStayAlive();
     } else {
@@ -878,11 +878,11 @@ void RadarInfo::FlipRadarState() {
   if (m_pi->IsRadarOnScreen(m_radar)) {
     m_stayalive_timeout = 0;
     if (m_state.button == RADAR_STANDBY) {
-      m_wantedState = RADAR_TRANSMIT;
+      m_wanted_state.Update(RADAR_TRANSMIT);
     } else {
-      m_wantedState = RADAR_STANDBY;
+      m_wanted_state.Update(RADAR_STANDBY);
     }
-    LOG_VERBOSE(wxT("BR24radar_pi: %s flip state to %d"), m_name.c_str(), m_wantedState);
+    LOG_VERBOSE(wxT("BR24radar_pi: %s flip state to %d"), m_name.c_str(), m_wanted_state.value);
     UpdateTransmitState();
   }
 }
@@ -1018,7 +1018,7 @@ wxString RadarInfo::GetCanvasTextCenter() {
         break;
     }
   } else if (!m_draw_panel.draw) {
-    s << _("No valid drawing method");
+    s << _("Radar not transmitting");
   }
 
   return s;

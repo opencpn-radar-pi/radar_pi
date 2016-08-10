@@ -66,6 +66,17 @@ class radar_control_item {
     value = v;
   };
 
+  bool GetButton(int * value) {
+    wxCriticalSectionLocker lock(m_exclusive);
+    bool changed = mod;
+    if (value) {
+      *value = this->value;
+    }
+
+    mod = false;
+    return changed;
+  }
+
   int GetButton() {
     wxCriticalSectionLocker lock(m_exclusive);
 
@@ -117,6 +128,8 @@ class RadarInfo : public wxEvtHandler {
   /* User radar settings */
 
   radar_control_item m_state;        // RadarState (observed)
+  radar_control_item m_wanted_state;
+
   radar_control_item m_orientation;  // 0 = Heading Up, 1 = North Up
 #define ORIENTATION_HEAD_UP (0)
 #define ORIENTATION_NORTH_UP (1)
@@ -165,7 +178,6 @@ class RadarInfo : public wxEvtHandler {
   int m_refreshes_queued;
   int m_refresh_millis;
   int m_main_timer_timeout;
-  RadarState m_wantedState;
 
   GuardZone *m_guard_zone[GUARD_ZONES];
   double m_ebl[BEARING_LINES];

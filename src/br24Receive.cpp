@@ -274,7 +274,7 @@ void br24Receive::EmulateFakeBuffer(void) {
   time_t now = time(0);
   UINT8 data[RETURNS_PER_LINE];
 
-  if (m_ri->m_wantedState != RADAR_TRANSMIT) {
+  if (m_ri->m_wanted_state.value != RADAR_TRANSMIT) {
     m_ri->m_state.Update(RADAR_STANDBY);
     m_ri->m_radar_timeout = time(0) + WATCHDOG_TIMEOUT;
     return;
@@ -683,7 +683,7 @@ struct radar_state04_66 {    // 04 C4 with length 66
   UINT16 antenna_height;     // 10-11
 };
 
-struct radar_state01_18 {  // 04 C4 with length 18
+struct radar_state01_18 {  // 01 C4 with length 18
   UINT8 what;              // 0   0x01
   UINT8 command;           // 1   0xC4
   UINT8 radar_status;      // 2
@@ -722,8 +722,23 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
         radar_state01_18 *s = (radar_state01_18 *)report;
         // Radar status in byte 2
         if (s->radar_status != m_radar_status) {
-          m_radar_status = report[2];
-          m_ri->m_radar_type = RT_4G;  // only 4G Tx on channel B
+          switch (report[2]) {
+            case 0x01:
+              m_ri->m_state.Update(RADAR_STANDBY);
+              LOG_VERBOSE(wxT("BR24radar_pi: %s reports status STANDBY"), m_ri->m_name.c_str());
+              break;
+            case 0x02:
+              m_ri->m_state.Update(RADAR_TRANSMIT);
+              LOG_VERBOSE(wxT("BR24radar_pi: %s reports status TRANSMIT"), m_ri->m_name.c_str());
+              break;
+            case 0x05:
+              m_ri->m_state.Update(RADAR_WAKING_UP);
+              LOG_VERBOSE(wxT("BR24radar_pi: %s reports status WAKING UP"), m_ri->m_name.c_str());
+              break;
+            default:
+              logBinaryData(wxT("received unknown radar status"), report, len);
+              break;
+          }
         }
         break;
       }
@@ -848,11 +863,11 @@ void br24Receive::ProcessCommand(wxString &addr, const UINT8 *command, int len) 
   if (len == 3 && memcmp(command, COMMAND_TX_ON_B, sizeof(COMMAND_TX_ON_B)) == 0) {
     LOG_VERBOSE(wxT("BR24radar_pi: %s received transmit on from %s"), m_ri->m_name.c_str(), addr.c_str());
     m_ri->m_state.Update(RADAR_TRANSMIT);
-    m_ri->m_wantedState = RADAR_TRANSMIT;
+    m_ri->m_wanted_state.Update(RADAR_TRANSMIT);
   } else if (len == 3 && memcmp(command, COMMAND_TX_OFF_B, sizeof(COMMAND_TX_OFF_B)) == 0) {
     LOG_VERBOSE(wxT("BR24radar_pi: %s received transmit off from %s"), m_ri->m_name.c_str(), addr.c_str());
     m_ri->m_state.Update(RADAR_STANDBY);
-    m_ri->m_wantedState = RADAR_STANDBY;
+    m_ri->m_wanted_state.Update(RADAR_STANDBY);
   } else if (len == 6 && command[0] == 0x03 && command[1] == 0xc1) {
     UINT32 range = *((UINT32 *)&command[2]);
     LOG_VERBOSE(wxT("BR24radar_pi: %s received range request for %u meters from %s"), m_ri->m_name.c_str(), range / 10,

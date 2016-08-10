@@ -437,7 +437,7 @@ void br24ControlsDialog::CreateControls() {
 
   wxStaticText* testMessage =
       new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  testMessage->SetFont(m_pi->m_font);
+  testMessage->SetFont(m_pi->m_fat_font);
   testBox->Add(testMessage, 0, wxALL, 2);
 
   wxStaticText* testButtonText =
@@ -1250,11 +1250,26 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   o = _("Standby / Transmit");
   o << wxT("\n");
   if (m_pi->m_settings.timed_idle == 0) {
-    if (m_ri->m_wantedState != state) {
-      o << _("Requested") << wxT(" ");
-      o << ((m_ri->m_wantedState == RADAR_TRANSMIT) ? _("Transmit") : _("Standby"));
+#if 0
+    if (m_ri->m_wanted_state.GetButton(0)) {
+      m_radar_state->SetFont(m_pi->m_fat_font);
     } else {
-      o << ((state == RADAR_TRANSMIT) ? _("Transmit") : _("Standby"));
+      m_radar_state->SetFont(m_pi->m_font);
+    }
+#endif
+    switch (state) {
+      case RADAR_OFF:
+        o << _("Off");
+        break;
+      case RADAR_STANDBY:
+        o << _("Standby");
+        break;
+      case RADAR_WAKING_UP:
+        o << _("Waking up");
+        break;
+      case RADAR_TRANSMIT:
+        o << _("Transmit");
+        break;
     }
     m_timed_idle_button->SetLocalValue(0);
   } else {
