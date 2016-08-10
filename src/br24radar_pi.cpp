@@ -177,6 +177,7 @@ int br24radar_pi::Init(void) {
   m_bpos_timestamp = 0;
   m_hdt = 0.0;
   m_hdt_timeout = 0;
+  m_hdm_timeout = 0;
   m_var_timeout = 0;
   m_idle_standby = 0;
   m_idle_transmit = 0;
@@ -697,7 +698,7 @@ void br24radar_pi::Notify(void) {
       radar_heading = m_radar_heading;
       radar_timeout = m_radar_heading_timeout;
     }
-    if (!wxIsNaN(radar_heading) && NOT_TIMED_OUT(now, radar_timeout) && NOT_TIMED_OUT(now, m_var_timeout)) {
+    if (!wxIsNaN(radar_heading) && NOT_TIMED_OUT(now, radar_timeout)) {
       m_hdt = radar_heading;
       LOG_INFO(wxT("BR24radar_pi: radar transmits heading, using that as best source of heading"));
       m_heading_source = HEADING_RADAR;
@@ -761,25 +762,26 @@ void br24radar_pi::Notify(void) {
   }
 
   wxString info;
-  if (!TIMED_OUT(now, m_hdt_timeout)) {
-    switch (m_heading_source) {
-      case HEADING_NONE:
-        break;
-      case HEADING_COG:
-        info << _("COG") << wxT(" ") << m_hdt;
-        break;
-      case HEADING_HDM:
-        info << _("HDM") << wxT(" ") << m_hdt;
-        break;
-      case HEADING_HDT:
-        info << _("HDT") << wxT(" ") << m_hdt;
-        break;
-      case HEADING_RADAR:
-        info << _("Radar") << wxT(" ") << m_hdt;
-        break;
-    }
+  switch (m_heading_source) {
+    case HEADING_NONE:
+      break;
+    case HEADING_COG:
+      info << _("COG") << wxT(" ") << m_hdt;
+      break;
+    case HEADING_HDM:
+      info << _("HDM") << wxT(" ") << m_hdm << wxT(" + ") + _("Variation");
+      break;
+    case HEADING_HDT:
+      info << _("HDT") << wxT(" ") << m_hdt;
+      break;
+    case HEADING_RADAR:
+      info << _("Radar") << wxT(" ") << m_hdt;
+      break;
   }
-  m_pMessageBox->SetHeadingInfo(info);
+  m_pMessageBox->SetTrueHeadingInfo(info);
+  info = wxT("");
+  info << m_hdm;
+  m_pMessageBox->SetMagHeadingInfo(info);
   m_pMessageBox->UpdateMessage(false);
 
   for (int r = 0; r < RADARS; r++) {
@@ -1138,19 +1140,12 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     radar_heading = m_radar_heading;
     radar_timeout = m_radar_heading_timeout;
   }
-  if (!wxIsNaN(radar_heading) && NOT_TIMED_OUT(now, radar_timeout) && NOT_TIMED_OUT(now, m_var_timeout)) {
+  if (!wxIsNaN(radar_heading) && NOT_TIMED_OUT(now, radar_timeout)) {
     m_hdt = radar_heading;
     if (m_heading_source != HEADING_RADAR) {
       LOG_INFO(wxT("BR24radar_pi: radar transmits heading, using that as best source of heading"));
     }
     m_heading_source = HEADING_RADAR;
-    m_hdt_timeout = now + HEADING_TIMEOUT;
-  } else if (!wxIsNaN(pfix.Hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
-    m_hdt = pfix.Hdm + m_var;
-    if (m_heading_source != HEADING_HDM) {
-      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f"), m_hdt);
-      m_heading_source = HEADING_HDM;
-    }
     m_hdt_timeout = now + HEADING_TIMEOUT;
   } else if (!wxIsNaN(pfix.Hdt)) {
     m_hdt = pfix.Hdt;
@@ -1159,6 +1154,15 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       m_heading_source = HEADING_HDT;
     }
     m_hdt_timeout = now + HEADING_TIMEOUT;
+  } else if (!wxIsNaN(pfix.Hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
+    m_hdm = pfix.Hdm;
+    m_hdt = pfix.Hdm + m_var;
+    if (m_heading_source != HEADING_HDM) {
+      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f + VAR"), m_hdt);
+      m_heading_source = HEADING_HDM;
+    }
+    m_hdt_timeout = now + HEADING_TIMEOUT;
+    m_hdm_timeout = m_hdt_timeout;
   } else if (!wxIsNaN(pfix.Cog) && m_settings.enable_cog_heading) {
     m_hdt = pfix.Cog;
     if (m_heading_source != HEADING_COG) {
@@ -1166,6 +1170,11 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       m_heading_source = HEADING_COG;
     }
     m_hdt_timeout = now + HEADING_TIMEOUT;
+  }
+
+  if (!wxIsNaN(pfix.Hdm)) {
+    m_hdm = pfix.Hdm;
+    m_hdm_timeout = now + HEADING_TIMEOUT;
   }
 
   if (pfix.FixTime > 0 && NOT_TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT)) {
@@ -1344,14 +1353,7 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
     m_hdt = radar_heading;
     if (m_heading_source != HEADING_RADAR) {
       LOG_INFO(wxT("BR24radar_pi: radar transmits heading, using that as best source of heading"));
-    }
-    m_heading_source = HEADING_RADAR;
-    m_hdt_timeout = now + HEADING_TIMEOUT;
-  } else if (!wxIsNaN(hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
-    m_hdt = hdm + m_var;
-    if (m_heading_source != HEADING_HDM) {
-      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f + var %f from NMEA %s"), hdm + m_var, sentence.c_str());
-      m_heading_source = HEADING_HDM;
+      m_heading_source = HEADING_RADAR;
     }
     m_hdt_timeout = now + HEADING_TIMEOUT;
   } else if (!wxIsNaN(hdt)) {
@@ -1361,6 +1363,18 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
       m_heading_source = HEADING_HDT;
     }
     m_hdt_timeout = now + HEADING_TIMEOUT;
+  } else if (!wxIsNaN(hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
+    m_hdt = hdm + m_var;
+    if (m_heading_source != HEADING_HDM) {
+      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f + VAR %f from NMEA %s"), hdm + m_var, sentence.c_str());
+      m_heading_source = HEADING_HDM;
+    }
+    m_hdt_timeout = now + HEADING_TIMEOUT;
+  }
+
+  if (!wxIsNaN(hdm)) {
+    m_hdm = hdm;
+    m_hdm_timeout = now + HEADING_TIMEOUT;
   }
 }
 

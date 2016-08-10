@@ -201,11 +201,10 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
 
     int range_raw = 0;
     int angle_raw = 0;
-    short int hdm_raw = 0;
-    short int hdt_raw = 0;
+    short int heading_raw = 0;
     int range_meters = 0;
 
-    hdm_raw = (line->common.heading[1] << 8) | line->common.heading[0];
+    heading_raw = (line->common.heading[1] << 8) | line->common.heading[0];
 
     if (memcmp(line->br24.mark, BR24MARK, sizeof(BR24MARK)) == 0) {
       // BR24 and 3G mode
@@ -238,13 +237,20 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     }
 
 #if 0
-    IF_LOG_AT(LOGLEVEL_RECEIVE, logBinaryData(wxString::Format(wxT("range=%d, angle=%d hdm=%hd"), range_raw, angle_raw, hdm_raw),
+    IF_LOG_AT(LOGLEVEL_RECEIVE, logBinaryData(wxString::Format(wxT("range=%d, angle=%d hdg=%hd"), range_raw, angle_raw, heading_raw),
                                               (uint8_t *)&line->common, sizeof(line->common)));
 #endif
 
-    if (HEADING_VALID(hdm_raw) && !m_pi->m_settings.ignore_radar_heading && NOT_TIMED_OUT(now, m_pi->m_var_timeout)) {
-      if ((hdt_raw & HEADING_TRUE_FLAG) == 0) {
-        hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(m_pi->m_var));
+    bool radar_heading_valid = HEADING_VALID(heading_raw);
+    bool radar_heading_true = (heading_raw * HEADING_TRUE_FLAG) != 0;
+    short int hdt_raw;
+
+    if (radar_heading_valid && !m_pi->m_settings.ignore_radar_heading &&
+        (radar_heading_true || NOT_TIMED_OUT(now, m_pi->m_var_timeout))) {
+      if (radar_heading_true) {
+        hdt_raw = MOD_ROTATION(heading_raw);
+      } else {
+        hdt_raw = MOD_ROTATION(heading_raw + SCALE_DEGREES_TO_RAW(m_pi->m_var));
       }
       m_pi->SetRadarHeading(MOD_DEGREES(SCALE_RAW_TO_DEGREES(hdt_raw)), now + HEADING_TIMEOUT);
       hdt_raw += SCALE_DEGREES_TO_RAW(m_ri->m_viewpoint_rotation);

@@ -170,11 +170,25 @@ void br24MessageBox::CreateControls() {
   m_have_boat_pos->SetFont(m_pi->m_font);
   m_have_boat_pos->Disable();
 
-  m_have_heading =
-      new wxCheckBox(this, ID_HEADING, _("Heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  m_nmea_sizer->Add(m_have_heading, 0, wxALL, BORDER);
-  m_have_heading->SetFont(m_pi->m_font);
-  m_have_heading->Disable();
+  wxStaticText *t = new wxStaticText(this, wxID_ANY, _("and"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  m_nmea_sizer->Add(t, 0, wxALL, 2);
+  t->SetFont(m_pi->m_font);
+
+  m_have_true_heading =
+  new wxCheckBox(this, ID_HEADING, _("True Heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  m_nmea_sizer->Add(m_have_true_heading, 0, wxALL, BORDER);
+  m_have_true_heading->SetFont(m_pi->m_font);
+  m_have_true_heading->Disable();
+
+  t = new wxStaticText(this, wxID_ANY, _("or"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  m_nmea_sizer->Add(t, 0, wxALL, 2);
+  t->SetFont(m_pi->m_font);
+
+  m_have_mag_heading =
+  new wxCheckBox(this, ID_HEADING, _("Magnetic heading"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  m_nmea_sizer->Add(m_have_mag_heading, 0, wxALL, BORDER);
+  m_have_mag_heading->SetFont(m_pi->m_font);
+  m_have_mag_heading->Disable();
 
   m_have_variation =
       new wxCheckBox(this, ID_HEADING, _("Variation"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
@@ -243,10 +257,12 @@ bool br24MessageBox::Show(bool show) {
 
 bool br24MessageBox::UpdateMessage(bool force) {
   message_status new_message_state = HIDE;
+  time_t now = time(0);
 
   bool haveOpenGL = m_pi->m_opengl_mode;
   bool haveGPS = m_pi->m_bpos_set;
-  bool haveHeading = m_pi->m_heading_source != HEADING_NONE;
+  bool haveTrueHeading = m_pi->m_heading_source != HEADING_NONE;
+  bool haveMagHeading = !TIMED_OUT(now, m_pi->m_hdm_timeout);
   bool haveVariation = m_pi->m_var_source != VARIATION_SOURCE_NONE;
   bool radarSeen = false;
   bool haveData = false;
@@ -267,7 +283,7 @@ bool br24MessageBox::UpdateMessage(bool force) {
   }
 
   bool radarOn = haveOpenGL && radarSeen;
-  bool navOn = haveGPS && haveHeading && haveVariation;
+  bool navOn = haveGPS && haveTrueHeading;
   bool no_overlay = !(m_pi->m_settings.show && m_pi->m_settings.chart_overlay >= 0);
 
   LOG_DIALOG(wxT("BR24radar_pi: messagebox decision: show=%d overlay=%d auto_hide=%d opengl=%d radarOn=%d navOn=%d"), showRadar,
@@ -307,7 +323,8 @@ bool br24MessageBox::UpdateMessage(bool force) {
 
   m_have_open_gl->SetValue(haveOpenGL);
   m_have_boat_pos->SetValue(haveGPS);
-  m_have_heading->SetValue(haveHeading);
+  m_have_true_heading->SetValue(haveTrueHeading);
+  m_have_mag_heading->SetValue(haveMagHeading);
   m_have_variation->SetValue(haveVariation);
   m_have_radar->SetValue(radarSeen);
   m_have_data->SetValue(haveData);
@@ -320,8 +337,11 @@ bool br24MessageBox::UpdateMessage(bool force) {
   if ((label = m_mcast_addr_info.GetValue()) != 0) {
     m_ip_box->SetLabel(*label);
   }
-  if ((label = m_heading_info.GetValue()) != 0) {
-    m_have_heading->SetLabel(*label);
+  if ((label = m_true_heading_info.GetValue()) != 0) {
+    m_have_true_heading->SetLabel(*label);
+  }
+  if ((label = m_mag_heading_info.GetValue()) != 0) {
+    m_have_mag_heading->SetLabel(*label);
   }
   if ((label = m_variation_info.GetValue()) != 0) {
     m_have_variation->SetLabel(*label);
@@ -413,11 +433,18 @@ void br24MessageBox::SetMcastIPAddress(wxString &msg) {
   m_mcast_addr_info.Update(label);
 }
 
-void br24MessageBox::SetHeadingInfo(wxString &msg) {
+void br24MessageBox::SetTrueHeadingInfo(wxString &msg) {
   wxString label;
 
-  label << _("Heading") << wxT(" ") << msg;
-  m_heading_info.Update(label);
+  label << _("True heading") << wxT(" ") << msg;
+  m_true_heading_info.Update(label);
+}
+
+void br24MessageBox::SetMagHeadingInfo(wxString &msg) {
+  wxString label;
+
+  label << _("Magnetic heading") << wxT(" ") << msg;
+  m_mag_heading_info.Update(label);
 }
 
 void br24MessageBox::SetVariationInfo(wxString &msg) {

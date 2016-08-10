@@ -84,7 +84,8 @@ class br24MessageBox : public wxDialog {
   // void SetErrorMessage(wxString &msg);
   void SetRadarIPAddress(wxString &msg);
   void SetMcastIPAddress(wxString &msg);
-  void SetHeadingInfo(wxString &msg);
+  void SetTrueHeadingInfo(wxString &msg);
+  void SetMagHeadingInfo(wxString &msg);
   void SetVariationInfo(wxString &msg);
   void SetStatisticsInfo(wxString &msg);
 
@@ -106,7 +107,8 @@ class br24MessageBox : public wxDialog {
   // radar_info_item m_error_message_info;
   radar_info_item m_radar_addr_info;
   radar_info_item m_mcast_addr_info;
-  radar_info_item m_heading_info;
+  radar_info_item m_true_heading_info;
+  radar_info_item m_mag_heading_info;
   radar_info_item m_variation_info;
   radar_info_item m_statistics_info;
 
@@ -128,7 +130,8 @@ class br24MessageBox : public wxDialog {
   wxStaticText *m_radar_off;
   wxCheckBox *m_have_open_gl;
   wxCheckBox *m_have_boat_pos;
-  wxCheckBox *m_have_heading;
+  wxCheckBox *m_have_true_heading;
+  wxCheckBox *m_have_mag_heading;
   wxCheckBox *m_have_variation;
   wxCheckBox *m_have_radar;
   wxCheckBox *m_have_data;
