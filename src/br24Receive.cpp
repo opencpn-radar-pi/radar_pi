@@ -63,6 +63,18 @@ static const ListenAddress LISTEN_COMMAND[2] = {{6680, "236.6.7.10"}, {6658, "23
 // If BR24MARK is found, we switch to BR24 mode, otherwise 4G.
 static UINT8 BR24MARK[] = {0x00, 0x44, 0x0d, 0x0e};
 
+/*
+ Heading on radar. Observed in field:
+ - Hakan: BR24, no RI: 0x9234 = negative, with recognisable 1234 in hex?
+ - Marcus: 3G, RI, true heading: 0x45be
+ - Kees: 4G, RI, mag heading: 0x07d6 = 2006 = 176,6 deg
+ - Kees: 4G, RI, no heading: 0x8000 = -1 = negative
+ Known values for heading value:
+*/
+#define HEADING_TRUE_FLAG 0x4000
+#define HEADING_MASK (SPOKES - 1)
+#define HEADING_VALID(x) (((x) & ~(HEADING_TRUE_FLAG | HEADING_MASK)) == 0)
+
 #pragma pack(push, 1)
 
 struct common_header {
@@ -71,7 +83,7 @@ struct common_header {
   UINT8 scan_number[2];  // 2 bytes, 0-4095
   UINT8 u00[4];          // 4 bytes
   UINT8 angle[2];        // 2 bytes
-  UINT8 heading[2];      // 2 bytes heading with RI-10/11
+  UINT8 heading[2];      // 2 bytes heading with RI-10/11. See bitmask explanation above.
 };
 
 struct br24_header {
@@ -80,7 +92,7 @@ struct br24_header {
   UINT8 scan_number[2];  // 2 bytes, 0-4095
   UINT8 mark[4];         // 4 bytes 0x00, 0x44, 0x0d, 0x0e
   UINT8 angle[2];        // 2 bytes
-  UINT8 heading[2];      // 2 bytes heading with RI-10/11
+  UINT8 heading[2];      // 2 bytes heading with RI-10/11. See bitmask explanation above.
   UINT8 range[4];        // 4 bytes
   UINT8 u01[2];          // 2 bytes blank
   UINT8 u02[2];          // 2 bytes
@@ -94,7 +106,7 @@ struct br4g_header {
   UINT8 u00[2];          // Always 0x4400 (integer)
   UINT8 largerange[2];   // 2 bytes or -1
   UINT8 angle[2];        // 2 bytes
-  UINT8 heading[2];      // 2 bytes heading with RI-10/11 or -1
+  UINT8 heading[2];      // 2 bytes heading with RI-10/11 or -1. See bitmask explanation above.
   UINT8 smallrange[2];   // 2 bytes or -1
   UINT8 rotation[2];     // 2 bytes, rotation/angle
   UINT8 u02[4];          // 4 bytes signed integer, always -1
@@ -193,6 +205,8 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     short int hdt_raw = 0;
     int range_meters = 0;
 
+    hdm_raw = (line->common.heading[1] << 8) | line->common.heading[0];
+
     if (memcmp(line->br24.mark, BR24MARK, sizeof(BR24MARK)) == 0) {
       // BR24 and 3G mode
       range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
@@ -223,9 +237,15 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       }
     }
 
-    hdm_raw = (line->common.heading[1] << 8) | line->common.heading[0];
-    if (hdm_raw != INT16_MIN && !m_pi->m_settings.ignore_radar_heading && NOT_TIMED_OUT(now, m_pi->m_var_timeout)) {
-      hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(m_pi->m_var));
+#if 0
+    IF_LOG_AT(LOGLEVEL_RECEIVE, logBinaryData(wxString::Format(wxT("range=%d, angle=%d hdm=%hd"), range_raw, angle_raw, hdm_raw),
+                                              (uint8_t *)&line->common, sizeof(line->common)));
+#endif
+
+    if (HEADING_VALID(hdm_raw) && !m_pi->m_settings.ignore_radar_heading && NOT_TIMED_OUT(now, m_pi->m_var_timeout)) {
+      if ((hdt_raw & HEADING_TRUE_FLAG) == 0) {
+        hdt_raw = MOD_ROTATION(hdm_raw + SCALE_DEGREES_TO_RAW(m_pi->m_var));
+      }
       m_pi->SetRadarHeading(MOD_DEGREES(SCALE_RAW_TO_DEGREES(hdt_raw)), now + HEADING_TIMEOUT);
       hdt_raw += SCALE_DEGREES_TO_RAW(m_ri->m_viewpoint_rotation);
     } else {  // no heading on radar
