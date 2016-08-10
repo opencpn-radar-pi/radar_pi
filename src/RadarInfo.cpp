@@ -812,7 +812,6 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
 }
 
 void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bool overlay) {
-
   if (!m_range_meters) {
     return;
   }
@@ -907,9 +906,9 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
       s << wxT("\n");
     }
     if (m_trails_motion.value == TARGET_MOTION_TRUE) {
-      s << _("TM");
+      s << wxT("RM(T)");
     } else {
-      s << _("RM");
+      s << wxT("RM(R)");
     }
   }
 

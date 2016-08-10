@@ -422,7 +422,7 @@ void br24ControlsDialog::CreateControls() {
   label << _("Clear cursor") << wxT("\n");
   label << _("Place EBL/VRM") << wxT("\n");
   label << _("Target trails") << wxT("\n");
-  label << _("Target trails motion") << wxT("\n");
+  label << _("True/Relative trails") << wxT("\n");
   label << _("Clear trails") << wxT("\n");
   label << _("Orientation") << wxT("\n");
   label << _("Refresh rate") << wxT("\n");
@@ -834,7 +834,7 @@ void br24ControlsDialog::CreateControls() {
   m_target_trails_button->SetLocalValue(m_ri->m_target_trails.button);  // redraw after adding names
 
   // The Trails Motion button
-  m_trails_motion_button = new wxButton(this, ID_TRAILS_MOTION, _("Target trails motion"), wxDefaultPosition, g_buttonSize, 0);
+  m_trails_motion_button = new wxButton(this, ID_TRAILS_MOTION, _("True/Relative trails"), wxDefaultPosition, g_buttonSize, 0);
   m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
   m_trails_motion_button->SetFont(m_pi->m_font);
 
@@ -1327,7 +1327,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   if (m_ri->m_trails_motion.mod || refreshAll) {
-    o = _("Target trails motion");
+    o = _("True/Relative trails");
     o << wxT("\n");
     if (m_ri->m_trails_motion.value == TARGET_MOTION_TRUE) {
       o << _("True");
