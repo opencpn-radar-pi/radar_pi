@@ -706,6 +706,10 @@ struct RadarReport_03C4_129 {
   UINT8 what;
   UINT8 command;
   UINT8 radar_type; // I hope! 01 = 4G, 08 = 3G, 0F = BR24
+  UINT8 u00[55];    // Lots of unknown
+  UINT16 firmware_date[16];
+  UINT16 firmware_time[16];
+  UINT8 u01[7];
 };
 
 struct RadarReport_04C4_66 {    // 04 C4 with length 66
@@ -733,6 +737,13 @@ struct RadarReport_08C4_18 {              // 08 c4  length 18
   UINT8 target_sep;                    // 13
 };
 #pragma pack(pop)
+
+static void AppendChar16String(wxString &dest, UINT16 * src) {
+  for (;*src; src++) {
+    wchar_t wc = (wchar_t) *src;
+    dest << wc;
+  }
+}
 
 bool br24Receive::ProcessReport(const UINT8 *report, int len) {
   IF_LOG_AT(LOGLEVEL_RECEIVE, logBinaryData(wxT("ProcessReport"), report, len));
@@ -798,10 +809,9 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
       }
 
       case (129 << 8) + 0x03: {  // 129 bytes starting with 03 C4
-        if (m_pi->m_settings.verbose >= 2) {
-          logBinaryData(wxT("received RadarReport_03C4_129"), report, len);
-        }
         RadarReport_03C4_129 *s = (RadarReport_03C4_129 *)report;
+        LOG_RECEIVE(wxT("BR24radar_pi: %s RadarReport_03C4_129 radar_type=%u"),
+                    m_ri->m_name.c_str(), s->radar_type);
 
         switch (s->radar_type) {
           case 0x0f:
@@ -827,7 +837,17 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
             break;
           default:
             LOG_INFO(wxT("BR24radar_pi: Unknown radar_type %u"), s->radar_type);
+            return false;
         }
+
+        wxString ts;
+
+        ts << wxT("Firmware date: ");
+        AppendChar16String(ts, s->firmware_date);
+        ts << wxT(" ");
+        AppendChar16String(ts, s->firmware_time);
+
+        m_pi->m_pMessageBox->SetRadarBuildInfo(ts);
 
         break;
       }

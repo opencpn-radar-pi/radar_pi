@@ -776,7 +776,7 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
   int drawing_method = m_pi->m_settings.drawing_method;
   bool colorOption = m_pi->m_settings.display_option > 0;
 
-  if (m_state.value != RADAR_TRANSMIT) {
+  if (m_state.value != RADAR_TRANSMIT && m_state.value != RADAR_WAKING_UP) {
     ResetRadarImage();
     return;
   }

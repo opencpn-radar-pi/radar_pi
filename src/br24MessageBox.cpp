@@ -120,7 +120,7 @@ void br24MessageBox::CreateControls() {
   m_message_sizer = new wxBoxSizer(wxVERTICAL);
   m_top_sizer->Add(m_message_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
-  m_radar_off = new wxStaticText(this, ID_OFF, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  m_radar_off = new wxStaticText(this, ID_OFF, label, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
   m_message_sizer->Add(m_radar_off, 0, wxALL, 2);
   m_radar_off->SetLabel(_("Cannot switch radar on as\nit is not connected or off"));
   m_radar_off->SetFont(m_pi->m_font);
@@ -330,30 +330,33 @@ bool br24MessageBox::UpdateMessage(bool force) {
   m_have_radar->SetValue(radarSeen);
   m_have_data->SetValue(haveData);
 
-  wxString *label;
+  wxString label;
 
-  if ((label = m_radar_type_info.GetValue()) != 0) {
-    m_radar_off->SetLabel(_("Radar type") + wxT(" ") + *label);
-    m_message_sizer->Layout();
+  m_radar_type_info.GetValue(&label);
+  if (label.Len() > 0) {
+    wxString build_info;
+
+    m_build_info.GetValue(&build_info);
+    m_radar_off->SetLabel(_("Radar type") + wxT(" ") + label + wxT("\n") + build_info);
   }
 
-  if ((label = m_radar_addr_info.GetValue()) != 0) {
-    m_have_radar->SetLabel(_("Radar IP") + wxT(" ") + *label);
+  if (m_radar_addr_info.GetNewValue(&label)) {
+    m_have_radar->SetLabel(_("Radar IP") + wxT(" ") + label);
   }
-  if ((label = m_mcast_addr_info.GetValue()) != 0) {
-    m_ip_box->SetLabel(*label);
+  if (m_mcast_addr_info.GetNewValue(&label)) {
+    m_ip_box->SetLabel(label);
   }
-  if ((label = m_true_heading_info.GetValue()) != 0) {
-    m_have_true_heading->SetLabel(*label);
+  if (m_true_heading_info.GetNewValue(&label)) {
+    m_have_true_heading->SetLabel(label);
   }
-  if ((label = m_mag_heading_info.GetValue()) != 0) {
-    m_have_mag_heading->SetLabel(*label);
+  if (m_mag_heading_info.GetNewValue(&label)) {
+    m_have_mag_heading->SetLabel(label);
   }
-  if ((label = m_variation_info.GetValue()) != 0) {
-    m_have_variation->SetLabel(*label);
+  if (m_variation_info.GetNewValue(&label)) {
+    m_have_variation->SetLabel(label);
   }
-  if ((label = m_statistics_info.GetValue()) != 0) {
-    m_statistics->SetLabel(*label);
+  if (m_statistics_info.GetNewValue(&label)) {
+    m_statistics->SetLabel(label);
   }
 
   if (m_message_state != new_message_state || m_old_radar_seen != radarSeen) {
@@ -426,6 +429,9 @@ void br24MessageBox::SetRadarIPAddress(wxString &msg) {
   m_radar_addr_info.Update(msg);
 }
 
+void br24MessageBox::SetRadarBuildInfo(wxString &msg) {
+  m_build_info.Update(msg);
+}
 
 void br24MessageBox::SetRadarType(RadarType radar_type) {
   wxString s;
