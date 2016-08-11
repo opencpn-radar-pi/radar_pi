@@ -1009,23 +1009,37 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
 wxString RadarInfo::GetCanvasTextCenter() {
   wxString s;
 
-  if (m_state.value == RADAR_OFF) {
-    s << _("No radar");
-  } else if (m_state.value == RADAR_STANDBY) {
-    s << _("Radar is in Standby");
-    switch (m_radar_type) {
-      case RT_BR24:
-        s << wxT("\nBR24");
-        break;
-      case RT_4G:
-        s << wxT("\n4G");
-        break;
-      case RT_UNKNOWN:
-      default:
-        break;
-    }
-  } else if (!m_draw_panel.draw) {
-    s << _("Radar not transmitting");
+  switch (m_state.value) {
+    case RADAR_OFF:
+      s << _("No radar");
+      break;
+    case RADAR_STANDBY:
+      s << _("Radar is in Standby");
+      break;
+    case RADAR_WAKING_UP:
+      s << _("Radar is waking up");
+      break;
+    case RADAR_TRANSMIT:
+      if (m_draw_panel.draw) {
+        return s;
+      }
+      s << _("Radar not transmitting");
+      break;
+  }
+
+  switch (m_radar_type) {
+    case RT_BR24:
+      s << wxT("\nBR24");
+      break;
+    case RT_3G:
+      s << wxT("\n3G");
+      break;
+    case RT_4G:
+      s << wxT("\n4G");
+      break;
+    case RT_UNKNOWN:
+    default:
+      break;
   }
 
   return s;

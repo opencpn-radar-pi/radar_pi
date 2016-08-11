@@ -83,6 +83,7 @@ class br24MessageBox : public wxDialog {
   bool UpdateMessage(bool force);  // Check whether message box needs to be visible, return true if shown
   // void SetErrorMessage(wxString &msg);
   void SetRadarIPAddress(wxString &msg);
+  void SetRadarType(RadarType radar_type);
   void SetMcastIPAddress(wxString &msg);
   void SetTrueHeadingInfo(wxString &msg);
   void SetMagHeadingInfo(wxString &msg);
@@ -106,6 +107,7 @@ class br24MessageBox : public wxDialog {
 
   // radar_info_item m_error_message_info;
   radar_info_item m_radar_addr_info;
+  radar_info_item m_radar_type_info;
   radar_info_item m_mcast_addr_info;
   radar_info_item m_true_heading_info;
   radar_info_item m_mag_heading_info;

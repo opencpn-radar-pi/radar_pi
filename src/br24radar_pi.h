@@ -176,7 +176,8 @@ typedef enum GuardZoneType { GZ_OFF, GZ_ARC, GZ_CIRCLE } GuardZoneType;
 
 typedef enum RadarType {
   RT_UNKNOWN,
-  RT_BR24,  // 3G is just a fancy BR24
+  RT_BR24,
+  RT_3G,
   RT_4G
 } RadarType;
 
@@ -290,6 +291,7 @@ struct PersistentSettings {
   int threshold_blue;               // Radar data has to be this strong to show as WEAK
   int threshold_multi_sweep;        // Radar data has to be this strong not to be ignored in multisweep
   int main_bang_size;               // Pixels at center to ignore
+  int type_detection_method;        // 0 = default, 1 = ignore reports
   wxPoint control_pos[RADARS];      // Saved position of control menu windows
   wxPoint window_pos[RADARS];       // Saved position of radar windows, when floating and not docked
   wxPoint alarm_pos;                // Saved position of alarm window

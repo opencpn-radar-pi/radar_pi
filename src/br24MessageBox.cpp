@@ -332,8 +332,13 @@ bool br24MessageBox::UpdateMessage(bool force) {
 
   wxString *label;
 
+  if ((label = m_radar_type_info.GetValue()) != 0) {
+    m_radar_off->SetLabel(_("Radar type") + wxT(" ") + *label);
+    m_message_sizer->Layout();
+  }
+
   if ((label = m_radar_addr_info.GetValue()) != 0) {
-    m_have_radar->SetLabel(*label);
+    m_have_radar->SetLabel(_("Radar IP") + wxT(" ") + *label);
   }
   if ((label = m_mcast_addr_info.GetValue()) != 0) {
     m_ip_box->SetLabel(*label);
@@ -352,11 +357,7 @@ bool br24MessageBox::UpdateMessage(bool force) {
   }
 
   if (m_message_state != new_message_state || m_old_radar_seen != radarSeen) {
-    if (!radarSeen) {
-      m_radar_off->Show();
-    } else {
-      m_radar_off->Hide();
-    }
+
     if (radarOn && (navOn || no_overlay)) {
       m_error_message->SetLabel(_("Radar requirements OK:"));
     } else {
@@ -422,9 +423,27 @@ void br24MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
 }
 
 void br24MessageBox::SetRadarIPAddress(wxString &msg) {
-  wxString label;
-  label << _("Radar IP") << wxT(" ") << msg;
-  m_radar_addr_info.Update(label);
+  m_radar_addr_info.Update(msg);
+}
+
+
+void br24MessageBox::SetRadarType(RadarType radar_type) {
+  wxString s;
+
+  switch (radar_type) {
+    case RT_UNKNOWN:
+      break;
+    case RT_BR24:
+      s = wxT("BR24");
+      break;
+    case RT_3G:
+      s = wxT("3G");
+      break;
+    case RT_4G:
+      s = wxT("4G");
+      break;
+  }
+  m_radar_type_info.Update(s);
 }
 
 void br24MessageBox::SetMcastIPAddress(wxString &msg) {

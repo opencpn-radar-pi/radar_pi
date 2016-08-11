@@ -342,8 +342,13 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
 
   br24OptionsDialog dlg(parent, m_settings, m_radar[0]->m_radar_type);
   if (dlg.ShowModal() == wxID_OK) {
+    bool old_emulator = m_settings.emulator_on;
     m_settings = dlg.GetSettings();
     SaveConfig();
+    if (!m_settings.emulator_on && old_emulator) { // If the *OLD* setting had emulator on, re-detect radar type
+      m_radar[0]->m_radar_type = RT_UNKNOWN;
+      m_radar[1]->m_radar_type = RT_UNKNOWN;
+    }
     if (m_settings.enable_dual_radar) {
       m_radar[0]->SetName(_("Radar A"));
       m_radar[1]->StartReceive();
@@ -680,7 +685,7 @@ void br24radar_pi::Notify(void) {
 
   time_t now = time(0);
 
-  if (m_radar[0]->m_radar_type == RT_BR24) {
+  if (m_radar[0]->m_radar_type != RT_4G) {
     m_settings.enable_dual_radar = 0;
   }
 

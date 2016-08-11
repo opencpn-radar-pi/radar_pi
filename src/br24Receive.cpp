@@ -211,9 +211,10 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
       angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
       range_meters = (int)((double)range_raw * 10.0 / sqrt(2.0));
-      if (m_ri->m_radar_type != RT_BR24) {
+      if (m_ri->m_radar_type == RT_UNKNOWN) {
         LOG_INFO(wxT("BR24radar_pi: %s is Navico type BR24 or 3G"), m_ri->m_name.c_str());
         m_ri->m_radar_type = RT_BR24;
+        m_pi->m_pMessageBox->SetRadarType(RT_BR24);
       }
     } else {
       // 4G mode
@@ -233,13 +234,14 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       if (m_ri->m_radar_type != RT_4G) {
         LOG_INFO(wxT("BR24radar_pi: %s is Navico type 4G"), m_ri->m_name.c_str());
         m_ri->m_radar_type = RT_4G;
+        m_pi->m_pMessageBox->SetRadarType(RT_4G);
       }
     }
 
-#if 0
-    IF_LOG_AT(LOGLEVEL_RECEIVE, logBinaryData(wxString::Format(wxT("range=%d, angle=%d hdg=%hd"), range_raw, angle_raw, heading_raw),
-                                              (uint8_t *)&line->common, sizeof(line->common)));
-#endif
+    if (angle_raw < 2) {
+      IF_LOG_AT(LOGLEVEL_RECEIVE, logBinaryData(wxString::Format(wxT("range=%d, angle=%d hdg=%hd"), range_raw, angle_raw, heading_raw),
+                                                (uint8_t *)&line->br24, sizeof(line->br24)));
+    }
 
     bool radar_heading_valid = HEADING_VALID(heading_raw);
     bool radar_heading_true = (heading_raw * HEADING_TRUE_FLAG) != 0;
@@ -297,7 +299,8 @@ void br24Receive::EmulateFakeBuffer(void) {
   int range_meters = 2308;
   int display_range_meters = 1500;
   int spots = 0;
-  m_ri->m_radar_type = RT_4G;
+  m_ri->m_radar_type = RT_4G; // Fake for emulator
+  m_pi->m_pMessageBox->SetRadarType(RT_4G);
   m_ri->m_range.Update(display_range_meters);
 
   for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
@@ -638,12 +641,39 @@ void *br24Receive::Entry(void) {
   return 0;
 }
 
+/*
+ RADAR REPORTS
+ 
+ The radars send various reports. The first 2 bytes indicate what the report type is.
+ The types seen on a BR24 are:
+ 
+ 2nd byte C4:   01 02 03 04 05 07 08
+ 2nd byte F5:   08 0C 0D 0F 10 11 12 13 14
+ 
+ Not definitive list for 
+ 4G radars only send the C4 data.
+ 
+*/
+
 //
 // The following is the received radar state. It sends this regularly
 // but especially after something sends it a state change.
 //
 #pragma pack(push, 1)
-struct radar_state02 {
+
+struct RadarReport_01C4_18 {  // 01 C4 with length 18
+  UINT8 what;              // 0   0x01
+  UINT8 command;           // 1   0xC4
+  UINT8 radar_status;      // 2
+  UINT8 field3;            // 3
+  UINT8 field4;            // 4
+  UINT8 field5;            // 5
+  UINT16 field6;           // 6-7
+  UINT16 field8;           // 8-9
+  UINT16 field10;          // 10-11
+};
+
+struct RadarReport_02C4_99 { // length 99
   UINT8 what;                    // 0   0x02
   UINT8 command;                 // 1 0xC4
   UINT32 range;                  //  2-3   0x06 0x09
@@ -665,22 +695,20 @@ struct radar_state02 {
   UINT8 field35;                 // 35
   UINT8 field36;                 // 36
   UINT8 field37;                 // 37
-  UINT8 target_expansion;
+  UINT8 target_expansion; // 38
   UINT8 field39;       // 39
   UINT8 field40;       // 40
   UINT8 field41;       // 41
   UINT8 target_boost;  // 42
-  UINT16 field8a;
-  UINT32 field8b;
-  UINT32 field9;
-  UINT32 field10;
-  UINT32 field11;
-  UINT32 field12;
-  UINT32 field13x;
-  UINT32 field14x;
 };
 
-struct radar_state04_66 {    // 04 C4 with length 66
+struct RadarReport_03C4_129 {
+  UINT8 what;
+  UINT8 command;
+  UINT8 radar_type; // I hope! 01 = 4G, 08 = 3G, 0F = BR24
+};
+
+struct RadarReport_04C4_66 {    // 04 C4 with length 66
   UINT8 what;                // 0   0x04
   UINT8 command;             // 1   0xC4
   UINT32 field2;             // 2-5
@@ -689,19 +717,7 @@ struct radar_state04_66 {    // 04 C4 with length 66
   UINT16 antenna_height;     // 10-11
 };
 
-struct radar_state01_18 {  // 01 C4 with length 18
-  UINT8 what;              // 0   0x01
-  UINT8 command;           // 1   0xC4
-  UINT8 radar_status;      // 2
-  UINT8 field3;            // 3
-  UINT8 field4;            // 4
-  UINT8 field5;            // 5
-  UINT16 field6;           // 6-7
-  UINT16 field8;           // 8-9
-  UINT16 field10;          // 10-11
-};
-
-struct radar_state08_18 {              // 08 c4  length 18
+struct RadarReport_08C4_18 {              // 08 c4  length 18
   UINT8 what;                          // 0  0x08
   UINT8 command;                       // 1  0xC4
   UINT8 field2;                        // 2
@@ -721,11 +737,19 @@ struct radar_state08_18 {              // 08 c4  length 18
 bool br24Receive::ProcessReport(const UINT8 *report, int len) {
   IF_LOG_AT(LOGLEVEL_RECEIVE, logBinaryData(wxT("ProcessReport"), report, len));
 
+  if (m_ri->m_radar == 1) {
+    if (m_ri->m_radar_type != RT_4G) {
+      LOG_INFO(wxT("BR24radar_pi: Radar report from 2nd radar tells us this a Navico 4G"));
+      m_ri->m_radar_type = RT_4G;
+      m_pi->m_pMessageBox->SetRadarType(RT_4G);
+    }
+  }
+
   if (report[1] == 0xC4) {
     // Looks like a radar report. Is it a known one?
     switch ((len << 8) + report[0]) {
       case (18 << 8) + 0x01: {  //  length 18, 01 C4
-        radar_state01_18 *s = (radar_state01_18 *)report;
+        RadarReport_01C4_18 *s = (RadarReport_01C4_18 *)report;
         // Radar status in byte 2
         if (s->radar_status != m_radar_status) {
           switch (report[2]) {
@@ -750,7 +774,7 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
       }
 
       case (99 << 8) + 0x02: {  // length 99, 02 C4
-        radar_state02 *s = (radar_state02 *)report;
+        RadarReport_02C4_99 *s = (RadarReport_02C4_99 *)report;
         if (s->field8 == 1) {       // 1 for auto
           m_ri->m_gain.Update(-1);  // auto gain
         } else {
@@ -773,16 +797,75 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
         break;
       }
 
+      case (129 << 8) + 0x03: {  // 129 bytes starting with 03 C4
+        if (m_pi->m_settings.verbose >= 2) {
+          logBinaryData(wxT("received RadarReport_03C4_129"), report, len);
+        }
+        RadarReport_03C4_129 *s = (RadarReport_03C4_129 *)report;
+
+        switch (s->radar_type) {
+          case 0x0f:
+            if (m_ri->m_radar_type == RT_UNKNOWN) {
+              LOG_INFO(wxT("BR24radar_pi: Radar report tells us this a Navico BR24"));
+              m_ri->m_radar_type = RT_BR24;
+              m_pi->m_pMessageBox->SetRadarType(RT_BR24);
+            }
+            break;
+          case 0x08:
+            if (m_ri->m_radar_type == RT_UNKNOWN || m_ri->m_radar_type == RT_BR24) {
+              LOG_INFO(wxT("BR24radar_pi: Radar report tells us this a Navico 3G"));
+              m_ri->m_radar_type = RT_3G;
+              m_pi->m_pMessageBox->SetRadarType(RT_3G);
+            }
+            break;
+          case 0x01:
+            if (m_ri->m_radar_type == RT_UNKNOWN) {
+              LOG_INFO(wxT("BR24radar_pi: Radar report tells us this a Navico 4G"));
+              m_ri->m_radar_type = RT_4G;
+              m_pi->m_pMessageBox->SetRadarType(RT_4G);
+            }
+            break;
+          default:
+            LOG_INFO(wxT("BR24radar_pi: Unknown radar_type %u"), s->radar_type);
+        }
+
+        break;
+      }
+
+      case (66 << 8) + 0x04: {  // 66 bytes starting with 04 C4
+        if (m_pi->m_settings.verbose >= 2) {
+          logBinaryData(wxT("received RadarReport_04C4_66"), report, len);
+        }
+        RadarReport_04C4_66 *data = (RadarReport_04C4_66 *)report;
+
+        // bearing alignment
+        int ba = (int)data->bearing_alignment / 10;
+        if (ba > 180) {
+          ba = ba - 360;
+        }
+        m_ri->m_bearing_alignment.Update(ba);
+
+        // antenna height
+        m_ri->m_antenna_height.Update(data->antenna_height / 1000);
+        break;
+      }
+        
+
+
       case (564 << 8) + 0x05: {  // length 564, 05 C4
         // Content unknown, but we know that BR24 radomes send this
         LOG_RECEIVE(wxT("received familiar BR24 report"), report, len);
-        m_ri->m_radar_type = RT_BR24;
+        if (m_ri->m_radar_type == RT_UNKNOWN) {
+          LOG_INFO(wxT("BR24radar_pi: Radar report tells us this a Navico BR24"));
+          m_ri->m_radar_type = RT_BR24;
+          m_pi->m_pMessageBox->SetRadarType(RT_BR24);
+        }
         break;
       }
 
       case (18 << 8) + 0x08: {  // length 18, 08 C4
         // contains scan speed, noise rejection and target_separation and sidelobe suppression
-        radar_state08_18 *s08 = (radar_state08_18 *)report;
+        RadarReport_08C4_18 *s08 = (RadarReport_08C4_18 *)report;
 
         IF_LOG_AT(LOGLEVEL_RECEIVE, logBinaryData(wxString::Format(wxT("scanspeed= %d, noise = %u target_sep %u"), s08->scan_speed,
                                                                    s08->noise_rejection, s08->target_sep),
@@ -798,29 +881,10 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
         m_ri->m_local_interference_rejection.Update(s08->local_interference_rejection);
 
         if (m_pi->m_settings.verbose >= 2) {
-          logBinaryData(wxT("received report_08"), report, len);
+          logBinaryData(wxT("received RadarReport_08C4_18"), report, len);
         }
         break;
       }
-
-      case (66 << 8) + 0x04: {  // 66 bytes starting with 04 C4
-        if (m_pi->m_settings.verbose >= 2) {
-          logBinaryData(wxT("received report_04"), report, len);
-        }
-        radar_state04_66 *s04_66 = (radar_state04_66 *)report;
-
-        // bearing alignment
-        int ba = (int)s04_66->bearing_alignment / 10;
-        if (ba > 180) {
-          ba = ba - 360;
-        }
-        m_ri->m_bearing_alignment.Update(ba);
-
-        // antenna height
-        m_ri->m_antenna_height.Update(s04_66->antenna_height / 1000);
-        break;
-      }
-
       default: {
         if (m_pi->m_settings.verbose >= 2) {
           logBinaryData(wxT("received unknown report"), report, len);
@@ -836,7 +900,12 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
         if (m_pi->m_settings.verbose >= 2) {
           logBinaryData(wxT("received BR24 report"), report, len);
         }
-        m_ri->m_radar_type = RT_BR24;
+        if (m_ri->m_radar_type == RT_UNKNOWN) {
+          LOG_INFO(wxT("BR24radar_pi: Radar report tells us this a Navico BR24"));
+          m_ri->m_radar_type = RT_BR24;
+          m_pi->m_pMessageBox->SetRadarType(RT_BR24);
+        }
+
         break;
 
       case (8 << 8) + 0x10:
