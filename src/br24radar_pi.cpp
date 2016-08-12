@@ -685,7 +685,7 @@ void br24radar_pi::Notify(void) {
 
   time_t now = time(0);
 
-  if (m_radar[0]->m_radar_type != RT_4G) {
+  if (m_radar[0]->m_radar_type == RT_3G || m_radar[0]->m_radar_type == RT_BR24) {
     m_settings.enable_dual_radar = 0;
   }
 
