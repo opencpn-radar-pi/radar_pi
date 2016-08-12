@@ -437,7 +437,7 @@ void br24ControlsDialog::CreateControls() {
 
   wxStaticText* testMessage =
       new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  testMessage->SetFont(m_pi->m_fat_font);
+  testMessage->SetFont(m_pi->m_font);
   testBox->Add(testMessage, 0, wxALL, 2);
 
   wxStaticText* testButtonText =
@@ -452,7 +452,7 @@ void br24ControlsDialog::CreateControls() {
 
   m_top_sizer->Fit(this);
   m_top_sizer->Layout();
-  int width = m_top_sizer->GetSize().GetWidth() + 10;
+  int width = m_top_sizer->GetSize().GetWidth() + 20;
 
   wxSize bestSize = GetBestSize();
   if (width < bestSize.GetWidth()) {
