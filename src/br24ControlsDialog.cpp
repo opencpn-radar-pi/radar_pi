@@ -1210,7 +1210,17 @@ void br24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) {
 void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
   m_pi->m_settings.timed_idle = 0;
-  m_ri->FlipRadarState();
+  switch (m_ri->m_state.value) {
+    case RADAR_OFF:
+    case RADAR_WAKING_UP:
+      break;
+    case RADAR_STANDBY:
+      m_ri->RequestRadarState(RADAR_TRANSMIT);
+      break;
+    case RADAR_TRANSMIT:
+      m_ri->RequestRadarState(RADAR_STANDBY);
+      break;
+  }
 }
 
 void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) { m_ri->ClearTrails(); }
@@ -1250,13 +1260,6 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   o = _("Standby / Transmit");
   o << wxT("\n");
   if (m_pi->m_settings.timed_idle == 0) {
-#if 0
-    if (m_ri->m_wanted_state.GetButton(0)) {
-      m_radar_state->SetFont(m_pi->m_fat_font);
-    } else {
-      m_radar_state->SetFont(m_pi->m_font);
-    }
-#endif
     switch (state) {
       case RADAR_OFF:
         o << _("Off");

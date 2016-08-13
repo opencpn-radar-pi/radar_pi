@@ -239,8 +239,9 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     }
 
     if (angle_raw < 2) {
-      IF_LOG_AT(LOGLEVEL_RECEIVE, logBinaryData(wxString::Format(wxT("range=%d, angle=%d hdg=%hd"), range_raw, angle_raw, heading_raw),
-                                                (uint8_t *)&line->br24, sizeof(line->br24)));
+      IF_LOG_AT(LOGLEVEL_RECEIVE,
+                logBinaryData(wxString::Format(wxT("range=%d, angle=%d hdg=%hd"), range_raw, angle_raw, heading_raw),
+                              (uint8_t *)&line->br24, sizeof(line->br24)));
     }
 
     bool radar_heading_valid = HEADING_VALID(heading_raw);
@@ -282,16 +283,17 @@ void br24Receive::EmulateFakeBuffer(void) {
   time_t now = time(0);
   UINT8 data[RETURNS_PER_LINE];
 
-  if (m_ri->m_wanted_state.value != RADAR_TRANSMIT) {
-    m_ri->m_state.Update(RADAR_STANDBY);
-    m_ri->m_radar_timeout = time(0) + WATCHDOG_TIMEOUT;
+  m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
+
+  if (m_ri->m_state.value != RADAR_TRANSMIT) {
+    if (m_ri->m_state.value == RADAR_OFF) {
+      m_ri->m_state.value = RADAR_STANDBY;
+    }
     return;
   }
 
   m_ri->m_statistics.packets++;
-  m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
   m_ri->m_data_timeout = now + WATCHDOG_TIMEOUT;
-  m_ri->m_state.Update(RADAR_TRANSMIT);
 
   m_next_rotation = (m_next_rotation + 1) % SPOKES;
 
@@ -299,7 +301,7 @@ void br24Receive::EmulateFakeBuffer(void) {
   int range_meters = 2308;
   int display_range_meters = 1500;
   int spots = 0;
-  m_ri->m_radar_type = RT_4G; // Fake for emulator
+  m_ri->m_radar_type = RT_4G;  // Fake for emulator
   m_pi->m_pMessageBox->SetRadarType(RT_4G);
   m_ri->m_range.Update(display_range_meters);
 
@@ -474,6 +476,11 @@ void *br24Receive::Entry(void) {
           commandSocket = GetNewCommandSocket();
         }
       }
+    } else {
+      if (reportSocket != INVALID_SOCKET) {
+        closesocket(reportSocket);
+        reportSocket = INVALID_SOCKET;
+      }
     }
 
     struct timeval tv = {(long)0, (long)(MILLIS_PER_SELECT * 1000)};
@@ -643,16 +650,16 @@ void *br24Receive::Entry(void) {
 
 /*
  RADAR REPORTS
- 
+
  The radars send various reports. The first 2 bytes indicate what the report type is.
  The types seen on a BR24 are:
- 
+
  2nd byte C4:   01 02 03 04 05 07 08
  2nd byte F5:   08 0C 0D 0F 10 11 12 13 14
- 
- Not definitive list for 
+
+ Not definitive list for
  4G radars only send the C4 data.
- 
+
 */
 
 //
@@ -662,18 +669,18 @@ void *br24Receive::Entry(void) {
 #pragma pack(push, 1)
 
 struct RadarReport_01C4_18 {  // 01 C4 with length 18
-  UINT8 what;              // 0   0x01
-  UINT8 command;           // 1   0xC4
-  UINT8 radar_status;      // 2
-  UINT8 field3;            // 3
-  UINT8 field4;            // 4
-  UINT8 field5;            // 5
-  UINT16 field6;           // 6-7
-  UINT16 field8;           // 8-9
-  UINT16 field10;          // 10-11
+  UINT8 what;                 // 0   0x01
+  UINT8 command;              // 1   0xC4
+  UINT8 radar_status;         // 2
+  UINT8 field3;               // 3
+  UINT8 field4;               // 4
+  UINT8 field5;               // 5
+  UINT16 field6;              // 6-7
+  UINT16 field8;              // 8-9
+  UINT16 field10;             // 10-11
 };
 
-struct RadarReport_02C4_99 { // length 99
+struct RadarReport_02C4_99 {     // length 99
   UINT8 what;                    // 0   0x02
   UINT8 command;                 // 1 0xC4
   UINT32 range;                  //  2-3   0x06 0x09
@@ -695,33 +702,33 @@ struct RadarReport_02C4_99 { // length 99
   UINT8 field35;                 // 35
   UINT8 field36;                 // 36
   UINT8 field37;                 // 37
-  UINT8 target_expansion; // 38
-  UINT8 field39;       // 39
-  UINT8 field40;       // 40
-  UINT8 field41;       // 41
-  UINT8 target_boost;  // 42
+  UINT8 target_expansion;        // 38
+  UINT8 field39;                 // 39
+  UINT8 field40;                 // 40
+  UINT8 field41;                 // 41
+  UINT8 target_boost;            // 42
 };
 
 struct RadarReport_03C4_129 {
   UINT8 what;
   UINT8 command;
-  UINT8 radar_type; // I hope! 01 = 4G, 08 = 3G, 0F = BR24
-  UINT8 u00[55];    // Lots of unknown
+  UINT8 radar_type;  // I hope! 01 = 4G, 08 = 3G, 0F = BR24
+  UINT8 u00[55];     // Lots of unknown
   UINT16 firmware_date[16];
   UINT16 firmware_time[16];
   UINT8 u01[7];
 };
 
-struct RadarReport_04C4_66 {    // 04 C4 with length 66
-  UINT8 what;                // 0   0x04
-  UINT8 command;             // 1   0xC4
-  UINT32 field2;             // 2-5
-  UINT16 bearing_alignment;  // 6-7
-  UINT16 field8;             // 8-9
-  UINT16 antenna_height;     // 10-11
+struct RadarReport_04C4_66 {  // 04 C4 with length 66
+  UINT8 what;                 // 0   0x04
+  UINT8 command;              // 1   0xC4
+  UINT32 field2;              // 2-5
+  UINT16 bearing_alignment;   // 6-7
+  UINT16 field8;              // 8-9
+  UINT16 antenna_height;      // 10-11
 };
 
-struct RadarReport_08C4_18 {              // 08 c4  length 18
+struct RadarReport_08C4_18 {           // 08 c4  length 18
   UINT8 what;                          // 0  0x08
   UINT8 command;                       // 1  0xC4
   UINT8 field2;                        // 2
@@ -738,9 +745,9 @@ struct RadarReport_08C4_18 {              // 08 c4  length 18
 };
 #pragma pack(pop)
 
-static void AppendChar16String(wxString &dest, UINT16 * src) {
-  for (;*src; src++) {
-    wchar_t wc = (wchar_t) *src;
+static void AppendChar16String(wxString &dest, UINT16 *src) {
+  for (; *src; src++) {
+    wchar_t wc = (wchar_t)*src;
     dest << wc;
   }
 }
@@ -810,8 +817,7 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
 
       case (129 << 8) + 0x03: {  // 129 bytes starting with 03 C4
         RadarReport_03C4_129 *s = (RadarReport_03C4_129 *)report;
-        LOG_RECEIVE(wxT("BR24radar_pi: %s RadarReport_03C4_129 radar_type=%u"),
-                    m_ri->m_name.c_str(), s->radar_type);
+        LOG_RECEIVE(wxT("BR24radar_pi: %s RadarReport_03C4_129 radar_type=%u"), m_ri->m_name.c_str(), s->radar_type);
 
         switch (s->radar_type) {
           case 0x0f:
@@ -869,8 +875,6 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
         m_ri->m_antenna_height.Update(data->antenna_height / 1000);
         break;
       }
-        
-
 
       case (564 << 8) + 0x05: {  // length 564, 05 C4
         // Content unknown, but we know that BR24 radomes send this
@@ -957,12 +961,10 @@ void br24Receive::ProcessCommand(wxString &addr, const UINT8 *command, int len) 
 
   if (len == 3 && memcmp(command, COMMAND_TX_ON_B, sizeof(COMMAND_TX_ON_B)) == 0) {
     LOG_VERBOSE(wxT("BR24radar_pi: %s received transmit on from %s"), m_ri->m_name.c_str(), addr.c_str());
-    m_ri->m_state.Update(RADAR_TRANSMIT);
-    m_ri->m_wanted_state.Update(RADAR_TRANSMIT);
+    // m_ri->m_state.Update(RADAR_TRANSMIT);
   } else if (len == 3 && memcmp(command, COMMAND_TX_OFF_B, sizeof(COMMAND_TX_OFF_B)) == 0) {
     LOG_VERBOSE(wxT("BR24radar_pi: %s received transmit off from %s"), m_ri->m_name.c_str(), addr.c_str());
-    m_ri->m_state.Update(RADAR_STANDBY);
-    m_ri->m_wanted_state.Update(RADAR_STANDBY);
+    // m_ri->m_state.Update(RADAR_STANDBY);
   } else if (len == 6 && command[0] == 0x03 && command[1] == 0xc1) {
     UINT32 range = *((UINT32 *)&command[2]);
     LOG_VERBOSE(wxT("BR24radar_pi: %s received range request for %u meters from %s"), m_ri->m_name.c_str(), range / 10,
