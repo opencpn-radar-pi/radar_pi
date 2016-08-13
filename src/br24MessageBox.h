@@ -47,7 +47,7 @@ class radar_info_item {
     value = v;
   };
 
-  bool GetNewValue(wxString * str) {
+  bool GetNewValue(wxString *str) {
     if (mod) {
       wxCriticalSectionLocker lock(m_exclusive);
 
@@ -58,7 +58,7 @@ class radar_info_item {
     return false;
   }
 
-  void GetValue(wxString * str) {
+  void GetValue(wxString *str) {
     wxCriticalSectionLocker lock(m_exclusive);
 
     *str = value;
@@ -126,7 +126,6 @@ class br24MessageBox : public wxDialog {
   message_status m_message_state;
   bool m_old_radar_seen;
   bool m_allow_auto_hide;
-
 
   wxBoxSizer *m_top_sizer;
   wxBoxSizer *m_nmea_sizer;

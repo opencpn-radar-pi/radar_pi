@@ -360,7 +360,6 @@ bool br24MessageBox::UpdateMessage(bool force) {
   }
 
   if (m_message_state != new_message_state || m_old_radar_seen != radarSeen) {
-
     if (radarOn && (navOn || no_overlay)) {
       m_error_message->SetLabel(_("Radar requirements OK:"));
     } else {
@@ -425,13 +424,9 @@ void br24MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
   m_pi->NotifyRadarWindowViz();
 }
 
-void br24MessageBox::SetRadarIPAddress(wxString &msg) {
-  m_radar_addr_info.Update(msg);
-}
+void br24MessageBox::SetRadarIPAddress(wxString &msg) { m_radar_addr_info.Update(msg); }
 
-void br24MessageBox::SetRadarBuildInfo(wxString &msg) {
-  m_build_info.Update(msg);
-}
+void br24MessageBox::SetRadarBuildInfo(wxString &msg) { m_build_info.Update(msg); }
 
 void br24MessageBox::SetRadarType(RadarType radar_type) {
   wxString s;
@@ -448,6 +443,9 @@ void br24MessageBox::SetRadarType(RadarType radar_type) {
     case RT_4G:
       s = wxT("4G");
       break;
+  }
+  if (m_pi->m_settings.emulator_on) {
+    s << wxT(" ") << _("Emulator");
   }
   m_radar_type_info.Update(s);
 }

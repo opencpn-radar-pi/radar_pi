@@ -63,6 +63,9 @@ class GuardZoneBogey;
 #define GUARD_ZONES (2)             // Could be increased if wanted
 #define BEARING_LINES (2)           // And these as well
 
+static const int SECONDS_PER_TIMED_IDLE_SETTING = 5 * 60;  // 5 minutes increment for each setting
+static const int SECONDS_PER_TRANSMIT_BURST = 30;
+
 #define OPENGL_ROTATION (-90.0)  // Difference between 'up' and OpenGL 'up'...
 
 #define ALL_RADARS(var, value) (((var)[0] == (value)) && ((var)[1] == (value)))
@@ -174,12 +177,7 @@ static string ControlTypeNames[CT_MAX] = {"Range",
 
 typedef enum GuardZoneType { GZ_OFF, GZ_ARC, GZ_CIRCLE } GuardZoneType;
 
-typedef enum RadarType {
-  RT_UNKNOWN,
-  RT_BR24,
-  RT_3G,
-  RT_4G
-} RadarType;
+typedef enum RadarType { RT_UNKNOWN, RT_BR24, RT_3G, RT_4G } RadarType;
 
 enum BlobColor {
   BLOB_NONE,
@@ -453,7 +451,7 @@ class br24radar_pi : public opencpn_plugin_112 {
   void PassHeadingToOpenCPN();
   void CacheSetToolbarToolBitmaps();
   void CheckTimedTransmit(RadarState state);
-  void SetDesiredStateAllRadars(RadarState desiredState);
+  void RequestStateAllRadars(RadarState state);
   void SetRadarWindowViz(bool reparent = false);
 
   wxCriticalSection m_exclusive;  // protects callbacks that come from multiple radars

@@ -127,8 +127,8 @@ class RadarInfo : public wxEvtHandler {
 
   /* User radar settings */
 
-  radar_control_item m_state;  // RadarState (observed)
-  radar_control_item m_wanted_state;
+  radar_control_item m_state;       // RadarState (observed)
+  radar_control_item m_boot_state;  // Can contain RADAR_TRANSMIT until radar is seen at boot
 
   radar_control_item m_orientation;  // 0 = Heading Up, 1 = North Up
 #define ORIENTATION_HEAD_UP (0)
@@ -225,13 +225,13 @@ class RadarInfo : public wxEvtHandler {
   void DeleteDialogs();
   void DeleteReceive();
   void UpdateTransmitState();
+  void RequestRadarState(RadarState state);
 
   bool IsPaneShown();
 
   void UpdateControlState(bool all);
   void ComputeColorMap();
   void ComputeTargetTrails();
-  void FlipRadarState();
   wxString &GetRangeText();
   const char *GetDisplayRangeStr(size_t idx);
   int GetDisplayRange() { return m_range.value; };

@@ -345,7 +345,7 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
     bool old_emulator = m_settings.emulator_on;
     m_settings = dlg.GetSettings();
     SaveConfig();
-    if (!m_settings.emulator_on && old_emulator) { // If the *OLD* setting had emulator on, re-detect radar type
+    if (!m_settings.emulator_on && old_emulator) {  // If the *OLD* setting had emulator on, re-detect radar type
       m_radar[0]->m_radar_type = RT_UNKNOWN;
       m_radar[1]->m_radar_type = RT_UNKNOWN;
     }
@@ -629,14 +629,9 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
   }
 }
 
-void br24radar_pi::SetDesiredStateAllRadars(RadarState desiredState) {
+void br24radar_pi::RequestStateAllRadars(RadarState state) {
   for (size_t r = 0; r < RADARS; r++) {
-    RadarState state = (RadarState)m_radar[r]->m_state.value;
-    if (state != RADAR_OFF) {
-      if (state != desiredState && !(state == RADAR_WAKING_UP && desiredState == RADAR_TRANSMIT)) {
-        m_radar[r]->FlipRadarState();
-      }
-    }
+    m_radar[r]->RequestRadarState(state);
   }
 }
 
@@ -647,9 +642,6 @@ void br24radar_pi::SetDesiredStateAllRadars(RadarState desiredState) {
  * If the OFF timer is running and has run out, stop the radar and start an ON timer.
  */
 void br24radar_pi::CheckTimedTransmit(RadarState state) {
-  static const int SECONDS_PER_TIMED_IDLE_SETTING = 5 * 60;  // 5 minutes increment for each setting
-  static const int SECONDS_PER_TRANSMIT_BURST = 30;
-
   if (m_settings.timed_idle == 0) {
     return;  // User does not want timed idle
   }
@@ -662,12 +654,12 @@ void br24radar_pi::CheckTimedTransmit(RadarState state) {
 
   if (state == RADAR_TRANSMIT) {
     if (TIMED_OUT(now, m_idle_standby)) {
-      SetDesiredStateAllRadars(RADAR_STANDBY);
+      RequestStateAllRadars(RADAR_STANDBY);
       m_idle_transmit = now + m_settings.timed_idle * SECONDS_PER_TIMED_IDLE_SETTING;
     }
   } else {
     if (TIMED_OUT(now, m_idle_transmit)) {
-      SetDesiredStateAllRadars(RADAR_TRANSMIT);
+      RequestStateAllRadars(RADAR_TRANSMIT);
       int burst = wxMax(m_settings.idle_run_time, SECONDS_PER_TRANSMIT_BURST);
       m_idle_standby = now + burst;
     }
@@ -930,7 +922,7 @@ bool br24radar_pi::LoadConfig(void) {
 
       for (int r = 0; r < RADARS; r++) {
         m_radar[r]->m_orientation.Update(0);
-        m_radar[r]->m_wanted_state.Update(0);
+        m_radar[r]->m_boot_state.Update(0);
         SetControlValue(r, CT_TARGET_TRAILS, 0);
         m_settings.show_radar[r] = true;
         LOG_DIALOG(wxT("BR24radar_pi: LoadConfig: show_radar[%d]=%d"), r, v);
@@ -959,7 +951,7 @@ bool br24radar_pi::LoadConfig(void) {
         pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
         m_radar[r]->m_orientation.Update(v);
         pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
-        m_radar[r]->m_wanted_state.Update(v);
+        m_radar[r]->m_boot_state.Update(v);
         pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
         SetControlValue(r, CT_TARGET_TRAILS, v);
         pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);

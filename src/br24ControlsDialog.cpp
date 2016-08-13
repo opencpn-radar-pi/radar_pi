@@ -54,6 +54,7 @@ enum {  // process ID's
   ID_REFRESHRATE,
   ID_SCAN_SPEED,
   ID_INSTALLATION,
+  ID_PREFERENCES,
   ID_TIMED_IDLE,
 
   ID_BEARING_ALIGNMENT,
@@ -122,6 +123,7 @@ EVT_BUTTON(ID_TARGET_SEPARATION, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_REFRESHRATE, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_SCAN_SPEED, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_INSTALLATION, br24ControlsDialog::OnInstallationButtonClick)
+EVT_BUTTON(ID_PREFERENCES, br24ControlsDialog::OnPreferencesButtonClick)
 EVT_BUTTON(ID_TIMED_IDLE, br24ControlsDialog::OnRadarControlButtonClick)
 
 EVT_BUTTON(ID_BEARING_ALIGNMENT, br24ControlsDialog::OnRadarControlButtonClick)
@@ -437,7 +439,7 @@ void br24ControlsDialog::CreateControls() {
 
   wxStaticText* testMessage =
       new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  testMessage->SetFont(m_pi->m_fat_font);
+  testMessage->SetFont(m_pi->m_font);
   testBox->Add(testMessage, 0, wxALL, 2);
 
   wxStaticText* testButtonText =
@@ -452,7 +454,7 @@ void br24ControlsDialog::CreateControls() {
 
   m_top_sizer->Fit(this);
   m_top_sizer->Layout();
-  int width = m_top_sizer->GetSize().GetWidth() + 10;
+  int width = m_top_sizer->GetSize().GetWidth() + 20;
 
   wxSize bestSize = GetBestSize();
   if (width < bestSize.GetWidth()) {
@@ -628,6 +630,11 @@ void br24ControlsDialog::CreateControls() {
   wxButton* bInstallation = new wxButton(this, ID_INSTALLATION, _("Installation"), wxDefaultPosition, g_smallButtonSize, 0);
   m_advanced_sizer->Add(bInstallation, 0, wxALL, BORDER);
   bInstallation->SetFont(m_pi->m_font);
+
+  // The PREFERENCES button
+  wxButton* bPreferences = new wxButton(this, ID_PREFERENCES, _("Preferences"), wxDefaultPosition, g_smallButtonSize, 0);
+  m_advanced_sizer->Add(bPreferences, 0, wxALL, BORDER);
+  bPreferences->SetFont(m_pi->m_font);
 
   m_top_sizer->Hide(m_advanced_sizer);
 
@@ -1103,6 +1110,8 @@ void br24ControlsDialog::OnViewButtonClick(wxCommandEvent& event) { SwitchTo(m_v
 
 void br24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event) { SwitchTo(m_installation_sizer, wxT("installation")); }
 
+void br24ControlsDialog::OnPreferencesButtonClick(wxCommandEvent& event) { m_pi->ShowPreferencesDialog(m_pi->m_parent_window); }
+
 void br24ControlsDialog::OnBearingButtonClick(wxCommandEvent& event) { SwitchTo(m_bearing_sizer, wxT("bearing")); }
 
 void br24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event) {
@@ -1210,7 +1219,17 @@ void br24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) {
 void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
   m_pi->m_settings.timed_idle = 0;
-  m_ri->FlipRadarState();
+  switch (m_ri->m_state.value) {
+    case RADAR_OFF:
+    case RADAR_WAKING_UP:
+      break;
+    case RADAR_STANDBY:
+      m_ri->RequestRadarState(RADAR_TRANSMIT);
+      break;
+    case RADAR_TRANSMIT:
+      m_ri->RequestRadarState(RADAR_STANDBY);
+      break;
+  }
 }
 
 void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) { m_ri->ClearTrails(); }
@@ -1250,13 +1269,6 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   o = _("Standby / Transmit");
   o << wxT("\n");
   if (m_pi->m_settings.timed_idle == 0) {
-#if 0
-    if (m_ri->m_wanted_state.GetButton(0)) {
-      m_radar_state->SetFont(m_pi->m_fat_font);
-    } else {
-      m_radar_state->SetFont(m_pi->m_font);
-    }
-#endif
     switch (state) {
       case RADAR_OFF:
         o << _("Off");

@@ -102,6 +102,7 @@ class br24ControlsDialog : public wxDialog {
   void OnAdvancedButtonClick(wxCommandEvent &event);
   void OnViewButtonClick(wxCommandEvent &event);
   void OnInstallationButtonClick(wxCommandEvent &event);
+  void OnPreferencesButtonClick(wxCommandEvent &event);
 
   void OnRadarGainButtonClick(wxCommandEvent &event);
 

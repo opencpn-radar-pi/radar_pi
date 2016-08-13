@@ -502,49 +502,74 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 void RadarInfo::UpdateTransmitState() {
   time_t now = time(0);
 
+  if (m_state.value == RADAR_TRANSMIT && TIMED_OUT(now, m_data_timeout)) {
+    m_state.Update(RADAR_STANDBY);
+    LOG_INFO(wxT("BR24radar_pi: %s data lost"), m_name.c_str());
+  }
   if (m_state.value == RADAR_STANDBY && TIMED_OUT(now, m_radar_timeout)) {
     static wxString empty;
 
     m_state.Update(RADAR_OFF);
     m_pi->m_pMessageBox->SetRadarIPAddress(empty);
-    LOG_INFO(wxT("BR24radar_pi: Lost %s presence"), m_name.c_str());
-  }
-  if (m_state.value == RADAR_TRANSMIT && TIMED_OUT(now, m_data_timeout)) {
-    m_state.Update(RADAR_STANDBY);
-    LOG_INFO(wxT("BR24radar_pi: Data Lost %s "), m_name.c_str());
-  }
-
-  if (!TIMED_OUT(now, m_stayalive_timeout) || !m_pi->IsRadarOnScreen(m_radar)) {
+    LOG_INFO(wxT("BR24radar_pi: %s lost presence"), m_name.c_str());
     return;
   }
 
-  if (m_wanted_state.value == RADAR_TRANSMIT) {
-    switch (m_state.value) {
-      case RADAR_OFF:
-      case RADAR_WAKING_UP:
-        break;
+  if (!m_pi->IsRadarOnScreen(m_radar)) {
+    return;
+  }
 
-      case RADAR_TRANSMIT:
-        m_transmit->RadarStayAlive();
-        break;
+  if (m_state.value == RADAR_TRANSMIT && TIMED_OUT(now, m_stayalive_timeout)) {
+    m_transmit->RadarStayAlive();
+    m_stayalive_timeout = now + STAYALIVE_TIMEOUT;
+  }
 
-      case RADAR_STANDBY:
-        m_transmit->RadarTxOn();
-        // Refresh radar immediately so that we generate draw mechanisms
-        if (m_pi->m_settings.chart_overlay == m_radar) {
-          GetOCPNCanvasWindow()->Refresh(false);
-        }
-        if (m_radar_panel) {
-          m_radar_panel->Refresh();
-        }
-        break;
-    }
-  } else {
-    if (m_state.value == RADAR_TRANSMIT) {
-      m_transmit->RadarTxOff();
+  // If we find we have a radar and the boot flag is still set, turn radar on
+  // Think about interaction with timed_transmit
+  if (m_boot_state.value == RADAR_TRANSMIT && m_state.value == RADAR_STANDBY) {
+    m_boot_state.Update(RADAR_OFF);
+    RequestRadarState(RADAR_TRANSMIT);
+  }
+}
+
+void RadarInfo::RequestRadarState(RadarState state) {
+  if (m_pi->IsRadarOnScreen(m_radar) && m_state.value != RADAR_OFF) {  // if radar is visible and detected
+    if (m_state.value != state && !(m_state.value == RADAR_WAKING_UP && state == RADAR_TRANSMIT)) {  // and change is wanted
+      time_t now = time(0);
+
+      switch (state) {
+        case RADAR_TRANSMIT:
+          if (m_pi->m_settings.emulator_on) {
+            m_state.Update(RADAR_TRANSMIT);
+          } else {
+            m_transmit->RadarTxOn();
+          }
+          // Refresh radar immediately so that we generate draw mechanisms
+          if (m_pi->m_settings.chart_overlay == m_radar) {
+            GetOCPNCanvasWindow()->Refresh(false);
+          }
+          if (m_radar_panel) {
+            m_radar_panel->Refresh();
+          }
+          m_pi->m_idle_standby = now + wxMax(m_pi->m_settings.idle_run_time, SECONDS_PER_TRANSMIT_BURST);
+          break;
+
+        case RADAR_STANDBY:
+          if (m_pi->m_settings.emulator_on) {
+            m_state.Update(RADAR_STANDBY);
+          } else {
+            m_transmit->RadarTxOff();
+          }
+          m_pi->m_idle_transmit = now + m_pi->m_settings.timed_idle * SECONDS_PER_TIMED_IDLE_SETTING;
+          break;
+
+        case RADAR_WAKING_UP:
+        case RADAR_OFF:
+          LOG_INFO(wxT("BR24radar_pi: %s unexpected status request %d"), m_name.c_str(), state);
+      }
+      m_stayalive_timeout = time(0) + STAYALIVE_TIMEOUT;
     }
   }
-  m_stayalive_timeout = now + STAYALIVE_TIMEOUT;
 }
 
 void RadarInfo::UpdateTrailPosition() {
@@ -879,19 +904,6 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
 
   glPopMatrix();
   glPopAttrib();
-}
-
-void RadarInfo::FlipRadarState() {
-  if (m_pi->IsRadarOnScreen(m_radar)) {
-    m_stayalive_timeout = 0;
-    if (m_state.button == RADAR_STANDBY) {
-      m_wanted_state.Update(RADAR_TRANSMIT);
-    } else {
-      m_wanted_state.Update(RADAR_STANDBY);
-    }
-    LOG_VERBOSE(wxT("BR24radar_pi: %s flip state to %d"), m_name.c_str(), m_wanted_state.value);
-    UpdateTransmitState();
-  }
 }
 
 wxString RadarInfo::GetCanvasTextTopLeft() {
