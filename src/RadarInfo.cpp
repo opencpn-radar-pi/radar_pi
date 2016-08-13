@@ -346,16 +346,25 @@ void RadarInfo::ComputeColorMap() {
   m_color_map_blue[BLOB_BLUE] = 255;
 
   if (m_pi->m_settings.display_option == 1 && m_target_trails.value > 0) {
-    GLubyte gray = 255;
-    static const GLubyte end_gray = 63;
-    static const GLubyte dec_gray = (gray - end_gray) / BLOB_HISTORY_COLORS;
+    float r1 = m_pi->m_settings.trail_start_colour.Red();
+    float g1 = m_pi->m_settings.trail_start_colour.Green();
+    float b1 = m_pi->m_settings.trail_start_colour.Blue();
+    float r2 = m_pi->m_settings.trail_end_colour.Red();
+    float g2 = m_pi->m_settings.trail_end_colour.Green();
+    float b2 = m_pi->m_settings.trail_end_colour.Blue();
+    float delta_r = (r2 - r1) / BLOB_HISTORY_COLORS;
+    float delta_g = (g2 - g1) / BLOB_HISTORY_COLORS;
+    float delta_b = (b2 - b1) / BLOB_HISTORY_COLORS;
+
     for (BlobColor history = BLOB_HISTORY_0; history <= BLOB_HISTORY_MAX; history = (BlobColor)(history + 1)) {
       m_color_map[history] = history;
 
-      m_color_map_red[history] = (GLubyte)gray;
-      m_color_map_green[history] = (GLubyte)gray;
-      m_color_map_blue[history] = (GLubyte)gray;
-      gray -= dec_gray;
+      m_color_map_red[history] = (GLubyte)r1;
+      m_color_map_green[history] = (GLubyte)g1;
+      m_color_map_blue[history] = (GLubyte)b1;
+      r1 += delta_r;
+      g1 += delta_g;
+      b1 += delta_b;
     }
   }
 }

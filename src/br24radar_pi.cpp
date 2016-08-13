@@ -906,6 +906,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
 bool br24radar_pi::LoadConfig(void) {
   wxFileConfig *pConf = m_pconfig;
   int v, x, y;
+  wxString s;
 
   if (pConf) {
     pConf->SetPath(wxT("Settings"));
@@ -952,6 +953,8 @@ bool br24radar_pi::LoadConfig(void) {
         m_radar[r]->m_orientation.Update(v);
         pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
         m_radar[r]->m_boot_state.Update(v);
+
+
         pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
         SetControlValue(r, CT_TARGET_TRAILS, v);
         pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);
@@ -1011,6 +1014,10 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("ThresholdGreen"), &m_settings.threshold_green, 100);
     pConf->Read(wxT("ThresholdMultiSweep"), &m_settings.threshold_multi_sweep, 20);
     pConf->Read(wxT("ThresholdRed"), &m_settings.threshold_red, 200);
+    pConf->Read(wxT("TrailColourStart"), &s, "rgb(255,255,255)");
+    m_settings.trail_start_colour = wxColour(s);
+    pConf->Read(wxT("TrailColourEnd"), &s, "rgb(63,63,63)");
+    m_settings.trail_end_colour = wxColour(s);
     pConf->Read(wxT("TrailsOnOverlay"), &m_settings.trails_on_overlay, false);
     pConf->Read(wxT("Transparency"), &m_settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
 
@@ -1061,6 +1068,8 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ThresholdGreen"), m_settings.threshold_green);
     pConf->Write(wxT("ThresholdMultiSweep"), m_settings.threshold_multi_sweep);
     pConf->Write(wxT("ThresholdRed"), m_settings.threshold_red);
+    pConf->Write(wxT("TrailColourStart"), m_settings.trail_start_colour.GetAsString());
+    pConf->Write(wxT("TrailColourEnd"), m_settings.trail_end_colour.GetAsString());
     pConf->Write(wxT("TrailsOnOverlay"), m_settings.trails_on_overlay);
     pConf->Write(wxT("Transparency"), m_settings.overlay_transparency);
     pConf->Write(wxT("VerboseLog"), m_settings.verbose);

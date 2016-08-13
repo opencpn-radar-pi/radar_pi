@@ -86,6 +86,7 @@ extern "C" {
 #include <wx/fileconf.h>
 #include <wx/glcanvas.h>
 #include <wx/mstream.h>
+#include <wx/clrpicker.h>
 #include <fstream>
 #include <stdint.h>
 

@@ -295,6 +295,8 @@ struct PersistentSettings {
   wxPoint alarm_pos;                // Saved position of alarm window
   wxString alert_audio_file;        // Filepath of alarm audio file. Must be WAV.
   wxString mcast_address;           // Saved address of radar. Used to speed up next boot.
+  wxColour trail_start_colour;      // Starting colour of a trail
+  wxColour trail_end_colour;        // Ending colour of a trail
 };
 
 struct scan_line {

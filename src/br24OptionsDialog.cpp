@@ -160,11 +160,42 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   m_MenuAutoHide->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnMenuAutoHideClick), NULL,
                           this);
 
+  // Target trails colours
+  
+      wxStaticBox *trailBox = new wxStaticBox(this, wxID_ANY, _("Target trails"));
+      wxStaticBoxSizer *trailSizer = new wxStaticBoxSizer(trailBox, wxVERTICAL);
+      DisplayOptionsBox->Add(trailSizer, 0, wxEXPAND | wxALL, border_size);
+
+      wxStaticText *trailStartText = new wxStaticText(this, wxID_ANY, _("Trail start color"));
+      trailSizer->Add(trailStartText, 0, wxALL, border_size);
+      m_TrailStartColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.trail_start_colour, wxDefaultPosition, wxSize(150,30));
+      m_TrailStartColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnTrailStartColourClick), NULL, this);
+      trailSizer->Add(m_TrailStartColour);
+
+      wxStaticText *trailEndText = new wxStaticText(this, wxID_ANY, _("Trail end color"));
+      trailSizer->Add(trailEndText, 0, wxALL, border_size);
+      m_TrailEndColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.trail_end_colour, wxDefaultPosition, wxSize(150,30));
+      m_TrailEndColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnTrailEndColourClick), NULL, this);
+      trailSizer->Add(m_TrailEndColour);
+      
+
   //  Options
   wxStaticBox *itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
   wxStaticBoxSizer *itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
   topSizer->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
 
+      m_EnableDualRadar = new wxCheckBox(this, wxID_ANY, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize,
+                                         wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+      itemStaticBoxSizerOptions->Add(m_EnableDualRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+      m_EnableDualRadar->SetValue(m_settings.enable_dual_radar);
+      m_EnableDualRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEnableDualRadarClick), NULL,
+                                 this);
+      if (radar_type == RT_4G) {
+        m_EnableDualRadar->Enable();
+      } else {
+        m_EnableDualRadar->Disable();
+      }
+      
   m_IgnoreHeading = new wxCheckBox(this, wxID_ANY, _("Ignore radar heading"), wxDefaultPosition, wxDefaultSize,
                                    wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   itemStaticBoxSizerOptions->Add(m_IgnoreHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
@@ -177,18 +208,6 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   itemStaticBoxSizerOptions->Add(m_PassHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
   m_PassHeading->SetValue(m_settings.pass_heading_to_opencpn);
   m_PassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnPassHeadingClick), NULL, this);
-
-  m_EnableDualRadar = new wxCheckBox(this, wxID_ANY, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize,
-                                     wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  itemStaticBoxSizerOptions->Add(m_EnableDualRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-  m_EnableDualRadar->SetValue(m_settings.enable_dual_radar);
-  m_EnableDualRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEnableDualRadarClick), NULL,
-                             this);
-  if (radar_type == RT_4G) {
-    m_EnableDualRadar->Enable();
-  } else {
-    m_EnableDualRadar->Disable();
-  }
 
   m_COGHeading = new wxCheckBox(this, wxID_ANY, _("Enable COG as heading"), wxDefaultPosition, wxDefaultSize,
                                 wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
@@ -246,6 +265,14 @@ void br24OptionsDialog::OnGuardZoneOnOverlayClick(wxCommandEvent &event) {
 
 void br24OptionsDialog::OnTrailsOnOverlayClick(wxCommandEvent &event) {
   m_settings.trails_on_overlay = m_TrailsOnOverlay->GetSelection() != 0;
+}
+
+void br24OptionsDialog::OnTrailStartColourClick(wxCommandEvent &event) {
+  m_settings.trail_start_colour = m_TrailStartColour->GetColour();
+}
+
+void br24OptionsDialog::OnTrailEndColourClick(wxCommandEvent &event) {
+  m_settings.trail_end_colour = m_TrailEndColour->GetColour();
 }
 
 void br24OptionsDialog::OnSelectSoundClick(wxCommandEvent &event) {
