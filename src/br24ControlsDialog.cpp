@@ -54,6 +54,7 @@ enum {  // process ID's
   ID_REFRESHRATE,
   ID_SCAN_SPEED,
   ID_INSTALLATION,
+  ID_PREFERENCES,
   ID_TIMED_IDLE,
 
   ID_BEARING_ALIGNMENT,
@@ -122,6 +123,7 @@ EVT_BUTTON(ID_TARGET_SEPARATION, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_REFRESHRATE, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_SCAN_SPEED, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_INSTALLATION, br24ControlsDialog::OnInstallationButtonClick)
+EVT_BUTTON(ID_PREFERENCES, br24ControlsDialog::OnPreferencesButtonClick)
 EVT_BUTTON(ID_TIMED_IDLE, br24ControlsDialog::OnRadarControlButtonClick)
 
 EVT_BUTTON(ID_BEARING_ALIGNMENT, br24ControlsDialog::OnRadarControlButtonClick)
@@ -629,6 +631,11 @@ void br24ControlsDialog::CreateControls() {
   m_advanced_sizer->Add(bInstallation, 0, wxALL, BORDER);
   bInstallation->SetFont(m_pi->m_font);
 
+  // The PREFERENCES button
+  wxButton* bPreferences = new wxButton(this, ID_PREFERENCES, _("Preferences"), wxDefaultPosition, g_smallButtonSize, 0);
+  m_advanced_sizer->Add(bPreferences, 0, wxALL, BORDER);
+  bPreferences->SetFont(m_pi->m_font);
+
   m_top_sizer->Hide(m_advanced_sizer);
 
   //**************** Installation BOX ******************//
@@ -1102,6 +1109,8 @@ void br24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event) { SwitchTo
 void br24ControlsDialog::OnViewButtonClick(wxCommandEvent& event) { SwitchTo(m_view_sizer, wxT("view")); }
 
 void br24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event) { SwitchTo(m_installation_sizer, wxT("installation")); }
+
+void br24ControlsDialog::OnPreferencesButtonClick(wxCommandEvent& event) { m_pi->ShowPreferencesDialog(m_pi->m_parent_window); }
 
 void br24ControlsDialog::OnBearingButtonClick(wxCommandEvent& event) { SwitchTo(m_bearing_sizer, wxT("bearing")); }
 
