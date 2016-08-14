@@ -163,7 +163,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   glLineWidth(1.0);
 
   for (int i = 1; i <= 4; i++) {
-    DrawArc(w / 2.0, h / 2.0, r * i * 0.25, 0.0, 2.0 * (float)PI, 360);
+    DrawArc(center_x, center_y, r * i * 0.25, 0.0, 2.0 * (float)PI, 360);
     const char *s = m_ri->GetDisplayRangeStr(i - 1);
     if (s) {
       m_FontNormal.RenderString(wxString::Format(wxT("%s"), s), center_x + x * (float)i, center_y + y * (float)i);
@@ -172,6 +172,14 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
 
   if (m_pi->m_heading_source != HEADING_NONE) {
     double heading = (m_ri->IsDisplayNorthUp() ? 0 : m_pi->m_hdt) + 180.;
+    double predictor = (m_ri->IsDisplayNorthUp() ? m_pi->m_hdt : 0) + 180.;
+
+    x = -sinf(deg2rad(predictor));
+    y = cosf(deg2rad(predictor));
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(center_x, center_y);
+    glVertex2f(center_x + x * r * 2, center_y + y * r * 2);
+    glEnd();
 
     for (int i = 0; i < 360; i += 5) {
       x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
