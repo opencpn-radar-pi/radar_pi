@@ -179,7 +179,7 @@ typedef enum GuardZoneType { GZ_OFF, GZ_ARC, GZ_CIRCLE } GuardZoneType;
 
 typedef enum RadarType { RT_UNKNOWN, RT_BR24, RT_3G, RT_4G } RadarType;
 
-enum BlobColor {
+enum BlobColour {
   BLOB_NONE,
   BLOB_HISTORY_0,
   BLOB_HISTORY_1,
@@ -213,12 +213,13 @@ enum BlobColor {
   BLOB_HISTORY_29,
   BLOB_HISTORY_30,
   BLOB_HISTORY_31,
-  BLOB_BLUE,
-  BLOB_GREEN,
-  BLOB_RED
+  BLOB_WEAK,
+  BLOB_INTERMEDIATE,
+  BLOB_STRONG
 };
 #define BLOB_HISTORY_MAX BLOB_HISTORY_31
-#define BLOB_HISTORY_COLORS (BLOB_HISTORY_MAX - BLOB_NONE)
+#define BLOB_HISTORY_COLOURS (BLOB_HISTORY_MAX - BLOB_NONE)
+#define BLOB_COLOURS (BLOB_STRONG+1)
 
 extern const char *convertRadarToString(int range_meters, int units, int index);
 extern double local_distance(double lat1, double lon1, double lat2, double lon2);
@@ -297,6 +298,9 @@ struct PersistentSettings {
   wxString mcast_address;           // Saved address of radar. Used to speed up next boot.
   wxColour trail_start_colour;      // Starting colour of a trail
   wxColour trail_end_colour;        // Ending colour of a trail
+  wxColour strong_colour;           // Colour for STRONG returns
+  wxColour intermediate_colour;     // Colour for INTERMEDIATE returns
+  wxColour weak_colour;             // Colour for WEAK returns
 };
 
 struct scan_line {

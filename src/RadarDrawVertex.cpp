@@ -90,9 +90,9 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
 }
 
 void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8* data, size_t len) {
-  GLubyte red, green, blue;
+  wxColour colour;
   GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
-  BlobColor previous_color = BLOB_NONE;
+  BlobColour previous_colour = BLOB_NONE;
   GLubyte strength = 0;
   time_t now = time(0);
 
@@ -127,37 +127,33 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
 
   for (size_t radius = 0; radius < len; radius++) {
     strength = data[radius];
-    BlobColor actual_color = m_ri->m_color_map[strength];
+    BlobColour actual_colour = m_ri->m_colour_map[strength];
 
-    if (actual_color == previous_color) {
+    if (actual_colour == previous_colour) {
       // continue with same color, just register it
       r_end++;
-    } else if (previous_color == BLOB_NONE && actual_color != BLOB_NONE) {
+    } else if (previous_colour == BLOB_NONE && actual_colour != BLOB_NONE) {
       // blob starts, no display, just register
       r_begin = radius;
       r_end = r_begin + 1;
-      previous_color = actual_color;  // new color
-    } else if (previous_color != BLOB_NONE && (previous_color != actual_color)) {
-      red = m_ri->m_color_map_red[previous_color];
-      green = m_ri->m_color_map_green[previous_color];
-      blue = m_ri->m_color_map_blue[previous_color];
+      previous_colour = actual_colour;  // new color
+    } else if (previous_colour != BLOB_NONE && (previous_colour != actual_colour)) {
+      colour = m_ri->m_colour_map_rgb[previous_colour];
 
-      SetBlob(line, angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
+      SetBlob(line, angle, angle + 1, r_begin, r_end, colour.Red(), colour.Green(), colour.Blue(), alpha);
 
-      previous_color = actual_color;
-      if (actual_color != BLOB_NONE) {  // change of color, start new blob
+      previous_colour = actual_colour;
+      if (actual_colour != BLOB_NONE) {  // change of color, start new blob
         r_begin = radius;
         r_end = r_begin + 1;
       }
     }
   }
 
-  if (previous_color != BLOB_NONE) {  // Draw final blob
-    red = m_ri->m_color_map_red[previous_color];
-    green = m_ri->m_color_map_green[previous_color];
-    blue = m_ri->m_color_map_blue[previous_color];
+  if (previous_colour != BLOB_NONE) {  // Draw final blob
+    colour = m_ri->m_colour_map_rgb[previous_colour];
 
-    SetBlob(line, angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
+    SetBlob(line, angle, angle + 1, r_begin, r_end, colour.Red(), colour.Green(), colour.Blue(), alpha);
   }
 }
 

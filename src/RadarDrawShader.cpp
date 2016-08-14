@@ -222,19 +222,19 @@ void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
     unsigned char *d = m_data + (angle * RETURNS_PER_LINE) * m_channels;
     for (size_t r = 0; r < len; r++) {
       GLubyte strength = data[r];
-      BlobColor color = m_ri->m_color_map[strength];
-      d[0] = m_ri->m_color_map_red[color];
-      d[1] = m_ri->m_color_map_green[color];
-      d[2] = m_ri->m_color_map_blue[color];
-      d[3] = color != BLOB_NONE ? alpha : 0;
+      BlobColour colour = m_ri->m_colour_map[strength];
+      d[0] = m_ri->m_colour_map_rgb[colour].Red();
+      d[1] = m_ri->m_colour_map_rgb[colour].Green();
+      d[2] = m_ri->m_colour_map_rgb[colour].Blue();
+      d[3] = colour != BLOB_NONE ? alpha : 0;
       d += m_channels;
     }
   } else {
     unsigned char *d = m_data + (angle * RETURNS_PER_LINE);
     for (size_t r = 0; r < len; r++) {
       GLubyte strength = data[r];
-      BlobColor color = m_ri->m_color_map[strength];
-      *d++ = (m_ri->m_color_map_red[color] * alpha) >> 8;
+      BlobColour colour = m_ri->m_colour_map[strength];
+      *d++ = (m_ri->m_colour_map_rgb[colour].Red() * alpha) >> 8;
     }
   }
 }

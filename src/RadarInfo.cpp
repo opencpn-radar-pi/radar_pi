@@ -247,7 +247,7 @@ bool RadarInfo::Init(wxString name, int verbose) {
 
   m_name = name;
 
-  ComputeColorMap();
+  ComputeColourMap();
 
   m_transmit = new br24Transmit(m_pi, name, m_radar);
 
@@ -321,29 +321,29 @@ void RadarInfo::StartReceive() {
   }
 }
 
-void RadarInfo::ComputeColorMap() {
+void RadarInfo::ComputeColourMap() {
   switch (m_pi->m_settings.display_option) {
     case 0:
       for (int i = 0; i <= UINT8_MAX; i++) {
-        m_color_map[i] = (i >= m_pi->m_settings.threshold_blue) ? BLOB_RED : BLOB_NONE;
+        m_colour_map[i] = (i >= m_pi->m_settings.threshold_blue) ? BLOB_STRONG : BLOB_NONE;
       }
       break;
     case 1:
       for (int i = 0; i <= UINT8_MAX; i++) {
-        m_color_map[i] =
-            (i >= m_pi->m_settings.threshold_red) ? BLOB_RED : (i >= m_pi->m_settings.threshold_green)
-                                                                   ? BLOB_GREEN
-                                                                   : (i >= m_pi->m_settings.threshold_blue) ? BLOB_BLUE : BLOB_NONE;
+        m_colour_map[i] =
+            (i >= m_pi->m_settings.threshold_red) ? BLOB_STRONG : (i >= m_pi->m_settings.threshold_green)
+                                                                   ? BLOB_INTERMEDIATE
+                                                                   : (i >= m_pi->m_settings.threshold_blue) ? BLOB_WEAK : BLOB_NONE;
       }
       break;
   }
 
-  memset(m_color_map_red, 0, sizeof(m_color_map_red));
-  memset(m_color_map_green, 0, sizeof(m_color_map_green));
-  memset(m_color_map_blue, 0, sizeof(m_color_map_blue));
-  m_color_map_red[BLOB_RED] = 255;
-  m_color_map_green[BLOB_GREEN] = 255;
-  m_color_map_blue[BLOB_BLUE] = 255;
+  for (int i = 0; i < BLOB_COLOURS; i++) {
+    m_colour_map_rgb[i] = wxColour(0, 0, 0);
+  }
+  m_colour_map_rgb[BLOB_STRONG] = m_pi->m_settings.strong_colour;
+  m_colour_map_rgb[BLOB_INTERMEDIATE] = m_pi->m_settings.intermediate_colour;
+  m_colour_map_rgb[BLOB_WEAK] = m_pi->m_settings.weak_colour;
 
   if (m_pi->m_settings.display_option == 1 && m_target_trails.value > 0) {
     float r1 = m_pi->m_settings.trail_start_colour.Red();
@@ -352,16 +352,14 @@ void RadarInfo::ComputeColorMap() {
     float r2 = m_pi->m_settings.trail_end_colour.Red();
     float g2 = m_pi->m_settings.trail_end_colour.Green();
     float b2 = m_pi->m_settings.trail_end_colour.Blue();
-    float delta_r = (r2 - r1) / BLOB_HISTORY_COLORS;
-    float delta_g = (g2 - g1) / BLOB_HISTORY_COLORS;
-    float delta_b = (b2 - b1) / BLOB_HISTORY_COLORS;
+    float delta_r = (r2 - r1) / BLOB_HISTORY_COLOURS;
+    float delta_g = (g2 - g1) / BLOB_HISTORY_COLOURS;
+    float delta_b = (b2 - b1) / BLOB_HISTORY_COLOURS;
 
-    for (BlobColor history = BLOB_HISTORY_0; history <= BLOB_HISTORY_MAX; history = (BlobColor)(history + 1)) {
-      m_color_map[history] = history;
+    for (BlobColour history = BLOB_HISTORY_0; history <= BLOB_HISTORY_MAX; history = (BlobColour)(history + 1)) {
+      m_colour_map[history] = history;
 
-      m_color_map_red[history] = (GLubyte)r1;
-      m_color_map_green[history] = (GLubyte)g1;
-      m_color_map_blue[history] = (GLubyte)b1;
+      m_colour_map_rgb[history] = wxColour(r1, g1, b1);
       r1 += delta_r;
       g1 += delta_g;
       b1 += delta_b;
@@ -480,7 +478,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
           if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
             (*trail)++;
           }
-          data[radius] = m_trail_color[*trail];
+          data[radius] = m_trail_colour[*trail];
         }
       }
     } else if (m_trails_motion.value == TARGET_MOTION_RELATIVE) {
@@ -492,7 +490,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
           if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
             (*trail)++;
           }
-          data[radius] = m_trail_color[*trail];
+          data[radius] = m_trail_colour[*trail];
         }
         trail++;
       }
@@ -1146,12 +1144,12 @@ void RadarInfo::ComputeTargetTrails() {
 
   TrailRevolutionsAge maxRev = maxRevs[m_target_trails.value];
   TrailRevolutionsAge revolution;
-  double colorsPerRevolution = BLOB_HISTORY_COLORS / (double)maxRev;
-  double color = 0.;
+  double coloursPerRevolution = BLOB_HISTORY_COLOURS / (double)maxRev;
+  double colour = 0.;
 
   // Like plotter, continuous trails are all very white (non transparent)
   if (m_target_trails.value == TRAIL_CONTINUOUS) {
-    colorsPerRevolution = 0.;
+    coloursPerRevolution = 0.;
   }
 
   LOG_VERBOSE(wxT("BR24radar_pi: Target trail value %d = %d revolutions"), m_target_trails.value, maxRev);
@@ -1159,10 +1157,10 @@ void RadarInfo::ComputeTargetTrails() {
   // Disperse the BLOB_HISTORY values over 0..maxrev
   for (revolution = 0; revolution <= TRAIL_MAX_REVOLUTIONS; revolution++) {
     if (revolution >= 1 && revolution <= maxRev) {
-      m_trail_color[revolution] = (BlobColor)(BLOB_HISTORY_0 + (int)color);
-      color += colorsPerRevolution;
+      m_trail_colour[revolution] = (BlobColour)(BLOB_HISTORY_0 + (int)colour);
+      colour += coloursPerRevolution;
     } else {
-      m_trail_color[revolution] = BLOB_NONE;
+      m_trail_colour[revolution] = BLOB_NONE;
     }
   }
 }

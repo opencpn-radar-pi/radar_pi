@@ -314,9 +314,9 @@ void br24Receive::EmulateFakeBuffer(void) {
     for (size_t range = 0; range < sizeof(data); range++) {
       size_t bit = range >> 7;
       // use bit 'bit' of angle_raw
-      UINT8 color = (((angle_raw + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
-      data[range] = color;
-      if (color > 0) {
+      UINT8 colour = (((angle_raw + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
+      data[range] = colour;
+      if (colour > 0) {
         spots++;
       }
     }

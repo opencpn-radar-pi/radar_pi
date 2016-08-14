@@ -357,7 +357,7 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
       ShowRadarControl(1, false);
     }
     for (size_t r = 0; r < RADARS; r++) {
-      m_radar[r]->ComputeColorMap();
+      m_radar[r]->ComputeColourMap();
       m_radar[r]->UpdateControlState(true);
     }
     if (!m_guard_bogey_confirmed && m_alarm_sound_timeout && m_settings.guard_zone_timeout) {
@@ -986,6 +986,12 @@ bool br24radar_pi::LoadConfig(void) {
 
     pConf->Read(wxT("AlertAudioFile"), &m_settings.alert_audio_file, m_shareLocn + wxT("alarm.wav"));
     pConf->Read(wxT("ChartOverlay"), &m_settings.chart_overlay, 0);
+    pConf->Read(wxT("ColourStrong"), &s, "rgb(255,0,0)");
+    m_settings.strong_colour = wxColour(s);
+    pConf->Read(wxT("ColourIntermediate"), &s, "rgb(0,255,0)");
+    m_settings.intermediate_colour = wxColour(s);
+    pConf->Read(wxT("ColourWeak"), &s, "rgb(0,0,255)");
+    m_settings.weak_colour = wxColour(s);
     pConf->Read(wxT("DisplayOption"), &m_settings.display_option, 1);
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
     pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
@@ -1246,7 +1252,7 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
     }
     case CT_TARGET_TRAILS: {
       m_radar[radar]->m_target_trails.Update(value);
-      m_radar[radar]->ComputeColorMap();
+      m_radar[radar]->ComputeColourMap();
       m_radar[radar]->ComputeTargetTrails();
       return true;
     }

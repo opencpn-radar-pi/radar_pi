@@ -160,8 +160,8 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   m_MenuAutoHide->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnMenuAutoHideClick), NULL,
                           this);
 
-  // Target trails colours
-  
+      // Target trails colours
+
       wxStaticBox *trailBox = new wxStaticBox(this, wxID_ANY, _("Target trails"));
       wxStaticBoxSizer *trailSizer = new wxStaticBoxSizer(trailBox, wxVERTICAL);
       DisplayOptionsBox->Add(trailSizer, 0, wxEXPAND | wxALL, border_size);
@@ -178,6 +178,30 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
       m_TrailEndColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnTrailEndColourClick), NULL, this);
       trailSizer->Add(m_TrailEndColour);
       
+      // Target trails colours
+
+      wxStaticBox *colourBox = new wxStaticBox(this, wxID_ANY, _("Target colors"));
+      wxStaticBoxSizer *colourSizer = new wxStaticBoxSizer(colourBox, wxVERTICAL);
+      DisplayOptionsBox->Add(colourSizer, 0, wxEXPAND | wxALL, border_size);
+
+      wxStaticText *weakText = new wxStaticText(this, wxID_ANY, _("Weak return color"));
+      colourSizer->Add(weakText, 0, wxALL, border_size);
+      m_WeakColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.weak_colour, wxDefaultPosition, wxSize(150,30));
+      m_WeakColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnWeakColourClick), NULL, this);
+      colourSizer->Add(m_WeakColour);
+
+      wxStaticText *intermediateText = new wxStaticText(this, wxID_ANY, _("Intermediate return color"));
+      colourSizer->Add(intermediateText, 0, wxALL, border_size);
+      m_IntermediateColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.intermediate_colour, wxDefaultPosition, wxSize(150,30));
+      m_IntermediateColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnIntermediateColourClick), NULL, this);
+      colourSizer->Add(m_IntermediateColour);
+
+      wxStaticText *strongText = new wxStaticText(this, wxID_ANY, _("Strong return color"));
+      colourSizer->Add(strongText, 0, wxALL, border_size);
+      m_StrongColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.strong_colour, wxDefaultPosition, wxSize(150,30));
+      m_StrongColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnStrongColourClick), NULL, this);
+      colourSizer->Add(m_StrongColour);
+
 
   //  Options
   wxStaticBox *itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
@@ -273,6 +297,18 @@ void br24OptionsDialog::OnTrailStartColourClick(wxCommandEvent &event) {
 
 void br24OptionsDialog::OnTrailEndColourClick(wxCommandEvent &event) {
   m_settings.trail_end_colour = m_TrailEndColour->GetColour();
+}
+
+void br24OptionsDialog::OnWeakColourClick(wxCommandEvent &event) {
+  m_settings.weak_colour = m_WeakColour->GetColour();
+}
+
+void br24OptionsDialog::OnIntermediateColourClick(wxCommandEvent &event) {
+  m_settings.intermediate_colour = m_IntermediateColour->GetColour();
+}
+
+void br24OptionsDialog::OnStrongColourClick(wxCommandEvent &event) {
+  m_settings.strong_colour = m_StrongColour->GetColour();
 }
 
 void br24OptionsDialog::OnSelectSoundClick(wxCommandEvent &event) {
