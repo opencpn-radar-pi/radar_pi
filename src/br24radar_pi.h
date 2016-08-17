@@ -219,7 +219,7 @@ enum BlobColour {
 };
 #define BLOB_HISTORY_MAX BLOB_HISTORY_31
 #define BLOB_HISTORY_COLOURS (BLOB_HISTORY_MAX - BLOB_NONE)
-#define BLOB_COLOURS (BLOB_STRONG+1)
+#define BLOB_COLOURS (BLOB_STRONG + 1)
 
 extern const char *convertRadarToString(int range_meters, int units, int index);
 extern double local_distance(double lat1, double lon1, double lat2, double lon2);
@@ -258,7 +258,6 @@ struct PersistentSettings {
   int overlay_transparency;
   int range_index;                  // index into range array, see RadarInfo.cpp
   int verbose;                      // Loglevel 0..4.
-  int display_option;               // Monocolor-red or Multi-color
   int guard_zone_threshold;         // How many blobs must be sent by radar before we fire alarm
   int guard_zone_render_style;      // 0 = Shading, 1 = Outline, 2 = Shading + Outline
   int guard_zone_timeout;           // How long before we warn again when bogeys are found

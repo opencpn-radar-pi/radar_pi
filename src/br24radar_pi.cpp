@@ -191,7 +191,6 @@ int br24radar_pi::Init(void) {
   m_settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
   m_settings.refreshrate = 1;
   m_settings.timed_idle = 0;
-  m_settings.display_option = 0;
   m_settings.threshold_blue = 255;
   m_settings.threshold_red = 255;
   m_settings.threshold_green = 255;
@@ -954,7 +953,6 @@ bool br24radar_pi::LoadConfig(void) {
         pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
         m_radar[r]->m_boot_state.Update(v);
 
-
         pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
         SetControlValue(r, CT_TARGET_TRAILS, v);
         pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);
@@ -992,7 +990,6 @@ bool br24radar_pi::LoadConfig(void) {
     m_settings.intermediate_colour = wxColour(s);
     pConf->Read(wxT("ColourWeak"), &s, "rgb(0,0,255)");
     m_settings.weak_colour = wxColour(s);
-    pConf->Read(wxT("DisplayOption"), &m_settings.display_option, 1);
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
     pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
     pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, false);
@@ -1027,7 +1024,6 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("TrailsOnOverlay"), &m_settings.trails_on_overlay, false);
     pConf->Read(wxT("Transparency"), &m_settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
 
-    m_settings.display_option = wxMax(wxMin(m_settings.display_option, 1), 0);
     m_settings.max_age = wxMax(wxMin(m_settings.max_age, MAX_AGE), MIN_AGE);
     m_settings.refreshrate = wxMax(wxMin(m_settings.refreshrate, 5), 1);
 
@@ -1048,7 +1044,6 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("AlarmPosY"), m_settings.alarm_pos.y);
     pConf->Write(wxT("AlertAudioFile"), m_settings.alert_audio_file);
     pConf->Write(wxT("ChartOverlay"), m_settings.chart_overlay);
-    pConf->Write(wxT("DisplayOption"), m_settings.display_option);
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
     pConf->Write(wxT("EmulatorOn"), m_settings.emulator_on);
     pConf->Write(wxT("EnableCOGHeading"), m_settings.enable_cog_heading);

@@ -55,7 +55,7 @@ class RadarDrawShader : public RadarDraw {
 
   ~RadarDrawShader();
 
-  bool Init(int color_option);
+  bool Init();
   void DrawRadarImage();
   void ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8* data, size_t len);
 

@@ -44,6 +44,8 @@ static const char *VertexShaderText =
     "} \n";
 
 // Convert to rectangular to polar coordinates for radar image in texture
+// No longer used, always use FragmentShaderColorText so we can draw trails.
+#ifdef NEVER
 static const char *FragmentShaderText =
     "uniform sampler2D tex2d; \n"
     "void main() \n"
@@ -54,6 +56,7 @@ static const char *FragmentShaderText =
     "   float a = atan(gl_TexCoord[0].y, gl_TexCoord[0].x) / 6.28318; \n"
     "   gl_FragColor = vec4(1, 0, 0, texture2D(tex2d, vec2(d, a)).x); \n"
     "} \n";
+#endif
 
 static const char *FragmentShaderColorText =
     "uniform sampler2D tex2d; \n"
@@ -66,14 +69,9 @@ static const char *FragmentShaderColorText =
     "   gl_FragColor = texture2D(tex2d, vec2(d, a)); \n"
     "} \n";
 
-bool RadarDrawShader::Init(int color_option) {
-  if (color_option) {
-    m_format = GL_RGBA;
-    m_channels = SHADER_COLOR_CHANNELS;
-  } else {
-    m_format = GL_LUMINANCE;
-    m_channels = 1;
-  }
+bool RadarDrawShader::Init() {
+  m_format = GL_RGBA;
+  m_channels = SHADER_COLOR_CHANNELS;
 
   if (!CompileShader && !ShadersSupported()) {
     wxLogError(wxT("BR24radar_pi: the OpenGL system of this computer does not support shader m_programs"));
@@ -81,7 +79,7 @@ bool RadarDrawShader::Init(int color_option) {
   }
 
   if (!CompileShaderText(&m_vertex, GL_VERTEX_SHADER, VertexShaderText) ||
-      !CompileShaderText(&m_fragment, GL_FRAGMENT_SHADER, color_option > 0 ? FragmentShaderColorText : FragmentShaderText)) {
+      !CompileShaderText(&m_fragment, GL_FRAGMENT_SHADER, FragmentShaderColorText)) {
     wxLogError(wxT("BR24radar_pi: the OpenGL system of this computer failed to compile shader programs"));
     return false;
   }

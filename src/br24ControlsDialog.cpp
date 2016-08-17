@@ -1476,14 +1476,6 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     }
   }
 
-  if (m_pi->m_settings.display_option == 1) {
-    m_target_trails_button->Enable();
-    m_clear_trails_button->Enable();
-  } else {
-    m_target_trails_button->Disable();
-    m_clear_trails_button->Disable();
-  }
-
   // Update the text that is currently shown in the edit box, this is a copy of the button itself
   if (m_from_control) {
     wxString label = m_from_control->GetLabel();

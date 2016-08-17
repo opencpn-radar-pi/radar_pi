@@ -40,7 +40,7 @@ class RadarDraw {
  public:
   static RadarDraw* make_Draw(RadarInfo* ri, int draw_method);
 
-  virtual bool Init(int color_option) = 0;
+  virtual bool Init() = 0;
   virtual void DrawRadarImage() = 0;
   virtual void ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8* data, size_t len) = 0;
 

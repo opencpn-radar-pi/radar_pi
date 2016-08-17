@@ -33,13 +33,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-bool RadarDrawVertex::Init(int newColorOption) {
-  if (newColorOption) {
-    // Don't care in vertex mode
-  }
-
-  return true;
-}
+bool RadarDrawVertex::Init() { return true; }
 
 #define ADD_VERTEX_POINT(angle, radius, r, g, b, a)          \
   {                                                          \

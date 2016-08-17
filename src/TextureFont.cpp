@@ -187,7 +187,7 @@ void TextureFont::RenderGlyph(wchar_t c) {
   /* degree symbol */
   if (c == 0x00B0)
     c = DEGREE_GLYPH;
-  else if (c < MIN_GLYPH || c >= MAX_GLYPH ) {
+  else if (c < MIN_GLYPH || c >= MAX_GLYPH) {
     // outside font, render with draw pixels (slow)
     wxMemoryDC dc;
     dc.SetFont(m_font);
@@ -219,8 +219,8 @@ void TextureFont::RenderGlyph(wchar_t c) {
     }
 
     for (int i = 0; i < w * h; i++) {
-      data[2 * i + 0] = imgdata[3 * i]; // Luminance
-      data[2 * i + 1] = imgdata[3 * i]; // Alpha
+      data[2 * i + 0] = imgdata[3 * i];  // Luminance
+      data[2 * i + 1] = imgdata[3 * i];  // Alpha
     }
     glBindTexture(GL_TEXTURE_2D, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

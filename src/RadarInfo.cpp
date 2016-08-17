@@ -322,20 +322,11 @@ void RadarInfo::StartReceive() {
 }
 
 void RadarInfo::ComputeColourMap() {
-  switch (m_pi->m_settings.display_option) {
-    case 0:
-      for (int i = 0; i <= UINT8_MAX; i++) {
-        m_colour_map[i] = (i >= m_pi->m_settings.threshold_blue) ? BLOB_STRONG : BLOB_NONE;
-      }
-      break;
-    case 1:
-      for (int i = 0; i <= UINT8_MAX; i++) {
-        m_colour_map[i] =
-            (i >= m_pi->m_settings.threshold_red) ? BLOB_STRONG : (i >= m_pi->m_settings.threshold_green)
-                                                                   ? BLOB_INTERMEDIATE
-                                                                   : (i >= m_pi->m_settings.threshold_blue) ? BLOB_WEAK : BLOB_NONE;
-      }
-      break;
+  for (int i = 0; i <= UINT8_MAX; i++) {
+    m_colour_map[i] =
+        (i >= m_pi->m_settings.threshold_red) ? BLOB_STRONG : (i >= m_pi->m_settings.threshold_green)
+                                                                  ? BLOB_INTERMEDIATE
+                                                                  : (i >= m_pi->m_settings.threshold_blue) ? BLOB_WEAK : BLOB_NONE;
   }
 
   for (int i = 0; i < BLOB_COLOURS; i++) {
@@ -345,7 +336,7 @@ void RadarInfo::ComputeColourMap() {
   m_colour_map_rgb[BLOB_INTERMEDIATE] = m_pi->m_settings.intermediate_colour;
   m_colour_map_rgb[BLOB_WEAK] = m_pi->m_settings.weak_colour;
 
-  if (m_pi->m_settings.display_option == 1 && m_target_trails.value > 0) {
+  if (m_target_trails.value > 0) {
     float r1 = m_pi->m_settings.trail_start_colour.Red();
     float g1 = m_pi->m_settings.trail_start_colour.Green();
     float b1 = m_pi->m_settings.trail_start_colour.Blue();
@@ -423,8 +414,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     LOG_VERBOSE(wxT("BR24radar_pi: %s HeadUp/NorthUp change"));
   }
   int north_up = m_orientation.GetButton() == ORIENTATION_NORTH_UP;
-  uint8_t weakest_normal_blob =
-      (m_pi->m_settings.display_option ? m_pi->m_settings.threshold_blue : m_pi->m_settings.threshold_red);
+  uint8_t weakest_normal_blob = m_pi->m_settings.threshold_blue;
 
   bool calc_history = m_multi_sweep_filter;
   for (size_t z = 0; z < GUARD_ZONES; z++) {
@@ -456,12 +446,12 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     }
   }
 
-  bool draw_trails_on_overlay = (m_pi->m_settings.display_option == 1) && (m_pi->m_settings.trails_on_overlay == 1);
+  bool draw_trails_on_overlay = (m_pi->m_settings.trails_on_overlay == 1);
   if (m_draw_overlay.draw && !draw_trails_on_overlay) {
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
-  if (m_target_trails.value != 0 && m_pi->m_settings.display_option == 1) {
+  if (m_target_trails.value != 0) {
     if (m_trails_motion.value == TARGET_MOTION_TRUE) {
       PolarToCartesianLookupTable *polarLookup;
       polarLookup = GetPolarToCartesianLookupTable();
@@ -806,7 +796,6 @@ void RadarInfo::ResetRadarImage() {
 void RadarInfo::RenderRadarImage(DrawInfo *di) {
   wxCriticalSectionLocker lock(m_exclusive);
   int drawing_method = m_pi->m_settings.drawing_method;
-  bool colorOption = m_pi->m_settings.display_option > 0;
 
   if (m_state.value != RADAR_TRANSMIT && m_state.value != RADAR_WAKING_UP) {
     ResetRadarImage();
@@ -814,12 +803,12 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
   }
 
   // Determine if a new draw method is required
-  if (!di->draw || (drawing_method != di->drawing_method) || (colorOption != di->color_option)) {
+  if (!di->draw || (drawing_method != di->drawing_method)) {
     RadarDraw *newDraw = RadarDraw::make_Draw(this, drawing_method);
     if (!newDraw) {
       wxLogError(wxT("BR24radar_pi: out of memory"));
       return;
-    } else if (newDraw->Init(colorOption)) {
+    } else if (newDraw->Init()) {
       wxArrayString methods;
       RadarDraw::GetDrawingMethods(methods);
       if (di == &m_draw_overlay) {
@@ -832,7 +821,6 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
       }
       di->draw = newDraw;
       di->drawing_method = drawing_method;
-      di->color_option = colorOption;
     } else {
       m_pi->m_settings.drawing_method = 0;
       delete newDraw;
