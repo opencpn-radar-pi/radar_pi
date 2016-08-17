@@ -171,7 +171,7 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   DisplayOptionsBox->Add(drawingMethodSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(menuOptionsSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(m_GuardZoneStyle, 0, wxALL | wxEXPAND, border_size);
-  DisplayOptionsBox->Add(guardZoneSizer, 0, wxALL , border_size);
+  DisplayOptionsBox->Add(guardZoneSizer, 0, wxALL, border_size);
   DisplayOptionsBox->Add(trailSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(colourSizer, 0, wxALL | wxEXPAND, border_size);
 
