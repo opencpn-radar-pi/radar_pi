@@ -299,7 +299,7 @@ void br24Receive::EmulateFakeBuffer(void) {
 
   int scanlines_in_packet = SPOKES * 24 / 60 * MILLIS_PER_SELECT / MILLISECONDS_PER_SECOND;
   int range_meters = 2308;
-  int display_range_meters = 1500;
+  int display_range_meters = 3000;
   int spots = 0;
   m_ri->m_radar_type = RT_4G;  // Fake for emulator
   m_pi->m_pMessageBox->SetRadarType(RT_4G);
@@ -315,6 +315,9 @@ void br24Receive::EmulateFakeBuffer(void) {
       size_t bit = range >> 7;
       // use bit 'bit' of angle_raw
       UINT8 colour = (((angle_raw + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
+      if (range > sizeof(data) - 10) {
+        colour = ((angle_raw + m_next_rotation) % SPOKES) <= 8 ? 255 : 0;
+      }
       data[range] = colour;
       if (colour > 0) {
         spots++;

@@ -1124,34 +1124,35 @@ void RadarInfo::SetBearing(int bearing) {
 void RadarInfo::ClearTrails() { memset(&m_trails, 0, sizeof(m_trails)); }
 
 void RadarInfo::ComputeTargetTrails() {
-  static TrailRevolutionsAge maxRevs[TRAIL_ARRAY_SIZE] = {SECONDS_TO_REVOLUTIONS(0),
+  static TrailRevolutionsAge maxRevs[TRAIL_ARRAY_SIZE] = {0,
                                                           SECONDS_TO_REVOLUTIONS(15),
                                                           SECONDS_TO_REVOLUTIONS(30),
                                                           SECONDS_TO_REVOLUTIONS(60),
                                                           SECONDS_TO_REVOLUTIONS(180),
                                                           SECONDS_TO_REVOLUTIONS(600),
-                                                          255};
+                                                          TRAIL_MAX_REVOLUTIONS + 1};
 
   TrailRevolutionsAge maxRev = maxRevs[m_target_trails.value];
   TrailRevolutionsAge revolution;
-  double coloursPerRevolution = BLOB_HISTORY_COLOURS / (double)maxRev;
+  double coloursPerRevolution = 0.;
   double colour = 0.;
 
   // Like plotter, continuous trails are all very white (non transparent)
-  if (m_target_trails.value == TRAIL_CONTINUOUS) {
-    coloursPerRevolution = 0.;
+  if ((m_target_trails.value > 0) && (m_target_trails.value < TRAIL_CONTINUOUS)) {
+    coloursPerRevolution = BLOB_HISTORY_COLOURS / (double)maxRev;
   }
 
   LOG_VERBOSE(wxT("BR24radar_pi: Target trail value %d = %d revolutions"), m_target_trails.value, maxRev);
 
   // Disperse the BLOB_HISTORY values over 0..maxrev
   for (revolution = 0; revolution <= TRAIL_MAX_REVOLUTIONS; revolution++) {
-    if (revolution >= 1 && revolution <= maxRev) {
+    if (revolution >= 1 && revolution < maxRev) {
       m_trail_colour[revolution] = (BlobColour)(BLOB_HISTORY_0 + (int)colour);
       colour += coloursPerRevolution;
     } else {
       m_trail_colour[revolution] = BLOB_NONE;
     }
+    // LOG_VERBOSE(wxT("BR24radar_pi: ComputeTargetTrails rev=%u color=%d"), revolution, m_trail_colour[revolution]);
   }
 }
 
