@@ -245,7 +245,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     }
 
     bool radar_heading_valid = HEADING_VALID(heading_raw);
-    bool radar_heading_true = (heading_raw * HEADING_TRUE_FLAG) != 0;
+    bool radar_heading_true = (heading_raw & HEADING_TRUE_FLAG) != 0;
     short int hdt_raw;
 
     if (radar_heading_valid && !m_pi->m_settings.ignore_radar_heading &&
@@ -255,7 +255,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       } else {
         hdt_raw = MOD_ROTATION(heading_raw + SCALE_DEGREES_TO_RAW(m_pi->m_var));
       }
-      m_pi->SetRadarHeading(MOD_DEGREES(SCALE_RAW_TO_DEGREES(hdt_raw)), now + HEADING_TIMEOUT);
+      m_pi->SetRadarHeading(MOD_DEGREES(SCALE_RAW_TO_DEGREES(hdt_raw)), radar_heading_true, now + HEADING_TIMEOUT);
       hdt_raw += SCALE_DEGREES_TO_RAW(m_ri->m_viewpoint_rotation);
     } else {  // no heading on radar
       m_pi->SetRadarHeading();

@@ -262,7 +262,7 @@ bool br24MessageBox::UpdateMessage(bool force) {
 
   bool haveOpenGL = m_pi->m_opengl_mode;
   bool haveGPS = m_pi->m_bpos_set;
-  bool haveTrueHeading = m_pi->m_heading_source != HEADING_NONE;
+  bool haveTrueHeading = false;
   bool haveMagHeading = !TIMED_OUT(now, m_pi->m_hdm_timeout);
   bool haveVariation = m_pi->m_var_source != VARIATION_SOURCE_NONE;
   bool radarSeen = false;
