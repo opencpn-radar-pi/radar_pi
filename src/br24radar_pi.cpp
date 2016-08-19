@@ -1336,7 +1336,7 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
   double hdt = nan("");
   double var;
 
-  LOG_RECEIVE(wxT("BR24radar_pi: SetNMEASentence %s"), sentence);
+  LOG_RECEIVE(wxT("BR24radar_pi: SetNMEASentence %s"), sentence.c_str());
 
   if (m_NMEA0183.PreParse()) {
     if (m_NMEA0183.LastSentenceIDReceived == _T("HDG") && m_NMEA0183.Parse()) {
@@ -1378,7 +1378,7 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
   } else if (!wxIsNaN(hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
     m_hdt = hdm + m_var;
     if (m_heading_source < HEADING_NMEA_HDM) {
-      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f + VAR %f from NMEA %s (%d->%d)"), hdm + m_var, sentence.c_str(),
+      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f + VAR %f from NMEA %s (%d->%d)"), hdm, m_var, sentence.c_str(),
                m_heading_source, HEADING_NMEA_HDT);
       m_heading_source = HEADING_NMEA_HDM;
     }
