@@ -879,12 +879,11 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
 
   //    Calculate image scale factor
-  double llat, llon, ulat, ulon, dist_y, pix_y, v_scale_ppm;
+  double llat, llon, ulat, ulon, dist_y, v_scale_ppm;
 
   GetCanvasLLPix(vp, wxPoint(0, vp->pix_height - 1), &ulat, &ulon);  // is pix_height a mapable coordinate?
   GetCanvasLLPix(vp, wxPoint(0, 0), &llat, &llon);
   dist_y = radar_distance(llat, llon, ulat, ulon, 'm');  // Distance of height of display - meters
-  pix_y = vp->pix_height;
   v_scale_ppm = 1.0;
   if (dist_y > 0.) {
     // v_scale_ppm = vertical pixels per meter
@@ -1318,7 +1317,7 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
   time_t now = time(0);
   double hdm = nan("");
   double hdt = nan("");
-  double var = nan("");
+  double var;
 
   if (m_NMEA0183.PreParse()) {
     if (m_NMEA0183.LastSentenceIDReceived == _T("HDG") && m_NMEA0183.Parse()) {

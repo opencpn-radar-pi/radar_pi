@@ -703,12 +703,14 @@ void RadarInfo::AdjustRange(int adjustment) {
   // the plotter in NM, and it chose the last range, we start using nautic miles as well.
 
   if (m_range.range) {
-    if (m_range.range > g_ranges_nautic && m_range.range < g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic)) {
+    if (m_range.range >= g_ranges_nautic && m_range.range < g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic)) {
       min = g_ranges_nautic;
       max = g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic) - 1;
-    } else if (m_range.range > g_ranges_metric && m_range.range < g_ranges_metric + ARRAY_SIZE(g_ranges_metric)) {
+    } else if (m_range.range >= g_ranges_metric && m_range.range < g_ranges_metric + ARRAY_SIZE(g_ranges_metric)) {
       min = g_ranges_metric;
       max = g_ranges_metric + ARRAY_SIZE(g_ranges_metric) - 1;
+    } else {
+      return;
     }
 
     if (m_radar_type != RT_4G) {
@@ -976,7 +978,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
   wxString s = m_pi->GetGuardZoneText(this);
 
   if (m_state.value == RADAR_TRANSMIT) {
-    double distance = 0.0, bearing;
+    double distance = 0.0, bearing = nanl(0);
 
     // Add VRM/EBLs
 

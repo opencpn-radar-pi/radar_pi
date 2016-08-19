@@ -1605,7 +1605,6 @@ void br24ControlsDialog::EnsureWindowNearOpenCPNWindow() {
     LOG_DIALOG(wxT("%s Move control dialog to %d,%d to be near OpenCPN at %d,%d to %d,%d"), m_log_name.c_str(), mPos.x, mPos.y,
                oPos.x, oPos.y, oPos.x + oSize.x, oPos.y + oSize.y);
   }
-  move = true;
   SetPosition(mPos);
 }
 
