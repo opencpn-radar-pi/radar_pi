@@ -262,8 +262,9 @@ bool br24MessageBox::UpdateMessage(bool force) {
 
   bool haveOpenGL = m_pi->m_opengl_mode;
   bool haveGPS = m_pi->m_bpos_set;
-  bool haveTrueHeading = false;
+  bool haveTrueHeading = !TIMED_OUT(now, m_pi->m_hdt_timeout);
   bool haveMagHeading = !TIMED_OUT(now, m_pi->m_hdm_timeout);
+  bool haveHeading = m_pi->m_heading_source != HEADING_NONE;
   bool haveVariation = m_pi->m_var_source != VARIATION_SOURCE_NONE;
   bool radarSeen = false;
   bool haveData = false;
@@ -284,7 +285,7 @@ bool br24MessageBox::UpdateMessage(bool force) {
   }
 
   bool radarOn = haveOpenGL && radarSeen;
-  bool navOn = haveGPS && haveTrueHeading;
+  bool navOn = haveGPS && haveHeading;
   bool no_overlay = !(m_pi->m_settings.show && m_pi->m_settings.chart_overlay >= 0);
 
   LOG_DIALOG(wxT("BR24radar_pi: messagebox decision: show=%d overlay=%d auto_hide=%d opengl=%d radarOn=%d navOn=%d"), showRadar,

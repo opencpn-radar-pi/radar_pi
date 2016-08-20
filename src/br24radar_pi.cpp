@@ -698,20 +698,23 @@ void br24radar_pi::Notify(void) {
     }
     if (!wxIsNaN(radar_heading) && NOT_TIMED_OUT(now, radar_timeout)) {
       if (radar_heading_true) {
-        m_hdt = radar_heading;
-        m_hdt_timeout = now + HEADING_TIMEOUT;
         if (m_heading_source != HEADING_RADAR_HDT) {
           LOG_INFO(wxT("BR24radar_pi: Heading source is not RADAR (TRUE) (%d->%d)"), m_heading_source, HEADING_RADAR_HDT);
           m_heading_source = HEADING_RADAR_HDT;
         }
+        if (m_heading_source == HEADING_RADAR_HDT) {
+          m_hdt = radar_heading;
+          m_hdt_timeout = now + HEADING_TIMEOUT;
+        }
       } else {
-        m_hdm = radar_heading;
         if (m_heading_source != HEADING_RADAR_HDM) {
           LOG_INFO(wxT("BR24radar_pi: Heading source is not RADAR (MAGNETIC) (%d->%d)"), m_heading_source, HEADING_RADAR_HDM);
           m_heading_source = HEADING_RADAR_HDM;
         }
-        if (m_var_source != VARIATION_SOURCE_NONE) {
-          m_hdt = radar_heading - m_var;
+        if (m_heading_source == HEADING_RADAR_HDM) {
+          m_hdm = radar_heading;
+          m_hdt = radar_heading + m_var;
+          m_hdm_timeout = now + HEADING_TIMEOUT;
         }
       }
     }
@@ -725,12 +728,32 @@ void br24radar_pi::Notify(void) {
     LOG_VERBOSE(wxT("BR24radar_pi: Lost Boat Position data"));
   }
 
-  if (m_heading_source != HEADING_NONE && TIMED_OUT(now, m_hdt_timeout)) {
-    // If the position data is 10s old reset our heading.
-    // Note that the watchdog is continuously reset every time we receive a
-    // heading
-    m_heading_source = HEADING_NONE;
-    LOG_VERBOSE(wxT("BR24radar_pi: Lost Heading data"));
+  switch (m_heading_source) {
+    case HEADING_NONE:
+      break;
+    case HEADING_FIX_COG:
+    case HEADING_FIX_HDT:
+    case HEADING_NMEA_HDT:
+    case HEADING_RADAR_HDT:
+      if (TIMED_OUT(now, m_hdt_timeout)) {
+        // If the position data is 10s old reset our heading.
+        // Note that the watchdog is continuously reset every time we receive a
+        // heading
+        m_heading_source = HEADING_NONE;
+        LOG_VERBOSE(wxT("BR24radar_pi: Lost Heading data"));
+      }
+      break;
+    case HEADING_FIX_HDM:
+    case HEADING_NMEA_HDM:
+    case HEADING_RADAR_HDM:
+      if (TIMED_OUT(now, m_hdm_timeout)) {
+        // If the position data is 10s old reset our heading.
+        // Note that the watchdog is continuously reset every time we receive a
+        // heading
+        m_heading_source = HEADING_NONE;
+        LOG_VERBOSE(wxT("BR24radar_pi: Lost Heading data"));
+      }
+      break;
   }
 
   if (m_var_source != VARIATION_SOURCE_NONE && TIMED_OUT(now, m_var_timeout)) {
@@ -802,10 +825,10 @@ void br24radar_pi::Notify(void) {
       break;
     case HEADING_FIX_HDM:
     case HEADING_NMEA_HDM:
-      info = _("HDM") + wxT(" ") + wxString::Format(wxT("%3.1f"), m_hdm) + wxT(" + ") + _("Variation");
+      info = _("HDM") + wxT(" ") + wxString::Format(wxT("%3.1f"), m_hdm);
       break;
     case HEADING_RADAR_HDM:
-      info = _("RADAR") + wxT(" ") + wxString::Format(wxT("%3.1f"), m_hdm) + wxT(" + ") + _("Variation");
+      info = _("RADAR") + wxT(" ") + wxString::Format(wxT("%3.1f"), m_hdm);
       break;
   }
   m_pMessageBox->SetMagHeadingInfo(info);
@@ -1171,33 +1194,33 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   LOG_VERBOSE(wxT("BR24radar_pi: SetPositionFixEx var=%f var_wd=%d"), pfix.Var, NOT_TIMED_OUT(now, m_var_timeout));
 
   if (!wxIsNaN(pfix.Hdt)) {
-    m_hdt = pfix.Hdt;
     if (m_heading_source < HEADING_FIX_HDT) {
       LOG_INFO(wxT("BR24radar_pi: Heading source is now HDT from OpenCPN (%d->%d)"), m_heading_source, HEADING_FIX_HDT);
       m_heading_source = HEADING_FIX_HDT;
     }
-    m_hdt_timeout = now + HEADING_TIMEOUT;
+    if (m_heading_source == HEADING_FIX_HDT) {
+      m_hdt = pfix.Hdt;
+      m_hdt_timeout = now + HEADING_TIMEOUT;
+    }
   } else if (!wxIsNaN(pfix.Hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
-    m_hdm = pfix.Hdm;
-    m_hdt = pfix.Hdm + m_var;
     if (m_heading_source < HEADING_FIX_HDM) {
       LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM from OpenCPN + VAR (%d->%d)"), m_heading_source, HEADING_FIX_HDM);
       m_heading_source = HEADING_FIX_HDM;
     }
-    m_hdt_timeout = now + HEADING_TIMEOUT;
-    m_hdm_timeout = m_hdt_timeout;
+    if (m_heading_source == HEADING_FIX_HDM) {
+      m_hdm = pfix.Hdm;
+      m_hdt = pfix.Hdm + m_var;
+      m_hdm_timeout = now + HEADING_TIMEOUT;
+    }
   } else if (!wxIsNaN(pfix.Cog) && m_settings.enable_cog_heading) {
-    m_hdt = pfix.Cog;
     if (m_heading_source < HEADING_FIX_COG) {
       LOG_INFO(wxT("BR24radar_pi: Heading source is now COG from OpenCPN (%d->%d)"), m_heading_source, HEADING_FIX_COG);
       m_heading_source = HEADING_FIX_COG;
     }
-    m_hdt_timeout = now + HEADING_TIMEOUT;
-  }
-
-  if (!wxIsNaN(pfix.Hdm)) {
-    m_hdm = pfix.Hdm;
-    m_hdm_timeout = now + HEADING_TIMEOUT;
+    if (m_heading_source == HEADING_FIX_COG) {
+      m_hdt = pfix.Cog;
+      m_hdt_timeout = now + HEADING_TIMEOUT;
+    }
   }
 
   if (pfix.FixTime > 0 && NOT_TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT)) {
@@ -1336,7 +1359,7 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
   double hdt = nan("");
   double var;
 
-  LOG_RECEIVE(wxT("BR24radar_pi: SetNMEASentence %s"), sentence);
+  LOG_RECEIVE(wxT("BR24radar_pi: SetNMEASentence %s"), sentence.c_str());
 
   if (m_NMEA0183.PreParse()) {
     if (m_NMEA0183.LastSentenceIDReceived == _T("HDG") && m_NMEA0183.Parse()) {
@@ -1368,26 +1391,26 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
   }
 
   if (!wxIsNaN(hdt)) {
-    m_hdt = hdt;
     if (m_heading_source < HEADING_NMEA_HDT) {
       LOG_INFO(wxT("BR24radar_pi: Heading source is now HDT %d from NMEA %s (%d->%d)"), m_hdt, sentence.c_str(), m_heading_source,
                HEADING_NMEA_HDT);
       m_heading_source = HEADING_NMEA_HDT;
     }
-    m_hdt_timeout = now + HEADING_TIMEOUT;
+    if (m_heading_source == HEADING_NMEA_HDT) {
+      m_hdt = hdt;
+      m_hdt_timeout = now + HEADING_TIMEOUT;
+    }
   } else if (!wxIsNaN(hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
-    m_hdt = hdm + m_var;
     if (m_heading_source < HEADING_NMEA_HDM) {
-      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f + VAR %f from NMEA %s (%d->%d)"), hdm + m_var, sentence.c_str(),
+      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f + VAR %f from NMEA %s (%d->%d)"), hdm, m_var, sentence.c_str(),
                m_heading_source, HEADING_NMEA_HDT);
       m_heading_source = HEADING_NMEA_HDM;
     }
-    m_hdt_timeout = now + HEADING_TIMEOUT;
-  }
-
-  if (!wxIsNaN(hdm)) {
-    m_hdm = hdm;
-    m_hdm_timeout = now + HEADING_TIMEOUT;
+    if (m_heading_source == HEADING_NMEA_HDM) {
+      m_hdm = hdm;
+      m_hdt = hdm + m_var;
+      m_hdm_timeout = now + HEADING_TIMEOUT;
+    }
   }
 }
 
