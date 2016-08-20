@@ -183,7 +183,7 @@ int br24radar_pi::Init(void) {
   m_idle_transmit = 0;
 
   m_heading_source = HEADING_NONE;
-  m_radar_heading = nan("");
+  m_radar_heading = nanl("");
 
   // Set default settings before we load config. Prevents random behavior on uninitalized behavior.
   // For instance, LOG_XXX messages before config is loaded.
@@ -686,20 +686,19 @@ void br24radar_pi::Notify(void) {
     SetRadarWindowViz(true);
   }
 
-  if (m_heading_source < HEADING_RADAR_HDM) {
+  {
     double radar_heading;
     bool radar_heading_true;
-    time_t radar_timeout;
     {
       wxCriticalSectionLocker lock(m_exclusive);
       radar_heading = m_radar_heading;
       radar_heading_true = m_radar_heading_true;
-      radar_timeout = m_radar_heading_timeout;
+      m_radar_heading = nanl("");
     }
-    if (!wxIsNaN(radar_heading) && NOT_TIMED_OUT(now, radar_timeout)) {
+    if (!wxIsNaN(radar_heading)) {
       if (radar_heading_true) {
         if (m_heading_source != HEADING_RADAR_HDT) {
-          LOG_INFO(wxT("BR24radar_pi: Heading source is not RADAR (TRUE) (%d->%d)"), m_heading_source, HEADING_RADAR_HDT);
+          LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (TRUE) (%d->%d)"), m_heading_source, HEADING_RADAR_HDT);
           m_heading_source = HEADING_RADAR_HDT;
         }
         if (m_heading_source == HEADING_RADAR_HDT) {
@@ -708,7 +707,7 @@ void br24radar_pi::Notify(void) {
         }
       } else {
         if (m_heading_source != HEADING_RADAR_HDM) {
-          LOG_INFO(wxT("BR24radar_pi: Heading source is not RADAR (MAGNETIC) (%d->%d)"), m_heading_source, HEADING_RADAR_HDM);
+          LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (MAGNETIC) (%d->%d)"), m_heading_source, HEADING_RADAR_HDM);
           m_heading_source = HEADING_RADAR_HDM;
         }
         if (m_heading_source == HEADING_RADAR_HDM) {
@@ -727,6 +726,8 @@ void br24radar_pi::Notify(void) {
     m_bpos_set = false;
     LOG_VERBOSE(wxT("BR24radar_pi: Lost Boat Position data"));
   }
+
+
 
   switch (m_heading_source) {
     case HEADING_NONE:
