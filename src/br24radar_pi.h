@@ -401,17 +401,7 @@ class br24radar_pi : public opencpn_plugin_112 {
 
   void SetMcastIPAddress(wxString &msg);
 
-  void SetRadarHeading(double heading = nan(""), bool isTrue = false) {
-    wxCriticalSectionLocker lock(m_exclusive);
-    m_radar_heading = heading;
-    m_radar_heading_true = isTrue;
-    if (m_radar_heading_true) {
-      m_hdt = heading;
-    } else {
-      m_hdm = heading;
-      m_hdt = m_hdm + m_var;
-    }
-  }
+  void SetRadarHeading(double heading = nan(""), bool isTrue = false);
 
   wxFont m_font;      // The dialog font at a normal size
   wxFont m_fat_font;  // The dialog font at a bigger size, bold
