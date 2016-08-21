@@ -684,10 +684,6 @@ void br24radar_pi::Notify(void) {
 
   time_t now = time(0);
 
-  if (m_radar[0]->m_radar_type != RT_4G) {
-    m_settings.enable_dual_radar = 0;
-  }
-
   if (m_opengl_mode_changed || m_notify_radar_window_viz) {
     m_opengl_mode_changed = false;
     m_notify_radar_window_viz = false;
