@@ -133,13 +133,35 @@ static int convertSpokeMetersToRangeMeters(int value) {
 void radar_range_control_item::Update(int v) {
   radar_control_item::Update(v);
 
-  int g;
+  size_t g;
+
+  // Find out which nautical or metric range is the one represented by 'value'.
+  // First we look up according to the desired setting (metric/nautical) and if
+  // that doesn't work we look up nautical then metric.
 
   range = 0;
-  for (g = 0; g < ARRAY_SIZE(g_ranges_nautic); g++) {
-    if (g_ranges_nautic[g].meters == value) {
-      range = &g_ranges_nautic[g];
-      break;
+  if (m_settings->range_units == RANGE_NAUTICAL) {
+    for (g = 0; g < ARRAY_SIZE(g_ranges_nautic); g++) {
+      if (g_ranges_nautic[g].meters == value) {
+        range = &g_ranges_nautic[g];
+        break;
+      }
+    }
+  }
+  else {
+    for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++) {
+      if (g_ranges_metric[g].meters == value) {
+        range = &g_ranges_metric[g];
+        break;
+      }
+    }
+  }
+  if (!range) {
+    for (g = 0; g < ARRAY_SIZE(g_ranges_nautic); g++) {
+      if (g_ranges_nautic[g].meters == value) {
+        range = &g_ranges_nautic[g];
+        break;
+      }
     }
   }
   if (!range) {
@@ -187,6 +209,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_state.value = 0;
   m_state.mod = false;
   m_state.button = 0;
+  m_range.m_settings = &m_pi->m_settings;
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     m_guard_zone[z] = new GuardZone(pi, radar, z);

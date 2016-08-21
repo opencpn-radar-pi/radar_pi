@@ -97,6 +97,7 @@ class radar_control_item {
 class radar_range_control_item : public radar_control_item {
  public:
   const RadarRange *range;
+  PersistentSettings *m_settings;
 
   void Update(int v);
 
@@ -105,7 +106,9 @@ class radar_range_control_item : public radar_control_item {
     button = 0;
     mod = false;
     range = 0;
+    m_settings = 0;
   }
+
 };
 
 struct DrawInfo {
