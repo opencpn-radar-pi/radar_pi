@@ -97,6 +97,7 @@ class radar_control_item {
 class radar_range_control_item : public radar_control_item {
  public:
   const RadarRange *range;
+  PersistentSettings *m_settings;
 
   void Update(int v);
 
@@ -105,7 +106,9 @@ class radar_range_control_item : public radar_control_item {
     button = 0;
     mod = false;
     range = 0;
+    m_settings = 0;
   }
+
 };
 
 struct DrawInfo {
@@ -116,7 +119,7 @@ struct DrawInfo {
 
 typedef UINT8 TrailRevolutionsAge;
 #define SECONDS_TO_REVOLUTIONS(x) ((x)*2 / 5)
-#define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(300)
+#define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(600) + 1
 enum { TRAIL_OFF, TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_10MIN, TRAIL_CONTINUOUS, TRAIL_ARRAY_SIZE };
 
 class RadarInfo : public wxEvtHandler {

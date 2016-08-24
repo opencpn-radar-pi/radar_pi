@@ -58,15 +58,16 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
   if (line->count + VERTEX_PER_QUAD > line->allocated) {
     const size_t extra = 8 * VERTEX_PER_QUAD;
     line->points = (VertexPoint*)realloc(line->points, (line->allocated + extra) * sizeof(VertexPoint));
-    if (!line->points) {
-      if (!m_oom) {
-        wxLogError(wxT("BR24radar_pi: Out of memory"));
-        m_oom = true;
-      }
-      return;
-    }
     line->allocated += extra;
     m_count += extra;
+  }
+
+  if (!line->points) {
+    if (!m_oom) {
+      wxLogError(wxT("BR24radar_pi: Out of memory"));
+      m_oom = true;
+    }
+    return;
   }
 
   // First triangle

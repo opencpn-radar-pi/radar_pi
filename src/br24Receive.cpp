@@ -245,23 +245,16 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     }
 
     bool radar_heading_valid = HEADING_VALID(heading_raw);
-    bool radar_heading_true = (heading_raw * HEADING_TRUE_FLAG) != 0;
-    short int hdt_raw;
+    bool radar_heading_true = (heading_raw & HEADING_TRUE_FLAG) != 0;
+    double heading;
 
-    if (radar_heading_valid && !m_pi->m_settings.ignore_radar_heading &&
-        (radar_heading_true || NOT_TIMED_OUT(now, m_pi->m_var_timeout))) {
-      if (radar_heading_true) {
-        hdt_raw = MOD_ROTATION(heading_raw);
-      } else {
-        hdt_raw = MOD_ROTATION(heading_raw + SCALE_DEGREES_TO_RAW(m_pi->m_var));
-      }
-      m_pi->SetRadarHeading(MOD_DEGREES(SCALE_RAW_TO_DEGREES(hdt_raw)), now + HEADING_TIMEOUT);
-      hdt_raw += SCALE_DEGREES_TO_RAW(m_ri->m_viewpoint_rotation);
+    if (radar_heading_valid && !m_pi->m_settings.ignore_radar_heading) {
+      heading = MOD_DEGREES(SCALE_RAW_TO_DEGREES(MOD_ROTATION(heading_raw)));
+      m_pi->SetRadarHeading(heading, radar_heading_true);
     } else {  // no heading on radar
       m_pi->SetRadarHeading();
-      hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt + m_ri->m_viewpoint_rotation);
     }
-
+    short int hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt + m_ri->m_viewpoint_rotation);
     int bearing_raw = angle_raw + hdt_raw;
     // until here all is based on 4096 (SPOKES) scanlines
 
@@ -299,7 +292,7 @@ void br24Receive::EmulateFakeBuffer(void) {
 
   int scanlines_in_packet = SPOKES * 24 / 60 * MILLIS_PER_SELECT / MILLISECONDS_PER_SECOND;
   int range_meters = 2308;
-  int display_range_meters = 1500;
+  int display_range_meters = 3000;
   int spots = 0;
   m_ri->m_radar_type = RT_4G;  // Fake for emulator
   m_pi->m_pMessageBox->SetRadarType(RT_4G);
@@ -315,6 +308,9 @@ void br24Receive::EmulateFakeBuffer(void) {
       size_t bit = range >> 7;
       // use bit 'bit' of angle_raw
       UINT8 colour = (((angle_raw + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
+      if (range > sizeof(data) - 10) {
+        colour = ((angle_raw + m_next_rotation) % SPOKES) <= 8 ? 255 : 0;
+      }
       data[range] = colour;
       if (colour > 0) {
         spots++;
