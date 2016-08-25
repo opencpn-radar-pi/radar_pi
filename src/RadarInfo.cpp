@@ -147,8 +147,7 @@ void radar_range_control_item::Update(int v) {
         break;
       }
     }
-  }
-  else {
+  } else {
     for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++) {
       if (g_ranges_metric[g].meters == value) {
         range = &g_ranges_metric[g];
@@ -1001,7 +1000,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
   wxString s = m_pi->GetGuardZoneText(this);
 
   if (m_state.value == RADAR_TRANSMIT) {
-    double distance = 0.0, bearing = nanl(0);
+    double distance = 0.0, bearing = nanl("");
 
     // Add VRM/EBLs
 
