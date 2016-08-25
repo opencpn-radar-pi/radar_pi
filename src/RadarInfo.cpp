@@ -739,11 +739,11 @@ void RadarInfo::AdjustRange(int adjustment) {
       max--;  // only 4G has longest ranges
     }
 
-    if (adjustment < 0 && m_range.range > min) {
+    if (adjustment > 0 && m_range.range > min) {
       LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), m_range.range[0].meters,
                   m_range.range[0].actual_meters, m_range.range[-1].meters, m_range.range[-1].actual_meters);
       m_transmit->SetRange(m_range.range[-1].meters);
-    } else if (adjustment > 0 && m_range.range < max) {
+    } else if (adjustment < 0 && m_range.range < max) {
       LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), m_range.range[0].meters,
                   m_range.range[0].actual_meters, m_range.range[+1].meters, m_range.range[+1].actual_meters);
       m_transmit->SetRange(m_range.range[+1].meters);
