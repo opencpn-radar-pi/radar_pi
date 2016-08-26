@@ -1073,7 +1073,7 @@ void br24ControlsDialog::OnMultiSweepClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
-  m_ri->ClearTrails();
+//  m_ri->ClearTrails();
   if (m_ri->m_trails_motion.value == TARGET_MOTION_RELATIVE) {
     m_ri->m_trails_motion.Update(TARGET_MOTION_TRUE);
   } else {
