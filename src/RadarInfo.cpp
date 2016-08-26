@@ -147,8 +147,7 @@ void radar_range_control_item::Update(int v) {
         break;
       }
     }
-  }
-  else {
+  } else {
     for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++) {
       if (g_ranges_metric[g].meters == value) {
         range = &g_ranges_metric[g];
@@ -740,11 +739,11 @@ void RadarInfo::AdjustRange(int adjustment) {
       max--;  // only 4G has longest ranges
     }
 
-    if (adjustment < 0 && m_range.range > min) {
+    if (adjustment > 0 && m_range.range > min) {
       LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), m_range.range[0].meters,
                   m_range.range[0].actual_meters, m_range.range[-1].meters, m_range.range[-1].actual_meters);
       m_transmit->SetRange(m_range.range[-1].meters);
-    } else if (adjustment > 0 && m_range.range < max) {
+    } else if (adjustment < 0 && m_range.range < max) {
       LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), m_range.range[0].meters,
                   m_range.range[0].actual_meters, m_range.range[+1].meters, m_range.range[+1].actual_meters);
       m_transmit->SetRange(m_range.range[+1].meters);
@@ -1001,7 +1000,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
   wxString s = m_pi->GetGuardZoneText(this);
 
   if (m_state.value == RADAR_TRANSMIT) {
-    double distance = 0.0, bearing = nanl(0);
+    double distance = 0.0, bearing = nanl("");
 
     // Add VRM/EBLs
 
