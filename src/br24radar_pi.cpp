@@ -671,8 +671,6 @@ void br24radar_pi::SetRadarHeading(double heading, bool isTrue) {
   m_radar_heading_true = isTrue;
 }
 
-
-
 // Notify
 // ------
 // Called once a second by the timer on radar[0].

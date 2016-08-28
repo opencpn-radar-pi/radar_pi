@@ -474,39 +474,39 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
 
   if (m_target_trails.value != 0) {
-      PolarToCartesianLookupTable *polarLookup;
-      polarLookup = GetPolarToCartesianLookupTable();
-        UpdateTrailPosition();
+    PolarToCartesianLookupTable *polarLookup;
+    polarLookup = GetPolarToCartesianLookupTable();
+    UpdateTrailPosition();
 
-      for (size_t radius = 0; radius < len; radius++) {
-        UINT8 *trail = &m_trails.true_trails[polarLookup->intx[bearing][radius] +
-                                             RETURNS_PER_LINE][polarLookup->inty[bearing][radius] + RETURNS_PER_LINE];
-        if (data[radius] >= weakest_normal_blob) {
-          *trail = 1;
-        } else {
-          if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-            (*trail)++;
-          }
-		  if (m_trails_motion.value == TARGET_MOTION_TRUE) {
-			  data[radius] = m_trail_colour[*trail];
-		  }
+    for (size_t radius = 0; radius < len; radius++) {
+      UINT8 *trail = &m_trails.true_trails[polarLookup->intx[bearing][radius] +
+                                           RETURNS_PER_LINE][polarLookup->inty[bearing][radius] + RETURNS_PER_LINE];
+      if (data[radius] >= weakest_normal_blob) {
+        *trail = 1;
+      } else {
+        if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+          (*trail)++;
+        }
+        if (m_trails_motion.value == TARGET_MOTION_TRUE) {
+          data[radius] = m_trail_colour[*trail];
         }
       }
+    }
 
-	  UINT8 *trail = m_trails.relative_trails[angle];
-      for (size_t radius = 0; radius < len; radius++) {
-        if (data[radius] >= weakest_normal_blob) {
-          *trail = 1;
-        } else {
-          if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-            (*trail)++;
-          }
-		  if (m_trails_motion.value == TARGET_MOTION_RELATIVE) {
-			  data[radius] = m_trail_colour[*trail];
-		  }
+    UINT8 *trail = m_trails.relative_trails[angle];
+    for (size_t radius = 0; radius < len; radius++) {
+      if (data[radius] >= weakest_normal_blob) {
+        *trail = 1;
+      } else {
+        if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+          (*trail)++;
         }
-        trail++;
+        if (m_trails_motion.value == TARGET_MOTION_RELATIVE) {
+          data[radius] = m_trail_colour[*trail];
+        }
       }
+      trail++;
+    }
   }
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
