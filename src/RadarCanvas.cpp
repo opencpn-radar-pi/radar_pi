@@ -380,13 +380,13 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   m_FontNormal.Build(font);
   wxFont bigFont = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
   bigFont.SetPointSize(bigFont.GetPointSize() + 2);
-  bigFont.SetStyle(wxFONTWEIGHT_BOLD);
+  bigFont.SetWeight(wxFONTWEIGHT_BOLD);
   m_FontBig.Build(bigFont);
   bigFont.SetPointSize(bigFont.GetPointSize() + 2);
-  bigFont.SetStyle(wxFONTWEIGHT_NORMAL);
+  bigFont.SetWeight(wxFONTWEIGHT_NORMAL);
   m_FontMenu.Build(bigFont);
   bigFont.SetPointSize(bigFont.GetPointSize() + 10);
-  bigFont.SetStyle(wxFONTWEIGHT_BOLD);
+  bigFont.SetWeight(wxFONTWEIGHT_BOLD);
   m_FontMenuBold.Build(bigFont);
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                // Black Background
