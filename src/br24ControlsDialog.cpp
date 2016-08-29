@@ -851,9 +851,9 @@ void br24ControlsDialog::CreateControls() {
   m_clear_trails_button->SetFont(m_pi->m_font);
 
   // The Multi Sweep Filter button
-  wxString labelMS;
-  labelMS << _("Multi Sweep Filter") << wxT("\n") << _("Off");
-  m_multi_sweep_button = new wxButton(this, ID_MULTISWEEP, labelMS, wxDefaultPosition, g_buttonSize, 0);
+  wxString labelSweep;
+  labelSweep << _("Multi Sweep Filter") << wxT("\n") << (m_ri->m_multi_sweep_filter ? _("On") : _("Off"));
+  m_multi_sweep_button = new wxButton(this, ID_MULTISWEEP, labelSweep, wxDefaultPosition, g_buttonSize, 0);
   m_view_sizer->Add(m_multi_sweep_button, 0, wxALL, BORDER);
   m_multi_sweep_button->SetFont(m_pi->m_font);
 
@@ -1066,18 +1066,13 @@ void br24ControlsDialog::OnAutoClick(wxCommandEvent& event) {
 
 void br24ControlsDialog::OnMultiSweepClick(wxCommandEvent& event) {
   wxString labelSweep;
-  if (m_ri->m_multi_sweep_filter == false) {
-    labelSweep << _("Multi Sweep Filter") << wxT("\n") << _("On");
-    m_ri->m_multi_sweep_filter = true;
-  } else {
-    labelSweep << _("Multi Sweep Filter") << wxT("\n") << _("Off");
-    m_ri->m_multi_sweep_filter = false;
-  }
+
+  m_ri->m_multi_sweep_filter = !m_ri->m_multi_sweep_filter;
+  labelSweep << _("Multi Sweep Filter") << wxT("\n") << (m_ri->m_multi_sweep_filter ? _("On") : _("Off"));
   m_multi_sweep_button->SetLabel(labelSweep);
 }
 
 void br24ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
-  m_ri->ClearTrails();
   if (m_ri->m_trails_motion.value == TARGET_MOTION_RELATIVE) {
     m_ri->m_trails_motion.Update(TARGET_MOTION_TRUE);
   } else {
@@ -1476,14 +1471,6 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     }
   }
 
-  if (m_pi->m_settings.display_option == 1) {
-    m_target_trails_button->Enable();
-    m_clear_trails_button->Enable();
-  } else {
-    m_target_trails_button->Disable();
-    m_clear_trails_button->Disable();
-  }
-
   // Update the text that is currently shown in the edit box, this is a copy of the button itself
   if (m_from_control) {
     wxString label = m_from_control->GetLabel();
@@ -1617,7 +1604,6 @@ void br24ControlsDialog::EnsureWindowNearOpenCPNWindow() {
     LOG_DIALOG(wxT("%s Move control dialog to %d,%d to be near OpenCPN at %d,%d to %d,%d"), m_log_name.c_str(), mPos.x, mPos.y,
                oPos.x, oPos.y, oPos.x + oSize.x, oPos.y + oSize.y);
   }
-  move = true;
   SetPosition(mPos);
 }
 

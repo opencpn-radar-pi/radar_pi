@@ -112,7 +112,17 @@ typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a 
 
 enum { BM_ID_RED, BM_ID_RED_SLAVE, BM_ID_GREEN, BM_ID_GREEN_SLAVE, BM_ID_AMBER, BM_ID_AMBER_SLAVE, BM_ID_BLANK, BM_ID_BLANK_SLAVE };
 
-enum HeadingSource { HEADING_NONE, HEADING_HDM, HEADING_HDT, HEADING_COG, HEADING_RADAR };
+// Arranged from low to high priority:
+enum HeadingSource {
+  HEADING_NONE,
+  HEADING_FIX_COG,
+  HEADING_FIX_HDM,
+  HEADING_FIX_HDT,
+  HEADING_NMEA_HDM,
+  HEADING_NMEA_HDT,
+  HEADING_RADAR_HDM,
+  HEADING_RADAR_HDT
+};
 
 enum RadarState { RADAR_OFF, RADAR_STANDBY, RADAR_TRANSMIT, RADAR_WAKING_UP };
 
@@ -179,7 +189,7 @@ typedef enum GuardZoneType { GZ_OFF, GZ_ARC, GZ_CIRCLE } GuardZoneType;
 
 typedef enum RadarType { RT_UNKNOWN, RT_BR24, RT_3G, RT_4G } RadarType;
 
-enum BlobColor {
+enum BlobColour {
   BLOB_NONE,
   BLOB_HISTORY_0,
   BLOB_HISTORY_1,
@@ -213,12 +223,13 @@ enum BlobColor {
   BLOB_HISTORY_29,
   BLOB_HISTORY_30,
   BLOB_HISTORY_31,
-  BLOB_BLUE,
-  BLOB_GREEN,
-  BLOB_RED
+  BLOB_WEAK,
+  BLOB_INTERMEDIATE,
+  BLOB_STRONG
 };
 #define BLOB_HISTORY_MAX BLOB_HISTORY_31
-#define BLOB_HISTORY_COLORS (BLOB_HISTORY_MAX - BLOB_NONE)
+#define BLOB_HISTORY_COLOURS (BLOB_HISTORY_MAX - BLOB_NONE)
+#define BLOB_COLOURS (BLOB_STRONG + 1)
 
 extern const char *convertRadarToString(int range_meters, int units, int index);
 extern double local_distance(double lat1, double lon1, double lat2, double lon2);
@@ -257,7 +268,6 @@ struct PersistentSettings {
   int overlay_transparency;
   int range_index;                  // index into range array, see RadarInfo.cpp
   int verbose;                      // Loglevel 0..4.
-  int display_option;               // Monocolor-red or Multi-color
   int guard_zone_threshold;         // How many blobs must be sent by radar before we fire alarm
   int guard_zone_render_style;      // 0 = Shading, 1 = Outline, 2 = Shading + Outline
   int guard_zone_timeout;           // How long before we warn again when bogeys are found
@@ -297,6 +307,9 @@ struct PersistentSettings {
   wxString mcast_address;           // Saved address of radar. Used to speed up next boot.
   wxColour trail_start_colour;      // Starting colour of a trail
   wxColour trail_end_colour;        // Ending colour of a trail
+  wxColour strong_colour;           // Colour for STRONG returns
+  wxColour intermediate_colour;     // Colour for INTERMEDIATE returns
+  wxColour weak_colour;             // Colour for WEAK returns
 };
 
 struct scan_line {
@@ -388,11 +401,7 @@ class br24radar_pi : public opencpn_plugin_112 {
 
   void SetMcastIPAddress(wxString &msg);
 
-  void SetRadarHeading(double heading = nan(""), time_t timeout = 0) {
-    wxCriticalSectionLocker lock(m_exclusive);
-    m_radar_heading = heading;
-    m_radar_heading_timeout = timeout;
-  }
+  void SetRadarHeading(double heading = nan(""), bool isTrue = false);
 
   wxFont m_font;      // The dialog font at a normal size
   wxFont m_fat_font;  // The dialog font at a bigger size, bold
@@ -413,6 +422,7 @@ class br24radar_pi : public opencpn_plugin_112 {
   double m_hdm;                    // Last magnetic heading obtained
   time_t m_hdm_timeout;            // When we consider heading is lost
   double m_radar_heading;          // Last heading obtained from radar, or nan if none
+  bool m_radar_heading_true;       // Was TRUE flag set on radar heading?
   time_t m_radar_heading_timeout;  // When last heading was obtained from radar, or 0 if not
 
   // Variation. Used to convert magnetic into true heading.

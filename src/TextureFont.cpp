@@ -170,14 +170,14 @@ void TextureFont::GetTextExtent(const wxString &string, int *width, int *height)
       wxCoord gw, gh;
       dc.GetTextExtent(c, &gw, &gh);  // measure the text
       w0 += gw;
-      if (h > gh) gh = h;
+      if (h < gh) h = gh;
       continue;
     }
 
     TexGlyphInfo &tgisi = m_tgi[c];
 
     w0 += tgisi.advance;
-    if (tgisi.height > h) h = tgisi.height;
+    if (h < tgisi.height) h = tgisi.height;
   }
   if (width) *width = wxMax(w0, w1);
   if (height) *height = h;
@@ -193,7 +193,12 @@ void TextureFont::RenderGlyph(wchar_t c) {
     dc.SetFont(m_font);
     wxCoord gw, gh;
     dc.GetTextExtent(c, &gw, &gh);  // measure the text
-    wxBitmap bmp(gw, gh);
+    int w, h;
+    for (w = 1; w < gw; w *= 2)
+      ;
+    for (h = 1; h < gh; h *= 2)
+      ;
+    wxBitmap bmp(w, h);
     dc.SelectObject(bmp);
     dc.SetBackground(wxBrush(wxColour(0, 0, 0)));
     dc.Clear();
@@ -201,16 +206,21 @@ void TextureFont::RenderGlyph(wchar_t c) {
     dc.SetTextForeground(wxColour(255, 255, 255));
     dc.DrawText(c, 0, 0);
     wxImage image = bmp.ConvertToImage();
-    if (m_blur) image = image.Blur(1);
+    if (m_blur) {
+      image = image.Blur(1);
+    }
     unsigned char *imgdata = image.GetData();
+    if (!imgdata) {
+      return;
+    }
+    char *data = new char[w * h * 2];
+    if (!data) {
+      return;
+    }
 
-    char *data = new char[gw * gh * 2];
-
-    if (data && imgdata) {
-      for (int i = 0; i < gw * gh; i++) {
-        data[2 * i + 0] = imgdata[3 * i];
-        data[2 * i + 1] = imgdata[3 * i];
-      }
+    for (int i = 0; i < w * h; i++) {
+      data[2 * i + 0] = imgdata[3 * i];  // Luminance
+      data[2 * i + 1] = imgdata[3 * i];  // Alpha
     }
     glBindTexture(GL_TEXTURE_2D, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -218,14 +228,7 @@ void TextureFont::RenderGlyph(wchar_t c) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-    /* make power of 2 */
-    int w, h;
-    for (w = 1; w < gw; w *= 2)
-      ;
-    for (h = 1; h < gh; h *= 2)
-      ;
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, w, h, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, NULL);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, gw, gh, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, w, h, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, data);
     float u = (float)gw / w, v = (float)gh / h;
     glBegin(GL_QUADS);
     glTexCoord2f(0, 0);

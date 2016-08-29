@@ -133,13 +133,34 @@ static int convertSpokeMetersToRangeMeters(int value) {
 void radar_range_control_item::Update(int v) {
   radar_control_item::Update(v);
 
-  int g;
+  size_t g;
+
+  // Find out which nautical or metric range is the one represented by 'value'.
+  // First we look up according to the desired setting (metric/nautical) and if
+  // that doesn't work we look up nautical then metric.
 
   range = 0;
-  for (g = 0; g < ARRAY_SIZE(g_ranges_nautic); g++) {
-    if (g_ranges_nautic[g].meters == value) {
-      range = &g_ranges_nautic[g];
-      break;
+  if (m_settings->range_units == RANGE_NAUTICAL) {
+    for (g = 0; g < ARRAY_SIZE(g_ranges_nautic); g++) {
+      if (g_ranges_nautic[g].meters == value) {
+        range = &g_ranges_nautic[g];
+        break;
+      }
+    }
+  } else {
+    for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++) {
+      if (g_ranges_metric[g].meters == value) {
+        range = &g_ranges_metric[g];
+        break;
+      }
+    }
+  }
+  if (!range) {
+    for (g = 0; g < ARRAY_SIZE(g_ranges_nautic); g++) {
+      if (g_ranges_nautic[g].meters == value) {
+        range = &g_ranges_nautic[g];
+        break;
+      }
     }
   }
   if (!range) {
@@ -187,6 +208,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_state.value = 0;
   m_state.mod = false;
   m_state.button = 0;
+  m_range.m_settings = &m_pi->m_settings;
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     m_guard_zone[z] = new GuardZone(pi, radar, z);
@@ -247,7 +269,7 @@ bool RadarInfo::Init(wxString name, int verbose) {
 
   m_name = name;
 
-  ComputeColorMap();
+  ComputeColourMap();
 
   m_transmit = new br24Transmit(m_pi, name, m_radar);
 
@@ -321,47 +343,36 @@ void RadarInfo::StartReceive() {
   }
 }
 
-void RadarInfo::ComputeColorMap() {
-  switch (m_pi->m_settings.display_option) {
-    case 0:
-      for (int i = 0; i <= UINT8_MAX; i++) {
-        m_color_map[i] = (i >= m_pi->m_settings.threshold_blue) ? BLOB_RED : BLOB_NONE;
-      }
-      break;
-    case 1:
-      for (int i = 0; i <= UINT8_MAX; i++) {
-        m_color_map[i] =
-            (i >= m_pi->m_settings.threshold_red) ? BLOB_RED : (i >= m_pi->m_settings.threshold_green)
-                                                                   ? BLOB_GREEN
-                                                                   : (i >= m_pi->m_settings.threshold_blue) ? BLOB_BLUE : BLOB_NONE;
-      }
-      break;
+void RadarInfo::ComputeColourMap() {
+  for (int i = 0; i <= UINT8_MAX; i++) {
+    m_colour_map[i] =
+        (i >= m_pi->m_settings.threshold_red) ? BLOB_STRONG : (i >= m_pi->m_settings.threshold_green)
+                                                                  ? BLOB_INTERMEDIATE
+                                                                  : (i >= m_pi->m_settings.threshold_blue) ? BLOB_WEAK : BLOB_NONE;
   }
 
-  memset(m_color_map_red, 0, sizeof(m_color_map_red));
-  memset(m_color_map_green, 0, sizeof(m_color_map_green));
-  memset(m_color_map_blue, 0, sizeof(m_color_map_blue));
-  m_color_map_red[BLOB_RED] = 255;
-  m_color_map_green[BLOB_GREEN] = 255;
-  m_color_map_blue[BLOB_BLUE] = 255;
+  for (int i = 0; i < BLOB_COLOURS; i++) {
+    m_colour_map_rgb[i] = wxColour(0, 0, 0);
+  }
+  m_colour_map_rgb[BLOB_STRONG] = m_pi->m_settings.strong_colour;
+  m_colour_map_rgb[BLOB_INTERMEDIATE] = m_pi->m_settings.intermediate_colour;
+  m_colour_map_rgb[BLOB_WEAK] = m_pi->m_settings.weak_colour;
 
-  if (m_pi->m_settings.display_option == 1 && m_target_trails.value > 0) {
+  if (m_target_trails.value > 0) {
     float r1 = m_pi->m_settings.trail_start_colour.Red();
     float g1 = m_pi->m_settings.trail_start_colour.Green();
     float b1 = m_pi->m_settings.trail_start_colour.Blue();
     float r2 = m_pi->m_settings.trail_end_colour.Red();
     float g2 = m_pi->m_settings.trail_end_colour.Green();
     float b2 = m_pi->m_settings.trail_end_colour.Blue();
-    float delta_r = (r2 - r1) / BLOB_HISTORY_COLORS;
-    float delta_g = (g2 - g1) / BLOB_HISTORY_COLORS;
-    float delta_b = (b2 - b1) / BLOB_HISTORY_COLORS;
+    float delta_r = (r2 - r1) / BLOB_HISTORY_COLOURS;
+    float delta_g = (g2 - g1) / BLOB_HISTORY_COLOURS;
+    float delta_b = (b2 - b1) / BLOB_HISTORY_COLOURS;
 
-    for (BlobColor history = BLOB_HISTORY_0; history <= BLOB_HISTORY_MAX; history = (BlobColor)(history + 1)) {
-      m_color_map[history] = history;
+    for (BlobColour history = BLOB_HISTORY_0; history <= BLOB_HISTORY_MAX; history = (BlobColour)(history + 1)) {
+      m_colour_map[history] = history;
 
-      m_color_map_red[history] = (GLubyte)r1;
-      m_color_map_green[history] = (GLubyte)g1;
-      m_color_map_blue[history] = (GLubyte)b1;
+      m_colour_map_rgb[history] = wxColour(r1, g1, b1);
       r1 += delta_r;
       g1 += delta_g;
       b1 += delta_b;
@@ -425,8 +436,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     LOG_VERBOSE(wxT("BR24radar_pi: %s HeadUp/NorthUp change"));
   }
   int north_up = m_orientation.GetButton() == ORIENTATION_NORTH_UP;
-  uint8_t weakest_normal_blob =
-      (m_pi->m_settings.display_option ? m_pi->m_settings.threshold_blue : m_pi->m_settings.threshold_red);
+  uint8_t weakest_normal_blob = m_pi->m_settings.threshold_blue;
 
   bool calc_history = m_multi_sweep_filter;
   for (size_t z = 0; z < GUARD_ZONES; z++) {
@@ -458,44 +468,44 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     }
   }
 
-  bool draw_trails_on_overlay = (m_pi->m_settings.display_option == 1) && (m_pi->m_settings.trails_on_overlay == 1);
+  bool draw_trails_on_overlay = (m_pi->m_settings.trails_on_overlay == 1);
   if (m_draw_overlay.draw && !draw_trails_on_overlay) {
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
-  if (m_target_trails.value != 0 && m_pi->m_settings.display_option == 1) {
-    if (m_trails_motion.value == TARGET_MOTION_TRUE) {
-      PolarToCartesianLookupTable *polarLookup;
-      polarLookup = GetPolarToCartesianLookupTable();
-      if (angle % 32 == 0) {  // run 1 out of 32 spokes
-        UpdateTrailPosition();
-      }
+  if (m_target_trails.value != 0) {
+    PolarToCartesianLookupTable *polarLookup;
+    polarLookup = GetPolarToCartesianLookupTable();
+    UpdateTrailPosition();
 
-      for (size_t radius = 0; radius < len; radius++) {
-        UINT8 *trail = &m_trails.true_trails[polarLookup->intx[bearing][radius] +
-                                             RETURNS_PER_LINE][polarLookup->inty[bearing][radius] + RETURNS_PER_LINE];
-        if (data[radius] >= weakest_normal_blob) {
-          *trail = 1;
-        } else {
-          if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-            (*trail)++;
-          }
-          data[radius] = m_trail_color[*trail];
+    for (size_t radius = 0; radius < len; radius++) {
+      UINT8 *trail = &m_trails.true_trails[polarLookup->intx[bearing][radius] +
+                                           RETURNS_PER_LINE][polarLookup->inty[bearing][radius] + RETURNS_PER_LINE];
+      if (data[radius] >= weakest_normal_blob) {
+        *trail = 1;
+      } else {
+        if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+          (*trail)++;
+        }
+        if (m_trails_motion.value == TARGET_MOTION_TRUE) {
+          data[radius] = m_trail_colour[*trail];
         }
       }
-    } else if (m_trails_motion.value == TARGET_MOTION_RELATIVE) {
-      UINT8 *trail = m_trails.relative_trails[angle];
-      for (size_t radius = 0; radius < len; radius++) {
-        if (data[radius] >= weakest_normal_blob) {
-          *trail = 1;
-        } else {
-          if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-            (*trail)++;
-          }
-          data[radius] = m_trail_color[*trail];
+    }
+
+    UINT8 *trail = m_trails.relative_trails[angle];
+    for (size_t radius = 0; radius < len; radius++) {
+      if (data[radius] >= weakest_normal_blob) {
+        *trail = 1;
+      } else {
+        if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+          (*trail)++;
         }
-        trail++;
+        if (m_trails_motion.value == TARGET_MOTION_RELATIVE) {
+          data[radius] = m_trail_colour[*trail];
+        }
       }
+      trail++;
     }
   }
 
@@ -715,23 +725,25 @@ void RadarInfo::AdjustRange(int adjustment) {
   // the plotter in NM, and it chose the last range, we start using nautic miles as well.
 
   if (m_range.range) {
-    if (m_range.range > g_ranges_nautic && m_range.range < g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic)) {
+    if (m_range.range >= g_ranges_nautic && m_range.range < g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic)) {
       min = g_ranges_nautic;
       max = g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic) - 1;
-    } else if (m_range.range > g_ranges_metric && m_range.range < g_ranges_metric + ARRAY_SIZE(g_ranges_metric)) {
+    } else if (m_range.range >= g_ranges_metric && m_range.range < g_ranges_metric + ARRAY_SIZE(g_ranges_metric)) {
       min = g_ranges_metric;
       max = g_ranges_metric + ARRAY_SIZE(g_ranges_metric) - 1;
+    } else {
+      return;
     }
 
     if (m_radar_type != RT_4G) {
       max--;  // only 4G has longest ranges
     }
 
-    if (adjustment < 0 && m_range.range > min) {
+    if (adjustment > 0 && m_range.range > min) {
       LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), m_range.range[0].meters,
                   m_range.range[0].actual_meters, m_range.range[-1].meters, m_range.range[-1].actual_meters);
       m_transmit->SetRange(m_range.range[-1].meters);
-    } else if (adjustment > 0 && m_range.range < max) {
+    } else if (adjustment < 0 && m_range.range < max) {
       LOG_VERBOSE(wxT("BR24radar_pi: Change radar range from %d/%d to %d/%d"), m_range.range[0].meters,
                   m_range.range[0].actual_meters, m_range.range[+1].meters, m_range.range[+1].actual_meters);
       m_transmit->SetRange(m_range.range[+1].meters);
@@ -808,7 +820,6 @@ void RadarInfo::ResetRadarImage() {
 void RadarInfo::RenderRadarImage(DrawInfo *di) {
   wxCriticalSectionLocker lock(m_exclusive);
   int drawing_method = m_pi->m_settings.drawing_method;
-  bool colorOption = m_pi->m_settings.display_option > 0;
 
   if (m_state.value != RADAR_TRANSMIT && m_state.value != RADAR_WAKING_UP) {
     ResetRadarImage();
@@ -816,12 +827,12 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
   }
 
   // Determine if a new draw method is required
-  if (!di->draw || (drawing_method != di->drawing_method) || (colorOption != di->color_option)) {
+  if (!di->draw || (drawing_method != di->drawing_method)) {
     RadarDraw *newDraw = RadarDraw::make_Draw(this, drawing_method);
     if (!newDraw) {
       wxLogError(wxT("BR24radar_pi: out of memory"));
       return;
-    } else if (newDraw->Init(colorOption)) {
+    } else if (newDraw->Init()) {
       wxArrayString methods;
       RadarDraw::GetDrawingMethods(methods);
       if (di == &m_draw_overlay) {
@@ -834,7 +845,6 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
       }
       di->draw = newDraw;
       di->drawing_method = drawing_method;
-      di->color_option = colorOption;
     } else {
       m_pi->m_settings.drawing_method = 0;
       delete newDraw;
@@ -990,7 +1000,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
   wxString s = m_pi->GetGuardZoneText(this);
 
   if (m_state.value == RADAR_TRANSMIT) {
-    double distance = 0.0, bearing;
+    double distance = 0.0, bearing = nanl("");
 
     // Add VRM/EBLs
 
@@ -1136,34 +1146,35 @@ void RadarInfo::SetBearing(int bearing) {
 void RadarInfo::ClearTrails() { memset(&m_trails, 0, sizeof(m_trails)); }
 
 void RadarInfo::ComputeTargetTrails() {
-  static TrailRevolutionsAge maxRevs[TRAIL_ARRAY_SIZE] = {SECONDS_TO_REVOLUTIONS(0),
+  static TrailRevolutionsAge maxRevs[TRAIL_ARRAY_SIZE] = {0,
                                                           SECONDS_TO_REVOLUTIONS(15),
                                                           SECONDS_TO_REVOLUTIONS(30),
                                                           SECONDS_TO_REVOLUTIONS(60),
                                                           SECONDS_TO_REVOLUTIONS(180),
                                                           SECONDS_TO_REVOLUTIONS(600),
-                                                          255};
+                                                          TRAIL_MAX_REVOLUTIONS + 1};
 
   TrailRevolutionsAge maxRev = maxRevs[m_target_trails.value];
   TrailRevolutionsAge revolution;
-  double colorsPerRevolution = BLOB_HISTORY_COLORS / (double)maxRev;
-  double color = 0.;
+  double coloursPerRevolution = 0.;
+  double colour = 0.;
 
   // Like plotter, continuous trails are all very white (non transparent)
-  if (m_target_trails.value == TRAIL_CONTINUOUS) {
-    colorsPerRevolution = 0.;
+  if ((m_target_trails.value > 0) && (m_target_trails.value < TRAIL_CONTINUOUS)) {
+    coloursPerRevolution = BLOB_HISTORY_COLOURS / (double)maxRev;
   }
 
   LOG_VERBOSE(wxT("BR24radar_pi: Target trail value %d = %d revolutions"), m_target_trails.value, maxRev);
 
   // Disperse the BLOB_HISTORY values over 0..maxrev
   for (revolution = 0; revolution <= TRAIL_MAX_REVOLUTIONS; revolution++) {
-    if (revolution >= 1 && revolution <= maxRev) {
-      m_trail_color[revolution] = (BlobColor)(BLOB_HISTORY_0 + (int)color);
-      color += colorsPerRevolution;
+    if (revolution >= 1 && revolution < maxRev) {
+      m_trail_colour[revolution] = (BlobColour)(BLOB_HISTORY_0 + (int)colour);
+      colour += coloursPerRevolution;
     } else {
-      m_trail_color[revolution] = BLOB_NONE;
+      m_trail_colour[revolution] = BLOB_NONE;
     }
+    // LOG_VERBOSE(wxT("BR24radar_pi: ComputeTargetTrails rev=%u color=%d"), revolution, m_trail_colour[revolution]);
   }
 }
 

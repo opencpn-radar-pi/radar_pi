@@ -163,7 +163,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   glLineWidth(1.0);
 
   for (int i = 1; i <= 4; i++) {
-    DrawArc(w / 2.0, h / 2.0, r * i * 0.25, 0.0, 2.0 * (float)PI, 360);
+    DrawArc(center_x, center_y, r * i * 0.25, 0.0, 2.0 * (float)PI, 360);
     const char *s = m_ri->GetDisplayRangeStr(i - 1);
     if (s) {
       m_FontNormal.RenderString(wxString::Format(wxT("%s"), s), center_x + x * (float)i, center_y + y * (float)i);
@@ -172,6 +172,14 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
 
   if (m_pi->m_heading_source != HEADING_NONE) {
     double heading = (m_ri->IsDisplayNorthUp() ? 0 : m_pi->m_hdt) + 180.;
+    double predictor = (m_ri->IsDisplayNorthUp() ? m_pi->m_hdt : 0) + 180.;
+
+    x = -sinf(deg2rad(predictor));
+    y = cosf(deg2rad(predictor));
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(center_x, center_y);
+    glVertex2f(center_x + x * r * 2, center_y + y * r * 2);
+    glEnd();
 
     for (int i = 0; i < 360; i += 5) {
       x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
@@ -372,13 +380,13 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   m_FontNormal.Build(font);
   wxFont bigFont = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
   bigFont.SetPointSize(bigFont.GetPointSize() + 2);
-  bigFont.SetStyle(wxFONTWEIGHT_BOLD);
+  bigFont.SetWeight(wxFONTWEIGHT_BOLD);
   m_FontBig.Build(bigFont);
   bigFont.SetPointSize(bigFont.GetPointSize() + 2);
-  bigFont.SetStyle(wxFONTWEIGHT_NORMAL);
+  bigFont.SetWeight(wxFONTWEIGHT_NORMAL);
   m_FontMenu.Build(bigFont);
   bigFont.SetPointSize(bigFont.GetPointSize() + 10);
-  bigFont.SetStyle(wxFONTWEIGHT_BOLD);
+  bigFont.SetWeight(wxFONTWEIGHT_BOLD);
   m_FontMenuBold.Build(bigFont);
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                // Black Background
@@ -458,9 +466,9 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
   } else if ((x >= center_x - m_zoom_size.x / 2) && (x <= center_x + m_zoom_size.x / 2) &&
              (y > h - m_zoom_size.y + MENU_ROUNDING)) {
     if (x > center_x) {
-      m_ri->AdjustRange(-1);
-    } else {
       m_ri->AdjustRange(+1);
+    } else {
+      m_ri->AdjustRange(-1);
     }
 
   } else {
@@ -500,11 +508,11 @@ void RadarCanvas::OnMouseWheel(wxMouseEvent &event) {
     }
     if (rotation > ZOOM_SENSITIVITY && m_last_mousewheel_zoom_in < now - ZOOM_TIME) {
       LOG_INFO(wxT("BR24radar_pi: %s Mouse zoom in"), m_ri->m_name.c_str());
-      m_ri->AdjustRange(-1);
+      m_ri->AdjustRange(+1);
       m_last_mousewheel_zoom_in = now;
     } else if (rotation < -1 * ZOOM_SENSITIVITY && m_last_mousewheel_zoom_out < now - ZOOM_TIME) {
       LOG_INFO(wxT("BR24radar_pi: %s Mouse zoom out"), m_ri->m_name.c_str());
-      m_ri->AdjustRange(+1);
+      m_ri->AdjustRange(-1);
       m_last_mousewheel_zoom_out = now;
     }
   }

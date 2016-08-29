@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-09 16:59+0200\n"
-"PO-Revision-Date: 2015-05-23 05:01-0400\n"
+"POT-Creation-Date: 2016-08-18 09:48+0200\n"
+"PO-Revision-Date: 2016-08-24 13:00-0400\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Czech\n"
 "Language: cs_CZ\n"
@@ -15,622 +15,769 @@ msgstr ""
 "X-Crowdin-Project: opencpn\n"
 "X-Crowdin-Language: cs\n"
 "X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
-#
-msgid "&Close"
-msgstr "&Stäng"
-#
-msgid "&Confirm"
-msgstr "&Potvrdit"
-#
-#, fuzzy
-msgid "&Hide Radar"
-msgstr "Radar"
-#
-#, fuzzy
-msgid "(Confirmed)"
-msgstr "&Potvrdit"
-#
-msgid "+"
-msgstr "+"
-#
-msgid "+10"
-msgstr "+10"
-#
-msgid "-"
-msgstr "-"
-#
-msgid "-10"
-msgstr "-10"
-#
-#, fuzzy
-msgid "1 min"
-msgstr "10 min"
-#
-msgid "10 min"
-msgstr "10 min"
-#
-msgid "10 sec"
-msgstr ""
-#
-msgid "15 min"
-msgstr "15 min"
-#
-msgid "15 sec"
-msgstr ""
-#
-msgid "20 min"
-msgstr "20 min"
-#
-msgid "25 min"
-msgstr "25 min"
-#
-#, fuzzy
-msgid "3 min"
-msgstr "30 min"
-#
-msgid "30 min"
-msgstr "30 min"
-#
-msgid "30 sec"
-msgstr ""
-#
-msgid "35 min"
-msgstr "35 min"
-#
-msgid "5 min"
-msgstr "5 min"
-#
-msgid "???"
-msgstr ""
-#
-msgid "Accelerated Graphics (OpenGL)"
-msgstr "Akcelerovaná grafika (OpenGL)"
-#
-msgid "Adjust"
-msgstr ""
-#
-#, fuzzy
-msgid "Advanced"
-msgstr ""
-"Pokročilé\n"
-"nastavení"
-#
-msgid "Antenna height"
-msgstr ""
-#
-msgid "Arc"
-msgstr "Sektor"
-#
+
+#: src\br24ControlsDialog.cpp:305 src\br24ControlsDialog.cpp:531
+#: src\RadarInfo.cpp:1068
 msgid "Auto"
 msgstr "Auto"
-#
-msgid "Auto hide after"
-msgstr ""
-#
-#, fuzzy
-msgid "BR24 Display Preferences"
-msgstr "BR24 Inställningar Målvisning"
-#
+
+#: src\br24ControlsDialog.cpp:380
 msgid "Back"
 msgstr "Zpět"
-#
-msgid "Bearing alignment"
-msgstr ""
-#
-msgid "Boat position"
-msgstr "Pozice lodí"
-#
-msgid "COG"
-msgstr "COG"
-#
-msgid "Cannot bind UDP socket to port "
-msgstr "Nelze vytvořit vazbu soketu UDP na portu "
-#
-msgid "Cannot create UDP socket"
-msgstr "Nelze vytvořit soket protokolu UDP"
-#
-msgid "Cannot set reuse address option on socket"
-msgstr "Nelze nastavit možnost opětovného použití adresy na socketu"
-#
-msgid ""
-"Cannot switch radar on as\n"
-"it is not connected or off"
-msgstr ""
-#
-msgid "Circle"
-msgstr "Cirkel"
-#
-#, c-format
-msgid "Clear EBL/VRM%d"
-msgstr ""
-#
-msgid "Clear cursor"
-msgstr ""
-#
-msgid "Clear trails"
-msgstr ""
-#
-msgid "Continuous"
-msgstr ""
-#
-msgid "Control Menu Auto Hide"
-msgstr ""
-#
-msgid "Drawing Method"
-msgstr ""
-#
-msgid "EBL/VRM"
-msgstr ""
-#
-msgid "Emulator"
-msgstr "Emulátor"
-#
-#, fuzzy
-msgid "Emulator mode"
-msgstr "Emulátor"
-#
-msgid "Enable dual radar, 4G only"
-msgstr ""
-#
-msgid "End bearing"
-msgstr "Konečný směr"
-#
-msgid "Ethernet card"
-msgstr ""
-#
-msgid "Fast"
-msgstr "Rychlé"
-#
-msgid "For radar overlay also required"
-msgstr ""
-#
-msgid "GPS"
-msgstr ""
-#
-msgid "GPU drawing method"
-msgstr ""
-#
-msgid "Gain"
-msgstr "Förstärkning"
-#
-msgid "Guard Zone"
-msgstr "Strážní zóna"
-#
-#, fuzzy
-msgid "Guard Zone Display"
-msgstr "Strážní zóna"
-#
-msgid "Guard Zone Sound"
-msgstr "Zvuk strážní zóny"
-#
-msgid "Guard Zone Styling"
-msgstr "Styl strážní zóny"
-#
-msgid "Guard zone"
-msgstr "Strážní zóna"
-#
-msgid "Guard zones"
-msgstr "Strážní zóny"
-#
-msgid "HDM"
-msgstr "HDM"
-#
-msgid "HDT"
-msgstr "HDT"
-#
-msgid "Head Up"
-msgstr ""
-#
-msgid "Head up"
-msgstr ""
-#
-msgid "Heading"
-msgstr "Kurs"
-#
-msgid "Hide both windows"
-msgstr ""
-#
-#, fuzzy
-msgid "Hide radar"
-msgstr "radar"
-#
-msgid "Hide window"
-msgstr ""
-#
-msgid "High"
-msgstr "Vysoký"
-#
-msgid "Info"
-msgstr "Info"
-#
-msgid "Inner range"
-msgstr "Vnitřní hranice"
-#
-#, fuzzy
-msgid "Installation"
-msgstr "Kalibrering"
-#
-#, fuzzy
-msgid "Interference rej."
-msgstr "Potlačení rušení"
-#
-msgid "Interference rejection"
-msgstr "Potlačení rušení"
-#
-msgid "Invalid IP address for UDP multicast"
-msgstr "Neplatná adresa IP pro UDP multicast"
-#
-msgid "Invalid multicast address"
-msgstr "Neplatná multicast adresa"
-#
-msgid "Kilometers"
-msgstr "Kilometer"
-#
-#, fuzzy
-msgid "Local interference rejection"
-msgstr "Potlačení rušení"
-#
-msgid "Low"
-msgstr "Nízký"
-#
-msgid "Medium"
-msgstr "Střední"
-#
-msgid "Menu"
-msgstr "Nabídka"
-#
-msgid "Monocolor-Red"
-msgstr "Enfärgad-Röd"
-#
-msgid "Multi Sweep Filter"
-msgstr ""
-#
-msgid "Multi-color"
-msgstr "Flerfärgad"
-#
-msgid "NMEA"
-msgstr "NMEA"
-#
-msgid "Nautical Miles"
-msgstr "Nautisk Mil"
-#
-msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
-msgstr "Navico Broadband BR24/3G/4G Radarmodul för OpenCPN\n"
-#
-msgid "Navico Radar PlugIn for OpenCPN"
-msgstr "Navico Radarmodul för OpenCPN"
-#
-msgid "Never"
-msgstr ""
-#
-#, c-format
-msgid "Next alarm in %d s"
-msgstr "Další alarm za %d s"
-#
-#, fuzzy
-msgid "No radar"
-msgstr "radar"
-#
-msgid "No valid drawing method"
-msgstr ""
-#
+
+#: src\br24ControlsDialog.cpp:399 src\br24ControlsDialog.cpp:1269
+msgid "Standby / Transmit"
+msgstr "Úsporný režim / vysílání"
+
+#: src\br24ControlsDialog.cpp:400 src\br24ControlsDialog.cpp:553
 msgid "Noise rejection"
 msgstr "Potlačení šumu"
-#
-msgid "Normal"
-msgstr "Normální"
-#
-msgid "North Up"
-msgstr ""
-#
-msgid "North up"
-msgstr ""
-#
-msgid "Off"
-msgstr "Av"
-#
-msgid "On"
-msgstr ""
-#
-msgid "OpenCPN options"
-msgstr "Možnosti OpenCPN"
-#
-msgid "OpenGL mode required"
-msgstr ""
-#
-msgid "Options"
-msgstr "Nastavení"
-#
-#, fuzzy
-msgid "Orientation"
-msgstr "Variace"
-#
-msgid "Outer range"
-msgstr "Vnější hranice"
-#
-msgid "Outline"
-msgstr "Obrys"
-#
-msgid "Overlay"
-msgstr ""
-#
-msgid "Overlay Display Options"
-msgstr "Alternativ överlagrad visning"
-#
-msgid "Pass radar heading to OpenCPN"
-msgstr "Předávat směr z radaru do OpenCPN"
-#
-#, c-format
-msgid "Place EBL/VRM%d"
-msgstr ""
-#
-msgid "RADAR"
-msgstr ""
-#
-msgid "Radar"
-msgstr "Radar"
-#
-#, fuzzy
-msgid "Radar A"
-msgstr "Radar"
-#
-#, fuzzy
-msgid "Radar B"
-msgstr "Radar"
-#
-msgid "Radar Control..."
-msgstr "Radar Inställningar..."
-#
-msgid "Radar IP"
-msgstr "IP radaru"
-#
-#, fuzzy
-msgid "Radar is in Standby"
-msgstr "Radar odesílající data"
-#
-msgid "Radar present"
-msgstr "Připojený radar"
-#
-#, fuzzy
-msgid "Radar requirements OK:"
-msgstr "Připojený radar"
-#
-#, fuzzy
-msgid "Radar requires the following"
-msgstr "Překrytí radarem vyžaduje následující údaje"
-#
-msgid "Radar sending data"
-msgstr "Radar odesílající data"
-#
-#, fuzzy
-msgid "Radar window and overlay"
-msgstr "Kortöverlagrad radar"
-#
-#, fuzzy
-msgid "Radar window only"
-msgstr "Självständing radarbild"
-#
-msgid "Rain clutter"
-msgstr "Rušení deštěm"
-#
-msgid "Range"
-msgstr "Räckvidd"
-#
-msgid "Range Units"
-msgstr "Räckvidd -Enhet"
-#
-msgid "Refresh rate"
-msgstr "Obnovovací frekvence"
-#
-msgid "Reverse mouse wheel zoom direction"
-msgstr ""
-#
-msgid "Scan age"
-msgstr "Stáří skenování"
-#
-msgid "Scan speed"
-msgstr "Rychlost skenování"
-#
-msgid "Sea clutter"
-msgstr "Rušení mořem"
-#
-msgid "Select Alert Sound"
-msgstr "Vybrat zvuk výstrah"
-#
-msgid "Select Sound File"
-msgstr "Vybrat zvukový soubor"
-#
-#, fuzzy
-msgid "Shader"
-msgstr "Stínování"
-#
-msgid "Shading"
-msgstr "Stínování"
-#
-msgid "Shading + Outline"
-msgstr "Stínování + obrys"
-#
-msgid "Show both windows"
-msgstr ""
-#
-msgid "Show other window"
-msgstr ""
-#
-#, fuzzy
-msgid "Show radar"
-msgstr "radar"
-#
-msgid "Show this window"
-msgstr ""
-#
-msgid "Show window"
-msgstr ""
-#
-msgid "Side lobe suppression"
-msgstr ""
-#
-msgid "Standby"
-msgstr ""
-#
-#, c-format
-msgid "Standby in %2d:%02d"
-msgstr ""
-#
-#, c-format
-msgid "Standby in %d:%02d"
-msgstr ""
-#
-msgid "Start bearing"
-msgstr "Počáteční směr"
-#
-msgid "Statistics"
-msgstr "Statistika"
-#
-msgid "Sweep Filter"
-msgstr ""
-#
-msgid "Target boost"
-msgstr "Zvýraznění cílů"
-#
-#, fuzzy
+
+#: src\br24ControlsDialog.cpp:401 src\br24ControlsDialog.cpp:567
 msgid "Target expansion"
-msgstr "Oddělení cílů"
-#
+msgstr "Expanze cílů"
+
+#: src\br24ControlsDialog.cpp:402 src\br24ControlsDialog.cpp:583
+msgid "Interference rejection"
+msgstr "Potlačení rušení"
+
+#: src\br24ControlsDialog.cpp:403 src\br24ControlsDialog.cpp:598
 msgid "Target separation"
 msgstr "Oddělení cílů"
-#
-#, fuzzy
+
+#: src\br24ControlsDialog.cpp:404 src\br24ControlsDialog.cpp:610
+msgid "Scan speed"
+msgstr "Rychlost skenování"
+
+#: src\br24ControlsDialog.cpp:405 src\br24ControlsDialog.cpp:622
+msgid "Target boost"
+msgstr "Zvýraznění cílů"
+
+#: src\br24ControlsDialog.cpp:406 src\br24ControlsDialog.cpp:630
+msgid "Installation"
+msgstr "Instalace"
+
+#: src\br24ControlsDialog.cpp:407 src\br24ControlsDialog.cpp:653
+msgid "Bearing alignment"
+msgstr "Srovnání náměru"
+
+#: src\br24ControlsDialog.cpp:408 src\br24ControlsDialog.cpp:661
+msgid "Antenna height"
+msgstr "Výška antény"
+
+#: src\br24ControlsDialog.cpp:409 src\br24ControlsDialog.cpp:669
+msgid "Local interference rej."
+msgstr "Potlačení lokálního rušení"
+
+#: src\br24ControlsDialog.cpp:410 src\br24ControlsDialog.cpp:679
+msgid "Side lobe suppression"
+msgstr "Potlačení bočního laloku"
+
+#: src\br24ControlsDialog.cpp:411 src\br24ControlsDialog.cpp:687
+msgid "Main bang size"
+msgstr "Velikost mrtvé zóny"
+
+#: src\br24ControlsDialog.cpp:412 src\br24ControlsDialog.cpp:414
+#: src\br24ControlsDialog.cpp:705
+msgid "Guard zones"
+msgstr "Strážní zóny"
+
+#: src\br24ControlsDialog.cpp:413 src\br24ControlsDialog.cpp:708
+msgid "Zone type"
+msgstr "Typ zóny"
+
+#: src\br24ControlsDialog.cpp:415 src\br24ControlsDialog.cpp:722
+msgid "Inner range"
+msgstr "Vnitřní hranice"
+
+#: src\br24ControlsDialog.cpp:416 src\br24ControlsDialog.cpp:729
+msgid "Outer range"
+msgstr "Vnější hranice"
+
+#: src\br24ControlsDialog.cpp:417 src\br24ControlsDialog.cpp:736
+msgid "Start bearing"
+msgstr "Počáteční směr"
+
+#: src\br24ControlsDialog.cpp:418 src\br24ControlsDialog.cpp:744
+msgid "End bearing"
+msgstr "Konečný směr"
+
+#: src\br24ControlsDialog.cpp:419
+msgid "Multi sweep filter"
+msgstr "Víceodrazový filtr"
+
+#: src\br24ControlsDialog.cpp:420 src\br24ControlsDialog.cpp:770
+msgid "Range"
+msgstr "Dosah"
+
+#: src\br24ControlsDialog.cpp:421 src\br24ControlsDialog.cpp:774
+msgid "Gain"
+msgstr "Zisk"
+
+#: src\br24ControlsDialog.cpp:422 src\br24ControlsDialog.cpp:778
+msgid "Sea clutter"
+msgstr "Rušení mořem"
+
+#: src\br24ControlsDialog.cpp:423 src\br24ControlsDialog.cpp:782
+msgid "Rain clutter"
+msgstr "Rušení deštěm"
+
+#: src\br24ControlsDialog.cpp:424 src\br24ControlsDialog.cpp:798
+msgid "Clear cursor"
+msgstr "Zrušit kurzor"
+
+#: src\br24ControlsDialog.cpp:425 src\br24ControlsDialog.cpp:804
+#: src\br24ControlsDialog.cpp:1346
+msgid "Place EBL/VRM"
+msgstr "Umístit EBL/VRM"
+
+#: src\br24ControlsDialog.cpp:426 src\br24ControlsDialog.cpp:836
+#: src\br24OptionsDialog.cpp:129
 msgid "Target trails"
-msgstr "Oddělení cílů"
-#
-msgid "Test Alert Sound"
-msgstr "Otestovat zvuk výstrahy"
-#
+msgstr "Stopy cílů"
+
+#: src\br24ControlsDialog.cpp:427 src\br24ControlsDialog.cpp:844
+#: src\br24ControlsDialog.cpp:1357
+msgid "True/Relative trails"
+msgstr "Skutečné/Relativní stopy"
+
+#: src\br24ControlsDialog.cpp:428 src\br24ControlsDialog.cpp:849
+msgid "Clear trails"
+msgstr "Smazat stopy"
+
+#: src\br24ControlsDialog.cpp:429 src\br24ControlsDialog.cpp:861
+#: src\br24ControlsDialog.cpp:1368
+msgid "Orientation"
+msgstr "Orientace"
+
+#: src\br24ControlsDialog.cpp:430 src\br24ControlsDialog.cpp:868
+msgid "Refresh rate"
+msgstr "Obnovovací frekvence"
+
+#: src\br24ControlsDialog.cpp:431 src\br24ControlsDialog.cpp:874
+msgid "Transparency"
+msgstr "Průhlednost"
+
+#: src\br24ControlsDialog.cpp:432 src\br24ControlsDialog.cpp:901
+#: src\br24ControlsDialog.cpp:1384
+msgid "Overlay"
+msgstr "Překryv"
+
+#: src\br24ControlsDialog.cpp:433 src\br24ControlsDialog.cpp:912
+msgid "Adjust"
+msgstr "Upravit"
+
+#: src\br24ControlsDialog.cpp:434 src\br24ControlsDialog.cpp:917
+msgid "Advanced"
+msgstr "Pokočilé"
+
+#: src\br24ControlsDialog.cpp:435 src\br24ControlsDialog.cpp:922
+msgid "View"
+msgstr "Zobrazení"
+
+#: src\br24ControlsDialog.cpp:436 src\br24ControlsDialog.cpp:927
+msgid "EBL/VRM"
+msgstr "EBL/VRM"
+
+#: src\br24ControlsDialog.cpp:437 src\br24ControlsDialog.cpp:952
 msgid "Timed Transmit"
 msgstr "Časované vysílání"
-#
-#, fuzzy
-msgid "Trail Display"
-msgstr "Radarvisning"
-#
-#, fuzzy
-msgid "Transmit"
-msgstr "Časované vysílání"
-#
-#, c-format
-msgid "Transmit in %2d:%02d"
-msgstr ""
-#
-#, c-format
-msgid "Transmit in %d:%02d"
-msgstr ""
-#
-msgid "Transparency"
-msgstr "Transparent"
-#
-msgid "Unable to create OpenGL canvas"
-msgstr ""
-#
-msgid "Unknown"
-msgstr ""
-#
+
+#: src\br24ControlsDialog.cpp:438 src\br24ControlsDialog.cpp:960
+msgid "Info"
+msgstr "Info"
+
+#: src\br24ControlsDialog.cpp:504
+msgid "+10"
+msgstr "+10"
+
+#: src\br24ControlsDialog.cpp:509
+msgid "+"
+msgstr "+"
+
+#: src\br24ControlsDialog.cpp:515
 msgid "Value"
 msgstr "Hodnota"
-#
+
+#: src\br24ControlsDialog.cpp:521
+msgid "-"
+msgstr "-"
+
+#: src\br24ControlsDialog.cpp:526
+msgid "-10"
+msgstr "-10"
+
+#: src\br24ControlsDialog.cpp:549 src\br24ControlsDialog.cpp:565
+#: src\br24ControlsDialog.cpp:577 src\br24ControlsDialog.cpp:593
+#: src\br24ControlsDialog.cpp:618 src\br24ControlsDialog.cpp:711
+#: src\br24ControlsDialog.cpp:827 src\br24ControlsDialog.cpp:855
+#: src\br24ControlsDialog.cpp:942 src\br24ControlsDialog.cpp:1073
+#: src\br24ControlsDialog.cpp:1274 src\br24ControlsDialog.cpp:1387
+#: src\br24ControlsDialog.cpp:1389
+msgid "Off"
+msgstr "Vyp"
+
+#: src\br24ControlsDialog.cpp:550 src\br24ControlsDialog.cpp:578
+#: src\br24ControlsDialog.cpp:594 src\br24ControlsDialog.cpp:619
+msgid "Low"
+msgstr "Nízký"
+
+#: src\br24ControlsDialog.cpp:551 src\br24ControlsDialog.cpp:580
+#: src\br24ControlsDialog.cpp:596 src\br24ControlsDialog.cpp:620
+msgid "High"
+msgstr "Vysoký"
+
+#: src\br24ControlsDialog.cpp:566 src\br24ControlsDialog.cpp:1070
+#: src\br24ControlsDialog.cpp:1389
+msgid "On"
+msgstr "Zap"
+
+#: src\br24ControlsDialog.cpp:579 src\br24ControlsDialog.cpp:595
+msgid "Medium"
+msgstr "Střední"
+
+#: src\br24ControlsDialog.cpp:607
+msgid "Normal"
+msgstr "Normální"
+
+#: src\br24ControlsDialog.cpp:608
+msgid "Fast"
+msgstr "Rychlé"
+
+#: src\br24ControlsDialog.cpp:635
+msgid "Preferences"
+msgstr "Předvolby"
+
+#: src\br24ControlsDialog.cpp:712
+msgid "Arc"
+msgstr "Sektor"
+
+#: src\br24ControlsDialog.cpp:713
+msgid "Circle"
+msgstr "Kruh"
+
+#: src\br24ControlsDialog.cpp:752 src\br24ControlsDialog.cpp:855
+#: src\br24ControlsDialog.cpp:1070 src\br24ControlsDialog.cpp:1073
+msgid "Multi Sweep Filter"
+msgstr "Víceodrazový filtr"
+
+#: src\br24ControlsDialog.cpp:828
+msgid "15 sec"
+msgstr "15 sek"
+
+#: src\br24ControlsDialog.cpp:829 src\br24OptionsDialog.cpp:119
+msgid "30 sec"
+msgstr "30 sek"
+
+#: src\br24ControlsDialog.cpp:830
+msgid "1 min"
+msgstr "1 min"
+
+#: src\br24ControlsDialog.cpp:831
+msgid "3 min"
+msgstr "3 min"
+
+#: src\br24ControlsDialog.cpp:832 src\br24ControlsDialog.cpp:944
+msgid "10 min"
+msgstr "10 min"
+
+#: src\br24ControlsDialog.cpp:833
+msgid "Continuous"
+msgstr "Kontinuální"
+
+#: src\br24ControlsDialog.cpp:890
+msgid "Unknown"
+msgstr "Neznámý"
+
+#: src\br24ControlsDialog.cpp:943
+msgid "5 min"
+msgstr "5 min"
+
+#: src\br24ControlsDialog.cpp:945
+msgid "15 min"
+msgstr "15 min"
+
+#: src\br24ControlsDialog.cpp:946
+msgid "20 min"
+msgstr "20 min"
+
+#: src\br24ControlsDialog.cpp:947
+msgid "25 min"
+msgstr "25 min"
+
+#: src\br24ControlsDialog.cpp:948
+msgid "30 min"
+msgstr "30 min"
+
+#: src\br24ControlsDialog.cpp:949
+msgid "35 min"
+msgstr "35 min"
+
+#: src\br24ControlsDialog.cpp:1009 src\br24ControlsDialog.cpp:1012
+msgid "Guard zone"
+msgstr "Strážní zóna"
+
+#: src\br24ControlsDialog.cpp:1277
+msgid "Standby"
+msgstr "Úsporný režim"
+
+#: src\br24ControlsDialog.cpp:1280
+msgid "Waking up"
+msgstr "Probouzení"
+
+#: src\br24ControlsDialog.cpp:1283
+msgid "Transmit"
+msgstr "Vyslat"
+
+#: src\br24ControlsDialog.cpp:1291 src\br24radar_pi.cpp:522
+msgid "Standby in"
+msgstr "Úsporný režim za"
+
+#: src\br24ControlsDialog.cpp:1296 src\br24radar_pi.cpp:527
+msgid "Transmit in"
+msgstr "Vysílání za"
+
+#: src\br24ControlsDialog.cpp:1325
+msgid "Hide both windows"
+msgstr "Skrytí obou oken"
+
+#: src\br24ControlsDialog.cpp:1327
+msgid "Show other window"
+msgstr "Zobrazit druhé okno"
+
+#: src\br24ControlsDialog.cpp:1331
+msgid "Show this window"
+msgstr "Zobrazit toto okno"
+
+#: src\br24ControlsDialog.cpp:1333
+msgid "Show both windows"
+msgstr "Zobrazit obě okna"
+
+#: src\br24ControlsDialog.cpp:1337
+msgid "Hide window"
+msgstr "Skrýt okno"
+
+#: src\br24ControlsDialog.cpp:1337
+msgid "Show window"
+msgstr "Zobrazit okno"
+
+#: src\br24ControlsDialog.cpp:1343
+msgid "Clear EBL/VRM"
+msgstr "Vymazat EBL/VRM"
+
+#: src\br24ControlsDialog.cpp:1360
+msgid "True"
+msgstr "Skutečný"
+
+#: src\br24ControlsDialog.cpp:1362
+msgid "Relative"
+msgstr "Relativní"
+
+#: src\br24ControlsDialog.cpp:1372
+msgid "North up"
+msgstr "Sever nahoře"
+
+#: src\br24ControlsDialog.cpp:1375
+msgid "Head up"
+msgstr "Směr nahoru"
+
+#: src\br24ControlsDialog.cpp:1378
+msgid "???"
+msgstr "???"
+
+#: src\br24ControlsDialog.cpp:1663
+msgid "Guard Zone"
+msgstr "Strážní zóna"
+
+#: src\br24ControlsDialog.h:60 src\br24MessageBox.h:86 src\br24radar_pi.cpp:233
+#: src\br24radar_pi.cpp:774
+msgid "Radar"
+msgstr "Radar"
+
+#: src\br24MessageBox.cpp:125
+msgid "Cannot switch radar on as\n"
+"it is not connected or off"
+msgstr "Nelze zapnout radar protože\n"
+"není připojen nebo je vypnut"
+
+#: src\br24MessageBox.cpp:132
+msgid "OpenCPN options"
+msgstr "Možnosti OpenCPN"
+
+#: src\br24MessageBox.cpp:137
+msgid "Accelerated Graphics (OpenGL)"
+msgstr "Akcelerovaná grafika (OpenGL)"
+
+#: src\br24MessageBox.cpp:143
+msgid "ZeroConf via Ethernet"
+msgstr "ZeroConf přes Ethernet"
+
+#: src\br24MessageBox.cpp:149
+msgid "Radar present"
+msgstr "Připojený radar"
+
+#: src\br24MessageBox.cpp:155
+msgid "Radar sending data"
+msgstr "Radar odesílající data"
+
+#: src\br24MessageBox.cpp:160
+msgid "For radar overlay also required"
+msgstr "Pro překrytí radarem je také třeba"
+
+#: src\br24MessageBox.cpp:168
+msgid "Boat position"
+msgstr "Pozice lodě"
+
+#: src\br24MessageBox.cpp:174
+msgid "and"
+msgstr "a"
+
+#: src\br24MessageBox.cpp:179
+msgid "True Heading"
+msgstr "Skutečný směr"
+
+#: src\br24MessageBox.cpp:184
+msgid "or"
+msgstr "nebo"
+
+#: src\br24MessageBox.cpp:188 src\br24MessageBox.cpp:470
+msgid "Magnetic heading"
+msgstr "Magnetický směr"
+
+#: src\br24MessageBox.cpp:195 src\br24MessageBox.cpp:477
+#: src\br24radar_pi.cpp:768
 msgid "Variation"
 msgstr "Variace"
-#
-msgid "Vertex Array"
+
+#: src\br24MessageBox.cpp:200 src\br24MessageBox.cpp:205
+msgid "Statistics"
+msgstr "Statistika"
+
+#: src\br24MessageBox.cpp:210
+msgid "&Close"
+msgstr "&Zavřít"
+
+#: src\br24MessageBox.cpp:216
+msgid "&Hide Radar"
+msgstr "&Skrýt Radar"
+
+#: src\br24MessageBox.cpp:340
+msgid "Radar type"
 msgstr ""
-#
-msgid "View"
+
+#: src\br24MessageBox.cpp:344
+msgid "Radar IP"
+msgstr "IP radaru"
+
+#: src\br24MessageBox.cpp:364
+msgid "Radar requirements OK:"
+msgstr "Požadavky radaru OK:"
+
+#: src\br24MessageBox.cpp:366
+msgid "Radar requires the following"
+msgstr "Radar vyžaduje následující"
+
+#: src\br24MessageBox.cpp:448 src\RadarInfo.cpp:913
+msgid "Emulator"
+msgstr "Emulátor"
+
+#: src\br24MessageBox.cpp:456
+msgid "Ethernet card"
+msgstr "Síťová karta"
+
+#: src\br24MessageBox.cpp:463
+msgid "True heading"
+msgstr "Skutečný směr"
+
+#: src\br24OptionsDialog.cpp:38
+msgid "BR24 Display Preferences"
+msgstr "Nastavení zobrazení BR24"
+
+#: src\br24OptionsDialog.cpp:58
+msgid "Nautical Miles"
+msgstr "Námořní míle"
+
+#: src\br24OptionsDialog.cpp:58
+msgid "Kilometers"
+msgstr "Kilometery"
+
+#: src\br24OptionsDialog.cpp:62
+msgid "Range Units"
+msgstr "Jednotky dosahu"
+
+#: src\br24OptionsDialog.cpp:69
+msgid "Shading"
+msgstr "Stínování"
+
+#: src\br24OptionsDialog.cpp:69
+msgid "Outline"
+msgstr "Obrys"
+
+#: src\br24OptionsDialog.cpp:69
+msgid "Shading + Outline"
+msgstr "Stínování + obrys"
+
+#: src\br24OptionsDialog.cpp:71
+msgid "Guard Zone Styling"
+msgstr "Styl strážní zóny"
+
+#: src\br24OptionsDialog.cpp:80
+msgid "Guard Zone Sound"
+msgstr "Zvuk strážní zóny"
+
+#: src\br24OptionsDialog.cpp:83
+msgid "Select Alert Sound"
+msgstr "Vybrat zvuk výstrah"
+
+#: src\br24OptionsDialog.cpp:87
+msgid "Test Alert Sound"
+msgstr "Otestovat zvuk výstrahy"
+
+#: src\br24OptionsDialog.cpp:92
+msgid "Repeat alarm after (sec)"
+msgstr "Opakování alarmu po (sek)"
+
+#: src\br24OptionsDialog.cpp:103
+msgid "GPU drawing method"
+msgstr "Metoda kreslení GPU"
+
+#: src\br24OptionsDialog.cpp:109
+msgid "Drawing Method"
+msgstr "Metoda kreslení"
+
+#: src\br24OptionsDialog.cpp:116
+msgid "Control Menu Auto Hide"
+msgstr "Automaticky schovat menu"
+
+#: src\br24OptionsDialog.cpp:119
+msgid "Never"
+msgstr "Nikdy"
+
+#: src\br24OptionsDialog.cpp:119
+msgid "10 sec"
+msgstr "10 sek"
+
+#: src\br24OptionsDialog.cpp:122
+msgid "Auto hide after"
+msgstr "Automaticky schovat po"
+
+#: src\br24OptionsDialog.cpp:132
+msgid "Trail start color"
+msgstr "Počáteční barva stopy"
+
+#: src\br24OptionsDialog.cpp:139
+msgid "Trail end color"
+msgstr "Konečná barva stopy"
+
+#: src\br24OptionsDialog.cpp:148
+msgid "Target colors"
+msgstr "Barvy cílů"
+
+#: src\br24OptionsDialog.cpp:151
+msgid "Weak return color"
+msgstr "Barva slabého odrazu"
+
+#: src\br24OptionsDialog.cpp:157
+msgid "Intermediate return color"
+msgstr "Barva středního odrazu"
+
+#: src\br24OptionsDialog.cpp:164
+msgid "Strong return color"
+msgstr "Barva silného odrazu"
+
+#: src\br24OptionsDialog.cpp:179
+msgid "Options"
+msgstr "Nastavení"
+
+#: src\br24OptionsDialog.cpp:183
+msgid "Show Guard Zone on overlay"
 msgstr ""
-#
+
+#: src\br24OptionsDialog.cpp:189
+msgid "Show Target trails on overlay"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:195
+msgid "Enable dual radar, 4G only"
+msgstr "Povolit duální radar, jen 4G"
+
+#: src\br24OptionsDialog.cpp:207
+msgid "Ignore radar heading"
+msgstr "Ignorovat směr z radaru"
+
+#: src\br24OptionsDialog.cpp:214
+msgid "Pass radar heading to OpenCPN"
+msgstr "Předávat směr z radaru do OpenCPN"
+
+#: src\br24OptionsDialog.cpp:220
+msgid "Enable COG as heading"
+msgstr "Povolit COG jako směr"
+
+#: src\br24OptionsDialog.cpp:228
+msgid "Emulator mode"
+msgstr "Režim emulátoru"
+
+#: src\br24OptionsDialog.cpp:233
+msgid "Reverse mouse wheel zoom direction"
+msgstr "Obrátit směr přiblížení kolečkem myši"
+
+#: src\br24OptionsDialog.cpp:288
+msgid "Select Sound File"
+msgstr "Vybrat zvukový soubor"
+
+#: src\br24OptionsDialog.cpp:289
 msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
 msgstr "Soubory WAV(*.wav)|*.wav|Všechny soubory(*.*)|*.*"
-#
-msgid "WMM"
-msgstr "WMM"
-#
-#, fuzzy
-msgid "ZeroConf via Ethernet"
-msgstr "ZeroConf přes (kabelový) Ethernet"
-#
+
+#: src\br24radar_pi.cpp:233 src\br24radar_pi.cpp:352
+msgid "Radar A"
+msgstr "Radar A"
+
+#: src\br24radar_pi.cpp:234
+msgid "Radar B"
+msgstr "Radar B"
+
+#: src\br24radar_pi.cpp:242
+msgid "Navico BR24, 3G and 4G RADAR"
+msgstr "Navico BR24, 3G a 4G RADAR"
+
+#: src\br24radar_pi.cpp:251
+msgid "Show radar"
+msgstr "Zobrazit radar"
+
+#: src\br24radar_pi.cpp:252
+msgid "Hide radar"
+msgstr "Skrýt radar"
+
+#: src\br24radar_pi.cpp:253
+msgid "Radar Control..."
+msgstr "Ovládání radaru..."
+
+#: src\br24radar_pi.cpp:255 src\RadarCanvas.cpp:98
+msgid "Menu"
+msgstr "Nabídka"
+
+#: src\br24radar_pi.cpp:330
+msgid "Navico Radar PlugIn for OpenCPN"
+msgstr "Navico Radar PlugIn pro OpenCPN"
+
+#: src\br24radar_pi.cpp:332
+msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+msgstr "Navico Broadband BR24 / 3G / 4G Radar PlugIn pro OpenCPN\n"
+
+#: src\br24radar_pi.cpp:540
 msgid "Zone"
 msgstr "Oblast"
-#
-#, fuzzy
-msgid ""
-"Zone 1: unknown\n"
-"Zone 2: unknown\n"
-"Timeout\n"
+
+#: src\br24radar_pi.cpp:542
+msgid "(Confirmed)"
+msgstr "(Potvrzeno)"
+
+#: src\br24radar_pi.cpp:574
+msgid " Zone"
+msgstr " Oblast"
+
+#: src\br24radar_pi.cpp:618
+msgid "Next alarm in"
+msgstr "Další alarm za"
+
+#: src\br24radar_pi.cpp:765
+msgid "COG"
+msgstr "COG"
+
+#: src\br24radar_pi.cpp:768
+msgid "HDM"
+msgstr "HDM"
+
+#: src\br24radar_pi.cpp:771
+msgid "HDT"
+msgstr "HDT"
+
+#: src\br24radar_pi.cpp:1131
+msgid "GPS"
 msgstr ""
-"Oblast 1: neznámá\n"
-"Oblast 2: neznámá\n"
-"Čas vypršel"
-#
-#, fuzzy
-msgid "Zone type"
-msgstr "Typ zóny:"
-#
-#~ msgid " Guard Zone Control"
-#~ msgstr " Nastavení strážních zón"
-#
-#~ msgid ""
-#~ "<<\n"
-#~ "Back"
-#~ msgstr ""
-#~ "<< \n"
-#~ "Zpět"
-#
-#~ msgid "C&onfirm + Close"
-#~ msgstr "P&otvrdit + zavřít"
-#
-#~ msgid "Data sources"
-#~ msgstr "Zdroje dat"
-#
-#~ msgid "Dialog"
-#~ msgstr "Dialogové okno"
-#
-#~ msgid "Downsample"
-#~ msgstr "Převzorkovat dolů"
-#
-#~ msgid "Guard Zone Active"
-#~ msgstr "Aktivní strážní zóna"
-#
-#~ msgid ""
-#~ "Heading correction\n"
-#~ "(-180 to +180)"
-#~ msgstr ""
-#~ "Korekce směru\n"
-#~ " (-180 až + 180)"
-#
-#~ msgid "Idle time is set to"
-#~ msgstr "Doba nečinnosti nastavena na"
-#
-#~ msgid "Multi-color 2"
-#~ msgstr "Vícebarva 2"
-#
-#~ msgid "Radar scanner is Idling"
-#~ msgstr "Radarový skener je nečinný"
-#
-#~ msgid "Set Guard Point"
-#~ msgstr "Nastavit strážní bod"
-#
-#~ msgid "Spectrum"
-#~ msgstr "Spektrum"
-#
-#~ msgid "Turn Radar always ON"
-#~ msgstr "Zapnout radar nepřetržitě"
-#
-#~ msgid "ca."
-#~ msgstr "ca."
-#
-#~ msgid "emulator"
-#~ msgstr "emulátor"
-#
-#~ msgid "minutes"
-#~ msgstr "minut"
-#
-#~ msgid "minutes until next run"
-#~ msgstr "minut do příštího spuštění"
+
+#: src\br24radar_pi.cpp:1217
+msgid "WMM"
+msgstr "WMM"
+
+#: src\br24radar_pi.cpp:1336
+msgid "NMEA"
+msgstr "NMEA"
+
+#: src\GuardZoneBogey.cpp:94
+msgid "Confirm"
+msgstr "Potvrdit"
+
+#: src\GuardZoneBogey.cpp:97
+msgid "Close"
+msgstr "Zavřít"
+
+#: src\GuardZoneBogey.h:53
+msgid "Alarm"
+msgstr "Alarm"
+
+#: src\RadarDraw.cpp:54
+msgid "Vertex Array"
+msgstr "Vertex pole"
+
+#: src\RadarDraw.cpp:54
+msgid "Shader"
+msgstr "Shader"
+
+#: src\RadarInfo.cpp:908
+msgid "North Up"
+msgstr "Sever nahoře"
+
+#: src\RadarInfo.cpp:910
+msgid "Head Up"
+msgstr "Směr nahoru"
+
+#: src\RadarInfo.cpp:1021
+msgid "No radar"
+msgstr "Bez radaru"
+
+#: src\RadarInfo.cpp:1024
+msgid "Radar is in Standby"
+msgstr "Radar je v pohotovostním režimu"
+
+#: src\RadarInfo.cpp:1027
+msgid "Radar is waking up"
+msgstr "Radar se probouzí"
+
+#: src\RadarInfo.cpp:1033
+msgid "Radar not transmitting"
+msgstr "Radar nevysílá"
+
+#: src\RadarPanel.cpp:38
+msgid "RADAR"
+msgstr "RADAR"
+
+#: src\RadarPanel.cpp:61 src\RadarPanel.cpp:156
+msgid "OpenGL mode required"
+msgstr "Je nutný OpenGL režim"
+
+#: src\RadarPanel.cpp:167
+msgid "Unable to create OpenGL canvas"
+msgstr "Nelze vytvořit OpenGL plátno"
+
+#: src\socketutil.cpp:179
+msgid "Cannot create UDP socket"
+msgstr "Nelze vytvořit soket protokolu UDP"
+
+#: src\socketutil.cpp:183
+msgid "Cannot set reuse address option on socket"
+msgstr "Nelze nastavit možnost opětovného použití adresy na socketu"
+
+#: src\socketutil.cpp:188
+msgid "Cannot bind UDP socket to port "
+msgstr "Nelze vytvořit vazbu soketu UDP na portu "
+
+#: src\socketutil.cpp:197
+msgid "Invalid multicast address"
+msgstr "Neplatná multicast adresa"
+
+#: src\socketutil.cpp:202
+msgid "Invalid IP address for UDP multicast"
+msgstr "Neplatná adresa IP pro UDP multicast"
+

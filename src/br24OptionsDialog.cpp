@@ -49,7 +49,7 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
   SetSizer(topSizer);
 
-  wxFlexGridSizer *DisplayOptionsBox = new wxFlexGridSizer(2, 5, 5);
+  wxFlexGridSizer *DisplayOptionsBox = new wxFlexGridSizer(4, 5, 5);
   topSizer->Add(DisplayOptionsBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL | wxEXPAND, 2);
 
   //  Range Units options
@@ -60,42 +60,10 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
 
   m_RangeUnits =
       new wxRadioBox(this, wxID_ANY, _("Range Units"), wxDefaultPosition, wxDefaultSize, 2, RangeModeStrings, 1, wxRA_SPECIFY_COLS);
-  DisplayOptionsBox->Add(m_RangeUnits, 0, wxALL | wxEXPAND, 2);
 
   m_RangeUnits->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnRangeUnitsClick), NULL, this);
 
   m_RangeUnits->SetSelection(m_settings.range_units);
-
-  /// Option m_settings
-  wxString Overlay_Display_Options[] = {
-      _("Monocolor-Red"), _("Multi-color"),
-  };
-
-  m_OverlayDisplayOptions = new wxRadioBox(this, wxID_ANY, _("Overlay Display Options"), wxDefaultPosition, wxDefaultSize,
-                                           ARRAY_SIZE(Overlay_Display_Options), Overlay_Display_Options, 1, wxRA_SPECIFY_COLS);
-  m_OverlayDisplayOptions->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnDisplayOptionClick),
-                                   NULL, this);
-  m_OverlayDisplayOptions->SetSelection(m_settings.display_option);
-  DisplayOptionsBox->Add(m_OverlayDisplayOptions, 0, wxALL | wxEXPAND, 2);
-
-  wxString GuardZoneOnOverlayStrings[] = {
-      _("Radar window only"), _("Radar window and overlay"),
-  };
-  m_GuardZoneOnOverlay = new wxRadioBox(this, wxID_ANY, _("Guard Zone Display"), wxDefaultPosition, wxDefaultSize,
-                                        ARRAY_SIZE(GuardZoneOnOverlayStrings), GuardZoneOnOverlayStrings, 1, wxRA_SPECIFY_COLS);
-
-  DisplayOptionsBox->Add(m_GuardZoneOnOverlay, 0, wxALL | wxEXPAND, 2);
-  m_GuardZoneOnOverlay->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED,
-                                wxCommandEventHandler(br24OptionsDialog::OnGuardZoneOnOverlayClick), NULL, this);
-  m_GuardZoneOnOverlay->SetSelection(m_settings.guard_zone_on_overlay);
-
-  m_TrailsOnOverlay = new wxRadioBox(this, wxID_ANY, _("Trail Display"), wxDefaultPosition, wxDefaultSize,
-                                     ARRAY_SIZE(GuardZoneOnOverlayStrings), GuardZoneOnOverlayStrings, 1, wxRA_SPECIFY_COLS);
-
-  DisplayOptionsBox->Add(m_TrailsOnOverlay, 0, wxALL | wxEXPAND, 2);
-  m_TrailsOnOverlay->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnTrailsOnOverlayClick),
-                             NULL, this);
-  m_TrailsOnOverlay->SetSelection(m_settings.trails_on_overlay);
 
   wxString GuardZoneStyleStrings[] = {
       _("Shading"), _("Outline"), _("Shading + Outline"),
@@ -103,7 +71,6 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   m_GuardZoneStyle = new wxRadioBox(this, wxID_ANY, _("Guard Zone Styling"), wxDefaultPosition, wxDefaultSize,
                                     ARRAY_SIZE(GuardZoneStyleStrings), GuardZoneStyleStrings, 1, wxRA_SPECIFY_COLS);
 
-  DisplayOptionsBox->Add(m_GuardZoneStyle, 0, wxALL | wxEXPAND, 2);
   m_GuardZoneStyle->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24OptionsDialog::OnGuardZoneStyleClick), NULL,
                             this);
   m_GuardZoneStyle->SetSelection(m_settings.guard_zone_render_style);
@@ -112,7 +79,6 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
 
   wxStaticBox *guardZoneBox = new wxStaticBox(this, wxID_ANY, _("Guard Zone Sound"));
   wxStaticBoxSizer *guardZoneSizer = new wxStaticBoxSizer(guardZoneBox, wxVERTICAL);
-  DisplayOptionsBox->Add(guardZoneSizer, 0, wxEXPAND | wxALL, border_size);
 
   wxButton *select_sound = new wxButton(this, wxID_ANY, _("Select Alert Sound"), wxDefaultPosition, small_button_size, 0);
   select_sound->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnSelectSoundClick), NULL, this);
@@ -136,7 +102,6 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
 
   wxStaticBox *drawingMethodBox = new wxStaticBox(this, wxID_ANY, _("GPU drawing method"));
   wxStaticBoxSizer *drawingMethodSizer = new wxStaticBoxSizer(drawingMethodBox, wxVERTICAL);
-  DisplayOptionsBox->Add(drawingMethodSizer, 0, wxEXPAND | wxALL, border_size);
 
   wxArrayString DrawingMethods;
   RadarDraw::GetDrawingMethods(DrawingMethods);
@@ -150,7 +115,6 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
 
   wxStaticBox *menuOptionsBox = new wxStaticBox(this, wxID_ANY, _("Control Menu Auto Hide"));
   wxStaticBoxSizer *menuOptionsSizer = new wxStaticBoxSizer(menuOptionsBox, wxVERTICAL);
-  DisplayOptionsBox->Add(menuOptionsSizer, 0, wxEXPAND | wxALL, border_size);
 
   wxString MenuAutoHideStrings[] = {_("Never"), _("10 sec"), _("30 sec")};
   m_MenuAutoHide = new wxComboBox(this, wxID_ANY, MenuAutoHideStrings[m_settings.menu_auto_hide], wxDefaultPosition, wxDefaultSize,
@@ -161,80 +125,120 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
                           this);
 
   // Target trails colours
-  
-      wxStaticBox *trailBox = new wxStaticBox(this, wxID_ANY, _("Target trails"));
-      wxStaticBoxSizer *trailSizer = new wxStaticBoxSizer(trailBox, wxVERTICAL);
-      DisplayOptionsBox->Add(trailSizer, 0, wxEXPAND | wxALL, border_size);
 
-      wxStaticText *trailStartText = new wxStaticText(this, wxID_ANY, _("Trail start color"));
-      trailSizer->Add(trailStartText, 0, wxALL, border_size);
-      m_TrailStartColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.trail_start_colour, wxDefaultPosition, wxSize(150,30));
-      m_TrailStartColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnTrailStartColourClick), NULL, this);
-      trailSizer->Add(m_TrailStartColour);
+  wxStaticBox *trailBox = new wxStaticBox(this, wxID_ANY, _("Target trails"));
+  wxStaticBoxSizer *trailSizer = new wxStaticBoxSizer(trailBox, wxVERTICAL);
 
-      wxStaticText *trailEndText = new wxStaticText(this, wxID_ANY, _("Trail end color"));
-      trailSizer->Add(trailEndText, 0, wxALL, border_size);
-      m_TrailEndColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.trail_end_colour, wxDefaultPosition, wxSize(150,30));
-      m_TrailEndColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnTrailEndColourClick), NULL, this);
-      trailSizer->Add(m_TrailEndColour);
-      
+  wxStaticText *trailStartText = new wxStaticText(this, wxID_ANY, _("Trail start color"));
+  trailSizer->Add(trailStartText, 0, wxALL, border_size);
+  m_TrailStartColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.trail_start_colour, wxDefaultPosition, wxSize(150, 30));
+  m_TrailStartColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnTrailStartColourClick), NULL,
+                              this);
+  trailSizer->Add(m_TrailStartColour);
+
+  wxStaticText *trailEndText = new wxStaticText(this, wxID_ANY, _("Trail end color"));
+  trailSizer->Add(trailEndText, 0, wxALL, border_size);
+  m_TrailEndColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.trail_end_colour, wxDefaultPosition, wxSize(150, 30));
+  m_TrailEndColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnTrailEndColourClick), NULL,
+                            this);
+  trailSizer->Add(m_TrailEndColour);
+
+  // Target trails colours
+
+  wxStaticBox *colourBox = new wxStaticBox(this, wxID_ANY, _("Target colors"));
+  wxStaticBoxSizer *colourSizer = new wxStaticBoxSizer(colourBox, wxVERTICAL);
+
+  wxStaticText *weakText = new wxStaticText(this, wxID_ANY, _("Weak return color"));
+  colourSizer->Add(weakText, 0, wxALL, border_size);
+  m_WeakColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.weak_colour, wxDefaultPosition, wxSize(150, 30));
+  m_WeakColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnWeakColourClick), NULL, this);
+  colourSizer->Add(m_WeakColour);
+
+  wxStaticText *intermediateText = new wxStaticText(this, wxID_ANY, _("Intermediate return color"));
+  colourSizer->Add(intermediateText, 0, wxALL, border_size);
+  m_IntermediateColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.intermediate_colour, wxDefaultPosition, wxSize(150, 30));
+  m_IntermediateColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnIntermediateColourClick),
+                                NULL, this);
+  colourSizer->Add(m_IntermediateColour);
+
+  wxStaticText *strongText = new wxStaticText(this, wxID_ANY, _("Strong return color"));
+  colourSizer->Add(strongText, 0, wxALL, border_size);
+  m_StrongColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.strong_colour, wxDefaultPosition, wxSize(150, 30));
+  m_StrongColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnStrongColourClick), NULL, this);
+  colourSizer->Add(m_StrongColour);
+
+  DisplayOptionsBox->Add(m_RangeUnits, 0, wxALL | wxEXPAND, border_size);
+  DisplayOptionsBox->Add(drawingMethodSizer, 0, wxALL | wxEXPAND, border_size);
+  DisplayOptionsBox->Add(menuOptionsSizer, 0, wxALL | wxEXPAND, border_size);
+  DisplayOptionsBox->Add(m_GuardZoneStyle, 0, wxALL | wxEXPAND, border_size);
+  DisplayOptionsBox->Add(guardZoneSizer, 0, wxALL, border_size);
+  DisplayOptionsBox->Add(trailSizer, 0, wxALL | wxEXPAND, border_size);
+  DisplayOptionsBox->Add(colourSizer, 0, wxALL | wxEXPAND, border_size);
 
   //  Options
   wxStaticBox *itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
   wxStaticBoxSizer *itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
   topSizer->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
 
-      m_EnableDualRadar = new wxCheckBox(this, wxID_ANY, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize,
-                                         wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-      itemStaticBoxSizerOptions->Add(m_EnableDualRadar, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
-      m_EnableDualRadar->SetValue(m_settings.enable_dual_radar);
-      m_EnableDualRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEnableDualRadarClick), NULL,
-                                 this);
-      if (radar_type == RT_4G) {
-        m_EnableDualRadar->Enable();
-      } else {
-        m_EnableDualRadar->Disable();
-      }
-      
+  m_GuardZoneOnOverlay = new wxCheckBox(this, wxID_ANY, _("Show Guard Zone on overlay"));
+  itemStaticBoxSizerOptions->Add(m_GuardZoneOnOverlay, 0, wxALL, border_size);
+  m_GuardZoneOnOverlay->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnGuardZoneOnOverlayClick),
+                                NULL, this);
+  m_GuardZoneOnOverlay->SetValue(m_settings.guard_zone_on_overlay);
+
+  m_TrailsOnOverlay = new wxCheckBox(this, wxID_ANY, _("Show Target trails on overlay"));
+  itemStaticBoxSizerOptions->Add(m_TrailsOnOverlay, 0, wxALL, border_size);
+  m_TrailsOnOverlay->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnTrailsOnOverlayClick), NULL,
+                             this);
+  m_TrailsOnOverlay->SetValue(m_settings.trails_on_overlay);
+
+  m_EnableDualRadar = new wxCheckBox(this, wxID_ANY, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize,
+                                     wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  itemStaticBoxSizerOptions->Add(m_EnableDualRadar, 0, wxALL, border_size);
+  m_EnableDualRadar->SetValue(m_settings.enable_dual_radar);
+  m_EnableDualRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEnableDualRadarClick), NULL,
+                             this);
+  if (radar_type == RT_4G) {
+    m_EnableDualRadar->Enable();
+  } else {
+    m_EnableDualRadar->Disable();
+  }
+
   m_IgnoreHeading = new wxCheckBox(this, wxID_ANY, _("Ignore radar heading"), wxDefaultPosition, wxDefaultSize,
                                    wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  itemStaticBoxSizerOptions->Add(m_IgnoreHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  itemStaticBoxSizerOptions->Add(m_IgnoreHeading, 0, wxALL, border_size);
   m_IgnoreHeading->SetValue(m_settings.ignore_radar_heading);
   m_IgnoreHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnIgnoreHeadingClick), NULL,
                            this);
 
   m_PassHeading = new wxCheckBox(this, wxID_ANY, _("Pass radar heading to OpenCPN"), wxDefaultPosition, wxDefaultSize,
                                  wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  itemStaticBoxSizerOptions->Add(m_PassHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  itemStaticBoxSizerOptions->Add(m_PassHeading, 0, wxALL, border_size);
   m_PassHeading->SetValue(m_settings.pass_heading_to_opencpn);
   m_PassHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnPassHeadingClick), NULL, this);
 
   m_COGHeading = new wxCheckBox(this, wxID_ANY, _("Enable COG as heading"), wxDefaultPosition, wxDefaultSize,
                                 wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  itemStaticBoxSizerOptions->Add(m_COGHeading, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  itemStaticBoxSizerOptions->Add(m_COGHeading, 0, wxALL, border_size);
   m_COGHeading->SetValue(m_settings.enable_cog_heading);
   m_COGHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEnableCOGHeadingClick), NULL,
                         this);
 
   m_Emulator =
       new wxCheckBox(this, wxID_ANY, _("Emulator mode"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  itemStaticBoxSizerOptions->Add(m_Emulator, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  itemStaticBoxSizerOptions->Add(m_Emulator, 0, wxALL, border_size);
   m_Emulator->SetValue(m_settings.emulator_on ? true : false);
   m_Emulator->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnEmulatorClick), NULL, this);
 
   m_ReverseZoom = new wxCheckBox(this, wxID_ANY, _("Reverse mouse wheel zoom direction"), wxDefaultPosition, wxDefaultSize,
                                  wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  itemStaticBoxSizerOptions->Add(m_ReverseZoom, 0, wxALIGN_CENTER_VERTICAL | wxALL, border_size);
+  itemStaticBoxSizerOptions->Add(m_ReverseZoom, 0, wxALL, border_size);
   m_ReverseZoom->SetValue(m_settings.reverse_zoom ? true : false);
   m_ReverseZoom->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnReverseZoomClick), NULL, this);
 
   // Accept/Reject button
   wxStdDialogButtonSizer *DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
   topSizer->Add(DialogButtonSizer, 0, wxALIGN_RIGHT | wxALL, border_size);
-
-  if (m_settings.display_option == 0) {
-    m_TrailsOnOverlay->Disable();
-  }
 
   DimeWindow(this);
 
@@ -246,25 +250,16 @@ void br24OptionsDialog::OnRangeUnitsClick(wxCommandEvent &event) {
   m_settings.range_units = (RangeUnits)m_RangeUnits->GetSelection();
 }
 
-void br24OptionsDialog::OnDisplayOptionClick(wxCommandEvent &event) {
-  m_settings.display_option = m_OverlayDisplayOptions->GetSelection();
-  if (m_settings.display_option == 0) {
-    m_TrailsOnOverlay->Disable();
-  } else {
-    m_TrailsOnOverlay->Enable();
-  }
-}
-
 void br24OptionsDialog::OnGuardZoneStyleClick(wxCommandEvent &event) {
   m_settings.guard_zone_render_style = m_GuardZoneStyle->GetSelection();
 }
 
 void br24OptionsDialog::OnGuardZoneOnOverlayClick(wxCommandEvent &event) {
-  m_settings.guard_zone_on_overlay = m_GuardZoneOnOverlay->GetSelection() != 0;
+  m_settings.guard_zone_on_overlay = m_GuardZoneOnOverlay->GetValue();
 }
 
 void br24OptionsDialog::OnTrailsOnOverlayClick(wxCommandEvent &event) {
-  m_settings.trails_on_overlay = m_TrailsOnOverlay->GetSelection() != 0;
+  m_settings.trails_on_overlay = m_TrailsOnOverlay->GetValue();
 }
 
 void br24OptionsDialog::OnTrailStartColourClick(wxCommandEvent &event) {
@@ -274,6 +269,14 @@ void br24OptionsDialog::OnTrailStartColourClick(wxCommandEvent &event) {
 void br24OptionsDialog::OnTrailEndColourClick(wxCommandEvent &event) {
   m_settings.trail_end_colour = m_TrailEndColour->GetColour();
 }
+
+void br24OptionsDialog::OnWeakColourClick(wxCommandEvent &event) { m_settings.weak_colour = m_WeakColour->GetColour(); }
+
+void br24OptionsDialog::OnIntermediateColourClick(wxCommandEvent &event) {
+  m_settings.intermediate_colour = m_IntermediateColour->GetColour();
+}
+
+void br24OptionsDialog::OnStrongColourClick(wxCommandEvent &event) { m_settings.strong_colour = m_StrongColour->GetColour(); }
 
 void br24OptionsDialog::OnSelectSoundClick(wxCommandEvent &event) {
   wxString *sharedData = GetpSharedDataLocation();

@@ -53,6 +53,9 @@ class br24OptionsDialog : public wxDialog {
   void OnTrailsOnOverlayClick(wxCommandEvent& event);
   void OnTrailStartColourClick(wxCommandEvent& event);
   void OnTrailEndColourClick(wxCommandEvent& event);
+  void OnWeakColourClick(wxCommandEvent& event);
+  void OnIntermediateColourClick(wxCommandEvent& event);
+  void OnStrongColourClick(wxCommandEvent& event);
   void OnSelectSoundClick(wxCommandEvent& event);
   void OnTestSoundClick(wxCommandEvent& event);
   void OnIgnoreHeadingClick(wxCommandEvent& event);
@@ -71,11 +74,14 @@ class br24OptionsDialog : public wxDialog {
   wxRadioBox* m_OverlayDisplayOptions;
   wxRadioBox* m_DisplayMode;
   wxRadioBox* m_GuardZoneStyle;
-  wxRadioBox* m_GuardZoneOnOverlay;
   wxTextCtrl* m_GuardZoneTimeout;
-  wxRadioBox* m_TrailsOnOverlay;
   wxColourPickerCtrl* m_TrailStartColour;
   wxColourPickerCtrl* m_TrailEndColour;
+  wxColourPickerCtrl* m_WeakColour;
+  wxColourPickerCtrl* m_IntermediateColour;
+  wxColourPickerCtrl* m_StrongColour;
+  wxCheckBox* m_GuardZoneOnOverlay;
+  wxCheckBox* m_TrailsOnOverlay;
   wxCheckBox* m_IgnoreHeading;
   wxCheckBox* m_PassHeading;
   wxCheckBox* m_COGHeading;
