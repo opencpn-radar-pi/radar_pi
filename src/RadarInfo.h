@@ -108,7 +108,6 @@ class radar_range_control_item : public radar_control_item {
     range = 0;
     m_settings = 0;
   }
-
 };
 
 struct DrawInfo {
@@ -195,10 +194,8 @@ class RadarInfo : public wxEvtHandler {
 #define TRAILS_MIDDLE (TRAILS_SIZE / 2)
 
   struct TrailBuffer {
-    union {
-      TrailRevolutionsAge true_trails[TRAILS_SIZE][TRAILS_SIZE];
-      TrailRevolutionsAge relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
-    };
+    TrailRevolutionsAge true_trails[TRAILS_SIZE][TRAILS_SIZE];
+    TrailRevolutionsAge relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
     double lat;
     double lon;
     double dif_lat;  // Fraction of a pixel expressed in lat/lon for True Motion Target Trails

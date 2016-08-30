@@ -2,14 +2,11 @@
 BR24radar_pi - Navico Broadband Radar Plugin for OpenCPN
 ========================================================
 
-WORK IN PROGRESS
-----------------
-This is the 'radarwindow' branch. I'm reworking most of the plugin to be more modular.
-
 Downloads
 ---------
 
-The latest binary version for Microsoft Windows, Linux x86 and x86_64 and OS X can be downloaded at http://opencpn-navico-radar-plugin.github.io .
+The latest binary version for Microsoft Windows and OS X can be downloaded at https://github.com/canboat/BR24radar_pi/releases .
+Ubuntu/Debian can install the standard opencpn PPA and install 'opencpn-plugin-br24radar'.
 
 Compiling
 ---------
