@@ -190,9 +190,14 @@ class RadarInfo : public wxEvtHandler {
   UINT8 m_history[LINES_PER_ROTATION][RETURNS_PER_LINE];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
-#define TRAILS_SIZE (RETURNS_PER_LINE * 2)
-#define TRAILS_MIDDLE (TRAILS_SIZE / 2)
+#define MARGIN (100)
+#define TRAILS_SIZE (RETURNS_PER_LINE * 2 + MARGIN * 2)
+//#define TRAILS_MIDDLE (TRAILS_SIZE / 2)
 
+  struct int_vector {
+    int x;
+    int y;
+  };
   struct TrailBuffer {
     TrailRevolutionsAge true_trails[TRAILS_SIZE][TRAILS_SIZE];
     TrailRevolutionsAge relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
@@ -200,6 +205,7 @@ class RadarInfo : public wxEvtHandler {
     double lon;
     double dif_lat;  // Fraction of a pixel expressed in lat/lon for True Motion Target Trails
     double dif_lon;
+    int_vector offset;
   };
   TrailBuffer m_trails;
 

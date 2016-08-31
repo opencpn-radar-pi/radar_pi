@@ -186,7 +186,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_radar_timeout = 0;
   m_data_timeout = 0;
   m_multi_sweep_filter = false;
-
+ 
   memset(&m_statistics, 0, sizeof(m_statistics));
 
   m_mouse_lat = 0.0;
@@ -479,8 +479,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     UpdateTrailPosition();
 
     for (size_t radius = 0; radius < len; radius++) {
-      UINT8 *trail = &m_trails.true_trails[polarLookup->intx[bearing][radius] +
-                                           RETURNS_PER_LINE][polarLookup->inty[bearing][radius] + RETURNS_PER_LINE];
+      UINT8 *trail = &m_trails.true_trails[polarLookup->intx[bearing][radius] + TRAILS_SIZE / 2 - m_trails.offset.x]
+                                          [polarLookup->inty[bearing][radius] + TRAILS_SIZE / 2 - m_trails.offset.y];
       if (data[radius] >= weakest_normal_blob) {
         *trail = 1;
       } else {
@@ -603,15 +603,15 @@ void RadarInfo::UpdateTrailPosition() {
   double dif_lon = m_trails.lon - m_pi->m_ownship_lon;
   m_trails.lat = m_pi->m_ownship_lat;
   m_trails.lon = m_pi->m_ownship_lon;
-  double fshift_lat = dif_lat * 60. * 1852. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
-  double fshift_lon = dif_lon * 60. * 1852. / (double)m_range_meters * (double)(TRAILS_SIZE / 2);
+  double fshift_lat = dif_lat * 60. * 1852. / (double)m_range_meters * (double)(RETURNS_PER_LINE);
+  double fshift_lon = dif_lon * 60. * 1852. / (double)m_range_meters * (double)(RETURNS_PER_LINE);
   fshift_lon *= cos(deg2rad(m_pi->m_ownship_lat));  // at higher latitudes a degree of longitude is fewer meters
   int shift_lat = (int)(fshift_lat + m_trails.dif_lat);
   int shift_lon = (int)(fshift_lon + m_trails.dif_lon);
   m_trails.dif_lat = fshift_lat + m_trails.dif_lat - (double)shift_lat;  // save the rounding fraction and appy it next time
   m_trails.dif_lon = fshift_lon + m_trails.dif_lon - (double)shift_lon;
 
-  if (abs(shift_lat) >= TRAILS_SIZE || abs(shift_lon) >= TRAILS_SIZE) {  // huge shift, reset trails
+  if (abs(shift_lat) >= RETURNS_PER_LINE * 2 || abs(shift_lon) >= RETURNS_PER_LINE * 2) {  // huge shift, reset trails
     ClearTrails();
     m_trails.lat = m_pi->m_ownship_lat;
     m_trails.lon = m_pi->m_ownship_lon;
@@ -620,26 +620,39 @@ void RadarInfo::UpdateTrailPosition() {
     return;
   }
 
-  if (shift_lon > 0) {
-    for (int i = 0; i < TRAILS_SIZE; i++) {
-      memmove(&m_trails.true_trails[i][shift_lon], &m_trails.true_trails[i][0], TRAILS_SIZE - shift_lon);
-      memset(&m_trails.true_trails[i][0], 0, shift_lon);
+  // don't shift the image now, only shift the center
+  m_trails.offset.x += shift_lat;  // latitude  == X axis
+  m_trails.offset.y += shift_lon;  // longitude == Y axis
+
+  if (abs(m_trails.offset.y) >= MARGIN) {  // offset too large: shift image
+                                           // shift in the opposite direction of the offset
+    if (m_trails.offset.y > 0) {
+      for (int i = 0; i < TRAILS_SIZE; i++) {
+        memmove(&m_trails.true_trails[i][m_trails.offset.y], &m_trails.true_trails[i][0], TRAILS_SIZE - m_trails.offset.y);
+        memset(&m_trails.true_trails[i][0], 0, m_trails.offset.y);
+      }
     }
-  }
-  if (shift_lon < 0) {
-    for (int i = 0; i < TRAILS_SIZE; i++) {
-      memmove(&m_trails.true_trails[i][0], &m_trails.true_trails[i][-shift_lon], TRAILS_SIZE + shift_lon);
-      memset(&m_trails.true_trails[i][TRAILS_SIZE + shift_lon], 0, -shift_lon);
+    if (m_trails.offset.y < 0) {
+      for (int i = 0; i < TRAILS_SIZE; i++) {
+        memmove(&m_trails.true_trails[i][0], &m_trails.true_trails[i][-m_trails.offset.y], TRAILS_SIZE + m_trails.offset.y);
+        memset(&m_trails.true_trails[i][TRAILS_SIZE + shift_lon], 0, -m_trails.offset.y);
+      }
     }
+    m_trails.offset.y = 0;
   }
 
-  if (shift_lat > 0) {
-    memmove(&m_trails.true_trails[shift_lat][0], &m_trails.true_trails[0][0], TRAILS_SIZE * (TRAILS_SIZE - shift_lat));
-    memset(&m_trails.true_trails[0][0], 0, TRAILS_SIZE * shift_lat);
-  }
-  if (shift_lat < 0) {
-    memmove(&m_trails.true_trails[0][0], &m_trails.true_trails[-shift_lat][0], TRAILS_SIZE * (TRAILS_SIZE + shift_lat));
-    memset(&m_trails.true_trails[TRAILS_SIZE + shift_lat][0], 0, -TRAILS_SIZE * shift_lat);
+  if (abs(m_trails.offset.x) >= MARGIN) {  // offset too large: shift image
+    if (m_trails.offset.x > 0) {
+      memmove(&m_trails.true_trails[m_trails.offset.x][0], &m_trails.true_trails[0][0],
+              TRAILS_SIZE * (TRAILS_SIZE - m_trails.offset.x));
+      memset(&m_trails.true_trails[0][0], 0, TRAILS_SIZE * m_trails.offset.x);
+    }
+    if (m_trails.offset.x < 0) {
+      memmove(&m_trails.true_trails[0][0], &m_trails.true_trails[-m_trails.offset.x][0],
+              TRAILS_SIZE * (TRAILS_SIZE + m_trails.offset.x));
+      memset(&m_trails.true_trails[TRAILS_SIZE + m_trails.offset.x][0], 0, -TRAILS_SIZE * m_trails.offset.x);
+    }
+    m_trails.offset.x = 0;
   }
 }
 
@@ -1143,7 +1156,9 @@ void RadarInfo::SetBearing(int bearing) {
   }
 }
 
-void RadarInfo::ClearTrails() { memset(&m_trails, 0, sizeof(m_trails)); }
+void RadarInfo::ClearTrails() { 
+    memset(&m_trails, 0, sizeof(m_trails)); 
+}
 
 void RadarInfo::ComputeTargetTrails() {
   static TrailRevolutionsAge maxRevs[TRAIL_ARRAY_SIZE] = {0,
