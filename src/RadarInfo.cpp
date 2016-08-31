@@ -473,7 +473,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
-  if (m_target_trails.value != 0) {
     PolarToCartesianLookupTable *polarLookup;
     polarLookup = GetPolarToCartesianLookupTable();
     UpdateTrailPosition();
@@ -487,7 +486,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
         if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
           (*trail)++;
         }
-        if (m_trails_motion.value == TARGET_MOTION_TRUE) {
+        if (m_trails_motion.value == TARGET_MOTION_TRUE && m_target_trails.value != 0) {
           data[radius] = m_trail_colour[*trail];
         }
       }
@@ -501,16 +500,15 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
         if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
           (*trail)++;
         }
-        if (m_trails_motion.value == TARGET_MOTION_RELATIVE) {
+        if (m_trails_motion.value == TARGET_MOTION_RELATIVE && m_target_trails.value != 0) {
           data[radius] = m_trail_colour[*trail];
         }
       }
       trail++;
     }
-  }
 
-  if (m_draw_overlay.draw && draw_trails_on_overlay) {
-    m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
+    if (m_draw_overlay.draw && draw_trails_on_overlay) {
+      m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
   if (m_draw_panel.draw) {
