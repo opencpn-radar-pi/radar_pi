@@ -357,8 +357,8 @@ void RadarInfo::ComputeColourMap() {
   m_colour_map_rgb[BLOB_STRONG] = m_pi->m_settings.strong_colour;
   m_colour_map_rgb[BLOB_INTERMEDIATE] = m_pi->m_settings.intermediate_colour;
   m_colour_map_rgb[BLOB_WEAK] = m_pi->m_settings.weak_colour;
-
-  if (m_target_trails.value > 0) {
+    
+  if (m_trails_motion.value > 0) {
     float r1 = m_pi->m_settings.trail_start_colour.Red();
     float g1 = m_pi->m_settings.trail_start_colour.Green();
     float b1 = m_pi->m_settings.trail_start_colour.Blue();
@@ -486,7 +486,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
         if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
           (*trail)++;
         }
-        if (m_trails_motion.value == TARGET_MOTION_TRUE && m_target_trails.value != 0) {
+        if (m_trails_motion.value == TARGET_MOTION_TRUE) {
           data[radius] = m_trail_colour[*trail];
         }
       }
@@ -500,7 +500,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
         if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
           (*trail)++;
         }
-        if (m_trails_motion.value == TARGET_MOTION_RELATIVE && m_target_trails.value != 0) {
+        if (m_trails_motion.value == TARGET_MOTION_RELATIVE ) {
           data[radius] = m_trail_colour[*trail];
         }
       }
@@ -950,7 +950,7 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
   if (m_range_meters) {
     s << wxT("\n") << GetRangeText();
   }
-  if (m_target_trails.value > 0) {
+  if (m_trails_motion.value > 0) {
     if (s.Right(1) != wxT("\n")) {
       s << wxT("\n");
     }
@@ -1168,12 +1168,15 @@ void RadarInfo::ComputeTargetTrails() {
                                                           TRAIL_MAX_REVOLUTIONS + 1};
 
   TrailRevolutionsAge maxRev = maxRevs[m_target_trails.value];
+  if (m_trails_motion.value == 0){
+      maxRev = 0;
+  }
   TrailRevolutionsAge revolution;
   double coloursPerRevolution = 0.;
   double colour = 0.;
 
   // Like plotter, continuous trails are all very white (non transparent)
-  if ((m_target_trails.value > 0) && (m_target_trails.value < TRAIL_CONTINUOUS)) {
+  if ((m_trails_motion.value > 0) && (m_target_trails.value < TRAIL_CONTINUOUS)) {
     coloursPerRevolution = BLOB_HISTORY_COLOURS / (double)maxRev;
   }
 

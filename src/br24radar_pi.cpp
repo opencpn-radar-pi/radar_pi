@@ -1299,6 +1299,8 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
     }
     case CT_TRAILS_MOTION: {
       m_radar[radar]->m_trails_motion.Update(value);
+      m_radar[radar]->ComputeColourMap();
+      m_radar[radar]->ComputeTargetTrails();
       return true;
     }
     case CT_MAIN_BANG_SIZE: {
