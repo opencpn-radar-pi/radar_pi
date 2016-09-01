@@ -1159,11 +1159,11 @@ void RadarInfo::ClearTrails() {
 }
 
 void RadarInfo::ComputeTargetTrails() {
-  static TrailRevolutionsAge maxRevs[TRAIL_ARRAY_SIZE] = {0,
-                                                          SECONDS_TO_REVOLUTIONS(15),
+  static TrailRevolutionsAge maxRevs[TRAIL_ARRAY_SIZE] = {SECONDS_TO_REVOLUTIONS(15),
                                                           SECONDS_TO_REVOLUTIONS(30),
                                                           SECONDS_TO_REVOLUTIONS(60),
                                                           SECONDS_TO_REVOLUTIONS(180),
+                                                          SECONDS_TO_REVOLUTIONS(300),
                                                           SECONDS_TO_REVOLUTIONS(600),
                                                           TRAIL_MAX_REVOLUTIONS + 1};
 

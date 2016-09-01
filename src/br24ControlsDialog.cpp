@@ -824,11 +824,11 @@ void br24ControlsDialog::CreateControls() {
   bMenuBack->SetFont(m_pi->m_font);
 
   // The TARGET_TRAIL button
-  target_trail_names[TRAIL_OFF] = _("Off");
   target_trail_names[TRAIL_15SEC] = _("15 sec");
   target_trail_names[TRAIL_30SEC] = _("30 sec");
   target_trail_names[TRAIL_1MIN] = _("1 min");
   target_trail_names[TRAIL_3MIN] = _("3 min");
+  target_trail_names[TRAIL_5MIN] = _("5 min");
   target_trail_names[TRAIL_10MIN] = _("10 min");
   target_trail_names[TRAIL_CONTINUOUS] = _("Continuous");
 
