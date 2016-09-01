@@ -1080,6 +1080,12 @@ void br24ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
   m_ri->m_trails_motion.Update(m_ri->m_trails_motion.value);
   m_ri->ComputeColourMap();
   m_ri->ComputeTargetTrails();
+  if (m_ri->m_trails_motion.value == TARGET_MOTION_OFF) {
+      m_target_trails_button->Disable();
+  }
+  else {
+      m_target_trails_button->Enable();
+  }
   UpdateControlValues(false);
 }
 

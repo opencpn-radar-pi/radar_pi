@@ -153,7 +153,7 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item m_side_lobe_suppression;
   radar_control_item m_target_trails;
   radar_control_item m_trails_motion;
-#define TARGET_MOTION_HIDE (0)
+#define TARGET_MOTION_OFF (0)
 #define TARGET_MOTION_RELATIVE (1)
 #define TARGET_MOTION_TRUE (2)
 
