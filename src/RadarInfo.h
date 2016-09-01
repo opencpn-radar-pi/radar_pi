@@ -193,7 +193,7 @@ class RadarInfo : public wxEvtHandler {
 
 #define MARGIN (100)
 #define TRAILS_SIZE (RETURNS_PER_LINE * 2 + MARGIN * 2)
-//#define TRAILS_MIDDLE (TRAILS_SIZE / 2)
+  //#define TRAILS_MIDDLE (TRAILS_SIZE / 2)
 
   struct int_vector {
     int x;

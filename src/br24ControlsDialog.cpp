@@ -1351,18 +1351,16 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   if (m_ri->m_trails_motion.mod || refreshAll) {
-      o = _("Off/Relative/True trails");
-      o << wxT("\n");
-      if (m_ri->m_trails_motion.value == TARGET_MOTION_TRUE) {
-          o << _("True");
-      }
-      else if (m_ri->m_trails_motion.value == TARGET_MOTION_RELATIVE) {
-          o << _("Relative");
-      }
-      else {
-          o << _("Off");
-      }
-      m_trails_motion_button->SetLabel(o);
+    o = _("Off/Relative/True trails");
+    o << wxT("\n");
+    if (m_ri->m_trails_motion.value == TARGET_MOTION_TRUE) {
+      o << _("True");
+    } else if (m_ri->m_trails_motion.value == TARGET_MOTION_RELATIVE) {
+      o << _("Relative");
+    } else {
+      o << _("Off");
+    }
+    m_trails_motion_button->SetLabel(o);
   }
 
   if (m_ri->m_orientation.mod || refreshAll) {

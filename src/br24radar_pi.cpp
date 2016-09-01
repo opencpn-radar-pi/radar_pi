@@ -30,9 +30,9 @@
  */
 
 #include "br24radar_pi.h"
+#include "GuardZoneBogey.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
-#include "GuardZoneBogey.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

@@ -30,13 +30,13 @@
  */
 
 #include "RadarInfo.h"
-#include "drawutil.h"
-#include "br24Receive.h"
-#include "br24Transmit.h"
-#include "RadarDraw.h"
 #include "RadarCanvas.h"
+#include "RadarDraw.h"
 #include "RadarPanel.h"
 #include "br24ControlsDialog.h"
+#include "br24Receive.h"
+#include "br24Transmit.h"
+#include "drawutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -186,7 +186,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_radar_timeout = 0;
   m_data_timeout = 0;
   m_multi_sweep_filter = false;
- 
+
   memset(&m_statistics, 0, sizeof(m_statistics));
 
   m_mouse_lat = 0.0;
@@ -345,8 +345,8 @@ void RadarInfo::StartReceive() {
 
 void RadarInfo::ComputeColourMap() {
   for (int i = 0; i <= UINT8_MAX; i++) {
-    m_colour_map[i] =
-        (i >= m_pi->m_settings.threshold_red) ? BLOB_STRONG : (i >= m_pi->m_settings.threshold_green)
+    m_colour_map[i] = (i >= m_pi->m_settings.threshold_red) ? BLOB_STRONG
+                                                            : (i >= m_pi->m_settings.threshold_green)
                                                                   ? BLOB_INTERMEDIATE
                                                                   : (i >= m_pi->m_settings.threshold_blue) ? BLOB_WEAK : BLOB_NONE;
   }
@@ -357,7 +357,7 @@ void RadarInfo::ComputeColourMap() {
   m_colour_map_rgb[BLOB_STRONG] = m_pi->m_settings.strong_colour;
   m_colour_map_rgb[BLOB_INTERMEDIATE] = m_pi->m_settings.intermediate_colour;
   m_colour_map_rgb[BLOB_WEAK] = m_pi->m_settings.weak_colour;
-    
+
   if (m_trails_motion.value > 0) {
     float r1 = m_pi->m_settings.trail_start_colour.Red();
     float g1 = m_pi->m_settings.trail_start_colour.Green();
@@ -473,42 +473,42 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
-    PolarToCartesianLookupTable *polarLookup;
-    polarLookup = GetPolarToCartesianLookupTable();
-    UpdateTrailPosition();
+  PolarToCartesianLookupTable *polarLookup;
+  polarLookup = GetPolarToCartesianLookupTable();
+  UpdateTrailPosition();
 
-    for (size_t radius = 0; radius < len; radius++) {
-      UINT8 *trail = &m_trails.true_trails[polarLookup->intx[bearing][radius] + TRAILS_SIZE / 2 - m_trails.offset.x]
-                                          [polarLookup->inty[bearing][radius] + TRAILS_SIZE / 2 - m_trails.offset.y];
-      if (data[radius] >= weakest_normal_blob) {
-        *trail = 1;
-      } else {
-        if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-          (*trail)++;
-        }
-        if (m_trails_motion.value == TARGET_MOTION_TRUE) {
-          data[radius] = m_trail_colour[*trail];
-        }
+  for (size_t radius = 0; radius < len; radius++) {
+    UINT8 *trail = &m_trails.true_trails[polarLookup->intx[bearing][radius] + TRAILS_SIZE / 2 - m_trails.offset.x]
+                                        [polarLookup->inty[bearing][radius] + TRAILS_SIZE / 2 - m_trails.offset.y];
+    if (data[radius] >= weakest_normal_blob) {
+      *trail = 1;
+    } else {
+      if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+        (*trail)++;
+      }
+      if (m_trails_motion.value == TARGET_MOTION_TRUE) {
+        data[radius] = m_trail_colour[*trail];
       }
     }
+  }
 
-    UINT8 *trail = m_trails.relative_trails[angle];
-    for (size_t radius = 0; radius < len; radius++) {
-      if (data[radius] >= weakest_normal_blob) {
-        *trail = 1;
-      } else {
-        if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-          (*trail)++;
-        }
-        if (m_trails_motion.value == TARGET_MOTION_RELATIVE ) {
-          data[radius] = m_trail_colour[*trail];
-        }
+  UINT8 *trail = m_trails.relative_trails[angle];
+  for (size_t radius = 0; radius < len; radius++) {
+    if (data[radius] >= weakest_normal_blob) {
+      *trail = 1;
+    } else {
+      if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+        (*trail)++;
       }
-      trail++;
+      if (m_trails_motion.value == TARGET_MOTION_RELATIVE) {
+        data[radius] = m_trail_colour[*trail];
+      }
     }
+    trail++;
+  }
 
-    if (m_draw_overlay.draw && draw_trails_on_overlay) {
-      m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
+  if (m_draw_overlay.draw && draw_trails_on_overlay) {
+    m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
   if (m_draw_panel.draw) {
@@ -1154,22 +1154,16 @@ void RadarInfo::SetBearing(int bearing) {
   }
 }
 
-void RadarInfo::ClearTrails() { 
-    memset(&m_trails, 0, sizeof(m_trails)); 
-}
+void RadarInfo::ClearTrails() { memset(&m_trails, 0, sizeof(m_trails)); }
 
 void RadarInfo::ComputeTargetTrails() {
-  static TrailRevolutionsAge maxRevs[TRAIL_ARRAY_SIZE] = {SECONDS_TO_REVOLUTIONS(15),
-                                                          SECONDS_TO_REVOLUTIONS(30),
-                                                          SECONDS_TO_REVOLUTIONS(60),
-                                                          SECONDS_TO_REVOLUTIONS(180),
-                                                          SECONDS_TO_REVOLUTIONS(300),
-                                                          SECONDS_TO_REVOLUTIONS(600),
-                                                          TRAIL_MAX_REVOLUTIONS + 1};
+  static TrailRevolutionsAge maxRevs[TRAIL_ARRAY_SIZE] = {
+      SECONDS_TO_REVOLUTIONS(15),  SECONDS_TO_REVOLUTIONS(30),  SECONDS_TO_REVOLUTIONS(60), SECONDS_TO_REVOLUTIONS(180),
+      SECONDS_TO_REVOLUTIONS(300), SECONDS_TO_REVOLUTIONS(600), TRAIL_MAX_REVOLUTIONS + 1};
 
   TrailRevolutionsAge maxRev = maxRevs[m_target_trails.value];
-  if (m_trails_motion.value == 0){
-      maxRev = 0;
+  if (m_trails_motion.value == 0) {
+    maxRev = 0;
   }
   TrailRevolutionsAge revolution;
   double coloursPerRevolution = 0.;
