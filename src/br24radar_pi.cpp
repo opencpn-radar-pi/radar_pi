@@ -501,7 +501,7 @@ void br24radar_pi::PassHeadingToOpenCPN() {
   char checksum = 0;
   char *p;
 
-  snprintf(sentence, sizeof(sentence), "APHDT,%.1f,M", m_hdt);
+  snprintf(sentence, sizeof(sentence), "APHDT,%.1f,T", m_hdt);
 
   for (p = sentence; *p; p++) {
     checksum ^= *p;
