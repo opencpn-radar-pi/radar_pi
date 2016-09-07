@@ -195,19 +195,27 @@ class RadarInfo : public wxEvtHandler {
 #define TRAILS_SIZE (RETURNS_PER_LINE * 2 + MARGIN * 2)
   //#define TRAILS_MIDDLE (TRAILS_SIZE / 2)
 
-  struct int_vector {
-    int x;
-    int y;
+  struct IntVector {
+    int lat;
+    int lon;
   };
   struct TrailBuffer {
     TrailRevolutionsAge true_trails[TRAILS_SIZE][TRAILS_SIZE];
     TrailRevolutionsAge relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
+    union {
+        TrailRevolutionsAge copy_of_true_trails[TRAILS_SIZE][TRAILS_SIZE];
+        TrailRevolutionsAge copy_of_relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
+    };
     double lat;
     double lon;
     double dif_lat;  // Fraction of a pixel expressed in lat/lon for True Motion Target Trails
     double dif_lon;
-    int_vector offset;
+    IntVector offset;
+    
   };
+  int m_old_range = 0;
+  int m_dir_lat = 0;
+  int m_dir_lon = 0;
   TrailBuffer m_trails;
 
   /* Methods */
@@ -247,6 +255,7 @@ class RadarInfo : public wxEvtHandler {
   void SetMouseVrmEbl(double vrm, double ebl);
   void SetBearing(int bearing);
   void ClearTrails();
+  void ZoomTrails(float zoom_factor);
   bool IsDisplayNorthUp() { return m_orientation.value == ORIENTATION_NORTH_UP && m_pi->m_heading_source != HEADING_NONE; }
 
   wxString GetCanvasTextTopLeft();
