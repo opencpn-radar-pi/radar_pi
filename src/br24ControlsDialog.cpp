@@ -828,8 +828,8 @@ void br24ControlsDialog::CreateControls() {
   target_trail_names[TRAIL_30SEC] = _("30 sec");
   target_trail_names[TRAIL_1MIN] = _("1 min");
   target_trail_names[TRAIL_3MIN] = _("3 min");
-  target_trail_names[TRAIL_5MIN] = _("5 min");
-  target_trail_names[TRAIL_10MIN] = _("10 min");
+  target_trail_names[TRAIL_6MIN] = _("6 min");
+  target_trail_names[TRAIL_12MIN] = _("12 min");
   target_trail_names[TRAIL_CONTINUOUS] = _("Continuous");
 
   m_target_trails_button =
