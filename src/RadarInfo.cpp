@@ -1266,7 +1266,7 @@ void RadarInfo::ClearTrails() { memset(&m_trails, 0, sizeof(m_trails)); }
 void RadarInfo::ComputeTargetTrails() {
   static TrailRevolutionsAge maxRevs[TRAIL_ARRAY_SIZE] = {
       SECONDS_TO_REVOLUTIONS(15),  SECONDS_TO_REVOLUTIONS(30),  SECONDS_TO_REVOLUTIONS(60), SECONDS_TO_REVOLUTIONS(180),
-      SECONDS_TO_REVOLUTIONS(360), SECONDS_TO_REVOLUTIONS(720), TRAIL_MAX_REVOLUTIONS + 1};
+      SECONDS_TO_REVOLUTIONS(300), SECONDS_TO_REVOLUTIONS(600), TRAIL_MAX_REVOLUTIONS + 1};
 
   TrailRevolutionsAge maxRev = maxRevs[m_target_trails.value];
   if (m_trails_motion.value == 0) {
