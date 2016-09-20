@@ -1230,7 +1230,10 @@ void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
 void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) { m_ri->ClearTrails(); }
 
 void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
-  m_ri->m_orientation.Update(1 - m_ri->m_orientation.value);
+  m_ri->m_orientation.Update(m_ri->m_orientation.value + 1);
+  if (m_ri->m_orientation.value > ORIENTATION_COURSE_UP){
+      m_ri->m_orientation.Update(ORIENTATION_HEAD_UP);
+  }
   UpdateControlValues(false);
 }
 
@@ -1369,6 +1372,9 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
       case ORIENTATION_HEAD_UP:
         o << _("Head up");
         break;
+      case ORIENTATION_COURSE_UP:
+          o << _("Course up");
+          break;
       default:
         o << _("???");
     }

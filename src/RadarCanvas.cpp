@@ -170,9 +170,23 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
     }
   }
 
+  double heading;
+  double predictor;
   if (m_pi->m_heading_source != HEADING_NONE) {
-    double heading = (m_ri->IsDisplayNorthUp() ? 0 : m_pi->m_hdt) + 180.;
-    double predictor = (m_ri->IsDisplayNorthUp() ? m_pi->m_hdt : 0) + 180.;
+    switch (m_ri->m_orientation.value) {
+      case ORIENTATION_HEAD_UP:
+        heading = m_pi->m_hdt + 180.;
+        predictor = 180.;
+        break;
+      case ORIENTATION_NORTH_UP:
+        heading = 180;
+        predictor = m_pi->m_hdt + 180;
+        break;
+      case ORIENTATION_COURSE_UP:
+        heading = m_ri->m_course + 180.;
+        predictor = m_pi->m_hdt + 180. - m_ri->m_course;
+        break;
+    }
 
     x = -sinf(deg2rad(predictor));
     y = cosf(deg2rad(predictor));

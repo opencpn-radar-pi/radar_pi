@@ -422,6 +422,18 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     data[i] = 0;
   }
 
+  // calculate course as the moving average of m_hdt over one revolution
+  if (m_pi->m_heading_source != HEADING_NONE && ((angle & 127) == 0)){   // sample m_hdt every 16 spokes
+      m_course_log[m_course_index] = m_pi->m_hdt;
+      m_course_index++;
+      if (m_course_index >= 16) m_course_index = 0;
+      double sum = 0;
+      for (int i = 0; i < 16; i++){
+          sum += m_course_log[i];
+      }
+      m_course = sum / 16 + 30;
+  }
+
   if (m_range_meters != range_meters) {
     ResetSpokes();
     LOG_VERBOSE(wxT("BR24radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters,
@@ -433,9 +445,9 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   } else if (m_orientation.mod) {
     ResetSpokes();
-    LOG_VERBOSE(wxT("BR24radar_pi: %s HeadUp/NorthUp change"));
+    LOG_VERBOSE(wxT("BR24radar_pi: %s HeadUp/NorthUp/CourseUp change"));
   }
-  int north_up = m_orientation.GetButton() == ORIENTATION_NORTH_UP;
+  int north_or_course_up = m_orientation.GetButton() != ORIENTATION_HEAD_UP;  // true for north up or course up
   uint8_t weakest_normal_blob = m_pi->m_settings.threshold_blue;
 
   bool calc_history = m_multi_sweep_filter;
@@ -514,7 +526,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
 
   if (m_draw_panel.draw) {
-    m_draw_panel.draw->ProcessRadarSpoke(3, north_up ? bearing : angle, data, len);
+      m_draw_panel.draw->ProcessRadarSpoke(3, north_or_course_up ? bearing : angle, data, len);
   }
 }
 
@@ -862,7 +874,7 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
   }
 }
 
-void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bool overlay) {
+void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_rotate, bool overlay) {
   if (!m_range_meters) {
     return;
   }
@@ -870,11 +882,19 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  rotate += OPENGL_ROTATION;  // Difference between OpenGL and compass + radar
-  double guard_rotate = rotate;
-  if (overlay || IsDisplayNorthUp()) {
+  overlay_rotate += OPENGL_ROTATION;  // Difference between OpenGL and compass + radar
+  double panel_rotate = overlay_rotate;
+  if (m_orientation.value == ORIENTATION_COURSE_UP){
+      panel_rotate -= m_course;
+  }
+  double guard_rotate = overlay_rotate;
+  if (overlay || m_orientation.value == ORIENTATION_NORTH_UP || m_orientation.value == ORIENTATION_COURSE_UP) {
     guard_rotate += m_pi->m_hdt;
   }
+  if (!overlay && m_orientation.value == ORIENTATION_COURSE_UP) {
+      guard_rotate -= m_course;
+  }
+
 
   if (overlay) {
     if (m_pi->m_settings.guard_zone_on_overlay) {
@@ -892,8 +912,8 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
     scale = scale / radar_pixels_per_meter;
     glPushMatrix();
     glTranslated(center.x, center.y, 0);
-    if (rotate != 0.0) {
-      glRotated(rotate, 0.0, 0.0, 1.0);
+    if (overlay_rotate != 0.0) {
+      glRotated(overlay_rotate, 0.0, 0.0, 1.0);
     }
     glScaled(scale, scale, 1.);
 
@@ -913,7 +933,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double rotate, bo
     double overscan = (double)m_range_meters / (double)m_range.value;
     scale = overscan / RETURNS_PER_LINE;
     glScaled(scale, scale, 1.);
-    glRotated(rotate, 0.0, 0.0, 1.0);
+    glRotated(panel_rotate, 0.0, 0.0, 1.0);
     LOG_DIALOG(wxT("BR24radar_pi: %s render overscan=%g range=%d"), m_name.c_str(), overscan, m_range.value);
     RenderRadarImage(&m_draw_panel);
     if (m_refreshes_queued > 0) {
@@ -930,8 +950,12 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
 
   if (IsDisplayNorthUp()) {
     s << _("North Up");
-  } else {
-    s << _("Head Up");
+  }
+  else if (m_orientation.value == ORIENTATION_COURSE_UP && m_pi->m_heading_source != HEADING_NONE) {
+    s << _("Course Up");
+  }
+  else  {
+      s << _("Head Up");
   }
   if (m_pi->m_settings.emulator_on) {
     s << wxT("\n") << _("Emulator");
@@ -983,7 +1007,7 @@ wxString RadarInfo::FormatAngle(double angle) {
   wxString s;
 
   wxString relative;
-  if (IsDisplayNorthUp()) {
+  if (IsDisplayNorthUp() || (m_orientation.value == ORIENTATION_COURSE_UP && m_pi->m_heading_source != HEADING_NONE)) {
     relative = wxT("T");
   } else {
     if (angle > 180.0) {
@@ -1018,6 +1042,11 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
     if (m_mouse_vrm != 0.0) {
       distance = m_mouse_vrm;
       bearing = m_mouse_ebl;
+      if (m_orientation.value == ORIENTATION_COURSE_UP && m_pi->m_heading_source != HEADING_NONE) {
+          bearing += m_course;
+          if (bearing >= 360) bearing -= 360;
+      }
+
     } else if ((m_mouse_lat != 0.0 || m_mouse_lon != 0.0) && m_pi->m_bpos_set) {
       // Can't compute this upfront, ownship may move...
       distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);

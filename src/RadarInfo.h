@@ -127,6 +127,10 @@ class RadarInfo : public wxEvtHandler {
   br24radar_pi *m_pi;
   int m_radar;  // Which radar this is (0..., max 2 for now)
 
+  double m_course;                 // m_course is the moving everage of m_hdt used for course_up
+  double m_course_log[16];
+  int m_course_index = 0;
+
   /* User radar settings */
 
   radar_control_item m_state;       // RadarState (observed)
@@ -135,6 +139,7 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item m_orientation;  // 0 = Heading Up, 1 = North Up
 #define ORIENTATION_HEAD_UP (0)
 #define ORIENTATION_NORTH_UP (1)
+#define ORIENTATION_COURSE_UP (2)
 
   radar_control_item m_overlay;
   radar_range_control_item m_range;  // value in meters
