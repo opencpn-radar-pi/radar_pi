@@ -423,15 +423,15 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
 
   // calculate course as the moving average of m_hdt over one revolution
-  if (m_pi->m_heading_source != HEADING_NONE && ((angle & 127) == 0)){   // sample m_hdt every 16 spokes
-      m_course_log[m_course_index] = m_pi->m_hdt;
-      m_course_index++;
-      if (m_course_index >= 16) m_course_index = 0;
-      double sum = 0;
-      for (int i = 0; i < 16; i++){
-          sum += m_course_log[i];
-      }
-      m_course = sum / 16;
+  if (m_pi->m_heading_source != HEADING_NONE && ((angle & 127) == 0)) {  // sample m_hdt every 16 spokes
+    m_course_log[m_course_index] = m_pi->m_hdt;
+    m_course_index++;
+    if (m_course_index >= 16) m_course_index = 0;
+    double sum = 0;
+    for (int i = 0; i < 16; i++) {
+      sum += m_course_log[i];
+    }
+    m_course = sum / 16;
   }
 
   if (m_range_meters != range_meters) {
@@ -1043,8 +1043,8 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
       distance = m_mouse_vrm;
       bearing = m_mouse_ebl;
       if (m_orientation.value == ORIENTATION_COURSE_UP && m_pi->m_heading_source != HEADING_NONE) {
-          bearing += m_course;
-          if (bearing >= 360) bearing -= 360;
+        bearing += m_course;
+        if (bearing >= 360) bearing -= 360;
       }
 
     } else if ((m_mouse_lat != 0.0 || m_mouse_lon != 0.0) && m_pi->m_bpos_set) {
