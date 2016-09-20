@@ -431,7 +431,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       for (int i = 0; i < 16; i++){
           sum += m_course_log[i];
       }
-      m_course = sum / 16 + 30;
+      m_course = sum / 16;
   }
 
   if (m_range_meters != range_meters) {
