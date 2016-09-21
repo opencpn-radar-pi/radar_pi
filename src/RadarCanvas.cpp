@@ -172,48 +172,48 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
 
   double heading;
   double predictor;
-    switch (m_ri->m_orientation.value) {
-      case ORIENTATION_HEAD_UP:
-        heading = 180.;
-        predictor = 180.;
-        break;
-      case ORIENTATION_NORTH_UP:
-        heading = 180;
-        predictor = m_pi->m_hdt + 180;
-        break;
-      case ORIENTATION_COURSE_UP:
-        heading = m_ri->m_course + 180.;
-        predictor = m_pi->m_hdt + 180. - m_ri->m_course;
-        break;
+  switch (m_ri->m_orientation.value) {
+    case ORIENTATION_HEAD_UP:
+      heading = 180.;
+      predictor = 180.;
+      break;
+    case ORIENTATION_NORTH_UP:
+      heading = 180;
+      predictor = m_pi->m_hdt + 180;
+      break;
+    case ORIENTATION_COURSE_UP:
+      heading = m_ri->m_course + 180.;
+      predictor = m_pi->m_hdt + 180. - m_ri->m_course;
+      break;
+  }
+
+  x = -sinf(deg2rad(predictor));
+  y = cosf(deg2rad(predictor));
+  glBegin(GL_LINE_STRIP);
+  glVertex2f(center_x, center_y);
+  glVertex2f(center_x + x * r * 2, center_y + y * r * 2);
+  glEnd();
+
+  for (int i = 0; i < 360; i += 5) {
+    x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
+    y = cosf(deg2rad(i - heading)) * (r * 1.00 - 1);
+
+    wxString s;
+    if (i % 90 == 0) {
+      static char nesw[4] = {'N', 'E', 'S', 'W'};
+      s = wxString::Format(wxT("%c"), nesw[i / 90]);
+    } else if (i % 15 == 0) {
+      s = wxString::Format(wxT("%u"), i);
     }
-
-    x = -sinf(deg2rad(predictor));
-    y = cosf(deg2rad(predictor));
-    glBegin(GL_LINE_STRIP);
-    glVertex2f(center_x, center_y);
-    glVertex2f(center_x + x * r * 2, center_y + y * r * 2);
-    glEnd();
-
-    for (int i = 0; i < 360; i += 5) {
-      x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
-      y = cosf(deg2rad(i - heading)) * (r * 1.00 - 1);
-
-      wxString s;
-      if (i % 90 == 0) {
-        static char nesw[4] = {'N', 'E', 'S', 'W'};
-        s = wxString::Format(wxT("%c"), nesw[i / 90]);
-      } else if (i % 15 == 0) {
-        s = wxString::Format(wxT("%u"), i);
-      }
-      m_FontNormal.GetTextExtent(s, &px, &py);
-      if (x > 0) {
-        x -= px;
-      }
-      if (y > 0) {
-        y -= py;
-      }
-      m_FontNormal.RenderString(s, center_x + x, center_y + y);
+    m_FontNormal.GetTextExtent(s, &px, &py);
+    if (x > 0) {
+      x -= px;
     }
+    if (y > 0) {
+      y -= py;
+    }
+    m_FontNormal.RenderString(s, center_x + x, center_y + y);
+  }
 }
 
 void RadarCanvas::FillCursorTexture() {
