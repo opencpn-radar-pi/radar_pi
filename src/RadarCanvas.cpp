@@ -284,9 +284,9 @@ void RadarCanvas::RenderCursor(int w, int h) {
   double distance;
   double bearing;
 
-  if (m_ri->m_mouse_vrm != 0.0) {
-    distance = m_ri->m_mouse_vrm * 1852.;
-    bearing = m_ri->m_mouse_ebl;
+  if (m_ri->m_mouse_vrm[m_ri->m_orientation.value] != 0.0) {
+      distance = m_ri->m_mouse_vrm[m_ri->m_orientation.value] * 1852.;
+    bearing = m_ri->m_mouse_ebl[m_ri->m_orientation.value];
   } else {
     if ((m_ri->m_mouse_lat == 0.0 && m_ri->m_mouse_lon == 0.0) || !m_pi->m_bpos_set) {
       return;
@@ -341,24 +341,23 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
   float full_range = wxMax(w, h) / 2.0;
   float center_x = w / 2.0;
   float center_y = h / 2.0;
-
   int display_range = m_ri->GetDisplayRange();
 
   for (int b = 0; b < BEARING_LINES; b++) {
-    if (m_ri->m_vrm[b] != 0.0) {
-      float scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
-      float angle = (float)deg2rad(m_ri->m_ebl[b]);
-      float x = center_x + sinf(angle) * full_range * 2.;
-      float y = center_y - cosf(angle) * full_range * 2.;
-
+      float x, y;
       glColor3ubv(rgb[b]);
       glLineWidth(1.0);
-
-      glBegin(GL_LINES);
-      glVertex2f(center_x, center_y);
-      glVertex2f(x, y);
-      glEnd();
-
+    if (m_ri->m_vrm[b] != 0.0) {
+      float scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
+      if (m_ri->m_ebl[m_ri->m_orientation.value][b] != nanl("")){
+          float angle = (float)deg2rad(m_ri->m_ebl[m_ri->m_orientation.value][b]);
+          x = center_x + sinf(angle) * full_range * 2.;
+          y = center_y - cosf(angle) * full_range * 2.;
+          glBegin(GL_LINES);
+          glVertex2f(center_x, center_y);
+          glVertex2f(x, y);
+          glEnd();
+      }
       DrawArc(center_x, center_y, scale, 0.f, 2.f * (float)PI, 360);
     }
   }

@@ -140,6 +140,7 @@ class RadarInfo : public wxEvtHandler {
 #define ORIENTATION_HEAD_UP (0)
 #define ORIENTATION_NORTH_UP (1)
 #define ORIENTATION_COURSE_UP (2)
+#define ORIENTATION_NUMBER (3)
 
   radar_control_item m_overlay;
   radar_range_control_item m_range;  // value in meters
@@ -187,7 +188,7 @@ class RadarInfo : public wxEvtHandler {
   int m_main_timer_timeout;
 
   GuardZone *m_guard_zone[GUARD_ZONES];
-  double m_ebl[BEARING_LINES];
+  double m_ebl[ORIENTATION_NUMBER][BEARING_LINES];
   double m_vrm[BEARING_LINES];
   receive_statistics m_statistics;
 
@@ -251,7 +252,9 @@ class RadarInfo : public wxEvtHandler {
   wxString GetCanvasTextBottomLeft();
   wxString GetCanvasTextCenter();
 
-  double m_mouse_lat, m_mouse_lon, m_mouse_vrm, m_mouse_ebl;
+  double m_mouse_lat, m_mouse_lon;
+  double m_mouse_ebl[ORIENTATION_NUMBER];
+  double m_mouse_vrm[ORIENTATION_NUMBER];
 
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
   wxColour m_colour_map_rgb[BLOB_COLOURS];

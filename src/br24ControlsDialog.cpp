@@ -1246,7 +1246,7 @@ void br24ControlsDialog::OnBearingSetButtonClick(wxCommandEvent& event) {
 
 void br24ControlsDialog::OnClearCursorButtonClick(wxCommandEvent& event) {
   LOG_DIALOG(wxT("%s OnClearCursorButtonClick"), m_log_name.c_str());
-  m_ri->SetMouseVrmEbl(0., 0.);
+  m_ri->SetMouseVrmEbl(0., nanl(""));
   SwitchTo(m_control_sizer, wxT("main (clear cursor)"));
 }
 
