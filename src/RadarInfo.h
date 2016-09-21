@@ -119,7 +119,7 @@ struct DrawInfo {
 typedef UINT8 TrailRevolutionsAge;
 #define SECONDS_TO_REVOLUTIONS(x) ((x)*2 / 5)
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(600) + 1
-enum { TRAIL_OFF, TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_10MIN, TRAIL_CONTINUOUS, TRAIL_ARRAY_SIZE };
+enum { TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_5MIN, TRAIL_10MIN, TRAIL_CONTINUOUS, TRAIL_ARRAY_SIZE };
 
 class RadarInfo : public wxEvtHandler {
  public:
@@ -159,8 +159,9 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item m_side_lobe_suppression;
   radar_control_item m_target_trails;
   radar_control_item m_trails_motion;
-#define TARGET_MOTION_RELATIVE (0)
-#define TARGET_MOTION_TRUE (1)
+#define TARGET_MOTION_OFF (0)
+#define TARGET_MOTION_RELATIVE (1)
+#define TARGET_MOTION_TRUE (2)
 
   /* Per radar objects */
 
@@ -196,17 +197,31 @@ class RadarInfo : public wxEvtHandler {
   UINT8 m_history[LINES_PER_ROTATION][RETURNS_PER_LINE];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
-#define TRAILS_SIZE (RETURNS_PER_LINE * 2)
-#define TRAILS_MIDDLE (TRAILS_SIZE / 2)
+#define MARGIN (100)
+#define TRAILS_SIZE (RETURNS_PER_LINE * 2 + MARGIN * 2)
+  //#define TRAILS_MIDDLE (TRAILS_SIZE / 2)
 
+  struct IntVector {
+    int lat;
+    int lon;
+  };
   struct TrailBuffer {
     TrailRevolutionsAge true_trails[TRAILS_SIZE][TRAILS_SIZE];
     TrailRevolutionsAge relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
+    union {
+        TrailRevolutionsAge copy_of_true_trails[TRAILS_SIZE][TRAILS_SIZE];
+        TrailRevolutionsAge copy_of_relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
+    };
     double lat;
     double lon;
     double dif_lat;  // Fraction of a pixel expressed in lat/lon for True Motion Target Trails
     double dif_lon;
+    IntVector offset;
+    
   };
+  int m_old_range = 0;
+  int m_dir_lat = 0;
+  int m_dir_lon = 0;
   TrailBuffer m_trails;
 
   /* Methods */
@@ -246,6 +261,7 @@ class RadarInfo : public wxEvtHandler {
   void SetMouseVrmEbl(double vrm, double ebl);
   void SetBearing(int bearing);
   void ClearTrails();
+  void ZoomTrails(float zoom_factor);
   bool IsDisplayNorthUp() { return m_orientation.value == ORIENTATION_NORTH_UP && m_pi->m_heading_source != HEADING_NONE; }
 
   wxString GetCanvasTextTopLeft();

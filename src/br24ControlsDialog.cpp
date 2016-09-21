@@ -424,7 +424,7 @@ void br24ControlsDialog::CreateControls() {
   label << _("Clear cursor") << wxT("\n");
   label << _("Place EBL/VRM") << wxT("\n");
   label << _("Target trails") << wxT("\n");
-  label << _("True/Relative trails") << wxT("\n");
+  label << _("Off/Relative/True trails") << wxT("\n");
   label << _("Clear trails") << wxT("\n");
   label << _("Orientation") << wxT("\n");
   label << _("Refresh rate") << wxT("\n");
@@ -824,11 +824,11 @@ void br24ControlsDialog::CreateControls() {
   bMenuBack->SetFont(m_pi->m_font);
 
   // The TARGET_TRAIL button
-  target_trail_names[TRAIL_OFF] = _("Off");
   target_trail_names[TRAIL_15SEC] = _("15 sec");
   target_trail_names[TRAIL_30SEC] = _("30 sec");
   target_trail_names[TRAIL_1MIN] = _("1 min");
   target_trail_names[TRAIL_3MIN] = _("3 min");
+  target_trail_names[TRAIL_5MIN] = _("5 min");
   target_trail_names[TRAIL_10MIN] = _("10 min");
   target_trail_names[TRAIL_CONTINUOUS] = _("Continuous");
 
@@ -841,7 +841,7 @@ void br24ControlsDialog::CreateControls() {
   m_target_trails_button->SetLocalValue(m_ri->m_target_trails.button);  // redraw after adding names
 
   // The Trails Motion button
-  m_trails_motion_button = new wxButton(this, ID_TRAILS_MOTION, _("True/Relative trails"), wxDefaultPosition, g_buttonSize, 0);
+  m_trails_motion_button = new wxButton(this, ID_TRAILS_MOTION, _("Off/Relative/True trails"), wxDefaultPosition, g_buttonSize, 0);
   m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
   m_trails_motion_button->SetFont(m_pi->m_font);
 
@@ -1073,10 +1073,18 @@ void br24ControlsDialog::OnMultiSweepClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
-  if (m_ri->m_trails_motion.value == TARGET_MOTION_RELATIVE) {
-    m_ri->m_trails_motion.Update(TARGET_MOTION_TRUE);
-  } else {
-    m_ri->m_trails_motion.Update(TARGET_MOTION_RELATIVE);
+  m_ri->m_trails_motion.value++;
+  if (m_ri->m_trails_motion.value > TARGET_MOTION_TRUE) {
+    m_ri->m_trails_motion.value = 0;
+  }
+  m_ri->m_trails_motion.Update(m_ri->m_trails_motion.value);
+  m_ri->ComputeColourMap();
+  m_ri->ComputeTargetTrails();
+  if (m_ri->m_trails_motion.value == TARGET_MOTION_OFF) {
+      m_target_trails_button->Disable();
+  }
+  else {
+      m_target_trails_button->Enable();
   }
   UpdateControlValues(false);
 }
@@ -1352,12 +1360,14 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   if (m_ri->m_trails_motion.mod || refreshAll) {
-    o = _("True/Relative trails");
+    o = _("Off/Relative/True trails");
     o << wxT("\n");
     if (m_ri->m_trails_motion.value == TARGET_MOTION_TRUE) {
       o << _("True");
-    } else {
+    } else if (m_ri->m_trails_motion.value == TARGET_MOTION_RELATIVE) {
       o << _("Relative");
+    } else {
+      o << _("Off");
     }
     m_trails_motion_button->SetLabel(o);
   }

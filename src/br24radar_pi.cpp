@@ -30,9 +30,9 @@
  */
 
 #include "br24radar_pi.h"
+#include "GuardZoneBogey.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
-#include "GuardZoneBogey.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -501,7 +501,7 @@ void br24radar_pi::PassHeadingToOpenCPN() {
   char checksum = 0;
   char *p;
 
-  snprintf(sentence, sizeof(sentence), "APHDT,%.1f,M", m_hdt);
+  snprintf(sentence, sizeof(sentence), "RAHDT,%.1f,T", m_hdt);
 
   for (p = sentence; *p; p++) {
     checksum ^= *p;
@@ -700,7 +700,7 @@ void br24radar_pi::Notify(void) {
     if (!wxIsNaN(radar_heading)) {
       if (radar_heading_true) {
         if (m_heading_source != HEADING_RADAR_HDT) {
-          LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (TRUE) (%d->%d)"), m_heading_source, HEADING_RADAR_HDT);
+       //   LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (TRUE) (%d->%d)"), m_heading_source, HEADING_RADAR_HDT);
           m_heading_source = HEADING_RADAR_HDT;
         }
         if (m_heading_source == HEADING_RADAR_HDT) {
@@ -709,7 +709,7 @@ void br24radar_pi::Notify(void) {
         }
       } else {
         if (m_heading_source != HEADING_RADAR_HDM) {
-          LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (MAGNETIC) (%d->%d)"), m_heading_source, HEADING_RADAR_HDM);
+      //    LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (MAGNETIC) (%d->%d)"), m_heading_source, HEADING_RADAR_HDM);
           m_heading_source = HEADING_RADAR_HDM;
         }
         if (m_heading_source == HEADING_RADAR_HDM) {
@@ -1202,7 +1202,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
 
   if (!wxIsNaN(pfix.Hdt)) {
     if (m_heading_source < HEADING_FIX_HDT) {
-      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDT from OpenCPN (%d->%d)"), m_heading_source, HEADING_FIX_HDT);
+      LOG_VERBOSE(wxT("BR24radar_pi: Heading source is now HDT from OpenCPN (%d->%d)"), m_heading_source, HEADING_FIX_HDT);
       m_heading_source = HEADING_FIX_HDT;
     }
     if (m_heading_source == HEADING_FIX_HDT) {
@@ -1211,7 +1211,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     }
   } else if (!wxIsNaN(pfix.Hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
     if (m_heading_source < HEADING_FIX_HDM) {
-      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM from OpenCPN + VAR (%d->%d)"), m_heading_source, HEADING_FIX_HDM);
+      LOG_VERBOSE(wxT("BR24radar_pi: Heading source is now HDM from OpenCPN + VAR (%d->%d)"), m_heading_source, HEADING_FIX_HDM);
       m_heading_source = HEADING_FIX_HDM;
     }
     if (m_heading_source == HEADING_FIX_HDM) {
@@ -1221,7 +1221,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     }
   } else if (!wxIsNaN(pfix.Cog) && m_settings.enable_cog_heading) {
     if (m_heading_source < HEADING_FIX_COG) {
-      LOG_INFO(wxT("BR24radar_pi: Heading source is now COG from OpenCPN (%d->%d)"), m_heading_source, HEADING_FIX_COG);
+      LOG_VERBOSE(wxT("BR24radar_pi: Heading source is now COG from OpenCPN (%d->%d)"), m_heading_source, HEADING_FIX_COG);
       m_heading_source = HEADING_FIX_COG;
     }
     if (m_heading_source == HEADING_FIX_COG) {
@@ -1234,7 +1234,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     m_ownship_lat = pfix.Lat;
     m_ownship_lon = pfix.Lon;
     if (!m_bpos_set) {
-      LOG_INFO(wxT("BR24radar_pi: GPS position is now known"));
+      LOG_VERBOSE(wxT("BR24radar_pi: GPS position is now known"));
     }
     m_bpos_set = true;
     m_bpos_timestamp = now;
@@ -1254,7 +1254,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
 
       if (variation != 360.0) {
         if (m_var_source != VARIATION_SOURCE_WMM) {
-          LOG_INFO(wxT("BR24radar_pi: WMM plugin provides new magnetic variation %f"), variation);
+          LOG_VERBOSE(wxT("BR24radar_pi: WMM plugin provides new magnetic variation %f"), variation);
         }
         m_var = variation;
         m_var_source = VARIATION_SOURCE_WMM;
@@ -1299,6 +1299,8 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
     }
     case CT_TRAILS_MOTION: {
       m_radar[radar]->m_trails_motion.Update(value);
+      m_radar[radar]->ComputeColourMap();
+      m_radar[radar]->ComputeTargetTrails();
       return true;
     }
     case CT_MAIN_BANG_SIZE: {
@@ -1377,7 +1379,7 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
           var = -m_NMEA0183.Hdg.MagneticVariationDegrees;
         }
         if (fabs(var - m_var) >= 0.05 && m_var_source <= VARIATION_SOURCE_NMEA) {
-          LOG_INFO(wxT("BR24radar_pi: NMEA provides new magnetic variation %f from %s"), var, sentence.c_str());
+  //        LOG_INFO(wxT("BR24radar_pi: NMEA provides new magnetic variation %f from %s"), var, sentence.c_str());
           m_var = var;
           m_var_source = VARIATION_SOURCE_NMEA;
           m_var_timeout = now + WATCHDOG_TIMEOUT;
@@ -1399,8 +1401,8 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
 
   if (!wxIsNaN(hdt)) {
     if (m_heading_source < HEADING_NMEA_HDT) {
-      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDT %d from NMEA %s (%d->%d)"), m_hdt, sentence.c_str(), m_heading_source,
-               HEADING_NMEA_HDT);
+   //   LOG_INFO(wxT("BR24radar_pi: Heading source is now HDT %d from NMEA %s (%d->%d)"), m_hdt, sentence.c_str(), m_heading_source,
+   //           HEADING_NMEA_HDT);    Crashes!!!
       m_heading_source = HEADING_NMEA_HDT;
     }
     if (m_heading_source == HEADING_NMEA_HDT) {
@@ -1409,8 +1411,8 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
     }
   } else if (!wxIsNaN(hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
     if (m_heading_source < HEADING_NMEA_HDM) {
-      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f + VAR %f from NMEA %s (%d->%d)"), hdm, m_var, sentence.c_str(),
-               m_heading_source, HEADING_NMEA_HDT);
+   //   LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f + VAR %f from NMEA %s (%d->%d)"), hdm, m_var, sentence.c_str(),
+   //            m_heading_source, HEADING_NMEA_HDT);
       m_heading_source = HEADING_NMEA_HDM;
     }
     if (m_heading_source == HEADING_NMEA_HDM) {
