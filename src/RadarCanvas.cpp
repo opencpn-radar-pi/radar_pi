@@ -172,10 +172,9 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
 
   double heading;
   double predictor;
-  if (m_pi->m_heading_source != HEADING_NONE) {
     switch (m_ri->m_orientation.value) {
       case ORIENTATION_HEAD_UP:
-        heading = m_pi->m_hdt + 180.;
+        heading = 180.;
         predictor = 180.;
         break;
       case ORIENTATION_NORTH_UP:
@@ -215,7 +214,6 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
       }
       m_FontNormal.RenderString(s, center_x + x, center_y + y);
     }
-  }
 }
 
 void RadarCanvas::FillCursorTexture() {
