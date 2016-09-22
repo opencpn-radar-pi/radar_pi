@@ -1291,7 +1291,7 @@ const char *RadarInfo::GetDisplayRangeStr(size_t idx) {
 
 void RadarInfo::SetMouseLatLon(double lat, double lon) {
   
-  for (int i; i < ORIENTATION_NUMBER; i++) {
+  for (int i = 0; i < ORIENTATION_NUMBER; i++) {
     m_mouse_ebl[i] = nanl("");
     m_mouse_vrm[i] = 0.0;
   }
