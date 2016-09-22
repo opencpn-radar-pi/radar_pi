@@ -422,18 +422,9 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     data[i] = 0;
   }
   // calculate course as the moving average of m_hdt over one revolution
-  if (m_pi->m_heading_source != HEADING_NONE && ((angle & 127) == 0)) {  // sample m_hdt every 16 spokes
-    m_course_log[m_course_index] = m_pi->m_hdt;
-    m_course_index++;
-    if (m_course_index >= 16) m_course_index = 0;
-    double sum = 0;
-    for (int i = 0; i < 16; i++) {
-      sum += m_course_log[i];
-    }
-    m_course = sum / 16;
-  }
-
-  data[RETURNS_PER_LINE - 1] = 200;  // $$$ range ring, do we want this?
+  SampleCourse(angle);
+ 
+  data[RETURNS_PER_LINE - 1] = 200;  //  range ring, do we want this?
   if (m_range_meters != range_meters) {
     ResetSpokes();
     LOG_VERBOSE(wxT("BR24radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters,
@@ -539,6 +530,38 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   if (m_draw_panel.draw) {
       m_draw_panel.draw->ProcessRadarSpoke(3, north_or_course_up ? bearing : angle, data, len);
+  }
+}
+
+void RadarInfo::SampleCourse(int angle) {
+  //  Calculates the moving average of m_hdt and returns this in m_course
+  //  This is a bit more complicated then expected, average of 359 and 1 is 180 and that is not what we want
+  if (m_pi->m_heading_source != HEADING_NONE && ((angle & 127) == 0)) {  // sample m_hdt every 16 spokes
+    if (m_course_log[m_course_index] > 720.) {  // keep values within limits
+      for (int i = 0; i < COURSE_SAMPLES; i++) {
+        m_course_log[i] -= 720;
+      }
+    }
+    if (m_course_log[m_course_index] < -720.) {
+      for (int i = 0; i < COURSE_SAMPLES; i++) {
+        m_course_log[i] += 720;
+      }
+    }
+    double hdt = m_pi->m_hdt;
+    while (m_course_log[m_course_index] - hdt > 180.) {  // compare with previous value
+      hdt += 360.;
+    }
+    while (m_course_log[m_course_index] - hdt < -180.) {
+      hdt -= 360.;
+    }
+    m_course_index++;
+    if (m_course_index >= COURSE_SAMPLES) m_course_index = 0;
+    m_course_log[m_course_index] = hdt;
+    double sum = 0;
+    for (int i = 0; i < COURSE_SAMPLES; i++) {
+      sum += m_course_log[i];
+    }
+    m_course = fmod(sum / 16 + 720., 360);
   }
 }
 

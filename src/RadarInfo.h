@@ -126,9 +126,9 @@ class RadarInfo : public wxEvtHandler {
   wxString m_name;  // Either "Radar", "Radar A", "Radar B".
   br24radar_pi *m_pi;
   int m_radar;  // Which radar this is (0..., max 2 for now)
-
+#define COURSE_SAMPLES (16)
   double m_course;                 // m_course is the moving everage of m_hdt used for course_up
-  double m_course_log[16];
+  double m_course_log[COURSE_SAMPLES];
   int m_course_index = 0;
 
   /* User radar settings */
@@ -263,6 +263,7 @@ class RadarInfo : public wxEvtHandler {
   void ClearTrails();
   void ZoomTrails(float zoom_factor);
   bool IsDisplayNorthUp() { return m_orientation.value == ORIENTATION_NORTH_UP && m_pi->m_heading_source != HEADING_NONE; }
+  void SampleCourse(int angle);
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
