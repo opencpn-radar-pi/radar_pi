@@ -536,7 +536,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 void RadarInfo::SampleCourse(int angle) {
   //  Calculates the moving average of m_hdt and returns this in m_course
   //  This is a bit more complicated then expected, average of 359 and 1 is 180 and that is not what we want
-  if (m_pi->m_heading_source != HEADING_NONE && ((angle & 127) == 0)) {  // sample m_hdt every 16 spokes
+  if (m_pi->m_heading_source != HEADING_NONE && ((angle & 127) == 0)) {  // sample m_hdt every 128 spokes
     if (m_course_log[m_course_index] > 720.) {  // keep values within limits
       for (int i = 0; i < COURSE_SAMPLES; i++) {
         m_course_log[i] -= 720;
