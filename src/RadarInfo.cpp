@@ -179,6 +179,10 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
 
   m_radar_type = RT_UNKNOWN;
   m_auto_range_mode = true;
+  m_course_index = 0;
+  m_old_range = 0;
+  m_dir_lat = 0;
+  m_dir_lon = 0;
   m_range_meters = 0;
   m_auto_range_meters = 0;
   m_previous_auto_range_meters = 0;
@@ -1103,15 +1107,18 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
   if (m_range_meters) {
     s << wxT("\n") << GetRangeText();
   }
+  if (s.Right(1) != wxT("\n")) {
+    s << wxT("\n");
+  }
   if (m_trails_motion.value > 0) {
-    if (s.Right(1) != wxT("\n")) {
-      s << wxT("\n");
-    }
     if (m_trails_motion.value == TARGET_MOTION_TRUE) {
       s << wxT("RM(T)");
     } else {
       s << wxT("RM(R)");
     }
+  }
+  else {
+    s << wxT("RM");
   }
 
   return s;

@@ -129,7 +129,7 @@ class RadarInfo : public wxEvtHandler {
 #define COURSE_SAMPLES (16)
   double m_course;                 // m_course is the moving everage of m_hdt used for course_up
   double m_course_log[COURSE_SAMPLES];
-  int m_course_index = 0;
+  int m_course_index;
 
   /* User radar settings */
 
@@ -219,9 +219,9 @@ class RadarInfo : public wxEvtHandler {
     IntVector offset;
     
   };
-  int m_old_range = 0;
-  int m_dir_lat = 0;
-  int m_dir_lon = 0;
+  int m_old_range;
+  int m_dir_lat;
+  int m_dir_lon;
   TrailBuffer m_trails;
 
   /* Methods */
