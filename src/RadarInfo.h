@@ -127,7 +127,7 @@ class RadarInfo : public wxEvtHandler {
   br24radar_pi *m_pi;
   int m_radar;  // Which radar this is (0..., max 2 for now)
 #define COURSE_SAMPLES (16)
-  double m_course;                 // m_course is the moving everage of m_hdt used for course_up
+  double m_course;  // m_course is the moving everage of m_hdt used for course_up
   double m_course_log[COURSE_SAMPLES];
   int m_course_index;
 
@@ -209,15 +209,14 @@ class RadarInfo : public wxEvtHandler {
     TrailRevolutionsAge true_trails[TRAILS_SIZE][TRAILS_SIZE];
     TrailRevolutionsAge relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
     union {
-        TrailRevolutionsAge copy_of_true_trails[TRAILS_SIZE][TRAILS_SIZE];
-        TrailRevolutionsAge copy_of_relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
+      TrailRevolutionsAge copy_of_true_trails[TRAILS_SIZE][TRAILS_SIZE];
+      TrailRevolutionsAge copy_of_relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
     };
     double lat;
     double lon;
     double dif_lat;  // Fraction of a pixel expressed in lat/lon for True Motion Target Trails
     double dif_lon;
     IntVector offset;
-    
   };
   int m_old_range;
   int m_dir_lat;

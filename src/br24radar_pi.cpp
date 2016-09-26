@@ -700,7 +700,7 @@ void br24radar_pi::Notify(void) {
     if (!wxIsNaN(radar_heading)) {
       if (radar_heading_true) {
         if (m_heading_source != HEADING_RADAR_HDT) {
-       //   LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (TRUE) (%d->%d)"), m_heading_source, HEADING_RADAR_HDT);
+          //   LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (TRUE) (%d->%d)"), m_heading_source, HEADING_RADAR_HDT);
           m_heading_source = HEADING_RADAR_HDT;
         }
         if (m_heading_source == HEADING_RADAR_HDT) {
@@ -709,7 +709,7 @@ void br24radar_pi::Notify(void) {
         }
       } else {
         if (m_heading_source != HEADING_RADAR_HDM) {
-      //    LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (MAGNETIC) (%d->%d)"), m_heading_source, HEADING_RADAR_HDM);
+          //    LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (MAGNETIC) (%d->%d)"), m_heading_source, HEADING_RADAR_HDM);
           m_heading_source = HEADING_RADAR_HDM;
         }
         if (m_heading_source == HEADING_RADAR_HDM) {
@@ -1379,7 +1379,7 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
           var = -m_NMEA0183.Hdg.MagneticVariationDegrees;
         }
         if (fabs(var - m_var) >= 0.05 && m_var_source <= VARIATION_SOURCE_NMEA) {
-  //        LOG_INFO(wxT("BR24radar_pi: NMEA provides new magnetic variation %f from %s"), var, sentence.c_str());
+          //        LOG_INFO(wxT("BR24radar_pi: NMEA provides new magnetic variation %f from %s"), var, sentence.c_str());
           m_var = var;
           m_var_source = VARIATION_SOURCE_NMEA;
           m_var_timeout = now + WATCHDOG_TIMEOUT;
@@ -1401,8 +1401,9 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
 
   if (!wxIsNaN(hdt)) {
     if (m_heading_source < HEADING_NMEA_HDT) {
-   //   LOG_INFO(wxT("BR24radar_pi: Heading source is now HDT %d from NMEA %s (%d->%d)"), m_hdt, sentence.c_str(), m_heading_source,
-   //           HEADING_NMEA_HDT);    Crashes!!!
+      //   LOG_INFO(wxT("BR24radar_pi: Heading source is now HDT %d from NMEA %s (%d->%d)"), m_hdt, sentence.c_str(),
+      //   m_heading_source,
+      //           HEADING_NMEA_HDT);    Crashes!!!
       m_heading_source = HEADING_NMEA_HDT;
     }
     if (m_heading_source == HEADING_NMEA_HDT) {
@@ -1411,8 +1412,8 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
     }
   } else if (!wxIsNaN(hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
     if (m_heading_source < HEADING_NMEA_HDM) {
-   //   LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f + VAR %f from NMEA %s (%d->%d)"), hdm, m_var, sentence.c_str(),
-   //            m_heading_source, HEADING_NMEA_HDT);
+      //   LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f + VAR %f from NMEA %s (%d->%d)"), hdm, m_var, sentence.c_str(),
+      //            m_heading_source, HEADING_NMEA_HDT);
       m_heading_source = HEADING_NMEA_HDM;
     }
     if (m_heading_source == HEADING_NMEA_HDM) {

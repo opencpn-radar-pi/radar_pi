@@ -283,7 +283,7 @@ void RadarCanvas::RenderCursor(int w, int h) {
   double bearing;
 
   if (m_ri->m_mouse_vrm[m_ri->m_orientation.value] != 0.0) {
-      distance = m_ri->m_mouse_vrm[m_ri->m_orientation.value] * 1852.;
+    distance = m_ri->m_mouse_vrm[m_ri->m_orientation.value] * 1852.;
     bearing = m_ri->m_mouse_ebl[m_ri->m_orientation.value];
   } else {
     if ((m_ri->m_mouse_lat == 0.0 && m_ri->m_mouse_lon == 0.0) || !m_pi->m_bpos_set) {
@@ -342,19 +342,19 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
   int display_range = m_ri->GetDisplayRange();
 
   for (int b = 0; b < BEARING_LINES; b++) {
-      float x, y;
-      glColor3ubv(rgb[b]);
-      glLineWidth(1.0);
+    float x, y;
+    glColor3ubv(rgb[b]);
+    glLineWidth(1.0);
     if (m_ri->m_vrm[b] != 0.0) {
       float scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
-      if (m_ri->m_ebl[m_ri->m_orientation.value][b] != nanl("")){
-          float angle = (float)deg2rad(m_ri->m_ebl[m_ri->m_orientation.value][b]);
-          x = center_x + sinf(angle) * full_range * 2.;
-          y = center_y - cosf(angle) * full_range * 2.;
-          glBegin(GL_LINES);
-          glVertex2f(center_x, center_y);
-          glVertex2f(x, y);
-          glEnd();
+      if (m_ri->m_ebl[m_ri->m_orientation.value][b] != nanl("")) {
+        float angle = (float)deg2rad(m_ri->m_ebl[m_ri->m_orientation.value][b]);
+        x = center_x + sinf(angle) * full_range * 2.;
+        y = center_y - cosf(angle) * full_range * 2.;
+        glBegin(GL_LINES);
+        glVertex2f(center_x, center_y);
+        glVertex2f(x, y);
+        glEnd();
       }
       DrawArc(center_x, center_y, scale, 0.f, 2.f * (float)PI, 360);
     }
@@ -470,7 +470,7 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
   int center_x = w / 2;
   int center_y = h / 2;
 
-//  LOG_DIALOG(wxT("BR24radar_pi: %s Mouse clicked at %d, %d"), m_ri->m_name.c_str(), x, y);
+  //  LOG_DIALOG(wxT("BR24radar_pi: %s Mouse clicked at %d, %d"), m_ri->m_name.c_str(), x, y);
   if (x > 0 && x < w && y > 0 && y < h) {
     if (x >= w - m_menu_size.x && y < m_menu_size.y) {
       m_pi->ShowRadarControl(m_ri->m_radar, true);
@@ -512,7 +512,7 @@ void RadarCanvas::OnMouseWheel(wxMouseEvent &event) {
 
   wxLongLong now = wxGetUTCTimeMillis();
 
-//  LOG_INFO(wxT("BR24radar_pi: %s Mouse range wheel %d / %d"), m_ri->m_name.c_str(), rotation, delta);
+  //  LOG_INFO(wxT("BR24radar_pi: %s Mouse range wheel %d / %d"), m_ri->m_name.c_str(), rotation, delta);
 
   if (rotation) {
     if (m_pi->m_settings.reverse_zoom) {

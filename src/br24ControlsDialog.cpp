@@ -1081,10 +1081,9 @@ void br24ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
   m_ri->ComputeColourMap();
   m_ri->ComputeTargetTrails();
   if (m_ri->m_trails_motion.value == TARGET_MOTION_OFF) {
-      m_target_trails_button->Disable();
-  }
-  else {
-      m_target_trails_button->Enable();
+    m_target_trails_button->Disable();
+  } else {
+    m_target_trails_button->Enable();
   }
   UpdateControlValues(false);
 }
@@ -1239,8 +1238,8 @@ void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) { m_ri-
 
 void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
   m_ri->m_orientation.Update(m_ri->m_orientation.value + 1);
-  if (m_ri->m_orientation.value > ORIENTATION_COURSE_UP){
-      m_ri->m_orientation.Update(ORIENTATION_HEAD_UP);
+  if (m_ri->m_orientation.value > ORIENTATION_COURSE_UP) {
+    m_ri->m_orientation.Update(ORIENTATION_HEAD_UP);
   }
   UpdateControlValues(false);
 }
@@ -1383,8 +1382,8 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
         o << _("Head up");
         break;
       case ORIENTATION_COURSE_UP:
-          o << _("Course up");
-          break;
+        o << _("Course up");
+        break;
       default:
         o << _("???");
     }
