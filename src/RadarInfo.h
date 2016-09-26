@@ -119,13 +119,17 @@ struct DrawInfo {
 typedef UINT8 TrailRevolutionsAge;
 #define SECONDS_TO_REVOLUTIONS(x) ((x)*2 / 5)
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(600) + 1
-enum { TRAIL_OFF, TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_10MIN, TRAIL_CONTINUOUS, TRAIL_ARRAY_SIZE };
+enum { TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_5MIN, TRAIL_10MIN, TRAIL_CONTINUOUS, TRAIL_ARRAY_SIZE };
 
 class RadarInfo : public wxEvtHandler {
  public:
   wxString m_name;  // Either "Radar", "Radar A", "Radar B".
   br24radar_pi *m_pi;
   int m_radar;  // Which radar this is (0..., max 2 for now)
+#define COURSE_SAMPLES (16)
+  double m_course;                 // m_course is the moving everage of m_hdt used for course_up
+  double m_course_log[COURSE_SAMPLES];
+  int m_course_index = 0;
 
   /* User radar settings */
 
@@ -135,6 +139,8 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item m_orientation;  // 0 = Heading Up, 1 = North Up
 #define ORIENTATION_HEAD_UP (0)
 #define ORIENTATION_NORTH_UP (1)
+#define ORIENTATION_COURSE_UP (2)
+#define ORIENTATION_NUMBER (3)
 
   radar_control_item m_overlay;
   radar_range_control_item m_range;  // value in meters
@@ -153,8 +159,9 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item m_side_lobe_suppression;
   radar_control_item m_target_trails;
   radar_control_item m_trails_motion;
-#define TARGET_MOTION_RELATIVE (0)
-#define TARGET_MOTION_TRUE (1)
+#define TARGET_MOTION_OFF (0)
+#define TARGET_MOTION_RELATIVE (1)
+#define TARGET_MOTION_TRUE (2)
 
   /* Per radar objects */
 
@@ -182,7 +189,7 @@ class RadarInfo : public wxEvtHandler {
   int m_main_timer_timeout;
 
   GuardZone *m_guard_zone[GUARD_ZONES];
-  double m_ebl[BEARING_LINES];
+  double m_ebl[ORIENTATION_NUMBER][BEARING_LINES];
   double m_vrm[BEARING_LINES];
   receive_statistics m_statistics;
 
@@ -190,17 +197,31 @@ class RadarInfo : public wxEvtHandler {
   UINT8 m_history[LINES_PER_ROTATION][RETURNS_PER_LINE];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
-#define TRAILS_SIZE (RETURNS_PER_LINE * 2)
-#define TRAILS_MIDDLE (TRAILS_SIZE / 2)
+#define MARGIN (100)
+#define TRAILS_SIZE (RETURNS_PER_LINE * 2 + MARGIN * 2)
+  //#define TRAILS_MIDDLE (TRAILS_SIZE / 2)
 
+  struct IntVector {
+    int lat;
+    int lon;
+  };
   struct TrailBuffer {
     TrailRevolutionsAge true_trails[TRAILS_SIZE][TRAILS_SIZE];
     TrailRevolutionsAge relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
+    union {
+        TrailRevolutionsAge copy_of_true_trails[TRAILS_SIZE][TRAILS_SIZE];
+        TrailRevolutionsAge copy_of_relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
+    };
     double lat;
     double lon;
     double dif_lat;  // Fraction of a pixel expressed in lat/lon for True Motion Target Trails
     double dif_lon;
+    IntVector offset;
+    
   };
+  int m_old_range = 0;
+  int m_dir_lat = 0;
+  int m_dir_lon = 0;
   TrailBuffer m_trails;
 
   /* Methods */
@@ -240,13 +261,17 @@ class RadarInfo : public wxEvtHandler {
   void SetMouseVrmEbl(double vrm, double ebl);
   void SetBearing(int bearing);
   void ClearTrails();
+  void ZoomTrails(float zoom_factor);
   bool IsDisplayNorthUp() { return m_orientation.value == ORIENTATION_NORTH_UP && m_pi->m_heading_source != HEADING_NONE; }
+  void SampleCourse(int angle);
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
   wxString GetCanvasTextCenter();
 
-  double m_mouse_lat, m_mouse_lon, m_mouse_vrm, m_mouse_ebl;
+  double m_mouse_lat, m_mouse_lon;
+  double m_mouse_ebl[ORIENTATION_NUMBER];
+  double m_mouse_vrm[ORIENTATION_NUMBER];
 
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
   wxColour m_colour_map_rgb[BLOB_COLOURS];

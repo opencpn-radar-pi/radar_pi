@@ -753,7 +753,7 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
 
   if (m_ri->m_radar == 1) {
     if (m_ri->m_radar_type != RT_4G) {
-      LOG_INFO(wxT("BR24radar_pi: Radar report from 2nd radar tells us this a Navico 4G"));
+   //   LOG_INFO(wxT("BR24radar_pi: Radar report from 2nd radar tells us this a Navico 4G"));
       m_ri->m_radar_type = RT_4G;
       m_pi->m_pMessageBox->SetRadarType(RT_4G);
     }
