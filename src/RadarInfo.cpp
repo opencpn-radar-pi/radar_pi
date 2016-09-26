@@ -196,13 +196,13 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_mouse_lat = 0.0;
   m_mouse_lon = 0.0;
   for (int i = 0; i < ORIENTATION_NUMBER; i++) {
-    m_mouse_ebl[i]= nanl("");
+    m_mouse_ebl[i] = nanl("");
     m_mouse_vrm[i] = 0.0;
     for (int b = 0; b < BEARING_LINES; b++) {
-        m_ebl[i][b] = nanl("");
-        m_vrm[b] = 0.0;
+      m_ebl[i][b] = nanl("");
+      m_vrm[b] = 0.0;
     }
-  } 
+  }
   m_transmit = 0;
   m_receive = 0;
   m_draw_panel.draw = 0;
@@ -350,8 +350,8 @@ void RadarInfo::StartReceive() {
 
 void RadarInfo::ComputeColourMap() {
   for (int i = 0; i <= UINT8_MAX; i++) {
-    m_colour_map[i] = (i >= m_pi->m_settings.threshold_red) ? BLOB_STRONG
-                                                            : (i >= m_pi->m_settings.threshold_green)
+    m_colour_map[i] =
+        (i >= m_pi->m_settings.threshold_red) ? BLOB_STRONG : (i >= m_pi->m_settings.threshold_green)
                                                                   ? BLOB_INTERMEDIATE
                                                                   : (i >= m_pi->m_settings.threshold_blue) ? BLOB_WEAK : BLOB_NONE;
   }
@@ -427,8 +427,13 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
   // calculate course as the moving average of m_hdt over one revolution
   SampleCourse(angle);
- 
+
+#ifdef NEVER
+  // Douwe likes this, and I think it has some value in testing, but I think it distracts as well.
+  // Why don't we make this an option?
   data[RETURNS_PER_LINE - 1] = 200;  //  range ring, do we want this?
+#endif
+
   if (m_range_meters != range_meters) {
     ResetSpokes();
     LOG_VERBOSE(wxT("BR24radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters,
@@ -482,22 +487,22 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   PolarToCartesianLookupTable *polarLookup;
   polarLookup = GetPolarToCartesianLookupTable();
-  if (m_old_range != m_range_meters && m_old_range != 0 && m_range_meters != 0){
-      // zoom trails
-      float zoom_factor = (float) m_old_range / (float) m_range_meters;
-      ZoomTrails(zoom_factor);
+  if (m_old_range != m_range_meters && m_old_range != 0 && m_range_meters != 0) {
+    // zoom trails
+    float zoom_factor = (float)m_old_range / (float)m_range_meters;
+    ZoomTrails(zoom_factor);
   }
-  if (m_old_range == 0 || m_range_meters == 0){
-      ClearTrails();
+  if (m_old_range == 0 || m_range_meters == 0) {
+    ClearTrails();
   }
   m_old_range = m_range_meters;
 
-  UpdateTrailPosition();   // for true trails
-  
+  UpdateTrailPosition();  // for true trails
+
   // True trails
   for (size_t radius = 0; radius < len - 1; radius++) {  //  len - 1 : no trails on range circle
     UINT8 *trail = &m_trails.true_trails[polarLookup->intx[bearing][radius] + TRAILS_SIZE / 2 + m_trails.offset.lat]
-        // when ship moves north, offset.lat > 0. Add to move trails image in opposite direction
+                                        // when ship moves north, offset.lat > 0. Add to move trails image in opposite direction
                                         [polarLookup->inty[bearing][radius] + TRAILS_SIZE / 2 + m_trails.offset.lon];
     // when ship moves east, offset.lon > 0. Add to move trails image in opposite direction
     if (data[radius] >= weakest_normal_blob) {
@@ -511,7 +516,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       }
     }
   }
-  
+
   // Relative trails
   UINT8 *trail = m_trails.relative_trails[angle];
   for (size_t radius = 0; radius < len - 1; radius++) {  // len - 1 : no trails on range circle
@@ -533,7 +538,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
 
   if (m_draw_panel.draw) {
-      m_draw_panel.draw->ProcessRadarSpoke(3, north_or_course_up ? bearing : angle, data, len);
+    m_draw_panel.draw->ProcessRadarSpoke(3, north_or_course_up ? bearing : angle, data, len);
   }
 }
 
@@ -541,7 +546,7 @@ void RadarInfo::SampleCourse(int angle) {
   //  Calculates the moving average of m_hdt and returns this in m_course
   //  This is a bit more complicated then expected, average of 359 and 1 is 180 and that is not what we want
   if (m_pi->m_heading_source != HEADING_NONE && ((angle & 127) == 0)) {  // sample m_hdt every 128 spokes
-    if (m_course_log[m_course_index] > 720.) {  // keep values within limits
+    if (m_course_log[m_course_index] > 720.) {                           // keep values within limits
       for (int i = 0; i < COURSE_SAMPLES; i++) {
         m_course_log[i] -= 720;
       }
@@ -587,14 +592,16 @@ void RadarInfo::ZoomTrails(float zoom_factor) {
 
   // zoom true trails
   memset(&m_trails.copy_of_true_trails, 0, sizeof(m_trails.copy_of_true_trails));
-  for (int i = TRAILS_SIZE / 2 + m_trails.offset.lat - RETURNS_PER_LINE; i < TRAILS_SIZE / 2 + m_trails.offset.lat + RETURNS_PER_LINE;
-       i++) {
-      int index_i = (int((float)(i - TRAILS_SIZE / 2 + m_trails.offset.lat) * zoom_factor)) + TRAILS_SIZE / 2 - m_trails.offset.lat * zoom_factor;
+  for (int i = TRAILS_SIZE / 2 + m_trails.offset.lat - RETURNS_PER_LINE;
+       i < TRAILS_SIZE / 2 + m_trails.offset.lat + RETURNS_PER_LINE; i++) {
+    int index_i = (int((float)(i - TRAILS_SIZE / 2 + m_trails.offset.lat) * zoom_factor)) + TRAILS_SIZE / 2 -
+                  m_trails.offset.lat * zoom_factor;
     if (index_i >= TRAILS_SIZE - 1) break;  // allow adding an additional pixel later
     if (index_i < 0) continue;
-    for (int j = TRAILS_SIZE / 2 + m_trails.offset.lon - RETURNS_PER_LINE; j < TRAILS_SIZE / 2 + m_trails.offset.lon + RETURNS_PER_LINE;
-         j++) {
-        int index_j = (int((float)(j - TRAILS_SIZE / 2 + m_trails.offset.lon) * zoom_factor)) + TRAILS_SIZE / 2 - m_trails.offset.lon * zoom_factor;
+    for (int j = TRAILS_SIZE / 2 + m_trails.offset.lon - RETURNS_PER_LINE;
+         j < TRAILS_SIZE / 2 + m_trails.offset.lon + RETURNS_PER_LINE; j++) {
+      int index_j = (int((float)(j - TRAILS_SIZE / 2 + m_trails.offset.lon) * zoom_factor)) + TRAILS_SIZE / 2 -
+                    m_trails.offset.lon * zoom_factor;
       if (index_j >= TRAILS_SIZE - 1) break;
       if (index_j < 0) continue;
       if (m_trails.true_trails[i][j] != 0) {  // many to one mapping, prevent overwriting trails with 0
@@ -1094,12 +1101,10 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
 
   if (IsDisplayNorthUp()) {
     s << _("North Up");
-  }
-  else if (m_orientation.value == ORIENTATION_COURSE_UP && m_pi->m_heading_source != HEADING_NONE) {
+  } else if (m_orientation.value == ORIENTATION_COURSE_UP && m_pi->m_heading_source != HEADING_NONE) {
     s << _("Course Up");
-  }
-  else  {
-      s << _("Head Up");
+  } else {
+    s << _("Head Up");
   }
   if (m_pi->m_settings.emulator_on) {
     s << wxT("\n") << _("Emulator");
@@ -1116,8 +1121,7 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
     } else {
       s << wxT("RM(R)");
     }
-  }
-  else {
+  } else {
     s << wxT("RM");
   }
 
@@ -1177,12 +1181,12 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
     // Add VRM/EBLs
 
     for (int b = 0; b < BEARING_LINES; b++) {
-        double bearing = m_ebl[m_orientation.value][b];
+      double bearing = m_ebl[m_orientation.value][b];
       if (m_vrm[b] != 0.0 && bearing != 0.) {
-          if (m_orientation.value == ORIENTATION_COURSE_UP) {
-              bearing += m_course;
-              if (bearing >= 360) bearing -= 360;
-          }
+        if (m_orientation.value == ORIENTATION_COURSE_UP) {
+          bearing += m_course;
+          if (bearing >= 360) bearing -= 360;
+        }
 
         if (s.length()) {
           s << wxT("\n");
@@ -1193,9 +1197,9 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
     // Add in mouse cursor location
 
     if (m_mouse_vrm[m_orientation.value] != 0.0) {
-        distance = m_mouse_vrm[m_orientation.value];
+      distance = m_mouse_vrm[m_orientation.value];
       bearing = m_mouse_ebl[m_orientation.value];
-      if (m_orientation.value == ORIENTATION_COURSE_UP) {  
+      if (m_orientation.value == ORIENTATION_COURSE_UP) {
         bearing += m_course;
         if (bearing >= 360) bearing -= 360;
       }
@@ -1297,7 +1301,6 @@ const char *RadarInfo::GetDisplayRangeStr(size_t idx) {
 }
 
 void RadarInfo::SetMouseLatLon(double lat, double lon) {
-  
   for (int i = 0; i < ORIENTATION_NUMBER; i++) {
     m_mouse_ebl[i] = nanl("");
     m_mouse_vrm[i] = 0.0;
@@ -1308,21 +1311,21 @@ void RadarInfo::SetMouseLatLon(double lat, double lon) {
 }
 
 void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
-    if (m_orientation.value == ORIENTATION_HEAD_UP){
-        m_mouse_vrm[ORIENTATION_HEAD_UP] = vrm;
-        m_mouse_ebl[ORIENTATION_HEAD_UP] = ebl;
-    }
-  if (m_orientation.value == ORIENTATION_NORTH_UP){
-      m_mouse_ebl[ORIENTATION_NORTH_UP] = ebl;
-      m_mouse_ebl[ORIENTATION_COURSE_UP] = ebl - m_course;
-      m_mouse_vrm[ORIENTATION_NORTH_UP] = vrm;
-      m_mouse_vrm[ORIENTATION_COURSE_UP] = vrm;
+  if (m_orientation.value == ORIENTATION_HEAD_UP) {
+    m_mouse_vrm[ORIENTATION_HEAD_UP] = vrm;
+    m_mouse_ebl[ORIENTATION_HEAD_UP] = ebl;
   }
-  if (m_orientation.value == ORIENTATION_COURSE_UP){
-      m_mouse_ebl[ORIENTATION_NORTH_UP] = ebl + m_course;
-      m_mouse_ebl[ORIENTATION_COURSE_UP] = ebl;
-      m_mouse_vrm[ORIENTATION_NORTH_UP] = vrm;
-      m_mouse_vrm[ORIENTATION_COURSE_UP] = vrm;
+  if (m_orientation.value == ORIENTATION_NORTH_UP) {
+    m_mouse_ebl[ORIENTATION_NORTH_UP] = ebl;
+    m_mouse_ebl[ORIENTATION_COURSE_UP] = ebl - m_course;
+    m_mouse_vrm[ORIENTATION_NORTH_UP] = vrm;
+    m_mouse_vrm[ORIENTATION_COURSE_UP] = vrm;
+  }
+  if (m_orientation.value == ORIENTATION_COURSE_UP) {
+    m_mouse_ebl[ORIENTATION_NORTH_UP] = ebl + m_course;
+    m_mouse_ebl[ORIENTATION_COURSE_UP] = ebl;
+    m_mouse_vrm[ORIENTATION_NORTH_UP] = vrm;
+    m_mouse_vrm[ORIENTATION_COURSE_UP] = vrm;
   }
 
   m_mouse_lat = 0.0;
@@ -1334,16 +1337,14 @@ void RadarInfo::SetBearing(int bearing) {
   if (m_vrm[bearing] != 0.0) {
     m_vrm[bearing] = 0.0;
     m_ebl[m_orientation.value][bearing] = nanl("");
-  }
-  else if (m_mouse_vrm[m_orientation.value] != 0.0) {
-      m_vrm[bearing] = m_mouse_vrm[m_orientation.value];
-      if (m_orientation.value == ORIENTATION_HEAD_UP){
-          m_ebl[ORIENTATION_HEAD_UP][bearing] = m_mouse_ebl[ORIENTATION_HEAD_UP];
-      }
-      else{
-          m_ebl[ORIENTATION_NORTH_UP][bearing] = m_mouse_ebl[ORIENTATION_NORTH_UP];
-          m_ebl[ORIENTATION_COURSE_UP][bearing] = m_mouse_ebl[ORIENTATION_COURSE_UP];
-      }
+  } else if (m_mouse_vrm[m_orientation.value] != 0.0) {
+    m_vrm[bearing] = m_mouse_vrm[m_orientation.value];
+    if (m_orientation.value == ORIENTATION_HEAD_UP) {
+      m_ebl[ORIENTATION_HEAD_UP][bearing] = m_mouse_ebl[ORIENTATION_HEAD_UP];
+    } else {
+      m_ebl[ORIENTATION_NORTH_UP][bearing] = m_mouse_ebl[ORIENTATION_NORTH_UP];
+      m_ebl[ORIENTATION_COURSE_UP][bearing] = m_mouse_ebl[ORIENTATION_COURSE_UP];
+    }
   } else if (m_mouse_lat != 0.0 || m_mouse_lon != 0.0) {
     m_vrm[bearing] = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
     m_ebl[m_orientation.value][bearing] = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
