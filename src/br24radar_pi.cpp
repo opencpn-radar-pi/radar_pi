@@ -33,6 +33,8 @@
 #include "GuardZoneBogey.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
+#include "RadarMarpa.h"
+
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -251,6 +253,7 @@ int br24radar_pi::Init(void) {
   wxMenuItem *mi1 = new wxMenuItem(&dummy_menu, -1, _("Show radar"));
   wxMenuItem *mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
   wxMenuItem *mi3 = new wxMenuItem(&dummy_menu, -1, _("Radar Control..."));
+  wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Set Marpa Target"));
 #ifdef __WXMSW__
   wxFont *qFont = OCPNGetFont(_("Menu"), 10);
   mi1->SetFont(*qFont);
@@ -260,6 +263,8 @@ int br24radar_pi::Init(void) {
   m_context_menu_show_id = AddCanvasContextMenuItem(mi1, this);
   m_context_menu_hide_id = AddCanvasContextMenuItem(mi2, this);
   m_context_menu_control_id = AddCanvasContextMenuItem(mi3, this);
+  m_context_menu_set_marpa_target = AddCanvasContextMenuItem(mi4, this);
+
 
   m_initialized = true;
   LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.show_radar[0], m_settings.show_radar[1],
@@ -272,6 +277,8 @@ int br24radar_pi::Init(void) {
     m_radar[1]->StartReceive();
   }
 
+  m_marpa = new RadarMarpa(this, m_radar[m_settings.chart_overlay]);
+  LOG_INFO(wxT("BR24rad $$$ Marpa constructor called"));
   return PLUGIN_OPTIONS;
 }
 
@@ -490,10 +497,33 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
   } else if (id == m_context_menu_show_id) {
     m_settings.show = 1;
     SetRadarWindowViz();
-  } else {
+  }
+  else if (id == m_context_menu_set_marpa_target){
+      LOG_INFO(wxT("BR24radar_pi: $$$ m_cursor_lat %f, m_cursor_lon %f"), m_cursor_lat, m_cursor_lon);
+      
+          LOG_INFO(wxT("BR24radar_pi: $$$ m_ownship_lat %f, m_ownship_lon %f"), m_ownship_lat, m_ownship_lon);
+          if (m_settings.show                                                       // radar shown
+              && m_settings.chart_overlay >= 0                                        //  overlay desired
+              && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
+              && m_bpos_set) {                                                      // overlay possible 
+              position target_pos;
+              target_pos.lat = m_cursor_lat;
+              target_pos.lon = m_cursor_lon;
+              m_marpa->AquireNewTarget(target_pos);
+              
+              if (!m_marpa->m_targets[0].target_lost){
+                  LOG_INFO(wxT("BR24radar_pi: $$$ target aquired, length=%i"), m_marpa->m_targets[0].contour_length);
+                  for (int i = 1; i < m_marpa->m_targets[0].contour_length; i++){
+                      LOG_INFO(wxT("BR24radar_pi: $$$ angle = %i, r= %i"), m_marpa->m_targets[0].contour[i].angle, m_marpa->m_targets[0].contour[i].r);
+                  }
+              }
+          }
+  }
+  else {
     wxLogError(wxT("BR24radar_pi: Unknown context menu item callback"));
   }
 }
+
 
 void br24radar_pi::PassHeadingToOpenCPN() {
   wxString nmea;

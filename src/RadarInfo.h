@@ -271,6 +271,7 @@ class RadarInfo : public wxEvtHandler {
   double m_mouse_lat, m_mouse_lon;
   double m_mouse_ebl[ORIENTATION_NUMBER];
   double m_mouse_vrm[ORIENTATION_NUMBER];
+  int m_range_meters;  // what radar told us is the range in the last received spoke
 
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
   wxColour m_colour_map_rgb[BLOB_COLOURS];
@@ -281,8 +282,6 @@ class RadarInfo : public wxEvtHandler {
   void RenderRadarImage(DrawInfo *di);
   wxString FormatDistance(double distance);
   wxString FormatAngle(double angle);
-
-  int m_range_meters;  // what radar told us is the range in the last received spoke
 
   int m_previous_auto_range_meters;
   int m_auto_range_meters;

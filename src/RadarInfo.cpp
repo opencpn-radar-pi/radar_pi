@@ -37,6 +37,7 @@
 #include "br24Receive.h"
 #include "br24Transmit.h"
 #include "drawutil.h"
+#include "RadarMarpa.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -175,6 +176,7 @@ void radar_range_control_item::Update(int v) {
 
 RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_pi = pi;
+  int test = (int)m_pi;
   m_radar = radar;
 
   m_radar_type = RT_UNKNOWN;
@@ -428,11 +430,20 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   // calculate course as the moving average of m_hdt over one revolution
   SampleCourse(angle);
 
-#ifdef NEVER
+  //for (int i = 0; i < RETURNS_PER_LINE; i++){  //   test cases
+  //    data[i] = 0;
+  //    if (i <= 295 && i >= 290 && bearing > 20 && bearing < 40) data[i] = 200;  
+  //    if ((i == 289 || i == 288) && (bearing == 20 || bearing == 21))data[i] = 200;  
+  //  //  if ((i == 287 || i == 286) && bearing == 21) data[i] = 200;  
+  //    //if (i == 286 && bearing == 22) data[i] = 200;  
+  //    //if (i == 286 && bearing == 23) data[i] = 200;  
+  //    //if (i == 287 && bearing == 23) data[i] = 200;  
+  //}
+
   // Douwe likes this, and I think it has some value in testing, but I think it distracts as well.
   // Why don't we make this an option?
-  data[RETURNS_PER_LINE - 1] = 200;  //  range ring, do we want this?
-#endif
+  data[RETURNS_PER_LINE - 1] = 200;  //  range ring, do we want this? ActionL: make setting
+
 
   if (m_range_meters != range_meters) {
     ResetSpokes();
@@ -456,25 +467,28 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       calc_history = true;
     }
   }
-  if (calc_history) {
-    UINT8 *hist_data = m_history[angle];
+  calc_history = true;
+//  if (calc_history) {
+    UINT8 *hist_data = m_history[bearing];  //$$$  angle
+ //   UINT8 *hist_data = m_history[angle];  $$$
     for (size_t radius = 0; radius < len; radius++) {
       hist_data[radius] = hist_data[radius] << 1;  // shift left history byte 1 bit
       if (data[radius] >= weakest_normal_blob) {
         hist_data[radius] = hist_data[radius] | 1;  // and add 1 if above threshold
       }
     }
-  }
+ // }
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     if (m_guard_zone[z]->m_type != GZ_OFF) {
-      m_guard_zone[z]->ProcessSpoke(angle, data, m_history[angle], len, range_meters);
+      m_guard_zone[z]->ProcessSpoke(bearing, data, m_history[bearing], len, range_meters);
+  //    m_guard_zone[z]->ProcessSpoke(angle, data, m_history[angle], len, range_meters);
     }
   }
 
   if (m_multi_sweep_filter) {
     for (size_t radius = 0; radius < len; radius++) {
-      if (!HISTORY_FILTER_ALLOW(m_history[angle][radius])) {
+      if (!HISTORY_FILTER_ALLOW(m_history[bearing][radius])) {  // $$$ angle
         data[radius] = 0;
       }
     }
@@ -1018,11 +1032,27 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
     }
   }
 
+//  polar alfa;  //$$$
+//  alfa.angle = -512;
+//  alfa.r = 511;
+//  if (m_marpa == 0)  {
+//      LOG_INFO(wxT("BR24radar_pi: $$$ marpa created m_ownship_lat %f, m_ownship_lon %f"), m_pi->m_ownship_lat, m_pi->m_ownship_lon);
+//      m_marpa = new RadarMarpa(m_pi, this);
+//  }
+//  position www = m_marpa->Angle2Pos(alfa);
+//  polar test = m_marpa->Pos2Angle(www);
+//  double factor = (double) m_range_meters / 60. / 1852. / cos(deg2rad(m_pi->m_ownship_lat));
+//  /*LOG_INFO(wxT("BR24radar_pi: $$$ m_ownship_lat %f, m_ownship_lon %f"), m_pi->m_ownship_lat, m_pi->m_ownship_lon);
+//  LOG_INFO(wxT("BR24radar_pi: $$$ m_cursor_lat %f, m_cursor_lon %f, range %i, factor = %f"), www.lat, www.lon, m_range_meters, factor);
+//  $$$
+//  LOG_INFO(wxT("BR24radar_pi: $$$ test.angle %i,  test.r %i, range %i, factor = %f"), test.angle, test.r, m_range_meters, factor);
+//*/
   di->draw->DrawRadarImage();
   if (g_first_render) {
     g_first_render = false;
     wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->m_boot_time;
     LOG_INFO(wxT("BR24radar_pi: First radar image rendered after %llu ms\n"), startup_elapsed);
+    
   }
 }
 

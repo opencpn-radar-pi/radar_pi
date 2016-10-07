@@ -42,6 +42,8 @@ SET(SRC_br24radar
             src/br24OptionsDialog.cpp
             src/br24Receive.h
             src/br24Receive.cpp
+			src/RadarMarpa.h
+			src/RadarMarpa.cpp
             src/br24Transmit.h
             src/br24Transmit.cpp
             src/icons.h

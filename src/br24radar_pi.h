@@ -53,6 +53,7 @@ class br24Receive;
 class br24Transmit;
 class br24radar_pi;
 class GuardZoneBogey;
+class RadarMarpa;
 
 #define SPOKES (4096)               // BR radars can generate up to 4096 spokes per rotation,
 #define LINES_PER_ROTATION (2048)   // but use only half that in practice
@@ -348,6 +349,7 @@ class br24radar_pi : public opencpn_plugin_112 {
   int GetAPIVersionMinor();
   int GetPlugInVersionMajor();
   int GetPlugInVersionMinor();
+  RadarMarpa *m_marpa;
 
   wxBitmap *GetPlugInBitmap();
   wxString GetCommonName();
@@ -472,6 +474,7 @@ class br24radar_pi : public opencpn_plugin_112 {
   int m_context_menu_control_id;
   int m_context_menu_show_id;
   int m_context_menu_hide_id;
+  int m_context_menu_set_marpa_target;
 
   int m_tool_id;
   wxBitmap *m_pdeficon;
