@@ -349,7 +349,6 @@ class br24radar_pi : public opencpn_plugin_112 {
   int GetAPIVersionMinor();
   int GetPlugInVersionMajor();
   int GetPlugInVersionMinor();
-  RadarMarpa *m_marpa;
 
   wxBitmap *GetPlugInBitmap();
   wxString GetCommonName();

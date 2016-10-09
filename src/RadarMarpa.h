@@ -38,9 +38,8 @@
 PLUGIN_BEGIN_NAMESPACE
 
 #define NUMBER_OF_TARGETS (20)
-#define MAX_TARGET_SIZE (100)
 #define OFF_LOCATION (20)
-#define PIX(ang, rad) ((m_ri->m_history[MOD_ROTATION2048(ang)][rad] & 1) != 0)  // true if pixel
+
 #define MAX_CONTOUR_LENGTH (500)
 
 class polar {
@@ -55,13 +54,21 @@ class position {
   double lon;
 };
 
+enum target_status {
+    lost,
+    active,
+    aquire,   // under aquisition
+    loosing, // lost but not yet communicated to OCPN
+    miss_1,  // missed 1 sweep
+};
+
 class MarpaTarget {
  public:
   //  position pos;
   polar pol;
   wxLongLong time;  // wxGetUTCTimeMillis
-  bool target_lost;
-  polar contour[MAX_CONTOUR_LENGTH];
+  target_status status;
+  polar contour[MAX_CONTOUR_LENGTH + 1];
   int contour_length;
 };
 enum colors { green, red };
@@ -79,11 +86,15 @@ class RadarMarpa {
   int GetTargetHeight(int angle, int rad);
   bool GetContour(polar* p, MarpaTarget* t);
   bool GetToContour(polar* p);
+  bool Pix(int a, int r);
+  void DrawContour(MarpaTarget t);
+  void DrawMarpaTargets();
   MarpaTarget m_targets[NUMBER_OF_TARGETS];
 
  private:
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
+  wxCriticalSection m_exclusive;
 };
 
 PLUGIN_END_NAMESPACE

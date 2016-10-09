@@ -176,7 +176,6 @@ void radar_range_control_item::Update(int v) {
 
 RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_pi = pi;
-  int test = (int)m_pi;
   m_radar = radar;
 
   m_radar_type = RT_UNKNOWN;
@@ -285,6 +284,12 @@ bool RadarInfo::Init(wxString name, int verbose) {
     wxLogError(wxT("BR24radar_pi %s: Unable to create RadarPanel"), name.c_str());
     return false;
   }
+
+  if (m_radar == m_pi->m_settings.chart_overlay){
+      m_marpa = new RadarMarpa(m_pi, this);
+      LOG_INFO(wxT("BR24rad $$$ Marpa constructor called"));
+  }
+
   m_timer->Start(m_refresh_millis);
   return true;
 }
@@ -421,7 +426,7 @@ void RadarInfo::ResetSpokes() {
  * @param len                   Number of returns
  * @param range                 Range (in meters) of this data
  */
-void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters) {
+void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time_received) {
   wxCriticalSectionLocker lock(m_exclusive);
 
   for (int i = 0; i < m_pi->m_settings.main_bang_size; i++) {
@@ -432,8 +437,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   //for (int i = 0; i < RETURNS_PER_LINE; i++){  //   test cases
   //    data[i] = 0;
-  //    if (i <= 295 && i >= 290 && bearing > 20 && bearing < 40) data[i] = 200;  
-  //    if ((i == 289 || i == 288) && (bearing == 20 || bearing == 21))data[i] = 200;  
+  //    if (i <= 300 && i >= 290 && bearing > 0 && bearing < 128) data[i] = 200;  
+  // //   if ((i == 289 || i == 288) && (bearing == 20 || bearing == 21))data[i] = 200;  
   //  //  if ((i == 287 || i == 286) && bearing == 21) data[i] = 200;  
   //    //if (i == 286 && bearing == 22) data[i] = 200;  
   //    //if (i == 286 && bearing == 23) data[i] = 200;  
@@ -469,8 +474,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
   calc_history = true;
 //  if (calc_history) {
-    UINT8 *hist_data = m_history[bearing];  //$$$  angle
- //   UINT8 *hist_data = m_history[angle];  $$$
+    UINT8 *hist_data = m_history[bearing];  
     for (size_t radius = 0; radius < len; radius++) {
       hist_data[radius] = hist_data[radius] << 1;  // shift left history byte 1 bit
       if (data[radius] >= weakest_normal_blob) {
@@ -1032,21 +1036,6 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
     }
   }
 
-//  polar alfa;  //$$$
-//  alfa.angle = -512;
-//  alfa.r = 511;
-//  if (m_marpa == 0)  {
-//      LOG_INFO(wxT("BR24radar_pi: $$$ marpa created m_ownship_lat %f, m_ownship_lon %f"), m_pi->m_ownship_lat, m_pi->m_ownship_lon);
-//      m_marpa = new RadarMarpa(m_pi, this);
-//  }
-//  position www = m_marpa->Angle2Pos(alfa);
-//  polar test = m_marpa->Pos2Angle(www);
-//  double factor = (double) m_range_meters / 60. / 1852. / cos(deg2rad(m_pi->m_ownship_lat));
-//  /*LOG_INFO(wxT("BR24radar_pi: $$$ m_ownship_lat %f, m_ownship_lon %f"), m_pi->m_ownship_lat, m_pi->m_ownship_lon);
-//  LOG_INFO(wxT("BR24radar_pi: $$$ m_cursor_lat %f, m_cursor_lon %f, range %i, factor = %f"), www.lat, www.lon, m_range_meters, factor);
-//  $$$
-//  LOG_INFO(wxT("BR24radar_pi: $$$ test.angle %i,  test.r %i, range %i, factor = %f"), test.angle, test.r, m_range_meters, factor);
-//*/
   di->draw->DrawRadarImage();
   if (g_first_render) {
     g_first_render = false;
@@ -1078,6 +1067,12 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   }
 
   if (overlay) {
+      glPushMatrix();
+      glTranslated(center.x, center.y, 0);
+      glScaled(scale, scale, 1.);
+      m_marpa->DrawMarpaTargets();
+      glPopMatrix();
+
     if (m_pi->m_settings.guard_zone_on_overlay) {
       glPushMatrix();
       glTranslated(center.x, center.y, 0);
@@ -1085,8 +1080,11 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
       glScaled(scale, scale, 1.);
 
       // LOG_DIALOG(wxT("BR24radar_pi: %s render guard zone on overlay"), name.c_str());
-
       RenderGuardZone();
+
+          
+
+
       glPopMatrix();
     }
     double radar_pixels_per_meter = ((double)RETURNS_PER_LINE) / m_range_meters;
