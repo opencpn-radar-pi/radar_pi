@@ -38,9 +38,9 @@
 PLUGIN_BEGIN_NAMESPACE
 
 #define NUMBER_OF_TARGETS (20)
-#define OFF_LOCATION (20)
+#define OFF_LOCATION (50)
 
-#define MAX_CONTOUR_LENGTH (500)
+#define MAX_CONTOUR_LENGTH (600)
 
 class polar {
  public:
@@ -70,6 +70,7 @@ class MarpaTarget {
   target_status status;
   polar contour[MAX_CONTOUR_LENGTH + 1];
   int contour_length;
+  polar max_angle, min_angle, max_r, min_r;
 };
 enum colors { green, red };
 
@@ -84,17 +85,20 @@ class RadarMarpa {
   int AquireNewTarget(position p);
   int GetTargetWidth(int angle, int rad);
   int GetTargetHeight(int angle, int rad);
-  bool GetContour(polar* p, MarpaTarget* t);
-  bool GetToContour(polar* p);
+  int GetContour(polar* p, MarpaTarget* t);
+  bool FindContourFromInside(polar* p);
+  bool FindNearestContour(polar* p, int dist);
+  bool FindContour(polar* p);
+  void CalculateCentroid(MarpaTarget t);
   bool Pix(int a, int r);
   void DrawContour(MarpaTarget t);
   void DrawMarpaTargets();
+  void RefreshMarpaTargets();
   MarpaTarget m_targets[NUMBER_OF_TARGETS];
 
  private:
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
-  wxCriticalSection m_exclusive;
 };
 
 PLUGIN_END_NAMESPACE

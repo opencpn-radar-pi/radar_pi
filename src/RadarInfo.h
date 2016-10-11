@@ -131,6 +131,7 @@ class RadarInfo : public wxEvtHandler {
   double m_course_log[COURSE_SAMPLES];
   int m_course_index;
   RadarMarpa *m_marpa;
+  wxCriticalSection m_exclusive;  // protects the following two
 
   /* User radar settings */
 
@@ -195,12 +196,11 @@ class RadarInfo : public wxEvtHandler {
   receive_statistics m_statistics;
 
   bool m_multi_sweep_filter;
-  UINT8 m_history[LINES_PER_ROTATION][RETURNS_PER_LINE];   // $$$
   struct line_history{
       UINT8 line[RETURNS_PER_LINE];
       wxLongLong time;
   };
-  /*line_history m_history[RETURNS_PER_LINE];*/
+  line_history m_history[LINES_PER_ROTATION];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
 #define MARGIN (100)
@@ -292,7 +292,7 @@ class RadarInfo : public wxEvtHandler {
   int m_previous_auto_range_meters;
   int m_auto_range_meters;
 
-  wxCriticalSection m_exclusive;  // protects the following two
+//  wxCriticalSection m_exclusive;  // protects the following two
   DrawInfo m_draw_panel;          // Draw onto our own panel
   DrawInfo m_draw_overlay;        // Abstract painting method
 

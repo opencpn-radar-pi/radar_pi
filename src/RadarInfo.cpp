@@ -285,10 +285,8 @@ bool RadarInfo::Init(wxString name, int verbose) {
     return false;
   }
 
-  if (m_radar == m_pi->m_settings.chart_overlay){
-      m_marpa = new RadarMarpa(m_pi, this);
-      LOG_INFO(wxT("BR24rad $$$ Marpa constructor called"));
-  }
+  m_marpa = new RadarMarpa(m_pi, this);
+  LOG_INFO(wxT("BR24rad $$$ Marpa constructor called"));
 
   m_timer->Start(m_refresh_millis);
   return true;
@@ -433,16 +431,31 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     data[i] = 0;
   }
   // calculate course as the moving average of m_hdt over one revolution
-  SampleCourse(angle);
+  SampleCourse(angle);  // used for course_up mode
 
-  //for (int i = 0; i < RETURNS_PER_LINE; i++){  //   test cases
+  //static int rev = 0;   //   test cases only
+  //if (angle == 0) rev++;
+  //for (int i = 0; i < RETURNS_PER_LINE; i++){  
   //    data[i] = 0;
-  //    if (i <= 300 && i >= 290 && bearing > 0 && bearing < 128) data[i] = 200;  
-  // //   if ((i == 289 || i == 288) && (bearing == 20 || bearing == 21))data[i] = 200;  
-  //  //  if ((i == 287 || i == 286) && bearing == 21) data[i] = 200;  
-  //    //if (i == 286 && bearing == 22) data[i] = 200;  
-  //    //if (i == 286 && bearing == 23) data[i] = 200;  
-  //    //if (i == 287 && bearing == 23) data[i] = 200;  
+  //    if (i <= 300 && i >= 290 && bearing > 10 && bearing < 64) data[i] = 200;  
+  ////    if (i <= 300 && i >= 290 && bearing >= 64 && bearing < 96 && rev%2 == 0) data[i] = 200;
+  //    if ((i == 289 /*|| i == 288*/) && (bearing == 20 || bearing == 21))data[i] = 200;  
+  //    if ((i == 287 /*|| i == 286*/) && bearing == 20) data[i] = 200;  
+  //    if (i == 288 && bearing == 20) data[i] = 200;
+  //    if (i == 286 && bearing == 20) data[i] = 200;  
+  //    if (i == 285 && bearing == 20) data[i] = 200;  
+  //    if (i == 285 && bearing == 21) data[i] = 200;  
+  //    if (i == 286 && bearing == 21) data[i] = 200;
+
+  //    if (i == 295 && bearing == 10) data[i] = 200;
+  //    if (i == 295 && bearing == 9) data[i] = 200;
+  //    if (i == 295 && bearing == 8) data[i] = 200;
+  //    if (i == 295 && bearing == 7) data[i] = 200;
+  //    if (i == 295 && bearing == 6) data[i] = 200;
+  //    if (i == 295 && bearing == 5) data[i] = 200;
+
+  //    if (i == 296 && bearing == 6) data[i] = 200;
+  //    if (i == 296 && bearing == 5) data[i] = 200;
   //}
 
   // Douwe likes this, and I think it has some value in testing, but I think it distracts as well.
@@ -466,33 +479,24 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   int north_or_course_up = m_orientation.GetButton() != ORIENTATION_HEAD_UP;  // true for north up or course up
   uint8_t weakest_normal_blob = m_pi->m_settings.threshold_blue;
 
-  bool calc_history = m_multi_sweep_filter;
-  for (size_t z = 0; z < GUARD_ZONES; z++) {
-    if (m_guard_zone[z]->m_type != GZ_OFF && m_guard_zone[z]->m_multi_sweep_filter) {
-      calc_history = true;
-    }
-  }
-  calc_history = true;
-//  if (calc_history) {
-    UINT8 *hist_data = m_history[bearing];  
+    UINT8 *hist_data = m_history[bearing].line;
+    m_history[bearing].time = time_received;
     for (size_t radius = 0; radius < len; radius++) {
       hist_data[radius] = hist_data[radius] << 1;  // shift left history byte 1 bit
       if (data[radius] >= weakest_normal_blob) {
         hist_data[radius] = hist_data[radius] | 1;  // and add 1 if above threshold
       }
     }
- // }
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     if (m_guard_zone[z]->m_type != GZ_OFF) {
-      m_guard_zone[z]->ProcessSpoke(bearing, data, m_history[bearing], len, range_meters);
-  //    m_guard_zone[z]->ProcessSpoke(angle, data, m_history[angle], len, range_meters);
+      m_guard_zone[z]->ProcessSpoke(bearing, data, m_history[bearing].line, len, range_meters);
     }
   }
 
   if (m_multi_sweep_filter) {
     for (size_t radius = 0; radius < len; radius++) {
-      if (!HISTORY_FILTER_ALLOW(m_history[bearing][radius])) {  // $$$ angle
+      if (!HISTORY_FILTER_ALLOW(m_history[bearing].line[radius])) { 
         data[radius] = 0;
       }
     }
@@ -1067,6 +1071,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   }
 
   if (overlay) {
+      m_marpa->RefreshMarpaTargets();
       glPushMatrix();
       glTranslated(center.x, center.y, 0);
       glScaled(scale, scale, 1.);
@@ -1081,10 +1086,6 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
 
       // LOG_DIALOG(wxT("BR24radar_pi: %s render guard zone on overlay"), name.c_str());
       RenderGuardZone();
-
-          
-
-
       glPopMatrix();
     }
     double radar_pixels_per_meter = ((double)RETURNS_PER_LINE) / m_range_meters;
