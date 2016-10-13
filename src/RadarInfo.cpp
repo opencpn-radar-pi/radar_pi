@@ -424,7 +424,7 @@ void RadarInfo::ResetSpokes() {
  * @param len                   Number of returns
  * @param range                 Range (in meters) of this data
  */
-void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time_received) {
+void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time_rec, double lat, double lon) {
   wxCriticalSectionLocker lock(m_exclusive);
 
   for (int i = 0; i < m_pi->m_settings.main_bang_size; i++) {
@@ -435,28 +435,28 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   //static int rev = 0;   //   test cases only
   //if (angle == 0) rev++;
-  //for (int i = 0; i < RETURNS_PER_LINE; i++){  
-  //    data[i] = 0;
+ // for (int i = 0; i < RETURNS_PER_LINE; i++){  
+   //   data[i] = 0;
   //    if (i <= 300 && i >= 290 && bearing > 10 && bearing < 64) data[i] = 200;  
-  ////    if (i <= 300 && i >= 290 && bearing >= 64 && bearing < 96 && rev%2 == 0) data[i] = 200;
-  //    if ((i == 289 /*|| i == 288*/) && (bearing == 20 || bearing == 21))data[i] = 200;  
-  //    if ((i == 287 /*|| i == 286*/) && bearing == 20) data[i] = 200;  
-  //    if (i == 288 && bearing == 20) data[i] = 200;
-  //    if (i == 286 && bearing == 20) data[i] = 200;  
-  //    if (i == 285 && bearing == 20) data[i] = 200;  
-  //    if (i == 285 && bearing == 21) data[i] = 200;  
-  //    if (i == 286 && bearing == 21) data[i] = 200;
+  //    if (i <= 300 && i >= 290 && bearing >= 64 && bearing < 96 && rev%2 == 0) data[i] = 200;
+      //if ((i == 289 /*|| i == 288*/) && (bearing == 20 || bearing == 21))data[i] = 200;  
+      //if ((i == 287 /*|| i == 286*/) && bearing == 20) data[i] = 200;  
+      //if (i == 288 && bearing == 20) data[i] = 200;
+      //if (i == 286 && bearing == 20) data[i] = 200;  
+      //if (i == 285 && bearing == 20) data[i] = 200;  
+      //if (i == 285 && bearing == 21) data[i] = 200;  
+      //if (i == 286 && bearing == 21) data[i] = 200;
 
-  //    if (i == 295 && bearing == 10) data[i] = 200;
-  //    if (i == 295 && bearing == 9) data[i] = 200;
-  //    if (i == 295 && bearing == 8) data[i] = 200;
-  //    if (i == 295 && bearing == 7) data[i] = 200;
-  //    if (i == 295 && bearing == 6) data[i] = 200;
-  //    if (i == 295 && bearing == 5) data[i] = 200;
+      //if (i == 295 && bearing == 10) data[i] = 200;
+      //if (i == 295 && bearing == 9) data[i] = 200;
+      //if (i == 295 && bearing == 8) data[i] = 200;
+      //if (i == 295 && bearing == 7) data[i] = 200;
+      //if (i == 295 && bearing == 6) data[i] = 200;
+      //if (i == 295 && bearing == 5) data[i] = 200;
 
-  //    if (i == 296 && bearing == 6) data[i] = 200;
-  //    if (i == 296 && bearing == 5) data[i] = 200;
-  //}
+    /*  if (i == 296 && bearing == 6) data[i] = 200;
+      if (i == 296 && bearing == 5) data[i] = 200;*/
+//  }
 
   // Douwe likes this, and I think it has some value in testing, but I think it distracts as well.
   // Why don't we make this an option?
@@ -480,7 +480,9 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   uint8_t weakest_normal_blob = m_pi->m_settings.threshold_blue;
 
     UINT8 *hist_data = m_history[bearing].line;
-    m_history[bearing].time = time_received;
+    m_history[bearing].time = time_rec;
+    m_history[bearing].lat = lat;
+    m_history[bearing].lon = lon;
     for (size_t radius = 0; radius < len; radius++) {
       hist_data[radius] = hist_data[radius] << 1;  // shift left history byte 1 bit
       if (data[radius] >= weakest_normal_blob) {

@@ -56,45 +56,59 @@ class position {
 
 enum target_status {
     lost,
-    active,
-    aquire,   // under aquisition
+    aquire0,   // under aquisition, first seen, no contour yet
+    aquire1,   // under aquisition, contour found, first position in log
+    aquire2,   // under aquisition, speed and course taken
+    aquire3,   // under aquisition, speed and course verified, next time active
     loosing, // lost but not yet communicated to OCPN
     miss_1,  // missed 1 sweep
 };
 
+class LogEntry{
+public:
+    wxLongLong time;  // wxGetUTCTimeMillis
+    position pos;
+    double speed;
+    double heading;
+};
+
+#define SIZE_OF_LOG (5)
+
 class MarpaTarget {
  public:
-  //  position pos;
+  LogEntry logbook[SIZE_OF_LOG];
   polar pol;
-  wxLongLong time;  // wxGetUTCTimeMillis
+ // wxLongLong time;  // wxGetUTCTimeMillis
   target_status status;
   polar contour[MAX_CONTOUR_LENGTH + 1];
   int contour_length;
   polar max_angle, min_angle, max_r, min_r;
+  void PushLogbook();
 };
-enum colors { green, red };
 
 class RadarMarpa {
  public:
   RadarMarpa(br24radar_pi* pi, RadarInfo* ri);
 
   ~RadarMarpa();
-  position Polar2Pos(polar a);
-  polar Pos2Polar(position p);
+  position Polar2Pos(polar a, position own_ship);
+  polar Pos2Polar(position p, position own_ship);
   int NextEmptyTarget();
-  int AquireNewTarget(position p);
+  void Aquire0NewTarget(position p);
+  void Aquire1NewTarget(MarpaTarget* t);
   int GetTargetWidth(int angle, int rad);
   int GetTargetHeight(int angle, int rad);
   int GetContour(polar* p, MarpaTarget* t);
   bool FindContourFromInside(polar* p);
   bool FindNearestContour(polar* p, int dist);
-  bool FindContour(polar* p);
-  void CalculateCentroid(MarpaTarget t);
+  ///*bool FindContour(polar* p);*/
+  void CalculateCentroid(MarpaTarget* t);
   bool Pix(int a, int r);
   void DrawContour(MarpaTarget t);
   void DrawMarpaTargets();
   void RefreshMarpaTargets();
   MarpaTarget m_targets[NUMBER_OF_TARGETS];
+//  bool PIX(polar* p, int aa, int rr);
 
  private:
   br24radar_pi* m_pi;

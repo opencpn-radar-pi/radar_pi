@@ -31,6 +31,8 @@
  */
 
 #include "br24Receive.h"
+#include "RadarMarpa.h"
+
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -156,7 +158,12 @@ void br24Receive::logBinaryData(const wxString &what, const UINT8 *data, int siz
 //
 void br24Receive::ProcessFrame(const UINT8 *data, int len) {
   time_t now = time(0);
-  wxLongLong time_received = wxGetUTCTimeMillis();   // used for ARPA
+  LogEntry log_line;  // used for ARPA
+  double lat = m_pi->m_ownship_lat;
+  double lon = m_pi->m_ownship_lon;
+ // log_line.time_rec = wxGetUTCTimeMillis();
+  wxLongLong time_rec =  wxGetUTCTimeMillis(); 
+
   radar_frame_pkt *packet = (radar_frame_pkt *)data;
 
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
@@ -263,7 +270,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
     //if (a == 10) m_test++;  // $$$
     //if (m_test < 3){  // 2 revs only for test   $$$
-    m_ri->ProcessRadarSpoke(a, b, line->data, RETURNS_PER_LINE, range_meters, time_received);
+    m_ri->ProcessRadarSpoke(a, b, line->data, RETURNS_PER_LINE, range_meters, time_rec, lat, lon);
     /*}*/
   }
 }
@@ -327,7 +334,11 @@ void br24Receive::EmulateFakeBuffer(void) {
     SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
     SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
     wxLongLong time_received = 0;
-    m_ri->ProcessRadarSpoke(a, b, data, sizeof(data), range_meters, time_received);
+    LogEntry log_line;
+    wxLongLong time_rec;
+    double lat = 0.;
+    double lon = 0.;
+    m_ri->ProcessRadarSpoke(a, b, data, sizeof(data), range_meters, time_rec, lat, lon);
   }
 
   LOG_VERBOSE(wxT("BR24radar_pi: emulating %d spokes at range %d with %d spots"), scanlines_in_packet, range_meters, spots);

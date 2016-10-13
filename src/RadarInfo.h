@@ -199,7 +199,10 @@ class RadarInfo : public wxEvtHandler {
   struct line_history{
       UINT8 line[RETURNS_PER_LINE];
       wxLongLong time;
+      double lat;
+      double lon;
   };
+
   line_history m_history[LINES_PER_ROTATION];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
@@ -240,7 +243,7 @@ class RadarInfo : public wxEvtHandler {
   void AdjustRange(int adjustment);
   void SetAutoRangeMeters(int meters);
   bool SetControlValue(ControlType controlType, int value);
-  void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time_received);
+  void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time, double lat, double lon);
   void RefreshDisplay(wxTimerEvent &event);
   void UpdateTrailPosition();
   void RenderGuardZone();

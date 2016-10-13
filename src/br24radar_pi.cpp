@@ -508,15 +508,9 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
               target_pos.lat = m_cursor_lat;
               target_pos.lon = m_cursor_lon;
               LOG_INFO(wxT("BR24radar_pi: $$$ voor aquire"));
-              m_radar[m_settings.chart_overlay]->m_marpa->AquireNewTarget(target_pos);
+              m_radar[m_settings.chart_overlay]->m_marpa->Aquire0NewTarget(target_pos);
               LOG_INFO(wxT("BR24radar_pi: $$$ na aquire"));
-              /*if (m_radar[m_settings.chart_overlay]->m_marpa->m_targets[0].status != lost){
-                  LOG_INFO(wxT("BR24radar_pi: $$$ target aquired, length=%i"), m_radar[m_settings.chart_overlay]->m_marpa->m_targets[0].contour_length);
-                  for (int i = 1; i < m_radar[m_settings.chart_overlay]->m_marpa->m_targets[0].contour_length; i++){
-                      LOG_INFO(wxT("BR24radar_pi: $$ angle = %i, r= %i"), m_radar[m_settings.chart_overlay]->m_marpa->m_targets[0].contour[i].angle, 
-                          m_radar[m_settings.chart_overlay]->m_marpa->m_targets[0].contour[i].r);
-                  }
-              }*/
+              
           }
   }
   else {
