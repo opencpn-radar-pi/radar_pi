@@ -504,11 +504,11 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
               && m_settings.chart_overlay >= 0                                        //  overlay desired
               && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
               && m_bpos_set) {                                                      // overlay possible 
-              position target_pos;
+              Position target_pos;
               target_pos.lat = m_cursor_lat;
               target_pos.lon = m_cursor_lon;
               LOG_INFO(wxT("BR24radar_pi: $$$ voor aquire"));
-              m_radar[m_settings.chart_overlay]->m_marpa->Aquire0NewTarget(target_pos);
+              m_radar[m_settings.chart_overlay]->m_marpa->m_targets->Aquire0NewTarget(target_pos);
               LOG_INFO(wxT("BR24radar_pi: $$$ na aquire"));
               
           }

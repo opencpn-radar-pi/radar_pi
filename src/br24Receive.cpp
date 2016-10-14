@@ -158,7 +158,6 @@ void br24Receive::logBinaryData(const wxString &what, const UINT8 *data, int siz
 //
 void br24Receive::ProcessFrame(const UINT8 *data, int len) {
   time_t now = time(0);
-  LogEntry log_line;  // used for ARPA
   double lat = m_pi->m_ownship_lat;
   double lon = m_pi->m_ownship_lon;
  // log_line.time_rec = wxGetUTCTimeMillis();
@@ -334,7 +333,6 @@ void br24Receive::EmulateFakeBuffer(void) {
     SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
     SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
     wxLongLong time_received = 0;
-    LogEntry log_line;
     wxLongLong time_rec;
     double lat = 0.;
     double lon = 0.;
