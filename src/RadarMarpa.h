@@ -42,16 +42,29 @@ PLUGIN_BEGIN_NAMESPACE
 
 #define MAX_CONTOUR_LENGTH (600)
 
-class polar {
+class Polar {
  public:
+     Polar(RadarInfo* ri);
   int angle;
   int r;
+  bool FindNearestContour(int dist);
+  bool FindContourFromInside();
+  bool Pix();
+  RadarInfo* m_ri;
 };
 
-class position {
+struct polar{
+    int angle;
+    int r;
+};
+
+class Position {
  public:
+     Position(RadarInfo* ri);
   double lat;
   double lon;
+  Polar Pos2Polar(Position own_ship);
+  RadarInfo* m_ri;
 };
 
 enum target_status {
@@ -67,7 +80,7 @@ enum target_status {
 class LogEntry{
 public:
     wxLongLong time;  // wxGetUTCTimeMillis
-    position pos;
+    Position pos;
     double speed;
     double heading;
 };
@@ -76,14 +89,21 @@ public:
 
 class MarpaTarget {
  public:
+     MarpaTarget(br24radar_pi* pi, RadarInfo* ri);
+  RadarInfo* m_ri;
+  br24radar_pi* m_pi;
   LogEntry logbook[SIZE_OF_LOG];
-  polar pol;
- // wxLongLong time;  // wxGetUTCTimeMillis
+  Polar pol;
+  // wxLongLong time;  // wxGetUTCTimeMillis
   target_status status;
-  polar contour[MAX_CONTOUR_LENGTH + 1];
+  Polar contour[MAX_CONTOUR_LENGTH + 1];
   int contour_length;
-  polar max_angle, min_angle, max_r, min_r;
+  Polar max_angle, min_angle, max_r, min_r;
   void PushLogbook();
+  void Aquire1NewTarget();
+  int GetContour(Polar* p);
+  
+  Position Polar2Pos(Polar a, Position own_ship);
 };
 
 class RadarMarpa {
@@ -91,26 +111,27 @@ class RadarMarpa {
   RadarMarpa(br24radar_pi* pi, RadarInfo* ri);
 
   ~RadarMarpa();
-  position Polar2Pos(polar a, position own_ship);
-  polar Pos2Polar(position p, position own_ship);
+  
+  
   int NextEmptyTarget();
-  void Aquire0NewTarget(position p);
-  void Aquire1NewTarget(MarpaTarget* t);
+  void Aquire0NewTarget(Position p);
+//  void Aquire1NewTarget(MarpaTarget* t);
   int GetTargetWidth(int angle, int rad);
   int GetTargetHeight(int angle, int rad);
-  int GetContour(polar* p, MarpaTarget* t);
-  bool FindContourFromInside(polar* p);
-  bool FindNearestContour(polar* p, int dist);
-  ///*bool FindContour(polar* p);*/
+//  int GetContour(Polar* p, MarpaTarget* t);
+
+//  bool FindNearestContour(Polar* p, int dist);
+  ///*bool FindContour(Polar* p);*/
   void CalculateCentroid(MarpaTarget* t);
-  bool Pix(int a, int r);
+//  bool Pix(int a, int r);
   void DrawContour(MarpaTarget t);
   void DrawMarpaTargets();
   void RefreshMarpaTargets();
-  MarpaTarget m_targets[NUMBER_OF_TARGETS];
-//  bool PIX(polar* p, int aa, int rr);
+  MarpaTarget *m_targets;
+  
+//  bool PIX(Polar* p, int aa, int rr);
 
- private:
+ 
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
 };
