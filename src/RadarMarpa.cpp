@@ -58,46 +58,42 @@ RadarMarpa::RadarMarpa(br24radar_pi* pi, RadarInfo* ri) {
  RadarMarpa::~RadarMarpa() {
  }
 
- MarpaTarget::Polar::Polar(){
-    
-     
- }
+ 
 
-
-Position MarpaTarget::Polar::Polar2Pos(Position own_ship) {
+Position MarpaTarget::Polar2Pos(Polar pol, Position own_ship) {
     // The "own_ship" in the fumction call can be the position at an earlier time than the current position
   // converts in a radar image angular data r ( 0 - 512) and angle (0 - 2096) to position (lat, lon)
     // based on the own ship position own_ship
   Position pos;
   pos.lat = own_ship.lat +
-      (double)r / (double)RETURNS_PER_LINE * (double)MarpaTarget::m_ri->m_range_meters *
-                cos(deg2rad(SCALE_RAW_TO_DEGREES2048(angle))) / 60. / 1852.;
+      (double)pol.r / (double)RETURNS_PER_LINE * (double)m_ri->m_range_meters *
+                cos(deg2rad(SCALE_RAW_TO_DEGREES2048(pol.angle))) / 60. / 1852.;
   pos.lon = own_ship.lon +
-            (double)r / (double)RETURNS_PER_LINE * (double)MarpaTarget::m_ri->m_range_meters *
-            sin(deg2rad(SCALE_RAW_TO_DEGREES2048(angle))) / cos(deg2rad(own_ship.lat)) / 60. / 1852.;
+            (double)pol.r / (double)RETURNS_PER_LINE * (double)m_ri->m_range_meters *
+            sin(deg2rad(SCALE_RAW_TO_DEGREES2048(pol.angle))) / cos(deg2rad(own_ship.lat)) / 60. / 1852.;
   return pos;
 }
 
-MarpaTarget::Polar MarpaTarget::Polar::Pos2Polar(Position p, Position own_ship){
+Polar RadarMarpa::Pos2Polar(Position p, Position own_ship){
     // converts in a radar image a lat-lon position to angular data
     Polar alfa;
     double dif_lat = p.lat;
     dif_lat -= own_ship.lat;
     double dif_lon = (p.lon - own_ship.lon) * cos(deg2rad(own_ship.lat));
-    alfa.r = (int)(sqrt(dif_lat * dif_lat + dif_lon * dif_lon) * 60. * 1852. * (double)RETURNS_PER_LINE / (double)MarpaTarget::m_ri->m_range_meters);
+    alfa.r = (int)(sqrt(dif_lat * dif_lat + dif_lon * dif_lon) * 60. * 1852. * (double)RETURNS_PER_LINE / (double)m_ri->m_range_meters);
     alfa.angle = (int)((atan2(dif_lon, dif_lat)) * (double)LINES_PER_ROTATION / (2. * PI));
     return alfa;
 }
 
-bool MarpaTarget::Polar::Pix() {
-  if (r < 1 || r >= RETURNS_PER_LINE - 1) {   // $$$ avoid range ring
-    LOG_INFO(wxT("BR24radar_pi: $$$ RadarMarpa:: Pix, r out of bound"));
-    return false;
-  }
-  return ((MarpaTarget::m_ri->m_history[MOD_ROTATION2048(angle)].line[r] & 1) != 0);
+bool MarpaTarget::Pix(int ang, int rad) {
+    if (rad < 1 || rad >= RETURNS_PER_LINE - 1) {   // $$$ avoid range ring
+        LOG_INFO(wxT("BR24radar_pi: $$$ RadarMarpa:: Pix, r out of bound"));
+        return false;
+    }
+    return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 1) != 0);
 }
 
-void MarpaTarget::Aquire0NewTarget(Position target_pos) {
+void RadarMarpa::Aquire0NewTarget(Position target_pos) {
   // aquires new target from mouse click
     // no contour taken yet
     // target status aquire0
@@ -106,23 +102,23 @@ void MarpaTarget::Aquire0NewTarget(Position target_pos) {
     Position own_pos;
     own_pos.lat = m_pi->m_ownship_lat;
     own_pos.lon = m_pi->m_ownship_lon;
-    targ_pol.Pos2Polar(target_pos, own_pos);
+    targ_pol = Pos2Polar(target_pos, own_pos);
     int i_target = NextEmptyTarget();
   if (i_target == -1) {
       LOG_INFO(wxT("BR24radar_pi: $$$ RadarMarpa:: max targets exceeded "));
       return;
   }
   LOG_INFO(wxT("BR24radar_pi: $$$ AquireNewTarget i = %i"), i_target);
-  this[i_target].pol = targ_pol;  // set the Polar 
-  this[i_target].status = aquire0;
+  m_targets[i_target].pol = targ_pol;  // set the Polar 
+  m_targets[i_target].status = aquire0;
   return;
 }
 
-bool MarpaTarget::Polar::FindContourFromInside(){  // moves pol to contour of blob
+bool MarpaTarget::FindContourFromInside(){  // moves pol to contour of blob
     // true if success
     //false when failed
-    int ang = angle;
-    int rad = r;
+    int ang = pol.angle;
+    int rad = pol.r;
     if (rad > RETURNS_PER_LINE - 1) {
         LOG_INFO(wxT("BR24radar_pi: $$$ FindContourFromInside outside image"));
         return false;
@@ -131,12 +127,12 @@ bool MarpaTarget::Polar::FindContourFromInside(){  // moves pol to contour of bl
         LOG_INFO(wxT("BR24radar_pi: $$$ FindContourFromInside close to center"));
         return false;
     }
-    if (!(Pix() )) {
+    if (!(Pix(ang, rad))) {
     //    LOG_INFO(wxT("BR24radar_pi: $$$ FindContourFromInside outside target ang= %i rad= %i"), ang, rad);
         return false;
     }
-    while (Pix()){
-        if (ang < angle - MAX_CONTOUR_LENGTH / 2){
+    while (Pix(ang, rad)){
+        if (ang < pol.angle - MAX_CONTOUR_LENGTH / 2){
     //        LOG_INFO(wxT("BR24radar_pi: $$$ FindContourFromInside no target contour found"));
             return false;
         }
@@ -144,7 +140,7 @@ bool MarpaTarget::Polar::FindContourFromInside(){  // moves pol to contour of bl
     }
     ang++;
  //   LOG_INFO(wxT("BR24radar_pi: $$$ FindContourFromInside contour found angle = %i"), ang);
-    angle = ang;
+    pol.angle = ang;
     return true;
 }
 
@@ -155,12 +151,13 @@ int MarpaTarget::GetContour() {
     wxCriticalSectionLocker lock(MarpaTarget::m_ri->m_exclusive);
     // the 4 possible translations to move from a point on the contour to the next
   polar transl[4] = {0, 1, 1, 0, 0, -1, -1, 0};   // NB structure polar, not class Polar
-  Polar p = pol;
+ // Polar p = pol;
   int count = 0;
-  Polar start = p;
-  Polar current = p;
+  Polar start = pol;
+  Polar current = pol;
   Polar test;
-
+  int aa;
+  int rr;
   bool succes = false;
   int index = 0;
   max_r = current;
@@ -178,18 +175,18 @@ int MarpaTarget::GetContour() {
     LOG_INFO(wxT("BR24radar_pi: $$$ RadarMarpa::GetContour getting in origin"));
     return 2; // return code 2, r too small
   }
-  if (!start.Pix()) {
+  if (!Pix(start.angle, start.r)) {
     LOG_INFO(wxT("BR24radar_pi: $$$ RadarMarpa::GetContour starting point outside blob angle = %i, r= %i"), current.angle,
              current.r);
     return 3; // return code 3, starting point outside blob
   }
   // first find the orientation of border point p
   for (int i = 0; i < 4; i++) {
-    index = i;
-    test.angle = current.angle + transl[index].angle;
-    test.r = current.r + transl[index].r;
-    succes = !test.Pix();
-    if (succes) break;
+      index = i;
+      aa = current.angle + transl[index].angle;
+      rr = current.r + transl[index].r;
+      succes = !Pix(aa, rr);
+      if (succes) break;
   }
   if (!succes) {
     LOG_INFO(wxT("BR24radar_pi:  RadarMarpa::GetContour starting point not on contour angle = %i, r= %i"), current.angle,
@@ -216,7 +213,7 @@ int MarpaTarget::GetContour() {
         LOG_INFO(wxT("BR24radar_pi: $$$ RadarMarpa::GetContour getting in origin"));
         return 6;  //  code 6, getting close to origin
       }
-        succes = test.Pix();   // this is the case where the whole blob is followed
+      succes = Pix(aa, rr);    // this is the case where the whole blob is followed
       // but we accept single pixel extensions of the blob
 
       if (succes) {
@@ -260,27 +257,29 @@ int MarpaTarget::GetContour() {
   Position p_own;
   p_own.lat = MarpaTarget::m_ri->m_history[MOD_ROTATION2048(pol.angle)].lat;  // get the position from receive time
   p_own.lon = MarpaTarget::m_ri->m_history[MOD_ROTATION2048(pol.angle)].lon;
-  logbook[0].pos = pol.Polar2Pos(p_own);
+  logbook[0].pos = Polar2Pos(pol, p_own);
+  
 
   return 0;   //  succes, blob found
 }  
 
-int MarpaTarget::NextEmptyTarget() {
-  int index = 0;
-  bool hit = false;
-  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
-    if (this[i].status == lost) {
-      index = i;
-      hit = true;
-      break;
+int RadarMarpa::NextEmptyTarget() {
+    int index = 0;
+    bool hit = false;
+    for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+        if (m_targets[i].status == lost) {
+            index = i;
+            hit = true;
+            break;
+        }
     }
-  }
-  if (!hit) {
-    index = -1;
-  }
-  LOG_INFO(wxT("BR24radar_pi: $$$ empty target i = %i"), index);
-  return index;
+    if (!hit) {
+        index = -1;
+    }
+    LOG_INFO(wxT("BR24radar_pi: $$$ empty target i = %i"), index);
+    return index;
 }
+
 
 void RadarMarpa::DrawContour(MarpaTarget target){
     PolarToCartesianLookupTable *polarLookup;
@@ -300,8 +299,8 @@ void RadarMarpa::DrawContour(MarpaTarget target){
     //        LOG_INFO(wxT("BR24radar_pi:RadarMarpa::DrawContour r < 0"));
             return;
         }
-        xx = polarLookup->x[angle][radius] * MarpaTarget::m_ri->m_range_meters / RETURNS_PER_LINE;
-        yy = polarLookup->y[angle][radius] * MarpaTarget::m_ri->m_range_meters / RETURNS_PER_LINE;
+        xx = polarLookup->x[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+        yy = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
         glVertex2f(xx, yy);
  //       LOG_INFO(wxT("BR24radar_pi: $$$ target DrawContour4 i=%i"), i);
         int ii = i + 1;
@@ -316,8 +315,8 @@ void RadarMarpa::DrawContour(MarpaTarget target){
         angle = MOD_ROTATION2048(target.contour[ii].angle - 512);
         radius = target.contour[ii].r;
     //    LOG_INFO(wxT("BR24radar_pi: $$$ target DrawContour4 i=%i ii = %i"), i, ii);
-        xx = polarLookup->x[angle][radius] * MarpaTarget::m_ri->m_range_meters / RETURNS_PER_LINE;
-        yy = polarLookup->y[angle][radius] * MarpaTarget::m_ri->m_range_meters / RETURNS_PER_LINE;
+        xx = polarLookup->x[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+        yy = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
         glVertex2f(xx, yy);
     }
     glEnd();
@@ -340,16 +339,16 @@ void RadarMarpa::RefreshMarpaTargets() {
         m_targets[i].Aquire1NewTarget();
     }
     if (m_targets[i].status != lost) {
-      if (m_targets[i].logbook[0].time == MarpaTarget::m_ri->m_history[MOD_ROTATION2048(m_targets[i].max_angle.angle + OFF_LOCATION)].time) {
+      if (m_targets[i].logbook[0].time == m_ri->m_history[MOD_ROTATION2048(m_targets[i].max_angle.angle + OFF_LOCATION)].time) {
             // check if target has been refreshed since last time
         // + OFF_LOCATION because target may have mooved
         continue;
       }
      
-      bool contour = m_targets[i].pol.FindContourFromInside();  //   $$$$ update position first!!
+      bool contour = m_targets[i].FindContourFromInside();  //   $$$$ update position first!!
 
       if (!contour) {
-          contour = m_targets[i].pol.FindNearestContour(50);
+          contour = m_targets[i].FindNearestContour(50);
       }
       if (!contour) {
         LOG_INFO(wxT("BR24radar_pi: $$$ AA refresh target contour NOT found i = %i"), i);
@@ -376,12 +375,12 @@ void MarpaTarget::Aquire1NewTarget() {
   // will add contour and position
   int ang = pol.angle;
   int rad = pol.r;
-  bool contour_found = pol.FindContourFromInside();
+  bool contour_found = FindContourFromInside();
   Polar targ_pol = pol;
   if (contour_found) {
     //   LOG_INFO(wxT("BR24radar_pi: $$$ Aquire1NewTarget FindContourFromInside OK"));
   } else {
-      contour_found = targ_pol.FindNearestContour(60);
+      contour_found = FindNearestContour(60);
     if (contour_found) {
       LOG_INFO(wxT("BR24radar_pi: $$$ Aquire1NewTarget FindNearestContour OK"));
     }
@@ -412,20 +411,20 @@ void MarpaTarget::Aquire1NewTarget() {
   return;
 }
 
-#define PIX(aa, rr)  \
-  test.angle = aa; \
-test.r = rr;    \
-  if (test.Pix()) {  \
-    angle = aa;                                                                      \
-    r = rr;                                                                          \
+#define PIX(aa, rr)                                                                     \
+  if (Pix(aa, rr)) {                                                                    \
+    pol.angle = aa;                                                                      \
+    pol.r = rr;                                                                          \
     LOG_INFO(wxT("BR24radar_pi: $$$FindNearestContour PIX FOUND a= %i r= %i"), aa, rr); \
     return true;                                                                        \
-  }
+    }
 
-bool MarpaTarget::Polar::FindNearestContour(int dist) {
+bool MarpaTarget::FindNearestContour(int dist) {
     // $$$ to do: no single pixel targets
   // make a search pattern along an approximate octagon
-  int a = angle;
+    
+  int a = pol.angle;
+  int r = pol.r;
   
   Polar test;
 //  LOG_INFO(wxT("BR24radar_pi: $$$FindNearestContour Called dist= %i  "), dist);
