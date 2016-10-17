@@ -68,14 +68,14 @@ class Position {
 
 class Polar {
 public:
-    Polar();
+    
     int angle;
     int r;
 };
 
 class LogEntry {
 public:
-    LogEntry();
+    //LogEntry();
     //   LogEntry(RadarInfo* ri);
     wxLongLong time;  // wxGetUTCTimeMillis
     Position pos;
@@ -90,14 +90,13 @@ class MarpaTarget {
   
   RadarInfo* m_ri;
   br24radar_pi* m_pi;
-  LogEntry* logbook;
+  LogEntry logbook[SIZE_OF_LOG];
   Polar pol;
   // wxLongLong time;  // wxGetUTCTimeMillis
   target_status status;
   Polar contour[MAX_CONTOUR_LENGTH + 1];
   int contour_length;
   Polar max_angle, min_angle, max_r, min_r;
-
   void PushLogbook();
   void Aquire1NewTarget();
   int GetContour();
