@@ -41,14 +41,12 @@ PLUGIN_BEGIN_NAMESPACE
 #define OFF_LOCATION (50)
 #define SIZE_OF_LOG (5)
 #define MAX_CONTOUR_LENGTH (600)
-
-
+#define MAX_LOST_COUNT (6)
 
 struct polar {
   int angle;
   int r;
 };
-
 
 enum target_status {
   lost,
@@ -56,8 +54,7 @@ enum target_status {
   aquire1,  // under aquisition, contour found, first position in log
   aquire2,  // under aquisition, speed and course taken
   aquire3,  // under aquisition, speed and course verified, next time active
-  loosing,  // lost but not yet communicated to OCPN
-  miss_1,   // missed 1 sweep
+  active
 };
 
 class Position {
@@ -67,44 +64,48 @@ class Position {
 };
 
 class Polar {
-public:
-    
-    int angle;
-    int r;
+ public:
+  int angle;
+  int r;
+  void Pos2Polar(Position p, Position own_ship, int range);
 };
 
 class LogEntry {
-public:
-    //LogEntry();
-    //   LogEntry(RadarInfo* ri);
-    wxLongLong time;  // wxGetUTCTimeMillis
-    Position pos;
-    double speed;
-    double heading;
+ public:
+  wxLongLong time;  // wxGetUTCTimeMillis
+  Position pos;
+  double speed;
+  double heading;
 };
 
 class MarpaTarget {
  public:
   MarpaTarget(br24radar_pi* pi, RadarInfo* ri);
   MarpaTarget();
-  
   RadarInfo* m_ri;
   br24radar_pi* m_pi;
-  LogEntry logbook[SIZE_OF_LOG];
-  Polar pol;
-  // wxLongLong time;  // wxGetUTCTimeMillis
+  wxLongLong t_refresh;  // time of last refresh
+  int nr_of_log_entries;
+  LogEntry logbook[SIZE_OF_LOG];  // stores positions, time heading and speed
+  Polar pol;                      // temporary polarcoordinates of target
   target_status status;
-  Polar contour[MAX_CONTOUR_LENGTH + 1];
+  int lost_count;
+  Polar contour[MAX_CONTOUR_LENGTH + 1];  // contour of target, only valid immediately after finding it
+  Polar expected;   //$$$ test only
   int contour_length;
-  Polar max_angle, min_angle, max_r, min_r;
+  Polar max_angle, min_angle, max_r, min_r;  // charasterictics of contour
   void PushLogbook();
-  void Aquire1NewTarget();
+ // void Aquire1NewTarget();
   int GetContour();
   void set(br24radar_pi* pi, RadarInfo* ri);
   bool FindNearestContour(int dist);
   bool FindContourFromInside();
   Position Polar2Pos(Polar pol, Position own_ship);
   bool Pix(int ang, int rad);
+  void UpdatePolar();
+ // void Aquire2NewTarget();
+  void CalculateSpeedandHeading();
+  bool GetTarget();
 };
 
 class RadarMarpa {
@@ -122,7 +123,7 @@ class RadarMarpa {
   MarpaTarget* m_targets;
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
-  Polar Pos2Polar(Position p, Position own_ship);
+  //  Polar Pos2Polar(Position p, Position own_ship);
   int NextEmptyTarget();
 };
 
