@@ -115,16 +115,17 @@ class RadarMarpa {
 
   int GetTargetWidth(int angle, int rad);
   int GetTargetHeight(int angle, int rad);
-  void CalculateCentroid(MarpaTarget* t);
-  void DrawContour(MarpaTarget t);
-  void DrawMarpaTargets();
-  void RefreshMarpaTargets();
-  void Aquire0NewTarget(Position p);
   MarpaTarget* m_targets;
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
   //  Polar Pos2Polar(Position p, Position own_ship);
   int NextEmptyTarget();
+
+  void CalculateCentroid(MarpaTarget* t);
+  void DrawContour(MarpaTarget t);
+  void DrawMarpaTargets();
+  void RefreshMarpaTargets();
+  void Aquire0NewTarget(Position p);
 };
 
 PLUGIN_END_NAMESPACE
