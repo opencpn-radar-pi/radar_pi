@@ -38,7 +38,7 @@
 PLUGIN_BEGIN_NAMESPACE
 
 #define NUMBER_OF_TARGETS (20)
-#define OFF_LOCATION (50)
+#define OFF_LOCATION (30)
 #define SIZE_OF_LOG (5)
 #define MAX_CONTOUR_LENGTH (600)
 #define MAX_LOST_COUNT (6)
@@ -106,6 +106,7 @@ class MarpaTarget {
  // void Aquire2NewTarget();
   void CalculateSpeedandHeading();
   bool GetTarget();
+  void RefreshTarget();
 };
 
 class RadarMarpa {

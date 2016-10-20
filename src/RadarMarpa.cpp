@@ -313,8 +313,8 @@ void RadarMarpa::DrawContour(MarpaTarget target) {
     //     LOG_INFO(wxT("BR24radar_pi: $$$ target DrawContour3 i=%i"), i);
     int angle = MOD_ROTATION2048(target.contour[i].angle - 512);
     int radius = target.contour[i].r;
-    if (radius < 0) {
-      //        LOG_INFO(wxT("BR24radar_pi:RadarMarpa::DrawContour r < 0"));
+    if (radius <= 0 || radius >= RETURNS_PER_LINE) {
+             LOG_INFO(wxT("BR24radar_pi:RadarMarpa::DrawContour r OUT OF RANGE"));
       return;
     }
     xx = polarLookup->x[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
@@ -326,13 +326,13 @@ void RadarMarpa::DrawContour(MarpaTarget target) {
       //      LOG_INFO(wxT("BR24radar_pi:R $$$draw start point ii = %i length =%i"), ii, target.contour_length);
       ii = 0;  // start point again
     }
-    if (radius < 0) {
-      //        LOG_INFO(wxT("BR24radar_pi:RadarMarpa::DrawContour r < 0"));
-      return;
+    if (radius <= 0 || radius >= RETURNS_PER_LINE) {
+        LOG_INFO(wxT("BR24radar_pi:RadarMarpa::DrawContour r OUT OF RANGE"));
+        return;
     }
     angle = MOD_ROTATION2048(target.contour[ii].angle - 512);
     radius = target.contour[ii].r;
-    //    LOG_INFO(wxT("BR24radar_pi: $$$ target DrawContour4 i=%i ii = %i"), i, ii);
+        LOG_INFO(wxT("BR24radar_pi: $$$ target DrawContour4 i=%i ii = %i"), i, ii);
     xx = polarLookup->x[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
     yy = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
     glVertex2f(xx, yy);
@@ -371,112 +371,117 @@ void RadarMarpa::DrawMarpaTargets() {
 }
 
 void RadarMarpa::RefreshMarpaTargets() {
-  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
-    if (m_targets[i].status == lost) {
-      continue;
+    for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+        if (m_targets[i].status == lost) {
+            continue;
+        }
+        m_targets[i].RefreshTarget();
     }
-    wxLongLong time_hist = m_ri->m_history[MOD_ROTATION2048(m_targets[i].max_angle.angle + OFF_LOCATION)].time;
+}
+
+void MarpaTarget::RefreshTarget() {
+    wxLongLong time_hist = m_ri->m_history[MOD_ROTATION2048(max_angle.angle + OFF_LOCATION)].time;
     int time_hist32 = time_hist.GetLo();
-    LOG_INFO(wxT("BR24radar_pi: $$$ RefreshMarpaTargets t_refresh = %i, t2 = %i i = %i"), m_targets[i].t_refresh.GetLo(), time_hist32, i);
-    LOG_INFO(wxT("BR24radar_pi: $$$ RefreshMarpaTargets status = %i"), m_targets[i].status);
-    if (m_targets[i].t_refresh == time_hist) {
+    LOG_INFO(wxT("BR24radar_pi: $$$ RefreshMarpaTargets t_refresh = %i, t2 = %i "), t_refresh.GetLo(), time_hist32);
+    LOG_INFO(wxT("BR24radar_pi: $$$ RefreshMarpaTargets status = %i"), status);
+    if (t_refresh == time_hist) {
       // check if target has been refreshed since last time
       // + OFF_LOCATION because target may have mooved
-      LOG_INFO(wxT("BR24radar_pi: $$$ RefreshMarpaTargets CONTINUE same pos no refresh next target i=%i "), i);
-      continue;
+      return;
     }
     // set new refresh time
-    m_targets[i].t_refresh = m_ri->m_history[MOD_ROTATION2048(m_targets[i].max_angle.angle + OFF_LOCATION)].time;
-    if (m_targets[i].status > aquire1) {
+    t_refresh = m_ri->m_history[MOD_ROTATION2048(max_angle.angle + OFF_LOCATION)].time;
+    if (status > aquire1) {
         LOG_INFO(wxT("BR24radar_pi: $$$ RefreshMarpaTargets dd"));
-      m_targets[i].UpdatePolar();  // update expected polar of target based on speed and heading from the log
-      if (m_targets[i].pol.r >= RETURNS_PER_LINE){
+      UpdatePolar();  // update expected polar of target based on speed and heading from the log
+      if (pol.r >= RETURNS_PER_LINE){
           LOG_INFO(wxT("BR24radar_pi: $$$ RefreshMarpaTargets r too large"));
-          m_targets[i].status = lost;
-          m_targets[i].contour_length = 0;
-          m_targets[i].nr_of_log_entries = 0;
-          m_targets[i].lost_count = 0;
+          status = lost;
+          contour_length = 0;
+          nr_of_log_entries = 0;
+          lost_count = 0;
           LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
-          break;
+          return;
       }
     }
-    m_targets[i].expected = m_targets[i].pol;  // $$$ test only
-    if (m_targets[i].GetTarget()) {
+    expected = pol;  // $$$ test only
+    if (GetTarget()) {
       // target refreshed
-      m_targets[i].lost_count = 0;
-      switch (m_targets[i].status) {
+      lost_count = 0;
+      switch (status) {
         case aquire0:
-          m_targets[i].status = aquire1;
+          status = aquire1;
           LOG_INFO(wxT("BR24radar_pi: $$$ true case =aquire1 "));
           break;
         case aquire1:
-          m_targets[i].status = aquire2;
+          status = aquire2;
           LOG_INFO(wxT("BR24radar_pi: $$$ true case =aquire2 "));
           break;
         case aquire2:
-          m_targets[i].status = aquire3;
+          status = aquire3;
           LOG_INFO(wxT("BR24radar_pi: $$$ true case =aquire3 "));
           break;
         case aquire3:
-          m_targets[i].status = active;
+          status = active;
           LOG_INFO(wxT("BR24radar_pi: $$$ true case =active "));
           break;
         case active:
             LOG_INFO(wxT("BR24radar_pi: $$$ true case was active "));
           break;
         default:
-          LOG_INFO(wxT("BR24radar_pi: $$$ unexpected status true status= %i"), m_targets[i].status);
+          LOG_INFO(wxT("BR24radar_pi: $$$ unexpected status true status= %i"), status);
+          break;
       }
     } else {
-      switch (m_targets[i].status) {
+      switch (status) {
         case aquire0:
-          m_targets[i].status = lost;
-          m_targets[i].contour_length = 0;
-          m_targets[i].nr_of_log_entries = 0;
-          m_targets[i].lost_count = 0;
+          status = lost;
+          contour_length = 0;
+          nr_of_log_entries = 0;
+          lost_count = 0;
           LOG_INFO(wxT("BR24radar_pi: $$$ case aquire0 lost"));
           break;
         case aquire1:
-          m_targets[i].status = lost;
-          m_targets[i].contour_length = 0;
-          m_targets[i].nr_of_log_entries = 0;
-          m_targets[i].lost_count = 0;
+          status = lost;
+          contour_length = 0;
+          nr_of_log_entries = 0;
+          lost_count = 0;
           LOG_INFO(wxT("BR24radar_pi: $$$ case aquire1 lost"));
           break;
         case aquire2:
-          m_targets[i].lost_count++;
-          if (m_targets[i].lost_count < 2) {
-              LOG_INFO(wxT("BR24radar_pi: $$$ case aquire2 lost lost_count=%i"), m_targets[i].lost_count);
+          lost_count++;
+          if (lost_count < 2) {
+              LOG_INFO(wxT("BR24radar_pi: $$$ case aquire2 lost lost_count=%i"), lost_count);
             break;  // give it another change
           } else {
-            m_targets[i].status = lost;
-            m_targets[i].contour_length = 0;
-            m_targets[i].nr_of_log_entries = 0;
-            m_targets[i].lost_count = 0;
+            status = lost;
+            contour_length = 0;
+            nr_of_log_entries = 0;
+            lost_count = 0;
             LOG_INFO(wxT("BR24radar_pi: $$$ case aquire2 lost"));
-            m_targets[i].lost_count = 0;
+            lost_count = 0;
             break;
           }
         case aquire3:
         case active:
-          m_targets[i].lost_count++;
-          if (m_targets[i].lost_count < MAX_LOST_COUNT) {
-              LOG_INFO(wxT("BR24radar_pi: $$$ case aquire or active lost lost_count=%i"), m_targets[i].lost_count);
+          lost_count++;
+          if (lost_count < MAX_LOST_COUNT) {
+              LOG_INFO(wxT("BR24radar_pi: $$$ case aquire or active lost lost_count=%i"), lost_count);
             break;  // try again next sweep
           } else {
-            m_targets[i].status = lost;
+            status = lost;
             LOG_INFO(wxT("BR24radar_pi: $$$ case aquire3  or active lost"));
-            m_targets[i].contour_length = 0;
-            m_targets[i].nr_of_log_entries = 0;
-            m_targets[i].lost_count = 0;
+            contour_length = 0;
+            nr_of_log_entries = 0;
+            lost_count = 0;
             break;
           }
         default:
-          LOG_INFO(wxT("BR24radar_pi: $$$ unexpected status false status= %i"), m_targets[i].status);
+          LOG_INFO(wxT("BR24radar_pi: $$$ unexpected status false status= %i"), status);
           break;
       }
     }
-  }
+  
   LOG_INFO(wxT("BR24radar_pi: $$$ RefreshMarpaTargets returned"));
   return;
 }
@@ -571,7 +576,7 @@ void MarpaTarget::UpdatePolar() {
 
 void MarpaTarget::CalculateSpeedandHeading() {
   int nr = nr_of_log_entries - 1;
-  if (nr > 3) nr = 3;  // calculate speed over the last 3 positions
+  if (nr > 4) nr = 4;  // calculate speed over the last 4 positions
   LOG_INFO(wxT("BR24radar_pi: $$$ CalcutateSpeedandHeading nr = %i"), nr);
   if (nr <= 0) return;
   double lat1 = logbook[nr].pos.lat;
@@ -607,9 +612,9 @@ bool MarpaTarget::GetTarget() {
     LOG_INFO(wxT("BR24radar_pi: $$$ Aquire2NewTarget FindContourFromInside OK"));
   } else {
     LOG_INFO(wxT("BR24radar_pi: $$$ Aquire2NewTarget FindContourFromInside NOT OK"));
-    int dist = OFF_LOCATION / 2;
+    int dist = OFF_LOCATION;
     if (status == aquire0 || status == aquire1) {
-      dist = OFF_LOCATION;
+      dist = OFF_LOCATION * 2;
     }
     contour_found = FindNearestContour(dist);
     if (contour_found) {
