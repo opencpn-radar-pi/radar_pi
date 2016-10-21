@@ -497,9 +497,9 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
     SetRadarWindowViz();
   }
   else if (id == m_context_menu_set_marpa_target){
-      LOG_INFO(wxT("BR24radar_pi: $$$ m_cursor_lat %f, m_cursor_lon %f"), m_cursor_lat, m_cursor_lon);
+    //  LOG_INFO(wxT("BR24radar_pi: $$$ m_cursor_lat %f, m_cursor_lon %f"), m_cursor_lat, m_cursor_lon);
       
-          LOG_INFO(wxT("BR24radar_pi: $$$ m_ownship_lat %f, m_ownship_lon %f"), m_ownship_lat, m_ownship_lon);
+     //     LOG_INFO(wxT("BR24radar_pi: $$$ m_ownship_lat %f, m_ownship_lon %f"), m_ownship_lat, m_ownship_lon);
           if (m_settings.show                                                       // radar shown
               && m_settings.chart_overlay >= 0                                        //  overlay desired
               && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
@@ -507,9 +507,9 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
               Position target_pos;
               target_pos.lat = m_cursor_lat;
               target_pos.lon = m_cursor_lon;
-              LOG_INFO(wxT("BR24radar_pi: $$$ voor aquire"));
+            //  LOG_INFO(wxT("BR24radar_pi: $$$ voor aquire"));
               m_radar[m_settings.chart_overlay]->m_marpa->Aquire0NewTarget(target_pos);
-              LOG_INFO(wxT("BR24radar_pi: $$$ na aquire"));
+             // LOG_INFO(wxT("BR24radar_pi: $$$ na aquire"));
               
           }
   }
