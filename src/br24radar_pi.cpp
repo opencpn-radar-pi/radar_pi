@@ -495,29 +495,20 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
   } else if (id == m_context_menu_show_id) {
     m_settings.show = 1;
     SetRadarWindowViz();
-  }
-  else if (id == m_context_menu_set_marpa_target){
-    //  LOG_INFO(wxT("BR24radar_pi: $$$ m_cursor_lat %f, m_cursor_lon %f"), m_cursor_lat, m_cursor_lon);
-      
-     //     LOG_INFO(wxT("BR24radar_pi: $$$ m_ownship_lat %f, m_ownship_lon %f"), m_ownship_lat, m_ownship_lon);
-          if (m_settings.show                                                       // radar shown
-              && m_settings.chart_overlay >= 0                                        //  overlay desired
-              && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
-              && m_bpos_set) {                                                      // overlay possible 
-              Position target_pos;
-              target_pos.lat = m_cursor_lat;
-              target_pos.lon = m_cursor_lon;
-            //  LOG_INFO(wxT("BR24radar_pi: $$$ voor aquire"));
-              m_radar[m_settings.chart_overlay]->m_marpa->Aquire0NewTarget(target_pos);
-             // LOG_INFO(wxT("BR24radar_pi: $$$ na aquire"));
-              
-          }
-  }
-  else {
+  } else if (id == m_context_menu_set_marpa_target) {
+    if (m_settings.show                                                        // radar shown
+        && m_settings.chart_overlay >= 0                                       // overlay desired
+        && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
+        && m_bpos_set) {                                                       // overlay possible
+      Position target_pos;
+      target_pos.lat = m_cursor_lat;
+      target_pos.lon = m_cursor_lon;
+      m_radar[m_settings.chart_overlay]->m_marpa->Aquire0NewTarget(target_pos);
+    }
+  } else {
     wxLogError(wxT("BR24radar_pi: Unknown context menu item callback"));
   }
 }
-
 
 void br24radar_pi::PassHeadingToOpenCPN() {
   wxString nmea;

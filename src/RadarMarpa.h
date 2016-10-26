@@ -61,6 +61,18 @@ class Position {
  public:
   double lat;
   double lon;
+  Position operator-(Position p) {
+      Position q;
+      q.lat = lat - p.lat;
+      q.lon = lon - p.lon;
+      return q;
+  }
+  Position operator+(Position p) {
+      Position q;
+      q.lat = lat + p.lat;
+      q.lon = lon + p.lon;
+      return q;
+  }
 };
 
 class Polar {
@@ -129,6 +141,47 @@ class RadarMarpa {
   void Aquire0NewTarget(Position p);
 };
 
-PLUGIN_END_NAMESPACE
+class MetricPoint {
+  double lat;
+  double lon;
+  Position Metric2Pos() {
+    Position p;
+    p.lon = lon / cos(deg2rad(lat)) / 1852. / 60;
+    p.lat = lat / 1852. / 60;
+    return p;
+  }
+
+  double Dist(MetricPoint p2) {
+    double dist = sqrt((p2.lat - lat) * (p2.lat - lat) + (p2.lon - lon) * (p2.lon - lon));
+    return dist;
+  }
+
+  double Bearing(MetricPoint p2) {
+    double bear = rad2deg(atan((p2.lon - lon) / (p2.lat - lat)));
+    return bear;
+  }
+
+  void operator=(Position p){
+      lat = p.lat * 60 * 1852;
+      lon = p.lat * 60 * 1852;
+      lon *= cos(deg2rad(p.lat));
+  }
+  
+    MetricPoint operator+(MetricPoint p) {
+      MetricPoint q;
+      q.lat = lat + p.lat;
+      q.lon = lon + p.lon;
+      return q;
+    }
+
+    MetricPoint operator-(MetricPoint p) {
+      MetricPoint q;
+      q.lat = lat - p.lat;
+      q.lon = lon - p.lon;
+      return q;
+    }
+};
+
+  PLUGIN_END_NAMESPACE
 
 #endif

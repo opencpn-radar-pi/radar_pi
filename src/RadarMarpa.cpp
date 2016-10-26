@@ -337,27 +337,26 @@ void RadarMarpa::DrawContour(MarpaTarget target) {
     yy = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
     glVertex2f(xx, yy);
   }
-  //// draw expected pos for test
-  //int angle = MOD_ROTATION2048(target.expected.angle - 512);
-  //int radius = target.expected.r;
-  //double xx;
-  //double yy;
-  //glColor4ub(0, 250, 0, 250);
-  //if (radius < 505 && radius > 5){
-  //    xx = polarLookup->x[angle][radius - 4] * m_ri->m_range_meters / RETURNS_PER_LINE;
-  //    yy = polarLookup->y[angle][radius - 4] * m_ri->m_range_meters / RETURNS_PER_LINE;
-  //    glVertex2f(xx, yy);
-  //    xx = polarLookup->x[angle][radius + 4] * m_ri->m_range_meters / RETURNS_PER_LINE;
-  //    yy = polarLookup->y[angle][radius + 4] * m_ri->m_range_meters / RETURNS_PER_LINE;
-  //    glVertex2f(xx, yy);
-  //    xx = polarLookup->x[angle - 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-  //    yy = polarLookup->y[angle - 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-  //    glVertex2f(xx, yy);
-  //    xx = polarLookup->x[angle + 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-  //    yy = polarLookup->y[angle + 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-
-  //    glVertex2f(xx, yy);
-  //}
+  // draw expected pos for test
+  int angle = MOD_ROTATION2048(target.expected.angle - 512);
+  int radius = target.expected.r;
+ /* double xx;
+  double yy;
+  glColor4ub(0, 250, 0, 250);
+  if (radius < 480 && radius > 10){
+      xx = polarLookup->x[angle][radius - 4] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      yy = polarLookup->y[angle][radius - 4] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      glVertex2f(xx, yy);
+      xx = polarLookup->x[angle][radius + 4] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      yy = polarLookup->y[angle][radius + 4] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      glVertex2f(xx, yy);
+      xx = polarLookup->x[angle - 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      yy = polarLookup->y[angle - 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      glVertex2f(xx, yy);
+      xx = polarLookup->x[angle + 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      yy = polarLookup->y[angle + 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      glVertex2f(xx, yy);
+  }*/
 
   glEnd();
 }
@@ -394,8 +393,9 @@ void MarpaTarget::RefreshTarget() {
     if (status > aquire1) {
         LOG_INFO(wxT("BR24radar_pi: $$$ RefreshMarpaTargets dd"));
       UpdatePolar();  // update expected polar of target based on speed and heading from the log
-      if (pol.r >= RETURNS_PER_LINE){
-          LOG_INFO(wxT("BR24radar_pi: $$$ RefreshMarpaTargets r too large"));
+      // zooming may  cause r to be out of bounds
+      if (pol.r >= RETURNS_PER_LINE || pol.r <= 0){
+          LOG_INFO(wxT("BR24radar_pi: $$$ RefreshMarpaTargets r too large or negative r = %i"), pol.r);
           status = lost;
           contour_length = 0;
           nr_of_log_entries = 0;
@@ -499,7 +499,6 @@ bool MarpaTarget::FindNearestContour(int dist) {
   // make a search pattern along an approximate octagon
   int a = pol.angle;
   int r = pol.r;
- // LOG_INFO(wxT("BR24radar_pi: $$$FindNearestContour Called dist= %i a= %i, r= %i "), dist, a, r);
   for (int i = 1; i < dist; i++) {
     int octa = (int)(i * .414 + .6);       // length of half side of octagon
                                            //   LOG_INFO(wxT("BR24radar_pi: $$$FindNearestContour Octa = %i, i = %i"), octa, i);
@@ -511,14 +510,12 @@ bool MarpaTarget::FindNearestContour(int dist) {
       PIX(a - i, r + j);                   // mirror vertical axis
     }
     for (int j = 0; j <= octa; j++) {  // 45 degrees side
-                                       //    LOG_INFO(wxT("BR24radar_pi: $$$FindNearestContour second block j = %i"), j);
       PIX(a + octa + j, r + i - j);
       PIX(a - octa - j, r + i - j);
       PIX(a + octa + j, r - i + j);  // mirror horizontal axis
       PIX(a - octa - j, r - i + j);
     }
   }
-//  LOG_INFO(wxT("BR24radar_pi: $$$FindNearestContour not found dist= %i"), dist);
   return false;
 }
 
@@ -559,25 +556,18 @@ void MarpaTarget::UpdatePolar() {
   LOG_INFO(wxT("BR24radar_pi: $$VV UpdatePolar speed = %f, heading = %f"), speed, heading);
   wxLongLong delta_t = wxGetUTCTimeMillis() - logbook[0].time;
   double dist = delta_t.GetLo() * speed / 1000.;
-//  LOG_INFO(wxT("BR24radar_pi: $$VV dist = %f"), dist);
-//  LOG_INFO(wxT("BR24radar_pi: $$$AA old lat = %f, old lon = %f"), target_pos.lat, target_pos.lon);
   target_pos.lat = target_pos.lat + cos(deg2rad(heading)) * dist / 1852. / 60;
-  target_pos.lon = target_pos.lon + sin(deg2rad(heading)) * dist / 1852. / 60 * cos(deg2rad(target_pos.lat));
-//  LOG_INFO(wxT("BR24radar_pi: $$$AA new lat = %f, new lon = %f"), target_pos.lat, target_pos.lon);
+  target_pos.lon = target_pos.lon + sin(deg2rad(heading)) * dist / 1852. / 60 / cos(deg2rad(target_pos.lat));
   Position own_pos;
   // and find the new polar
   own_pos.lat = m_pi->m_ownship_lat;
   own_pos.lon = m_pi->m_ownship_lon;
-//  LOG_INFO(wxT("BR24radar_pi: $$$AA own_pos.lat = %f, own_pos.lon = %f"), own_pos.lat, own_pos.lon);
-//  LOG_INFO(wxT("BR24radar_pi: $$$AA OLD polar angle = %i, r= %i"), pol.angle, pol.r);
   pol.Pos2Polar(target_pos, own_pos, m_ri->m_range_meters);
-//  LOG_INFO(wxT("BR24radar_pi: $$$AA NEW polar angle = %i, r= %i"), pol.angle, pol.r);
 }
 
 void MarpaTarget::CalculateSpeedandHeading() {
   int nr = nr_of_log_entries - 1;
   if (nr > 4) nr = 4;  // calculate speed over the last 4 positions
-//  LOG_INFO(wxT("BR24radar_pi: $$$ CalcutateSpeedandHeading nr = %i"), nr);
   if (nr <= 0) return;
   double lat1 = logbook[nr].pos.lat;
   double lat2 = logbook[0].pos.lat;
@@ -586,17 +576,13 @@ void MarpaTarget::CalculateSpeedandHeading() {
   double dist = local_distance(lat1, lon1, lat2, lon2);  // dist in miles
   long time1 = logbook[nr].time.GetLo();
   long time2 = logbook[0].time.GetLo();
-//  LOG_INFO(wxT("BR24radar_pi: $$$ CalcutateSpeedandHeading time1 = %i, time2 = %i"), time1, time2);
   long delta_t = (logbook[0].time - logbook[nr].time).GetLo();  // get the lower 32 bits of the wxLongLong
   if (delta_t > 10) {
     double speed = (dist * 1000) / (double)delta_t * 1852.;  // speed in m/s
     double heading = local_bearing(lat1, lon1, lat2, lon2);
-//    LOG_INFO(wxT("BR24radar_pi: $$$ CalcutateSpeedandHeading speed = %f, dist = %f, bearing = %f, t=%i"), speed, dist, heading,
-//             delta_t);
     logbook[0].speed = speed;
     logbook[0].heading = heading;
   } else {
-//    LOG_INFO(wxT("BR24radar_pi: $$$ CalcutateSpeedandHeading delta time < 10, delta = %i"), delta_t);
     logbook[0].speed = logbook[1].speed;
     logbook[0].heading = logbook[1].heading;
   }
@@ -627,17 +613,9 @@ bool MarpaTarget::GetTarget() {
     LOG_INFO(wxT("BR24radar_pi: $$$ Aquire2NewTarget No contour found"));
     return false;
   }
-//  LOG_INFO(wxT("BR24radar_pi: $$$ Aquire2NewTarget Voor contour start  target.status= %i, length=%i"), status, contour_length);
   if (GetContour() != 0) {
- //   LOG_INFO(wxT("BR24radar_pi: $$$ Aquire2NewTarget GetContour FAILED m_targets[i_target].status= %i, length=%i"), status,
- //            contour_length);
-  //  LOG_INFO(wxT("BR24radar_pi: $$$  NA aquire call lat log 0 = %f"), logbook[0].pos.lat);
     return false;
   }
-
-  // now find speed and heading
-
-//  LOG_INFO(wxT("BR24radar_pi: $$$ GetTarget time =  poslat= %f poslon= %f"), logbook[0].pos.lat, logbook[0].pos.lon);
   return true;
 }
 
