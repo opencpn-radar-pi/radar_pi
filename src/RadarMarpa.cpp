@@ -579,11 +579,6 @@ bool ArpaTarget::GetTarget() {
   return true;
 }
 
-// ARPA test
-time_t t_Test = time(0) - 5;
-float f_Dist = 3.2f, f_Bear = 23.1f, dL = 0.0001f;
-// ARPA Position in deciamal degrees.
-double f_Lat = 53.433, f_Lon = 06.185;
 
 void ArpaTarget::PassARPAtoOCPN() {
   wxString tNum, tDist, tBearing, B_Un, tSpeed, tCourse, C_Un, D_Un, Name, Stat;
@@ -592,6 +587,7 @@ void ArpaTarget::PassARPAtoOCPN() {
   char sentence[80];
   char checksum = 0;
   char* p;
+  double f_Lat, f_Lon;
 
   tDist = wxEmptyString;     // wxString::Format(wxT("%f"), f_Dist);
   tBearing = wxEmptyString;  // wxString::Format(wxT("%f"), f_Bear);
@@ -648,7 +644,14 @@ void ArpaTarget::PassARPAtoOCPN() {
   nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
   LOG_INFO(wxT("BR24radar_pi: $$$ pushed %s"), nmea);
   PushNMEABuffer(nmea);
-  t_Test = time(0);
+}
+
+void RadarArpa::PassARPATargetsToOCPN() {
+  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+    if (m_targets[i].status == active) {
+      m_targets[i].PassARPAtoOCPN();
+    }
+  }
 }
 
 PLUGIN_END_NAMESPACE

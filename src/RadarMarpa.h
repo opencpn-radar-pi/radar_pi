@@ -128,6 +128,7 @@ class RadarArpa {
   RadarArpa(br24radar_pi* pi, RadarInfo* ri);
   ~RadarArpa();
 
+  void PassARPATargetsToOCPN();
   int GetTargetWidth(int angle, int rad);
   int GetTargetHeight(int angle, int rad);
   ArpaTarget* m_targets;

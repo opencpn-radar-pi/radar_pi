@@ -864,7 +864,7 @@ void br24radar_pi::Notify(void) {
     m_radar[r]->m_statistics.packets = 0;
     m_radar[r]->m_statistics.spokes = 0;
   }
-
+  m_radar[m_settings.chart_overlay]->m_marpa->PassARPATargetsToOCPN();
   UpdateState();
 }
 
