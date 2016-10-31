@@ -285,8 +285,8 @@ bool RadarInfo::Init(wxString name, int verbose) {
     return false;
   }
 
-  m_marpa = new RadarMarpa(m_pi, this);
-  LOG_INFO(wxT("BR24rad $$$ Marpa constructor called"));
+  m_marpa = new RadarArpa(m_pi, this);
+  LOG_INFO(wxT("BR24rad $$$ Arpa constructor called"));
 
   m_timer->Start(m_refresh_millis);
   return true;
@@ -1073,11 +1073,11 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   }
 
   if (overlay) {
-      m_marpa->RefreshMarpaTargets();
+      m_marpa->RefreshArpaTargets();
       glPushMatrix();
       glTranslated(center.x, center.y, 0);
       glScaled(scale, scale, 1.);
-      m_marpa->DrawMarpaTargets();
+      m_marpa->DrawArpaTargets();
       glPopMatrix();
 
     if (m_pi->m_settings.guard_zone_on_overlay) {

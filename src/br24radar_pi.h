@@ -53,7 +53,7 @@ class br24Receive;
 class br24Transmit;
 class br24radar_pi;
 class GuardZoneBogey;
-class RadarMarpa;
+class RadarArpa;
 
 #define SPOKES (4096)               // BR radars can generate up to 4096 spokes per rotation,
 #define LINES_PER_ROTATION (2048)   // but use only half that in practice

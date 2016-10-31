@@ -62,16 +62,16 @@ class Position {
   double lat;
   double lon;
   Position operator-(Position p) {
-      Position q;
-      q.lat = lat - p.lat;
-      q.lon = lon - p.lon;
-      return q;
+    Position q;
+    q.lat = lat - p.lat;
+    q.lon = lon - p.lon;
+    return q;
   }
   Position operator+(Position p) {
-      Position q;
-      q.lat = lat + p.lat;
-      q.lon = lon + p.lon;
-      return q;
+    Position q;
+    q.lat = lat + p.lat;
+    q.lon = lon + p.lon;
+    return q;
   }
 };
 
@@ -90,12 +90,13 @@ class LogEntry {
   double heading;
 };
 
-class MarpaTarget {
+class ArpaTarget {
  public:
-  MarpaTarget(br24radar_pi* pi, RadarInfo* ri);
-  MarpaTarget();
+  ArpaTarget(br24radar_pi* pi, RadarInfo* ri);
+  ArpaTarget();
   RadarInfo* m_ri;
   br24radar_pi* m_pi;
+  int target_id;
   wxLongLong t_refresh;  // time of last refresh
   int nr_of_log_entries;
   LogEntry logbook[SIZE_OF_LOG];  // stores positions, time heading and speed
@@ -103,11 +104,11 @@ class MarpaTarget {
   target_status status;
   int lost_count;
   Polar contour[MAX_CONTOUR_LENGTH + 1];  // contour of target, only valid immediately after finding it
-  Polar expected;   //$$$ test only
+  Polar expected;                        
   int contour_length;
   Polar max_angle, min_angle, max_r, min_r;  // charasterictics of contour
   void PushLogbook();
- // void Aquire1NewTarget();
+  // void Aquire1NewTarget();
   int GetContour();
   void set(br24radar_pi* pi, RadarInfo* ri);
   bool FindNearestContour(int dist);
@@ -115,33 +116,37 @@ class MarpaTarget {
   Position Polar2Pos(Polar pol, Position own_ship);
   bool Pix(int ang, int rad);
   void UpdatePolar();
- // void Aquire2NewTarget();
+  // void Aquire2NewTarget();
   void CalculateSpeedandHeading();
   bool GetTarget();
   void RefreshTarget();
+  void PassARPAtoOCPN();
 };
 
-class RadarMarpa {
+class RadarArpa {
  public:
-  RadarMarpa(br24radar_pi* pi, RadarInfo* ri);
-  ~RadarMarpa();
+  RadarArpa(br24radar_pi* pi, RadarInfo* ri);
+  ~RadarArpa();
 
   int GetTargetWidth(int angle, int rad);
   int GetTargetHeight(int angle, int rad);
-  MarpaTarget* m_targets;
+  ArpaTarget* m_targets;
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
   //  Polar Pos2Polar(Position p, Position own_ship);
   int NextEmptyTarget();
 
-  void CalculateCentroid(MarpaTarget* t);
-  void DrawContour(MarpaTarget t);
-  void DrawMarpaTargets();
-  void RefreshMarpaTargets();
+  void CalculateCentroid(ArpaTarget* t);
+  void DrawContour(ArpaTarget t);
+  void DrawArpaTargets();
+  void RefreshArpaTargets();
   void Aquire0NewTarget(Position p);
 };
 
+// following is not used yet and not tested
+
 class MetricPoint {
+ public:
   double lat;
   double lon;
   Position Metric2Pos() {
@@ -161,27 +166,27 @@ class MetricPoint {
     return bear;
   }
 
-  void operator=(Position p){
-      lat = p.lat * 60 * 1852;
-      lon = p.lat * 60 * 1852;
-      lon *= cos(deg2rad(p.lat));
+  void operator=(Position p) {
+    lat = p.lat * 60 * 1852;
+    lon = p.lat * 60 * 1852;
+    lon *= cos(deg2rad(p.lat));
   }
-  
-    MetricPoint operator+(MetricPoint p) {
-      MetricPoint q;
-      q.lat = lat + p.lat;
-      q.lon = lon + p.lon;
-      return q;
-    }
 
-    MetricPoint operator-(MetricPoint p) {
-      MetricPoint q;
-      q.lat = lat - p.lat;
-      q.lon = lon - p.lon;
-      return q;
-    }
+  MetricPoint operator+(MetricPoint p) {
+    MetricPoint q;
+    q.lat = lat + p.lat;
+    q.lon = lon + p.lon;
+    return q;
+  }
+
+  MetricPoint operator-(MetricPoint p) {
+    MetricPoint q;
+    q.lat = lat - p.lat;
+    q.lon = lon - p.lon;
+    return q;
+  }
 };
 
-  PLUGIN_END_NAMESPACE
+PLUGIN_END_NAMESPACE
 
 #endif

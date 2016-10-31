@@ -253,7 +253,7 @@ int br24radar_pi::Init(void) {
   wxMenuItem *mi1 = new wxMenuItem(&dummy_menu, -1, _("Show radar"));
   wxMenuItem *mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
   wxMenuItem *mi3 = new wxMenuItem(&dummy_menu, -1, _("Radar Control..."));
-  wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Set Marpa Target"));
+  wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Set Arpa Target"));
 #ifdef __WXMSW__
   wxFont *qFont = OCPNGetFont(_("Menu"), 10);
   mi1->SetFont(*qFont);
