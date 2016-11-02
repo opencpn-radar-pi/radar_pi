@@ -87,7 +87,7 @@ class LogEntry {
   wxLongLong time;  // wxGetUTCTimeMillis
   Position pos;
   double speed;
-  double heading;
+  double course;
 };
 
 class ArpaTarget {
@@ -99,8 +99,11 @@ class ArpaTarget {
   int target_id;
   wxLongLong t_refresh;  // time of last refresh
   int nr_of_log_entries;
-  LogEntry logbook[SIZE_OF_LOG];  // stores positions, time heading and speed
+  LogEntry logbook[SIZE_OF_LOG];  // stores positions, time course and speed
   Polar pol;                      // temporary polarcoordinates of target
+  double bearing;                 // only valid directly after calculation
+  double distance;// only valid directly after calculation
+  time_t last_O_update;
   target_status status;
   int lost_count;
   Polar contour[MAX_CONTOUR_LENGTH + 1];  // contour of target, only valid immediately after finding it
@@ -117,7 +120,7 @@ class ArpaTarget {
   bool Pix(int ang, int rad);
   void UpdatePolar();
   // void Aquire2NewTarget();
-  void CalculateSpeedandHeading();
+  void CalculateSpeedandCourse();
   bool GetTarget();
   void RefreshTarget();
   void PassARPAtoOCPN();
