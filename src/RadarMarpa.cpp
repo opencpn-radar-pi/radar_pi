@@ -632,8 +632,8 @@ void ArpaTarget::PassARPAtoOCPN() {
   tNum = wxString::Format(wxT("%2i"), target_id);
   s_speed = wxString::Format(wxT("%3.1f"), logbook[0].speed);
   s_course = wxString::Format(wxT("%3.0f"), logbook[0].course);
-  s_bearing = wxString::Format(wxT("%3.0f"), bearing);
-  s_distance = wxString::Format(wxT("%f"), distance);
+ // s_bearing = wxString::Format(wxT("%3.0f"), bearing);
+ // s_distance = wxString::Format(wxT("%f"), distance);
 
   s_time = wxEmptyString;  // Not used for ARPA targets in OCPN "015200.36";
 
