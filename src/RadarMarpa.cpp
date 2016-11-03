@@ -585,14 +585,14 @@ bool ArpaTarget::GetTarget() {
   return true;
 }
 
-
 void ArpaTarget::PassARPAtoOCPN() {
-  wxString tNum, tDist, tBearing, B_Un, C_Un, D_Un, Name, Stat;
+  wxString tNum, tDist, tBearing, B_Un, C_Un, D_Un, Stat;
   wxString s_Lat, N_S, s_Lon, E_W, s_time;  // For TLL
   wxString s_speed, s_course;
   wxString nmea;
   wxString s_bearing;
   wxString s_distance;
+  wxString target_name;
   char sentence[80];
   char checksum = 0;
   char* p;
@@ -602,8 +602,7 @@ void ArpaTarget::PassARPAtoOCPN() {
   B_Un = wxEmptyString;      // Bearing Units  R or empty
   C_Un = "T";                // Course Units
   D_Un = "N";                // Speed/Distance Unit K, N, S N= NM/h = Knots
-  Name = wxEmptyString;  // Target name. Dont use - O will make its own name = "ARPA" + tNum. (Alt.: Send fex. "4G-Arpa-" + tNum)
-  Stat = "T";            // Target Status  L/Q/T
+  Stat = "T";                // Target Status  L/Q/T
 
   f_Lat = logbook[0].pos.lat;
   f_Lon = logbook[0].pos.lon;
@@ -632,50 +631,52 @@ void ArpaTarget::PassARPAtoOCPN() {
   tNum = wxString::Format(wxT("%2i"), target_id);
   s_speed = wxString::Format(wxT("%3.1f"), logbook[0].speed);
   s_course = wxString::Format(wxT("%3.0f"), logbook[0].course);
- // s_bearing = wxString::Format(wxT("%3.0f"), bearing);
- // s_distance = wxString::Format(wxT("%f"), distance);
+  target_name = wxString::Format(wxT("MARPA %2i"), target_id);
+
+ /* LOG_INFO(wxT("BR24radar_pi: $$$ bearing = %f, distance = %f"), bearing, distance);
+   s_bearing = wxString::Format(wxT("%3.0f"), bearing);
+   s_distance = wxString::Format(wxT("%f"), distance);*/
 
   s_time = wxEmptyString;  // Not used for ARPA targets in OCPN "015200.36";
 
   //"$RATLL,01,5603.370,N,01859.976,E,ALPHA,015200.36,T,*75\r\n"
   if (time(0) - last_O_update >= 6) {
-      last_O_update = time(0);
-  int TLL = sprintf(sentence, "RATLL,%s,%s,%s,%s,%s,%s,,%s,",
-      (const char*)tNum.mb_str(),   //  1 Target number 00 - 99
-      (const char*)s_Lat.mb_str(),  //  2 Lat
-      (const char*)N_S.mb_str(),    //  3 North south
-      (const char*)s_Lon.mb_str(),  //  4 Lat
-      (const char*)E_W.mb_str(),    //  5 E/W
-      (const char*)Name.mb_str(),   // 6 Target name
-      //(const char *)s_time.mb_str(),     //  7 Send time
-      (const char*)Stat.mb_str());  // 8 Target Status L/Q/T
+    last_O_update = time(0);
+    int TLL = sprintf(sentence, "RATLL,%s,%s,%s,%s,%s,%s,,%s,",
+                      (const char*)tNum.mb_str(),         //  1 Target number 00 - 99
+                      (const char*)s_Lat.mb_str(),        //  2 Lat
+                      (const char*)N_S.mb_str(),          //  3 North south
+                      (const char*)s_Lon.mb_str(),        //  4 Lat
+                      (const char*)E_W.mb_str(),          //  5 E/W
+                      (const char*)target_name.mb_str(),  // 6 Target name
+                      //(const char *)s_time.mb_str(),     //  7 Send time
+                      (const char*)Stat.mb_str());  // 8 Target Status L/Q/T
 
-  for (p = sentence; *p; p++) {
+    for (p = sentence; *p; p++) {
       checksum ^= *p;
+    }
+    nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
+    LOG_INFO(wxT("BR24radar_pi: $$$ pushed TLL= %s"), nmea);
+    PushNMEABuffer(nmea);
+
+    // code for TTM follows, did not  work
+
+    // LOG_INFO(wxT("BR24radar_pi: $$$ bearing= %f distance = %f"), bearing, distance);
+    //// send speed and course using TTM
+    // TLL = sprintf(sentence, "RATTM,%s,%s,%s,,%s,%s,T,,,N,,%s,,",
+    //    (const char*)tNum.mb_str(),   //  target id
+    //    (const char*)s_distance.mb_str(),
+    //    (const char*)s_bearing.mb_str(),
+    //    (const char*)s_speed.mb_str(),
+    //    (const char*)s_course.mb_str(),
+    //    (const char*)Stat.mb_str());  // 8 Target Status L/Q/T
+    // for (p = sentence; *p; p++) {
+    //    checksum ^= *p;
+    //}
+    // nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
+    // LOG_INFO(wxT("BR24radar_pi: $$$ pushed TTM= %s"), nmea);
+    // PushNMEABuffer(nmea);
   }
-  nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
-  LOG_INFO(wxT("BR24radar_pi: $$$ pushed TLL= %s"), nmea);
-  PushNMEABuffer(nmea);
-
-  // code for TTM follows, did not  work
-
-  //LOG_INFO(wxT("BR24radar_pi: $$$ bearing= %f distance = %f"), bearing, distance);
-  //// send speed and course using TTM
-  //TLL = sprintf(sentence, "RATTM,%s,%s,%s,,%s,%s,T,,,N,,%s,,",
-  //    (const char*)tNum.mb_str(),   //  target id
-  //    (const char*)s_distance.mb_str(),
-  //    (const char*)s_bearing.mb_str(),
-  //    (const char*)s_speed.mb_str(),
-  //    (const char*)s_course.mb_str(),
-  //    (const char*)Stat.mb_str());  // 8 Target Status L/Q/T
-  //for (p = sentence; *p; p++) {
-  //    checksum ^= *p;
-  //}
-  //nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
-  //LOG_INFO(wxT("BR24radar_pi: $$$ pushed TTM= %s"), nmea);
-  //PushNMEABuffer(nmea);
-  }
-
 }
 
 void RadarArpa::PassARPATargetsToOCPN() {
