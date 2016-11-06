@@ -52,6 +52,9 @@ SET(SRC_br24radar
             src/GuardZone.cpp
             src/GuardZoneBogey.h
             src/GuardZoneBogey.cpp
+			src/Kalman.h
+			src/Kalman.cpp
+			src/Matrix.cpp
             src/RadarInfo.h
             src/RadarInfo.cpp
             src/RadarCanvas.h
