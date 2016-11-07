@@ -55,6 +55,7 @@ SET(SRC_br24radar
 			src/Kalman.h
 			src/Kalman.cpp
 			src/Matrix.cpp
+			src/Matrix.h
             src/RadarInfo.h
             src/RadarInfo.cpp
             src/RadarCanvas.h

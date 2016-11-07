@@ -40,9 +40,11 @@ PLUGIN_BEGIN_NAMESPACE
 class Kalman_Filter{
 
 public:
-  void  KalmanDemo();
+  
 
 };
+
+void  KalmanDemo();
 
 
 

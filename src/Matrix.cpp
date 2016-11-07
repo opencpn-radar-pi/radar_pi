@@ -54,6 +54,7 @@ A.Print();
 //#include <cstdlib>
 
 #include "br24radar_pi.h"
+#include "Matrix.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -78,7 +79,7 @@ PLUGIN_BEGIN_NAMESPACE
 /*
 * a simple exception class
 * you can create an exeption by entering
-*   throw Exception("...Error description...");
+*   LOG_INFO(wxT("BR24radar_pi: Matrix exception ...Error description...");
 * and get the error message from the data msg for displaying:
 *   err.msg
 */
@@ -88,19 +89,10 @@ class Exception {
   Exception(const char* arg) : msg(arg) {}
 };
 
-class Matrix {
- public:
-  // constructor
-  Matrix() {
-    // printf("Executing constructor Matrix() ...\n");
-    // create a Matrix object without content
-    p = NULL;
-    rows = 0;
-    cols = 0;
-  }
+
 
   // constructor
-  Matrix(const int row_count, const int column_count) {
+  Matrix::Matrix(const int row_count, const int column_count) {
     // create a Matrix object with given number of rows and columns
     p = NULL;
 
@@ -121,7 +113,7 @@ class Matrix {
   }
 
   // assignment operator
-  Matrix(const Matrix& a) {
+  Matrix::Matrix(const Matrix& a) {
     rows = a.rows;
     cols = a.cols;
     p = new double*[a.rows];
@@ -137,27 +129,29 @@ class Matrix {
 
   // index operator. You can use this class like myMatrix(col, row)
   // the indexes are one-based, not zero based.
-  double& operator()(const int r, const int c) {
+  double& Matrix::operator()(const int r, const int c) {
     if (p != NULL && r > 0 && r <= rows && c > 0 && c <= cols) {
       return p[r - 1][c - 1];
     } else {
-      throw Exception("Subscript out of range");
+      LOG_INFO(wxT("BR24radar_pi: Matrix exception Subscript out of range"));
+      return p[r - 1][c - 1];
     }
   }
 
   // index operator. You can use this class like myMatrix.get(col, row)
   // the indexes are one-based, not zero based.
   // use this function get if you want to read from a const Matrix
-  double get(const int r, const int c) const {
+  double Matrix::get(const int r, const int c) const {
     if (p != NULL && r > 0 && r <= rows && c > 0 && c <= cols) {
       return p[r - 1][c - 1];
     } else {
-      throw Exception("Subscript out of range");
+      LOG_INFO(wxT("BR24radar_pi: Matrix exception Subscript out of range"));  // 
+      return p[r - 1][c - 1];
     }
   }
 
   // assignment operator
-  Matrix& operator=(const Matrix& a) {
+  Matrix& Matrix::operator=(const Matrix& a) {
     rows = a.rows;
     cols = a.cols;
     p = new double*[a.rows];
@@ -173,7 +167,7 @@ class Matrix {
   }
 
   // add a double value (elements wise)
-  Matrix& Add(const double v) {
+  Matrix& Matrix::Add(const double v) {
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c < cols; c++) {
         p[r][c] += v;
@@ -182,11 +176,10 @@ class Matrix {
     return *this;
   }
 
-  // subtract a double value (elements wise)
-  Matrix& Subtract(const double v) { return Add(-v); }
+  
 
   // multiply a double value (elements wise)
-  Matrix& Multiply(const double v) {
+  Matrix& Matrix::Multiply(const double v) {
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c < cols; c++) {
         p[r][c] *= v;
@@ -195,11 +188,11 @@ class Matrix {
     return *this;
   }
 
-  // divide a double value (elements wise)
-  Matrix& Divide(const double v) { return Multiply(1 / v); }
+  //// divide a double value (elements wise)
+  //Matrix& Divide(const double v) { return Multiply(1 / v); }
 
   // addition of Matrix with Matrix
-  friend Matrix operator+(const Matrix& a, const Matrix& b) {
+  Matrix operator+(const Matrix& a, const Matrix& b) {
     // check if the dimensions match
     if (a.rows == b.rows && a.cols == b.cols) {
       Matrix res(a.rows, a.cols);
@@ -212,7 +205,7 @@ class Matrix {
       return res;
     } else {
       // give an error
-      throw Exception("Dimensions does not match");
+      LOG_INFO(wxT("BR24radar_pi: Matrix exception Dimensions does not match"));
     }
 
     // return an empty matrix (this never happens but just for safety)
@@ -220,20 +213,20 @@ class Matrix {
   }
 
   // addition of Matrix with double
-  friend Matrix operator+(const Matrix& a, const double b) {
+  Matrix operator+(const Matrix& a, const double b) {
     Matrix res = a;
     res.Add(b);
     return res;
   }
   // addition of double with Matrix
-  friend Matrix operator+(const double b, const Matrix& a) {
+  Matrix operator+(const double b, const Matrix& a) {
     Matrix res = a;
     res.Add(b);
     return res;
   }
 
   // subtraction of Matrix with Matrix
-  friend Matrix operator-(const Matrix& a, const Matrix& b) {
+  Matrix operator-(const Matrix& a, const Matrix& b) {
     // check if the dimensions match
     if (a.rows == b.rows && a.cols == b.cols) {
       Matrix res(a.rows, a.cols);
@@ -246,7 +239,7 @@ class Matrix {
       return res;
     } else {
       // give an error
-      throw Exception("Dimensions does not match");
+      LOG_INFO(wxT("BR24radar_pi: Matrix exception Dimensions does not match"));
     }
 
     // return an empty matrix (this never happens but just for safety)
@@ -254,20 +247,20 @@ class Matrix {
   }
 
   // subtraction of Matrix with double
-  friend Matrix operator-(const Matrix& a, const double b) {
+  Matrix operator-(const Matrix& a, const double b) {
     Matrix res = a;
     res.Subtract(b);
     return res;
   }
   // subtraction of double with Matrix
-  friend Matrix operator-(const double b, const Matrix& a) {
+  Matrix operator-(const double b, const Matrix& a) {
     Matrix res = -a;
     res.Add(b);
     return res;
   }
 
   // operator unary minus
-  friend Matrix operator-(const Matrix& a) {
+  Matrix operator-(const Matrix& a) {
     Matrix res(a.rows, a.cols);
 
     for (int r = 0; r < a.rows; r++) {
@@ -280,7 +273,7 @@ class Matrix {
   }
 
   // operator multiplication
-  friend Matrix operator*(const Matrix& a, const Matrix& b) {
+  Matrix operator*(const Matrix& a, const Matrix& b) {
     // check if the dimensions match
     if (a.cols == b.rows) {
       Matrix res(a.rows, b.cols);
@@ -295,7 +288,7 @@ class Matrix {
       return res;
     } else {
       // give an error
-      throw Exception("Dimensions does not match");
+      LOG_INFO(wxT("BR24radar_pi: Matrix exception Dimensions does not match"));
     }
 
     // return an empty matrix (this never happens but just for safety)
@@ -303,57 +296,57 @@ class Matrix {
   }
 
   // multiplication of Matrix with double
-  friend Matrix operator*(const Matrix& a, const double b) {
+  Matrix operator*(const Matrix& a, const double b) {
     Matrix res = a;
     res.Multiply(b);
     return res;
   }
   // multiplication of double with Matrix
-  friend Matrix operator*(const double b, const Matrix& a) {
+  Matrix operator*(const double b, const Matrix& a) {
     Matrix res = a;
     res.Multiply(b);
     return res;
   }
 
-  // division of Matrix with Matrix
-  friend Matrix operator/(const Matrix& a, const Matrix& b) {
-    // check if the dimensions match: must be square and equal sizes
-    if (a.rows == a.cols && a.rows == a.cols && b.rows == b.cols) {
-      Matrix res(a.rows, a.cols);
+  //// division of Matrix with Matrix
+  //Matrix operator/(const Matrix& a, const Matrix& b) {
+  //  // check if the dimensions match: must be square and equal sizes
+  //  if (a.rows == a.cols && a.rows == a.cols && b.rows == b.cols) {
+  //    Matrix res(a.rows, a.cols);
 
-      res = a * Inv(b);
+  //    res = a * Inv(b);
 
-      return res;
-    } else {
-      // give an error
-      throw Exception("Dimensions does not match");
-    }
+  //    return res;
+  //  } else {
+  //    // give an error
+  //    LOG_INFO(wxT("BR24radar_pi: Matrix exception Dimensions does not match"));
+  //  }
 
-    // return an empty matrix (this never happens but just for safety)
-    return Matrix();
-  }
+  //  // return an empty matrix (this never happens but just for safety)
+  //  return Matrix();
+  //}
 
-  // division of Matrix with double
-  friend Matrix operator/(const Matrix& a, const double b) {
-    Matrix res = a;
-    res.Divide(b);
-    return res;
-  }
+  //// division of Matrix with double
+  //Matrix operator/(const Matrix& a, const double b) {
+  //  Matrix res = a;
+  //  res.Divide(b);
+  //  return res;
+  //}
 
-  // division of double with Matrix
-  friend Matrix operator/(const double b, const Matrix& a) {
-    Matrix b_matrix(1, 1);
-    b_matrix(1, 1) = b;
+  //// division of double with Matrix
+  //friend Matrix operator/(const double b, const Matrix& a) {
+  //  Matrix b_matrix(1, 1);
+  //  b_matrix(1, 1) = b;
 
-    Matrix res = b_matrix / a;
-    return res;
-  }
+  //  Matrix res = b_matrix / a;
+  //  return res;
+  //}
 
   /**
   * returns the minor from the given matrix where
   * the selected row and column are removed
   */
-  Matrix Minor(const int row, const int col) const {
+  Matrix Matrix::Minor(const int row, const int col) const {
     Matrix res;
     if (row > 0 && row <= rows && col > 0 && col <= cols) {
       res = Matrix(rows - 1, cols - 1);
@@ -365,7 +358,7 @@ class Matrix {
         }
       }
     } else {
-      throw Exception("Index for minor out of range");
+      LOG_INFO(wxT("BR24radar_pi: Matrix exception Index for minor out of range"));
     }
 
     return res;
@@ -377,7 +370,7 @@ class Matrix {
   * and for i=2 the function returns the number of columns
   * else the function returns 0
   */
-  int Size(const int i) const {
+  int Matrix::Size(const int i) const {
     if (i == 1) {
       return rows;
     } else if (i == 2) {
@@ -386,51 +379,37 @@ class Matrix {
     return 0;
   }
 
-  // returns the number of rows
-  int GetRows() const { return rows; }
+  
 
-  // returns the number of columns
-  int GetCols() const { return cols; }
+  
 
-  // print the contents of the matrix
-  void Print() const {
-    if (p != NULL) {
-      printf("[");
-      for (int r = 0; r < rows; r++) {
-        if (r > 0) {
-          printf(" ");
-        }
-        for (int c = 0; c < cols - 1; c++) {
-          printf("%.2f, ", p[r][c]);
-        }
-        if (r < rows - 1) {
-          printf("%.2f;\n", p[r][cols - 1]);
-        } else {
-          printf("%.2f]\n", p[r][cols - 1]);
-        }
-      }
-    } else {
-      // matrix is empty
-      printf("[ ]\n");
-    }
-  }
+  //// print the contents of the matrix
+  //void Print() const {
+  //  if (p != NULL) {
+  //    printf("[");
+  //    for (int r = 0; r < rows; r++) {
+  //      if (r > 0) {
+  //        printf(" ");
+  //      }
+  //      for (int c = 0; c < cols - 1; c++) {
+  //        printf("%.2f, ", p[r][c]);
+  //      }
+  //      if (r < rows - 1) {
+  //        printf("%.2f;\n", p[r][cols - 1]);
+  //      } else {
+  //        printf("%.2f]\n", p[r][cols - 1]);
+  //      }
+  //    }
+  //  } else {
+  //    // matrix is empty
+  //    printf("[ ]\n"));
+  //  }
+  //}
 
- public:
-  // destructor
-  ~Matrix() {
-    // clean up allocated memory
-    for (int r = 0; r < rows; r++) {
-      delete p[r];
-    }
-    delete p;
-    p = NULL;
-  }
+ /*public:*/
+  
 
- private:
-  int rows;
-  int cols;
-  double** p;  // pointer to a matrix with doubles
-};
+ 
 
 /*
 * i.e. for i=1 the function returns the number of rows,
@@ -476,31 +455,31 @@ Matrix Diag(const int n) {
 * @param  v a vector
 * @return a diagonal matrix with the given vector v on the diagonal
 */
-Matrix Diag(const Matrix& v) {
-  Matrix res;
-  if (v.GetCols() == 1) {
-    // the given matrix is a vector n x 1
-    int rows = v.GetRows();
-    res = Matrix(rows, rows);
-
-    // copy the values of the vector to the matrix
-    for (int r = 1; r <= rows; r++) {
-      res(r, r) = v.get(r, 1);
-    }
-  } else if (v.GetRows() == 1) {
-    // the given matrix is a vector 1 x n
-    int cols = v.GetCols();
-    res = Matrix(cols, cols);
-
-    // copy the values of the vector to the matrix
-    for (int c = 1; c <= cols; c++) {
-      res(c, c) = v.get(1, c);
-    }
-  } else {
-    throw Exception("Parameter for diag must be a vector");
-  }
-  return res;
-}
+//Matrix::Diag(const Matrix& v) {
+//  Matrix res;
+//  if (v.GetCols() == 1) {
+//    // the given matrix is a vector n x 1
+//    int rows = v.GetRows();
+//    res = Matrix(rows, rows);
+//
+//    // copy the values of the vector to the matrix
+//    for (int r = 1; r <= rows; r++) {
+//      res(r, r) = v.get(r, 1);
+//    }
+//  } else if (v.GetRows() == 1) {
+//    // the given matrix is a vector 1 x n
+//    int cols = v.GetCols();
+//    res = Matrix(cols, cols);
+//
+//    // copy the values of the vector to the matrix
+//    for (int c = 1; c <= cols; c++) {
+//      res(c, c) = v.get(1, c);
+//    }
+//  } else {
+//    LOG_INFO(wxT("BR24radar_pi: Matrix exception Parameter for diag must be a vector");
+//  }
+//  return res;
+//}
 
 /*
 * returns the determinant of Matrix a
@@ -528,7 +507,7 @@ double Det(const Matrix& a) {
       }
     }
   } else {
-    throw Exception("Matrix must be square");
+    LOG_INFO(wxT("BR24radar_pi: Matrix exception Matrix must be square"));
   }
   return d;
 }
@@ -614,9 +593,9 @@ Matrix Inv(const Matrix& a) {
     }
   } else {
     if (rows == cols) {
-      throw Exception("Matrix must be square");
+      LOG_INFO(wxT("BR24radar_pi: Matrix exception Matrix must be square"));
     } else {
-      throw Exception("Determinant of matrix is zero");
+      LOG_INFO(wxT("BR24radar_pi: Matrix exception Determinant of matrix is zero"));
     }
   }
   return res;

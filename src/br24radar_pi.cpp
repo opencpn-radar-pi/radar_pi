@@ -34,6 +34,7 @@
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
 #include "RadarMarpa.h"
+#include "Kalman.h"
 
 
 PLUGIN_BEGIN_NAMESPACE
@@ -156,7 +157,9 @@ int br24radar_pi::Init(void) {
     m_pconfig = GetOCPNConfigObject();
     m_first_init = false;
   }
-
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman voor demo"));
+  KalmanDemo();
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman na demo"));
   // Font can change so initialize every time
   m_font = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
   m_fat_font = m_font;

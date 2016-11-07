@@ -37,8 +37,10 @@
 
 #include "Kalman.h"
 #include <random>  // $$$ remove later
-#include "Matrix.cpp"
+#include "Matrix.h"
 #include "br24radar_pi.h"
+
+
 PLUGIN_BEGIN_NAMESPACE
 
 //  tracker.m The MATLAB - file for the paper on Kalman filtering
@@ -46,9 +48,11 @@ PLUGIN_BEGIN_NAMESPACE
 // Converted and adapted for C++ by Douwe Fokkema
 
 // $$$ for test only
+
 std::random_device rd;
 std::mt19937 gen(rd());
 std::normal_distribution<> distr(0, 1);
+
 
 //  Variables for the plot
 double TRUERANGE;
@@ -67,13 +71,16 @@ double TRUEY;
 double jac_a;
 double jac_b;
 
-void Kalman_Filter::KalmanDemo() {
+
+
+void KalmanDemo() {
+    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman entry"));
   Matrix axlar(4, 1);
   axlar(1, 1) = 0.;
   axlar(2, 1) = 12000.;
   axlar(3, 1) = 0.;
   axlar(4, 1) = 12000.;
-
+  LOG_INFO(wxT("BR24radar_pi: $$$ axlar done"));
   // hold on
   //  The target start position
 
@@ -123,7 +130,8 @@ void Kalman_Filter::KalmanDemo() {
 
   Matrix XP(4, 1);  // Estimate (expected) position of target
 
-  Matrix Z(1, 2);  // Observation vector
+ // Matrix Z(1, 2);  // Observation vector
+  Matrix ZT(2, 1);  // Transpose of Z
 
   Matrix E(4, 1);  //  The difference between estimate and measurement
 
@@ -144,14 +152,14 @@ void Kalman_Filter::KalmanDemo() {
   ESTY = 10050.;
 
   double RR = ESTRANGE * ESTRANGE / 36481;
-  Matrix R(1, 4);  // Measurement error covariance matrix, depends on radar charasteristics
+  Matrix R(2, 2);  // Measurement error covariance matrix, depends on radar charasteristics
   R(1, 1) = 625.;
   R(2, 2) = RR;
 
   Matrix K(1, 4);  // Kalman gain
-
   //  The main loop of the file
   for (int k = 1; k <= 135; k++) {
+      LOG_INFO(wxT("BR24radar_pi: $$$ Kalman start loop k= %i"),k);
     //  Part 1 of the target path
     if (k < 20) {
       TRUEX = TRUEX + 50;
@@ -227,7 +235,7 @@ void Kalman_Filter::KalmanDemo() {
     //  To Cartesian coordinates to be able to plot the measurements
     MATX = MATRANGE * cos(MATANGLE);
     MATY = MATRANGE * sin(MATANGLE);
-
+    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman start k=%i, TRUEX= %f, TRUEY= %f, MATX= %f, MATY= %f"), k, TRUEX, TRUEY, MATX, MATY);
     //  Calculation of the Jacobi matrix for A
     jac_a = cos(DELTAANGLE);
     jac_b = sin(DELTAANGLE);
@@ -251,19 +259,18 @@ void Kalman_Filter::KalmanDemo() {
 
     //  Predict state
     XP = A * X;
+    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman XP(1,1)= %f, XP(2,1)= %f, XP(3,1)= %f, XP(4,1)= %f"), XP(1, 1), XP(2, 1), XP(3, 1), XP(4, 1));
     //  The measurement
     dist = MATRANGE * cos(MATANGLE - ESTANGLE) - ESTRANGE;
     angular = MATRANGE * tan(MATANGLE - ESTANGLE);
-
-    Z(1, 1) = dist;
-    Z(2, 1) = angular;
+    ZT(1, 1) = dist;
+    ZT(2, 1) = angular;
     // Z = [dist angular]';
     //  The difference between estimate and measurement
-    E = Z - H * XP;
+    E = ZT - H * XP;
     EX = E(1, 1);
     EY = E(2, 1);
     PX = P(1, 1);
-
     PXX = 5 * (sqrt(PX));
     PY = P(2, 1);
     PYY = 5 * (sqrt(PX));
@@ -298,7 +305,6 @@ void Kalman_Filter::KalmanDemo() {
     } else {  //  maneuvering target
       PP = A * P * AT + Q2;
     }
-
     //  Calculation of Kalman gain
     H1T(1, 1) = H1(1, 1);
     H1T(2, 1) = H1(1, 2);
@@ -312,7 +318,7 @@ void Kalman_Filter::KalmanDemo() {
 
     K = PP * H1T * Inv(H * PP * HT + R);
     //  Calculation of the estimate
-    X = XP + K * (Z - H * XP);
+    X = XP + K * (ZT - H * XP);
     //  Calculate the angle and range differences between old and new estimate
     DELTAANGLE = atan(X(4, 1) / ESTRANGE);
     double DELTARANGE = X(3, 1);
