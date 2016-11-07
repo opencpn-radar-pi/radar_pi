@@ -49,9 +49,9 @@ you can quick-print the content of a matrix in the console with:
 A.Print();
 */
 
-#include <math.h>
-#include <cstdio>
-#include <cstdlib>
+//#include <math.h>
+//#include <cstdio>
+//#include <cstdlib>
 
 #include "br24radar_pi.h"
 
@@ -66,14 +66,14 @@ PLUGIN_BEGIN_NAMESPACE
 //  }
 
 // Declarations
-class Matrix;
-double Det(const Matrix& a);
-Matrix Diag(const int n);
-Matrix Diag(const Matrix& v);
-Matrix Inv(const Matrix& a);
-Matrix Ones(const int rows, const int cols);
-int Size(const Matrix& a, const int i);
-Matrix Zeros(const int rows, const int cols);
+//class Matrix;
+//double Det(const Matrix& a);
+//Matrix Diag(const int n);
+//Matrix Diag(const Matrix& v);
+//Matrix Inv(const Matrix& a);
+//Matrix Ones(const int rows, const int cols);
+//int Size(const Matrix& a, const int i);
+//Matrix Zeros(const int rows, const int cols);
 
 /*
 * a simple exception class
