@@ -81,8 +81,8 @@ void Kalman_Filter::KalmanDemo() {
   TRUEY = 10000.;
   //  Variables used to create the target track
   int ACC = 1;
-  float SVANGVINKEL1 = 0.14;
-  float SVANGVINKEL2 = 0.45;
+  double SVANGVINKEL1 = 0.14;
+  double SVANGVINKEL2 = 0.45;
 
   //  Initial values
   bool maneuvring = false;
