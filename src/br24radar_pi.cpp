@@ -157,9 +157,7 @@ int br24radar_pi::Init(void) {
     m_pconfig = GetOCPNConfigObject();
     m_first_init = false;
   }
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman voor demo"));
-  KalmanDemo();
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman na demo"));
+  
   // Font can change so initialize every time
   m_font = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
   m_fat_font = m_font;

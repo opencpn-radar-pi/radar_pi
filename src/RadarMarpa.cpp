@@ -47,13 +47,15 @@ RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
     m_targets[i].set(pi, ri);
     m_targets[i].contour_length = 0;
-    m_targets[i].status = lost;
+    m_targets[i] = lost;
     m_targets[i].contour_length = 0;
     m_targets[i].nr_of_log_entries = 0;
     m_targets[i].lost_count = 0;
     m_targets[i].last_O_update = time(0);
   }
+  
   LOG_INFO(wxT("BR24radar_pi: $$$ radarmarpa creator ready"));
+
 }
 
 void ArpaTarget::set(br24radar_pi* pi, RadarInfo* ri) {
@@ -108,7 +110,7 @@ void RadarArpa::Aquire0NewTarget(Position target_pos) {
     return;
   }
   m_targets[i_target].pol = targ_pol;  // set the Polar
-  m_targets[i_target].status = aquire0;
+  m_targets[i_target] = aquire0;
   target_id_count++;
   if (target_id_count >= 100) target_id_count = 1;
   m_targets[i_target].target_id = target_id_count;
@@ -255,6 +257,7 @@ int ArpaTarget::GetContour() {
   p_own.lat = m_ri->m_history[MOD_ROTATION2048(pol.angle)].lat;  // get the position at receive time
   p_own.lon = m_ri->m_history[MOD_ROTATION2048(pol.angle)].lon;
   logbook[0].pos = Polar2Pos(pol, p_own);  // using own ship location from the time of reception
+  logbook[0].pp = pol;
   nr_of_log_entries++;
   if (nr_of_log_entries > SIZE_OF_LOG) {
     nr_of_log_entries = SIZE_OF_LOG;
@@ -342,6 +345,11 @@ void RadarArpa::DrawArpaTargets() {
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
     if (m_targets[i].status != lost) {
       DrawContour(m_targets[i]);
+     /* if (m_targets[i].nr_of_log_entries == 10){   // to find covariance of observations
+          for (int j = 1; j < 10; j++){
+              LOG_INFO(wxT("BR24radar_pi: $$$ logbook dist angle % i, %i"), m_targets[i].logbook[j].pp.r, m_targets[i].logbook[j].pp.angle);
+          }
+      }*/
     }
   }
 }
@@ -686,6 +694,11 @@ void RadarArpa::PassARPATargetsToOCPN() {
       m_targets[i].PassARPAtoOCPN();
     }
   }
+}
+
+void ArpaTarget::operator=(target_status stat){
+    status = stat;
+    LOG_INFO(wxT("BR24radar_pi: $$$ target_status updated"));
 }
 
 PLUGIN_END_NAMESPACE

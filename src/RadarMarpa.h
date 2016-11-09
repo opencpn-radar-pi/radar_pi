@@ -33,14 +33,20 @@
 #ifndef _RADAR_MARPA_H_
 #define _RADAR_MARPA_H_
 
-#include "br24radar_pi.h"
-//#include "RadarInfo.h"
+//#include "pi_common.h"
+
+//#include "br24radar_pi.h"
+#include "Kalman.h"
+#include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
+//    Forward definitions
+class Kalman_Filter;
+
 #define NUMBER_OF_TARGETS (20)
 #define OFF_LOCATION (30)
-#define SIZE_OF_LOG (5)
+#define SIZE_OF_LOG (100)
 #define MAX_CONTOUR_LENGTH (600)
 #define MAX_LOST_COUNT (6)
 
@@ -86,6 +92,7 @@ class Polar {
 class LogEntry {
  public:
   wxLongLong time;  // wxGetUTCTimeMillis
+  Polar pp;
   Position pos;
   double speed;
   double course;
@@ -125,6 +132,7 @@ class ArpaTarget {
   bool GetTarget();
   void RefreshTarget();
   void PassARPAtoOCPN();
+  void operator=(target_status stat);
 };
 
 class RadarArpa {
@@ -138,6 +146,7 @@ class RadarArpa {
   ArpaTarget* m_targets;
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
+  Kalman_Filter* m_kalman;
   //  Polar Pos2Polar(Position p, Position own_ship);
   int NextEmptyTarget();
 

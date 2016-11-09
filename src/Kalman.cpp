@@ -29,30 +29,13 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************
  The filter used here is an "Extended Kalman Filter", for a general introduction see Wikipedia.
- This specific implementation is based on the paper: Kalman filtering. With a radar tracking implementation.
- by Fredrik Svanström, Linaeus Univerity, Kalmar, Sweden. This paper describes the tracking used in the
- Saab military surveillance radar PS-90, see: http://www.diva-portal.org/smash/get/diva2:668963/fulltext01.pdf
- The paper above gives an implementation of the tracker in Matlab code, which was used for this implementation.
+ 
  */
 
 #include "Kalman.h"
-#include <random>  // $$$ remove later
-#include "Matrix.h"
-#include "br24radar_pi.h"
 
 
 PLUGIN_BEGIN_NAMESPACE
-
-//  tracker.m The MATLAB - file for the paper on Kalman filtering
-//  Made by Fredrik Svanström 2013
-// Converted and adapted for C++ by Douwe Fokkema
-
-// $$$ for test only
-
-std::random_device rd;
-std::mt19937 gen(rd());
-std::normal_distribution<> distr(0, 1);
-
 
 //  Variables for the plot
 double TRUERANGE;
@@ -72,46 +55,42 @@ double jac_a;
 double jac_b;
 
 
+Kalman_Filter::Kalman_Filter(Position init_position, double init_speed, double init_course){
+    
+    Q1 = Matrix(4, 4);
+    Q2 = Matrix(4, 4);
+    Q1(3, 3) = 2.;
+    Q1(4, 4) = 2.;
 
-void KalmanDemo() {
+    //  Matrix Q2(4, 4);
+    Q2(3, 3) = 20.;  // Error covariance matrix when maneuvring
+    Q2(4, 4) = 20.;
+    Q1 = Q1 + Q2;
+
+    LOG_INFO(wxT("BR24radar_pi: $$$ XXXXXXXXXXXXXXXXXXXXXXXXXX %f"), Q1(4, 4));
+
+    H = Matrix(2, 4);  // Observation matrix
+    H(1, 1) = 1.; 
+    H(2, 2) = 1.;
+
+    HT = Matrix(4, 2);  // Transpose of observation matrix
+    HT(1, 1) = 1.;
+    HT(2, 2) = 1.;
+
+    H1 = Matrix(2, 4);   // Variable observation matrix
+    Matrix H1T(4, 2);  // Transposed H1
+
+
+    
+}
+
+Kalman_Filter::~Kalman_Filter(){
+
+}
+
+void Kalman_Filter::Kalman_Next_Estimate(int delta_t, Position* x) {
     LOG_INFO(wxT("BR24radar_pi: $$$ Kalman entry"));
-  Matrix axlar(4, 1);
-  axlar(1, 1) = 0.;
-  axlar(2, 1) = 12000.;
-  axlar(3, 1) = 0.;
-  axlar(4, 1) = 12000.;
-  LOG_INFO(wxT("BR24radar_pi: $$$ axlar done"));
-  // hold on
-  //  The target start position
-
-  TRUEX = 950.;
-  TRUEY = 10000.;
-  //  Variables used to create the target track
-  int ACC = 1;
-  double SVANGVINKEL1 = 0.14;
-  double SVANGVINKEL2 = 0.45;
-
-  //  Initial values
-  bool maneuvring = false;
-
-  Matrix Q1(4, 4);  // Error covariance matrix when not maneuvring
-  Q1(3, 3) = 100.;
-  Q1(4, 4) = 100.;
-
-  Matrix Q2(4, 4);
-  Q2(3, 3) = 3600.;  // Error covariance matrix when maneuvring
-  Q2(4, 4) = 3600.;
-
-  Matrix H(2, 4);  // Observation matrix
-  H(1, 1) = 1.;
-  H(2, 2) = 1.;
-
-  Matrix HT(4, 2);  // Transpose of observation matrix
-  HT(1, 1) = 1.;
-  HT(2, 2) = 1.;
-
-  Matrix H1(2, 4);   // Variable observation matrix
-  Matrix H1T(4, 2);  // Translated H1
+    
 
   Matrix P(4, 4);  // Error covariance matrix, initial values
   P(1, 1) = 1000.;
@@ -122,7 +101,9 @@ void KalmanDemo() {
   Matrix PP(4, 4);  // Error covariance matrix
 
   Matrix X(4, 1);  // Target position and speed
-  X(3, 1) = 5.;    // Initial values
+  //X(1, 1) = 950.;  //not in original
+  //X(2, 1) = 10000.;
+  X(3, 1) = 5.;    // Initial values of speed
   X(4, 1) = -45.;
 
   Matrix A(4, 4);   // The Jacobi state transition matrix
@@ -160,78 +141,13 @@ void KalmanDemo() {
   //  The main loop of the file
   for (int k = 1; k <= 135; k++) {
       LOG_INFO(wxT("BR24radar_pi: $$$ Kalman start loop k= %i"),k);
-    //  Part 1 of the target path
-    if (k < 20) {
-      TRUEX = TRUEX + 50;
-    }
-    //  Part 2 of the target path, acceleration
-    if (k >= 20) {
-      if (k < 27) {
-        TRUEX = TRUEX + 50 + 20 * ACC;
-        ACC = ACC + 1;
-      }
-    }
-    //  Part 3 of the target path
-    if (k >= 27) {
-      if (k < 60) {
-        TRUEX = TRUEX + 200;
-      }
-    }
-    //  Part 4 of the target path, turning at 3g
-    if (k >= 60) {
-      if (k < 83) {
-        double SVANGMITTX1 = 9410;
-        double SVANGMITTY1 = 8550;
-        TRUEX = SVANGMITTX1 + 1450 * sin(SVANGVINKEL1);
-        TRUEY = SVANGMITTY1 + 1450 * cos(SVANGVINKEL1);
-        SVANGVINKEL1 = SVANGVINKEL1 + 0.14;
-      }
-    }
-    //  Part 5 of the target path
-    if (k >= 83) {
-      if (k < 95) {
-        TRUEX = TRUEX - 200;
-      }
-    }
-    //  Part 6 of the target path when the target is not visible
-    if (k >= 95) {
-      if (k < 103) {
-        TRUEX = TRUEX - 200000;
-        TRUEY = TRUEX - 200000;
-      }
-    }
-    //  Part 7 of the target path, the target is now visible again
-    if (k == 103) {
-      TRUEX = 5296;
-      TRUEY = 7104;
-    }
-    if (k >= 103) {
-      if (k < 115) {
-        TRUEX = TRUEX - 200;
-        TRUEY = TRUEY;
-      }
-    }
-    //  Part 8 of the target path, turning at 9g
-    if (k >= 115) {
-      if (k < 122) {
-        int SVANGMITTX2 = 2896;
-        int SVANGMITTY2 = 6654;
-        TRUEX = SVANGMITTX2 - 455 * sin(SVANGVINKEL2);
-        TRUEY = SVANGMITTY2 + 455 * cos(SVANGVINKEL2);
-        SVANGVINKEL2 = SVANGVINKEL2 + 0.45;
-      }
-    }
-    //  Part 9 of the target path
-    if (k >= 122) {
-      TRUEX = TRUEX + 200.;
-    }
-
+    
     //  To polar coordinates
     TRUERANGE = sqrt(TRUEX * TRUEX + TRUEY * TRUEY);
     TRUEANGLE = atan(TRUEY / TRUEX);
     //  Adding measurement noise
-    MATRANGE = TRUERANGE + 25 * distr(gen);
-    MATANGLE = TRUEANGLE + 0.005 * distr(gen);
+ //   MATRANGE = TRUERANGE + 25 * distr(gen);
+ //   MATANGLE = TRUEANGLE + 0.005 * distr(gen);
     //  To Cartesian coordinates to be able to plot the measurements
     MATX = MATRANGE * cos(MATANGLE);
     MATY = MATRANGE * sin(MATANGLE);
@@ -239,35 +155,37 @@ void KalmanDemo() {
     //  Calculation of the Jacobi matrix for A
     jac_a = cos(DELTAANGLE);
     jac_b = sin(DELTAANGLE);
-    A(1, 3) = jac_a;
-    A(1, 4) = jac_b;
-    A(2, 3) = -jac_b;
-    A(2, 4) = jac_a;
+    A(1, 1) = jac_a;
+    A(1, 2) = jac_b;
+    A(2, 1) = -jac_b;
+    A(2, 2) = jac_a;
     A(3, 3) = jac_a;
     A(3, 4) = jac_b;
     A(4, 3) = -jac_b;
     A(4, 4) = jac_a;
 
-    AT(3, 1) = jac_a;
-    AT(4, 1) = jac_b;
-    AT(3, 2) = -jac_b;
-    AT(4, 2) = jac_a;
+    AT(1, 1) = jac_a;
+    AT(2, 1) = jac_b;
+    AT(1, 2) = -jac_b;
+    AT(2, 2) = jac_a;
     AT(3, 3) = jac_a;
     AT(4, 3) = jac_b;
     AT(3, 4) = -jac_b;
     AT(4, 4) = jac_a;
 
     //  Predict state
+    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman X(1,1)= %f, X(2,1)= %f, X(3,1)= %f, X(4,1)= %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
     XP = A * X;
+    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman X(1,1)= %f, X(2,1)= %f, X(3,1)= %f, X(4,1)= %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
     LOG_INFO(wxT("BR24radar_pi: $$$ Kalman XP(1,1)= %f, XP(2,1)= %f, XP(3,1)= %f, XP(4,1)= %f"), XP(1, 1), XP(2, 1), XP(3, 1), XP(4, 1));
     //  The measurement
-    dist = MATRANGE * cos(MATANGLE - ESTANGLE) - ESTRANGE;
+    dist = MATRANGE * cos(MATANGLE - ESTANGLE) - ESTRANGE;  // diff between measured and estimated
     angular = MATRANGE * tan(MATANGLE - ESTANGLE);
     ZT(1, 1) = dist;
     ZT(2, 1) = angular;
     // Z = [dist angular]';
     //  The difference between estimate and measurement
-    E = ZT - H * XP;
+    E = ZT - H * XP;   // seems to be wrong
     EX = E(1, 1);
     EY = E(2, 1);
     PX = P(1, 1);
