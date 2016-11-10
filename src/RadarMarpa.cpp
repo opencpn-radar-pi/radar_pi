@@ -47,7 +47,7 @@ RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
     m_targets[i].set(pi, ri);
     m_targets[i].contour_length = 0;
-    m_targets[i] = lost;
+    m_targets[i].status = lost;
     m_targets[i].contour_length = 0;
     m_targets[i].nr_of_log_entries = 0;
     m_targets[i].lost_count = 0;
@@ -110,7 +110,7 @@ void RadarArpa::Aquire0NewTarget(Position target_pos) {
     return;
   }
   m_targets[i_target].pol = targ_pol;  // set the Polar
-  m_targets[i_target] = aquire0;
+  m_targets[i_target].status = aquire0;
   target_id_count++;
   if (target_id_count >= 100) target_id_count = 1;
   m_targets[i_target].target_id = target_id_count;
@@ -379,6 +379,10 @@ void ArpaTarget::RefreshTarget() {
     if (pol.r >= RETURNS_PER_LINE || pol.r <= 0) {
       LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets r too large or negative r = %i"), pol.r);
       status = lost;
+      if (m_kalman){
+          m_kalman->~Kalman_Filter();  // delete the filter
+          LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
+      }
       contour_length = 0;
       nr_of_log_entries = 0;
       lost_count = 0;
@@ -390,6 +394,10 @@ void ArpaTarget::RefreshTarget() {
   if (GetTarget()) {
     // target refreshed
     lost_count = 0;
+    if (status > aquire2) {
+        pol.angle = (expected.angle + pol.angle) / 2;
+        pol.angle = (expected.r + pol.r) / 2;
+    }
     switch (status) {
       case aquire0:
         status = aquire1;
@@ -397,7 +405,8 @@ void ArpaTarget::RefreshTarget() {
         break;
       case aquire1:
         status = aquire2;
-        //       LOG_INFO(wxT("BR24radar_pi: $$$ true case =aquire2 "));
+        m_kalman = new Kalman_Filter(logbook[0].pos, logbook[0].speed, logbook[0].course);
+        //       LOG_INFO(wxT("BR24radar_pi: $$$ true case =aquire2 , kalman filter made"));
         break;
       case aquire2:
         status = aquire3;
@@ -417,12 +426,20 @@ void ArpaTarget::RefreshTarget() {
     switch (status) {
       case aquire0:
         status = lost;
+        if (m_kalman){
+            m_kalman->~Kalman_Filter();  // delete the filter
+            LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
+        }
         contour_length = 0;
         nr_of_log_entries = 0;
         lost_count = 0;
         break;
       case aquire1:
         status = lost;
+        if (m_kalman){
+            m_kalman->~Kalman_Filter();  // delete the filter
+            LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
+        }
         contour_length = 0;
         nr_of_log_entries = 0;
         lost_count = 0;
@@ -434,6 +451,10 @@ void ArpaTarget::RefreshTarget() {
           break;  // give it another chance
         } else {
           status = lost;
+          if (m_kalman){
+              m_kalman->~Kalman_Filter();  // delete the filter
+              LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
+          }
           contour_length = 0;
           nr_of_log_entries = 0;
           lost_count = 0;
@@ -448,6 +469,10 @@ void ArpaTarget::RefreshTarget() {
           break;  // try again next sweep
         } else {
           status = lost;
+          if (m_kalman){
+              m_kalman->~Kalman_Filter();  // delete the filter
+              LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
+          }
           //         LOG_INFO(wxT("BR24radar_pi: $$$ case aquire3  or active lost"));
           contour_length = 0;
           nr_of_log_entries = 0;
@@ -538,7 +563,7 @@ void ArpaTarget::UpdatePolar() {
 
 void ArpaTarget::CalculateSpeedandCourse() {
   int nr = nr_of_log_entries - 1;
-  if (nr > 4) nr = 4;  // calculate speed over the last 4 positions
+  if (nr > 10) nr = 10;  // calculate speed over the last 4 positions
   if (nr <= 0) return;
   double lat1 = logbook[nr].pos.lat;
   double lat2 = logbook[0].pos.lat;
@@ -696,9 +721,12 @@ void RadarArpa::PassARPATargetsToOCPN() {
   }
 }
 
-void ArpaTarget::operator=(target_status stat){
-    status = stat;
-    LOG_INFO(wxT("BR24radar_pi: $$$ target_status updated"));
+MetricPoint Conv(Position p) {
+    MetricPoint q;
+    q.lat = p.lat * 60 * 1852;
+    q.lon = p.lat * 60 * 1852;
+    q.lon *= cos(deg2rad(p.lat));
+    return q;
 }
 
 PLUGIN_END_NAMESPACE

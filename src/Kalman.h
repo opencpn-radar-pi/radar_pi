@@ -55,6 +55,7 @@ public:
     Matrix H1;   // Variable observation matrix
     Matrix H1T;  // Transposed H1
     bool maneuvring;
+    Matrix X; // estimated target position and speed
 };
 
 

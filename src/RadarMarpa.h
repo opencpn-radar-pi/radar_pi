@@ -43,6 +43,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 //    Forward definitions
 class Kalman_Filter;
+class Metric_Point;
 
 #define NUMBER_OF_TARGETS (20)
 #define OFF_LOCATION (30)
@@ -64,10 +65,13 @@ enum target_status {
   active
 };
 
+
+
 class Position {
  public:
   double lat;
   double lon;
+  
   Position operator-(Position p) {
     Position q;
     q.lat = lat - p.lat;
@@ -80,6 +84,7 @@ class Position {
     q.lon = lon + p.lon;
     return q;
   }
+  
 };
 
 class Polar {
@@ -105,6 +110,7 @@ class ArpaTarget {
   RadarInfo* m_ri;
   br24radar_pi* m_pi;
   int target_id;
+  Kalman_Filter* m_kalman;
   wxLongLong t_refresh;  // time of last refresh
   int nr_of_log_entries;
   LogEntry logbook[SIZE_OF_LOG];  // stores positions, time course and speed
@@ -132,7 +138,7 @@ class ArpaTarget {
   bool GetTarget();
   void RefreshTarget();
   void PassARPAtoOCPN();
-  void operator=(target_status stat);
+  
 };
 
 class RadarArpa {
@@ -145,8 +151,7 @@ class RadarArpa {
   int GetTargetHeight(int angle, int rad);
   ArpaTarget* m_targets;
   br24radar_pi* m_pi;
-  RadarInfo* m_ri;
-  Kalman_Filter* m_kalman;
+  RadarInfo* m_ri;  
   //  Polar Pos2Polar(Position p, Position own_ship);
   int NextEmptyTarget();
 
@@ -170,6 +175,8 @@ class MetricPoint {
     return p;
   }
 
+  MetricPoint Conv(Position p);
+
   double Dist(MetricPoint p2) {
     double dist = sqrt((p2.lat - lat) * (p2.lat - lat) + (p2.lon - lon) * (p2.lon - lon));
     return dist;
@@ -180,11 +187,11 @@ class MetricPoint {
     return bear;
   }
 
-  void operator=(Position p) {
+ /* void Conv(Position p);*//* {
     lat = p.lat * 60 * 1852;
     lon = p.lat * 60 * 1852;
     lon *= cos(deg2rad(p.lat));
-  }
+  }*/
 
   MetricPoint operator+(MetricPoint p) {
     MetricPoint q;

@@ -80,7 +80,18 @@ Kalman_Filter::Kalman_Filter(Position init_position, double init_speed, double i
     H1 = Matrix(2, 4);   // Variable observation matrix
     Matrix H1T(4, 2);  // Transposed H1
 
+//    MetricPoint xx = Conv(init_position);
+    //Matrix X(4, 1);
+    //X(4, 1) = xx.lat;
+    //X(4, 2) = xx.lon;
+    //X(4, 3) = init_speed * cos(deg2rad(init_course)) * 1852 / 3600; // north speed in m / sec
+    //X(4, 4) = init_speed * sin(deg2rad(init_course)) * 1852 / 3600; // east speed in m / sec
 
+    Matrix P(4, 4);  // Error covariance matrix, initial values
+    P(1, 1) = 10;  // $$$ redifine!!
+    P(2, 2) = 10.;
+    P(3, 3) = 10.;
+    P(4, 4) = 10.;
     
 }
 
@@ -92,11 +103,7 @@ void Kalman_Filter::Kalman_Next_Estimate(int delta_t, Position* x) {
     LOG_INFO(wxT("BR24radar_pi: $$$ Kalman entry"));
     
 
-  Matrix P(4, 4);  // Error covariance matrix, initial values
-  P(1, 1) = 1000.;
-  P(2, 2) = 1000.;
-  P(3, 3) = 3600.;
-  P(4, 4) = 3600.;
+  
 
   Matrix PP(4, 4);  // Error covariance matrix
 
@@ -188,41 +195,41 @@ void Kalman_Filter::Kalman_Next_Estimate(int delta_t, Position* x) {
     E = ZT - H * XP;   // seems to be wrong
     EX = E(1, 1);
     EY = E(2, 1);
-    PX = P(1, 1);
-    PXX = 5 * (sqrt(PX));
-    PY = P(2, 1);
-    PYY = 5 * (sqrt(PX));
-    //  Measurement to track association
-    if (abs(EX) > (2 * PXX)) {
-      H1(1, 1) = 0.;
-      H1(2, 2) = 0.;
-    } else if (abs(EY) > (2 * PYY)) {
-      H1(1, 1) = 0.;
-      H1(2, 2) = 0.;
-    } else if (abs(EY) > 3000) {
-      H1(1, 1) = 0.;
-      H1(2, 2) = 0.;
-    } else if (abs(EY) > 3000) {
-      H1(1, 1) = 0.;
-      H1(2, 2) = 0.;
-    } else {
-      H1(1, 1) = 1.;
-      H1(2, 2) = 1.;
-    }
-    //  A check if the target is maneuvering
-    if (abs(EX) > PXX) {
-      maneuvring = true;
-    } else if (abs(EY) > PYY) {
-      maneuvring = true;
-    } else {
-      maneuvring = false;
-    }
-    //  Predict error covariance
-    if (!maneuvring) {  //  non maneuvering target
-      PP = A * P * AT + Q1;
-    } else {  //  maneuvering target
-      PP = A * P * AT + Q2;
-    }
+  //  PX = P(1, 1);
+    //PXX = 5 * (sqrt(PX));
+    //PY = P(2, 1);
+    //PYY = 5 * (sqrt(PX));
+    ////  Measurement to track association
+    //if (abs(EX) > (2 * PXX)) {
+    //  H1(1, 1) = 0.;
+    //  H1(2, 2) = 0.;
+    //} else if (abs(EY) > (2 * PYY)) {
+    //  H1(1, 1) = 0.;
+    //  H1(2, 2) = 0.;
+    //} else if (abs(EY) > 3000) {
+    //  H1(1, 1) = 0.;
+    //  H1(2, 2) = 0.;
+    //} else if (abs(EY) > 3000) {
+    //  H1(1, 1) = 0.;
+    //  H1(2, 2) = 0.;
+    //} else {
+    //  H1(1, 1) = 1.;
+    //  H1(2, 2) = 1.;
+    //}
+    ////  A check if the target is maneuvering
+    //if (abs(EX) > PXX) {
+    //  maneuvring = true;
+    //} else if (abs(EY) > PYY) {
+    //  maneuvring = true;
+    //} else {
+    //  maneuvring = false;
+    //}
+    ////  Predict error covariance
+    //if (!maneuvring) {  //  non maneuvering target
+    //  PP = A * P * AT + Q1;
+    //} else {  //  maneuvering target
+    //  PP = A * P * AT + Q2;
+    //}
     //  Calculation of Kalman gain
     H1T(1, 1) = H1(1, 1);
     H1T(2, 1) = H1(1, 2);
@@ -245,7 +252,7 @@ void Kalman_Filter::Kalman_Next_Estimate(int delta_t, Position* x) {
     ESTANGLE = ESTANGLE + DELTAANGLE;
     ESTRANGE = ESTRANGE + DELTARANGE;
     //  Calculation of error covariance
-    P = PP - K * H * PP;
+ //   P = PP - K * H * PP;
     //  To Cartesian coordinates to be able to plot the estimate
     ESTX = ESTRANGE * cos(ESTANGLE);
     ESTY = ESTRANGE * sin(ESTANGLE);
