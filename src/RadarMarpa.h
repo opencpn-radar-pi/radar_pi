@@ -110,7 +110,7 @@ class ArpaTarget {
   RadarInfo* m_ri;
   br24radar_pi* m_pi;
   int target_id;
-  Kalman_Filter* m_kalman;
+  Kalman_Filter* m_kalman = 0;
   wxLongLong t_refresh;  // time of last refresh
   int nr_of_log_entries;
   LogEntry logbook[SIZE_OF_LOG];  // stores positions, time course and speed
@@ -138,7 +138,7 @@ class ArpaTarget {
   bool GetTarget();
   void RefreshTarget();
   void PassARPAtoOCPN();
-  
+  void SetStatusLost();
 };
 
 class RadarArpa {

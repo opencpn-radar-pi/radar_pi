@@ -46,12 +46,7 @@ RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
   m_targets = new ArpaTarget[NUMBER_OF_TARGETS];
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
     m_targets[i].set(pi, ri);
-    m_targets[i].contour_length = 0;
-    m_targets[i].status = lost;
-    m_targets[i].contour_length = 0;
-    m_targets[i].nr_of_log_entries = 0;
-    m_targets[i].lost_count = 0;
-    m_targets[i].last_O_update = time(0);
+    m_targets[i].SetStatusLost();
   }
   
   LOG_INFO(wxT("BR24radar_pi: $$$ radarmarpa creator ready"));
@@ -378,14 +373,7 @@ void ArpaTarget::RefreshTarget() {
     // zooming may  cause r to be out of bounds
     if (pol.r >= RETURNS_PER_LINE || pol.r <= 0) {
       LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets r too large or negative r = %i"), pol.r);
-      status = lost;
-      if (m_kalman){
-          m_kalman->~Kalman_Filter();  // delete the filter
-          LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
-      }
-      contour_length = 0;
-      nr_of_log_entries = 0;
-      lost_count = 0;
+      SetStatusLost();
       LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
       return;
     }
@@ -425,24 +413,10 @@ void ArpaTarget::RefreshTarget() {
   } else {
     switch (status) {
       case aquire0:
-        status = lost;
-        if (m_kalman){
-            m_kalman->~Kalman_Filter();  // delete the filter
-            LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
-        }
-        contour_length = 0;
-        nr_of_log_entries = 0;
-        lost_count = 0;
+        SetStatusLost();
         break;
       case aquire1:
-        status = lost;
-        if (m_kalman){
-            m_kalman->~Kalman_Filter();  // delete the filter
-            LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
-        }
-        contour_length = 0;
-        nr_of_log_entries = 0;
-        lost_count = 0;
+          SetStatusLost();
         //     LOG_INFO(wxT("BR24radar_pi: $$$ case aquire1 lost"));
         break;
       case aquire2:
@@ -450,16 +424,8 @@ void ArpaTarget::RefreshTarget() {
         if (lost_count < 2) {
           break;  // give it another chance
         } else {
-          status = lost;
-          if (m_kalman){
-              m_kalman->~Kalman_Filter();  // delete the filter
-              LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
-          }
-          contour_length = 0;
-          nr_of_log_entries = 0;
-          lost_count = 0;
+            SetStatusLost();
           //          LOG_INFO(wxT("BR24radar_pi: $$$ case aquire2 lost"));
-          lost_count = 0;
           break;
         }
       case aquire3:
@@ -468,15 +434,7 @@ void ArpaTarget::RefreshTarget() {
         if (lost_count < MAX_LOST_COUNT) {
           break;  // try again next sweep
         } else {
-          status = lost;
-          if (m_kalman){
-              m_kalman->~Kalman_Filter();  // delete the filter
-              LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
-          }
-          //         LOG_INFO(wxT("BR24radar_pi: $$$ case aquire3  or active lost"));
-          contour_length = 0;
-          nr_of_log_entries = 0;
-          lost_count = 0;
+            SetStatusLost();
           break;
         }
       default:
@@ -531,17 +489,11 @@ void ArpaTarget::PushLogbook() {
 ArpaTarget::ArpaTarget(br24radar_pi* pi, RadarInfo* ri) {
   ArpaTarget::m_ri = ri;
   m_pi = pi;
-  status = lost;
-  contour_length = 0;
-  lost_count = 0;
-  nr_of_log_entries = 0;
+  SetStatusLost();
 }
 
 ArpaTarget::ArpaTarget() {
-  status = lost;
-  contour_length = 0;
-  lost_count = 0;
-  nr_of_log_entries = 0;
+    SetStatusLost();
 }
 
 void ArpaTarget::UpdatePolar() {
@@ -727,6 +679,20 @@ MetricPoint Conv(Position p) {
     q.lon = p.lat * 60 * 1852;
     q.lon *= cos(deg2rad(p.lat));
     return q;
+}
+
+void ArpaTarget::SetStatusLost(){
+    status = lost;
+    contour_length = 0;
+    contour_length = 0;
+    nr_of_log_entries = 0;
+    lost_count = 0;
+    last_O_update = time(0);
+    if (m_kalman){
+        m_kalman->~Kalman_Filter();  // delete the filter
+        m_kalman = 0;
+        LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
+    }
 }
 
 PLUGIN_END_NAMESPACE

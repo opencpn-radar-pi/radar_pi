@@ -29,11 +29,10 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************
  The filter used here is an "Extended Kalman Filter", for a general introduction see Wikipedia.
- 
+
  */
 
 #include "Kalman.h"
-
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -54,63 +53,57 @@ double TRUEY;
 double jac_a;
 double jac_b;
 
+Kalman_Filter::Kalman_Filter(Position init_position, double init_speed, double init_course) {
+  Q1 = Matrix(4, 4);
+  Q2 = Matrix(4, 4);
+  Q1(3, 3) = 2.;
+  Q1(4, 4) = 2.;
 
-Kalman_Filter::Kalman_Filter(Position init_position, double init_speed, double init_course){
-    
-    Q1 = Matrix(4, 4);
-    Q2 = Matrix(4, 4);
-    Q1(3, 3) = 2.;
-    Q1(4, 4) = 2.;
+  //  Matrix Q2(4, 4);
+  Q2(3, 3) = 20.;  // Error covariance matrix when maneuvring
+  Q2(4, 4) = 20.;
+  Q1 = Q1 + Q2;
 
-    //  Matrix Q2(4, 4);
-    Q2(3, 3) = 20.;  // Error covariance matrix when maneuvring
-    Q2(4, 4) = 20.;
-    Q1 = Q1 + Q2;
+  LOG_INFO(wxT("BR24radar_pi: $$$ XXXXXXXXXXXXXXXXXXXXXXXXXX %f"), Q1(4, 4));
 
-    LOG_INFO(wxT("BR24radar_pi: $$$ XXXXXXXXXXXXXXXXXXXXXXXXXX %f"), Q1(4, 4));
+  H = Matrix(2, 4);  // Observation matrix
+  H(1, 1) = 1.;
+  H(2, 2) = 1.;
 
-    H = Matrix(2, 4);  // Observation matrix
-    H(1, 1) = 1.; 
-    H(2, 2) = 1.;
+  HT = Matrix(4, 2);  // Transpose of observation matrix
+  HT(1, 1) = 1.;
+  HT(2, 2) = 1.;
 
-    HT = Matrix(4, 2);  // Transpose of observation matrix
-    HT(1, 1) = 1.;
-    HT(2, 2) = 1.;
+  H1 = Matrix(2, 4);  // Variable observation matrix
+  Matrix H1T(4, 2);   // Transposed H1
 
-    H1 = Matrix(2, 4);   // Variable observation matrix
-    Matrix H1T(4, 2);  // Transposed H1
+  //    MetricPoint xx = Conv(init_position);
+  // Matrix X(4, 1);
+  // X(4, 1) = xx.lat;
+  // X(4, 2) = xx.lon;
+  // X(4, 3) = init_speed * cos(deg2rad(init_course)) * 1852 / 3600; // north speed in m / sec
+  // X(4, 4) = init_speed * sin(deg2rad(init_course)) * 1852 / 3600; // east speed in m / sec
 
-//    MetricPoint xx = Conv(init_position);
-    //Matrix X(4, 1);
-    //X(4, 1) = xx.lat;
-    //X(4, 2) = xx.lon;
-    //X(4, 3) = init_speed * cos(deg2rad(init_course)) * 1852 / 3600; // north speed in m / sec
-    //X(4, 4) = init_speed * sin(deg2rad(init_course)) * 1852 / 3600; // east speed in m / sec
-
-    Matrix P(4, 4);  // Error covariance matrix, initial values
-    P(1, 1) = 10;  // $$$ redifine!!
-    P(2, 2) = 10.;
-    P(3, 3) = 10.;
-    P(4, 4) = 10.;
-    
+  Matrix P(4, 4);  // Error covariance matrix, initial values
+  P(1, 1) = 10;    // $$$ redifine!!
+  P(2, 2) = 10.;
+  P(3, 3) = 10.;
+  P(4, 4) = 10.;
 }
 
-Kalman_Filter::~Kalman_Filter(){
-
+Kalman_Filter::~Kalman_Filter() {
+    
 }
 
 void Kalman_Filter::Kalman_Next_Estimate(int delta_t, Position* x) {
-    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman entry"));
-    
-
-  
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman entry"));
 
   Matrix PP(4, 4);  // Error covariance matrix
 
   Matrix X(4, 1);  // Target position and speed
-  //X(1, 1) = 950.;  //not in original
-  //X(2, 1) = 10000.;
-  X(3, 1) = 5.;    // Initial values of speed
+  // X(1, 1) = 950.;  //not in original
+  // X(2, 1) = 10000.;
+  X(3, 1) = 5.;  // Initial values of speed
   X(4, 1) = -45.;
 
   Matrix A(4, 4);   // The Jacobi state transition matrix
@@ -118,7 +111,7 @@ void Kalman_Filter::Kalman_Next_Estimate(int delta_t, Position* x) {
 
   Matrix XP(4, 1);  // Estimate (expected) position of target
 
- // Matrix Z(1, 2);  // Observation vector
+  // Matrix Z(1, 2);  // Observation vector
   Matrix ZT(2, 1);  // Transpose of Z
 
   Matrix E(4, 1);  //  The difference between estimate and measurement
@@ -147,14 +140,14 @@ void Kalman_Filter::Kalman_Next_Estimate(int delta_t, Position* x) {
   Matrix K(1, 4);  // Kalman gain
   //  The main loop of the file
   for (int k = 1; k <= 135; k++) {
-      LOG_INFO(wxT("BR24radar_pi: $$$ Kalman start loop k= %i"),k);
-    
+    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman start loop k= %i"), k);
+
     //  To polar coordinates
     TRUERANGE = sqrt(TRUEX * TRUEX + TRUEY * TRUEY);
     TRUEANGLE = atan(TRUEY / TRUEX);
     //  Adding measurement noise
- //   MATRANGE = TRUERANGE + 25 * distr(gen);
- //   MATANGLE = TRUEANGLE + 0.005 * distr(gen);
+    //   MATRANGE = TRUERANGE + 25 * distr(gen);
+    //   MATANGLE = TRUEANGLE + 0.005 * distr(gen);
     //  To Cartesian coordinates to be able to plot the measurements
     MATX = MATRANGE * cos(MATANGLE);
     MATY = MATRANGE * sin(MATANGLE);
@@ -184,7 +177,8 @@ void Kalman_Filter::Kalman_Next_Estimate(int delta_t, Position* x) {
     LOG_INFO(wxT("BR24radar_pi: $$$ Kalman X(1,1)= %f, X(2,1)= %f, X(3,1)= %f, X(4,1)= %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
     XP = A * X;
     LOG_INFO(wxT("BR24radar_pi: $$$ Kalman X(1,1)= %f, X(2,1)= %f, X(3,1)= %f, X(4,1)= %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
-    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman XP(1,1)= %f, XP(2,1)= %f, XP(3,1)= %f, XP(4,1)= %f"), XP(1, 1), XP(2, 1), XP(3, 1), XP(4, 1));
+    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman XP(1,1)= %f, XP(2,1)= %f, XP(3,1)= %f, XP(4,1)= %f"), XP(1, 1), XP(2, 1), XP(3, 1),
+             XP(4, 1));
     //  The measurement
     dist = MATRANGE * cos(MATANGLE - ESTANGLE) - ESTRANGE;  // diff between measured and estimated
     angular = MATRANGE * tan(MATANGLE - ESTANGLE);
@@ -192,15 +186,15 @@ void Kalman_Filter::Kalman_Next_Estimate(int delta_t, Position* x) {
     ZT(2, 1) = angular;
     // Z = [dist angular]';
     //  The difference between estimate and measurement
-    E = ZT - H * XP;   // seems to be wrong
+    E = ZT - H * XP;  // seems to be wrong
     EX = E(1, 1);
     EY = E(2, 1);
-  //  PX = P(1, 1);
-    //PXX = 5 * (sqrt(PX));
-    //PY = P(2, 1);
-    //PYY = 5 * (sqrt(PX));
+    //  PX = P(1, 1);
+    // PXX = 5 * (sqrt(PX));
+    // PY = P(2, 1);
+    // PYY = 5 * (sqrt(PX));
     ////  Measurement to track association
-    //if (abs(EX) > (2 * PXX)) {
+    // if (abs(EX) > (2 * PXX)) {
     //  H1(1, 1) = 0.;
     //  H1(2, 2) = 0.;
     //} else if (abs(EY) > (2 * PYY)) {
@@ -217,7 +211,7 @@ void Kalman_Filter::Kalman_Next_Estimate(int delta_t, Position* x) {
     //  H1(2, 2) = 1.;
     //}
     ////  A check if the target is maneuvering
-    //if (abs(EX) > PXX) {
+    // if (abs(EX) > PXX) {
     //  maneuvring = true;
     //} else if (abs(EY) > PYY) {
     //  maneuvring = true;
@@ -225,7 +219,7 @@ void Kalman_Filter::Kalman_Next_Estimate(int delta_t, Position* x) {
     //  maneuvring = false;
     //}
     ////  Predict error covariance
-    //if (!maneuvring) {  //  non maneuvering target
+    // if (!maneuvring) {  //  non maneuvering target
     //  PP = A * P * AT + Q1;
     //} else {  //  maneuvering target
     //  PP = A * P * AT + Q2;
@@ -252,12 +246,12 @@ void Kalman_Filter::Kalman_Next_Estimate(int delta_t, Position* x) {
     ESTANGLE = ESTANGLE + DELTAANGLE;
     ESTRANGE = ESTRANGE + DELTARANGE;
     //  Calculation of error covariance
- //   P = PP - K * H * PP;
+    //   P = PP - K * H * PP;
     //  To Cartesian coordinates to be able to plot the estimate
     ESTX = ESTRANGE * cos(ESTANGLE);
     ESTY = ESTRANGE * sin(ESTANGLE);
     //  Plotting
-    //axis(axlar);
+    // axis(axlar);
     //  plot(TRUEX, TRUEY, 'b*', 'markersize', 8); The true target position
     // plot(MATX, MATY, 'k*', 'markersize', 3); //  The measurement
     // if maneuvring < 1
