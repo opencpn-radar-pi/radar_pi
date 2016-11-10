@@ -41,6 +41,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 //    Forward definitions
 class Position;
+class Matrix;
 
 class Kalman_Filter{
     
@@ -50,7 +51,7 @@ public:
     void SetMeasurement(Position measured_pos);
     void Kalman_Next_Estimate(int delta_t, Position* x);  // measured position and expected position
     
-    Matrix Q1;// Error covariance matrix when not maneuvring
+    Matrix Q1;  // Error covariance matrix when not maneuvring
     Matrix Q2;  // Error covariance matrix when maneuvring
     Matrix H;  // Observation matrix
     Matrix HT;  // Transpose of observation matrix
@@ -59,12 +60,8 @@ public:
     bool maneuvring;
     Matrix X; // estimated target position and speed and course
     Matrix Z; // measured target position and speed and course
+    Matrix P; // Error covariance matrix, initial values
 };
-
-
-
-
-
 
 PLUGIN_END_NAMESPACE
 #endif 

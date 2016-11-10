@@ -112,6 +112,26 @@ class Exception {
     }
   }
 
+  void Matrix::Extend(int row_count, int column_count){
+      // create a Matrix object with given number of rows and columns
+      p = NULL;
+
+      if (row_count > 0 && column_count > 0) {
+          rows = row_count;
+          cols = column_count;
+
+          p = new double*[rows];
+          for (int r = 0; r < rows; r++) {
+              p[r] = new double[cols];
+
+              // initially fill in zeros for all values in the matrix;
+              for (int c = 0; c < cols; c++) {
+                  p[r][c] = 0;
+              }
+          }
+      }
+  }
+
   // assignment operator
   Matrix::Matrix(const Matrix& a) {
     rows = a.rows;

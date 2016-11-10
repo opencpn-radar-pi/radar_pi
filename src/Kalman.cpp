@@ -54,34 +54,27 @@ double jac_a;
 double jac_b;
 
 Kalman_Filter::Kalman_Filter(Position init_position, double init_speed, double init_course) {
-  Matrix Q1 = Matrix(4, 4);  // Error covariance matrix when not maneuvring
-  Q1(1, 1) = 4.;
-  Matrix Q2 = Matrix(4, 4);
-  int hh = Q1.Size(1);
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman size of cc %i"), Q1.Size(1));
+  //  Matrix Q1 = Matrix(4, 4);  // Error covariance matrix when not maneuvring
+  Q1.Extend(4, 4);
+  Q2.Extend(4, 4);
   Q1(3, 3) = 2.;
   Q1(4, 4) = 2.;
 
-  //  Matrix Q2(4, 4);
+  Q2.Extend(4, 4);
   Q2(3, 3) = 20.;  // Error covariance matrix when maneuvring
   Q2(4, 4) = 20.;
-  Q1 = Q1 + Q2;
-
-  LOG_INFO(wxT("BR24radar_pi: $$$ XXXXXXXXXXXXXXXXXXXXXXXXXX %f"), Q1(4, 4));
-
-  H = Matrix(2, 4);  // Observation matrix
+  H.Extend(2, 4);  // Observation matrix
   H(1, 1) = 1.;
   H(2, 2) = 1.;
 
-  HT = Matrix(4, 2);  // Transpose of observation matrix
+  HT.Extend(4, 2);  // Transpose of observation matrix
   HT(1, 1) = 1.;
   HT(2, 2) = 1.;
-
-  H1 = Matrix(2, 4);  // Variable observation matrix
-  Matrix H1T(4, 2);   // Transposed H1
+  H1.Extend(2, 4);   // Variable observation matrix
+  H1T.Extend(4, 2);  // Transposed H1
 
   MetricPoint xx = Pos2Metric(init_position);
-  Matrix X(4, 1);  // matrix of estimate position (X circumflex in literature)
+  X.Extend(4, 1);  // matrix of estimate position (X circumflex in literature)
   X(1, 1) = xx.lat;
   X(2, 1) = xx.lon;
   X(3, 1) = init_speed * 1852. / 3600.;   // speed in m / sec
@@ -89,10 +82,10 @@ Kalman_Filter::Kalman_Filter(Position init_position, double init_speed, double i
 
   Matrix Z(2, 1);  //  measured target position and speed and course
   Z(1, 1) = xx.lat;
-  Z(2, 1) = xx.lon;
+  // Z(2, 1) = xx.lon;
 
-  Matrix P(4, 4);  // Error covariance matrix, initial values
-  P(1, 1) = 10;    // $$$ redifine!!
+  // Matrix P(4, 4);  // Error covariance matrix, initial values
+  P(1, 1) = 10;  // $$$ redifine!!
   P(2, 2) = 10.;
   P(3, 3) = 10.;
   P(4, 4) = 10.;
@@ -101,13 +94,13 @@ Kalman_Filter::Kalman_Filter(Position init_position, double init_speed, double i
 Kalman_Filter::~Kalman_Filter() {}
 
 void Kalman_Filter::SetMeasurement(Position measured_pos) {
-  // MetricPoint xx = Pos2Metric(measured_pos);
+   MetricPoint xx = Pos2Metric(measured_pos);
   /* X(1, 1) = xx.lat;
    X(2, 1) = xx.lon;*/
   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement"));
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman size of X %i"), X.Size(1));
+  
   int iii = Q1.Size(1);
-  //  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman size of Q1 %i"), Q1.Size(1));
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman size of Q1 %i"), Q1.Size(1));
   return;
 }
 
