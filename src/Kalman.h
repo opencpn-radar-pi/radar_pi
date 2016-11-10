@@ -47,15 +47,18 @@ class Kalman_Filter{
 public:
     Kalman_Filter(Position init_position, double init_speed, double init_course);
     ~Kalman_Filter();
+    void SetMeasurement(Position measured_pos);
     void Kalman_Next_Estimate(int delta_t, Position* x);  // measured position and expected position
-    Matrix Q1;  // Error covariance matrix when not maneuvring
+    
+    Matrix Q1;// Error covariance matrix when not maneuvring
     Matrix Q2;  // Error covariance matrix when maneuvring
     Matrix H;  // Observation matrix
     Matrix HT;  // Transpose of observation matrix
     Matrix H1;   // Variable observation matrix
     Matrix H1T;  // Transposed H1
     bool maneuvring;
-    Matrix X; // estimated target position and speed
+    Matrix X; // estimated target position and speed and course
+    Matrix Z; // measured target position and speed and course
 };
 
 

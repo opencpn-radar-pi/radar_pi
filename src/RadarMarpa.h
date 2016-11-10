@@ -44,6 +44,7 @@ PLUGIN_BEGIN_NAMESPACE
 //    Forward definitions
 class Kalman_Filter;
 class Metric_Point;
+class Position;
 
 #define NUMBER_OF_TARGETS (20)
 #define OFF_LOCATION (30)
@@ -87,6 +88,8 @@ class Position {
   
 };
 
+
+
 class Polar {
  public:
   int angle;
@@ -110,7 +113,8 @@ class ArpaTarget {
   RadarInfo* m_ri;
   br24radar_pi* m_pi;
   int target_id;
-  Kalman_Filter* m_kalman = 0;
+  Position measured_pos;  // the most recently measured position of the target
+  Kalman_Filter* m_kalman;
   wxLongLong t_refresh;  // time of last refresh
   int nr_of_log_entries;
   LogEntry logbook[SIZE_OF_LOG];  // stores positions, time course and speed
@@ -175,7 +179,7 @@ class MetricPoint {
     return p;
   }
 
-  MetricPoint Conv(Position p);
+  
 
   double Dist(MetricPoint p2) {
     double dist = sqrt((p2.lat - lat) * (p2.lat - lat) + (p2.lon - lon) * (p2.lon - lon));
@@ -207,6 +211,8 @@ class MetricPoint {
     return q;
   }
 };
+
+MetricPoint Pos2Metric(Position p);
 
 PLUGIN_END_NAMESPACE
 

@@ -48,9 +48,8 @@ RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
     m_targets[i].set(pi, ri);
     m_targets[i].SetStatusLost();
   }
-  
-  LOG_INFO(wxT("BR24radar_pi: $$$ radarmarpa creator ready"));
 
+  LOG_INFO(wxT("BR24radar_pi: $$$ radarmarpa creator ready"));
 }
 
 void ArpaTarget::set(br24radar_pi* pi, RadarInfo* ri) {
@@ -251,7 +250,8 @@ int ArpaTarget::GetContour() {
   Position p_own;
   p_own.lat = m_ri->m_history[MOD_ROTATION2048(pol.angle)].lat;  // get the position at receive time
   p_own.lon = m_ri->m_history[MOD_ROTATION2048(pol.angle)].lon;
-  logbook[0].pos = Polar2Pos(pol, p_own);  // using own ship location from the time of reception
+  measured_pos = Polar2Pos(pol, p_own);  // using own ship location from the time of reception
+  logbook[0].pos = measured_pos;
   logbook[0].pp = pol;
   nr_of_log_entries++;
   if (nr_of_log_entries > SIZE_OF_LOG) {
@@ -340,11 +340,12 @@ void RadarArpa::DrawArpaTargets() {
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
     if (m_targets[i].status != lost) {
       DrawContour(m_targets[i]);
-     /* if (m_targets[i].nr_of_log_entries == 10){   // to find covariance of observations
-          for (int j = 1; j < 10; j++){
-              LOG_INFO(wxT("BR24radar_pi: $$$ logbook dist angle % i, %i"), m_targets[i].logbook[j].pp.r, m_targets[i].logbook[j].pp.angle);
-          }
-      }*/
+      /* if (m_targets[i].nr_of_log_entries == 10){   // to find covariance of observations
+           for (int j = 1; j < 10; j++){
+               LOG_INFO(wxT("BR24radar_pi: $$$ logbook dist angle % i, %i"), m_targets[i].logbook[j].pp.r,
+       m_targets[i].logbook[j].pp.angle);
+           }
+       }*/
     }
   }
 }
@@ -369,6 +370,9 @@ void ArpaTarget::RefreshTarget() {
   // set new refresh time
   t_refresh = m_ri->m_history[MOD_ROTATION2048(max_angle.angle + OFF_LOCATION)].time;
   if (status > aquire1) {
+
+// get estimate
+
     UpdatePolar();  // update expected polar of target based on speed and course from the log
     // zooming may  cause r to be out of bounds
     if (pol.r >= RETURNS_PER_LINE || pol.r <= 0) {
@@ -379,12 +383,17 @@ void ArpaTarget::RefreshTarget() {
     }
   }
   expected = pol;  // $$$ test only
+  if (m_kalman){
+      m_kalman->SetMeasurement(measured_pos);
+  }
+  // get measurement
+
   if (GetTarget()) {
     // target refreshed
     lost_count = 0;
     if (status > aquire2) {
-        pol.angle = (expected.angle + pol.angle) / 2;
-        pol.angle = (expected.r + pol.r) / 2;
+      //   pol.angle = (expected.angle + pol.angle) / 2;
+      //  pol.angle = (expected.r + pol.r) / 2;
     }
     switch (status) {
       case aquire0:
@@ -393,7 +402,7 @@ void ArpaTarget::RefreshTarget() {
         break;
       case aquire1:
         status = aquire2;
-        m_kalman = new Kalman_Filter(logbook[0].pos, logbook[0].speed, logbook[0].course);
+        m_kalman = new Kalman_Filter(measured_pos, logbook[0].speed, logbook[0].course);
         //       LOG_INFO(wxT("BR24radar_pi: $$$ true case =aquire2 , kalman filter made"));
         break;
       case aquire2:
@@ -416,7 +425,7 @@ void ArpaTarget::RefreshTarget() {
         SetStatusLost();
         break;
       case aquire1:
-          SetStatusLost();
+        SetStatusLost();
         //     LOG_INFO(wxT("BR24radar_pi: $$$ case aquire1 lost"));
         break;
       case aquire2:
@@ -424,7 +433,7 @@ void ArpaTarget::RefreshTarget() {
         if (lost_count < 2) {
           break;  // give it another chance
         } else {
-            SetStatusLost();
+          SetStatusLost();
           //          LOG_INFO(wxT("BR24radar_pi: $$$ case aquire2 lost"));
           break;
         }
@@ -434,7 +443,7 @@ void ArpaTarget::RefreshTarget() {
         if (lost_count < MAX_LOST_COUNT) {
           break;  // try again next sweep
         } else {
-            SetStatusLost();
+          SetStatusLost();
           break;
         }
       default:
@@ -489,11 +498,13 @@ void ArpaTarget::PushLogbook() {
 ArpaTarget::ArpaTarget(br24radar_pi* pi, RadarInfo* ri) {
   ArpaTarget::m_ri = ri;
   m_pi = pi;
+  m_kalman = 0;
   SetStatusLost();
 }
 
-ArpaTarget::ArpaTarget() {
-    SetStatusLost();
+ArpaTarget::ArpaTarget() { 
+    m_kalman = 0;
+    SetStatusLost(); 
 }
 
 void ArpaTarget::UpdatePolar() {
@@ -619,9 +630,9 @@ void ArpaTarget::PassARPAtoOCPN() {
   s_course = wxString::Format(wxT("%3.0f"), logbook[0].course);
   target_name = wxString::Format(wxT("MARPA %2i"), target_id);
 
- /* LOG_INFO(wxT("BR24radar_pi: $$$ bearing = %f, distance = %f"), bearing, distance);
-   s_bearing = wxString::Format(wxT("%3.0f"), bearing);
-   s_distance = wxString::Format(wxT("%f"), distance);*/
+  /* LOG_INFO(wxT("BR24radar_pi: $$$ bearing = %f, distance = %f"), bearing, distance);
+    s_bearing = wxString::Format(wxT("%3.0f"), bearing);
+    s_distance = wxString::Format(wxT("%f"), distance);*/
 
   s_time = wxEmptyString;  // Not used for ARPA targets in OCPN "015200.36";
 
@@ -673,26 +684,29 @@ void RadarArpa::PassARPATargetsToOCPN() {
   }
 }
 
-MetricPoint Conv(Position p) {
-    MetricPoint q;
-    q.lat = p.lat * 60 * 1852;
-    q.lon = p.lat * 60 * 1852;
-    q.lon *= cos(deg2rad(p.lat));
-    return q;
+MetricPoint Pos2Metric(Position p){
+  MetricPoint q;
+  q.lat = p.lat * 60.* 1852.;
+  q.lon = p.lat * 60.* 1852.;
+  q.lon *= cos(deg2rad(p.lat));
+  return q;
 }
 
-void ArpaTarget::SetStatusLost(){
-    status = lost;
-    contour_length = 0;
-    contour_length = 0;
-    nr_of_log_entries = 0;
-    lost_count = 0;
-    last_O_update = time(0);
-    if (m_kalman){
-        m_kalman->~Kalman_Filter();  // delete the filter
-        m_kalman = 0;
-        LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
-    }
+void ArpaTarget::SetStatusLost() {
+  status = lost;
+  contour_length = 0;
+  contour_length = 0;
+  nr_of_log_entries = 0;
+  lost_count = 0;
+  last_O_update = time(0);
+  if (m_kalman) {
+    m_kalman->~Kalman_Filter();  // delete the filter
+    m_kalman = 0;
+    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
+  }
+  MetricPoint uu;
+  Position pp;
+  uu = Pos2Metric(pp);
 }
 
 PLUGIN_END_NAMESPACE
