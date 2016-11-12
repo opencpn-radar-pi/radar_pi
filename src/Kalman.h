@@ -33,35 +33,40 @@
 #ifndef _BR24KALMAN_H_
 #define _BR24KALMAN_H_
 
-#include "br24radar_pi.h"
 #include "Matrix.h"
 #include "RadarMarpa.h"
+#include "br24radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
 //    Forward definitions
 class Position;
 class Matrix;
+class ArpaTarget;
+class MetricPoint;
 
-class Kalman_Filter{
-    
-public:
-    Kalman_Filter(Position init_position, double init_speed, double init_course);
-    ~Kalman_Filter();
-    void SetMeasurement(Position measured_pos);
-    void Kalman_Next_Estimate(int delta_t, Position* x);  // measured position and expected position
-    
-    Matrix Q1;  // Error covariance matrix when not maneuvring
-    Matrix Q2;  // Error covariance matrix when maneuvring
-    Matrix H;  // Observation matrix
-    Matrix HT;  // Transpose of observation matrix
-    Matrix H1;   // Variable observation matrix
-    Matrix H1T;  // Transposed H1
-    bool maneuvring;
-    Matrix X; // estimated target position and speed and course
-    Matrix Z; // measured target position and speed and course
-    Matrix P; // Error covariance matrix, initial values
+class Kalman_Filter {
+ public:
+  Kalman_Filter(Position init_position, double init_speed, double init_course);
+  ~Kalman_Filter();
+  MetricPoint SetMeasurement(MetricPoint Z, MetricPoint X);
+  MetricPoint Predict(MetricPoint x);  // measured position and expected position
+  
+
+  Matrix Q1;   // Error covariance matrix when not maneuvring
+  Matrix Q2;   // Error covariance matrix when maneuvring
+  Matrix H;    // Observation matrix
+  Matrix HT;   // Transpose of observation matrix
+  Matrix H1;   // Variable observation matrix
+  Matrix H1T;  // Transposed H1
+  Matrix X;    // estimated target position and speed and course
+  Matrix Z;    // measured target position and speed and course
+  Matrix P;    // Error covariance matrix, initial values
+  Matrix K;    // Kalman gain
+  Matrix F;    // State transition operator, from one measurement to the next
+
+  bool maneuvring;
 };
 
 PLUGIN_END_NAMESPACE
-#endif 
+#endif

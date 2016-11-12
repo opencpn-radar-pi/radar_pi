@@ -38,13 +38,14 @@
 //#include "br24radar_pi.h"
 #include "Kalman.h"
 #include "RadarInfo.h"
+#include "Matrix.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
 //    Forward definitions
 class Kalman_Filter;
-class Metric_Point;
 class Position;
+class Matrix;
 
 #define NUMBER_OF_TARGETS (20)
 #define OFF_LOCATION (30)
@@ -67,7 +68,6 @@ enum target_status {
 };
 
 
-
 class Position {
  public:
   double lat;
@@ -85,9 +85,7 @@ class Position {
     q.lon = lon + p.lon;
     return q;
   }
-  
 };
-
 
 
 class Polar {
@@ -96,6 +94,7 @@ class Polar {
   int r;
   void Pos2Polar(Position p, Position own_ship, int range);
 };
+
 
 class LogEntry {
  public:
@@ -106,15 +105,41 @@ class LogEntry {
   double course;
 };
 
+class MetricPoint {
+public:
+    double lat; // in meters
+    double lon;  // in meters
+    double mspeed;  // m / sec
+    double course;  // degrees
+    wxLongLong time;  // wxGetUTCTimeMillis
+    Position Metric2Pos();
+    MetricPoint operator+(MetricPoint p) {
+        MetricPoint q;
+        q.lat = lat + p.lat;
+        q.lon = lon + p.lon;
+        return q;
+    }
+
+    MetricPoint operator-(MetricPoint p) {
+        MetricPoint q;
+        q.lat = lat - p.lat;
+        q.lon = lon - p.lon;
+        return q;
+    }
+};
+
+
 class ArpaTarget {
  public:
   ArpaTarget(br24radar_pi* pi, RadarInfo* ri);
   ArpaTarget();
+  ~ArpaTarget();
   RadarInfo* m_ri;
   br24radar_pi* m_pi;
   int target_id;
   Position measured_pos;  // the most recently measured position of the target
   Kalman_Filter* m_kalman;
+  MetricPoint xpos;  // holds actual metric position, metric speed, course (degrees)
   wxLongLong t_refresh;  // time of last refresh
   int nr_of_log_entries;
   LogEntry logbook[SIZE_OF_LOG];  // stores positions, time course and speed
@@ -145,6 +170,8 @@ class ArpaTarget {
   void SetStatusLost();
 };
 
+
+
 class RadarArpa {
  public:
   RadarArpa(br24radar_pi* pi, RadarInfo* ri);
@@ -166,51 +193,18 @@ class RadarArpa {
   void Aquire0NewTarget(Position p);
 };
 
-// following is not used yet and not tested
-
-class MetricPoint {
- public:
-  double lat;
-  double lon;
-  Position Metric2Pos() {
-    Position p;
-    p.lon = lon / cos(deg2rad(lat)) / 1852. / 60;
-    p.lat = lat / 1852. / 60;
-    return p;
-  }
-
-  
-
-  double Dist(MetricPoint p2) {
+  /*double Dist(MetricPoint p2) {
     double dist = sqrt((p2.lat - lat) * (p2.lat - lat) + (p2.lon - lon) * (p2.lon - lon));
     return dist;
   }
-
-  double Bearing(MetricPoint p2) {
+*/
+  /*double Bearing(MetricPoint p2) {
     double bear = rad2deg(atan((p2.lon - lon) / (p2.lat - lat)));
     return bear;
-  }
-
- /* void Conv(Position p);*//* {
-    lat = p.lat * 60 * 1852;
-    lon = p.lat * 60 * 1852;
-    lon *= cos(deg2rad(p.lat));
   }*/
 
-  MetricPoint operator+(MetricPoint p) {
-    MetricPoint q;
-    q.lat = lat + p.lat;
-    q.lon = lon + p.lon;
-    return q;
-  }
+  
 
-  MetricPoint operator-(MetricPoint p) {
-    MetricPoint q;
-    q.lat = lat - p.lat;
-    q.lon = lon - p.lon;
-    return q;
-  }
-};
 
 MetricPoint Pos2Metric(Position p);
 

@@ -40,7 +40,6 @@ static int target_id_count = 0;
 
 RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
   LOG_INFO(wxT("BR24radar_pi: $$$ radarmarpa creator call"));
-
   m_ri = ri;
   m_pi = pi;
   m_targets = new ArpaTarget[NUMBER_OF_TARGETS];
@@ -48,8 +47,11 @@ RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
     m_targets[i].set(pi, ri);
     m_targets[i].SetStatusLost();
   }
-
   LOG_INFO(wxT("BR24radar_pi: $$$ radarmarpa creator ready"));
+}
+
+ArpaTarget::~ArpaTarget(){
+   
 }
 
 void ArpaTarget::set(br24radar_pi* pi, RadarInfo* ri) {
@@ -139,7 +141,7 @@ bool ArpaTarget::FindContourFromInside() {  // moves pol to contour of blob
   return true;
 }
 
-int ArpaTarget::GetContour() {
+int ArpaTarget::GetContour() {  // sets the measured_pos if succesfull
   // p must start on the contour of the blob
   // follows the contour in a clockwise direction
 
@@ -373,19 +375,50 @@ void ArpaTarget::RefreshTarget() {
 
 // get estimate
 
-    UpdatePolar();  // update expected polar of target based on speed and course from the log
-    // zooming may  cause r to be out of bounds
-    if (pol.r >= RETURNS_PER_LINE || pol.r <= 0) {
-      LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets r too large or negative r = %i"), pol.r);
-      SetStatusLost();
-      LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
-      return;
-    }
+    //UpdatePolar();  // update expected polar of target based on speed and course from the log
+    //// zooming may  cause r to be out of bounds
+    //if (pol.r >= RETURNS_PER_LINE || pol.r <= 0) {
+    //  LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets r too large or negative r = %i"), pol.r);
+    //  SetStatusLost();
+    //  LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
+    //  return;
+    //}
+
+      
+
+      if (m_kalman && status >= aquire3){
+          LOG_INFO(wxT("BR24radar_pi: $$$ prediction started"));
+          xpos = m_kalman->Predict(xpos); // xpos is new estimated position
+          Position xx;
+          LOG_INFO(wxT("BR24radar_pi: $$$ prediction started xpos.lat = %f lon= %f"), xpos.lat, xpos.lon);
+          xx.lat = xpos.lat / 1852. / 60.;
+          LOG_INFO(wxT("BR24radar_pi: $$$ prediction started xpos.lat = %f xx.lat= %f"), xpos.lat, xx.lat);
+          xx.lon = xpos.lon / 1852. / 60.;
+          xx.lon /= cos(deg2rad(xx.lat));
+          LOG_INFO(wxT("BR24radar_pi: $$$ prediction started xpos.lon = %f xx.lon= %f"), xpos.lon, xx.lon);
+          LOG_INFO(wxT("BR24radar_pi: $$$ prediction"));
+          LOG_INFO(wxT("BR24radar_pi: $$$ prediction started lat = %f lon= %f"), xx.lat, xx.lon);
+          Position own_pos;
+          own_pos.lat = m_pi->m_ownship_lat;
+          own_pos.lon = m_pi->m_ownship_lon;
+          pol.Pos2Polar(xx, own_pos, m_ri->m_range_meters);
+          logbook[0].pos = xx;
+          logbook[0].time = xpos.time;
+      }
+      else{
+          LOG_INFO(wxT("BR24radar_pi: $$$ Update polar called"));
+          UpdatePolar();  // update expected polar of target based on speed and course from the log
+      }
+      // zooming may  cause r to be out of bounds
+      if (pol.r >= RETURNS_PER_LINE || pol.r <= 0) {
+        LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets r too large or negative r = %i"), pol.r);
+        SetStatusLost();
+        LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
+        return;
+      }
   }
   expected = pol;  // $$$ test only
-  if (m_kalman){
-      m_kalman->SetMeasurement(measured_pos);
-  }
+ 
   // get measurement
 
   if (GetTarget()) {
@@ -402,8 +435,11 @@ void ArpaTarget::RefreshTarget() {
         break;
       case aquire1:
         status = aquire2;
-        m_kalman = new Kalman_Filter(measured_pos, logbook[0].speed, logbook[0].course);
-        //       LOG_INFO(wxT("BR24radar_pi: $$$ true case =aquire2 , kalman filter made"));
+        if (!m_kalman){
+            m_kalman = new Kalman_Filter(measured_pos, logbook[0].speed, logbook[0].course);
+            LOG_INFO(wxT("BR24radar_pi: $$$ true case =aquire2 , kalman filter made"));
+        }
+        
         break;
       case aquire2:
         status = aquire3;
@@ -419,6 +455,19 @@ void ArpaTarget::RefreshTarget() {
       default:
         break;
     }
+
+   
+    if (m_kalman && status > aquire2) {
+        MetricPoint z = Pos2Metric(measured_pos);
+      LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement in refresh0"));
+      z.mspeed = logbook[0].speed;  // speed in m/sec
+      z.course = logbook[0].course;
+      if (status == aquire3){
+          xpos = z;
+      }
+      xpos = m_kalman->SetMeasurement(z, xpos);  // X is new estimated position, improved with measured position
+    }
+    //    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement in refresh  X %f %f %f %f"), X(1, 1), X(2, 2), X(3, 3), X(4, 4));
   } else {
     switch (status) {
       case aquire0:
@@ -687,7 +736,7 @@ void RadarArpa::PassARPATargetsToOCPN() {
 MetricPoint Pos2Metric(Position p){
   MetricPoint q;
   q.lat = p.lat * 60.* 1852.;
-  q.lon = p.lat * 60.* 1852.;
+  q.lon = p.lon * 60.* 1852.;
   q.lon *= cos(deg2rad(p.lat));
   return q;
 }
@@ -704,9 +753,13 @@ void ArpaTarget::SetStatusLost() {
     m_kalman = 0;
     LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
   }
-  MetricPoint uu;
-  Position pp;
-  uu = Pos2Metric(pp);
+}
+
+Position MetricPoint::Metric2Pos() {
+    Position p;
+    p.lon = lon / cos(deg2rad(lat)) / 1852. / 60;
+    p.lat = lat / 1852. / 60;
+    return p;
 }
 
 PLUGIN_END_NAMESPACE

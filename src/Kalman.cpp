@@ -54,7 +54,8 @@ double jac_a;
 double jac_b;
 
 Kalman_Filter::Kalman_Filter(Position init_position, double init_speed, double init_course) {
-  //  Matrix Q1 = Matrix(4, 4);  // Error covariance matrix when not maneuvring
+    // Error covariance matrix when not maneuvring
+    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman_Filter created"));
   Q1.Extend(4, 4);
   Q2.Extend(4, 4);
   Q1(3, 3) = 2.;
@@ -63,50 +64,110 @@ Kalman_Filter::Kalman_Filter(Position init_position, double init_speed, double i
   Q2.Extend(4, 4);
   Q2(3, 3) = 20.;  // Error covariance matrix when maneuvring
   Q2(4, 4) = 20.;
-  H.Extend(2, 4);  // Observation matrix
+
+  H.Extend(4, 4);  // Observation matrix
   H(1, 1) = 1.;
   H(2, 2) = 1.;
+  H(3, 3) = 1.;
+  H(4, 4) = 1.;
+
 
   HT.Extend(4, 2);  // Transpose of observation matrix
   HT(1, 1) = 1.;
   HT(2, 2) = 1.;
+
   H1.Extend(2, 4);   // Variable observation matrix
   H1T.Extend(4, 2);  // Transposed H1
 
   MetricPoint xx = Pos2Metric(init_position);
+
   X.Extend(4, 1);  // matrix of estimate position (X circumflex in literature)
   X(1, 1) = xx.lat;
   X(2, 1) = xx.lon;
   X(3, 1) = init_speed * 1852. / 3600.;   // speed in m / sec
   X(4, 1) = init_course * 1852. / 3600.;  // east speed in m / sec
 
-  Matrix Z(2, 1);  //  measured target position and speed and course
-  Z(1, 1) = xx.lat;
-  // Z(2, 1) = xx.lon;
+  Z.Extend(4, 1);  //  measured target position and speed and course
+  Z = X;   // initial measures position is initial position
 
-  // Matrix P(4, 4);  // Error covariance matrix, initial values
-  P(1, 1) = 10;  // $$$ redifine!!
+  P.Extend(4, 4);  // Error covariance matrix, initial values
+  P(1, 1) = 10;  // $$$ redefine!!
   P(2, 2) = 10.;
   P(3, 3) = 10.;
   P(4, 4) = 10.;
+
+  K.Extend(4, 4);  // initial Kalman gain
+  K(1, 1) = .5;
+  K(2, 2) = .5;
+  K(3, 3) = .5;
+  K(4, 4) = .5;
+
+  F.Extend(4, 4);
+  for (int i = 1; i <= 4; i++){
+      F(i, i) = 1.;
+  }
+
 }
 
-Kalman_Filter::~Kalman_Filter() {}
-
-void Kalman_Filter::SetMeasurement(Position measured_pos) {
-   MetricPoint xx = Pos2Metric(measured_pos);
-  /* X(1, 1) = xx.lat;
-   X(2, 1) = xx.lon;*/
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement"));
-  
-  int iii = Q1.Size(1);
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman size of Q1 %i"), Q1.Size(1));
-  return;
+Kalman_Filter::~Kalman_Filter() {  // clean up all matrices
+   Q1.~Matrix();
+   Q2.~Matrix();
+   H.~Matrix();
+   HT.~Matrix();
+   H1.~Matrix();
+   H1T.~Matrix();
+   X.~Matrix();
+   Z.~Matrix();
+   P.~Matrix();
+   K.~Matrix();
 }
 
-// void Kalman_Filter::Kalman_Next_Estimate(int delta_t, Position* x) {
-//  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman entry"));
-//
+MetricPoint Kalman_Filter::SetMeasurement(MetricPoint zz, MetricPoint xx) {
+  // zz measured position, xx estimated position
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement1"));
+
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement2"));
+  Z(1, 1) = zz.lat;
+  Z(2, 1) = zz.lon;
+  Z(3, 1) = zz.mspeed;
+  Z(4, 1) = zz.course;
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement3"));
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement before Z %f %f %f %f"), Z(1, 1), Z(2, 1), Z(3, 1), Z(4, 1));
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement before X %f %f %f %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
+  X = X + K * (Z - H * X);
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement after  X %f %f %f %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
+  MetricPoint xx;
+  xx.lat = X(1, 1);
+  xx.lon = X(2, 1);
+  xx.mspeed = X(3, 1);
+  xx.course = X(4, 1);
+  xx.time = wxGetUTCTimeMillis();
+  return xx;
+}
+
+MetricPoint Kalman_Filter::Predict(MetricPoint xx) {
+    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict entry"));
+    X(1, 1) = xx.lat;
+    X(2, 1) = xx.lon;
+    X(3, 1) = xx.mspeed;
+    X(4, 1) = xx.course;
+    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict entry2"));
+    wxLongLong delta_t = wxGetUTCTimeMillis() - xx.time;
+    F(1, 3) = (double)delta_t.GetLo() * cos(deg2rad(xx.course)) / 1000.;
+    F(2, 3) = (double)delta_t.GetLo() * sin(deg2rad(xx.course)) / 1000.;
+    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict before X %f %f %f %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
+    X = F * X;
+    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict after  X %f %f %f %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
+    MetricPoint x_ret;
+    x_ret.lat = X(1, 1);
+    x_ret.lon = X(2, 1);
+    x_ret.mspeed = X(3, 1);
+    x_ret.course = X(4, 1);
+    x_ret.time = wxGetUTCTimeMillis();
+    return x_ret;
+}
+
+
 //  Matrix PP(4, 4);  // Error covariance matrix
 //
 //  Matrix X(4, 1);  // Target position and speed
