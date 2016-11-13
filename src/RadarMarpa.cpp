@@ -282,6 +282,7 @@ int RadarArpa::NextEmptyTarget() {
 }
 
 void RadarArpa::DrawContour(ArpaTarget target) {
+    // should be improved using vertex arrays
   PolarToCartesianLookupTable* polarLookup;
   polarLookup = GetPolarToCartesianLookupTable();
   glColor4ub(40, 40, 100, 250);
@@ -315,9 +316,10 @@ void RadarArpa::DrawContour(ArpaTarget target) {
     glVertex2f(xx, yy);
   }
   // draw expected pos for test
-  int angle = MOD_ROTATION2048(target.expected.angle - 512);
+  // may crash for unknown reason, but usefull in debugging
+  /*int angle = MOD_ROTATION2048(target.expected.angle - 512);
   int radius = target.expected.r;
-  /* double xx;
+   double xx;
    double yy;
    glColor4ub(0, 250, 0, 250);
    if (radius < 480 && radius > 10){
@@ -342,7 +344,7 @@ void RadarArpa::DrawArpaTargets() {
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
     if (m_targets[i].status != lost) {
       DrawContour(m_targets[i]);
-      /* if (m_targets[i].nr_of_log_entries == 10){   // to find covariance of observations
+      /* if (m_targets[i].nr_of_log_entries == 10){   // to find covariance of observations, use with steady ship on steady targets
            for (int j = 1; j < 10; j++){
                LOG_INFO(wxT("BR24radar_pi: $$$ logbook dist angle % i, %i"), m_targets[i].logbook[j].pp.r,
        m_targets[i].logbook[j].pp.angle);
@@ -372,62 +374,33 @@ void ArpaTarget::RefreshTarget() {
   // set new refresh time
   t_refresh = m_ri->m_history[MOD_ROTATION2048(max_angle.angle + OFF_LOCATION)].time;
   if (status > aquire1) {
+    prev_xpos = xpos;
 
-// get estimate
+    // get estimate
 
-    //UpdatePolar();  // update expected polar of target based on speed and course from the log
-    //// zooming may  cause r to be out of bounds
-    //if (pol.r >= RETURNS_PER_LINE || pol.r <= 0) {
-    //  LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets r too large or negative r = %i"), pol.r);
-    //  SetStatusLost();
-    //  LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
-    //  return;
-    //}
-
-      
-
-      if (m_kalman && status >= aquire3){
-          LOG_INFO(wxT("BR24radar_pi: $$$ prediction started"));
-          xpos = m_kalman->Predict(xpos); // xpos is new estimated position
-          Position xx;
-          LOG_INFO(wxT("BR24radar_pi: $$$ prediction started xpos.lat = %f lon= %f"), xpos.lat, xpos.lon);
-          xx.lat = xpos.lat / 1852. / 60.;
-          LOG_INFO(wxT("BR24radar_pi: $$$ prediction started xpos.lat = %f xx.lat= %f"), xpos.lat, xx.lat);
-          xx.lon = xpos.lon / 1852. / 60.;
-          xx.lon /= cos(deg2rad(xx.lat));
-          LOG_INFO(wxT("BR24radar_pi: $$$ prediction started xpos.lon = %f xx.lon= %f"), xpos.lon, xx.lon);
-          LOG_INFO(wxT("BR24radar_pi: $$$ prediction"));
-          LOG_INFO(wxT("BR24radar_pi: $$$ prediction started lat = %f lon= %f"), xx.lat, xx.lon);
-          Position own_pos;
-          own_pos.lat = m_pi->m_ownship_lat;
-          own_pos.lon = m_pi->m_ownship_lon;
-          pol.Pos2Polar(xx, own_pos, m_ri->m_range_meters);
-          logbook[0].pos = xx;
-          logbook[0].time = xpos.time;
-      }
-      else{
-          LOG_INFO(wxT("BR24radar_pi: $$$ Update polar called"));
-          UpdatePolar();  // update expected polar of target based on speed and course from the log
-      }
-      // zooming may  cause r to be out of bounds
-      if (pol.r >= RETURNS_PER_LINE || pol.r <= 0) {
-        LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets r too large or negative r = %i"), pol.r);
-        SetStatusLost();
-        LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
-        return;
-      }
+    if (m_kalman && status >= aquire3) {
+      prev_xpos = xpos;
+      xpos = m_kalman->Predict(xpos);  // xpos is new estimated position
+    } else {
+      LOG_INFO(wxT("BR24radar_pi: $$$ Update polar called"));
+      UpdatePolar();  // update expected polar of target based on speed and course from the log
+                      // this is executed during target aquisition
+    }
+    // zooming may  cause r to be out of bounds
+    if (pol.r >= RETURNS_PER_LINE || pol.r <= 0) {
+      LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets r too large or negative r = %i"), pol.r);
+      SetStatusLost();
+      LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
+      return;
+    }
   }
-  expected = pol;  // $$$ test only
- 
+  expected = pol;  // $$$ for test only
+
   // get measurement
 
   if (GetTarget()) {
     // target refreshed
     lost_count = 0;
-    if (status > aquire2) {
-      //   pol.angle = (expected.angle + pol.angle) / 2;
-      //  pol.angle = (expected.r + pol.r) / 2;
-    }
     switch (status) {
       case aquire0:
         status = aquire1;
@@ -435,11 +408,14 @@ void ArpaTarget::RefreshTarget() {
         break;
       case aquire1:
         status = aquire2;
-        if (!m_kalman){
-            m_kalman = new Kalman_Filter(measured_pos, logbook[0].speed, logbook[0].course);
-            LOG_INFO(wxT("BR24radar_pi: $$$ true case =aquire2 , kalman filter made"));
+        if (!m_kalman) {
+          xpos = Pos2Metric(measured_pos);
+          xpos.time = logbook[0].time;
+          xpos.d_lat = 2.5 * logbook[0].speed * cos(deg2rad(logbook[0].course));
+          xpos.d_lon = 2.5 * logbook[0].speed * sin(deg2rad(logbook[0].course));
+          prev_xpos = xpos;
+          m_kalman = new Kalman_Filter();
         }
-        
         break;
       case aquire2:
         status = aquire3;
@@ -456,18 +432,15 @@ void ArpaTarget::RefreshTarget() {
         break;
     }
 
-   
     if (m_kalman && status > aquire2) {
-        MetricPoint z = Pos2Metric(measured_pos);
-      LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement in refresh0"));
-      z.mspeed = logbook[0].speed;  // speed in m/sec
-      z.course = logbook[0].course;
-      if (status == aquire3){
-          xpos = z;
-      }
+      MetricPoint z = Pos2Metric(measured_pos);
+      z.time = logbook[0].time;
+      z.d_lat = 2.5 * logbook[0].speed * cos(deg2rad(logbook[0].course));
+      z.d_lon = 2.5 * logbook[0].speed * sin(deg2rad(logbook[0].course));
       xpos = m_kalman->SetMeasurement(z, xpos);  // X is new estimated position, improved with measured position
+      xpos.d_lat = xpos.lat - prev_xpos.lat;
+      xpos.d_lon = xpos.lon - prev_xpos.lon;
     }
-    //    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement in refresh  X %f %f %f %f"), X(1, 1), X(2, 2), X(3, 3), X(4, 4));
   } else {
     switch (status) {
       case aquire0:
@@ -497,6 +470,33 @@ void ArpaTarget::RefreshTarget() {
         }
       default:
         break;
+    }
+  }
+  if (status > aquire2) {
+    Position xx;
+    xx.lat = xpos.lat / 1852. / 60.;
+    xx.lon = xpos.lon / 1852. / 60.;
+    xx.lon /= cos(deg2rad(xx.lat));
+    Position own_pos;
+    own_pos.lat = m_pi->m_ownship_lat;
+    own_pos.lon = m_pi->m_ownship_lon;
+    pol.Pos2Polar(xx, own_pos, m_ri->m_range_meters);
+    if (pol.r >= RETURNS_PER_LINE || pol.r <= 0) {
+      LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets r too large or negative r = %i"), pol.r);
+      SetStatusLost();
+      LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
+      return;
+    }
+    logbook[0].pos = xx;
+    CalculateSpeedandCourse();
+    LOG_INFO(wxT("BR24radar_pi: $$$ ********************************************** Speed = %f, Heading = %f"), logbook[0].speed,
+             logbook[0].course);
+    // send target data to OCPN
+    if (status == active){
+        O_update_counter++;
+        if (O_update_counter % 1 == 0){
+            PassARPAtoOCPN();
+        }
     }
   }
   return;
@@ -574,9 +574,13 @@ void ArpaTarget::UpdatePolar() {
 }
 
 void ArpaTarget::CalculateSpeedandCourse() {
-  int nr = nr_of_log_entries - 1;
-  if (nr > 10) nr = 10;  // calculate speed over the last 4 positions
-  if (nr <= 0) return;
+  int nr = 5;
+  if (nr > nr_of_log_entries - 1) nr = nr_of_log_entries - 1;
+  if (nr_of_log_entries <= 1 ){
+      logbook[0].speed = 0.;
+      logbook[0].course = 0.;
+      return;
+  }
   double lat1 = logbook[nr].pos.lat;
   double lat2 = logbook[0].pos.lat;
   double lon1 = logbook[nr].pos.lon;
@@ -639,7 +643,7 @@ void ArpaTarget::PassARPAtoOCPN() {
   wxString s_bearing;
   wxString s_distance;
   wxString target_name;
-  char sentence[80];
+  char sentence[90];
   char checksum = 0;
   char* p;
   double f_Lat, f_Lon;
@@ -671,58 +675,63 @@ void ArpaTarget::PassARPAtoOCPN() {
   double f_LonDegr = (int)(f_Lon);
   double f_LonMin = (f_Lon - f_LonDegr) * 60.0;
   double f_LonforTLL = (f_LonDegr * 100.0) + f_LonMin;  // Type: 01148.60
+  double dist = (double)pol.r / (double)RETURNS_PER_LINE * (double)m_ri->m_range_meters / 1852.;
+  double bearing = (double)pol.angle * 360. / (double)LINES_PER_ROTATION;
+  if (bearing < 0) bearing += 360;
+  LOG_INFO(wxT("BR24radar_pi: $$$ send dist = %f, bearing = %f"), dist, bearing);
 
   s_Lat = wxString::Format(wxT("%f"), f_LatforTLL);
   s_Lon = wxString::Format(wxT("%f"), f_LonforTLL);
   tNum = wxString::Format(wxT("%2i"), target_id);
   s_speed = wxString::Format(wxT("%3.1f"), logbook[0].speed);
-  s_course = wxString::Format(wxT("%3.0f"), logbook[0].course);
+  s_course = wxString::Format(wxT("%3.1f"), logbook[0].course);
   target_name = wxString::Format(wxT("MARPA %2i"), target_id);
-
-  /* LOG_INFO(wxT("BR24radar_pi: $$$ bearing = %f, distance = %f"), bearing, distance);
-    s_bearing = wxString::Format(wxT("%3.0f"), bearing);
-    s_distance = wxString::Format(wxT("%f"), distance);*/
+  s_distance = wxString::Format(wxT("%f"), dist);
+  s_bearing = wxString::Format(wxT("%f"), bearing);
 
   s_time = wxEmptyString;  // Not used for ARPA targets in OCPN "015200.36";
 
-  //"$RATLL,01,5603.370,N,01859.976,E,ALPHA,015200.36,T,*75\r\n"
-  if (time(0) - last_O_update >= 6) {
-    last_O_update = time(0);
-    int TLL = sprintf(sentence, "RATLL,%s,%s,%s,%s,%s,%s,,%s,",
-                      (const char*)tNum.mb_str(),         //  1 Target number 00 - 99
-                      (const char*)s_Lat.mb_str(),        //  2 Lat
-                      (const char*)N_S.mb_str(),          //  3 North south
-                      (const char*)s_Lon.mb_str(),        //  4 Lat
-                      (const char*)E_W.mb_str(),          //  5 E/W
-                      (const char*)target_name.mb_str(),  // 6 Target name
-                      //(const char *)s_time.mb_str(),     //  7 Send time
-                      (const char*)Stat.mb_str());  // 8 Target Status L/Q/T
+  
+  
+    //int TLL = sprintf(sentence, "RATLL,%s,%s, %s,%s,%s,%s, , %s,",
+    //                  (const char*)tNum.mb_str(),         //  1 Target number 00 - 99
+    //                  (const char*)s_Lat.mb_str(),        //  2 Lat
+    //                  (const char*)N_S.mb_str(),          //  3 North south
+    //                  (const char*)s_Lon.mb_str(),        //  4 Lat
+    //                  (const char*)E_W.mb_str(),          //  5 E/W
+    //                  (const char*)target_name.mb_str(),  // 6 Target name
+    //                  //(const char *)s_time.mb_str(),     //  7 Send time
+    //                  (const char*)Stat.mb_str());  // 8 Target Status L/Q/T
 
-    for (p = sentence; *p; p++) {
-      checksum ^= *p;
-    }
-    nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
-    LOG_INFO(wxT("BR24radar_pi: $$$ pushed TLL= %s"), nmea);
-    PushNMEABuffer(nmea);
-
-    // code for TTM follows, did not  work
-
-    // LOG_INFO(wxT("BR24radar_pi: $$$ bearing= %f distance = %f"), bearing, distance);
-    //// send speed and course using TTM
-    // TLL = sprintf(sentence, "RATTM,%s,%s,%s,,%s,%s,T,,,N,,%s,,",
-    //    (const char*)tNum.mb_str(),   //  target id
-    //    (const char*)s_distance.mb_str(),
-    //    (const char*)s_bearing.mb_str(),
-    //    (const char*)s_speed.mb_str(),
-    //    (const char*)s_course.mb_str(),
-    //    (const char*)Stat.mb_str());  // 8 Target Status L/Q/T
-    // for (p = sentence; *p; p++) {
-    //    checksum ^= *p;
+    //for (p = sentence; *p; p++) {
+    //  checksum ^= *p;
     //}
-    // nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
-    // LOG_INFO(wxT("BR24radar_pi: $$$ pushed TTM= %s"), nmea);
-    // PushNMEABuffer(nmea);
-  }
+    //nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
+    //LOG_INFO(wxT("BR24radar_pi: $$$ pushed TLL= %s"), nmea);
+    //PushNMEABuffer(nmea);
+
+
+
+
+   /*  code for TTM follows
+     send speed and course using TTM*/
+
+
+  int   TLL = sprintf(sentence, "RATTM,%2s,%s,%s, T,%s,%s, T, 0.0, 0.0, N, ,%s, ,154125.82, A, ",
+        (const char*)tNum.mb_str(),   //  target id
+        (const char*)s_distance.mb_str(),
+        (const char*)s_bearing.mb_str(),
+        (const char*)s_speed.mb_str(),
+        (const char*)s_course.mb_str(),
+        (const char*)Stat.mb_str());  // 8 Target Status L/Q/T
+
+     LOG_INFO(wxT("BR24radar_pi: $$$ voor pu TTM= %s"), sentence);
+     for (p = sentence; *p; p++) {
+        checksum ^= *p;
+    }
+     nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
+     LOG_INFO(wxT("BR24radar_pi: $$$ pushed TTM= %s"), nmea);
+     PushNMEABuffer(nmea);
 }
 
 void RadarArpa::PassARPATargetsToOCPN() {
@@ -747,7 +756,6 @@ void ArpaTarget::SetStatusLost() {
   contour_length = 0;
   nr_of_log_entries = 0;
   lost_count = 0;
-  last_O_update = time(0);
   if (m_kalman) {
     m_kalman->~Kalman_Filter();  // delete the filter
     m_kalman = 0;

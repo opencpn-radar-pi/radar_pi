@@ -47,11 +47,10 @@ class MetricPoint;
 
 class Kalman_Filter {
  public:
-  Kalman_Filter(Position init_position, double init_speed, double init_course);
+  Kalman_Filter();
   ~Kalman_Filter();
   MetricPoint SetMeasurement(MetricPoint Z, MetricPoint X);
   MetricPoint Predict(MetricPoint x);  // measured position and expected position
-  
 
   Matrix Q1;   // Error covariance matrix when not maneuvring
   Matrix Q2;   // Error covariance matrix when maneuvring
@@ -59,8 +58,6 @@ class Kalman_Filter {
   Matrix HT;   // Transpose of observation matrix
   Matrix H1;   // Variable observation matrix
   Matrix H1T;  // Transposed H1
-  Matrix X;    // estimated target position and speed and course
-  Matrix Z;    // measured target position and speed and course
   Matrix P;    // Error covariance matrix, initial values
   Matrix K;    // Kalman gain
   Matrix F;    // State transition operator, from one measurement to the next

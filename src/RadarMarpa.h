@@ -37,8 +37,8 @@
 
 //#include "br24radar_pi.h"
 #include "Kalman.h"
-#include "RadarInfo.h"
 #include "Matrix.h"
+#include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -49,9 +49,9 @@ class Matrix;
 
 #define NUMBER_OF_TARGETS (20)
 #define OFF_LOCATION (30)
-#define SIZE_OF_LOG (100)
+#define SIZE_OF_LOG (10)
 #define MAX_CONTOUR_LENGTH (600)
-#define MAX_LOST_COUNT (6)
+#define MAX_LOST_COUNT (4)
 
 struct polar {
   int angle;
@@ -67,12 +67,11 @@ enum target_status {
   active
 };
 
-
 class Position {
  public:
   double lat;
   double lon;
-  
+
   Position operator-(Position p) {
     Position q;
     q.lat = lat - p.lat;
@@ -87,14 +86,12 @@ class Position {
   }
 };
 
-
 class Polar {
  public:
   int angle;
   int r;
   void Pos2Polar(Position p, Position own_ship, int range);
 };
-
 
 class LogEntry {
  public:
@@ -106,28 +103,27 @@ class LogEntry {
 };
 
 class MetricPoint {
-public:
-    double lat; // in meters
-    double lon;  // in meters
-    double mspeed;  // m / sec
-    double course;  // degrees
-    wxLongLong time;  // wxGetUTCTimeMillis
-    Position Metric2Pos();
-    MetricPoint operator+(MetricPoint p) {
-        MetricPoint q;
-        q.lat = lat + p.lat;
-        q.lon = lon + p.lon;
-        return q;
-    }
+ public:
+  double lat;       // in meters
+  double lon;       // in meters
+  double d_lat;     // m / sec
+  double d_lon;     // degrees
+  wxLongLong time;  // wxGetUTCTimeMillis
+  Position Metric2Pos();
+  MetricPoint operator+(MetricPoint p) {
+    MetricPoint q;
+    q.lat = lat + p.lat;
+    q.lon = lon + p.lon;
+    return q;
+  }
 
-    MetricPoint operator-(MetricPoint p) {
-        MetricPoint q;
-        q.lat = lat - p.lat;
-        q.lon = lon - p.lon;
-        return q;
-    }
+  MetricPoint operator-(MetricPoint p) {
+    MetricPoint q;
+    q.lat = lat - p.lat;
+    q.lon = lon - p.lon;
+    return q;
+  }
 };
-
 
 class ArpaTarget {
  public:
@@ -139,18 +135,19 @@ class ArpaTarget {
   int target_id;
   Position measured_pos;  // the most recently measured position of the target
   Kalman_Filter* m_kalman;
-  MetricPoint xpos;  // holds actual metric position, metric speed, course (degrees)
-  wxLongLong t_refresh;  // time of last refresh
+  MetricPoint xpos;       // holds actual metric position
+  MetricPoint prev_xpos;  // holds previous metric position
+  wxLongLong t_refresh;   // time of last refresh
   int nr_of_log_entries;
   LogEntry logbook[SIZE_OF_LOG];  // stores positions, time course and speed
   Polar pol;                      // temporary polarcoordinates of target
   double bearing;                 // only valid directly after calculation
-  double distance;// only valid directly after calculation
-  time_t last_O_update;
+  double distance;                // only valid directly after calculation
+  unsigned int O_update_counter;
   target_status status;
   int lost_count;
   Polar contour[MAX_CONTOUR_LENGTH + 1];  // contour of target, only valid immediately after finding it
-  Polar expected;                        
+  Polar expected;
   int contour_length;
   Polar max_angle, min_angle, max_r, min_r;  // charasterictics of contour
   void PushLogbook();
@@ -170,8 +167,6 @@ class ArpaTarget {
   void SetStatusLost();
 };
 
-
-
 class RadarArpa {
  public:
   RadarArpa(br24radar_pi* pi, RadarInfo* ri);
@@ -182,7 +177,7 @@ class RadarArpa {
   int GetTargetHeight(int angle, int rad);
   ArpaTarget* m_targets;
   br24radar_pi* m_pi;
-  RadarInfo* m_ri;  
+  RadarInfo* m_ri;
   //  Polar Pos2Polar(Position p, Position own_ship);
   int NextEmptyTarget();
 
@@ -193,18 +188,15 @@ class RadarArpa {
   void Aquire0NewTarget(Position p);
 };
 
-  /*double Dist(MetricPoint p2) {
-    double dist = sqrt((p2.lat - lat) * (p2.lat - lat) + (p2.lon - lon) * (p2.lon - lon));
-    return dist;
-  }
+/*double Dist(MetricPoint p2) {
+  double dist = sqrt((p2.lat - lat) * (p2.lat - lat) + (p2.lon - lon) * (p2.lon - lon));
+  return dist;
+}
 */
-  /*double Bearing(MetricPoint p2) {
-    double bear = rad2deg(atan((p2.lon - lon) / (p2.lat - lat)));
-    return bear;
-  }*/
-
-  
-
+/*double Bearing(MetricPoint p2) {
+  double bear = rad2deg(atan((p2.lon - lon) / (p2.lat - lat)));
+  return bear;
+}*/
 
 MetricPoint Pos2Metric(Position p);
 
