@@ -343,9 +343,9 @@ void RadarArpa::DrawContour(ArpaTarget target) {
        xx = polarLookup->x[angle + 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
        yy = polarLookup->y[angle + 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
        glVertex2f(xx, yy);
-   }
+   }*/
 
-  glEnd();*/
+  glEnd();
 }
 
 void RadarArpa::DrawArpaTargets() {
