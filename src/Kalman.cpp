@@ -51,8 +51,8 @@ Kalman_Filter::Kalman_Filter() {
   H.Extend(4, 4);  // Observation matrix
   H(1, 1) = 1.;
   H(2, 2) = 1.;
-  H(3, 3) = 0.;
-  H(4, 4) = 0.;
+  H(3, 3) = 1.; // $$$
+  H(4, 4) = 1.;
 
   HT.Extend(4, 2);  // Transpose of observation matrix
   HT(1, 1) = 1.;
@@ -69,11 +69,11 @@ Kalman_Filter::Kalman_Filter() {
   P(4, 4) = 10.;
 
   K.Extend(4, 4);  // initial Kalman gain
-  double gain = .2;
+  double gain = .3;
   K(1, 1) = gain;
   K(2, 2) = gain;
-  /*K(3, 3) = .5;
-  K(4, 4) = .5;*/
+  K(3, 3) = .05; // $$$
+  K(4, 4) = .05;
 
   F.Extend(4, 4);
   for (int i = 1; i <= 4; i++) {
@@ -113,6 +113,8 @@ MetricPoint Kalman_Filter::SetMeasurement(MetricPoint zz, MetricPoint xx) {
   MetricPoint xx;
   xx.lat = X(1, 1);
   xx.lon = X(2, 1);
+  xx.d_lat = X(3, 1);
+  xx.d_lon = X(4, 1);
   xx.time = zz.time;
   X.~Matrix();
   Z.~Matrix();

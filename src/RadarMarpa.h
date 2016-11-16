@@ -49,9 +49,10 @@ class Matrix;
 
 #define NUMBER_OF_TARGETS (20)
 #define OFF_LOCATION (30)
-#define SIZE_OF_LOG (10)
+#define SCAN_MARGIN (200)
+#define SIZE_OF_LOG (20)
 #define MAX_CONTOUR_LENGTH (600)
-#define MAX_LOST_COUNT (4)
+#define MAX_LOST_COUNT (8)
 
 struct polar {
   int angle;
@@ -65,6 +66,12 @@ enum target_status {
   aquire2,  // under aquisition, speed and course taken
   aquire3,  // under aquisition, speed and course verified, next time active
   active
+};
+
+enum OCPN_target_status{
+    Q,    // aquiring
+    T,    // active
+    L      // lost
 };
 
 class Position {
@@ -121,6 +128,7 @@ class MetricPoint {
     MetricPoint q;
     q.lat = lat - p.lat;
     q.lon = lon - p.lon;
+    q.time = time - p.time;
     return q;
   }
 };
@@ -163,8 +171,9 @@ class ArpaTarget {
   void CalculateSpeedandCourse();
   bool GetTarget();
   void RefreshTarget();
-  void PassARPAtoOCPN();
+  void PassARPAtoOCPN(OCPN_target_status s);
   void SetStatusLost();
+  bool same_time;
 };
 
 class RadarArpa {
