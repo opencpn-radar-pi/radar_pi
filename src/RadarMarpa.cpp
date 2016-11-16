@@ -325,11 +325,11 @@ void RadarArpa::DrawContour(ArpaTarget target) {
   }
   // draw expected pos for test
   // may crash for unknown reason, but usefull in debugging
- /* int angle = MOD_ROTATION2048(target.expected.angle - 512);
+  int angle = MOD_ROTATION2048(target.expected.angle - 512);
   int radius = target.expected.r;
    double xx;
    double yy;
-   glColor4ub(0, 250, 0, 250);
+   /*glColor4ub(0, 250, 0, 250);
    if (radius < 480 && radius > 10){
        xx = polarLookup->x[angle][radius - 4] * m_ri->m_range_meters / RETURNS_PER_LINE;
        yy = polarLookup->y[angle][radius - 4] * m_ri->m_range_meters / RETURNS_PER_LINE;
@@ -342,10 +342,10 @@ void RadarArpa::DrawContour(ArpaTarget target) {
        glVertex2f(xx, yy);
        xx = polarLookup->x[angle + 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
        yy = polarLookup->y[angle + 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-       glVertex2f(xx, yy);*/
+       glVertex2f(xx, yy);
    }
 
-  glEnd();
+  glEnd();*/
 }
 
 void RadarArpa::DrawArpaTargets() {
