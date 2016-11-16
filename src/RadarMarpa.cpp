@@ -705,11 +705,11 @@ void ArpaTarget::PassARPAtoOCPN( OCPN_target_status status ) {
     char* p;
 
     s_Bear_Unit = wxEmptyString;      // Bearing Units  R or empty
-    s_Course_Unit = "T";              // Course type R; Realtive T; true 
-    s_Dist_Unit = "N";                // Speed/Distance Unit K, N, S N= NM/h = Knots
-    if ( status == Q ) s_status = "Q";
-    if ( status == T ) s_status = "T";
-    if ( status == L ) s_status = "L";
+    s_Course_Unit = wxT("T");              // Course type R; Realtive T; true 
+    s_Dist_Unit = wxT("N");                // Speed/Distance Unit K, N, S N= NM/h = Knots
+    if ( status == Q ) s_status = wxT("Q");
+    if ( status == T ) s_status = wxT("T");
+    if ( status == L ) s_status = wxT("L");
 
     double dist = (double)pol.r / (double)RETURNS_PER_LINE * (double)m_ri->m_range_meters / 1852.;
     double bearing = (double)pol.angle * 360. / (double)LINES_PER_ROTATION;
