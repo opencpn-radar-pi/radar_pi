@@ -693,57 +693,67 @@ bool ArpaTarget::GetTarget() {
   return true;
 }
 
-void ArpaTarget::PassARPAtoOCPN( OCPN_target_status status ) {
-    wxString s_TargID, s_Bear_Unit, s_Course_Unit;
-    wxString s_speed, s_course, s_Dist_Unit, s_status;
-    wxString s_bearing;
-    wxString s_distance;
-    wxString s_target_name;
-    wxString nmea;
-    char sentence [90];
-    char checksum = 0;
-    char* p;
+void ArpaTarget::PassARPAtoOCPN(OCPN_target_status status) {
+  wxString s_TargID, s_Bear_Unit, s_Course_Unit;
+  wxString s_speed, s_course, s_Dist_Unit, s_status;
+  wxString s_bearing;
+  wxString s_distance;
+  wxString s_target_name;
+  wxString nmea;
+  char sentence[90];
+  char checksum = 0;
+  char* p;
 
-    s_Bear_Unit = wxEmptyString;      // Bearing Units  R or empty
-    s_Course_Unit = wxT("T");              // Course type R; Realtive T; true 
-    s_Dist_Unit = wxT("N");                // Speed/Distance Unit K, N, S N= NM/h = Knots
-    if ( status == Q ) s_status = wxT("Q");
-    if ( status == T ) s_status = wxT("T");
-    if ( status == L ) s_status = wxT("L");
+  s_Bear_Unit = wxEmptyString;  // Bearing Units  R or empty
+  s_Course_Unit = wxT("T");     // Course type R; Realtive T; true
+  s_Dist_Unit = wxT("N");       // Speed/Distance Unit K, N, S N= NM/h = Knots
+  if (status == Q) s_status = wxT("Q");
+  if (status == T) s_status = wxT("T");
+  if (status == L) s_status = wxT("L");
 
-    double dist = (double)pol.r / (double)RETURNS_PER_LINE * (double)m_ri->m_range_meters / 1852.;
-    double bearing = (double)pol.angle * 360. / (double)LINES_PER_ROTATION;
-    double speed_kn = logbook [0].speed * 3600. / 1852.;
-    if ( bearing < 0 ) bearing += 360;
-    //LOG_INFO(wxT("BR24radar_pi: $$$ send dist = %f, bearing = %f"), dist, bearing);
-    s_TargID = wxString::Format( wxT( "%2i" ), target_id );
-    s_speed = wxString::Format( wxT( "%4.2f" ), speed_kn );
-    s_course = wxString::Format( wxT( "%3.1f" ), logbook [0].course );
-    s_target_name = wxString::Format( wxT( "MARPA%2i" ), target_id );
-    s_distance = wxString::Format( wxT( "%f" ), dist );
-    s_bearing = wxString::Format( wxT( "%f" ), bearing );
-
-    /* Code for TTM follows. Send speed and course using TTM*/
-    LOG_INFO( wxT( "BR24radar_pi: $$$ pushed speed = %f" ), speed_kn );
-    //                                    1  2  3  4  5  6  7  8 9 10 11 12 13 
-    int   TTM = sprintf( sentence, "RATTM,%2s,%s,%s,%s,%s,%s,%s, , ,%s,%s,%s, ",
-        (const char*)s_TargID.mb_str(),      // 1 target id
-        (const char*)s_distance.mb_str(),    // 2 Targ distance
-        (const char*)s_bearing.mb_str(),     // 3 Bearing fr own ship.
-        (const char*)s_Bear_Unit.mb_str(),   // 4 Brearing unit ( T = true)
-        (const char*)s_speed.mb_str(),       // 5 Target speed 
-        (const char*)s_course.mb_str(),      // 6 Target Course. 
-        (const char*)s_Course_Unit.mb_str(), // 7 Course ref T // 8 CPA Not used // 9 TCPA Not used
-        (const char*)s_Dist_Unit.mb_str(),   // 10 S/D Unit N = knots/Nm 
-        (const char*)s_target_name.mb_str(), // 11 Target name
-        (const char*)s_status.mb_str() );    // 12 Target Status L/Q/T // 13 Ref N/A
-
-    for ( p = sentence; *p; p++ ) {
-        checksum ^= *p;
+  double dist = (double)pol.r / (double)RETURNS_PER_LINE * (double)m_ri->m_range_meters / 1852.;
+  double bearing = (double)pol.angle * 360. / (double)LINES_PER_ROTATION;
+  double speed_kn = logbook[0].speed * 3600. / 1852.;
+  if (bearing < 0) bearing += 360;
+  // LOG_INFO(wxT("BR24radar_pi: $$$ send dist = %f, bearing = %f"), dist, bearing);
+  s_TargID = wxString::Format(wxT("%2i"), target_id);
+  s_speed = wxString::Format(wxT("%4.2f"), speed_kn);
+  s_course = wxString::Format(wxT("%3.1f"), logbook[0].course);
+  s_target_name = wxString::Format(wxT("MARPA%2i"), target_id);
+  s_distance = wxString::Format(wxT("%f"), dist);
+  s_bearing = wxString::Format(wxT("%f"), bearing);
+  if (status == L) {
+    int TLL = sprintf(sentence, "RATLL,%s,,,,,,, %s,",
+                      (const char*)s_TargID.mb_str(),   //  1 Target number 00 - 99
+                      (const char*)s_status.mb_str());  // 8 Target Status L/Q/T
+    for (p = sentence; *p; p++) {
+      checksum ^= *p;
     }
-    nmea.Printf( wxT( "$%s*%02X\r\n" ), sentence, (unsigned)checksum );
-    //LOG_INFO(wxT("BR24radar_pi: $$$ pushed TTM= %s"), nmea);
-    PushNMEABuffer( nmea );
+    nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
+    LOG_INFO(wxT("BR24radar_pi: $$$ pushed TLL= %s"), nmea);
+    PushNMEABuffer(nmea);
+  } else {
+    /* Code for TTM follows. Send speed and course using TTM*/
+    LOG_INFO(wxT("BR24radar_pi: $$$ pushed speed = %f"), speed_kn);
+    //                                    1  2  3  4  5  6  7  8 9 10 11 12 13
+    int TTM = sprintf(sentence, "RATTM,%2s,%s,%s,%s,%s,%s,%s, , ,%s,%s,%s, ",
+                      (const char*)s_TargID.mb_str(),       // 1 target id
+                      (const char*)s_distance.mb_str(),     // 2 Targ distance
+                      (const char*)s_bearing.mb_str(),      // 3 Bearing fr own ship.
+                      (const char*)s_Bear_Unit.mb_str(),    // 4 Brearing unit ( T = true)
+                      (const char*)s_speed.mb_str(),        // 5 Target speed
+                      (const char*)s_course.mb_str(),       // 6 Target Course.
+                      (const char*)s_Course_Unit.mb_str(),  // 7 Course ref T // 8 CPA Not used // 9 TCPA Not used
+                      (const char*)s_Dist_Unit.mb_str(),    // 10 S/D Unit N = knots/Nm
+                      (const char*)s_target_name.mb_str(),  // 11 Target name
+                      (const char*)s_status.mb_str());      // 12 Target Status L/Q/T // 13 Ref N/A
+    for (p = sentence; *p; p++) {
+      checksum ^= *p;
+    }
+    nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
+    // LOG_INFO(wxT("BR24radar_pi: $$$ pushed TTM= %s"), nmea);
+    PushNMEABuffer(nmea);
+  }
 }
 
 void RadarArpa::PassARPATargetsToOCPN() {
