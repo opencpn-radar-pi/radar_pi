@@ -255,7 +255,7 @@ int ArpaTarget::GetContour() {  // sets the measured_pos if succesfull
  
   PushLogbook();  // shift all entries down
   logbook[0].time = m_ri->m_history[MOD_ROTATION2048(max_angle.angle)].time;
-  t_refresh = m_ri->m_history[MOD_ROTATION2048(max_angle.angle + SCAN_MARGIN)].time;
+ // t_refresh = m_ri->m_history[MOD_ROTATION2048(max_angle.angle + SCAN_MARGIN)].time;
   Position p_own;
   p_own.lat = m_ri->m_history[MOD_ROTATION2048(pol.angle)].lat;  // get the position at receive time
   p_own.lon = m_ri->m_history[MOD_ROTATION2048(pol.angle)].lon;
