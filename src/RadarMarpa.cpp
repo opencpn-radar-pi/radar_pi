@@ -244,6 +244,7 @@ int ArpaTarget::GetContour() {  // sets the measured_pos if succesfull
   if (max_r.r < 2 || min_r.r < 2) {
     return 11;  // return code 11 r too small
   }
+  pol.r = (max_r.r + min_r.r) / 2;
   if (logbook[0].time == m_ri->m_history[MOD_ROTATION2048(max_angle.angle)].time){
       // this target has the same time as previous, can't be OK, reject it
       LOG_INFO(wxT("BR24radar_pi: $$$ duplicate time found"));
@@ -327,23 +328,29 @@ void RadarArpa::DrawContour(ArpaTarget target) {
   // may crash for unknown reason, but usefull in debugging
   int angle = MOD_ROTATION2048(target.expected.angle - 512);
   int radius = target.expected.r;
+
+  // following displays expected position with crosses that indicate the size of the search area
+  // for debugging only
+
    double xx;
    double yy;
-   /*glColor4ub(0, 250, 0, 250);
-   if (radius < 480 && radius > 10){
-       xx = polarLookup->x[angle][radius - 4] * m_ri->m_range_meters / RETURNS_PER_LINE;
-       yy = polarLookup->y[angle][radius - 4] * m_ri->m_range_meters / RETURNS_PER_LINE;
+   int dist_a = (int)(326. / (double)radius * OFF_LOCATION / 2.);
+   int dist_r = (int)((double)OFF_LOCATION / 2.);
+   glColor4ub(0, 250, 0, 250);
+   if (radius < 511 - dist_r && radius > dist_r ){
+       xx = polarLookup->x[MOD_ROTATION2048(angle)][radius - dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
+       yy = polarLookup->y[MOD_ROTATION2048(angle)][radius - dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
        glVertex2f(xx, yy);
-       xx = polarLookup->x[angle][radius + 4] * m_ri->m_range_meters / RETURNS_PER_LINE;
-       yy = polarLookup->y[angle][radius + 4] * m_ri->m_range_meters / RETURNS_PER_LINE;
+       xx = polarLookup->x[MOD_ROTATION2048(angle)][radius + dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
+       yy = polarLookup->y[MOD_ROTATION2048(angle)][radius + dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
        glVertex2f(xx, yy);
-       xx = polarLookup->x[angle - 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-       yy = polarLookup->y[angle - 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+       xx = polarLookup->x[MOD_ROTATION2048(angle - dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+       yy = polarLookup->y[MOD_ROTATION2048(angle - dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
        glVertex2f(xx, yy);
-       xx = polarLookup->x[angle + 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-       yy = polarLookup->y[angle + 5][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+       xx = polarLookup->x[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+       yy = polarLookup->y[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
        glVertex2f(xx, yy);
-   }*/
+   }
 
   glEnd();
 }
@@ -387,10 +394,7 @@ void ArpaTarget::RefreshTarget() {
     prev_xpos = xpos;
 
     // get estimate
-
     if (m_kalman && status >= aquire3) {
-      
-
 
 
       xpos = m_kalman->Predict(xpos);  // xpos is new estimated position
@@ -411,9 +415,7 @@ void ArpaTarget::RefreshTarget() {
           LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
           return;
       }
-
-
-
+      
 
     } else {
       LOG_INFO(wxT("BR24radar_pi: $$$ Update polar called"));
@@ -549,7 +551,7 @@ void ArpaTarget::RefreshTarget() {
     double tt = (double)((xpos.time - prev_xpos.time).GetLo()) / 1000.;
     speed_now = (sqrt(s1 * s1 + s2 * s2)) / tt;
     LOG_INFO(wxT("BR24radar_pi: $$$ ** xpos.time. %i, prev_xpos.time %i"), xpos.time.GetLo(), prev_xpos.time.GetLo());
-    LOG_INFO(wxT("BR24radar_pi: $$$ *********Speed = %f, time %f, s1= %f, s2= %f, Heading = %f"), speed_now, tt, s1, s2,
+    LOG_INFO(wxT("BR24radar_pi: $$$ *********Speed = %f, time %f, s1= %f, s2= %f, Heading = %f"), speed_now * 3600./1852., tt, s1, s2,
              logbook[0].course);
     // send target data to OCPN
     if (status >= aquire3){
@@ -573,26 +575,33 @@ void ArpaTarget::RefreshTarget() {
 
 bool ArpaTarget::FindNearestContour(int dist) {
   // $$$ to do: no single pixel targets
-  // make a search pattern along an approximate octagon
+  // make a search pattern along a square
+  // returns the position of the nearest blob found in pol
   int a = pol.angle;
   int r = pol.r;
-  for (int i = 1; i < dist; i++) {
-    int octa = (int)(i * .414 + .6);       // length of half side of octagon
-    for (int j = -octa; j <= octa; j++) {  // top side
-      PIX(a + j, r + i);                   // use the symmetry to check equivalent points
-      PIX(a + i, r + j);                   // 90 degrees right rotation
-      PIX(a + j, r - i);                   // mirror horizontal axis
-      PIX(a - i, r + j);                   // mirror vertical axis
+  if (dist < 2) dist = 2;
+
+  for (int j = 2; j <= dist; j++) {
+    int dist_r = (int)((double)j / 2.);
+    int dist_a = (int)(326. / (double)r * j / 2.);  // 326/r: conversion factor to make squares
+    for (int i = a - dist_a; i < a + dist_a; i++) {  // "upper" side
+      PIX(i, r + dist_r);
     }
-    for (int j = 0; j <= octa; j++) {  // 45 degrees side
-      PIX(a + octa + j, r + i - j);
-      PIX(a - octa - j, r + i - j);
-      PIX(a + octa + j, r - i + j);  // mirror horizontal axis
-      PIX(a - octa - j, r - i + j);
+    for (int i = r + dist_r; i > r - dist_r; i--) {  // "right hand" side
+      PIX(a + dist_a, i);
+    }
+    for (int i = a + dist_a; i > a - dist_a; i--) {  // "lower" side
+      PIX(i, r - dist_r);
+    }
+    for (int i = r - dist_r; i < r + dist_r; i++) {  // "left hand" side
+      PIX(a - dist_a, i);
     }
   }
   return false;
 }
+
+
+
 
 void RadarArpa::CalculateCentroid(ArpaTarget* target) {
   /* target->pol.angle = (target->max_angle.angle + target->min_angle.angle) / 2;
