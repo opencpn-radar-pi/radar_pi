@@ -28,7 +28,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************
- The filter used here is an "Extended Kalman Filter", for a general introduction see Wikipedia.
+ The filter used here is an "Extended Kalman Filter" temmporarily with a fixed Kalman gain. For a general introduction see Wikipedia.
 
  */
 
@@ -69,11 +69,11 @@ Kalman_Filter::Kalman_Filter() {
   P(4, 4) = 10.;
 
   K.Extend(4, 4);  // initial Kalman gain
-  double gain = .3;
+  double gain = .2;
   K(1, 1) = gain;
   K(2, 2) = gain;
-  K(3, 3) = .05; // $$$
-  K(4, 4) = .05;
+  K(3, 3) = .1; // $$$
+  K(4, 4) = .1;
 
   F.Extend(4, 4);
   for (int i = 1; i <= 4; i++) {
@@ -110,15 +110,15 @@ MetricPoint Kalman_Filter::SetMeasurement(MetricPoint zz, MetricPoint xx) {
   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement before X %f %f %f %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
   X = X + K * (Z - H * X);
   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement after  X %f %f %f %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
-  MetricPoint xx;
-  xx.lat = X(1, 1);
-  xx.lon = X(2, 1);
-  xx.d_lat = X(3, 1);
-  xx.d_lon = X(4, 1);
-  xx.time = zz.time;
+  MetricPoint xx1;
+  xx1.lat = X(1, 1);
+  xx1.lon = X(2, 1);
+  xx1.d_lat = X(3, 1);
+  xx1.d_lon = X(4, 1);
+  xx1.time = zz.time;
   X.~Matrix();
   Z.~Matrix();
-  return xx;
+  return xx1;
 }
 
 MetricPoint Kalman_Filter::Predict(MetricPoint xx) {
