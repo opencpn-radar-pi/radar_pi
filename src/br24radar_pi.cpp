@@ -1198,7 +1198,7 @@ void br24radar_pi::SetPositionFix(PlugIn_Position_Fix &pfix) {}
 void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   time_t now = time(0);
   wxString info;
-
+  LOG_INFO(wxT("BR24radar_pi: $$$ **position fix updated"));
   if (m_var_source <= VARIATION_SOURCE_FIX && !wxIsNaN(pfix.Var) && (fabs(pfix.Var) > 0.0 || m_var == 0.0)) {
     if (m_var_source < VARIATION_SOURCE_FIX || fabs(pfix.Var - m_var) > 0.05) {
       LOG_VERBOSE(wxT("BR24radar_pi: Position fix provides new magnetic variation %f"), pfix.Var);

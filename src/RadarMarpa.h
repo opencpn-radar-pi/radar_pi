@@ -54,19 +54,14 @@ class Matrix;
 #define MAX_CONTOUR_LENGTH (600)
 #define MAX_LOST_COUNT (8)
 
-struct polar {
-  int angle;
-  int r;
-};
+typedef target_status int;
+#define LOST (-1)
+#define AQUIRE0 (0)    // 0 under aquisition, first seen, no contour yet
+#define AQUIRE1 (1)    // 1 under aquisition, contour found, first position FOUND
+#define AQUIRE2 (2)    // 2 under aquisition, speed and course taken
+#define AQUIRE3 (3)    // 3 under aquisition, speed and course verified, next time active
+  //    >=4  active
 
-enum target_status {
-  lost,
-  aquire0,  // under aquisition, first seen, no contour yet
-  aquire1,  // under aquisition, contour found, first position in log
-  aquire2,  // under aquisition, speed and course taken
-  aquire3,  // under aquisition, speed and course verified, next time active
-  active
-};
 
 enum OCPN_target_status{
     Q,    // aquiring
@@ -113,8 +108,8 @@ class MetricPoint {
  public:
   double lat;       // in meters
   double lon;       // in meters
-  double d_lat;     // m / sec
-  double d_lon;     // degrees
+  double dlat_dt;     // m / sec
+  double dlon_dt;     // degrees
   wxLongLong time;  // wxGetUTCTimeMillis
   Position Metric2Pos();
   MetricPoint operator+(MetricPoint p) {
@@ -133,6 +128,9 @@ class MetricPoint {
   }
 };
 
+Polar Metric2Polar(MetricPoint p, Position own_ship, int range);
+MetricPoint Polar2Metric(Polar p, Position own_ship, int range);
+
 class ArpaTarget {
  public:
   ArpaTarget(br24radar_pi* pi, RadarInfo* ri);
@@ -141,14 +139,13 @@ class ArpaTarget {
   RadarInfo* m_ri;
   br24radar_pi* m_pi;
   int target_id;
-  Position measured_pos;  // the most recently measured position of the target
+//  MetricPoint Z;  // the most recently measured position of the target
+  MetricPoint X;       // holds actual metric position
+
   Kalman_Filter* m_kalman;
-  MetricPoint xpos;       // holds actual metric position
-  MetricPoint prev_xpos;  // holds previous metric position
   wxLongLong t_refresh;   // time of last refresh
   int nr_of_log_entries;
   LogEntry logbook[SIZE_OF_LOG];  // stores positions, time course and speed
-  Polar pol;                      // temporary polarcoordinates of target
   double bearing;                 // only valid directly after calculation
   double distance;                // only valid directly after calculation
   unsigned int O_update_counter;
@@ -160,20 +157,19 @@ class ArpaTarget {
   Polar max_angle, min_angle, max_r, min_r;  // charasterictics of contour
   void PushLogbook();
   // void Aquire1NewTarget();
-  int GetContour();
+  int GetContour(Polar* p, MetricPoint* z);
   void set(br24radar_pi* pi, RadarInfo* ri);
-  bool FindNearestContour(int dist);
-  bool FindContourFromInside();
+  bool FindNearestContour(Polar* pol, int dist);
+  bool FindContourFromInside(Polar* p);
   Position Polar2Pos(Polar pol, Position own_ship);
   bool Pix(int ang, int rad);
   void UpdatePolar();
   // void Aquire2NewTarget();
   void CalculateSpeedandCourse();
-  bool GetTarget();
+  bool GetTarget(Polar* pol, MetricPoint* z);
   void RefreshTarget();
   void PassARPAtoOCPN(OCPN_target_status s);
   void SetStatusLost();
-  bool same_time;
 };
 
 class RadarArpa {

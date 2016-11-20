@@ -49,8 +49,8 @@ class Kalman_Filter {
  public:
   Kalman_Filter();
   ~Kalman_Filter();
-  MetricPoint SetMeasurement(MetricPoint Z, MetricPoint X);
-  MetricPoint Predict(MetricPoint x);  // measured position and expected position
+  void SetMeasurement(MetricPoint* zz, MetricPoint* xx);
+  void Predict(MetricPoint* x, int delta_time);  // measured position and expected position
 
   Matrix Q1;   // Error covariance matrix when not maneuvring
   Matrix Q2;   // Error covariance matrix when maneuvring

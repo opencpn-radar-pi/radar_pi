@@ -94,49 +94,49 @@ Kalman_Filter::~Kalman_Filter() {  // clean up all matrices
   K.~Matrix();
 }
 
-MetricPoint Kalman_Filter::SetMeasurement(MetricPoint zz, MetricPoint xx) {
+void Kalman_Filter::SetMeasurement(MetricPoint* zz, MetricPoint* xx) {
   // zz measured position, xx estimated position
   Matrix Z(4, 1);
-  Z(1, 1) = zz.lat;
-  Z(2, 1) = zz.lon;
-  Z(3, 1) = zz.d_lat;
-  Z(4, 1) = zz.d_lon;
+  Z(1, 1) = zz->lat;
+  Z(2, 1) = zz->lon;
+  Z(3, 1) = zz->dlat_dt;
+  Z(4, 1) = zz->dlon_dt;
   Matrix X(4, 1);
-  X(1, 1) = xx.lat;
-  X(2, 1) = xx.lon;
-  X(3, 1) = xx.d_lat;
-  X(4, 1) = xx.d_lon;
+  X(1, 1) = xx->lat;
+  X(2, 1) = xx->lon;
+  X(3, 1) = xx->dlat_dt;
+  X(4, 1) = xx->dlon_dt;
   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement before Z %f %f %f %f"), Z(1, 1), Z(2, 1), Z(3, 1), Z(4, 1));
   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement before X %f %f %f %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
   X = X + K * (Z - H * X);
   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement after  X %f %f %f %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
-  MetricPoint xx1;
-  xx1.lat = X(1, 1);
-  xx1.lon = X(2, 1);
-  xx1.d_lat = X(3, 1);
-  xx1.d_lon = X(4, 1);
-  xx1.time = zz.time;
+  xx->lat = X(1, 1);
+  xx->lon = X(2, 1);
+  xx->dlat_dt = X(3, 1);
+  xx->dlat_dt = X(4, 1);
+  xx->time = zz->time;
   X.~Matrix();
   Z.~Matrix();
-  return xx1;
+  return;
 }
 
-MetricPoint Kalman_Filter::Predict(MetricPoint xx) {
+void Kalman_Filter::Predict(MetricPoint* xx, int delta_time) {
   Matrix X(4, 1);
-  X(1, 1) = xx.lat;
-  X(2, 1) = xx.lon;
-  X(3, 1) = xx.d_lat;
-  X(4, 1) = xx.d_lon;
+  X(1, 1) = xx->lat;
+  X(2, 1) = xx->lon;
+  X(3, 1) = xx->dlat_dt;
+  X(4, 1) = xx->dlon_dt;
+  F(1, 3) = ((double)delta_time) / 1000.;
+  F(2, 4) = ((double)delta_time) / 1000.;
   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict before X %f %f %f %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
   X = F * X;
   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict after  X %f %f %f %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
-  MetricPoint x_ret;
-  x_ret.lat = X(1, 1);
-  x_ret.lon = X(2, 1);
-  x_ret.d_lat = X(3, 1);
-  x_ret.d_lon = X(4, 1);
+  xx->lat = X(1, 1);
+  xx->lon = X(2, 1);
+  xx->dlat_dt = X(3, 1);
+  xx->dlon_dt = X(4, 1);
   X.~Matrix();
-  return x_ret;
+  return;
 }
 
 
