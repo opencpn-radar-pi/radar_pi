@@ -53,8 +53,6 @@ class Matrix;
 #define SIZE_OF_LOG (20)
 #define MAX_CONTOUR_LENGTH (600)
 #define MAX_LOST_COUNT (8)
-
-typedef target_status int;
 #define LOST (-1)
 #define AQUIRE0 (0)    // 0 under aquisition, first seen, no contour yet
 #define AQUIRE1 (1)    // 1 under aquisition, contour found, first position FOUND
@@ -62,7 +60,7 @@ typedef target_status int;
 #define AQUIRE3 (3)    // 3 under aquisition, speed and course verified, next time active
   //    >=4  active
 
-
+typedef int target_status;
 enum OCPN_target_status{
     Q,    // aquiring
     T,    // active
@@ -98,7 +96,6 @@ class Polar {
 class LogEntry {
  public:
   wxLongLong time;  // wxGetUTCTimeMillis
-  Polar pp;
   Position pos;
   double speed;
   double course;
@@ -163,12 +160,11 @@ class ArpaTarget {
   bool FindContourFromInside(Polar* p);
   Position Polar2Pos(Polar pol, Position own_ship);
   bool Pix(int ang, int rad);
-  void UpdatePolar();
   // void Aquire2NewTarget();
   void CalculateSpeedandCourse();
   bool GetTarget(Polar* pol, MetricPoint* z);
   void RefreshTarget();
-  void PassARPAtoOCPN(OCPN_target_status s);
+  void PassARPAtoOCPN(Polar* p, OCPN_target_status s);
   void SetStatusLost();
 };
 
@@ -177,7 +173,6 @@ class RadarArpa {
   RadarArpa(br24radar_pi* pi, RadarInfo* ri);
   ~RadarArpa();
 
-  void PassARPATargetsToOCPN();
   int GetTargetWidth(int angle, int rad);
   int GetTargetHeight(int angle, int rad);
   ArpaTarget* m_targets;
