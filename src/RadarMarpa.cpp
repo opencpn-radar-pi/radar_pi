@@ -255,10 +255,8 @@ int ArpaTarget::GetContour(Polar* pol, MetricPoint* z) {  // sets the measured_p
   
   wxLongLong target_time = m_ri->m_history[MOD_ROTATION2048(pol->angle)].time;
   
-  LOG_INFO(wxT("BR24radar_pi: $$$ blob found  r= %i, alfa= %i, target_time= %u"), pol->r, pol->angle,  target_time.GetLo());
-  polar.r = pol->r;  // store in class
-  polar.angle = pol->angle;
-
+  LOG_INFO(wxT("BR24radar_pi: $$$ blob found  target_time= %u"),  target_time.GetLo());
+  
   Position p_own;
   p_own.lat = m_ri->m_history[MOD_ROTATION2048(pol->angle)].lat;  // get the position at receive time
   p_own.lon = m_ri->m_history[MOD_ROTATION2048(pol->angle)].lon;
@@ -291,7 +289,7 @@ void RadarArpa::DrawContour(ArpaTarget target) {
   glColor4ub(40, 40, 100, 250);
   glLineWidth(3.0);
   glBegin(GL_LINES);
-  //LOG_INFO(wxT("BR24radar_pi:RadarArpa::DrawContour  r = % i, alf= %i"), target.polar.r, target.polar.angle);
+
   for (int i = 0; i < target.contour_length; i++) {
     double xx;
     double yy;
@@ -422,11 +420,11 @@ void ArpaTarget::RefreshTarget() {
           LOG_INFO(wxT("BR24radar_pi: $$$ ***Gettarget true estimated time %u, target time %u"), X.time.GetLo(), z.time.GetLo());
           // check if target has a new later time than previous target
           if (z.time <= prev_X.time) {
-           //    found old target again, reset what we have done      
-              wxLongLong t1 = prev_X.time.GetLo();
-              wxLongLong t2 = z.time.GetLo();
+              // found old target again, reset what we have done      
+              /*t1 = prev_X.time.GetLo();
+              t2 = z.time.GetLo();
               LOG_INFO(wxT("BR24radar_pi: $$$ Gettarget same time found prev target time %u, target time %u"), t1,
-                  t2);
+                  t2);*/
               X = prev_X;
               prev_X = prev2_X;
               return;
@@ -450,8 +448,6 @@ void ArpaTarget::RefreshTarget() {
           LOG_INFO(wxT("BR24radar_pi: $$$ new status = %i"), status);
 
           m_kalman->SetMeasurement(&z, &X);  // X is new estimated position, improved with measured position
-          //X = z; // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-          //expected = polar;  //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
       }
       else {
