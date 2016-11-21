@@ -255,6 +255,8 @@ int br24radar_pi::Init(void) {
   wxMenuItem *mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
   wxMenuItem *mi3 = new wxMenuItem(&dummy_menu, -1, _("Radar Control..."));
   wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Set Arpa Target"));
+  /*wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete Arpa Target"));
+  wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all Arpa Targets"));*/
 #ifdef __WXMSW__
   wxFont *qFont = OCPNGetFont(_("Menu"), 10);
   mi1->SetFont(*qFont);
@@ -265,7 +267,6 @@ int br24radar_pi::Init(void) {
   m_context_menu_hide_id = AddCanvasContextMenuItem(mi2, this);
   m_context_menu_control_id = AddCanvasContextMenuItem(mi3, this);
   m_context_menu_set_marpa_target = AddCanvasContextMenuItem(mi4, this);
-
 
   m_initialized = true;
   LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.show_radar[0], m_settings.show_radar[1],
@@ -501,12 +502,39 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
         && m_settings.chart_overlay >= 0                                       // overlay desired
         && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
         && m_bpos_set) {                                                       // overlay possible
+        if (!m_radar[m_settings.chart_overlay]->m_marpa){
+            wxMenu dummy_menu;
+            wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete Arpa Target"));
+            wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all Arpa Targets"));
+            m_radar[m_settings.chart_overlay]->m_marpa = new RadarArpa(this, m_radar[m_settings.chart_overlay]);
+            m_context_menu_delete_marpa_target = AddCanvasContextMenuItem(mi5, this);
+            m_context_menu_delete_all_marpa_targets = AddCanvasContextMenuItem(mi6, this);
+        }
       Position target_pos;
       target_pos.lat = m_cursor_lat;
       target_pos.lon = m_cursor_lon;
       m_radar[m_settings.chart_overlay]->m_marpa->Aquire0NewTarget(target_pos);
     }
-  } else {
+  }
+  else if (id == m_context_menu_delete_marpa_target) {
+      if (m_settings.show                                                        // radar shown
+          && m_settings.chart_overlay >= 0                                       // overlay desired
+          && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
+          && m_bpos_set) {                                                       // overlay possible
+
+      }
+  }
+  else if (id == m_context_menu_delete_all_marpa_targets) {
+      if (m_settings.show                                                        // radar shown
+          && m_settings.chart_overlay >= 0                                       // overlay desired
+          && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
+          && m_bpos_set) {                                                       // overlay possible
+          m_radar[m_settings.chart_overlay]->m_marpa->DeleteAllTargets();
+      }
+  }
+  
+  
+  else {
     wxLogError(wxT("BR24radar_pi: Unknown context menu item callback"));
   }
 }

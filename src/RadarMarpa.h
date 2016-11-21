@@ -138,6 +138,7 @@ class ArpaTarget {
   int target_id;
 //  MetricPoint Z;  // the most recently measured position of the target
   MetricPoint X;       // holds actual metric position
+  Polar polar;  // recent polar position of the target
 
   Kalman_Filter* m_kalman;
   wxLongLong t_refresh;   // time of last refresh
@@ -186,6 +187,7 @@ class RadarArpa {
   void DrawArpaTargets();
   void RefreshArpaTargets();
   void Aquire0NewTarget(Position p);
+  void DeleteAllTargets();
 };
 
 /*double Dist(MetricPoint p2) {

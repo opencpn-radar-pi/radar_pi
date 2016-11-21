@@ -177,7 +177,7 @@ void radar_range_control_item::Update(int v) {
 RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_pi = pi;
   m_radar = radar;
-
+  m_marpa = 0;
   m_radar_type = RT_UNKNOWN;
   m_auto_range_mode = true;
   m_course_index = 0;
@@ -284,9 +284,6 @@ bool RadarInfo::Init(wxString name, int verbose) {
     wxLogError(wxT("BR24radar_pi %s: Unable to create RadarPanel"), name.c_str());
     return false;
   }
-
-  m_marpa = new RadarArpa(m_pi, this);
-  LOG_INFO(wxT("BR24rad $$$ Arpa constructor called"));
 
   m_timer->Start(m_refresh_millis);
   return true;
@@ -1073,12 +1070,14 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   }
 
   if (overlay) {
-      m_marpa->RefreshArpaTargets();
-      glPushMatrix();
-      glTranslated(center.x, center.y, 0);
-      glScaled(scale, scale, 1.);
-      m_marpa->DrawArpaTargets();
-      glPopMatrix();
+      if (m_marpa){
+          m_marpa->RefreshArpaTargets();
+          glPushMatrix();
+          glTranslated(center.x, center.y, 0);
+          glScaled(scale, scale, 1.);
+          m_marpa->DrawArpaTargets();
+          glPopMatrix();
+      }
 
     if (m_pi->m_settings.guard_zone_on_overlay) {
       glPushMatrix();

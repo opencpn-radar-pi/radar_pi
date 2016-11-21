@@ -474,6 +474,8 @@ class br24radar_pi : public opencpn_plugin_112 {
   int m_context_menu_show_id;
   int m_context_menu_hide_id;
   int m_context_menu_set_marpa_target;
+  int m_context_menu_delete_marpa_target;
+  int m_context_menu_delete_all_marpa_targets;
 
   int m_tool_id;
   wxBitmap *m_pdeficon;
