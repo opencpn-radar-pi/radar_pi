@@ -72,8 +72,8 @@ Kalman_Filter::Kalman_Filter() {
   double gain = .2;
   K(1, 1) = gain;
   K(2, 2) = gain;
-  K(3, 3) = .1; // $$$
-  K(4, 4) = .1;
+  K(3, 3) = .2; // $$$
+  K(4, 4) = .2;
 
   F.Extend(4, 4);
   for (int i = 1; i <= 4; i++) {
@@ -113,7 +113,7 @@ void Kalman_Filter::SetMeasurement(MetricPoint* zz, MetricPoint* xx) {
   xx->lat = X(1, 1);
   xx->lon = X(2, 1);
   xx->dlat_dt = X(3, 1);
-  xx->dlat_dt = X(4, 1);
+  xx->dlon_dt = X(4, 1);
   xx->time = zz->time;
   X.~Matrix();
   Z.~Matrix();

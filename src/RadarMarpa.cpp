@@ -104,6 +104,7 @@ void RadarArpa::Aquire0NewTarget(Position target_pos) {
     LOG_INFO(wxT("BR24radar_pi: RadarArpa:: max targets exceeded "));
     return;
   }
+  LOG_INFO(wxT("BR24radar_pi: $$$Aquire0NewTarget "));
   m_targets[i_target].X = Pos2Metric(target_pos);  // Expected position
 //  m_targets[i_target].X.time = wxGetUTCTimeMillis();
   m_targets[i_target].X.time = 0;
@@ -373,8 +374,6 @@ void RadarArpa::RefreshArpaTargets() {
 }
 
 void ArpaTarget::RefreshTarget() {
-     LOG_INFO(wxT("BR24radar_pi: $$$ refresh target entered"));
-
   MetricPoint prev_X;
   MetricPoint prev2_X;
   Polar pol;
@@ -382,123 +381,124 @@ void ArpaTarget::RefreshTarget() {
   own_pos.lat = m_pi->m_ownship_lat;
   own_pos.lon = m_pi->m_ownship_lon;
   pol = Metric2Polar(X, own_pos, m_ri->m_range_meters);
+  wxLongLong time1 = m_ri->m_history[MOD_ROTATION2048(pol.angle)].time;
+  wxLongLong time2 = m_ri->m_history[MOD_ROTATION2048(pol.angle + SCAN_MARGIN)].time;
+  // check if target has been refreshed since last time
+  // and if the beam has passed the target location with SCAN_MARGIN spokes
+  if (time1 > (t_refresh + 1000) && time2 >= time1) {
 
-  wxLongLong time_hist = m_ri->m_history[MOD_ROTATION2048(pol.angle + SCAN_MARGIN)].time;
-  if (t_refresh >= time_hist) {
-    // check if target has been refreshed since last time
-    // + SCAN_MARGIN because target may have mooved
-    return;
-  }
-  unsigned int t1, t2;
-  t1 = (unsigned int)(t_refresh.GetLo());
-  t2 = (unsigned int)(time_hist.GetLo());
-  LOG_INFO(wxT("BR24radar_pi: $$$ ***t_refresh %u, time_hist= %u"), t1, t2);
-  // set new refresh time
-  t_refresh = m_ri->m_history[MOD_ROTATION2048(pol.angle + SCAN_MARGIN)].time;
+      // set new refresh time
+      t_refresh = time1;
+      wxLongLong t_target = time1;  // estimated new target time
+      prev2_X = prev_X;
+      prev_X = X;  // save the previous target position
 
-  wxLongLong t_target = m_ri->m_history[MOD_ROTATION2048(pol.angle)].time;  // estimated new target time
-  prev2_X = prev_X;
-  prev_X = X;  // save the previous target position
+      // get estimate
+      X.time = t_target;
+      LOG_INFO(wxT("BR24radar_pi: $$$ before predict X.time %u, prevX.time %u"), X.time.GetLo(), prev_X.time.GetLo());
+      unsigned int delta_t = (unsigned int)((X.time - prev_X.time).GetLo());
+      LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets  before predict delta_t= %u"), delta_t);
 
-  // get estimate
-  X.time = t_target;
-  LOG_INFO(wxT("BR24radar_pi: $$$ *** Xtime %u, prevXtime %u"), X.time.GetLo(), prev_X.time.GetLo());
-  unsigned int delta_t = (unsigned int)((X.time - prev_X.time).GetLo());
-  LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets delta_t= %u"), delta_t);
+      m_kalman->Predict(&X, delta_t);  // X is new estimated position vector
 
-  m_kalman->Predict(&X, delta_t);  // X is new estimated position vector
-
-  // now set the polar to expected position
-  pol = Metric2Polar(X, own_pos, m_ri->m_range_meters);
-  // zooming and target movemedt may  cause r to be out of bounds
-  if (pol.r >= RETURNS_PER_LINE || pol.r <= 0) {
-    LOG_INFO(wxT("BR24radar_pi: $$$ after predict r too large or negative r = %i"), pol.r);
-    SetStatusLost();
-    LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
-    return;
-  }
-  expected = pol;  // $$$ for test only
-
-  // get measurement
-  MetricPoint z;
-
-  if (GetTarget(&pol, &z)) {
-    // target refreshed
-    LOG_INFO(wxT("BR24radar_pi: $$$ ***Gettarget true estimated time %u, target time %u"), X.time.GetLo(), z.time.GetLo());
-    // check if target has a new later time than previous target
-    if (z.time <= prev_X.time) {
-      // found old target again, reset what we have done      
-      t1 = prev_X.time.GetLo();
-      t2 = z.time.GetLo();
-      LOG_INFO(wxT("BR24radar_pi: $$$ Gettarget same time found prev target time %u, target time %u"), t1,
-               t2);
-      X = prev_X;
-      prev_X = prev2_X;
-      return;
-    }
-    lost_count = 0;
-    if (status == 0 || status == 1) {
-      X = z;  // as we have no history we move target to measured position
-      LOG_INFO(wxT("BR24radar_pi: $$$ status 0 or 1"));
-      X.dlat_dt = 0.;
-      X.dlon_dt = 0.;
-      z.dlat_dt = 0.;
-      z.dlon_dt = 0.;
-    } else {  // set speed in z
-      double delta_t = (double)((z.time - X.time).GetLo()) / 1000.;
-      z.dlat_dt = (z.lat - X.lat) / delta_t;
-      z.dlon_dt = (z.lon - X.lon) / delta_t;
-    }
-    status++;
-    LOG_INFO(wxT("BR24radar_pi: $$$ new status = %i"), status);
-
-    m_kalman->SetMeasurement(&z, &X);  // X is new estimated position, improved with measured position
-
-  } else {
-    // target not found
-    if (status == AQUIRE0 || status == AQUIRE1) {
-      SetStatusLost();
-      //     LOG_INFO(wxT("BR24radar_pi: $$$ case aquire0 or 1 lost"));
-      return;
-    } else {
-      lost_count++;
-      if (lost_count >= MAX_LOST_COUNT) {
-        SetStatusLost();
-        //          LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
-        return;
+      // now set the polar to expected position
+      pol = Metric2Polar(X, own_pos, m_ri->m_range_meters);
+      // zooming and target movemedt may  cause r to be out of bounds
+      if (pol.r >= RETURNS_PER_LINE || pol.r <= 0) {
+          LOG_INFO(wxT("BR24radar_pi: $$$ after predict r too large or negative r = %i"), pol.r);
+          SetStatusLost();
+          LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
+          return;
       }
-    }
-    // target was not found but gets another chance
-    LOG_INFO(wxT("BR24radar_pi: $$$ target not found but not lost, target time= %i"), X.time.GetLo());
-  }
-  PushLogbook();
-  logbook[0].time = X.time;
-  Position xx;
-  xx.lat = X.lat / 1852. / 60.;
-  xx.lon = X.lon / 1852. / 60.;
-  xx.lon /= cos(deg2rad(xx.lat));
-  logbook[0].pos = xx;
-  logbook[0].time = X.time;
-  if (status >= 2) {
-    CalculateSpeedandCourse();
-    double speed_now;
-    /*double s1 = xpos.lat - prev_xpos.lat;
-    double s2 = xpos.lon - prev_xpos.lon;*/
-    double s1 = X.dlat_dt;
-    double s2 = X.dlon_dt;
-    double tt = (double)((X.time - prev_X.time).GetLo()) / 1000.;
-    speed_now = (sqrt(s1 * s1 + s2 * s2)) / tt;
-    LOG_INFO(wxT("BR24radar_pi: $$$ ** xpos.time. %i, prev_xpos.time %i"), X.time.GetLo(), prev_X.time.GetLo());
-    LOG_INFO(wxT("BR24radar_pi: $$$ *********Speed = %f, time %f, s1= %f, s2= %f, Heading = %f"), speed_now * 3600. / 1852., tt, s1,
-             s2, rad2deg(atan2(s2, s1)));
-    // send target data to OCPN
-    pol = Metric2Polar(X, own_pos, m_ri->m_range_meters);
-    if (status >= 3) {
-      OCPN_target_status s;
-      if (status == 3) s = Q;
-      if (status > 4) s = T;
-      PassARPAtoOCPN(&pol, s);
-    }
+      expected = pol;  // $$$ for test only
+
+      // get measurement
+      MetricPoint z;
+
+      if (GetTarget(&pol, &z)) {
+          // target refreshed
+          LOG_INFO(wxT("BR24radar_pi: $$$ ***Gettarget true estimated time %u, target time %u"), X.time.GetLo(), z.time.GetLo());
+          // check if target has a new later time than previous target
+          if (z.time <= prev_X.time) {
+              // found old target again, reset what we have done      
+              /*t1 = prev_X.time.GetLo();
+              t2 = z.time.GetLo();
+              LOG_INFO(wxT("BR24radar_pi: $$$ Gettarget same time found prev target time %u, target time %u"), t1,
+                  t2);*/
+              X = prev_X;
+              prev_X = prev2_X;
+              return;
+          }
+          lost_count = 0;
+          if (status == 0 ) {
+              X = z;  // as we have no history we move target to measured position
+              LOG_INFO(wxT("BR24radar_pi: $$$ status 0 or 1"));
+              X.dlat_dt = 0.;
+              X.dlon_dt = 0.;
+              z.dlat_dt = 0.;
+              z.dlon_dt = 0.;
+          }
+          else {  // set speed in z
+              double delta_t = (double)((z.time - prev_X.time).GetLo()) / 1000.;
+              LOG_INFO(wxT("BR24radar_pi: $$$ delta t for speed %f"), delta_t);
+              z.dlat_dt = (z.lat - X.lat) / delta_t;
+              z.dlon_dt = (z.lon - X.lon) / delta_t;
+          }
+          status++;
+          LOG_INFO(wxT("BR24radar_pi: $$$ new status = %i"), status);
+
+          m_kalman->SetMeasurement(&z, &X);  // X is new estimated position, improved with measured position
+
+      }
+      else {
+          // target not found
+          if (status == AQUIRE0 || status == AQUIRE1) {
+              SetStatusLost();
+              //     LOG_INFO(wxT("BR24radar_pi: $$$ case aquire0 or 1 lost"));
+              return;
+          }
+          else {
+              lost_count++;
+              if (lost_count >= MAX_LOST_COUNT) {
+                  SetStatusLost();
+                  //          LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
+                  return;
+              }
+          }
+          // target was not found but gets another chance
+          LOG_INFO(wxT("BR24radar_pi: $$$ target not found but not lost, target time= %u"), X.time.GetLo());
+      }
+      // set refresh time to the time of the spoke where the target was found
+      t_refresh = X.time;
+      PushLogbook();
+      logbook[0].time = X.time;
+      Position xx;
+      xx.lat = X.lat / 1852. / 60.;
+      xx.lon = X.lon / 1852. / 60.;
+      xx.lon /= cos(deg2rad(xx.lat));
+      logbook[0].pos = xx;
+      logbook[0].time = X.time;
+      if (status >= 2) {
+          CalculateSpeedandCourse();
+          double speed_now;
+          /*double s1 = xpos.lat - prev_xpos.lat;
+          double s2 = xpos.lon - prev_xpos.lon;*/
+          double s1 = X.dlat_dt;
+          double s2 = X.dlon_dt;
+          double tt = (double)((X.time - prev_X.time).GetLo()) / 1000.;
+          speed_now = (sqrt(s1 * s1 + s2 * s2)) / tt * 3600. / 1852.;
+          LOG_INFO(wxT("BR24radar_pi: $$$ **before pass arpa X.time. %u, prev_X.time %u"), X.time.GetLo(), prev_X.time.GetLo());
+          LOG_INFO(wxT("BR24radar_pi: $$$ *********Speed = %f, time %f, s1= %f, s2= %f, Heading = %f"), speed_now * 3600. / 1852., tt, s1,
+              s2, rad2deg(atan2(s2, s1)));
+          // send target data to OCPN
+          pol = Metric2Polar(X, own_pos, m_ri->m_range_meters);
+          if (status >= 3) {
+              OCPN_target_status s;
+              if (status >= 3) s = Q;
+              if (status > 7) s = T;
+              PassARPAtoOCPN(&pol, s);
+          }
+      }
   }
   return;
 }
@@ -518,7 +518,6 @@ bool ArpaTarget::FindNearestContour(Polar* pol, int dist) {
   int a = pol->angle;
   int r = pol->r;
   if (dist < 2) dist = 2;
-  LOG_INFO(wxT("BR24radar_pi: $$$ FindNearestContour r= %i, a= %i"), r, a);
   for (int j = 2; j <= dist; j++) {
     int dist_r = (int)((double)j / 2.);
     int dist_a = (int)(326. / (double)r * j / 2.);  // 326/r: conversion factor to make squares
@@ -538,9 +537,6 @@ bool ArpaTarget::FindNearestContour(Polar* pol, int dist) {
   LOG_INFO(wxT("BR24radar_pi: $$$ FindNearestContour return false"));
   return false;
 }
-
-
-
 
 void RadarArpa::CalculateCentroid(ArpaTarget* target) {
   /* target->pol.angle = (target->max_angle.angle + target->min_angle.angle) / 2;
@@ -609,7 +605,6 @@ bool ArpaTarget::GetTarget(Polar* pol, MetricPoint* z) {
       dist = OFF_LOCATION * 2;
     }
     if (dist > pol->r - 5) dist = pol->r - 5; // don't search close to origin
-    LOG_INFO(wxT("BR24radar_pi: $$$ FindNearestContour dist=%i"), dist);
     contour_found = FindNearestContour(pol, dist);
   }
   if (!contour_found) {
