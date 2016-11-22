@@ -452,11 +452,8 @@ void ArpaTarget::RefreshTarget() {
           LOG_INFO(wxT("BR24radar_pi: $$$ ***Gettarget true estimated time %u, target time %u"), X.time.GetLo(), z.time.GetLo());
           // check if target has a new later time than previous target
           if (z.time <= prev_X.time) {
-              // found old target again, reset what we have done      
-              /*t1 = prev_X.time.GetLo();
-              t2 = z.time.GetLo();
-              LOG_INFO(wxT("BR24radar_pi: $$$ Gettarget same time found prev target time %u, target time %u"), t1,
-                  t2);*/
+              // found old target again, reset what we have done   
+              LOG_INFO(wxT("BR24radar_pi: $$$ Gettarget same time found"));
               X = prev_X;
               prev_X = prev2_X;
               return;
@@ -478,10 +475,17 @@ void ArpaTarget::RefreshTarget() {
           }
           if (status != FOR_DELETION) status++;
           LOG_INFO(wxT("BR24radar_pi: $$$ new status = %i"), status);
-          double gain = 0.2;
-          if (status <= 5) gain = 0.5;
-          if (status <= 3) gain = 0.8;
-          m_kalman->SetMeasurement(&z, &X, gain);  // X is new estimated position, improved with measured position
+          double gain_p = 0.2;  // Kalman gain for position
+          double gain_s = 0.3;  // Kalman gain for velocity
+          if (status <= 5) { 
+              gain_p = 0.5;
+              gain_s = 0.5;
+          }
+          if (status <= 3) {
+              gain_p = 0.8;
+              gain_s = 0.8;
+          }
+          m_kalman->SetMeasurement(&z, &X, gain_p, gain_s);  // X is new estimated position, improved with measured position
           pol_z = Pos2Polar(z, own_pos, m_ri->m_range_meters); 
       }
       else {
@@ -513,11 +517,10 @@ void ArpaTarget::RefreshTarget() {
           CalculateSpeedandCourse();
           double speed_now;
           double s1 = X.dlat_dt * 60.;
-          double s2 = X.dlon_dt * cos(deg2rad(X.lat)) * 60.;
-          double tt = (double)((X.time - prev_X.time).GetLo()) / 1000.;
-          speed_now = (sqrt(s1 * s1 + s2 * s2)) / tt * 3600.; // and convert to miles per hour
+          double s2 = X.dlon_dt * cos(deg2rad(X.lat)) * 60.; // nautical miles now
+          speed_now = (sqrt(s1 * s1 + s2 * s2)) * 3600.; // and convert to miles per hour
           LOG_INFO(wxT("BR24radar_pi: $$$ **before pass arpa X.time. %u, prev_X.time %u"), X.time.GetLo(), prev_X.time.GetLo());
-          LOG_INFO(wxT("BR24radar_pi: $$$ *********Speed = %f, time %f, s1= %f, s2= %f, Heading = %f"), speed_now, tt, s1,
+          LOG_INFO(wxT("BR24radar_pi: $$$ *********Speed = %f,  s1= %f, s2= %f, Heading = %f"), speed_now, s1,
               s2, rad2deg(atan2(s2, s1)));
           // send target data to OCPN
           pol = Pos2Polar(X, own_pos, m_ri->m_range_meters);

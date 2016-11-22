@@ -49,7 +49,7 @@ class Kalman_Filter {
  public:
   Kalman_Filter();
   ~Kalman_Filter();
-  void SetMeasurement(Position* zz, Position* xx, double gain);
+  void SetMeasurement(Position* zz, Position* xx, double gain_p, double gain_s);
   void Predict(Position* x, int delta_time);  // measured position and expected position
 
   Matrix Q1;   // Error covariance matrix when not maneuvring

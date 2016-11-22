@@ -52,7 +52,7 @@ class Matrix;
 #define SCAN_MARGIN (200)
 #define SIZE_OF_LOG (20)
 #define MAX_CONTOUR_LENGTH (600)
-#define MAX_LOST_COUNT (4)
+#define MAX_LOST_COUNT (5)
 #define FOR_DELETION (-2)
 #define LOST (-1)
 #define AQUIRE0 (0)    // 0 under aquisition, first seen, no contour yet

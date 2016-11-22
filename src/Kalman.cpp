@@ -94,12 +94,12 @@ Kalman_Filter::~Kalman_Filter() {  // clean up all matrices
   K.~Matrix();
 }
 
-void Kalman_Filter::SetMeasurement(Position* zz, Position* xx, double gain) {
+void Kalman_Filter::SetMeasurement(Position* zz, Position* xx, double gain_p, double gain_s) {
   // zz measured position, xx estimated position
-    K(1, 1) = gain;
-    K(2, 2) = gain;
-    K(3, 3) = gain; 
-    K(4, 4) = gain;
+    K(1, 1) = gain_p;
+    K(2, 2) = gain_p;
+    K(3, 3) = gain_s; 
+    K(4, 4) = gain_s;
   Matrix Z(4, 1);
   Z(1, 1) = zz->lat;
   Z(2, 1) = zz->lon;
@@ -110,10 +110,10 @@ void Kalman_Filter::SetMeasurement(Position* zz, Position* xx, double gain) {
   X(2, 1) = xx->lon;
   X(3, 1) = xx->dlat_dt;
   X(4, 1) = xx->dlon_dt;
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement before Z %f %f %f %f"), Z(1, 1), Z(2, 1), Z(3, 1), Z(4, 1));
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement before X %f %f %f %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement before Z %f %f %.9f %.9f"), Z(1, 1), Z(2, 1), Z(3, 1), Z(4, 1));
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement before X %f %f %.9f %.9f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
   X = X + K * (Z - H * X);
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement after  X %f %f %f %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement after  X %f %f %.9f %.9f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
   xx->lat = X(1, 1);
   xx->lon = X(2, 1);
   xx->dlat_dt = X(3, 1);
@@ -132,9 +132,9 @@ void Kalman_Filter::Predict(Position* xx, int delta_time) {
   X(4, 1) = xx->dlon_dt;
   F(1, 3) = ((double)delta_time) / 1000.;
   F(2, 4) = ((double)delta_time) / 1000.;
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict before X %f %f %f %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict before X %f %f %.9f %.9f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
   X = F * X;
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict after  X %f %f %f %f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict after  X %f %f %.9f %.9f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
   xx->lat = X(1, 1);
   xx->lon = X(2, 1);
   xx->dlat_dt = X(3, 1);
