@@ -59,6 +59,9 @@ class Matrix;
 #define AQUIRE2 (2)    // 2 under aquisition, speed and course taken
 #define AQUIRE3 (3)    // 3 under aquisition, speed and course verified, next time active
   //    >=4  active
+#define Q_NUM (3)      // status Q to OCPN at target status 3
+#define T_NUM (7)      // status T to OCPN at target status 7
+
 
 typedef int target_status;
 enum OCPN_target_status{
@@ -71,6 +74,9 @@ class Position {
  public:
   double lat;
   double lon;
+  double dlat_dt;     // deg / sec
+  double dlon_dt;     // deg / sec
+  wxLongLong time;    // millis
 
   Position operator-(Position p) {
     Position q;
@@ -90,7 +96,6 @@ class Polar {
  public:
   int angle;
   int r;
-  void Pos2Polar(Position p, Position own_ship, int range);
 };
 
 class LogEntry {
@@ -101,33 +106,6 @@ class LogEntry {
   double course;
 };
 
-class MetricPoint {
- public:
-  double lat;       // in meters
-  double lon;       // in meters
-  double dlat_dt;     // m / sec
-  double dlon_dt;     // degrees
-  wxLongLong time;  // wxGetUTCTimeMillis
-  Position Metric2Pos();
-  MetricPoint operator+(MetricPoint p) {
-    MetricPoint q;
-    q.lat = lat + p.lat;
-    q.lon = lon + p.lon;
-    return q;
-  }
-
-  MetricPoint operator-(MetricPoint p) {
-    MetricPoint q;
-    q.lat = lat - p.lat;
-    q.lon = lon - p.lon;
-    q.time = time - p.time;
-    return q;
-  }
-};
-
-Polar Metric2Polar(MetricPoint p, Position own_ship, int range);
-MetricPoint Polar2Metric(Polar p, Position own_ship, int range);
-
 class ArpaTarget {
  public:
   ArpaTarget(br24radar_pi* pi, RadarInfo* ri);
@@ -136,9 +114,8 @@ class ArpaTarget {
   RadarInfo* m_ri;
   br24radar_pi* m_pi;
   int target_id;
-//  MetricPoint Z;  // the most recently measured position of the target
-  MetricPoint X;       // holds actual metric position
-  Polar polar;  // recent polar position of the target
+  Position X;       // holds actual position
+  Polar polar;      // recent polar position of the target
 
   Kalman_Filter* m_kalman;
   wxLongLong t_refresh;   // time of last refresh
@@ -155,15 +132,14 @@ class ArpaTarget {
   Polar max_angle, min_angle, max_r, min_r;  // charasterictics of contour
   void PushLogbook();
   // void Aquire1NewTarget();
-  int GetContour(Polar* p, MetricPoint* z);
+  int GetContour(Polar* p, Position* z);
   void set(br24radar_pi* pi, RadarInfo* ri);
   bool FindNearestContour(Polar* pol, int dist);
   bool FindContourFromInside(Polar* p);
-  Position Polar2Pos(Polar pol, Position own_ship);
   bool Pix(int ang, int rad);
   // void Aquire2NewTarget();
   void CalculateSpeedandCourse();
-  bool GetTarget(Polar* pol, MetricPoint* z);
+  bool GetTarget(Polar* pol, Position* z);
   void RefreshTarget();
   void PassARPAtoOCPN(Polar* p, OCPN_target_status s);
   void SetStatusLost();
@@ -179,28 +155,15 @@ class RadarArpa {
   ArpaTarget* m_targets;
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
-  //  Polar Pos2Polar(Position p, Position own_ship);
   int NextEmptyTarget();
 
   void CalculateCentroid(ArpaTarget* t);
   void DrawContour(ArpaTarget t);
   void DrawArpaTargets();
   void RefreshArpaTargets();
-  void Aquire0NewTarget(Position p);
+  void AquireNewTarget(Position p, int status);
   void DeleteAllTargets();
 };
-
-/*double Dist(MetricPoint p2) {
-  double dist = sqrt((p2.lat - lat) * (p2.lat - lat) + (p2.lon - lon) * (p2.lon - lon));
-  return dist;
-}
-*/
-/*double Bearing(MetricPoint p2) {
-  double bear = rad2deg(atan((p2.lon - lon) / (p2.lat - lat)));
-  return bear;
-}*/
-
-MetricPoint Pos2Metric(Position p);
 
 PLUGIN_END_NAMESPACE
 

@@ -72,7 +72,7 @@ Kalman_Filter::Kalman_Filter() {
   double gain = .2;
   K(1, 1) = gain;
   K(2, 2) = gain;
-  K(3, 3) = .2; // $$$
+  K(3, 3) = .2; 
   K(4, 4) = .2;
 
   F.Extend(4, 4);
@@ -94,8 +94,12 @@ Kalman_Filter::~Kalman_Filter() {  // clean up all matrices
   K.~Matrix();
 }
 
-void Kalman_Filter::SetMeasurement(MetricPoint* zz, MetricPoint* xx) {
+void Kalman_Filter::SetMeasurement(Position* zz, Position* xx, double gain) {
   // zz measured position, xx estimated position
+    K(1, 1) = gain;
+    K(2, 2) = gain;
+    K(3, 3) = gain; 
+    K(4, 4) = gain;
   Matrix Z(4, 1);
   Z(1, 1) = zz->lat;
   Z(2, 1) = zz->lon;
@@ -120,7 +124,7 @@ void Kalman_Filter::SetMeasurement(MetricPoint* zz, MetricPoint* xx) {
   return;
 }
 
-void Kalman_Filter::Predict(MetricPoint* xx, int delta_time) {
+void Kalman_Filter::Predict(Position* xx, int delta_time) {
   Matrix X(4, 1);
   X(1, 1) = xx->lat;
   X(2, 1) = xx->lon;
