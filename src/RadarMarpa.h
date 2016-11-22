@@ -71,6 +71,8 @@ enum OCPN_target_status{
     L      // lost
 };
 
+
+
 class Position {
  public:
   double lat;
@@ -98,6 +100,8 @@ class Polar {
   int angle;
   int r;
 };
+
+Polar Pos2Polar(Position p, Position own_ship, int range);
 
 class LogEntry {
  public:

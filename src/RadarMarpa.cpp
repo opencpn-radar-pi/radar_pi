@@ -82,8 +82,8 @@ Polar Pos2Polar(Position p, Position own_ship, int range) {
   double dif_lat = p.lat;
   dif_lat -= own_ship.lat;
   double dif_lon = (p.lon - own_ship.lon) * cos(deg2rad(own_ship.lat));
-  pol.r = (int)(sqrt(dif_lat * dif_lat + dif_lon * dif_lon) * 60. * 1852. * (double)RETURNS_PER_LINE / (double)range);
-  pol.angle = (int)((atan2(dif_lon, dif_lat)) * (double)LINES_PER_ROTATION / (2. * PI));
+  pol.r = (int)(sqrt(dif_lat * dif_lat + dif_lon * dif_lon) * 60. * 1852. * (double)RETURNS_PER_LINE / (double)range + 1);
+  pol.angle = (int)((atan2(dif_lon, dif_lat)) * (double)LINES_PER_ROTATION / (2. * PI) + 1);  // + 1 to minimize rounding errors
   return pol;
 }
 
@@ -468,15 +468,15 @@ void ArpaTarget::RefreshTarget() {
               z.dlon_dt = 0.;
           }
           else {  // set speed in z
-              double delta_t = (double)((z.time - prev_X.time).GetLo()) / 1000.;
+              double delta_t = (double)((z.time - prev_X.time).GetLo()) / 1000.;  // seconds
               LOG_INFO(wxT("BR24radar_pi: $$$ delta t for speed %f"), delta_t);
-              z.dlat_dt = (z.lat - X.lat) / delta_t;
+              z.dlat_dt = (z.lat - X.lat) / delta_t;  // degrees per second
               z.dlon_dt = (z.lon - X.lon) / delta_t;
           }
           if (status != FOR_DELETION) status++;
           LOG_INFO(wxT("BR24radar_pi: $$$ new status = %i"), status);
-          double gain_p = 0.2;  // Kalman gain for position
-          double gain_s = 0.3;  // Kalman gain for velocity
+          double gain_p = 0.7;  // Kalman gain for position
+          double gain_s = 0.7;  // Kalman gain for velocity
           if (status <= 5) { 
               gain_p = 0.5;
               gain_s = 0.5;
@@ -486,7 +486,7 @@ void ArpaTarget::RefreshTarget() {
               gain_s = 0.8;
           }
           m_kalman->SetMeasurement(&z, &X, gain_p, gain_s);  // X is new estimated position, improved with measured position
-          pol_z = Pos2Polar(z, own_pos, m_ri->m_range_meters); 
+          pol_z = Pos2Polar(z, own_pos, m_ri->m_range_meters);   // used for deletion of targets
       }
       else {
           // target not found
