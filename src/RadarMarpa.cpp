@@ -376,13 +376,32 @@ void RadarArpa::DrawArpaTargets() {
 
 void RadarArpa::RefreshArpaTargets() {
   //  LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets  entered"));
+  int target_to_delete = -1;
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
     if (m_targets[i].status == LOST) {
       continue;
     }
     //   LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets  entered, found i = %i"), i);
     m_targets[i].RefreshTarget();
+    if (m_targets[i].status == FOR_DELETION) {
+      target_to_delete = i;
+      LOG_INFO(wxT("BR24radar_pi: $$$ FOR_DELETION i= %i"), i);
+    }
   }
+  if (target_to_delete != -1){
+      // delete targets
+      Polar pol = m_targets[target_to_delete].pol_z;
+      for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+          if (i == target_to_delete) continue;
+          if (m_targets[i].pol_z.r == pol.r && m_targets[i].pol_z.angle == pol.angle){
+              // this is the target to be deleted
+              m_targets[i].SetStatusLost();
+              LOG_INFO(wxT("BR24radar_pi: $$$ deleted i= %i"), i);
+              m_targets[target_to_delete].SetStatusLost();
+          }
+      }
+  }
+  
 }
 
 void ArpaTarget::RefreshTarget() {
@@ -443,9 +462,9 @@ void ArpaTarget::RefreshTarget() {
               return;
           }
           lost_count = 0;
-          if (status == 0 ) {
+          if (status == AQUIRE0 || status == FOR_DELETION) {
               X = z;  // as we have no history we move target to measured position
-              LOG_INFO(wxT("BR24radar_pi: $$$ status 0 or 1"));
+              LOG_INFO(wxT("BR24radar_pi: $$$ status 0 "));
               X.dlat_dt = 0.;
               X.dlon_dt = 0.;
               z.dlat_dt = 0.;
@@ -457,17 +476,17 @@ void ArpaTarget::RefreshTarget() {
               z.dlat_dt = (z.lat - X.lat) / delta_t;
               z.dlon_dt = (z.lon - X.lon) / delta_t;
           }
-          status++;
+          if (status != FOR_DELETION) status++;
           LOG_INFO(wxT("BR24radar_pi: $$$ new status = %i"), status);
           double gain = 0.2;
           if (status <= 5) gain = 0.5;
           if (status <= 3) gain = 0.8;
           m_kalman->SetMeasurement(&z, &X, gain);  // X is new estimated position, improved with measured position
-
+          pol_z = Pos2Polar(z, own_pos, m_ri->m_range_meters); 
       }
       else {
           // target not found
-          if (status == AQUIRE0 || status == AQUIRE1) {
+          if (status == AQUIRE0 || status == AQUIRE1 || status == FOR_DELETION) {
               SetStatusLost();
               //     LOG_INFO(wxT("BR24radar_pi: $$$ case aquire0 or 1 lost"));
               return;

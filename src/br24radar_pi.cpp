@@ -524,7 +524,7 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
           Position target_pos;
           target_pos.lat = m_cursor_lat;
           target_pos.lon = m_cursor_lon;
-          m_radar[m_settings.chart_overlay]->m_marpa->AquireNewTarget(target_pos, -1);
+          m_radar[m_settings.chart_overlay]->m_marpa->AquireNewTarget(target_pos, -2);
       }
   }
   else if (id == m_context_menu_delete_all_marpa_targets) {

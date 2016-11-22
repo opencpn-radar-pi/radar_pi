@@ -53,6 +53,7 @@ class Matrix;
 #define SIZE_OF_LOG (20)
 #define MAX_CONTOUR_LENGTH (600)
 #define MAX_LOST_COUNT (4)
+#define FOR_DELETION (-2)
 #define LOST (-1)
 #define AQUIRE0 (0)    // 0 under aquisition, first seen, no contour yet
 #define AQUIRE1 (1)    // 1 under aquisition, contour found, first position FOUND
@@ -116,7 +117,7 @@ class ArpaTarget {
   int target_id;
   Position X;       // holds actual position
   Polar polar;      // recent polar position of the target
-
+  Polar pol_z;      // polar of the last measured position, ussed for target deletion
   Kalman_Filter* m_kalman;
   wxLongLong t_refresh;   // time of last refresh
   int nr_of_log_entries;
