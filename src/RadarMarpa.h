@@ -55,31 +55,28 @@ class Matrix;
 #define MAX_LOST_COUNT (5)
 #define FOR_DELETION (-2)
 #define LOST (-1)
-#define AQUIRE0 (0)    // 0 under aquisition, first seen, no contour yet
-#define AQUIRE1 (1)    // 1 under aquisition, contour found, first position FOUND
-#define AQUIRE2 (2)    // 2 under aquisition, speed and course taken
-#define AQUIRE3 (3)    // 3 under aquisition, speed and course verified, next time active
-  //    >=4  active
-#define Q_NUM (3)      // status Q to OCPN at target status 3
-#define T_NUM (7)      // status T to OCPN at target status 7
-
+#define AQUIRE0 (0)  // 0 under aquisition, first seen, no contour yet
+#define AQUIRE1 (1)  // 1 under aquisition, contour found, first position FOUND
+#define AQUIRE2 (2)  // 2 under aquisition, speed and course taken
+#define AQUIRE3 (3)  // 3 under aquisition, speed and course verified, next time active
+//    >=4  active
+#define Q_NUM (3)  // status Q to OCPN at target status 3
+#define T_NUM (7)  // status T to OCPN at target status 7
 
 typedef int target_status;
-enum OCPN_target_status{
-    Q,    // aquiring
-    T,    // active
-    L      // lost
+enum OCPN_target_status {
+  Q,  // aquiring
+  T,  // active
+  L   // lost
 };
-
-
 
 class Position {
  public:
   double lat;
   double lon;
-  double dlat_dt;     // deg / sec
-  double dlon_dt;     // deg / sec
-  wxLongLong time;    // millis
+  double dlat_dt;   // deg / sec
+  double dlon_dt;   // deg / sec
+  wxLongLong time;  // millis
 
   Position operator-(Position p) {
     Position q;
@@ -119,11 +116,11 @@ class ArpaTarget {
   RadarInfo* m_ri;
   br24radar_pi* m_pi;
   int target_id;
-  Position X;       // holds actual position
-  Polar polar;      // recent polar position of the target
-  Polar pol_z;      // polar of the last measured position, ussed for target deletion
+  Position X;   // holds actual position
+  Polar polar;  // recent polar position of the target
+  Polar pol_z;  // polar of the last measured position, ussed for target deletion
   Kalman_Filter* m_kalman;
-  wxLongLong t_refresh;   // time of last refresh
+  wxLongLong t_refresh;  // time of last refresh
   int nr_of_log_entries;
   LogEntry logbook[SIZE_OF_LOG];  // stores positions, time course and speed
   double bearing;                 // only valid directly after calculation

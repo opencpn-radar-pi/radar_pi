@@ -28,7 +28,8 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************
- The filter used here is an "Extended Kalman Filter" temmporarily with a fixed Kalman gain. For a general introduction see Wikipedia.
+ The filter used here is an "Extended Kalman Filter" temmporarily with a fixed Kalman gain. For a general introduction see
+ Wikipedia.
 
  */
 
@@ -51,14 +52,14 @@ Kalman_Filter::Kalman_Filter() {
   H.Extend(4, 4);  // Observation matrix
   H(1, 1) = 1.;
   H(2, 2) = 1.;
-  H(3, 3) = 1.; // $$$
+  H(3, 3) = 1.;  // $$$
   H(4, 4) = 1.;
 
   HT.Extend(4, 2);  // Transpose of observation matrix
   HT(1, 1) = 1.;
   HT(2, 2) = 1.;
 
-  H1.Extend(2, 4);   // Variable observation matrix
+  H1.Extend(2, 4);  // Variable observation matrix
 
   H1T.Extend(4, 2);  // Transposed H1
 
@@ -72,7 +73,7 @@ Kalman_Filter::Kalman_Filter() {
   double gain = .2;
   K(1, 1) = gain;
   K(2, 2) = gain;
-  K(3, 3) = .2; 
+  K(3, 3) = .2;
   K(4, 4) = .2;
 
   F.Extend(4, 4);
@@ -96,10 +97,10 @@ Kalman_Filter::~Kalman_Filter() {  // clean up all matrices
 
 void Kalman_Filter::SetMeasurement(Position* zz, Position* xx, double gain_p, double gain_s) {
   // zz measured position, xx estimated position
-    K(1, 1) = gain_p;
-    K(2, 2) = gain_p;
-    K(3, 3) = gain_s; 
-    K(4, 4) = gain_s;
+  K(1, 1) = gain_p;
+  K(2, 2) = gain_p;
+  K(3, 3) = gain_s;
+  K(4, 4) = gain_s;
   Matrix Z(4, 1);
   Z(1, 1) = zz->lat;
   Z(2, 1) = zz->lon;
@@ -142,6 +143,5 @@ void Kalman_Filter::Predict(Position* xx, int delta_time) {
   X.~Matrix();
   return;
 }
-
 
 PLUGIN_END_NAMESPACE
