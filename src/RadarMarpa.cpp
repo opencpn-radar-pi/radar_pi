@@ -400,6 +400,10 @@ void RadarArpa::RefreshArpaTargets() {
               m_targets[target_to_delete].SetStatusLost();
           }
       }
+      if (m_targets[target_to_delete].status == FOR_DELETION){
+          // no target deleted
+          m_targets[target_to_delete].SetStatusLost();
+      }
   }
   
 }
@@ -470,13 +474,13 @@ void ArpaTarget::RefreshTarget() {
           else {  // set speed in z
               double delta_t = (double)((z.time - prev_X.time).GetLo()) / 1000.;  // seconds
               LOG_INFO(wxT("BR24radar_pi: $$$ delta t for speed %f"), delta_t);
-              z.dlat_dt = (z.lat - X.lat) / delta_t;  // degrees per second
-              z.dlon_dt = (z.lon - X.lon) / delta_t;
+              z.dlat_dt = (z.lat - prev_X.lat) / delta_t;  // degrees per second
+              z.dlon_dt = (z.lon - prev_X.lon) / delta_t;  // degrees per second
           }
           if (status != FOR_DELETION) status++;
           LOG_INFO(wxT("BR24radar_pi: $$$ new status = %i"), status);
-          double gain_p = 0.7;  // Kalman gain for position
-          double gain_s = 0.7;  // Kalman gain for velocity
+          double gain_p = 0.2;  // Kalman gain for position
+          double gain_s = 0.1;  // Kalman gain for velocity
           if (status <= 5) { 
               gain_p = 0.5;
               gain_s = 0.5;
@@ -516,9 +520,9 @@ void ArpaTarget::RefreshTarget() {
       if (status >= 2) {
           CalculateSpeedandCourse();
           double speed_now;
-          double s1 = X.dlat_dt * 60.;
-          double s2 = X.dlon_dt * cos(deg2rad(X.lat)) * 60.; // nautical miles now
-          speed_now = (sqrt(s1 * s1 + s2 * s2)) * 3600.; // and convert to miles per hour
+          double s1 = X.dlat_dt * 60.;                       // nautical miles per second
+          double s2 = X.dlon_dt * cos(deg2rad(X.lat)) * 60.; // nautical miles per second
+          speed_now = (sqrt(s1 * s1 + s2 * s2)) * 3600.;   // and convert to nautical miles per hour
           LOG_INFO(wxT("BR24radar_pi: $$$ **before pass arpa X.time. %u, prev_X.time %u"), X.time.GetLo(), prev_X.time.GetLo());
           LOG_INFO(wxT("BR24radar_pi: $$$ *********Speed = %f,  s1= %f, s2= %f, Heading = %f"), speed_now, s1,
               s2, rad2deg(atan2(s2, s1)));
@@ -694,7 +698,7 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
         (const char*)s_Course_Unit.mb_str(), // 7 Course ref T // 8 CPA Not used // 9 TCPA Not used
         (const char*)s_Dist_Unit.mb_str(),   // 10 S/D Unit N = knots/Nm 
         (const char*)s_target_name.mb_str(), // 11 Target name
-        (const char*)s_status.mb_str());    // 12 Target Status L/Q/T // 13 Ref N/A
+        (const char*)s_status.mb_str());     // 12 Target Status L/Q/T // 13 Ref N/A
 
     for (p = sentence; *p; p++) {
         checksum ^= *p;
