@@ -108,17 +108,18 @@ void RadarArpa::AquireNewTarget(Position target_pos, int status) {
   own_pos.lat = m_pi->m_ownship_lat;
   own_pos.lon = m_pi->m_ownship_lon;
   pol = Pos2Polar(target_pos, own_pos, m_ri->m_range_meters);
-  LOG_INFO(wxT("BR24radar_pi: $$$Aquire0NewTarget r %i a %i"), pol.r, pol.angle);
-  LOG_INFO(wxT("BR24radar_pi: $$$Aquire0NewTarget lat %f lon %f"), target_pos.lat, target_pos.lon);
+  LOG_INFO(wxT("BR24radar_pi: $$$AquireNewTarget r %i a %i"), pol.r, pol.angle);
+  LOG_INFO(wxT("BR24radar_pi: $$$AquireNewTarget lat %f lon %f"), target_pos.lat, target_pos.lon);
 
   m_targets[i_target].X = target_pos;  // Expected position
   pol = Pos2Polar(m_targets[i_target].X, own_pos, m_ri->m_range_meters);
-  LOG_INFO(wxT("BR24radar_pi: $$$Aquire0NewTarget from metric r %i a %i"), pol.r, pol.angle);
-
+  LOG_INFO(wxT("BR24radar_pi: $$$AquireNewTarget from metric r %i a %i"), pol.r, pol.angle);
+  LOG_INFO(wxT("BR24radar_pi: $$$AquireNewTarget status= %i"), status);
   m_targets[i_target].X.time = 0;
   m_targets[i_target].X.dlat_dt = 0.;
   m_targets[i_target].X.dlon_dt = 0.;
   m_targets[i_target].status = status;
+
   target_id_count++;
   if (target_id_count >= 100) target_id_count = 1;
   m_targets[i_target].target_id = target_id_count;
