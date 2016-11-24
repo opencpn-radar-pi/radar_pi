@@ -60,8 +60,8 @@ class Matrix;
 #define AQUIRE2 (2)  // 2 under aquisition, speed and course taken
 #define AQUIRE3 (3)  // 3 under aquisition, speed and course verified, next time active
 //    >=4  active
-#define Q_NUM (3)  // status Q to OCPN at target status 3
-#define T_NUM (7)  // status T to OCPN at target status 7
+#define Q_NUM (2)  // status Q to OCPN at target status 2
+#define T_NUM (5)  // status T to OCPN at target status 5
 
 typedef int target_status;
 enum OCPN_target_status {
