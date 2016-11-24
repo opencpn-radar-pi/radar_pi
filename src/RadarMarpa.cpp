@@ -374,33 +374,45 @@ void RadarArpa::DrawArpaTargets() {
 void RadarArpa::RefreshArpaTargets() {
   //  LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets  entered"));
   int target_to_delete = -1;
+  // find a target with status FOR_DELETION if it is there
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
-    if (m_targets[i].status == LOST) {
-      continue;
-    }
-    //   LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets  entered, found i = %i"), i);
-    m_targets[i].RefreshTarget();
     if (m_targets[i].status == FOR_DELETION) {
       target_to_delete = i;
       LOG_INFO(wxT("BR24radar_pi: $$$ FOR_DELETION i= %i"), i);
     }
   }
+  
   if (target_to_delete != -1) {
-    // delete targets
-    Polar pol = m_targets[target_to_delete].pol_z;
+    // delete the target that is closest to the target with status FOR_DELETION
+    Position x = m_targets[target_to_delete].X;
+    double min_dist = 1000;
+    int del_target = -1;
     for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
-      if (i == target_to_delete) continue;
-      if (m_targets[i].pol_z.r == pol.r && m_targets[i].pol_z.angle == pol.angle) {
-        // this is the target to be deleted
-        m_targets[i].SetStatusLost();
-        LOG_INFO(wxT("BR24radar_pi: $$$ deleted i= %i"), i);
-        m_targets[target_to_delete].SetStatusLost();
+      if (i == target_to_delete || m_targets[i].status == LOST) continue;
+      double dif_lat = x.lat - m_targets[i].X.lat;
+      double dif_lon = (x.lon - m_targets[i].X.lon) * cos(deg2rad(x.lat));
+      double dist2 = dif_lat * dif_lat + dif_lon * dif_lon;
+      if (dist2 < min_dist) {
+        min_dist = dist2;
+        del_target = i;
       }
     }
-    if (m_targets[target_to_delete].status == FOR_DELETION) {
-      // no target deleted
-      m_targets[target_to_delete].SetStatusLost();
+    // del_target now is the index of the target closest to trget with index target_to_delete
+    if (del_target != -1) {
+      m_targets[del_target].SetStatusLost();
+      LOG_INFO(wxT("BR24radar_pi: $$$ deleted i= %i"), del_target);
     }
+    else {
+        LOG_INFO(wxT("BR24radar_pi: $$$ target to delete not found del_target= %i"), del_target);
+    }
+    m_targets[target_to_delete].SetStatusLost();
+  }
+
+  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+    if (m_targets[i].status == LOST) {
+      continue;
+    }
+    m_targets[i].RefreshTarget();
   }
 }
 
@@ -458,7 +470,7 @@ void ArpaTarget::RefreshTarget() {
         return;
       }
       lost_count = 0;
-      if (status == AQUIRE0 || status == FOR_DELETION) {
+      if (status == AQUIRE0) {
         X = z;  // as we have no history we move target to measured position
         LOG_INFO(wxT("BR24radar_pi: $$$ status 0 "));
         X.dlat_dt = 0.;
@@ -471,7 +483,7 @@ void ArpaTarget::RefreshTarget() {
         z.dlat_dt = (z.lat - prev_X.lat) / delta_t;  // degrees per second
         z.dlon_dt = (z.lon - prev_X.lon) / delta_t;  // degrees per second
       }
-      if (status != FOR_DELETION) status++;
+      status++;
       LOG_INFO(wxT("BR24radar_pi: $$$ new status = %i"), status);
       double gain_p = 0.2;  // Kalman gain for position
       double gain_s = 0.1;  // Kalman gain for velocity
@@ -484,10 +496,10 @@ void ArpaTarget::RefreshTarget() {
         gain_s = 0.8;
       }
       m_kalman->SetMeasurement(&z, &X, gain_p, gain_s);     // X is new estimated position, improved with measured position
-      pol_z = Pos2Polar(z, own_pos, m_ri->m_range_meters);  // used for deletion of targets
+      pol_z = Pos2Polar(z, own_pos, m_ri->m_range_meters);  
     } else {
       // target not found
-      if (status == AQUIRE0 || status == AQUIRE1 || status == FOR_DELETION) {
+      if (status == AQUIRE0 || status == AQUIRE1) {
         SetStatusLost();
         //     LOG_INFO(wxT("BR24radar_pi: $$$ case aquire0 or 1 lost"));
         return;
