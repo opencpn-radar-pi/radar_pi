@@ -262,6 +262,7 @@ int br24radar_pi::Init(void) {
   mi1->SetFont(*qFont);
   mi2->SetFont(*qFont);
   mi3->SetFont(*qFont);
+  mi4->SetFont(*qFont);
 #endif
   m_context_menu_show_id = AddCanvasContextMenuItem(mi1, this);
   m_context_menu_hide_id = AddCanvasContextMenuItem(mi2, this);
@@ -506,6 +507,11 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
             wxMenu dummy_menu;
             wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete Arpa Target"));
             wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all Arpa Targets"));
+#ifdef __WXMSW__
+            wxFont *qFont = OCPNGetFont(_("Menu"), 10);
+            mi5->SetFont(*qFont);
+            mi6->SetFont(*qFont);
+#endif
             m_radar[m_settings.chart_overlay]->m_marpa = new RadarArpa(this, m_radar[m_settings.chart_overlay]);
             m_context_menu_delete_marpa_target = AddCanvasContextMenuItem(mi5, this);
             m_context_menu_delete_all_marpa_targets = AddCanvasContextMenuItem(mi6, this);
