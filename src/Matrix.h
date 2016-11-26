@@ -43,8 +43,11 @@ friend Matrix operator-(const Matrix& a);
 friend Matrix operator*(const Matrix& a, const Matrix& b);
 friend Matrix operator*(const Matrix& a, const double b);
 friend Matrix operator*(const double b, const Matrix& a);
+
+//Matrix& Matrix::operator=(const Matrix& a);
 Matrix& operator=(const Matrix& a);
 
+//int Matrix::Size(const int i) const;
 int Size(const int i) const;
 // returns the number of rows
 int GetRows() const { return rows; }

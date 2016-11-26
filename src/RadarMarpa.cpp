@@ -518,8 +518,8 @@ void ArpaTarget::RefreshTarget() {
     t_refresh = X.time;
     PushLogbook();
     logbook[0].time = X.time;
-    logbook[0].pol_z = pol_z;  // $$$ test only
-    logbook[0].z = z;           // $$$ test only
+    //logbook[0].pol_z = pol_z;  // $$$ for producing covariance dada
+    //logbook[0].z = z;           // $$$ for producing covariance dada
     logbook[0].pos = X;
     logbook[0].time = X.time;
     if (status >= 2) {
