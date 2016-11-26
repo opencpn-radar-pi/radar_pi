@@ -78,18 +78,18 @@ class Position {
   double dlon_dt;   // deg / sec
   wxLongLong time;  // millis
 
-  Position operator-(Position p) {
+ /* Position operator-(Position p) {
     Position q;
     q.lat = lat - p.lat;
     q.lon = lon - p.lon;
     return q;
-  }
-  Position operator+(Position p) {
+  }*/
+  /*Position operator+(Position p) {
     Position q;
     q.lat = lat + p.lat;
     q.lon = lon + p.lon;
     return q;
-  }
+  }*/
 };
 
 class Polar {
@@ -106,6 +106,8 @@ class LogEntry {
   Position pos;
   double speed;
   double course;
+  //Position z;  // $$$ test only and
+  //Polar pol_z;  // for output of covariance data
 };
 
 class ArpaTarget {

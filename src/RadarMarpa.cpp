@@ -359,14 +359,16 @@ void RadarArpa::DrawContour(ArpaTarget target) {
 void RadarArpa::DrawArpaTargets() {
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
     if (m_targets[i].status != LOST) {
-      //     LOG_INFO(wxT("BR24radar_pi: $$$ DrawArpaTargets  entered i= %i"), i);
       DrawContour(m_targets[i]);
-      /* if (m_targets[i].nr_of_log_entries == 10){   // to find covariance of observations, use with steady ship on steady targets
-           for (int j = 1; j < 10; j++){
-               LOG_INFO(wxT("BR24radar_pi: $$$ logbook dist angle % i, %i"), m_targets[i].logbook[j].pp.r,
-       m_targets[i].logbook[j].pp.angle);
-           }
-       }*/
+       //if (m_targets[i].nr_of_log_entries == 51){   // to find covariance of observations, use with steady ship on steady targets
+                                                      // will output a list of target details in the log
+       //    for (int j = 1; j < 41; j++){
+       //        LOG_INFO(wxT("BR24radar_pi: $$$ logbook dist j=%i, angle % i,%i, lat lon ,%f,%f"), j, m_targets[i].logbook[j].pol_z.r,
+       //            m_targets[i].logbook[j].pol_z.angle, m_targets[i].logbook[j].z.lat, m_targets[i].logbook[j].z.lon);
+       //    }
+       //    m_targets[i].SetStatusLost();
+       //    LOG_INFO(wxT("BR24radar_pi: $$$ logbook end"));
+       //}
     }
   }
 }
@@ -397,7 +399,7 @@ void RadarArpa::RefreshArpaTargets() {
         del_target = i;
       }
     }
-    // del_target now is the index of the target closest to trget with index target_to_delete
+    // del_target is the index of the target closest to target with index target_to_delete
     if (del_target != -1) {
       m_targets[del_target].SetStatusLost();
       LOG_INFO(wxT("BR24radar_pi: $$$ deleted i= %i"), del_target);
@@ -481,7 +483,7 @@ void ArpaTarget::RefreshTarget() {
         double delta_t = (double)((z.time - prev_X.time).GetLo()) / 1000.;  // seconds
         LOG_INFO(wxT("BR24radar_pi: $$$ delta t for speed %f"), delta_t);
         z.dlat_dt = (z.lat - prev_X.lat) / delta_t;  // degrees per second
-        z.dlon_dt = (z.lon - prev_X.lon) / delta_t;  // degrees per second
+        z.dlon_dt = (z.lon - prev_X.lon) / delta_t;  // (lon) degrees per second
       }
       status++;
       LOG_INFO(wxT("BR24radar_pi: $$$ new status = %i"), status);
@@ -501,13 +503,11 @@ void ArpaTarget::RefreshTarget() {
       // target not found
       if (status == AQUIRE0 || status == AQUIRE1) {
         SetStatusLost();
-        //     LOG_INFO(wxT("BR24radar_pi: $$$ case aquire0 or 1 lost"));
         return;
       } else {
         lost_count++;
         if (lost_count >= MAX_LOST_COUNT) {
           SetStatusLost();
-          //          LOG_INFO(wxT("BR24radar_pi: $$$ target lost"));
           return;
         }
       }
@@ -518,7 +518,8 @@ void ArpaTarget::RefreshTarget() {
     t_refresh = X.time;
     PushLogbook();
     logbook[0].time = X.time;
-
+    logbook[0].pol_z = pol_z;  // $$$ test only
+    logbook[0].z = z;           // $$$ test only
     logbook[0].pos = X;
     logbook[0].time = X.time;
     if (status >= 2) {
@@ -579,8 +580,7 @@ bool ArpaTarget::FindNearestContour(Polar* pol, int dist) {
 }
 
 void RadarArpa::CalculateCentroid(ArpaTarget* target) {
-  /* target->pol.angle = (target->max_angle.angle + target->min_angle.angle) / 2;
-   target->pol.r = (target->max_r.r + target->min_r.r) / 2;*/
+  
   // real calculation still to be done
 }
 
