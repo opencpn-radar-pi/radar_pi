@@ -40,29 +40,33 @@
 PLUGIN_BEGIN_NAMESPACE
 
 //    Forward definitions
-class Position;
+class LocalPosition;
 class Matrix;
 class ArpaTarget;
-class MetricPoint;
+class Polar;
 
 class Kalman_Filter {
  public:
-  Kalman_Filter();
+  Kalman_Filter(int range);
   ~Kalman_Filter();
-  void SetMeasurement(Position* zz, Position* xx, double gain_p, double gain_s);
-  void Predict(Position* x, int delta_time);  // measured position and expected position
+  void SetMeasurement(Polar* p, LocalPosition* x, Polar* expected);
+  void Predict(LocalPosition* x, double delta_time);  // measured position and expected position
 
-  Matrix Q1;   // Error covariance matrix when not maneuvring
-  Matrix Q2;   // Error covariance matrix when maneuvring
-  Matrix H;    // Observation matrix
-  Matrix HT;   // Transpose of observation matrix
-  Matrix H1;   // Variable observation matrix
-  Matrix H1T;  // Transposed H1
-  Matrix P;    // Error covariance matrix, initial values
-  Matrix K;    // Kalman gain
-  Matrix F;    // State transition operator, from one measurement to the next
-
-  bool maneuvring;
+  Matrix A;
+  Matrix AT;
+  Matrix W;
+  Matrix WT;
+  Matrix H;
+  Matrix HT;
+  Matrix V;
+  Matrix VT;
+  Matrix P;
+  Matrix Q;
+  Matrix FT;
+  Matrix R;
+  Matrix K;
+  Matrix I;
+  
 };
 
 PLUGIN_END_NAMESPACE

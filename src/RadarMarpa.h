@@ -96,6 +96,16 @@ class Polar {
  public:
   int angle;
   int r;
+  wxLongLong time;  // wxGetUTCTimeMillis
+};
+
+class LocalPosition{
+    // position in meters relative to own ship position
+public:
+    double lat;
+    double lon;
+    double dlat_dt;  // meters per second
+    double dlon_dt;
 };
 
 Polar Pos2Polar(Position p, Position own_ship, int range);
@@ -136,14 +146,14 @@ class ArpaTarget {
   Polar max_angle, min_angle, max_r, min_r;  // charasterictics of contour
   void PushLogbook();
   // void Aquire1NewTarget();
-  int GetContour(Polar* p, Position* z);
+  int GetContour(Polar* p);
   void set(br24radar_pi* pi, RadarInfo* ri);
   bool FindNearestContour(Polar* pol, int dist);
   bool FindContourFromInside(Polar* p);
   bool Pix(int ang, int rad);
   // void Aquire2NewTarget();
   void CalculateSpeedandCourse();
-  bool GetTarget(Polar* pol, Position* z);
+  bool GetTarget(Polar* pol);
   void RefreshTarget();
   void PassARPAtoOCPN(Polar* p, OCPN_target_status s);
   void SetStatusLost();
