@@ -155,6 +155,7 @@ bool ArpaTarget::FindContourFromInside(Polar* pol) {  // moves pol to contour of
   return true;
 }
 
+
 int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
   // pol must start on the contour of the blob
   // follows the contour in a clockwise direction
@@ -252,6 +253,7 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
     }
   }
   contour_length = count;
+  LOG_INFO(wxT("BR24radar_pi: $$$ blob found contour_length = %i"), contour_length);
   //  CalculateCentroid(*target);   $$$ we better use the real centroid instead of the average
   pol->angle = (max_angle.angle + min_angle.angle) / 2;
   if (max_r.r >= 511 || min_r.r >= 511) {
@@ -292,8 +294,9 @@ void RadarArpa::DrawContour(ArpaTarget target) {
   glColor4ub(40, 40, 100, 250);
   glLineWidth(3.0);
   glBegin(GL_LINES);
-
+  //LOG_INFO(wxT("BR24radar_pi:RadarArpa::DrawContour start contour_length= %i "), target.contour_length);
   for (int i = 0; i < target.contour_length; i++) {
+
     double xx;
     double yy;
     int angle = MOD_ROTATION2048(target.contour[i].angle - 512);
@@ -723,7 +726,6 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
 
 void ArpaTarget::SetStatusLost() {
   status = LOST;
-  contour_length = 0;
   contour_length = 0;
   nr_of_log_entries = 0;
   lost_count = 0;
