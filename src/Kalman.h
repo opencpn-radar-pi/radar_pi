@@ -49,7 +49,7 @@ class Kalman_Filter {
  public:
   Kalman_Filter(int range);
   ~Kalman_Filter();
-  void SetMeasurement(Polar* p, LocalPosition* x, Polar* expected);
+  void SetMeasurement(Polar* p, LocalPosition* x, Polar* expected, int range);
   void Predict(LocalPosition* x, double delta_time);  // measured position and expected position
 
   Matrix A;

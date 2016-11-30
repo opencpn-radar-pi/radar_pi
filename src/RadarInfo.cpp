@@ -432,28 +432,32 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   //static int rev = 0;   //   test cases only
   //if (angle == 0) rev++;
- // for (int i = 0; i < RETURNS_PER_LINE; i++){  
-   //   data[i] = 0;
-  //    if (i <= 300 && i >= 290 && bearing > 10 && bearing < 64) data[i] = 200;  
-  //    if (i <= 300 && i >= 290 && bearing >= 64 && bearing < 96 && rev%2 == 0) data[i] = 200;
-      //if ((i == 289 /*|| i == 288*/) && (bearing == 20 || bearing == 21))data[i] = 200;  
-      //if ((i == 287 /*|| i == 286*/) && bearing == 20) data[i] = 200;  
-      //if (i == 288 && bearing == 20) data[i] = 200;
-      //if (i == 286 && bearing == 20) data[i] = 200;  
-      //if (i == 285 && bearing == 20) data[i] = 200;  
-      //if (i == 285 && bearing == 21) data[i] = 200;  
-      //if (i == 286 && bearing == 21) data[i] = 200;
+  //for (int i = 0; i < RETURNS_PER_LINE; i++){  
+  //    data[i] = 0;
 
-      //if (i == 295 && bearing == 10) data[i] = 200;
-      //if (i == 295 && bearing == 9) data[i] = 200;
-      //if (i == 295 && bearing == 8) data[i] = 200;
-      //if (i == 295 && bearing == 7) data[i] = 200;
-      //if (i == 295 && bearing == 6) data[i] = 200;
-      //if (i == 295 && bearing == 5) data[i] = 200;
+  //    if ((bearing == 0 || bearing == 1)&& (i == 500 || i == 501))data[i] = 200;
+  //    //if (i <= 300 && i >= 290 && bearing > 10 && bearing < 64) data[i] = 200;  
+  //    //if (i <= 300 && i >= 290 && bearing >= 64 && bearing < 96 && rev%2 == 0) data[i] = 200;
+  //    //if ((i == 289 /*|| i == 288*/) && (bearing == 20 || bearing == 21))data[i] = 200;  
+  //    //if ((i == 287 /*|| i == 286*/) && bearing == 20) data[i] = 200;  
+  //    //if (i == 288 && bearing == 20) data[i] = 200;
+  //    //if (i == 286 && bearing == 20) data[i] = 200;  
+  //    //if (i == 285 && bearing == 20) data[i] = 200;  
+  //    //if (i == 285 && bearing == 21) data[i] = 200;  
+  //    //if (i == 286 && bearing == 21) data[i] = 200;
 
-    /*  if (i == 296 && bearing == 6) data[i] = 200;
-      if (i == 296 && bearing == 5) data[i] = 200;*/
-//  }
+  //    //if (i == 295 && bearing == 10) data[i] = 200;
+  //    //if (i == 295 && bearing == 9) data[i] = 200;
+  //    //if (i == 295 && bearing == 8) data[i] = 200;
+  //    //if (i == 295 && bearing == 7) data[i] = 200;
+  //    //if (i == 295 && bearing == 6) data[i] = 200;
+  //    //if (i == 295 && bearing == 5) data[i] = 200;
+
+  //  /*  if (i == 296 && bearing == 6) data[i] = 200;
+  //    if (i == 296 && bearing == 5) data[i] = 200;*/
+  //}
+
+
 
   // Douwe likes this, and I think it has some value in testing, but I think it distracts as well.
   // Why don't we make this an option?

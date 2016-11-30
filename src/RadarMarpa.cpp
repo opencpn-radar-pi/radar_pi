@@ -231,6 +231,7 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
     // next point found
     current.angle = aa;
     current.r = rr;
+    LOG_INFO(wxT("BR24radar_pi::RadarArpa::GetContour next point r= %i, angle= %i"), rr,aa);
     contour[count] = current;
     count++;
     if (current.angle > max_angle.angle) {
@@ -444,6 +445,7 @@ void ArpaTarget::RefreshTarget() {
     LocalPosition x_local;
     x_local.lat = (X.lat - own_pos.lat) * 60. * 1852.;  // in meters
     x_local.lon = (X.lon - own_pos.lon) * 60. * 1852. * cos (deg2rad(own_pos.lat));  // in meters
+    LOG_INFO(wxT("BR24radar_pi: $$$ beginning X.dlat_dt=%f  X.dlon_dt= %f"), X.dlat_dt, X.dlon_dt);
     x_local.dlat_dt = X.dlat_dt * 60. * 1852.;  // meters / sec
     x_local.dlon_dt = X.dlon_dt * 60. * 1852. * cos(deg2rad(own_pos.lat));   // meters / sec
 
@@ -495,13 +497,16 @@ void ArpaTarget::RefreshTarget() {
 
 
 
-      m_kalman->SetMeasurement(&pol, &x_local, &expected);     // pol is measured position
+      m_kalman->SetMeasurement(&pol, &x_local, &expected, m_ri->m_range_meters);     // pol is measured position
                                                     // x_local expected position
 
 
-
-      X.lat = own_pos.lat + x_local.lat / 60 / 1852;
-      X.lon = own_pos.lon + x_local.lon / 60 / 1852 / cos(deg2rad(own_pos.lat));
+      LOG_INFO(wxT("BR24radar_pi: $$$ x_local.dlat_dt=%.7f  x_local.dlon_dt= %.7f"), x_local.dlat_dt, x_local.dlon_dt);
+      X.lat = own_pos.lat + x_local.lat / 60. / 1852.;
+      X.lon = own_pos.lon + x_local.lon / 60. / 1852. / cos(deg2rad(own_pos.lat));
+      X.dlat_dt = x_local.dlat_dt / 60. / 1852.;
+      X.dlon_dt = x_local.dlon_dt / 60. / 1852. / cos(deg2rad(own_pos.lat));
+      LOG_INFO(wxT("BR24radar_pi: $$$ X.dlat_dt=%.7f  X.dlon_dt= %.7f"), X.dlat_dt, X.dlon_dt);
       X.time = pol.time;
     } else {
       // target not found
@@ -655,8 +660,9 @@ bool ArpaTarget::GetTarget(Polar* pol) {
     LOG_INFO(wxT("BR24radar_pi: $$$ GetTarget No contour found r= %i"), pol->r);
     return false;
   }
-  if (GetContour(pol) != 0) {
-    LOG_INFO(wxT("BR24radar_pi: $$$ GetContour returned false"));
+  int cont = GetContour(pol);
+  if (cont != 0) {
+    LOG_INFO(wxT("BR24radar_pi: $$$ GetContour returned false cont = %i"), cont);
     return false;
   }
   LOG_INFO(wxT("BR24radar_pi: $$$ GetContour returned true"));
@@ -695,7 +701,6 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
 
   /* Code for TTM follows. Send speed and course using TTM*/
   LOG_INFO(wxT("BR24radar_pi: $$$ pushed speed = %f"), speed_kn);
-  //                                    1  2  3  4  5  6  7  8 9 10 11 12 13
   int TTM = sprintf(sentence, "RATTM,%2s,%s,%s,%s,%s,%s,%s, , ,%s,%s,%s, ",
                     (const char*)s_TargID.mb_str(),       // 1 target id
                     (const char*)s_distance.mb_str(),     // 2 Targ distance
