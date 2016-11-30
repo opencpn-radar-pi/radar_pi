@@ -88,6 +88,7 @@ bool ArpaTarget::Pix(int ang, int rad) {
   if (rad < 1 || rad >= RETURNS_PER_LINE - 1) {  // $$$ avoid range ring
     return false;
   }
+  LOG_INFO(wxT("BR24radar_pi: Pix ang %i, rad %i pix %i"), ang, rad, (m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 1));
   return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 1) != 0);
 }
 
@@ -164,7 +165,7 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
   wxCriticalSectionLocker lock(ArpaTarget::m_ri->m_exclusive);
   LOG_INFO(wxT("BR24radar_pi: $$$ RadarArpa::GetContour called r= %i, angle= %i"), pol->r, pol->angle);
   // the 4 possible translations to move from a point on the contour to the next
-  Polar transl[4] = {0, 1, 1, 0, 0, -1, -1, 0};  // NB structure polar, not class Polar
+  Polar transl[4] = {0, 1, 1, 0, 0, -1, -1, 0};  
   int count = 0;
   Polar start = *pol;
   Polar current = *pol;
@@ -201,8 +202,10 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
   }
   index += 1;  // determines starting direction
   if (index > 3) index -= 4;
+  LOG_INFO(wxT("BR24radar_pi: $$$ RadarArpa::GetContour index= %i"), index);
 
   while (current.r != start.r || current.angle != start.angle || count == 0) {
+      LOG_INFO(wxT("BR24radar_pi: $$$ r while loop current.r %i, start.r %i,  current.angle %i,  start.angle %i,  count %i"), current.r, start.r, current.angle, start.angle, count);
     // try all translations to find the next point
     // start with the "left most" translation relative to the previous one
     index += 3;  // we will turn left all the time if possible
@@ -252,6 +255,8 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
       // blob too large
       return 8;  // return code 8, Blob too large
     }
+
+    LOG_INFO(wxT("BR24radar_pi: $$$  while loop end current.r %i, start.r %i,  current.angle %i,  start.angle %i,  count %i"), current.r, start.r, current.angle, start.angle, count);
   }
   contour_length = count;
   LOG_INFO(wxT("BR24radar_pi: $$$ blob found contour_length = %i"), contour_length);

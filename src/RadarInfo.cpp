@@ -441,7 +441,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       //if ((i == 289 /*|| i == 288*/) && (bearing == 20 || bearing == 21))data[i] = 200;  
       if (i == 287 && bearing == 20) data[i] = 200;  
       if (i == 288 && bearing == 20) data[i] = 200;
-      if (i == 286 && bearing == 20) data[i] = 200;  
+      /*if (i == 286 && bearing == 20) data[i] = 200;  
       if (i == 285 && bearing == 20) data[i] = 200;  
       if (i == 285 && bearing == 21) data[i] = 200;  
       if (i == 286 && bearing == 21) data[i] = 200;
@@ -451,7 +451,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       if (i == 295 && bearing == 8) data[i] = 200;
       if (i == 295 && bearing == 7) data[i] = 200;
       if (i == 295 && bearing == 6) data[i] = 200;
-      if (i == 295 && bearing == 5) data[i] = 200;
+      if (i == 295 && bearing == 5) data[i] = 200;*/
 
     /*  if (i == 296 && bearing == 6) data[i] = 200;
       if (i == 296 && bearing == 5) data[i] = 200;*/

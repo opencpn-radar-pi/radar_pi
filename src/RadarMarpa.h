@@ -49,7 +49,7 @@ class Matrix;
 
 #define NUMBER_OF_TARGETS (20)
 #define OFF_LOCATION (40)
-#define SCAN_MARGIN (200)
+#define SCAN_MARGIN (100)
 #define SIZE_OF_LOG (20)
 #define MAX_CONTOUR_LENGTH (600)
 #define MAX_LOST_COUNT (5)
