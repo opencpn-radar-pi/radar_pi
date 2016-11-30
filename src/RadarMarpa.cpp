@@ -88,7 +88,6 @@ bool ArpaTarget::Pix(int ang, int rad) {
   if (rad < 1 || rad >= RETURNS_PER_LINE - 1) {  // $$$ avoid range ring
     return false;
   }
-  LOG_INFO(wxT("BR24radar_pi: Pix ang %i, rad %i pix %i"), ang, rad, (m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 1));
   return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 1) != 0);
 }
 
@@ -163,9 +162,20 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
   // returns metric position of the blob in Z
 
   wxCriticalSectionLocker lock(ArpaTarget::m_ri->m_exclusive);
-  LOG_INFO(wxT("BR24radar_pi: $$$ RadarArpa::GetContour called r= %i, angle= %i"), pol->r, pol->angle);
   // the 4 possible translations to move from a point on the contour to the next
-  Polar transl[4] = {0, 1, 1, 0, 0, -1, -1, 0};  
+  Polar transl[4];//   = { 0, 1,   1, 0,   0, -1,   -1, 0 };
+  transl[0].angle = 0;
+  transl[0].r = 1;
+
+  transl[1].angle = 1;
+  transl[1].r = 0;
+
+  transl[2].angle = 0;
+  transl[2].r = -1;
+
+  transl[3].angle = -1;
+  transl[3].r = 0;
+
   int count = 0;
   Polar start = *pol;
   Polar current = *pol;
@@ -205,7 +215,6 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
   LOG_INFO(wxT("BR24radar_pi: $$$ RadarArpa::GetContour index= %i"), index);
 
   while (current.r != start.r || current.angle != start.angle || count == 0) {
-      LOG_INFO(wxT("BR24radar_pi: $$$ r while loop current.r %i, start.r %i,  current.angle %i,  start.angle %i,  count %i"), current.r, start.r, current.angle, start.angle, count);
     // try all translations to find the next point
     // start with the "left most" translation relative to the previous one
     index += 3;  // we will turn left all the time if possible
@@ -236,7 +245,6 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
     // next point found
     current.angle = aa;
     current.r = rr;
-    LOG_INFO(wxT("BR24radar_pi::RadarArpa::GetContour next point r= %i, angle= %i"), rr,aa);
     contour[count] = current;
     count++;
     if (current.angle > max_angle.angle) {
@@ -255,8 +263,6 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
       // blob too large
       return 8;  // return code 8, Blob too large
     }
-
-    LOG_INFO(wxT("BR24radar_pi: $$$  while loop end current.r %i, start.r %i,  current.angle %i,  start.angle %i,  count %i"), current.r, start.r, current.angle, start.angle, count);
   }
   contour_length = count;
   LOG_INFO(wxT("BR24radar_pi: $$$ blob found contour_length = %i"), contour_length);
@@ -454,14 +460,13 @@ void ArpaTarget::RefreshTarget() {
     LocalPosition x_local;
     x_local.lat = (X.lat - own_pos.lat) * 60. * 1852.;  // in meters
     x_local.lon = (X.lon - own_pos.lon) * 60. * 1852. * cos (deg2rad(own_pos.lat));  // in meters
-    LOG_INFO(wxT("BR24radar_pi: $$$ beginning X.dlat_dt=%f  X.dlon_dt= %f"), X.dlat_dt, X.dlon_dt);
     x_local.dlat_dt = X.dlat_dt * 60. * 1852.;  // meters / sec
     x_local.dlon_dt = X.dlon_dt * 60. * 1852. * cos(deg2rad(own_pos.lat));   // meters / sec
 
     m_kalman->Predict(&x_local, delta_t);  // x_local is new estimated local position of the target
 
     // now set the polar to expected position from the expected local position
-    pol.angle = atan(x_local.lon / x_local.lat) * LINES_PER_ROTATION / (2 * PI);
+    pol.angle = atan2(x_local.lon, x_local.lat) * LINES_PER_ROTATION / (2 * PI);
     pol.r = (int)(sqrt(x_local.lat * x_local.lat + x_local.lon * x_local.lon) * (double)RETURNS_PER_LINE / (double)m_ri->m_range_meters);
     LOG_INFO(wxT("BR24radar_pi: $$$ predicted  r = %i, angle = %i,"), pol.r, pol.angle );
 
@@ -511,12 +516,7 @@ void ArpaTarget::RefreshTarget() {
 
 
       LOG_INFO(wxT("BR24radar_pi: $$$ x_local.dlat_dt=%.7f  x_local.dlon_dt= %.7f"), x_local.dlat_dt, x_local.dlon_dt);
-      X.lat = own_pos.lat + x_local.lat / 60. / 1852.;
-      X.lon = own_pos.lon + x_local.lon / 60. / 1852. / cos(deg2rad(own_pos.lat));
-      X.dlat_dt = x_local.dlat_dt / 60. / 1852.;
-      X.dlon_dt = x_local.dlon_dt / 60. / 1852. / cos(deg2rad(own_pos.lat));
-      LOG_INFO(wxT("BR24radar_pi: $$$ X.dlat_dt=%.7f  X.dlon_dt= %.7f"), X.dlat_dt, X.dlon_dt);
-      X.time = pol.time;
+      X.time = pol.time; // set the target time to the newly found time
     } else {
       // target not found
       if (status == AQUIRE0 || status == AQUIRE1) {
@@ -532,6 +532,12 @@ void ArpaTarget::RefreshTarget() {
       // target was not found but gets another chance
       LOG_INFO(wxT("BR24radar_pi: $$$ target not found but not lost, target time= %u"), X.time.GetLo());
     }
+    X.lat = own_pos.lat + x_local.lat / 60. / 1852.;
+    X.lon = own_pos.lon + x_local.lon / 60. / 1852. / cos(deg2rad(own_pos.lat));
+    X.dlat_dt = x_local.dlat_dt / 60. / 1852.;
+    X.dlon_dt = x_local.dlon_dt / 60. / 1852. / cos(deg2rad(own_pos.lat));
+    LOG_INFO(wxT("BR24radar_pi: $$$ X.dlat_dt=%.7f  X.dlon_dt= %.7f"), X.dlat_dt, X.dlon_dt);
+    
     // set refresh time to the time of the spoke where the target was found
     t_refresh = X.time;
     PushLogbook();
@@ -541,14 +547,8 @@ void ArpaTarget::RefreshTarget() {
     logbook[0].pos = X;
     logbook[0].time = X.time;
     if (status >= 2) {
-      CalculateSpeedandCourse();
-      double speed_now;
-      double s1 = X.dlat_dt * 60.;                        // nautical miles per second
-      double s2 = X.dlon_dt * cos(deg2rad(X.lat)) * 60.;  // nautical miles per second
-      speed_now = (sqrt(s1 * s1 + s2 * s2)) * 3600.;      // and convert to nautical miles per hour
-      LOG_INFO(wxT("BR24radar_pi: $$$ **before pass arpa X.time. %u, prev_X.time %u"), X.time.GetLo(), prev_X.time.GetLo());
-      LOG_INFO(wxT("BR24radar_pi: $$$ *********Speed = %f,  s1= %f, s2= %f, Heading = %f"), speed_now, s1, s2,
-               rad2deg(atan2(s2, s1)));
+  //    CalculateSpeedandCourse();
+      
       // send target data to OCPN
       pol = Pos2Polar(X, own_pos, m_ri->m_range_meters);
       if (status >= 3) {
@@ -691,6 +691,14 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   char checksum = 0;
   char* p;
 
+  double speed_kn;
+  double s1 = X.dlat_dt * 60.;                        // nautical miles per second
+  double s2 = X.dlon_dt * cos(deg2rad(X.lat)) * 60.;  // nautical miles per second
+  speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600.;      // and convert to nautical miles per hour
+  double course = rad2deg(atan2(s2, s1));
+  LOG_INFO(wxT("BR24radar_pi: $$$ *********Speed = %f,  s1= %f, s2= %f, Heading = %f"), speed_kn, s1, s2,
+      rad2deg(atan2(s2, s1)));
+
   s_Bear_Unit = wxEmptyString;  // Bearing Units  R or empty
   s_Course_Unit = wxT("T");     // Course type R; Realtive T; true
   s_Dist_Unit = wxT("N");       // Speed/Distance Unit K, N, S N= NM/h = Knots
@@ -700,12 +708,12 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
 
   double dist = (double)pol->r / (double)RETURNS_PER_LINE * (double)m_ri->m_range_meters / 1852.;
   double bearing = (double)pol->angle * 360. / (double)LINES_PER_ROTATION;
-  double speed_kn = logbook[0].speed * 3600. / 1852.;
+  
   if (bearing < 0) bearing += 360;
   // LOG_INFO(wxT("BR24radar_pi: $$$ send dist = %f, bearing = %f"), dist, bearing);
   s_TargID = wxString::Format(wxT("%2i"), target_id);
   s_speed = wxString::Format(wxT("%4.2f"), status == Q ? 0.0 : speed_kn);
-  s_course = wxString::Format(wxT("%3.1f"), status == Q ? 0.0 : logbook[0].course);
+  s_course = wxString::Format(wxT("%3.1f"), status == Q ? 0.0 : course);
   s_target_name = wxString::Format(wxT("MARPA%2i"), target_id);
   s_distance = wxString::Format(wxT("%f"), dist);
   s_bearing = wxString::Format(wxT("%f"), bearing);

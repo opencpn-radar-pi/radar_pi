@@ -66,7 +66,7 @@ WT(2, 4) = 1.;
 
 // Observation matrix, jacobian of observation function
 // dhi / dvj
-// angle = atan (lat/lon) * 2048 / (2 * pi) + v1
+// angle = atan2 (lat,lon) * 2048 / (2 * pi) + v1
 // r = sqrt(x * x + y * y) + v2
 // v is measurement noise
 H.Extend(2, 4);
@@ -85,29 +85,22 @@ VT(2, 2) = 1.;
 // P estimate error covariance
 P.Extend(4, 4);
 // initial values follow
-//P(1, 1) = .0000027 * range * range;
-P(1, 1) = 50.; // $$$ dependent on range???
+//P(1, 1) = .0000027 * range * range;   ???
+P(1, 1) = 50.; 
 P(2, 2) = P(1, 1);
 P(3, 3) = 4.;
 P(4, 4) = 4.;   
 
-P(1, 1) = 1.;
-P(1, 1) = 1.;
-P(2, 2) = 1.;
-P(3, 3) = 1.;
-P(4, 4) = 1.;
-
 // Q Process noise covariance matrix
 Q.Extend(2, 2);
-Q(1, 1) = 2.;  // variance in lat speed, (m / sec)2
-Q(2, 2) = 2.;  // variance in lon speed, (m / sec)2
-//Q(1, 1) = 0.;  // variance in lat speed, (m / sec)2 %%%%%%%%%%%%%%%%
-//Q(2, 2) = 0.;  // variance in lon speed, (m / sec)2%%%%%%%%%%%%%%%%%%
+Q(1, 1) = 1.;  // variance in lat speed, (m / sec)2
+Q(2, 2) = 1.;  // variance in lon speed, (m / sec)2
+
 
 // R measurement noise covariance matrix
 R.Extend(2, 2);
-R(1, 1) = 3.0;  // variance in the angle 
-R(2, 2) = .3;  // variance in radius
+R(1, 1) = 100.0;  // variance in the angle 3.0
+R(2, 2) = 25.;  // variance in radius  .5
 
 K.Extend(4, 2);  // initial Kalman gain
 
@@ -142,7 +135,6 @@ void Kalman_Filter::Predict(LocalPosition* xx, double delta_time) {
     X(2, 1) = xx->lon;
     X(3, 1) = xx->dlat_dt;
     X(4, 1) = xx->dlon_dt;
-    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict called2"));
     A(1, 3) = delta_time;  // time in seconds
     A(2, 4) = delta_time;
 
@@ -157,16 +149,16 @@ void Kalman_Filter::Predict(LocalPosition* xx, double delta_time) {
     xx->dlat_dt = X(3, 1);
     xx->dlon_dt = X(4, 1);
     // calculate apriori P
-    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict P before"));
-    for (int i = 1; i < 5; i++){
+ //   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict P before"));
+   /* for (int i = 1; i < 5; i++){
         LOG_INFO(wxT("BR24radar_pi: $$$ Kalman P   %f %f %.9f %.9f"), P(i, 1), P(i, 2), P(i,3), P(i,4));
-}
+}*/
     P = A * P * AT + W * Q * WT;
-    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict P After"));
+    /*LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict P After"));
     for (int i = 1; i < 5; i++){
         LOG_INFO(wxT("BR24radar_pi: $$$ Kalman P   %f %f %.9f %.9f"), P(i, 1), P(i, 2), P(i, 3), P(i, 4));
-    }
-    LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict "));
+    }*/
+    /*LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict "));*/
     X.~Matrix();
     return;
 }
@@ -193,10 +185,9 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
   HT(1, 2) = H(2, 1);
   HT(2, 2) = H(2, 2);
 
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman H"));
-  for (int i = 1; i < 3; i++){
+  /*for (int i = 1; i < 3; i++){
       LOG_INFO(wxT("BR24radar_pi: $$$ Kalman H   %f %f %f %f"), H(i, 1), H(i, 2), H(i, 3), H(i, 4));
-  }
+  }*/
 
   Matrix Z(2, 1);
   Z(1, 1) = (double)(pol->angle - expected->angle);  // Z is  difference between measured and expected
@@ -211,17 +202,15 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
   // calculate Kalman gain
   Matrix Inverse(4, 4);
   
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman inverse1"));
   Inverse = Inv(H * P * HT + R);  // V left out, only valid if V = I
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman inverse"));
   K = P * HT * Inverse;
 
   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Gain "));
   for (int i = 1; i < 5; i++){
       LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Gain  K %f %f "), K(i, 1), K(i, 2));
   }
-  LOG_INFO(wxT("BR24radar_pi: $$$ end of K"));
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman inverse calculated"));
+  
+ 
   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement before Z %f %f "), Z(1, 1), Z(2, 1));
   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement before X %f %f %.9f %.9f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
 
