@@ -162,6 +162,7 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
   // returns metric position of the blob in Z
 
   wxCriticalSectionLocker lock(ArpaTarget::m_ri->m_exclusive);
+  LOG_INFO(wxT("BR24radar_pi: $$$ RadarArpa::GetContour called r= %i, angle= %i"), pol->r, pol->angle);
   // the 4 possible translations to move from a point on the contour to the next
   Polar transl[4] = {0, 1, 1, 0, 0, -1, -1, 0};  // NB structure polar, not class Polar
   int count = 0;
@@ -649,8 +650,10 @@ void ArpaTarget::CalculateSpeedandCourse() {
 
 bool ArpaTarget::GetTarget(Polar* pol) {
   // general target refresh
+    LOG_INFO(wxT("BR24radar_pi: $$$ RadarArpa::Gettarget 1 r= %i, angle= %i"), pol->r, pol->angle);
   bool contour_found = FindContourFromInside(pol);
   if (contour_found) {
+      LOG_INFO(wxT("BR24radar_pi: $$$ RadarArpa::Gettarget contour_found inside r= %i, angle= %i"), pol->r, pol->angle);
   } else {
     int dist = OFF_LOCATION;
     if (status == AQUIRE0 || status == AQUIRE1) {
