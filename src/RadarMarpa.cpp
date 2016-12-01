@@ -339,7 +339,7 @@ void RadarArpa::DrawContour(ArpaTarget target) {
   // following displays expected position with crosses that indicate the size of the search area
   // for debugging only
 
-  double xx;
+  /*double xx;
   double yy;
   int dist_a = (int)(326. / (double)radius * OFF_LOCATION / 2.);
   int dist_r = (int)((double)OFF_LOCATION / 2.);
@@ -357,7 +357,7 @@ void RadarArpa::DrawContour(ArpaTarget target) {
     xx = polarLookup->x[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
     yy = polarLookup->y[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
     glVertex2f(xx, yy);
-  }
+  }*/
 
   glEnd();
 }
@@ -496,8 +496,9 @@ void ArpaTarget::RefreshTarget() {
       } 
       status++;
 
-      m_kalman->SetMeasurement(&pol, &x_local, &expected, m_ri->m_range_meters);     // pol is measured position
-                                                    // x_local expected position
+      m_kalman->SetMeasurement(&pol, &x_local, &expected, m_ri->m_range_meters);     // pol is measured position in polar coordinates
+                                                    // x_local expected position in local coordinates
+                                                    // expected  is expected position in polar coordinates
 
       X.time = pol.time; // set the target time to the newly found time
     } else {
