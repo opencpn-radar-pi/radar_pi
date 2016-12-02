@@ -66,7 +66,6 @@ class Kalman_Filter {
   Matrix R;
   Matrix K;
   Matrix I;
-  
 };
 
 PLUGIN_END_NAMESPACE

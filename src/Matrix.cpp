@@ -53,28 +53,10 @@ A.Print();
 //#include <cstdio>
 //#include <cstdlib>
 
-#include "br24radar_pi.h"
 #include "Matrix.h"
+#include "br24radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
-
-//#define PAUSE                                \
-//  {                                          \
-//    printf("Press \"Enter\" to continue\n"); \
-//    fflush(stdin);                           \
-//    getchar();                               \
-//    fflush(stdin);                           \
-//  }
-
-// Declarations
-//class Matrix;
-//double Det(const Matrix& a);
-//Matrix Diag(const int n);
-//Matrix Diag(const Matrix& v);
-//Matrix Inv(const Matrix& a);
-//Matrix Ones(const int rows, const int cols);
-//int Size(const Matrix& a, const int i);
-//Matrix Zeros(const int rows, const int cols);
 
 /*
 * a simple exception class
@@ -89,317 +71,313 @@ class Exception {
   Exception(const char* arg) : msg(arg) {}
 };
 
+// constructor
+Matrix::Matrix(const int row_count, const int column_count) {
+  // create a Matrix object with given number of rows and columns
+  p = NULL;
 
+  if (row_count > 0 && column_count > 0) {
+    rows = row_count;
+    cols = column_count;
 
-  // constructor
-  Matrix::Matrix(const int row_count, const int column_count) {
-    // create a Matrix object with given number of rows and columns
-    p = NULL;
-
-    if (row_count > 0 && column_count > 0) {
-      rows = row_count;
-      cols = column_count;
-
-      p = new double*[rows];
-      for (int r = 0; r < rows; r++) {
-        p[r] = new double[cols];
-
-        // initially fill in zeros for all values in the matrix;
-        for (int c = 0; c < cols; c++) {
-          p[r][c] = 0;
-        }
-      }
-    }
-  }
-
-  void Matrix::Extend(int row_count, int column_count){
-      // create a Matrix object with given number of rows and columns
-      p = NULL;
-
-      if (row_count > 0 && column_count > 0) {
-          rows = row_count;
-          cols = column_count;
-
-          p = new double*[rows];
-          for (int r = 0; r < rows; r++) {
-              p[r] = new double[cols];
-
-              // initially fill in zeros for all values in the matrix;
-              for (int c = 0; c < cols; c++) {
-                  p[r][c] = 0;
-              }
-          }
-      }
-  }
-
-  // assignment operator
-  Matrix::Matrix(const Matrix& a) {
-    rows = a.rows;
-    cols = a.cols;
-    p = new double*[a.rows];
-    for (int r = 0; r < a.rows; r++) {
-      p[r] = new double[a.cols];
-
-      // copy the values from the matrix a
-      for (int c = 0; c < a.cols; c++) {
-        p[r][c] = a.p[r][c];
-      }
-    }
-  }
-
-  // index operator. You can use this class like myMatrix(col, row)
-  // the indexes are one-based, not zero based.
-  double& Matrix::operator()(const int r, const int c) {
-    if (p != NULL && r > 0 && r <= rows && c > 0 && c <= cols) {
-      return p[r - 1][c - 1];
-    } else {
-      LOG_INFO(wxT("BR24radar_pi: Matrix exception Subscript out of range, index operator"));
-      return p[r - 1][c - 1];
-    }
-  }
-
-  // index operator. You can use this class like myMatrix.get(col, row)
-  // the indexes are one-based, not zero based.
-  // use this function get if you want to read from a const Matrix
-  double Matrix::get(const int r, const int c) const {
-    if (p != NULL && r > 0 && r <= rows && c > 0 && c <= cols) {
-      return p[r - 1][c - 1];
-    } else {
-      LOG_INFO(wxT("BR24radar_pi: Matrix exception Subscript out of range, get row col"));  // 
-      return p[r - 1][c - 1];
-    }
-  }
-
-  // assignment operator
-  Matrix& Matrix::operator=(const Matrix& a) {
-    rows = a.rows;
-    cols = a.cols;
-    p = new double*[a.rows];
-    for (int r = 0; r < a.rows; r++) {
-      p[r] = new double[a.cols];
-
-      // copy the values from the matrix a
-      for (int c = 0; c < a.cols; c++) {
-        p[r][c] = a.p[r][c];
-      }
-    }
-    return *this;
-  }
-
-  // add a double value (elements wise)
-  Matrix& Matrix::Add(const double v) {
+    p = new double*[rows];
     for (int r = 0; r < rows; r++) {
+      p[r] = new double[cols];
+
+      // initially fill in zeros for all values in the matrix;
       for (int c = 0; c < cols; c++) {
-        p[r][c] += v;
+        p[r][c] = 0;
       }
     }
-    return *this;
   }
+}
 
-  
+void Matrix::Extend(int row_count, int column_count) {
+  // extend a Matrix object with given number of rows and columns
+  // in a class definition define the matrix without dimension,
+  // extend it in the constructor to the desired dimensions
+  p = NULL;
 
-  // multiply a double value (elements wise)
-  Matrix& Matrix::Multiply(const double v) {
+  if (row_count > 0 && column_count > 0) {
+    rows = row_count;
+    cols = column_count;
+
+    p = new double*[rows];
     for (int r = 0; r < rows; r++) {
+      p[r] = new double[cols];
+
+      // initially fill in zeros for all values in the matrix;
       for (int c = 0; c < cols; c++) {
-        p[r][c] *= v;
+        p[r][c] = 0;
       }
     }
-    return *this;
   }
+}
 
-  //// divide a double value (elements wise)
-  //Matrix& Divide(const double v) { return Multiply(1 / v); }
+// assignment operator
+Matrix::Matrix(const Matrix& a) {
+  rows = a.rows;
+  cols = a.cols;
+  p = new double*[a.rows];
+  for (int r = 0; r < a.rows; r++) {
+    p[r] = new double[a.cols];
 
-  // addition of Matrix with Matrix
-  Matrix operator+(const Matrix& a, const Matrix& b) {
-    // check if the dimensions match
-    if (a.rows == b.rows && a.cols == b.cols) {
-      Matrix res(a.rows, a.cols);
-
-      for (int r = 0; r < a.rows; r++) {
-        for (int c = 0; c < a.cols; c++) {
-          res.p[r][c] = a.p[r][c] + b.p[r][c];
-        }
-      }
-      return res;
-    } else {
-      // give an error
-      LOG_INFO(wxT("BR24radar_pi: Matrix exception Dimensions does not match"));
+    // copy the values from the matrix a
+    for (int c = 0; c < a.cols; c++) {
+      p[r][c] = a.p[r][c];
     }
-
-    // return an empty matrix (this never happens but just for safety)
-    return Matrix();
   }
+}
 
-  // addition of Matrix with double
-  Matrix operator+(const Matrix& a, const double b) {
-    Matrix res = a;
-    res.Add(b);
-    return res;
+// index operator. You can use this class like myMatrix(col, row)
+// the indexes are one-based, not zero based.
+double& Matrix::operator()(const int r, const int c) {
+  if (p != NULL && r > 0 && r <= rows && c > 0 && c <= cols) {
+    return p[r - 1][c - 1];
+  } else {
+    LOG_INFO(wxT("BR24radar_pi: Matrix exception Subscript out of range, index operator"));
+    return p[r - 1][c - 1];
   }
-  // addition of double with Matrix
-  Matrix operator+(const double b, const Matrix& a) {
-    Matrix res = a;
-    res.Add(b);
-    return res;
+}
+
+// index operator. You can use this class like myMatrix.get(col, row)
+// the indexes are one-based, not zero based.
+// use this function get if you want to read from a const Matrix
+double Matrix::get(const int r, const int c) const {
+  if (p != NULL && r > 0 && r <= rows && c > 0 && c <= cols) {
+    return p[r - 1][c - 1];
+  } else {
+    LOG_INFO(wxT("BR24radar_pi: Matrix exception Subscript out of range, get row col"));  //
+    return p[r - 1][c - 1];
   }
+}
 
-  // subtraction of Matrix with Matrix
-  Matrix operator-(const Matrix& a, const Matrix& b) {
-    // check if the dimensions match
-    if (a.rows == b.rows && a.cols == b.cols) {
-      Matrix res(a.rows, a.cols);
+// assignment operator
+Matrix& Matrix::operator=(const Matrix& a) {
+  rows = a.rows;
+  cols = a.cols;
+  p = new double*[a.rows];
+  for (int r = 0; r < a.rows; r++) {
+    p[r] = new double[a.cols];
 
-      for (int r = 0; r < a.rows; r++) {
-        for (int c = 0; c < a.cols; c++) {
-          res.p[r][c] = a.p[r][c] - b.p[r][c];
-        }
-      }
-      return res;
-    } else {
-      // give an error
-      LOG_INFO(wxT("BR24radar_pi: Matrix exception Dimensions does not match"));
+    // copy the values from the matrix a
+    for (int c = 0; c < a.cols; c++) {
+      p[r][c] = a.p[r][c];
     }
-
-    // return an empty matrix (this never happens but just for safety)
-    return Matrix();
   }
+  return *this;
+}
 
-  // subtraction of Matrix with double
-  Matrix operator-(const Matrix& a, const double b) {
-    Matrix res = a;
-    res.Subtract(b);
-    return res;
+// add a double value (elements wise)
+Matrix& Matrix::Add(const double v) {
+  for (int r = 0; r < rows; r++) {
+    for (int c = 0; c < cols; c++) {
+      p[r][c] += v;
+    }
   }
-  // subtraction of double with Matrix
-  Matrix operator-(const double b, const Matrix& a) {
-    Matrix res = -a;
-    res.Add(b);
-    return res;
-  }
+  return *this;
+}
 
-  // operator unary minus
-  Matrix operator-(const Matrix& a) {
+// multiply a double value (elements wise)
+Matrix& Matrix::Multiply(const double v) {
+  for (int r = 0; r < rows; r++) {
+    for (int c = 0; c < cols; c++) {
+      p[r][c] *= v;
+    }
+  }
+  return *this;
+}
+
+//// divide a double value (elements wise)
+// Matrix& Divide(const double v) { return Multiply(1 / v); }
+
+// addition of Matrix with Matrix
+Matrix operator+(const Matrix& a, const Matrix& b) {
+  // check if the dimensions match
+  if (a.rows == b.rows && a.cols == b.cols) {
     Matrix res(a.rows, a.cols);
 
     for (int r = 0; r < a.rows; r++) {
       for (int c = 0; c < a.cols; c++) {
-        res.p[r][c] = -a.p[r][c];
+        res.p[r][c] = a.p[r][c] + b.p[r][c];
       }
     }
-
     return res;
+  } else {
+    // give an error
+    LOG_INFO(wxT("BR24radar_pi: Matrix exception Dimensions does not match"));
   }
 
-  // operator multiplication
-  Matrix operator*(const Matrix& a, const Matrix& b) {
-    // check if the dimensions match
-    if (a.cols == b.rows) {
-      Matrix res(a.rows, b.cols);
+  // return an empty matrix (this never happens but just for safety)
+  return Matrix();
+}
 
-      for (int r = 0; r < a.rows; r++) {
-        for (int c_res = 0; c_res < b.cols; c_res++) {
-          for (int c = 0; c < a.cols; c++) {
-            res.p[r][c_res] += a.p[r][c] * b.p[c][c_res];
-          }
+// addition of Matrix with double
+Matrix operator+(const Matrix& a, const double b) {
+  Matrix res = a;
+  res.Add(b);
+  return res;
+}
+// addition of double with Matrix
+Matrix operator+(const double b, const Matrix& a) {
+  Matrix res = a;
+  res.Add(b);
+  return res;
+}
+
+// subtraction of Matrix with Matrix
+Matrix operator-(const Matrix& a, const Matrix& b) {
+  // check if the dimensions match
+  if (a.rows == b.rows && a.cols == b.cols) {
+    Matrix res(a.rows, a.cols);
+
+    for (int r = 0; r < a.rows; r++) {
+      for (int c = 0; c < a.cols; c++) {
+        res.p[r][c] = a.p[r][c] - b.p[r][c];
+      }
+    }
+    return res;
+  } else {
+    // give an error
+    LOG_INFO(wxT("BR24radar_pi: Matrix exception Dimensions does not match"));
+  }
+
+  // return an empty matrix (this never happens but just for safety)
+  return Matrix();
+}
+
+// subtraction of Matrix with double
+Matrix operator-(const Matrix& a, const double b) {
+  Matrix res = a;
+  res.Subtract(b);
+  return res;
+}
+// subtraction of double with Matrix
+Matrix operator-(const double b, const Matrix& a) {
+  Matrix res = -a;
+  res.Add(b);
+  return res;
+}
+
+// operator unary minus
+Matrix operator-(const Matrix& a) {
+  Matrix res(a.rows, a.cols);
+
+  for (int r = 0; r < a.rows; r++) {
+    for (int c = 0; c < a.cols; c++) {
+      res.p[r][c] = -a.p[r][c];
+    }
+  }
+
+  return res;
+}
+
+// operator multiplication
+Matrix operator*(const Matrix& a, const Matrix& b) {
+  // check if the dimensions match
+  if (a.cols == b.rows) {
+    Matrix res(a.rows, b.cols);
+
+    for (int r = 0; r < a.rows; r++) {
+      for (int c_res = 0; c_res < b.cols; c_res++) {
+        for (int c = 0; c < a.cols; c++) {
+          res.p[r][c_res] += a.p[r][c] * b.p[c][c_res];
         }
       }
-      return res;
-    } else {
-      // give an error
-      LOG_INFO(wxT("BR24radar_pi: Matrix exception Dimensions does not match"));
     }
-
-    // return an empty matrix (this never happens but just for safety)
-    return Matrix();
-  }
-
-  // multiplication of Matrix with double
-  Matrix operator*(const Matrix& a, const double b) {
-    Matrix res = a;
-    res.Multiply(b);
     return res;
-  }
-  // multiplication of double with Matrix
-  Matrix operator*(const double b, const Matrix& a) {
-    Matrix res = a;
-    res.Multiply(b);
-    return res;
+  } else {
+    // give an error
+    LOG_INFO(wxT("BR24radar_pi: Matrix exception Dimensions does not match"));
   }
 
-  //// division of Matrix with Matrix
-  //Matrix operator/(const Matrix& a, const Matrix& b) {
-  //  // check if the dimensions match: must be square and equal sizes
-  //  if (a.rows == a.cols && a.rows == a.cols && b.rows == b.cols) {
-  //    Matrix res(a.rows, a.cols);
+  // return an empty matrix (this never happens but just for safety)
+  return Matrix();
+}
 
-  //    res = a * Inv(b);
+// multiplication of Matrix with double
+Matrix operator*(const Matrix& a, const double b) {
+  Matrix res = a;
+  res.Multiply(b);
+  return res;
+}
+// multiplication of double with Matrix
+Matrix operator*(const double b, const Matrix& a) {
+  Matrix res = a;
+  res.Multiply(b);
+  return res;
+}
 
-  //    return res;
-  //  } else {
-  //    // give an error
-  //    LOG_INFO(wxT("BR24radar_pi: Matrix exception Dimensions does not match"));
-  //  }
+//// division of Matrix with Matrix
+// Matrix operator/(const Matrix& a, const Matrix& b) {
+//  // check if the dimensions match: must be square and equal sizes
+//  if (a.rows == a.cols && a.rows == a.cols && b.rows == b.cols) {
+//    Matrix res(a.rows, a.cols);
 
-  //  // return an empty matrix (this never happens but just for safety)
-  //  return Matrix();
-  //}
+//    res = a * Inv(b);
 
-  //// division of Matrix with double
-  //Matrix operator/(const Matrix& a, const double b) {
-  //  Matrix res = a;
-  //  res.Divide(b);
-  //  return res;
-  //}
+//    return res;
+//  } else {
+//    // give an error
+//    LOG_INFO(wxT("BR24radar_pi: Matrix exception Dimensions does not match"));
+//  }
 
-  //// division of double with Matrix
-  //friend Matrix operator/(const double b, const Matrix& a) {
-  //  Matrix b_matrix(1, 1);
-  //  b_matrix(1, 1) = b;
+//  // return an empty matrix (this never happens but just for safety)
+//  return Matrix();
+//}
 
-  //  Matrix res = b_matrix / a;
-  //  return res;
-  //}
+//// division of Matrix with double
+// Matrix operator/(const Matrix& a, const double b) {
+//  Matrix res = a;
+//  res.Divide(b);
+//  return res;
+//}
 
-  /**
-  * returns the minor from the given matrix where
-  * the selected row and column are removed
-  */
-  Matrix Matrix::Minor(const int row, const int col) const {
-    Matrix res;
-    if (row > 0 && row <= rows && col > 0 && col <= cols) {
-      res = Matrix(rows - 1, cols - 1);
+//// division of double with Matrix
+// friend Matrix operator/(const double b, const Matrix& a) {
+//  Matrix b_matrix(1, 1);
+//  b_matrix(1, 1) = b;
 
-      // copy the content of the matrix to the minor, except the selected
-      for (int r = 1; r <= (rows - (row >= rows)); r++) {
-        for (int c = 1; c <= (cols - (col >= cols)); c++) {
-          res(r - (r > row), c - (c > col)) = p[r - 1][c - 1];
-        }
+//  Matrix res = b_matrix / a;
+//  return res;
+//}
+
+/**
+* returns the minor from the given matrix where
+* the selected row and column are removed
+*/
+Matrix Matrix::Minor(const int row, const int col) const {
+  Matrix res;
+  if (row > 0 && row <= rows && col > 0 && col <= cols) {
+    res = Matrix(rows - 1, cols - 1);
+
+    // copy the content of the matrix to the minor, except the selected
+    for (int r = 1; r <= (rows - (row >= rows)); r++) {
+      for (int c = 1; c <= (cols - (col >= cols)); c++) {
+        res(r - (r > row), c - (c > col)) = p[r - 1][c - 1];
       }
-    } else {
-      LOG_INFO(wxT("BR24radar_pi: Matrix exception Index for minor out of range"));
     }
-
-    return res;
+  } else {
+    LOG_INFO(wxT("BR24radar_pi: Matrix exception Index for minor out of range"));
   }
 
-  /*
-  * returns the size of the i-th dimension of the matrix.
-  * i.e. for i=1 the function returns the number of rows,
-  * and for i=2 the function returns the number of columns
-  * else the function returns 0
-  */
-  int Matrix::Size(const int i) const {
-    if (i == 1) {
-      return rows;
-    } else if (i == 2) {
-      return cols;
-    }
-    return 0;
-  }
+  return res;
+}
 
-  
+/*
+* returns the size of the i-th dimension of the matrix.
+* i.e. for i=1 the function returns the number of rows,
+* and for i=2 the function returns the number of columns
+* else the function returns 0
+*/
+int Matrix::Size(const int i) const {
+  if (i == 1) {
+    return rows;
+  } else if (i == 2) {
+    return cols;
+  }
+  return 0;
+}
 
 /*
 * i.e. for i=1 the function returns the number of rows,
@@ -559,6 +537,5 @@ Matrix Inv(const Matrix& a) {
   }
   return res;
 }
-
 
 PLUGIN_END_NAMESPACE

@@ -111,54 +111,53 @@ Kalman_Filter::Kalman_Filter(int range) {
 }
 
 Kalman_Filter::~Kalman_Filter() {  // clean up all matrices
-    A.~Matrix();
-    AT.~Matrix();
-    W.~Matrix();
-    WT.~Matrix();
-    H.~Matrix();
-    HT.~Matrix();
-    V.~Matrix();
-    VT.~Matrix();
-    P.~Matrix();
-    Q.~Matrix();
-    FT.~Matrix();
-    R.~Matrix();
-    K.~Matrix();
-    I.~Matrix();
+  A.~Matrix();
+  AT.~Matrix();
+  W.~Matrix();
+  WT.~Matrix();
+  H.~Matrix();
+  HT.~Matrix();
+  V.~Matrix();
+  VT.~Matrix();
+  P.~Matrix();
+  Q.~Matrix();
+  FT.~Matrix();
+  R.~Matrix();
+  K.~Matrix();
+  I.~Matrix();
 }
 
 void Kalman_Filter::Predict(LocalPosition* xx, double delta_time) {
-    Matrix X(4, 1);
-    X(1, 1) = xx->lat;
-    X(2, 1) = xx->lon;
-    X(3, 1) = xx->dlat_dt;
-    X(4, 1) = xx->dlon_dt;
-    A(1, 3) = delta_time;  // time in seconds
-    A(2, 4) = delta_time;
+  Matrix X(4, 1);
+  X(1, 1) = xx->lat;
+  X(2, 1) = xx->lon;
+  X(3, 1) = xx->dlat_dt;
+  X(4, 1) = xx->dlon_dt;
+  A(1, 3) = delta_time;  // time in seconds
+  A(2, 4) = delta_time;
 
-    AT(3, 1) = delta_time;
-    AT(4, 2) = delta_time;
+  AT(3, 1) = delta_time;
+  AT(4, 2) = delta_time;
 
-    X = A * X;
-    xx->lat = X(1, 1);
-    xx->lon = X(2, 1);
-    xx->dlat_dt = X(3, 1);
-    xx->dlon_dt = X(4, 1);
-    // calculate apriori P
- //   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict P before"));
-   /* for (int i = 1; i < 5; i++){
-        LOG_INFO(wxT("BR24radar_pi: $$$ Kalman P   %f %f %.9f %.9f"), P(i, 1), P(i, 2), P(i,3), P(i,4));
+  X = A * X;
+  xx->lat = X(1, 1);
+  xx->lon = X(2, 1);
+  xx->dlat_dt = X(3, 1);
+  xx->dlon_dt = X(4, 1);
+  // calculate apriori P
+  //   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict P before"));
+  /* for (int i = 1; i < 5; i++){
+       LOG_INFO(wxT("BR24radar_pi: $$$ Kalman P   %f %f %.9f %.9f"), P(i, 1), P(i, 2), P(i,3), P(i,4));
 }*/
-    P = A * P * AT + W * Q * WT;
-    /*LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict P After"));
-    for (int i = 1; i < 5; i++){
-        LOG_INFO(wxT("BR24radar_pi: $$$ Kalman P   %f %f %.9f %.9f"), P(i, 1), P(i, 2), P(i, 3), P(i, 4));
-    }*/
-    /*LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict "));*/
-    X.~Matrix();
-    return;
+  P = A * P * AT + W * Q * WT;
+  /*LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict P After"));
+  for (int i = 1; i < 5; i++){
+      LOG_INFO(wxT("BR24radar_pi: $$$ Kalman P   %f %f %.9f %.9f"), P(i, 1), P(i, 2), P(i, 3), P(i, 4));
+  }*/
+  /*LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict "));*/
+  X.~Matrix();
+  return;
 }
-
 
 void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected, int range) {
 // pol measured angular position
@@ -196,7 +195,7 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
 
   // calculate Kalman gain
   Matrix Inverse(4, 4);
-  
+
   Inverse = Inv(H * P * HT + R);  // V left out, only valid if V = I
   K = P * HT * Inverse;
 
@@ -206,7 +205,7 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
   }*/
 
   X = X + K * Z;
- // LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement after  X %f %f %.9f %.9f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
+  // LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement after  X %f %f %.9f %.9f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
   x->lat = X(1, 1);
   x->lon = X(2, 1);
   x->dlat_dt = X(3, 1);
@@ -220,6 +219,5 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
   Inverse.~Matrix();
   return;
 }
-
 
 PLUGIN_END_NAMESPACE

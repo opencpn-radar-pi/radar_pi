@@ -86,13 +86,13 @@ class Polar {
   wxLongLong time;  // wxGetUTCTimeMillis
 };
 
-class LocalPosition{
-    // position in meters relative to own ship position
-public:
-    double lat;
-    double lon;
-    double dlat_dt;  // meters per second
-    double dlon_dt;
+class LocalPosition {
+  // position in meters relative to own ship position
+ public:
+  double lat;
+  double lon;
+  double dlat_dt;  // meters per second
+  double dlon_dt;
 };
 
 Polar Pos2Polar(Position p, Position own_ship, int range);
@@ -118,8 +118,8 @@ class ArpaTarget {
   Polar pol_z;  // polar of the last measured position, ussed for target deletion
   Kalman_Filter* m_kalman;
   wxLongLong t_refresh;  // time of last refresh
-  double bearing;                 // only valid directly after calculation
-  double distance;                // only valid directly after calculation
+  double bearing;        // only valid directly after calculation
+  double distance;       // only valid directly after calculation
   unsigned int O_update_counter;
   target_status status;
   int lost_count;
