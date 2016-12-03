@@ -365,16 +365,6 @@ void RadarArpa::DrawArpaTargets() {
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
     if (m_targets[i].status != LOST) {
       DrawContour(m_targets[i]);
-      // if (m_targets[i].nr_of_log_entries == 51){   // to find covariance of observations, use with steady ship on steady targets
-      // will output a list of target details in the log
-      //    for (int j = 1; j < 41; j++){
-      //        LOG_INFO(wxT("BR24radar_pi: $$$ logbook dist j=%i, angle % i,%i, lat lon ,%f,%f"), j,
-      //        m_targets[i].logbook[j].pol_z.r,
-      //            m_targets[i].logbook[j].pol_z.angle, m_targets[i].logbook[j].z.lat, m_targets[i].logbook[j].z.lon);
-      //    }
-      //    m_targets[i].SetStatusLost();
-      //    LOG_INFO(wxT("BR24radar_pi: $$$ logbook end"));
-      //}
     }
   }
 }
@@ -421,13 +411,45 @@ void RadarArpa::RefreshArpaTargets() {
     }
     m_targets[i].RefreshTarget();
   }
+
+  // check for duplicates 
+  bool dup = false;
+  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+      if (m_targets[i].status == LOST) {
+          continue;
+      }
+      for (int j = i + 1; j < NUMBER_OF_TARGETS; j++) {
+          
+          if (m_targets[j].status == LOST) {
+              continue;
+          }
+          if (m_targets[j].pol_z.angle == m_targets[i].pol_z.angle && m_targets[j].pol_z.r == m_targets[i].pol_z.r) {
+              // duplicate found
+              if (m_targets[j].duplicate_count == 0){
+                  m_targets[j].duplicate_count = m_targets[j].status;
+                  dup = true;  // if at least one duplicate found  dup = true
+              }
+              else 
+              if (m_targets[j].lost_count + MAX_DUP < m_targets[j].status){
+                  m_targets[j].SetStatusLost();
+              }
+          }
+      }
+      
+  }
+  if (!dup){
+      for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+          m_targets[i].duplicate_count = 0; // reset all duplicate counters
+          }
+      }
 }
 
 void ArpaTarget::RefreshTarget() {
   Position prev_X;
   Position prev2_X;
-  Polar pol;
   Position own_pos;
+  Polar pol;
+  
   own_pos.lat = m_pi->m_ownship_lat;
   own_pos.lon = m_pi->m_ownship_lon;
   pol = Pos2Polar(X, own_pos, m_ri->m_range_meters);
@@ -473,6 +495,8 @@ void ArpaTarget::RefreshTarget() {
     expected = pol;
     // now search for the target at the expected polar position in pol
     if (GetTarget(&pol)) {
+        pol_z = pol;
+        LOG_INFO(wxT("BR24radar_pi: $$$ after get target ang = %i, r= %i"), pol.angle, pol.r);
       // target refreshed, measured position in pol
       // check if target has a new later time than previous target
       if (pol.time <= prev_X.time) {
@@ -630,7 +654,7 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600.;       // and convert to nautical miles per hour
   double course = rad2deg(atan2(s2, s1));
   if (speed_kn < (double)TARGET_SPEED_DIV_SDEV * X.sd_speed_kn){
-      LOG_INFO(wxT("BR24radar_pi: $$$ low speed, set to 0, speed = %f, sd = %f"), speed_kn, X.sd_speed_kn);
+    //  LOG_INFO(wxT("BR24radar_pi: $$$ low speed, set to 0, speed = %f, sd = %f"), speed_kn, X.sd_speed_kn);
       speed_kn = 0.;
       course = 0.;      
   }
@@ -688,6 +712,7 @@ void ArpaTarget::SetStatusLost() {
     PassARPAtoOCPN(&p, L);
     LOG_INFO(wxT("BR24radar_pi: $$$ Kalman filter deleted"));
   }
+  duplicate_count = 0;
 }
 
 void RadarArpa::DeleteAllTargets() {
@@ -698,4 +723,9 @@ void RadarArpa::DeleteAllTargets() {
   }
 }
 
+
+void RadarArpa::RemoveDuplicates(){
+    // removed duplicate target after MAX_DUP sweeps
+
+}
 PLUGIN_END_NAMESPACE
