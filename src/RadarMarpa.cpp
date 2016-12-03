@@ -518,7 +518,7 @@ void ArpaTarget::RefreshTarget() {
     X.lon = own_pos.lon + x_local.lon / 60. / 1852. / cos(deg2rad(own_pos.lat));
     X.dlat_dt = x_local.dlat_dt / 60. / 1852.;
     X.dlon_dt = x_local.dlon_dt / 60. / 1852. / cos(deg2rad(own_pos.lat));
-
+    X.sd_speed_kn = x_local.sd_speed_m_s * 3600. / 1852.;
     // set refresh time to the time of the spoke where the target was found
     t_refresh = X.time;
     if (status >= 2) {
@@ -628,6 +628,11 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   double s2 = X.dlon_dt * cos(deg2rad(X.lat)) * 60.;  // nautical miles per second
   speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600.;       // and convert to nautical miles per hour
   double course = rad2deg(atan2(s2, s1));
+  if (speed_kn < (double)TARGET_SPEED_DIV_SDEV * X.sd_speed_kn){
+    //  LOG_INFO(wxT("BR24radar_pi: $$$ low speed, set to 0, speed = %f, sd = %f"), speed_kn, X.sd_speed_kn);
+      speed_kn = 0.;
+      course = 0.;      
+  }
 
   s_Bear_Unit = wxEmptyString;  // Bearing Units  R or empty
   s_Course_Unit = wxT("T");     // Course type R; Realtive T; true

@@ -210,9 +210,13 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
   x->lon = X(2, 1);
   x->dlat_dt = X(3, 1);
   x->dlon_dt = X(4, 1);
-
+  x->sd_speed_m_s = sqrt((P(3, 3) + P(4, 4)) / 2.);  // rough approximation of standard dev of speed
   // update covariance P
   P = (I - K * H) * P;
+  /*LOG_INFO(wxT("BR24radar_pi: $$$ Kalman  P After"));
+  for (int i = 1; i < 5; i++){
+  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman P   %f %f %.9f %.9f"), P(i, 1), P(i, 2), P(i, 3), P(i, 4));
+  }*/
 
   X.~Matrix();
   Z.~Matrix();

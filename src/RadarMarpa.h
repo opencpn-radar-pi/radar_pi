@@ -62,6 +62,7 @@ class Matrix;
 //    >=4  active
 #define Q_NUM (2)  // status Q to OCPN at target status 2
 #define T_NUM (5)  // status T to OCPN at target status 5
+#define TARGET_SPEED_DIV_SDEV 2.  // when speed is < TARGET_SPEED_DIV_SDEV * standard_deviation of speed, speed of target  is shown as 0
 
 typedef int target_status;
 enum OCPN_target_status {
@@ -77,6 +78,7 @@ class Position {
   double dlat_dt;   // deg / sec
   double dlon_dt;   // deg / sec
   wxLongLong time;  // millis
+  double sd_speed_kn;  // standard deviation of the speed in knots
 };
 
 class Polar {
@@ -93,6 +95,7 @@ class LocalPosition {
   double lon;
   double dlat_dt;  // meters per second
   double dlon_dt;
+  double sd_speed_m_s; // standard deviation of the speed m / sec
 };
 
 Polar Pos2Polar(Position p, Position own_ship, int range);
