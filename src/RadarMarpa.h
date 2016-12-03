@@ -152,6 +152,7 @@ class RadarArpa {
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
   int NextEmptyTarget();
+  int radar_lost_count;  // all targets will be deleted when radar not seen
 
   void CalculateCentroid(ArpaTarget* t);
   void DrawContour(ArpaTarget t);

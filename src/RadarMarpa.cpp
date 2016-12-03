@@ -42,6 +42,7 @@ RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
   LOG_INFO(wxT("BR24radar_pi: $$$ radarmarpa creator call"));
   m_ri = ri;
   m_pi = pi;
+  radar_lost_count = 0;
   m_targets = new ArpaTarget[NUMBER_OF_TARGETS];
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
     m_targets[i].set(pi, ri);
@@ -385,7 +386,7 @@ void RadarArpa::RefreshArpaTargets() {
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
     if (m_targets[i].status == FOR_DELETION) {
       target_to_delete = i;
-      LOG_INFO(wxT("BR24radar_pi: $$$ FOR_DELETION i= %i"), i);
+   //   LOG_INFO(wxT("BR24radar_pi: $$$ FOR_DELETION i= %i"), i);
     }
   }
 
@@ -629,7 +630,7 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600.;       // and convert to nautical miles per hour
   double course = rad2deg(atan2(s2, s1));
   if (speed_kn < (double)TARGET_SPEED_DIV_SDEV * X.sd_speed_kn){
-    //  LOG_INFO(wxT("BR24radar_pi: $$$ low speed, set to 0, speed = %f, sd = %f"), speed_kn, X.sd_speed_kn);
+      LOG_INFO(wxT("BR24radar_pi: $$$ low speed, set to 0, speed = %f, sd = %f"), speed_kn, X.sd_speed_kn);
       speed_kn = 0.;
       course = 0.;      
   }
