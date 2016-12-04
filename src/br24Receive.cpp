@@ -267,10 +267,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
 
     SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
     SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
-    //if (a == 10) m_test++;  // $$$
-    //if (m_test < 3){  // 2 revs only for test   $$$
     m_ri->ProcessRadarSpoke(a, b, line->data, RETURNS_PER_LINE, range_meters, time_rec, lat, lon);
-    /*}*/
   }
 }
 

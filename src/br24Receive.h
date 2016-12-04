@@ -47,7 +47,6 @@ class br24Receive : public wxThread {
     m_radar_status = 0;
     m_new_ip_addr = false;
     m_next_rotation = 0;
-    m_test = 0;   ///   $$$
 
     if (m_pi->m_settings.mcast_address.length()) {
       int b[4];
@@ -114,7 +113,6 @@ class br24Receive : public wxThread {
 
   int m_next_spoke;     // emulator next spoke
   int m_next_rotation;  // slowly rotate emulator
-  int m_test;  // $$$
   char m_radar_status;
 };
 

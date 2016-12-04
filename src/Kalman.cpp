@@ -42,8 +42,7 @@
 PLUGIN_BEGIN_NAMESPACE
 
 Kalman_Filter::Kalman_Filter(int range) {
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman_Filter created"));
-  // as the measurement to state transformation is non-linear, the extended Kalman filter should be used
+  // as the measurement to state transformation is non-linear, the extended Kalman filter is used
   // as the state transformation is linear, the state transformation matrix F is equal to the jacobian A
   // f is the state transformation function Xk <- Xk-1
   // Ai,j is jacobian matrix dfi / dxj
@@ -56,7 +55,7 @@ Kalman_Filter::Kalman_Filter(int range) {
   AT.Extend(4, 4);  // transpose of A
   AT = A;
 
-  W.Extend(4, 2);
+  W.Extend(4, 2);  // Jacobian matrix of partial derivatives dfi / dwj
   W(3, 1) = 1.;
   W(4, 2) = 1.;
 
@@ -64,12 +63,12 @@ Kalman_Filter::Kalman_Filter(int range) {
   WT(1, 3) = 1.;
   WT(2, 4) = 1.;
 
-  // Observation matrix, jacobian of observation function
+  // Observation matrix, jacobian of observation function h
   // dhi / dvj
   // angle = atan2 (lat,lon) * 2048 / (2 * pi) + v1
   // r = sqrt(x * x + y * y) + v2
   // v is measurement noise
-  H.Extend(2, 4);
+  H.Extend(2, 4);  // values filled in SetMeasurement
 
   HT.Extend(4, 2);  // Transpose of observation matrix
 
@@ -101,9 +100,9 @@ Kalman_Filter::Kalman_Filter(int range) {
   R(1, 1) = 100.0;  // variance in the angle 3.0
   R(2, 2) = 25.;    // variance in radius  .5
 
-  K.Extend(4, 2);  // initial Kalman gain
+  K.Extend(4, 2);  // Kalman gain
 
-  // identity matrix
+  // Identity matrix
   I.Extend(4, 4);
   for (int i = 1; i <= 4; i++) {
     I(i, i) = 1.;
@@ -145,16 +144,7 @@ void Kalman_Filter::Predict(LocalPosition* xx, double delta_time) {
   xx->dlat_dt = X(3, 1);
   xx->dlon_dt = X(4, 1);
   // calculate apriori P
-  //   LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict P before"));
-  /* for (int i = 1; i < 5; i++){
-       LOG_INFO(wxT("BR24radar_pi: $$$ Kalman P   %f %f %.9f %.9f"), P(i, 1), P(i, 2), P(i,3), P(i,4));
-}*/
   P = A * P * AT + W * Q * WT;
-  /*LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict P After"));
-  for (int i = 1; i < 5; i++){
-      LOG_INFO(wxT("BR24radar_pi: $$$ Kalman P   %f %f %.9f %.9f"), P(i, 1), P(i, 2), P(i, 3), P(i, 4));
-  }*/
-  /*LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Predict "));*/
   X.~Matrix();
   return;
 }
@@ -179,10 +169,6 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
   HT(1, 2) = H(2, 1);
   HT(2, 2) = H(2, 2);
 
-  /*for (int i = 1; i < 3; i++){
-      LOG_INFO(wxT("BR24radar_pi: $$$ Kalman H   %f %f %f %f"), H(i, 1), H(i, 2), H(i, 3), H(i, 4));
-  }*/
-
   Matrix Z(2, 1);
   Z(1, 1) = (double)(pol->angle - expected->angle);  // Z is  difference between measured and expected
   Z(2, 1) = (double)(pol->r - expected->r);
@@ -198,14 +184,7 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
 
   Inverse = Inv(H * P * HT + R);  // V left out, only valid if V = I
   K = P * HT * Inverse;
-
-  /*LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Gain "));
-  for (int i = 1; i < 5; i++){
-      LOG_INFO(wxT("BR24radar_pi: $$$ Kalman Gain  K %f %f "), K(i, 1), K(i, 2));
-  }*/
-
   X = X + K * Z;
-  // LOG_INFO(wxT("BR24radar_pi: $$$ Kalman SetMeasurement after  X %f %f %.9f %.9f"), X(1, 1), X(2, 1), X(3, 1), X(4, 1));
   x->lat = X(1, 1);
   x->lon = X(2, 1);
   x->dlat_dt = X(3, 1);
@@ -213,11 +192,6 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
   x->sd_speed_m_s = sqrt((P(3, 3) + P(4, 4)) / 2.);  // rough approximation of standard dev of speed
   // update covariance P
   P = (I - K * H) * P;
-  /*LOG_INFO(wxT("BR24radar_pi: $$$ Kalman  P After"));
-  for (int i = 1; i < 5; i++){
-  LOG_INFO(wxT("BR24radar_pi: $$$ Kalman P   %f %f %.9f %.9f"), P(i, 1), P(i, 2), P(i, 3), P(i, 4));
-  }*/
-
   X.~Matrix();
   Z.~Matrix();
   Inverse.~Matrix();

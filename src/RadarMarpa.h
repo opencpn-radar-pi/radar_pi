@@ -48,22 +48,22 @@ class Position;
 class Matrix;
 
 #define NUMBER_OF_TARGETS (20)
-#define OFF_LOCATION (40)
-#define SCAN_MARGIN (100)
-#define SIZE_OF_LOG (20)
-#define MAX_CONTOUR_LENGTH (600)
-#define MAX_LOST_COUNT (5)
-#define FOR_DELETION (-2)
+#define OFF_LOCATION (40)         // target search area in radial direction
+#define SCAN_MARGIN (100)         // number of lines that a next scan of the target may have moved
+#define MAX_CONTOUR_LENGTH (600)  // defines maximal size of target contour
+#define MAX_LOST_COUNT (5)        // number of sweeps that target can be missed before it is seet to lost
+#define FOR_DELETION (-2)         // status of a duplicate target used to delete a target
 #define LOST (-1)
 #define AQUIRE0 (0)  // 0 under aquisition, first seen, no contour yet
 #define AQUIRE1 (1)  // 1 under aquisition, contour found, first position FOUND
 #define AQUIRE2 (2)  // 2 under aquisition, speed and course taken
 #define AQUIRE3 (3)  // 3 under aquisition, speed and course verified, next time active
-//    >=4  active
-#define Q_NUM (2)  // status Q to OCPN at target status 2
-#define T_NUM (5)  // status T to OCPN at target status 5
-#define TARGET_SPEED_DIV_SDEV 2.  // when speed is < TARGET_SPEED_DIV_SDEV * standard_deviation of speed, speed of target  is shown as 0
-#define MAX_DUP 3 // maximum number of sweeps a duplicate target is allowed to exist
+                     //    >=4  active
+#define Q_NUM (2)    // status Q to OCPN at target status 2
+#define T_NUM (5)    // status T to OCPN at target status 5
+#define TARGET_SPEED_DIV_SDEV \
+  2.               // when speed is < TARGET_SPEED_DIV_SDEV * standard_deviation of speed, speed of target  is shown as 0
+#define MAX_DUP 3  // maximum number of sweeps a duplicate target is allowed to exist
 
 typedef int target_status;
 enum OCPN_target_status {
@@ -76,9 +76,9 @@ class Position {
  public:
   double lat;
   double lon;
-  double dlat_dt;   // deg / sec
-  double dlon_dt;   // deg / sec
-  wxLongLong time;  // millis
+  double dlat_dt;      // deg / sec
+  double dlon_dt;      // deg / sec
+  wxLongLong time;     // millis
   double sd_speed_kn;  // standard deviation of the speed in knots
 };
 
@@ -96,7 +96,7 @@ class LocalPosition {
   double lon;
   double dlat_dt;  // meters per second
   double dlon_dt;
-  double sd_speed_m_s; // standard deviation of the speed m / sec
+  double sd_speed_m_s;  // standard deviation of the speed m / sec
 };
 
 Polar Pos2Polar(Position p, Position own_ship, int range);
@@ -117,9 +117,8 @@ class ArpaTarget {
   RadarInfo* m_ri;
   br24radar_pi* m_pi;
   int target_id;
-  Position X;   // holds actual position
+  Position X;   // holds actual position of target
   Polar pol_z;  // polar of the last measured position, used for duplicate detection
- // Polar pol;  // 
   Kalman_Filter* m_kalman;
   wxLongLong t_refresh;  // time of last refresh
   target_status status;
@@ -150,14 +149,12 @@ class RadarArpa {
   RadarInfo* m_ri;
   int NextEmptyTarget();
   int radar_lost_count;  // all targets will be deleted when radar not seen
-
   void CalculateCentroid(ArpaTarget* t);
   void DrawContour(ArpaTarget t);
   void DrawArpaTargets();
   void RefreshArpaTargets();
   void AquireNewTarget(Position p, int status);
   void DeleteAllTargets();
-  void RemoveDuplicates();
 };
 
 PLUGIN_END_NAMESPACE
