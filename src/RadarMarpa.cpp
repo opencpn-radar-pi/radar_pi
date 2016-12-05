@@ -459,8 +459,8 @@ void ArpaTarget::RefreshTarget() {
     LocalPosition x_local;
     x_local.lat = (X.lat - own_pos.lat) * 60. * 1852.;                              // in meters
     x_local.lon = (X.lon - own_pos.lon) * 60. * 1852. * cos(deg2rad(own_pos.lat));  // in meters
-    x_local.dlat_dt = X.dlat_dt * 60. * 1852.;                                      // meters / sec
-    x_local.dlon_dt = X.dlon_dt * 60. * 1852. * cos(deg2rad(own_pos.lat));          // meters / sec
+    x_local.dlat_dt = X.dlat_dt ;                                      // meters / sec
+    x_local.dlon_dt = X.dlon_dt ;          // meters / sec
 
     m_kalman->Predict(&x_local, delta_t);  // x_local is new estimated local position of the target
 
@@ -521,8 +521,8 @@ void ArpaTarget::RefreshTarget() {
     }
     X.lat = own_pos.lat + x_local.lat / 60. / 1852.;
     X.lon = own_pos.lon + x_local.lon / 60. / 1852. / cos(deg2rad(own_pos.lat));
-    X.dlat_dt = x_local.dlat_dt / 60. / 1852.;
-    X.dlon_dt = x_local.dlon_dt / 60. / 1852. / cos(deg2rad(own_pos.lat));
+    X.dlat_dt = x_local.dlat_dt ;
+    X.dlon_dt = x_local.dlon_dt ;
     X.sd_speed_kn = x_local.sd_speed_m_s * 3600. / 1852.;
     // set refresh time to the time of the spoke where the target was found
     t_refresh = X.time;
@@ -623,9 +623,9 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   char* p;
 
   double speed_kn;
-  double s1 = X.dlat_dt * 60.;                        // nautical miles per second
-  double s2 = X.dlon_dt * cos(deg2rad(X.lat)) * 60.;  // nautical miles per second
-  speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600.;       // and convert to nautical miles per hour
+  double s1 = X.dlat_dt;                        // m per second
+  double s2 = X.dlon_dt;  // m  per second
+  speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600. / 1852.;       // and convert to nautical miles per hour
   double course = rad2deg(atan2(s2, s1));
   if (speed_kn < (double)TARGET_SPEED_DIV_SDEV * X.sd_speed_kn) {
     //  LOG_INFO(wxT("BR24radar_pi:  low speed, set to 0, speed = %f, sd = %f"), speed_kn, X.sd_speed_kn);

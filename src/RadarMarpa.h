@@ -76,8 +76,8 @@ class Position {
  public:
   double lat;
   double lon;
-  double dlat_dt;      // deg / sec
-  double dlon_dt;      // deg / sec
+  double dlat_dt;      // m / sec
+  double dlon_dt;      // m / sec
   wxLongLong time;     // millis
   double sd_speed_kn;  // standard deviation of the speed in knots
 };
