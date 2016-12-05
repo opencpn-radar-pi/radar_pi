@@ -82,6 +82,10 @@ class GuardZone {
    */
   void ProcessSpoke(SpokeBearing angle, UINT8 *data, UINT8 *hist, size_t len, int range);
 
+  // Find targets inside the zone
+  void SearchTargets();
+  bool Pix(int ang, int rad);
+
   int GetBogeyCount() {
     if (m_bogey_count > -1) {
       LOG_GUARD(wxT("%s reporting bogey_count=%d"), m_log_name.c_str(), m_bogey_count);
@@ -91,7 +95,7 @@ class GuardZone {
 
   GuardZone(br24radar_pi *pi, int radar, int zone) {
     m_pi = pi;
-
+    m_ri = m_pi->m_radar[radar];
     m_log_name = wxString::Format(wxT("BR24radar_pi: Radar %c GuardZone %d:"), radar + 'A', zone + 1);
 
     m_type = GZ_OFF;
@@ -108,6 +112,8 @@ class GuardZone {
 
  private:
   br24radar_pi *m_pi;
+  RadarInfo* m_ri;
+  
   wxString m_log_name;
   bool m_last_in_guard_zone;
   SpokeBearing m_last_angle;

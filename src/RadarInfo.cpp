@@ -216,7 +216,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_state.button = 0;
   m_range.m_settings = &m_pi->m_settings;
 
-  for (size_t z = 0; z < GUARD_ZONES; z++) {
+  for (size_t z = 0; z < GUARD_ZONES + ARPA_ZONES; z++) {
     m_guard_zone[z] = new GuardZone(pi, radar, z);
   }
 
@@ -264,7 +264,7 @@ RadarInfo::~RadarInfo() {
     delete m_transmit;
     m_transmit = 0;
   }
-  for (size_t z = 0; z < GUARD_ZONES; z++) {
+  for (size_t z = 0; z < GUARD_ZONES + ARPA_ZONES; z++) {
     delete m_guard_zone[z];
     m_guard_zone[z] = 0;
   }
@@ -875,7 +875,7 @@ void RadarInfo::RenderGuardZone() {
   int start_bearing = 0, end_bearing = 0;
   GLubyte red = 0, green = 200, blue = 0, alpha = 50;
 
-  for (size_t z = 0; z < GUARD_ZONES; z++) {
+  for (size_t z = 0; z < GUARD_ZONES + ARPA_ZONES; z++) {
     if (m_guard_zone[z]->m_type != GZ_OFF) {
       if (m_guard_zone[z]->m_type == GZ_CIRCLE) {
         start_bearing = 0;

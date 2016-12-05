@@ -117,4 +117,109 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
   m_last_angle = angle;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Search  whole zone for targets
+void GuardZone::SearchTargets() {
+
+ //   construct Arpa class if required
+    if (!m_ri->m_marpa){
+        m_ri->m_marpa = new RadarArpa(m_pi, m_ri);
+    }
+
+  size_t range_start = m_inner_range * RETURNS_PER_LINE / m_ri->m_range_meters;  // Convert from meters to 0..511
+  size_t range_end = m_outer_range * RETURNS_PER_LINE / m_ri->m_range_meters;    // Convert from meters to 0..511
+  bool in_guard_zone = false;
+
+  if (m_type == GZ_CIRCLE) {
+    m_start_bearing = 0;
+    m_end_bearing = LINES_PER_ROTATION;
+  }
+
+  if (m_start_bearing < 0 || m_end_bearing < 0) {
+    m_start_bearing += LINES_PER_ROTATION;
+    m_end_bearing += LINES_PER_ROTATION;
+  }
+
+  for (int angle = m_start_bearing; angle < m_end_bearing; angle++) {
+
+      if (range_start < RETURNS_PER_LINE) {
+          if (range_end > RETURNS_PER_LINE) {
+              range_end = RETURNS_PER_LINE;
+          }
+
+          for (size_t r = range_start; r < range_end; r++) {
+              if (Pix(angle, r)) {
+                  // check all targets if this pixel is within the area of the target
+                  for (int i = 0; i < NUMBER_OF_TARGETS; i++){
+                      ArpaTarget* t = &m_ri->m_marpa->m_targets[i];
+                      if (t->status == LOST){
+                          continue;
+                      }
+                      if (t->min_r.r <= r && t->max_r.r >= r && t->min_angle.angle <= angle && t->max_angle.angle >= angle){
+                          // r and angle are in the area of a blob
+                          r = t->max_r.r;  // skip rest of this blob
+                          continue;
+                      }
+
+                  }  // end loop over targets
+
+              } //  if (Pix(angle, r))
+          }  // end loop r
+      } // r > RETURNS_PER_LINE
+
+  } // next angle
+
+
+  
+        
+      
+      if (angle > m_last_angle) {
+        in_guard_zone = true;
+      }
+    }
+    break;
+
+  default:
+    in_guard_zone = false;
+    break;
+}
+}
+
+if (m_last_in_guard_zone && !in_guard_zone) {
+  // last bearing that could add to m_running_count, so store as bogey_count;
+  m_bogey_count = m_running_count;
+  m_running_count = 0;
+  LOG_GUARD(wxT("%s angle=%d last_angle=%d range=%d guardzone=%d..%d (%d - %d) bogey_count=%d"), m_log_name.c_str(), angle,
+            m_last_angle, range, range_start, range_end, m_inner_range, m_outer_range, m_bogey_count);
+
+  
+}
+
+m_last_in_guard_zone = in_guard_zone;
+m_last_angle = angle;
+}
+
+bool GuardZone::ArpaTarget::Pix(int ang, int rad) {
+    if (rad < 1 || rad >= RETURNS_PER_LINE - 1) {  //  avoid range ring
+        return false;
+    }
+    return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 1) != 0);
+}
+
 PLUGIN_END_NAMESPACE
