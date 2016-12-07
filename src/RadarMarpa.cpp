@@ -92,7 +92,7 @@ bool ArpaTarget::Pix(int ang, int rad) {
 }
 
 void RadarArpa::AquireNewTarget(Position target_pos, int status) {
-  // aquires new target from mouse click
+  // aquires new target from mouse click position
   // no contour taken yet
   // target status aquire0
   // returns in X metric coordinates of click
@@ -100,22 +100,14 @@ void RadarArpa::AquireNewTarget(Position target_pos, int status) {
 
   int i_target = NextEmptyTarget();
   if (i_target == -1) {
-    LOG_INFO(wxT("BR24radar_pi: RadarArpa:: max targets exceeded "));
+    LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded "));
     return;
   }
-  Position own_pos;
-  Polar pol;
-  own_pos.lat = m_pi->m_ownship_lat;
-  own_pos.lon = m_pi->m_ownship_lon;
-  pol = Pos2Polar(target_pos, own_pos, m_ri->m_range_meters);
-
   m_targets[i_target].X = target_pos;  // Expected position
-
   m_targets[i_target].X.time = 0;
   m_targets[i_target].X.dlat_dt = 0.;
   m_targets[i_target].X.dlon_dt = 0.;
   m_targets[i_target].status = status;
-
   target_id_count++;
   if (target_id_count >= 100) target_id_count = 1;
   m_targets[i_target].target_id = target_id_count;
