@@ -412,10 +412,10 @@ void RadarArpa::RefreshArpaTargets() {
       }
       if (m_targets[j].pol_z.angle == m_targets[i].pol_z.angle && m_targets[j].pol_z.r == m_targets[i].pol_z.r) {
         // duplicate found
+        dup = true;  // if at least one duplicate found  dup = true
         if (m_targets[j].duplicate_count == 0) {
           m_targets[j].duplicate_count = m_targets[j].status;
-          dup = true;  // if at least one duplicate found  dup = true
-        } else if (m_targets[j].lost_count + MAX_DUP < m_targets[j].status) {
+        } else if (m_targets[j].duplicate_count + MAX_DUP < m_targets[j].status) {
           m_targets[j].SetStatusLost();
         }
       }
@@ -464,8 +464,8 @@ void ArpaTarget::RefreshTarget() {
 
     m_kalman->Predict(&x_local, delta_t);  // x_local is new estimated local position of the target
 
-    // now set the polar to expected position from the expected local position
-    pol.angle = atan2(x_local.lon, x_local.lat) * LINES_PER_ROTATION / (2 * PI);
+    // now set the polar to expected angular position from the expected local position
+    pol.angle = (int)(atan2(x_local.lon, x_local.lat) * LINES_PER_ROTATION / (2. * PI));
     pol.r = (int)(sqrt(x_local.lat * x_local.lat + x_local.lon * x_local.lon) * (double)RETURNS_PER_LINE /
                   (double)m_ri->m_range_meters);
 
@@ -474,7 +474,7 @@ void ArpaTarget::RefreshTarget() {
       SetStatusLost();
       return;
     }
-    expected = pol;
+    expected = pol;  // save expected polar position
     // now search for the target at the expected polar position in pol
     if (GetTarget(&pol)) {
       pol_z = pol;
@@ -489,7 +489,7 @@ void ArpaTarget::RefreshTarget() {
       }
       lost_count = 0;
       if (status == AQUIRE0) {
-        // as this is the first measurement we move target to measured position
+        // as this is the first measurement, move target to measured position
         Position p_own;
         p_own.lat = m_ri->m_history[MOD_ROTATION2048(pol.angle)].lat;  // get the position at receive time
         p_own.lon = m_ri->m_history[MOD_ROTATION2048(pol.angle)].lon;
@@ -503,7 +503,6 @@ void ArpaTarget::RefreshTarget() {
       m_kalman->SetMeasurement(&pol, &x_local, &expected, m_ri->m_range_meters);  // pol is measured position in polar coordinates
                                                                                   // x_local expected position in local coordinates
       // expected  is expected position in polar coordinates
-
       X.time = pol.time;  // set the target time to the newly found time
     } else {
       // target not found
@@ -521,8 +520,8 @@ void ArpaTarget::RefreshTarget() {
     }
     X.lat = own_pos.lat + x_local.lat / 60. / 1852.;
     X.lon = own_pos.lon + x_local.lon / 60. / 1852. / cos(deg2rad(own_pos.lat));
-    X.dlat_dt = x_local.dlat_dt ;
-    X.dlon_dt = x_local.dlon_dt ;
+    X.dlat_dt = x_local.dlat_dt;  // meters / sec
+    X.dlon_dt = x_local.dlon_dt;  // meters /sec
     X.sd_speed_kn = x_local.sd_speed_m_s * 3600. / 1852.;
     // set refresh time to the time of the spoke where the target was found
     t_refresh = X.time;
