@@ -172,15 +172,14 @@ void GuardZone::SearchTargets() {
                           continue;
                       }
                       if (t->min_r.r <= r && t->max_r.r >= r && t->min_angle.angle <= angle && t->max_angle.angle >= angle){
-                          // r and angle are in the area of a blob
+                          // r and angle area in the area of a blob
                           r = t->max_r.r;  // skip rest of this blob
-                          continue;
+                          LOG_INFO(wxT("BR24radar_pi: skipped to end of blob r= %i i= %i"), r, i);
+                          break;  // get out of target loop, next r
                       }
-
                   }  // end loop over targets
-
               } //  if (Pix(angle, r))
-          }  // end loop r
+          }  //  loop r
       } // r > RETURNS_PER_LINE
 
   } // next angle
