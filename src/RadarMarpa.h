@@ -51,7 +51,8 @@ class Matrix;
 #define OFF_LOCATION (40)         // target search area in radial direction
 #define SCAN_MARGIN (100)         // number of lines that a next scan of the target may have moved
 #define MAX_CONTOUR_LENGTH (600)  // defines maximal size of target contour
-#define MAX_LOST_COUNT (6)        // number of sweeps that target can be missed before it is seet to lost
+#define MIN_CONTOUR_LENGTH (4)    // defines the minimal length of a contour during target aquisition
+#define MAX_LOST_COUNT (5)        // number of sweeps that target can be missed before it is seet to lost
 #define FOR_DELETION (-2)         // status of a duplicate target used to delete a target
 #define LOST (-1)
 #define AQUIRE0 (0)  // 0 under aquisition, first seen, no contour yet
@@ -63,7 +64,7 @@ class Matrix;
 #define T_NUM (5)    // status T to OCPN at target status 5
 #define TARGET_SPEED_DIV_SDEV \
   2.               // when speed is < TARGET_SPEED_DIV_SDEV * standard_deviation of speed, speed of target  is shown as 0
-#define MAX_DUP 3  // maximum number of sweeps a duplicate target is allowed to exist
+#define MAX_DUP 2  // maximum number of sweeps a duplicate target is allowed to exist
 
 typedef int target_status;
 enum OCPN_target_status {
@@ -100,14 +101,8 @@ class LocalPosition {
 };
 
 Polar Pos2Polar(Position p, Position own_ship, int range);
+Position Polar2Pos(Polar pol, Position own_ship, int range);
 
-class LogEntry {
- public:
-  wxLongLong time;  // wxGetUTCTimeMillis
-  Position pos;
-  double speed;
-  double course;
-};
 
 class ArpaTarget {
  public:
@@ -154,6 +149,7 @@ class RadarArpa {
   void DrawArpaTargets();
   void RefreshArpaTargets();
   void AquireNewTarget(Position p, int status);
+  void AquireNewTarget(Polar p, int status, int* target_i);
   void DeleteAllTargets();
 };
 

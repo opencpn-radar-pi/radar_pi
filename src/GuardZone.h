@@ -97,7 +97,6 @@ class GuardZone {
     m_pi = pi;
     m_ri = m_pi->m_radar[radar];
     m_log_name = wxString::Format(wxT("BR24radar_pi: Radar %c GuardZone %d:"), radar + 'A', zone + 1);
-
     m_type = GZ_OFF;
     m_start_bearing = 0;
     m_end_bearing = 0;

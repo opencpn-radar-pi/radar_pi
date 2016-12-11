@@ -28,6 +28,7 @@
  ***************************************************************************
  */
 
+#include "RadarMarpa.h"
 #include "br24radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
@@ -117,108 +118,85 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
   m_last_angle = angle;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Search  whole zone for targets
+// Search  guard zone for targets
 void GuardZone::SearchTargets() {
-
- //   construct Arpa class if required
-    if (!m_ri->m_marpa){
-        m_ri->m_marpa = new RadarArpa(m_pi, m_ri);
-    }
-
+  if (m_ri->m_range_meters == 0) return;
   size_t range_start = m_inner_range * RETURNS_PER_LINE / m_ri->m_range_meters;  // Convert from meters to 0..511
   size_t range_end = m_outer_range * RETURNS_PER_LINE / m_ri->m_range_meters;    // Convert from meters to 0..511
-  bool in_guard_zone = false;
-
   if (m_type == GZ_CIRCLE) {
     m_start_bearing = 0;
     m_end_bearing = LINES_PER_ROTATION;
   }
 
-  if (m_start_bearing < 0 || m_end_bearing < 0) {
-    m_start_bearing += LINES_PER_ROTATION;
-    m_end_bearing += LINES_PER_ROTATION;
+  SpokeBearing hdt = SCALE_DEGREES_TO_RAW2048(m_pi->m_hdt);
+  SpokeBearing start_bearing = m_start_bearing + hdt;
+  SpokeBearing end_bearing = m_end_bearing + hdt;
+  start_bearing = MOD_ROTATION2048(start_bearing);
+  end_bearing = MOD_ROTATION2048(end_bearing);
+  if (start_bearing > end_bearing) {
+    end_bearing += LINES_PER_ROTATION;
   }
 
-  for (int angle = m_start_bearing; angle < m_end_bearing; angle++) {
-
-      if (range_start < RETURNS_PER_LINE) {
-          if (range_end > RETURNS_PER_LINE) {
-              range_end = RETURNS_PER_LINE;
-          }
-
-          for (size_t r = range_start; r < range_end; r++) {
-              if (Pix(angle, r)) {
-                  // check all targets if this pixel is within the area of the target
-                  for (int i = 0; i < NUMBER_OF_TARGETS; i++){
-                      ArpaTarget* t = &m_ri->m_marpa->m_targets[i];
-                      if (t->status == LOST){
-                          continue;
-                      }
-                      if (t->min_r.r <= r && t->max_r.r >= r && t->min_angle.angle <= angle && t->max_angle.angle >= angle){
-                          // r and angle area in the area of a blob
-                          r = t->max_r.r;  // skip rest of this blob
-                          LOG_INFO(wxT("BR24radar_pi: skipped to end of blob r= %i i= %i"), r, i);
-                          break;  // get out of target loop, next r
-                      }
-                  }  // end loop over targets
-              } //  if (Pix(angle, r))
-          }  //  loop r
-      } // r > RETURNS_PER_LINE
-
-  } // next angle
-
-
-  
-        
-      
-      if (angle > m_last_angle) {
-        in_guard_zone = true;
+  //  LOG_INFO(wxT("BR24radar_pi: $$$ m_start_bearing % i, m_end_bearing %i, start bearing %i, end_bearing %i"), m_start_bearing,
+  //  m_end_bearing, start_bearing, end_bearing);
+  for (int angle = start_bearing; angle < end_bearing; angle += 2) {
+    if (range_start < RETURNS_PER_LINE) {
+      if (range_end > RETURNS_PER_LINE) {
+        range_end = RETURNS_PER_LINE;
       }
-    }
-    break;
-
-  default:
-    in_guard_zone = false;
-    break;
+      for (int r = (int)range_start; r < (int)range_end; r++) {  // $$ type size_t
+        // the searching margins when we look if a pixel is part of an existing blob
+        // too large: we may  miss blobs
+        // too small: we get double blobs
+        int dist_r = (int)((double)OFF_LOCATION / 2.);
+        int dist_a = (int)(512. / (double)r * OFF_LOCATION / 2.);  // 512 / r: conversion factor to make squares
+        if (Pix(angle, r)) {
+          bool next_r = false;
+          // check all targets if this pixel is within the area of the target
+          for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+            ArpaTarget* t = &m_ri->m_marpa->m_targets[i];
+            if (t->status == LOST) {
+              continue;
+            }
+            int minan = t->min_angle.angle - dist_a;
+            int maxan = t->max_angle.angle + dist_a;
+            //      LOG_INFO(wxT("BR24radar_pi: $$$ i=%i, angle=%i, r=%i"), i, angle, r);
+            //      LOG_INFO(wxT("BR24radar_pi: $$$ t->min_r.r= %i, t->max_r.r= %i, t->min_angle.angle= %i, t->max_angle.angle=
+            //      %i"), t->min_r.r, t->max_r.r, t->min_angle.angle, t->max_angle.angle);
+            if ((t->min_r.r - dist_r <= r && t->max_r.r + dist_r >= r) && (minan <= angle && maxan >= angle) ||
+                (minan <= angle + LINES_PER_ROTATION && maxan >= angle + LINES_PER_ROTATION) ||
+                (minan <= angle - LINES_PER_ROTATION && maxan >= angle - LINES_PER_ROTATION)) {
+              // r and angle area in the area of a blob with a margin to allow for movement
+              r = t->max_r.r + dist_r;  // skip rest of this blob
+              next_r = true;
+              break;  // get out of target loop
+            }
+          }  // end loop over targets
+          if (next_r) continue;
+          // pixel found that does not belong to a known target
+          Position own_pos;
+          Polar pol;
+          pol.angle = angle;
+          pol.r = r;
+          own_pos.lat = m_pi->m_ownship_lat;
+          own_pos.lon = m_pi->m_ownship_lon;
+          Position x;
+          x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
+          int target_i;
+          m_ri->m_marpa->AquireNewTarget(pol, 0, &target_i);
+          if (target_i == -1) break;                           // max targets exceeded
+          m_ri->m_marpa->m_targets[target_i].RefreshTarget();  // make first contour
+        }                                                      //  if (Pix(angle, r))
+      }                                                        //  loop r
+    }                                                          // r > RETURNS_PER_LINE
+  }                                                            // next angle
 }
-}
 
-if (m_last_in_guard_zone && !in_guard_zone) {
-  // last bearing that could add to m_running_count, so store as bogey_count;
-  m_bogey_count = m_running_count;
-  m_running_count = 0;
-  LOG_GUARD(wxT("%s angle=%d last_angle=%d range=%d guardzone=%d..%d (%d - %d) bogey_count=%d"), m_log_name.c_str(), angle,
-            m_last_angle, range, range_start, range_end, m_inner_range, m_outer_range, m_bogey_count);
-
-  
-}
-
-m_last_in_guard_zone = in_guard_zone;
-m_last_angle = angle;
-}
-
-bool GuardZone::ArpaTarget::Pix(int ang, int rad) {
-    if (rad < 1 || rad >= RETURNS_PER_LINE - 1) {  //  avoid range ring
-        return false;
-    }
-    return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 1) != 0);
+bool GuardZone::Pix(int ang, int rad) {
+  if (rad < 1 || rad >= RETURNS_PER_LINE - 1) {  //  avoid range ring
+    return false;
+  }
+  return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 1) != 0);
 }
 
 PLUGIN_END_NAMESPACE

@@ -62,7 +62,6 @@ class RadarArpa;
 #define RADARS (2)                  // Number of radars supported by this PI. 2 since 4G supports 2. More work
                                     // needed if you intend to add multiple radomes to network!
 #define GUARD_ZONES (2)             // Could be increased if wanted
-#define ARPA_ZONES (1)
 
 #define BEARING_LINES (2)           // And these as well
 
@@ -515,6 +514,5 @@ PLUGIN_END_NAMESPACE
 #include "br24Transmit.h"
 #include "GuardZone.h"
 #include "RadarInfo.h"
-#include "RadarMarpa.h"
 
 #endif /* _BR24RADAR_PI_H_ */

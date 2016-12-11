@@ -216,10 +216,6 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_state.button = 0;
   m_range.m_settings = &m_pi->m_settings;
 
-  for (size_t z = 0; z < GUARD_ZONES + ARPA_ZONES; z++) {
-    m_guard_zone[z] = new GuardZone(pi, radar, z);
-  }
-
   ComputeTargetTrails();
 
   m_timer = new wxTimer(this, TIMER_ID);
@@ -264,7 +260,7 @@ RadarInfo::~RadarInfo() {
     delete m_transmit;
     m_transmit = 0;
   }
-  for (size_t z = 0; z < GUARD_ZONES + ARPA_ZONES; z++) {
+  for (size_t z = 0; z < GUARD_ZONES; z++) {
     delete m_guard_zone[z];
     m_guard_zone[z] = 0;
   }
@@ -495,7 +491,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     if (m_guard_zone[z]->m_type != GZ_OFF) {
-      m_guard_zone[z]->ProcessSpoke(bearing, data, m_history[bearing].line, len, range_meters);
+      m_guard_zone[z]->ProcessSpoke(angle, data, m_history[bearing].line, len, range_meters);
     }
   }
 
@@ -875,7 +871,7 @@ void RadarInfo::RenderGuardZone() {
   int start_bearing = 0, end_bearing = 0;
   GLubyte red = 0, green = 200, blue = 0, alpha = 50;
 
-  for (size_t z = 0; z < GUARD_ZONES + ARPA_ZONES; z++) {
+  for (size_t z = 0; z < GUARD_ZONES; z++) {
     if (m_guard_zone[z]->m_type != GZ_OFF) {
       if (m_guard_zone[z]->m_type == GZ_CIRCLE) {
         start_bearing = 0;
@@ -1084,7 +1080,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
           m_marpa->DrawArpaTargets();
           glPopMatrix();
       }
-
+      
     if (m_pi->m_settings.guard_zone_on_overlay) {
       glPushMatrix();
       glTranslated(center.x, center.y, 0);

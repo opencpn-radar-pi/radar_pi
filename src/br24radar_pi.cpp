@@ -213,6 +213,16 @@ int br24radar_pi::Init(void) {
   m_radar[0] = new RadarInfo(this, 0);
   m_radar[1] = new RadarInfo(this, 1);
 
+// make guard zones after making the radars
+  for (size_t z = 0; z < GUARD_ZONES; z++) {
+      m_radar[0]->m_guard_zone[z] = new GuardZone(this, 0, z);
+  }
+
+  for (size_t z = 0; z < GUARD_ZONES; z++) {
+      m_radar[1]->m_guard_zone[z] = new GuardZone(this, 1, z);
+  }
+
+
   //    And load the configuration items
   if (LoadConfig()) {
     LOG_INFO(wxT("BR24radar_pi: Configuration file values initialised"));
@@ -901,6 +911,22 @@ void br24radar_pi::Notify(void) {
     m_radar[r]->m_statistics.missing_spokes = 0;
     m_radar[r]->m_statistics.packets = 0;
     m_radar[r]->m_statistics.spokes = 0;
+  }
+  if (m_radar[m_settings.chart_overlay]->m_guard_zone[0]){
+
+      if (!m_radar[m_settings.chart_overlay]->m_marpa){
+          wxMenu dummy_menu;
+          wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete Arpa Target"));
+          wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all Arpa Targets"));
+#ifdef __WXMSW__
+          wxFont *qFont = OCPNGetFont(_("Menu"), 10);
+          mi5->SetFont(*qFont);
+          mi6->SetFont(*qFont);
+#endif
+          m_radar[m_settings.chart_overlay]->m_marpa = new RadarArpa(this, m_radar[m_settings.chart_overlay]);
+          m_context_menu_delete_marpa_target = AddCanvasContextMenuItem(mi5, this);
+          m_context_menu_delete_all_marpa_targets = AddCanvasContextMenuItem(mi6, this);
+      }
   }
   UpdateState();
 }
