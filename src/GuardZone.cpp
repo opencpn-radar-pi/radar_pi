@@ -140,19 +140,22 @@ void GuardZone::SearchTargets() {
       end_bearing = LINES_PER_ROTATION;
   }
 
-  //  LOG_INFO(wxT("BR24radar_pi: $$$ m_start_bearing % i, m_end_bearing %i, start bearing %i, end_bearing %i"), m_start_bearing,
-  //  m_end_bearing, start_bearing, end_bearing);
-  for (int angle = start_bearing; angle < end_bearing; angle += 2) {
-    if (range_start < RETURNS_PER_LINE) {
+
+  if (range_start < RETURNS_PER_LINE) {
       if (range_end > RETURNS_PER_LINE) {
-        range_end = RETURNS_PER_LINE;
+          range_end = RETURNS_PER_LINE;
       }
+
+    LOG_INFO(wxT("BR24radar_pi: $$$ m_start_bearing % i, m_end_bearing %i, start bearing %i, end_bearing %i"), m_start_bearing,
+    m_end_bearing, start_bearing, end_bearing);
+  for (int angle = start_bearing; angle < end_bearing; angle += 2) {
+    
       for (int r = (int)range_start; r < (int)range_end; r++) {  // $$ type size_t
         // the searching margins when we look if a pixel is part of an existing blob
         // too large: we may  miss blobs
         // too small: we get double blobs
-        int dist_r = (int)((double)OFF_LOCATION / 2.);
-        int dist_a = (int)(512. / (double)r * OFF_LOCATION / 2.);  // 512 / r: conversion factor to make squares
+          int dist_r = (int)((double)ARPA_DETECT_MARGIN / 2.);
+          int dist_a = (int)(512. / (double)r * (double)ARPA_DETECT_MARGIN / 2.);  // 512 / r: conversion factor to make squares
         if (Pix(angle, r)) {
           bool next_r = false;
           // check all targets if this pixel is within the area of the target
