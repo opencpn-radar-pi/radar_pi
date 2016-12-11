@@ -328,7 +328,7 @@ void RadarArpa::DrawContour(ArpaTarget target) {
   // following displays expected position with crosses that indicate the size of the search area
   // for debugging only
 
-  /*double xx;
+  double xx;
   double yy;
   int dist_a = (int)(326. / (double)radius * OFF_LOCATION / 2.);
   int dist_r = (int)((double)OFF_LOCATION / 2.);
@@ -346,7 +346,7 @@ void RadarArpa::DrawContour(ArpaTarget target) {
     xx = polarLookup->x[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
     yy = polarLookup->y[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
     glVertex2f(xx, yy);
-  }*/
+  }
 
   glEnd();
 }
@@ -563,9 +563,11 @@ bool ArpaTarget::FindNearestContour(Polar* pol, int dist) {
   int a = pol->angle;
   int r = pol->r;
   if (dist < 2) dist = 2;
+  LOG_INFO(wxT("BR24radar_pi: $$$ find nearest contour dist %i"), dist);
   for (int j = 2; j <= dist; j++) {
-    int dist_r = (int)((double)j / 2.);
-    int dist_a = (int)(326. / (double)r * j / 2.);   // 326/r: conversion factor to make squares
+    int dist_r = j;
+    int dist_a = (int)(326. / (double)(r * j ));   // 326/r: conversion factor to make squares
+    LOG_INFO(wxT("BR24radar_pi: $$$ dist_r %i, dist_a %i" ), dist_r, dist_a);
     for (int i = a - dist_a; i < a + dist_a; i++) {  // "upper" side
       PIX(i, r + dist_r);
     }
@@ -606,15 +608,22 @@ bool ArpaTarget::GetTarget(Polar* pol) {
     int dist = OFF_LOCATION;
     if (status == AQUIRE0 || status == AQUIRE1) {
       dist = OFF_LOCATION * 2;
+      LOG_INFO(wxT("BR24radar_pi: $$$  0nearest contour dist %i"), dist);
     }
-    if (dist > pol->r - 5) dist = pol->r - 5;  // don't search close to origin
+    LOG_INFO(wxT("BR24radar_pi: $$$ nearest contour dist %i"), dist);
+    if (dist > pol->r - 5) {
+        dist = pol->r - 5;  // don't search close to origin
+        LOG_INFO(wxT("BR24radar_pi: $$$ nearest contour dist reset %i"), dist);
+    }
     contour_found = FindNearestContour(pol, dist);
   }
   if (!contour_found) {
+      LOG_INFO(wxT("BR24radar_pi: $$$ nearest contour not found, status = %i"), status);
     return false;
   }
   int cont = GetContour(pol);
   if (cont != 0) {
+      LOG_INFO(wxT("BR24radar_pi: $$$ contour not found, status = %i code %i"), status, cont);
     return false;
   }
   return true;

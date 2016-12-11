@@ -120,13 +120,11 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
 
 // Search  guard zone for targets
 void GuardZone::SearchTargets() {
+
+  if (m_type == GZ_OFF) return;
   if (m_ri->m_range_meters == 0) return;
   size_t range_start = m_inner_range * RETURNS_PER_LINE / m_ri->m_range_meters;  // Convert from meters to 0..511
   size_t range_end = m_outer_range * RETURNS_PER_LINE / m_ri->m_range_meters;    // Convert from meters to 0..511
-  if (m_type == GZ_CIRCLE) {
-    m_start_bearing = 0;
-    m_end_bearing = LINES_PER_ROTATION;
-  }
 
   SpokeBearing hdt = SCALE_DEGREES_TO_RAW2048(m_pi->m_hdt);
   SpokeBearing start_bearing = m_start_bearing + hdt;
@@ -135,6 +133,11 @@ void GuardZone::SearchTargets() {
   end_bearing = MOD_ROTATION2048(end_bearing);
   if (start_bearing > end_bearing) {
     end_bearing += LINES_PER_ROTATION;
+  }
+
+  if (m_type == GZ_CIRCLE) {
+      start_bearing = 0;
+      end_bearing = LINES_PER_ROTATION;
   }
 
   //  LOG_INFO(wxT("BR24radar_pi: $$$ m_start_bearing % i, m_end_bearing %i, start bearing %i, end_bearing %i"), m_start_bearing,
