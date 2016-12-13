@@ -157,8 +157,7 @@ void GuardZone::SearchTargets() {
 
         // check if target has been refreshed since last time
         // and if the beam has passed the target location with SCAN_MARGIN spokes
-        //if (time1 > (t_refresh + 1000) && time2 >= time1) {  // the beam sould have passed our "angle" AND a point SCANMARGIN further
-        // always refresh when status == 0
+        
         if ((time1 > (m_ri->m_marpa->arpa_update_time[angle] + SCAN_MARGIN2) && time2 >= time1) ) {  // the beam sould have passed our "angle" AND a point SCANMARGIN further
             // set new refresh time
             m_ri->m_marpa->arpa_update_time[angle] = time1;
@@ -174,8 +173,8 @@ void GuardZone::SearchTargets() {
                 // the searching margins when we look if a pixel is part of an existing blob
                 // too large: we may  miss blobs
                 // too small: we get double blobs
-                int dist_r = 1;// (int)((double)ARPA_DETECT_MARGIN / 2.);
-                int dist_a = 1;// (int)(512. / (double)rrr * (double)ARPA_DETECT_MARGIN / 2.);  // 512 / r: conversion factor to make squares
+                
+               
                 if (Pix(angle, rrr)) {
                     bool next_r = false;
                     // check all targets if this pixel is within the area of the target
@@ -184,8 +183,8 @@ void GuardZone::SearchTargets() {
                         if (t->status == LOST) {
                             continue;
                         }
-                        int min_ang = t->min_angle.angle - dist_a;
-                        int max_ang = t->max_angle.angle + dist_a;
+                        int min_ang = t->min_angle.angle - 1;
+                        int max_ang = t->max_angle.angle + 1;
                         unsigned int tim1 = m_ri->m_marpa->arpa_update_time[angle].GetLo();
                             /*  LOG_INFO(wxT("BR24radar_pi: $$$ i=%i, angle=%i, r=%i time= %u"), i, angle, rrr, tim1);
                               LOG_INFO(wxT("BR24radar_pi: $$$ t->min_r.r= %i, t->max_r.r= %i, t->min_angle.angle= %i, t->max_angle.angle=%i"), t->min_r.r, t->max_r.r, t->min_angle.angle, t->max_angle.angle);*/
@@ -194,9 +193,12 @@ void GuardZone::SearchTargets() {
                             ((min_ang <= angle + LINES_PER_ROTATION) && (max_ang >= angle + LINES_PER_ROTATION)) ||
                             ((min_ang <= angle - LINES_PER_ROTATION && max_ang >= angle - LINES_PER_ROTATION)))) {
                             // r and angle area in the area of a blob with a margin to allow for movement
+                            if (time1 > t->t_refresh){
+                                LOG_INFO(wxT("BR24radar_pi: $$$  XXXX wrong timeing time1 %u, t->t_refresh %u status %i"), time1.GetLo(), t->t_refresh.GetLo(),t->status) ;
+                            }
                           //  LOG_INFO(wxT("BR24radar_pi: $$$ break i= %i, r= %i, t->min_r.r= %i, t->max_r.r= %i, min_ang= %i, max_ang= %i"), i,rrr,t->min_r.r, 
                           //      t->max_r.r, min_ang, max_ang);
-                            rrr = t->max_r.r + dist_r;  // skip rest of this blob
+                            rrr = t->max_r.r + 1;  // skip rest of this blob
                             next_r = true;
                             break;  // get out of target loop
                         }

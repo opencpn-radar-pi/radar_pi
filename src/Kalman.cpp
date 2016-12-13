@@ -92,8 +92,8 @@ Kalman_Filter::Kalman_Filter(int range) {
 
   // Q Process noise covariance matrix
   Q.Extend(2, 2);
-  Q(1, 1) = .1;  // variance in lat speed, (m / sec)2
-  Q(2, 2) = .1;  // variance in lon speed, (m / sec)2
+  Q(1, 1) = NOISE;  // variance in lat speed, (m / sec)2
+  Q(2, 2) = NOISE;  // variance in lon speed, (m / sec)2
 
   // R measurement noise covariance matrix
   R.Extend(2, 2);

@@ -259,30 +259,26 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
     if (current.r < min_r.r) {
       min_r = current;
     }
-    //if (count >= MAX_CONTOUR_LENGTH) {
-    //  // blob too large
-    //  return 8;  // return code 8, Blob too large
-    //}
   }
   contour_length = count;
   //  CalculateCentroid(*target);    we better use the real centroid instead of the average, todo
   pol->angle = (max_angle.angle + min_angle.angle) / 2;
   if (max_r.r > RETURNS_PER_LINE - 1 || min_r.r > RETURNS_PER_LINE - 1) {
-      LOG_INFO(wxT("BR24radar_pi: $$$ get contour GG"));
     return 10;  // return code 10 r too large
   }
   if (max_r.r < 2 || min_r.r < 2) {
-      LOG_INFO(wxT("BR24radar_pi: $$$ get contour HH"));
     return 11;  // return code 11 r too small
   }
   pol->r = (max_r.r + min_r.r) / 2;
+  pol->time = m_ri->m_history[MOD_ROTATION2048(pol->angle)].time;
 
-  wxLongLong target_time = m_ri->m_history[MOD_ROTATION2048(pol->angle)].time;
 
-  pol->time = target_time;
-  LOG_INFO(wxT("BR24radar_pi: $$$ get contour blob found angle= %i, r= %i"), pol->angle, pol->r);
+  wxLongLong tmin = m_ri->m_history[MOD_ROTATION2048(min_angle.angle)].time;
+  wxLongLong tmax = m_ri->m_history[MOD_ROTATION2048(max_angle.angle)].time;
+  LOG_INFO(wxT("$$$ blob found angle= %i, r= %i t %u, tmin %u tmax %u"), pol->angle, pol->r, pol->time.GetLo(), tmin.GetLo(), tmax.GetLo());
+
+
   return 0;  //  succes, blob found
-  
 }
 
 int RadarArpa::NextEmptyTarget() {
@@ -430,9 +426,24 @@ void RadarArpa::RefreshArpaTargets() {
       if (m_targets[j].status == LOST) {
         continue;
       }
+      if (m_targets[i].status == LOST) {
+          break;
+      }
       if (m_targets[j].pol_z.angle == m_targets[i].pol_z.angle && m_targets[j].pol_z.r == m_targets[i].pol_z.r) {
         // duplicate found
-        dup = true;  // if at least one duplicate found  dup = true
+        dup = true;  // if at least one duplicate found  
+        // a mature target should not get a new duplicate
+        //but two mature targets may go together for a few sweeps
+        int dup_to_delete = j;  // target with the lowest statud
+        if (m_targets[j].status > m_targets[i].status){
+            dup_to_delete = i;
+        }
+        if (m_targets[dup_to_delete].status < 3){
+            // it's new, kill it immediately and get out
+            m_targets[dup_to_delete].SetStatusLost();
+            LOG_INFO(wxT("BR24radar_pi::$$$ fresh duplicate deleted i=%i"), j);
+            continue;
+        }
         if (m_targets[j].duplicate_count == 0) {
           m_targets[j].duplicate_count = m_targets[j].status;
         } else if (m_targets[j].duplicate_count + MAX_DUP < m_targets[j].status) {
@@ -455,6 +466,7 @@ void ArpaTarget::RefreshTarget() {
   Position own_pos;
   Polar pol;
 
+  if (status == LOST) return; // refresh may be called from guard directly, better check
   own_pos.lat = m_pi->m_ownship_lat;
   own_pos.lon = m_pi->m_ownship_lon;
   pol = Pos2Polar(X, own_pos, m_ri->m_range_meters);
@@ -470,12 +482,11 @@ void ArpaTarget::RefreshTarget() {
     // set new refresh time
     t_refresh = time1;
     LOG_INFO(wxT("BR24radar_pi: $$$ target refresh time %u"), t_refresh.GetLo());
-    wxLongLong t_target = time1;  // estimated new target time
     prev2_X = prev_X;
     prev_X = X;  // save the previous target position
 
     // PREDICTION CYCLE
-    X.time = t_target;
+    X.time = time1;    // estimated new target time
     double delta_t = ((double)((X.time - prev_X.time).GetLo())) / 1000.;  // in seconds
     if (status == 0) {
       delta_t = 0.;

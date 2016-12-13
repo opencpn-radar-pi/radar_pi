@@ -49,12 +49,13 @@ class Matrix;
 
 #define REFRESH_INTERVAL (200)  //  max refresh interval of targets in milli seconds
 #define NUMBER_OF_TARGETS (100)
-#define OFF_LOCATION (40)         // target search area in radial direction
+#define OFF_LOCATION (50)         // target search area in radial direction
 //#define ARPA_DETECT_MARGIN (20)   // margin needed for ARPA to eperate targets
 #define SCAN_MARGIN (100)         // number of lines that a next scan of the target may have moved
 #define MAX_CONTOUR_LENGTH (601)  // defines maximal size of target contour
 #define MIN_CONTOUR_LENGTH (4)
 #define MAX_LOST_COUNT (3)        // number of sweeps that target can be missed before it is seet to lost
+
 #define FOR_DELETION (-2)         // status of a duplicate target used to delete a target
 #define LOST (-1)
 #define AQUIRE0 (0)  // 0 under aquisition, first seen, no contour yet
@@ -62,13 +63,18 @@ class Matrix;
 #define AQUIRE2 (2)  // 2 under aquisition, speed and course taken
 #define AQUIRE3 (3)  // 3 under aquisition, speed and course verified, next time active
                      //    >=4  active
+
 #define Q_NUM (4)    // status Q to OCPN at target status 
 #define T_NUM (6)    // status T to OCPN at target status 
-#define TARGET_SPEED_DIV_SDEV \
-  2.               // when speed is < TARGET_SPEED_DIV_SDEV * standard_deviation of speed, speed of target  is shown as 0
+
+#define TARGET_SPEED_DIV_SDEV 2.             
 #define MAX_DUP 2  // maximum number of sweeps a duplicate target is allowed to exist
 #define SCAN_MARGIN2 (500)
-#define STATUS_TO_OCPN (5) // 
+#define STATUS_TO_OCPN (4) // 
+#define NOISE (0.13)   // Allowed covariance of target speed in lat and lon
+                       // critical for the performance of target tracking
+                       // lower value makes target go straight
+                       // higher values allow target to make curves
 
 typedef int target_status;
 enum OCPN_target_status {
