@@ -1070,7 +1070,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   if (!overlay && m_orientation.value == ORIENTATION_COURSE_UP) {
     guard_rotate -= m_course;
   }
-
+  
   if (overlay) {
       if (m_marpa){
           m_marpa->RefreshArpaTargets();
