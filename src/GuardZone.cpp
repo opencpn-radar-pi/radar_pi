@@ -36,6 +36,7 @@ PLUGIN_BEGIN_NAMESPACE
 #undef TEST_GUARD_ZONE_LOCATION
 
 void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_t len, int range) {
+  if (!m_alarm_on) return;
   size_t range_start = m_inner_range * RETURNS_PER_LINE / range;  // Convert from meters to 0..511
   size_t range_end = m_outer_range * RETURNS_PER_LINE / range;    // Convert from meters to 0..511
   bool in_guard_zone = false;
@@ -120,15 +121,17 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
 
 // Search  guard zone for targets
 void GuardZone::SearchTargets() {
-    LOG_INFO(wxT("BR24radar_pi: $$$ enter SearchTargets"));
-    if (m_type == GZ_OFF) {
-        LOG_INFO(wxT("BR24radar_pi: $$$ enter SearchTargets GZ_OFF"));
-        return;
-    }
-    if (m_ri->m_range_meters == 0) {
-        LOG_INFO(wxT("BR24radar_pi: $$$ enter SearchTargets meters == 0"));
+  if (!m_arpa_on) return;
+  LOG_INFO(wxT("BR24radar_pi: $$$ enter SearchTargets"));
+  if (m_type == GZ_OFF) {
+    LOG_INFO(wxT("BR24radar_pi: $$$ enter SearchTargets GZ_OFF"));
+    return;
+  }
+  if (m_ri->m_range_meters == 0) {
+    LOG_INFO(wxT("BR24radar_pi: $$$ enter SearchTargets meters == 0"));
 
-        return; }
+    return;
+  }
   size_t range_start = m_inner_range * RETURNS_PER_LINE / m_ri->m_range_meters;  // Convert from meters to 0..511
   size_t range_end = m_outer_range * RETURNS_PER_LINE / m_ri->m_range_meters;    // Convert from meters to 0..511
 
@@ -138,96 +141,96 @@ void GuardZone::SearchTargets() {
   start_bearing = MOD_ROTATION2048(start_bearing);
   end_bearing = MOD_ROTATION2048(end_bearing);
   if (start_bearing > end_bearing) {
-      
     end_bearing += LINES_PER_ROTATION;
   }
   if (m_type == GZ_CIRCLE) {
-      start_bearing = 0;
-      end_bearing = LINES_PER_ROTATION;
+    start_bearing = 0;
+    end_bearing = LINES_PER_ROTATION;
   }
 
   if (range_start < RETURNS_PER_LINE) {
-      if (range_end > RETURNS_PER_LINE) {
-          range_end = RETURNS_PER_LINE;
-      }
-      if (range_end < range_start) return;
+    if (range_end > RETURNS_PER_LINE) {
+      range_end = RETURNS_PER_LINE;
+    }
+    if (range_end < range_start) return;
 
-    
     for (int angle = start_bearing; angle < end_bearing; angle += 2) {
-        // check if this angle has been updated by the beam since last time
-        // and if possible targets have been refreshed
+      // check if this angle has been updated by the beam since last time
+      // and if possible targets have been refreshed
 
-        wxLongLong time1 = m_ri->m_history[MOD_ROTATION2048(angle)].time;
-        wxLongLong time2 = m_ri->m_history[MOD_ROTATION2048(angle + 2 * SCAN_MARGIN)].time;
+      wxLongLong time1 = m_ri->m_history[MOD_ROTATION2048(angle)].time;
+      wxLongLong time2 = m_ri->m_history[MOD_ROTATION2048(angle + 2 * SCAN_MARGIN)].time;
 
-        // check if target has been refreshed since last time
-        // and if the beam has passed the target location with SCAN_MARGIN spokes
-        if ((time1 >(m_ri->m_marpa->arpa_update_time[MOD_ROTATION2048(angle)] + SCAN_MARGIN2) && time2 >= time1)) {  // the beam sould have passed our "angle" AND a point SCANMARGIN further
-            // set new refresh time
-            m_ri->m_marpa->arpa_update_time[angle] = time1;
+      // check if target has been refreshed since last time
+      // and if the beam has passed the target location with SCAN_MARGIN spokes
+      if ((time1 > (m_ri->m_marpa->arpa_update_time[MOD_ROTATION2048(angle)] + SCAN_MARGIN2) &&
+           time2 >= time1)) {  // the beam sould have passed our "angle" AND a point SCANMARGIN further
+        // set new refresh time
+        m_ri->m_marpa->arpa_update_time[angle] = time1;
 
-            /*LOG_INFO(wxT("BR24radar_pi: $$$ past timecheck angle=%i, m_start_bearing % i, m_end_bearing %i, start bearing %i, end_bearing %i"), angle, m_start_bearing,
-                m_end_bearing, start_bearing, end_bearing);
-            LOG_INFO(wxT("BR24radar_pi: $$$ ARPA refresh time %u"), time1.GetLo());*/
+        /*LOG_INFO(wxT("BR24radar_pi: $$$ past timecheck angle=%i, m_start_bearing % i, m_end_bearing %i, start bearing %i,
+        end_bearing %i"), angle, m_start_bearing,
+            m_end_bearing, start_bearing, end_bearing);
+        LOG_INFO(wxT("BR24radar_pi: $$$ ARPA refresh time %u"), time1.GetLo());*/
 
-          for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {  // $$$ type size_t
-               
-                if (Pix(angle, rrr)) {
-                    bool next_r = false;
-                    // check all targets if this pixel is within the area of the target
-                    for (int i = 0; i < m_ri->m_marpa->number_of_targets; i++) {
-                        if (!m_ri->m_marpa->m_targets[i]) continue;
-                        ArpaTarget* t = m_ri->m_marpa->m_targets[i];
-                        if (t->status == LOST) {
-                            continue;
-                        }
-                        int min_ang = t->min_angle.angle - 1;
-                        int max_ang = t->max_angle.angle + 1;
-                        unsigned int tim1 = m_ri->m_marpa->arpa_update_time[angle].GetLo();
-                            /*  LOG_INFO(wxT("BR24radar_pi: $$$ i=%i, angle=%i, r=%i time= %u"), i, angle, rrr, tim1);
-                              LOG_INFO(wxT("BR24radar_pi: $$$ t->min_r.r= %i, t->max_r.r= %i, t->min_angle.angle= %i, t->max_angle.angle=%i"), t->min_r.r, t->max_r.r, t->min_angle.angle, t->max_angle.angle);*/
-                        if (t->min_r.r  <= rrr && t->max_r.r  >= rrr && 
-                            ((min_ang <= angle && max_ang >= angle) ||
-                            ((min_ang <= angle + LINES_PER_ROTATION) && (max_ang >= angle + LINES_PER_ROTATION)) ||
-                            ((min_ang <= angle - LINES_PER_ROTATION && max_ang >= angle - LINES_PER_ROTATION)))) {
-                            // r and angle area in the area of a blob with a margin to allow for movement
-                            /*if (time1 > t->t_refresh){
-                                LOG_INFO(wxT("BR24radar_pi: $$$  XXXX wrong timeing time1 %u, t->t_refresh %u status %i"), time1.GetLo(), t->t_refresh.GetLo(),t->status) ;
-                            }*/
-                          //  LOG_INFO(wxT("BR24radar_pi: $$$ break i= %i, r= %i, t->min_r.r= %i, t->max_r.r= %i, min_ang= %i, max_ang= %i"), i,rrr,t->min_r.r, 
-                          //      t->max_r.r, min_ang, max_ang);
-                            rrr = t->max_r.r + 1;  // skip rest of this blob
-                            next_r = true;
-                            break;  // get out of target loop
-                        }
-                    }  // end loop over targets
-                    if (next_r) continue;
-                    // pixel found that does not belong to a known target
-                    
-             //       LOG_INFO(wxT("BR24radar_pi: $$$ unknown pixel found angle %i, r %i"), angle, rrr);
-                    Position own_pos;
-                    Polar pol;
-                    pol.angle = angle;
-                    pol.r = rrr;
-                    own_pos.lat = m_pi->m_ownship_lat;
-                    own_pos.lon = m_pi->m_ownship_lon;
-                    Position x;
-                    x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
-                    int target_i;
-                    m_ri->m_marpa->AquireNewTarget(pol, 0, &target_i);
-                    if (target_i == -1) break;                           // $$$ how to handle max targets exceeded
-                    m_ri->m_marpa->m_targets[target_i]->RefreshTarget();  // make first contour and max min values
-                }                                                      //  if (Pix(angle, r))
-                
-            }                                                        //  while loop r
-        }                                                        // timing  
-    }                                                        // next angle
-  }                                                             // r > RETURNS_PER_LINE
-  LOG_INFO(wxT("BR24radar_pi: $$$ quit SearchTargets"));
+        for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {  // $$$ type size_t
+
+          if (Pix(angle, rrr)) {
+            bool next_r = false;
+            // check all targets if this pixel is within the area of the target
+            for (int i = 0; i < m_ri->m_marpa->number_of_targets; i++) {
+              if (!m_ri->m_marpa->m_targets[i]) continue;
+              ArpaTarget* t = m_ri->m_marpa->m_targets[i];
+              if (t->status == LOST) {
+                continue;
+              }
+              int min_ang = t->min_angle.angle - 1;
+              int max_ang = t->max_angle.angle + 1;
+              unsigned int tim1 = m_ri->m_marpa->arpa_update_time[angle].GetLo();
+              /*  LOG_INFO(wxT("BR24radar_pi: $$$ i=%i, angle=%i, r=%i time= %u"), i, angle, rrr, tim1);
+                LOG_INFO(wxT("BR24radar_pi: $$$ t->min_r.r= %i, t->max_r.r= %i, t->min_angle.angle= %i, t->max_angle.angle=%i"),
+                t->min_r.r, t->max_r.r, t->min_angle.angle, t->max_angle.angle);*/
+              if (t->min_r.r <= rrr && t->max_r.r >= rrr &&
+                  ((min_ang <= angle && max_ang >= angle) ||
+                   ((min_ang <= angle + LINES_PER_ROTATION) && (max_ang >= angle + LINES_PER_ROTATION)) ||
+                   ((min_ang <= angle - LINES_PER_ROTATION && max_ang >= angle - LINES_PER_ROTATION)))) {
+                // r and angle area in the area of a blob with a margin to allow for movement
+                /*if (time1 > t->t_refresh){
+                    LOG_INFO(wxT("BR24radar_pi: $$$  XXXX wrong timeing time1 %u, t->t_refresh %u status %i"), time1.GetLo(),
+                t->t_refresh.GetLo(),t->status) ;
+                }*/
+                //  LOG_INFO(wxT("BR24radar_pi: $$$ break i= %i, r= %i, t->min_r.r= %i, t->max_r.r= %i, min_ang= %i, max_ang= %i"),
+                //  i,rrr,t->min_r.r,
+                //      t->max_r.r, min_ang, max_ang);
+                rrr = t->max_r.r + 1;  // skip rest of this blob
+                next_r = true;
+                break;  // get out of target loop
+              }
+            }  // end loop over targets
+            if (next_r) continue;
+            // pixel found that does not belong to a known target
+
+            //       LOG_INFO(wxT("BR24radar_pi: $$$ unknown pixel found angle %i, r %i"), angle, rrr);
+            Position own_pos;
+            Polar pol;
+            pol.angle = angle;
+            pol.r = rrr;
+            own_pos.lat = m_pi->m_ownship_lat;
+            own_pos.lon = m_pi->m_ownship_lon;
+            Position x;
+            x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
+            int target_i;
+            m_ri->m_marpa->AquireNewTarget(pol, 0, &target_i);
+            if (target_i == -1) break;                            // $$$ how to handle max targets exceeded
+            m_ri->m_marpa->m_targets[target_i]->RefreshTarget();  // make first contour and max min values
+          }                                                       //  if (Pix(angle, r))
+
+        }  //  while loop r
+      }    // timing
+    }      // next angle
+  }        // r > RETURNS_PER_LINE
   return;
 }
-
-
 
 bool GuardZone::Pix(int ang, int rad) {
   if (rad < 1 || rad >= RETURNS_PER_LINE - 1) {  //  avoid range ring

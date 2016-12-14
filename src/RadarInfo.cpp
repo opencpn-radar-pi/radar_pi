@@ -1070,19 +1070,13 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   if (!overlay && m_orientation.value == ORIENTATION_COURSE_UP) {
     guard_rotate -= m_course;
   }
-  LOG_INFO(wxT("BR24radar_pi: $$$ before if (overlay) {"));
   if (overlay) {
-      LOG_INFO(wxT("BR24radar_pi: $$$ after if (overlay) {"));
       if (m_marpa){
-          LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets called from radarinfo"));
           m_marpa->RefreshArpaTargets();
-          LOG_INFO(wxT("BR24radar_pi: $$$ RefreshArpaTargets returned from radarinfo"));
           glPushMatrix();
           glTranslated(center.x, center.y, 0);
           glScaled(scale, scale, 1.);
-          LOG_INFO(wxT("BR24radar_pi: $$$ DrawArpaTargets called from radarinfo"));
           m_marpa->DrawArpaTargets();
-          LOG_INFO(wxT("BR24radar_pi: $$$ DrawArpaTargets returned from radarinfo"));
           glPopMatrix();
       }
       

@@ -422,6 +422,9 @@ void RadarArpa::RefreshArpaTargets() {
   if (m_pi->m_settings.guard_zone_on_overlay) {
     m_ri->m_guard_zone[0]->SearchTargets();
   }
+  if (m_pi->m_settings.guard_zone_on_overlay) {
+      m_ri->m_guard_zone[1]->SearchTargets();
+  }
   // check for duplicates
   bool dup = false;
   for (int i = 0; i < number_of_targets; i++) {

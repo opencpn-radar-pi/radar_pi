@@ -44,6 +44,8 @@ class GuardZone {
   int m_inner_range;  // start in meters
   int m_outer_range;  // end   in meters
   int m_multi_sweep_filter;
+  int m_alarm_on;
+  int m_arpa_on;
 
   void ResetBogeys() {
     m_bogey_count = -1;
@@ -75,6 +77,12 @@ class GuardZone {
   void SetMultiSweepFilter(int filter) {
     m_multi_sweep_filter = filter;
     ResetBogeys();
+  };
+  void SetArpaOn(int arpa) {
+      m_arpa_on = arpa;
+  };
+  void SetAlarmOn(int alarm) {
+      m_alarm_on = alarm;
   };
 
   /*

@@ -748,9 +748,21 @@ void br24ControlsDialog::CreateControls() {
   m_guard_sizer->Add(m_end_bearing, 1, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
   m_end_bearing->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24ControlsDialog::OnEnd_Bearing_Value), NULL, this);
 
-  // added check box to control multi swep filtering
+  // checkbox for ARPA
+  m_arpa_box = new wxCheckBox(this, wxID_ANY, _("ARPA                     "), wxDefaultPosition, wxDefaultSize,
+      wxALIGN_LEFT | wxST_NO_AUTORESIZE);
+  m_guard_sizer->Add(m_arpa_box, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+  m_arpa_box->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnARPAClick), NULL, this);
+
+  // checkbox for blob alarm
+  m_alarm = new wxCheckBox(this, wxID_ANY, _("Alarm On              "), wxDefaultPosition, wxDefaultSize,
+      wxALIGN_LEFT | wxST_NO_AUTORESIZE);
+  m_guard_sizer->Add(m_alarm, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+  m_alarm->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnAlarmClick), NULL, this);
+
+  // added check box to control multi sweep filtering
   m_filter = new wxCheckBox(this, wxID_ANY, _("Multi Sweep Filter"), wxDefaultPosition, wxDefaultSize,
-                            wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE);
+      wxALIGN_LEFT | wxST_NO_AUTORESIZE);
   m_guard_sizer->Add(m_filter, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
   m_filter->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnFilterClick), NULL, this);
 
@@ -1690,6 +1702,8 @@ void br24ControlsDialog::ShowGuardZone(int zone) {
   bearing = round(bearing);
   m_end_bearing->SetValue(wxString::Format(wxT("%3.0f"), bearing));
   m_filter->SetValue(m_guard_zone->m_multi_sweep_filter ? 1 : 0);
+  m_alarm->SetValue(m_guard_zone->m_alarm_on ? 1 : 0);
+  m_arpa_box->SetValue(m_guard_zone->m_arpa_on ? 1 : 0);
 
   m_top_sizer->Hide(m_control_sizer);
   SwitchTo(m_guard_sizer, wxT("guard"));
@@ -1772,6 +1786,16 @@ void br24ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
 void br24ControlsDialog::OnFilterClick(wxCommandEvent& event) {
   int filt = m_filter->GetValue();
   m_guard_zone->SetMultiSweepFilter(filt);
+}
+
+void br24ControlsDialog::OnARPAClick(wxCommandEvent& event) {
+    int arpa = m_arpa_box->GetValue();
+    m_guard_zone->SetArpaOn(arpa);
+}
+
+void br24ControlsDialog::OnAlarmClick(wxCommandEvent& event) {
+    int alarm = m_alarm->GetValue();
+    m_guard_zone->SetAlarmOn(alarm);
 }
 
 PLUGIN_END_NAMESPACE
