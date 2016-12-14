@@ -47,8 +47,7 @@ class Kalman_Filter;
 class Position;
 class Matrix;
 
-#define REFRESH_INTERVAL (200)  //  max refresh interval of targets in milli seconds
-#define NUMBER_OF_TARGETS (40)
+#define MAX_NUMBER_OF_TARGETS (100)
 #define OFF_LOCATION (50)  // target search area in radial direction
 //#define ARPA_DETECT_MARGIN (20)   // margin needed for ARPA to eperate targets
 #define SCAN_MARGIN (100)         // number of lines that a next scan of the target may have moved
@@ -163,6 +162,7 @@ class RadarArpa {
 
   //  wxLongLong time_refresh;  // wxGetUTCTimeMillis
   wxLongLong arpa_update_time[LINES_PER_ROTATION];
+  int number_of_targets;
   int NextEmptyTarget();
   int radar_lost_count;  // all targets will be deleted when radar not seen
   void CalculateCentroid(ArpaTarget* t);

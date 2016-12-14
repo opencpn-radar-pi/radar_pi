@@ -323,6 +323,9 @@ bool br24radar_pi::DeInit(void) {
 
   // Delete all 'new'ed objects
   for (int r = 0; r < RADARS; r++) {
+      if (m_radar[r]->m_marpa){
+          delete m_radar[r]->m_marpa;
+      }
     delete m_radar[r];
     m_radar[r] = 0;
   }

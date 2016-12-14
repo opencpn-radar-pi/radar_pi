@@ -42,14 +42,7 @@ RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
   m_ri = ri;
   m_pi = pi;
   radar_lost_count = 0;
-  // time_refresh = 0;
-  // m_targets = new ArpaTarget[NUMBER_OF_TARGETS];
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
-    /* m_targets[i].set(pi, ri);
-     m_targets[i].status = LOST;
-     m_targets[i].contour_length = 0;
-     m_targets[i].lost_count = 0;
-     m_targets[i].duplicate_count = 0;*/
     m_targets[i] = 0;
   }
   for (int angle = 0; angle < LINES_PER_ROTATION; angle++) {
@@ -66,7 +59,13 @@ void ArpaTarget::set(br24radar_pi* pi, RadarInfo* ri) {
   t_refresh = wxGetUTCTimeMillis();
 }
 
-RadarArpa::~RadarArpa() {}
+RadarArpa::~RadarArpa() {
+  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+    if (m_targets[i]) {
+      delete m_targets[i];
+    }
+  }
+}
 
 Position Polar2Pos(Polar pol, Position own_ship, double range) {
   // The "own_ship" in the fumction call can be the position at an earlier time than the current position
@@ -79,268 +78,268 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
             (double)pol.r / (double)RETURNS_PER_LINE * range * sin(deg2rad(SCALE_RAW_TO_DEGREES2048(pol.angle))) /
                 cos(deg2rad(own_ship.lat)) / 60. / 1852.;
   return pos;
-}
-
-Polar Pos2Polar(Position p, Position own_ship, int range) {
-  // converts in a radar image a lat-lon position to angular data
-  Polar pol;
-  double dif_lat = p.lat;
-  dif_lat -= own_ship.lat;
-  double dif_lon = (p.lon - own_ship.lon) * cos(deg2rad(own_ship.lat));
-  pol.r = (int)(sqrt(dif_lat * dif_lat + dif_lon * dif_lon) * 60. * 1852. * (double)RETURNS_PER_LINE / (double)range + 1);
-  pol.angle = (int)((atan2(dif_lon, dif_lat)) * (double)LINES_PER_ROTATION / (2. * PI) + 1);  // + 1 to minimize rounding errors
-  return pol;
-}
-
-bool ArpaTarget::Pix(int ang, int rad) {
-  if (rad <= 1 || rad >= RETURNS_PER_LINE - 1) {  //  avoid range ring
-    return false;
   }
-  return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 1) != 0);
-}
 
-void RadarArpa::AquireNewTarget(Position target_pos, int status) {
-  // aquires new target from mouse click position
-  // no contour taken yet
-  // target status aquire0
-  // returns in X metric coordinates of click
-  // constructs Kalman filter
-  int i_target = NextEmptyTarget();
-  if (i_target == -1) {
-    LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded "));
+  Polar Pos2Polar(Position p, Position own_ship, int range) {
+    // converts in a radar image a lat-lon position to angular data
+    Polar pol;
+    double dif_lat = p.lat;
+    dif_lat -= own_ship.lat;
+    double dif_lon = (p.lon - own_ship.lon) * cos(deg2rad(own_ship.lat));
+    pol.r = (int)(sqrt(dif_lat * dif_lat + dif_lon * dif_lon) * 60. * 1852. * (double)RETURNS_PER_LINE / (double)range + 1);
+    pol.angle = (int)((atan2(dif_lon, dif_lat)) * (double)LINES_PER_ROTATION / (2. * PI) + 1);  // + 1 to minimize rounding errors
+    return pol;
+  }
+
+  bool ArpaTarget::Pix(int ang, int rad) {
+    if (rad <= 1 || rad >= RETURNS_PER_LINE - 1) {  //  avoid range ring
+      return false;
+    }
+    return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 1) != 0);
+  }
+
+  void RadarArpa::AquireNewTarget(Position target_pos, int status) {
+    // aquires new target from mouse click position
+    // no contour taken yet
+    // target status aquire0
+    // returns in X metric coordinates of click
+    // constructs Kalman filter
+    int i_target = NextEmptyTarget();
+    if (i_target == -1) {
+      LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded "));
+      return;
+    }
+    m_targets[i_target]->X = target_pos;  // Expected position
+    m_targets[i_target]->X.time = 0;
+    m_targets[i_target]->X.dlat_dt = 0.;
+    m_targets[i_target]->X.dlon_dt = 0.;
+    m_targets[i_target]->status = status;
+
+    if (!m_targets[i_target]->m_kalman) {
+      m_targets[i_target]->m_kalman = new Kalman_Filter(m_ri->m_range_meters);
+    }
     return;
   }
-  m_targets[i_target]->X = target_pos;  // Expected position
-  m_targets[i_target]->X.time = 0;
-  m_targets[i_target]->X.dlat_dt = 0.;
-  m_targets[i_target]->X.dlon_dt = 0.;
-  m_targets[i_target]->status = status;
 
-  if (!m_targets[i_target]->m_kalman) {
-    m_targets[i_target]->m_kalman = new Kalman_Filter(m_ri->m_range_meters);
-  }
-  return;
-}
-
-bool ArpaTarget::FindContourFromInside(Polar* pol) {  // moves pol to contour of blob
-  // true if success
-  // false when failed
-  int ang = pol->angle;
-  int rad = pol->r;
-  if (rad >= RETURNS_PER_LINE - 1 || rad < 3) {
-    return false;
-  }
-  if (!(Pix(ang, rad))) {
-    return false;
-  }
-  while (Pix(ang, rad)) {
-    /*if (ang < pol->angle - MAX_CONTOUR_LENGTH / 2) {
+  bool ArpaTarget::FindContourFromInside(Polar * pol) {  // moves pol to contour of blob
+    // true if success
+    // false when failed
+    int ang = pol->angle;
+    int rad = pol->r;
+    if (rad >= RETURNS_PER_LINE - 1 || rad < 3) {
       return false;
-    }*/
-    ang--;
-    // if (rad > 511) return false;
+    }
+    if (!(Pix(ang, rad))) {
+      return false;
+    }
+    while (Pix(ang, rad)) {
+      /*if (ang < pol->angle - MAX_CONTOUR_LENGTH / 2) {
+        return false;
+      }*/
+      ang--;
+      // if (rad > 511) return false;
+    }
+    ang++;
+    pol->angle = ang;
+    return true;
   }
-  ang++;
-  pol->angle = ang;
-  return true;
-}
 
-int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
-                                          // pol must start on the contour of the blob
-                                          // follows the contour in a clockwise direction
-                                          // returns metric position of the blob in Z
-  wxCriticalSectionLocker lock(ArpaTarget::m_ri->m_exclusive);
-  // the 4 possible translations to move from a point on the contour to the next
-  Polar transl[4];  //   = { 0, 1,   1, 0,   0, -1,   -1, 0 };
-  transl[0].angle = 0;
-  transl[0].r = 1;
+  int ArpaTarget::GetContour(Polar * pol) {  // sets the measured_pos if succesfull
+                                             // pol must start on the contour of the blob
+                                             // follows the contour in a clockwise direction
+                                             // returns metric position of the blob in Z
+    wxCriticalSectionLocker lock(ArpaTarget::m_ri->m_exclusive);
+    // the 4 possible translations to move from a point on the contour to the next
+    Polar transl[4];  //   = { 0, 1,   1, 0,   0, -1,   -1, 0 };
+    transl[0].angle = 0;
+    transl[0].r = 1;
 
-  transl[1].angle = 1;
-  transl[1].r = 0;
+    transl[1].angle = 1;
+    transl[1].r = 0;
 
-  transl[2].angle = 0;
-  transl[2].r = -1;
+    transl[2].angle = 0;
+    transl[2].r = -1;
 
-  transl[3].angle = -1;
-  transl[3].r = 0;
+    transl[3].angle = -1;
+    transl[3].r = 0;
 
-  int count = 0;
-  Polar start = *pol;
-  Polar current = *pol;
-  int aa;
-  int rr;
+    int count = 0;
+    Polar start = *pol;
+    Polar current = *pol;
+    int aa;
+    int rr;
 
-  bool succes = false;
-  int index = 0;
-  max_r = current;
-  max_angle = current;
-  min_r = current;
-  min_angle = current;
-  // check if p inside blob
-  if (start.r >= RETURNS_PER_LINE - 1) {
-    return 1;  // return code 1, r too large
-  }
-  if (start.r < 4) {
-    return 2;  // return code 2, r too small
-  }
-  if (!Pix(start.angle, start.r)) {
-    return 3;  // return code 3, starting point outside blob
-  }
-  // first find the orientation of border point p
-  for (int i = 0; i < 4; i++) {
-    index = i;
-    aa = current.angle + transl[index].angle;
-    rr = current.r + transl[index].r;
-    //  if (rr > 511) return 13;  // r too large
-    succes = !Pix(aa, rr);
-    if (succes) break;
-  }
-  if (!succes) {
-    return 4;  // return code 4, starting point not on contour
-  }
-  index += 1;  // determines starting direction
-  if (index > 3) index -= 4;
-
-  while (current.r != start.r || current.angle != start.angle || count == 0) {
-    // try all translations to find the next point
-    // start with the "left most" translation relative to the previous one
-    index += 3;  // we will turn left all the time if possible
+    bool succes = false;
+    int index = 0;
+    max_r = current;
+    max_angle = current;
+    min_r = current;
+    min_angle = current;
+    // check if p inside blob
+    if (start.r >= RETURNS_PER_LINE - 1) {
+      return 1;  // return code 1, r too large
+    }
+    if (start.r < 4) {
+      return 2;  // return code 2, r too small
+    }
+    if (!Pix(start.angle, start.r)) {
+      return 3;  // return code 3, starting point outside blob
+    }
+    // first find the orientation of border point p
     for (int i = 0; i < 4; i++) {
-      if (index > 3) index -= 4;
+      index = i;
       aa = current.angle + transl[index].angle;
       rr = current.r + transl[index].r;
-      succes = Pix(aa, rr);  // this is the case where the whole blob is followed
-      // but we accept single pixel extensions of the blob
-      if (succes) {
-        // next point found
-
-        break;
-      }
-      index += 1;
+      //  if (rr > 511) return 13;  // r too large
+      succes = !Pix(aa, rr);
+      if (succes) break;
     }
     if (!succes) {
-      LOG_INFO(wxT("BR24radar_pi::RadarArpa::GetContour no next point found count= %i"), count);
-      return 7;  // return code 7, no next point found
+      return 4;  // return code 4, starting point not on contour
     }
-    // next point found
-    current.angle = aa;
-    current.r = rr;
-    if (count < MAX_CONTOUR_LENGTH - 2) {
-      contour[count] = current;
-    }
-    if (count == MAX_CONTOUR_LENGTH - 2) {
-      contour[count] = start;  // shortcut to the beginning for drawing the contour
-    }
-    if (count < MAX_CONTOUR_LENGTH - 1) {
-      count++;
-    }
-    if (current.angle > max_angle.angle) {
-      max_angle = current;
-    }
-    if (current.angle < min_angle.angle) {
-      min_angle = current;
-    }
-    if (current.r > max_r.r) {
-      max_r = current;
-    }
-    if (current.r < min_r.r) {
-      min_r = current;
-    }
-  }
-  contour_length = count;
-  //  CalculateCentroid(*target);    we better use the real centroid instead of the average, todo
-  pol->angle = (max_angle.angle + min_angle.angle) / 2;
-  if (max_r.r > RETURNS_PER_LINE - 1 || min_r.r > RETURNS_PER_LINE - 1) {
-    return 10;  // return code 10 r too large
-  }
-  if (max_r.r < 2 || min_r.r < 2) {
-    return 11;  // return code 11 r too small
-  }
-  pol->r = (max_r.r + min_r.r) / 2;
-  pol->time = m_ri->m_history[MOD_ROTATION2048(pol->angle)].time;
-  return 0;  //  succes, blob found
-}
+    index += 1;  // determines starting direction
+    if (index > 3) index -= 4;
 
-int RadarArpa::NextEmptyTarget() {
-  int index = 0;
-  bool hit = false;
-  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
-    if (m_targets[i] == 0) {
-      m_targets[i] = new ArpaTarget(m_pi, m_ri);
-      index = i;
-      hit = true;
-      break;
-    }
-  }
-  if (!hit) {
-    index = -1;
-  }
-  return index;
-}
+    while (current.r != start.r || current.angle != start.angle || count == 0) {
+      // try all translations to find the next point
+      // start with the "left most" translation relative to the previous one
+      index += 3;  // we will turn left all the time if possible
+      for (int i = 0; i < 4; i++) {
+        if (index > 3) index -= 4;
+        aa = current.angle + transl[index].angle;
+        rr = current.r + transl[index].r;
+        succes = Pix(aa, rr);  // this is the case where the whole blob is followed
+        // but we accept single pixel extensions of the blob
+        if (succes) {
+          // next point found
 
-void RadarArpa::DrawContour(ArpaTarget* target) {
-  // should be improved using vertex arrays
-  PolarToCartesianLookupTable* polarLookup;
-  polarLookup = GetPolarToCartesianLookupTable();
-  glColor4ub(40, 40, 100, 250);
-  glLineWidth(3.0);
-  glBegin(GL_LINES);
-  for (int i = 0; i < target->contour_length; i++) {
+          break;
+        }
+        index += 1;
+      }
+      if (!succes) {
+        LOG_INFO(wxT("BR24radar_pi::RadarArpa::GetContour no next point found count= %i"), count);
+        return 7;  // return code 7, no next point found
+      }
+      // next point found
+      current.angle = aa;
+      current.r = rr;
+      if (count < MAX_CONTOUR_LENGTH - 2) {
+        contour[count] = current;
+      }
+      if (count == MAX_CONTOUR_LENGTH - 2) {
+        contour[count] = start;  // shortcut to the beginning for drawing the contour
+      }
+      if (count < MAX_CONTOUR_LENGTH - 1) {
+        count++;
+      }
+      if (current.angle > max_angle.angle) {
+        max_angle = current;
+      }
+      if (current.angle < min_angle.angle) {
+        min_angle = current;
+      }
+      if (current.r > max_r.r) {
+        max_r = current;
+      }
+      if (current.r < min_r.r) {
+        min_r = current;
+      }
+    }
+    contour_length = count;
+    //  CalculateCentroid(*target);    we better use the real centroid instead of the average, todo
+    pol->angle = (max_angle.angle + min_angle.angle) / 2;
+    if (max_r.r > RETURNS_PER_LINE - 1 || min_r.r > RETURNS_PER_LINE - 1) {
+      return 10;  // return code 10 r too large
+    }
+    if (max_r.r < 2 || min_r.r < 2) {
+      return 11;  // return code 11 r too small
+    }
+    pol->r = (max_r.r + min_r.r) / 2;
+    pol->time = m_ri->m_history[MOD_ROTATION2048(pol->angle)].time;
+    return 0;  //  succes, blob found
+  }
+
+  int RadarArpa::NextEmptyTarget() {
+    int index = 0;
+    bool hit = false;
+    for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+      if (m_targets[i] == 0) {
+        m_targets[i] = new ArpaTarget(m_pi, m_ri);
+        index = i;
+        hit = true;
+        break;
+      }
+    }
+    if (!hit) {
+      index = -1;
+    }
+    return index;
+  }
+
+  void RadarArpa::DrawContour(ArpaTarget * target) {
+    // should be improved using vertex arrays
+    PolarToCartesianLookupTable* polarLookup;
+    polarLookup = GetPolarToCartesianLookupTable();
+    glColor4ub(40, 40, 100, 250);
+    glLineWidth(3.0);
+    glBegin(GL_LINES);
+    for (int i = 0; i < target->contour_length; i++) {
+      double xx;
+      double yy;
+      int angle = MOD_ROTATION2048(target->contour[i].angle - 512);
+      int radius = target->contour[i].r;
+      if (radius <= 0 || radius >= RETURNS_PER_LINE) {
+        return;
+      }
+      xx = polarLookup->x[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      yy = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      glVertex2f(xx, yy);
+      int ii = i + 1;
+      if (ii == target->contour_length) {
+        ii = 0;  // start point again
+      }
+      if (radius <= 0 || radius >= RETURNS_PER_LINE) {
+        return;
+      }
+      angle = MOD_ROTATION2048(target->contour[ii].angle - 512);
+      radius = target->contour[ii].r;
+      xx = polarLookup->x[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      yy = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      glVertex2f(xx, yy);
+    }
+    // draw expected pos for test
+    // may crash for unknown reason, but usefull in debugging
+    int angle = MOD_ROTATION2048(target->expected.angle - 512);
+    int radius = target->expected.r;
+
+    // following displays expected position with crosses that indicate the size of the search area
+    // for debugging only
+
     double xx;
     double yy;
-    int angle = MOD_ROTATION2048(target->contour[i].angle - 512);
-    int radius = target->contour[i].r;
-    if (radius <= 0 || radius >= RETURNS_PER_LINE) {
-      return;
+    int dist_a = (int)(326. / (double)radius * OFF_LOCATION / 2.);
+    int dist_r = (int)((double)OFF_LOCATION / 2.);
+    glColor4ub(0, 250, 0, 250);
+    if (radius < 511 - dist_r && radius > dist_r) {
+      xx = polarLookup->x[MOD_ROTATION2048(angle)][radius - dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      yy = polarLookup->y[MOD_ROTATION2048(angle)][radius - dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      glVertex2f(xx, yy);
+      xx = polarLookup->x[MOD_ROTATION2048(angle)][radius + dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      yy = polarLookup->y[MOD_ROTATION2048(angle)][radius + dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      glVertex2f(xx, yy);
+      xx = polarLookup->x[MOD_ROTATION2048(angle - dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      yy = polarLookup->y[MOD_ROTATION2048(angle - dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      glVertex2f(xx, yy);
+      xx = polarLookup->x[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      yy = polarLookup->y[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+      glVertex2f(xx, yy);
     }
-    xx = polarLookup->x[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    yy = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    glVertex2f(xx, yy);
-    int ii = i + 1;
-    if (ii == target->contour_length) {
-      ii = 0;  // start point again
-    }
-    if (radius <= 0 || radius >= RETURNS_PER_LINE) {
-      return;
-    }
-    angle = MOD_ROTATION2048(target->contour[ii].angle - 512);
-    radius = target->contour[ii].r;
-    xx = polarLookup->x[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    yy = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    glVertex2f(xx, yy);
+    glEnd();
   }
-  // draw expected pos for test
-  // may crash for unknown reason, but usefull in debugging
-  int angle = MOD_ROTATION2048(target->expected.angle - 512);
-  int radius = target->expected.r;
 
-  // following displays expected position with crosses that indicate the size of the search area
-  // for debugging only
-
-  double xx;
-  double yy;
-  int dist_a = (int)(326. / (double)radius * OFF_LOCATION / 2.);
-  int dist_r = (int)((double)OFF_LOCATION / 2.);
-  glColor4ub(0, 250, 0, 250);
-  if (radius < 511 - dist_r && radius > dist_r) {
-    xx = polarLookup->x[MOD_ROTATION2048(angle)][radius - dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    yy = polarLookup->y[MOD_ROTATION2048(angle)][radius - dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    glVertex2f(xx, yy);
-    xx = polarLookup->x[MOD_ROTATION2048(angle)][radius + dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    yy = polarLookup->y[MOD_ROTATION2048(angle)][radius + dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    glVertex2f(xx, yy);
-    xx = polarLookup->x[MOD_ROTATION2048(angle - dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    yy = polarLookup->y[MOD_ROTATION2048(angle - dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    glVertex2f(xx, yy);
-    xx = polarLookup->x[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    yy = polarLookup->y[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    glVertex2f(xx, yy);
-  }
-  glEnd();
-}
-
-void RadarArpa::DrawArpaTargets() {
-  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+  void RadarArpa::DrawArpaTargets() {
+    for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
       if (!m_targets[i]) continue;
     if (m_targets[i]->status != LOST) {
       DrawContour(m_targets[i]);
