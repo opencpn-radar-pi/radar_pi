@@ -47,7 +47,7 @@ class Kalman_Filter;
 class Position;
 class Matrix;
 
-#define MAX_NUMBER_OF_TARGETS (100)
+#define MAX_NUMBER_OF_TARGETS (100)  // real max numer of targets is 1 less
 #define OFF_LOCATION (50)  // target search area in radial direction
 //#define ARPA_DETECT_MARGIN (20)   // margin needed for ARPA to eperate targets
 #define SCAN_MARGIN (100)         // number of lines that a next scan of the target may have moved
@@ -156,14 +156,13 @@ class RadarArpa {
   RadarArpa(br24radar_pi* pi, RadarInfo* ri);
   ~RadarArpa();
 
-  ArpaTarget* m_targets[NUMBER_OF_TARGETS];
+  ArpaTarget* m_targets[MAX_NUMBER_OF_TARGETS];
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
 
   //  wxLongLong time_refresh;  // wxGetUTCTimeMillis
   wxLongLong arpa_update_time[LINES_PER_ROTATION];
   int number_of_targets;
-  int NextEmptyTarget();
   int radar_lost_count;  // all targets will be deleted when radar not seen
   void CalculateCentroid(ArpaTarget* t);
   void DrawContour(ArpaTarget* t);

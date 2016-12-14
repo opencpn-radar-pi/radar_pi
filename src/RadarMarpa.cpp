@@ -42,7 +42,8 @@ RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
   m_ri = ri;
   m_pi = pi;
   radar_lost_count = 0;
-  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+  number_of_targets = 0;
+  for (int i = 0; i < MAX_NUMBER_OF_TARGETS; i++) {
     m_targets[i] = 0;
   }
   for (int angle = 0; angle < LINES_PER_ROTATION; angle++) {
@@ -60,7 +61,7 @@ void ArpaTarget::set(br24radar_pi* pi, RadarInfo* ri) {
 }
 
 RadarArpa::~RadarArpa() {
-  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+  for (int i = 0; i < number_of_targets; i++) {
     if (m_targets[i]) {
       delete m_targets[i];
     }
@@ -104,8 +105,15 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
     // target status aquire0
     // returns in X metric coordinates of click
     // constructs Kalman filter
-    int i_target = NextEmptyTarget();
-    if (i_target == -1) {
+
+    // make new target
+    int i_target;
+    if (number_of_targets < MAX_NUMBER_OF_TARGETS - 1 || (number_of_targets == MAX_NUMBER_OF_TARGETS - 1 && status == -2)) {
+      m_targets[number_of_targets] = new ArpaTarget(m_pi, m_ri);
+      i_target = number_of_targets;
+      number_of_targets++;
+    } else {
+      i_target = -1;
       LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded "));
       return;
     }
@@ -260,22 +268,6 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
     return 0;  //  succes, blob found
   }
 
-  int RadarArpa::NextEmptyTarget() {
-    int index = 0;
-    bool hit = false;
-    for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
-      if (m_targets[i] == 0) {
-        m_targets[i] = new ArpaTarget(m_pi, m_ri);
-        index = i;
-        hit = true;
-        break;
-      }
-    }
-    if (!hit) {
-      index = -1;
-    }
-    return index;
-  }
 
   void RadarArpa::DrawContour(ArpaTarget * target) {
     // should be improved using vertex arrays
@@ -339,7 +331,7 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
   }
 
   void RadarArpa::DrawArpaTargets() {
-    for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+    for (int i = 0; i < number_of_targets; i++) {
       if (!m_targets[i]) continue;
     if (m_targets[i]->status != LOST) {
       DrawContour(m_targets[i]);
@@ -349,19 +341,20 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
 
 void RadarArpa::RefreshArpaTargets() {
   // remove targets with status LOST
-  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+  for (int i = 0; i < number_of_targets; i++) {
     if (m_targets[i]) {
       if (m_targets[i]->status == LOST) {
-          LOG_INFO(wxT("BR24radar_pi: $$$ delete object"));
         delete m_targets[i];
-        LOG_INFO(wxT("BR24radar_pi: $$$ delete object OK"));
-        m_targets[i] = 0;
+        // and replace the deleted target with the last one
+        m_targets[i] = m_targets[number_of_targets - 1];
+        m_targets[number_of_targets - 1] = 0;
+        number_of_targets--;
       }
     }
   }
   int target_to_delete = -1;
   // find a target with status FOR_DELETION if it is there
-  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+  for (int i = 0; i < number_of_targets; i++) {
       if (!m_targets[i]) continue;
     if (m_targets[i]->status == FOR_DELETION) {
       target_to_delete = i;
@@ -372,7 +365,7 @@ void RadarArpa::RefreshArpaTargets() {
     Position x = m_targets[target_to_delete]->X;
     double min_dist = 1000;
     int del_target = -1;
-    for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+    for (int i = 0; i < number_of_targets; i++) {
         if (!m_targets[i]) continue;
       if (i == target_to_delete || m_targets[i]->status == LOST) continue;
       double dif_lat = x.lat - m_targets[i]->X.lat;
@@ -389,10 +382,9 @@ void RadarArpa::RefreshArpaTargets() {
     }
     m_targets[target_to_delete]->SetStatusLost();
   }
-  //  if (time_refresh + REFRESH_INTERVAL > wxGetUTCTimeMillis()) return;
-  //  time_refresh = wxGetUTCTimeMillis();
+
   // main target refresh loop
-  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+  for (int i = 0; i < number_of_targets; i++) {
       if (!m_targets[i]) continue;
     if (m_targets[i]->status == LOST) {
       continue;
@@ -404,12 +396,12 @@ void RadarArpa::RefreshArpaTargets() {
   }
   // check for duplicates
   bool dup = false;
-  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+  for (int i = 0; i < number_of_targets; i++) {
     if (!m_targets[i]) continue;
     if (m_targets[i]->status == LOST) {
       continue;
     }
-    for (int j = i + 1; j < NUMBER_OF_TARGETS; j++) {
+    for (int j = i + 1; j < number_of_targets; j++) {
       if (!m_targets[j]) continue;
       if (m_targets[j]->status == LOST) {
         continue;
@@ -441,7 +433,7 @@ void RadarArpa::RefreshArpaTargets() {
     }
   }
   if (!dup) {
-    for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+    for (int i = 0; i < number_of_targets; i++) {
         if (!m_targets[i]) continue;
       m_targets[i]->duplicate_count = 0;  // reset all duplicate counters
     }
@@ -712,8 +704,8 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
 }
 
 void ArpaTarget::SetStatusLost() {
-  contour_length = 0;
-  lost_count = 0;
+ /* contour_length = 0;
+  lost_count = 0;*/
   if (m_kalman) {
     m_kalman->~Kalman_Filter();  // delete the filter
     m_kalman = 0;
@@ -725,17 +717,16 @@ void ArpaTarget::SetStatusLost() {
     p.r = 0;
     PassARPAtoOCPN(&p, L);
   }
-  duplicate_count = 0;
+  /*duplicate_count = 0;*/
   status = LOST;
-  target_id = 0;
+ /* target_id = 0;*/
 }
 
 void RadarArpa::DeleteAllTargets() {
-  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+  for (int i = 0; i < number_of_targets; i++) {
       if (!m_targets[i]) continue;
-    if (m_targets[i]->status != LOST) {
       m_targets[i]->SetStatusLost();
-    }
+    
   }
 }
 
@@ -750,10 +741,15 @@ void RadarArpa::AquireNewTarget(Polar pol, int status, int* target_i) {
   own_pos.lat = m_pi->m_ownship_lat;
   own_pos.lon = m_pi->m_ownship_lon;
   target_pos = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
-
-  int i_target = NextEmptyTarget();
-  if (i_target == -1) {
-    LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded "));
+  // make new target
+  int i_target;
+  if (number_of_targets < MAX_NUMBER_OF_TARGETS - 1 || (number_of_targets == MAX_NUMBER_OF_TARGETS - 1 && status == -2)) {
+    m_targets[number_of_targets] = new ArpaTarget(m_pi, m_ri);
+    i_target = number_of_targets;
+    number_of_targets++;
+  } else {
+    i_target = -1;
+    LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded %i"), number_of_targets);
     *target_i = i_target;
     return;
   }
@@ -766,7 +762,6 @@ void RadarArpa::AquireNewTarget(Polar pol, int status, int* target_i) {
     m_targets[i_target]->m_kalman = new Kalman_Filter(m_ri->m_range_meters);
   }
   *target_i = i_target;
-  LOG_INFO(wxT("BR24radar_pi: RadarArpa:: AquireNewTarget status =%i"), status);
   return;
 }
 

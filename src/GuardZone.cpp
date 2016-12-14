@@ -169,7 +169,7 @@ void GuardZone::SearchTargets() {
                 if (Pix(angle, rrr)) {
                     bool next_r = false;
                     // check all targets if this pixel is within the area of the target
-                    for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+                    for (int i = 0; i < m_ri->m_marpa->number_of_targets; i++) {
                         if (!m_ri->m_marpa->m_targets[i]) continue;
                         ArpaTarget* t = m_ri->m_marpa->m_targets[i];
                         if (t->status == LOST) {
