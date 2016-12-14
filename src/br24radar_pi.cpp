@@ -47,7 +47,6 @@ PLUGIN_BEGIN_NAMESPACE
 extern "C" DECL_EXP opencpn_plugin *create_pi(void *ppimgr) { return new br24radar_pi(ppimgr); }
 
 extern "C" DECL_EXP void destroy_pi(opencpn_plugin *p) { delete p; }
-extern bool g_first_render;
 
 /********************************************************************************************************/
 //   Distance measurement for simple sphere
@@ -323,7 +322,6 @@ bool br24radar_pi::DeInit(void) {
   SaveConfig();
 
   // Delete all 'new'ed objects
-  g_first_render = true;
   for (int r = 0; r < RADARS; r++) {
       LOG_INFO(wxT("BR24radar_pi: $$$ radar_pi start delete m_marpa %i"), r);
       if (m_radar[r]->m_marpa){
@@ -332,15 +330,8 @@ bool br24radar_pi::DeInit(void) {
           LOG_INFO(wxT("BR24radar_pi: $$$ radar_pi delete m_marpa %i succes"), r);
           m_radar[r]->m_marpa = 0;
       }
-      for (int z = 0; z < GUARD_ZONES; z++) {
-          if (m_radar[r]->m_guard_zone[z]){
-              LOG_INFO(wxT("BR24radar_pi: $$$ delete guardzone %i"), z);
-              delete m_radar[r]->m_guard_zone[z];
-              m_radar[r]->m_guard_zone[z] = 0;
-              LOG_INFO(wxT("BR24radar_pi: $$$ delete guardzone succes%i"), z);
-          }
-      }
-
+     
+      LOG_INFO(wxT("BR24radar_pi: $$$ going to radar deleted %i"), r);
     delete m_radar[r];
     LOG_INFO(wxT("BR24radar_pi: $$$ radar deleted %i"), r);
     m_radar[r] = 0;

@@ -37,7 +37,6 @@
 PLUGIN_BEGIN_NAMESPACE
 
 static int target_id_count = 0;
-extern bool g_first_render;
 
 RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
   m_ri = ri;
@@ -58,7 +57,7 @@ ArpaTarget::~ArpaTarget() {
     if (m_kalman){
         delete m_kalman;
         m_kalman = 0;
-        LOG_INFO(wxT("BR24radar_pi:$$$ kalman destructed"));
+        LOG_INFO(wxT("BR24radar_pi:$$$ kalman destructed succes"));
     }
 }
 
@@ -123,7 +122,9 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
     // make new target
     int i_target;
     if (number_of_targets < MAX_NUMBER_OF_TARGETS - 1 || (number_of_targets == MAX_NUMBER_OF_TARGETS - 1 && status == -2)) {
-      m_targets[number_of_targets] = new ArpaTarget(m_pi, m_ri);
+        if (m_targets[number_of_targets] == 0){
+        m_targets[number_of_targets] = new ArpaTarget(m_pi, m_ri);
+        }
       i_target = number_of_targets;
       number_of_targets++;
     } else {
@@ -346,10 +347,10 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
 
   void RadarArpa::DrawArpaTargets() {
       LOG_INFO(wxT("BR24radar_pi: $$$ DrawArpaTargets"));
-      if (g_first_render) {
+      /*if (g_first_render) {
           LOG_INFO(wxT("BR24radar_pi:: $$$ enter draw arpa g_first_render true"));
           return;
-      }
+      }*/
     for (int i = 0; i < number_of_targets; i++) {
       if (!m_targets[i]) continue;
     if (m_targets[i]->status != LOST) {
@@ -362,15 +363,16 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
 void RadarArpa::RefreshArpaTargets() {
     LOG_INFO(wxT("BR24radar_pi:: $$$ enter refresh arpa"));
     
-    if (g_first_render) {
+    /*if (g_first_render) {
         LOG_INFO(wxT("BR24radar_pi:: $$$ enter refresh arpa g_first_render true"));
         return;
-    }
+    }*/
   // remove targets with status LOST
   for (int i = 0; i < number_of_targets; i++) {
     if (m_targets[i]) {
       if (m_targets[i]->status == LOST) {
         delete m_targets[i];
+        m_targets[i] = 0;
         // and replace the deleted target with the last one
         m_targets[i] = m_targets[number_of_targets - 1];
         m_targets[number_of_targets - 1] = 0;
@@ -420,7 +422,6 @@ void RadarArpa::RefreshArpaTargets() {
   if (m_pi->m_settings.guard_zone_on_overlay) {
     m_ri->m_guard_zone[0]->SearchTargets();
   }
-  LOG_INFO(wxT("BR24radar_pi:: $$$ aaenter refresh arpa"));
   // check for duplicates
   bool dup = false;
   for (int i = 0; i < number_of_targets; i++) {
@@ -428,17 +429,18 @@ void RadarArpa::RefreshArpaTargets() {
     if (m_targets[i]->status == LOST) {
       continue;
     }
-    LOG_INFO(wxT("BR24radar_pi:: $$$ bbenter refresh arpa"));
     for (int j = i + 1; j < number_of_targets; j++) {
       if (!m_targets[j]) continue;
       if (m_targets[j]->status == LOST) {
         continue;
       }
-      if (!m_targets[i]) break;
+      if (!m_targets[i]) { 
+          break; }
+      if (!m_targets[j]) { 
+          break; }
       if (m_targets[i]->status == LOST) {
         break;
       }
-    //  LOG_INFO(wxT("BR24radar_pi:: $$$ ccenter refresh arpa"));
       if (m_targets[j]->pol_z.angle == m_targets[i]->pol_z.angle && m_targets[j]->pol_z.r == m_targets[i]->pol_z.r) {
         // duplicate found
         dup = true;  // if at least one duplicate found
@@ -463,11 +465,11 @@ void RadarArpa::RefreshArpaTargets() {
   }
   LOG_INFO(wxT("BR24radar_pi:: $$$ wwenter refresh arpa"));
   if (!dup) {
-      LOG_INFO(wxT("BR24radar_pi:: $$$ wwenter refresh arpa not dup %i"), number_of_targets);
+      LOG_INFO(wxT("BR24radar_pi:: $$$ wwenter refresh arpa not dup "));
     for (int i = 0; i < number_of_targets; i++) {
-        LOG_INFO(wxT("BR24radar_pi:: $$$ 1wwenter refresh arpa i=%i"), i);
+        LOG_INFO(wxT("BR24radar_pi:: $$$ 1wwenter refresh arpa "));
         if (!m_targets[i]) continue;
-        LOG_INFO(wxT("BR24radar_pi:: $$$ wwenter refresh arpa i=%i"),i);
+        LOG_INFO(wxT("BR24radar_pi:: $$$ wwenter refresh arpa "));
       m_targets[i]->duplicate_count = 0;  // reset all duplicate counters
     }
   }
@@ -738,8 +740,8 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
 }
 
 void ArpaTarget::SetStatusLost() {
- /* contour_length = 0;
-  lost_count = 0;*/
+  contour_length = 0;
+  lost_count = 0;
   if (m_kalman) {
       delete m_kalman; // delete the filter
     m_kalman = 0;
@@ -751,9 +753,9 @@ void ArpaTarget::SetStatusLost() {
     p.r = 0;
     PassARPAtoOCPN(&p, L);
   }
-  /*duplicate_count = 0;*/
+  duplicate_count = 0;
   status = LOST;
- /* target_id = 0;*/
+  target_id = 0;
 }
 
 void RadarArpa::DeleteAllTargets() {
@@ -778,7 +780,9 @@ void RadarArpa::AquireNewTarget(Polar pol, int status, int* target_i) {
   // make new target
   int i_target;
   if (number_of_targets < MAX_NUMBER_OF_TARGETS - 1 || (number_of_targets == MAX_NUMBER_OF_TARGETS - 1 && status == -2)) {
-    m_targets[number_of_targets] = new ArpaTarget(m_pi, m_ri);
+      if (m_targets[number_of_targets] == 0){
+          m_targets[number_of_targets] = new ArpaTarget(m_pi, m_ri);
+      }
     i_target = number_of_targets;
     number_of_targets++;
   } else {

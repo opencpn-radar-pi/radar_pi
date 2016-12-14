@@ -1081,7 +1081,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
           glTranslated(center.x, center.y, 0);
           glScaled(scale, scale, 1.);
           LOG_INFO(wxT("BR24radar_pi: $$$ DrawArpaTargets called from radarinfo"));
-      //    m_marpa->DrawArpaTargets();
+          m_marpa->DrawArpaTargets();
           LOG_INFO(wxT("BR24radar_pi: $$$ DrawArpaTargets returned from radarinfo"));
           glPopMatrix();
       }
