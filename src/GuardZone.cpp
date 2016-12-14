@@ -121,8 +121,14 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
 // Search  guard zone for targets
 void GuardZone::SearchTargets() {
     LOG_INFO(wxT("BR24radar_pi: $$$ enter SearchTargets"));
-  if (m_type == GZ_OFF) return;
-  if (m_ri->m_range_meters == 0) return;
+    if (m_type == GZ_OFF) {
+        LOG_INFO(wxT("BR24radar_pi: $$$ enter SearchTargets GZ_OFF"));
+        return;
+    }
+    if (m_ri->m_range_meters == 0) {
+        LOG_INFO(wxT("BR24radar_pi: $$$ enter SearchTargets meters == 0"));
+
+        return; }
   size_t range_start = m_inner_range * RETURNS_PER_LINE / m_ri->m_range_meters;  // Convert from meters to 0..511
   size_t range_end = m_outer_range * RETURNS_PER_LINE / m_ri->m_range_meters;    // Convert from meters to 0..511
 

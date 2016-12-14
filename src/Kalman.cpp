@@ -109,21 +109,8 @@ Kalman_Filter::Kalman_Filter(int range) {
   }
 }
 
-Kalman_Filter::~Kalman_Filter() {  // clean up all matrices
-  A.~Matrix();
-  AT.~Matrix();
-  W.~Matrix();
-  WT.~Matrix();
-  H.~Matrix();
-  HT.~Matrix();
-  V.~Matrix();
-  VT.~Matrix();
-  P.~Matrix();
-  Q.~Matrix();
-  FT.~Matrix();
-  R.~Matrix();
-  K.~Matrix();
-  I.~Matrix();
+Kalman_Filter::~Kalman_Filter() {  
+  
 }
 
 void Kalman_Filter::Predict(LocalPosition* xx, double delta_time) {
@@ -145,7 +132,6 @@ void Kalman_Filter::Predict(LocalPosition* xx, double delta_time) {
   xx->dlon_dt = X(4, 1);
   // calculate apriori P
   P = A * P * AT + W * Q * WT;
-  X.~Matrix();
   return;
 }
 
@@ -192,9 +178,6 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
   x->sd_speed_m_s = sqrt((P(3, 3) + P(4, 4)) / 2.);  // rough approximation of standard dev of speed
   // update covariance P
   P = (I - K * H) * P;
-  X.~Matrix();
-  Z.~Matrix();
-  Inverse.~Matrix();
   return;
 }
 
