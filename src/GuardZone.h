@@ -57,6 +57,7 @@ class GuardZone {
 
   void SetType(GuardZoneType type) {
     m_type = type;
+    if (m_type > (GuardZoneType)1) m_type = (GuardZoneType)0;
     ResetBogeys();
   };
   void SetStartBearing(SpokeBearing start_bearing) {
@@ -84,6 +85,9 @@ class GuardZone {
   };
   void SetAlarmOn(int alarm) {
       m_alarm_on = alarm;
+      if (m_alarm_on){
+          m_pi->m_guard_bogey_confirmed = false;
+      }
   };
 
   /*
@@ -106,16 +110,17 @@ class GuardZone {
     m_pi = pi;
     m_ri = m_pi->m_radar[radar];
     m_log_name = wxString::Format(wxT("BR24radar_pi: Radar %c GuardZone %d:"), radar + 'A', zone + 1);
-    m_type = GZ_OFF;
+    m_type = GZ_CIRCLE;
     m_start_bearing = 0;
     m_end_bearing = 0;
     m_inner_range = 0;
     m_outer_range = 0;
     m_multi_sweep_filter = 0;
+    m_arpa_on = 0;
+    m_alarm_on = 0;
     for (int angle = 0; angle < LINES_PER_ROTATION; angle++) {
         arpa_update_time[angle] = 0;
     }
-
     ResetBogeys();
   }
 

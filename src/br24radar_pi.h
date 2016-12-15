@@ -187,7 +187,7 @@ static string ControlTypeNames[CT_MAX] = {"Range",
                                           "Target trails motion",
                                           "Main bang size"};
 
-typedef enum GuardZoneType { GZ_OFF, GZ_ARC, GZ_CIRCLE } GuardZoneType;
+typedef enum GuardZoneType { GZ_ARC, GZ_CIRCLE, GZ_OFF } GuardZoneType;
 
 typedef enum RadarType { RT_UNKNOWN, RT_BR24, RT_3G, RT_4G } RadarType;
 
@@ -370,6 +370,7 @@ class br24radar_pi : public opencpn_plugin_112 {
   void ShowPreferencesDialog(wxWindow *parent);
   void SetCursorLatLon(double lat, double lon);
   bool MouseEventHook(wxMouseEvent &event);
+  bool m_guard_bogey_confirmed;
 
   // The wxTimer overrides
 
@@ -500,7 +501,6 @@ class br24radar_pi : public opencpn_plugin_112 {
 
   GuardZoneBogey *m_bogey_dialog;
   bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
-  bool m_guard_bogey_confirmed;
   time_t m_alarm_sound_timeout;
   time_t m_guard_bogey_timeout;  // If we haven't seen bogeys for this long we reset confirm
 #define CONFIRM_RESET_TIMEOUT (15)

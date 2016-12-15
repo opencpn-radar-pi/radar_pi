@@ -252,7 +252,7 @@ wxString target_boost_names[3];
 wxString target_expansion_names[2];
 wxString scan_speed_names[2];
 wxString timed_idle_times[8];
-wxString guard_zone_names[3];
+wxString guard_zone_names[2];
 wxString target_trail_names[TRAIL_ARRAY_SIZE];
 
 void br24RadarControlButton::AdjustValue(int adjustment) {
@@ -708,9 +708,10 @@ void br24ControlsDialog::CreateControls() {
   wxStaticText* type_Text = new wxStaticText(this, wxID_ANY, _("Zone type"), wxDefaultPosition, wxDefaultSize, 0);
   m_guard_sizer->Add(type_Text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
-  guard_zone_names[0] = _("Off");
-  guard_zone_names[1] = _("Arc");
-  guard_zone_names[2] = _("Circle");
+  /*guard_zone_names[0] = _("Off");*/
+  guard_zone_names[0] = _("Arc");
+  guard_zone_names[1] = _("Circle");
+  
   m_guard_zone_type = new wxRadioBox(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, ARRAY_SIZE(guard_zone_names),
                                      guard_zone_names, 1, wxRA_SPECIFY_COLS);
   m_guard_sizer->Add(m_guard_zone_type, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
@@ -1016,12 +1017,31 @@ void br24ControlsDialog::UpdateAdvanced4GState() {
 }
 
 void br24ControlsDialog::UpdateGuardZoneState() {
-  wxString label1, label2;
+    wxString label1, label2, label3, label4;
+    if (m_ri->m_guard_zone[0]->m_alarm_on){
+        label3 << _(" + Alarm");
+    }
+    if (m_ri->m_guard_zone[0]->m_arpa_on){
+        label3 << _(" + Arpa");
+    }
+    if (!m_ri->m_guard_zone[0]->m_alarm_on && !m_ri->m_guard_zone[0]->m_arpa_on){
+        label3 << _(" Off");
+    }
 
-  label1 << _("Guard zone") << wxT(" 1\n") << guard_zone_names[m_ri->m_guard_zone[0]->m_type];
+    if (m_ri->m_guard_zone[1]->m_alarm_on){
+        label4 << _(" + Alarm");
+    }
+    if (m_ri->m_guard_zone[1]->m_arpa_on){
+        label4 << _(" + Arpa");
+    }
+    if (!m_ri->m_guard_zone[1]->m_alarm_on && !m_ri->m_guard_zone[1]->m_arpa_on){
+        label4 << _(" Off");
+    }
+
+  label1 << _("Guard zone") << wxT(" 1\n") << guard_zone_names[m_ri->m_guard_zone[0]->m_type]<<label3;
   m_guard_1_button->SetLabel(label1);
 
-  label2 << _("Guard zone") << wxT(" 2\n") << guard_zone_names[m_ri->m_guard_zone[1]->m_type];
+  label2 << _("Guard zone") << wxT(" 2\n") << guard_zone_names[m_ri->m_guard_zone[1]->m_type]<<label4;
   m_guard_2_button->SetLabel(label2);
 }
 
