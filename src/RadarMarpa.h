@@ -161,7 +161,7 @@ class RadarArpa {
   RadarInfo* m_ri;
 
   //  wxLongLong time_refresh;  // wxGetUTCTimeMillis
-  wxLongLong arpa_update_time[LINES_PER_ROTATION];
+//  wxLongLong arpa_update_time[LINES_PER_ROTATION];
   int number_of_targets;
   int radar_lost_count;  // all targets will be deleted when radar not seen
   void CalculateCentroid(ArpaTarget* t);

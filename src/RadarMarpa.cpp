@@ -46,9 +46,6 @@ RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
   for (int i = 0; i < MAX_NUMBER_OF_TARGETS; i++) {
     m_targets[i] = 0;
   }
-  for (int angle = 0; angle < LINES_PER_ROTATION; angle++) {
-    arpa_update_time[angle] = 0;
-  }
   LOG_INFO(wxT("BR24radar_pi: $$$ RadarMarpa creator ready"));
 }
 
@@ -349,7 +346,6 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
   }
 
   void RadarArpa::DrawArpaTargets() {
-      LOG_INFO(wxT("BR24radar_pi: $$$ DrawArpaTargets"));
       /*if (g_first_render) {
           LOG_INFO(wxT("BR24radar_pi:: $$$ enter draw arpa g_first_render true"));
           return;
@@ -419,9 +415,9 @@ void RadarArpa::RefreshArpaTargets() {
   if (m_pi->m_settings.guard_zone_on_overlay) {
     m_ri->m_guard_zone[0]->SearchTargets();
   }
-  /*if (m_pi->m_settings.guard_zone_on_overlay) {
+  if (m_pi->m_settings.guard_zone_on_overlay) {
       m_ri->m_guard_zone[1]->SearchTargets();
-  }*/
+  }
   // check for duplicates
   bool dup = false;
   for (int i = 0; i < number_of_targets; i++) {

@@ -36,7 +36,10 @@ PLUGIN_BEGIN_NAMESPACE
 #undef TEST_GUARD_ZONE_LOCATION
 
 void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_t len, int range) {
-  if (!m_alarm_on) return;
+    if (!m_alarm_on) {
+        ResetBogeys();
+        return;
+    }
   size_t range_start = m_inner_range * RETURNS_PER_LINE / range;  // Convert from meters to 0..511
   size_t range_end = m_outer_range * RETURNS_PER_LINE / range;    // Convert from meters to 0..511
   bool in_guard_zone = false;
@@ -123,13 +126,10 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
 void GuardZone::SearchTargets() {
   if (!m_arpa_on) return;
   
-  LOG_INFO(wxT("BR24radar_pi: $$$ enter SearchTargets"));
   if (m_type == GZ_OFF) {
-    LOG_INFO(wxT("BR24radar_pi: $$$ enter SearchTargets GZ_OFF"));
     return;
   }
   if (m_ri->m_range_meters == 0) {
-    LOG_INFO(wxT("BR24radar_pi: $$$ enter SearchTargets meters == 0"));
 
     return;
   }
@@ -164,10 +164,10 @@ void GuardZone::SearchTargets() {
 
       // check if target has been refreshed since last time
       // and if the beam has passed the target location with SCAN_MARGIN spokes
-      if ((time1 > (m_ri->m_marpa->arpa_update_time[MOD_ROTATION2048(angle)] + SCAN_MARGIN2) &&
+      if ((time1 > (arpa_update_time[MOD_ROTATION2048(angle)] + SCAN_MARGIN2) &&
            time2 >= time1)) {  // the beam sould have passed our "angle" AND a point SCANMARGIN further
         // set new refresh time
-        m_ri->m_marpa->arpa_update_time[angle] = time1;
+          arpa_update_time[MOD_ROTATION2048(angle)] = time1;
 
         /*LOG_INFO(wxT("BR24radar_pi: $$$ past timecheck angle=%i, m_start_bearing % i, m_end_bearing %i, start bearing %i,
         end_bearing %i"), angle, m_start_bearing,
@@ -187,7 +187,7 @@ void GuardZone::SearchTargets() {
               }
               int min_ang = t->min_angle.angle - 1;
               int max_ang = t->max_angle.angle + 1;
-              unsigned int tim1 = m_ri->m_marpa->arpa_update_time[angle].GetLo();
+              unsigned int tim1 = arpa_update_time[MOD_ROTATION2048(angle)].GetLo();
               /*  LOG_INFO(wxT("BR24radar_pi: $$$ i=%i, angle=%i, r=%i time= %u"), i, angle, rrr, tim1);
                 LOG_INFO(wxT("BR24radar_pi: $$$ t->min_r.r= %i, t->max_r.r= %i, t->min_angle.angle= %i, t->max_angle.angle=%i"),
                 t->min_r.r, t->max_r.r, t->min_angle.angle, t->max_angle.angle);*/
