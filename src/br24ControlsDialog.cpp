@@ -1701,7 +1701,12 @@ void br24ControlsDialog::ShowGuardZone(int zone) {
   m_guard_zone = m_ri->m_guard_zone[zone];
 
   wxString GuardZoneText;
-  GuardZoneText << _("Guard Zone") << wxString::Format(wxT(" %d"), zone + 1);
+  if (zone == 0){
+      GuardZoneText << _("Guard Zone 1 Green");
+  }
+  if (zone == 1){
+      GuardZoneText << _("Guard Zone 2 Blue");
+  }
   m_guard_zone_text->SetLabel(GuardZoneText);
 
   m_guard_zone_type->SetSelection(m_guard_zone->m_type);
