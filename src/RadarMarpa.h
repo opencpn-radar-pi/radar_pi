@@ -145,6 +145,7 @@ class ArpaTarget {
   bool FindNearestContour(Polar* pol, int dist);
   bool FindContourFromInside(Polar* p);
   bool Pix(int ang, int rad);
+  bool MultiPix(int ang, int rad);
   bool GetTarget(Polar* pol);
   void RefreshTarget();
   void PassARPAtoOCPN(Polar* p, OCPN_target_status s);

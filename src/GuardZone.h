@@ -101,6 +101,7 @@ class GuardZone {
   // Find targets inside the zone
   void SearchTargets();
   bool Pix(int ang, int rad);
+  bool MultiPix(int ang, int rad);
 
   int GetBogeyCount() {
     if (m_bogey_count > -1) {

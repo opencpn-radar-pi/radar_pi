@@ -109,6 +109,16 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
     return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 1) != 0);
   }
 
+  bool ArpaTarget::MultiPix(int ang, int rad) {
+      // same as Pix, but only true if a blob of at least 4 pixels was found
+      int test = 0;
+      if (Pix(ang, rad)){
+          test = Pix(ang + 1, rad) + Pix(ang - 1, rad) + Pix(ang, rad + 1) + Pix(ang, rad - 1);
+      }
+      if (test < 3) return false;
+      else return true;
+  }
+
   void RadarArpa::AquireNewTarget(Position target_pos, int status) {
     // aquires new target from mouse click position
     // no contour taken yet
@@ -153,13 +163,10 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
       return false;
     }
     while (Pix(ang, rad)) {
-      /*if (ang < pol->angle - MAX_CONTOUR_LENGTH / 2) {
-        return false;
-      }*/
       ang--;
-      // if (rad > 511) return false;
     }
     ang++;
+    if (!MultiPix(ang, rad)) return false;
     pol->angle = ang;
     return true;
   }
@@ -228,8 +235,7 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
         if (index > 3) index -= 4;
         aa = current.angle + transl[index].angle;
         rr = current.r + transl[index].r;
-        succes = Pix(aa, rr);  // this is the case where the whole blob is followed
-        // but we accept single pixel extensions of the blob
+        succes = Pix(aa, rr);  
         if (succes) {
           // next point found
 
@@ -593,7 +599,7 @@ void ArpaTarget::RefreshTarget() {
 
 #define PIX(aa, rr)       \
   if (rr > 510) continue; \
-  if (Pix(aa, rr)) {      \
+  if (MultiPix(aa, rr)) {      \
     pol->angle = aa;      \
     pol->r = rr;          \
     return true;          \
