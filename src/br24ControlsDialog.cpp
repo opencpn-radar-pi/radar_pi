@@ -1736,13 +1736,7 @@ void br24ControlsDialog::SetGuardZoneVisibility() {
 
   m_guard_zone->SetType(zoneType);
 
-  if (zoneType == GZ_OFF) {
-    m_start_bearing->Disable();
-    m_end_bearing->Disable();
-    m_inner_range->Disable();
-    m_outer_range->Disable();
-
-  } else if (zoneType == GZ_CIRCLE) {
+   if (zoneType == GZ_CIRCLE) {
     m_start_bearing->Disable();
     m_end_bearing->Disable();
     m_inner_range->Enable();

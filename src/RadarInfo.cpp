@@ -459,7 +459,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   // Douwe likes this, and I think it has some value in testing, but I think it distracts as well.
   // Why don't we make this an option?
-  data[RETURNS_PER_LINE - 1] = 200;  //  range ring, do we want this? ActionL: make setting
+  data[RETURNS_PER_LINE - 1] = 200;  //  range ring, do we want this? ActionL: make setting, switched on for testing
 
 
   if (m_range_meters != range_meters) {
@@ -490,11 +490,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     }
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
-    if (m_guard_zone[z]->m_type != GZ_OFF) {
+    if (m_guard_zone[z]->m_alarm_on) {
       m_guard_zone[z]->ProcessSpoke(angle, data, m_history[bearing].line, len, range_meters);
     }
   }
-
+  bool test = 1;
   if (m_multi_sweep_filter) {
     for (size_t radius = 0; radius < len; radius++) {
       if (!HISTORY_FILTER_ALLOW(m_history[bearing].line[radius])) { 
@@ -872,28 +872,29 @@ void RadarInfo::RenderGuardZone() {
   GLubyte red = 0, green = 200, blue = 0, alpha = 50;
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
-    if (m_guard_zone[z]->m_type != GZ_OFF) {
-      if (m_guard_zone[z]->m_type == GZ_CIRCLE) {
-        start_bearing = 0;
-        end_bearing = 359;
-      } else {
-        start_bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone[z]->m_start_bearing);
-        end_bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone[z]->m_end_bearing);
+      if (m_guard_zone[z]->m_alarm_on || m_guard_zone[z]->m_arpa_on) {
+          if (m_guard_zone[z]->m_type == GZ_CIRCLE) {
+              start_bearing = 0;
+              end_bearing = 359;
+          }
+          else {
+              start_bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone[z]->m_start_bearing);
+              end_bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone[z]->m_end_bearing);
+          }
+          switch (m_pi->m_settings.guard_zone_render_style) {
+          case 1:
+              glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
+              DrawOutlineArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing, true);
+              break;
+          case 2:
+              glColor4ub(red, green, blue, alpha);
+              DrawOutlineArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing, false);
+              // fall thru
+          default:
+              glColor4ub(red, green, blue, alpha);
+              DrawFilledArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing);
+          }
       }
-      switch (m_pi->m_settings.guard_zone_render_style) {
-        case 1:
-          glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
-          DrawOutlineArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing, true);
-          break;
-        case 2:
-          glColor4ub(red, green, blue, alpha);
-          DrawOutlineArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing, false);
-        // fall thru
-        default:
-          glColor4ub(red, green, blue, alpha);
-          DrawFilledArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing);
-      }
-    }
 
     red = 0;
     green = 0;

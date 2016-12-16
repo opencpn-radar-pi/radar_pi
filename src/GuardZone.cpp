@@ -36,12 +36,6 @@ PLUGIN_BEGIN_NAMESPACE
 #undef TEST_GUARD_ZONE_LOCATION
 
 void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_t len, int range) {
-    if (!m_alarm_on) {
-        ResetBogeys();
-        return;
-        
-    }
-//    m_pi->m_guard_bogey_confirmed = false;
   size_t range_start = m_inner_range * RETURNS_PER_LINE / range;  // Convert from meters to 0..511
   size_t range_end = m_outer_range * RETURNS_PER_LINE / range;    // Convert from meters to 0..511
   bool in_guard_zone = false;
@@ -128,7 +122,7 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
 void GuardZone::SearchTargets() {
   if (!m_arpa_on) return;
   
-  if (m_type == GZ_OFF) {
+  if (!m_alarm_on) {
     return;
   }
   if (m_ri->m_range_meters == 0) {

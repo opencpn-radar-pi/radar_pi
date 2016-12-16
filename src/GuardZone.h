@@ -88,6 +88,9 @@ class GuardZone {
       if (m_alarm_on){
           m_pi->m_guard_bogey_confirmed = false;
       }
+      else{
+          ResetBogeys();
+      }
   };
 
   /*
