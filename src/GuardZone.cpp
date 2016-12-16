@@ -122,7 +122,7 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
 void GuardZone::SearchTargets() {
   if (!m_arpa_on) return;
 
-  if (!m_alarm_on) {
+  if (!m_arpa_on) {
     return;
   }
   if (m_ri->m_range_meters == 0) {
@@ -215,12 +215,12 @@ bool GuardZone::Pix(int ang, int rad) {
 }
 
 bool GuardZone::MultiPix(int ang, int rad) {
-    // same as Pix, but only true if a blob of at least 4 pixels was found
+    // same as Pix, but only true if a blob of at least 3 pixels was found
     int test = 0;
     if (Pix(ang, rad)){
         test = Pix(ang + 1, rad) + Pix(ang - 1, rad) + Pix(ang, rad + 1) + Pix(ang, rad - 1);
     }
-    if (test < 3) return false;
+    if (test < 2) return false;
     else return true;
 }
 

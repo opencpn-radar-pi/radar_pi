@@ -110,12 +110,12 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
   }
 
   bool ArpaTarget::MultiPix(int ang, int rad) {
-      // same as Pix, but only true if a blob of at least 4 pixels was found
+      // same as Pix, but only true if a blob of at least 3 pixels was found
       int test = 0;
       if (Pix(ang, rad)){
           test = Pix(ang + 1, rad) + Pix(ang - 1, rad) + Pix(ang, rad + 1) + Pix(ang, rad - 1);
       }
-      if (test < 3) return false;
+      if (test < 2) return false;
       else return true;
   }
 
