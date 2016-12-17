@@ -455,6 +455,8 @@ class br24radar_pi : public opencpn_plugin_112 {
   time_t m_idle_standby;   // When we will change to standby
   time_t m_idle_transmit;  // When we will change to transmit
 
+  wxString JsonAIS; //Temp for Json AIS message
+
  private:
   void RadarSendState(void);
   void UpdateState(void);
