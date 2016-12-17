@@ -1047,7 +1047,6 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
     g_first_render = false;
     wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->m_boot_time;
     LOG_INFO(wxT("BR24radar_pi: First radar image rendered after %llu ms\n"), startup_elapsed);
-    
   }
 }
 
@@ -1061,8 +1060,13 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
 
   overlay_rotate += OPENGL_ROTATION;  // Difference between OpenGL and compass + radar
   double panel_rotate = overlay_rotate;
+  double arpa_rotate = 0.;
   if (m_orientation.value == ORIENTATION_COURSE_UP) {
     panel_rotate -= m_course;
+    arpa_rotate -= m_course;
+  }
+  if (m_orientation.value == ORIENTATION_HEAD_UP) {
+      arpa_rotate = - m_pi->m_hdt;
   }
   double guard_rotate = overlay_rotate;
   if (overlay || m_orientation.value == ORIENTATION_NORTH_UP || m_orientation.value == ORIENTATION_COURSE_UP) {
@@ -1071,16 +1075,18 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   if (!overlay && m_orientation.value == ORIENTATION_COURSE_UP) {
     guard_rotate -= m_course;
   }
+  if (m_marpa){
+      m_marpa->RefreshArpaTargets();
+  }
   if (overlay) {
-      if (m_marpa){
-          m_marpa->RefreshArpaTargets();
-          glPushMatrix();
-          glTranslated(center.x, center.y, 0);
-          glScaled(scale, scale, 1.);
-          m_marpa->DrawArpaTargets();
-          glPopMatrix();
-      }
-      
+    if (m_marpa) {
+      glPushMatrix();
+      glTranslated(center.x, center.y, 0);
+      glScaled(scale, scale, 1.);
+      m_marpa->DrawArpaTargets();
+      glPopMatrix();
+    }
+
     if (m_pi->m_settings.guard_zone_on_overlay) {
       glPushMatrix();
       glTranslated(center.x, center.y, 0);
@@ -1111,6 +1117,14 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     glRotated(guard_rotate, 0.0, 0.0, 1.0);
     RenderGuardZone();
     glPopMatrix();
+
+    if (m_marpa) {
+      glPushMatrix();
+      glScaled(scale, scale, 1.);
+      glRotated(arpa_rotate, 0.0, 0.0, 1.0);
+      m_marpa->DrawArpaTargets();
+      glPopMatrix();
+    }
 
     glPushMatrix();
     double overscan = (double)m_range_meters / (double)m_range.value;

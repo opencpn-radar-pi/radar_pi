@@ -287,11 +287,11 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
   }
 
 
-  void RadarArpa::DrawContour(ArpaTarget * target) {
+  void RadarArpa::DrawContour(ArpaTarget* target) {
     // should be improved using vertex arrays
     PolarToCartesianLookupTable* polarLookup;
     polarLookup = GetPolarToCartesianLookupTable();
-    glColor4ub(40, 40, 100, 250);
+    glColor4ub(200, 200, 100, 250);
     glLineWidth(3.0);
     glBegin(GL_LINES);
     for (int i = 0; i < target->contour_length; i++) {
@@ -352,10 +352,6 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
   }
 
   void RadarArpa::DrawArpaTargets() {
-      /*if (g_first_render) {
-          LOG_INFO(wxT("BR24radar_pi:: $$$ enter draw arpa g_first_render true"));
-          return;
-      }*/
     for (int i = 0; i < number_of_targets; i++) {
       if (!m_targets[i]) continue;
     if (m_targets[i]->status != LOST) {
@@ -365,7 +361,6 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
 }
 
 void RadarArpa::RefreshArpaTargets() {
-    
   // remove targets with status LOST and put them at the end
   for (int i = 0; i < number_of_targets; i++) {
     if (m_targets[i]) {
