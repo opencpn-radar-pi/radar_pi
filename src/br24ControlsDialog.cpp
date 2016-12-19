@@ -1729,6 +1729,7 @@ void br24ControlsDialog::ShowGuardZone(int zone) {
   m_filter->SetValue(m_guard_zone->m_multi_sweep_filter ? 1 : 0);
   m_alarm->SetValue(m_guard_zone->m_alarm_on ? 1 : 0);
   m_arpa_box->SetValue(m_guard_zone->m_arpa_on ? 1 : 0);
+  m_guard_zone->m_show_time = time(0);
 
   m_top_sizer->Hide(m_control_sizer);
   SwitchTo(m_guard_sizer, wxT("guard"));
@@ -1761,6 +1762,7 @@ void br24ControlsDialog::OnGuardZoneModeClick(wxCommandEvent& event) { SetGuardZ
 void br24ControlsDialog::OnInner_Range_Value(wxCommandEvent& event) {
   wxString temp = m_inner_range->GetValue();
   double t;
+  m_guard_zone->m_show_time = time(0);
   temp.ToDouble(&t);
 
   int conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
@@ -1771,6 +1773,7 @@ void br24ControlsDialog::OnInner_Range_Value(wxCommandEvent& event) {
 void br24ControlsDialog::OnOuter_Range_Value(wxCommandEvent& event) {
   wxString temp = m_outer_range->GetValue();
   double t;
+  m_guard_zone->m_show_time = time(0);
   temp.ToDouble(&t);
 
   int conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
@@ -1782,6 +1785,7 @@ void br24ControlsDialog::OnStart_Bearing_Value(wxCommandEvent& event) {
   wxString temp = m_start_bearing->GetValue();
   double t;
 
+  m_guard_zone->m_show_time = time(0);
   temp.ToDouble(&t);
   t = fmod(t, 360.);
   if (t < 0.) {
@@ -1794,6 +1798,7 @@ void br24ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
   wxString temp = m_end_bearing->GetValue();
   double t;
 
+  m_guard_zone->m_show_time = time(0);
   temp.ToDouble(&t);
   t = fmod(t, 360.);
   if (t < 0.) {

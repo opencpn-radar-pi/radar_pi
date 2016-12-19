@@ -55,7 +55,6 @@ ArpaTarget::~ArpaTarget() {
         delete m_kalman;
         m_kalman = 0;
     }
-    LOG_INFO(wxT("BR24radar_pi:$$$ arpatarget destructed"));
 }
 
 
@@ -68,7 +67,6 @@ RadarArpa::~RadarArpa() {
       m_targets[i] = 0;
     }
   }
-  LOG_INFO(wxT("BR24radar_pi:$$$  ~RadarArpa() ready"));
 }
 
 Position Polar2Pos(Polar pol, Position own_ship, double range) {

@@ -120,8 +120,7 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
 
 // Search  guard zone for targets
 void GuardZone::SearchTargets() {
-  if (!m_arpa_on) return;
-
+  
   if (!m_arpa_on) {
     return;
   }

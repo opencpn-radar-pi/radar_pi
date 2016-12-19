@@ -46,6 +46,7 @@ class GuardZone {
   int m_multi_sweep_filter;
   int m_alarm_on;
   int m_arpa_on;
+  time_t m_show_time;
   wxLongLong arpa_update_time[LINES_PER_ROTATION];
 
   void ResetBogeys() {
@@ -122,6 +123,7 @@ class GuardZone {
     m_multi_sweep_filter = 0;
     m_arpa_on = 0;
     m_alarm_on = 0;
+    m_show_time = 0;
     for (int angle = 0; angle < LINES_PER_ROTATION; angle++) {
         arpa_update_time[angle] = 0;
     }
