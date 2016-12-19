@@ -203,6 +203,7 @@ void Kalman_Filter::Predict(LocalPosition* xx, double delta_time) {
   xx->dlon_dt = X(4, 1);
   // calculate apriori P
   P = A * P * AT + W * Q * WT;
+  xx->sd_speed_m_s = sqrt((P(3, 3) + P(4, 4)) / 2.);  // rough approximation of standard dev of speed
   return;
 }
 
@@ -246,9 +247,10 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
   x->lon = X(2, 1);
   x->dlat_dt = X(3, 1);
   x->dlon_dt = X(4, 1);
-  x->sd_speed_m_s = sqrt((P(3, 3) + P(4, 4)) / 2.);  // rough approximation of standard dev of speed
+  
   // update covariance P
   P = (I - K * H) * P;
+  x->sd_speed_m_s = sqrt((P(3, 3) + P(4, 4)) / 2.);  // rough approximation of standard dev of speed
   return;
 }
 

@@ -58,21 +58,14 @@ ArpaTarget::~ArpaTarget() {
     LOG_INFO(wxT("BR24radar_pi:$$$ arpatarget destructed"));
 }
 
-void ArpaTarget::set(br24radar_pi* pi, RadarInfo* ri) {
-  m_ri = ri;
-  m_pi = pi;
-  t_refresh = wxGetUTCTimeMillis();
-}
 
 RadarArpa::~RadarArpa() {
     int n = number_of_targets;
     number_of_targets = 0;
   for (int i = 0; i < n; i++) {
     if (m_targets[i]) {
-        LOG_INFO(wxT("BR24radar_pi:$$$ target destructed %i"), i);
       delete m_targets[i];
       m_targets[i] = 0;
-      LOG_INFO(wxT("BR24radar_pi:$$$  succes target destructed %i  n= %i"), i, n);
     }
   }
   LOG_INFO(wxT("BR24radar_pi:$$$  ~RadarArpa() ready"));
@@ -447,15 +440,23 @@ void RadarArpa::RefreshArpaTargets() {
         if (m_targets[j]->status > m_targets[i]->status) {
           dup_to_delete = i;
         }
-        if (m_targets[dup_to_delete]->status < 3) {
+        // delete the stationary target
+        if (m_targets[j]->stationary && !m_targets[i]->stationary) {
+            dup_to_delete = j;
+        }
+        if (m_targets[i]->stationary && !m_targets[j]->stationary){
+            dup_to_delete = i;
+        }
+        if (m_targets[dup_to_delete]->status < 5) {
           // it's new, kill it immediately and get out
           m_targets[dup_to_delete]->SetStatusLost();
           continue;
         }
-        if (m_targets[j]->duplicate_count == 0) {
-          m_targets[j]->duplicate_count = m_targets[j]->status;
-        } else if (m_targets[j]->duplicate_count + MAX_DUP < m_targets[j]->status) {
-          m_targets[j]->SetStatusLost();
+        if (m_targets[dup_to_delete]->duplicate_count == 0) {
+            m_targets[dup_to_delete]->duplicate_count = m_targets[dup_to_delete]->status;
+        }
+        else if (m_targets[dup_to_delete]->duplicate_count + MAX_DUP <= m_targets[dup_to_delete]->status) {
+            m_targets[dup_to_delete]->SetStatusLost();
         }
       }
     }
@@ -559,7 +560,6 @@ void ArpaTarget::RefreshTarget() {
     } else {
       // target not found
       if (status == AQUIRE0 || status == AQUIRE1) {
-          LOG_INFO(wxT("BR24radar_pi: $$$status == AQUIRE0 || status == AQUIRE1"));
         SetStatusLost();
         return;
       } else {
@@ -579,6 +579,21 @@ void ArpaTarget::RefreshTarget() {
     // set refresh time to the time of the spoke where the target was found
     t_refresh = X.time;
     if (status >= 2) {
+        double s1 = X.dlat_dt;                                 // m per second
+        double s2 = X.dlon_dt;                                 // m  per second
+        speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600. / 1852.;  // and convert to nautical miles per hour
+        course = rad2deg(atan2(s2, s1));
+        if (course < 0) course += 360.;
+        if (speed_kn < (double)TARGET_SPEED_DIV_SDEV * X.sd_speed_kn) {
+            speed_kn = 0.;
+            course = 0.;
+            stationary++;
+            if (stationary > 2) stationary = 2;
+        }
+        else {
+            stationary--;
+            if (stationary < 0) stationary = 0;
+        }
       // send target data to OCPN
       pol = Pos2Polar(X, own_pos, m_ri->m_range_meters);
       if (status >= STATUS_TO_OCPN) {
@@ -639,6 +654,10 @@ ArpaTarget::ArpaTarget(br24radar_pi* pi, RadarInfo* ri) {
   duplicate_count = 0;
   target_id = 0;
   t_refresh = 0;
+  arpa = false;
+  speed_kn = 0.;
+  course = 0.;
+  stationary = 0;   
 }
 
 ArpaTarget::ArpaTarget() {
@@ -649,6 +668,10 @@ ArpaTarget::ArpaTarget() {
   duplicate_count = 0;
   target_id = 0;
   t_refresh = 0;
+  arpa = false;
+  speed_kn = 0.;
+  course = 0.;
+  stationary = 0;
 }
 
 bool ArpaTarget::GetTarget(Polar* pol) {
@@ -683,22 +706,15 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   char sentence[90];
   char checksum = 0;
   char* p;
-  double speed_kn;
-  double s1 = X.dlat_dt;                                 // m per second
-  double s2 = X.dlon_dt;                                 // m  per second
-  speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600. / 1852.;  // and convert to nautical miles per hour
-  double course = rad2deg(atan2(s2, s1));
-  if (speed_kn < (double)TARGET_SPEED_DIV_SDEV * X.sd_speed_kn) {
-    speed_kn = 0.;
-    course = 0.;
-  }
 
   s_Bear_Unit = wxEmptyString;  // Bearing Units  R or empty
   s_Course_Unit = wxT("T");     // Course type R; Realtive T; true
   s_Dist_Unit = wxT("N");       // Speed/Distance Unit K, N, S N= NM/h = Knots
   if (status == Q) s_status = wxT("Q");
   if (status == T) s_status = wxT("T");
-  if (status == L) s_status = wxT("L");
+  if (status == L) { 
+      s_status = wxT("L"); 
+  }
 
   double dist = (double)pol->r / (double)RETURNS_PER_LINE * (double)m_ri->m_range_meters / 1852.;
   double bearing = (double)pol->angle * 360. / (double)LINES_PER_ROTATION;
@@ -707,7 +723,12 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   s_TargID = wxString::Format(wxT("%3i"), target_id);
   s_speed = wxString::Format(wxT("%4.2f"), status == Q ? 0.0 : speed_kn);
   s_course = wxString::Format(wxT("%3.1f"), status == Q ? 0.0 : course);
-  s_target_name = wxString::Format(wxT("MARPA%3i"), target_id);
+  if (arpa == true){
+      s_target_name = wxString::Format(wxT("ARPA%3i"), target_id);
+  }
+  else{
+      s_target_name = wxString::Format(wxT("MARPA%3i"), target_id);
+  }
   s_distance = wxString::Format(wxT("%f"), dist);
   s_bearing = wxString::Format(wxT("%f"), bearing);
 
@@ -728,6 +749,7 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
     checksum ^= *p;
   }
   nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
+//  LOG_INFO(wxT("BR24radar_pi: RadarArpa:: string send %s"), nmea);
   PushNMEABuffer(nmea);
 }
 
@@ -748,6 +770,11 @@ void ArpaTarget::SetStatusLost() {
   duplicate_count = 0;
   status = LOST;
   target_id = 0;
+  arpa = false;
+  t_refresh = 0;
+  speed_kn = 0.;
+  course = 0.;
+  stationary = 0;
 }
 
 void RadarArpa::DeleteAllTargets() {
