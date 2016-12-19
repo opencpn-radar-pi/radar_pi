@@ -1318,6 +1318,17 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
 void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
   static const wxString WMM_VARIATION_BOAT = wxString(_T("WMM_VARIATION_BOAT"));
   wxString info;
+  bool ArpaGuardOn = false;
+  double ArpaMaxRange = 0.0;
+  for (int i = 0; i < RADARS; i++) {
+      for (int z = 0; z < GUARD_ZONES; z++) {
+          if (m_radar[i]->m_guard_zone[z]->m_arpa_on) {
+              ArpaGuardOn = true;
+              int t = m_radar[i]->m_guard_zone[z]->m_outer_range;
+              if (t > ArpaMaxRange) ArpaMaxRange = t;
+          }
+      }
+  }
 
   if (message_id.Cmp(WMM_VARIATION_BOAT) == 0) {
     wxJSONReader reader;
@@ -1341,8 +1352,9 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
       }
     }
   }
-  else if (message_id == wxS("AIS")) { // && ARPA search active ? Douwe do you've such a flag?
+  else if (message_id == wxS("AIS") && ArpaGuardOn) { // && ArpaGuardOn
       wxString Msg = "Test: JSON AIS detected\n";
+      Msg << "Range : " << ArpaMaxRange << "\n";
       wxJSONReader reader;
       wxJSONValue message;
       if (!reader.Parse(message_body, &message)) {
@@ -1365,17 +1377,17 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
               wxString AISName = message.Get(_T("shipname"), wxEmptyString).AsString();
               double fAISLon;
               AISLon.ToDouble(&fAISLon);
-              float f_AISLat = wxAtof(AISLat);
-              float f_AISLon = wxAtof(AISLon);
+              double f_AISLat = wxAtof(AISLat);
+              double f_AISLon = wxAtof(AISLon);
               //Rectangle around own ship to look for AIS targets. 
-              //Douwe - put for ex. Rectangle side of actual guard zone length
               //Then you check if AISinlist > 0 and for you pos in the list
-              double d_side = 0.06;
+              double d_side = ArpaMaxRange / 1852.0 /60.0 ;
+              //int test = m_outer_range;
+              Msg << "Upper Lat / Lon: " << m_ownship_lat + d_side << m_ownship_lon - d_side * 2 << "\n";
               if (f_AISLat < (m_ownship_lat + d_side) &&
                   f_AISLat >(m_ownship_lat - d_side) &&
-                  f_AISLon < (m_ownship_lon + d_side) &&
-                  f_AISLon >(m_ownship_lon - d_side)) {
-                  Msg << "Target within my Range\n";
+                  f_AISLon < (m_ownship_lon + d_side * 2 ) &&
+                  f_AISLon >(m_ownship_lon - d_side * 2)) {
                   int turn = 0;
                   for (int i = 0; i < AISARRAY; i++) {
                       if (AISInRangeM[i] == AISmmsi) {
@@ -1437,7 +1449,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
           }
       }
   }
-
+  // Delete arrary??
 }
 
 bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value) {  // sends the command to the radar
