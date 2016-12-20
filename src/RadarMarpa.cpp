@@ -316,7 +316,7 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
     // following displays expected position with crosses that indicate the size of the search area
     // for debugging only
 
-    double xx;
+    /*double xx;
     double yy;
     int dist_a = (int)(326. / (double)radius * OFF_LOCATION / 2.);
     int dist_r = (int)((double)OFF_LOCATION / 2.);
@@ -334,7 +334,7 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
       xx = polarLookup->x[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
       yy = polarLookup->y[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
       glVertex2f(xx, yy);
-    }
+    }*/
 
 
 
@@ -546,7 +546,7 @@ void ArpaTarget::RefreshTarget() {
       // target get an id when status  == STATUS_TO_OCPN
       if (status == STATUS_TO_OCPN) {
         target_id_count++;
-        if (target_id_count >= 1000) target_id_count = 1;
+        if (target_id_count >= 10000) target_id_count = 1;
         target_id = target_id_count;
       }
 
@@ -728,14 +728,14 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   double bearing = (double)pol->angle * 360. / (double)LINES_PER_ROTATION;
 
   if (bearing < 0) bearing += 360;
-  s_TargID = wxString::Format(wxT("%3i"), target_id);
+  s_TargID = wxString::Format(wxT("%4i"), target_id);
   s_speed = wxString::Format(wxT("%4.2f"), status == Q ? 0.0 : speed_kn);
   s_course = wxString::Format(wxT("%3.1f"), status == Q ? 0.0 : course);
   if (arpa == true){
-      s_target_name = wxString::Format(wxT("ARPA%3i"), target_id);
+      s_target_name = wxString::Format(wxT("ARPA%4i"), target_id);
   }
   else{
-      s_target_name = wxString::Format(wxT("MARPA%3i"), target_id);
+      s_target_name = wxString::Format(wxT("MARPA%4i"), target_id);
   }
   s_distance = wxString::Format(wxT("%f"), dist);
   s_bearing = wxString::Format(wxT("%f"), bearing);
