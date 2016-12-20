@@ -66,7 +66,7 @@ class Matrix;
 #define Q_NUM (4)  // status Q to OCPN at target status
 #define T_NUM (6)  // status T to OCPN at target status
 
-#define TARGET_SPEED_DIV_SDEV 3.
+#define TARGET_SPEED_DIV_SDEV 2.
 #define MAX_DUP 2  // maximum number of sweeps a duplicate target is allowed to exist
 #define SCAN_MARGIN2 (500)
 #define STATUS_TO_OCPN (5)  //
