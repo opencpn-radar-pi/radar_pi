@@ -457,6 +457,14 @@ class br24radar_pi : public opencpn_plugin_112 {
 
   wxString JsonAIS; //Temp for Json AIS message
 
+  typedef struct AISinARPA {
+      long AISmmsi;
+      time_t LastUpdate;
+      float AISLat;
+      float AISLon;
+      wxString AISName;
+  }TargetInRange;
+
  private:
   void RadarSendState(void);
   void UpdateState(void);
