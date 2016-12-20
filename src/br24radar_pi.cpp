@@ -1352,98 +1352,79 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
       }
     }
   }
-  else if (message_id == wxS("AIS") && ArpaGuardOn || AISinlist) {
+  else if (message_id == wxS("AIS") && ArpaGuardOn || count_ais_in_arpa) {
       wxJSONReader reader;
       wxJSONValue message;
-      const short AISARRAY = 50;
-      static long AISInRangeM[AISARRAY];
-      static time_t AISInRangeT[AISARRAY];
-      static float f_AISlat_A[AISARRAY];
-      static float f_AISlon_A[AISARRAY];
-      static wxString s_AISName_A[AISARRAY];
       wxString Msg = wxEmptyString;
-
-      //AISinARPA* TargetInRange1 = NULL;
-      TargetInRange* Tir;
-      Tir = new TargetInRange[AISARRAY];       //
-      Tir[0].AISmmsi = 123456;
-      Tir[0].AISLat = 57.23456;
-      Tir[0].AISLon = 11.26378;
-      Tir[0].AISName = "Kalle";
-      Msg << Tir[0].AISmmsi << "  " << Tir->AISName << "\n";
-      Msg << "Size TargetInRange: " << sizeof(TargetInRange) << "\n";
-      delete[] Tir;
-      Msg << "Size after delete: " << sizeof(TargetInRange) << "\n";
 
       if (!reader.Parse(message_body, &message)) {
           wxJSONValue defaultValue(999);
-          long AISmmsi = message.Get(_T("mmsi"), defaultValue).AsLong();
-          if (AISmmsi > 200000000 ) { //Neither ARPA targets nor SAR_aircraft
+          long json_ais_mmsi = message.Get(_T("mmsi"), defaultValue).AsLong();
+          if (json_ais_mmsi > 200000000) { //Neither ARPA targets nor SAR_aircraft
               wxJSONValue defaultValue("0.0");
               wxString AISLat = message.Get(_T("lat"), defaultValue).AsString();
               wxString AISLon = message.Get(_T("lon"), defaultValue).AsString();
               double f_AISLat = wxAtof(AISLat);
               double f_AISLon = wxAtof(AISLon);
               //Rectangle around own ship to look for AIS targets. 
-              //Then you check if AISinlist > 0 and for your pos in the list
-              double d_side = ArpaMaxRange / 1852.0 /60.0;
+              //Then you check if count_ais_in_arpa > 0 and for your pos in the list
+              double d_side = ArpaMaxRange / 1852.0 / 60.0;
               if (f_AISLat < (m_ownship_lat + d_side) &&
                   f_AISLat >(m_ownship_lat - d_side) &&
-                  f_AISLon < (m_ownship_lon + d_side * 2 ) &&
+                  f_AISLon < (m_ownship_lon + d_side * 2) &&
                   f_AISLon >(m_ownship_lon - d_side * 2)) {
                   Msg << "AIS in ARPA range detected\n";
-                  Msg << wxString::Format(_T("MMSI: %d\n"), AISmmsi);
+                  Msg << wxString::Format(_T("MMSI: %d\n"), json_ais_mmsi);
                   Msg << "Latitude: " << AISLat << "\n";
                   Msg << "Longitude: " << AISLon << "\n";
                   wxString AISName = message.Get(_T("shipname"), wxEmptyString).AsString();
-                  int turn = 0;
-                  for (int i = 0; i < AISARRAY; i++) {
-                      if (AISInRangeM[i] == AISmmsi) {
-                          AISInRangeT[i] = time(0);
-                          Msg << s_AISName_A[i] << " Updated #" << i << "\n";
+                  bool turn = false;
+                  for (int i = 0; i < SIZEAISAR; i++) {
+                      if (!turn && ais_in_arpa[i].ais_mmsi == json_ais_mmsi) {
+                          ais_in_arpa[i].ais_time_upd = time(0);
+                          Msg << ais_in_arpa[i].ais_name << " Updated #" << i << "\n";
                           break;
                       }
-                      if (i != AISARRAY - 1 ) {
-                          if (turn != 0 && AISInRangeM[i] == 0) {
-                              AISInRangeM[i] = AISmmsi;
-                              AISInRangeT[i] = time(0);
-                              f_AISlat_A[i] = f_AISLat;
-                              f_AISlon_A[i] = f_AISLon;
-                              s_AISName_A[i] = AISName.Trim();
-                              AISinlist++;
-                              Msg << "New post: " << s_AISName_A[i] << "\n";
+                      if (i != SIZEAISAR - 1) {
+                          if (turn && ais_in_arpa[i].ais_mmsi == 0) {
+                              ais_in_arpa[i].ais_mmsi = json_ais_mmsi;
+                              ais_in_arpa[i].ais_time_upd = time(0);
+                              ais_in_arpa[i].ais_lat = f_AISLat;
+                              ais_in_arpa[i].ais_lon = f_AISLon;
+                              ais_in_arpa[i].ais_name = AISName.Trim();
+                              count_ais_in_arpa++;
+                              Msg << "New post: " << ais_in_arpa[i].ais_name << "\n";
                               break;
                           }
 
                       } else {  //mmsi not found. Search an empty post from start.
                           i = 0;
-                          turn++;
+                          turn = true;
                       }
                   }
-                  Msg << "AIS targets in list: " << AISinlist << "\n";
+                  Msg << "AIS targets in list: " << count_ais_in_arpa << "\n";
                   JsonAIS = Msg; // Open my borrowed RadarInfoBox to se the message;
               }
           }
       }
-      if (AISinlist) { //Delete old posts if present
-          for (int i = 0; i < AISARRAY; i++) {
+      if (count_ais_in_arpa) { //Delete old posts if present
+          for (int i = 0; i < SIZEAISAR; i++) {
               //Delete > 3 min old item.
-              if (AISInRangeM[i] > 0 && 
-                  ((time(0) - AISInRangeT[i]) > (3 * 60) || !ArpaGuardOn)) {
+              if (ais_in_arpa[i].ais_mmsi > 0 &&
+                  ((time(0) - ais_in_arpa[i].ais_time_upd) > (3 * 60) || !ArpaGuardOn)) {
                   Msg = wxEmptyString;
-                  Msg << "Deleted: " << s_AISName_A[i] << "\n";
-                  AISInRangeM[i] = 0;
-                  AISInRangeT[i] = 0;
-                  s_AISName_A[i].clear(); // = '\0'; // wxEmptyString;
-                  AISinlist--;
-                  Msg << "AIS targets in list: " << AISinlist << "\n";
-                  if (!AISinlist) Msg = wxEmptyString;
+                  Msg << "Deleted: " << ais_in_arpa[i].ais_name << "\n";
+                  ais_in_arpa[i].ais_mmsi = 0;
+                  ais_in_arpa[i].ais_time_upd = 0;
+                  ais_in_arpa[i].ais_name.clear();
+                  count_ais_in_arpa--;
+                  Msg << "AIS targets in list: " << count_ais_in_arpa << "\n";
+                  if (!count_ais_in_arpa) Msg = wxEmptyString;
                   JsonAIS = Msg;
                   Beep(400, 400);
               }
           }
       }
-
   }
   // Delete arrary??
 }

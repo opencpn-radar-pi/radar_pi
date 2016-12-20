@@ -325,6 +325,15 @@ struct scan_line {
   // a 1 is added in the rightmost position, if below threshold, a 0.
 };
 
+#define SIZEAISAR (50)
+struct AisArpa {
+    long ais_mmsi;
+    time_t ais_time_upd;
+    float ais_lat;
+    float ais_lon;
+    wxString ais_name;
+};
+
 //----------------------------------------------------------------------------------------------------------
 //    The PlugIn Class Definition
 //----------------------------------------------------------------------------------------------------------
@@ -457,13 +466,9 @@ class br24radar_pi : public opencpn_plugin_112 {
 
   wxString JsonAIS; //Temp for Json AIS message
 
-  typedef struct AISinARPA {
-      long AISmmsi;
-      time_t LastUpdate;
-      float AISLat;
-      float AISLon;
-      wxString AISName;
-  }TargetInRange;
+
+ AisArpa ais_in_arpa[SIZEAISAR];
+ int count_ais_in_arpa;
 
  private:
   void RadarSendState(void);
