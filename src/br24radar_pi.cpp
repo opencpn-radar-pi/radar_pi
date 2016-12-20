@@ -1352,7 +1352,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
       }
     }
   }
-  else if (message_id == wxS("AIS") && ArpaGuardOn || count_ais_in_arpa) {
+  else if (message_id == wxS("AIS") && ArpaGuardOn || count_ais_in_arpa > 0) {
       wxJSONReader reader;
       wxJSONValue message;
       wxString Msg = wxEmptyString;
@@ -1366,9 +1366,13 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
               wxString AISLon = message.Get(_T("lon"), defaultValue).AsString();
               double f_AISLat = wxAtof(AISLat);
               double f_AISLon = wxAtof(AISLon);
+              Msg << "Json AIS detected\n";
               //Rectangle around own ship to look for AIS targets. 
               //Then you check if count_ais_in_arpa > 0 and for your pos in the list
               double d_side = ArpaMaxRange / 1852.0 / 60.0;
+              Msg << "d_Side = " << d_side << "  "<<ArpaMaxRange << "\n";
+              JsonAIS = Msg;
+
               if (f_AISLat < (m_ownship_lat + d_side) &&
                   f_AISLat >(m_ownship_lat - d_side) &&
                   f_AISLon < (m_ownship_lon + d_side * 2) &&
@@ -1407,7 +1411,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
               }
           }
       }
-      if (count_ais_in_arpa) { //Delete old posts if present
+      if (count_ais_in_arpa > 0) { //Delete old posts if present
           for (int i = 0; i < SIZEAISAR; i++) {
               //Delete > 3 min old item.
               if (ais_in_arpa[i].ais_mmsi > 0 &&
@@ -1419,7 +1423,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
                   ais_in_arpa[i].ais_name.clear();
                   count_ais_in_arpa--;
                   Msg << "AIS targets in list: " << count_ais_in_arpa << "\n";
-                  if (!count_ais_in_arpa) Msg = wxEmptyString;
+                  //if (count_ais_in_arpa == 0) Msg = wxEmptyString;
                   JsonAIS = Msg;
                   Beep(400, 400);
               }

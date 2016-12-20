@@ -758,7 +758,7 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   }
   nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
 //  LOG_INFO(wxT("BR24radar_pi: RadarArpa:: string send %s"), nmea);
-  if (m_pi->count_ais_in_arpa) cout << m_pi->ais_in_arpa[0].ais_lat;
+  //if (m_pi->count_ais_in_arpa) cout << m_pi->ais_in_arpa[0].ais_lat;
   PushNMEABuffer(nmea);
 }
 

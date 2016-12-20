@@ -468,7 +468,7 @@ class br24radar_pi : public opencpn_plugin_112 {
 
 
  AisArpa ais_in_arpa[SIZEAISAR];
- int count_ais_in_arpa;
+ int count_ais_in_arpa = 0;
 
  private:
   void RadarSendState(void);
