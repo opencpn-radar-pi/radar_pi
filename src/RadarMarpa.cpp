@@ -55,7 +55,6 @@ ArpaTarget::~ArpaTarget() {
         delete m_kalman;
         m_kalman = 0;
     }
-    LOG_INFO(wxT("BR24radar_pi:$$$ arpatarget destructed"));
 }
 
 
@@ -68,7 +67,6 @@ RadarArpa::~RadarArpa() {
       m_targets[i] = 0;
     }
   }
-  LOG_INFO(wxT("BR24radar_pi:$$$  ~RadarArpa() ready"));
 }
 
 Position Polar2Pos(Polar pol, Position own_ship, double range) {
@@ -441,31 +439,20 @@ void RadarArpa::RefreshArpaTargets() {
         }
         // delete the stationary target
         if (m_targets[j]->stationary && !m_targets[i]->stationary) {
-            LOG_INFO(wxT("BR24radar_pi: $$$ (m_targets[j]->stationary1 %i, m_targets[i]->stationary %i"), m_targets[j]->stationary, m_targets[i]->stationary);
             dup_to_delete = j;
-            LOG_INFO(wxT("BR24radar_pi: $$$ duplicate stationary 1 i= %i, id= %i"), j, m_targets[dup_to_delete]->target_id);
         }
         if (m_targets[i]->stationary && !m_targets[j]->stationary){
-            LOG_INFO(wxT("BR24radar_pi: $$$ (m_targets[j]->stationary2 %i, m_targets[i]->stationary %i"), m_targets[j]->stationary, m_targets[i]->stationary);
             dup_to_delete = i;
-            LOG_INFO(wxT("BR24radar_pi: $$$ duplicate stationary 2 i= %i, id= %i"),i, m_targets[dup_to_delete]->target_id);
         }
         if (m_targets[dup_to_delete]->status < 5) {
           // it's new, kill it immediately and get out
-            LOG_INFO(wxT("BR24radar_pi: $$$ duplicate deleted immediately i= %i, id= %i"), dup_to_delete, m_targets[dup_to_delete]->target_id);
           m_targets[dup_to_delete]->SetStatusLost();
           continue;
         }
         if (m_targets[dup_to_delete]->duplicate_count == 0) {
             m_targets[dup_to_delete]->duplicate_count = m_targets[dup_to_delete]->status;
-            LOG_INFO(wxT("BR24radar_pi: $$$ duplicate check dup_to_delete= %i"), dup_to_delete);
-          LOG_INFO(wxT("BR24radar_pi: $$$ duplicate check1 duplicate_count= %i, status= %i,  id= %i"), 
-              m_targets[dup_to_delete]->duplicate_count, m_targets[dup_to_delete]->status, m_targets[dup_to_delete]->target_id);
         }
         else if (m_targets[dup_to_delete]->duplicate_count + MAX_DUP <= m_targets[dup_to_delete]->status) {
-            LOG_INFO(wxT("BR24radar_pi: $$$ duplicate check2 duplicate_count= %i, status= %i, id= %i"), 
-                m_targets[dup_to_delete]->duplicate_count, m_targets[dup_to_delete]->status, m_targets[dup_to_delete]->target_id);
-            LOG_INFO(wxT("BR24radar_pi: $$$ duplicate deleted later id= %i"), m_targets[dup_to_delete]->target_id);
             m_targets[dup_to_delete]->SetStatusLost();
         }
       }
@@ -569,9 +556,7 @@ void ArpaTarget::RefreshTarget() {
       X.time = pol.time;  // set the target time to the newly found time
     } else {
       // target not found
-        LOG_INFO(wxT("BR24radar_pi: $$$ target not found targetid %i, lost_count %i"), target_id, lost_count);
       if (status == AQUIRE0 || status == AQUIRE1) {
-          LOG_INFO(wxT("BR24radar_pi: $$$status == AQUIRE0 || status == AQUIRE1"));
         SetStatusLost();
         return;
       } else {
@@ -596,7 +581,7 @@ void ArpaTarget::RefreshTarget() {
         speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600. / 1852.;  // and convert to nautical miles per hour
         course = rad2deg(atan2(s2, s1));
         if (course < 0) course += 360.;
-        LOG_INFO(wxT("BR24radar_pi: $$$ speed_kn= %f, X.sd_speed_kn= %f, target_id %i stationary= %i"),speed_kn,X.sd_speed_kn,target_id, stationary);
+    //    LOG_INFO(wxT("BR24radar_pi: $$$ speed_kn= %f, X.sd_speed_kn= %f, target_id %i stationary= %i"),speed_kn,X.sd_speed_kn,target_id, stationary);
         if (speed_kn < (double)TARGET_SPEED_DIV_SDEV * X.sd_speed_kn) {
             speed_kn = 0.;
             course = 0.;
