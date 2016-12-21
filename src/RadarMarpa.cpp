@@ -514,6 +514,8 @@ void ArpaTarget::RefreshTarget() {
       return;
     }
     expected = pol;  // save expected polar position
+
+    // Measurement cycle
     // now search for the target at the expected polar position in pol
     if (GetTarget(&pol)) {
       pol_z = pol;
@@ -556,6 +558,7 @@ void ArpaTarget::RefreshTarget() {
       X.time = pol.time;  // set the target time to the newly found time
     } else {
       // target not found
+        LOG_INFO(wxT("$$$ target not found id= %i, status= %i, lostcount= %i angle= %i, r= %i"), target_id, status, lost_count, pol.angle, pol.r);
       if (status == AQUIRE0 || status == AQUIRE1) {
         SetStatusLost();
         return;
@@ -581,7 +584,7 @@ void ArpaTarget::RefreshTarget() {
         speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600. / 1852.;  // and convert to nautical miles per hour
         course = rad2deg(atan2(s2, s1));
         if (course < 0) course += 360.;
-    //    LOG_INFO(wxT("BR24radar_pi: $$$ speed_kn= %f, X.sd_speed_kn= %f, target_id %i stationary= %i"),speed_kn,X.sd_speed_kn,target_id, stationary);
+        LOG_INFO(wxT("BR24radar_pi: $$$ speed_kn= %f, X.sd_speed_kn= %f, target_id %i stationary= %i"),speed_kn,X.sd_speed_kn,target_id, stationary);
         if (speed_kn < (double)TARGET_SPEED_DIV_SDEV * X.sd_speed_kn) {
             speed_kn = 0.;
             course = 0.;
