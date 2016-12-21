@@ -761,8 +761,26 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   }
   nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
 //  LOG_INFO(wxT("BR24radar_pi: RadarArpa:: string send %s"), nmea);
-  //if (m_pi->count_ais_in_arpa) cout << m_pi->ais_in_arpa[0].ais_lat;
-  PushNMEABuffer(nmea);
+  
+  // Check for AIS target at (M)ARPA position
+  // Douwe - Just an example of "my" array - take or leave what you want
+  // Check what's in ais_in_arpa[] for more info
+  // This may be an inefficient place to do do this. Would be done earlier
+  bool ais_at_arpapos = false;
+  if (m_pi->count_ais_in_arpa > 0) {
+      double arpaLat = 53., arpaLon = 11.; // Temp Dummy. Put your lat/lon as a If-condition
+      double posOffset = 50 / 1852 / 60; // look say 50 meters around, (Rather course? You may do it better?)
+      for (int i = 0; i < SIZEAISAR; i++) {
+          if (arpaLat < m_pi->ais_in_arpa[i].ais_lat + posOffset &&
+              arpaLat > m_pi->ais_in_arpa[i].ais_lat - posOffset &&
+              arpaLon < m_pi->ais_in_arpa[i].ais_lon + posOffset * 2 &&
+              arpaLon > m_pi->ais_in_arpa[i].ais_lon - posOffset * 2) {
+              ais_at_arpapos = true;
+              break;
+          }
+      }
+  }
+  if (!ais_at_arpapos) PushNMEABuffer(nmea);
 }
 
 void ArpaTarget::SetStatusLost() {
