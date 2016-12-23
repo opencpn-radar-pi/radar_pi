@@ -185,8 +185,12 @@ int br24radar_pi::Init(void) {
   m_idle_standby = 0;
   m_idle_transmit = 0;
   count_ais_in_arpa = 0;
-  AisArpa ais_in_arpa[SIZEAISAR];
-
+  ais_in_arpa[SIZEAISAR];
+  //Silly, but could there be old scrap in memory location? (Debug exp.)
+  for (int i = 0; i < SIZEAISAR; i++) {
+      ais_in_arpa[i].ais_mmsi = 0;
+  }
+  
   m_heading_source = HEADING_NONE;
   m_radar_heading = nanl("");
 
@@ -1319,19 +1323,24 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
 void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
     static const wxString WMM_VARIATION_BOAT = wxString(_T("WMM_VARIATION_BOAT"));
     wxString info;
-    //Check if any ARPA zone is active
-    bool ArpaGuardOn = false;
+    //Check if any Radar and ARPA zone is active
     double ArpaMaxRange = 0.0;
-    for (int i = 0; i < RADARS; i++) {
-        for (int z = 0; z < GUARD_ZONES; z++) {
-            if (m_radar[i]->m_guard_zone[z]->m_arpa_on) {
-                ArpaGuardOn = true;
-                int t = m_radar[i]->m_guard_zone[z]->m_outer_range;
-                if (t > ArpaMaxRange) ArpaMaxRange = t;
-             }
-         }
-     }
-
+    bool ArpaGuardOn = false;
+    for (size_t r = 0; r < RADARS; r++) {
+        if (m_radar[r]->m_state.value != RADAR_OFF) { // One radar is on. Check for guardzones
+            for (int i = 0; i < RADARS; i++) {
+                for (int z = 0; z < GUARD_ZONES; z++) {
+                    if (m_radar[i]->m_guard_zone[z]->m_arpa_on) {
+                        ArpaGuardOn = true;
+                        int t = m_radar[i]->m_guard_zone[z]->m_outer_range;
+                        if (t > ArpaMaxRange) ArpaMaxRange = t;
+                    }
+                }
+            }
+            break;
+        }
+    }
+    
     if (message_id.Cmp(WMM_VARIATION_BOAT) == 0) {
         wxJSONReader reader;
         wxJSONValue message;
@@ -1361,32 +1370,28 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
           wxJSONValue defaultValue(999);
           long json_ais_mmsi = message.Get(_T("mmsi"), defaultValue).AsLong();
           if (json_ais_mmsi > 200000000) { //Neither ARPA targets nor SAR_aircraft
-              wxJSONValue defaultValue("0.0");
-              wxString AISLat = message.Get(_T("lat"), defaultValue).AsString();
-              wxString AISLon = message.Get(_T("lon"), defaultValue).AsString();
-              double f_AISLat = wxAtof(AISLat);
-              double f_AISLon = wxAtof(AISLon);
-              //Msg << "Json AIS detected\n";  //Debug
+              wxJSONValue defaultValue("90.0");
+              double f_AISLat = wxAtof(message.Get(_T("lat"), defaultValue).AsString());
+              double f_AISLon = wxAtof(message.Get(_T("lon"), defaultValue).AsString());
               //Rectangle around own ship to look for AIS targets. 
               double d_side = ArpaMaxRange / 1852.0 / 60.0;
               if (f_AISLat < (m_ownship_lat + d_side) &&
                   f_AISLat >(m_ownship_lat - d_side) &&
                   f_AISLon < (m_ownship_lon + d_side * 2) &&
                   f_AISLon >(m_ownship_lon - d_side * 2)) {
-                  //Msg << "AIS in ARPA range detected\n";
                   Msg << wxString::Format(_T("MMSI: %d\n"), json_ais_mmsi); //Debug
-                  Msg << "Latitude: " << AISLat << "\n";
-                  Msg << "Longitude: " << AISLon << "\n";
                   wxString AISName = message.Get(_T("shipname"), wxEmptyString).AsString();
                   bool turn = false;
                   for (int i = 0; i < SIZEAISAR; i++) {
                       if (!turn && ais_in_arpa[i].ais_mmsi == json_ais_mmsi) {
                           ais_in_arpa[i].ais_time_upd = time(0);
                           Msg << ais_in_arpa[i].ais_name << " Updated\n";
+                          Msg << "Lat: " << ais_in_arpa[i].ais_lat << "\n";
+                          Msg << "Lon: " << ais_in_arpa[i].ais_lon << "\n";
                           break;
                       }
                       if (i != SIZEAISAR - 1) {
-                          if (turn && ais_in_arpa[i].ais_mmsi == 0) {
+                          if (turn && ais_in_arpa[i].ais_mmsi == 0) { //Empty post
                               ais_in_arpa[i].ais_mmsi = json_ais_mmsi;
                               ais_in_arpa[i].ais_time_upd = time(0);
                               ais_in_arpa[i].ais_lat = f_AISLat;
@@ -1394,10 +1399,12 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
                               ais_in_arpa[i].ais_name = AISName.Trim().Truncate(11);
                               count_ais_in_arpa++;
                               Msg << "New post: " << ais_in_arpa[i].ais_name << "\n";
+                              Msg << "Lat: " << ais_in_arpa[i].ais_lat << "\n";
+                              Msg << "Lon: " << ais_in_arpa[i].ais_lon << "\n";
                               break;
                           }
-                      } else {  //mmsi not found. Search an empty post from start.
-                          i = 0;
+                      } else {  //mmsi not in list. Search an empty post from start.
+                          i = -1; //To use also post 0
                           turn = true;
                       }
                   }
@@ -1406,7 +1413,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
               }
           }
       }
-      //Delete > 3 min old items or at once if no active ARPA zone
+      //Delete > 3 min old items or at once if neither active ARPA zone nor Radar
       if (count_ais_in_arpa > 0) {
           for (int i = 0; i < SIZEAISAR; i++) {
               if (ais_in_arpa[i].ais_mmsi > 0 &&
@@ -1416,15 +1423,38 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
                   ais_in_arpa[i].ais_mmsi = 0;
                   ais_in_arpa[i].ais_time_upd = 0;
                   ais_in_arpa[i].ais_name.clear();
-                  if (count_ais_in_arpa != 0) count_ais_in_arpa--;
+                  if (count_ais_in_arpa > 0) count_ais_in_arpa--;
                   Msg << "AIS targets in list: " << count_ais_in_arpa << "\n";
                   if (count_ais_in_arpa == 0) Msg = wxEmptyString;
                   JsonAIS = Msg;
-                  Beep(400, 400); // Debug
+                  Beep(400, 300); // Debug
               }
           }
       }
   }
+}
+
+bool br24radar_pi::FindAIS_at_arpaPos(const double &lat, const double &lon, const int &dist) {
+    if (count_ais_in_arpa == 0) return false;
+    bool hit = false;
+    double offset = (double)dist / 1852. / 60.; // look say 50 meters around, (Rather course? )
+    for (int i = 0; i < SIZEAISAR; i++) {
+        if (ais_in_arpa[i].ais_mmsi != 0) { //Avtive post
+            if (lat < ais_in_arpa[i].ais_lat + offset     &&
+                lat > ais_in_arpa[i].ais_lat - offset     &&
+                lon < ais_in_arpa[i].ais_lon + offset * 2 &&
+                lon > ais_in_arpa[i].ais_lon - offset * 2 ) {
+                hit = true;
+                //Beep(500, 300); // Debug
+                wxString Msg = "+++ FindAIS_ +++ \n";
+                Msg << "ARPA at Lat: " << lat << "\n        Lon: " << lon << "\n";
+                Msg << "Blocked by: " << ais_in_arpa[i].ais_name << " Nr: " << i << "\n";
+                JsonAIS = Msg;
+                break;
+            }
+        }
+    }
+    return hit ? true : false;
 }
 
 bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value) {  // sends the command to the radar

@@ -779,23 +779,15 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   
   // Check for AIS target at (M)ARPA position
   // Douwe - Just an example of "my" array - take or leave what you want
-  // Check what's in ais_in_arpa[] for more info
+  // Check what's in ais_in_arpa[] for more info. Want ships name??
   // This may be an inefficient place to do do this. Would be done earlier
-  bool ais_at_arpapos = false;
-  if (m_pi->count_ais_in_arpa > 0) {
-      double arpaLat = 53., arpaLon = 11.; // Temp Dummy. Put your lat/lon as a If-condition
-      double posOffset = 50 / 1852 / 60; // look say 50 meters around, (Rather course? You may do it better?)
-      for (int i = 0; i < SIZEAISAR; i++) {
-          if (arpaLat < m_pi->ais_in_arpa[i].ais_lat + posOffset &&
-              arpaLat > m_pi->ais_in_arpa[i].ais_lat - posOffset &&
-              arpaLon < m_pi->ais_in_arpa[i].ais_lon + posOffset * 2 &&
-              arpaLon > m_pi->ais_in_arpa[i].ais_lon - posOffset * 2) {
-              ais_at_arpapos = true;
-              break;
-          }
-      }
-  }
-  if (!ais_at_arpapos) PushNMEABuffer(nmea);
+    double arpaLat = 57.123456, arpaLon = 11.123456; // Temp Dummy. Put your lat/lon in the function call
+    arpaLat = m_pi->ais_in_arpa[0].ais_lat;
+    arpaLon = m_pi->ais_in_arpa[0].ais_lon;
+    int posOffset = 10; // look say 50 meters around, (Rather course? check function)
+    if (!m_pi->FindAIS_at_arpaPos(arpaLat, arpaLon, posOffset) || status == L ) PushNMEABuffer(nmea);
+
+  //PushNMEABuffer(nmea);
 }
 
 void ArpaTarget::SetStatusLost() {

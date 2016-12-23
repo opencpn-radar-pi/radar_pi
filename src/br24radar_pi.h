@@ -469,6 +469,7 @@ class br24radar_pi : public opencpn_plugin_112 {
   wxString JsonAIS; //Temp for Json AIS message
   AisArpa ais_in_arpa[SIZEAISAR];
   int count_ais_in_arpa;
+  bool FindAIS_at_arpaPos(const double &lat, const double &lon, const int &dist);
 
  private:
   void RadarSendState(void);
