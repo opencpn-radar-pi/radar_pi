@@ -316,7 +316,7 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
     // following displays expected position with crosses that indicate the size of the search area
     // for debugging only
 
-    /*double xx;
+    double xx;
     double yy;
     int dist_a = (int)(326. / (double)radius * OFF_LOCATION / 2.);
     int dist_r = (int)((double)OFF_LOCATION / 2.);
@@ -334,7 +334,7 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
       xx = polarLookup->x[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
       yy = polarLookup->y[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
       glVertex2f(xx, yy);
-    }*/
+    }
 
 
 
@@ -490,6 +490,13 @@ void ArpaTarget::RefreshTarget() {
     prev2_X = prev_X;
     prev_X = X;  // save the previous target position
 
+    // get a target_id immediately
+   /* if (status == 0) {
+        target_id_count++;
+        if (target_id_count >= 10000) target_id_count = 1;
+        target_id = target_id_count;
+    }*/
+
     // PREDICTION CYCLE
     X.time = time1;                                                       // estimated new target time
     double delta_t = ((double)((X.time - prev_X.time).GetLo())) / 1000.;  // in seconds
@@ -601,6 +608,10 @@ void ArpaTarget::RefreshTarget() {
         OCPN_target_status s;
         if (status >= Q_NUM) s = Q;
         if (status > T_NUM) s = T;
+        if (lost_count > 0){
+            // if target was not seen last sweep, colot yellow
+            s = Q;
+        }
         PassARPAtoOCPN(&pol, s);
       }
     }
@@ -662,7 +673,9 @@ ArpaTarget::ArpaTarget(br24radar_pi* pi, RadarInfo* ri) {
   arpa = false;
   speed_kn = 0.;
   course = 0.;
-  stationary = 0;   
+  stationary = 0;
+  X.dlat_dt = 0.;
+  X.dlon_dt = 0.;
 }
 
 ArpaTarget::ArpaTarget() {
@@ -677,6 +690,8 @@ ArpaTarget::ArpaTarget() {
   speed_kn = 0.;
   course = 0.;
   stationary = 0;
+  X.dlat_dt = 0.;
+  X.dlon_dt = 0.;
 }
 
 bool ArpaTarget::GetTarget(Polar* pol) {
@@ -805,6 +820,8 @@ void ArpaTarget::SetStatusLost() {
   speed_kn = 0.;
   course = 0.;
   stationary = 0;
+  X.dlat_dt = 0.;
+  X.dlon_dt = 0.;
 }
 
 void RadarArpa::DeleteAllTargets() {
@@ -851,5 +868,6 @@ void RadarArpa::AquireNewTarget(Polar pol, int status, int* target_i) {
   *target_i = i_target;
   return;
 }
+
 
 PLUGIN_END_NAMESPACE

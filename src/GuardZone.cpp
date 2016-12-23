@@ -174,7 +174,6 @@ void GuardZone::SearchTargets() {
               }
               int min_ang = t->min_angle.angle - 1;
               int max_ang = t->max_angle.angle + 1;
-              unsigned int tim1 = arpa_update_time[MOD_ROTATION2048(angle)].GetLo();
               if (t->min_r.r <= rrr && t->max_r.r >= rrr &&
                   ((min_ang <= angle && max_ang >= angle) ||
                    ((min_ang <= angle + LINES_PER_ROTATION) && (max_ang >= angle + LINES_PER_ROTATION)) ||
@@ -223,5 +222,6 @@ bool GuardZone::MultiPix(int ang, int rad) {
     if (test < 2) return false;
     else return true;
 }
+
 
 PLUGIN_END_NAMESPACE
