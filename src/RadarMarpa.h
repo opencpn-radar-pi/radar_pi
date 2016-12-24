@@ -48,7 +48,7 @@ class Position;
 class Matrix;
 
 #define MAX_NUMBER_OF_TARGETS (100)  // real max numer of targets is 1 less
-#define OFF_LOCATION (50)  // target search area in radial direction
+#define OFF_LOCATION (20)  // target search area in radial direction
 //#define ARPA_DETECT_MARGIN (20)   // margin needed for ARPA to eperate targets
 #define SCAN_MARGIN (100)         // number of lines that a next scan of the target may have moved
 #define MAX_CONTOUR_LENGTH (601)  // defines maximal size of target contour
@@ -154,6 +154,7 @@ class ArpaTarget {
   void RefreshTarget();
   void PassARPAtoOCPN(Polar* p, OCPN_target_status s);
   void SetStatusLost();
+  void ResetPixels();
 };
 
 class RadarArpa {
@@ -164,6 +165,7 @@ class RadarArpa {
   ArpaTarget* m_targets[MAX_NUMBER_OF_TARGETS];
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
+  bool target_refreshed;
 
   //  wxLongLong time_refresh;  // wxGetUTCTimeMillis
 //  wxLongLong arpa_update_time[LINES_PER_ROTATION];

@@ -163,26 +163,29 @@ void GuardZone::SearchTargets() {
                                // set new refresh time
         arpa_update_time[MOD_ROTATION2048(angle)] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
-          if (MultiPix(angle, rrr)) {
+            if (MultiPix(angle, rrr)) {
             bool next_r = false;
             // check all targets if this pixel is within the area of the target
-            for (int i = 0; i < m_ri->m_marpa->number_of_targets; i++) {
-              if (!m_ri->m_marpa->m_targets[i]) continue;
-              ArpaTarget* t = m_ri->m_marpa->m_targets[i];
-              if (t->status == LOST) {
-                continue;
-              }
-              int min_ang = t->min_angle.angle - 1;
-              int max_ang = t->max_angle.angle + 1;
-              if (t->min_r.r <= rrr && t->max_r.r >= rrr &&
-                  ((min_ang <= angle && max_ang >= angle) ||
-                   ((min_ang <= angle + LINES_PER_ROTATION) && (max_ang >= angle + LINES_PER_ROTATION)) ||
-                   ((min_ang <= angle - LINES_PER_ROTATION && max_ang >= angle - LINES_PER_ROTATION)))) {
-                rrr = t->max_r.r + 1;  // skip rest of this blob
-                next_r = true;
-                break;  // get out of target loop
-              }
-            }  // end loop over targets
+            // following not needed anymore as targets are wiped out after found
+            // code only for test
+            //for (int i = 0; i < m_ri->m_marpa->number_of_targets; i++) {
+            //  if (!m_ri->m_marpa->m_targets[i]) continue;
+            //  ArpaTarget* t = m_ri->m_marpa->m_targets[i];
+            //  if (t->status == LOST) {
+            //    continue;
+            //  }
+            //  int min_ang = t->min_angle.angle - 1;
+            //  int max_ang = t->max_angle.angle + 1;
+            //  if (t->min_r.r <= rrr && t->max_r.r >= rrr &&
+            //      ((min_ang <= angle && max_ang >= angle) ||
+            //       ((min_ang <= angle + LINES_PER_ROTATION) && (max_ang >= angle + LINES_PER_ROTATION)) ||
+            //       ((min_ang <= angle - LINES_PER_ROTATION && max_ang >= angle - LINES_PER_ROTATION)))) {
+            //    rrr = t->max_r.r + 1;  // skip rest of this blob
+            //    next_r = true;
+            //    LOG_INFO(wxT("$$$$ GUARD existing target found nr= %i id= %i minr %i, maxr %i, mina %i, maxa %i"), i, t->target_id, t->min_r.r, t->max_r.r, t->min_angle.angle, t->max_angle.angle);
+            //    break;  // get out of target loop
+            //  }
+            //}  // end loop over targets
             if (next_r) continue;
             // pixel found that does not belong to a known target
             Position own_pos;
@@ -219,7 +222,7 @@ bool GuardZone::MultiPix(int ang, int rad) {
     if (Pix(ang, rad)){
         test = Pix(ang + 1, rad) + Pix(ang - 1, rad) + Pix(ang, rad + 1) + Pix(ang, rad - 1);
     }
-    if (test < 2) return false;
+    if (test < 3) return false;
     else return true;
 }
 
