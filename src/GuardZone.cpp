@@ -163,7 +163,7 @@ void GuardZone::SearchTargets() {
                                // set new refresh time
         arpa_update_time[MOD_ROTATION2048(angle)] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
-            if (MultiPix(angle, rrr)) {
+            if (m_ri->m_marpa->MultiPix(angle, rrr)) {
             bool next_r = false;
             // check all targets if this pixel is within the area of the target
             // following not needed anymore as targets are wiped out after found
@@ -209,22 +209,6 @@ void GuardZone::SearchTargets() {
   return;
 }
 
-bool GuardZone::Pix(int ang, int rad) {
-  if (rad < 1 || rad >= RETURNS_PER_LINE - 1) {  //  avoid range ring
-    return false;
-  }
-  return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 1) != 0);
-}
-
-bool GuardZone::MultiPix(int ang, int rad) {
-    // same as Pix, but only true if a blob of at least 3 pixels was found
-    int test = 0;
-    if (Pix(ang, rad)){
-        test = Pix(ang + 1, rad) + Pix(ang - 1, rad) + Pix(ang, rad + 1) + Pix(ang, rad - 1);
-    }
-    if (test < 3) return false;
-    else return true;
-}
 
 
 PLUGIN_END_NAMESPACE

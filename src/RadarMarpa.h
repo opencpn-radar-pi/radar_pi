@@ -148,8 +148,6 @@ class ArpaTarget {
   void set(br24radar_pi* pi, RadarInfo* ri);
   bool FindNearestContour(Polar* pol, int dist);
   bool FindContourFromInside(Polar* p);
-  bool Pix(int ang, int rad);
-  bool MultiPix(int ang, int rad);
   bool GetTarget(Polar* pol);
   void RefreshTarget();
   void PassARPAtoOCPN(Polar* p, OCPN_target_status s);
@@ -178,6 +176,8 @@ class RadarArpa {
   void AquireNewTarget(Position p, int status);
   void AquireNewTarget(Polar pol, int status, int* target_i);
   void DeleteAllTargets();
+  bool Pix(int ang, int rad);
+  bool MultiPix(int ang, int rad);
 };
 
 PLUGIN_END_NAMESPACE

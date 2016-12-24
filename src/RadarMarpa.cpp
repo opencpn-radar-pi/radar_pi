@@ -93,14 +93,14 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
     return pol;
   }
 
-  bool ArpaTarget::Pix(int ang, int rad) {
+  bool RadarArpa::Pix(int ang, int rad) {
     if (rad <= 1 || rad >= RETURNS_PER_LINE - 1) {  //  avoid range ring
       return false;
     }
     return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 1) != 0);
   }
 
-  bool ArpaTarget::MultiPix(int ang, int rad) {
+  bool RadarArpa::MultiPix(int ang, int rad) {
     // returns true if a pixel i ang, rad, but only true if the blob contains at least 3 pixels
     int test = 0;
     if (!Pix(ang, rad)) return false;
@@ -152,10 +152,10 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
     if (rad >= RETURNS_PER_LINE - 1 || rad < 3) {
       return false;
     }
-    if (!(Pix(ang, rad))) {
+    if (!(m_ri->m_marpa->Pix(ang, rad))) {
       return false;
     }
-    while (Pix(ang, rad)) {
+    while (m_ri->m_marpa->Pix(ang, rad)) {
       ang--;
     }
     ang++;
@@ -201,7 +201,7 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
     if (start.r < 4) {
       return 2;  // return code 2, r too small
     }
-    if (!Pix(start.angle, start.r)) {
+    if (!m_ri->m_marpa->Pix(start.angle, start.r)) {
       return 3;  // return code 3, starting point outside blob
     }
     // first find the orientation of border point p
@@ -210,7 +210,7 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
       aa = current.angle + transl[index].angle;
       rr = current.r + transl[index].r;
       //  if (rr > 511) return 13;  // r too large
-      succes = !Pix(aa, rr);
+      succes = !m_ri->m_marpa->Pix(aa, rr);
       if (succes) break;
     }
     if (!succes) {
@@ -227,7 +227,7 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
         if (index > 3) index -= 4;
         aa = current.angle + transl[index].angle;
         rr = current.r + transl[index].r;
-        succes = Pix(aa, rr);  
+        succes = m_ri->m_marpa->Pix(aa, rr);
         if (succes) {
           // next point found
 
@@ -692,7 +692,7 @@ void ArpaTarget::RefreshTarget() {
 
 #define PIX(aa, rr)       \
   if (rr > 510) continue; \
-  if (MultiPix(aa, rr)) {      \
+  if (m_ri->m_marpa->MultiPix(aa, rr)) {      \
     pol->angle = aa;      \
     pol->r = rr;          \
     return true;          \
@@ -703,7 +703,7 @@ bool ArpaTarget::FindNearestContour(Polar* pol, int dist) {
   // returns the position of the nearest blob found in pol
   int a = pol->angle;
   int r = pol->r;
-  if (Pix(a, r))LOG_INFO(wxT("BR24radar_pi: $$$ FindNearestContour called TRUE XXX aa= %i, rr= %i"), a, r);
+  if (m_ri->m_marpa->Pix(a, r))LOG_INFO(wxT("BR24radar_pi: $$$ FindNearestContour called TRUE XXX aa= %i, rr= %i"), a, r);
   LOG_INFO(wxT("BR24radar_pi: $$$ FindNearestContour called aa= %i, rr= %i"), a, r); 
   if (dist < 2) dist = 2;
   for (int j = 1; j <= dist; j++) {
@@ -779,7 +779,7 @@ bool ArpaTarget::GetTarget(Polar* pol) {
 
     int a = pol->angle;
     int r = pol->r;
-    if (Pix(a, r)){
+    if (m_ri->m_marpa->Pix(a, r)){
         contour_found = FindContourFromInside(pol);
         LOG_INFO(wxT("BR24radar_pi: FindContourFromInside"));
     } else {
