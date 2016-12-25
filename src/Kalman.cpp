@@ -41,6 +41,11 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+Kalman_Filter::Kalman_Filter(){
+
+}
+
+
 Kalman_Filter::Kalman_Filter(int range) {
   // as the measurement to state transformation is non-linear, the extended Kalman filter is used
   // as the state transformation is linear, the state transformation matrix F is equal to the jacobian A

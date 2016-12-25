@@ -320,8 +320,8 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
 
     double xx;
     double yy;
-    int dist_a = (int)(326. / (double)radius * OFF_LOCATION / 2.);
-    int dist_r = (int)((double)OFF_LOCATION / 2.);
+    int dist_a = (int)(326. / (double)radius * TARGET_SEARCH_RADIUS2 / 2.);
+    int dist_r = (int)((double)TARGET_SEARCH_RADIUS2 / 2.);
     glColor4ub(0, 250, 0, 250);
     if (radius < 511 - dist_r && radius > dist_r) {
       xx = polarLookup->x[MOD_ROTATION2048(angle)][radius - dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
@@ -401,52 +401,46 @@ void RadarArpa::RefreshArpaTargets() {
     m_targets[target_to_delete]->SetStatusLost();
   }
 
+  ArpaTarget t;
+  Kalman_Filter k;
   // main target refresh loop
-  LOG_INFO(wxT("BR24radar_pi: $$$$ main refresh loop"));
+  LOG_INFO(wxT("BR24radar_pi: $$ main refresh loop"));
+
+  // pass 1 of target refresh
+  int dist = TARGET_SEARCH_RADIUS1;
   for (int i = 0; i < number_of_targets; i++) {
-      if (!m_targets[i]) continue;
-    if (m_targets[i]->status <= 5) {
-      continue;
+      LOG_INFO(wxT("BR24radar_pi: $$ PASS1 main refresh loop i=%i"),i);
+      if (!m_targets[i]) {
+          LOG_INFO(wxT("BR24radar_pi: $$$ target non existent i=%i"), i);
+          continue;
+      }
+      m_targets[i]->proc_stat = PASS1;
+     // backup target
+      /*t = *m_targets[i];
+      k = *m_targets[i]->m_kalman;*/
+
+    m_targets[i]->RefreshTarget(dist);
+    if (m_targets[i]->proc_stat == NOT_FOUND){
+        // reset target
+        /**m_targets[i] = t;
+        *m_targets[i]->m_kalman = k;*/
     }
-    m_targets[i]->RefreshTarget();
   }
-
-
+  
+  // pass 2 of target refresh
+  dist = TARGET_SEARCH_RADIUS2;
   for (int i = 0; i < number_of_targets; i++) {
-      if (!m_targets[i]) continue;
-      if (m_targets[i]->status <= 3) {
+      
+      if (!m_targets[i]) {
+          LOG_INFO(wxT("BR24radar_pi: $$$ target non existent i=%i"), i);
           continue;
       }
-      m_targets[i]->RefreshTarget();
+      LOG_INFO(wxT("BR24radar_pi: $$ PASS2 main refresh loop i=%i"),i);
+      m_targets[i]->RefreshTarget(dist);
   }
 
 
-  for (int i = 0; i < number_of_targets; i++) {
-      if (!m_targets[i]) continue;
-      if (m_targets[i]->status <= 2) {
-          continue;
-      }
-      m_targets[i]->RefreshTarget();
-  }
-
-
-  for (int i = 0; i < number_of_targets; i++) {
-      if (!m_targets[i]) continue;
-      if (m_targets[i]->status <= 1) {
-          continue;
-      }
-      m_targets[i]->RefreshTarget();
-  }
-
-
-  for (int i = 0; i < number_of_targets; i++) {
-      if (!m_targets[i]) continue;
-      if (m_targets[i]->status == LOST) {
-          continue;
-      }
-      m_targets[i]->RefreshTarget();
-  }
-
+  
 
   if (m_pi->m_settings.guard_zone_on_overlay) {
     m_ri->m_guard_zone[0]->SearchTargets();
@@ -454,138 +448,91 @@ void RadarArpa::RefreshArpaTargets() {
   if (m_pi->m_settings.guard_zone_on_overlay) {
       m_ri->m_guard_zone[1]->SearchTargets();
   }
-
-
-  // check for duplicates
-  //if (target_refreshed) {
-  //  bool dup = false;
-  //  for (int i = 0; i < number_of_targets; i++) {
-  //    if (!m_targets[i]) continue;
-  //    if (m_targets[i]->status == LOST) {
-  //      continue;
-  //    }
-  //    for (int j = i + 1; j < number_of_targets; j++) {
-  //      if (!m_targets[j]) continue;
-  //      if (m_targets[j]->status == LOST) {
-  //        continue;
-  //      }
-  //      if (!m_targets[i]) {
-  //        break;
-  //      }
-  //      if (!m_targets[j]) {
-  //        break;
-  //      }
-  //      if (m_targets[i]->status == LOST) {
-  //        break;
-  //      }
-  //      if (m_targets[j]->pol_z.angle == m_targets[i]->pol_z.angle && m_targets[j]->pol_z.r == m_targets[i]->pol_z.r) {
-  //        // duplicate found
-  //        LOG_INFO(wxT("BR24radar_pi: $$$$ duplicate found id= %i, id= %i maxr %i, minr %i"), m_targets[i]->target_id,
-  //                 m_targets[j]->target_id, m_targets[i]->max_r.r, m_targets[i]->min_r.r);
-  //        dup = true;  // if at least one duplicate found
-  //        // a mature target should not get a new duplicate
-  //        // but two mature targets may go together for a few sweeps
-  //        int dup_to_delete = j;  // target with the lowest status
-  //        if (m_targets[j]->status > m_targets[i]->status) {
-  //          dup_to_delete = i;
-  //        }
-  //        // delete the stationary target
-  //        if (m_targets[j]->stationary && !m_targets[i]->stationary) {
-  //          dup_to_delete = j;
-  //        }
-  //        if (m_targets[i]->stationary && !m_targets[j]->stationary) {
-  //          dup_to_delete = i;
-  //        }
-  //        //if (m_targets[dup_to_delete]->status < 5) {
-  //        //  // it's new, kill it immediately and get out
-  //        //  LOG_INFO(wxT("BR24radar_pi: $$$$ duplicate deleted small status id= %i, status %i, maxr %i, minr %i"),
-  //        //           m_targets[dup_to_delete]->target_id, m_targets[dup_to_delete]->status, m_targets[dup_to_delete]->max_r.r,
-  //        //           m_targets[i]->min_r.r);
-
-  //        //  m_targets[dup_to_delete]->SetStatusLost();
-  //        //  continue;
-  //        //}
-  //        if (m_targets[dup_to_delete]->duplicate_count == 0) {
-  //          m_targets[dup_to_delete]->duplicate_count = m_targets[dup_to_delete]->status;
-  //        } else if (m_targets[dup_to_delete]->duplicate_count + MAX_DUP <= m_targets[dup_to_delete]->status) {
-  //          LOG_INFO(wxT("BR24radar_pi: $$$$ duplicate deleted id= %i,  maxr %i, minr %i"), m_targets[dup_to_delete]->target_id,
-  //                   m_targets[i]->max_r.r, m_targets[dup_to_delete]->min_r.r);
-
-  //          m_targets[dup_to_delete]->SetStatusLost();
-  //        }
-  //      }
-  //    }
-  //  }
-  //  if (!dup) {
-  //    for (int i = 0; i < number_of_targets; i++) {
-  //      if (!m_targets[i]) continue;
-  //      m_targets[i]->duplicate_count = 0;  // reset all duplicate counters
-  //    }
-  //  }
-  //} // end duplicates
-
 }
 
-void ArpaTarget::RefreshTarget() {
+void ArpaTarget::RefreshTarget(int dist) {
   Position prev_X;
   Position prev2_X;
   Position own_pos;
   Polar pol;
+  double delta_t;
+  LocalPosition x_local;
+  wxLongLong prev_t_refresh = t_refresh;
 
-  if (status == LOST) return;  // refresh may be called from guard directly, better check
+
+  // refresh may be called from guard directly, better check
+  if (status == LOST) { 
+      LOG_INFO(wxT("$$$ refresh with lost"));
+      return; 
+  }  
+
+
+
+  if (proc_stat == PASS2){
+      LOG_INFO(wxT("$$$ refresh with pass2, return target_id =%i, status %i"), target_id, status);
+      return;
+  }
+  if (proc_stat == NOT_FOUND)LOG_INFO(wxT("$$$ enter not found id= %i, minr %i maxr %i mina %i, maxa %i, status %i"), target_id, min_r.r, max_r.r, min_angle.angle, max_angle.angle, status);
+//  if (proc_stat != NOT_FOUND){
   own_pos.lat = m_pi->m_ownship_lat;
   own_pos.lon = m_pi->m_ownship_lon;
   pol = Pos2Polar(X, own_pos, m_ri->m_range_meters);
-
   wxLongLong time1 = m_ri->m_history[MOD_ROTATION2048(pol.angle)].time;
-  wxLongLong time2 = m_ri->m_history[MOD_ROTATION2048(pol.angle + SCAN_MARGIN)].time;
+  int margin = SCAN_MARGIN;
+  if (proc_stat == NOT_FOUND) margin += 200;
+  wxLongLong time2 = m_ri->m_history[MOD_ROTATION2048(pol.angle + margin)].time;
   // check if target has been refreshed since last time
   // and if the beam has passed the target location with SCAN_MARGIN spokes
-  // if (time1 > (t_refresh + 1000) && time2 >= time1) {  // the beam sould have passed our "angle" AND a point SCANMARGIN further
+  // the beam sould have passed our "angle" AND a point SCANMARGIN further
   // always refresh when status == 0
-  if ((time1 > (t_refresh + SCAN_MARGIN2) && time2 >= time1) ||
-      status == 0) {  // the beam sould have passed our "angle" AND a point SCANMARGIN further
-    // set new refresh time
-    m_ri->m_marpa->target_refreshed = true;
-    t_refresh = time1;
-    prev2_X = prev_X;
-    prev_X = X;  // save the previous target position
-
-    // get a target_id immediately
-    if (status == 0) {
-        target_id_count++;
-        if (target_id_count >= 10000) target_id_count = 1;
-        target_id = target_id_count;
-    }
-
-    // PREDICTION CYCLE
-    X.time = time1;                                                       // estimated new target time
-    double delta_t = ((double)((X.time - prev_X.time).GetLo())) / 1000.;  // in seconds
-    if (status == 0) {
-      delta_t = 0.;
-    } 
-
-    LocalPosition x_local;
-    x_local.lat = (X.lat - own_pos.lat) * 60. * 1852.;                              // in meters
-    x_local.lon = (X.lon - own_pos.lon) * 60. * 1852. * cos(deg2rad(own_pos.lat));  // in meters
-    x_local.dlat_dt = X.dlat_dt;                                                    // meters / sec
-    x_local.dlon_dt = X.dlon_dt;                                                    // meters / sec
-    m_kalman->Predict(&x_local, delta_t);  // x_local is new estimated local position of the target
-    // now set the polar to expected angular position from the expected local position
-    pol.angle = (int)(atan2(x_local.lon, x_local.lat) * LINES_PER_ROTATION / (2. * PI));
-    pol.r = (int)(sqrt(x_local.lat * x_local.lat + x_local.lon * x_local.lon) * (double)RETURNS_PER_LINE /
-                  (double)m_ri->m_range_meters);
-
-    // zooming and target movement may  cause r to be out of bounds
-    if (pol.r >= RETURNS_PER_LINE || pol.r <= 0) {
-      SetStatusLost();
+  if ((time1 < (t_refresh + SCAN_MARGIN2) || time2 < time1) && status != 0) {
       return;
-    }
-    expected = pol;  // save expected polar position
+  }
+  LOG_INFO(wxT("$$$ Refresh id= %i, minr %i maxr %i mina %i, maxa %i status = %i"), target_id, min_r.r, max_r.r, min_angle.angle, max_angle.angle, status);
+      // set new refresh time
+      m_ri->m_marpa->target_refreshed = true;
+      t_refresh = time1;
+      prev2_X = prev_X;
+      prev_X = X;  // save the previous target position
+
+      // get a target_id immediately (for testing only, should be done later)
+      if (status == 0) {
+          target_id_count++;
+          if (target_id_count >= 10000) target_id_count = 1;
+          target_id = target_id_count;
+      }
+
+      // PREDICTION CYCLE
+      X.time = time1;                                                       // estimated new target time
+      delta_t = ((double)((X.time - prev_X.time).GetLo())) / 1000.;  // in seconds
+      if (status == 0) {
+          delta_t = 0.;
+      }
+    //  LocalPosition x_local;
+      x_local.lat = (X.lat - own_pos.lat) * 60. * 1852.;                              // in meters
+      x_local.lon = (X.lon - own_pos.lon) * 60. * 1852. * cos(deg2rad(own_pos.lat));  // in meters
+      x_local.dlat_dt = X.dlat_dt;                                                    // meters / sec
+      x_local.dlon_dt = X.dlon_dt;                                                    // meters / sec
+      m_kalman->Predict(&x_local, delta_t);  // x_local is new estimated local position of the target
+      // now set the polar to expected angular position from the expected local position
+      pol.angle = (int)(atan2(x_local.lon, x_local.lat) * LINES_PER_ROTATION / (2. * PI));
+      pol.r = (int)(sqrt(x_local.lat * x_local.lat + x_local.lon * x_local.lon) * (double)RETURNS_PER_LINE /
+          (double)m_ri->m_range_meters);
+
+      // zooming and target movement may  cause r to be out of bounds
+      if (pol.r >= RETURNS_PER_LINE || pol.r <= 0) {
+          SetStatusLost();
+          LOG_INFO(wxT("$$$ return SetStatusLost() r %i"), pol.r);
+          return;
+      }
+      expected = pol;  // save expected polar position
+//  }
 
     // Measurement cycle
     // now search for the target at the expected polar position in pol
-    if (GetTarget(&pol)) {
+  LOG_INFO(wxT("$$$ Call get id= %i status %i"), target_id, status);
+  int dist1 = dist;
+    if (GetTarget(&pol, dist1)) {
         ResetPixels();
         LOG_INFO(wxT("$$$ target get and reset id= %i, minr %i maxr %i mina %i, maxa %i"), target_id, min_r.r, max_r.r, min_angle.angle, max_angle.angle);
       pol_z = pol;
@@ -618,7 +565,9 @@ void ArpaTarget::RefreshTarget() {
         X.dlon_dt = 0.;
         delta_t = 2.5;  // not relevant as speed is 0
       }
+      
       status++;
+      LOG_INFO(wxT("BR24radar_pi: increase status and call set measurement %i"), status);
       // target get an id when status  == STATUS_TO_OCPN
      /* if (status == STATUS_TO_OCPN) {
         target_id_count++;
@@ -634,6 +583,19 @@ void ArpaTarget::RefreshTarget() {
     } else {
 
       // target not found
+        if (proc_stat == PASS1){
+            proc_stat = NOT_FOUND;
+            // try again later in pass 2 with a larger distance
+            // reset what we have done
+            pol.time = prev_X.time;
+            t_refresh = prev_t_refresh;
+               
+                X = prev_X;
+                prev_X = prev2_X;
+
+            LOG_INFO(wxT("$$$ PASS1 not found id= %i, status= %i, lostcount= %i angle= %i, r= %i"), target_id, status, lost_count, pol.angle, pol.r);
+            return;
+        }
         // set target polar position to the expected polar position
         pol_z = pol;
         LOG_INFO(wxT("$$$ target not found id= %i, status= %i, lostcount= %i angle= %i, r= %i"), target_id, status, lost_count, pol.angle, pol.r);
@@ -649,6 +611,8 @@ void ArpaTarget::RefreshTarget() {
       }
       // target was not found but gets another chance
     }
+    LOG_INFO(wxT("$$$ normal end refresh"));
+    proc_stat = PASS2;
     X.lat = own_pos.lat + x_local.lat / 60. / 1852.;
     X.lon = own_pos.lon + x_local.lon / 60. / 1852. / cos(deg2rad(own_pos.lat));
     X.dlat_dt = x_local.dlat_dt;  // meters / sec
@@ -686,7 +650,7 @@ void ArpaTarget::RefreshTarget() {
         PassARPAtoOCPN(&pol, s);
       }
     }
-  }
+  
   return;
 }
 
@@ -701,10 +665,11 @@ void ArpaTarget::RefreshTarget() {
 bool ArpaTarget::FindNearestContour(Polar* pol, int dist) {
   // make a search pattern along a square
   // returns the position of the nearest blob found in pol
+    LOG_INFO(wxT("BR24radar_pi: $$$ FindNearestContour dist =%i"), dist);
   int a = pol->angle;
-  int r = pol->r;
+  int r = pol->r;/*
   if (m_ri->m_marpa->Pix(a, r))LOG_INFO(wxT("BR24radar_pi: $$$ FindNearestContour called TRUE XXX aa= %i, rr= %i"), a, r);
-  LOG_INFO(wxT("BR24radar_pi: $$$ FindNearestContour called aa= %i, rr= %i"), a, r); 
+  LOG_INFO(wxT("BR24radar_pi: $$$ FindNearestContour called aa= %i, rr= %i"), a, r); */
   if (dist < 2) dist = 2;
   for (int j = 1; j <= dist; j++) {
     int dist_r = j;
@@ -750,6 +715,8 @@ ArpaTarget::ArpaTarget(br24radar_pi* pi, RadarInfo* ri) {
   stationary = 0;
   X.dlat_dt = 0.;
   X.dlon_dt = 0.;
+  speeds.nr = 0;
+  proc_stat = PASS1;
 }
 
 ArpaTarget::ArpaTarget() {
@@ -766,34 +733,35 @@ ArpaTarget::ArpaTarget() {
   stationary = 0;
   X.dlat_dt = 0.;
   X.dlon_dt = 0.;
+  speeds.nr = 0;
+  proc_stat = PASS1;
 }
 
-bool ArpaTarget::GetTarget(Polar* pol) {
+bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
   // general target refresh
+    LOG_INFO(wxT("BR24radar_pi: $$$ GetTarget dist =%i"), dist1);
     bool contour_found = false;
-    int dist = OFF_LOCATION;
+    int dist = dist1;
     if (status == AQUIRE0 || status == AQUIRE1) {
-        dist = OFF_LOCATION * 2;
+        dist *= 2;
     }
     if (dist > pol->r - 5) dist = pol->r - 5;  // don't search close to origin
-
     int a = pol->angle;
     int r = pol->r;
     if (m_ri->m_marpa->Pix(a, r)){
-        contour_found = FindContourFromInside(pol);
-        LOG_INFO(wxT("BR24radar_pi: FindContourFromInside"));
+        contour_found = FindContourFromInside(pol);/*
+        LOG_INFO(wxT("BR24radar_pi: FindContourFromInside"));*/
     } else {
-      LOG_INFO(wxT("BR24radar_p $$$ before FindNearestContour called a %i, r %i"), a, r);
-      for (int i = -1; i < 2; i++) {
+      /*for (int i = -1; i < 2; i++) {
         int i1 = m_ri->m_history[MOD_ROTATION2048(a - 1)].line[r - i] & 1;
         int i2 = m_ri->m_history[MOD_ROTATION2048(a)].line[r - i] & 1;
         int i3 = m_ri->m_history[MOD_ROTATION2048(a + 1)].line[r - i] & 1;
         LOG_INFO(wxT("before %i, %i, %i"), i1, i2, i3);
-      }
+      }*/
       contour_found = FindNearestContour(pol, dist);
       a = pol->angle;
       r = pol->r;
-      LOG_INFO(wxT("BR24radar_p $$$ after FindNearestContour called a %i, r %i"), a, r);
+      /*LOG_INFO(wxT("BR24radar_p $$$ after FindNearestContour called a %i, r %i"), a, r);
       for (int i = -1; i < 2; i++) {
         int i1 = m_ri->m_history[MOD_ROTATION2048(a - 1)].line[r - i] & 1;
         int i2 = m_ri->m_history[MOD_ROTATION2048(a)].line[r - i] & 1;
@@ -801,7 +769,7 @@ bool ArpaTarget::GetTarget(Polar* pol) {
         LOG_INFO(wxT("after %i, %i, %i"), i1, i2, i3);
       }
 
-      LOG_INFO(wxT("BR24radar_pi: FindNearestContour contour_found=%i"), contour_found);
+      LOG_INFO(wxT("BR24radar_pi: FindNearestContour contour_found=%i"), contour_found);*/
     }
     if (!contour_found) {
       return false;
@@ -811,13 +779,13 @@ bool ArpaTarget::GetTarget(Polar* pol) {
     if (cont != 0) {
       a = pol->angle;
       r = pol->r;
-      LOG_INFO(wxT("BR24radar_pi: after GEt Contour ERROR id=%i return code %i"), target_id, cont);
+     /* LOG_INFO(wxT("BR24radar_pi: after GEt Contour ERROR id=%i return code %i"), target_id, cont);
       for (int i = -1; i < 2; i++){
           int i1 = m_ri->m_history[MOD_ROTATION2048(a -1)].line[r -i] & 1;
           int i2 = m_ri->m_history[MOD_ROTATION2048(a)].line[r-i] & 1;
           int i3 = m_ri->m_history[MOD_ROTATION2048(a +1)].line[r-i] & 1;
           LOG_INFO(wxT("not on contour %i, %i, %i"), i1, i2, i3);
-      }
+      }*/
       return false;
   }
   return true;
@@ -915,22 +883,8 @@ void ArpaTarget::SetStatusLost() {
   stationary = 0;
   X.dlat_dt = 0.;
   X.dlon_dt = 0.;
-
-  //for (int i = 0; i < number_of_targets; i++) {
-  //    if (m_targets[i]) {
-  //        if (m_targets[i]->status == LOST) {
-  //            // and swap the deleted target with the last one
-  //            ArpaTarget* swap = m_targets[i];
-  //            // we keep the lost target for later use, destruction and construction is expensive
-  //            m_targets[i] = m_targets[number_of_targets - 1];
-  //            m_targets[number_of_targets - 1] = swap;
-  //            number_of_targets--;
-  //        }
-  //    }
-  //}
-
-
-
+  speeds.nr = 0;
+  proc_stat = PASS1;
 }
 
 void RadarArpa::DeleteAllTargets() {

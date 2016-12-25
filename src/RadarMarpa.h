@@ -48,8 +48,8 @@ class Position;
 class Matrix;
 
 #define MAX_NUMBER_OF_TARGETS (100)  // real max numer of targets is 1 less
-#define OFF_LOCATION (20)  // target search area in radial direction
-//#define ARPA_DETECT_MARGIN (20)   // margin needed for ARPA to eperate targets
+#define TARGET_SEARCH_RADIUS1 (5)  // radius of target search area for pass 1
+#define TARGET_SEARCH_RADIUS2 (25)  // radius of target search area for pass 1
 #define SCAN_MARGIN (100)         // number of lines that a next scan of the target may have moved
 #define MAX_CONTOUR_LENGTH (601)  // defines maximal size of target contour
 #define MIN_CONTOUR_LENGTH (8)
@@ -65,7 +65,7 @@ class Matrix;
 
 #define Q_NUM (4)  // status Q to OCPN at target status
 #define T_NUM (6)  // status T to OCPN at target status
-
+#define SPEED_HISTORY (8) 
 #define TARGET_SPEED_DIV_SDEV 2.
 #define MAX_DUP 2  // maximum number of sweeps a duplicate target is allowed to exist
 #define SCAN_MARGIN2 (500)
@@ -113,12 +113,26 @@ class LocalPosition {
 
 Polar Pos2Polar(Position p, Position own_ship, int range);
 
-class LogEntry {
- public:
-  wxLongLong time;  // wxGetUTCTimeMillis
-  Position pos;
-  double speed;
-  double course;
+//class LogEntry {
+// public:
+//  wxLongLong time;  // wxGetUTCTimeMillis
+//  Position pos;
+//  double speed;
+//  double course;
+//};
+
+struct speed{
+    double av;
+    double hist[SPEED_HISTORY];
+    double dif[SPEED_HISTORY];
+    double sd;
+    int nr;
+};
+
+enum target_process_status{
+    PASS1,
+    NOT_FOUND,
+    PASS2
 };
 
 class ArpaTarget {
@@ -136,10 +150,12 @@ class ArpaTarget {
   target_status status;
   double speed_kn;
   double course;
+  speed speeds;
   int stationary;   // number of sweeps target was stationary
   bool arpa;
   int lost_count;
   int duplicate_count;
+  target_process_status proc_stat;
   Polar contour[MAX_CONTOUR_LENGTH + 1];  // contour of target, only valid immediately after finding it
   Polar expected;
   int contour_length;
@@ -148,8 +164,8 @@ class ArpaTarget {
   void set(br24radar_pi* pi, RadarInfo* ri);
   bool FindNearestContour(Polar* pol, int dist);
   bool FindContourFromInside(Polar* p);
-  bool GetTarget(Polar* pol);
-  void RefreshTarget();
+  bool GetTarget(Polar* pol, int dist);
+  void RefreshTarget(int dist);
   void PassARPAtoOCPN(Polar* p, OCPN_target_status s);
   void SetStatusLost();
   void ResetPixels();
@@ -163,7 +179,7 @@ class RadarArpa {
   ArpaTarget* m_targets[MAX_NUMBER_OF_TARGETS];
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
-  bool target_refreshed;
+  bool target_refreshed;    //   $$$ remove after test
 
   //  wxLongLong time_refresh;  // wxGetUTCTimeMillis
 //  wxLongLong arpa_update_time[LINES_PER_ROTATION];

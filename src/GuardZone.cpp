@@ -199,7 +199,7 @@ void GuardZone::SearchTargets() {
             int target_i;
             m_ri->m_marpa->AquireNewTarget(pol, 0, &target_i);
             if (target_i == -1) break;                            // $$$ how to handle max targets exceeded
-            m_ri->m_marpa->m_targets[target_i]->RefreshTarget();  // make first contour and max min values
+            m_ri->m_marpa->m_targets[target_i]->RefreshTarget(TARGET_SEARCH_RADIUS1);  // make first contour and max min values
             m_ri->m_marpa->m_targets[target_i]->arpa = true;
           }                                                       
         }
