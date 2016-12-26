@@ -41,10 +41,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-Kalman_Filter::Kalman_Filter(){
-
-}
-
+Kalman_Filter::Kalman_Filter() {}
 
 Kalman_Filter::Kalman_Filter(int range) {
   // as the measurement to state transformation is non-linear, the extended Kalman filter is used
@@ -115,79 +112,75 @@ Kalman_Filter::Kalman_Filter(int range) {
 }
 
 void Kalman_Filter::ResetFilter() {
-    // reset the filter to use  it for a new case
-    Matrix Zero(4, 4);
-    A = Zero;
-    for (int i = 1; i <= 4; i++) {
-        A(i, i) = 1.;
-    }
+  // reset the filter to use  it for a new case
+  Matrix Zero(4, 4);
+  A = Zero;
+  for (int i = 1; i <= 4; i++) {
+    A(i, i) = 1.;
+  }
 
-    // transpose of A
-    AT = A;
+  // transpose of A
+  AT = A;
 
-    // Jacobian matrix of partial derivatives dfi / dwj
-    Matrix Wz(4, 2);
-    W = Wz;
-    W(3, 1) = 1.;
-    W(4, 2) = 1.;
+  // Jacobian matrix of partial derivatives dfi / dwj
+  Matrix Wz(4, 2);
+  W = Wz;
+  W(3, 1) = 1.;
+  W(4, 2) = 1.;
 
-   // transpose of W
-    Matrix WTz(2, 4);
-    WT = WTz;
-    WT(1, 3) = 1.;
-    WT(2, 4) = 1.;
+  // transpose of W
+  Matrix WTz(2, 4);
+  WT = WTz;
+  WT(1, 3) = 1.;
+  WT(2, 4) = 1.;
 
-    // Observation matrix, jacobian of observation function h
-    // dhi / dvj
-    // angle = atan2 (lat,lon) * 2048 / (2 * pi) + v1
-    // r = sqrt(x * x + y * y) + v2
-    // v is measurement noise
-    Matrix Hz(2, 4);
-    H = Hz;
-    H.Extend(2, 4);  // values filled in SetMeasurement
+  // Observation matrix, jacobian of observation function h
+  // dhi / dvj
+  // angle = atan2 (lat,lon) * 2048 / (2 * pi) + v1
+  // r = sqrt(x * x + y * y) + v2
+  // v is measurement noise
+  Matrix Hz(2, 4);
+  H = Hz;
+  H.Extend(2, 4);  // values filled in SetMeasurement
 
-    // Transpose of observation matrix
-    Matrix HTz(4, 2);
-    HT = HTz;
+  // Transpose of observation matrix
+  Matrix HTz(4, 2);
+  HT = HTz;
 
-    // Jacobian V, dhi / dvj
-    
-    V(1, 1) = 1.;
-    V(2, 2) = 1.;
+  // Jacobian V, dhi / dvj
 
-    
-    VT(1, 1) = 1.;
-    VT(2, 2) = 1.;
+  V(1, 1) = 1.;
+  V(2, 2) = 1.;
 
-    // P estimate error covariance
-    // initial values follow
-    // P(1, 1) = .0000027 * range * range;   ???
-    Matrix Pz(4, 4);
-    P = Pz;
-    P(1, 1) = 20.;
-    P(2, 2) = P(1, 1);
-    P(3, 3) = 4.;
-    P(4, 4) = 4.;
+  VT(1, 1) = 1.;
+  VT(2, 2) = 1.;
 
-    // Q Process noise covariance matrix
-    Q(1, 1) = NOISE;  // variance in lat speed, (m / sec)2
-    Q(2, 2) = NOISE;  // variance in lon speed, (m / sec)2
+  // P estimate error covariance
+  // initial values follow
+  // P(1, 1) = .0000027 * range * range;   ???
+  Matrix Pz(4, 4);
+  P = Pz;
+  P(1, 1) = 20.;
+  P(2, 2) = P(1, 1);
+  P(3, 3) = 4.;
+  P(4, 4) = 4.;
 
-    // R measurement noise covariance matrix
-    R(1, 1) = 100.0;  // variance in the angle 3.0
-    R(2, 2) = 25.;    // variance in radius  .5
+  // Q Process noise covariance matrix
+  Q(1, 1) = NOISE;  // variance in lat speed, (m / sec)2
+  Q(2, 2) = NOISE;  // variance in lon speed, (m / sec)2
 
-    // Identity matrix
-    I = Pz;
-    for (int i = 1; i <= 4; i++) {
-        I(i, i) = 1.;
-    }
+  // R measurement noise covariance matrix
+  R(1, 1) = 100.0;  // variance in the angle 3.0
+  R(2, 2) = 25.;    // variance in radius  .5
+
+  // Identity matrix
+  I = Pz;
+  for (int i = 1; i <= 4; i++) {
+    I(i, i) = 1.;
+  }
 }
 
-
-Kalman_Filter::~Kalman_Filter() {  
-  
-}
+Kalman_Filter::~Kalman_Filter() {}
 
 void Kalman_Filter::Predict(LocalPosition* xx, double delta_time) {
   Matrix X(4, 1);
@@ -252,7 +245,7 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
   x->lon = X(2, 1);
   x->dlat_dt = X(3, 1);
   x->dlon_dt = X(4, 1);
-  
+
   // update covariance P
   P = (I - K * H) * P;
   x->sd_speed_m_s = sqrt((P(3, 3) + P(4, 4)) / 2.);  // rough approximation of standard dev of speed

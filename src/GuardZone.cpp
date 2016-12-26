@@ -120,7 +120,6 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
 
 // Search  guard zone for targets
 void GuardZone::SearchTargets() {
-  
   if (!m_arpa_on) {
     return;
   }
@@ -163,29 +162,8 @@ void GuardZone::SearchTargets() {
                                // set new refresh time
         arpa_update_time[MOD_ROTATION2048(angle)] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
-            if (m_ri->m_marpa->MultiPix(angle, rrr)) {
+          if (m_ri->m_marpa->MultiPix(angle, rrr)) {
             bool next_r = false;
-            // check all targets if this pixel is within the area of the target
-            // following not needed anymore as targets are wiped out after found
-            // code only for test
-            //for (int i = 0; i < m_ri->m_marpa->number_of_targets; i++) {
-            //  if (!m_ri->m_marpa->m_targets[i]) continue;
-            //  ArpaTarget* t = m_ri->m_marpa->m_targets[i];
-            //  if (t->status == LOST) {
-            //    continue;
-            //  }
-            //  int min_ang = t->min_angle.angle - 1;
-            //  int max_ang = t->max_angle.angle + 1;
-            //  if (t->min_r.r <= rrr && t->max_r.r >= rrr &&
-            //      ((min_ang <= angle && max_ang >= angle) ||
-            //       ((min_ang <= angle + LINES_PER_ROTATION) && (max_ang >= angle + LINES_PER_ROTATION)) ||
-            //       ((min_ang <= angle - LINES_PER_ROTATION && max_ang >= angle - LINES_PER_ROTATION)))) {
-            //    rrr = t->max_r.r + 1;  // skip rest of this blob
-            //    next_r = true;
-            //    LOG_INFO(wxT("$$$$ GUARD existing target found nr= %i id= %i minr %i, maxr %i, mina %i, maxa %i"), i, t->target_id, t->min_r.r, t->max_r.r, t->min_angle.angle, t->max_angle.angle);
-            //    break;  // get out of target loop
-            //  }
-            //}  // end loop over targets
             if (next_r) continue;
             // pixel found that does not belong to a known target
             Position own_pos;
@@ -198,17 +176,15 @@ void GuardZone::SearchTargets() {
             x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
             int target_i;
             m_ri->m_marpa->AquireNewTarget(pol, 0, &target_i);
-            if (target_i == -1) break;                            // $$$ how to handle max targets exceeded
+            if (target_i == -1) break;                                                 // $$$ how to handle max targets exceeded
             m_ri->m_marpa->m_targets[target_i]->RefreshTarget(TARGET_SEARCH_RADIUS1);  // make first contour and max min values
             m_ri->m_marpa->m_targets[target_i]->arpa = true;
-          }                                                       
+          }
         }
       }
     }
   }
   return;
 }
-
-
 
 PLUGIN_END_NAMESPACE
