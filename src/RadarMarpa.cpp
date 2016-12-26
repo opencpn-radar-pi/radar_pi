@@ -97,7 +97,7 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
     if (rad <= 1 || rad >= RETURNS_PER_LINE - 1) {  //  avoid range ring
       return false;
     }
-    return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 1) != 0);
+    return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 128) != 0);
   }
 
   bool RadarArpa::MultiPix(int ang, int rad) {
@@ -752,24 +752,9 @@ bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
         contour_found = FindContourFromInside(pol);/*
         LOG_INFO(wxT("BR24radar_pi: FindContourFromInside"));*/
     } else {
-      /*for (int i = -1; i < 2; i++) {
-        int i1 = m_ri->m_history[MOD_ROTATION2048(a - 1)].line[r - i] & 1;
-        int i2 = m_ri->m_history[MOD_ROTATION2048(a)].line[r - i] & 1;
-        int i3 = m_ri->m_history[MOD_ROTATION2048(a + 1)].line[r - i] & 1;
-        LOG_INFO(wxT("before %i, %i, %i"), i1, i2, i3);
-      }*/
       contour_found = FindNearestContour(pol, dist);
       a = pol->angle;
       r = pol->r;
-      /*LOG_INFO(wxT("BR24radar_p $$$ after FindNearestContour called a %i, r %i"), a, r);
-      for (int i = -1; i < 2; i++) {
-        int i1 = m_ri->m_history[MOD_ROTATION2048(a - 1)].line[r - i] & 1;
-        int i2 = m_ri->m_history[MOD_ROTATION2048(a)].line[r - i] & 1;
-        int i3 = m_ri->m_history[MOD_ROTATION2048(a + 1)].line[r - i] & 1;
-        LOG_INFO(wxT("after %i, %i, %i"), i1, i2, i3);
-      }
-
-      LOG_INFO(wxT("BR24radar_pi: FindNearestContour contour_found=%i"), contour_found);*/
     }
     if (!contour_found) {
       return false;
@@ -779,13 +764,6 @@ bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
     if (cont != 0) {
       a = pol->angle;
       r = pol->r;
-     /* LOG_INFO(wxT("BR24radar_pi: after GEt Contour ERROR id=%i return code %i"), target_id, cont);
-      for (int i = -1; i < 2; i++){
-          int i1 = m_ri->m_history[MOD_ROTATION2048(a -1)].line[r -i] & 1;
-          int i2 = m_ri->m_history[MOD_ROTATION2048(a)].line[r-i] & 1;
-          int i3 = m_ri->m_history[MOD_ROTATION2048(a +1)].line[r-i] & 1;
-          LOG_INFO(wxT("not on contour %i, %i, %i"), i1, i2, i3);
-      }*/
       return false;
   }
   return true;
@@ -936,7 +914,7 @@ void ArpaTarget::ResetPixels(){
     // resets the pixels of the current blob so that blob will no be found again in the same sweep
     for (int r = min_r.r; r <= max_r.r; r++){
         for (int a = min_angle.angle; a <= max_angle.angle; a++){
-            m_ri->m_history[MOD_ROTATION2048(a)].line[r] = 0;
+            m_ri->m_history[MOD_ROTATION2048(a)].line[r] = m_ri->m_history[MOD_ROTATION2048(a)].line[r] & 127;
         }
     }
 
