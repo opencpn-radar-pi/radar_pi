@@ -484,9 +484,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     m_history[bearing].lon = lon;
     for (size_t radius = 0; radius < len; radius++) {
       hist_data[radius] = hist_data[radius] << 1;  // shift left history byte 1 bit
+      // set leftmost bit to 0 for ARPA
+      hist_data[radius] = hist_data[radius] & 127;
       if (data[radius] >= weakest_normal_blob) {
           //and add 1 if above threshold and set the left bit, used for ARPA
-        hist_data[radius] = hist_data[radius] & 129;  
+        hist_data[radius] = hist_data[radius] | 129;  
       }
     }
 

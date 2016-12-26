@@ -496,11 +496,11 @@ void ArpaTarget::RefreshTarget(int dist) {
       prev_X = X;  // save the previous target position
 
       // get a target_id immediately (for testing only, should be done later)
-      if (status == 0) {
+      /*if (status == 0) {
           target_id_count++;
           if (target_id_count >= 10000) target_id_count = 1;
           target_id = target_id_count;
-      }
+      }*/
 
       // PREDICTION CYCLE
       X.time = time1;                                                       // estimated new target time
@@ -569,11 +569,11 @@ void ArpaTarget::RefreshTarget(int dist) {
       status++;
       LOG_INFO(wxT("BR24radar_pi: increase status and call set measurement %i"), status);
       // target get an id when status  == STATUS_TO_OCPN
-     /* if (status == STATUS_TO_OCPN) {
+      if (status == STATUS_TO_OCPN) {
         target_id_count++;
         if (target_id_count >= 10000) target_id_count = 1;
         target_id = target_id_count;
-      }*/
+      }
 
       // Kalman filter to  calculate the apostriori local position and speed based on found position (pol)
       m_kalman->SetMeasurement(&pol, &x_local, &expected, m_ri->m_range_meters);  // pol is measured position in polar coordinates
