@@ -330,8 +330,8 @@ struct scan_line {
 struct AisArpa {
     long ais_mmsi;
     time_t ais_time_upd;
-    float ais_lat;
-    float ais_lon;
+    double ais_lat;
+    double ais_lon;
     wxString ais_name;
 };
 
