@@ -49,7 +49,7 @@ class Matrix;
 
 #define MAX_NUMBER_OF_TARGETS (100)  // real max numer of targets is 1 less
 #define TARGET_SEARCH_RADIUS1 (5)  // radius of target search area for pass 1
-#define TARGET_SEARCH_RADIUS2 (25)  // radius of target search area for pass 1
+#define TARGET_SEARCH_RADIUS2 (20)  // radius of target search area for pass 1
 #define SCAN_MARGIN (100)         // number of lines that a next scan of the target may have moved
 #define MAX_CONTOUR_LENGTH (601)  // defines maximal size of target contour
 #define MIN_CONTOUR_LENGTH (8)
@@ -131,8 +131,8 @@ struct speed{
 
 enum target_process_status{
     PASS1,
-    NOT_FOUND,
-    PASS2
+    TARGET_NOT_FOUND_IN_PASS1,
+    FOUND_IN_PASS1
 };
 
 class ArpaTarget {
