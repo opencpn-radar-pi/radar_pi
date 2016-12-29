@@ -1366,7 +1366,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
       wxJSONReader reader;
       wxJSONValue message;
       wxString Msg = wxEmptyString; //Debug
-      time_t now = time(0);
+      //time_t now = time(0);
       if (!reader.Parse(message_body, &message)) {
           wxJSONValue defaultValue(999);
           long json_ais_mmsi = message.Get(_T("mmsi"), defaultValue).AsLong();
@@ -1418,7 +1418,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
       if (count_ais_in_arpa > 0) {
           for (int i = 0; i < SIZEAISAR; i++) {
               if (ais_in_arpa[i].ais_mmsi > 0 &&
-                  ((now - ais_in_arpa[i].ais_time_upd) > (3 * 60) || !ArpaGuardOn)) {
+                  ((time(0) - ais_in_arpa[i].ais_time_upd) > (3 * 60) || !ArpaGuardOn)) {//Debug 1 min
                   Msg = wxEmptyString;
                   Msg << _T("Deleted: ") << ais_in_arpa[i].ais_name << "\n";
                   ais_in_arpa[i].ais_mmsi = 0;
@@ -1437,23 +1437,36 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
 
 bool br24radar_pi::FindAIS_at_arpaPos(const double &lat, const double &lon, const int &dist) {
     if (count_ais_in_arpa == 0) return false;
+    wxString Msg = "Check pos: \n";
+    //static time_t msgtimer = 0;
+    //Msg << "ARPA at Lat: " << lat << "        Lon: " << lon << "\n";
+    //Msg << ais_in_arpa[0].ais_name << " at Lat: " << ais_in_arpa[0].ais_lat << "        Lon: " << ais_in_arpa[0].ais_lon << "\n";
+    //Msg << ais_in_arpa[1].ais_name << " at Lat: " << ais_in_arpa[1].ais_lat << "        Lon: " << ais_in_arpa[1].ais_lon << "\n";
     bool hit = false;
     double offset = (double)dist / 1852. / 60.; // look say 50 meters around, (Rather course? )
+    Msg << "Offset=:    " << offset << "\n";
+    //JsonAIS = Msg;
     for (int i = 0; i < SIZEAISAR; i++) {
         if (ais_in_arpa[i].ais_mmsi != 0) { //Avtive post
-            if (lat < ais_in_arpa[i].ais_lat + offset     &&
-                lat > ais_in_arpa[i].ais_lat - offset     &&
-                lon < ais_in_arpa[i].ais_lon + offset * 2 &&
-                lon > ais_in_arpa[i].ais_lon - offset * 2 ) {
+            if (lat + offset > ais_in_arpa[i].ais_lat       &&
+                lat - offset < ais_in_arpa[i].ais_lat       &&
+                lon + (offset * 2) > ais_in_arpa[i].ais_lon &&
+                lon - (offset * 2) < ais_in_arpa[i].ais_lon) {
                 hit = true;
                 //Beep(500, 300); // Debug
-                wxString Msg = "_T(+++ FindAIS_ +++ \n)";
-                Msg << _T("ARPA at Lat: ") << lat << "_T(\n        Lon: )" << lon << "\n";
-                Msg << _T("Blocked by: ") << ais_in_arpa[i].ais_name << "_T( Nr: )" << i << "\n";
+                //wxString Msg = "_T(+++ FindAIS_ +++ \n)";
+                Msg = "HIT---\n";
+                Msg << _T("ARPA at Lat: ") << lat << _T("\n        Lon: ") << lon << "\n";
+                Msg << _T("Blocked by: ") << ais_in_arpa[i].ais_name << " Nr: " << i << "\n";
                 JsonAIS = Msg;
+                //msgtimer = time(0);
                 break;
             }
         }
+        //if (time(0) - msgtimer > 20) { //Debug
+        //    Msg = wxEmptyString;
+        //    JsonAIS = Msg;
+        //}
     }
     return hit ? true : false;
 }

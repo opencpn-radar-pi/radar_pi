@@ -635,7 +635,21 @@ void ArpaTarget::RefreshTarget(int dist) {
         // if target was not seen last sweep, colot yellow
         s = Q;
       }
-      PassARPAtoOCPN(&pol, s);
+      // Check for AIS target at (M)ARPA position
+      // Douwe - Just an example of "my" array - take or leave what you want
+      // Check what's in ais_in_arpa[] for more info. Want ships name??
+      // ARPA status L is still passing, ~Row 810.
+      // and we may instead check for AIS earlier to directly send L to an existing ARPA?
+      double arpaLat = m_pi->ais_in_arpa[0].ais_lat;// Temp for debug. Put your lat/lon in the function call
+      double arpaLon = m_pi->ais_in_arpa[0].ais_lon;
+      arpaLat = X.lat; // Is X.lat last known pos?? If OK put it direct in the function call
+      arpaLon = X.lon;
+      int posOffset = 90; // look say 50 meters around, (Rather course? check function)
+      if (!m_pi->FindAIS_at_arpaPos(arpaLat, arpaLon, posOffset)) {
+          PassARPAtoOCPN(&pol, s);
+      } else { SetStatusLost(); } //Quick idea, will this work??
+
+      //PassARPAtoOCPN(&pol, s);
     }
   }
 
