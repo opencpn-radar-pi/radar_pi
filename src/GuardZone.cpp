@@ -118,7 +118,7 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
   m_last_angle = angle;
 }
 
-// Search  guard zone for targets
+// Search  guard zone for ARPA targets
 void GuardZone::SearchTargets() {
   if (!m_arpa_on) {
     return;
@@ -153,7 +153,8 @@ void GuardZone::SearchTargets() {
       // and if possible targets have been refreshed
 
       wxLongLong time1 = m_ri->m_history[MOD_ROTATION2048(angle)].time;
-      wxLongLong time2 = m_ri->m_history[MOD_ROTATION2048(angle + 2 * SCAN_MARGIN)].time;
+      // next one must be timed later than the pass 2 in refresh, otherwise target may be found multiple times
+      wxLongLong time2 = m_ri->m_history[MOD_ROTATION2048(angle + 4 * SCAN_MARGIN)].time;
 
       // check if target has been refreshed since last time
       // and if the beam has passed the target location with SCAN_MARGIN spokes

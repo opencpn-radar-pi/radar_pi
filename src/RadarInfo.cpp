@@ -427,8 +427,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   SampleCourse(angle);  // used for course_up mode
 
   // Douwe likes this, and I think it has some value in testing, but I think it distracts as well.
-  // Why don't we make this an option?
-  //data[RETURNS_PER_LINE - 1] = 200;  //  range ring, do we want this? ActionL: make setting, switched on for testing
+  // Why don't we make this an option? Yes we should
+  data[RETURNS_PER_LINE - 1] = 200;  //  range ring, do we want this? ActionL: make setting, switched on for testing
 
 
   if (m_range_meters != range_meters) {

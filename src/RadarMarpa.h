@@ -48,7 +48,7 @@ class Position;
 class Matrix;
 
 #define MAX_NUMBER_OF_TARGETS (100)  // real max numer of targets is 1 less
-#define TARGET_SEARCH_RADIUS1 (5)    // radius of target search area for pass 1
+#define TARGET_SEARCH_RADIUS1 (0)    // radius of target search area for pass 1 (on top of the size of the blob)
 #define TARGET_SEARCH_RADIUS2 (15)   // radius of target search area for pass 1
 #define SCAN_MARGIN (100)            // number of lines that a next scan of the target may have moved
 #define MAX_CONTOUR_LENGTH (601)     // defines maximal size of target contour
@@ -74,6 +74,7 @@ class Matrix;
                             // critical for the performance of target tracking
                             // lower value makes target go straight
                             // higher values allow target to make curves
+#define START_UP_SPEED (0.5)  // maximum allowed speed (m/sec) for new target, real format with .
 
 typedef int target_status;
 enum OCPN_target_status {
@@ -112,14 +113,6 @@ class LocalPosition {
 };
 
 Polar Pos2Polar(Position p, Position own_ship, int range);
-
-// class LogEntry {
-// public:
-//  wxLongLong time;  // wxGetUTCTimeMillis
-//  Position pos;
-//  double speed;
-//  double course;
-//};
 
 struct speed {
   double av;
@@ -165,6 +158,7 @@ class ArpaTarget {
   void PassARPAtoOCPN(Polar* p, OCPN_target_status s);
   void SetStatusLost();
   void ResetPixels();
+  void GetSpeed();
 };
 
 class RadarArpa {

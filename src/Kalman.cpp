@@ -89,8 +89,8 @@ Kalman_Filter::Kalman_Filter(int range) {
   // P(1, 1) = .0000027 * range * range;   ???
   P(1, 1) = 20.;
   P(2, 2) = P(1, 1);
-  P(3, 3) = 4.;
-  P(4, 4) = 4.;
+  P(3, 3) = 1.;
+  P(4, 4) = 1.;
 
   // Q Process noise covariance matrix
   Q.Extend(2, 2);

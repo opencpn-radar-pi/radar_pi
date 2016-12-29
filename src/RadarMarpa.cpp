@@ -581,16 +581,38 @@ void ArpaTarget::RefreshTarget(int dist) {
   X.dlat_dt = x_local.dlat_dt;  // meters / sec
   X.dlon_dt = x_local.dlon_dt;  // meters /sec
   X.sd_speed_kn = x_local.sd_speed_m_s * 3600. / 1852.;
+  
   // set refresh time to the time of the spoke where the target was found
   t_refresh = X.time;
   if (status >= 1) {
+      if (status == 2){
+          // avoid extreme start-up speeds
+          if (X.dlat_dt > START_UP_SPEED) X.dlat_dt = START_UP_SPEED;
+          if (X.dlat_dt < - START_UP_SPEED) X.dlat_dt = - START_UP_SPEED;
+          if (X.dlon_dt > START_UP_SPEED) X.dlon_dt = START_UP_SPEED;
+          if (X.dlon_dt < -START_UP_SPEED) X.dlon_dt = -START_UP_SPEED;
+      }
+      if (status == 3){
+          // avoid extreme start-up speeds
+          if (X.dlat_dt > 2 * START_UP_SPEED) X.dlat_dt = 2 * START_UP_SPEED;
+          if (X.dlat_dt < -2 * START_UP_SPEED) X.dlat_dt = -2 * START_UP_SPEED;
+          if (X.dlon_dt > 2 * START_UP_SPEED) X.dlon_dt = 2 * START_UP_SPEED;
+          if (X.dlon_dt < -2 * START_UP_SPEED) X.dlon_dt = -2 * START_UP_SPEED;
+      }
     double s1 = X.dlat_dt;                                 // m per second
     double s2 = X.dlon_dt;                                 // m  per second
     speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600. / 1852.;  // and convert to nautical miles per hour
     course = rad2deg(atan2(s2, s1));
     if (course < 0) course += 360.;
-    //    LOG_INFO(wxT("BR24radar_pi: $$$ speed_kn= %f, X.sd_speed_kn= %f, target_id %i status= %i, X.dlat_dt %f, X.dlon_dt %f"),
-    //    speed_kn, X.sd_speed_kn, target_id, status, X.dlat_dt, X.dlon_dt);
+
+    
+ //   LOG_INFO(wxT("BR24radar_pi: $$$ speed_kn= %f, X.sd_speed_kn= %f, target_id %i status= %i, X.dlat_dt %f, X.dlon_dt %f"),
+        speed_kn, X.sd_speed_kn, target_id, status, X.dlat_dt, X.dlon_dt);
+    GetSpeed();
+ //   LOG_INFO(wxT("BR24radar_pi: $$$ average speed_kn= %f, X.sd_speed_kn= %f, target_id %i status= %i, X.dlat_dt %f, X.dlon_dt %f"),
+        speed_kn, X.sd_speed_kn, target_id, status, X.dlat_dt, X.dlon_dt);
+
+
     if (speed_kn < (double)TARGET_SPEED_DIV_SDEV * X.sd_speed_kn) {
       speed_kn = 0.;
       course = 0.;
@@ -600,6 +622,8 @@ void ArpaTarget::RefreshTarget(int dist) {
       stationary--;
       if (stationary < 0) stationary = 0;
     }
+
+
     // send target data to OCPN
     pol = Pos2Polar(X, own_pos, m_ri->m_range_meters);
     LOG_INFO(wxT("BR24radar_pi: $$$ angle= %i, r= %i"), pol.angle, pol.r);
@@ -865,5 +889,24 @@ void ArpaTarget::ResetPixels() {
       m_ri->m_history[MOD_ROTATION2048(a)].line[r] = m_ri->m_history[MOD_ROTATION2048(a)].line[r] & 127;
     }
   }
+}
+
+
+void ArpaTarget::GetSpeed(){
+    return;
+    //speeds.nr++;
+    //if (speeds.nr > SPEED_HISTORY) speeds.nr = SPEED_HISTORY;
+    //// shift array down
+    //int num = sizeof(double) * (SPEED_HISTORY - 1);
+    //memmove(&speeds.hist[1], speeds.hist, num);
+    //// set last speed
+    //speeds.hist[0] = speed_kn;
+    //// calculate average
+    //speeds.av = 0.;
+    //for (int i = 0; i < speeds.nr; i++){
+    //    speeds.av += speeds.hist[i];
+    //}
+    //speeds.av /= speeds.nr;
+    //speed_kn = speeds.av;
 }
 PLUGIN_END_NAMESPACE
