@@ -607,10 +607,10 @@ void ArpaTarget::RefreshTarget(int dist) {
 
     
  //   LOG_INFO(wxT("BR24radar_pi: $$$ speed_kn= %f, X.sd_speed_kn= %f, target_id %i status= %i, X.dlat_dt %f, X.dlon_dt %f"),
-        speed_kn, X.sd_speed_kn, target_id, status, X.dlat_dt, X.dlon_dt);
+  /*      speed_kn, X.sd_speed_kn, target_id, status, X.dlat_dt, X.dlon_dt);*/
     GetSpeed();
  //   LOG_INFO(wxT("BR24radar_pi: $$$ average speed_kn= %f, X.sd_speed_kn= %f, target_id %i status= %i, X.dlat_dt %f, X.dlon_dt %f"),
-        speed_kn, X.sd_speed_kn, target_id, status, X.dlat_dt, X.dlon_dt);
+      /*  speed_kn, X.sd_speed_kn, target_id, status, X.dlat_dt, X.dlon_dt);*/
 
 
     if (speed_kn < (double)TARGET_SPEED_DIV_SDEV * X.sd_speed_kn) {
