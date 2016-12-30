@@ -325,7 +325,7 @@ struct scan_line {
   // a 1 is added in the rightmost position, if below threshold, a 0.
 };
 
-//Check for AIS targets inside ARPA zone
+//Table for AIS targets inside ARPA zone
 #define SIZEAISAR (50)
 struct AisArpa {
     long ais_mmsi;
