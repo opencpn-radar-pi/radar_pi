@@ -189,7 +189,6 @@ int br24radar_pi::Init(void) {
   //Silly, but could there be old scrap in memory location? (Debug exp.)
   for (int i = 0; i < SIZEAISAR; i++) {
       ais_in_arpa[i].ais_mmsi = 0;
-      ais_in_arpa[i].ais_name = wxEmptyString;
   }
   
   m_heading_source = HEADING_NONE;
@@ -1379,7 +1378,6 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
                   f_AISLat >(m_ownship_lat - d_side)      &&
                   f_AISLon < (m_ownship_lon + d_side * 2) &&
                   f_AISLon >(m_ownship_lon - d_side * 2) ) {
-                  wxString AISName = message.Get(_T("shipname"), wxEmptyString).AsString();
                   bool turn = false;
                   for (int i = 0; i < SIZEAISAR; i++) {
                       if (!turn && ais_in_arpa[i].ais_mmsi == json_ais_mmsi) {
@@ -1394,7 +1392,8 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
                               ais_in_arpa[i].ais_time_upd = time(0);
                               ais_in_arpa[i].ais_lat = f_AISLat;
                               ais_in_arpa[i].ais_lon = f_AISLon;
-                              ais_in_arpa[i].ais_name = AISName.Trim().Truncate(11);
+                              ais_in_arpa[i].ais_name = message.Get(_T("shipname"), wxEmptyString) \
+                                                        .AsString().Trim().Truncate(12);
                               count_ais_in_arpa++;
                               break;
                           }
