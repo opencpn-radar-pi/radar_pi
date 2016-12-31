@@ -48,7 +48,7 @@ class Polar;
 class Kalman_Filter {
  public:
   Kalman_Filter(int range);
-  Kalman_Filter::Kalman_Filter();
+  Kalman_Filter();
   ~Kalman_Filter();
   void SetMeasurement(Polar* p, LocalPosition* x, Polar* expected, int range);
   void Predict(LocalPosition* x, double delta_time);  // measured position and expected position
