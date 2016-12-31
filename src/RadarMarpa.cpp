@@ -630,12 +630,9 @@ void ArpaTarget::RefreshTarget(int dist) {
       }
       // Check for AIS target at (M)ARPA position
       int posOffset = 30; // look 60 meters around,
-      if (!m_pi->FindAIS_at_arpaPos(X.lat, X.lon, posOffset)) {
-          PassARPAtoOCPN(&pol, s);
-      } else { //Wipe out a already present ARPA symbol
-          SetStatusLost(); 
-      }
-      //PassARPAtoOCPN(&pol, s);
+      if (m_pi->FindAIS_at_arpaPos(X.lat, X.lon, posOffset)) s = L;
+
+      PassARPAtoOCPN(&pol, s);
     }
   }
   return;
