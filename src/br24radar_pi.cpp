@@ -1118,6 +1118,7 @@ bool br24radar_pi::LoadConfig(void) {
       pConf->Read(wxT("AlarmPosY"), &y, 175);
       m_settings.alarm_pos = wxPoint(x, y);
       pConf->Read(wxT("EnableCOGHeading"), &m_settings.enable_cog_heading, false);
+      pConf->Read(wxT("AISatARPAoffset"), &m_settings.AISatARPAoffset, 35);
     }
 
     pConf->Read(wxT("AlertAudioFile"), &m_settings.alert_audio_file, m_shareLocn + wxT("alarm.wav"));
@@ -1212,6 +1213,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("TrailsOnOverlay"), m_settings.trails_on_overlay);
     pConf->Write(wxT("Transparency"), m_settings.overlay_transparency);
     pConf->Write(wxT("VerboseLog"), m_settings.verbose);
+    pConf->Write(wxT("AISatARPAoffset"), m_settings.AISatARPAoffset);
 
     for (int r = 0; r < RADARS; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.value);
@@ -1398,7 +1400,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
                               break;
                           }
                       } else {  //mmsi not in list. Search an empty post from start.
-                          i = -1; //To use also post 0
+                          i = -1;
                           turn = true;
                       }
                   }

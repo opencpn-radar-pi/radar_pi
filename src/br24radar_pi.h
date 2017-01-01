@@ -302,6 +302,7 @@ struct PersistentSettings {
   int threshold_multi_sweep;        // Radar data has to be this strong not to be ignored in multisweep
   int main_bang_size;               // Pixels at center to ignore
   int type_detection_method;        // 0 = default, 1 = ignore reports
+  int AISatARPAoffset;              // Rectangle side where to search AIS targets at ARPA position
   wxPoint control_pos[RADARS];      // Saved position of control menu windows
   wxPoint window_pos[RADARS];       // Saved position of radar windows, when floating and not docked
   wxPoint alarm_pos;                // Saved position of alarm window
