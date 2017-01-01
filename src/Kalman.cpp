@@ -228,7 +228,6 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
   Matrix Z(2, 1);
   Z(1, 1) = (double)(pol->angle - expected->angle);  // Z is  difference between measured and expected
   Z(2, 1) = (double)(pol->r - expected->r);
-
   Matrix X(4, 1);
   X(1, 1) = x->lat;
   X(2, 1) = x->lon;
@@ -237,9 +236,10 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
 
   // calculate Kalman gain
   Matrix Inverse(4, 4);
-
   Inverse = Inv(H * P * HT + R);  // V left out, only valid if V = I
   K = P * HT * Inverse;
+
+  // calculate apostriori expected position
   X = X + K * Z;
   x->lat = X(1, 1);
   x->lon = X(2, 1);

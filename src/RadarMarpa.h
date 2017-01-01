@@ -51,9 +51,10 @@ class Matrix;
 #define TARGET_SEARCH_RADIUS1 (0)    // radius of target search area for pass 1 (on top of the size of the blob)
 #define TARGET_SEARCH_RADIUS2 (15)   // radius of target search area for pass 1
 #define SCAN_MARGIN (100)            // number of lines that a next scan of the target may have moved
+#define SCAN_MARGIN2 (1000)          // if target is refreshed after this time you will be shure it is the next sweep
 #define MAX_CONTOUR_LENGTH (601)     // defines maximal size of target contour
 #define MIN_CONTOUR_LENGTH (8)
-#define MAX_LOST_COUNT (5)  // number of sweeps that target can be missed before it is seet to lost
+#define MAX_LOST_COUNT (3)  // number of sweeps that target can be missed before it is seet to lost
 
 #define FOR_DELETION (-2)  // status of a duplicate target used to delete a target
 #define LOST (-1)
@@ -68,13 +69,13 @@ class Matrix;
 #define SPEED_HISTORY (8)
 #define TARGET_SPEED_DIV_SDEV 2.
 #define MAX_DUP 2  // maximum number of sweeps a duplicate target is allowed to exist
-#define SCAN_MARGIN2 (500)
-#define STATUS_TO_OCPN (5)  //
+#define STATUS_TO_OCPN (5)  // First status to be send to OCPN
 #define NOISE (0.13)        // Allowed covariance of target speed in lat and lon
                             // critical for the performance of target tracking
                             // lower value makes target go straight
                             // higher values allow target to make curves
 #define START_UP_SPEED (0.5)  // maximum allowed speed (m/sec) for new target, real format with .
+#define DISTANCE_BETWEEN_TARGETS (4) // minimum separation between targets
 
 typedef int target_status;
 enum OCPN_target_status {
@@ -122,7 +123,8 @@ struct speed {
   int nr;
 };
 
-enum target_process_status { PASS1, TARGET_NOT_FOUND_IN_PASS1, FOUND_IN_PASS1 };
+enum target_process_status { UNKNOWN, NOT_FOUND_IN_PASS1 };
+enum pass_n {PASS1, PASS2};
 
 class ArpaTarget {
  public:
@@ -144,7 +146,8 @@ class ArpaTarget {
   bool arpa;
   int lost_count;
   int duplicate_count;
-  target_process_status proc_stat;
+  target_process_status pass1_result;
+  pass_n  pass_nr;
   Polar contour[MAX_CONTOUR_LENGTH + 1];  // contour of target, only valid immediately after finding it
   Polar expected;
   int contour_length;
