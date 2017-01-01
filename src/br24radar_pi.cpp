@@ -1433,8 +1433,8 @@ bool br24radar_pi::FindAIS_at_arpaPos(const double &lat, const double &lon, cons
         if (ais_in_arpa[i].ais_mmsi != 0) { //Avtive post
             if (lat + offset > ais_in_arpa[i].ais_lat       &&
                 lat - offset < ais_in_arpa[i].ais_lat       &&
-                lon + (offset * 2) > ais_in_arpa[i].ais_lon &&
-                lon - (offset * 2) < ais_in_arpa[i].ais_lon) {
+                lon + (offset * 1.75) > ais_in_arpa[i].ais_lon &&
+                lon - (offset * 1.75) < ais_in_arpa[i].ais_lon) {
                 hit = true;
                 Msg << _T("ARPA at:\n")             <<
                     _T("Lat: ") << lat << _T("\n") <<
