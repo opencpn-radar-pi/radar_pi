@@ -49,7 +49,7 @@ class Matrix;
 
 #define MAX_NUMBER_OF_TARGETS (100)  // real max numer of targets is 1 less
 #define TARGET_SEARCH_RADIUS1 (0)    // radius of target search area for pass 1 (on top of the size of the blob)
-#define TARGET_SEARCH_RADIUS2 (15)   // radius of target search area for pass 1
+#define TARGET_SEARCH_RADIUS2 (20)   // radius of target search area for pass 1
 #define SCAN_MARGIN (100)            // number of lines that a next scan of the target may have moved
 #define SCAN_MARGIN2 (1000)          // if target is refreshed after this time you will be shure it is the next sweep
 #define MAX_CONTOUR_LENGTH (601)     // defines maximal size of target contour
@@ -68,14 +68,14 @@ class Matrix;
 #define T_NUM (6)  // status T to OCPN at target status
 #define SPEED_HISTORY (8)
 #define TARGET_SPEED_DIV_SDEV 2.
-#define MAX_DUP 2  // maximum number of sweeps a duplicate target is allowed to exist
-#define STATUS_TO_OCPN (5)  // First status to be send to OCPN
-#define NOISE (0.13)        // Allowed covariance of target speed in lat and lon
-                            // critical for the performance of target tracking
-                            // lower value makes target go straight
-                            // higher values allow target to make curves
-#define START_UP_SPEED (0.5)  // maximum allowed speed (m/sec) for new target, real format with .
-#define DISTANCE_BETWEEN_TARGETS (4) // minimum separation between targets
+#define MAX_DUP 2                     // maximum number of sweeps a duplicate target is allowed to exist
+#define STATUS_TO_OCPN (5)            // First status to be send to OCPN
+#define NOISE (0.13)                  // Allowed covariance of target speed in lat and lon
+                                      // critical for the performance of target tracking
+                                      // lower value makes target go straight
+                                      // higher values allow target to make curves
+#define START_UP_SPEED (0.5)          // maximum allowed speed (m/sec) for new target, real format with .
+#define DISTANCE_BETWEEN_TARGETS (4)  // minimum separation between targets
 
 typedef int target_status;
 enum OCPN_target_status {
@@ -124,7 +124,7 @@ struct speed {
 };
 
 enum target_process_status { UNKNOWN, NOT_FOUND_IN_PASS1 };
-enum pass_n {PASS1, PASS2};
+enum pass_n { PASS1, PASS2 };
 
 class ArpaTarget {
  public:
@@ -134,8 +134,7 @@ class ArpaTarget {
   RadarInfo* m_ri;
   br24radar_pi* m_pi;
   int target_id;
-  Position X;   // holds actual position of target
-  Polar pol_z;  // polar of the last measured position, used for duplicate detection
+  Position X;  // holds actual position of target
   Kalman_Filter* m_kalman;
   wxLongLong t_refresh;  // time of last refresh
   target_status status;
@@ -147,7 +146,7 @@ class ArpaTarget {
   int lost_count;
   int duplicate_count;
   target_process_status pass1_result;
-  pass_n  pass_nr;
+  pass_n pass_nr;
   Polar contour[MAX_CONTOUR_LENGTH + 1];  // contour of target, only valid immediately after finding it
   Polar expected;
   int contour_length;
