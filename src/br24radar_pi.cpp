@@ -1325,24 +1325,6 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
 void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
     static const wxString WMM_VARIATION_BOAT = wxString(_T("WMM_VARIATION_BOAT"));
     wxString info;
-    //Check if any Radar and ARPA zone is active
-    double ArpaMaxRange = 0.0;
-    bool ArpaGuardOn = false;
-    for (size_t r = 0; r < RADARS; r++) {
-        if (m_radar[r]->m_state.value != RADAR_OFF) { // One radar is on. Check for guardzones
-            for (int i = 0; i < RADARS; i++) {
-                for (int z = 0; z < GUARD_ZONES; z++) {
-                    if (m_radar[i]->m_guard_zone[z]->m_arpa_on) {
-                        ArpaGuardOn = true;
-                        int t = m_radar[i]->m_guard_zone[z]->m_outer_range;
-                        if (t > ArpaMaxRange) ArpaMaxRange = t;
-                    }
-                }
-            }
-            break;
-        }
-    }
-    
     if (message_id.Cmp(WMM_VARIATION_BOAT) == 0) {
         wxJSONReader reader;
         wxJSONValue message;
@@ -1364,62 +1346,80 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
                 }
             }
         }
-    } else if ((message_id == wxS("AIS") && ArpaGuardOn) || count_ais_in_arpa > 0) {
-      wxJSONReader reader;
-      wxJSONValue message;
-      if (!reader.Parse(message_body, &message)) {
-          wxJSONValue defaultValue(999);
-          long json_ais_mmsi = message.Get(_T("mmsi"), defaultValue).AsLong();
-          if (json_ais_mmsi > 200000000) { //Neither ARPA targets nor SAR_aircraft
-              wxJSONValue defaultValue("90.0");
-              double f_AISLat = wxAtof(message.Get(_T("lat"), defaultValue).AsString());
-              double f_AISLon = wxAtof(message.Get(_T("lon"), defaultValue).AsString());
-              //Rectangle around own ship to look for AIS targets. 
-              double d_side = ArpaMaxRange / 1852.0 / 60.0;
-              if (f_AISLat < (m_ownship_lat + d_side)     &&
-                  f_AISLat >(m_ownship_lat - d_side)      &&
-                  f_AISLon < (m_ownship_lon + d_side * 2) &&
-                  f_AISLon >(m_ownship_lon - d_side * 2) ) {
-                  bool turn = false;
-                  for (int i = 0; i < SIZEAISAR; i++) {
-                      if (!turn && ais_in_arpa[i].ais_mmsi == json_ais_mmsi) {
-                          ais_in_arpa[i].ais_time_upd = time(0);
-                          ais_in_arpa[i].ais_lat = f_AISLat;
-                          ais_in_arpa[i].ais_lon = f_AISLon;
-                          break;
-                      }
-                      if (i != SIZEAISAR - 1) {
-                          if (turn && ais_in_arpa[i].ais_mmsi == 0) { //Empty post
-                              ais_in_arpa[i].ais_mmsi = json_ais_mmsi;
-                              ais_in_arpa[i].ais_time_upd = time(0);
-                              ais_in_arpa[i].ais_lat = f_AISLat;
-                              ais_in_arpa[i].ais_lon = f_AISLon;
-                              ais_in_arpa[i].ais_name = message.Get(_T("shipname"), wxEmptyString) \
-                                                        .AsString().Trim().Truncate(12);
-                              count_ais_in_arpa++;
-                              break;
-                          }
-                      } else {  //mmsi not in list. Search an empty post from start.
-                          i = -1;
-                          turn = true;
-                      }
-                  }
-              }
-          }
-      }
-      //Delete > 3 min old AIS items or at once if neither active ARPA zone nor Radar
-      if (count_ais_in_arpa > 0) {
-          for (int i = 0; i < SIZEAISAR; i++) {
-              if (ais_in_arpa[i].ais_mmsi > 0 &&
-                  ((time(0) - ais_in_arpa[i].ais_time_upd) > (3 * 60) || !ArpaGuardOn)) {//Debug 1 min
-                  ais_in_arpa[i].ais_mmsi = 0;
-                  ais_in_arpa[i].ais_time_upd = 0;
-                  ais_in_arpa[i].ais_name.clear();
-                  if (count_ais_in_arpa > 0) count_ais_in_arpa--;
-                  if (count_ais_in_arpa == 0) JsonAIS = wxEmptyString;
-              }
-          }
-      }
+    } else if (message_id == wxS("AIS") || count_ais_in_arpa > 0) {
+        //Check if any Radar and ARPA zone is active
+        double ArpaMaxRange = 0.0;
+        bool ArpaGuardOn = false;
+        for (size_t r = 0; r < RADARS; r++) {
+            if (m_radar[r]->m_state.value != RADAR_OFF) { // One radar is on. Check for guardzones
+                for (int i = 0; i < RADARS; i++) {
+                    for (int z = 0; z < GUARD_ZONES; z++) {
+                        if (m_radar[i]->m_guard_zone[z]->m_arpa_on) {
+                            ArpaGuardOn = true;
+                            int t = m_radar[i]->m_guard_zone[z]->m_outer_range;
+                            if (t > ArpaMaxRange) ArpaMaxRange = t;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        if (ArpaGuardOn) {
+            wxJSONReader reader;
+            wxJSONValue message;
+            if (!reader.Parse(message_body, &message)) {
+                wxJSONValue defaultValue(999);
+                long json_ais_mmsi = message.Get(_T("mmsi"), defaultValue).AsLong();
+                if (json_ais_mmsi > 200000000) { //Neither ARPA targets nor SAR_aircraft
+                    wxJSONValue defaultValue("90.0");
+                    double f_AISLat = wxAtof(message.Get(_T("lat"), defaultValue).AsString());
+                    double f_AISLon = wxAtof(message.Get(_T("lon"), defaultValue).AsString());
+                    //Rectangle around own ship to look for AIS targets. 
+                    double d_side = ArpaMaxRange / 1852.0 / 60.0;
+                    if (f_AISLat < (m_ownship_lat + d_side) &&
+                        f_AISLat >(m_ownship_lat - d_side) &&
+                        f_AISLon < (m_ownship_lon + d_side * 2) &&
+                        f_AISLon >(m_ownship_lon - d_side * 2)) {
+                        bool updated = false;
+                        int empty = -1;
+                        for (int i = 0; i < SIZEAISAR; i++) {
+                            //If mmsi is in list, update
+                            if (ais_in_arpa[i].ais_mmsi == json_ais_mmsi) {
+                                ais_in_arpa[i].ais_time_upd = time(0);
+                                ais_in_arpa[i].ais_lat = f_AISLat;
+                                ais_in_arpa[i].ais_lon = f_AISLon;
+                                updated = true;
+                                break;
+                            } else { //Find first empty post
+                                if (empty == -1 && ais_in_arpa[i].ais_mmsi == 0) empty = i;
+                            }
+                        }
+                        if (!updated) { //New post, put in first empty
+                            ais_in_arpa[empty].ais_mmsi = json_ais_mmsi;
+                            ais_in_arpa[empty].ais_time_upd = time(0);
+                            ais_in_arpa[empty].ais_lat = f_AISLat;
+                            ais_in_arpa[empty].ais_lon = f_AISLon;
+                            ais_in_arpa[empty].ais_name = message.Get(_T("shipname"), wxEmptyString) \
+                                                          .AsString().Trim().Truncate(12);
+                            count_ais_in_arpa++;
+                        }
+                    }
+                }
+            }
+        }
+        //Delete > 3 min old AIS items or at once if neither active ARPA zone nor Radar
+        if (count_ais_in_arpa > 0) {
+            for (int i = 0; i < SIZEAISAR; i++) {
+                if (ais_in_arpa[i].ais_mmsi > 0 &&
+                    ((time(0) - ais_in_arpa[i].ais_time_upd) > (3 * 60) || !ArpaGuardOn)) {
+                    ais_in_arpa[i].ais_mmsi = 0;
+                    ais_in_arpa[i].ais_time_upd = 0;
+                    ais_in_arpa[i].ais_name.clear();
+                    if (count_ais_in_arpa > 0) count_ais_in_arpa--;
+                    if (count_ais_in_arpa == 0) JsonAIS = wxEmptyString;
+                }
+            }
+        }
   }
 }
 
