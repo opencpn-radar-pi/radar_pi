@@ -855,7 +855,7 @@ void br24radar_pi::Notify(void) {
                               m_radar[r]->m_statistics.missing_spokes);
       }
     }
-    if (JsonAIS != wxEmptyString ) t = JsonAIS; //test for ARPA AIS info
+    if (JsonAIS != wxEmptyString ) t = JsonAIS; //ARPA AIS debug info
     m_pMessageBox->SetStatisticsInfo(t);
     if (t.length() > 0) {
       t.Replace(wxT("\n"), wxT(" "));
@@ -1118,7 +1118,7 @@ bool br24radar_pi::LoadConfig(void) {
       pConf->Read(wxT("AlarmPosY"), &y, 175);
       m_settings.alarm_pos = wxPoint(x, y);
       pConf->Read(wxT("EnableCOGHeading"), &m_settings.enable_cog_heading, false);
-      pConf->Read(wxT("AISatARPAoffset"), &m_settings.AISatARPAoffset, 35);
+      pConf->Read(wxT("AISatARPAoffset"), &m_settings.AISatARPAoffset, 18);
     }
 
     pConf->Read(wxT("AlertAudioFile"), &m_settings.alert_audio_file, m_shareLocn + wxT("alarm.wav"));
@@ -1423,12 +1423,13 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
   }
 }
 
-bool br24radar_pi::FindAIS_at_arpaPos(const double &lat, const double &lon, const int &dist) {
+bool br24radar_pi::FindAIS_at_arpaPos(const double &lat, const double &lon, const double &dist) {
     if (count_ais_in_arpa == 0) return false;
     wxString Msg = wxEmptyString;
     static time_t msgtimer = 0; //debug
     bool hit = false;
-    double offset = (double)dist / 1852. / 60.;
+    double offset = dist / 1852. / 60.;
+    Msg << "dist: " << dist << " m\n";
     for (int i = 0; i < SIZEAISAR; i++) {
         if (ais_in_arpa[i].ais_mmsi != 0) { //Avtive post
             if (lat + offset > ais_in_arpa[i].ais_lat       &&
