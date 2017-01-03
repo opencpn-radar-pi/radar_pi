@@ -50,7 +50,7 @@ class Matrix;
 #define MAX_NUMBER_OF_TARGETS (100)  // real max numer of targets is 1 less
 #define TARGET_SEARCH_RADIUS1 (0)    // radius of target search area for pass 1 (on top of the size of the blob)
 #define TARGET_SEARCH_RADIUS2 (20)   // radius of target search area for pass 1
-#define SCAN_MARGIN (100)            // number of lines that a next scan of the target may have moved
+#define SCAN_MARGIN (150)            // number of lines that a next scan of the target may have moved
 #define SCAN_MARGIN2 (1000)          // if target is refreshed after this time you will be shure it is the next sweep
 #define MAX_CONTOUR_LENGTH (601)     // defines maximal size of target contour
 #define MIN_CONTOUR_LENGTH (8)
