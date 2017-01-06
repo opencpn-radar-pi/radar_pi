@@ -475,12 +475,6 @@ void ArpaTarget::RefreshTarget(int dist) {
   prev2_X = prev_X;
   prev_X = X;  // save the previous target position
 
-  if (status == 0) {
-      target_id_count++;
-      if (target_id_count >= 10000) target_id_count = 1;
-      target_id = target_id_count;
-  }
-
   // PREDICTION CYCLE
   X.time = time1;                                                // estimated new target time
   delta_t = ((double)((X.time - prev_X.time).GetLo())) / 1000.;  // in seconds
@@ -549,11 +543,11 @@ void ArpaTarget::RefreshTarget(int dist) {
 
     status++;
     // target gets an id when status  == STATUS_TO_OCPN
-   /* if (status == STATUS_TO_OCPN) {
+    if (status == STATUS_TO_OCPN) {
       target_id_count++;
       if (target_id_count >= 10000) target_id_count = 1;
       target_id = target_id_count;
-    }*/
+    }
 
     // Kalman filter to  calculate the apostriori local position and speed based on found position (pol)
     
