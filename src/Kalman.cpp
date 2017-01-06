@@ -227,6 +227,12 @@ void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected
 
   Matrix Z(2, 1);
   Z(1, 1) = (double)(pol->angle - expected->angle);  // Z is  difference between measured and expected
+  if (Z(1, 1) > LINES_PER_ROTATION / 2){
+      Z(1, 1) -= LINES_PER_ROTATION;
+  }
+  if (Z(1, 1) < - LINES_PER_ROTATION / 2){
+      Z(1, 1) += LINES_PER_ROTATION;
+  }
   Z(2, 1) = (double)(pol->r - expected->r);
   Matrix X(4, 1);
   X(1, 1) = x->lat;
