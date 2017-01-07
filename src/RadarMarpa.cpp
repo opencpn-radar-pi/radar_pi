@@ -182,10 +182,10 @@ bool ArpaTarget::FindContourFromInside(Polar* pol) {  // moves pol to contour of
   if (rad >= RETURNS_PER_LINE - 1 || rad < 3) {
     return false;
   }
-  if (!(m_ri->m_marpa->Pix(ang, rad))) {
+  if (!(Pix(ang, rad))) {
     return false;
   }
-  while (m_ri->m_marpa->Pix(ang, rad)) {
+  while (Pix(ang, rad)) {
     ang--;
   }
   ang++;
@@ -231,7 +231,7 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
   if (start.r < 4) {
     return 2;  // return code 2, r too small
   }
-  if (!m_ri->m_marpa->Pix(start.angle, start.r)) {
+  if (!Pix(start.angle, start.r)) {
     return 3;  // return code 3, starting point outside blob
   }
   // first find the orientation of border point p
@@ -240,7 +240,7 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
     aa = current.angle + transl[index].angle;
     rr = current.r + transl[index].r;
     //  if (rr > 511) return 13;  // r too large
-    succes = !m_ri->m_marpa->Pix(aa, rr);
+    succes = !Pix(aa, rr);
     if (succes) break;
   }
   if (!succes) {
@@ -257,7 +257,7 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
       if (index > 3) index -= 4;
       aa = current.angle + transl[index].angle;
       rr = current.r + transl[index].r;
-      succes = m_ri->m_marpa->Pix(aa, rr);
+      succes = Pix(aa, rr);
       if (succes) {
         // next point found
 
@@ -586,46 +586,42 @@ void ArpaTarget::RefreshTarget(int dist) {
   } else {
     // target not found
 
-    if (pass_nr == PASS1) {
-      pol = back;
-      check_for_duplicate = true;
-      // check if another target has taken the targets position, duplicate
-      if (GetTarget(&pol, dist1)) {
-          // found as duplicate, handle as not found, but don't do a pass 2
-          check_for_duplicate = false;
-          pass1_result = UNKNOWN;
-          if (status == AQUIRE0 || status == AQUIRE1 || status == 2) {
-              SetStatusLost();
-              return;
-          }
-          else {
-              lost_count++;
-              if (lost_count > MAX_LOST_COUNT) {
-                  SetStatusLost();
-                  return;
-              }
-          }
-      }
-        pass1_result = NOT_FOUND_IN_PASS1;
-        // try again later in pass 2 with a larger distance
-        // reset what we have done
-        pol.time = prev_X.time;
-        t_refresh = prev_t_refresh;
-        X = prev_X;
-        prev_X = prev2_X;
-        return;
-      
+    // check if the position of the target has been taken by another target, a duplicate
+    // if duplicate, handle target as not found but don't do pass 2 (= search in the surroundings)
+    bool duplicate = false;
+    check_for_duplicate = true;
+    if (pass_nr == PASS1 && GetTarget(&pol, dist1)) {
+      pass1_result = UNKNOWN;
+      duplicate = true;
     }
+    check_for_duplicate = false;
+
+    // not found in pass 1
+    // try again later in pass 2 with a larger distance
+    if (pass_nr == PASS1 && !duplicate) {
+      pass1_result = NOT_FOUND_IN_PASS1;
+      // reset what we have done
+      pol.time = prev_X.time;
+      t_refresh = prev_t_refresh;
+      X = prev_X;
+      prev_X = prev2_X;
+      return;
+    }
+
+    // delete low status targets immediately when not found
     if (status == AQUIRE0 || status == AQUIRE1 || status == 2) {
       SetStatusLost();
       return;
-    } else {
-      lost_count++;
-      if (lost_count > MAX_LOST_COUNT) {
-        SetStatusLost();
-        return;
-      }
     }
+
+    lost_count++;
+
+    // delete if not found too often
+    if (lost_count > MAX_LOST_COUNT) {
+      SetStatusLost();
+      return;
+    }
+
     // target was not found but gets another chance
   }  // end of target not found
 
@@ -710,10 +706,11 @@ void ArpaTarget::RefreshTarget(int dist) {
 bool ArpaTarget::FindNearestContour(Polar* pol, int dist) {
   // make a search pattern along a square
   // returns the position of the nearest blob found in pol
+  // dist is search radius (1 more or less)
   int a = pol->angle;
   int r = pol->r;
   if (dist < 2) dist = 2;
-  for (int j = 1; j <= dist / 2 ; j++) {
+  for (int j = 1; j <= dist; j++) {
     int dist_r = j;
     int dist_a = (int)(326. / (double)r * j);  // 326/r: conversion factor to make squares
     if (dist_a == 0) dist_a = 1;
@@ -794,7 +791,7 @@ bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
 
   int r1 = r;
 
-  if (m_ri->m_marpa->Pix(a, r)) {
+  if (Pix(a, r)) {
     contour_found = FindContourFromInside(pol);
   } else {
     contour_found = FindNearestContour(pol, dist);
