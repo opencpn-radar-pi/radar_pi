@@ -53,7 +53,7 @@ class Matrix;
 #define SCAN_MARGIN (150)            // number of lines that a next scan of the target may have moved
 #define SCAN_MARGIN2 (1000)          // if target is refreshed after this time you will be shure it is the next sweep
 #define MAX_CONTOUR_LENGTH (601)     // defines maximal size of target contour
-#define MAX_TARGET_DIAMETER (300)    // target will be set lost if diameter larger than this value
+#define MAX_TARGET_DIAMETER (200)    // target will be set lost if diameter larger than this value
 #define MIN_CONTOUR_LENGTH (8)
 #define MAX_LOST_COUNT (3)  // number of sweeps that target can be missed before it is seet to lost
 
