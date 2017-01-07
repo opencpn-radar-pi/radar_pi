@@ -147,6 +147,7 @@ class ArpaTarget {
   bool arpa;
   int lost_count;
   int duplicate_count;
+  bool check_for_duplicate;
   target_process_status pass1_result;
   pass_n pass_nr;
   Polar contour[MAX_CONTOUR_LENGTH + 1];  // contour of target, only valid immediately after finding it
@@ -163,6 +164,8 @@ class ArpaTarget {
   void SetStatusLost();
   void ResetPixels();
   void GetSpeed();
+  bool Pix(int ang, int rad);
+  bool MultiPix(int ang, int rad);
 };
 
 class RadarArpa {

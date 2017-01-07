@@ -99,8 +99,22 @@ bool RadarArpa::Pix(int ang, int rad) {
   return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 128) != 0);
 }
 
+bool ArpaTarget::Pix(int ang, int rad) {
+    if (rad <= 1 || rad >= RETURNS_PER_LINE - 1) {  //  avoid range ring
+        return false;
+    }
+    if (check_for_duplicate){
+        // check bit 1
+        return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 64) != 0);
+    }
+    else{
+        // check bit 0
+        return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 128) != 0);
+    }
+}
+
 bool RadarArpa::MultiPix(int ang, int rad) {
-  // returns true if a pixel i ang, rad, but only true if the blob contains at least 3 pixels
+  // returns true if a pixel i ang, rad and the blob contains at least 3 pixels
   int test = 0;
   if (!Pix(ang, rad)) return false;
   test = Pix(ang + 1, rad) + Pix(ang - 1, rad) + Pix(ang, rad + 1) + Pix(ang, rad - 1);
@@ -109,6 +123,18 @@ bool RadarArpa::MultiPix(int ang, int rad) {
   if (test >= 2) return true;
   test += Pix(ang + 2, rad + 2) + Pix(ang - 1, rad - 1) + Pix(ang - 1, rad + 1) + Pix(ang + 1, rad - 1);
   return false;
+}
+
+bool ArpaTarget::MultiPix(int ang, int rad) {
+    // returns true if a pixel i ang, rad and the blob contains at least 3 pixels
+    int test = 0;
+    if (!Pix(ang, rad)) return false;
+    test = Pix(ang + 1, rad) + Pix(ang - 1, rad) + Pix(ang, rad + 1) + Pix(ang, rad - 1);
+    if (test >= 2) return true;
+    test += Pix(ang + 1, rad + 1) + Pix(ang - 1, rad - 1) + Pix(ang - 1, rad + 1) + Pix(ang + 1, rad - 1);
+    if (test >= 2) return true;
+    test += Pix(ang + 2, rad + 2) + Pix(ang - 1, rad - 1) + Pix(ang - 1, rad + 1) + Pix(ang + 1, rad - 1);
+    return false;
 }
 
 void RadarArpa::AquireNewTarget(Position target_pos, int status) {
@@ -505,6 +531,7 @@ void ArpaTarget::RefreshTarget(int dist) {
   Polar back = pol;
   if (GetTarget(&pol, dist1)) {
     ResetPixels();
+
     // target too large? (land masses?) get rid of it
     if (abs(back.r - pol.r) > MAX_TARGET_DIAMETER || abs(max_r.r - min_r.r) > MAX_TARGET_DIAMETER ||
         abs(min_angle.angle - max_angle.angle) > MAX_TARGET_DIAMETER){
@@ -555,19 +582,39 @@ void ArpaTarget::RefreshTarget(int dist) {
     // x_local expected position in local coordinates
 
     X.time = pol.time;  // set the target time to the newly found time
+
   } else {
     // target not found
 
-    // return if not found in PASS1
     if (pass_nr == PASS1) {
-      pass1_result = NOT_FOUND_IN_PASS1;
-      // try again later in pass 2 with a larger distance
-      // reset what we have done
-      pol.time = prev_X.time;
-      t_refresh = prev_t_refresh;
-      X = prev_X;
-      prev_X = prev2_X;
-      return;
+      pol = back;
+      check_for_duplicate = true;
+      // check if another target has taken the targets position, duplicate
+      if (GetTarget(&pol, dist1)) {
+          // found as duplicate, handle as not found, but don't do a pass 2
+          check_for_duplicate = false;
+          pass1_result = UNKNOWN;
+          if (status == AQUIRE0 || status == AQUIRE1 || status == 2) {
+              SetStatusLost();
+              return;
+          }
+          else {
+              lost_count++;
+              if (lost_count > MAX_LOST_COUNT) {
+                  SetStatusLost();
+                  return;
+              }
+          }
+      }
+        pass1_result = NOT_FOUND_IN_PASS1;
+        // try again later in pass 2 with a larger distance
+        // reset what we have done
+        pol.time = prev_X.time;
+        t_refresh = prev_t_refresh;
+        X = prev_X;
+        prev_X = prev2_X;
+        return;
+      
     }
     if (status == AQUIRE0 || status == AQUIRE1 || status == 2) {
       SetStatusLost();
@@ -654,7 +701,7 @@ void ArpaTarget::RefreshTarget(int dist) {
 
 #define PIX(aa, rr)                      \
   if (rr > 510) continue;                \
-  if (m_ri->m_marpa->MultiPix(aa, rr)) { \
+  if (MultiPix(aa, rr)) { \
     pol->angle = aa;                     \
     pol->r = rr;                         \
     return true;                         \
@@ -898,6 +945,7 @@ void RadarArpa::AquireNewTarget(Polar pol, int status, int* target_i) {
     m_targets[i_target]->m_kalman = new Kalman_Filter(m_ri->m_range_meters);
   }
   *target_i = i_target;
+  m_targets[i_target]->check_for_duplicate = false;
   return;
 }
 
