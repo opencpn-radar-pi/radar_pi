@@ -1214,6 +1214,9 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("Transparency"), m_settings.overlay_transparency);
     pConf->Write(wxT("VerboseLog"), m_settings.verbose);
     pConf->Write(wxT("AISatARPAoffset"), m_settings.AISatARPAoffset);
+    pConf->Write(wxT("ColourStrong"), m_settings.strong_colour.GetAsString());
+    pConf->Write(wxT("ColourIntermediate"), m_settings.intermediate_colour.GetAsString());
+    pConf->Write(wxT("ColourWeak"), m_settings.weak_colour.GetAsString());
 
     for (int r = 0; r < RADARS; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.value);
