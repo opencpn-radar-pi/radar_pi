@@ -48,7 +48,7 @@ class Position;
 class Matrix;
 
 #define MAX_NUMBER_OF_TARGETS (200)  // real max numer of targets is 1 less
-#define TARGET_SEARCH_RADIUS1 (5)    // radius of target search area for pass 1 (on top of the size of the blob)
+#define TARGET_SEARCH_RADIUS1 (2)    // radius of target search area for pass 1 (on top of the size of the blob)
 #define TARGET_SEARCH_RADIUS2 (15)   // radius of target search area for pass 1
 #define SCAN_MARGIN (150)            // number of lines that a next scan of the target may have moved
 #define SCAN_MARGIN2 (1000)          // if target is refreshed after this time you will be shure it is the next sweep
