@@ -750,7 +750,7 @@ void br24ControlsDialog::CreateControls() {
   m_end_bearing->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24ControlsDialog::OnEnd_Bearing_Value), NULL, this);
 
   // checkbox for ARPA
-  m_arpa_box = new wxCheckBox(this, wxID_ANY, _("ARPA                     "), wxDefaultPosition, wxDefaultSize,
+  m_arpa_box = new wxCheckBox(this, wxID_ANY, _("ARPA On               "), wxDefaultPosition, wxDefaultSize,
       wxALIGN_LEFT | wxST_NO_AUTORESIZE);
   m_guard_sizer->Add(m_arpa_box, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
   m_arpa_box->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnARPAClick), NULL, this);
