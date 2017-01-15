@@ -130,6 +130,8 @@ class RadarInfo : public wxEvtHandler {
   double m_course;  // m_course is the moving everage of m_hdt used for course_up
   double m_course_log[COURSE_SAMPLES];
   int m_course_index;
+  RadarArpa *m_marpa;
+  wxCriticalSection m_exclusive;  // protects the following two
 
   /* User radar settings */
 
@@ -194,7 +196,14 @@ class RadarInfo : public wxEvtHandler {
   receive_statistics m_statistics;
 
   bool m_multi_sweep_filter;
-  UINT8 m_history[LINES_PER_ROTATION][RETURNS_PER_LINE];
+  struct line_history{
+      UINT8 line[RETURNS_PER_LINE];
+      wxLongLong time;
+      double lat;
+      double lon;
+  };
+
+  line_history m_history[LINES_PER_ROTATION];
 #define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
 #define MARGIN (100)
@@ -234,7 +243,7 @@ class RadarInfo : public wxEvtHandler {
   void AdjustRange(int adjustment);
   void SetAutoRangeMeters(int meters);
   bool SetControlValue(ControlType controlType, int value);
-  void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters);
+  void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time, double lat, double lon);
   void RefreshDisplay(wxTimerEvent &event);
   void UpdateTrailPosition();
   void RenderGuardZone();
@@ -271,6 +280,7 @@ class RadarInfo : public wxEvtHandler {
   double m_mouse_lat, m_mouse_lon;
   double m_mouse_ebl[ORIENTATION_NUMBER];
   double m_mouse_vrm[ORIENTATION_NUMBER];
+  int m_range_meters;  // what radar told us is the range in the last received spoke
 
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
   wxColour m_colour_map_rgb[BLOB_COLOURS];
@@ -282,12 +292,10 @@ class RadarInfo : public wxEvtHandler {
   wxString FormatDistance(double distance);
   wxString FormatAngle(double angle);
 
-  int m_range_meters;  // what radar told us is the range in the last received spoke
-
   int m_previous_auto_range_meters;
   int m_auto_range_meters;
 
-  wxCriticalSection m_exclusive;  // protects the following two
+//  wxCriticalSection m_exclusive;  // protects the following two
   DrawInfo m_draw_panel;          // Draw onto our own panel
   DrawInfo m_draw_overlay;        // Abstract painting method
 

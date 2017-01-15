@@ -17,7 +17,9 @@ SET(TITLE_NAME BR24Radar)
 SET(CPACK_PACKAGE_CONTACT "kees@verruijt.net")
 SET(VERSION_MAJOR "2")
 #SET(CMAKE_BUILD_TYPE Debug)
-SET(VERSION_MINOR "2")
+SET(VERSION_MINOR "3")
+SET(VERSION_PATCH "03")
+SET(VERSION_DATE "04/12/2016")
 
 INCLUDE("cmake/PluginConfigure.cmake")
 
@@ -42,6 +44,8 @@ SET(SRC_br24radar
             src/br24OptionsDialog.cpp
             src/br24Receive.h
             src/br24Receive.cpp
+			src/RadarMarpa.h
+			src/RadarMarpa.cpp
             src/br24Transmit.h
             src/br24Transmit.cpp
             src/icons.h
@@ -50,6 +54,10 @@ SET(SRC_br24radar
             src/GuardZone.cpp
             src/GuardZoneBogey.h
             src/GuardZoneBogey.cpp
+			src/Kalman.h
+			src/Kalman.cpp
+			src/Matrix.cpp
+			src/Matrix.h
             src/RadarInfo.h
             src/RadarInfo.cpp
             src/RadarCanvas.h

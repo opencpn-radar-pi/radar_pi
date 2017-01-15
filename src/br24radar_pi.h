@@ -53,6 +53,7 @@ class br24Receive;
 class br24Transmit;
 class br24radar_pi;
 class GuardZoneBogey;
+class RadarArpa;
 
 #define SPOKES (4096)               // BR radars can generate up to 4096 spokes per rotation,
 #define LINES_PER_ROTATION (2048)   // but use only half that in practice
@@ -61,6 +62,7 @@ class GuardZoneBogey;
 #define RADARS (2)                  // Number of radars supported by this PI. 2 since 4G supports 2. More work
                                     // needed if you intend to add multiple radomes to network!
 #define GUARD_ZONES (2)             // Could be increased if wanted
+
 #define BEARING_LINES (2)           // And these as well
 
 static const int SECONDS_PER_TIMED_IDLE_SETTING = 5 * 60;  // 5 minutes increment for each setting
@@ -185,7 +187,7 @@ static string ControlTypeNames[CT_MAX] = {"Range",
                                           "Target trails motion",
                                           "Main bang size"};
 
-typedef enum GuardZoneType { GZ_OFF, GZ_ARC, GZ_CIRCLE } GuardZoneType;
+typedef enum GuardZoneType { GZ_ARC, GZ_CIRCLE } GuardZoneType;
 
 typedef enum RadarType { RT_UNKNOWN, RT_BR24, RT_3G, RT_4G } RadarType;
 
@@ -300,6 +302,7 @@ struct PersistentSettings {
   int threshold_multi_sweep;        // Radar data has to be this strong not to be ignored in multisweep
   int main_bang_size;               // Pixels at center to ignore
   int type_detection_method;        // 0 = default, 1 = ignore reports
+  int AISatARPAoffset;              // Rectangle side where to search AIS targets at ARPA position
   wxPoint control_pos[RADARS];      // Saved position of control menu windows
   wxPoint window_pos[RADARS];       // Saved position of radar windows, when floating and not docked
   wxPoint alarm_pos;                // Saved position of alarm window
@@ -323,6 +326,16 @@ struct scan_line {
   // a 1 is added in the rightmost position, if below threshold, a 0.
 };
 
+//Table for AIS targets inside ARPA zone
+#define SIZEAISAR (50)
+struct AisArpa {
+    long ais_mmsi;
+    time_t ais_time_upd;
+    double ais_lat;
+    double ais_lon;
+    wxString ais_name;
+};
+
 //----------------------------------------------------------------------------------------------------------
 //    The PlugIn Class Definition
 //----------------------------------------------------------------------------------------------------------
@@ -343,6 +356,9 @@ class br24radar_pi : public opencpn_plugin_112 {
   //    The required PlugIn Methods
   int Init(void);
   bool DeInit(void);
+  int m_context_menu_delete_marpa_target = 0;
+  int m_context_menu_delete_all_marpa_targets = 0;
+
 
   int GetAPIVersionMajor();
   int GetAPIVersionMinor();
@@ -368,6 +384,7 @@ class br24radar_pi : public opencpn_plugin_112 {
   void ShowPreferencesDialog(wxWindow *parent);
   void SetCursorLatLon(double lat, double lon);
   bool MouseEventHook(wxMouseEvent &event);
+  bool m_guard_bogey_confirmed;
 
   // The wxTimer overrides
 
@@ -452,6 +469,12 @@ class br24radar_pi : public opencpn_plugin_112 {
   time_t m_idle_standby;   // When we will change to standby
   time_t m_idle_transmit;  // When we will change to transmit
 
+  //Check for AIS targets inside ARPA zone
+  wxString JsonAIS; //Temp for Json AIS message
+  AisArpa ais_in_arpa[SIZEAISAR];
+  int count_ais_in_arpa;
+  bool FindAIS_at_arpaPos(const double &lat, const double &lon, const double &dist);
+
  private:
   void RadarSendState(void);
   void UpdateState(void);
@@ -472,7 +495,8 @@ class br24radar_pi : public opencpn_plugin_112 {
   int m_context_menu_control_id;
   int m_context_menu_show_id;
   int m_context_menu_hide_id;
-
+  int m_context_menu_set_marpa_target;
+  
   int m_tool_id;
   wxBitmap *m_pdeficon;
 
@@ -495,7 +519,6 @@ class br24radar_pi : public opencpn_plugin_112 {
 
   GuardZoneBogey *m_bogey_dialog;
   bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
-  bool m_guard_bogey_confirmed;
   time_t m_alarm_sound_timeout;
   time_t m_guard_bogey_timeout;  // If we haven't seen bogeys for this long we reset confirm
 #define CONFIRM_RESET_TIMEOUT (15)

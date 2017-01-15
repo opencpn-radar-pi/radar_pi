@@ -216,6 +216,8 @@ class br24ControlsDialog : public wxDialog {
   wxTextCtrl *m_start_bearing;
   wxTextCtrl *m_end_bearing;
   wxCheckBox *m_filter;
+  wxCheckBox *m_arpa_box;
+  wxCheckBox *m_alarm;
 
   void ShowGuardZone(int zone);
   void SetGuardZoneVisibility();
@@ -224,7 +226,9 @@ class br24ControlsDialog : public wxDialog {
   void OnOuter_Range_Value(wxCommandEvent &event);
   void OnStart_Bearing_Value(wxCommandEvent &event);
   void OnEnd_Bearing_Value(wxCommandEvent &event);
-  void OnFilterClick(wxCommandEvent &event);
+  void OnFilterClick(wxCommandEvent &event);  
+  void OnARPAClick(wxCommandEvent &event);
+  void OnAlarmClick(wxCommandEvent &event);
 };
 
 PLUGIN_END_NAMESPACE

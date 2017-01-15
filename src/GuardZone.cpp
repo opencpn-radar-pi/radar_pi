@@ -28,6 +28,7 @@
  ***************************************************************************
  */
 
+#include "RadarMarpa.h"
 #include "br24radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
@@ -115,6 +116,76 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
 
   m_last_in_guard_zone = in_guard_zone;
   m_last_angle = angle;
+}
+
+// Search  guard zone for ARPA targets
+void GuardZone::SearchTargets() {
+  if (!m_arpa_on) {
+    return;
+  }
+  if (m_ri->m_range_meters == 0) {
+    return;
+  }
+  size_t range_start = m_inner_range * RETURNS_PER_LINE / m_ri->m_range_meters;  // Convert from meters to 0..511
+  size_t range_end = m_outer_range * RETURNS_PER_LINE / m_ri->m_range_meters;    // Convert from meters to 0..511
+
+  SpokeBearing hdt = SCALE_DEGREES_TO_RAW2048(m_pi->m_hdt);
+  SpokeBearing start_bearing = m_start_bearing + hdt;
+  SpokeBearing end_bearing = m_end_bearing + hdt;
+  start_bearing = MOD_ROTATION2048(start_bearing);
+  end_bearing = MOD_ROTATION2048(end_bearing);
+  if (start_bearing > end_bearing) {
+    end_bearing += LINES_PER_ROTATION;
+  }
+  if (m_type == GZ_CIRCLE) {
+    start_bearing = 0;
+    end_bearing = LINES_PER_ROTATION;
+  }
+
+  if (range_start < RETURNS_PER_LINE) {
+    if (range_end > RETURNS_PER_LINE) {
+      range_end = RETURNS_PER_LINE;
+    }
+    if (range_end < range_start) return;
+
+    for (int angle = start_bearing; angle < end_bearing; angle += 2) {
+      // check if this angle has been updated by the beam since last time
+      // and if possible targets have been refreshed
+
+      wxLongLong time1 = m_ri->m_history[MOD_ROTATION2048(angle)].time;
+      // next one must be timed later than the pass 2 in refresh, otherwise target may be found multiple times
+      wxLongLong time2 = m_ri->m_history[MOD_ROTATION2048(angle + 3 * SCAN_MARGIN)].time;
+
+      // check if target has been refreshed since last time
+      // and if the beam has passed the target location with SCAN_MARGIN spokes
+      if ((time1 > (arpa_update_time[MOD_ROTATION2048(angle)] + SCAN_MARGIN2) &&
+           time2 >= time1)) {  // the beam sould have passed our "angle" AND a point SCANMARGIN further
+                               // set new refresh time
+        arpa_update_time[MOD_ROTATION2048(angle)] = time1;
+        for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
+          if (m_ri->m_marpa->MultiPix(angle, rrr)) {
+            bool next_r = false;
+            if (next_r) continue;
+            // pixel found that does not belong to a known target
+            Position own_pos;
+            Polar pol;
+            pol.angle = angle;
+            pol.r = rrr;
+            own_pos.lat = m_pi->m_ownship_lat;
+            own_pos.lon = m_pi->m_ownship_lon;
+            Position x;
+            x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
+            int target_i;
+            m_ri->m_marpa->AquireNewTarget(pol, 0, &target_i);
+            if (target_i == -1) break;                                                 // $$$ how to handle max targets exceeded
+            m_ri->m_marpa->m_targets[target_i]->RefreshTarget(TARGET_SEARCH_RADIUS1);  // make first contour and max min values
+            m_ri->m_marpa->m_targets[target_i]->arpa = true;
+          }
+        }
+      }
+    }
+  }
+  return;
 }
 
 PLUGIN_END_NAMESPACE
