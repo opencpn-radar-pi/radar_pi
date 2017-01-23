@@ -391,9 +391,11 @@ void RadarArpa::RefreshArpaTargets() {
             wxMenu dummy_menu;
             wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete Arpa Target"));
             wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all Arpa Targets"));
+#ifdef __WXMSW__
             wxFont *qFont = OCPNGetFont(_("Menu"), 10);
             mi5->SetFont(*qFont);
             mi6->SetFont(*qFont);
+#endif
             m_pi->m_context_menu_delete_marpa_target = AddCanvasContextMenuItem(mi5, m_pi);
             m_pi->m_context_menu_delete_all_marpa_targets = AddCanvasContextMenuItem(mi6, m_pi);
         }
