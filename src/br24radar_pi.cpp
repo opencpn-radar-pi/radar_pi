@@ -30,9 +30,12 @@
  */
 
 #include "br24radar_pi.h"
+#include "GuardZoneBogey.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
-#include "GuardZoneBogey.h"
+#include "RadarMarpa.h"
+#include "Kalman.h"
+
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -154,7 +157,7 @@ int br24radar_pi::Init(void) {
     m_pconfig = GetOCPNConfigObject();
     m_first_init = false;
   }
-
+  
   // Font can change so initialize every time
   m_font = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
   m_fat_font = m_font;
@@ -181,7 +184,13 @@ int br24radar_pi::Init(void) {
   m_var_timeout = 0;
   m_idle_standby = 0;
   m_idle_transmit = 0;
-
+  count_ais_in_arpa = 0;
+  ais_in_arpa[SIZEAISAR];
+  //Silly, but could there be old scrap in memory location? (Debug exp.)
+  for (int i = 0; i < SIZEAISAR; i++) {
+      ais_in_arpa[i].ais_mmsi = 0;
+  }
+  
   m_heading_source = HEADING_NONE;
   m_radar_heading = nanl("");
 
@@ -209,6 +218,18 @@ int br24radar_pi::Init(void) {
   // before config, so config can set data in it
   m_radar[0] = new RadarInfo(this, 0);
   m_radar[1] = new RadarInfo(this, 1);
+  m_radar[0]->m_marpa = new RadarArpa(this, m_radar[0]);
+  m_radar[1]->m_marpa = new RadarArpa(this, m_radar[1]);
+
+// make guard zones after making the radars
+  for (size_t z = 0; z < GUARD_ZONES; z++) {
+      m_radar[0]->m_guard_zone[z] = new GuardZone(this, 0, z);
+  }
+
+  for (size_t z = 0; z < GUARD_ZONES; z++) {
+      m_radar[1]->m_guard_zone[z] = new GuardZone(this, 1, z);
+  }
+
 
   //    And load the configuration items
   if (LoadConfig()) {
@@ -251,15 +272,18 @@ int br24radar_pi::Init(void) {
   wxMenuItem *mi1 = new wxMenuItem(&dummy_menu, -1, _("Show radar"));
   wxMenuItem *mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
   wxMenuItem *mi3 = new wxMenuItem(&dummy_menu, -1, _("Radar Control..."));
+  wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Set Arpa Target"));
 #ifdef __WXMSW__
   wxFont *qFont = OCPNGetFont(_("Menu"), 10);
   mi1->SetFont(*qFont);
   mi2->SetFont(*qFont);
   mi3->SetFont(*qFont);
+  mi4->SetFont(*qFont);
 #endif
   m_context_menu_show_id = AddCanvasContextMenuItem(mi1, this);
   m_context_menu_hide_id = AddCanvasContextMenuItem(mi2, this);
   m_context_menu_control_id = AddCanvasContextMenuItem(mi3, this);
+  m_context_menu_set_marpa_target = AddCanvasContextMenuItem(mi4, this);
 
   m_initialized = true;
   LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.show_radar[0], m_settings.show_radar[1],
@@ -305,12 +329,16 @@ bool br24radar_pi::DeInit(void) {
 
   // Delete all 'new'ed objects
   for (int r = 0; r < RADARS; r++) {
+      if (m_radar[r]->m_marpa){
+          delete m_radar[r]->m_marpa;
+          m_radar[r]->m_marpa = 0;
+      }
+     
     delete m_radar[r];
     m_radar[r] = 0;
   }
 
   // No need to delete wxWindow stuff, wxWidgets does this for us.
-
   LOG_VERBOSE(wxT("BR24radar_pi: DeInit of plugin done"));
   return true;
 }
@@ -490,7 +518,39 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
   } else if (id == m_context_menu_show_id) {
     m_settings.show = 1;
     SetRadarWindowViz();
-  } else {
+  } else if (id == m_context_menu_set_marpa_target) {
+    if (m_settings.show                                                        // radar shown
+        && m_settings.chart_overlay >= 0                                       // overlay desired
+        && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
+        && m_bpos_set) {   
+      Position target_pos;
+      target_pos.lat = m_cursor_lat;
+      target_pos.lon = m_cursor_lon;
+      m_radar[m_settings.chart_overlay]->m_marpa->AquireNewTarget(target_pos, 0);
+    }
+  }
+  else if (id == m_context_menu_delete_marpa_target) {
+      if (m_settings.show                                                        // radar shown
+          && m_settings.chart_overlay >= 0                                       // overlay desired
+          && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
+          && m_bpos_set) {                                                       // overlay possible
+          Position target_pos;
+          target_pos.lat = m_cursor_lat;
+          target_pos.lon = m_cursor_lon;
+          m_radar[m_settings.chart_overlay]->m_marpa->AquireNewTarget(target_pos, -2);
+      }
+  }
+  else if (id == m_context_menu_delete_all_marpa_targets) {
+      if (m_settings.show                                                        // radar shown
+          && m_settings.chart_overlay >= 0                                       // overlay desired
+          && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
+          && m_bpos_set) {                                                       // overlay possible
+          m_radar[m_settings.chart_overlay]->m_marpa->DeleteAllTargets();
+      }
+  }
+  
+  
+  else {
     wxLogError(wxT("BR24radar_pi: Unknown context menu item callback"));
   }
 }
@@ -501,7 +561,7 @@ void br24radar_pi::PassHeadingToOpenCPN() {
   char checksum = 0;
   char *p;
 
-  snprintf(sentence, sizeof(sentence), "APHDT,%.1f,M", m_hdt);
+  snprintf(sentence, sizeof(sentence), "RAHDT,%.1f,T", m_hdt);
 
   for (p = sentence; *p; p++) {
     checksum ^= *p;
@@ -700,7 +760,7 @@ void br24radar_pi::Notify(void) {
     if (!wxIsNaN(radar_heading)) {
       if (radar_heading_true) {
         if (m_heading_source != HEADING_RADAR_HDT) {
-          LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (TRUE) (%d->%d)"), m_heading_source, HEADING_RADAR_HDT);
+          //   LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (TRUE) (%d->%d)"), m_heading_source, HEADING_RADAR_HDT);
           m_heading_source = HEADING_RADAR_HDT;
         }
         if (m_heading_source == HEADING_RADAR_HDT) {
@@ -709,7 +769,7 @@ void br24radar_pi::Notify(void) {
         }
       } else {
         if (m_heading_source != HEADING_RADAR_HDM) {
-          LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (MAGNETIC) (%d->%d)"), m_heading_source, HEADING_RADAR_HDM);
+          //    LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (MAGNETIC) (%d->%d)"), m_heading_source, HEADING_RADAR_HDM);
           m_heading_source = HEADING_RADAR_HDM;
         }
         if (m_heading_source == HEADING_RADAR_HDM) {
@@ -789,6 +849,7 @@ void br24radar_pi::Notify(void) {
                               m_radar[r]->m_statistics.missing_spokes);
       }
     }
+    if (JsonAIS != wxEmptyString ) t = JsonAIS; //ARPA AIS debug info
     m_pMessageBox->SetStatisticsInfo(t);
     if (t.length() > 0) {
       t.Replace(wxT("\n"), wxT(" "));
@@ -849,7 +910,7 @@ void br24radar_pi::Notify(void) {
     m_radar[r]->m_statistics.packets = 0;
     m_radar[r]->m_statistics.spokes = 0;
   }
-
+  
   UpdateState();
 }
 
@@ -920,6 +981,15 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
       || m_settings.chart_overlay < 0                                        // No overlay desired
       || m_radar[m_settings.chart_overlay]->m_state.value != RADAR_TRANSMIT  // Radar not transmitting
       || !m_bpos_set) {                                                      // No overlay possible (yet)
+    if (m_radar[m_settings.chart_overlay] >= 0) {
+      if (m_radar[m_settings.chart_overlay]->m_marpa) {
+          if (m_radar[m_settings.chart_overlay]->m_marpa->radar_lost_count > 5){
+              m_radar[m_settings.chart_overlay]->m_marpa->DeleteAllTargets();  // Let ARPA targets disappear
+              m_radar[m_settings.chart_overlay]->m_marpa->radar_lost_count = 0;
+          }
+          m_radar[m_settings.chart_overlay]->m_marpa->radar_lost_count++;
+      }
+    }
     return true;
   }
 
@@ -1033,6 +1103,8 @@ bool br24radar_pi::LoadConfig(void) {
           pConf->Read(wxString::Format(wxT("Radar%dZone%dInnerRange"), r, i), &m_radar[r]->m_guard_zone[i]->m_inner_range, 0);
           pConf->Read(wxString::Format(wxT("Radar%dZone%dFilter"), r, i), &m_radar[r]->m_guard_zone[i]->m_multi_sweep_filter, 0);
           pConf->Read(wxString::Format(wxT("Radar%dZone%dType"), r, i), &v, 0);
+          pConf->Read(wxString::Format(wxT("Radar%dZone%dAlarmOn"), r, i), &m_radar[r]->m_guard_zone[i]->m_alarm_on, 0);
+          pConf->Read(wxString::Format(wxT("Radar%dZone%dArpaOn"), r, i), &m_radar[r]->m_guard_zone[i]->m_arpa_on, 0);
           m_radar[r]->m_guard_zone[i]->SetType((GuardZoneType)v);
         }
       }
@@ -1040,6 +1112,7 @@ bool br24radar_pi::LoadConfig(void) {
       pConf->Read(wxT("AlarmPosY"), &y, 175);
       m_settings.alarm_pos = wxPoint(x, y);
       pConf->Read(wxT("EnableCOGHeading"), &m_settings.enable_cog_heading, false);
+      pConf->Read(wxT("AISatARPAoffset"), &m_settings.AISatARPAoffset, 18);
     }
 
     pConf->Read(wxT("AlertAudioFile"), &m_settings.alert_audio_file, m_shareLocn + wxT("alarm.wav"));
@@ -1134,6 +1207,10 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("TrailsOnOverlay"), m_settings.trails_on_overlay);
     pConf->Write(wxT("Transparency"), m_settings.overlay_transparency);
     pConf->Write(wxT("VerboseLog"), m_settings.verbose);
+    pConf->Write(wxT("AISatARPAoffset"), m_settings.AISatARPAoffset);
+    pConf->Write(wxT("ColourStrong"), m_settings.strong_colour.GetAsString());
+    pConf->Write(wxT("ColourIntermediate"), m_settings.intermediate_colour.GetAsString());
+    pConf->Write(wxT("ColourWeak"), m_settings.weak_colour.GetAsString());
 
     for (int r = 0; r < RADARS; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.value);
@@ -1155,6 +1232,8 @@ bool br24radar_pi::SaveConfig(void) {
         pConf->Write(wxString::Format(wxT("Radar%dZone%dInnerRange"), r, i), m_radar[r]->m_guard_zone[i]->m_inner_range);
         pConf->Write(wxString::Format(wxT("Radar%dZone%dType"), r, i), (int)m_radar[r]->m_guard_zone[i]->m_type);
         pConf->Write(wxString::Format(wxT("Radar%dZone%dFilter"), r, i), m_radar[r]->m_guard_zone[i]->m_multi_sweep_filter);
+        pConf->Write(wxString::Format(wxT("Radar%dZone%dAlarmOn"), r, i), m_radar[r]->m_guard_zone[i]->m_alarm_on);
+        pConf->Write(wxString::Format(wxT("Radar%dZone%dArpaOn"), r, i), m_radar[r]->m_guard_zone[i]->m_arpa_on);
       }
     }
 
@@ -1183,7 +1262,6 @@ void br24radar_pi::SetPositionFix(PlugIn_Position_Fix &pfix) {}
 void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   time_t now = time(0);
   wxString info;
-
   if (m_var_source <= VARIATION_SOURCE_FIX && !wxIsNaN(pfix.Var) && (fabs(pfix.Var) > 0.0 || m_var == 0.0)) {
     if (m_var_source < VARIATION_SOURCE_FIX || fabs(pfix.Var - m_var) > 0.05) {
       LOG_VERBOSE(wxT("BR24radar_pi: Position fix provides new magnetic variation %f"), pfix.Var);
@@ -1202,7 +1280,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
 
   if (!wxIsNaN(pfix.Hdt)) {
     if (m_heading_source < HEADING_FIX_HDT) {
-      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDT from OpenCPN (%d->%d)"), m_heading_source, HEADING_FIX_HDT);
+      LOG_VERBOSE(wxT("BR24radar_pi: Heading source is now HDT from OpenCPN (%d->%d)"), m_heading_source, HEADING_FIX_HDT);
       m_heading_source = HEADING_FIX_HDT;
     }
     if (m_heading_source == HEADING_FIX_HDT) {
@@ -1211,7 +1289,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     }
   } else if (!wxIsNaN(pfix.Hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
     if (m_heading_source < HEADING_FIX_HDM) {
-      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM from OpenCPN + VAR (%d->%d)"), m_heading_source, HEADING_FIX_HDM);
+      LOG_VERBOSE(wxT("BR24radar_pi: Heading source is now HDM from OpenCPN + VAR (%d->%d)"), m_heading_source, HEADING_FIX_HDM);
       m_heading_source = HEADING_FIX_HDM;
     }
     if (m_heading_source == HEADING_FIX_HDM) {
@@ -1221,7 +1299,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     }
   } else if (!wxIsNaN(pfix.Cog) && m_settings.enable_cog_heading) {
     if (m_heading_source < HEADING_FIX_COG) {
-      LOG_INFO(wxT("BR24radar_pi: Heading source is now COG from OpenCPN (%d->%d)"), m_heading_source, HEADING_FIX_COG);
+      LOG_VERBOSE(wxT("BR24radar_pi: Heading source is now COG from OpenCPN (%d->%d)"), m_heading_source, HEADING_FIX_COG);
       m_heading_source = HEADING_FIX_COG;
     }
     if (m_heading_source == HEADING_FIX_COG) {
@@ -1234,7 +1312,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     m_ownship_lat = pfix.Lat;
     m_ownship_lon = pfix.Lon;
     if (!m_bpos_set) {
-      LOG_INFO(wxT("BR24radar_pi: GPS position is now known"));
+      LOG_VERBOSE(wxT("BR24radar_pi: GPS position is now known"));
     }
     m_bpos_set = true;
     m_bpos_timestamp = now;
@@ -1242,31 +1320,139 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
 }
 
 void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
-  static const wxString WMM_VARIATION_BOAT = wxString(_T("WMM_VARIATION_BOAT"));
-  wxString info;
+    static const wxString WMM_VARIATION_BOAT = wxString(_T("WMM_VARIATION_BOAT"));
+    wxString info;
+    if (message_id.Cmp(WMM_VARIATION_BOAT) == 0) {
+        wxJSONReader reader;
+        wxJSONValue message;
+        if (!reader.Parse(message_body, &message)) {
+            wxJSONValue defaultValue(360);
+            double variation = message.Get(_T("Decl"), defaultValue).AsDouble();
 
-  if (message_id.Cmp(WMM_VARIATION_BOAT) == 0) {
-    wxJSONReader reader;
-    wxJSONValue message;
-    if (!reader.Parse(message_body, &message)) {
-      wxJSONValue defaultValue(360);
-      double variation = message.Get(_T("Decl"), defaultValue).AsDouble();
-
-      if (variation != 360.0) {
-        if (m_var_source != VARIATION_SOURCE_WMM) {
-          LOG_INFO(wxT("BR24radar_pi: WMM plugin provides new magnetic variation %f"), variation);
+            if (variation != 360.0) {
+                if (m_var_source != VARIATION_SOURCE_WMM) {
+                    LOG_VERBOSE(wxT("BR24radar_pi: WMM plugin provides new magnetic variation %f"), variation);
+                }
+                m_var = variation;
+                m_var_source = VARIATION_SOURCE_WMM;
+                m_var_timeout = time(0) + WATCHDOG_TIMEOUT;
+                if (m_pMessageBox->IsShown()) {
+                    info = _("WMM");
+                    info << wxT(" ") << wxString::Format(wxT("%2.1f"), m_var);
+                    m_pMessageBox->SetVariationInfo(info);
+                }
+            }
         }
-        m_var = variation;
-        m_var_source = VARIATION_SOURCE_WMM;
-        m_var_timeout = time(0) + WATCHDOG_TIMEOUT;
-        if (m_pMessageBox->IsShown()) {
-          info = _("WMM");
-          info << wxT(" ") << wxString::Format(wxT("%2.1f"), m_var);
-          m_pMessageBox->SetVariationInfo(info);
+    } else if (message_id == wxS("AIS") || count_ais_in_arpa > 0) {
+        //Check if any Radar and ARPA zone is active
+        double ArpaMaxRange = 0.0;
+        bool ArpaGuardOn = false;
+        for (size_t r = 0; r < RADARS; r++) {
+            if (m_radar[r]->m_state.value != RADAR_OFF) { // One radar is on. Check for guardzones
+                for (int i = 0; i < RADARS; i++) {
+                    for (int z = 0; z < GUARD_ZONES; z++) {
+                        if (m_radar[i]->m_guard_zone[z]->m_arpa_on) {
+                            ArpaGuardOn = true;
+                            int t = m_radar[i]->m_guard_zone[z]->m_outer_range;
+                            if (t > ArpaMaxRange) ArpaMaxRange = t;
+                        }
+                    }
+                }
+                break;
+            }
         }
-      }
-    }
+        if (ArpaGuardOn) {
+            wxJSONReader reader;
+            wxJSONValue message;
+            if (!reader.Parse(message_body, &message)) {
+                wxJSONValue defaultValue(999);
+                long json_ais_mmsi = message.Get(_T("mmsi"), defaultValue).AsLong();
+                if (json_ais_mmsi > 200000000) { //Neither ARPA targets nor SAR_aircraft
+                    wxJSONValue defaultValue("90.0");
+                    double f_AISLat = wxAtof(message.Get(_T("lat"), defaultValue).AsString());
+                    double f_AISLon = wxAtof(message.Get(_T("lon"), defaultValue).AsString());
+                    //Rectangle around own ship to look for AIS targets. 
+                    double d_side = ArpaMaxRange / 1852.0 / 60.0;
+                    if (f_AISLat < (m_ownship_lat + d_side) &&
+                        f_AISLat >(m_ownship_lat - d_side) &&
+                        f_AISLon < (m_ownship_lon + d_side * 2) &&
+                        f_AISLon >(m_ownship_lon - d_side * 2)) {
+                        bool updated = false;
+                        int empty = -1;
+                        for (int i = 0; i < SIZEAISAR; i++) {
+                            //If mmsi is in list, update
+                            if (ais_in_arpa[i].ais_mmsi == json_ais_mmsi) {
+                                ais_in_arpa[i].ais_time_upd = time(0);
+                                ais_in_arpa[i].ais_lat = f_AISLat;
+                                ais_in_arpa[i].ais_lon = f_AISLon;
+                                updated = true;
+                                break;
+                            } else { //Find first empty post
+                                if (empty == -1 && ais_in_arpa[i].ais_mmsi == 0) empty = i;
+                            }
+                        }
+                        if (!updated) { //New post, put in first empty
+                            ais_in_arpa[empty].ais_mmsi = json_ais_mmsi;
+                            ais_in_arpa[empty].ais_time_upd = time(0);
+                            ais_in_arpa[empty].ais_lat = f_AISLat;
+                            ais_in_arpa[empty].ais_lon = f_AISLon;
+                            ais_in_arpa[empty].ais_name = message.Get(_T("shipname"), wxEmptyString) \
+                                                          .AsString().Trim().Truncate(12);
+                            count_ais_in_arpa++;
+                        }
+                    }
+                }
+            }
+        }
+        //Delete > 3 min old AIS items or at once if neither active ARPA zone nor Radar
+        if (count_ais_in_arpa > 0) {
+            for (int i = 0; i < SIZEAISAR; i++) {
+                if (ais_in_arpa[i].ais_mmsi > 0 &&
+                    ((time(0) - ais_in_arpa[i].ais_time_upd) > (3 * 60) || !ArpaGuardOn)) {
+                    ais_in_arpa[i].ais_mmsi = 0;
+                    ais_in_arpa[i].ais_time_upd = 0;
+                    ais_in_arpa[i].ais_name.clear();
+                    if (count_ais_in_arpa > 0) count_ais_in_arpa--;
+                    if (count_ais_in_arpa == 0) JsonAIS = wxEmptyString;
+                }
+            }
+        }
   }
+}
+
+bool br24radar_pi::FindAIS_at_arpaPos(const double &lat, const double &lon, const double &dist) {
+    if (count_ais_in_arpa == 0) return false;
+    wxString Msg = wxEmptyString;
+    static time_t msgtimer = 0; //debug
+    bool hit = false;
+    double offset = dist / 1852. / 60.;
+    Msg << "dist: " << dist << " m\n";
+    for (int i = 0; i < SIZEAISAR; i++) {
+        if (ais_in_arpa[i].ais_mmsi != 0) { //Avtive post
+            if (lat + offset > ais_in_arpa[i].ais_lat       &&
+                lat - offset < ais_in_arpa[i].ais_lat       &&
+                lon + (offset * 1.75) > ais_in_arpa[i].ais_lon &&
+                lon - (offset * 1.75) < ais_in_arpa[i].ais_lon) {
+                hit = true;
+                Msg << _T("ARPA at:\n")             <<
+                    _T("Lat: ") << lat << _T("\n") <<
+                    _T("Lon: ") << lon << _T("\n");
+                wxString AIS_targ = wxEmptyString;
+                AIS_targ << ais_in_arpa[i].ais_name;
+                if (AIS_targ == wxEmptyString) AIS_targ << ais_in_arpa[i].ais_mmsi;
+                Msg << _T("Covered by: ") << AIS_targ << "\n";
+                JsonAIS = Msg;
+                msgtimer = time(0);
+                break;
+            }
+        }
+        if (time(0) - msgtimer > 20) { //Debug. clean last message
+            Msg = "AIS in ARPA zones: ";
+            Msg << count_ais_in_arpa << "\n";
+            JsonAIS = Msg;
+        }
+    }
+    return hit ? true : false;
 }
 
 bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value) {  // sends the command to the radar
@@ -1299,6 +1485,8 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
     }
     case CT_TRAILS_MOTION: {
       m_radar[radar]->m_trails_motion.Update(value);
+      m_radar[radar]->ComputeColourMap();
+      m_radar[radar]->ComputeTargetTrails();
       return true;
     }
     case CT_MAIN_BANG_SIZE: {
@@ -1377,7 +1565,7 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
           var = -m_NMEA0183.Hdg.MagneticVariationDegrees;
         }
         if (fabs(var - m_var) >= 0.05 && m_var_source <= VARIATION_SOURCE_NMEA) {
-          LOG_INFO(wxT("BR24radar_pi: NMEA provides new magnetic variation %f from %s"), var, sentence.c_str());
+          //        LOG_INFO(wxT("BR24radar_pi: NMEA provides new magnetic variation %f from %s"), var, sentence.c_str());
           m_var = var;
           m_var_source = VARIATION_SOURCE_NMEA;
           m_var_timeout = now + WATCHDOG_TIMEOUT;
@@ -1399,8 +1587,9 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
 
   if (!wxIsNaN(hdt)) {
     if (m_heading_source < HEADING_NMEA_HDT) {
-      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDT %d from NMEA %s (%d->%d)"), m_hdt, sentence.c_str(), m_heading_source,
-               HEADING_NMEA_HDT);
+      //   LOG_INFO(wxT("BR24radar_pi: Heading source is now HDT %d from NMEA %s (%d->%d)"), m_hdt, sentence.c_str(),
+      //   m_heading_source,
+      //           HEADING_NMEA_HDT);    Crashes!!!
       m_heading_source = HEADING_NMEA_HDT;
     }
     if (m_heading_source == HEADING_NMEA_HDT) {
@@ -1409,8 +1598,8 @@ void br24radar_pi::SetNMEASentence(wxString &sentence) {
     }
   } else if (!wxIsNaN(hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
     if (m_heading_source < HEADING_NMEA_HDM) {
-      LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f + VAR %f from NMEA %s (%d->%d)"), hdm, m_var, sentence.c_str(),
-               m_heading_source, HEADING_NMEA_HDT);
+      //   LOG_INFO(wxT("BR24radar_pi: Heading source is now HDM %f + VAR %f from NMEA %s (%d->%d)"), hdm, m_var, sentence.c_str(),
+      //            m_heading_source, HEADING_NMEA_HDT);
       m_heading_source = HEADING_NMEA_HDM;
     }
     if (m_heading_source == HEADING_NMEA_HDM) {

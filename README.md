@@ -8,6 +8,11 @@ Downloads
 The latest binary version for Microsoft Windows and OS X can be downloaded at https://github.com/canboat/BR24radar_pi/releases .
 Ubuntu/Debian can install the standard opencpn PPA and install 'opencpn-plugin-br24radar'.
 
+Manual
+------
+
+There is now a manual on this site, see https://github.com/canboat/BR24radar_pi/wiki .
+
 Compiling
 ---------
 
@@ -111,12 +116,12 @@ This would be a pretty useless plugin if OpenCPN did not exist. Hurrah for @bdbc
 
 The plugin was started by @cowelld, who took @bdbcat's Garmin radar plugin and the reverse engineered data from http://www.roboat.at/technologie/radar/ and created the first working version in 2012.
 
-@canboat started helping Dave. Soon he implemented most of the 4G specific functionality, rewrote the control dialogs, implemented the guard zones and cleaned the code considerably.
+@canboat started helping Dave. Soon he implemented most of the 4G specific functionality, refactored the code, rewrote the control dialogs, implemented the guard zones, target trails, PPI windows, EBL/VRM and mouse cursor functionality.
 
 @nohal contributed the packaging installers, without which this would still be a set of sources instead of deliverable packages for various platforms.
 
 @Hakansv did a lot of testing and contributed the idle timer, and contributed work on the translations.
 
-@douwefokkema implemented the heading on radar functionality, optimised the OpenGL drawing and implemented the refresh rate code.
+@douwefokkema also tested a lot and implemented the heading on radar functionality, optimised the OpenGL drawing, implemented the refresh rate code and optimised the target trails code.
 
-@seandepagnier shader support and some optimizations
+@seandepagnier shader support and some optimizations.

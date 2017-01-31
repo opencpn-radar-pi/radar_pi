@@ -170,37 +170,49 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
     }
   }
 
-  if (m_pi->m_heading_source != HEADING_NONE) {
-    double heading = (m_ri->IsDisplayNorthUp() ? 0 : m_pi->m_hdt) + 180.;
-    double predictor = (m_ri->IsDisplayNorthUp() ? m_pi->m_hdt : 0) + 180.;
+  double heading;
+  double predictor;
+  switch (m_ri->m_orientation.value) {
+    case ORIENTATION_HEAD_UP:
+      heading = 180.;
+      predictor = 180.;
+      break;
+    case ORIENTATION_NORTH_UP:
+      heading = 180;
+      predictor = m_pi->m_hdt + 180;
+      break;
+    case ORIENTATION_COURSE_UP:
+      heading = m_ri->m_course + 180.;
+      predictor = m_pi->m_hdt + 180. - m_ri->m_course;
+      break;
+  }
 
-    x = -sinf(deg2rad(predictor));
-    y = cosf(deg2rad(predictor));
-    glBegin(GL_LINE_STRIP);
-    glVertex2f(center_x, center_y);
-    glVertex2f(center_x + x * r * 2, center_y + y * r * 2);
-    glEnd();
+  x = -sinf(deg2rad(predictor));
+  y = cosf(deg2rad(predictor));
+  glBegin(GL_LINE_STRIP);
+  glVertex2f(center_x, center_y);
+  glVertex2f(center_x + x * r * 2, center_y + y * r * 2);
+  glEnd();
 
-    for (int i = 0; i < 360; i += 5) {
-      x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
-      y = cosf(deg2rad(i - heading)) * (r * 1.00 - 1);
+  for (int i = 0; i < 360; i += 5) {
+    x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
+    y = cosf(deg2rad(i - heading)) * (r * 1.00 - 1);
 
-      wxString s;
-      if (i % 90 == 0) {
-        static char nesw[4] = {'N', 'E', 'S', 'W'};
-        s = wxString::Format(wxT("%c"), nesw[i / 90]);
-      } else if (i % 15 == 0) {
-        s = wxString::Format(wxT("%u"), i);
-      }
-      m_FontNormal.GetTextExtent(s, &px, &py);
-      if (x > 0) {
-        x -= px;
-      }
-      if (y > 0) {
-        y -= py;
-      }
-      m_FontNormal.RenderString(s, center_x + x, center_y + y);
+    wxString s;
+    if (i % 90 == 0) {
+      static char nesw[4] = {'N', 'E', 'S', 'W'};
+      s = wxString::Format(wxT("%c"), nesw[i / 90]);
+    } else if (i % 15 == 0) {
+      s = wxString::Format(wxT("%u"), i);
     }
+    m_FontNormal.GetTextExtent(s, &px, &py);
+    if (x > 0) {
+      x -= px;
+    }
+    if (y > 0) {
+      y -= py;
+    }
+    m_FontNormal.RenderString(s, center_x + x, center_y + y);
   }
 }
 
@@ -270,9 +282,9 @@ void RadarCanvas::RenderCursor(int w, int h) {
   double distance;
   double bearing;
 
-  if (m_ri->m_mouse_vrm != 0.0) {
-    distance = m_ri->m_mouse_vrm * 1852.;
-    bearing = m_ri->m_mouse_ebl;
+  if (m_ri->m_mouse_vrm[m_ri->m_orientation.value] != 0.0) {
+    distance = m_ri->m_mouse_vrm[m_ri->m_orientation.value] * 1852.;
+    bearing = m_ri->m_mouse_ebl[m_ri->m_orientation.value];
   } else {
     if ((m_ri->m_mouse_lat == 0.0 && m_ri->m_mouse_lon == 0.0) || !m_pi->m_bpos_set) {
       return;
@@ -327,24 +339,23 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
   float full_range = wxMax(w, h) / 2.0;
   float center_x = w / 2.0;
   float center_y = h / 2.0;
-
   int display_range = m_ri->GetDisplayRange();
 
   for (int b = 0; b < BEARING_LINES; b++) {
+    float x, y;
+    glColor3ubv(rgb[b]);
+    glLineWidth(1.0);
     if (m_ri->m_vrm[b] != 0.0) {
       float scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
-      float angle = (float)deg2rad(m_ri->m_ebl[b]);
-      float x = center_x + sinf(angle) * full_range * 2.;
-      float y = center_y - cosf(angle) * full_range * 2.;
-
-      glColor3ubv(rgb[b]);
-      glLineWidth(1.0);
-
-      glBegin(GL_LINES);
-      glVertex2f(center_x, center_y);
-      glVertex2f(x, y);
-      glEnd();
-
+      if (m_ri->m_ebl[m_ri->m_orientation.value][b] != nanl("")) {
+        float angle = (float)deg2rad(m_ri->m_ebl[m_ri->m_orientation.value][b]);
+        x = center_x + sinf(angle) * full_range * 2.;
+        y = center_y - cosf(angle) * full_range * 2.;
+        glBegin(GL_LINES);
+        glVertex2f(center_x, center_y);
+        glVertex2f(x, y);
+        glEnd();
+      }
       DrawArc(center_x, center_y, scale, 0.f, 2.f * (float)PI, 360);
     }
   }
@@ -459,34 +470,35 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
   int center_x = w / 2;
   int center_y = h / 2;
 
-  LOG_DIALOG(wxT("BR24radar_pi: %s Mouse clicked at %d, %d"), m_ri->m_name.c_str(), x, y);
+  //  LOG_DIALOG(wxT("BR24radar_pi: %s Mouse clicked at %d, %d"), m_ri->m_name.c_str(), x, y);
+  if (x > 0 && x < w && y > 0 && y < h) {
+    if (x >= w - m_menu_size.x && y < m_menu_size.y) {
+      m_pi->ShowRadarControl(m_ri->m_radar, true);
+    } else if ((x >= center_x - m_zoom_size.x / 2) && (x <= center_x + m_zoom_size.x / 2) &&
+               (y > h - m_zoom_size.y + MENU_ROUNDING)) {
+      if (x > center_x) {
+        m_ri->AdjustRange(+1);
+      } else {
+        m_ri->AdjustRange(-1);
+      }
 
-  if (x >= w - m_menu_size.x && y < m_menu_size.y) {
-    m_pi->ShowRadarControl(m_ri->m_radar, true);
-  } else if ((x >= center_x - m_zoom_size.x / 2) && (x <= center_x + m_zoom_size.x / 2) &&
-             (y > h - m_zoom_size.y + MENU_ROUNDING)) {
-    if (x > center_x) {
-      m_ri->AdjustRange(+1);
     } else {
-      m_ri->AdjustRange(-1);
+      double delta_x = x - center_x;
+      double delta_y = y - center_y;
+
+      double distance = sqrt(delta_x * delta_x + delta_y * delta_y);
+
+      int display_range = m_ri->GetDisplayRange();
+
+      double angle = fmod(rad2deg(atan2(delta_y, delta_x)) + 720. + 90., 360.0);
+
+      double full_range = wxMax(w, h) / 2.0;
+
+      double range = distance / (1852.0 * full_range / display_range);
+
+      LOG_VERBOSE(wxT("BR24radar_pi: cursor in PPI at angle=%.1f range=%f heading=%.1f"), angle, range);
+      m_ri->SetMouseVrmEbl(range, angle);
     }
-
-  } else {
-    double delta_x = x - center_x;
-    double delta_y = y - center_y;
-
-    double distance = sqrt(delta_x * delta_x + delta_y * delta_y);
-
-    int display_range = m_ri->GetDisplayRange();
-
-    double angle = fmod(rad2deg(atan2(delta_y, delta_x)) + 720. + 90., 360.0);
-
-    double full_range = wxMax(w, h) / 2.0;
-
-    double range = distance / (1852.0 * full_range / display_range);
-
-    LOG_VERBOSE(wxT("BR24radar_pi: cursor in PPI at angle=%.1f range=%f heading=%.1f"), angle, range);
-    m_ri->SetMouseVrmEbl(range, angle);
   }
   event.Skip();
 }
@@ -500,7 +512,7 @@ void RadarCanvas::OnMouseWheel(wxMouseEvent &event) {
 
   wxLongLong now = wxGetUTCTimeMillis();
 
-  LOG_INFO(wxT("BR24radar_pi: %s Mouse range wheel %d / %d"), m_ri->m_name.c_str(), rotation, delta);
+  //  LOG_INFO(wxT("BR24radar_pi: %s Mouse range wheel %d / %d"), m_ri->m_name.c_str(), rotation, delta);
 
   if (rotation) {
     if (m_pi->m_settings.reverse_zoom) {

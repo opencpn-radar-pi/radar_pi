@@ -252,7 +252,7 @@ wxString target_boost_names[3];
 wxString target_expansion_names[2];
 wxString scan_speed_names[2];
 wxString timed_idle_times[8];
-wxString guard_zone_names[3];
+wxString guard_zone_names[2];
 wxString target_trail_names[TRAIL_ARRAY_SIZE];
 
 void br24RadarControlButton::AdjustValue(int adjustment) {
@@ -424,7 +424,7 @@ void br24ControlsDialog::CreateControls() {
   label << _("Clear cursor") << wxT("\n");
   label << _("Place EBL/VRM") << wxT("\n");
   label << _("Target trails") << wxT("\n");
-  label << _("True/Relative trails") << wxT("\n");
+  label << _("Off/Relative/True trails") << wxT("\n");
   label << _("Clear trails") << wxT("\n");
   label << _("Orientation") << wxT("\n");
   label << _("Refresh rate") << wxT("\n");
@@ -708,9 +708,10 @@ void br24ControlsDialog::CreateControls() {
   wxStaticText* type_Text = new wxStaticText(this, wxID_ANY, _("Zone type"), wxDefaultPosition, wxDefaultSize, 0);
   m_guard_sizer->Add(type_Text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
-  guard_zone_names[0] = _("Off");
-  guard_zone_names[1] = _("Arc");
-  guard_zone_names[2] = _("Circle");
+  /*guard_zone_names[0] = _("Off");*/
+  guard_zone_names[0] = _("Arc");
+  guard_zone_names[1] = _("Circle");
+  
   m_guard_zone_type = new wxRadioBox(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, ARRAY_SIZE(guard_zone_names),
                                      guard_zone_names, 1, wxRA_SPECIFY_COLS);
   m_guard_sizer->Add(m_guard_zone_type, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
@@ -748,9 +749,21 @@ void br24ControlsDialog::CreateControls() {
   m_guard_sizer->Add(m_end_bearing, 1, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
   m_end_bearing->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24ControlsDialog::OnEnd_Bearing_Value), NULL, this);
 
-  // added check box to control multi swep filtering
+  // checkbox for ARPA
+  m_arpa_box = new wxCheckBox(this, wxID_ANY, _("ARPA On               "), wxDefaultPosition, wxDefaultSize,
+      wxALIGN_LEFT | wxST_NO_AUTORESIZE);
+  m_guard_sizer->Add(m_arpa_box, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+  m_arpa_box->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnARPAClick), NULL, this);
+
+  // checkbox for blob alarm
+  m_alarm = new wxCheckBox(this, wxID_ANY, _("Alarm On              "), wxDefaultPosition, wxDefaultSize,
+      wxALIGN_LEFT | wxST_NO_AUTORESIZE);
+  m_guard_sizer->Add(m_alarm, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+  m_alarm->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnAlarmClick), NULL, this);
+
+  // added check box to control multi sweep filtering
   m_filter = new wxCheckBox(this, wxID_ANY, _("Multi Sweep Filter"), wxDefaultPosition, wxDefaultSize,
-                            wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE);
+      wxALIGN_LEFT | wxST_NO_AUTORESIZE);
   m_guard_sizer->Add(m_filter, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
   m_filter->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnFilterClick), NULL, this);
 
@@ -824,11 +837,11 @@ void br24ControlsDialog::CreateControls() {
   bMenuBack->SetFont(m_pi->m_font);
 
   // The TARGET_TRAIL button
-  target_trail_names[TRAIL_OFF] = _("Off");
   target_trail_names[TRAIL_15SEC] = _("15 sec");
   target_trail_names[TRAIL_30SEC] = _("30 sec");
   target_trail_names[TRAIL_1MIN] = _("1 min");
   target_trail_names[TRAIL_3MIN] = _("3 min");
+  target_trail_names[TRAIL_5MIN] = _("5 min");
   target_trail_names[TRAIL_10MIN] = _("10 min");
   target_trail_names[TRAIL_CONTINUOUS] = _("Continuous");
 
@@ -841,7 +854,7 @@ void br24ControlsDialog::CreateControls() {
   m_target_trails_button->SetLocalValue(m_ri->m_target_trails.button);  // redraw after adding names
 
   // The Trails Motion button
-  m_trails_motion_button = new wxButton(this, ID_TRAILS_MOTION, _("True/Relative trails"), wxDefaultPosition, g_buttonSize, 0);
+  m_trails_motion_button = new wxButton(this, ID_TRAILS_MOTION, _("Off/Relative/True trails"), wxDefaultPosition, g_buttonSize, 0);
   m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
   m_trails_motion_button->SetFont(m_pi->m_font);
 
@@ -1004,12 +1017,31 @@ void br24ControlsDialog::UpdateAdvanced4GState() {
 }
 
 void br24ControlsDialog::UpdateGuardZoneState() {
-  wxString label1, label2;
+    wxString label1, label2, label3, label4;
+    if (m_ri->m_guard_zone[0]->m_alarm_on){
+        label3 << _(" + Alarm");
+    }
+    if (m_ri->m_guard_zone[0]->m_arpa_on){
+        label3 << _(" + Arpa");
+    }
+    if (!m_ri->m_guard_zone[0]->m_alarm_on && !m_ri->m_guard_zone[0]->m_arpa_on){
+        label3 << _(" Off");
+    }
 
-  label1 << _("Guard zone") << wxT(" 1\n") << guard_zone_names[m_ri->m_guard_zone[0]->m_type];
+    if (m_ri->m_guard_zone[1]->m_alarm_on){
+        label4 << _(" + Alarm");
+    }
+    if (m_ri->m_guard_zone[1]->m_arpa_on){
+        label4 << _(" + Arpa");
+    }
+    if (!m_ri->m_guard_zone[1]->m_alarm_on && !m_ri->m_guard_zone[1]->m_arpa_on){
+        label4 << _(" Off");
+    }
+
+  label1 << _("Guard zone") << wxT(" 1 Green\n") << guard_zone_names[m_ri->m_guard_zone[0]->m_type]<<label3;
   m_guard_1_button->SetLabel(label1);
 
-  label2 << _("Guard zone") << wxT(" 2\n") << guard_zone_names[m_ri->m_guard_zone[1]->m_type];
+  label2 << _("Guard zone") << wxT(" 2 Blue\n") << guard_zone_names[m_ri->m_guard_zone[1]->m_type]<<label4;
   m_guard_2_button->SetLabel(label2);
 }
 
@@ -1073,10 +1105,17 @@ void br24ControlsDialog::OnMultiSweepClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
-  if (m_ri->m_trails_motion.value == TARGET_MOTION_RELATIVE) {
-    m_ri->m_trails_motion.Update(TARGET_MOTION_TRUE);
+  m_ri->m_trails_motion.value++;
+  if (m_ri->m_trails_motion.value > TARGET_MOTION_TRUE) {
+    m_ri->m_trails_motion.value = 0;
+  }
+  m_ri->m_trails_motion.Update(m_ri->m_trails_motion.value);
+  m_ri->ComputeColourMap();
+  m_ri->ComputeTargetTrails();
+  if (m_ri->m_trails_motion.value == TARGET_MOTION_OFF) {
+    m_target_trails_button->Disable();
   } else {
-    m_ri->m_trails_motion.Update(TARGET_MOTION_RELATIVE);
+    m_target_trails_button->Enable();
   }
   UpdateControlValues(false);
 }
@@ -1230,7 +1269,10 @@ void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
 void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) { m_ri->ClearTrails(); }
 
 void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
-  m_ri->m_orientation.Update(1 - m_ri->m_orientation.value);
+  m_ri->m_orientation.Update(m_ri->m_orientation.value + 1);
+  if (m_ri->m_orientation.value > ORIENTATION_COURSE_UP) {
+    m_ri->m_orientation.Update(ORIENTATION_HEAD_UP);
+  }
   UpdateControlValues(false);
 }
 
@@ -1243,7 +1285,7 @@ void br24ControlsDialog::OnBearingSetButtonClick(wxCommandEvent& event) {
 
 void br24ControlsDialog::OnClearCursorButtonClick(wxCommandEvent& event) {
   LOG_DIALOG(wxT("%s OnClearCursorButtonClick"), m_log_name.c_str());
-  m_ri->SetMouseVrmEbl(0., 0.);
+  m_ri->SetMouseVrmEbl(0., nanl(""));
   SwitchTo(m_control_sizer, wxT("main (clear cursor)"));
 }
 
@@ -1349,12 +1391,14 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   if (m_ri->m_trails_motion.mod || refreshAll) {
-    o = _("True/Relative trails");
+    o = _("Off/Relative/True trails");
     o << wxT("\n");
     if (m_ri->m_trails_motion.value == TARGET_MOTION_TRUE) {
       o << _("True");
-    } else {
+    } else if (m_ri->m_trails_motion.value == TARGET_MOTION_RELATIVE) {
       o << _("Relative");
+    } else {
+      o << _("Off");
     }
     m_trails_motion_button->SetLabel(o);
   }
@@ -1368,6 +1412,9 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
         break;
       case ORIENTATION_HEAD_UP:
         o << _("Head up");
+        break;
+      case ORIENTATION_COURSE_UP:
+        o << _("Course up");
         break;
       default:
         o << _("???");
@@ -1654,7 +1701,12 @@ void br24ControlsDialog::ShowGuardZone(int zone) {
   m_guard_zone = m_ri->m_guard_zone[zone];
 
   wxString GuardZoneText;
-  GuardZoneText << _("Guard Zone") << wxString::Format(wxT(" %d"), zone + 1);
+  if (zone == 0){
+      GuardZoneText << _("Guard Zone 1 Green");
+  }
+  if (zone == 1){
+      GuardZoneText << _("Guard Zone 2 Blue");
+  }
   m_guard_zone_text->SetLabel(GuardZoneText);
 
   m_guard_zone_type->SetSelection(m_guard_zone->m_type);
@@ -1675,6 +1727,9 @@ void br24ControlsDialog::ShowGuardZone(int zone) {
   bearing = round(bearing);
   m_end_bearing->SetValue(wxString::Format(wxT("%3.0f"), bearing));
   m_filter->SetValue(m_guard_zone->m_multi_sweep_filter ? 1 : 0);
+  m_alarm->SetValue(m_guard_zone->m_alarm_on ? 1 : 0);
+  m_arpa_box->SetValue(m_guard_zone->m_arpa_on ? 1 : 0);
+  m_guard_zone->m_show_time = time(0);
 
   m_top_sizer->Hide(m_control_sizer);
   SwitchTo(m_guard_sizer, wxT("guard"));
@@ -1687,13 +1742,7 @@ void br24ControlsDialog::SetGuardZoneVisibility() {
 
   m_guard_zone->SetType(zoneType);
 
-  if (zoneType == GZ_OFF) {
-    m_start_bearing->Disable();
-    m_end_bearing->Disable();
-    m_inner_range->Disable();
-    m_outer_range->Disable();
-
-  } else if (zoneType == GZ_CIRCLE) {
+   if (zoneType == GZ_CIRCLE) {
     m_start_bearing->Disable();
     m_end_bearing->Disable();
     m_inner_range->Enable();
@@ -1713,6 +1762,7 @@ void br24ControlsDialog::OnGuardZoneModeClick(wxCommandEvent& event) { SetGuardZ
 void br24ControlsDialog::OnInner_Range_Value(wxCommandEvent& event) {
   wxString temp = m_inner_range->GetValue();
   double t;
+  m_guard_zone->m_show_time = time(0);
   temp.ToDouble(&t);
 
   int conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
@@ -1723,6 +1773,7 @@ void br24ControlsDialog::OnInner_Range_Value(wxCommandEvent& event) {
 void br24ControlsDialog::OnOuter_Range_Value(wxCommandEvent& event) {
   wxString temp = m_outer_range->GetValue();
   double t;
+  m_guard_zone->m_show_time = time(0);
   temp.ToDouble(&t);
 
   int conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
@@ -1734,6 +1785,7 @@ void br24ControlsDialog::OnStart_Bearing_Value(wxCommandEvent& event) {
   wxString temp = m_start_bearing->GetValue();
   double t;
 
+  m_guard_zone->m_show_time = time(0);
   temp.ToDouble(&t);
   t = fmod(t, 360.);
   if (t < 0.) {
@@ -1746,6 +1798,7 @@ void br24ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
   wxString temp = m_end_bearing->GetValue();
   double t;
 
+  m_guard_zone->m_show_time = time(0);
   temp.ToDouble(&t);
   t = fmod(t, 360.);
   if (t < 0.) {
@@ -1757,6 +1810,16 @@ void br24ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
 void br24ControlsDialog::OnFilterClick(wxCommandEvent& event) {
   int filt = m_filter->GetValue();
   m_guard_zone->SetMultiSweepFilter(filt);
+}
+
+void br24ControlsDialog::OnARPAClick(wxCommandEvent& event) {
+    int arpa = m_arpa_box->GetValue();
+    m_guard_zone->SetArpaOn(arpa);
+}
+
+void br24ControlsDialog::OnAlarmClick(wxCommandEvent& event) {
+    int alarm = m_alarm->GetValue();
+    m_guard_zone->SetAlarmOn(alarm);
 }
 
 PLUGIN_END_NAMESPACE
