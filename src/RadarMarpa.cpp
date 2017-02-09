@@ -152,7 +152,6 @@ void RadarArpa::AquireNewTarget(Position target_pos, int status) {
     i_target = number_of_targets;
     number_of_targets++;
   } else {
-    i_target = -1;
     LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded "));
     return;
   }
@@ -345,13 +344,15 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
     yy = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
     glVertex2f(xx, yy);
   }
-  // draw expected pos for test
-  int angle = MOD_ROTATION2048(target->expected.angle - 512);
-  int radius = target->expected.r;
   // following displays expected position with crosses that indicate the size of the search area
   // for debugging only
 
-  /*double xx;
+#ifdef MARPA_DEBUG
+  // draw expected pos for test
+  int angle = MOD_ROTATION2048(target->expected.angle - 512);
+  int radius = target->expected.r;
+
+  double xx;
   double yy;
   int dist_a = (int)(326. / (double)radius * TARGET_SEARCH_RADIUS2 / 2.);
   int dist_r = (int)((double)TARGET_SEARCH_RADIUS2 / 2.);
@@ -369,7 +370,8 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
     xx = polarLookup->x[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
     yy = polarLookup->y[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
     glVertex2f(xx, yy);
-  }*/
+  }
+#endif
 
   glEnd();
 }
@@ -587,7 +589,6 @@ void ArpaTarget::RefreshTarget(int dist) {
       X = Polar2Pos(pol, p_own, m_ri->m_range_meters);  // using own ship location from the time of reception
       X.dlat_dt = 0.;
       X.dlon_dt = 0.;
-      delta_t = 2.5;  // not relevant as speed is 0
       expected = pol;
       X.sd_speed_kn = 0.;
     }
@@ -815,8 +816,6 @@ bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
   int a = pol->angle;
   int r = pol->r;
 
-  int r1 = r;
-
   if (Pix(a, r)) {
     contour_found = FindContourFromInside(pol);
   } else {
@@ -871,7 +870,7 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   s_bearing = wxString::Format(wxT("%f"), bearing);
 
   /* Code for TTM follows. Send speed and course using TTM*/
-  int TTM = sprintf(sentence, "RATTM,%2s,%s,%s,%s,%s,%s,%s, , ,%s,%s,%s, ",
+  snprintf(sentence, sizeof(sentence), "RATTM,%2s,%s,%s,%s,%s,%s,%s, , ,%s,%s,%s, ",
                     (const char*)s_TargID.mb_str(),       // 1 target id
                     (const char*)s_distance.mb_str(),     // 2 Targ distance
                     (const char*)s_bearing.mb_str(),      // 3 Bearing fr own ship.

@@ -328,7 +328,6 @@ void br24Receive::EmulateFakeBuffer(void) {
 
     SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
     SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
-    wxLongLong time_received = 0;
     wxLongLong time_rec;
     double lat = 0.;
     double lon = 0.;

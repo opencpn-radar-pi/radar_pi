@@ -466,7 +466,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       m_guard_zone[z]->ProcessSpoke(angle, data, m_history[bearing].line, len, range_meters);
     }
   }
-  bool test = 1;
   if (m_multi_sweep_filter) {
     for (size_t radius = 0; radius < len; radius++) {
       if (!HISTORY_FILTER_ALLOW(m_history[bearing].line[radius])) {

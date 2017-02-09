@@ -136,7 +136,7 @@ double& Matrix::operator()(const int r, const int c) {
     return p[r - 1][c - 1];
   } else {
     LOG_INFO(wxT("BR24radar_pi: Matrix exception Subscript out of range, index operator"));
-    return p[r - 1][c - 1];
+    return p[0][0];
   }
 }
 
@@ -147,8 +147,8 @@ double Matrix::get(const int r, const int c) const {
   if (p != NULL && r > 0 && r <= rows && c > 0 && c <= cols) {
     return p[r - 1][c - 1];
   } else {
-    LOG_INFO(wxT("BR24radar_pi: Matrix exception Subscript out of range, get row col"));  //
-    return p[r - 1][c - 1];
+    LOG_INFO(wxT("BR24radar_pi: Matrix exception Subscript out of range, get row %d col %d"), r, c);  //
+    return 0;
   }
 }
 
@@ -465,12 +465,17 @@ Matrix Inv(const Matrix& a) {
   int rows = a.GetRows();
   int cols = a.GetRows();
 
-  d = Det(a);
-  if (rows == cols && d != 0) {
-    // this is a square matrix
-    if (rows == 1) {
-      // this is a 1 x 1 matrix
+  if (rows != cols) {
+    LOG_INFO(wxT("BR24radar_pi: Matrix exception Matrix must be square"));
+    res = Matrix(rows, cols);
+  } else {
+    d = Det(a);
+    if (d == 0) {
+      LOG_INFO(wxT("BR24radar_pi: Matrix exception Determinant of matrix is zero"));
       res = Matrix(rows, cols);
+    } else if (rows == 1) {
+      res = Matrix(rows, cols);
+      // this is a 1 x 1 matrix
       res(1, 1) = 1 / a.get(1, 1);
     } else if (rows == 2) {
       // this is a 2 x 2 matrix
@@ -528,13 +533,8 @@ Matrix Inv(const Matrix& a) {
         }
       }
     }
-  } else {
-    if (rows == cols) {
-      LOG_INFO(wxT("BR24radar_pi: Matrix exception Matrix must be square"));
-    } else {
-      LOG_INFO(wxT("BR24radar_pi: Matrix exception Determinant of matrix is zero"));
-    }
   }
+
   return res;
 }
 
