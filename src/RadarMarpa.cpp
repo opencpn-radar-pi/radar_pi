@@ -100,17 +100,16 @@ bool RadarArpa::Pix(int ang, int rad) {
 }
 
 bool ArpaTarget::Pix(int ang, int rad) {
-    if (rad <= 1 || rad >= RETURNS_PER_LINE - 1) {  //  avoid range ring
-        return false;
-    }
-    if (check_for_duplicate){
-        // check bit 1
-        return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 64) != 0);
-    }
-    else{
-        // check bit 0
-        return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 128) != 0);
-    }
+  if (rad <= 1 || rad >= RETURNS_PER_LINE - 1) {  //  avoid range ring
+    return false;
+  }
+  if (check_for_duplicate) {
+    // check bit 1
+    return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 64) != 0);
+  } else {
+    // check bit 0
+    return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 128) != 0);
+  }
 }
 
 bool RadarArpa::MultiPix(int ang, int rad) {
@@ -126,15 +125,15 @@ bool RadarArpa::MultiPix(int ang, int rad) {
 }
 
 bool ArpaTarget::MultiPix(int ang, int rad) {
-    // returns true if a pixel i ang, rad and the blob contains at least 3 pixels
-    int test = 0;
-    if (!Pix(ang, rad)) return false;
-    test = Pix(ang + 1, rad) + Pix(ang - 1, rad) + Pix(ang, rad + 1) + Pix(ang, rad - 1);
-    if (test >= 2) return true;
-    test += Pix(ang + 1, rad + 1) + Pix(ang - 1, rad - 1) + Pix(ang - 1, rad + 1) + Pix(ang + 1, rad - 1);
-    if (test >= 2) return true;
-    test += Pix(ang + 2, rad + 2) + Pix(ang - 1, rad - 1) + Pix(ang - 1, rad + 1) + Pix(ang + 1, rad - 1);
-    return false;
+  // returns true if a pixel i ang, rad and the blob contains at least 3 pixels
+  int test = 0;
+  if (!Pix(ang, rad)) return false;
+  test = Pix(ang + 1, rad) + Pix(ang - 1, rad) + Pix(ang, rad + 1) + Pix(ang, rad - 1);
+  if (test >= 2) return true;
+  test += Pix(ang + 1, rad + 1) + Pix(ang - 1, rad - 1) + Pix(ang - 1, rad + 1) + Pix(ang + 1, rad - 1);
+  if (test >= 2) return true;
+  test += Pix(ang + 2, rad + 2) + Pix(ang - 1, rad - 1) + Pix(ang - 1, rad + 1) + Pix(ang + 1, rad - 1);
+  return false;
 }
 
 void RadarArpa::AquireNewTarget(Position target_pos, int status) {
@@ -307,8 +306,8 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
   if (max_r.r < 2 || min_r.r < 2) {
     return 11;  // return code 11 r too small
   }
-  if (pol->angle >= LINES_PER_ROTATION){
-      pol->angle -= LINES_PER_ROTATION;
+  if (pol->angle >= LINES_PER_ROTATION) {
+    pol->angle -= LINES_PER_ROTATION;
   }
   pol->r = (max_r.r + min_r.r) / 2;
   pol->time = m_ri->m_history[MOD_ROTATION2048(pol->angle)].time;
@@ -352,25 +351,25 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
   // following displays expected position with crosses that indicate the size of the search area
   // for debugging only
 
-   /*double xx;
-   double yy;
-   int dist_a = (int)(326. / (double)radius * TARGET_SEARCH_RADIUS2 / 2.);
-   int dist_r = (int)((double)TARGET_SEARCH_RADIUS2 / 2.);
-   glColor4ub(0, 250, 0, 250);
-   if (radius < 511 - dist_r && radius > dist_r) {
-     xx = polarLookup->x[MOD_ROTATION2048(angle)][radius - dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
-     yy = polarLookup->y[MOD_ROTATION2048(angle)][radius - dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
-     glVertex2f(xx, yy);
-     xx = polarLookup->x[MOD_ROTATION2048(angle)][radius + dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
-     yy = polarLookup->y[MOD_ROTATION2048(angle)][radius + dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
-     glVertex2f(xx, yy);
-     xx = polarLookup->x[MOD_ROTATION2048(angle - dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-     yy = polarLookup->y[MOD_ROTATION2048(angle - dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-     glVertex2f(xx, yy);
-     xx = polarLookup->x[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-     yy = polarLookup->y[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-     glVertex2f(xx, yy);
-   }*/
+  /*double xx;
+  double yy;
+  int dist_a = (int)(326. / (double)radius * TARGET_SEARCH_RADIUS2 / 2.);
+  int dist_r = (int)((double)TARGET_SEARCH_RADIUS2 / 2.);
+  glColor4ub(0, 250, 0, 250);
+  if (radius < 511 - dist_r && radius > dist_r) {
+    xx = polarLookup->x[MOD_ROTATION2048(angle)][radius - dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
+    yy = polarLookup->y[MOD_ROTATION2048(angle)][radius - dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
+    glVertex2f(xx, yy);
+    xx = polarLookup->x[MOD_ROTATION2048(angle)][radius + dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
+    yy = polarLookup->y[MOD_ROTATION2048(angle)][radius + dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
+    glVertex2f(xx, yy);
+    xx = polarLookup->x[MOD_ROTATION2048(angle - dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+    yy = polarLookup->y[MOD_ROTATION2048(angle - dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+    glVertex2f(xx, yy);
+    xx = polarLookup->x[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+    yy = polarLookup->y[MOD_ROTATION2048(angle + dist_a)][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+    glVertex2f(xx, yy);
+  }*/
 
   glEnd();
 }
@@ -386,20 +385,20 @@ void RadarArpa::DrawArpaTargets() {
 
 void RadarArpa::RefreshArpaTargets() {
   // remove targets with status LOST and put them at the end
-    if (number_of_targets > 0){
-        if (m_pi->m_context_menu_delete_marpa_target == 0){
-            wxMenu dummy_menu;
-            wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete Arpa Target"));
-            wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all Arpa Targets"));
+  if (number_of_targets > 0) {
+    if (m_pi->m_context_menu_delete_marpa_target == 0) {
+      wxMenu dummy_menu;
+      wxMenuItem* mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete Arpa Target"));
+      wxMenuItem* mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all Arpa Targets"));
 #ifdef __WXMSW__
-            wxFont *qFont = OCPNGetFont(_("Menu"), 10);
-            mi5->SetFont(*qFont);
-            mi6->SetFont(*qFont);
+      wxFont* qFont = OCPNGetFont(_("Menu"), 10);
+      mi5->SetFont(*qFont);
+      mi6->SetFont(*qFont);
 #endif
-            m_pi->m_context_menu_delete_marpa_target = AddCanvasContextMenuItem(mi5, m_pi);
-            m_pi->m_context_menu_delete_all_marpa_targets = AddCanvasContextMenuItem(mi6, m_pi);
-        }
+      m_pi->m_context_menu_delete_marpa_target = AddCanvasContextMenuItem(mi5, m_pi);
+      m_pi->m_context_menu_delete_all_marpa_targets = AddCanvasContextMenuItem(mi6, m_pi);
     }
+  }
   for (int i = 0; i < number_of_targets; i++) {
     if (m_targets[i]) {
       if (m_targets[i]->status == LOST) {
@@ -517,11 +516,11 @@ void ArpaTarget::RefreshTarget(int dist) {
   prev_X = X;  // save the previous target position
 
   // for test only
- /* if (status == 0) {
-      target_id_count++;
-      if (target_id_count >= 10000) target_id_count = 1;
-      target_id = target_id_count;
-  }*/
+  /* if (status == 0) {
+       target_id_count++;
+       if (target_id_count >= 10000) target_id_count = 1;
+       target_id = target_id_count;
+   }*/
 
   // PREDICTION CYCLE
   X.time = time1;                                                // estimated new target time
@@ -529,9 +528,9 @@ void ArpaTarget::RefreshTarget(int dist) {
   if (status == 0) {
     delta_t = 0.;
   }
-  if (X.lat > 90.){
-      SetStatusLost();
-      return;
+  if (X.lat > 90.) {
+    SetStatusLost();
+    return;
   }
   x_local.lat = (X.lat - own_pos.lat) * 60. * 1852.;                              // in meters
   x_local.lon = (X.lon - own_pos.lon) * 60. * 1852. * cos(deg2rad(own_pos.lat));  // in meters
@@ -558,9 +557,9 @@ void ArpaTarget::RefreshTarget(int dist) {
     ResetPixels();
     // target too large? (land masses?) get rid of it
     if (abs(back.r - pol.r) > MAX_TARGET_DIAMETER || abs(max_r.r - min_r.r) > MAX_TARGET_DIAMETER ||
-        abs(min_angle.angle - max_angle.angle) > MAX_TARGET_DIAMETER){
-        SetStatusLost();
-        return;
+        abs(min_angle.angle - max_angle.angle) > MAX_TARGET_DIAMETER) {
+      SetStatusLost();
+      return;
     }
 
     // delete if target too small
@@ -602,19 +601,17 @@ void ArpaTarget::RefreshTarget(int dist) {
     }
 
     // Kalman filter to  calculate the apostriori local position and speed based on found position (pol)
-    if (status > 1){
-        m_kalman->SetMeasurement(&pol, &x_local, &expected, m_ri->m_range_meters);  // pol is measured position in polar coordinates
+    if (status > 1) {
+      m_kalman->SetMeasurement(&pol, &x_local, &expected, m_ri->m_range_meters);  // pol is measured position in polar coordinates
     }
-    
+
     // x_local expected position in local coordinates
 
     X.time = pol.time;  // set the target time to the newly found time
-  }   // end of target found
-
-
+  }                     // end of target found
 
   // target not found
-  else {  
+  else {
     // target not found
 
     // check if the position of the target has been taken by another target, a duplicate
@@ -686,10 +683,10 @@ void ArpaTarget::RefreshTarget(int dist) {
     speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600. / 1852.;  // and convert to nautical miles per hour
     course = rad2deg(atan2(s2, s1));
     if (course < 0) course += 360.;
-    
+
     GetSpeed();
-    if (speed_kn > 20.){
-        pol = Pos2Polar(X, own_pos, m_ri->m_range_meters);
+    if (speed_kn > 20.) {
+      pol = Pos2Polar(X, own_pos, m_ri->m_range_meters);
     }
 
     if (speed_kn < (double)TARGET_SPEED_DIV_SDEV * X.sd_speed_kn) {
@@ -714,7 +711,7 @@ void ArpaTarget::RefreshTarget(int dist) {
       }
       // Check for AIS target at (M)ARPA position
       double posOffset = (double)m_pi->m_settings.AISatARPAoffset;
-      //Default 18 >> look 36 meters around + 3% of distance to target
+      // Default 18 >> look 36 meters around + 3% of distance to target
       double dist2target = (3.0 / 100) * (double)pol.r / (double)RETURNS_PER_LINE * m_ri->m_range_meters;
       posOffset += dist2target;
       if (m_pi->FindAIS_at_arpaPos(X.lat, X.lon, posOffset)) s = L;
@@ -724,12 +721,12 @@ void ArpaTarget::RefreshTarget(int dist) {
   return;
 }
 
-#define PIX(aa, rr)                      \
-  if (rr > 510) continue;                \
+#define PIX(aa, rr)       \
+  if (rr > 510) continue; \
   if (MultiPix(aa, rr)) { \
-    pol->angle = aa;                     \
-    pol->r = rr;                         \
-    return true;                         \
+    pol->angle = aa;      \
+    pol->r = rr;          \
+    return true;          \
   }
 
 bool ArpaTarget::FindNearestContour(Polar* pol, int dist) {
@@ -830,7 +827,7 @@ bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
   }
   int cont = GetContour(pol);
   if (cont != 0) {
-      // reset pol
+    // reset pol
     pol->angle = a;
     pol->r = r;
     return false;
@@ -849,9 +846,9 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   char checksum = 0;
   char* p;
 
-  s_Bear_Unit = wxEmptyString;  // Bearing Units  R or empty
-  s_Course_Unit = wxT("T");     // Course type R; Realtive T; true
-  s_Dist_Unit = wxT("N");       // Speed/Distance Unit K, N, S N= NM/h = Knots
+  s_Bear_Unit = wxEmptyString;           // Bearing Units  R or empty
+  s_Course_Unit = wxT("T");              // Course type R; Realtive T; true
+  s_Dist_Unit = wxT("N");                // Speed/Distance Unit K, N, S N= NM/h = Knots
   if (status == Q) s_status = wxT("Q");  // yellow
   if (status == T) s_status = wxT("T");  // green
   if (status == L) {

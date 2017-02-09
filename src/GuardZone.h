@@ -81,17 +81,14 @@ class GuardZone {
     m_multi_sweep_filter = filter;
     ResetBogeys();
   };
-  void SetArpaOn(int arpa) {
-      m_arpa_on = arpa;
-  };
+  void SetArpaOn(int arpa) { m_arpa_on = arpa; };
   void SetAlarmOn(int alarm) {
-      m_alarm_on = alarm;
-      if (m_alarm_on){
-          m_pi->m_guard_bogey_confirmed = false;
-      }
-      else{
-          ResetBogeys();
-      }
+    m_alarm_on = alarm;
+    if (m_alarm_on) {
+      m_pi->m_guard_bogey_confirmed = false;
+    } else {
+      ResetBogeys();
+    }
   };
 
   /*
@@ -123,7 +120,7 @@ class GuardZone {
     m_alarm_on = 0;
     m_show_time = 0;
     for (int angle = 0; angle < LINES_PER_ROTATION; angle++) {
-        arpa_update_time[angle] = 0;
+      arpa_update_time[angle] = 0;
     }
     ResetBogeys();
   }
@@ -132,8 +129,8 @@ class GuardZone {
 
  private:
   br24radar_pi *m_pi;
-  RadarInfo* m_ri;
-  
+  RadarInfo *m_ri;
+
   wxString m_log_name;
   bool m_last_in_guard_zone;
   SpokeBearing m_last_angle;

@@ -35,10 +35,10 @@
 #define MY_API_VERSION_MAJOR 1
 #define MY_API_VERSION_MINOR 12
 
-#include "pi_common.h"
 #include "jsonreader.h"
-#include "version.h"
 #include "nmea0183/nmea0183.h"
+#include "pi_common.h"
+#include "version.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -63,7 +63,7 @@ class RadarArpa;
                                     // needed if you intend to add multiple radomes to network!
 #define GUARD_ZONES (2)             // Could be increased if wanted
 
-#define BEARING_LINES (2)           // And these as well
+#define BEARING_LINES (2)  // And these as well
 
 static const int SECONDS_PER_TIMED_IDLE_SETTING = 5 * 60;  // 5 minutes increment for each setting
 static const int SECONDS_PER_TRANSMIT_BURST = 30;
@@ -326,14 +326,14 @@ struct scan_line {
   // a 1 is added in the rightmost position, if below threshold, a 0.
 };
 
-//Table for AIS targets inside ARPA zone
+// Table for AIS targets inside ARPA zone
 #define SIZEAISAR (50)
 struct AisArpa {
-    long ais_mmsi;
-    time_t ais_time_upd;
-    double ais_lat;
-    double ais_lon;
-    wxString ais_name;
+  long ais_mmsi;
+  time_t ais_time_upd;
+  double ais_lat;
+  double ais_lon;
+  wxString ais_name;
 };
 
 //----------------------------------------------------------------------------------------------------------
@@ -358,7 +358,6 @@ class br24radar_pi : public opencpn_plugin_112 {
   bool DeInit(void);
   int m_context_menu_delete_marpa_target = 0;
   int m_context_menu_delete_all_marpa_targets = 0;
-
 
   int GetAPIVersionMajor();
   int GetAPIVersionMinor();
@@ -469,8 +468,8 @@ class br24radar_pi : public opencpn_plugin_112 {
   time_t m_idle_standby;   // When we will change to standby
   time_t m_idle_transmit;  // When we will change to transmit
 
-  //Check for AIS targets inside ARPA zone
-  wxString JsonAIS; //Temp for Json AIS message
+  // Check for AIS targets inside ARPA zone
+  wxString JsonAIS;  // Temp for Json AIS message
   AisArpa ais_in_arpa[SIZEAISAR];
   int count_ais_in_arpa;
   bool FindAIS_at_arpaPos(const double &lat, const double &lon, const double &dist);
@@ -496,7 +495,7 @@ class br24radar_pi : public opencpn_plugin_112 {
   int m_context_menu_show_id;
   int m_context_menu_hide_id;
   int m_context_menu_set_marpa_target;
-  
+
   int m_tool_id;
   wxBitmap *m_pdeficon;
 
@@ -526,11 +525,11 @@ class br24radar_pi : public opencpn_plugin_112 {
 
 PLUGIN_END_NAMESPACE
 
-#include "br24OptionsDialog.h"
-#include "br24ControlsDialog.h"
-#include "br24MessageBox.h"
-#include "br24Transmit.h"
 #include "GuardZone.h"
 #include "RadarInfo.h"
+#include "br24ControlsDialog.h"
+#include "br24MessageBox.h"
+#include "br24OptionsDialog.h"
+#include "br24Transmit.h"
 
 #endif /* _BR24RADAR_PI_H_ */

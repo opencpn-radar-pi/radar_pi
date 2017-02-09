@@ -30,8 +30,8 @@
  */
 
 #include "RadarCanvas.h"
-#include "drawutil.h"
 #include "TextureFont.h"
+#include "drawutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

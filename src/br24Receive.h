@@ -32,9 +32,9 @@
 #ifndef _BR24RECEIVE_H_
 #define _BR24RECEIVE_H_
 
+#include "RadarInfo.h"
 #include "pi_common.h"
 #include "socketutil.h"
-#include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

@@ -45,8 +45,8 @@ extern "C" {
 
 #ifdef __WXGTK__
 #include "GL/gl.h"
-#include "GL/glu.h"
 #include "GL/glext.h"
+#include "GL/glu.h"
 #endif
 
 #ifdef __WXOSX__
@@ -72,23 +72,23 @@ extern "C" {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpotentially-evaluated-expression"
 #endif
-#include "wx/wx.h"
 #include "wx/aui/aui.h"
 #include "wx/aui/framemanager.h"
+#include "wx/wx.h"
 #ifdef __WXOSX__
 #pragma clang diagnostic pop
 #endif
 
-#include <wx/socket.h>
+#include <stdint.h>
 #include <wx/apptrait.h>
-#include <wx/sckaddr.h>
+#include <wx/clrpicker.h>
 #include <wx/datetime.h>
 #include <wx/fileconf.h>
 #include <wx/glcanvas.h>
 #include <wx/mstream.h>
-#include <wx/clrpicker.h>
+#include <wx/sckaddr.h>
+#include <wx/socket.h>
 #include <fstream>
-#include <stdint.h>
 
 using namespace std;
 
@@ -98,9 +98,9 @@ using namespace std;
 #endif
 
 #ifdef __WXOSX__
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #endif
 
 // Load the ocpn_plugin. On OS X this generates many warnings, suppress these.

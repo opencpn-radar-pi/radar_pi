@@ -190,8 +190,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
     case CT_GAIN: {
       if (value < 0) {  // AUTO gain
         UINT8 cmd[] = {
-            0x06, 0xc1, 0, 0, 0,   0,
-            0x01, 0,    0, 0, 0xad  // changed from a1 to ad
+            0x06, 0xc1, 0, 0, 0, 0, 0x01, 0, 0, 0, 0xad  // changed from a1 to ad
         };
         LOG_VERBOSE(wxT("BR24radar_pi: %s Gain: Auto in setcontrolvalue"), m_name);
         r = TransmitCmd(cmd, sizeof(cmd));

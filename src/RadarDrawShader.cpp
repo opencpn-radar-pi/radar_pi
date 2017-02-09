@@ -30,8 +30,8 @@
  */
 
 #include "RadarDrawShader.h"
-#include "shaderutil.h"
 #include "drawutil.h"
+#include "shaderutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

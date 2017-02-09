@@ -226,7 +226,7 @@ class br24ControlsDialog : public wxDialog {
   void OnOuter_Range_Value(wxCommandEvent &event);
   void OnStart_Bearing_Value(wxCommandEvent &event);
   void OnEnd_Bearing_Value(wxCommandEvent &event);
-  void OnFilterClick(wxCommandEvent &event);  
+  void OnFilterClick(wxCommandEvent &event);
   void OnARPAClick(wxCommandEvent &event);
   void OnAlarmClick(wxCommandEvent &event);
 };

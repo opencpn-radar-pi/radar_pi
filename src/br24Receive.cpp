@@ -33,7 +33,6 @@
 #include "br24Receive.h"
 #include "RadarMarpa.h"
 
-
 PLUGIN_BEGIN_NAMESPACE
 
 /*
@@ -160,8 +159,8 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
   time_t now = time(0);
   double lat = m_pi->m_ownship_lat;
   double lon = m_pi->m_ownship_lon;
- // log_line.time_rec = wxGetUTCTimeMillis();
-  wxLongLong time_rec =  wxGetUTCTimeMillis(); 
+  // log_line.time_rec = wxGetUTCTimeMillis();
+  wxLongLong time_rec = wxGetUTCTimeMillis();
 
   radar_frame_pkt *packet = (radar_frame_pkt *)data;
 

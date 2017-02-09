@@ -32,12 +32,12 @@
 #include "RadarInfo.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
+#include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "br24ControlsDialog.h"
 #include "br24Receive.h"
 #include "br24Transmit.h"
 #include "drawutil.h"
-#include "RadarMarpa.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -348,8 +348,8 @@ void RadarInfo::StartReceive() {
 
 void RadarInfo::ComputeColourMap() {
   for (int i = 0; i <= UINT8_MAX; i++) {
-    m_colour_map[i] =
-        (i >= m_pi->m_settings.threshold_red) ? BLOB_STRONG : (i >= m_pi->m_settings.threshold_green)
+    m_colour_map[i] = (i >= m_pi->m_settings.threshold_red) ? BLOB_STRONG
+                                                            : (i >= m_pi->m_settings.threshold_green)
                                                                   ? BLOB_INTERMEDIATE
                                                                   : (i >= m_pi->m_settings.threshold_blue) ? BLOB_WEAK : BLOB_NONE;
   }
@@ -417,7 +417,8 @@ void RadarInfo::ResetSpokes() {
  * @param len                   Number of returns
  * @param range                 Range (in meters) of this data
  */
-void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time_rec, double lat, double lon) {
+void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters,
+                                  wxLongLong time_rec, double lat, double lon) {
   wxCriticalSectionLocker lock(m_exclusive);
 
   for (int i = 0; i < m_pi->m_settings.main_bang_size; i++) {
@@ -429,7 +430,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   // Douwe likes this, and I think it has some value in testing, but I think it distracts as well.
   // Why don't we make this an option? Yes we should
   data[RETURNS_PER_LINE - 1] = 200;  //  range ring, do we want this? ActionL: make setting, switched on for testing
-
 
   if (m_range_meters != range_meters) {
     ResetSpokes();
@@ -447,19 +447,19 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   int north_or_course_up = m_orientation.GetButton() != ORIENTATION_HEAD_UP;  // true for north up or course up
   uint8_t weakest_normal_blob = m_pi->m_settings.threshold_blue;
 
-    UINT8 *hist_data = m_history[bearing].line;
-    m_history[bearing].time = time_rec;
-    m_history[bearing].lat = lat;
-    m_history[bearing].lon = lon;
-    for (size_t radius = 0; radius < len; radius++) {
-      hist_data[radius] = hist_data[radius] << 1;  // shift left history byte 1 bit
-      // clear leftmost 2 bits to 00 for ARPA
-      hist_data[radius] = hist_data[radius] & 63;
-      if (data[radius] >= weakest_normal_blob) {
-          //and add 1 if above threshold and set the left 2 bits, used for ARPA
-        hist_data[radius] = hist_data[radius] | 192;  
-      }
+  UINT8 *hist_data = m_history[bearing].line;
+  m_history[bearing].time = time_rec;
+  m_history[bearing].lat = lat;
+  m_history[bearing].lon = lon;
+  for (size_t radius = 0; radius < len; radius++) {
+    hist_data[radius] = hist_data[radius] << 1;  // shift left history byte 1 bit
+    // clear leftmost 2 bits to 00 for ARPA
+    hist_data[radius] = hist_data[radius] & 63;
+    if (data[radius] >= weakest_normal_blob) {
+      // and add 1 if above threshold and set the left 2 bits, used for ARPA
+      hist_data[radius] = hist_data[radius] | 192;
     }
+  }
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     if (m_guard_zone[z]->m_alarm_on) {
@@ -469,7 +469,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   bool test = 1;
   if (m_multi_sweep_filter) {
     for (size_t radius = 0; radius < len; radius++) {
-      if (!HISTORY_FILTER_ALLOW(m_history[bearing].line[radius])) { 
+      if (!HISTORY_FILTER_ALLOW(m_history[bearing].line[radius])) {
         data[radius] = 0;
       }
     }
@@ -844,29 +844,28 @@ void RadarInfo::RenderGuardZone() {
   GLubyte red = 0, green = 200, blue = 0, alpha = 50;
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
-      if (m_guard_zone[z]->m_alarm_on || m_guard_zone[z]->m_arpa_on || m_guard_zone[z]->m_show_time + 5 > time(0)) {
-          if (m_guard_zone[z]->m_type == GZ_CIRCLE) {
-              start_bearing = 0;
-              end_bearing = 359;
-          }
-          else {
-              start_bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone[z]->m_start_bearing);
-              end_bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone[z]->m_end_bearing);
-          }
-          switch (m_pi->m_settings.guard_zone_render_style) {
-          case 1:
-              glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
-              DrawOutlineArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing, true);
-              break;
-          case 2:
-              glColor4ub(red, green, blue, alpha);
-              DrawOutlineArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing, false);
-              // fall thru
-          default:
-              glColor4ub(red, green, blue, alpha);
-              DrawFilledArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing);
-          }
+    if (m_guard_zone[z]->m_alarm_on || m_guard_zone[z]->m_arpa_on || m_guard_zone[z]->m_show_time + 5 > time(0)) {
+      if (m_guard_zone[z]->m_type == GZ_CIRCLE) {
+        start_bearing = 0;
+        end_bearing = 359;
+      } else {
+        start_bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone[z]->m_start_bearing);
+        end_bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone[z]->m_end_bearing);
       }
+      switch (m_pi->m_settings.guard_zone_render_style) {
+        case 1:
+          glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
+          DrawOutlineArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing, true);
+          break;
+        case 2:
+          glColor4ub(red, green, blue, alpha);
+          DrawOutlineArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing, false);
+        // fall thru
+        default:
+          glColor4ub(red, green, blue, alpha);
+          DrawFilledArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing);
+      }
+    }
 
     red = 0;
     green = 0;
@@ -1038,7 +1037,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     arpa_rotate -= m_course;
   }
   if (m_orientation.value == ORIENTATION_HEAD_UP) {
-      arpa_rotate = - m_pi->m_hdt;
+    arpa_rotate = -m_pi->m_hdt;
   }
   double guard_rotate = overlay_rotate;
   if (overlay || m_orientation.value == ORIENTATION_NORTH_UP || m_orientation.value == ORIENTATION_COURSE_UP) {
@@ -1047,8 +1046,8 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   if (!overlay && m_orientation.value == ORIENTATION_COURSE_UP) {
     guard_rotate -= m_course;
   }
-  if (m_marpa){
-      m_marpa->RefreshArpaTargets();
+  if (m_marpa) {
+    m_marpa->RefreshArpaTargets();
   }
   if (overlay) {
     if (m_marpa) {
