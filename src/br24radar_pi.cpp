@@ -1386,7 +1386,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
                 if (empty == -1 && ais_in_arpa[i].ais_mmsi == 0) empty = i;
               }
             }
-            if (!updated) {  // New post, put in first empty
+            if (!updated && empty != -1) {  // New post, load at first empty if present
               ais_in_arpa[empty].ais_mmsi = json_ais_mmsi;
               ais_in_arpa[empty].ais_time_upd = time(0);
               ais_in_arpa[empty].ais_lat = f_AISLat;
