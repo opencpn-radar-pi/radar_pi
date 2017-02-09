@@ -29,10 +29,10 @@
  ***************************************************************************
  */
 
-#include "br24radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
+#include "br24radar_pi.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
 
@@ -121,6 +121,9 @@ br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_112(ppimgr) {
   m_opencpn_gl_context = 0;
   m_opencpn_gl_context_broken = false;
 
+  m_context_menu_delete_marpa_target = 0;
+  m_context_menu_delete_all_marpa_targets = 0;
+
   m_first_init = true;
 }
 
@@ -184,7 +187,6 @@ int br24radar_pi::Init(void) {
   m_idle_standby = 0;
   m_idle_transmit = 0;
   count_ais_in_arpa = 0;
-  ais_in_arpa[SIZEAISAR];
   // Silly, but could there be old scrap in memory location? (Debug exp.)
   for (int i = 0; i < SIZEAISAR; i++) {
     ais_in_arpa[i].ais_mmsi = 0;
