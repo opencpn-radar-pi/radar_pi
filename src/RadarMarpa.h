@@ -43,7 +43,7 @@
 PLUGIN_BEGIN_NAMESPACE
 
 //    Forward definitions
-class Kalman_Filter;
+class KalmanFilter;
 class Position;
 
 #define MAX_NUMBER_OF_TARGETS (200)  // real max numer of targets is 1 less
@@ -132,11 +132,12 @@ class ArpaTarget {
   ArpaTarget(br24radar_pi* pi, RadarInfo* ri);
   ArpaTarget();
   ~ArpaTarget();
+
   RadarInfo* m_ri;
   br24radar_pi* m_pi;
   int target_id;
   Position X;  // holds actual position of target
-  Kalman_Filter* m_kalman;
+  KalmanFilter* m_kalman;
   wxLongLong t_refresh;  // time of last refresh
   target_status status;
   double speed_kn;
@@ -153,6 +154,7 @@ class ArpaTarget {
   Polar expected;
   int contour_length;
   Polar max_angle, min_angle, max_r, min_r;  // charasterictics of contour
+
   int GetContour(Polar* p);
   void set(br24radar_pi* pi, RadarInfo* ri);
   bool FindNearestContour(Polar* pol, int dist);

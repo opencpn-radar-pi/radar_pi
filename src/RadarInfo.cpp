@@ -29,9 +29,9 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
+#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "br24ControlsDialog.h"
@@ -177,7 +177,7 @@ void radar_range_control_item::Update(int v) {
 RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_pi = pi;
   m_radar = radar;
-  m_marpa = 0;
+  m_arpa = 0;
   m_radar_type = RT_UNKNOWN;
   m_auto_range_mode = true;
   m_course_index = 0;
@@ -1045,15 +1045,15 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   if (!overlay && m_orientation.value == ORIENTATION_COURSE_UP) {
     guard_rotate -= m_course;
   }
-  if (m_marpa) {
-    m_marpa->RefreshArpaTargets();
+  if (m_arpa) {
+    m_arpa->RefreshArpaTargets();
   }
   if (overlay) {
-    if (m_marpa) {
+    if (m_arpa) {
       glPushMatrix();
       glTranslated(center.x, center.y, 0);
       glScaled(scale, scale, 1.);
-      m_marpa->DrawArpaTargets();
+      m_arpa->DrawArpaTargets();
       glPopMatrix();
     }
 
@@ -1088,11 +1088,11 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     RenderGuardZone();
     glPopMatrix();
 
-    if (m_marpa) {
+    if (m_arpa) {
       glPushMatrix();
       glScaled(scale, scale, 1.);
       glRotated(arpa_rotate, 0.0, 0.0, 1.0);
-      m_marpa->DrawArpaTargets();
+      m_arpa->DrawArpaTargets();
       glPopMatrix();
     }
 

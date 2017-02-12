@@ -130,7 +130,7 @@ class RadarInfo : public wxEvtHandler {
   double m_course;  // m_course is the moving everage of m_hdt used for course_up
   double m_course_log[COURSE_SAMPLES];
   int m_course_index;
-  RadarArpa *m_marpa;
+  RadarArpa *m_arpa;
   wxCriticalSection m_exclusive;  // protects the following two
 
   /* User radar settings */

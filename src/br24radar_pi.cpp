@@ -219,8 +219,8 @@ int br24radar_pi::Init(void) {
   // before config, so config can set data in it
   m_radar[0] = new RadarInfo(this, 0);
   m_radar[1] = new RadarInfo(this, 1);
-  m_radar[0]->m_marpa = new RadarArpa(this, m_radar[0]);
-  m_radar[1]->m_marpa = new RadarArpa(this, m_radar[1]);
+  m_radar[0]->m_arpa = new RadarArpa(this, m_radar[0]);
+  m_radar[1]->m_arpa = new RadarArpa(this, m_radar[1]);
 
   // make guard zones after making the radars
   for (size_t z = 0; z < GUARD_ZONES; z++) {
@@ -329,9 +329,9 @@ bool br24radar_pi::DeInit(void) {
 
   // Delete all 'new'ed objects
   for (int r = 0; r < RADARS; r++) {
-    if (m_radar[r]->m_marpa) {
-      delete m_radar[r]->m_marpa;
-      m_radar[r]->m_marpa = 0;
+    if (m_radar[r]->m_arpa) {
+      delete m_radar[r]->m_arpa;
+      m_radar[r]->m_arpa = 0;
     }
 
     delete m_radar[r];
@@ -526,7 +526,7 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
       Position target_pos;
       target_pos.lat = m_cursor_lat;
       target_pos.lon = m_cursor_lon;
-      m_radar[m_settings.chart_overlay]->m_marpa->AcquireNewTarget(target_pos, 0);
+      m_radar[m_settings.chart_overlay]->m_arpa->AcquireNewTarget(target_pos, 0);
     }
   } else if (id == m_context_menu_delete_marpa_target) {
     if (m_settings.show                                                        // radar shown
@@ -536,14 +536,14 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
       Position target_pos;
       target_pos.lat = m_cursor_lat;
       target_pos.lon = m_cursor_lon;
-      m_radar[m_settings.chart_overlay]->m_marpa->AcquireNewTarget(target_pos, -2);
+      m_radar[m_settings.chart_overlay]->m_arpa->AcquireNewTarget(target_pos, -2);
     }
   } else if (id == m_context_menu_delete_all_marpa_targets) {
     if (m_settings.show                                                        // radar shown
         && m_settings.chart_overlay >= 0                                       // overlay desired
         && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
         && m_bpos_set) {                                                       // overlay possible
-      m_radar[m_settings.chart_overlay]->m_marpa->DeleteAllTargets();
+      m_radar[m_settings.chart_overlay]->m_arpa->DeleteAllTargets();
     }
   }
 
@@ -979,12 +979,12 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
       || m_radar[m_settings.chart_overlay]->m_state.value != RADAR_TRANSMIT  // Radar not transmitting
       || !m_bpos_set) {                                                      // No overlay possible (yet)
     if (m_radar[m_settings.chart_overlay] >= 0) {
-      if (m_radar[m_settings.chart_overlay]->m_marpa) {
-        if (m_radar[m_settings.chart_overlay]->m_marpa->radar_lost_count > 5) {
-          m_radar[m_settings.chart_overlay]->m_marpa->DeleteAllTargets();  // Let ARPA targets disappear
-          m_radar[m_settings.chart_overlay]->m_marpa->radar_lost_count = 0;
+      if (m_radar[m_settings.chart_overlay]->m_arpa) {
+        if (m_radar[m_settings.chart_overlay]->m_arpa->radar_lost_count > 5) {
+          m_radar[m_settings.chart_overlay]->m_arpa->DeleteAllTargets();  // Let ARPA targets disappear
+          m_radar[m_settings.chart_overlay]->m_arpa->radar_lost_count = 0;
         }
-        m_radar[m_settings.chart_overlay]->m_marpa->radar_lost_count++;
+        m_radar[m_settings.chart_overlay]->m_arpa->radar_lost_count++;
       }
     }
     return true;

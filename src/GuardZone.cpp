@@ -163,7 +163,7 @@ void GuardZone::SearchTargets() {
                                // set new refresh time
         arpa_update_time[MOD_ROTATION2048(angle)] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
-          if (m_ri->m_marpa->MultiPix(angle, rrr)) {
+          if (m_ri->m_arpa->MultiPix(angle, rrr)) {
             bool next_r = false;
             if (next_r) continue;
             // pixel found that does not belong to a known target
@@ -176,10 +176,10 @@ void GuardZone::SearchTargets() {
             Position x;
             x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
             int target_i;
-            m_ri->m_marpa->AcquireNewTarget(pol, 0, &target_i);
-            if (target_i == -1) break;                                                 // $$$ how to handle max targets exceeded
-            m_ri->m_marpa->m_targets[target_i]->RefreshTarget(TARGET_SEARCH_RADIUS1);  // make first contour and max min values
-            m_ri->m_marpa->m_targets[target_i]->arpa = true;
+            m_ri->m_arpa->AcquireNewTarget(pol, 0, &target_i);
+            if (target_i == -1) break;                                                // $$$ how to handle max targets exceeded
+            m_ri->m_arpa->m_targets[target_i]->RefreshTarget(TARGET_SEARCH_RADIUS1);  // make first contour and max min values
+            m_ri->m_arpa->m_targets[target_i]->arpa = true;
           }
         }
       }

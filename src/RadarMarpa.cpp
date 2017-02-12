@@ -167,7 +167,7 @@ void RadarArpa::AcquireNewTarget(Position target_pos, int status) {
   m_targets[i_target]->min_r.r = 0;
 
   if (!m_targets[i_target]->m_kalman) {
-    m_targets[i_target]->m_kalman = new Kalman_Filter(m_ri->m_range_meters);
+    m_targets[i_target]->m_kalman = new KalmanFilter();
   }
   return;
 }
@@ -448,7 +448,7 @@ void RadarArpa::RefreshArpaTargets() {
   }
 
   ArpaTarget t;
-  Kalman_Filter k;
+  KalmanFilter k;
   // main target refresh loop
 
   // pass 1 of target refresh
@@ -959,7 +959,7 @@ void RadarArpa::AcquireNewTarget(Polar pol, int status, int* target_i) {
   m_targets[i_target]->max_r.r = 0;
   m_targets[i_target]->min_r.r = 0;
   if (!m_targets[i_target]->m_kalman) {
-    m_targets[i_target]->m_kalman = new Kalman_Filter(m_ri->m_range_meters);
+    m_targets[i_target]->m_kalman = new KalmanFilter();
   }
   *target_i = i_target;
   m_targets[i_target]->check_for_duplicate = false;
