@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#include "RadarMarpa.h"
 #include "RadarInfo.h"
+#include "RadarMarpa.h"
 #include "br24radar_pi.h"
 #include "drawutil.h"
 
@@ -136,10 +136,10 @@ bool ArpaTarget::MultiPix(int ang, int rad) {
   return false;
 }
 
-void RadarArpa::AquireNewTarget(Position target_pos, int status) {
-  // aquires new target from mouse click position
+void RadarArpa::AcquireNewTarget(Position target_pos, int status) {
+  // acquires new target from mouse click position
   // no contour taken yet
-  // target status aquire0
+  // target status acquire0
   // returns in X metric coordinates of click
   // constructs Kalman filter
 
@@ -344,8 +344,8 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
     yy = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
     glVertex2f(xx, yy);
   }
-  // following displays expected position with crosses that indicate the size of the search area
-  // for debugging only
+// following displays expected position with crosses that indicate the size of the search area
+// for debugging only
 
 #ifdef MARPA_DEBUG
   // draw expected pos for test
@@ -565,7 +565,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     }
 
     // delete if target too small
-    if (contour_length < MIN_CONTOUR_LENGTH && (status == AQUIRE0 || status == AQUIRE1)) {
+    if (contour_length < MIN_CONTOUR_LENGTH && (status == ACQUIRE0 || status == ACQUIRE1)) {
       SetStatusLost();
       return;
     }
@@ -581,7 +581,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     }
 
     lost_count = 0;
-    if (status == AQUIRE0) {
+    if (status == ACQUIRE0) {
       // as this is the first measurement, move target to measured position
       Position p_own;
       p_own.lat = m_ri->m_history[MOD_ROTATION2048(pol.angle)].lat;  // get the position at receive time
@@ -638,7 +638,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     }
 
     // delete low status targets immediately when not found
-    if (status == AQUIRE0 || status == AQUIRE1 || status == 2) {
+    if (status == ACQUIRE0 || status == ACQUIRE1 || status == 2) {
       SetStatusLost();
       return;
     }
@@ -653,7 +653,7 @@ void ArpaTarget::RefreshTarget(int dist) {
   }  // end of target not found
   // set pass1_result ready for next sweep
   pass1_result = UNKNOWN;
-  if (status != AQUIRE1) {
+  if (status != ACQUIRE1) {
     // if status == 1, then this was first measurement, keep position at measured position
     X.lat = own_pos.lat + x_local.lat / 60. / 1852.;
     X.lon = own_pos.lon + x_local.lon / 60. / 1852. / cos(deg2rad(own_pos.lat));
@@ -809,7 +809,7 @@ bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
   // general target refresh
   bool contour_found = false;
   int dist = dist1;
-  if (status == AQUIRE0 || status == AQUIRE1) {
+  if (status == ACQUIRE0 || status == ACQUIRE1) {
     dist *= 2;
   }
   if (dist > pol->r - 5) dist = pol->r - 5;  // don't search close to origin
@@ -871,16 +871,16 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
 
   /* Code for TTM follows. Send speed and course using TTM*/
   snprintf(sentence, sizeof(sentence), "RATTM,%2s,%s,%s,%s,%s,%s,%s, , ,%s,%s,%s, ",
-                    (const char*)s_TargID.mb_str(),       // 1 target id
-                    (const char*)s_distance.mb_str(),     // 2 Targ distance
-                    (const char*)s_bearing.mb_str(),      // 3 Bearing fr own ship.
-                    (const char*)s_Bear_Unit.mb_str(),    // 4 Brearing unit ( T = true)
-                    (const char*)s_speed.mb_str(),        // 5 Target speed
-                    (const char*)s_course.mb_str(),       // 6 Target Course.
-                    (const char*)s_Course_Unit.mb_str(),  // 7 Course ref T // 8 CPA Not used // 9 TCPA Not used
-                    (const char*)s_Dist_Unit.mb_str(),    // 10 S/D Unit N = knots/Nm
-                    (const char*)s_target_name.mb_str(),  // 11 Target name
-                    (const char*)s_status.mb_str());      // 12 Target Status L/Q/T // 13 Ref N/A
+           (const char*)s_TargID.mb_str(),       // 1 target id
+           (const char*)s_distance.mb_str(),     // 2 Targ distance
+           (const char*)s_bearing.mb_str(),      // 3 Bearing fr own ship.
+           (const char*)s_Bear_Unit.mb_str(),    // 4 Brearing unit ( T = true)
+           (const char*)s_speed.mb_str(),        // 5 Target speed
+           (const char*)s_course.mb_str(),       // 6 Target Course.
+           (const char*)s_Course_Unit.mb_str(),  // 7 Course ref T // 8 CPA Not used // 9 TCPA Not used
+           (const char*)s_Dist_Unit.mb_str(),    // 10 S/D Unit N = knots/Nm
+           (const char*)s_target_name.mb_str(),  // 11 Target name
+           (const char*)s_status.mb_str());      // 12 Target Status L/Q/T // 13 Ref N/A
 
   for (p = sentence; *p; p++) {
     checksum ^= *p;
@@ -924,8 +924,8 @@ void RadarArpa::DeleteAllTargets() {
   }
 }
 
-void RadarArpa::AquireNewTarget(Polar pol, int status, int* target_i) {
-  // aquires new target from mouse click position
+void RadarArpa::AcquireNewTarget(Polar pol, int status, int* target_i) {
+  // acquires new target from mouse click position
   // no contour taken yet
   // target status status, normally 0, if dummy target to delete a target -2
   // returns in X metric coordinates of click

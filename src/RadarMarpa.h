@@ -58,11 +58,11 @@ class Position;
 
 #define FOR_DELETION (-2)  // status of a duplicate target used to delete a target
 #define LOST (-1)
-#define AQUIRE0 (0)  // 0 under aquisition, first seen, no contour yet
-#define AQUIRE1 (1)  // 1 under aquisition, contour found, first position FOUND
-#define AQUIRE2 (2)  // 2 under aquisition, speed and course taken
-#define AQUIRE3 (3)  // 3 under aquisition, speed and course verified, next time active
-                     //    >=4  active
+#define ACQUIRE0 (0)  // 0 under acquisition, first seen, no contour yet
+#define ACQUIRE1 (1)  // 1 under acquisition, contour found, first position FOUND
+#define ACQUIRE2 (2)  // 2 under acquisition, speed and course taken
+#define ACQUIRE3 (3)  // 3 under acquisition, speed and course verified, next time active
+                      //    >=4  active
 
 #define Q_NUM (4)  // status Q to OCPN at target status
 #define T_NUM (6)  // status T to OCPN at target status
@@ -79,7 +79,7 @@ class Position;
 
 typedef int target_status;
 enum OCPN_target_status {
-  Q,  // aquiring
+  Q,  // acquiring
   T,  // active
   L   // lost
 };
@@ -181,8 +181,8 @@ class RadarArpa {
   void DrawContour(ArpaTarget* t);
   void DrawArpaTargets();
   void RefreshArpaTargets();
-  void AquireNewTarget(Position p, int status);
-  void AquireNewTarget(Polar pol, int status, int* target_i);
+  void AcquireNewTarget(Position p, int status);
+  void AcquireNewTarget(Polar pol, int status, int* target_i);
   void DeleteAllTargets();
   bool Pix(int ang, int rad);
   bool MultiPix(int ang, int rad);
