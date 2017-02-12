@@ -45,7 +45,6 @@ PLUGIN_BEGIN_NAMESPACE
 //    Forward definitions
 class Kalman_Filter;
 class Position;
-class Matrix;
 
 #define MAX_NUMBER_OF_TARGETS (200)  // real max numer of targets is 1 less
 #define TARGET_SEARCH_RADIUS1 (2)    // radius of target search area for pass 1 (on top of the size of the blob)
