@@ -17,8 +17,8 @@
 #pragma hdrstop
 #endif
 
-#include <wx/log.h>
 #include <wx/debug.h>
+#include <wx/log.h>
 #include <wx/arrimpl.cpp>
 
 #include "jsonval.h"
@@ -1177,7 +1177,7 @@ bool wxJSONValue::AsString(wxString& str) const {
   return r;
 }
 
-bool wxJSONValue::AsCString(wxChar* ch) const {
+bool wxJSONValue::AsCString(wxChar*& ch) const {
   bool r = IsCString();
   if (r) {
     ch = (wxChar*)AsCString();
@@ -2026,7 +2026,6 @@ wxString wxJSONValue::Dump(bool deep, int indent) const {
     switch (type) {
       case wxJSONTYPE_OBJECT:
         map = AsMap();
-        size = Size();
         for (it = map->begin(); it != map->end(); ++it) {
           const wxJSONValue& v = it->second;
           sub = v.Dump(true, indent);
