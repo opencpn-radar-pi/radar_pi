@@ -1018,6 +1018,10 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
     wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->m_boot_time;
     LOG_INFO(wxT("BR24radar_pi: First radar image rendered after %llu ms\n"), startup_elapsed);
   }
+
+  if (m_arpa) {
+    m_arpa->RadarLostReset();
+  }
 }
 
 void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_rotate, bool overlay) {

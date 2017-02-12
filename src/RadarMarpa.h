@@ -116,7 +116,7 @@ class LocalPosition {
 
 Polar Pos2Polar(Position p, Position own_ship, int range);
 
-struct speed {
+struct SpeedHistory {
   double av;
   double hist[SPEED_HISTORY];
   double dif[SPEED_HISTORY];
@@ -124,36 +124,16 @@ struct speed {
   int nr;
 };
 
-enum target_process_status { UNKNOWN, NOT_FOUND_IN_PASS1 };
-enum pass_n { PASS1, PASS2 };
+enum TargetProcessStatus { UNKNOWN, NOT_FOUND_IN_PASS1 };
+enum PassN { PASS1, PASS2 };
 
 class ArpaTarget {
+  friend class RadarArpa; // Allow RadarArpa access to private members
+
  public:
   ArpaTarget(br24radar_pi* pi, RadarInfo* ri);
   ArpaTarget();
   ~ArpaTarget();
-
-  RadarInfo* m_ri;
-  br24radar_pi* m_pi;
-  int target_id;
-  Position X;  // holds actual position of target
-  KalmanFilter* m_kalman;
-  wxLongLong t_refresh;  // time of last refresh
-  target_status status;
-  double speed_kn;
-  double course;
-  speed speeds;
-  int stationary;  // number of sweeps target was stationary
-  bool arpa;
-  int lost_count;
-  int duplicate_count;
-  bool check_for_duplicate;
-  target_process_status pass1_result;
-  pass_n pass_nr;
-  Polar contour[MAX_CONTOUR_LENGTH + 1];  // contour of target, only valid immediately after finding it
-  Polar expected;
-  int contour_length;
-  Polar max_angle, min_angle, max_r, min_r;  // charasterictics of contour
 
   int GetContour(Polar* p);
   void set(br24radar_pi* pi, RadarInfo* ri);
@@ -167,27 +147,65 @@ class ArpaTarget {
   void GetSpeed();
   bool Pix(int ang, int rad);
   bool MultiPix(int ang, int rad);
+
+ private:
+  RadarInfo* m_ri;
+  br24radar_pi* m_pi;
+  KalmanFilter* m_kalman;
+  int m_target_id;
+  target_status m_status;
+  Position m_position;  // holds actual position of target
+  double m_speed_kn;    // Average speed of target. TODO: Merge with m_position.speed?
+  wxLongLong m_refresh;  // time of last refresh
+  double m_course;
+  SpeedHistory m_speeds;
+  int m_stationary;  // number of sweeps target was stationary
+  int m_lost_count;
+  bool m_check_for_duplicate;
+  TargetProcessStatus m_pass1_result;
+  PassN m_pass_nr;
+  Polar m_contour[MAX_CONTOUR_LENGTH + 1];  // contour of target, only valid immediately after finding it
+  int m_contour_length;
+  Polar m_max_angle, m_min_angle, m_max_r, m_min_r;  // charasterictics of contour
+
+  Polar m_expected;
+
+  bool m_automatic;  // True for ARPA, false for MARPA.
 };
 
 class RadarArpa {
  public:
   RadarArpa(br24radar_pi* pi, RadarInfo* ri);
   ~RadarArpa();
+  void DrawArpaTargets();
+  void RefreshArpaTargets();
+  int AcquireNewARPATarget(Polar pol, int status);
+  void AcquireNewMARPATarget(Position p);
+  void DeleteTarget(Position p);
+  bool MultiPix(int ang, int rad);
+  void DeleteAllTargets();
+  void RadarLost() {
+    if (m_radar_lost_count > 5) {
+      DeleteAllTargets();  // Let ARPA targets disappear
+      m_radar_lost_count = 0;
+    }
+    m_radar_lost_count++;
+  }
+  void RadarLostReset() {
+    m_radar_lost_count = 0;
+  }
 
+private:
   ArpaTarget* m_targets[MAX_NUMBER_OF_TARGETS];
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
-  int number_of_targets;
-  int radar_lost_count;  // all targets will be deleted when radar not seen
+  int m_number_of_targets;
+  int m_radar_lost_count;  // all targets will be deleted when radar not seen five times in a row
+
+  void AcquireOrDeleteMarpaTarget(Position p, int status);
   void CalculateCentroid(ArpaTarget* t);
   void DrawContour(ArpaTarget* t);
-  void DrawArpaTargets();
-  void RefreshArpaTargets();
-  void AcquireNewTarget(Position p, int status);
-  void AcquireNewTarget(Polar pol, int status, int* target_i);
-  void DeleteAllTargets();
   bool Pix(int ang, int rad);
-  bool MultiPix(int ang, int rad);
 };
 
 PLUGIN_END_NAMESPACE
