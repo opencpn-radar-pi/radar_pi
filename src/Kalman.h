@@ -44,11 +44,10 @@ class LocalPosition;
 class ArpaTarget;
 class Polar;
 
-class Kalman_Filter {
+class KalmanFilter {
  public:
-  Kalman_Filter(int range);
-  Kalman_Filter();
-  ~Kalman_Filter();
+  KalmanFilter();
+  ~KalmanFilter();
   void SetMeasurement(Polar* p, LocalPosition* x, Polar* expected, int range);
   void Predict(LocalPosition* x, double delta_time);  // measured position and expected position
   void ResetFilter();

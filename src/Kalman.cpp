@@ -41,9 +41,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-Kalman_Filter::Kalman_Filter() {}
-
-Kalman_Filter::Kalman_Filter(int range) {
+KalmanFilter::KalmanFilter() {
   // as the measurement to state transformation is non-linear, the extended Kalman filter is used
   // as the state transformation is linear, the state transformation matrix F is equal to the jacobian A
   // f is the state transformation function Xk <- Xk-1
@@ -52,7 +50,7 @@ Kalman_Filter::Kalman_Filter(int range) {
   ResetFilter();
 }
 
-void Kalman_Filter::ResetFilter() {
+void KalmanFilter::ResetFilter() {
   // reset the filter to use  it for a new case
   A = I;
 
@@ -105,9 +103,9 @@ void Kalman_Filter::ResetFilter() {
   R(1, 1) = 25.;    // variance in radius  .5
 }
 
-Kalman_Filter::~Kalman_Filter() {}
+KalmanFilter::~KalmanFilter() {}
 
-void Kalman_Filter::Predict(LocalPosition* xx, double delta_time) {
+void KalmanFilter::Predict(LocalPosition* xx, double delta_time) {
   Matrix<double, 4, 1> X;
   X(0, 0) = xx->lat;
   X(1, 0) = xx->lon;
@@ -130,7 +128,7 @@ void Kalman_Filter::Predict(LocalPosition* xx, double delta_time) {
   return;
 }
 
-void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected, int range) {
+void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected, int range) {
 // pol measured angular position
 // x expected local position
 // expected, same but in polar coordinates
