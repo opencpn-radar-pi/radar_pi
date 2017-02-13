@@ -60,20 +60,17 @@ int main() {
   cout << "Delta lat=" << x_local.dlat_dt << " Delta lon=" << x_local.dlon_dt << "\n";
   cout << "StdDev speed=" << x_local.sd_speed_m_s << "\n";
 
-  if (x_local.lat != 25)
-  {
+  if (x_local.lat != 25) {
     cout << "Predicted lat is not expected value " << 25 << "\n";
     ret = 1;
   }
 
-  if (x_local.lon != 10)
-  {
+  if (x_local.lon != 10) {
     cout << "Predicted lat is not expected value " << 10 << "\n";
     ret = 1;
   }
 
-  if (fabs(x_local.sd_speed_m_s - 0.360555) > 0.001)
-  {
+  if (fabs(x_local.sd_speed_m_s - 0.360555) > 0.001) {
     cout << "Predicted StdDev is not expected value " << 0.360555 << "\n";
     ret = 1;
   }

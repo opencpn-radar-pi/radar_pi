@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
+#include "RadarInfo.h"
 #include "br24radar_pi.h"
 #include "drawutil.h"
 
@@ -136,13 +136,9 @@ bool ArpaTarget::MultiPix(int ang, int rad) {
   return false;
 }
 
-void RadarArpa::AcquireNewMARPATarget(Position target_pos) {
-  AcquireOrDeleteMarpaTarget(target_pos, ACQUIRE0);
-}
+void RadarArpa::AcquireNewMARPATarget(Position target_pos) { AcquireOrDeleteMarpaTarget(target_pos, ACQUIRE0); }
 
-void RadarArpa::DeleteTarget(Position target_pos) {
-  AcquireOrDeleteMarpaTarget(target_pos, FOR_DELETION);
-}
+void RadarArpa::DeleteTarget(Position target_pos) { AcquireOrDeleteMarpaTarget(target_pos, FOR_DELETION); }
 
 void RadarArpa::AcquireOrDeleteMarpaTarget(Position target_pos, int status) {
   // acquires new target from mouse click position
@@ -153,7 +149,8 @@ void RadarArpa::AcquireOrDeleteMarpaTarget(Position target_pos, int status) {
 
   // make new target
   int i_target;
-  if (m_number_of_targets < MAX_NUMBER_OF_TARGETS - 1 || (m_number_of_targets == MAX_NUMBER_OF_TARGETS - 1 && status == FOR_DELETION)) {
+  if (m_number_of_targets < MAX_NUMBER_OF_TARGETS - 1 ||
+      (m_number_of_targets == MAX_NUMBER_OF_TARGETS - 1 && status == FOR_DELETION)) {
     if (m_targets[m_number_of_targets] == 0) {
       m_targets[m_number_of_targets] = new ArpaTarget(m_pi, m_ri);
     }
@@ -164,7 +161,7 @@ void RadarArpa::AcquireOrDeleteMarpaTarget(Position target_pos, int status) {
     return;
   }
 
-  ArpaTarget * target = m_targets[i_target];
+  ArpaTarget* target = m_targets[i_target];
   target->m_position = target_pos;  // Expected position
   target->m_position.time = 0;
   target->m_position.dlat_dt = 0.;
@@ -437,7 +434,7 @@ void RadarArpa::RefreshArpaTargets() {
   }
   if (target_to_delete != -1) {
     // delete the target that is closest to the target with status FOR_DELETION
-    Position * deletePosition = & m_targets[target_to_delete]->m_position;
+    Position* deletePosition = &m_targets[target_to_delete]->m_position;
     double min_dist = 1000;
     int del_target = -1;
     for (int i = 0; i < m_number_of_targets; i++) {
@@ -620,7 +617,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     // x_local expected position in local coordinates
 
     m_position.time = pol.time;  // set the target time to the newly found time
-  }                     // end of target found
+  }                              // end of target found
 
   // target not found
   else {
@@ -690,8 +687,8 @@ void ArpaTarget::RefreshTarget(int dist) {
       if (m_position.dlon_dt > 2 * START_UP_SPEED) m_position.dlon_dt = 2 * START_UP_SPEED;
       if (m_position.dlon_dt < -2 * START_UP_SPEED) m_position.dlon_dt = -2 * START_UP_SPEED;
     }
-    double s1 = m_position.dlat_dt;                                 // m per second
-    double s2 = m_position.dlon_dt;                                 // m  per second
+    double s1 = m_position.dlat_dt;                          // m per second
+    double s2 = m_position.dlon_dt;                          // m  per second
     m_speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600. / 1852.;  // and convert to nautical miles per hour
     m_course = rad2deg(atan2(s2, s1));
     if (m_course < 0) m_course += 360.;
@@ -726,7 +723,7 @@ void ArpaTarget::RefreshTarget(int dist) {
       // Default 18 >> look 36 meters around + 3% of distance to target
       double dist2target = (3.0 / 100) * (double)pol.r / (double)RETURNS_PER_LINE * m_ri->m_range_meters;
       posOffset += dist2target;
-      if (m_pi->FindAIS_at_arpaPos(m_position.lat,m_position.lon, posOffset)) s = L;
+      if (m_pi->FindAIS_at_arpaPos(m_position.lat, m_position.lon, posOffset)) s = L;
       PassARPAtoOCPN(&pol, s);
     }
   }
@@ -854,16 +851,18 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   char checksum = 0;
   char* p;
 
-  s_Bear_Unit = wxEmptyString;           // Bearing Units  R or empty
-  s_Course_Unit = wxT("T");              // Course type R; Realtive T; true
-  s_Dist_Unit = wxT("N");                // Speed/Distance Unit K, N, S N= NM/h = Knots
-  switch (status)
-  {
-    case Q: s_status = wxT("Q");  // yellow
+  s_Bear_Unit = wxEmptyString;  // Bearing Units  R or empty
+  s_Course_Unit = wxT("T");     // Course type R; Realtive T; true
+  s_Dist_Unit = wxT("N");       // Speed/Distance Unit K, N, S N= NM/h = Knots
+  switch (status) {
+    case Q:
+      s_status = wxT("Q");  // yellow
       break;
-    case T: s_status = wxT("T"); // green
+    case T:
+      s_status = wxT("T");  // green
       break;
-    case L: s_status = wxT("L"); // ?
+    case L:
+      s_status = wxT("L");  // ?
       break;
   }
 
@@ -959,7 +958,7 @@ int RadarArpa::AcquireNewARPATarget(Polar pol, int status) {
     return -1;
   }
 
-  ArpaTarget * target = m_targets[i];
+  ArpaTarget* target = m_targets[i];
 
   target->m_position = target_pos;  // Expected position
   target->m_position.time = wxGetUTCTimeMillis();

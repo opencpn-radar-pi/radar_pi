@@ -177,7 +177,7 @@ void GuardZone::SearchTargets() {
             x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
             int target_i;
             target_i = m_ri->m_arpa->AcquireNewARPATarget(pol, 0);
-            if (target_i == -1) break;                       // TODO: how to handle max targets exceeded
+            if (target_i == -1) break;  // TODO: how to handle max targets exceeded
           }
         }
       }

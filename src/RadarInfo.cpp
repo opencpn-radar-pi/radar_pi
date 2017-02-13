@@ -29,9 +29,9 @@
  ***************************************************************************
  */
 
+#include "RadarInfo.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "br24ControlsDialog.h"

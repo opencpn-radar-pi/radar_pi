@@ -128,7 +128,7 @@ enum TargetProcessStatus { UNKNOWN, NOT_FOUND_IN_PASS1 };
 enum PassN { PASS1, PASS2 };
 
 class ArpaTarget {
-  friend class RadarArpa; // Allow RadarArpa access to private members
+  friend class RadarArpa;  // Allow RadarArpa access to private members
 
  public:
   ArpaTarget(br24radar_pi* pi, RadarInfo* ri);
@@ -154,8 +154,8 @@ class ArpaTarget {
   KalmanFilter* m_kalman;
   int m_target_id;
   target_status m_status;
-  Position m_position;  // holds actual position of target
-  double m_speed_kn;    // Average speed of target. TODO: Merge with m_position.speed?
+  Position m_position;   // holds actual position of target
+  double m_speed_kn;     // Average speed of target. TODO: Merge with m_position.speed?
   wxLongLong m_refresh;  // time of last refresh
   double m_course;
   SpeedHistory m_speeds;
@@ -191,11 +191,9 @@ class RadarArpa {
     }
     m_radar_lost_count++;
   }
-  void RadarLostReset() {
-    m_radar_lost_count = 0;
-  }
+  void RadarLostReset() { m_radar_lost_count = 0; }
 
-private:
+ private:
   ArpaTarget* m_targets[MAX_NUMBER_OF_TARGETS];
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
