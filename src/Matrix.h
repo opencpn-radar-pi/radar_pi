@@ -27,11 +27,10 @@
 #define _MATRIX_H_
 
 #include "br24radar_pi.h"
-
-PLUGIN_BEGIN_NAMESPACE
-
 #include <cstdlib>
 #include <iostream>
+
+PLUGIN_BEGIN_NAMESPACE
 
 template <typename Ty, int N, int M = N>
 struct Matrix {
