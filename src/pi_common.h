@@ -103,16 +103,6 @@ using namespace std;
 #include <sys/types.h>
 #endif
 
-// Load the ocpn_plugin. On OS X this generates many warnings, suppress these.
-#ifdef __WXOSX__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Woverloaded-virtual"
-#endif
-#include "ocpn_plugin.h"
-#ifdef __WXOSX__
-#pragma clang diagnostic pop
-#endif
-
 #ifndef SOCKET
 #define SOCKET int
 #endif
@@ -163,5 +153,10 @@ using namespace std;
 #ifndef rad2deg
 #define rad2deg(x) ((x)*360.0 / (2 * PI))
 #endif
+
+#define SPOKES (4096)               // BR radars can generate up to 4096 spokes per rotation,
+#define LINES_PER_ROTATION (2048)   // but use only half that in practice
+#define RETURNS_PER_LINE (512)      // BR radars generate 512 separate values per range, at 8 bits each
+#define DEGREES_PER_ROTATION (360)  // Classical math
 
 #endif

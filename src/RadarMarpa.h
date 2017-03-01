@@ -70,10 +70,6 @@ class Position;
 #define TARGET_SPEED_DIV_SDEV 2.
 #define MAX_DUP 2                     // maximum number of sweeps a duplicate target is allowed to exist
 #define STATUS_TO_OCPN (5)            // First status to be send to OCPN
-#define NOISE (0.13)                  // Allowed covariance of target speed in lat and lon
-                                      // critical for the performance of target tracking
-                                      // lower value makes target go straight
-                                      // higher values allow target to make curves
 #define START_UP_SPEED (0.5)          // maximum allowed speed (m/sec) for new target, real format with .
 #define DISTANCE_BETWEEN_TARGETS (4)  // minimum separation between targets
 
@@ -95,24 +91,7 @@ class Position {
   double sd_speed_kn;  // standard deviation of the speed in knots
 };
 
-class Polar {
- public:
-  int angle;
-  int r;
-  wxLongLong time;  // wxGetUTCTimeMillis
-};
-
 Position Polar2Pos(Polar pol, Position own_ship, double range);
-
-class LocalPosition {
-  // position in meters relative to own ship position
- public:
-  double lat;
-  double lon;
-  double dlat_dt;  // meters per second
-  double dlon_dt;
-  double sd_speed_m_s;  // standard deviation of the speed m / sec
-};
 
 Polar Pos2Polar(Position p, Position own_ship, int range);
 

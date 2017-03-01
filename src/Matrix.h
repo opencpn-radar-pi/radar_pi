@@ -26,9 +26,9 @@
 #ifndef _MATRIX_H_
 #define _MATRIX_H_
 
-#include "br24radar_pi.h"
 #include <cstdlib>
 #include <iostream>
+#include "pi_common.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

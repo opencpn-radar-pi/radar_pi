@@ -40,6 +40,16 @@
 #include "pi_common.h"
 #include "version.h"
 
+// Load the ocpn_plugin. On OS X this generates many warnings, suppress these.
+#ifdef __WXOSX__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Woverloaded-virtual"
+#endif
+#include "ocpn_plugin.h"
+#ifdef __WXOSX__
+#pragma clang diagnostic pop
+#endif
+
 PLUGIN_BEGIN_NAMESPACE
 
 //    Forward definitions
@@ -55,14 +65,9 @@ class br24radar_pi;
 class GuardZoneBogey;
 class RadarArpa;
 
-#define SPOKES (4096)               // BR radars can generate up to 4096 spokes per rotation,
-#define LINES_PER_ROTATION (2048)   // but use only half that in practice
-#define RETURNS_PER_LINE (512)      // BR radars generate 512 separate values per range, at 8 bits each
-#define DEGREES_PER_ROTATION (360)  // Classical math
-#define RADARS (2)                  // Number of radars supported by this PI. 2 since 4G supports 2. More work
-                                    // needed if you intend to add multiple radomes to network!
-#define GUARD_ZONES (2)             // Could be increased if wanted
-
+#define RADARS (2)         // Number of radars supported by this PI. 2 since 4G supports 2. More work
+                           // needed if you intend to add multiple radomes to network!
+#define GUARD_ZONES (2)    // Could be increased if wanted
 #define BEARING_LINES (2)  // And these as well
 
 static const int SECONDS_PER_TIMED_IDLE_SETTING = 5 * 60;  // 5 minutes increment for each setting

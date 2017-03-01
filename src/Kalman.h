@@ -34,15 +34,30 @@
 #define _BR24KALMAN_H_
 
 #include "Matrix.h"
-#include "RadarMarpa.h"
-#include "br24radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
-//    Forward definitions
-class LocalPosition;
-class ArpaTarget;
-class Polar;
+#define NOISE (0.13)  // Allowed covariance of target speed in lat and lon
+                      // critical for the performance of target tracking
+                      // lower value makes target go straight
+                      // higher values allow target to make curves
+
+class Polar {
+ public:
+  int angle;
+  int r;
+  wxLongLong time;  // wxGetUTCTimeMillis
+};
+
+class LocalPosition {
+  // position in meters relative to own ship position
+ public:
+  double lat;
+  double lon;
+  double dlat_dt;  // meters per second
+  double dlon_dt;
+  double sd_speed_m_s;  // standard deviation of the speed m / sec
+};
 
 class KalmanFilter {
  public:
