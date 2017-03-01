@@ -34,8 +34,7 @@
 
 int main() {
   int ret = 0;
-  int range = 4000;
-  br24::Kalman_Filter *filter = new br24::Kalman_Filter(range);
+  br24::KalmanFilter *filter = new br24::KalmanFilter();
   br24::Polar pol, expected;
   br24::LocalPosition x_local;
 
