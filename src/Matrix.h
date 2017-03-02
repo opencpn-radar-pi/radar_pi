@@ -69,8 +69,24 @@ struct Matrix {
     return result;
   }
 
+  // Return matrix initialized to value
+  Matrix<Ty, M, N> Init(Ty value) const {
+    Matrix<Ty, M, N> result;
+    for (int e = 0; e < M * N; ++e) {
+      result.flatten[e] = Ty(value);
+    }
+    return result;
+  }
+
   // Return matrix inverse
   Matrix<Ty, N, M> Inverse();
+
+  Matrix<Ty, N, N> Identity() {
+    Matrix<Ty, N, N> result = Matrix<Ty, N, N>();
+    for (int i = 0; i < N * N; ++i) result.flatten[i] = Ty(0);
+    for (int i = 0; i < N; ++i) result.element[i][i] = Ty(1);
+    return result;
+  }
 };
 
 ///
@@ -178,13 +194,6 @@ Matrix<Ty, N, M> operator*(Ty scalar, const Matrix<Ty, N, M>& a) {
 template <typename Ty, int N, int M>
 Matrix<Ty, N, M> operator-(Ty scalar, const Matrix<Ty, N, M>& a) {
   return -a + scalar;
-}
-
-template <typename Ty, int N>
-Matrix<Ty, N, N> identity_matrix() {
-  Matrix<Ty, N, N> result = Matrix<Ty, N, N>();
-  for (int i = 0; i < N; ++i) result.element[i][i] = Ty(1);
-  return result;
 }
 
 PLUGIN_END_NAMESPACE

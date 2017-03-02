@@ -47,6 +47,12 @@ KalmanFilter::KalmanFilter() {
   // f is the state transformation function Xk <- Xk-1
   // Ai,j is jacobian matrix dfi / dxj
 
+  I = I.Identity();
+  V = ZeroMatrix2;
+  VT = ZeroMatrix2;
+  Q = ZeroMatrix2;
+  R = ZeroMatrix2;
+
   ResetFilter();
 }
 
