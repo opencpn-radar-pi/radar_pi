@@ -48,8 +48,6 @@ KalmanFilter::KalmanFilter() {
   // Ai,j is jacobian matrix dfi / dxj
 
   I = I.Identity();
-  V = ZeroMatrix2;
-  VT = ZeroMatrix2;
   Q = ZeroMatrix2;
   R = ZeroMatrix2;
 
@@ -84,13 +82,8 @@ void KalmanFilter::ResetFilter() {
   HT = ZeroMatrix42;
 
   // Jacobian V, dhi / dvj
-
-  V(0, 0) = 1.;
-  V(1, 1) = 1.;
-
-  VT(0, 0) = 1.;
-  VT(1, 1) = 1.;
-
+  // As V is the identity matrix, it is left out of the calculation of the Kalman gain
+  
   // P estimate error covariance
   // initial values follow
   // P(1, 1) = .0000027 * range * range;   ???

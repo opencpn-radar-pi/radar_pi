@@ -37,7 +37,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-#define NOISE (0.13)  // Allowed covariance of target speed in lat and lon
+#define NOISE (0.02)  // Allowed covariance of target speed in lat and lon
                       // critical for the performance of target tracking
                       // lower value makes target go straight
                       // higher values allow target to make curves
@@ -78,8 +78,6 @@ class KalmanFilter {
   Matrix<double, 2, 4> WT;
   Matrix<double, 2, 4> H;
   Matrix<double, 4, 2> HT;
-  Matrix<double, 2> V;
-  Matrix<double, 2> VT;
   Matrix<double, 4> P;
   Matrix<double, 2> Q;
   Matrix<double, 2> R;

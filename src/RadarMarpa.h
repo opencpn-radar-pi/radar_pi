@@ -68,7 +68,6 @@ class Position;
 #define T_NUM (6)  // status T to OCPN at target status
 #define SPEED_HISTORY (8)
 #define TARGET_SPEED_DIV_SDEV 2.
-#define MAX_DUP 2                     // maximum number of sweeps a duplicate target is allowed to exist
 #define STATUS_TO_OCPN (5)            // First status to be send to OCPN
 #define START_UP_SPEED (0.5)          // maximum allowed speed (m/sec) for new target, real format with .
 #define DISTANCE_BETWEEN_TARGETS (4)  // minimum separation between targets

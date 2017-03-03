@@ -692,8 +692,6 @@ void ArpaTarget::RefreshTarget(int dist) {
     m_speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600. / 1852.;  // and convert to nautical miles per hour
     m_course = rad2deg(atan2(s2, s1));
     if (m_course < 0) m_course += 360.;
-
-    GetSpeed();
     if (m_speed_kn > 20.) {
       pol = Pos2Polar(m_position, own_pos, m_ri->m_range_meters);
     }
@@ -871,8 +869,8 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
 
   if (bearing < 0) bearing += 360;
   s_TargID = wxString::Format(wxT("%4i"), m_target_id);
-  s_speed = wxString::Format(wxT("%4.2f"), status == Q ? 0.0 : m_speed_kn);
-  s_course = wxString::Format(wxT("%3.1f"), status == Q ? 0.0 : m_course);
+  s_speed = wxString::Format(wxT("%4.2f"), m_speed_kn);
+  s_course = wxString::Format(wxT("%3.1f"), m_course);
   if (m_automatic) {
     s_target_name = wxString::Format(wxT("ARPA%4i"), m_target_id);
   } else {
@@ -990,21 +988,5 @@ void ArpaTarget::ResetPixels() {
   }
 }
 
-void ArpaTarget::GetSpeed() {
-  m_speeds.nr++;
-  if (m_speeds.nr > SPEED_HISTORY) m_speeds.nr = SPEED_HISTORY;
-  // shift array down
-  int num = sizeof(double) * (SPEED_HISTORY - 1);
-  memmove(&m_speeds.hist[1], m_speeds.hist, num);
-  // set last speed
-  m_speeds.hist[0] = m_speed_kn;
-  // calculate average
-  m_speeds.av = 0.;
-  for (int i = 0; i < m_speeds.nr; i++) {
-    m_speeds.av += m_speeds.hist[i];
-  }
-  m_speeds.av /= m_speeds.nr;
-  m_speed_kn = m_speeds.av;
-  m_position.speed_kn = m_speed_kn;
-}
+
 PLUGIN_END_NAMESPACE
