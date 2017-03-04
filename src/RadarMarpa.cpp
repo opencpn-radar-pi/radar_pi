@@ -112,27 +112,214 @@ bool ArpaTarget::Pix(int ang, int rad) {
   }
 }
 
-bool RadarArpa::MultiPix(int ang, int rad) {
-  // returns true if a pixel i ang, rad and the blob contains at least 3 pixels
-  int test = 0;
-  if (!Pix(ang, rad)) return false;
-  test = Pix(ang + 1, rad) + Pix(ang - 1, rad) + Pix(ang, rad + 1) + Pix(ang, rad - 1);
-  if (test >= 2) return true;
-  test += Pix(ang + 1, rad + 1) + Pix(ang - 1, rad - 1) + Pix(ang - 1, rad + 1) + Pix(ang + 1, rad - 1);
-  if (test >= 2) return true;
-  test += Pix(ang + 2, rad + 2) + Pix(ang - 1, rad - 1) + Pix(ang - 1, rad + 1) + Pix(ang + 1, rad - 1);
+bool ArpaTarget::MultiPix(int ang, int rad) {  // checks the blob has a contour of at least length pixels
+  // pol must start on the contour of the blob
+  // false if not
+  // if false clears out pixels of th blob in hist
+  wxCriticalSectionLocker lock(ArpaTarget::m_ri->m_exclusive);
+  int length = MIN_CONTOUR_LENGTH;
+  Polar start;
+  start.angle = ang;
+  start.r = rad;
+  if (!Pix(start.angle, start.r)) {
+    return false;
+  }
+  Polar current = start;  // the 4 possible translations to move from a point on the contour to the next
+  Polar max_angle;
+  Polar min_angle;
+  Polar max_r;
+  Polar min_r;
+  Polar transl[4];  //   = { 0, 1,   1, 0,   0, -1,   -1, 0 };
+  transl[0].angle = 0;
+  transl[0].r = 1;
+  transl[1].angle = 1;
+  transl[1].r = 0;
+  transl[2].angle = 0;
+  transl[2].r = -1;
+  transl[3].angle = -1;
+  transl[3].r = 0;
+  int count = 0;
+  int aa;
+  int rr;
+  bool succes = false;
+  int index = 0;
+  max_r = current;
+  max_angle = current;
+  min_r = current;
+  min_angle = current;  // check if p inside blob
+  if (start.r >= RETURNS_PER_LINE - 1) {
+    return false;  //  r too large
+  }
+  if (start.r < 3) {
+    return false;  //  r too small
+  }
+  // first find the orientation of border point p
+  for (int i = 0; i < 4; i++) {
+    index = i;
+    aa = current.angle + transl[index].angle;
+    rr = current.r + transl[index].r;
+    succes = !Pix(aa, rr);
+    if (succes) break;
+  }
+  if (!succes) {
+    LOG_INFO(wxT("br24radar_pi Error starting point not on contour"));
+    return false;
+  }
+  index += 1;  // determines starting direction
+  if (index > 3) index -= 4;
+  while (current.r != start.r || current.angle != start.angle ||
+         count == 0) {  // try all translations to find the next point  // start with the "left most" translation relative to the
+                        // previous one
+    index += 3;         // we will turn left all the time if possible
+    for (int i = 0; i < 4; i++) {
+      if (index > 3) index -= 4;
+      aa = current.angle + transl[index].angle;
+      rr = current.r + transl[index].r;
+      succes = Pix(aa, rr);
+      if (succes) {  // next point found
+        break;
+      }
+      index += 1;
+    }
+    if (!succes) {
+      LOG_INFO(wxT("BR24radar_pi::RadarArpa::CheckContour no next point found count= %i"), count);
+      return false;  // return code 7, no next point found
+    }                // next point found
+    current.angle = aa;
+    current.r = rr;
+    if (count >= length) {
+      return true;
+    }
+    count++;
+    if (current.angle > max_angle.angle) {
+      max_angle = current;
+    }
+    if (current.angle < min_angle.angle) {
+      min_angle = current;
+    }
+    if (current.r > max_r.r) {
+      max_r = current;
+    }
+    if (current.r < min_r.r) {
+      min_r = current;
+    }
+  }  // contour length is less than MIN_CONTOUR_LENGTH
+     // before returning false erase this blob so we do not have to check this one again
+  if (min_angle.angle < 0) {
+    min_angle.angle += LINES_PER_ROTATION;
+    max_angle.angle += LINES_PER_ROTATION;
+  }
+  for (int a = min_angle.angle; a <= max_angle.angle; a++) {
+    for (int r = min_r.r; r <= max_r.r; r++) {
+      m_ri->m_history[MOD_ROTATION2048(a)].line[r] &= 63;
+    }
+  }
   return false;
 }
 
-bool ArpaTarget::MultiPix(int ang, int rad) {
-  // returns true if a pixel i ang, rad and the blob contains at least 3 pixels
-  int test = 0;
-  if (!Pix(ang, rad)) return false;
-  test = Pix(ang + 1, rad) + Pix(ang - 1, rad) + Pix(ang, rad + 1) + Pix(ang, rad - 1);
-  if (test >= 2) return true;
-  test += Pix(ang + 1, rad + 1) + Pix(ang - 1, rad - 1) + Pix(ang - 1, rad + 1) + Pix(ang + 1, rad - 1);
-  if (test >= 2) return true;
-  test += Pix(ang + 2, rad + 2) + Pix(ang - 1, rad - 1) + Pix(ang - 1, rad + 1) + Pix(ang + 1, rad - 1);
+bool RadarArpa::MultiPix(int ang, int rad) {
+  // checks the blob has a contour of at least length pixels
+  // pol must start on the contour of the blob
+  // false if not
+  // if false clears out pixels of th blob in hist
+  //    wxCriticalSectionLocker lock(ArpaTarget::m_ri->m_exclusive);
+  int length = MIN_CONTOUR_LENGTH;
+  Polar start;
+  start.angle = ang;
+  start.r = rad;
+  if (!Pix(start.angle, start.r)) {
+    return false;
+  }
+  Polar current = start;  // the 4 possible translations to move from a point on the contour to the next
+  Polar max_angle;
+  Polar min_angle;
+  Polar max_r;
+  Polar min_r;
+  Polar transl[4];  //   = { 0, 1,   1, 0,   0, -1,   -1, 0 };
+  transl[0].angle = 0;
+  transl[0].r = 1;
+  transl[1].angle = 1;
+  transl[1].r = 0;
+  transl[2].angle = 0;
+  transl[2].r = -1;
+  transl[3].angle = -1;
+  transl[3].r = 0;
+  int count = 0;
+  int aa;
+  int rr;
+  bool succes = false;
+  int index = 0;
+  max_r = current;
+  max_angle = current;
+  min_r = current;
+  min_angle = current;  // check if p inside blob
+  if (start.r >= RETURNS_PER_LINE - 1) {
+    return false;  //  r too large
+  }
+  if (start.r < 3) {
+    return false;  //  r too small
+  }
+  // first find the orientation of border point p
+  for (int i = 0; i < 4; i++) {
+    index = i;
+    aa = current.angle + transl[index].angle;
+    rr = current.r + transl[index].r;
+    succes = !Pix(aa, rr);
+    if (succes) break;
+  }
+  if (!succes) {
+    LOG_INFO(wxT("br24radar_pi Error starting point not on contour"));
+    return false;
+  }
+  index += 1;  // determines starting direction
+  if (index > 3) index -= 4;
+  while (current.r != start.r || current.angle != start.angle ||
+         count == 0) {  // try all translations to find the next point  // start with the "left most" translation relative to the
+    // previous one
+    index += 3;  // we will turn left all the time if possible
+    for (int i = 0; i < 4; i++) {
+      if (index > 3) index -= 4;
+      aa = current.angle + transl[index].angle;
+      rr = current.r + transl[index].r;
+      succes = Pix(aa, rr);
+      if (succes) {  // next point found
+        break;
+      }
+      index += 1;
+    }
+    if (!succes) {
+      LOG_INFO(wxT("BR24radar_pi::RadarArpa::CheckContour no next point found count= %i"), count);
+      return false;  // return code 7, no next point found
+    }                // next point found
+    current.angle = aa;
+    current.r = rr;
+    if (count >= length) {
+      return true;
+    }
+    count++;
+    if (current.angle > max_angle.angle) {
+      max_angle = current;
+    }
+    if (current.angle < min_angle.angle) {
+      min_angle = current;
+    }
+    if (current.r > max_r.r) {
+      max_r = current;
+    }
+    if (current.r < min_r.r) {
+      min_r = current;
+    }
+  }  // contour length is less than MIN_CONTOUR_LENGTH
+  // before returning false erase this blob so we do not have to check this one again
+  if (min_angle.angle < 0) {
+    min_angle.angle += LINES_PER_ROTATION;
+    max_angle.angle += LINES_PER_ROTATION;
+  }
+  for (int a = min_angle.angle; a <= max_angle.angle; a++) {
+    for (int r = min_r.r; r <= max_r.r; r++) {
+      m_ri->m_history[MOD_ROTATION2048(a)].line[r] &= 63;
+    }
+  }
   return false;
 }
 
@@ -196,7 +383,12 @@ bool ArpaTarget::FindContourFromInside(Polar* pol) {  // moves pol to contour of
   }
   ang++;
   pol->angle = ang;
-  return true;
+  // check if the blob has the required min contour length
+  if (MultiPix(ang, rad)) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
