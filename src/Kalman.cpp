@@ -121,9 +121,15 @@ void KalmanFilter::Predict(LocalPosition* xx, double delta_time) {
   xx->lon = X(1, 0);
   xx->dlat_dt = X(2, 0);
   xx->dlon_dt = X(3, 0);
-  // calculate apriori P
-  P = A * P * AT + W * Q * WT;
   xx->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed
+ return;
+}
+
+void KalmanFilter::Update_P() {  
+    // calculate apriori P  
+    // separated from the predict to prevent the update being done both in pass 1 and pass2
+    
+  P = A * P * AT + W * Q * WT;
   return;
 }
 

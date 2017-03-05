@@ -71,6 +71,7 @@ class KalmanFilter {
   void SetMeasurement(Polar* p, LocalPosition* x, Polar* expected, int range);
   void Predict(LocalPosition* x, double delta_time);  // measured position and expected position
   void ResetFilter();
+  void Update_P();
 
   Matrix<double, 4> A;
   Matrix<double, 4> AT;

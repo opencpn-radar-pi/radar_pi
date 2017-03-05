@@ -117,7 +117,7 @@ bool ArpaTarget::MultiPix(int ang, int rad) {  // checks the blob has a contour 
   // false if not
   // if false clears out pixels of th blob in hist
   wxCriticalSectionLocker lock(ArpaTarget::m_ri->m_exclusive);
-  int length = MIN_CONTOUR_LENGTH;
+  int length = m_ri->m_min_contour_length;
   Polar start;
   start.angle = ang;
   start.r = rad;
@@ -203,7 +203,7 @@ bool ArpaTarget::MultiPix(int ang, int rad) {  // checks the blob has a contour 
     if (current.r < min_r.r) {
       min_r = current;
     }
-  }  // contour length is less than MIN_CONTOUR_LENGTH
+  }  // contour length is less than m_min_contour_length
      // before returning false erase this blob so we do not have to check this one again
   if (min_angle.angle < 0) {
     min_angle.angle += LINES_PER_ROTATION;
@@ -223,7 +223,7 @@ bool RadarArpa::MultiPix(int ang, int rad) {
   // false if not
   // if false clears out pixels of th blob in hist
   //    wxCriticalSectionLocker lock(ArpaTarget::m_ri->m_exclusive);
-  int length = MIN_CONTOUR_LENGTH;
+    int length = m_ri->m_min_contour_length;
   Polar start;
   start.angle = ang;
   start.r = rad;
@@ -309,7 +309,7 @@ bool RadarArpa::MultiPix(int ang, int rad) {
     if (current.r < min_r.r) {
       min_r = current;
     }
-  }  // contour length is less than MIN_CONTOUR_LENGTH
+  }  // contour length is less than m_min_contour_length
   // before returning false erase this blob so we do not have to check this one again
   if (min_angle.angle < 0) {
     min_angle.angle += LINES_PER_ROTATION;
@@ -764,12 +764,6 @@ void ArpaTarget::RefreshTarget(int dist) {
       return;
     }
 
-    // delete if target too small
-    if (m_contour_length < MIN_CONTOUR_LENGTH && (m_status == ACQUIRE0 || m_status == ACQUIRE1)) {
-      SetStatusLost();
-      return;
-    }
-
     // target refreshed, measured position in pol
     // check if target has a new later time than previous target
     if (pol.time <= prev_X.time && m_status > 1) {
@@ -803,6 +797,7 @@ void ArpaTarget::RefreshTarget(int dist) {
 
     // Kalman filter to  calculate the apostriori local position and speed based on found position (pol)
     if (m_status > 1) {
+        m_kalman->Update_P();
       m_kalman->SetMeasurement(&pol, &x_local, &m_expected, m_ri->m_range_meters);  // pol is measured position in polar coordinates
     }
 
@@ -814,7 +809,7 @@ void ArpaTarget::RefreshTarget(int dist) {
   // target not found
   else {
     // target not found
-
+      if (m_pass_nr == PASS1) m_kalman->Update_P();
     // check if the position of the target has been taken by another target, a duplicate
     // if duplicate, handle target as not found but don't do pass 2 (= search in the surroundings)
     bool duplicate = false;
