@@ -223,7 +223,7 @@ bool RadarArpa::MultiPix(int ang, int rad) {
   // false if not
   // if false clears out pixels of th blob in hist
   //    wxCriticalSectionLocker lock(ArpaTarget::m_ri->m_exclusive);
-    int length = m_ri->m_min_contour_length;
+  int length = m_ri->m_min_contour_length;
   Polar start;
   start.angle = ang;
   start.r = rad;
@@ -797,7 +797,7 @@ void ArpaTarget::RefreshTarget(int dist) {
 
     // Kalman filter to  calculate the apostriori local position and speed based on found position (pol)
     if (m_status > 1) {
-        m_kalman->Update_P();
+      m_kalman->Update_P();
       m_kalman->SetMeasurement(&pol, &x_local, &m_expected, m_ri->m_range_meters);  // pol is measured position in polar coordinates
     }
 
@@ -809,7 +809,7 @@ void ArpaTarget::RefreshTarget(int dist) {
   // target not found
   else {
     // target not found
-      if (m_pass_nr == PASS1) m_kalman->Update_P();
+    if (m_pass_nr == PASS1) m_kalman->Update_P();
     // check if the position of the target has been taken by another target, a duplicate
     // if duplicate, handle target as not found but don't do pass 2 (= search in the surroundings)
     bool duplicate = false;
@@ -1174,6 +1174,5 @@ void ArpaTarget::ResetPixels() {
     }
   }
 }
-
 
 PLUGIN_END_NAMESPACE
