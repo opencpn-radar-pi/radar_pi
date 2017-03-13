@@ -715,9 +715,8 @@ void ArpaTarget::RefreshTarget(int dist) {
   if ((time1 < (m_refresh + SCAN_MARGIN2) || time2 < time1) && m_status != 0) {
     wxLongLong now = wxGetUTCTimeMillis();  // millis
     int diff = now.GetLo() - m_refresh.GetLo();
-    if (diff > 5200) {
-      LOG_INFO(wxT("BR24radar_pi: target not refreshed, missing spokes status= %i, target_id= %i, lost_countx= %i timediff= %i"),
-          m_status, m_target_id, m_lost_count, diff);
+    if (diff > 8000) {
+      LOG_INFO(wxT("BR24radar_pi: target not refreshed, missing spokes, set lost, status= %i, target_id= %i timediff= %i"), m_status, m_target_id, diff);
       SetStatusLost();
     }
     return;
