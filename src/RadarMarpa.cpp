@@ -516,6 +516,9 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
 void RadarArpa::DrawContour(ArpaTarget* target) {
   // should be improved using vertex arrays
   PolarToCartesianLookupTable* polarLookup;
+  if (target->m_lost_count > 0){
+      return;  // don't draw targets that were not seen last sweep
+  }
   polarLookup = GetPolarToCartesianLookupTable();
   glColor4ub(40, 40, 100, 250);
   glLineWidth(3.0);
@@ -710,6 +713,13 @@ void ArpaTarget::RefreshTarget(int dist) {
   // the beam sould have passed our "angle" AND a point SCANMARGIN further
   // always refresh when status == 0
   if ((time1 < (m_refresh + SCAN_MARGIN2) || time2 < time1) && m_status != 0) {
+    wxLongLong now = wxGetUTCTimeMillis();  // millis
+    int diff = now.GetLo() - m_refresh.GetLo();
+    if (diff > 5200) {
+      LOG_INFO(wxT("BR24radar_pi: target not refreshed, missing spokes status= %i, target_id= %i, lost_countx= %i timediff= %i"),
+          m_status, m_target_id, m_lost_count, diff);
+      SetStatusLost();
+    }
     return;
   }
   // set new refresh time
