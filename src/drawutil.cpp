@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#include "br24radar_pi.h"
 #include "drawutil.h"
+#include "br24radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

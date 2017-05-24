@@ -41,220 +41,145 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-Kalman_Filter::Kalman_Filter() {}
-
-Kalman_Filter::Kalman_Filter(int range) {
+KalmanFilter::KalmanFilter() {
   // as the measurement to state transformation is non-linear, the extended Kalman filter is used
   // as the state transformation is linear, the state transformation matrix F is equal to the jacobian A
   // f is the state transformation function Xk <- Xk-1
   // Ai,j is jacobian matrix dfi / dxj
 
-  A.Extend(4, 4);
-  for (int i = 1; i <= 4; i++) {
-    A(i, i) = 1.;
-  }
+  I = I.Identity();
+  V = ZeroMatrix2;
+  VT = ZeroMatrix2;
+  Q = ZeroMatrix2;
+  R = ZeroMatrix2;
 
-  AT.Extend(4, 4);  // transpose of A
-  AT = A;
-
-  W.Extend(4, 2);  // Jacobian matrix of partial derivatives dfi / dwj
-  W(3, 1) = 1.;
-  W(4, 2) = 1.;
-
-  WT.Extend(2, 4);  // transpose of W
-  WT(1, 3) = 1.;
-  WT(2, 4) = 1.;
-
-  // Observation matrix, jacobian of observation function h
-  // dhi / dvj
-  // angle = atan2 (lat,lon) * 2048 / (2 * pi) + v1
-  // r = sqrt(x * x + y * y) + v2
-  // v is measurement noise
-  H.Extend(2, 4);  // values filled in SetMeasurement
-
-  HT.Extend(4, 2);  // Transpose of observation matrix
-
-  // Jacobian V, dhi / dvj
-  V.Extend(2, 2);
-  V(1, 1) = 1.;
-  V(2, 2) = 1.;
-
-  VT.Extend(2, 2);
-  VT(1, 1) = 1.;
-  VT(2, 2) = 1.;
-
-  // P estimate error covariance
-  P.Extend(4, 4);
-  // initial values follow
-  // P(1, 1) = .0000027 * range * range;   ???
-  P(1, 1) = 20.;
-  P(2, 2) = P(1, 1);
-  P(3, 3) = 1.;
-  P(4, 4) = 1.;
-
-  // Q Process noise covariance matrix
-  Q.Extend(2, 2);
-  Q(1, 1) = NOISE;  // variance in lat speed, (m / sec)2
-  Q(2, 2) = NOISE;  // variance in lon speed, (m / sec)2
-
-  // R measurement noise covariance matrix
-  R.Extend(2, 2);
-  R(1, 1) = 100.0;  // variance in the angle 3.0
-  R(2, 2) = 25.;    // variance in radius  .5
-
-  K.Extend(4, 2);  // Kalman gain
-
-  // Identity matrix
-  I.Extend(4, 4);
-  for (int i = 1; i <= 4; i++) {
-    I(i, i) = 1.;
-  }
+  ResetFilter();
 }
 
-void Kalman_Filter::ResetFilter() {
+void KalmanFilter::ResetFilter() {
   // reset the filter to use  it for a new case
-  Matrix Zero(4, 4);
-  A = Zero;
-  for (int i = 1; i <= 4; i++) {
-    A(i, i) = 1.;
-  }
+  A = I;
 
   // transpose of A
   AT = A;
 
   // Jacobian matrix of partial derivatives dfi / dwj
-  Matrix Wz(4, 2);
-  W = Wz;
+  W = ZeroMatrix42;
+  W(2, 0) = 1.;
   W(3, 1) = 1.;
-  W(4, 2) = 1.;
 
   // transpose of W
-  Matrix WTz(2, 4);
-  WT = WTz;
+  WT = ZeroMatrix24;
+  WT(0, 2) = 1.;
   WT(1, 3) = 1.;
-  WT(2, 4) = 1.;
 
   // Observation matrix, jacobian of observation function h
   // dhi / dvj
   // angle = atan2 (lat,lon) * 2048 / (2 * pi) + v1
   // r = sqrt(x * x + y * y) + v2
   // v is measurement noise
-  Matrix Hz(2, 4);
-  H = Hz;
-  H.Extend(2, 4);  // values filled in SetMeasurement
+  H = ZeroMatrix24;
 
   // Transpose of observation matrix
-  Matrix HTz(4, 2);
-  HT = HTz;
+  HT = ZeroMatrix42;
 
   // Jacobian V, dhi / dvj
 
+  V(0, 0) = 1.;
   V(1, 1) = 1.;
-  V(2, 2) = 1.;
 
+  VT(0, 0) = 1.;
   VT(1, 1) = 1.;
-  VT(2, 2) = 1.;
 
   // P estimate error covariance
   // initial values follow
   // P(1, 1) = .0000027 * range * range;   ???
-  Matrix Pz(4, 4);
-  P = Pz;
-  P(1, 1) = 20.;
-  P(2, 2) = P(1, 1);
+  P = ZeroMatrix4;
+  P(0, 0) = 20.;
+  P(1, 1) = P(1, 1);
+  P(2, 2) = 4.;
   P(3, 3) = 4.;
-  P(4, 4) = 4.;
 
   // Q Process noise covariance matrix
-  Q(1, 1) = NOISE;  // variance in lat speed, (m / sec)2
-  Q(2, 2) = NOISE;  // variance in lon speed, (m / sec)2
+  Q(0, 0) = NOISE;  // variance in lat speed, (m / sec)2
+  Q(1, 1) = NOISE;  // variance in lon speed, (m / sec)2
 
   // R measurement noise covariance matrix
-  R(1, 1) = 100.0;  // variance in the angle 3.0
-  R(2, 2) = 25.;    // variance in radius  .5
-
-  // Identity matrix
-  I = Pz;
-  for (int i = 1; i <= 4; i++) {
-    I(i, i) = 1.;
-  }
+  R(0, 0) = 100.0;  // variance in the angle 3.0
+  R(1, 1) = 25.;    // variance in radius  .5
 }
 
-Kalman_Filter::~Kalman_Filter() {}
+KalmanFilter::~KalmanFilter() {}
 
-void Kalman_Filter::Predict(LocalPosition* xx, double delta_time) {
-  Matrix X(4, 1);
-  X(1, 1) = xx->lat;
-  X(2, 1) = xx->lon;
-  X(3, 1) = xx->dlat_dt;
-  X(4, 1) = xx->dlon_dt;
-  A(1, 3) = delta_time;  // time in seconds
-  A(2, 4) = delta_time;
+void KalmanFilter::Predict(LocalPosition* xx, double delta_time) {
+  Matrix<double, 4, 1> X;
+  X(0, 0) = xx->lat;
+  X(1, 0) = xx->lon;
+  X(2, 0) = xx->dlat_dt;
+  X(3, 0) = xx->dlon_dt;
+  A(0, 2) = delta_time;  // time in seconds
+  A(1, 3) = delta_time;
 
+  AT(2, 0) = delta_time;
   AT(3, 1) = delta_time;
-  AT(4, 2) = delta_time;
 
   X = A * X;
-  xx->lat = X(1, 1);
-  xx->lon = X(2, 1);
-  xx->dlat_dt = X(3, 1);
-  xx->dlon_dt = X(4, 1);
+  xx->lat = X(0, 0);
+  xx->lon = X(1, 0);
+  xx->dlat_dt = X(2, 0);
+  xx->dlon_dt = X(3, 0);
   // calculate apriori P
   P = A * P * AT + W * Q * WT;
-  xx->sd_speed_m_s = sqrt((P(3, 3) + P(4, 4)) / 2.);  // rough approximation of standard dev of speed
+  xx->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed
   return;
 }
 
-void Kalman_Filter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected, int range) {
+void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected, int range) {
 // pol measured angular position
 // x expected local position
 // expected, same but in polar coordinates
-#define LON x->lon
-#define LAT x->lat
-  double q_sum = LON * LON + LAT * LAT;
+#define SQUARED(x) ((x) * (x))
+  double q_sum = SQUARED(x->lon) + SQUARED(x->lat);
 
   double c = 2048. / (2. * PI);
-  H(1, 1) = -c * LON / q_sum;
-  H(1, 2) = c * LAT / q_sum;
-  HT(1, 1) = H(1, 1);
-  HT(2, 1) = H(1, 2);
+  H(0, 0) = -c * x->lon / q_sum;
+  H(0, 1) = c * x->lat / q_sum;
 
   q_sum = sqrt(q_sum);
-  H(2, 1) = LAT / q_sum * 512. / (double)range;
-  H(2, 2) = LON / q_sum * 512. / (double)range;
-  HT(1, 2) = H(2, 1);
-  HT(2, 2) = H(2, 2);
+  H(1, 0) = x->lat / q_sum * 512. / (double)range;
+  H(1, 1) = x->lon / q_sum * 512. / (double)range;
 
-  Matrix Z(2, 1);
-  Z(1, 1) = (double)(pol->angle - expected->angle);  // Z is  difference between measured and expected
-  if (Z(1, 1) > LINES_PER_ROTATION / 2){
-      Z(1, 1) -= LINES_PER_ROTATION;
+  HT = H.Transpose();
+
+  Matrix<double, 2, 1> Z;
+  Z(0, 0) = (double)(pol->angle - expected->angle);  // Z is  difference between measured and expected
+  if (Z(0, 0) > LINES_PER_ROTATION / 2) {
+    Z(0, 0) -= LINES_PER_ROTATION;
   }
-  if (Z(1, 1) < - LINES_PER_ROTATION / 2){
-      Z(1, 1) += LINES_PER_ROTATION;
+  if (Z(0, 0) < -LINES_PER_ROTATION / 2) {
+    Z(0, 0) += LINES_PER_ROTATION;
   }
-  Z(2, 1) = (double)(pol->r - expected->r);
-  Matrix X(4, 1);
-  X(1, 1) = x->lat;
-  X(2, 1) = x->lon;
-  X(3, 1) = x->dlat_dt;
-  X(4, 1) = x->dlon_dt;
+  Z(1, 0) = (double)(pol->r - expected->r);
+
+  Matrix<double, 4, 1> X;
+  X(0, 0) = x->lat;
+  X(1, 0) = x->lon;
+  X(2, 0) = x->dlat_dt;
+  X(3, 0) = x->dlon_dt;
 
   // calculate Kalman gain
-  Matrix Inverse(4, 4);
-  Inverse = Inv(H * P * HT + R);  // V left out, only valid if V = I
-  K = P * HT * Inverse;
+  K = P * HT * ((H * P * HT + R).Inverse());
 
   // calculate apostriori expected position
   X = X + K * Z;
-  x->lat = X(1, 1);
-  x->lon = X(2, 1);
-  x->dlat_dt = X(3, 1);
-  x->dlon_dt = X(4, 1);
+  x->lat = X(0, 0);
+  x->lon = X(1, 0);
+  x->dlat_dt = X(2, 0);
+  x->dlon_dt = X(3, 0);
 
   // update covariance P
   P = (I - K * H) * P;
-  x->sd_speed_m_s = sqrt((P(3, 3) + P(4, 4)) / 2.);  // rough approximation of standard dev of speed
+  x->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed
   return;
 }
 

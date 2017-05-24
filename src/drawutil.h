@@ -32,7 +32,7 @@
 #ifndef _DRAWUTIL_H_
 #define _DRAWUTIL_H_
 
-#include "pi_common.h"
+#include "br24radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

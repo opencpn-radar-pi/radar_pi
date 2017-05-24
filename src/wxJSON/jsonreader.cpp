@@ -10,10 +10,10 @@
 
 #include <jsonreader.h>
 
-#include <wx/mstream.h>
-#include <wx/sstream.h>
 #include <wx/debug.h>
 #include <wx/log.h>
+#include <wx/mstream.h>
+#include <wx/sstream.h>
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -359,7 +359,6 @@ int wxJSONReader::Parse(wxInputStream& is, wxJSONValue* val) {
     default:
       AddError(_T("Cannot find a start object/array character" ));
       return m_errors.size();
-      break;
   }
 
   // returning from DoRead() could be for EOF or for

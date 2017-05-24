@@ -711,7 +711,7 @@ void br24ControlsDialog::CreateControls() {
   /*guard_zone_names[0] = _("Off");*/
   guard_zone_names[0] = _("Arc");
   guard_zone_names[1] = _("Circle");
-  
+
   m_guard_zone_type = new wxRadioBox(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, ARRAY_SIZE(guard_zone_names),
                                      guard_zone_names, 1, wxRA_SPECIFY_COLS);
   m_guard_sizer->Add(m_guard_zone_type, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
@@ -751,19 +751,19 @@ void br24ControlsDialog::CreateControls() {
 
   // checkbox for ARPA
   m_arpa_box = new wxCheckBox(this, wxID_ANY, _("ARPA On               "), wxDefaultPosition, wxDefaultSize,
-      wxALIGN_LEFT | wxST_NO_AUTORESIZE);
+                              wxALIGN_LEFT | wxST_NO_AUTORESIZE);
   m_guard_sizer->Add(m_arpa_box, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
   m_arpa_box->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnARPAClick), NULL, this);
 
   // checkbox for blob alarm
   m_alarm = new wxCheckBox(this, wxID_ANY, _("Alarm On              "), wxDefaultPosition, wxDefaultSize,
-      wxALIGN_LEFT | wxST_NO_AUTORESIZE);
+                           wxALIGN_LEFT | wxST_NO_AUTORESIZE);
   m_guard_sizer->Add(m_alarm, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
   m_alarm->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnAlarmClick), NULL, this);
 
   // added check box to control multi sweep filtering
-  m_filter = new wxCheckBox(this, wxID_ANY, _("Multi Sweep Filter"), wxDefaultPosition, wxDefaultSize,
-      wxALIGN_LEFT | wxST_NO_AUTORESIZE);
+  m_filter =
+      new wxCheckBox(this, wxID_ANY, _("Multi Sweep Filter"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT | wxST_NO_AUTORESIZE);
   m_guard_sizer->Add(m_filter, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
   m_filter->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnFilterClick), NULL, this);
 
@@ -1017,31 +1017,31 @@ void br24ControlsDialog::UpdateAdvanced4GState() {
 }
 
 void br24ControlsDialog::UpdateGuardZoneState() {
-    wxString label1, label2, label3, label4;
-    if (m_ri->m_guard_zone[0]->m_alarm_on){
-        label3 << _(" + Alarm");
-    }
-    if (m_ri->m_guard_zone[0]->m_arpa_on){
-        label3 << _(" + Arpa");
-    }
-    if (!m_ri->m_guard_zone[0]->m_alarm_on && !m_ri->m_guard_zone[0]->m_arpa_on){
-        label3 << _(" Off");
-    }
+  wxString label1, label2, label3, label4;
+  if (m_ri->m_guard_zone[0]->m_alarm_on) {
+    label3 << _(" + Alarm");
+  }
+  if (m_ri->m_guard_zone[0]->m_arpa_on) {
+    label3 << _(" + Arpa");
+  }
+  if (!m_ri->m_guard_zone[0]->m_alarm_on && !m_ri->m_guard_zone[0]->m_arpa_on) {
+    label3 << _(" Off");
+  }
 
-    if (m_ri->m_guard_zone[1]->m_alarm_on){
-        label4 << _(" + Alarm");
-    }
-    if (m_ri->m_guard_zone[1]->m_arpa_on){
-        label4 << _(" + Arpa");
-    }
-    if (!m_ri->m_guard_zone[1]->m_alarm_on && !m_ri->m_guard_zone[1]->m_arpa_on){
-        label4 << _(" Off");
-    }
+  if (m_ri->m_guard_zone[1]->m_alarm_on) {
+    label4 << _(" + Alarm");
+  }
+  if (m_ri->m_guard_zone[1]->m_arpa_on) {
+    label4 << _(" + Arpa");
+  }
+  if (!m_ri->m_guard_zone[1]->m_alarm_on && !m_ri->m_guard_zone[1]->m_arpa_on) {
+    label4 << _(" Off");
+  }
 
-  label1 << _("Guard zone") << wxT(" 1 Green\n") << guard_zone_names[m_ri->m_guard_zone[0]->m_type]<<label3;
+  label1 << _("Guard zone") << wxT(" 1 Green\n") << guard_zone_names[m_ri->m_guard_zone[0]->m_type] << label3;
   m_guard_1_button->SetLabel(label1);
 
-  label2 << _("Guard zone") << wxT(" 2 Blue\n") << guard_zone_names[m_ri->m_guard_zone[1]->m_type]<<label4;
+  label2 << _("Guard zone") << wxT(" 2 Blue\n") << guard_zone_names[m_ri->m_guard_zone[1]->m_type] << label4;
   m_guard_2_button->SetLabel(label2);
 }
 
@@ -1701,11 +1701,11 @@ void br24ControlsDialog::ShowGuardZone(int zone) {
   m_guard_zone = m_ri->m_guard_zone[zone];
 
   wxString GuardZoneText;
-  if (zone == 0){
-      GuardZoneText << _("Guard Zone 1 Green");
+  if (zone == 0) {
+    GuardZoneText << _("Guard Zone 1 Green");
   }
-  if (zone == 1){
-      GuardZoneText << _("Guard Zone 2 Blue");
+  if (zone == 1) {
+    GuardZoneText << _("Guard Zone 2 Blue");
   }
   m_guard_zone_text->SetLabel(GuardZoneText);
 
@@ -1742,7 +1742,7 @@ void br24ControlsDialog::SetGuardZoneVisibility() {
 
   m_guard_zone->SetType(zoneType);
 
-   if (zoneType == GZ_CIRCLE) {
+  if (zoneType == GZ_CIRCLE) {
     m_start_bearing->Disable();
     m_end_bearing->Disable();
     m_inner_range->Enable();
@@ -1813,13 +1813,13 @@ void br24ControlsDialog::OnFilterClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnARPAClick(wxCommandEvent& event) {
-    int arpa = m_arpa_box->GetValue();
-    m_guard_zone->SetArpaOn(arpa);
+  int arpa = m_arpa_box->GetValue();
+  m_guard_zone->SetArpaOn(arpa);
 }
 
 void br24ControlsDialog::OnAlarmClick(wxCommandEvent& event) {
-    int alarm = m_alarm->GetValue();
-    m_guard_zone->SetAlarmOn(alarm);
+  int alarm = m_alarm->GetValue();
+  m_guard_zone->SetAlarmOn(alarm);
 }
 
 PLUGIN_END_NAMESPACE

@@ -43,9 +43,8 @@
 PLUGIN_BEGIN_NAMESPACE
 
 //    Forward definitions
-class Kalman_Filter;
+class KalmanFilter;
 class Position;
-class Matrix;
 
 #define MAX_NUMBER_OF_TARGETS (200)  // real max numer of targets is 1 less
 #define TARGET_SEARCH_RADIUS1 (2)    // radius of target search area for pass 1 (on top of the size of the blob)
@@ -59,11 +58,11 @@ class Matrix;
 
 #define FOR_DELETION (-2)  // status of a duplicate target used to delete a target
 #define LOST (-1)
-#define AQUIRE0 (0)  // 0 under aquisition, first seen, no contour yet
-#define AQUIRE1 (1)  // 1 under aquisition, contour found, first position FOUND
-#define AQUIRE2 (2)  // 2 under aquisition, speed and course taken
-#define AQUIRE3 (3)  // 3 under aquisition, speed and course verified, next time active
-                     //    >=4  active
+#define ACQUIRE0 (0)  // 0 under acquisition, first seen, no contour yet
+#define ACQUIRE1 (1)  // 1 under acquisition, contour found, first position FOUND
+#define ACQUIRE2 (2)  // 2 under acquisition, speed and course taken
+#define ACQUIRE3 (3)  // 3 under acquisition, speed and course verified, next time active
+                      //    >=4  active
 
 #define Q_NUM (4)  // status Q to OCPN at target status
 #define T_NUM (6)  // status T to OCPN at target status
@@ -71,16 +70,12 @@ class Matrix;
 #define TARGET_SPEED_DIV_SDEV 2.
 #define MAX_DUP 2                     // maximum number of sweeps a duplicate target is allowed to exist
 #define STATUS_TO_OCPN (5)            // First status to be send to OCPN
-#define NOISE (0.13)                  // Allowed covariance of target speed in lat and lon
-                                      // critical for the performance of target tracking
-                                      // lower value makes target go straight
-                                      // higher values allow target to make curves
 #define START_UP_SPEED (0.5)          // maximum allowed speed (m/sec) for new target, real format with .
 #define DISTANCE_BETWEEN_TARGETS (4)  // minimum separation between targets
 
 typedef int target_status;
 enum OCPN_target_status {
-  Q,  // aquiring
+  Q,  // acquiring
   T,  // active
   L   // lost
 };
@@ -89,35 +84,18 @@ class Position {
  public:
   double lat;
   double lon;
-  double dlat_dt;      // m / sec
-  double dlon_dt;      // m / sec
-  wxLongLong time;     // millis
+  double dlat_dt;   // m / sec
+  double dlon_dt;   // m / sec
+  wxLongLong time;  // millis
   double speed_kn;
   double sd_speed_kn;  // standard deviation of the speed in knots
 };
 
-class Polar {
- public:
-  int angle;
-  int r;
-  wxLongLong time;  // wxGetUTCTimeMillis
-};
-
 Position Polar2Pos(Polar pol, Position own_ship, double range);
-
-class LocalPosition {
-  // position in meters relative to own ship position
- public:
-  double lat;
-  double lon;
-  double dlat_dt;  // meters per second
-  double dlon_dt;
-  double sd_speed_m_s;  // standard deviation of the speed m / sec
-};
 
 Polar Pos2Polar(Position p, Position own_ship, int range);
 
-struct speed {
+struct SpeedHistory {
   double av;
   double hist[SPEED_HISTORY];
   double dif[SPEED_HISTORY];
@@ -125,35 +103,17 @@ struct speed {
   int nr;
 };
 
-enum target_process_status { UNKNOWN, NOT_FOUND_IN_PASS1 };
-enum pass_n { PASS1, PASS2 };
+enum TargetProcessStatus { UNKNOWN, NOT_FOUND_IN_PASS1 };
+enum PassN { PASS1, PASS2 };
 
 class ArpaTarget {
+  friend class RadarArpa;  // Allow RadarArpa access to private members
+
  public:
   ArpaTarget(br24radar_pi* pi, RadarInfo* ri);
   ArpaTarget();
   ~ArpaTarget();
-  RadarInfo* m_ri;
-  br24radar_pi* m_pi;
-  int target_id;
-  Position X;  // holds actual position of target
-  Kalman_Filter* m_kalman;
-  wxLongLong t_refresh;  // time of last refresh
-  target_status status;
-  double speed_kn;
-  double course;
-  speed speeds;
-  int stationary;  // number of sweeps target was stationary
-  bool arpa;
-  int lost_count;
-  int duplicate_count;
-  bool check_for_duplicate;
-  target_process_status pass1_result;
-  pass_n pass_nr;
-  Polar contour[MAX_CONTOUR_LENGTH + 1];  // contour of target, only valid immediately after finding it
-  Polar expected;
-  int contour_length;
-  Polar max_angle, min_angle, max_r, min_r;  // charasterictics of contour
+
   int GetContour(Polar* p);
   void set(br24radar_pi* pi, RadarInfo* ri);
   bool FindNearestContour(Polar* pol, int dist);
@@ -166,27 +126,63 @@ class ArpaTarget {
   void GetSpeed();
   bool Pix(int ang, int rad);
   bool MultiPix(int ang, int rad);
+
+ private:
+  RadarInfo* m_ri;
+  br24radar_pi* m_pi;
+  KalmanFilter* m_kalman;
+  int m_target_id;
+  target_status m_status;
+  Position m_position;   // holds actual position of target
+  double m_speed_kn;     // Average speed of target. TODO: Merge with m_position.speed?
+  wxLongLong m_refresh;  // time of last refresh
+  double m_course;
+  SpeedHistory m_speeds;
+  int m_stationary;  // number of sweeps target was stationary
+  int m_lost_count;
+  bool m_check_for_duplicate;
+  TargetProcessStatus m_pass1_result;
+  PassN m_pass_nr;
+  Polar m_contour[MAX_CONTOUR_LENGTH + 1];  // contour of target, only valid immediately after finding it
+  int m_contour_length;
+  Polar m_max_angle, m_min_angle, m_max_r, m_min_r;  // charasterictics of contour
+
+  Polar m_expected;
+
+  bool m_automatic;  // True for ARPA, false for MARPA.
 };
 
 class RadarArpa {
  public:
   RadarArpa(br24radar_pi* pi, RadarInfo* ri);
   ~RadarArpa();
+  void DrawArpaTargets();
+  void RefreshArpaTargets();
+  int AcquireNewARPATarget(Polar pol, int status);
+  void AcquireNewMARPATarget(Position p);
+  void DeleteTarget(Position p);
+  bool MultiPix(int ang, int rad);
+  void DeleteAllTargets();
+  void RadarLost() {
+    if (m_radar_lost_count > 5) {
+      DeleteAllTargets();  // Let ARPA targets disappear
+      m_radar_lost_count = 0;
+    }
+    m_radar_lost_count++;
+  }
+  void RadarLostReset() { m_radar_lost_count = 0; }
 
+ private:
   ArpaTarget* m_targets[MAX_NUMBER_OF_TARGETS];
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
-  int number_of_targets;
-  int radar_lost_count;  // all targets will be deleted when radar not seen
+  int m_number_of_targets;
+  int m_radar_lost_count;  // all targets will be deleted when radar not seen five times in a row
+
+  void AcquireOrDeleteMarpaTarget(Position p, int status);
   void CalculateCentroid(ArpaTarget* t);
   void DrawContour(ArpaTarget* t);
-  void DrawArpaTargets();
-  void RefreshArpaTargets();
-  void AquireNewTarget(Position p, int status);
-  void AquireNewTarget(Polar pol, int status, int* target_i);
-  void DeleteAllTargets();
   bool Pix(int ang, int rad);
-  bool MultiPix(int ang, int rad);
 };
 
 PLUGIN_END_NAMESPACE

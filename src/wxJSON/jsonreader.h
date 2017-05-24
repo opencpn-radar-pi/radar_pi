@@ -23,9 +23,9 @@
 // for all others, include the necessary headers (this file is usually all you
 // need because it includes almost all "standard" wxWidgets headers)
 #ifndef WX_PRECOMP
+#include <wx/arrstr.h>
 #include <wx/stream.h>
 #include <wx/string.h>
-#include <wx/arrstr.h>
 #endif
 
 #include "json_defs.h"

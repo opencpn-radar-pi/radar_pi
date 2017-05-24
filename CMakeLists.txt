@@ -44,8 +44,8 @@ SET(SRC_br24radar
             src/br24OptionsDialog.cpp
             src/br24Receive.h
             src/br24Receive.cpp
-			src/RadarMarpa.h
-			src/RadarMarpa.cpp
+            src/RadarMarpa.h
+            src/RadarMarpa.cpp
             src/br24Transmit.h
             src/br24Transmit.cpp
             src/icons.h
@@ -54,10 +54,9 @@ SET(SRC_br24radar
             src/GuardZone.cpp
             src/GuardZoneBogey.h
             src/GuardZoneBogey.cpp
-			src/Kalman.h
-			src/Kalman.cpp
-			src/Matrix.cpp
-			src/Matrix.h
+            src/Kalman.h
+            src/Kalman.cpp
+            src/Matrix.h
             src/RadarInfo.h
             src/RadarInfo.cpp
             src/RadarCanvas.h
@@ -99,6 +98,7 @@ INCLUDE_DIRECTORIES(src/nmea0183)
 INCLUDE_DIRECTORIES(src/wxJSON)
 INCLUDE_DIRECTORIES(src)
 
+
 IF(WIN32)
   SET(wxWidgets_USE_LIBS base core net adv gl aui)
   SET(BUILD_SHARED_LIBS TRUE)
@@ -106,6 +106,17 @@ IF(WIN32)
 ENDIF(WIN32)
 
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_br24radar} ${SRC_NMEA0183} ${SRC_JSON})
+
+SET(TEST_KALMAN kalman-test)
+SET(SRC_KALMAN
+              src/Kalman-test.cpp
+              src/Kalman.h
+              src/Kalman.cpp
+              src/Matrix.h
+              src/RadarMarpa.h
+)
+ADD_EXECUTABLE(${TEST_KALMAN} ${SRC_KALMAN})
+TARGET_LINK_LIBRARIES(${TEST_KALMAN} ${wxWidgets_LIBRARIES})
 
 INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginLocalization.cmake")

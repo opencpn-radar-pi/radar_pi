@@ -32,8 +32,8 @@
 #ifndef _RADAR_CANVAS_H_
 #define _RADAR_CANVAS_H_
 
-#include "br24radar_pi.h"
 #include "TextureFont.h"
+#include "br24radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

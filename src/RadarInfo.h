@@ -130,7 +130,7 @@ class RadarInfo : public wxEvtHandler {
   double m_course;  // m_course is the moving everage of m_hdt used for course_up
   double m_course_log[COURSE_SAMPLES];
   int m_course_index;
-  RadarArpa *m_marpa;
+  RadarArpa *m_arpa;
   wxCriticalSection m_exclusive;  // protects the following two
 
   /* User radar settings */
@@ -196,11 +196,11 @@ class RadarInfo : public wxEvtHandler {
   receive_statistics m_statistics;
 
   bool m_multi_sweep_filter;
-  struct line_history{
-      UINT8 line[RETURNS_PER_LINE];
-      wxLongLong time;
-      double lat;
-      double lon;
+  struct line_history {
+    UINT8 line[RETURNS_PER_LINE];
+    wxLongLong time;
+    double lat;
+    double lon;
   };
 
   line_history m_history[LINES_PER_ROTATION];
@@ -243,7 +243,8 @@ class RadarInfo : public wxEvtHandler {
   void AdjustRange(int adjustment);
   void SetAutoRangeMeters(int meters);
   bool SetControlValue(ControlType controlType, int value);
-  void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time, double lat, double lon);
+  void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time,
+                         double lat, double lon);
   void RefreshDisplay(wxTimerEvent &event);
   void UpdateTrailPosition();
   void RenderGuardZone();
@@ -295,9 +296,9 @@ class RadarInfo : public wxEvtHandler {
   int m_previous_auto_range_meters;
   int m_auto_range_meters;
 
-//  wxCriticalSection m_exclusive;  // protects the following two
-  DrawInfo m_draw_panel;          // Draw onto our own panel
-  DrawInfo m_draw_overlay;        // Abstract painting method
+  //  wxCriticalSection m_exclusive;  // protects the following two
+  DrawInfo m_draw_panel;    // Draw onto our own panel
+  DrawInfo m_draw_overlay;  // Abstract painting method
 
   int m_verbose;
   wxTimer *m_timer;

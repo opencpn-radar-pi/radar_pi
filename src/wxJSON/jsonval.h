@@ -21,10 +21,10 @@
 // for all others, include the necessary headers (this file is usually all you
 // need because it includes almost all "standard" wxWidgets headers)
 #ifndef WX_PRECOMP
-#include <wx/object.h>
-#include <wx/hashmap.h>
-#include <wx/dynarray.h>
 #include <wx/arrstr.h>
+#include <wx/dynarray.h>
+#include <wx/hashmap.h>
+#include <wx/object.h>
 #endif
 
 #include "json_defs.h"
@@ -163,7 +163,7 @@ class WXDLLIMPEXP_JSON wxJSONValue {
   bool AsBool(bool& b) const;
   bool AsDouble(double& d) const;
   bool AsString(wxString& str) const;
-  bool AsCString(wxChar* ch) const;
+  bool AsCString(wxChar*& ch) const;
   wxMemoryBuffer AsMemoryBuff() const;
   bool AsMemoryBuff(wxMemoryBuffer& buff) const;
 

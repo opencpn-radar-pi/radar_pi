@@ -30,8 +30,8 @@
  */
 
 #include "RadarCanvas.h"
-#include "drawutil.h"
 #include "TextureFont.h"
+#include "drawutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -507,7 +507,7 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
 #define ZOOM_SENSITIVITY 0  // Increase to make less sensitive
 
 void RadarCanvas::OnMouseWheel(wxMouseEvent &event) {
-  int delta = event.GetWheelDelta();
+  // int delta = event.GetWheelDelta();
   int rotation = event.GetWheelRotation();
 
   wxLongLong now = wxGetUTCTimeMillis();
