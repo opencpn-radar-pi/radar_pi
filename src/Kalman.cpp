@@ -48,8 +48,6 @@ KalmanFilter::KalmanFilter() {
   // Ai,j is jacobian matrix dfi / dxj
 
   I = I.Identity();
-  V = ZeroMatrix2;
-  VT = ZeroMatrix2;
   Q = ZeroMatrix2;
   R = ZeroMatrix2;
 
@@ -84,12 +82,7 @@ void KalmanFilter::ResetFilter() {
   HT = ZeroMatrix42;
 
   // Jacobian V, dhi / dvj
-
-  V(0, 0) = 1.;
-  V(1, 1) = 1.;
-
-  VT(0, 0) = 1.;
-  VT(1, 1) = 1.;
+  // As V is the identity matrix, it is left out of the calculation of the Kalman gain
 
   // P estimate error covariance
   // initial values follow
@@ -128,9 +121,15 @@ void KalmanFilter::Predict(LocalPosition* xx, double delta_time) {
   xx->lon = X(1, 0);
   xx->dlat_dt = X(2, 0);
   xx->dlon_dt = X(3, 0);
-  // calculate apriori P
-  P = A * P * AT + W * Q * WT;
   xx->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed
+  return;
+}
+
+void KalmanFilter::Update_P() {
+  // calculate apriori P
+  // separated from the predict to prevent the update being done both in pass 1 and pass2
+
+  P = A * P * AT + W * Q * WT;
   return;
 }
 

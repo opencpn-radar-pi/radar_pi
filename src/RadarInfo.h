@@ -139,6 +139,7 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item m_boot_state;  // Can contain RADAR_TRANSMIT until radar is seen at boot
 
   radar_control_item m_orientation;  // 0 = Heading Up, 1 = North Up
+  int m_min_contour_length;    // minimum contour length of an ARPA or MARPA target
 #define ORIENTATION_HEAD_UP (0)
 #define ORIENTATION_NORTH_UP (1)
 #define ORIENTATION_COURSE_UP (2)
