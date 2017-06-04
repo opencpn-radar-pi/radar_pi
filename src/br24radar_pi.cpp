@@ -726,6 +726,27 @@ void br24radar_pi::SetRadarHeading(double heading, bool isTrue) {
   wxCriticalSectionLocker lock(m_exclusive);
   m_radar_heading = heading;
   m_radar_heading_true = isTrue;
+  time_t now = time(0);
+  if (!wxIsNaN(m_radar_heading)) {
+    if (m_radar_heading_true) {
+      if (m_heading_source != HEADING_RADAR_HDT) {
+        m_heading_source = HEADING_RADAR_HDT;
+      }
+      if (m_heading_source == HEADING_RADAR_HDT) {
+        m_hdt = m_radar_heading;
+        m_hdt_timeout = now + HEADING_TIMEOUT;
+      }
+    } else {
+      if (m_heading_source != HEADING_RADAR_HDM) {
+        m_heading_source = HEADING_RADAR_HDM;
+      }
+      if (m_heading_source == HEADING_RADAR_HDM) {
+        m_hdm = m_radar_heading;
+        m_hdt = m_radar_heading + m_var;
+        m_hdm_timeout = now + HEADING_TIMEOUT;
+      }
+    }
+  }
 }
 
 // Notify
@@ -745,38 +766,39 @@ void br24radar_pi::Notify(void) {
     SetRadarWindowViz(true);
   }
 
-  {
-    double radar_heading;
-    bool radar_heading_true;
-    {
-      wxCriticalSectionLocker lock(m_exclusive);
-      radar_heading = m_radar_heading;
-      radar_heading_true = m_radar_heading_true;
-      m_radar_heading = nanl("");
-    }
-    if (!wxIsNaN(radar_heading)) {
-      if (radar_heading_true) {
-        if (m_heading_source != HEADING_RADAR_HDT) {
-          //   LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (TRUE) (%d->%d)"), m_heading_source, HEADING_RADAR_HDT);
-          m_heading_source = HEADING_RADAR_HDT;
-        }
-        if (m_heading_source == HEADING_RADAR_HDT) {
-          m_hdt = radar_heading;
-          m_hdt_timeout = now + HEADING_TIMEOUT;
-        }
-      } else {
-        if (m_heading_source != HEADING_RADAR_HDM) {
-          //    LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (MAGNETIC) (%d->%d)"), m_heading_source, HEADING_RADAR_HDM);
-          m_heading_source = HEADING_RADAR_HDM;
-        }
-        if (m_heading_source == HEADING_RADAR_HDM) {
-          m_hdm = radar_heading;
-          m_hdt = radar_heading + m_var;
-          m_hdm_timeout = now + HEADING_TIMEOUT;
-        }
-      }
-    }
-  }
+  //{  // removed from notify as the heading on radar should be applied immediately to m_hdt
+  //   // m_hdt should be adjusted for every  spoke
+  //  double radar_heading;
+  //  bool radar_heading_true;
+  //  {
+  //    wxCriticalSectionLocker lock(m_exclusive);
+  //    radar_heading = m_radar_heading;
+  //    radar_heading_true = m_radar_heading_true;
+  //    m_radar_heading = nanl("");
+  //  }
+  //  if (!wxIsNaN(radar_heading)) {
+  //    if (radar_heading_true) {
+  //      if (m_heading_source != HEADING_RADAR_HDT) {
+  //        //   LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (TRUE) (%d->%d)"), m_heading_source, HEADING_RADAR_HDT);
+  //        m_heading_source = HEADING_RADAR_HDT;
+  //      }
+  //      if (m_heading_source == HEADING_RADAR_HDT) {
+  //        m_hdt = radar_heading;
+  //        m_hdt_timeout = now + HEADING_TIMEOUT;
+  //      }
+  //    } else {
+  //      if (m_heading_source != HEADING_RADAR_HDM) {
+  //        //    LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (MAGNETIC) (%d->%d)"), m_heading_source, HEADING_RADAR_HDM);
+  //        m_heading_source = HEADING_RADAR_HDM;
+  //      }
+  //      if (m_heading_source == HEADING_RADAR_HDM) {
+  //        m_hdm = radar_heading;
+  //        m_hdt = radar_heading + m_var;
+  //        m_hdm_timeout = now + HEADING_TIMEOUT;
+  //      }
+  //    }
+  //  }
+  //}
 
   if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
     // If the position data is 10s old reset our heading.
