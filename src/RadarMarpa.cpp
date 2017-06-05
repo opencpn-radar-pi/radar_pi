@@ -41,7 +41,6 @@ static int target_id_count = 0;
 RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
   m_ri = ri;
   m_pi = pi;
-  m_radar_lost_count = 0;
   m_number_of_targets = 0;
   for (int i = 0; i < MAX_NUMBER_OF_TARGETS; i++) {
     m_targets[i] = 0;
