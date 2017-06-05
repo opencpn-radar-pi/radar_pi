@@ -109,7 +109,7 @@ static double radar_distance(double lat1, double lon1, double lat2, double lon2,
 //
 //---------------------------------------------------------------------------------------------------------
 
-br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_112(ppimgr) {
+br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_114(ppimgr) {
   m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
   // Create the PlugIn icons
@@ -960,7 +960,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     return true;
   }
 
-  LOG_DIALOG(wxT("BR24radar_pi: RenderGLOverlay"));
+  LOG_DIALOG(wxT("BR24radar_pi: RenderGLOverlay context=%p"), pcontext);
   m_opencpn_gl_context = pcontext;
   if (!m_opencpn_gl_context && !m_opencpn_gl_context_broken) {
     LOG_INFO(wxT("BR24radar_pi: OpenCPN does not pass OpenGL context. Resize of OpenCPN window may be broken!"));

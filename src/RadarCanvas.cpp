@@ -361,6 +361,15 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
   }
 }
 
+static void ResetGLViewPort(int w, int h)
+{
+  glViewport(0, 0, w, h);
+  glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
+  glLoadIdentity();             // Reset projection matrix stack
+  glOrtho(0, w, h, 0, -1, 1);
+  glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
+}
+
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
 
@@ -400,23 +409,45 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   bigFont.SetWeight(wxFONTWEIGHT_BOLD);
   m_FontMenuBold.Build(bigFont);
 
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                // Black Background
+  //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                // Black Background
+  glClearColor(0.0f, 0.0f, 0.2f, 1.0f);                // Black Background
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // Clear the canvas
   glEnable(GL_TEXTURE_2D);                             // Enable textures
   glEnable(GL_COLOR_MATERIAL);
   glEnable(GL_BLEND);
-  // glDisable(GL_DEPTH_TEST);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  glViewport(0, 0, w, h);
-  glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
-  glLoadIdentity();             // Reset projection matrix stack
-  glOrtho(0, w, h, 0, -1, 1);
-  glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
-
+  // LAYER 1 - RANGE RINGS AND HEADINGS
+  ResetGLViewPort(w, h);
   RenderRangeRingsAndHeading(w, h);
+
+#if 0
+  // LAYER 2 - AIS AND ARPA TARGETS
+  ResetGLViewPort(w, h);
+  PlugIn_ViewPort vp;
+  vp.clat = m_pi->m_ownship_lat;
+  vp.clon = m_pi->m_ownship_lon;
+  vp.m_projection_type = 4; // Orthographic projection
+  float full_range = wxMax(w, h) / 2.0;
+  int display_range = m_ri->GetDisplayRange();
+
+  vp.view_scale_ppm = full_range / display_range;
+  vp.skew = 0.;
+  vp.rotation = 0.;
+  vp.pix_width = w;
+  vp.pix_height = h;
+  wxColour saveAISFontColor = PlugInGetFontColor(_( "AIS Target Name" ) );
+  PlugInSetFontColor(_("AIS Target Name"), wxColour(200, 200, 200));
+  PlugInAISDrawGL(this, vp);
+  PlugInSetFontColor(_("AIS Target Name"), saveAISFontColor);
+#endif
+
+  // LAYER 3 - EBL & VRM
+
+  ResetGLViewPort(w, h);
   Render_EBL_VRM(w, h);
 
+  // LAYER 4 - RADAR RETURNS
   glViewport(0, 0, w, h);
   glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
   glLoadIdentity();             // Reset projection matrix stack
@@ -426,27 +457,12 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     glScaled((float)h / w, -1.0, 1.0);
   }
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
-
   m_ri->RenderRadarImage(wxPoint(0, 0), 1.0, 0.0, false);
 
-  glViewport(0, 0, w, h);
-  glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
-  glLoadIdentity();             // Reset projection matrix stack
-  glOrtho(0, w, h, 0, -1, 1);
-  glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
-
-  glEnable(GL_TEXTURE_2D);
-
+  // LAYER 5 - TEXTS & CURSOR
+  ResetGLViewPort(w, h);
   RenderTexts(w, h);
   RenderCursor(w, h);
-
-#ifdef NEVER
-  glDisable(GL_TEXTURE_2D);
-
-  glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
-  glLoadIdentity();             // Reset projection matrix stack
-  glMatrixMode(GL_MODELVIEW);   // Reset matrick stack target back to GL_MODELVIEW
-#endif
 
   glPopAttrib();
   glPopMatrix();

@@ -277,7 +277,9 @@ void TextureFont::RenderString(const wxString &string, int x, int y) {
   glTranslatef(x, y, 0);
 
   glPushAttrib(GL_TEXTURE_BIT);
+  glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, m_texobj);
+  glEnable(GL_BLEND);
   glPushMatrix();
 
   for (unsigned int i = 0; i < string.size(); i++) {
