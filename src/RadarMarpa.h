@@ -162,20 +162,14 @@ class RadarArpa {
   bool MultiPix(int ang, int rad);
   void DeleteAllTargets();
   void RadarLost() {
-    if (m_radar_lost_count > 5) {
       DeleteAllTargets();  // Let ARPA targets disappear
-      m_radar_lost_count = 0;
-    }
-    m_radar_lost_count++;
   }
-  void RadarLostReset() { m_radar_lost_count = 0; }
 
  private:
   ArpaTarget* m_targets[MAX_NUMBER_OF_TARGETS];
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
   int m_number_of_targets;
-  int m_radar_lost_count;  // all targets will be deleted when radar not seen five times in a row
 
   void AcquireOrDeleteMarpaTarget(Position p, int status);
   void CalculateCentroid(ArpaTarget* t);

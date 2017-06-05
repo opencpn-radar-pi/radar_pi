@@ -529,21 +529,29 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
       m_radar[m_settings.chart_overlay]->m_arpa->AcquireNewMARPATarget(target_pos);
     }
   } else if (id == m_context_menu_delete_marpa_target) {
+      // Targets can also be deleted when the overlay is not shown
+      // In this case targets can be made by a guard zone in a radarwindow
     if (m_settings.show                                                        // radar shown
-        && m_settings.chart_overlay >= 0                                       // overlay desired
-        && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
         && m_bpos_set) {                                                       // overlay possible
       Position target_pos;
       target_pos.lat = m_cursor_lat;
       target_pos.lon = m_cursor_lon;
-      m_radar[m_settings.chart_overlay]->m_arpa->DeleteTarget(target_pos);
+      if (m_radar[0]->m_arpa){
+          m_radar[0]->m_arpa->DeleteTarget(target_pos);
+      }
+      if (m_radar[1]->m_arpa){
+          m_radar[1]->m_arpa->DeleteTarget(target_pos);
+      }
     }
   } else if (id == m_context_menu_delete_all_marpa_targets) {
     if (m_settings.show                                                        // radar shown
-        && m_settings.chart_overlay >= 0                                       // overlay desired
-        && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
         && m_bpos_set) {                                                       // overlay possible
-      m_radar[m_settings.chart_overlay]->m_arpa->DeleteAllTargets();
+      if (m_radar[0]->m_arpa){
+          m_radar[0]->m_arpa->DeleteAllTargets();
+      }
+      if (m_radar[1]->m_arpa){
+          m_radar[1]->m_arpa->DeleteAllTargets();
+      }
     }
   }
 
@@ -766,39 +774,17 @@ void br24radar_pi::Notify(void) {
     SetRadarWindowViz(true);
   }
 
-  //{  // removed from notify as the heading on radar should be applied immediately to m_hdt
-  //   // m_hdt should be adjusted for every  spoke
-  //  double radar_heading;
-  //  bool radar_heading_true;
-  //  {
-  //    wxCriticalSectionLocker lock(m_exclusive);
-  //    radar_heading = m_radar_heading;
-  //    radar_heading_true = m_radar_heading_true;
-  //    m_radar_heading = nanl("");
-  //  }
-  //  if (!wxIsNaN(radar_heading)) {
-  //    if (radar_heading_true) {
-  //      if (m_heading_source != HEADING_RADAR_HDT) {
-  //        //   LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (TRUE) (%d->%d)"), m_heading_source, HEADING_RADAR_HDT);
-  //        m_heading_source = HEADING_RADAR_HDT;
-  //      }
-  //      if (m_heading_source == HEADING_RADAR_HDT) {
-  //        m_hdt = radar_heading;
-  //        m_hdt_timeout = now + HEADING_TIMEOUT;
-  //      }
-  //    } else {
-  //      if (m_heading_source != HEADING_RADAR_HDM) {
-  //        //    LOG_INFO(wxT("BR24radar_pi: Heading source is now RADAR (MAGNETIC) (%d->%d)"), m_heading_source, HEADING_RADAR_HDM);
-  //        m_heading_source = HEADING_RADAR_HDM;
-  //      }
-  //      if (m_heading_source == HEADING_RADAR_HDM) {
-  //        m_hdm = radar_heading;
-  //        m_hdt = radar_heading + m_var;
-  //        m_hdm_timeout = now + HEADING_TIMEOUT;
-  //      }
-  //    }
-  //  }
-  //}
+  if (!m_settings.show                                                       // No radar shown
+      || (m_radar[0]->m_state.value != RADAR_TRANSMIT &&  m_radar[0]->m_state.value != RADAR_TRANSMIT) // Radar not transmitting
+      || !m_bpos_set) {                                                      // No overlay possible (yet)
+      // Conditions for ARPA not fulfilled, delete all targets
+      if (m_radar[0]->m_arpa) {
+          m_radar[0]->m_arpa->RadarLost();
+      }
+      if (m_radar[1]->m_arpa) {
+          m_radar[1]->m_arpa->RadarLost();
+      }
+  }
 
   if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
     // If the position data is 10s old reset our heading.
@@ -995,16 +981,11 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     // is managed by wxAuiManager as well.
     m_opengl_mode_changed = true;
   }
-
+  
   if (!m_settings.show                                                       // No radar shown
       || m_settings.chart_overlay < 0                                        // No overlay desired
       || m_radar[m_settings.chart_overlay]->m_state.value != RADAR_TRANSMIT  // Radar not transmitting
       || !m_bpos_set) {                                                      // No overlay possible (yet)
-    if (m_radar[m_settings.chart_overlay] >= 0) {
-      if (m_radar[m_settings.chart_overlay]->m_arpa) {
-        m_radar[m_settings.chart_overlay]->m_arpa->RadarLost();
-      }
-    }
     return true;
   }
 
