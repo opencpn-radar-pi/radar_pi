@@ -123,6 +123,11 @@ void GuardZone::SearchTargets() {
   if (!m_arpa_on) {
     return;
   }
+  if (!m_pi->m_settings.show                                                       // No radar shown
+   || (m_pi->m_radar[0]->m_state.value != RADAR_TRANSMIT && m_pi->m_radar[1]->m_state.value != RADAR_TRANSMIT)  // Radar not transmitting
+      || !m_pi->m_bpos_set){                                                       // No position
+      return;
+  }
   if (m_ri->m_range_meters == 0) {
     return;
   }

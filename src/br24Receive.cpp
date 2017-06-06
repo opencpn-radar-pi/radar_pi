@@ -257,7 +257,9 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     if (radar_heading_valid && !m_pi->m_settings.ignore_radar_heading) {
       heading = MOD_DEGREES(SCALE_RAW_TO_DEGREES(MOD_ROTATION(heading_raw)));
       m_pi->SetRadarHeading(heading, radar_heading_true);
-    } else {  // no heading on radar
+    } else {                                                                               // no heading on radar
+        if (m_pi->m_heading_source == HEADING_RADAR_HDM || m_pi->m_heading_source == HEADING_RADAR_HDT)
+            m_pi->m_heading_source = HEADING_NONE;  // let other heading source take over
       m_pi->SetRadarHeading();
     }
     short int hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt + m_ri->m_viewpoint_rotation);
