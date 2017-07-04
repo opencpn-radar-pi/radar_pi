@@ -95,7 +95,6 @@ class br24ControlsDialog : public wxDialog {
   void OnMinusClick(wxCommandEvent &event);
   void OnMinusTenClick(wxCommandEvent &event);
   void OnAutoClick(wxCommandEvent &event);
-  void OnMultiSweepClick(wxCommandEvent &event);
   void OnTrailsMotionClick(wxCommandEvent &event);
 
   void OnAdjustButtonClick(wxCommandEvent &event);
@@ -161,7 +160,6 @@ class br24ControlsDialog : public wxDialog {
   wxButton *m_minus_button;
   wxButton *m_minus_ten_button;
   wxButton *m_auto_button;
-  wxButton *m_multi_sweep_button;
 
   // Advanced controls
   br24RadarControlButton *m_interference_rejection_button;
@@ -208,14 +206,12 @@ class br24ControlsDialog : public wxDialog {
   // Guard Zone Edit
 
   GuardZone *m_guard_zone;
-
   wxStaticText *m_guard_zone_text;
   wxRadioBox *m_guard_zone_type;
   wxTextCtrl *m_outer_range;
   wxTextCtrl *m_inner_range;
   wxTextCtrl *m_start_bearing;
   wxTextCtrl *m_end_bearing;
-  wxCheckBox *m_filter;
   wxCheckBox *m_arpa_box;
   wxCheckBox *m_alarm;
 
@@ -226,7 +222,6 @@ class br24ControlsDialog : public wxDialog {
   void OnOuter_Range_Value(wxCommandEvent &event);
   void OnStart_Bearing_Value(wxCommandEvent &event);
   void OnEnd_Bearing_Value(wxCommandEvent &event);
-  void OnFilterClick(wxCommandEvent &event);
   void OnARPAClick(wxCommandEvent &event);
   void OnAlarmClick(wxCommandEvent &event);
 };

@@ -1098,7 +1098,6 @@ bool br24radar_pi::LoadConfig(void) {
           pConf->Read(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), &m_radar[r]->m_guard_zone[i]->m_end_bearing, 0);
           pConf->Read(wxString::Format(wxT("Radar%dZone%dOuterRange"), r, i), &m_radar[r]->m_guard_zone[i]->m_outer_range, 0);
           pConf->Read(wxString::Format(wxT("Radar%dZone%dInnerRange"), r, i), &m_radar[r]->m_guard_zone[i]->m_inner_range, 0);
-          pConf->Read(wxString::Format(wxT("Radar%dZone%dFilter"), r, i), &m_radar[r]->m_guard_zone[i]->m_multi_sweep_filter, 0);
           pConf->Read(wxString::Format(wxT("Radar%dZone%dType"), r, i), &v, 0);
           pConf->Read(wxString::Format(wxT("Radar%dZone%dAlarmOn"), r, i), &m_radar[r]->m_guard_zone[i]->m_alarm_on, 0);
           pConf->Read(wxString::Format(wxT("Radar%dZone%dArpaOn"), r, i), &m_radar[r]->m_guard_zone[i]->m_arpa_on, 0);
@@ -1145,7 +1144,6 @@ bool br24radar_pi::LoadConfig(void) {
     // Make room for BLOB_HISTORY_MAX history values
     m_settings.threshold_blue = MAX(m_settings.threshold_blue, BLOB_HISTORY_MAX + 1);
     pConf->Read(wxT("ThresholdGreen"), &m_settings.threshold_green, 100);
-    pConf->Read(wxT("ThresholdMultiSweep"), &m_settings.threshold_multi_sweep, 20);
     pConf->Read(wxT("ThresholdRed"), &m_settings.threshold_red, 200);
     pConf->Read(wxT("TrailColourStart"), &s, "rgb(255,255,255)");
     m_settings.trail_start_colour = wxColour(s);
@@ -1197,7 +1195,6 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("SkewFactor"), m_settings.skew_factor);
     pConf->Write(wxT("ThresholdBlue"), m_settings.threshold_blue);
     pConf->Write(wxT("ThresholdGreen"), m_settings.threshold_green);
-    pConf->Write(wxT("ThresholdMultiSweep"), m_settings.threshold_multi_sweep);
     pConf->Write(wxT("ThresholdRed"), m_settings.threshold_red);
     pConf->Write(wxT("TrailColourStart"), m_settings.trail_start_colour.GetAsString());
     pConf->Write(wxT("TrailColourEnd"), m_settings.trail_end_colour.GetAsString());
@@ -1229,7 +1226,6 @@ bool br24radar_pi::SaveConfig(void) {
         pConf->Write(wxString::Format(wxT("Radar%dZone%dOuterRange"), r, i), m_radar[r]->m_guard_zone[i]->m_outer_range);
         pConf->Write(wxString::Format(wxT("Radar%dZone%dInnerRange"), r, i), m_radar[r]->m_guard_zone[i]->m_inner_range);
         pConf->Write(wxString::Format(wxT("Radar%dZone%dType"), r, i), (int)m_radar[r]->m_guard_zone[i]->m_type);
-        pConf->Write(wxString::Format(wxT("Radar%dZone%dFilter"), r, i), m_radar[r]->m_guard_zone[i]->m_multi_sweep_filter);
         pConf->Write(wxString::Format(wxT("Radar%dZone%dAlarmOn"), r, i), m_radar[r]->m_guard_zone[i]->m_alarm_on);
         pConf->Write(wxString::Format(wxT("Radar%dZone%dArpaOn"), r, i), m_radar[r]->m_guard_zone[i]->m_arpa_on);
       }
