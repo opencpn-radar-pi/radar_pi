@@ -23,13 +23,13 @@ You will need the general preconditions for building OpenCPN from http://opencpn
 The following command line snippets show how to build the entire package separately from the OpenCPN source.
 In order to build multiple platforms you can build in separate `build-${platform}` directories.
 
-###Obtain the source code
+### Obtain the source code
 
 ```
 git clone https://github.com/canboat/BR24radar_pi.git
 ```
 
-###Build on Microsoft Windows
+### Build on Microsoft Windows
 
 ```
 mkdir BR24radar_pi/build-win32
@@ -39,14 +39,14 @@ cmake --build .
 ```
 Windows note: You must place opencpn.lib into your build directory to be able to link the plugin DLL. You can get this file from your local OpenCPN build, or alternatively download from http://sourceforge.net/projects/opencpnplugins/files/opencpn_lib/
 
-###Creating a package on Microsoft Windows
+### Creating a package on Microsoft Windows
 
 Windows
 ```
 cmake --build . --config release --target package
 ```
 
-###Build on Linux
+### Build on Linux
 
 Example on 64 bit Intel/AMD64 system:
 
@@ -58,13 +58,13 @@ make
 ```
 
 
-###Creating a package on Linux
+### Creating a package on Linux
 
 ```
 make package
 ```
 
-###Build on Mac OS X:
+### Build on Mac OS X:
 
 XCode can be downloaded from the App Store.
 
@@ -78,7 +78,7 @@ ln -s /usr/local/Cellar/gettext/0.19.2/bin/msgfmt /usr/local/bin/msgfmt
 
 To target older OS X versions than the one you are running, you need the respective SDKs installed. Official releases target 10.7. The easiest way to achieve that is using https://github.com/devernay/xcodelegacy
 
-####Building wxWidgets
+#### Building wxWidgets
 (do not use wxmac from Homebrew, it is not compatible with OpenCPN)
 Get wxWidgets 3.0.x source from http://wxwidgets.org
 Configure, build and install
@@ -89,7 +89,7 @@ make
 sudo make install
 ```
 
-####Building the plugin
+#### Building the plugin
 Before running cmake, you must set the deployment target to OS X 10.7 to be compatible with the libraries used by core OpenCPN
 ```
 export MACOSX_DEPLOYMENT_TARGET=10.7
@@ -99,7 +99,7 @@ cmake ..
 make
 ```
 
-####Packaging on OS X
+#### Packaging on OS X
 Get and install the Packages application from http://s.sudre.free.fr/Software/Packages/about.html
 ```
 make create-pkg
