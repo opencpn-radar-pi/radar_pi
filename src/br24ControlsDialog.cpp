@@ -42,7 +42,6 @@ enum {  // process ID's
   ID_MINUS,
   ID_MINUS_TEN,
   ID_AUTO,
-  ID_MULTISWEEP,
   ID_TRAILS_MOTION,
 
   ID_TRANSPARENCY,
@@ -111,7 +110,6 @@ EVT_BUTTON(ID_PLUS, br24ControlsDialog::OnPlusClick)
 EVT_BUTTON(ID_MINUS, br24ControlsDialog::OnMinusClick)
 EVT_BUTTON(ID_MINUS_TEN, br24ControlsDialog::OnMinusTenClick)
 EVT_BUTTON(ID_AUTO, br24ControlsDialog::OnAutoClick)
-EVT_BUTTON(ID_MULTISWEEP, br24ControlsDialog::OnMultiSweepClick)
 EVT_BUTTON(ID_TRAILS_MOTION, br24ControlsDialog::OnTrailsMotionClick)
 
 EVT_BUTTON(ID_TRANSPARENCY, br24ControlsDialog::OnRadarControlButtonClick)
@@ -416,7 +414,6 @@ void br24ControlsDialog::CreateControls() {
   label << _("Outer range") << wxT("\n");
   label << _("Start bearing") << wxT("\n");
   label << _("End bearing") << wxT("\n");
-  label << _("Multi sweep filter") << wxT("\n");
   label << _("Range") << wxT("\n");
   label << _("Gain") << wxT("\n");
   label << _("Sea clutter") << wxT("\n");
@@ -761,12 +758,6 @@ void br24ControlsDialog::CreateControls() {
   m_guard_sizer->Add(m_alarm, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
   m_alarm->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnAlarmClick), NULL, this);
 
-  // added check box to control multi sweep filtering
-  m_filter =
-      new wxCheckBox(this, wxID_ANY, _("Multi Sweep Filter"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT | wxST_NO_AUTORESIZE);
-  m_guard_sizer->Add(m_filter, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
-  m_filter->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnFilterClick), NULL, this);
-
   m_top_sizer->Hide(m_guard_sizer);
 
   //**************** ADJUST BOX ******************//
@@ -862,13 +853,6 @@ void br24ControlsDialog::CreateControls() {
   m_clear_trails_button = new wxButton(this, ID_CLEAR_TRAILS, _("Clear trails"), wxDefaultPosition, g_smallButtonSize, 0);
   m_view_sizer->Add(m_clear_trails_button, 0, wxALL, BORDER);
   m_clear_trails_button->SetFont(m_pi->m_font);
-
-  // The Multi Sweep Filter button
-  wxString labelSweep;
-  labelSweep << _("Multi Sweep Filter") << wxT("\n") << (m_ri->m_multi_sweep_filter ? _("On") : _("Off"));
-  m_multi_sweep_button = new wxButton(this, ID_MULTISWEEP, labelSweep, wxDefaultPosition, g_buttonSize, 0);
-  m_view_sizer->Add(m_multi_sweep_button, 0, wxALL, BORDER);
-  m_multi_sweep_button->SetFont(m_pi->m_font);
 
   // The Rotation button
   m_orientation_button = new wxButton(this, ID_ORIENTATION, _("Orientation"), wxDefaultPosition, g_buttonSize, 0);
@@ -1094,14 +1078,6 @@ void br24ControlsDialog::OnAutoClick(wxCommandEvent& event) {
   m_auto_button->Disable();
 
   OnBackClick(event);
-}
-
-void br24ControlsDialog::OnMultiSweepClick(wxCommandEvent& event) {
-  wxString labelSweep;
-
-  m_ri->m_multi_sweep_filter = !m_ri->m_multi_sweep_filter;
-  labelSweep << _("Multi Sweep Filter") << wxT("\n") << (m_ri->m_multi_sweep_filter ? _("On") : _("Off"));
-  m_multi_sweep_button->SetLabel(labelSweep);
 }
 
 void br24ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
@@ -1726,7 +1702,6 @@ void br24ControlsDialog::ShowGuardZone(int zone) {
   }
   bearing = round(bearing);
   m_end_bearing->SetValue(wxString::Format(wxT("%3.0f"), bearing));
-  m_filter->SetValue(m_guard_zone->m_multi_sweep_filter ? 1 : 0);
   m_alarm->SetValue(m_guard_zone->m_alarm_on ? 1 : 0);
   m_arpa_box->SetValue(m_guard_zone->m_arpa_on ? 1 : 0);
   m_guard_zone->m_show_time = time(0);
@@ -1805,11 +1780,6 @@ void br24ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
     t += 360.;
   }
   m_guard_zone->SetEndBearing(SCALE_DEGREES_TO_RAW2048(t));
-}
-
-void br24ControlsDialog::OnFilterClick(wxCommandEvent& event) {
-  int filt = m_filter->GetValue();
-  m_guard_zone->SetMultiSweepFilter(filt);
 }
 
 void br24ControlsDialog::OnARPAClick(wxCommandEvent& event) {

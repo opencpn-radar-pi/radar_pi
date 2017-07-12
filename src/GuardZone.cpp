@@ -48,9 +48,7 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
           if (range_end > RETURNS_PER_LINE) {
             range_end = RETURNS_PER_LINE;
           }
-
           for (size_t r = range_start; r <= range_end; r++) {
-            if (!m_multi_sweep_filter || HISTORY_FILTER_ALLOW(hist[r])) {
               if (data[r] >= m_pi->m_settings.threshold_blue) {
                 m_running_count++;
               }
@@ -60,7 +58,7 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
                 data[r] = m_pi->m_settings.threshold_green;
               }
 #endif
-            }
+            
           }
         }
         in_guard_zone = true;
@@ -74,7 +72,6 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
         }
 
         for (size_t r = range_start; r <= range_end; r++) {
-          if (!m_multi_sweep_filter || HISTORY_FILTER_ALLOW(hist[r])) {
             if (data[r] >= m_pi->m_settings.threshold_blue) {
               m_running_count++;
             }
@@ -84,7 +81,6 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
               data[r] = m_pi->m_settings.threshold_green;
             }
 #endif
-          }
         }
         if (angle > m_last_angle) {
           in_guard_zone = true;

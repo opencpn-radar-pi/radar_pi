@@ -190,7 +190,6 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_stayalive_timeout = 0;
   m_radar_timeout = 0;
   m_data_timeout = 0;
-  m_multi_sweep_filter = false;
 
   memset(&m_statistics, 0, sizeof(m_statistics));
 
@@ -452,9 +451,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   m_history[bearing].lat = lat;
   m_history[bearing].lon = lon;
   for (size_t radius = 0; radius < len; radius++) {
-    hist_data[radius] = hist_data[radius] << 1;  // shift left history byte 1 bit
-    // clear leftmost 2 bits to 00 for ARPA
-    hist_data[radius] = hist_data[radius] & 63;
+  //  hist_data[radius] = hist_data[radius] & 63;  // clear leftmost 2 bits to 00 for ARPA
+	  hist_data[radius] = 0;
     if (data[radius] >= weakest_normal_blob) {
       // and add 1 if above threshold and set the left 2 bits, used for ARPA
       hist_data[radius] = hist_data[radius] | 192;
@@ -464,13 +462,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     if (m_guard_zone[z]->m_alarm_on) {
       m_guard_zone[z]->ProcessSpoke(angle, data, m_history[bearing].line, len, range_meters);
-    }
-  }
-  if (m_multi_sweep_filter) {
-    for (size_t radius = 0; radius < len; radius++) {
-      if (!HISTORY_FILTER_ALLOW(m_history[bearing].line[radius])) {
-        data[radius] = 0;
-      }
     }
   }
 

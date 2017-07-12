@@ -196,7 +196,6 @@ class RadarInfo : public wxEvtHandler {
   double m_vrm[BEARING_LINES];
   receive_statistics m_statistics;
 
-  bool m_multi_sweep_filter;
   struct line_history {
     UINT8 line[RETURNS_PER_LINE];
     wxLongLong time;
@@ -205,7 +204,6 @@ class RadarInfo : public wxEvtHandler {
   };
 
   line_history m_history[LINES_PER_ROTATION];
-#define HISTORY_FILTER_ALLOW(x) (HasBitCount2[(x)&7])
 
 #define MARGIN (100)
 #define TRAILS_SIZE (RETURNS_PER_LINE * 2 + MARGIN * 2)

@@ -43,7 +43,6 @@ class GuardZone {
   SpokeBearing m_end_bearing;
   int m_inner_range;  // start in meters
   int m_outer_range;  // end   in meters
-  int m_multi_sweep_filter;
   int m_alarm_on;
   int m_arpa_on;
   time_t m_show_time;
@@ -75,10 +74,6 @@ class GuardZone {
   };
   void SetOuterRange(int outer_range) {
     m_outer_range = outer_range;
-    ResetBogeys();
-  };
-  void SetMultiSweepFilter(int filter) {
-    m_multi_sweep_filter = filter;
     ResetBogeys();
   };
   void SetArpaOn(int arpa) { m_arpa_on = arpa; };
@@ -115,7 +110,6 @@ class GuardZone {
     m_end_bearing = 0;
     m_inner_range = 0;
     m_outer_range = 0;
-    m_multi_sweep_filter = 0;
     m_arpa_on = 0;
     m_alarm_on = 0;
     m_show_time = 0;

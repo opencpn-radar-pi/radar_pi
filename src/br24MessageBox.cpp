@@ -264,7 +264,7 @@ bool br24MessageBox::UpdateMessage(bool force) {
   bool haveGPS = m_pi->m_bpos_set;
   bool haveTrueHeading = !TIMED_OUT(now, m_pi->m_hdt_timeout);
   bool haveMagHeading = !TIMED_OUT(now, m_pi->m_hdm_timeout);
-  bool haveHeading = m_pi->m_heading_source != HEADING_NONE;
+  bool haveHeading = haveTrueHeading || haveMagHeading;
   bool haveVariation = m_pi->m_var_source != VARIATION_SOURCE_NONE;
   bool radarSeen = false;
   bool haveData = false;

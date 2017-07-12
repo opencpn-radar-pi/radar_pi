@@ -111,10 +111,10 @@ bool ArpaTarget::Pix(int ang, int rad) {
   }
 }
 
-bool ArpaTarget::MultiPix(int ang, int rad) {  // checks the blob has a contour of at least length pixels
+bool ArpaTarget::MultiPix(int ang, int rad) {  // checks if the blob has a contour of at least length pixels
   // pol must start on the contour of the blob
   // false if not
-  // if false clears out pixels of th blob in hist
+  // if false clears out pixels of the blob in hist
   wxCriticalSectionLocker lock(ArpaTarget::m_ri->m_exclusive);
   int length = m_ri->m_min_contour_length;
   Polar start;
@@ -161,13 +161,14 @@ bool ArpaTarget::MultiPix(int ang, int rad) {  // checks the blob has a contour 
     if (succes) break;
   }
   if (!succes) {
-    LOG_INFO(wxT("br24radar_pi Error starting point not on contour"));
+    // single pixel blob
     return false;
   }
   index += 1;  // determines starting direction
   if (index > 3) index -= 4;
   while (current.r != start.r || current.angle != start.angle ||
-         count == 0) {  // try all translations to find the next point  // start with the "left most" translation relative to the
+         count == 0) {  // try all translations to find the next point  
+	                    // start with the "left most" translation relative to the
                         // previous one
     index += 3;         // we will turn left all the time if possible
     for (int i = 0; i < 4; i++) {
@@ -181,8 +182,7 @@ bool ArpaTarget::MultiPix(int ang, int rad) {  // checks the blob has a contour 
       index += 1;
     }
     if (!succes) {
-      LOG_INFO(wxT("BR24radar_pi::RadarArpa::CheckContour no next point found count= %i"), count);
-      return false;  // return code 7, no next point found
+      return false;  // no next point found (this happens when the blob consists of one single pixel)
     }                // next point found
     current.angle = aa;
     current.r = rr;
@@ -267,7 +267,6 @@ bool RadarArpa::MultiPix(int ang, int rad) {
     if (succes) break;
   }
   if (!succes) {
-    LOG_INFO(wxT("br24radar_pi Error starting point not on contour"));
     return false;
   }
   index += 1;  // determines starting direction
@@ -287,8 +286,7 @@ bool RadarArpa::MultiPix(int ang, int rad) {
       index += 1;
     }
     if (!succes) {
-      LOG_INFO(wxT("BR24radar_pi::RadarArpa::CheckContour no next point found count= %i"), count);
-      return false;  // return code 7, no next point found
+      return false;  // no next point found
     }                // next point found
     current.angle = aa;
     current.r = rr;
