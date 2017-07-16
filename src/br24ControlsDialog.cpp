@@ -28,8 +28,8 @@
  ***************************************************************************
  */
 
-#include "br24ControlsDialog.h"
 #include "RadarPanel.h"
+#include "br24ControlsDialog.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -1245,10 +1245,11 @@ void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
 void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) { m_ri->ClearTrails(); }
 
 void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
-  m_ri->m_orientation.Update(m_ri->m_orientation.value + 1);
-  if (m_ri->m_orientation.value > ORIENTATION_COURSE_UP) {
-    m_ri->m_orientation.Update(ORIENTATION_HEAD_UP);
+  int value = m_ri->m_orientation.button + 1;
+  if (value > ORIENTATION_COURSE_UP) {
+    value = ORIENTATION_HEAD_UP;
   }
+  m_ri->m_orientation.Update(value);
   UpdateControlValues(false);
 }
 

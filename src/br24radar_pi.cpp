@@ -29,10 +29,10 @@
  ***************************************************************************
  */
 
-#include "br24radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
+#include "br24radar_pi.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
 
@@ -529,28 +529,28 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
       m_radar[m_settings.chart_overlay]->m_arpa->AcquireNewMARPATarget(target_pos);
     }
   } else if (id == m_context_menu_delete_marpa_target) {
-      // Targets can also be deleted when the overlay is not shown
-      // In this case targets can be made by a guard zone in a radarwindow
-    if (m_settings.show                                                        // radar shown
-        && m_bpos_set) {                                                       // overlay possible
+    // Targets can also be deleted when the overlay is not shown
+    // In this case targets can be made by a guard zone in a radarwindow
+    if (m_settings.show   // radar shown
+        && m_bpos_set) {  // overlay possible
       Position target_pos;
       target_pos.lat = m_cursor_lat;
       target_pos.lon = m_cursor_lon;
-      if (m_radar[0]->m_arpa){
-          m_radar[0]->m_arpa->DeleteTarget(target_pos);
+      if (m_radar[0]->m_arpa) {
+        m_radar[0]->m_arpa->DeleteTarget(target_pos);
       }
-      if (m_radar[1]->m_arpa){
-          m_radar[1]->m_arpa->DeleteTarget(target_pos);
+      if (m_radar[1]->m_arpa) {
+        m_radar[1]->m_arpa->DeleteTarget(target_pos);
       }
     }
   } else if (id == m_context_menu_delete_all_marpa_targets) {
-    if (m_settings.show                                                        // radar shown
-        && m_bpos_set) {                                                       // overlay possible
-      if (m_radar[0]->m_arpa){
-          m_radar[0]->m_arpa->DeleteAllTargets();
+    if (m_settings.show   // radar shown
+        && m_bpos_set) {  // overlay possible
+      if (m_radar[0]->m_arpa) {
+        m_radar[0]->m_arpa->DeleteAllTargets();
       }
-      if (m_radar[1]->m_arpa){
-          m_radar[1]->m_arpa->DeleteAllTargets();
+      if (m_radar[1]->m_arpa) {
+        m_radar[1]->m_arpa->DeleteAllTargets();
       }
     }
   }
@@ -774,16 +774,16 @@ void br24radar_pi::Notify(void) {
     SetRadarWindowViz(true);
   }
 
-  if (!m_settings.show                                                       // No radar shown
-      || (m_radar[0]->m_state.value != RADAR_TRANSMIT &&  m_radar[0]->m_state.value != RADAR_TRANSMIT) // Radar not transmitting
-      || !m_bpos_set) {                                                      // No overlay possible (yet)
-      // Conditions for ARPA not fulfilled, delete all targets
-      if (m_radar[0]->m_arpa) {
-          m_radar[0]->m_arpa->RadarLost();
-      }
-      if (m_radar[1]->m_arpa) {
-          m_radar[1]->m_arpa->RadarLost();
-      }
+  if (!m_settings.show                                                                                 // No radar shown
+      || (m_radar[0]->m_state.value != RADAR_TRANSMIT && m_radar[0]->m_state.value != RADAR_TRANSMIT)  // Radar not transmitting
+      || !m_bpos_set) {                                                                                // No overlay possible (yet)
+    // Conditions for ARPA not fulfilled, delete all targets
+    if (m_radar[0]->m_arpa) {
+      m_radar[0]->m_arpa->RadarLost();
+    }
+    if (m_radar[1]->m_arpa) {
+      m_radar[1]->m_arpa->RadarLost();
+    }
   }
 
   if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
@@ -981,7 +981,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     // is managed by wxAuiManager as well.
     m_opengl_mode_changed = true;
   }
-  
+
   if (!m_settings.show                                                       // No radar shown
       || m_settings.chart_overlay < 0                                        // No overlay desired
       || m_radar[m_settings.chart_overlay]->m_state.value != RADAR_TRANSMIT  // Radar not transmitting
@@ -1113,12 +1113,14 @@ bool br24radar_pi::LoadConfig(void) {
 
     pConf->Read(wxT("AlertAudioFile"), &m_settings.alert_audio_file, m_shareLocn + wxT("alarm.wav"));
     pConf->Read(wxT("ChartOverlay"), &m_settings.chart_overlay, 0);
-    pConf->Read(wxT("ColourStrong"), &s, "rgb(255,0,0)");
+    pConf->Read(wxT("ColourStrong"), &s, "red");
     m_settings.strong_colour = wxColour(s);
-    pConf->Read(wxT("ColourIntermediate"), &s, "rgb(0,255,0)");
+    pConf->Read(wxT("ColourIntermediate"), &s, "green");
     m_settings.intermediate_colour = wxColour(s);
-    pConf->Read(wxT("ColourWeak"), &s, "rgb(0,0,255)");
+    pConf->Read(wxT("ColourWeak"), &s, "blue");
     m_settings.weak_colour = wxColour(s);
+    pConf->Read(wxT("ColourArpaEdge"), &s, "white");
+    m_settings.arpa_colour = wxColour(s);
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
     pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
     pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, false);
@@ -1205,6 +1207,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ColourStrong"), m_settings.strong_colour.GetAsString());
     pConf->Write(wxT("ColourIntermediate"), m_settings.intermediate_colour.GetAsString());
     pConf->Write(wxT("ColourWeak"), m_settings.weak_colour.GetAsString());
+    pConf->Write(wxT("ColourArpaEdge"), m_settings.arpa_colour.GetAsString());
 
     for (int r = 0; r < RADARS; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.value);

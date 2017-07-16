@@ -30,8 +30,8 @@
  ***************************************************************************
  */
 
-#include "br24Receive.h"
 #include "RadarMarpa.h"
+#include "br24Receive.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -208,6 +208,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     int range_raw = 0;
     int angle_raw = 0;
     short int heading_raw = 0;
+    short int rotation_raw;
     int range_meters = 0;
 
     heading_raw = (line->common.heading[1] << 8) | line->common.heading[0];
@@ -227,6 +228,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       short int large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
       short int small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
       angle_raw = (line->br4g.angle[1] << 8) | line->br4g.angle[0];
+      rotation_raw = (line->br4g.rotation[1] << 8) | line->br4g.rotation[0];
       if (large_range == 0x80) {
         if (small_range == -1) {
           range_raw = 0;  // Invalid range received
@@ -244,26 +246,30 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       }
     }
 
-    if (angle_raw < 2) {
+    // if (angle_raw < 4) {
+    {
       IF_LOG_AT(LOGLEVEL_RECEIVE,
-                logBinaryData(wxString::Format(wxT("range=%d, angle=%d hdg=%hd"), range_raw, angle_raw, heading_raw),
+                logBinaryData(wxString::Format(wxT("range=%d, angle=%d hdg=%d"), range_raw, angle_raw, heading_raw),
                               (uint8_t *)&line->br24, sizeof(line->br24)));
     }
 
     bool radar_heading_valid = HEADING_VALID(heading_raw);
     bool radar_heading_true = (heading_raw & HEADING_TRUE_FLAG) != 0;
     double heading;
+    int bearing_raw;
 
     if (radar_heading_valid && !m_pi->m_settings.ignore_radar_heading) {
       heading = MOD_DEGREES(SCALE_RAW_TO_DEGREES(MOD_ROTATION(heading_raw)));
       m_pi->SetRadarHeading(heading, radar_heading_true);
-    } else {                                                                               // no heading on radar
-        if (m_pi->m_heading_source == HEADING_RADAR_HDM || m_pi->m_heading_source == HEADING_RADAR_HDT)
-            m_pi->m_heading_source = HEADING_NONE;  // let other heading source take over
+    } else {  // no heading on radar
+      if (m_pi->m_heading_source == HEADING_RADAR_HDM || m_pi->m_heading_source == HEADING_RADAR_HDT)
+        m_pi->m_heading_source = HEADING_NONE;  // let other heading source take over
       m_pi->SetRadarHeading();
+      // Guess the heading for the spoke. This is updated much less frequently than the
+      // data from the radar (which is accurate 10x per second), likely once per second.
+      heading_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt);
     }
-    short int hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt + m_ri->m_viewpoint_rotation);
-    int bearing_raw = angle_raw + hdt_raw;
+    bearing_raw = angle_raw + heading_raw;
     // until here all is based on 4096 (SPOKES) scanlines
 
     SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);    // divide by 2 to map on 2048 scanlines

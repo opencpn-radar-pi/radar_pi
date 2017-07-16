@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#include "RadarMarpa.h"
 #include "RadarInfo.h"
+#include "RadarMarpa.h"
 #include "br24radar_pi.h"
 #include "drawutil.h"
 
@@ -45,7 +45,7 @@ RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
   for (int i = 0; i < MAX_NUMBER_OF_TARGETS; i++) {
     m_targets[i] = 0;
   }
-  LOG_INFO(wxT("BR24radar_pi: RadarMarpa creator ready"));
+  LOG_ARPA(wxT("BR24radar_pi: RadarMarpa creator ready"));
 }
 
 ArpaTarget::~ArpaTarget() {
@@ -166,11 +166,10 @@ bool ArpaTarget::MultiPix(int ang, int rad) {  // checks if the blob has a conto
   }
   index += 1;  // determines starting direction
   if (index > 3) index -= 4;
-  while (current.r != start.r || current.angle != start.angle ||
-         count == 0) {  // try all translations to find the next point  
-	                    // start with the "left most" translation relative to the
-                        // previous one
-    index += 3;         // we will turn left all the time if possible
+  while (current.r != start.r || current.angle != start.angle || count == 0) {  // try all translations to find the next point
+    // start with the "left most" translation relative to the
+    // previous one
+    index += 3;  // we will turn left all the time if possible
     for (int i = 0; i < 4; i++) {
       if (index > 3) index -= 4;
       aa = current.angle + transl[index].angle;
@@ -513,11 +512,12 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
 void RadarArpa::DrawContour(ArpaTarget* target) {
   // should be improved using vertex arrays
   PolarToCartesianLookupTable* polarLookup;
-  if (target->m_lost_count > 0){
-      return;  // don't draw targets that were not seen last sweep
+  if (target->m_lost_count > 0) {
+    return;  // don't draw targets that were not seen last sweep
   }
   polarLookup = GetPolarToCartesianLookupTable();
-  glColor4ub(40, 40, 100, 250);
+  wxColor arpa = m_pi->m_settings.arpa_colour;
+  glColor4ub(arpa.Red(), arpa.Green(), arpa.Blue(), arpa.Alpha());
   glLineWidth(3.0);
   glBegin(GL_LINES);
   for (int i = 0; i < target->m_contour_length; i++) {
@@ -713,7 +713,8 @@ void ArpaTarget::RefreshTarget(int dist) {
     wxLongLong now = wxGetUTCTimeMillis();  // millis
     int diff = now.GetLo() - m_refresh.GetLo();
     if (diff > 8000) {
-      LOG_INFO(wxT("BR24radar_pi: target not refreshed, missing spokes, set lost, status= %i, target_id= %i timediff= %i"), m_status, m_target_id, diff);
+      LOG_ARPA(wxT("BR24radar_pi: target not refreshed, missing spokes, set lost, status= %i, target_id= %i timediff= %i"),
+               m_status, m_target_id, diff);
       SetStatusLost();
     }
     return;

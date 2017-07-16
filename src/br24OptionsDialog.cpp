@@ -143,7 +143,7 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
                             this);
   trailSizer->Add(m_TrailEndColour);
 
-  // Target trails colours
+  // Target colours
 
   wxStaticBox *colourBox = new wxStaticBox(this, wxID_ANY, _("Target colors"));
   wxStaticBoxSizer *colourSizer = new wxStaticBoxSizer(colourBox, wxVERTICAL);
@@ -167,6 +167,17 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   m_StrongColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnStrongColourClick), NULL, this);
   colourSizer->Add(m_StrongColour);
 
+  // ARPA colour
+
+  wxStaticBox *arpaColourBox = new wxStaticBox(this, wxID_ANY, _("ARPA color"));
+  wxStaticBoxSizer *arpaColourSizer = new wxStaticBoxSizer(arpaColourBox, wxVERTICAL);
+
+  wxStaticText *arpaText = new wxStaticText(this, wxID_ANY, _("ARPA edge color"));
+  arpaColourSizer->Add(arpaText, 0, wxALL, border_size);
+  m_ArpaColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.arpa_colour, wxDefaultPosition, wxSize(150, 30));
+  m_ArpaColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnArpaColourClick), NULL, this);
+  arpaColourSizer->Add(m_ArpaColour);
+
   DisplayOptionsBox->Add(m_RangeUnits, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(drawingMethodSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(menuOptionsSizer, 0, wxALL | wxEXPAND, border_size);
@@ -174,6 +185,7 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   DisplayOptionsBox->Add(guardZoneSizer, 0, wxALL, border_size);
   DisplayOptionsBox->Add(trailSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(colourSizer, 0, wxALL | wxEXPAND, border_size);
+  DisplayOptionsBox->Add(arpaColourSizer, 0, wxALL | wxEXPAND, border_size);
 
   //  Options
   wxStaticBox *itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
@@ -271,6 +283,8 @@ void br24OptionsDialog::OnTrailEndColourClick(wxCommandEvent &event) {
 }
 
 void br24OptionsDialog::OnWeakColourClick(wxCommandEvent &event) { m_settings.weak_colour = m_WeakColour->GetColour(); }
+
+void br24OptionsDialog::OnArpaColourClick(wxCommandEvent &event) { m_settings.arpa_colour = m_ArpaColour->GetColour(); }
 
 void br24OptionsDialog::OnIntermediateColourClick(wxCommandEvent &event) {
   m_settings.intermediate_colour = m_IntermediateColour->GetColour();

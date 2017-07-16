@@ -29,9 +29,9 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
+#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "br24ControlsDialog.h"
@@ -420,6 +420,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
                                   wxLongLong time_rec, double lat, double lon) {
   wxCriticalSectionLocker lock(m_exclusive);
 
+  int orientation;
+
   for (int i = 0; i < m_pi->m_settings.main_bang_size; i++) {
     data[i] = 0;
   }
@@ -438,12 +440,20 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     if (!m_range.value) {
       m_range.Update(convertSpokeMetersToRangeMeters(range_meters));
     }
-
-  } else if (m_orientation.mod) {
-    ResetSpokes();
-    LOG_VERBOSE(wxT("BR24radar_pi: %s HeadUp/NorthUp/CourseUp change"));
   }
-  int north_or_course_up = m_orientation.GetButton() != ORIENTATION_HEAD_UP;  // true for north up or course up
+  if (m_orientation.GetButton(&orientation)) {
+    ResetSpokes();
+    LOG_VERBOSE(wxT("BR24radar_pi: %s HeadUp/NorthUp/CourseUp change"), m_name.c_str());
+  }
+  // In NORTH or COURSE UP modes we store the radar data at the bearing received
+  // in the spoke. In other words: at an absolute angle off north.
+  // This way, when the boat rotates the data on the overlay doesn't rotate with it.
+  // This is also called 'stabilized' mode, I guess.
+  //
+  // The history data used for the ARPA data is *always* in bearing mode, it is not usable
+  // with relative data.
+  //
+  int north_or_course_up = orientation != ORIENTATION_HEAD_UP;  // true for north up or course up
   uint8_t weakest_normal_blob = m_pi->m_settings.threshold_blue;
 
   UINT8 *hist_data = m_history[bearing].line;
@@ -451,8 +461,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   m_history[bearing].lat = lat;
   m_history[bearing].lon = lon;
   for (size_t radius = 0; radius < len; radius++) {
-  //  hist_data[radius] = hist_data[radius] & 63;  // clear leftmost 2 bits to 00 for ARPA
-	  hist_data[radius] = 0;
+    //  hist_data[radius] = hist_data[radius] & 63;  // clear leftmost 2 bits to 00 for ARPA
+    hist_data[radius] = 0;
     if (data[radius] >= weakest_normal_blob) {
       // and add 1 if above threshold and set the left 2 bits, used for ARPA
       hist_data[radius] = hist_data[radius] | 192;
@@ -1020,34 +1030,34 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   overlay_rotate += OPENGL_ROTATION;  // Difference between OpenGL and compass + radar
+                                      // Note that for overlay=false this is purely OPENGL_ROTATION.
+
   double panel_rotate = overlay_rotate;
-  double arpa_rotate = 0.;
-  if (m_orientation.value == ORIENTATION_COURSE_UP) {
-    panel_rotate -= m_course;
-    arpa_rotate -= m_course;
-  }
-  if (m_orientation.value == ORIENTATION_HEAD_UP) {
-    arpa_rotate = -m_pi->m_hdt;
-  }
   double guard_rotate = overlay_rotate;
-  if (overlay || m_orientation.value == ORIENTATION_NORTH_UP || m_orientation.value == ORIENTATION_COURSE_UP) {
+  double arpa_rotate = overlay_rotate;
+
+  // So many combinations here
+
+  if (!overlay) {
+    arpa_rotate = 0.;
+    if (m_orientation.value == ORIENTATION_COURSE_UP) {
+      panel_rotate -= m_course;  // Panel only needs COG applied
+      arpa_rotate -= m_course;
+      guard_rotate += m_pi->m_hdt - m_course;
+    } else if (m_orientation.value == ORIENTATION_NORTH_UP) {
+      guard_rotate += m_pi->m_hdt;
+    } else {
+      arpa_rotate += -m_pi->m_hdt;  // Undo the actual heading calculation always done for ARPA
+    }
+  } else {
     guard_rotate += m_pi->m_hdt;
   }
-  if (!overlay && m_orientation.value == ORIENTATION_COURSE_UP) {
-    guard_rotate -= m_course;
-  }
+
   if (m_arpa) {
     m_arpa->RefreshArpaTargets();
   }
-  if (overlay) {
-    if (m_arpa) {
-      glPushMatrix();
-      glTranslated(center.x, center.y, 0);
-      glScaled(scale, scale, 1.);
-      m_arpa->DrawArpaTargets();
-      glPopMatrix();
-    }
 
+  if (overlay) {
     if (m_pi->m_settings.guard_zone_on_overlay) {
       glPushMatrix();
       glTranslated(center.x, center.y, 0);
@@ -1058,25 +1068,46 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
       RenderGuardZone();
       glPopMatrix();
     }
+
     double radar_pixels_per_meter = ((double)RETURNS_PER_LINE) / m_range_meters;
-    scale = scale / radar_pixels_per_meter;
+    double radar_scale = scale / radar_pixels_per_meter;
     glPushMatrix();
     glTranslated(center.x, center.y, 0);
-    if (overlay_rotate != 0.0) {
-      glRotated(overlay_rotate, 0.0, 0.0, 1.0);
-    }
-    glScaled(scale, scale, 1.);
+    glRotated(panel_rotate, 0.0, 0.0, 1.0);
+    glScaled(radar_scale, radar_scale, 1.);
 
     RenderRadarImage(&m_draw_overlay);
     if (m_overlay_refreshes_queued > 0) {
       m_overlay_refreshes_queued--;
     }
+    glPopMatrix();
+
+    if (m_arpa) {
+      glPushMatrix();
+      glTranslated(center.x, center.y, 0);
+      glScaled(scale, scale, 1.);
+      m_arpa->DrawArpaTargets();
+      glPopMatrix();
+    }
+
   } else if (m_range.value) {
     glPushMatrix();
     scale = 1.0 / m_range.value;
     glScaled(scale, scale, 1.);
     glRotated(guard_rotate, 0.0, 0.0, 1.0);
     RenderGuardZone();
+    glPopMatrix();
+
+    glPushMatrix();
+    double overscan = (double)m_range_meters / (double)m_range.value;
+    double radar_scale = overscan / RETURNS_PER_LINE;
+    glScaled(radar_scale, radar_scale, 1.);
+    glRotated(panel_rotate, 0.0, 0.0, 1.0);
+    LOG_DIALOG(wxT("BR24radar_pi: %s render overscan=%g range=%d"), m_name.c_str(), overscan, m_range.value);
+    RenderRadarImage(&m_draw_panel);
+    if (m_refreshes_queued > 0) {
+      m_refreshes_queued--;
+    }
     glPopMatrix();
 
     if (m_arpa) {
@@ -1086,20 +1117,8 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
       m_arpa->DrawArpaTargets();
       glPopMatrix();
     }
-
-    glPushMatrix();
-    double overscan = (double)m_range_meters / (double)m_range.value;
-    scale = overscan / RETURNS_PER_LINE;
-    glScaled(scale, scale, 1.);
-    glRotated(panel_rotate, 0.0, 0.0, 1.0);
-    LOG_DIALOG(wxT("BR24radar_pi: %s render overscan=%g range=%d"), m_name.c_str(), overscan, m_range.value);
-    RenderRadarImage(&m_draw_panel);
-    if (m_refreshes_queued > 0) {
-      m_refreshes_queued--;
-    }
   }
 
-  glPopMatrix();
   glPopAttrib();
 }
 
