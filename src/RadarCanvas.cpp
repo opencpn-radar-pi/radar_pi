@@ -174,7 +174,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   double predictor;
   switch (m_ri->m_orientation.value) {
     case ORIENTATION_HEAD_UP:
-      heading = 180.;
+      heading = m_pi->m_hdt + 180.;
       predictor = 180.;
       break;
     case ORIENTATION_NORTH_UP:
