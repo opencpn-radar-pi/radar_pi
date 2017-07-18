@@ -1305,6 +1305,13 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     }
   }
 
+  if (!wxIsNaN(pfix.Cog)){
+	  m_cog = pfix.Cog;
+  }
+  else{
+	  m_cog = nan("");
+  }
+
   if (pfix.FixTime > 0 && NOT_TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT)) {
     m_ownship_lat = pfix.Lat;
     m_ownship_lon = pfix.Lon;
