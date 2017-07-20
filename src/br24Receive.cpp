@@ -266,9 +266,9 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
         m_pi->m_heading_source = HEADING_NONE;  // let other heading source take over
       m_pi->SetRadarHeading();
       // Guess the heading for the spoke. This is updated much less frequently than the
-      // data from the radar (which is accurate 10x per second), likely once per second.
-      heading_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt);
+      // data from the radar (which is accurate 10x per second), likely once per second.      
     }
+	heading_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt);  // include variation 
     bearing_raw = angle_raw + heading_raw;
     // until here all is based on 4096 (SPOKES) scanlines
 
