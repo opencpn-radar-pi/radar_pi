@@ -442,7 +442,6 @@ class br24radar_pi : public opencpn_plugin_112 {
 
   double m_hdt;                    // this is the heading that the pi is using for all heading operations, in degrees.
                                    // m_hdt will come from the radar if available else from the NMEA stream.
-  double m_cog;
   time_t m_hdt_timeout;            // When we consider heading is lost
   double m_hdm;                    // Last magnetic heading obtained
   time_t m_hdm_timeout;            // When we consider heading is lost

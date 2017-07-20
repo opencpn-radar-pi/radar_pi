@@ -538,13 +538,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 }
 
 void RadarInfo::SampleCourse(int angle) {
-	// use COG if available
-	if (!wxIsNaN(m_pi->m_cog)){
-		m_course = m_pi->m_cog;
-		return;
-	}
-	// no cog available: use average heading
-
   //  Calculates the moving average of m_hdt and returns this in m_course
   //  This is a bit more complicated then expected, average of 359 and 1 is 180 and that is not what we want
   if (m_pi->m_heading_source != HEADING_NONE && ((angle & 127) == 0)) {  // sample m_hdt every 128 spokes
@@ -1135,7 +1128,7 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
   if (IsDisplayNorthUp()) {
     s << _("North Up");
   } else if (m_orientation.value == ORIENTATION_COURSE_UP && m_pi->m_heading_source != HEADING_NONE) {
-    s << _("COG Up");
+    s << _("Course Up");
   } else {
     s << _("Head Up");
   }

@@ -1391,7 +1391,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
         o << _("Head up");
         break;
       case ORIENTATION_COURSE_UP:
-        o << _("COG Up");
+        o << _("Course up");
         break;
       default:
         o << _("???");
