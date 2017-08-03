@@ -337,17 +337,17 @@ bool br24radar_pi::DeInit(void) {
 
 	if (m_radar[r]->m_receive) {
 		LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread request stop"), m_radar[r]->m_name.c_str());
-		m_radar[r]->m_receive->Shutdown();
-		LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread stopped"), m_radar[r]->m_name.c_str());
-		m_radar[r]->m_receive->Wait();
+		m_radar[r]->m_receive->Shutdown();     // will close receive socket 
+		while (!m_radar[r]->m_receive->m_socket_closed){
+		   wxMilliSleep(1);
+		   LOG_VERBOSE(wxT("BR24radar_pi: waiting for receive socket closing"));
+		}
 		LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread delete"), m_radar[r]->m_name.c_str());
 		delete m_radar[r]->m_receive;
 		LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread deleted"), m_radar[r]->m_name.c_str());
 		m_radar[r]->m_receive = 0;
 	}
-
-
-    delete m_radar[r];
+	delete m_radar[r];
     m_radar[r] = 0;
   }
 

@@ -463,6 +463,8 @@ void *br24Receive::Entry(void) {
   SOCKET dataSocket = INVALID_SOCKET;
   SOCKET commandSocket = INVALID_SOCKET;
   SOCKET reportSocket = INVALID_SOCKET;
+  m_shutdown_flag = false;
+  m_socket_closed = false;
 
   LOG_RECEIVE(wxT("BR24radar_pi: br24Receive thread %s starting"), m_ri->m_name.c_str());
   socketReady(INVALID_SOCKET, 1000);  // sleep for 1s so that other stuff is set up (fixes Windows core on startup)
@@ -471,7 +473,7 @@ void *br24Receive::Entry(void) {
     reportSocket = GetNewReportSocket();
   }
 
-  while (true) {
+  while (!m_shutdown_flag) {
     if (!m_pi->m_settings.emulator_on) {
       if (reportSocket == INVALID_SOCKET) {
         reportSocket = PickNextEthernetCard();
@@ -628,7 +630,10 @@ void *br24Receive::Entry(void) {
 
   }  // endless loop until thread destroy
 
-  LOG_INFO(wxT("BR24radar_pi: receive quit"));
+//  LOG_INFO(wxT("BR24radar_pi: receive quit"));
+
+  m_socket_closed = true;
+
 
   if (dataSocket != INVALID_SOCKET) {
     closesocket(dataSocket);
@@ -655,7 +660,7 @@ void *br24Receive::Entry(void) {
   LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread sleeping"), m_ri->m_name.c_str());
   wxMilliSleep(2000);
 #endif
-  LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopping"), m_ri->m_name.c_str());
+ // LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopping"), m_ri->m_name.c_str());
   return 0;
 }
 
@@ -985,9 +990,14 @@ void br24Receive::ProcessCommand(wxString &addr, const UINT8 *command, int len) 
 
 // Called from the main thread to stop this thread.
 void br24Receive::Shutdown() {
-  if (m_send_socket != INVALID_SOCKET) {
-    send(m_send_socket, "!", 1, MSG_DONTROUTE);
-  }
+
+LOG_VERBOSE(wxT("BR24radar_pi: shutdown receive called"));
+// interrupt the receive thread by closing the socket
+if (m_receive_socket != INVALID_SOCKET) {
+   closesocket(m_receive_socket);
+   m_receive_socket = INVALID_SOCKET;
+}
+m_shutdown_flag = true;
 }
 
 PLUGIN_END_NAMESPACE
