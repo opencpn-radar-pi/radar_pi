@@ -422,36 +422,44 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   RenderRangeRingsAndHeading(w, h);
 
 #if 1
-  // LAYER 2 - AIS AND ARPA TARGETS
-  ResetGLViewPort(w, h);
-  PlugIn_ViewPort vp;
-  vp.clat = m_pi->m_ownship_lat;
-  vp.clon = m_pi->m_ownship_lon;
-  vp.m_projection_type = 4;  // Orthographic projection
-  float full_range = wxMax(w, h) / 2.0;
-  int display_range = m_ri->GetDisplayRange();
+  if (m_pi->m_heading_source != HEADING_NONE) {
+    // LAYER 2 - AIS AND ARPA TARGETS
 
-  switch (m_ri->m_orientation.value) {
-    case ORIENTATION_HEAD_UP:
-      vp.rotation = deg2rad(-m_pi->m_hdt);
-      break;
-    case ORIENTATION_NORTH_UP:
-      vp.rotation = 0.;
-      break;
-    case ORIENTATION_COURSE_UP:
-      vp.rotation = deg2rad(-m_ri->m_course);
-      break;
-  }
+    glPushMatrix();
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    ResetGLViewPort(w, h);
+    PlugIn_ViewPort vp;
+    vp.clat = m_pi->m_ownship_lat;
+    vp.clon = m_pi->m_ownship_lon;
+    vp.m_projection_type = 4;  // Orthographic projection
+    float full_range = wxMax(w, h) / 2.0;
+    int display_range = m_ri->GetDisplayRange();
 
-  vp.view_scale_ppm = full_range / display_range;
-  vp.skew = 0.;
-  vp.pix_width = w;
-  vp.pix_height = h;
-  wxColour saveAISFontColor = PlugInGetFontColor(_("AIS Target Name"));
-  PlugInSetFontColor(_("AIS Target Name"), M_SETTINGS.ais_text_colour);
-  PlugInAISDrawGL(this, vp);
-  PlugInSetFontColor(_("AIS Target Name"), saveAISFontColor);
+    switch (m_ri->m_orientation.value) {
+      case ORIENTATION_HEAD_UP:
+        vp.rotation = deg2rad(-m_pi->m_hdt);
+        break;
+      case ORIENTATION_NORTH_UP:
+        vp.rotation = 0.;
+        break;
+      case ORIENTATION_COURSE_UP:
+        vp.rotation = deg2rad(-m_ri->m_course);
+        break;
+    }
+
+    vp.view_scale_ppm = full_range / display_range;
+    vp.skew = 0.;
+    vp.pix_width = w;
+    vp.pix_height = h;
+    wxColour saveAISFontColor = PlugInGetFontColor(_("AIS Target Name"));
+    PlugInSetFontColor(_("AIS Target Name"), M_SETTINGS.ais_text_colour);
+    PlugInAISDrawGL(this, vp);
+    PlugInSetFontColor(_("AIS Target Name"), saveAISFontColor);
 #endif
+
+    glPopAttrib();
+    glPopMatrix();
+  }
 
   // LAYER 3 - EBL & VRM
 
