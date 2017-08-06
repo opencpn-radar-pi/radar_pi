@@ -32,8 +32,8 @@
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
+#include "br24Receive.h"
 #include "br24radar_pi.h"
-#include "br24receive.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
 
@@ -335,17 +335,16 @@ bool br24radar_pi::DeInit(void) {
       m_radar[r]->m_arpa = 0;
     }
 
-	if (m_radar[r]->m_receive) {
-		LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread request stop"), m_radar[r]->m_name.c_str());
-		m_radar[r]->m_receive->Shutdown();
-		LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread stopped"), m_radar[r]->m_name.c_str());
-		m_radar[r]->m_receive->Wait();
-		LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread delete"), m_radar[r]->m_name.c_str());
-		delete m_radar[r]->m_receive;
-		LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread deleted"), m_radar[r]->m_name.c_str());
-		m_radar[r]->m_receive = 0;
-	}
-
+    if (m_radar[r]->m_receive) {
+      LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread request stop"), m_radar[r]->m_name.c_str());
+      m_radar[r]->m_receive->Shutdown();
+      LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread stopped"), m_radar[r]->m_name.c_str());
+      m_radar[r]->m_receive->Wait();
+      LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread delete"), m_radar[r]->m_name.c_str());
+      delete m_radar[r]->m_receive;
+      LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread deleted"), m_radar[r]->m_name.c_str());
+      m_radar[r]->m_receive = 0;
+    }
 
     delete m_radar[r];
     m_radar[r] = 0;
@@ -1134,6 +1133,8 @@ bool br24radar_pi::LoadConfig(void) {
     m_settings.weak_colour = wxColour(s);
     pConf->Read(wxT("ColourArpaEdge"), &s, "white");
     m_settings.arpa_colour = wxColour(s);
+    pConf->Read(wxT("ColourAISText"), &s, "rgba(200,200,0,0.5)");
+    m_settings.ais_text_colour = wxColour(s);
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
     pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
     pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, false);
@@ -1221,6 +1222,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ColourIntermediate"), m_settings.intermediate_colour.GetAsString());
     pConf->Write(wxT("ColourWeak"), m_settings.weak_colour.GetAsString());
     pConf->Write(wxT("ColourArpaEdge"), m_settings.arpa_colour.GetAsString());
+    pConf->Write(wxT("ColourAISText"), m_settings.ais_text_colour.GetAsString());
 
     for (int r = 0; r < RADARS; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.value);

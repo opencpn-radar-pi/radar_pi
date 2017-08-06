@@ -170,49 +170,51 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
     }
   }
 
-  double heading;
-  double predictor;
-  switch (m_ri->m_orientation.value) {
-    case ORIENTATION_HEAD_UP:
-      heading = m_pi->m_hdt + 180.;
-      predictor = 180.;
-      break;
-    case ORIENTATION_NORTH_UP:
-      heading = 180;
-      predictor = m_pi->m_hdt + 180;
-      break;
-    case ORIENTATION_COURSE_UP:
-      heading = m_ri->m_course + 180.;
-      predictor = m_pi->m_hdt + 180. - m_ri->m_course;
-      break;
-  }
-
-  x = -sinf(deg2rad(predictor));
-  y = cosf(deg2rad(predictor));
-  glBegin(GL_LINE_STRIP);
-  glVertex2f(center_x, center_y);
-  glVertex2f(center_x + x * r * 2, center_y + y * r * 2);
-  glEnd();
-
-  for (int i = 0; i < 360; i += 5) {
-    x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
-    y = cosf(deg2rad(i - heading)) * (r * 1.00 - 1);
-
-    wxString s;
-    if (i % 90 == 0) {
-      static char nesw[4] = {'N', 'E', 'S', 'W'};
-      s = wxString::Format(wxT("%c"), nesw[i / 90]);
-    } else if (i % 15 == 0) {
-      s = wxString::Format(wxT("%u"), i);
+  if (m_pi->m_heading_source != HEADING_NONE) {
+    double heading;
+    double predictor;
+    switch (m_ri->m_orientation.value) {
+      case ORIENTATION_HEAD_UP:
+        heading = m_pi->m_hdt + 180.;
+        predictor = 180.;
+        break;
+      case ORIENTATION_NORTH_UP:
+        heading = 180;
+        predictor = m_pi->m_hdt + 180;
+        break;
+      case ORIENTATION_COURSE_UP:
+        heading = m_ri->m_course + 180.;
+        predictor = m_pi->m_hdt + 180. - m_ri->m_course;
+        break;
     }
-    m_FontNormal.GetTextExtent(s, &px, &py);
-    if (x > 0) {
-      x -= px;
+
+    x = -sinf(deg2rad(predictor));
+    y = cosf(deg2rad(predictor));
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(center_x, center_y);
+    glVertex2f(center_x + x * r * 2, center_y + y * r * 2);
+    glEnd();
+
+    for (int i = 0; i < 360; i += 5) {
+      x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
+      y = cosf(deg2rad(i - heading)) * (r * 1.00 - 1);
+
+      wxString s;
+      if (i % 90 == 0) {
+        static char nesw[4] = {'N', 'E', 'S', 'W'};
+        s = wxString::Format(wxT("%c"), nesw[i / 90]);
+      } else if (i % 15 == 0) {
+        s = wxString::Format(wxT("%u"), i);
+      }
+      m_FontNormal.GetTextExtent(s, &px, &py);
+      if (x > 0) {
+        x -= px;
+      }
+      if (y > 0) {
+        y -= py;
+      }
+      m_FontNormal.RenderString(s, center_x + x, center_y + y);
     }
-    if (y > 0) {
-      y -= py;
-    }
-    m_FontNormal.RenderString(s, center_x + x, center_y + y);
   }
 }
 
@@ -361,8 +363,7 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
   }
 }
 
-static void ResetGLViewPort(int w, int h)
-{
+static void ResetGLViewPort(int w, int h) {
   glViewport(0, 0, w, h);
   glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
   glLoadIdentity();             // Reset projection matrix stack
@@ -409,8 +410,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   bigFont.SetWeight(wxFONTWEIGHT_BOLD);
   m_FontMenuBold.Build(bigFont);
 
-  //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                // Black Background
-  glClearColor(0.0f, 0.0f, 0.2f, 1.0f);                // Black Background
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                // Black Background
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // Clear the canvas
   glEnable(GL_TEXTURE_2D);                             // Enable textures
   glEnable(GL_COLOR_MATERIAL);
@@ -421,23 +421,34 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   ResetGLViewPort(w, h);
   RenderRangeRingsAndHeading(w, h);
 
-#if 0
+#if 1
   // LAYER 2 - AIS AND ARPA TARGETS
   ResetGLViewPort(w, h);
   PlugIn_ViewPort vp;
   vp.clat = m_pi->m_ownship_lat;
   vp.clon = m_pi->m_ownship_lon;
-  vp.m_projection_type = 4; // Orthographic projection
+  vp.m_projection_type = 4;  // Orthographic projection
   float full_range = wxMax(w, h) / 2.0;
   int display_range = m_ri->GetDisplayRange();
 
+  switch (m_ri->m_orientation.value) {
+    case ORIENTATION_HEAD_UP:
+      vp.rotation = deg2rad(-m_pi->m_hdt);
+      break;
+    case ORIENTATION_NORTH_UP:
+      vp.rotation = 0.;
+      break;
+    case ORIENTATION_COURSE_UP:
+      vp.rotation = deg2rad(-m_ri->m_course);
+      break;
+  }
+
   vp.view_scale_ppm = full_range / display_range;
   vp.skew = 0.;
-  vp.rotation = 0.;
   vp.pix_width = w;
   vp.pix_height = h;
-  wxColour saveAISFontColor = PlugInGetFontColor(_( "AIS Target Name" ) );
-  PlugInSetFontColor(_("AIS Target Name"), wxColour(200, 200, 200));
+  wxColour saveAISFontColor = PlugInGetFontColor(_("AIS Target Name"));
+  PlugInSetFontColor(_("AIS Target Name"), M_SETTINGS.ais_text_colour);
   PlugInAISDrawGL(this, vp);
   PlugInSetFontColor(_("AIS Target Name"), saveAISFontColor);
 #endif

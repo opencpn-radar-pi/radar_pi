@@ -33,7 +33,7 @@
 #define _BR24RADARPI_H_
 
 #define MY_API_VERSION_MAJOR 1
-#define MY_API_VERSION_MINOR 14 // Needed for PluginAISDrawGL().
+#define MY_API_VERSION_MINOR 14  // Needed for PluginAISDrawGL().
 
 #include "jsonreader.h"
 #include "nmea0183/nmea0183.h"
@@ -321,6 +321,7 @@ struct PersistentSettings {
   wxColour intermediate_colour;     // Colour for INTERMEDIATE returns
   wxColour weak_colour;             // Colour for WEAK returns
   wxColour arpa_colour;             // Colour for ARPA edges
+  wxColour ais_text_colour;         // Colour for AIS texts
 };
 
 struct scan_line {
