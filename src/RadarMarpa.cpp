@@ -590,8 +590,8 @@ void RadarArpa::RefreshArpaTargets() {
   if (m_number_of_targets > 0) {
     if (m_pi->m_context_menu_delete_marpa_target == 0) {
       wxMenu dummy_menu;
-      wxMenuItem* mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete Arpa Target"));
-      wxMenuItem* mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all Arpa Targets"));
+      wxMenuItem* mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete (M)ARPA Target"));
+      wxMenuItem* mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all (M)ARPA Targets"));
 #ifdef __WXMSW__
       wxFont* qFont = OCPNGetFont(_("Menu"), 10);
       mi5->SetFont(*qFont);
