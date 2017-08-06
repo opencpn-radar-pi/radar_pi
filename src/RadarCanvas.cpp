@@ -421,13 +421,13 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   ResetGLViewPort(w, h);
   RenderRangeRingsAndHeading(w, h);
 
-#if 1
   if (m_pi->m_heading_source != HEADING_NONE) {
     // LAYER 2 - AIS AND ARPA TARGETS
 
     glPushMatrix();
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     ResetGLViewPort(w, h);
+
     PlugIn_ViewPort vp;
     vp.clat = m_pi->m_ownship_lat;
     vp.clon = m_pi->m_ownship_lon;
@@ -455,7 +455,6 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     PlugInSetFontColor(_("AIS Target Name"), M_SETTINGS.ais_text_colour);
     PlugInAISDrawGL(this, vp);
     PlugInSetFontColor(_("AIS Target Name"), saveAISFontColor);
-#endif
 
     glPopAttrib();
     glPopMatrix();
