@@ -451,7 +451,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     vp.skew = 0.;
     vp.pix_width = w;
     vp.pix_height = h;
-    wxColour saveAISFontColor = PlugInGetFontColor(_("AIS Target Name"));
+    wxColour saveAISFontColor = GetFontColour_PlugIn(_("AIS Target Name"));
     PlugInSetFontColor(_("AIS Target Name"), M_SETTINGS.ais_text_colour);
     PlugInAISDrawGL(this, vp);
     PlugInSetFontColor(_("AIS Target Name"), saveAISFontColor);
