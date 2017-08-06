@@ -867,7 +867,6 @@ void br24radar_pi::Notify(void) {
                               m_radar[r]->m_statistics.missing_spokes);
       }
     }
-    if (JsonAIS != wxEmptyString) t = JsonAIS;  // ARPA AIS debug info
     m_pMessageBox->SetStatisticsInfo(t);
     if (t.length() > 0) {
       t.Replace(wxT("\n"), wxT(" "));
@@ -1404,7 +1403,6 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
               ais_in_arpa[empty].ais_time_upd = time(0);
               ais_in_arpa[empty].ais_lat = f_AISLat;
               ais_in_arpa[empty].ais_lon = f_AISLon;
-              ais_in_arpa[empty].ais_name = message.Get(_T("shipname"), wxEmptyString).AsString().Trim().Truncate(12);
               count_ais_in_arpa++;
             }
           }
@@ -1417,9 +1415,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
         if (ais_in_arpa[i].ais_mmsi > 0 && ((time(0) - ais_in_arpa[i].ais_time_upd) > (3 * 60) || !ArpaGuardOn)) {
           ais_in_arpa[i].ais_mmsi = 0;
           ais_in_arpa[i].ais_time_upd = 0;
-          ais_in_arpa[i].ais_name.clear();
           if (count_ais_in_arpa > 0) count_ais_in_arpa--;
-          if (count_ais_in_arpa == 0) JsonAIS = wxEmptyString;
         }
       }
     }
@@ -1428,32 +1424,15 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
 
 bool br24radar_pi::FindAIS_at_arpaPos(const double &lat, const double &lon, const double &dist) {
   if (count_ais_in_arpa == 0) return false;
-  wxString Msg = wxEmptyString;
-  static time_t msgtimer = 0;  // debug
   bool hit = false;
   double offset = dist / 1852. / 60.;
-  Msg << "dist: " << dist << " m\n";
   for (int i = 0; i < SIZEAISAR; i++) {
     if (ais_in_arpa[i].ais_mmsi != 0) {  // Avtive post
       if (lat + offset > ais_in_arpa[i].ais_lat && lat - offset < ais_in_arpa[i].ais_lat &&
           lon + (offset * 1.75) > ais_in_arpa[i].ais_lon && lon - (offset * 1.75) < ais_in_arpa[i].ais_lon) {
         hit = true;
-        Msg << _T("ARPA at:\n")
-            << _T("Lat: ") << lat << _T("\n")
-            << _T("Lon: ") << lon << _T("\n");
-        wxString AIS_targ = wxEmptyString;
-        AIS_targ << ais_in_arpa[i].ais_name;
-        if (AIS_targ == wxEmptyString) AIS_targ << ais_in_arpa[i].ais_mmsi;
-        Msg << _T("Covered by: ") << AIS_targ << "\n";
-        JsonAIS = Msg;
-        msgtimer = time(0);
         break;
       }
-    }
-    if (time(0) - msgtimer > 20) {  // Debug. clean last message
-      Msg = "AIS in ARPA zones: ";
-      Msg << count_ais_in_arpa << "\n";
-      JsonAIS = Msg;
     }
   }
   return hit ? true : false;
