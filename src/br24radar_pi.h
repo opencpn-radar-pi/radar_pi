@@ -33,7 +33,7 @@
 #define _BR24RADARPI_H_
 
 #define MY_API_VERSION_MAJOR 1
-#define MY_API_VERSION_MINOR 12
+#define MY_API_VERSION_MINOR 14  // Needed for PluginAISDrawGL().
 
 #include "jsonreader.h"
 #include "nmea0183/nmea0183.h"
@@ -321,6 +321,7 @@ struct PersistentSettings {
   wxColour intermediate_colour;     // Colour for INTERMEDIATE returns
   wxColour weak_colour;             // Colour for WEAK returns
   wxColour arpa_colour;             // Colour for ARPA edges
+  wxColour ais_text_colour;         // Colour for AIS texts
 };
 
 struct scan_line {
@@ -355,7 +356,7 @@ struct AisArpa {
    INSTALLS_TOOLBAR_TOOL | USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS | WANTS_NMEA_SENTENCES | WANTS_PREFERENCES |  \
    WANTS_PLUGIN_MESSAGING | WANTS_CURSOR_LATLON | WANTS_MOUSE_EVENTS)
 
-class br24radar_pi : public opencpn_plugin_112 {
+class br24radar_pi : public opencpn_plugin_114 {
  public:
   br24radar_pi(void *ppimgr);
   ~br24radar_pi();
