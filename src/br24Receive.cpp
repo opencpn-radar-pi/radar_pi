@@ -30,8 +30,8 @@
  ***************************************************************************
  */
 
-#include "RadarMarpa.h"
 #include "br24Receive.h"
+#include "RadarMarpa.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -266,9 +266,9 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
         m_pi->m_heading_source = HEADING_NONE;  // let other heading source take over
       m_pi->SetRadarHeading();
       // Guess the heading for the spoke. This is updated much less frequently than the
-      // data from the radar (which is accurate 10x per second), likely once per second.      
+      // data from the radar (which is accurate 10x per second), likely once per second.
     }
-	heading_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt);  // include variation 
+    heading_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt);  // include variation
     bearing_raw = angle_raw + heading_raw;
     // until here all is based on 4096 (SPOKES) scanlines
 
@@ -988,8 +988,7 @@ void br24Receive::ProcessCommand(wxString &addr, const UINT8 *command, int len) 
 // for the setup of these two sockets.
 void br24Receive::Shutdown() {
   if (m_send_socket != INVALID_SOCKET) {
-    if (send(m_send_socket, "!", 1, MSG_DONTROUTE) > 0)
-    {
+    if (send(m_send_socket, "!", 1, MSG_DONTROUTE) > 0) {
       LOG_VERBOSE(wxT("BR24radar_pi: %s requested receive thread to stop"), m_ri->m_name.c_str());
       return;
     }

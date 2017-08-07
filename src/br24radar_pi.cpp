@@ -1119,8 +1119,10 @@ bool br24radar_pi::LoadConfig(void) {
     m_settings.weak_colour = wxColour(s);
     pConf->Read(wxT("ColourArpaEdge"), &s, "white");
     m_settings.arpa_colour = wxColour(s);
-    pConf->Read(wxT("ColourAISText"), &s, "rgba(200,200,0,0.5)");
+    pConf->Read(wxT("ColourAISText"), &s, "rgb(100,100,100)");
     m_settings.ais_text_colour = wxColour(s);
+    pConf->Read(wxT("ColourPPIBackground"), &s, "rgb(0,0,50)");
+    m_settings.ppi_background_colour = wxColour(s);
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
     pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
     pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, false);
@@ -1209,6 +1211,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ColourWeak"), m_settings.weak_colour.GetAsString());
     pConf->Write(wxT("ColourArpaEdge"), m_settings.arpa_colour.GetAsString());
     pConf->Write(wxT("ColourAISText"), m_settings.ais_text_colour.GetAsString());
+    pConf->Write(wxT("ColourPPIBackground"), m_settings.ppi_background_colour.GetAsString());
 
     for (int r = 0; r < RADARS; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.value);

@@ -238,7 +238,6 @@ void RadarInfo::Shutdown() {
 }
 
 RadarInfo::~RadarInfo() {
-
   m_timer->Stop();
   if (m_receive) {
     m_receive->Wait();
@@ -536,7 +535,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
 
   if (m_draw_panel.draw) {
-    m_draw_panel.draw->ProcessRadarSpoke(3, north_or_course_up ? bearing : angle, data, len);
+    m_draw_panel.draw->ProcessRadarSpoke(4, north_or_course_up ? bearing : angle, data, len);
   }
 }
 

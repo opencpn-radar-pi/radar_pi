@@ -28,8 +28,8 @@
  ***************************************************************************
  */
 
-#include "RadarPanel.h"
 #include "br24ControlsDialog.h"
+#include "RadarPanel.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

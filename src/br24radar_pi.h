@@ -325,6 +325,7 @@ struct PersistentSettings {
   wxColour weak_colour;             // Colour for WEAK returns
   wxColour arpa_colour;             // Colour for ARPA edges
   wxColour ais_text_colour;         // Colour for AIS texts
+  wxColour ppi_background_colour;   // Colour for PPI background (normally very dark)
 };
 
 struct scan_line {

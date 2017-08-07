@@ -159,6 +159,9 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   int px;
   int py;
 
+  glPushMatrix();
+  glPushAttrib(GL_ALL_ATTRIB_BITS);
+
   glColor3ub(0, 126, 29);  // same color as HDS
   glLineWidth(1.0);
 
@@ -206,6 +209,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
       } else if (i % 15 == 0) {
         s = wxString::Format(wxT("%u"), i);
       }
+
       m_FontNormal.GetTextExtent(s, &px, &py);
       if (x > 0) {
         x -= px;
@@ -216,6 +220,9 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
       m_FontNormal.RenderString(s, center_x + x, center_y + y);
     }
   }
+
+  glPopAttrib();
+  glPopMatrix();
 }
 
 void RadarCanvas::FillCursorTexture() {
@@ -410,7 +417,8 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   bigFont.SetWeight(wxFONTWEIGHT_BOLD);
   m_FontMenuBold.Build(bigFont);
 
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                // Black Background
+  wxColour bg = M_SETTINGS.ppi_background_colour;
+  glClearColor(bg.Red() / 256.0, bg.Green() / 256.0, bg.Blue() / 256.0, bg.Alpha() / 256.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // Clear the canvas
   glEnable(GL_TEXTURE_2D);                             // Enable textures
   glEnable(GL_COLOR_MATERIAL);
@@ -424,9 +432,10 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   if (m_pi->m_heading_source != HEADING_NONE) {
     // LAYER 2 - AIS AND ARPA TARGETS
 
+    ResetGLViewPort(w, h);
     glPushMatrix();
     glPushAttrib(GL_ALL_ATTRIB_BITS);
-    ResetGLViewPort(w, h);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
     PlugIn_ViewPort vp;
     vp.clat = m_pi->m_ownship_lat;
@@ -451,10 +460,20 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     vp.skew = 0.;
     vp.pix_width = w;
     vp.pix_height = h;
-    wxColour saveAISFontColor = GetFontColour_PlugIn(_("AIS Target Name"));
-    PlugInSetFontColor(_("AIS Target Name"), M_SETTINGS.ais_text_colour);
+
+    wxString aisTextFont = _("AIS Target Name");
+    wxFont *aisFont = GetOCPNScaledFont_PlugIn(aisTextFont, 12);
+    wxColour aisFontColor = GetFontColour_PlugIn(aisTextFont);
+
+    if (aisFont) {
+      wxColour newFontColor = M_SETTINGS.ais_text_colour;
+      PlugInSetFontColor(aisTextFont, newFontColor);
+      newFontColor = GetFontColour_PlugIn(aisTextFont);
+    }
     PlugInAISDrawGL(this, vp);
-    PlugInSetFontColor(_("AIS Target Name"), saveAISFontColor);
+    if (aisFont) {
+      PlugInSetFontColor(aisTextFont, aisFontColor);
+    }
 
     glPopAttrib();
     glPopMatrix();
