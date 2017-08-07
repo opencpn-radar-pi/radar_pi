@@ -464,7 +464,7 @@ void *br24Receive::Entry(void) {
   SOCKET commandSocket = INVALID_SOCKET;
   SOCKET reportSocket = INVALID_SOCKET;
 
-  LOG_RECEIVE(wxT("BR24radar_pi: br24Receive thread %s starting"), m_ri->m_name.c_str());
+  LOG_VERBOSE(wxT("BR24radar_pi: br24Receive thread %s starting"), m_ri->m_name.c_str());
   socketReady(INVALID_SOCKET, 1000);  // sleep for 1s so that other stuff is set up (fixes Windows core on startup)
 
   if (m_mcast_addr) {
@@ -524,6 +524,7 @@ void *br24Receive::Entry(void) {
         rx_len = sizeof(rx_addr);
         r = recvfrom(m_receive_socket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
         if (r > 0) {
+          LOG_VERBOSE(wxT("BR24radar_pi: %s received stop instruction"), m_ri->m_name.c_str());
           break;
         }
       }
@@ -628,8 +629,6 @@ void *br24Receive::Entry(void) {
 
   }  // endless loop until thread destroy
 
-  LOG_INFO(wxT("BR24radar_pi: receive quit"));
-
   if (dataSocket != INVALID_SOCKET) {
     closesocket(dataSocket);
   }
@@ -651,9 +650,9 @@ void *br24Receive::Entry(void) {
     freeifaddrs(m_interface_array);
   }
 
-#if 0
+#ifdef TEST_THREAD_RACES
   LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread sleeping"), m_ri->m_name.c_str());
-  wxMilliSleep(2000);
+  wxMilliSleep(1000);
 #endif
   LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopping"), m_ri->m_name.c_str());
   return 0;
@@ -984,10 +983,18 @@ void br24Receive::ProcessCommand(wxString &addr, const UINT8 *command, int len) 
 }
 
 // Called from the main thread to stop this thread.
+// We send a simple one byte message to the thread so that it awakens from the select() call with
+// this message ready for it to be read on 'm_receive_socket'. See the constructor in br24Receive.h
+// for the setup of these two sockets.
 void br24Receive::Shutdown() {
   if (m_send_socket != INVALID_SOCKET) {
-    send(m_send_socket, "!", 1, MSG_DONTROUTE);
+    if (send(m_send_socket, "!", 1, MSG_DONTROUTE) > 0)
+    {
+      LOG_VERBOSE(wxT("BR24radar_pi: %s requested receive thread to stop"), m_ri->m_name.c_str());
+      return;
+    }
   }
+  LOG_INFO(wxT("BR24radar_pi: %s receive thread will take long time to stop"), m_ri->m_name.c_str());
 }
 
 PLUGIN_END_NAMESPACE

@@ -32,7 +32,6 @@
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
-#include "br24Receive.h"
 #include "br24radar_pi.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
@@ -321,31 +320,19 @@ bool br24radar_pi::DeInit(void) {
     m_bogey_dialog = 0;
   }
 
-  // Delete all dialogs
+  // Stop processing in all radars.
+  // This will delete the dialogs (so that the user cannot change the config)
+  // and stop the radar threads from accepting new data.
+  // After this is done we can safely save the configuration.
   for (int r = 0; r < RADARS; r++) {
-    m_radar[r]->DeleteDialogs();
+    m_radar[r]->Shutdown();
   }
 
   SaveConfig();
 
-  // Delete all 'new'ed objects
+  // Delete the RadarInfo objects. This will call their destructor, which in turn
+  // will wait for the receive threads to stop and then delete all data.
   for (int r = 0; r < RADARS; r++) {
-    if (m_radar[r]->m_arpa) {
-      delete m_radar[r]->m_arpa;
-      m_radar[r]->m_arpa = 0;
-    }
-
-    if (m_radar[r]->m_receive) {
-      LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread request stop"), m_radar[r]->m_name.c_str());
-      m_radar[r]->m_receive->Shutdown();
-      LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread stopped"), m_radar[r]->m_name.c_str());
-      m_radar[r]->m_receive->Wait();
-      LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread delete"), m_radar[r]->m_name.c_str());
-      delete m_radar[r]->m_receive;
-      LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread deleted"), m_radar[r]->m_name.c_str());
-      m_radar[r]->m_receive = 0;
-    }
-
     delete m_radar[r];
     m_radar[r] = 0;
   }

@@ -223,7 +223,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_refresh_millis = 50;
 }
 
-void RadarInfo::DeleteDialogs() {
+void RadarInfo::Shutdown() {
   if (m_control_dialog) {
     delete m_control_dialog;
     m_control_dialog = 0;
@@ -232,21 +232,20 @@ void RadarInfo::DeleteDialogs() {
     delete m_radar_panel;
     m_radar_panel = 0;
   }
+  if (m_receive) {
+    m_receive->Shutdown();
+  }
 }
 
 RadarInfo::~RadarInfo() {
+
   m_timer->Stop();
   if (m_receive) {
-    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread request stop"), m_name.c_str());
-    m_receive->Shutdown();
-    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopped"), m_name.c_str());
     m_receive->Wait();
-    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread delete"), m_name.c_str());
+    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopped"), m_name.c_str());
     delete m_receive;
-    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread deleted"), m_name.c_str());
     m_receive = 0;
   }
-  DeleteDialogs();
   if (m_draw_panel.draw) {
     delete m_draw_panel.draw;
     m_draw_panel.draw = 0;
@@ -258,6 +257,10 @@ RadarInfo::~RadarInfo() {
   if (m_transmit) {
     delete m_transmit;
     m_transmit = 0;
+  }
+  if (m_arpa) {
+    delete m_arpa;
+    m_arpa = 0;
   }
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     delete m_guard_zone[z];

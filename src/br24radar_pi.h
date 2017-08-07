@@ -52,6 +52,9 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+// Define the following to make sure we have no race conditions during thread stop.
+// #define TEST_THREAD_RACES
+
 //    Forward definitions
 class GuardZone;
 class RadarInfo;

@@ -251,8 +251,8 @@ class RadarInfo : public wxEvtHandler {
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
   void ShowControlDialog(bool show, bool reparent);
-  void DeleteDialogs();
-  void DeleteReceive();
+  void Shutdown();
+  //void DeleteReceive();
   void UpdateTransmitState();
   void RequestRadarState(RadarState state);
 
