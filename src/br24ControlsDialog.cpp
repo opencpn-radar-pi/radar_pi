@@ -28,8 +28,8 @@
  ***************************************************************************
  */
 
-#include "br24ControlsDialog.h"
 #include "RadarPanel.h"
+#include "br24ControlsDialog.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -181,13 +181,14 @@ class br24RadarControlButton : public wxButton {
     if (ct == CT_GAIN) {
       value = 50;
     }
-    hasAuto = newHasAuto;
-    isAuto = false;
+    autoValue = 0;
+    autoValues = newHasAuto ? 1 : 0;
+    autoNames = 0;
     firstLine = label;
     names = 0;
     controlType = ct;
-    if (hasAuto) {
-      SetLocalAuto();
+    if (autoValues > 0) {
+      SetLocalAuto(-1);  // Not sent to radar, radar will update state
     } else {
       SetLocalValue(newValue);
     }
@@ -196,10 +197,11 @@ class br24RadarControlButton : public wxButton {
   }
 
   virtual void AdjustValue(int adjustment);
-  virtual void SetAuto();
+  virtual void SetAuto(int newValue);
   virtual void SetLocalValue(int newValue);
-  virtual void SetLocalAuto();
+  virtual void SetLocalAuto(int newValue);
   const wxString* names;
+  const wxString* autoNames;
 
   wxString firstLine;
 
@@ -207,11 +209,11 @@ class br24RadarControlButton : public wxButton {
   br24radar_pi* m_pi;
 
   int value;
+  int autoValue;   // 0 = not auto mode, -1 = normal auto value, -2... etc special, auto_names is set
+  int autoValues;  // 0 = none, 1 = normal auto value, 2.. etc special, auto_names is set
 
   int minValue;
   int maxValue;
-  bool hasAuto;
-  bool isAuto;
   ControlType controlType;
 };
 
@@ -226,8 +228,9 @@ class br24RadarRangeControlButton : public br24RadarControlButton {
     minValue = 0;
     maxValue = 0;
     value = -1;  // means: never set
-    hasAuto = true;
-    isAuto = false;
+    autoValue = 0;
+    autoValues = 1;
+    autoNames = 0;
     firstLine = label;
     names = 0;
     controlType = CT_RANGE;
@@ -236,7 +239,7 @@ class br24RadarRangeControlButton : public br24RadarControlButton {
   }
 
   virtual void AdjustValue(int adjustment);
-  virtual void SetAuto();
+  virtual void SetAuto(int newValue);
   void SetRangeLabel();
 
  private:
@@ -252,6 +255,7 @@ wxString scan_speed_names[2];
 wxString timed_idle_times[8];
 wxString guard_zone_names[2];
 wxString target_trail_names[TRAIL_ARRAY_SIZE];
+wxString sea_clutter_names[2];
 
 void br24RadarControlButton::AdjustValue(int adjustment) {
   int newValue = value + adjustment;
@@ -270,6 +274,11 @@ void br24RadarControlButton::AdjustValue(int adjustment) {
 }
 
 void br24RadarControlButton::SetLocalValue(int newValue) {  // sets value in the button without sending new value to the radar
+  if (newValue < 0)
+  {
+    SetLocalAuto(newValue);
+    return;
+  }
   if (newValue < minValue) {
     value = minValue;
   } else if (newValue > maxValue) {
@@ -277,7 +286,7 @@ void br24RadarControlButton::SetLocalValue(int newValue) {  // sets value in the
   } else {
     value = newValue;
   }
-  isAuto = false;
+  autoValue = 0;
 
   wxString label;
 
@@ -290,17 +299,25 @@ void br24RadarControlButton::SetLocalValue(int newValue) {  // sets value in the
   this->SetLabel(label);
 }
 
-void br24RadarControlButton::SetAuto() {
-  SetLocalAuto();
-  m_parent->m_ri->SetControlValue(controlType, -1);
+void br24RadarControlButton::SetAuto(int newValue) {
+  SetLocalAuto(newValue);
+  m_parent->m_ri->SetControlValue(controlType, -abs(newValue));
 }
 
-void br24RadarControlButton::SetLocalAuto() {  // sets auto in the button without sending new value
-                                               // to the radar
+void br24RadarControlButton::SetLocalAuto(int newValue) {  // sets auto in the button without sending new value
+                                                           // to the radar
   wxString label;
 
-  isAuto = true;
-  label << firstLine << wxT("\n") << _("Auto");
+  autoValue = abs(newValue);
+  LOG_VERBOSE(wxT("Set %s to auto value %d, max=%d"), label, autoValue, autoValues);
+  label << firstLine << wxT("\n");
+  if (autoNames && autoValue > 0 && autoValue <= autoValues) {
+    label << autoNames[autoValue - 1];
+  }
+  else
+  {
+    label << _("Auto");
+  }
   this->SetLabel(label);
 }
 
@@ -311,12 +328,12 @@ void br24RadarRangeControlButton::SetRangeLabel() {
 
 void br24RadarRangeControlButton::AdjustValue(int adjustment) {
   LOG_VERBOSE(wxT("%s Adjusting %s by %d"), m_parent->m_log_name.c_str(), GetName(), adjustment);
-  isAuto = false;
+  autoValue = 0;
   m_parent->m_ri->AdjustRange(adjustment);  // send new value to the radar
 }
 
-void br24RadarRangeControlButton::SetAuto() {
-  isAuto = true;
+void br24RadarRangeControlButton::SetAuto(int newValue) {
+  autoValue = newValue;
   m_parent->m_ri->m_auto_range_mode = true;
 }
 
@@ -779,7 +796,12 @@ void br24ControlsDialog::CreateControls() {
   m_adjust_sizer->Add(m_gain_button, 0, wxALL, BORDER);
 
   // The SEA button
-  m_sea_button = new br24RadarControlButton(this, ID_SEA, _("Sea clutter"), CT_SEA, true, m_ri->m_sea.button);
+  sea_clutter_names[0] = _("Harbour");
+  sea_clutter_names[1] = _("Offshore");
+  m_sea_button = new br24RadarControlButton(this, ID_SEA, _("Sea clutter"), CT_SEA, false, 0);
+  m_sea_button->autoNames = sea_clutter_names;
+  m_sea_button->autoValues = 2;
+  m_sea_button->SetLocalValue(m_ri->m_sea.button);
   m_adjust_sizer->Add(m_sea_button, 0, wxALL, BORDER);
 
   // The RAIN button
@@ -1074,10 +1096,14 @@ void br24ControlsDialog::OnBackClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnAutoClick(wxCommandEvent& event) {
-  m_from_control->SetAuto();
-  m_auto_button->Disable();
-
-  OnBackClick(event);
+  if (m_from_control->autoValues == 1) {
+    m_from_control->SetAuto(1);
+    m_auto_button->Disable();
+  } else if (m_from_control->autoValue < m_from_control->autoValues) {
+    m_from_control->SetAuto(m_from_control->autoValue + 1);
+  } else {
+    m_from_control->SetAuto(0);
+  }
 }
 
 void br24ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
@@ -1138,9 +1164,9 @@ void br24ControlsDialog::EnterEditMode(br24RadarControlButton* button) {
 
   SwitchTo(m_edit_sizer, wxT("edit"));
 
-  if (m_from_control->hasAuto) {
+  if (m_from_control->autoValues > 0) {
     m_auto_button->Show();
-    if (m_from_control->isAuto) {
+    if (m_from_control->autoValue != 0 && m_from_control->autoValues == 1) {
       m_auto_button->Disable();
     } else {
       m_auto_button->Enable();
@@ -1418,8 +1444,8 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   // gain
   if (m_ri->m_gain.mod || refreshAll) {
     int button = m_ri->m_gain.GetButton();
-    if (button == -1) {
-      m_gain_button->SetLocalAuto();
+    if (button < 0) {
+      m_gain_button->SetLocalAuto(button);
     } else {
       m_gain_button->SetLocalValue(button);
     }
@@ -1433,8 +1459,8 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   //   sea
   if (m_ri->m_sea.mod || refreshAll) {
     int button = m_ri->m_sea.GetButton();
-    if (button == -1) {
-      m_sea_button->SetLocalAuto();
+    if (button < 0) {
+      m_sea_button->SetLocalAuto(button);
     } else {
       m_sea_button->SetLocalValue(button);
     }
@@ -1488,8 +1514,8 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   // side lobe suppression
   if (m_ri->m_side_lobe_suppression.mod || refreshAll) {
     int button = m_ri->m_side_lobe_suppression.GetButton();
-    if (button == -1) {
-      m_side_lobe_suppression_button->SetLocalAuto();
+    if (button < 0) {
+      m_side_lobe_suppression_button->SetLocalAuto(button);
     } else {
       m_side_lobe_suppression_button->SetLocalValue(button);
     }

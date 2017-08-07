@@ -697,7 +697,7 @@ struct RadarReport_02C4_99 {     // length 99
   UINT16 field4;                 // 6-7    0
   UINT32 field8;                 // 8-11   1
   UINT8 gain;                    // 12
-  UINT8 field13;                 // 13  ==1 for sea auto
+  UINT8 sea_auto;                // 13  0 = off, 1 = harbour, 2 = offshore
   UINT8 field14;                 // 14
   UINT16 field15;                // 15-16
   UINT32 sea;                    // 17-20   sea state (17)
@@ -809,8 +809,8 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
           m_ri->m_gain.Update(s->gain * 100 / 255);
         }
         m_ri->m_rain.Update(s->rain * 100 / 255);
-        if (s->field13 == 0x01) {
-          m_ri->m_sea.Update(-1);  // auto sea
+        if (s->sea_auto > 0) {
+          m_ri->m_sea.Update(-s->sea_auto);
         } else {
           m_ri->m_sea.Update(s->sea * 100 / 255);
         }
