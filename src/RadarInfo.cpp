@@ -1036,7 +1036,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
 
   double panel_rotate = overlay_rotate;
   double guard_rotate = overlay_rotate;
-  double arpa_rotate = overlay_rotate;
+  double arpa_rotate;
 
   // So many combinations here
 
@@ -1053,6 +1053,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     }
   } else {
     guard_rotate += m_pi->m_hdt;
+    arpa_rotate = overlay_rotate - OPENGL_ROTATION;
   }
 
   if (m_arpa) {
@@ -1066,7 +1067,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
       glRotated(guard_rotate, 0.0, 0.0, 1.0);
       glScaled(scale, scale, 1.);
 
-      // LOG_DIALOG(wxT("BR24radar_pi: %s render guard zone on overlay"), name.c_str());
+      // LOG_DIALOG(wxT("BR24radar_pi: %s render guard zone on overlay"), m_name.c_str());
       RenderGuardZone();
       glPopMatrix();
     }
@@ -1087,7 +1088,9 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     if (m_arpa) {
       glPushMatrix();
       glTranslated(center.x, center.y, 0);
-      glRotated(-arpa_rotate, 0.0, 0.0, 1.0);
+      LOG_VERBOSE(wxT("BR24radar_pi: %s render ARPA targets on overlay with rot=%f"), m_name.c_str(), arpa_rotate);
+
+      glRotated(arpa_rotate, 0.0, 0.0, 1.0);
       glScaled(scale, scale, 1.);
       m_arpa->DrawArpaTargets();
       glPopMatrix();
