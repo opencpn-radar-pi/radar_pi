@@ -29,10 +29,10 @@
  ***************************************************************************
  */
 
+#include "br24radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
-#include "br24radar_pi.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
 
@@ -273,17 +273,24 @@ int br24radar_pi::Init(void) {
   wxMenuItem *mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
   wxMenuItem *mi3 = new wxMenuItem(&dummy_menu, -1, _("Radar Control..."));
   wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Set MARPA Target"));
+  wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete (M)ARPA Target"));
+  wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all (M)ARPA Targets"));
+
 #ifdef __WXMSW__
   wxFont *qFont = OCPNGetFont(_("Menu"), 10);
   mi1->SetFont(*qFont);
   mi2->SetFont(*qFont);
   mi3->SetFont(*qFont);
   mi4->SetFont(*qFont);
+  mi5->SetFont(*qFont);
+  mi6->SetFont(*qFont);
 #endif
   m_context_menu_show_id = AddCanvasContextMenuItem(mi1, this);
   m_context_menu_hide_id = AddCanvasContextMenuItem(mi2, this);
   m_context_menu_control_id = AddCanvasContextMenuItem(mi3, this);
   m_context_menu_set_marpa_target = AddCanvasContextMenuItem(mi4, this);
+  m_context_menu_delete_marpa_target = AddCanvasContextMenuItem(mi5, this);
+  m_context_menu_delete_all_marpa_targets = AddCanvasContextMenuItem(mi6, this);
 
   m_initialized = true;
   LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.show_radar[0], m_settings.show_radar[1],

@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
+#include "RadarInfo.h"
 #include "br24radar_pi.h"
 #include "drawutil.h"
 
@@ -587,18 +587,13 @@ void RadarArpa::DrawArpaTargets() {
 
 void RadarArpa::RefreshArpaTargets() {
   // remove targets with status LOST and put them at the end
-  if (m_number_of_targets > 0) {
-    if (m_pi->m_context_menu_delete_marpa_target == 0) {
-      wxMenu dummy_menu;
-      wxMenuItem* mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete (M)ARPA Target"));
-      wxMenuItem* mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all (M)ARPA Targets"));
-#ifdef __WXMSW__
-      wxFont* qFont = OCPNGetFont(_("Menu"), 10);
-      mi5->SetFont(*qFont);
-      mi6->SetFont(*qFont);
-#endif
-      m_pi->m_context_menu_delete_marpa_target = AddCanvasContextMenuItem(mi5, m_pi);
-      m_pi->m_context_menu_delete_all_marpa_targets = AddCanvasContextMenuItem(mi6, m_pi);
+  if (m_pi->m_context_menu_delete_marpa_target) {
+    if (m_number_of_targets > 0) {
+      SetCanvasContextMenuItemGrey(m_pi->m_context_menu_delete_marpa_target, false);
+      SetCanvasContextMenuItemGrey(m_pi->m_context_menu_delete_all_marpa_targets, false);
+    } else {
+      SetCanvasContextMenuItemGrey(m_pi->m_context_menu_delete_marpa_target, true);
+      SetCanvasContextMenuItemGrey(m_pi->m_context_menu_delete_all_marpa_targets, true);
     }
   }
   for (int i = 0; i < m_number_of_targets; i++) {
