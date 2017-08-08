@@ -567,7 +567,7 @@ void RadarInfo::SampleCourse(int angle) {
     for (int i = 0; i < COURSE_SAMPLES; i++) {
       sum += m_course_log[i];
     }
-    m_course = fmod(sum / 16 + 720., 360);
+    m_course = fmod(sum / COURSE_SAMPLES + 720., 360);
   }
 }
 
@@ -1087,6 +1087,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     if (m_arpa) {
       glPushMatrix();
       glTranslated(center.x, center.y, 0);
+      glRotated(-arpa_rotate, 0.0, 0.0, 1.0);
       glScaled(scale, scale, 1.);
       m_arpa->DrawArpaTargets();
       glPopMatrix();
@@ -1339,26 +1340,43 @@ void RadarInfo::SetMouseLatLon(double lat, double lon) {
 }
 
 void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
+  double bearing;
+
   if (m_orientation.value == ORIENTATION_HEAD_UP) {
     m_mouse_vrm[ORIENTATION_HEAD_UP] = vrm;
     m_mouse_ebl[ORIENTATION_HEAD_UP] = ebl;
+    bearing = ebl + m_pi->m_hdt;
   }
   if (m_orientation.value == ORIENTATION_NORTH_UP) {
     m_mouse_ebl[ORIENTATION_NORTH_UP] = ebl;
     m_mouse_ebl[ORIENTATION_COURSE_UP] = ebl - m_course;
     m_mouse_vrm[ORIENTATION_NORTH_UP] = vrm;
     m_mouse_vrm[ORIENTATION_COURSE_UP] = vrm;
+    bearing = ebl;
   }
   if (m_orientation.value == ORIENTATION_COURSE_UP) {
     m_mouse_ebl[ORIENTATION_NORTH_UP] = ebl + m_course;
     m_mouse_ebl[ORIENTATION_COURSE_UP] = ebl;
     m_mouse_vrm[ORIENTATION_NORTH_UP] = vrm;
     m_mouse_vrm[ORIENTATION_COURSE_UP] = vrm;
+    bearing = ebl + m_pi->m_hdt;
   }
 
-  m_mouse_lat = 0.0;
-  m_mouse_lon = 0.0;
-  LOG_DIALOG(wxT("BR24radar_pi: SetMouseVrmEbl(%f, %f)"), vrm, ebl);
+  static double R = 6378.1e3 / 1852.; // Radius of the Earth in nm
+  double brng = deg2rad(bearing);
+  double d = vrm; // Distance in nm
+
+  double lat1 = deg2rad(m_pi->m_ownship_lat);
+  double lon1 = deg2rad(m_pi->m_ownship_lon);
+
+  double lat2 = asin(sin(lat1)*cos(d/R) + cos(lat1) * sin(d/R) * cos(brng));
+  double lon2 = lon1 + atan2(sin(brng) * sin(d/R) * cos(lat1),
+                             cos(d/R) - sin(lat1) * sin(lat2));
+
+  m_mouse_lat = rad2deg(lat2);
+  m_mouse_lon = rad2deg(lon2);
+  LOG_DIALOG(wxT("BR24radar_pi: SetMouseVrmEbl(%f, %f) = %f / %f"), vrm, ebl, m_mouse_lat, m_mouse_lon);
+  m_control_dialog->ShowCursorPane();
 }
 
 void RadarInfo::SetBearing(int bearing) {

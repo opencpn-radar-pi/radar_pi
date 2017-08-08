@@ -344,6 +344,8 @@ void RadarArpa::AcquireOrDeleteMarpaTarget(Position target_pos, int status) {
     return;
   }
 
+  LOG_ARPA(wxT("BR24radar_pi: Adding (M)ARPA target at position %f / %f"), target_pos.lat, target_pos.lon);
+
   ArpaTarget* target = m_targets[i_target];
   target->m_position = target_pos;  // Expected position
   target->m_position.time = 0;

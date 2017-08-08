@@ -52,15 +52,17 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin *p) { delete p; }
 /********************************************************************************************************/
 
 double local_distance(double lat1, double lon1, double lat2, double lon2) {
-  // Spherical Law of Cosines
-  double theta, dist;
+  double s1 = deg2rad(lat1);
+  double l1 = deg2rad(lon1);
+  double s2 = deg2rad(lat2);
+  double l2 = deg2rad(lon2);
+  double theta = l2 - l1;
 
-  theta = lon2 - lon1;
-  dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta));
-  dist = acos(dist);  // radians
-  dist = rad2deg(dist);
-  dist = fabs(dist) * 60;  // nautical miles/degree
-  return (dist);
+  // Spherical Law of Cosines
+  double dist = acos(sin(s1) * sin(s2) + cos(s1) * cos(s2) * cos(theta));
+
+  dist = fabs(rad2deg(dist)) * 60;  // nautical miles/degree
+  return dist;
 }
 
 double local_bearing(double lat1, double lon1, double lat2, double lon2) {
@@ -68,9 +70,10 @@ double local_bearing(double lat1, double lon1, double lat2, double lon2) {
   double l1 = deg2rad(lon1);
   double s2 = deg2rad(lat2);
   double l2 = deg2rad(lon2);
+  double theta = l2 - l1;
 
-  double y = sin(l2 - l1) * cos(s2);
-  double x = cos(s1) * sin(s2) - sin(s1) * cos(s2) * cos(l2 - l1);
+  double y = sin(theta) * cos(s2);
+  double x = cos(s1) * sin(s2) - sin(s1) * cos(s2) * cos(theta);
 
   double brg = fmod(rad2deg(atan2(y, x)) + 360.0, 360.0);
   return brg;
@@ -240,11 +243,13 @@ int br24radar_pi::Init(void) {
     LOG_INFO(wxT("BR24radar_pi: TRANSMIT = %d"), LOGLEVEL_TRANSMIT);
     LOG_INFO(wxT("BR24radar_pi: RECEIVE  = %d"), LOGLEVEL_RECEIVE);
     LOG_INFO(wxT("BR24radar_pi: GUARD    = %d"), LOGLEVEL_GUARD);
+    LOG_INFO(wxT("BR24radar_pi: ARPA     = %d"), LOGLEVEL_ARPA);
     LOG_VERBOSE(wxT("BR24radar_pi: VERBOSE  log is enabled"));
     LOG_DIALOG(wxT("BR24radar_pi: DIALOG   log is enabled"));
     LOG_TRANSMIT(wxT("BR24radar_pi: TRANSMIT log is enabled"));
     LOG_RECEIVE(wxT("BR24radar_pi: RECEIVE  log is enabled"));
     LOG_GUARD(wxT("BR24radar_pi: GUARD    log is enabled"));
+    LOG_ARPA(wxT("BR24radar_pi: ARPA     log is enabled"));
   } else {
     wxLogError(wxT("BR24radar_pi: configuration file values initialisation failed"));
     return 0;  // give up

@@ -30,6 +30,7 @@
 
 #include "RadarPanel.h"
 #include "br24ControlsDialog.h"
+#include "RadarMarpa.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -68,6 +69,8 @@ enum {  // process ID's
   ID_RAIN,
 
   ID_CLEAR_CURSOR,
+  ID_SET_MARPA,
+  ID_DELETE_MARPA,
 
   ID_TARGET_TRAILS,
   ID_CLEAR_TRAILS,
@@ -154,6 +157,8 @@ EVT_BUTTON(ID_MESSAGE, br24ControlsDialog::OnMessageButtonClick)
 
 EVT_BUTTON(ID_BEARING_SET, br24ControlsDialog::OnBearingSetButtonClick)
 EVT_BUTTON(ID_CLEAR_CURSOR, br24ControlsDialog::OnClearCursorButtonClick)
+EVT_BUTTON(ID_SET_MARPA, br24ControlsDialog::OnSetMarpaButtonClick)
+EVT_BUTTON(ID_DELETE_MARPA, br24ControlsDialog::OnDeleteMarpaButtonClick)
 
 EVT_MOVE(br24ControlsDialog::OnMove)
 EVT_CLOSE(br24ControlsDialog::OnClose)
@@ -820,30 +825,38 @@ void br24ControlsDialog::CreateControls() {
 
   m_top_sizer->Hide(m_adjust_sizer);
 
-  //**************** BEARING BOX ******************//
+  //**************** CURSOR BOX ******************//
 
-  m_bearing_sizer = new wxBoxSizer(wxVERTICAL);
-  m_top_sizer->Add(m_bearing_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+  m_cursor_sizer = new wxBoxSizer(wxVERTICAL);
+  m_top_sizer->Add(m_cursor_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The Back button
-  br24RadarButton* bBearingBack = new br24RadarButton(this, ID_BACK, backButtonStr);
-  m_bearing_sizer->Add(bBearingBack, 0, wxALL, BORDER);
+  br24RadarButton* bCursorBack = new br24RadarButton(this, ID_BACK, backButtonStr);
+  m_cursor_sizer->Add(bCursorBack, 0, wxALL, BORDER);
 
   // The CLEAR CURSOR button
   m_clear_cursor = new br24RadarButton(this, ID_CLEAR_CURSOR, _("Clear cursor"));
-  m_bearing_sizer->Add(m_clear_cursor, 0, wxALL, BORDER);
+  m_cursor_sizer->Add(m_clear_cursor, 0, wxALL, BORDER);
+
+  // The SET MARPA button
+  m_set_marpa = new br24RadarButton(this, ID_SET_MARPA, _("Set MARPA Target"));
+  m_cursor_sizer->Add(m_set_marpa, 0, wxALL, BORDER);
+
+  // The DELETE MARPA button
+  m_delete_marpa = new br24RadarButton(this, ID_DELETE_MARPA, _("Delete (M)ARPA Target"));
+  m_cursor_sizer->Add(m_delete_marpa, 0, wxALL, BORDER);
 
   for (int b = 0; b < BEARING_LINES; b++) {
     // The BEARING button
     wxString label = _("Place EBL/VRM");
     label << wxString::Format(wxT("%d"), b + 1);
     m_bearing_buttons[b] = new br24RadarButton(this, ID_BEARING_SET + b, label);
-    m_bearing_sizer->Add(m_bearing_buttons[b], 0, wxALL, BORDER);
+    m_cursor_sizer->Add(m_bearing_buttons[b], 0, wxALL, BORDER);
     m_bearing_buttons[b]->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnBearingSetButtonClick),
                                   0, this);
   }
 
-  m_top_sizer->Hide(m_bearing_sizer);
+  m_top_sizer->Hide(m_cursor_sizer);
 
   //**************** VIEW BOX ******************//
   // These are the controls that the users sees when the View button is selected
@@ -1141,7 +1154,7 @@ void br24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event) { Swit
 
 void br24ControlsDialog::OnPreferencesButtonClick(wxCommandEvent& event) { m_pi->ShowPreferencesDialog(m_pi->m_parent_window); }
 
-void br24ControlsDialog::OnBearingButtonClick(wxCommandEvent& event) { SwitchTo(m_bearing_sizer, wxT("bearing")); }
+void br24ControlsDialog::OnBearingButtonClick(wxCommandEvent& event) { SwitchTo(m_cursor_sizer, wxT("bearing")); }
 
 void br24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
@@ -1283,6 +1296,22 @@ void br24ControlsDialog::OnClearCursorButtonClick(wxCommandEvent& event) {
   LOG_DIALOG(wxT("%s OnClearCursorButtonClick"), m_log_name.c_str());
   m_ri->SetMouseVrmEbl(0., nanl(""));
   SwitchTo(m_control_sizer, wxT("main (clear cursor)"));
+}
+
+void br24ControlsDialog::OnSetMarpaButtonClick(wxCommandEvent& event) {
+  Position target_pos;
+  target_pos.lat = m_ri->m_mouse_lat;
+  target_pos.lon = m_ri->m_mouse_lon;
+  LOG_DIALOG(wxT("%s OnSetMarpaButtonClick mouse=%f/%f"), m_log_name.c_str(), target_pos.lat, target_pos.lon);
+  m_ri->m_arpa->AcquireNewMARPATarget(target_pos);
+}
+
+void br24ControlsDialog::OnDeleteMarpaButtonClick(wxCommandEvent& event) {
+  Position target_pos;
+  target_pos.lat = m_ri->m_mouse_lat;
+  target_pos.lon = m_ri->m_mouse_lon;
+  LOG_DIALOG(wxT("%s OnDeleteMarpaButtonClick mouse=%f/%f"), m_log_name.c_str(), target_pos.lat, target_pos.lon);
+  m_ri->m_arpa->DeleteTarget(target_pos);
 }
 
 void br24ControlsDialog::OnMove(wxMoveEvent& event) {
@@ -1562,7 +1591,7 @@ void br24ControlsDialog::UpdateDialogShown() {
     LOG_DIALOG(wxT("%s UpdateDialogShown manually opened"), m_log_name.c_str());
     if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_view_sizer) &&
         !m_top_sizer->IsShown(m_edit_sizer) && !m_top_sizer->IsShown(m_installation_sizer) &&
-        !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_bearing_sizer)) {
+        !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_cursor_sizer)) {
       SwitchTo(m_control_sizer, wxT("main (manual open)"));
     }
     m_control_sizer->Layout();

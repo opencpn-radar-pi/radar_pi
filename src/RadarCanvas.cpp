@@ -549,7 +549,7 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
 
       double range = distance / (1852.0 * full_range / display_range);
 
-      LOG_VERBOSE(wxT("BR24radar_pi: cursor in PPI at angle=%.1f range=%f heading=%.1f"), angle, range);
+      LOG_VERBOSE(wxT("BR24radar_pi: cursor in PPI at angle=%.1fdeg range=%.2fnm"), angle, range);
       m_ri->SetMouseVrmEbl(range, angle);
     }
   }
