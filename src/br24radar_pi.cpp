@@ -29,10 +29,10 @@
  ***************************************************************************
  */
 
-#include "br24radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
+#include "br24radar_pi.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
 
@@ -408,18 +408,27 @@ void br24radar_pi::NotifyRadarWindowViz() {
 }
 
 void br24radar_pi::SetRadarWindowViz(bool reparent) {
-  int r;
-  for (r = 0; r < RADARS; r++) {
+  int arpa_targets = 0;
+
+  for (int r = 0; r < RADARS; r++) {
     bool showThisRadar = m_settings.show && m_settings.show_radar[r] && (r == 0 || m_settings.enable_dual_radar);
     bool showThisControl = m_settings.show && m_settings.show_radar_control[r] && (r == 0 || m_settings.enable_dual_radar);
     m_radar[r]->ShowRadarWindow(showThisRadar);
     m_radar[r]->ShowControlDialog(showThisControl, reparent);
     m_radar[r]->UpdateTransmitState();
+    arpa_targets += m_radar[r]->m_arpa->GetTargetCount();
   }
 
   SetCanvasContextMenuItemViz(m_context_menu_show_id, m_settings.show == 0);
   SetCanvasContextMenuItemViz(m_context_menu_hide_id, m_settings.show != 0);
-  SetCanvasContextMenuItemGrey(m_context_menu_control_id, m_settings.show == 0);
+  SetCanvasContextMenuItemViz(m_context_menu_control_id, m_settings.show != 0);
+  SetCanvasContextMenuItemViz(m_context_menu_control_id, m_settings.show != 0);
+  SetCanvasContextMenuItemViz(m_context_menu_set_marpa_target, m_settings.show != 0);
+  SetCanvasContextMenuItemViz(m_context_menu_delete_marpa_target, m_settings.show != 0);
+  SetCanvasContextMenuItemViz(m_context_menu_delete_all_marpa_targets, m_settings.show != 0);
+  SetCanvasContextMenuItemGrey(m_context_menu_delete_marpa_target, arpa_targets == 0);
+  SetCanvasContextMenuItemGrey(m_context_menu_delete_all_marpa_targets, arpa_targets == 0);
+
   LOG_DIALOG(wxT("BR24radar_pi: RadarWindow show = %d window0=%d window1=%d"), m_settings.show, m_settings.show_radar[0],
              m_settings.show_radar[1]);
 }
