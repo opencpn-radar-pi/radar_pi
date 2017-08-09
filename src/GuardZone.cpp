@@ -116,8 +116,12 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
 
 // Search  guard zone for ARPA targets
 void GuardZone::SearchTargets() {
-  if (!m_arpa_on) {
-    return;
+	if (!m_arpa_on) {
+		return;
+	}
+	if (m_ri->m_arpa->m_number_of_targets >= MAX_NUMBER_OF_TARGETS - 2){
+		LOG_INFO(wxT("BR24radar_pi: No more scanning for ARPA targets, maximum number of targets reached"));
+		return;
   }
   if (!m_pi->m_settings.show                                                       // No radar shown
    || (m_pi->m_radar[0]->m_state.value != RADAR_TRANSMIT && m_pi->m_radar[1]->m_state.value != RADAR_TRANSMIT)  // Radar not transmitting
