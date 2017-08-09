@@ -87,7 +87,6 @@ class br24Receive : public wxThread {
   sockaddr_in *m_mcast_addr;
   wxIPV4address m_ip_addr;
   bool m_new_ip_addr;
-  bool m_socket_closed;
 
  private:
   void logBinaryData(const wxString &what, const UINT8 *data, int size);
@@ -115,7 +114,6 @@ class br24Receive : public wxThread {
   int m_next_spoke;     // emulator next spoke
   int m_next_rotation;  // slowly rotate emulator
   char m_radar_status;
-  bool m_shutdown_flag;
 };
 
 PLUGIN_END_NAMESPACE
