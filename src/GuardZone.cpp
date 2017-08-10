@@ -119,6 +119,10 @@ void GuardZone::SearchTargets() {
   if (!m_arpa_on) {
     return;
   }
+  if (m_ri->m_arpa->m_number_of_targets >= MAX_NUMBER_OF_TARGETS - 2){
+    LOG_INFO(wxT("BR24radar_pi: No more scanning for ARPA targets, maximum number of targets reached"));
+    return;
+  }
   if (!m_pi->m_settings.show                                                       // No radar shown
    || (m_pi->m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT && m_pi->m_radar[1]->m_state.GetValue() != RADAR_TRANSMIT)  // Radar not transmitting
       || !m_pi->m_bpos_set){                                                       // No position
@@ -164,6 +168,10 @@ void GuardZone::SearchTargets() {
                                // set new refresh time
         arpa_update_time[MOD_ROTATION2048(angle)] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
+          if (m_ri->m_arpa->m_number_of_targets >= MAX_NUMBER_OF_TARGETS - 1){
+            LOG_INFO(wxT("BR24radar_pi: No more scanning for ARPA targets in loop, maximum number of targets reached"));
+            return;
+          }
           if (m_ri->m_arpa->MultiPix(angle, rrr)) {
             bool next_r = false;
             if (next_r) continue;
@@ -178,7 +186,7 @@ void GuardZone::SearchTargets() {
             x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
             int target_i;
             target_i = m_ri->m_arpa->AcquireNewARPATarget(pol, 0);
-            if (target_i == -1) break;  // TODO: how to handle max targets exceeded
+            if (target_i == -1) break;
           }
         }
       }
