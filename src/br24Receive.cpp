@@ -655,6 +655,7 @@ void *br24Receive::Entry(void) {
   wxMilliSleep(1000);
 #endif
   LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopping"), m_ri->m_name.c_str());
+  m_is_shutdown = true;
   return 0;
 }
 
@@ -988,6 +989,7 @@ void br24Receive::ProcessCommand(wxString &addr, const UINT8 *command, int len) 
 // for the setup of these two sockets.
 void br24Receive::Shutdown() {
   if (m_send_socket != INVALID_SOCKET) {
+    m_shutdown_time_requested = wxGetUTCTimeMillis();
     if (send(m_send_socket, "!", 1, MSG_DONTROUTE) > 0) {
       LOG_VERBOSE(wxT("BR24radar_pi: %s requested receive thread to stop"), m_ri->m_name.c_str());
       return;

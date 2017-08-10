@@ -240,8 +240,37 @@ void RadarInfo::Shutdown() {
 RadarInfo::~RadarInfo() {
   m_timer->Stop();
   if (m_receive) {
+    wxLongLong threadStartWait = wxGetUTCTimeMillis();
     m_receive->Wait();
-    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopped"), m_name.c_str());
+    wxLongLong threadEndWait = wxGetUTCTimeMillis();
+    wxLongLong threadExtraWait = 0;
+    // See if Douwe is right and Wait() doesn't work properly -- attests it returns
+    // before the thread is dead.
+    while (!m_receive->m_is_shutdown)
+    {
+      wxYield();
+      wxMilliSleep(10);
+      threadExtraWait = wxGetUTCTimeMillis();
+    }
+
+    // Now log what we have done
+    if (threadExtraWait != 0) {
+      LOG_INFO(wxT("BR24radar_pi: %s receive thread wait did not work, had to wait for %lu ms extra"),
+               m_name.c_str(), threadExtraWait - threadEndWait);
+      threadEndWait = threadExtraWait;
+    }
+    if (m_receive->m_shutdown_time_requested != 0)
+    {
+      LOG_INFO(wxT("BR24radar_pi: %s receive thread stopped in %lu ms, had to wait for %lu ms"), m_name.c_str(),
+      threadEndWait - m_receive->m_shutdown_time_requested,
+      threadEndWait - threadStartWait);
+    }
+    else
+    {
+      LOG_INFO(wxT("BR24radar_pi: %s receive thread stopped in %lu ms, had to wait for %lu ms"), m_name.c_str(),
+               threadEndWait - m_receive->m_shutdown_time_requested,
+               threadEndWait - threadStartWait);
+    }
     delete m_receive;
     m_receive = 0;
   }
