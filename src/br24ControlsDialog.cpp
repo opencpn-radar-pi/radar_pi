@@ -586,12 +586,12 @@ void br24ControlsDialog::CreateControls() {
   noise_rejection_names[2] = _("High");
 
   m_noise_rejection_button = new br24RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), CT_NOISE_REJECTION, false,
-                                                        m_ri->m_noise_rejection.button);
+                                                        0);
   m_advanced_sizer->Add(m_noise_rejection_button, 0, wxALL, BORDER);
   m_noise_rejection_button->minValue = 0;
   m_noise_rejection_button->maxValue = ARRAY_SIZE(noise_rejection_names) - 1;
   m_noise_rejection_button->names = noise_rejection_names;
-  m_noise_rejection_button->SetLocalValue(m_ri->m_noise_rejection.button);  // redraw after adding names
+  m_noise_rejection_button->SetLocalValue(m_ri->m_noise_rejection.GetButton());  // redraw after adding names
 
   m_advanced_4G_sizer = new wxBoxSizer(wxVERTICAL);
   m_advanced_sizer->Add(m_advanced_4G_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
@@ -600,12 +600,12 @@ void br24ControlsDialog::CreateControls() {
   target_expansion_names[0] = _("Off");
   target_expansion_names[1] = _("On");
   m_target_expansion_button = new br24RadarControlButton(this, ID_TARGET_EXPANSION, _("Target expansion"), CT_TARGET_EXPANSION,
-                                                         false, m_ri->m_target_expansion.button);
+                                                         false, 0);
   m_advanced_sizer->Add(m_target_expansion_button, 0, wxALL, BORDER);
   m_target_expansion_button->minValue = 0;
   m_target_expansion_button->maxValue = ARRAY_SIZE(target_expansion_names) - 1;
   m_target_expansion_button->names = target_expansion_names;
-  m_target_expansion_button->SetLocalValue(m_ri->m_target_expansion.button);  // redraw after adding names
+  m_target_expansion_button->SetLocalValue(m_ri->m_target_expansion.GetButton());  // redraw after adding names
 
   // The REJECTION button
 
@@ -616,12 +616,12 @@ void br24ControlsDialog::CreateControls() {
 
   m_interference_rejection_button =
       new br24RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"), CT_INTERFERENCE_REJECTION, false,
-                                 m_ri->m_interference_rejection.button);
+                                 0);
   m_advanced_sizer->Add(m_interference_rejection_button, 0, wxALL, BORDER);
   m_interference_rejection_button->minValue = 0;
   m_interference_rejection_button->maxValue = ARRAY_SIZE(interference_rejection_names) - 1;
   m_interference_rejection_button->names = interference_rejection_names;
-  m_interference_rejection_button->SetLocalValue(m_ri->m_interference_rejection.button);  // redraw after adding names
+  m_interference_rejection_button->SetLocalValue(m_ri->m_interference_rejection.GetButton());  // redraw after adding names
 
   // The TARGET SEPARATION button
 
@@ -631,35 +631,35 @@ void br24ControlsDialog::CreateControls() {
   target_separation_names[3] = _("High");
 
   m_target_separation_button = new br24RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"), CT_TARGET_SEPARATION,
-                                                          false, m_ri->m_target_separation.button);
+                                                          false, 0);
   m_advanced_4G_sizer->Add(m_target_separation_button, 0, wxALL, BORDER);
   m_target_separation_button->minValue = 0;
   m_target_separation_button->maxValue = ARRAY_SIZE(target_separation_names) - 1;
   m_target_separation_button->names = target_separation_names;
-  m_target_separation_button->SetLocalValue(m_ri->m_target_separation.button);  // redraw after adding names
+  m_target_separation_button->SetLocalValue(m_ri->m_target_separation.GetButton());  // redraw after adding names
 
   // The SCAN SPEED button
   scan_speed_names[0] = _("Normal");
   scan_speed_names[1] = _("Fast");
   m_scan_speed_button =
-      new br24RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), CT_SCAN_SPEED, false, m_ri->m_scan_speed.button);
+      new br24RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), CT_SCAN_SPEED, false, 0);
   m_advanced_sizer->Add(m_scan_speed_button, 0, wxALL, BORDER);
   m_scan_speed_button->minValue = 0;
   m_scan_speed_button->maxValue = ARRAY_SIZE(scan_speed_names) - 1;
   m_scan_speed_button->names = scan_speed_names;
-  m_scan_speed_button->SetLocalValue(m_ri->m_scan_speed.button);  // redraw after adding names
+  m_scan_speed_button->SetLocalValue(m_ri->m_scan_speed.GetButton());  // redraw after adding names
 
   // The TARGET BOOST button
   target_boost_names[0] = _("Off");
   target_boost_names[1] = _("Low");
   target_boost_names[2] = _("High");
   m_target_boost_button =
-      new br24RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), CT_TARGET_BOOST, false, m_ri->m_target_boost.button);
+      new br24RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), CT_TARGET_BOOST, false, 0);
   m_advanced_sizer->Add(m_target_boost_button, 0, wxALL, BORDER);
   m_target_boost_button->minValue = 0;
   m_target_boost_button->maxValue = ARRAY_SIZE(target_boost_names) - 1;
   m_target_boost_button->names = target_boost_names;
-  m_target_boost_button->SetLocalValue(m_ri->m_target_boost.button);  // redraw after adding names
+  m_target_boost_button->SetLocalValue(m_ri->m_target_boost.GetButton());  // redraw after adding names
 
   // The INSTALLATION button
   br24RadarButton* bInstallation = new br24RadarButton(this, ID_INSTALLATION, _("Installation"));
@@ -683,14 +683,14 @@ void br24ControlsDialog::CreateControls() {
 
   // The BEARING ALIGNMENT button
   m_bearing_alignment_button = new br24RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"), CT_BEARING_ALIGNMENT,
-                                                          false, m_ri->m_bearing_alignment.button);
+                                                          false, m_ri->m_bearing_alignment.GetButton());
   m_installation_sizer->Add(m_bearing_alignment_button, 0, wxALL, BORDER);
   m_bearing_alignment_button->minValue = -179;
   m_bearing_alignment_button->maxValue = 180;
 
   // The ANTENNA HEIGHT button
   m_antenna_height_button = new br24RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Antenna height"), CT_ANTENNA_HEIGHT, false,
-                                                       m_ri->m_antenna_height.button);
+                                                       m_ri->m_antenna_height.GetButton());
   m_installation_sizer->Add(m_antenna_height_button, 0, wxALL, BORDER);
   m_antenna_height_button->minValue = 0;
   m_antenna_height_button->maxValue = 30;
@@ -698,21 +698,21 @@ void br24ControlsDialog::CreateControls() {
   // The LOCAL INTERFERENCE REJECTION button
   m_local_interference_rejection_button =
       new br24RadarControlButton(this, ID_LOCAL_INTERFERENCE_REJECTION, _("Local interference rej."),
-                                 CT_LOCAL_INTERFERENCE_REJECTION, false, m_ri->m_local_interference_rejection.button);
+                                 CT_LOCAL_INTERFERENCE_REJECTION, false, 0);
   m_installation_sizer->Add(m_local_interference_rejection_button, 0, wxALL, BORDER);
   m_local_interference_rejection_button->minValue = 0;
   m_local_interference_rejection_button->maxValue =
       ARRAY_SIZE(target_separation_names) - 1;  // off, low, medium, high, same as target separation
   m_local_interference_rejection_button->names = target_separation_names;
-  m_local_interference_rejection_button->SetLocalValue(m_ri->m_local_interference_rejection.button);
+  m_local_interference_rejection_button->SetLocalValue(m_ri->m_local_interference_rejection.GetButton());
 
   // The SIDE LOBE SUPPRESSION button
   m_side_lobe_suppression_button = new br24RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"),
-                                                              CT_SIDE_LOBE_SUPPRESSION, true, m_ri->m_side_lobe_suppression.button);
+                                                              CT_SIDE_LOBE_SUPPRESSION, true, 0);
   m_installation_sizer->Add(m_side_lobe_suppression_button, 0, wxALL, BORDER);
   m_side_lobe_suppression_button->minValue = 0;
   m_side_lobe_suppression_button->maxValue = 100;
-  m_side_lobe_suppression_button->SetLocalValue(m_ri->m_side_lobe_suppression.button);  // redraw after adding names
+  m_side_lobe_suppression_button->SetLocalValue(m_ri->m_side_lobe_suppression.GetButton());  // redraw after adding names
 
   // The MAIN BANG SIZE button
   m_main_bang_size_button = new br24RadarControlButton(this, ID_MAIN_BANG_SIZE, _("Main bang size"), CT_MAIN_BANG_SIZE, false,
@@ -807,7 +807,7 @@ void br24ControlsDialog::CreateControls() {
   m_adjust_sizer->Add(m_range_button, 0, wxALL, BORDER);
 
   // The GAIN button
-  m_gain_button = new br24RadarControlButton(this, ID_GAIN, _("Gain"), CT_GAIN, true, m_ri->m_gain.button);
+  m_gain_button = new br24RadarControlButton(this, ID_GAIN, _("Gain"), CT_GAIN, true, m_ri->m_gain.GetButton());
   m_adjust_sizer->Add(m_gain_button, 0, wxALL, BORDER);
 
   // The SEA button
@@ -816,11 +816,11 @@ void br24ControlsDialog::CreateControls() {
   m_sea_button = new br24RadarControlButton(this, ID_SEA, _("Sea clutter"), CT_SEA, false, 0);
   m_sea_button->autoNames = sea_clutter_names;
   m_sea_button->autoValues = 2;
-  m_sea_button->SetLocalValue(m_ri->m_sea.button);
+  m_sea_button->SetLocalValue(m_ri->m_sea.GetButton());
   m_adjust_sizer->Add(m_sea_button, 0, wxALL, BORDER);
 
   // The RAIN button
-  m_rain_button = new br24RadarControlButton(this, ID_RAIN, _("Rain clutter"), CT_RAIN, false, m_ri->m_rain.button);
+  m_rain_button = new br24RadarControlButton(this, ID_RAIN, _("Rain clutter"), CT_RAIN, false, m_ri->m_rain.GetButton());
   m_adjust_sizer->Add(m_rain_button, 0, wxALL, BORDER);
 
   m_top_sizer->Hide(m_adjust_sizer);
@@ -878,12 +878,12 @@ void br24ControlsDialog::CreateControls() {
   target_trail_names[TRAIL_CONTINUOUS] = _("Continuous");
 
   m_target_trails_button =
-      new br24RadarControlButton(this, ID_TARGET_TRAILS, _("Target trails"), CT_TARGET_TRAILS, false, m_ri->m_target_trails.button);
+      new br24RadarControlButton(this, ID_TARGET_TRAILS, _("Target trails"), CT_TARGET_TRAILS, false, 0);
   m_view_sizer->Add(m_target_trails_button, 0, wxALL, BORDER);
   m_target_trails_button->minValue = 0;
   m_target_trails_button->maxValue = ARRAY_SIZE(target_trail_names) - 1;
   m_target_trails_button->names = target_trail_names;
-  m_target_trails_button->SetLocalValue(m_ri->m_target_trails.button);  // redraw after adding names
+  m_target_trails_button->SetLocalValue(m_ri->m_target_trails.GetButton());  // redraw after adding names
 
   // The Trails Motion button
   m_trails_motion_button = new br24RadarButton(this, ID_TRAILS_MOTION, _("Off/Relative/True trails"));
@@ -1113,14 +1113,16 @@ void br24ControlsDialog::OnAutoClick(wxCommandEvent& event) {
 }
 
 void br24ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
-  m_ri->m_trails_motion.value++;
-  if (m_ri->m_trails_motion.value > TARGET_MOTION_TRUE) {
-    m_ri->m_trails_motion.value = 0;
+  int value = m_ri->m_trails_motion.GetValue();
+
+  value++;
+  if (value > TARGET_MOTION_TRUE) {
+    value = 0;
   }
-  m_ri->m_trails_motion.Update(m_ri->m_trails_motion.value);
+  m_ri->m_trails_motion.Update(value);
   m_ri->ComputeColourMap();
   m_ri->ComputeTargetTrails();
-  if (m_ri->m_trails_motion.value == TARGET_MOTION_OFF) {
+  if (value == TARGET_MOTION_OFF) {
     m_target_trails_button->Disable();
   } else {
     m_target_trails_button->Enable();
@@ -1261,7 +1263,7 @@ void br24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) {
 void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
   m_pi->m_settings.timed_idle = 0;
-  switch (m_ri->m_state.value) {
+  switch (m_ri->m_state.GetValue()) {
     case RADAR_OFF:
     case RADAR_WAKING_UP:
       break;
@@ -1277,7 +1279,7 @@ void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
 void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) { m_ri->ClearTrails(); }
 
 void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
-  int value = m_ri->m_orientation.button + 1;
+  int value = m_ri->m_orientation.GetValue() + 1;
   if (value > ORIENTATION_COURSE_UP) {
     value = ORIENTATION_HEAD_UP;
   }
@@ -1322,7 +1324,7 @@ void br24ControlsDialog::OnMove(wxMoveEvent& event) {
 void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   wxString o;
 
-  if (m_ri->m_state.mod) {
+  if (m_ri->m_state.IsModified()) {
     refreshAll = true;
   }
 
@@ -1411,16 +1413,17 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_bearing_buttons[b]->SetLabel(o);
   }
 
-  if (m_ri->m_target_trails.mod || refreshAll) {
+  if (m_ri->m_target_trails.IsModified() || refreshAll) {
     m_target_trails_button->SetLocalValue(m_ri->m_target_trails.GetButton());
   }
 
-  if (m_ri->m_trails_motion.mod || refreshAll) {
+  if (m_ri->m_trails_motion.IsModified() || refreshAll) {
+    int trails_motion = m_ri->m_trails_motion.GetButton();
     o = _("Off/Relative/True trails");
     o << wxT("\n");
-    if (m_ri->m_trails_motion.value == TARGET_MOTION_TRUE) {
+    if (trails_motion == TARGET_MOTION_TRUE) {
       o << _("True");
-    } else if (m_ri->m_trails_motion.value == TARGET_MOTION_RELATIVE) {
+    } else if (trails_motion == TARGET_MOTION_RELATIVE) {
       o << _("Relative");
     } else {
       o << _("Off");
@@ -1428,7 +1431,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_trails_motion_button->SetLabel(o);
   }
 
-  if (m_ri->m_orientation.mod || refreshAll) {
+  if (m_ri->m_orientation.IsModified() || refreshAll) {
     o = _("Orientation");
     o << wxT("\n");
     switch (m_ri->m_orientation.GetButton()) {
@@ -1447,24 +1450,25 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_orientation_button->SetLabel(o);
   }
 
-  if (m_ri->m_overlay.mod || ((m_pi->m_settings.chart_overlay == m_ri->m_radar) != (m_ri->m_overlay.button != 0)) || refreshAll) {
+  int overlay;
+  if (m_ri->m_overlay.GetButton(&overlay) || ((m_pi->m_settings.chart_overlay == m_ri->m_radar) != (overlay != 0)) || refreshAll) {
     o = _("Overlay");
     o << wxT("\n");
     if (m_pi->m_settings.enable_dual_radar && ALL_RADARS(m_pi->m_settings.show_radar, 0)) {
-      o << ((m_ri->m_overlay.GetButton() > 0) ? m_ri->m_name : _("Off"));
+      o << ((overlay > 0) ? m_ri->m_name : _("Off"));
     } else {
-      o << ((m_ri->m_overlay.GetButton() > 0) ? _("On") : _("Off"));
+      o << ((overlay > 0) ? _("On") : _("Off"));
     }
     m_overlay_button->SetLabel(o);
   }
 
-  if (m_ri->m_range.mod || refreshAll) {
+  if (m_ri->m_range.IsModified() || refreshAll) {
     m_ri->m_range.GetButton();
     m_range_button->SetRangeLabel();
   }
 
   // gain
-  if (m_ri->m_gain.mod || refreshAll) {
+  if (m_ri->m_gain.IsModified() || refreshAll) {
     int button = m_ri->m_gain.GetButton();
     if (button < 0) {
       m_gain_button->SetLocalAuto(button);
@@ -1474,12 +1478,12 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   //  rain
-  if (m_ri->m_rain.mod || refreshAll) {
+  if (m_ri->m_rain.IsModified() || refreshAll) {
     m_rain_button->SetLocalValue(m_ri->m_rain.GetButton());
   }
 
   //   sea
-  if (m_ri->m_sea.mod || refreshAll) {
+  if (m_ri->m_sea.IsModified() || refreshAll) {
     int button = m_ri->m_sea.GetButton();
     if (button < 0) {
       m_sea_button->SetLocalAuto(button);
@@ -1489,52 +1493,52 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   //   target_boost
-  if (m_ri->m_target_boost.mod || refreshAll) {
+  if (m_ri->m_target_boost.IsModified() || refreshAll) {
     m_target_boost_button->SetLocalValue(m_ri->m_target_boost.GetButton());
   }
 
   //   target_expansion
-  if (m_ri->m_target_expansion.mod || refreshAll) {
+  if (m_ri->m_target_expansion.IsModified() || refreshAll) {
     m_target_expansion_button->SetLocalValue(m_ri->m_target_expansion.GetButton());
   }
 
   //  noise_rejection
-  if (m_ri->m_noise_rejection.mod || refreshAll) {
+  if (m_ri->m_noise_rejection.IsModified() || refreshAll) {
     m_noise_rejection_button->SetLocalValue(m_ri->m_noise_rejection.GetButton());
   }
 
   //  target_separation
-  if (m_ri->m_target_separation.mod || refreshAll) {
+  if (m_ri->m_target_separation.IsModified() || refreshAll) {
     m_target_separation_button->SetLocalValue(m_ri->m_target_separation.GetButton());
   }
 
   //  interference_rejection
-  if (m_ri->m_interference_rejection.mod || refreshAll) {
+  if (m_ri->m_interference_rejection.IsModified() || refreshAll) {
     m_interference_rejection_button->SetLocalValue(m_ri->m_interference_rejection.GetButton());
   }
 
   // scanspeed
-  if (m_ri->m_scan_speed.mod || refreshAll) {
+  if (m_ri->m_scan_speed.IsModified() || refreshAll) {
     m_scan_speed_button->SetLocalValue(m_ri->m_scan_speed.GetButton());
   }
 
   //   antenna height
-  if (m_ri->m_antenna_height.mod || refreshAll) {
+  if (m_ri->m_antenna_height.IsModified() || refreshAll) {
     m_antenna_height_button->SetLocalValue(m_ri->m_antenna_height.GetButton());
   }
 
   //  bearing alignment
-  if (m_ri->m_bearing_alignment.mod || refreshAll) {
+  if (m_ri->m_bearing_alignment.IsModified() || refreshAll) {
     m_bearing_alignment_button->SetLocalValue(m_ri->m_bearing_alignment.GetButton());
   }
 
   //  local interference rejection
-  if (m_ri->m_local_interference_rejection.mod || refreshAll) {
+  if (m_ri->m_local_interference_rejection.IsModified() || refreshAll) {
     m_local_interference_rejection_button->SetLocalValue(m_ri->m_local_interference_rejection.GetButton());
   }
 
   // side lobe suppression
-  if (m_ri->m_side_lobe_suppression.mod || refreshAll) {
+  if (m_ri->m_side_lobe_suppression.IsModified() || refreshAll) {
     int button = m_ri->m_side_lobe_suppression.GetButton();
     if (button < 0) {
       m_side_lobe_suppression_button->SetLocalAuto(button);

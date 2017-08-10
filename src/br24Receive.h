@@ -50,14 +50,16 @@ class br24Receive : public wxThread {
     m_shutdown_time_requested = 0;
     m_is_shutdown = false;
 
-    if (m_pi->m_settings.mcast_address.length()) {
+    wxString mcast_address = m_pi->GetMcastIPAddress();
+
+    if (mcast_address.length()) {
       int b[4];
       union {
         uint8_t b[4];
         uint32_t addr;
       } mcast;
 
-      if (sscanf(m_pi->m_settings.mcast_address.c_str(), "%u.%u.%u.%u", &b[0], &b[1], &b[2], &b[3]) == 4) {
+      if (sscanf(mcast_address.c_str(), "%u.%u.%u.%u", &b[0], &b[1], &b[2], &b[3]) == 4) {
         mcast.b[0] = (uint8_t)b[0];
         mcast.b[1] = (uint8_t)b[1];
         mcast.b[2] = (uint8_t)b[2];
@@ -70,7 +72,7 @@ class br24Receive : public wxThread {
         m_initial_mcast_addr.sin_port = 0;
         m_initial_mcast_addr.sin_family = AF_INET;
         m_mcast_addr = &m_initial_mcast_addr;
-        LOG_VERBOSE(wxT("BR24radar_pi: assuming radar is still reachable via %s"), m_pi->m_settings.mcast_address.c_str());
+        LOG_VERBOSE(wxT("BR24radar_pi: assuming radar is still reachable via %s"), mcast_address.c_str());
       }
     }
 

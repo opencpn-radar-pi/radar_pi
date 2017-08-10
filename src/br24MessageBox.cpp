@@ -262,10 +262,10 @@ bool br24MessageBox::UpdateMessage(bool force) {
 
   bool haveOpenGL = m_pi->m_opengl_mode;
   bool haveGPS = m_pi->m_bpos_set;
-  bool haveTrueHeading = !TIMED_OUT(now, m_pi->m_hdt_timeout);
-  bool haveMagHeading = !TIMED_OUT(now, m_pi->m_hdm_timeout);
+  bool haveTrueHeading = !TIMED_OUT(now, m_pi->GetHeadingTrueTimeout());
+  bool haveMagHeading = !TIMED_OUT(now, m_pi->GetHeadingMagTimeout());
   bool haveHeading = haveTrueHeading || haveMagHeading;
-  bool haveVariation = m_pi->m_var_source != VARIATION_SOURCE_NONE;
+  bool haveVariation = m_pi->GetVariationSource() != VARIATION_SOURCE_NONE;
   bool radarSeen = false;
   bool haveData = false;
   bool showRadar = m_pi->m_settings.show != 0;
@@ -276,10 +276,11 @@ bool br24MessageBox::UpdateMessage(bool force) {
   }
 
   for (int r = 0; r < RADARS; r++) {
-    if (m_pi->m_radar[r]->m_state.value != RADAR_OFF) {
+    int state = m_pi->m_radar[r]->m_state.GetValue();
+    if (state != RADAR_OFF) {
       radarSeen = true;
     }
-    if (m_pi->m_radar[r]->m_state.value == RADAR_TRANSMIT) {
+    if (state == RADAR_TRANSMIT) {
       haveData = true;
     }
   }

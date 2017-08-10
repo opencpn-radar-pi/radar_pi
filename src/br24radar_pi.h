@@ -429,8 +429,25 @@ class br24radar_pi : public opencpn_plugin_114 {
   wxString GetGuardZoneText(RadarInfo *ri);
 
   void SetMcastIPAddress(wxString &msg);
+  wxString GetMcastIPAddress() {
+    wxCriticalSectionLocker lock(m_exclusive);
+    return m_settings.mcast_address;
+  };
 
   void SetRadarHeading(double heading = nan(""), bool isTrue = false);
+  double GetHeadingTrue();
+  time_t GetHeadingTrueTimeout() {
+    wxCriticalSectionLocker lock(m_exclusive);
+    return m_hdt_timeout;
+  };
+  time_t GetHeadingMagTimeout() {
+    wxCriticalSectionLocker lock(m_exclusive);
+    return m_hdm_timeout;
+  };
+  VariationSource GetVariationSource() {
+    wxCriticalSectionLocker lock(m_exclusive);
+    return m_var_source;
+  };
 
   wxFont m_font;      // The dialog font at a normal size
   wxFont m_fat_font;  // The dialog font at a bigger size, bold
@@ -444,24 +461,6 @@ class br24radar_pi : public opencpn_plugin_114 {
   wxWindow *m_parent_window;
   wxGLContext *m_opencpn_gl_context;
   bool m_opencpn_gl_context_broken;
-
-  double m_hdt;                    // this is the heading that the pi is using for all heading operations, in degrees.
-                                   // m_hdt will come from the radar if available else from the NMEA stream.
-  time_t m_hdt_timeout;            // When we consider heading is lost
-  double m_hdm;                    // Last magnetic heading obtained
-  time_t m_hdm_timeout;            // When we consider heading is lost
-  double m_radar_heading;          // Last heading obtained from radar, or nan if none
-  bool m_radar_heading_true;       // Was TRUE flag set on radar heading?
-  time_t m_radar_heading_timeout;  // When last heading was obtained from radar, or 0 if not
-
-  // Variation. Used to convert magnetic into true heading.
-  // Can come from SetPositionFixEx, which may hail from the WMM plugin
-  // and is thus to be preferred, or GPS or a NMEA sentence. The latter will probably
-  // have an outdated variation model, so is less preferred. Besides, some devices
-  // transmit invalid (zero) values. So we also let non-zero values prevail.
-  double m_var;  // local magnetic variation, in degrees
-  VariationSource m_var_source;
-  time_t m_var_timeout;
 
   HeadingSource m_heading_source;
   bool m_opengl_mode;
@@ -489,6 +488,7 @@ class br24radar_pi : public opencpn_plugin_114 {
  private:
   void RadarSendState(void);
   void UpdateState(void);
+  void UpdateHeadingState(time_t now);
   void DoTick(void);
   void Select_Clutter(int req_clutter_index);
   void Select_Rejection(int req_rejection_index);
@@ -501,6 +501,24 @@ class br24radar_pi : public opencpn_plugin_114 {
   void SetRadarWindowViz(bool reparent = false);
 
   wxCriticalSection m_exclusive;  // protects callbacks that come from multiple radars
+
+  double m_hdt;                    // this is the heading that the pi is using for all heading operations, in degrees.
+                                   // m_hdt will come from the radar if available else from the NMEA stream.
+  time_t m_hdt_timeout;            // When we consider heading is lost
+  double m_hdm;                    // Last magnetic heading obtained
+  time_t m_hdm_timeout;            // When we consider heading is lost
+  double m_radar_heading;          // Last heading obtained from radar, or nan if none
+  bool m_radar_heading_true;       // Was TRUE flag set on radar heading?
+  time_t m_radar_heading_timeout;  // When last heading was obtained from radar, or 0 if not
+
+  // Variation. Used to convert magnetic into true heading.
+  // Can come from SetPositionFixEx, which may hail from the WMM plugin
+  // and is thus to be preferred, or GPS or a NMEA sentence. The latter will probably
+  // have an outdated variation model, so is less preferred. Besides, some devices
+  // transmit invalid (zero) values. So we also let non-zero values prevail.
+  double m_var;  // local magnetic variation, in degrees
+  VariationSource m_var_source;
+  time_t m_var_timeout;
 
   wxFileConfig *m_pconfig;
   int m_context_menu_control_id;

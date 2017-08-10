@@ -164,6 +164,8 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
 
   radar_frame_pkt *packet = (radar_frame_pkt *)data;
 
+  wxCriticalSectionLocker lock(m_ri->m_exclusive);
+
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
   m_ri->m_data_timeout = now + DATA_TIMEOUT;
   m_ri->m_state.Update(RADAR_TRANSMIT);
@@ -268,7 +270,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       // Guess the heading for the spoke. This is updated much less frequently than the
       // data from the radar (which is accurate 10x per second), likely once per second.
     }
-    heading_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt);  // include variation
+    heading_raw = SCALE_DEGREES_TO_RAW(m_pi->GetHeadingTrue());  // include variation
     bearing_raw = angle_raw + heading_raw;
     // until here all is based on 4096 (SPOKES) scanlines
 
@@ -291,9 +293,11 @@ void br24Receive::EmulateFakeBuffer(void) {
 
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
 
-  if (m_ri->m_state.value != RADAR_TRANSMIT) {
-    if (m_ri->m_state.value == RADAR_OFF) {
-      m_ri->m_state.value = RADAR_STANDBY;
+  int state = m_ri->m_state.GetValue();
+
+  if (state != RADAR_TRANSMIT) {
+    if (state == RADAR_OFF) {
+      m_ri->m_state.Update(RADAR_STANDBY);
     }
     return;
   }
@@ -330,7 +334,7 @@ void br24Receive::EmulateFakeBuffer(void) {
       }
     }
 
-    int hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt);
+    int hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->GetHeadingTrue());
     int bearing_raw = angle_raw + hdt_raw;
     bearing_raw += SCALE_DEGREES_TO_RAW(270);  // Compensate openGL rotation compared to North UP
 
@@ -575,7 +579,7 @@ void *br24Receive::Entry(void) {
 
               addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
               m_pi->m_pMessageBox->SetRadarIPAddress(addr);
-              if (m_ri->m_state.value == RADAR_OFF) {
+              if (m_ri->m_state.GetValue() == RADAR_OFF) {
                 LOG_INFO(wxT("BR24radar_pi: %s detected at %s"), m_ri->m_name.c_str(), addr.c_str());
                 m_ri->m_state.Update(RADAR_STANDBY);
               }

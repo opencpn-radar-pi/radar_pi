@@ -176,18 +176,18 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   if (m_pi->m_heading_source != HEADING_NONE) {
     double heading;
     double predictor;
-    switch (m_ri->m_orientation.value) {
+    switch (m_ri->m_orientation.GetValue()) {
       case ORIENTATION_HEAD_UP:
-        heading = m_pi->m_hdt + 180.;
+        heading = m_pi->GetHeadingTrue() + 180.;
         predictor = 180.;
         break;
       case ORIENTATION_NORTH_UP:
         heading = 180;
-        predictor = m_pi->m_hdt + 180;
+        predictor = m_pi->GetHeadingTrue() + 180;
         break;
       case ORIENTATION_COURSE_UP:
         heading = m_ri->m_course + 180.;
-        predictor = m_pi->m_hdt + 180. - m_ri->m_course;
+        predictor = m_pi->GetHeadingTrue() + 180. - m_ri->m_course;
         break;
     }
 
@@ -291,9 +291,11 @@ void RadarCanvas::RenderCursor(int w, int h) {
   double distance;
   double bearing;
 
-  if (m_ri->m_mouse_vrm[m_ri->m_orientation.value] != 0.0) {
-    distance = m_ri->m_mouse_vrm[m_ri->m_orientation.value] * 1852.;
-    bearing = m_ri->m_mouse_ebl[m_ri->m_orientation.value];
+  int orientation = m_ri->m_orientation.GetValue();
+
+  if (m_ri->m_mouse_vrm[orientation] != 0.0) {
+    distance = m_ri->m_mouse_vrm[orientation] * 1852.;
+    bearing = m_ri->m_mouse_ebl[orientation];
   } else {
     if ((m_ri->m_mouse_lat == 0.0 && m_ri->m_mouse_lon == 0.0) || !m_pi->m_bpos_set) {
       return;
@@ -302,7 +304,7 @@ void RadarCanvas::RenderCursor(int w, int h) {
     distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon) * 1852.;
     bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon);
     if (!m_ri->IsDisplayNorthUp()) {
-      bearing -= m_pi->m_hdt;
+      bearing -= m_pi->GetHeadingTrue();
     }
     // LOG_DIALOG(wxT("BR24radar_pi: Chart Mouse vrm=%f ebl=%f"), distance / 1852.0, bearing);
   }
@@ -349,6 +351,7 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
   float center_x = w / 2.0;
   float center_y = h / 2.0;
   int display_range = m_ri->GetDisplayRange();
+  int orientation = m_ri->m_orientation.GetValue();
 
   for (int b = 0; b < BEARING_LINES; b++) {
     float x, y;
@@ -356,8 +359,8 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
     glLineWidth(1.0);
     if (m_ri->m_vrm[b] != 0.0) {
       float scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
-      if (m_ri->m_ebl[m_ri->m_orientation.value][b] != nanl("")) {
-        float angle = (float)deg2rad(m_ri->m_ebl[m_ri->m_orientation.value][b]);
+      if (m_ri->m_ebl[orientation][b] != nanl("")) {
+        float angle = (float)deg2rad(m_ri->m_ebl[orientation][b]);
         x = center_x + sinf(angle) * full_range * 2.;
         y = center_y - cosf(angle) * full_range * 2.;
         glBegin(GL_LINES);
@@ -444,9 +447,9 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     float full_range = wxMax(w, h) / 2.0;
     int display_range = m_ri->GetDisplayRange();
 
-    switch (m_ri->m_orientation.value) {
+    switch (m_ri->m_orientation.GetValue()) {
       case ORIENTATION_HEAD_UP:
-        vp.rotation = deg2rad(-m_pi->m_hdt);
+        vp.rotation = deg2rad(-m_pi->GetHeadingTrue());
         break;
       case ORIENTATION_NORTH_UP:
         vp.rotation = 0.;

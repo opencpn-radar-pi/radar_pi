@@ -52,62 +52,83 @@ struct RadarRange {
 
 class radar_control_item {
  public:
-  int value;
-  int button;
-  bool mod;
-
   void Update(int v) {
     wxCriticalSectionLocker lock(m_exclusive);
 
-    if (v != button) {
-      mod = true;
-      button = v;
+    if (v != m_button) {
+      m_mod = true;
+      m_button = v;
     }
-    value = v;
+    m_value = v;
   };
 
   bool GetButton(int *value) {
     wxCriticalSectionLocker lock(m_exclusive);
-    bool changed = mod;
+    bool changed = m_mod;
     if (value) {
-      *value = this->value;
+      *value = this->m_value;
     }
 
-    mod = false;
+    m_mod = false;
     return changed;
   }
 
   int GetButton() {
     wxCriticalSectionLocker lock(m_exclusive);
 
-    mod = false;
-    return button;
+    m_mod = false;
+    return m_button;
+  }
+
+  int GetValue() {
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    return m_value;
+  }
+
+  bool IsModified() {
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    return m_mod;
   }
 
   radar_control_item() {
-    value = 0;
-    button = 0;
-    mod = false;
+    m_value = 0;
+    m_button = 0;
+    m_mod = false;
   }
 
  protected:
   wxCriticalSection m_exclusive;
+  int m_value;
+  int m_button;
+  bool m_mod;
 };
 
 class radar_range_control_item : public radar_control_item {
  public:
-  const RadarRange *range;
   PersistentSettings *m_settings;
 
   void Update(int v);
+  const RadarRange * GetRange() {
+
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    return m_range;
+  }
+
 
   radar_range_control_item() {
-    value = 0;
-    button = 0;
-    mod = false;
-    range = 0;
+    m_value = 0;
+    m_button = 0;
+    m_mod = false;
+    m_range = 0;
     m_settings = 0;
   }
+
+private:
+  const RadarRange *m_range;
+
 };
 
 struct DrawInfo {
@@ -139,7 +160,7 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item m_boot_state;  // Can contain RADAR_TRANSMIT until radar is seen at boot
 
   radar_control_item m_orientation;  // 0 = Heading Up, 1 = North Up
-  int m_min_contour_length;    // minimum contour length of an ARPA or MARPA target
+  int m_min_contour_length;          // minimum contour length of an ARPA or MARPA target
 #define ORIENTATION_HEAD_UP (0)
 #define ORIENTATION_NORTH_UP (1)
 #define ORIENTATION_COURSE_UP (2)
@@ -252,7 +273,7 @@ class RadarInfo : public wxEvtHandler {
   void ShowRadarWindow(bool show);
   void ShowControlDialog(bool show, bool reparent);
   void Shutdown();
-  //void DeleteReceive();
+  // void DeleteReceive();
   void UpdateTransmitState();
   void RequestRadarState(RadarState state);
 
@@ -263,14 +284,14 @@ class RadarInfo : public wxEvtHandler {
   void ComputeTargetTrails();
   wxString &GetRangeText();
   const char *GetDisplayRangeStr(size_t idx);
-  int GetDisplayRange() { return m_range.value; };
+  int GetDisplayRange() { return m_range.GetValue(); };
   void SetNetworkCardAddress(struct sockaddr_in *address);
   void SetMouseLatLon(double lat, double lon);
   void SetMouseVrmEbl(double vrm, double ebl);
   void SetBearing(int bearing);
   void ClearTrails();
   void ZoomTrails(float zoom_factor);
-  bool IsDisplayNorthUp() { return m_orientation.value == ORIENTATION_NORTH_UP && m_pi->m_heading_source != HEADING_NONE; }
+  bool IsDisplayNorthUp() { return m_orientation.GetValue() == ORIENTATION_NORTH_UP && m_pi->m_heading_source != HEADING_NONE; }
   void SampleCourse(int angle);
 
   wxString GetCanvasTextTopLeft();

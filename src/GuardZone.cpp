@@ -120,7 +120,7 @@ void GuardZone::SearchTargets() {
     return;
   }
   if (!m_pi->m_settings.show                                                       // No radar shown
-   || (m_pi->m_radar[0]->m_state.value != RADAR_TRANSMIT && m_pi->m_radar[1]->m_state.value != RADAR_TRANSMIT)  // Radar not transmitting
+   || (m_pi->m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT && m_pi->m_radar[1]->m_state.GetValue() != RADAR_TRANSMIT)  // Radar not transmitting
       || !m_pi->m_bpos_set){                                                       // No position
       return;
   }
@@ -130,7 +130,7 @@ void GuardZone::SearchTargets() {
   size_t range_start = m_inner_range * RETURNS_PER_LINE / m_ri->m_range_meters;  // Convert from meters to 0..511
   size_t range_end = m_outer_range * RETURNS_PER_LINE / m_ri->m_range_meters;    // Convert from meters to 0..511
 
-  SpokeBearing hdt = SCALE_DEGREES_TO_RAW2048(m_pi->m_hdt);
+  SpokeBearing hdt = SCALE_DEGREES_TO_RAW2048(m_pi->GetHeadingTrue());
   SpokeBearing start_bearing = m_start_bearing + hdt;
   SpokeBearing end_bearing = m_end_bearing + hdt;
   start_bearing = MOD_ROTATION2048(start_bearing);

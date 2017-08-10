@@ -326,24 +326,21 @@ bool br24radar_pi::DeInit(void) {
 
   m_initialized = false;
 
-  // New style objects save position in destructor.
-  if (m_bogey_dialog) {
-    delete m_bogey_dialog;
-    m_bogey_dialog = 0;
-  }
-
   // Stop processing in all radars.
-  // This will delete the dialogs (so that the user cannot change the config)
-  // and stop the radar threads from accepting new data.
-  // After this is done we can safely save the configuration.
+  // This waits for the receive threads to stop and removes the dialog, so that its settings
+  // can be saved.
   for (int r = 0; r < RADARS; r++) {
     m_radar[r]->Shutdown();
   }
 
+  if (m_bogey_dialog) {
+    delete m_bogey_dialog; // This will also save its current pos in m_settings
+    m_bogey_dialog = 0;
+  }
+
   SaveConfig();
 
-  // Delete the RadarInfo objects. This will call their destructor, which in turn
-  // will wait for the receive threads to stop and then delete all data.
+  // Delete the RadarInfo objects. This will call their destructor and delete all data.
   for (int r = 0; r < RADARS; r++) {
     delete m_radar[r];
     m_radar[r] = 0;
@@ -541,7 +538,7 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
   } else if (id == m_context_menu_set_marpa_target) {
     if (m_settings.show                                                        // radar shown
         && m_settings.chart_overlay >= 0                                       // overlay desired
-        && m_radar[m_settings.chart_overlay]->m_state.value == RADAR_TRANSMIT  // Radar  transmitting
+        && m_radar[m_settings.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
         && m_bpos_set) {
       Position target_pos;
       target_pos.lat = m_cursor_lat;
@@ -646,7 +643,7 @@ void br24radar_pi::CheckGuardZoneBogeys(void) {
       text << m_radar[r]->m_name;
       text << wxT(":\n");
     }
-    if (m_radar[r]->m_state.value == RADAR_TRANSMIT) {
+    if (m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT) {
       bool bogeys_found_this_radar = false;
 
       for (size_t z = 0; z < GUARD_ZONES; z++) {
@@ -777,34 +774,9 @@ void br24radar_pi::SetRadarHeading(double heading, bool isTrue) {
   }
 }
 
-// Notify
-// ------
-// Called once a second by the timer on radar[0].
-//
-// This checks if we need to ping the radar to keep it alive (or make it alive)
-
-void br24radar_pi::Notify(void) {
-  LOG_VERBOSE(wxT("BR24radar_pi: main timer"));
-
-  time_t now = time(0);
-
-  if (m_opengl_mode_changed || m_notify_radar_window_viz) {
-    m_opengl_mode_changed = false;
-    m_notify_radar_window_viz = false;
-    SetRadarWindowViz(true);
-  }
-
-  if (!m_settings.show                                                                                 // No radar shown
-      || (m_radar[0]->m_state.value != RADAR_TRANSMIT && m_radar[0]->m_state.value != RADAR_TRANSMIT)  // Radar not transmitting
-      || !m_bpos_set) {                                                                                // No overlay possible (yet)
-    // Conditions for ARPA not fulfilled, delete all targets
-    if (m_radar[0]->m_arpa) {
-      m_radar[0]->m_arpa->RadarLost();
-    }
-    if (m_radar[1]->m_arpa) {
-      m_radar[1]->m_arpa->RadarLost();
-    }
-  }
+void br24radar_pi::UpdateHeadingState(time_t now)
+{
+  wxCriticalSectionLocker lock(m_exclusive);
 
   if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
     // If the position data is 10s old reset our heading.
@@ -846,11 +818,49 @@ void br24radar_pi::Notify(void) {
     m_var_source = VARIATION_SOURCE_NONE;
     LOG_VERBOSE(wxT("BR24radar_pi: Lost Variation source"));
   }
+}
+
+double br24radar_pi::GetHeadingTrue() {
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  return m_hdt;
+}
+
+// Notify
+// ------
+// Called once a second by the timer on radar[0].
+//
+// This checks if we need to ping the radar to keep it alive (or make it alive)
+
+void br24radar_pi::Notify(void) {
+  LOG_VERBOSE(wxT("BR24radar_pi: main timer"));
+
+  time_t now = time(0);
+
+  if (m_opengl_mode_changed || m_notify_radar_window_viz) {
+    m_opengl_mode_changed = false;
+    m_notify_radar_window_viz = false;
+    SetRadarWindowViz(true);
+  }
+
+  if (!m_settings.show                                                                                 // No radar shown
+      || (m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT && m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT)  // Radar not transmitting
+      || !m_bpos_set) {                                                                                // No overlay possible (yet)
+    // Conditions for ARPA not fulfilled, delete all targets
+    if (m_radar[0]->m_arpa) {
+      m_radar[0]->m_arpa->RadarLost();
+    }
+    if (m_radar[1]->m_arpa) {
+      m_radar[1]->m_arpa->RadarLost();
+    }
+  }
+
+  UpdateHeadingState(now);
 
   // Check the age of "radar_seen", if too old radar_seen = false
   bool any_data_seen = false;
   for (size_t r = 0; r < RADARS; r++) {
-    if (m_radar[r]->m_state.value == RADAR_TRANSMIT) {
+    if (m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT) {
       any_data_seen = true;
     }
     m_radar[r]->UpdateTransmitState();
@@ -867,7 +877,7 @@ void br24radar_pi::Notify(void) {
   if (m_pMessageBox->IsShown() || (m_settings.verbose != 0)) {
     wxString t;
     for (size_t r = 0; r < RADARS; r++) {
-      if (m_radar[r]->m_state.value != RADAR_OFF) {
+      if (m_radar[r]->m_state.GetValue() != RADAR_OFF) {
         t << wxString::Format(wxT("%s\npackets %d/%d\nspokes %d/%d/%d\n"), m_radar[r]->m_name.c_str(),
                               m_radar[r]->m_statistics.packets, m_radar[r]->m_statistics.broken_packets,
                               m_radar[r]->m_statistics.spokes, m_radar[r]->m_statistics.broken_spokes,
@@ -942,7 +952,7 @@ void br24radar_pi::UpdateState(void) {
   RadarState state = RADAR_OFF;
 
   for (int r = 0; r < RADARS; r++) {
-    state = wxMax(state, (RadarState)m_radar[r]->m_state.value);
+    state = wxMax(state, (RadarState)m_radar[r]->m_state.GetValue());
   }
   if (state == RADAR_OFF) {
     m_toolbar_button = TB_SEARCHING;
@@ -1003,7 +1013,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
 
   if (!m_settings.show                                                       // No radar shown
       || m_settings.chart_overlay < 0                                        // No overlay desired
-      || m_radar[m_settings.chart_overlay]->m_state.value != RADAR_TRANSMIT  // Radar not transmitting
+      || m_radar[m_settings.chart_overlay]->m_state.GetValue() != RADAR_TRANSMIT  // Radar not transmitting
       || !m_bpos_set) {                                                      // No overlay possible (yet)
     return true;
   }
@@ -1235,12 +1245,12 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ColourPPIBackground"), m_settings.ppi_background_colour.GetAsString());
 
     for (int r = 0; r < RADARS; r++) {
-      pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.value);
-      pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->m_state.value);
+      pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->m_state.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
       pConf->Write(wxString::Format(wxT("Radar%dControlShow"), r), m_settings.show_radar_control[r]);
-      pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->m_target_trails.value);
-      pConf->Write(wxString::Format(wxT("Radar%dTrueMotion"), r), m_radar[r]->m_trails_motion.value);
+      pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->m_target_trails.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dTrueMotion"), r), m_radar[r]->m_trails_motion.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dWindowPosX"), r), m_settings.window_pos[r].x);
       pConf->Write(wxString::Format(wxT("Radar%dWindowPosY"), r), m_settings.window_pos[r].y);
       pConf->Write(wxString::Format(wxT("Radar%dControlPosX"), r), m_settings.control_pos[r].x);
@@ -1348,6 +1358,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
     wxJSONReader reader;
     wxJSONValue message;
     if (!reader.Parse(message_body, &message)) {
+      wxCriticalSectionLocker lock(m_exclusive);
       wxJSONValue defaultValue(360);
       double variation = message.Get(_T("Decl"), defaultValue).AsDouble();
 
@@ -1370,7 +1381,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
     double ArpaMaxRange = 0.0;
     bool ArpaGuardOn = false;
     for (size_t r = 0; r < RADARS; r++) {
-      if (m_radar[r]->m_state.value != RADAR_OFF) {  // One radar is on. Check for guardzones
+      if (m_radar[r]->m_state.GetValue() != RADAR_OFF) {  // One radar is on. Check for guardzones
         for (int i = 0; i < RADARS; i++) {
           for (int z = 0; z < GUARD_ZONES; z++) {
             if (m_radar[i]->m_guard_zone[z]->m_arpa_on) {
