@@ -47,6 +47,8 @@ class br24Receive : public wxThread {
     m_radar_status = 0;
     m_new_ip_addr = false;
     m_next_rotation = 0;
+    m_shutdown_time_requested = 0;
+    m_is_shutdown = false;
 
     if (m_pi->m_settings.mcast_address.length()) {
       int b[4];
@@ -87,6 +89,9 @@ class br24Receive : public wxThread {
   sockaddr_in *m_mcast_addr;
   wxIPV4address m_ip_addr;
   bool m_new_ip_addr;
+
+  wxLongLong m_shutdown_time_requested; // Main thread asks this thread to stop
+  volatile bool m_is_shutdown;
 
  private:
   void logBinaryData(const wxString &what, const UINT8 *data, int size);
