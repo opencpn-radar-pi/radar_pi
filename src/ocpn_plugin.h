@@ -49,7 +49,7 @@ class wxGLContext;
 //    PlugIns conforming to API Version less then the most modern will also
 //    be correctly supported.
 #define API_VERSION_MAJOR 1
-#define API_VERSION_MINOR 13
+#define API_VERSION_MINOR 14
 
 //    Fwd Definitions
 class wxFileConfig;
@@ -57,6 +57,7 @@ class wxNotebook;
 class wxFont;
 class wxAuiManager;
 class wxScrolledWindow;
+class wxGLCanvas;
 
 //---------------------------------------------------------------------------------------------------------
 //
@@ -476,6 +477,12 @@ class DECL_EXP opencpn_plugin_113 : public opencpn_plugin_112 {
   virtual void OnToolbarToolUpCallback(int id);
 };
 
+class DECL_EXP opencpn_plugin_114 : public opencpn_plugin_113 {
+ public:
+  opencpn_plugin_114(void *pmgr);
+  virtual ~opencpn_plugin_114();
+};
+
 //------------------------------------------------------------------
 //      Route and Waypoint PlugIn support
 //
@@ -713,6 +720,39 @@ class DECL_EXP PlugInChartBaseGL : public PlugInChartBase {
   virtual int GetNoCOVRTablePoints(int iTable);
   virtual int GetNoCOVRTablenPoints(int iTable);
   virtual float *GetNoCOVRTableHead(int iTable);
+};
+
+// ----------------------------------------------------------------------------
+// PlugInChartBaseExtended
+//  Derived from PlugInChartBase, add extended chart support methods
+// ----------------------------------------------------------------------------
+
+class DECL_EXP PlugInChartBaseExtended : public PlugInChartBase {
+ public:
+  PlugInChartBaseExtended();
+  virtual ~PlugInChartBaseExtended();
+
+  virtual int RenderRegionViewOnGL(const wxGLContext &glc, const PlugIn_ViewPort &VPoint, const wxRegion &Region,
+                                   bool b_use_stencil);
+
+  virtual wxBitmap &RenderRegionViewOnDCNoText(const PlugIn_ViewPort &VPoint, const wxRegion &Region);
+  virtual bool RenderRegionViewOnDCTextOnly(wxMemoryDC &dc, const PlugIn_ViewPort &VPoint, const wxRegion &Region);
+
+  virtual int RenderRegionViewOnGLNoText(const wxGLContext &glc, const PlugIn_ViewPort &VPoint, const wxRegion &Region,
+                                         bool b_use_stencil);
+
+  virtual int RenderRegionViewOnGLTextOnly(const wxGLContext &glc, const PlugIn_ViewPort &VPoint, const wxRegion &Region,
+                                           bool b_use_stencil);
+
+  virtual ListOfPI_S57Obj *GetObjRuleListAtLatLon(float lat, float lon, float select_radius, PlugIn_ViewPort *VPoint);
+  virtual wxString CreateObjDescriptions(ListOfPI_S57Obj *obj_list);
+
+  virtual int GetNoCOVREntries();
+  virtual int GetNoCOVRTablePoints(int iTable);
+  virtual int GetNoCOVRTablenPoints(int iTable);
+  virtual float *GetNoCOVRTableHead(int iTable);
+
+  virtual void ClearPLIBTextList();
 };
 
 class wxArrayOfS57attVal;
@@ -1077,5 +1117,11 @@ class DECL_EXP OCPN_downloadEvent : public wxEvent {
 // extern const wxEventType DECL_EXP wxEVT_DOWNLOAD_EVENT;
 
 extern WXDLLIMPEXP_CORE const wxEventType wxEVT_DOWNLOAD_EVENT;
+
+// API 1.14 Extra canvas Support
+
+/* Allow drawing of objects onto other OpenGL canvases */
+extern DECL_EXP void PlugInAISDrawGL(wxGLCanvas *glcanvas, const PlugIn_ViewPort &vp);
+extern DECL_EXP bool PlugInSetFontColor(const wxString TextElement, const wxColour color);
 
 #endif  //_PLUGIN_H_

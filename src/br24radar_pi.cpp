@@ -33,7 +33,6 @@
 #include "Kalman.h"
 #include "RadarMarpa.h"
 #include "br24radar_pi.h"
-#include "br24receive.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
 
@@ -53,15 +52,17 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin *p) { delete p; }
 /********************************************************************************************************/
 
 double local_distance(double lat1, double lon1, double lat2, double lon2) {
-  // Spherical Law of Cosines
-  double theta, dist;
+  double s1 = deg2rad(lat1);
+  double l1 = deg2rad(lon1);
+  double s2 = deg2rad(lat2);
+  double l2 = deg2rad(lon2);
+  double theta = l2 - l1;
 
-  theta = lon2 - lon1;
-  dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta));
-  dist = acos(dist);  // radians
-  dist = rad2deg(dist);
-  dist = fabs(dist) * 60;  // nautical miles/degree
-  return (dist);
+  // Spherical Law of Cosines
+  double dist = acos(sin(s1) * sin(s2) + cos(s1) * cos(s2) * cos(theta));
+
+  dist = fabs(rad2deg(dist)) * 60;  // nautical miles/degree
+  return dist;
 }
 
 double local_bearing(double lat1, double lon1, double lat2, double lon2) {
@@ -69,9 +70,10 @@ double local_bearing(double lat1, double lon1, double lat2, double lon2) {
   double l1 = deg2rad(lon1);
   double s2 = deg2rad(lat2);
   double l2 = deg2rad(lon2);
+  double theta = l2 - l1;
 
-  double y = sin(l2 - l1) * cos(s2);
-  double x = cos(s1) * sin(s2) - sin(s1) * cos(s2) * cos(l2 - l1);
+  double y = sin(theta) * cos(s2);
+  double x = cos(s1) * sin(s2) - sin(s1) * cos(s2) * cos(theta);
 
   double brg = fmod(rad2deg(atan2(y, x)) + 360.0, 360.0);
   return brg;
@@ -110,7 +112,7 @@ static double radar_distance(double lat1, double lon1, double lat2, double lon2,
 //
 //---------------------------------------------------------------------------------------------------------
 
-br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_112(ppimgr) {
+br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_114(ppimgr) {
   m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
   // Create the PlugIn icons
@@ -241,11 +243,13 @@ int br24radar_pi::Init(void) {
     LOG_INFO(wxT("BR24radar_pi: TRANSMIT = %d"), LOGLEVEL_TRANSMIT);
     LOG_INFO(wxT("BR24radar_pi: RECEIVE  = %d"), LOGLEVEL_RECEIVE);
     LOG_INFO(wxT("BR24radar_pi: GUARD    = %d"), LOGLEVEL_GUARD);
+    LOG_INFO(wxT("BR24radar_pi: ARPA     = %d"), LOGLEVEL_ARPA);
     LOG_VERBOSE(wxT("BR24radar_pi: VERBOSE  log is enabled"));
     LOG_DIALOG(wxT("BR24radar_pi: DIALOG   log is enabled"));
     LOG_TRANSMIT(wxT("BR24radar_pi: TRANSMIT log is enabled"));
     LOG_RECEIVE(wxT("BR24radar_pi: RECEIVE  log is enabled"));
     LOG_GUARD(wxT("BR24radar_pi: GUARD    log is enabled"));
+    LOG_ARPA(wxT("BR24radar_pi: ARPA     log is enabled"));
   } else {
     wxLogError(wxT("BR24radar_pi: configuration file values initialisation failed"));
     return 0;  // give up
@@ -273,18 +277,25 @@ int br24radar_pi::Init(void) {
   wxMenuItem *mi1 = new wxMenuItem(&dummy_menu, -1, _("Show radar"));
   wxMenuItem *mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
   wxMenuItem *mi3 = new wxMenuItem(&dummy_menu, -1, _("Radar Control..."));
-  wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Set Arpa Target"));
+  wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Set MARPA Target"));
+  wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete (M)ARPA Target"));
+  wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all (M)ARPA Targets"));
+
 #ifdef __WXMSW__
   wxFont *qFont = OCPNGetFont(_("Menu"), 10);
   mi1->SetFont(*qFont);
   mi2->SetFont(*qFont);
   mi3->SetFont(*qFont);
   mi4->SetFont(*qFont);
+  mi5->SetFont(*qFont);
+  mi6->SetFont(*qFont);
 #endif
   m_context_menu_show_id = AddCanvasContextMenuItem(mi1, this);
   m_context_menu_hide_id = AddCanvasContextMenuItem(mi2, this);
   m_context_menu_control_id = AddCanvasContextMenuItem(mi3, this);
   m_context_menu_set_marpa_target = AddCanvasContextMenuItem(mi4, this);
+  m_context_menu_delete_marpa_target = AddCanvasContextMenuItem(mi5, this);
+  m_context_menu_delete_all_marpa_targets = AddCanvasContextMenuItem(mi6, this);
 
   m_initialized = true;
   LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.show_radar[0], m_settings.show_radar[1],
@@ -321,32 +332,19 @@ bool br24radar_pi::DeInit(void) {
     m_bogey_dialog = 0;
   }
 
-  // Delete all dialogs
+  // Stop processing in all radars.
+  // This will delete the dialogs (so that the user cannot change the config)
+  // and stop the radar threads from accepting new data.
+  // After this is done we can safely save the configuration.
   for (int r = 0; r < RADARS; r++) {
-    m_radar[r]->DeleteDialogs();
+    m_radar[r]->Shutdown();
   }
 
   SaveConfig();
 
-  // Delete all 'new'ed objects
+  // Delete the RadarInfo objects. This will call their destructor, which in turn
+  // will wait for the receive threads to stop and then delete all data.
   for (int r = 0; r < RADARS; r++) {
-    if (m_radar[r]->m_arpa) {
-      delete m_radar[r]->m_arpa;
-      m_radar[r]->m_arpa = 0;
-    }
-
-	if (m_radar[r]->m_receive) {
-		LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread request stop"), m_radar[r]->m_name.c_str());
-		m_radar[r]->m_receive->Shutdown();
-		LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread stopped"), m_radar[r]->m_name.c_str());
-		m_radar[r]->m_receive->Wait();
-		LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread delete"), m_radar[r]->m_name.c_str());
-		delete m_radar[r]->m_receive;
-		LOG_VERBOSE(wxT("BR24radar_pi: %s DeInit receive thread deleted"), m_radar[r]->m_name.c_str());
-		m_radar[r]->m_receive = 0;
-	}
-
-
     delete m_radar[r];
     m_radar[r] = 0;
   }
@@ -415,18 +413,27 @@ void br24radar_pi::NotifyRadarWindowViz() {
 }
 
 void br24radar_pi::SetRadarWindowViz(bool reparent) {
-  int r;
-  for (r = 0; r < RADARS; r++) {
+  int arpa_targets = 0;
+
+  for (int r = 0; r < RADARS; r++) {
     bool showThisRadar = m_settings.show && m_settings.show_radar[r] && (r == 0 || m_settings.enable_dual_radar);
     bool showThisControl = m_settings.show && m_settings.show_radar_control[r] && (r == 0 || m_settings.enable_dual_radar);
     m_radar[r]->ShowRadarWindow(showThisRadar);
     m_radar[r]->ShowControlDialog(showThisControl, reparent);
     m_radar[r]->UpdateTransmitState();
+    arpa_targets += m_radar[r]->m_arpa->GetTargetCount();
   }
 
   SetCanvasContextMenuItemViz(m_context_menu_show_id, m_settings.show == 0);
   SetCanvasContextMenuItemViz(m_context_menu_hide_id, m_settings.show != 0);
-  SetCanvasContextMenuItemGrey(m_context_menu_control_id, m_settings.show == 0);
+  SetCanvasContextMenuItemViz(m_context_menu_control_id, m_settings.show != 0);
+  SetCanvasContextMenuItemViz(m_context_menu_control_id, m_settings.show != 0);
+  SetCanvasContextMenuItemViz(m_context_menu_set_marpa_target, m_settings.show != 0);
+  SetCanvasContextMenuItemViz(m_context_menu_delete_marpa_target, m_settings.show != 0);
+  SetCanvasContextMenuItemViz(m_context_menu_delete_all_marpa_targets, m_settings.show != 0);
+  SetCanvasContextMenuItemGrey(m_context_menu_delete_marpa_target, arpa_targets == 0);
+  SetCanvasContextMenuItemGrey(m_context_menu_delete_all_marpa_targets, arpa_targets == 0);
+
   LOG_DIALOG(wxT("BR24radar_pi: RadarWindow show = %d window0=%d window1=%d"), m_settings.show, m_settings.show_radar[0],
              m_settings.show_radar[1]);
 }
@@ -867,7 +874,6 @@ void br24radar_pi::Notify(void) {
                               m_radar[r]->m_statistics.missing_spokes);
       }
     }
-    if (JsonAIS != wxEmptyString) t = JsonAIS;  // ARPA AIS debug info
     m_pMessageBox->SetStatisticsInfo(t);
     if (t.length() > 0) {
       t.Replace(wxT("\n"), wxT(" "));
@@ -981,7 +987,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     return true;
   }
 
-  LOG_DIALOG(wxT("BR24radar_pi: RenderGLOverlay"));
+  LOG_DIALOG(wxT("BR24radar_pi: RenderGLOverlay context=%p"), pcontext);
   m_opencpn_gl_context = pcontext;
   if (!m_opencpn_gl_context && !m_opencpn_gl_context_broken) {
     LOG_INFO(wxT("BR24radar_pi: OpenCPN does not pass OpenGL context. Resize of OpenCPN window may be broken!"));
@@ -1134,6 +1140,10 @@ bool br24radar_pi::LoadConfig(void) {
     m_settings.weak_colour = wxColour(s);
     pConf->Read(wxT("ColourArpaEdge"), &s, "white");
     m_settings.arpa_colour = wxColour(s);
+    pConf->Read(wxT("ColourAISText"), &s, "rgb(100,100,100)");
+    m_settings.ais_text_colour = wxColour(s);
+    pConf->Read(wxT("ColourPPIBackground"), &s, "rgb(0,0,50)");
+    m_settings.ppi_background_colour = wxColour(s);
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
     pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
     pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, false);
@@ -1221,6 +1231,8 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ColourIntermediate"), m_settings.intermediate_colour.GetAsString());
     pConf->Write(wxT("ColourWeak"), m_settings.weak_colour.GetAsString());
     pConf->Write(wxT("ColourArpaEdge"), m_settings.arpa_colour.GetAsString());
+    pConf->Write(wxT("ColourAISText"), m_settings.ais_text_colour.GetAsString());
+    pConf->Write(wxT("ColourPPIBackground"), m_settings.ppi_background_colour.GetAsString());
 
     for (int r = 0; r < RADARS; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.value);
@@ -1404,7 +1416,6 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
               ais_in_arpa[empty].ais_time_upd = time(0);
               ais_in_arpa[empty].ais_lat = f_AISLat;
               ais_in_arpa[empty].ais_lon = f_AISLon;
-              ais_in_arpa[empty].ais_name = message.Get(_T("shipname"), wxEmptyString).AsString().Trim().Truncate(12);
               count_ais_in_arpa++;
             }
           }
@@ -1417,9 +1428,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
         if (ais_in_arpa[i].ais_mmsi > 0 && ((time(0) - ais_in_arpa[i].ais_time_upd) > (3 * 60) || !ArpaGuardOn)) {
           ais_in_arpa[i].ais_mmsi = 0;
           ais_in_arpa[i].ais_time_upd = 0;
-          ais_in_arpa[i].ais_name.clear();
           if (count_ais_in_arpa > 0) count_ais_in_arpa--;
-          if (count_ais_in_arpa == 0) JsonAIS = wxEmptyString;
         }
       }
     }
@@ -1428,32 +1437,15 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
 
 bool br24radar_pi::FindAIS_at_arpaPos(const double &lat, const double &lon, const double &dist) {
   if (count_ais_in_arpa == 0) return false;
-  wxString Msg = wxEmptyString;
-  static time_t msgtimer = 0;  // debug
   bool hit = false;
   double offset = dist / 1852. / 60.;
-  Msg << "dist: " << dist << " m\n";
   for (int i = 0; i < SIZEAISAR; i++) {
     if (ais_in_arpa[i].ais_mmsi != 0) {  // Avtive post
       if (lat + offset > ais_in_arpa[i].ais_lat && lat - offset < ais_in_arpa[i].ais_lat &&
           lon + (offset * 1.75) > ais_in_arpa[i].ais_lon && lon - (offset * 1.75) < ais_in_arpa[i].ais_lon) {
         hit = true;
-        Msg << _T("ARPA at:\n")
-            << _T("Lat: ") << lat << _T("\n")
-            << _T("Lon: ") << lon << _T("\n");
-        wxString AIS_targ = wxEmptyString;
-        AIS_targ << ais_in_arpa[i].ais_name;
-        if (AIS_targ == wxEmptyString) AIS_targ << ais_in_arpa[i].ais_mmsi;
-        Msg << _T("Covered by: ") << AIS_targ << "\n";
-        JsonAIS = Msg;
-        msgtimer = time(0);
         break;
       }
-    }
-    if (time(0) - msgtimer > 20) {  // Debug. clean last message
-      Msg = "AIS in ARPA zones: ";
-      Msg << count_ais_in_arpa << "\n";
-      JsonAIS = Msg;
     }
   }
   return hit ? true : false;

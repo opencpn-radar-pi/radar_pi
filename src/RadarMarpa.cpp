@@ -344,6 +344,8 @@ void RadarArpa::AcquireOrDeleteMarpaTarget(Position target_pos, int status) {
     return;
   }
 
+  LOG_ARPA(wxT("BR24radar_pi: Adding (M)ARPA target at position %f / %f"), target_pos.lat, target_pos.lon);
+
   ArpaTarget* target = m_targets[i_target];
   target->m_position = target_pos;  // Expected position
   target->m_position.time = 0;
@@ -587,20 +589,7 @@ void RadarArpa::DrawArpaTargets() {
 
 void RadarArpa::RefreshArpaTargets() {
   // remove targets with status LOST and put them at the end
-  if (m_number_of_targets > 0) {
-    if (m_pi->m_context_menu_delete_marpa_target == 0) {
-      wxMenu dummy_menu;
-      wxMenuItem* mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete Arpa Target"));
-      wxMenuItem* mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all Arpa Targets"));
-#ifdef __WXMSW__
-      wxFont* qFont = OCPNGetFont(_("Menu"), 10);
-      mi5->SetFont(*qFont);
-      mi6->SetFont(*qFont);
-#endif
-      m_pi->m_context_menu_delete_marpa_target = AddCanvasContextMenuItem(mi5, m_pi);
-      m_pi->m_context_menu_delete_all_marpa_targets = AddCanvasContextMenuItem(mi6, m_pi);
-    }
-  }
+
   for (int i = 0; i < m_number_of_targets; i++) {
     if (m_targets[i]) {
       if (m_targets[i]->m_status == LOST) {

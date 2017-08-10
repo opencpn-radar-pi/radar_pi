@@ -33,7 +33,7 @@
 #define _BR24RADARPI_H_
 
 #define MY_API_VERSION_MAJOR 1
-#define MY_API_VERSION_MINOR 12
+#define MY_API_VERSION_MINOR 14  // Needed for PluginAISDrawGL().
 
 #include "jsonreader.h"
 #include "nmea0183/nmea0183.h"
@@ -51,6 +51,9 @@
 #endif
 
 PLUGIN_BEGIN_NAMESPACE
+
+// Define the following to make sure we have no race conditions during thread stop.
+// #define TEST_THREAD_RACES
 
 //    Forward definitions
 class GuardZone;
@@ -321,6 +324,8 @@ struct PersistentSettings {
   wxColour intermediate_colour;     // Colour for INTERMEDIATE returns
   wxColour weak_colour;             // Colour for WEAK returns
   wxColour arpa_colour;             // Colour for ARPA edges
+  wxColour ais_text_colour;         // Colour for AIS texts
+  wxColour ppi_background_colour;   // Colour for PPI background (normally very dark)
 };
 
 struct scan_line {
@@ -355,7 +360,7 @@ struct AisArpa {
    INSTALLS_TOOLBAR_TOOL | USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS | WANTS_NMEA_SENTENCES | WANTS_PREFERENCES |  \
    WANTS_PLUGIN_MESSAGING | WANTS_CURSOR_LATLON | WANTS_MOUSE_EVENTS)
 
-class br24radar_pi : public opencpn_plugin_112 {
+class br24radar_pi : public opencpn_plugin_114 {
  public:
   br24radar_pi(void *ppimgr);
   ~br24radar_pi();
@@ -477,7 +482,6 @@ class br24radar_pi : public opencpn_plugin_112 {
   time_t m_idle_transmit;  // When we will change to transmit
 
   // Check for AIS targets inside ARPA zone
-  wxString JsonAIS;  // Temp for Json AIS message
   AisArpa ais_in_arpa[SIZEAISAR];
   int count_ais_in_arpa;
   bool FindAIS_at_arpaPos(const double &lat, const double &lon, const double &dist);

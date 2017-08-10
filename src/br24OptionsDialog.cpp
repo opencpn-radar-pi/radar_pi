@@ -167,16 +167,30 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   m_StrongColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnStrongColourClick), NULL, this);
   colourSizer->Add(m_StrongColour);
 
-  // ARPA colour
-
-  wxStaticBox *arpaColourBox = new wxStaticBox(this, wxID_ANY, _("ARPA color"));
-  wxStaticBoxSizer *arpaColourSizer = new wxStaticBoxSizer(arpaColourBox, wxVERTICAL);
-
   wxStaticText *arpaText = new wxStaticText(this, wxID_ANY, _("ARPA edge color"));
-  arpaColourSizer->Add(arpaText, 0, wxALL, border_size);
+  colourSizer->Add(arpaText, 0, wxALL, border_size);
   m_ArpaColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.arpa_colour, wxDefaultPosition, wxSize(150, 30));
   m_ArpaColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnArpaColourClick), NULL, this);
-  arpaColourSizer->Add(m_ArpaColour);
+  colourSizer->Add(m_ArpaColour);
+
+  // Other colours
+
+  wxStaticBox *PPIColourBox = new wxStaticBox(this, wxID_ANY, _("Radar window colors"));
+  wxStaticBoxSizer *PPIColourSizer = new wxStaticBoxSizer(PPIColourBox, wxVERTICAL);
+
+  wxStaticText *backgroundText = new wxStaticText(this, wxID_ANY, _("Background color"));
+  PPIColourSizer->Add(backgroundText, 0, wxALL, border_size);
+  m_PPIBackgroundColour =
+      new wxColourPickerCtrl(this, wxID_ANY, m_settings.ppi_background_colour, wxDefaultPosition, wxSize(150, 30));
+  m_PPIBackgroundColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnPPIBackgroundColourClick),
+                                 NULL, this);
+  PPIColourSizer->Add(m_PPIBackgroundColour);
+
+  wxStaticText *aisText = new wxStaticText(this, wxID_ANY, _("AIS text color"));
+  PPIColourSizer->Add(aisText, 0, wxALL, border_size);
+  m_AisTextColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.ais_text_colour, wxDefaultPosition, wxSize(150, 30));
+  m_AisTextColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(br24OptionsDialog::OnAisTextColourClick), NULL, this);
+  PPIColourSizer->Add(m_AisTextColour);
 
   DisplayOptionsBox->Add(m_RangeUnits, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(drawingMethodSizer, 0, wxALL | wxEXPAND, border_size);
@@ -185,7 +199,7 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   DisplayOptionsBox->Add(guardZoneSizer, 0, wxALL, border_size);
   DisplayOptionsBox->Add(trailSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(colourSizer, 0, wxALL | wxEXPAND, border_size);
-  DisplayOptionsBox->Add(arpaColourSizer, 0, wxALL | wxEXPAND, border_size);
+  DisplayOptionsBox->Add(PPIColourSizer, 0, wxALL | wxEXPAND, border_size);
 
   //  Options
   wxStaticBox *itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
@@ -285,6 +299,12 @@ void br24OptionsDialog::OnTrailEndColourClick(wxCommandEvent &event) {
 void br24OptionsDialog::OnWeakColourClick(wxCommandEvent &event) { m_settings.weak_colour = m_WeakColour->GetColour(); }
 
 void br24OptionsDialog::OnArpaColourClick(wxCommandEvent &event) { m_settings.arpa_colour = m_ArpaColour->GetColour(); }
+
+void br24OptionsDialog::OnAisTextColourClick(wxCommandEvent &event) { m_settings.ais_text_colour = m_AisTextColour->GetColour(); }
+
+void br24OptionsDialog::OnPPIBackgroundColourClick(wxCommandEvent &event) {
+  m_settings.ppi_background_colour = m_PPIBackgroundColour->GetColour();
+}
 
 void br24OptionsDialog::OnIntermediateColourClick(wxCommandEvent &event) {
   m_settings.intermediate_colour = m_IntermediateColour->GetColour();

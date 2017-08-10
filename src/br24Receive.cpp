@@ -30,8 +30,8 @@
  ***************************************************************************
  */
 
-#include "RadarMarpa.h"
 #include "br24Receive.h"
+#include "RadarMarpa.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -266,9 +266,9 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
         m_pi->m_heading_source = HEADING_NONE;  // let other heading source take over
       m_pi->SetRadarHeading();
       // Guess the heading for the spoke. This is updated much less frequently than the
-      // data from the radar (which is accurate 10x per second), likely once per second.      
+      // data from the radar (which is accurate 10x per second), likely once per second.
     }
-	heading_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt);  // include variation 
+    heading_raw = SCALE_DEGREES_TO_RAW(m_pi->m_hdt);  // include variation
     bearing_raw = angle_raw + heading_raw;
     // until here all is based on 4096 (SPOKES) scanlines
 
@@ -464,7 +464,7 @@ void *br24Receive::Entry(void) {
   SOCKET commandSocket = INVALID_SOCKET;
   SOCKET reportSocket = INVALID_SOCKET;
 
-  LOG_RECEIVE(wxT("BR24radar_pi: br24Receive thread %s starting"), m_ri->m_name.c_str());
+  LOG_VERBOSE(wxT("BR24radar_pi: br24Receive thread %s starting"), m_ri->m_name.c_str());
   socketReady(INVALID_SOCKET, 1000);  // sleep for 1s so that other stuff is set up (fixes Windows core on startup)
 
   if (m_mcast_addr) {
@@ -524,6 +524,7 @@ void *br24Receive::Entry(void) {
         rx_len = sizeof(rx_addr);
         r = recvfrom(m_receive_socket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
         if (r > 0) {
+          LOG_VERBOSE(wxT("BR24radar_pi: %s received stop instruction"), m_ri->m_name.c_str());
           break;
         }
       }
@@ -628,8 +629,6 @@ void *br24Receive::Entry(void) {
 
   }  // endless loop until thread destroy
 
-  LOG_INFO(wxT("BR24radar_pi: receive quit"));
-
   if (dataSocket != INVALID_SOCKET) {
     closesocket(dataSocket);
   }
@@ -651,9 +650,9 @@ void *br24Receive::Entry(void) {
     freeifaddrs(m_interface_array);
   }
 
-#if 0
+#ifdef TEST_THREAD_RACES
   LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread sleeping"), m_ri->m_name.c_str());
-  wxMilliSleep(2000);
+  wxMilliSleep(1000);
 #endif
   LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopping"), m_ri->m_name.c_str());
   return 0;
@@ -698,7 +697,7 @@ struct RadarReport_02C4_99 {     // length 99
   UINT16 field4;                 // 6-7    0
   UINT32 field8;                 // 8-11   1
   UINT8 gain;                    // 12
-  UINT8 field13;                 // 13  ==1 for sea auto
+  UINT8 sea_auto;                // 13  0 = off, 1 = harbour, 2 = offshore
   UINT8 field14;                 // 14
   UINT16 field15;                // 15-16
   UINT32 sea;                    // 17-20   sea state (17)
@@ -810,8 +809,8 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
           m_ri->m_gain.Update(s->gain * 100 / 255);
         }
         m_ri->m_rain.Update(s->rain * 100 / 255);
-        if (s->field13 == 0x01) {
-          m_ri->m_sea.Update(-1);  // auto sea
+        if (s->sea_auto > 0) {
+          m_ri->m_sea.Update(-s->sea_auto);
         } else {
           m_ri->m_sea.Update(s->sea * 100 / 255);
         }
@@ -984,10 +983,17 @@ void br24Receive::ProcessCommand(wxString &addr, const UINT8 *command, int len) 
 }
 
 // Called from the main thread to stop this thread.
+// We send a simple one byte message to the thread so that it awakens from the select() call with
+// this message ready for it to be read on 'm_receive_socket'. See the constructor in br24Receive.h
+// for the setup of these two sockets.
 void br24Receive::Shutdown() {
   if (m_send_socket != INVALID_SOCKET) {
-    send(m_send_socket, "!", 1, MSG_DONTROUTE);
+    if (send(m_send_socket, "!", 1, MSG_DONTROUTE) > 0) {
+      LOG_VERBOSE(wxT("BR24radar_pi: %s requested receive thread to stop"), m_ri->m_name.c_str());
+      return;
+    }
   }
+  LOG_INFO(wxT("BR24radar_pi: %s receive thread will take long time to stop"), m_ri->m_name.c_str());
 }
 
 PLUGIN_END_NAMESPACE

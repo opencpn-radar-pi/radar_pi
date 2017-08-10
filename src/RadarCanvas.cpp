@@ -159,6 +159,9 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   int px;
   int py;
 
+  glPushMatrix();
+  glPushAttrib(GL_ALL_ATTRIB_BITS);
+
   glColor3ub(0, 126, 29);  // same color as HDS
   glLineWidth(1.0);
 
@@ -170,50 +173,56 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
     }
   }
 
-  double heading;
-  double predictor;
-  switch (m_ri->m_orientation.value) {
-    case ORIENTATION_HEAD_UP:
-      heading = m_pi->m_hdt + 180.;
-      predictor = 180.;
-      break;
-    case ORIENTATION_NORTH_UP:
-      heading = 180;
-      predictor = m_pi->m_hdt + 180;
-      break;
-    case ORIENTATION_COURSE_UP:
-      heading = m_ri->m_course + 180.;
-      predictor = m_pi->m_hdt + 180. - m_ri->m_course;
-      break;
+  if (m_pi->m_heading_source != HEADING_NONE) {
+    double heading;
+    double predictor;
+    switch (m_ri->m_orientation.value) {
+      case ORIENTATION_HEAD_UP:
+        heading = m_pi->m_hdt + 180.;
+        predictor = 180.;
+        break;
+      case ORIENTATION_NORTH_UP:
+        heading = 180;
+        predictor = m_pi->m_hdt + 180;
+        break;
+      case ORIENTATION_COURSE_UP:
+        heading = m_ri->m_course + 180.;
+        predictor = m_pi->m_hdt + 180. - m_ri->m_course;
+        break;
+    }
+
+    x = -sinf(deg2rad(predictor));
+    y = cosf(deg2rad(predictor));
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(center_x, center_y);
+    glVertex2f(center_x + x * r * 2, center_y + y * r * 2);
+    glEnd();
+
+    for (int i = 0; i < 360; i += 5) {
+      x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
+      y = cosf(deg2rad(i - heading)) * (r * 1.00 - 1);
+
+      wxString s;
+      if (i % 90 == 0) {
+        static char nesw[4] = {'N', 'E', 'S', 'W'};
+        s = wxString::Format(wxT("%c"), nesw[i / 90]);
+      } else if (i % 15 == 0) {
+        s = wxString::Format(wxT("%u"), i);
+      }
+
+      m_FontNormal.GetTextExtent(s, &px, &py);
+      if (x > 0) {
+        x -= px;
+      }
+      if (y > 0) {
+        y -= py;
+      }
+      m_FontNormal.RenderString(s, center_x + x, center_y + y);
+    }
   }
 
-  x = -sinf(deg2rad(predictor));
-  y = cosf(deg2rad(predictor));
-  glBegin(GL_LINE_STRIP);
-  glVertex2f(center_x, center_y);
-  glVertex2f(center_x + x * r * 2, center_y + y * r * 2);
-  glEnd();
-
-  for (int i = 0; i < 360; i += 5) {
-    x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
-    y = cosf(deg2rad(i - heading)) * (r * 1.00 - 1);
-
-    wxString s;
-    if (i % 90 == 0) {
-      static char nesw[4] = {'N', 'E', 'S', 'W'};
-      s = wxString::Format(wxT("%c"), nesw[i / 90]);
-    } else if (i % 15 == 0) {
-      s = wxString::Format(wxT("%u"), i);
-    }
-    m_FontNormal.GetTextExtent(s, &px, &py);
-    if (x > 0) {
-      x -= px;
-    }
-    if (y > 0) {
-      y -= py;
-    }
-    m_FontNormal.RenderString(s, center_x + x, center_y + y);
-  }
+  glPopAttrib();
+  glPopMatrix();
 }
 
 void RadarCanvas::FillCursorTexture() {
@@ -361,6 +370,14 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
   }
 }
 
+static void ResetGLViewPort(int w, int h) {
+  glViewport(0, 0, w, h);
+  glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
+  glLoadIdentity();             // Reset projection matrix stack
+  glOrtho(0, w, h, 0, -1, 1);
+  glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
+}
+
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
 
@@ -400,23 +417,74 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   bigFont.SetWeight(wxFONTWEIGHT_BOLD);
   m_FontMenuBold.Build(bigFont);
 
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                // Black Background
+  wxColour bg = M_SETTINGS.ppi_background_colour;
+  glClearColor(bg.Red() / 256.0, bg.Green() / 256.0, bg.Blue() / 256.0, bg.Alpha() / 256.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // Clear the canvas
   glEnable(GL_TEXTURE_2D);                             // Enable textures
   glEnable(GL_COLOR_MATERIAL);
   glEnable(GL_BLEND);
-  // glDisable(GL_DEPTH_TEST);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  glViewport(0, 0, w, h);
-  glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
-  glLoadIdentity();             // Reset projection matrix stack
-  glOrtho(0, w, h, 0, -1, 1);
-  glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
-
+  // LAYER 1 - RANGE RINGS AND HEADINGS
+  ResetGLViewPort(w, h);
   RenderRangeRingsAndHeading(w, h);
+
+  if (m_pi->m_heading_source != HEADING_NONE) {
+    // LAYER 2 - AIS AND ARPA TARGETS
+
+    ResetGLViewPort(w, h);
+    glPushMatrix();
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+    PlugIn_ViewPort vp;
+    vp.clat = m_pi->m_ownship_lat;
+    vp.clon = m_pi->m_ownship_lon;
+    vp.m_projection_type = 4;  // Orthographic projection
+    float full_range = wxMax(w, h) / 2.0;
+    int display_range = m_ri->GetDisplayRange();
+
+    switch (m_ri->m_orientation.value) {
+      case ORIENTATION_HEAD_UP:
+        vp.rotation = deg2rad(-m_pi->m_hdt);
+        break;
+      case ORIENTATION_NORTH_UP:
+        vp.rotation = 0.;
+        break;
+      case ORIENTATION_COURSE_UP:
+        vp.rotation = deg2rad(-m_ri->m_course);
+        break;
+    }
+
+    vp.view_scale_ppm = full_range / display_range;
+    vp.skew = 0.;
+    vp.pix_width = w;
+    vp.pix_height = h;
+
+    wxString aisTextFont = _("AIS Target Name");
+    wxFont *aisFont = GetOCPNScaledFont_PlugIn(aisTextFont, 12);
+    wxColour aisFontColor = GetFontColour_PlugIn(aisTextFont);
+
+    if (aisFont) {
+      wxColour newFontColor = M_SETTINGS.ais_text_colour;
+      PlugInSetFontColor(aisTextFont, newFontColor);
+      newFontColor = GetFontColour_PlugIn(aisTextFont);
+    }
+    PlugInAISDrawGL(this, vp);
+    if (aisFont) {
+      PlugInSetFontColor(aisTextFont, aisFontColor);
+    }
+
+    glPopAttrib();
+    glPopMatrix();
+  }
+
+  // LAYER 3 - EBL & VRM
+
+  ResetGLViewPort(w, h);
   Render_EBL_VRM(w, h);
 
+  // LAYER 4 - RADAR RETURNS
   glViewport(0, 0, w, h);
   glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
   glLoadIdentity();             // Reset projection matrix stack
@@ -426,27 +494,12 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     glScaled((float)h / w, -1.0, 1.0);
   }
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
-
   m_ri->RenderRadarImage(wxPoint(0, 0), 1.0, 0.0, false);
 
-  glViewport(0, 0, w, h);
-  glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
-  glLoadIdentity();             // Reset projection matrix stack
-  glOrtho(0, w, h, 0, -1, 1);
-  glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
-
-  glEnable(GL_TEXTURE_2D);
-
+  // LAYER 5 - TEXTS & CURSOR
+  ResetGLViewPort(w, h);
   RenderTexts(w, h);
   RenderCursor(w, h);
-
-#ifdef NEVER
-  glDisable(GL_TEXTURE_2D);
-
-  glMatrixMode(GL_PROJECTION);  // Next two operations on the project matrix stack
-  glLoadIdentity();             // Reset projection matrix stack
-  glMatrixMode(GL_MODELVIEW);   // Reset matrick stack target back to GL_MODELVIEW
-#endif
 
   glPopAttrib();
   glPopMatrix();
@@ -496,7 +549,7 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
 
       double range = distance / (1852.0 * full_range / display_range);
 
-      LOG_VERBOSE(wxT("BR24radar_pi: cursor in PPI at angle=%.1f range=%f heading=%.1f"), angle, range);
+      LOG_VERBOSE(wxT("BR24radar_pi: cursor in PPI at angle=%.1fdeg range=%.2fnm"), angle, range);
       m_ri->SetMouseVrmEbl(range, angle);
     }
   }

@@ -223,7 +223,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_refresh_millis = 50;
 }
 
-void RadarInfo::DeleteDialogs() {
+void RadarInfo::Shutdown() {
   if (m_control_dialog) {
     delete m_control_dialog;
     m_control_dialog = 0;
@@ -232,21 +232,19 @@ void RadarInfo::DeleteDialogs() {
     delete m_radar_panel;
     m_radar_panel = 0;
   }
+  if (m_receive) {
+    m_receive->Shutdown();
+  }
 }
 
 RadarInfo::~RadarInfo() {
   m_timer->Stop();
   if (m_receive) {
-    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread request stop"), m_name.c_str());
-    m_receive->Shutdown();
-    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopped"), m_name.c_str());
     m_receive->Wait();
-    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread delete"), m_name.c_str());
+    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopped"), m_name.c_str());
     delete m_receive;
-    LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread deleted"), m_name.c_str());
     m_receive = 0;
   }
-  DeleteDialogs();
   if (m_draw_panel.draw) {
     delete m_draw_panel.draw;
     m_draw_panel.draw = 0;
@@ -258,6 +256,10 @@ RadarInfo::~RadarInfo() {
   if (m_transmit) {
     delete m_transmit;
     m_transmit = 0;
+  }
+  if (m_arpa) {
+    delete m_arpa;
+    m_arpa = 0;
   }
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     delete m_guard_zone[z];
@@ -533,7 +535,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
 
   if (m_draw_panel.draw) {
-    m_draw_panel.draw->ProcessRadarSpoke(3, north_or_course_up ? bearing : angle, data, len);
+    m_draw_panel.draw->ProcessRadarSpoke(4, north_or_course_up ? bearing : angle, data, len);
   }
 }
 
@@ -565,7 +567,7 @@ void RadarInfo::SampleCourse(int angle) {
     for (int i = 0; i < COURSE_SAMPLES; i++) {
       sum += m_course_log[i];
     }
-    m_course = fmod(sum / 16 + 720., 360);
+    m_course = fmod(sum / COURSE_SAMPLES + 720., 360);
   }
 }
 
@@ -1034,7 +1036,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
 
   double panel_rotate = overlay_rotate;
   double guard_rotate = overlay_rotate;
-  double arpa_rotate = overlay_rotate;
+  double arpa_rotate;
 
   // So many combinations here
 
@@ -1051,6 +1053,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     }
   } else {
     guard_rotate += m_pi->m_hdt;
+    arpa_rotate = overlay_rotate - OPENGL_ROTATION;
   }
 
   if (m_arpa) {
@@ -1064,7 +1067,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
       glRotated(guard_rotate, 0.0, 0.0, 1.0);
       glScaled(scale, scale, 1.);
 
-      // LOG_DIALOG(wxT("BR24radar_pi: %s render guard zone on overlay"), name.c_str());
+      // LOG_DIALOG(wxT("BR24radar_pi: %s render guard zone on overlay"), m_name.c_str());
       RenderGuardZone();
       glPopMatrix();
     }
@@ -1085,6 +1088,9 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     if (m_arpa) {
       glPushMatrix();
       glTranslated(center.x, center.y, 0);
+      LOG_VERBOSE(wxT("BR24radar_pi: %s render ARPA targets on overlay with rot=%f"), m_name.c_str(), arpa_rotate);
+
+      glRotated(arpa_rotate, 0.0, 0.0, 1.0);
       glScaled(scale, scale, 1.);
       m_arpa->DrawArpaTargets();
       glPopMatrix();
@@ -1337,26 +1343,43 @@ void RadarInfo::SetMouseLatLon(double lat, double lon) {
 }
 
 void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
+  double bearing;
+
   if (m_orientation.value == ORIENTATION_HEAD_UP) {
     m_mouse_vrm[ORIENTATION_HEAD_UP] = vrm;
     m_mouse_ebl[ORIENTATION_HEAD_UP] = ebl;
+    bearing = ebl + m_pi->m_hdt;
   }
   if (m_orientation.value == ORIENTATION_NORTH_UP) {
     m_mouse_ebl[ORIENTATION_NORTH_UP] = ebl;
     m_mouse_ebl[ORIENTATION_COURSE_UP] = ebl - m_course;
     m_mouse_vrm[ORIENTATION_NORTH_UP] = vrm;
     m_mouse_vrm[ORIENTATION_COURSE_UP] = vrm;
+    bearing = ebl;
   }
   if (m_orientation.value == ORIENTATION_COURSE_UP) {
     m_mouse_ebl[ORIENTATION_NORTH_UP] = ebl + m_course;
     m_mouse_ebl[ORIENTATION_COURSE_UP] = ebl;
     m_mouse_vrm[ORIENTATION_NORTH_UP] = vrm;
     m_mouse_vrm[ORIENTATION_COURSE_UP] = vrm;
+    bearing = ebl + m_pi->m_hdt;
   }
 
-  m_mouse_lat = 0.0;
-  m_mouse_lon = 0.0;
-  LOG_DIALOG(wxT("BR24radar_pi: SetMouseVrmEbl(%f, %f)"), vrm, ebl);
+  static double R = 6378.1e3 / 1852.; // Radius of the Earth in nm
+  double brng = deg2rad(bearing);
+  double d = vrm; // Distance in nm
+
+  double lat1 = deg2rad(m_pi->m_ownship_lat);
+  double lon1 = deg2rad(m_pi->m_ownship_lon);
+
+  double lat2 = asin(sin(lat1)*cos(d/R) + cos(lat1) * sin(d/R) * cos(brng));
+  double lon2 = lon1 + atan2(sin(brng) * sin(d/R) * cos(lat1),
+                             cos(d/R) - sin(lat1) * sin(lat2));
+
+  m_mouse_lat = rad2deg(lat2);
+  m_mouse_lon = rad2deg(lon2);
+  LOG_DIALOG(wxT("BR24radar_pi: SetMouseVrmEbl(%f, %f) = %f / %f"), vrm, ebl, m_mouse_lat, m_mouse_lon);
+  m_control_dialog->ShowCursorPane();
 }
 
 void RadarInfo::SetBearing(int bearing) {

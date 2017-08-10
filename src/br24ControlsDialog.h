@@ -75,6 +75,7 @@ class br24ControlsDialog : public wxDialog {
   void UnHideTemporarily();
   void ShowDialog();
   void HideDialog();
+  void ShowCursorPane() { SwitchTo(m_cursor_sizer, wxT("cursor")); }
 
   br24radar_pi *m_pi;
   RadarInfo *m_ri;
@@ -119,6 +120,8 @@ class br24ControlsDialog : public wxDialog {
   void OnZone2ButtonClick(wxCommandEvent &event);
 
   void OnClearCursorButtonClick(wxCommandEvent &event);
+  void OnSetMarpaButtonClick(wxCommandEvent &event);
+  void OnDeleteMarpaButtonClick(wxCommandEvent &event);
   void OnBearingSetButtonClick(wxCommandEvent &event);
   void OnBearingButtonClick(wxCommandEvent &event);
 
@@ -141,7 +144,7 @@ class br24ControlsDialog : public wxDialog {
   wxBoxSizer *m_installation_sizer;
   wxBoxSizer *m_guard_sizer;
   wxBoxSizer *m_adjust_sizer;
-  wxBoxSizer *m_bearing_sizer;
+  wxBoxSizer *m_cursor_sizer;
   wxBoxSizer *m_transmit_sizer;  // Controls disabled if not transmitting
   wxBoxSizer *m_from_sizer;      // If on edit control, this is where the button is from
 
@@ -180,6 +183,8 @@ class br24ControlsDialog : public wxDialog {
   // Bearing controls
   wxButton *m_bearing_buttons[BEARING_LINES];
   wxButton *m_clear_cursor;
+  wxButton *m_set_marpa;
+  wxButton *m_delete_marpa;
 
   // View controls
   br24RadarControlButton *m_target_trails_button;

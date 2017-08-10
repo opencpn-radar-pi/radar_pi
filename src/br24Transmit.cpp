@@ -207,9 +207,9 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
     }
 
     case CT_SEA: {
-      if (value < 0) {  // Sea Clutter - Auto
-        UINT8 cmd[11] = {0x06, 0xc1, 0x02, 0, 0, 0, 0x01, 0, 0, 0, 0xd3};
-        LOG_VERBOSE(wxT("BR24radar_pi: %s Sea: Auto"), m_name);
+      if (value < 0) {  // Sea Clutter - Auto Harbor or Offshore
+        UINT8 cmd[11] = {0x06, 0xc1, 0x02, 0, 0, 0, abs(value), 0, 0, 0, 0xd3};
+        LOG_VERBOSE(wxT("BR24radar_pi: %s Sea: Auto %d"), m_name, abs(value));
         r = TransmitCmd(cmd, sizeof(cmd));
       } else {  // Sea Clutter
         int v = (value + 1) * 255 / 100;

@@ -162,9 +162,10 @@ class RadarArpa {
   bool MultiPix(int ang, int rad);
   void DeleteAllTargets();
   void RadarLost() {
-      DeleteAllTargets();  // Let ARPA targets disappear
+    DeleteAllTargets();  // Let ARPA targets disappear
   }
   int m_number_of_targets;
+  int GetTargetCount() { return m_number_of_targets; }
 
  private:
   ArpaTarget* m_targets[MAX_NUMBER_OF_TARGETS];
