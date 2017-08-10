@@ -389,10 +389,14 @@ bool ArpaTarget::FindContourFromInside(Polar* pol) {  // moves pol to contour of
   }
 }
 
-int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
-                                          // pol must start on the contour of the blob
-                                          // follows the contour in a clockwise direction
-                                          // returns metric position of the blob in Z
+/** 
+ * Find a contour from the given start position on the edge of a blob.
+ *
+ * Follows the contour in a clockwise manner.
+ *
+ * Returns 0 if ok, or a small integer on error (but nothing is done with this)
+ */
+int ArpaTarget::GetContour(Polar* pol) {
   wxCriticalSectionLocker lock(ArpaTarget::m_ri->m_exclusive);
   // the 4 possible translations to move from a point on the contour to the next
   Polar transl[4];  //   = { 0, 1,   1, 0,   0, -1,   -1, 0 };
@@ -477,6 +481,9 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
     if (count < MAX_CONTOUR_LENGTH - 1) {
       count++;
     }
+    else {
+      return 9; // Countour too large
+    }
     if (current.angle > m_max_angle.angle) {
       m_max_angle = current;
     }
@@ -508,7 +515,7 @@ int ArpaTarget::GetContour(Polar* pol) {  // sets the measured_pos if succesfull
   }
   pol->r = (m_max_r.r + m_min_r.r) / 2;
   pol->time = m_ri->m_history[MOD_ROTATION2048(pol->angle)].time;
-  return 0;  //  succes, blob found
+  return 0;  //  success, blob found
 }
 
 void RadarArpa::DrawContour(ArpaTarget* target) {
