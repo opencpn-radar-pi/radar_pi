@@ -46,7 +46,7 @@ PLUGIN_BEGIN_NAMESPACE
 class KalmanFilter;
 class Position;
 
-#define MAX_NUMBER_OF_TARGETS (100)  // real max numer of targets is 1 less, 2 less for ARPA
+#define MAX_NUMBER_OF_TARGETS (100)
 #define TARGET_SEARCH_RADIUS1 (2)    // radius of target search area for pass 1 (on top of the size of the blob)
 #define TARGET_SEARCH_RADIUS2 (15)   // radius of target search area for pass 1
 #define SCAN_MARGIN (150)            // number of lines that a next scan of the target may have moved
