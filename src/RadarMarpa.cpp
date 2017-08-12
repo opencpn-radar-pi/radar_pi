@@ -477,12 +477,10 @@ int ArpaTarget::GetContour(Polar* pol) {
     }
     if (count == MAX_CONTOUR_LENGTH - 2) {
       m_contour[count] = start;  // shortcut to the beginning for drawing the contour
+	  current = start;           // this will cause the while to terminate
     }
     if (count < MAX_CONTOUR_LENGTH - 1) {
       count++;
-    }
-    else {
-      return 9; // Countour too large
     }
     if (current.angle > m_max_angle.angle) {
       m_max_angle = current;
