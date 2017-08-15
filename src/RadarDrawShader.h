@@ -42,8 +42,8 @@ class RadarDrawShader : public RadarDraw {
  public:
   RadarDrawShader(RadarInfo* ri) {
     m_ri = ri;
-    m_start_line = LINES_PER_ROTATION;
-    m_end_line = 0;
+    m_start_line = -1; // No spokes received since last draw
+    m_lines = 0;
     m_texture = 0;
     m_fragment = 0;
     m_vertex = 0;
@@ -64,8 +64,8 @@ class RadarDrawShader : public RadarDraw {
 
   wxCriticalSection m_exclusive;  // protects the following three data structures
   unsigned char m_data[SHADER_COLOR_CHANNELS * LINES_PER_ROTATION * RETURNS_PER_LINE];
-  int m_start_line;
-  int m_end_line;
+  int m_start_line;  // First line received since last draw, or -1
+  int m_lines;       // # of lines received since last draw
 
   int m_format;
   int m_channels;
