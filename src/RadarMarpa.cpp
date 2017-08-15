@@ -1003,10 +1003,14 @@ bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
   // general target refresh
   bool contour_found = false;
   int dist = dist1;
+
   if (m_status == ACQUIRE0 || m_status == ACQUIRE1) {
     dist *= 2;
   }
-  if (dist > pol->r - 5) dist = pol->r - 5;  // don't search close to origin
+  if (dist > pol->r - 5) {
+    dist = pol->r - 5;  // don't search close to origin
+  }
+
   int a = pol->angle;
   int r = pol->r;
 
@@ -1020,7 +1024,8 @@ bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
   }
   int cont = GetContour(pol);
   if (cont != 0) {
-    // reset pol
+    // LOG_ARPA(wxT("BR24radar_pi: ARPA contour error %d at %d, %d"), cont, a, r);
+    // reset pol in case of error
     pol->angle = a;
     pol->r = r;
     return false;

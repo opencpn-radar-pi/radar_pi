@@ -28,9 +28,9 @@
  ***************************************************************************
  */
 
-#include "RadarPanel.h"
 #include "br24ControlsDialog.h"
 #include "RadarMarpa.h"
+#include "RadarPanel.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -168,7 +168,7 @@ END_EVENT_TABLE()
 static wxSize g_buttonSize;
 
 class br24RadarButton : public wxButton {
-public:
+ public:
   br24RadarButton(){
 
   };
@@ -179,14 +179,13 @@ public:
     m_parent = parent;
     m_pi = m_parent->m_pi;
     SetFont(m_parent->m_pi->m_font);
-    SetLabel(label); // Use the \n on Mac to enforce double height button
+    SetLabel(label);  // Use the \n on Mac to enforce double height button
   }
 
   br24ControlsDialog* m_parent;
   br24radar_pi* m_pi;
 
-  void SetLabel( const wxString& label )
-  {
+  void SetLabel(const wxString& label) {
 #ifdef __WXOSX__
     wxButton::SetLabel(wxT("\n") + label + wxT("\n"));
 #else
@@ -306,8 +305,7 @@ void br24RadarControlButton::AdjustValue(int adjustment) {
 }
 
 void br24RadarControlButton::SetLocalValue(int newValue) {  // sets value in the button without sending new value to the radar
-  if (newValue < 0)
-  {
+  if (newValue < 0) {
     SetLocalAuto(newValue);
     return;
   }
@@ -345,9 +343,7 @@ void br24RadarControlButton::SetLocalAuto(int newValue) {  // sets auto in the b
   label << firstLine << wxT("\n");
   if (autoNames && autoValue > 0 && autoValue <= autoValues) {
     label << autoNames[autoValue - 1];
-  }
-  else
-  {
+  } else {
     label << _("Auto");
   }
   this->SetLabel(label);
@@ -585,8 +581,8 @@ void br24ControlsDialog::CreateControls() {
   noise_rejection_names[1] = _("Low");
   noise_rejection_names[2] = _("High");
 
-  m_noise_rejection_button = new br24RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), CT_NOISE_REJECTION, false,
-                                                        0);
+  m_noise_rejection_button =
+      new br24RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), CT_NOISE_REJECTION, false, 0);
   m_advanced_sizer->Add(m_noise_rejection_button, 0, wxALL, BORDER);
   m_noise_rejection_button->minValue = 0;
   m_noise_rejection_button->maxValue = ARRAY_SIZE(noise_rejection_names) - 1;
@@ -599,8 +595,8 @@ void br24ControlsDialog::CreateControls() {
   // The TARGET EXPANSION button
   target_expansion_names[0] = _("Off");
   target_expansion_names[1] = _("On");
-  m_target_expansion_button = new br24RadarControlButton(this, ID_TARGET_EXPANSION, _("Target expansion"), CT_TARGET_EXPANSION,
-                                                         false, 0);
+  m_target_expansion_button =
+      new br24RadarControlButton(this, ID_TARGET_EXPANSION, _("Target expansion"), CT_TARGET_EXPANSION, false, 0);
   m_advanced_sizer->Add(m_target_expansion_button, 0, wxALL, BORDER);
   m_target_expansion_button->minValue = 0;
   m_target_expansion_button->maxValue = ARRAY_SIZE(target_expansion_names) - 1;
@@ -615,8 +611,7 @@ void br24ControlsDialog::CreateControls() {
   interference_rejection_names[3] = _("High");
 
   m_interference_rejection_button =
-      new br24RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"), CT_INTERFERENCE_REJECTION, false,
-                                 0);
+      new br24RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"), CT_INTERFERENCE_REJECTION, false, 0);
   m_advanced_sizer->Add(m_interference_rejection_button, 0, wxALL, BORDER);
   m_interference_rejection_button->minValue = 0;
   m_interference_rejection_button->maxValue = ARRAY_SIZE(interference_rejection_names) - 1;
@@ -630,8 +625,8 @@ void br24ControlsDialog::CreateControls() {
   target_separation_names[2] = _("Medium");
   target_separation_names[3] = _("High");
 
-  m_target_separation_button = new br24RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"), CT_TARGET_SEPARATION,
-                                                          false, 0);
+  m_target_separation_button =
+      new br24RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"), CT_TARGET_SEPARATION, false, 0);
   m_advanced_4G_sizer->Add(m_target_separation_button, 0, wxALL, BORDER);
   m_target_separation_button->minValue = 0;
   m_target_separation_button->maxValue = ARRAY_SIZE(target_separation_names) - 1;
@@ -641,8 +636,7 @@ void br24ControlsDialog::CreateControls() {
   // The SCAN SPEED button
   scan_speed_names[0] = _("Normal");
   scan_speed_names[1] = _("Fast");
-  m_scan_speed_button =
-      new br24RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), CT_SCAN_SPEED, false, 0);
+  m_scan_speed_button = new br24RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), CT_SCAN_SPEED, false, 0);
   m_advanced_sizer->Add(m_scan_speed_button, 0, wxALL, BORDER);
   m_scan_speed_button->minValue = 0;
   m_scan_speed_button->maxValue = ARRAY_SIZE(scan_speed_names) - 1;
@@ -653,8 +647,7 @@ void br24ControlsDialog::CreateControls() {
   target_boost_names[0] = _("Off");
   target_boost_names[1] = _("Low");
   target_boost_names[2] = _("High");
-  m_target_boost_button =
-      new br24RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), CT_TARGET_BOOST, false, 0);
+  m_target_boost_button = new br24RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), CT_TARGET_BOOST, false, 0);
   m_advanced_sizer->Add(m_target_boost_button, 0, wxALL, BORDER);
   m_target_boost_button->minValue = 0;
   m_target_boost_button->maxValue = ARRAY_SIZE(target_boost_names) - 1;
@@ -696,9 +689,8 @@ void br24ControlsDialog::CreateControls() {
   m_antenna_height_button->maxValue = 30;
 
   // The LOCAL INTERFERENCE REJECTION button
-  m_local_interference_rejection_button =
-      new br24RadarControlButton(this, ID_LOCAL_INTERFERENCE_REJECTION, _("Local interference rej."),
-                                 CT_LOCAL_INTERFERENCE_REJECTION, false, 0);
+  m_local_interference_rejection_button = new br24RadarControlButton(
+      this, ID_LOCAL_INTERFERENCE_REJECTION, _("Local interference rej."), CT_LOCAL_INTERFERENCE_REJECTION, false, 0);
   m_installation_sizer->Add(m_local_interference_rejection_button, 0, wxALL, BORDER);
   m_local_interference_rejection_button->minValue = 0;
   m_local_interference_rejection_button->maxValue =
@@ -707,8 +699,8 @@ void br24ControlsDialog::CreateControls() {
   m_local_interference_rejection_button->SetLocalValue(m_ri->m_local_interference_rejection.GetButton());
 
   // The SIDE LOBE SUPPRESSION button
-  m_side_lobe_suppression_button = new br24RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"),
-                                                              CT_SIDE_LOBE_SUPPRESSION, true, 0);
+  m_side_lobe_suppression_button =
+      new br24RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"), CT_SIDE_LOBE_SUPPRESSION, true, 0);
   m_installation_sizer->Add(m_side_lobe_suppression_button, 0, wxALL, BORDER);
   m_side_lobe_suppression_button->minValue = 0;
   m_side_lobe_suppression_button->maxValue = 100;
@@ -877,8 +869,7 @@ void br24ControlsDialog::CreateControls() {
   target_trail_names[TRAIL_10MIN] = _("10 min");
   target_trail_names[TRAIL_CONTINUOUS] = _("Continuous");
 
-  m_target_trails_button =
-      new br24RadarControlButton(this, ID_TARGET_TRAILS, _("Target trails"), CT_TARGET_TRAILS, false, 0);
+  m_target_trails_button = new br24RadarControlButton(this, ID_TARGET_TRAILS, _("Target trails"), CT_TARGET_TRAILS, false, 0);
   m_view_sizer->Add(m_target_trails_button, 0, wxALL, BORDER);
   m_target_trails_button->minValue = 0;
   m_target_trails_button->maxValue = ARRAY_SIZE(target_trail_names) - 1;
@@ -1001,6 +992,9 @@ void br24ControlsDialog::CreateControls() {
 }
 
 void br24ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar* name) {
+  if (!m_top_sizer || !m_from_sizer) {
+    return;
+  }
   m_top_sizer->Hide(m_from_sizer);
   m_top_sizer->Show(to);
   LOG_VERBOSE(wxT("%s switch to control view %s"), m_log_name.c_str(), name);

@@ -29,9 +29,9 @@
  ***************************************************************************
  */
 
+#include "RadarInfo.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "br24ControlsDialog.h"
@@ -1417,7 +1417,9 @@ void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
   m_mouse_lat = rad2deg(lat2);
   m_mouse_lon = rad2deg(lon2);
   LOG_DIALOG(wxT("BR24radar_pi: SetMouseVrmEbl(%f, %f) = %f / %f"), vrm, ebl, m_mouse_lat, m_mouse_lon);
-  m_control_dialog->ShowCursorPane();
+  if (m_control_dialog) {
+    m_control_dialog->ShowCursorPane();
+  }
 }
 
 void RadarInfo::SetBearing(int bearing) {
