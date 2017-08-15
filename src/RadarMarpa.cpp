@@ -339,6 +339,7 @@ void RadarArpa::AcquireOrDeleteMarpaTarget(Position target_pos, int status) {
     }
     i_target = m_number_of_targets;
     m_number_of_targets++;
+    m_pi->NotifyRadarWindowViz();
   } else {
     LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded "));
     return;
@@ -607,6 +608,9 @@ void RadarArpa::RefreshArpaTargets() {
         m_number_of_targets--;
         // set the lost target at the last position
         m_targets[m_number_of_targets] = lost;
+        if (m_number_of_targets == 0) {
+          m_pi->NotifyRadarWindowViz();
+        }
       }
     }
   }
@@ -1145,6 +1149,9 @@ int RadarArpa::AcquireNewARPATarget(Polar pol, int status) {
     }
     i = m_number_of_targets;
     m_number_of_targets++;
+    if (m_number_of_targets == 1) {
+      m_pi->NotifyRadarWindowViz();
+    }
   } else {
     LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded %i"), m_number_of_targets);
     return -1;
