@@ -413,7 +413,7 @@ void RadarInfo::ComputeColourMap() {
 void RadarInfo::ResetSpokes() {
   UINT8 zap[RETURNS_PER_LINE];
 
-  LOG_VERBOSE(wxT("BR24radar_pi: reset spokes, history and trails"));
+  LOG_VERBOSE(wxT("BR24radar_pi: reset spokes"));
 
   memset(zap, 0, sizeof(zap));
   memset(m_history, 0, sizeof(m_history));
@@ -428,6 +428,7 @@ void RadarInfo::ResetSpokes() {
       m_draw_overlay.draw->ProcessRadarSpoke(0, r, zap, sizeof(zap));
     }
   }
+
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     // Zap them anyway just to be sure
     m_guard_zone[z]->ResetBogeys();
@@ -467,10 +468,14 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       m_range.Update(convertSpokeMetersToRangeMeters(range_meters));
     }
   }
+
   if (m_orientation.GetButton(&orientation)) {
-    ResetSpokes();
-    LOG_VERBOSE(wxT("BR24radar_pi: %s HeadUp/NorthUp/CourseUp change"), m_name.c_str());
+    if ((orientation == ORIENTATION_HEAD_UP || m_previous_orientation == ORIENTATION_HEAD_UP) &&
+        (orientation != m_previous_orientation)) {
+      ResetSpokes();
+    }
   }
+
   // In NORTH or COURSE UP modes we store the radar data at the bearing received
   // in the spoke. In other words: at an absolute angle off north.
   // This way, when the boat rotates the data on the overlay doesn't rotate with it.
@@ -479,7 +484,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   // The history data used for the ARPA data is *always* in bearing mode, it is not usable
   // with relative data.
   //
-  int north_or_course_up = orientation != ORIENTATION_HEAD_UP;  // true for north up or course up
+  int stabilized_mode = orientation != ORIENTATION_HEAD_UP;  // true for north up or course up
   uint8_t weakest_normal_blob = m_pi->m_settings.threshold_blue;
 
   UINT8 *hist_data = m_history[bearing].line;
@@ -561,7 +566,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
 
   if (m_draw_panel.draw) {
-    m_draw_panel.draw->ProcessRadarSpoke(4, north_or_course_up ? bearing : angle, data, len);
+    m_draw_panel.draw->ProcessRadarSpoke(4, stabilized_mode ? bearing : angle, data, len);
   }
 }
 

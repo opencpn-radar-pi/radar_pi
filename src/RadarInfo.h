@@ -329,6 +329,8 @@ class RadarInfo : public wxEvtHandler {
 
   BlobColour m_trail_colour[TRAIL_MAX_REVOLUTIONS + 1];
 
+  int m_previous_orientation;
+
   DECLARE_EVENT_TABLE()
 };
 
