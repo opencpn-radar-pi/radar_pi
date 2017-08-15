@@ -944,7 +944,7 @@ void br24ControlsDialog::CreateControls() {
   m_transmit_sizer->Add(bView, 0, wxALL, BORDER);
 
   // The BEARING button
-  m_bearing_button = new br24RadarButton(this, ID_BEARING, _("EBL/VRM"));
+  m_bearing_button = new br24RadarButton(this, ID_BEARING, _("Cursor"));
   m_transmit_sizer->Add(m_bearing_button, 0, wxALL, BORDER);
 
   // The GUARD ZONE 1 button
