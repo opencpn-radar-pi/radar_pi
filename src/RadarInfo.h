@@ -157,15 +157,16 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item m_boot_state;  // Can contain RADAR_TRANSMIT until radar is seen at boot
 
   radar_control_item m_orientation;  // See below for allowed values.
-  // Orientation HEAD_UP is available if there is no heading or dev mode is switched on
-  // Other orientations are available if there is a heading
-#define ORIENTATION_HEAD_UP (0)      // Unstabilized heading (as if without compass)                                     // Available if no compass or in dev mode
+// Orientation HEAD_UP is available if there is no heading or dev mode is switched on
+// Other orientations are available if there is a heading
+#define ORIENTATION_HEAD_UP \
+  (0)  // Unstabilized heading (as if without compass)                                     // Available if no compass or in dev mode
 #define ORIENTATION_STABILIZED_UP (1)  // Stabilized heading (averaged over a few seconds)
-#define ORIENTATION_NORTH_UP (2)  // North up
-#define ORIENTATION_COG_UP (3)  // Averaged GPS COG up (same way as OpenCPN)
+#define ORIENTATION_NORTH_UP (2)       // North up
+#define ORIENTATION_COG_UP (3)         // Averaged GPS COG up (same way as OpenCPN)
 #define ORIENTATION_NUMBER (4)
 
-  int m_min_contour_length;          // minimum contour length of an ARPA or MARPA target
+  int m_min_contour_length;  // minimum contour length of an ARPA or MARPA target
 
   radar_control_item m_overlay;
   radar_range_control_item m_range;  // value in meters
@@ -263,7 +264,7 @@ class RadarInfo : public wxEvtHandler {
   void SetName(wxString name);
   void AdjustRange(int adjustment);
   void SetAutoRangeMeters(int meters);
-  bool SetControlValue(ControlType controlType, int value);
+  bool SetControlValue(ControlType controlType, int value, int autoValue);
   void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time,
                          double lat, double lon);
   void RefreshDisplay(wxTimerEvent &event);

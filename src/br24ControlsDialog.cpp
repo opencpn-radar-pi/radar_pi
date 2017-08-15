@@ -219,7 +219,7 @@ class br24RadarControlButton : public wxButton {
     names = 0;
     controlType = ct;
     if (autoValues > 0) {
-      SetLocalAuto(-1);  // Not sent to radar, radar will update state
+      SetLocalAuto(AUTO_RANGE - 1);  // Not sent to radar, radar will update state
     } else {
       SetLocalValue(newValue);
     }
@@ -240,7 +240,7 @@ class br24RadarControlButton : public wxButton {
   br24radar_pi* m_pi;
 
   int value;
-  int autoValue;   // 0 = not auto mode, -1 = normal auto value, -2... etc special, auto_names is set
+  int autoValue;   // 0 = not auto mode, 1 = normal auto value, 2... etc special, auto_names is set
   int autoValues;  // 0 = none, 1 = normal auto value, 2.. etc special, auto_names is set
 
   int minValue;
@@ -291,6 +291,8 @@ wxString sea_clutter_names[2];
 void br24RadarControlButton::AdjustValue(int adjustment) {
   int newValue = value + adjustment;
 
+  autoValue = 0;  // Disable Auto
+
   if (newValue < minValue) {
     newValue = minValue;
   } else if (newValue > maxValue) {
@@ -298,16 +300,20 @@ void br24RadarControlButton::AdjustValue(int adjustment) {
   }
   if (newValue != value) {
     LOG_VERBOSE(wxT("%s Adjusting %s by %d from %d to %d"), m_parent->m_log_name.c_str(), GetName(), adjustment, value, newValue);
-    if (m_pi->SetControlValue(m_parent->m_ri->m_radar, controlType, newValue)) {
+    if (m_pi->SetControlValue(m_parent->m_ri->m_radar, controlType, newValue, 0)) {
       SetLocalValue(newValue);
     }
   }
 }
 
 void br24RadarControlButton::SetLocalValue(int newValue) {  // sets value in the button without sending new value to the radar
-  if (newValue < 0) {
-    SetLocalAuto(newValue);
+  if (newValue <= AUTO_RANGE) {
+    SetLocalAuto(AUTO_RANGE - newValue);
     return;
+  }
+  if (newValue != value) {
+    LOG_VERBOSE(wxT("%s Set %s value %d -> %d, range=%d..%d"), m_parent->m_log_name.c_str(), ControlTypeNames[controlType], value,
+                newValue, minValue, maxValue);
   }
   if (newValue < minValue) {
     value = minValue;
@@ -329,17 +335,22 @@ void br24RadarControlButton::SetLocalValue(int newValue) {  // sets value in the
   this->SetLabel(label);
 }
 
-void br24RadarControlButton::SetAuto(int newValue) {
-  SetLocalAuto(newValue);
-  m_parent->m_ri->SetControlValue(controlType, -abs(newValue));
+void br24RadarControlButton::SetAuto(int newAutoValue) {
+  SetLocalAuto(newAutoValue);
+  m_parent->m_ri->SetControlValue(controlType, value, newAutoValue);
 }
 
 void br24RadarControlButton::SetLocalAuto(int newValue) {  // sets auto in the button without sending new value
                                                            // to the radar
   wxString label;
 
-  autoValue = abs(newValue);
-  LOG_VERBOSE(wxT("Set %s to auto value %d, max=%d"), label, autoValue, autoValues);
+  autoValue = newValue;
+  LOG_VERBOSE(wxT("%s Set %s to auto value %d, max=%d"), m_parent->m_log_name.c_str(), ControlTypeNames[controlType], autoValue,
+              autoValues);
+  if (autoValue == 0) {
+    SetLocalValue(value);  // To update label to old non-auto value
+    return;
+  }
   label << firstLine << wxT("\n");
   if (autoNames && autoValue > 0 && autoValue <= autoValues) {
     label << autoNames[autoValue - 1];
@@ -1277,8 +1288,7 @@ void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
 
   if (m_pi->m_heading_source == HEADING_NONE) {
     value = ORIENTATION_HEAD_UP;
-  }
-  else { // There is a heading
+  } else {  // There is a heading
     if (value == ORIENTATION_NUMBER) {
       // TODO: Allow HEAD UP if dev mode is on
       value = ORIENTATION_STABILIZED_UP;
@@ -1479,11 +1489,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   // gain
   if (m_ri->m_gain.IsModified() || refreshAll) {
     int button = m_ri->m_gain.GetButton();
-    if (button < 0) {
-      m_gain_button->SetLocalAuto(button);
-    } else {
-      m_gain_button->SetLocalValue(button);
-    }
+    m_gain_button->SetLocalValue(button);
   }
 
   //  rain
@@ -1494,11 +1500,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   //   sea
   if (m_ri->m_sea.IsModified() || refreshAll) {
     int button = m_ri->m_sea.GetButton();
-    if (button < 0) {
-      m_sea_button->SetLocalAuto(button);
-    } else {
-      m_sea_button->SetLocalValue(button);
-    }
+    m_sea_button->SetLocalValue(button);
   }
 
   //   target_boost
@@ -1549,11 +1551,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   // side lobe suppression
   if (m_ri->m_side_lobe_suppression.IsModified() || refreshAll) {
     int button = m_ri->m_side_lobe_suppression.GetButton();
-    if (button < 0) {
-      m_side_lobe_suppression_button->SetLocalAuto(button);
-    } else {
-      m_side_lobe_suppression_button->SetLocalValue(button);
-    }
+    m_side_lobe_suppression_button->SetLocalValue(button);
   }
 
   // Update the text that is currently shown in the edit box, this is a copy of the button itself

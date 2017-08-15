@@ -837,7 +837,6 @@ void br24radar_pi::UpdateHeadingState(time_t now) {
       }
     }
   }
-
 }
 
 double br24radar_pi::GetHeadingTrue() {
@@ -1112,7 +1111,7 @@ bool br24radar_pi::LoadConfig(void) {
       for (int r = 0; r < RADARS; r++) {
         m_radar[r]->m_orientation.Update(ORIENTATION_HEAD_UP);
         m_radar[r]->m_boot_state.Update(0);
-        SetControlValue(r, CT_TARGET_TRAILS, 0);
+        SetControlValue(r, CT_TARGET_TRAILS, 0, 0);
         m_settings.show_radar[r] = true;
         LOG_DIALOG(wxT("BR24radar_pi: LoadConfig: show_radar[%d]=%d"), r, v);
         wxString s = (r) ? wxT("B") : wxT("");
@@ -1144,9 +1143,9 @@ bool br24radar_pi::LoadConfig(void) {
         pConf->Read(wxString::Format(wxT("Radar%dMinContourLength"), r), &m_radar[r]->m_min_contour_length, 6);
 
         pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
-        SetControlValue(r, CT_TARGET_TRAILS, v);
+        SetControlValue(r, CT_TARGET_TRAILS, v, 0);
         pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);
-        SetControlValue(r, CT_TRAILS_MOTION, v);
+        SetControlValue(r, CT_TRAILS_MOTION, v, 0);
         pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[r], r ? false : true);
         pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * r);
         pConf->Read(wxString::Format(wxT("Radar%dWindowPosY"), r), &y, 120);
@@ -1312,11 +1311,7 @@ bool br24radar_pi::SaveConfig(void) {
 }
 
 void br24radar_pi::SetMcastIPAddress(wxString &address) {
-  {
-
-
-    m_settings.mcast_address = address;
-  }
+  { m_settings.mcast_address = address; }
   if (m_pMessageBox) {
     m_pMessageBox->SetMcastIPAddress(address);
   }
@@ -1546,7 +1541,8 @@ bool br24radar_pi::FindAIS_at_arpaPos(const double &lat, const double &lon, cons
   return hit ? true : false;
 }
 
-bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value) {  // sends the command to the radar
+bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value,
+                                   int autoValue) {  // sends the command to the radar
   LOG_TRANSMIT(wxT("BR24radar_pi: %s set %s = %d"), m_radar[radar]->m_name.c_str(), ControlTypeNames[controlType].c_str(), value);
   switch (controlType) {
     case CT_TRANSPARENCY: {
@@ -1586,7 +1582,7 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
     }
 
     default: {
-      if (m_radar[radar]->SetControlValue(controlType, value)) {
+      if (m_radar[radar]->SetControlValue(controlType, value, autoValue)) {
         return true;
       }
     }

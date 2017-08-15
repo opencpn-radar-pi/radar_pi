@@ -331,6 +331,7 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
       if (!m_pi->m_settings.show_radar[m_radar]) {
         parent = GetOCPNCanvasWindow();
       }
+      LOG_VERBOSE(wxT("BR24radar_pi %s: Creating control dialog"), m_name.c_str());
       m_control_dialog->Create(parent, m_pi, this, wxID_ANY, m_name, m_pi->m_settings.control_pos[m_radar]);
     }
     m_control_dialog->ShowDialog();
@@ -965,7 +966,9 @@ void RadarInfo::SetAutoRangeMeters(int meters) {
   }
 }
 
-bool RadarInfo::SetControlValue(ControlType controlType, int value) { return m_transmit->SetControlValue(controlType, value); }
+bool RadarInfo::SetControlValue(ControlType controlType, int value, int autoValue) {
+  return m_transmit->SetControlValue(controlType, value, autoValue);
+}
 
 void RadarInfo::ShowRadarWindow(bool show) { m_radar_panel->ShowFrame(show); }
 
@@ -1089,8 +1092,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
         panel_rotate -= cog;  // Panel only needs stabilized heading applied
         arpa_rotate -= cog;
         guard_rotate += m_pi->GetHeadingTrue() - cog;
-      }
-        break;
+      } break;
       case ORIENTATION_NORTH_UP:
         guard_rotate += m_pi->GetHeadingTrue();
         break;
@@ -1250,8 +1252,7 @@ wxString RadarInfo::FormatAngle(double angle) {
 
   wxString relative;
   if (angle > 360) angle -= 360;
-  if (IsDisplayNorthUp() || (m_orientation.GetValue() != ORIENTATION_HEAD_UP
-  && m_pi->m_heading_source != HEADING_NONE)) {
+  if (IsDisplayNorthUp() || (m_orientation.GetValue() != ORIENTATION_HEAD_UP && m_pi->m_heading_source != HEADING_NONE)) {
     relative = wxT("T");
   } else {
     if (angle > 180.0) {
@@ -1295,8 +1296,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
 
       if (orientation == ORIENTATION_STABILIZED_UP) {
         bearing += m_course;
-      }
-      else if (orientation == ORIENTATION_COG_UP) {
+      } else if (orientation == ORIENTATION_COG_UP) {
         bearing += m_pi->GetCOG();
       }
       if (bearing >= 360) bearing -= 360;
