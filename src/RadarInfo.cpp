@@ -1136,6 +1136,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     glPushMatrix();
     scale = 1.0 / range;
     glRotated(guard_rotate, 0.0, 0.0, 1.0);
+    glScaled(scale, scale, 1.);
     RenderGuardZone();
     glPopMatrix();
 
