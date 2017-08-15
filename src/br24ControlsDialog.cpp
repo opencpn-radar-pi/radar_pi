@@ -1274,9 +1274,17 @@ void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) { m_ri-
 
 void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
   int value = m_ri->m_orientation.GetValue() + 1;
-  if (value > ORIENTATION_COURSE_UP) {
+
+  if (m_pi->m_heading_source == HEADING_NONE) {
     value = ORIENTATION_HEAD_UP;
   }
+  else { // There is a heading
+    if (value == ORIENTATION_NUMBER) {
+      // TODO: Allow HEAD UP if dev mode is on
+      value = ORIENTATION_STABILIZED_UP;
+    }
+  }
+
   m_ri->m_orientation.Update(value);
   UpdateControlValues(false);
 }
@@ -1426,20 +1434,27 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   if (m_ri->m_orientation.IsModified() || refreshAll) {
+    int orientation = m_ri->m_orientation.GetButton();
+
     o = _("Orientation");
     o << wxT("\n");
-    switch (m_ri->m_orientation.GetButton()) {
-      case ORIENTATION_NORTH_UP:
-        o << _("North up");
-        break;
+    switch (orientation) {
       case ORIENTATION_HEAD_UP:
         o << _("Head up");
         break;
-      case ORIENTATION_COURSE_UP:
+      case ORIENTATION_STABILIZED_UP:
+        o << _("Head up");
+        o << wxT(" ");
+        o << _("(Stabilized)");
+        break;
+      case ORIENTATION_NORTH_UP:
+        o << _("North up");
+        break;
+      case ORIENTATION_COG_UP:
         o << _("Course up");
         break;
       default:
-        o << _("???");
+        o << _("Unknown");
     }
     m_orientation_button->SetLabel(o);
   }

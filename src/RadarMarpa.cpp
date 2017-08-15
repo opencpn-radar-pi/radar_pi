@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
+#include "RadarInfo.h"
 #include "br24radar_pi.h"
 #include "drawutil.h"
 
@@ -389,7 +389,7 @@ bool ArpaTarget::FindContourFromInside(Polar* pol) {  // moves pol to contour of
   }
 }
 
-/** 
+/**
  * Find a contour from the given start position on the edge of a blob.
  *
  * Follows the contour in a clockwise manner.
@@ -480,9 +480,8 @@ int ArpaTarget::GetContour(Polar* pol) {
     }
     if (count < MAX_CONTOUR_LENGTH - 1) {
       count++;
-    }
-    else {
-      return 9; // Countour too large
+    } else {
+      return 9;  // Countour too large
     }
     if (current.angle > m_max_angle.angle) {
       m_max_angle = current;

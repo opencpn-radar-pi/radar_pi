@@ -29,10 +29,10 @@
  ***************************************************************************
  */
 
+#include "br24radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
-#include "br24radar_pi.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
 
@@ -189,6 +189,7 @@ int br24radar_pi::Init(void) {
   m_var_timeout = 0;
   m_idle_standby = 0;
   m_idle_transmit = 0;
+  m_boot_time = time(0);
   count_ais_in_arpa = 0;
   // Silly, but could there be old scrap in memory location? (Debug exp.)
   for (int i = 0; i < SIZEAISAR; i++) {
@@ -334,7 +335,7 @@ bool br24radar_pi::DeInit(void) {
   }
 
   if (m_bogey_dialog) {
-    delete m_bogey_dialog; // This will also save its current pos in m_settings
+    delete m_bogey_dialog;  // This will also save its current pos in m_settings
     m_bogey_dialog = 0;
   }
 
@@ -536,8 +537,8 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
     m_settings.show = 1;
     SetRadarWindowViz();
   } else if (id == m_context_menu_set_marpa_target) {
-    if (m_settings.show                                                        // radar shown
-        && m_settings.chart_overlay >= 0                                       // overlay desired
+    if (m_settings.show                                                             // radar shown
+        && m_settings.chart_overlay >= 0                                            // overlay desired
         && m_radar[m_settings.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
         && m_bpos_set) {
       Position target_pos;
@@ -774,9 +775,12 @@ void br24radar_pi::SetRadarHeading(double heading, bool isTrue) {
   }
 }
 
-void br24radar_pi::UpdateHeadingState(time_t now)
-{
+void br24radar_pi::UpdateHeadingState(time_t now) {
   wxCriticalSectionLocker lock(m_exclusive);
+
+  if (!TIMED_OUT(now, m_boot_time + WATCHDOG_TIMEOUT)) {
+    return;
+  }
 
   if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
     // If the position data is 10s old reset our heading.
@@ -818,6 +822,22 @@ void br24radar_pi::UpdateHeadingState(time_t now)
     m_var_source = VARIATION_SOURCE_NONE;
     LOG_VERBOSE(wxT("BR24radar_pi: Lost Variation source"));
   }
+
+  // check for no longer allowed value
+  if (m_heading_source == HEADING_NONE) {
+    for (int i = 0; i < RADARS; i++) {
+      if (m_radar[i]->m_orientation.GetValue() != ORIENTATION_HEAD_UP) {
+        m_radar[i]->m_orientation.Update(ORIENTATION_HEAD_UP);
+      }
+    }
+  } else {
+    for (int i = 0; i < RADARS; i++) {
+      if (m_radar[i]->m_orientation.GetValue() == ORIENTATION_HEAD_UP) {
+        m_radar[i]->m_orientation.Update(ORIENTATION_STABILIZED_UP);
+      }
+    }
+  }
+
 }
 
 double br24radar_pi::GetHeadingTrue() {
@@ -843,9 +863,10 @@ void br24radar_pi::Notify(void) {
     SetRadarWindowViz(true);
   }
 
-  if (!m_settings.show                                                                                 // No radar shown
-      || (m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT && m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT)  // Radar not transmitting
-      || !m_bpos_set) {                                                                                // No overlay possible (yet)
+  if (!m_settings.show  // No radar shown
+      || (m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT &&
+          m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT)  // Radar not transmitting
+      || !m_bpos_set) {                                      // No overlay possible (yet)
     // Conditions for ARPA not fulfilled, delete all targets
     if (m_radar[0]->m_arpa) {
       m_radar[0]->m_arpa->RadarLost();
@@ -1011,10 +1032,18 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     m_opengl_mode_changed = true;
   }
 
-  if (!m_settings.show                                                       // No radar shown
-      || m_settings.chart_overlay < 0                                        // No overlay desired
+  if (vp->rotation != m_vp_rotation) {
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    m_cog_timeout = time(0) + m_COGAvgSec;
+    m_cog = m_COGAvg;
+    m_vp_rotation = vp->rotation;
+  }
+
+  if (!m_settings.show                                                            // No radar shown
+      || m_settings.chart_overlay < 0                                             // No overlay desired
       || m_radar[m_settings.chart_overlay]->m_state.GetValue() != RADAR_TRANSMIT  // Radar not transmitting
-      || !m_bpos_set) {                                                      // No overlay possible (yet)
+      || !m_bpos_set) {                                                           // No overlay possible (yet)
     return true;
   }
 
@@ -1065,6 +1094,11 @@ bool br24radar_pi::LoadConfig(void) {
   if (pConf) {
     pConf->SetPath(wxT("Settings"));
     pConf->Read(wxT("OpenGL"), &m_opengl_mode, false);
+    pConf->Read(wxT("COGUPAvgSeconds"), &m_COGAvgSec, 15);
+    m_COGAvgSec = wxMin(m_COGAvgSec, MAX_COG_AVERAGE_SECONDS);  // Bound the array size
+    for (int i = 0; i < m_COGAvgSec; i++) {
+      m_COGTable[i] = NAN;
+    }
 
     pConf->SetPath(wxT("/Plugins/BR24Radar"));
 
@@ -1076,7 +1110,7 @@ bool br24radar_pi::LoadConfig(void) {
       m_settings.idle_run_time *= 60;
 
       for (int r = 0; r < RADARS; r++) {
-        m_radar[r]->m_orientation.Update(0);
+        m_radar[r]->m_orientation.Update(ORIENTATION_HEAD_UP);
         m_radar[r]->m_boot_state.Update(0);
         SetControlValue(r, CT_TARGET_TRAILS, 0);
         m_settings.show_radar[r] = true;
@@ -1279,7 +1313,7 @@ bool br24radar_pi::SaveConfig(void) {
 
 void br24radar_pi::SetMcastIPAddress(wxString &address) {
   {
-    wxCriticalSectionLocker lock(m_exclusive);
+
 
     m_settings.mcast_address = address;
   }
@@ -1292,6 +1326,8 @@ void br24radar_pi::SetMcastIPAddress(wxString &address) {
 void br24radar_pi::SetPositionFix(PlugIn_Position_Fix &pfix) {}
 
 void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
+  wxCriticalSectionLocker lock(m_exclusive);
+
   time_t now = time(0);
   wxString info;
   if (m_var_source <= VARIATION_SOURCE_FIX && !wxIsNaN(pfix.Var) && (fabs(pfix.Var) > 0.0 || m_var == 0.0)) {
@@ -1348,6 +1384,54 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     }
     m_bpos_set = true;
     m_bpos_timestamp = now;
+  }
+
+  if (!wxIsNaN(pfix.Cog)) {
+    UpdateCOGAvg(pfix.Cog);
+  }
+  if (TIMED_OUT(now, m_cog_timeout)) {
+    m_cog_timeout = now + m_COGAvgSec;
+    m_cog = m_COGAvg;
+  }
+}
+
+void br24radar_pi::UpdateCOGAvg(double cog) {
+  // This is a straight copy (except for formatting) of the code in
+  // OpenCPN/src/chart1.cpp MyFrame::PostProcessNNEA
+  if (m_COGAvgSec > 0) {
+    //    Make a hole
+    for (int i = m_COGAvgSec - 1; i > 0; i--) {
+      m_COGTable[i] = m_COGTable[i - 1];
+    }
+    m_COGTable[0] = cog;
+
+    double sum = 0., count = 0;
+    for (int i = 0; i < m_COGAvgSec; i++) {
+      double adder = m_COGTable[i];
+      if (wxIsNaN(adder)) {
+        continue;
+      }
+      if (fabs(adder - m_COGAvg) > 180.) {
+        if ((adder - m_COGAvg) > 0.) {
+          adder -= 360.;
+        } else {
+          adder += 360.;
+        }
+      }
+
+      sum += adder;
+      count++;
+    }
+    sum /= count;
+
+    if (sum < 0.) {
+      sum += 360.;
+    } else if (sum >= 360.) {
+      sum -= 360.;
+    }
+    m_COGAvg = sum;
+  } else {
+    m_COGAvg = cog;
   }
 }
 

@@ -181,13 +181,17 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
         heading = m_pi->GetHeadingTrue() + 180.;
         predictor = 180.;
         break;
+      case ORIENTATION_STABILIZED_UP:
+        heading = m_ri->m_course + 180.;
+        predictor = m_pi->GetHeadingTrue() + 180. - m_ri->m_course;
+        break;
       case ORIENTATION_NORTH_UP:
         heading = 180;
         predictor = m_pi->GetHeadingTrue() + 180;
         break;
-      case ORIENTATION_COURSE_UP:
-        heading = m_ri->m_course + 180.;
-        predictor = m_pi->GetHeadingTrue() + 180. - m_ri->m_course;
+      case ORIENTATION_COG_UP:
+        heading = m_pi->GetCOG() + 180.;
+        predictor = m_pi->GetHeadingTrue() + 180. - heading;
         break;
     }
 
@@ -293,8 +297,8 @@ void RadarCanvas::RenderCursor(int w, int h) {
 
   int orientation = m_ri->m_orientation.GetValue();
 
-  if (m_ri->m_mouse_vrm[orientation] != 0.0) {
-    distance = m_ri->m_mouse_vrm[orientation] * 1852.;
+  if (m_ri->m_mouse_vrm != 0.0) {
+    distance = m_ri->m_mouse_vrm * 1852.;
     bearing = m_ri->m_mouse_ebl[orientation];
   } else {
     if ((m_ri->m_mouse_lat == 0.0 && m_ri->m_mouse_lon == 0.0) || !m_pi->m_bpos_set) {
@@ -448,14 +452,15 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     int display_range = m_ri->GetDisplayRange();
 
     switch (m_ri->m_orientation.GetValue()) {
-      case ORIENTATION_HEAD_UP:
+      case ORIENTATION_STABILIZED_UP:
         vp.rotation = deg2rad(-m_pi->GetHeadingTrue());
         break;
       case ORIENTATION_NORTH_UP:
+      case ORIENTATION_HEAD_UP:
         vp.rotation = 0.;
         break;
-      case ORIENTATION_COURSE_UP:
-        vp.rotation = deg2rad(-m_ri->m_course);
+      case ORIENTATION_COG_UP:
+        vp.rotation = deg2rad(-m_pi->GetCOG());
         break;
     }
 

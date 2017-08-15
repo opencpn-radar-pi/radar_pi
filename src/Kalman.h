@@ -38,9 +38,9 @@
 PLUGIN_BEGIN_NAMESPACE
 
 #define NOISE (0.015)  // Allowed covariance of target speed in lat and lon
-                      // critical for the performance of target tracking
-                      // lower value makes target go straight
-                      // higher values allow target to make curves
+                       // critical for the performance of target tracking
+                       // lower value makes target go straight
+                       // higher values allow target to make curves
 
 class Polar {
  public:
@@ -53,8 +53,8 @@ class LocalPosition {
  public:
   double lat;
   double lon;
-  double dlat_dt;  // latitude  of speed vector, m/s
-  double dlon_dt;  // longitude of speed vector, m/s
+  double dlat_dt;       // latitude  of speed vector, m/s
+  double dlon_dt;       // longitude of speed vector, m/s
   double sd_speed_m_s;  // standard deviation of the speed, m/s
 };
 

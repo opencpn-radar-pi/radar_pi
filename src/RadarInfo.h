@@ -110,13 +110,11 @@ class radar_range_control_item : public radar_control_item {
   PersistentSettings *m_settings;
 
   void Update(int v);
-  const RadarRange * GetRange() {
-
+  const RadarRange *GetRange() {
     wxCriticalSectionLocker lock(m_exclusive);
 
     return m_range;
   }
-
 
   radar_range_control_item() {
     m_value = 0;
@@ -126,9 +124,8 @@ class radar_range_control_item : public radar_control_item {
     m_settings = 0;
   }
 
-private:
+ private:
   const RadarRange *m_range;
-
 };
 
 struct DrawInfo {
@@ -159,12 +156,16 @@ class RadarInfo : public wxEvtHandler {
   radar_control_item m_state;       // RadarState (observed)
   radar_control_item m_boot_state;  // Can contain RADAR_TRANSMIT until radar is seen at boot
 
-  radar_control_item m_orientation;  // 0 = Heading Up, 1 = North Up
+  radar_control_item m_orientation;  // See below for allowed values.
+  // Orientation HEAD_UP is available if there is no heading or dev mode is switched on
+  // Other orientations are available if there is a heading
+#define ORIENTATION_HEAD_UP (0)      // Unstabilized heading (as if without compass)                                     // Available if no compass or in dev mode
+#define ORIENTATION_STABILIZED_UP (1)  // Stabilized heading (averaged over a few seconds)
+#define ORIENTATION_NORTH_UP (2)  // North up
+#define ORIENTATION_COG_UP (3)  // Averaged GPS COG up (same way as OpenCPN)
+#define ORIENTATION_NUMBER (4)
+
   int m_min_contour_length;          // minimum contour length of an ARPA or MARPA target
-#define ORIENTATION_HEAD_UP (0)
-#define ORIENTATION_NORTH_UP (1)
-#define ORIENTATION_COURSE_UP (2)
-#define ORIENTATION_NUMBER (3)
 
   radar_control_item m_overlay;
   radar_range_control_item m_range;  // value in meters
@@ -300,7 +301,7 @@ class RadarInfo : public wxEvtHandler {
 
   double m_mouse_lat, m_mouse_lon;
   double m_mouse_ebl[ORIENTATION_NUMBER];
-  double m_mouse_vrm[ORIENTATION_NUMBER];
+  double m_mouse_vrm;
   int m_range_meters;  // what radar told us is the range in the last received spoke
 
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.

@@ -92,7 +92,7 @@ class br24Receive : public wxThread {
   wxIPV4address m_ip_addr;
   bool m_new_ip_addr;
 
-  wxLongLong m_shutdown_time_requested; // Main thread asks this thread to stop
+  wxLongLong m_shutdown_time_requested;  // Main thread asks this thread to stop
   volatile bool m_is_shutdown;
 
  private:
