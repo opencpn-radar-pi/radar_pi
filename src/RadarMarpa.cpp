@@ -1188,4 +1188,10 @@ void ArpaTarget::ResetPixels() {
   }
 }
 
+void RadarArpa::ClearContours(){
+  for (int i = 0; i < m_number_of_targets; i++){
+    m_targets[i]->m_contour_length = 0;
+  }
+}
+
 PLUGIN_END_NAMESPACE

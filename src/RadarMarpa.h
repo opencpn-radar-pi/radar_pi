@@ -164,11 +164,12 @@ class RadarArpa {
   void RadarLost() {
     DeleteAllTargets();  // Let ARPA targets disappear
   }
+  void ClearContours();
   int m_number_of_targets;
   int GetTargetCount() { return m_number_of_targets; }
+  ArpaTarget* m_targets[MAX_NUMBER_OF_TARGETS];
 
  private:
-  ArpaTarget* m_targets[MAX_NUMBER_OF_TARGETS];
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
 
