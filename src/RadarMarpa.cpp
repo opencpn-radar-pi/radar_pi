@@ -529,31 +529,26 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
   wxColor arpa = m_pi->m_settings.arpa_colour;
   glColor4ub(arpa.Red(), arpa.Green(), arpa.Blue(), arpa.Alpha());
   glLineWidth(3.0);
-  glBegin(GL_LINES);
+
+  glEnableClientState(GL_VERTEX_ARRAY);
+
+  double vertex_array[2 * MAX_CONTOUR_LENGTH + 1];
   for (int i = 0; i < target->m_contour_length; i++) {
-    double xx;
-    double yy;
     int angle = MOD_ROTATION2048(target->m_contour[i].angle - 512);
     int radius = target->m_contour[i].r;
     if (radius <= 0 || radius >= RETURNS_PER_LINE) {
+      LOG_INFO(wxT("BR24radar_pi: wrong values in DrawContour"));
       return;
     }
-    xx = polarLookup->x[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    yy = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    glVertex2f(xx, yy);
-    int ii = i + 1;
-    if (ii == target->m_contour_length) {
-      ii = 0;  // start point again
-    }
-    if (radius <= 0 || radius >= RETURNS_PER_LINE) {
-      return;
-    }
-    angle = MOD_ROTATION2048(target->m_contour[ii].angle - 512);
-    radius = target->m_contour[ii].r;
-    xx = polarLookup->x[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    yy = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    glVertex2f(xx, yy);
+    vertex_array[2 * i] = polarLookup->x[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
+    vertex_array[2 * i + 1] = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE; 
   }
+
+  glVertexPointer(2, GL_DOUBLE, 0, vertex_array);
+  glDrawArrays(GL_LINE_STRIP, 0, target->m_contour_length);
+
+  glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
+
 // following displays expected position with crosses that indicate the size of the search area
 // for debugging only
 
@@ -583,7 +578,6 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
   }
 #endif
 
-  glEnd();
 }
 
 void RadarArpa::DrawArpaTargets() {
