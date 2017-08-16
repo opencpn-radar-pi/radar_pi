@@ -5,7 +5,7 @@
  *           Target tracking
  * Authors:  Douwe Fokkema
  *           Kees Verruijt
- *           Håkan Svensson
+ *           HÃ¥kan Svensson
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -478,11 +478,10 @@ int ArpaTarget::GetContour(Polar* pol) {
     }
     if (count == MAX_CONTOUR_LENGTH - 2) {
       m_contour[count] = start;  // shortcut to the beginning for drawing the contour
+	  current = start;           // this will cause the while to terminate
     }
     if (count < MAX_CONTOUR_LENGTH - 1) {
       count++;
-    } else {
-      return 9;  // Countour too large
     }
     if (current.angle > m_max_angle.angle) {
       m_max_angle = current;
