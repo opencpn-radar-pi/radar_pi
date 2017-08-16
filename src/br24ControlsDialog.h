@@ -108,7 +108,7 @@ class br24ControlsDialog : public wxDialog {
 
   void OnRadarGainButtonClick(wxCommandEvent &event);
 
-  void OnRadarStateButtonClick(wxCommandEvent &event);
+  void OnPowerButtonClick(wxCommandEvent &event);
   void OnRadarShowButtonClick(wxCommandEvent &event);
   void OnRadarOverlayButtonClick(wxCommandEvent &event);
   void OnMessageButtonClick(wxCommandEvent &event);
@@ -129,10 +129,14 @@ class br24ControlsDialog : public wxDialog {
 
   void OnConfirmBogeyButtonClick(wxCommandEvent &event);
 
+  void OnTransmitButtonClick(wxCommandEvent &event);
+  void OnStandbyButtonClick(wxCommandEvent &event);
+
   void EnterEditMode(br24RadarControlButton *button);
 
   void SwitchTo(wxBoxSizer *to, const wxChar *name);
   void UpdateAdvanced4GState();
+  void UpdateTrailsState();
 
   void SetMenuAutoHideTimeout();
 
@@ -147,6 +151,7 @@ class br24ControlsDialog : public wxDialog {
   wxBoxSizer *m_guard_sizer;
   wxBoxSizer *m_adjust_sizer;
   wxBoxSizer *m_cursor_sizer;
+  wxBoxSizer *m_power_sizer;
   wxBoxSizer *m_transmit_sizer;  // Controls disabled if not transmitting
   wxBoxSizer *m_from_sizer;      // If on edit control, this is where the button is from
 
@@ -173,7 +178,6 @@ class br24ControlsDialog : public wxDialog {
   br24RadarControlButton *m_target_boost_button;
   br24RadarControlButton *m_target_expansion_button;
   br24RadarControlButton *m_scan_speed_button;
-  br24RadarControlButton *m_timed_idle_button;
 
   // Installation controls
   br24RadarControlButton *m_bearing_alignment_button;
@@ -194,9 +198,15 @@ class br24ControlsDialog : public wxDialog {
   wxButton *m_clear_trails_button;
   wxButton *m_orientation_button;
 
+  // Power controls
+  wxStaticText *m_power_text;
+  wxButton *m_transmit_button;
+  wxButton *m_standby_button;
+  br24RadarControlButton *m_timed_idle_button;
+  br24RadarControlButton *m_timed_run_button;
+
   // Show Controls
 
-  wxButton *m_radar_state;
   wxButton *m_overlay_button;
   wxButton *m_window_button;
   br24RadarRangeControlButton *m_range_button;
@@ -209,6 +219,7 @@ class br24ControlsDialog : public wxDialog {
   wxButton *m_bearing_button;
   wxButton *m_guard_1_button;
   wxButton *m_guard_2_button;
+  wxButton *m_power_button;
 
   // Guard Zone Edit
 

@@ -74,7 +74,7 @@ class RadarArpa;
 #define BEARING_LINES (2)  // And these as well
 
 static const int SECONDS_PER_TIMED_IDLE_SETTING = 5 * 60;  // 5 minutes increment for each setting
-static const int SECONDS_PER_TRANSMIT_BURST = 30;
+static const int SECONDS_PER_TIMED_RUN_SETTING = 10;
 
 #define OPENGL_ROTATION (-90.0)  // Difference between 'up' and OpenGL 'up'...
 
@@ -164,6 +164,7 @@ typedef enum ControlType {
   CT_SCAN_SPEED,
   CT_SCAN_AGE,
   CT_TIMED_IDLE,
+  CT_TIMED_RUN,
   CT_BEARING_ALIGNMENT,
   CT_SIDE_LOBE_SUPPRESSION,
   CT_ANTENNA_HEIGHT,
@@ -189,6 +190,7 @@ static string ControlTypeNames[CT_MAX] = {"Range",
                                           "Scan speed",
                                           "Scan age",
                                           "Timed idle",
+                                          "Running time",
                                           "Bearing alignment",
                                           "Side lobe suppression",
                                           "Antenna height",
@@ -291,7 +293,7 @@ struct PersistentSettings {
   int range_unit_meters;            // ... 1852 or 1000, depending on range_units
   int max_age;                      // Scans older than this in seconds will be removed
   int timed_idle;                   // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
-  int idle_run_time;                // how long, in seconds, should a idle run be? Value < 30 is ignored set to 30.
+  int idle_run_time;                // 0 = 10s, 1 = 30s, 2 = 1 min
   int refreshrate;                  // How quickly to refresh the display
   bool show;                        // whether to show any radar (overlay or window)
   bool show_radar[RADARS];          // whether to show radar window
@@ -405,6 +407,7 @@ class br24radar_pi : public opencpn_plugin_114 {
   // Other public methods
 
   void NotifyRadarWindowViz();
+  void NotifyControlDialog();
 
   void OnControlDialogClose(RadarInfo *ri);
   void SetDisplayMode(DisplayModeType mode);
@@ -548,7 +551,8 @@ class br24radar_pi : public opencpn_plugin_114 {
   ToolbarIconColor m_sent_toolbar_button;
 
   bool m_old_data_seen;
-  bool m_notify_radar_window_viz;
+  volatile bool m_notify_radar_window_viz;
+  volatile bool m_notify_control_dialog;
 
 #define HEADING_TIMEOUT (5)
 
