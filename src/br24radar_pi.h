@@ -414,7 +414,7 @@ class br24radar_pi : public opencpn_plugin_114 {
   void OnGuardZoneDialogClose(RadarInfo *ri);
   void ConfirmGuardZoneBogeys();
 
-  bool SetControlValue(int radar, ControlType controlType, int value);
+  bool SetControlValue(int radar, ControlType controlType, int value, int autoValue);
 
   // Various state decisions
   bool IsRadarOnScreen(int radar) { return m_settings.show && (m_settings.show_radar[radar] || m_settings.chart_overlay == radar); }
@@ -448,6 +448,10 @@ class br24radar_pi : public opencpn_plugin_114 {
     wxCriticalSectionLocker lock(m_exclusive);
     return m_var_source;
   };
+  double GetCOG() {
+    wxCriticalSectionLocker lock(m_exclusive);
+    return m_cog;
+  }
 
   wxFont m_font;      // The dialog font at a normal size
   wxFont m_fat_font;  // The dialog font at a bigger size, bold
@@ -467,6 +471,7 @@ class br24radar_pi : public opencpn_plugin_114 {
   volatile bool m_opengl_mode_changed;
   bool m_bpos_set;
   time_t m_bpos_timestamp;
+  time_t m_boot_timestamp;  // We wait for a few seconds before we start validity checks
 
   // Cursor position. Used to show position in radar window
   double m_cursor_lat, m_cursor_lon;
@@ -499,6 +504,7 @@ class br24radar_pi : public opencpn_plugin_114 {
   void CheckTimedTransmit(RadarState state);
   void RequestStateAllRadars(RadarState state);
   void SetRadarWindowViz(bool reparent = false);
+  void UpdateCOGAvg(double cog);
 
   wxCriticalSection m_exclusive;  // protects callbacks that come from multiple radars
 
@@ -551,6 +557,15 @@ class br24radar_pi : public opencpn_plugin_114 {
   time_t m_alarm_sound_timeout;
   time_t m_guard_bogey_timeout;  // If we haven't seen bogeys for this long we reset confirm
 #define CONFIRM_RESET_TIMEOUT (15)
+
+// Compute average COG same way as OpenCPN
+#define MAX_COG_AVERAGE_SECONDS (60)
+  double m_COGTable[MAX_COG_AVERAGE_SECONDS];
+  int m_COGAvgSec;       // Default 15, comes from OCPN settings
+  double m_COGAvg;       // Average COG over m_COGTable
+  double m_cog;          // Value of m_COGAvg at rotation time
+  time_t m_cog_timeout;  // When m_cog will be set again
+  double m_vp_rotation;  // Last seen vp->rotation
 };
 
 PLUGIN_END_NAMESPACE

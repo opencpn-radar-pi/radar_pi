@@ -59,7 +59,7 @@ class br24Transmit {
   void RadarTxOn();
   bool RadarStayAlive();
   bool SetRange(int meters);
-  bool SetControlValue(ControlType controlType, int value);
+  bool SetControlValue(ControlType controlType, int value, int autoValue);
 
  private:
   br24radar_pi *m_pi;
