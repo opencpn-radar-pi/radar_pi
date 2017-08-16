@@ -108,7 +108,7 @@ bool RadarDrawShader::Init() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   m_start_line = -1;
-  m_end_line = 0;
+  m_lines = 0;
 
   return true;
 }
@@ -150,8 +150,9 @@ void RadarDrawShader::DrawRadarImage() {
   if (m_start_line > -1) {
     // Since the last time we have received data from [m_start_line, m_end_line>
     // so we only need to update the texture for those data lines.
-    if (m_end_line < m_start_line) {
-      // if the new data wraps past the end of the texture
+    if (m_start_line + m_lines > LINES_PER_ROTATION) {
+      int end_line = MOD_ROTATION2048(m_start_line + m_lines);
+      // if the new data partly wraps past the end of the texture
       // tell it the two parts separately
       // First remap [0, m_end_line>
       glTexSubImage2D(/* target =   */ GL_TEXTURE_2D,
@@ -159,7 +160,7 @@ void RadarDrawShader::DrawRadarImage() {
                       /* x-offset = */ 0,
                       /* y-offset = */ 0,
                       /* width =    */ RETURNS_PER_LINE,
-                      /* height =   */ m_end_line,
+                      /* height =   */ end_line,
                       /* format =   */ m_format,
                       /* type =     */ GL_UNSIGNED_BYTE,
                       /* pixels =   */ m_data);
@@ -174,19 +175,19 @@ void RadarDrawShader::DrawRadarImage() {
                       /* type =     */ GL_UNSIGNED_BYTE,
                       /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * m_channels);
     } else {
-      // Remap [m_start_line, m_end_line>
+      // Map [m_start_line, m_end_line>
       glTexSubImage2D(/* target =   */ GL_TEXTURE_2D,
                       /* level =    */ 0,
                       /* x-offset = */ 0,
                       /* y-offset = */ m_start_line,
                       /* width =    */ RETURNS_PER_LINE,
-                      /* height =   */ m_end_line - m_start_line,
+                      /* height =   */ m_lines,
                       /* format =   */ m_format,
                       /* type =     */ GL_UNSIGNED_BYTE,
                       /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * m_channels);
     }
     m_start_line = -1;
-    m_end_line = 0;
+    m_lines = 0;
   }
 
   // We tell the GPU to draw a square from (-512,-512) to (+512,+512).
@@ -214,7 +215,9 @@ void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
   if (m_start_line == -1) {
     m_start_line = angle;  // Note that this only runs once after each draw,
   }
-  m_end_line = angle + 1;  // whereas this keeps running every draw operation
+  if (m_lines < LINES_PER_ROTATION) {
+    m_lines++;
+  }
 
   if (m_channels == SHADER_COLOR_CHANNELS) {
     unsigned char *d = m_data + (angle * RETURNS_PER_LINE) * m_channels;

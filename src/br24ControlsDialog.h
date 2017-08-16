@@ -42,6 +42,8 @@ class br24RadarRangeControlButton;
 #define OFFSCREEN_CONTROL_X (-10000)
 #define OFFSCREEN_CONTROL_Y (-10000)
 
+#define AUTO_RANGE (-20000)  // Auto values are -20000 - auto_index
+
 const static wxPoint OFFSCREEN_CONTROL = wxPoint(OFFSCREEN_CONTROL_X, OFFSCREEN_CONTROL_Y);
 
 //----------------------------------------------------------------------------------------------------------

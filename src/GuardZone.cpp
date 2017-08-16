@@ -49,16 +49,15 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
             range_end = RETURNS_PER_LINE;
           }
           for (size_t r = range_start; r <= range_end; r++) {
-              if (data[r] >= m_pi->m_settings.threshold_blue) {
-                m_running_count++;
-              }
+            if (data[r] >= m_pi->m_settings.threshold_blue) {
+              m_running_count++;
+            }
 #ifdef TEST_GUARD_ZONE_LOCATION
-              // Zap guard zone computation location to green so this is visible on screen
-              else {
-                data[r] = m_pi->m_settings.threshold_green;
-              }
+            // Zap guard zone computation location to green so this is visible on screen
+            else {
+              data[r] = m_pi->m_settings.threshold_green;
+            }
 #endif
-            
           }
         }
         in_guard_zone = true;
@@ -72,14 +71,14 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
         }
 
         for (size_t r = range_start; r <= range_end; r++) {
-            if (data[r] >= m_pi->m_settings.threshold_blue) {
-              m_running_count++;
-            }
+          if (data[r] >= m_pi->m_settings.threshold_blue) {
+            m_running_count++;
+          }
 #ifdef TEST_GUARD_ZONE_LOCATION
-            // Zap guard zone computation location to green so this is visible on screen
-            else {
-              data[r] = m_pi->m_settings.threshold_green;
-            }
+          // Zap guard zone computation location to green so this is visible on screen
+          else {
+            data[r] = m_pi->m_settings.threshold_green;
+          }
 #endif
         }
         if (angle > m_last_angle) {
@@ -119,14 +118,15 @@ void GuardZone::SearchTargets() {
   if (!m_arpa_on) {
     return;
   }
-  if (m_ri->m_arpa->m_number_of_targets >= MAX_NUMBER_OF_TARGETS - 2){
+  if (m_ri->m_arpa->m_number_of_targets >= MAX_NUMBER_OF_TARGETS - 2) {
     LOG_INFO(wxT("BR24radar_pi: No more scanning for ARPA targets, maximum number of targets reached"));
     return;
   }
-  if (!m_pi->m_settings.show                                                       // No radar shown
-   || (m_pi->m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT && m_pi->m_radar[1]->m_state.GetValue() != RADAR_TRANSMIT)  // Radar not transmitting
-      || !m_pi->m_bpos_set){                                                       // No position
-      return;
+  if (!m_pi->m_settings.show  // No radar shown
+      || (m_pi->m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT &&
+          m_pi->m_radar[1]->m_state.GetValue() != RADAR_TRANSMIT)  // Radar not transmitting
+      || !m_pi->m_bpos_set) {                                      // No position
+    return;
   }
   if (m_ri->m_range_meters == 0) {
     return;
@@ -168,7 +168,7 @@ void GuardZone::SearchTargets() {
                                // set new refresh time
         arpa_update_time[MOD_ROTATION2048(angle)] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
-          if (m_ri->m_arpa->m_number_of_targets >= MAX_NUMBER_OF_TARGETS - 1){
+          if (m_ri->m_arpa->m_number_of_targets >= MAX_NUMBER_OF_TARGETS - 1) {
             LOG_INFO(wxT("BR24radar_pi: No more scanning for ARPA targets in loop, maximum number of targets reached"));
             return;
           }

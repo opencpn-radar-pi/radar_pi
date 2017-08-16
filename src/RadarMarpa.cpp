@@ -5,7 +5,7 @@
  *           Target tracking
  * Authors:  Douwe Fokkema
  *           Kees Verruijt
- *           Håkan Svensson
+ *           HÃ¥kan Svensson
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
+#include "RadarInfo.h"
 #include "br24radar_pi.h"
 #include "drawutil.h"
 
@@ -339,6 +339,7 @@ void RadarArpa::AcquireOrDeleteMarpaTarget(Position target_pos, int status) {
     }
     i_target = m_number_of_targets;
     m_number_of_targets++;
+    m_pi->NotifyRadarWindowViz();
   } else {
     LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded "));
     return;
@@ -389,7 +390,7 @@ bool ArpaTarget::FindContourFromInside(Polar* pol) {  // moves pol to contour of
   }
 }
 
-/** 
+/**
  * Find a contour from the given start position on the edge of a blob.
  *
  * Follows the contour in a clockwise manner.
@@ -606,6 +607,9 @@ void RadarArpa::RefreshArpaTargets() {
         m_number_of_targets--;
         // set the lost target at the last position
         m_targets[m_number_of_targets] = lost;
+        if (m_number_of_targets == 0) {
+          m_pi->NotifyRadarWindowViz();
+        }
       }
     }
   }
@@ -1001,10 +1005,14 @@ bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
   // general target refresh
   bool contour_found = false;
   int dist = dist1;
+
   if (m_status == ACQUIRE0 || m_status == ACQUIRE1) {
     dist *= 2;
   }
-  if (dist > pol->r - 5) dist = pol->r - 5;  // don't search close to origin
+  if (dist > pol->r - 5) {
+    dist = pol->r - 5;  // don't search close to origin
+  }
+
   int a = pol->angle;
   int r = pol->r;
 
@@ -1018,7 +1026,8 @@ bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
   }
   int cont = GetContour(pol);
   if (cont != 0) {
-    // reset pol
+    // LOG_ARPA(wxT("BR24radar_pi: ARPA contour error %d at %d, %d"), cont, a, r);
+    // reset pol in case of error
     pol->angle = a;
     pol->r = r;
     return false;
@@ -1139,6 +1148,9 @@ int RadarArpa::AcquireNewARPATarget(Polar pol, int status) {
     }
     i = m_number_of_targets;
     m_number_of_targets++;
+    if (m_number_of_targets == 1) {
+      m_pi->NotifyRadarWindowViz();
+    }
   } else {
     LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded %i"), m_number_of_targets);
     return -1;

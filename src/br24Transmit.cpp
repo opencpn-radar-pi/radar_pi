@@ -153,7 +153,7 @@ bool br24Transmit::SetRange(int meters) {
   return false;
 }
 
-bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sends the command to the radar
+bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoValue) {  // sends the command to the radar
   bool r = false;
 
   switch (controlType) {
@@ -188,38 +188,24 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
     }
 
     case CT_GAIN: {
-      if (value < 0) {  // AUTO gain
-        UINT8 cmd[] = {
-            0x06, 0xc1, 0, 0, 0, 0, 0x01, 0, 0, 0, 0xad  // changed from a1 to ad
-        };
-        LOG_VERBOSE(wxT("BR24radar_pi: %s Gain: Auto in setcontrolvalue"), m_name);
-        r = TransmitCmd(cmd, sizeof(cmd));
-      } else {  // Manual Gain
-        int v = (value + 1) * 255 / 100;
-        if (v > 255) {
-          v = 255;
-        }
-        UINT8 cmd[] = {0x06, 0xc1, 0, 0, 0, 0, 0, 0, 0, 0, (UINT8)v};
-        LOG_VERBOSE(wxT("BR24radar_pi: %s Gain: %d"), m_name, value);
-        r = TransmitCmd(cmd, sizeof(cmd));
+      int v = (value + 1) * 255 / 100;
+      if (v > 255) {
+        v = 255;
       }
+      UINT8 cmd[] = {0x06, 0xc1, 0, 0, 0, (UINT8)autoValue, 0, 0, 0, 0, (UINT8)v};
+      LOG_VERBOSE(wxT("BR24radar_pi: %s Gain: %d auto %d"), m_name, value, autoValue);
+      r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
 
     case CT_SEA: {
-      if (value < 0) {  // Sea Clutter - Auto Harbor or Offshore
-        UINT8 cmd[11] = {0x06, 0xc1, 0x02, 0, 0, 0, abs(value), 0, 0, 0, 0xd3};
-        LOG_VERBOSE(wxT("BR24radar_pi: %s Sea: Auto %d"), m_name, abs(value));
-        r = TransmitCmd(cmd, sizeof(cmd));
-      } else {  // Sea Clutter
-        int v = (value + 1) * 255 / 100;
-        if (v > 255) {
-          v = 255;
-        }
-        UINT8 cmd[] = {0x06, 0xc1, 0x02, 0, 0, 0, 0, 0, 0, 0, (UINT8)v};
-        LOG_VERBOSE(wxT("BR24radar_pi: %s Sea: %d"), m_name, value);
-        r = TransmitCmd(cmd, sizeof(cmd));
+      int v = (value + 1) * 255 / 100;
+      if (v > 255) {
+        v = 255;
       }
+      UINT8 cmd[] = {0x06, 0xc1, 0x02, 0, 0, 0, autoValue, 0, 0, 0, (UINT8)v};
+      LOG_VERBOSE(wxT("BR24radar_pi: %s Sea: %d auto %d"), m_name, value, autoValue);
+      r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
 
@@ -235,20 +221,13 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value) {  // sen
     }
 
     case CT_SIDE_LOBE_SUPPRESSION: {
-      if (value < 0) {
-        UINT8 cmd[] = {// SIDE_LOBE_SUPPRESSION auto
-                       0x06, 0xc1, 0x05, 0, 0, 0, 0x01, 0, 0, 0, 0xc0};
-        LOG_VERBOSE(wxT("BR24radar_pi: %s command Tx CT_SIDE_LOBE_SUPPRESSION Auto"), m_name);
-        r = TransmitCmd(cmd, sizeof(cmd));
-      } else {
-        int v = (value + 1) * 255 / 100;
-        if (v > 255) {
-          v = 255;
-        }
-        UINT8 cmd[] = {0x6, 0xc1, 0x05, 0, 0, 0, 0, 0, 0, 0, (UINT8)v};
-        LOG_VERBOSE(wxT("BR24radar_pi: %s command Tx CT_SIDE_LOBE_SUPPRESSION: %d"), m_name, value);
-        r = TransmitCmd(cmd, sizeof(cmd));
+      int v = value * 256 / 100;
+      if (v > 255) {
+        v = 255;
       }
+      UINT8 cmd[] = {0x6, 0xc1, 0x05, 0, 0, 0, autoValue, 0, 0, 0, (UINT8)v};
+      LOG_VERBOSE(wxT("BR24radar_pi: %s command Tx CT_SIDE_LOBE_SUPPRESSION: %d auto %d"), m_name, value, autoValue);
+      r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
 
