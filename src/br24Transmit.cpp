@@ -159,6 +159,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoV
   switch (controlType) {
     case CT_RANGE:
     case CT_TIMED_IDLE:
+    case CT_TIMED_RUN:
     case CT_SCAN_AGE:
     case CT_TRANSPARENCY:
     case CT_REFRESHRATE:
