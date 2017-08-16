@@ -461,6 +461,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   if (m_range_meters != range_meters) {
     ResetSpokes();
+    m_arpa->ClearContours();
     LOG_VERBOSE(wxT("BR24radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters,
                 range_meters);
     m_range_meters = range_meters;
@@ -1014,6 +1015,7 @@ void RadarInfo::ResetRadarImage() {
   if (m_range_meters) {
     ResetSpokes();
     ClearTrails();
+    m_arpa->ClearContours();
     m_range_meters = 0;
   }
 }
