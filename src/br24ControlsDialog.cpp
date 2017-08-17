@@ -55,7 +55,6 @@ enum {  // process ID's
   ID_SCAN_SPEED,
   ID_INSTALLATION,
   ID_PREFERENCES,
-  ID_TIMED_IDLE,
 
   ID_BEARING_ALIGNMENT,
   ID_ANTENNA_HEIGHT,
@@ -76,7 +75,11 @@ enum {  // process ID's
   ID_CLEAR_TRAILS,
   ID_ORIENTATION,
 
-  ID_RADAR_STATE,
+  ID_TRANSMIT,
+  ID_STANDBY,
+  ID_TIMED_IDLE,
+  ID_TIMED_RUN,
+
   ID_SHOW_RADAR,
   ID_RADAR_OVERLAY,
   ID_ADJUST,
@@ -85,6 +88,7 @@ enum {  // process ID's
   ID_BEARING,
   ID_ZONE1,
   ID_ZONE2,
+  ID_POWER,
 
   ID_CONFIRM_BOGEY,
 
@@ -125,7 +129,6 @@ EVT_BUTTON(ID_REFRESHRATE, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_SCAN_SPEED, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_INSTALLATION, br24ControlsDialog::OnInstallationButtonClick)
 EVT_BUTTON(ID_PREFERENCES, br24ControlsDialog::OnPreferencesButtonClick)
-EVT_BUTTON(ID_TIMED_IDLE, br24ControlsDialog::OnRadarControlButtonClick)
 
 EVT_BUTTON(ID_BEARING_ALIGNMENT, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_ANTENNA_HEIGHT, br24ControlsDialog::OnRadarControlButtonClick)
@@ -133,7 +136,7 @@ EVT_BUTTON(ID_LOCAL_INTERFERENCE_REJECTION, br24ControlsDialog::OnRadarControlBu
 EVT_BUTTON(ID_SIDE_LOBE_SUPPRESSION, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_MAIN_BANG_SIZE, br24ControlsDialog::OnRadarControlButtonClick)
 
-EVT_BUTTON(ID_RADAR_STATE, br24ControlsDialog::OnRadarStateButtonClick)
+EVT_BUTTON(ID_POWER, br24ControlsDialog::OnPowerButtonClick)
 EVT_BUTTON(ID_SHOW_RADAR, br24ControlsDialog::OnRadarShowButtonClick)
 EVT_BUTTON(ID_RADAR_OVERLAY, br24ControlsDialog::OnRadarOverlayButtonClick)
 EVT_BUTTON(ID_RANGE, br24ControlsDialog::OnRadarControlButtonClick)
@@ -159,6 +162,11 @@ EVT_BUTTON(ID_BEARING_SET, br24ControlsDialog::OnBearingSetButtonClick)
 EVT_BUTTON(ID_CLEAR_CURSOR, br24ControlsDialog::OnClearCursorButtonClick)
 EVT_BUTTON(ID_SET_MARPA, br24ControlsDialog::OnSetMarpaButtonClick)
 EVT_BUTTON(ID_DELETE_MARPA, br24ControlsDialog::OnDeleteMarpaButtonClick)
+
+EVT_BUTTON(ID_TRANSMIT, br24ControlsDialog::OnTransmitButtonClick)
+EVT_BUTTON(ID_STANDBY, br24ControlsDialog::OnStandbyButtonClick)
+EVT_BUTTON(ID_TIMED_IDLE, br24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_TIMED_RUN, br24ControlsDialog::OnRadarControlButtonClick)
 
 EVT_MOVE(br24ControlsDialog::OnMove)
 EVT_CLOSE(br24ControlsDialog::OnClose)
@@ -284,6 +292,7 @@ wxString target_boost_names[3];
 wxString target_expansion_names[2];
 wxString scan_speed_names[2];
 wxString timed_idle_times[8];
+wxString timed_run_times[3];
 wxString guard_zone_names[2];
 wxString target_trail_names[TRAIL_ARRAY_SIZE];
 wxString sea_clutter_names[2];
@@ -871,6 +880,10 @@ void br24ControlsDialog::CreateControls() {
   br24RadarButton* bMenuBack = new br24RadarButton(this, ID_BACK, backButtonStr);
   m_view_sizer->Add(bMenuBack, 0, wxALL, BORDER);
 
+  // The Trails Motion button
+  m_trails_motion_button = new br24RadarButton(this, ID_TRAILS_MOTION, _("Off/Relative/True trails"));
+  m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
+
   // The TARGET_TRAIL button
   target_trail_names[TRAIL_15SEC] = _("15 sec");
   target_trail_names[TRAIL_30SEC] = _("30 sec");
@@ -886,14 +899,12 @@ void br24ControlsDialog::CreateControls() {
   m_target_trails_button->maxValue = ARRAY_SIZE(target_trail_names) - 1;
   m_target_trails_button->names = target_trail_names;
   m_target_trails_button->SetLocalValue(m_ri->m_target_trails.GetButton());  // redraw after adding names
-
-  // The Trails Motion button
-  m_trails_motion_button = new br24RadarButton(this, ID_TRAILS_MOTION, _("Off/Relative/True trails"));
-  m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
+  m_target_trails_button->Hide();
 
   // The Clear Trails button
   m_clear_trails_button = new br24RadarButton(this, ID_CLEAR_TRAILS, _("Clear trails"));
   m_view_sizer->Add(m_clear_trails_button, 0, wxALL, BORDER);
+  m_clear_trails_button->Hide();
 
   // The Rotation button
   m_orientation_button = new br24RadarButton(this, ID_ORIENTATION, _("Orientation"));
@@ -916,26 +927,66 @@ void br24ControlsDialog::CreateControls() {
 
   m_top_sizer->Hide(m_view_sizer);
 
+  //***************** POWER BOX *************//
+
+  m_power_sizer = new wxBoxSizer(wxVERTICAL);
+  m_top_sizer->Add(m_power_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
+  // The <<Back button
+  br24RadarButton* power_back_button = new br24RadarButton(this, ID_BACK, backButtonStr);
+  m_power_sizer->Add(power_back_button, 0, wxALL, BORDER);
+
+  m_power_text = new wxStaticText(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0);
+  m_power_sizer->Add(m_power_text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
+  m_transmit_button = new br24RadarButton(this, ID_TRANSMIT, _("Transmit"));
+  m_power_sizer->Add(m_transmit_button, 0, wxALL, BORDER);
+
+  m_standby_button = new br24RadarButton(this, ID_STANDBY, _("Standby"));
+  m_power_sizer->Add(m_standby_button, 0, wxALL, BORDER);
+
+  // The TIMED TRANSMIT button
+  timed_idle_times[0] = _("Off");
+  timed_idle_times[1] = _("5 min");
+  timed_idle_times[2] = _("10 min");
+  timed_idle_times[3] = _("15 min");
+  timed_idle_times[4] = _("20 min");
+  timed_idle_times[5] = _("25 min");
+  timed_idle_times[6] = _("30 min");
+  timed_idle_times[7] = _("35 min");
+
+  m_timed_idle_button =
+      new br24RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), CT_TIMED_IDLE, false, m_pi->m_settings.timed_idle);
+  m_power_sizer->Add(m_timed_idle_button, 0, wxALL, BORDER);
+  m_timed_idle_button->minValue = 0;
+  m_timed_idle_button->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
+  m_timed_idle_button->names = timed_idle_times;
+  m_timed_idle_button->SetLocalValue(m_pi->m_settings.timed_idle);
+
+  // The TIMED RUNTIME button
+  timed_run_times[0] = _("10 s");
+  timed_run_times[1] = _("20 s");
+  timed_run_times[2] = _("30 s");
+
+  m_timed_run_button = new br24RadarControlButton(this, ID_TIMED_RUN, _("Runtime"), CT_TIMED_RUN, false, 0);
+  m_power_sizer->Add(m_timed_run_button, 0, wxALL, BORDER);
+  m_timed_run_button->minValue = 0;
+  m_timed_run_button->maxValue = ARRAY_SIZE(timed_run_times) - 1;
+  m_timed_run_button->names = timed_run_times;
+  m_timed_run_button->SetLocalValue(m_pi->m_settings.idle_run_time);
+
+  // The INFO button
+  br24RadarButton* bMessage = new br24RadarButton(this, ID_MESSAGE, _("Info"));
+  m_power_sizer->Add(bMessage, 0, wxALL, BORDER);
+
+  m_top_sizer->Hide(m_power_sizer);
+
   //**************** CONTROL BOX ******************//
   // These are the controls that the users sees when the dialog is started
 
   // A box sizer to contain RANGE, GAIN etc button
   m_control_sizer = new wxBoxSizer(wxVERTICAL);
   m_top_sizer->Add(m_control_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-
-  // The Transmit button
-  m_radar_state = new br24RadarButton(this, ID_RADAR_STATE, _("Unknown"));
-  m_control_sizer->Add(m_radar_state, 0, wxALL, BORDER);
-  // Updated when we receive data
-
-  // The SHOW / HIDE RADAR button
-  m_window_button = new br24RadarButton(this, ID_SHOW_RADAR, wxT(""));
-  m_control_sizer->Add(m_window_button, 0, wxALL, BORDER);
-
-  // The RADAR ONLY / OVERLAY button
-  wxString overlay = _("Overlay");
-  m_overlay_button = new br24RadarButton(this, ID_RADAR_OVERLAY, overlay);
-  m_control_sizer->Add(m_overlay_button, 0, wxALL, BORDER);
 
   //***************** TRANSMIT SIZER, items hidden when not transmitting ****************//
 
@@ -966,27 +1017,21 @@ void br24ControlsDialog::CreateControls() {
   m_guard_2_button = new br24RadarButton(this, ID_ZONE2, wxT(""));
   m_transmit_sizer->Add(m_guard_2_button, 0, wxALL, BORDER);
 
-  // The TIMED TRANSMIT button
-  timed_idle_times[0] = _("Off");
-  timed_idle_times[1] = _("5 min");
-  timed_idle_times[2] = _("10 min");
-  timed_idle_times[3] = _("15 min");
-  timed_idle_times[4] = _("20 min");
-  timed_idle_times[5] = _("25 min");
-  timed_idle_times[6] = _("30 min");
-  timed_idle_times[7] = _("35 min");
+  ///// Following three are shown even when radar is not transmitting
 
-  m_timed_idle_button =
-      new br24RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), CT_TIMED_IDLE, false, m_pi->m_settings.timed_idle);
-  m_control_sizer->Add(m_timed_idle_button, 0, wxALL, BORDER);
-  m_timed_idle_button->minValue = 0;
-  m_timed_idle_button->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
-  m_timed_idle_button->names = timed_idle_times;
-  m_timed_idle_button->SetLocalValue(m_pi->m_settings.timed_idle);
+  // The SHOW / HIDE RADAR button
+  m_window_button = new br24RadarButton(this, ID_SHOW_RADAR, wxT(""));
+  m_control_sizer->Add(m_window_button, 0, wxALL, BORDER);
 
-  // The INFO button
-  br24RadarButton* bMessage = new br24RadarButton(this, ID_MESSAGE, _("Info"));
-  m_control_sizer->Add(bMessage, 0, wxALL, BORDER);
+  // The RADAR ONLY / OVERLAY button
+  wxString overlay = _("Overlay");
+  m_overlay_button = new br24RadarButton(this, ID_RADAR_OVERLAY, overlay);
+  m_control_sizer->Add(m_overlay_button, 0, wxALL, BORDER);
+
+  // The Transmit button
+  m_power_button = new br24RadarButton(this, ID_POWER, _("Unknown"));
+  m_control_sizer->Add(m_power_button, 0, wxALL, BORDER);
+  // Updated when we receive data
 
   m_from_sizer = m_control_sizer;
   m_control_sizer->Hide(m_transmit_sizer);
@@ -1011,6 +1056,7 @@ void br24ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar* name) {
   LOG_VERBOSE(wxT("%s switch to control view %s"), m_log_name.c_str(), name);
 
   UpdateAdvanced4GState();
+  UpdateTrailsState();
   UpdateGuardZoneState();
   SetMenuAutoHideTimeout();
 
@@ -1029,6 +1075,20 @@ void br24ControlsDialog::UpdateAdvanced4GState() {
       m_advanced_sizer->Show(m_advanced_4G_sizer);
     } else {
       m_advanced_sizer->Hide(m_advanced_4G_sizer);
+    }
+  }
+}
+
+void br24ControlsDialog::UpdateTrailsState() {
+  if (m_top_sizer->IsShown(m_view_sizer)) {
+    int value = m_ri->m_trails_motion.GetValue();
+
+    if (value == TARGET_MOTION_OFF) {
+      m_target_trails_button->Hide();
+      m_clear_trails_button->Hide();
+    } else {
+      m_target_trails_button->Show();
+      m_clear_trails_button->Show();
     }
   }
 }
@@ -1127,11 +1187,8 @@ void br24ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
   m_ri->m_trails_motion.Update(value);
   m_ri->ComputeColourMap();
   m_ri->ComputeTargetTrails();
-  if (value == TARGET_MOTION_OFF) {
-    m_target_trails_button->Disable();
-  } else {
-    m_target_trails_button->Enable();
-  }
+  UpdateTrailsState();
+  Fit();
   UpdateControlValues(false);
 }
 
@@ -1158,6 +1215,8 @@ void br24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event) { SwitchTo
 void br24ControlsDialog::OnViewButtonClick(wxCommandEvent& event) { SwitchTo(m_view_sizer, wxT("view")); }
 
 void br24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event) { SwitchTo(m_installation_sizer, wxT("installation")); }
+
+void br24ControlsDialog::OnPowerButtonClick(wxCommandEvent& event) { SwitchTo(m_power_sizer, wxT("power")); }
 
 void br24ControlsDialog::OnPreferencesButtonClick(wxCommandEvent& event) { m_pi->ShowPreferencesDialog(m_pi->m_parent_window); }
 
@@ -1265,20 +1324,16 @@ void br24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) {
   EnterEditMode((br24RadarControlButton*)event.GetEventObject());
 }
 
-void br24ControlsDialog::OnRadarStateButtonClick(wxCommandEvent& event) {
+void br24ControlsDialog::OnTransmitButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
   m_pi->m_settings.timed_idle = 0;
-  switch (m_ri->m_state.GetValue()) {
-    case RADAR_OFF:
-    case RADAR_WAKING_UP:
-      break;
-    case RADAR_STANDBY:
-      m_ri->RequestRadarState(RADAR_TRANSMIT);
-      break;
-    case RADAR_TRANSMIT:
-      m_ri->RequestRadarState(RADAR_STANDBY);
-      break;
-  }
+  m_ri->RequestRadarState(RADAR_TRANSMIT);
+}
+
+void br24ControlsDialog::OnStandbyButtonClick(wxCommandEvent& event) {
+  SetMenuAutoHideTimeout();
+  m_pi->m_settings.timed_idle = 0;
+  m_ri->RequestRadarState(RADAR_STANDBY);
 }
 
 void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) { m_ri->ClearTrails(); }
@@ -1342,7 +1397,14 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   RadarState state = (RadarState)m_ri->m_state.GetButton();
 
-  o = _("Standby / Transmit");
+  if (state == RADAR_TRANSMIT) {
+    m_standby_button->Enable();
+    m_transmit_button->Disable();
+  } else {
+    m_standby_button->Disable();
+    m_transmit_button->Enable();
+  }
+  o = _("Power Status");
   o << wxT("\n");
   if (m_pi->m_settings.timed_idle == 0) {
     switch (state) {
@@ -1364,35 +1426,38 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     time_t now = time(0);
     int left = m_pi->m_idle_standby - now;
     if (left > 0) {
-      o = _("Standby in");
+      o << _("Standby in");
       o << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
     } else {
       left = m_pi->m_idle_transmit - now;
       if (left >= 0) {
-        o = _("Transmit in");
+        o << _("Transmit in");
         o << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
       }
     }
   }
-  m_radar_state->SetLabel(o);
+  m_power_button->SetLabel(o);
+  m_power_text->SetLabel(o);
 
+  if (m_top_sizer->IsShown(m_power_sizer)) {
+    if (m_pi->m_settings.timed_idle) {
+      m_power_sizer->Show(m_timed_run_button);
+    } else {
+      m_power_sizer->Hide(m_timed_run_button);
+    }
+  }
   if (state == RADAR_TRANSMIT) {
     if (m_top_sizer->IsShown(m_control_sizer)) {
       m_control_sizer->Show(m_transmit_sizer);
-      m_top_sizer->Show(m_timed_idle_button);
       m_control_sizer->Layout();
     }
   } else {
     m_control_sizer->Hide(m_transmit_sizer);
-    if (m_pi->m_settings.timed_idle) {
-      m_top_sizer->Show(m_timed_idle_button);
-    } else {
-      m_top_sizer->Hide(m_timed_idle_button);
-    }
     m_control_sizer->Layout();
   }
   m_top_sizer->Layout();
   Layout();
+  Fit();
 
   if (m_pi->m_settings.enable_dual_radar) {
     int show_other_radar = m_pi->m_settings.show_radar[1 - m_ri->m_radar];
@@ -1554,6 +1619,15 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_side_lobe_suppression_button->SetLocalValue(button);
   }
 
+  if (refreshAll) {
+    // Update all buttons set from plugin settings
+    m_transparency_button->SetLocalValue(M_SETTINGS.overlay_transparency);
+    m_timed_idle_button->SetLocalValue(M_SETTINGS.timed_idle);
+    m_timed_run_button->SetLocalValue(M_SETTINGS.idle_run_time);
+    m_refresh_rate_button->SetLocalValue(M_SETTINGS.refreshrate);
+    m_main_bang_size_button->SetLocalValue(M_SETTINGS.main_bang_size);
+  }
+
   // Update the text that is currently shown in the edit box, this is a copy of the button itself
   if (m_from_control) {
     wxString label = m_from_control->GetLabel();
@@ -1602,7 +1676,8 @@ void br24ControlsDialog::UpdateDialogShown() {
     LOG_DIALOG(wxT("%s UpdateDialogShown manually opened"), m_log_name.c_str());
     if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_view_sizer) &&
         !m_top_sizer->IsShown(m_edit_sizer) && !m_top_sizer->IsShown(m_installation_sizer) &&
-        !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_cursor_sizer)) {
+        !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_cursor_sizer) &&
+        !m_top_sizer->IsShown(m_power_sizer)) {
       SwitchTo(m_control_sizer, wxT("main (manual open)"));
     }
     m_control_sizer->Layout();

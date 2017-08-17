@@ -219,7 +219,9 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
 
   ComputeTargetTrails();
 
-  m_timer = new wxTimer(this, TIMER_ID);
+  if (m_radar == 0) {
+    m_timer = new wxTimer(this, TIMER_ID);
+  }
   m_overlay_refreshes_queued = 0;
   m_refreshes_queued = 0;
   m_refresh_millis = 50;
@@ -269,7 +271,9 @@ void RadarInfo::Shutdown() {
 }
 
 RadarInfo::~RadarInfo() {
-  m_timer->Stop();
+  if (m_timer) {
+    m_timer->Stop();
+  }
   if (m_draw_panel.draw) {
     delete m_draw_panel.draw;
     m_draw_panel.draw = 0;
@@ -307,7 +311,9 @@ bool RadarInfo::Init(wxString name, int verbose) {
     return false;
   }
 
-  m_timer->Start(m_refresh_millis);
+  if (m_timer) {
+    m_timer->Start(m_refresh_millis);
+  }
   return true;
 }
 
@@ -348,7 +354,7 @@ void RadarInfo::SetNetworkCardAddress(struct sockaddr_in *address) {
     wxLogError(wxT("BR24radar_pi %s: Unable to create transmit socket"), m_name.c_str());
   }
   m_stayalive_timeout = 0;  // Allow immediate restart of any TxOn or TxOff command
-  m_pi->NotifyRadarWindowViz();
+  m_pi->NotifyControlDialog();
 }
 
 void RadarInfo::SetName(wxString name) {
@@ -461,7 +467,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   if (m_range_meters != range_meters) {
     ResetSpokes();
-    if (m_arpa){
+    if (m_arpa) {
       m_arpa->ClearContours();
     }
     LOG_VERBOSE(wxT("BR24radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters,
@@ -711,7 +717,6 @@ void RadarInfo::RequestRadarState(RadarState state) {
           if (m_radar_panel) {
             m_radar_panel->Refresh();
           }
-          m_pi->m_idle_standby = now + wxMax(m_pi->m_settings.idle_run_time, SECONDS_PER_TRANSMIT_BURST);
           break;
 
         case RADAR_STANDBY:
@@ -720,7 +725,6 @@ void RadarInfo::RequestRadarState(RadarState state) {
           } else {
             m_transmit->RadarTxOff();
           }
-          m_pi->m_idle_transmit = now + m_pi->m_settings.timed_idle * SECONDS_PER_TIMED_IDLE_SETTING;
           break;
 
         case RADAR_WAKING_UP:
@@ -843,13 +847,7 @@ void RadarInfo::UpdateTrailPosition() {
 }
 
 void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
-  if (m_radar == 0) {
-    time_t now = time(0);
-    if (TIMED_OUT(now, m_main_timer_timeout)) {
-      m_pi->Notify();
-      m_main_timer_timeout = now + 1;
-    }
-  }
+  m_pi->Notify();
 
   if (m_overlay_refreshes_queued > 0) {
     // don't do additional refresh when too busy
@@ -1017,7 +1015,7 @@ void RadarInfo::ResetRadarImage() {
   if (m_range_meters) {
     ResetSpokes();
     ClearTrails();
-    if (m_arpa){
+    if (m_arpa) {
       m_arpa->ClearContours();
     }
     m_range_meters = 0;

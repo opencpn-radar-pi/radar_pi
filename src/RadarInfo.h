@@ -212,7 +212,6 @@ class RadarInfo : public wxEvtHandler {
   int m_overlay_refreshes_queued;
   int m_refreshes_queued;
   int m_refresh_millis;
-  int m_main_timer_timeout;
 
   GuardZone *m_guard_zone[GUARD_ZONES];
   double m_ebl[ORIENTATION_NUMBER][BEARING_LINES];

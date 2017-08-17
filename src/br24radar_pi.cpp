@@ -29,10 +29,10 @@
  ***************************************************************************
  */
 
-#include "br24radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
+#include "br24radar_pi.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
 
@@ -178,6 +178,7 @@ int br24radar_pi::Init(void) {
   m_toolbar_button = TB_NONE;
   m_opengl_mode_changed = false;
   m_notify_radar_window_viz = false;
+  m_notify_control_dialog = false;
 
   m_bogey_dialog = 0;
   m_alarm_sound_timeout = 0;
@@ -405,10 +406,13 @@ void br24radar_pi::ShowPreferencesDialog(wxWindow *parent) {
 // A different thread (or even the control dialog itself) has changed state and now
 // the radar window and control visibility needs to be reset. It can't call SetRadarWindowViz()
 // directly so we redirect via flag and main thread.
-void br24radar_pi::NotifyRadarWindowViz() {
-  m_notify_radar_window_viz = true;
-  m_radar[0]->m_main_timer_timeout = 0;
-}
+void br24radar_pi::NotifyRadarWindowViz() { m_notify_radar_window_viz = true; }
+
+// A different thread (or even the control dialog itself) has changed state and now
+// the content of the control dialog needs to be reset (but not its visibility, that is what
+// NotifyRadarWindowViz() does.)
+//
+void br24radar_pi::NotifyControlDialog() { m_notify_control_dialog = true; }
 
 void br24radar_pi::SetRadarWindowViz(bool reparent) {
   int arpa_targets = 0;
@@ -737,13 +741,13 @@ void br24radar_pi::CheckTimedTransmit(RadarState state) {
   if (state == RADAR_TRANSMIT) {
     if (TIMED_OUT(now, m_idle_standby)) {
       RequestStateAllRadars(RADAR_STANDBY);
-      m_idle_transmit = now + m_settings.timed_idle * SECONDS_PER_TIMED_IDLE_SETTING;
+      m_idle_transmit = now + m_settings.timed_idle * SECONDS_PER_TIMED_IDLE_SETTING -
+                        (m_settings.idle_run_time + 1) * SECONDS_PER_TIMED_RUN_SETTING;
     }
   } else {
     if (TIMED_OUT(now, m_idle_transmit)) {
       RequestStateAllRadars(RADAR_TRANSMIT);
-      int burst = wxMax(m_settings.idle_run_time, SECONDS_PER_TRANSMIT_BURST);
-      m_idle_standby = now + burst;
+      m_idle_standby = now + (m_settings.idle_run_time + 1) * SECONDS_PER_TIMED_RUN_SETTING;
     }
   }
 }
@@ -847,19 +851,27 @@ double br24radar_pi::GetHeadingTrue() {
 
 // Notify
 // ------
-// Called once a second by the timer on radar[0].
+// Called between 1 and 10 times per second by radar 0's timer function.
 //
 // This checks if we need to ping the radar to keep it alive (or make it alive)
 
 void br24radar_pi::Notify(void) {
-  LOG_VERBOSE(wxT("BR24radar_pi: main timer"));
-
   time_t now = time(0);
+  bool updateAllControls;
 
-  if (m_opengl_mode_changed || m_notify_radar_window_viz) {
-    m_opengl_mode_changed = false;
-    m_notify_radar_window_viz = false;
-    SetRadarWindowViz(true);
+  {
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    LOG_VERBOSE(wxT("BR24radar_pi: main timer"));
+
+    updateAllControls = m_notify_control_dialog;
+    m_notify_control_dialog = false;
+    if (m_opengl_mode_changed || m_notify_radar_window_viz) {
+      m_opengl_mode_changed = false;
+      m_notify_radar_window_viz = false;
+      SetRadarWindowViz(true);
+      updateAllControls = true;
+    }
   }
 
   if (!m_settings.show  // No radar shown
@@ -957,7 +969,7 @@ void br24radar_pi::Notify(void) {
   m_pMessageBox->UpdateMessage(false);
 
   for (int r = 0; r < RADARS; r++) {
-    m_radar[r]->UpdateControlState(false);
+    m_radar[r]->UpdateControlState(updateAllControls);
     m_radar[r]->m_statistics.broken_packets = 0;
     m_radar[r]->m_statistics.broken_spokes = 0;
     m_radar[r]->m_statistics.missing_spokes = 0;
@@ -1104,9 +1116,9 @@ bool br24radar_pi::LoadConfig(void) {
     if (pConf->Read(wxT("DisplayMode"), &v, 0)) {  // v1.3
       wxLogMessage(wxT("BR24radar_pi: Upgrading settings from v1.3 or lower"));
       pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
-      m_settings.verbose = wxMin(m_settings.verbose, 1);                // Values over 1 are different now
-      pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 2);  // Now is in seconds, not minutes
-      m_settings.idle_run_time *= 60;
+      m_settings.verbose = wxMax(m_settings.verbose, 1);  // Values over 1 are different now
+      pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 2);
+      m_settings.idle_run_time = wxMax(m_settings.idle_run_time, 2);
 
       for (int r = 0; r < RADARS; r++) {
         m_radar[r]->m_orientation.Update(ORIENTATION_HEAD_UP);
@@ -1134,7 +1146,9 @@ bool br24radar_pi::LoadConfig(void) {
       pConf->Read(wxT("Enable_COG_heading"), &m_settings.enable_cog_heading, false);
     } else {
       pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
-      pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 120);
+      pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 1);
+      m_settings.idle_run_time = wxMax(m_settings.idle_run_time, 2);
+
       for (int r = 0; r < RADARS; r++) {
         pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
         m_radar[r]->m_orientation.Update(v);
@@ -1547,21 +1561,34 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
   switch (controlType) {
     case CT_TRANSPARENCY: {
       m_settings.overlay_transparency = value;
+      m_radar[1 - radar]->UpdateControlState(true); // Update the controls in the other radar
       return true;
     }
     case CT_SCAN_AGE: {
       m_settings.max_age = value;
+      m_radar[1 - radar]->UpdateControlState(true); // Update the controls in the other radar
       return true;
     }
     case CT_TIMED_IDLE: {
       m_settings.timed_idle = value;
-      m_idle_standby = time(0) + 5;
+      m_idle_standby = 0;
       m_idle_transmit = 0;
-      CheckTimedTransmit(RADAR_TRANSMIT);
+      if (m_radar[0]->m_state.GetValue() == RADAR_TRANSMIT || m_radar[1]->m_state.GetValue() == RADAR_TRANSMIT) {
+        m_idle_standby = time(0) + 10;
+      } else {
+        m_idle_transmit = time(0) + 10;
+      }
+      m_radar[1 - radar]->UpdateControlState(true); // Update the controls in the other radar
+      return true;
+    }
+    case CT_TIMED_RUN: {
+      m_settings.idle_run_time = value;
+      m_radar[1 - radar]->UpdateControlState(true); // Update the controls in the other radar
       return true;
     }
     case CT_REFRESHRATE: {
       m_settings.refreshrate = value;
+      m_radar[1 - radar]->UpdateControlState(true); // Update the controls in the other radar
       return true;
     }
     case CT_TARGET_TRAILS: {
@@ -1578,6 +1605,7 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
     }
     case CT_MAIN_BANG_SIZE: {
       m_settings.main_bang_size = value;
+      m_radar[1 - radar]->UpdateControlState(true); // Update the controls in the other radar
       return true;
     }
 

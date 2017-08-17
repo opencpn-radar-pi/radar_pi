@@ -339,7 +339,9 @@ void RadarArpa::AcquireOrDeleteMarpaTarget(Position target_pos, int status) {
     }
     i_target = m_number_of_targets;
     m_number_of_targets++;
-    m_pi->NotifyRadarWindowViz();
+    if (m_number_of_targets == 1) {
+      m_pi->NotifyControlDialog();
+    }
   } else {
     LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded "));
     return;
@@ -478,7 +480,7 @@ int ArpaTarget::GetContour(Polar* pol) {
     }
     if (count == MAX_CONTOUR_LENGTH - 2) {
       m_contour[count] = start;  // shortcut to the beginning for drawing the contour
-	  current = start;           // this will cause the while to terminate
+      current = start;           // this will cause the while to terminate
     }
     if (count < MAX_CONTOUR_LENGTH - 1) {
       count++;
@@ -601,8 +603,8 @@ void RadarArpa::RefreshArpaTargets() {
         m_number_of_targets--;
         // set the lost target at the last position
         m_targets[m_number_of_targets] = lost;
-        if (m_number_of_targets == 0) {
-          m_pi->NotifyRadarWindowViz();
+        if (m_number_of_targets == 1) {
+          m_pi->NotifyControlDialog();
         }
       }
     }
@@ -1143,7 +1145,7 @@ int RadarArpa::AcquireNewARPATarget(Polar pol, int status) {
     i = m_number_of_targets;
     m_number_of_targets++;
     if (m_number_of_targets == 1) {
-      m_pi->NotifyRadarWindowViz();
+      m_pi->NotifyControlDialog();
     }
   } else {
     LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded %i"), m_number_of_targets);
@@ -1182,8 +1184,8 @@ void ArpaTarget::ResetPixels() {
   }
 }
 
-void RadarArpa::ClearContours(){
-  for (int i = 0; i < m_number_of_targets; i++){
+void RadarArpa::ClearContours() {
+  for (int i = 0; i < m_number_of_targets; i++) {
     m_targets[i]->m_contour_length = 0;
   }
 }

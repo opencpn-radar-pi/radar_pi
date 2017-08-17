@@ -159,6 +159,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoV
   switch (controlType) {
     case CT_RANGE:
     case CT_TIMED_IDLE:
+    case CT_TIMED_RUN:
     case CT_SCAN_AGE:
     case CT_TRANSPARENCY:
     case CT_REFRESHRATE:
@@ -192,7 +193,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoV
       if (v > 255) {
         v = 255;
       }
-      UINT8 cmd[] = {0x06, 0xc1, 0, 0, 0, (UINT8)autoValue, 0, 0, 0, 0, (UINT8)v};
+      UINT8 cmd[] = {0x06, 0xc1, 0, 0, 0, 0, (UINT8)autoValue, 0, 0, 0, (UINT8)v};
       LOG_VERBOSE(wxT("BR24radar_pi: %s Gain: %d auto %d"), m_name, value, autoValue);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;

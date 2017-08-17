@@ -42,7 +42,7 @@ class RadarDrawShader : public RadarDraw {
  public:
   RadarDrawShader(RadarInfo* ri) {
     m_ri = ri;
-    m_start_line = -1; // No spokes received since last draw
+    m_start_line = -1;  // No spokes received since last draw
     m_lines = 0;
     m_texture = 0;
     m_fragment = 0;
