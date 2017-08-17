@@ -859,19 +859,15 @@ void br24radar_pi::Notify(void) {
   time_t now = time(0);
   bool updateAllControls;
 
-  {
-    wxCriticalSectionLocker lock(m_exclusive);
+  LOG_VERBOSE(wxT("BR24radar_pi: main timer"));
 
-    LOG_VERBOSE(wxT("BR24radar_pi: main timer"));
-
-    updateAllControls = m_notify_control_dialog;
-    m_notify_control_dialog = false;
-    if (m_opengl_mode_changed || m_notify_radar_window_viz) {
-      m_opengl_mode_changed = false;
-      m_notify_radar_window_viz = false;
-      SetRadarWindowViz(true);
-      updateAllControls = true;
-    }
+  updateAllControls = m_notify_control_dialog;
+  m_notify_control_dialog = false;
+  if (m_opengl_mode_changed || m_notify_radar_window_viz) {
+    m_opengl_mode_changed = false;
+    m_notify_radar_window_viz = false;
+    SetRadarWindowViz(true);
+    updateAllControls = true;
   }
 
   if (!m_settings.show  // No radar shown
