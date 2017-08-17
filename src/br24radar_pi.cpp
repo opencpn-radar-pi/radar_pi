@@ -868,6 +868,8 @@ void br24radar_pi::Notify(void) {
     m_notify_radar_window_viz = false;
     SetRadarWindowViz(true);
     updateAllControls = true;
+  } else {
+    SetRadarWindowViz();
   }
 
   if (!m_settings.show  // No radar shown
