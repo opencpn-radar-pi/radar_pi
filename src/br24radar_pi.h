@@ -507,6 +507,7 @@ class br24radar_pi : public opencpn_plugin_114 {
   void CheckTimedTransmit(RadarState state);
   void RequestStateAllRadars(RadarState state);
   void SetRadarWindowViz(bool reparent = false);
+  void UpdateContextMenu();
   void UpdateCOGAvg(double cog);
 
   wxCriticalSection m_exclusive;  // protects callbacks that come from multiple radars
@@ -570,6 +571,10 @@ class br24radar_pi : public opencpn_plugin_114 {
   double m_cog;          // Value of m_COGAvg at rotation time
   time_t m_cog_timeout;  // When m_cog will be set again
   double m_vp_rotation;  // Last seen vp->rotation
+
+  // Keep last state of ContextMenu state sent, to avoid redraws
+  bool m_context_menu_show;
+  bool m_context_menu_arpa;
 };
 
 PLUGIN_END_NAMESPACE
