@@ -865,21 +865,6 @@ void br24radar_pi::UpdateHeadingState(time_t now) {
     m_var_source = VARIATION_SOURCE_NONE;
     LOG_VERBOSE(wxT("BR24radar_pi: Lost Variation source"));
   }
-
-  // check for no longer allowed value
-  if (m_heading_source == HEADING_NONE) {
-    for (int i = 0; i < RADARS; i++) {
-      if (m_radar[i]->m_orientation.GetValue() != ORIENTATION_HEAD_UP) {
-        m_radar[i]->m_orientation.Update(ORIENTATION_HEAD_UP);
-      }
-    }
-  } else {
-    for (int i = 0; i < RADARS; i++) {
-      if (m_radar[i]->m_orientation.GetValue() == ORIENTATION_HEAD_UP) {
-        m_radar[i]->m_orientation.Update(ORIENTATION_STABILIZED_UP);
-      }
-    }
-  }
 }
 
 double br24radar_pi::GetHeadingTrue() {

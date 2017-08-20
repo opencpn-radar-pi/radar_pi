@@ -176,7 +176,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   if (m_pi->m_heading_source != HEADING_NONE) {
     double heading;
     double predictor;
-    switch (m_ri->m_orientation.GetValue()) {
+    switch (m_ri->GetOrientation()) {
       case ORIENTATION_HEAD_UP:
         heading = m_pi->GetHeadingTrue() + 180.;
         predictor = 180.;
@@ -295,7 +295,7 @@ void RadarCanvas::RenderCursor(int w, int h) {
   double distance;
   double bearing;
 
-  int orientation = m_ri->m_orientation.GetValue();
+  int orientation = m_ri->GetOrientation();
 
   if (!isnan(m_ri->m_mouse_vrm)) {
     distance = m_ri->m_mouse_vrm * 1852.;
@@ -307,7 +307,7 @@ void RadarCanvas::RenderCursor(int w, int h) {
     // Can't compute this upfront, ownship may move...
     distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon) * 1852.;
     bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon);
-    if (!m_ri->IsDisplayNorthUp()) {
+    if (m_ri->GetOrientation() != ORIENTATION_NORTH_UP) {
       bearing -= m_pi->GetHeadingTrue();
     }
     // LOG_DIALOG(wxT("BR24radar_pi: Chart Mouse vrm=%f ebl=%f"), distance / 1852.0, bearing);
@@ -355,7 +355,7 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
   float center_x = w / 2.0;
   float center_y = h / 2.0;
   int display_range = m_ri->GetDisplayRange();
-  int orientation = m_ri->m_orientation.GetValue();
+  int orientation = m_ri->GetOrientation();
 
   for (int b = 0; b < BEARING_LINES; b++) {
     float x, y;
@@ -451,7 +451,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     float full_range = wxMax(w, h) / 2.0;
     int display_range = m_ri->GetDisplayRange();
 
-    switch (m_ri->m_orientation.GetValue()) {
+    switch (m_ri->GetOrientation()) {
       case ORIENTATION_STABILIZED_UP:
         vp.rotation = deg2rad(-m_pi->GetHeadingTrue());
         break;

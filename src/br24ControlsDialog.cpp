@@ -1533,6 +1533,12 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     }
     m_orientation_button->SetLabel(o);
   }
+  LOG_DIALOG(wxT("BR24radar_pi: orientation=%d heading source=%d"), m_ri->GetOrientation(), m_pi->m_heading_source);
+  if (m_pi->m_heading_source == HEADING_NONE) {
+    m_orientation_button->Disable();
+  } else {
+    m_orientation_button->Enable();
+  }
 
   int overlay;
   if (m_ri->m_overlay.GetButton(&overlay) || ((m_pi->m_settings.chart_overlay == m_ri->m_radar) != (overlay != 0)) || refreshAll) {

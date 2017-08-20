@@ -541,7 +541,7 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
       return;
     }
     vertex_array[2 * i] = polarLookup->x[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
-    vertex_array[2 * i + 1] = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE; 
+    vertex_array[2 * i + 1] = polarLookup->y[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
   }
 
   glVertexPointer(2, GL_DOUBLE, 0, vertex_array);
@@ -577,7 +577,6 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
     glVertex2f(xx, yy);
   }
 #endif
-
 }
 
 void RadarArpa::DrawArpaTargets() {

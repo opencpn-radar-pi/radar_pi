@@ -478,11 +478,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     }
   }
 
-  if (m_orientation.GetButton(&orientation)) {
-    if ((orientation == ORIENTATION_HEAD_UP || m_previous_orientation == ORIENTATION_HEAD_UP) &&
-        (orientation != m_previous_orientation)) {
-      ResetSpokes();
-    }
+  orientation = GetOrientation();
+  if ((orientation == ORIENTATION_HEAD_UP || m_previous_orientation == ORIENTATION_HEAD_UP) &&
+      (orientation != m_previous_orientation)) {
+    ResetSpokes();
+    m_previous_orientation = orientation;
   }
 
   // In NORTH or COURSE UP modes we store the radar data at the bearing received
@@ -1068,6 +1068,19 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
   }
 }
 
+int RadarInfo::GetOrientation() {
+  int orientation;
+
+  // check for no longer allowed value
+  if (m_pi->m_heading_source == HEADING_NONE) {
+    orientation = ORIENTATION_HEAD_UP;
+  } else {
+    orientation = m_orientation.GetValue();
+  }
+
+  return orientation;
+}
+
 void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_rotate, bool overlay) {
   if (!m_range_meters) {
     return;
@@ -1085,7 +1098,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
 
   // So many combinations here
 
-  int orientation = m_orientation.GetValue();
+  int orientation = GetOrientation();
   int range = m_range.GetValue();
 
   if (!overlay) {
@@ -1189,7 +1202,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
 wxString RadarInfo::GetCanvasTextTopLeft() {
   wxString s;
 
-  switch (m_orientation.GetValue()) {
+  switch (GetOrientation()) {
     case ORIENTATION_HEAD_UP:
       s << _("Head Up");
       break;
@@ -1261,7 +1274,7 @@ wxString RadarInfo::FormatAngle(double angle) {
 
   wxString relative;
   if (angle > 360) angle -= 360;
-  if (IsDisplayNorthUp() || (m_orientation.GetValue() != ORIENTATION_HEAD_UP && m_pi->m_heading_source != HEADING_NONE)) {
+  if (GetOrientation() != ORIENTATION_HEAD_UP) {
     relative = wxT("T");
   } else {
     if (angle > 180.0) {
@@ -1279,7 +1292,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
 
   if (m_state.GetValue() == RADAR_TRANSMIT) {
     double distance = 0.0, bearing = nan("");
-    int orientation = m_orientation.GetValue();
+    int orientation = GetOrientation();
 
     // Add VRM/EBLs
 
@@ -1314,7 +1327,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
       // Can't compute this upfront, ownship may move...
       distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
       bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
-      if (!IsDisplayNorthUp()) {
+      if (GetOrientation() != ORIENTATION_NORTH_UP) {
         bearing -= m_pi->GetHeadingTrue();
       }
     }
@@ -1420,7 +1433,7 @@ void RadarInfo::SetMouseLatLon(double lat, double lon) {
 
 void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
   double bearing;
-  int orientation = m_orientation.GetValue();
+  int orientation = GetOrientation();
   double cog = m_pi->GetCOG();
 
   m_mouse_vrm = vrm;
@@ -1468,7 +1481,7 @@ void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
 }
 
 void RadarInfo::SetBearing(int bearing) {
-  int orientation = m_orientation.GetValue();
+  int orientation = GetOrientation();
 
   if (!isnan(m_vrm[bearing])) {
     m_vrm[bearing] = NAN;
