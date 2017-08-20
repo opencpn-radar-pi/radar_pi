@@ -197,14 +197,14 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
 
   memset(&m_statistics, 0, sizeof(m_statistics));
 
-  m_mouse_lat = 0.0;
-  m_mouse_lon = 0.0;
+  m_mouse_lat = NAN;
+  m_mouse_lon = NAN;
   for (int i = 0; i < ORIENTATION_NUMBER; i++) {
-    m_mouse_ebl[i] = nan("");
-    m_mouse_vrm = 0.0;
+    m_mouse_ebl[i] = NAN;
+    m_mouse_vrm = NAN;
     for (int b = 0; b < BEARING_LINES; b++) {
-      m_ebl[i][b] = nan("");
-      m_vrm[b] = 0.0;
+      m_ebl[i][b] = NAN;
+      m_vrm[b] = NAN;
     }
   }
   m_transmit = 0;
@@ -1285,7 +1285,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
 
     for (int b = 0; b < BEARING_LINES; b++) {
       double bearing = m_ebl[orientation][b];
-      if (m_vrm[b] != 0.0 && bearing != 0.) {
+      if (!isnan(m_vrm[b]) && !isnan(bearing)) {
         if (orientation == ORIENTATION_STABILIZED_UP) {
           bearing += m_course;
           if (bearing >= 360) bearing -= 360;
@@ -1299,7 +1299,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
     }
     // Add in mouse cursor location
 
-    if (m_mouse_vrm != 0.0) {
+    if (!isnan(m_mouse_vrm)) {
       distance = m_mouse_vrm;
       bearing = m_mouse_ebl[orientation];
 
@@ -1310,7 +1310,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
       }
       if (bearing >= 360) bearing -= 360;
 
-    } else if ((m_mouse_lat != 0.0 || m_mouse_lon != 0.0) && m_pi->m_bpos_set) {
+    } else if (!isnan(m_mouse_lat) && !isnan(m_mouse_lon) && m_pi->m_bpos_set) {
       // Can't compute this upfront, ownship may move...
       distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
       bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
@@ -1410,9 +1410,9 @@ const char *RadarInfo::GetDisplayRangeStr(size_t idx) {
 
 void RadarInfo::SetMouseLatLon(double lat, double lon) {
   for (int i = 0; i < ORIENTATION_NUMBER; i++) {
-    m_mouse_ebl[i] = nan("");
+    m_mouse_ebl[i] = NAN;
   }
-  m_mouse_vrm = 0.0;
+  m_mouse_vrm = NAN;
   m_mouse_lat = lat;
   m_mouse_lon = lon;
   LOG_DIALOG(wxT("BR24radar_pi: SetMouseLatLon(%f, %f)"), lat, lon);
@@ -1470,15 +1470,15 @@ void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
 void RadarInfo::SetBearing(int bearing) {
   int orientation = m_orientation.GetValue();
 
-  if (m_vrm[bearing] != 0.0) {
-    m_vrm[bearing] = 0.0;
-    m_ebl[orientation][bearing] = nanl("");
-  } else if (m_mouse_vrm != 0.0) {
+  if (!isnan(m_vrm[bearing])) {
+    m_vrm[bearing] = NAN;
+    m_ebl[orientation][bearing] = NAN;
+  } else if (!isnan(m_mouse_vrm)) {
     m_vrm[bearing] = m_mouse_vrm;
     for (int i = 0; i < ORIENTATION_NUMBER; i++) {
       m_ebl[i][bearing] = m_mouse_ebl[i];
     }
-  } else if (m_mouse_lat != 0.0 || m_mouse_lon != 0.0) {
+  } else if (!isnan(m_mouse_lat) && !isnan(m_mouse_lon)) {
     m_vrm[bearing] = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
     m_ebl[orientation][bearing] = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
   }

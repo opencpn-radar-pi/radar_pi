@@ -1480,7 +1480,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   m_window_button->SetLabel(o);
 
   for (int b = 0; b < BEARING_LINES; b++) {
-    if (m_ri->m_vrm[b] != 0.0) {
+    if (!isnan(m_ri->m_vrm[b])) {
       o = _("Clear EBL/VRM");
       o << wxString::Format(wxT("%d"), b + 1);
     } else {

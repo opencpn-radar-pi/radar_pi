@@ -297,11 +297,11 @@ void RadarCanvas::RenderCursor(int w, int h) {
 
   int orientation = m_ri->m_orientation.GetValue();
 
-  if (m_ri->m_mouse_vrm != 0.0) {
+  if (!isnan(m_ri->m_mouse_vrm)) {
     distance = m_ri->m_mouse_vrm * 1852.;
     bearing = m_ri->m_mouse_ebl[orientation];
   } else {
-    if ((m_ri->m_mouse_lat == 0.0 && m_ri->m_mouse_lon == 0.0) || !m_pi->m_bpos_set) {
+    if (isnan(m_ri->m_mouse_lat) || isnan(m_ri->m_mouse_lon) || !m_pi->m_bpos_set) {
       return;
     }
     // Can't compute this upfront, ownship may move...
@@ -361,7 +361,7 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
     float x, y;
     glColor3ubv(rgb[b]);
     glLineWidth(1.0);
-    if (m_ri->m_vrm[b] != 0.0) {
+    if (!isnan(m_ri->m_vrm[b])) {
       float scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
       if (m_ri->m_ebl[orientation][b] != nanl("")) {
         float angle = (float)deg2rad(m_ri->m_ebl[orientation][b]);
