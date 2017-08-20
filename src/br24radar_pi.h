@@ -574,6 +574,7 @@ class br24radar_pi : public opencpn_plugin_114 {
 
   // Keep last state of ContextMenu state sent, to avoid redraws
   bool m_context_menu_show;
+  bool m_context_menu_control;
   bool m_context_menu_arpa;
 };
 

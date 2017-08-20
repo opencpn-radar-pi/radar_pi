@@ -299,7 +299,10 @@ int br24radar_pi::Init(void) {
   m_context_menu_delete_marpa_target = AddCanvasContextMenuItem(mi5, this);
   m_context_menu_delete_all_marpa_targets = AddCanvasContextMenuItem(mi6, this);
   m_context_menu_show = true;
-  m_context_menu_arpa = true;
+  m_context_menu_control = false;
+  m_context_menu_arpa = false;
+  SetCanvasContextMenuItemViz(m_context_menu_show_id, false);
+
   m_initialized = true;
   LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.show_radar[0], m_settings.show_radar[1],
               m_settings.chart_overlay);
@@ -438,7 +441,19 @@ void br24radar_pi::UpdateContextMenu() {
   }
 
   bool show = m_settings.show;
+  bool control = false;
   bool arpa = arpa_targets == 0;
+
+  if (m_settings.chart_overlay >= 0) {
+    control = m_settings.show_radar_control[m_settings.chart_overlay];
+  } else {
+    control = true;
+    for (int r = 0; r < RADARS; r++) {
+      if (!m_settings.show_radar_control[r]) {
+        control = false;
+      }
+    }
+  }
 
   if (m_context_menu_arpa != arpa) {
     SetCanvasContextMenuItemGrey(m_context_menu_delete_marpa_target, arpa);
@@ -446,11 +461,15 @@ void br24radar_pi::UpdateContextMenu() {
     m_context_menu_arpa = arpa;
     LOG_DIALOG(wxT("BR24radar_pi: ContextMenu arpa = %d"), arpa_targets);
   }
+  if (m_context_menu_control != control) {
+    SetCanvasContextMenuItemGrey(m_context_menu_control_id, control);
+    m_context_menu_control = control;
+    LOG_DIALOG(wxT("BR24radar_pi: ContextMenu control = %d"), control);
+  }
 
   if (m_context_menu_show != show) {
     SetCanvasContextMenuItemViz(m_context_menu_show_id, !show);
     SetCanvasContextMenuItemViz(m_context_menu_hide_id, show);
-    SetCanvasContextMenuItemViz(m_context_menu_control_id, show);
     SetCanvasContextMenuItemViz(m_context_menu_control_id, show);
     SetCanvasContextMenuItemViz(m_context_menu_set_marpa_target, show);
     SetCanvasContextMenuItemViz(m_context_menu_delete_marpa_target, show);
@@ -555,10 +574,10 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
       ShowRadarControl(m_settings.chart_overlay, true);
     }
   } else if (id == m_context_menu_hide_id) {
-    m_settings.show = 0;
+    m_settings.show = false;
     SetRadarWindowViz();
   } else if (id == m_context_menu_show_id) {
-    m_settings.show = 1;
+    m_settings.show = true;
     SetRadarWindowViz();
   } else if (id == m_context_menu_set_marpa_target) {
     if (m_settings.show                                                             // radar shown
