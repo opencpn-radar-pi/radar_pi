@@ -608,7 +608,7 @@ void RadarArpa::CleanUpLostTargets() {
 }
 
 void RadarArpa::RefreshArpaTargets() {
-    CleanUpLostTargets();
+  CleanUpLostTargets();
   int target_to_delete = -1;
   // find a target with status FOR_DELETION if it is there
   for (int i = 0; i < m_number_of_targets; i++) {
