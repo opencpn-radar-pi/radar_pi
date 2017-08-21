@@ -439,7 +439,6 @@ void br24radar_pi::UpdateContextMenu() {
   for (int r = 0; r < RADARS; r++) {
     arpa_targets += m_radar[r]->m_arpa->GetTargetCount();
   }
-
   bool show = m_settings.show;
   bool control = false;
   bool arpa = arpa_targets == 0;
@@ -459,7 +458,7 @@ void br24radar_pi::UpdateContextMenu() {
     SetCanvasContextMenuItemGrey(m_context_menu_delete_marpa_target, arpa);
     SetCanvasContextMenuItemGrey(m_context_menu_delete_all_marpa_targets, arpa);
     m_context_menu_arpa = arpa;
-    LOG_DIALOG(wxT("BR24radar_pi: ContextMenu arpa = %d"), arpa_targets);
+    LOG_DIALOG(wxT("BR24radar_pi: ContextMenu arpa nr of targets = %d"), arpa_targets);
   }
   if (m_context_menu_control != control) {
     SetCanvasContextMenuItemGrey(m_context_menu_control_id, control);
@@ -597,11 +596,8 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
       Position target_pos;
       target_pos.lat = m_cursor_lat;
       target_pos.lon = m_cursor_lon;
-      if (m_radar[0]->m_arpa) {
-        m_radar[0]->m_arpa->DeleteTarget(target_pos);
-      }
-      if (m_radar[1]->m_arpa) {
-        m_radar[1]->m_arpa->DeleteTarget(target_pos);
+      if (m_radar[m_settings.chart_overlay]->m_arpa) {
+          m_radar[m_settings.chart_overlay]->m_arpa->DeleteTarget(target_pos);
       }
     }
   } else if (id == m_context_menu_delete_all_marpa_targets) {
