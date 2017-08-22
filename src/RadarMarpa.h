@@ -161,6 +161,7 @@ class RadarArpa {
   void DeleteTarget(Position p);
   bool MultiPix(int ang, int rad);
   void DeleteAllTargets();
+  void CleanUpLostTargets();
   void RadarLost() {
     DeleteAllTargets();  // Let ARPA targets disappear
   }
