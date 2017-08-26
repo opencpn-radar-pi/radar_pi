@@ -436,7 +436,6 @@ void br24radar_pi::UpdateContextMenu() {
   for (int r = 0; r < RADARS; r++) {
     arpa_targets += m_radar[r]->m_arpa->GetTargetCount();
   }
-
   bool show = m_settings.show;
   bool control = false;
   bool arpa = arpa_targets == 0;
@@ -456,7 +455,7 @@ void br24radar_pi::UpdateContextMenu() {
     SetCanvasContextMenuItemGrey(m_context_menu_delete_radar_target, arpa);
     SetCanvasContextMenuItemGrey(m_context_menu_delete_all_radar_targets, arpa);
     m_context_menu_arpa = arpa;
-    LOG_DIALOG(wxT("BR24radar_pi: ContextMenu arpa = %d"), arpa_targets);
+    LOG_DIALOG(wxT("BR24radar_pi: ContextMenu arpa nr of targets = %d"), arpa_targets);
   }
   if (m_context_menu_control != control) {
     SetCanvasContextMenuItemGrey(m_context_menu_control_id, control);
@@ -589,15 +588,12 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
   } else if (id == m_context_menu_delete_radar_target) {
     // Targets can also be deleted when the overlay is not shown
     // In this case targets can be made by a guard zone in a radarwindow
-    if (m_settings.show   // radar shown
-        && m_bpos_set) {  // overlay possible
+    if (m_settings.show && m_settings.chart_overlay >= 0) {
       Position target_pos;
       target_pos.lat = m_cursor_lat;
       target_pos.lon = m_cursor_lon;
-      for (int i = 0; i < RADARS; i++) {
-        if (m_radar[i]->m_arpa) {
-          m_radar[i]->m_arpa->DeleteTarget(target_pos);
-        }
+      if (m_radar[m_settings.chart_overlay]->m_arpa) {
+        m_radar[m_settings.chart_overlay]->m_arpa->DeleteTarget(target_pos);
       }
     }
   } else if (id == m_context_menu_delete_all_radar_targets) {
