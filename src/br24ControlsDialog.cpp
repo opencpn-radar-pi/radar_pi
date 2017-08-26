@@ -68,8 +68,9 @@ enum {  // process ID's
   ID_RAIN,
 
   ID_CLEAR_CURSOR,
-  ID_SET_MARPA,
-  ID_DELETE_MARPA,
+  ID_ACQUIRE_TARGET,
+  ID_DELETE_TARGET,
+  ID_DELETE_ALL_TARGETS,
 
   ID_TARGET_TRAILS,
   ID_CLEAR_TRAILS,
@@ -160,8 +161,9 @@ EVT_BUTTON(ID_MESSAGE, br24ControlsDialog::OnMessageButtonClick)
 
 EVT_BUTTON(ID_BEARING_SET, br24ControlsDialog::OnBearingSetButtonClick)
 EVT_BUTTON(ID_CLEAR_CURSOR, br24ControlsDialog::OnClearCursorButtonClick)
-EVT_BUTTON(ID_SET_MARPA, br24ControlsDialog::OnSetMarpaButtonClick)
-EVT_BUTTON(ID_DELETE_MARPA, br24ControlsDialog::OnDeleteMarpaButtonClick)
+EVT_BUTTON(ID_ACQUIRE_TARGET, br24ControlsDialog::OnAcquireTargetButtonClick)
+EVT_BUTTON(ID_DELETE_TARGET, br24ControlsDialog::OnDeleteTargetButtonClick)
+EVT_BUTTON(ID_DELETE_ALL_TARGETS, br24ControlsDialog::OnDeleteAllTargetsButtonClick)
 
 EVT_BUTTON(ID_TRANSMIT, br24ControlsDialog::OnTransmitButtonClick)
 EVT_BUTTON(ID_STANDBY, br24ControlsDialog::OnStandbyButtonClick)
@@ -792,13 +794,13 @@ void br24ControlsDialog::CreateControls() {
   m_end_bearing->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24ControlsDialog::OnEnd_Bearing_Value), NULL, this);
 
   // checkbox for ARPA
-  m_arpa_box = new wxCheckBox(this, wxID_ANY, _("ARPA On               "), wxDefaultPosition, wxDefaultSize,
+  m_arpa_box = new wxCheckBox(this, wxID_ANY, _("ARPA On"), wxDefaultPosition, wxDefaultSize,
                               wxALIGN_LEFT | wxST_NO_AUTORESIZE);
   m_guard_sizer->Add(m_arpa_box, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
   m_arpa_box->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnARPAClick), NULL, this);
 
   // checkbox for blob alarm
-  m_alarm = new wxCheckBox(this, wxID_ANY, _("Alarm On              "), wxDefaultPosition, wxDefaultSize,
+  m_alarm = new wxCheckBox(this, wxID_ANY, _("Alarm On"), wxDefaultPosition, wxDefaultSize,
                            wxALIGN_LEFT | wxST_NO_AUTORESIZE);
   m_guard_sizer->Add(m_alarm, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
   m_alarm->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnAlarmClick), NULL, this);
@@ -850,13 +852,17 @@ void br24ControlsDialog::CreateControls() {
   m_clear_cursor = new br24RadarButton(this, ID_CLEAR_CURSOR, _("Clear cursor"));
   m_cursor_sizer->Add(m_clear_cursor, 0, wxALL, BORDER);
 
-  // The SET MARPA button
-  m_set_marpa = new br24RadarButton(this, ID_SET_MARPA, _("Set MARPA Target"));
-  m_cursor_sizer->Add(m_set_marpa, 0, wxALL, BORDER);
+  // The ACQUIRE TARGET button
+  m_acquire_target = new br24RadarButton(this, ID_ACQUIRE_TARGET, _("Acquire Target"));
+  m_cursor_sizer->Add(m_acquire_target, 0, wxALL, BORDER);
 
-  // The DELETE MARPA button
-  m_delete_marpa = new br24RadarButton(this, ID_DELETE_MARPA, _("Delete (M)ARPA Target"));
-  m_cursor_sizer->Add(m_delete_marpa, 0, wxALL, BORDER);
+  // The DELETE TARGET button
+  m_delete_target = new br24RadarButton(this, ID_DELETE_TARGET, _("Delete target"));
+  m_cursor_sizer->Add(m_delete_target, 0, wxALL, BORDER);
+
+  // The DELETE ALL button
+  m_delete_all = new br24RadarButton(this, ID_DELETE_ALL_TARGETS, _("Delete all targets"));
+  m_cursor_sizer->Add(m_delete_all, 0, wxALL, BORDER);
 
   for (int b = 0; b < BEARING_LINES; b++) {
     // The BEARING button
@@ -1367,20 +1373,29 @@ void br24ControlsDialog::OnClearCursorButtonClick(wxCommandEvent& event) {
   SwitchTo(m_control_sizer, wxT("main (clear cursor)"));
 }
 
-void br24ControlsDialog::OnSetMarpaButtonClick(wxCommandEvent& event) {
+void br24ControlsDialog::OnAcquireTargetButtonClick(wxCommandEvent& event) {
   Position target_pos;
   target_pos.lat = m_ri->m_mouse_lat;
   target_pos.lon = m_ri->m_mouse_lon;
-  LOG_DIALOG(wxT("%s OnSetMarpaButtonClick mouse=%f/%f"), m_log_name.c_str(), target_pos.lat, target_pos.lon);
+  LOG_DIALOG(wxT("%s OnAcquireTargetButtonClick mouse=%f/%f"), m_log_name.c_str(), target_pos.lat, target_pos.lon);
   m_ri->m_arpa->AcquireNewMARPATarget(target_pos);
 }
 
-void br24ControlsDialog::OnDeleteMarpaButtonClick(wxCommandEvent& event) {
+void br24ControlsDialog::OnDeleteTargetButtonClick(wxCommandEvent& event) {
   Position target_pos;
   target_pos.lat = m_ri->m_mouse_lat;
   target_pos.lon = m_ri->m_mouse_lon;
-  LOG_DIALOG(wxT("%s OnDeleteMarpaButtonClick mouse=%f/%f"), m_log_name.c_str(), target_pos.lat, target_pos.lon);
+  LOG_DIALOG(wxT("%s OnDeleteTargetButtonClick mouse=%f/%f"), m_log_name.c_str(), target_pos.lat, target_pos.lon);
   m_ri->m_arpa->DeleteTarget(target_pos);
+}
+
+void br24ControlsDialog::OnDeleteAllTargetsButtonClick(wxCommandEvent& event) {
+  LOG_DIALOG(wxT("%s OnDeleteAllTargetsButtonClick"), m_log_name.c_str());
+  for (int i = 0; i < RADARS; i++) {
+    if (m_pi->m_radar[i]->m_arpa) {
+      m_pi->m_radar[i]->m_arpa->DeleteAllTargets();
+    }
+  }
 }
 
 void br24ControlsDialog::OnMove(wxMoveEvent& event) {

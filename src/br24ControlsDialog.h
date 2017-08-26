@@ -122,8 +122,9 @@ class br24ControlsDialog : public wxDialog {
   void OnZone2ButtonClick(wxCommandEvent &event);
 
   void OnClearCursorButtonClick(wxCommandEvent &event);
-  void OnSetMarpaButtonClick(wxCommandEvent &event);
-  void OnDeleteMarpaButtonClick(wxCommandEvent &event);
+  void OnAcquireTargetButtonClick(wxCommandEvent &event);
+  void OnDeleteTargetButtonClick(wxCommandEvent &event);
+  void OnDeleteAllTargetsButtonClick(wxCommandEvent &event);
   void OnBearingSetButtonClick(wxCommandEvent &event);
   void OnBearingButtonClick(wxCommandEvent &event);
 
@@ -189,8 +190,9 @@ class br24ControlsDialog : public wxDialog {
   // Bearing controls
   wxButton *m_bearing_buttons[BEARING_LINES];
   wxButton *m_clear_cursor;
-  wxButton *m_set_marpa;
-  wxButton *m_delete_marpa;
+  wxButton *m_acquire_target;
+  wxButton *m_delete_target;
+  wxButton *m_delete_all;
 
   // View controls
   br24RadarControlButton *m_target_trails_button;

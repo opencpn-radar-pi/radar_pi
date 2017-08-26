@@ -731,7 +731,7 @@ void RadarInfo::RequestRadarState(RadarState state) {
         case RADAR_OFF:
           LOG_INFO(wxT("BR24radar_pi: %s unexpected status request %d"), m_name.c_str(), state);
       }
-      m_stayalive_timeout = time(0) + STAYALIVE_TIMEOUT;
+      m_stayalive_timeout = now + STAYALIVE_TIMEOUT;
     }
   }
 }

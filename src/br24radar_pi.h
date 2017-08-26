@@ -371,8 +371,6 @@ class br24radar_pi : public opencpn_plugin_114 {
   //    The required PlugIn Methods
   int Init(void);
   bool DeInit(void);
-  int m_context_menu_delete_marpa_target;
-  int m_context_menu_delete_all_marpa_targets;
 
   int GetAPIVersionMajor();
   int GetAPIVersionMinor();
@@ -534,7 +532,9 @@ class br24radar_pi : public opencpn_plugin_114 {
   int m_context_menu_control_id;
   int m_context_menu_show_id;
   int m_context_menu_hide_id;
-  int m_context_menu_set_marpa_target;
+  int m_context_menu_acquire_radar_target;
+  int m_context_menu_delete_radar_target;
+  int m_context_menu_delete_all_radar_targets;
 
   int m_tool_id;
   wxBitmap *m_pdeficon;

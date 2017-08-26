@@ -124,9 +124,6 @@ br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_114(ppimgr) {
   m_opencpn_gl_context = 0;
   m_opencpn_gl_context_broken = false;
 
-  m_context_menu_delete_marpa_target = 0;
-  m_context_menu_delete_all_marpa_targets = 0;
-
   m_first_init = true;
 }
 
@@ -279,9 +276,9 @@ int br24radar_pi::Init(void) {
   wxMenuItem *mi1 = new wxMenuItem(&dummy_menu, -1, _("Show radar"));
   wxMenuItem *mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
   wxMenuItem *mi3 = new wxMenuItem(&dummy_menu, -1, _("Radar Control..."));
-  wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Set MARPA Target"));
-  wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete (M)ARPA Target"));
-  wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all (M)ARPA Targets"));
+  wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Acquire radar target"));
+  wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete radar target"));
+  wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all radar targets"));
 
 #ifdef __WXMSW__
   wxFont *qFont = OCPNGetFont(_("Menu"), 10);
@@ -295,9 +292,9 @@ int br24radar_pi::Init(void) {
   m_context_menu_show_id = AddCanvasContextMenuItem(mi1, this);
   m_context_menu_hide_id = AddCanvasContextMenuItem(mi2, this);
   m_context_menu_control_id = AddCanvasContextMenuItem(mi3, this);
-  m_context_menu_set_marpa_target = AddCanvasContextMenuItem(mi4, this);
-  m_context_menu_delete_marpa_target = AddCanvasContextMenuItem(mi5, this);
-  m_context_menu_delete_all_marpa_targets = AddCanvasContextMenuItem(mi6, this);
+  m_context_menu_acquire_radar_target = AddCanvasContextMenuItem(mi4, this);
+  m_context_menu_delete_radar_target = AddCanvasContextMenuItem(mi5, this);
+  m_context_menu_delete_all_radar_targets = AddCanvasContextMenuItem(mi6, this);
   m_context_menu_show = true;
   m_context_menu_control = false;
   m_context_menu_arpa = false;
@@ -456,8 +453,8 @@ void br24radar_pi::UpdateContextMenu() {
   }
 
   if (m_context_menu_arpa != arpa) {
-    SetCanvasContextMenuItemGrey(m_context_menu_delete_marpa_target, arpa);
-    SetCanvasContextMenuItemGrey(m_context_menu_delete_all_marpa_targets, arpa);
+    SetCanvasContextMenuItemGrey(m_context_menu_delete_radar_target, arpa);
+    SetCanvasContextMenuItemGrey(m_context_menu_delete_all_radar_targets, arpa);
     m_context_menu_arpa = arpa;
     LOG_DIALOG(wxT("BR24radar_pi: ContextMenu arpa = %d"), arpa_targets);
   }
@@ -471,9 +468,9 @@ void br24radar_pi::UpdateContextMenu() {
     SetCanvasContextMenuItemViz(m_context_menu_show_id, !show);
     SetCanvasContextMenuItemViz(m_context_menu_hide_id, show);
     SetCanvasContextMenuItemViz(m_context_menu_control_id, show);
-    SetCanvasContextMenuItemViz(m_context_menu_set_marpa_target, show);
-    SetCanvasContextMenuItemViz(m_context_menu_delete_marpa_target, show);
-    SetCanvasContextMenuItemViz(m_context_menu_delete_all_marpa_targets, show);
+    SetCanvasContextMenuItemViz(m_context_menu_acquire_radar_target, show);
+    SetCanvasContextMenuItemViz(m_context_menu_delete_radar_target, show);
+    SetCanvasContextMenuItemViz(m_context_menu_delete_all_radar_targets, show);
     m_context_menu_show = show;
     LOG_DIALOG(wxT("BR24radar_pi: ContextMenu show = %d"), show);
   }
@@ -579,7 +576,7 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
   } else if (id == m_context_menu_show_id) {
     m_settings.show = true;
     SetRadarWindowViz();
-  } else if (id == m_context_menu_set_marpa_target) {
+  } else if (id == m_context_menu_acquire_radar_target) {
     if (m_settings.show                                                             // radar shown
         && m_settings.chart_overlay >= 0                                            // overlay desired
         && m_radar[m_settings.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
@@ -589,7 +586,7 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
       target_pos.lon = m_cursor_lon;
       m_radar[m_settings.chart_overlay]->m_arpa->AcquireNewMARPATarget(target_pos);
     }
-  } else if (id == m_context_menu_delete_marpa_target) {
+  } else if (id == m_context_menu_delete_radar_target) {
     // Targets can also be deleted when the overlay is not shown
     // In this case targets can be made by a guard zone in a radarwindow
     if (m_settings.show   // radar shown
@@ -597,26 +594,20 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
       Position target_pos;
       target_pos.lat = m_cursor_lat;
       target_pos.lon = m_cursor_lon;
-      if (m_radar[0]->m_arpa) {
-        m_radar[0]->m_arpa->DeleteTarget(target_pos);
-      }
-      if (m_radar[1]->m_arpa) {
-        m_radar[1]->m_arpa->DeleteTarget(target_pos);
+      for (int i = 0; i < RADARS; i++) {
+        if (m_radar[i]->m_arpa) {
+          m_radar[i]->m_arpa->DeleteTarget(target_pos);
+        }
       }
     }
-  } else if (id == m_context_menu_delete_all_marpa_targets) {
-    if (m_settings.show   // radar shown
-        && m_bpos_set) {  // overlay possible
-      if (m_radar[0]->m_arpa) {
-        m_radar[0]->m_arpa->DeleteAllTargets();
-      }
-      if (m_radar[1]->m_arpa) {
-        m_radar[1]->m_arpa->DeleteAllTargets();
+  } else if (id == m_context_menu_delete_all_radar_targets) {
+    for (int i = 0; i < RADARS; i++) {
+      if (m_radar[i]->m_arpa) {
+        m_radar[i]->m_arpa->DeleteAllTargets();
       }
     }
   }
-
-  else {
+else {
     wxLogError(wxT("BR24radar_pi: Unknown context menu item callback"));
   }
 }
