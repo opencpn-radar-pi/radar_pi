@@ -28,9 +28,9 @@
  ***************************************************************************
  */
 
-#include "br24ControlsDialog.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
+#include "br24ControlsDialog.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -1667,6 +1667,15 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_main_bang_size_button->SetLocalValue(M_SETTINGS.main_bang_size);
     m_antenna_starboard_button->SetLocalValue(M_SETTINGS.antenna_starboard);
     m_antenna_forward_button->SetLocalValue(M_SETTINGS.antenna_forward);
+  }
+
+  int arpa_targets = m_ri->m_arpa->GetTargetCount();
+  if (arpa_targets) {
+    m_delete_target->Enable();
+    m_delete_all->Enable();
+  } else {
+    m_delete_target->Disable();
+    m_delete_all->Disable();
   }
 
   // Update the text that is currently shown in the edit box, this is a copy of the button itself
