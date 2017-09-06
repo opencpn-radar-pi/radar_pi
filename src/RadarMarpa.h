@@ -65,7 +65,6 @@ class Position;
 
 #define Q_NUM (4)  // status Q to OCPN at target status
 #define T_NUM (6)  // status T to OCPN at target status
-#define SPEED_HISTORY (8)
 #define TARGET_SPEED_DIV_SDEV 2.
 #define STATUS_TO_OCPN (5)            // First status to be send to OCPN
 #define START_UP_SPEED (0.5)          // maximum allowed speed (m/sec) for new target, real format with .
@@ -92,14 +91,6 @@ class Position {
 Position Polar2Pos(Polar pol, Position own_ship, double range);
 
 Polar Pos2Polar(Position p, Position own_ship, int range);
-
-struct SpeedHistory {
-  double av;
-  double hist[SPEED_HISTORY];
-  double dif[SPEED_HISTORY];
-  double sd;
-  int nr;
-};
 
 enum TargetProcessStatus { UNKNOWN, NOT_FOUND_IN_PASS1 };
 enum PassN { PASS1, PASS2 };
@@ -135,7 +126,6 @@ class ArpaTarget {
   double m_speed_kn;     // Average speed of target. TODO: Merge with m_position.speed?
   wxLongLong m_refresh;  // time of last refresh
   double m_course;
-  SpeedHistory m_speeds;
   int m_stationary;  // number of sweeps target was stationary
   int m_lost_count;
   bool m_check_for_duplicate;
