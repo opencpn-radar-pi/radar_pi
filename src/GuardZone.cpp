@@ -180,8 +180,8 @@ void GuardZone::SearchTargets() {
             Polar pol;
             pol.angle = angle;
             pol.r = rrr;
-            own_pos.lat = m_pi->m_ownship_lat;
-            own_pos.lon = m_pi->m_ownship_lon;
+            own_pos.lat = m_pi->m_radar_lat;
+            own_pos.lon = m_pi->m_radar_lon;
             Position x;
             x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
             int target_i;

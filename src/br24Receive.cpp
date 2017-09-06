@@ -157,8 +157,8 @@ void br24Receive::logBinaryData(const wxString &what, const UINT8 *data, int siz
 //
 void br24Receive::ProcessFrame(const UINT8 *data, int len) {
   time_t now = time(0);
-  double lat = m_pi->m_ownship_lat;
-  double lon = m_pi->m_ownship_lon;
+  double lat = m_pi->m_radar_lat;
+  double lon = m_pi->m_radar_lon;
   // log_line.time_rec = wxGetUTCTimeMillis();
   wxLongLong time_rec = wxGetUTCTimeMillis();
 

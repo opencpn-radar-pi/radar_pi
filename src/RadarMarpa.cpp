@@ -693,8 +693,8 @@ void ArpaTarget::RefreshTarget(int dist) {
   if (m_status == LOST) {
     return;
   }
-  own_pos.lat = m_pi->m_ownship_lat;
-  own_pos.lon = m_pi->m_ownship_lon;
+  own_pos.lat = m_pi->m_radar_lat;
+  own_pos.lon = m_pi->m_radar_lon;
   pol = Pos2Polar(m_position, own_pos, m_ri->m_range_meters);
   wxLongLong time1 = m_ri->m_history[MOD_ROTATION2048(pol.angle)].time;
   int margin = SCAN_MARGIN;
@@ -1131,8 +1131,8 @@ int RadarArpa::AcquireNewARPATarget(Polar pol, int status) {
   // constructs Kalman filter
   Position own_pos;
   Position target_pos;
-  own_pos.lat = m_pi->m_ownship_lat;
-  own_pos.lon = m_pi->m_ownship_lon;
+  own_pos.lat = m_pi->m_radar_lat;
+  own_pos.lon = m_pi->m_radar_lon;
   target_pos = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
   // make new target or re-use an existing one with status == lost
   int i;

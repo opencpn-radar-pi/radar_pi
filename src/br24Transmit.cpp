@@ -167,6 +167,8 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoV
     case CT_TRAILS_MOTION:
     case CT_MAIN_BANG_SIZE:
     case CT_MAX:
+    case CT_ANTENNA_FORWARD:
+    case CT_ANTENNA_STARBOARD:
       // The above are not settings that are not radar commands. Made them explicit so the
       // compiler can catch missing control types.
       break;
