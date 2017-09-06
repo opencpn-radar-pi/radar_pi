@@ -898,6 +898,19 @@ void br24radar_pi::Notify(void) {
 
   UpdateHeadingState(now);
 
+  // Update radar position offsett from GPS
+  if (!wxIsNaN(m_hdt) && (m_settings.antenna_starboard != 0 || m_settings.antenna_forward != 0)) {
+    double sine = sin(deg2rad(m_hdt));
+    double cosine = cos(deg2rad(m_hdt));
+    double dist_forward = (double)m_settings.antenna_forward / 1852 / 60;
+    double dist_starboard = (double)m_settings.antenna_starboard / 1852 / 60;
+    m_radar_lat = dist_forward * cosine - dist_starboard * sine + m_ownship_lat;
+    m_radar_lon = (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_ownship_lat)) + m_ownship_lon;
+  } else {
+    m_radar_lat = m_ownship_lat;
+    m_radar_lon = m_ownship_lon;
+  }
+
   // Check the age of "radar_seen", if too old radar_seen = false
   bool any_data_seen = false;
   for (size_t r = 0; r < RADARS; r++) {
@@ -1079,7 +1092,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   }
 
   wxPoint boat_center;
-  GetCanvasPixLL(vp, &boat_center, m_ownship_lat, m_ownship_lon);
+  GetCanvasPixLL(vp, &boat_center, m_radar_lat, m_radar_lon);
 
   m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
 
@@ -1220,6 +1233,8 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
     pConf->Read(wxT("IgnoreRadarHeading"), &m_settings.ignore_radar_heading, 0);
     pConf->Read(wxT("MainBangSize"), &m_settings.main_bang_size, 0);
+    pConf->Read(wxT("AntennaForward"), &m_settings.antenna_forward, 0);
+    pConf->Read(wxT("AntennaStarboard"), &m_settings.antenna_starboard, 0);
     pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 0);
     pConf->Read(wxT("PassHeadingToOCPN"), &m_settings.pass_heading_to_opencpn, false);
     pConf->Read(wxT("RadarInterface"), &m_settings.mcast_address);
@@ -1274,6 +1289,8 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("GuardZonesThreshold"), m_settings.guard_zone_threshold);
     pConf->Write(wxT("IgnoreRadarHeading"), m_settings.ignore_radar_heading);
     pConf->Write(wxT("MainBangSize"), m_settings.main_bang_size);
+    pConf->Write(wxT("AntennaForward"), m_settings.antenna_forward);
+    pConf->Write(wxT("AntennaStarboard"), m_settings.antenna_starboard);
     pConf->Write(wxT("MenuAutoHide"), m_settings.menu_auto_hide);
     pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
     pConf->Write(wxT("RadarInterface"), m_settings.mcast_address);
@@ -1397,6 +1414,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   if (pfix.FixTime > 0 && NOT_TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT)) {
     m_ownship_lat = pfix.Lat;
     m_ownship_lon = pfix.Lon;
+    
     if (!m_bpos_set) {
       LOG_VERBOSE(wxT("BR24radar_pi: GPS position is now known"));
     }
@@ -1508,8 +1526,8 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
           double f_AISLon = wxAtof(message.Get(_T("lon"), defaultValue).AsString());
           // Rectangle around own ship to look for AIS targets.
           double d_side = ArpaMaxRange / 1852.0 / 60.0;
-          if (f_AISLat < (m_ownship_lat + d_side) && f_AISLat > (m_ownship_lat - d_side) &&
-              f_AISLon < (m_ownship_lon + d_side * 2) && f_AISLon > (m_ownship_lon - d_side * 2)) {
+          if (f_AISLat < (m_radar_lat + d_side) && f_AISLat > (m_radar_lat - d_side) &&
+              f_AISLon < (m_radar_lon + d_side * 2) && f_AISLon > (m_radar_lon - d_side * 2)) {
             bool updated = false;
             int empty = -1;
             for (int i = 0; i < SIZEAISAR; i++) {
@@ -1616,6 +1634,18 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
       m_settings.main_bang_size = value;
       m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
       return true;
+    }
+
+    case CT_ANTENNA_FORWARD: {
+        m_settings.antenna_forward = value;
+        m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
+        return true;
+    }
+
+    case CT_ANTENNA_STARBOARD: {
+        m_settings.antenna_starboard = value;
+        m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
+        return true;
     }
 
     default: {

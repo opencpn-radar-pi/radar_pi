@@ -305,8 +305,8 @@ void RadarCanvas::RenderCursor(int w, int h) {
       return;
     }
     // Can't compute this upfront, ownship may move...
-    distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon) * 1852.;
-    bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon);
+    distance = local_distance(m_pi->m_radar_lat, m_pi->m_radar_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon) * 1852.;
+    bearing = local_bearing(m_pi->m_radar_lat, m_pi->m_radar_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon);
     if (m_ri->GetOrientation() != ORIENTATION_NORTH_UP) {
       bearing -= m_pi->GetHeadingTrue();
     }
@@ -445,8 +445,8 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
     PlugIn_ViewPort vp;
-    vp.clat = m_pi->m_ownship_lat;
-    vp.clon = m_pi->m_ownship_lon;
+    vp.clat = m_pi->m_radar_lat;
+    vp.clon = m_pi->m_radar_lon;
     vp.m_projection_type = 4;  // Orthographic projection
     float full_range = wxMax(w, h) / 2.0;
     int display_range = m_ri->GetDisplayRange();

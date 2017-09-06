@@ -58,6 +58,8 @@ enum {  // process ID's
 
   ID_BEARING_ALIGNMENT,
   ID_ANTENNA_HEIGHT,
+  ID_ANTENNA_FORWARD,
+  ID_ANTENNA_STARBOARD,
   ID_LOCAL_INTERFERENCE_REJECTION,
   ID_SIDE_LOBE_SUPPRESSION,
   ID_MAIN_BANG_SIZE,
@@ -133,6 +135,8 @@ EVT_BUTTON(ID_PREFERENCES, br24ControlsDialog::OnPreferencesButtonClick)
 
 EVT_BUTTON(ID_BEARING_ALIGNMENT, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_ANTENNA_HEIGHT, br24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_ANTENNA_FORWARD, br24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_ANTENNA_STARBOARD, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_LOCAL_INTERFERENCE_REJECTION, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_SIDE_LOBE_SUPPRESSION, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_MAIN_BANG_SIZE, br24ControlsDialog::OnRadarControlButtonClick)
@@ -471,6 +475,8 @@ void br24ControlsDialog::CreateControls() {
   label << _("Installation") << wxT("\n");
   label << _("Bearing alignment") << wxT("\n");
   label << _("Antenna height") << wxT("\n");
+  label << _("Antenna forward of GPS") << wxT("\n");
+  label << _("Antenna starboard of GPS") << wxT("\n");
   label << _("Local interference rej.") << wxT("\n");
   label << _("Side lobe suppression") << wxT("\n");
   label << _("Main bang size") << wxT("\n");
@@ -709,6 +715,20 @@ void br24ControlsDialog::CreateControls() {
   m_installation_sizer->Add(m_antenna_height_button, 0, wxALL, BORDER);
   m_antenna_height_button->minValue = 0;
   m_antenna_height_button->maxValue = 30;
+
+  // The ANTENNA FORWARD button
+  m_antenna_forward_button = new br24RadarControlButton(this, ID_ANTENNA_FORWARD, _("Antenna forward of GPS"), CT_ANTENNA_FORWARD, false,
+      m_pi->m_settings.antenna_forward);
+  m_installation_sizer->Add(m_antenna_forward_button, 0, wxALL, BORDER);
+  m_antenna_forward_button->minValue = -200;
+  m_antenna_forward_button->maxValue = 200;
+
+  // The ANTENNA STARBOARD button
+  m_antenna_starboard_button = new br24RadarControlButton(this, ID_ANTENNA_STARBOARD, _("Antenna starboard of GPS"), CT_ANTENNA_STARBOARD, false,
+      m_pi->m_settings.antenna_starboard);
+  m_installation_sizer->Add(m_antenna_starboard_button, 0, wxALL, BORDER);
+  m_antenna_starboard_button->minValue = -200;
+  m_antenna_starboard_button->maxValue = 200;
 
   // The LOCAL INTERFERENCE REJECTION button
   m_local_interference_rejection_button = new br24RadarControlButton(
@@ -1647,6 +1667,8 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_timed_run_button->SetLocalValue(M_SETTINGS.idle_run_time);
     m_refresh_rate_button->SetLocalValue(M_SETTINGS.refreshrate);
     m_main_bang_size_button->SetLocalValue(M_SETTINGS.main_bang_size);
+    m_antenna_starboard_button->SetLocalValue(M_SETTINGS.antenna_starboard);
+    m_antenna_forward_button->SetLocalValue(M_SETTINGS.antenna_forward);
   }
 
   // Update the text that is currently shown in the edit box, this is a copy of the button itself

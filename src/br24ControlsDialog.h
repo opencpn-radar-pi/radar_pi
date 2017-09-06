@@ -183,6 +183,8 @@ class br24ControlsDialog : public wxDialog {
   // Installation controls
   br24RadarControlButton *m_bearing_alignment_button;
   br24RadarControlButton *m_antenna_height_button;
+  br24RadarControlButton *m_antenna_forward_button;
+  br24RadarControlButton *m_antenna_starboard_button;
   br24RadarControlButton *m_local_interference_rejection_button;
   br24RadarControlButton *m_side_lobe_suppression_button;
   br24RadarControlButton *m_main_bang_size_button;

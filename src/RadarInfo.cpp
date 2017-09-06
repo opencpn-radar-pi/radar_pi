@@ -465,6 +465,9 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   // Why don't we make this an option? Yes we should
   data[RETURNS_PER_LINE - 1] = 200;  //  range ring, do we want this? ActionL: make setting, switched on for testing
 
+  data[2] = 200; // dot in the centre
+  data[1] = 200;
+
   if (m_range_meters != range_meters) {
     ResetSpokes();
     if (m_arpa) {
@@ -745,17 +748,17 @@ void RadarInfo::UpdateTrailPosition() {
   if (!m_pi->m_bpos_set || m_pi->m_heading_source == HEADING_NONE) {
     return;
   }
-  if (m_trails.lat == m_pi->m_ownship_lat && m_trails.lon == m_pi->m_ownship_lon) {  // don't do anything until position changes
+  if (m_trails.lat == m_pi->m_radar_lat && m_trails.lon == m_pi->m_radar_lon) {  // don't do anything until position changes
     return;
   }
 
-  double dif_lat = m_pi->m_ownship_lat - m_trails.lat;  // going north is positive
-  double dif_lon = m_pi->m_ownship_lon - m_trails.lon;  // moving east is positive
-  m_trails.lat = m_pi->m_ownship_lat;
-  m_trails.lon = m_pi->m_ownship_lon;
+  double dif_lat = m_pi->m_radar_lat - m_trails.lat;  // going north is positive
+  double dif_lon = m_pi->m_radar_lon - m_trails.lon;  // moving east is positive
+  m_trails.lat = m_pi->m_radar_lat;
+  m_trails.lon = m_pi->m_radar_lon;
   double fshift_lat = dif_lat * 60. * 1852. / (double)m_range_meters * (double)(RETURNS_PER_LINE);
   double fshift_lon = dif_lon * 60. * 1852. / (double)m_range_meters * (double)(RETURNS_PER_LINE);
-  fshift_lon *= cos(deg2rad(m_pi->m_ownship_lat));  // at higher latitudes a degree of longitude is fewer meters
+  fshift_lon *= cos(deg2rad(m_pi->m_radar_lat));  // at higher latitudes a degree of longitude is fewer meters
   int shift_lat = (int)(fshift_lat + m_trails.dif_lat);
 
   if (shift_lat > 0 && m_dir_lat <= 0) {
@@ -796,8 +799,8 @@ void RadarInfo::UpdateTrailPosition() {
 
   if (abs(shift_lat) >= MARGIN || abs(shift_lon) >= MARGIN) {  // huge shift, reset trails
     ClearTrails();
-    m_trails.lat = m_pi->m_ownship_lat;
-    m_trails.lon = m_pi->m_ownship_lon;
+    m_trails.lat = m_pi->m_radar_lat;
+    m_trails.lon = m_pi->m_radar_lon;
     m_trails.dif_lat = 0.;
     m_trails.dif_lon = 0.;
     LOG_INFO(wxT("BR24radar_pi: %s Large movement trails reset"), m_name.c_str());
@@ -1325,8 +1328,8 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
 
     } else if (!isnan(m_mouse_lat) && !isnan(m_mouse_lon) && m_pi->m_bpos_set) {
       // Can't compute this upfront, ownship may move...
-      distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
-      bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
+      distance = local_distance(m_pi->m_radar_lat, m_pi->m_radar_lon, m_mouse_lat, m_mouse_lon);
+      bearing = local_bearing(m_pi->m_radar_lat, m_pi->m_radar_lon, m_mouse_lat, m_mouse_lon);
       if (GetOrientation() != ORIENTATION_NORTH_UP) {
         bearing -= m_pi->GetHeadingTrue();
       }
@@ -1466,8 +1469,8 @@ void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
   double brng = deg2rad(bearing);
   double d = vrm;  // Distance in nm
 
-  double lat1 = deg2rad(m_pi->m_ownship_lat);
-  double lon1 = deg2rad(m_pi->m_ownship_lon);
+  double lat1 = deg2rad(m_pi->m_radar_lat);
+  double lon1 = deg2rad(m_pi->m_radar_lon);
 
   double lat2 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(brng));
   double lon2 = lon1 + atan2(sin(brng) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat2));
@@ -1492,8 +1495,8 @@ void RadarInfo::SetBearing(int bearing) {
       m_ebl[i][bearing] = m_mouse_ebl[i];
     }
   } else if (!isnan(m_mouse_lat) && !isnan(m_mouse_lon)) {
-    m_vrm[bearing] = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
-    m_ebl[orientation][bearing] = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_mouse_lat, m_mouse_lon);
+    m_vrm[bearing] = local_distance(m_pi->m_radar_lat, m_pi->m_radar_lon, m_mouse_lat, m_mouse_lon);
+    m_ebl[orientation][bearing] = local_bearing(m_pi->m_radar_lat, m_pi->m_radar_lon, m_mouse_lat, m_mouse_lon);
   }
 }
 

@@ -168,6 +168,8 @@ typedef enum ControlType {
   CT_BEARING_ALIGNMENT,
   CT_SIDE_LOBE_SUPPRESSION,
   CT_ANTENNA_HEIGHT,
+  CT_ANTENNA_FORWARD,
+  CT_ANTENNA_STARBOARD,
   CT_LOCAL_INTERFERENCE_REJECTION,
   CT_TARGET_TRAILS,
   CT_TRAILS_MOTION,
@@ -194,6 +196,8 @@ static string ControlTypeNames[CT_MAX] = {"Range",
                                           "Bearing alignment",
                                           "Side lobe suppression",
                                           "Antenna height",
+                                          "Antenna forward of GPS",
+                                          "Antenna starboard of GPS"
                                           "Local interference rejection",
                                           "Target trails",
                                           "Target trails motion",
@@ -313,6 +317,8 @@ struct PersistentSettings {
   int threshold_blue;               // Radar data has to be this strong to show as WEAK
   int threshold_multi_sweep;        // Radar data has to be this strong not to be ignored in multisweep
   int main_bang_size;               // Pixels at center to ignore
+  int antenna_starboard;            // Ofsett of radar antenne starboard of GPS antenna
+  int antenna_forward;              // Ofsett of radar antenne forward of GPS antenna
   int type_detection_method;        // 0 = default, 1 = ignore reports
   int AISatARPAoffset;              // Rectangle side where to search AIS targets at ARPA position
   wxPoint control_pos[RADARS];      // Saved position of control menu windows
@@ -476,7 +482,7 @@ class br24radar_pi : public opencpn_plugin_114 {
 
   // Cursor position. Used to show position in radar window
   double m_cursor_lat, m_cursor_lon;
-  double m_ownship_lat, m_ownship_lon;
+  double m_ownship_lat, m_ownship_lon, m_radar_lat, m_radar_lon;
 
   bool m_initialized;      // True if Init() succeeded and DeInit() not called yet.
   bool m_first_init;       // True in first Init() call.
