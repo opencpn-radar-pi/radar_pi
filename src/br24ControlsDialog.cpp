@@ -717,15 +717,15 @@ void br24ControlsDialog::CreateControls() {
   m_antenna_height_button->maxValue = 30;
 
   // The ANTENNA FORWARD button
-  m_antenna_forward_button = new br24RadarControlButton(this, ID_ANTENNA_FORWARD, _("Antenna forward of GPS"), CT_ANTENNA_FORWARD, false,
-      m_pi->m_settings.antenna_forward);
+  m_antenna_forward_button = new br24RadarControlButton(this, ID_ANTENNA_FORWARD, _("Antenna forward of GPS"), CT_ANTENNA_FORWARD,
+                                                        false, m_pi->m_settings.antenna_forward);
   m_installation_sizer->Add(m_antenna_forward_button, 0, wxALL, BORDER);
   m_antenna_forward_button->minValue = -200;
   m_antenna_forward_button->maxValue = 200;
 
   // The ANTENNA STARBOARD button
-  m_antenna_starboard_button = new br24RadarControlButton(this, ID_ANTENNA_STARBOARD, _("Antenna starboard of GPS"), CT_ANTENNA_STARBOARD, false,
-      m_pi->m_settings.antenna_starboard);
+  m_antenna_starboard_button = new br24RadarControlButton(this, ID_ANTENNA_STARBOARD, _("Antenna starboard of GPS"),
+                                                          CT_ANTENNA_STARBOARD, false, m_pi->m_settings.antenna_starboard);
   m_installation_sizer->Add(m_antenna_starboard_button, 0, wxALL, BORDER);
   m_antenna_starboard_button->minValue = -200;
   m_antenna_starboard_button->maxValue = 200;
@@ -814,14 +814,12 @@ void br24ControlsDialog::CreateControls() {
   m_end_bearing->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24ControlsDialog::OnEnd_Bearing_Value), NULL, this);
 
   // checkbox for ARPA
-  m_arpa_box = new wxCheckBox(this, wxID_ANY, _("ARPA On"), wxDefaultPosition, wxDefaultSize,
-                              wxALIGN_LEFT | wxST_NO_AUTORESIZE);
+  m_arpa_box = new wxCheckBox(this, wxID_ANY, _("ARPA On"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT | wxST_NO_AUTORESIZE);
   m_guard_sizer->Add(m_arpa_box, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
   m_arpa_box->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnARPAClick), NULL, this);
 
   // checkbox for blob alarm
-  m_alarm = new wxCheckBox(this, wxID_ANY, _("Alarm On"), wxDefaultPosition, wxDefaultSize,
-                           wxALIGN_LEFT | wxST_NO_AUTORESIZE);
+  m_alarm = new wxCheckBox(this, wxID_ANY, _("Alarm On"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT | wxST_NO_AUTORESIZE);
   m_guard_sizer->Add(m_alarm, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
   m_alarm->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnAlarmClick), NULL, this);
 

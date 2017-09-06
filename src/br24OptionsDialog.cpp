@@ -206,6 +206,12 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
   wxStaticBoxSizer *itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
   topSizer->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
 
+  m_ShowExtremeRange = new wxCheckBox(this, wxID_ANY, _("Show ring at extreme range"));
+  itemStaticBoxSizerOptions->Add(m_ShowExtremeRange, 0, wxALL, border_size);
+  m_ShowExtremeRange->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnShowExtremeRangeClick),
+                              NULL, this);
+  m_ShowExtremeRange->SetValue(m_settings.show_extreme_range);
+
   m_GuardZoneOnOverlay = new wxCheckBox(this, wxID_ANY, _("Show Guard Zone on overlay"));
   itemStaticBoxSizerOptions->Add(m_GuardZoneOnOverlay, 0, wxALL, border_size);
   m_GuardZoneOnOverlay->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24OptionsDialog::OnGuardZoneOnOverlayClick),
@@ -282,6 +288,10 @@ void br24OptionsDialog::OnGuardZoneStyleClick(wxCommandEvent &event) {
 
 void br24OptionsDialog::OnGuardZoneOnOverlayClick(wxCommandEvent &event) {
   m_settings.guard_zone_on_overlay = m_GuardZoneOnOverlay->GetValue();
+}
+
+void br24OptionsDialog::OnShowExtremeRangeClick(wxCommandEvent &event) {
+  m_settings.show_extreme_range = m_ShowExtremeRange->GetValue();
 }
 
 void br24OptionsDialog::OnTrailsOnOverlayClick(wxCommandEvent &event) {

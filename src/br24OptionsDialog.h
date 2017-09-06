@@ -50,6 +50,7 @@ class br24OptionsDialog : public wxDialog {
   void OnGuardZoneStyleClick(wxCommandEvent& event);
   void OnGuardZoneOnOverlayClick(wxCommandEvent& event);
   void OnGuardZoneTimeoutClick(wxCommandEvent& event);
+  void OnShowExtremeRangeClick(wxCommandEvent& event);
   void OnTrailsOnOverlayClick(wxCommandEvent& event);
   void OnTrailStartColourClick(wxCommandEvent& event);
   void OnTrailEndColourClick(wxCommandEvent& event);
@@ -86,6 +87,7 @@ class br24OptionsDialog : public wxDialog {
   wxColourPickerCtrl* m_ArpaColour;
   wxColourPickerCtrl* m_AisTextColour;
   wxColourPickerCtrl* m_PPIBackgroundColour;
+  wxCheckBox* m_ShowExtremeRange;
   wxCheckBox* m_GuardZoneOnOverlay;
   wxCheckBox* m_TrailsOnOverlay;
   wxCheckBox* m_IgnoreHeading;

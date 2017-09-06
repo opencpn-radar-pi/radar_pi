@@ -455,18 +455,18 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
                                   wxLongLong time_rec, double lat, double lon) {
   int orientation;
 
-  for (int i = 0; i < m_pi->m_settings.main_bang_size; i++) {
-    data[i] = 0;
-  }
   // calculate course as the moving average of m_hdt over one revolution
   SampleCourse(angle);  // used for course_up mode
 
-  // Douwe likes this, and I think it has some value in testing, but I think it distracts as well.
-  // Why don't we make this an option? Yes we should
-  data[RETURNS_PER_LINE - 1] = 200;  //  range ring, do we want this? ActionL: make setting, switched on for testing
+  for (int i = 0; i < m_pi->m_settings.main_bang_size; i++) {
+    data[i] = 0;
+  }
 
-  data[2] = 200; // dot in the centre
-  data[1] = 200;
+  if (m_pi->m_settings.show_extreme_range) {
+    data[RETURNS_PER_LINE - 1] = 255;  //  range ring, do we want this? ActionL: make setting, switched on for testing
+    data[1] = 255;                     // Main bang on purpose to show radar center
+    data[0] = 255;                     // Main bang on purpose to show radar center
+  }
 
   if (m_range_meters != range_meters) {
     ResetSpokes();

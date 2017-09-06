@@ -197,7 +197,7 @@ static string ControlTypeNames[CT_MAX] = {"Range",
                                           "Side lobe suppression",
                                           "Antenna height",
                                           "Antenna forward of GPS",
-                                          "Antenna starboard of GPS"
+                                          "Antenna starboard of GPS",
                                           "Local interference rejection",
                                           "Target trails",
                                           "Target trails motion",
@@ -299,19 +299,20 @@ struct PersistentSettings {
   int timed_idle;                   // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
   int idle_run_time;                // 0 = 10s, 1 = 30s, 2 = 1 min
   int refreshrate;                  // How quickly to refresh the display
+  int chart_overlay;                // -1 = none, otherwise = radar number
+  int menu_auto_hide;               // 0 = none, 1 = 10s, 2 = 30s
+  int drawing_method;               // VertexBuffer, Shader, etc.
   bool show;                        // whether to show any radar (overlay or window)
   bool show_radar[RADARS];          // whether to show radar window
   bool show_radar_control[RADARS];  // whether to show radar window
   bool transmit_radar[RADARS];      // whether radar should be transmitting (persistent)
-  int chart_overlay;                // -1 = none, otherwise = radar number
-  int menu_auto_hide;               // 0 = none, 1 = 10s, 2 = 30s
   bool pass_heading_to_opencpn;     // Pass heading coming from radar as NMEA data to OpenCPN
   bool enable_cog_heading;          // Allow COG as heading. Should be taken out back and shot.
   bool enable_dual_radar;           // Should the dual radar be enabled for 4G?
   bool emulator_on;                 // Emulator, useful when debugging without radar
-  int drawing_method;               // VertexBuffer, Shader, etc.
   bool ignore_radar_heading;        // For testing purposes
   bool reverse_zoom;                // false = normal, true = reverse
+  bool show_extreme_range;          // Show red ring at extreme range and center
   int threshold_red;                // Radar data has to be this strong to show as STRONG
   int threshold_green;              // Radar data has to be this strong to show as INTERMEDIATE
   int threshold_blue;               // Radar data has to be this strong to show as WEAK
