@@ -975,7 +975,6 @@ ArpaTarget::ArpaTarget(br24radar_pi* pi, RadarInfo* ri) {
   m_stationary = 0;
   m_position.dlat_dt = 0.;
   m_position.dlon_dt = 0.;
-  m_speeds.nr = 0;
   m_pass1_result = UNKNOWN;
   m_pass_nr = PASS1;
 }
@@ -993,7 +992,6 @@ ArpaTarget::ArpaTarget() {
   m_stationary = 0;
   m_position.dlat_dt = 0.;
   m_position.dlon_dt = 0.;
-  m_speeds.nr = 0;
   m_pass1_result = UNKNOWN;
   m_pass_nr = PASS1;
 }
@@ -1115,7 +1113,6 @@ void ArpaTarget::SetStatusLost() {
   m_stationary = 0;
   m_position.dlat_dt = 0.;
   m_position.dlon_dt = 0.;
-  m_speeds.nr = 0;
   m_pass_nr = PASS1;
 }
 
