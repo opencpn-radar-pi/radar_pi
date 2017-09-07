@@ -168,6 +168,7 @@ class br24ControlsDialog : public wxDialog {
   wxButton *m_plus_ten_button;
   wxButton *m_plus_button;
   wxStaticText *m_value_text;
+  wxStaticText *m_comment_text;
   wxButton *m_minus_button;
   wxButton *m_minus_ten_button;
   wxButton *m_auto_button;

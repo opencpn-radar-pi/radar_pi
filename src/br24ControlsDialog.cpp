@@ -28,9 +28,9 @@
  ***************************************************************************
  */
 
+#include "br24ControlsDialog.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
-#include "br24ControlsDialog.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -200,11 +200,31 @@ class br24RadarButton : public wxButton {
   br24radar_pi* m_pi;
 
   void SetLabel(const wxString& label) {
+    wxString newLabel;
+
 #ifdef __WXOSX__
-    wxButton::SetLabel(wxT("\n") + label + wxT("\n"));
-#else
-    wxButton::SetLabel(label);
+    newLabel << wxT("\n");
 #endif
+    newLabel << label;
+#ifdef __WXOSX__
+    newLabel << wxT("\n");
+#endif
+    wxButton::SetLabel(newLabel);
+  }
+};
+
+class DynamicStaticText : public wxStaticText {
+ public:
+  DynamicStaticText() {}
+
+  DynamicStaticText(wxWindow* parent, wxWindowID id, const wxString& label, const wxPoint& pos = wxDefaultPosition,
+                    const wxSize& size = wxDefaultSize, long style = 0, const wxString& name = wxStaticTextNameStr) {
+    Create(parent, id, label, pos, size, style, name);
+  }
+
+  void SetLabel(const wxString& label) {
+    wxStaticText::SetLabel(label);
+    SetSize(GetTextExtent(label));
   }
 };
 
@@ -215,7 +235,7 @@ class br24RadarControlButton : public wxButton {
   };
 
   br24RadarControlButton(br24ControlsDialog* parent, wxWindowID id, const wxString& label, ControlType ct, bool newHasAuto,
-                         int newValue) {
+                         int newValue, const wxString& newUnit = wxT(""), const wxString& newComment = wxT("")) {
     Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
 
     m_parent = parent;
@@ -230,6 +250,8 @@ class br24RadarControlButton : public wxButton {
     autoValues = newHasAuto ? 1 : 0;
     autoNames = 0;
     firstLine = label;
+    unit = newUnit;
+    comment = newComment;
     names = 0;
     controlType = ct;
     if (autoValues > 0) {
@@ -247,6 +269,8 @@ class br24RadarControlButton : public wxButton {
   virtual void SetLocalAuto(int newValue);
   const wxString* names;
   const wxString* autoNames;
+  wxString unit;
+  wxString comment;
 
   wxString firstLine;
 
@@ -276,6 +300,7 @@ class br24RadarRangeControlButton : public br24RadarControlButton {
     autoValue = 0;
     autoValues = 1;
     autoNames = 0;
+    unit = wxT("");
     firstLine = label;
     names = 0;
     controlType = CT_RANGE;
@@ -345,6 +370,9 @@ void br24RadarControlButton::SetLocalValue(int newValue) {  // sets value in the
     label.Printf(wxT("%s\n%s"), firstLine.c_str(), names[value].c_str());
   } else {
     label.Printf(wxT("%s\n%d"), firstLine.c_str(), value);
+  }
+  if (unit.length() > 0) {
+    label << wxT(" ") << unit;
   }
 
   this->SetLabel(label);
@@ -474,9 +502,9 @@ void br24ControlsDialog::CreateControls() {
   label << _("Target boost") << wxT("\n");
   label << _("Installation") << wxT("\n");
   label << _("Bearing alignment") << wxT("\n");
-  label << _("Antenna height (m)") << wxT("\n");
-  label << _("Antenna forward of GPS (m)") << wxT("\n");
-  label << _("Antenna starboard of GPS (m)") << wxT("\n");
+  label << _("Antenna height") << wxT("\n");
+  label << _("Antenna forward of GPS") << wxT("\n");
+  label << _("Antenna starboard of GPS") << wxT("\n");
   label << _("Local interference rej.") << wxT("\n");
   label << _("Side lobe suppression") << wxT("\n");
   label << _("Main bang size") << wxT("\n");
@@ -573,12 +601,17 @@ void br24ControlsDialog::CreateControls() {
   m_plus_button = new br24RadarButton(this, ID_PLUS, _("+"));
   m_edit_sizer->Add(m_plus_button, 0, wxALL, BORDER);
 
-  // The VALUE button
-  wxSize valueSize = wxSize(g_buttonSize.x, g_buttonSize.y + 20);
-  m_value_text = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, valueSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  // The VALUE text
+  wxSize valueSize = wxSize(g_buttonSize.x, g_buttonSize.y);
+  m_value_text = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, valueSize, wxALIGN_CENTRE_HORIZONTAL);
   m_edit_sizer->Add(m_value_text, 0, wxALL, BORDER);
   m_value_text->SetFont(m_pi->m_fat_font);
   m_value_text->SetBackgroundColour(*wxLIGHT_GREY);
+
+  // The COMMENT text
+  m_comment_text = new DynamicStaticText(this, ID_VALUE, wxT(""), wxDefaultPosition, g_buttonSize, wxALIGN_CENTRE_HORIZONTAL);
+  m_edit_sizer->Add(m_comment_text, 0, wxALL, BORDER);
+  m_comment_text->SetBackgroundColour(*wxLIGHT_GREY);
 
   // The - button
   m_minus_button = new br24RadarButton(this, ID_MINUS, _("-"));
@@ -703,29 +736,32 @@ void br24ControlsDialog::CreateControls() {
   m_installation_sizer->Add(bInstallationBack, 0, wxALL, BORDER);
 
   // The BEARING ALIGNMENT button
-  m_bearing_alignment_button = new br24RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"), CT_BEARING_ALIGNMENT,
-                                                          false, m_ri->m_bearing_alignment.GetButton());
+  m_bearing_alignment_button =
+      new br24RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"), CT_BEARING_ALIGNMENT, false,
+                                 m_ri->m_bearing_alignment.GetButton(), _("degrees"), _("relative to bow"));
   m_installation_sizer->Add(m_bearing_alignment_button, 0, wxALL, BORDER);
   m_bearing_alignment_button->minValue = -179;
   m_bearing_alignment_button->maxValue = 180;
 
   // The ANTENNA HEIGHT button
-  m_antenna_height_button = new br24RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Antenna height (m)"), CT_ANTENNA_HEIGHT, false,
-                                                       m_ri->m_antenna_height.GetButton());
+  m_antenna_height_button = new br24RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Antenna height"), CT_ANTENNA_HEIGHT, false,
+                                                       m_ri->m_antenna_height.GetButton(), _("m"), _("above sealevel"));
   m_installation_sizer->Add(m_antenna_height_button, 0, wxALL, BORDER);
   m_antenna_height_button->minValue = 0;
   m_antenna_height_button->maxValue = 30;
 
   // The ANTENNA FORWARD button
-  m_antenna_forward_button = new br24RadarControlButton(this, ID_ANTENNA_FORWARD, _("Antenna forward of GPS (m)"), CT_ANTENNA_FORWARD,
-                                                        false, m_pi->m_settings.antenna_forward);
+  m_antenna_forward_button = new br24RadarControlButton(this, ID_ANTENNA_FORWARD, _("Antenna forward"), CT_ANTENNA_FORWARD, false,
+                                                        m_pi->m_settings.antenna_forward, _("m"),
+                                                        _("relative to GPS") + wxT("\n") + _("negative = behind"));
   m_installation_sizer->Add(m_antenna_forward_button, 0, wxALL, BORDER);
   m_antenna_forward_button->minValue = -200;
   m_antenna_forward_button->maxValue = 200;
 
   // The ANTENNA STARBOARD button
-  m_antenna_starboard_button = new br24RadarControlButton(this, ID_ANTENNA_STARBOARD, _("Antenna starboard of GPS (m)"),
-                                                          CT_ANTENNA_STARBOARD, false, m_pi->m_settings.antenna_starboard);
+  m_antenna_starboard_button = new br24RadarControlButton(this, ID_ANTENNA_STARBOARD, _("Antenna starboard"), CT_ANTENNA_STARBOARD,
+                                                          false, m_pi->m_settings.antenna_starboard, _("m"),
+                                                          _("relative to GPS") + wxT("\n") + _("negative = port"));
   m_installation_sizer->Add(m_antenna_starboard_button, 0, wxALL, BORDER);
   m_antenna_starboard_button->minValue = -50;
   m_antenna_starboard_button->maxValue = 50;
@@ -741,8 +777,8 @@ void br24ControlsDialog::CreateControls() {
   m_local_interference_rejection_button->SetLocalValue(m_ri->m_local_interference_rejection.GetButton());
 
   // The SIDE LOBE SUPPRESSION button
-  m_side_lobe_suppression_button =
-      new br24RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"), CT_SIDE_LOBE_SUPPRESSION, true, 0);
+  m_side_lobe_suppression_button = new br24RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"),
+                                                              CT_SIDE_LOBE_SUPPRESSION, true, 0, wxT("%"));
   m_installation_sizer->Add(m_side_lobe_suppression_button, 0, wxALL, BORDER);
   m_side_lobe_suppression_button->minValue = 0;
   m_side_lobe_suppression_button->maxValue = 100;
@@ -1259,6 +1295,13 @@ void br24ControlsDialog::EnterEditMode(br24RadarControlButton* button) {
   m_value_text->SetLabel(button->GetLabel());
 
   SwitchTo(m_edit_sizer, wxT("edit"));
+
+  if (button->comment.length() > 0) {
+    m_comment_text->SetLabel(button->comment);
+    m_comment_text->Show();
+  } else {
+    m_comment_text->Hide();
+  }
 
   if (m_from_control->autoValues > 0) {
     m_auto_button->Show();
