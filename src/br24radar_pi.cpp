@@ -1168,6 +1168,8 @@ bool br24radar_pi::LoadConfig(void) {
       m_settings.idle_run_time = wxMax(m_settings.idle_run_time, 2);
 
       for (int r = 0; r < RADARS; r++) {
+        pConf->Read(wxString::Format(wxT("Radar%dRange"), r), &v, 2000);
+        m_radar[r]->m_range.Update(v);
         pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
         if (v == ORIENTATION_HEAD_UP) {
           v = ORIENTATION_STABILIZED_UP;
@@ -1321,6 +1323,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ColourPPIBackground"), m_settings.ppi_background_colour.GetAsString());
 
     for (int r = 0; r < RADARS; r++) {
+      pConf->Write(wxString::Format(wxT("Radar%dRange"), r), m_radar[r]->m_range.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->m_state.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
