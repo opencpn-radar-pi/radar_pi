@@ -355,7 +355,6 @@ struct AisArpa {
   time_t ais_time_upd;
   double ais_lat;
   double ais_lon;
-  wxString ais_name;
 };
 
 //----------------------------------------------------------------------------------------------------------
