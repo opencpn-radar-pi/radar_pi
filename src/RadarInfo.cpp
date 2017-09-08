@@ -552,18 +552,22 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   // True trails
   for (size_t radius = 0; radius < len - 1; radius++) {  //  len - 1 : no trails on range circle
-    UINT8 *trail = &m_trails.true_trails[polarLookup->intx[bearing][radius] + TRAILS_SIZE / 2 + m_trails.offset.lat]
-                                        // when ship moves north, offset.lat > 0. Add to move trails image in opposite direction
-                                        [polarLookup->inty[bearing][radius] + TRAILS_SIZE / 2 + m_trails.offset.lon];
-    // when ship moves east, offset.lon > 0. Add to move trails image in opposite direction
-    if (data[radius] >= weakest_normal_blob) {
-      *trail = 1;
-    } else {
-      if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-        (*trail)++;
-      }
-      if (motion == TARGET_MOTION_TRUE) {
-        data[radius] = m_trail_colour[*trail];
+    int x = polarLookup->intx[bearing][radius] + TRAILS_SIZE / 2 + m_trails.offset.lat;
+    int y = polarLookup->inty[bearing][radius] + TRAILS_SIZE / 2 + m_trails.offset.lon;
+
+    if (x >= 0 && x < TRAILS_SIZE && y >= 0 && y < TRAILS_SIZE) {
+      UINT8 *trail = &m_trails.true_trails[x][y];
+      // when ship moves north, offset.lat > 0. Add to move trails image in opposite direction
+      // when ship moves east, offset.lon > 0. Add to move trails image in opposite direction
+      if (data[radius] >= weakest_normal_blob) {
+        *trail = 1;
+      } else {
+        if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+          (*trail)++;
+        }
+        if (motion == TARGET_MOTION_TRUE) {
+          data[radius] = m_trail_colour[*trail];
+        }
       }
     }
   }
@@ -863,7 +867,7 @@ void RadarInfo::UpdateTrailPosition() {
 void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
   m_pi->Notify();
 
-  LOG_INFO(wxT("BR24radar_pi: TIMER"));
+  //  LOG_INFO(wxT("BR24radar_pi: TIMER"));
 
   if (m_overlay_refreshes_queued > 0) {
     // don't do additional refresh when too busy
