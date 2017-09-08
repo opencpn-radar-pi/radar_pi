@@ -170,7 +170,7 @@ SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in *addr, UINT16 port, con
   wxString address;
   address.Printf(wxT(" %u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
 
-  memset(&adr, 0, sizeof(adr));
+  CLEAR_STRUCT(adr);
   adr.sin_family = AF_INET;
   adr.sin_addr.s_addr = htonl(INADDR_ANY);  // I know, htonl is unnecessary here
   adr.sin_port = htons(port);
@@ -218,7 +218,7 @@ SOCKET GetLocalhostServerTCPSocket() {
   SOCKET server = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
   struct sockaddr_in adr;
 
-  memset(&adr, 0, sizeof(adr));
+  CLEAR_STRUCT(adr);
   adr.sin_family = AF_INET;
   adr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);  // I know, htonl is unnecessary here
   adr.sin_port = htons(0);
@@ -242,7 +242,7 @@ SOCKET GetLocalhostSendTCPSocket(SOCKET server) {
   struct sockaddr_in adr;
   socklen_t adrlen;
 
-  memset(&adr, 0, sizeof(adr));
+  CLEAR_STRUCT(adr);
   adrlen = sizeof(adr);
 
   if (client == INVALID_SOCKET) {
@@ -299,8 +299,7 @@ int getifaddrs(struct ifaddrs **ifap) {
 
   /* alloc a contiguous block for entire list */
   unsigned n = iilen, k = 0;
-  struct ifaddrs_storage *ifa = (struct ifaddrs_storage *)malloc(n * sizeof(struct ifaddrs_storage));
-  memset(ifa, 0, n * sizeof(struct ifaddrs_storage));
+  struct ifaddrs_storage *ifa = (struct ifaddrs_storage *)calloc(n, sizeof(struct ifaddrs_storage));
 
   /* foreach interface */
   struct ifaddrs_storage *ift = ifa;

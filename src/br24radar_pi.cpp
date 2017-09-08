@@ -160,6 +160,8 @@ int br24radar_pi::Init(void) {
     m_first_init = false;
   }
 
+  time_t now = time(0);
+
   // Font can change so initialize every time
   m_font = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
   m_fat_font = m_font;
@@ -180,14 +182,13 @@ int br24radar_pi::Init(void) {
   m_bogey_dialog = 0;
   m_alarm_sound_timeout = 0;
   m_guard_bogey_timeout = 0;
-  m_bpos_timestamp = 0;
+  m_bpos_timestamp = now;
   m_hdt = 0.0;
-  m_hdt_timeout = 0;
-  m_hdm_timeout = 0;
-  m_var_timeout = 0;
+  m_hdt_timeout = now + WATCHDOG_TIMEOUT;
+  m_hdm_timeout = now + WATCHDOG_TIMEOUT;
+  m_var_timeout = now + WATCHDOG_TIMEOUT;
   m_idle_standby = 0;
   m_idle_transmit = 0;
-  m_boot_time = time(0);
   count_ais_in_arpa = 0;
   // Silly, but could there be old scrap in memory location? (Debug exp.)
   for (int i = 0; i < SIZEAISAR; i++) {
@@ -806,10 +807,6 @@ void br24radar_pi::SetRadarHeading(double heading, bool isTrue) {
 
 void br24radar_pi::UpdateHeadingState(time_t now) {
   wxCriticalSectionLocker lock(m_exclusive);
-
-  if (!TIMED_OUT(now, m_boot_time + WATCHDOG_TIMEOUT)) {
-    return;
-  }
 
   if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
     // If the position data is 10s old reset our heading.

@@ -1054,7 +1054,7 @@ void br24ControlsDialog::CreateControls() {
   m_control_sizer->Add(m_transmit_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The ADJUST button
-  m_adjust_button = new br24RadarButton(this, ID_ADJUST, _("Adjust"));
+  m_adjust_button = new br24RadarButton(this, ID_ADJUST, _("X Adjust"));
   m_transmit_sizer->Add(m_adjust_button, 0, wxALL, BORDER);
 
   // The ADVANCED button

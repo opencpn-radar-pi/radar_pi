@@ -36,7 +36,7 @@ PLUGIN_BEGIN_NAMESPACE
 br24Transmit::br24Transmit(br24radar_pi *pi, wxString name, int radar) {
   m_pi = pi;
 
-  memset(&m_addr, 0, sizeof(m_addr));
+  CLEAR_STRUCT(m_addr);
   m_addr.sin_family = AF_INET;
 
   static UINT8 radar_mcast_send_addr[2][4] = {{236, 6, 7, 10}, {236, 6, 7, 14}};

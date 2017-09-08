@@ -43,7 +43,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 bool g_first_render = true;
 
-enum { TIMER_ID = 1 };
+enum { TIMER_ID = 51 };
 
 BEGIN_EVENT_TABLE(RadarInfo, wxEvtHandler)
 EVT_TIMER(TIMER_ID, RadarInfo::RefreshDisplay)
@@ -178,6 +178,12 @@ void radar_range_control_item::Update(int v) {
   m_range = newRange;
 }
 
+/**
+ * Constructor.
+ *
+ * Called when the config is not yet known, so this should not start any
+ * computations based on those yet.
+ */
 RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_pi = pi;
   m_radar = radar;
@@ -195,7 +201,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_radar_timeout = 0;
   m_data_timeout = 0;
 
-  memset(&m_statistics, 0, sizeof(m_statistics));
+  CLEAR_STRUCT(m_statistics);
 
   m_mouse_lat = NAN;
   m_mouse_lon = NAN;
@@ -209,6 +215,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   }
   m_transmit = 0;
   m_receive = 0;
+  m_timer = 0;
   m_draw_panel.draw = 0;
   m_draw_overlay.draw = 0;
   m_radar_panel = 0;
@@ -217,11 +224,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_state.Update(0);
   m_range.m_settings = &m_pi->m_settings;
 
-  ComputeTargetTrails();
-
-  if (m_radar == 0) {
-    m_timer = new wxTimer(this, TIMER_ID);
-  }
+  ClearTrails();
   m_overlay_refreshes_queued = 0;
   m_refreshes_queued = 0;
   m_refresh_millis = 50;
@@ -296,6 +299,11 @@ RadarInfo::~RadarInfo() {
   }
 }
 
+/**
+ * Initialize the on-screen and receive/transmit items.
+ *
+ * This is called after the config file has been loaded, so all state is known.
+ */
 bool RadarInfo::Init(wxString name, int verbose) {
   m_verbose = verbose;
 
@@ -311,7 +319,10 @@ bool RadarInfo::Init(wxString name, int verbose) {
     return false;
   }
 
-  if (m_timer) {
+  ComputeTargetTrails();
+
+  if (m_radar == 0) { // Need only one timer, so do this only on the first radar.
+    m_timer = new wxTimer(this, TIMER_ID);
     m_timer->Start(m_refresh_millis);
   }
   return true;
@@ -421,8 +432,8 @@ void RadarInfo::ResetSpokes() {
 
   LOG_VERBOSE(wxT("BR24radar_pi: reset spokes"));
 
-  memset(zap, 0, sizeof(zap));
-  memset(m_history, 0, sizeof(m_history));
+  CLEAR_STRUCT(zap);
+  CLEAR_STRUCT(m_history);
 
   if (m_draw_panel.draw) {
     for (size_t r = 0; r < LINES_PER_ROTATION; r++) {
@@ -618,7 +629,7 @@ void RadarInfo::ZoomTrails(float zoom_factor) {
   // zoom_factor > 1 -> zoom in, enlarge image
 
   // zoom relative trails
-  memset(&m_trails.copy_of_relative_trails, 0, sizeof(m_trails.copy_of_relative_trails));
+  CLEAR_STRUCT(m_trails.copy_of_relative_trails);
   for (int i = 0; i < LINES_PER_ROTATION; i++) {
     for (int j = 0; j < RETURNS_PER_LINE; j++) {
       int index_j = (int((float)j * zoom_factor));
@@ -628,10 +639,10 @@ void RadarInfo::ZoomTrails(float zoom_factor) {
       }
     }
   }
-  memcpy(&m_trails.relative_trails[0][0], &m_trails.copy_of_relative_trails[0][0], sizeof(m_trails.copy_of_relative_trails));
+  CLEAR_STRUCT(m_trails.relative_trails);
+  CLEAR_STRUCT(m_trails.copy_of_true_trails);
 
   // zoom true trails
-  memset(&m_trails.copy_of_true_trails, 0, sizeof(m_trails.copy_of_true_trails));
   for (int i = TRAILS_SIZE / 2 + m_trails.offset.lat - RETURNS_PER_LINE;
        i < TRAILS_SIZE / 2 + m_trails.offset.lat + RETURNS_PER_LINE; i++) {
     int index_i = (int((float)(i - TRAILS_SIZE / 2 + m_trails.offset.lat) * zoom_factor)) + TRAILS_SIZE / 2 -
@@ -851,6 +862,8 @@ void RadarInfo::UpdateTrailPosition() {
 
 void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
   m_pi->Notify();
+
+  LOG_INFO(wxT("BR24radar_pi: TIMER"));
 
   if (m_overlay_refreshes_queued > 0) {
     // don't do additional refresh when too busy
@@ -1500,7 +1513,7 @@ void RadarInfo::SetBearing(int bearing) {
   }
 }
 
-void RadarInfo::ClearTrails() { memset(&m_trails, 0, sizeof(m_trails)); }
+void RadarInfo::ClearTrails() { CLEAR_STRUCT(m_trails); }
 
 void RadarInfo::ComputeTargetTrails() {
   static TrailRevolutionsAge maxRevs[TRAIL_ARRAY_SIZE] = {
