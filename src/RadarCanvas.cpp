@@ -452,11 +452,11 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     int display_range = m_ri->GetDisplayRange();
 
     switch (m_ri->GetOrientation()) {
+      case ORIENTATION_HEAD_UP:
       case ORIENTATION_STABILIZED_UP:
         vp.rotation = deg2rad(-m_pi->GetHeadingTrue());
         break;
       case ORIENTATION_NORTH_UP:
-      case ORIENTATION_HEAD_UP:
         vp.rotation = 0.;
         break;
       case ORIENTATION_COG_UP:
