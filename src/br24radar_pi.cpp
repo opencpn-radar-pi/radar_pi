@@ -1169,6 +1169,9 @@ bool br24radar_pi::LoadConfig(void) {
 
       for (int r = 0; r < RADARS; r++) {
         pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
+        if (v == ORIENTATION_HEAD_UP) {
+          v = ORIENTATION_STABILIZED_UP;
+        }
         m_radar[r]->m_orientation.Update(v);
         pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
         m_radar[r]->m_boot_state.Update(v);
@@ -1219,6 +1222,7 @@ bool br24radar_pi::LoadConfig(void) {
     m_settings.ais_text_colour = wxColour(s);
     pConf->Read(wxT("ColourPPIBackground"), &s, "rgb(0,0,50)");
     m_settings.ppi_background_colour = wxColour(s);
+    pConf->Read(wxT("DeveloperMode"), &m_settings.developer_mode, false);
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
     pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
     pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, false);
@@ -1275,6 +1279,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("AlarmPosY"), m_settings.alarm_pos.y);
     pConf->Write(wxT("AlertAudioFile"), m_settings.alert_audio_file);
     pConf->Write(wxT("ChartOverlay"), m_settings.chart_overlay);
+    pConf->Write(wxT("DeveloperMode"), m_settings.developer_mode);
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
     pConf->Write(wxT("EmulatorOn"), m_settings.emulator_on);
     pConf->Write(wxT("EnableCOGHeading"), m_settings.enable_cog_heading);

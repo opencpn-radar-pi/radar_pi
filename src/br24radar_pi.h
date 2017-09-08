@@ -283,7 +283,7 @@ enum RangeUnits { RANGE_NAUTICAL, RANGE_METRIC };
  * some of it is 'secret' and can only be set by manipulating the ini file directly.
  */
 struct PersistentSettings {
-  int overlay_transparency;
+  int overlay_transparency;         // How transparent is the radar picture over the chart
   int range_index;                  // index into range array, see RadarInfo.cpp
   int verbose;                      // Loglevel 0..4.
   int guard_zone_threshold;         // How many blobs must be sent by radar before we fire alarm
@@ -302,6 +302,7 @@ struct PersistentSettings {
   int chart_overlay;                // -1 = none, otherwise = radar number
   int menu_auto_hide;               // 0 = none, 1 = 10s, 2 = 30s
   int drawing_method;               // VertexBuffer, Shader, etc.
+  bool developer_mode;              // Readonly from config, allows head up mode
   bool show;                        // whether to show any radar (overlay or window)
   bool show_radar[RADARS];          // whether to show radar window
   bool show_radar_control[RADARS];  // whether to show radar window

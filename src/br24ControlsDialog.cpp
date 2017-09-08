@@ -1412,8 +1412,12 @@ void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
     value = ORIENTATION_HEAD_UP;
   } else {  // There is a heading
     if (value == ORIENTATION_NUMBER) {
-      // TODO: Allow HEAD UP if dev mode is on
-      value = ORIENTATION_STABILIZED_UP;
+      if (M_SETTINGS.developer_mode) {
+        value = ORIENTATION_HEAD_UP;
+      }
+      else {
+        value = ORIENTATION_STABILIZED_UP;
+      }
     }
   }
 
