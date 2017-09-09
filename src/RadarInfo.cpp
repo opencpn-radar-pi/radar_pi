@@ -534,23 +534,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
-  PolarToCartesianLookupTable *polarLookup;
-  polarLookup = GetPolarToCartesianLookupTable();
-  if (m_old_range != m_range_meters && m_old_range != 0 && m_range_meters != 0) {
-    // zoom trails
-    float zoom_factor = (float)m_old_range / (float)m_range_meters;
-    ZoomTrails(zoom_factor);
-  }
-  if (m_old_range == 0 || m_range_meters == 0) {
-    ClearTrails();
-  }
-  m_old_range = m_range_meters;
-
-  UpdateTrailPosition();  // for true trails
-
-  int motion = m_trails_motion.GetValue();
+  UpdateTrailPosition();
 
   // True trails
+  int motion = m_trails_motion.GetValue();
+  PolarToCartesianLookupTable * polarLookup = GetPolarToCartesianLookupTable();
   for (size_t radius = 0; radius < len - 1; radius++) {  //  len - 1 : no trails on range circle
     int x = polarLookup->intx[bearing][radius] + TRAILS_SIZE / 2 + m_trails.offset.lat;
     int y = polarLookup->inty[bearing][radius] + TRAILS_SIZE / 2 + m_trails.offset.lon;
@@ -636,25 +624,25 @@ void RadarInfo::ZoomTrails(float zoom_factor) {
   CLEAR_STRUCT(m_trails.copy_of_relative_trails);
   for (int i = 0; i < LINES_PER_ROTATION; i++) {
     for (int j = 0; j < RETURNS_PER_LINE; j++) {
-      int index_j = (int((float)j * zoom_factor));
+      int index_j = int((float)j * zoom_factor);
       if (index_j >= RETURNS_PER_LINE) break;
       if (m_trails.relative_trails[i][j] != 0) {
         m_trails.copy_of_relative_trails[i][index_j] = m_trails.relative_trails[i][j];
       }
     }
   }
-  CLEAR_STRUCT(m_trails.relative_trails);
-  CLEAR_STRUCT(m_trails.copy_of_true_trails);
+  memcpy(m_trails.relative_trails, m_trails.copy_of_relative_trails, sizeof(m_trails.copy_of_relative_trails));
 
+  CLEAR_STRUCT(m_trails.copy_of_true_trails);
   // zoom true trails
-  for (int i = TRAILS_SIZE / 2 + m_trails.offset.lat - RETURNS_PER_LINE;
-       i < TRAILS_SIZE / 2 + m_trails.offset.lat + RETURNS_PER_LINE; i++) {
+  for (int i = wxMax(TRAILS_SIZE / 2 + m_trails.offset.lat - RETURNS_PER_LINE, 0);
+       i < wxMin(TRAILS_SIZE / 2 + m_trails.offset.lat + RETURNS_PER_LINE, TRAILS_SIZE); i++) {
     int index_i = (int((float)(i - TRAILS_SIZE / 2 + m_trails.offset.lat) * zoom_factor)) + TRAILS_SIZE / 2 -
                   m_trails.offset.lat * zoom_factor;
     if (index_i >= TRAILS_SIZE - 1) break;  // allow adding an additional pixel later
     if (index_i < 0) continue;
-    for (int j = TRAILS_SIZE / 2 + m_trails.offset.lon - RETURNS_PER_LINE;
-         j < TRAILS_SIZE / 2 + m_trails.offset.lon + RETURNS_PER_LINE; j++) {
+    for (int j = wxMax(TRAILS_SIZE / 2 + m_trails.offset.lon - RETURNS_PER_LINE, 0);
+         j < wxMin(TRAILS_SIZE / 2 + m_trails.offset.lon + RETURNS_PER_LINE, TRAILS_SIZE); j++) {
       int index_j = (int((float)(j - TRAILS_SIZE / 2 + m_trails.offset.lon) * zoom_factor)) + TRAILS_SIZE / 2 -
                     m_trails.offset.lon * zoom_factor;
       if (index_j >= TRAILS_SIZE - 1) break;
@@ -759,76 +747,88 @@ void RadarInfo::UpdateTrailPosition() {
   // of the image (offset) is changed.
   // So we move the image around within the m_trails.true_trails buffer (by moving the pointer).
   // But when there is no room anymore (margin used) the whole trails image is shifted
-  // and the is offset reset
-  if (!m_pi->m_bpos_set || m_pi->m_heading_source == HEADING_NONE) {
-    return;
-  }
-  if (m_trails.lat == m_pi->m_radar_lat && m_trails.lon == m_pi->m_radar_lon) {  // don't do anything until position changes
-    return;
-  }
+  // and the offset is reset
 
-  double dif_lat = m_pi->m_radar_lat - m_trails.lat;  // going north is positive
-  double dif_lon = m_pi->m_radar_lon - m_trails.lon;  // moving east is positive
-  m_trails.lat = m_pi->m_radar_lat;
-  m_trails.lon = m_pi->m_radar_lon;
-  double fshift_lat = dif_lat * 60. * 1852. / (double)m_range_meters * (double)(RETURNS_PER_LINE);
-  double fshift_lon = dif_lon * 60. * 1852. / (double)m_range_meters * (double)(RETURNS_PER_LINE);
-  fshift_lon *= cos(deg2rad(m_pi->m_radar_lat));  // at higher latitudes a degree of longitude is fewer meters
-  int shift_lat = (int)(fshift_lat + m_trails.dif_lat);
+  int shift_lat;
+  int shift_lon;
 
-  if (shift_lat > 0 && m_dir_lat <= 0) {
-    // change of direction of movement
-    // clear space in true_trails outside image in that direction (this area might not be empty)
-    memset(&m_trails.true_trails[TRAILS_SIZE - MARGIN + m_trails.offset.lat][0], 0, TRAILS_SIZE * (MARGIN - m_trails.offset.lat));
-    m_dir_lat = 1;
-  }
-
-  if (shift_lat < 0 && m_dir_lat >= 0) {
-    // change of direction of movement
-    // clear space in true_trails outside image in that direction
-    memset(&m_trails.true_trails[0][0], 0, TRAILS_SIZE * (MARGIN + m_trails.offset.lat));
-    m_dir_lat = -1;
-  }
-
-  int shift_lon = (int)(fshift_lon + m_trails.dif_lon);
-  if (shift_lon > 0 && m_dir_lon <= 0) {
-    // change of direction of movement
-    // clear space in true_trails outside image in that direction
-    for (int i = 0; i < TRAILS_SIZE; i++) {
-      memset(&m_trails.true_trails[i][TRAILS_SIZE - MARGIN + m_trails.offset.lon], 0, MARGIN - m_trails.offset.lon);
-    }
-    m_dir_lon = 1;
-  }
-
-  if (shift_lon < 0 && m_dir_lon >= 0) {
-    // change of direction of movement
-    // clear space in true_trails outside image in that direction
-    for (int i = 0; i < TRAILS_SIZE; i++) {
-      memset(&m_trails.true_trails[i][0], 0, MARGIN + m_trails.offset.lon);
-    }
-    m_dir_lon = -1;
-  }
-
-  m_trails.dif_lat = fshift_lat + m_trails.dif_lat - (double)shift_lat;  // save the rounding fraction and appy it next time
-  m_trails.dif_lon = fshift_lon + m_trails.dif_lon - (double)shift_lon;
-
-  if (abs(shift_lat) >= MARGIN || abs(shift_lon) >= MARGIN) {  // huge shift, reset trails
+  if (m_old_range == 0 || m_range_meters == 0) {
     ClearTrails();
+  } else if (m_old_range != m_range_meters) {
+    // zoom trails
+    float zoom_factor = (float)m_old_range / (float)m_range_meters;
+    ZoomTrails(zoom_factor); // this modifies m_trails.offset, so check it is still within bounds below
+  }
+  m_old_range = m_range_meters;
+
+  if (m_pi->m_bpos_set && m_pi->m_heading_source != HEADING_NONE && m_trails.lat != m_pi->m_radar_lat && m_trails.lon != m_pi->m_radar_lon) {  // don't do anything until position changes
+    double dif_lat = m_pi->m_radar_lat - m_trails.lat;  // going north is positive
+    double dif_lon = m_pi->m_radar_lon - m_trails.lon;  // moving east is positive
     m_trails.lat = m_pi->m_radar_lat;
     m_trails.lon = m_pi->m_radar_lon;
-    m_trails.dif_lat = 0.;
-    m_trails.dif_lon = 0.;
-    LOG_INFO(wxT("BR24radar_pi: %s Large movement trails reset"), m_name.c_str());
-    return;
-  }
+    double fshift_lat = dif_lat * 60. * 1852. / (double)m_range_meters * (double)(RETURNS_PER_LINE);
+    double fshift_lon = dif_lon * 60. * 1852. / (double)m_range_meters * (double)(RETURNS_PER_LINE);
+    fshift_lon *= cos(deg2rad(m_pi->m_radar_lat));  // at higher latitudes a degree of longitude is fewer meters
+    shift_lat = (int)(fshift_lat + m_trails.dif_lat);
 
-  // don't shift the image yet, only shift the center
-  m_trails.offset.lat += shift_lat;
-  m_trails.offset.lon += shift_lon;  //  index as follows: array[lat][lon]
+    if (shift_lat > 0 && m_dir_lat <= 0) {
+      // change of direction of movement
+      // clear space in true_trails outside image in that direction (this area might not be empty)
+      memset(&m_trails.true_trails[TRAILS_SIZE - MARGIN + m_trails.offset.lat][0], 0, TRAILS_SIZE * (MARGIN - m_trails.offset.lat));
+      m_dir_lat = 1;
+    }
+
+    if (shift_lat < 0 && m_dir_lat >= 0) {
+      // change of direction of movement
+      // clear space in true_trails outside image in that direction
+      memset(&m_trails.true_trails[0][0], 0, TRAILS_SIZE * (MARGIN + m_trails.offset.lat));
+      m_dir_lat = -1;
+    }
+
+    shift_lon = (int)(fshift_lon + m_trails.dif_lon);
+    if (shift_lon > 0 && m_dir_lon <= 0) {
+      // change of direction of movement
+      // clear space in true_trails outside image in that direction
+      for (int i = 0; i < TRAILS_SIZE; i++) {
+        memset(&m_trails.true_trails[i][TRAILS_SIZE - MARGIN + m_trails.offset.lon], 0, MARGIN - m_trails.offset.lon);
+      }
+      m_dir_lon = 1;
+    }
+
+    if (shift_lon < 0 && m_dir_lon >= 0) {
+      // change of direction of movement
+      // clear space in true_trails outside image in that direction
+      for (int i = 0; i < TRAILS_SIZE; i++) {
+        memset(&m_trails.true_trails[i][0], 0, MARGIN + m_trails.offset.lon);
+      }
+      m_dir_lon = -1;
+    }
+
+    m_trails.dif_lat = fshift_lat + m_trails.dif_lat - (double)shift_lat;  // save the rounding fraction and appy it next time
+    m_trails.dif_lon = fshift_lon + m_trails.dif_lon - (double)shift_lon;
+
+    if (abs(shift_lat) >= MARGIN || abs(shift_lon) >= MARGIN) {  // huge shift, reset trails
+      ClearTrails();
+      m_trails.lat = m_pi->m_radar_lat;
+      m_trails.lon = m_pi->m_radar_lon;
+      m_trails.dif_lat = 0.;
+      m_trails.dif_lon = 0.;
+      LOG_INFO(wxT("BR24radar_pi: %s Large movement trails reset"), m_name.c_str());
+      return;
+    }
+
+    // don't shift the image yet, only shift the center
+    m_trails.offset.lat += shift_lat;
+    m_trails.offset.lon += shift_lon;  //  index as follows: array[lat][lon]
+  }
+  else {
+    shift_lat = 0;
+    shift_lon = 0;
+  }
 
   if (abs(m_trails.offset.lon) >= MARGIN) {  // offset too large: shift image
                                              // shift in the opposite direction of the offset
-    m_trails.offset.lon -= shift_lon;        // subtract again, image should be indide limits
+    m_trails.offset.lon -= shift_lon;        // subtract again, image should be inside limits
     if (m_trails.offset.lon > 0) {
       for (int i = 0; i < TRAILS_SIZE; i++) {
         memmove(&m_trails.true_trails[i][MARGIN], &m_trails.true_trails[i][MARGIN + m_trails.offset.lon], RETURNS_PER_LINE * 2);
