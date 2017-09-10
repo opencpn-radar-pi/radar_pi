@@ -512,7 +512,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   // The history data used for the ARPA data is *always* in bearing mode, it is not usable
   // with relative data.
   //
-  int stabilized_mode = orientation != ORIENTATION_HEAD_UP;  // true for north up or course up
+  int stabilized_mode = orientation != ORIENTATION_HEAD_UP;
   uint8_t weakest_normal_blob = m_pi->m_settings.threshold_blue;
 
   UINT8 *hist_data = m_history[bearing].line;
@@ -520,7 +520,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   m_history[bearing].lat = lat;
   m_history[bearing].lon = lon;
   for (size_t radius = 0; radius < len; radius++) {
-    //  hist_data[radius] = hist_data[radius] & 63;  // clear leftmost 2 bits to 00 for ARPA
     hist_data[radius] = 0;
     if (data[radius] >= weakest_normal_blob) {
       // and add 1 if above threshold and set the left 2 bits, used for ARPA
