@@ -852,11 +852,6 @@ void br24radar_pi::UpdateHeadingState(time_t now) {
   }
 }
 
-double br24radar_pi::GetHeadingTrue() {
-  wxCriticalSectionLocker lock(m_exclusive);
-
-  return m_hdt;
-}
 
 // Notify
 // ------
@@ -868,32 +863,36 @@ void br24radar_pi::Notify(void) {
   time_t now = time(0);
   bool updateAllControls;
 
-  LOG_VERBOSE(wxT("BR24radar_pi: main timer"));
+  {
+    wxCriticalSectionLocker lock(m_exclusive);
 
-  updateAllControls = m_notify_control_dialog;
-  m_notify_control_dialog = false;
-  if (m_opengl_mode_changed || m_notify_radar_window_viz) {
-    m_opengl_mode_changed = false;
-    m_notify_radar_window_viz = false;
-    SetRadarWindowViz(true);
-    updateAllControls = true;
-  } else {
-    UpdateContextMenu();
-  }
+    LOG_VERBOSE(wxT("BR24radar_pi: main timer"));
 
-  UpdateHeadingState(now);
+    updateAllControls = m_notify_control_dialog;
+    m_notify_control_dialog = false;
+    if (m_opengl_mode_changed || m_notify_radar_window_viz) {
+      m_opengl_mode_changed = false;
+      m_notify_radar_window_viz = false;
+      SetRadarWindowViz(true);
+      updateAllControls = true;
+    } else {
+      UpdateContextMenu();
+    }
 
-  // Update radar position offset from GPS
-  if (!wxIsNaN(m_hdt) && (m_settings.antenna_starboard != 0 || m_settings.antenna_forward != 0)) {
-    double sine = sin(deg2rad(m_hdt));
-    double cosine = cos(deg2rad(m_hdt));
-    double dist_forward = (double)m_settings.antenna_forward / 1852 / 60;
-    double dist_starboard = (double)m_settings.antenna_starboard / 1852 / 60;
-    m_radar_lat = dist_forward * cosine - dist_starboard * sine + m_ownship_lat;
-    m_radar_lon = (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_ownship_lat)) + m_ownship_lon;
-  } else {
-    m_radar_lat = m_ownship_lat;
-    m_radar_lon = m_ownship_lon;
+    UpdateHeadingState(now);
+
+    // Update radar position offset from GPS
+    if (!wxIsNaN(m_hdt) && (m_settings.antenna_starboard != 0 || m_settings.antenna_forward != 0)) {
+      double sine = sin(deg2rad(m_hdt));
+      double cosine = cos(deg2rad(m_hdt));
+      double dist_forward = (double)m_settings.antenna_forward / 1852 / 60;
+      double dist_starboard = (double)m_settings.antenna_starboard / 1852 / 60;
+      m_radar_lat = dist_forward * cosine - dist_starboard * sine + m_ownship_lat;
+      m_radar_lon = (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_ownship_lat)) + m_ownship_lon;
+    } else {
+      m_radar_lat = m_ownship_lat;
+      m_radar_lon = m_ownship_lon;
+    }
   }
 
   // Check the age of "radar_seen", if too old radar_seen = false
@@ -925,6 +924,7 @@ void br24radar_pi::Notify(void) {
   if (m_pMessageBox->IsShown() || (m_settings.verbose != 0)) {
     wxString t;
     for (size_t r = 0; r < RADARS; r++) {
+      wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
       if (m_radar[r]->m_state.GetValue() != RADAR_OFF) {
         t << wxString::Format(wxT("%s\npackets %d/%d\nspokes %d/%d/%d\n"), m_radar[r]->m_name.c_str(),
                               m_radar[r]->m_statistics.packets, m_radar[r]->m_statistics.broken_packets,
@@ -937,6 +937,17 @@ void br24radar_pi::Notify(void) {
       t.Replace(wxT("\n"), wxT(" "));
       LOG_RECEIVE(wxT("BR24radar_pi: %s"), t.c_str());
     }
+  }
+
+  // Always reset the counters, so they don't show huge numbers after IsShown changes
+  for (int r = 0; r < RADARS; r++) {
+    wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
+
+    m_radar[r]->m_statistics.broken_packets = 0;
+    m_radar[r]->m_statistics.broken_spokes = 0;
+    m_radar[r]->m_statistics.missing_spokes = 0;
+    m_radar[r]->m_statistics.packets = 0;
+    m_radar[r]->m_statistics.spokes = 0;
   }
 
   wxString info;
@@ -986,11 +997,6 @@ void br24radar_pi::Notify(void) {
 
   for (int r = 0; r < RADARS; r++) {
     m_radar[r]->UpdateControlState(updateAllControls);
-    m_radar[r]->m_statistics.broken_packets = 0;
-    m_radar[r]->m_statistics.broken_spokes = 0;
-    m_radar[r]->m_statistics.missing_spokes = 0;
-    m_radar[r]->m_statistics.packets = 0;
-    m_radar[r]->m_statistics.spokes = 0;
   }
 
   UpdateState();
@@ -1356,7 +1362,9 @@ bool br24radar_pi::SaveConfig(void) {
 }
 
 void br24radar_pi::SetMcastIPAddress(wxString &address) {
-  { m_settings.mcast_address = address; }
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  m_settings.mcast_address = address;
   if (m_pMessageBox) {
     m_pMessageBox->SetMcastIPAddress(address);
   }

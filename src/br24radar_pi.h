@@ -441,25 +441,35 @@ class br24radar_pi : public opencpn_plugin_114 {
   wxString GetMcastIPAddress() {
     wxCriticalSectionLocker lock(m_exclusive);
     return m_settings.mcast_address;
-  };
+  }
 
   void SetRadarHeading(double heading = nan(""), bool isTrue = false);
-  double GetHeadingTrue();
+  double GetHeadingTrue() {
+    wxCriticalSectionLocker lock(m_exclusive);
+    return m_hdt;
+  }
   time_t GetHeadingTrueTimeout() {
     wxCriticalSectionLocker lock(m_exclusive);
     return m_hdt_timeout;
-  };
+  }
   time_t GetHeadingMagTimeout() {
     wxCriticalSectionLocker lock(m_exclusive);
     return m_hdm_timeout;
-  };
+  }
   VariationSource GetVariationSource() {
     wxCriticalSectionLocker lock(m_exclusive);
     return m_var_source;
-  };
+  }
   double GetCOG() {
     wxCriticalSectionLocker lock(m_exclusive);
     return m_cog;
+  }
+  void GetRadarPosition(double * lat, double * lon)
+  {
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    *lat = m_radar_lat;
+    *lon = m_radar_lon;
   }
 
   wxFont m_font;      // The dialog font at a normal size
