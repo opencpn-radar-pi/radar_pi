@@ -187,6 +187,7 @@ int br24radar_pi::Init(void) {
   m_hdt_timeout = now + WATCHDOG_TIMEOUT;
   m_hdm_timeout = now + WATCHDOG_TIMEOUT;
   m_var_timeout = now + WATCHDOG_TIMEOUT;
+  m_cog_timeout = now;
   m_idle_standby = 0;
   m_idle_transmit = 0;
   count_ais_in_arpa = 0;

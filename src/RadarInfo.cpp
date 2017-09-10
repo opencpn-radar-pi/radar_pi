@@ -197,11 +197,13 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_range_meters = 0;
   m_auto_range_meters = 0;
   m_previous_auto_range_meters = 0;
+  m_previous_orientation = ORIENTATION_HEAD_UP;
   m_stayalive_timeout = 0;
   m_radar_timeout = 0;
   m_data_timeout = 0;
 
   CLEAR_STRUCT(m_statistics);
+  CLEAR_STRUCT(m_course_log);
 
   m_mouse_lat = NAN;
   m_mouse_lon = NAN;
