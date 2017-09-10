@@ -1414,8 +1414,7 @@ void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
     if (value == ORIENTATION_NUMBER) {
       if (M_SETTINGS.developer_mode) {
         value = ORIENTATION_HEAD_UP;
-      }
-      else {
+      } else {
         value = ORIENTATION_STABILIZED_UP;
       }
     }

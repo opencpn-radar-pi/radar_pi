@@ -321,7 +321,7 @@ bool RadarInfo::Init(wxString name, int verbose) {
 
   ComputeTargetTrails();
 
-  if (m_radar == 0) { // Need only one timer, so do this only on the first radar.
+  if (m_radar == 0) {  // Need only one timer, so do this only on the first radar.
     m_timer = new wxTimer(this, TIMER_ID);
     m_timer->Start(m_refresh_millis);
   }
@@ -538,7 +538,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   // True trails
   int motion = m_trails_motion.GetValue();
-  PolarToCartesianLookupTable * polarLookup = GetPolarToCartesianLookupTable();
+  PolarToCartesianLookupTable *polarLookup = GetPolarToCartesianLookupTable();
   for (size_t radius = 0; radius < len - 1; radius++) {  //  len - 1 : no trails on range circle
     int x = polarLookup->intx[bearing][radius] + TRAILS_SIZE / 2 + m_trails.offset.lat;
     int y = polarLookup->inty[bearing][radius] + TRAILS_SIZE / 2 + m_trails.offset.lon;
@@ -757,11 +757,12 @@ void RadarInfo::UpdateTrailPosition() {
   } else if (m_old_range != m_range_meters) {
     // zoom trails
     float zoom_factor = (float)m_old_range / (float)m_range_meters;
-    ZoomTrails(zoom_factor); // this modifies m_trails.offset, so check it is still within bounds below
+    ZoomTrails(zoom_factor);  // this modifies m_trails.offset, so check it is still within bounds below
   }
   m_old_range = m_range_meters;
 
-  if (m_pi->m_bpos_set && m_pi->m_heading_source != HEADING_NONE && m_trails.lat != m_pi->m_radar_lat && m_trails.lon != m_pi->m_radar_lon) {  // don't do anything until position changes
+  if (m_pi->m_bpos_set && m_pi->m_heading_source != HEADING_NONE && m_trails.lat != m_pi->m_radar_lat &&
+      m_trails.lon != m_pi->m_radar_lon) {              // don't do anything until position changes
     double dif_lat = m_pi->m_radar_lat - m_trails.lat;  // going north is positive
     double dif_lon = m_pi->m_radar_lon - m_trails.lon;  // moving east is positive
     m_trails.lat = m_pi->m_radar_lat;
@@ -820,8 +821,7 @@ void RadarInfo::UpdateTrailPosition() {
     // don't shift the image yet, only shift the center
     m_trails.offset.lat += shift_lat;
     m_trails.offset.lon += shift_lon;  //  index as follows: array[lat][lon]
-  }
-  else {
+  } else {
     shift_lat = 0;
     shift_lon = 0;
   }
