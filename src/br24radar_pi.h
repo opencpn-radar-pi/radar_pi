@@ -256,6 +256,7 @@ extern double local_bearing(double lat1, double lon1, double lat2, double lon2);
 enum DisplayModeType { DM_CHART_OVERLAY, DM_CHART_NONE };
 enum ToolbarIconColor { TB_NONE, TB_HIDDEN, TB_SEARCHING, TB_SEEN, TB_STANDBY, TB_ACTIVE };
 enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_SOURCE_FIX, VARIATION_SOURCE_WMM };
+enum OpenGLMode { OPENGL_UNKOWN, OPENGL_OFF, OPENGL_ON };
 
 static const int RangeUnitsToMeters[2] = {1852, 1000};
 
@@ -475,7 +476,7 @@ class br24radar_pi : public opencpn_plugin_114 {
   bool m_opencpn_gl_context_broken;
 
   HeadingSource m_heading_source;
-  bool m_opengl_mode;
+  OpenGLMode m_opengl_mode;
   volatile bool m_opengl_mode_changed;
   bool m_bpos_set;
   time_t m_bpos_timestamp;

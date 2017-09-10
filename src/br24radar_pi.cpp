@@ -119,7 +119,7 @@ br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_114(ppimgr) {
   initialize_images();
   m_pdeficon = new wxBitmap(*_img_radar_blank);
 
-  m_opengl_mode = false;
+  m_opengl_mode = OPENGL_UNKOWN;
   m_opengl_mode_changed = false;
   m_opencpn_gl_context = 0;
   m_opencpn_gl_context_broken = false;
@@ -1029,8 +1029,8 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 
   LOG_DIALOG(wxT("BR24radar_pi: RenderOverlay"));
 
-  if (m_opengl_mode) {
-    m_opengl_mode = false;
+  if (m_opengl_mode != OPENGL_OFF) {
+    m_opengl_mode = OPENGL_OFF;
     // Can't hide/show the windows from here, this becomes recursive because the Chart display
     // is managed by wxAuiManager as well.
     m_opengl_mode_changed = true;
@@ -1052,8 +1052,8 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   }
   m_opencpn_gl_context_broken = m_opencpn_gl_context == 0;
 
-  if (!m_opengl_mode) {
-    m_opengl_mode = true;
+  if (m_opengl_mode != OPENGL_ON) {
+    m_opengl_mode = OPENGL_ON;
     // Can't hide/show the windows from here, this becomes recursive because the Chart display
     // is managed by wxAuiManager as well.
     m_opengl_mode_changed = true;
@@ -1120,7 +1120,6 @@ bool br24radar_pi::LoadConfig(void) {
 
   if (pConf) {
     pConf->SetPath(wxT("Settings"));
-    pConf->Read(wxT("OpenGL"), &m_opengl_mode, false);
     pConf->Read(wxT("COGUPAvgSeconds"), &m_COGAvgSec, 15);
     m_COGAvgSec = wxMin(m_COGAvgSec, MAX_COG_AVERAGE_SECONDS);  // Bound the array size
     for (int i = 0; i < m_COGAvgSec; i++) {

@@ -396,8 +396,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   wxPaintDC(this);  // only to be used in paint events. use wxClientDC to paint
                     // outside the paint event
 
-  if (!m_pi->m_opengl_mode) {
-    LOG_DIALOG(wxT("BR24radar_pi: %s cannot render non-OpenGL mode"), m_ri->m_name.c_str());
+  if (m_pi->m_opengl_mode != OPENGL_ON) {
     return;
   }
   if (!m_pi->m_opencpn_gl_context && !m_pi->m_opencpn_gl_context_broken) {
