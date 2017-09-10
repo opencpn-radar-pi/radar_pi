@@ -134,6 +134,8 @@ struct radar_frame_pkt {
 };
 #pragma pack(pop)
 
+bool g_first_receive = true;
+
 // Ethernet packet stuff *************************************************************
 
 void br24Receive::logBinaryData(const wxString &what, const UINT8 *data, int size) {
@@ -179,6 +181,12 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
   int scanlines_in_packet = (len - sizeof(packet->frame_hdr)) / sizeof(radar_line);
   if (scanlines_in_packet != 32) {
     m_ri->m_statistics.broken_packets++;
+  }
+
+  if (g_first_receive) {
+    g_first_receive = false;
+    wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->m_boot_time;
+    LOG_INFO(wxT("BR24radar_pi: First radar spoke received after %llu ms\n"), startup_elapsed);
   }
 
   for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
@@ -469,7 +477,6 @@ void *br24Receive::Entry(void) {
   SOCKET reportSocket = INVALID_SOCKET;
 
   LOG_VERBOSE(wxT("BR24radar_pi: br24Receive thread %s starting"), m_ri->m_name.c_str());
-  socketReady(INVALID_SOCKET, 1000);  // sleep for 1s so that other stuff is set up (fixes Windows core on startup)
 
   if (m_mcast_addr) {
     reportSocket = GetNewReportSocket();
@@ -483,12 +490,27 @@ void *br24Receive::Entry(void) {
           no_data_timeout = 0;
           no_spoke_timeout = 0;
         }
-      } else {
-        // reportSocket is still valid, open data and command sockets as well if they are closed
+      }
+      if (radar_addr) {
+        // If we have detected a radar antenna at this address start opening more sockets.
+        // We do this later for 2 reasons:
+        // - Resource consumption
+        // - Timing. If we start processing radar data before the rest of the system
+        //           is initialized then we get ordering/race condition issues.
         if (dataSocket == INVALID_SOCKET) {
           dataSocket = GetNewDataSocket();
-        } else if (commandSocket == INVALID_SOCKET) {
+        }
+        if (commandSocket == INVALID_SOCKET) {
           commandSocket = GetNewCommandSocket();
+        }
+      } else {
+        if (dataSocket != INVALID_SOCKET) {
+          closesocket(dataSocket);
+          dataSocket = INVALID_SOCKET;
+        }
+        if (commandSocket != INVALID_SOCKET) {
+          closesocket(commandSocket);
+          commandSocket = INVALID_SOCKET;
         }
       }
     } else {

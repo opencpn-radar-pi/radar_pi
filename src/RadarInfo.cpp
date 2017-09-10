@@ -385,6 +385,9 @@ void RadarInfo::StartReceive() {
     m_receive = new br24Receive(m_pi, this);
     if (!m_receive || (m_receive->Run() != wxTHREAD_NO_ERROR)) {
       LOG_INFO(wxT("BR24radar_pi: %s unable to start receive thread."), m_name.c_str());
+      if (m_receive) {
+        delete m_receive;
+      }
       m_receive = 0;
     }
   }

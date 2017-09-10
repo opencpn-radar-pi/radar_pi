@@ -880,19 +880,6 @@ void br24radar_pi::Notify(void) {
     UpdateContextMenu();
   }
 
-  if (!m_settings.show  // No radar shown
-      || (m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT &&
-          m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT)  // Radar not transmitting
-      || !m_bpos_set) {                                      // No overlay possible (yet)
-    // Conditions for ARPA not fulfilled, delete all targets
-    if (m_radar[0]->m_arpa) {
-      m_radar[0]->m_arpa->RadarLost();
-    }
-    if (m_radar[1]->m_arpa) {
-      m_radar[1]->m_arpa->RadarLost();
-    }
-  }
-
   UpdateHeadingState(now);
 
   // Update radar position offset from GPS
@@ -914,6 +901,15 @@ void br24radar_pi::Notify(void) {
     if (m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT) {
       any_data_seen = true;
     }
+    if (!m_settings.show  // No radar shown
+        || m_radar[r]->m_state.GetValue() != RADAR_TRANSMIT  // Radar not transmitting
+        || !m_bpos_set) {                                      // No overlay possible (yet)
+                                                               // Conditions for ARPA not fulfilled, delete all targets
+      if (m_radar[r]->m_arpa) {
+        m_radar[r]->m_arpa->RadarLost();
+      }
+    }
+
     m_radar[r]->UpdateTransmitState();
   }
 
