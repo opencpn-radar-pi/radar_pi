@@ -197,6 +197,7 @@ int br24radar_pi::Init(void) {
 
   m_heading_source = HEADING_NONE;
   m_radar_heading = nanl("");
+  m_vp_rotation = 0.;
 
   // Set default settings before we load config. Prevents random behavior on uninitalized behavior.
   // For instance, LOG_XXX messages before config is loaded.
@@ -894,7 +895,7 @@ void br24radar_pi::Notify(void) {
 
   UpdateHeadingState(now);
 
-  // Update radar position offsett from GPS
+  // Update radar position offset from GPS
   if (!wxIsNaN(m_hdt) && (m_settings.antenna_starboard != 0 || m_settings.antenna_forward != 0)) {
     double sine = sin(deg2rad(m_hdt));
     double cosine = cos(deg2rad(m_hdt));
@@ -1131,6 +1132,11 @@ bool br24radar_pi::LoadConfig(void) {
 
     pConf->SetPath(wxT("/Plugins/BR24Radar"));
 
+    // Valgrind: This needs to be set before we set range, since that uses this
+    pConf->Read(wxT("RangeUnits"), &v, 0);
+    m_settings.range_units = (RangeUnits)wxMax(wxMin(v, 1), 0);
+    m_settings.range_unit_meters = (m_settings.range_units == RANGE_METRIC) ? 1000 : 1852;
+
     if (pConf->Read(wxT("DisplayMode"), &v, 0)) {  // v1.3
       wxLogMessage(wxT("BR24radar_pi: Upgrading settings from v1.3 or lower"));
       pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
@@ -1241,9 +1247,6 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 0);
     pConf->Read(wxT("PassHeadingToOCPN"), &m_settings.pass_heading_to_opencpn, false);
     pConf->Read(wxT("RadarInterface"), &m_settings.mcast_address);
-    pConf->Read(wxT("RangeUnits"), &v, 0);
-    m_settings.range_units = (RangeUnits)wxMax(wxMin(v, 1), 0);
-    m_settings.range_unit_meters = (m_settings.range_units == RANGE_METRIC) ? 1000 : 1852;
     pConf->Read(wxT("Refreshrate"), &m_settings.refreshrate, 3);
     pConf->Read(wxT("ReverseZoom"), &m_settings.reverse_zoom, false);
     pConf->Read(wxT("ScanMaxAge"), &m_settings.max_age, 6);
