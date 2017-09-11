@@ -233,7 +233,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
 
   m_arpa = new RadarArpa(m_pi, this);
   for (size_t z = 0; z < GUARD_ZONES; z++) {
-    m_guard_zone[z] = new GuardZone(m_pi, radar, z);
+    m_guard_zone[z] = new GuardZone(m_pi, this, z);
   }
 }
 
