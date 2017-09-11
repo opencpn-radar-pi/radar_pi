@@ -435,7 +435,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   ResetGLViewPort(w, h);
   RenderRangeRingsAndHeading(w, h);
 
-  if (m_pi->m_heading_source != HEADING_NONE) {
+  if (m_pi->m_heading_source != HEADING_NONE && M_SETTINGS.show_radar_target[m_ri->m_radar]) {
     // LAYER 2 - AIS AND ARPA TARGETS
 
     ResetGLViewPort(w, h);

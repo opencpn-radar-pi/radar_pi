@@ -42,10 +42,7 @@ RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
   m_ri = ri;
   m_pi = pi;
   m_number_of_targets = 0;
-  for (int i = 0; i < MAX_NUMBER_OF_TARGETS; i++) {
-    m_targets[i] = 0;
-  }
-  LOG_ARPA(wxT("BR24radar_pi: RadarMarpa creator ready"));
+  CLEAR_STRUCT(m_targets);
 }
 
 ArpaTarget::~ArpaTarget() {

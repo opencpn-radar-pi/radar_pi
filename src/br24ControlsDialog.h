@@ -113,6 +113,7 @@ class br24ControlsDialog : public wxDialog {
   void OnRadarOverlayButtonClick(wxCommandEvent &event);
   void OnMessageButtonClick(wxCommandEvent &event);
 
+  void OnTargetsButtonClick(wxCommandEvent &event);
   void OnClearTrailsButtonClick(wxCommandEvent &event);
   void OnOrientationButtonClick(wxCommandEvent &event);
 
@@ -199,6 +200,7 @@ class br24ControlsDialog : public wxDialog {
 
   // View controls
   br24RadarControlButton *m_target_trails_button;
+  wxButton *m_targets_button;
   wxButton *m_trails_motion_button;
   wxButton *m_clear_trails_button;
   wxButton *m_orientation_button;

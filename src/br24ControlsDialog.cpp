@@ -74,6 +74,7 @@ enum {  // process ID's
   ID_DELETE_TARGET,
   ID_DELETE_ALL_TARGETS,
 
+  ID_TARGETS,
   ID_TARGET_TRAILS,
   ID_CLEAR_TRAILS,
   ID_ORIENTATION,
@@ -149,6 +150,7 @@ EVT_BUTTON(ID_GAIN, br24ControlsDialog::OnRadarGainButtonClick)
 EVT_BUTTON(ID_SEA, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_RAIN, br24ControlsDialog::OnRadarControlButtonClick)
 
+EVT_BUTTON(ID_TARGETS, br24ControlsDialog::OnTargetsButtonClick)
 EVT_BUTTON(ID_TARGET_TRAILS, br24ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_CLEAR_TRAILS, br24ControlsDialog::OnClearTrailsButtonClick)
 EVT_BUTTON(ID_ORIENTATION, br24ControlsDialog::OnOrientationButtonClick)
@@ -940,6 +942,10 @@ void br24ControlsDialog::CreateControls() {
   br24RadarButton* bMenuBack = new br24RadarButton(this, ID_BACK, backButtonStr);
   m_view_sizer->Add(bMenuBack, 0, wxALL, BORDER);
 
+  // The Show Targets button
+  m_targets_button = new br24RadarButton(this, ID_TARGETS, _("Show AIS/ARPA"));
+  m_view_sizer->Add(m_targets_button, 0, wxALL, BORDER);
+
   // The Trails Motion button
   m_trails_motion_button = new br24RadarButton(this, ID_TRAILS_MOTION, _("Off/Relative/True trails"));
   m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
@@ -1290,6 +1296,12 @@ void br24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event) {
   }
 }
 
+void br24ControlsDialog::OnTargetsButtonClick(wxCommandEvent &event) {
+  M_SETTINGS.show_radar_target[m_ri->m_radar] = !(M_SETTINGS.show_radar_target[m_ri->m_radar]);
+
+  UpdateControlValues(false);
+}
+
 void br24ControlsDialog::EnterEditMode(br24RadarControlButton* button) {
   m_from_control = button;  // Keep a record of which button was clicked
   m_value_text->SetLabel(button->GetLabel());
@@ -1569,6 +1581,12 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_bearing_buttons[b]->SetLabel(o);
   }
 
+  if (M_SETTINGS.show_radar_target[m_ri->m_radar]) {
+    m_targets_button->SetLabel(_("Hide AIS/ARPA"));
+  } else {
+    m_targets_button->SetLabel(_("Show AIS/ARPA"));
+  }
+
   if (m_ri->m_target_trails.IsModified() || refreshAll) {
     m_target_trails_button->SetLocalValue(m_ri->m_target_trails.GetButton());
   }
@@ -1630,6 +1648,8 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     }
     m_overlay_button->SetLabel(o);
   }
+
+
 
   if (m_ri->m_range.IsModified() || refreshAll) {
     m_ri->m_range.GetButton();

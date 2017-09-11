@@ -118,7 +118,7 @@ void GuardZone::SearchTargets() {
   if (!m_arpa_on) {
     return;
   }
-  if (m_ri->m_arpa->m_number_of_targets >= MAX_NUMBER_OF_TARGETS - 2) {
+  if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 2) {
     LOG_INFO(wxT("BR24radar_pi: No more scanning for ARPA targets, maximum number of targets reached"));
     return;
   }
@@ -168,7 +168,7 @@ void GuardZone::SearchTargets() {
                                // set new refresh time
         arpa_update_time[MOD_ROTATION2048(angle)] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
-          if (m_ri->m_arpa->m_number_of_targets >= MAX_NUMBER_OF_TARGETS - 1) {
+          if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 1) {
             LOG_INFO(wxT("BR24radar_pi: No more scanning for ARPA targets in loop, maximum number of targets reached"));
             return;
           }

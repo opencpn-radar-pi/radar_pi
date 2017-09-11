@@ -222,7 +222,6 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     int range_raw = 0;
     int angle_raw = 0;
     short int heading_raw = 0;
-    short int rotation_raw;
     int range_meters = 0;
 
     heading_raw = (line->common.heading[1] << 8) | line->common.heading[0];
@@ -242,7 +241,6 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       short int large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
       short int small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
       angle_raw = (line->br4g.angle[1] << 8) | line->br4g.angle[0];
-      rotation_raw = (line->br4g.rotation[1] << 8) | line->br4g.rotation[0];
       if (large_range == 0x80) {
         if (small_range == -1) {
           range_raw = 0;  // Invalid range received

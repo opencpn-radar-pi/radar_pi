@@ -230,6 +230,11 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_overlay_refreshes_queued = 0;
   m_refreshes_queued = 0;
   m_refresh_millis = 50;
+
+  m_arpa = new RadarArpa(m_pi, this);
+  for (size_t z = 0; z < GUARD_ZONES; z++) {
+    m_guard_zone[z] = new GuardZone(m_pi, radar, z);
+  }
 }
 
 void RadarInfo::Shutdown() {
@@ -1463,6 +1468,7 @@ void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
   m_mouse_vrm = vrm;
   switch (orientation) {
     case ORIENTATION_HEAD_UP:
+    default:
       m_mouse_ebl[ORIENTATION_HEAD_UP] = ebl;
       bearing = ebl;
       break;

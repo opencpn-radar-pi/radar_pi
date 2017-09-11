@@ -191,10 +191,7 @@ int br24radar_pi::Init(void) {
   m_idle_standby = 0;
   m_idle_transmit = 0;
   count_ais_in_arpa = 0;
-  // Silly, but could there be old scrap in memory location? (Debug exp.)
-  for (int i = 0; i < SIZEAISAR; i++) {
-    ais_in_arpa[i].ais_mmsi = 0;
-  }
+  CLEAR_STRUCT(ais_in_arpa);
 
   m_heading_source = HEADING_NONE;
   m_radar_heading = nanl("");
@@ -221,19 +218,10 @@ int br24radar_pi::Init(void) {
   m_pMessageBox = new br24MessageBox;
   m_pMessageBox->Create(m_parent_window, this);
 
-  // before config, so config can set data in it
-  m_radar[0] = new RadarInfo(this, 0);
-  m_radar[1] = new RadarInfo(this, 1);
-  m_radar[0]->m_arpa = new RadarArpa(this, m_radar[0]);
-  m_radar[1]->m_arpa = new RadarArpa(this, m_radar[1]);
-
-  // make guard zones after making the radars
-  for (size_t z = 0; z < GUARD_ZONES; z++) {
-    m_radar[0]->m_guard_zone[z] = new GuardZone(this, 0, z);
-  }
-
-  for (size_t z = 0; z < GUARD_ZONES; z++) {
-    m_radar[1]->m_guard_zone[z] = new GuardZone(this, 1, z);
+  // Create objects before config, so config can set data in it
+  // This does not start any threads or generate any UI.
+  for (int r = 0; r < RADARS; r++) {
+    m_radar[r] = new RadarInfo(this, r);
   }
 
   //    And load the configuration items
@@ -1196,6 +1184,7 @@ bool br24radar_pi::LoadConfig(void) {
         pConf->Read(wxString::Format(wxT("Radar%dWindowPosY"), r), &y, 120);
         m_settings.window_pos[r] = wxPoint(x, y);
         pConf->Read(wxString::Format(wxT("Radar%dControlShow"), r), &m_settings.show_radar_control[r], false);
+        pConf->Read(wxString::Format(wxT("Radar%dTargetShow"), r), &m_settings.show_radar_target[r], true);
         pConf->Read(wxString::Format(wxT("Radar%dControlPosX"), r), &x, OFFSCREEN_CONTROL_X);
         pConf->Read(wxString::Format(wxT("Radar%dControlPosY"), r), &y, OFFSCREEN_CONTROL_Y);
         m_settings.control_pos[r] = wxPoint(x, y);
@@ -1333,6 +1322,7 @@ bool br24radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->m_state.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
       pConf->Write(wxString::Format(wxT("Radar%dControlShow"), r), m_settings.show_radar_control[r]);
+      pConf->Write(wxString::Format(wxT("Radar%dTargetShow"), r), m_settings.show_radar_target[r]);
       pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->m_target_trails.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTrueMotion"), r), m_radar[r]->m_trails_motion.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dWindowPosX"), r), m_settings.window_pos[r].x);
