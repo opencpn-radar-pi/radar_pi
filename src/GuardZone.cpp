@@ -35,6 +35,24 @@ PLUGIN_BEGIN_NAMESPACE
 
 #undef TEST_GUARD_ZONE_LOCATION
 
+GuardZone::GuardZone(br24radar_pi *pi, RadarInfo* ri, int zone)
+{
+  m_pi = pi;
+  m_ri = ri;
+  m_log_name = wxString::Format(wxT("BR24radar_pi: Radar %c GuardZone %d:"), m_ri->m_radar + 'A', zone + 1);
+  m_type = GZ_CIRCLE;
+  m_start_bearing = 0;
+  m_end_bearing = 0;
+  m_inner_range = 0;
+  m_outer_range = 0;
+  m_arpa_on = 0;
+  m_alarm_on = 0;
+  m_show_time = 0;
+  CLEAR_STRUCT(arpa_update_time);
+  ResetBogeys();
+}
+
+
 void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_t len, int range) {
   size_t range_start = m_inner_range * RETURNS_PER_LINE / range;  // Convert from meters to 0..511
   size_t range_end = m_outer_range * RETURNS_PER_LINE / range;    // Convert from meters to 0..511
@@ -118,7 +136,7 @@ void GuardZone::SearchTargets() {
   if (!m_arpa_on) {
     return;
   }
-  if (m_ri->m_arpa->m_number_of_targets >= MAX_NUMBER_OF_TARGETS - 2) {
+  if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 2) {
     LOG_INFO(wxT("BR24radar_pi: No more scanning for ARPA targets, maximum number of targets reached"));
     return;
   }
@@ -168,7 +186,7 @@ void GuardZone::SearchTargets() {
                                // set new refresh time
         arpa_update_time[MOD_ROTATION2048(angle)] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
-          if (m_ri->m_arpa->m_number_of_targets >= MAX_NUMBER_OF_TARGETS - 1) {
+          if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 1) {
             LOG_INFO(wxT("BR24radar_pi: No more scanning for ARPA targets in loop, maximum number of targets reached"));
             return;
           }
@@ -180,8 +198,8 @@ void GuardZone::SearchTargets() {
             Polar pol;
             pol.angle = angle;
             pol.r = rrr;
-            own_pos.lat = m_pi->m_ownship_lat;
-            own_pos.lon = m_pi->m_ownship_lon;
+            own_pos.lat = m_pi->m_radar_lat;
+            own_pos.lon = m_pi->m_radar_lon;
             Position x;
             x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
             int target_i;

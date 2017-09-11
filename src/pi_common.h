@@ -141,6 +141,7 @@ using namespace std;
 #endif
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
+#define CLEAR_STRUCT(x) memset(&x, 0, sizeof(x))
 
 #define MILLISECONDS_PER_SECOND (1000)
 

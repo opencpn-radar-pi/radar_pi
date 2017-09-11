@@ -292,8 +292,8 @@ class RadarInfo : public wxEvtHandler {
   void SetBearing(int bearing);
   void ClearTrails();
   void ZoomTrails(float zoom_factor);
-  bool IsDisplayNorthUp() { return m_orientation.GetValue() == ORIENTATION_NORTH_UP && m_pi->m_heading_source != HEADING_NONE; }
   void SampleCourse(int angle);
+  int GetOrientation();
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();

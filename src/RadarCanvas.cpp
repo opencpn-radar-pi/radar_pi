@@ -176,7 +176,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   if (m_pi->m_heading_source != HEADING_NONE) {
     double heading;
     double predictor;
-    switch (m_ri->m_orientation.GetValue()) {
+    switch (m_ri->GetOrientation()) {
       case ORIENTATION_HEAD_UP:
         heading = m_pi->GetHeadingTrue() + 180.;
         predictor = 180.;
@@ -295,19 +295,19 @@ void RadarCanvas::RenderCursor(int w, int h) {
   double distance;
   double bearing;
 
-  int orientation = m_ri->m_orientation.GetValue();
+  int orientation = m_ri->GetOrientation();
 
-  if (m_ri->m_mouse_vrm != 0.0) {
+  if (!isnan(m_ri->m_mouse_vrm)) {
     distance = m_ri->m_mouse_vrm * 1852.;
     bearing = m_ri->m_mouse_ebl[orientation];
   } else {
-    if ((m_ri->m_mouse_lat == 0.0 && m_ri->m_mouse_lon == 0.0) || !m_pi->m_bpos_set) {
+    if (isnan(m_ri->m_mouse_lat) || isnan(m_ri->m_mouse_lon) || !m_pi->m_bpos_set) {
       return;
     }
     // Can't compute this upfront, ownship may move...
-    distance = local_distance(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon) * 1852.;
-    bearing = local_bearing(m_pi->m_ownship_lat, m_pi->m_ownship_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon);
-    if (!m_ri->IsDisplayNorthUp()) {
+    distance = local_distance(m_pi->m_radar_lat, m_pi->m_radar_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon) * 1852.;
+    bearing = local_bearing(m_pi->m_radar_lat, m_pi->m_radar_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon);
+    if (m_ri->GetOrientation() != ORIENTATION_NORTH_UP) {
       bearing -= m_pi->GetHeadingTrue();
     }
     // LOG_DIALOG(wxT("BR24radar_pi: Chart Mouse vrm=%f ebl=%f"), distance / 1852.0, bearing);
@@ -355,13 +355,13 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
   float center_x = w / 2.0;
   float center_y = h / 2.0;
   int display_range = m_ri->GetDisplayRange();
-  int orientation = m_ri->m_orientation.GetValue();
+  int orientation = m_ri->GetOrientation();
 
   for (int b = 0; b < BEARING_LINES; b++) {
     float x, y;
     glColor3ubv(rgb[b]);
     glLineWidth(1.0);
-    if (m_ri->m_vrm[b] != 0.0) {
+    if (!isnan(m_ri->m_vrm[b])) {
       float scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
       if (m_ri->m_ebl[orientation][b] != nanl("")) {
         float angle = (float)deg2rad(m_ri->m_ebl[orientation][b]);
@@ -396,8 +396,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   wxPaintDC(this);  // only to be used in paint events. use wxClientDC to paint
                     // outside the paint event
 
-  if (!m_pi->m_opengl_mode) {
-    LOG_DIALOG(wxT("BR24radar_pi: %s cannot render non-OpenGL mode"), m_ri->m_name.c_str());
+  if (m_pi->m_opengl_mode != OPENGL_ON) {
     return;
   }
   if (!m_pi->m_opencpn_gl_context && !m_pi->m_opencpn_gl_context_broken) {
@@ -436,7 +435,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   ResetGLViewPort(w, h);
   RenderRangeRingsAndHeading(w, h);
 
-  if (m_pi->m_heading_source != HEADING_NONE) {
+  if (m_pi->m_heading_source != HEADING_NONE && M_SETTINGS.show_radar_target[m_ri->m_radar]) {
     // LAYER 2 - AIS AND ARPA TARGETS
 
     ResetGLViewPort(w, h);
@@ -445,18 +444,18 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
     PlugIn_ViewPort vp;
-    vp.clat = m_pi->m_ownship_lat;
-    vp.clon = m_pi->m_ownship_lon;
+    vp.clat = m_pi->m_radar_lat;
+    vp.clon = m_pi->m_radar_lon;
     vp.m_projection_type = 4;  // Orthographic projection
     float full_range = wxMax(w, h) / 2.0;
     int display_range = m_ri->GetDisplayRange();
 
-    switch (m_ri->m_orientation.GetValue()) {
+    switch (m_ri->GetOrientation()) {
+      case ORIENTATION_HEAD_UP:
       case ORIENTATION_STABILIZED_UP:
         vp.rotation = deg2rad(-m_pi->GetHeadingTrue());
         break;
       case ORIENTATION_NORTH_UP:
-      case ORIENTATION_HEAD_UP:
         vp.rotation = 0.;
         break;
       case ORIENTATION_COG_UP:

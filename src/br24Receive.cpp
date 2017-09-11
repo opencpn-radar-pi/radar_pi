@@ -134,6 +134,8 @@ struct radar_frame_pkt {
 };
 #pragma pack(pop)
 
+bool g_first_receive = true;
+
 // Ethernet packet stuff *************************************************************
 
 void br24Receive::logBinaryData(const wxString &what, const UINT8 *data, int size) {
@@ -157,8 +159,12 @@ void br24Receive::logBinaryData(const wxString &what, const UINT8 *data, int siz
 //
 void br24Receive::ProcessFrame(const UINT8 *data, int len) {
   time_t now = time(0);
-  double lat = m_pi->m_ownship_lat;
-  double lon = m_pi->m_ownship_lon;
+
+  double lat;
+  double lon;
+
+  m_pi->GetRadarPosition(&lat, &lon);
+
   // log_line.time_rec = wxGetUTCTimeMillis();
   wxLongLong time_rec = wxGetUTCTimeMillis();
 
@@ -179,6 +185,12 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
   int scanlines_in_packet = (len - sizeof(packet->frame_hdr)) / sizeof(radar_line);
   if (scanlines_in_packet != 32) {
     m_ri->m_statistics.broken_packets++;
+  }
+
+  if (g_first_receive) {
+    g_first_receive = false;
+    wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->m_boot_time;
+    LOG_INFO(wxT("BR24radar_pi: First radar spoke received after %llu ms\n"), startup_elapsed);
   }
 
   for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
@@ -210,7 +222,6 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     int range_raw = 0;
     int angle_raw = 0;
     short int heading_raw = 0;
-    short int rotation_raw;
     int range_meters = 0;
 
     heading_raw = (line->common.heading[1] << 8) | line->common.heading[0];
@@ -230,7 +241,6 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       short int large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
       short int small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
       angle_raw = (line->br4g.angle[1] << 8) | line->br4g.angle[0];
-      rotation_raw = (line->br4g.rotation[1] << 8) | line->br4g.rotation[0];
       if (large_range == 0x80) {
         if (small_range == -1) {
           range_raw = 0;  // Invalid range received
@@ -263,13 +273,13 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     if (radar_heading_valid && !m_pi->m_settings.ignore_radar_heading) {
       heading = MOD_DEGREES(SCALE_RAW_TO_DEGREES(MOD_ROTATION(heading_raw)));
       m_pi->SetRadarHeading(heading, radar_heading_true);
-    } else {  // no heading on radar
-      if (m_pi->m_heading_source == HEADING_RADAR_HDM || m_pi->m_heading_source == HEADING_RADAR_HDT)
-        m_pi->m_heading_source = HEADING_NONE;  // let other heading source take over
+    } else if (m_pi->m_heading_source == HEADING_RADAR_HDM || m_pi->m_heading_source == HEADING_RADAR_HDT) {
+      // no heading on radar and heading source is still radar
+      m_pi->m_heading_source = HEADING_NONE;  // let other heading source take over
       m_pi->SetRadarHeading();
-      // Guess the heading for the spoke. This is updated much less frequently than the
-      // data from the radar (which is accurate 10x per second), likely once per second.
     }
+    // Guess the heading for the spoke. This is updated much less frequently than the
+    // data from the radar (which is accurate 10x per second), likely once per second.
     heading_raw = SCALE_DEGREES_TO_RAW(m_pi->GetHeadingTrue());  // include variation
     bearing_raw = angle_raw + heading_raw;
     // until here all is based on 4096 (SPOKES) scanlines
@@ -469,7 +479,6 @@ void *br24Receive::Entry(void) {
   SOCKET reportSocket = INVALID_SOCKET;
 
   LOG_VERBOSE(wxT("BR24radar_pi: br24Receive thread %s starting"), m_ri->m_name.c_str());
-  socketReady(INVALID_SOCKET, 1000);  // sleep for 1s so that other stuff is set up (fixes Windows core on startup)
 
   if (m_mcast_addr) {
     reportSocket = GetNewReportSocket();
@@ -483,12 +492,27 @@ void *br24Receive::Entry(void) {
           no_data_timeout = 0;
           no_spoke_timeout = 0;
         }
-      } else {
-        // reportSocket is still valid, open data and command sockets as well if they are closed
+      }
+      if (radar_addr) {
+        // If we have detected a radar antenna at this address start opening more sockets.
+        // We do this later for 2 reasons:
+        // - Resource consumption
+        // - Timing. If we start processing radar data before the rest of the system
+        //           is initialized then we get ordering/race condition issues.
         if (dataSocket == INVALID_SOCKET) {
           dataSocket = GetNewDataSocket();
-        } else if (commandSocket == INVALID_SOCKET) {
+        }
+        if (commandSocket == INVALID_SOCKET) {
           commandSocket = GetNewCommandSocket();
+        }
+      } else {
+        if (dataSocket != INVALID_SOCKET) {
+          closesocket(dataSocket);
+          dataSocket = INVALID_SOCKET;
+        }
+        if (commandSocket != INVALID_SOCKET) {
+          closesocket(commandSocket);
+          commandSocket = INVALID_SOCKET;
         }
       }
     } else {

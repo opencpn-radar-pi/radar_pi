@@ -29,10 +29,10 @@
  ***************************************************************************
  */
 
+#include "br24radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
-#include "br24radar_pi.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
 
@@ -119,13 +119,10 @@ br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_114(ppimgr) {
   initialize_images();
   m_pdeficon = new wxBitmap(*_img_radar_blank);
 
-  m_opengl_mode = false;
+  m_opengl_mode = OPENGL_UNKOWN;
   m_opengl_mode_changed = false;
   m_opencpn_gl_context = 0;
   m_opencpn_gl_context_broken = false;
-
-  m_context_menu_delete_marpa_target = 0;
-  m_context_menu_delete_all_marpa_targets = 0;
 
   m_first_init = true;
 }
@@ -163,6 +160,8 @@ int br24radar_pi::Init(void) {
     m_first_init = false;
   }
 
+  time_t now = time(0);
+
   // Font can change so initialize every time
   m_font = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
   m_fat_font = m_font;
@@ -183,22 +182,20 @@ int br24radar_pi::Init(void) {
   m_bogey_dialog = 0;
   m_alarm_sound_timeout = 0;
   m_guard_bogey_timeout = 0;
-  m_bpos_timestamp = 0;
+  m_bpos_timestamp = now;
   m_hdt = 0.0;
-  m_hdt_timeout = 0;
-  m_hdm_timeout = 0;
-  m_var_timeout = 0;
+  m_hdt_timeout = now + WATCHDOG_TIMEOUT;
+  m_hdm_timeout = now + WATCHDOG_TIMEOUT;
+  m_var_timeout = now + WATCHDOG_TIMEOUT;
+  m_cog_timeout = now;
   m_idle_standby = 0;
   m_idle_transmit = 0;
-  m_boot_time = time(0);
   count_ais_in_arpa = 0;
-  // Silly, but could there be old scrap in memory location? (Debug exp.)
-  for (int i = 0; i < SIZEAISAR; i++) {
-    ais_in_arpa[i].ais_mmsi = 0;
-  }
+  CLEAR_STRUCT(ais_in_arpa);
 
   m_heading_source = HEADING_NONE;
   m_radar_heading = nanl("");
+  m_vp_rotation = 0.;
 
   // Set default settings before we load config. Prevents random behavior on uninitalized behavior.
   // For instance, LOG_XXX messages before config is loaded.
@@ -221,19 +218,10 @@ int br24radar_pi::Init(void) {
   m_pMessageBox = new br24MessageBox;
   m_pMessageBox->Create(m_parent_window, this);
 
-  // before config, so config can set data in it
-  m_radar[0] = new RadarInfo(this, 0);
-  m_radar[1] = new RadarInfo(this, 1);
-  m_radar[0]->m_arpa = new RadarArpa(this, m_radar[0]);
-  m_radar[1]->m_arpa = new RadarArpa(this, m_radar[1]);
-
-  // make guard zones after making the radars
-  for (size_t z = 0; z < GUARD_ZONES; z++) {
-    m_radar[0]->m_guard_zone[z] = new GuardZone(this, 0, z);
-  }
-
-  for (size_t z = 0; z < GUARD_ZONES; z++) {
-    m_radar[1]->m_guard_zone[z] = new GuardZone(this, 1, z);
+  // Create objects before config, so config can set data in it
+  // This does not start any threads or generate any UI.
+  for (int r = 0; r < RADARS; r++) {
+    m_radar[r] = new RadarInfo(this, r);
   }
 
   //    And load the configuration items
@@ -279,9 +267,9 @@ int br24radar_pi::Init(void) {
   wxMenuItem *mi1 = new wxMenuItem(&dummy_menu, -1, _("Show radar"));
   wxMenuItem *mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
   wxMenuItem *mi3 = new wxMenuItem(&dummy_menu, -1, _("Radar Control..."));
-  wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Set MARPA Target"));
-  wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete (M)ARPA Target"));
-  wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all (M)ARPA Targets"));
+  wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Acquire radar target"));
+  wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete radar target"));
+  wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all radar targets"));
 
 #ifdef __WXMSW__
   wxFont *qFont = OCPNGetFont(_("Menu"), 10);
@@ -295,9 +283,13 @@ int br24radar_pi::Init(void) {
   m_context_menu_show_id = AddCanvasContextMenuItem(mi1, this);
   m_context_menu_hide_id = AddCanvasContextMenuItem(mi2, this);
   m_context_menu_control_id = AddCanvasContextMenuItem(mi3, this);
-  m_context_menu_set_marpa_target = AddCanvasContextMenuItem(mi4, this);
-  m_context_menu_delete_marpa_target = AddCanvasContextMenuItem(mi5, this);
-  m_context_menu_delete_all_marpa_targets = AddCanvasContextMenuItem(mi6, this);
+  m_context_menu_acquire_radar_target = AddCanvasContextMenuItem(mi4, this);
+  m_context_menu_delete_radar_target = AddCanvasContextMenuItem(mi5, this);
+  m_context_menu_delete_all_radar_targets = AddCanvasContextMenuItem(mi6, this);
+  m_context_menu_show = true;
+  m_context_menu_control = false;
+  m_context_menu_arpa = false;
+  SetCanvasContextMenuItemViz(m_context_menu_show_id, false);
 
   m_initialized = true;
   LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.show_radar[0], m_settings.show_radar[1],
@@ -415,29 +407,63 @@ void br24radar_pi::NotifyRadarWindowViz() { m_notify_radar_window_viz = true; }
 void br24radar_pi::NotifyControlDialog() { m_notify_control_dialog = true; }
 
 void br24radar_pi::SetRadarWindowViz(bool reparent) {
-  int arpa_targets = 0;
-
   for (int r = 0; r < RADARS; r++) {
     bool showThisRadar = m_settings.show && m_settings.show_radar[r] && (r == 0 || m_settings.enable_dual_radar);
     bool showThisControl = m_settings.show && m_settings.show_radar_control[r] && (r == 0 || m_settings.enable_dual_radar);
     m_radar[r]->ShowRadarWindow(showThisRadar);
     m_radar[r]->ShowControlDialog(showThisControl, reparent);
     m_radar[r]->UpdateTransmitState();
-    arpa_targets += m_radar[r]->m_arpa->GetTargetCount();
   }
-
-  SetCanvasContextMenuItemViz(m_context_menu_show_id, m_settings.show == 0);
-  SetCanvasContextMenuItemViz(m_context_menu_hide_id, m_settings.show != 0);
-  SetCanvasContextMenuItemViz(m_context_menu_control_id, m_settings.show != 0);
-  SetCanvasContextMenuItemViz(m_context_menu_control_id, m_settings.show != 0);
-  SetCanvasContextMenuItemViz(m_context_menu_set_marpa_target, m_settings.show != 0);
-  SetCanvasContextMenuItemViz(m_context_menu_delete_marpa_target, m_settings.show != 0);
-  SetCanvasContextMenuItemViz(m_context_menu_delete_all_marpa_targets, m_settings.show != 0);
-  SetCanvasContextMenuItemGrey(m_context_menu_delete_marpa_target, arpa_targets == 0);
-  SetCanvasContextMenuItemGrey(m_context_menu_delete_all_marpa_targets, arpa_targets == 0);
 
   LOG_DIALOG(wxT("BR24radar_pi: RadarWindow show = %d window0=%d window1=%d"), m_settings.show, m_settings.show_radar[0],
              m_settings.show_radar[1]);
+
+  UpdateContextMenu();
+}
+
+void br24radar_pi::UpdateContextMenu() {
+  int arpa_targets = 0;
+
+  for (int r = 0; r < RADARS; r++) {
+    arpa_targets += m_radar[r]->m_arpa->GetTargetCount();
+  }
+  bool show = m_settings.show;
+  bool control = false;
+  bool arpa = arpa_targets == 0;
+
+  if (m_settings.chart_overlay >= 0) {
+    control = m_settings.show_radar_control[m_settings.chart_overlay];
+  } else {
+    control = true;
+    for (int r = 0; r < RADARS; r++) {
+      if (!m_settings.show_radar_control[r]) {
+        control = false;
+      }
+    }
+  }
+
+  if (m_context_menu_arpa != arpa) {
+    SetCanvasContextMenuItemGrey(m_context_menu_delete_radar_target, arpa);
+    SetCanvasContextMenuItemGrey(m_context_menu_delete_all_radar_targets, arpa);
+    m_context_menu_arpa = arpa;
+    LOG_DIALOG(wxT("BR24radar_pi: ContextMenu arpa nr of targets = %d"), arpa_targets);
+  }
+  if (m_context_menu_control != control) {
+    SetCanvasContextMenuItemGrey(m_context_menu_control_id, control);
+    m_context_menu_control = control;
+    LOG_DIALOG(wxT("BR24radar_pi: ContextMenu control = %d"), control);
+  }
+
+  if (m_context_menu_show != show) {
+    SetCanvasContextMenuItemViz(m_context_menu_show_id, !show);
+    SetCanvasContextMenuItemViz(m_context_menu_hide_id, show);
+    SetCanvasContextMenuItemViz(m_context_menu_control_id, show);
+    SetCanvasContextMenuItemViz(m_context_menu_acquire_radar_target, show);
+    SetCanvasContextMenuItemViz(m_context_menu_delete_radar_target, show);
+    SetCanvasContextMenuItemViz(m_context_menu_delete_all_radar_targets, show);
+    m_context_menu_show = show;
+    LOG_DIALOG(wxT("BR24radar_pi: ContextMenu show = %d"), show);
+  }
 }
 
 //********************************************************************************
@@ -535,12 +561,12 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
       ShowRadarControl(m_settings.chart_overlay, true);
     }
   } else if (id == m_context_menu_hide_id) {
-    m_settings.show = 0;
+    m_settings.show = false;
     SetRadarWindowViz();
   } else if (id == m_context_menu_show_id) {
-    m_settings.show = 1;
+    m_settings.show = true;
     SetRadarWindowViz();
-  } else if (id == m_context_menu_set_marpa_target) {
+  } else if (id == m_context_menu_acquire_radar_target) {
     if (m_settings.show                                                             // radar shown
         && m_settings.chart_overlay >= 0                                            // overlay desired
         && m_radar[m_settings.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
@@ -550,34 +576,24 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
       target_pos.lon = m_cursor_lon;
       m_radar[m_settings.chart_overlay]->m_arpa->AcquireNewMARPATarget(target_pos);
     }
-  } else if (id == m_context_menu_delete_marpa_target) {
+  } else if (id == m_context_menu_delete_radar_target) {
     // Targets can also be deleted when the overlay is not shown
     // In this case targets can be made by a guard zone in a radarwindow
-    if (m_settings.show   // radar shown
-        && m_bpos_set) {  // overlay possible
+    if (m_settings.show && m_settings.chart_overlay >= 0) {
       Position target_pos;
       target_pos.lat = m_cursor_lat;
       target_pos.lon = m_cursor_lon;
-      if (m_radar[0]->m_arpa) {
-        m_radar[0]->m_arpa->DeleteTarget(target_pos);
-      }
-      if (m_radar[1]->m_arpa) {
-        m_radar[1]->m_arpa->DeleteTarget(target_pos);
+      if (m_radar[m_settings.chart_overlay]->m_arpa) {
+        m_radar[m_settings.chart_overlay]->m_arpa->DeleteTarget(target_pos);
       }
     }
-  } else if (id == m_context_menu_delete_all_marpa_targets) {
-    if (m_settings.show   // radar shown
-        && m_bpos_set) {  // overlay possible
-      if (m_radar[0]->m_arpa) {
-        m_radar[0]->m_arpa->DeleteAllTargets();
-      }
-      if (m_radar[1]->m_arpa) {
-        m_radar[1]->m_arpa->DeleteAllTargets();
+  } else if (id == m_context_menu_delete_all_radar_targets) {
+    for (int i = 0; i < RADARS; i++) {
+      if (m_radar[i]->m_arpa) {
+        m_radar[i]->m_arpa->DeleteAllTargets();
       }
     }
-  }
-
-  else {
+  } else {
     wxLogError(wxT("BR24radar_pi: Unknown context menu item callback"));
   }
 }
@@ -782,10 +798,6 @@ void br24radar_pi::SetRadarHeading(double heading, bool isTrue) {
 void br24radar_pi::UpdateHeadingState(time_t now) {
   wxCriticalSectionLocker lock(m_exclusive);
 
-  if (!TIMED_OUT(now, m_boot_time + WATCHDOG_TIMEOUT)) {
-    return;
-  }
-
   if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
     // If the position data is 10s old reset our heading.
     // Note that the watchdog is continuously reset every time we receive a
@@ -826,28 +838,8 @@ void br24radar_pi::UpdateHeadingState(time_t now) {
     m_var_source = VARIATION_SOURCE_NONE;
     LOG_VERBOSE(wxT("BR24radar_pi: Lost Variation source"));
   }
-
-  // check for no longer allowed value
-  if (m_heading_source == HEADING_NONE) {
-    for (int i = 0; i < RADARS; i++) {
-      if (m_radar[i]->m_orientation.GetValue() != ORIENTATION_HEAD_UP) {
-        m_radar[i]->m_orientation.Update(ORIENTATION_HEAD_UP);
-      }
-    }
-  } else {
-    for (int i = 0; i < RADARS; i++) {
-      if (m_radar[i]->m_orientation.GetValue() == ORIENTATION_HEAD_UP) {
-        m_radar[i]->m_orientation.Update(ORIENTATION_STABILIZED_UP);
-      }
-    }
-  }
 }
 
-double br24radar_pi::GetHeadingTrue() {
-  wxCriticalSectionLocker lock(m_exclusive);
-
-  return m_hdt;
-}
 
 // Notify
 // ------
@@ -859,33 +851,37 @@ void br24radar_pi::Notify(void) {
   time_t now = time(0);
   bool updateAllControls;
 
-  LOG_VERBOSE(wxT("BR24radar_pi: main timer"));
+  {
+    wxCriticalSectionLocker lock(m_exclusive);
 
-  updateAllControls = m_notify_control_dialog;
-  m_notify_control_dialog = false;
-  if (m_opengl_mode_changed || m_notify_radar_window_viz) {
-    m_opengl_mode_changed = false;
-    m_notify_radar_window_viz = false;
-    SetRadarWindowViz(true);
-    updateAllControls = true;
-  } else {
-    SetRadarWindowViz();
-  }
+    LOG_VERBOSE(wxT("BR24radar_pi: main timer"));
 
-  if (!m_settings.show  // No radar shown
-      || (m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT &&
-          m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT)  // Radar not transmitting
-      || !m_bpos_set) {                                      // No overlay possible (yet)
-    // Conditions for ARPA not fulfilled, delete all targets
-    if (m_radar[0]->m_arpa) {
-      m_radar[0]->m_arpa->RadarLost();
+    updateAllControls = m_notify_control_dialog;
+    m_notify_control_dialog = false;
+    if (m_opengl_mode_changed || m_notify_radar_window_viz) {
+      m_opengl_mode_changed = false;
+      m_notify_radar_window_viz = false;
+      SetRadarWindowViz(true);
+      updateAllControls = true;
+    } else {
+      UpdateContextMenu();
     }
-    if (m_radar[1]->m_arpa) {
-      m_radar[1]->m_arpa->RadarLost();
+
+    UpdateHeadingState(now);
+
+    // Update radar position offset from GPS
+    if (!wxIsNaN(m_hdt) && (m_settings.antenna_starboard != 0 || m_settings.antenna_forward != 0)) {
+      double sine = sin(deg2rad(m_hdt));
+      double cosine = cos(deg2rad(m_hdt));
+      double dist_forward = (double)m_settings.antenna_forward / 1852 / 60;
+      double dist_starboard = (double)m_settings.antenna_starboard / 1852 / 60;
+      m_radar_lat = dist_forward * cosine - dist_starboard * sine + m_ownship_lat;
+      m_radar_lon = (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_ownship_lat)) + m_ownship_lon;
+    } else {
+      m_radar_lat = m_ownship_lat;
+      m_radar_lon = m_ownship_lon;
     }
   }
-
-  UpdateHeadingState(now);
 
   // Check the age of "radar_seen", if too old radar_seen = false
   bool any_data_seen = false;
@@ -893,6 +889,15 @@ void br24radar_pi::Notify(void) {
     if (m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT) {
       any_data_seen = true;
     }
+    if (!m_settings.show  // No radar shown
+        || m_radar[r]->m_state.GetValue() != RADAR_TRANSMIT  // Radar not transmitting
+        || !m_bpos_set) {                                      // No overlay possible (yet)
+                                                               // Conditions for ARPA not fulfilled, delete all targets
+      if (m_radar[r]->m_arpa) {
+        m_radar[r]->m_arpa->RadarLost();
+      }
+    }
+
     m_radar[r]->UpdateTransmitState();
   }
 
@@ -907,6 +912,7 @@ void br24radar_pi::Notify(void) {
   if (m_pMessageBox->IsShown() || (m_settings.verbose != 0)) {
     wxString t;
     for (size_t r = 0; r < RADARS; r++) {
+      wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
       if (m_radar[r]->m_state.GetValue() != RADAR_OFF) {
         t << wxString::Format(wxT("%s\npackets %d/%d\nspokes %d/%d/%d\n"), m_radar[r]->m_name.c_str(),
                               m_radar[r]->m_statistics.packets, m_radar[r]->m_statistics.broken_packets,
@@ -919,6 +925,17 @@ void br24radar_pi::Notify(void) {
       t.Replace(wxT("\n"), wxT(" "));
       LOG_RECEIVE(wxT("BR24radar_pi: %s"), t.c_str());
     }
+  }
+
+  // Always reset the counters, so they don't show huge numbers after IsShown changes
+  for (int r = 0; r < RADARS; r++) {
+    wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
+
+    m_radar[r]->m_statistics.broken_packets = 0;
+    m_radar[r]->m_statistics.broken_spokes = 0;
+    m_radar[r]->m_statistics.missing_spokes = 0;
+    m_radar[r]->m_statistics.packets = 0;
+    m_radar[r]->m_statistics.spokes = 0;
   }
 
   wxString info;
@@ -968,11 +985,6 @@ void br24radar_pi::Notify(void) {
 
   for (int r = 0; r < RADARS; r++) {
     m_radar[r]->UpdateControlState(updateAllControls);
-    m_radar[r]->m_statistics.broken_packets = 0;
-    m_radar[r]->m_statistics.broken_spokes = 0;
-    m_radar[r]->m_statistics.missing_spokes = 0;
-    m_radar[r]->m_statistics.packets = 0;
-    m_radar[r]->m_statistics.spokes = 0;
   }
 
   UpdateState();
@@ -1011,8 +1023,8 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 
   LOG_DIALOG(wxT("BR24radar_pi: RenderOverlay"));
 
-  if (m_opengl_mode) {
-    m_opengl_mode = false;
+  if (m_opengl_mode != OPENGL_OFF) {
+    m_opengl_mode = OPENGL_OFF;
     // Can't hide/show the windows from here, this becomes recursive because the Chart display
     // is managed by wxAuiManager as well.
     m_opengl_mode_changed = true;
@@ -1034,8 +1046,8 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   }
   m_opencpn_gl_context_broken = m_opencpn_gl_context == 0;
 
-  if (!m_opengl_mode) {
-    m_opengl_mode = true;
+  if (m_opengl_mode != OPENGL_ON) {
+    m_opengl_mode = OPENGL_ON;
     // Can't hide/show the windows from here, this becomes recursive because the Chart display
     // is managed by wxAuiManager as well.
     m_opengl_mode_changed = true;
@@ -1068,7 +1080,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   }
 
   wxPoint boat_center;
-  GetCanvasPixLL(vp, &boat_center, m_ownship_lat, m_ownship_lon);
+  GetCanvasPixLL(vp, &boat_center, m_radar_lat, m_radar_lon);
 
   m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
 
@@ -1102,7 +1114,6 @@ bool br24radar_pi::LoadConfig(void) {
 
   if (pConf) {
     pConf->SetPath(wxT("Settings"));
-    pConf->Read(wxT("OpenGL"), &m_opengl_mode, false);
     pConf->Read(wxT("COGUPAvgSeconds"), &m_COGAvgSec, 15);
     m_COGAvgSec = wxMin(m_COGAvgSec, MAX_COG_AVERAGE_SECONDS);  // Bound the array size
     for (int i = 0; i < m_COGAvgSec; i++) {
@@ -1110,6 +1121,11 @@ bool br24radar_pi::LoadConfig(void) {
     }
 
     pConf->SetPath(wxT("/Plugins/BR24Radar"));
+
+    // Valgrind: This needs to be set before we set range, since that uses this
+    pConf->Read(wxT("RangeUnits"), &v, 0);
+    m_settings.range_units = (RangeUnits)wxMax(wxMin(v, 1), 0);
+    m_settings.range_unit_meters = (m_settings.range_units == RANGE_METRIC) ? 1000 : 1852;
 
     if (pConf->Read(wxT("DisplayMode"), &v, 0)) {  // v1.3
       wxLogMessage(wxT("BR24radar_pi: Upgrading settings from v1.3 or lower"));
@@ -1148,7 +1164,12 @@ bool br24radar_pi::LoadConfig(void) {
       m_settings.idle_run_time = wxMax(m_settings.idle_run_time, 2);
 
       for (int r = 0; r < RADARS; r++) {
+        pConf->Read(wxString::Format(wxT("Radar%dRange"), r), &v, 2000);
+        m_radar[r]->m_range.Update(v);
         pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
+        if (v == ORIENTATION_HEAD_UP) {
+          v = ORIENTATION_STABILIZED_UP;
+        }
         m_radar[r]->m_orientation.Update(v);
         pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
         m_radar[r]->m_boot_state.Update(v);
@@ -1163,6 +1184,7 @@ bool br24radar_pi::LoadConfig(void) {
         pConf->Read(wxString::Format(wxT("Radar%dWindowPosY"), r), &y, 120);
         m_settings.window_pos[r] = wxPoint(x, y);
         pConf->Read(wxString::Format(wxT("Radar%dControlShow"), r), &m_settings.show_radar_control[r], false);
+        pConf->Read(wxString::Format(wxT("Radar%dTargetShow"), r), &m_settings.show_radar_target[r], true);
         pConf->Read(wxString::Format(wxT("Radar%dControlPosX"), r), &x, OFFSCREEN_CONTROL_X);
         pConf->Read(wxString::Format(wxT("Radar%dControlPosY"), r), &y, OFFSCREEN_CONTROL_Y);
         m_settings.control_pos[r] = wxPoint(x, y);
@@ -1199,6 +1221,7 @@ bool br24radar_pi::LoadConfig(void) {
     m_settings.ais_text_colour = wxColour(s);
     pConf->Read(wxT("ColourPPIBackground"), &s, "rgb(0,0,50)");
     m_settings.ppi_background_colour = wxColour(s);
+    pConf->Read(wxT("DeveloperMode"), &m_settings.developer_mode, false);
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
     pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
     pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, false);
@@ -1209,12 +1232,12 @@ bool br24radar_pi::LoadConfig(void) {
     pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
     pConf->Read(wxT("IgnoreRadarHeading"), &m_settings.ignore_radar_heading, 0);
     pConf->Read(wxT("MainBangSize"), &m_settings.main_bang_size, 0);
+    pConf->Read(wxT("ShowExtremeRange"), &m_settings.show_extreme_range, false);
+    pConf->Read(wxT("AntennaForward"), &m_settings.antenna_forward, 0);
+    pConf->Read(wxT("AntennaStarboard"), &m_settings.antenna_starboard, 0);
     pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 0);
     pConf->Read(wxT("PassHeadingToOCPN"), &m_settings.pass_heading_to_opencpn, false);
     pConf->Read(wxT("RadarInterface"), &m_settings.mcast_address);
-    pConf->Read(wxT("RangeUnits"), &v, 0);
-    m_settings.range_units = (RangeUnits)wxMax(wxMin(v, 1), 0);
-    m_settings.range_unit_meters = (m_settings.range_units == RANGE_METRIC) ? 1000 : 1852;
     pConf->Read(wxT("Refreshrate"), &m_settings.refreshrate, 3);
     pConf->Read(wxT("ReverseZoom"), &m_settings.reverse_zoom, false);
     pConf->Read(wxT("ScanMaxAge"), &m_settings.max_age, 6);
@@ -1252,6 +1275,7 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("AlarmPosY"), m_settings.alarm_pos.y);
     pConf->Write(wxT("AlertAudioFile"), m_settings.alert_audio_file);
     pConf->Write(wxT("ChartOverlay"), m_settings.chart_overlay);
+    pConf->Write(wxT("DeveloperMode"), m_settings.developer_mode);
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
     pConf->Write(wxT("EmulatorOn"), m_settings.emulator_on);
     pConf->Write(wxT("EnableCOGHeading"), m_settings.enable_cog_heading);
@@ -1263,6 +1287,9 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("GuardZonesThreshold"), m_settings.guard_zone_threshold);
     pConf->Write(wxT("IgnoreRadarHeading"), m_settings.ignore_radar_heading);
     pConf->Write(wxT("MainBangSize"), m_settings.main_bang_size);
+    pConf->Write(wxT("ShowExtremeRange"), m_settings.show_extreme_range);
+    pConf->Write(wxT("AntennaForward"), m_settings.antenna_forward);
+    pConf->Write(wxT("AntennaStarboard"), m_settings.antenna_starboard);
     pConf->Write(wxT("MenuAutoHide"), m_settings.menu_auto_hide);
     pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
     pConf->Write(wxT("RadarInterface"), m_settings.mcast_address);
@@ -1290,10 +1317,12 @@ bool br24radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ColourPPIBackground"), m_settings.ppi_background_colour.GetAsString());
 
     for (int r = 0; r < RADARS; r++) {
+      pConf->Write(wxString::Format(wxT("Radar%dRange"), r), m_radar[r]->m_range.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->m_state.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
       pConf->Write(wxString::Format(wxT("Radar%dControlShow"), r), m_settings.show_radar_control[r]);
+      pConf->Write(wxString::Format(wxT("Radar%dTargetShow"), r), m_settings.show_radar_target[r]);
       pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->m_target_trails.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTrueMotion"), r), m_radar[r]->m_trails_motion.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dWindowPosX"), r), m_settings.window_pos[r].x);
@@ -1323,7 +1352,9 @@ bool br24radar_pi::SaveConfig(void) {
 }
 
 void br24radar_pi::SetMcastIPAddress(wxString &address) {
-  { m_settings.mcast_address = address; }
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  m_settings.mcast_address = address;
   if (m_pMessageBox) {
     m_pMessageBox->SetMcastIPAddress(address);
   }
@@ -1386,6 +1417,7 @@ void br24radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   if (pfix.FixTime > 0 && NOT_TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT)) {
     m_ownship_lat = pfix.Lat;
     m_ownship_lon = pfix.Lon;
+
     if (!m_bpos_set) {
       LOG_VERBOSE(wxT("BR24radar_pi: GPS position is now known"));
     }
@@ -1497,8 +1529,8 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
           double f_AISLon = wxAtof(message.Get(_T("lon"), defaultValue).AsString());
           // Rectangle around own ship to look for AIS targets.
           double d_side = ArpaMaxRange / 1852.0 / 60.0;
-          if (f_AISLat < (m_ownship_lat + d_side) && f_AISLat > (m_ownship_lat - d_side) &&
-              f_AISLon < (m_ownship_lon + d_side * 2) && f_AISLon > (m_ownship_lon - d_side * 2)) {
+          if (f_AISLat < (m_radar_lat + d_side) && f_AISLat > (m_radar_lat - d_side) && f_AISLon < (m_radar_lon + d_side * 2) &&
+              f_AISLon > (m_radar_lon - d_side * 2)) {
             bool updated = false;
             int empty = -1;
             for (int i = 0; i < SIZEAISAR; i++) {
@@ -1559,12 +1591,12 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
   switch (controlType) {
     case CT_TRANSPARENCY: {
       m_settings.overlay_transparency = value;
-      m_radar[1 - radar]->UpdateControlState(true); // Update the controls in the other radar
+      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
       return true;
     }
     case CT_SCAN_AGE: {
       m_settings.max_age = value;
-      m_radar[1 - radar]->UpdateControlState(true); // Update the controls in the other radar
+      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
       return true;
     }
     case CT_TIMED_IDLE: {
@@ -1576,17 +1608,17 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
       } else {
         m_idle_transmit = time(0) + 10;
       }
-      m_radar[1 - radar]->UpdateControlState(true); // Update the controls in the other radar
+      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
       return true;
     }
     case CT_TIMED_RUN: {
       m_settings.idle_run_time = value;
-      m_radar[1 - radar]->UpdateControlState(true); // Update the controls in the other radar
+      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
       return true;
     }
     case CT_REFRESHRATE: {
       m_settings.refreshrate = value;
-      m_radar[1 - radar]->UpdateControlState(true); // Update the controls in the other radar
+      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
       return true;
     }
     case CT_TARGET_TRAILS: {
@@ -1603,7 +1635,19 @@ bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value
     }
     case CT_MAIN_BANG_SIZE: {
       m_settings.main_bang_size = value;
-      m_radar[1 - radar]->UpdateControlState(true); // Update the controls in the other radar
+      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
+      return true;
+    }
+
+    case CT_ANTENNA_FORWARD: {
+      m_settings.antenna_forward = value;
+      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
+      return true;
+    }
+
+    case CT_ANTENNA_STARBOARD: {
+      m_settings.antenna_starboard = value;
+      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
       return true;
     }
 

@@ -36,7 +36,7 @@ PLUGIN_BEGIN_NAMESPACE
 br24Transmit::br24Transmit(br24radar_pi *pi, wxString name, int radar) {
   m_pi = pi;
 
-  memset(&m_addr, 0, sizeof(m_addr));
+  CLEAR_STRUCT(m_addr);
   m_addr.sin_family = AF_INET;
 
   static UINT8 radar_mcast_send_addr[2][4] = {{236, 6, 7, 10}, {236, 6, 7, 14}};
@@ -167,6 +167,8 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoV
     case CT_TRAILS_MOTION:
     case CT_MAIN_BANG_SIZE:
     case CT_MAX:
+    case CT_ANTENNA_FORWARD:
+    case CT_ANTENNA_STARBOARD:
       // The above are not settings that are not radar commands. Made them explicit so the
       // compiler can catch missing control types.
       break;

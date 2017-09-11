@@ -101,23 +101,7 @@ class GuardZone {
     return m_bogey_count;
   };
 
-  GuardZone(br24radar_pi *pi, int radar, int zone) {
-    m_pi = pi;
-    m_ri = m_pi->m_radar[radar];
-    m_log_name = wxString::Format(wxT("BR24radar_pi: Radar %c GuardZone %d:"), radar + 'A', zone + 1);
-    m_type = GZ_CIRCLE;
-    m_start_bearing = 0;
-    m_end_bearing = 0;
-    m_inner_range = 0;
-    m_outer_range = 0;
-    m_arpa_on = 0;
-    m_alarm_on = 0;
-    m_show_time = 0;
-    for (int angle = 0; angle < LINES_PER_ROTATION; angle++) {
-      arpa_update_time[angle] = 0;
-    }
-    ResetBogeys();
-  }
+  GuardZone(br24radar_pi *pi, RadarInfo* ri, int zone);
 
   ~GuardZone() { LOG_VERBOSE(wxT("%s destroyed"), m_log_name.c_str()); }
 

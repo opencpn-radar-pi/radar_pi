@@ -50,7 +50,7 @@ class RadarDrawShader : public RadarDraw {
     m_program = 0;
     m_format = GL_RGBA;
     m_channels = SHADER_COLOR_CHANNELS;
-    memset(m_data, 0, sizeof(m_data));
+    CLEAR_STRUCT(m_data);
   }
 
   ~RadarDrawShader();

@@ -113,6 +113,7 @@ class br24ControlsDialog : public wxDialog {
   void OnRadarOverlayButtonClick(wxCommandEvent &event);
   void OnMessageButtonClick(wxCommandEvent &event);
 
+  void OnTargetsButtonClick(wxCommandEvent &event);
   void OnClearTrailsButtonClick(wxCommandEvent &event);
   void OnOrientationButtonClick(wxCommandEvent &event);
 
@@ -122,8 +123,9 @@ class br24ControlsDialog : public wxDialog {
   void OnZone2ButtonClick(wxCommandEvent &event);
 
   void OnClearCursorButtonClick(wxCommandEvent &event);
-  void OnSetMarpaButtonClick(wxCommandEvent &event);
-  void OnDeleteMarpaButtonClick(wxCommandEvent &event);
+  void OnAcquireTargetButtonClick(wxCommandEvent &event);
+  void OnDeleteTargetButtonClick(wxCommandEvent &event);
+  void OnDeleteAllTargetsButtonClick(wxCommandEvent &event);
   void OnBearingSetButtonClick(wxCommandEvent &event);
   void OnBearingButtonClick(wxCommandEvent &event);
 
@@ -167,6 +169,7 @@ class br24ControlsDialog : public wxDialog {
   wxButton *m_plus_ten_button;
   wxButton *m_plus_button;
   wxStaticText *m_value_text;
+  wxStaticText *m_comment_text;
   wxButton *m_minus_button;
   wxButton *m_minus_ten_button;
   wxButton *m_auto_button;
@@ -182,6 +185,8 @@ class br24ControlsDialog : public wxDialog {
   // Installation controls
   br24RadarControlButton *m_bearing_alignment_button;
   br24RadarControlButton *m_antenna_height_button;
+  br24RadarControlButton *m_antenna_forward_button;
+  br24RadarControlButton *m_antenna_starboard_button;
   br24RadarControlButton *m_local_interference_rejection_button;
   br24RadarControlButton *m_side_lobe_suppression_button;
   br24RadarControlButton *m_main_bang_size_button;
@@ -189,11 +194,13 @@ class br24ControlsDialog : public wxDialog {
   // Bearing controls
   wxButton *m_bearing_buttons[BEARING_LINES];
   wxButton *m_clear_cursor;
-  wxButton *m_set_marpa;
-  wxButton *m_delete_marpa;
+  wxButton *m_acquire_target;
+  wxButton *m_delete_target;
+  wxButton *m_delete_all;
 
   // View controls
   br24RadarControlButton *m_target_trails_button;
+  wxButton *m_targets_button;
   wxButton *m_trails_motion_button;
   wxButton *m_clear_trails_button;
   wxButton *m_orientation_button;

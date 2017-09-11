@@ -168,6 +168,8 @@ typedef enum ControlType {
   CT_BEARING_ALIGNMENT,
   CT_SIDE_LOBE_SUPPRESSION,
   CT_ANTENNA_HEIGHT,
+  CT_ANTENNA_FORWARD,
+  CT_ANTENNA_STARBOARD,
   CT_LOCAL_INTERFERENCE_REJECTION,
   CT_TARGET_TRAILS,
   CT_TRAILS_MOTION,
@@ -194,6 +196,8 @@ static string ControlTypeNames[CT_MAX] = {"Range",
                                           "Bearing alignment",
                                           "Side lobe suppression",
                                           "Antenna height",
+                                          "Antenna forward of GPS",
+                                          "Antenna starboard of GPS",
                                           "Local interference rejection",
                                           "Target trails",
                                           "Target trails motion",
@@ -252,6 +256,7 @@ extern double local_bearing(double lat1, double lon1, double lat2, double lon2);
 enum DisplayModeType { DM_CHART_OVERLAY, DM_CHART_NONE };
 enum ToolbarIconColor { TB_NONE, TB_HIDDEN, TB_SEARCHING, TB_SEEN, TB_STANDBY, TB_ACTIVE };
 enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_SOURCE_FIX, VARIATION_SOURCE_WMM };
+enum OpenGLMode { OPENGL_UNKOWN, OPENGL_OFF, OPENGL_ON };
 
 static const int RangeUnitsToMeters[2] = {1852, 1000};
 
@@ -279,7 +284,7 @@ enum RangeUnits { RANGE_NAUTICAL, RANGE_METRIC };
  * some of it is 'secret' and can only be set by manipulating the ini file directly.
  */
 struct PersistentSettings {
-  int overlay_transparency;
+  int overlay_transparency;         // How transparent is the radar picture over the chart
   int range_index;                  // index into range array, see RadarInfo.cpp
   int verbose;                      // Loglevel 0..4.
   int guard_zone_threshold;         // How many blobs must be sent by radar before we fire alarm
@@ -295,24 +300,29 @@ struct PersistentSettings {
   int timed_idle;                   // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
   int idle_run_time;                // 0 = 10s, 1 = 30s, 2 = 1 min
   int refreshrate;                  // How quickly to refresh the display
-  bool show;                        // whether to show any radar (overlay or window)
-  bool show_radar[RADARS];          // whether to show radar window
-  bool show_radar_control[RADARS];  // whether to show radar window
-  bool transmit_radar[RADARS];      // whether radar should be transmitting (persistent)
   int chart_overlay;                // -1 = none, otherwise = radar number
   int menu_auto_hide;               // 0 = none, 1 = 10s, 2 = 30s
+  int drawing_method;               // VertexBuffer, Shader, etc.
+  bool developer_mode;              // Readonly from config, allows head up mode
+  bool show;                        // whether to show any radar (overlay or window)
+  bool show_radar[RADARS];          // whether to show radar window
+  bool show_radar_control[RADARS];  // whether to show radar menu (control) window
+  bool show_radar_target[RADARS];   // whether to show AIS and ARPA targets on radar window
+  bool transmit_radar[RADARS];      // whether radar should be transmitting (persistent)
   bool pass_heading_to_opencpn;     // Pass heading coming from radar as NMEA data to OpenCPN
   bool enable_cog_heading;          // Allow COG as heading. Should be taken out back and shot.
   bool enable_dual_radar;           // Should the dual radar be enabled for 4G?
   bool emulator_on;                 // Emulator, useful when debugging without radar
-  int drawing_method;               // VertexBuffer, Shader, etc.
   bool ignore_radar_heading;        // For testing purposes
   bool reverse_zoom;                // false = normal, true = reverse
+  bool show_extreme_range;          // Show red ring at extreme range and center
   int threshold_red;                // Radar data has to be this strong to show as STRONG
   int threshold_green;              // Radar data has to be this strong to show as INTERMEDIATE
   int threshold_blue;               // Radar data has to be this strong to show as WEAK
   int threshold_multi_sweep;        // Radar data has to be this strong not to be ignored in multisweep
   int main_bang_size;               // Pixels at center to ignore
+  int antenna_starboard;            // Ofsett of radar antenne starboard of GPS antenna
+  int antenna_forward;              // Ofsett of radar antenne forward of GPS antenna
   int type_detection_method;        // 0 = default, 1 = ignore reports
   int AISatARPAoffset;              // Rectangle side where to search AIS targets at ARPA position
   wxPoint control_pos[RADARS];      // Saved position of control menu windows
@@ -348,7 +358,6 @@ struct AisArpa {
   time_t ais_time_upd;
   double ais_lat;
   double ais_lon;
-  wxString ais_name;
 };
 
 //----------------------------------------------------------------------------------------------------------
@@ -371,8 +380,6 @@ class br24radar_pi : public opencpn_plugin_114 {
   //    The required PlugIn Methods
   int Init(void);
   bool DeInit(void);
-  int m_context_menu_delete_marpa_target;
-  int m_context_menu_delete_all_marpa_targets;
 
   int GetAPIVersionMajor();
   int GetAPIVersionMinor();
@@ -435,25 +442,35 @@ class br24radar_pi : public opencpn_plugin_114 {
   wxString GetMcastIPAddress() {
     wxCriticalSectionLocker lock(m_exclusive);
     return m_settings.mcast_address;
-  };
+  }
 
   void SetRadarHeading(double heading = nan(""), bool isTrue = false);
-  double GetHeadingTrue();
+  double GetHeadingTrue() {
+    wxCriticalSectionLocker lock(m_exclusive);
+    return m_hdt;
+  }
   time_t GetHeadingTrueTimeout() {
     wxCriticalSectionLocker lock(m_exclusive);
     return m_hdt_timeout;
-  };
+  }
   time_t GetHeadingMagTimeout() {
     wxCriticalSectionLocker lock(m_exclusive);
     return m_hdm_timeout;
-  };
+  }
   VariationSource GetVariationSource() {
     wxCriticalSectionLocker lock(m_exclusive);
     return m_var_source;
-  };
+  }
   double GetCOG() {
     wxCriticalSectionLocker lock(m_exclusive);
     return m_cog;
+  }
+  void GetRadarPosition(double * lat, double * lon)
+  {
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    *lat = m_radar_lat;
+    *lon = m_radar_lon;
   }
 
   wxFont m_font;      // The dialog font at a normal size
@@ -470,7 +487,7 @@ class br24radar_pi : public opencpn_plugin_114 {
   bool m_opencpn_gl_context_broken;
 
   HeadingSource m_heading_source;
-  bool m_opengl_mode;
+  OpenGLMode m_opengl_mode;
   volatile bool m_opengl_mode_changed;
   bool m_bpos_set;
   time_t m_bpos_timestamp;
@@ -478,7 +495,7 @@ class br24radar_pi : public opencpn_plugin_114 {
 
   // Cursor position. Used to show position in radar window
   double m_cursor_lat, m_cursor_lon;
-  double m_ownship_lat, m_ownship_lon;
+  double m_ownship_lat, m_ownship_lon, m_radar_lat, m_radar_lon;
 
   bool m_initialized;      // True if Init() succeeded and DeInit() not called yet.
   bool m_first_init;       // True in first Init() call.
@@ -507,6 +524,7 @@ class br24radar_pi : public opencpn_plugin_114 {
   void CheckTimedTransmit(RadarState state);
   void RequestStateAllRadars(RadarState state);
   void SetRadarWindowViz(bool reparent = false);
+  void UpdateContextMenu();
   void UpdateCOGAvg(double cog);
 
   wxCriticalSection m_exclusive;  // protects callbacks that come from multiple radars
@@ -533,7 +551,9 @@ class br24radar_pi : public opencpn_plugin_114 {
   int m_context_menu_control_id;
   int m_context_menu_show_id;
   int m_context_menu_hide_id;
-  int m_context_menu_set_marpa_target;
+  int m_context_menu_acquire_radar_target;
+  int m_context_menu_delete_radar_target;
+  int m_context_menu_delete_all_radar_targets;
 
   int m_tool_id;
   wxBitmap *m_pdeficon;
@@ -570,6 +590,11 @@ class br24radar_pi : public opencpn_plugin_114 {
   double m_cog;          // Value of m_COGAvg at rotation time
   time_t m_cog_timeout;  // When m_cog will be set again
   double m_vp_rotation;  // Last seen vp->rotation
+
+  // Keep last state of ContextMenu state sent, to avoid redraws
+  bool m_context_menu_show;
+  bool m_context_menu_control;
+  bool m_context_menu_arpa;
 };
 
 PLUGIN_END_NAMESPACE

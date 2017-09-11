@@ -260,7 +260,7 @@ bool br24MessageBox::UpdateMessage(bool force) {
   message_status new_message_state = HIDE;
   time_t now = time(0);
 
-  bool haveOpenGL = m_pi->m_opengl_mode;
+  bool haveOpenGL = m_pi->m_opengl_mode == OPENGL_ON;
   bool haveGPS = m_pi->m_bpos_set;
   bool haveTrueHeading = !TIMED_OUT(now, m_pi->GetHeadingTrueTimeout());
   bool haveMagHeading = !TIMED_OUT(now, m_pi->GetHeadingMagTimeout());

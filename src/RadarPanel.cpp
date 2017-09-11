@@ -58,7 +58,7 @@ bool RadarPanel::Create() {
 
   m_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-  m_text = new wxStaticText(this, 0, _("OpenGL mode required"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
+  m_text = new wxStaticText(this, 0, wxT(""), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
   m_sizer->Add(m_text, 0, wxEXPAND | wxALL, 0);
   SetSizer(m_sizer);
 
@@ -149,7 +149,7 @@ void RadarPanel::ShowFrame(bool visible) {
 
   wxAuiPaneInfo& pane = m_aui_mgr->GetPane(this);
 
-  if (!m_pi->m_opengl_mode && m_ri->m_radar_canvas) {
+  if (m_pi->m_opengl_mode == OPENGL_OFF && m_ri->m_radar_canvas) {
     m_sizer->Detach(m_ri->m_radar_canvas);
     delete m_ri->m_radar_canvas;
     m_ri->m_radar_canvas = 0;
@@ -160,7 +160,7 @@ void RadarPanel::ShowFrame(bool visible) {
     Layout();
   }
   if (visible) {
-    if (m_pi->m_opengl_mode && !m_ri->m_radar_canvas) {
+    if (m_pi->m_opengl_mode == OPENGL_ON && !m_ri->m_radar_canvas) {
       LOG_DIALOG(wxT("BR24radar_pi %s: creating OpenGL canvas"), m_ri->m_name.c_str());
       m_ri->m_radar_canvas = new RadarCanvas(m_pi, m_ri, this, GetSize());
       if (!m_ri->m_radar_canvas) {
