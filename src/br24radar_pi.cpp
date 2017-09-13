@@ -104,7 +104,11 @@ static double radar_distance(double lat1, double lon1, double lat2, double lon2,
 //
 //---------------------------------------------------------------------------------------------------------
 
-//#include "default_pi.xpm"
+enum { TIMER_ID = 51 };
+
+BEGIN_EVENT_TABLE(br24radar_pi, wxEvtHandler)
+EVT_TIMER(TIMER_ID, br24radar_pi::OnTimerNotify)
+END_EVENT_TABLE()
 
 //---------------------------------------------------------------------------------------------------------
 //
@@ -123,6 +127,8 @@ br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_114(ppimgr) {
   m_opengl_mode_changed = false;
   m_opencpn_gl_context = 0;
   m_opencpn_gl_context_broken = false;
+
+  m_timer = 0;
 
   m_first_init = true;
 }
@@ -295,13 +301,14 @@ int br24radar_pi::Init(void) {
   LOG_VERBOSE(wxT("BR24radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.show_radar[0], m_settings.show_radar[1],
               m_settings.chart_overlay);
 
+  m_notify_time_ms = 0;
+  m_timer = new wxTimer(this, TIMER_ID);
   SetRadarWindowViz();
-  Notify();
+  TimedControlUpdate();
   m_radar[0]->StartReceive();
   if (m_settings.enable_dual_radar) {
     m_radar[1]->StartReceive();
   }
-
   return PLUGIN_OPTIONS;
 }
 
@@ -319,6 +326,12 @@ bool br24radar_pi::DeInit(void) {
   LOG_VERBOSE(wxT("BR24radar_pi: DeInit of plugin"));
 
   m_initialized = false;
+
+  if (m_timer) {
+    m_timer->Stop();
+    delete m_timer;
+    m_timer = 0;
+  }
 
   // Stop processing in all radars.
   // This waits for the receive threads to stop and removes the dialog, so that its settings
@@ -795,8 +808,10 @@ void br24radar_pi::SetRadarHeading(double heading, bool isTrue) {
   }
 }
 
-void br24radar_pi::UpdateHeadingState(time_t now) {
+void br24radar_pi::UpdateHeadingState() {
   wxCriticalSectionLocker lock(m_exclusive);
+
+  time_t now = time(0);
 
   if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
     // If the position data is 10s old reset our heading.
@@ -840,6 +855,51 @@ void br24radar_pi::UpdateHeadingState(time_t now) {
   }
 }
 
+/**
+ * This is called whenever OpenCPN is drawing the chart, about halfway through its
+ * process, e.g. as the last part of RenderGLOverlay(), and by the timer.
+ *
+ * This happens on the main (GUI) thread.
+ */
+void br24radar_pi::ScheduleWindowRefresh() {
+  int drawTime = 0;
+  int millis;
+
+  TimedControlUpdate();  // Update the controls. Method is self-limiting if called too often.
+
+  for (int r = 0; r < RADARS; r++) {
+    drawTime += m_radar[r]->GetDrawTime();
+    m_radar[r]->RefreshDisplay();
+  }
+
+  if (m_settings.refreshrate > 1 && drawTime < 500) {  // 1 = 1 per s, 1000ms between draws, no additional refreshes
+    // 2 = 2 per s,  500ms
+    // 3 = 4 per s,  250ms
+    // 4 = 8 per s,  125ms
+    // 5 = 16 per s,  64ms
+    millis = (1000 - drawTime) / (1 << (m_settings.refreshrate - 1)) + drawTime;
+
+    m_timer->StartOnce(millis);
+    LOG_VERBOSE(wxT("BR24radar_pi: rendering PPI window(s) took %dms, next extra render is in %dms"), drawTime, millis);
+  } else {
+    LOG_VERBOSE(wxT("BR24radar_pi: rendering PPI window(s) took %dms, refreshrate=%d, no next extra render"), drawTime,
+                m_settings.refreshrate);
+  }
+}
+
+void br24radar_pi::OnTimerNotify(wxTimerEvent &event) {
+  if (m_settings.show) {  // Is radar enabled?
+    LOG_INFO(wxT("BR24radar_pi: TIMER"));
+
+    if (m_settings.chart_overlay >= 0) {
+      // If overlay is enabled schedule another chart draw. Note this will cause another call to RenderGLOverlay,
+      // which will then call ScheduleWindowRefresh again itself.
+      GetOCPNCanvasWindow()->Refresh(false);
+    } else {
+      ScheduleWindowRefresh();
+    }
+  }
+}
 
 // Notify
 // ------
@@ -847,57 +907,54 @@ void br24radar_pi::UpdateHeadingState(time_t now) {
 //
 // This checks if we need to ping the radar to keep it alive (or make it alive)
 
-void br24radar_pi::Notify(void) {
-  time_t now = time(0);
+void br24radar_pi::TimedControlUpdate() {
+  wxLongLong now = wxGetUTCTimeMillis();
+  if (!m_notify_control_dialog && !TIMED_OUT(now, m_notify_time_ms + 200)) {
+    return;  // Don't run this more often than 5 times per second
+  }
+  m_notify_time_ms = now;
+
   bool updateAllControls;
 
-  {
-    wxCriticalSectionLocker lock(m_exclusive);
+  updateAllControls = m_notify_control_dialog;
+  m_notify_control_dialog = false;
+  if (m_opengl_mode_changed || m_notify_radar_window_viz) {
+    m_opengl_mode_changed = false;
+    m_notify_radar_window_viz = false;
+    SetRadarWindowViz(true);
+    updateAllControls = true;
+  } else {
+    UpdateContextMenu();
+  }
 
-    LOG_VERBOSE(wxT("BR24radar_pi: main timer"));
+  UpdateHeadingState();
 
-    updateAllControls = m_notify_control_dialog;
-    m_notify_control_dialog = false;
-    if (m_opengl_mode_changed || m_notify_radar_window_viz) {
-      m_opengl_mode_changed = false;
-      m_notify_radar_window_viz = false;
-      SetRadarWindowViz(true);
-      updateAllControls = true;
-    } else {
-      UpdateContextMenu();
-    }
-
-    UpdateHeadingState(now);
-
-    // Update radar position offset from GPS
-    if (!wxIsNaN(m_hdt) && (m_settings.antenna_starboard != 0 || m_settings.antenna_forward != 0)) {
-      double sine = sin(deg2rad(m_hdt));
-      double cosine = cos(deg2rad(m_hdt));
-      double dist_forward = (double)m_settings.antenna_forward / 1852 / 60;
-      double dist_starboard = (double)m_settings.antenna_starboard / 1852 / 60;
-      m_radar_lat = dist_forward * cosine - dist_starboard * sine + m_ownship_lat;
-      m_radar_lon = (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_ownship_lat)) + m_ownship_lon;
-    } else {
-      m_radar_lat = m_ownship_lat;
-      m_radar_lon = m_ownship_lon;
-    }
+  // Update radar position offset from GPS
+  if (!wxIsNaN(m_hdt) && (m_settings.antenna_starboard != 0 || m_settings.antenna_forward != 0)) {
+    double sine = sin(deg2rad(m_hdt));
+    double cosine = cos(deg2rad(m_hdt));
+    double dist_forward = (double)m_settings.antenna_forward / 1852 / 60;
+    double dist_starboard = (double)m_settings.antenna_starboard / 1852 / 60;
+    m_radar_lat = dist_forward * cosine - dist_starboard * sine + m_ownship_lat;
+    m_radar_lon = (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_ownship_lat)) + m_ownship_lon;
+  } else {
+    m_radar_lat = m_ownship_lat;
+    m_radar_lon = m_ownship_lon;
   }
 
   // Check the age of "radar_seen", if too old radar_seen = false
   bool any_data_seen = false;
   for (size_t r = 0; r < RADARS; r++) {
-    if (m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT) {
+    int state = m_radar[r]->m_state.GetValue();  // Safe, protected by lock
+    if (state == RADAR_TRANSMIT) {
       any_data_seen = true;
     }
-    if (!m_settings.show  // No radar shown
-        || m_radar[r]->m_state.GetValue() != RADAR_TRANSMIT  // Radar not transmitting
-        || !m_bpos_set) {                                      // No overlay possible (yet)
-                                                               // Conditions for ARPA not fulfilled, delete all targets
-      if (m_radar[r]->m_arpa) {
-        m_radar[r]->m_arpa->RadarLost();
-      }
+    if (!m_settings.show            // No radar shown
+        || state != RADAR_TRANSMIT  // Radar not transmitting
+        || !m_bpos_set) {           // No overlay possible (yet)
+                                    // Conditions for ARPA not fulfilled, delete all targets
+      m_radar[r]->m_arpa->RadarLost();
     }
-
     m_radar[r]->UpdateTransmitState();
   }
 
@@ -912,8 +969,9 @@ void br24radar_pi::Notify(void) {
   if (m_pMessageBox->IsShown() || (m_settings.verbose != 0)) {
     wxString t;
     for (size_t r = 0; r < RADARS; r++) {
-      wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
       if (m_radar[r]->m_state.GetValue() != RADAR_OFF) {
+        wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
+
         t << wxString::Format(wxT("%s\npackets %d/%d\nspokes %d/%d/%d\n"), m_radar[r]->m_name.c_str(),
                               m_radar[r]->m_statistics.packets, m_radar[r]->m_statistics.broken_packets,
                               m_radar[r]->m_statistics.spokes, m_radar[r]->m_statistics.broken_spokes,
@@ -1061,46 +1119,47 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     m_vp_rotation = vp->rotation;
   }
 
-  if (!m_settings.show                                                            // No radar shown
-      || m_settings.chart_overlay < 0                                             // No overlay desired
-      || m_radar[m_settings.chart_overlay]->m_state.GetValue() != RADAR_TRANSMIT  // Radar not transmitting
-      || !m_bpos_set) {                                                           // No overlay possible (yet)
-    return true;
+  if (m_settings.show                                                             // Radar shown
+      && m_settings.chart_overlay >= 0                                            // Overlay desired
+      && m_radar[m_settings.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar transmitting
+      && m_bpos_set) {                                                            // Boat position known
+
+    // Always compute m_auto_range_meters, possibly needed by SendState() called
+    // from DoTick().
+    double max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
+    // max_distance is the length of the diagonal of the viewport. If the boat
+    // were centered, the max length to the edge of the screen is exactly half that.
+    double edge_distance = max_distance / 2.0;
+    int auto_range_meters = (int)edge_distance;
+    if (auto_range_meters < 50) {
+      auto_range_meters = 50;
+    }
+
+    wxPoint boat_center;
+    GetCanvasPixLL(vp, &boat_center, m_radar_lat, m_radar_lon);
+
+    m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
+
+    //    Calculate image scale factor
+    double llat, llon, ulat, ulon, dist_y, v_scale_ppm;
+
+    GetCanvasLLPix(vp, wxPoint(0, vp->pix_height - 1), &ulat, &ulon);  // is pix_height a mapable coordinate?
+    GetCanvasLLPix(vp, wxPoint(0, 0), &llat, &llon);
+    dist_y = radar_distance(llat, llon, ulat, ulon, 'm');  // Distance of height of display - meters
+    v_scale_ppm = 1.0;
+    if (dist_y > 0.) {
+      // v_scale_ppm = vertical pixels per meter
+      v_scale_ppm = vp->pix_height / dist_y;  // pixel height of screen div by equivalent meters
+    }
+
+    double rotation = fmod(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor) + 720.0, 360);
+
+    LOG_DIALOG(wxT("BR24radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"),
+               vp->clat, vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale, rotation);
+    m_radar[m_settings.chart_overlay]->RenderRadarImage(boat_center, v_scale_ppm, rotation, true);
   }
 
-  // Always compute m_auto_range_meters, possibly needed by SendState() called
-  // from DoTick().
-  double max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
-  // max_distance is the length of the diagonal of the viewport. If the boat
-  // were centered, the max length to the edge of the screen is exactly half that.
-  double edge_distance = max_distance / 2.0;
-  int auto_range_meters = (int)edge_distance;
-  if (auto_range_meters < 50) {
-    auto_range_meters = 50;
-  }
-
-  wxPoint boat_center;
-  GetCanvasPixLL(vp, &boat_center, m_radar_lat, m_radar_lon);
-
-  m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
-
-  //    Calculate image scale factor
-  double llat, llon, ulat, ulon, dist_y, v_scale_ppm;
-
-  GetCanvasLLPix(vp, wxPoint(0, vp->pix_height - 1), &ulat, &ulon);  // is pix_height a mapable coordinate?
-  GetCanvasLLPix(vp, wxPoint(0, 0), &llat, &llon);
-  dist_y = radar_distance(llat, llon, ulat, ulon, 'm');  // Distance of height of display - meters
-  v_scale_ppm = 1.0;
-  if (dist_y > 0.) {
-    // v_scale_ppm = vertical pixels per meter
-    v_scale_ppm = vp->pix_height / dist_y;  // pixel height of screen div by equivalent meters
-  }
-
-  double rotation = fmod(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor) + 720.0, 360);
-
-  LOG_DIALOG(wxT("BR24radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat,
-             vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale, rotation);
-  m_radar[m_settings.chart_overlay]->RenderRadarImage(boat_center, v_scale_ppm, rotation, true);
+  ScheduleWindowRefresh();
 
   return true;
 }

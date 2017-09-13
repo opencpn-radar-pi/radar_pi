@@ -139,7 +139,7 @@ typedef UINT8 TrailRevolutionsAge;
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(600) + 1
 enum { TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_5MIN, TRAIL_10MIN, TRAIL_CONTINUOUS, TRAIL_ARRAY_SIZE };
 
-class RadarInfo : public wxEvtHandler {
+class RadarInfo {
  public:
   wxString m_name;  // Either "Radar", "Radar A", "Radar B".
   br24radar_pi *m_pi;
@@ -209,8 +209,7 @@ class RadarInfo : public wxEvtHandler {
 
   RadarType m_radar_type;
   bool m_auto_range_mode;
-  int m_overlay_refreshes_queued;
-  int m_refreshes_queued;
+
   int m_refresh_millis;
 
   GuardZone *m_guard_zone[GUARD_ZONES];
@@ -266,7 +265,7 @@ class RadarInfo : public wxEvtHandler {
   bool SetControlValue(ControlType controlType, int value, int autoValue);
   void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time,
                          double lat, double lon);
-  void RefreshDisplay(wxTimerEvent &event);
+  void RefreshDisplay();
   void UpdateTrailPosition();
   void RenderGuardZone();
   void ResetRadarImage();
@@ -277,7 +276,10 @@ class RadarInfo : public wxEvtHandler {
   // void DeleteReceive();
   void UpdateTransmitState();
   void RequestRadarState(RadarState state);
-
+  int GetDrawTime() {
+    wxCriticalSectionLocker lock(m_exclusive);
+    return IsPaneShown() ? m_draw_time_ms : 0;
+  };
   bool IsPaneShown();
 
   void UpdateControlState(bool all);
@@ -322,15 +324,13 @@ class RadarInfo : public wxEvtHandler {
   DrawInfo m_draw_overlay;  // Abstract painting method
 
   int m_verbose;
-  wxTimer *m_timer;
+  int m_draw_time_ms;  // Number of millis spent drawing
 
   wxString m_range_text;
 
   BlobColour m_trail_colour[TRAIL_MAX_REVOLUTIONS + 1];
 
   int m_previous_orientation;
-
-  DECLARE_EVENT_TABLE()
 };
 
 PLUGIN_END_NAMESPACE

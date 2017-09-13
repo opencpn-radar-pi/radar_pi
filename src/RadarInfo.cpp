@@ -43,12 +43,6 @@ PLUGIN_BEGIN_NAMESPACE
 
 bool g_first_render = true;
 
-enum { TIMER_ID = 51 };
-
-BEGIN_EVENT_TABLE(RadarInfo, wxEvtHandler)
-EVT_TIMER(TIMER_ID, RadarInfo::RefreshDisplay)
-END_EVENT_TABLE()
-
 static const RadarRange g_ranges_metric[] = {
     /* Nautical (mixed) first */
     {50, 98, "50 m", 0, 0, 0},
@@ -217,7 +211,6 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   }
   m_transmit = 0;
   m_receive = 0;
-  m_timer = 0;
   m_draw_panel.draw = 0;
   m_draw_overlay.draw = 0;
   m_radar_panel = 0;
@@ -227,8 +220,6 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_range.m_settings = &m_pi->m_settings;
 
   ClearTrails();
-  m_overlay_refreshes_queued = 0;
-  m_refreshes_queued = 0;
   m_refresh_millis = 50;
 
   m_arpa = new RadarArpa(m_pi, this);
@@ -281,9 +272,6 @@ void RadarInfo::Shutdown() {
 }
 
 RadarInfo::~RadarInfo() {
-  if (m_timer) {
-    m_timer->Stop();
-  }
   if (m_draw_panel.draw) {
     delete m_draw_panel.draw;
     m_draw_panel.draw = 0;
@@ -328,10 +316,6 @@ bool RadarInfo::Init(wxString name, int verbose) {
 
   ComputeTargetTrails();
 
-  if (m_radar == 0) {  // Need only one timer, so do this only on the first radar.
-    m_timer = new wxTimer(this, TIMER_ID);
-    m_timer->Start(m_refresh_millis);
-  }
   return true;
 }
 
@@ -873,40 +857,6 @@ void RadarInfo::UpdateTrailPosition() {
   }
 }
 
-void RadarInfo::RefreshDisplay(wxTimerEvent &event) {
-  m_pi->Notify();
-
-  //  LOG_INFO(wxT("BR24radar_pi: TIMER"));
-
-  if (m_overlay_refreshes_queued > 0) {
-    // don't do additional refresh when too busy
-    LOG_DIALOG(wxT("BR24radar_pi: %s busy encountered, overlay_refreshes_queued=%d"), m_name.c_str(), m_overlay_refreshes_queued);
-  } else if (m_pi->IsOverlayOnScreen(m_radar)) {
-    m_overlay_refreshes_queued++;
-    GetOCPNCanvasWindow()->Refresh(false);
-  }
-
-  if (m_refreshes_queued > 0) {
-    // don't do additional refresh and reset the refresh conter
-    // this will also balance performance, if too busy skip refresh
-    LOG_DIALOG(wxT("BR24radar_pi: %s busy encountered, refreshes_queued=%d"), m_name.c_str(), m_refreshes_queued);
-  } else if (IsPaneShown()) {
-    m_refreshes_queued++;
-    m_radar_panel->Refresh(false);
-  }
-
-  // Calculate refresh speed
-  if (m_pi->m_settings.refreshrate) {
-    int millis = 1000 / (1 + ((m_pi->m_settings.refreshrate) - 1) * 5);
-
-    if (millis != m_refresh_millis) {
-      m_refresh_millis = millis;
-      LOG_VERBOSE(wxT("BR24radar_pi: %s changed timer interval to %d milliseconds"), m_name.c_str(), m_refresh_millis);
-      m_timer->Start(m_refresh_millis);
-    }
-  }
-}
-
 void RadarInfo::RenderGuardZone() {
   int start_bearing = 0, end_bearing = 0;
   GLubyte red = 0, green = 200, blue = 0, alpha = 50;
@@ -1051,6 +1001,17 @@ void RadarInfo::ResetRadarImage() {
   }
 }
 
+/**
+ * plugin calls this to request a redraw of the PPI window.
+ *
+ * Called on GUI thread.
+ */
+void RadarInfo::RefreshDisplay() {
+  if (IsPaneShown()) {
+    m_radar_panel->Refresh(false);
+  }
+}
+
 void RadarInfo::RenderRadarImage(DrawInfo *di) {
   wxCriticalSectionLocker lock(m_exclusive);
   int drawing_method = m_pi->m_settings.drawing_method;
@@ -1114,6 +1075,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   if (!m_range_meters) {
     return;
   }
+
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);  // Save state
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1180,9 +1142,6 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     glScaled(radar_scale, radar_scale, 1.);
 
     RenderRadarImage(&m_draw_overlay);
-    if (m_overlay_refreshes_queued > 0) {
-      m_overlay_refreshes_queued--;
-    }
     glPopMatrix();
 
     if (m_arpa) {
@@ -1197,6 +1156,8 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     }
 
   } else if (range != 0) {
+    wxStopWatch stopwatch;
+
     glPushMatrix();
     scale = 1.0 / range;
     glRotated(guard_rotate, 0.0, 0.0, 1.0);
@@ -1211,9 +1172,6 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     glRotated(panel_rotate, 0.0, 0.0, 1.0);
     LOG_DIALOG(wxT("BR24radar_pi: %s render overscan=%g range=%d"), m_name.c_str(), overscan, range);
     RenderRadarImage(&m_draw_panel);
-    if (m_refreshes_queued > 0) {
-      m_refreshes_queued--;
-    }
     glPopMatrix();
 
     if (m_arpa) {
@@ -1223,6 +1181,8 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
       m_arpa->DrawArpaTargets();
       glPopMatrix();
     }
+    glFinish();
+    m_draw_time_ms = stopwatch.Time();
   }
 
   glPopAttrib();
