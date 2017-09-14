@@ -1080,6 +1080,9 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     for (int i = 0; i < GUARD_ZONES; i++){
       if (m_guard_zone[i]->m_arpa_on) arpa_on = true;
     }
+    if (m_arpa->GetTargetCount()){
+      arpa_on = true;
+    }
   }
 
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);  // Save state
