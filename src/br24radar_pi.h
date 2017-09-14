@@ -371,7 +371,7 @@ struct AisArpa {
    INSTALLS_TOOLBAR_TOOL | USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS | WANTS_NMEA_SENTENCES | WANTS_PREFERENCES |  \
    WANTS_PLUGIN_MESSAGING | WANTS_CURSOR_LATLON | WANTS_MOUSE_EVENTS)
 
-class br24radar_pi : public opencpn_plugin_114 {
+class br24radar_pi : public opencpn_plugin_114, public wxEvtHandler {
  public:
   br24radar_pi(void *ppimgr);
   ~br24radar_pi();
@@ -407,10 +407,6 @@ class br24radar_pi : public opencpn_plugin_114 {
   bool MouseEventHook(wxMouseEvent &event);
   bool m_guard_bogey_confirmed;
 
-  // The wxTimer overrides
-
-  void Notify();
-
   // Other public methods
 
   void NotifyRadarWindowViz();
@@ -426,9 +422,7 @@ class br24radar_pi : public opencpn_plugin_114 {
 
   bool SetControlValue(int radar, ControlType controlType, int value, int autoValue);
 
-  // Various state decisions
   bool IsRadarOnScreen(int radar) { return m_settings.show && (m_settings.show_radar[radar] || m_settings.chart_overlay == radar); }
-  bool IsOverlayOnScreen(int radar) { return m_settings.show && m_settings.chart_overlay == radar; }
 
   bool LoadConfig();
   bool SaveConfig();
@@ -465,8 +459,7 @@ class br24radar_pi : public opencpn_plugin_114 {
     wxCriticalSectionLocker lock(m_exclusive);
     return m_cog;
   }
-  void GetRadarPosition(double * lat, double * lon)
-  {
+  void GetRadarPosition(double *lat, double *lon) {
     wxCriticalSectionLocker lock(m_exclusive);
 
     *lat = m_radar_lat;
@@ -513,7 +506,7 @@ class br24radar_pi : public opencpn_plugin_114 {
  private:
   void RadarSendState(void);
   void UpdateState(void);
-  void UpdateHeadingState(time_t now);
+  void UpdateHeadingState();
   void DoTick(void);
   void Select_Clutter(int req_clutter_index);
   void Select_Rejection(int req_rejection_index);
@@ -526,6 +519,9 @@ class br24radar_pi : public opencpn_plugin_114 {
   void SetRadarWindowViz(bool reparent = false);
   void UpdateContextMenu();
   void UpdateCOGAvg(double cog);
+  void OnTimerNotify(wxTimerEvent &event);
+  void TimedControlUpdate();
+  void ScheduleWindowRefresh();
 
   wxCriticalSection m_exclusive;  // protects callbacks that come from multiple radars
 
@@ -573,6 +569,7 @@ class br24radar_pi : public opencpn_plugin_114 {
   bool m_old_data_seen;
   volatile bool m_notify_radar_window_viz;
   volatile bool m_notify_control_dialog;
+  wxLongLong m_notify_time_ms;
 
 #define HEADING_TIMEOUT (5)
 
@@ -595,6 +592,10 @@ class br24radar_pi : public opencpn_plugin_114 {
   bool m_context_menu_show;
   bool m_context_menu_control;
   bool m_context_menu_arpa;
+
+  wxTimer *m_timer;
+
+  DECLARE_EVENT_TABLE()
 };
 
 PLUGIN_END_NAMESPACE
