@@ -39,6 +39,7 @@
 #include "nmea0183/nmea0183.h"
 #include "pi_common.h"
 #include "version.h"
+#include <vector>
 
 // Load the ocpn_plugin. On OS X this generates many warnings, suppress these.
 #ifdef __WXOSX__
@@ -352,12 +353,14 @@ struct scan_line {
 };
 
 // Table for AIS targets inside ARPA zone
-#define SIZEAISAR (50)
 struct AisArpa {
-  long ais_mmsi;
-  time_t ais_time_upd;
-  double ais_lat;
-  double ais_lon;
+    long ais_mmsi;
+    time_t ais_time_upd;
+    double ais_lat;
+    double ais_lon;
+
+    AisArpa()
+    : ais_mmsi(0), ais_time_upd(), ais_lat(), ais_lon() {}
 };
 
 //----------------------------------------------------------------------------------------------------------
@@ -499,8 +502,7 @@ class br24radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   time_t m_idle_transmit;  // When we will change to transmit
 
   // Check for AIS targets inside ARPA zone
-  AisArpa ais_in_arpa[SIZEAISAR];
-  int count_ais_in_arpa;
+  vector<AisArpa> AISinARPAzone; //Array for AIS targets in ARPA zone(s)
   bool FindAIS_at_arpaPos(const double &lat, const double &lon, const double &dist);
 
  private:

@@ -196,9 +196,6 @@ int br24radar_pi::Init(void) {
   m_cog_timeout = now;
   m_idle_standby = 0;
   m_idle_transmit = 0;
-  count_ais_in_arpa = 0;
-  CLEAR_STRUCT(ais_in_arpa);
-
   m_heading_source = HEADING_NONE;
   m_radar_heading = nanl("");
   m_vp_rotation = 0.;
@@ -1558,7 +1555,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
         }
       }
     }
-  } else if (message_id == wxS("AIS") || count_ais_in_arpa > 0) {
+  } else if (message_id == wxS("AIS") || AISinARPAzone.size() > 0) {
     // Check if any Radar and ARPA zone is active
     double ArpaMaxRange = 0.0;
     bool ArpaGuardOn = false;
@@ -1591,57 +1588,52 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
           if (f_AISLat < (m_radar_lat + d_side) && f_AISLat > (m_radar_lat - d_side) && f_AISLon < (m_radar_lon + d_side * 2) &&
               f_AISLon > (m_radar_lon - d_side * 2)) {
             bool updated = false;
-            int empty = -1;
-            for (int i = 0; i < SIZEAISAR; i++) {
-              // If mmsi is in list, update
-              if (ais_in_arpa[i].ais_mmsi == json_ais_mmsi) {
-                ais_in_arpa[i].ais_time_upd = time(0);
-                ais_in_arpa[i].ais_lat = f_AISLat;
-                ais_in_arpa[i].ais_lon = f_AISLon;
-                updated = true;
-                break;
-              } else {  // Find first empty post
-                if (empty == -1 && ais_in_arpa[i].ais_mmsi == 0) empty = i;
-              }
+            for (size_t i = 0; i < AISinARPAzone.size(); i++) { //Check for existing mmsi
+                if (AISinARPAzone[i].ais_mmsi == json_ais_mmsi) {
+                    AISinARPAzone[i].ais_time_upd = time(0);
+                    AISinARPAzone[i].ais_lat = f_AISLat;
+                    AISinARPAzone[i].ais_lon = f_AISLon;
+                    updated = true;
+                    break;
+                }
             }
-            if (!updated && empty != -1) {  // New post, load at first empty if present
-              ais_in_arpa[empty].ais_mmsi = json_ais_mmsi;
-              ais_in_arpa[empty].ais_time_upd = time(0);
-              ais_in_arpa[empty].ais_lat = f_AISLat;
-              ais_in_arpa[empty].ais_lon = f_AISLon;
-              count_ais_in_arpa++;
+            if (!updated) { //Add a new target
+                AisArpa NewAISTarget;
+                NewAISTarget.ais_mmsi = json_ais_mmsi;
+                NewAISTarget.ais_time_upd = time(0);
+                NewAISTarget.ais_lat = f_AISLat;
+                NewAISTarget.ais_lon = f_AISLon;
+                AISinARPAzone.push_back(NewAISTarget);
             }
           }
         }
       }
     }
     // Delete > 3 min old AIS items or at once if neither active ARPA zone nor Radar
-    if (count_ais_in_arpa > 0) {
-      for (int i = 0; i < SIZEAISAR; i++) {
-        if (ais_in_arpa[i].ais_mmsi > 0 && ((time(0) - ais_in_arpa[i].ais_time_upd) > (3 * 60) || !ArpaGuardOn)) {
-          ais_in_arpa[i].ais_mmsi = 0;
-          ais_in_arpa[i].ais_time_upd = 0;
-          if (count_ais_in_arpa > 0) count_ais_in_arpa--;
+    if (AISinARPAzone.size() > 0) {
+        for (size_t i = 0; i < AISinARPAzone.size(); i++) {
+            if (AISinARPAzone[i].ais_mmsi > 0 && ((time(0) - AISinARPAzone[i].ais_time_upd) > (3 * 60) || !ArpaGuardOn)) {
+                AISinARPAzone.erase(AISinARPAzone.begin() + i);
+            }
         }
-      }
     }
   }
 }
 
 bool br24radar_pi::FindAIS_at_arpaPos(const double &lat, const double &lon, const double &dist) {
-  if (count_ais_in_arpa == 0) return false;
+  if (AISinARPAzone.size() < 1) return false;
   bool hit = false;
   double offset = dist / 1852. / 60.;
-  for (int i = 0; i < SIZEAISAR; i++) {
-    if (ais_in_arpa[i].ais_mmsi != 0) {  // Avtive post
-      if (lat + offset > ais_in_arpa[i].ais_lat && lat - offset < ais_in_arpa[i].ais_lat &&
-          lon + (offset * 1.75) > ais_in_arpa[i].ais_lon && lon - (offset * 1.75) < ais_in_arpa[i].ais_lon) {
+  for (size_t i = 0; i < AISinARPAzone.size(); i++) {
+      if (AISinARPAzone[i].ais_mmsi != 0) {  // Avtive post
+          if (lat + offset > AISinARPAzone[i].ais_lat && lat - offset < AISinARPAzone[i].ais_lat &&
+              lon + (offset * 1.75) > AISinARPAzone[i].ais_lon && lon - (offset * 1.75) < AISinARPAzone[i].ais_lon) {
         hit = true;
         break;
       }
     }
   }
-  return hit ? true : false;
+  return hit;
 }
 
 bool br24radar_pi::SetControlValue(int radar, ControlType controlType, int value,
