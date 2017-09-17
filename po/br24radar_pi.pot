@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: br24radar_pi 3.911\n"
+"Project-Id-Version: br24radar_pi 3.913\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-11 17:48+0200\n"
+"POT-Creation-Date: 2017-09-16 12:32+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: src\br24ControlsDialog.cpp:403 src\br24ControlsDialog.cpp:627
-#: src\RadarInfo.cpp:1426
+#: src\RadarInfo.cpp:1386
 msgid "Auto"
 msgstr ""
 
@@ -404,7 +404,7 @@ msgid "Cursor"
 msgstr ""
 
 #: src\br24ControlsDialog.cpp:1098 src\br24ControlsDialog.cpp:1629
-#: src\RadarInfo.cpp:1248
+#: src\RadarInfo.cpp:1208
 msgid "Unknown"
 msgstr ""
 
@@ -432,11 +432,11 @@ msgstr ""
 msgid "Waking up"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1520 src\br24radar_pi.cpp:625
+#: src\br24ControlsDialog.cpp:1520 src\br24radar_pi.cpp:638
 msgid "Standby in"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1525 src\br24radar_pi.cpp:630
+#: src\br24ControlsDialog.cpp:1525 src\br24radar_pi.cpp:643
 msgid "Transmit in"
 msgstr ""
 
@@ -504,7 +504,7 @@ msgstr ""
 msgid "Guard Zone 2 Blue"
 msgstr ""
 
-#: src\br24ControlsDialog.h:62 src\br24MessageBox.h:86 src\br24radar_pi.cpp:249
+#: src\br24ControlsDialog.h:62 src\br24MessageBox.h:86 src\br24radar_pi.cpp:255
 msgid "Radar"
 msgstr ""
 
@@ -590,7 +590,7 @@ msgstr ""
 msgid "Radar requires the following"
 msgstr ""
 
-#: src\br24MessageBox.cpp:450 src\RadarInfo.cpp:1252
+#: src\br24MessageBox.cpp:450 src\RadarInfo.cpp:1212
 msgid "Emulator"
 msgstr ""
 
@@ -762,95 +762,95 @@ msgstr ""
 msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
 msgstr ""
 
-#: src\br24radar_pi.cpp:249 src\br24radar_pi.cpp:382
+#: src\br24radar_pi.cpp:255 src\br24radar_pi.cpp:395
 msgid "Radar A"
 msgstr ""
 
-#: src\br24radar_pi.cpp:250
+#: src\br24radar_pi.cpp:256
 msgid "Radar B"
 msgstr ""
 
-#: src\br24radar_pi.cpp:258
+#: src\br24radar_pi.cpp:264
 msgid "Navico BR24, 3G and 4G RADAR"
 msgstr ""
 
-#: src\br24radar_pi.cpp:267
+#: src\br24radar_pi.cpp:273
 msgid "Show radar"
 msgstr ""
 
-#: src\br24radar_pi.cpp:268
+#: src\br24radar_pi.cpp:274
 msgid "Hide radar"
 msgstr ""
 
-#: src\br24radar_pi.cpp:269
+#: src\br24radar_pi.cpp:275
 msgid "Radar Control..."
 msgstr ""
 
-#: src\br24radar_pi.cpp:270
+#: src\br24radar_pi.cpp:276
 msgid "Acquire radar target"
 msgstr ""
 
-#: src\br24radar_pi.cpp:271
+#: src\br24radar_pi.cpp:277
 msgid "Delete radar target"
 msgstr ""
 
-#: src\br24radar_pi.cpp:272
+#: src\br24radar_pi.cpp:278
 msgid "Delete all radar targets"
 msgstr ""
 
-#: src\br24radar_pi.cpp:275 src\RadarCanvas.cpp:98
+#: src\br24radar_pi.cpp:281 src\RadarCanvas.cpp:98
 msgid "Menu"
 msgstr ""
 
-#: src\br24radar_pi.cpp:360
+#: src\br24radar_pi.cpp:373
 msgid "Navico Radar PlugIn for OpenCPN"
 msgstr ""
 
-#: src\br24radar_pi.cpp:362
+#: src\br24radar_pi.cpp:375
 msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
 msgstr ""
 
-#: src\br24radar_pi.cpp:643
+#: src\br24radar_pi.cpp:656
 msgid "Zone"
 msgstr ""
 
-#: src\br24radar_pi.cpp:645
+#: src\br24radar_pi.cpp:658
 msgid "(Confirmed)"
 msgstr ""
 
-#: src\br24radar_pi.cpp:677
+#: src\br24radar_pi.cpp:690
 msgid " Zone"
 msgstr ""
 
-#: src\br24radar_pi.cpp:721
+#: src\br24radar_pi.cpp:734
 msgid "Next alarm in"
 msgstr ""
 
-#: src\br24radar_pi.cpp:950
+#: src\br24radar_pi.cpp:1008
 msgid "COG"
 msgstr ""
 
-#: src\br24radar_pi.cpp:954
+#: src\br24radar_pi.cpp:1012
 msgid "HDT"
 msgstr ""
 
-#: src\br24radar_pi.cpp:957 src\br24radar_pi.cpp:977 src\RadarPanel.cpp:38
+#: src\br24radar_pi.cpp:1015 src\br24radar_pi.cpp:1035 src\RadarPanel.cpp:38
 msgid "RADAR"
 msgstr ""
 
-#: src\br24radar_pi.cpp:974
+#: src\br24radar_pi.cpp:1032
 msgid "HDM"
 msgstr ""
 
-#: src\br24radar_pi.cpp:1375
+#: src\br24radar_pi.cpp:1434
 msgid "GPS"
 msgstr ""
 
-#: src\br24radar_pi.cpp:1496
+#: src\br24radar_pi.cpp:1555
 msgid "WMM"
 msgstr ""
 
-#: src\br24radar_pi.cpp:1729
+#: src\br24radar_pi.cpp:1788
 msgid "NMEA"
 msgstr ""
 
@@ -878,35 +878,35 @@ msgstr ""
 msgid "Shader"
 msgstr ""
 
-#: src\RadarInfo.cpp:1236 src\RadarInfo.cpp:1239
+#: src\RadarInfo.cpp:1196 src\RadarInfo.cpp:1199
 msgid "Head Up"
 msgstr ""
 
-#: src\RadarInfo.cpp:1239
+#: src\RadarInfo.cpp:1199
 msgid "Stabilized"
 msgstr ""
 
-#: src\RadarInfo.cpp:1242
+#: src\RadarInfo.cpp:1202
 msgid "Course Up"
 msgstr ""
 
-#: src\RadarInfo.cpp:1245
+#: src\RadarInfo.cpp:1205
 msgid "North Up"
 msgstr ""
 
-#: src\RadarInfo.cpp:1379
+#: src\RadarInfo.cpp:1339
 msgid "No radar"
 msgstr ""
 
-#: src\RadarInfo.cpp:1382
+#: src\RadarInfo.cpp:1342
 msgid "Radar is in Standby"
 msgstr ""
 
-#: src\RadarInfo.cpp:1385
+#: src\RadarInfo.cpp:1345
 msgid "Radar is waking up"
 msgstr ""
 
-#: src\RadarInfo.cpp:1391
+#: src\RadarInfo.cpp:1351
 msgid "Radar not transmitting"
 msgstr ""
 

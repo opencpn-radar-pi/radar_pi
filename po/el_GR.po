@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-18 09:48+0200\n"
-"PO-Revision-Date: 2016-08-24 13:01-0400\n"
+"POT-Creation-Date: 2017-09-11 17:48+0200\n"
+"PO-Revision-Date: 2017-09-16 06:22-0400\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Greek\n"
 "Language: el_GR\n"
@@ -16,441 +16,554 @@ msgstr ""
 "X-Crowdin-Language: el\n"
 "X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
 
-#: src\br24ControlsDialog.cpp:305 src\br24ControlsDialog.cpp:531
-#: src\RadarInfo.cpp:1068
+#: src\br24ControlsDialog.cpp:403 src\br24ControlsDialog.cpp:627
+#: src\RadarInfo.cpp:1426
 msgid "Auto"
-msgstr ""
+msgstr "Αυτόματα"
 
-#: src\br24ControlsDialog.cpp:380
+#: src\br24ControlsDialog.cpp:479
 msgid "Back"
-msgstr ""
+msgstr "Πίσω"
 
-#: src\br24ControlsDialog.cpp:399 src\br24ControlsDialog.cpp:1269
+#: src\br24ControlsDialog.cpp:498
 msgid "Standby / Transmit"
-msgstr ""
+msgstr "Περίμενε/Στείλε"
 
-#: src\br24ControlsDialog.cpp:400 src\br24ControlsDialog.cpp:553
+#: src\br24ControlsDialog.cpp:499 src\br24ControlsDialog.cpp:648
 msgid "Noise rejection"
-msgstr ""
+msgstr "Απόρριψη θορύβου"
 
-#: src\br24ControlsDialog.cpp:401 src\br24ControlsDialog.cpp:567
+#: src\br24ControlsDialog.cpp:500 src\br24ControlsDialog.cpp:662
 msgid "Target expansion"
-msgstr ""
+msgstr "Επέκταση στόχου"
 
-#: src\br24ControlsDialog.cpp:402 src\br24ControlsDialog.cpp:583
+#: src\br24ControlsDialog.cpp:501 src\br24ControlsDialog.cpp:677
 msgid "Interference rejection"
-msgstr ""
+msgstr "Απόρριψη παρεμβολών"
 
-#: src\br24ControlsDialog.cpp:403 src\br24ControlsDialog.cpp:598
+#: src\br24ControlsDialog.cpp:502 src\br24ControlsDialog.cpp:692
 msgid "Target separation"
-msgstr ""
+msgstr "Διαχωρισμός στόχου"
 
-#: src\br24ControlsDialog.cpp:404 src\br24ControlsDialog.cpp:610
+#: src\br24ControlsDialog.cpp:503 src\br24ControlsDialog.cpp:702
 msgid "Scan speed"
-msgstr ""
+msgstr "Ταχύτητα σάρωσης"
 
-#: src\br24ControlsDialog.cpp:405 src\br24ControlsDialog.cpp:622
+#: src\br24ControlsDialog.cpp:504 src\br24ControlsDialog.cpp:713
 msgid "Target boost"
-msgstr ""
+msgstr "Ενίσχυση στόχου"
 
-#: src\br24ControlsDialog.cpp:406 src\br24ControlsDialog.cpp:630
+#: src\br24ControlsDialog.cpp:505 src\br24ControlsDialog.cpp:721
 msgid "Installation"
-msgstr ""
+msgstr "Εγκατάσταση"
 
-#: src\br24ControlsDialog.cpp:407 src\br24ControlsDialog.cpp:653
+#: src\br24ControlsDialog.cpp:506 src\br24ControlsDialog.cpp:742
 msgid "Bearing alignment"
-msgstr ""
+msgstr "Ευθυγράμμιση κατεύθυνσης"
 
-#: src\br24ControlsDialog.cpp:408 src\br24ControlsDialog.cpp:661
+#: src\br24ControlsDialog.cpp:507 src\br24ControlsDialog.cpp:749
 msgid "Antenna height"
-msgstr ""
+msgstr "Ύψος κεραίας"
 
-#: src\br24ControlsDialog.cpp:409 src\br24ControlsDialog.cpp:669
+#: src\br24ControlsDialog.cpp:508
+msgid "Antenna forward of GPS"
+msgstr "Κεραία μπροστά από το GPS"
+
+#: src\br24ControlsDialog.cpp:509
+msgid "Antenna starboard of GPS"
+msgstr "Κεραία δεξιά από το GPS"
+
+#: src\br24ControlsDialog.cpp:510 src\br24ControlsDialog.cpp:773
 msgid "Local interference rej."
-msgstr ""
+msgstr "Απορ. τοπικών παρεμβολών"
 
-#: src\br24ControlsDialog.cpp:410 src\br24ControlsDialog.cpp:679
+#: src\br24ControlsDialog.cpp:511 src\br24ControlsDialog.cpp:782
 msgid "Side lobe suppression"
-msgstr ""
+msgstr "Καταστολή πλάγιου λοβού"
 
-#: src\br24ControlsDialog.cpp:411 src\br24ControlsDialog.cpp:687
+#: src\br24ControlsDialog.cpp:512 src\br24ControlsDialog.cpp:790
 msgid "Main bang size"
-msgstr ""
+msgstr "Νεκρή ζώνη χωρίς ανακλάσεις"
 
-#: src\br24ControlsDialog.cpp:412 src\br24ControlsDialog.cpp:414
-#: src\br24ControlsDialog.cpp:705
+#: src\br24ControlsDialog.cpp:513 src\br24ControlsDialog.cpp:515
+#: src\br24ControlsDialog.cpp:807
 msgid "Guard zones"
 msgstr "Ζώνες επιφυλακής"
 
-#: src\br24ControlsDialog.cpp:413 src\br24ControlsDialog.cpp:708
+#: src\br24ControlsDialog.cpp:514 src\br24ControlsDialog.cpp:810
 msgid "Zone type"
-msgstr ""
+msgstr "Τύπος Ζώνης"
 
-#: src\br24ControlsDialog.cpp:415 src\br24ControlsDialog.cpp:722
+#: src\br24ControlsDialog.cpp:516 src\br24ControlsDialog.cpp:825
 msgid "Inner range"
 msgstr "Εσωτερική περιοχή"
 
-#: src\br24ControlsDialog.cpp:416 src\br24ControlsDialog.cpp:729
+#: src\br24ControlsDialog.cpp:517 src\br24ControlsDialog.cpp:832
 msgid "Outer range"
 msgstr "Εξωτερική περιοχή"
 
-#: src\br24ControlsDialog.cpp:417 src\br24ControlsDialog.cpp:736
+#: src\br24ControlsDialog.cpp:518 src\br24ControlsDialog.cpp:839
 msgid "Start bearing"
 msgstr "Αρχή μέτρησης"
 
-#: src\br24ControlsDialog.cpp:418 src\br24ControlsDialog.cpp:744
+#: src\br24ControlsDialog.cpp:519 src\br24ControlsDialog.cpp:847
 msgid "End bearing"
 msgstr "Τέλος μέτρησης"
 
-#: src\br24ControlsDialog.cpp:419
-msgid "Multi sweep filter"
-msgstr ""
-
-#: src\br24ControlsDialog.cpp:420 src\br24ControlsDialog.cpp:770
+#: src\br24ControlsDialog.cpp:520 src\br24ControlsDialog.cpp:876
 msgid "Range"
-msgstr ""
+msgstr "Εύρος"
 
-#: src\br24ControlsDialog.cpp:421 src\br24ControlsDialog.cpp:774
+#: src\br24ControlsDialog.cpp:521 src\br24ControlsDialog.cpp:880
 msgid "Gain"
-msgstr ""
+msgstr "Ενίσχυση"
 
-#: src\br24ControlsDialog.cpp:422 src\br24ControlsDialog.cpp:778
+#: src\br24ControlsDialog.cpp:522 src\br24ControlsDialog.cpp:886
 msgid "Sea clutter"
-msgstr ""
+msgstr "«Θόρυβος» στη θάλασσα"
 
-#: src\br24ControlsDialog.cpp:423 src\br24ControlsDialog.cpp:782
+#: src\br24ControlsDialog.cpp:523 src\br24ControlsDialog.cpp:893
 msgid "Rain clutter"
-msgstr ""
+msgstr "«Θόρυβος» λόγω βροχής"
 
-#: src\br24ControlsDialog.cpp:424 src\br24ControlsDialog.cpp:798
+#: src\br24ControlsDialog.cpp:524 src\br24ControlsDialog.cpp:908
 msgid "Clear cursor"
-msgstr ""
+msgstr "Καθαρισμός δρομέα"
 
-#: src\br24ControlsDialog.cpp:425 src\br24ControlsDialog.cpp:804
-#: src\br24ControlsDialog.cpp:1346
+#: src\br24ControlsDialog.cpp:525 src\br24ControlsDialog.cpp:925
+#: src\br24ControlsDialog.cpp:1578
 msgid "Place EBL/VRM"
-msgstr ""
+msgstr "Τοποθέτηση EBL/VRM"
 
-#: src\br24ControlsDialog.cpp:426 src\br24ControlsDialog.cpp:836
+#: src\br24ControlsDialog.cpp:526 src\br24ControlsDialog.cpp:962
 #: src\br24OptionsDialog.cpp:129
 msgid "Target trails"
-msgstr ""
+msgstr "Ίχνη στόχου"
 
-#: src\br24ControlsDialog.cpp:427 src\br24ControlsDialog.cpp:844
-#: src\br24ControlsDialog.cpp:1357
-msgid "True/Relative trails"
-msgstr ""
+#: src\br24ControlsDialog.cpp:527 src\br24ControlsDialog.cpp:950
+#: src\br24ControlsDialog.cpp:1596
+msgid "Off/Relative/True trails"
+msgstr "Ίχνη: Off/Σχετικά/Αληθή"
 
-#: src\br24ControlsDialog.cpp:428 src\br24ControlsDialog.cpp:849
+#: src\br24ControlsDialog.cpp:528 src\br24ControlsDialog.cpp:971
 msgid "Clear trails"
-msgstr ""
+msgstr "Καθαρισμός ιχνών"
 
-#: src\br24ControlsDialog.cpp:429 src\br24ControlsDialog.cpp:861
-#: src\br24ControlsDialog.cpp:1368
+#: src\br24ControlsDialog.cpp:529 src\br24ControlsDialog.cpp:976
+#: src\br24ControlsDialog.cpp:1611
 msgid "Orientation"
-msgstr ""
+msgstr "Προσανατολισμός"
 
-#: src\br24ControlsDialog.cpp:430 src\br24ControlsDialog.cpp:868
+#: src\br24ControlsDialog.cpp:530 src\br24ControlsDialog.cpp:982
 msgid "Refresh rate"
-msgstr ""
+msgstr "Ανανέωση ρυθμού"
 
-#: src\br24ControlsDialog.cpp:431 src\br24ControlsDialog.cpp:874
+#: src\br24ControlsDialog.cpp:531 src\br24ControlsDialog.cpp:988
 msgid "Transparency"
-msgstr ""
+msgstr "Διαφάνεια"
 
-#: src\br24ControlsDialog.cpp:432 src\br24ControlsDialog.cpp:901
-#: src\br24ControlsDialog.cpp:1384
+#: src\br24ControlsDialog.cpp:532 src\br24ControlsDialog.cpp:1093
+#: src\br24ControlsDialog.cpp:1642
 msgid "Overlay"
-msgstr ""
+msgstr "Επικάλυψη"
 
-#: src\br24ControlsDialog.cpp:433 src\br24ControlsDialog.cpp:912
+#: src\br24ControlsDialog.cpp:533 src\br24ControlsDialog.cpp:1063
 msgid "Adjust"
-msgstr ""
+msgstr "Προσαρμογή"
 
-#: src\br24ControlsDialog.cpp:434 src\br24ControlsDialog.cpp:917
+#: src\br24ControlsDialog.cpp:534 src\br24ControlsDialog.cpp:1067
 msgid "Advanced"
-msgstr ""
+msgstr "Για προχωρημένους"
 
-#: src\br24ControlsDialog.cpp:435 src\br24ControlsDialog.cpp:922
+#: src\br24ControlsDialog.cpp:535 src\br24ControlsDialog.cpp:1071
 msgid "View"
-msgstr ""
+msgstr "Προβολή"
 
-#: src\br24ControlsDialog.cpp:436 src\br24ControlsDialog.cpp:927
+#: src\br24ControlsDialog.cpp:536
 msgid "EBL/VRM"
-msgstr ""
+msgstr "EBL/VRM"
 
-#: src\br24ControlsDialog.cpp:437 src\br24ControlsDialog.cpp:952
+#: src\br24ControlsDialog.cpp:537 src\br24ControlsDialog.cpp:1025
 msgid "Timed Transmit"
-msgstr ""
+msgstr "Χρονομετρημένη μετάδοση"
 
-#: src\br24ControlsDialog.cpp:438 src\br24ControlsDialog.cpp:960
+#: src\br24ControlsDialog.cpp:538 src\br24ControlsDialog.cpp:1045
 msgid "Info"
-msgstr ""
+msgstr "Info"
 
-#: src\br24ControlsDialog.cpp:504
+#: src\br24ControlsDialog.cpp:599
 msgid "+10"
-msgstr ""
+msgstr "+10"
 
-#: src\br24ControlsDialog.cpp:509
+#: src\br24ControlsDialog.cpp:603
 msgid "+"
-msgstr ""
+msgstr "+"
 
-#: src\br24ControlsDialog.cpp:515
+#: src\br24ControlsDialog.cpp:608
 msgid "Value"
-msgstr ""
+msgstr "Τιμή"
 
-#: src\br24ControlsDialog.cpp:521
+#: src\br24ControlsDialog.cpp:619
 msgid "-"
-msgstr ""
+msgstr "-"
 
-#: src\br24ControlsDialog.cpp:526
+#: src\br24ControlsDialog.cpp:623
 msgid "-10"
-msgstr ""
+msgstr "-10"
 
-#: src\br24ControlsDialog.cpp:549 src\br24ControlsDialog.cpp:565
-#: src\br24ControlsDialog.cpp:577 src\br24ControlsDialog.cpp:593
-#: src\br24ControlsDialog.cpp:618 src\br24ControlsDialog.cpp:711
-#: src\br24ControlsDialog.cpp:827 src\br24ControlsDialog.cpp:855
-#: src\br24ControlsDialog.cpp:942 src\br24ControlsDialog.cpp:1073
-#: src\br24ControlsDialog.cpp:1274 src\br24ControlsDialog.cpp:1387
-#: src\br24ControlsDialog.cpp:1389
+#: src\br24ControlsDialog.cpp:643 src\br24ControlsDialog.cpp:659
+#: src\br24ControlsDialog.cpp:671 src\br24ControlsDialog.cpp:686
+#: src\br24ControlsDialog.cpp:710 src\br24ControlsDialog.cpp:1015
+#: src\br24ControlsDialog.cpp:1503 src\br24ControlsDialog.cpp:1603
+#: src\br24ControlsDialog.cpp:1645 src\br24ControlsDialog.cpp:1647
 msgid "Off"
 msgstr "Οff"
 
-#: src\br24ControlsDialog.cpp:550 src\br24ControlsDialog.cpp:578
-#: src\br24ControlsDialog.cpp:594 src\br24ControlsDialog.cpp:619
+#: src\br24ControlsDialog.cpp:644 src\br24ControlsDialog.cpp:672
+#: src\br24ControlsDialog.cpp:687 src\br24ControlsDialog.cpp:711
 msgid "Low"
-msgstr ""
+msgstr "Χαμηλό"
 
-#: src\br24ControlsDialog.cpp:551 src\br24ControlsDialog.cpp:580
-#: src\br24ControlsDialog.cpp:596 src\br24ControlsDialog.cpp:620
+#: src\br24ControlsDialog.cpp:645 src\br24ControlsDialog.cpp:674
+#: src\br24ControlsDialog.cpp:689 src\br24ControlsDialog.cpp:712
 msgid "High"
-msgstr ""
+msgstr "Υψηλό"
 
-#: src\br24ControlsDialog.cpp:566 src\br24ControlsDialog.cpp:1070
-#: src\br24ControlsDialog.cpp:1389
+#: src\br24ControlsDialog.cpp:660 src\br24ControlsDialog.cpp:1647
 msgid "On"
-msgstr ""
+msgstr "ON"
 
-#: src\br24ControlsDialog.cpp:579 src\br24ControlsDialog.cpp:595
+#: src\br24ControlsDialog.cpp:673 src\br24ControlsDialog.cpp:688
 msgid "Medium"
-msgstr ""
+msgstr "Μεσαίο"
 
-#: src\br24ControlsDialog.cpp:607
+#: src\br24ControlsDialog.cpp:700
 msgid "Normal"
-msgstr ""
+msgstr "Κανονικό"
 
-#: src\br24ControlsDialog.cpp:608
+#: src\br24ControlsDialog.cpp:701
 msgid "Fast"
-msgstr ""
+msgstr "Γρήγορο"
 
-#: src\br24ControlsDialog.cpp:635
+#: src\br24ControlsDialog.cpp:725
 msgid "Preferences"
-msgstr ""
+msgstr "Προτιμήσεις"
 
-#: src\br24ControlsDialog.cpp:712
+#: src\br24ControlsDialog.cpp:743
+msgid "degrees"
+msgstr "μοίρες"
+
+#: src\br24ControlsDialog.cpp:743
+msgid "relative to bow"
+msgstr "σε σχέση με την πλώρη"
+
+#: src\br24ControlsDialog.cpp:750 src\br24ControlsDialog.cpp:757
+#: src\br24ControlsDialog.cpp:765
+msgid "m"
+msgstr "m"
+
+#: src\br24ControlsDialog.cpp:750
+msgid "above sealevel"
+msgstr "πάνω από τα ίσαλα"
+
+#: src\br24ControlsDialog.cpp:756
+msgid "Antenna forward"
+msgstr "Κεραία μπροστά"
+
+#: src\br24ControlsDialog.cpp:758 src\br24ControlsDialog.cpp:766
+msgid "relative to GPS"
+msgstr "ως προς το GPS"
+
+#: src\br24ControlsDialog.cpp:758
+msgid "negative = behind"
+msgstr "αρνητικό = πίσω"
+
+#: src\br24ControlsDialog.cpp:764
+msgid "Antenna starboard"
+msgstr "Κεραία δεξιά"
+
+#: src\br24ControlsDialog.cpp:766
+msgid "negative = port"
+msgstr "αρνητικό = αριστερά"
+
+#: src\br24ControlsDialog.cpp:814
 msgid "Arc"
 msgstr "Τόξο"
 
-#: src\br24ControlsDialog.cpp:713
+#: src\br24ControlsDialog.cpp:815
 msgid "Circle"
 msgstr "Κύκλος"
 
-#: src\br24ControlsDialog.cpp:752 src\br24ControlsDialog.cpp:855
-#: src\br24ControlsDialog.cpp:1070 src\br24ControlsDialog.cpp:1073
-msgid "Multi Sweep Filter"
+#: src\br24ControlsDialog.cpp:855
+msgid "ARPA On"
+msgstr "ARPA On"
+
+#: src\br24ControlsDialog.cpp:860
+msgid "Alarm On"
+msgstr "Συναγερμός On"
+
+#: src\br24ControlsDialog.cpp:884
+msgid "Harbour"
+msgstr "Λιμάνι"
+
+#: src\br24ControlsDialog.cpp:885
+msgid "Offshore"
+msgstr "Ανοικτή θαλάσσα"
+
+#: src\br24ControlsDialog.cpp:912
+msgid "Acquire Target"
+msgstr "Απόκτηση στόχου"
+
+#: src\br24ControlsDialog.cpp:916
+msgid "Delete target"
+msgstr "Διαγραφή του στόχου"
+
+#: src\br24ControlsDialog.cpp:920
+msgid "Delete all targets"
+msgstr "Διαγραφή όλων των στόχων"
+
+#: src\br24ControlsDialog.cpp:946 src\br24ControlsDialog.cpp:1587
+msgid "Show AIS/ARPA"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:828
+#: src\br24ControlsDialog.cpp:954
 msgid "15 sec"
-msgstr ""
+msgstr "15 δευτ"
 
-#: src\br24ControlsDialog.cpp:829 src\br24OptionsDialog.cpp:119
+#: src\br24ControlsDialog.cpp:955 src\br24OptionsDialog.cpp:119
 msgid "30 sec"
-msgstr ""
+msgstr "30 δευτ"
 
-#: src\br24ControlsDialog.cpp:830
+#: src\br24ControlsDialog.cpp:956
 msgid "1 min"
-msgstr ""
+msgstr "1 λεπτό"
 
-#: src\br24ControlsDialog.cpp:831
+#: src\br24ControlsDialog.cpp:957
 msgid "3 min"
-msgstr ""
+msgstr "3 λεπτά"
 
-#: src\br24ControlsDialog.cpp:832 src\br24ControlsDialog.cpp:944
-msgid "10 min"
-msgstr ""
-
-#: src\br24ControlsDialog.cpp:833
-msgid "Continuous"
-msgstr ""
-
-#: src\br24ControlsDialog.cpp:890
-msgid "Unknown"
-msgstr ""
-
-#: src\br24ControlsDialog.cpp:943
+#: src\br24ControlsDialog.cpp:958 src\br24ControlsDialog.cpp:1016
 msgid "5 min"
-msgstr ""
+msgstr "5 λεπτά"
 
-#: src\br24ControlsDialog.cpp:945
-msgid "15 min"
-msgstr ""
+#: src\br24ControlsDialog.cpp:959 src\br24ControlsDialog.cpp:1017
+msgid "10 min"
+msgstr "10 λεπτά"
 
-#: src\br24ControlsDialog.cpp:946
-msgid "20 min"
-msgstr ""
+#: src\br24ControlsDialog.cpp:960
+msgid "Continuous"
+msgstr "Συνεχής"
 
-#: src\br24ControlsDialog.cpp:947
-msgid "25 min"
-msgstr ""
-
-#: src\br24ControlsDialog.cpp:948
-msgid "30 min"
-msgstr ""
-
-#: src\br24ControlsDialog.cpp:949
-msgid "35 min"
-msgstr ""
-
-#: src\br24ControlsDialog.cpp:1009 src\br24ControlsDialog.cpp:1012
-msgid "Guard zone"
-msgstr ""
-
-#: src\br24ControlsDialog.cpp:1277
-msgid "Standby"
-msgstr ""
-
-#: src\br24ControlsDialog.cpp:1280
-msgid "Waking up"
-msgstr ""
-
-#: src\br24ControlsDialog.cpp:1283
+#: src\br24ControlsDialog.cpp:1008 src\br24ControlsDialog.cpp:1512
 msgid "Transmit"
-msgstr ""
+msgstr "Μετάδοση"
 
-#: src\br24ControlsDialog.cpp:1291 src\br24radar_pi.cpp:522
+#: src\br24ControlsDialog.cpp:1011 src\br24ControlsDialog.cpp:1506
+msgid "Standby"
+msgstr "Κατάσταση αναμονής"
+
+#: src\br24ControlsDialog.cpp:1018
+msgid "15 min"
+msgstr "15 min"
+
+#: src\br24ControlsDialog.cpp:1019
+msgid "20 min"
+msgstr "20 λεπτά"
+
+#: src\br24ControlsDialog.cpp:1020
+msgid "25 min"
+msgstr "25 min"
+
+#: src\br24ControlsDialog.cpp:1021
+msgid "30 min"
+msgstr "30 min"
+
+#: src\br24ControlsDialog.cpp:1022
+msgid "35 min"
+msgstr "35 min"
+
+#: src\br24ControlsDialog.cpp:1033
+msgid "10 s"
+msgstr "10 s"
+
+#: src\br24ControlsDialog.cpp:1034
+msgid "20 s"
+msgstr "20 s"
+
+#: src\br24ControlsDialog.cpp:1035
+msgid "30 s"
+msgstr "30 s"
+
+#: src\br24ControlsDialog.cpp:1037
+msgid "Runtime"
+msgstr "Διάρκεια"
+
+#: src\br24ControlsDialog.cpp:1075
+msgid "Cursor"
+msgstr "Δρομέας"
+
+#: src\br24ControlsDialog.cpp:1098 src\br24ControlsDialog.cpp:1629
+#: src\RadarInfo.cpp:1248
+msgid "Unknown"
+msgstr "Άγνωστο"
+
+#: src\br24ControlsDialog.cpp:1165 src\br24ControlsDialog.cpp:1175
+msgid " + Alarm"
+msgstr " + Συναγερμός"
+
+#: src\br24ControlsDialog.cpp:1168 src\br24ControlsDialog.cpp:1178
+msgid " + Arpa"
+msgstr " + Arpa"
+
+#: src\br24ControlsDialog.cpp:1171 src\br24ControlsDialog.cpp:1181
+msgid " Off"
+msgstr " OFF"
+
+#: src\br24ControlsDialog.cpp:1184 src\br24ControlsDialog.cpp:1187
+msgid "Guard zone"
+msgstr "Ζώνη επιφυλακής"
+
+#: src\br24ControlsDialog.cpp:1498
+msgid "Power Status"
+msgstr "Κατάσταση ενέργειας"
+
+#: src\br24ControlsDialog.cpp:1509
+msgid "Waking up"
+msgstr "Ξύπνημα"
+
+#: src\br24ControlsDialog.cpp:1520 src\br24radar_pi.cpp:625
 msgid "Standby in"
-msgstr ""
+msgstr "Σε κατάσταση αναμονής"
 
-#: src\br24ControlsDialog.cpp:1296 src\br24radar_pi.cpp:527
+#: src\br24ControlsDialog.cpp:1525 src\br24radar_pi.cpp:630
 msgid "Transmit in"
-msgstr ""
+msgstr "Μετάδοση"
 
-#: src\br24ControlsDialog.cpp:1325
+#: src\br24ControlsDialog.cpp:1557
 msgid "Hide both windows"
-msgstr ""
+msgstr "Απόκρυψη δύο παραθύρων"
 
-#: src\br24ControlsDialog.cpp:1327
+#: src\br24ControlsDialog.cpp:1559
 msgid "Show other window"
-msgstr ""
+msgstr "Εμφάνιση άλλου παραθύρου"
 
-#: src\br24ControlsDialog.cpp:1331
+#: src\br24ControlsDialog.cpp:1563
 msgid "Show this window"
-msgstr ""
+msgstr "Εμφάνιση αυτού του παραθύρου"
 
-#: src\br24ControlsDialog.cpp:1333
+#: src\br24ControlsDialog.cpp:1565
 msgid "Show both windows"
-msgstr ""
+msgstr "Εμφάνιση δύο παράθυρων"
 
-#: src\br24ControlsDialog.cpp:1337
+#: src\br24ControlsDialog.cpp:1569
 msgid "Hide window"
-msgstr ""
+msgstr "Απόκρυψη παραθύρου"
 
-#: src\br24ControlsDialog.cpp:1337
+#: src\br24ControlsDialog.cpp:1569
 msgid "Show window"
-msgstr ""
+msgstr "Εμφάνιση παραθύρου"
 
-#: src\br24ControlsDialog.cpp:1343
+#: src\br24ControlsDialog.cpp:1575
 msgid "Clear EBL/VRM"
+msgstr "Εκκαθάριση EBL/VRM"
+
+#: src\br24ControlsDialog.cpp:1585
+msgid "Hide AIS/ARPA"
 msgstr ""
 
-#: src\br24ControlsDialog.cpp:1360
+#: src\br24ControlsDialog.cpp:1599
 msgid "True"
-msgstr ""
+msgstr "Αληθής"
 
-#: src\br24ControlsDialog.cpp:1362
+#: src\br24ControlsDialog.cpp:1601
 msgid "Relative"
-msgstr ""
+msgstr "Σχετική"
 
-#: src\br24ControlsDialog.cpp:1372
-msgid "North up"
-msgstr ""
-
-#: src\br24ControlsDialog.cpp:1375
+#: src\br24ControlsDialog.cpp:1615 src\br24ControlsDialog.cpp:1618
 msgid "Head up"
-msgstr ""
+msgstr "Προς τα μπρος"
 
-#: src\br24ControlsDialog.cpp:1378
-msgid "???"
-msgstr ""
+#: src\br24ControlsDialog.cpp:1620
+msgid "(Stabilized)"
+msgstr "(σταθεροποιημένο)"
 
-#: src\br24ControlsDialog.cpp:1663
-msgid "Guard Zone"
-msgstr "Ζώνν επιφυλακής"
+#: src\br24ControlsDialog.cpp:1623
+msgid "North up"
+msgstr "Προς το Βορρά"
 
-#: src\br24ControlsDialog.h:60 src\br24MessageBox.h:86 src\br24radar_pi.cpp:233
-#: src\br24radar_pi.cpp:774
+#: src\br24ControlsDialog.cpp:1626
+msgid "Course up"
+msgstr "Προς την πορεία"
+
+#: src\br24ControlsDialog.cpp:1932
+msgid "Guard Zone 1 Green"
+msgstr "Ζώνη επιφυλακής 1 πράσινη"
+
+#: src\br24ControlsDialog.cpp:1935
+msgid "Guard Zone 2 Blue"
+msgstr "Ζώνη επιφυλακής 2 μπλε"
+
+#: src\br24ControlsDialog.h:62 src\br24MessageBox.h:86 src\br24radar_pi.cpp:249
 msgid "Radar"
-msgstr ""
+msgstr "Ραντάρ"
 
 #: src\br24MessageBox.cpp:125
 msgid "Cannot switch radar on as\n"
 "it is not connected or off"
-msgstr ""
+msgstr "Δεν μπορώ να γυρίσω στο ραντάρ\n"
+" γιατί δεν είναι συνδεδεμένο ή OFF"
 
 #: src\br24MessageBox.cpp:132
 msgid "OpenCPN options"
-msgstr ""
+msgstr "Επιλογές OpenCPN"
 
 #: src\br24MessageBox.cpp:137
 msgid "Accelerated Graphics (OpenGL)"
-msgstr ""
+msgstr "Γραφικά OpenGL"
 
 #: src\br24MessageBox.cpp:143
 msgid "ZeroConf via Ethernet"
-msgstr ""
+msgstr "ZeroConf μέσω Ethernet"
 
 #: src\br24MessageBox.cpp:149
 msgid "Radar present"
-msgstr ""
+msgstr "Υπάρχει ραντάρ"
 
 #: src\br24MessageBox.cpp:155
 msgid "Radar sending data"
-msgstr ""
+msgstr "Το ραντάρ στέλνει δεδομένα"
 
 #: src\br24MessageBox.cpp:160
 msgid "For radar overlay also required"
-msgstr ""
+msgstr "Για την προσθήκη του ραντάρ απαιτείται επίσης"
 
 #: src\br24MessageBox.cpp:168
 msgid "Boat position"
-msgstr ""
+msgstr "Θέση πλοίου"
 
 #: src\br24MessageBox.cpp:174
 msgid "and"
-msgstr ""
+msgstr "και"
 
 #: src\br24MessageBox.cpp:179
 msgid "True Heading"
-msgstr ""
+msgstr "Πραγματική πορεία"
 
 #: src\br24MessageBox.cpp:184
 msgid "or"
-msgstr ""
+msgstr "η"
 
-#: src\br24MessageBox.cpp:188 src\br24MessageBox.cpp:470
+#: src\br24MessageBox.cpp:188 src\br24MessageBox.cpp:472
 msgid "Magnetic heading"
-msgstr ""
+msgstr "Μαγνητική πορεία"
 
-#: src\br24MessageBox.cpp:195 src\br24MessageBox.cpp:477
-#: src\br24radar_pi.cpp:768
+#: src\br24MessageBox.cpp:195 src\br24MessageBox.cpp:479
 msgid "Variation"
-msgstr ""
+msgstr "Παραλλαγή"
 
 #: src\br24MessageBox.cpp:200 src\br24MessageBox.cpp:205
 msgid "Statistics"
-msgstr ""
+msgstr "Στατιστικά"
 
 #: src\br24MessageBox.cpp:210
 msgid "&Close"
@@ -458,325 +571,369 @@ msgstr "&Κλείσιμο"
 
 #: src\br24MessageBox.cpp:216
 msgid "&Hide Radar"
-msgstr ""
+msgstr "& Απόκρυψη ραντάρ"
 
-#: src\br24MessageBox.cpp:340
+#: src\br24MessageBox.cpp:342
 msgid "Radar type"
-msgstr ""
+msgstr "Τύπος ραντάρ"
 
-#: src\br24MessageBox.cpp:344
+#: src\br24MessageBox.cpp:346
 msgid "Radar IP"
-msgstr ""
-
-#: src\br24MessageBox.cpp:364
-msgid "Radar requirements OK:"
-msgstr ""
+msgstr "Ραντάρ IP"
 
 #: src\br24MessageBox.cpp:366
+msgid "Radar requirements OK:"
+msgstr "Απαιτήσεις ραντάρ OK:"
+
+#: src\br24MessageBox.cpp:368
 msgid "Radar requires the following"
-msgstr ""
+msgstr "Το ραντάρ απαιτεί τα ακόλουθα"
 
-#: src\br24MessageBox.cpp:448 src\RadarInfo.cpp:913
+#: src\br24MessageBox.cpp:450 src\RadarInfo.cpp:1252
 msgid "Emulator"
-msgstr ""
+msgstr "Εξομοιωτής"
 
-#: src\br24MessageBox.cpp:456
+#: src\br24MessageBox.cpp:458
 msgid "Ethernet card"
-msgstr ""
+msgstr "Κάρτα Ethernet"
 
-#: src\br24MessageBox.cpp:463
+#: src\br24MessageBox.cpp:465
 msgid "True heading"
-msgstr ""
+msgstr "Πραγματική πορεία"
 
 #: src\br24OptionsDialog.cpp:38
 msgid "BR24 Display Preferences"
-msgstr ""
+msgstr "Προτιμήσεις παρουσίασης BR24"
 
 #: src\br24OptionsDialog.cpp:58
 msgid "Nautical Miles"
-msgstr ""
+msgstr "Ναυτικά μίλια"
 
 #: src\br24OptionsDialog.cpp:58
 msgid "Kilometers"
-msgstr ""
+msgstr "Χιλιόμετρα"
 
 #: src\br24OptionsDialog.cpp:62
 msgid "Range Units"
-msgstr ""
+msgstr "Μονάδες"
 
 #: src\br24OptionsDialog.cpp:69
 msgid "Shading"
-msgstr ""
+msgstr "Σκίαση"
 
 #: src\br24OptionsDialog.cpp:69
 msgid "Outline"
-msgstr ""
+msgstr "Περίγραμμα"
 
 #: src\br24OptionsDialog.cpp:69
 msgid "Shading + Outline"
-msgstr ""
+msgstr "Σκίαση + περίγραμμα"
 
 #: src\br24OptionsDialog.cpp:71
 msgid "Guard Zone Styling"
-msgstr ""
+msgstr "Στιλ ζώνης επιφυλακής"
 
 #: src\br24OptionsDialog.cpp:80
 msgid "Guard Zone Sound"
-msgstr ""
+msgstr "Ήχος ζώνης επιφυλακής"
 
 #: src\br24OptionsDialog.cpp:83
 msgid "Select Alert Sound"
-msgstr ""
+msgstr "Επιλογή ήχου συναγερμού"
 
 #: src\br24OptionsDialog.cpp:87
 msgid "Test Alert Sound"
-msgstr ""
+msgstr "Δοκιμή ήχου συναγερμού"
 
 #: src\br24OptionsDialog.cpp:92
 msgid "Repeat alarm after (sec)"
-msgstr ""
+msgstr "Επανάληψη συναγερμού μετά από (δευτ.)"
 
 #: src\br24OptionsDialog.cpp:103
 msgid "GPU drawing method"
-msgstr ""
+msgstr "Μέθοδος σχεδίασης GPU"
 
 #: src\br24OptionsDialog.cpp:109
 msgid "Drawing Method"
-msgstr ""
+msgstr "Mέθοδος σχεδίασης"
 
 #: src\br24OptionsDialog.cpp:116
 msgid "Control Menu Auto Hide"
-msgstr ""
+msgstr "Aυτόματη απόκρυψη μενού ελέγχου"
 
 #: src\br24OptionsDialog.cpp:119
 msgid "Never"
-msgstr ""
+msgstr "Ποτέ"
 
 #: src\br24OptionsDialog.cpp:119
 msgid "10 sec"
-msgstr ""
+msgstr "10 s"
 
 #: src\br24OptionsDialog.cpp:122
 msgid "Auto hide after"
-msgstr ""
+msgstr "Αυτόματη απόκρυψη μετά από"
 
 #: src\br24OptionsDialog.cpp:132
 msgid "Trail start color"
-msgstr ""
+msgstr "Χρώμα έναρξης ίχνους"
 
 #: src\br24OptionsDialog.cpp:139
 msgid "Trail end color"
-msgstr ""
+msgstr "Χρώμα τέλους ίχνους"
 
 #: src\br24OptionsDialog.cpp:148
 msgid "Target colors"
-msgstr ""
+msgstr "Χρώματα στόχων"
 
 #: src\br24OptionsDialog.cpp:151
 msgid "Weak return color"
-msgstr ""
+msgstr "Χρώμα ασθενούς σήματος"
 
 #: src\br24OptionsDialog.cpp:157
 msgid "Intermediate return color"
-msgstr ""
+msgstr "Χρώμα μεσαίου σήματος"
 
 #: src\br24OptionsDialog.cpp:164
 msgid "Strong return color"
-msgstr ""
+msgstr "Χρώμα ισχυρού σήματος"
 
-#: src\br24OptionsDialog.cpp:179
-msgid "Options"
-msgstr ""
+#: src\br24OptionsDialog.cpp:170
+msgid "ARPA edge color"
+msgstr "Χρώμα ορίου ARPA"
 
-#: src\br24OptionsDialog.cpp:183
-msgid "Show Guard Zone on overlay"
-msgstr ""
+#: src\br24OptionsDialog.cpp:178
+msgid "Radar window colors"
+msgstr "Χρώματα παραθύρων ραντάρ"
+
+#: src\br24OptionsDialog.cpp:181
+msgid "Background color"
+msgstr "Χρώμα φόντου"
 
 #: src\br24OptionsDialog.cpp:189
+msgid "AIS text color"
+msgstr "Χρώμα κειμένου AIS"
+
+#: src\br24OptionsDialog.cpp:205
+msgid "Options"
+msgstr "Επιλογές"
+
+#: src\br24OptionsDialog.cpp:209
+msgid "Show ring at extreme range"
+msgstr "Δακτυλίδι στο άκρο της περιοχής"
+
+#: src\br24OptionsDialog.cpp:215
+msgid "Show Guard Zone on overlay"
+msgstr "Εμφάνιση ζώνης επιφυλακής στην επικάλυψη"
+
+#: src\br24OptionsDialog.cpp:221
 msgid "Show Target trails on overlay"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:195
+#: src\br24OptionsDialog.cpp:227
 msgid "Enable dual radar, 4G only"
-msgstr ""
+msgstr "Ενεργοποίηση διπλού ραντάρ, 4G μόνο"
 
-#: src\br24OptionsDialog.cpp:207
+#: src\br24OptionsDialog.cpp:239
 msgid "Ignore radar heading"
-msgstr ""
+msgstr "Αγνόησε την κατεύθυνση πορείας του ραντάρ"
 
-#: src\br24OptionsDialog.cpp:214
+#: src\br24OptionsDialog.cpp:246
 msgid "Pass radar heading to OpenCPN"
-msgstr ""
+msgstr "Στείλε την κατεύθυνση πορείας του ραντάρ στο OpenCPN"
 
-#: src\br24OptionsDialog.cpp:220
+#: src\br24OptionsDialog.cpp:252
 msgid "Enable COG as heading"
-msgstr ""
+msgstr "Ενεργοποίηση του COG ως πορεία ραντάρ"
 
-#: src\br24OptionsDialog.cpp:228
+#: src\br24OptionsDialog.cpp:260
 msgid "Emulator mode"
-msgstr ""
+msgstr "Λειτουργία εξομοιωτή"
 
-#: src\br24OptionsDialog.cpp:233
+#: src\br24OptionsDialog.cpp:265
 msgid "Reverse mouse wheel zoom direction"
-msgstr ""
+msgstr "Αντιστροφή της κατεύθυνσης zoom του τροχού του δρομέα"
 
-#: src\br24OptionsDialog.cpp:288
+#: src\br24OptionsDialog.cpp:332
 msgid "Select Sound File"
-msgstr ""
+msgstr "Επιλογή αρχείου ήχου"
 
-#: src\br24OptionsDialog.cpp:289
+#: src\br24OptionsDialog.cpp:333
 msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
-msgstr ""
+msgstr "WAV αρχεία (*.wav)|*.wav|Όλα τα αρχεία (*.*)|*.*"
 
-#: src\br24radar_pi.cpp:233 src\br24radar_pi.cpp:352
+#: src\br24radar_pi.cpp:249 src\br24radar_pi.cpp:382
 msgid "Radar A"
-msgstr ""
+msgstr "Ραντάρ A"
 
-#: src\br24radar_pi.cpp:234
+#: src\br24radar_pi.cpp:250
 msgid "Radar B"
-msgstr ""
+msgstr "Ραντάρ B"
 
-#: src\br24radar_pi.cpp:242
+#: src\br24radar_pi.cpp:258
 msgid "Navico BR24, 3G and 4G RADAR"
-msgstr ""
+msgstr "Navico BR24, 3G και 4G ΡΑΝΤAΡ"
 
-#: src\br24radar_pi.cpp:251
+#: src\br24radar_pi.cpp:267
 msgid "Show radar"
-msgstr ""
+msgstr "Εμφάνιση ραντάρ"
 
-#: src\br24radar_pi.cpp:252
+#: src\br24radar_pi.cpp:268
 msgid "Hide radar"
-msgstr ""
+msgstr "Απόκρυψη ραντάρ"
 
-#: src\br24radar_pi.cpp:253
+#: src\br24radar_pi.cpp:269
 msgid "Radar Control..."
 msgstr "Έλεγχος ραντάρ..."
 
-#: src\br24radar_pi.cpp:255 src\RadarCanvas.cpp:98
-msgid "Menu"
-msgstr "Menu"
+#: src\br24radar_pi.cpp:270
+msgid "Acquire radar target"
+msgstr "Λήψη στόχου ραντάρ"
 
-#: src\br24radar_pi.cpp:330
+#: src\br24radar_pi.cpp:271
+msgid "Delete radar target"
+msgstr "Διαγραφή στόχου ραντάρ"
+
+#: src\br24radar_pi.cpp:272
+msgid "Delete all radar targets"
+msgstr "Διαγραφή όλων των στόχων ραντάρ"
+
+#: src\br24radar_pi.cpp:275 src\RadarCanvas.cpp:98
+msgid "Menu"
+msgstr "Μενού"
+
+#: src\br24radar_pi.cpp:360
 msgid "Navico Radar PlugIn for OpenCPN"
 msgstr "Πρόσθετο Ραντάρ Navico για το OpenCPN"
 
-#: src\br24radar_pi.cpp:332
+#: src\br24radar_pi.cpp:362
 msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
 msgstr "Πρόσθετο Ραντάρ Navico Broadband BR24/3G/4G για το OpenCPN\n"
 
-#: src\br24radar_pi.cpp:540
+#: src\br24radar_pi.cpp:643
 msgid "Zone"
 msgstr "Ζώνη"
 
-#: src\br24radar_pi.cpp:542
+#: src\br24radar_pi.cpp:645
 msgid "(Confirmed)"
-msgstr ""
+msgstr "(Επιβεβαίωση)"
 
-#: src\br24radar_pi.cpp:574
+#: src\br24radar_pi.cpp:677
 msgid " Zone"
-msgstr ""
+msgstr " Ζώνη"
 
-#: src\br24radar_pi.cpp:618
+#: src\br24radar_pi.cpp:721
 msgid "Next alarm in"
-msgstr ""
+msgstr "Επόμενος συναγερμός σε"
 
-#: src\br24radar_pi.cpp:765
+#: src\br24radar_pi.cpp:950
 msgid "COG"
-msgstr ""
+msgstr "COG"
 
-#: src\br24radar_pi.cpp:768
-msgid "HDM"
-msgstr ""
-
-#: src\br24radar_pi.cpp:771
+#: src\br24radar_pi.cpp:954
 msgid "HDT"
-msgstr ""
+msgstr "HDT"
 
-#: src\br24radar_pi.cpp:1131
+#: src\br24radar_pi.cpp:957 src\br24radar_pi.cpp:977 src\RadarPanel.cpp:38
+msgid "RADAR"
+msgstr "ΡΑΝΤΑΡ"
+
+#: src\br24radar_pi.cpp:974
+msgid "HDM"
+msgstr "HDM"
+
+#: src\br24radar_pi.cpp:1375
 msgid "GPS"
 msgstr ""
 
-#: src\br24radar_pi.cpp:1217
+#: src\br24radar_pi.cpp:1496
 msgid "WMM"
-msgstr ""
+msgstr "WMM"
 
-#: src\br24radar_pi.cpp:1336
+#: src\br24radar_pi.cpp:1729
 msgid "NMEA"
-msgstr ""
+msgstr "NMEA"
 
 #: src\GuardZoneBogey.cpp:94
 msgid "Confirm"
-msgstr ""
+msgstr "Επιβεβαίωση"
 
 #: src\GuardZoneBogey.cpp:97
 msgid "Close"
-msgstr ""
+msgstr "Κλείσιμο"
 
 #: src\GuardZoneBogey.h:53
 msgid "Alarm"
-msgstr ""
+msgstr "Συναγερμός"
+
+#: src\RadarCanvas.cpp:471
+msgid "AIS Target Name"
+msgstr "Όνομα στόχου AIS"
 
 #: src\RadarDraw.cpp:54
 msgid "Vertex Array"
-msgstr ""
+msgstr "Πίνακας Vertex"
 
 #: src\RadarDraw.cpp:54
 msgid "Shader"
-msgstr ""
+msgstr "Σκίαση"
 
-#: src\RadarInfo.cpp:908
-msgid "North Up"
-msgstr ""
-
-#: src\RadarInfo.cpp:910
+#: src\RadarInfo.cpp:1236 src\RadarInfo.cpp:1239
 msgid "Head Up"
-msgstr ""
+msgstr "Προς τα μπρος"
 
-#: src\RadarInfo.cpp:1021
+#: src\RadarInfo.cpp:1239
+msgid "Stabilized"
+msgstr "Σταθεροποιημένο"
+
+#: src\RadarInfo.cpp:1242
+msgid "Course Up"
+msgstr "Πορεία προς τα πάνω"
+
+#: src\RadarInfo.cpp:1245
+msgid "North Up"
+msgstr "Βορράς προς τα πάνω"
+
+#: src\RadarInfo.cpp:1379
 msgid "No radar"
-msgstr ""
+msgstr "Όχι ραντάρ"
 
-#: src\RadarInfo.cpp:1024
+#: src\RadarInfo.cpp:1382
 msgid "Radar is in Standby"
-msgstr ""
+msgstr "Το ραντάρ είναι σε κατάσταση αναμονής"
 
-#: src\RadarInfo.cpp:1027
+#: src\RadarInfo.cpp:1385
 msgid "Radar is waking up"
-msgstr ""
+msgstr "Το ραντάρ έχει αφυπνίζεται"
 
-#: src\RadarInfo.cpp:1033
+#: src\RadarInfo.cpp:1391
 msgid "Radar not transmitting"
-msgstr ""
+msgstr "Το ραντάρ δεν μεταδίδει"
 
-#: src\RadarPanel.cpp:38
-msgid "RADAR"
-msgstr ""
-
-#: src\RadarPanel.cpp:61 src\RadarPanel.cpp:156
+#: src\RadarPanel.cpp:156
 msgid "OpenGL mode required"
-msgstr ""
+msgstr "Απαιτείται λειτουργία OpenGL"
 
 #: src\RadarPanel.cpp:167
 msgid "Unable to create OpenGL canvas"
-msgstr ""
+msgstr "Δεν είναι δυνατή η δημιουργία καμβά OpenGL"
 
 #: src\socketutil.cpp:179
 msgid "Cannot create UDP socket"
-msgstr ""
+msgstr "Δεν είναι δυνατό να δημιουργηθεί υποδοχή UDP"
 
 #: src\socketutil.cpp:183
 msgid "Cannot set reuse address option on socket"
-msgstr ""
+msgstr "Δεν είναι δυνατό να ορισθεί επιλογή διεύθυνσης επαναχρησιμοποίησης στην υποδοχή"
 
 #: src\socketutil.cpp:188
 msgid "Cannot bind UDP socket to port "
-msgstr ""
+msgstr "Δεν είναι δυνατό να συνδεθεί η υποδοχή UDP στη θύρα "
 
 #: src\socketutil.cpp:197
 msgid "Invalid multicast address"
-msgstr ""
+msgstr "Μη έγκυρη διεύθυνση multicast"
 
 #: src\socketutil.cpp:202
 msgid "Invalid IP address for UDP multicast"
-msgstr ""
+msgstr "Μη έγκυρη διεύθυνση IP για UDP multicast"
 
