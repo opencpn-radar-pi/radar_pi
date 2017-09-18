@@ -669,13 +669,9 @@ void RadarArpa::RefreshArpaTargets() {
     m_targets[i]->RefreshTarget(dist);
   }
 
-  if (m_pi->m_settings.guard_zone_on_overlay) {
-    m_ri->m_guard_zone[0]->SearchTargets();
+  for (int i = 0; i < GUARD_ZONES; i++)
+    m_ri->m_guard_zone[i]->SearchTargets();
   }
-  if (m_pi->m_settings.guard_zone_on_overlay) {
-    m_ri->m_guard_zone[1]->SearchTargets();
-  }
-}
 
 void ArpaTarget::RefreshTarget(int dist) {
   Position prev_X;

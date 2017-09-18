@@ -1075,6 +1075,15 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   if (!m_range_meters) {
     return;
   }
+  bool arpa_on = false;
+  if (m_arpa){
+    for (int i = 0; i < GUARD_ZONES; i++){
+      if (m_guard_zone[i]->m_arpa_on) arpa_on = true;
+    }
+    if (m_arpa->GetTargetCount()){
+      arpa_on = true;
+    }
+  }
 
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);  // Save state
   glEnable(GL_BLEND);
@@ -1118,7 +1127,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     arpa_rotate = overlay_rotate - OPENGL_ROTATION;
   }
 
-  if (m_arpa) {
+  if (arpa_on) {
     m_arpa->RefreshArpaTargets();
   }
 
@@ -1144,7 +1153,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     RenderRadarImage(&m_draw_overlay);
     glPopMatrix();
 
-    if (m_arpa) {
+    if (arpa_on) {
       glPushMatrix();
       glTranslated(center.x, center.y, 0);
       LOG_VERBOSE(wxT("BR24radar_pi: %s render ARPA targets on overlay with rot=%f"), m_name.c_str(), arpa_rotate);
@@ -1174,7 +1183,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     RenderRadarImage(&m_draw_panel);
     glPopMatrix();
 
-    if (m_arpa) {
+    if (arpa_on) {
       glPushMatrix();
       glScaled(scale, scale, 1.);
       glRotated(arpa_rotate, 0.0, 0.0, 1.0);
