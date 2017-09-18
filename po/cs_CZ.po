@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-18 09:48+0200\n"
-"PO-Revision-Date: 2016-08-24 13:00-0400\n"
+"POT-Creation-Date: 2017-09-11 17:48+0200\n"
+"PO-Revision-Date: 2017-09-16 06:21-0400\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Czech\n"
 "Language: cs_CZ\n"
@@ -16,381 +16,494 @@ msgstr ""
 "X-Crowdin-Language: cs\n"
 "X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
 
-#: src\br24ControlsDialog.cpp:305 src\br24ControlsDialog.cpp:531
-#: src\RadarInfo.cpp:1068
+#: src\br24ControlsDialog.cpp:403 src\br24ControlsDialog.cpp:627
+#: src\RadarInfo.cpp:1426
 msgid "Auto"
 msgstr "Auto"
 
-#: src\br24ControlsDialog.cpp:380
+#: src\br24ControlsDialog.cpp:479
 msgid "Back"
 msgstr "Zpět"
 
-#: src\br24ControlsDialog.cpp:399 src\br24ControlsDialog.cpp:1269
+#: src\br24ControlsDialog.cpp:498
 msgid "Standby / Transmit"
 msgstr "Úsporný režim / vysílání"
 
-#: src\br24ControlsDialog.cpp:400 src\br24ControlsDialog.cpp:553
+#: src\br24ControlsDialog.cpp:499 src\br24ControlsDialog.cpp:648
 msgid "Noise rejection"
 msgstr "Potlačení šumu"
 
-#: src\br24ControlsDialog.cpp:401 src\br24ControlsDialog.cpp:567
+#: src\br24ControlsDialog.cpp:500 src\br24ControlsDialog.cpp:662
 msgid "Target expansion"
 msgstr "Expanze cílů"
 
-#: src\br24ControlsDialog.cpp:402 src\br24ControlsDialog.cpp:583
+#: src\br24ControlsDialog.cpp:501 src\br24ControlsDialog.cpp:677
 msgid "Interference rejection"
 msgstr "Potlačení rušení"
 
-#: src\br24ControlsDialog.cpp:403 src\br24ControlsDialog.cpp:598
+#: src\br24ControlsDialog.cpp:502 src\br24ControlsDialog.cpp:692
 msgid "Target separation"
 msgstr "Oddělení cílů"
 
-#: src\br24ControlsDialog.cpp:404 src\br24ControlsDialog.cpp:610
+#: src\br24ControlsDialog.cpp:503 src\br24ControlsDialog.cpp:702
 msgid "Scan speed"
 msgstr "Rychlost skenování"
 
-#: src\br24ControlsDialog.cpp:405 src\br24ControlsDialog.cpp:622
+#: src\br24ControlsDialog.cpp:504 src\br24ControlsDialog.cpp:713
 msgid "Target boost"
 msgstr "Zvýraznění cílů"
 
-#: src\br24ControlsDialog.cpp:406 src\br24ControlsDialog.cpp:630
+#: src\br24ControlsDialog.cpp:505 src\br24ControlsDialog.cpp:721
 msgid "Installation"
 msgstr "Instalace"
 
-#: src\br24ControlsDialog.cpp:407 src\br24ControlsDialog.cpp:653
+#: src\br24ControlsDialog.cpp:506 src\br24ControlsDialog.cpp:742
 msgid "Bearing alignment"
 msgstr "Srovnání náměru"
 
-#: src\br24ControlsDialog.cpp:408 src\br24ControlsDialog.cpp:661
+#: src\br24ControlsDialog.cpp:507 src\br24ControlsDialog.cpp:749
 msgid "Antenna height"
 msgstr "Výška antény"
 
-#: src\br24ControlsDialog.cpp:409 src\br24ControlsDialog.cpp:669
+#: src\br24ControlsDialog.cpp:508
+msgid "Antenna forward of GPS"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:509
+msgid "Antenna starboard of GPS"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:510 src\br24ControlsDialog.cpp:773
 msgid "Local interference rej."
 msgstr "Potlačení lokálního rušení"
 
-#: src\br24ControlsDialog.cpp:410 src\br24ControlsDialog.cpp:679
+#: src\br24ControlsDialog.cpp:511 src\br24ControlsDialog.cpp:782
 msgid "Side lobe suppression"
 msgstr "Potlačení bočního laloku"
 
-#: src\br24ControlsDialog.cpp:411 src\br24ControlsDialog.cpp:687
+#: src\br24ControlsDialog.cpp:512 src\br24ControlsDialog.cpp:790
 msgid "Main bang size"
 msgstr "Velikost mrtvé zóny"
 
-#: src\br24ControlsDialog.cpp:412 src\br24ControlsDialog.cpp:414
-#: src\br24ControlsDialog.cpp:705
+#: src\br24ControlsDialog.cpp:513 src\br24ControlsDialog.cpp:515
+#: src\br24ControlsDialog.cpp:807
 msgid "Guard zones"
 msgstr "Strážní zóny"
 
-#: src\br24ControlsDialog.cpp:413 src\br24ControlsDialog.cpp:708
+#: src\br24ControlsDialog.cpp:514 src\br24ControlsDialog.cpp:810
 msgid "Zone type"
 msgstr "Typ zóny"
 
-#: src\br24ControlsDialog.cpp:415 src\br24ControlsDialog.cpp:722
+#: src\br24ControlsDialog.cpp:516 src\br24ControlsDialog.cpp:825
 msgid "Inner range"
 msgstr "Vnitřní hranice"
 
-#: src\br24ControlsDialog.cpp:416 src\br24ControlsDialog.cpp:729
+#: src\br24ControlsDialog.cpp:517 src\br24ControlsDialog.cpp:832
 msgid "Outer range"
 msgstr "Vnější hranice"
 
-#: src\br24ControlsDialog.cpp:417 src\br24ControlsDialog.cpp:736
+#: src\br24ControlsDialog.cpp:518 src\br24ControlsDialog.cpp:839
 msgid "Start bearing"
 msgstr "Počáteční směr"
 
-#: src\br24ControlsDialog.cpp:418 src\br24ControlsDialog.cpp:744
+#: src\br24ControlsDialog.cpp:519 src\br24ControlsDialog.cpp:847
 msgid "End bearing"
 msgstr "Konečný směr"
 
-#: src\br24ControlsDialog.cpp:419
-msgid "Multi sweep filter"
-msgstr "Víceodrazový filtr"
-
-#: src\br24ControlsDialog.cpp:420 src\br24ControlsDialog.cpp:770
+#: src\br24ControlsDialog.cpp:520 src\br24ControlsDialog.cpp:876
 msgid "Range"
 msgstr "Dosah"
 
-#: src\br24ControlsDialog.cpp:421 src\br24ControlsDialog.cpp:774
+#: src\br24ControlsDialog.cpp:521 src\br24ControlsDialog.cpp:880
 msgid "Gain"
 msgstr "Zisk"
 
-#: src\br24ControlsDialog.cpp:422 src\br24ControlsDialog.cpp:778
+#: src\br24ControlsDialog.cpp:522 src\br24ControlsDialog.cpp:886
 msgid "Sea clutter"
 msgstr "Rušení mořem"
 
-#: src\br24ControlsDialog.cpp:423 src\br24ControlsDialog.cpp:782
+#: src\br24ControlsDialog.cpp:523 src\br24ControlsDialog.cpp:893
 msgid "Rain clutter"
 msgstr "Rušení deštěm"
 
-#: src\br24ControlsDialog.cpp:424 src\br24ControlsDialog.cpp:798
+#: src\br24ControlsDialog.cpp:524 src\br24ControlsDialog.cpp:908
 msgid "Clear cursor"
 msgstr "Zrušit kurzor"
 
-#: src\br24ControlsDialog.cpp:425 src\br24ControlsDialog.cpp:804
-#: src\br24ControlsDialog.cpp:1346
+#: src\br24ControlsDialog.cpp:525 src\br24ControlsDialog.cpp:925
+#: src\br24ControlsDialog.cpp:1578
 msgid "Place EBL/VRM"
 msgstr "Umístit EBL/VRM"
 
-#: src\br24ControlsDialog.cpp:426 src\br24ControlsDialog.cpp:836
+#: src\br24ControlsDialog.cpp:526 src\br24ControlsDialog.cpp:962
 #: src\br24OptionsDialog.cpp:129
 msgid "Target trails"
 msgstr "Stopy cílů"
 
-#: src\br24ControlsDialog.cpp:427 src\br24ControlsDialog.cpp:844
-#: src\br24ControlsDialog.cpp:1357
-msgid "True/Relative trails"
-msgstr "Skutečné/Relativní stopy"
+#: src\br24ControlsDialog.cpp:527 src\br24ControlsDialog.cpp:950
+#: src\br24ControlsDialog.cpp:1596
+msgid "Off/Relative/True trails"
+msgstr ""
 
-#: src\br24ControlsDialog.cpp:428 src\br24ControlsDialog.cpp:849
+#: src\br24ControlsDialog.cpp:528 src\br24ControlsDialog.cpp:971
 msgid "Clear trails"
 msgstr "Smazat stopy"
 
-#: src\br24ControlsDialog.cpp:429 src\br24ControlsDialog.cpp:861
-#: src\br24ControlsDialog.cpp:1368
+#: src\br24ControlsDialog.cpp:529 src\br24ControlsDialog.cpp:976
+#: src\br24ControlsDialog.cpp:1611
 msgid "Orientation"
 msgstr "Orientace"
 
-#: src\br24ControlsDialog.cpp:430 src\br24ControlsDialog.cpp:868
+#: src\br24ControlsDialog.cpp:530 src\br24ControlsDialog.cpp:982
 msgid "Refresh rate"
 msgstr "Obnovovací frekvence"
 
-#: src\br24ControlsDialog.cpp:431 src\br24ControlsDialog.cpp:874
+#: src\br24ControlsDialog.cpp:531 src\br24ControlsDialog.cpp:988
 msgid "Transparency"
 msgstr "Průhlednost"
 
-#: src\br24ControlsDialog.cpp:432 src\br24ControlsDialog.cpp:901
-#: src\br24ControlsDialog.cpp:1384
+#: src\br24ControlsDialog.cpp:532 src\br24ControlsDialog.cpp:1093
+#: src\br24ControlsDialog.cpp:1642
 msgid "Overlay"
 msgstr "Překryv"
 
-#: src\br24ControlsDialog.cpp:433 src\br24ControlsDialog.cpp:912
+#: src\br24ControlsDialog.cpp:533 src\br24ControlsDialog.cpp:1063
 msgid "Adjust"
 msgstr "Upravit"
 
-#: src\br24ControlsDialog.cpp:434 src\br24ControlsDialog.cpp:917
+#: src\br24ControlsDialog.cpp:534 src\br24ControlsDialog.cpp:1067
 msgid "Advanced"
 msgstr "Pokočilé"
 
-#: src\br24ControlsDialog.cpp:435 src\br24ControlsDialog.cpp:922
+#: src\br24ControlsDialog.cpp:535 src\br24ControlsDialog.cpp:1071
 msgid "View"
 msgstr "Zobrazení"
 
-#: src\br24ControlsDialog.cpp:436 src\br24ControlsDialog.cpp:927
+#: src\br24ControlsDialog.cpp:536
 msgid "EBL/VRM"
 msgstr "EBL/VRM"
 
-#: src\br24ControlsDialog.cpp:437 src\br24ControlsDialog.cpp:952
+#: src\br24ControlsDialog.cpp:537 src\br24ControlsDialog.cpp:1025
 msgid "Timed Transmit"
 msgstr "Časované vysílání"
 
-#: src\br24ControlsDialog.cpp:438 src\br24ControlsDialog.cpp:960
+#: src\br24ControlsDialog.cpp:538 src\br24ControlsDialog.cpp:1045
 msgid "Info"
 msgstr "Info"
 
-#: src\br24ControlsDialog.cpp:504
+#: src\br24ControlsDialog.cpp:599
 msgid "+10"
 msgstr "+10"
 
-#: src\br24ControlsDialog.cpp:509
+#: src\br24ControlsDialog.cpp:603
 msgid "+"
 msgstr "+"
 
-#: src\br24ControlsDialog.cpp:515
+#: src\br24ControlsDialog.cpp:608
 msgid "Value"
 msgstr "Hodnota"
 
-#: src\br24ControlsDialog.cpp:521
+#: src\br24ControlsDialog.cpp:619
 msgid "-"
 msgstr "-"
 
-#: src\br24ControlsDialog.cpp:526
+#: src\br24ControlsDialog.cpp:623
 msgid "-10"
 msgstr "-10"
 
-#: src\br24ControlsDialog.cpp:549 src\br24ControlsDialog.cpp:565
-#: src\br24ControlsDialog.cpp:577 src\br24ControlsDialog.cpp:593
-#: src\br24ControlsDialog.cpp:618 src\br24ControlsDialog.cpp:711
-#: src\br24ControlsDialog.cpp:827 src\br24ControlsDialog.cpp:855
-#: src\br24ControlsDialog.cpp:942 src\br24ControlsDialog.cpp:1073
-#: src\br24ControlsDialog.cpp:1274 src\br24ControlsDialog.cpp:1387
-#: src\br24ControlsDialog.cpp:1389
+#: src\br24ControlsDialog.cpp:643 src\br24ControlsDialog.cpp:659
+#: src\br24ControlsDialog.cpp:671 src\br24ControlsDialog.cpp:686
+#: src\br24ControlsDialog.cpp:710 src\br24ControlsDialog.cpp:1015
+#: src\br24ControlsDialog.cpp:1503 src\br24ControlsDialog.cpp:1603
+#: src\br24ControlsDialog.cpp:1645 src\br24ControlsDialog.cpp:1647
 msgid "Off"
 msgstr "Vyp"
 
-#: src\br24ControlsDialog.cpp:550 src\br24ControlsDialog.cpp:578
-#: src\br24ControlsDialog.cpp:594 src\br24ControlsDialog.cpp:619
+#: src\br24ControlsDialog.cpp:644 src\br24ControlsDialog.cpp:672
+#: src\br24ControlsDialog.cpp:687 src\br24ControlsDialog.cpp:711
 msgid "Low"
 msgstr "Nízký"
 
-#: src\br24ControlsDialog.cpp:551 src\br24ControlsDialog.cpp:580
-#: src\br24ControlsDialog.cpp:596 src\br24ControlsDialog.cpp:620
+#: src\br24ControlsDialog.cpp:645 src\br24ControlsDialog.cpp:674
+#: src\br24ControlsDialog.cpp:689 src\br24ControlsDialog.cpp:712
 msgid "High"
 msgstr "Vysoký"
 
-#: src\br24ControlsDialog.cpp:566 src\br24ControlsDialog.cpp:1070
-#: src\br24ControlsDialog.cpp:1389
+#: src\br24ControlsDialog.cpp:660 src\br24ControlsDialog.cpp:1647
 msgid "On"
 msgstr "Zap"
 
-#: src\br24ControlsDialog.cpp:579 src\br24ControlsDialog.cpp:595
+#: src\br24ControlsDialog.cpp:673 src\br24ControlsDialog.cpp:688
 msgid "Medium"
 msgstr "Střední"
 
-#: src\br24ControlsDialog.cpp:607
+#: src\br24ControlsDialog.cpp:700
 msgid "Normal"
 msgstr "Normální"
 
-#: src\br24ControlsDialog.cpp:608
+#: src\br24ControlsDialog.cpp:701
 msgid "Fast"
 msgstr "Rychlé"
 
-#: src\br24ControlsDialog.cpp:635
+#: src\br24ControlsDialog.cpp:725
 msgid "Preferences"
 msgstr "Předvolby"
 
-#: src\br24ControlsDialog.cpp:712
+#: src\br24ControlsDialog.cpp:743
+msgid "degrees"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:743
+msgid "relative to bow"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:750 src\br24ControlsDialog.cpp:757
+#: src\br24ControlsDialog.cpp:765
+msgid "m"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:750
+msgid "above sealevel"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:756
+msgid "Antenna forward"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:758 src\br24ControlsDialog.cpp:766
+msgid "relative to GPS"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:758
+msgid "negative = behind"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:764
+msgid "Antenna starboard"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:766
+msgid "negative = port"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:814
 msgid "Arc"
 msgstr "Sektor"
 
-#: src\br24ControlsDialog.cpp:713
+#: src\br24ControlsDialog.cpp:815
 msgid "Circle"
 msgstr "Kruh"
 
-#: src\br24ControlsDialog.cpp:752 src\br24ControlsDialog.cpp:855
-#: src\br24ControlsDialog.cpp:1070 src\br24ControlsDialog.cpp:1073
-msgid "Multi Sweep Filter"
-msgstr "Víceodrazový filtr"
+#: src\br24ControlsDialog.cpp:855
+msgid "ARPA On"
+msgstr ""
 
-#: src\br24ControlsDialog.cpp:828
+#: src\br24ControlsDialog.cpp:860
+msgid "Alarm On"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:884
+msgid "Harbour"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:885
+msgid "Offshore"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:912
+msgid "Acquire Target"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:916
+msgid "Delete target"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:920
+msgid "Delete all targets"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:946 src\br24ControlsDialog.cpp:1587
+msgid "Show AIS/ARPA"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:954
 msgid "15 sec"
 msgstr "15 sek"
 
-#: src\br24ControlsDialog.cpp:829 src\br24OptionsDialog.cpp:119
+#: src\br24ControlsDialog.cpp:955 src\br24OptionsDialog.cpp:119
 msgid "30 sec"
 msgstr "30 sek"
 
-#: src\br24ControlsDialog.cpp:830
+#: src\br24ControlsDialog.cpp:956
 msgid "1 min"
 msgstr "1 min"
 
-#: src\br24ControlsDialog.cpp:831
+#: src\br24ControlsDialog.cpp:957
 msgid "3 min"
 msgstr "3 min"
 
-#: src\br24ControlsDialog.cpp:832 src\br24ControlsDialog.cpp:944
-msgid "10 min"
-msgstr "10 min"
-
-#: src\br24ControlsDialog.cpp:833
-msgid "Continuous"
-msgstr "Kontinuální"
-
-#: src\br24ControlsDialog.cpp:890
-msgid "Unknown"
-msgstr "Neznámý"
-
-#: src\br24ControlsDialog.cpp:943
+#: src\br24ControlsDialog.cpp:958 src\br24ControlsDialog.cpp:1016
 msgid "5 min"
 msgstr "5 min"
 
-#: src\br24ControlsDialog.cpp:945
-msgid "15 min"
-msgstr "15 min"
+#: src\br24ControlsDialog.cpp:959 src\br24ControlsDialog.cpp:1017
+msgid "10 min"
+msgstr "10 min"
 
-#: src\br24ControlsDialog.cpp:946
-msgid "20 min"
-msgstr "20 min"
+#: src\br24ControlsDialog.cpp:960
+msgid "Continuous"
+msgstr "Kontinuální"
 
-#: src\br24ControlsDialog.cpp:947
-msgid "25 min"
-msgstr "25 min"
-
-#: src\br24ControlsDialog.cpp:948
-msgid "30 min"
-msgstr "30 min"
-
-#: src\br24ControlsDialog.cpp:949
-msgid "35 min"
-msgstr "35 min"
-
-#: src\br24ControlsDialog.cpp:1009 src\br24ControlsDialog.cpp:1012
-msgid "Guard zone"
-msgstr "Strážní zóna"
-
-#: src\br24ControlsDialog.cpp:1277
-msgid "Standby"
-msgstr "Úsporný režim"
-
-#: src\br24ControlsDialog.cpp:1280
-msgid "Waking up"
-msgstr "Probouzení"
-
-#: src\br24ControlsDialog.cpp:1283
+#: src\br24ControlsDialog.cpp:1008 src\br24ControlsDialog.cpp:1512
 msgid "Transmit"
 msgstr "Vyslat"
 
-#: src\br24ControlsDialog.cpp:1291 src\br24radar_pi.cpp:522
+#: src\br24ControlsDialog.cpp:1011 src\br24ControlsDialog.cpp:1506
+msgid "Standby"
+msgstr "Úsporný režim"
+
+#: src\br24ControlsDialog.cpp:1018
+msgid "15 min"
+msgstr "15 min"
+
+#: src\br24ControlsDialog.cpp:1019
+msgid "20 min"
+msgstr "20 min"
+
+#: src\br24ControlsDialog.cpp:1020
+msgid "25 min"
+msgstr "25 min"
+
+#: src\br24ControlsDialog.cpp:1021
+msgid "30 min"
+msgstr "30 min"
+
+#: src\br24ControlsDialog.cpp:1022
+msgid "35 min"
+msgstr "35 min"
+
+#: src\br24ControlsDialog.cpp:1033
+msgid "10 s"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1034
+msgid "20 s"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1035
+msgid "30 s"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1037
+msgid "Runtime"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1075
+msgid "Cursor"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1098 src\br24ControlsDialog.cpp:1629
+#: src\RadarInfo.cpp:1248
+msgid "Unknown"
+msgstr "Neznámý"
+
+#: src\br24ControlsDialog.cpp:1165 src\br24ControlsDialog.cpp:1175
+msgid " + Alarm"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1168 src\br24ControlsDialog.cpp:1178
+msgid " + Arpa"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1171 src\br24ControlsDialog.cpp:1181
+msgid " Off"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1184 src\br24ControlsDialog.cpp:1187
+msgid "Guard zone"
+msgstr "Strážní zóna"
+
+#: src\br24ControlsDialog.cpp:1498
+msgid "Power Status"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1509
+msgid "Waking up"
+msgstr "Probouzení"
+
+#: src\br24ControlsDialog.cpp:1520 src\br24radar_pi.cpp:625
 msgid "Standby in"
 msgstr "Úsporný režim za"
 
-#: src\br24ControlsDialog.cpp:1296 src\br24radar_pi.cpp:527
+#: src\br24ControlsDialog.cpp:1525 src\br24radar_pi.cpp:630
 msgid "Transmit in"
 msgstr "Vysílání za"
 
-#: src\br24ControlsDialog.cpp:1325
+#: src\br24ControlsDialog.cpp:1557
 msgid "Hide both windows"
 msgstr "Skrytí obou oken"
 
-#: src\br24ControlsDialog.cpp:1327
+#: src\br24ControlsDialog.cpp:1559
 msgid "Show other window"
 msgstr "Zobrazit druhé okno"
 
-#: src\br24ControlsDialog.cpp:1331
+#: src\br24ControlsDialog.cpp:1563
 msgid "Show this window"
 msgstr "Zobrazit toto okno"
 
-#: src\br24ControlsDialog.cpp:1333
+#: src\br24ControlsDialog.cpp:1565
 msgid "Show both windows"
 msgstr "Zobrazit obě okna"
 
-#: src\br24ControlsDialog.cpp:1337
+#: src\br24ControlsDialog.cpp:1569
 msgid "Hide window"
 msgstr "Skrýt okno"
 
-#: src\br24ControlsDialog.cpp:1337
+#: src\br24ControlsDialog.cpp:1569
 msgid "Show window"
 msgstr "Zobrazit okno"
 
-#: src\br24ControlsDialog.cpp:1343
+#: src\br24ControlsDialog.cpp:1575
 msgid "Clear EBL/VRM"
 msgstr "Vymazat EBL/VRM"
 
-#: src\br24ControlsDialog.cpp:1360
+#: src\br24ControlsDialog.cpp:1585
+msgid "Hide AIS/ARPA"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1599
 msgid "True"
 msgstr "Skutečný"
 
-#: src\br24ControlsDialog.cpp:1362
+#: src\br24ControlsDialog.cpp:1601
 msgid "Relative"
 msgstr "Relativní"
 
-#: src\br24ControlsDialog.cpp:1372
-msgid "North up"
-msgstr "Sever nahoře"
-
-#: src\br24ControlsDialog.cpp:1375
+#: src\br24ControlsDialog.cpp:1615 src\br24ControlsDialog.cpp:1618
 msgid "Head up"
 msgstr "Směr nahoru"
 
-#: src\br24ControlsDialog.cpp:1378
-msgid "???"
-msgstr "???"
+#: src\br24ControlsDialog.cpp:1620
+msgid "(Stabilized)"
+msgstr ""
 
-#: src\br24ControlsDialog.cpp:1663
-msgid "Guard Zone"
-msgstr "Strážní zóna"
+#: src\br24ControlsDialog.cpp:1623
+msgid "North up"
+msgstr "Sever nahoře"
 
-#: src\br24ControlsDialog.h:60 src\br24MessageBox.h:86 src\br24radar_pi.cpp:233
-#: src\br24radar_pi.cpp:774
+#: src\br24ControlsDialog.cpp:1626
+msgid "Course up"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1932
+msgid "Guard Zone 1 Green"
+msgstr ""
+
+#: src\br24ControlsDialog.cpp:1935
+msgid "Guard Zone 2 Blue"
+msgstr ""
+
+#: src\br24ControlsDialog.h:62 src\br24MessageBox.h:86 src\br24radar_pi.cpp:249
 msgid "Radar"
 msgstr "Radar"
 
@@ -440,12 +553,11 @@ msgstr "Skutečný směr"
 msgid "or"
 msgstr "nebo"
 
-#: src\br24MessageBox.cpp:188 src\br24MessageBox.cpp:470
+#: src\br24MessageBox.cpp:188 src\br24MessageBox.cpp:472
 msgid "Magnetic heading"
 msgstr "Magnetický směr"
 
-#: src\br24MessageBox.cpp:195 src\br24MessageBox.cpp:477
-#: src\br24radar_pi.cpp:768
+#: src\br24MessageBox.cpp:195 src\br24MessageBox.cpp:479
 msgid "Variation"
 msgstr "Variace"
 
@@ -461,31 +573,31 @@ msgstr "&Zavřít"
 msgid "&Hide Radar"
 msgstr "&Skrýt Radar"
 
-#: src\br24MessageBox.cpp:340
+#: src\br24MessageBox.cpp:342
 msgid "Radar type"
 msgstr ""
 
-#: src\br24MessageBox.cpp:344
+#: src\br24MessageBox.cpp:346
 msgid "Radar IP"
 msgstr "IP radaru"
 
-#: src\br24MessageBox.cpp:364
+#: src\br24MessageBox.cpp:366
 msgid "Radar requirements OK:"
 msgstr "Požadavky radaru OK:"
 
-#: src\br24MessageBox.cpp:366
+#: src\br24MessageBox.cpp:368
 msgid "Radar requires the following"
 msgstr "Radar vyžaduje následující"
 
-#: src\br24MessageBox.cpp:448 src\RadarInfo.cpp:913
+#: src\br24MessageBox.cpp:450 src\RadarInfo.cpp:1252
 msgid "Emulator"
 msgstr "Emulátor"
 
-#: src\br24MessageBox.cpp:456
+#: src\br24MessageBox.cpp:458
 msgid "Ethernet card"
 msgstr "Síťová karta"
 
-#: src\br24MessageBox.cpp:463
+#: src\br24MessageBox.cpp:465
 msgid "True heading"
 msgstr "Skutečný směr"
 
@@ -585,123 +697,159 @@ msgstr "Barva středního odrazu"
 msgid "Strong return color"
 msgstr "Barva silného odrazu"
 
-#: src\br24OptionsDialog.cpp:179
-msgid "Options"
-msgstr "Nastavení"
+#: src\br24OptionsDialog.cpp:170
+msgid "ARPA edge color"
+msgstr ""
 
-#: src\br24OptionsDialog.cpp:183
-msgid "Show Guard Zone on overlay"
+#: src\br24OptionsDialog.cpp:178
+msgid "Radar window colors"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:181
+msgid "Background color"
 msgstr ""
 
 #: src\br24OptionsDialog.cpp:189
+msgid "AIS text color"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:205
+msgid "Options"
+msgstr "Nastavení"
+
+#: src\br24OptionsDialog.cpp:209
+msgid "Show ring at extreme range"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:215
+msgid "Show Guard Zone on overlay"
+msgstr ""
+
+#: src\br24OptionsDialog.cpp:221
 msgid "Show Target trails on overlay"
 msgstr ""
 
-#: src\br24OptionsDialog.cpp:195
+#: src\br24OptionsDialog.cpp:227
 msgid "Enable dual radar, 4G only"
 msgstr "Povolit duální radar, jen 4G"
 
-#: src\br24OptionsDialog.cpp:207
+#: src\br24OptionsDialog.cpp:239
 msgid "Ignore radar heading"
 msgstr "Ignorovat směr z radaru"
 
-#: src\br24OptionsDialog.cpp:214
+#: src\br24OptionsDialog.cpp:246
 msgid "Pass radar heading to OpenCPN"
 msgstr "Předávat směr z radaru do OpenCPN"
 
-#: src\br24OptionsDialog.cpp:220
+#: src\br24OptionsDialog.cpp:252
 msgid "Enable COG as heading"
 msgstr "Povolit COG jako směr"
 
-#: src\br24OptionsDialog.cpp:228
+#: src\br24OptionsDialog.cpp:260
 msgid "Emulator mode"
 msgstr "Režim emulátoru"
 
-#: src\br24OptionsDialog.cpp:233
+#: src\br24OptionsDialog.cpp:265
 msgid "Reverse mouse wheel zoom direction"
 msgstr "Obrátit směr přiblížení kolečkem myši"
 
-#: src\br24OptionsDialog.cpp:288
+#: src\br24OptionsDialog.cpp:332
 msgid "Select Sound File"
 msgstr "Vybrat zvukový soubor"
 
-#: src\br24OptionsDialog.cpp:289
+#: src\br24OptionsDialog.cpp:333
 msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
 msgstr "Soubory WAV(*.wav)|*.wav|Všechny soubory(*.*)|*.*"
 
-#: src\br24radar_pi.cpp:233 src\br24radar_pi.cpp:352
+#: src\br24radar_pi.cpp:249 src\br24radar_pi.cpp:382
 msgid "Radar A"
 msgstr "Radar A"
 
-#: src\br24radar_pi.cpp:234
+#: src\br24radar_pi.cpp:250
 msgid "Radar B"
 msgstr "Radar B"
 
-#: src\br24radar_pi.cpp:242
+#: src\br24radar_pi.cpp:258
 msgid "Navico BR24, 3G and 4G RADAR"
 msgstr "Navico BR24, 3G a 4G RADAR"
 
-#: src\br24radar_pi.cpp:251
+#: src\br24radar_pi.cpp:267
 msgid "Show radar"
 msgstr "Zobrazit radar"
 
-#: src\br24radar_pi.cpp:252
+#: src\br24radar_pi.cpp:268
 msgid "Hide radar"
 msgstr "Skrýt radar"
 
-#: src\br24radar_pi.cpp:253
+#: src\br24radar_pi.cpp:269
 msgid "Radar Control..."
 msgstr "Ovládání radaru..."
 
-#: src\br24radar_pi.cpp:255 src\RadarCanvas.cpp:98
+#: src\br24radar_pi.cpp:270
+msgid "Acquire radar target"
+msgstr ""
+
+#: src\br24radar_pi.cpp:271
+msgid "Delete radar target"
+msgstr ""
+
+#: src\br24radar_pi.cpp:272
+msgid "Delete all radar targets"
+msgstr ""
+
+#: src\br24radar_pi.cpp:275 src\RadarCanvas.cpp:98
 msgid "Menu"
 msgstr "Nabídka"
 
-#: src\br24radar_pi.cpp:330
+#: src\br24radar_pi.cpp:360
 msgid "Navico Radar PlugIn for OpenCPN"
 msgstr "Navico Radar PlugIn pro OpenCPN"
 
-#: src\br24radar_pi.cpp:332
+#: src\br24radar_pi.cpp:362
 msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
 msgstr "Navico Broadband BR24 / 3G / 4G Radar PlugIn pro OpenCPN\n"
 
-#: src\br24radar_pi.cpp:540
+#: src\br24radar_pi.cpp:643
 msgid "Zone"
 msgstr "Oblast"
 
-#: src\br24radar_pi.cpp:542
+#: src\br24radar_pi.cpp:645
 msgid "(Confirmed)"
 msgstr "(Potvrzeno)"
 
-#: src\br24radar_pi.cpp:574
+#: src\br24radar_pi.cpp:677
 msgid " Zone"
 msgstr " Oblast"
 
-#: src\br24radar_pi.cpp:618
+#: src\br24radar_pi.cpp:721
 msgid "Next alarm in"
 msgstr "Další alarm za"
 
-#: src\br24radar_pi.cpp:765
+#: src\br24radar_pi.cpp:950
 msgid "COG"
 msgstr "COG"
 
-#: src\br24radar_pi.cpp:768
-msgid "HDM"
-msgstr "HDM"
-
-#: src\br24radar_pi.cpp:771
+#: src\br24radar_pi.cpp:954
 msgid "HDT"
 msgstr "HDT"
 
-#: src\br24radar_pi.cpp:1131
+#: src\br24radar_pi.cpp:957 src\br24radar_pi.cpp:977 src\RadarPanel.cpp:38
+msgid "RADAR"
+msgstr "RADAR"
+
+#: src\br24radar_pi.cpp:974
+msgid "HDM"
+msgstr "HDM"
+
+#: src\br24radar_pi.cpp:1375
 msgid "GPS"
 msgstr ""
 
-#: src\br24radar_pi.cpp:1217
+#: src\br24radar_pi.cpp:1496
 msgid "WMM"
 msgstr "WMM"
 
-#: src\br24radar_pi.cpp:1336
+#: src\br24radar_pi.cpp:1729
 msgid "NMEA"
 msgstr "NMEA"
 
@@ -717,6 +865,10 @@ msgstr "Zavřít"
 msgid "Alarm"
 msgstr "Alarm"
 
+#: src\RadarCanvas.cpp:471
+msgid "AIS Target Name"
+msgstr ""
+
 #: src\RadarDraw.cpp:54
 msgid "Vertex Array"
 msgstr "Vertex pole"
@@ -725,35 +877,39 @@ msgstr "Vertex pole"
 msgid "Shader"
 msgstr "Shader"
 
-#: src\RadarInfo.cpp:908
-msgid "North Up"
-msgstr "Sever nahoře"
-
-#: src\RadarInfo.cpp:910
+#: src\RadarInfo.cpp:1236 src\RadarInfo.cpp:1239
 msgid "Head Up"
 msgstr "Směr nahoru"
 
-#: src\RadarInfo.cpp:1021
+#: src\RadarInfo.cpp:1239
+msgid "Stabilized"
+msgstr ""
+
+#: src\RadarInfo.cpp:1242
+msgid "Course Up"
+msgstr ""
+
+#: src\RadarInfo.cpp:1245
+msgid "North Up"
+msgstr "Sever nahoře"
+
+#: src\RadarInfo.cpp:1379
 msgid "No radar"
 msgstr "Bez radaru"
 
-#: src\RadarInfo.cpp:1024
+#: src\RadarInfo.cpp:1382
 msgid "Radar is in Standby"
 msgstr "Radar je v pohotovostním režimu"
 
-#: src\RadarInfo.cpp:1027
+#: src\RadarInfo.cpp:1385
 msgid "Radar is waking up"
 msgstr "Radar se probouzí"
 
-#: src\RadarInfo.cpp:1033
+#: src\RadarInfo.cpp:1391
 msgid "Radar not transmitting"
 msgstr "Radar nevysílá"
 
-#: src\RadarPanel.cpp:38
-msgid "RADAR"
-msgstr "RADAR"
-
-#: src\RadarPanel.cpp:61 src\RadarPanel.cpp:156
+#: src\RadarPanel.cpp:156
 msgid "OpenGL mode required"
 msgstr "Je nutný OpenGL režim"
 
