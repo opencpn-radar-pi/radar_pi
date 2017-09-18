@@ -502,7 +502,7 @@ class br24radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   time_t m_idle_transmit;  // When we will change to transmit
 
   // Check for AIS targets inside ARPA zone
-  vector<AisArpa> AISinARPAzone; //Array for AIS targets in ARPA zone(s)
+  vector<AisArpa> m_ais_in_arpa_zone; //Array for AIS targets in ARPA zone(s)
   bool FindAIS_at_arpaPos(const double &lat, const double &lon, const double &dist);
 
  private:

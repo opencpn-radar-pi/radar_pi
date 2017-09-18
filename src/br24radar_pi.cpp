@@ -1555,7 +1555,7 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
         }
       }
     }
-  } else if (message_id == wxS("AIS") || AISinARPAzone.size() > 0) {
+  } else if (message_id == wxS("AIS") || m_ais_in_arpa_zone.size() > 0) {
     // Check if any Radar and ARPA zone is active
     double ArpaMaxRange = 0.0;
     bool ArpaGuardOn = false;
@@ -1588,32 +1588,32 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
           if (f_AISLat < (m_radar_lat + d_side) && f_AISLat > (m_radar_lat - d_side) && f_AISLon < (m_radar_lon + d_side * 2) &&
               f_AISLon > (m_radar_lon - d_side * 2)) {
             bool updated = false;
-            for (size_t i = 0; i < AISinARPAzone.size(); i++) { //Check for existing mmsi
-                if (AISinARPAzone[i].ais_mmsi == json_ais_mmsi) {
-                    AISinARPAzone[i].ais_time_upd = time(0);
-                    AISinARPAzone[i].ais_lat = f_AISLat;
-                    AISinARPAzone[i].ais_lon = f_AISLon;
+            for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) { //Check for existing mmsi
+                if (m_ais_in_arpa_zone[i].ais_mmsi == json_ais_mmsi) {
+                    m_ais_in_arpa_zone[i].ais_time_upd = time(0);
+                    m_ais_in_arpa_zone[i].ais_lat = f_AISLat;
+                    m_ais_in_arpa_zone[i].ais_lon = f_AISLon;
                     updated = true;
                     break;
                 }
             }
             if (!updated) { //Add a new target
-                AisArpa NewAISTarget;
-                NewAISTarget.ais_mmsi = json_ais_mmsi;
-                NewAISTarget.ais_time_upd = time(0);
-                NewAISTarget.ais_lat = f_AISLat;
-                NewAISTarget.ais_lon = f_AISLon;
-                AISinARPAzone.push_back(NewAISTarget);
+                AisArpa m_new_ais_target;
+                m_new_ais_target.ais_mmsi = json_ais_mmsi;
+                m_new_ais_target.ais_time_upd = time(0);
+                m_new_ais_target.ais_lat = f_AISLat;
+                m_new_ais_target.ais_lon = f_AISLon;
+                m_ais_in_arpa_zone.push_back(m_new_ais_target);
             }
           }
         }
       }
     }
     // Delete > 3 min old AIS items or at once if neither active ARPA zone nor Radar
-    if (AISinARPAzone.size() > 0) {
-        for (size_t i = 0; i < AISinARPAzone.size(); i++) {
-            if (AISinARPAzone[i].ais_mmsi > 0 && ((time(0) - AISinARPAzone[i].ais_time_upd) > (3 * 60) || !ArpaGuardOn)) {
-                AISinARPAzone.erase(AISinARPAzone.begin() + i);
+    if (m_ais_in_arpa_zone.size() > 0) {
+        for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) {
+            if (m_ais_in_arpa_zone[i].ais_mmsi > 0 && ((time(0) - m_ais_in_arpa_zone[i].ais_time_upd) > (3 * 60) || !ArpaGuardOn)) {
+                m_ais_in_arpa_zone.erase(m_ais_in_arpa_zone.begin() + i);
             }
         }
     }
@@ -1621,13 +1621,13 @@ void br24radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body
 }
 
 bool br24radar_pi::FindAIS_at_arpaPos(const double &lat, const double &lon, const double &dist) {
-  if (AISinARPAzone.size() < 1) return false;
+  if (m_ais_in_arpa_zone.size() < 1) return false;
   bool hit = false;
   double offset = dist / 1852. / 60.;
-  for (size_t i = 0; i < AISinARPAzone.size(); i++) {
-      if (AISinARPAzone[i].ais_mmsi != 0) {  // Avtive post
-          if (lat + offset > AISinARPAzone[i].ais_lat && lat - offset < AISinARPAzone[i].ais_lat &&
-              lon + (offset * 1.75) > AISinARPAzone[i].ais_lon && lon - (offset * 1.75) < AISinARPAzone[i].ais_lon) {
+  for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) {
+      if (m_ais_in_arpa_zone[i].ais_mmsi != 0) {  // Avtive post
+          if (lat + offset > m_ais_in_arpa_zone[i].ais_lat && lat - offset < m_ais_in_arpa_zone[i].ais_lat &&
+              lon + (offset * 1.75) > m_ais_in_arpa_zone[i].ais_lon && lon - (offset * 1.75) < m_ais_in_arpa_zone[i].ais_lon) {
         hit = true;
         break;
       }
