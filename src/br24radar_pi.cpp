@@ -1260,7 +1260,8 @@ bool br24radar_pi::LoadConfig(void) {
       pConf->Read(wxT("AlarmPosY"), &y, 175);
       m_settings.alarm_pos = wxPoint(x, y);
       pConf->Read(wxT("EnableCOGHeading"), &m_settings.enable_cog_heading, false);
-      pConf->Read(wxT("AISatARPAoffset"), &m_settings.AISatARPAoffset, 18);
+      pConf->Read(wxT("AISatARPAoffset"), &m_settings.AISatARPAoffset, 40);
+      if (m_settings.AISatARPAoffset < 10 || m_settings.AISatARPAoffset > 200) m_settings.AISatARPAoffset = 40;
     }
 
     pConf->Read(wxT("AlertAudioFile"), &m_settings.alert_audio_file, m_shareLocn + wxT("alarm.wav"));
