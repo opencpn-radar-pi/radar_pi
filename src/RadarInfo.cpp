@@ -773,20 +773,27 @@ void RadarInfo::UpdateTrailPosition() {
   if (!m_pi->m_bpos_set || m_pi->m_heading_source == HEADING_NONE){
     return;
   }
-  // don't do anything until position changes 
+  // Did the ship move? No, return.
   if (m_trails.lat == m_pi->m_radar_lat && m_trails.lon == m_pi->m_radar_lon) {
     return;
   }
 
+  // Check the movement of the ship
     double dif_lat = m_pi->m_radar_lat - m_trails.lat;  // going north is positive
     double dif_lon = m_pi->m_radar_lon - m_trails.lon;  // moving east is positive
     m_trails.lat = m_pi->m_radar_lat;
     m_trails.lon = m_pi->m_radar_lon;
+
+    // get (floating point) shift of the ship in radar pixels
     double fshift_lat = dif_lat * 60. * 1852. / (double)m_range_meters * (double)(RETURNS_PER_LINE);
     double fshift_lon = dif_lon * 60. * 1852. / (double)m_range_meters * (double)(RETURNS_PER_LINE);
     fshift_lon *= cos(deg2rad(m_pi->m_radar_lat));  // at higher latitudes a degree of longitude is fewer meters
-    shift_lat = (int)(fshift_lat + m_trails.dif_lat);
 
+    // Get the integer pixel shift, first add previous rounding error
+    shift_lat = (int)(fshift_lat + m_trails.dif_lat);
+    shift_lon = (int)(fshift_lon + m_trails.dif_lon);
+
+    // Check for changes in the direction of movement, part of the image buffer has to be erased
     if (shift_lat > 0 && m_dir_lat <= 0) {
       // change of direction of movement
       // clear space in true_trails outside image in that direction (this area might not be empty)
@@ -801,7 +808,6 @@ void RadarInfo::UpdateTrailPosition() {
       m_dir_lat = -1;
     }
 
-    shift_lon = (int)(fshift_lon + m_trails.dif_lon);
     if (shift_lon > 0 && m_dir_lon <= 0) {
       // change of direction of movement
       // clear space in true_trails outside image in that direction
@@ -820,15 +826,12 @@ void RadarInfo::UpdateTrailPosition() {
       m_dir_lon = -1;
     }
 
-    m_trails.dif_lat = fshift_lat + m_trails.dif_lat - (double)shift_lat;  // save the rounding fraction and appy it next time
+    // save the rounding fraction and appy it next time
+    m_trails.dif_lat = fshift_lat + m_trails.dif_lat - (double)shift_lat;  
     m_trails.dif_lon = fshift_lon + m_trails.dif_lon - (double)shift_lon;
 
     if (abs(shift_lat) >= MARGIN || abs(shift_lon) >= MARGIN) {  // huge shift, reset trails
       ClearTrails();
-      m_trails.lat = m_pi->m_radar_lat;
-      m_trails.lon = m_pi->m_radar_lon;
-      m_trails.dif_lat = 0.;
-      m_trails.dif_lon = 0.;
       LOG_INFO(wxT("BR24radar_pi: %s Large movement trails reset"), m_name.c_str());
       return;
     }
