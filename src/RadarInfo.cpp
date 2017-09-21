@@ -745,9 +745,26 @@ void RadarInfo::UpdateTrailPosition() {
   int shift_lat;
   int shift_lon;
 
+  // zooming of trails required? First check conditions
   if (m_old_range == 0 || m_range_meters == 0) {
     ClearTrails();
-  } else if (m_old_range != m_range_meters) {
+    if (m_range_meters == 0){
+      return;
+      if (m_old_range == 0){
+        m_old_range = m_range_meters;
+        return;
+      }
+    }
+  }
+  else if (m_old_range != m_range_meters) {
+    // zoom trails
+    float zoom_factor = (float)m_old_range / (float)m_range_meters;
+    m_old_range = m_range_meters;
+    // useless to zoom too much, image quality degrades
+    if (zoom_factor < .2 || zoom_factor > 5.){
+      ClearTrails();
+      return;
+    }
     // zoom trails
     float zoom_factor = (float)m_old_range / (float)m_range_meters;
     ZoomTrails(zoom_factor);  // this modifies m_trails.offset, so check it is still within bounds below
@@ -1496,7 +1513,16 @@ void RadarInfo::SetBearing(int bearing) {
   }
 }
 
-void RadarInfo::ClearTrails() { CLEAR_STRUCT(m_trails); }
+void RadarInfo::ClearTrails() {
+  CLEAR_STRUCT(m_trails);
+  m_trails.lat = m_pi->m_radar_lat;
+  m_trails.lon = m_pi->m_radar_lon;
+  m_trails.dif_lat = 0.;
+  m_trails.dif_lon = 0.;
+  m_trails.offset.lat = 0;
+  m_trails.offset.lon = 0;
+  m_old_range = m_range_meters;
+}
 
 void RadarInfo::ComputeTargetTrails() {
   static TrailRevolutionsAge maxRevs[TRAIL_ARRAY_SIZE] = {
