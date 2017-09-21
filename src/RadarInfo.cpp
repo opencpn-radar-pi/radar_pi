@@ -766,13 +766,18 @@ void RadarInfo::UpdateTrailPosition() {
       return;
     }
     // zoom trails
-    float zoom_factor = (float)m_old_range / (float)m_range_meters;
     ZoomTrails(zoom_factor);  // this modifies m_trails.offset, so check it is still within bounds below
   }
   m_old_range = m_range_meters;
 
-  if (m_pi->m_bpos_set && m_pi->m_heading_source != HEADING_NONE && m_trails.lat != m_pi->m_radar_lat &&
-      m_trails.lon != m_pi->m_radar_lon) {              // don't do anything until position changes
+  if (!m_pi->m_bpos_set || m_pi->m_heading_source == HEADING_NONE){
+    return;
+  }
+  // don't do anything until position changes 
+  if (m_trails.lat == m_pi->m_radar_lat && m_trails.lon == m_pi->m_radar_lon) {
+    return;
+  }
+
     double dif_lat = m_pi->m_radar_lat - m_trails.lat;  // going north is positive
     double dif_lon = m_pi->m_radar_lon - m_trails.lon;  // moving east is positive
     m_trails.lat = m_pi->m_radar_lat;
@@ -831,10 +836,7 @@ void RadarInfo::UpdateTrailPosition() {
     // don't shift the image yet, only shift the center
     m_trails.offset.lat += shift_lat;
     m_trails.offset.lon += shift_lon;  //  index as follows: array[lat][lon]
-  } else {
-    shift_lat = 0;
-    shift_lon = 0;
-  }
+  
 
   if (abs(m_trails.offset.lon) >= MARGIN) {  // offset too large: shift image
                                              // shift in the opposite direction of the offset
