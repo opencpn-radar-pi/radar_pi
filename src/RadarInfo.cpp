@@ -838,6 +838,8 @@ void RadarInfo::UpdateTrailPosition() {
 
     if (abs(shift_lat) >= MARGIN || abs(shift_lon) >= MARGIN) {  // huge shift, reset trails
       ClearTrails();
+      m_trails.lat = m_pi->m_ownship_lat;
+      m_trails.lon = m_pi->m_ownship_lon;
       LOG_INFO(wxT("BR24radar_pi: %s Large movement trails reset"), m_name.c_str());
       return;
     }
