@@ -195,7 +195,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_stayalive_timeout = 0;
   m_radar_timeout = 0;
   m_data_timeout = 0;
-
+  ClearTrails();
   CLEAR_STRUCT(m_statistics);
   CLEAR_STRUCT(m_course_log);
 
@@ -218,8 +218,6 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_control_dialog = 0;
   m_state.Update(0);
   m_range.m_settings = &m_pi->m_settings;
-
-  ClearTrails();
   m_refresh_millis = 50;
 
   m_arpa = new RadarArpa(m_pi, this);
@@ -612,7 +610,6 @@ void RadarInfo::SampleCourse(int angle) {
 
 void RadarInfo::ZoomTrails(float zoom_factor) {
   // zoom_factor > 1 -> zoom in, enlarge image
-
   // zoom relative trails
   CLEAR_STRUCT(m_trails.copy_of_relative_trails);
   for (int i = 0; i < LINES_PER_ROTATION; i++) {
@@ -741,7 +738,14 @@ void RadarInfo::UpdateTrailPosition() {
   // So we move the image around within the m_trails.true_trails buffer (by moving the pointer).
   // But when there is no room anymore (margin used) the whole trails image is shifted
   // and the offset is reset
-
+  if (m_trails.offset.lon >= MARGIN || m_trails.offset.lon <= -MARGIN){  
+    LOG_INFO(wxT("BR24radar_pi: offset lon too large %i"), m_trails.offset.lon);
+    m_trails.offset.lon = 0;
+  }
+  if (m_trails.offset.lat >= MARGIN || m_trails.offset.lat <= -MARGIN){
+    LOG_INFO(wxT("BR24radar_pi: offset lat too large %i"), m_trails.offset.lat);
+    m_trails.offset.lat = 0;
+  }
   int shift_lat;
   int shift_lon;
 
@@ -760,12 +764,11 @@ void RadarInfo::UpdateTrailPosition() {
     // zoom trails
     float zoom_factor = (float)m_old_range / (float)m_range_meters;
     m_old_range = m_range_meters;
-    // useless to zoom too much, image quality degrades
-    if (zoom_factor < .2 || zoom_factor > 5.){
-      ClearTrails();
-      return;
-    }
-    // zoom trails
+    
+    // center the image before zooming
+    // otherwise the offset might get too large
+    ShiftImageLatToCenter();
+    ShiftImageLonToCenter();
     ZoomTrails(zoom_factor);  // this modifies m_trails.offset, so check it is still within bounds below
   }
   m_old_range = m_range_meters;
@@ -775,6 +778,9 @@ void RadarInfo::UpdateTrailPosition() {
   }
   // Did the ship move? No, return.
   if (m_trails.lat == m_pi->m_radar_lat && m_trails.lon == m_pi->m_radar_lon) {
+    if (m_trails.offset.lon >= MARGIN || m_trails.offset.lon <= -MARGIN){
+      m_trails.offset.lon = 0;
+    }
     return;
   }
 
@@ -836,47 +842,64 @@ void RadarInfo::UpdateTrailPosition() {
       return;
     }
 
-    // don't shift the image yet, only shift the center
+    // offset lon too large: shift image
+    if (abs(m_trails.offset.lon + shift_lon) >= MARGIN) {  
+      ShiftImageLonToCenter();
+  }
+
+    // offset lat too large: shift image in lat direction
+    if (abs(m_trails.offset.lat + shift_lat) >= MARGIN) {
+      ShiftImageLatToCenter();
+  }
+    // apply the shifts to the offset
     m_trails.offset.lat += shift_lat;
-    m_trails.offset.lon += shift_lon;  //  index as follows: array[lat][lon]
-  
+    m_trails.offset.lon += shift_lon;  
+    if (m_trails.offset.lon >= MARGIN || m_trails.offset.lon <= -MARGIN){
+      m_trails.offset.lon = 0;
+    }
+}
 
-  if (abs(m_trails.offset.lon) >= MARGIN) {  // offset too large: shift image
-                                             // shift in the opposite direction of the offset
-    m_trails.offset.lon -= shift_lon;        // subtract again, image should be inside limits
-    if (m_trails.offset.lon > 0) {
-      for (int i = 0; i < TRAILS_SIZE; i++) {
-        memmove(&m_trails.true_trails[i][MARGIN], &m_trails.true_trails[i][MARGIN + m_trails.offset.lon], RETURNS_PER_LINE * 2);
-        memset(&m_trails.true_trails[i][TRAILS_SIZE - MARGIN], 0, MARGIN);
-      }
+// shifts the true trails image in lon direction to center
+void RadarInfo::ShiftImageLonToCenter(){
+  if (m_trails.offset.lon >= MARGIN || m_trails.offset.lon <= - MARGIN){   // abs no good
+    LOG_INFO(wxT("BR24radar_pi: offset lon too large %i"), m_trails.offset.lon);
+    m_trails.offset.lon = 0;
+    return;
+  }
+  if (m_trails.offset.lon > 0) {
+    for (int i = 0; i < TRAILS_SIZE; i++) {
+      memmove(&m_trails.true_trails[i][MARGIN], &m_trails.true_trails[i][MARGIN + m_trails.offset.lon], RETURNS_PER_LINE * 2);
+      memset(&m_trails.true_trails[i][TRAILS_SIZE - MARGIN], 0, MARGIN);
     }
-    if (m_trails.offset.lon < 0) {
-      for (int i = 0; i < TRAILS_SIZE; i++) {
-        memmove(&m_trails.true_trails[i][MARGIN], &m_trails.true_trails[i][MARGIN + m_trails.offset.lon], RETURNS_PER_LINE * 2);
-        //     memset(&m_trails.true_trails[i][TRAILS_SIZE - MARGIN], 0, MARGIN);
-        memset(&m_trails.true_trails[i][0], 0, MARGIN);
-      }
+  }
+  if (m_trails.offset.lon < 0) {
+    for (int i = 0; i < TRAILS_SIZE; i++) {
+      memmove(&m_trails.true_trails[i][MARGIN], &m_trails.true_trails[i][MARGIN + m_trails.offset.lon], RETURNS_PER_LINE * 2);
+      memset(&m_trails.true_trails[i][TRAILS_SIZE - MARGIN], 0, MARGIN);
+      memset(&m_trails.true_trails[i][0], 0, MARGIN);
     }
-    m_trails.offset.lon = shift_lon;
+  }
+  m_trails.offset.lon = 0;
+}
+
+// shifts the true trails image in lat direction to center
+void RadarInfo::ShiftImageLatToCenter(){
+  if (m_trails.offset.lat >= MARGIN || m_trails.offset.lat <= -MARGIN){  // abs not ok
+    LOG_INFO(wxT("BR24radar_pi: offset lat too large %i"), m_trails.offset.lat);
+    m_trails.offset.lat = 0;
   }
 
-  if (abs(m_trails.offset.lat) >= MARGIN) {  // offset too large: shift image
-    m_trails.offset.lat -= shift_lat;        // image inside array
-
-    if (m_trails.offset.lat > 0) {
-      memmove(&m_trails.true_trails[MARGIN][0], &m_trails.true_trails[MARGIN + m_trails.offset.lat][0],
-              (RETURNS_PER_LINE * 2) * TRAILS_SIZE);
-      memset(&m_trails.true_trails[TRAILS_SIZE - MARGIN][0], 0, TRAILS_SIZE * MARGIN);
-    }
-
-    if (m_trails.offset.lat < 0) {
-      memmove(&m_trails.true_trails[MARGIN][0], &m_trails.true_trails[MARGIN + m_trails.offset.lat][0],
-              RETURNS_PER_LINE * 2 * TRAILS_SIZE);
-
-      memset(&m_trails.true_trails[0][0], 0, TRAILS_SIZE * MARGIN);
-    }
-    m_trails.offset.lat = shift_lat;
+  if (m_trails.offset.lat > 0) {  
+    memmove(&m_trails.true_trails[MARGIN][0], &m_trails.true_trails[MARGIN + m_trails.offset.lat][0],
+      (RETURNS_PER_LINE * 2) * TRAILS_SIZE);
+    memset(&m_trails.true_trails[TRAILS_SIZE - MARGIN][0], 0, TRAILS_SIZE * MARGIN);
   }
+  if (m_trails.offset.lat < 0) {
+    memmove(&m_trails.true_trails[MARGIN][0], &m_trails.true_trails[MARGIN + m_trails.offset.lat][0],
+      RETURNS_PER_LINE * 2 * TRAILS_SIZE);
+    memset(&m_trails.true_trails[0][0], 0, TRAILS_SIZE * MARGIN);
+  }
+  m_trails.offset.lat = 0;
 }
 
 void RadarInfo::RenderGuardZone() {
@@ -1519,14 +1542,8 @@ void RadarInfo::SetBearing(int bearing) {
 }
 
 void RadarInfo::ClearTrails() {
+  LOG_VERBOSE(wxT("BR24radar_pi: ClearTrails"));
   CLEAR_STRUCT(m_trails);
-  m_trails.lat = m_pi->m_radar_lat;
-  m_trails.lon = m_pi->m_radar_lon;
-  m_trails.dif_lat = 0.;
-  m_trails.dif_lon = 0.;
-  m_trails.offset.lat = 0;
-  m_trails.offset.lon = 0;
-  m_old_range = m_range_meters;
 }
 
 void RadarInfo::ComputeTargetTrails() {
