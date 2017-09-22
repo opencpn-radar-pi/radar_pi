@@ -769,7 +769,7 @@ void RadarInfo::UpdateTrailPosition() {
     // otherwise the offset might get too large
     ShiftImageLatToCenter();
     ShiftImageLonToCenter();
-    ZoomTrails(zoom_factor);  // this modifies m_trails.offset, so check it is still within bounds below
+    ZoomTrails(zoom_factor);  // this no longer modifies m_trails.offset, as the image is centered now
   }
   m_old_range = m_range_meters;
 
@@ -778,9 +778,6 @@ void RadarInfo::UpdateTrailPosition() {
   }
   // Did the ship move? No, return.
   if (m_trails.lat == m_pi->m_radar_lat && m_trails.lon == m_pi->m_radar_lon) {
-    if (m_trails.offset.lon >= MARGIN || m_trails.offset.lon <= -MARGIN){
-      m_trails.offset.lon = 0;
-    }
     return;
   }
 
@@ -856,9 +853,6 @@ void RadarInfo::UpdateTrailPosition() {
     // apply the shifts to the offset
     m_trails.offset.lat += shift_lat;
     m_trails.offset.lon += shift_lon;  
-    if (m_trails.offset.lon >= MARGIN || m_trails.offset.lon <= -MARGIN){
-      m_trails.offset.lon = 0;
-    }
 }
 
 // shifts the true trails image in lon direction to center
