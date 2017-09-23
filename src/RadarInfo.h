@@ -269,6 +269,8 @@ class RadarInfo {
   void UpdateTrailPosition();
   void RenderGuardZone();
   void ResetRadarImage();
+  void ShiftImageLonToCenter();
+  void ShiftImageLatToCenter();
   void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
   void ShowControlDialog(bool show, bool reparent);
