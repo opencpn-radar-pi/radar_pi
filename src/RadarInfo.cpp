@@ -216,7 +216,7 @@ RadarInfo::RadarInfo(br24radar_pi *pi, int radar) {
   m_radar_panel = 0;
   m_radar_canvas = 0;
   m_control_dialog = 0;
-  m_state.Update(0);
+  m_state.Update(RADAR_OFF);
   m_range.m_settings = &m_pi->m_settings;
   m_refresh_millis = 50;
 

@@ -606,7 +606,6 @@ void *br24Receive::Entry(void) {
                 m_ri->m_state.Update(RADAR_STANDBY);
               }
             }
-            m_ri->m_radar_timeout = time(0) + WATCHDOG_TIMEOUT;
             no_data_timeout = SECONDS_SELECT(-15);
           }
         } else {
@@ -792,6 +791,10 @@ static void AppendChar16String(wxString &dest, UINT16 *src) {
 bool br24Receive::ProcessReport(const UINT8 *report, int len) {
   IF_LOG_AT(LOGLEVEL_RECEIVE, logBinaryData(wxT("ProcessReport"), report, len));
 
+  time_t now = time(0);
+
+  m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
+
   if (m_ri->m_radar == 1) {
     if (m_ri->m_radar_type != RT_4G) {
       //   LOG_INFO(wxT("BR24radar_pi: Radar report from 2nd radar tells us this a Navico 4G"));
@@ -807,7 +810,9 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
         RadarReport_01C4_18 *s = (RadarReport_01C4_18 *)report;
         // Radar status in byte 2
         if (s->radar_status != m_radar_status) {
-          switch (report[2]) {
+          m_radar_status = s->radar_status;
+
+          switch (m_radar_status) {
             case 0x01:
               m_ri->m_state.Update(RADAR_STANDBY);
               LOG_VERBOSE(wxT("BR24radar_pi: %s reports status STANDBY"), m_ri->m_name.c_str());
@@ -818,6 +823,7 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
               break;
             case 0x05:
               m_ri->m_state.Update(RADAR_WAKING_UP);
+              m_ri->m_data_timeout = now + DATA_TIMEOUT;
               LOG_VERBOSE(wxT("BR24radar_pi: %s reports status WAKING UP"), m_ri->m_name.c_str());
               break;
             default:
