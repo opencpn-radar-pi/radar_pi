@@ -294,6 +294,7 @@ void RadarCanvas::FillCursorTexture() {
 void RadarCanvas::RenderCursor(int w, int h) {
   double distance;
   double bearing;
+  double radar_lat, radar_lon;
 
   int orientation = m_ri->GetOrientation();
 
@@ -301,12 +302,12 @@ void RadarCanvas::RenderCursor(int w, int h) {
     distance = m_ri->m_mouse_vrm * 1852.;
     bearing = m_ri->m_mouse_ebl[orientation];
   } else {
-    if (isnan(m_ri->m_mouse_lat) || isnan(m_ri->m_mouse_lon) || !m_pi->m_bpos_set) {
+    if (isnan(m_ri->m_mouse_lat) || isnan(m_ri->m_mouse_lon) || !m_pi->GetRadarPosition(&radar_lat, &radar_lon)) {
       return;
     }
     // Can't compute this upfront, ownship may move...
-    distance = local_distance(m_pi->m_radar_lat, m_pi->m_radar_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon) * 1852.;
-    bearing = local_bearing(m_pi->m_radar_lat, m_pi->m_radar_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon);
+    distance = local_distance(radar_lat, radar_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon) * 1852.;
+    bearing = local_bearing(radar_lat, radar_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon);
     if (m_ri->GetOrientation() != ORIENTATION_NORTH_UP) {
       bearing -= m_pi->GetHeadingTrue();
     }
@@ -388,7 +389,7 @@ static void ResetGLViewPort(int w, int h) {
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
 
-  if (!IsShown() || !m_pi->m_initialized) {
+  if (!IsShown() || !m_pi->IsInitialized()) {
     return;
   }
 
@@ -435,7 +436,10 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   ResetGLViewPort(w, h);
   RenderRangeRingsAndHeading(w, h);
 
-  if (m_pi->m_heading_source != HEADING_NONE && M_SETTINGS.show_radar_target[m_ri->m_radar]) {
+  PlugIn_ViewPort vp;
+
+  if (m_pi->m_heading_source != HEADING_NONE && m_pi->GetRadarPosition(&vp.clat, &vp.clon) &&
+      M_SETTINGS.show_radar_target[m_ri->m_radar]) {
     // LAYER 2 - AIS AND ARPA TARGETS
 
     ResetGLViewPort(w, h);
@@ -443,9 +447,6 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-    PlugIn_ViewPort vp;
-    vp.clat = m_pi->m_radar_lat;
-    vp.clon = m_pi->m_radar_lon;
     vp.m_projection_type = 4;  // Orthographic projection
     float full_range = wxMax(w, h) / 2.0;
     int display_range = m_ri->GetDisplayRange();

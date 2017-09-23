@@ -1514,18 +1514,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     }
     m_timed_idle_button->SetLocalValue(0);
   } else {
-    time_t now = time(0);
-    int left = m_pi->m_idle_standby - now;
-    if (left > 0) {
-      o << _("Standby in");
-      o << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
-    } else {
-      left = m_pi->m_idle_transmit - now;
-      if (left >= 0) {
-        o << _("Transmit in");
-        o << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
-      }
-    }
+    o << m_pi->GetTimedIdleText();
   }
   m_power_button->SetLabel(o);
   m_power_text->SetLabel(o);

@@ -119,8 +119,7 @@ END_EVENT_TABLE()
 br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_114(ppimgr) {
   m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
-  m_ownship_lat = nan("");
-  m_ownship_lon = nan("");
+
   // Create the PlugIn icons
   initialize_images();
   m_pdeficon = new wxBitmap(*_img_radar_blank);
@@ -179,6 +178,13 @@ int br24radar_pi::Init(void) {
   m_var = 0.0;
   m_var_source = VARIATION_SOURCE_NONE;
   m_bpos_set = false;
+  m_ownship_lat = nan("");
+  m_ownship_lon = nan("");
+  m_radar_lat = nan("");
+  m_radar_lon = nan("");
+  m_cursor_lat = nan("");
+  m_cursor_lon = nan("");
+
   m_guard_bogey_seen = false;
   m_guard_bogey_confirmed = false;
   m_sent_toolbar_button = TB_NONE;
@@ -627,7 +633,7 @@ void br24radar_pi::PassHeadingToOpenCPN() {
   PushNMEABuffer(nmea);
 }
 
-wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri) {
+wxString br24radar_pi::GetTimedIdleText() {
   wxString text;
 
   if (m_settings.timed_idle > 0) {
@@ -635,16 +641,20 @@ wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri) {
     int left = m_idle_standby - now;
     if (left >= 0) {
       text = _("Standby in");
-      text << wxString::Format(wxT(" %2d:%02d"), left / 60, left % 60);
+      text << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
     } else {
       left = m_idle_transmit - now;
       if (left >= 0) {
         text = _("Transmit in");
-        text << wxString::Format(wxT(" %2d:%02d"), left / 60, left % 60);
-        return text;
+        text << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
       }
     }
   }
+  return text;
+}
+
+wxString br24radar_pi::GetGuardZoneText(RadarInfo *ri) {
+  wxString text = GetTimedIdleText();
 
   for (int z = 0; z < GUARD_ZONES; z++) {
     int bogeys = ri->m_guard_zone[z]->GetBogeyCount();
@@ -805,15 +815,13 @@ void br24radar_pi::SetRadarHeading(double heading, bool isTrue) {
   }
 }
 
-void br24radar_pi::UpdateHeadingState() {
+void br24radar_pi::UpdateHeadingPositionState() {
   wxCriticalSectionLocker lock(m_exclusive);
-
   time_t now = time(0);
 
   if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
-    // If the position data is 10s old reset our heading.
-    // Note that the watchdog is continuously reset every time we receive a
-    // heading.
+    // If the position data is 10s old reset our position.
+    // Note that the watchdog is reset every time we receive a position.
     m_bpos_set = false;
     LOG_VERBOSE(wxT("BR24radar_pi: Lost Boat Position data"));
   }
@@ -827,8 +835,7 @@ void br24radar_pi::UpdateHeadingState() {
     case HEADING_RADAR_HDT:
       if (TIMED_OUT(now, m_hdt_timeout)) {
         // If the position data is 10s old reset our heading.
-        // Note that the watchdog is continuously reset every time we receive a
-        // heading
+        // Note that the watchdog is reset every time we receive a heading.
         m_heading_source = HEADING_NONE;
         LOG_VERBOSE(wxT("BR24radar_pi: Lost Heading data"));
       }
@@ -849,6 +856,20 @@ void br24radar_pi::UpdateHeadingState() {
   if (m_var_source != VARIATION_SOURCE_NONE && TIMED_OUT(now, m_var_timeout)) {
     m_var_source = VARIATION_SOURCE_NONE;
     LOG_VERBOSE(wxT("BR24radar_pi: Lost Variation source"));
+  }
+
+  // Update radar position offset from GPS
+  if (m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt) &&
+      (m_settings.antenna_starboard != 0 || m_settings.antenna_forward != 0)) {
+    double sine = sin(deg2rad(m_hdt));
+    double cosine = cos(deg2rad(m_hdt));
+    double dist_forward = (double)m_settings.antenna_forward / 1852 / 60;
+    double dist_starboard = (double)m_settings.antenna_starboard / 1852 / 60;
+    m_radar_lat = dist_forward * cosine - dist_starboard * sine + m_ownship_lat;
+    m_radar_lon = (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_ownship_lat)) + m_ownship_lon;
+  } else {
+    m_radar_lat = m_ownship_lat;
+    m_radar_lon = m_ownship_lon;
   }
 }
 
@@ -898,12 +919,7 @@ void br24radar_pi::OnTimerNotify(wxTimerEvent &event) {
   }
 }
 
-// Notify
-// ------
-// Called between 1 and 10 times per second by radar 0's timer function.
-//
-// This checks if we need to ping the radar to keep it alive (or make it alive)
-
+// Called between 1 and 10 times per second by timer or RenderGLOverlay call
 void br24radar_pi::TimedControlUpdate() {
   wxLongLong now = wxGetUTCTimeMillis();
   if (!m_notify_control_dialog && !TIMED_OUT(now, m_notify_time_ms + 200)) {
@@ -911,9 +927,7 @@ void br24radar_pi::TimedControlUpdate() {
   }
   m_notify_time_ms = now;
 
-  bool updateAllControls;
-
-  updateAllControls = m_notify_control_dialog;
+  bool updateAllControls = m_notify_control_dialog;
   m_notify_control_dialog = false;
   if (m_opengl_mode_changed || m_notify_radar_window_viz) {
     m_opengl_mode_changed = false;
@@ -924,20 +938,7 @@ void br24radar_pi::TimedControlUpdate() {
     UpdateContextMenu();
   }
 
-  UpdateHeadingState();
-
-  // Update radar position offset from GPS
-  if (!wxIsNaN(m_hdt) && (m_settings.antenna_starboard != 0 || m_settings.antenna_forward != 0)) {
-    double sine = sin(deg2rad(m_hdt));
-    double cosine = cos(deg2rad(m_hdt));
-    double dist_forward = (double)m_settings.antenna_forward / 1852 / 60;
-    double dist_starboard = (double)m_settings.antenna_starboard / 1852 / 60;
-    m_radar_lat = dist_forward * cosine - dist_starboard * sine + m_ownship_lat;
-    m_radar_lon = (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_ownship_lat)) + m_ownship_lon;
-  } else {
-    m_radar_lat = m_ownship_lat;
-    m_radar_lon = m_ownship_lon;
-  }
+  UpdateHeadingPositionState();
 
   // Check the age of "radar_seen", if too old radar_seen = false
   bool any_data_seen = false;

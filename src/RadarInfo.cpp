@@ -657,7 +657,6 @@ void RadarInfo::ZoomTrails(float zoom_factor) {
 }
 
 void RadarInfo::UpdateTransmitState() {
-  wxCriticalSectionLocker lock(m_exclusive);
   time_t now = time(0);
 
   int state = m_state.GetValue();
@@ -733,21 +732,24 @@ void RadarInfo::RequestRadarState(RadarState state) {
 }
 
 void RadarInfo::UpdateTrailPosition() {
+  double radar_lat;
+  double radar_lon;
+  int shift_lat;
+  int shift_lon;
+
   // When position changes the trail image is not moved, only the pointer to the center
   // of the image (offset) is changed.
   // So we move the image around within the m_trails.true_trails buffer (by moving the pointer).
   // But when there is no room anymore (margin used) the whole trails image is shifted
   // and the offset is reset
   if (m_trails.offset.lon >= MARGIN || m_trails.offset.lon <= -MARGIN) {
-    LOG_INFO(wxT("BR24radar_pi: offset lon too large %i"), m_trails.offset.lon);
+    LOG_INFO(wxT("BR24radar_pi: offset lon too large %d"), m_trails.offset.lon);
     m_trails.offset.lon = 0;
   }
   if (m_trails.offset.lat >= MARGIN || m_trails.offset.lat <= -MARGIN) {
-    LOG_INFO(wxT("BR24radar_pi: offset lat too large %i"), m_trails.offset.lat);
+    LOG_INFO(wxT("BR24radar_pi: offset lat too large %d"), m_trails.offset.lat);
     m_trails.offset.lat = 0;
   }
-  int shift_lat;
-  int shift_lon;
 
   // zooming of trails required? First check conditions
   if (m_old_range == 0 || m_range_meters == 0) {
@@ -772,32 +774,25 @@ void RadarInfo::UpdateTrailPosition() {
   }
   m_old_range = m_range_meters;
 
-  if (!m_pi->m_bpos_set || m_pi->m_heading_source == HEADING_NONE) {
-    return;
-  }
-  if (wxIsNaN(m_pi->m_radar_lat) || wxIsNaN(m_pi->m_radar_lon)) {
-    return;
-  }
-  if (m_pi->m_radar_lat > 90 || m_pi->m_radar_lat < -90 || m_pi->m_radar_lon > 360 || m_pi->m_radar_lon < -360) {
-    LOG_INFO(wxT("BR24radar_pi: trails invalid position"));
+  if (!m_pi->GetRadarPosition(&radar_lat, &radar_lon) || m_pi->m_heading_source == HEADING_NONE) {
     return;
   }
 
   // Did the ship move? No, return.
-  if (m_trails.lat == m_pi->m_radar_lat && m_trails.lon == m_pi->m_radar_lon) {
+  if (m_trails.lat == radar_lat && m_trails.lon == radar_lon) {
     return;
   }
 
   // Check the movement of the ship
-  double dif_lat = m_pi->m_radar_lat - m_trails.lat;  // going north is positive
-  double dif_lon = m_pi->m_radar_lon - m_trails.lon;  // moving east is positive
-  m_trails.lat = m_pi->m_radar_lat;
-  m_trails.lon = m_pi->m_radar_lon;
+  double dif_lat = radar_lat - m_trails.lat;  // going north is positive
+  double dif_lon = radar_lon - m_trails.lon;  // moving east is positive
+  m_trails.lat = radar_lat;
+  m_trails.lon = radar_lon;
 
   // get (floating point) shift of the ship in radar pixels
   double fshift_lat = dif_lat * 60. * 1852. / (double)m_range_meters * (double)(RETURNS_PER_LINE);
   double fshift_lon = dif_lon * 60. * 1852. / (double)m_range_meters * (double)(RETURNS_PER_LINE);
-  fshift_lon *= cos(deg2rad(m_pi->m_radar_lat));  // at higher latitudes a degree of longitude is fewer meters
+  fshift_lon *= cos(deg2rad(radar_lat));  // at higher latitudes a degree of longitude is fewer meters
 
   // Get the integer pixel shift, first add previous rounding error
   shift_lat = (int)(fshift_lat + m_trails.dif_lat);
@@ -842,8 +837,10 @@ void RadarInfo::UpdateTrailPosition() {
 
   if (shift_lat >= MARGIN || shift_lat <= -MARGIN || shift_lon >= MARGIN || shift_lon <= -MARGIN) {  // huge shift, reset trails
     ClearTrails();
-    m_trails.lat = m_pi->m_radar_lat;
-    m_trails.lon = m_pi->m_radar_lon;
+    if (!m_pi->GetRadarPosition(&m_trails.lat, &m_trails.lon)) {
+      m_trails.lat = 0.;
+      m_trails.lon = 0.;
+    }
     LOG_INFO(wxT("BR24radar_pi: %s Large movement trails reset"), m_name.c_str());
     return;
   }
@@ -1101,7 +1098,7 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
   di->draw->DrawRadarImage();
   if (g_first_render) {
     g_first_render = false;
-    wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->m_boot_time;
+    wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->GetBootMillis();
     LOG_INFO(wxT("BR24radar_pi: First radar image rendered after %llu ms\n"), startup_elapsed);
   }
 }
@@ -1334,6 +1331,7 @@ wxString RadarInfo::FormatAngle(double angle) {
 }
 
 wxString RadarInfo::GetCanvasTextBottomLeft() {
+  double radar_lat, radar_lon;
   wxString s = m_pi->GetGuardZoneText(this);
 
   if (m_state.GetValue() == RADAR_TRANSMIT) {
@@ -1369,10 +1367,10 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
       }
       if (bearing >= 360) bearing -= 360;
 
-    } else if (!isnan(m_mouse_lat) && !isnan(m_mouse_lon) && m_pi->m_bpos_set) {
+    } else if (!isnan(m_mouse_lat) && !isnan(m_mouse_lon) && m_pi->GetRadarPosition(&radar_lat, &radar_lon)) {
       // Can't compute this upfront, ownship may move...
-      distance = local_distance(m_pi->m_radar_lat, m_pi->m_radar_lon, m_mouse_lat, m_mouse_lon);
-      bearing = local_bearing(m_pi->m_radar_lat, m_pi->m_radar_lon, m_mouse_lat, m_mouse_lon);
+      distance = local_distance(radar_lat, radar_lon, m_mouse_lat, m_mouse_lon);
+      bearing = local_bearing(radar_lat, radar_lon, m_mouse_lat, m_mouse_lon);
       if (GetOrientation() != ORIENTATION_NORTH_UP) {
         bearing -= m_pi->GetHeadingTrue();
       }
@@ -1513,22 +1511,29 @@ void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
   double brng = deg2rad(bearing);
   double d = vrm;  // Distance in nm
 
-  double lat1 = deg2rad(m_pi->m_radar_lat);
-  double lon1 = deg2rad(m_pi->m_radar_lon);
+  double lat1, lon1;
+  if (m_pi->GetRadarPosition(&lat1, &lon1)) {
+    lat1 = deg2rad(lat1);
+    lon1 = deg2rad(lon1);
 
-  double lat2 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(brng));
-  double lon2 = lon1 + atan2(sin(brng) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat2));
+    double lat2 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(brng));
+    double lon2 = lon1 + atan2(sin(brng) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat2));
 
-  m_mouse_lat = rad2deg(lat2);
-  m_mouse_lon = rad2deg(lon2);
-  LOG_DIALOG(wxT("BR24radar_pi: SetMouseVrmEbl(%f, %f) = %f / %f"), vrm, ebl, m_mouse_lat, m_mouse_lon);
-  if (m_control_dialog) {
-    m_control_dialog->ShowCursorPane();
+    m_mouse_lat = rad2deg(lat2);
+    m_mouse_lon = rad2deg(lon2);
+    LOG_DIALOG(wxT("BR24radar_pi: SetMouseVrmEbl(%f, %f) = %f / %f"), vrm, ebl, m_mouse_lat, m_mouse_lon);
+    if (m_control_dialog) {
+      m_control_dialog->ShowCursorPane();
+    }
+  } else {
+    m_mouse_lat = nan("");
+    m_mouse_lon = nan("");
   }
 }
 
 void RadarInfo::SetBearing(int bearing) {
   int orientation = GetOrientation();
+  double radar_lat, radar_lon;
 
   if (!isnan(m_vrm[bearing])) {
     m_vrm[bearing] = NAN;
@@ -1538,9 +1543,9 @@ void RadarInfo::SetBearing(int bearing) {
     for (int i = 0; i < ORIENTATION_NUMBER; i++) {
       m_ebl[i][bearing] = m_mouse_ebl[i];
     }
-  } else if (!isnan(m_mouse_lat) && !isnan(m_mouse_lon)) {
-    m_vrm[bearing] = local_distance(m_pi->m_radar_lat, m_pi->m_radar_lon, m_mouse_lat, m_mouse_lon);
-    m_ebl[orientation][bearing] = local_bearing(m_pi->m_radar_lat, m_pi->m_radar_lon, m_mouse_lat, m_mouse_lon);
+  } else if (!isnan(m_mouse_lat) && !isnan(m_mouse_lon) && m_pi->GetRadarPosition(&radar_lat, &radar_lon)) {
+    m_vrm[bearing] = local_distance(radar_lat, radar_lon, m_mouse_lat, m_mouse_lon);
+    m_ebl[orientation][bearing] = local_bearing(radar_lat, radar_lon, m_mouse_lat, m_mouse_lon);
   }
 }
 

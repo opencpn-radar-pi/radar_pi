@@ -189,7 +189,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
 
   if (g_first_receive) {
     g_first_receive = false;
-    wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->m_boot_time;
+    wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->GetBootMillis();
     LOG_INFO(wxT("BR24radar_pi: First radar spoke received after %llu ms\n"), startup_elapsed);
   }
 

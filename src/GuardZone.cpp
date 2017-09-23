@@ -129,7 +129,7 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
   m_last_angle = angle;
 }
 
-// Search  guard zone for ARPA targets
+// Search guard zone for ARPA targets
 void GuardZone::SearchTargets() {
   if (!m_arpa_on) {
     return;
@@ -196,12 +196,10 @@ void GuardZone::SearchTargets() {
             Polar pol;
             pol.angle = angle;
             pol.r = rrr;
-            own_pos.lat = m_pi->m_radar_lat;
-            own_pos.lon = m_pi->m_radar_lon;
-            Position x;
-            x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
-            int target_i;
-            target_i = m_ri->m_arpa->AcquireNewARPATarget(pol, 0);
+
+            m_pi->GetRadarPosition(&own_pos.lat, &own_pos.lon);
+            Position x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
+            int target_i = m_ri->m_arpa->AcquireNewARPATarget(pol, 0);
             if (target_i == -1) break;
           }
         }
