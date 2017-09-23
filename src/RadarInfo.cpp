@@ -657,6 +657,7 @@ void RadarInfo::ZoomTrails(float zoom_factor) {
 }
 
 void RadarInfo::UpdateTransmitState() {
+  wxCriticalSectionLocker lock(m_exclusive);
   time_t now = time(0);
 
   int state = m_state.GetValue();
