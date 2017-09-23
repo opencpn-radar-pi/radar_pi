@@ -101,7 +101,7 @@ class GuardZone {
     return m_bogey_count;
   };
 
-  GuardZone(br24radar_pi *pi, RadarInfo* ri, int zone);
+  GuardZone(br24radar_pi *pi, RadarInfo *ri, int zone);
 
   ~GuardZone() { LOG_VERBOSE(wxT("%s destroyed"), m_log_name.c_str()); }
 

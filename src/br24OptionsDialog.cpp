@@ -276,7 +276,7 @@ br24OptionsDialog::br24OptionsDialog(wxWindow *parent, PersistentSettings &setti
 
   Fit();
   // SetMinSize(GetBestSize());
-        SetLayoutAdaptationMode(wxDIALOG_ADAPTATION_MODE_ENABLED);
+  SetLayoutAdaptationMode(wxDIALOG_ADAPTATION_MODE_ENABLED);
 }
 
 void br24OptionsDialog::OnRangeUnitsClick(wxCommandEvent &event) {

@@ -35,8 +35,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 #undef TEST_GUARD_ZONE_LOCATION
 
-GuardZone::GuardZone(br24radar_pi *pi, RadarInfo* ri, int zone)
-{
+GuardZone::GuardZone(br24radar_pi* pi, RadarInfo* ri, int zone) {
   m_pi = pi;
   m_ri = ri;
   m_log_name = wxString::Format(wxT("BR24radar_pi: Radar %c GuardZone %d:"), m_ri->m_radar + 'A', zone + 1);
@@ -51,7 +50,6 @@ GuardZone::GuardZone(br24radar_pi *pi, RadarInfo* ri, int zone)
   CLEAR_STRUCT(arpa_update_time);
   ResetBogeys();
 }
-
 
 void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_t len, int range) {
   size_t range_start = m_inner_range * RETURNS_PER_LINE / range;  // Convert from meters to 0..511

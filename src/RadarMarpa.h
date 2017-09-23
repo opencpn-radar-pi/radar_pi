@@ -158,7 +158,7 @@ class RadarArpa {
   void ClearContours();
   int GetTargetCount() { return m_number_of_targets; }
 
-private:
+ private:
   int m_number_of_targets;
   ArpaTarget* m_targets[MAX_NUMBER_OF_TARGETS];
 

@@ -1296,7 +1296,7 @@ void br24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event) {
   }
 }
 
-void br24ControlsDialog::OnTargetsButtonClick(wxCommandEvent &event) {
+void br24ControlsDialog::OnTargetsButtonClick(wxCommandEvent& event) {
   M_SETTINGS.show_radar_target[m_ri->m_radar] = !(M_SETTINGS.show_radar_target[m_ri->m_radar]);
 
   UpdateControlValues(false);
@@ -1648,8 +1648,6 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     }
     m_overlay_button->SetLabel(o);
   }
-
-
 
   if (m_ri->m_range.IsModified() || refreshAll) {
     m_ri->m_range.GetButton();
