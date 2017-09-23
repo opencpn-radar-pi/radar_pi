@@ -59,8 +59,8 @@ class RadarCanvas : public wxGLCanvas {
   br24radar_pi* m_pi;
   RadarInfo* m_ri;
 
-  wxGLContext* m_context;       // Our GL context
-  wxGLContext* m_zero_context;  // Set OpenGL back to this after using m_context so O doesn't accidentally use ours
+  wxGLContext* m_context;  // Our GL context
+  wxGLContext* m_zero_context;
 
   TextureFont m_FontNormal;
   TextureFont m_FontBig;

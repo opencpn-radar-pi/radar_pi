@@ -1420,7 +1420,7 @@ void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) { m_ri-
 void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
   int value = m_ri->m_orientation.GetValue() + 1;
 
-  if (m_pi->m_heading_source == HEADING_NONE) {
+  if (m_pi->GetHeadingSource() == HEADING_NONE) {
     value = ORIENTATION_HEAD_UP;
   } else {  // There is a heading
     if (value == ORIENTATION_NUMBER) {
@@ -1619,8 +1619,8 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     }
     m_orientation_button->SetLabel(o);
   }
-  LOG_DIALOG(wxT("BR24radar_pi: orientation=%d heading source=%d"), m_ri->GetOrientation(), m_pi->m_heading_source);
-  if (m_pi->m_heading_source == HEADING_NONE) {
+  LOG_DIALOG(wxT("BR24radar_pi: orientation=%d heading source=%d"), m_ri->GetOrientation(), m_pi->GetHeadingSource());
+  if (m_pi->GetHeadingSource() == HEADING_NONE) {
     m_orientation_button->Disable();
   } else {
     m_orientation_button->Enable();

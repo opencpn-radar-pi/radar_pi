@@ -423,6 +423,7 @@ class br24radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   void ShowGuardZoneDialog(int radar, int zone);
   void OnGuardZoneDialogClose(RadarInfo *ri);
   void ConfirmGuardZoneBogeys();
+  void ResetOpenGLContext();
 
   bool SetControlValue(int radar, ControlType controlType, int value, int autoValue);
 
@@ -474,12 +475,14 @@ class br24radar_pi : public opencpn_plugin_114, public wxEvtHandler {
     }
     return false;
   }
+  HeadingSource GetHeadingSource() { return m_heading_source; }
   bool IsInitialized() { return m_initialized; }
   wxLongLong GetBootMillis() { return m_boot_time; }
+  bool IsOpenGLEnabled() { return m_opengl_mode == OPENGL_ON; }
+  wxGLContext *GetChartOpenGLContext();
 
   wxFont m_font;      // The dialog font at a normal size
   wxFont m_fat_font;  // The dialog font at a bigger size, bold
-  int m_display_width, m_display_height;
 
   PersistentSettings m_settings;
   RadarInfo *m_radar[RADARS];
@@ -487,15 +490,6 @@ class br24radar_pi : public opencpn_plugin_114, public wxEvtHandler {
 
   br24MessageBox *m_pMessageBox;
   wxWindow *m_parent_window;
-  wxGLContext *m_opencpn_gl_context;
-  bool m_opencpn_gl_context_broken;
-
-  HeadingSource m_heading_source;
-  OpenGLMode m_opengl_mode;
-  volatile bool m_opengl_mode_changed;
-  bool m_bpos_set;
-  time_t m_bpos_timestamp;
-  time_t m_boot_timestamp;  // We wait for a few seconds before we start validity checks
 
   // Check for AIS targets inside ARPA zone
   vector<AisArpa> m_ais_in_arpa_zone;  // Array for AIS targets in ARPA zone(s)
@@ -520,6 +514,7 @@ class br24radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   void OnTimerNotify(wxTimerEvent &event);
   void TimedControlUpdate();
   void ScheduleWindowRefresh();
+  void SetOpenGLMode(OpenGLMode mode);
 
   wxCriticalSection m_exclusive;  // protects callbacks that come from multiple radars
 
@@ -531,6 +526,9 @@ class br24radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   double m_radar_heading;          // Last heading obtained from radar, or nan if none
   bool m_radar_heading_true;       // Was TRUE flag set on radar heading?
   time_t m_radar_heading_timeout;  // When last heading was obtained from radar, or 0 if not
+  HeadingSource m_heading_source;
+  bool m_bpos_set;
+  time_t m_bpos_timestamp;
 
   // Variation. Used to convert magnetic into true heading.
   // Can come from SetPositionFixEx, which may hail from the WMM plugin
@@ -602,6 +600,12 @@ class br24radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   // Timed Transmit
   time_t m_idle_standby;   // When we will change to standby
   time_t m_idle_transmit;  // When we will change to transmit
+
+  OpenGLMode m_opengl_mode;
+  volatile bool m_opengl_mode_changed;
+
+  wxGLContext *m_opencpn_gl_context;
+  bool m_opencpn_gl_context_broken;
 
   wxTimer *m_timer;
 

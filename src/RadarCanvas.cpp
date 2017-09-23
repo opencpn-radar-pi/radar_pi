@@ -173,7 +173,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
     }
   }
 
-  if (m_pi->m_heading_source != HEADING_NONE) {
+  if (m_pi->GetHeadingSource() != HEADING_NONE) {
     double heading;
     double predictor;
     switch (m_ri->GetOrientation()) {
@@ -397,11 +397,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   wxPaintDC(this);  // only to be used in paint events. use wxClientDC to paint
                     // outside the paint event
 
-  if (m_pi->m_opengl_mode != OPENGL_ON) {
-    return;
-  }
-  if (!m_pi->m_opencpn_gl_context && !m_pi->m_opencpn_gl_context_broken) {
-    LOG_DIALOG(wxT("BR24radar_pi: %s skip render as no context known yet"), m_ri->m_name.c_str());
+  if (!m_pi->IsOpenGLEnabled()) {
     return;
   }
   LOG_DIALOG(wxT("BR24radar_pi: %s render OpenGL canvas %d by %d "), m_ri->m_name.c_str(), w, h);
@@ -438,7 +434,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
 
   PlugIn_ViewPort vp;
 
-  if (m_pi->m_heading_source != HEADING_NONE && m_pi->GetRadarPosition(&vp.clat, &vp.clon) &&
+  if (m_pi->GetHeadingSource() != HEADING_NONE && m_pi->GetRadarPosition(&vp.clat, &vp.clon) &&
       M_SETTINGS.show_radar_target[m_ri->m_radar]) {
     // LAYER 2 - AIS AND ARPA TARGETS
 
@@ -515,8 +511,9 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glFinish();
   SwapBuffers();
 
-  if (m_pi->m_opencpn_gl_context) {
-    SetCurrent(*m_pi->m_opencpn_gl_context);
+  wxGLContext *chart_context = m_pi->GetChartOpenGLContext();
+  if (chart_context) {
+    SetCurrent(*chart_context);
   } else {
     SetCurrent(*m_zero_context);  // Make sure OpenCPN -at least- doesn't overwrite our context info
   }

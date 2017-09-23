@@ -219,7 +219,6 @@ int br24radar_pi::Init(void) {
   m_settings.threshold_green = 255;
   m_settings.mcast_address = wxT("");
 
-  ::wxDisplaySize(&m_display_width, &m_display_height);
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
   m_parent_window = GetOCPNCanvasWindow();
@@ -588,7 +587,7 @@ void br24radar_pi::OnContextMenuItemCallback(int id) {
     if (m_settings.show                                                             // radar shown
         && m_settings.chart_overlay >= 0                                            // overlay desired
         && m_radar[m_settings.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
-        && m_bpos_set) {
+        && !isnan(m_cursor_lat) && !isnan(m_cursor_lon)) {
       Position target_pos;
       target_pos.lat = m_cursor_lat;
       target_pos.lon = m_cursor_lon;
@@ -812,6 +811,9 @@ void br24radar_pi::SetRadarHeading(double heading, bool isTrue) {
         m_hdm_timeout = now + HEADING_TIMEOUT;
       }
     }
+  } else if (m_heading_source == HEADING_RADAR_HDM || m_heading_source == HEADING_RADAR_HDT) {
+    // no heading on radar and heading source is still radar
+    m_heading_source = HEADING_NONE;
   }
 }
 
@@ -1068,6 +1070,17 @@ void br24radar_pi::UpdateState(void) {
   CheckTimedTransmit(state);
 }
 
+void br24radar_pi::SetOpenGLMode(OpenGLMode mode) {
+  if (m_opengl_mode != mode) {
+    m_opengl_mode = mode;
+    // Can't hide/show the windows from here, this becomes recursive because the Chart display
+    // is managed by wxAuiManager as well.
+    m_opengl_mode_changed = true;
+  }
+}
+
+wxGLContext *br24radar_pi::GetChartOpenGLContext() { return m_opencpn_gl_context; }
+
 //**************************************************************************************************
 // Radar Image Graphic Display Processes
 //**************************************************************************************************
@@ -1079,18 +1092,15 @@ bool br24radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 
   LOG_DIALOG(wxT("BR24radar_pi: RenderOverlay"));
 
-  if (m_opengl_mode != OPENGL_OFF) {
-    m_opengl_mode = OPENGL_OFF;
-    // Can't hide/show the windows from here, this becomes recursive because the Chart display
-    // is managed by wxAuiManager as well.
-    m_opengl_mode_changed = true;
-  }
+  SetOpenGLMode(OPENGL_OFF);
   return true;
 }
 
 // Called by Plugin Manager on main system process cycle
 
 bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
+  double radar_lat, radar_lon;
+
   if (!m_initialized) {
     return true;
   }
@@ -1102,12 +1112,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   }
   m_opencpn_gl_context_broken = m_opencpn_gl_context == 0;
 
-  if (m_opengl_mode != OPENGL_ON) {
-    m_opengl_mode = OPENGL_ON;
-    // Can't hide/show the windows from here, this becomes recursive because the Chart display
-    // is managed by wxAuiManager as well.
-    m_opengl_mode_changed = true;
-  }
+  SetOpenGLMode(OPENGL_ON);
 
   if (vp->rotation != m_vp_rotation) {
     wxCriticalSectionLocker lock(m_exclusive);
@@ -1120,7 +1125,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   if (m_settings.show                                                             // Radar shown
       && m_settings.chart_overlay >= 0                                            // Overlay desired
       && m_radar[m_settings.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar transmitting
-      && m_bpos_set) {                                                            // Boat position known
+      && GetRadarPosition(&radar_lat, &radar_lon)) {                              // Boat position known
 
     // Always compute m_auto_range_meters, possibly needed by SendState() called
     // from DoTick().
@@ -1134,7 +1139,7 @@ bool br24radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     }
 
     wxPoint boat_center;
-    GetCanvasPixLL(vp, &boat_center, m_radar_lat, m_radar_lon);
+    GetCanvasPixLL(vp, &boat_center, radar_lat, radar_lon);
 
     m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
 

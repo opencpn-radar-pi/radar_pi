@@ -67,8 +67,9 @@ bool RadarPanel::Create() {
   Layout();
   // SetMinSize(GetBestSize());
 
-  m_best_size.x = m_pi->m_display_width / 2;
-  m_best_size.y = m_pi->m_display_height / 2;
+  m_best_size = wxGetDisplaySize();
+  m_best_size.x /= 2;
+  m_best_size.y /= 2;
 
   pane.MinSize(256, 256);
   pane.BestSize(m_best_size);
@@ -149,7 +150,7 @@ void RadarPanel::ShowFrame(bool visible) {
 
   wxAuiPaneInfo& pane = m_aui_mgr->GetPane(this);
 
-  if (m_pi->m_opengl_mode == OPENGL_OFF && m_ri->m_radar_canvas) {
+  if (!m_pi->IsOpenGLEnabled() && m_ri->m_radar_canvas) {
     m_sizer->Detach(m_ri->m_radar_canvas);
     delete m_ri->m_radar_canvas;
     m_ri->m_radar_canvas = 0;
@@ -160,7 +161,7 @@ void RadarPanel::ShowFrame(bool visible) {
     Layout();
   }
   if (visible) {
-    if (m_pi->m_opengl_mode == OPENGL_ON && !m_ri->m_radar_canvas) {
+    if (m_pi->IsOpenGLEnabled() && !m_ri->m_radar_canvas) {
       LOG_DIALOG(wxT("BR24radar_pi %s: creating OpenGL canvas"), m_ri->m_name.c_str());
       m_ri->m_radar_canvas = new RadarCanvas(m_pi, m_ri, this, GetSize());
       if (!m_ri->m_radar_canvas) {

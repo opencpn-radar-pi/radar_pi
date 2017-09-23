@@ -131,6 +131,8 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
 
 // Search guard zone for ARPA targets
 void GuardZone::SearchTargets() {
+  Position own_pos;
+
   if (!m_arpa_on) {
     return;
   }
@@ -141,7 +143,7 @@ void GuardZone::SearchTargets() {
   if (!m_pi->m_settings.show  // No radar shown
       || (m_pi->m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT &&
           m_pi->m_radar[1]->m_state.GetValue() != RADAR_TRANSMIT)  // Radar not transmitting
-      || !m_pi->m_bpos_set) {                                      // No position
+      || !m_pi->GetRadarPosition(&own_pos.lat, &own_pos.lon)) {    // No position
     return;
   }
   if (m_ri->m_range_meters == 0) {
@@ -192,12 +194,10 @@ void GuardZone::SearchTargets() {
             bool next_r = false;
             if (next_r) continue;
             // pixel found that does not belong to a known target
-            Position own_pos;
             Polar pol;
             pol.angle = angle;
             pol.r = rrr;
 
-            m_pi->GetRadarPosition(&own_pos.lat, &own_pos.lon);
             Position x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
             int target_i = m_ri->m_arpa->AcquireNewARPATarget(pol, 0);
             if (target_i == -1) break;

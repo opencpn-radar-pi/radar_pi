@@ -273,9 +273,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     if (radar_heading_valid && !m_pi->m_settings.ignore_radar_heading) {
       heading = MOD_DEGREES(SCALE_RAW_TO_DEGREES(MOD_ROTATION(heading_raw)));
       m_pi->SetRadarHeading(heading, radar_heading_true);
-    } else if (m_pi->m_heading_source == HEADING_RADAR_HDM || m_pi->m_heading_source == HEADING_RADAR_HDT) {
-      // no heading on radar and heading source is still radar
-      m_pi->m_heading_source = HEADING_NONE;  // let other heading source take over
+    } else {
       m_pi->SetRadarHeading();
     }
     // Guess the heading for the spoke. This is updated much less frequently than the

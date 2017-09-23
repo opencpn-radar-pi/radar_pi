@@ -259,9 +259,10 @@ bool br24MessageBox::Show(bool show) {
 bool br24MessageBox::UpdateMessage(bool force) {
   message_status new_message_state = HIDE;
   time_t now = time(0);
+  double radar_lat, radar_lon;
 
-  bool haveOpenGL = m_pi->m_opengl_mode == OPENGL_ON;
-  bool haveGPS = m_pi->m_bpos_set;
+  bool haveOpenGL = m_pi->IsOpenGLEnabled();
+  bool haveGPS = m_pi->GetRadarPosition(&radar_lat, &radar_lon);
   bool haveTrueHeading = !TIMED_OUT(now, m_pi->GetHeadingTrueTimeout());
   bool haveMagHeading = !TIMED_OUT(now, m_pi->GetHeadingMagTimeout());
   bool haveHeading = haveTrueHeading || haveMagHeading;
