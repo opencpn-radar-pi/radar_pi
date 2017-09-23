@@ -776,6 +776,14 @@ void RadarInfo::UpdateTrailPosition() {
   if (!m_pi->m_bpos_set || m_pi->m_heading_source == HEADING_NONE){
     return;
   }
+  if (wxIsNaN(m_pi->m_radar_lat) || wxIsNaN(m_pi->m_radar_lon)){
+    return;
+  }
+  if (m_pi->m_radar_lat > 90 || m_pi->m_radar_lat < -90 || m_pi->m_radar_lon > 360 || m_pi->m_radar_lon < -360){
+    LOG_INFO(wxT("BR24radar_pi: trails invalid position"));
+    return;
+  }
+
   // Did the ship move? No, return.
   if (m_trails.lat == m_pi->m_radar_lat && m_trails.lon == m_pi->m_radar_lon) {
     return;
@@ -835,8 +843,8 @@ void RadarInfo::UpdateTrailPosition() {
 
     if (abs(shift_lat) >= MARGIN || abs(shift_lon) >= MARGIN) {  // huge shift, reset trails
       ClearTrails();
-      m_trails.lat = m_pi->m_ownship_lat;
-      m_trails.lon = m_pi->m_ownship_lon;
+      m_trails.lat = m_pi->m_radar_lat;
+      m_trails.lon = m_pi->m_radar_lon;
       LOG_INFO(wxT("BR24radar_pi: %s Large movement trails reset"), m_name.c_str());
       return;
     }
@@ -852,7 +860,7 @@ void RadarInfo::UpdateTrailPosition() {
   }
     // apply the shifts to the offset
     m_trails.offset.lat += shift_lat;
-    m_trails.offset.lon += shift_lon;  
+    m_trails.offset.lon += shift_lon; 
 }
 
 // shifts the true trails image in lon direction to center

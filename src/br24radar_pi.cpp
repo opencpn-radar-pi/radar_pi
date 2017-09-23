@@ -119,6 +119,8 @@ END_EVENT_TABLE()
 br24radar_pi::br24radar_pi(void *ppimgr) : opencpn_plugin_114(ppimgr) {
   m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
+  m_ownship_lat = nan("");
+  m_ownship_lon = nan("");
   // Create the PlugIn icons
   initialize_images();
   m_pdeficon = new wxBitmap(*_img_radar_blank);
