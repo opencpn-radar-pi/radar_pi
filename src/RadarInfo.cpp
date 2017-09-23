@@ -841,7 +841,7 @@ void RadarInfo::UpdateTrailPosition() {
     m_trails.dif_lat = fshift_lat + m_trails.dif_lat - (double)shift_lat;  
     m_trails.dif_lon = fshift_lon + m_trails.dif_lon - (double)shift_lon;
 
-    if (abs(shift_lat) >= MARGIN || abs(shift_lon) >= MARGIN) {  // huge shift, reset trails
+    if (shift_lat >= MARGIN || shift_lat <= -MARGIN || shift_lon >= MARGIN || shift_lon <= -MARGIN) {  // huge shift, reset trails
       ClearTrails();
       m_trails.lat = m_pi->m_radar_lat;
       m_trails.lon = m_pi->m_radar_lon;
