@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
@@ -38,7 +38,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 /*
  =======================================================================================================================
- BR24Radar Guard Zone Bogey Dialog Specification ;
+ Guard Zone Bogey Dialog Specification ;
  =======================================================================================================================
  */
 class GuardZoneBogey : public wxDialog {

@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
@@ -30,8 +30,8 @@
  ***************************************************************************
  */
 
-#ifndef _BR24KALMAN_H_
-#define _BR24KALMAN_H_
+#ifndef _KALMAN_H_
+#define _KALMAN_H_
 
 #include "Matrix.h"
 

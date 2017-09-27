@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
@@ -74,19 +74,19 @@ bool RadarDrawShader::Init() {
   m_channels = SHADER_COLOR_CHANNELS;
 
   if (!CompileShader && !ShadersSupported()) {
-    wxLogError(wxT("BR24radar_pi: the OpenGL system of this computer does not support shader m_programs"));
+    wxLogError(wxT("radar_pi: the OpenGL system of this computer does not support shader m_programs"));
     return false;
   }
 
   if (!CompileShaderText(&m_vertex, GL_VERTEX_SHADER, VertexShaderText) ||
       !CompileShaderText(&m_fragment, GL_FRAGMENT_SHADER, FragmentShaderColorText)) {
-    wxLogError(wxT("BR24radar_pi: the OpenGL system of this computer failed to compile shader programs"));
+    wxLogError(wxT("radar_pi: the OpenGL system of this computer failed to compile shader programs"));
     return false;
   }
 
   m_program = LinkShaders(m_vertex, m_fragment);
   if (!m_program) {
-    wxLogError(wxT("BR24radar_pi: GPU oriented OpenGL failed to link shader program"));
+    wxLogError(wxT("radar_pi: GPU oriented OpenGL failed to link shader program"));
     return false;
   }
 

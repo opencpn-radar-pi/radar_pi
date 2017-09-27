@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
@@ -64,7 +64,7 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
 
   if (!line->points) {
     if (!m_oom) {
-      wxLogError(wxT("BR24radar_pi: Out of memory"));
+      wxLogError(wxT("radar_pi: Out of memory"));
       m_oom = true;
     }
     return;
@@ -109,7 +109,7 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
     line->points = (VertexPoint*)malloc(line->allocated * sizeof(VertexPoint));
     if (!line->points) {
       if (!m_oom) {
-        wxLogError(wxT("BR24radar_pi: Out of memory"));
+        wxLogError(wxT("radar_pi: Out of memory"));
         m_oom = true;
       }
       line->allocated = 0;

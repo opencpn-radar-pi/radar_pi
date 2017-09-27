@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin, Arpa partition
+ * Purpose:  Radar Plugin, Arpa partition
  *           Target tracking
  * Authors:  Douwe Fokkema
  *           Kees Verruijt

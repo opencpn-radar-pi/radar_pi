@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
@@ -224,12 +224,12 @@ SOCKET GetLocalhostServerTCPSocket() {
   adr.sin_port = htons(0);
 
   if (server == INVALID_SOCKET) {
-    wxLogError(wxT("BR24radar_pi: cannot get socket"));
+    wxLogError(wxT("radar_pi: cannot get socket"));
     return INVALID_SOCKET;
   }
 
   if (bind(server, (struct sockaddr *)&adr, sizeof(adr))) {
-    wxLogError(wxT("BR24radar_pi: cannot bind socket to loopback address"));
+    wxLogError(wxT("radar_pi: cannot bind socket to loopback address"));
     closesocket(server);
     return INVALID_SOCKET;
   }
@@ -246,18 +246,18 @@ SOCKET GetLocalhostSendTCPSocket(SOCKET server) {
   adrlen = sizeof(adr);
 
   if (client == INVALID_SOCKET) {
-    wxLogError(wxT("BR24radar_pi: cannot get socket"));
+    wxLogError(wxT("radar_pi: cannot get socket"));
     return INVALID_SOCKET;
   }
 
   if (getsockname(server, (struct sockaddr *)&adr, &adrlen)) {
-    wxLogError(wxT("BR24radar_pi: cannot get sockname"));
+    wxLogError(wxT("radar_pi: cannot get sockname"));
     closesocket(client);
     return INVALID_SOCKET;
   }
 
   if (connect(client, (struct sockaddr *)&adr, adrlen)) {
-    wxLogError(wxT("BR24radar_pi: cannot connect socket"));
+    wxLogError(wxT("radar_pi: cannot connect socket"));
     closesocket(client);
     return INVALID_SOCKET;
   }
@@ -272,12 +272,12 @@ int getifaddrs(struct ifaddrs **ifap) {
 
   int sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {
-    wxLogError(wxT("BR24radar_pi: Cannot get socket"));
+    wxLogError(wxT("radar_pi: Cannot get socket"));
     return -1;
   }
 
   if (WSAIoctl(sock, SIO_GET_INTERFACE_LIST, 0, 0, buf, sizeof(buf), &bytesReturned, 0, 0) < 0) {
-    wxLogError(wxT("BR24radar_pi: Cannot get interface list"));
+    wxLogError(wxT("radar_pi: Cannot get interface list"));
     closesocket(sock);
     return -1;
   }

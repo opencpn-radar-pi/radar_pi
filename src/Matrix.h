@@ -1,6 +1,6 @@
 /******************************************************************************
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Authors:  Kees Verruijt, Blaz Bratanic
  ***************************************************************************
  *   This program is free software; you can redistribute it and/or modify  *

@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
@@ -43,7 +43,7 @@ RadarDraw* RadarDraw::make_Draw(RadarInfo* ri, int draw_method) {
     case 1:
       return new RadarDrawShader(ri);
     default:
-      wxLogError(wxT("BR24radar_pi: unsupported draw method %d"), draw_method);
+      wxLogError(wxT("radar_pi: unsupported draw method %d"), draw_method);
   }
   return 0;
 }

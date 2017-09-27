@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
@@ -143,7 +143,7 @@ void br24Receive::logBinaryData(const wxString &what, const UINT8 *data, int siz
   int i = 0;
 
   explain.Alloc(size * 3 + 50);
-  explain += wxT("BR24radar_pi: ") + m_ri->m_name + wxT(" ");
+  explain += wxT("radar_pi: ") + m_ri->m_name + wxT(" ");
   explain += what;
   explain += wxString::Format(wxT(" %d bytes: "), size);
   for (i = 0; i < size; i++) {
@@ -190,7 +190,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
   if (g_first_receive) {
     g_first_receive = false;
     wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->GetBootMillis();
-    LOG_INFO(wxT("BR24radar_pi: First radar spoke received after %llu ms\n"), startup_elapsed);
+    LOG_INFO(wxT("radar_pi: First radar spoke received after %llu ms\n"), startup_elapsed);
   }
 
   for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
@@ -200,14 +200,14 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
     int spoke = line->common.scan_number[0] | (line->common.scan_number[1] << 8);
     m_ri->m_statistics.spokes++;
     if (line->common.headerLen != 0x18) {
-      LOG_RECEIVE(wxT("BR24radar_pi: strange header length %d"), line->common.headerLen);
+      LOG_RECEIVE(wxT("radar_pi: strange header length %d"), line->common.headerLen);
       // Do not draw something with this...
       m_ri->m_statistics.missing_spokes++;
       m_next_spoke = (spoke + 1) % SPOKES;
       continue;
     }
     if (line->common.status != 0x02 && line->common.status != 0x12) {
-      LOG_RECEIVE(wxT("BR24radar_pi: strange status %02x"), line->common.status);
+      LOG_RECEIVE(wxT("radar_pi: strange status %02x"), line->common.status);
       m_ri->m_statistics.broken_spokes++;
     }
     if (m_next_spoke >= 0 && spoke != m_next_spoke) {
@@ -232,7 +232,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
       range_meters = (int)((double)range_raw * 10.0 / sqrt(2.0));
       if (m_ri->m_radar_type == RT_UNKNOWN) {
-        LOG_INFO(wxT("BR24radar_pi: %s is Navico type BR24 or 3G"), m_ri->m_name.c_str());
+        LOG_INFO(wxT("radar_pi: %s is Navico type BR24 or 3G"), m_ri->m_name.c_str());
         m_ri->m_radar_type = RT_BR24;
         m_pi->m_pMessageBox->SetRadarType(RT_BR24);
       }
@@ -252,7 +252,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
       }
       range_meters = range_raw / 4;
       if (m_ri->m_radar_type != RT_4G) {
-        LOG_INFO(wxT("BR24radar_pi: %s is Navico type 4G"), m_ri->m_name.c_str());
+        LOG_INFO(wxT("radar_pi: %s is Navico type 4G"), m_ri->m_name.c_str());
         m_ri->m_radar_type = RT_4G;
         m_pi->m_pMessageBox->SetRadarType(RT_4G);
       }
@@ -354,7 +354,7 @@ void br24Receive::EmulateFakeBuffer(void) {
     m_ri->ProcessRadarSpoke(a, b, data, sizeof(data), range_meters, time_rec, lat, lon);
   }
 
-  LOG_VERBOSE(wxT("BR24radar_pi: emulating %d spokes at range %d with %d spots"), scanlines_in_packet, range_meters, spots);
+  LOG_VERBOSE(wxT("radar_pi: emulating %d spokes at range %d with %d spots"), scanlines_in_packet, range_meters, spots);
 }
 
 SOCKET br24Receive::PickNextEthernetCard() {
@@ -406,10 +406,10 @@ SOCKET br24Receive::GetNewReportSocket() {
     wxString addr;
     UINT8 *a = (UINT8 *)&m_mcast_addr->sin_addr;  // sin_addr is in network layout
     addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
-    LOG_RECEIVE(wxT("BR24radar_pi: %s listening for reports on %s"), m_ri->m_name.c_str(), addr.c_str());
+    LOG_RECEIVE(wxT("radar_pi: %s listening for reports on %s"), m_ri->m_name.c_str(), addr.c_str());
     m_pi->SetMcastIPAddress(addr);
   } else {
-    wxLogError(wxT("BR24radar_pi: Unable to listen to socket: %s"), error.c_str());
+    wxLogError(wxT("radar_pi: Unable to listen to socket: %s"), error.c_str());
   }
   return socket;
 }
@@ -427,9 +427,9 @@ SOCKET br24Receive::GetNewDataSocket() {
     wxString addr;
     UINT8 *a = (UINT8 *)&m_mcast_addr->sin_addr;  // sin_addr is in network layout
     addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
-    LOG_RECEIVE(wxT("BR24radar_pi: %s listening for data on %s"), m_ri->m_name.c_str(), addr.c_str());
+    LOG_RECEIVE(wxT("radar_pi: %s listening for data on %s"), m_ri->m_name.c_str(), addr.c_str());
   } else {
-    wxLogError(wxT("BR24radar_pi: Unable to listen to socket: %s"), error.c_str());
+    wxLogError(wxT("radar_pi: Unable to listen to socket: %s"), error.c_str());
   }
   return socket;
 }
@@ -454,7 +454,7 @@ void *br24Receive::Entry(void) {
   SOCKET dataSocket = INVALID_SOCKET;
   SOCKET reportSocket = INVALID_SOCKET;
 
-  LOG_VERBOSE(wxT("BR24radar_pi: br24Receive thread %s starting"), m_ri->m_name.c_str());
+  LOG_VERBOSE(wxT("radar_pi: br24Receive thread %s starting"), m_ri->m_name.c_str());
 
   if (m_mcast_addr) {
     reportSocket = GetNewReportSocket();
@@ -517,7 +517,7 @@ void *br24Receive::Entry(void) {
         rx_len = sizeof(rx_addr);
         r = recvfrom(m_receive_socket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
         if (r > 0) {
-          LOG_VERBOSE(wxT("BR24radar_pi: %s received stop instruction"), m_ri->m_name.c_str());
+          LOG_VERBOSE(wxT("radar_pi: %s received stop instruction"), m_ri->m_name.c_str());
           break;
         }
       }
@@ -532,7 +532,7 @@ void *br24Receive::Entry(void) {
         } else {
           closesocket(dataSocket);
           dataSocket = INVALID_SOCKET;
-          wxLogError(wxT("BR24radar_pi: %s at %u.%u.%u.%u illegal frame"), m_ri->m_name.c_str(), a[0], a[1], a[2], a[3]);
+          wxLogError(wxT("radar_pi: %s at %u.%u.%u.%u illegal frame"), m_ri->m_name.c_str(), a[0], a[1], a[2], a[3]);
         }
       }
 
@@ -553,14 +553,14 @@ void *br24Receive::Entry(void) {
               addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
               m_pi->m_pMessageBox->SetRadarIPAddress(addr);
               if (m_ri->m_state.GetValue() == RADAR_OFF) {
-                LOG_INFO(wxT("BR24radar_pi: %s detected at %s"), m_ri->m_name.c_str(), addr.c_str());
+                LOG_INFO(wxT("radar_pi: %s detected at %s"), m_ri->m_name.c_str(), addr.c_str());
                 m_ri->m_state.Update(RADAR_STANDBY);
               }
             }
             no_data_timeout = SECONDS_SELECT(-15);
           }
         } else {
-          wxLogError(wxT("BR24radar_pi: %s at %u.%u.%u.%u illegal report"), m_ri->m_name.c_str(), a[0], a[1], a[2], a[3]);
+          wxLogError(wxT("radar_pi: %s at %u.%u.%u.%u illegal report"), m_ri->m_name.c_str(), a[0], a[1], a[2], a[3]);
           closesocket(reportSocket);
           reportSocket = INVALID_SOCKET;
         }
@@ -620,10 +620,10 @@ void *br24Receive::Entry(void) {
   }
 
 #ifdef TEST_THREAD_RACES
-  LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread sleeping"), m_ri->m_name.c_str());
+  LOG_VERBOSE(wxT("radar_pi: %s receive thread sleeping"), m_ri->m_name.c_str());
   wxMilliSleep(1000);
 #endif
-  LOG_VERBOSE(wxT("BR24radar_pi: %s receive thread stopping"), m_ri->m_name.c_str());
+  LOG_VERBOSE(wxT("radar_pi: %s receive thread stopping"), m_ri->m_name.c_str());
   m_is_shutdown = true;
   return 0;
 }
@@ -741,7 +741,7 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
 
   if (m_ri->m_radar == 1) {
     if (m_ri->m_radar_type != RT_4G) {
-      //   LOG_INFO(wxT("BR24radar_pi: Radar report from 2nd radar tells us this a Navico 4G"));
+      //   LOG_INFO(wxT("radar_pi: Radar report from 2nd radar tells us this a Navico 4G"));
       m_ri->m_radar_type = RT_4G;
       m_pi->m_pMessageBox->SetRadarType(RT_4G);
     }
@@ -759,16 +759,16 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
           switch (m_radar_status) {
             case 0x01:
               m_ri->m_state.Update(RADAR_STANDBY);
-              LOG_VERBOSE(wxT("BR24radar_pi: %s reports status STANDBY"), m_ri->m_name.c_str());
+              LOG_VERBOSE(wxT("radar_pi: %s reports status STANDBY"), m_ri->m_name.c_str());
               break;
             case 0x02:
               m_ri->m_state.Update(RADAR_TRANSMIT);
-              LOG_VERBOSE(wxT("BR24radar_pi: %s reports status TRANSMIT"), m_ri->m_name.c_str());
+              LOG_VERBOSE(wxT("radar_pi: %s reports status TRANSMIT"), m_ri->m_name.c_str());
               break;
             case 0x05:
               m_ri->m_state.Update(RADAR_WAKING_UP);
               m_ri->m_data_timeout = now + DATA_TIMEOUT;
-              LOG_VERBOSE(wxT("BR24radar_pi: %s reports status WAKING UP"), m_ri->m_name.c_str());
+              LOG_VERBOSE(wxT("radar_pi: %s reports status WAKING UP"), m_ri->m_name.c_str());
               break;
             default:
               logBinaryData(wxT("received unknown radar status"), report, len);
@@ -796,7 +796,7 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
         m_ri->m_target_expansion.Update(s->target_expansion);
         m_ri->m_range.Update(s->range / 10);
 
-        LOG_RECEIVE(wxT("BR24radar_pi: %s state range=%u gain=%u sea=%u rain=%u if_rejection=%u tgt_boost=%u tgt_expansion=%u"),
+        LOG_RECEIVE(wxT("radar_pi: %s state range=%u gain=%u sea=%u rain=%u if_rejection=%u tgt_boost=%u tgt_expansion=%u"),
                     m_ri->m_name.c_str(), s->range, s->gain, s->sea, s->rain, s->interference_rejection, s->target_boost,
                     s->target_expansion);
         break;
@@ -804,32 +804,32 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
 
       case (129 << 8) + 0x03: {  // 129 bytes starting with 03 C4
         RadarReport_03C4_129 *s = (RadarReport_03C4_129 *)report;
-        LOG_RECEIVE(wxT("BR24radar_pi: %s RadarReport_03C4_129 radar_type=%u"), m_ri->m_name.c_str(), s->radar_type);
+        LOG_RECEIVE(wxT("radar_pi: %s RadarReport_03C4_129 radar_type=%u"), m_ri->m_name.c_str(), s->radar_type);
 
         switch (s->radar_type) {
           case 0x0f:
             if (m_ri->m_radar_type == RT_UNKNOWN) {
-              LOG_INFO(wxT("BR24radar_pi: Radar report tells us this a Navico BR24"));
+              LOG_INFO(wxT("radar_pi: Radar report tells us this a Navico BR24"));
               m_ri->m_radar_type = RT_BR24;
               m_pi->m_pMessageBox->SetRadarType(RT_BR24);
             }
             break;
           case 0x08:
             if (m_ri->m_radar_type == RT_UNKNOWN || m_ri->m_radar_type == RT_BR24) {
-              LOG_INFO(wxT("BR24radar_pi: Radar report tells us this a Navico 3G"));
+              LOG_INFO(wxT("radar_pi: Radar report tells us this a Navico 3G"));
               m_ri->m_radar_type = RT_3G;
               m_pi->m_pMessageBox->SetRadarType(RT_3G);
             }
             break;
           case 0x01:
             if (m_ri->m_radar_type == RT_UNKNOWN) {
-              LOG_INFO(wxT("BR24radar_pi: Radar report tells us this a Navico 4G"));
+              LOG_INFO(wxT("radar_pi: Radar report tells us this a Navico 4G"));
               m_ri->m_radar_type = RT_4G;
               m_pi->m_pMessageBox->SetRadarType(RT_4G);
             }
             break;
           default:
-            LOG_INFO(wxT("BR24radar_pi: Unknown radar_type %u"), s->radar_type);
+            LOG_INFO(wxT("radar_pi: Unknown radar_type %u"), s->radar_type);
             return false;
         }
 
@@ -867,7 +867,7 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
         // Content unknown, but we know that BR24 radomes send this
         LOG_RECEIVE(wxT("received familiar BR24 report"), report, len);
         if (m_ri->m_radar_type == RT_UNKNOWN) {
-          LOG_INFO(wxT("BR24radar_pi: Radar report tells us this a Navico BR24"));
+          LOG_INFO(wxT("radar_pi: Radar report tells us this a Navico BR24"));
           m_ri->m_radar_type = RT_BR24;
           m_pi->m_pMessageBox->SetRadarType(RT_BR24);
         }
@@ -912,7 +912,7 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
           logBinaryData(wxT("received BR24 report"), report, len);
         }
         if (m_ri->m_radar_type == RT_UNKNOWN) {
-          LOG_INFO(wxT("BR24radar_pi: Radar report tells us this a Navico BR24"));
+          LOG_INFO(wxT("radar_pi: Radar report tells us this a Navico BR24"));
           m_ri->m_radar_type = RT_BR24;
           m_pi->m_pMessageBox->SetRadarType(RT_BR24);
         }
@@ -951,11 +951,11 @@ void br24Receive::Shutdown() {
   if (m_send_socket != INVALID_SOCKET) {
     m_shutdown_time_requested = wxGetUTCTimeMillis();
     if (send(m_send_socket, "!", 1, MSG_DONTROUTE) > 0) {
-      LOG_VERBOSE(wxT("BR24radar_pi: %s requested receive thread to stop"), m_ri->m_name.c_str());
+      LOG_VERBOSE(wxT("radar_pi: %s requested receive thread to stop"), m_ri->m_name.c_str());
       return;
     }
   }
-  LOG_INFO(wxT("BR24radar_pi: %s receive thread will take long time to stop"), m_ri->m_name.c_str());
+  LOG_INFO(wxT("radar_pi: %s receive thread will take long time to stop"), m_ri->m_name.c_str());
 }
 
 PLUGIN_END_NAMESPACE

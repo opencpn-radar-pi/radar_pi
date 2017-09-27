@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Authors:  David Register
  *           Dave Cowell
  *           Kees Verruijt
@@ -56,12 +56,12 @@ RadarCanvas::RadarCanvas(radar_pi *pi, RadarInfo *ri, wxWindow *parent, wxSize s
   m_last_mousewheel_zoom_in = 0;
   m_last_mousewheel_zoom_out = 0;
 
-  LOG_VERBOSE(wxT("BR24radar_pi: %s create OpenGL canvas"), m_ri->m_name.c_str());
+  LOG_VERBOSE(wxT("radar_pi: %s create OpenGL canvas"), m_ri->m_name.c_str());
   Refresh(false);
 }
 
 RadarCanvas::~RadarCanvas() {
-  LOG_VERBOSE(wxT("BR24radar_pi: %s destroy OpenGL canvas"), m_ri->m_name.c_str());
+  LOG_VERBOSE(wxT("radar_pi: %s destroy OpenGL canvas"), m_ri->m_name.c_str());
   delete m_context;
   delete m_zero_context;
   if (m_cursor_texture) {
@@ -72,7 +72,7 @@ RadarCanvas::~RadarCanvas() {
 
 void RadarCanvas::OnSize(wxSizeEvent &evt) {
   wxSize parentSize = m_parent->GetSize();
-  LOG_DIALOG(wxT("BR24radar_pi: %s resize OpenGL canvas to %d, %d"), m_ri->m_name.c_str(), parentSize.x, parentSize.y);
+  LOG_DIALOG(wxT("radar_pi: %s resize OpenGL canvas to %d, %d"), m_ri->m_name.c_str(), parentSize.x, parentSize.y);
   Refresh(false);
   if (GetSize() != parentSize) {
     SetSize(parentSize);
@@ -81,7 +81,7 @@ void RadarCanvas::OnSize(wxSizeEvent &evt) {
 
 void RadarCanvas::OnMove(wxMoveEvent &evt) {
   wxPoint pos = m_parent->GetPosition();
-  LOG_DIALOG(wxT("BR24radar_pi: %s move OpenGL canvas to %d, %d"), m_ri->m_name.c_str(), pos.x, pos.y);
+  LOG_DIALOG(wxT("radar_pi: %s move OpenGL canvas to %d, %d"), m_ri->m_name.c_str(), pos.x, pos.y);
 }
 
 void RadarCanvas::RenderTexts(int w, int h) {
@@ -311,7 +311,7 @@ void RadarCanvas::RenderCursor(int w, int h) {
     if (m_ri->GetOrientation() != ORIENTATION_NORTH_UP) {
       bearing -= m_pi->GetHeadingTrue();
     }
-    // LOG_DIALOG(wxT("BR24radar_pi: Chart Mouse vrm=%f ebl=%f"), distance / 1852.0, bearing);
+    // LOG_DIALOG(wxT("radar_pi: Chart Mouse vrm=%f ebl=%f"), distance / 1852.0, bearing);
   }
   double full_range = wxMax(w, h) / 2.0;
 
@@ -326,13 +326,13 @@ void RadarCanvas::RenderCursor(int w, int h) {
   double x = center_x + sin(angle) * range - CURSOR_WIDTH * CURSOR_SCALE / 2;
   double y = center_y - cos(angle) * range - CURSOR_WIDTH * CURSOR_SCALE / 2;
 
-  // LOG_DIALOG(wxT("BR24radar_pi: draw cursor angle=%.1f bearing=%.1f"), rad2deg(angle), bearing);
+  // LOG_DIALOG(wxT("radar_pi: draw cursor angle=%.1f bearing=%.1f"), rad2deg(angle), bearing);
 
   if (!m_cursor_texture) {
     glGenTextures(1, &m_cursor_texture);
     glBindTexture(GL_TEXTURE_2D, m_cursor_texture);
     FillCursorTexture();
-    LOG_DIALOG(wxT("BR24radar_pi: generated cursor texture # %u"), m_cursor_texture);
+    LOG_DIALOG(wxT("radar_pi: generated cursor texture # %u"), m_cursor_texture);
   }
 
   glColor3f(1.0f, 1.0f, 1.0f);
@@ -400,7 +400,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   if (!m_pi->IsOpenGLEnabled()) {
     return;
   }
-  LOG_DIALOG(wxT("BR24radar_pi: %s render OpenGL canvas %d by %d "), m_ri->m_name.c_str(), w, h);
+  LOG_DIALOG(wxT("radar_pi: %s render OpenGL canvas %d by %d "), m_ri->m_name.c_str(), w, h);
 
   SetCurrent(*m_context);
 
@@ -528,7 +528,7 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
   int center_x = w / 2;
   int center_y = h / 2;
 
-  //  LOG_DIALOG(wxT("BR24radar_pi: %s Mouse clicked at %d, %d"), m_ri->m_name.c_str(), x, y);
+  //  LOG_DIALOG(wxT("radar_pi: %s Mouse clicked at %d, %d"), m_ri->m_name.c_str(), x, y);
   if (x > 0 && x < w && y > 0 && y < h) {
     if (x >= w - m_menu_size.x && y < m_menu_size.y) {
       m_pi->ShowRadarControl(m_ri->m_radar, true);
@@ -554,7 +554,7 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
 
       double range = distance / (1852.0 * full_range / display_range);
 
-      LOG_VERBOSE(wxT("BR24radar_pi: cursor in PPI at angle=%.1fdeg range=%.2fnm"), angle, range);
+      LOG_VERBOSE(wxT("radar_pi: cursor in PPI at angle=%.1fdeg range=%.2fnm"), angle, range);
       m_ri->SetMouseVrmEbl(range, angle);
     }
   }
@@ -570,18 +570,18 @@ void RadarCanvas::OnMouseWheel(wxMouseEvent &event) {
 
   wxLongLong now = wxGetUTCTimeMillis();
 
-  //  LOG_INFO(wxT("BR24radar_pi: %s Mouse range wheel %d / %d"), m_ri->m_name.c_str(), rotation, delta);
+  //  LOG_INFO(wxT("radar_pi: %s Mouse range wheel %d / %d"), m_ri->m_name.c_str(), rotation, delta);
 
   if (rotation) {
     if (m_pi->m_settings.reverse_zoom) {
       rotation = -rotation;
     }
     if (rotation > ZOOM_SENSITIVITY && m_last_mousewheel_zoom_in < now - ZOOM_TIME) {
-      LOG_INFO(wxT("BR24radar_pi: %s Mouse zoom in"), m_ri->m_name.c_str());
+      LOG_INFO(wxT("radar_pi: %s Mouse zoom in"), m_ri->m_name.c_str());
       m_ri->AdjustRange(+1);
       m_last_mousewheel_zoom_in = now;
     } else if (rotation < -1 * ZOOM_SENSITIVITY && m_last_mousewheel_zoom_out < now - ZOOM_TIME) {
-      LOG_INFO(wxT("BR24radar_pi: %s Mouse zoom out"), m_ri->m_name.c_str());
+      LOG_INFO(wxT("radar_pi: %s Mouse zoom out"), m_ri->m_name.c_str());
       m_ri->AdjustRange(-1);
       m_last_mousewheel_zoom_out = now;
     }
