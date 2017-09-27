@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
@@ -29,15 +29,15 @@
  ***************************************************************************
  */
 
-#ifndef _BR24CONTROLSDIALOG_H_
-#define _BR24CONTROLSDIALOG_H_
+#ifndef _CONTROLSDIALOG_H_
+#define _CONTROLSDIALOG_H_
 
-#include "br24radar_pi.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
-class br24RadarControlButton;
-class br24RadarRangeControlButton;
+class RadarControlButton;
+class RadarRangeControlButton;
 
 #define OFFSCREEN_CONTROL_X (-10000)
 #define OFFSCREEN_CONTROL_Y (-10000)
@@ -47,19 +47,19 @@ class br24RadarRangeControlButton;
 const static wxPoint OFFSCREEN_CONTROL = wxPoint(OFFSCREEN_CONTROL_X, OFFSCREEN_CONTROL_Y);
 
 //----------------------------------------------------------------------------------------------------------
-//    BR24Radar Control Dialog Specification
+//    Radar Control Dialog Specification
 //----------------------------------------------------------------------------------------------------------
-class br24ControlsDialog : public wxDialog {
-  DECLARE_CLASS(br24ControlsDialog)
+class ControlsDialog : public wxDialog {
+  DECLARE_CLASS(ControlsDialog)
   DECLARE_EVENT_TABLE()
 
  public:
-  br24ControlsDialog();
+  ControlsDialog();
 
-  ~br24ControlsDialog();
+  ~ControlsDialog();
   void Init();
 
-  bool Create(wxWindow *parent, br24radar_pi *pi, RadarInfo *ri, wxWindowID id = wxID_ANY, const wxString &caption = _("Radar"),
+  bool Create(wxWindow *parent, radar_pi *pi, RadarInfo *ri, wxWindowID id = wxID_ANY, const wxString &caption = _("Radar"),
               const wxPoint &pos = OFFSCREEN_CONTROL);
 
   void CreateControls();
@@ -79,7 +79,7 @@ class br24ControlsDialog : public wxDialog {
   void HideDialog();
   void ShowCursorPane() { SwitchTo(m_cursor_sizer, wxT("cursor")); }
 
-  br24radar_pi *m_pi;
+  radar_pi *m_pi;
   RadarInfo *m_ri;
   wxString m_log_name;
   wxBoxSizer *m_top_sizer;
@@ -134,7 +134,7 @@ class br24ControlsDialog : public wxDialog {
   void OnTransmitButtonClick(wxCommandEvent &event);
   void OnStandbyButtonClick(wxCommandEvent &event);
 
-  void EnterEditMode(br24RadarControlButton *button);
+  void EnterEditMode(RadarControlButton *button);
 
   void SwitchTo(wxBoxSizer *to, const wxChar *name);
   void UpdateAdvanced4GState();
@@ -163,7 +163,7 @@ class br24ControlsDialog : public wxDialog {
 
   // Edit Controls
 
-  br24RadarControlButton *m_from_control;  // Only set when in edit mode
+  RadarControlButton *m_from_control;  // Only set when in edit mode
 
   // The 'edit' control has these buttons:
   wxButton *m_plus_ten_button;
@@ -175,21 +175,21 @@ class br24ControlsDialog : public wxDialog {
   wxButton *m_auto_button;
 
   // Advanced controls
-  br24RadarControlButton *m_interference_rejection_button;
-  br24RadarControlButton *m_target_separation_button;
-  br24RadarControlButton *m_noise_rejection_button;
-  br24RadarControlButton *m_target_boost_button;
-  br24RadarControlButton *m_target_expansion_button;
-  br24RadarControlButton *m_scan_speed_button;
+  RadarControlButton *m_interference_rejection_button;
+  RadarControlButton *m_target_separation_button;
+  RadarControlButton *m_noise_rejection_button;
+  RadarControlButton *m_target_boost_button;
+  RadarControlButton *m_target_expansion_button;
+  RadarControlButton *m_scan_speed_button;
 
   // Installation controls
-  br24RadarControlButton *m_bearing_alignment_button;
-  br24RadarControlButton *m_antenna_height_button;
-  br24RadarControlButton *m_antenna_forward_button;
-  br24RadarControlButton *m_antenna_starboard_button;
-  br24RadarControlButton *m_local_interference_rejection_button;
-  br24RadarControlButton *m_side_lobe_suppression_button;
-  br24RadarControlButton *m_main_bang_size_button;
+  RadarControlButton *m_bearing_alignment_button;
+  RadarControlButton *m_antenna_height_button;
+  RadarControlButton *m_antenna_forward_button;
+  RadarControlButton *m_antenna_starboard_button;
+  RadarControlButton *m_local_interference_rejection_button;
+  RadarControlButton *m_side_lobe_suppression_button;
+  RadarControlButton *m_main_bang_size_button;
 
   // Bearing controls
   wxButton *m_bearing_buttons[BEARING_LINES];
@@ -199,7 +199,7 @@ class br24ControlsDialog : public wxDialog {
   wxButton *m_delete_all;
 
   // View controls
-  br24RadarControlButton *m_target_trails_button;
+  RadarControlButton *m_target_trails_button;
   wxButton *m_targets_button;
   wxButton *m_trails_motion_button;
   wxButton *m_clear_trails_button;
@@ -209,19 +209,19 @@ class br24ControlsDialog : public wxDialog {
   wxStaticText *m_power_text;
   wxButton *m_transmit_button;
   wxButton *m_standby_button;
-  br24RadarControlButton *m_timed_idle_button;
-  br24RadarControlButton *m_timed_run_button;
+  RadarControlButton *m_timed_idle_button;
+  RadarControlButton *m_timed_run_button;
 
   // Show Controls
 
   wxButton *m_overlay_button;
   wxButton *m_window_button;
-  br24RadarRangeControlButton *m_range_button;
-  br24RadarControlButton *m_transparency_button;  // TODO: Set it on change
-  br24RadarControlButton *m_refresh_rate_button;  // TODO: Set it on change
-  br24RadarControlButton *m_gain_button;
-  br24RadarControlButton *m_sea_button;
-  br24RadarControlButton *m_rain_button;
+  RadarRangeControlButton *m_range_button;
+  RadarControlButton *m_transparency_button;  // TODO: Set it on change
+  RadarControlButton *m_refresh_rate_button;  // TODO: Set it on change
+  RadarControlButton *m_gain_button;
+  RadarControlButton *m_sea_button;
+  RadarControlButton *m_rain_button;
   wxButton *m_adjust_button;
   wxButton *m_bearing_button;
   wxButton *m_guard_1_button;

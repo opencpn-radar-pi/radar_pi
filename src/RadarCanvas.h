@@ -33,13 +33,13 @@
 #define _RADAR_CANVAS_H_
 
 #include "TextureFont.h"
-#include "br24radar_pi.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
 class RadarCanvas : public wxGLCanvas {
  public:
-  RadarCanvas(br24radar_pi* pi, RadarInfo* ri, wxWindow* parent, wxSize size);
+  RadarCanvas(radar_pi* pi, RadarInfo* ri, wxWindow* parent, wxSize size);
   virtual ~RadarCanvas();
 
   void Render(wxPaintEvent& evt);
@@ -56,7 +56,7 @@ class RadarCanvas : public wxGLCanvas {
   void Render_EBL_VRM(int w, int h);
 
   wxWindow* m_parent;
-  br24radar_pi* m_pi;
+  radar_pi* m_pi;
   RadarInfo* m_ri;
 
   wxGLContext* m_context;  // Our GL context

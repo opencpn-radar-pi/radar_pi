@@ -36,7 +36,7 @@
 #ifndef _PI_COMMON_H_
 #define _PI_COMMON_H_
 
-#define PLUGIN_NAMESPACE br24
+#define PLUGIN_NAMESPACE RadarPlugin
 #define PLUGIN_BEGIN_NAMESPACE namespace PLUGIN_NAMESPACE {
 #define PLUGIN_END_NAMESPACE }
 

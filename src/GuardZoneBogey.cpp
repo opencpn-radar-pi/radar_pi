@@ -30,7 +30,7 @@
  */
 
 #include "GuardZoneBogey.h"
-#include "br24radar_pi.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -57,7 +57,7 @@ GuardZoneBogey::~GuardZoneBogey() {
   }
 }
 
-bool GuardZoneBogey::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, const wxString &m_caption, const wxPoint &pos,
+bool GuardZoneBogey::Create(wxWindow *parent, radar_pi *pi, wxWindowID id, const wxString &m_caption, const wxPoint &pos,
                             const wxSize &size, long style) {
   m_parent = parent;
   m_pi = pi;

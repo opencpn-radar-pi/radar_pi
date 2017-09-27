@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico br24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
@@ -28,7 +28,7 @@
  ***************************************************************************
  */
 
-#include "br24ControlsDialog.h"
+#include "ControlsDialog.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 
@@ -110,86 +110,86 @@ enum {  // process ID's
 //---------------------------------------------------------------------------------------
 //          Radar Control Implementation
 //---------------------------------------------------------------------------------------
-IMPLEMENT_CLASS(br24ControlsDialog, wxDialog)
+IMPLEMENT_CLASS(ControlsDialog, wxDialog)
 
-BEGIN_EVENT_TABLE(br24ControlsDialog, wxDialog)
+BEGIN_EVENT_TABLE(ControlsDialog, wxDialog)
 
-EVT_CLOSE(br24ControlsDialog::OnClose)
-EVT_BUTTON(ID_BACK, br24ControlsDialog::OnBackClick)
-EVT_BUTTON(ID_PLUS_TEN, br24ControlsDialog::OnPlusTenClick)
-EVT_BUTTON(ID_PLUS, br24ControlsDialog::OnPlusClick)
-EVT_BUTTON(ID_MINUS, br24ControlsDialog::OnMinusClick)
-EVT_BUTTON(ID_MINUS_TEN, br24ControlsDialog::OnMinusTenClick)
-EVT_BUTTON(ID_AUTO, br24ControlsDialog::OnAutoClick)
-EVT_BUTTON(ID_TRAILS_MOTION, br24ControlsDialog::OnTrailsMotionClick)
+EVT_CLOSE(ControlsDialog::OnClose)
+EVT_BUTTON(ID_BACK, ControlsDialog::OnBackClick)
+EVT_BUTTON(ID_PLUS_TEN, ControlsDialog::OnPlusTenClick)
+EVT_BUTTON(ID_PLUS, ControlsDialog::OnPlusClick)
+EVT_BUTTON(ID_MINUS, ControlsDialog::OnMinusClick)
+EVT_BUTTON(ID_MINUS_TEN, ControlsDialog::OnMinusTenClick)
+EVT_BUTTON(ID_AUTO, ControlsDialog::OnAutoClick)
+EVT_BUTTON(ID_TRAILS_MOTION, ControlsDialog::OnTrailsMotionClick)
 
-EVT_BUTTON(ID_TRANSPARENCY, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_INTERFERENCE_REJECTION, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_TARGET_BOOST, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_TARGET_EXPANSION, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_NOISE_REJECTION, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_TARGET_SEPARATION, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_REFRESHRATE, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_SCAN_SPEED, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_INSTALLATION, br24ControlsDialog::OnInstallationButtonClick)
-EVT_BUTTON(ID_PREFERENCES, br24ControlsDialog::OnPreferencesButtonClick)
+EVT_BUTTON(ID_TRANSPARENCY, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_INTERFERENCE_REJECTION, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_TARGET_BOOST, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_TARGET_EXPANSION, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_NOISE_REJECTION, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_TARGET_SEPARATION, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_REFRESHRATE, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_SCAN_SPEED, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_INSTALLATION, ControlsDialog::OnInstallationButtonClick)
+EVT_BUTTON(ID_PREFERENCES, ControlsDialog::OnPreferencesButtonClick)
 
-EVT_BUTTON(ID_BEARING_ALIGNMENT, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_ANTENNA_HEIGHT, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_ANTENNA_FORWARD, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_ANTENNA_STARBOARD, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_LOCAL_INTERFERENCE_REJECTION, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_SIDE_LOBE_SUPPRESSION, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_MAIN_BANG_SIZE, br24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_BEARING_ALIGNMENT, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_ANTENNA_HEIGHT, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_ANTENNA_FORWARD, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_ANTENNA_STARBOARD, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_LOCAL_INTERFERENCE_REJECTION, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_SIDE_LOBE_SUPPRESSION, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_MAIN_BANG_SIZE, ControlsDialog::OnRadarControlButtonClick)
 
-EVT_BUTTON(ID_POWER, br24ControlsDialog::OnPowerButtonClick)
-EVT_BUTTON(ID_SHOW_RADAR, br24ControlsDialog::OnRadarShowButtonClick)
-EVT_BUTTON(ID_RADAR_OVERLAY, br24ControlsDialog::OnRadarOverlayButtonClick)
-EVT_BUTTON(ID_RANGE, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_GAIN, br24ControlsDialog::OnRadarGainButtonClick)
-EVT_BUTTON(ID_SEA, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_RAIN, br24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_POWER, ControlsDialog::OnPowerButtonClick)
+EVT_BUTTON(ID_SHOW_RADAR, ControlsDialog::OnRadarShowButtonClick)
+EVT_BUTTON(ID_RADAR_OVERLAY, ControlsDialog::OnRadarOverlayButtonClick)
+EVT_BUTTON(ID_RANGE, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_GAIN, ControlsDialog::OnRadarGainButtonClick)
+EVT_BUTTON(ID_SEA, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_RAIN, ControlsDialog::OnRadarControlButtonClick)
 
-EVT_BUTTON(ID_TARGETS, br24ControlsDialog::OnTargetsButtonClick)
-EVT_BUTTON(ID_TARGET_TRAILS, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_CLEAR_TRAILS, br24ControlsDialog::OnClearTrailsButtonClick)
-EVT_BUTTON(ID_ORIENTATION, br24ControlsDialog::OnOrientationButtonClick)
+EVT_BUTTON(ID_TARGETS, ControlsDialog::OnTargetsButtonClick)
+EVT_BUTTON(ID_TARGET_TRAILS, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_CLEAR_TRAILS, ControlsDialog::OnClearTrailsButtonClick)
+EVT_BUTTON(ID_ORIENTATION, ControlsDialog::OnOrientationButtonClick)
 
-EVT_BUTTON(ID_ADJUST, br24ControlsDialog::OnAdjustButtonClick)
-EVT_BUTTON(ID_ADVANCED, br24ControlsDialog::OnAdvancedButtonClick)
-EVT_BUTTON(ID_VIEW, br24ControlsDialog::OnViewButtonClick)
+EVT_BUTTON(ID_ADJUST, ControlsDialog::OnAdjustButtonClick)
+EVT_BUTTON(ID_ADVANCED, ControlsDialog::OnAdvancedButtonClick)
+EVT_BUTTON(ID_VIEW, ControlsDialog::OnViewButtonClick)
 
-EVT_BUTTON(ID_BEARING, br24ControlsDialog::OnBearingButtonClick)
-EVT_BUTTON(ID_ZONE1, br24ControlsDialog::OnZone1ButtonClick)
-EVT_BUTTON(ID_ZONE2, br24ControlsDialog::OnZone2ButtonClick)
+EVT_BUTTON(ID_BEARING, ControlsDialog::OnBearingButtonClick)
+EVT_BUTTON(ID_ZONE1, ControlsDialog::OnZone1ButtonClick)
+EVT_BUTTON(ID_ZONE2, ControlsDialog::OnZone2ButtonClick)
 
-EVT_BUTTON(ID_MESSAGE, br24ControlsDialog::OnMessageButtonClick)
+EVT_BUTTON(ID_MESSAGE, ControlsDialog::OnMessageButtonClick)
 
-EVT_BUTTON(ID_BEARING_SET, br24ControlsDialog::OnBearingSetButtonClick)
-EVT_BUTTON(ID_CLEAR_CURSOR, br24ControlsDialog::OnClearCursorButtonClick)
-EVT_BUTTON(ID_ACQUIRE_TARGET, br24ControlsDialog::OnAcquireTargetButtonClick)
-EVT_BUTTON(ID_DELETE_TARGET, br24ControlsDialog::OnDeleteTargetButtonClick)
-EVT_BUTTON(ID_DELETE_ALL_TARGETS, br24ControlsDialog::OnDeleteAllTargetsButtonClick)
+EVT_BUTTON(ID_BEARING_SET, ControlsDialog::OnBearingSetButtonClick)
+EVT_BUTTON(ID_CLEAR_CURSOR, ControlsDialog::OnClearCursorButtonClick)
+EVT_BUTTON(ID_ACQUIRE_TARGET, ControlsDialog::OnAcquireTargetButtonClick)
+EVT_BUTTON(ID_DELETE_TARGET, ControlsDialog::OnDeleteTargetButtonClick)
+EVT_BUTTON(ID_DELETE_ALL_TARGETS, ControlsDialog::OnDeleteAllTargetsButtonClick)
 
-EVT_BUTTON(ID_TRANSMIT, br24ControlsDialog::OnTransmitButtonClick)
-EVT_BUTTON(ID_STANDBY, br24ControlsDialog::OnStandbyButtonClick)
-EVT_BUTTON(ID_TIMED_IDLE, br24ControlsDialog::OnRadarControlButtonClick)
-EVT_BUTTON(ID_TIMED_RUN, br24ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_TRANSMIT, ControlsDialog::OnTransmitButtonClick)
+EVT_BUTTON(ID_STANDBY, ControlsDialog::OnStandbyButtonClick)
+EVT_BUTTON(ID_TIMED_IDLE, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_TIMED_RUN, ControlsDialog::OnRadarControlButtonClick)
 
-EVT_MOVE(br24ControlsDialog::OnMove)
-EVT_CLOSE(br24ControlsDialog::OnClose)
+EVT_MOVE(ControlsDialog::OnMove)
+EVT_CLOSE(ControlsDialog::OnClose)
 
 END_EVENT_TABLE()
 
 static wxSize g_buttonSize;
 
-class br24RadarButton : public wxButton {
+class RadarButton : public wxButton {
  public:
-  br24RadarButton(){
+  RadarButton(){
 
   };
 
-  br24RadarButton(br24ControlsDialog* parent, wxWindowID id, const wxString& label) {
+  RadarButton(ControlsDialog* parent, wxWindowID id, const wxString& label) {
     Create(parent, id, label, wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
 
     m_parent = parent;
@@ -198,8 +198,8 @@ class br24RadarButton : public wxButton {
     SetLabel(label);  // Use the \n on Mac to enforce double height button
   }
 
-  br24ControlsDialog* m_parent;
-  br24radar_pi* m_pi;
+  ControlsDialog* m_parent;
+  radar_pi* m_pi;
 
   void SetLabel(const wxString& label) {
     wxString newLabel;
@@ -230,14 +230,14 @@ class DynamicStaticText : public wxStaticText {
   }
 };
 
-class br24RadarControlButton : public wxButton {
+class RadarControlButton : public wxButton {
  public:
-  br24RadarControlButton(){
+  RadarControlButton(){
 
   };
 
-  br24RadarControlButton(br24ControlsDialog* parent, wxWindowID id, const wxString& label, ControlType ct, bool newHasAuto,
-                         int newValue, const wxString& newUnit = wxT(""), const wxString& newComment = wxT("")) {
+  RadarControlButton(ControlsDialog* parent, wxWindowID id, const wxString& label, ControlType ct, bool newHasAuto, int newValue,
+                     const wxString& newUnit = wxT(""), const wxString& newComment = wxT("")) {
     Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
 
     m_parent = parent;
@@ -276,8 +276,8 @@ class br24RadarControlButton : public wxButton {
 
   wxString firstLine;
 
-  br24ControlsDialog* m_parent;
-  br24radar_pi* m_pi;
+  ControlsDialog* m_parent;
+  radar_pi* m_pi;
 
   int value;
   int autoValue;   // 0 = not auto mode, 1 = normal auto value, 2... etc special, auto_names is set
@@ -288,9 +288,9 @@ class br24RadarControlButton : public wxButton {
   ControlType controlType;
 };
 
-class br24RadarRangeControlButton : public br24RadarControlButton {
+class RadarRangeControlButton : public RadarControlButton {
  public:
-  br24RadarRangeControlButton(br24ControlsDialog* parent, RadarInfo* ri, wxWindowID id, const wxString& label) {
+  RadarRangeControlButton(ControlsDialog* parent, RadarInfo* ri, wxWindowID id, const wxString& label) {
     Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
 
     m_parent = parent;
@@ -330,7 +330,7 @@ wxString guard_zone_names[2];
 wxString target_trail_names[TRAIL_ARRAY_SIZE];
 wxString sea_clutter_names[2];
 
-void br24RadarControlButton::AdjustValue(int adjustment) {
+void RadarControlButton::AdjustValue(int adjustment) {
   int newValue = value + adjustment;
 
   autoValue = 0;  // Disable Auto
@@ -348,7 +348,7 @@ void br24RadarControlButton::AdjustValue(int adjustment) {
   }
 }
 
-void br24RadarControlButton::SetLocalValue(int newValue) {  // sets value in the button without sending new value to the radar
+void RadarControlButton::SetLocalValue(int newValue) {  // sets value in the button without sending new value to the radar
   if (newValue <= AUTO_RANGE) {
     SetLocalAuto(AUTO_RANGE - newValue);
     return;
@@ -380,13 +380,13 @@ void br24RadarControlButton::SetLocalValue(int newValue) {  // sets value in the
   this->SetLabel(label);
 }
 
-void br24RadarControlButton::SetAuto(int newAutoValue) {
+void RadarControlButton::SetAuto(int newAutoValue) {
   SetLocalAuto(newAutoValue);
   m_parent->m_ri->SetControlValue(controlType, value, newAutoValue);
 }
 
-void br24RadarControlButton::SetLocalAuto(int newValue) {  // sets auto in the button without sending new value
-                                                           // to the radar
+void RadarControlButton::SetLocalAuto(int newValue) {  // sets auto in the button without sending new value
+                                                       // to the radar
   wxString label;
 
   autoValue = newValue;
@@ -405,32 +405,32 @@ void br24RadarControlButton::SetLocalAuto(int newValue) {  // sets auto in the b
   this->SetLabel(label);
 }
 
-void br24RadarRangeControlButton::SetRangeLabel() {
+void RadarRangeControlButton::SetRangeLabel() {
   wxString text = m_ri->GetRangeText();
   this->SetLabel(firstLine + wxT("\n") + text);
 }
 
-void br24RadarRangeControlButton::AdjustValue(int adjustment) {
+void RadarRangeControlButton::AdjustValue(int adjustment) {
   LOG_VERBOSE(wxT("%s Adjusting %s by %d"), m_parent->m_log_name.c_str(), GetName(), adjustment);
   autoValue = 0;
   m_parent->m_ri->AdjustRange(adjustment);  // send new value to the radar
 }
 
-void br24RadarRangeControlButton::SetAuto(int newValue) {
+void RadarRangeControlButton::SetAuto(int newValue) {
   autoValue = newValue;
   m_parent->m_ri->m_auto_range_mode = true;
 }
 
-br24ControlsDialog::br24ControlsDialog() { Init(); }
+ControlsDialog::ControlsDialog() { Init(); }
 
-br24ControlsDialog::~br24ControlsDialog() {
+ControlsDialog::~ControlsDialog() {
   wxPoint pos = GetPosition();
 
   LOG_DIALOG(wxT("%s saved position %d,%d"), m_log_name.c_str(), pos.x, pos.y);
   m_pi->m_settings.control_pos[m_ri->m_radar] = pos;
 }
 
-void br24ControlsDialog::Init() {
+void ControlsDialog::Init() {
   // Initialize all members that need initialization
   m_hide = false;
   m_hide_temporarily = true;
@@ -441,13 +441,13 @@ void br24ControlsDialog::Init() {
   m_manually_positioned = false;
 }
 
-bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* ri, wxWindowID id, const wxString& caption,
-                                const wxPoint& pos) {
+bool ControlsDialog::Create(wxWindow* parent, radar_pi* ppi, RadarInfo* ri, wxWindowID id, const wxString& caption,
+                            const wxPoint& pos) {
   m_parent = parent;
   m_pi = ppi;
   m_ri = ri;
 
-  m_log_name = wxString::Format(wxT("BR24radar_pi: Radar %c ControlDialog:"), ri->m_radar + 'A');
+  m_log_name = wxString::Format(wxT("radar_pi: Radar %c ControlDialog:"), ri->m_radar + 'A');
 
 #ifdef __WXMSW__
   long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
@@ -473,7 +473,7 @@ bool br24ControlsDialog::Create(wxWindow* parent, br24radar_pi* ppi, RadarInfo* 
   return true;
 }
 
-void br24ControlsDialog::CreateControls() {
+void ControlsDialog::CreateControls() {
   static int BORDER = 0;
   wxString backButtonStr;
   backButtonStr << wxT("<<\n") << _("Back");
@@ -592,15 +592,15 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_edit_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The <<Back button
-  br24RadarButton* back_button = new br24RadarButton(this, ID_BACK, backButtonStr);
+  RadarButton* back_button = new RadarButton(this, ID_BACK, backButtonStr);
   m_edit_sizer->Add(back_button, 0, wxALL, BORDER);
 
   // The +10 button
-  m_plus_ten_button = new br24RadarButton(this, ID_PLUS_TEN, _("+10"));
+  m_plus_ten_button = new RadarButton(this, ID_PLUS_TEN, _("+10"));
   m_edit_sizer->Add(m_plus_ten_button, 0, wxALL, BORDER);
 
   // The + button
-  m_plus_button = new br24RadarButton(this, ID_PLUS, _("+"));
+  m_plus_button = new RadarButton(this, ID_PLUS, _("+"));
   m_edit_sizer->Add(m_plus_button, 0, wxALL, BORDER);
 
   // The VALUE text
@@ -616,15 +616,15 @@ void br24ControlsDialog::CreateControls() {
   m_comment_text->SetBackgroundColour(*wxLIGHT_GREY);
 
   // The - button
-  m_minus_button = new br24RadarButton(this, ID_MINUS, _("-"));
+  m_minus_button = new RadarButton(this, ID_MINUS, _("-"));
   m_edit_sizer->Add(m_minus_button, 0, wxALL, BORDER);
 
   // The -10 button
-  m_minus_ten_button = new br24RadarButton(this, ID_MINUS_TEN, _("-10"));
+  m_minus_ten_button = new RadarButton(this, ID_MINUS_TEN, _("-10"));
   m_edit_sizer->Add(m_minus_ten_button, 0, wxALL, BORDER);
 
   // The Auto button
-  m_auto_button = new br24RadarButton(this, ID_AUTO, _("Auto"));
+  m_auto_button = new RadarButton(this, ID_AUTO, _("Auto"));
   m_edit_sizer->Add(m_auto_button, 0, wxALL, BORDER);
 
   m_top_sizer->Hide(m_edit_sizer);
@@ -636,7 +636,7 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_advanced_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The Back button
-  br24RadarButton* bAdvancedBack = new br24RadarButton(this, ID_BACK, backButtonStr);
+  RadarButton* bAdvancedBack = new RadarButton(this, ID_BACK, backButtonStr);
   m_advanced_sizer->Add(bAdvancedBack, 0, wxALL, BORDER);
 
   // The NOISE REJECTION button
@@ -644,8 +644,7 @@ void br24ControlsDialog::CreateControls() {
   noise_rejection_names[1] = _("Low");
   noise_rejection_names[2] = _("High");
 
-  m_noise_rejection_button =
-      new br24RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), CT_NOISE_REJECTION, false, 0);
+  m_noise_rejection_button = new RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), CT_NOISE_REJECTION, false, 0);
   m_advanced_sizer->Add(m_noise_rejection_button, 0, wxALL, BORDER);
   m_noise_rejection_button->minValue = 0;
   m_noise_rejection_button->maxValue = ARRAY_SIZE(noise_rejection_names) - 1;
@@ -659,7 +658,7 @@ void br24ControlsDialog::CreateControls() {
   target_expansion_names[0] = _("Off");
   target_expansion_names[1] = _("On");
   m_target_expansion_button =
-      new br24RadarControlButton(this, ID_TARGET_EXPANSION, _("Target expansion"), CT_TARGET_EXPANSION, false, 0);
+      new RadarControlButton(this, ID_TARGET_EXPANSION, _("Target expansion"), CT_TARGET_EXPANSION, false, 0);
   m_advanced_sizer->Add(m_target_expansion_button, 0, wxALL, BORDER);
   m_target_expansion_button->minValue = 0;
   m_target_expansion_button->maxValue = ARRAY_SIZE(target_expansion_names) - 1;
@@ -674,7 +673,7 @@ void br24ControlsDialog::CreateControls() {
   interference_rejection_names[3] = _("High");
 
   m_interference_rejection_button =
-      new br24RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"), CT_INTERFERENCE_REJECTION, false, 0);
+      new RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"), CT_INTERFERENCE_REJECTION, false, 0);
   m_advanced_sizer->Add(m_interference_rejection_button, 0, wxALL, BORDER);
   m_interference_rejection_button->minValue = 0;
   m_interference_rejection_button->maxValue = ARRAY_SIZE(interference_rejection_names) - 1;
@@ -689,7 +688,7 @@ void br24ControlsDialog::CreateControls() {
   target_separation_names[3] = _("High");
 
   m_target_separation_button =
-      new br24RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"), CT_TARGET_SEPARATION, false, 0);
+      new RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"), CT_TARGET_SEPARATION, false, 0);
   m_advanced_4G_sizer->Add(m_target_separation_button, 0, wxALL, BORDER);
   m_target_separation_button->minValue = 0;
   m_target_separation_button->maxValue = ARRAY_SIZE(target_separation_names) - 1;
@@ -699,7 +698,7 @@ void br24ControlsDialog::CreateControls() {
   // The SCAN SPEED button
   scan_speed_names[0] = _("Normal");
   scan_speed_names[1] = _("Fast");
-  m_scan_speed_button = new br24RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), CT_SCAN_SPEED, false, 0);
+  m_scan_speed_button = new RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), CT_SCAN_SPEED, false, 0);
   m_advanced_sizer->Add(m_scan_speed_button, 0, wxALL, BORDER);
   m_scan_speed_button->minValue = 0;
   m_scan_speed_button->maxValue = ARRAY_SIZE(scan_speed_names) - 1;
@@ -710,7 +709,7 @@ void br24ControlsDialog::CreateControls() {
   target_boost_names[0] = _("Off");
   target_boost_names[1] = _("Low");
   target_boost_names[2] = _("High");
-  m_target_boost_button = new br24RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), CT_TARGET_BOOST, false, 0);
+  m_target_boost_button = new RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), CT_TARGET_BOOST, false, 0);
   m_advanced_sizer->Add(m_target_boost_button, 0, wxALL, BORDER);
   m_target_boost_button->minValue = 0;
   m_target_boost_button->maxValue = ARRAY_SIZE(target_boost_names) - 1;
@@ -718,11 +717,11 @@ void br24ControlsDialog::CreateControls() {
   m_target_boost_button->SetLocalValue(m_ri->m_target_boost.GetButton());  // redraw after adding names
 
   // The INSTALLATION button
-  br24RadarButton* bInstallation = new br24RadarButton(this, ID_INSTALLATION, _("Installation"));
+  RadarButton* bInstallation = new RadarButton(this, ID_INSTALLATION, _("Installation"));
   m_advanced_sizer->Add(bInstallation, 0, wxALL, BORDER);
 
   // The PREFERENCES button
-  br24RadarButton* bPreferences = new br24RadarButton(this, ID_PREFERENCES, _("Preferences"));
+  RadarButton* bPreferences = new RadarButton(this, ID_PREFERENCES, _("Preferences"));
   m_advanced_sizer->Add(bPreferences, 0, wxALL, BORDER);
 
   m_top_sizer->Hide(m_advanced_sizer);
@@ -734,42 +733,42 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_installation_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The Back button
-  br24RadarButton* bInstallationBack = new br24RadarButton(this, ID_BACK, backButtonStr);
+  RadarButton* bInstallationBack = new RadarButton(this, ID_BACK, backButtonStr);
   m_installation_sizer->Add(bInstallationBack, 0, wxALL, BORDER);
 
   // The BEARING ALIGNMENT button
   m_bearing_alignment_button =
-      new br24RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"), CT_BEARING_ALIGNMENT, false,
-                                 m_ri->m_bearing_alignment.GetButton(), _("degrees"), _("relative to bow"));
+      new RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"), CT_BEARING_ALIGNMENT, false,
+                             m_ri->m_bearing_alignment.GetButton(), _("degrees"), _("relative to bow"));
   m_installation_sizer->Add(m_bearing_alignment_button, 0, wxALL, BORDER);
   m_bearing_alignment_button->minValue = -179;
   m_bearing_alignment_button->maxValue = 180;
 
   // The ANTENNA HEIGHT button
-  m_antenna_height_button = new br24RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Antenna height"), CT_ANTENNA_HEIGHT, false,
-                                                       m_ri->m_antenna_height.GetButton(), _("m"), _("above sealevel"));
+  m_antenna_height_button = new RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Antenna height"), CT_ANTENNA_HEIGHT, false,
+                                                   m_ri->m_antenna_height.GetButton(), _("m"), _("above sealevel"));
   m_installation_sizer->Add(m_antenna_height_button, 0, wxALL, BORDER);
   m_antenna_height_button->minValue = 0;
   m_antenna_height_button->maxValue = 30;
 
   // The ANTENNA FORWARD button
-  m_antenna_forward_button = new br24RadarControlButton(this, ID_ANTENNA_FORWARD, _("Antenna forward"), CT_ANTENNA_FORWARD, false,
-                                                        m_pi->m_settings.antenna_forward, _("m"),
-                                                        _("relative to GPS") + wxT("\n") + _("negative = behind"));
+  m_antenna_forward_button =
+      new RadarControlButton(this, ID_ANTENNA_FORWARD, _("Antenna forward"), CT_ANTENNA_FORWARD, false,
+                             m_pi->m_settings.antenna_forward, _("m"), _("relative to GPS") + wxT("\n") + _("negative = behind"));
   m_installation_sizer->Add(m_antenna_forward_button, 0, wxALL, BORDER);
   m_antenna_forward_button->minValue = -200;
   m_antenna_forward_button->maxValue = 200;
 
   // The ANTENNA STARBOARD button
-  m_antenna_starboard_button = new br24RadarControlButton(this, ID_ANTENNA_STARBOARD, _("Antenna starboard"), CT_ANTENNA_STARBOARD,
-                                                          false, m_pi->m_settings.antenna_starboard, _("m"),
-                                                          _("relative to GPS") + wxT("\n") + _("negative = port"));
+  m_antenna_starboard_button =
+      new RadarControlButton(this, ID_ANTENNA_STARBOARD, _("Antenna starboard"), CT_ANTENNA_STARBOARD, false,
+                             m_pi->m_settings.antenna_starboard, _("m"), _("relative to GPS") + wxT("\n") + _("negative = port"));
   m_installation_sizer->Add(m_antenna_starboard_button, 0, wxALL, BORDER);
   m_antenna_starboard_button->minValue = -50;
   m_antenna_starboard_button->maxValue = 50;
 
   // The LOCAL INTERFERENCE REJECTION button
-  m_local_interference_rejection_button = new br24RadarControlButton(
+  m_local_interference_rejection_button = new RadarControlButton(
       this, ID_LOCAL_INTERFERENCE_REJECTION, _("Local interference rej."), CT_LOCAL_INTERFERENCE_REJECTION, false, 0);
   m_installation_sizer->Add(m_local_interference_rejection_button, 0, wxALL, BORDER);
   m_local_interference_rejection_button->minValue = 0;
@@ -779,16 +778,16 @@ void br24ControlsDialog::CreateControls() {
   m_local_interference_rejection_button->SetLocalValue(m_ri->m_local_interference_rejection.GetButton());
 
   // The SIDE LOBE SUPPRESSION button
-  m_side_lobe_suppression_button = new br24RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"),
-                                                              CT_SIDE_LOBE_SUPPRESSION, true, 0, wxT("%"));
+  m_side_lobe_suppression_button = new RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"),
+                                                          CT_SIDE_LOBE_SUPPRESSION, true, 0, wxT("%"));
   m_installation_sizer->Add(m_side_lobe_suppression_button, 0, wxALL, BORDER);
   m_side_lobe_suppression_button->minValue = 0;
   m_side_lobe_suppression_button->maxValue = 100;
   m_side_lobe_suppression_button->SetLocalValue(m_ri->m_side_lobe_suppression.GetButton());  // redraw after adding names
 
   // The MAIN BANG SIZE button
-  m_main_bang_size_button = new br24RadarControlButton(this, ID_MAIN_BANG_SIZE, _("Main bang size"), CT_MAIN_BANG_SIZE, false,
-                                                       m_pi->m_settings.main_bang_size);
+  m_main_bang_size_button = new RadarControlButton(this, ID_MAIN_BANG_SIZE, _("Main bang size"), CT_MAIN_BANG_SIZE, false,
+                                                   m_pi->m_settings.main_bang_size);
   m_installation_sizer->Add(m_main_bang_size_button, 0, wxALL, BORDER);
   m_main_bang_size_button->minValue = 0;
   m_main_bang_size_button->maxValue = 10;
@@ -801,7 +800,7 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_guard_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The <<Back button
-  br24RadarButton* guard_back_button = new br24RadarButton(this, ID_BACK, backButtonStr);
+  RadarButton* guard_back_button = new RadarButton(this, ID_BACK, backButtonStr);
   m_guard_sizer->Add(guard_back_button, 0, wxALL, BORDER);
 
   m_guard_zone_text = new wxStaticText(this, wxID_ANY, _("Guard zones"));
@@ -818,7 +817,7 @@ void br24ControlsDialog::CreateControls() {
                                      guard_zone_names, 1, wxRA_SPECIFY_COLS);
   m_guard_sizer->Add(m_guard_zone_type, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
-  m_guard_zone_type->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(br24ControlsDialog::OnGuardZoneModeClick), NULL,
+  m_guard_zone_type->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(ControlsDialog::OnGuardZoneModeClick), NULL,
                              this);
 
   // Inner and Outer Ranges
@@ -827,39 +826,38 @@ void br24ControlsDialog::CreateControls() {
 
   m_inner_range = new wxTextCtrl(this, wxID_ANY);
   m_guard_sizer->Add(m_inner_range, 1, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-  m_inner_range->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24ControlsDialog::OnInner_Range_Value), NULL, this);
+  m_inner_range->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(ControlsDialog::OnInner_Range_Value), NULL, this);
   ///   start of copy
   wxStaticText* outer_range_Text = new wxStaticText(this, wxID_ANY, _("Outer range"), wxDefaultPosition, wxDefaultSize, 0);
   m_guard_sizer->Add(outer_range_Text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
 
   m_outer_range = new wxTextCtrl(this, wxID_ANY);
   m_guard_sizer->Add(m_outer_range, 1, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-  m_outer_range->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24ControlsDialog::OnOuter_Range_Value), NULL, this);
+  m_outer_range->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(ControlsDialog::OnOuter_Range_Value), NULL, this);
 
   wxStaticText* pStart_Bearing = new wxStaticText(this, wxID_ANY, _("Start bearing"), wxDefaultPosition, wxDefaultSize, 0);
   m_guard_sizer->Add(pStart_Bearing, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
 
   m_start_bearing = new wxTextCtrl(this, wxID_ANY);
   m_guard_sizer->Add(m_start_bearing, 1, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-  m_start_bearing->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24ControlsDialog::OnStart_Bearing_Value), NULL,
-                           this);
+  m_start_bearing->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(ControlsDialog::OnStart_Bearing_Value), NULL, this);
 
   wxStaticText* pEnd_Bearing = new wxStaticText(this, wxID_ANY, _("End bearing"), wxDefaultPosition, wxDefaultSize, 0);
   m_guard_sizer->Add(pEnd_Bearing, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
 
   m_end_bearing = new wxTextCtrl(this, wxID_ANY);
   m_guard_sizer->Add(m_end_bearing, 1, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-  m_end_bearing->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(br24ControlsDialog::OnEnd_Bearing_Value), NULL, this);
+  m_end_bearing->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(ControlsDialog::OnEnd_Bearing_Value), NULL, this);
 
   // checkbox for ARPA
   m_arpa_box = new wxCheckBox(this, wxID_ANY, _("ARPA On"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT | wxST_NO_AUTORESIZE);
   m_guard_sizer->Add(m_arpa_box, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
-  m_arpa_box->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnARPAClick), NULL, this);
+  m_arpa_box->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ControlsDialog::OnARPAClick), NULL, this);
 
   // checkbox for blob alarm
   m_alarm = new wxCheckBox(this, wxID_ANY, _("Alarm On"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT | wxST_NO_AUTORESIZE);
   m_guard_sizer->Add(m_alarm, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
-  m_alarm->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnAlarmClick), NULL, this);
+  m_alarm->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ControlsDialog::OnAlarmClick), NULL, this);
 
   m_top_sizer->Hide(m_guard_sizer);
 
@@ -869,28 +867,28 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_adjust_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The Back button
-  br24RadarButton* bAdjustBack = new br24RadarButton(this, ID_BACK, backButtonStr);
+  RadarButton* bAdjustBack = new RadarButton(this, ID_BACK, backButtonStr);
   m_adjust_sizer->Add(bAdjustBack, 0, wxALL, BORDER);
 
   // The RANGE button
-  m_range_button = new br24RadarRangeControlButton(this, m_ri, ID_RANGE, _("Range"));
+  m_range_button = new RadarRangeControlButton(this, m_ri, ID_RANGE, _("Range"));
   m_adjust_sizer->Add(m_range_button, 0, wxALL, BORDER);
 
   // The GAIN button
-  m_gain_button = new br24RadarControlButton(this, ID_GAIN, _("Gain"), CT_GAIN, true, m_ri->m_gain.GetButton());
+  m_gain_button = new RadarControlButton(this, ID_GAIN, _("Gain"), CT_GAIN, true, m_ri->m_gain.GetButton());
   m_adjust_sizer->Add(m_gain_button, 0, wxALL, BORDER);
 
   // The SEA button
   sea_clutter_names[0] = _("Harbour");
   sea_clutter_names[1] = _("Offshore");
-  m_sea_button = new br24RadarControlButton(this, ID_SEA, _("Sea clutter"), CT_SEA, false, 0);
+  m_sea_button = new RadarControlButton(this, ID_SEA, _("Sea clutter"), CT_SEA, false, 0);
   m_sea_button->autoNames = sea_clutter_names;
   m_sea_button->autoValues = 2;
   m_sea_button->SetLocalValue(m_ri->m_sea.GetButton());
   m_adjust_sizer->Add(m_sea_button, 0, wxALL, BORDER);
 
   // The RAIN button
-  m_rain_button = new br24RadarControlButton(this, ID_RAIN, _("Rain clutter"), CT_RAIN, false, m_ri->m_rain.GetButton());
+  m_rain_button = new RadarControlButton(this, ID_RAIN, _("Rain clutter"), CT_RAIN, false, m_ri->m_rain.GetButton());
   m_adjust_sizer->Add(m_rain_button, 0, wxALL, BORDER);
 
   m_top_sizer->Hide(m_adjust_sizer);
@@ -901,33 +899,33 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_cursor_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The Back button
-  br24RadarButton* bCursorBack = new br24RadarButton(this, ID_BACK, backButtonStr);
+  RadarButton* bCursorBack = new RadarButton(this, ID_BACK, backButtonStr);
   m_cursor_sizer->Add(bCursorBack, 0, wxALL, BORDER);
 
   // The CLEAR CURSOR button
-  m_clear_cursor = new br24RadarButton(this, ID_CLEAR_CURSOR, _("Clear cursor"));
+  m_clear_cursor = new RadarButton(this, ID_CLEAR_CURSOR, _("Clear cursor"));
   m_cursor_sizer->Add(m_clear_cursor, 0, wxALL, BORDER);
 
   // The ACQUIRE TARGET button
-  m_acquire_target = new br24RadarButton(this, ID_ACQUIRE_TARGET, _("Acquire Target"));
+  m_acquire_target = new RadarButton(this, ID_ACQUIRE_TARGET, _("Acquire Target"));
   m_cursor_sizer->Add(m_acquire_target, 0, wxALL, BORDER);
 
   // The DELETE TARGET button
-  m_delete_target = new br24RadarButton(this, ID_DELETE_TARGET, _("Delete target"));
+  m_delete_target = new RadarButton(this, ID_DELETE_TARGET, _("Delete target"));
   m_cursor_sizer->Add(m_delete_target, 0, wxALL, BORDER);
 
   // The DELETE ALL button
-  m_delete_all = new br24RadarButton(this, ID_DELETE_ALL_TARGETS, _("Delete all targets"));
+  m_delete_all = new RadarButton(this, ID_DELETE_ALL_TARGETS, _("Delete all targets"));
   m_cursor_sizer->Add(m_delete_all, 0, wxALL, BORDER);
 
   for (int b = 0; b < BEARING_LINES; b++) {
     // The BEARING button
     wxString label = _("Place EBL/VRM");
     label << wxString::Format(wxT("%d"), b + 1);
-    m_bearing_buttons[b] = new br24RadarButton(this, ID_BEARING_SET + b, label);
+    m_bearing_buttons[b] = new RadarButton(this, ID_BEARING_SET + b, label);
     m_cursor_sizer->Add(m_bearing_buttons[b], 0, wxALL, BORDER);
-    m_bearing_buttons[b]->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(br24ControlsDialog::OnBearingSetButtonClick),
-                                  0, this);
+    m_bearing_buttons[b]->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ControlsDialog::OnBearingSetButtonClick), 0,
+                                  this);
   }
 
   m_top_sizer->Hide(m_cursor_sizer);
@@ -939,15 +937,15 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_view_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The Back button
-  br24RadarButton* bMenuBack = new br24RadarButton(this, ID_BACK, backButtonStr);
+  RadarButton* bMenuBack = new RadarButton(this, ID_BACK, backButtonStr);
   m_view_sizer->Add(bMenuBack, 0, wxALL, BORDER);
 
   // The Show Targets button
-  m_targets_button = new br24RadarButton(this, ID_TARGETS, _("Show AIS/ARPA"));
+  m_targets_button = new RadarButton(this, ID_TARGETS, _("Show AIS/ARPA"));
   m_view_sizer->Add(m_targets_button, 0, wxALL, BORDER);
 
   // The Trails Motion button
-  m_trails_motion_button = new br24RadarButton(this, ID_TRAILS_MOTION, _("Off/Relative/True trails"));
+  m_trails_motion_button = new RadarButton(this, ID_TRAILS_MOTION, _("Off/Relative/True trails"));
   m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
 
   // The TARGET_TRAIL button
@@ -959,7 +957,7 @@ void br24ControlsDialog::CreateControls() {
   target_trail_names[TRAIL_10MIN] = _("10 min");
   target_trail_names[TRAIL_CONTINUOUS] = _("Continuous");
 
-  m_target_trails_button = new br24RadarControlButton(this, ID_TARGET_TRAILS, _("Target trails"), CT_TARGET_TRAILS, false, 0);
+  m_target_trails_button = new RadarControlButton(this, ID_TARGET_TRAILS, _("Target trails"), CT_TARGET_TRAILS, false, 0);
   m_view_sizer->Add(m_target_trails_button, 0, wxALL, BORDER);
   m_target_trails_button->minValue = 0;
   m_target_trails_button->maxValue = ARRAY_SIZE(target_trail_names) - 1;
@@ -968,25 +966,25 @@ void br24ControlsDialog::CreateControls() {
   m_target_trails_button->Hide();
 
   // The Clear Trails button
-  m_clear_trails_button = new br24RadarButton(this, ID_CLEAR_TRAILS, _("Clear trails"));
+  m_clear_trails_button = new RadarButton(this, ID_CLEAR_TRAILS, _("Clear trails"));
   m_view_sizer->Add(m_clear_trails_button, 0, wxALL, BORDER);
   m_clear_trails_button->Hide();
 
   // The Rotation button
-  m_orientation_button = new br24RadarButton(this, ID_ORIENTATION, _("Orientation"));
+  m_orientation_button = new RadarButton(this, ID_ORIENTATION, _("Orientation"));
   m_view_sizer->Add(m_orientation_button, 0, wxALL, BORDER);
   // Updated when we receive data
 
   // The REFRESHRATE button
   m_refresh_rate_button =
-      new br24RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), CT_REFRESHRATE, false, m_pi->m_settings.refreshrate);
+      new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), CT_REFRESHRATE, false, m_pi->m_settings.refreshrate);
   m_view_sizer->Add(m_refresh_rate_button, 0, wxALL, BORDER);
   m_refresh_rate_button->minValue = 1;
   m_refresh_rate_button->maxValue = 5;
 
   // The TRANSPARENCY button
-  m_transparency_button = new br24RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), CT_TRANSPARENCY, false,
-                                                     m_pi->m_settings.overlay_transparency);
+  m_transparency_button = new RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), CT_TRANSPARENCY, false,
+                                                 m_pi->m_settings.overlay_transparency);
   m_view_sizer->Add(m_transparency_button, 0, wxALL, BORDER);
   m_transparency_button->minValue = MIN_OVERLAY_TRANSPARENCY;
   m_transparency_button->maxValue = MAX_OVERLAY_TRANSPARENCY;
@@ -999,16 +997,16 @@ void br24ControlsDialog::CreateControls() {
   m_top_sizer->Add(m_power_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The <<Back button
-  br24RadarButton* power_back_button = new br24RadarButton(this, ID_BACK, backButtonStr);
+  RadarButton* power_back_button = new RadarButton(this, ID_BACK, backButtonStr);
   m_power_sizer->Add(power_back_button, 0, wxALL, BORDER);
 
   m_power_text = new wxStaticText(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0);
   m_power_sizer->Add(m_power_text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
-  m_transmit_button = new br24RadarButton(this, ID_TRANSMIT, _("Transmit"));
+  m_transmit_button = new RadarButton(this, ID_TRANSMIT, _("Transmit"));
   m_power_sizer->Add(m_transmit_button, 0, wxALL, BORDER);
 
-  m_standby_button = new br24RadarButton(this, ID_STANDBY, _("Standby"));
+  m_standby_button = new RadarButton(this, ID_STANDBY, _("Standby"));
   m_power_sizer->Add(m_standby_button, 0, wxALL, BORDER);
 
   // The TIMED TRANSMIT button
@@ -1022,7 +1020,7 @@ void br24ControlsDialog::CreateControls() {
   timed_idle_times[7] = _("35 min");
 
   m_timed_idle_button =
-      new br24RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), CT_TIMED_IDLE, false, m_pi->m_settings.timed_idle);
+      new RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), CT_TIMED_IDLE, false, m_pi->m_settings.timed_idle);
   m_power_sizer->Add(m_timed_idle_button, 0, wxALL, BORDER);
   m_timed_idle_button->minValue = 0;
   m_timed_idle_button->maxValue = ARRAY_SIZE(timed_idle_times) - 1;
@@ -1034,7 +1032,7 @@ void br24ControlsDialog::CreateControls() {
   timed_run_times[1] = _("20 s");
   timed_run_times[2] = _("30 s");
 
-  m_timed_run_button = new br24RadarControlButton(this, ID_TIMED_RUN, _("Runtime"), CT_TIMED_RUN, false, 0);
+  m_timed_run_button = new RadarControlButton(this, ID_TIMED_RUN, _("Runtime"), CT_TIMED_RUN, false, 0);
   m_power_sizer->Add(m_timed_run_button, 0, wxALL, BORDER);
   m_timed_run_button->minValue = 0;
   m_timed_run_button->maxValue = ARRAY_SIZE(timed_run_times) - 1;
@@ -1042,7 +1040,7 @@ void br24ControlsDialog::CreateControls() {
   m_timed_run_button->SetLocalValue(m_pi->m_settings.idle_run_time);
 
   // The INFO button
-  br24RadarButton* bMessage = new br24RadarButton(this, ID_MESSAGE, _("Info"));
+  RadarButton* bMessage = new RadarButton(this, ID_MESSAGE, _("Info"));
   m_power_sizer->Add(bMessage, 0, wxALL, BORDER);
 
   m_top_sizer->Hide(m_power_sizer);
@@ -1060,42 +1058,42 @@ void br24ControlsDialog::CreateControls() {
   m_control_sizer->Add(m_transmit_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The ADJUST button
-  m_adjust_button = new br24RadarButton(this, ID_ADJUST, _("Adjust"));
+  m_adjust_button = new RadarButton(this, ID_ADJUST, _("Adjust"));
   m_transmit_sizer->Add(m_adjust_button, 0, wxALL, BORDER);
 
   // The ADVANCED button
-  br24RadarButton* bAdvanced = new br24RadarButton(this, ID_ADVANCED, _("Advanced"));
+  RadarButton* bAdvanced = new RadarButton(this, ID_ADVANCED, _("Advanced"));
   m_transmit_sizer->Add(bAdvanced, 0, wxALL, BORDER);
 
   // The VIEW menu
-  br24RadarButton* bView = new br24RadarButton(this, ID_VIEW, _("View"));
+  RadarButton* bView = new RadarButton(this, ID_VIEW, _("View"));
   m_transmit_sizer->Add(bView, 0, wxALL, BORDER);
 
   // The BEARING button
-  m_bearing_button = new br24RadarButton(this, ID_BEARING, _("Cursor"));
+  m_bearing_button = new RadarButton(this, ID_BEARING, _("Cursor"));
   m_transmit_sizer->Add(m_bearing_button, 0, wxALL, BORDER);
 
   // The GUARD ZONE 1 button
-  m_guard_1_button = new br24RadarButton(this, ID_ZONE1, wxT(""));
+  m_guard_1_button = new RadarButton(this, ID_ZONE1, wxT(""));
   m_transmit_sizer->Add(m_guard_1_button, 0, wxALL, BORDER);
 
   // The GUARD ZONE 2 button
-  m_guard_2_button = new br24RadarButton(this, ID_ZONE2, wxT(""));
+  m_guard_2_button = new RadarButton(this, ID_ZONE2, wxT(""));
   m_transmit_sizer->Add(m_guard_2_button, 0, wxALL, BORDER);
 
   ///// Following three are shown even when radar is not transmitting
 
   // The SHOW / HIDE RADAR button
-  m_window_button = new br24RadarButton(this, ID_SHOW_RADAR, wxT(""));
+  m_window_button = new RadarButton(this, ID_SHOW_RADAR, wxT(""));
   m_control_sizer->Add(m_window_button, 0, wxALL, BORDER);
 
   // The RADAR ONLY / OVERLAY button
   wxString overlay = _("Overlay");
-  m_overlay_button = new br24RadarButton(this, ID_RADAR_OVERLAY, overlay);
+  m_overlay_button = new RadarButton(this, ID_RADAR_OVERLAY, overlay);
   m_control_sizer->Add(m_overlay_button, 0, wxALL, BORDER);
 
   // The Transmit button
-  m_power_button = new br24RadarButton(this, ID_POWER, _("Unknown"));
+  m_power_button = new RadarButton(this, ID_POWER, _("Unknown"));
   m_control_sizer->Add(m_power_button, 0, wxALL, BORDER);
   // Updated when we receive data
 
@@ -1113,7 +1111,7 @@ void br24ControlsDialog::CreateControls() {
   // SetSize(size_min);
 }
 
-void br24ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar* name) {
+void ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar* name) {
   if (!m_top_sizer || !m_from_sizer) {
     return;
   }
@@ -1135,7 +1133,7 @@ void br24ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar* name) {
   Fit();
 }
 
-void br24ControlsDialog::UpdateAdvanced4GState() {
+void ControlsDialog::UpdateAdvanced4GState() {
   if (m_top_sizer->IsShown(m_advanced_sizer)) {
     if (m_ri->m_radar_type == RT_4G) {
       m_advanced_sizer->Show(m_advanced_4G_sizer);
@@ -1145,7 +1143,7 @@ void br24ControlsDialog::UpdateAdvanced4GState() {
   }
 }
 
-void br24ControlsDialog::UpdateTrailsState() {
+void ControlsDialog::UpdateTrailsState() {
   if (m_top_sizer->IsShown(m_view_sizer)) {
     int value = m_ri->m_trails_motion.GetValue();
 
@@ -1159,7 +1157,7 @@ void br24ControlsDialog::UpdateTrailsState() {
   }
 }
 
-void br24ControlsDialog::UpdateGuardZoneState() {
+void ControlsDialog::UpdateGuardZoneState() {
   wxString label1, label2, label3, label4;
   if (m_ri->m_guard_zone[0]->m_alarm_on) {
     label3 << _(" + Alarm");
@@ -1189,20 +1187,20 @@ void br24ControlsDialog::UpdateGuardZoneState() {
 }
 
 #if 0
-void br24ControlsDialog::SetTimedIdleIndex(int index) {
+void ControlsDialog::SetTimedIdleIndex(int index) {
   m_timed_idle_button->SetValue(index);  // set and recompute the Timed Idle label
 }
 #endif
 
-void br24ControlsDialog::OnZone1ButtonClick(wxCommandEvent& event) { ShowGuardZone(0); }
+void ControlsDialog::OnZone1ButtonClick(wxCommandEvent& event) { ShowGuardZone(0); }
 
-void br24ControlsDialog::OnZone2ButtonClick(wxCommandEvent& event) { ShowGuardZone(1); }
+void ControlsDialog::OnZone2ButtonClick(wxCommandEvent& event) { ShowGuardZone(1); }
 
-void br24ControlsDialog::OnClose(wxCloseEvent& event) { m_pi->OnControlDialogClose(m_ri); }
+void ControlsDialog::OnClose(wxCloseEvent& event) { m_pi->OnControlDialogClose(m_ri); }
 
-void br24ControlsDialog::OnIdOKClick(wxCommandEvent& event) { m_pi->OnControlDialogClose(m_ri); }
+void ControlsDialog::OnIdOKClick(wxCommandEvent& event) { m_pi->OnControlDialogClose(m_ri); }
 
-void br24ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
+void ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
   LOG_DIALOG(wxT("%s OnPlustTenClick for %s value %d"), m_log_name.c_str(), m_from_control->GetLabel().c_str(),
              m_from_control->value + 10);
   m_from_control->AdjustValue(+10);
@@ -1212,7 +1210,7 @@ void br24ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
   m_value_text->SetLabel(label);
 }
 
-void br24ControlsDialog::OnPlusClick(wxCommandEvent& event) {
+void ControlsDialog::OnPlusClick(wxCommandEvent& event) {
   m_from_control->AdjustValue(+1);
   m_auto_button->Enable();
 
@@ -1220,7 +1218,7 @@ void br24ControlsDialog::OnPlusClick(wxCommandEvent& event) {
   m_value_text->SetLabel(label);
 }
 
-void br24ControlsDialog::OnBackClick(wxCommandEvent& event) {
+void ControlsDialog::OnBackClick(wxCommandEvent& event) {
   if (m_top_sizer->IsShown(m_edit_sizer)) {
     m_top_sizer->Hide(m_edit_sizer);
     SwitchTo(m_from_sizer, wxT("from (back click)"));
@@ -1232,7 +1230,7 @@ void br24ControlsDialog::OnBackClick(wxCommandEvent& event) {
   }
 }
 
-void br24ControlsDialog::OnAutoClick(wxCommandEvent& event) {
+void ControlsDialog::OnAutoClick(wxCommandEvent& event) {
   if (m_from_control->autoValues == 1) {
     m_from_control->SetAuto(1);
     m_auto_button->Disable();
@@ -1243,7 +1241,7 @@ void br24ControlsDialog::OnAutoClick(wxCommandEvent& event) {
   }
 }
 
-void br24ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
+void ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
   int value = m_ri->m_trails_motion.GetValue();
 
   value++;
@@ -1258,7 +1256,7 @@ void br24ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
   UpdateControlValues(false);
 }
 
-void br24ControlsDialog::OnMinusClick(wxCommandEvent& event) {
+void ControlsDialog::OnMinusClick(wxCommandEvent& event) {
   m_from_control->AdjustValue(-1);
   m_auto_button->Enable();
 
@@ -1266,7 +1264,7 @@ void br24ControlsDialog::OnMinusClick(wxCommandEvent& event) {
   m_value_text->SetLabel(label);
 }
 
-void br24ControlsDialog::OnMinusTenClick(wxCommandEvent& event) {
+void ControlsDialog::OnMinusTenClick(wxCommandEvent& event) {
   m_from_control->AdjustValue(-10);
   m_auto_button->Enable();
 
@@ -1274,21 +1272,21 @@ void br24ControlsDialog::OnMinusTenClick(wxCommandEvent& event) {
   m_value_text->SetLabel(label);
 }
 
-void br24ControlsDialog::OnAdjustButtonClick(wxCommandEvent& event) { SwitchTo(m_adjust_sizer, wxT("adjust")); }
+void ControlsDialog::OnAdjustButtonClick(wxCommandEvent& event) { SwitchTo(m_adjust_sizer, wxT("adjust")); }
 
-void br24ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event) { SwitchTo(m_advanced_sizer, wxT("advanced")); }
+void ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event) { SwitchTo(m_advanced_sizer, wxT("advanced")); }
 
-void br24ControlsDialog::OnViewButtonClick(wxCommandEvent& event) { SwitchTo(m_view_sizer, wxT("view")); }
+void ControlsDialog::OnViewButtonClick(wxCommandEvent& event) { SwitchTo(m_view_sizer, wxT("view")); }
 
-void br24ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event) { SwitchTo(m_installation_sizer, wxT("installation")); }
+void ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event) { SwitchTo(m_installation_sizer, wxT("installation")); }
 
-void br24ControlsDialog::OnPowerButtonClick(wxCommandEvent& event) { SwitchTo(m_power_sizer, wxT("power")); }
+void ControlsDialog::OnPowerButtonClick(wxCommandEvent& event) { SwitchTo(m_power_sizer, wxT("power")); }
 
-void br24ControlsDialog::OnPreferencesButtonClick(wxCommandEvent& event) { m_pi->ShowPreferencesDialog(m_pi->m_parent_window); }
+void ControlsDialog::OnPreferencesButtonClick(wxCommandEvent& event) { m_pi->ShowPreferencesDialog(m_pi->m_parent_window); }
 
-void br24ControlsDialog::OnBearingButtonClick(wxCommandEvent& event) { SwitchTo(m_cursor_sizer, wxT("bearing")); }
+void ControlsDialog::OnBearingButtonClick(wxCommandEvent& event) { SwitchTo(m_cursor_sizer, wxT("bearing")); }
 
-void br24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event) {
+void ControlsDialog::OnMessageButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
 
   if (m_pi->m_pMessageBox) {
@@ -1296,13 +1294,13 @@ void br24ControlsDialog::OnMessageButtonClick(wxCommandEvent& event) {
   }
 }
 
-void br24ControlsDialog::OnTargetsButtonClick(wxCommandEvent& event) {
+void ControlsDialog::OnTargetsButtonClick(wxCommandEvent& event) {
   M_SETTINGS.show_radar_target[m_ri->m_radar] = !(M_SETTINGS.show_radar_target[m_ri->m_radar]);
 
   UpdateControlValues(false);
 }
 
-void br24ControlsDialog::EnterEditMode(br24RadarControlButton* button) {
+void ControlsDialog::EnterEditMode(RadarControlButton* button) {
   m_from_control = button;  // Keep a record of which button was clicked
   m_value_text->SetLabel(button->GetLabel());
 
@@ -1335,11 +1333,11 @@ void br24ControlsDialog::EnterEditMode(br24RadarControlButton* button) {
   m_edit_sizer->Layout();
 }
 
-void br24ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
-  EnterEditMode((br24RadarControlButton*)event.GetEventObject());
+void ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
+  EnterEditMode((RadarControlButton*)event.GetEventObject());
 }
 
-void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
+void ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
 
   bool show = true;
@@ -1370,7 +1368,7 @@ void br24ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
   m_pi->NotifyRadarWindowViz();
 }
 
-void br24ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
+void ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
 
   int this_radar = m_ri->m_radar;
@@ -1399,25 +1397,23 @@ void br24ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
   UpdateControlValues(true);
 }
 
-void br24ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) {
-  EnterEditMode((br24RadarControlButton*)event.GetEventObject());
-}
+void ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) { EnterEditMode((RadarControlButton*)event.GetEventObject()); }
 
-void br24ControlsDialog::OnTransmitButtonClick(wxCommandEvent& event) {
+void ControlsDialog::OnTransmitButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
   m_pi->m_settings.timed_idle = 0;
   m_ri->RequestRadarState(RADAR_TRANSMIT);
 }
 
-void br24ControlsDialog::OnStandbyButtonClick(wxCommandEvent& event) {
+void ControlsDialog::OnStandbyButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
   m_pi->m_settings.timed_idle = 0;
   m_ri->RequestRadarState(RADAR_STANDBY);
 }
 
-void br24ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) { m_ri->ClearTrails(); }
+void ControlsDialog::OnClearTrailsButtonClick(wxCommandEvent& event) { m_ri->ClearTrails(); }
 
-void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
+void ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
   int value = m_ri->m_orientation.GetValue() + 1;
 
   if (m_pi->GetHeadingSource() == HEADING_NONE) {
@@ -1436,20 +1432,20 @@ void br24ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
   UpdateControlValues(false);
 }
 
-void br24ControlsDialog::OnBearingSetButtonClick(wxCommandEvent& event) {
+void ControlsDialog::OnBearingSetButtonClick(wxCommandEvent& event) {
   int bearing = event.GetId() - ID_BEARING_SET;
   LOG_DIALOG(wxT("%s OnBearingSetButtonClick for bearing #%d"), m_log_name.c_str(), bearing + 1);
 
   m_ri->SetBearing(bearing);
 }
 
-void br24ControlsDialog::OnClearCursorButtonClick(wxCommandEvent& event) {
+void ControlsDialog::OnClearCursorButtonClick(wxCommandEvent& event) {
   LOG_DIALOG(wxT("%s OnClearCursorButtonClick"), m_log_name.c_str());
   m_ri->SetMouseVrmEbl(0., nanl(""));
   SwitchTo(m_control_sizer, wxT("main (clear cursor)"));
 }
 
-void br24ControlsDialog::OnAcquireTargetButtonClick(wxCommandEvent& event) {
+void ControlsDialog::OnAcquireTargetButtonClick(wxCommandEvent& event) {
   Position target_pos;
   target_pos.lat = m_ri->m_mouse_lat;
   target_pos.lon = m_ri->m_mouse_lon;
@@ -1457,7 +1453,7 @@ void br24ControlsDialog::OnAcquireTargetButtonClick(wxCommandEvent& event) {
   m_ri->m_arpa->AcquireNewMARPATarget(target_pos);
 }
 
-void br24ControlsDialog::OnDeleteTargetButtonClick(wxCommandEvent& event) {
+void ControlsDialog::OnDeleteTargetButtonClick(wxCommandEvent& event) {
   Position target_pos;
   target_pos.lat = m_ri->m_mouse_lat;
   target_pos.lon = m_ri->m_mouse_lon;
@@ -1465,7 +1461,7 @@ void br24ControlsDialog::OnDeleteTargetButtonClick(wxCommandEvent& event) {
   m_ri->m_arpa->DeleteTarget(target_pos);
 }
 
-void br24ControlsDialog::OnDeleteAllTargetsButtonClick(wxCommandEvent& event) {
+void ControlsDialog::OnDeleteAllTargetsButtonClick(wxCommandEvent& event) {
   LOG_DIALOG(wxT("%s OnDeleteAllTargetsButtonClick"), m_log_name.c_str());
   for (int i = 0; i < RADARS; i++) {
     if (m_pi->m_radar[i]->m_arpa) {
@@ -1474,12 +1470,12 @@ void br24ControlsDialog::OnDeleteAllTargetsButtonClick(wxCommandEvent& event) {
   }
 }
 
-void br24ControlsDialog::OnMove(wxMoveEvent& event) {
+void ControlsDialog::OnMove(wxMoveEvent& event) {
   m_manually_positioned = true;
   event.Skip();
 }
 
-void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
+void ControlsDialog::UpdateControlValues(bool refreshAll) {
   wxString o;
 
   if (m_ri->m_state.IsModified()) {
@@ -1619,7 +1615,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
     }
     m_orientation_button->SetLabel(o);
   }
-  LOG_DIALOG(wxT("BR24radar_pi: orientation=%d heading source=%d"), m_ri->GetOrientation(), m_pi->GetHeadingSource());
+  LOG_DIALOG(wxT("radar_pi: orientation=%d heading source=%d"), m_ri->GetOrientation(), m_pi->GetHeadingSource());
   if (m_pi->GetHeadingSource() == HEADING_NONE) {
     m_orientation_button->Disable();
   } else {
@@ -1738,7 +1734,7 @@ void br24ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 }
 
-void br24ControlsDialog::UpdateDialogShown() {
+void ControlsDialog::UpdateDialogShown() {
   if (m_hide) {
     if (IsShown()) {
       LOG_DIALOG(wxT("%s UpdateDialogShown explicit closed: Hidden"), m_log_name.c_str());
@@ -1825,7 +1821,7 @@ void br24ControlsDialog::UpdateDialogShown() {
 
 #define PROXIMITY_MARGIN 32
 
-void br24ControlsDialog::EnsureWindowNearOpenCPNWindow() {
+void ControlsDialog::EnsureWindowNearOpenCPNWindow() {
   wxWindow* parent = m_pi->m_parent_window;
   while (parent->GetParent()) {
     parent = parent->GetParent();
@@ -1868,30 +1864,30 @@ void br24ControlsDialog::EnsureWindowNearOpenCPNWindow() {
   SetPosition(mPos);
 }
 
-void br24ControlsDialog::HideTemporarily() {
+void ControlsDialog::HideTemporarily() {
   m_hide_temporarily = true;
   UpdateDialogShown();
 }
 
-void br24ControlsDialog::UnHideTemporarily() {
+void ControlsDialog::UnHideTemporarily() {
   m_hide_temporarily = false;
   SetMenuAutoHideTimeout();
   UpdateDialogShown();
 }
 
-void br24ControlsDialog::ShowDialog() {
+void ControlsDialog::ShowDialog() {
   m_hide = false;
   UnHideTemporarily();
   UpdateControlValues(true);
 }
 
-void br24ControlsDialog::HideDialog() {
+void ControlsDialog::HideDialog() {
   m_hide = true;
   m_auto_hide_timeout = 0;
   UpdateDialogShown();
 }
 
-void br24ControlsDialog::SetMenuAutoHideTimeout() {
+void ControlsDialog::SetMenuAutoHideTimeout() {
   if (m_top_sizer->IsShown(m_control_sizer)) {
     switch (m_pi->m_settings.menu_auto_hide) {
       case 1:
@@ -1909,7 +1905,7 @@ void br24ControlsDialog::SetMenuAutoHideTimeout() {
   }
 }
 
-void br24ControlsDialog::ShowGuardZone(int zone) {
+void ControlsDialog::ShowGuardZone(int zone) {
   double conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
 
   m_guard_zone = m_ri->m_guard_zone[zone];
@@ -1950,7 +1946,7 @@ void br24ControlsDialog::ShowGuardZone(int zone) {
   UpdateDialogShown();
 }
 
-void br24ControlsDialog::SetGuardZoneVisibility() {
+void ControlsDialog::SetGuardZoneVisibility() {
   GuardZoneType zoneType = (GuardZoneType)m_guard_zone_type->GetSelection();
 
   m_guard_zone->SetType(zoneType);
@@ -1970,9 +1966,9 @@ void br24ControlsDialog::SetGuardZoneVisibility() {
   m_guard_sizer->Layout();
 }
 
-void br24ControlsDialog::OnGuardZoneModeClick(wxCommandEvent& event) { SetGuardZoneVisibility(); }
+void ControlsDialog::OnGuardZoneModeClick(wxCommandEvent& event) { SetGuardZoneVisibility(); }
 
-void br24ControlsDialog::OnInner_Range_Value(wxCommandEvent& event) {
+void ControlsDialog::OnInner_Range_Value(wxCommandEvent& event) {
   wxString temp = m_inner_range->GetValue();
   double t;
   m_guard_zone->m_show_time = time(0);
@@ -1983,7 +1979,7 @@ void br24ControlsDialog::OnInner_Range_Value(wxCommandEvent& event) {
   m_guard_zone->SetInnerRange((int)(t * conversionFactor));
 }
 
-void br24ControlsDialog::OnOuter_Range_Value(wxCommandEvent& event) {
+void ControlsDialog::OnOuter_Range_Value(wxCommandEvent& event) {
   wxString temp = m_outer_range->GetValue();
   double t;
   m_guard_zone->m_show_time = time(0);
@@ -1994,7 +1990,7 @@ void br24ControlsDialog::OnOuter_Range_Value(wxCommandEvent& event) {
   m_guard_zone->SetOuterRange((int)(t * conversionFactor));
 }
 
-void br24ControlsDialog::OnStart_Bearing_Value(wxCommandEvent& event) {
+void ControlsDialog::OnStart_Bearing_Value(wxCommandEvent& event) {
   wxString temp = m_start_bearing->GetValue();
   double t;
 
@@ -2007,7 +2003,7 @@ void br24ControlsDialog::OnStart_Bearing_Value(wxCommandEvent& event) {
   m_guard_zone->SetStartBearing(SCALE_DEGREES_TO_RAW2048(t));
 }
 
-void br24ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
+void ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
   wxString temp = m_end_bearing->GetValue();
   double t;
 
@@ -2020,12 +2016,12 @@ void br24ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
   m_guard_zone->SetEndBearing(SCALE_DEGREES_TO_RAW2048(t));
 }
 
-void br24ControlsDialog::OnARPAClick(wxCommandEvent& event) {
+void ControlsDialog::OnARPAClick(wxCommandEvent& event) {
   int arpa = m_arpa_box->GetValue();
   m_guard_zone->SetArpaOn(arpa);
 }
 
-void br24ControlsDialog::OnAlarmClick(wxCommandEvent& event) {
+void ControlsDialog::OnAlarmClick(wxCommandEvent& event) {
   int alarm = m_alarm->GetValue();
   m_guard_zone->SetAlarmOn(alarm);
 }

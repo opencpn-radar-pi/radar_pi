@@ -32,13 +32,13 @@
 #ifndef _RADAR_FRAME_H_
 #define _RADAR_FRAME_H_
 
-#include "br24radar_pi.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
 class RadarPanel : public wxPanel {
  public:
-  RadarPanel(br24radar_pi* pi, RadarInfo* ri, wxWindow* parent);
+  RadarPanel(radar_pi* pi, RadarInfo* ri, wxWindow* parent);
   bool Create();
   virtual ~RadarPanel();
 
@@ -52,7 +52,7 @@ class RadarPanel : public wxPanel {
 
  private:
   wxWindow* m_parent;
-  br24radar_pi* m_pi;
+  radar_pi* m_pi;
   RadarInfo* m_ri;
   wxAuiManager* m_aui_mgr;
   wxString m_aui_name;

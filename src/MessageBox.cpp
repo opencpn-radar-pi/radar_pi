@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
@@ -28,7 +28,7 @@
  ***************************************************************************
  */
 
-#include "br24MessageBox.h"
+#include "MessageBox.h"
 #include "RadarPanel.h"
 
 PLUGIN_BEGIN_NAMESPACE
@@ -47,24 +47,24 @@ enum {  // process ID's
 //---------------------------------------------------------------------------------------
 //          Radar Control Implementation
 //---------------------------------------------------------------------------------------
-IMPLEMENT_CLASS(br24MessageBox, wxDialog)
+IMPLEMENT_CLASS(MessageBox, wxDialog)
 
-BEGIN_EVENT_TABLE(br24MessageBox, wxDialog)
+BEGIN_EVENT_TABLE(MessageBox, wxDialog)
 
-EVT_CLOSE(br24MessageBox::OnClose)
-EVT_BUTTON(ID_MSG_CLOSE, br24MessageBox::OnMessageCloseButtonClick)
-EVT_BUTTON(ID_MSG_HIDE, br24MessageBox::OnMessageHideRadarClick)
+EVT_CLOSE(MessageBox::OnClose)
+EVT_BUTTON(ID_MSG_CLOSE, MessageBox::OnMessageCloseButtonClick)
+EVT_BUTTON(ID_MSG_HIDE, MessageBox::OnMessageHideRadarClick)
 
-EVT_MOVE(br24MessageBox::OnMove)
-EVT_SIZE(br24MessageBox::OnSize)
+EVT_MOVE(MessageBox::OnMove)
+EVT_SIZE(MessageBox::OnSize)
 
 END_EVENT_TABLE()
 
-br24MessageBox::br24MessageBox() { Init(); }
+MessageBox::MessageBox() { Init(); }
 
-br24MessageBox::~br24MessageBox() {}
+MessageBox::~MessageBox() {}
 
-void br24MessageBox::Init() {
+void MessageBox::Init() {
   // Initialize all members that need initialization
   m_parent = 0;
   m_top_sizer = 0;
@@ -74,7 +74,7 @@ void br24MessageBox::Init() {
   m_ip_box = 0;
 }
 
-bool br24MessageBox::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, const wxString &caption, const wxPoint &pos) {
+bool MessageBox::Create(wxWindow *parent, radar_pi *pi, wxWindowID id, const wxString &caption, const wxPoint &pos) {
   m_parent = parent;
   m_pi = pi;
 
@@ -100,12 +100,12 @@ bool br24MessageBox::Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id, c
   m_old_radar_seen = false;
   m_allow_auto_hide = true;
 
-  LOG_DIALOG(wxT("BR24radar_pi: MessageBox created"));
+  LOG_DIALOG(wxT("radar_pi: MessageBox created"));
 
   return true;
 }
 
-void br24MessageBox::CreateControls() {
+void MessageBox::CreateControls() {
   static int BORDER = 0;
 
   // A top-level sizer
@@ -219,17 +219,17 @@ void br24MessageBox::CreateControls() {
   m_message_sizer->Hide(m_hide_radar);
 }
 
-void br24MessageBox::OnMove(wxMoveEvent &event) { event.Skip(); }
+void MessageBox::OnMove(wxMoveEvent &event) { event.Skip(); }
 
-void br24MessageBox::OnSize(wxSizeEvent &event) { event.Skip(); }
+void MessageBox::OnSize(wxSizeEvent &event) { event.Skip(); }
 
-void br24MessageBox::OnClose(wxCloseEvent &event) {
+void MessageBox::OnClose(wxCloseEvent &event) {
   m_allow_auto_hide = true;
   m_message_state = HIDE;
   Hide();
 }
 
-bool br24MessageBox::IsModalDialogShown() {
+bool MessageBox::IsModalDialogShown() {
   const wxWindowList children = m_parent->GetChildren();
 
   if (!children.IsEmpty()) {
@@ -246,8 +246,8 @@ bool br24MessageBox::IsModalDialogShown() {
   return false;
 }
 
-bool br24MessageBox::Show(bool show) {
-  LOG_DIALOG(wxT("BR24radar_pi: message box show = %d"), (int)show);
+bool MessageBox::Show(bool show) {
+  LOG_DIALOG(wxT("radar_pi: message box show = %d"), (int)show);
 
   if (show) {
     CenterOnParent();
@@ -256,7 +256,7 @@ bool br24MessageBox::Show(bool show) {
   return wxDialog::Show(show);
 }
 
-bool br24MessageBox::UpdateMessage(bool force) {
+bool MessageBox::UpdateMessage(bool force) {
   message_status new_message_state = HIDE;
   time_t now = time(0);
   double radar_lat, radar_lon;
@@ -290,36 +290,36 @@ bool br24MessageBox::UpdateMessage(bool force) {
   bool navOn = haveGPS && haveHeading;
   bool no_overlay = !(m_pi->m_settings.show && m_pi->m_settings.chart_overlay >= 0);
 
-  LOG_DIALOG(wxT("BR24radar_pi: messagebox decision: show=%d overlay=%d auto_hide=%d opengl=%d radarOn=%d navOn=%d"), showRadar,
+  LOG_DIALOG(wxT("radar_pi: messagebox decision: show=%d overlay=%d auto_hide=%d opengl=%d radarOn=%d navOn=%d"), showRadar,
              m_pi->m_settings.chart_overlay, m_allow_auto_hide, haveOpenGL, radarOn, navOn);
 
   if (!m_allow_auto_hide) {
-    LOG_DIALOG(wxT("BR24radar_pi: messagebox explicit wanted: SHOW_CLOSE"));
+    LOG_DIALOG(wxT("radar_pi: messagebox explicit wanted: SHOW_CLOSE"));
     new_message_state = SHOW_CLOSE;
   } else if (IsModalDialogShown()) {
-    LOG_DIALOG(wxT("BR24radar_pi: messagebox modal dialog shown: HIDE"));
+    LOG_DIALOG(wxT("radar_pi: messagebox modal dialog shown: HIDE"));
     new_message_state = HIDE;
   } else if (!showRadar) {
-    LOG_DIALOG(wxT("BR24radar_pi: messagebox no radar wanted: HIDE"));
+    LOG_DIALOG(wxT("radar_pi: messagebox no radar wanted: HIDE"));
     new_message_state = HIDE;
   } else if (!haveOpenGL) {
-    LOG_DIALOG(wxT("BR24radar_pi: messagebox no OpenGL: SHOW"));
+    LOG_DIALOG(wxT("radar_pi: messagebox no OpenGL: SHOW"));
     new_message_state = SHOW;
     ret = true;
   } else if (no_overlay) {
     if (radarOn) {
-      LOG_DIALOG(wxT("BR24radar_pi: messagebox radar window needs met: HIDE"));
+      LOG_DIALOG(wxT("radar_pi: messagebox radar window needs met: HIDE"));
       new_message_state = HIDE;
     } else {
-      LOG_DIALOG(wxT("BR24radar_pi: messagebox radar window needs not met: SHOW_NO_NMEA"));
+      LOG_DIALOG(wxT("radar_pi: messagebox radar window needs not met: SHOW_NO_NMEA"));
       new_message_state = SHOW_NO_NMEA;
     }
   } else {  // overlay
     if (navOn && radarOn) {
-      LOG_DIALOG(wxT("BR24radar_pi: messagebox overlay needs met: HIDE"));
+      LOG_DIALOG(wxT("radar_pi: messagebox overlay needs met: HIDE"));
       new_message_state = HIDE;
     } else {
-      LOG_DIALOG(wxT("BR24radar_pi: messagebox overlay needs not met: SHOW"));
+      LOG_DIALOG(wxT("radar_pi: messagebox overlay needs not met: SHOW"));
       new_message_state = SHOW;
       ret = true;
     }
@@ -399,9 +399,9 @@ bool br24MessageBox::UpdateMessage(bool force) {
         m_hide_radar->Hide();
         break;
     }
-    LOG_DIALOG(wxT("BR24radar_pi: messagebox case=%d"), new_message_state);
+    LOG_DIALOG(wxT("radar_pi: messagebox case=%d"), new_message_state);
   } else {
-    LOG_DIALOG(wxT("BR24radar_pi: no change"));
+    LOG_DIALOG(wxT("radar_pi: no change"));
   }
   m_top_sizer->Layout();
   Layout();
@@ -413,13 +413,13 @@ bool br24MessageBox::UpdateMessage(bool force) {
   return ret;
 }
 
-void br24MessageBox::OnMessageCloseButtonClick(wxCommandEvent &event) {
+void MessageBox::OnMessageCloseButtonClick(wxCommandEvent &event) {
   m_allow_auto_hide = true;
   m_message_state = HIDE;
   Hide();
 }
 
-void br24MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
+void MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
   m_pi->m_settings.show = 0;
   m_allow_auto_hide = true;
   m_message_state = HIDE;
@@ -427,11 +427,11 @@ void br24MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
   m_pi->NotifyRadarWindowViz();
 }
 
-void br24MessageBox::SetRadarIPAddress(wxString &msg) { m_radar_addr_info.Update(msg); }
+void MessageBox::SetRadarIPAddress(wxString &msg) { m_radar_addr_info.Update(msg); }
 
-void br24MessageBox::SetRadarBuildInfo(wxString &msg) { m_build_info.Update(msg); }
+void MessageBox::SetRadarBuildInfo(wxString &msg) { m_build_info.Update(msg); }
 
-void br24MessageBox::SetRadarType(RadarType radar_type) {
+void MessageBox::SetRadarType(RadarType radar_type) {
   wxString s;
 
   switch (radar_type) {
@@ -453,34 +453,34 @@ void br24MessageBox::SetRadarType(RadarType radar_type) {
   m_radar_type_info.Update(s);
 }
 
-void br24MessageBox::SetMcastIPAddress(wxString &msg) {
+void MessageBox::SetMcastIPAddress(wxString &msg) {
   wxString label;
 
   label << _("Ethernet card") << wxT(" ") << msg;
   m_mcast_addr_info.Update(label);
 }
 
-void br24MessageBox::SetTrueHeadingInfo(wxString &msg) {
+void MessageBox::SetTrueHeadingInfo(wxString &msg) {
   wxString label;
 
   label << _("True heading") << wxT(" ") << msg;
   m_true_heading_info.Update(label);
 }
 
-void br24MessageBox::SetMagHeadingInfo(wxString &msg) {
+void MessageBox::SetMagHeadingInfo(wxString &msg) {
   wxString label;
 
   label << _("Magnetic heading") << wxT(" ") << msg;
   m_mag_heading_info.Update(label);
 }
 
-void br24MessageBox::SetVariationInfo(wxString &msg) {
+void MessageBox::SetVariationInfo(wxString &msg) {
   wxString label;
 
   label << _("Variation") << wxT(" ") << msg;
   m_variation_info.Update(label);
 }
 
-void br24MessageBox::SetStatisticsInfo(wxString &msg) { m_statistics_info.Update(msg); }
+void MessageBox::SetStatisticsInfo(wxString &msg) { m_statistics_info.Update(msg); }
 
 PLUGIN_END_NAMESPACE

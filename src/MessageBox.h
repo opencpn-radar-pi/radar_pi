@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
@@ -29,10 +29,10 @@
  ***************************************************************************
  */
 
-#ifndef _BR24MESSAGEBOX_H_
-#define _BR24MESSAGEBOX_H_
+#ifndef _MESSAGEBOX_H_
+#define _MESSAGEBOX_H_
 
-#include "br24radar_pi.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -72,18 +72,18 @@ class radar_info_item {
   bool mod;
 };
 
-class br24MessageBox : public wxDialog {
-  DECLARE_CLASS(br24MessageBox)
+class MessageBox : public wxDialog {
+  DECLARE_CLASS(MessageBox)
   DECLARE_EVENT_TABLE()
 
  public:
-  br24MessageBox();
+  MessageBox();
 
-  ~br24MessageBox();
+  ~MessageBox();
   void Init();
   bool Show(bool show = true);
 
-  bool Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id = wxID_ANY, const wxString &caption = _("Radar"),
+  bool Create(wxWindow *parent, radar_pi *pi, wxWindowID id = wxID_ANY, const wxString &caption = _("Radar"),
               const wxPoint &pos = wxDefaultPosition);
 
   void CreateControls();
@@ -111,7 +111,7 @@ class br24MessageBox : public wxDialog {
   bool IsModalDialogShown();
 
   wxWindow *m_parent;
-  br24radar_pi *m_pi;
+  radar_pi *m_pi;
 
   radar_info_item m_build_info;
   radar_info_item m_radar_type_info;

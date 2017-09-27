@@ -32,7 +32,7 @@
 #ifndef _GUARDZONE_H_
 #define _GUARDZONE_H_
 
-#include "br24radar_pi.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -101,12 +101,12 @@ class GuardZone {
     return m_bogey_count;
   };
 
-  GuardZone(br24radar_pi *pi, RadarInfo *ri, int zone);
+  GuardZone(radar_pi *pi, RadarInfo *ri, int zone);
 
   ~GuardZone() { LOG_VERBOSE(wxT("%s destroyed"), m_log_name.c_str()); }
 
  private:
-  br24radar_pi *m_pi;
+  radar_pi *m_pi;
   RadarInfo *m_ri;
 
   wxString m_log_name;

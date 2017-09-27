@@ -9,24 +9,24 @@
 # define minimum cmake version
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.2)
 
-PROJECT(br24radar_pi)
+PROJECT(radar_pi)
 
-SET(PACKAGE_NAME br24radar_pi)
-SET(VERBOSE_NAME BR24Radar)
-SET(TITLE_NAME BR24Radar)
+SET(PACKAGE_NAME radar_pi)
+SET(VERBOSE_NAME Radar)
+SET(TITLE_NAME Radar)
 SET(CPACK_PACKAGE_CONTACT "kees@verruijt.net")
-SET(VERSION_MAJOR "3")
+SET(VERSION_MAJOR "4")
 #SET(CMAKE_BUILD_TYPE Debug)
-SET(VERSION_MINOR "0")
+SET(VERSION_MINOR "927")
 SET(VERSION_PATCH "0")
-SET(VERSION_DATE "2017-09-24")
+SET(VERSION_DATE "2017-09-27")
 
 INCLUDE("cmake/PluginConfigure.cmake")
 
 # For convenience we define the sources as a variable. You can add
 # header files and cpp/c files and CMake will sort them out
 
-SET(SRC_br24radar
+SET(SRC_radar
             src/pi_common.h
             src/shaderutil.h
             src/shaderutil.cpp
@@ -34,14 +34,14 @@ SET(SRC_br24radar
             src/socketutil.cpp
             src/drawutil.h
             src/drawutil.cpp
-            src/br24radar_pi.h
-            src/br24radar_pi.cpp
-            src/br24ControlsDialog.h
-            src/br24ControlsDialog.cpp
-            src/br24MessageBox.h
-            src/br24MessageBox.cpp
-            src/br24OptionsDialog.h
-            src/br24OptionsDialog.cpp
+            src/radar_pi.h
+            src/radar_pi.cpp
+            src/ControlsDialog.h
+            src/ControlsDialog.cpp
+            src/MessageBox.h
+            src/MessageBox.cpp
+            src/OptionsDialog.h
+            src/OptionsDialog.cpp
             src/br24Receive.h
             src/br24Receive.cpp
             src/RadarMarpa.h
@@ -105,7 +105,7 @@ IF(WIN32)
   FIND_PACKAGE(wxWidgets REQUIRED)
 ENDIF(WIN32)
 
-ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_br24radar} ${SRC_NMEA0183} ${SRC_JSON})
+ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_radar} ${SRC_NMEA0183} ${SRC_JSON})
 
 SET(TEST_KALMAN kalman-test)
 SET(SRC_KALMAN

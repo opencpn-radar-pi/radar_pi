@@ -30,7 +30,7 @@
  */
 
 #include "drawutil.h"
-#include "br24radar_pi.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -151,13 +151,13 @@ void CheckOpenGLError(const wxString& after) {
     }
 
     if (err == errLast) {
-      wxLogError(wxT("BR24radar_pi: OpenGL error could not be reset"));
+      wxLogError(wxT("radar_pi: OpenGL error could not be reset"));
       return;
     }
 
     errLast = err;
 
-    wxLogError(wxT("BR24radar_pi: OpenGL error %d after %s"), err, after.c_str());
+    wxLogError(wxT("radar_pi: OpenGL error %d after %s"), err, after.c_str());
   }
 }
 
@@ -168,7 +168,7 @@ PolarToCartesianLookupTable* GetPolarToCartesianLookupTable() {
     lookupTable = (PolarToCartesianLookupTable*)malloc(sizeof(PolarToCartesianLookupTable));
 
     if (!lookupTable) {
-      wxLogError(wxT("BR24radar_pi: Out Of Memory, fatal!"));
+      wxLogError(wxT("radar_pi: Out Of Memory, fatal!"));
       wxAbort();
     }
 

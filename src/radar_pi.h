@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#ifndef _BR24RADARPI_H_
-#define _BR24RADARPI_H_
+#ifndef _RADARPI_H_
+#define _RADARPI_H_
 
 #define MY_API_VERSION_MAJOR 1
 #define MY_API_VERSION_MINOR 14  // Needed for PluginAISDrawGL().
@@ -60,16 +60,17 @@ PLUGIN_BEGIN_NAMESPACE
 class GuardZone;
 class RadarInfo;
 
-class br24ControlsDialog;
-class br24MessageBox;
-class br24OptionsDialog;
+class ControlsDialog;
+class MessageBox;
+class OptionsDialog;
 class br24Receive;
 class br24Transmit;
-class br24radar_pi;
+class radar_pi;
 class GuardZoneBogey;
 class RadarArpa;
 
-#define RADARS (2)         // Number of radars supported by this PI. 2 since 4G supports 2. More work
+#define RADARS \
+  (2)                      // Number of radars supported by this PI. 2 since 4G supports 2. More work
                            // needed if you intend to add multiple radomes to network!
 #define GUARD_ZONES (2)    // Could be increased if wanted
 #define BEARING_LINES (2)  // And these as well
@@ -368,17 +369,17 @@ struct AisArpa {
 //    The PlugIn Class Definition
 //----------------------------------------------------------------------------------------------------------
 
-#define BR24RADAR_TOOL_POSITION -1  // Request default positioning of toolbar tool
+#define RADAR_TOOL_POSITION -1  // Request default positioning of toolbar tool
 
 #define PLUGIN_OPTIONS                                                                                                       \
   (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK | WANTS_OPENGL_OVERLAY_CALLBACK | WANTS_OVERLAY_CALLBACK | WANTS_TOOLBAR_CALLBACK | \
    INSTALLS_TOOLBAR_TOOL | USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS | WANTS_NMEA_SENTENCES | WANTS_PREFERENCES |  \
    WANTS_PLUGIN_MESSAGING | WANTS_CURSOR_LATLON | WANTS_MOUSE_EVENTS)
 
-class br24radar_pi : public opencpn_plugin_114, public wxEvtHandler {
+class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
  public:
-  br24radar_pi(void *ppimgr);
-  ~br24radar_pi();
+  radar_pi(void *ppimgr);
+  ~radar_pi();
   void PrepareRadarImage(int angle);
 
   //    The required PlugIn Methods
@@ -488,7 +489,7 @@ class br24radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   RadarInfo *m_radar[RADARS];
   wxString m_perspective[RADARS];  // Temporary storage of window location when plugin is disabled
 
-  br24MessageBox *m_pMessageBox;
+  MessageBox *m_pMessageBox;
   wxWindow *m_parent_window;
 
   // Check for AIS targets inside ARPA zone
@@ -614,11 +615,11 @@ class br24radar_pi : public opencpn_plugin_114, public wxEvtHandler {
 
 PLUGIN_END_NAMESPACE
 
+#include "ControlsDialog.h"
 #include "GuardZone.h"
+#include "MessageBox.h"
+#include "OptionsDialog.h"
 #include "RadarInfo.h"
-#include "br24ControlsDialog.h"
-#include "br24MessageBox.h"
-#include "br24OptionsDialog.h"
 #include "br24Transmit.h"
 
-#endif /* _BR24RADAR_PI_H_ */
+#endif /* _RADAR_PI_H_ */

@@ -33,7 +33,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-br24Transmit::br24Transmit(br24radar_pi *pi, wxString name, int radar) {
+br24Transmit::br24Transmit(radar_pi *pi, wxString name, int radar) {
   m_pi = pi;
 
   CLEAR_STRUCT(m_addr);
@@ -52,9 +52,9 @@ br24Transmit::br24Transmit(br24radar_pi *pi, wxString name, int radar) {
 br24Transmit::~br24Transmit() {
   if (m_radar_socket != INVALID_SOCKET) {
     closesocket(m_radar_socket);
-    LOG_TRANSMIT(wxT("BR24radar_pi: %s transmit socket closed"), m_name.c_str());
+    LOG_TRANSMIT(wxT("radar_pi: %s transmit socket closed"), m_name.c_str());
   }
-  LOG_VERBOSE(wxT("BR24radar_pi: %s transmit object destroyed"), m_name.c_str());
+  LOG_VERBOSE(wxT("radar_pi: %s transmit object destroyed"), m_name.c_str());
 }
 
 bool br24Transmit::Init(struct sockaddr_in *adr) {
@@ -76,12 +76,12 @@ bool br24Transmit::Init(struct sockaddr_in *adr) {
   }
 
   if (r) {
-    wxLogError(wxT("BR24radar_pi: Unable to create UDP sending socket"));
+    wxLogError(wxT("radar_pi: Unable to create UDP sending socket"));
     // Might as well give up now
     return false;
   }
 
-  LOG_TRANSMIT(wxT("BR24radar_pi: %s transmit socket open"), m_name);
+  LOG_TRANSMIT(wxT("radar_pi: %s transmit socket open"), m_name);
   return true;
 }
 
@@ -90,7 +90,7 @@ void br24Transmit::logBinaryData(const wxString &what, const UINT8 *data, int si
   int i = 0;
 
   explain.Alloc(size * 3 + 50);
-  explain += wxT("BR24radar_pi: ") + m_name + wxT(" ");
+  explain += wxT("radar_pi: ") + m_name + wxT(" ");
   explain += what;
   explain += wxString::Format(wxT(" %d bytes: "), size);
   for (i = 0; i < size; i++) {
@@ -101,16 +101,16 @@ void br24Transmit::logBinaryData(const wxString &what, const UINT8 *data, int si
 
 bool br24Transmit::TransmitCmd(const UINT8 *msg, int size) {
   if (m_pi->m_settings.emulator_on) {
-    wxLogError(wxT("BR24radar_pi: ignoring transmit command in emulator mode"));
+    wxLogError(wxT("radar_pi: ignoring transmit command in emulator mode"));
     return false;
   }
 
   if (m_radar_socket == INVALID_SOCKET) {
-    wxLogError(wxT("BR24radar_pi: Unable to transmit command to unknown radar"));
+    wxLogError(wxT("radar_pi: Unable to transmit command to unknown radar"));
     return false;
   }
   if (sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&m_addr, sizeof(m_addr)) < size) {
-    wxLogError(wxT("BR24radar_pi: Unable to transmit command to %s: %s"), m_name, SOCKETERRSTR);
+    wxLogError(wxT("radar_pi: Unable to transmit command to %s: %s"), m_name, SOCKETERRSTR);
     return false;
   }
   IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("transmit"), msg, size));
@@ -118,19 +118,19 @@ bool br24Transmit::TransmitCmd(const UINT8 *msg, int size) {
 }
 
 void br24Transmit::RadarTxOff() {
-  IF_LOG_AT(LOGLEVEL_VERBOSE | LOGLEVEL_TRANSMIT, wxLogMessage(wxT("BR24radar_pi: %s transmit: turn Off"), m_name));
+  IF_LOG_AT(LOGLEVEL_VERBOSE | LOGLEVEL_TRANSMIT, wxLogMessage(wxT("radar_pi: %s transmit: turn Off"), m_name));
   TransmitCmd(COMMAND_TX_OFF_A, sizeof(COMMAND_TX_OFF_A));
   TransmitCmd(COMMAND_TX_OFF_B, sizeof(COMMAND_TX_OFF_B));
 }
 
 void br24Transmit::RadarTxOn() {
-  IF_LOG_AT(LOGLEVEL_VERBOSE | LOGLEVEL_TRANSMIT, wxLogMessage(wxT("BR24radar_pi: %s transmit: turn on"), m_name));
+  IF_LOG_AT(LOGLEVEL_VERBOSE | LOGLEVEL_TRANSMIT, wxLogMessage(wxT("radar_pi: %s transmit: turn on"), m_name));
   TransmitCmd(COMMAND_TX_ON_A, sizeof(COMMAND_TX_ON_A));
   TransmitCmd(COMMAND_TX_ON_B, sizeof(COMMAND_TX_ON_B));
 }
 
 bool br24Transmit::RadarStayAlive() {
-  LOG_TRANSMIT(wxT("BR24radar_pi: %s transmit: stay alive"), m_name);
+  LOG_TRANSMIT(wxT("radar_pi: %s transmit: stay alive"), m_name);
 
   TransmitCmd(COMMAND_STAY_ON_A, sizeof(COMMAND_STAY_ON_A));
   TransmitCmd(COMMAND_STAY_ON_B, sizeof(COMMAND_STAY_ON_B));
@@ -147,7 +147,7 @@ bool br24Transmit::SetRange(int meters) {
                    (UINT8)((decimeters >> 8) & 0XFFL),
                    (UINT8)((decimeters >> 16) & 0XFFL),
                    (UINT8)((decimeters >> 24) & 0XFFL)};
-    LOG_VERBOSE(wxT("BR24radar_pi: %s transmit: range %d meters"), m_name, meters);
+    LOG_VERBOSE(wxT("radar_pi: %s transmit: range %d meters"), m_name, meters);
     return TransmitCmd(pck, sizeof(pck));
   }
   return false;
@@ -185,7 +185,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoV
       int v1 = v / 256;
       int v2 = v & 255;
       UINT8 cmd[4] = {0x05, 0xc1, (UINT8)v2, (UINT8)v1};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Bearing alignment: %d"), m_name, v);
+      LOG_VERBOSE(wxT("radar_pi: %s Bearing alignment: %d"), m_name, v);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
@@ -196,7 +196,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoV
         v = 255;
       }
       UINT8 cmd[] = {0x06, 0xc1, 0, 0, 0, 0, (UINT8)autoValue, 0, 0, 0, (UINT8)v};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Gain: %d auto %d"), m_name, value, autoValue);
+      LOG_VERBOSE(wxT("radar_pi: %s Gain: %d auto %d"), m_name, value, autoValue);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
@@ -207,7 +207,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoV
         v = 255;
       }
       UINT8 cmd[] = {0x06, 0xc1, 0x02, 0, 0, 0, autoValue, 0, 0, 0, (UINT8)v};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Sea: %d auto %d"), m_name, value, autoValue);
+      LOG_VERBOSE(wxT("radar_pi: %s Sea: %d auto %d"), m_name, value, autoValue);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
@@ -218,7 +218,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoV
         v = 255;
       }
       UINT8 cmd[] = {0x06, 0xc1, 0x04, 0, 0, 0, 0, 0, 0, 0, (UINT8)v};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Rain: %d"), m_name, value);
+      LOG_VERBOSE(wxT("radar_pi: %s Rain: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
@@ -229,7 +229,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoV
         v = 255;
       }
       UINT8 cmd[] = {0x6, 0xc1, 0x05, 0, 0, 0, autoValue, 0, 0, 0, (UINT8)v};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s command Tx CT_SIDE_LOBE_SUPPRESSION: %d auto %d"), m_name, value, autoValue);
+      LOG_VERBOSE(wxT("radar_pi: %s command Tx CT_SIDE_LOBE_SUPPRESSION: %d auto %d"), m_name, value, autoValue);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
@@ -238,21 +238,21 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoV
 
     case CT_INTERFERENCE_REJECTION: {
       UINT8 cmd[] = {0x08, 0xc1, (UINT8)value};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Rejection: %d"), m_name, value);
+      LOG_VERBOSE(wxT("radar_pi: %s Rejection: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
 
     case CT_TARGET_EXPANSION: {
       UINT8 cmd[] = {0x09, 0xc1, (UINT8)value};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Target expansion: %d"), m_name, value);
+      LOG_VERBOSE(wxT("radar_pi: %s Target expansion: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
 
     case CT_TARGET_BOOST: {
       UINT8 cmd[] = {0x0a, 0xc1, (UINT8)value};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Target boost: %d"), m_name, value);
+      LOG_VERBOSE(wxT("radar_pi: %s Target boost: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
@@ -263,14 +263,14 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoV
       if (value < 0) value = 0;
       if (value > 3) value = 3;
       UINT8 cmd[] = {0x0e, 0xc1, (UINT8)value};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s local interference rejection %d"), m_name, value);
+      LOG_VERBOSE(wxT("radar_pi: %s local interference rejection %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
 
     case CT_SCAN_SPEED: {
       UINT8 cmd[] = {0x0f, 0xc1, (UINT8)value};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Scan speed: %d"), m_name, value);
+      LOG_VERBOSE(wxT("radar_pi: %s Scan speed: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
@@ -279,14 +279,14 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoV
 
     case CT_NOISE_REJECTION: {
       UINT8 cmd[] = {0x21, 0xc1, (UINT8)value};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Noise rejection: %d"), m_name, value);
+      LOG_VERBOSE(wxT("radar_pi: %s Noise rejection: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
 
     case CT_TARGET_SEPARATION: {
       UINT8 cmd[] = {0x22, 0xc1, (UINT8)value};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Target separation: %d"), m_name, value);
+      LOG_VERBOSE(wxT("radar_pi: %s Target separation: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
@@ -298,7 +298,7 @@ bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoV
       int v1 = v / 256;
       int v2 = v & 255;
       UINT8 cmd[10] = {0x30, 0xc1, 0x01, 0, 0, 0, (UINT8)v2, (UINT8)v1, 0, 0};
-      LOG_VERBOSE(wxT("BR24radar_pi: %s Antenna height: %d"), m_name, v);
+      LOG_VERBOSE(wxT("radar_pi: %s Antenna height: %d"), m_name, v);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }

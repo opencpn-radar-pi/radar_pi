@@ -32,7 +32,7 @@
 #ifndef _RADAR_INFO_H_
 #define _RADAR_INFO_H_
 
-#include "br24radar_pi.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -142,7 +142,7 @@ enum { TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_5MIN, TRAIL_10MIN
 class RadarInfo {
  public:
   wxString m_name;  // Either "Radar", "Radar A", "Radar B".
-  br24radar_pi *m_pi;
+  radar_pi *m_pi;
   int m_radar;  // Which radar this is (0..., max 2 for now)
 #define COURSE_SAMPLES (16)
   double m_course;  // m_course is the moving everage of m_hdt used for course_up
@@ -193,7 +193,7 @@ class RadarInfo {
 
   br24Transmit *m_transmit;
   br24Receive *m_receive;
-  br24ControlsDialog *m_control_dialog;
+  ControlsDialog *m_control_dialog;
   RadarPanel *m_radar_panel;
   RadarCanvas *m_radar_canvas;
 
@@ -254,7 +254,7 @@ class RadarInfo {
 
   /* Methods */
 
-  RadarInfo(br24radar_pi *pi, int radar);
+  RadarInfo(radar_pi *pi, int radar);
   ~RadarInfo();
 
   bool Init(wxString name, int verbose);

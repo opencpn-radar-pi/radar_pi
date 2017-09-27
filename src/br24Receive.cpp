@@ -30,8 +30,8 @@
  ***************************************************************************
  */
 
-#include "br24Receive.h"
 #include "RadarMarpa.h"
+#include "br24Receive.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -434,27 +434,6 @@ SOCKET br24Receive::GetNewDataSocket() {
   return socket;
 }
 
-SOCKET br24Receive::GetNewCommandSocket() {
-  SOCKET socket;
-  wxString error;
-
-  if (!m_mcast_addr) {
-    return INVALID_SOCKET;
-  }
-
-  socket = startUDPMulticastReceiveSocket(m_mcast_addr, LISTEN_COMMAND[m_ri->m_radar].port, LISTEN_COMMAND[m_ri->m_radar].address,
-                                          error);
-  if (socket != INVALID_SOCKET) {
-    wxString addr;
-    UINT8 *a = (UINT8 *)&m_mcast_addr->sin_addr;  // sin_addr is in network layout
-    addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
-    LOG_RECEIVE(wxT("BR24radar_pi: %s listening for command on %s"), m_ri->m_name.c_str(), addr.c_str());
-  } else {
-    wxLogError(wxT("BR24radar_pi: Unable to listen to socket: %s"), error.c_str());
-  }
-  return socket;
-}
-
 void *br24Receive::Entry(void) {
   int r = 0;
   int no_data_timeout = 0;
@@ -473,7 +452,6 @@ void *br24Receive::Entry(void) {
   sockaddr_in *radar_addr = 0;
 
   SOCKET dataSocket = INVALID_SOCKET;
-  SOCKET commandSocket = INVALID_SOCKET;
   SOCKET reportSocket = INVALID_SOCKET;
 
   LOG_VERBOSE(wxT("BR24radar_pi: br24Receive thread %s starting"), m_ri->m_name.c_str());
@@ -500,17 +478,10 @@ void *br24Receive::Entry(void) {
         if (dataSocket == INVALID_SOCKET) {
           dataSocket = GetNewDataSocket();
         }
-        if (commandSocket == INVALID_SOCKET) {
-          commandSocket = GetNewCommandSocket();
-        }
       } else {
         if (dataSocket != INVALID_SOCKET) {
           closesocket(dataSocket);
           dataSocket = INVALID_SOCKET;
-        }
-        if (commandSocket != INVALID_SOCKET) {
-          closesocket(commandSocket);
-          commandSocket = INVALID_SOCKET;
         }
       }
     } else {
@@ -533,10 +504,6 @@ void *br24Receive::Entry(void) {
     if (reportSocket != INVALID_SOCKET) {
       FD_SET(reportSocket, &fdin);
       maxFd = MAX(reportSocket, maxFd);
-    }
-    if (commandSocket != INVALID_SOCKET) {
-      FD_SET(commandSocket, &fdin);
-      maxFd = MAX(commandSocket, maxFd);
     }
     if (dataSocket != INVALID_SOCKET) {
       FD_SET(dataSocket, &fdin);
@@ -569,22 +536,6 @@ void *br24Receive::Entry(void) {
         }
       }
 
-      if (commandSocket != INVALID_SOCKET && FD_ISSET(commandSocket, &fdin)) {
-        rx_len = sizeof(rx_addr);
-        r = recvfrom(commandSocket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
-        if (r > 0 && rx_addr.addr.ss_family == AF_INET) {
-          wxString addr;
-          addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
-          IF_LOG_AT(LOGLEVEL_RECEIVE, logBinaryData(wxString::Format(wxT("%s sent command"), addr.c_str()), data, r));
-          ProcessCommand(addr, data, r);
-          no_data_timeout = SECONDS_SELECT(-15);
-        } else {
-          closesocket(commandSocket);
-          commandSocket = INVALID_SOCKET;
-          wxLogError(wxT("BR24radar_pi: %s at %u.%u.%u.%u illegal command"), m_ri->m_name.c_str(), a[0], a[1], a[2], a[3]);
-        }
-      }
-
       if (reportSocket != INVALID_SOCKET && FD_ISSET(reportSocket, &fdin)) {
         rx_len = sizeof(rx_addr);
         r = recvfrom(reportSocket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
@@ -594,7 +545,7 @@ void *br24Receive::Entry(void) {
               wxString addr;
 
               m_ri->SetNetworkCardAddress(m_mcast_addr);  // enables transmit data
-              // the dataSocket and commandSocket are opened in the next loop
+              // the dataSocket is opened in the next loop
 
               radarFoundAddr = rx_addr.ipv4;
               radar_addr = &radarFoundAddr;
@@ -646,19 +597,12 @@ void *br24Receive::Entry(void) {
         closesocket(dataSocket);
         dataSocket = INVALID_SOCKET;
       }
-      if (commandSocket != INVALID_SOCKET) {
-        closesocket(commandSocket);
-        commandSocket = INVALID_SOCKET;
-      }
     }
 
   }  // endless loop until thread destroy
 
   if (dataSocket != INVALID_SOCKET) {
     closesocket(dataSocket);
-  }
-  if (commandSocket != INVALID_SOCKET) {
-    closesocket(commandSocket);
   }
   if (reportSocket != INVALID_SOCKET) {
     closesocket(reportSocket);
@@ -997,22 +941,6 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
     logBinaryData(wxT("received unknown message"), report, len);
   }
   return false;
-}
-
-void br24Receive::ProcessCommand(wxString &addr, const UINT8 *command, int len) {
-  IF_LOG_AT(LOGLEVEL_RECEIVE, logBinaryData(wxT("ProcessCommand"), command, len));
-
-  if (len == 3 && memcmp(command, COMMAND_TX_ON_B, sizeof(COMMAND_TX_ON_B)) == 0) {
-    LOG_VERBOSE(wxT("BR24radar_pi: %s received transmit on from %s"), m_ri->m_name.c_str(), addr.c_str());
-    // m_ri->m_state.Update(RADAR_TRANSMIT);
-  } else if (len == 3 && memcmp(command, COMMAND_TX_OFF_B, sizeof(COMMAND_TX_OFF_B)) == 0) {
-    LOG_VERBOSE(wxT("BR24radar_pi: %s received transmit off from %s"), m_ri->m_name.c_str(), addr.c_str());
-    // m_ri->m_state.Update(RADAR_STANDBY);
-  } else if (len == 6 && command[0] == 0x03 && command[1] == 0xc1) {
-    UINT32 range = *((UINT32 *)&command[2]);
-    LOG_VERBOSE(wxT("BR24radar_pi: %s received range request for %u meters from %s"), m_ri->m_name.c_str(), range / 10,
-                addr.c_str());
-  }
 }
 
 // Called from the main thread to stop this thread.

@@ -111,4 +111,4 @@ int main() {
 
 PLUGIN_END_NAMESPACE
 
-int main() { br24::main(); }
+int main() { RadarPlugin::main(); }

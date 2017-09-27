@@ -34,7 +34,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-int br24_inet_aton(const char *cp, struct in_addr *addr) {
+int radar_inet_aton(const char *cp, struct in_addr *addr) {
   u_long val;
   u_int parts[4];
   u_int *pp = parts;
@@ -193,7 +193,7 @@ SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in *addr, UINT16 port, con
   struct ip_mreq mreq;
   mreq.imr_interface = addr->sin_addr;
 
-  if (!br24_inet_aton(mcast_address, &mreq.imr_multiaddr)) {
+  if (!radar_inet_aton(mcast_address, &mreq.imr_multiaddr)) {
     error_message << _("Invalid multicast address") << wxT(" ") << wxString::FromUTF8(mcast_address);
     goto fail;
   }

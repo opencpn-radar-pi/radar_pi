@@ -31,14 +31,14 @@
 
 #include "RadarMarpa.h"
 #include "RadarInfo.h"
-#include "br24radar_pi.h"
+#include "radar_pi.h"
 #include "drawutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
 static int target_id_count = 0;
 
-RadarArpa::RadarArpa(br24radar_pi* pi, RadarInfo* ri) {
+RadarArpa::RadarArpa(radar_pi* pi, RadarInfo* ri) {
   m_ri = ri;
   m_pi = pi;
   m_number_of_targets = 0;
@@ -337,11 +337,11 @@ void RadarArpa::AcquireOrDeleteMarpaTarget(Position target_pos, int status) {
     i_target = m_number_of_targets;
     m_number_of_targets++;
   } else {
-    LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded "));
+    LOG_INFO(wxT("radar_pi: RadarArpa:: Error, max targets exceeded "));
     return;
   }
 
-  LOG_ARPA(wxT("BR24radar_pi: Adding (M)ARPA target at position %f / %f"), target_pos.lat, target_pos.lon);
+  LOG_ARPA(wxT("radar_pi: Adding (M)ARPA target at position %f / %f"), target_pos.lat, target_pos.lon);
 
   ArpaTarget* target = m_targets[i_target];
   target->m_position = target_pos;  // Expected position
@@ -463,7 +463,7 @@ int ArpaTarget::GetContour(Polar* pol) {
       index += 1;
     }
     if (!succes) {
-      LOG_INFO(wxT("BR24radar_pi::RadarArpa::GetContour no next point found count= %i"), count);
+      LOG_INFO(wxT("radar_pi::RadarArpa::GetContour no next point found count= %i"), count);
       return 7;  // return code 7, no next point found
     }
     // next point found
@@ -531,7 +531,7 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
     int angle = MOD_ROTATION2048(target->m_contour[i].angle - 512);
     int radius = target->m_contour[i].r;
     if (radius <= 0 || radius >= RETURNS_PER_LINE) {
-      LOG_INFO(wxT("BR24radar_pi: wrong values in DrawContour"));
+      LOG_INFO(wxT("radar_pi: wrong values in DrawContour"));
       return;
     }
     vertex_array[2 * i] = polarLookup->x[angle][radius] * m_ri->m_range_meters / RETURNS_PER_LINE;
@@ -647,7 +647,7 @@ void RadarArpa::RefreshArpaTargets() {
   int dist = TARGET_SEARCH_RADIUS1;
   for (int i = 0; i < m_number_of_targets; i++) {
     if (!m_targets[i]) {
-      LOG_INFO(wxT("BR24radar_pi:  error target non existent i=%i"), i);
+      LOG_INFO(wxT("radar_pi:  error target non existent i=%i"), i);
       continue;
     }
     m_targets[i]->m_pass_nr = PASS1;
@@ -661,7 +661,7 @@ void RadarArpa::RefreshArpaTargets() {
   dist = TARGET_SEARCH_RADIUS2;
   for (int i = 0; i < m_number_of_targets; i++) {
     if (!m_targets[i]) {
-      LOG_INFO(wxT("BR24radar_pi: error target non existent i=%i"), i);
+      LOG_INFO(wxT("radar_pi: error target non existent i=%i"), i);
       continue;
     }
     if (m_targets[i]->m_pass1_result == UNKNOWN) continue;
@@ -698,7 +698,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     wxLongLong now = wxGetUTCTimeMillis();  // millis
     int diff = now.GetLo() - m_refresh.GetLo();
     if (diff > 8000) {
-      LOG_ARPA(wxT("BR24radar_pi: target not refreshed, missing spokes, set lost, status= %i, target_id= %i timediff= %i"),
+      LOG_ARPA(wxT("radar_pi: target not refreshed, missing spokes, set lost, status= %i, target_id= %i timediff= %i"),
                m_status, m_target_id, diff);
       SetStatusLost();
     }
@@ -760,7 +760,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     // check if target has a new later time than previous target
     if (pol.time <= prev_X.time && m_status > 1) {
       // found old target again, reset what we have done
-      LOG_INFO(wxT("BR24radar_pi: Error Gettarget same time found"));
+      LOG_INFO(wxT("radar_pi: Error Gettarget same time found"));
       m_position = prev_X;
       prev_X = prev2_X;
       return;
@@ -950,7 +950,7 @@ void RadarArpa::CalculateCentroid(ArpaTarget* target) {
   // real calculation still to be done
 }
 
-ArpaTarget::ArpaTarget(br24radar_pi* pi, RadarInfo* ri) {
+ArpaTarget::ArpaTarget(radar_pi* pi, RadarInfo* ri) {
   ArpaTarget::m_ri = ri;
   m_pi = pi;
   m_kalman = 0;
@@ -1011,7 +1011,7 @@ bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
   }
   int cont = GetContour(pol);
   if (cont != 0) {
-    // LOG_ARPA(wxT("BR24radar_pi: ARPA contour error %d at %d, %d"), cont, a, r);
+    // LOG_ARPA(wxT("radar_pi: ARPA contour error %d at %d, %d"), cont, a, r);
     // reset pol in case of error
     pol->angle = a;
     pol->r = r;
@@ -1135,7 +1135,7 @@ int RadarArpa::AcquireNewARPATarget(Polar pol, int status) {
     i = m_number_of_targets;
     m_number_of_targets++;
   } else {
-    LOG_INFO(wxT("BR24radar_pi: RadarArpa:: Error, max targets exceeded %i"), m_number_of_targets);
+    LOG_INFO(wxT("radar_pi: RadarArpa:: Error, max targets exceeded %i"), m_number_of_targets);
     return -1;
   }
 

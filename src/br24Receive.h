@@ -40,7 +40,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 class br24Receive : public wxThread {
  public:
-  br24Receive(br24radar_pi *pi, RadarInfo *ri) : wxThread(wxTHREAD_JOINABLE), m_pi(pi), m_ri(ri) {
+  br24Receive(radar_pi *pi, RadarInfo *ri) : wxThread(wxTHREAD_JOINABLE), m_pi(pi), m_ri(ri) {
     Create(1024 * 1024);  // Stack size, be liberal
     m_next_spoke = -1;
     m_mcast_addr = 0;
@@ -72,14 +72,14 @@ class br24Receive : public wxThread {
         m_initial_mcast_addr.sin_port = 0;
         m_initial_mcast_addr.sin_family = AF_INET;
         m_mcast_addr = &m_initial_mcast_addr;
-        LOG_VERBOSE(wxT("BR24radar_pi: assuming radar is still reachable via %s"), mcast_address.c_str());
+        LOG_VERBOSE(wxT("radar_pi: assuming radar is still reachable via %s"), mcast_address.c_str());
       }
     }
 
     m_receive_socket = GetLocalhostServerTCPSocket();
     m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
 
-    LOG_RECEIVE(wxT("BR24radar_pi: %s receive thread created"), m_ri->m_name.c_str());
+    LOG_RECEIVE(wxT("radar_pi: %s receive thread created"), m_ri->m_name.c_str());
   };
 
   ~br24Receive() {}
@@ -100,15 +100,13 @@ class br24Receive : public wxThread {
 
   void ProcessFrame(const UINT8 *data, int len);
   bool ProcessReport(const UINT8 *data, int len);
-  void ProcessCommand(wxString &addr, const UINT8 *data, int len);
 
   void EmulateFakeBuffer(void);
   SOCKET PickNextEthernetCard();
   SOCKET GetNewReportSocket();
   SOCKET GetNewDataSocket();
-  SOCKET GetNewCommandSocket();
 
-  br24radar_pi *m_pi;
+  radar_pi *m_pi;
   wxString m_ip;
   RadarInfo *m_ri;  // All transfer of data passes back through this.
 

@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  Navico BR24 Radar Plugin
+ * Purpose:  Radar Plugin
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
@@ -29,16 +29,16 @@
  ***************************************************************************
  */
 
-#ifndef _BR24OPTIONSDIALOG_H_
-#define _BR24OPTIONSDIALOG_H_
+#ifndef _OPTIONSDIALOG_H_
+#define _OPTIONSDIALOG_H_
 
-#include "br24radar_pi.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
-class br24OptionsDialog : public wxDialog {
+class OptionsDialog : public wxDialog {
  public:
-  br24OptionsDialog(wxWindow* parent, PersistentSettings& settings, RadarType radar_type);
+  OptionsDialog(wxWindow* parent, PersistentSettings& settings, RadarType radar_type);
   PersistentSettings GetSettings() { return m_settings; };
 
  private:
@@ -102,4 +102,4 @@ class br24OptionsDialog : public wxDialog {
 
 PLUGIN_END_NAMESPACE
 
-#endif /* _BR24OPTIONSDIALOG_H_ */
+#endif /* _OPTIONSDIALOG_H_ */

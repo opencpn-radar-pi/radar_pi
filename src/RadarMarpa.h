@@ -35,7 +35,7 @@
 
 //#include "pi_common.h"
 
-//#include "br24radar_pi.h"
+//#include "radar_pi.h"
 #include "Kalman.h"
 #include "Matrix.h"
 #include "RadarInfo.h"
@@ -99,12 +99,12 @@ class ArpaTarget {
   friend class RadarArpa;  // Allow RadarArpa access to private members
 
  public:
-  ArpaTarget(br24radar_pi* pi, RadarInfo* ri);
+  ArpaTarget(radar_pi* pi, RadarInfo* ri);
   ArpaTarget();
   ~ArpaTarget();
 
   int GetContour(Polar* p);
-  void set(br24radar_pi* pi, RadarInfo* ri);
+  void set(radar_pi* pi, RadarInfo* ri);
   bool FindNearestContour(Polar* pol, int dist);
   bool FindContourFromInside(Polar* p);
   bool GetTarget(Polar* pol, int dist);
@@ -118,7 +118,7 @@ class ArpaTarget {
 
  private:
   RadarInfo* m_ri;
-  br24radar_pi* m_pi;
+  radar_pi* m_pi;
   KalmanFilter* m_kalman;
   int m_target_id;
   target_status m_status;
@@ -142,7 +142,7 @@ class ArpaTarget {
 
 class RadarArpa {
  public:
-  RadarArpa(br24radar_pi* pi, RadarInfo* ri);
+  RadarArpa(radar_pi* pi, RadarInfo* ri);
   ~RadarArpa();
   void DrawArpaTargets();
   void RefreshArpaTargets();
@@ -162,7 +162,7 @@ class RadarArpa {
   int m_number_of_targets;
   ArpaTarget* m_targets[MAX_NUMBER_OF_TARGETS];
 
-  br24radar_pi* m_pi;
+  radar_pi* m_pi;
   RadarInfo* m_ri;
 
   void AcquireOrDeleteMarpaTarget(Position p, int status);

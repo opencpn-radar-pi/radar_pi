@@ -32,7 +32,7 @@
 #ifndef _RADAR_DRAW_H_
 #define _RADAR_DRAW_H_
 
-#include "br24radar_pi.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

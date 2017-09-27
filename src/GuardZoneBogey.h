@@ -32,7 +32,7 @@
 #ifndef _GUARDZONEBOGEY_H_
 #define _GUARDZONEBOGEY_H_
 
-#include "br24radar_pi.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -50,7 +50,7 @@ class GuardZoneBogey : public wxDialog {
 
   ~GuardZoneBogey();
 
-  bool Create(wxWindow *parent, br24radar_pi *pi, wxWindowID id = wxID_ANY, const wxString &m_caption = _("Alarm"),
+  bool Create(wxWindow *parent, radar_pi *pi, wxWindowID id = wxID_ANY, const wxString &m_caption = _("Alarm"),
               const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize,
               long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
 
@@ -62,7 +62,7 @@ class GuardZoneBogey : public wxDialog {
   void OnCloseClick(wxCommandEvent &event);
 
   wxWindow *m_parent;
-  br24radar_pi *m_pi;
+  radar_pi *m_pi;
 
   /* Controls */
   wxStaticText *m_bogey_text;
