@@ -105,7 +105,11 @@ typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a 
 
 #ifndef M_SETTINGS
 #define M_SETTINGS m_pi->m_settings
+#define M_PLUGIN m_pi->
+#else
+#define M_PLUGIN
 #endif
+
 #define LOGLEVEL_INFO 0
 #define LOGLEVEL_VERBOSE 1
 #define LOGLEVEL_DIALOG 2
@@ -125,6 +129,19 @@ typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a 
 #define LOG_RECEIVE IF_LOG_AT_LEVEL(LOGLEVEL_RECEIVE) wxLogMessage
 #define LOG_GUARD IF_LOG_AT_LEVEL(LOGLEVEL_GUARD) wxLogMessage
 #define LOG_ARPA IF_LOG_AT_LEVEL(LOGLEVEL_ARPA) wxLogMessage
+
+#define LOG_BINARY_VERBOSE(what, data, size) \
+  IF_LOG_AT_LEVEL(LOGLEVEL_VERBOSE) { M_PLUGIN logBinaryData(what, data, size); }
+#define LOG_BINARY_DIALOG(what, data, size) \
+  IF_LOG_AT_LEVEL(LOGLEVEL_DIALOG) { M_PLUGIN logBinaryData(what, data, size); }
+#define LOG_BINARY_TRANSMIT(what, data, size) \
+  IF_LOG_AT_LEVEL(LOGLEVEL_TRANSMIT) { M_PLUGIN logBinaryData(what, data, size); }
+#define LOG_BINARY_RECEIVE(what, data, size) \
+  IF_LOG_AT_LEVEL(LOGLEVEL_RECEIVE) { M_PLUGIN logBinaryData(what, data, size); }
+#define LOG_BINARY_GUARD(what, data, size) \
+  IF_LOG_AT_LEVEL(LOGLEVEL_GUARD) { M_PLUGIN logBinaryData(what, data, size); }
+#define LOG_BINARY_ARPA(what, data, size) \
+  IF_LOG_AT_LEVEL(LOGLEVEL_ARPA) { M_PLUGIN logBinaryData(what, data, size); }
 
 enum { BM_ID_RED, BM_ID_RED_SLAVE, BM_ID_GREEN, BM_ID_GREEN_SLAVE, BM_ID_AMBER, BM_ID_AMBER_SLAVE, BM_ID_BLANK, BM_ID_BLANK_SLAVE };
 
@@ -425,6 +442,7 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   void OnGuardZoneDialogClose(RadarInfo *ri);
   void ConfirmGuardZoneBogeys();
   void ResetOpenGLContext();
+  void logBinaryData(const wxString &what, const UINT8 *data, int size);
 
   bool SetControlValue(int radar, ControlType controlType, int value, int autoValue);
 

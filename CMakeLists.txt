@@ -27,51 +27,54 @@ INCLUDE("cmake/PluginConfigure.cmake")
 # header files and cpp/c files and CMake will sort them out
 
 SET(SRC_radar
-            src/pi_common.h
-            src/shaderutil.h
-            src/shaderutil.cpp
-            src/socketutil.h
-            src/socketutil.cpp
-            src/drawutil.h
-            src/drawutil.cpp
-            src/radar_pi.h
-            src/radar_pi.cpp
-            src/ControlsDialog.h
             src/ControlsDialog.cpp
-            src/MessageBox.h
-            src/MessageBox.cpp
-            src/OptionsDialog.h
-            src/OptionsDialog.cpp
-            src/br24Receive.h
-            src/br24Receive.cpp
-            src/RadarMarpa.h
-            src/RadarMarpa.cpp
-            src/br24Transmit.h
-            src/br24Transmit.cpp
-            src/icons.h
-            src/icons.cpp
-            src/GuardZone.h
+            src/ControlsDialog.h
             src/GuardZone.cpp
-            src/GuardZoneBogey.h
+            src/GuardZone.h
             src/GuardZoneBogey.cpp
-            src/Kalman.h
+            src/GuardZoneBogey.h
             src/Kalman.cpp
+            src/Kalman.h
             src/Matrix.h
-            src/RadarInfo.h
-            src/RadarInfo.cpp
-            src/RadarCanvas.h
+            src/MessageBox.cpp
+            src/MessageBox.h
+            src/OptionsDialog.cpp
+            src/OptionsDialog.h
             src/RadarCanvas.cpp
-            src/RadarPanel.h
-            src/RadarPanel.cpp
-            src/RadarDraw.h
+            src/RadarCanvas.h
+            src/RadarControl.h
             src/RadarDraw.cpp
-            src/RadarDrawShader.h
+            src/RadarDraw.h
             src/RadarDrawShader.cpp
-            src/RadarDrawVertex.h
+            src/RadarDrawShader.h
             src/RadarDrawVertex.cpp
-            src/TextureFont.h
+            src/RadarDrawVertex.h
+            src/RadarInfo.cpp
+            src/RadarInfo.h
+            src/RadarMarpa.cpp
+            src/RadarMarpa.h
+            src/RadarPanel.cpp
+            src/RadarPanel.h
             src/TextureFont.cpp
+            src/TextureFont.h
+            src/br24Receive.cpp
+            src/br24Receive.h
+            src/br24Transmit.cpp
+            src/br24Transmit.h
+            src/drawutil.cpp
+            src/drawutil.h
+            src/icons.cpp
+            src/icons.h
+            src/pi_common.h
+            src/radar_pi.cpp
+            src/radar_pi.h
+            src/shaderutil.cpp
+            src/shaderutil.h
+            src/socketutil.cpp
+            src/socketutil.h
+
 )
+
 SET(SRC_NMEA0183
         src/nmea0183/nmea0183.cpp
         src/nmea0183/nmea0183.hpp
