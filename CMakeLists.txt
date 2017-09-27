@@ -55,10 +55,11 @@ SET(SRC_radar
             src/RadarMarpa.h
             src/RadarPanel.cpp
             src/RadarPanel.h
+            src/RadarReceive.h
             src/TextureFont.cpp
             src/TextureFont.h
-            src/br24Receive.cpp
-            src/br24Receive.h
+            src/NavicoReceive.cpp
+            src/NavicoReceive.h
             src/br24Transmit.cpp
             src/br24Transmit.h
             src/drawutil.cpp

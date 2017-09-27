@@ -34,6 +34,8 @@
 
 #include "radar_pi.h"
 
+#include "RadarReceive.h"
+
 PLUGIN_BEGIN_NAMESPACE
 
 class RadarDraw;
@@ -192,12 +194,12 @@ class RadarInfo {
   /* Per radar objects */
 
   RadarControl *m_control;
-  br24Receive *m_receive;
+  RadarReceive *m_receive;
   ControlsDialog *m_control_dialog;
   RadarPanel *m_radar_panel;
   RadarCanvas *m_radar_canvas;
 
-  /* Abstractions of our own. Some filled by br24Receive. */
+  /* Abstractions of our own. Some filled by RadarReceive. */
 
   double m_viewpoint_rotation;
 

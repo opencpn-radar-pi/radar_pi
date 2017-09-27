@@ -30,8 +30,8 @@
  ***************************************************************************
  */
 
-#include "RadarMarpa.h"
-#include "br24Receive.h"
+#include "NavicoReceive.h"
+#include "socketutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -141,7 +141,7 @@ bool g_first_receive = true;
 // Process one radar frame packet, which can contain up to 32 'spokes' or lines extending outwards
 // from the radar up to the range indicated in the packet.
 //
-void br24Receive::ProcessFrame(const UINT8 *data, int len) {
+void NavicoReceive::ProcessFrame(const UINT8 *data, int len) {
   time_t now = time(0);
 
   double lat;
@@ -277,7 +277,7 @@ void br24Receive::ProcessFrame(const UINT8 *data, int len) {
  * image.
  */
 
-void br24Receive::EmulateFakeBuffer(void) {
+void NavicoReceive::EmulateFakeBuffer(void) {
   time_t now = time(0);
   UINT8 data[RETURNS_PER_LINE];
 
@@ -339,7 +339,7 @@ void br24Receive::EmulateFakeBuffer(void) {
   LOG_VERBOSE(wxT("radar_pi: emulating %d spokes at range %d with %d spots"), scanlines_in_packet, range_meters, spots);
 }
 
-SOCKET br24Receive::PickNextEthernetCard() {
+SOCKET NavicoReceive::PickNextEthernetCard() {
   SOCKET socket = INVALID_SOCKET;
   m_mcast_addr = 0;
 
@@ -374,7 +374,7 @@ SOCKET br24Receive::PickNextEthernetCard() {
   return socket;
 }
 
-SOCKET br24Receive::GetNewReportSocket() {
+SOCKET NavicoReceive::GetNewReportSocket() {
   SOCKET socket;
   wxString error;
 
@@ -396,7 +396,7 @@ SOCKET br24Receive::GetNewReportSocket() {
   return socket;
 }
 
-SOCKET br24Receive::GetNewDataSocket() {
+SOCKET NavicoReceive::GetNewDataSocket() {
   SOCKET socket;
   wxString error;
 
@@ -416,7 +416,13 @@ SOCKET br24Receive::GetNewDataSocket() {
   return socket;
 }
 
-void *br24Receive::Entry(void) {
+/*
+ * Entry
+ *
+ * Called by wxThread when the new thread is running.
+ * It should remain running until Shutdown is called.
+ */
+void *NavicoReceive::Entry(void) {
   int r = 0;
   int no_data_timeout = 0;
   int no_spoke_timeout = 0;
@@ -436,7 +442,7 @@ void *br24Receive::Entry(void) {
   SOCKET dataSocket = INVALID_SOCKET;
   SOCKET reportSocket = INVALID_SOCKET;
 
-  LOG_VERBOSE(wxT("radar_pi: br24Receive thread %s starting"), m_ri->m_name.c_str());
+  LOG_VERBOSE(wxT("radar_pi: NavicoReceive thread %s starting"), m_ri->m_name.c_str());
 
   if (m_mcast_addr) {
     reportSocket = GetNewReportSocket();
@@ -714,7 +720,7 @@ static void AppendChar16String(wxString &dest, UINT16 *src) {
   }
 }
 
-bool br24Receive::ProcessReport(const UINT8 *report, int len) {
+bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
   LOG_BINARY_RECEIVE(wxT("ProcessReport"), report, len);
 
   time_t now = time(0);
@@ -927,9 +933,10 @@ bool br24Receive::ProcessReport(const UINT8 *report, int len) {
 
 // Called from the main thread to stop this thread.
 // We send a simple one byte message to the thread so that it awakens from the select() call with
-// this message ready for it to be read on 'm_receive_socket'. See the constructor in br24Receive.h
+// this message ready for it to be read on 'm_receive_socket'. See the constructor in NavicoReceive.h
 // for the setup of these two sockets.
-void br24Receive::Shutdown() {
+
+void NavicoReceive::Shutdown() {
   if (m_send_socket != INVALID_SOCKET) {
     m_shutdown_time_requested = wxGetUTCTimeMillis();
     if (send(m_send_socket, "!", 1, MSG_DONTROUTE) > 0) {

@@ -30,12 +30,13 @@
  */
 
 #include "ControlsDialog.h"
+#include "NavicoReceive.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
-#include "br24Receive.h"
+#include "RadarReceive.h"
 #include "br24Transmit.h"
 #include "drawutil.h"
 
@@ -228,12 +229,14 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
 
 void RadarInfo::Shutdown() {
   if (m_receive) {
-    m_receive->Shutdown();
-
     wxLongLong threadStartWait = wxGetUTCTimeMillis();
+    m_receive->Shutdown();
     m_receive->Wait();
     wxLongLong threadEndWait = wxGetUTCTimeMillis();
+
+#ifdef NEVER
     wxLongLong threadExtraWait = 0;
+
     // See if Douwe is right and Wait() doesn't work properly -- attests it returns
     // before the thread is dead.
     while (!m_receive->m_is_shutdown) {
@@ -255,6 +258,10 @@ void RadarInfo::Shutdown() {
       LOG_INFO(wxT("radar_pi: %s receive thread stopped in %lu ms, had to wait for %lu ms"), m_name.c_str(),
                threadEndWait - m_receive->m_shutdown_time_requested, threadEndWait - threadStartWait);
     }
+#endif
+
+    LOG_INFO(wxT("radar_pi: %s receive thread stopped in %lu ms"), m_name.c_str(), threadEndWait - threadStartWait);
+
     delete m_receive;
     m_receive = 0;
   }
@@ -371,7 +378,7 @@ void RadarInfo::SetName(wxString name) {
 void RadarInfo::StartReceive() {
   if (!m_receive) {
     LOG_RECEIVE(wxT("radar_pi: %s starting receive thread"), m_name.c_str());
-    m_receive = new br24Receive(m_pi, this);
+    m_receive = new NavicoReceive(m_pi, this);
     if (!m_receive || (m_receive->Run() != wxTHREAD_NO_ERROR)) {
       LOG_INFO(wxT("radar_pi: %s unable to start receive thread."), m_name.c_str());
       if (m_receive) {

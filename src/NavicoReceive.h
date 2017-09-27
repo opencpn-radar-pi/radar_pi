@@ -29,19 +29,21 @@
  ***************************************************************************
  */
 
-#ifndef _BR24RECEIVE_H_
-#define _BR24RECEIVE_H_
+#ifndef _NAVICORECEIVE_H_
+#define _NAVICORECEIVE_H_
 
-#include "RadarInfo.h"
-#include "pi_common.h"
+#include "RadarReceive.h"
 #include "socketutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
-class br24Receive : public wxThread {
+//
+// An intermediary class that implements the common parts of any Navico radar.
+//
+
+class NavicoReceive : public RadarReceive {
  public:
-  br24Receive(radar_pi *pi, RadarInfo *ri) : wxThread(wxTHREAD_JOINABLE), m_pi(pi), m_ri(ri) {
-    Create(1024 * 1024);  // Stack size, be liberal
+  NavicoReceive(radar_pi *pi, RadarInfo *ri) : RadarReceive(pi, ri) {
     m_next_spoke = -1;
     m_mcast_addr = 0;
     m_radar_status = 0;
@@ -82,7 +84,7 @@ class br24Receive : public wxThread {
     LOG_RECEIVE(wxT("radar_pi: %s receive thread created"), m_ri->m_name.c_str());
   };
 
-  ~br24Receive() {}
+  ~NavicoReceive() {}
 
   void *Entry(void);
   void Shutdown(void);
@@ -96,8 +98,6 @@ class br24Receive : public wxThread {
   volatile bool m_is_shutdown;
 
  private:
-  void logBinaryData(const wxString &what, const UINT8 *data, int size);
-
   void ProcessFrame(const UINT8 *data, int len);
   bool ProcessReport(const UINT8 *data, int len);
 
@@ -106,9 +106,7 @@ class br24Receive : public wxThread {
   SOCKET GetNewReportSocket();
   SOCKET GetNewDataSocket();
 
-  radar_pi *m_pi;
   wxString m_ip;
-  RadarInfo *m_ri;  // All transfer of data passes back through this.
 
   SOCKET m_receive_socket;  // Where we listen for message from m_send_socket
   SOCKET m_send_socket;     // A message to this socket will interrupt select() and allow immediate shutdown
@@ -123,4 +121,4 @@ class br24Receive : public wxThread {
 
 PLUGIN_END_NAMESPACE
 
-#endif /* _BR24RECEIVE_H_ */
+#endif /* _NAVICORECEIVE_H_ */

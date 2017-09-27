@@ -63,7 +63,7 @@ class RadarInfo;
 class ControlsDialog;
 class MessageBox;
 class OptionsDialog;
-class br24Receive;
+class RadarReceive;
 class RadarControl;
 class radar_pi;
 class GuardZoneBogey;
