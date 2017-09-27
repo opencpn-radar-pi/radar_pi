@@ -1,17 +1,9 @@
 
-BR24radar_pi - Navico Broadband Radar Plugin for OpenCPN
-========================================================
+radar_pi - Radar Plugin for OpenCPN
+===================================
 
-Downloads
----------
-
-The latest binary version for Microsoft Windows and OS X can be downloaded at https://github.com/canboat/BR24radar_pi/releases .
-Ubuntu/Debian can install the standard opencpn PPA and install 'opencpn-plugin-br24radar'.
-
-Manual
-------
-
-There is now a manual on this site, see https://github.com/canboat/BR24radar_pi/wiki .
+This is a work in progress. It will support Navico Broadband and Halo radars as well as Garmin xHD and possibly others.
+It is meant as the community effort to only write the common parts of radar support once.
 
 Compiling
 ---------
@@ -26,14 +18,14 @@ In order to build multiple platforms you can build in separate `build-${platform
 ### Obtain the source code
 
 ```
-git clone https://github.com/canboat/BR24radar_pi.git
+git clone https://github.com/opencpn-radar-pi/radar_pi.git
 ```
 
 ### Build on Microsoft Windows
 
 ```
-mkdir BR24radar_pi/build-win32
-cd BR24radar_pi/build-win32
+mkdir radar_pi/build-win32
+cd radar_pi/build-win32
 cmake ..
 cmake --build .
 ```
@@ -51,8 +43,8 @@ cmake --build . --config release --target package
 Example on 64 bit Intel/AMD64 system:
 
 ```
-mkdir BR24radar_pi/build-linux-x86_64
-cd BR24radar_pi/build-linux-x86_64
+mkdir radar_pi/build-linux-x86_64
+cd radar_pi/build-linux-x86_64
 cmake ..
 make
 ```

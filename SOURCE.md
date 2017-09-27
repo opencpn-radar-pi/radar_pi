@@ -1,7 +1,7 @@
 
 
-BR24radar_pi - Source design
-============================
+radar_pi - Source design
+========================
 
 Terminology
 -----------
