@@ -29,37 +29,67 @@
  ***************************************************************************
  */
 
-#ifndef _BR24TRANSMIT_H_
-#define _BR24TRANSMIT_H_
+#ifndef _RADARCONTROL_H_
+#define _RADARCONTROL_H_
 
 #include "RadarInfo.h"
 #include "pi_common.h"
-#include "socketutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
-class br24Transmit : public RadarControl {
+class RadarControl {
  public:
-  br24Transmit(radar_pi *pi, wxString name, int radar);
-  ~br24Transmit();
+  RadarControl(radar_pi *pi, wxString name, int radar){};
+  virtual ~RadarControl(){};
 
-  bool Init(struct sockaddr_in *address);
-  void RadarTxOff();
-  void RadarTxOn();
-  bool RadarStayAlive();
-  bool SetRange(int meters);
-  bool SetControlValue(ControlType controlType, int value, int autoValue);
+  RadarControl(){};
 
- private:
-  radar_pi *m_pi;
-  struct sockaddr_in m_addr;
-  SOCKET m_radar_socket;
-  wxString m_name;
+  /*
+   * Initialize any local data structures.
+   *
+   * @param address     The address of the ethernet card on this machine
+   */
+  virtual bool Init(struct sockaddr_in *address) = 0;
 
-  bool TransmitCmd(const UINT8 *msg, int size);
-  void logBinaryData(const wxString &what, const UINT8 *data, int size);
+  /*
+   * Ask the radar to switch off.
+   */
+  virtual void RadarTxOff() = 0;
+
+  /*
+   * Ask the radar to switch on.
+   */
+  virtual void RadarTxOn() = 0;
+
+  /*
+   * Send a 'keepalive' message to the radar.
+   * This can be a null implementation if the radar does not need this.
+   *
+   * @returns   true on success, false on failure.
+   */
+  virtual bool RadarStayAlive() { return true; };
+
+  /*
+   * Set the range to the given range in meters.
+   *
+   * @param     meters  Requested range in meters.
+   * @returns   true on success, false on failure.
+   */
+  virtual bool SetRange(int meters) = 0;
+
+  /*
+   * Modify a radar setting.
+   *
+   * TODO: autoValue needs to be explained, and probably given a different interface.
+   *
+   * @param     controlType     Control such as CT_GAIN, etc.
+   * @param     value           Requested value.
+   * @param     autoValue       Requested auto-value.
+   * @returns   true on success, false on failure.
+   */
+  virtual bool SetControlValue(ControlType controlType, int value, int autoValue) = 0;
 };
 
 PLUGIN_END_NAMESPACE
 
-#endif /* _BR24TRANSMIT_H_ */
+#endif /* _RADARCONTROL_H_ */

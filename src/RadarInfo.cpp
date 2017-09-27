@@ -29,12 +29,12 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
+#include "ControlsDialog.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
+#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
-#include "ControlsDialog.h"
 #include "br24Receive.h"
 #include "br24Transmit.h"
 #include "drawutil.h"
@@ -209,7 +209,7 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
       m_vrm[b] = NAN;
     }
   }
-  m_transmit = 0;
+  m_control = 0;
   m_receive = 0;
   m_draw_panel.draw = 0;
   m_draw_overlay.draw = 0;
@@ -278,9 +278,9 @@ RadarInfo::~RadarInfo() {
     delete m_draw_overlay.draw;
     m_draw_overlay.draw = 0;
   }
-  if (m_transmit) {
-    delete m_transmit;
-    m_transmit = 0;
+  if (m_control) {
+    delete m_control;
+    m_control = 0;
   }
   if (m_arpa) {
     delete m_arpa;
@@ -304,7 +304,7 @@ bool RadarInfo::Init(wxString name, int verbose) {
 
   ComputeColourMap();
 
-  m_transmit = new br24Transmit(m_pi, name, m_radar);
+  m_control = new br24Transmit(m_pi, name, m_radar);
 
   m_radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
   if (!m_radar_panel || !m_radar_panel->Create()) {
@@ -350,7 +350,7 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
 }
 
 void RadarInfo::SetNetworkCardAddress(struct sockaddr_in *address) {
-  if (!m_transmit->Init(address)) {
+  if (!m_control->Init(address)) {
     wxLogError(wxT("radar_pi %s: Unable to create transmit socket"), m_name.c_str());
   }
   m_stayalive_timeout = 0;  // Allow immediate restart of any TxOn or TxOff command
@@ -476,8 +476,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     if (m_arpa) {
       m_arpa->ClearContours();
     }
-    LOG_VERBOSE(wxT("radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters,
-                range_meters);
+    LOG_VERBOSE(wxT("radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters, range_meters);
     m_range_meters = range_meters;
     if (!m_range.GetValue()) {
       m_range.Update(convertSpokeMetersToRangeMeters(range_meters));
@@ -680,7 +679,7 @@ void RadarInfo::UpdateTransmitState() {
   }
 
   if (state == RADAR_TRANSMIT && TIMED_OUT(now, m_stayalive_timeout)) {
-    m_transmit->RadarStayAlive();
+    m_control->RadarStayAlive();
     m_stayalive_timeout = now + STAYALIVE_TIMEOUT;
   }
 
@@ -704,7 +703,7 @@ void RadarInfo::RequestRadarState(RadarState state) {
           if (m_pi->m_settings.emulator_on) {
             m_state.Update(RADAR_TRANSMIT);
           } else {
-            m_transmit->RadarTxOn();
+            m_control->RadarTxOn();
           }
           // Refresh radar immediately so that we generate draw mechanisms
           if (m_pi->m_settings.chart_overlay == m_radar) {
@@ -719,7 +718,7 @@ void RadarInfo::RequestRadarState(RadarState state) {
           if (m_pi->m_settings.emulator_on) {
             m_state.Update(RADAR_STANDBY);
           } else {
-            m_transmit->RadarTxOff();
+            m_control->RadarTxOff();
           }
           break;
 
@@ -966,11 +965,11 @@ void RadarInfo::AdjustRange(int adjustment) {
     if (adjustment < 0 && range > min) {
       LOG_VERBOSE(wxT("radar_pi: Change radar range from %d/%d to %d/%d"), range[0].meters, range[0].actual_meters,
                   range[-1].meters, range[-1].actual_meters);
-      m_transmit->SetRange(range[-1].meters);
+      m_control->SetRange(range[-1].meters);
     } else if (adjustment > 0 && range < max) {
       LOG_VERBOSE(wxT("radar_pi: Change radar range from %d/%d to %d/%d"), range[0].meters, range[0].actual_meters,
                   range[+1].meters, range[+1].actual_meters);
-      m_transmit->SetRange(range[+1].meters);
+      m_control->SetRange(range[+1].meters);
     }
   }
 }
@@ -988,7 +987,7 @@ void RadarInfo::SetAutoRangeMeters(int meters) {
           LOG_VERBOSE(wxT("radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters,
                       m_auto_range_meters);
         }
-        m_transmit->SetRange(meters);
+        m_control->SetRange(meters);
         m_previous_auto_range_meters = m_auto_range_meters;
       }
     }
@@ -998,7 +997,7 @@ void RadarInfo::SetAutoRangeMeters(int meters) {
 }
 
 bool RadarInfo::SetControlValue(ControlType controlType, int value, int autoValue) {
-  return m_transmit->SetControlValue(controlType, value, autoValue);
+  return m_control->SetControlValue(controlType, value, autoValue);
 }
 
 void RadarInfo::ShowRadarWindow(bool show) { m_radar_panel->ShowFrame(show); }

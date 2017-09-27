@@ -64,7 +64,7 @@ class ControlsDialog;
 class MessageBox;
 class OptionsDialog;
 class br24Receive;
-class br24Transmit;
+class RadarControl;
 class radar_pi;
 class GuardZoneBogey;
 class RadarArpa;
@@ -619,7 +619,7 @@ PLUGIN_END_NAMESPACE
 #include "GuardZone.h"
 #include "MessageBox.h"
 #include "OptionsDialog.h"
+#include "RadarControl.h"
 #include "RadarInfo.h"
-#include "br24Transmit.h"
 
 #endif /* _RADAR_PI_H_ */

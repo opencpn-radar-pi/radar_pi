@@ -191,7 +191,7 @@ class RadarInfo {
 
   /* Per radar objects */
 
-  br24Transmit *m_transmit;
+  RadarControl *m_control;
   br24Receive *m_receive;
   ControlsDialog *m_control_dialog;
   RadarPanel *m_radar_panel;
