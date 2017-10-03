@@ -29,7 +29,7 @@
  ***************************************************************************
  */
 
-#include "ControlsDialog.h"
+#include "NavicoControlsDialog.h"
 #include "NavicoReceive.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
@@ -337,7 +337,7 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
       LOG_VERBOSE(wxT("radar_pi %s: Reparenting control dialog"), m_name.c_str());
     }
     if (!m_control_dialog) {
-      m_control_dialog = new ControlsDialog;
+      m_control_dialog = new NavicoControlsDialog;
       m_control_dialog->m_panel_position = panel_pos;
       m_control_dialog->m_manually_positioned = manually_positioned;
       wxWindow *parent = (wxWindow *)m_radar_panel;

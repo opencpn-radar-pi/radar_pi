@@ -38,6 +38,8 @@ SET(SRC_radar
             src/Matrix.h
             src/MessageBox.cpp
             src/MessageBox.h
+            src/NavicoControlsDialog.cpp
+            src/NavicoControlsDialog.h
             src/OptionsDialog.cpp
             src/OptionsDialog.h
             src/RadarCanvas.cpp

@@ -31,7 +31,6 @@
  */
 
 #include "NavicoReceive.h"
-#include "socketutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

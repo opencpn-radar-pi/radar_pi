@@ -167,66 +167,16 @@ struct receive_statistics {
   int missing_spokes;
 };
 
-// WARNING
-// WARNING If you add to ControlType, make sure to add strings to ControlTypeNames as well!
-// WARNING
-typedef enum ControlType {
-  CT_RANGE,
-  CT_GAIN,
-  CT_SEA,
-  CT_RAIN,
-  CT_TRANSPARENCY,
-  CT_INTERFERENCE_REJECTION,
-  CT_TARGET_SEPARATION,
-  CT_NOISE_REJECTION,
-  CT_TARGET_BOOST,
-  CT_TARGET_EXPANSION,
-  CT_REFRESHRATE,
-  CT_SCAN_SPEED,
-  CT_SCAN_AGE,
-  CT_TIMED_IDLE,
-  CT_TIMED_RUN,
-  CT_BEARING_ALIGNMENT,
-  CT_SIDE_LOBE_SUPPRESSION,
-  CT_ANTENNA_HEIGHT,
-  CT_ANTENNA_FORWARD,
-  CT_ANTENNA_STARBOARD,
-  CT_LOCAL_INTERFERENCE_REJECTION,
-  CT_TARGET_TRAILS,
-  CT_TRAILS_MOTION,
-  CT_MAIN_BANG_SIZE,
-  CT_MAX  // Keep this last, see below
-} ControlType;
-
-// The following are only for logging, so don't care about translations.
-static string ControlTypeNames[CT_MAX] = {"Range",
-                                          "Gain",
-                                          "Sea",
-                                          "Rain",
-                                          "Transparency",
-                                          "Interference rejection",
-                                          "Target separation",
-                                          "Noise rejection",
-                                          "Target boost",
-                                          "Target expansion",
-                                          "Refresh rate",
-                                          "Scan speed",
-                                          "Scan age",
-                                          "Timed idle",
-                                          "Running time",
-                                          "Bearing alignment",
-                                          "Side lobe suppression",
-                                          "Antenna height",
-                                          "Antenna forward of GPS",
-                                          "Antenna starboard of GPS",
-                                          "Local interference rejection",
-                                          "Target trails",
-                                          "Target trails motion",
-                                          "Main bang size"};
-
 typedef enum GuardZoneType { GZ_ARC, GZ_CIRCLE } GuardZoneType;
 
 typedef enum RadarType { RT_UNKNOWN, RT_BR24, RT_3G, RT_4G } RadarType;
+
+typedef enum ControlType {
+#define CONTROL_TYPE(x, y) x,
+#include "ControlType.inc"
+#undef CONTROL_TYPE
+  CT_MAX
+} ControlType;
 
 enum BlobColour {
   BLOB_NONE,
