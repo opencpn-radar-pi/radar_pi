@@ -26,9 +26,18 @@ INCLUDE("cmake/PluginConfigure.cmake")
 # For convenience we define the sources as a variable. You can add
 # header files and cpp/c files and CMake will sort them out
 
-SET(SRC_radar
-            src/br4gatype.h
-            src/br4gbtype.h
+SET(SRC_NAVICO
+            src/navico/br4gatype.h
+            src/navico/br4gbtype.h
+            src/navico/NavicoReceive.cpp
+            src/navico/NavicoReceive.h
+            src/navico/NavicoControl.cpp
+            src/navico/NavicoControl.h
+            src/navico/NavicoControlsDialog.cpp
+            src/navico/NavicoControlsDialog.h
+)
+
+SET(SRC_RADAR
             src/ControlsDialog.cpp
             src/ControlsDialog.h
             src/GuardZone.cpp
@@ -40,8 +49,6 @@ SET(SRC_radar
             src/Matrix.h
             src/MessageBox.cpp
             src/MessageBox.h
-            src/NavicoControlsDialog.cpp
-            src/NavicoControlsDialog.h
             src/OptionsDialog.cpp
             src/OptionsDialog.h
             src/RadarCanvas.cpp
@@ -65,10 +72,8 @@ SET(SRC_radar
             src/RadarType.h
             src/TextureFont.cpp
             src/TextureFont.h
-            src/NavicoReceive.cpp
-            src/NavicoReceive.h
-            src/NavicoControl.cpp
-            src/NavicoControl.h
+            src/ControlsDialog.cpp
+            src/ControlsDialog.h
             src/drawutil.cpp
             src/drawutil.h
             src/icons.cpp
@@ -116,7 +121,7 @@ IF(WIN32)
   FIND_PACKAGE(wxWidgets REQUIRED)
 ENDIF(WIN32)
 
-ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_radar} ${SRC_NMEA0183} ${SRC_JSON})
+ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_RADAR} ${SRC_NMEA0183} ${SRC_JSON} ${SRC_NAVICO})
 
 SET(TEST_KALMAN kalman-test)
 SET(SRC_KALMAN

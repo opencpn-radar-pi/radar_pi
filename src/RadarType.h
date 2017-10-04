@@ -36,9 +36,9 @@
 #include "RadarInfo.h"
 #include "pi_common.h"
 
-#include <NavicoControl.h>
-#include <NavicoControlsDialog.h>
-#include <NavicoReceive.h>
+#include "navico/NavicoControl.h"
+#include "navico/NavicoControlsDialog.h"
+#include "navico/NavicoReceive.h"
 
 #endif /* _RADARTYPE_H_ */
 
@@ -47,8 +47,8 @@
 #endif
 
 //#include <br24type.h>
-#include <br4gatype.h>
-#include <br4gbtype.h>
+#include "navico/br4gatype.h"
+#include "navico/br4gbtype.h"
 //#include <halotype.h>
 #undef DEFINE_RADAR  // Prepare for next inclusion
 #undef INITIALIZE_RADAR

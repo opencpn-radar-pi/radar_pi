@@ -29,8 +29,7 @@
  ***************************************************************************
  */
 
-#include "NavicoControlsDialog.h"
-#include "NavicoReceive.h"
+#include "ControlsDialog.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
