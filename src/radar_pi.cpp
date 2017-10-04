@@ -230,9 +230,8 @@ int radar_pi::Init(void) {
 
   // Create objects before config, so config can set data in it
   // This does not start any threads or generate any UI.
-  for (int r = 0; r < RADARS; r++) {
-    m_radar[r] = new RadarInfo(this, r);
-  }
+  m_radar[0] = new RadarInfo(RT_4GA, this, 0);
+  m_radar[1] = new RadarInfo(RT_4GB, this, 1);
 
   //    And load the configuration items
   if (LoadConfig()) {
@@ -392,8 +391,8 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
     m_settings = dlg.GetSettings();
     SaveConfig();
     if (!m_settings.emulator_on && old_emulator) {  // If the *OLD* setting had emulator on, re-detect radar type
-      m_radar[0]->m_radar_type = RT_UNKNOWN;
-      m_radar[1]->m_radar_type = RT_UNKNOWN;
+      m_radar[0]->m_radar_type = RT_4GA;
+      m_radar[1]->m_radar_type = RT_4GB;
     }
     if (m_settings.enable_dual_radar) {
       m_radar[0]->SetName(_("Radar A"));

@@ -147,6 +147,8 @@ class MessageBox : public wxDialog {
   wxCheckBox *m_have_radar;
   wxCheckBox *m_have_data;
   wxStaticText *m_statistics;
+
+  wxArrayString m_radar_names;
 };
 
 PLUGIN_END_NAMESPACE

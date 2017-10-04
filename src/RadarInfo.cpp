@@ -33,11 +33,11 @@
 #include "NavicoReceive.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
+#include "RadarFactory.h"
 #include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
-#include "br24Transmit.h"
 #include "drawutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
@@ -97,7 +97,7 @@ static size_t convertMetersToRadarAllowedValue(int *range_meters, int units, Rad
   n = g_range_maxValue[units];
   ranges = units ? g_ranges_metric : g_ranges_nautic;
 
-  if (radarType != RT_4G) {
+  if (radarType < RT_4GA) {
     n--;  // only 4G has longest ranges
   }
   for (; n > 0; n--) {
@@ -179,11 +179,11 @@ void radar_range_control_item::Update(int v) {
  * Called when the config is not yet known, so this should not start any
  * computations based on those yet.
  */
-RadarInfo::RadarInfo(radar_pi *pi, int radar) {
+RadarInfo::RadarInfo(RadarType radarType, radar_pi *pi, int radar) {
+  m_radar_type = radarType;
   m_pi = pi;
   m_radar = radar;
   m_arpa = 0;
-  m_radar_type = RT_UNKNOWN;
   m_auto_range_mode = true;
   m_course_index = 0;
   m_old_range = 0;
@@ -311,7 +311,7 @@ bool RadarInfo::Init(wxString name, int verbose) {
 
   ComputeColourMap();
 
-  m_control = new br24Transmit(m_pi, name, m_radar);
+  m_control = RadarFactory::makeRadarControl(m_radar_type);
 
   m_radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
   if (!m_radar_panel || !m_radar_panel->Create()) {
@@ -337,7 +337,7 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
       LOG_VERBOSE(wxT("radar_pi %s: Reparenting control dialog"), m_name.c_str());
     }
     if (!m_control_dialog) {
-      m_control_dialog = new NavicoControlsDialog;
+      m_control_dialog = RadarFactory::makeControlsDialog(m_radar_type, m_radar);
       m_control_dialog->m_panel_position = panel_pos;
       m_control_dialog->m_manually_positioned = manually_positioned;
       wxWindow *parent = (wxWindow *)m_radar_panel;
@@ -357,7 +357,7 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
 }
 
 void RadarInfo::SetNetworkCardAddress(struct sockaddr_in *address) {
-  if (!m_control->Init(address)) {
+  if (!m_control->Init(m_pi, m_name, address)) {
     wxLogError(wxT("radar_pi %s: Unable to create transmit socket"), m_name.c_str());
   }
   m_stayalive_timeout = 0;  // Allow immediate restart of any TxOn or TxOff command
@@ -378,7 +378,7 @@ void RadarInfo::SetName(wxString name) {
 void RadarInfo::StartReceive() {
   if (!m_receive) {
     LOG_RECEIVE(wxT("radar_pi: %s starting receive thread"), m_name.c_str());
-    m_receive = new NavicoReceive(m_pi, this);
+    m_receive = RadarFactory::makeRadarReceive(m_radar_type, m_pi, this);
     if (!m_receive || (m_receive->Run() != wxTHREAD_NO_ERROR)) {
       LOG_INFO(wxT("radar_pi: %s unable to start receive thread."), m_name.c_str());
       if (m_receive) {
@@ -965,7 +965,7 @@ void RadarInfo::AdjustRange(int adjustment) {
       return;
     }
 
-    if (m_radar_type != RT_4G) {
+    if (m_radar_type < RT_4GA) {
       max--;  // only 4G has longest ranges
     }
 
@@ -1414,20 +1414,7 @@ wxString RadarInfo::GetCanvasTextCenter() {
       break;
   }
 
-  switch (m_radar_type) {
-    case RT_BR24:
-      s << wxT("\nBR24");
-      break;
-    case RT_3G:
-      s << wxT("\n3G");
-      break;
-    case RT_4G:
-      s << wxT("\n4G");
-      break;
-    case RT_UNKNOWN:
-    default:
-      break;
-  }
+  s << wxT("\n") << m_name;
 
   return s;
 }

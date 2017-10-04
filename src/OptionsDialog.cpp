@@ -227,11 +227,7 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
   m_EnableDualRadar->SetValue(m_settings.enable_dual_radar);
   m_EnableDualRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnEnableDualRadarClick), NULL,
                              this);
-  if (radar_type == RT_4G) {
-    m_EnableDualRadar->Enable();
-  } else {
-    m_EnableDualRadar->Disable();
-  }
+  m_EnableDualRadar->Enable();
 
   m_IgnoreHeading = new wxCheckBox(this, wxID_ANY, _("Ignore radar heading"), wxDefaultPosition, wxDefaultSize,
                                    wxALIGN_CENTRE | wxST_NO_AUTORESIZE);

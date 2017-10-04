@@ -29,26 +29,48 @@
  ***************************************************************************
  */
 
-#if !defined(DEFINE_RADAR)
-#ifndef _RADARTYPE_H_
-#define _RADARTYPE_H_
+#include "RadarFactory.h"
+#include "RadarType.h"
 
-#include "RadarInfo.h"
-#include "pi_common.h"
+PLUGIN_BEGIN_NAMESPACE
 
-#include <NavicoControl.h>
-#include <NavicoControlsDialog.h>
-#include <NavicoReceive.h>
+ControlsDialog* RadarFactory::makeControlsDialog(size_t radarType, int radar) {
+  switch (radarType) {
+#define DEFINE_RADAR(t, x, a, b, c) \
+  case t:                           \
+    return new a;
+#include "RadarType.h"
+  };
+  return 0;
+}
 
-#endif /* _RADARTYPE_H_ */
+RadarReceive* RadarFactory::makeRadarReceive(size_t radarType, radar_pi* pi, RadarInfo* ri) {
+  switch (radarType) {
+#define DEFINE_RADAR(t, x, a, b, c) \
+  case t:                           \
+    return new b(pi, ri);
+#include "RadarType.h"
+  };
+  return 0;
+}
 
-#define DEFINE_RADAR(t, x, a, b, c)
-#define INITIALIZE_RADAR
-#endif
+RadarControl* RadarFactory::makeRadarControl(size_t radarType) {
+  switch (radarType) {
+#define DEFINE_RADAR(t, x, a, b, c) \
+  case t:                           \
+    return new c;
+#include "RadarType.h"
+  };
+  return 0;
+}
 
-//#include <br24type.h>
-#include <br4gatype.h>
-#include <br4gbtype.h>
-//#include <halotype.h>
-#undef DEFINE_RADAR  // Prepare for next inclusion
-#undef INITIALIZE_RADAR
+void RadarFactory::GetRadarTypes(wxArrayString& radarTypes) {
+  wxString names[] = {
+#define DEFINE_RADAR(t, x, a, b, c) x,
+#include "RadarType.h"
+  };
+
+  radarTypes = wxArrayString(ARRAY_SIZE(names), names);
+}
+
+PLUGIN_END_NAMESPACE

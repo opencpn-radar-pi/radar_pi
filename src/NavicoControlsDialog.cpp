@@ -844,7 +844,7 @@ void NavicoControlsDialog::CreateControls() {
 
 void NavicoControlsDialog::UpdateRadarSpecificState() {
   if (m_top_sizer->IsShown(m_advanced_sizer)) {
-    if (m_ri->m_radar_type == RT_4G) {
+    if (m_ri->m_radar_type >= RT_4GA) {
       m_advanced_sizer->Show(m_advanced_4G_sizer);
     } else {
       m_advanced_sizer->Hide(m_advanced_4G_sizer);

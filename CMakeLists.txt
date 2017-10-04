@@ -27,6 +27,8 @@ INCLUDE("cmake/PluginConfigure.cmake")
 # header files and cpp/c files and CMake will sort them out
 
 SET(SRC_radar
+            src/br4gatype.h
+            src/br4gbtype.h
             src/ControlsDialog.cpp
             src/ControlsDialog.h
             src/GuardZone.cpp
@@ -51,6 +53,8 @@ SET(SRC_radar
             src/RadarDrawShader.h
             src/RadarDrawVertex.cpp
             src/RadarDrawVertex.h
+            src/RadarFactory.cpp
+            src/RadarFactory.h
             src/RadarInfo.cpp
             src/RadarInfo.h
             src/RadarMarpa.cpp
@@ -58,12 +62,13 @@ SET(SRC_radar
             src/RadarPanel.cpp
             src/RadarPanel.h
             src/RadarReceive.h
+            src/RadarType.h
             src/TextureFont.cpp
             src/TextureFont.h
             src/NavicoReceive.cpp
             src/NavicoReceive.h
-            src/br24Transmit.cpp
-            src/br24Transmit.h
+            src/NavicoControl.cpp
+            src/NavicoControl.h
             src/drawutil.cpp
             src/drawutil.h
             src/icons.cpp

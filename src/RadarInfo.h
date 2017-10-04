@@ -145,7 +145,8 @@ class RadarInfo {
  public:
   wxString m_name;  // Either "Radar", "Radar A", "Radar B".
   radar_pi *m_pi;
-  int m_radar;  // Which radar this is (0..., max 2 for now)
+  int m_radar;             // Which radar this is (0..., max 2 for now)
+  RadarType m_radar_type;  // Which radar type
 #define COURSE_SAMPLES (16)
   double m_course;  // m_course is the moving everage of m_hdt used for course_up
   double m_course_log[COURSE_SAMPLES];
@@ -209,7 +210,6 @@ class RadarInfo {
 #define STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
 #define DATA_TIMEOUT (5)
 
-  RadarType m_radar_type;
   bool m_auto_range_mode;
 
   int m_refresh_millis;
@@ -256,7 +256,7 @@ class RadarInfo {
 
   /* Methods */
 
-  RadarInfo(radar_pi *pi, int radar);
+  RadarInfo(RadarType radarType, radar_pi *pi, int radar);
   ~RadarInfo();
 
   bool Init(wxString name, int verbose);

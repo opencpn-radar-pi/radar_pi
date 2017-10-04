@@ -169,7 +169,10 @@ struct receive_statistics {
 
 typedef enum GuardZoneType { GZ_ARC, GZ_CIRCLE } GuardZoneType;
 
-typedef enum RadarType { RT_UNKNOWN, RT_BR24, RT_3G, RT_4G } RadarType;
+typedef enum RadarType {
+#define DEFINE_RADAR(t, n, a, b, c) t,
+#include "RadarType.h"
+} RadarType;
 
 typedef enum ControlType {
 #define CONTROL_TYPE(x, y) x,

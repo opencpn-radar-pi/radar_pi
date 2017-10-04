@@ -29,6 +29,7 @@
  */
 
 #include "MessageBox.h"
+#include "RadarFactory.h"
 #include "RadarPanel.h"
 
 PLUGIN_BEGIN_NAMESPACE
@@ -72,6 +73,8 @@ void MessageBox::Init() {
   m_info_sizer = 0;
   m_message_sizer = 0;
   m_ip_box = 0;
+
+  RadarFactory::GetRadarTypes(m_radar_names);
 }
 
 bool MessageBox::Create(wxWindow *parent, radar_pi *pi, wxWindowID id, const wxString &caption, const wxPoint &pos) {
@@ -434,19 +437,7 @@ void MessageBox::SetRadarBuildInfo(wxString &msg) { m_build_info.Update(msg); }
 void MessageBox::SetRadarType(RadarType radar_type) {
   wxString s;
 
-  switch (radar_type) {
-    case RT_UNKNOWN:
-      break;
-    case RT_BR24:
-      s = wxT("BR24");
-      break;
-    case RT_3G:
-      s = wxT("3G");
-      break;
-    case RT_4G:
-      s = wxT("4G");
-      break;
-  }
+  s << m_radar_names[radar_type];
   if (m_pi->m_settings.emulator_on) {
     s << wxT(" ") << _("Emulator");
   }

@@ -214,11 +214,13 @@ void NavicoReceive::ProcessFrame(const UINT8 *data, int len) {
       range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
       angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
       range_meters = (int)((double)range_raw * 10.0 / sqrt(2.0));
+#ifdef TODO
       if (m_ri->m_radar_type == RT_UNKNOWN) {
         LOG_INFO(wxT("radar_pi: %s is Navico type BR24 or 3G"), m_ri->m_name.c_str());
         m_ri->m_radar_type = RT_BR24;
         m_pi->m_pMessageBox->SetRadarType(RT_BR24);
       }
+#endif
     } else {
       // 4G mode
       short int large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
@@ -234,11 +236,13 @@ void NavicoReceive::ProcessFrame(const UINT8 *data, int len) {
         range_raw = large_range * 256;
       }
       range_meters = range_raw / 4;
+#ifdef TODO
       if (m_ri->m_radar_type != RT_4G) {
         LOG_INFO(wxT("radar_pi: %s is Navico type 4G"), m_ri->m_name.c_str());
         m_ri->m_radar_type = RT_4G;
         m_pi->m_pMessageBox->SetRadarType(RT_4G);
       }
+#endif
     }
 
     /*
@@ -300,8 +304,10 @@ void NavicoReceive::EmulateFakeBuffer(void) {
   int range_meters = 2308;
   int display_range_meters = 3000;
   int spots = 0;
+#ifdef TODO
   m_ri->m_radar_type = RT_4G;  // Fake for emulator
   m_pi->m_pMessageBox->SetRadarType(RT_4G);
+#endif
   m_ri->m_range.Update(display_range_meters);
 
   for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
@@ -726,6 +732,7 @@ bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
 
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
 
+#ifdef TODO
   if (m_ri->m_radar == 1) {
     if (m_ri->m_radar_type != RT_4G) {
       //   LOG_INFO(wxT("radar_pi: Radar report from 2nd radar tells us this a Navico 4G"));
@@ -733,6 +740,7 @@ bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
       m_pi->m_pMessageBox->SetRadarType(RT_4G);
     }
   }
+#endif
 
   if (report[1] == 0xC4) {
     // Looks like a radar report. Is it a known one?
@@ -793,6 +801,7 @@ bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
         RadarReport_03C4_129 *s = (RadarReport_03C4_129 *)report;
         LOG_RECEIVE(wxT("radar_pi: %s RadarReport_03C4_129 radar_type=%u"), m_ri->m_name.c_str(), s->radar_type);
 
+#ifdef TODO
         switch (s->radar_type) {
           case 0x0f:
             if (m_ri->m_radar_type == RT_UNKNOWN) {
@@ -819,6 +828,7 @@ bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
             LOG_INFO(wxT("radar_pi: Unknown radar_type %u"), s->radar_type);
             return false;
         }
+#endif
 
         wxString ts;
 
@@ -850,9 +860,11 @@ bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
         break;
       }
 
+#ifdef TODO
       case (564 << 8) + 0x05: {  // length 564, 05 C4
         // Content unknown, but we know that BR24 radomes send this
         LOG_RECEIVE(wxT("received familiar BR24 report"), report, len);
+
         if (m_ri->m_radar_type == RT_UNKNOWN) {
           LOG_INFO(wxT("radar_pi: Radar report tells us this a Navico BR24"));
           m_ri->m_radar_type = RT_BR24;
@@ -860,6 +872,7 @@ bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
         }
         break;
       }
+#endif
 
       case (18 << 8) + 0x08: {  // length 18, 08 C4
         // contains scan speed, noise rejection and target_separation and sidelobe suppression
@@ -892,6 +905,7 @@ bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
     }
     return true;
   } else if (report[1] == 0xF5) {
+#ifdef TODO
     // Looks like a radar report. Is it a known one?
     switch ((len << 8) + report[0]) {
       case (16 << 8) + 0x0f:
@@ -921,6 +935,7 @@ bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
         }
         break;
     }
+#endif
     return true;
   }
 

@@ -29,26 +29,37 @@
  ***************************************************************************
  */
 
-#if !defined(DEFINE_RADAR)
-#ifndef _RADARTYPE_H_
-#define _RADARTYPE_H_
+#ifndef _NAVICOCONTROL_H_
+#define _NAVICOCONTROL_H_
 
 #include "RadarInfo.h"
 #include "pi_common.h"
+#include "socketutil.h"
 
-#include <NavicoControl.h>
-#include <NavicoControlsDialog.h>
-#include <NavicoReceive.h>
+PLUGIN_BEGIN_NAMESPACE
 
-#endif /* _RADARTYPE_H_ */
+class NavicoControl : public RadarControl {
+ public:
+  NavicoControl(UINT8 mcastAddress[4], unsigned short port);
+  ~NavicoControl();
 
-#define DEFINE_RADAR(t, x, a, b, c)
-#define INITIALIZE_RADAR
-#endif
+  bool Init(radar_pi *pi, wxString name, struct sockaddr_in *address);
+  void RadarTxOff();
+  void RadarTxOn();
+  bool RadarStayAlive();
+  bool SetRange(int meters);
+  bool SetControlValue(ControlType controlType, int value, int autoValue);
 
-//#include <br24type.h>
-#include <br4gatype.h>
-#include <br4gbtype.h>
-//#include <halotype.h>
-#undef DEFINE_RADAR  // Prepare for next inclusion
-#undef INITIALIZE_RADAR
+ private:
+  radar_pi *m_pi;
+  struct sockaddr_in m_addr;
+  SOCKET m_radar_socket;
+  wxString m_name;
+
+  bool TransmitCmd(const UINT8 *msg, int size);
+  void logBinaryData(const wxString &what, const UINT8 *data, int size);
+};
+
+PLUGIN_END_NAMESPACE
+
+#endif /* _NAVICOCONTROL_H_ */

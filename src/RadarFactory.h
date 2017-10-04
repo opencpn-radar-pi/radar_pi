@@ -29,26 +29,22 @@
  ***************************************************************************
  */
 
-#if !defined(DEFINE_RADAR)
-#ifndef _RADARTYPE_H_
-#define _RADARTYPE_H_
+#ifndef _RADAR_FACTORY_H_
+#define _RADAR_FACTORY_H_
 
-#include "RadarInfo.h"
-#include "pi_common.h"
+#include "radar_pi.h"
 
-#include <NavicoControl.h>
-#include <NavicoControlsDialog.h>
-#include <NavicoReceive.h>
+PLUGIN_BEGIN_NAMESPACE
 
-#endif /* _RADARTYPE_H_ */
+class RadarFactory {
+ public:
+  static ControlsDialog* makeControlsDialog(size_t radarType, int radar);
+  static RadarReceive* makeRadarReceive(size_t radarType, radar_pi* pi, RadarInfo* ri);
+  static RadarControl* makeRadarControl(size_t radarType);
 
-#define DEFINE_RADAR(t, x, a, b, c)
-#define INITIALIZE_RADAR
+  static void GetRadarTypes(wxArrayString& radarTypes);
+};
+
+PLUGIN_END_NAMESPACE
+
 #endif
-
-//#include <br24type.h>
-#include <br4gatype.h>
-#include <br4gbtype.h>
-//#include <halotype.h>
-#undef DEFINE_RADAR  // Prepare for next inclusion
-#undef INITIALIZE_RADAR

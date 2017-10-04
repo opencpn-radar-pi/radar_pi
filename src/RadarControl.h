@@ -39,17 +39,17 @@ PLUGIN_BEGIN_NAMESPACE
 
 class RadarControl {
  public:
-  RadarControl(radar_pi *pi, wxString name, int radar){};
-  virtual ~RadarControl(){};
-
   RadarControl(){};
+  virtual ~RadarControl(){};
 
   /*
    * Initialize any local data structures.
    *
+   * @param pi          The calling radar plugin instance
+   * @param name        Name of this radar, for logging
    * @param address     The address of the ethernet card on this machine
    */
-  virtual bool Init(struct sockaddr_in *address) = 0;
+  virtual bool Init(radar_pi *pi, wxString name, struct sockaddr_in *address) = 0;
 
   /*
    * Ask the radar to switch off.

@@ -29,7 +29,7 @@
  ***************************************************************************
  */
 
-#include "br24Transmit.h"
+#include "NavicoControl.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -44,33 +44,28 @@ static const UINT8 COMMAND_STAY_ON_B[2] = {0x03, 0xc2};
 static const UINT8 COMMAND_STAY_ON_C[2] = {0x04, 0xc2};
 static const UINT8 COMMAND_STAY_ON_D[2] = {0x05, 0xc2};
 
-br24Transmit::br24Transmit(radar_pi *pi, wxString name, int radar) {
-  m_pi = pi;
-
+NavicoControl::NavicoControl(UINT8 mcastSendAddress[4], unsigned short mcastSendPort) {
   CLEAR_STRUCT(m_addr);
   m_addr.sin_family = AF_INET;
-
-  static UINT8 radar_mcast_send_addr[2][4] = {{236, 6, 7, 10}, {236, 6, 7, 14}};
-
-  static unsigned short radar_mcast_send_port[2] = {6680, 6658};
-
-  memcpy(&m_addr.sin_addr.s_addr, radar_mcast_send_addr[radar % 2], sizeof(m_addr.sin_addr.s_addr));
-  m_addr.sin_port = htons(radar_mcast_send_port[radar % 2]);
-  m_name = name;
+  memcpy(&m_addr.sin_addr.s_addr, mcastSendAddress, sizeof(m_addr.sin_addr.s_addr));
+  m_addr.sin_port = htons(mcastSendPort);
   m_radar_socket = INVALID_SOCKET;
+  m_name = wxT("Navico radar");
 }
 
-br24Transmit::~br24Transmit() {
+NavicoControl::~NavicoControl() {
   if (m_radar_socket != INVALID_SOCKET) {
     closesocket(m_radar_socket);
     LOG_TRANSMIT(wxT("radar_pi: %s transmit socket closed"), m_name.c_str());
   }
-  LOG_VERBOSE(wxT("radar_pi: %s transmit object destroyed"), m_name.c_str());
 }
 
-bool br24Transmit::Init(struct sockaddr_in *adr) {
+bool NavicoControl::Init(radar_pi *pi, wxString name, struct sockaddr_in *adr) {
   int r;
   int one = 1;
+
+  m_pi = pi;
+  m_name = name;
 
   if (m_radar_socket != INVALID_SOCKET) {
     closesocket(m_radar_socket);
@@ -96,7 +91,7 @@ bool br24Transmit::Init(struct sockaddr_in *adr) {
   return true;
 }
 
-void br24Transmit::logBinaryData(const wxString &what, const UINT8 *data, int size) {
+void NavicoControl::logBinaryData(const wxString &what, const UINT8 *data, int size) {
   wxString explain;
   int i = 0;
 
@@ -110,7 +105,7 @@ void br24Transmit::logBinaryData(const wxString &what, const UINT8 *data, int si
   LOG_TRANSMIT(explain);
 }
 
-bool br24Transmit::TransmitCmd(const UINT8 *msg, int size) {
+bool NavicoControl::TransmitCmd(const UINT8 *msg, int size) {
   if (m_pi->m_settings.emulator_on) {
     wxLogError(wxT("radar_pi: ignoring transmit command in emulator mode"));
     return false;
@@ -128,19 +123,19 @@ bool br24Transmit::TransmitCmd(const UINT8 *msg, int size) {
   return true;
 }
 
-void br24Transmit::RadarTxOff() {
+void NavicoControl::RadarTxOff() {
   IF_LOG_AT(LOGLEVEL_VERBOSE | LOGLEVEL_TRANSMIT, wxLogMessage(wxT("radar_pi: %s transmit: turn Off"), m_name));
   TransmitCmd(COMMAND_TX_OFF_A, sizeof(COMMAND_TX_OFF_A));
   TransmitCmd(COMMAND_TX_OFF_B, sizeof(COMMAND_TX_OFF_B));
 }
 
-void br24Transmit::RadarTxOn() {
+void NavicoControl::RadarTxOn() {
   IF_LOG_AT(LOGLEVEL_VERBOSE | LOGLEVEL_TRANSMIT, wxLogMessage(wxT("radar_pi: %s transmit: turn on"), m_name));
   TransmitCmd(COMMAND_TX_ON_A, sizeof(COMMAND_TX_ON_A));
   TransmitCmd(COMMAND_TX_ON_B, sizeof(COMMAND_TX_ON_B));
 }
 
-bool br24Transmit::RadarStayAlive() {
+bool NavicoControl::RadarStayAlive() {
   LOG_TRANSMIT(wxT("radar_pi: %s transmit: stay alive"), m_name);
 
   TransmitCmd(COMMAND_STAY_ON_A, sizeof(COMMAND_STAY_ON_A));
@@ -149,7 +144,7 @@ bool br24Transmit::RadarStayAlive() {
   return TransmitCmd(COMMAND_STAY_ON_D, sizeof(COMMAND_STAY_ON_D));
 }
 
-bool br24Transmit::SetRange(int meters) {
+bool NavicoControl::SetRange(int meters) {
   if (meters >= 50 && meters <= 72704) {
     unsigned int decimeters = (unsigned int)meters * 10;
     UINT8 pck[] = {0x03,
@@ -164,7 +159,7 @@ bool br24Transmit::SetRange(int meters) {
   return false;
 }
 
-bool br24Transmit::SetControlValue(ControlType controlType, int value, int autoValue) {  // sends the command to the radar
+bool NavicoControl::SetControlValue(ControlType controlType, int value, int autoValue) {  // sends the command to the radar
   bool r = false;
 
   switch (controlType) {
