@@ -155,25 +155,21 @@ bool socketReady(SOCKET sockfd, int timeout) {
   return r > 0;
 }
 
-SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in *addr, UINT16 port, const char *mcast_address, wxString &error_message) {
+SOCKET startUDPMulticastReceiveSocket(NetworkAddress sender, const char *mcast_address, wxString &error_message) {
   SOCKET rx_socket;
-  struct sockaddr_in adr;
+  struct sockaddr_in listenAddress;
   int one = 1;
 
   error_message = wxT("");
 
-  if (!addr) {
-    return INVALID_SOCKET;
-  }
-
-  UINT8 *a = (UINT8 *)&addr->sin_addr;  // sin_addr is in network layout
+  UINT8 *a = (UINT8 *)&sender.addr;  // sin_addr is in network layout
   wxString address;
   address.Printf(wxT(" %u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
 
-  CLEAR_STRUCT(adr);
-  adr.sin_family = AF_INET;
-  adr.sin_addr.s_addr = htonl(INADDR_ANY);  // I know, htonl is unnecessary here
-  adr.sin_port = htons(port);
+  CLEAR_STRUCT(listenAddress);
+  listenAddress.sin_family = AF_INET;
+  listenAddress.sin_addr.s_addr = htonl(INADDR_ANY);  // I know, htonl is unnecessary here
+  listenAddress.sin_port = sender.port;
   rx_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
   if (rx_socket == INVALID_SOCKET) {
     error_message << _("Cannot create UDP socket");
@@ -184,14 +180,14 @@ SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in *addr, UINT16 port, con
     goto fail;
   }
 
-  if (bind(rx_socket, (struct sockaddr *)&adr, sizeof(adr))) {
-    error_message << _("Cannot bind UDP socket to port ") << port;
+  if (bind(rx_socket, (struct sockaddr *)&listenAddress, sizeof(listenAddress))) {
+    error_message << _("Cannot bind UDP socket to port ") << ntohs(sender.port);
     goto fail;
   }
 
   // Subscribe rx_socket to a multicast group
   struct ip_mreq mreq;
-  mreq.imr_interface = addr->sin_addr;
+  mreq.imr_interface = sender.addr;
 
   if (!radar_inet_aton(mcast_address, &mreq.imr_multiaddr)) {
     error_message << _("Invalid multicast address") << wxT(" ") << wxString::FromUTF8(mcast_address);

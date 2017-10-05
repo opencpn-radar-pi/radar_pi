@@ -43,7 +43,9 @@ PLUGIN_BEGIN_NAMESPACE
 
 class NavicoReceive : public RadarReceive {
  public:
-  NavicoReceive(radar_pi *pi, RadarInfo *ri) : RadarReceive(pi, ri) {
+  NavicoReceive(radar_pi *pi, RadarInfo *ri, NetworkAddress dataAddr, NetworkAddress reportAddr) : RadarReceive(pi, ri) {
+    m_data_addr = dataAddr;
+    m_report_addr = reportAddr;
     m_next_spoke = -1;
     m_mcast_addr = 0;
     m_radar_status = 0;
@@ -93,6 +95,9 @@ class NavicoReceive : public RadarReceive {
   sockaddr_in *m_mcast_addr;
   wxIPV4address m_ip_addr;
   bool m_new_ip_addr;
+
+  NetworkAddress m_data_addr;
+  NetworkAddress m_report_addr;
 
   wxLongLong m_shutdown_time_requested;  // Main thread asks this thread to stop
   volatile bool m_is_shutdown;

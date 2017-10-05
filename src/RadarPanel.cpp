@@ -140,8 +140,7 @@ void RadarPanel::close(wxAuiManagerEvent& event) {
     LOG_DIALOG(wxT("radar_pi: RadarPanel::close: show_radar[%d]=%d"), m_ri->m_radar, 0);
     m_pi->NotifyRadarWindowViz();
   } else {
-    LOG_DIALOG(wxT("radar_pi: RadarPanel::close: ignore close of window %s in window %s"), pane->name.c_str(),
-               m_aui_name.c_str());
+    LOG_DIALOG(wxT("radar_pi: RadarPanel::close: ignore close of window %s in window %s"), pane->name.c_str(), m_aui_name.c_str());
   }
 }
 
@@ -199,8 +198,7 @@ void RadarPanel::ShowFrame(bool visible) {
         perspective = perspective.Mid(p + m_dock.length());
         perspective = perspective.BeforeFirst(wxT('|'));
         m_dock_size = wxAtoi(perspective);
-        LOG_DIALOG(wxT("radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(),
-                   m_dock_size);
+        LOG_DIALOG(wxT("radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(), m_dock_size);
       }
     }
   } else {

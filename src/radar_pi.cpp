@@ -29,12 +29,12 @@
  ***************************************************************************
  */
 
+#include "radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
-#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -1616,11 +1616,6 @@ bool radar_pi::SetControlValue(int radar, ControlType controlType, int value,
   switch (controlType) {
     case CT_TRANSPARENCY: {
       m_settings.overlay_transparency = value;
-      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
-      return true;
-    }
-    case CT_SCAN_AGE: {
-      m_settings.max_age = value;
       m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
       return true;
     }

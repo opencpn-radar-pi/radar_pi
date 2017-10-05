@@ -29,11 +29,11 @@
  ***************************************************************************
  */
 
+#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"

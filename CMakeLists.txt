@@ -27,12 +27,16 @@ INCLUDE("cmake/PluginConfigure.cmake")
 # header files and cpp/c files and CMake will sort them out
 
 SET(SRC_NAVICO
+            src/navico/br24type.h
             src/navico/br4gatype.h
             src/navico/br4gbtype.h
+            src/navico/haloatype.h
+            src/navico/halobtype.h
             src/navico/NavicoReceive.cpp
             src/navico/NavicoReceive.h
             src/navico/NavicoControl.cpp
             src/navico/NavicoControl.h
+            src/navico/NavicoControlSet.h
             src/navico/NavicoControlsDialog.cpp
             src/navico/NavicoControlsDialog.h
 )
@@ -70,6 +74,7 @@ SET(SRC_RADAR
             src/RadarPanel.h
             src/RadarReceive.h
             src/RadarType.h
+            src/SoftwareControlSet.h
             src/TextureFont.cpp
             src/TextureFont.h
             src/ControlsDialog.cpp

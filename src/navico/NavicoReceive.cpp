@@ -43,19 +43,6 @@ PLUGIN_BEGIN_NAMESPACE
 #define MILLIS_PER_SELECT 250
 #define SECONDS_SELECT(x) ((x)*MILLISECONDS_PER_SECOND / MILLIS_PER_SELECT)
 
-// There are two radars in every 4G radome. They send and listen on different addresses
-
-struct ListenAddress {
-  uint16_t port;
-  const char *address;
-};
-
-static const ListenAddress LISTEN_DATA[2] = {{6678, "236.6.7.8"}, {6657, "236.6.7.13"}};
-
-static const ListenAddress LISTEN_REPORT[2] = {{6679, "236.6.7.9"}, {6659, "236.6.7.15"}};
-
-static const ListenAddress LISTEN_COMMAND[2] = {{6680, "236.6.7.10"}, {6658, "236.6.7.14"}};
-
 // A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration)
 // Note that 3G scanners are BR24's with better power, so they are more BR24+ than 4G-.
 // As far as we know they 3G's use exactly the same command set.
@@ -387,8 +374,7 @@ SOCKET NavicoReceive::GetNewReportSocket() {
     return INVALID_SOCKET;
   }
 
-  socket =
-      startUDPMulticastReceiveSocket(m_mcast_addr, LISTEN_REPORT[m_ri->m_radar].port, LISTEN_REPORT[m_ri->m_radar].address, error);
+  socket = startUDPMulticastReceiveSocket(m_mcast_addr, m_report_addr, error);
   if (socket != INVALID_SOCKET) {
     wxString addr;
     UINT8 *a = (UINT8 *)&m_mcast_addr->sin_addr;  // sin_addr is in network layout
@@ -409,7 +395,7 @@ SOCKET NavicoReceive::GetNewDataSocket() {
     return INVALID_SOCKET;
   }
 
-  socket = startUDPMulticastReceiveSocket(m_mcast_addr, LISTEN_DATA[m_ri->m_radar].port, LISTEN_DATA[m_ri->m_radar].address, error);
+  socket = startUDPMulticastReceiveSocket(m_mcast_addr, m_data_addr, error);
   if (socket != INVALID_SOCKET) {
     wxString addr;
     UINT8 *a = (UINT8 *)&m_mcast_addr->sin_addr;  // sin_addr is in network layout

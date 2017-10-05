@@ -48,7 +48,7 @@ RadarReceive* RadarFactory::makeRadarReceive(size_t radarType, radar_pi* pi, Rad
   switch (radarType) {
 #define DEFINE_RADAR(t, x, a, b, c) \
   case t:                           \
-    return new b(pi, ri);
+    return new b;
 #include "RadarType.h"
   };
   return 0;

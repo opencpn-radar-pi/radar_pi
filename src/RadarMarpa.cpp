@@ -31,8 +31,8 @@
 
 #include "RadarMarpa.h"
 #include "RadarInfo.h"
-#include "radar_pi.h"
 #include "drawutil.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -70,9 +70,8 @@ Position Polar2Pos(Polar pol, Position own_ship, double range) {
   Position pos;
   pos.lat = own_ship.lat +
             (double)pol.r / (double)RETURNS_PER_LINE * range * cos(deg2rad(SCALE_RAW_TO_DEGREES2048(pol.angle))) / 60. / 1852.;
-  pos.lon = own_ship.lon +
-            (double)pol.r / (double)RETURNS_PER_LINE * range * sin(deg2rad(SCALE_RAW_TO_DEGREES2048(pol.angle))) /
-                cos(deg2rad(own_ship.lat)) / 60. / 1852.;
+  pos.lon = own_ship.lon + (double)pol.r / (double)RETURNS_PER_LINE * range * sin(deg2rad(SCALE_RAW_TO_DEGREES2048(pol.angle))) /
+                               cos(deg2rad(own_ship.lat)) / 60. / 1852.;
   return pos;
 }
 
@@ -698,8 +697,8 @@ void ArpaTarget::RefreshTarget(int dist) {
     wxLongLong now = wxGetUTCTimeMillis();  // millis
     int diff = now.GetLo() - m_refresh.GetLo();
     if (diff > 8000) {
-      LOG_ARPA(wxT("radar_pi: target not refreshed, missing spokes, set lost, status= %i, target_id= %i timediff= %i"),
-               m_status, m_target_id, diff);
+      LOG_ARPA(wxT("radar_pi: target not refreshed, missing spokes, set lost, status= %i, target_id= %i timediff= %i"), m_status,
+               m_target_id, diff);
       SetStatusLost();
     }
     return;

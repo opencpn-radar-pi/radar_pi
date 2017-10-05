@@ -44,20 +44,39 @@ PLUGIN_BEGIN_NAMESPACE
 const static wxPoint OFFSCREEN_CONTROL = wxPoint(OFFSCREEN_CONTROL_X, OFFSCREEN_CONTROL_Y);
 
 class RadarControlButton;
+class RadarRangeControlButton;
 class RadarButton;
 
 extern wxString guard_zone_names[2];
 
 extern string ControlTypeNames[CT_MAX];
 
+struct ControlInfo {
+  ControlType type;
+  int autoValues;
+  int defaultValue;
+  int minValue;
+  int maxValue;
+  int stepValue;
+  int nameCount;
+  wxString *names;
+};
+
+struct ControlSet {
+  ControlInfo control[CT_MAX];
+};
+
 //----------------------------------------------------------------------------------------------------------
 //    Radar Control Dialog Specification
 //----------------------------------------------------------------------------------------------------------
 class ControlsDialog : public wxDialog {
- public:
-  ControlsDialog();
+  DECLARE_CLASS(ControlsDialog)
+  DECLARE_EVENT_TABLE()
 
+ public:
+  ControlsDialog(){};
   ~ControlsDialog();
+
   void Init();
 
   bool Create(wxWindow *parent, radar_pi *pi, RadarInfo *ri, wxWindowID id = wxID_ANY, const wxString &caption = _("Radar"),
@@ -67,8 +86,8 @@ class ControlsDialog : public wxDialog {
   wxString &GetRangeText();
   void SetTimedIdleIndex(int index);
   void UpdateGuardZoneState();
-  virtual void UpdateDialogShown() = 0;
-  virtual void UpdateControlValues(bool force) = 0;
+  void UpdateDialogShown();
+  void UpdateControlValues(bool force);
   void SetErrorMessage(wxString &msg);
   void ShowBogeys(wxString text, bool confirmed);
   void HideBogeys();
@@ -88,6 +107,24 @@ class ControlsDialog : public wxDialog {
   bool m_manually_positioned;
 
  protected:
+  ControlSet m_set;
+  void SetControl(ControlType ct, int autoValues, int defaultValue, int minValue, int maxValue, int stepValue, int nameCount,
+                  wxString names[]) {
+    m_set.control[ct].type = ct;
+    m_set.control[ct].autoValues = autoValues;
+    m_set.control[ct].defaultValue = defaultValue;
+    m_set.control[ct].minValue = minValue;
+    m_set.control[ct].maxValue = maxValue;
+    m_set.control[ct].stepValue = stepValue;
+    m_set.control[ct].nameCount = nameCount;
+    if (nameCount > 0) {
+      m_set.control[ct].names = new wxString[nameCount];
+      for (int i = 0; i < nameCount; i++) {
+        m_set.control[ct].names[i] = names[i];
+      }
+    }
+  }
+
   bool m_hide;
   bool m_hide_temporarily;
   time_t m_auto_hide_timeout;  // At what time do we hide the dialog
@@ -99,6 +136,7 @@ class ControlsDialog : public wxDialog {
   wxBoxSizer *m_guard_sizer;
   wxBoxSizer *m_adjust_sizer;
   wxBoxSizer *m_cursor_sizer;
+  wxBoxSizer *m_installation_sizer;
   wxBoxSizer *m_power_sizer;
   wxBoxSizer *m_transmit_sizer;  // Controls disabled if not transmitting
   wxBoxSizer *m_from_sizer;      // If on edit control, this is where the button is from
@@ -153,6 +191,35 @@ class ControlsDialog : public wxDialog {
   RadarControlButton *m_timed_idle_button;
   RadarControlButton *m_timed_run_button;
 
+  // Advanced controls
+  RadarControlButton *m_interference_rejection_button;
+  RadarControlButton *m_target_separation_button;
+  RadarControlButton *m_noise_rejection_button;
+  RadarControlButton *m_target_boost_button;
+  RadarControlButton *m_target_expansion_button;
+  RadarControlButton *m_scan_speed_button;
+
+  // Installation controls
+  RadarControlButton *m_bearing_alignment_button;
+  RadarControlButton *m_antenna_height_button;
+  RadarControlButton *m_antenna_forward_button;
+  RadarControlButton *m_antenna_starboard_button;
+  RadarControlButton *m_local_interference_rejection_button;
+  RadarControlButton *m_side_lobe_suppression_button;
+  RadarControlButton *m_main_bang_size_button;
+
+  // Adjust controls
+  wxButton *m_overlay_button;
+  wxButton *m_window_button;
+  RadarRangeControlButton *m_range_button;
+  RadarControlButton *m_transparency_button;  // TODO: Set it on change
+  RadarControlButton *m_refresh_rate_button;  // TODO: Set it on change
+  RadarControlButton *m_gain_button;
+  RadarControlButton *m_sea_button;
+  RadarControlButton *m_rain_button;
+  wxButton *m_adjust_button;
+  wxButton *m_bearing_button;
+
   // Methods common to any radar
   void EnsureWindowNearOpenCPNWindow();
   void ShowGuardZone(int zone);
@@ -161,9 +228,68 @@ class ControlsDialog : public wxDialog {
   void SwitchTo(wxBoxSizer *to, const wxChar *name);
   void UpdateTrailsState();
 
+  void CreateControls();
+
   // Methods that we know that every radar must or may implement its own way
-  virtual void CreateControls() = 0;
   virtual void UpdateRadarSpecificState(){};
+
+  // Callbacks when a button is pressed
+
+  void OnClose(wxCloseEvent &event);
+  void OnIdOKClick(wxCommandEvent &event);
+  void OnMove(wxMoveEvent &event);
+
+  void OnPlusTenClick(wxCommandEvent &event);
+  void OnPlusClick(wxCommandEvent &event);
+  void OnBackClick(wxCommandEvent &event);
+  void OnMinusClick(wxCommandEvent &event);
+  void OnMinusTenClick(wxCommandEvent &event);
+  void OnAutoClick(wxCommandEvent &event);
+  void OnTrailsMotionClick(wxCommandEvent &event);
+
+  void OnAdjustButtonClick(wxCommandEvent &event);
+  void OnAdvancedButtonClick(wxCommandEvent &event);
+  void OnViewButtonClick(wxCommandEvent &event);
+  void OnInstallationButtonClick(wxCommandEvent &event);
+  void OnPreferencesButtonClick(wxCommandEvent &event);
+
+  void OnRadarGainButtonClick(wxCommandEvent &event);
+
+  void OnPowerButtonClick(wxCommandEvent &event);
+  void OnRadarShowButtonClick(wxCommandEvent &event);
+  void OnRadarOverlayButtonClick(wxCommandEvent &event);
+  void OnMessageButtonClick(wxCommandEvent &event);
+
+  void OnTargetsButtonClick(wxCommandEvent &event);
+  void OnClearTrailsButtonClick(wxCommandEvent &event);
+  void OnOrientationButtonClick(wxCommandEvent &event);
+
+  void OnRadarControlButtonClick(wxCommandEvent &event);
+
+  void OnZone1ButtonClick(wxCommandEvent &event);
+  void OnZone2ButtonClick(wxCommandEvent &event);
+
+  void OnClearCursorButtonClick(wxCommandEvent &event);
+  void OnAcquireTargetButtonClick(wxCommandEvent &event);
+  void OnDeleteTargetButtonClick(wxCommandEvent &event);
+  void OnDeleteAllTargetsButtonClick(wxCommandEvent &event);
+  void OnBearingSetButtonClick(wxCommandEvent &event);
+  void OnBearingButtonClick(wxCommandEvent &event);
+
+  void OnConfirmBogeyButtonClick(wxCommandEvent &event);
+
+  void OnTransmitButtonClick(wxCommandEvent &event);
+  void OnStandbyButtonClick(wxCommandEvent &event);
+
+  void EnterEditMode(RadarControlButton *button);
+
+  void OnGuardZoneModeClick(wxCommandEvent &event);
+  void OnInner_Range_Value(wxCommandEvent &event);
+  void OnOuter_Range_Value(wxCommandEvent &event);
+  void OnStart_Bearing_Value(wxCommandEvent &event);
+  void OnEnd_Bearing_Value(wxCommandEvent &event);
+  void OnARPAClick(wxCommandEvent &event);
+  void OnAlarmClick(wxCommandEvent &event);
 };
 
 class RadarButton : public wxButton {
@@ -300,6 +426,13 @@ class RadarRangeControlButton : public RadarControlButton {
  private:
   RadarInfo *m_ri;
 };
+
+// This sets up the initializer macro in the constructor of the
+// derived control dialogs.
+#define HAVE_CONTROL(a, b, c, d, e, f, g) \
+  wxString a##_names[] = g;               \
+  SetControl(a, b, c, d, e, f, ARRAY_SIZE(a##_names), a##_names);
+#define SKIP_CONTROL(a)
 
 PLUGIN_END_NAMESPACE
 

@@ -119,7 +119,7 @@ struct inverse<Ty, 2, 2> {
   }
 };
 
-}  // detail
+}  // namespace detail
 
 // Define matrix inverse
 template <typename Ty, int N, int M>

@@ -30,11 +30,34 @@
  */
 
 //
-// This defines the capabilities of *all* navico radars, e.g. the common parts
-// Ranges are not included because those are radar dependent.
-//
+// This defines the capabilities of the sofware controls.
 
-#include "SoftwareType.h"
+#ifndef CTD_AUTO_NO
+#define CTD_AUTO_NO 0
+#endif
+#ifndef CTD_AUTO_YES
+#define CTD_AUTO_YES 1
+#endif
+#ifndef CTD_DEF_ZERO
+#define CTD_DEF_ZERO 0
+#endif
+#ifndef CTD_MIN_ZERO
+#define CTD_MIN_ZERO 0
+#endif
+#ifndef CTD_MAX_100
+#define CTD_MAX_100 100
+#endif
+#ifndef CTD_STEP_1
+#define CTD_STEP_1 1
+#endif
+#ifndef CTD_NUMERIC
+#define CTD_NUMERIC \
+  { wxT("") }
+#endif
+#ifndef CTD_PERCENTAGE
+#define CTD_PERCENTAGE \
+  { wxT("%") }
+#endif
 
 //
 // Make an entry for all control types. Specify all supported (or all?) controls.
@@ -49,21 +72,33 @@
 // Field 6: Step (for instance, min 0 / max 100 / step 10 gives 11 possible values)
 // Field 7: Names
 //
-// Note that for range the min, max, step values are ignored, see TODO.
+// The following are controls that are software only. These should not be varied
+// per radar type.
 
-HAVE_CONTROL(CT_RANGE, CTD_AUTO_YES, 1000, CTD_MIN_ZERO, 0, CTD_STEP_1, CTD_NUMERIC)
-HAVE_CONTROL(CT_GAIN, CTD_AUTO_YES, 50, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
-HAVE_CONTROL(CT_SEA, 2, CTD_DEF_ZERO, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
-HAVE_CONTROL(CT_RAIN, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
-HAVE_CONTROL(CT_TRANSPARENCY, CTD_AUTO_NO, 5, CTD_MIN_ZERO, 9, CTD_STEP_1, CTD_PERCENTAGE)
-HAVE_CONTROL(CT_INTERFERENCE_REJECTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 3, CTD_STEP_1, (_("Off"), _("Low"), _("Medium"), _("High"))
-HAVE_CONTROL(CT_TARGET_SEPARATION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 3, CTD_STEP_1, (_("Off"), _("Low"), _("Medium"), _("High"))
-HAVE_CONTROL(CT_NOISE_REJECTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2, CTD_STEP_1, (_("Off"), _("Low"), _("High"))
-HAVE_CONTROL(CT_TARGET_BOOST, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2, CTD_STEP_1, (_("Off"), _("Low"), _("High"))
-HAVE_CONTROL(CT_TARGET_EXPANSION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 1, CTD_STEP_1, (_("Off"), _("On")))
-HAVE_CONTROL(CT_SCAN_SPEED, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 1, CTD_STEP_1, (_("Normal"), _("Fast")))
-HAVE_CONTROL(CT_BEARING_ALIGNMENT, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, -180, +180, CTD_STEP_1, CTD_NUMERIC)
-HAVE_CONTROL(CT_SIDE_LOBE_SUPPRESSION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
-HAVE_CONTROL(CT_ANTENNA_HEIGHT, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 50, CTD_STEP_1, CTD_NUMERIC)
-HAVE_CONTROL(CT_LOCAL_INTERFERENCE_REJECTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 3, CTD_STEP_1, (_("Off"), _("Low"), _("Medium"), _("High")))
+// Note that due to how the C++ preprocessor works, { } must be defined in a nested define
 
+#ifndef TIMED_IDLE_NAMES
+#define TIMED_IDLE_NAMES \
+  { _("Off"), _("5 min"), _("10 min"), _("15 min"), _("20 min"), _("25 min"), _("30 min"), _("35 min") }
+#endif
+#ifndef TIMED_RUN_NAMES
+#define TIMED_RUN_NAMES \
+  { _("10 sec"), _("20 sec"), _("30 sec") }
+#endif
+#ifndef TARGET_TRAIL_NAMES
+#define TARGET_TRAIL_NAMES \
+  { _("15 sec"), _("30 sec"), _("1 min"), _("3 min"), _("5 min"), _("10 min"), _("Continuous") }
+#endif
+#ifndef TRAIL_MOTION_NAMES
+#define TRAIL_MOTION_NAMES \
+  { _("Off"), _("Relative"), _("True") }
+#endif
+
+HAVE_CONTROL(CT_ANTENNA_FORWARD, CTD_AUTO_NO, CTD_DEF_ZERO, -500, +500, CTD_STEP_1, CTD_NUMERIC)
+HAVE_CONTROL(CT_ANTENNA_STARBOARD, CTD_AUTO_NO, CTD_DEF_ZERO, -100, +100, CTD_STEP_1, CTD_NUMERIC)
+HAVE_CONTROL(CT_MAIN_BANG_SIZE, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_NUMERIC)
+HAVE_CONTROL(CT_REFRESHRATE, CTD_AUTO_NO, 1, 1, 5, CTD_STEP_1, CTD_NUMERIC)
+HAVE_CONTROL(CT_TARGET_TRAILS, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 6, CTD_STEP_1, TARGET_TRAIL_NAMES)
+HAVE_CONTROL(CT_TIMED_IDLE, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 8, CTD_STEP_1, TIMED_IDLE_NAMES)
+HAVE_CONTROL(CT_TIMED_RUN, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2, CTD_STEP_1, TIMED_RUN_NAMES)
+HAVE_CONTROL(CT_TRAILS_MOTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2, CTD_STEP_1, TRAIL_MOTION_NAMES)

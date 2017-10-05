@@ -60,8 +60,9 @@ class Position;
 #define ACQUIRE0 (0)  // 0 under acquisition, first seen, no contour yet
 #define ACQUIRE1 (1)  // 1 under acquisition, contour found, first position FOUND
 #define ACQUIRE2 (2)  // 2 under acquisition, speed and course taken
-#define ACQUIRE3 (3)  // 3 under acquisition, speed and course verified, next time active
-                      //    >=4  active
+#define ACQUIRE3 \
+  (3)  // 3 under acquisition, speed and course verified, next time active
+       //    >=4  active
 
 #define Q_NUM (4)  // status Q to OCPN at target status
 #define T_NUM (6)  // status T to OCPN at target status

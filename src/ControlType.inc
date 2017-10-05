@@ -29,34 +29,35 @@
  ***************************************************************************
  */
 
-
 //
 // A list of all possible controls.
 //
 // This is included multiple times for various purposes
 //
 
-CONTROL_TYPE(CT_RANGE, "Range")
-CONTROL_TYPE(CT_GAIN, "Gain")
-CONTROL_TYPE(CT_SEA, "Sea")
-CONTROL_TYPE(CT_RAIN, "Rain")
-CONTROL_TYPE(CT_TRANSPARENCY, "Transparency")
-CONTROL_TYPE(CT_INTERFERENCE_REJECTION, "Interference rejection")
-CONTROL_TYPE(CT_TARGET_SEPARATION, "Target separation")
-CONTROL_TYPE(CT_NOISE_REJECTION, "Noise rejection")
-CONTROL_TYPE(CT_TARGET_BOOST, "Target boost")
-CONTROL_TYPE(CT_TARGET_EXPANSION, "Target expansion")
-CONTROL_TYPE(CT_REFRESHRATE, "Refresh rate")
-CONTROL_TYPE(CT_SCAN_SPEED, "Scan speed")
-CONTROL_TYPE(CT_SCAN_AGE, "Scan age")
-CONTROL_TYPE(CT_TIMED_IDLE, "Timed idle")
-CONTROL_TYPE(CT_TIMED_RUN, "Timed run")
-CONTROL_TYPE(CT_BEARING_ALIGNMENT, "Bearing alignment")
-CONTROL_TYPE(CT_SIDE_LOBE_SUPPRESSION, "Side lobe suppression")
-CONTROL_TYPE(CT_ANTENNA_HEIGHT, "Antenna height")
+// Software
 CONTROL_TYPE(CT_ANTENNA_FORWARD, "Antenna forward of GPS")
 CONTROL_TYPE(CT_ANTENNA_STARBOARD, "Antenna starboard of GPS")
-CONTROL_TYPE(CT_LOCAL_INTERFERENCE_REJECTION, "Local interference rejection")
-CONTROL_TYPE(CT_TARGET_TRAILS, "Target trails")
-CONTROL_TYPE(CT_TRAILS_MOTION, "Target trails motion")
 CONTROL_TYPE(CT_MAIN_BANG_SIZE, "Main bang size")
+CONTROL_TYPE(CT_REFRESHRATE, "Refresh rate")
+CONTROL_TYPE(CT_TARGET_TRAILS, "Target trails")
+CONTROL_TYPE(CT_TIMED_IDLE, "Timed idle")
+CONTROL_TYPE(CT_TIMED_RUN, "Timed run")
+CONTROL_TYPE(CT_TRAILS_MOTION, "Target trails motion")
+
+// Hardware
+CONTROL_TYPE(CT_ANTENNA_HEIGHT, "Antenna height")
+CONTROL_TYPE(CT_BEARING_ALIGNMENT, "Bearing alignment")
+CONTROL_TYPE(CT_GAIN, "Gain")
+CONTROL_TYPE(CT_INTERFERENCE_REJECTION, "Interference rejection")
+CONTROL_TYPE(CT_LOCAL_INTERFERENCE_REJECTION, "Local interference rejection")
+CONTROL_TYPE(CT_NOISE_REJECTION, "Noise rejection")
+CONTROL_TYPE(CT_RAIN, "Rain clutter")
+CONTROL_TYPE(CT_RANGE, "Range")
+CONTROL_TYPE(CT_SCAN_SPEED, "Scan speed")
+CONTROL_TYPE(CT_SEA, "Sea clutter")
+CONTROL_TYPE(CT_SIDE_LOBE_SUPPRESSION, "Side lobe suppression")
+CONTROL_TYPE(CT_TARGET_BOOST, "Target boost")
+CONTROL_TYPE(CT_TARGET_EXPANSION, "Target expansion")
+CONTROL_TYPE(CT_TARGET_SEPARATION, "Target separation")
+CONTROL_TYPE(CT_TRANSPARENCY, "Transparency")

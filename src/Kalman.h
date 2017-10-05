@@ -37,10 +37,11 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-#define NOISE (0.015)  // Allowed covariance of target speed in lat and lon
-                       // critical for the performance of target tracking
-                       // lower value makes target go straight
-                       // higher values allow target to make curves
+#define NOISE \
+  (0.015)  // Allowed covariance of target speed in lat and lon
+           // critical for the performance of target tracking
+           // lower value makes target go straight
+           // higher values allow target to make curves
 
 class Polar {
  public:

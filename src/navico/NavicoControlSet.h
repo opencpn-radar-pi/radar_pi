@@ -30,37 +30,16 @@
  */
 
 //
-// This defines the capabilities of the sofware controls.
+// This defines the capabilities of *all* navico radars, e.g. the common parts
+// Ranges are not included because those are radar dependent.
+//
 
-#ifndef CTD_AUTO_NO
-# define CTD_AUTO_NO 0
-#endif
-#ifndef CTD_AUTO_YES
-# define CTD_AUTO_YES 1
-#endif
-#ifndef CTD_DEF_ZERO
-# define CTD_DEF_ZERO 0
-#endif
-#ifndef CTD_MIN_ZERO
-# define CTD_MIN_ZERO 0
-#endif
-#ifndef CTD_MAX_100
-# define CTD_MAX_100 100
-#endif
-#ifndef CTD_STEP_1
-# define CTD_STEP_1 1
-#endif
-#ifndef CTD_NUMERIC
-# define CTD_NUMERIC (0)
-#endif
-#ifndef CTD_PERCENTAGE
-# define CTD_PERCENTAGE (0)
-#endif
+#include "SoftwareControlSet.h"
 
 //
 // Make an entry for all control types. Specify all supported (or all?) controls.
 //
-// Macro:   Either HAVE_CONTROL (if it has this) or SKIP_CONTROL (if it doesn't have it)
+// Macro:   HAVE_CONTROL (if it has this)
 // Field 1: Control identifier
 // Field 2: 0 = No auto, n = maximum auto value
 //          For instance, Navico radars have multiple values for Auto Sea State.
@@ -70,15 +49,39 @@
 // Field 6: Step (for instance, min 0 / max 100 / step 10 gives 11 possible values)
 // Field 7: Names
 //
-// The following are controls that are software only. These should not be varied
-// per radar type.
+// Note that for range the min, max, step values are ignored, see TODO.
 
-HAS_CONTROL(CT_REFRESHRATE, CTD_AUTO_NO, 1, 1, 5, CTD_STEP_1, CTD_NUMERIC)
-HAS_CONTROL(CT_TIMED_IDLE, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 7, CTD_STEP_1, (_("Off"), _("5 min"), _("10 min"), _("15 min"), _("20 min"), _("25 min"), _("30 min"), _("35 min")))
-HAS_CONTROL(CT_TIMED_RUN, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2, CTD_STEP_1, (_("10 sec"), _("20 sec"), _("30 sec")))
-HAS_CONTROL(CT_ANTENNA_FORWARD, CTD_AUTO_NO, CTD_DEF_ZERO, -500, +500, CTD_STEP_1, CTD_NUMERIC)
-HAS_CONTROL(CT_ANTENNA_STARBOARD, CTD_AUTO_NO, CTD_DEF_ZERO, -100, +100, CTD_STEP_1, CTD_NUMERIC)
-HAS_CONTROL(CT_TARGET_TRAILS, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 6, CTD_STEP_1, (_("15 sec"), _("30 sec"), _("1 min"), _("3 min"), _("5 min"), _("10 min"), _("Continuous")))
-HAS_CONTROL(CT_TRAILS_MOTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2, CTD_STEP_1, (_("Off"), _("Relative"), _("True")))
-HAS_CONTROL(CT_MAIN_BANG_SIZE, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_NUMERIC)
+#ifndef OFF_LOW_MEDIUM_HIGH
+#define OFF_LOW_MEDIUM_HIGH \
+  { _("Off"), _("Low"), _("Medium"), _("High") }
+#endif
+#ifndef OFF_LOW_HIGH
+#define OFF_LOW_HIGH \
+  { _("Off"), _("Low"), _("High") }
+#endif
+#ifndef OFF_ON
+#define OFF_ON \
+  { _("Off"), _("On") }
+#endif
+#ifndef SLOW_FAST
+#define SLOW_FAST \
+  { _("Slow"), _("Fast") }
+#endif
 
+HAVE_CONTROL(CT_ANTENNA_HEIGHT, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 50, CTD_STEP_1, CTD_NUMERIC)
+HAVE_CONTROL(CT_BEARING_ALIGNMENT, CTD_AUTO_NO, CTD_DEF_ZERO, -180, +180, CTD_STEP_1, CTD_NUMERIC)
+HAVE_CONTROL(CT_GAIN, CTD_AUTO_YES, 50, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
+HAVE_CONTROL(CT_INTERFERENCE_REJECTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 3, CTD_STEP_1, OFF_LOW_MEDIUM_HIGH)
+HAVE_CONTROL(CT_LOCAL_INTERFERENCE_REJECTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 3, CTD_STEP_1, OFF_LOW_MEDIUM_HIGH)
+HAVE_CONTROL(CT_NOISE_REJECTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2, CTD_STEP_1, OFF_LOW_HIGH)
+HAVE_CONTROL(CT_RAIN, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
+HAVE_CONTROL(CT_RANGE, CTD_AUTO_YES, 1000, CTD_MIN_ZERO, 0, CTD_STEP_1, CTD_NUMERIC)
+HAVE_CONTROL(CT_SCAN_SPEED, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 1, CTD_STEP_1, SLOW_FAST)
+HAVE_CONTROL(CT_SEA, 2, CTD_DEF_ZERO, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
+HAVE_CONTROL(CT_SIDE_LOBE_SUPPRESSION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
+HAVE_CONTROL(CT_TARGET_BOOST, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2, CTD_STEP_1, OFF_LOW_HIGH)
+HAVE_CONTROL(CT_TARGET_EXPANSION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 1, CTD_STEP_1, OFF_ON)
+if (radarType != RT_BR24) {
+  HAVE_CONTROL(CT_TARGET_SEPARATION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 3, CTD_STEP_1, OFF_LOW_MEDIUM_HIGH)
+}
+HAVE_CONTROL(CT_TRANSPARENCY, CTD_AUTO_NO, 5, CTD_MIN_ZERO, 9, CTD_STEP_1, CTD_PERCENTAGE)

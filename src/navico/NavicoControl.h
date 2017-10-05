@@ -40,7 +40,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 class NavicoControl : public RadarControl {
  public:
-  NavicoControl(UINT8 mcastAddress[4], unsigned short port);
+  NavicoControl(NetworkAddress sendAddr);
   ~NavicoControl();
 
   bool Init(radar_pi *pi, wxString name, struct sockaddr_in *address);

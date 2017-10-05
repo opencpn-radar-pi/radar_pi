@@ -46,9 +46,15 @@
 #define INITIALIZE_RADAR
 #endif
 
-//#include <br24type.h>
+#include "navico/br24type.h"
+
 #include "navico/br4gatype.h"
 #include "navico/br4gbtype.h"
-//#include <halotype.h>
+
+#include "navico/haloatype.h"
+#include "navico/halobtype.h"
+
+// TODO: Add Garmin etc.
+
 #undef DEFINE_RADAR  // Prepare for next inclusion
 #undef INITIALIZE_RADAR

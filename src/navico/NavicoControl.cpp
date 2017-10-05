@@ -44,11 +44,11 @@ static const UINT8 COMMAND_STAY_ON_B[2] = {0x03, 0xc2};
 static const UINT8 COMMAND_STAY_ON_C[2] = {0x04, 0xc2};
 static const UINT8 COMMAND_STAY_ON_D[2] = {0x05, 0xc2};
 
-NavicoControl::NavicoControl(UINT8 mcastSendAddress[4], unsigned short mcastSendPort) {
+NavicoControl::NavicoControl(NetworkAddress sendAddr) {
   CLEAR_STRUCT(m_addr);
   m_addr.sin_family = AF_INET;
-  memcpy(&m_addr.sin_addr.s_addr, mcastSendAddress, sizeof(m_addr.sin_addr.s_addr));
-  m_addr.sin_port = htons(mcastSendPort);
+  m_addr.sin_addr = sendAddr.addr;
+  m_addr.sin_port = sendAddr.port;
   m_radar_socket = INVALID_SOCKET;
   m_name = wxT("Navico radar");
 }
@@ -166,7 +166,6 @@ bool NavicoControl::SetControlValue(ControlType controlType, int value, int auto
     case CT_RANGE:
     case CT_TIMED_IDLE:
     case CT_TIMED_RUN:
-    case CT_SCAN_AGE:
     case CT_TRANSPARENCY:
     case CT_REFRESHRATE:
     case CT_TARGET_TRAILS:

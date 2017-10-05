@@ -41,11 +41,18 @@ PLUGIN_BEGIN_NAMESPACE
   (i && i->ifa_addr && i->ifa_addr->sa_family == AF_INET && (i->ifa_flags & IFF_UP) > 0 && (i->ifa_flags & IFF_LOOPBACK) == 0 && \
    (i->ifa_flags & IFF_MULTICAST) > 0)
 
+// easy define of mcast addresses. Note that these are in network order already.
+#define IPV4_ADDR(a, b, c, d) (htonl(((a) << 24) | ((b) << 16) | ((c) << 8) | (d)))
+#define IPV4_PORT(p) (htons(p))
+struct NetworkAddress {
+  struct in_addr addr;
+  uint16_t port;
+};
+
 extern bool socketReady(SOCKET sockfd, int timeout);
 
 extern int radar_inet_aton(const char *cp, struct in_addr *addr);
-extern SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in *addr, UINT16 port, const char *mcast_address,
-                                             wxString &error_message);
+extern SOCKET startUDPMulticastReceiveSocket(struct sockaddr_in *addr, NetworkAddress mcastAddr, wxString &error_message);
 extern SOCKET GetLocalhostServerTCPSocket();
 extern SOCKET GetLocalhostSendTCPSocket(SOCKET receive_socket);
 
