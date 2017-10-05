@@ -29,38 +29,41 @@
  ***************************************************************************
  */
 
-#if !defined(DEFINE_RADAR)
-#ifndef _RADARTYPE_H_
-#define _RADARTYPE_H_
+#ifndef _EMULATORRECEIVE_H_
+#define _EMULATORRECEIVE_H_
 
-#include "RadarInfo.h"
-#include "pi_common.h"
+#include "RadarReceive.h"
+#include "socketutil.h"
 
-#include "navico/NavicoControl.h"
-#include "navico/NavicoControlsDialog.h"
-#include "navico/NavicoReceive.h"
+PLUGIN_BEGIN_NAMESPACE
 
-#include "emulator/EmulatorControl.h"
-#include "emulator/EmulatorControlsDialog.h"
-#include "emulator/EmulatorReceive.h"
+//
+// An intermediary class that implements the common parts of any Emulator radar.
+//
 
-#endif /* _RADARTYPE_H_ */
+class EmulatorReceive : public RadarReceive {
+ public:
+  EmulatorReceive(radar_pi *pi, RadarInfo *ri) : RadarReceive(pi, ri) {
+    m_shutdown = false;
 
-#define DEFINE_RADAR(t, x, a, b, c)
-#define INITIALIZE_RADAR
-#endif
+    LOG_RECEIVE(wxT("radar_pi: %s receive thread created"), m_ri->m_name.c_str());
+  };
 
-#include "navico/br24type.h"
+  ~EmulatorReceive() {}
 
-#include "navico/br4gatype.h"
-#include "navico/br4gbtype.h"
+  void *Entry(void);
+  void Shutdown(void);
 
-#include "navico/haloatype.h"
-#include "navico/halobtype.h"
+ private:
+  void EmulateFakeBuffer(void);
 
-// TODO: Add Garmin etc.
+  volatile bool m_shutdown;
 
-#include "emulator/emulatortype.h"
+  int m_next_spoke;     // emulator next spoke
+  int m_next_rotation;  // slowly rotate emulator
+  char m_radar_status;
+};
 
-#undef DEFINE_RADAR  // Prepare for next inclusion
-#undef INITIALIZE_RADAR
+PLUGIN_END_NAMESPACE
+
+#endif /* _EMULATORRECEIVE_H_ */

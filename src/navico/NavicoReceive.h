@@ -50,7 +50,6 @@ class NavicoReceive : public RadarReceive {
     m_mcast_addr = 0;
     m_radar_status = 0;
     m_new_ip_addr = false;
-    m_next_rotation = 0;
     m_shutdown_time_requested = 0;
     m_is_shutdown = false;
 
@@ -106,7 +105,6 @@ class NavicoReceive : public RadarReceive {
   void ProcessFrame(const UINT8 *data, int len);
   bool ProcessReport(const UINT8 *data, int len);
 
-  void EmulateFakeBuffer(void);
   SOCKET PickNextEthernetCard();
   SOCKET GetNewReportSocket();
   SOCKET GetNewDataSocket();
@@ -119,8 +117,7 @@ class NavicoReceive : public RadarReceive {
   struct ifaddrs *m_interface_array;
   struct ifaddrs *m_interface;
 
-  int m_next_spoke;     // emulator next spoke
-  int m_next_rotation;  // slowly rotate emulator
+  int m_next_spoke;
   char m_radar_status;
 };
 

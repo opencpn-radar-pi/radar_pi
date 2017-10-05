@@ -29,38 +29,32 @@
  ***************************************************************************
  */
 
-#if !defined(DEFINE_RADAR)
-#ifndef _RADARTYPE_H_
-#define _RADARTYPE_H_
+#ifndef _EMULATORCONTROL_H_
+#define _EMULATORCONTROL_H_
 
 #include "RadarInfo.h"
 #include "pi_common.h"
+#include "socketutil.h"
 
-#include "navico/NavicoControl.h"
-#include "navico/NavicoControlsDialog.h"
-#include "navico/NavicoReceive.h"
+PLUGIN_BEGIN_NAMESPACE
 
-#include "emulator/EmulatorControl.h"
-#include "emulator/EmulatorControlsDialog.h"
-#include "emulator/EmulatorReceive.h"
+class EmulatorControl : public RadarControl {
+ public:
+  EmulatorControl();
+  ~EmulatorControl();
 
-#endif /* _RADARTYPE_H_ */
+  bool Init(radar_pi *pi, wxString name, struct sockaddr_in *address);
+  void RadarTxOff();
+  void RadarTxOn();
+  bool RadarStayAlive();
+  bool SetRange(int meters);
+  bool SetControlValue(ControlType controlType, int value, int autoValue);
 
-#define DEFINE_RADAR(t, x, a, b, c)
-#define INITIALIZE_RADAR
-#endif
+ private:
+  radar_pi *m_pi;
+  wxString m_name;
+};
 
-#include "navico/br24type.h"
+PLUGIN_END_NAMESPACE
 
-#include "navico/br4gatype.h"
-#include "navico/br4gbtype.h"
-
-#include "navico/haloatype.h"
-#include "navico/halobtype.h"
-
-// TODO: Add Garmin etc.
-
-#include "emulator/emulatortype.h"
-
-#undef DEFINE_RADAR  // Prepare for next inclusion
-#undef INITIALIZE_RADAR
+#endif /* _EMULATORCONTROL_H_ */

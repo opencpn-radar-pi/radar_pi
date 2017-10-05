@@ -247,12 +247,6 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
   m_COGHeading->SetValue(m_settings.enable_cog_heading);
   m_COGHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnEnableCOGHeadingClick), NULL, this);
 
-  m_Emulator =
-      new wxCheckBox(this, wxID_ANY, _("Emulator mode"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  itemStaticBoxSizerOptions->Add(m_Emulator, 0, wxALL, border_size);
-  m_Emulator->SetValue(m_settings.emulator_on ? true : false);
-  m_Emulator->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnEmulatorClick), NULL, this);
-
   m_ReverseZoom = new wxCheckBox(this, wxID_ANY, _("Reverse mouse wheel zoom direction"), wxDefaultPosition, wxDefaultSize,
                                  wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   itemStaticBoxSizerOptions->Add(m_ReverseZoom, 0, wxALL, border_size);
@@ -347,7 +341,6 @@ void OptionsDialog::OnMenuAutoHideClick(wxCommandEvent &event) { m_settings.menu
 
 void OptionsDialog::OnDrawingMethodClick(wxCommandEvent &event) { m_settings.drawing_method = m_DrawingMethod->GetSelection(); }
 
-void OptionsDialog::OnEmulatorClick(wxCommandEvent &event) { m_settings.emulator_on = m_Emulator->GetValue(); }
 void OptionsDialog::OnReverseZoomClick(wxCommandEvent &event) { m_settings.reverse_zoom = m_ReverseZoom->GetValue(); }
 
 PLUGIN_END_NAMESPACE

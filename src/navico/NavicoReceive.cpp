@@ -260,77 +260,6 @@ void NavicoReceive::ProcessFrame(const UINT8 *data, int len) {
   }
 }
 
-/*
- * Called once a second. Emulate a radar return that is
- * at the current desired auto_range.
- * Speed is 24 images per minute, e.g. 1/2.5 of a full
- * image.
- */
-
-void NavicoReceive::EmulateFakeBuffer(void) {
-  time_t now = time(0);
-  UINT8 data[RETURNS_PER_LINE];
-
-  m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
-
-  int state = m_ri->m_state.GetValue();
-
-  if (state != RADAR_TRANSMIT) {
-    if (state == RADAR_OFF) {
-      m_ri->m_state.Update(RADAR_STANDBY);
-    }
-    return;
-  }
-
-  m_ri->m_statistics.packets++;
-  m_ri->m_data_timeout = now + WATCHDOG_TIMEOUT;
-
-  m_next_rotation = (m_next_rotation + 1) % SPOKES;
-
-  int scanlines_in_packet = SPOKES * 24 / 60 * MILLIS_PER_SELECT / MILLISECONDS_PER_SECOND;
-  int range_meters = 2308;
-  int display_range_meters = 3000;
-  int spots = 0;
-#ifdef TODO
-  m_ri->m_radar_type = RT_4G;  // Fake for emulator
-  m_pi->m_pMessageBox->SetRadarType(RT_4G);
-#endif
-  m_ri->m_range.Update(display_range_meters);
-
-  for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
-    int angle_raw = m_next_spoke;
-    m_next_spoke = (m_next_spoke + 1) % SPOKES;
-    m_ri->m_statistics.spokes++;
-
-    // Invent a pattern. Outermost ring, then a square pattern
-    for (size_t range = 0; range < sizeof(data); range++) {
-      size_t bit = range >> 7;
-      // use bit 'bit' of angle_raw
-      UINT8 colour = (((angle_raw + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
-      if (range > sizeof(data) - 10) {
-        colour = ((angle_raw + m_next_rotation) % SPOKES) <= 8 ? 255 : 0;
-      }
-      data[range] = colour;
-      if (colour > 0) {
-        spots++;
-      }
-    }
-
-    int hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->GetHeadingTrue());
-    int bearing_raw = angle_raw + hdt_raw;
-    bearing_raw += SCALE_DEGREES_TO_RAW(270);  // Compensate openGL rotation compared to North UP
-
-    SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
-    SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
-    wxLongLong time_rec;
-    double lat = 0.;
-    double lon = 0.;
-    m_ri->ProcessRadarSpoke(a, b, data, sizeof(data), range_meters, time_rec, lat, lon);
-  }
-
-  LOG_VERBOSE(wxT("radar_pi: emulating %d spokes at range %d with %d spots"), scanlines_in_packet, range_meters, spots);
-}
-
 SOCKET NavicoReceive::PickNextEthernetCard() {
   SOCKET socket = INVALID_SOCKET;
   m_mcast_addr = 0;
@@ -440,33 +369,26 @@ void *NavicoReceive::Entry(void) {
   }
 
   while (true) {
-    if (!m_pi->m_settings.emulator_on) {
-      if (reportSocket == INVALID_SOCKET) {
-        reportSocket = PickNextEthernetCard();
-        if (reportSocket != INVALID_SOCKET) {
-          no_data_timeout = 0;
-          no_spoke_timeout = 0;
-        }
+    if (reportSocket == INVALID_SOCKET) {
+      reportSocket = PickNextEthernetCard();
+      if (reportSocket != INVALID_SOCKET) {
+        no_data_timeout = 0;
+        no_spoke_timeout = 0;
       }
-      if (radar_addr) {
-        // If we have detected a radar antenna at this address start opening more sockets.
-        // We do this later for 2 reasons:
-        // - Resource consumption
-        // - Timing. If we start processing radar data before the rest of the system
-        //           is initialized then we get ordering/race condition issues.
-        if (dataSocket == INVALID_SOCKET) {
-          dataSocket = GetNewDataSocket();
-        }
-      } else {
-        if (dataSocket != INVALID_SOCKET) {
-          closesocket(dataSocket);
-          dataSocket = INVALID_SOCKET;
-        }
+    }
+    if (radar_addr) {
+      // If we have detected a radar antenna at this address start opening more sockets.
+      // We do this later for 2 reasons:
+      // - Resource consumption
+      // - Timing. If we start processing radar data before the rest of the system
+      //           is initialized then we get ordering/race condition issues.
+      if (dataSocket == INVALID_SOCKET) {
+        dataSocket = GetNewDataSocket();
       }
     } else {
-      if (reportSocket != INVALID_SOCKET) {
-        closesocket(reportSocket);
-        reportSocket = INVALID_SOCKET;
+      if (dataSocket != INVALID_SOCKET) {
+        closesocket(dataSocket);
+        dataSocket = INVALID_SOCKET;
       }
     }
 
@@ -545,8 +467,6 @@ void *NavicoReceive::Entry(void) {
         }
       }
 
-    } else if (m_pi->m_settings.emulator_on) {
-      EmulateFakeBuffer();
     } else {  // no data received -> select timeout
 
       if (no_data_timeout >= SECONDS_SELECT(2)) {

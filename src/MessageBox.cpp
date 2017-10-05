@@ -438,9 +438,6 @@ void MessageBox::SetRadarType(RadarType radar_type) {
   wxString s;
 
   s << m_radar_names[radar_type];
-  if (m_pi->m_settings.emulator_on) {
-    s << wxT(" ") << _("Emulator");
-  }
   m_radar_type_info.Update(s);
 }
 

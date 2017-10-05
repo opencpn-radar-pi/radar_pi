@@ -29,38 +29,23 @@
  ***************************************************************************
  */
 
-#if !defined(DEFINE_RADAR)
-#ifndef _RADARTYPE_H_
-#define _RADARTYPE_H_
+#ifndef _EMULATORCONTROLSDIALOG_H_
+#define _EMULATORCONTROLSDIALOG_H_
 
-#include "RadarInfo.h"
-#include "pi_common.h"
+#include "ControlsDialog.h"
 
-#include "navico/NavicoControl.h"
-#include "navico/NavicoControlsDialog.h"
-#include "navico/NavicoReceive.h"
+PLUGIN_BEGIN_NAMESPACE
 
-#include "emulator/EmulatorControl.h"
-#include "emulator/EmulatorControlsDialog.h"
-#include "emulator/EmulatorReceive.h"
+//----------------------------------------------------------------------------------------------------------
+//    Radar Control Dialog Specification
+//----------------------------------------------------------------------------------------------------------
+class EmulatorControlsDialog : public ControlsDialog {
+ public:
+  EmulatorControlsDialog();
 
-#endif /* _RADARTYPE_H_ */
+  ~EmulatorControlsDialog(){};
+};
 
-#define DEFINE_RADAR(t, x, a, b, c)
-#define INITIALIZE_RADAR
+PLUGIN_END_NAMESPACE
+
 #endif
-
-#include "navico/br24type.h"
-
-#include "navico/br4gatype.h"
-#include "navico/br4gbtype.h"
-
-#include "navico/haloatype.h"
-#include "navico/halobtype.h"
-
-// TODO: Add Garmin etc.
-
-#include "emulator/emulatortype.h"
-
-#undef DEFINE_RADAR  // Prepare for next inclusion
-#undef INITIALIZE_RADAR

@@ -29,38 +29,33 @@
  ***************************************************************************
  */
 
-#if !defined(DEFINE_RADAR)
-#ifndef _RADARTYPE_H_
-#define _RADARTYPE_H_
+#include "EmulatorControl.h"
 
-#include "RadarInfo.h"
-#include "pi_common.h"
+PLUGIN_BEGIN_NAMESPACE
 
-#include "navico/NavicoControl.h"
-#include "navico/NavicoControlsDialog.h"
-#include "navico/NavicoReceive.h"
+EmulatorControl::EmulatorControl() { m_name = wxT("Emulator"); }
 
-#include "emulator/EmulatorControl.h"
-#include "emulator/EmulatorControlsDialog.h"
-#include "emulator/EmulatorReceive.h"
+EmulatorControl::~EmulatorControl() {}
 
-#endif /* _RADARTYPE_H_ */
+bool EmulatorControl::Init(radar_pi *pi, wxString name, struct sockaddr_in *adr) {
+  m_pi = pi;
+  m_name = name;
 
-#define DEFINE_RADAR(t, x, a, b, c)
-#define INITIALIZE_RADAR
-#endif
+  return true;
+}
 
-#include "navico/br24type.h"
+void EmulatorControl::RadarTxOff() {}
 
-#include "navico/br4gatype.h"
-#include "navico/br4gbtype.h"
+void EmulatorControl::RadarTxOn() {}
 
-#include "navico/haloatype.h"
-#include "navico/halobtype.h"
+bool EmulatorControl::RadarStayAlive() { return true; }
 
-// TODO: Add Garmin etc.
+bool EmulatorControl::SetRange(int meters) { return false; }
 
-#include "emulator/emulatortype.h"
+bool EmulatorControl::SetControlValue(ControlType controlType, int value, int autoValue) {  // sends the command to the radar
+  bool r = false;
 
-#undef DEFINE_RADAR  // Prepare for next inclusion
-#undef INITIALIZE_RADAR
+  return r;
+}
+
+PLUGIN_END_NAMESPACE

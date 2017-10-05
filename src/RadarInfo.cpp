@@ -29,11 +29,11 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
+#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -706,11 +706,7 @@ void RadarInfo::RequestRadarState(RadarState state) {
 
       switch (state) {
         case RADAR_TRANSMIT:
-          if (m_pi->m_settings.emulator_on) {
-            m_state.Update(RADAR_TRANSMIT);
-          } else {
-            m_control->RadarTxOn();
-          }
+          m_control->RadarTxOn();
           // Refresh radar immediately so that we generate draw mechanisms
           if (m_pi->m_settings.chart_overlay == m_radar) {
             GetOCPNCanvasWindow()->Refresh(false);
@@ -721,11 +717,7 @@ void RadarInfo::RequestRadarState(RadarState state) {
           break;
 
         case RADAR_STANDBY:
-          if (m_pi->m_settings.emulator_on) {
-            m_state.Update(RADAR_STANDBY);
-          } else {
-            m_control->RadarTxOff();
-          }
+          m_control->RadarTxOff();
           break;
 
         case RADAR_WAKING_UP:
@@ -1267,9 +1259,6 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
     default:
       s << _("Unknown");
       break;
-  }
-  if (m_pi->m_settings.emulator_on) {
-    s << wxT("\n") << _("Emulator");
   }
   if (m_range_meters) {
     s << wxT("\n") << GetRangeText();

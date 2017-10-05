@@ -26,6 +26,17 @@ INCLUDE("cmake/PluginConfigure.cmake")
 # For convenience we define the sources as a variable. You can add
 # header files and cpp/c files and CMake will sort them out
 
+SET(SRC_EMULATOR
+            src/emulator/EmulatorControl.cpp        
+            src/emulator/EmulatorControl.h          
+            src/emulator/EmulatorControlSet.h       
+            src/emulator/EmulatorControlsDialog.cpp 
+            src/emulator/EmulatorControlsDialog.h   
+            src/emulator/EmulatorReceive.cpp        
+            src/emulator/EmulatorReceive.h          
+            src/emulator/emulatortype.h
+)
+
 SET(SRC_NAVICO
             src/navico/br24type.h
             src/navico/br4gatype.h
@@ -126,7 +137,7 @@ IF(WIN32)
   FIND_PACKAGE(wxWidgets REQUIRED)
 ENDIF(WIN32)
 
-ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_RADAR} ${SRC_NMEA0183} ${SRC_JSON} ${SRC_NAVICO})
+ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_RADAR} ${SRC_NMEA0183} ${SRC_JSON} ${SRC_EMULATOR} ${SRC_NAVICO})
 
 SET(TEST_KALMAN kalman-test)
 SET(SRC_KALMAN

@@ -29,12 +29,12 @@
  ***************************************************************************
  */
 
-#include "radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -387,13 +387,8 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
 
   OptionsDialog dlg(parent, m_settings, m_radar[0]->m_radar_type);
   if (dlg.ShowModal() == wxID_OK) {
-    bool old_emulator = m_settings.emulator_on;
     m_settings = dlg.GetSettings();
     SaveConfig();
-    if (!m_settings.emulator_on && old_emulator) {  // If the *OLD* setting had emulator on, re-detect radar type
-      m_radar[0]->m_radar_type = RT_4GA;
-      m_radar[1]->m_radar_type = RT_4GB;
-    }
     if (m_settings.enable_dual_radar) {
       m_radar[0]->SetName(_("Radar A"));
       m_radar[1]->StartReceive();
@@ -1252,7 +1247,6 @@ bool radar_pi::LoadConfig(void) {
     m_settings.ppi_background_colour = wxColour(s);
     pConf->Read(wxT("DeveloperMode"), &m_settings.developer_mode, false);
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
-    pConf->Read(wxT("EmulatorOn"), &m_settings.emulator_on, false);
     pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, false);
     pConf->Read(wxT("GuardZoneDebugInc"), &m_settings.guard_zone_debug_inc, 0);
     pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, true);
@@ -1307,7 +1301,6 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ChartOverlay"), m_settings.chart_overlay);
     pConf->Write(wxT("DeveloperMode"), m_settings.developer_mode);
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
-    pConf->Write(wxT("EmulatorOn"), m_settings.emulator_on);
     pConf->Write(wxT("EnableCOGHeading"), m_settings.enable_cog_heading);
     pConf->Write(wxT("EnableDualRadar"), m_settings.enable_dual_radar);
     pConf->Write(wxT("GuardZoneDebugInc"), m_settings.guard_zone_debug_inc);
