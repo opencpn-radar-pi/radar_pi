@@ -115,11 +115,6 @@ void NavicoControl::logBinaryData(const wxString &what, const UINT8 *data, int s
 }
 
 bool NavicoControl::TransmitCmd(const UINT8 *msg, int size) {
-  if (m_pi->m_settings.emulator_on) {
-    wxLogError(wxT("radar_pi: ignoring transmit command in emulator mode"));
-    return false;
-  }
-
   if (m_radar_socket == INVALID_SOCKET) {
     wxLogError(wxT("radar_pi: Unable to transmit command to unknown radar"));
     return false;
