@@ -68,7 +68,6 @@ class OptionsDialog : public wxDialog {
   void OnMenuAutoHideClick(wxCommandEvent& event);
   void OnEnableCOGHeadingClick(wxCommandEvent& event);
   void OnEnableDualRadarClick(wxCommandEvent& event);
-  void OnEmulatorClick(wxCommandEvent& event);
   void OnReverseZoomClick(wxCommandEvent& event);
 
   PersistentSettings m_settings;
@@ -96,7 +95,6 @@ class OptionsDialog : public wxDialog {
   wxComboBox* m_DrawingMethod;
   wxComboBox* m_MenuAutoHide;
   wxCheckBox* m_EnableDualRadar;
-  wxCheckBox* m_Emulator;
   wxCheckBox* m_ReverseZoom;
 };
 
