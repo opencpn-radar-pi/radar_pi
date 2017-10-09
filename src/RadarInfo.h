@@ -256,7 +256,7 @@ class RadarInfo {
 
   /* Methods */
 
-  RadarInfo(RadarType radarType, radar_pi *pi, int radar);
+  RadarInfo(radar_pi *pi, int radar);
   ~RadarInfo();
 
   bool Init(wxString name, int verbose);
@@ -292,7 +292,7 @@ class RadarInfo {
   wxString &GetRangeText();
   const char *GetDisplayRangeStr(size_t idx);
   int GetDisplayRange() { return m_range.GetValue(); };
-  void SetNetworkCardAddress(struct sockaddr_in *address);
+  void SetNetworkCardAddress(NetworkAddress &address);
   void SetMouseLatLon(double lat, double lon);
   void SetMouseVrmEbl(double vrm, double ebl);
   void SetBearing(int bearing);

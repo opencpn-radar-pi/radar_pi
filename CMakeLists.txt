@@ -85,6 +85,8 @@ SET(SRC_RADAR
             src/RadarPanel.h
             src/RadarReceive.h
             src/RadarType.h
+            src/SelectDialog.cpp
+            src/SelectDialog.h
             src/SoftwareControlSet.h
             src/TextureFont.cpp
             src/TextureFont.h

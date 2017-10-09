@@ -43,7 +43,7 @@ class NavicoControl : public RadarControl {
   NavicoControl(NetworkAddress sendAddr);
   ~NavicoControl();
 
-  bool Init(radar_pi *pi, wxString name, struct sockaddr_in *address);
+  bool Init(radar_pi *pi, wxString &name, NetworkAddress &address);
   void RadarTxOff();
   void RadarTxOn();
   bool RadarStayAlive();

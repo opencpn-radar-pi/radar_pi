@@ -5,7 +5,6 @@
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
- *           Hakan Svensson
  *           Douwe Fokkema
  *           Sean D'Epagnier
  ***************************************************************************
@@ -30,63 +29,51 @@
  ***************************************************************************
  */
 
-#ifndef _SOCKETUTIL_H_
-#define _SOCKETUTIL_H_
-
-#include "pi_common.h"
+#include "SelectDialog.h"
+#include "RadarFactory.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
-#define VALID_IPV4_ADDRESS(i)                                                                                                    \
-  (i && i->ifa_addr && i->ifa_addr->sa_family == AF_INET && (i->ifa_flags & IFF_UP) > 0 && (i->ifa_flags & IFF_LOOPBACK) == 0 && \
-   (i->ifa_flags & IFF_MULTICAST) > 0)
+SelectDialog::SelectDialog(wxWindow *parent, radar_pi *pi)
+    : wxDialog(parent, wxID_ANY, _("Radar Selection"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE) {
+  m_parent = parent;
+  m_pi = pi;
 
-// easy define of mcast addresses. Note that these are in network order already.
-#define IPV4_ADDR(a, b, c, d) (htonl(((a) << 24) | ((b) << 16) | ((c) << 8) | (d)))
-#define IPV4_PORT(p) (htons(p))
-struct NetworkAddress {
-  struct in_addr addr;
-  uint16_t port;
-};
+  int font_size_y, font_descent, font_lead;
+  GetTextExtent(_T("0"), NULL, &font_size_y, &font_descent, &font_lead);
+  wxSize small_button_size(-1, (int)(1.4 * (font_size_y + font_descent + font_lead)));
 
-extern bool socketReady(SOCKET sockfd, int timeout);
+  int border_size = 4;
+  wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
+  SetSizer(topSizer);
 
-extern int radar_inet_aton(const char *cp, struct in_addr *addr);
-extern SOCKET startUDPMulticastReceiveSocket(NetworkAddress &addr, NetworkAddress &mcast_address, wxString &error_message);
-extern SOCKET GetLocalhostServerTCPSocket();
-extern SOCKET GetLocalhostSendTCPSocket(SOCKET receive_socket);
+  // Menu options
 
-#ifndef __WXMSW__
+  wxStaticBox *selectBox = new wxStaticBox(this, wxID_ANY, _("Select (max) two radar scanner types"));
+  wxStaticBoxSizer *selectSizer = new wxStaticBoxSizer(selectBox, wxVERTICAL);
 
-// Mac and Linux have ifaddrs.
-#include <ifaddrs.h>
-#include <net/if.h>
+  wxArrayString names;
+  RadarFactory::GetRadarTypes(names);
 
-#else
+  for (int i = 0; i < RT_MAX; i++) {
+    m_selected[i] = new wxCheckBox(this, wxID_ANY, names[i], wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    selectSizer->Add(m_selected[i], 0, wxALL, border_size);
+    m_selected[i]->SetValue(false);
+    m_selected[i]->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(SelectDialog::OnSelect), NULL, this);
+  }
 
-// Emulate (just enough of) ifaddrs on Windows
-// Thanks to
-// https://code.google.com/p/openpgm/source/browse/trunk/openpgm/pgm/getifaddrs.c?r=496&spec=svn496
-// Although that file has interesting new APIs the old ioctl works fine with XP and W7, and does
-// enough
-// for what we want to do.
+  // Accept/Reject button
+  wxStdDialogButtonSizer *DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
 
-struct ifaddrs {
-  struct ifaddrs *ifa_next;
-  struct sockaddr *ifa_addr;
-  ULONG ifa_flags;
-};
+  topSizer->Add(selectSizer);
+  topSizer->Add(DialogButtonSizer, 0, wxALIGN_RIGHT | wxALL, border_size);
 
-struct ifaddrs_storage {
-  struct ifaddrs ifa;
-  struct sockaddr_storage addr;
-};
+  DimeWindow(this);
 
-extern int getifaddrs(struct ifaddrs **ifap);
-extern void freeifaddrs(struct ifaddrs *ifa);
+  Fit();
+  SetLayoutAdaptationMode(wxDIALOG_ADAPTATION_MODE_ENABLED);
+}
 
-#endif
+void SelectDialog::OnSelect(wxCommandEvent &event) {}
 
 PLUGIN_END_NAMESPACE
-
-#endif

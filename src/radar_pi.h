@@ -39,6 +39,7 @@
 #include "jsonreader.h"
 #include "nmea0183/nmea0183.h"
 #include "pi_common.h"
+#include "socketutil.h"
 #include "version.h"
 
 // Load the ocpn_plugin. On OS X this generates many warnings, suppress these.
@@ -172,7 +173,10 @@ typedef enum GuardZoneType { GZ_ARC, GZ_CIRCLE } GuardZoneType;
 typedef enum RadarType {
 #define DEFINE_RADAR(t, n, a, b, c) t,
 #include "RadarType.h"
+  RT_MAX
 } RadarType;
+
+extern const char *RadarTypeName[RT_MAX];
 
 typedef enum ControlType {
 #define CONTROL_TYPE(x, y) x,
@@ -258,60 +262,60 @@ enum RangeUnits { RANGE_NAUTICAL, RANGE_METRIC };
  * some of it is 'secret' and can only be set by manipulating the ini file directly.
  */
 struct PersistentSettings {
-  int overlay_transparency;         // How transparent is the radar picture over the chart
-  int range_index;                  // index into range array, see RadarInfo.cpp
-  int verbose;                      // Loglevel 0..4.
-  int guard_zone_threshold;         // How many blobs must be sent by radar before we fire alarm
-  int guard_zone_render_style;      // 0 = Shading, 1 = Outline, 2 = Shading + Outline
-  int guard_zone_timeout;           // How long before we warn again when bogeys are found
-  bool guard_zone_on_overlay;       // 0 = false, 1 = true
-  bool trails_on_overlay;           // 0 = false, 1 = true
-  int guard_zone_debug_inc;         // Value to add on every cycle to guard zone bearings, for testing.
-  double skew_factor;               // Set to -1 or other value to correct skewing
-  RangeUnits range_units;           // See enum
-  int range_unit_meters;            // ... 1852 or 1000, depending on range_units
-  int max_age;                      // Scans older than this in seconds will be removed
-  int timed_idle;                   // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
-  int idle_run_time;                // 0 = 10s, 1 = 30s, 2 = 1 min
-  int refreshrate;                  // How quickly to refresh the display
-  int chart_overlay;                // -1 = none, otherwise = radar number
-  int menu_auto_hide;               // 0 = none, 1 = 10s, 2 = 30s
-  int drawing_method;               // VertexBuffer, Shader, etc.
-  bool developer_mode;              // Readonly from config, allows head up mode
-  bool show;                        // whether to show any radar (overlay or window)
-  bool show_radar[RADARS];          // whether to show radar window
-  bool show_radar_control[RADARS];  // whether to show radar menu (control) window
-  bool show_radar_target[RADARS];   // whether to show AIS and ARPA targets on radar window
-  bool transmit_radar[RADARS];      // whether radar should be transmitting (persistent)
-  bool pass_heading_to_opencpn;     // Pass heading coming from radar as NMEA data to OpenCPN
-  bool enable_cog_heading;          // Allow COG as heading. Should be taken out back and shot.
-  bool enable_dual_radar;           // Should the dual radar be enabled for 4G?
-  bool emulator_on;                 // Emulator, useful when debugging without radar
-  bool ignore_radar_heading;        // For testing purposes
-  bool reverse_zoom;                // false = normal, true = reverse
-  bool show_extreme_range;          // Show red ring at extreme range and center
-  int threshold_red;                // Radar data has to be this strong to show as STRONG
-  int threshold_green;              // Radar data has to be this strong to show as INTERMEDIATE
-  int threshold_blue;               // Radar data has to be this strong to show as WEAK
-  int threshold_multi_sweep;        // Radar data has to be this strong not to be ignored in multisweep
-  int main_bang_size;               // Pixels at center to ignore
-  int antenna_starboard;            // Ofsett of radar antenne starboard of GPS antenna
-  int antenna_forward;              // Ofsett of radar antenne forward of GPS antenna
-  int type_detection_method;        // 0 = default, 1 = ignore reports
-  int AISatARPAoffset;              // Rectangle side where to search AIS targets at ARPA position
-  wxPoint control_pos[RADARS];      // Saved position of control menu windows
-  wxPoint window_pos[RADARS];       // Saved position of radar windows, when floating and not docked
-  wxPoint alarm_pos;                // Saved position of alarm window
-  wxString alert_audio_file;        // Filepath of alarm audio file. Must be WAV.
-  wxString mcast_address;           // Saved address of radar. Used to speed up next boot.
-  wxColour trail_start_colour;      // Starting colour of a trail
-  wxColour trail_end_colour;        // Ending colour of a trail
-  wxColour strong_colour;           // Colour for STRONG returns
-  wxColour intermediate_colour;     // Colour for INTERMEDIATE returns
-  wxColour weak_colour;             // Colour for WEAK returns
-  wxColour arpa_colour;             // Colour for ARPA edges
-  wxColour ais_text_colour;         // Colour for AIS texts
-  wxColour ppi_background_colour;   // Colour for PPI background (normally very dark)
+  int overlay_transparency;              // How transparent is the radar picture over the chart
+  int range_index;                       // index into range array, see RadarInfo.cpp
+  int verbose;                           // Loglevel 0..4.
+  int guard_zone_threshold;              // How many blobs must be sent by radar before we fire alarm
+  int guard_zone_render_style;           // 0 = Shading, 1 = Outline, 2 = Shading + Outline
+  int guard_zone_timeout;                // How long before we warn again when bogeys are found
+  bool guard_zone_on_overlay;            // 0 = false, 1 = true
+  bool trails_on_overlay;                // 0 = false, 1 = true
+  int guard_zone_debug_inc;              // Value to add on every cycle to guard zone bearings, for testing.
+  double skew_factor;                    // Set to -1 or other value to correct skewing
+  RangeUnits range_units;                // See enum
+  int range_unit_meters;                 // ... 1852 or 1000, depending on range_units
+  int max_age;                           // Scans older than this in seconds will be removed
+  int timed_idle;                        // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
+  int idle_run_time;                     // 0 = 10s, 1 = 30s, 2 = 1 min
+  int refreshrate;                       // How quickly to refresh the display
+  int chart_overlay;                     // -1 = none, otherwise = radar number
+  int menu_auto_hide;                    // 0 = none, 1 = 10s, 2 = 30s
+  int drawing_method;                    // VertexBuffer, Shader, etc.
+  bool developer_mode;                   // Readonly from config, allows head up mode
+  bool show;                             // whether to show any radar (overlay or window)
+  bool show_radar[RADARS];               // whether to show radar window
+  bool show_radar_control[RADARS];       // whether to show radar menu (control) window
+  bool show_radar_target[RADARS];        // whether to show AIS and ARPA targets on radar window
+  bool transmit_radar[RADARS];           // whether radar should be transmitting (persistent)
+  bool pass_heading_to_opencpn;          // Pass heading coming from radar as NMEA data to OpenCPN
+  bool enable_cog_heading;               // Allow COG as heading. Should be taken out back and shot.
+  bool enable_dual_radar;                // Should the dual radar be enabled for 4G?
+  bool emulator_on;                      // Emulator, useful when debugging without radar
+  bool ignore_radar_heading;             // For testing purposes
+  bool reverse_zoom;                     // false = normal, true = reverse
+  bool show_extreme_range;               // Show red ring at extreme range and center
+  int threshold_red;                     // Radar data has to be this strong to show as STRONG
+  int threshold_green;                   // Radar data has to be this strong to show as INTERMEDIATE
+  int threshold_blue;                    // Radar data has to be this strong to show as WEAK
+  int threshold_multi_sweep;             // Radar data has to be this strong not to be ignored in multisweep
+  int main_bang_size;                    // Pixels at center to ignore
+  int antenna_starboard;                 // Ofsett of radar antenne starboard of GPS antenna
+  int antenna_forward;                   // Ofsett of radar antenne forward of GPS antenna
+  int type_detection_method;             // 0 = default, 1 = ignore reports
+  int AISatARPAoffset;                   // Rectangle side where to search AIS targets at ARPA position
+  wxPoint control_pos[RADARS];           // Saved position of control menu windows
+  wxPoint window_pos[RADARS];            // Saved position of radar windows, when floating and not docked
+  wxPoint alarm_pos;                     // Saved position of alarm window
+  wxString alert_audio_file;             // Filepath of alarm audio file. Must be WAV.
+  NetworkAddress mcast_address[RADARS];  // Saved address of radar. Used to speed up next boot.
+  wxColour trail_start_colour;           // Starting colour of a trail
+  wxColour trail_end_colour;             // Ending colour of a trail
+  wxColour strong_colour;                // Colour for STRONG returns
+  wxColour intermediate_colour;          // Colour for INTERMEDIATE returns
+  wxColour weak_colour;                  // Colour for WEAK returns
+  wxColour arpa_colour;                  // Colour for ARPA edges
+  wxColour ais_text_colour;              // Colour for AIS texts
+  wxColour ppi_background_colour;        // Colour for PPI background (normally very dark)
 };
 
 struct scan_line {
@@ -384,6 +388,8 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
 
   // Other public methods
 
+  bool ShowSelectDialog();
+
   void NotifyRadarWindowViz();
   void NotifyControlDialog();
 
@@ -410,10 +416,13 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   wxString GetTimedIdleText();
   wxString GetGuardZoneText(RadarInfo *ri);
 
-  void SetMcastIPAddress(wxString &msg);
-  wxString GetMcastIPAddress() {
+  void SetMcastIPAddress(int r, NetworkAddress &addr) {
     wxCriticalSectionLocker lock(m_exclusive);
-    return m_settings.mcast_address;
+    m_settings.mcast_address[r] = addr;
+  };
+  NetworkAddress &GetMcastIPAddress(int r) {
+    wxCriticalSectionLocker lock(m_exclusive);
+    return m_settings.mcast_address[r];
   }
 
   void SetRadarHeading(double heading = nan(""), bool isTrue = false);

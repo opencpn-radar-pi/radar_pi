@@ -5,7 +5,6 @@
  * Author:   David Register
  *           Dave Cowell
  *           Kees Verruijt
- *           Hakan Svensson
  *           Douwe Fokkema
  *           Sean D'Epagnier
  ***************************************************************************
@@ -30,63 +29,25 @@
  ***************************************************************************
  */
 
-#ifndef _SOCKETUTIL_H_
-#define _SOCKETUTIL_H_
+#ifndef _SELECTDIALOG_H_
+#define _SELECTDIALOG_H_
 
-#include "pi_common.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
-#define VALID_IPV4_ADDRESS(i)                                                                                                    \
-  (i && i->ifa_addr && i->ifa_addr->sa_family == AF_INET && (i->ifa_flags & IFF_UP) > 0 && (i->ifa_flags & IFF_LOOPBACK) == 0 && \
-   (i->ifa_flags & IFF_MULTICAST) > 0)
+class SelectDialog : public wxDialog {
+ public:
+  SelectDialog(wxWindow* parent, radar_pi* pi);
 
-// easy define of mcast addresses. Note that these are in network order already.
-#define IPV4_ADDR(a, b, c, d) (htonl(((a) << 24) | ((b) << 16) | ((c) << 8) | (d)))
-#define IPV4_PORT(p) (htons(p))
-struct NetworkAddress {
-  struct in_addr addr;
-  uint16_t port;
+ private:
+  void OnClose(wxCloseEvent& event);
+  void OnSelect(wxCommandEvent& event);
+
+  radar_pi* m_pi;
+  wxCheckBox* m_selected[RT_MAX];
 };
-
-extern bool socketReady(SOCKET sockfd, int timeout);
-
-extern int radar_inet_aton(const char *cp, struct in_addr *addr);
-extern SOCKET startUDPMulticastReceiveSocket(NetworkAddress &addr, NetworkAddress &mcast_address, wxString &error_message);
-extern SOCKET GetLocalhostServerTCPSocket();
-extern SOCKET GetLocalhostSendTCPSocket(SOCKET receive_socket);
-
-#ifndef __WXMSW__
-
-// Mac and Linux have ifaddrs.
-#include <ifaddrs.h>
-#include <net/if.h>
-
-#else
-
-// Emulate (just enough of) ifaddrs on Windows
-// Thanks to
-// https://code.google.com/p/openpgm/source/browse/trunk/openpgm/pgm/getifaddrs.c?r=496&spec=svn496
-// Although that file has interesting new APIs the old ioctl works fine with XP and W7, and does
-// enough
-// for what we want to do.
-
-struct ifaddrs {
-  struct ifaddrs *ifa_next;
-  struct sockaddr *ifa_addr;
-  ULONG ifa_flags;
-};
-
-struct ifaddrs_storage {
-  struct ifaddrs ifa;
-  struct sockaddr_storage addr;
-};
-
-extern int getifaddrs(struct ifaddrs **ifap);
-extern void freeifaddrs(struct ifaddrs *ifa);
-
-#endif
 
 PLUGIN_END_NAMESPACE
 
-#endif
+#endif /* _SELECTDIALOG_H_ */

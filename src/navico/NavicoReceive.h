@@ -47,37 +47,13 @@ class NavicoReceive : public RadarReceive {
     m_data_addr = dataAddr;
     m_report_addr = reportAddr;
     m_next_spoke = -1;
-    m_mcast_addr = 0;
+    CLEAR_STRUCT(m_mcast_addr);
     m_radar_status = 0;
     m_new_ip_addr = false;
     m_shutdown_time_requested = 0;
     m_is_shutdown = false;
 
-    wxString mcast_address = m_pi->GetMcastIPAddress();
-
-    if (mcast_address.length()) {
-      int b[4];
-      union {
-        uint8_t b[4];
-        uint32_t addr;
-      } mcast;
-
-      if (sscanf(mcast_address.c_str(), "%u.%u.%u.%u", &b[0], &b[1], &b[2], &b[3]) == 4) {
-        mcast.b[0] = (uint8_t)b[0];
-        mcast.b[1] = (uint8_t)b[1];
-        mcast.b[2] = (uint8_t)b[2];
-        mcast.b[3] = (uint8_t)b[3];
-
-#ifdef __WXMAC__
-        m_initial_mcast_addr.sin_len = sizeof(sockaddr_in);
-#endif
-        m_initial_mcast_addr.sin_addr.s_addr = mcast.addr;
-        m_initial_mcast_addr.sin_port = 0;
-        m_initial_mcast_addr.sin_family = AF_INET;
-        m_mcast_addr = &m_initial_mcast_addr;
-        LOG_VERBOSE(wxT("radar_pi: assuming radar is still reachable via %s"), mcast_address.c_str());
-      }
-    }
+    m_mcast_addr = m_pi->GetMcastIPAddress(ri->m_radar);
 
     m_receive_socket = GetLocalhostServerTCPSocket();
     m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
@@ -90,8 +66,7 @@ class NavicoReceive : public RadarReceive {
   void *Entry(void);
   void Shutdown(void);
 
-  sockaddr_in m_initial_mcast_addr;
-  sockaddr_in *m_mcast_addr;
+  NetworkAddress m_mcast_addr;
   wxIPV4address m_ip_addr;
   bool m_new_ip_addr;
 

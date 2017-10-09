@@ -29,11 +29,11 @@
  ***************************************************************************
  */
 
+#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -178,8 +178,7 @@ void radar_range_control_item::Update(int v) {
  * Called when the config is not yet known, so this should not start any
  * computations based on those yet.
  */
-RadarInfo::RadarInfo(RadarType radarType, radar_pi *pi, int radar) {
-  m_radar_type = radarType;
+RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_pi = pi;
   m_radar = radar;
   m_arpa = 0;
@@ -355,7 +354,14 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
   }
 }
 
-void RadarInfo::SetNetworkCardAddress(struct sockaddr_in *address) {
+void RadarInfo::SetNetworkCardAddress(NetworkAddress &address) {
+  m_pi->SetMcastIPAddress(m_radar, address);
+  /* TODO
+    if (m_pMessageBox) {
+      m_pMessageBox->SetMcastIPAddress(address);
+    }
+*/
+
   if (!m_control->Init(m_pi, m_name, address)) {
     wxLogError(wxT("radar_pi %s: Unable to create transmit socket"), m_name.c_str());
   }

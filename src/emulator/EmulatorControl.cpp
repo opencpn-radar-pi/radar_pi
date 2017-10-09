@@ -37,7 +37,7 @@ EmulatorControl::EmulatorControl() { m_name = wxT("Emulator"); }
 
 EmulatorControl::~EmulatorControl() {}
 
-bool EmulatorControl::Init(radar_pi *pi, wxString name, struct sockaddr_in *adr) {
+bool EmulatorControl::Init(radar_pi *pi, wxString &name, NetworkAddress &adr) {
   m_pi = pi;
   m_name = name;
 

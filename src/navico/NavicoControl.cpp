@@ -60,7 +60,7 @@ NavicoControl::~NavicoControl() {
   }
 }
 
-bool NavicoControl::Init(radar_pi *pi, wxString name, struct sockaddr_in *adr) {
+bool NavicoControl::Init(radar_pi *pi, wxString &name, NetworkAddress &adr) {
   int r;
   int one = 1;
 
@@ -78,7 +78,16 @@ bool NavicoControl::Init(radar_pi *pi, wxString name, struct sockaddr_in *adr) {
   }
 
   if (!r) {
-    r = bind(m_radar_socket, (struct sockaddr *)adr, sizeof(*adr));
+    struct sockaddr_in s;
+
+    s.sin_addr = adr.addr;
+    s.sin_port = adr.port;
+    s.sin_family = AF_INET;
+#ifdef __WX_MAC__
+    s.sin_len = sizeof(sockaddr_in);
+#endif
+
+    r = bind(m_radar_socket, (struct sockaddr *)&s, sizeof(s));
   }
 
   if (r) {

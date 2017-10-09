@@ -49,7 +49,7 @@ class RadarControl {
    * @param name        Name of this radar, for logging
    * @param address     The address of the ethernet card on this machine
    */
-  virtual bool Init(radar_pi *pi, wxString name, struct sockaddr_in *address) = 0;
+  virtual bool Init(radar_pi *pi, wxString &name, NetworkAddress &address) = 0;
 
   /*
    * Ask the radar to switch off.

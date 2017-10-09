@@ -155,7 +155,7 @@ bool socketReady(SOCKET sockfd, int timeout) {
   return r > 0;
 }
 
-SOCKET startUDPMulticastReceiveSocket(NetworkAddress sender, const char *mcast_address, wxString &error_message) {
+SOCKET startUDPMulticastReceiveSocket(NetworkAddress &sender, NetworkAddress &mcast_address, wxString &error_message) {
   SOCKET rx_socket;
   struct sockaddr_in listenAddress;
   int one = 1;
@@ -188,11 +188,7 @@ SOCKET startUDPMulticastReceiveSocket(NetworkAddress sender, const char *mcast_a
   // Subscribe rx_socket to a multicast group
   struct ip_mreq mreq;
   mreq.imr_interface = sender.addr;
-
-  if (!radar_inet_aton(mcast_address, &mreq.imr_multiaddr)) {
-    error_message << _("Invalid multicast address") << wxT(" ") << wxString::FromUTF8(mcast_address);
-    goto fail;
-  }
+  mreq.imr_multiaddr = mcast_address.addr;
 
   if (setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *)&mreq, sizeof(mreq))) {
     error_message << _("Invalid IP address for UDP multicast");

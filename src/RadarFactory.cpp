@@ -34,6 +34,11 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+const char* RadarTypeName[RT_MAX] = {
+#define DEFINE_RADAR(t, n, a, b, c) n,
+#include "RadarType.h"
+};
+
 ControlsDialog* RadarFactory::makeControlsDialog(size_t radarType, int radar) {
   switch (radarType) {
 #define DEFINE_RADAR(t, x, a, b, c) \
