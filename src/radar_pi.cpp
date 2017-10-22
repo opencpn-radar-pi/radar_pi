@@ -260,6 +260,10 @@ int radar_pi::Init(void) {
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->Init(RadarTypeName[m_radar[r]->m_radar_type], m_settings.verbose);
   }
+  for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
+    delete m_radar[r];
+    m_radar[r] = 0;
+  }
 
   //    This PlugIn needs a toolbar icon
 
@@ -411,6 +415,10 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
 
     for (size_t i = 0; i < RT_MAX; i++) {
       if (dlg.m_selected[i]->GetValue()) {
+        if (!m_radar[r])
+        {
+          m_radar[r] = new RadarInfo(this, r);
+        }
         m_radar[r]->m_radar_type = (RadarType)i;
         m_settings.show_radar[r] = true;
         m_settings.show_radar_control[r] = true;
@@ -427,7 +435,9 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
       m_radar[r]->Init(RadarTypeName[m_radar[r]->m_radar_type], m_settings.verbose);
     }
     for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
+      if (m_radar[r]) {
       delete m_radar[r];
+      }
     }
   }
   return ret;

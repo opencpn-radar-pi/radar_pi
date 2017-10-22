@@ -49,7 +49,6 @@ NavicoControl::NavicoControl(NetworkAddress sendMultiCastAddress) {
   m_addr.sin_addr = sendMultiCastAddress.addr;
   m_addr.sin_port = sendMultiCastAddress.port;
 
-
   m_radar_socket = INVALID_SOCKET;
   m_name = wxT("Navico radar");
 }
@@ -61,7 +60,7 @@ NavicoControl::~NavicoControl() {
   }
 }
 
-bool NavicoControl::Init(radar_pi *pi, wxString &name, NetworkAddress &ifadr, NetworkAddress &radaradr) {
+bool NavicoControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) {
   int r;
   int one = 1;
 
@@ -70,7 +69,8 @@ bool NavicoControl::Init(radar_pi *pi, wxString &name, NetworkAddress &ifadr, Ne
     ;
 
   m_pi = pi;
-  m_name = name;
+  m_ri = ri;
+  m_name = ri->m_name;
 
   if (m_radar_socket != INVALID_SOCKET) {
     closesocket(m_radar_socket);

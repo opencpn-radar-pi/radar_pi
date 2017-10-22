@@ -33,20 +33,25 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-EmulatorControl::EmulatorControl() { m_name = wxT("Emulator"); }
+EmulatorControl::EmulatorControl() { m_pi = 0; m_ri = 0; m_name = wxT("Emulator"); }
 
 EmulatorControl::~EmulatorControl() {}
 
-bool EmulatorControl::Init(radar_pi *pi, wxString &name, NetworkAddress &ifadr, NetworkAddress &radaradr) {
+bool EmulatorControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) {
   m_pi = pi;
-  m_name = name;
+  m_ri = ri;
+  m_name = ri->m_name;
 
   return true;
 }
 
-void EmulatorControl::RadarTxOff() {}
+void EmulatorControl::RadarTxOff() {  m_ri->m_state.Update(RADAR_STANDBY);
+}
 
-void EmulatorControl::RadarTxOn() {}
+void EmulatorControl::RadarTxOn() {
+  if (m_ri) {
+  m_ri->m_state.Update(RADAR_TRANSMIT);
+  }}
 
 bool EmulatorControl::RadarStayAlive() { return true; }
 

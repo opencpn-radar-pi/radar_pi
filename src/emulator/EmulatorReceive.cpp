@@ -122,8 +122,11 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
  */
 void *EmulatorReceive::Entry(void) {
   int r = 0;
+  NetworkAddress fake = {{IPV4_ADDR(127, 0, 0, 10)}, IPV4_PORT(3333)};
 
   LOG_VERBOSE(wxT("radar_pi: EmulatorReceive thread %s starting"), m_ri->m_name.c_str());
+
+  m_ri->DetectedRadar(fake, fake);
 
   while (!m_shutdown) {
     struct timeval tv = {(long)0, (long)(MILLIS_PER_SELECT * 1000)};

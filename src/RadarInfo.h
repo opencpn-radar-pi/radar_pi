@@ -141,25 +141,26 @@ typedef UINT8 TrailRevolutionsAge;
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(600) + 1
 enum { TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_5MIN, TRAIL_10MIN, TRAIL_CONTINUOUS, TRAIL_ARRAY_SIZE };
 
+#define COURSE_SAMPLES (16)
+
 class RadarInfo {
  public:
   wxString m_name;  // Either "Radar", "Radar A", "Radar B".
-  radar_pi *m_pi;
-  int m_radar;             // Which radar this is (0..., max 2 for now)
+  radar_pi *m_pi; // Pointer back to the plugin
+  int m_radar;             // Which radar this is [0..RADARS>
   RadarType m_radar_type;  // Which radar type
-#define COURSE_SAMPLES (16)
   double m_course;  // m_course is the moving everage of m_hdt used for course_up
   double m_course_log[COURSE_SAMPLES];
   int m_course_index;
   RadarArpa *m_arpa;
-  wxCriticalSection m_exclusive;  // protects the following two
+  wxCriticalSection m_exclusive;
 
   /* User radar settings */
 
   radar_control_item m_state;       // RadarState (observed)
   radar_control_item m_boot_state;  // Can contain RADAR_TRANSMIT until radar is seen at boot
-
   radar_control_item m_orientation;  // See below for allowed values.
+  
 // Orientation HEAD_UP is available if there is no heading or dev mode is switched on
 // Other orientations are available if there is a heading
 #define ORIENTATION_HEAD_UP \

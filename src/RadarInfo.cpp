@@ -363,7 +363,7 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
 
 void RadarInfo::DetectedRadar(NetworkAddress &interfaceAddress, NetworkAddress &radarAddress) {
   m_pi->SetRadarInterfaceAddress(m_radar, interfaceAddress);
-  if (!m_control->Init(m_pi, m_name, interfaceAddress, radarAddress)) {
+  if (!m_control->Init(m_pi, this, interfaceAddress, radarAddress)) {
     wxLogError(wxT("radar_pi %s: Unable to create transmit socket"), m_name.c_str());
   }
   m_stayalive_timeout = 0;  // Allow immediate restart of any TxOn or TxOff command

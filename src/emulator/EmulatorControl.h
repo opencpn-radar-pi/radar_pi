@@ -43,8 +43,7 @@ class EmulatorControl : public RadarControl {
   EmulatorControl();
   ~EmulatorControl();
 
-  bool Init(radar_pi *pi, wxString &name,
-            NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
+  bool Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
   void RadarTxOff();
   void RadarTxOn();
   bool RadarStayAlive();
@@ -53,6 +52,7 @@ class EmulatorControl : public RadarControl {
 
  private:
   radar_pi *m_pi;
+  RadarInfo *m_ri;
   wxString m_name;
 };
 

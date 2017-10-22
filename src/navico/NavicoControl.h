@@ -43,7 +43,7 @@ class NavicoControl : public RadarControl {
   NavicoControl(NetworkAddress sendMultiCastAddress);
   ~NavicoControl();
 
-  bool Init(radar_pi *pi, wxString &name, NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
+  bool Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
   void RadarTxOff();
   void RadarTxOn();
   bool RadarStayAlive();
@@ -52,6 +52,7 @@ class NavicoControl : public RadarControl {
 
  private:
   radar_pi *m_pi;
+  RadarInfo *m_ri;
   struct sockaddr_in m_addr;
   SOCKET m_radar_socket;
   wxString m_name;
