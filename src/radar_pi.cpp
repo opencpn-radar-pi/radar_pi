@@ -256,23 +256,8 @@ int radar_pi::Init(void) {
     return 0;  // give up
   }
 
-  // Create objects before config, so config can set data in it
-  // This does not start any threads or generate any UI.
-  bool any = false;
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (m_radar[r]->m_radar_type != RT_MAX) {
-      any = true;
-    }
-  }
-  if (!any && !ShowSelectDialog()) {
-    wxLogError(wxT("radar_pi: no radars selected"));
-    return 0;
-  }
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->Init(RadarTypeName[m_radar[r]->m_radar_type], m_settings.verbose);
-  }
-  for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
-    delete m_radar[r];
   }
 
   //    This PlugIn needs a toolbar icon
@@ -398,10 +383,24 @@ void radar_pi::SetDefaults(void) {
   // We don't need to do anything special here.
 }
 
-bool radar_pi::ShowSelectDialog() {
+bool radar_pi::IsRadarSelectionComplete(bool force) {
   bool ret = false;
 
-  LOG_DIALOG(wxT("radar_pi: ShowSelectDialog"));
+  bool any = false;
+
+  if (!force)
+  {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      if (m_radar[r]->m_radar_type != RT_MAX) {
+        any = true;
+      }
+    }
+  }
+  if (any && !force) {
+    return true;
+  }
+
+  LOG_DIALOG(wxT("radar_pi: IsRadarSelectionComplete not yet so show selection dialog"));
 
   SelectDialog dlg(m_parent_window, this);
   if (dlg.ShowModal() == wxID_OK) {
@@ -422,6 +421,13 @@ bool radar_pi::ShowSelectDialog() {
     }
 
     SaveConfig();
+
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      m_radar[r]->Init(RadarTypeName[m_radar[r]->m_radar_type], m_settings.verbose);
+    }
+    for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
+      delete m_radar[r];
+    }
   }
   return ret;
 }
@@ -429,6 +435,7 @@ bool radar_pi::ShowSelectDialog() {
 void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
   LOG_DIALOG(wxT("radar_pi: ShowPreferencesDialog"));
 
+  if (IsRadarSelectionComplete(false)) {
   OptionsDialog dlg(parent, m_settings, m_radar[0]->m_radar_type);
   if (dlg.ShowModal() == wxID_OK) {
     m_settings = dlg.GetSettings();
@@ -440,6 +447,7 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
     if (!m_guard_bogey_confirmed && m_alarm_sound_timeout && m_settings.guard_zone_timeout) {
       m_alarm_sound_timeout = time(0) + m_settings.guard_zone_timeout;
     }
+  }
   }
 }
 
@@ -1389,9 +1397,9 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ColourArpaEdge"), m_settings.arpa_colour.GetAsString());
     pConf->Write(wxT("ColourAISText"), m_settings.ais_text_colour.GetAsString());
     pConf->Write(wxT("ColourPPIBackground"), m_settings.ppi_background_colour.GetAsString());
+    pConf->Write(wxT("RadarCount"), m_settings.radar_count);
 
     for (size_t r = 0; r < m_settings.radar_count; r++) {
-      if (m_radar[r]->m_radar_type != RT_MAX) {
         pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);
 
         wxString addr;
@@ -1424,7 +1432,6 @@ bool radar_pi::SaveConfig(void) {
           pConf->Write(wxString::Format(wxT("Radar%dZone%dArpaOn"), r, i), m_radar[r]->m_guard_zone[i]->m_arpa_on);
         }
       }
-    }
 
     pConf->Flush();
     // LOG_VERBOSE(wxT("radar_pi: Saved settings"));
