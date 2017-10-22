@@ -257,13 +257,6 @@ int radar_pi::Init(void) {
     return 0;  // give up
   }
 
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    m_radar[r]->Init(RadarTypeName[m_radar[r]->m_radar_type], m_settings.verbose);
-  }
-  for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
-    delete m_radar[r];
-    m_radar[r] = 0;
-  }
 
   //    This PlugIn needs a toolbar icon
 
@@ -312,12 +305,20 @@ int radar_pi::Init(void) {
 
   m_notify_time_ms = 0;
   m_timer = new wxTimer(this, TIMER_ID);
+
+  // Now that the settings are made we can initialize the RadarInfos
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    m_radar[r]->Init();
+  }
+  for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
+    delete m_radar[r];
+    m_radar[r] = 0;
+  }
+
   m_initialized = true;
   SetRadarWindowViz();
   TimedControlUpdate();
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    m_radar[r]->StartReceive();
-  }
+
   return PLUGIN_OPTIONS;
 }
 
@@ -414,6 +415,11 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
 
     for (size_t i = 0; i < RT_MAX; i++) {
       if (dlg.m_selected[i]->GetValue()) {
+        if (m_radar[r] && m_radar[r]->m_radar_type != (RadarType) i) {
+          m_radar[r]->Shutdown();
+          delete m_radar[r];
+          m_radar[r] = 0;
+        }
         if (!m_radar[r]) {
           m_radar[r] = new RadarInfo(this, r);
         }
@@ -430,11 +436,13 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
     SaveConfig();
 
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      m_radar[r]->Init(RadarTypeName[m_radar[r]->m_radar_type], m_settings.verbose);
+      m_radar[r]->Init();
     }
     for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
       if (m_radar[r]) {
+        m_radar[r]->Shutdown();
         delete m_radar[r];
+        m_radar[r] = 0;
       }
     }
   }
@@ -451,6 +459,7 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
       if (IsRadarSelectionComplete(false)) {
         SaveConfig();
         for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+
           m_radar[r]->ComputeColourMap();
           m_radar[r]->UpdateControlState(true);
         }

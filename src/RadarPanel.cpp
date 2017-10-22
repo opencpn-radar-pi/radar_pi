@@ -206,6 +206,7 @@ void RadarPanel::ShowFrame(bool visible) {
   }
 
   pane.Show(visible);
+  pane.Caption(m_ri->m_name);
   m_aui_mgr->Update();  // causes recursive calls on OS X when not in OpenGL mode
 
   if (visible && (m_dock_size > 0)) {

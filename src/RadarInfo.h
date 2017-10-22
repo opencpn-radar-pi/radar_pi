@@ -260,8 +260,7 @@ class RadarInfo {
   RadarInfo(radar_pi *pi, int radar);
   ~RadarInfo();
 
-  bool Init(wxString name, int verbose);
-  void StartReceive();
+  bool Init();
   void SetName(wxString name);
   wxString GetStatus();
 

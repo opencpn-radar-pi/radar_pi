@@ -304,27 +304,45 @@ RadarInfo::~RadarInfo() {
  * Initialize the on-screen and receive/transmit items.
  *
  * This is called after the config file has been loaded, so all state is known.
+ * It is also called when the user reselects radars, so it needs to be able to be called
+ * multiple times.
  */
-bool RadarInfo::Init(wxString name, int verbose) {
-  m_verbose = verbose;
-
-  m_name = name;
+bool RadarInfo::Init() {
+  m_verbose = M_SETTINGS.verbose;
+  m_name = RadarTypeName[m_radar_type];
 
   ComputeColourMap();
 
-  m_control = RadarFactory::makeRadarControl(m_radar_type);
-
-  m_radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
-  if (!m_radar_panel || !m_radar_panel->Create()) {
-    wxLogError(wxT("radar_pi %s: Unable to create RadarPanel"), name.c_str());
-    return false;
+  if (!m_control) {
+      m_control = RadarFactory::makeRadarControl(m_radar_type);
   }
-
-  m_arpa = new RadarArpa(m_pi, this);
+  if (!m_radar_panel) {
+    m_radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
+    if (!m_radar_panel || !m_radar_panel->Create()) {
+      wxLogError(wxT("radar_pi %s: Unable to create RadarPanel"), m_name.c_str());
+      return false;
+    }
+  }
+  if (!m_arpa) {
+    m_arpa = new RadarArpa(m_pi, this);
+  }
 
   ComputeTargetTrails();
 
   m_range.Update(m_range_meters);
+  UpdateControlState(true);
+
+  if (!m_receive) {
+    LOG_RECEIVE(wxT("radar_pi: %s starting receive thread"), m_name.c_str());
+    m_receive = RadarFactory::makeRadarReceive(m_radar_type, m_pi, this);
+    if (!m_receive || (m_receive->Run() != wxTHREAD_NO_ERROR)) {
+      LOG_INFO(wxT("radar_pi: %s unable to start receive thread."), m_name.c_str());
+      if (m_receive) {
+        delete m_receive;
+      }
+      m_receive = 0;
+    }
+  }
 
   return true;
 }
@@ -377,20 +395,6 @@ void RadarInfo::SetName(wxString name) {
     m_radar_panel->SetCaption(name);
     if (m_control_dialog) {
       m_control_dialog->SetTitle(name);
-    }
-  }
-}
-
-void RadarInfo::StartReceive() {
-  if (!m_receive) {
-    LOG_RECEIVE(wxT("radar_pi: %s starting receive thread"), m_name.c_str());
-    m_receive = RadarFactory::makeRadarReceive(m_radar_type, m_pi, this);
-    if (!m_receive || (m_receive->Run() != wxTHREAD_NO_ERROR)) {
-      LOG_INFO(wxT("radar_pi: %s unable to start receive thread."), m_name.c_str());
-      if (m_receive) {
-        delete m_receive;
-      }
-      m_receive = 0;
     }
   }
 }

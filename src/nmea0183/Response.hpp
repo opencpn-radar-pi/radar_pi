@@ -32,6 +32,8 @@
 #if !defined(RESPONSE_CLASS_HEADER)
 #define RESPONSE_CLASS_HEADER
 
+#include "Sentence.hpp"
+
 PLUGIN_BEGIN_NAMESPACE
 
 /*
