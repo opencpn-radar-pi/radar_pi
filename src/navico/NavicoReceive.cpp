@@ -308,7 +308,7 @@ SOCKET NavicoReceive::GetNewReportSocket() {
 
     m_status = wxString::Format(wxT("%s Scanning interface %s"), m_ri->m_name.c_str(), addr.c_str());
 
-// m_pi->SetMcastIPAddress(m_ri->m_radar, m_interface_addr);
+    // m_pi->SetMcastIPAddress(m_ri->m_radar, m_interface_addr);
   } else {
     wxLogError(wxT("radar_pi: Unable to listen to socket: %s"), error.c_str());
   }

@@ -89,11 +89,10 @@ class NavicoReceive : public RadarReceive {
   int m_next_spoke;
   char m_radar_status;
 
-  wxString m_addr;      // Radar's IP address
+  wxString m_addr;  // Radar's IP address
 
-  wxCriticalSection m_lock; // Protects m_status
-  wxString m_status;    // Userfriendly string
-
+  wxCriticalSection m_lock;  // Protects m_status
+  wxString m_status;         // Userfriendly string
 };
 
 PLUGIN_END_NAMESPACE

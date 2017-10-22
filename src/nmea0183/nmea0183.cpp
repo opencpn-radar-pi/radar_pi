@@ -165,8 +165,8 @@ bool NMEA0183::PreParse(void) {
     wxString mnemonic = sentence.Field(0);
 
     /*
-          ** See if this is a proprietary field
-    */
+     ** See if this is a proprietary field
+     */
 
     if (mnemonic.Left(1) == 'P')
       mnemonic = _T("P");

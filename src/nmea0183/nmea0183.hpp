@@ -46,15 +46,15 @@
 ** General Purpose Classes
 */
 
-#include "Sentence.hpp"
 #include "Response.hpp"
+#include "Sentence.hpp"
 
 /*
 ** Response Classes
 */
 
-#include "hdm.hpp"
 #include "hdg.hpp"
+#include "hdm.hpp"
 #include "hdt.hpp"
 
 PLUGIN_BEGIN_NAMESPACE

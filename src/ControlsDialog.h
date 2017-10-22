@@ -74,17 +74,15 @@ class ControlsDialog : public wxDialog {
   DECLARE_EVENT_TABLE()
 
  public:
-  ControlsDialog()
-  {
-      // Initialize all members that need initialization
-      m_hide = false;
-      m_hide_temporarily = true;
+  ControlsDialog() {
+    // Initialize all members that need initialization
+    m_hide = false;
+    m_hide_temporarily = true;
 
-      m_from_control = 0;
+    m_from_control = 0;
 
-      m_panel_position = wxDefaultPosition;
-      m_manually_positioned = false;
-
+    m_panel_position = wxDefaultPosition;
+    m_manually_positioned = false;
   };
   ~ControlsDialog();
 

@@ -1502,7 +1502,6 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   Layout();
   Fit();
 
-
   if (M_SETTINGS.radar_count > 1) {
     bool show_other_radar = false;
     if (m_pi->m_settings.show_radar[m_ri->m_radar]) {

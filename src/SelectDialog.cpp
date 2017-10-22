@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#include "RadarFactory.h"
 #include "SelectDialog.h"
+#include "RadarFactory.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -49,7 +49,7 @@ SelectDialog::SelectDialog(wxWindow *parent, radar_pi *pi)
 
   // Menu options
 
-      wxStaticBox *selectBox = new wxStaticBox(this, wxID_ANY, wxString::Format(_("Select (max) %d radar scanner types"), RADARS));
+  wxStaticBox *selectBox = new wxStaticBox(this, wxID_ANY, wxString::Format(_("Select (max) %d radar scanner types"), RADARS));
   wxStaticBoxSizer *selectSizer = new wxStaticBoxSizer(selectBox, wxVERTICAL);
 
   wxArrayString names;

@@ -155,7 +155,7 @@ void MessageBox::CreateControls() {
   m_presence = new wxStaticText(this, wxID_ANY, presence, wxDefaultPosition, wxDefaultSize, 0);
   ipSizer->Add(m_presence, 0, wxALL, BORDER);
   m_presence->SetFont(m_pi->m_font);
- // m_presence->Disable();
+  // m_presence->Disable();
 
   wxStaticBox *nmeaBox = new wxStaticBox(this, wxID_ANY, _("For radar overlay also required"));
   nmeaBox->SetFont(m_pi->m_font);

@@ -29,8 +29,8 @@
  *         "It is BSD license, do with it what you will"                   *
  */
 
-#include "nmea0183.h"
 #include <math.h>
+#include "nmea0183.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

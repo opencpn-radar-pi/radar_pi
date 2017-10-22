@@ -145,11 +145,11 @@ enum { TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_5MIN, TRAIL_10MIN
 
 class RadarInfo {
  public:
-  wxString m_name;  // Either "Radar", "Radar A", "Radar B".
-  radar_pi *m_pi; // Pointer back to the plugin
+  wxString m_name;         // Either "Radar", "Radar A", "Radar B".
+  radar_pi *m_pi;          // Pointer back to the plugin
   int m_radar;             // Which radar this is [0..RADARS>
   RadarType m_radar_type;  // Which radar type
-  double m_course;  // m_course is the moving everage of m_hdt used for course_up
+  double m_course;         // m_course is the moving everage of m_hdt used for course_up
   double m_course_log[COURSE_SAMPLES];
   int m_course_index;
   RadarArpa *m_arpa;
@@ -157,10 +157,10 @@ class RadarInfo {
 
   /* User radar settings */
 
-  radar_control_item m_state;       // RadarState (observed)
-  radar_control_item m_boot_state;  // Can contain RADAR_TRANSMIT until radar is seen at boot
+  radar_control_item m_state;        // RadarState (observed)
+  radar_control_item m_boot_state;   // Can contain RADAR_TRANSMIT until radar is seen at boot
   radar_control_item m_orientation;  // See below for allowed values.
-  
+
 // Orientation HEAD_UP is available if there is no heading or dev mode is switched on
 // Other orientations are available if there is a heading
 #define ORIENTATION_HEAD_UP \

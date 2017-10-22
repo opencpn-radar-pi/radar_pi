@@ -33,7 +33,11 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-EmulatorControl::EmulatorControl() { m_pi = 0; m_ri = 0; m_name = wxT("Emulator"); }
+EmulatorControl::EmulatorControl() {
+  m_pi = 0;
+  m_ri = 0;
+  m_name = wxT("Emulator");
+}
 
 EmulatorControl::~EmulatorControl() {}
 
@@ -45,13 +49,13 @@ bool EmulatorControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, N
   return true;
 }
 
-void EmulatorControl::RadarTxOff() {  m_ri->m_state.Update(RADAR_STANDBY);
-}
+void EmulatorControl::RadarTxOff() { m_ri->m_state.Update(RADAR_STANDBY); }
 
 void EmulatorControl::RadarTxOn() {
   if (m_ri) {
-  m_ri->m_state.Update(RADAR_TRANSMIT);
-  }}
+    m_ri->m_state.Update(RADAR_TRANSMIT);
+  }
+}
 
 bool EmulatorControl::RadarStayAlive() { return true; }
 
