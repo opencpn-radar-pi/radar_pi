@@ -288,17 +288,6 @@ ControlsDialog::~ControlsDialog() {
   m_pi->m_settings.control_pos[m_ri->m_radar] = pos;
 }
 
-void ControlsDialog::Init() {
-  // Initialize all members that need initialization
-  m_hide = false;
-  m_hide_temporarily = true;
-
-  m_from_control = 0;
-
-  m_panel_position = wxDefaultPosition;
-  m_manually_positioned = false;
-}
-
 bool ControlsDialog::Create(wxWindow* parent, radar_pi* ppi, RadarInfo* ri, wxWindowID id, const wxString& caption,
                             const wxPoint& pos) {
   m_parent = parent;

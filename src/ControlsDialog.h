@@ -74,10 +74,19 @@ class ControlsDialog : public wxDialog {
   DECLARE_EVENT_TABLE()
 
  public:
-  ControlsDialog(){};
-  ~ControlsDialog();
+  ControlsDialog()
+  {
+      // Initialize all members that need initialization
+      m_hide = false;
+      m_hide_temporarily = true;
 
-  void Init();
+      m_from_control = 0;
+
+      m_panel_position = wxDefaultPosition;
+      m_manually_positioned = false;
+
+  };
+  ~ControlsDialog();
 
   bool Create(wxWindow *parent, radar_pi *pi, RadarInfo *ri, wxWindowID id = wxID_ANY, const wxString &caption = _("Radar"),
               const wxPoint &pos = OFFSCREEN_CONTROL);
