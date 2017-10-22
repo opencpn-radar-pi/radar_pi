@@ -40,10 +40,6 @@ class SelectDialog : public wxDialog {
  public:
   SelectDialog(wxWindow* parent, radar_pi* pi);
 
- private:
-  void OnClose(wxCloseEvent& event);
-  void OnSelect(wxCommandEvent& event);
-
   radar_pi* m_pi;
   wxCheckBox* m_selected[RT_MAX];
 };

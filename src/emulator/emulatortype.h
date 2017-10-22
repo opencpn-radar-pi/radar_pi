@@ -7,4 +7,4 @@ PLUGIN_END_NAMESPACE
 
 #endif
 
-DEFINE_RADAR(RT_EMULATOR, "Emulator", EmulatorControlsDialog, EmulatorReceive(pi, ri), EmulatorControl)
+DEFINE_RADAR(RT_EMULATOR, wxT("Emulator"), EmulatorControlsDialog, EmulatorReceive(pi, ri), EmulatorControl)

@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
-#include "radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
 #include "SelectDialog.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -231,8 +231,8 @@ int radar_pi::Init(void) {
 
   // Create objects before config, so config can set data in it
   // This does not start any threads or generate any UI.
-  for (int i = 0; i < RADARS; i++) {
-    m_radar[i] = new RadarInfo(this, i);
+  for (size_t r = 0; r < RADARS; r++) {
+    m_radar[r] = new RadarInfo(this, r);
   }
 
   //    And load the configuration items
@@ -256,9 +256,24 @@ int radar_pi::Init(void) {
     return 0;  // give up
   }
 
-  // After load config
-  m_radar[0]->Init(m_settings.enable_dual_radar ? _("Radar A") : _("Radar"), m_settings.verbose);
-  m_radar[1]->Init(_("Radar B"), m_settings.verbose);
+  // Create objects before config, so config can set data in it
+  // This does not start any threads or generate any UI.
+  bool any = false;
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (m_radar[r]->m_radar_type != RT_MAX) {
+      any = true;
+    }
+  }
+  if (!any && !ShowSelectDialog()) {
+    wxLogError(wxT("radar_pi: no radars selected"));
+    return 0;
+  }
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    m_radar[r]->Init(RadarTypeName[m_radar[r]->m_radar_type], m_settings.verbose);
+  }
+  for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
+    delete m_radar[r];
+  }
 
   //    This PlugIn needs a toolbar icon
 
@@ -302,19 +317,16 @@ int radar_pi::Init(void) {
   m_context_menu_arpa = false;
   SetCanvasContextMenuItemViz(m_context_menu_show_id, false);
 
-  m_initialized = true;
   LOG_VERBOSE(wxT("radar_pi: Initialized plugin transmit=%d/%d overlay=%d"), m_settings.show_radar[0], m_settings.show_radar[1],
               m_settings.chart_overlay);
 
-  if (true && ShowSelectDialog()) {
-    m_notify_time_ms = 0;
-    m_timer = new wxTimer(this, TIMER_ID);
-    SetRadarWindowViz();
-    TimedControlUpdate();
-    m_radar[0]->StartReceive();
-    if (m_settings.enable_dual_radar) {
-      m_radar[1]->StartReceive();
-    }
+  m_notify_time_ms = 0;
+  m_timer = new wxTimer(this, TIMER_ID);
+  m_initialized = true;
+  SetRadarWindowViz();
+  TimedControlUpdate();
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    m_radar[r]->StartReceive();
   }
   return PLUGIN_OPTIONS;
 }
@@ -343,7 +355,7 @@ bool radar_pi::DeInit(void) {
   // Stop processing in all radars.
   // This waits for the receive threads to stop and removes the dialog, so that its settings
   // can be saved.
-  for (int r = 0; r < RADARS; r++) {
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->Shutdown();
   }
 
@@ -355,7 +367,7 @@ bool radar_pi::DeInit(void) {
   SaveConfig();
 
   // Delete the RadarInfo objects. This will call their destructor and delete all data.
-  for (int r = 0; r < RADARS; r++) {
+  for (int r = 0; r < M_SETTINGS.radar_count; r++) {
     delete m_radar[r];
     m_radar[r] = 0;
   }
@@ -387,19 +399,31 @@ void radar_pi::SetDefaults(void) {
 }
 
 bool radar_pi::ShowSelectDialog() {
+  bool ret = false;
+
   LOG_DIALOG(wxT("radar_pi: ShowSelectDialog"));
 
   SelectDialog dlg(m_parent_window, this);
   if (dlg.ShowModal() == wxID_OK) {
-    SaveConfig();
-    return true;
-  }
-  for (int i = 0; i < RADARS; i++) {
-    if (m_radar[i]->m_radar_type != RT_MAX) {
-      return true;
+    size_t r = 0;
+
+    m_settings.radar_count = 0;
+
+    for (size_t i = 0; i < RT_MAX; i++) {
+      if (dlg.m_selected[i]->GetValue()) {
+        m_radar[r]->m_radar_type = (RadarType)i;
+        m_settings.show_radar[r] = true;
+        m_settings.show_radar_control[r] = true;
+        r++;
+        m_settings.radar_count = r;
+
+        ret = true;
+      }
     }
+
+    SaveConfig();
   }
-  return false;
+  return ret;
 }
 
 void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
@@ -409,14 +433,7 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
   if (dlg.ShowModal() == wxID_OK) {
     m_settings = dlg.GetSettings();
     SaveConfig();
-    if (m_settings.enable_dual_radar) {
-      m_radar[0]->SetName(_("Radar A"));
-      m_radar[1]->StartReceive();
-    } else {
-      m_radar[1]->ShowRadarWindow(false);
-      ShowRadarControl(1, false);
-    }
-    for (size_t r = 0; r < RADARS; r++) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       m_radar[r]->ComputeColourMap();
       m_radar[r]->UpdateControlState(true);
     }
@@ -438,7 +455,7 @@ void radar_pi::NotifyRadarWindowViz() { m_notify_radar_window_viz = true; }
 void radar_pi::NotifyControlDialog() { m_notify_control_dialog = true; }
 
 void radar_pi::SetRadarWindowViz(bool reparent) {
-  for (int r = 0; r < RADARS; r++) {
+  for (size_t r = 0; r < m_settings.radar_count; r++) {
     bool showThisRadar = m_settings.show && m_settings.show_radar[r] && (r == 0 || m_settings.enable_dual_radar);
     bool showThisControl = m_settings.show && m_settings.show_radar_control[r] && (r == 0 || m_settings.enable_dual_radar);
     m_radar[r]->ShowRadarWindow(showThisRadar);
@@ -455,7 +472,7 @@ void radar_pi::SetRadarWindowViz(bool reparent) {
 void radar_pi::UpdateContextMenu() {
   int arpa_targets = 0;
 
-  for (int r = 0; r < RADARS; r++) {
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     arpa_targets += m_radar[r]->m_arpa->GetTargetCount();
   }
   bool show = m_settings.show;
@@ -466,7 +483,7 @@ void radar_pi::UpdateContextMenu() {
     control = m_settings.show_radar_control[m_settings.chart_overlay];
   } else {
     control = true;
-    for (int r = 0; r < RADARS; r++) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       if (!m_settings.show_radar_control[r]) {
         control = false;
       }
@@ -579,7 +596,7 @@ void radar_pi::OnContextMenuItemCallback(int id) {
       done = true;
     } else {
       LOG_DIALOG(wxT("radar_pi: OnToolbarToolCallback: show controls of visible radars"));
-      for (int r = 0; r < RADARS; r++) {
+      for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
         if (m_settings.show_radar[r]) {
           ShowRadarControl(r, true);
           done = true;
@@ -619,9 +636,9 @@ void radar_pi::OnContextMenuItemCallback(int id) {
       }
     }
   } else if (id == m_context_menu_delete_all_radar_targets) {
-    for (int i = 0; i < RADARS; i++) {
-      if (m_radar[i]->m_arpa) {
-        m_radar[i]->m_arpa->DeleteAllTargets();
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      if (m_radar[r]->m_arpa) {
+        m_radar[r]->m_arpa->DeleteAllTargets();
       }
     }
   } else {
@@ -694,8 +711,8 @@ void radar_pi::CheckGuardZoneBogeys(void) {
   time_t now = time(0);
   wxString text;
 
-  for (size_t r = 0; r < RADARS; r++) {
-    if (m_settings.enable_dual_radar) {
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (M_SETTINGS.radar_count > 1) {
       text << m_radar[r]->m_name;
       text << wxT(":\n");
     }
@@ -767,7 +784,7 @@ void radar_pi::CheckGuardZoneBogeys(void) {
 }
 
 void radar_pi::RequestStateAllRadars(RadarState state) {
-  for (size_t r = 0; r < RADARS; r++) {
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->RequestRadarState(state);
   }
 }
@@ -901,7 +918,7 @@ void radar_pi::ScheduleWindowRefresh() {
 
   TimedControlUpdate();  // Update the controls. Method is self-limiting if called too often.
 
-  for (int r = 0; r < RADARS; r++) {
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     drawTime += m_radar[r]->GetDrawTime();
     m_radar[r]->RefreshDisplay();
   }
@@ -958,7 +975,7 @@ void radar_pi::TimedControlUpdate() {
 
   // Check the age of "radar_seen", if too old radar_seen = false
   bool any_data_seen = false;
-  for (size_t r = 0; r < RADARS; r++) {
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     int state = m_radar[r]->m_state.GetValue();  // Safe, protected by lock
     if (state == RADAR_TRANSMIT) {
       any_data_seen = true;
@@ -982,7 +999,7 @@ void radar_pi::TimedControlUpdate() {
 
   if (m_pMessageBox->IsShown() || (m_settings.verbose != 0)) {
     wxString t;
-    for (size_t r = 0; r < RADARS; r++) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       if (m_radar[r]->m_state.GetValue() != RADAR_OFF) {
         wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
 
@@ -1000,7 +1017,7 @@ void radar_pi::TimedControlUpdate() {
   }
 
   // Always reset the counters, so they don't show huge numbers after IsShown changes
-  for (int r = 0; r < RADARS; r++) {
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
 
     m_radar[r]->m_statistics.broken_packets = 0;
@@ -1055,7 +1072,7 @@ void radar_pi::TimedControlUpdate() {
   m_pMessageBox->SetMagHeadingInfo(info);
   m_pMessageBox->UpdateMessage(false);
 
-  for (int r = 0; r < RADARS; r++) {
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->UpdateControlState(updateAllControls);
   }
 
@@ -1065,7 +1082,7 @@ void radar_pi::TimedControlUpdate() {
 void radar_pi::UpdateState(void) {
   RadarState state = RADAR_OFF;
 
-  for (int r = 0; r < RADARS; r++) {
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     state = wxMax(state, (RadarState)m_radar[r]->m_state.GetValue());
   }
   if (state == RADAR_OFF) {
@@ -1136,9 +1153,10 @@ bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     m_vp_rotation = vp->rotation;
   }
 
-  if (m_settings.show                                                             // Radar shown
-      && m_settings.chart_overlay >= 0                                            // Overlay desired
-      && m_radar[m_settings.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar transmitting
+  if (M_SETTINGS.show                                                             // Radar shown
+      && M_SETTINGS.chart_overlay >= 0                                            // Overlay desired
+      && M_SETTINGS.chart_overlay < M_SETTINGS.radar_count                        // and still valid
+      && m_radar[M_SETTINGS.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar transmitting
       && GetRadarPosition(&radar_lat, &radar_lon)) {                              // Boat position known
 
     // Always compute m_auto_range_meters, possibly needed by SendState() called
@@ -1207,7 +1225,10 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 1);
     m_settings.idle_run_time = wxMax(m_settings.idle_run_time, 2);
 
-    for (int r = 0; r < RADARS; r++) {
+    pConf->Read(wxT("RadarCount"), &v, 0);
+    M_SETTINGS.radar_count = v;
+    
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       pConf->Read(wxString::Format(wxT("Radar%dType"), r), &s, "unknown");
       m_radar[r]->m_radar_type = RT_MAX;  // = not used
       for (int i = 0; i < RT_MAX; i++) {
@@ -1221,7 +1242,7 @@ bool radar_pi::LoadConfig(void) {
       radar_inet_aton(s.c_str(), &m_settings.mcast_address[r].addr);
 
       pConf->Read(wxString::Format(wxT("Radar%dRange"), r), &v, 2000);
-      m_radar[r]->m_range.Update(v);
+      m_radar[r]->m_range_meters = v;
       pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
       if (v == ORIENTATION_HEAD_UP) {
         v = ORIENTATION_STABILIZED_UP;
@@ -1369,7 +1390,7 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ColourAISText"), m_settings.ais_text_colour.GetAsString());
     pConf->Write(wxT("ColourPPIBackground"), m_settings.ppi_background_colour.GetAsString());
 
-    for (int r = 0; r < RADARS; r++) {
+    for (size_t r = 0; r < m_settings.radar_count; r++) {
       if (m_radar[r]->m_radar_type != RT_MAX) {
         pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);
 
@@ -1556,10 +1577,10 @@ void radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
     // Check if any Radar and ARPA zone is active
     double ArpaMaxRange = 0.0;
     bool ArpaGuardOn = false;
-    for (size_t r = 0; r < RADARS; r++) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       if (m_radar[r]->m_state.GetValue() != RADAR_OFF) {  // One radar is on. Check for guardzones
-        for (int i = 0; i < RADARS; i++) {
-          for (int z = 0; z < GUARD_ZONES; z++) {
+        for (size_t i = 0; i < M_SETTINGS.radar_count; i++) {
+          for (size_t z = 0; z < GUARD_ZONES; z++) {
             if (m_radar[i]->m_guard_zone[z]->m_arpa_on) {
               ArpaGuardOn = true;
               int t = m_radar[i]->m_guard_zone[z]->m_outer_range;
@@ -1817,7 +1838,7 @@ void radar_pi::SetCursorLatLon(double lat, double lon) {
 
 bool radar_pi::MouseEventHook(wxMouseEvent &event) {
   if (event.LeftDown()) {
-    for (int r = 0; r < RADARS; r++) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       m_radar[r]->SetMouseLatLon(m_cursor_lat, m_cursor_lon);
     }
   }

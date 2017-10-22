@@ -70,9 +70,7 @@ class radar_pi;
 class GuardZoneBogey;
 class RadarArpa;
 
-#define RADARS \
-  (2)                      // Number of radars supported by this PI. 2 since 4G supports 2. More work
-                           // needed if you intend to add multiple radomes to network!
+#define RADARS (4)         // Arbitrary limit, anyone running this many is already crazy!
 #define GUARD_ZONES (2)    // Could be increased if wanted
 #define BEARING_LINES (2)  // And these as well
 
@@ -80,9 +78,6 @@ static const int SECONDS_PER_TIMED_IDLE_SETTING = 5 * 60;  // 5 minutes incremen
 static const int SECONDS_PER_TIMED_RUN_SETTING = 10;
 
 #define OPENGL_ROTATION (-90.0)  // Difference between 'up' and OpenGL 'up'...
-
-#define ALL_RADARS(var, value) (((var)[0] == (value)) && ((var)[1] == (value)))
-#define ANY_RADAR(var, value) (((var)[0] == (value)) || ((var)[1] == (value)))
 
 typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a bearing (? = North,
                            // +ve = clockwise)
@@ -176,7 +171,7 @@ typedef enum RadarType {
   RT_MAX
 } RadarType;
 
-extern const char *RadarTypeName[RT_MAX];
+extern const wchar_t *RadarTypeName[RT_MAX];
 
 typedef enum ControlType {
 #define CONTROL_TYPE(x, y) x,
@@ -262,6 +257,7 @@ enum RangeUnits { RANGE_NAUTICAL, RANGE_METRIC };
  * some of it is 'secret' and can only be set by manipulating the ini file directly.
  */
 struct PersistentSettings {
+  size_t radar_count;                    // How many radars we have
   int overlay_transparency;              // How transparent is the radar picture over the chart
   int range_index;                       // index into range array, see RadarInfo.cpp
   int verbose;                           // Loglevel 0..4.

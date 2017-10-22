@@ -1317,7 +1317,7 @@ void ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
         show = false;
       }
     }
-    for (int r = 0; r < RADARS; r++) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       m_pi->m_settings.show_radar[r] = show;
       if (!show && m_pi->m_settings.chart_overlay != r) {
         m_pi->m_settings.show_radar_control[r] = false;
@@ -1339,12 +1339,23 @@ void ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
 
   int this_radar = m_ri->m_radar;
-  int other_radar = 1 - this_radar;
+  int next_radar = (this_radar + 1) % M_SETTINGS.radar_count;
+
+  int other_radar = -1;
+  if (M_SETTINGS.radar_count > 1 && !M_SETTINGS.show_radar[this_radar]) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      if (next_radar != this_radar && M_SETTINGS.show_radar[r] == false) {
+        other_radar = next_radar;
+        break;
+      }
+      next_radar = (next_radar + 1) % M_SETTINGS.radar_count;
+    }
+  }
 
   if (m_pi->m_settings.chart_overlay != this_radar) {
     m_pi->m_settings.chart_overlay = this_radar;
-  } else if (m_pi->m_settings.enable_dual_radar && ALL_RADARS(m_pi->m_settings.show_radar, 0)) {
-    // If no radar window shown, toggle overlay to different radar
+  } else if (other_radar > -1) {
+    // If no radar window shown, toggle overlay to different radar with hidden window
     m_pi->m_settings.chart_overlay = other_radar;
 
     wxPoint pos = m_pi->m_radar[this_radar]->m_control_dialog->GetPosition();
@@ -1430,7 +1441,7 @@ void ControlsDialog::OnDeleteTargetButtonClick(wxCommandEvent& event) {
 
 void ControlsDialog::OnDeleteAllTargetsButtonClick(wxCommandEvent& event) {
   LOG_DIALOG(wxT("%s OnDeleteAllTargetsButtonClick"), m_log_name.c_str());
-  for (int i = 0; i < RADARS; i++) {
+  for (size_t i = 0; i < M_SETTINGS.radar_count; i++) {
     if (m_pi->m_radar[i]->m_arpa) {
       m_pi->m_radar[i]->m_arpa->DeleteAllTargets();
     }
@@ -1593,10 +1604,14 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_ri->m_overlay.GetButton(&overlay) || ((m_pi->m_settings.chart_overlay == m_ri->m_radar) != (overlay != 0)) || refreshAll) {
     o = _("Overlay");
     o << wxT("\n");
-    if (m_pi->m_settings.enable_dual_radar && ALL_RADARS(m_pi->m_settings.show_radar, 0)) {
-      o << ((overlay > 0) ? m_ri->m_name : _("Off"));
+    if (overlay) {
+      if (M_SETTINGS.show_radar[m_ri->m_radar]) {
+        o << _("On");
+      } else {
+        o << m_ri->m_name;
+      }
     } else {
-      o << ((overlay > 0) ? _("On") : _("Off"));
+      o << _("Off");
     }
     m_overlay_button->SetLabel(o);
   }

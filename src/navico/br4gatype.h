@@ -13,5 +13,5 @@ PLUGIN_END_NAMESPACE
 
 #endif
 
-DEFINE_RADAR(RT_4GA, "Navico 4G A", NavicoControlsDialog(RT_4GA), NavicoReceive(pi, ri, report4G_A, data4G_A),
+DEFINE_RADAR(RT_4GA, wxT("Navico 4G A"), NavicoControlsDialog(RT_4GA), NavicoReceive(pi, ri, report4G_A, data4G_A),
              NavicoControl(send4G_A))

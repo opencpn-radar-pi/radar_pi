@@ -34,7 +34,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-const char* RadarTypeName[RT_MAX] = {
+const wchar_t * RadarTypeName[RT_MAX] = {
 #define DEFINE_RADAR(t, n, a, b, c) n,
 #include "RadarType.h"
 };

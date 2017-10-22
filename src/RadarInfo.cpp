@@ -29,11 +29,11 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
+#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -219,7 +219,6 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_range.m_settings = &m_pi->m_settings;
   m_refresh_millis = 50;
 
-  m_arpa = new RadarArpa(m_pi, this);
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     m_guard_zone[z] = new GuardZone(m_pi, this, z);
   }
@@ -275,6 +274,8 @@ void RadarInfo::Shutdown() {
 }
 
 RadarInfo::~RadarInfo() {
+  Shutdown();
+
   if (m_draw_panel.draw) {
     delete m_draw_panel.draw;
     m_draw_panel.draw = 0;
@@ -292,8 +293,10 @@ RadarInfo::~RadarInfo() {
     m_arpa = 0;
   }
   for (size_t z = 0; z < GUARD_ZONES; z++) {
-    delete m_guard_zone[z];
-    m_guard_zone[z] = 0;
+    if (m_guard_zone[z]) {
+      delete m_guard_zone[z];
+      m_guard_zone[z] = 0;
+    }
   }
 }
 
@@ -317,7 +320,11 @@ bool RadarInfo::Init(wxString name, int verbose) {
     return false;
   }
 
+  m_arpa = new RadarArpa(m_pi, this);
+
   ComputeTargetTrails();
+
+  m_range.Update(m_range_meters);
 
   return true;
 }

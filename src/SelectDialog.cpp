@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#include "SelectDialog.h"
 #include "RadarFactory.h"
+#include "SelectDialog.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -58,8 +58,13 @@ SelectDialog::SelectDialog(wxWindow *parent, radar_pi *pi)
   for (int i = 0; i < RT_MAX; i++) {
     m_selected[i] = new wxCheckBox(this, wxID_ANY, names[i], wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
     selectSizer->Add(m_selected[i], 0, wxALL, border_size);
+
     m_selected[i]->SetValue(false);
-    m_selected[i]->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(SelectDialog::OnSelect), NULL, this);
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      if (m_pi->m_radar[r]->m_radar_type == i) {
+        m_selected[i]->SetValue(true);
+      }
+    }
   }
 
   // Accept/Reject button
@@ -73,7 +78,5 @@ SelectDialog::SelectDialog(wxWindow *parent, radar_pi *pi)
   Fit();
   SetLayoutAdaptationMode(wxDIALOG_ADAPTATION_MODE_ENABLED);
 }
-
-void SelectDialog::OnSelect(wxCommandEvent &event) {}
 
 PLUGIN_END_NAMESPACE

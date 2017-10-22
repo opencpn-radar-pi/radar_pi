@@ -13,5 +13,5 @@ PLUGIN_END_NAMESPACE
 
 #endif
 
-DEFINE_RADAR(RT_HaloA, "Navico Halo A", NavicoControlsDialog(RT_HaloA), NavicoReceive(pi, ri, reportHalo_A, dataHalo_A),
+DEFINE_RADAR(RT_HaloA, wxT("Navico Halo A"), NavicoControlsDialog(RT_HaloA), NavicoReceive(pi, ri, reportHalo_A, dataHalo_A),
              NavicoControl(sendHalo_A))
