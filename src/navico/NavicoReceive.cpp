@@ -299,17 +299,16 @@ SOCKET NavicoReceive::GetNewReportSocket() {
 
   socket = startUDPMulticastReceiveSocket(m_interface_addr, m_report_addr, error);
   if (socket != INVALID_SOCKET) {
-    wxCriticalSectionLocker lock(m_lock);
-    wxString addr;
+    wxString addr = FormatNetworkAddress(m_interface_addr);
+    wxString rep_addr = FormatNetworkAddressPort(m_report_addr);
 
-    UINT8 *a = (UINT8 *)&m_interface_addr.addr;  // sin_addr is in network layout
-    addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
-    LOG_RECEIVE(wxT("radar_pi: %s scanning interface %s"), m_ri->m_name.c_str(), addr.c_str());
+    LOG_RECEIVE(wxT("radar_pi: %s scanning interface %s for data from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
 
-    m_status = wxString::Format(wxT("%s Scanning interface %s"), m_ri->m_name.c_str(), addr.c_str());
-
-    // m_pi->SetMcastIPAddress(m_ri->m_radar, m_interface_addr);
+    wxString s;
+    s << m_ri->m_name << wxT(": ") << _("Scanning interface") << addr;
+    SetStatus(s);
   } else {
+    SetStatus(error);
     wxLogError(wxT("radar_pi: Unable to listen to socket: %s"), error.c_str());
   }
   return socket;
@@ -325,11 +324,12 @@ SOCKET NavicoReceive::GetNewDataSocket() {
 
   socket = startUDPMulticastReceiveSocket(m_interface_addr, m_data_addr, error);
   if (socket != INVALID_SOCKET) {
-    wxString addr;
-    UINT8 *a = (UINT8 *)&m_interface_addr.addr;  // sin_addr is in network layout
-    addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
-    LOG_RECEIVE(wxT("radar_pi: %s listening for data on %s"), m_ri->m_name.c_str(), addr.c_str());
+    wxString addr = FormatNetworkAddress(m_interface_addr);
+    wxString rep_addr = FormatNetworkAddressPort(m_report_addr);
+
+    LOG_RECEIVE(wxT("radar_pi: %s listening for data on %s from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
   } else {
+    SetStatus(error);
     wxLogError(wxT("radar_pi: Unable to listen to socket: %s"), error.c_str());
   }
   return socket;
@@ -350,7 +350,6 @@ void *NavicoReceive::Entry(void) {
     sockaddr_in ipv4;
   } rx_addr;
   socklen_t rx_len;
-  UINT8 *a = (UINT8 *)&rx_addr.ipv4.sin_addr;  // sin_addr is in network layout
 
   UINT8 data[sizeof(radar_frame_pkt)];
   m_interface_array = 0;
@@ -367,7 +366,7 @@ void *NavicoReceive::Entry(void) {
     reportSocket = GetNewReportSocket();
   }
 
-  while (true) {
+  while (m_receive_socket != INVALID_SOCKET) {
     if (reportSocket == INVALID_SOCKET) {
       reportSocket = PickNextEthernetCard();
       if (reportSocket != INVALID_SOCKET) {
@@ -432,7 +431,7 @@ void *NavicoReceive::Entry(void) {
         } else {
           closesocket(dataSocket);
           dataSocket = INVALID_SOCKET;
-          wxLogError(wxT("radar_pi: %s at %u.%u.%u.%u illegal frame"), m_ri->m_name.c_str(), a[0], a[1], a[2], a[3]);
+          wxLogError(wxT("radar_pi: %s illegal frame"), m_ri->m_name.c_str());
         }
       }
 
@@ -440,20 +439,20 @@ void *NavicoReceive::Entry(void) {
         rx_len = sizeof(rx_addr);
         r = recvfrom(reportSocket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
         if (r > 0) {
+          NetworkAddress radar_address;
+          radar_address.addr = rx_addr.ipv4.sin_addr;
+          radar_address.port = rx_addr.ipv4.sin_port;
+
           if (ProcessReport(data, r)) {
             if (!radar_addr) {
               wxCriticalSectionLocker lock(m_lock);
-              NetworkAddress radarAddress;
-              radarAddress.addr = rx_addr.ipv4.sin_addr;
-              radarAddress.port = rx_addr.ipv4.sin_port;
-              m_ri->DetectedRadar(m_interface_addr, radarAddress);  // enables transmit data
+              m_ri->DetectedRadar(m_interface_addr, radar_address);  // enables transmit data
 
               // the dataSocket is opened in the next loop
 
               radarFoundAddr = rx_addr.ipv4;
               radar_addr = &radarFoundAddr;
-
-              m_addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
+              m_addr = FormatNetworkAddress(radar_address);
 
               if (m_ri->m_state.GetValue() == RADAR_OFF) {
                 LOG_INFO(wxT("radar_pi: %s detected at %s"), m_ri->m_name.c_str(), m_addr.c_str());
@@ -463,7 +462,7 @@ void *NavicoReceive::Entry(void) {
             no_data_timeout = SECONDS_SELECT(-15);
           }
         } else {
-          wxLogError(wxT("radar_pi: %s at %u.%u.%u.%u illegal report"), m_ri->m_name.c_str(), a[0], a[1], a[2], a[3]);
+          wxLogError(wxT("radar_pi: %s illegal report"), m_ri->m_name.c_str());
           closesocket(reportSocket);
           reportSocket = INVALID_SOCKET;
         }
@@ -657,7 +656,6 @@ bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
         RadarReport_01C4_18 *s = (RadarReport_01C4_18 *)report;
         // Radar status in byte 2
         if (s->radar_status != m_radar_status) {
-          wxCriticalSectionLocker lock(m_lock);
           m_radar_status = s->radar_status;
           wxString stat;
 
@@ -683,7 +681,7 @@ bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
               stat = _("Unknown status");
               break;
           }
-          m_status = wxString::Format(wxT("%s IP %s %s"), m_ri->m_name.c_str(), stat.c_str());
+          SetStatus(wxString::Format(wxT("%s IP %s %s"), m_ri->m_name.c_str(), stat.c_str()));
         }
         break;
       }

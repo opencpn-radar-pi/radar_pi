@@ -34,6 +34,25 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+wxString FormatNetworkAddress(NetworkAddress& addr)
+{
+  UINT8 *a = (UINT8 *)&addr.addr;  // sin_addr is in network layout
+  wxString address;
+  address.Printf(wxT(" %u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
+
+  return address;
+}
+
+wxString FormatNetworkAddressPort(NetworkAddress& addr)
+{
+  UINT8 *a = (UINT8 *)&addr.addr;  // sin_addr is in network layout
+  wxString address;
+  address.Printf(wxT(" %u.%u.%u.%u port %u"), a[0], a[1], a[2], a[3], htons(addr.port));
+
+  return address;
+}
+
+
 int radar_inet_aton(const char *cp, struct in_addr *addr) {
   u_long val;
   u_int parts[4];
@@ -155,21 +174,20 @@ bool socketReady(SOCKET sockfd, int timeout) {
   return r > 0;
 }
 
-SOCKET startUDPMulticastReceiveSocket(NetworkAddress &sender, NetworkAddress &mcast_address, wxString &error_message) {
+SOCKET startUDPMulticastReceiveSocket(NetworkAddress &interface_address, NetworkAddress &mcast_address, wxString &error_message) {
   SOCKET rx_socket;
   struct sockaddr_in listenAddress;
   int one = 1;
 
   error_message = wxT("");
 
-  UINT8 *a = (UINT8 *)&sender.addr;  // sin_addr is in network layout
-  wxString address;
-  address.Printf(wxT(" %u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
-
   CLEAR_STRUCT(listenAddress);
+#ifdef __WXMAC__
+  listenAddress.sin_len = sizeof(listenAddress);
+#endif
   listenAddress.sin_family = AF_INET;
-  listenAddress.sin_addr.s_addr = htonl(INADDR_ANY);  // I know, htonl is unnecessary here
-  listenAddress.sin_port = sender.port;
+  listenAddress.sin_addr.s_addr = INADDR_ANY;
+  listenAddress.sin_port = interface_address.port;
   rx_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
   if (rx_socket == INVALID_SOCKET) {
     error_message << _("Cannot create UDP socket");
@@ -181,13 +199,13 @@ SOCKET startUDPMulticastReceiveSocket(NetworkAddress &sender, NetworkAddress &mc
   }
 
   if (bind(rx_socket, (struct sockaddr *)&listenAddress, sizeof(listenAddress))) {
-    error_message << _("Cannot bind UDP socket to port ") << ntohs(sender.port);
+    error_message << _("Cannot bind UDP socket to port ") << ntohs(interface_address.port);
     goto fail;
   }
 
   // Subscribe rx_socket to a multicast group
   struct ip_mreq mreq;
-  mreq.imr_interface = sender.addr;
+  mreq.imr_interface = interface_address.addr;
   mreq.imr_multiaddr = mcast_address.addr;
 
   if (setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *)&mreq, sizeof(mreq))) {
@@ -199,7 +217,7 @@ SOCKET startUDPMulticastReceiveSocket(NetworkAddress &sender, NetworkAddress &mc
   return rx_socket;
 
 fail:
-  error_message << wxT(" ") << address;
+  error_message = FormatNetworkAddress(interface_address) + wxT(": ") + error_message;
   if (rx_socket != INVALID_SOCKET) {
     closesocket(rx_socket);
   }
@@ -211,9 +229,12 @@ SOCKET GetLocalhostServerTCPSocket() {
   struct sockaddr_in adr;
 
   CLEAR_STRUCT(adr);
+#ifdef __WXMAC__
+  adr.sin_len = sizeof(adr);
+#endif
   adr.sin_family = AF_INET;
-  adr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);  // I know, htonl is unnecessary here
-  adr.sin_port = htons(0);
+  adr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  adr.sin_port = 0;
 
   if (server == INVALID_SOCKET) {
     wxLogError(wxT("radar_pi: cannot get socket"));

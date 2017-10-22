@@ -49,6 +49,10 @@ struct NetworkAddress {
   uint16_t port;
 };
 
+extern wxString FormatNetworkAddress(NetworkAddress& addr);
+extern wxString FormatNetworkAddressPort(NetworkAddress& addr);
+
+
 extern bool socketReady(SOCKET sockfd, int timeout);
 
 extern int radar_inet_aton(const char *cp, struct in_addr *addr);
