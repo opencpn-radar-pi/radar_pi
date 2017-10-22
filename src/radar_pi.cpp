@@ -450,6 +450,8 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
   OptionsDialog dlg(parent, m_settings, m_radar[0]->m_radar_type);
   if (dlg.ShowModal() == wxID_OK) {
     m_settings = dlg.GetSettings();
+    if (IsRadarSelectionComplete(false)) {
+
     SaveConfig();
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       m_radar[r]->ComputeColourMap();
@@ -457,6 +459,7 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
     }
     if (!m_guard_bogey_confirmed && m_alarm_sound_timeout && m_settings.guard_zone_timeout) {
       m_alarm_sound_timeout = time(0) + m_settings.guard_zone_timeout;
+    }
     }
   }
   }

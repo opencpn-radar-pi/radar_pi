@@ -68,7 +68,8 @@ class OptionsDialog : public wxDialog {
   void OnMenuAutoHideClick(wxCommandEvent& event);
   void OnEnableCOGHeadingClick(wxCommandEvent& event);
   void OnReverseZoomClick(wxCommandEvent& event);
-
+  void OnResetButtonClick(wxCommandEvent& event);
+  
   PersistentSettings m_settings;
 
   // DisplayOptions

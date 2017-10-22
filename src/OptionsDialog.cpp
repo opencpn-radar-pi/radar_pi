@@ -49,7 +49,7 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
   wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
   SetSizer(topSizer);
 
-  wxFlexGridSizer *DisplayOptionsBox = new wxFlexGridSizer(4, 5, 5);
+  wxFlexGridSizer *DisplayOptionsBox = new wxFlexGridSizer(4, 2, 5);
   topSizer->Add(DisplayOptionsBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL | wxEXPAND, 2);
 
   //  Range Units options
@@ -199,9 +199,13 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
   DisplayOptionsBox->Add(PPIColourSizer, 0, wxALL | wxEXPAND, border_size);
 
   //  Options
+
+  wxFlexGridSizer *OptionsGrid = new wxFlexGridSizer(2, 1, 5);
+  topSizer->Add(OptionsGrid, 0, wxALIGN_CENTER_HORIZONTAL | wxALL | wxEXPAND, 2);
+
   wxStaticBox *itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
   wxStaticBoxSizer *itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
-  topSizer->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
+  OptionsGrid->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
 
   m_ShowExtremeRange = new wxCheckBox(this, wxID_ANY, _("Show ring at extreme range"));
   itemStaticBoxSizerOptions->Add(m_ShowExtremeRange, 0, wxALL, border_size);
@@ -244,6 +248,15 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
   itemStaticBoxSizerOptions->Add(m_ReverseZoom, 0, wxALL, border_size);
   m_ReverseZoom->SetValue(m_settings.reverse_zoom ? true : false);
   m_ReverseZoom->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnReverseZoomClick), NULL, this);
+
+  // Reset radars button
+  wxStaticBox *itemStaticBoxReset = new wxStaticBox(this, wxID_ANY, _("Reset"));
+  wxStaticBoxSizer *itemStaticBoxSizerReset = new wxStaticBoxSizer(itemStaticBoxReset, wxVERTICAL);
+  OptionsGrid->Add(itemStaticBoxSizerReset, 0, wxEXPAND | wxALL, border_size);
+
+      wxButton *resetButton = new wxButton(this, wxID_ANY, _("Reset Radar Types"), wxDefaultPosition, small_button_size, 0);
+      resetButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(OptionsDialog::OnResetButtonClick), NULL, this);
+      itemStaticBoxSizerReset->Add(resetButton, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, border_size);
 
   // Accept/Reject button
   wxStdDialogButtonSizer *DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
@@ -332,5 +345,9 @@ void OptionsDialog::OnMenuAutoHideClick(wxCommandEvent &event) { m_settings.menu
 void OptionsDialog::OnDrawingMethodClick(wxCommandEvent &event) { m_settings.drawing_method = m_DrawingMethod->GetSelection(); }
 
 void OptionsDialog::OnReverseZoomClick(wxCommandEvent &event) { m_settings.reverse_zoom = m_ReverseZoom->GetValue(); }
+
+void OptionsDialog::OnResetButtonClick(wxCommandEvent &event) {
+  m_settings.radar_count = 0;
+}
 
 PLUGIN_END_NAMESPACE
