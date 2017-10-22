@@ -1298,12 +1298,12 @@ void ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
 
   bool show = true;
 
-  if (m_pi->m_settings.enable_dual_radar) {
+  if (M_SETTINGS.radar_count > 1) {
     if (m_pi->m_settings.show_radar[m_ri->m_radar]) {
-      int show_other_radar = m_pi->m_settings.show_radar[1 - m_ri->m_radar];
-      if (show_other_radar) {
-        // Hide both windows
-        show = false;
+      for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+        if (r != m_ri->m_radar && M_SETTINGS.show_radar[r] == true) {
+          show = false;
+        }
       }
     }
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -1502,23 +1502,32 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   Layout();
   Fit();
 
-  if (m_pi->m_settings.enable_dual_radar) {
-    int show_other_radar = m_pi->m_settings.show_radar[1 - m_ri->m_radar];
+
+  if (M_SETTINGS.radar_count > 1) {
+    bool show_other_radar = false;
+    if (m_pi->m_settings.show_radar[m_ri->m_radar]) {
+      for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+        if (r != m_ri->m_radar && M_SETTINGS.show_radar[r] == true) {
+          show_other_radar = true;
+        }
+      }
+    }
+
     if (m_pi->m_settings.show_radar[m_ri->m_radar]) {
       if (show_other_radar) {
-        o = _("Hide both windows");
+        o = _("Hide all PPI windows");
       } else {
-        o = _("Show other window");
+        o = _("Show other PPI windows");
       }
     } else {
       if (show_other_radar) {
-        o = _("Show this window");  // can happen if this window hidden but control is for overlay
+        o = _("Show PPI window");  // can happen if this window hidden but control is for overlay
       } else {
-        o = _("Show both windows");
+        o = _("Show all PPI windows");
       }
     }
   } else {
-    o = (m_pi->m_settings.show_radar[m_ri->m_radar]) ? _("Hide window") : _("Show window");
+    o = (m_pi->m_settings.show_radar[m_ri->m_radar]) ? _("Hide PPI") : _("Show PPI");
   }
   m_window_button->SetLabel(o);
 

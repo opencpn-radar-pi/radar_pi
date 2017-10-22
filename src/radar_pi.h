@@ -285,7 +285,6 @@ struct PersistentSettings {
   bool transmit_radar[RADARS];           // whether radar should be transmitting (persistent)
   bool pass_heading_to_opencpn;          // Pass heading coming from radar as NMEA data to OpenCPN
   bool enable_cog_heading;               // Allow COG as heading. Should be taken out back and shot.
-  bool enable_dual_radar;                // Should the dual radar be enabled for 4G?
   bool ignore_radar_heading;             // For testing purposes
   bool reverse_zoom;                     // false = normal, true = reverse
   bool show_extreme_range;               // Show red ring at extreme range and center

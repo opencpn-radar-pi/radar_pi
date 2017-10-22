@@ -49,7 +49,7 @@ SelectDialog::SelectDialog(wxWindow *parent, radar_pi *pi)
 
   // Menu options
 
-  wxStaticBox *selectBox = new wxStaticBox(this, wxID_ANY, _("Select (max) two radar scanner types"));
+      wxStaticBox *selectBox = new wxStaticBox(this, wxID_ANY, wxString::Format(_("Select (max) %d radar scanner types"), RADARS));
   wxStaticBoxSizer *selectSizer = new wxStaticBoxSizer(selectBox, wxVERTICAL);
 
   wxArrayString names;

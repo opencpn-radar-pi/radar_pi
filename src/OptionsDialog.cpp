@@ -221,14 +221,6 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
                              this);
   m_TrailsOnOverlay->SetValue(m_settings.trails_on_overlay);
 
-  m_EnableDualRadar = new wxCheckBox(this, wxID_ANY, _("Enable dual radar, 4G only"), wxDefaultPosition, wxDefaultSize,
-                                     wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  itemStaticBoxSizerOptions->Add(m_EnableDualRadar, 0, wxALL, border_size);
-  m_EnableDualRadar->SetValue(m_settings.enable_dual_radar);
-  m_EnableDualRadar->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnEnableDualRadarClick), NULL,
-                             this);
-  m_EnableDualRadar->Enable();
-
   m_IgnoreHeading = new wxCheckBox(this, wxID_ANY, _("Ignore radar heading"), wxDefaultPosition, wxDefaultSize,
                                    wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   itemStaticBoxSizerOptions->Add(m_IgnoreHeading, 0, wxALL, border_size);
@@ -324,8 +316,6 @@ void OptionsDialog::OnGuardZoneTimeoutClick(wxCommandEvent &event) {
 }
 
 void OptionsDialog::OnEnableCOGHeadingClick(wxCommandEvent &event) { m_settings.enable_cog_heading = m_COGHeading->GetValue(); }
-
-void OptionsDialog::OnEnableDualRadarClick(wxCommandEvent &event) { m_settings.enable_dual_radar = m_EnableDualRadar->GetValue(); }
 
 void OptionsDialog::OnTestSoundClick(wxCommandEvent &event) {
   if (!m_settings.alert_audio_file.IsEmpty()) {

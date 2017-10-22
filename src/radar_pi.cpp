@@ -464,16 +464,13 @@ void radar_pi::NotifyControlDialog() { m_notify_control_dialog = true; }
 
 void radar_pi::SetRadarWindowViz(bool reparent) {
   for (size_t r = 0; r < m_settings.radar_count; r++) {
-    bool showThisRadar = m_settings.show && m_settings.show_radar[r] && (r == 0 || m_settings.enable_dual_radar);
-    bool showThisControl = m_settings.show && m_settings.show_radar_control[r] && (r == 0 || m_settings.enable_dual_radar);
+    bool showThisRadar = m_settings.show && m_settings.show_radar[r];
+    bool showThisControl = m_settings.show && m_settings.show_radar_control[r];
+    LOG_DIALOG(wxT("radar_pi: RadarWindow[%d] show=%d showcontrol=%d"), r, showThisRadar, showThisControl);
     m_radar[r]->ShowRadarWindow(showThisRadar);
     m_radar[r]->ShowControlDialog(showThisControl, reparent);
     m_radar[r]->UpdateTransmitState();
   }
-
-  LOG_DIALOG(wxT("radar_pi: RadarWindow show = %d window0=%d window1=%d"), m_settings.show, m_settings.show_radar[0],
-             m_settings.show_radar[1]);
-
   UpdateContextMenu();
 }
 
@@ -1308,7 +1305,6 @@ bool radar_pi::LoadConfig(void) {
     m_settings.ppi_background_colour = wxColour(s);
     pConf->Read(wxT("DeveloperMode"), &m_settings.developer_mode, false);
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
-    pConf->Read(wxT("EnableDualRadar"), &m_settings.enable_dual_radar, false);
     pConf->Read(wxT("GuardZoneDebugInc"), &m_settings.guard_zone_debug_inc, 0);
     pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, true);
     pConf->Read(wxT("GuardZoneTimeout"), &m_settings.guard_zone_timeout, 30);
@@ -1362,7 +1358,6 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("DeveloperMode"), m_settings.developer_mode);
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
     pConf->Write(wxT("EnableCOGHeading"), m_settings.enable_cog_heading);
-    pConf->Write(wxT("EnableDualRadar"), m_settings.enable_dual_radar);
     pConf->Write(wxT("GuardZoneDebugInc"), m_settings.guard_zone_debug_inc);
     pConf->Write(wxT("GuardZoneOnOverlay"), m_settings.guard_zone_on_overlay);
     pConf->Write(wxT("GuardZoneTimeout"), m_settings.guard_zone_timeout);

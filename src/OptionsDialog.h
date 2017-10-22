@@ -67,7 +67,6 @@ class OptionsDialog : public wxDialog {
   void OnDrawingMethodClick(wxCommandEvent& event);
   void OnMenuAutoHideClick(wxCommandEvent& event);
   void OnEnableCOGHeadingClick(wxCommandEvent& event);
-  void OnEnableDualRadarClick(wxCommandEvent& event);
   void OnReverseZoomClick(wxCommandEvent& event);
 
   PersistentSettings m_settings;
