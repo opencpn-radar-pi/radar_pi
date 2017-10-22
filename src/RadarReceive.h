@@ -54,6 +54,17 @@ class RadarReceive : public wxThread {
   virtual void *Entry(void) = 0;
 
   /*
+   * GetStatus
+   *
+   * Return a string that explains whether the radar has been seen,
+   * if interesting at which IP address or whatever, and whether it is functional.
+   *
+   * It can include newlines. It is presented to the end users, so it must be
+   * a translated string.
+   */
+  virtual wxString GetStatus() = 0;
+
+  /*
    * Shutdown
    *
    * Called when the thread should stop.

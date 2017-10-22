@@ -143,22 +143,19 @@ void MessageBox::CreateControls() {
   m_have_open_gl->SetFont(m_pi->m_font);
   m_have_open_gl->Disable();
 
-  m_ip_box = new wxStaticBox(this, wxID_ANY, _("ZeroConf via Ethernet"));
+  m_ip_box = new wxStaticBox(this, wxID_ANY, _("Radar present"));
   m_ip_box->SetFont(m_pi->m_font);
   wxStaticBoxSizer *ipSizer = new wxStaticBoxSizer(m_ip_box, wxVERTICAL);
   m_message_sizer->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
-  m_have_radar =
-      new wxCheckBox(this, ID_RADAR, _("Radar present"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  ipSizer->Add(m_have_radar, 0, wxALL, BORDER);
-  m_have_radar->SetFont(m_pi->m_font);
-  m_have_radar->Disable();
-
-  m_have_data =
-      new wxCheckBox(this, ID_DATA, _("Radar sending data"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  ipSizer->Add(m_have_data, 0, wxALL, BORDER);
-  m_have_data->SetFont(m_pi->m_font);
-  m_have_data->Disable();
+  wxString presence;
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    presence << m_pi->m_radar[r]->GetStatus() << wxT("\n");
+  }
+  m_presence = new wxStaticText(this, wxID_ANY, presence, wxDefaultPosition, wxDefaultSize, 0);
+  ipSizer->Add(m_presence, 0, wxALL, BORDER);
+  m_presence->SetFont(m_pi->m_font);
+ // m_presence->Disable();
 
   wxStaticBox *nmeaBox = new wxStaticBox(this, wxID_ANY, _("For radar overlay also required"));
   nmeaBox->SetFont(m_pi->m_font);
@@ -333,8 +330,6 @@ bool MessageBox::UpdateMessage(bool force) {
   m_have_true_heading->SetValue(haveTrueHeading);
   m_have_mag_heading->SetValue(haveMagHeading);
   m_have_variation->SetValue(haveVariation);
-  m_have_radar->SetValue(radarSeen);
-  m_have_data->SetValue(haveData);
 
   wxString label;
 
@@ -346,9 +341,12 @@ bool MessageBox::UpdateMessage(bool force) {
     m_radar_off->SetLabel(_("Radar type") + wxT(" ") + label + wxT("\n") + build_info);
   }
 
-  if (m_radar_addr_info.GetNewValue(&label)) {
-    m_have_radar->SetLabel(_("Radar IP") + wxT(" ") + label);
+  wxString presence;
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    presence << m_pi->m_radar[r]->GetStatus() << wxT("\n");
   }
+  m_presence->SetLabel(presence);
+
   if (m_mcast_addr_info.GetNewValue(&label)) {
     m_ip_box->SetLabel(label);
   }
@@ -439,13 +437,6 @@ void MessageBox::SetRadarType(RadarType radar_type) {
 
   s << m_radar_names[radar_type];
   m_radar_type_info.Update(s);
-}
-
-void MessageBox::SetMcastIPAddress(wxString &msg) {
-  wxString label;
-
-  label << _("Ethernet card") << wxT(" ") << msg;
-  m_mcast_addr_info.Update(label);
 }
 
 void MessageBox::SetTrueHeadingInfo(wxString &msg) {

@@ -44,11 +44,12 @@ static const UINT8 COMMAND_STAY_ON_B[2] = {0x03, 0xc2};
 static const UINT8 COMMAND_STAY_ON_C[2] = {0x04, 0xc2};
 static const UINT8 COMMAND_STAY_ON_D[2] = {0x05, 0xc2};
 
-NavicoControl::NavicoControl(NetworkAddress sendAddr) {
-  CLEAR_STRUCT(m_addr);
+NavicoControl::NavicoControl(NetworkAddress sendMultiCastAddress) {
   m_addr.sin_family = AF_INET;
-  m_addr.sin_addr = sendAddr.addr;
-  m_addr.sin_port = sendAddr.port;
+  m_addr.sin_addr = sendMultiCastAddress.addr;
+  m_addr.sin_port = sendMultiCastAddress.port;
+
+
   m_radar_socket = INVALID_SOCKET;
   m_name = wxT("Navico radar");
 }
@@ -60,9 +61,13 @@ NavicoControl::~NavicoControl() {
   }
 }
 
-bool NavicoControl::Init(radar_pi *pi, wxString &name, NetworkAddress &adr) {
+bool NavicoControl::Init(radar_pi *pi, wxString &name, NetworkAddress &ifadr, NetworkAddress &radaradr) {
   int r;
   int one = 1;
+
+  // The radar scanner address is not used for Navico BR/Halo radars
+  if (radaradr.port != 0)
+    ;
 
   m_pi = pi;
   m_name = name;
@@ -80,8 +85,8 @@ bool NavicoControl::Init(radar_pi *pi, wxString &name, NetworkAddress &adr) {
   if (!r) {
     struct sockaddr_in s;
 
-    s.sin_addr = adr.addr;
-    s.sin_port = adr.port;
+    s.sin_addr = ifadr.addr;
+    s.sin_port = ifadr.port;
     s.sin_family = AF_INET;
 #ifdef __WX_MAC__
     s.sin_len = sizeof(sockaddr_in);

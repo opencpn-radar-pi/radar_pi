@@ -40,10 +40,10 @@ PLUGIN_BEGIN_NAMESPACE
 
 class NavicoControl : public RadarControl {
  public:
-  NavicoControl(NetworkAddress sendAddr);
+  NavicoControl(NetworkAddress sendMultiCastAddress);
   ~NavicoControl();
 
-  bool Init(radar_pi *pi, wxString &name, NetworkAddress &address);
+  bool Init(radar_pi *pi, wxString &name, NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
   void RadarTxOff();
   void RadarTxOn();
   bool RadarStayAlive();

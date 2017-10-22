@@ -262,6 +262,8 @@ class RadarInfo {
   bool Init(wxString name, int verbose);
   void StartReceive();
   void SetName(wxString name);
+  wxString GetStatus();
+
   void AdjustRange(int adjustment);
   void SetAutoRangeMeters(int meters);
   bool SetControlValue(ControlType controlType, int value, int autoValue);
@@ -292,7 +294,7 @@ class RadarInfo {
   wxString &GetRangeText();
   const char *GetDisplayRangeStr(size_t idx);
   int GetDisplayRange() { return m_range.GetValue(); };
-  void SetNetworkCardAddress(NetworkAddress &address);
+  void DetectedRadar(NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
   void SetMouseLatLon(double lat, double lon);
   void SetMouseVrmEbl(double vrm, double ebl);
   void SetBearing(int bearing);

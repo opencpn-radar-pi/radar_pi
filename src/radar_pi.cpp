@@ -218,7 +218,8 @@ int radar_pi::Init(void) {
   m_settings.threshold_blue = 255;
   m_settings.threshold_red = 255;
   m_settings.threshold_green = 255;
-  CLEAR_STRUCT(m_settings.mcast_address);
+  CLEAR_STRUCT(m_settings.radar_interface_address);
+  m_settings.radar_count = 0;
 
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
@@ -561,6 +562,9 @@ int radar_pi::GetToolbarToolCount(void) { return 1; }
  */
 void radar_pi::OnToolbarToolCallback(int id) {
   if (!m_initialized) {
+    return;
+  }
+  if (!IsRadarSelectionComplete(false)) {
     return;
   }
 
@@ -1244,7 +1248,7 @@ bool radar_pi::LoadConfig(void) {
       }
 
       pConf->Read(wxString::Format(wxT("Radar%dInterface"), r), &s, "0.0.0.0");
-      radar_inet_aton(s.c_str(), &m_settings.mcast_address[r].addr);
+      radar_inet_aton(s.c_str(), &m_settings.radar_interface_address[r].addr);
 
       pConf->Read(wxString::Format(wxT("Radar%dRange"), r), &v, 2000);
       m_radar[r]->m_range_meters = v;
@@ -1398,7 +1402,7 @@ bool radar_pi::SaveConfig(void) {
         pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);
 
         wxString addr;
-        UINT8 *a = (UINT8 *)&m_settings.mcast_address[r].addr;
+        UINT8 *a = (UINT8 *)&m_settings.radar_interface_address[r].addr;
         addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
         pConf->Write(wxString::Format(wxT("Radar%dInterface"), r), addr);
 

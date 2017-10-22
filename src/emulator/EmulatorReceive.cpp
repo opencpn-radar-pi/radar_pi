@@ -151,4 +151,8 @@ void EmulatorReceive::Shutdown() {
   m_shutdown = true;
 }
 
+wxString EmulatorReceive::GetStatus() {
+  return _("Emulator Status OK");
+}
+
 PLUGIN_END_NAMESPACE

@@ -45,11 +45,13 @@ class RadarControl {
   /*
    * Initialize any local data structures.
    *
-   * @param pi          The calling radar plugin instance
-   * @param name        Name of this radar, for logging
-   * @param address     The address of the ethernet card on this machine
+   * @param pi                   The calling radar plugin instance
+   * @param name                 Name of this radar, for logging
+   * @param interfaceAddress     The IPv4 address of the ethernet card on this machine
+   * @param radarAddress         The IPV4 address of the radar scanner
    */
-  virtual bool Init(radar_pi *pi, wxString &name, NetworkAddress &address) = 0;
+  virtual bool Init(radar_pi *pi, wxString &name,
+                    NetworkAddress &interfaceAddress, NetworkAddress &radarAddress) = 0;
 
   /*
    * Ask the radar to switch off.

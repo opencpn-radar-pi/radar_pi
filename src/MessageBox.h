@@ -92,7 +92,6 @@ class MessageBox : public wxDialog {
   void SetRadarBuildInfo(wxString &msg);
   void SetRadarIPAddress(wxString &msg);
   void SetRadarType(RadarType radar_type);
-  void SetMcastIPAddress(wxString &msg);
   void SetTrueHeadingInfo(wxString &msg);
   void SetMagHeadingInfo(wxString &msg);
   void SetVariationInfo(wxString &msg);
@@ -144,8 +143,7 @@ class MessageBox : public wxDialog {
   wxCheckBox *m_have_true_heading;
   wxCheckBox *m_have_mag_heading;
   wxCheckBox *m_have_variation;
-  wxCheckBox *m_have_radar;
-  wxCheckBox *m_have_data;
+  wxStaticText *m_presence;
   wxStaticText *m_statistics;
 
   wxArrayString m_radar_names;

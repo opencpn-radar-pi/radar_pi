@@ -47,14 +47,10 @@ class NavicoReceive : public RadarReceive {
     m_data_addr = dataAddr;
     m_report_addr = reportAddr;
     m_next_spoke = -1;
-    CLEAR_STRUCT(m_mcast_addr);
     m_radar_status = 0;
-    m_new_ip_addr = false;
     m_shutdown_time_requested = 0;
     m_is_shutdown = false;
-
-    m_mcast_addr = m_pi->GetMcastIPAddress(ri->m_radar);
-
+    m_interface_addr = m_pi->GetRadarInterfaceAddress(ri->m_radar);
     m_receive_socket = GetLocalhostServerTCPSocket();
     m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
 
@@ -65,11 +61,9 @@ class NavicoReceive : public RadarReceive {
 
   void *Entry(void);
   void Shutdown(void);
+  wxString GetStatus();
 
-  NetworkAddress m_mcast_addr;
-  wxIPV4address m_ip_addr;
-  bool m_new_ip_addr;
-
+  NetworkAddress m_interface_addr;
   NetworkAddress m_data_addr;
   NetworkAddress m_report_addr;
 
@@ -94,6 +88,12 @@ class NavicoReceive : public RadarReceive {
 
   int m_next_spoke;
   char m_radar_status;
+
+  wxString m_addr;      // Radar's IP address
+
+  wxCriticalSection m_lock; // Protects m_status
+  wxString m_status;    // Userfriendly string
+
 };
 
 PLUGIN_END_NAMESPACE

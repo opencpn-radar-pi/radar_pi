@@ -361,15 +361,9 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
   }
 }
 
-void RadarInfo::SetNetworkCardAddress(NetworkAddress &address) {
-  m_pi->SetMcastIPAddress(m_radar, address);
-  /* TODO
-    if (m_pMessageBox) {
-      m_pMessageBox->SetMcastIPAddress(address);
-    }
-*/
-
-  if (!m_control->Init(m_pi, m_name, address)) {
+void RadarInfo::DetectedRadar(NetworkAddress &interfaceAddress, NetworkAddress &radarAddress) {
+  m_pi->SetRadarInterfaceAddress(m_radar, interfaceAddress);
+  if (!m_control->Init(m_pi, m_name, interfaceAddress, radarAddress)) {
     wxLogError(wxT("radar_pi %s: Unable to create transmit socket"), m_name.c_str());
   }
   m_stayalive_timeout = 0;  // Allow immediate restart of any TxOn or TxOff command
@@ -1582,6 +1576,13 @@ void RadarInfo::ComputeTargetTrails() {
     }
     // LOG_VERBOSE(wxT("radar_pi: ComputeTargetTrails rev=%u color=%d"), revolution, m_trail_colour[revolution]);
   }
+}
+
+wxString RadarInfo::GetStatus() {
+  if (m_receive) {
+    return m_receive->GetStatus();
+  }
+  return _("Uninitialized");
 }
 
 PLUGIN_END_NAMESPACE
