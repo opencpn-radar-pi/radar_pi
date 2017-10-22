@@ -24,8 +24,8 @@ git clone https://github.com/opencpn-radar-pi/radar_pi.git
 ### Build on Microsoft Windows
 
 ```
-mkdir radar_pi/build-win32
-cd radar_pi/build-win32
+mkdir radar_pi\build-win32
+cd radar_pi\build-win32
 cmake ..
 cmake --build .
 ```
