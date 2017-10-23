@@ -257,7 +257,6 @@ int radar_pi::Init(void) {
     return 0;  // give up
   }
 
-
   //    This PlugIn needs a toolbar icon
 
   wxString svg_normal = m_shareLocn + wxT("radar_standby.svg");
@@ -415,7 +414,7 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
 
     for (size_t i = 0; i < RT_MAX; i++) {
       if (dlg.m_selected[i]->GetValue()) {
-        if (m_radar[r] && m_radar[r]->m_radar_type != (RadarType) i) {
+        if (m_radar[r] && m_radar[r]->m_radar_type != (RadarType)i) {
           m_radar[r]->Shutdown();
           delete m_radar[r];
           m_radar[r] = 0;
@@ -459,7 +458,6 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
       if (IsRadarSelectionComplete(false)) {
         SaveConfig();
         for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-
           m_radar[r]->ComputeColourMap();
           m_radar[r]->UpdateControlState(true);
         }
