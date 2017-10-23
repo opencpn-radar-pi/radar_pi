@@ -99,7 +99,6 @@ class NavicoReceive : public RadarReceive {
     wxCriticalSectionLocker lock(m_lock);
     m_status = status;
   }
-
 };
 
 PLUGIN_END_NAMESPACE

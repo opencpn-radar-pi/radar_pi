@@ -314,7 +314,7 @@ bool RadarInfo::Init() {
   ComputeColourMap();
 
   if (!m_control) {
-      m_control = RadarFactory::makeRadarControl(m_radar_type);
+    m_control = RadarFactory::makeRadarControl(m_radar_type);
   }
   if (!m_radar_panel) {
     m_radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());

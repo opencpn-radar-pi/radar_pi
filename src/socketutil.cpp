@@ -34,8 +34,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-wxString FormatNetworkAddress(NetworkAddress& addr)
-{
+wxString FormatNetworkAddress(NetworkAddress &addr) {
   UINT8 *a = (UINT8 *)&addr.addr;  // sin_addr is in network layout
   wxString address;
   address.Printf(wxT(" %u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
@@ -43,15 +42,13 @@ wxString FormatNetworkAddress(NetworkAddress& addr)
   return address;
 }
 
-wxString FormatNetworkAddressPort(NetworkAddress& addr)
-{
+wxString FormatNetworkAddressPort(NetworkAddress &addr) {
   UINT8 *a = (UINT8 *)&addr.addr;  // sin_addr is in network layout
   wxString address;
   address.Printf(wxT(" %u.%u.%u.%u port %u"), a[0], a[1], a[2], a[3], htons(addr.port));
 
   return address;
 }
-
 
 int radar_inet_aton(const char *cp, struct in_addr *addr) {
   u_long val;
@@ -182,12 +179,12 @@ SOCKET startUDPMulticastReceiveSocket(NetworkAddress &interface_address, Network
   error_message = wxT("");
 
   CLEAR_STRUCT(listenAddress);
-#ifdef __WXMAC__
+#ifdef __WXMAC__xxx
   listenAddress.sin_len = sizeof(listenAddress);
 #endif
   listenAddress.sin_family = AF_INET;
-  listenAddress.sin_addr.s_addr = INADDR_ANY;
-  listenAddress.sin_port = interface_address.port;
+  listenAddress.sin_addr.s_addr = htonl(INADDR_ANY);
+  listenAddress.sin_port = mcast_address.port;
   rx_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
   if (rx_socket == INVALID_SOCKET) {
     error_message << _("Cannot create UDP socket");
@@ -199,7 +196,7 @@ SOCKET startUDPMulticastReceiveSocket(NetworkAddress &interface_address, Network
   }
 
   if (bind(rx_socket, (struct sockaddr *)&listenAddress, sizeof(listenAddress))) {
-    error_message << _("Cannot bind UDP socket to port ") << ntohs(interface_address.port);
+    error_message << _("Cannot bind UDP socket to port ") << ntohs(mcast_address.port);
     goto fail;
   }
 
