@@ -69,7 +69,7 @@ static const char *FragmentShaderColorText =
     "   gl_FragColor = texture2D(tex2d, vec2(d, a)); \n"
     "} \n";
 
-bool RadarDrawShader::Init() {
+bool RadarDrawShader::Init(size_t spokes, size_t spoke_len) {
   m_format = GL_RGBA;
   m_channels = SHADER_COLOR_CHANNELS;
 
@@ -94,12 +94,17 @@ bool RadarDrawShader::Init() {
     glGenTextures(1, &m_texture);
   }
   glBindTexture(GL_TEXTURE_2D, m_texture);
+
+  if (m_data) {
+    free(m_data);
+  }
+  m_data = (unsigned char *) calloc(SHADER_COLOR_CHANNELS, spoke_len * spokes);
   // Tell the GPU the size of the texture:
   glTexImage2D(/* target          = */ GL_TEXTURE_2D,
                /* level           = */ 0,
                /* internal_format = */ m_format,
-               /* width           = */ RETURNS_PER_LINE,
-               /* heigth          = */ LINES_PER_ROTATION,
+               /* width           = */ spoke_len,
+               /* heigth          = */ spokes,
                /* border          = */ 0,
                /* format          = */ m_format,
                /* type            = */ GL_UNSIGNED_BYTE,
@@ -132,6 +137,11 @@ RadarDrawShader::~RadarDrawShader() {
     glDeleteTextures(1, &m_texture);
     m_texture = 0;
   }
+
+  if (m_data) {
+    free(m_data);
+    m_data = 0;
+  }
 }
 
 void RadarDrawShader::DrawRadarImage() {
@@ -150,7 +160,7 @@ void RadarDrawShader::DrawRadarImage() {
   if (m_start_line > -1) {
     // Since the last time we have received data from [m_start_line, m_end_line>
     // so we only need to update the texture for those data lines.
-    if (m_start_line + m_lines > LINES_PER_ROTATION) {
+    if (m_start_line + m_lines > m_spokes) {
       int end_line = MOD_ROTATION2048(m_start_line + m_lines);
       // if the new data partly wraps past the end of the texture
       // tell it the two parts separately
@@ -159,32 +169,32 @@ void RadarDrawShader::DrawRadarImage() {
                       /* level =    */ 0,
                       /* x-offset = */ 0,
                       /* y-offset = */ 0,
-                      /* width =    */ RETURNS_PER_LINE,
+                      /* width =    */ m_spoke_len,
                       /* height =   */ end_line,
                       /* format =   */ m_format,
                       /* type =     */ GL_UNSIGNED_BYTE,
                       /* pixels =   */ m_data);
-      // And then remap [m_start_line, LINES_PER_ROTATION>
+      // And then remap [m_start_line, m_spokes>
       glTexSubImage2D(/* target =   */ GL_TEXTURE_2D,
                       /* level =    */ 0,
                       /* x-offset = */ 0,
                       /* y-offset = */ m_start_line,
-                      /* width =    */ RETURNS_PER_LINE,
-                      /* height =   */ LINES_PER_ROTATION - m_start_line,
+                      /* width =    */ m_spoke_len,
+                      /* height =   */ m_spokes - m_start_line,
                       /* format =   */ m_format,
                       /* type =     */ GL_UNSIGNED_BYTE,
-                      /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * m_channels);
+                      /* pixels =   */ m_data + m_start_line * m_spoke_len * m_channels);
     } else {
       // Map [m_start_line, m_end_line>
       glTexSubImage2D(/* target =   */ GL_TEXTURE_2D,
                       /* level =    */ 0,
                       /* x-offset = */ 0,
                       /* y-offset = */ m_start_line,
-                      /* width =    */ RETURNS_PER_LINE,
+                      /* width =    */ m_spoke_len,
                       /* height =   */ m_lines,
                       /* format =   */ m_format,
                       /* type =     */ GL_UNSIGNED_BYTE,
-                      /* pixels =   */ m_data + m_start_line * RETURNS_PER_LINE * m_channels);
+                      /* pixels =   */ m_data + m_start_line * m_spoke_len * m_channels);
     }
     m_start_line = -1;
     m_lines = 0;
@@ -215,12 +225,12 @@ void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
   if (m_start_line == -1) {
     m_start_line = angle;  // Note that this only runs once after each draw,
   }
-  if (m_lines < LINES_PER_ROTATION) {
+  if (m_lines < m_spokes) {
     m_lines++;
   }
 
   if (m_channels == SHADER_COLOR_CHANNELS) {
-    unsigned char *d = m_data + (angle * RETURNS_PER_LINE) * m_channels;
+    unsigned char *d = m_data + (angle * m_spoke_len) * m_channels;
     for (size_t r = 0; r < len; r++) {
       GLubyte strength = data[r];
       BlobColour colour = m_ri->m_colour_map[strength];
@@ -231,7 +241,7 @@ void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
       d += m_channels;
     }
   } else {
-    unsigned char *d = m_data + (angle * RETURNS_PER_LINE);
+    unsigned char *d = m_data + (angle * m_spoke_len);
     for (size_t r = 0; r < len; r++) {
       GLubyte strength = data[r];
       BlobColour colour = m_ri->m_colour_map[strength];

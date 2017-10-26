@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#include "RadarMarpa.h"
 #include "RadarInfo.h"
+#include "RadarMarpa.h"
 #include "drawutil.h"
 #include "radar_pi.h"
 
@@ -435,7 +435,7 @@ int ArpaTarget::GetContour(Polar* pol) {
     index = i;
     aa = current.angle + transl[index].angle;
     rr = current.r + transl[index].r;
-    //  if (rr > 511) return 13;  // r too large
+    //  if (rr > RETURNS_PER_LINE - 1) return 13;  // r too large
     succes = !Pix(aa, rr);
     if (succes) break;
   }
@@ -555,7 +555,7 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
   int dist_a = (int)(326. / (double)radius * TARGET_SEARCH_RADIUS2 / 2.);
   int dist_r = (int)((double)TARGET_SEARCH_RADIUS2 / 2.);
   glColor4ub(0, 250, 0, 250);
-  if (radius < 511 - dist_r && radius > dist_r) {
+  if (radius < RETURNS_PER_LINE - 1 - dist_r && radius > dist_r) {
     xx = polarLookup->x[MOD_ROTATION2048(angle)][radius - dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
     yy = polarLookup->y[MOD_ROTATION2048(angle)][radius - dist_r] * m_ri->m_range_meters / RETURNS_PER_LINE;
     glVertex2f(xx, yy);

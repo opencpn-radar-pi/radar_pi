@@ -33,7 +33,37 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-bool RadarDrawVertex::Init() { return true; }
+bool RadarDrawVertex::Init(size_t spokes, size_t spoke_len) {
+  if (m_spokes != spokes) {
+    Reset();
+  }
+
+  {
+    wxCriticalSectionLocker  lock(m_exclusive);
+    m_spokes = spokes;         // How many spokes form a circle
+    m_spoke_len = spoke_len;   // How long each spoke is
+
+    if (!m_vertices) {
+      m_vertices = (VertexLine *) calloc(sizeof(VertexLine), m_spokes);
+    }
+  }
+
+  return m_vertices != NULL;
+}
+
+void RadarDrawVertex::Reset() {
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  if (m_vertices) {
+    for (size_t i = 0; i < m_spokes; i++) {
+      if (m_vertices[i].points) {
+        free(m_vertices[i].points);
+      }
+    }
+    free(m_vertices);
+    m_vertices = 0;
+  }
+}
 
 #define ADD_VERTEX_POINT(angle, radius, r, g, b, a)          \
   {                                                          \
@@ -96,7 +126,7 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
   int r_begin = 0;
   int r_end = 0;
 
-  if (angle < 0 || angle >= LINES_PER_ROTATION) {
+  if (angle < 0 || angle >= m_spokes || len > m_spoke_len) {
     return;
   }
 
@@ -160,7 +190,7 @@ void RadarDrawVertex::DrawRadarImage() {
   {
     wxCriticalSectionLocker lock(m_exclusive);
 
-    for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
+    for (size_t i = 0; i < m_spokes; i++) {
       VertexLine* line = &m_vertices[i];
       if (!line->count || TIMED_OUT(now, line->timeout)) {
         continue;

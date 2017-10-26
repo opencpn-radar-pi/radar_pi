@@ -52,17 +52,17 @@ GuardZone::GuardZone(radar_pi* pi, RadarInfo* ri, int zone) {
 }
 
 void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_t len, int range) {
-  size_t range_start = m_inner_range * RETURNS_PER_LINE / range;  // Convert from meters to 0..511
-  size_t range_end = m_outer_range * RETURNS_PER_LINE / range;    // Convert from meters to 0..511
+  size_t range_start = m_inner_range * len / range;  // Convert from meters to 0..511
+  size_t range_end = m_outer_range * len / range;    // Convert from meters to 0..511
   bool in_guard_zone = false;
 
   switch (m_type) {
     case GZ_ARC:
       if ((angle >= m_start_bearing && angle < m_end_bearing) ||
           (m_start_bearing >= m_end_bearing && (angle >= m_start_bearing || angle < m_end_bearing))) {
-        if (range_start < RETURNS_PER_LINE) {
-          if (range_end > RETURNS_PER_LINE) {
-            range_end = RETURNS_PER_LINE;
+        if (range_start < len) {
+          if (range_end > len) {
+            range_end = len;
           }
           for (size_t r = range_start; r <= range_end; r++) {
             if (data[r] >= m_pi->m_settings.threshold_blue) {
@@ -81,9 +81,9 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
       break;
 
     case GZ_CIRCLE:
-      if (range_start < RETURNS_PER_LINE) {
-        if (range_end > RETURNS_PER_LINE) {
-          range_end = RETURNS_PER_LINE;
+      if (range_start < len) {
+        if (range_end > len) {
+          range_end = len;
         }
 
         for (size_t r = range_start; r <= range_end; r++) {
@@ -149,8 +149,8 @@ void GuardZone::SearchTargets() {
   if (m_ri->m_range_meters == 0) {
     return;
   }
-  size_t range_start = m_inner_range * RETURNS_PER_LINE / m_ri->m_range_meters;  // Convert from meters to 0..511
-  size_t range_end = m_outer_range * RETURNS_PER_LINE / m_ri->m_range_meters;    // Convert from meters to 0..511
+  size_t range_start = m_inner_range * m_ri->m_spoke_len / m_ri->m_range_meters;  // Convert from meters to 0..511
+  size_t range_end = m_outer_range * m_ri->m_spoke_len / m_ri->m_range_meters;    // Convert from meters to 0..511
 
   SpokeBearing hdt = SCALE_DEGREES_TO_RAW2048(m_pi->GetHeadingTrue());
   SpokeBearing start_bearing = m_start_bearing + hdt;
@@ -165,9 +165,9 @@ void GuardZone::SearchTargets() {
     end_bearing = LINES_PER_ROTATION;
   }
 
-  if (range_start < RETURNS_PER_LINE) {
-    if (range_end > RETURNS_PER_LINE) {
-      range_end = RETURNS_PER_LINE;
+  if (range_start < m_ri->m_spoke_len) {
+    if (range_end > m_ri->m_spoke_len) {
+      range_end = m_ri->m_spoke_len;
     }
     if (range_end < range_start) return;
 
@@ -198,7 +198,10 @@ void GuardZone::SearchTargets() {
             pol.angle = angle;
             pol.r = rrr;
 
+#ifdef TODO_DOUWE
+            // This variable is unused?
             Position x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
+#endif
             int target_i = m_ri->m_arpa->AcquireNewARPATarget(pol, 0);
             if (target_i == -1) break;
           }

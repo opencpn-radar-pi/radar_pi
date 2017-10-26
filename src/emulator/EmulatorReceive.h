@@ -62,7 +62,6 @@ class EmulatorReceive : public RadarReceive {
 
   int m_next_spoke;     // emulator next spoke
   int m_next_rotation;  // slowly rotate emulator
-  char m_radar_status;
 };
 
 PLUGIN_END_NAMESPACE

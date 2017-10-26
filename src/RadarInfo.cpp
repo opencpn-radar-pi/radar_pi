@@ -194,6 +194,7 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_stayalive_timeout = 0;
   m_radar_timeout = 0;
   m_data_timeout = 0;
+  m_history = 0;
   ClearTrails();
   CLEAR_STRUCT(m_statistics);
   CLEAR_STRUCT(m_course_log);
@@ -298,6 +299,15 @@ RadarInfo::~RadarInfo() {
       m_guard_zone[z] = 0;
     }
   }
+
+  if (m_history) {
+    for (size_t i = 0; i < m_spokes; i++) {
+      if (m_history[i].line) {
+        free(m_history[i].line);
+      }
+    }
+    free(m_history);
+  }
 }
 
 /**
@@ -310,6 +320,13 @@ RadarInfo::~RadarInfo() {
 bool RadarInfo::Init() {
   m_verbose = M_SETTINGS.verbose;
   m_name = RadarTypeName[m_radar_type];
+  m_spokes = RadarSpokes[m_radar_type];
+  m_spoke_len_max = SPOKES;
+
+  m_history = (line_history *)calloc(sizeof(line_history), m_spokes);
+  for (size_t i = 0; i < m_spokes; i++) {
+    m_history[i].line = (UINT8 *) calloc(sizeof(UINT8), m_spoke_len_max);
+  }
 
   ComputeColourMap();
 
@@ -442,16 +459,21 @@ void RadarInfo::ResetSpokes() {
   LOG_VERBOSE(wxT("radar_pi: reset spokes"));
 
   CLEAR_STRUCT(zap);
-  CLEAR_STRUCT(m_history);
+  for (size_t i = 0; i < m_spokes; i++) {
+    memset(m_history[i].line, 0, m_spoke_len_max);
+    m_history[i].time = 0;
+    m_history[i].lat = 0.;
+    m_history[i].lon = 0.;
+  }
 
   if (m_draw_panel.draw) {
-    for (size_t r = 0; r < LINES_PER_ROTATION; r++) {
-      m_draw_panel.draw->ProcessRadarSpoke(0, r, zap, sizeof(zap));
+    for (size_t r = 0; r < m_spokes; r++) {
+      m_draw_panel.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len);
     }
   }
   if (m_draw_overlay.draw) {
-    for (size_t r = 0; r < LINES_PER_ROTATION; r++) {
-      m_draw_overlay.draw->ProcessRadarSpoke(0, r, zap, sizeof(zap));
+    for (size_t r = 0; r < m_spokes; r++) {
+      m_draw_overlay.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len);
     }
   }
 
@@ -483,18 +505,30 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   }
 
   if (m_pi->m_settings.show_extreme_range) {
-    data[RETURNS_PER_LINE - 1] = 255;  //  range ring, do we want this? ActionL: make setting, switched on for testing
+    data[m_spoke_len - 1] = 255;
     data[1] = 255;                     // Main bang on purpose to show radar center
     data[0] = 255;                     // Main bang on purpose to show radar center
   }
 
-  if (m_range_meters != range_meters) {
+  if (m_range_meters != range_meters || m_spoke_len != len) {
+    if (m_draw_panel.draw && m_spoke_len != len) {
+      m_draw_panel.draw->Init(m_spokes, m_spoke_len);
+    }
+    if (m_draw_overlay.draw && m_spoke_len != len) {
+      m_draw_overlay.draw->Init(m_spokes, m_spoke_len);
+    }
     ResetSpokes();
     if (m_arpa) {
       m_arpa->ClearContours();
     }
-    LOG_VERBOSE(wxT("radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters, range_meters);
+    if (m_range_meters != range_meters) {
+      LOG_VERBOSE(wxT("radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters, range_meters);
+    }
+    else {
+      LOG_VERBOSE(wxT("radar_pi: %s detected spoke length change from %zu to %zu bytes"), m_name.c_str(), m_spoke_len, len);
+    }
     m_range_meters = range_meters;
+    m_spoke_len = len;
     if (!m_range.GetValue()) {
       m_range.Update(convertSpokeMetersToRangeMeters(range_meters));
     }
@@ -629,9 +663,9 @@ void RadarInfo::ZoomTrails(float zoom_factor) {
   // zoom relative trails
   CLEAR_STRUCT(m_trails.copy_of_relative_trails);
   for (int i = 0; i < LINES_PER_ROTATION; i++) {
-    for (int j = 0; j < RETURNS_PER_LINE; j++) {
+    for (int j = 0; j < m_spoke_len; j++) {
       int index_j = int((float)j * zoom_factor);
-      if (index_j >= RETURNS_PER_LINE) break;
+      if (index_j >= m_spoke_len) break;
       if (m_trails.relative_trails[i][j] != 0) {
         m_trails.copy_of_relative_trails[i][index_j] = m_trails.relative_trails[i][j];
       }
@@ -1082,7 +1116,7 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
     if (!newDraw) {
       wxLogError(wxT("radar_pi: out of memory"));
       return;
-    } else if (newDraw->Init()) {
+    } else if (newDraw->Init(m_spokes, m_spoke_len)) {
       wxArrayString methods;
       RadarDraw::GetDrawingMethods(methods);
       if (di == &m_draw_overlay) {
@@ -1197,7 +1231,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
       glPopMatrix();
     }
 
-    double radar_pixels_per_meter = ((double)RETURNS_PER_LINE) / m_range_meters;
+    double radar_pixels_per_meter = ((double)m_spoke_len) / m_range_meters;
     double radar_scale = scale / radar_pixels_per_meter;
     glPushMatrix();
     glTranslated(center.x, center.y, 0);
@@ -1230,7 +1264,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
 
     glPushMatrix();
     double overscan = (double)m_range_meters / (double)range;
-    double radar_scale = overscan / RETURNS_PER_LINE;
+    double radar_scale = overscan / m_spoke_len;
     glScaled(radar_scale, radar_scale, 1.);
     glRotated(panel_rotate, 0.0, 0.0, 1.0);
     LOG_DIALOG(wxT("radar_pi: %s render overscan=%g range=%d"), m_name.c_str(), overscan, range);

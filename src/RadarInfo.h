@@ -149,7 +149,11 @@ class RadarInfo {
   radar_pi *m_pi;          // Pointer back to the plugin
   int m_radar;             // Which radar this is [0..RADARS>
   RadarType m_radar_type;  // Which radar type
-  double m_course;         // m_course is the moving everage of m_hdt used for course_up
+  size_t m_spokes;         // # of spokes per rotation
+  size_t m_spoke_len_max;  // Max # of bytes per spoke
+  size_t m_spoke_len;      // current # of bytes per spoke (with some radars this is dependent on range)
+
+  double m_course;  // m_course is the moving everage of m_hdt used for course_up
   double m_course_log[COURSE_SAMPLES];
   int m_course_index;
   RadarArpa *m_arpa;
@@ -221,13 +225,13 @@ class RadarInfo {
   receive_statistics m_statistics;
 
   struct line_history {
-    UINT8 line[RETURNS_PER_LINE];
+    UINT8 *line;
     wxLongLong time;
     double lat;
     double lon;
   };
 
-  line_history m_history[LINES_PER_ROTATION];
+  line_history *m_history;
 
 #define MARGIN (100)
 #define TRAILS_SIZE (RETURNS_PER_LINE * 2 + MARGIN * 2)

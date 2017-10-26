@@ -55,15 +55,18 @@ class RadarDrawShader : public RadarDraw {
 
   ~RadarDrawShader();
 
-  bool Init();
+  bool Init(size_t spokes, size_t spoke_len);
   void DrawRadarImage();
   void ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8* data, size_t len);
 
  private:
   RadarInfo* m_ri;
 
-  wxCriticalSection m_exclusive;  // protects the following three data structures
-  unsigned char m_data[SHADER_COLOR_CHANNELS * LINES_PER_ROTATION * RETURNS_PER_LINE];
+  wxCriticalSection m_exclusive;  // protects the following data structures
+  unsigned char* m_data;          // [SHADER_COLOR_CHANNELS * LINES_PER_ROTATION * RETURNS_PER_LINE];
+  size_t m_spokes;
+  size_t m_spoke_len;
+
   int m_start_line;  // First line received since last draw, or -1
   int m_lines;       // # of lines received since last draw
 
@@ -74,6 +77,8 @@ class RadarDrawShader : public RadarDraw {
   GLuint m_fragment;
   GLuint m_vertex;
   GLuint m_program;
+
+  void Reset();
 };
 
 PLUGIN_END_NAMESPACE

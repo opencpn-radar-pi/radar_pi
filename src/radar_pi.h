@@ -35,6 +35,7 @@
 #define MY_API_VERSION_MAJOR 1
 #define MY_API_VERSION_MINOR 14  // Needed for PluginAISDrawGL().
 
+#include <algorithm>
 #include <vector>
 #include "jsonreader.h"
 #include "nmea0183/nmea0183.h"
@@ -166,10 +167,15 @@ struct receive_statistics {
 typedef enum GuardZoneType { GZ_ARC, GZ_CIRCLE } GuardZoneType;
 
 typedef enum RadarType {
-#define DEFINE_RADAR(t, n, a, b, c) t,
+#define DEFINE_RADAR(t, n, s, a, b, c) t,
 #include "RadarType.h"
   RT_MAX
 } RadarType;
+
+const size_t RadarSpokes[RT_MAX] = {
+#define DEFINE_RADAR(t, n, s, a, b, c) s,
+#include "RadarType.h"
+};
 
 extern const wchar_t *RadarTypeName[RT_MAX];
 

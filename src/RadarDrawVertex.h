@@ -46,6 +46,7 @@ class RadarDrawVertex : public RadarDraw {
 
     m_ri = ri;
 
+    m_vertices = 0;
     for (size_t i = 0; i < ARRAY_SIZE(m_vertices); i++) {
       m_vertices[i].count = 0;
       m_vertices[i].allocated = 0;
@@ -58,22 +59,16 @@ class RadarDrawVertex : public RadarDraw {
     m_polarLookup = GetPolarToCartesianLookupTable();
   }
 
-  bool Init();
+  bool Init(size_t spokes, size_t spoke_len);
   void DrawRadarImage();
   void ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8* data, size_t len);
 
-  ~RadarDrawVertex() {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    for (size_t i = 0; i < LINES_PER_ROTATION; i++) {
-      if (m_vertices[i].points) {
-        free(m_vertices[i].points);
-      }
-    }
-  }
+  ~RadarDrawVertex() { Reset(); }
 
  private:
   RadarInfo* m_ri;
+  size_t m_spokes;
+  size_t m_spoke_len;
 
   static const int VERTEX_PER_TRIANGLE = 3;
   static const int VERTEX_PER_QUAD = 2 * VERTEX_PER_TRIANGLE;
@@ -98,12 +93,14 @@ class RadarDrawVertex : public RadarDraw {
   PolarToCartesianLookupTable* m_polarLookup;
 
   wxCriticalSection m_exclusive;  // protects the following
-  VertexLine m_vertices[LINES_PER_ROTATION];
+  VertexLine* m_vertices;
   unsigned int m_count;
   bool m_oom;
 
   void SetBlob(VertexLine* line, int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green, GLubyte blue,
                GLubyte alpha);
+
+  void Reset();
 };
 
 PLUGIN_END_NAMESPACE
