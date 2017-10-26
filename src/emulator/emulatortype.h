@@ -17,5 +17,11 @@ PLUGIN_END_NAMESPACE
 #define SPOKE_LEN_MAX 512
 #endif
 
-//           Type         Name             Spokes ControlDialog          Receive class            Send/Control class
-DEFINE_RADAR(RT_EMULATOR, wxT("Emulator"), 2048, EmulatorControlsDialog, EmulatorReceive(pi, ri), EmulatorControl)
+DEFINE_RADAR(RT_EMULATOR,             /* Type */
+             wxT("Emulator"),         /* Name */
+             2048,                    /* Spokes */
+             512,                     /* Spoke length */
+             EmulatorControlsDialog,  /* Controls class */
+             EmulatorReceive(pi, ri), /* Receive class */
+             EmulatorControl          /* Send/Control class */
+)

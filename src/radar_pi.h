@@ -167,13 +167,18 @@ struct receive_statistics {
 typedef enum GuardZoneType { GZ_ARC, GZ_CIRCLE } GuardZoneType;
 
 typedef enum RadarType {
-#define DEFINE_RADAR(t, n, s, a, b, c) t,
+#define DEFINE_RADAR(t, n, s, l, a, b, c) t,
 #include "RadarType.h"
   RT_MAX
 } RadarType;
 
 const size_t RadarSpokes[RT_MAX] = {
-#define DEFINE_RADAR(t, n, s, a, b, c) s,
+#define DEFINE_RADAR(t, n, s, l, a, b, c) s,
+#include "RadarType.h"
+};
+
+const size_t RadarSpokeLenMax[RT_MAX] = {
+#define DEFINE_RADAR(t, n, s, l, a, b, c) l,
 #include "RadarType.h"
 };
 

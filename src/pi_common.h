@@ -157,7 +157,7 @@ using namespace std;
 
 #define SPOKES_MAX 0
 #define SPOKE_LEN_MAX 0
-#define DEFINE_RADAR(t, n, s, a, b, c)
+#define DEFINE_RADAR(t, n, s, l, a, b, c)
 #include "RadarType.h"
 
 // So now SPOKES_MAX and SPOKE_LEN_MAX are the maxima over all radar types...

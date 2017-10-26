@@ -35,14 +35,14 @@
 PLUGIN_BEGIN_NAMESPACE
 
 const wchar_t* RadarTypeName[RT_MAX] = {
-#define DEFINE_RADAR(t, n, s, a, b, c) n,
+#define DEFINE_RADAR(t, n, s, l, a, b, c) n,
 #include "RadarType.h"
 };
 
 ControlsDialog* RadarFactory::makeControlsDialog(size_t radarType, int radar) {
   switch (radarType) {
-#define DEFINE_RADAR(t, x, s, a, b, c) \
-  case t:                              \
+#define DEFINE_RADAR(t, x, s, l, a, b, c) \
+  case t:                                 \
     return new a;
 #include "RadarType.h"
   };
@@ -51,8 +51,8 @@ ControlsDialog* RadarFactory::makeControlsDialog(size_t radarType, int radar) {
 
 RadarReceive* RadarFactory::makeRadarReceive(size_t radarType, radar_pi* pi, RadarInfo* ri) {
   switch (radarType) {
-#define DEFINE_RADAR(t, x, s, a, b, c) \
-  case t:                              \
+#define DEFINE_RADAR(t, x, s, l, a, b, c) \
+  case t:                                 \
     return new b;
 #include "RadarType.h"
   };
@@ -61,8 +61,8 @@ RadarReceive* RadarFactory::makeRadarReceive(size_t radarType, radar_pi* pi, Rad
 
 RadarControl* RadarFactory::makeRadarControl(size_t radarType) {
   switch (radarType) {
-#define DEFINE_RADAR(t, x, s, a, b, c) \
-  case t:                              \
+#define DEFINE_RADAR(t, x, s, l, a, b, c) \
+  case t:                                 \
     return new c;
 #include "RadarType.h"
   };
@@ -71,7 +71,7 @@ RadarControl* RadarFactory::makeRadarControl(size_t radarType) {
 
 void RadarFactory::GetRadarTypes(wxArrayString& radarTypes) {
   wxString names[] = {
-#define DEFINE_RADAR(t, x, s, a, b, c) x,
+#define DEFINE_RADAR(t, x, s, l, a, b, c) x,
 #include "RadarType.h"
   };
 

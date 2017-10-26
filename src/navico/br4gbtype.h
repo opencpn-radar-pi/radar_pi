@@ -26,6 +26,7 @@ PLUGIN_END_NAMESPACE
 DEFINE_RADAR(RT_4GB,                                      /* Type */
              wxT("Navico 4G B"),                          /* Name */
              2048,                                        /* Spokes */
+             512,                                         /* Spoke length (max) */
              NavicoControlsDialog(RT_4GB),                /* ControlsDialog class constructor */
              NavicoReceive(pi, ri, report4G_B, data4G_B), /* Receive class constructor */
              NavicoControl(send4G_B)                      /* Send/Control class constructor */

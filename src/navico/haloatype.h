@@ -26,6 +26,7 @@ PLUGIN_END_NAMESPACE
 DEFINE_RADAR(RT_HaloA,                                        /* Type */
              wxT("Navico Halo A"),                            /* Name */
              2048,                                            /* Spokes */
+             512,                                             /* Spoke length (max) */
              NavicoControlsDialog(RT_HaloA),                  /* ControlsDialog class constructor */
              NavicoReceive(pi, ri, reportHalo_A, dataHalo_A), /* Receive class constructor */
              NavicoControl(sendHalo_A)                        /* Send/Control class constructor */
