@@ -162,9 +162,8 @@ using namespace std;
 
 // So now SPOKES_MAX and SPOKE_LEN_MAX are the maxima over all radar types...
 
-#define SPOKES (4096)                    // BR radars can generate up to 4096 spokes per rotation,
-#define LINES_PER_ROTATION (SPOKES_MAX)  // but use only half that in practice
-#define RETURNS_PER_LINE (512)           // BR radars generate 512 separate values per range, at 8 bits each
-#define DEGREES_PER_ROTATION (360)       // Classical math
+#define LINES_PER_ROTATION (SPOKES_MAX)
+#define RETURNS_PER_LINE (SPOKE_LEN_MAX)
+#define DEGREES_PER_ROTATION (360)  // Classical math
 
 #endif

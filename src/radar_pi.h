@@ -83,15 +83,22 @@ static const int SECONDS_PER_TIMED_RUN_SETTING = 10;
 typedef int SpokeBearing;  // A value from 0 -- LINES_PER_ROTATION indicating a bearing (? = North,
                            // +ve = clockwise)
 
+typedef int AngleDegrees;  // An angle relative to North or HeadUp. Generally [0..359> or [-180,180]
+
 // Use the above to convert from 'raw' headings sent by the radar (0..4095) into classical degrees
 // (0..359) and back
-#define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double)DEGREES_PER_ROTATION / SPOKES)
-#define SCALE_RAW_TO_DEGREES2048(raw) ((raw) * (double)DEGREES_PER_ROTATION / LINES_PER_ROTATION)
-#define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double)SPOKES / DEGREES_PER_ROTATION))
-#define SCALE_DEGREES_TO_RAW2048(angle) ((int)((angle) * (double)LINES_PER_ROTATION / DEGREES_PER_ROTATION))
-#define MOD_DEGREES(angle) (fmod(angle + 2 * DEGREES_PER_ROTATION, DEGREES_PER_ROTATION))
-#define MOD_ROTATION(raw) (((raw) + 2 * SPOKES) % SPOKES)
-#define MOD_ROTATION2048(raw) (((raw) + 2 * LINES_PER_ROTATION) % LINES_PER_ROTATION)
+
+// OLD NAVICO
+//#define SCALE_RAW_TO_DEGREES2048(raw) ((raw) * (double)DEGREES_PER_ROTATION / LINES_PER_ROTATION)
+//#define SCALE_DEGREES_TO_RAW2048(angle) ((int)((angle) * (double)LINES_PER_ROTATION / DEGREES_PER_ROTATION))
+//#define MOD_ROTATION(raw) (((raw) + 2 * SPOKES) % SPOKES)
+
+// NEW GENERIC
+#define SCALE_DEGREES_TO_SPOKES(angle) ((angle) * (m_ri->m_spokes) / DEGREES_PER_ROTATION)
+#define SCALE_SPOKES_TO_DEGREES(raw) ((raw) * (double)DEGREES_PER_ROTATION / m_ri->m_spokes)
+#define MOD_SPOKES(raw) (((raw) + 2 * m_ri->m_spokes) % m_ri->m_spokes)
+#define MOD_DEGREES(angle) ((angle + 2 * DEGREES_PER_ROTATION) % DEGREES_PER_ROTATION)
+#define MOD_DEGREES_FLOAT(angle) (fmod((double) angle + 2 * DEGREES_PER_ROTATION, DEGREES_PER_ROTATION))
 
 #define WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 

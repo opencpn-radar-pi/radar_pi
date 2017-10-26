@@ -43,6 +43,15 @@ PLUGIN_BEGIN_NAMESPACE
 #define MILLIS_PER_SELECT 250
 #define SECONDS_SELECT(x) ((x)*MILLISECONDS_PER_SECOND / MILLIS_PER_SELECT)
 
+//
+// Navico radars use an internal spoke ID that has range [0..4096> but they
+// only send half of them
+//
+#define SPOKES (4096)
+#define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double)DEGREES_PER_ROTATION / SPOKES)
+#define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double)SPOKES / DEGREES_PER_ROTATION))
+
+
 // A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration)
 // Note that 3G scanners are BR24's with better power, so they are more BR24+ than 4G-.
 // As far as we know they 3G's use exactly the same command set.
@@ -236,7 +245,7 @@ void NavicoReceive::ProcessFrame(const UINT8 *data, int len) {
     int bearing_raw;
 
     if (radar_heading_valid && !m_pi->m_settings.ignore_radar_heading) {
-      heading = MOD_DEGREES(SCALE_RAW_TO_DEGREES(MOD_ROTATION(heading_raw)));
+      heading = MOD_DEGREES_FLOAT(SCALE_RAW_TO_DEGREES(heading_raw));
       m_pi->SetRadarHeading(heading, radar_heading_true);
     } else {
       m_pi->SetRadarHeading();
@@ -247,8 +256,8 @@ void NavicoReceive::ProcessFrame(const UINT8 *data, int len) {
     bearing_raw = angle_raw + heading_raw;
     // until here all is based on 4096 (SPOKES) scanlines
 
-    SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
-    SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
+    SpokeBearing a = MOD_SPOKES(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
+    SpokeBearing b = MOD_SPOKES(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
     m_ri->ProcessRadarSpoke(a, b, line->data, RETURNS_PER_LINE, range_meters, time_rec, lat, lon);
   }
 }

@@ -55,11 +55,12 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
   size_t range_start = m_inner_range * len / range;  // Convert from meters to 0..511
   size_t range_end = m_outer_range * len / range;    // Convert from meters to 0..511
   bool in_guard_zone = false;
+  AngleDegrees degAngle = angle / 333;
 
   switch (m_type) {
     case GZ_ARC:
-      if ((angle >= m_start_bearing && angle < m_end_bearing) ||
-          (m_start_bearing >= m_end_bearing && (angle >= m_start_bearing || angle < m_end_bearing))) {
+      if ((degAngle >= m_start_bearing && degAngle < m_end_bearing) ||
+          (m_start_bearing >= m_end_bearing && (degAngle >= m_start_bearing || degAngle < m_end_bearing))) {
         if (range_start < len) {
           if (range_end > len) {
             range_end = len;
@@ -118,10 +119,10 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
     // When debugging with a static ship it is hard to find moving targets, so move
     // the guard zone instead. This slowly rotates the guard zone.
     if (m_pi->m_settings.guard_zone_debug_inc && m_type == GZ_ARC) {
-      m_start_bearing += LINES_PER_ROTATION - m_pi->m_settings.guard_zone_debug_inc;
-      m_end_bearing += LINES_PER_ROTATION - m_pi->m_settings.guard_zone_debug_inc;
-      m_start_bearing %= LINES_PER_ROTATION;
-      m_end_bearing %= LINES_PER_ROTATION;
+      m_start_bearing += m_pi->m_settings.guard_zone_debug_inc;
+      m_end_bearing += m_pi->m_settings.guard_zone_debug_inc;
+      m_start_bearing %= DEGREES_PER_ROTATION;
+      m_end_bearing %= DEGREES_PER_ROTATION;
     }
   }
 
@@ -152,17 +153,17 @@ void GuardZone::SearchTargets() {
   size_t range_start = m_inner_range * m_ri->m_spoke_len / m_ri->m_range_meters;  // Convert from meters to 0..511
   size_t range_end = m_outer_range * m_ri->m_spoke_len / m_ri->m_range_meters;    // Convert from meters to 0..511
 
-  SpokeBearing hdt = SCALE_DEGREES_TO_RAW2048(m_pi->GetHeadingTrue());
-  SpokeBearing start_bearing = m_start_bearing + hdt;
+  SpokeBearing hdt = SCALE_DEGREES_TO_SPOKES(m_pi->GetHeadingTrue());
+  SpokeBearing start_bearing = SCALE_DEGREES_TO_SPOKES(m_start_bearing) + hdt;
   SpokeBearing end_bearing = m_end_bearing + hdt;
-  start_bearing = MOD_ROTATION2048(start_bearing);
-  end_bearing = MOD_ROTATION2048(end_bearing);
+  start_bearing = MOD_SPOKES(start_bearing);
+  end_bearing = MOD_SPOKES(end_bearing);
   if (start_bearing > end_bearing) {
-    end_bearing += LINES_PER_ROTATION;
+    end_bearing += m_ri->m_spokes;
   }
   if (m_type == GZ_CIRCLE) {
     start_bearing = 0;
-    end_bearing = LINES_PER_ROTATION;
+    end_bearing = m_ri->m_spokes;
   }
 
   if (range_start < m_ri->m_spoke_len) {
@@ -171,20 +172,22 @@ void GuardZone::SearchTargets() {
     }
     if (range_end < range_start) return;
 
-    for (int angle = start_bearing; angle < end_bearing; angle += 2) {
+    for (int angleIter = start_bearing; angleIter < end_bearing; angleIter += 2) {
+      SpokeBearing angle = MOD_SPOKES(angleIter);
+
       // check if this angle has been updated by the beam since last time
       // and if possible targets have been refreshed
 
-      wxLongLong time1 = m_ri->m_history[MOD_ROTATION2048(angle)].time;
+      wxLongLong time1 = m_ri->m_history[angle].time;
       // next one must be timed later than the pass 2 in refresh, otherwise target may be found multiple times
-      wxLongLong time2 = m_ri->m_history[MOD_ROTATION2048(angle + 3 * SCAN_MARGIN)].time;
+      wxLongLong time2 = m_ri->m_history[MOD_SPOKES(angle + 3 * SCAN_MARGIN)].time;
 
       // check if target has been refreshed since last time
       // and if the beam has passed the target location with SCAN_MARGIN spokes
-      if ((time1 > (arpa_update_time[MOD_ROTATION2048(angle)] + SCAN_MARGIN2) &&
+      if ((time1 > (arpa_update_time[angle] + SCAN_MARGIN2) &&
            time2 >= time1)) {  // the beam sould have passed our "angle" AND a point SCANMARGIN further
                                // set new refresh time
-        arpa_update_time[MOD_ROTATION2048(angle)] = time1;
+        arpa_update_time[angle] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
           if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 1) {
             LOG_INFO(wxT("radar_pi: No more scanning for ARPA targets in loop, maximum number of targets reached"));

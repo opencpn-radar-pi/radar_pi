@@ -89,9 +89,6 @@ class Position {
   double sd_speed_kn;  // standard deviation of the speed in knots
 };
 
-Position Polar2Pos(Polar pol, Position own_ship, double range);
-
-Polar Pos2Polar(Position p, Position own_ship, int range);
 
 enum TargetProcessStatus { UNKNOWN, NOT_FOUND_IN_PASS1 };
 enum PassN { PASS1, PASS2 };
@@ -135,10 +132,11 @@ class ArpaTarget {
   Polar m_contour[MAX_CONTOUR_LENGTH + 1];  // contour of target, only valid immediately after finding it
   int m_contour_length;
   Polar m_max_angle, m_min_angle, m_max_r, m_min_r;  // charasterictics of contour
-
   Polar m_expected;
-
   bool m_automatic;  // True for ARPA, false for MARPA.
+
+  Position Polar2Pos(Polar pol, Position own_ship, double range);
+  Polar Pos2Polar(Position p, Position own_ship, int range);
 };
 
 class RadarArpa {

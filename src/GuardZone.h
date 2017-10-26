@@ -39,8 +39,8 @@ PLUGIN_BEGIN_NAMESPACE
 class GuardZone {
  public:
   GuardZoneType m_type;
-  SpokeBearing m_start_bearing;
-  SpokeBearing m_end_bearing;
+  AngleDegrees m_start_bearing;
+  AngleDegrees m_end_bearing;
   int m_inner_range;  // start in meters
   int m_outer_range;  // end   in meters
   int m_alarm_on;

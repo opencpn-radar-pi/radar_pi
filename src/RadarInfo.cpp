@@ -321,7 +321,7 @@ bool RadarInfo::Init() {
   m_verbose = M_SETTINGS.verbose;
   m_name = RadarTypeName[m_radar_type];
   m_spokes = RadarSpokes[m_radar_type];
-  m_spoke_len_max = SPOKES;
+  m_spoke_len_max = RadarSpokeLenMax[m_radar_type];
 
   m_history = (line_history *)calloc(sizeof(line_history), m_spokes);
   for (size_t i = 0; i < m_spokes; i++) {
@@ -955,8 +955,8 @@ void RadarInfo::RenderGuardZone() {
         start_bearing = 0;
         end_bearing = 359;
       } else {
-        start_bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone[z]->m_start_bearing);
-        end_bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone[z]->m_end_bearing);
+        start_bearing = m_guard_zone[z]->m_start_bearing;
+        end_bearing = m_guard_zone[z]->m_end_bearing;
       }
       switch (m_pi->m_settings.guard_zone_render_style) {
         case 1:

@@ -404,19 +404,15 @@ void ControlsDialog::ShowGuardZone(int zone) {
   m_inner_range->SetValue(wxString::Format(wxT("%2.2f"), m_guard_zone->m_inner_range / conversionFactor));
   m_outer_range->SetValue(wxString::Format(wxT("%2.2f"), m_guard_zone->m_outer_range / conversionFactor));
 
-  double bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone->m_start_bearing);
-  if (bearing >= 180.0) {
-    bearing -= 360.;
-  }
-  bearing = round(bearing);
-  m_start_bearing->SetValue(wxString::Format(wxT("%3.0f"), bearing));
+  AngleDegrees bearing = m_guard_zone->m_start_bearing;
+  m_start_bearing->SetValue(wxString::Format(wxT("%d"), bearing));
 
-  bearing = SCALE_RAW_TO_DEGREES2048(m_guard_zone->m_end_bearing);
-  if (bearing >= 180.0) {
+  bearing = m_guard_zone->m_end_bearing;
+  while (bearing >= 180.0) {
     bearing -= 360.;
   }
   bearing = round(bearing);
-  m_end_bearing->SetValue(wxString::Format(wxT("%3.0f"), bearing));
+  m_end_bearing->SetValue(wxString::Format(wxT("%d"), bearing));
   m_alarm->SetValue(m_guard_zone->m_alarm_on ? 1 : 0);
   m_arpa_box->SetValue(m_guard_zone->m_arpa_on ? 1 : 0);
   m_guard_zone->m_show_time = time(0);
@@ -1847,28 +1843,30 @@ void ControlsDialog::OnOuter_Range_Value(wxCommandEvent& event) {
 
 void ControlsDialog::OnStart_Bearing_Value(wxCommandEvent& event) {
   wxString temp = m_start_bearing->GetValue();
-  double t;
+  long t;
 
   m_guard_zone->m_show_time = time(0);
-  temp.ToDouble(&t);
-  t = fmod(t, 360.);
-  if (t < 0.) {
-    t += 360.;
+
+  temp.ToLong(&t);
+  t = MOD_DEGREES(t);
+  while (t < 0) {
+    t += 360;
   }
-  m_guard_zone->SetStartBearing(SCALE_DEGREES_TO_RAW2048(t));
+  m_guard_zone->SetStartBearing(t);
 }
 
 void ControlsDialog::OnEnd_Bearing_Value(wxCommandEvent& event) {
   wxString temp = m_end_bearing->GetValue();
-  double t;
+  long t;
 
   m_guard_zone->m_show_time = time(0);
-  temp.ToDouble(&t);
-  t = fmod(t, 360.);
-  if (t < 0.) {
-    t += 360.;
+
+  temp.ToLong(&t);
+  t = MOD_DEGREES(t);
+  while (t < 0) {
+    t += 360;
   }
-  m_guard_zone->SetEndBearing(SCALE_DEGREES_TO_RAW2048(t));
+  m_guard_zone->SetEndBearing(t);
 }
 
 void ControlsDialog::OnARPAClick(wxCommandEvent& event) {

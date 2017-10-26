@@ -32,6 +32,10 @@
 
 #include "EmulatorReceive.h"
 
+#define EMULATOR_SPOKES 2048
+#define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double)DEGREES_PER_ROTATION / EMULATOR_SPOKES)
+#define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double)EMULATOR_SPOKES / DEGREES_PER_ROTATION))
+
 PLUGIN_BEGIN_NAMESPACE
 
 /*
@@ -68,9 +72,9 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
   m_ri->m_statistics.packets++;
   m_ri->m_data_timeout = now + WATCHDOG_TIMEOUT;
 
-  m_next_rotation = (m_next_rotation + 1) % SPOKES;
+  m_next_rotation = (m_next_rotation + 1) % EMULATOR_SPOKES;
 
-  int scanlines_in_packet = SPOKES * 24 / 60 * MILLIS_PER_SELECT / MILLISECONDS_PER_SECOND;
+  int scanlines_in_packet = EMULATOR_SPOKES * 24 / 60 * MILLIS_PER_SELECT / MILLISECONDS_PER_SECOND;
   int range_meters = 2308;
   int display_range_meters = 3000;
   int spots = 0;
@@ -82,7 +86,7 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
 
   for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
     int angle_raw = m_next_spoke;
-    m_next_spoke = (m_next_spoke + 1) % SPOKES;
+    m_next_spoke = (m_next_spoke + 1) % EMULATOR_SPOKES;
     m_ri->m_statistics.spokes++;
 
     // Invent a pattern. Outermost ring, then a square pattern
@@ -91,7 +95,7 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
       // use bit 'bit' of angle_raw
       UINT8 colour = (((angle_raw + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
       if (range > sizeof(data) - 10) {
-        colour = ((angle_raw + m_next_rotation) % SPOKES) <= 8 ? 255 : 0;
+        colour = ((angle_raw + m_next_rotation) % EMULATOR_SPOKES) <= 8 ? 255 : 0;
       }
       data[range] = colour;
       if (colour > 0) {
@@ -103,8 +107,8 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
     int bearing_raw = angle_raw + hdt_raw;
     bearing_raw += SCALE_DEGREES_TO_RAW(270);  // Compensate openGL rotation compared to North UP
 
-    SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
-    SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
+    SpokeBearing a = MOD_SPOKES(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
+    SpokeBearing b = MOD_SPOKES(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
     wxLongLong time_rec;
     double lat = 0.;
     double lon = 0.;

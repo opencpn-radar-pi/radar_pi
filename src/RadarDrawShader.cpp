@@ -161,7 +161,7 @@ void RadarDrawShader::DrawRadarImage() {
     // Since the last time we have received data from [m_start_line, m_end_line>
     // so we only need to update the texture for those data lines.
     if (m_start_line + m_lines > m_spokes) {
-      int end_line = MOD_ROTATION2048(m_start_line + m_lines);
+      int end_line = (m_start_line + m_lines) % m_spokes;
       // if the new data partly wraps past the end of the texture
       // tell it the two parts separately
       // First remap [0, m_end_line>

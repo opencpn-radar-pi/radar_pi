@@ -81,8 +81,8 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
   if (r2 == 0) {
     return;
   }
-  int arc1 = MOD_ROTATION2048(angle_begin);
-  int arc2 = MOD_ROTATION2048(angle_end);
+  int arc1 = angle_begin % m_spokes;
+  int arc2 = angle_end % m_spokes;
   size_t count = line->count;
 
   if (line->count + VERTEX_PER_QUAD > line->allocated) {
