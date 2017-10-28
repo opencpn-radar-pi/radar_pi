@@ -346,6 +346,6 @@ void OptionsDialog::OnDrawingMethodClick(wxCommandEvent &event) { m_settings.dra
 
 void OptionsDialog::OnReverseZoomClick(wxCommandEvent &event) { m_settings.reverse_zoom = m_ReverseZoom->GetValue(); }
 
-void OptionsDialog::OnResetButtonClick(wxCommandEvent &event) { m_settings.radar_count = 0; }
+void OptionsDialog::OnResetButtonClick(wxCommandEvent &event) { m_settings.radar_count = 0; EndModal(wxID_OK); }
 
 PLUGIN_END_NAMESPACE

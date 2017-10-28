@@ -143,7 +143,7 @@ void MessageBox::CreateControls() {
   m_have_open_gl->SetFont(m_pi->m_font);
   m_have_open_gl->Disable();
 
-  m_ip_box = new wxStaticBox(this, wxID_ANY, _("Radar present"));
+  m_ip_box = new wxStaticBox(this, wxID_ANY, _("Detected radars"));
   m_ip_box->SetFont(m_pi->m_font);
   wxStaticBoxSizer *ipSizer = new wxStaticBoxSizer(m_ip_box, wxVERTICAL);
   m_message_sizer->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);

@@ -51,7 +51,6 @@ PLUGIN_BEGIN_NAMESPACE
 #define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double)DEGREES_PER_ROTATION / SPOKES)
 #define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double)SPOKES / DEGREES_PER_ROTATION))
 
-
 // A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration)
 // Note that 3G scanners are BR24's with better power, so they are more BR24+ than 4G-.
 // As far as we know they 3G's use exactly the same command set.
@@ -258,7 +257,9 @@ void NavicoReceive::ProcessFrame(const UINT8 *data, int len) {
 
     SpokeBearing a = MOD_SPOKES(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
     SpokeBearing b = MOD_SPOKES(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
-    m_ri->ProcessRadarSpoke(a, b, line->data, RETURNS_PER_LINE, range_meters, time_rec, lat, lon);
+    size_t len = RETURNS_PER_LINE;
+
+    m_ri->ProcessRadarSpoke(a, b, line->data, len, range_meters, time_rec, lat, lon);
   }
 }
 

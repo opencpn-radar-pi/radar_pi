@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
-#include "radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
 #include "SelectDialog.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -451,6 +451,10 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
 void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
   LOG_DIALOG(wxT("radar_pi: ShowPreferencesDialog"));
 
+  bool oldShow = M_SETTINGS.show;
+  M_SETTINGS.show = 0;
+  NotifyRadarWindowViz();
+
   if (IsRadarSelectionComplete(false)) {
     OptionsDialog dlg(parent, m_settings, m_radar[0]->m_radar_type);
     if (dlg.ShowModal() == wxID_OK) {
@@ -467,6 +471,9 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
       }
     }
   }
+
+  M_SETTINGS.show = oldShow;
+  NotifyRadarWindowViz();
 }
 
 // A different thread (or even the control dialog itself) has changed state and now
@@ -1254,53 +1261,59 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("RadarCount"), &v, 0);
     M_SETTINGS.radar_count = v;
 
+    size_t n = 0;
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      RadarInfo *ri = m_radar[n];
       pConf->Read(wxString::Format(wxT("Radar%dType"), r), &s, "unknown");
-      m_radar[r]->m_radar_type = RT_MAX;  // = not used
+      ri->m_radar_type = RT_MAX;  // = not used
       for (int i = 0; i < RT_MAX; i++) {
         if (s.IsSameAs(RadarTypeName[i])) {
-          m_radar[r]->m_radar_type = (RadarType)i;
+          ri->m_radar_type = (RadarType)i;
           break;
         }
       }
+      if (ri->m_radar_type == RT_MAX) {
+        continue;  // This happens if someone changed the name in the config file or
+                   // we drop support for a type or rename it.
+      }
 
       pConf->Read(wxString::Format(wxT("Radar%dInterface"), r), &s, "0.0.0.0");
-      radar_inet_aton(s.c_str(), &m_settings.radar_interface_address[r].addr);
+      radar_inet_aton(s.c_str(), &m_settings.radar_interface_address[n].addr);
 
       pConf->Read(wxString::Format(wxT("Radar%dRange"), r), &v, 2000);
-      m_radar[r]->m_range_meters = v;
+      ri->m_range_meters = v;
       pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
       if (v == ORIENTATION_HEAD_UP) {
         v = ORIENTATION_STABILIZED_UP;
       }
-      m_radar[r]->m_orientation.Update(v);
+      ri->m_orientation.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
-      m_radar[r]->m_boot_state.Update(v);
-      pConf->Read(wxString::Format(wxT("Radar%dMinContourLength"), r), &m_radar[r]->m_min_contour_length, 6);
+      ri->m_boot_state.Update(v);
+      pConf->Read(wxString::Format(wxT("Radar%dMinContourLength"), r), &ri->m_min_contour_length, 6);
 
       pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
-      SetControlValue(r, CT_TARGET_TRAILS, v, 0);
+      SetControlValue(n, CT_TARGET_TRAILS, v, 0);
       pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);
-      SetControlValue(r, CT_TRAILS_MOTION, v, 0);
-      pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[r], r ? false : true);
-      pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * r);
+      SetControlValue(n, CT_TRAILS_MOTION, v, 0);
+      pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[n], n ? false : true);
+      pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * n);
       pConf->Read(wxString::Format(wxT("Radar%dWindowPosY"), r), &y, 120);
-      m_settings.window_pos[r] = wxPoint(x, y);
-      pConf->Read(wxString::Format(wxT("Radar%dControlShow"), r), &m_settings.show_radar_control[r], false);
-      pConf->Read(wxString::Format(wxT("Radar%dTargetShow"), r), &m_settings.show_radar_target[r], true);
+      m_settings.window_pos[n] = wxPoint(x, y);
+      pConf->Read(wxString::Format(wxT("Radar%dControlShow"), r), &m_settings.show_radar_control[n], false);
+      pConf->Read(wxString::Format(wxT("Radar%dTargetShow"), r), &m_settings.show_radar_target[n], true);
       pConf->Read(wxString::Format(wxT("Radar%dControlPosX"), r), &x, OFFSCREEN_CONTROL_X);
       pConf->Read(wxString::Format(wxT("Radar%dControlPosY"), r), &y, OFFSCREEN_CONTROL_Y);
-      m_settings.control_pos[r] = wxPoint(x, y);
-      LOG_DIALOG(wxT("radar_pi: LoadConfig: show_radar[%d]=%d control=%d,%d"), r, v, x, y);
+      m_settings.control_pos[n] = wxPoint(x, y);
+      LOG_DIALOG(wxT("radar_pi: LoadConfig: show_radar[%d]=%d control=%d,%d"), n, v, x, y);
       for (int i = 0; i < GUARD_ZONES; i++) {
-        pConf->Read(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), &m_radar[r]->m_guard_zone[i]->m_start_bearing, 0);
-        pConf->Read(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), &m_radar[r]->m_guard_zone[i]->m_end_bearing, 0);
-        pConf->Read(wxString::Format(wxT("Radar%dZone%dOuterRange"), r, i), &m_radar[r]->m_guard_zone[i]->m_outer_range, 0);
-        pConf->Read(wxString::Format(wxT("Radar%dZone%dInnerRange"), r, i), &m_radar[r]->m_guard_zone[i]->m_inner_range, 0);
+        pConf->Read(wxString::Format(wxT("Radar%dZone%dStartBearing"), r, i), &ri->m_guard_zone[i]->m_start_bearing, 0);
+        pConf->Read(wxString::Format(wxT("Radar%dZone%dEndBearing"), r, i), &ri->m_guard_zone[i]->m_end_bearing, 0);
+        pConf->Read(wxString::Format(wxT("Radar%dZone%dOuterRange"), r, i), &ri->m_guard_zone[i]->m_outer_range, 0);
+        pConf->Read(wxString::Format(wxT("Radar%dZone%dInnerRange"), r, i), &ri->m_guard_zone[i]->m_inner_range, 0);
         pConf->Read(wxString::Format(wxT("Radar%dZone%dType"), r, i), &v, 0);
-        pConf->Read(wxString::Format(wxT("Radar%dZone%dAlarmOn"), r, i), &m_radar[r]->m_guard_zone[i]->m_alarm_on, 0);
-        pConf->Read(wxString::Format(wxT("Radar%dZone%dArpaOn"), r, i), &m_radar[r]->m_guard_zone[i]->m_arpa_on, 0);
-        m_radar[r]->m_guard_zone[i]->SetType((GuardZoneType)v);
+        pConf->Read(wxString::Format(wxT("Radar%dZone%dAlarmOn"), r, i), &ri->m_guard_zone[i]->m_alarm_on, 0);
+        pConf->Read(wxString::Format(wxT("Radar%dZone%dArpaOn"), r, i), &ri->m_guard_zone[i]->m_arpa_on, 0);
+        ri->m_guard_zone[i]->SetType((GuardZoneType)v);
       }
       pConf->Read(wxT("AlarmPosX"), &x, 25);
       pConf->Read(wxT("AlarmPosY"), &y, 175);
@@ -1308,7 +1321,10 @@ bool radar_pi::LoadConfig(void) {
       pConf->Read(wxT("EnableCOGHeading"), &m_settings.enable_cog_heading, false);
       pConf->Read(wxT("AISatARPAoffset"), &m_settings.AISatARPAoffset, 40);
       if (m_settings.AISatARPAoffset < 10 || m_settings.AISatARPAoffset > 200) m_settings.AISatARPAoffset = 40;
+
+      n++;
     }
+    m_settings.radar_count = n;
 
     pConf->Read(wxT("AlertAudioFile"), &m_settings.alert_audio_file, m_shareLocn + wxT("alarm.wav"));
     pConf->Read(wxT("ChartOverlay"), &m_settings.chart_overlay, 0);

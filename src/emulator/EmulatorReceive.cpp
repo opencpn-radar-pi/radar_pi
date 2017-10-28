@@ -32,7 +32,6 @@
 
 #include "EmulatorReceive.h"
 
-#define EMULATOR_SPOKES 2048
 #define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double)DEGREES_PER_ROTATION / EMULATOR_SPOKES)
 #define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double)EMULATOR_SPOKES / DEGREES_PER_ROTATION))
 
@@ -56,7 +55,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 void EmulatorReceive::EmulateFakeBuffer(void) {
   time_t now = time(0);
-  UINT8 data[RETURNS_PER_LINE];
+  UINT8 data[EMULATOR_MAX_SPOKE_LEN];
 
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
 
@@ -78,10 +77,6 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
   int range_meters = 2308;
   int display_range_meters = 3000;
   int spots = 0;
-#ifdef TODO
-  m_ri->m_radar_type = RT_EMULATOR;  // Fake for emulator
-  m_pi->m_pMessageBox->SetRadarType(RT_EMULATOR);
-#endif
   m_ri->m_range.Update(display_range_meters);
 
   for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
