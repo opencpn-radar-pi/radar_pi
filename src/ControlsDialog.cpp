@@ -1623,6 +1623,8 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_target_boost_button->SetLocalValue(m_ri->m_target_boost.GetButton());
   }
 
+#if 0
+
   //   target_expansion
   if (m_ri->m_target_expansion.IsModified() || refreshAll) {
     m_target_expansion_button->SetLocalValue(m_ri->m_target_expansion.GetButton());
@@ -1632,11 +1634,13 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_ri->m_noise_rejection.IsModified() || refreshAll) {
     m_noise_rejection_button->SetLocalValue(m_ri->m_noise_rejection.GetButton());
   }
+#endif
 
   //  target_separation
   if (m_ri->m_target_separation.IsModified() || refreshAll) {
     m_target_separation_button->SetLocalValue(m_ri->m_target_separation.GetButton());
   }
+
 
   //  interference_rejection
   if (m_ri->m_interference_rejection.IsModified() || refreshAll) {
