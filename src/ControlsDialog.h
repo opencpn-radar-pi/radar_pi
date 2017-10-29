@@ -86,6 +86,80 @@ class ControlsDialog : public wxDialog {
 
     m_panel_position = wxDefaultPosition;
     m_manually_positioned = false;
+
+    m_pi = 0;
+    m_ri = 0;
+    m_top_sizer = 0;
+    m_control_sizer = 0;
+    m_parent = 0;
+    m_advanced_sizer = 0;
+    m_view_sizer = 0;
+    m_edit_sizer = 0;
+    m_guard_sizer = 0;
+    m_adjust_sizer = 0;
+    m_cursor_sizer = 0;
+    m_installation_sizer = 0;
+    m_power_sizer = 0;
+    m_transmit_sizer = 0;  // Controls disabled if not transmitting
+    m_from_sizer = 0;      // If on edit control, this is where the button is from
+    m_from_control = 0;  // Only set when in edit mode
+    m_plus_ten_button = 0;
+    m_plus_button = 0;
+    m_value_text = 0;
+    m_comment_text = 0;
+    m_minus_button = 0;
+    m_minus_ten_button = 0;
+    m_auto_button = 0;
+    m_power_button = 0;
+    m_guard_zone = 0;
+    m_guard_zone_text = 0;
+    m_guard_zone_type = 0;
+    m_outer_range = 0;
+    m_inner_range = 0;
+    m_start_bearing = 0;
+    m_end_bearing = 0;
+    m_arpa_box = 0;
+    m_alarm = 0;
+    CLEAR_STRUCT(m_bearing_buttons);
+    m_clear_cursor = 0;
+    m_acquire_target = 0;
+    m_delete_target = 0;
+    m_delete_all = 0;
+    m_target_trails_button = 0;
+    m_targets_button = 0;
+    m_trails_motion_button = 0;
+    m_clear_trails_button = 0;
+    m_orientation_button = 0;
+    m_power_text = 0;
+    m_transmit_button = 0;
+    m_standby_button = 0;
+    m_timed_idle_button = 0;
+    m_timed_run_button = 0;
+    m_interference_rejection_button = 0;
+    m_target_separation_button = 0;
+    m_noise_rejection_button = 0;
+    m_target_boost_button = 0;
+    m_target_expansion_button = 0;
+    m_scan_speed_button = 0;
+    m_bearing_alignment_button = 0;
+    m_antenna_height_button = 0;
+    m_antenna_forward_button = 0;
+    m_antenna_starboard_button = 0;
+    m_local_interference_rejection_button = 0;
+    m_side_lobe_suppression_button = 0;
+    m_main_bang_size_button = 0;
+    m_overlay_button = 0;
+    m_window_button = 0;
+    m_range_button = 0;
+    m_transparency_button = 0;  // TODO: Set it on change
+    m_refresh_rate_button = 0;  // TODO: Set it on change
+    m_gain_button = 0;
+    m_sea_button = 0;
+    m_rain_button = 0;
+    m_adjust_button = 0;
+    m_bearing_button = 0;
+
+    CLEAR_STRUCT(m_ctrl);
   };
   ~ControlsDialog();
 
@@ -385,13 +459,26 @@ class RadarControlButton : public wxButton {
   }
 
   RadarControlButton(ControlsDialog *parent, wxWindowID id, const wxString &label, ControlInfo &control, radar_control_item &item, const wxString &newUnit = wxT(""), const wxString &newComment = wxT("")) {
+    Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
 
-    RadarControlButton(parent, id, g_buttonSize, label, control.type,
-                       control.autoValues > 0, control.defaultValue, newUnit, newComment);
+    m_parent = parent;
+    m_pi = m_parent->m_pi;
+
+    value = control.defaultValue;
     autoValues = control.autoValues;
     minValue = control.minValue;
     maxValue = control.maxValue;
     names = control.names;
+    autoValue = 0;
+    firstLine = label;
+    unit = newUnit;
+    comment = newComment;
+    names = 0;
+    controlType = control.type;
+
+    SetLocalValue(item.GetButton());
+
+    this->SetFont(m_parent->m_pi->m_font);
     // SetLocalValue(item.GetButton());
   }
 

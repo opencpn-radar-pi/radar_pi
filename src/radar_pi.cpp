@@ -52,11 +52,11 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin *p) { delete p; }
 //   Distance measurement for simple sphere
 /********************************************************************************************************/
 
-double local_distance(double lat1, double lon1, double lat2, double lon2) {
-  double s1 = deg2rad(lat1);
-  double l1 = deg2rad(lon1);
-  double s2 = deg2rad(lat2);
-  double l2 = deg2rad(lon2);
+double local_distance(GeoPosition pos1, GeoPosition pos2) {
+  double s1 = deg2rad(pos1.lat);
+  double l1 = deg2rad(pos1.lon);
+  double s2 = deg2rad(pos2.lat);
+  double l2 = deg2rad(pos2.lon);
   double theta = l2 - l1;
 
   // Spherical Law of Cosines
@@ -66,11 +66,11 @@ double local_distance(double lat1, double lon1, double lat2, double lon2) {
   return dist;
 }
 
-double local_bearing(double lat1, double lon1, double lat2, double lon2) {
-  double s1 = deg2rad(lat1);
-  double l1 = deg2rad(lon1);
-  double s2 = deg2rad(lat2);
-  double l2 = deg2rad(lon2);
+double local_bearing(GeoPosition pos1, GeoPosition pos2) {
+  double s1 = deg2rad(pos1.lat);
+  double l1 = deg2rad(pos1.lon);
+  double s2 = deg2rad(pos2.lat);
+  double l2 = deg2rad(pos2.lon);
   double theta = l2 - l1;
 
   double y = sin(theta) * cos(s2);
@@ -80,8 +80,8 @@ double local_bearing(double lat1, double lon1, double lat2, double lon2) {
   return brg;
 }
 
-static double radar_distance(double lat1, double lon1, double lat2, double lon2, char unit) {
-  double dist = local_distance(lat1, lon1, lat2, lon2);
+static double radar_distance(GeoPosition pos1, GeoPosition pos2, char unit) {
+  double dist = local_distance(pos1, pos2);
 
   switch (unit) {
     case 'M':  // statute miles
@@ -179,12 +179,10 @@ int radar_pi::Init(void) {
   m_var = 0.0;
   m_var_source = VARIATION_SOURCE_NONE;
   m_bpos_set = false;
-  m_ownship_lat = nan("");
-  m_ownship_lon = nan("");
-  m_radar_lat = nan("");
-  m_radar_lon = nan("");
-  m_cursor_lat = nan("");
-  m_cursor_lon = nan("");
+  m_ownship.lat = nan("");
+  m_ownship.lon = nan("");
+  m_cursor_pos.lat = nan("");
+  m_cursor_pos.lon = nan("");
 
   m_guard_bogey_seen = false;
   m_guard_bogey_confirmed = false;
@@ -651,10 +649,9 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     if (m_settings.show                                                             // radar shown
         && m_settings.chart_overlay >= 0                                            // overlay desired
         && m_radar[m_settings.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
-        && !isnan(m_cursor_lat) && !isnan(m_cursor_lon)) {
+        && !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon)) {
       Position target_pos;
-      target_pos.lat = m_cursor_lat;
-      target_pos.lon = m_cursor_lon;
+      target_pos.pos = m_cursor_pos;
       m_radar[m_settings.chart_overlay]->m_arpa->AcquireNewMARPATarget(target_pos);
     }
   } else if (id == m_context_menu_delete_radar_target) {
@@ -662,8 +659,7 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     // In this case targets can be made by a guard zone in a radarwindow
     if (m_settings.show && m_settings.chart_overlay >= 0) {
       Position target_pos;
-      target_pos.lat = m_cursor_lat;
-      target_pos.lon = m_cursor_lon;
+      target_pos.pos = m_cursor_pos;
       if (m_radar[m_settings.chart_overlay]->m_arpa) {
         m_radar[m_settings.chart_overlay]->m_arpa->DeleteTarget(target_pos);
       }
@@ -882,60 +878,55 @@ void radar_pi::SetRadarHeading(double heading, bool isTrue) {
 }
 
 void radar_pi::UpdateHeadingPositionState() {
-  wxCriticalSectionLocker lock(m_exclusive);
-  time_t now = time(0);
+  {
+    wxCriticalSectionLocker lock(m_exclusive);
+    time_t now = time(0);
 
-  if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
-    // If the position data is 10s old reset our position.
-    // Note that the watchdog is reset every time we receive a position.
-    m_bpos_set = false;
-    LOG_VERBOSE(wxT("radar_pi: Lost Boat Position data"));
-  }
+    if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
+      // If the position data is 10s old reset our position.
+      // Note that the watchdog is reset every time we receive a position.
+      m_bpos_set = false;
+      LOG_VERBOSE(wxT("radar_pi: Lost Boat Position data"));
+    }
 
-  switch (m_heading_source) {
-    case HEADING_NONE:
-      break;
-    case HEADING_FIX_COG:
-    case HEADING_FIX_HDT:
-    case HEADING_NMEA_HDT:
-    case HEADING_RADAR_HDT:
-      if (TIMED_OUT(now, m_hdt_timeout)) {
-        // If the position data is 10s old reset our heading.
-        // Note that the watchdog is reset every time we receive a heading.
-        m_heading_source = HEADING_NONE;
-        LOG_VERBOSE(wxT("radar_pi: Lost Heading data"));
-      }
-      break;
-    case HEADING_FIX_HDM:
-    case HEADING_NMEA_HDM:
-    case HEADING_RADAR_HDM:
-      if (TIMED_OUT(now, m_hdm_timeout)) {
-        // If the position data is 10s old reset our heading.
-        // Note that the watchdog is continuously reset every time we receive a
-        // heading
-        m_heading_source = HEADING_NONE;
-        LOG_VERBOSE(wxT("radar_pi: Lost Heading data"));
-      }
-      break;
-  }
+    switch (m_heading_source) {
+      case HEADING_NONE:
+        break;
+      case HEADING_FIX_COG:
+      case HEADING_FIX_HDT:
+      case HEADING_NMEA_HDT:
+      case HEADING_RADAR_HDT:
+        if (TIMED_OUT(now, m_hdt_timeout)) {
+          // If the position data is 10s old reset our heading.
+          // Note that the watchdog is reset every time we receive a heading.
+          m_heading_source = HEADING_NONE;
+          LOG_VERBOSE(wxT("radar_pi: Lost Heading data"));
+        }
+        break;
+      case HEADING_FIX_HDM:
+      case HEADING_NMEA_HDM:
+      case HEADING_RADAR_HDM:
+        if (TIMED_OUT(now, m_hdm_timeout)) {
+          // If the position data is 10s old reset our heading.
+          // Note that the watchdog is continuously reset every time we receive a
+          // heading
+          m_heading_source = HEADING_NONE;
+          LOG_VERBOSE(wxT("radar_pi: Lost Heading data"));
+        }
+        break;
+    }
 
-  if (m_var_source != VARIATION_SOURCE_NONE && TIMED_OUT(now, m_var_timeout)) {
-    m_var_source = VARIATION_SOURCE_NONE;
-    LOG_VERBOSE(wxT("radar_pi: Lost Variation source"));
+    if (m_var_source != VARIATION_SOURCE_NONE && TIMED_OUT(now, m_var_timeout)) {
+      m_var_source = VARIATION_SOURCE_NONE;
+      LOG_VERBOSE(wxT("radar_pi: Lost Variation source"));
+    }
   }
 
   // Update radar position offset from GPS
-  if (m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt) &&
-      (m_settings.antenna_starboard != 0 || m_settings.antenna_forward != 0)) {
-    double sine = sin(deg2rad(m_hdt));
-    double cosine = cos(deg2rad(m_hdt));
-    double dist_forward = (double)m_settings.antenna_forward / 1852 / 60;
-    double dist_starboard = (double)m_settings.antenna_starboard / 1852 / 60;
-    m_radar_lat = dist_forward * cosine - dist_starboard * sine + m_ownship_lat;
-    m_radar_lon = (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_ownship_lat)) + m_ownship_lon;
-  } else {
-    m_radar_lat = m_ownship_lat;
-    m_radar_lon = m_ownship_lon;
+  if (m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt)) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      m_radar[r]->SetRadarPosition(m_ownship, m_hdt);
+    }
   }
 }
 
@@ -1163,7 +1154,7 @@ bool radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 // Called by Plugin Manager on main system process cycle
 
 bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
-  double radar_lat, radar_lon;
+  GeoPosition radar_pos;
 
   if (!m_initialized) {
     return true;
@@ -1190,11 +1181,13 @@ bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
       && M_SETTINGS.chart_overlay >= 0                                            // Overlay desired
       && M_SETTINGS.chart_overlay < (int)M_SETTINGS.radar_count                   // and still valid
       && m_radar[M_SETTINGS.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar transmitting
-      && GetRadarPosition(&radar_lat, &radar_lon)) {                              // Boat position known
+      && m_radar[M_SETTINGS.chart_overlay]->GetRadarPosition(&radar_pos)) {       // Boat position known
 
     // Always compute m_auto_range_meters, possibly needed by SendState() called
     // from DoTick().
-    double max_distance = radar_distance(vp->lat_min, vp->lon_min, vp->lat_max, vp->lon_max, 'm');
+    GeoPosition pos_min = { vp->lat_min, vp->lon_min };
+    GeoPosition pos_max = { vp->lat_max, vp->lon_max };
+    double max_distance = radar_distance(pos_min, pos_max, 'm');
     // max_distance is the length of the diagonal of the viewport. If the boat
     // were centered, the max length to the edge of the screen is exactly half that.
     double edge_distance = max_distance / 2.0;
@@ -1204,16 +1197,15 @@ bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     }
 
     wxPoint boat_center;
-    GetCanvasPixLL(vp, &boat_center, radar_lat, radar_lon);
+    GetCanvasPixLL(vp, &boat_center, radar_pos.lat, radar_pos.lon);
 
     m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
 
     //    Calculate image scale factor
-    double llat, llon, ulat, ulon, dist_y, v_scale_ppm;
-
-    GetCanvasLLPix(vp, wxPoint(0, vp->pix_height - 1), &ulat, &ulon);  // is pix_height a mapable coordinate?
-    GetCanvasLLPix(vp, wxPoint(0, 0), &llat, &llon);
-    dist_y = radar_distance(llat, llon, ulat, ulon, 'm');  // Distance of height of display - meters
+    double dist_y, v_scale_ppm;
+    GetCanvasLLPix(vp, wxPoint(0, vp->pix_height - 1), &pos_max.lat, &pos_max.lon);  // is pix_height a mapable coordinate?
+    GetCanvasLLPix(vp, wxPoint(0, 0), &pos_min.lat, &pos_min.lon);
+    dist_y = radar_distance(pos_min, pos_max, 'm');  // Distance of height of display - meters
     v_scale_ppm = 1.0;
     if (dist_y > 0.) {
       // v_scale_ppm = vertical pixels per meter
@@ -1295,6 +1287,13 @@ bool radar_pi::LoadConfig(void) {
       SetControlValue(n, CT_TARGET_TRAILS, v, 0);
       pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);
       SetControlValue(n, CT_TRAILS_MOTION, v, 0);
+      pConf->Read(wxT("MainBangSize"), &v, 0);
+      SetControlValue(n, CT_MAIN_BANG_SIZE, v, 0);
+      pConf->Read(wxT("AntennaForward"), &v, 0);
+      SetControlValue(n, CT_ANTENNA_FORWARD, v, 0);
+      pConf->Read(wxT("AntennaStarboard"), &v, 0);
+      SetControlValue(n, CT_ANTENNA_STARBOARD, v, 0);
+
       pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[n], n ? false : true);
       pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * n);
       pConf->Read(wxString::Format(wxT("Radar%dWindowPosY"), r), &y, 120);
@@ -1348,10 +1347,7 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("GuardZonesRenderStyle"), &m_settings.guard_zone_render_style, 0);
     pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
     pConf->Read(wxT("IgnoreRadarHeading"), &m_settings.ignore_radar_heading, 0);
-    pConf->Read(wxT("MainBangSize"), &m_settings.main_bang_size, 0);
     pConf->Read(wxT("ShowExtremeRange"), &m_settings.show_extreme_range, false);
-    pConf->Read(wxT("AntennaForward"), &m_settings.antenna_forward, 0);
-    pConf->Read(wxT("AntennaStarboard"), &m_settings.antenna_starboard, 0);
     pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 0);
     pConf->Read(wxT("PassHeadingToOCPN"), &m_settings.pass_heading_to_opencpn, false);
     pConf->Read(wxT("Refreshrate"), &m_settings.refreshrate, 3);
@@ -1401,10 +1397,7 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("GuardZonesRenderStyle"), m_settings.guard_zone_render_style);
     pConf->Write(wxT("GuardZonesThreshold"), m_settings.guard_zone_threshold);
     pConf->Write(wxT("IgnoreRadarHeading"), m_settings.ignore_radar_heading);
-    pConf->Write(wxT("MainBangSize"), m_settings.main_bang_size);
     pConf->Write(wxT("ShowExtremeRange"), m_settings.show_extreme_range);
-    pConf->Write(wxT("AntennaForward"), m_settings.antenna_forward);
-    pConf->Write(wxT("AntennaStarboard"), m_settings.antenna_starboard);
     pConf->Write(wxT("MenuAutoHide"), m_settings.menu_auto_hide);
     pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
     pConf->Write(wxT("RangeUnits"), (int)m_settings.range_units);
@@ -1452,6 +1445,9 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dControlPosX"), r), m_settings.control_pos[r].x);
       pConf->Write(wxString::Format(wxT("Radar%dControlPosY"), r), m_settings.control_pos[r].y);
       pConf->Write(wxString::Format(wxT("Radar%dMinContourLength"), r), m_radar[r]->m_min_contour_length);
+      pConf->Write(wxString::Format(wxT("Radar%dMainBangSize"), r), m_radar[r]->m_main_bang_size.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dAntennaForward"), r), m_radar[r]->m_antenna_forward.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dAntennaStarboard"), r), m_radar[r]->m_antenna_starboard.GetValue());
 
       // LOG_DIALOG(wxT("radar_pi: SaveConfig: show_radar[%d]=%d"), r, m_settings.show_radar[r]);
       for (int i = 0; i < GUARD_ZONES; i++) {
@@ -1528,8 +1524,8 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   }
 
   if (pfix.FixTime > 0 && NOT_TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT)) {
-    m_ownship_lat = pfix.Lat;
-    m_ownship_lon = pfix.Lon;
+    m_ownship.lat = pfix.Lat;
+    m_ownship.lon = pfix.Lon;
 
     if (!m_bpos_set) {
       LOG_VERBOSE(wxT("radar_pi: GPS position is now known"));
@@ -1642,8 +1638,8 @@ void radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
           double f_AISLon = wxAtof(message.Get(_T("lon"), defaultValue).AsString());
           // Rectangle around own ship to look for AIS targets.
           double d_side = ArpaMaxRange / 1852.0 / 60.0;
-          if (f_AISLat < (m_radar_lat + d_side) && f_AISLat > (m_radar_lat - d_side) && f_AISLon < (m_radar_lon + d_side * 2) &&
-              f_AISLon > (m_radar_lon - d_side * 2)) {
+          if (f_AISLat < (m_ownship.lat + d_side) && f_AISLat > (m_ownship.lat - d_side) &&
+              f_AISLon < (m_ownship.lon + d_side * 2) && f_AISLon > (m_ownship.lon - d_side * 2)) {
             bool updated = false;
             for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) {  // Check for existing mmsi
               if (m_ais_in_arpa_zone[i].ais_mmsi == json_ais_mmsi) {
@@ -1677,14 +1673,14 @@ void radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
   }
 }
 
-bool radar_pi::FindAIS_at_arpaPos(const double &lat, const double &lon, const double &dist) {
+bool radar_pi::FindAIS_at_arpaPos(const GeoPosition &pos, const double &dist) {
   if (m_ais_in_arpa_zone.size() < 1) return false;
   bool hit = false;
   double offset = dist / 1852. / 60.;
   for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) {
     if (m_ais_in_arpa_zone[i].ais_mmsi != 0) {  // Avtive post
-      if (lat + offset > m_ais_in_arpa_zone[i].ais_lat && lat - offset < m_ais_in_arpa_zone[i].ais_lat &&
-          lon + (offset * 1.75) > m_ais_in_arpa_zone[i].ais_lon && lon - (offset * 1.75) < m_ais_in_arpa_zone[i].ais_lon) {
+      if (pos.lat + offset > m_ais_in_arpa_zone[i].ais_lat && pos.lat - offset < m_ais_in_arpa_zone[i].ais_lat &&
+          pos.lon + (offset * 1.75) > m_ais_in_arpa_zone[i].ais_lon && pos.lon - (offset * 1.75) < m_ais_in_arpa_zone[i].ais_lon) {
         hit = true;
         break;
       }
@@ -1737,20 +1733,17 @@ bool radar_pi::SetControlValue(int radar, ControlType controlType, int value,
       return true;
     }
     case CT_MAIN_BANG_SIZE: {
-      m_settings.main_bang_size = value;
-      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
+      m_radar[radar]->m_main_bang_size.Update(value);
       return true;
     }
 
     case CT_ANTENNA_FORWARD: {
-      m_settings.antenna_forward = value;
-      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
+      m_radar[radar]->m_antenna_forward.Update(value);
       return true;
     }
 
     case CT_ANTENNA_STARBOARD: {
-      m_settings.antenna_starboard = value;
-      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
+      m_radar[radar]->m_antenna_starboard.Update(value);
       return true;
     }
 
@@ -1870,15 +1863,12 @@ void radar_pi::SetNMEASentence(wxString &sentence) {
   }
 }
 
-void radar_pi::SetCursorLatLon(double lat, double lon) {
-  m_cursor_lat = lat;
-  m_cursor_lon = lon;
-}
+void radar_pi::SetCursorPosition(GeoPosition pos) { m_cursor_pos = pos; }
 
 bool radar_pi::MouseEventHook(wxMouseEvent &event) {
   if (event.LeftDown()) {
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      m_radar[r]->SetMouseLatLon(m_cursor_lat, m_cursor_lon);
+      m_radar[r]->SetMousePosition(m_cursor_pos);
     }
   }
   return false;

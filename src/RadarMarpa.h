@@ -80,8 +80,7 @@ enum OCPN_target_status {
 
 class Position {
  public:
-  double lat;
-  double lon;
+  GeoPosition pos;
   double dlat_dt;   // m / sec
   double dlon_dt;   // m / sec
   wxLongLong time;  // millis

@@ -673,7 +673,6 @@ void ControlsDialog::CreateControls() {
   RadarButton* bAdvancedBack = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
   m_advanced_sizer->Add(bAdvancedBack, 0, wxALL, BORDER);
 
-#if 0
   if (m_ctrl.control[CT_NOISE_REJECTION].type) {
     // The NOISE REJECTION button
     m_noise_rejection_button =
@@ -683,61 +682,34 @@ void ControlsDialog::CreateControls() {
 
   // The TARGET EXPANSION button
   if (m_ctrl.control[CT_TARGET_EXPANSION].type) {
-    // The NOISE REJECTION button
-    m_advanced_sizer->Add(new RadarControlButton(this, ID_TARGET_EXPANSION, _("Target expansion"), m_ctrl.control[CT_TARGET_EXPANSION], m_ri->m_target_expansion), 0, wxALL, BORDER);
+    m_target_expansion_button = new RadarControlButton(this, ID_TARGET_EXPANSION, _("Target expansion"), m_ctrl.control[CT_TARGET_EXPANSION], m_ri->m_target_expansion);
+    m_advanced_sizer->Add(m_target_expansion_button, 0, wxALL, BORDER);
   }
-#endif
   
   // The REJECTION button
 
-  interference_rejection_names[0] = _("Off");
-  interference_rejection_names[1] = _("Low");
-  interference_rejection_names[2] = _("Medium");
-  interference_rejection_names[3] = _("High");
-
-  m_interference_rejection_button = new RadarControlButton(this, ID_INTERFERENCE_REJECTION, g_buttonSize,
-                                                           _("Interference rejection"), CT_INTERFERENCE_REJECTION, false, 0);
-  m_advanced_sizer->Add(m_interference_rejection_button, 0, wxALL, BORDER);
-  m_interference_rejection_button->minValue = 0;
-  m_interference_rejection_button->maxValue = ARRAY_SIZE(interference_rejection_names) - 1;
-  m_interference_rejection_button->names = interference_rejection_names;
-  m_interference_rejection_button->SetLocalValue(m_ri->m_interference_rejection.GetButton());  // redraw after adding names
+  if (m_ctrl.control[CT_INTERFERENCE_REJECTION].type) {
+    m_interference_rejection_button = new RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"), m_ctrl.control[CT_INTERFERENCE_REJECTION], m_ri->m_interference_rejection);
+    m_advanced_sizer->Add(m_interference_rejection_button, 0, wxALL, BORDER);
+  }
 
   // The TARGET SEPARATION button
-
-  target_separation_names[0] = _("Off");
-  target_separation_names[1] = _("Low");
-  target_separation_names[2] = _("Medium");
-  target_separation_names[3] = _("High");
-
-  m_target_separation_button =
-      new RadarControlButton(this, ID_TARGET_SEPARATION, g_buttonSize, _("Target separation"), CT_TARGET_SEPARATION, false, 0);
-  m_advanced_sizer->Add(m_target_separation_button, 0, wxALL, BORDER);
-  m_target_separation_button->minValue = 0;
-  m_target_separation_button->maxValue = ARRAY_SIZE(target_separation_names) - 1;
-  m_target_separation_button->names = target_separation_names;
-  m_target_separation_button->SetLocalValue(m_ri->m_target_separation.GetButton());  // redraw after adding names
+  if (m_ctrl.control[CT_TARGET_SEPARATION].type) {
+    m_target_separation_button = new RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"), m_ctrl.control[CT_TARGET_SEPARATION], m_ri->m_target_separation);
+    m_advanced_sizer->Add(m_target_separation_button, 0, wxALL, BORDER);
+  }
 
   // The SCAN SPEED button
-  scan_speed_names[0] = _("Normal");
-  scan_speed_names[1] = _("Fast");
-  m_scan_speed_button = new RadarControlButton(this, ID_SCAN_SPEED, g_buttonSize, _("Scan speed"), CT_SCAN_SPEED, false, 0);
-  m_advanced_sizer->Add(m_scan_speed_button, 0, wxALL, BORDER);
-  m_scan_speed_button->minValue = 0;
-  m_scan_speed_button->maxValue = ARRAY_SIZE(scan_speed_names) - 1;
-  m_scan_speed_button->names = scan_speed_names;
-  m_scan_speed_button->SetLocalValue(m_ri->m_scan_speed.GetButton());  // redraw after adding names
+  if (m_ctrl.control[CT_SCAN_SPEED].type) {
+    m_scan_speed_button = new RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), m_ctrl.control[CT_SCAN_SPEED], m_ri->m_scan_speed);
+    m_advanced_sizer->Add(m_scan_speed_button, 0, wxALL, BORDER);
+  }
 
   // The TARGET BOOST button
-  target_boost_names[0] = _("Off");
-  target_boost_names[1] = _("Low");
-  target_boost_names[2] = _("High");
-  m_target_boost_button = new RadarControlButton(this, ID_TARGET_BOOST, g_buttonSize, _("Target boost"), CT_TARGET_BOOST, false, 0);
-  m_advanced_sizer->Add(m_target_boost_button, 0, wxALL, BORDER);
-  m_target_boost_button->minValue = 0;
-  m_target_boost_button->maxValue = ARRAY_SIZE(target_boost_names) - 1;
-  m_target_boost_button->names = target_boost_names;
-  m_target_boost_button->SetLocalValue(m_ri->m_target_boost.GetButton());  // redraw after adding names
+  if (m_ctrl.control[CT_TARGET_BOOST].type) {
+    m_target_boost_button = new RadarControlButton(this, ID_SCAN_SPEED, _("Target boost"), m_ctrl.control[CT_TARGET_BOOST], m_ri->m_target_boost);
+    m_advanced_sizer->Add(m_target_boost_button, 0, wxALL, BORDER);
+  }
 
   // The INSTALLATION button
   RadarButton* bInstallation = new RadarButton(this, ID_INSTALLATION, g_buttonSize, _("Installation"));
@@ -760,35 +732,30 @@ void ControlsDialog::CreateControls() {
   m_installation_sizer->Add(bInstallationBack, 0, wxALL, BORDER);
 
   // The BEARING ALIGNMENT button
-  m_bearing_alignment_button =
-      new RadarControlButton(this, ID_BEARING_ALIGNMENT, g_buttonSize, _("Bearing alignment"), CT_BEARING_ALIGNMENT, false,
-                             m_ri->m_bearing_alignment.GetButton(), _("degrees"), _("relative to bow"));
-  m_installation_sizer->Add(m_bearing_alignment_button, 0, wxALL, BORDER);
-  m_bearing_alignment_button->minValue = -179;
-  m_bearing_alignment_button->maxValue = 180;
+  if (m_ctrl.control[CT_BEARING_ALIGNMENT].type) {
+    m_bearing_alignment_button = new RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"), m_ctrl.control[CT_BEARING_ALIGNMENT], m_ri->m_bearing_alignment);
+    m_installation_sizer->Add(m_bearing_alignment_button, 0, wxALL, BORDER);
+  }
 
   // The ANTENNA HEIGHT button
-  m_antenna_height_button = new RadarControlButton(this, ID_ANTENNA_HEIGHT, g_buttonSize, _("Antenna height"), CT_ANTENNA_HEIGHT,
-                                                   false, m_ri->m_antenna_height.GetButton(), _("m"), _("above sealevel"));
-  m_installation_sizer->Add(m_antenna_height_button, 0, wxALL, BORDER);
-  m_antenna_height_button->minValue = 0;
-  m_antenna_height_button->maxValue = 30;
+  if (m_ctrl.control[CT_ANTENNA_HEIGHT].type) {
+    m_antenna_height_button = new RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Bearing alignment"), m_ctrl.control[CT_ANTENNA_HEIGHT], m_ri->m_antenna_height);
+    m_installation_sizer->Add(m_antenna_height_button, 0, wxALL, BORDER);
+  }
 
   // The ANTENNA FORWARD button
-  m_antenna_forward_button =
-      new RadarControlButton(this, ID_ANTENNA_FORWARD, g_buttonSize, _("Antenna forward"), CT_ANTENNA_FORWARD, false,
-                             m_pi->m_settings.antenna_forward, _("m"), _("relative to GPS") + wxT("\n") + _("negative = behind"));
-  m_installation_sizer->Add(m_antenna_forward_button, 0, wxALL, BORDER);
-  m_antenna_forward_button->minValue = -200;
-  m_antenna_forward_button->maxValue = 200;
+  if (m_ctrl.control[CT_ANTENNA_FORWARD].type) {
+    m_antenna_forward_button = new RadarControlButton(this, ID_ANTENNA_FORWARD, _("Antenna forward"), m_ctrl.control[CT_ANTENNA_FORWARD], m_ri->m_antenna_forward,
+                                                      _("m"), _("relative to GPS") + wxT("\n") + _("negative = behind"));
+    m_installation_sizer->Add(m_antenna_forward_button, 0, wxALL, BORDER);
+  }
 
   // The ANTENNA STARBOARD button
-  m_antenna_starboard_button =
-      new RadarControlButton(this, ID_ANTENNA_STARBOARD, g_buttonSize, _("Antenna starboard"), CT_ANTENNA_STARBOARD, false,
-                             m_pi->m_settings.antenna_starboard, _("m"), _("relative to GPS") + wxT("\n") + _("negative = port"));
-  m_installation_sizer->Add(m_antenna_starboard_button, 0, wxALL, BORDER);
-  m_antenna_starboard_button->minValue = -50;
-  m_antenna_starboard_button->maxValue = 50;
+  if (m_ctrl.control[CT_ANTENNA_STARBOARD].type) {
+    m_antenna_starboard_button = new RadarControlButton(this, ID_ANTENNA_STARBOARD, _("Antenna forward"), m_ctrl.control[CT_ANTENNA_STARBOARD], m_ri->m_antenna_starboard,
+                                                      _("m"), _("relative to GPS") + wxT("\n") + _("negative = port"));
+    m_installation_sizer->Add(m_antenna_starboard_button, 0, wxALL, BORDER);
+  }
 
   // The LOCAL INTERFERENCE REJECTION button
   m_local_interference_rejection_button = new RadarControlButton(
@@ -809,11 +776,11 @@ void ControlsDialog::CreateControls() {
   m_side_lobe_suppression_button->SetLocalValue(m_ri->m_side_lobe_suppression.GetButton());  // redraw after adding names
 
   // The MAIN BANG SIZE button
-  m_main_bang_size_button = new RadarControlButton(this, ID_MAIN_BANG_SIZE, g_buttonSize, _("Main bang size"), CT_MAIN_BANG_SIZE,
-                                                   false, m_pi->m_settings.main_bang_size);
-  m_installation_sizer->Add(m_main_bang_size_button, 0, wxALL, BORDER);
-  m_main_bang_size_button->minValue = 0;
-  m_main_bang_size_button->maxValue = 10;
+  if (m_ctrl.control[CT_MAIN_BANG_SIZE].type) {
+    m_main_bang_size_button = new RadarControlButton(this, ID_MAIN_BANG_SIZE, _("Main bang size"), m_ctrl.control[CT_MAIN_BANG_SIZE], m_ri->m_main_bang_size,
+                                                        _("pixels"));
+    m_installation_sizer->Add(m_main_bang_size_button, 0, wxALL, BORDER);
+  }
 
   m_top_sizer->Hide(m_installation_sizer);
 
@@ -1397,17 +1364,15 @@ void ControlsDialog::OnClearCursorButtonClick(wxCommandEvent& event) {
 
 void ControlsDialog::OnAcquireTargetButtonClick(wxCommandEvent& event) {
   Position target_pos;
-  target_pos.lat = m_ri->m_mouse_lat;
-  target_pos.lon = m_ri->m_mouse_lon;
-  LOG_DIALOG(wxT("%s OnAcquireTargetButtonClick mouse=%f/%f"), m_log_name.c_str(), target_pos.lat, target_pos.lon);
+  target_pos.pos = m_ri->m_mouse_pos;
+  LOG_DIALOG(wxT("%s OnAcquireTargetButtonClick mouse=%f/%f"), m_log_name.c_str(), target_pos.pos.lat, target_pos.pos.lon);
   m_ri->m_arpa->AcquireNewMARPATarget(target_pos);
 }
 
 void ControlsDialog::OnDeleteTargetButtonClick(wxCommandEvent& event) {
   Position target_pos;
-  target_pos.lat = m_ri->m_mouse_lat;
-  target_pos.lon = m_ri->m_mouse_lon;
-  LOG_DIALOG(wxT("%s OnDeleteTargetButtonClick mouse=%f/%f"), m_log_name.c_str(), target_pos.lat, target_pos.lon);
+  target_pos.pos = m_ri->m_mouse_pos;
+  LOG_DIALOG(wxT("%s OnDeleteTargetButtonClick mouse=%f/%f"), m_log_name.c_str(), target_pos.pos.lat, target_pos.pos.lon);
   m_ri->m_arpa->DeleteTarget(target_pos);
 }
 
@@ -1596,92 +1561,104 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_overlay_button->SetLabel(o);
   }
 
-  if (m_ri->m_range.IsModified() || refreshAll) {
+  if (m_range_button && (m_ri->m_range.IsModified() || refreshAll)) {
     m_ri->m_range.GetButton();
     m_range_button->SetRangeLabel();
   }
 
   // gain
-  if (m_ri->m_gain.IsModified() || refreshAll) {
+  if (m_gain_button && (m_ri->m_gain.IsModified() || refreshAll)) {
     int button = m_ri->m_gain.GetButton();
     m_gain_button->SetLocalValue(button);
   }
 
   //  rain
-  if (m_ri->m_rain.IsModified() || refreshAll) {
+  if (m_rain_button && (m_ri->m_rain.IsModified() || refreshAll)) {
     m_rain_button->SetLocalValue(m_ri->m_rain.GetButton());
   }
 
   //   sea
-  if (m_ri->m_sea.IsModified() || refreshAll) {
+  if (m_sea_button && (m_ri->m_sea.IsModified() || refreshAll)) {
     int button = m_ri->m_sea.GetButton();
     m_sea_button->SetLocalValue(button);
   }
 
   //   target_boost
-  if (m_ri->m_target_boost.IsModified() || refreshAll) {
+  if (m_target_boost_button && (m_ri->m_target_boost.IsModified() || refreshAll)) {
     m_target_boost_button->SetLocalValue(m_ri->m_target_boost.GetButton());
   }
 
-#if 0
-
   //   target_expansion
-  if (m_ri->m_target_expansion.IsModified() || refreshAll) {
+  if (m_target_expansion_button && (m_ri->m_target_expansion.IsModified() || refreshAll)) {
     m_target_expansion_button->SetLocalValue(m_ri->m_target_expansion.GetButton());
   }
 
   //  noise_rejection
-  if (m_ri->m_noise_rejection.IsModified() || refreshAll) {
+  if (m_noise_rejection_button && (m_ri->m_noise_rejection.IsModified() || refreshAll)) {
     m_noise_rejection_button->SetLocalValue(m_ri->m_noise_rejection.GetButton());
   }
-#endif
 
   //  target_separation
-  if (m_ri->m_target_separation.IsModified() || refreshAll) {
+  if (m_target_separation_button && (m_ri->m_target_separation.IsModified() || refreshAll)) {
     m_target_separation_button->SetLocalValue(m_ri->m_target_separation.GetButton());
   }
 
 
   //  interference_rejection
-  if (m_ri->m_interference_rejection.IsModified() || refreshAll) {
+  if (m_interference_rejection_button && (m_ri->m_interference_rejection.IsModified() || refreshAll)) {
     m_interference_rejection_button->SetLocalValue(m_ri->m_interference_rejection.GetButton());
   }
 
   // scanspeed
-  if (m_ri->m_scan_speed.IsModified() || refreshAll) {
+  if (m_scan_speed_button && (m_ri->m_scan_speed.IsModified() || refreshAll)) {
     m_scan_speed_button->SetLocalValue(m_ri->m_scan_speed.GetButton());
   }
 
   //   antenna height
-  if (m_ri->m_antenna_height.IsModified() || refreshAll) {
+  if (m_antenna_height_button && (m_ri->m_antenna_height.IsModified() || refreshAll)) {
     m_antenna_height_button->SetLocalValue(m_ri->m_antenna_height.GetButton());
   }
 
   //  bearing alignment
-  if (m_ri->m_bearing_alignment.IsModified() || refreshAll) {
+  if (m_bearing_alignment_button && (m_ri->m_bearing_alignment.IsModified() || refreshAll)) {
     m_bearing_alignment_button->SetLocalValue(m_ri->m_bearing_alignment.GetButton());
   }
 
   //  local interference rejection
-  if (m_ri->m_local_interference_rejection.IsModified() || refreshAll) {
+  if (m_local_interference_rejection_button && (m_ri->m_local_interference_rejection.IsModified() || refreshAll)) {
     m_local_interference_rejection_button->SetLocalValue(m_ri->m_local_interference_rejection.GetButton());
   }
 
   // side lobe suppression
-  if (m_ri->m_side_lobe_suppression.IsModified() || refreshAll) {
+  if (m_side_lobe_suppression_button && (m_ri->m_side_lobe_suppression.IsModified() || refreshAll)) {
     int button = m_ri->m_side_lobe_suppression.GetButton();
     m_side_lobe_suppression_button->SetLocalValue(button);
   }
 
+  if (m_main_bang_size_button && (m_ri->m_main_bang_size.IsModified() || refreshAll)) {
+    m_main_bang_size_button->SetLocalValue(m_ri->m_main_bang_size.GetButton());
+  }
+  if (m_antenna_starboard_button && (m_ri->m_antenna_starboard.IsModified() || refreshAll)) {
+    m_antenna_starboard_button->SetLocalValue(m_ri->m_antenna_starboard.GetButton());
+  }
+  if (m_antenna_forward_button && (m_ri->m_antenna_forward.IsModified() || refreshAll)) {
+    m_antenna_forward_button->SetLocalValue(m_ri->m_antenna_forward.GetButton());
+  }
+
   if (refreshAll) {
     // Update all buttons set from plugin settings
-    m_transparency_button->SetLocalValue(M_SETTINGS.overlay_transparency);
-    m_timed_idle_button->SetLocalValue(M_SETTINGS.timed_idle);
-    m_timed_run_button->SetLocalValue(M_SETTINGS.idle_run_time);
-    m_refresh_rate_button->SetLocalValue(M_SETTINGS.refreshrate);
-    m_main_bang_size_button->SetLocalValue(M_SETTINGS.main_bang_size);
-    m_antenna_starboard_button->SetLocalValue(M_SETTINGS.antenna_starboard);
-    m_antenna_forward_button->SetLocalValue(M_SETTINGS.antenna_forward);
+    if (m_transparency_button) {
+      m_transparency_button->SetLocalValue(M_SETTINGS.overlay_transparency);
+    }
+    if (m_timed_idle_button) {
+      m_timed_idle_button->SetLocalValue(M_SETTINGS.timed_idle);
+    }
+    if (m_timed_run_button) {
+      m_timed_run_button->SetLocalValue(M_SETTINGS.idle_run_time);
+    }
+    if (m_refresh_rate_button) {
+      m_refresh_rate_button->SetLocalValue(M_SETTINGS.refreshrate);
+    }
   }
 
   int arpa_targets = m_ri->m_arpa->GetTargetCount();

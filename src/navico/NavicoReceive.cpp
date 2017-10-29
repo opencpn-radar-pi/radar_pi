@@ -138,11 +138,6 @@ bool g_first_receive = true;
 void NavicoReceive::ProcessFrame(const UINT8 *data, int len) {
   time_t now = time(0);
 
-  double lat;
-  double lon;
-
-  m_pi->GetRadarPosition(&lat, &lon);
-
   // log_line.time_rec = wxGetUTCTimeMillis();
   wxLongLong time_rec = wxGetUTCTimeMillis();
 
@@ -259,7 +254,7 @@ void NavicoReceive::ProcessFrame(const UINT8 *data, int len) {
     SpokeBearing b = MOD_SPOKES(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
     size_t len = NAVICO_SPOKE_LEN;
 
-    m_ri->ProcessRadarSpoke(a, b, line->data, len, range_meters, time_rec, lat, lon);
+    m_ri->ProcessRadarSpoke(a, b, line->data, len, range_meters, time_rec);
   }
 }
 

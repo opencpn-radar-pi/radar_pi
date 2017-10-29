@@ -167,13 +167,13 @@ void TrailBuffer::ZoomTrails(float zoom_factor) {
 
   for (size_t i = wxMax(m_trail_size / 2 + m_offset.lat - m_max_spoke_len, 0);
        i < wxMin(m_trail_size / 2 + m_offset.lat + m_max_spoke_len, m_trail_size); i++) {
-    size_t index_i =
+    int index_i =
         (int((float)(i - m_trail_size / 2 + m_offset.lat) * zoom_factor)) + m_trail_size / 2 - m_offset.lat * zoom_factor;
     if (index_i >= m_trail_size - 1) break;  // allow adding an additional pixel later
     if (index_i < 0) continue;
     for (size_t j = wxMax(m_trail_size / 2 + m_offset.lon - m_max_spoke_len, 0);
          j < wxMin(m_trail_size / 2 + m_offset.lon + m_max_spoke_len, m_trail_size); j++) {
-      size_t index_j =
+      int index_j =
           (int((float)(j - m_trail_size / 2 + m_offset.lon) * zoom_factor)) + m_trail_size / 2 - m_offset.lon * zoom_factor;
       if (index_j >= m_trail_size - 1) break;
       if (index_j < 0) continue;
@@ -237,7 +237,7 @@ void TrailBuffer::UpdateTrailPosition() {
     ZoomTrails(zoom_factor);
   }
 
-  if (!m_ri->m_pi->GetRadarPosition(&radar.lat, &radar.lon) || m_ri->m_pi->GetHeadingSource() == HEADING_NONE) {
+  if (!m_ri->GetRadarPosition(&radar) || m_ri->m_pi->GetHeadingSource() == HEADING_NONE) {
     return;
   }
 
@@ -301,7 +301,7 @@ void TrailBuffer::UpdateTrailPosition() {
 
   if (shift.lat >= MARGIN || shift.lat <= -MARGIN || shift.lon >= MARGIN || shift.lon <= -MARGIN) {  // huge shift, reset trails
     ClearTrails();
-    if (!m_ri->m_pi->GetRadarPosition(&m_pos.lat, &m_pos.lon)) {
+    if (!m_ri->GetRadarPosition(&m_pos)) {
       m_pos.lat = 0.;
       m_pos.lon = 0.;
     }

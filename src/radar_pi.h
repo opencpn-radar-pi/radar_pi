@@ -243,8 +243,8 @@ enum BlobColour {
 #define BLOB_COLOURS (BLOB_STRONG + 1)
 
 extern const char *convertRadarToString(int range_meters, int units, int index);
-extern double local_distance(double lat1, double lon1, double lat2, double lon2);
-extern double local_bearing(double lat1, double lon1, double lat2, double lon2);
+extern double local_distance(GeoPosition pos1, GeoPosition pos2);
+extern double local_bearing(GeoPosition pos1, GeoPosition pos2);
 
 enum DisplayModeType { DM_CHART_OVERLAY, DM_CHART_NONE };
 enum ToolbarIconColor { TB_NONE, TB_HIDDEN, TB_SEARCHING, TB_SEEN, TB_STANDBY, TB_ACTIVE };
@@ -312,9 +312,6 @@ struct PersistentSettings {
   int threshold_green;                             // Radar data has to be this strong to show as INTERMEDIATE
   int threshold_blue;                              // Radar data has to be this strong to show as WEAK
   int threshold_multi_sweep;                       // Radar data has to be this strong not to be ignored in multisweep
-  int main_bang_size;                              // Pixels at center to ignore
-  int antenna_starboard;                           // Ofsett of radar antenne starboard of GPS antenna
-  int antenna_forward;                             // Ofsett of radar antenne forward of GPS antenna
   int type_detection_method;                       // 0 = default, 1 = ignore reports
   int AISatARPAoffset;                             // Rectangle side where to search AIS targets at ARPA position
   wxPoint control_pos[RADARS];                     // Saved position of control menu windows
@@ -385,7 +382,7 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   void OnToolbarToolCallback(int id);
   void OnContextMenuItemCallback(int id);
   void ShowPreferencesDialog(wxWindow *parent);
-  void SetCursorLatLon(double lat, double lon);
+  void SetCursorPosition(GeoPosition pos);
   bool MouseEventHook(wxMouseEvent &event);
   bool m_guard_bogey_confirmed;
 
@@ -449,18 +446,13 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
     wxCriticalSectionLocker lock(m_exclusive);
     return m_cog;
   }
-  bool GetRadarPosition(double *lat, double *lon) {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    if (m_bpos_set && VALID_GEO(m_radar_lat) && VALID_GEO(m_radar_lon)) {
-      *lat = m_radar_lat;
-      *lon = m_radar_lon;
-      return true;
-    }
-    return false;
-  }
   HeadingSource GetHeadingSource() { return m_heading_source; }
   bool IsInitialized() { return m_initialized; }
+  bool IsBoatPositionValid() {
+    wxCriticalSectionLocker lock(m_exclusive);
+    return m_bpos_set;
+  }
+
   wxLongLong GetBootMillis() { return m_boot_time; }
   bool IsOpenGLEnabled() { return m_opengl_mode == OPENGL_ON; }
   wxGLContext *GetChartOpenGLContext();
@@ -477,7 +469,7 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
 
   // Check for AIS targets inside ARPA zone
   vector<AisArpa> m_ais_in_arpa_zone;  // Array for AIS targets in ARPA zone(s)
-  bool FindAIS_at_arpaPos(const double &lat, const double &lon, const double &dist);
+  bool FindAIS_at_arpaPos(const GeoPosition &pos, const double &dist);
 
  private:
   void RadarSendState(void);
@@ -574,8 +566,8 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   bool m_context_menu_arpa;
 
   // Cursor position. Used to show position in radar window
-  double m_cursor_lat, m_cursor_lon;
-  double m_ownship_lat, m_ownship_lon, m_radar_lat, m_radar_lon;
+  GeoPosition m_cursor_pos;
+  GeoPosition m_ownship;
 
   bool m_initialized;      // True if Init() succeeded and DeInit() not called yet.
   bool m_first_init;       // True in first Init() call.

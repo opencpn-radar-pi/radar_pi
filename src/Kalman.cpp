@@ -108,8 +108,8 @@ KalmanFilter::~KalmanFilter() {}
 
 void KalmanFilter::Predict(LocalPosition* xx, double delta_time) {
   Matrix<double, 4, 1> X;
-  X(0, 0) = xx->lat;
-  X(1, 0) = xx->lon;
+  X(0, 0) = xx->pos.lat;
+  X(1, 0) = xx->pos.lon;
   X(2, 0) = xx->dlat_dt;
   X(3, 0) = xx->dlon_dt;
   A(0, 2) = delta_time;  // time in seconds
@@ -119,8 +119,8 @@ void KalmanFilter::Predict(LocalPosition* xx, double delta_time) {
   AT(3, 1) = delta_time;
 
   X = A * X;
-  xx->lat = X(0, 0);
-  xx->lon = X(1, 0);
+  xx->pos.lat = X(0, 0);
+  xx->pos.lon = X(1, 0);
   xx->dlat_dt = X(2, 0);
   xx->dlon_dt = X(3, 0);
   xx->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed
@@ -140,15 +140,15 @@ void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected,
 // x expected local position
 // expected, same but in polar coordinates
 #define SQUARED(x) ((x) * (x))
-  double q_sum = SQUARED(x->lon) + SQUARED(x->lat);
+  double q_sum = SQUARED(x->pos.lon) + SQUARED(x->pos.lat);
 
   double c = 2048. / (2. * PI);
-  H(0, 0) = -c * x->lon / q_sum;
-  H(0, 1) = c * x->lat / q_sum;
+  H(0, 0) = -c * x->pos.lon / q_sum;
+  H(0, 1) = c * x->pos.lat / q_sum;
 
   q_sum = sqrt(q_sum);
-  H(1, 0) = x->lat / q_sum * 512. / (double)range;
-  H(1, 1) = x->lon / q_sum * 512. / (double)range;
+  H(1, 0) = x->pos.lat / q_sum * 512. / (double)range;
+  H(1, 1) = x->pos.lon / q_sum * 512. / (double)range;
 
   HT = H.Transpose();
 
@@ -163,8 +163,8 @@ void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected,
   Z(1, 0) = (double)(pol->r - expected->r);
 
   Matrix<double, 4, 1> X;
-  X(0, 0) = x->lat;
-  X(1, 0) = x->lon;
+  X(0, 0) = x->pos.lat;
+  X(1, 0) = x->pos.lon;
   X(2, 0) = x->dlat_dt;
   X(3, 0) = x->dlon_dt;
 
@@ -173,8 +173,8 @@ void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected,
 
   // calculate apostriori expected position
   X = X + K * Z;
-  x->lat = X(0, 0);
-  x->lon = X(1, 0);
+  x->pos.lat = X(0, 0);
+  x->pos.lon = X(1, 0);
   x->dlat_dt = X(2, 0);
   x->dlon_dt = X(3, 0);
 

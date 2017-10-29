@@ -144,7 +144,7 @@ void GuardZone::SearchTargets() {
   if (!m_pi->m_settings.show  // No radar shown
       || (m_pi->m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT &&
           m_pi->m_radar[1]->m_state.GetValue() != RADAR_TRANSMIT)  // Radar not transmitting
-      || !m_pi->GetRadarPosition(&own_pos.lat, &own_pos.lon)) {    // No position
+      || !m_ri->GetRadarPosition(&own_pos.pos)) {    // No position
     return;
   }
   if (m_ri->m_range_meters == 0) {

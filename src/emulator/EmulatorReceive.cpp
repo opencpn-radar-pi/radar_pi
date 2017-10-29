@@ -101,10 +101,8 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
     int hdt = SCALE_DEGREES_TO_SPOKES(m_pi->GetHeadingTrue());
     int bearing = MOD_SPOKES(angle + hdt);
 
-    wxLongLong time_rec;
-    double lat = 0.;
-    double lon = 0.;
-    m_ri->ProcessRadarSpoke(angle, bearing, data, sizeof(data), range_meters, time_rec, lat, lon);
+    wxLongLong time_rec = wxGetUTCTimeMillis();
+    m_ri->ProcessRadarSpoke(angle, bearing, data, sizeof(data), range_meters, time_rec);
   }
 
   LOG_VERBOSE(wxT("radar_pi: emulating %d spokes at range %d with %d spots"), scanlines_in_packet, range_meters, spots);

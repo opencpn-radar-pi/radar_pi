@@ -259,10 +259,9 @@ bool MessageBox::Show(bool show) {
 bool MessageBox::UpdateMessage(bool force) {
   message_status new_message_state = HIDE;
   time_t now = time(0);
-  double radar_lat, radar_lon;
 
   bool haveOpenGL = m_pi->IsOpenGLEnabled();
-  bool haveGPS = m_pi->GetRadarPosition(&radar_lat, &radar_lon);
+  bool haveGPS = m_pi->IsBoatPositionValid();
   bool haveTrueHeading = !TIMED_OUT(now, m_pi->GetHeadingTrueTimeout());
   bool haveMagHeading = !TIMED_OUT(now, m_pi->GetHeadingMagTimeout());
   bool haveHeading = haveTrueHeading || haveMagHeading;

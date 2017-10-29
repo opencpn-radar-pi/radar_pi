@@ -294,7 +294,7 @@ void RadarCanvas::FillCursorTexture() {
 void RadarCanvas::RenderCursor(int w, int h) {
   double distance;
   double bearing;
-  double radar_lat, radar_lon;
+  GeoPosition pos;
 
   int orientation = m_ri->GetOrientation();
 
@@ -302,12 +302,12 @@ void RadarCanvas::RenderCursor(int w, int h) {
     distance = m_ri->m_mouse_vrm * 1852.;
     bearing = m_ri->m_mouse_ebl[orientation];
   } else {
-    if (isnan(m_ri->m_mouse_lat) || isnan(m_ri->m_mouse_lon) || !m_pi->GetRadarPosition(&radar_lat, &radar_lon)) {
+    if (isnan(m_ri->m_mouse_pos.lat) || isnan(m_ri->m_mouse_pos.lon) || !m_ri->GetRadarPosition(&pos)) {
       return;
     }
     // Can't compute this upfront, ownship may move...
-    distance = local_distance(radar_lat, radar_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon) * 1852.;
-    bearing = local_bearing(radar_lat, radar_lon, m_ri->m_mouse_lat, m_ri->m_mouse_lon);
+    distance = local_distance(pos, m_ri->m_mouse_pos) * 1852.;
+    bearing = local_bearing(pos, m_ri->m_mouse_pos);
     if (m_ri->GetOrientation() != ORIENTATION_NORTH_UP) {
       bearing -= m_pi->GetHeadingTrue();
     }
@@ -433,9 +433,9 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   RenderRangeRingsAndHeading(w, h);
 
   PlugIn_ViewPort vp;
+  GeoPosition pos;
 
-  if (m_pi->GetHeadingSource() != HEADING_NONE && m_pi->GetRadarPosition(&vp.clat, &vp.clon) &&
-      M_SETTINGS.show_radar_target[m_ri->m_radar]) {
+  if (m_pi->GetHeadingSource() != HEADING_NONE && m_ri->GetRadarPosition(&pos) && M_SETTINGS.show_radar_target[m_ri->m_radar]) {
     // LAYER 2 - AIS AND ARPA TARGETS
 
     ResetGLViewPort(w, h);
@@ -464,6 +464,8 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     vp.skew = 0.;
     vp.pix_width = w;
     vp.pix_height = h;
+    vp.clat = pos.lat;
+    vp.clon = pos.lon;
 
     wxString aisTextFont = _("AIS Target Name");
     wxFont *aisFont = GetOCPNScaledFont_PlugIn(aisTextFont, 12);

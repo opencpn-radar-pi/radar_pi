@@ -50,11 +50,6 @@ class TrailBuffer {
   void UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t len);
   void UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t len);
 
-  struct GeoPosition {
-    double lat;
-    double lon;
-  };
-
   struct GeoPositionPixels {
     int lat;
     int lon;
@@ -74,8 +69,8 @@ class TrailBuffer {
   size_t m_max_spoke_len;
   size_t m_trail_size;
 
-  TrailRevolutionsAge *m_true_trails;      // m_trails_size * m_trails_size
-  TrailRevolutionsAge *m_relative_trails;  // m_spokes * m_max_spoke_len
+  TrailRevolutionsAge *m_true_trails;           // m_trails_size * m_trails_size
+  TrailRevolutionsAge *m_relative_trails;       // m_spokes * m_max_spoke_len
   TrailRevolutionsAge *m_copy_true_trails;      // m_trails_size * m_trails_size
   TrailRevolutionsAge *m_copy_relative_trails;  // m_spokes * m_max_spoke_len
 };

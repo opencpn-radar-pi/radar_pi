@@ -164,4 +164,9 @@ using namespace std;
 
 #define DEGREES_PER_ROTATION (360)  // Classical math
 
+struct GeoPosition {
+  double lat;
+  double lon;
+};
+
 #endif

@@ -52,8 +52,7 @@ class Polar {
 
 class LocalPosition {
  public:
-  double lat;
-  double lon;
+  GeoPosition pos;
   double dlat_dt;       // latitude  of speed vector, m/s
   double dlon_dt;       // longitude of speed vector, m/s
   double sd_speed_m_s;  // standard deviation of the speed, m/s

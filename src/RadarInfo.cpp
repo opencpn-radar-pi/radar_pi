@@ -204,8 +204,8 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   CLEAR_STRUCT(m_statistics);
   CLEAR_STRUCT(m_course_log);
 
-  m_mouse_lat = NAN;
-  m_mouse_lon = NAN;
+  m_mouse_pos.lat = NAN;
+  m_mouse_pos.lon = NAN;
   for (int i = 0; i < ORIENTATION_NUMBER; i++) {
     m_mouse_ebl[i] = NAN;
     m_mouse_vrm = NAN;
@@ -471,8 +471,8 @@ void RadarInfo::ResetSpokes() {
   for (size_t i = 0; i < m_spokes; i++) {
     memset(m_history[i].line, 0, m_spoke_len_max);
     m_history[i].time = 0;
-    m_history[i].lat = 0.;
-    m_history[i].lon = 0.;
+    m_history[i].pos.lat = 0.;
+    m_history[i].pos.lon = 0.;
   }
 
   if (m_draw_panel.draw) {
@@ -501,15 +501,16 @@ void RadarInfo::ResetSpokes() {
  * @param data                  A line of len bytes, each byte represents strength at that distance.
  * @param len                   Number of returns
  * @param range                 Range (in meters) of this data
+ * @param time_rec              Time at this moment
  */
 void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters,
-                                  wxLongLong time_rec, double lat, double lon) {
+                                  wxLongLong time_rec) {
   int orientation;
 
   // calculate course as the moving average of m_hdt over one revolution
   SampleCourse(angle);  // used for course_up mode
 
-  for (int i = 0; i < m_pi->m_settings.main_bang_size; i++) {
+  for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
     data[i] = 0;
   }
 
@@ -574,8 +575,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   UINT8 *hist_data = m_history[bearing].line;
   m_history[bearing].time = time_rec;
-  m_history[bearing].lat = lat;
-  m_history[bearing].lon = lon;
+  GetRadarPosition(&m_history[bearing].pos);
   for (size_t radius = 0; radius < len; radius++) {
     hist_data[radius] = 0;
     if (data[radius] >= weakest_normal_blob) {
@@ -1138,7 +1138,7 @@ wxString RadarInfo::FormatAngle(double angle) {
 }
 
 wxString RadarInfo::GetCanvasTextBottomLeft() {
-  double radar_lat, radar_lon;
+  GeoPosition radar_pos;
   wxString s = m_pi->GetGuardZoneText(this);
 
   if (m_state.GetValue() == RADAR_TRANSMIT) {
@@ -1174,10 +1174,10 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
       }
       if (bearing >= 360) bearing -= 360;
 
-    } else if (!isnan(m_mouse_lat) && !isnan(m_mouse_lon) && m_pi->GetRadarPosition(&radar_lat, &radar_lon)) {
+    } else if (!isnan(m_mouse_pos.lat) && !isnan(m_mouse_pos.lon) && GetRadarPosition(&radar_pos)) {
       // Can't compute this upfront, ownship may move...
-      distance = local_distance(radar_lat, radar_lon, m_mouse_lat, m_mouse_lon);
-      bearing = local_bearing(radar_lat, radar_lon, m_mouse_lat, m_mouse_lon);
+      distance = local_distance(radar_pos, m_mouse_pos);
+      bearing = local_bearing(radar_pos, m_mouse_pos);
       if (GetOrientation() != ORIENTATION_NORTH_UP) {
         bearing -= m_pi->GetHeadingTrue();
       }
@@ -1259,14 +1259,13 @@ const char *RadarInfo::GetDisplayRangeStr(size_t idx) {
   return 0;
 }
 
-void RadarInfo::SetMouseLatLon(double lat, double lon) {
+void RadarInfo::SetMousePosition(GeoPosition pos) {
   for (int i = 0; i < ORIENTATION_NUMBER; i++) {
     m_mouse_ebl[i] = NAN;
   }
   m_mouse_vrm = NAN;
-  m_mouse_lat = lat;
-  m_mouse_lon = lon;
-  LOG_DIALOG(wxT("radar_pi: SetMouseLatLon(%f, %f)"), lat, lon);
+  m_mouse_pos = pos;
+  LOG_DIALOG(wxT("radar_pi: SetMousePosition(%f, %f)"), pos.lat, pos.lon);
 }
 
 void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
@@ -1305,29 +1304,29 @@ void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
   double brng = deg2rad(bearing);
   double d = vrm;  // Distance in nm
 
-  double lat1, lon1;
-  if (m_pi->GetRadarPosition(&lat1, &lon1)) {
-    lat1 = deg2rad(lat1);
-    lon1 = deg2rad(lon1);
+  GeoPosition radar_pos;
+  if (GetRadarPosition(&radar_pos)) {
+    radar_pos.lat = deg2rad(radar_pos.lat);
+    radar_pos.lon = deg2rad(radar_pos.lon);
 
-    double lat2 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(brng));
-    double lon2 = lon1 + atan2(sin(brng) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat2));
+    double lat2 = asin(sin(radar_pos.lat) * cos(d / R) + cos(radar_pos.lat) * sin(d / R) * cos(brng));
+    double lon2 = radar_pos.lon + atan2(sin(brng) * sin(d / R) * cos(radar_pos.lat), cos(d / R) - sin(radar_pos.lat) * sin(lat2));
 
-    m_mouse_lat = rad2deg(lat2);
-    m_mouse_lon = rad2deg(lon2);
-    LOG_DIALOG(wxT("radar_pi: SetMouseVrmEbl(%f, %f) = %f / %f"), vrm, ebl, m_mouse_lat, m_mouse_lon);
+    m_mouse_pos.lat = rad2deg(lat2);
+    m_mouse_pos.lon = rad2deg(lon2);
+    LOG_DIALOG(wxT("radar_pi: SetMouseVrmEbl(%f, %f) = %f / %f"), vrm, ebl, m_mouse_pos.lat, m_mouse_pos.lon);
     if (m_control_dialog) {
       m_control_dialog->ShowCursorPane();
     }
   } else {
-    m_mouse_lat = nan("");
-    m_mouse_lon = nan("");
+    m_mouse_pos.lat = nan("");
+    m_mouse_pos.lon = nan("");
   }
 }
 
 void RadarInfo::SetBearing(int bearing) {
   int orientation = GetOrientation();
-  double radar_lat, radar_lon;
+  GeoPosition radar_pos;
 
   if (!isnan(m_vrm[bearing])) {
     m_vrm[bearing] = NAN;
@@ -1337,9 +1336,9 @@ void RadarInfo::SetBearing(int bearing) {
     for (int i = 0; i < ORIENTATION_NUMBER; i++) {
       m_ebl[i][bearing] = m_mouse_ebl[i];
     }
-  } else if (!isnan(m_mouse_lat) && !isnan(m_mouse_lon) && m_pi->GetRadarPosition(&radar_lat, &radar_lon)) {
-    m_vrm[bearing] = local_distance(radar_lat, radar_lon, m_mouse_lat, m_mouse_lon);
-    m_ebl[orientation][bearing] = local_bearing(radar_lat, radar_lon, m_mouse_lat, m_mouse_lon);
+  } else if (!isnan(m_mouse_pos.lat) && !isnan(m_mouse_pos.lon) && GetRadarPosition(&radar_pos)) {
+    m_vrm[bearing] = local_distance(radar_pos, m_mouse_pos);
+    m_ebl[orientation][bearing] = local_bearing(radar_pos, m_mouse_pos);
   }
 }
 
@@ -1385,8 +1384,7 @@ wxString RadarInfo::GetStatus() {
   return _("Uninitialized");
 }
 
-void RadarInfo::ClearTrails()
-{
+void RadarInfo::ClearTrails() {
   if (m_trails) {
     delete m_trails;
   }

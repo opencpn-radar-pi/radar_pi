@@ -106,6 +106,9 @@ class RadarInfo {
   radar_control_item m_scan_speed;
   radar_control_item m_bearing_alignment;
   radar_control_item m_antenna_height;
+  radar_control_item m_antenna_forward;
+  radar_control_item m_antenna_starboard;
+  radar_control_item m_main_bang_size;
   radar_control_item m_local_interference_rejection;
   radar_control_item m_side_lobe_suppression;
   radar_control_item m_target_trails;
@@ -144,8 +147,7 @@ class RadarInfo {
   struct line_history {
     UINT8 *line;
     wxLongLong time;
-    double lat;
-    double lon;
+    GeoPosition pos;
   };
 
   line_history *m_history;
@@ -167,8 +169,7 @@ class RadarInfo {
   void AdjustRange(int adjustment);
   void SetAutoRangeMeters(int meters);
   bool SetControlValue(ControlType controlType, int value, int autoValue);
-  void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time,
-                         double lat, double lon);
+  void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time);
   void RefreshDisplay();
   void RenderGuardZone();
   void ResetRadarImage();
@@ -194,18 +195,43 @@ class RadarInfo {
   const char *GetDisplayRangeStr(size_t idx);
   int GetDisplayRange() { return m_range.GetValue(); };
   void DetectedRadar(NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
-  void SetMouseLatLon(double lat, double lon);
+  void SetMousePosition(GeoPosition pos);
   void SetMouseVrmEbl(double vrm, double ebl);
   void SetBearing(int bearing);
   void SampleCourse(int angle);
   int GetOrientation();
   void ClearTrails();
+  void SetRadarPosition(GeoPosition boat_pos, double heading) {
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    if (m_antenna_starboard.GetValue() != 0 || m_antenna_forward.GetValue() != 0) {
+      double sine = sin(deg2rad(heading));
+      double cosine = cos(deg2rad(heading));
+      double dist_forward = (double)m_antenna_forward.GetValue() / 1852 / 60;
+      double dist_starboard = (double)m_antenna_starboard.GetValue() / 1852 / 60;
+      m_radar_position.lat = dist_forward * cosine - dist_starboard * sine + boat_pos.lat;
+      m_radar_position.lon = (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(boat_pos.lat)) + boat_pos.lon;
+    } else {
+      m_radar_position = boat_pos;
+    }
+  }
+  bool GetRadarPosition(GeoPosition *pos) {
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    if (m_pi->IsBoatPositionValid() && VALID_GEO(m_radar_position.lat) && VALID_GEO(m_radar_position.lon)) {
+      *pos = m_radar_position;
+      return true;
+    }
+    pos->lat = nan("");
+    pos->lon = nan("");
+    return false;
+  }
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
   wxString GetCanvasTextCenter();
 
-  double m_mouse_lat, m_mouse_lon;
+  GeoPosition m_mouse_pos;
   double m_mouse_ebl[ORIENTATION_NUMBER];
   double m_mouse_vrm;
   int m_range_meters;  // what radar told us is the range in the last received spoke
@@ -238,6 +264,8 @@ class RadarInfo {
   BlobColour m_trail_colour[TRAIL_MAX_REVOLUTIONS + 1];
 
   int m_previous_orientation;
+
+  GeoPosition m_radar_position;
 };
 
 PLUGIN_END_NAMESPACE
