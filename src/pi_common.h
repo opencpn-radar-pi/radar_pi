@@ -155,8 +155,6 @@ using namespace std;
 #define rad2deg(x) ((x)*360.0 / (2 * PI))
 #endif
 
-#define SPOKES_MAX 0
-#define SPOKE_LEN_MAX 0
 #define DEFINE_RADAR(t, n, s, l, a, b, c)
 #include "RadarType.h"
 

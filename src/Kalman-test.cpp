@@ -74,8 +74,8 @@ int main() {
   pol.r = 1000;
   pol.time = 1000;
 
-  x_local.lat = 50;
-  x_local.lon = -5;
+  x_local.pos.lat = 50;
+  x_local.pos.lon = -5;
   x_local.dlat_dt = 5;
   x_local.dlon_dt = 2;
   x_local.sd_speed_m_s = 0.2;
@@ -87,7 +87,7 @@ int main() {
   filter->SetMeasurement(&pol, &x_local, &expected, 4000);                // pol is measured position in polar coordinates
   filter->Predict(&x_local, (expected.time - pol.time).GetLo() / 1000.);  // x_local is new estimated local position of the target
 
-  cout << "INFO: The predicted location is: lat=" << x_local.lat << " lon=" << x_local.lon << "\n";
+  cout << "INFO: The predicted location is: lat=" << x_local.pos.lat << " lon=" << x_local.pos.lon << "\n";
   cout << "INFO: Delta lat=" << x_local.dlat_dt << " Delta lon=" << x_local.dlon_dt << "\n";
   cout << "INFO: StdDev speed=" << x_local.sd_speed_m_s << "\n";
 
@@ -97,8 +97,8 @@ int main() {
     ret = 1;                                                                                              \
   }
 
-  ASSERT_VALUE("lat", x_local.lat, 69.1754);
-  ASSERT_VALUE("lon", x_local.lon, 5);
+  ASSERT_VALUE("lat", x_local.pos.lat, 69.1754);
+  ASSERT_VALUE("lon", x_local.pos.lon, 5);
   ASSERT_VALUE("stddev", x_local.sd_speed_m_s, 2.03224);
 
   if (ret == 0) {

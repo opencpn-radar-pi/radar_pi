@@ -50,6 +50,14 @@
 #define INITIALIZE_RADAR
 #endif
 
+#ifndef SPOKES_MAX
+#define SPOKES_MAX 0
+#endif
+
+#ifndef SPOKE_LEN_MAX
+#define SPOKE_LEN_MAX 0
+#endif
+
 #include "navico/br24type.h"
 
 #include "navico/br4gatype.h"
