@@ -673,6 +673,7 @@ void ControlsDialog::CreateControls() {
   RadarButton* bAdvancedBack = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
   m_advanced_sizer->Add(bAdvancedBack, 0, wxALL, BORDER);
 
+#if 0
   if (m_ctrl.control[CT_NOISE_REJECTION].type) {
     // The NOISE REJECTION button
     m_noise_rejection_button =
@@ -685,7 +686,8 @@ void ControlsDialog::CreateControls() {
     // The NOISE REJECTION button
     m_advanced_sizer->Add(new RadarControlButton(this, ID_TARGET_EXPANSION, _("Target expansion"), m_ctrl.control[CT_TARGET_EXPANSION], m_ri->m_target_expansion), 0, wxALL, BORDER);
   }
-
+#endif
+  
   // The REJECTION button
 
   interference_rejection_names[0] = _("Off");
