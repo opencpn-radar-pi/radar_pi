@@ -161,37 +161,6 @@ void CheckOpenGLError(const wxString& after) {
   }
 }
 
-PolarToCartesianLookupTable* lookupTable = 0;
-
-PolarToCartesianLookupTable* GetPolarToCartesianLookupTable() {
-  if (!lookupTable) {
-    lookupTable = (PolarToCartesianLookupTable*)malloc(sizeof(PolarToCartesianLookupTable));
-
-    if (!lookupTable) {
-      wxLogError(wxT("radar_pi: Out Of Memory, fatal!"));
-      wxAbort();
-    }
-
-    // initialise polar_to_cart_y[arc + 1][radius] arrays
-    for (int arc = 0; arc < LINES_PER_ROTATION + 1; arc++) {
-      GLfloat sine = sinf((GLfloat)arc * PI * 2 / LINES_PER_ROTATION);
-      GLfloat cosine = cosf((GLfloat)arc * PI * 2 / LINES_PER_ROTATION);
-      for (int radius = 0; radius < RETURNS_PER_LINE + 1; radius++) {
-        lookupTable->x[arc][radius] = (GLfloat)radius * cosine;
-        lookupTable->y[arc][radius] = (GLfloat)radius * sine;
-        lookupTable->intx[arc][radius] = (int)lookupTable->x[arc][radius];
-        lookupTable->inty[arc][radius] = (int)lookupTable->y[arc][radius];
-      }
-    }
-  }
-  return lookupTable;
-}
-
-typedef struct {
-  float x;
-  float y;
-} Vector2f;
-
 //
 //  Draws rounded rectangle.
 //
@@ -201,10 +170,10 @@ typedef struct {
 //
 #define ROUNDING_POINT_COUNT 8  // Larger values makes circle smoother.
 void DrawRoundRect(float x, float y, float width, float height, float radius) {
-  Vector2f top_left[ROUNDING_POINT_COUNT];
-  Vector2f bottom_left[ROUNDING_POINT_COUNT];
-  Vector2f top_right[ROUNDING_POINT_COUNT];
-  Vector2f bottom_right[ROUNDING_POINT_COUNT];
+  Point top_left[ROUNDING_POINT_COUNT];
+  Point bottom_left[ROUNDING_POINT_COUNT];
+  Point top_right[ROUNDING_POINT_COUNT];
+  Point bottom_right[ROUNDING_POINT_COUNT];
 
   if (radius == 0.0) {
     radius = min(width, height);
@@ -219,7 +188,7 @@ void DrawRoundRect(float x, float y, float width, float height, float radius) {
   float inner_height = height - radius * 2.0f;
 
   const unsigned int segment_count = ROUNDING_POINT_COUNT;
-  Vector2f top_left_corner = {x + radius, y + radius};
+  Point top_left_corner = {x + radius, y + radius};
 
   for (i = 0; i < segment_count; i++) {
     x_offset = cosf(angle);

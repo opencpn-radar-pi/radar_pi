@@ -42,6 +42,8 @@ class RadarDraw;
 class RadarCanvas;
 class RadarPanel;
 class GuardZoneBogey;
+class RadarInfo;
+class TrailBuffer;
 
 struct RadarRange {
   int meters;
@@ -136,7 +138,6 @@ struct DrawInfo {
   bool color_option;
 };
 
-typedef UINT8 TrailRevolutionsAge;
 #define SECONDS_TO_REVOLUTIONS(x) ((x)*2 / 5)
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(600) + 1
 enum { TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_5MIN, TRAIL_10MIN, TRAIL_CONTINUOUS, TRAIL_ARRAY_SIZE };
@@ -144,6 +145,8 @@ enum { TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_5MIN, TRAIL_10MIN
 #define COURSE_SAMPLES (16)
 
 class RadarInfo {
+  friend class TrailBuffer;
+
  public:
   wxString m_name;         // Either "Radar", "Radar A", "Radar B".
   radar_pi *m_pi;          // Pointer back to the plugin
@@ -233,31 +236,10 @@ class RadarInfo {
 
   line_history *m_history;
 
-#define MARGIN (100)
-#define TRAILS_SIZE (RETURNS_PER_LINE * 2 + MARGIN * 2)
-  //#define TRAILS_MIDDLE (TRAILS_SIZE / 2)
-
-  struct IntVector {
-    int lat;
-    int lon;
-  };
-  struct TrailBuffer {
-    TrailRevolutionsAge true_trails[TRAILS_SIZE][TRAILS_SIZE];
-    TrailRevolutionsAge relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
-    union {
-      TrailRevolutionsAge copy_of_true_trails[TRAILS_SIZE][TRAILS_SIZE];
-      TrailRevolutionsAge copy_of_relative_trails[LINES_PER_ROTATION][RETURNS_PER_LINE];
-    };
-    double lat;
-    double lon;
-    double dif_lat;  // Fraction of a pixel expressed in lat/lon for True Motion Target Trails
-    double dif_lon;
-    IntVector offset;
-  };
   int m_old_range;
   int m_dir_lat;
   int m_dir_lon;
-  TrailBuffer m_trails;
+  TrailBuffer *m_trails;
 
   /* Methods */
 
@@ -274,7 +256,6 @@ class RadarInfo {
   void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time,
                          double lat, double lon);
   void RefreshDisplay();
-  void UpdateTrailPosition();
   void RenderGuardZone();
   void ResetRadarImage();
   void ShiftImageLonToCenter();
@@ -302,10 +283,9 @@ class RadarInfo {
   void SetMouseLatLon(double lat, double lon);
   void SetMouseVrmEbl(double vrm, double ebl);
   void SetBearing(int bearing);
-  void ClearTrails();
-  void ZoomTrails(float zoom_factor);
   void SampleCourse(int angle);
   int GetOrientation();
+  void ClearTrails();
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
@@ -319,6 +299,9 @@ class RadarInfo {
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
   wxColour m_colour_map_rgb[BLOB_COLOURS];
   BlobColour m_colour_map[UINT8_MAX + 1];
+
+  // Speedup PolarToCartesian lookup (angle,radius) -> (x, y)
+  PolarToCartesianLookup *m_polar_lookup;
 
  private:
   void ResetSpokes();

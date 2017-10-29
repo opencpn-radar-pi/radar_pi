@@ -43,6 +43,7 @@ SET(SRC_NAVICO
             src/navico/br4gbtype.h
             src/navico/haloatype.h
             src/navico/halobtype.h
+            src/navico/NavicoCommon.h
             src/navico/NavicoReceive.cpp
             src/navico/NavicoReceive.h
             src/navico/NavicoControl.cpp
@@ -90,6 +91,8 @@ SET(SRC_RADAR
             src/SoftwareControlSet.h
             src/TextureFont.cpp
             src/TextureFont.h
+            src/TrailBuffer.h
+            src/TrailBuffer.cpp
             src/ControlsDialog.cpp
             src/ControlsDialog.h
             src/drawutil.cpp

@@ -114,7 +114,7 @@ struct radar_line {
     br24_header br24;
     br4g_header br4g;
   };
-  UINT8 data[RETURNS_PER_LINE];
+  UINT8 data[NAVICO_SPOKE_LEN];
 };
 
 /* Normally the packets are have 32 spokes, or scan lines, but we assume nothing
@@ -257,7 +257,7 @@ void NavicoReceive::ProcessFrame(const UINT8 *data, int len) {
 
     SpokeBearing a = MOD_SPOKES(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
     SpokeBearing b = MOD_SPOKES(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
-    size_t len = RETURNS_PER_LINE;
+    size_t len = NAVICO_SPOKE_LEN;
 
     m_ri->ProcessRadarSpoke(a, b, line->data, len, range_meters, time_rec, lat, lon);
   }

@@ -13,20 +13,12 @@ PLUGIN_END_NAMESPACE
 
 #endif
 
-// Halo has 2048 spokes of exactly 512 bytes each
-#if SPOKES_MAX < 2048
-#undef SPOKES_MAX
-#define SPOKES_MAX 2048
-#endif
-#if SPOKE_LEN_MAX < 512
-#undef SPOKE_LEN_MAX
-#define SPOKE_LEN_MAX 512
-#endif
+#include "NavicoCommon.h"
 
 DEFINE_RADAR(RT_HaloB,                                        /* Type */
              wxT("Navico Halo B"),                            /* Name */
-             2048,                                            /* Spokes */
-             512,                                             /* Spoke length (max) */
+             NAVICO_SPOKES,                                   /* Spokes */
+             NAVICO_SPOKE_LEN,                                /* Spoke length (max) */
              NavicoControlsDialog(RT_HaloB),                  /* ControlsDialog class constructor */
              NavicoReceive(pi, ri, reportHalo_B, dataHalo_B), /* Receive class constructor */
              NavicoControl(sendHalo_B)                        /* Send/Control class constructor */

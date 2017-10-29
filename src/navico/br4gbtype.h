@@ -13,20 +13,14 @@ PLUGIN_END_NAMESPACE
 
 #endif
 
+#include "NavicoCommon.h"
+
 // 4G has 2048 spokes of exactly 512 bytes each
-#if SPOKES_MBX < 2048
-#undef SPOKES_MBX
-#define SPOKES_MBX 2048
-#endif
-#if SPOKE_LEN_MBX < 512
-#undef SPOKE_LEN_MBX
-#define SPOKE_LEN_MBX 512
-#endif
 
 DEFINE_RADAR(RT_4GB,                                      /* Type */
              wxT("Navico 4G B"),                          /* Name */
-             2048,                                        /* Spokes */
-             512,                                         /* Spoke length (max) */
+             NAVICO_SPOKES,                               /* Spokes */
+             NAVICO_SPOKE_LEN,                            /* Spoke length (max) */
              NavicoControlsDialog(RT_4GB),                /* ControlsDialog class constructor */
              NavicoReceive(pi, ri, report4G_B, data4G_B), /* Receive class constructor */
              NavicoControl(send4G_B)                      /* Send/Control class constructor */

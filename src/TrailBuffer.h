@@ -29,43 +29,57 @@
  ***************************************************************************
  */
 
-#ifndef _EMULATORRECEIVE_H_
-#define _EMULATORRECEIVE_H_
+#ifndef _TRAIL_BUFFER_H_
+#define _TRAIL_BUFFER_H_
 
-#include "RadarReceive.h"
-#include "socketutil.h"
+#include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
-//
-// An intermediary class that implements the common parts of any Emulator radar.
-//
+typedef UINT8 TrailRevolutionsAge;
 
-class EmulatorReceive : public RadarReceive {
+#define MARGIN (100)
+
+class TrailBuffer {
  public:
-  EmulatorReceive(radar_pi *pi, RadarInfo *ri) : RadarReceive(pi, ri) {
-    m_shutdown = false;
-    m_next_spoke = 0;
-    m_next_rotation = 0;
+  TrailBuffer(RadarInfo *ri, size_t spokes, size_t max_spoke_len);
+  ~TrailBuffer();
 
-    LOG_RECEIVE(wxT("radar_pi: %s receive thread created"), m_ri->m_name.c_str());
+  void ClearTrails();
+  void UpdateTrailPosition();
+  void UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t len);
+  void UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t len);
+
+  struct GeoPosition {
+    double lat;
+    double lon;
   };
 
-  ~EmulatorReceive() {}
+  struct GeoPositionPixels {
+    int lat;
+    int lon;
+  };
 
-  void *Entry(void);
-  void Shutdown(void);
-  wxString GetStatus();
+  GeoPosition m_pos;
+  GeoPosition m_dif;  // Fraction of a pixel expressed in lat/lon for True Motion Target Trails
+  GeoPositionPixels m_offset;
 
  private:
-  void EmulateFakeBuffer(void);
+  void ShiftImageLonToCenter();
+  void ShiftImageLatToCenter();
+  void ZoomTrails(float zoom_factor);
 
-  volatile bool m_shutdown;
+  RadarInfo *m_ri;
+  size_t m_spokes;
+  size_t m_max_spoke_len;
+  size_t m_trail_size;
 
-  int m_next_spoke;     // emulator next spoke
-  int m_next_rotation;  // slowly rotate emulator
+  TrailRevolutionsAge *m_true_trails;      // m_trails_size * m_trails_size
+  TrailRevolutionsAge *m_relative_trails;  // m_spokes * m_max_spoke_len
+  TrailRevolutionsAge *m_copy_true_trails;      // m_trails_size * m_trails_size
+  TrailRevolutionsAge *m_copy_relative_trails;  // m_spokes * m_max_spoke_len
 };
 
 PLUGIN_END_NAMESPACE
 
-#endif /* _EMULATORRECEIVE_H_ */
+#endif

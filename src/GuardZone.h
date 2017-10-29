@@ -46,7 +46,7 @@ class GuardZone {
   int m_alarm_on;
   int m_arpa_on;
   time_t m_show_time;
-  wxLongLong arpa_update_time[LINES_PER_ROTATION];
+  wxLongLong arpa_update_time[SPOKES_MAX];
 
   void ResetBogeys() {
     m_bogey_count = -1;

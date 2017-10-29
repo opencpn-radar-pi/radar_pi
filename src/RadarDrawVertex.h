@@ -45,18 +45,9 @@ class RadarDrawVertex : public RadarDraw {
     wxCriticalSectionLocker lock(m_exclusive);
 
     m_ri = ri;
-
     m_vertices = 0;
-    for (size_t i = 0; i < ARRAY_SIZE(m_vertices); i++) {
-      m_vertices[i].count = 0;
-      m_vertices[i].allocated = 0;
-      m_vertices[i].timeout = 0;
-      m_vertices[i].points = 0;
-    }
     m_count = 0;
     m_oom = false;
-
-    m_polarLookup = GetPolarToCartesianLookupTable();
   }
 
   bool Init(size_t spokes, size_t spoke_len);
@@ -72,11 +63,10 @@ class RadarDrawVertex : public RadarDraw {
 
   static const int VERTEX_PER_TRIANGLE = 3;
   static const int VERTEX_PER_QUAD = 2 * VERTEX_PER_TRIANGLE;
-  static const int MAX_BLOBS_PER_LINE = RETURNS_PER_LINE;
+  static const int MAX_BLOBS_PER_LINE = SPOKE_LEN_MAX;
 
   struct VertexPoint {
-    GLfloat x;
-    GLfloat y;
+    Point xy;
     GLubyte red;
     GLubyte green;
     GLubyte blue;
@@ -90,17 +80,16 @@ class RadarDrawVertex : public RadarDraw {
     size_t allocated;
   };
 
-  PolarToCartesianLookupTable* m_polarLookup;
+  void SetBlob(VertexLine* line, int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green, GLubyte blue,
+               GLubyte alpha);
+
+  void Reset();
 
   wxCriticalSection m_exclusive;  // protects the following
   VertexLine* m_vertices;
   unsigned int m_count;
   bool m_oom;
 
-  void SetBlob(VertexLine* line, int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green, GLubyte blue,
-               GLubyte alpha);
-
-  void Reset();
 };
 
 PLUGIN_END_NAMESPACE

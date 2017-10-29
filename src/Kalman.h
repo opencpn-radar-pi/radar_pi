@@ -66,7 +66,7 @@ static Matrix<double, 2> ZeroMatrix2;
 
 class KalmanFilter {
  public:
-  KalmanFilter();
+  KalmanFilter(size_t spokes);
   ~KalmanFilter();
   void SetMeasurement(Polar* p, LocalPosition* x, Polar* expected, int range);
   void Predict(LocalPosition* x, double delta_time);  // measured position and expected position
@@ -84,6 +84,9 @@ class KalmanFilter {
   Matrix<double, 2> R;
   Matrix<double, 4, 2> K;
   Matrix<double, 4> I;
+
+private:
+  size_t m_spokes;
 };
 
 PLUGIN_END_NAMESPACE

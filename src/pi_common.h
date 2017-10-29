@@ -162,8 +162,6 @@ using namespace std;
 
 // So now SPOKES_MAX and SPOKE_LEN_MAX are the maxima over all radar types...
 
-#define LINES_PER_ROTATION (SPOKES_MAX)
-#define RETURNS_PER_LINE (SPOKE_LEN_MAX)
 #define DEGREES_PER_ROTATION (360)  // Classical math
 
 #endif

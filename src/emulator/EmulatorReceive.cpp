@@ -80,17 +80,17 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
   m_ri->m_range.Update(display_range_meters);
 
   for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
-    int angle_raw = m_next_spoke;
-    m_next_spoke = (m_next_spoke + 1) % EMULATOR_SPOKES;
+    int angle = m_next_spoke;
+    m_next_spoke = MOD_SPOKES(m_next_spoke + 1);
     m_ri->m_statistics.spokes++;
 
     // Invent a pattern. Outermost ring, then a square pattern
     for (size_t range = 0; range < sizeof(data); range++) {
       size_t bit = range >> 7;
       // use bit 'bit' of angle_raw
-      UINT8 colour = (((angle_raw + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
+      UINT8 colour = (((angle + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
       if (range > sizeof(data) - 10) {
-        colour = ((angle_raw + m_next_rotation) % EMULATOR_SPOKES) <= 8 ? 255 : 0;
+        colour = ((angle + m_next_rotation) % EMULATOR_SPOKES) <= 8 ? 255 : 0;
       }
       data[range] = colour;
       if (colour > 0) {
@@ -98,16 +98,13 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
       }
     }
 
-    int hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->GetHeadingTrue());
-    int bearing_raw = angle_raw + hdt_raw;
-    bearing_raw += SCALE_DEGREES_TO_RAW(270);  // Compensate openGL rotation compared to North UP
+    int hdt = SCALE_DEGREES_TO_SPOKES(m_pi->GetHeadingTrue());
+    int bearing = MOD_SPOKES(angle + hdt);
 
-    SpokeBearing a = MOD_SPOKES(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
-    SpokeBearing b = MOD_SPOKES(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
     wxLongLong time_rec;
     double lat = 0.;
     double lon = 0.;
-    m_ri->ProcessRadarSpoke(a, b, data, sizeof(data), range_meters, time_rec, lat, lon);
+    m_ri->ProcessRadarSpoke(angle, bearing, data, sizeof(data), range_meters, time_rec, lat, lon);
   }
 
   LOG_VERBOSE(wxT("radar_pi: emulating %d spokes at range %d with %d spots"), scanlines_in_packet, range_meters, spots);

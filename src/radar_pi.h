@@ -37,6 +37,7 @@
 
 #include <algorithm>
 #include <vector>
+#include "drawutil.h"
 #include "jsonreader.h"
 #include "nmea0183/nmea0183.h"
 #include "pi_common.h"
@@ -98,7 +99,7 @@ typedef int AngleDegrees;  // An angle relative to North or HeadUp. Generally [0
 #define SCALE_SPOKES_TO_DEGREES(raw) ((raw) * (double)DEGREES_PER_ROTATION / m_ri->m_spokes)
 #define MOD_SPOKES(raw) (((raw) + 2 * m_ri->m_spokes) % m_ri->m_spokes)
 #define MOD_DEGREES(angle) ((angle + 2 * DEGREES_PER_ROTATION) % DEGREES_PER_ROTATION)
-#define MOD_DEGREES_FLOAT(angle) (fmod((double) angle + 2 * DEGREES_PER_ROTATION, DEGREES_PER_ROTATION))
+#define MOD_DEGREES_FLOAT(angle) (fmod((double)angle + 2 * DEGREES_PER_ROTATION, DEGREES_PER_ROTATION))
 
 #define WATCHDOG_TIMEOUT (10)  // After 10s assume GPS and heading data is invalid
 
@@ -328,17 +329,6 @@ struct PersistentSettings {
   wxColour arpa_colour;                            // Colour for ARPA edges
   wxColour ais_text_colour;                        // Colour for AIS texts
   wxColour ppi_background_colour;                  // Colour for PPI background (normally very dark)
-};
-
-struct scan_line {
-  int range;                            // range of this scan line in decimeters
-  wxLongLong age;                       // how old this scan line is. We keep old scans on-screen for a while
-  UINT8 data[RETURNS_PER_LINE + 1];     // radar return strength, data[512] is an additional element,
-                                        // accessed in drawing the spokes
-  UINT8 history[RETURNS_PER_LINE + 1];  // contains per bit the history of previous scans.
-  // Each scan this byte is left shifted one bit. If the strength (=level) of a return is above the
-  // threshold
-  // a 1 is added in the rightmost position, if below threshold, a 0.
 };
 
 // Table for AIS targets inside ARPA zone

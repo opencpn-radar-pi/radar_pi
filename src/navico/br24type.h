@@ -11,20 +11,12 @@ PLUGIN_END_NAMESPACE
 
 #endif
 
-// BR24 has 2048 spokes of exactly 512 bytes each
-#if SPOKES_MAX < 2048
-#undef SPOKES_MAX
-#define SPOKES_MAX 2048
-#endif
-#if SPOKE_LEN_MAX < 512
-#undef SPOKE_LEN_MAX
-#define SPOKE_LEN_MAX 512
-#endif
+#include "NavicoCommon.h"
 
 DEFINE_RADAR(RT_BR24,                                     /* Type */
              wxT("Navico BR24"),                          /* Name */
-             2048,                                        /* Spokes */
-             512,                                         /* Spoke length */
+             NAVICO_SPOKES,                               /* Spokes */
+             NAVICO_SPOKE_LEN,                            /* Spoke length */
              NavicoControlsDialog(RT_BR24),               /* Controls class */
              NavicoReceive(pi, ri, reportBR24, dataBR24), /* Receive class */
              NavicoControl(sendBR24)                      /* Send/Control class */

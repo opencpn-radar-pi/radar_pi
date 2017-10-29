@@ -29,14 +29,15 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
+#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
+#include "TrailBuffer.h"
 #include "drawutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
@@ -195,7 +196,11 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_radar_timeout = 0;
   m_data_timeout = 0;
   m_history = 0;
-  ClearTrails();
+  m_polar_lookup = 0;
+  m_spokes = 0;
+  m_spoke_len = 0;
+  m_spoke_len_max = 0;
+  m_trails = 0;
   CLEAR_STRUCT(m_statistics);
   CLEAR_STRUCT(m_course_log);
 
@@ -293,6 +298,10 @@ RadarInfo::~RadarInfo() {
     delete m_arpa;
     m_arpa = 0;
   }
+  if (m_trails) {
+    delete m_trails;
+    m_trails = 0;
+  }
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     if (m_guard_zone[z]) {
       delete m_guard_zone[z];
@@ -325,7 +334,7 @@ bool RadarInfo::Init() {
 
   m_history = (line_history *)calloc(sizeof(line_history), m_spokes);
   for (size_t i = 0; i < m_spokes; i++) {
-    m_history[i].line = (UINT8 *) calloc(sizeof(UINT8), m_spoke_len_max);
+    m_history[i].line = (UINT8 *)calloc(sizeof(UINT8), m_spoke_len_max);
   }
 
   ComputeColourMap();
@@ -343,7 +352,7 @@ bool RadarInfo::Init() {
   if (!m_arpa) {
     m_arpa = new RadarArpa(m_pi, this);
   }
-
+  m_trails = new TrailBuffer(this, m_spokes, m_spoke_len_max);
   ComputeTargetTrails();
 
   m_range.Update(m_range_meters);
@@ -454,7 +463,7 @@ void RadarInfo::ComputeColourMap() {
 }
 
 void RadarInfo::ResetSpokes() {
-  UINT8 zap[RETURNS_PER_LINE];
+  UINT8 zap[SPOKE_LEN_MAX];
 
   LOG_VERBOSE(wxT("radar_pi: reset spokes"));
 
@@ -506,29 +515,40 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   if (m_pi->m_settings.show_extreme_range) {
     data[m_spoke_len - 1] = 255;
-    data[1] = 255;                     // Main bang on purpose to show radar center
-    data[0] = 255;                     // Main bang on purpose to show radar center
+    data[1] = 255;  // Main bang on purpose to show radar center
+    data[0] = 255;  // Main bang on purpose to show radar center
   }
 
   if (m_range_meters != range_meters || m_spoke_len != len) {
+    if (m_polar_lookup) {
+      delete m_polar_lookup;
+      m_polar_lookup = 0;
+    }
+    if (!m_polar_lookup) {
+      m_polar_lookup = new PolarToCartesianLookup(m_spokes, len);
+    }
+
     if (m_draw_panel.draw && m_spoke_len != len) {
-      m_draw_panel.draw->Init(m_spokes, m_spoke_len);
+      m_draw_panel.draw->Init(m_spokes, len);
+      LOG_VERBOSE(wxT("radar_pi: %s new size %zu spokes and %zu bytes per spoke"), m_name.c_str(), m_spokes, len);
     }
     if (m_draw_overlay.draw && m_spoke_len != len) {
-      m_draw_overlay.draw->Init(m_spokes, m_spoke_len);
+      m_draw_overlay.draw->Init(m_spokes, len);
+      LOG_VERBOSE(wxT("radar_pi: %s overlay new size %zu spokes and %zu bytes per spoke"), m_name.c_str(), m_spokes, len);
     }
+    m_spoke_len = len;
     ResetSpokes();
     if (m_arpa) {
       m_arpa->ClearContours();
     }
+
     if (m_range_meters != range_meters) {
-      LOG_VERBOSE(wxT("radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters, range_meters);
-    }
-    else {
+      LOG_VERBOSE(wxT("radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters,
+                  range_meters);
+    } else {
       LOG_VERBOSE(wxT("radar_pi: %s detected spoke length change from %zu to %zu bytes"), m_name.c_str(), m_spoke_len, len);
     }
     m_range_meters = range_meters;
-    m_spoke_len = len;
     if (!m_range.GetValue()) {
       m_range.Update(convertSpokeMetersToRangeMeters(range_meters));
     }
@@ -575,47 +595,13 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
   }
 
-  UpdateTrailPosition();
+  m_trails->UpdateTrailPosition();
 
   // True trails
-  int motion = m_trails_motion.GetValue();
-  PolarToCartesianLookupTable *polarLookup = GetPolarToCartesianLookupTable();
-  for (size_t radius = 0; radius < len - 1; radius++) {  //  len - 1 : no trails on range circle
-    int x = polarLookup->intx[bearing][radius] + TRAILS_SIZE / 2 + m_trails.offset.lat;
-    int y = polarLookup->inty[bearing][radius] + TRAILS_SIZE / 2 + m_trails.offset.lon;
-
-    if (x >= 0 && x < TRAILS_SIZE && y >= 0 && y < TRAILS_SIZE) {
-      UINT8 *trail = &m_trails.true_trails[x][y];
-      // when ship moves north, offset.lat > 0. Add to move trails image in opposite direction
-      // when ship moves east, offset.lon > 0. Add to move trails image in opposite direction
-      if (data[radius] >= weakest_normal_blob) {
-        *trail = 1;
-      } else {
-        if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-          (*trail)++;
-        }
-        if (motion == TARGET_MOTION_TRUE) {
-          data[radius] = m_trail_colour[*trail];
-        }
-      }
-    }
-  }
+  m_trails->UpdateTrueTrails(bearing, data, len);
 
   // Relative trails
-  UINT8 *trail = m_trails.relative_trails[angle];
-  for (size_t radius = 0; radius < len - 1; radius++) {  // len - 1 : no trails on range circle
-    if (data[radius] >= weakest_normal_blob) {
-      *trail = 1;
-    } else {
-      if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-        (*trail)++;
-      }
-      if (motion == TARGET_MOTION_RELATIVE) {
-        data[radius] = m_trail_colour[*trail];
-      }
-    }
-    trail++;
-  }
+  m_trails->UpdateRelativeTrails(angle, data, len);
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
     m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
@@ -656,54 +642,6 @@ void RadarInfo::SampleCourse(int angle) {
     }
     m_course = fmod(sum / COURSE_SAMPLES + 720., 360);
   }
-}
-
-void RadarInfo::ZoomTrails(float zoom_factor) {
-  // zoom_factor > 1 -> zoom in, enlarge image
-  // zoom relative trails
-  CLEAR_STRUCT(m_trails.copy_of_relative_trails);
-  for (int i = 0; i < LINES_PER_ROTATION; i++) {
-    for (int j = 0; j < m_spoke_len; j++) {
-      int index_j = int((float)j * zoom_factor);
-      if (index_j >= m_spoke_len) break;
-      if (m_trails.relative_trails[i][j] != 0) {
-        m_trails.copy_of_relative_trails[i][index_j] = m_trails.relative_trails[i][j];
-      }
-    }
-  }
-  memcpy(m_trails.relative_trails, m_trails.copy_of_relative_trails, sizeof(m_trails.copy_of_relative_trails));
-
-  CLEAR_STRUCT(m_trails.copy_of_true_trails);
-  // zoom true trails
-  for (int i = wxMax(TRAILS_SIZE / 2 + m_trails.offset.lat - RETURNS_PER_LINE, 0);
-       i < wxMin(TRAILS_SIZE / 2 + m_trails.offset.lat + RETURNS_PER_LINE, TRAILS_SIZE); i++) {
-    int index_i = (int((float)(i - TRAILS_SIZE / 2 + m_trails.offset.lat) * zoom_factor)) + TRAILS_SIZE / 2 -
-                  m_trails.offset.lat * zoom_factor;
-    if (index_i >= TRAILS_SIZE - 1) break;  // allow adding an additional pixel later
-    if (index_i < 0) continue;
-    for (int j = wxMax(TRAILS_SIZE / 2 + m_trails.offset.lon - RETURNS_PER_LINE, 0);
-         j < wxMin(TRAILS_SIZE / 2 + m_trails.offset.lon + RETURNS_PER_LINE, TRAILS_SIZE); j++) {
-      int index_j = (int((float)(j - TRAILS_SIZE / 2 + m_trails.offset.lon) * zoom_factor)) + TRAILS_SIZE / 2 -
-                    m_trails.offset.lon * zoom_factor;
-      if (index_j >= TRAILS_SIZE - 1) break;
-      if (index_j < 0) continue;
-      if (m_trails.true_trails[i][j] != 0) {  // many to one mapping, prevent overwriting trails with 0
-        m_trails.copy_of_true_trails[index_i][index_j] = m_trails.true_trails[i][j];
-        if (zoom_factor > 1.2) {
-          // add an extra pixel in the y direction
-          m_trails.copy_of_true_trails[index_i][index_j + 1] = m_trails.true_trails[i][j];
-          if (zoom_factor > 1.6) {
-            // also add  pixel in the x direction
-            m_trails.copy_of_true_trails[index_i + 1][index_j] = m_trails.true_trails[i][j];
-            m_trails.copy_of_true_trails[index_i + 1][index_j + 1] = m_trails.true_trails[i][j];
-          }
-        }
-      }
-    }
-  }
-  memcpy(m_trails.true_trails, m_trails.copy_of_true_trails, sizeof(m_trails.copy_of_true_trails));
-  m_trails.offset.lon *= zoom_factor;
-  m_trails.offset.lat *= zoom_factor;
 }
 
 void RadarInfo::UpdateTransmitState() {
@@ -772,177 +710,6 @@ void RadarInfo::RequestRadarState(RadarState state) {
       m_stayalive_timeout = now + STAYALIVE_TIMEOUT;
     }
   }
-}
-
-void RadarInfo::UpdateTrailPosition() {
-  double radar_lat;
-  double radar_lon;
-  int shift_lat;
-  int shift_lon;
-
-  // When position changes the trail image is not moved, only the pointer to the center
-  // of the image (offset) is changed.
-  // So we move the image around within the m_trails.true_trails buffer (by moving the pointer).
-  // But when there is no room anymore (margin used) the whole trails image is shifted
-  // and the offset is reset
-  if (m_trails.offset.lon >= MARGIN || m_trails.offset.lon <= -MARGIN) {
-    LOG_INFO(wxT("radar_pi: offset lon too large %d"), m_trails.offset.lon);
-    m_trails.offset.lon = 0;
-  }
-  if (m_trails.offset.lat >= MARGIN || m_trails.offset.lat <= -MARGIN) {
-    LOG_INFO(wxT("radar_pi: offset lat too large %d"), m_trails.offset.lat);
-    m_trails.offset.lat = 0;
-  }
-
-  // zooming of trails required? First check conditions
-  if (m_old_range == 0 || m_range_meters == 0) {
-    ClearTrails();
-    if (m_range_meters == 0) {
-      return;
-      if (m_old_range == 0) {
-        m_old_range = m_range_meters;
-        return;
-      }
-    }
-  } else if (m_old_range != m_range_meters) {
-    // zoom trails
-    float zoom_factor = (float)m_old_range / (float)m_range_meters;
-    m_old_range = m_range_meters;
-
-    // center the image before zooming
-    // otherwise the offset might get too large
-    ShiftImageLatToCenter();
-    ShiftImageLonToCenter();
-    ZoomTrails(zoom_factor);  // this no longer modifies m_trails.offset, as the image is centered now
-  }
-  m_old_range = m_range_meters;
-
-  if (!m_pi->GetRadarPosition(&radar_lat, &radar_lon) || m_pi->GetHeadingSource() == HEADING_NONE) {
-    return;
-  }
-
-  // Did the ship move? No, return.
-  if (m_trails.lat == radar_lat && m_trails.lon == radar_lon) {
-    return;
-  }
-
-  // Check the movement of the ship
-  double dif_lat = radar_lat - m_trails.lat;  // going north is positive
-  double dif_lon = radar_lon - m_trails.lon;  // moving east is positive
-  m_trails.lat = radar_lat;
-  m_trails.lon = radar_lon;
-
-  // get (floating point) shift of the ship in radar pixels
-  double fshift_lat = dif_lat * 60. * 1852. / (double)m_range_meters * (double)(RETURNS_PER_LINE);
-  double fshift_lon = dif_lon * 60. * 1852. / (double)m_range_meters * (double)(RETURNS_PER_LINE);
-  fshift_lon *= cos(deg2rad(radar_lat));  // at higher latitudes a degree of longitude is fewer meters
-
-  // Get the integer pixel shift, first add previous rounding error
-  shift_lat = (int)(fshift_lat + m_trails.dif_lat);
-  shift_lon = (int)(fshift_lon + m_trails.dif_lon);
-
-  // Check for changes in the direction of movement, part of the image buffer has to be erased
-  if (shift_lat > 0 && m_dir_lat <= 0) {
-    // change of direction of movement
-    // clear space in true_trails outside image in that direction (this area might not be empty)
-    memset(&m_trails.true_trails[TRAILS_SIZE - MARGIN + m_trails.offset.lat][0], 0, TRAILS_SIZE * (MARGIN - m_trails.offset.lat));
-    m_dir_lat = 1;
-  }
-
-  if (shift_lat < 0 && m_dir_lat >= 0) {
-    // change of direction of movement
-    // clear space in true_trails outside image in that direction
-    memset(&m_trails.true_trails[0][0], 0, TRAILS_SIZE * (MARGIN + m_trails.offset.lat));
-    m_dir_lat = -1;
-  }
-
-  if (shift_lon > 0 && m_dir_lon <= 0) {
-    // change of direction of movement
-    // clear space in true_trails outside image in that direction
-    for (int i = 0; i < TRAILS_SIZE; i++) {
-      memset(&m_trails.true_trails[i][TRAILS_SIZE - MARGIN + m_trails.offset.lon], 0, MARGIN - m_trails.offset.lon);
-    }
-    m_dir_lon = 1;
-  }
-
-  if (shift_lon < 0 && m_dir_lon >= 0) {
-    // change of direction of movement
-    // clear space in true_trails outside image in that direction
-    for (int i = 0; i < TRAILS_SIZE; i++) {
-      memset(&m_trails.true_trails[i][0], 0, MARGIN + m_trails.offset.lon);
-    }
-    m_dir_lon = -1;
-  }
-
-  // save the rounding fraction and appy it next time
-  m_trails.dif_lat = fshift_lat + m_trails.dif_lat - (double)shift_lat;
-  m_trails.dif_lon = fshift_lon + m_trails.dif_lon - (double)shift_lon;
-
-  if (shift_lat >= MARGIN || shift_lat <= -MARGIN || shift_lon >= MARGIN || shift_lon <= -MARGIN) {  // huge shift, reset trails
-    ClearTrails();
-    if (!m_pi->GetRadarPosition(&m_trails.lat, &m_trails.lon)) {
-      m_trails.lat = 0.;
-      m_trails.lon = 0.;
-    }
-    LOG_INFO(wxT("radar_pi: %s Large movement trails reset"), m_name.c_str());
-    return;
-  }
-
-  // offset lon too large: shift image
-  if (abs(m_trails.offset.lon + shift_lon) >= MARGIN) {
-    ShiftImageLonToCenter();
-  }
-
-  // offset lat too large: shift image in lat direction
-  if (abs(m_trails.offset.lat + shift_lat) >= MARGIN) {
-    ShiftImageLatToCenter();
-  }
-  // apply the shifts to the offset
-  m_trails.offset.lat += shift_lat;
-  m_trails.offset.lon += shift_lon;
-}
-
-// shifts the true trails image in lon direction to center
-void RadarInfo::ShiftImageLonToCenter() {
-  if (m_trails.offset.lon >= MARGIN || m_trails.offset.lon <= -MARGIN) {  // abs no good
-    LOG_INFO(wxT("radar_pi: offset lon too large %i"), m_trails.offset.lon);
-    m_trails.offset.lon = 0;
-    return;
-  }
-  if (m_trails.offset.lon > 0) {
-    for (int i = 0; i < TRAILS_SIZE; i++) {
-      memmove(&m_trails.true_trails[i][MARGIN], &m_trails.true_trails[i][MARGIN + m_trails.offset.lon], RETURNS_PER_LINE * 2);
-      memset(&m_trails.true_trails[i][TRAILS_SIZE - MARGIN], 0, MARGIN);
-    }
-  }
-  if (m_trails.offset.lon < 0) {
-    for (int i = 0; i < TRAILS_SIZE; i++) {
-      memmove(&m_trails.true_trails[i][MARGIN], &m_trails.true_trails[i][MARGIN + m_trails.offset.lon], RETURNS_PER_LINE * 2);
-      memset(&m_trails.true_trails[i][TRAILS_SIZE - MARGIN], 0, MARGIN);
-      memset(&m_trails.true_trails[i][0], 0, MARGIN);
-    }
-  }
-  m_trails.offset.lon = 0;
-}
-
-// shifts the true trails image in lat direction to center
-void RadarInfo::ShiftImageLatToCenter() {
-  if (m_trails.offset.lat >= MARGIN || m_trails.offset.lat <= -MARGIN) {  // abs not ok
-    LOG_INFO(wxT("radar_pi: offset lat too large %i"), m_trails.offset.lat);
-    m_trails.offset.lat = 0;
-  }
-
-  if (m_trails.offset.lat > 0) {
-    memmove(&m_trails.true_trails[MARGIN][0], &m_trails.true_trails[MARGIN + m_trails.offset.lat][0],
-            (RETURNS_PER_LINE * 2) * TRAILS_SIZE);
-    memset(&m_trails.true_trails[TRAILS_SIZE - MARGIN][0], 0, TRAILS_SIZE * MARGIN);
-  }
-  if (m_trails.offset.lat < 0) {
-    memmove(&m_trails.true_trails[MARGIN][0], &m_trails.true_trails[MARGIN + m_trails.offset.lat][0],
-            RETURNS_PER_LINE * 2 * TRAILS_SIZE);
-    memset(&m_trails.true_trails[0][0], 0, TRAILS_SIZE * MARGIN);
-  }
-  m_trails.offset.lat = 0;
 }
 
 void RadarInfo::RenderGuardZone() {
@@ -1576,11 +1343,6 @@ void RadarInfo::SetBearing(int bearing) {
   }
 }
 
-void RadarInfo::ClearTrails() {
-  LOG_VERBOSE(wxT("radar_pi: ClearTrails"));
-  CLEAR_STRUCT(m_trails);
-}
-
 void RadarInfo::ComputeTargetTrails() {
   static TrailRevolutionsAge maxRevs[TRAIL_ARRAY_SIZE] = {
       SECONDS_TO_REVOLUTIONS(15),  SECONDS_TO_REVOLUTIONS(30),  SECONDS_TO_REVOLUTIONS(60), SECONDS_TO_REVOLUTIONS(180),
@@ -1621,6 +1383,14 @@ wxString RadarInfo::GetStatus() {
     return m_receive->GetStatus();
   }
   return _("Uninitialized");
+}
+
+void RadarInfo::ClearTrails()
+{
+  if (m_trails) {
+    delete m_trails;
+  }
+  m_trails = new TrailBuffer(this, m_spokes, m_spoke_len_max);
 }
 
 PLUGIN_END_NAMESPACE

@@ -39,16 +39,23 @@ bool RadarDrawVertex::Init(size_t spokes, size_t spoke_len) {
   }
 
   {
-    wxCriticalSectionLocker  lock(m_exclusive);
-    m_spokes = spokes;         // How many spokes form a circle
-    m_spoke_len = spoke_len;   // How long each spoke is
+    wxCriticalSectionLocker lock(m_exclusive);
+    m_spokes = spokes;        // How many spokes form a circle
+    m_spoke_len = spoke_len;  // How long each spoke is
 
     if (!m_vertices) {
-      m_vertices = (VertexLine *) calloc(sizeof(VertexLine), m_spokes);
+      m_vertices = (VertexLine*)calloc(sizeof(VertexLine), m_spokes);
+    }
+    if (!m_vertices) {
+      if (!m_oom) {
+        wxLogError(wxT("radar_pi: Out of memory"));
+        m_oom = true;
+      }
+      return false;
     }
   }
 
-  return m_vertices != NULL;
+  return true;
 }
 
 void RadarDrawVertex::Reset() {
@@ -65,15 +72,14 @@ void RadarDrawVertex::Reset() {
   }
 }
 
-#define ADD_VERTEX_POINT(angle, radius, r, g, b, a)          \
-  {                                                          \
-    line->points[count].x = m_polarLookup->x[angle][radius]; \
-    line->points[count].y = m_polarLookup->y[angle][radius]; \
-    line->points[count].red = r;                             \
-    line->points[count].green = g;                           \
-    line->points[count].blue = b;                            \
-    line->points[count].alpha = a;                           \
-    count++;                                                 \
+#define ADD_VERTEX_POINT(angle, radius, r, g, b, a)                          \
+  {                                                                          \
+    line->points[count].xy = m_ri->m_polar_lookup->GetPoint(angle, radius); \
+    line->points[count].red = r;                                             \
+    line->points[count].green = g;                                           \
+    line->points[count].blue = b;                                            \
+    line->points[count].alpha = a;                                           \
+    count++;                                                                 \
   }
 
 void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green,
@@ -126,7 +132,7 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
   int r_begin = 0;
   int r_end = 0;
 
-  if (angle < 0 || angle >= m_spokes || len > m_spoke_len) {
+  if (angle < 0 || angle >= m_spokes || len > m_spoke_len || !m_vertices) {
     return;
   }
 
@@ -196,7 +202,7 @@ void RadarDrawVertex::DrawRadarImage() {
         continue;
       }
 
-      glVertexPointer(2, GL_FLOAT, sizeof(VertexPoint), &line->points[0].x);
+      glVertexPointer(2, GL_FLOAT, sizeof(VertexPoint), &line->points[0].xy);
       glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(VertexPoint), &line->points[0].red);
       glDrawArrays(GL_TRIANGLES, 0, line->count);
     }

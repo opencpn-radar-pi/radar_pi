@@ -72,6 +72,9 @@ static const char *FragmentShaderColorText =
 bool RadarDrawShader::Init(size_t spokes, size_t spoke_len) {
   m_format = GL_RGBA;
   m_channels = SHADER_COLOR_CHANNELS;
+  m_spokes = spokes;
+  m_spoke_len = spoke_len;
+
 
   if (!CompileShader && !ShadersSupported()) {
     wxLogError(wxT("radar_pi: the OpenGL system of this computer does not support shader m_programs"));
@@ -147,7 +150,7 @@ RadarDrawShader::~RadarDrawShader() {
 void RadarDrawShader::DrawRadarImage() {
   wxCriticalSectionLocker lock(m_exclusive);
 
-  if (!m_program || !m_texture) {
+  if (!m_program || !m_texture || !m_data) {
     return;
   }
 

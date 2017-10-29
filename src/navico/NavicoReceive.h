@@ -34,6 +34,7 @@
 
 #include "RadarReceive.h"
 #include "socketutil.h"
+#include "NavicoCommon.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

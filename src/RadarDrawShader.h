@@ -50,7 +50,9 @@ class RadarDrawShader : public RadarDraw {
     m_program = 0;
     m_format = GL_RGBA;
     m_channels = SHADER_COLOR_CHANNELS;
-    CLEAR_STRUCT(m_data);
+    m_data = 0;
+    m_spokes = 0;
+    m_spoke_len = 0;
   }
 
   ~RadarDrawShader();
@@ -63,7 +65,7 @@ class RadarDrawShader : public RadarDraw {
   RadarInfo* m_ri;
 
   wxCriticalSection m_exclusive;  // protects the following data structures
-  unsigned char* m_data;          // [SHADER_COLOR_CHANNELS * LINES_PER_ROTATION * RETURNS_PER_LINE];
+  unsigned char* m_data;          // [SHADER_COLOR_CHANNELS * m_spokes * m_spoke_len];
   size_t m_spokes;
   size_t m_spoke_len;
 
