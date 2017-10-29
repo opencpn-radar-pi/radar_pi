@@ -42,9 +42,31 @@ PLUGIN_BEGIN_NAMESPACE
    (i->ifa_flags & IFF_MULTICAST) > 0)
 
 // easy define of mcast addresses. Note that these are in network order already.
-#define IPV4_ADDR(a, b, c, d) (htonl(((a) << 24) | ((b) << 16) | ((c) << 8) | (d)))
+#define IPV4_ADDR(a, b, c, d) ((uint32_t)(((a)&0xff) << 24) | (((b)&0xff) << 16) | (((c)&0xff) << 8) | ((d)&0xff))
+
 #define IPV4_PORT(p) (htons(p))
-struct NetworkAddress {
+
+class NetworkAddress {
+public:
+  NetworkAddress() {
+    addr.s_addr = 0;
+    port = 0;
+  }
+  NetworkAddress(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t p)
+  {
+    union {
+      uint8_t byte[4];
+      uint32_t word;
+    } u;
+
+    u.byte[0] = a;
+    u.byte[1] = b;
+    u.byte[2] = c;
+    u.byte[3] = d;
+
+    addr.s_addr = u.word;
+    port = htons(p);
+  }
   struct in_addr addr;
   uint16_t port;
 };

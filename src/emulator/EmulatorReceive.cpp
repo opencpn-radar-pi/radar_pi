@@ -116,7 +116,7 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
  */
 void *EmulatorReceive::Entry(void) {
   int r = 0;
-  NetworkAddress fake = {{IPV4_ADDR(127, 0, 0, 10)}, IPV4_PORT(3333)};
+  NetworkAddress fake(127, 0, 0, 10, 3333);
 
   LOG_VERBOSE(wxT("radar_pi: EmulatorReceive thread %s starting"), m_ri->m_name.c_str());
 
@@ -138,6 +138,22 @@ void *EmulatorReceive::Entry(void) {
     }
 
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
+    if (r > 0) {
+      if (m_receive_socket != INVALID_SOCKET && FD_ISSET(m_receive_socket, &fdin)) {
+        uint8_t data[10];
+        union {
+          sockaddr_storage addr;
+          sockaddr_in ipv4;
+        } rx_addr;
+
+        socklen_t rx_len = sizeof(rx_addr);
+        r = recvfrom(m_receive_socket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
+        if (r > 0) {
+          LOG_VERBOSE(wxT("radar_pi: %s received stop instruction"), m_ri->m_name.c_str());
+          break;
+        }
+      }
+    }
 
     EmulateFakeBuffer();
 

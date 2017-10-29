@@ -302,6 +302,7 @@ SOCKET NavicoReceive::GetNewReportSocket() {
     return INVALID_SOCKET;
   }
 
+  error.Printf(wxT("%s reports: "), m_ri->m_name.c_str());
   socket = startUDPMulticastReceiveSocket(m_interface_addr, m_report_addr, error);
   if (socket != INVALID_SOCKET) {
     wxString addr = FormatNetworkAddress(m_interface_addr);
@@ -310,7 +311,7 @@ SOCKET NavicoReceive::GetNewReportSocket() {
     LOG_RECEIVE(wxT("radar_pi: %s scanning interface %s for data from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
 
     wxString s;
-    s << m_ri->m_name << wxT(": ") << _("Scanning interface") << addr;
+    s << m_ri->m_name << wxT(": ") << _("Scanning interface") << wxT(" ") << addr;
     SetStatus(s);
   } else {
     SetStatus(error);
@@ -327,10 +328,11 @@ SOCKET NavicoReceive::GetNewDataSocket() {
     return INVALID_SOCKET;
   }
 
+  error.Printf(wxT("%s data: "), m_ri->m_name.c_str());
   socket = startUDPMulticastReceiveSocket(m_interface_addr, m_data_addr, error);
   if (socket != INVALID_SOCKET) {
     wxString addr = FormatNetworkAddress(m_interface_addr);
-    wxString rep_addr = FormatNetworkAddressPort(m_report_addr);
+    wxString rep_addr = FormatNetworkAddressPort(m_data_addr);
 
     LOG_RECEIVE(wxT("radar_pi: %s listening for data on %s from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
   } else {
@@ -414,7 +416,9 @@ void *NavicoReceive::Entry(void) {
       maxFd = MAX(dataSocket, maxFd);
     }
 
+    wxLongLong start = wxGetUTCTimeMillis();
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
+    LOG_VERBOSE(wxT("radar_pi: select maxFd=%d r=%d elapsed=%lld"), maxFd, r, wxGetUTCTimeMillis() - start);
 
     if (r > 0) {
       if (m_receive_socket != INVALID_SOCKET && FD_ISSET(m_receive_socket, &fdin)) {
@@ -686,7 +690,7 @@ bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
               stat = _("Unknown status");
               break;
           }
-          SetStatus(wxString::Format(wxT("%s IP %s %s"), m_ri->m_name.c_str(), stat.c_str()));
+          SetStatus(wxString::Format(wxT("%s IP %s %s"), m_ri->m_name.c_str(), m_addr.c_str(), stat.c_str()));
         }
         break;
       }

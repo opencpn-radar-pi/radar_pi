@@ -3,9 +3,9 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-static const NetworkAddress dataBR24 = {{IPV4_ADDR(236, 6, 7, 8)}, IPV4_PORT(6678)};
-static const NetworkAddress reportBR24 = {{IPV4_ADDR(236, 6, 7, 9)}, IPV4_PORT(6679)};
-static const NetworkAddress sendBR24 = {{IPV4_ADDR(236, 6, 7, 10)}, IPV4_PORT(6680)};
+static const NetworkAddress dataBR24(236, 6, 7, 8, 6678);
+static const NetworkAddress reportBR24(236, 6, 7, 9, 6679);
+static const NetworkAddress sendBR24(236, 6, 7, 10, 6680);
 
 PLUGIN_END_NAMESPACE
 

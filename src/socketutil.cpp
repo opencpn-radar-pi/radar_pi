@@ -37,7 +37,7 @@ PLUGIN_BEGIN_NAMESPACE
 wxString FormatNetworkAddress(NetworkAddress &addr) {
   UINT8 *a = (UINT8 *)&addr.addr;  // sin_addr is in network layout
   wxString address;
-  address.Printf(wxT(" %u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
+  address.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
 
   return address;
 }
@@ -45,7 +45,7 @@ wxString FormatNetworkAddress(NetworkAddress &addr) {
 wxString FormatNetworkAddressPort(NetworkAddress &addr) {
   UINT8 *a = (UINT8 *)&addr.addr;  // sin_addr is in network layout
   wxString address;
-  address.Printf(wxT(" %u.%u.%u.%u port %u"), a[0], a[1], a[2], a[3], htons(addr.port));
+  address.Printf(wxT("%u.%u.%u.%u port %u"), a[0], a[1], a[2], a[3], htons(addr.port));
 
   return address;
 }
@@ -176,8 +176,6 @@ SOCKET startUDPMulticastReceiveSocket(NetworkAddress &interface_address, Network
   struct sockaddr_in listenAddress;
   int one = 1;
 
-  error_message = wxT("");
-
   CLEAR_STRUCT(listenAddress);
 #ifdef __WXMAC__xxx
   listenAddress.sin_len = sizeof(listenAddress);
@@ -210,11 +208,12 @@ SOCKET startUDPMulticastReceiveSocket(NetworkAddress &interface_address, Network
     goto fail;
   }
 
+  wxLogMessage(wxT("radar_pi: multicast reception for %s on interface %s"), FormatNetworkAddressPort(mcast_address), FormatNetworkAddress(interface_address));
+
   // Hurrah! Success!
   return rx_socket;
 
 fail:
-  error_message = FormatNetworkAddress(interface_address) + wxT(": ") + error_message;
   if (rx_socket != INVALID_SOCKET) {
     closesocket(rx_socket);
   }
