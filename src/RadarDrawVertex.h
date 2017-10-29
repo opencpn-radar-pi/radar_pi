@@ -89,7 +89,6 @@ class RadarDrawVertex : public RadarDraw {
   VertexLine* m_vertices;
   unsigned int m_count;
   bool m_oom;
-
 };
 
 PLUGIN_END_NAMESPACE

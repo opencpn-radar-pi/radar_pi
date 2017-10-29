@@ -32,9 +32,9 @@
 #ifndef _NAVICORECEIVE_H_
 #define _NAVICORECEIVE_H_
 
+#include "NavicoCommon.h"
 #include "RadarReceive.h"
 #include "socketutil.h"
-#include "NavicoCommon.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
+#include "radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
 #include "SelectDialog.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
-#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -695,7 +695,7 @@ void radar_pi::PassHeadingToOpenCPN() {
 wxString radar_pi::GetTimedIdleText() {
   wxString text;
 
-  if (m_settings.timed_idle > 0) {
+  if (m_settings.timed_idle.GetValue() > 0) {
     time_t now = time(0);
     int left = m_idle_standby - now;
     if (left >= 0) {
@@ -825,7 +825,7 @@ void radar_pi::RequestStateAllRadars(RadarState state) {
  * If the OFF timer is running and has run out, stop the radar and start an ON timer.
  */
 void radar_pi::CheckTimedTransmit(RadarState state) {
-  if (m_settings.timed_idle == 0) {
+  if (m_settings.timed_idle.GetValue() == 0) {
     return;  // User does not want timed idle
   }
 
@@ -837,12 +837,12 @@ void radar_pi::CheckTimedTransmit(RadarState state) {
 
   if (m_idle_standby > 0 && TIMED_OUT(now, m_idle_standby) && state == RADAR_TRANSMIT) {
     RequestStateAllRadars(RADAR_STANDBY);
-    m_idle_transmit = now + m_settings.timed_idle * SECONDS_PER_TIMED_IDLE_SETTING -
-                      (m_settings.idle_run_time + 1) * SECONDS_PER_TIMED_RUN_SETTING;
+    m_idle_transmit = now + m_settings.timed_idle.GetValue() * SECONDS_PER_TIMED_IDLE_SETTING -
+                      (m_settings.idle_run_time.GetValue() + 1) * SECONDS_PER_TIMED_RUN_SETTING;
     m_idle_standby = 0;
   } else if (m_idle_transmit > 0 && TIMED_OUT(now, m_idle_transmit) && state == RADAR_STANDBY) {
     RequestStateAllRadars(RADAR_TRANSMIT);
-    m_idle_standby = now + (m_settings.idle_run_time + 1) * SECONDS_PER_TIMED_RUN_SETTING;
+    m_idle_standby = now + (m_settings.idle_run_time.GetValue() + 1) * SECONDS_PER_TIMED_RUN_SETTING;
     m_idle_transmit = 0;
   }
 }
@@ -947,18 +947,19 @@ void radar_pi::ScheduleWindowRefresh() {
     m_radar[r]->RefreshDisplay();
   }
 
-  if (m_settings.refreshrate > 1 && drawTime < 500) {  // 1 = 1 per s, 1000ms between draws, no additional refreshes
+  int refreshrate = m_settings.refreshrate.GetValue();
+
+  if (refreshrate > 1 && drawTime < 500) {  // 1 = 1 per s, 1000ms between draws, no additional refreshes
     // 2 = 2 per s,  500ms
     // 3 = 4 per s,  250ms
     // 4 = 8 per s,  125ms
     // 5 = 16 per s,  64ms
-    millis = (1000 - drawTime) / (1 << (m_settings.refreshrate - 1)) + drawTime;
+    millis = (1000 - drawTime) / (1 << (refreshrate - 1)) + drawTime;
 
     m_timer->StartOnce(millis);
     LOG_VERBOSE(wxT("radar_pi: rendering PPI window(s) took %dms, next extra render is in %dms"), drawTime, millis);
   } else {
-    LOG_VERBOSE(wxT("radar_pi: rendering PPI window(s) took %dms, refreshrate=%d, no next extra render"), drawTime,
-                m_settings.refreshrate);
+    LOG_VERBOSE(wxT("radar_pi: rendering PPI window(s) took %dms, refreshrate=%d, no next extra render"), drawTime, refreshrate);
   }
 }
 
@@ -1115,7 +1116,7 @@ void radar_pi::UpdateState(void) {
     m_toolbar_button = TB_HIDDEN;
   } else if (state == RADAR_TRANSMIT) {
     m_toolbar_button = TB_ACTIVE;
-  } else if (m_settings.timed_idle) {
+  } else if (m_settings.timed_idle.GetValue() > 0) {
     m_toolbar_button = TB_SEEN;
   } else {
     m_toolbar_button = TB_STANDBY;
@@ -1185,8 +1186,8 @@ bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
 
     // Always compute m_auto_range_meters, possibly needed by SendState() called
     // from DoTick().
-    GeoPosition pos_min = { vp->lat_min, vp->lon_min };
-    GeoPosition pos_max = { vp->lat_max, vp->lon_max };
+    GeoPosition pos_min = {vp->lat_min, vp->lon_min};
+    GeoPosition pos_max = {vp->lat_max, vp->lon_max};
     double max_distance = radar_distance(pos_min, pos_max, 'm');
     // max_distance is the length of the diagonal of the viewport. If the boat
     // were centered, the max length to the edge of the screen is exactly half that.
@@ -1247,8 +1248,9 @@ bool radar_pi::LoadConfig(void) {
     m_settings.range_unit_meters = (m_settings.range_units == RANGE_METRIC) ? 1000 : 1852;
 
     pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
-    pConf->Read(wxT("RunTimeOnIdle"), &m_settings.idle_run_time, 1);
-    m_settings.idle_run_time = wxMax(m_settings.idle_run_time, 2);
+    pConf->Read(wxT("RunTimeOnIdle"), &v, 1);
+    m_settings.idle_run_time.Update(v);
+    m_settings.idle_run_time = wxMax(m_settings.idle_run_time.GetValue(), 2);
 
     pConf->Read(wxT("RadarCount"), &v, 0);
     M_SETTINGS.radar_count = v;
@@ -1350,7 +1352,8 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("ShowExtremeRange"), &m_settings.show_extreme_range, false);
     pConf->Read(wxT("MenuAutoHide"), &m_settings.menu_auto_hide, 0);
     pConf->Read(wxT("PassHeadingToOCPN"), &m_settings.pass_heading_to_opencpn, false);
-    pConf->Read(wxT("Refreshrate"), &m_settings.refreshrate, 3);
+    pConf->Read(wxT("Refreshrate"), &v, 3);
+    m_settings.refreshrate.Update(v);
     pConf->Read(wxT("ReverseZoom"), &m_settings.reverse_zoom, false);
     pConf->Read(wxT("ScanMaxAge"), &m_settings.max_age, 6);
     pConf->Read(wxT("Show"), &m_settings.show, true);
@@ -1365,10 +1368,10 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("TrailColourEnd"), &s, "rgb(63,63,63)");
     m_settings.trail_end_colour = wxColour(s);
     pConf->Read(wxT("TrailsOnOverlay"), &m_settings.trails_on_overlay, false);
-    pConf->Read(wxT("Transparency"), &m_settings.overlay_transparency, DEFAULT_OVERLAY_TRANSPARENCY);
+    pConf->Read(wxT("Transparency"), &v, DEFAULT_OVERLAY_TRANSPARENCY);
+    m_settings.overlay_transparency.Update(v);
 
     m_settings.max_age = wxMax(wxMin(m_settings.max_age, MAX_AGE), MIN_AGE);
-    m_settings.refreshrate = wxMax(wxMin(m_settings.refreshrate, 5), 1);
 
     SaveConfig();
     return true;
@@ -1401,9 +1404,9 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("MenuAutoHide"), m_settings.menu_auto_hide);
     pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
     pConf->Write(wxT("RangeUnits"), (int)m_settings.range_units);
-    pConf->Write(wxT("Refreshrate"), m_settings.refreshrate);
+    pConf->Write(wxT("Refreshrate"), m_settings.refreshrate.GetValue());
     pConf->Write(wxT("ReverseZoom"), m_settings.reverse_zoom);
-    pConf->Write(wxT("RunTimeOnIdle"), m_settings.idle_run_time);
+    pConf->Write(wxT("RunTimeOnIdle"), m_settings.idle_run_time.GetValue());
     pConf->Write(wxT("ScanMaxAge"), m_settings.max_age);
     pConf->Write(wxT("Show"), m_settings.show);
     pConf->Write(wxT("SkewFactor"), m_settings.skew_factor);
@@ -1413,7 +1416,7 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("TrailColourStart"), m_settings.trail_start_colour.GetAsString());
     pConf->Write(wxT("TrailColourEnd"), m_settings.trail_end_colour.GetAsString());
     pConf->Write(wxT("TrailsOnOverlay"), m_settings.trails_on_overlay);
-    pConf->Write(wxT("Transparency"), m_settings.overlay_transparency);
+    pConf->Write(wxT("Transparency"), m_settings.overlay_transparency.GetValue());
     pConf->Write(wxT("VerboseLog"), m_settings.verbose);
     pConf->Write(wxT("AISatARPAoffset"), m_settings.AISatARPAoffset);
     pConf->Write(wxT("ColourStrong"), m_settings.strong_colour.GetAsString());

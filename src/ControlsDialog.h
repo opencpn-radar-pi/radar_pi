@@ -32,8 +32,8 @@
 #ifndef _CONTROLSDIALOG_H_
 #define _CONTROLSDIALOG_H_
 
-#include "radar_pi.h"
 #include "radar_control_item.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -57,6 +57,7 @@ extern wxSize g_buttonSize;
 struct ControlInfo {
   ControlType type;
   int autoValues;
+  wxString *autoNames;
   int defaultValue;
   int minValue;
   int maxValue;
@@ -102,7 +103,7 @@ class ControlsDialog : public wxDialog {
     m_power_sizer = 0;
     m_transmit_sizer = 0;  // Controls disabled if not transmitting
     m_from_sizer = 0;      // If on edit control, this is where the button is from
-    m_from_control = 0;  // Only set when in edit mode
+    m_from_control = 0;    // Only set when in edit mode
     m_plus_ten_button = 0;
     m_plus_button = 0;
     m_value_text = 0;
@@ -192,8 +193,8 @@ class ControlsDialog : public wxDialog {
 
  protected:
   ControlSet m_ctrl;
-  void DefineControl(ControlType ct, int autoValues, int defaultValue, int minValue, int maxValue, int stepValue, int nameCount,
-                  wxString names[]) {
+  void DefineControl(ControlType ct, int autoValues, wxString auto_names[], int defaultValue, int minValue, int maxValue,
+                     int stepValue, int nameCount, wxString names[]) {
     m_ctrl.control[ct].type = ct;
     m_ctrl.control[ct].autoValues = autoValues;
     m_ctrl.control[ct].defaultValue = defaultValue;
@@ -201,6 +202,12 @@ class ControlsDialog : public wxDialog {
     m_ctrl.control[ct].maxValue = maxValue;
     m_ctrl.control[ct].stepValue = stepValue;
     m_ctrl.control[ct].nameCount = nameCount;
+    if (autoValues > 0) {
+      m_ctrl.control[ct].autoNames = new wxString[autoValues];
+      for (int i = 0; i < autoValues; i++) {
+        m_ctrl.control[ct].autoNames[i] = auto_names[i];
+      }
+    }
     if (nameCount > 0) {
       m_ctrl.control[ct].names = new wxString[nameCount];
       for (int i = 0; i < nameCount; i++) {
@@ -458,23 +465,33 @@ class RadarControlButton : public wxButton {
     this->SetFont(m_parent->m_pi->m_font);
   }
 
-  RadarControlButton(ControlsDialog *parent, wxWindowID id, const wxString &label, ControlInfo &control, radar_control_item &item, const wxString &newUnit = wxT(""), const wxString &newComment = wxT("")) {
+  RadarControlButton(ControlsDialog *parent, wxWindowID id, const wxString &label, ControlInfo &ctrl, radar_control_item &item,
+                     const wxString &newUnit = wxT(""), const wxString &newComment = wxT("")) {
     Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
 
     m_parent = parent;
     m_pi = m_parent->m_pi;
 
-    value = control.defaultValue;
-    autoValues = control.autoValues;
-    minValue = control.minValue;
-    maxValue = control.maxValue;
-    names = control.names;
+    value = ctrl.defaultValue;
+    autoValues = ctrl.autoValues;
+    autoNames = ctrl.autoNames;
+    minValue = ctrl.minValue;
+    maxValue = ctrl.maxValue;
+    if (ctrl.nameCount > 1) {
+      names = ctrl.names;
+    } else if (ctrl.nameCount == 1 && ctrl.names[0].length() > 0) {
+      unit = ctrl.names[0];
+      names = 0;
+    } else {
+      names = 0;
+    }
     autoValue = 0;
     firstLine = label;
-    unit = newUnit;
+    if (newUnit.length() > 0) {
+      unit = newUnit;
+    }
     comment = newComment;
-    names = 0;
-    controlType = control.type;
+    controlType = ctrl.type;
 
     SetLocalValue(item.GetButton());
 
@@ -538,8 +555,9 @@ class RadarRangeControlButton : public RadarControlButton {
 // This sets up the initializer macro in the constructor of the
 // derived control dialogs.
 #define HAVE_CONTROL(a, b, c, d, e, f, g) \
+  wxString a##_auto_names[] = b;          \
   wxString a##_names[] = g;               \
-  DefineControl(a, b, c, d, e, f, ARRAY_SIZE(a##_names), a##_names);
+  DefineControl(a, ARRAY_SIZE(a##_auto_names), a##_auto_names, c, d, e, f, ARRAY_SIZE(a##_names), a##_names);
 #define SKIP_CONTROL(a)
 
 PLUGIN_END_NAMESPACE

@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
+#include "RadarInfo.h"
 #include "drawutil.h"
 #include "radar_pi.h"
 
@@ -69,9 +69,10 @@ Position ArpaTarget::Polar2Pos(Polar pol, Position own_ship, double range) {
   // based on the own ship position own_ship
   Position pos;
   pos.pos.lat = own_ship.pos.lat + ((double)pol.r / m_ri->m_spoke_len) * range  // Scale to fraction of distance from radar
-                               * cos(deg2rad(SCALE_SPOKES_TO_DEGREES(pol.angle))) / 60. / 1852.;
+                                       * cos(deg2rad(SCALE_SPOKES_TO_DEGREES(pol.angle))) / 60. / 1852.;
   pos.pos.lon = own_ship.pos.lon + ((double)pol.r / (double)m_ri->m_spoke_len) * range  // Scale to fraction of distance to radar
-                               * sin(deg2rad(SCALE_SPOKES_TO_DEGREES(pol.angle))) / cos(deg2rad(own_ship.pos.lat)) / 60. / 1852.;
+                                       * sin(deg2rad(SCALE_SPOKES_TO_DEGREES(pol.angle))) / cos(deg2rad(own_ship.pos.lat)) / 60. /
+                                       1852.;
   return pos;
 }
 
@@ -695,16 +696,16 @@ void ArpaTarget::RefreshTarget(int dist) {
     SetStatusLost();
     return;
   }
-  x_local.pos.lat = (m_position.pos.lat - own_pos.pos.lat) * 60. * 1852.;                              // in meters
+  x_local.pos.lat = (m_position.pos.lat - own_pos.pos.lat) * 60. * 1852.;                                  // in meters
   x_local.pos.lon = (m_position.pos.lon - own_pos.pos.lon) * 60. * 1852. * cos(deg2rad(own_pos.pos.lat));  // in meters
-  x_local.dlat_dt = m_position.dlat_dt;                                                    // meters / sec
-  x_local.dlon_dt = m_position.dlon_dt;                                                    // meters / sec
+  x_local.dlat_dt = m_position.dlat_dt;                                                                    // meters / sec
+  x_local.dlon_dt = m_position.dlon_dt;                                                                    // meters / sec
   m_kalman->Predict(&x_local, delta_t);  // x_local is new estimated local position of the target
                                          // now set the polar to expected angular position from the expected local position
   pol.angle = (int)(atan2(x_local.pos.lon, x_local.pos.lat) * m_ri->m_spokes / (2. * PI));
   if (pol.angle < 0) pol.angle += m_ri->m_spokes;
-  pol.r =
-      (int)(sqrt(x_local.pos.lat * x_local.pos.lat + x_local.pos.lon * x_local.pos.lon) * (double)m_ri->m_spoke_len / (double)m_ri->m_range_meters);
+  pol.r = (int)(sqrt(x_local.pos.lat * x_local.pos.lat + x_local.pos.lon * x_local.pos.lon) * (double)m_ri->m_spoke_len /
+                (double)m_ri->m_range_meters);
   // zooming and target movement may  cause r to be out of bounds
   if (pol.r >= (int)m_ri->m_spoke_len || pol.r <= 0) {
     SetStatusLost();
@@ -739,7 +740,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     if (m_status == ACQUIRE0) {
       // as this is the first measurement, move target to measured position
       Position p_own;
-      p_own.pos = m_ri->m_history[MOD_SPOKES(pol.angle)].pos;  // get the position at receive time
+      p_own.pos = m_ri->m_history[MOD_SPOKES(pol.angle)].pos;    // get the position at receive time
       m_position = Polar2Pos(pol, p_own, m_ri->m_range_meters);  // using own ship location from the time of reception
       m_position.dlat_dt = 0.;
       m_position.dlon_dt = 0.;

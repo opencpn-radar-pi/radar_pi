@@ -84,7 +84,7 @@ class KalmanFilter {
   Matrix<double, 4, 2> K;
   Matrix<double, 4> I;
 
-private:
+ private:
   size_t m_spokes;
 };
 

@@ -41,6 +41,7 @@
 #include "jsonreader.h"
 #include "nmea0183/nmea0183.h"
 #include "pi_common.h"
+#include "radar_control_item.h"
 #include "socketutil.h"
 #include "version.h"
 
@@ -278,7 +279,7 @@ enum RangeUnits { RANGE_NAUTICAL, RANGE_METRIC };
  */
 struct PersistentSettings {
   size_t radar_count;                              // How many radars we have
-  int overlay_transparency;                        // How transparent is the radar picture over the chart
+  radar_control_item overlay_transparency;         // How transparent is the radar picture over the chart
   int range_index;                                 // index into range array, see RadarInfo.cpp
   int verbose;                                     // Loglevel 0..4.
   int guard_zone_threshold;                        // How many blobs must be sent by radar before we fire alarm
@@ -291,9 +292,9 @@ struct PersistentSettings {
   RangeUnits range_units;                          // See enum
   int range_unit_meters;                           // ... 1852 or 1000, depending on range_units
   int max_age;                                     // Scans older than this in seconds will be removed
-  int timed_idle;                                  // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
-  int idle_run_time;                               // 0 = 10s, 1 = 30s, 2 = 1 min
-  int refreshrate;                                 // How quickly to refresh the display
+  radar_control_item timed_idle;                   // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
+  radar_control_item idle_run_time;                // 0 = 10s, 1 = 30s, 2 = 1 min
+  radar_control_item refreshrate;                  // How quickly to refresh the display
   int chart_overlay;                               // -1 = none, otherwise = radar number
   int menu_auto_hide;                              // 0 = none, 1 = 10s, 2 = 30s
   int drawing_method;                              // VertexBuffer, Shader, etc.

@@ -29,11 +29,11 @@
  ***************************************************************************
  */
 
+#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -138,7 +138,7 @@ void radar_range_control_item::Update(int v) {
   // First we look up according to the desired setting (metric/nautical) and if
   // that doesn't work we look up nautical then metric.
 
-  if (m_settings->range_units == RANGE_NAUTICAL) {
+  if (M_SETTINGS.range_units == RANGE_NAUTICAL) {
     for (g = 0; g < ARRAY_SIZE(g_ranges_nautic); g++) {
       if (g_ranges_nautic[g].meters == m_value) {
         newRange = &g_ranges_nautic[g];
@@ -179,7 +179,7 @@ void radar_range_control_item::Update(int v) {
  * Called when the config is not yet known, so this should not start any
  * computations based on those yet.
  */
-RadarInfo::RadarInfo(radar_pi *pi, int radar) {
+RadarInfo::RadarInfo(radar_pi *pi, int radar) : m_range(pi) {
   m_pi = pi;
   m_radar = radar;
   m_arpa = 0;
@@ -222,7 +222,6 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_radar_canvas = 0;
   m_control_dialog = 0;
   m_state.Update(RADAR_OFF);
-  m_range.m_settings = &m_pi->m_settings;
   m_refresh_millis = 50;
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
@@ -592,7 +591,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
 
   bool draw_trails_on_overlay = (m_pi->m_settings.trails_on_overlay == 1);
   if (m_draw_overlay.draw && !draw_trails_on_overlay) {
-    m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
+    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len);
   }
 
   m_trails->UpdateTrailPosition();
@@ -604,7 +603,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   m_trails->UpdateRelativeTrails(angle, data, len);
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
-    m_draw_overlay.draw->ProcessRadarSpoke(m_pi->m_settings.overlay_transparency, bearing, data, len);
+    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len);
   }
 
   if (m_draw_panel.draw) {

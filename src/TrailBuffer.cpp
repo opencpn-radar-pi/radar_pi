@@ -167,8 +167,7 @@ void TrailBuffer::ZoomTrails(float zoom_factor) {
 
   for (size_t i = wxMax(m_trail_size / 2 + m_offset.lat - m_max_spoke_len, 0);
        i < wxMin(m_trail_size / 2 + m_offset.lat + m_max_spoke_len, m_trail_size); i++) {
-    int index_i =
-        (int((float)(i - m_trail_size / 2 + m_offset.lat) * zoom_factor)) + m_trail_size / 2 - m_offset.lat * zoom_factor;
+    int index_i = (int((float)(i - m_trail_size / 2 + m_offset.lat) * zoom_factor)) + m_trail_size / 2 - m_offset.lat * zoom_factor;
     if (index_i >= m_trail_size - 1) break;  // allow adding an additional pixel later
     if (index_i < 0) continue;
     for (size_t j = wxMax(m_trail_size / 2 + m_offset.lon - m_max_spoke_len, 0);

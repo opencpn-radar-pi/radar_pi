@@ -88,7 +88,6 @@ class Position {
   double sd_speed_kn;  // standard deviation of the speed in knots
 };
 
-
 enum TargetProcessStatus { UNKNOWN, NOT_FOUND_IN_PASS1 };
 enum PassN { PASS1, PASS2 };
 
