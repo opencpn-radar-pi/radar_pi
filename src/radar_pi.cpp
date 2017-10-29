@@ -160,6 +160,7 @@ int radar_pi::Init(void) {
       // Might as well give up now
       return 0;
     }
+    wxLogMessage(wxT("radar_pi: Windows sockets initialized"));
 #endif
 
     AddLocaleCatalog(_T("opencpn-radar_pi"));

@@ -47,11 +47,15 @@ class EmulatorReceive : public RadarReceive {
     m_shutdown = false;
     m_next_spoke = 0;
     m_next_rotation = 0;
-
+    m_receive_socket = GetLocalhostServerTCPSocket();
+    m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
     LOG_RECEIVE(wxT("radar_pi: %s receive thread created"), m_ri->m_name.c_str());
   };
 
-  ~EmulatorReceive() {}
+  ~EmulatorReceive() {
+    closesocket(m_receive_socket);
+    closesocket(m_send_socket);
+  }
 
   void *Entry(void);
   void Shutdown(void);
@@ -64,6 +68,9 @@ class EmulatorReceive : public RadarReceive {
 
   int m_next_spoke;     // emulator next spoke
   int m_next_rotation;  // slowly rotate emulator
+
+  SOCKET m_receive_socket;  // Where we listen for message from m_send_socket
+  SOCKET m_send_socket;     // A message to this socket will interrupt select() and allow immediate shutdown
 };
 
 PLUGIN_END_NAMESPACE

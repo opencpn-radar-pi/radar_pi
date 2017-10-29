@@ -123,12 +123,21 @@ void *EmulatorReceive::Entry(void) {
   m_ri->DetectedRadar(fake, fake);
 
   while (!m_shutdown) {
-    struct timeval tv = {(long)0, (long)(MILLIS_PER_SELECT * 1000)};
+    struct timeval tv;
+
+    tv.tv_sec = 0;
+    tv.tv_usec = (long)(MILLIS_PER_SELECT * 1000);
 
     fd_set fdin;
     FD_ZERO(&fdin);
 
-    r = select(0, &fdin, 0, 0, &tv);
+    int maxFd = INVALID_SOCKET;
+    if (m_receive_socket != INVALID_SOCKET) {
+      FD_SET(m_receive_socket, &fdin);
+      maxFd = MAX(m_receive_socket, maxFd);
+    }
+
+    r = select(maxFd + 1, &fdin, 0, 0, &tv);
 
     EmulateFakeBuffer();
 
@@ -144,8 +153,14 @@ void *EmulatorReceive::Entry(void) {
 // for the setup of these two sockets.
 
 void EmulatorReceive::Shutdown() {
-  LOG_INFO(wxT("radar_pi: %s receive thread will take long time to stop"), m_ri->m_name.c_str());
   m_shutdown = true;
+  if (m_send_socket != INVALID_SOCKET) {
+    if (send(m_send_socket, "!", 1, MSG_DONTROUTE) > 0) {
+      LOG_VERBOSE(wxT("radar_pi: %s requested receive thread to stop"), m_ri->m_name.c_str());
+      return;
+    }
+  }
+  LOG_INFO(wxT("radar_pi: %s receive thread will take long time to stop"), m_ri->m_name.c_str());
 }
 
 wxString EmulatorReceive::GetStatus() { return _("Emulator Status OK"); }
