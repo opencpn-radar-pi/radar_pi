@@ -357,7 +357,7 @@ bool radar_pi::DeInit(void) {
   SaveConfig();
 
   // Delete the RadarInfo objects. This will call their destructor and delete all data.
-  for (int r = 0; r < M_SETTINGS.radar_count; r++) {
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     delete m_radar[r];
     m_radar[r] = 0;
   }
@@ -1188,7 +1188,7 @@ bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
 
   if (M_SETTINGS.show                                                             // Radar shown
       && M_SETTINGS.chart_overlay >= 0                                            // Overlay desired
-      && M_SETTINGS.chart_overlay < M_SETTINGS.radar_count                        // and still valid
+      && M_SETTINGS.chart_overlay < (int)M_SETTINGS.radar_count                   // and still valid
       && m_radar[M_SETTINGS.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar transmitting
       && GetRadarPosition(&radar_lat, &radar_lon)) {                              // Boat position known
 

@@ -193,6 +193,7 @@ const size_t RadarSpokeLenMax[RT_MAX] = {
 extern const wchar_t *RadarTypeName[RT_MAX];
 
 typedef enum ControlType {
+  CT_NONE,
 #define CONTROL_TYPE(x, y) x,
 #include "ControlType.inc"
 #undef CONTROL_TYPE

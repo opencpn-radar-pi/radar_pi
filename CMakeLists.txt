@@ -102,6 +102,7 @@ SET(SRC_RADAR
             src/pi_common.h
             src/radar_pi.cpp
             src/radar_pi.h
+            src/radar_control_item.h
             src/shaderutil.cpp
             src/shaderutil.h
             src/socketutil.cpp

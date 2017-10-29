@@ -35,7 +35,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 int main() {
   int ret = 0;
-  KalmanFilter *filter = new KalmanFilter();
+  KalmanFilter *filter = new KalmanFilter(2048);
   Polar pol, expected;
   LocalPosition x_local;
 

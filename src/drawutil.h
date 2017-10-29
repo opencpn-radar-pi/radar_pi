@@ -78,10 +78,10 @@ class PolarToCartesianLookup {
       wxAbort();
     }
 
-    for (int arc = 0; arc < m_spokes; arc++) {
+    for (size_t arc = 0; arc < m_spokes; arc++) {
       float sine = sinf((float)arc * PI * 2 / m_spokes);
       float cosine = cosf((float)arc * PI * 2 / m_spokes);
-      for (int radius = 0; radius < m_spoke_len; radius++) {
+      for (size_t radius = 0; radius < m_spoke_len; radius++) {
         float x = (float)radius * cosine;
         float y = (float)radius * sine;
         M_XY(arc, radius).x = x;

@@ -65,8 +65,9 @@ bool NavicoControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, Net
   int one = 1;
 
   // The radar scanner address is not used for Navico BR/Halo radars
-  if (radaradr.port != 0)
-    ;
+  if (radaradr.port != 0) {
+    // Null
+  }
 
   m_pi = pi;
   m_ri = ri;
@@ -172,6 +173,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, int value, int auto
   bool r = false;
 
   switch (controlType) {
+    case CT_NONE:
     case CT_RANGE:
     case CT_TIMED_IDLE:
     case CT_TIMED_RUN:

@@ -72,14 +72,14 @@ void RadarDrawVertex::Reset() {
   }
 }
 
-#define ADD_VERTEX_POINT(angle, radius, r, g, b, a)                          \
-  {                                                                          \
+#define ADD_VERTEX_POINT(angle, radius, r, g, b, a)                         \
+  {                                                                         \
     line->points[count].xy = m_ri->m_polar_lookup->GetPoint(angle, radius); \
-    line->points[count].red = r;                                             \
-    line->points[count].green = g;                                           \
-    line->points[count].blue = b;                                            \
-    line->points[count].alpha = a;                                           \
-    count++;                                                                 \
+    line->points[count].red = r;                                            \
+    line->points[count].green = g;                                          \
+    line->points[count].blue = b;                                           \
+    line->points[count].alpha = a;                                          \
+    count++;                                                                \
   }
 
 void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green,
@@ -132,7 +132,7 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
   int r_begin = 0;
   int r_end = 0;
 
-  if (angle < 0 || angle >= m_spokes || len > m_spoke_len || !m_vertices) {
+  if (angle < 0 || angle >= (int)m_spokes || len > m_spoke_len || !m_vertices) {
     return;
   }
 

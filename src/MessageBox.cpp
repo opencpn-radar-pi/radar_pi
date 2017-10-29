@@ -276,7 +276,7 @@ bool MessageBox::UpdateMessage(bool force) {
     m_allow_auto_hide = false;
   }
 
-  for (int r = 0; r < M_SETTINGS.radar_count; r++) {
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     int state = m_pi->m_radar[r]->m_state.GetValue();
     if (state != RADAR_OFF) {
       radarSeen = true;

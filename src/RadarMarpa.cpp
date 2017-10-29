@@ -88,14 +88,14 @@ Polar ArpaTarget::Pos2Polar(Position p, Position own_ship, int range) {
 }
 
 bool RadarArpa::Pix(int ang, int rad) {
-  if (rad <= 1 || rad >= m_ri->m_spoke_len - 1) {  //  avoid range ring
+  if (rad <= 1 || rad >= (int)m_ri->m_spoke_len - 1) {  //  avoid range ring
     return false;
   }
   return ((m_ri->m_history[MOD_SPOKES(ang)].line[rad] & 128) != 0);
 }
 
 bool ArpaTarget::Pix(int ang, int rad) {
-  if (rad <= 1 || rad >= m_ri->m_spoke_len - 1) {  //  avoid range ring
+  if (rad <= 1 || rad >= (int)m_ri->m_spoke_len - 1) {  //  avoid range ring
     return false;
   }
   if (m_check_for_duplicate) {
@@ -142,7 +142,7 @@ bool ArpaTarget::MultiPix(int ang, int rad) {  // checks if the blob has a conto
   max_angle = current;
   min_r = current;
   min_angle = current;  // check if p inside blob
-  if (start.r >= m_ri->m_spoke_len - 1) {
+  if (start.r >= (int)m_ri->m_spoke_len - 1) {
     return false;  //  r too large
   }
   if (start.r < 3) {
@@ -247,7 +247,7 @@ bool RadarArpa::MultiPix(int ang, int rad) {
   max_angle = current;
   min_r = current;
   min_angle = current;  // check if p inside blob
-  if (start.r >= m_ri->m_spoke_len - 1) {
+  if (start.r >= (int)m_ri->m_spoke_len - 1) {
     return false;  //  r too large
   }
   if (start.r < 3) {
@@ -366,7 +366,7 @@ bool ArpaTarget::FindContourFromInside(Polar* pol) {  // moves pol to contour of
   // false when failed
   int ang = pol->angle;
   int rad = pol->r;
-  if (rad >= m_ri->m_spoke_len - 1 || rad < 3) {
+  if (rad >= (int)m_ri->m_spoke_len - 1 || rad < 3) {
     return false;
   }
   if (!(Pix(ang, rad))) {
@@ -421,7 +421,7 @@ int ArpaTarget::GetContour(Polar* pol) {
   m_min_r = current;
   m_min_angle = current;
   // check if p inside blob
-  if (start.r >= m_ri->m_spoke_len - 1) {
+  if (start.r >= (int)m_ri->m_spoke_len - 1) {
     return 1;  // return code 1, r too large
   }
   if (start.r < 4) {
@@ -498,13 +498,13 @@ int ArpaTarget::GetContour(Polar* pol) {
     m_max_angle.angle += m_ri->m_spokes;
   }
   pol->angle = (m_max_angle.angle + m_min_angle.angle) / 2;
-  if (m_max_r.r > m_ri->m_spoke_len - 1 || m_min_r.r > m_ri->m_spoke_len - 1) {
+  if (m_max_r.r > (int)m_ri->m_spoke_len - 1 || m_min_r.r > (int)m_ri->m_spoke_len - 1) {
     return 10;  // return code 10 r too large
   }
   if (m_max_r.r < 2 || m_min_r.r < 2) {
     return 11;  // return code 11 r too small
   }
-  if (pol->angle >= m_ri->m_spokes) {
+  if (pol->angle >= (int)m_ri->m_spokes) {
     pol->angle -= m_ri->m_spokes;
   }
   pol->r = (m_max_r.r + m_min_r.r) / 2;
@@ -527,7 +527,7 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
   for (int i = 0; i < target->m_contour_length; i++) {
     int angle = target->m_contour[i].angle + (DEGREES_PER_ROTATION + OPENGL_ROTATION) * m_ri->m_spokes / DEGREES_PER_ROTATION;
     int radius = target->m_contour[i].r;
-    if (radius <= 0 || radius >= m_ri->m_spoke_len) {
+    if (radius <= 0 || radius >= (int)m_ri->m_spoke_len) {
       LOG_INFO(wxT("radar_pi: wrong values in DrawContour"));
       return;
     }
@@ -706,7 +706,7 @@ void ArpaTarget::RefreshTarget(int dist) {
   pol.r =
       (int)(sqrt(x_local.lat * x_local.lat + x_local.lon * x_local.lon) * (double)m_ri->m_spoke_len / (double)m_ri->m_range_meters);
   // zooming and target movement may  cause r to be out of bounds
-  if (pol.r >= m_ri->m_spoke_len || pol.r <= 0) {
+  if (pol.r >= (int)m_ri->m_spoke_len || pol.r <= 0) {
     SetStatusLost();
     return;
   }
@@ -1132,8 +1132,10 @@ int RadarArpa::AcquireNewARPATarget(Polar pol, int status) {
 
 void ArpaTarget::ResetPixels() {
   // resets the pixels of the current blob (plus a little margin) so that blob will no be found again in the same sweep
-  for (int r = wxMax(m_min_r.r - DISTANCE_BETWEEN_TARGETS, 0); r <= wxMin(m_max_r.r + DISTANCE_BETWEEN_TARGETS, m_ri->m_spoke_len_max - 1); r++) {
-    for (int a = wxMax(m_min_angle.angle - DISTANCE_BETWEEN_TARGETS, 0); a <= wxMin(m_max_angle.angle + DISTANCE_BETWEEN_TARGETS, m_ri->m_spokes); a++) {
+  for (int r = wxMax(m_min_r.r - DISTANCE_BETWEEN_TARGETS, 0);
+       r <= wxMin(m_max_r.r + DISTANCE_BETWEEN_TARGETS, (int)m_ri->m_spoke_len_max - 1); r++) {
+    for (int a = wxMax(m_min_angle.angle - DISTANCE_BETWEEN_TARGETS, 0);
+         a <= wxMin(m_max_angle.angle + DISTANCE_BETWEEN_TARGETS, (int)m_ri->m_spokes); a++) {
       m_ri->m_history[a].line[r] = m_ri->m_history[a].line[r] & 127;
     }
   }

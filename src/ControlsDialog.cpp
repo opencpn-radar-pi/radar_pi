@@ -183,6 +183,7 @@ END_EVENT_TABLE()
 
 // The following are only for logging, so don't care about translations.
 string ControlTypeNames[CT_MAX] = {
+  "Unused",
 #define CONTROL_TYPE(x, y) y,
 #include "ControlType.inc"
 #undef CONTROL_TYPE
@@ -508,7 +509,7 @@ void ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar* name) {
   Fit();
 }
 
-static wxSize g_buttonSize;
+wxSize g_buttonSize;
 
 wxString interference_rejection_names[4];
 wxString target_separation_names[4];
@@ -621,11 +622,6 @@ void ControlsDialog::CreateControls() {
   // Determined desired button width
 
   //**************** EDIT BOX ******************//
-  // A box sizer to contain RANGE button
-  m_edit_sizer = new wxBoxSizer(wxVERTICAL);
-  m_top_sizer->Add(m_edit_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-
-  // A box sizer to contain RANGE button
   m_edit_sizer = new wxBoxSizer(wxVERTICAL);
   m_top_sizer->Add(m_edit_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
@@ -677,29 +673,18 @@ void ControlsDialog::CreateControls() {
   RadarButton* bAdvancedBack = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
   m_advanced_sizer->Add(bAdvancedBack, 0, wxALL, BORDER);
 
-  // The NOISE REJECTION button
-  noise_rejection_names[0] = _("Off");
-  noise_rejection_names[1] = _("Low");
-  noise_rejection_names[2] = _("High");
-
-  m_noise_rejection_button =
-      new RadarControlButton(this, ID_NOISE_REJECTION, g_buttonSize, _("Noise rejection"), CT_NOISE_REJECTION, false, 0);
-  m_advanced_sizer->Add(m_noise_rejection_button, 0, wxALL, BORDER);
-  m_noise_rejection_button->minValue = 0;
-  m_noise_rejection_button->maxValue = ARRAY_SIZE(noise_rejection_names) - 1;
-  m_noise_rejection_button->names = noise_rejection_names;
-  m_noise_rejection_button->SetLocalValue(m_ri->m_noise_rejection.GetButton());  // redraw after adding names
+  if (m_ctrl.control[CT_NOISE_REJECTION].type) {
+    // The NOISE REJECTION button
+    m_noise_rejection_button =
+      new RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"), m_ctrl.control[CT_NOISE_REJECTION], m_ri->m_noise_rejection);
+    m_advanced_sizer->Add(m_noise_rejection_button, 0, wxALL, BORDER);
+  }
 
   // The TARGET EXPANSION button
-  target_expansion_names[0] = _("Off");
-  target_expansion_names[1] = _("On");
-  m_target_expansion_button =
-      new RadarControlButton(this, ID_TARGET_EXPANSION, g_buttonSize, _("Target expansion"), CT_TARGET_EXPANSION, false, 0);
-  m_advanced_sizer->Add(m_target_expansion_button, 0, wxALL, BORDER);
-  m_target_expansion_button->minValue = 0;
-  m_target_expansion_button->maxValue = ARRAY_SIZE(target_expansion_names) - 1;
-  m_target_expansion_button->names = target_expansion_names;
-  m_target_expansion_button->SetLocalValue(m_ri->m_target_expansion.GetButton());  // redraw after adding names
+  if (m_ctrl.control[CT_TARGET_EXPANSION].type) {
+    // The NOISE REJECTION button
+    m_advanced_sizer->Add(new RadarControlButton(this, ID_TARGET_EXPANSION, _("Target expansion"), m_ctrl.control[CT_TARGET_EXPANSION], m_ri->m_target_expansion), 0, wxALL, BORDER);
+  }
 
   // The REJECTION button
 

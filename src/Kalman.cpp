@@ -42,9 +42,8 @@
 PLUGIN_BEGIN_NAMESPACE
 
 KalmanFilter::KalmanFilter(size_t spokes) {
-
   m_spokes = spokes;
-  
+
   // as the measurement to state transformation is non-linear, the extended Kalman filter is used
   // as the state transformation is linear, the state transformation matrix F is equal to the jacobian A
   // f is the state transformation function Xk <- Xk-1
@@ -158,7 +157,7 @@ void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected,
   if (Z(0, 0) > m_spokes / 2) {
     Z(0, 0) -= m_spokes;
   }
-  if (Z(0, 0) < -m_spokes / 2) {
+  if (Z(0, 0) < -(int)m_spokes / 2) {
     Z(0, 0) += m_spokes;
   }
   Z(1, 0) = (double)(pol->r - expected->r);

@@ -75,7 +75,6 @@ bool RadarDrawShader::Init(size_t spokes, size_t spoke_len) {
   m_spokes = spokes;
   m_spoke_len = spoke_len;
 
-
   if (!CompileShader && !ShadersSupported()) {
     wxLogError(wxT("radar_pi: the OpenGL system of this computer does not support shader m_programs"));
     return false;
@@ -101,7 +100,7 @@ bool RadarDrawShader::Init(size_t spokes, size_t spoke_len) {
   if (m_data) {
     free(m_data);
   }
-  m_data = (unsigned char *) calloc(SHADER_COLOR_CHANNELS, spoke_len * spokes);
+  m_data = (unsigned char *)calloc(SHADER_COLOR_CHANNELS, spoke_len * spokes);
   // Tell the GPU the size of the texture:
   glTexImage2D(/* target          = */ GL_TEXTURE_2D,
                /* level           = */ 0,
@@ -163,7 +162,7 @@ void RadarDrawShader::DrawRadarImage() {
   if (m_start_line > -1) {
     // Since the last time we have received data from [m_start_line, m_end_line>
     // so we only need to update the texture for those data lines.
-    if (m_start_line + m_lines > m_spokes) {
+    if (m_start_line + m_lines > (int)m_spokes) {
       int end_line = (m_start_line + m_lines) % m_spokes;
       // if the new data partly wraps past the end of the texture
       // tell it the two parts separately
@@ -228,7 +227,7 @@ void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, UI
   if (m_start_line == -1) {
     m_start_line = angle;  // Note that this only runs once after each draw,
   }
-  if (m_lines < m_spokes) {
+  if (m_lines < (int)m_spokes) {
     m_lines++;
   }
 

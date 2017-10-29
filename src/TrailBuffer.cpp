@@ -47,7 +47,6 @@ PLUGIN_BEGIN_NAMESPACE
 #define M_RELATIVE_TRAILS_STRIDE m_max_spoke_len
 #define M_RELATIVE_TRAILS(x, y) m_relative_trails[x * M_RELATIVE_TRAILS_STRIDE + y]
 
-
 TrailBuffer::TrailBuffer(RadarInfo *ri, size_t spokes, size_t max_spoke_len) {
   m_ri = ri;
   m_spokes = spokes;
@@ -82,7 +81,7 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
     point.x += m_trail_size / 2 + m_offset.lat;
     point.y += m_trail_size / 2 + m_offset.lon;
 
-    if (point.x >= 0 && point.x < m_trail_size && point.y >= 0 && point.y < m_trail_size) {
+    if (point.x >= 0 && point.x < (int)m_trail_size && point.y >= 0 && point.y < (int)m_trail_size) {
       UINT8 *trail = &M_TRUE_TRAILS(point.x, point.y);
       // when ship moves north, offset.lat > 0. Add to move trails image in opposite direction
       // when ship moves east, offset.lon > 0. Add to move trails image in opposite direction
@@ -105,7 +104,7 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
     point.x += m_trail_size / 2 + m_offset.lat;
     point.y += m_trail_size / 2 + m_offset.lon;
 
-    if (point.x >= 0 && point.x < m_trail_size && point.y >= 0 && point.y < m_trail_size) {
+    if (point.x >= 0 && point.x < (int)m_trail_size && point.y >= 0 && point.y < (int)m_trail_size) {
       UINT8 *trail = &M_TRUE_TRAILS(point.x, m_trail_size + point.y);
       // when ship moves north, offset.lat > 0. Add to move trails image in opposite direction
       // when ship moves east, offset.lon > 0. Add to move trails image in opposite direction
@@ -148,9 +147,9 @@ void TrailBuffer::ZoomTrails(float zoom_factor) {
 
   // zoom relative trails
 
-  for (int i = 0; i < m_spokes; i++) {
-    for (int j = 0; j < m_max_spoke_len; j++) {
-      int index_j = int((float)j * zoom_factor);
+  for (size_t i = 0; i < m_spokes; i++) {
+    for (size_t j = 0; j < m_max_spoke_len; j++) {
+      size_t index_j = (size_t)((float)j * zoom_factor);
       if (index_j >= m_max_spoke_len) break;
       if (M_RELATIVE_TRAILS(i, j) != 0) {
         m_copy_relative_trails[i * M_RELATIVE_TRAILS_STRIDE + index_j] = M_RELATIVE_TRAILS(i, j);
@@ -166,16 +165,16 @@ void TrailBuffer::ZoomTrails(float zoom_factor) {
 
   // zoom true trails
 
-  for (int i = wxMax(m_trail_size / 2 + m_offset.lat - m_max_spoke_len, 0);
+  for (size_t i = wxMax(m_trail_size / 2 + m_offset.lat - m_max_spoke_len, 0);
        i < wxMin(m_trail_size / 2 + m_offset.lat + m_max_spoke_len, m_trail_size); i++) {
-    int index_i = (int((float)(i - m_trail_size / 2 + m_offset.lat) * zoom_factor)) + m_trail_size / 2 -
-                  m_offset.lat * zoom_factor;
+    size_t index_i =
+        (int((float)(i - m_trail_size / 2 + m_offset.lat) * zoom_factor)) + m_trail_size / 2 - m_offset.lat * zoom_factor;
     if (index_i >= m_trail_size - 1) break;  // allow adding an additional pixel later
     if (index_i < 0) continue;
-    for (int j = wxMax(m_trail_size / 2 + m_offset.lon - m_max_spoke_len, 0);
+    for (size_t j = wxMax(m_trail_size / 2 + m_offset.lon - m_max_spoke_len, 0);
          j < wxMin(m_trail_size / 2 + m_offset.lon + m_max_spoke_len, m_trail_size); j++) {
-      int index_j = (int((float)(j - m_trail_size / 2 + m_offset.lon) * zoom_factor)) + m_trail_size / 2 -
-                    m_offset.lon * zoom_factor;
+      size_t index_j =
+          (int((float)(j - m_trail_size / 2 + m_offset.lon) * zoom_factor)) + m_trail_size / 2 - m_offset.lon * zoom_factor;
       if (index_j >= m_trail_size - 1) break;
       if (index_j < 0) continue;
       uint8_t pixel = M_TRUE_TRAILS(i, j);
@@ -280,7 +279,7 @@ void TrailBuffer::UpdateTrailPosition() {
   if (shift.lon > 0 && m_dir.lon <= 0) {
     // change of direction of movement
     // clear space in true_trails outside image in that direction
-    for (int i = 0; i < TRAILS_SIZE; i++) {
+    for (size_t i = 0; i < TRAILS_SIZE; i++) {
       memset(&m_trails.true_trails[i][TRAILS_SIZE - MARGIN + m_offset.lon], 0, MARGIN - m_offset.lon);
     }
     m_dir.lon = 1;
@@ -289,7 +288,7 @@ void TrailBuffer::UpdateTrailPosition() {
   if (shift.lon < 0 && m_dir_lon >= 0) {
     // change of direction of movement
     // clear space in true_trails outside image in that direction
-    for (int i = 0; i < TRAILS_SIZE; i++) {
+    for (size_t i = 0; i < TRAILS_SIZE; i++) {
       memset(&m_trails.true_trails[i][0], 0, MARGIN + m_offset.lon);
     }
     m_dir.lon = -1;
@@ -338,7 +337,7 @@ void TrailBuffer::ShiftImageLonToCenter() {
   if (m_offset.lon > 0) {
     shift = m_offset.lon;
     keep = m_trail_size - shift;
-    for (int i = 0; i < m_trail_size; i++) {
+    for (size_t i = 0; i < m_trail_size; i++) {
       memmove(&M_TRUE_TRAILS(i, 0), &M_TRUE_TRAILS(i, shift), keep);
       memset(&M_TRUE_TRAILS(i, keep), 0, shift);
     }
@@ -347,7 +346,7 @@ void TrailBuffer::ShiftImageLonToCenter() {
     int shift = -m_offset.lon;
     int keep = m_trail_size - shift;
 
-    for (int i = 0; i < m_trail_size; i++) {
+    for (size_t i = 0; i < m_trail_size; i++) {
       memmove(&M_TRUE_TRAILS(i, 0), &M_TRUE_TRAILS(i, shift), keep);
       memset(&M_TRUE_TRAILS(i, keep), 0, shift);
     }

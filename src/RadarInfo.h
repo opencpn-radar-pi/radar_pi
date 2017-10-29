@@ -35,6 +35,7 @@
 #include "radar_pi.h"
 
 #include "RadarReceive.h"
+#include "radar_control_item.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -44,93 +45,6 @@ class RadarPanel;
 class GuardZoneBogey;
 class RadarInfo;
 class TrailBuffer;
-
-struct RadarRange {
-  int meters;
-  int actual_meters;
-  const char *name;
-  const char *range1;
-  const char *range2;
-  const char *range3;
-};
-
-class radar_control_item {
- public:
-  void Update(int v) {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    if (v != m_button) {
-      m_mod = true;
-      m_button = v;
-    }
-    m_value = v;
-  };
-
-  bool GetButton(int *value) {
-    wxCriticalSectionLocker lock(m_exclusive);
-    bool changed = m_mod;
-    if (value) {
-      *value = this->m_value;
-    }
-
-    m_mod = false;
-    return changed;
-  }
-
-  int GetButton() {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    m_mod = false;
-    return m_button;
-  }
-
-  int GetValue() {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    return m_value;
-  }
-
-  bool IsModified() {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    return m_mod;
-  }
-
-  radar_control_item() {
-    m_value = 0;
-    m_button = 0;
-    m_mod = false;
-  }
-
- protected:
-  wxCriticalSection m_exclusive;
-  int m_value;
-  int m_button;
-  bool m_mod;
-};
-
-class radar_range_control_item : public radar_control_item {
- public:
-  PersistentSettings *m_settings;
-
-  void Update(int v);
-  const RadarRange *GetRange() {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    return m_range;
-  }
-
-  radar_range_control_item() {
-    m_value = 0;
-    m_button = 0;
-    m_mod = false;
-    m_range = 0;
-    m_settings = 0;
-  }
-
- private:
-  const RadarRange *m_range;
-};
 
 struct DrawInfo {
   RadarDraw *draw;
