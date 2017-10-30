@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
-#include "radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
 #include "SelectDialog.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -950,7 +950,8 @@ void radar_pi::ScheduleWindowRefresh() {
 
   int refreshrate = m_settings.refreshrate.GetValue();
 
-  if (refreshrate > 1 && drawTime < 500) {  // 1 = 1 per s, 1000ms between draws, no additional refreshes
+  if (refreshrate > 1 && drawTime < 500) {
+    // 1 = 1 per s, 1000ms between draws, no additional refreshes
     // 2 = 2 per s,  500ms
     // 3 = 4 per s,  250ms
     // 4 = 8 per s,  125ms

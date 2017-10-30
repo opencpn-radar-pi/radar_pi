@@ -29,11 +29,11 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
+#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -218,6 +218,7 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) : m_range(pi) {
   m_receive = 0;
   m_draw_panel.draw = 0;
   m_draw_overlay.draw = 0;
+  m_draw_time_ms = 1000;  // Assume really bad draw time until we actually measure it to prevent fast redraw at start
   m_radar_panel = 0;
   m_radar_canvas = 0;
   m_control_dialog = 0;

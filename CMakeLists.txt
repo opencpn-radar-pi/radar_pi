@@ -37,6 +37,17 @@ SET(SRC_EMULATOR
             src/emulator/emulatortype.h
 )
 
+SET(SRC_GARMIN_XHD
+            src/garminxhd/GarminxHDControl.cpp        
+            src/garminxhd/GarminxHDControl.h          
+            src/garminxhd/GarminxHDControlSet.h       
+            src/garminxhd/GarminxHDControlsDialog.cpp 
+            src/garminxhd/GarminxHDControlsDialog.h   
+            src/garminxhd/GarminxHDReceive.cpp        
+            src/garminxhd/GarminxHDReceive.h          
+            src/garminxhd/garminxhdtype.h
+)
+
 SET(SRC_NAVICO
             src/navico/br24type.h
             src/navico/br4gatype.h
@@ -143,7 +154,7 @@ IF(WIN32)
   FIND_PACKAGE(wxWidgets REQUIRED)
 ENDIF(WIN32)
 
-ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_RADAR} ${SRC_NMEA0183} ${SRC_JSON} ${SRC_EMULATOR} ${SRC_NAVICO})
+ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_RADAR} ${SRC_NMEA0183} ${SRC_JSON} ${SRC_EMULATOR} ${SRC_GARMIN_XHD} ${SRC_NAVICO})
 
 SET(TEST_KALMAN kalman-test)
 SET(SRC_KALMAN

@@ -6,7 +6,6 @@
  *           Dave Cowell
  *           Kees Verruijt
  *           Douwe Fokkema
- *           Sean D'Epagnier
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -29,52 +28,16 @@
  ***************************************************************************
  */
 
-#if !defined(DEFINE_RADAR)
-#ifndef _RADARTYPE_H_
-#define _RADARTYPE_H_
+#include "GarminxHDControlsDialog.h"
+#include "RadarMarpa.h"
+#include "RadarPanel.h"
 
-#include "RadarInfo.h"
-#include "pi_common.h"
+PLUGIN_BEGIN_NAMESPACE
 
-#include "garminxhd/GarminxHDControl.h"
-#include "garminxhd/GarminxHDControlsDialog.h"
-#include "garminxhd/GarminxHDReceive.h"
+GarminxHDControlsDialog::GarminxHDControlsDialog(){
 
-#include "navico/NavicoControl.h"
-#include "navico/NavicoControlsDialog.h"
-#include "navico/NavicoReceive.h"
+#include "garminxhd/GarminxHDControlSet.h"
 
-#include "emulator/EmulatorControl.h"
-#include "emulator/EmulatorControlsDialog.h"
-#include "emulator/EmulatorReceive.h"
+}
 
-#endif /* _RADARTYPE_H_ */
-
-#define DEFINE_RADAR(t, x, s, l, a, b, c)
-#define INITIALIZE_RADAR
-#endif
-
-#ifndef SPOKES_MAX
-#define SPOKES_MAX 0
-#endif
-
-#ifndef SPOKE_LEN_MAX
-#define SPOKE_LEN_MAX 0
-#endif
-
-#include "garminxhd/garminxhdtype.h"
-
-#include "navico/br24type.h"
-
-#include "navico/br4gatype.h"
-#include "navico/br4gbtype.h"
-
-#include "navico/haloatype.h"
-#include "navico/halobtype.h"
-
-// TODO: Add Garmin etc.
-
-#include "emulator/emulatortype.h"
-
-#undef DEFINE_RADAR  // Prepare for next inclusion
-#undef INITIALIZE_RADAR
+PLUGIN_END_NAMESPACE

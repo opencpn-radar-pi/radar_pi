@@ -229,10 +229,15 @@ void RadarPanel::ShowFrame(bool visible) {
   }
 }
 
-bool RadarPanel::IsPaneShown() { return m_aui_mgr->GetPane(this).IsShown(); }
+bool RadarPanel::IsPaneShown() {
+  if (m_aui_mgr) {
+    return m_aui_mgr->GetPane(this).IsShown();
+  }
+  return false;
+}
 
 wxPoint RadarPanel::GetPos() {
-  if (m_aui_mgr->GetPane(this).IsFloating()) {
+  if (m_aui_mgr && m_aui_mgr->GetPane(this).IsFloating()) {
     return GetParent()->GetScreenPosition();
   }
   return GetScreenPosition();

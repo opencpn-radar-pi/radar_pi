@@ -29,52 +29,42 @@
  ***************************************************************************
  */
 
-#if !defined(DEFINE_RADAR)
-#ifndef _RADARTYPE_H_
-#define _RADARTYPE_H_
+#include "GarminxHDControl.h"
 
-#include "RadarInfo.h"
-#include "pi_common.h"
+PLUGIN_BEGIN_NAMESPACE
 
-#include "garminxhd/GarminxHDControl.h"
-#include "garminxhd/GarminxHDControlsDialog.h"
-#include "garminxhd/GarminxHDReceive.h"
+GarminxHDControl::GarminxHDControl() {
+  m_pi = 0;
+  m_ri = 0;
+  m_name = wxT("GarminxHD");
+}
 
-#include "navico/NavicoControl.h"
-#include "navico/NavicoControlsDialog.h"
-#include "navico/NavicoReceive.h"
+GarminxHDControl::~GarminxHDControl() {}
 
-#include "emulator/EmulatorControl.h"
-#include "emulator/EmulatorControlsDialog.h"
-#include "emulator/EmulatorReceive.h"
+bool GarminxHDControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) {
+  m_pi = pi;
+  m_ri = ri;
+  m_name = ri->m_name;
 
-#endif /* _RADARTYPE_H_ */
+  return true;
+}
 
-#define DEFINE_RADAR(t, x, s, l, a, b, c)
-#define INITIALIZE_RADAR
-#endif
+void GarminxHDControl::RadarTxOff() { m_ri->m_state.Update(RADAR_STANDBY); }
 
-#ifndef SPOKES_MAX
-#define SPOKES_MAX 0
-#endif
+void GarminxHDControl::RadarTxOn() {
+  if (m_ri) {
+    m_ri->m_state.Update(RADAR_TRANSMIT);
+  }
+}
 
-#ifndef SPOKE_LEN_MAX
-#define SPOKE_LEN_MAX 0
-#endif
+bool GarminxHDControl::RadarStayAlive() { return true; }
 
-#include "garminxhd/garminxhdtype.h"
+bool GarminxHDControl::SetRange(int meters) { return false; }
 
-#include "navico/br24type.h"
+bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int autoValue) {  // sends the command to the radar
+  bool r = false;
 
-#include "navico/br4gatype.h"
-#include "navico/br4gbtype.h"
+  return r;
+}
 
-#include "navico/haloatype.h"
-#include "navico/halobtype.h"
-
-// TODO: Add Garmin etc.
-
-#include "emulator/emulatortype.h"
-
-#undef DEFINE_RADAR  // Prepare for next inclusion
-#undef INITIALIZE_RADAR
+PLUGIN_END_NAMESPACE

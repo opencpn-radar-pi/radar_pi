@@ -29,52 +29,50 @@
  ***************************************************************************
  */
 
-#if !defined(DEFINE_RADAR)
-#ifndef _RADARTYPE_H_
-#define _RADARTYPE_H_
+#ifndef _GARMIN_XHD_RECEIVE_H_
+#define _GARMIN_XHD_RECEIVE_H_
 
-#include "RadarInfo.h"
-#include "pi_common.h"
+#include "RadarReceive.h"
+#include "socketutil.h"
 
-#include "garminxhd/GarminxHDControl.h"
-#include "garminxhd/GarminxHDControlsDialog.h"
-#include "garminxhd/GarminxHDReceive.h"
+PLUGIN_BEGIN_NAMESPACE
 
-#include "navico/NavicoControl.h"
-#include "navico/NavicoControlsDialog.h"
-#include "navico/NavicoReceive.h"
+//
+// An intermediary class that implements the common parts of any GarminxHD radar.
+//
 
-#include "emulator/EmulatorControl.h"
-#include "emulator/EmulatorControlsDialog.h"
-#include "emulator/EmulatorReceive.h"
+class GarminxHDReceive : public RadarReceive {
+ public:
+  GarminxHDReceive(radar_pi *pi, RadarInfo *ri) : RadarReceive(pi, ri) {
+    m_shutdown = false;
+    m_next_spoke = 0;
+    m_next_rotation = 0;
+    m_receive_socket = GetLocalhostServerTCPSocket();
+    m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
+    LOG_RECEIVE(wxT("radar_pi: %s receive thread created"), m_ri->m_name.c_str());
+  };
 
-#endif /* _RADARTYPE_H_ */
+  ~GarminxHDReceive() {
+    closesocket(m_receive_socket);
+    closesocket(m_send_socket);
+  }
 
-#define DEFINE_RADAR(t, x, s, l, a, b, c)
-#define INITIALIZE_RADAR
-#endif
+  void *Entry(void);
+  void Shutdown(void);
+  wxString GetStatus();
 
-#ifndef SPOKES_MAX
-#define SPOKES_MAX 0
-#endif
+ private:
+  void EmulateFakeBuffer(void);
 
-#ifndef SPOKE_LEN_MAX
-#define SPOKE_LEN_MAX 0
-#endif
+  volatile bool m_shutdown;
 
-#include "garminxhd/garminxhdtype.h"
+  int m_next_spoke;     // emulator next spoke
+  int m_next_rotation;  // slowly rotate emulator
 
-#include "navico/br24type.h"
+  SOCKET m_receive_socket;  // Where we listen for message from m_send_socket
+  SOCKET m_send_socket;     // A message to this socket will interrupt select() and allow immediate shutdown
+};
 
-#include "navico/br4gatype.h"
-#include "navico/br4gbtype.h"
+PLUGIN_END_NAMESPACE
 
-#include "navico/haloatype.h"
-#include "navico/halobtype.h"
-
-// TODO: Add Garmin etc.
-
-#include "emulator/emulatortype.h"
-
-#undef DEFINE_RADAR  // Prepare for next inclusion
-#undef INITIALIZE_RADAR
+#endif /* _GARMIN_XHD_RECEIVE_H_ */
