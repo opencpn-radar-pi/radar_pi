@@ -384,6 +384,7 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   void OnContextMenuItemCallback(int id);
   void ShowPreferencesDialog(wxWindow *parent);
   void SetCursorPosition(GeoPosition pos);
+  void SetCursorLatLon(double lat, double lon);
   bool MouseEventHook(wxMouseEvent &event);
   bool m_guard_bogey_confirmed;
 

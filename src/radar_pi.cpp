@@ -1867,7 +1867,13 @@ void radar_pi::SetNMEASentence(wxString &sentence) {
   }
 }
 
+// is not called anywhere
 void radar_pi::SetCursorPosition(GeoPosition pos) { m_cursor_pos = pos; }
+
+void radar_pi::SetCursorLatLon(double lat, double lon) {
+  m_cursor_pos.lat = lat;
+  m_cursor_pos.lon = lon;
+}
 
 bool radar_pi::MouseEventHook(wxMouseEvent &event) {
   if (event.LeftDown()) {
