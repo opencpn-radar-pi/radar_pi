@@ -170,7 +170,7 @@ void GuardZone::SearchTargets() {
   size_t range_end = m_outer_range * m_ri->m_spoke_len / m_ri->m_range_meters;    // Convert from meters to 0..511
   SpokeBearing hdt = SCALE_DEGREES_TO_SPOKES(m_pi->GetHeadingTrue());
   SpokeBearing start_bearing = SCALE_DEGREES_TO_SPOKES(m_start_bearing) + hdt;
-  SpokeBearing end_bearing = m_end_bearing + hdt;
+  SpokeBearing end_bearing   = SCALE_DEGREES_TO_SPOKES(m_end_bearing  ) + hdt;
   start_bearing = MOD_SPOKES(start_bearing);
   end_bearing = MOD_SPOKES(end_bearing);
   if (start_bearing > end_bearing) {
