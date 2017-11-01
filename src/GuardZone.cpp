@@ -211,11 +211,6 @@ void GuardZone::SearchTargets() {
             Polar pol;
             pol.angle = angle;
             pol.r = rrr;
-
-#ifdef TODO_DOUWE
-            // This variable is unused?
-            Position x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
-#endif
             int target_i = m_ri->m_arpa->AcquireNewARPATarget(pol, 0);
             if (target_i == -1) break;
           }
