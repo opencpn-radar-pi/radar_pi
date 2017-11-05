@@ -94,7 +94,7 @@ class RadarInfo {
   int m_min_contour_length;  // minimum contour length of an ARPA or MARPA target
 
   radar_control_item m_overlay;
-  radar_range_control_item m_range;  // value in meters
+  radar_range_control_item m_range;  // value in meters, shown on display
   radar_control_item m_gain;
   radar_control_item m_interference_rejection;
   radar_control_item m_target_separation;
@@ -192,7 +192,7 @@ class RadarInfo {
   void ComputeColourMap();
   void ComputeTargetTrails();
   wxString &GetRangeText();
-  const char *GetDisplayRangeStr(size_t idx);
+  wxString GetDisplayRangeStr(int meters, int quarter, bool unit);
   int GetDisplayRange() { return m_range.GetValue(); };
   void DetectedRadar(NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
   void SetMousePosition(GeoPosition pos);
@@ -234,7 +234,15 @@ class RadarInfo {
   GeoPosition m_mouse_pos;
   double m_mouse_ebl[ORIENTATION_NUMBER];
   double m_mouse_vrm;
-  int m_range_meters;  // what radar told us is the range in the last received spoke
+
+  // Digital radars cannot produce just any range. When asked for a particular value
+  // they produce a slightly larger range.
+  //
+  // The 'official' value, which is also what we tell users, is set via m_range.Update() by
+  // the receive threads.
+  // The 'display' value (m_range_meters), used to compute the proper display, which is up to 40% larger
+  // is set by ProcessRadarSpoke.
+  int m_range_meters;  // report from radar of what the actual length is to be displayed
 
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
   wxColour m_colour_map_rgb[BLOB_COLOURS];

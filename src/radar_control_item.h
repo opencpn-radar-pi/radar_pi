@@ -41,10 +41,6 @@ class radar_pi;
 struct RadarRange {
   int meters;
   int actual_meters;
-  const char *name;
-  const char *range1;
-  const char *range2;
-  const char *range3;
 };
 
 class radar_control_item {

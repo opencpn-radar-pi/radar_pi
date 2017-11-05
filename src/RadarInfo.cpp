@@ -46,43 +46,28 @@ bool g_first_render = true;
 
 static const RadarRange g_ranges_metric[] = {
     /* Nautical (mixed) first */
-    {50, 98, "50 m", 0, 0, 0},
-    {75, 146, "75 m", 0, 0, 0},
-    {100, 195, "100 m", "25", "50", "75"},
-    {250, 488, "250 m", 0, "125", 0},
-    {500, 808, "500 m", "125", "250", "375"},
-    {750, 1154, "750 m", 0, "375", 0},
-    {1000, 1616, "1 km", "250", "500", "750"},
-    {1500, 2308, "1.5 km", 0, "750", 0},
-    {2000, 3366, "2 km", "500", "1000", "1500"},
-    {3000, 4713, "3 km", 0, "1500", 0},
-    {4000, 5655, "4 km", "1", "2", "3"},
-    {6000, 9408, "6 km", "1.5", "3.0", "4.5"},
-    {8000, 12096, "8 km", "2", "4", "6"},
-    {12000, 18176, "12 km", "3", "6", "9"},
-    {16000, 26240, "16 km", "4", "8", "12"},
-    {24000, 36352, "24 km", "6", "12", "18"},
-    {36000, 52480, "36 km", "9", "18", "27"},
-    {48000, 72704, "48 km", "12", "24", "36"}};
+    {50, 98},      {75, 146},      {100, 195},     {250, 488},     {500, 808},     {750, 1154},
+    {1000, 1616},  {1500, 2308},   {2000, 3366},   {3000, 4713},   {4000, 5655},   {6000, 9408},
+    {8000, 12096}, {12000, 18176}, {16000, 26240}, {24000, 36352}, {36000, 52480}, {48000, 72704}};
 
-static const RadarRange g_ranges_nautic[] = {{50, 98, "50 m", 0, 0, 0},
-                                             {75, 146, "75 m", 0, 0, 0},
-                                             {100, 195, "100 m", "25", "50", "75"},
-                                             {1852 / 8, 451, "1/8 NM", 0, "1/16", 0},
-                                             {1852 / 4, 673, "1/4 NM", "1/32", "1/8", 0},
-                                             {1852 / 2, 1389, "1/2 NM", "1/8", "1/4", "3/8"},
-                                             {1852 * 3 / 4, 2020, "3/4 NM", 0, "3/8", 0},
-                                             {1852 * 1, 2693, "1 NM", "1/4", "1/2", "3/4"},
-                                             {1852 * 3 / 2, 4039, "1.5 NM", "3/8", "3/4", 0},
-                                             {1852 * 2, 5655, "2 NM", "0.5", "1.0", "1.5"},
-                                             {1852 * 3, 8079, "3 NM", "0.75", "1.5", "2.25"},
-                                             {1852 * 4, 10752, "4 NM", "1", "2", "3"},
-                                             {1852 * 6, 16128, "6 NM", "1.5", "3", "4.5"},
-                                             {1852 * 8, 22208, "8 NM", "2", "4", "6"},
-                                             {1852 * 12, 36352, "12 NM", "3", "6", "9"},
-                                             {1852 * 16, 44416, "16 NM", "4", "8", "12"},
-                                             {1852 * 24, 72704, "24 NM", "6", "12", "18"},
-                                             {1852 * 36, 72704, "36 NM", "9", "18", "27"}};
+static const RadarRange g_ranges_nautic[] = {{50, 98},
+                                             {75, 146},
+                                             {100, 195},
+                                             {1852 / 8, 451},
+                                             {1852 / 4, 673},
+                                             {1852 / 2, 1389},
+                                             {1852 * 3 / 4, 2020},
+                                             {1852 * 1, 2693},
+                                             {1852 * 3 / 2, 4039},
+                                             {1852 * 2, 5655},
+                                             {1852 * 3, 8079},
+                                             {1852 * 4, 10752},
+                                             {1852 * 6, 16128},
+                                             {1852 * 8, 22208},
+                                             {1852 * 12, 36352},
+                                             {1852 * 16, 44416},
+                                             {1852 * 24, 72704},
+                                             {1852 * 36, 72704}};
 
 static const int METRIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_metric);
 static const int NAUTIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_nautic);
@@ -1223,11 +1208,6 @@ wxString &RadarInfo::GetRangeText() {
   const RadarRange *r = m_range.GetRange();
   int meters = m_range.GetValue();
 
-  if (!r) {
-    m_range_text = wxT("");
-    return m_range_text;
-  }
-
   bool auto_range = m_auto_range_mode && (m_overlay.GetValue() > 0);
 
   m_range_text = wxT("");
@@ -1236,7 +1216,7 @@ wxString &RadarInfo::GetRangeText() {
     m_range_text << wxT(" (");
   }
   if (r) {
-    m_range_text << wxString::FromUTF8(r->name);
+    m_range_text << GetDisplayRangeStr(r->meters, 4, true);
   } else {
     m_range_text << wxString::Format(wxT("/%d m/"), meters);
   }
@@ -1249,14 +1229,70 @@ wxString &RadarInfo::GetRangeText() {
   return m_range_text;
 }
 
-const char *RadarInfo::GetDisplayRangeStr(size_t idx) {
-  const RadarRange *range = m_range.GetRange();
+/*
+ * Create a nice value for 1/4, 1/2, 3/4 or 1/1 of the range.
+ *
+ * We only have a value in meters, and based on that we decide
+ * whether it is likely a value in metric or nautical miles.
+ *
+ * @param quarter      1..4, 1 = show 1/4th of range, etc. 4 = entire range
+ * @return String with human readable representation of range
+ */
+wxString RadarInfo::GetDisplayRangeStr(int meters, int quarter, bool unit) {
+  wxString s;
 
-  if (range) {
-    return (&range->name)[(idx + 1) % 4];
+  if ((meters < 100 && meters % 25 == 0) || (meters < 1000 && meters % 50 == 0) || (meters % 1000 == 0)) {
+    // really sure this is metric.
+    meters = meters * quarter / 4;
+
+    if (meters % 25 == 0) {
+      s = wxString::Format(wxT("%d"), meters);
+      if (unit) {
+        s << " m";
+      }
+    }
+    return s;
   }
 
-  return 0;
+  meters = meters * quarter / 4;
+  if (meters % 1852 == 0) {
+    s = wxString::Format(wxT("%d"), meters / 1852);
+  } else if (meters >= 1852) {
+    s = wxString::Format(wxT("%g"), (float)meters / 1852.);
+  } else {
+    switch (meters) {
+      case 1852 / 4:
+        s = wxT("1/4");
+        break;
+      case 1852 / 2:
+        s = wxT("1/2");
+        break;
+      case 1852 * 3 / 4:
+        s = wxT("3/4");
+        break;
+      case 1852 / 8:
+        s = wxT("1/8");
+        break;
+      case 1852 / 16:
+        s = wxT("1/16");
+        break;
+      case 1852 * 3 / 16:
+        s = wxT("3/16");
+        break;
+      case 1852 / 32:
+        s = wxT("1/32");
+        break;
+      case 1852 * 3 / 32:
+        s = wxT("3/32");
+        break;
+      default:
+        return wxT("");
+    }
+  }
+  if (unit) {
+    s << wxT(" NM");
+  }
+  return s;
 }
 
 void RadarInfo::SetMousePosition(GeoPosition pos) {

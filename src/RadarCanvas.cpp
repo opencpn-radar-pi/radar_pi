@@ -167,9 +167,12 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
 
   for (int i = 1; i <= 4; i++) {
     DrawArc(center_x, center_y, r * i * 0.25, 0.0, 2.0 * (float)PI, 360);
-    const char *s = m_ri->GetDisplayRangeStr(i - 1);
-    if (s) {
-      m_FontNormal.RenderString(wxString::Format(wxT("%s"), s), center_x + x * (float)i, center_y + y * (float)i);
+    const RadarRange *r = m_ri->m_range.GetRange();
+    if (r) {
+      wxString s = m_ri->GetDisplayRangeStr(r->meters, i, false);
+      if (s.length() > 0) {
+        m_FontNormal.RenderString(s, center_x + x * (float)i, center_y + y * (float)i);
+      }
     }
   }
 
