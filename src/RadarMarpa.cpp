@@ -1128,7 +1128,7 @@ void ArpaTarget::ResetPixels() {
   for (int r = wxMax(m_min_r.r - DISTANCE_BETWEEN_TARGETS, 0);
        r <= wxMin(m_max_r.r + DISTANCE_BETWEEN_TARGETS, (int)m_ri->m_spoke_len_max - 1); r++) {
     for (int a = wxMax(m_min_angle.angle - DISTANCE_BETWEEN_TARGETS, 0);
-         a <= wxMin(m_max_angle.angle + DISTANCE_BETWEEN_TARGETS, (int)m_ri->m_spokes -1); a++) {
+         a <= wxMin(m_max_angle.angle + DISTANCE_BETWEEN_TARGETS, (int)m_ri->m_spokes - 1); a++) {
       m_ri->m_history[a].line[r] = m_ri->m_history[a].line[r] & 127;
     }
   }

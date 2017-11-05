@@ -1403,8 +1403,11 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
       case RADAR_STANDBY:
         o << _("Standby");
         break;
-      case RADAR_WAKING_UP:
-        o << _("Waking up");
+      case RADAR_WARMING_UP:
+        o << _("Warming up") << wxString::Format(wxT(" (%d s)"), m_ri->m_warmup.GetValue());
+        break;
+      case RADAR_SPINNING_UP:
+        o << _("Spinning up");
         break;
       case RADAR_TRANSMIT:
         o << _("Transmit");

@@ -177,9 +177,9 @@ SOCKET GarminxHDReceive::GetNewReportSocket() {
 
     wxString s;
     s << m_ri->m_name << wxT(": ") << _("Scanning interface") << wxT(" ") << addr;
-    SetStatus(s);
+    SetInfoStatus(s);
   } else {
-    SetStatus(error);
+    SetInfoStatus(error);
     wxLogError(wxT("radar_pi: Unable to listen to socket: %s"), error.c_str());
   }
   return socket;
@@ -201,7 +201,7 @@ SOCKET GarminxHDReceive::GetNewDataSocket() {
 
     LOG_RECEIVE(wxT("radar_pi: %s listening for data on %s from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
   } else {
-    SetStatus(error);
+    SetInfoStatus(error);
     wxLogError(wxT("radar_pi: Unable to listen to socket: %s"), error.c_str());
   }
   return socket;
@@ -443,6 +443,47 @@ typedef struct {
 
 #pragma pack(pop)
 
+bool GarminxHDReceive::UpdateScannerStatus(int status) {
+  bool ret = true;
+
+  if (status != m_radar_status) {
+    m_radar_status = status;
+
+    wxString stat;
+    time_t now = time(0);
+
+    switch (m_radar_status) {
+      case 1:
+        m_ri->m_state.Update(RADAR_WARMING_UP);
+        LOG_VERBOSE(wxT("radar_pi: %s reports status WARMUP"), m_ri->m_name.c_str());
+        stat = _("Warmup");
+        break;
+      case 3:
+        m_ri->m_state.Update(RADAR_STANDBY);
+        LOG_VERBOSE(wxT("radar_pi: %s reports status STANDBY"), m_ri->m_name.c_str());
+        stat = _("Standby");
+        break;
+      case 4:
+        m_ri->m_state.Update(RADAR_SPINNING_UP);
+        m_ri->m_data_timeout = now + DATA_TIMEOUT;
+        LOG_VERBOSE(wxT("radar_pi: %s reports status SPINNING UP"), m_ri->m_name.c_str());
+        stat = _("Spinning up");
+        break;
+      case 5:
+        m_ri->m_state.Update(RADAR_TRANSMIT);
+        LOG_VERBOSE(wxT("radar_pi: %s reports status TRANSMIT"), m_ri->m_name.c_str());
+        stat = _("Transmit");
+        break;
+      default:
+        stat <<_("Unknown status") << wxString::Format(wxT(" %d"), m_radar_status);
+        ret = false;
+        break;
+    }
+    SetInfoStatus(wxString::Format(wxT("%s IP %s %s"), m_ri->m_name.c_str(), m_addr.c_str(), stat.c_str()));
+  }
+  return ret;
+}
+
 bool GarminxHDReceive::ProcessReport(const UINT8 *report, int len) {
   LOG_BINARY_RECEIVE(wxT("ProcessReport"), report, len);
 
@@ -507,6 +548,46 @@ bool GarminxHDReceive::ProcessReport(const UINT8 *report, int len) {
         m_ri->m_rain.Update(packet10->parm1 / 100);
         return true;
       }
+
+      case 0x0939: {
+        // Sea Clutter On/Off
+        switch (packet9->parm1) {
+          case 0: {
+            // No sea clutter
+            m_ri->m_sea.Update(0);
+            return true;
+          }
+          case 1: {
+            // Manual sea clutter, value set via report 0x093a
+            return true;
+          }
+          case 2: {
+            // Auto sea clutter
+            m_ri->m_sea.Update(AUTO_RANGE - 1);
+            return true;
+          }
+        }
+        break;
+      }
+
+      case 0x093a: {
+        // Sea Clutter level
+        m_ri->m_sea.Update(packet10->parm1 / 100);
+        return true;
+      }
+
+      case 0x0992: {
+        // Scanner state
+        if (UpdateScannerStatus(packet9->parm1)) {
+          return true;
+        }
+      }
+
+      case 0x0993: {
+        // Warmup
+        m_ri->m_warmup.Update(packet9->parm1);
+        return true;
+      }
     }
   }
 
@@ -532,7 +613,7 @@ void GarminxHDReceive::Shutdown() {
   LOG_INFO(wxT("radar_pi: %s receive thread will take long time to stop"), m_ri->m_name.c_str());
 }
 
-wxString GarminxHDReceive::GetStatus() {
+wxString GarminxHDReceive::GetInfoStatus() {
   wxCriticalSectionLocker lock(m_lock);
   // Called on the UI thread, so be gentle
 

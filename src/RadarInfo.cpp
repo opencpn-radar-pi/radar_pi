@@ -504,6 +504,9 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
     data[1] = 255;  // Main bang on purpose to show radar center
     data[0] = 255;  // Main bang on purpose to show radar center
   }
+  for (int i = m_spoke_len; i < m_spoke_len_max; i++) {
+    data[i] = 0;
+  }
 
   if (m_range_meters != range_meters || m_spoke_len != len) {
     if (m_polar_lookup) {
@@ -668,8 +671,8 @@ void RadarInfo::UpdateTransmitState() {
 void RadarInfo::RequestRadarState(RadarState state) {
   int oldState = m_state.GetValue();
 
-  if (m_pi->IsRadarOnScreen(m_radar) && oldState != RADAR_OFF) {                           // if radar is visible and detected
-    if (oldState != state && !(oldState == RADAR_WAKING_UP && state == RADAR_TRANSMIT)) {  // and change is wanted
+  if (m_pi->IsRadarOnScreen(m_radar) && oldState != RADAR_OFF) {                         // if radar is visible and detected
+    if (oldState != state && !(oldState != RADAR_STANDBY && state == RADAR_TRANSMIT)) {  // and change is wanted
       time_t now = time(0);
 
       switch (state) {
@@ -688,7 +691,8 @@ void RadarInfo::RequestRadarState(RadarState state) {
           m_control->RadarTxOff();
           break;
 
-        case RADAR_WAKING_UP:
+        case RADAR_SPINNING_UP:
+        case RADAR_WARMING_UP:
         case RADAR_OFF:
           LOG_INFO(wxT("radar_pi: %s unexpected status request %d"), m_name.c_str(), state);
       }
@@ -857,7 +861,7 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
   int drawing_method = m_pi->m_settings.drawing_method;
   int state = m_state.GetValue();
 
-  if (state != RADAR_TRANSMIT && state != RADAR_WAKING_UP) {
+  if (state != RADAR_TRANSMIT) {
     ResetRadarImage();
     return;
   }
@@ -1188,8 +1192,11 @@ wxString RadarInfo::GetCanvasTextCenter() {
     case RADAR_STANDBY:
       s << _("Radar is in Standby");
       break;
-    case RADAR_WAKING_UP:
-      s << _("Radar is waking up");
+    case RADAR_WARMING_UP:
+      s << _("Radar warming up") << wxString::Format(wxT(" (%d s)"), m_warmup.GetValue());
+      break;
+    case RADAR_SPINNING_UP:
+      s << _("Radar is spinning up");
       break;
     case RADAR_TRANSMIT:
       if (m_draw_panel.draw) {
@@ -1413,9 +1420,9 @@ void RadarInfo::ComputeTargetTrails() {
   }
 }
 
-wxString RadarInfo::GetStatus() {
+wxString RadarInfo::GetInfoStatus() {
   if (m_receive) {
-    return m_receive->GetStatus();
+    return m_receive->GetInfoStatus();
   }
   return _("Uninitialized");
 }

@@ -310,9 +310,9 @@ SOCKET NavicoReceive::GetNewReportSocket() {
 
     wxString s;
     s << m_ri->m_name << wxT(": ") << _("Scanning interface") << wxT(" ") << addr;
-    SetStatus(s);
+    SetInfoStatus(s);
   } else {
-    SetStatus(error);
+    SetInfoStatus(error);
     wxLogError(wxT("radar_pi: Unable to listen to socket: %s"), error.c_str());
   }
   return socket;
@@ -334,7 +334,7 @@ SOCKET NavicoReceive::GetNewDataSocket() {
 
     LOG_RECEIVE(wxT("radar_pi: %s listening for data on %s from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
   } else {
-    SetStatus(error);
+    SetInfoStatus(error);
     wxLogError(wxT("radar_pi: Unable to listen to socket: %s"), error.c_str());
   }
   return socket;
@@ -678,9 +678,9 @@ bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
               stat = _("Transmit");
               break;
             case 0x05:
-              m_ri->m_state.Update(RADAR_WAKING_UP);
+              m_ri->m_state.Update(RADAR_SPINNING_UP);
               m_ri->m_data_timeout = now + DATA_TIMEOUT;
-              LOG_VERBOSE(wxT("radar_pi: %s reports status WAKING UP"), m_ri->m_name.c_str());
+              LOG_VERBOSE(wxT("radar_pi: %s reports status SPINNING UP"), m_ri->m_name.c_str());
               stat = _("Waking up");
               break;
             default:
@@ -688,7 +688,7 @@ bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
               stat = _("Unknown status");
               break;
           }
-          SetStatus(wxString::Format(wxT("%s IP %s %s"), m_ri->m_name.c_str(), m_addr.c_str(), stat.c_str()));
+          SetInfoStatus(wxString::Format(wxT("%s IP %s %s"), m_ri->m_name.c_str(), m_addr.c_str(), stat.c_str()));
         }
         break;
       }
@@ -881,7 +881,7 @@ void NavicoReceive::Shutdown() {
   LOG_INFO(wxT("radar_pi: %s receive thread will take long time to stop"), m_ri->m_name.c_str());
 }
 
-wxString NavicoReceive::GetStatus() {
+wxString NavicoReceive::GetInfoStatus() {
   wxCriticalSectionLocker lock(m_lock);
   // Called on the UI thread, so be gentle
 

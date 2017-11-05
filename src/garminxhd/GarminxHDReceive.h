@@ -54,7 +54,7 @@ class GarminxHDReceive : public RadarReceive {
     m_interface_addr = m_pi->GetRadarInterfaceAddress(ri->m_radar);
     m_receive_socket = GetLocalhostServerTCPSocket();
     m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
-    SetStatus(wxString::Format(wxT("%s: %s"), m_ri->m_name.c_str(), _("Initializing")));
+    SetInfoStatus(wxString::Format(wxT("%s: %s"), m_ri->m_name.c_str(), _("Initializing")));
 
     LOG_RECEIVE(wxT("radar_pi: %s receive thread created"), m_ri->m_name.c_str());
   };
@@ -63,7 +63,7 @@ class GarminxHDReceive : public RadarReceive {
 
   void *Entry(void);
   void Shutdown(void);
-  wxString GetStatus();
+  wxString GetInfoStatus();
 
   NetworkAddress m_interface_addr;
   NetworkAddress m_data_addr;
@@ -89,7 +89,7 @@ class GarminxHDReceive : public RadarReceive {
   struct ifaddrs *m_interface;
 
   int m_next_spoke;
-  char m_radar_status;
+  int m_radar_status;
   bool m_first_receive;
 
   wxString m_addr;  // Radar's IP address
@@ -97,7 +97,9 @@ class GarminxHDReceive : public RadarReceive {
   wxCriticalSection m_lock;  // Protects m_status
   wxString m_status;         // Userfriendly string
 
-  void SetStatus(wxString status) {
+  bool UpdateScannerStatus(int status);
+
+  void SetInfoStatus(wxString status) {
     wxCriticalSectionLocker lock(m_lock);
     m_status = status;
   }

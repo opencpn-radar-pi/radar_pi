@@ -59,7 +59,7 @@ class EmulatorReceive : public RadarReceive {
 
   void *Entry(void);
   void Shutdown(void);
-  wxString GetStatus();
+  wxString GetInfoStatus();
 
  private:
   void EmulateFakeBuffer(void);

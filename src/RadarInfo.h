@@ -116,6 +116,7 @@ class RadarInfo {
 #define TARGET_MOTION_OFF (0)
 #define TARGET_MOTION_RELATIVE (1)
 #define TARGET_MOTION_TRUE (2)
+  radar_control_item m_warmup;
 
   /* Per radar objects */
 
@@ -164,7 +165,7 @@ class RadarInfo {
 
   bool Init();
   void SetName(wxString name);
-  wxString GetStatus();
+  wxString GetInfoStatus();
 
   void AdjustRange(int adjustment);
   void SetAutoRangeMeters(int meters);

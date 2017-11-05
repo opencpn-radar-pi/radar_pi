@@ -163,7 +163,7 @@ enum HeadingSource {
   HEADING_RADAR_HDT
 };
 
-enum RadarState { RADAR_OFF, RADAR_STANDBY, RADAR_TRANSMIT, RADAR_WAKING_UP };
+enum RadarState { RADAR_OFF, RADAR_WARMING_UP, RADAR_STANDBY, RADAR_TRANSMIT, RADAR_SPINNING_UP };
 
 struct receive_statistics {
   int packets;

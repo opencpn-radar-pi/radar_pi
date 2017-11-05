@@ -150,7 +150,7 @@ void MessageBox::CreateControls() {
 
   wxString presence;
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    presence << m_pi->m_radar[r]->GetStatus() << wxT("\n");
+    presence << m_pi->m_radar[r]->GetInfoStatus() << wxT("\n");
   }
   m_presence = new wxStaticText(this, wxID_ANY, presence, wxDefaultPosition, wxDefaultSize, 0);
   ipSizer->Add(m_presence, 0, wxALL, BORDER);
@@ -342,7 +342,7 @@ bool MessageBox::UpdateMessage(bool force) {
 
   wxString presence;
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    presence << m_pi->m_radar[r]->GetStatus() << wxT("\n");
+    presence << m_pi->m_radar[r]->GetInfoStatus() << wxT("\n");
   }
   m_presence->SetLabel(presence);
 

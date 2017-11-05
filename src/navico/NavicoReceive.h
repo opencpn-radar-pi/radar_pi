@@ -55,7 +55,7 @@ class NavicoReceive : public RadarReceive {
     m_interface_addr = m_pi->GetRadarInterfaceAddress(ri->m_radar);
     m_receive_socket = GetLocalhostServerTCPSocket();
     m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
-    SetStatus(wxString::Format(wxT("%s: %s"), m_ri->m_name.c_str(), _("Initializing")));
+    SetInfoStatus(wxString::Format(wxT("%s: %s"), m_ri->m_name.c_str(), _("Initializing")));
 
     LOG_RECEIVE(wxT("radar_pi: %s receive thread created"), m_ri->m_name.c_str());
   };
@@ -64,7 +64,7 @@ class NavicoReceive : public RadarReceive {
 
   void *Entry(void);
   void Shutdown(void);
-  wxString GetStatus();
+  wxString GetInfoStatus();
 
   NetworkAddress m_interface_addr;
   NetworkAddress m_data_addr;
@@ -98,7 +98,7 @@ class NavicoReceive : public RadarReceive {
   wxCriticalSection m_lock;  // Protects m_status
   wxString m_status;         // Userfriendly string
 
-  void SetStatus(wxString status) {
+  void SetInfoStatus(wxString status) {
     wxCriticalSectionLocker lock(m_lock);
     m_status = status;
   }
