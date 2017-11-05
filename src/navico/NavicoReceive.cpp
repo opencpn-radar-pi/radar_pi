@@ -56,7 +56,7 @@ PLUGIN_BEGIN_NAMESPACE
 // As far as we know they 3G's use exactly the same command set.
 
 // If BR24MARK is found, we switch to BR24 mode, otherwise 4G.
-static UINT8 BR24MARK[] = {0x00, 0x44, 0x0d, 0x0e};
+static uint8_t BR24MARK[] = {0x00, 0x44, 0x0d, 0x0e};
 
 /*
  Heading on radar. Observed in field:
@@ -73,40 +73,40 @@ static UINT8 BR24MARK[] = {0x00, 0x44, 0x0d, 0x0e};
 #pragma pack(push, 1)
 
 struct common_header {
-  UINT8 headerLen;       // 1 bytes
-  UINT8 status;          // 1 bytes
-  UINT8 scan_number[2];  // 2 bytes, 0-4095
-  UINT8 u00[4];          // 4 bytes
-  UINT8 angle[2];        // 2 bytes
-  UINT8 heading[2];      // 2 bytes heading with RI-10/11. See bitmask explanation above.
+  uint8_t headerLen;       // 1 bytes
+  uint8_t status;          // 1 bytes
+  uint8_t scan_number[2];  // 2 bytes, 0-4095
+  uint8_t u00[4];          // 4 bytes
+  uint8_t angle[2];        // 2 bytes
+  uint8_t heading[2];      // 2 bytes heading with RI-10/11. See bitmask explanation above.
 };
 
 struct br24_header {
-  UINT8 headerLen;       // 1 bytes
-  UINT8 status;          // 1 bytes
-  UINT8 scan_number[2];  // 2 bytes, 0-4095
-  UINT8 mark[4];         // 4 bytes 0x00, 0x44, 0x0d, 0x0e
-  UINT8 angle[2];        // 2 bytes
-  UINT8 heading[2];      // 2 bytes heading with RI-10/11. See bitmask explanation above.
-  UINT8 range[4];        // 4 bytes
-  UINT8 u01[2];          // 2 bytes blank
-  UINT8 u02[2];          // 2 bytes
-  UINT8 u03[4];          // 4 bytes blank
-};                       /* total size = 24 */
+  uint8_t headerLen;       // 1 bytes
+  uint8_t status;          // 1 bytes
+  uint8_t scan_number[2];  // 2 bytes, 0-4095
+  uint8_t mark[4];         // 4 bytes 0x00, 0x44, 0x0d, 0x0e
+  uint8_t angle[2];        // 2 bytes
+  uint8_t heading[2];      // 2 bytes heading with RI-10/11. See bitmask explanation above.
+  uint8_t range[4];        // 4 bytes
+  uint8_t u01[2];          // 2 bytes blank
+  uint8_t u02[2];          // 2 bytes
+  uint8_t u03[4];          // 4 bytes blank
+};                         /* total size = 24 */
 
 struct br4g_header {
-  UINT8 headerLen;       // 1 bytes
-  UINT8 status;          // 1 bytes
-  UINT8 scan_number[2];  // 2 bytes, 0-4095
-  UINT8 u00[2];          // Always 0x4400 (integer)
-  UINT8 largerange[2];   // 2 bytes or -1
-  UINT8 angle[2];        // 2 bytes
-  UINT8 heading[2];      // 2 bytes heading with RI-10/11 or -1. See bitmask explanation above.
-  UINT8 smallrange[2];   // 2 bytes or -1
-  UINT8 rotation[2];     // 2 bytes, rotation/angle
-  UINT8 u02[4];          // 4 bytes signed integer, always -1
-  UINT8 u03[4];          // 4 bytes signed integer, mostly -1 (0x80 in last byte) or 0xa0 in last byte
-};                       /* total size = 24 */
+  uint8_t headerLen;       // 1 bytes
+  uint8_t status;          // 1 bytes
+  uint8_t scan_number[2];  // 2 bytes, 0-4095
+  uint8_t u00[2];          // Always 0x4400 (integer)
+  uint8_t largerange[2];   // 2 bytes or -1
+  uint8_t angle[2];        // 2 bytes
+  uint8_t heading[2];      // 2 bytes heading with RI-10/11 or -1. See bitmask explanation above.
+  uint8_t smallrange[2];   // 2 bytes or -1
+  uint8_t rotation[2];     // 2 bytes, rotation/angle
+  uint8_t u02[4];          // 4 bytes signed integer, always -1
+  uint8_t u03[4];          // 4 bytes signed integer, mostly -1 (0x80 in last byte) or 0xa0 in last byte
+};                         /* total size = 24 */
 
 struct radar_line {
   union {
@@ -114,7 +114,7 @@ struct radar_line {
     br24_header br24;
     br4g_header br4g;
   };
-  UINT8 data[NAVICO_SPOKE_LEN];
+  uint8_t data[NAVICO_SPOKE_LEN];
 };
 
 /* Normally the packets are have 32 spokes, or scan lines, but we assume nothing
@@ -123,7 +123,7 @@ struct radar_line {
  */
 
 struct radar_frame_pkt {
-  UINT8 frame_hdr[8];
+  uint8_t frame_hdr[8];
   radar_line line[120];  //  scan lines, or spokes
 };
 #pragma pack(pop)
@@ -133,7 +133,7 @@ struct radar_frame_pkt {
 // Process one radar frame packet, which can contain up to 32 'spokes' or lines extending outwards
 // from the radar up to the range indicated in the packet.
 //
-void NavicoReceive::ProcessFrame(const UINT8 *data, int len) {
+void NavicoReceive::ProcessFrame(const uint8_t *data, int len) {
   time_t now = time(0);
 
   // log_line.time_rec = wxGetUTCTimeMillis();
@@ -356,7 +356,7 @@ void *NavicoReceive::Entry(void) {
   } rx_addr;
   socklen_t rx_len;
 
-  UINT8 data[sizeof(radar_frame_pkt)];
+  uint8_t data[sizeof(radar_frame_pkt)];
   m_interface_array = 0;
   m_interface = 0;
   struct sockaddr_in radarFoundAddr;
@@ -556,90 +556,90 @@ void *NavicoReceive::Entry(void) {
 #pragma pack(push, 1)
 
 struct RadarReport_01C4_18 {  // 01 C4 with length 18
-  UINT8 what;                 // 0   0x01
-  UINT8 command;              // 1   0xC4
-  UINT8 radar_status;         // 2
-  UINT8 field3;               // 3
-  UINT8 field4;               // 4
-  UINT8 field5;               // 5
-  UINT16 field6;              // 6-7
-  UINT16 field8;              // 8-9
-  UINT16 field10;             // 10-11
+  uint8_t what;               // 0   0x01
+  uint8_t command;            // 1   0xC4
+  uint8_t radar_status;       // 2
+  uint8_t field3;             // 3
+  uint8_t field4;             // 4
+  uint8_t field5;             // 5
+  uint16_t field6;            // 6-7
+  uint16_t field8;            // 8-9
+  uint16_t field10;           // 10-11
 };
 
-struct RadarReport_02C4_99 {     // length 99
-  UINT8 what;                    // 0   0x02
-  UINT8 command;                 // 1 0xC4
-  UINT32 range;                  //  2-3   0x06 0x09
-  UINT16 field4;                 // 6-7    0
-  UINT32 field8;                 // 8-11   1
-  UINT8 gain;                    // 12
-  UINT8 sea_auto;                // 13  0 = off, 1 = harbour, 2 = offshore
-  UINT8 field14;                 // 14
-  UINT16 field15;                // 15-16
-  UINT32 sea;                    // 17-20   sea state (17)
-  UINT8 field21;                 // 21
-  UINT8 rain;                    // 22   rain clutter
-  UINT8 field23;                 // 23
-  UINT32 field24;                // 24-27
-  UINT32 field28;                // 28-31
-  UINT8 field32;                 // 32
-  UINT8 field33;                 // 33
-  UINT8 interference_rejection;  // 34
-  UINT8 field35;                 // 35
-  UINT8 field36;                 // 36
-  UINT8 field37;                 // 37
-  UINT8 target_expansion;        // 38
-  UINT8 field39;                 // 39
-  UINT8 field40;                 // 40
-  UINT8 field41;                 // 41
-  UINT8 target_boost;            // 42
+struct RadarReport_02C4_99 {       // length 99
+  uint8_t what;                    // 0   0x02
+  uint8_t command;                 // 1 0xC4
+  uint32_t range;                  //  2-3   0x06 0x09
+  uint16_t field4;                 // 6-7    0
+  uint32_t field8;                 // 8-11   1
+  uint8_t gain;                    // 12
+  uint8_t sea_auto;                // 13  0 = off, 1 = harbour, 2 = offshore
+  uint8_t field14;                 // 14
+  uint16_t field15;                // 15-16
+  uint32_t sea;                    // 17-20   sea state (17)
+  uint8_t field21;                 // 21
+  uint8_t rain;                    // 22   rain clutter
+  uint8_t field23;                 // 23
+  uint32_t field24;                // 24-27
+  uint32_t field28;                // 28-31
+  uint8_t field32;                 // 32
+  uint8_t field33;                 // 33
+  uint8_t interference_rejection;  // 34
+  uint8_t field35;                 // 35
+  uint8_t field36;                 // 36
+  uint8_t field37;                 // 37
+  uint8_t target_expansion;        // 38
+  uint8_t field39;                 // 39
+  uint8_t field40;                 // 40
+  uint8_t field41;                 // 41
+  uint8_t target_boost;            // 42
 };
 
 struct RadarReport_03C4_129 {
-  UINT8 what;
-  UINT8 command;
-  UINT8 radar_type;  // I hope! 01 = 4G, 08 = 3G, 0F = BR24
-  UINT8 u00[55];     // Lots of unknown
-  UINT16 firmware_date[16];
-  UINT16 firmware_time[16];
-  UINT8 u01[7];
+  uint8_t what;
+  uint8_t command;
+  uint8_t radar_type;  // I hope! 01 = 4G, 08 = 3G, 0F = BR24
+  uint8_t u00[55];     // Lots of unknown
+  uint16_t firmware_date[16];
+  uint16_t firmware_time[16];
+  uint8_t u01[7];
 };
 
-struct RadarReport_04C4_66 {  // 04 C4 with length 66
-  UINT8 what;                 // 0   0x04
-  UINT8 command;              // 1   0xC4
-  UINT32 field2;              // 2-5
-  UINT16 bearing_alignment;   // 6-7
-  UINT16 field8;              // 8-9
-  UINT16 antenna_height;      // 10-11
+struct RadarReport_04C4_66 {   // 04 C4 with length 66
+  uint8_t what;                // 0   0x04
+  uint8_t command;             // 1   0xC4
+  uint32_t field2;             // 2-5
+  uint16_t bearing_alignment;  // 6-7
+  uint16_t field8;             // 8-9
+  uint16_t antenna_height;     // 10-11
 };
 
-struct RadarReport_08C4_18 {           // 08 c4  length 18
-  UINT8 what;                          // 0  0x08
-  UINT8 command;                       // 1  0xC4
-  UINT8 field2;                        // 2
-  UINT8 local_interference_rejection;  // 3
-  UINT8 scan_speed;                    // 4
-  UINT8 sls_auto;                      // 5 installation: sidelobe suppression auto
-  UINT8 field6;                        // 6
-  UINT8 field7;                        // 7
-  UINT8 field8;                        // 8
-  UINT8 side_lobe_suppression;         // 9 installation: sidelobe suppression
-  UINT16 field10;                      // 10-11
-  UINT8 noise_rejection;               // 12    noise rejection
-  UINT8 target_sep;                    // 13
+struct RadarReport_08C4_18 {             // 08 c4  length 18
+  uint8_t what;                          // 0  0x08
+  uint8_t command;                       // 1  0xC4
+  uint8_t field2;                        // 2
+  uint8_t local_interference_rejection;  // 3
+  uint8_t scan_speed;                    // 4
+  uint8_t sls_auto;                      // 5 installation: sidelobe suppression auto
+  uint8_t field6;                        // 6
+  uint8_t field7;                        // 7
+  uint8_t field8;                        // 8
+  uint8_t side_lobe_suppression;         // 9 installation: sidelobe suppression
+  uint16_t field10;                      // 10-11
+  uint8_t noise_rejection;               // 12    noise rejection
+  uint8_t target_sep;                    // 13
 };
 #pragma pack(pop)
 
-static void AppendChar16String(wxString &dest, UINT16 *src) {
+static void AppendChar16String(wxString &dest, uint16_t *src) {
   for (; *src; src++) {
     wchar_t wc = (wchar_t)*src;
     dest << wc;
   }
 }
 
-bool NavicoReceive::ProcessReport(const UINT8 *report, int len) {
+bool NavicoReceive::ProcessReport(const uint8_t *report, int len) {
   LOG_BINARY_RECEIVE(wxT("ProcessReport"), report, len);
 
   time_t now = time(0);

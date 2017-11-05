@@ -120,7 +120,7 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
   line->count = count;
 }
 
-void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8* data, size_t len) {
+void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len) {
   wxColour colour;
   GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
   BlobColour previous_colour = BLOB_NONE;

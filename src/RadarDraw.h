@@ -42,7 +42,7 @@ class RadarDraw {
 
   virtual bool Init(size_t spokes, size_t spoke_len) = 0;
   virtual void DrawRadarImage() = 0;
-  virtual void ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8* data, size_t len) = 0;
+  virtual void ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len) = 0;
 
   virtual ~RadarDraw() = 0;
 

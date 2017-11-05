@@ -33,16 +33,16 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-static const UINT8 COMMAND_TX_OFF_A[3] = {0x00, 0xc1, 0x01};  // OFF part 1, note same as TX ON part 1
-static const UINT8 COMMAND_TX_OFF_B[3] = {0x01, 0xc1, 0x00};  // OFF part 1, note same as TX ON part 1
+static const uint8_t COMMAND_TX_OFF_A[3] = {0x00, 0xc1, 0x01};  // OFF part 1, note same as TX ON part 1
+static const uint8_t COMMAND_TX_OFF_B[3] = {0x01, 0xc1, 0x00};  // OFF part 1, note same as TX ON part 1
 
-static const UINT8 COMMAND_TX_ON_A[3] = {0x00, 0xc1, 0x01};  // ON part 1
-static const UINT8 COMMAND_TX_ON_B[3] = {0x01, 0xc1, 0x01};  // ON part 2
+static const uint8_t COMMAND_TX_ON_A[3] = {0x00, 0xc1, 0x01};  // ON part 1
+static const uint8_t COMMAND_TX_ON_B[3] = {0x01, 0xc1, 0x01};  // ON part 2
 
-static const UINT8 COMMAND_STAY_ON_A[2] = {0xA0, 0xc1};
-static const UINT8 COMMAND_STAY_ON_B[2] = {0x03, 0xc2};
-static const UINT8 COMMAND_STAY_ON_C[2] = {0x04, 0xc2};
-static const UINT8 COMMAND_STAY_ON_D[2] = {0x05, 0xc2};
+static const uint8_t COMMAND_STAY_ON_A[2] = {0xA0, 0xc1};
+static const uint8_t COMMAND_STAY_ON_B[2] = {0x03, 0xc2};
+static const uint8_t COMMAND_STAY_ON_C[2] = {0x04, 0xc2};
+static const uint8_t COMMAND_STAY_ON_D[2] = {0x05, 0xc2};
 
 NavicoControl::NavicoControl(NetworkAddress sendMultiCastAddress) {
   m_addr.sin_family = AF_INET;
@@ -106,7 +106,7 @@ bool NavicoControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, Net
   return true;
 }
 
-void NavicoControl::logBinaryData(const wxString &what, const UINT8 *data, int size) {
+void NavicoControl::logBinaryData(const wxString &what, const uint8_t *data, int size) {
   wxString explain;
   int i = 0;
 
@@ -120,7 +120,7 @@ void NavicoControl::logBinaryData(const wxString &what, const UINT8 *data, int s
   LOG_TRANSMIT(explain);
 }
 
-bool NavicoControl::TransmitCmd(const UINT8 *msg, int size) {
+bool NavicoControl::TransmitCmd(const uint8_t *msg, int size) {
   if (m_radar_socket == INVALID_SOCKET) {
     wxLogError(wxT("radar_pi: Unable to transmit command to unknown radar"));
     return false;
@@ -157,12 +157,12 @@ bool NavicoControl::RadarStayAlive() {
 bool NavicoControl::SetRange(int meters) {
   if (meters >= 50 && meters <= 72704) {
     unsigned int decimeters = (unsigned int)meters * 10;
-    UINT8 pck[] = {0x03,
-                   0xc1,
-                   (UINT8)((decimeters >> 0) & 0XFFL),
-                   (UINT8)((decimeters >> 8) & 0XFFL),
-                   (UINT8)((decimeters >> 16) & 0XFFL),
-                   (UINT8)((decimeters >> 24) & 0XFFL)};
+    uint8_t pck[] = {0x03,
+                     0xc1,
+                     (uint8_t)((decimeters >> 0) & 0XFFL),
+                     (uint8_t)((decimeters >> 8) & 0XFFL),
+                     (uint8_t)((decimeters >> 16) & 0XFFL),
+                     (uint8_t)((decimeters >> 24) & 0XFFL)};
     LOG_VERBOSE(wxT("radar_pi: %s transmit: range %d meters"), m_name, meters);
     return TransmitCmd(pck, sizeof(pck));
   }
@@ -200,7 +200,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, int value, int auto
       int v = value * 10;
       int v1 = v / 256;
       int v2 = v & 255;
-      UINT8 cmd[4] = {0x05, 0xc1, (UINT8)v2, (UINT8)v1};
+      uint8_t cmd[4] = {0x05, 0xc1, (uint8_t)v2, (uint8_t)v1};
       LOG_VERBOSE(wxT("radar_pi: %s Bearing alignment: %d"), m_name, v);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
@@ -211,7 +211,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, int value, int auto
       if (v > 255) {
         v = 255;
       }
-      UINT8 cmd[] = {0x06, 0xc1, 0, 0, 0, 0, (UINT8)autoValue, 0, 0, 0, (UINT8)v};
+      uint8_t cmd[] = {0x06, 0xc1, 0, 0, 0, 0, (uint8_t)autoValue, 0, 0, 0, (uint8_t)v};
       LOG_VERBOSE(wxT("radar_pi: %s Gain: %d auto %d"), m_name, value, autoValue);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
@@ -222,7 +222,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, int value, int auto
       if (v > 255) {
         v = 255;
       }
-      UINT8 cmd[] = {0x06, 0xc1, 0x02, 0, 0, 0, autoValue, 0, 0, 0, (UINT8)v};
+      uint8_t cmd[] = {0x06, 0xc1, 0x02, 0, 0, 0, autoValue, 0, 0, 0, (uint8_t)v};
       LOG_VERBOSE(wxT("radar_pi: %s Sea: %d auto %d"), m_name, value, autoValue);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
@@ -233,7 +233,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, int value, int auto
       if (v > 255) {
         v = 255;
       }
-      UINT8 cmd[] = {0x06, 0xc1, 0x04, 0, 0, 0, 0, 0, 0, 0, (UINT8)v};
+      uint8_t cmd[] = {0x06, 0xc1, 0x04, 0, 0, 0, 0, 0, 0, 0, (uint8_t)v};
       LOG_VERBOSE(wxT("radar_pi: %s Rain: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
@@ -244,7 +244,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, int value, int auto
       if (v > 255) {
         v = 255;
       }
-      UINT8 cmd[] = {0x6, 0xc1, 0x05, 0, 0, 0, autoValue, 0, 0, 0, (UINT8)v};
+      uint8_t cmd[] = {0x6, 0xc1, 0x05, 0, 0, 0, autoValue, 0, 0, 0, (uint8_t)v};
       LOG_VERBOSE(wxT("radar_pi: %s command Tx CT_SIDE_LOBE_SUPPRESSION: %d auto %d"), m_name, value, autoValue);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
@@ -253,21 +253,21 @@ bool NavicoControl::SetControlValue(ControlType controlType, int value, int auto
     // What would command 7 be?
 
     case CT_INTERFERENCE_REJECTION: {
-      UINT8 cmd[] = {0x08, 0xc1, (UINT8)value};
+      uint8_t cmd[] = {0x08, 0xc1, (uint8_t)value};
       LOG_VERBOSE(wxT("radar_pi: %s Rejection: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
 
     case CT_TARGET_EXPANSION: {
-      UINT8 cmd[] = {0x09, 0xc1, (UINT8)value};
+      uint8_t cmd[] = {0x09, 0xc1, (uint8_t)value};
       LOG_VERBOSE(wxT("radar_pi: %s Target expansion: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
 
     case CT_TARGET_BOOST: {
-      UINT8 cmd[] = {0x0a, 0xc1, (UINT8)value};
+      uint8_t cmd[] = {0x0a, 0xc1, (uint8_t)value};
       LOG_VERBOSE(wxT("radar_pi: %s Target boost: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
@@ -278,14 +278,14 @@ bool NavicoControl::SetControlValue(ControlType controlType, int value, int auto
     case CT_LOCAL_INTERFERENCE_REJECTION: {
       if (value < 0) value = 0;
       if (value > 3) value = 3;
-      UINT8 cmd[] = {0x0e, 0xc1, (UINT8)value};
+      uint8_t cmd[] = {0x0e, 0xc1, (uint8_t)value};
       LOG_VERBOSE(wxT("radar_pi: %s local interference rejection %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
 
     case CT_SCAN_SPEED: {
-      UINT8 cmd[] = {0x0f, 0xc1, (UINT8)value};
+      uint8_t cmd[] = {0x0f, 0xc1, (uint8_t)value};
       LOG_VERBOSE(wxT("radar_pi: %s Scan speed: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
@@ -294,14 +294,14 @@ bool NavicoControl::SetControlValue(ControlType controlType, int value, int auto
     // What would command 10 through 20 be?
 
     case CT_NOISE_REJECTION: {
-      UINT8 cmd[] = {0x21, 0xc1, (UINT8)value};
+      uint8_t cmd[] = {0x21, 0xc1, (uint8_t)value};
       LOG_VERBOSE(wxT("radar_pi: %s Noise rejection: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
 
     case CT_TARGET_SEPARATION: {
-      UINT8 cmd[] = {0x22, 0xc1, (UINT8)value};
+      uint8_t cmd[] = {0x22, 0xc1, (uint8_t)value};
       LOG_VERBOSE(wxT("radar_pi: %s Target separation: %d"), m_name, value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
@@ -313,7 +313,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, int value, int auto
       int v = value * 1000;  // radar wants millimeters, not meters :-)
       int v1 = v / 256;
       int v2 = v & 255;
-      UINT8 cmd[10] = {0x30, 0xc1, 0x01, 0, 0, 0, (UINT8)v2, (UINT8)v1, 0, 0};
+      uint8_t cmd[10] = {0x30, 0xc1, 0x01, 0, 0, 0, (uint8_t)v2, (uint8_t)v1, 0, 0};
       LOG_VERBOSE(wxT("radar_pi: %s Antenna height: %d"), m_name, v);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;

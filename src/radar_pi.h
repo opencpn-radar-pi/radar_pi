@@ -402,7 +402,7 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   void OnGuardZoneDialogClose(RadarInfo *ri);
   void ConfirmGuardZoneBogeys();
   void ResetOpenGLContext();
-  void logBinaryData(const wxString &what, const UINT8 *data, int size);
+  void logBinaryData(const wxString &what, const uint8_t *data, int size);
 
   bool SetControlValue(int radar, ControlType controlType, int value, int autoValue);
 

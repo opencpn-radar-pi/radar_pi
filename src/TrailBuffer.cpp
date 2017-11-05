@@ -82,7 +82,7 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
     point.y += m_trail_size / 2 + m_offset.lon;
 
     if (point.x >= 0 && point.x < (int)m_trail_size && point.y >= 0 && point.y < (int)m_trail_size) {
-      UINT8 *trail = &M_TRUE_TRAILS(point.x, point.y);
+      uint8_t *trail = &M_TRUE_TRAILS(point.x, point.y);
       // when ship moves north, offset.lat > 0. Add to move trails image in opposite direction
       // when ship moves east, offset.lon > 0. Add to move trails image in opposite direction
       if (data[radius] >= weakest_normal_blob) {
@@ -105,7 +105,7 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
     point.y += m_trail_size / 2 + m_offset.lon;
 
     if (point.x >= 0 && point.x < (int)m_trail_size && point.y >= 0 && point.y < (int)m_trail_size) {
-      UINT8 *trail = &M_TRUE_TRAILS(point.x, m_trail_size + point.y);
+      uint8_t *trail = &M_TRUE_TRAILS(point.x, m_trail_size + point.y);
       // when ship moves north, offset.lat > 0. Add to move trails image in opposite direction
       // when ship moves east, offset.lon > 0. Add to move trails image in opposite direction
       if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
@@ -117,7 +117,7 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
 
 void TrailBuffer::UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t len) {
   int motion = m_ri->m_trails_motion.GetValue();
-  UINT8 *trail = &M_RELATIVE_TRAILS(angle, 0);
+  uint8_t *trail = &M_RELATIVE_TRAILS(angle, 0);
   uint8_t weakest_normal_blob = m_ri->m_pi->m_settings.threshold_blue;
   size_t radius = 0;
 

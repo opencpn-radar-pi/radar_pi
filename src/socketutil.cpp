@@ -35,7 +35,7 @@
 PLUGIN_BEGIN_NAMESPACE
 
 wxString FormatNetworkAddress(NetworkAddress &addr) {
-  UINT8 *a = (UINT8 *)&addr.addr;  // sin_addr is in network layout
+  uint8_t *a = (uint8_t *)&addr.addr;  // sin_addr is in network layout
   wxString address;
   address.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
 
@@ -43,7 +43,7 @@ wxString FormatNetworkAddress(NetworkAddress &addr) {
 }
 
 wxString FormatNetworkAddressPort(NetworkAddress &addr) {
-  UINT8 *a = (UINT8 *)&addr.addr;  // sin_addr is in network layout
+  uint8_t *a = (uint8_t *)&addr.addr;  // sin_addr is in network layout
   wxString address;
   address.Printf(wxT("%u.%u.%u.%u port %u"), a[0], a[1], a[2], a[3], htons(addr.port));
 

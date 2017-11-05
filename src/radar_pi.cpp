@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
-#include "radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
 #include "SelectDialog.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -1432,7 +1432,7 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);
 
       wxString addr;
-      UINT8 *a = (UINT8 *)&m_settings.radar_interface_address[r].addr;
+      uint8_t *a = (uint8_t *)&m_settings.radar_interface_address[r].addr;
       addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
       pConf->Write(wxString::Format(wxT("Radar%dInterface"), r), addr);
 
@@ -1884,7 +1884,7 @@ bool radar_pi::MouseEventHook(wxMouseEvent &event) {
   return false;
 }
 
-void radar_pi::logBinaryData(const wxString &what, const UINT8 *data, int size) {
+void radar_pi::logBinaryData(const wxString &what, const uint8_t *data, int size) {
   wxString explain;
   int i = 0;
 

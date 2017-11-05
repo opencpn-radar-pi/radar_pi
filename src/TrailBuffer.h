@@ -36,7 +36,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-typedef UINT8 TrailRevolutionsAge;
+typedef uint8_t TrailRevolutionsAge;
 
 #define MARGIN (100)
 

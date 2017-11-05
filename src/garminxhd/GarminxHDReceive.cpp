@@ -70,7 +70,7 @@ struct radar_line {
 // Process one radar line, which contains exactly one line or spoke of data extending outwards
 // from the radar up to the range indicated in the packet.
 //
-void GarminxHDReceive::ProcessFrame(const UINT8 *data, int len) {
+void GarminxHDReceive::ProcessFrame(const uint8_t *data, int len) {
   // log_line.time_rec = wxGetUTCTimeMillis();
   wxLongLong time_rec = wxGetUTCTimeMillis();
   time_t now = (time_t)(time_rec.GetValue() / MILLISECONDS_PER_SECOND);
@@ -484,7 +484,7 @@ bool GarminxHDReceive::UpdateScannerStatus(int status) {
   return ret;
 }
 
-bool GarminxHDReceive::ProcessReport(const UINT8 *report, int len) {
+bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
   LOG_BINARY_RECEIVE(wxT("ProcessReport"), report, len);
 
   time_t now = time(0);
@@ -526,7 +526,7 @@ bool GarminxHDReceive::ProcessReport(const UINT8 *report, int len) {
         }
         break;
 
-      case 0x091e:                              // Range
+      case 0x091e:  // Range
         LOG_VERBOSE(wxT("range %d"), packet12->parm1);
         m_ri->m_range.Update(packet12->parm1);  // Range in meters
         return true;
@@ -601,8 +601,6 @@ bool GarminxHDReceive::ProcessReport(const UINT8 *report, int len) {
         m_ri->m_warmup.Update(packet9->parm1);
         return true;
       }
-
-
     }
   }
 

@@ -146,7 +146,7 @@ class RadarInfo {
   receive_statistics m_statistics;
 
   struct line_history {
-    UINT8 *line;
+    uint8_t *line;
     wxLongLong time;
     GeoPosition pos;
   };
@@ -170,7 +170,7 @@ class RadarInfo {
   void AdjustRange(int adjustment);
   void SetAutoRangeMeters(int meters);
   bool SetControlValue(ControlType controlType, int value, int autoValue);
-  void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters, wxLongLong time);
+  void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint8_t *data, size_t len, int range_meters, wxLongLong time);
   void RefreshDisplay();
   void RenderGuardZone();
   void ResetRadarImage();

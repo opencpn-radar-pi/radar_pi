@@ -220,7 +220,7 @@ void RadarDrawShader::DrawRadarImage() {
   glPopAttrib();
 }
 
-void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8 *data, size_t len) {
+void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t *data, size_t len) {
   GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
   wxCriticalSectionLocker lock(m_exclusive);
 

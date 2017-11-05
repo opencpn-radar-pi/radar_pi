@@ -52,7 +52,7 @@ class RadarDrawVertex : public RadarDraw {
 
   bool Init(size_t spokes, size_t spoke_len);
   void DrawRadarImage();
-  void ProcessRadarSpoke(int transparency, SpokeBearing angle, UINT8* data, size_t len);
+  void ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len);
 
   ~RadarDrawVertex() { Reset(); }
 

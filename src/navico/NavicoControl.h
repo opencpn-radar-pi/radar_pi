@@ -57,8 +57,8 @@ class NavicoControl : public RadarControl {
   SOCKET m_radar_socket;
   wxString m_name;
 
-  bool TransmitCmd(const UINT8 *msg, int size);
-  void logBinaryData(const wxString &what, const UINT8 *data, int size);
+  bool TransmitCmd(const uint8_t *msg, int size);
+  void logBinaryData(const wxString &what, const uint8_t *data, int size);
 };
 
 PLUGIN_END_NAMESPACE

@@ -51,7 +51,7 @@ GuardZone::GuardZone(radar_pi* pi, RadarInfo* ri, int zone) {
   ResetBogeys();
 }
 
-void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_t len, int range) {
+void GuardZone::ProcessSpoke(SpokeBearing angle, uint8_t* data, uint8_t* hist, size_t len, int range) {
   size_t range_start = m_inner_range * len / range;  // Convert from meters to 0..511
   size_t range_end = m_outer_range * len / range;    // Convert from meters to 0..511
   bool in_guard_zone = false;

@@ -89,7 +89,7 @@ class GuardZone {
   /*
    * Check if data is in this GuardZone, if so update bogeyCount
    */
-  void ProcessSpoke(SpokeBearing angle, UINT8 *data, UINT8 *hist, size_t len, int range);
+  void ProcessSpoke(SpokeBearing angle, uint8_t *data, uint8_t *hist, size_t len, int range);
 
   // Find targets inside the zone
   void SearchTargets();

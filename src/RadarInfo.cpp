@@ -29,11 +29,11 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
+#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -205,7 +205,7 @@ bool RadarInfo::Init() {
 
   m_history = (line_history *)calloc(sizeof(line_history), m_spokes);
   for (size_t i = 0; i < m_spokes; i++) {
-    m_history[i].line = (UINT8 *)calloc(sizeof(UINT8), m_spoke_len_max);
+    m_history[i].line = (uint8_t *)calloc(sizeof(uint8_t), m_spoke_len_max);
   }
 
   ComputeColourMap();
@@ -334,7 +334,7 @@ void RadarInfo::ComputeColourMap() {
 }
 
 void RadarInfo::ResetSpokes() {
-  UINT8 zap[SPOKE_LEN_MAX];
+  uint8_t zap[SPOKE_LEN_MAX];
 
   LOG_VERBOSE(wxT("radar_pi: reset spokes"));
 
@@ -374,7 +374,7 @@ void RadarInfo::ResetSpokes() {
  * @param range                 Range (in meters) of this data
  * @param time_rec              Time at this moment
  */
-void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT8 *data, size_t len, int range_meters,
+void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint8_t *data, size_t len, int range_meters,
                                   wxLongLong time_rec) {
   int orientation;
 
@@ -444,7 +444,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
   int stabilized_mode = orientation != ORIENTATION_HEAD_UP;
   uint8_t weakest_normal_blob = m_pi->m_settings.threshold_blue;
 
-  UINT8 *hist_data = m_history[bearing].line;
+  uint8_t *hist_data = m_history[bearing].line;
   m_history[bearing].time = time_rec;
   GetRadarPosition(&m_history[bearing].pos);
   for (size_t radius = 0; radius < len; radius++) {

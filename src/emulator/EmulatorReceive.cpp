@@ -55,7 +55,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 void EmulatorReceive::EmulateFakeBuffer(void) {
   time_t now = time(0);
-  UINT8 data[EMULATOR_MAX_SPOKE_LEN];
+  uint8_t data[EMULATOR_MAX_SPOKE_LEN];
 
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
 
@@ -88,7 +88,7 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
     for (size_t range = 0; range < sizeof(data); range++) {
       size_t bit = range >> 7;
       // use bit 'bit' of angle_raw
-      UINT8 colour = (((angle + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
+      uint8_t colour = (((angle + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
       if (range > sizeof(data) - 10) {
         colour = ((angle + m_next_rotation) % EMULATOR_SPOKES) <= 8 ? 255 : 0;
       }
