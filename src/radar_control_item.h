@@ -38,11 +38,6 @@ PLUGIN_BEGIN_NAMESPACE
 
 class radar_pi;
 
-struct RadarRange {
-  int meters;
-  int actual_meters;
-};
-
 class radar_control_item {
  public:
   // The copy constructor
@@ -119,31 +114,6 @@ class radar_control_item {
   int m_value;
   int m_button;
   bool m_mod;
-};
-
-class radar_range_control_item : public radar_control_item {
- public:
-  // PersistentSettings *m_settings;
-
-  void Update(int v);
-  const RadarRange *GetRange() {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    return m_range;
-  }
-
-  radar_range_control_item(radar_pi *pi) {
-    m_pi = pi;
-    m_value = 0;
-    m_button = 0;
-    m_mod = false;
-    m_range = 0;
-    // m_settings = 0;
-  }
-
- private:
-  const RadarRange *m_range;
-  radar_pi *m_pi;
 };
 
 PLUGIN_END_NAMESPACE

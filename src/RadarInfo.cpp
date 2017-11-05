@@ -44,127 +44,13 @@ PLUGIN_BEGIN_NAMESPACE
 
 bool g_first_render = true;
 
-static const RadarRange g_ranges_metric[] = {
-    /* Nautical (mixed) first */
-    {50, 98},      {75, 146},      {100, 195},     {250, 488},     {500, 808},     {750, 1154},
-    {1000, 1616},  {1500, 2308},   {2000, 3366},   {3000, 4713},   {4000, 5655},   {6000, 9408},
-    {8000, 12096}, {12000, 18176}, {16000, 26240}, {24000, 36352}, {36000, 52480}, {48000, 72704}};
-
-static const RadarRange g_ranges_nautic[] = {{50, 98},
-                                             {75, 146},
-                                             {100, 195},
-                                             {1852 / 8, 451},
-                                             {1852 / 4, 673},
-                                             {1852 / 2, 1389},
-                                             {1852 * 3 / 4, 2020},
-                                             {1852 * 1, 2693},
-                                             {1852 * 3 / 2, 4039},
-                                             {1852 * 2, 5655},
-                                             {1852 * 3, 8079},
-                                             {1852 * 4, 10752},
-                                             {1852 * 6, 16128},
-                                             {1852 * 8, 22208},
-                                             {1852 * 12, 36352},
-                                             {1852 * 16, 44416},
-                                             {1852 * 24, 72704},
-                                             {1852 * 36, 72704}};
-
-static const int METRIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_metric);
-static const int NAUTIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_nautic);
-
-static const int g_range_maxValue[2] = {NAUTIC_RANGE_COUNT - 1, METRIC_RANGE_COUNT - 1};
-
-static size_t convertMetersToRadarAllowedValue(int *range_meters, int units, RadarType radarType) {
-  const RadarRange *ranges;
-  int myrange = *range_meters;
-  size_t n;
-
-  n = g_range_maxValue[units];
-  ranges = units ? g_ranges_metric : g_ranges_nautic;
-
-  if (radarType < RT_4GA) {
-    n--;  // only 4G has longest ranges
-  }
-  for (; n > 0; n--) {
-    if (ranges[n].meters <= myrange) {  // step down until past the right range value
-      break;
-    }
-  }
-  *range_meters = ranges[n].meters;
-
-  return n;
-}
-
-static int convertSpokeMetersToRangeMeters(int value) {
-  int g;
-
-  for (g = 0; g < ARRAY_SIZE(g_ranges_nautic); g++) {
-    if (g_ranges_nautic[g].actual_meters == value) {
-      return g_ranges_nautic[g].meters;
-    }
-  }
-  for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++) {
-    if (g_ranges_metric[g].actual_meters == value) {
-      return g_ranges_metric[g].meters;
-    }
-  }
-  return 0;
-}
-
-void radar_range_control_item::Update(int v) {
-  radar_control_item::Update(v);
-
-  wxCriticalSectionLocker lock(m_exclusive);
-
-  size_t g;
-  const RadarRange *newRange = 0;
-
-  // Find out which nautical or metric range is the one represented by 'value'.
-  // First we look up according to the desired setting (metric/nautical) and if
-  // that doesn't work we look up nautical then metric.
-
-  if (M_SETTINGS.range_units == RANGE_NAUTICAL) {
-    for (g = 0; g < ARRAY_SIZE(g_ranges_nautic); g++) {
-      if (g_ranges_nautic[g].meters == m_value) {
-        newRange = &g_ranges_nautic[g];
-        break;
-      }
-    }
-  } else {
-    for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++) {
-      if (g_ranges_metric[g].meters == m_value) {
-        newRange = &g_ranges_metric[g];
-        break;
-      }
-    }
-  }
-  if (!newRange) {
-    for (g = 0; g < ARRAY_SIZE(g_ranges_nautic); g++) {
-      if (g_ranges_nautic[g].meters == m_value) {
-        newRange = &g_ranges_nautic[g];
-        break;
-      }
-    }
-  }
-  if (!newRange) {
-    for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++) {
-      if (g_ranges_metric[g].meters == m_value) {
-        newRange = &g_ranges_metric[g];
-        break;
-      }
-    }
-  }
-
-  m_range = newRange;
-}
-
 /**
  * Constructor.
  *
  * Called when the config is not yet known, so this should not start any
  * computations based on those yet.
  */
-RadarInfo::RadarInfo(radar_pi *pi, int radar) : m_range(pi) {
+RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_pi = pi;
   m_radar = radar;
   m_arpa = 0;
@@ -325,7 +211,7 @@ bool RadarInfo::Init() {
   ComputeColourMap();
 
   if (!m_control) {
-    m_control = RadarFactory::makeRadarControl(m_radar_type);
+    m_control = RadarFactory::MakeRadarControl(m_radar_type);
   }
   if (!m_radar_panel) {
     m_radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
@@ -345,7 +231,7 @@ bool RadarInfo::Init() {
 
   if (!m_receive) {
     LOG_RECEIVE(wxT("radar_pi: %s starting receive thread"), m_name.c_str());
-    m_receive = RadarFactory::makeRadarReceive(m_radar_type, m_pi, this);
+    m_receive = RadarFactory::MakeRadarReceive(m_radar_type, m_pi, this);
     if (!m_receive || (m_receive->Run() != wxTHREAD_NO_ERROR)) {
       LOG_INFO(wxT("radar_pi: %s unable to start receive thread."), m_name.c_str());
       if (m_receive) {
@@ -371,7 +257,7 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
       LOG_VERBOSE(wxT("radar_pi %s: Reparenting control dialog"), m_name.c_str());
     }
     if (!m_control_dialog) {
-      m_control_dialog = RadarFactory::makeControlsDialog(m_radar_type, m_radar);
+      m_control_dialog = RadarFactory::MakeControlsDialog(m_radar_type, m_radar);
       m_control_dialog->m_panel_position = panel_pos;
       m_control_dialog->m_manually_positioned = manually_positioned;
       wxWindow *parent = (wxWindow *)m_radar_panel;
@@ -538,9 +424,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, UINT
       LOG_VERBOSE(wxT("radar_pi: %s detected spoke length change from %zu to %zu bytes"), m_name.c_str(), m_spoke_len, len);
     }
     m_range_meters = range_meters;
-    if (!m_range.GetValue()) {
-      m_range.Update(convertSpokeMetersToRangeMeters(range_meters));
-    }
   }
 
   orientation = GetOrientation();
@@ -735,44 +618,6 @@ void RadarInfo::RenderGuardZone() {
   }
 }
 
-void RadarInfo::AdjustRange(int adjustment) {
-  const RadarRange *min, *max;
-
-  m_auto_range_mode = false;
-  m_previous_auto_range_meters = 0;
-
-  // Note that we don't actually use m_settings.units here, so that if we are metric and
-  // the plotter in NM, and it chose the last range, we start using nautic miles as well.
-
-  const RadarRange *range = m_range.GetRange();
-
-  if (range) {
-    if (range >= g_ranges_nautic && range < g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic)) {
-      min = g_ranges_nautic;
-      max = g_ranges_nautic + ARRAY_SIZE(g_ranges_nautic) - 1;
-    } else if (range >= g_ranges_metric && range < g_ranges_metric + ARRAY_SIZE(g_ranges_metric)) {
-      min = g_ranges_metric;
-      max = g_ranges_metric + ARRAY_SIZE(g_ranges_metric) - 1;
-    } else {
-      return;
-    }
-
-    if (m_radar_type < RT_4GA) {
-      max--;  // only 4G has longest ranges
-    }
-
-    if (adjustment < 0 && range > min) {
-      LOG_VERBOSE(wxT("radar_pi: Change radar range from %d/%d to %d/%d"), range[0].meters, range[0].actual_meters,
-                  range[-1].meters, range[-1].actual_meters);
-      m_control->SetRange(range[-1].meters);
-    } else if (adjustment > 0 && range < max) {
-      LOG_VERBOSE(wxT("radar_pi: Change radar range from %d/%d to %d/%d"), range[0].meters, range[0].actual_meters,
-                  range[+1].meters, range[+1].actual_meters);
-      m_control->SetRange(range[+1].meters);
-    }
-  }
-}
-
 void RadarInfo::SetAutoRangeMeters(int meters) {
   if (m_state.GetValue() == RADAR_TRANSMIT && m_auto_range_mode) {
     m_auto_range_meters = meters;
@@ -780,7 +625,7 @@ void RadarInfo::SetAutoRangeMeters(int meters) {
     int test = 100 * m_previous_auto_range_meters / m_auto_range_meters;
     if (test < 95 || test > 105) {  //   range change required
       // Compute a 'standard' distance. This will be slightly smaller.
-      convertMetersToRadarAllowedValue(&meters, m_pi->m_settings.range_units, m_radar_type);
+      meters = GetNearestRange(meters, m_pi->m_settings.range_units);
       if (meters != m_range_meters) {
         if (m_pi->m_settings.verbose) {
           LOG_VERBOSE(wxT("radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters,
@@ -1211,8 +1056,7 @@ wxString RadarInfo::GetCanvasTextCenter() {
   return s;
 }
 
-wxString &RadarInfo::GetRangeText() {
-  const RadarRange *r = m_range.GetRange();
+wxString RadarInfo::GetRangeText() {
   int meters = m_range.GetValue();
 
   bool auto_range = m_auto_range_mode && (m_overlay.GetValue() > 0);
@@ -1222,15 +1066,17 @@ wxString &RadarInfo::GetRangeText() {
     m_range_text = _("Auto");
     m_range_text << wxT(" (");
   }
-  if (r) {
-    m_range_text << GetDisplayRangeStr(r->meters, 4, true);
-  } else {
-    m_range_text << wxString::Format(wxT("/%d m/"), meters);
+
+  wxString s = GetDisplayRangeStr(meters, 4, true);
+  if (s.length() == 0) {
+    s = wxString::Format(wxT("/%d m/"), meters);
   }
+  m_range_text << s;
 
   if (auto_range) {
     m_range_text << wxT(")");
   }
+
   LOG_DIALOG(wxT("radar_pi: range label '%s' for spokerange=%d range=%d auto=%d"), m_range_text.c_str(), m_range_meters, meters,
              m_auto_range_mode);
   return m_range_text;
@@ -1432,6 +1278,46 @@ void RadarInfo::ClearTrails() {
     delete m_trails;
   }
   m_trails = new TrailBuffer(this, m_spokes, m_spoke_len_max);
+}
+
+int RadarInfo::GetNearestRange(int range_meters, int units) {
+  const int *ranges;
+  size_t count = RadarFactory::GetRadarRanges(m_radar_type, M_SETTINGS.range_units, &ranges);
+  size_t n;
+
+  for (n = count; n > 0; n--) {
+    if (ranges[n] <= range_meters) {  // step down until past the right range value
+      break;
+    }
+  }
+  return ranges[n];
+}
+
+void RadarInfo::AdjustRange(int adjustment) {
+  int current_range_meters = m_range.GetValue();
+  const int *ranges;
+  size_t count = RadarFactory::GetRadarRanges(m_radar_type, M_SETTINGS.range_units, &ranges);
+  size_t n;
+
+  m_auto_range_mode = false;
+  m_previous_auto_range_meters = 0;
+
+  for (n = count - 1; n > 0; n--) {
+    if (ranges[n] <= current_range_meters) {  // step down until past the right range value
+      break;
+    }
+  }
+
+  // Note that we don't actually use m_settings.units here, so that if we are metric and
+  // the plotter in NM, and it chose the last range, we start using nautic miles as well.
+
+  if (adjustment < 0 && n > 0) {
+    LOG_VERBOSE(wxT("radar_pi: Change radar range from %d to %d"), ranges[n], ranges[n - 1]);
+    m_control->SetRange(ranges[n - 1]);
+  } else if (adjustment > 0 && n < count - 1) {
+    LOG_VERBOSE(wxT("radar_pi: Change radar range from %d to %d"), ranges[n], ranges[n + 1]);
+    m_control->SetRange(ranges[n + 1]);
+  }
 }
 
 PLUGIN_END_NAMESPACE

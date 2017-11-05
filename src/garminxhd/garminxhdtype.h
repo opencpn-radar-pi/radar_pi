@@ -11,6 +11,19 @@ PLUGIN_END_NAMESPACE
 
 #endif
 
+#define RANGE_METRIC_RT_GARMIN_XHD \
+  { 100, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000, 12000, 16000, 24000, 36000, 48000 }
+#define RANGE_MIXED_RT_GARMIN_XHD                                                                                         \
+  {                                                                                                                       \
+    1852 / 8, 1852 / 4, 1852 / 2, 1852 * 3 / 4, 1852 * 1, 1852 * 3 / 2, 1852 * 2, 1852 * 3, 1852 * 4, 1852 * 6, 1852 * 8, \
+        1852 * 12, 1852 * 16, 1852 * 24, 1852 * 36, 1852 * 48                                                             \
+  }
+#define RANGE_NAUTIC_RT_GARMIN_XHD                                                                                        \
+  {                                                                                                                       \
+    1852 / 8, 1852 / 4, 1852 / 2, 1852 * 3 / 4, 1852 * 1, 1852 * 3 / 2, 1852 * 2, 1852 * 3, 1852 * 4, 1852 * 6, 1852 * 8, \
+        1852 * 12, 1852 * 16, 1852 * 24, 1852 * 36, 1852 * 48                                                             \
+  }
+
 // Garmin xHD has 1440 spokes of varying 547 - 733 bytes each
 #define GARMIN_XHD_SPOKES 1440
 #define GARMIN_XHD_MAX_SPOKE_LEN 733

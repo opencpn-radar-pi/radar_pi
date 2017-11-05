@@ -31,6 +31,7 @@
 
 #include "RadarFactory.h"
 #include "RadarType.h"
+#include "pi_common.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -39,7 +40,7 @@ const wchar_t* RadarTypeName[RT_MAX] = {
 #include "RadarType.h"
 };
 
-ControlsDialog* RadarFactory::makeControlsDialog(size_t radarType, int radar) {
+ControlsDialog* RadarFactory::MakeControlsDialog(size_t radarType, int radar) {
   switch (radarType) {
 #define DEFINE_RADAR(t, x, s, l, a, b, c) \
   case t:                                 \
@@ -49,7 +50,7 @@ ControlsDialog* RadarFactory::makeControlsDialog(size_t radarType, int radar) {
   return 0;
 }
 
-RadarReceive* RadarFactory::makeRadarReceive(size_t radarType, radar_pi* pi, RadarInfo* ri) {
+RadarReceive* RadarFactory::MakeRadarReceive(size_t radarType, radar_pi* pi, RadarInfo* ri) {
   switch (radarType) {
 #define DEFINE_RADAR(t, x, s, l, a, b, c) \
   case t:                                 \
@@ -59,13 +60,55 @@ RadarReceive* RadarFactory::makeRadarReceive(size_t radarType, radar_pi* pi, Rad
   return 0;
 }
 
-RadarControl* RadarFactory::makeRadarControl(size_t radarType) {
+RadarControl* RadarFactory::MakeRadarControl(size_t radarType) {
   switch (radarType) {
 #define DEFINE_RADAR(t, x, s, l, a, b, c) \
   case t:                                 \
     return new c;
 #include "RadarType.h"
   };
+  return 0;
+}
+
+size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const int** ranges) {
+  switch (units) {
+    case RANGE_MIXED:
+      switch (radarType) {
+#define DEFINE_RADAR(t, x, s, l, a, b, c) \
+  case t: {                               \
+    const int r[] = RANGE_MIXED_##t;      \
+    *ranges = r;                          \
+    return ARRAY_SIZE(r);                 \
+  }
+
+#include "RadarType.h"
+      };
+      break;
+
+    case RANGE_METRIC:
+      switch (radarType) {
+#define DEFINE_RADAR(t, x, s, l, a, b, c) \
+  case t: {                               \
+    const int r[] = RANGE_METRIC_##t;     \
+    *ranges = r;                          \
+    return ARRAY_SIZE(r);                 \
+  }
+#include "RadarType.h"
+      };
+      break;
+
+    case RANGE_NAUTIC:
+      switch (radarType) {
+#define DEFINE_RADAR(t, x, s, l, a, b, c) \
+  case t: {                               \
+    const int r[] = RANGE_NAUTIC_##t;     \
+    *ranges = r;                          \
+    return ARRAY_SIZE(r);                 \
+  }
+#include "RadarType.h"
+      };
+      break;
+  }
   return 0;
 }
 

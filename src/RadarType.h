@@ -54,6 +54,18 @@
 #define INITIALIZE_RADAR
 #endif
 
+#if !defined(DEFINE_RANGE_METRIC)
+#define DEFINE_RANGE_METRIC(t, x)
+#endif
+
+#if !defined(DEFINE_RANGE_MIXED)
+#define DEFINE_RANGE_MIXED(t, x)
+#endif
+
+#if !defined(DEFINE_RANGE_NAUTIC)
+#define DEFINE_RANGE_NAUTIC(t, x)
+#endif
+
 #ifndef SPOKES_MAX
 #define SPOKES_MAX 0
 #endif
@@ -78,3 +90,6 @@
 
 #undef DEFINE_RADAR  // Prepare for next inclusion
 #undef INITIALIZE_RADAR
+#undef DEFINE_RANGE_METRIC
+#undef DEFINE_RANGE_MIXED
+#undef DEFINE_RANGE_NAUTIC

@@ -1245,9 +1245,8 @@ bool radar_pi::LoadConfig(void) {
     pConf->SetPath(wxT("/Plugins/Radar"));
 
     // Valgrind: This needs to be set before we set range, since that uses this
-    pConf->Read(wxT("RangeUnits"), &v, 0);
-    m_settings.range_units = (RangeUnits)wxMax(wxMin(v, 1), 0);
-    m_settings.range_unit_meters = (m_settings.range_units == RANGE_METRIC) ? 1000 : 1852;
+    pConf->Read(wxT("RangeUnits"), &v, RANGE_NAUTIC);
+    m_settings.range_units = (RangeUnits)wxMax(wxMin(v, 2), 0);
 
     pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
     pConf->Read(wxT("RunTimeOnIdle"), &v, 1);

@@ -55,7 +55,7 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
   //  Range Units options
 
   wxString RangeModeStrings[] = {
-      _("Nautical Miles"), _("Kilometers"),
+      _("Mixed NM / short range m"), _("Kilometers"), _("Nautical Miles"),
   };
 
   m_RangeUnits =

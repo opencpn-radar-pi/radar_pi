@@ -48,6 +48,7 @@ class GarminxHDControl : public RadarControl {
   void RadarTxOn();
   bool RadarStayAlive();
   bool SetRange(int meters);
+
   bool SetControlValue(ControlType controlType, int value, int autoValue);
 
  private:

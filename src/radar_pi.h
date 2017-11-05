@@ -271,7 +271,7 @@ static const bool HasBitCount2[8] = {
 #define MIN_AGE (4)
 #define MAX_AGE (12)
 
-enum RangeUnits { RANGE_NAUTICAL, RANGE_METRIC };
+enum RangeUnits { RANGE_MIXED, RANGE_METRIC, RANGE_NAUTIC };
 
 /**
  * The data that is stored in the opencpn.ini file. Most of this is set in the OptionsDialog,
@@ -290,7 +290,6 @@ struct PersistentSettings {
   int guard_zone_debug_inc;                        // Value to add on every cycle to guard zone bearings, for testing.
   double skew_factor;                              // Set to -1 or other value to correct skewing
   RangeUnits range_units;                          // See enum
-  int range_unit_meters;                           // ... 1852 or 1000, depending on range_units
   int max_age;                                     // Scans older than this in seconds will be removed
   radar_control_item timed_idle;                   // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
   radar_control_item idle_run_time;                // 0 = 10s, 1 = 30s, 2 = 1 min

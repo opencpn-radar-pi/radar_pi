@@ -94,7 +94,7 @@ class RadarInfo {
   int m_min_contour_length;  // minimum contour length of an ARPA or MARPA target
 
   radar_control_item m_overlay;
-  radar_range_control_item m_range;  // value in meters, shown on display
+  radar_control_item m_range;  // value in meters, shown on display
   radar_control_item m_gain;
   radar_control_item m_interference_rejection;
   radar_control_item m_target_separation;
@@ -192,7 +192,7 @@ class RadarInfo {
   void UpdateControlState(bool all);
   void ComputeColourMap();
   void ComputeTargetTrails();
-  wxString &GetRangeText();
+  wxString GetRangeText();
   wxString GetDisplayRangeStr(int meters, int quarter, bool unit);
   int GetDisplayRange() { return m_range.GetValue(); };
   void DetectedRadar(NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
@@ -251,6 +251,9 @@ class RadarInfo {
 
   // Speedup PolarToCartesian lookup (angle,radius) -> (x, y)
   PolarToCartesianLookup *m_polar_lookup;
+
+  void AdjustRange(int adjustment, int current_range_meters);
+  int GetNearestRange(int range_meters, int units);
 
  private:
   void ResetSpokes();
