@@ -33,7 +33,14 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-GarminxHDControl::GarminxHDControl() {
+GarminxHDControl::GarminxHDControl(NetworkAddress sendMultiCastAddress) {
+  m_addr.sin_family = AF_INET;
+  m_addr.sin_addr = sendMultiCastAddress.addr;
+  m_addr.sin_port = sendMultiCastAddress.port;
+
+  m_radar_socket = INVALID_SOCKET;
+  m_name = wxT("Navico radar");
+
   m_pi = 0;
   m_ri = 0;
   m_name = wxT("GarminxHD");

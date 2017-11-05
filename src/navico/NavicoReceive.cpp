@@ -128,8 +128,6 @@ struct radar_frame_pkt {
 };
 #pragma pack(pop)
 
-bool g_first_receive = true;
-
 // ProcessFrame
 // ------------
 // Process one radar frame packet, which can contain up to 32 'spokes' or lines extending outwards
@@ -160,10 +158,10 @@ void NavicoReceive::ProcessFrame(const UINT8 *data, int len) {
     m_ri->m_statistics.broken_packets++;
   }
 
-  if (g_first_receive) {
-    g_first_receive = false;
+  if (m_first_receive) {
+    m_first_receive = false;
     wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->GetBootMillis();
-    LOG_INFO(wxT("radar_pi: First radar spoke received after %llu ms\n"), startup_elapsed);
+    LOG_INFO(wxT("radar_pi: %s first radar spoke received after %llu ms\n"), m_ri->m_name.c_str(), startup_elapsed);
   }
 
   for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {

@@ -40,7 +40,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 class GarminxHDControl : public RadarControl {
  public:
-  GarminxHDControl();
+  GarminxHDControl(NetworkAddress sendMultiCastAddress);
   ~GarminxHDControl();
 
   bool Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
@@ -53,6 +53,8 @@ class GarminxHDControl : public RadarControl {
  private:
   radar_pi *m_pi;
   RadarInfo *m_ri;
+  struct sockaddr_in m_addr;
+  SOCKET m_radar_socket;
   wxString m_name;
 };
 

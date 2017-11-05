@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#ifndef _GARMIN_XHD_RECEIVE_H_
-#define _GARMIN_XHD_RECEIVE_H_
+#ifndef _GARMIN_XH_RECEIVE_H_
+#define _GARMIN_XH_RECEIVE_H_
 
 #include "RadarReceive.h"
 #include "socketutil.h"
@@ -38,41 +38,71 @@
 PLUGIN_BEGIN_NAMESPACE
 
 //
-// An intermediary class that implements the common parts of any GarminxHD radar.
+// An intermediary class that implements the common parts of any Navico radar.
 //
 
 class GarminxHDReceive : public RadarReceive {
  public:
-  GarminxHDReceive(radar_pi *pi, RadarInfo *ri) : RadarReceive(pi, ri) {
-    m_shutdown = false;
-    m_next_spoke = 0;
-    m_next_rotation = 0;
+  GarminxHDReceive(radar_pi *pi, RadarInfo *ri, NetworkAddress reportAddr, NetworkAddress dataAddr) : RadarReceive(pi, ri) {
+    m_data_addr = dataAddr;
+    m_report_addr = reportAddr;
+    m_next_spoke = -1;
+    m_radar_status = 0;
+    m_shutdown_time_requested = 0;
+    m_is_shutdown = false;
+    m_first_receive = true;
+    m_interface_addr = m_pi->GetRadarInterfaceAddress(ri->m_radar);
     m_receive_socket = GetLocalhostServerTCPSocket();
     m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
+    SetStatus(wxString::Format(wxT("%s: %s"), m_ri->m_name.c_str(), _("Initializing")));
+
     LOG_RECEIVE(wxT("radar_pi: %s receive thread created"), m_ri->m_name.c_str());
   };
 
-  ~GarminxHDReceive() {
-    closesocket(m_receive_socket);
-    closesocket(m_send_socket);
-  }
+  ~GarminxHDReceive() {}
 
   void *Entry(void);
   void Shutdown(void);
   wxString GetStatus();
 
+  NetworkAddress m_interface_addr;
+  NetworkAddress m_data_addr;
+  NetworkAddress m_report_addr;
+
+  wxLongLong m_shutdown_time_requested;  // Main thread asks this thread to stop
+  volatile bool m_is_shutdown;
+
  private:
-  void EmulateFakeBuffer(void);
+  void ProcessFrame(const UINT8 *data, int len);
+  bool ProcessReport(const UINT8 *data, int len);
 
-  volatile bool m_shutdown;
+  SOCKET PickNextEthernetCard();
+  SOCKET GetNewReportSocket();
+  SOCKET GetNewDataSocket();
 
-  int m_next_spoke;     // emulator next spoke
-  int m_next_rotation;  // slowly rotate emulator
+  wxString m_ip;
 
   SOCKET m_receive_socket;  // Where we listen for message from m_send_socket
   SOCKET m_send_socket;     // A message to this socket will interrupt select() and allow immediate shutdown
+
+  struct ifaddrs *m_interface_array;
+  struct ifaddrs *m_interface;
+
+  int m_next_spoke;
+  char m_radar_status;
+  bool m_first_receive;
+
+  wxString m_addr;  // Radar's IP address
+
+  wxCriticalSection m_lock;  // Protects m_status
+  wxString m_status;         // Userfriendly string
+
+  void SetStatus(wxString status) {
+    wxCriticalSectionLocker lock(m_lock);
+    m_status = status;
+  }
 };
 
 PLUGIN_END_NAMESPACE
 
-#endif /* _GARMIN_XHD_RECEIVE_H_ */
+#endif /* _GARMIN_XH_RECEIVE_H_ */

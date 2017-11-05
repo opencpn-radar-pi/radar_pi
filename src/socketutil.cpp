@@ -208,7 +208,8 @@ SOCKET startUDPMulticastReceiveSocket(NetworkAddress &interface_address, Network
     goto fail;
   }
 
-  wxLogMessage(wxT("radar_pi: multicast reception for %s on interface %s"), FormatNetworkAddressPort(mcast_address), FormatNetworkAddress(interface_address));
+  wxLogMessage(wxT("radar_pi: multicast reception for %s on interface %s"), FormatNetworkAddressPort(mcast_address),
+               FormatNetworkAddress(interface_address));
 
   // Hurrah! Success!
   return rx_socket;

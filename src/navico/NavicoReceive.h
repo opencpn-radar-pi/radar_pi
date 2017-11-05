@@ -51,6 +51,7 @@ class NavicoReceive : public RadarReceive {
     m_radar_status = 0;
     m_shutdown_time_requested = 0;
     m_is_shutdown = false;
+    m_first_receive = true;
     m_interface_addr = m_pi->GetRadarInterfaceAddress(ri->m_radar);
     m_receive_socket = GetLocalhostServerTCPSocket();
     m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
@@ -90,6 +91,7 @@ class NavicoReceive : public RadarReceive {
 
   int m_next_spoke;
   char m_radar_status;
+  bool m_first_receive;
 
   wxString m_addr;  // Radar's IP address
 
