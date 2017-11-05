@@ -407,7 +407,7 @@ void *GarminxHDReceive::Entry(void) {
 
  The radars send various reports.
 
-*/
+ */
 
 #pragma pack(push, 1)
 
@@ -475,7 +475,7 @@ bool GarminxHDReceive::UpdateScannerStatus(int status) {
         stat = _("Transmit");
         break;
       default:
-        stat <<_("Unknown status") << wxString::Format(wxT(" %d"), m_radar_status);
+        stat << _("Unknown status") << wxString::Format(wxT(" %d"), m_radar_status);
         ret = false;
         break;
     }
@@ -503,25 +503,25 @@ bool GarminxHDReceive::ProcessReport(const UINT8 *report, int len) {
         return true;
 
       case 0x0919:  // Standby/Transmit
-        // parm1 = 0 : Standby request
-        // parm1 = 1 : TX request
-        // Ignored, gxradar did nothing with this
-        break;
+                    // parm1 = 0 : Standby request
+                    // parm1 = 1 : TX request
+                    // Ignored, gxradar did nothing with this
         return true;
 
-      /*
-    case 0x091d:  // Auto Gain Mode
-      if (g_scan_gain_auto) {
-        if (packet->parm1) {
-          g_scan_gain_mode = 0;
-        } else {
-          g_scan_gain_mode = 1;
+      case 0x091d:  // Auto Gain Mode
+        switch (packet9->parm1) {
+          case 0:
+            m_ri->m_gain.Update(AUTO_RANGE - 2);  // AUTO HIGH
+            return true;
+
+          case 1:
+            m_ri->m_gain.Update(AUTO_RANGE - 1);  // AUTO LOW
+            return true;
+
+          default:
+            break;
         }
-      } else {
-        g_scan_gain_mode = 2;
-      }
-      return true;
-*/
+        break;
 
       case 0x091e:                              // Range
         m_ri->m_range.Update(packet12->parm1);  // Range in meters
