@@ -133,7 +133,6 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, UINT8* data, UINT8* hist, size_
 // Search guard zone for ARPA targets
 void GuardZone::SearchTargets() {
   Position own_pos;
-
   if (!m_arpa_on) {
     return;
   }
@@ -141,21 +140,37 @@ void GuardZone::SearchTargets() {
     LOG_INFO(wxT("radar_pi: No more scanning for ARPA targets, maximum number of targets reached"));
     return;
   }
-  if (!m_pi->m_settings.show  // No radar shown
-      || (m_pi->m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT &&
-          m_pi->m_radar[1]->m_state.GetValue() != RADAR_TRANSMIT)  // Radar not transmitting
-      || !m_ri->GetRadarPosition(&own_pos.pos)) {                  // No position
+  if (!m_pi->m_settings.show                       // No radar shown
+      || !m_ri->GetRadarPosition(&own_pos.pos)) {  // No position
     return;
   }
+  if (m_pi->m_radar[0] == 0 && m_pi->m_radar[1] == 0) {
+    return;
+  }
+  if (m_pi->m_radar[0] != 0 && m_pi->m_radar[1] != 0) {
+    if (m_pi->m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT &&
+        m_pi->m_radar[1]->m_state.GetValue() != RADAR_TRANSMIT)  // Both radars exist, No radar transmitting
+      return;
+  }
+  if (m_pi->m_radar[0] != 0 && m_pi->m_radar[1] == 0) {
+    if (m_pi->m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT) {  // Radar0 not transmitting, radar1 non existent
+      return;
+    }
+  }
+  if (m_pi->m_radar[0] == 0 && m_pi->m_radar[1] != 0) {
+    if (m_pi->m_radar[1]->m_state.GetValue() != RADAR_TRANSMIT) {  // Radar1 not transmitting, radar0 non existent
+      return;
+    }
+  }
+
   if (m_ri->m_range_meters == 0) {
     return;
   }
   size_t range_start = m_inner_range * m_ri->m_spoke_len / m_ri->m_range_meters;  // Convert from meters to 0..511
   size_t range_end = m_outer_range * m_ri->m_spoke_len / m_ri->m_range_meters;    // Convert from meters to 0..511
-
   SpokeBearing hdt = SCALE_DEGREES_TO_SPOKES(m_pi->GetHeadingTrue());
   SpokeBearing start_bearing = SCALE_DEGREES_TO_SPOKES(m_start_bearing) + hdt;
-  SpokeBearing end_bearing = m_end_bearing + hdt;
+  SpokeBearing end_bearing   = SCALE_DEGREES_TO_SPOKES(m_end_bearing  ) + hdt;
   start_bearing = MOD_SPOKES(start_bearing);
   end_bearing = MOD_SPOKES(end_bearing);
   if (start_bearing > end_bearing) {
@@ -165,21 +180,17 @@ void GuardZone::SearchTargets() {
     start_bearing = 0;
     end_bearing = m_ri->m_spokes;
   }
-
   if (range_start < m_ri->m_spoke_len) {
     if (range_end > m_ri->m_spoke_len) {
       range_end = m_ri->m_spoke_len;
     }
     if (range_end < range_start) return;
 
+    // loop with +2 increments as target must be larger than 2 pixels in width
     for (int angleIter = start_bearing; angleIter < end_bearing; angleIter += 2) {
       SpokeBearing angle = MOD_SPOKES(angleIter);
-
-      // check if this angle has been updated by the beam since last time
-      // and if possible targets have been refreshed
-
       wxLongLong time1 = m_ri->m_history[angle].time;
-      // next one must be timed later than the pass 2 in refresh, otherwise target may be found multiple times
+      // time2 must be timed later than the pass 2 in refresh, otherwise target may be found multiple times
       wxLongLong time2 = m_ri->m_history[MOD_SPOKES(angle + 3 * SCAN_MARGIN)].time;
 
       // check if target has been refreshed since last time
@@ -200,11 +211,6 @@ void GuardZone::SearchTargets() {
             Polar pol;
             pol.angle = angle;
             pol.r = rrr;
-
-#ifdef TODO_DOUWE
-            // This variable is unused?
-            Position x = Polar2Pos(pol, own_pos, m_ri->m_range_meters);
-#endif
             int target_i = m_ri->m_arpa->AcquireNewARPATarget(pol, 0);
             if (target_i == -1) break;
           }

@@ -650,7 +650,6 @@ void ArpaTarget::RefreshTarget(int dist) {
   double delta_t;
   LocalPosition x_local;
   wxLongLong prev_refresh = m_refresh;
-
   // refresh may be called from guard directly, better check
   if (m_status == LOST || !m_ri->GetRadarPosition(&own_pos.pos)) {
     return;
@@ -712,7 +711,6 @@ void ArpaTarget::RefreshTarget(int dist) {
     return;
   }
   m_expected = pol;  // save expected polar position
-
   // Measurement cycle
   // now search for the target at the expected polar position in pol
   int dist1 = dist;
@@ -725,7 +723,6 @@ void ArpaTarget::RefreshTarget(int dist) {
       SetStatusLost();
       return;
     }
-
     // target refreshed, measured position in pol
     // check if target has a new later time than previous target
     if (pol.time <= prev_X.time && m_status > 1) {
@@ -735,7 +732,6 @@ void ArpaTarget::RefreshTarget(int dist) {
       prev_X = prev2_X;
       return;
     }
-
     m_lost_count = 0;
     if (m_status == ACQUIRE0) {
       // as this is the first measurement, move target to measured position
@@ -747,7 +743,6 @@ void ArpaTarget::RefreshTarget(int dist) {
       m_expected = pol;
       m_position.sd_speed_kn = 0.;
     }
-
     m_status++;
     // target gets an id when status  == STATUS_TO_OCPN
     if (m_status == STATUS_TO_OCPN) {
@@ -755,7 +750,6 @@ void ArpaTarget::RefreshTarget(int dist) {
       if (target_id_count >= 10000) target_id_count = 1;
       m_target_id = target_id_count;
     }
-
     // Kalman filter to  calculate the apostriori local position and speed based on found position (pol)
     if (m_status > 1) {
       m_kalman->Update_P();
@@ -1090,7 +1084,6 @@ int RadarArpa::AcquireNewARPATarget(Polar pol, int status) {
   // constructs Kalman filter
   Position own_pos;
   Position target_pos;
-
   if (!m_ri->GetRadarPosition(&own_pos.pos)) {
     return -1;
   }
@@ -1106,7 +1099,6 @@ int RadarArpa::AcquireNewARPATarget(Polar pol, int status) {
     LOG_INFO(wxT("radar_pi: RadarArpa:: Error, max targets exceeded %i"), m_number_of_targets);
     return -1;
   }
-
   ArpaTarget* target = m_targets[i];
   target_pos = target->Polar2Pos(pol, own_pos, m_ri->m_range_meters);
 
@@ -1131,11 +1123,12 @@ int RadarArpa::AcquireNewARPATarget(Polar pol, int status) {
 }
 
 void ArpaTarget::ResetPixels() {
-  // resets the pixels of the current blob (plus a little margin) so that blob will no be found again in the same sweep
+  // resets the pixels of the current blob (plus DISTANCE_BETWEEN_TARGETS) so that blob will not be found again in the same sweep
+  // We not only reset the blob but all pixels in a radial "square" covering the blob
   for (int r = wxMax(m_min_r.r - DISTANCE_BETWEEN_TARGETS, 0);
        r <= wxMin(m_max_r.r + DISTANCE_BETWEEN_TARGETS, (int)m_ri->m_spoke_len_max - 1); r++) {
     for (int a = wxMax(m_min_angle.angle - DISTANCE_BETWEEN_TARGETS, 0);
-         a <= wxMin(m_max_angle.angle + DISTANCE_BETWEEN_TARGETS, (int)m_ri->m_spokes); a++) {
+         a <= wxMin(m_max_angle.angle + DISTANCE_BETWEEN_TARGETS, (int)m_ri->m_spokes -1); a++) {
       m_ri->m_history[a].line[r] = m_ri->m_history[a].line[r] & 127;
     }
   }

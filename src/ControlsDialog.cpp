@@ -426,7 +426,6 @@ void ControlsDialog::ShowGuardZone(int zone) {
 
 void ControlsDialog::SetGuardZoneVisibility() {
   GuardZoneType zoneType = (GuardZoneType)m_guard_zone_type->GetSelection();
-
   m_guard_zone->SetType(zoneType);
 
   if (zoneType == GZ_CIRCLE) {
