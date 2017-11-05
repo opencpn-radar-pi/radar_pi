@@ -110,7 +110,6 @@ void GarminxHDReceive::ProcessFrame(const UINT8 *data, int len) {
   m_next_spoke = (spoke + 1) % GARMIN_XHD_SPOKES;
 
   short int heading_raw = 0;
-  int range_meters = 0;
   double heading;
   int bearing_raw;
 
@@ -120,7 +119,8 @@ void GarminxHDReceive::ProcessFrame(const UINT8 *data, int len) {
   SpokeBearing a = MOD_SPOKES(angle_raw);
   SpokeBearing b = MOD_SPOKES(bearing_raw);
 
-  m_ri->ProcessRadarSpoke(a, b, packet->line_data, packet->scan_length, range_meters, time_rec);
+  m_ri->m_range.Update(packet->range_meters);
+  m_ri->ProcessRadarSpoke(a, b, packet->line_data, packet->scan_length, packet->display_meters, time_rec);
 }
 
 SOCKET GarminxHDReceive::PickNextEthernetCard() {
