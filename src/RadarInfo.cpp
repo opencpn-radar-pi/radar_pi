@@ -390,7 +390,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
     data[1] = 255;  // Main bang on purpose to show radar center
     data[0] = 255;  // Main bang on purpose to show radar center
   }
-  for (int i = m_spoke_len; i < m_spoke_len_max; i++) {
+  for (size_t i = m_spoke_len; i < m_spoke_len_max; i++) {
     data[i] = 0;
   }
 
