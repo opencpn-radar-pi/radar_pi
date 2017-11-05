@@ -283,7 +283,7 @@ void *GarminxHDReceive::Entry(void) {
 
     wxLongLong start = wxGetUTCTimeMillis();
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
-    LOG_VERBOSE(wxT("radar_pi: select maxFd=%d r=%d elapsed=%lld"), maxFd, r, wxGetUTCTimeMillis() - start);
+    LOG_RECEIVE(wxT("radar_pi: select maxFd=%d r=%d elapsed=%lld"), maxFd, r, wxGetUTCTimeMillis() - start);
 
     if (r > 0) {
       if (m_receive_socket != INVALID_SOCKET && FD_ISSET(m_receive_socket, &fdin)) {
@@ -588,7 +588,7 @@ bool GarminxHDReceive::ProcessReport(const UINT8 *report, int len) {
       }
 
       // TODO no-xmit zone
-        
+
       case 0x0992: {
         // Scanner state
         if (UpdateScannerStatus(packet9->parm1)) {
