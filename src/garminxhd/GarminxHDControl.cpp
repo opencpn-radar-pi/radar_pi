@@ -55,10 +55,10 @@ typedef struct {
 
 #pragma pack(pop)
 
-GarminxHDControl::GarminxHDControl(NetworkAddress sendMultiCastAddress) {
+GarminxHDControl::GarminxHDControl(NetworkAddress sendAddress) {
   m_addr.sin_family = AF_INET;
-  m_addr.sin_addr = sendMultiCastAddress.addr;
-  m_addr.sin_port = sendMultiCastAddress.port;
+  m_addr.sin_addr = sendAddress.addr; // Overwritten by actual radar addr
+  m_addr.sin_port = sendAddress.port;
 
   m_radar_socket = INVALID_SOCKET;
   m_name = wxT("Navico radar");
@@ -79,10 +79,7 @@ bool GarminxHDControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, 
   int r;
   int one = 1;
 
-  // The radar scanner address is not used for Navico BR/Halo radars
-  if (radaradr.port != 0) {
-    // Null
-  }
+  m_addr.sin_addr = radaradr.addr;
 
   m_pi = pi;
   m_ri = ri;
