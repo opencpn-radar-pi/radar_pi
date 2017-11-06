@@ -52,6 +52,9 @@ class GarminxHDControl : public RadarControl {
   bool SetControlValue(ControlType controlType, int value, int autoValue);
 
  private:
+  void logBinaryData(const wxString &what, const void *data, int size);
+  bool TransmitCmd(const void *msg, int size);
+
   radar_pi *m_pi;
   RadarInfo *m_ri;
   struct sockaddr_in m_addr;
