@@ -12,7 +12,8 @@ PLUGIN_END_NAMESPACE
 #endif
 
 #define RANGE_METRIC_RT_GARMIN_XHD \
-  { 100, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000, 12000, 16000, 24000, 36000, 48000 }
+  { 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000, 12000, 16000, 24000, 36000, 48000, 64000 }
+// Garmin mixed range is the same as nautical miles, it does not support really short ranges
 #define RANGE_MIXED_RT_GARMIN_XHD                                                                                         \
   {                                                                                                                       \
     1852 / 8, 1852 / 4, 1852 / 2, 1852 * 3 / 4, 1852 * 1, 1852 * 3 / 2, 1852 * 2, 1852 * 3, 1852 * 4, 1852 * 6, 1852 * 8, \
