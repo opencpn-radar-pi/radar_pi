@@ -110,7 +110,6 @@ void GarminxHDReceive::ProcessFrame(const uint8_t *data, int len) {
   m_next_spoke = (spoke + 1) % GARMIN_XHD_SPOKES;
 
   short int heading_raw = 0;
-  double heading;
   int bearing_raw;
 
   heading_raw = SCALE_DEGREES_TO_RAW(m_pi->GetHeadingTrue());  // include variation
