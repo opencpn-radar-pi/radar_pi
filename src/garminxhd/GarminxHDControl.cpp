@@ -57,7 +57,7 @@ typedef struct {
 
 GarminxHDControl::GarminxHDControl(NetworkAddress sendAddress) {
   m_addr.sin_family = AF_INET;
-  m_addr.sin_addr = sendAddress.addr; // Overwritten by actual radar addr
+  m_addr.sin_addr = sendAddress.addr;  // Overwritten by actual radar addr
   m_addr.sin_port = sendAddress.port;
 
   m_radar_socket = INVALID_SOCKET;
@@ -120,7 +120,7 @@ bool GarminxHDControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, 
 
 void GarminxHDControl::logBinaryData(const wxString &what, const void *data, int size) {
   wxString explain;
-  const uint8_t *d = (const uint8_t *) data;
+  const uint8_t *d = (const uint8_t *)data;
   int i = 0;
 
   explain.Alloc(size * 3 + 50);
@@ -148,14 +148,24 @@ bool GarminxHDControl::TransmitCmd(const void *msg, int size) {
 
 void GarminxHDControl::RadarTxOff() {
   IF_LOG_AT(LOGLEVEL_VERBOSE | LOGLEVEL_TRANSMIT, wxLogMessage(wxT("radar_pi: %s transmit: turn off"), m_name));
+
+  rad_ctl_pkt_9 packet;
+  packet.packet_type = 0x919;
+  packet.len1 = sizeof(packet.parm1);
+  packet.parm1 = 0;  // 0 for "off"
+
+  TransmitCmd(&packet, sizeof(packet));
 }
 
 void GarminxHDControl::RadarTxOn() {
   IF_LOG_AT(LOGLEVEL_VERBOSE | LOGLEVEL_TRANSMIT, wxLogMessage(wxT("radar_pi: %s transmit: turn on"), m_name));
 
-  if (m_ri) {
-    m_ri->m_state.Update(RADAR_TRANSMIT);
-  }
+  rad_ctl_pkt_9 packet;
+  packet.packet_type = 0x919;
+  packet.len1 = sizeof(packet.parm1);
+  packet.parm1 = 1;  // 1 for "on"
+
+  TransmitCmd(&packet, sizeof(packet));
 }
 
 bool GarminxHDControl::RadarStayAlive() {
