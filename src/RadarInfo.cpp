@@ -1124,18 +1124,23 @@ wxString RadarInfo::GetDisplayRangeStr(int meters, int quarter, bool unit) {
         s = wxT("3/4");
         break;
       case 1852 / 8:
+      case 1852 / 8 + 1:
         s = wxT("1/8");
         break;
       case 1852 / 16:
+      case 1852 / 16 + 1:
         s = wxT("1/16");
         break;
       case 1852 * 3 / 16:
+      case 1852 * 3 / 16 + 1:
         s = wxT("3/16");
         break;
       case 1852 / 32:
+      case 1852 / 32 + 1:
         s = wxT("1/32");
         break;
       case 1852 * 3 / 32:
+      case 1852 * 3 / 32 + 1:
         s = wxT("3/32");
         break;
       default:
