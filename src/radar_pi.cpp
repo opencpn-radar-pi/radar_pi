@@ -1099,13 +1099,15 @@ void radar_pi::TimedControlUpdate() {
   m_pMessageBox->SetMagHeadingInfo(info);
   m_pMessageBox->UpdateMessage(false);
 
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    m_radar[r]->UpdateControlState(updateAllControls);
-  }
-
+  UpdateAllControlStates(updateAllControls);
   UpdateState();
 }
 
+void radar_pi::UpdateAllControlStates(bool all) {
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    m_radar[r]->UpdateControlState(all);
+  }
+}
 void radar_pi::UpdateState(void) {
   RadarState state = RADAR_OFF;
 
@@ -1699,7 +1701,7 @@ bool radar_pi::SetControlValue(int radar, ControlType controlType, int value,
   switch (controlType) {
     case CT_TRANSPARENCY: {
       m_settings.overlay_transparency = value;
-      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
+      UpdateAllControlStates(true);
       return true;
     }
     case CT_TIMED_IDLE: {
@@ -1711,17 +1713,17 @@ bool radar_pi::SetControlValue(int radar, ControlType controlType, int value,
       } else {
         m_idle_transmit = time(0) + 10;
       }
-      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
+      UpdateAllControlStates(true);
       return true;
     }
     case CT_TIMED_RUN: {
       m_settings.idle_run_time = value;
-      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
+      UpdateAllControlStates(true);
       return true;
     }
     case CT_REFRESHRATE: {
       m_settings.refreshrate = value;
-      m_radar[1 - radar]->UpdateControlState(true);  // Update the controls in the other radar
+      UpdateAllControlStates(true);
       return true;
     }
     case CT_TARGET_TRAILS: {

@@ -404,6 +404,7 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   void ResetOpenGLContext();
   void logBinaryData(const wxString &what, const uint8_t *data, int size);
 
+  void UpdateAllControlStates(bool all);
   bool SetControlValue(int radar, ControlType controlType, int value, int autoValue);
 
   bool IsRadarOnScreen(int radar) { return m_settings.show && (m_settings.show_radar[radar] || m_settings.chart_overlay == radar); }
