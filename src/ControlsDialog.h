@@ -196,12 +196,21 @@ class ControlsDialog : public wxDialog {
   void DefineControl(ControlType ct, int autoValues, wxString auto_names[], int defaultValue, int minValue, int maxValue,
                      int stepValue, int nameCount, wxString names[]) {
     m_ctrl.control[ct].type = ct;
-    m_ctrl.control[ct].autoValues = autoValues;
     m_ctrl.control[ct].defaultValue = defaultValue;
     m_ctrl.control[ct].minValue = minValue;
     m_ctrl.control[ct].maxValue = maxValue;
     m_ctrl.control[ct].stepValue = stepValue;
     m_ctrl.control[ct].nameCount = nameCount;
+
+    // To simplify the macros a control without autovalues passes in
+    // CTD_AUTO_NO, which is an array of 1 with length zero.
+    if (autoValues == 1 && auto_names[0].length() == 0)
+    {
+      autoValues = 0;
+      m_ctrl.control[ct].autoNames = 0;
+    }
+    m_ctrl.control[ct].autoValues = autoValues;
+
     if (autoValues > 0) {
       m_ctrl.control[ct].autoNames = new wxString[autoValues];
       for (int i = 0; i < autoValues; i++) {
