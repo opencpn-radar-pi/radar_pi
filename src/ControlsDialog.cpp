@@ -748,7 +748,7 @@ void ControlsDialog::CreateControls() {
 
   // The ANTENNA HEIGHT button
   if (m_ctrl.control[CT_ANTENNA_HEIGHT].type) {
-    m_antenna_height_button = new RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Bearing alignment"),
+    m_antenna_height_button = new RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Antenna height"),
                                                      m_ctrl.control[CT_ANTENNA_HEIGHT], m_ri->m_antenna_height);
     m_installation_sizer->Add(m_antenna_height_button, 0, wxALL, BORDER);
   }
