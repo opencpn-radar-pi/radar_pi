@@ -282,7 +282,7 @@ void *GarminxHDReceive::Entry(void) {
 
     wxLongLong start = wxGetUTCTimeMillis();
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
-    LOG_RECEIVE(wxT("radar_pi: select maxFd=%d r=%d elapsed=%lld"), maxFd, r, wxGetUTCTimeMillis() - start);
+    // LOG_RECEIVE(wxT("radar_pi: select maxFd=%d r=%d elapsed=%lld"), maxFd, r, wxGetUTCTimeMillis() - start);
 
     if (r > 0) {
       if (m_receive_socket != INVALID_SOCKET && FD_ISSET(m_receive_socket, &fdin)) {
@@ -554,8 +554,8 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
         break;
 
       case 0x0930:  // Dome offset, called bearing alignment here
-        LOG_VERBOSE(wxT("0x0930: bearing alignment %d"), packet12->parm1 / 32);
-        m_ri->m_bearing_alignment.Update(packet12->parm1 / 32);
+        LOG_VERBOSE(wxT("0x0930: bearing alignment %d"), (int32_t) packet12->parm1 / 32);
+        m_ri->m_bearing_alignment.Update((int32_t) packet12->parm1 / 32);
         return true;
 
       case 0x0932:  // Crosstalk reject, I guess this is the same as interference rejection?
@@ -609,7 +609,31 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
         return true;
       }
 
-      // TODO no-xmit zone
+      case 0x093f: {
+        LOG_VERBOSE(wxT("0x093a: no transmit mode %d"), packet9->parm1);
+        m_no_transmit_zone_mode = packet9->parm1 > 0;
+        // parm1 = 0 = Zone off, in that case we want AUTO_RANGE - 1 = 'Off'.
+        // parm1 = 1 = Zone on, in that case we will receive 0x0940+0x0941.
+        if (!m_no_transmit_zone_mode) {
+          m_ri->m_no_transmit_start.Update(AUTO_RANGE - 1);
+          m_ri->m_no_transmit_end.Update(AUTO_RANGE - 1);
+        }
+        return true;
+      }
+      case 0x0940: {
+        LOG_VERBOSE(wxT("0x0940: no transmit zone start %d"), packet12->parm1 / 32);
+        if (m_no_transmit_zone_mode) {
+          m_ri->m_no_transmit_start.Update(packet12->parm1 / 32);
+        }
+        return true;
+      }
+      case 0x0941: {
+        LOG_VERBOSE(wxT("0x0941: no transmit zone end %d"), (int32_t) packet12->parm1 / 32);
+        if (m_no_transmit_zone_mode) {
+          m_ri->m_no_transmit_end.Update((int32_t) packet12->parm1 / 32);
+        }
+        return true;
+      }
 
       case 0x0992: {
         // Scanner state

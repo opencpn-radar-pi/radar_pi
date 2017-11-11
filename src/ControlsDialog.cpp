@@ -57,6 +57,8 @@ enum {  // process ID's
   ID_PREFERENCES,
 
   ID_BEARING_ALIGNMENT,
+  ID_NO_TRANSMIT_START,
+  ID_NO_TRANSMIT_END,
   ID_ANTENNA_HEIGHT,
   ID_ANTENNA_FORWARD,
   ID_ANTENNA_STARBOARD,
@@ -135,6 +137,8 @@ EVT_BUTTON(ID_INSTALLATION, ControlsDialog::OnInstallationButtonClick)
 EVT_BUTTON(ID_PREFERENCES, ControlsDialog::OnPreferencesButtonClick)
 
 EVT_BUTTON(ID_BEARING_ALIGNMENT, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_NO_TRANSMIT_START, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_NO_TRANSMIT_END, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_ANTENNA_HEIGHT, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_ANTENNA_FORWARD, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_ANTENNA_STARBOARD, ControlsDialog::OnRadarControlButtonClick)
@@ -732,6 +736,20 @@ void ControlsDialog::CreateControls() {
     m_bearing_alignment_button = new RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"),
                                                         m_ctrl.control[CT_BEARING_ALIGNMENT], m_ri->m_bearing_alignment);
     m_installation_sizer->Add(m_bearing_alignment_button, 0, wxALL, BORDER);
+  }
+
+  // The NO TRANSMIT START button
+  if (m_ctrl.control[CT_NO_TRANSMIT_START].type) {
+    m_no_transmit_start_button = new RadarControlButton(this, ID_NO_TRANSMIT_START, _("No transmit start"),
+                                                        m_ctrl.control[CT_NO_TRANSMIT_START], m_ri->m_no_transmit_start);
+    m_installation_sizer->Add(m_no_transmit_start_button, 0, wxALL, BORDER);
+  }
+
+  // The NO TRANSMIT END button
+  if (m_ctrl.control[CT_NO_TRANSMIT_END].type) {
+    m_no_transmit_end_button = new RadarControlButton(this, ID_NO_TRANSMIT_END, _("No transmit end"),
+                                                        m_ctrl.control[CT_NO_TRANSMIT_END], m_ri->m_no_transmit_end);
+    m_installation_sizer->Add(m_no_transmit_end_button, 0, wxALL, BORDER);
   }
 
   // The ANTENNA HEIGHT button
@@ -1602,6 +1620,14 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   //  bearing alignment
   if (m_bearing_alignment_button && (m_ri->m_bearing_alignment.IsModified() || refreshAll)) {
     m_bearing_alignment_button->SetLocalValue(m_ri->m_bearing_alignment.GetButton());
+  }
+
+  //  no transmit zone
+  if (m_no_transmit_start_button && (m_ri->m_no_transmit_start.IsModified() || refreshAll)) {
+    m_no_transmit_start_button->SetLocalValue(m_ri->m_no_transmit_start.GetButton());
+  }
+  if (m_no_transmit_end_button && (m_ri->m_no_transmit_end.IsModified() || refreshAll)) {
+    m_no_transmit_end_button->SetLocalValue(m_ri->m_no_transmit_end.GetButton());
   }
 
   //  local interference rejection

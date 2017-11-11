@@ -30,7 +30,7 @@
  */
 
 //
-// This defines the capabilities of the sofware controls.
+// This defines the capabilities of the software controls.
 
 #ifndef CTD_AUTO_NO
 #define CTD_AUTO_NO \
@@ -40,7 +40,14 @@
 #define CTD_AUTO_YES \
   { _("Auto") }
 #endif
+#ifndef CTD_AUTO_OFF
+#define CTD_AUTO_OFF \
+{ _("Off") }
+#endif
 
+#ifndef CTD_DEF_OFF
+#define CTD_DEF_OFF AUTO_RANGE - 1
+#endif
 #ifndef CTD_DEF_ZERO
 #define CTD_DEF_ZERO 0
 #endif

@@ -189,6 +189,15 @@ bool GarminxHDControl::SetRange(int meters) {
 bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int autoValue) {
   bool r = false;
 
+  rad_ctl_pkt_9 pck_9;
+  rad_ctl_pkt_10 pck_10;
+  rad_ctl_pkt_12 pck_12;
+
+  pck_9.len1 = sizeof(pck_9.len1);
+  pck_10.len1 = sizeof(pck_10.len1);
+  pck_12.len1 = sizeof(pck_12.len1);
+
+
   switch (controlType) {
     // The following are settings that are not radar commands. Made them explicit so the
     // compiler can catch missing control types.
@@ -223,24 +232,56 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
       if (value < 0) {
         value += 360;
       }
-      rad_ctl_pkt_12 packet;
 
-      packet.packet_type = 0x930;
-      packet.len1 = sizeof(packet.parm1);
-      packet.parm1 = value << 5;
+      pck_12.packet_type = 0x930;
+      pck_12.parm1 = value << 5;
 
       LOG_VERBOSE(wxT("radar_pi: %s Bearing alignment: %d"), m_name, value);
-      r = TransmitCmd(&packet, sizeof(packet));
+      r = TransmitCmd(&pck_12, sizeof(pck_12));
+      break;
+    }
+
+    case CT_NO_TRANSMIT_START: {
+      // value is already in range -180 .. +180 which is what I think radar wants...
+      if (autoValue > 0) { // OFF
+        pck_9.packet_type = 0x93f;
+        pck_9.parm1 = 0;
+        r = TransmitCmd(&pck_9, sizeof(pck_9));
+        m_ri->m_no_transmit_start.Update(AUTO_RANGE - 1); // necessary because we hacked "off" as auto value
+      } else {
+        pck_9.packet_type = 0x93f;
+        pck_9.parm1 = 1;
+        r = TransmitCmd(&pck_9, sizeof(pck_9));
+        pck_12.packet_type = 0x940;
+        pck_12.parm1 = value * 32;
+        r = TransmitCmd(&pck_12, sizeof(pck_12));
+        m_ri->m_no_transmit_start.Update(value); // necessary because we hacked "off" as auto value
+      }
+      LOG_VERBOSE(wxT("radar_pi: %s No Transmit Start: %d off %d"), m_name, value, autoValue);
+      break;
+    }
+
+    case CT_NO_TRANSMIT_END: {
+      // value is already in range -180 .. +180 which is what I think radar wants...
+      if (autoValue > 0) { // OFF
+        pck_9.packet_type = 0x93f;
+        pck_9.parm1 = 0;
+        r = TransmitCmd(&pck_9, sizeof(pck_9));
+        m_ri->m_no_transmit_start.Update(AUTO_RANGE - 1); // necessary because we hacked "off" as auto value
+      } else {
+        pck_9.packet_type = 0x93f;
+        pck_9.parm1 = 1;
+        r = TransmitCmd(&pck_9, sizeof(pck_9));
+        pck_12.packet_type = 0x941;
+        pck_12.parm1 = value * 32;
+        r = TransmitCmd(&pck_12, sizeof(pck_12));
+        m_ri->m_no_transmit_start.Update(value); // necessary because we hacked "off" as auto value
+      }
+      LOG_VERBOSE(wxT("radar_pi: %s No Transmit End: %d off %d"), m_name, value, autoValue);
       break;
     }
 
     case CT_GAIN: {
-      rad_ctl_pkt_9 pck_9;
-      rad_ctl_pkt_10 pck_10;
-
-      pck_9.len1 = sizeof(pck_9.len1);
-      pck_10.len1 = sizeof(pck_10.len1);
-
       LOG_VERBOSE(wxT("radar_pi: %s Gain: %d auto %d"), m_name, value, autoValue);
 
       if (autoValue > 0) {
@@ -262,12 +303,6 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
     }
 
     case CT_SEA: {
-      rad_ctl_pkt_9 pck_9;
-      rad_ctl_pkt_10 pck_10;
-
-      pck_9.len1 = sizeof(pck_9.len1);
-      pck_10.len1 = sizeof(pck_10.len1);
-
       LOG_VERBOSE(wxT("radar_pi: %s Sea: %d auto %d"), m_name, value, autoValue);
 
       if (autoValue > 0) {
@@ -296,12 +331,6 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
     }
 
     case CT_RAIN: {  // Rain Clutter - Manual. Range is 0x01 to 0x50
-      rad_ctl_pkt_9 pck_9;
-      rad_ctl_pkt_10 pck_10;
-
-      pck_9.len1 = sizeof(pck_9.len1);
-      pck_10.len1 = sizeof(pck_10.len1);
-
       LOG_VERBOSE(wxT("radar_pi: %s Rain: %d"), m_name, value);
 
       if (value == 0) {
@@ -321,25 +350,19 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
 
     case CT_INTERFERENCE_REJECTION: {
       LOG_VERBOSE(wxT("radar_pi: %s Interference Rejection / Crosstalk: %d"), m_name, value);
-      rad_ctl_pkt_9 packet;
+      pck_9.packet_type = 0x91b;
+      pck_9.parm1 = value;
 
-      packet.packet_type = 0x91b;
-      packet.len1 = sizeof(packet.parm1);
-      packet.parm1 = value;
-
-      r = TransmitCmd(&packet, sizeof(packet));
+      r = TransmitCmd(&pck_9, sizeof(pck_9));
       break;
     }
 
     case CT_SCAN_SPEED: {
       LOG_VERBOSE(wxT("radar_pi: %s Scan speed: %d"), m_name, value);
-      rad_ctl_pkt_9 packet;
+      pck_9.packet_type = 0x916;
+      pck_9.parm1 = value * 2;
 
-      packet.packet_type = 0x916;
-      packet.len1 = sizeof(packet.parm1);
-      packet.parm1 = value * 2;
-
-      r = TransmitCmd(&packet, sizeof(packet));
+      r = TransmitCmd(&pck_9, sizeof(pck_9));
       break;
     }
   }

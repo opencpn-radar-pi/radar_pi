@@ -405,11 +405,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
 
     if (m_draw_panel.draw && m_spoke_len != len) {
       m_draw_panel.draw->SetSpokeLength(len);
-      LOG_VERBOSE(wxT("radar_pi: %s new size %zu spokes and %zu bytes per spoke"), m_name.c_str(), m_spokes, len);
+      LOG_VERBOSE(wxT("radar_pi: %s new size %u spokes and %u bytes per spoke"), m_name.c_str(), (unsigned) m_spokes, len);
     }
     if (m_draw_overlay.draw && m_spoke_len != len) {
       m_draw_overlay.draw->SetSpokeLength(len);
-      LOG_VERBOSE(wxT("radar_pi: %s overlay new size %zu spokes and %zu bytes per spoke"), m_name.c_str(), m_spokes, len);
+      LOG_VERBOSE(wxT("radar_pi: %s overlay new size %u spokes and %u bytes per spoke"), m_name.c_str(), (unsigned) m_spokes, (unsigned) len);
     }
     m_spoke_len = len;
     ResetSpokes();

@@ -185,8 +185,10 @@ bool NavicoControl::SetControlValue(ControlType controlType, int value, int auto
     case CT_MAX:
     case CT_ANTENNA_FORWARD:
     case CT_ANTENNA_STARBOARD:
-      // The above are not settings that are not radar commands. Made them explicit so the
-      // compiler can catch missing control types.
+    case CT_NO_TRANSMIT_START:
+    case CT_NO_TRANSMIT_END:
+      // The above are not settings that are not radar commands or not supported by Navico radar.
+      // Made them explicit so the compiler can catch missing control types.
       break;
 
     // Ordering the radar commands by the first byte value.

@@ -105,6 +105,8 @@ class RadarInfo {
   radar_control_item m_rain;
   radar_control_item m_scan_speed;
   radar_control_item m_bearing_alignment;
+  radar_control_item m_no_transmit_start;
+  radar_control_item m_no_transmit_end;
   radar_control_item m_antenna_height;
   radar_control_item m_antenna_forward;
   radar_control_item m_antenna_starboard;

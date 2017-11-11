@@ -99,6 +99,7 @@ class GarminxHDReceive : public RadarReceive {
 
   bool m_auto_gain;  // True if auto gain mode is on
   int m_sea_mode;    // 0=off, 1=manual, 2=auto
+  bool m_no_transmit_zone_mode; // True if there is a zone
 
   bool UpdateScannerStatus(int status);
 
