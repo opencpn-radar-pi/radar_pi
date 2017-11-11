@@ -509,31 +509,48 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
         LOG_VERBOSE(wxT("0x0919: standby/transmit %d"), packet9->parm1);
         return true;
 
-      case 0x091d:  // Auto Gain Mode
-        LOG_VERBOSE(wxT("0x091d: auto-gain mode %d"), packet9->parm1);
-        switch (packet9->parm1) {
-          case 0:
-            m_ri->m_gain.Update(AUTO_RANGE - 2);  // AUTO HIGH
-            return true;
-
-          case 1:
-            m_ri->m_gain.Update(AUTO_RANGE - 1);  // AUTO LOW
-            return true;
-
-          default:
-            break;
-        }
-        break;
-
       case 0x091e:  // Range
         LOG_VERBOSE(wxT("0x091e: range %d"), packet12->parm1);
         m_ri->m_range.Update(packet12->parm1);  // Range in meters
         return true;
 
+      //
+      // Garmin sends range in three separate packets, in the order 0x924, 0x925, 0x91d every
+      // two seconds.
+      // Auto High: 0x924 = 2, 0x925 = gain, 0x91d = 1
+      // Auto Low:  0x924 = 2, 0x925 = gain, 0x91d = 0
+      // Manual:    0x924 = 0, 0x925 = gain, 0x91d = 0 (could be last one used?)
+
+      case 0x0924:  // AutoGain on/off
+        LOG_VERBOSE(wxT("0x924: autogain %d"), packet9->parm1);
+        m_auto_gain = packet9->parm1 > 0;
+        return true;
+
       case 0x0925:  // Gain
         LOG_VERBOSE(wxT("0x925: gain %d"), packet10->parm1);
-        m_ri->m_gain.Update(packet10->parm1 / 100);
+        if (!m_auto_gain) {
+          m_ri->m_gain.Update(packet10->parm1 / 100);
+        }
         return true;
+
+      case 0x091d:  // Auto Gain Mode
+        LOG_VERBOSE(wxT("0x091d: auto-gain mode %d"), packet9->parm1);
+        if (m_auto_gain) {
+          switch (packet9->parm1) {
+            case 0:
+              m_ri->m_gain.Update(AUTO_RANGE - 1);  // AUTO LOW
+              return true;
+
+            case 1:
+              m_ri->m_gain.Update(AUTO_RANGE - 2);  // AUTO HIGH
+              return true;
+
+            default:
+              break;
+          }
+        }
+        break;
+
 
       case 0x0930:  // Dome offset, called bearing alignment here
         LOG_VERBOSE(wxT("0x0930: bearing alignment %d"), packet12->parm1 / 32);
@@ -604,9 +621,7 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
     }
   }
 
-  if (m_pi->m_settings.verbose >= 2) {
-    LOG_BINARY_RECEIVE(wxT("received unknown message"), report, len);
-  }
+  LOG_BINARY_RECEIVE(wxT("received unknown message"), report, len);
   return false;
 }
 

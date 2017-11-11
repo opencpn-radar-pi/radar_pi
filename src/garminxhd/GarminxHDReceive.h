@@ -97,6 +97,8 @@ class GarminxHDReceive : public RadarReceive {
   wxCriticalSection m_lock;  // Protects m_status
   wxString m_status;         // Userfriendly string
 
+  bool m_auto_gain; // True if auto gain mode is on
+
   bool UpdateScannerStatus(int status);
 
   void SetInfoStatus(wxString status) {
