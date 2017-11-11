@@ -214,12 +214,22 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
 
     x = -sinf(deg2rad(predictor));
     y = cosf(deg2rad(predictor));
-    glBegin(GL_LINE_STRIP);
+    glLineWidth(1.0);
+    glBegin(GL_LINES);
     glVertex2f(center_x, center_y);
     glVertex2f(center_x + x * r * 2, center_y + y * r * 2);
+
+    for (int i = 0; i < 360; i += 10) {
+      x = -sinf(deg2rad(i - heading)) * (r * 1.00);
+      y = cosf(deg2rad(i - heading)) * (r * 1.00);
+
+      // draw a little 'tick' outward from the outermost range circle (which is already drawn)
+      glVertex2f(center_x + x, center_y + y);
+      glVertex2f(center_x + x * 1.02, center_y + y * 1.02);
+    }
     glEnd();
 
-    for (int i = 0; i < 360; i += 5) {
+    for (int i = 0; i < 360; i += 30) {
       x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
       y = cosf(deg2rad(i - heading)) * (r * 1.00 - 1);
 
@@ -227,7 +237,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
       if (i % 90 == 0) {
         static char nesw[4] = {'N', 'E', 'S', 'W'};
         s = wxString::Format(wxT("%c"), nesw[i / 90]);
-      } else if (i % 15 == 0) {
+      } else  {
         s = wxString::Format(wxT("%u"), i);
       }
 
