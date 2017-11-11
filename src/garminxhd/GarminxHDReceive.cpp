@@ -498,7 +498,7 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
 
     switch (packet_type) {
       case 0x0916:  // Dome Speed
-        LOG_VERBOSE(wxT("scan speed %d"), packet9->parm1);
+        LOG_VERBOSE(wxT("0x0916: scan speed %d"), packet9->parm1);
         m_ri->m_scan_speed.Update(packet9->parm1 >> 1);
         return true;
 
@@ -506,11 +506,11 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
                     // parm1 = 0 : Standby request
                     // parm1 = 1 : TX request
                     // Ignored, gxradar did nothing with this
-        LOG_VERBOSE(wxT("standby/transmit %d"), packet9->parm1);
+        LOG_VERBOSE(wxT("0x0919: standby/transmit %d"), packet9->parm1);
         return true;
 
       case 0x091d:  // Auto Gain Mode
-        LOG_VERBOSE(wxT("auto-gain mode %d"), packet9->parm1);
+        LOG_VERBOSE(wxT("0x091d: auto-gain mode %d"), packet9->parm1);
         switch (packet9->parm1) {
           case 0:
             m_ri->m_gain.Update(AUTO_RANGE - 2);  // AUTO HIGH
@@ -526,40 +526,40 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
         break;
 
       case 0x091e:  // Range
-        LOG_VERBOSE(wxT("range %d"), packet12->parm1);
+        LOG_VERBOSE(wxT("0x091e: range %d"), packet12->parm1);
         m_ri->m_range.Update(packet12->parm1);  // Range in meters
         return true;
 
       case 0x0925:  // Gain
-        LOG_VERBOSE(wxT("gain %d"), packet10->parm1);
+        LOG_VERBOSE(wxT("0x925: gain %d"), packet10->parm1);
         m_ri->m_gain.Update(packet10->parm1 / 100);
         return true;
 
       case 0x0930:  // Dome offset, called bearing alignment here
-        LOG_VERBOSE(wxT("bearing alignment %d"), packet12->parm1 / 32);
+        LOG_VERBOSE(wxT("0x0930: bearing alignment %d"), packet12->parm1 / 32);
         m_ri->m_bearing_alignment.Update(packet12->parm1 / 32);
         return true;
 
       case 0x0932:  // Crosstalk reject, I guess this is the same as interference rejection?
-        LOG_VERBOSE(wxT("crosstalk/interference rejection %d"), packet9->parm1);
+        LOG_VERBOSE(wxT("0x0932: crosstalk/interference rejection %d"), packet9->parm1);
         m_ri->m_interference_rejection.Update(packet9->parm1);
         return true;
 
       case 0x0933:  // Rain clutter mode
-        LOG_VERBOSE(wxT("rain mode %d"), packet9->parm1);
+        LOG_VERBOSE(wxT("0x933: rain mode %d"), packet9->parm1);
         m_ri->m_rain.Update(AUTO_RANGE - packet9->parm1);
         return true;
 
       case 0x0934: {
         // Rain clutter level
-        LOG_VERBOSE(wxT("rain clutter %d"), packet10->parm1);
+        LOG_VERBOSE(wxT("0x0934: rain clutter %d"), packet10->parm1);
         m_ri->m_rain.Update(packet10->parm1 / 100);
         return true;
       }
 
       case 0x0939: {
         // Sea Clutter On/Off
-        LOG_VERBOSE(wxT("sea mode %d"), packet9->parm1);
+        LOG_VERBOSE(wxT("0x0939: sea mode %d"), packet9->parm1);
         switch (packet9->parm1) {
           case 0: {
             // No sea clutter
@@ -581,7 +581,7 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
 
       case 0x093a: {
         // Sea Clutter level
-        LOG_VERBOSE(wxT("sea clutter %d"), packet10->parm1);
+        LOG_VERBOSE(wxT("0x93a: sea clutter %d"), packet10->parm1);
         m_ri->m_sea.Update(packet10->parm1 / 100);
         return true;
       }
@@ -597,6 +597,7 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
 
       case 0x0993: {
         // Warmup
+        LOG_VERBOSE(wxT("0x993: warmup %d"), packet10->parm1);
         m_ri->m_warmup.Update(packet9->parm1);
         return true;
       }
