@@ -29,11 +29,11 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
+#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -405,11 +405,12 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
 
     if (m_draw_panel.draw && m_spoke_len != len) {
       m_draw_panel.draw->SetSpokeLength(len);
-      LOG_VERBOSE(wxT("radar_pi: %s new size %u spokes and %u bytes per spoke"), m_name.c_str(), (unsigned) m_spokes, len);
+      LOG_VERBOSE(wxT("radar_pi: %s new size %u spokes and %u bytes per spoke"), m_name.c_str(), (unsigned)m_spokes, len);
     }
     if (m_draw_overlay.draw && m_spoke_len != len) {
       m_draw_overlay.draw->SetSpokeLength(len);
-      LOG_VERBOSE(wxT("radar_pi: %s overlay new size %u spokes and %u bytes per spoke"), m_name.c_str(), (unsigned) m_spokes, (unsigned) len);
+      LOG_VERBOSE(wxT("radar_pi: %s overlay new size %u spokes and %u bytes per spoke"), m_name.c_str(), (unsigned)m_spokes,
+                  (unsigned)len);
     }
     m_spoke_len = len;
     ResetSpokes();
@@ -421,7 +422,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
       LOG_VERBOSE(wxT("radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters,
                   range_meters);
     } else {
-      LOG_VERBOSE(wxT("radar_pi: %s detected spoke length change from %zu to %zu bytes"), m_name.c_str(), m_spoke_len, len);
+      LOG_VERBOSE(wxT("radar_pi: %s detected spoke length change from %u to %u bytes"), m_name.c_str(), (unsigned)m_spoke_len,
+                  (unsigned)len);
     }
     m_range_meters = range_meters;
   }
