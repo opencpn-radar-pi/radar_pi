@@ -71,14 +71,18 @@ RadarControl* RadarFactory::MakeRadarControl(size_t radarType) {
 }
 
 size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const int** ranges) {
+  size_t n = 0;
+  *ranges = 0;
+
   switch (units) {
     case RANGE_MIXED:
       switch (radarType) {
-#define DEFINE_RADAR(t, x, s, l, a, b, c) \
-  case t: {                               \
-    static const int r[] = RANGE_MIXED_##t;      \
-    *ranges = r;                          \
-    return ARRAY_SIZE(r);                 \
+#define DEFINE_RADAR(t, x, s, l, a, b, c)   \
+  case t: {                                 \
+    static const int r[] = RANGE_MIXED_##t; \
+    *ranges = r;                            \
+    n = ARRAY_SIZE(r);                      \
+    break;                                  \
   }
 
 #include "RadarType.h"
@@ -87,11 +91,12 @@ size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const in
 
     case RANGE_METRIC:
       switch (radarType) {
-#define DEFINE_RADAR(t, x, s, l, a, b, c) \
-  case t: {                               \
-    static const int r[] = RANGE_METRIC_##t;     \
-    *ranges = r;                          \
-    return ARRAY_SIZE(r);                 \
+#define DEFINE_RADAR(t, x, s, l, a, b, c)    \
+  case t: {                                  \
+    static const int r[] = RANGE_METRIC_##t; \
+    *ranges = r;                             \
+    n = ARRAY_SIZE(r);                       \
+    break;                                   \
   }
 #include "RadarType.h"
       };
@@ -99,17 +104,23 @@ size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const in
 
     case RANGE_NAUTIC:
       switch (radarType) {
-#define DEFINE_RADAR(t, x, s, l, a, b, c) \
-  case t: {                               \
-    static const int r[] = RANGE_NAUTIC_##t;     \
-    *ranges = r;                          \
-    return ARRAY_SIZE(r);                 \
+#define DEFINE_RADAR(t, x, s, l, a, b, c)    \
+  case t: {                                  \
+    static const int r[] = RANGE_NAUTIC_##t; \
+    *ranges = r;                             \
+    n = ARRAY_SIZE(r);                       \
+    break;                                   \
   }
 #include "RadarType.h"
       };
       break;
   }
-  return 0;
+
+  if (n == 0) {
+    wxLogError(wxT("Internal error: Programmer forgot to define ranges for radar type %d units %d"), (int)radarType, (int)units);
+    wxAbort();
+  }
+  return n;
 }
 
 void RadarFactory::GetRadarTypes(wxArrayString& radarTypes) {
