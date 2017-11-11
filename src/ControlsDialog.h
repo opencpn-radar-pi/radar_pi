@@ -520,7 +520,7 @@ class RadarControlButton : public wxButton {
   wxString firstLine;
 
   ControlsDialog *m_parent;
-  radar_pi *m_pi;
+  radar_pi *m_pi; // could be accessed through m_parent but the M_SETTINGS macro requires it directly in this class.0
 
   int value;
   int autoValue;   // 0 = not auto mode, 1 = normal auto value, 2... etc special, auto_names is set
@@ -533,12 +533,11 @@ class RadarControlButton : public wxButton {
 
 class RadarRangeControlButton : public RadarControlButton {
  public:
-  RadarRangeControlButton(ControlsDialog *parent, RadarInfo *ri, wxWindowID id, wxSize buttonSize, const wxString &label) {
+  RadarRangeControlButton(ControlsDialog *parent, wxWindowID id, wxSize buttonSize, const wxString &label) {
     Create(parent, id, label + wxT("\n"), wxDefaultPosition, buttonSize, 0, wxDefaultValidator, label);
 
     m_parent = parent;
     m_pi = m_parent->m_pi;
-    m_ri = ri;
     minValue = 0;
     maxValue = 0;
     value = -1;  // means: never set
@@ -556,9 +555,6 @@ class RadarRangeControlButton : public RadarControlButton {
   virtual void AdjustValue(int adjustment);
   virtual void SetAuto(int newValue);
   void SetRangeLabel();
-
- private:
-  RadarInfo *m_ri;
 };
 
 // This sets up the initializer macro in the constructor of the

@@ -267,7 +267,7 @@ void RadarControlButton::SetLocalAuto(int newValue) {  // sets auto in the butto
 }
 
 void RadarRangeControlButton::SetRangeLabel() {
-  wxString text = m_ri->GetRangeText();
+  wxString text = m_parent->m_ri->GetRangeText();
   this->SetLabel(firstLine + wxT("\n") + text);
 }
 
@@ -764,7 +764,7 @@ void ControlsDialog::CreateControls() {
   // The ANTENNA STARBOARD button
   if (m_ctrl.control[CT_ANTENNA_STARBOARD].type) {
     m_antenna_starboard_button =
-        new RadarControlButton(this, ID_ANTENNA_STARBOARD, _("Antenna forward"), m_ctrl.control[CT_ANTENNA_STARBOARD],
+        new RadarControlButton(this, ID_ANTENNA_STARBOARD, _("Antenna starboard"), m_ctrl.control[CT_ANTENNA_STARBOARD],
                                m_ri->m_antenna_starboard, _("m"), _("relative to GPS") + wxT("\n") + _("negative = port"));
     m_installation_sizer->Add(m_antenna_starboard_button, 0, wxALL, BORDER);
   }
@@ -868,7 +868,7 @@ void ControlsDialog::CreateControls() {
 
   // The RANGE button
   if (m_ctrl.control[CT_RANGE].type) {
-    m_range_button = new RadarRangeControlButton(this, m_ri, ID_RANGE, g_buttonSize, _("Range"));
+    m_range_button = new RadarRangeControlButton(this, ID_RANGE, g_buttonSize, _("Range"));
     m_adjust_sizer->Add(m_range_button, 0, wxALL, BORDER);
   }
 

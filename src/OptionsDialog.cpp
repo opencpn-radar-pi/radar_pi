@@ -59,7 +59,7 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
   };
 
   m_RangeUnits =
-      new wxRadioBox(this, wxID_ANY, _("Range Units"), wxDefaultPosition, wxDefaultSize, 2, RangeModeStrings, 1, wxRA_SPECIFY_COLS);
+      new wxRadioBox(this, wxID_ANY, _("Range Units"), wxDefaultPosition, wxDefaultSize, ARRAY_SIZE(RangeModeStrings), RangeModeStrings, 1, wxRA_SPECIFY_COLS);
 
   m_RangeUnits->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(OptionsDialog::OnRangeUnitsClick), NULL, this);
 

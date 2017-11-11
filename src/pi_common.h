@@ -155,6 +155,9 @@ using namespace std;
 #define rad2deg(x) ((x)*360.0 / (2 * PI))
 #endif
 
+#define METERS_PER_NM 1852
+#define NM(x) (METERS_PER_NM * x) // Define this such that NM(1/8) works even with integer division
+
 #define DEFINE_RADAR(t, n, s, l, a, b, c)
 #include "RadarType.h"
 

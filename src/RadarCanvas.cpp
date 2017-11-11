@@ -149,29 +149,45 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   // Max range ringe
   float r = wxMax(w, h) / 2.0;
 
-  // Position of the range texts
-  float x = sinf((float)(0.25 * PI)) * r * 0.25;
-  float y = cosf((float)(0.25 * PI)) * r * 0.25;
-  float center_x = w / 2.0;
-  float center_y = h / 2.0;
-
   // Size of rendered string in pixels
-  int px;
-  int py;
-
   glPushMatrix();
   glPushAttrib(GL_ALL_ATTRIB_BITS);
 
   glColor3ub(0, 126, 29);  // same color as HDS
   glLineWidth(1.0);
 
-  for (int i = 1; i <= 4; i++) {
-    DrawArc(center_x, center_y, r * i * 0.25, 0.0, 2.0 * (float)PI, 360);
-    int meters = m_ri->m_range.GetValue();
+  int meters = m_ri->m_range.GetValue();
+  int rings = 1;
+
+  if (meters > 0) {
+  // Instead of computing various modulo we just check which ranges
+  // result in a non-empty range string.
+  // We try 3/4th, 2/3rd, 1/2, falling back to 1 ring = no subrings
+
+  for (rings = 4; rings > 1; rings--)
+  {
+    wxString s = m_ri->GetDisplayRangeStr(meters * (rings - 1)/ rings, false);
+    if (s.length() > 0)
+    {
+      break;
+    }
+  }
+  }
+
+  float x = sinf((float)(0.25 * PI)) * r / (double) rings;
+  float y = cosf((float)(0.25 * PI)) * r / (double) rings;
+  // Position of the range texts
+  float center_x = w / 2.0;
+  float center_y = h / 2.0;
+  int px;
+  int py;
+
+  for (int i = 1; i <= rings; i++) {
+    DrawArc(center_x, center_y, r * i / (double) rings, 0.0, 2.0 * (float)PI, 360);
     if (meters != 0) {
-      wxString s = m_ri->GetDisplayRangeStr(meters, i, false);
+      wxString s = m_ri->GetDisplayRangeStr(meters * i / rings, false);
       if (s.length() > 0) {
-        m_FontNormal.RenderString(s, center_x + x * (float)i, center_y + y * (float)i);
+        m_FontNormal.RenderString(s, center_x + x * i, center_y + y * i);
       }
     }
   }

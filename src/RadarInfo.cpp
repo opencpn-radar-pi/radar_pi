@@ -1067,7 +1067,7 @@ wxString RadarInfo::GetRangeText() {
     m_range_text << wxT(" (");
   }
 
-  wxString s = GetDisplayRangeStr(meters, 4, true);
+  wxString s = GetDisplayRangeStr(meters, true);
   if (s.length() == 0) {
     s = wxString::Format(wxT("/%d m/"), meters);
   }
@@ -1088,15 +1088,15 @@ wxString RadarInfo::GetRangeText() {
  * We only have a value in meters, and based on that we decide
  * whether it is likely a value in metric or nautical miles.
  *
- * @param quarter      1..4, 1 = show 1/4th of range, etc. 4 = entire range
+ * Return empty string if it is not representable nicely
+ *
  * @return String with human readable representation of range
  */
-wxString RadarInfo::GetDisplayRangeStr(int meters, int quarter, bool unit) {
+wxString RadarInfo::GetDisplayRangeStr(int meters, bool unit) {
   wxString s;
 
   if ((meters < 100 && meters % 25 == 0) || (meters < 1000 && meters % 50 == 0) || (meters % 1000 == 0)) {
     // really sure this is metric.
-    meters = meters * quarter / 4;
 
     if (meters % 25 == 0) {
       s = wxString::Format(wxT("%d"), meters);
@@ -1107,40 +1107,43 @@ wxString RadarInfo::GetDisplayRangeStr(int meters, int quarter, bool unit) {
     return s;
   }
 
-  meters = meters * quarter / 4;
-  if (meters % 1852 == 0) {
-    s = wxString::Format(wxT("%d"), meters / 1852);
-  } else if (meters >= 1852) {
-    s = wxString::Format(wxT("%g"), (float)meters / 1852.);
+  if (meters % NM(1) == 0) {
+    s = wxString::Format(wxT("%d"), meters / NM(1));
+  } else if (meters > NM(1) && meters % NM(1) == NM(1) / 2) {
+    s = wxString::Format(wxT("%d.5"), meters / NM(1));
   } else {
     switch (meters) {
-      case 1852 / 4:
+      case NM(1/4):
         s = wxT("1/4");
         break;
-      case 1852 / 2:
+      case NM(1/2):
         s = wxT("1/2");
         break;
-      case 1852 * 3 / 4:
+      case NM(3/4):
         s = wxT("3/4");
         break;
-      case 1852 / 8:
-      case 1852 / 8 + 1:
+      case NM(1/8):
+      case NM(1/8) + 1:
         s = wxT("1/8");
         break;
-      case 1852 / 16:
-      case 1852 / 16 + 1:
+      case NM(3/8):
+      case NM(3/8) + 1:
+        s = wxT("3/4");
+        break;
+      case NM(1/16):
+      case NM(1/16) + 1:
         s = wxT("1/16");
         break;
-      case 1852 * 3 / 16:
-      case 1852 * 3 / 16 + 1:
+      case NM(3/16):
+      case NM(3/16) + 1:
         s = wxT("3/16");
         break;
-      case 1852 / 32:
-      case 1852 / 32 + 1:
+      case NM(1/32):
+      case NM(1/32) + 1:
         s = wxT("1/32");
         break;
-      case 1852 * 3 / 32:
-      case 1852 * 3 / 32 + 1:
+      case NM(3/32):
+      case NM(3/32) + 1:
         s = wxT("3/32");
         break;
       default:

@@ -193,7 +193,7 @@ class RadarInfo {
   void ComputeColourMap();
   void ComputeTargetTrails();
   wxString GetRangeText();
-  wxString GetDisplayRangeStr(int meters, int quarter, bool unit);
+  wxString GetDisplayRangeStr(int meters, bool unit);
   int GetDisplayRange() { return m_range.GetValue(); };
   void DetectedRadar(NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
   void SetMousePosition(GeoPosition pos);

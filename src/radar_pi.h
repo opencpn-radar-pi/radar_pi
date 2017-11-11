@@ -252,8 +252,6 @@ enum ToolbarIconColor { TB_NONE, TB_HIDDEN, TB_SEARCHING, TB_SEEN, TB_STANDBY, T
 enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_SOURCE_FIX, VARIATION_SOURCE_WMM };
 enum OpenGLMode { OPENGL_UNKOWN, OPENGL_OFF, OPENGL_ON };
 
-static const int RangeUnitsToMeters[2] = {1852, 1000};
-
 static const bool HasBitCount2[8] = {
     false,  // 000
     false,  // 001
@@ -272,6 +270,7 @@ static const bool HasBitCount2[8] = {
 #define MAX_AGE (12)
 
 enum RangeUnits { RANGE_MIXED, RANGE_METRIC, RANGE_NAUTIC };
+static const int RangeUnitsToMeters[3] = {1852, 1000, 1852};
 
 /**
  * The data that is stored in the opencpn.ini file. Most of this is set in the OptionsDialog,
