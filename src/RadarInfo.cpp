@@ -404,11 +404,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
     }
 
     if (m_draw_panel.draw && m_spoke_len != len) {
-      m_draw_panel.draw->Init(m_spokes, len);
+      m_draw_panel.draw->SetSpokeLength(len);
       LOG_VERBOSE(wxT("radar_pi: %s new size %zu spokes and %zu bytes per spoke"), m_name.c_str(), m_spokes, len);
     }
     if (m_draw_overlay.draw && m_spoke_len != len) {
-      m_draw_overlay.draw->Init(m_spokes, len);
+      m_draw_overlay.draw->SetSpokeLength(len);
       LOG_VERBOSE(wxT("radar_pi: %s overlay new size %zu spokes and %zu bytes per spoke"), m_name.c_str(), m_spokes, len);
     }
     m_spoke_len = len;
@@ -717,7 +717,7 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
     if (!newDraw) {
       wxLogError(wxT("radar_pi: out of memory"));
       return;
-    } else if (newDraw->Init(m_spokes, m_spoke_len)) {
+    } else if (newDraw->Init(m_spokes, m_spoke_len_max)) {
       wxArrayString methods;
       RadarDraw::GetDrawingMethods(methods);
       if (di == &m_draw_overlay) {
@@ -832,7 +832,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
       glPopMatrix();
     }
 
-    double radar_pixels_per_meter = ((double)m_spoke_len) / m_range_meters;
+    double radar_pixels_per_meter = ((double)m_spoke_len_max) / m_range_meters;
     double radar_scale = scale / radar_pixels_per_meter;
     glPushMatrix();
     glTranslated(center.x, center.y, 0);

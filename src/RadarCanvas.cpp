@@ -237,7 +237,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
       if (i % 90 == 0) {
         static char nesw[4] = {'N', 'E', 'S', 'W'};
         s = wxString::Format(wxT("%c"), nesw[i / 90]);
-      } else  {
+      } else {
         s = wxString::Format(wxT("%u"), i);
       }
 

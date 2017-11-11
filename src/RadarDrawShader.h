@@ -57,7 +57,9 @@ class RadarDrawShader : public RadarDraw {
 
   ~RadarDrawShader();
 
-  bool Init(size_t spokes, size_t spoke_len);
+  bool Init(size_t spokes, size_t spoke_len_max);
+  void SetSpokeLength(size_t spoke_len);
+
   void DrawRadarImage();
   void ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len);
 
@@ -68,6 +70,7 @@ class RadarDrawShader : public RadarDraw {
   unsigned char* m_data;          // [SHADER_COLOR_CHANNELS * m_spokes * m_spoke_len];
   size_t m_spokes;
   size_t m_spoke_len;
+  size_t m_spoke_len_max;
 
   int m_start_line;  // First line received since last draw, or -1
   int m_lines;       // # of lines received since last draw

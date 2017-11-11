@@ -69,16 +69,20 @@ static const char *FragmentShaderColorText =
     "   gl_FragColor = texture2D(tex2d, vec2(d, a)); \n"
     "} \n";
 
-bool RadarDrawShader::Init(size_t spokes, size_t spoke_len) {
+bool RadarDrawShader::Init(size_t spokes, size_t spoke_len_max) {
+  wxCriticalSectionLocker lock(m_exclusive);
+
   m_format = GL_RGBA;
   m_channels = SHADER_COLOR_CHANNELS;
   m_spokes = spokes;
-  m_spoke_len = spoke_len;
+  m_spoke_len_max = spoke_len_max;
 
   if (!CompileShader && !ShadersSupported()) {
     wxLogError(wxT("radar_pi: the OpenGL system of this computer does not support shader m_programs"));
     return false;
   }
+
+  Reset();
 
   if (!CompileShaderText(&m_vertex, GL_VERTEX_SHADER, VertexShaderText) ||
       !CompileShaderText(&m_fragment, GL_FRAGMENT_SHADER, FragmentShaderColorText)) {
@@ -87,26 +91,24 @@ bool RadarDrawShader::Init(size_t spokes, size_t spoke_len) {
   }
 
   m_program = LinkShaders(m_vertex, m_fragment);
-  if (!m_program) {
+  if (m_program == 0) {
     wxLogError(wxT("radar_pi: GPU oriented OpenGL failed to link shader program"));
     return false;
   }
 
-  if (!m_texture) {
-    glGenTextures(1, &m_texture);
-  }
+  glGenTextures(1, &m_texture);
   glBindTexture(GL_TEXTURE_2D, m_texture);
 
   if (m_data) {
     free(m_data);
   }
-  m_data = (unsigned char *)calloc(SHADER_COLOR_CHANNELS, spoke_len * spokes);
+  m_data = (unsigned char *)calloc(SHADER_COLOR_CHANNELS, m_spoke_len_max * m_spokes);
   // Tell the GPU the size of the texture:
   glTexImage2D(/* target          = */ GL_TEXTURE_2D,
                /* level           = */ 0,
                /* internal_format = */ m_format,
-               /* width           = */ spoke_len,
-               /* heigth          = */ spokes,
+               /* width           = */ m_spoke_len_max,
+               /* heigth          = */ m_spokes,
                /* border          = */ 0,
                /* format          = */ m_format,
                /* type            = */ GL_UNSIGNED_BYTE,
@@ -120,9 +122,7 @@ bool RadarDrawShader::Init(size_t spokes, size_t spoke_len) {
   return true;
 }
 
-RadarDrawShader::~RadarDrawShader() {
-  wxCriticalSectionLocker lock(m_exclusive);
-
+void RadarDrawShader::Reset() {
   if (m_vertex) {
     DeleteShader(m_vertex);
     m_vertex = 0;
@@ -144,6 +144,18 @@ RadarDrawShader::~RadarDrawShader() {
     free(m_data);
     m_data = 0;
   }
+}
+
+void RadarDrawShader::SetSpokeLength(size_t spoke_len) {
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  m_spoke_len = spoke_len;
+}
+
+RadarDrawShader::~RadarDrawShader() {
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  Reset();
 }
 
 void RadarDrawShader::DrawRadarImage() {
@@ -171,7 +183,7 @@ void RadarDrawShader::DrawRadarImage() {
                       /* level =    */ 0,
                       /* x-offset = */ 0,
                       /* y-offset = */ 0,
-                      /* width =    */ m_spoke_len,
+                      /* width =    */ m_spoke_len_max,
                       /* height =   */ end_line,
                       /* format =   */ m_format,
                       /* type =     */ GL_UNSIGNED_BYTE,
@@ -181,22 +193,22 @@ void RadarDrawShader::DrawRadarImage() {
                       /* level =    */ 0,
                       /* x-offset = */ 0,
                       /* y-offset = */ m_start_line,
-                      /* width =    */ m_spoke_len,
+                      /* width =    */ m_spoke_len_max,
                       /* height =   */ m_spokes - m_start_line,
                       /* format =   */ m_format,
                       /* type =     */ GL_UNSIGNED_BYTE,
-                      /* pixels =   */ m_data + m_start_line * m_spoke_len * m_channels);
+                      /* pixels =   */ m_data + m_start_line * m_spoke_len_max * m_channels);
     } else {
       // Map [m_start_line, m_end_line>
       glTexSubImage2D(/* target =   */ GL_TEXTURE_2D,
                       /* level =    */ 0,
                       /* x-offset = */ 0,
                       /* y-offset = */ m_start_line,
-                      /* width =    */ m_spoke_len,
+                      /* width =    */ m_spoke_len_max,
                       /* height =   */ m_lines,
                       /* format =   */ m_format,
                       /* type =     */ GL_UNSIGNED_BYTE,
-                      /* pixels =   */ m_data + m_start_line * m_spoke_len * m_channels);
+                      /* pixels =   */ m_data + m_start_line * m_spoke_len_max * m_channels);
     }
     m_start_line = -1;
     m_lines = 0;
@@ -204,7 +216,7 @@ void RadarDrawShader::DrawRadarImage() {
 
   // We tell the GPU to draw a square from (-512,-512) to (+512,+512).
   // The shader morphs this into a circle.
-  float fullscale = 512;
+  float fullscale = m_spoke_len_max;
   glBegin(GL_QUADS);
   glTexCoord2f(-1, -1);
   glVertex2f(-fullscale, -fullscale);
@@ -230,9 +242,10 @@ void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   if (m_lines < (int)m_spokes) {
     m_lines++;
   }
+  len = wxMin(len, m_spoke_len);
 
   if (m_channels == SHADER_COLOR_CHANNELS) {
-    unsigned char *d = m_data + (angle * m_spoke_len) * m_channels;
+    unsigned char *d = m_data + (angle * m_spoke_len_max) * m_channels;
     for (size_t r = 0; r < len; r++) {
       GLubyte strength = data[r];
       BlobColour colour = m_ri->m_colour_map[strength];
@@ -242,12 +255,21 @@ void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
       d[3] = colour != BLOB_NONE ? alpha : 0;
       d += m_channels;
     }
+    for (size_t r = len; r < m_spoke_len_max; r++) {
+      *d++ = 0;
+      *d++ = 0;
+      *d++ = 0;
+      *d++ = 0;
+    }
   } else {
-    unsigned char *d = m_data + (angle * m_spoke_len);
+    unsigned char *d = m_data + (angle * m_spoke_len_max);
     for (size_t r = 0; r < len; r++) {
       GLubyte strength = data[r];
       BlobColour colour = m_ri->m_colour_map[strength];
       *d++ = (m_ri->m_colour_map_rgb[colour].Red() * alpha) >> 8;
+    }
+    for (size_t r = len; r < m_spoke_len_max; r++) {
+      *d++ = 0;
     }
   }
 }

@@ -33,34 +33,38 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-bool RadarDrawVertex::Init(size_t spokes, size_t spoke_len) {
+void RadarDrawVertex::SetSpokeLength(size_t spoke_len) {
+  // This is called when the spoke length changes
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  m_spoke_len = spoke_len;
+}
+
+bool RadarDrawVertex::Init(size_t spokes, size_t spoke_len_max) {
+  wxCriticalSectionLocker lock(m_exclusive);
+
   if (m_spokes != spokes) {
     Reset();
   }
+  m_spokes = spokes;                // How many spokes form a circle
+  m_spoke_len_max = spoke_len_max;  // How long each spoke is (max)
+  m_spoke_len = m_spoke_len_max;
 
-  {
-    wxCriticalSectionLocker lock(m_exclusive);
-    m_spokes = spokes;        // How many spokes form a circle
-    m_spoke_len = spoke_len;  // How long each spoke is
-
-    if (!m_vertices) {
-      m_vertices = (VertexLine*)calloc(sizeof(VertexLine), m_spokes);
+  if (!m_vertices) {
+    m_vertices = (VertexLine*)calloc(sizeof(VertexLine), m_spokes);
+  }
+  if (!m_vertices) {
+    if (!m_oom) {
+      wxLogError(wxT("radar_pi: Out of memory"));
+      m_oom = true;
     }
-    if (!m_vertices) {
-      if (!m_oom) {
-        wxLogError(wxT("radar_pi: Out of memory"));
-        m_oom = true;
-      }
-      return false;
-    }
+    return false;
   }
 
   return true;
 }
 
 void RadarDrawVertex::Reset() {
-  wxCriticalSectionLocker lock(m_exclusive);
-
   if (m_vertices) {
     for (size_t i = 0; i < m_spokes; i++) {
       if (m_vertices[i].points) {
