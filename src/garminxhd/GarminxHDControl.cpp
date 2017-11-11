@@ -281,6 +281,9 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
         pck_9.packet_type = 0x939;
         pck_9.parm1 = 0;  // off
         r = TransmitCmd(&pck_9, sizeof(pck_9));
+        pck_10.packet_type = 0x93a;
+        pck_10.parm1 = value * 100;
+        r = TransmitCmd(&pck_10, sizeof(pck_10));
       } else {
         pck_9.packet_type = 0x939;
         pck_9.parm1 = 1;  // manual

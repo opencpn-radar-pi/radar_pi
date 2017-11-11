@@ -522,12 +522,12 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
       // Manual:    0x924 = 0, 0x925 = gain, 0x91d = 0 (could be last one used?)
 
       case 0x0924:  // AutoGain on/off
-        LOG_VERBOSE(wxT("0x924: autogain %d"), packet9->parm1);
+        LOG_VERBOSE(wxT("0x0924: autogain %d"), packet9->parm1);
         m_auto_gain = packet9->parm1 > 0;
         return true;
 
       case 0x0925:  // Gain
-        LOG_VERBOSE(wxT("0x925: gain %d"), packet10->parm1);
+        LOG_VERBOSE(wxT("0x0925: gain %d"), packet10->parm1);
         if (!m_auto_gain) {
           m_ri->m_gain.Update(packet10->parm1 / 100);
         }
@@ -549,6 +549,9 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
               break;
           }
         }
+        else {
+          m_ri->m_gain.Update(AUTO_RANGE);  // AUTO OFF
+        }
         break;
 
 
@@ -563,7 +566,7 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
         return true;
 
       case 0x0933:  // Rain clutter mode
-        LOG_VERBOSE(wxT("0x933: rain mode %d"), packet9->parm1);
+        LOG_VERBOSE(wxT("0x0933: rain mode %d"), packet9->parm1);
         m_ri->m_rain.Update(AUTO_RANGE - packet9->parm1);
         return true;
 
@@ -577,14 +580,17 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
       case 0x0939: {
         // Sea Clutter On/Off
         LOG_VERBOSE(wxT("0x0939: sea mode %d"), packet9->parm1);
+        m_sea_mode = packet9->parm1;
         switch (packet9->parm1) {
           case 0: {
             // No sea clutter
+            m_ri->m_sea.Update(AUTO_RANGE);
             m_ri->m_sea.Update(0);
             return true;
           }
           case 1: {
             // Manual sea clutter, value set via report 0x093a
+            m_ri->m_sea.Update(AUTO_RANGE);
             return true;
           }
           case 2: {
@@ -598,8 +604,10 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
 
       case 0x093a: {
         // Sea Clutter level
-        LOG_VERBOSE(wxT("0x93a: sea clutter %d"), packet10->parm1);
-        m_ri->m_sea.Update(packet10->parm1 / 100);
+        LOG_VERBOSE(wxT("0x093a: sea clutter %d"), packet10->parm1);
+        if (m_sea_mode == 1) {
+          m_ri->m_sea.Update(packet10->parm1 / 100);
+        }
         return true;
       }
 
@@ -614,7 +622,7 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
 
       case 0x0993: {
         // Warmup
-        LOG_VERBOSE(wxT("0x993: warmup %d"), packet10->parm1);
+        LOG_VERBOSE(wxT("0x0993: warmup %d"), packet10->parm1);
         m_ri->m_warmup.Update(packet9->parm1);
         return true;
       }
