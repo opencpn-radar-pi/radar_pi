@@ -291,6 +291,8 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
         pck_9.packet_type = 0x91d;
         pck_9.parm1 = (autoValue == 1) ? 0 : 1;
         r = TransmitCmd(&pck_9, sizeof(pck_9));
+        LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d) (control)"), m_name, AUTO_RANGE - autoValue);
+        m_ri->m_gain.Update(AUTO_RANGE - autoValue);
       } else {
         pck_9.packet_type = 0x924;
         pck_9.parm1 = 0;
@@ -298,6 +300,8 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
         pck_10.packet_type = 0x925;
         pck_10.parm1 = value * 100;
         r = TransmitCmd(&pck_10, sizeof(pck_10));
+        LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d) (control)"), m_name, value);
+        m_ri->m_gain.Update(value);
       }
       break;
     }

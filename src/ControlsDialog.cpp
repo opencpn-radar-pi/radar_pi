@@ -1569,6 +1569,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_gain_button && (m_ri->m_gain.IsModified() || refreshAll)) {
     int button = m_ri->m_gain.GetButton();
     m_gain_button->SetLocalValue(button);
+    LOG_VERBOSE(wxT("radar_pi: %s %d -> GUI gain %d auto %d"), m_ri->m_name.c_str(), button, m_gain_button->value, m_gain_button->autoValue);
   }
 
   //  rain

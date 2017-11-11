@@ -529,6 +529,7 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
       case 0x0925:  // Gain
         LOG_VERBOSE(wxT("0x0925: gain %d"), packet10->parm1);
         if (!m_auto_gain) {
+          LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d)"), m_ri->m_name, packet10->parm1 / 100);
           m_ri->m_gain.Update(packet10->parm1 / 100);
         }
         return true;
@@ -538,18 +539,18 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
         if (m_auto_gain) {
           switch (packet9->parm1) {
             case 0:
+              LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d)"), m_ri->m_name, AUTO_RANGE - 1);
               m_ri->m_gain.Update(AUTO_RANGE - 1);  // AUTO LOW
               return true;
 
             case 1:
+              LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d)"), m_ri->m_name, AUTO_RANGE - 2);
               m_ri->m_gain.Update(AUTO_RANGE - 2);  // AUTO HIGH
               return true;
 
             default:
               break;
           }
-        } else {
-          m_ri->m_gain.Update(AUTO_RANGE);  // AUTO OFF
         }
         break;
 
