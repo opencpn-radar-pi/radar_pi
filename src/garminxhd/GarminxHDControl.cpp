@@ -139,7 +139,7 @@ bool GarminxHDControl::TransmitCmd(const void *msg, int size) {
     return false;
   }
   if (sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&m_addr, sizeof(m_addr)) < size) {
-    wxLogError(wxT("radar_pi: Unable to transmit command to %s: %s"), m_name, SOCKETERRSTR);
+    wxLogError(wxT("radar_pi: Unable to transmit command to %s: %s"), m_name.c_str(), SOCKETERRSTR);
     return false;
   }
   IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxString::Format(wxT("%s transmit"), m_name), msg, size));
@@ -180,7 +180,7 @@ bool GarminxHDControl::SetRange(int meters) {
     packet.packet_type = 0x91e;
     packet.len1 = sizeof(packet.parm1);
     packet.parm1 = meters;
-    LOG_VERBOSE(wxT("radar_pi: %s transmit: range %d meters"), m_name, meters);
+    LOG_VERBOSE(wxT("radar_pi: %s transmit: range %d meters"), m_name.c_str(), meters);
     return TransmitCmd(&packet, sizeof(packet));
   }
   return false;
@@ -196,7 +196,6 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
   pck_9.len1 = sizeof(pck_9.len1);
   pck_10.len1 = sizeof(pck_10.len1);
   pck_12.len1 = sizeof(pck_12.len1);
-
 
   switch (controlType) {
     // The following are settings that are not radar commands. Made them explicit so the
@@ -236,18 +235,18 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
       pck_12.packet_type = 0x930;
       pck_12.parm1 = value << 5;
 
-      LOG_VERBOSE(wxT("radar_pi: %s Bearing alignment: %d"), m_name, value);
+      LOG_VERBOSE(wxT("radar_pi: %s Bearing alignment: %d"), m_name.c_str(), value);
       r = TransmitCmd(&pck_12, sizeof(pck_12));
       break;
     }
 
     case CT_NO_TRANSMIT_START: {
       // value is already in range -180 .. +180 which is what I think radar wants...
-      if (autoValue > 0) { // OFF
+      if (autoValue > 0) {  // OFF
         pck_9.packet_type = 0x93f;
         pck_9.parm1 = 0;
         r = TransmitCmd(&pck_9, sizeof(pck_9));
-        m_ri->m_no_transmit_start.Update(AUTO_RANGE - 1); // necessary because we hacked "off" as auto value
+        m_ri->m_no_transmit_start.Update(AUTO_RANGE - 1);  // necessary because we hacked "off" as auto value
       } else {
         pck_9.packet_type = 0x93f;
         pck_9.parm1 = 1;
@@ -255,19 +254,19 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
         pck_12.packet_type = 0x940;
         pck_12.parm1 = value * 32;
         r = TransmitCmd(&pck_12, sizeof(pck_12));
-        m_ri->m_no_transmit_start.Update(value); // necessary because we hacked "off" as auto value
+        m_ri->m_no_transmit_start.Update(value);  // necessary because we hacked "off" as auto value
       }
-      LOG_VERBOSE(wxT("radar_pi: %s No Transmit Start: %d off %d"), m_name, value, autoValue);
+      LOG_VERBOSE(wxT("radar_pi: %s No Transmit Start: %d off %d"), m_name.c_str(), value, autoValue);
       break;
     }
 
     case CT_NO_TRANSMIT_END: {
       // value is already in range -180 .. +180 which is what I think radar wants...
-      if (autoValue > 0) { // OFF
+      if (autoValue > 0) {  // OFF
         pck_9.packet_type = 0x93f;
         pck_9.parm1 = 0;
         r = TransmitCmd(&pck_9, sizeof(pck_9));
-        m_ri->m_no_transmit_start.Update(AUTO_RANGE - 1); // necessary because we hacked "off" as auto value
+        m_ri->m_no_transmit_start.Update(AUTO_RANGE - 1);  // necessary because we hacked "off" as auto value
       } else {
         pck_9.packet_type = 0x93f;
         pck_9.parm1 = 1;
@@ -275,14 +274,14 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
         pck_12.packet_type = 0x941;
         pck_12.parm1 = value * 32;
         r = TransmitCmd(&pck_12, sizeof(pck_12));
-        m_ri->m_no_transmit_start.Update(value); // necessary because we hacked "off" as auto value
+        m_ri->m_no_transmit_start.Update(value);  // necessary because we hacked "off" as auto value
       }
-      LOG_VERBOSE(wxT("radar_pi: %s No Transmit End: %d off %d"), m_name, value, autoValue);
+      LOG_VERBOSE(wxT("radar_pi: %s No Transmit End: %d off %d"), m_name.c_str(), value, autoValue);
       break;
     }
 
     case CT_GAIN: {
-      LOG_VERBOSE(wxT("radar_pi: %s Gain: %d auto %d"), m_name, value, autoValue);
+      LOG_VERBOSE(wxT("radar_pi: %s Gain: %d auto %d"), m_name.c_str(), value, autoValue);
 
       if (autoValue > 0) {
         pck_9.packet_type = 0x924;
@@ -291,7 +290,7 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
         pck_9.packet_type = 0x91d;
         pck_9.parm1 = (autoValue == 1) ? 0 : 1;
         r = TransmitCmd(&pck_9, sizeof(pck_9));
-        LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d) (control)"), m_name, AUTO_RANGE - autoValue);
+        LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d) (control)"), m_name.c_str(), AUTO_RANGE - autoValue);
         m_ri->m_gain.Update(AUTO_RANGE - autoValue);
       } else {
         pck_9.packet_type = 0x924;
@@ -300,14 +299,14 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
         pck_10.packet_type = 0x925;
         pck_10.parm1 = value * 100;
         r = TransmitCmd(&pck_10, sizeof(pck_10));
-        LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d) (control)"), m_name, value);
+        LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d) (control)"), m_name.c_str(), value);
         m_ri->m_gain.Update(value);
       }
       break;
     }
 
     case CT_SEA: {
-      LOG_VERBOSE(wxT("radar_pi: %s Sea: %d auto %d"), m_name, value, autoValue);
+      LOG_VERBOSE(wxT("radar_pi: %s Sea: %d auto %d"), m_name.c_str(), value, autoValue);
 
       if (autoValue > 0) {
         pck_9.packet_type = 0x939;
@@ -335,7 +334,7 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
     }
 
     case CT_RAIN: {  // Rain Clutter - Manual. Range is 0x01 to 0x50
-      LOG_VERBOSE(wxT("radar_pi: %s Rain: %d"), m_name, value);
+      LOG_VERBOSE(wxT("radar_pi: %s Rain: %d"), m_name.c_str(), value);
 
       if (value == 0) {
         pck_9.packet_type = 0x933;
@@ -353,7 +352,7 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
     }
 
     case CT_INTERFERENCE_REJECTION: {
-      LOG_VERBOSE(wxT("radar_pi: %s Interference Rejection / Crosstalk: %d"), m_name, value);
+      LOG_VERBOSE(wxT("radar_pi: %s Interference Rejection / Crosstalk: %d"), m_name.c_str(), value);
       pck_9.packet_type = 0x91b;
       pck_9.parm1 = value;
 
@@ -362,7 +361,7 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
     }
 
     case CT_SCAN_SPEED: {
-      LOG_VERBOSE(wxT("radar_pi: %s Scan speed: %d"), m_name, value);
+      LOG_VERBOSE(wxT("radar_pi: %s Scan speed: %d"), m_name.c_str(), value);
       pck_9.packet_type = 0x916;
       pck_9.parm1 = value * 2;
 
