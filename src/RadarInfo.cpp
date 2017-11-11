@@ -616,6 +616,19 @@ void RadarInfo::RenderGuardZone() {
     green = 0;
     blue = 200;
   }
+
+  start_bearing = m_no_transmit_start.GetValue();
+  end_bearing = m_no_transmit_end.GetValue();
+  if (start_bearing != end_bearing && start_bearing >= -180 && end_bearing >= -180) {
+    if (start_bearing < 0) {
+      start_bearing += 360;
+    }
+    if (end_bearing < 0) {
+      end_bearing += 360;
+    }
+    glColor4ub(250, 255, 255, alpha);
+    DrawFilledArc(m_range_meters, 0, m_no_transmit_start.GetValue(), m_no_transmit_end.GetValue());
+  }
 }
 
 void RadarInfo::SetAutoRangeMeters(int meters) {
