@@ -134,7 +134,7 @@ void RadarInfo::Shutdown() {
     }
 #endif
 
-    LOG_INFO(wxT("radar_pi: %s receive thread stopped in %lu ms"), m_name.c_str(), threadEndWait - threadStartWait);
+    LOG_INFO(wxT("radar_pi: %s receive thread stopped in %llu ms"), m_name.c_str(), threadEndWait - threadStartWait);
 
     delete m_receive;
     m_receive = 0;
