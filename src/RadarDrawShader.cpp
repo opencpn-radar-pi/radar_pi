@@ -76,6 +76,7 @@ bool RadarDrawShader::Init(size_t spokes, size_t spoke_len_max) {
   m_channels = SHADER_COLOR_CHANNELS;
   m_spokes = spokes;
   m_spoke_len_max = spoke_len_max;
+  m_spoke_len = m_spoke_len_max;
 
   if (!CompileShader && !ShadersSupported()) {
     wxLogError(wxT("radar_pi: the OpenGL system of this computer does not support shader m_programs"));
