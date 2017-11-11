@@ -76,7 +76,7 @@ size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const in
       switch (radarType) {
 #define DEFINE_RADAR(t, x, s, l, a, b, c) \
   case t: {                               \
-    const int r[] = RANGE_MIXED_##t;      \
+    static const int r[] = RANGE_MIXED_##t;      \
     *ranges = r;                          \
     return ARRAY_SIZE(r);                 \
   }
@@ -89,7 +89,7 @@ size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const in
       switch (radarType) {
 #define DEFINE_RADAR(t, x, s, l, a, b, c) \
   case t: {                               \
-    const int r[] = RANGE_METRIC_##t;     \
+    static const int r[] = RANGE_METRIC_##t;     \
     *ranges = r;                          \
     return ARRAY_SIZE(r);                 \
   }
@@ -101,7 +101,7 @@ size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const in
       switch (radarType) {
 #define DEFINE_RADAR(t, x, s, l, a, b, c) \
   case t: {                               \
-    const int r[] = RANGE_NAUTIC_##t;     \
+    static const int r[] = RANGE_NAUTIC_##t;     \
     *ranges = r;                          \
     return ARRAY_SIZE(r);                 \
   }
