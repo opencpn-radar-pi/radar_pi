@@ -548,12 +548,10 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
             default:
               break;
           }
-        }
-        else {
+        } else {
           m_ri->m_gain.Update(AUTO_RANGE);  // AUTO OFF
         }
         break;
-
 
       case 0x0930:  // Dome offset, called bearing alignment here
         LOG_VERBOSE(wxT("0x0930: bearing alignment %d"), packet12->parm1 / 32);

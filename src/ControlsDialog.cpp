@@ -508,7 +508,6 @@ void ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar* name) {
   to->Layout();
   m_top_sizer->Layout();
   Fit();
-
 }
 
 wxSize g_buttonSize;

@@ -58,8 +58,8 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
       _("Mixed NM / short range m"), _("Kilometers"), _("Nautical Miles"),
   };
 
-  m_RangeUnits =
-      new wxRadioBox(this, wxID_ANY, _("Range Units"), wxDefaultPosition, wxDefaultSize, ARRAY_SIZE(RangeModeStrings), RangeModeStrings, 1, wxRA_SPECIFY_COLS);
+  m_RangeUnits = new wxRadioBox(this, wxID_ANY, _("Range Units"), wxDefaultPosition, wxDefaultSize, ARRAY_SIZE(RangeModeStrings),
+                                RangeModeStrings, 1, wxRA_SPECIFY_COLS);
 
   m_RangeUnits->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(OptionsDialog::OnRangeUnitsClick), NULL, this);
 

@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
+#include "radar_pi.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
 #include "SelectDialog.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
-#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

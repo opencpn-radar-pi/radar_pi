@@ -29,11 +29,11 @@
  ***************************************************************************
  */
 
+#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -1113,37 +1113,37 @@ wxString RadarInfo::GetDisplayRangeStr(int meters, bool unit) {
     s = wxString::Format(wxT("%d.5"), meters / NM(1));
   } else {
     switch (meters) {
-      case NM(1/4):
+      case NM(1 / 4):
         s = wxT("1/4");
         break;
-      case NM(1/2):
+      case NM(1 / 2):
         s = wxT("1/2");
         break;
-      case NM(3/4):
+      case NM(3 / 4):
         s = wxT("3/4");
         break;
-      case NM(1/8):
-      case NM(1/8) + 1:
+      case NM(1 / 8):
+      case NM(1 / 8) + 1:
         s = wxT("1/8");
         break;
-      case NM(3/8):
-      case NM(3/8) + 1:
+      case NM(3 / 8):
+      case NM(3 / 8) + 1:
         s = wxT("3/4");
         break;
-      case NM(1/16):
-      case NM(1/16) + 1:
+      case NM(1 / 16):
+      case NM(1 / 16) + 1:
         s = wxT("1/16");
         break;
-      case NM(3/16):
-      case NM(3/16) + 1:
+      case NM(3 / 16):
+      case NM(3 / 16) + 1:
         s = wxT("3/16");
         break;
-      case NM(1/32):
-      case NM(1/32) + 1:
+      case NM(1 / 32):
+      case NM(1 / 32) + 1:
         s = wxT("1/32");
         break;
-      case NM(3/32):
-      case NM(3/32) + 1:
+      case NM(3 / 32):
+      case NM(3 / 32) + 1:
         s = wxT("3/32");
         break;
       default:

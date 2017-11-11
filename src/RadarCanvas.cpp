@@ -160,22 +160,20 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   int rings = 1;
 
   if (meters > 0) {
-  // Instead of computing various modulo we just check which ranges
-  // result in a non-empty range string.
-  // We try 3/4th, 2/3rd, 1/2, falling back to 1 ring = no subrings
+    // Instead of computing various modulo we just check which ranges
+    // result in a non-empty range string.
+    // We try 3/4th, 2/3rd, 1/2, falling back to 1 ring = no subrings
 
-  for (rings = 4; rings > 1; rings--)
-  {
-    wxString s = m_ri->GetDisplayRangeStr(meters * (rings - 1)/ rings, false);
-    if (s.length() > 0)
-    {
-      break;
+    for (rings = 4; rings > 1; rings--) {
+      wxString s = m_ri->GetDisplayRangeStr(meters * (rings - 1) / rings, false);
+      if (s.length() > 0) {
+        break;
+      }
     }
   }
-  }
 
-  float x = sinf((float)(0.25 * PI)) * r / (double) rings;
-  float y = cosf((float)(0.25 * PI)) * r / (double) rings;
+  float x = sinf((float)(0.25 * PI)) * r / (double)rings;
+  float y = cosf((float)(0.25 * PI)) * r / (double)rings;
   // Position of the range texts
   float center_x = w / 2.0;
   float center_y = h / 2.0;
@@ -183,7 +181,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
   int py;
 
   for (int i = 1; i <= rings; i++) {
-    DrawArc(center_x, center_y, r * i / (double) rings, 0.0, 2.0 * (float)PI, 360);
+    DrawArc(center_x, center_y, r * i / (double)rings, 0.0, 2.0 * (float)PI, 360);
     if (meters != 0) {
       wxString s = m_ri->GetDisplayRangeStr(meters * i / rings, false);
       if (s.length() > 0) {

@@ -156,7 +156,7 @@ using namespace std;
 #endif
 
 #define METERS_PER_NM 1852
-#define NM(x) (METERS_PER_NM * x) // Define this such that NM(1/8) works even with integer division
+#define NM(x) (METERS_PER_NM * x)  // Define this such that NM(1/8) works even with integer division
 
 #define DEFINE_RADAR(t, n, s, l, a, b, c)
 #include "RadarType.h"

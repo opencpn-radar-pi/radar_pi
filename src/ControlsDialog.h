@@ -204,8 +204,7 @@ class ControlsDialog : public wxDialog {
 
     // To simplify the macros a control without autovalues passes in
     // CTD_AUTO_NO, which is an array of 1 with length zero.
-    if (autoValues == 1 && auto_names[0].length() == 0)
-    {
+    if (autoValues == 1 && auto_names[0].length() == 0) {
       autoValues = 0;
       m_ctrl.control[ct].autoNames = 0;
     }
@@ -520,7 +519,7 @@ class RadarControlButton : public wxButton {
   wxString firstLine;
 
   ControlsDialog *m_parent;
-  radar_pi *m_pi; // could be accessed through m_parent but the M_SETTINGS macro requires it directly in this class.0
+  radar_pi *m_pi;  // could be accessed through m_parent but the M_SETTINGS macro requires it directly in this class.0
 
   int value;
   int autoValue;   // 0 = not auto mode, 1 = normal auto value, 2... etc special, auto_names is set
