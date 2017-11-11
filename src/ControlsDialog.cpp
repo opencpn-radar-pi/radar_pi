@@ -513,17 +513,6 @@ void ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar* name) {
 
 wxSize g_buttonSize;
 
-wxString interference_rejection_names[4];
-wxString target_separation_names[4];
-wxString noise_rejection_names[3];
-wxString target_boost_names[3];
-wxString target_expansion_names[2];
-wxString scan_speed_names[2];
-wxString timed_idle_times[8];
-wxString timed_run_times[3];
-wxString target_trail_names[TRAIL_ARRAY_SIZE];
-wxString sea_clutter_names[2];
-
 void ControlsDialog::CreateControls() {
   static int BORDER = 0;
   wxString backButtonStr;
