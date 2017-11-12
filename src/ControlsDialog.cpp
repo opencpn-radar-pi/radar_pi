@@ -274,11 +274,11 @@ void RadarControlButton::UpdateLabel() {
           label << autoNames[state - RCS_AUTO_1];
         } else {
           label << _("Auto");
-          if (value != 0) {
-            label << wxString::Format(wxT(" %d"), value);
-            if (unit.length() > 0) {
-              label << wxT(" ") << unit;
-            }
+        }
+        if (value != 0) {
+          label << wxString::Format(wxT(" %d"), value);
+          if (unit.length() > 0) {
+            label << wxT(" ") << unit;
           }
         }
         break;
