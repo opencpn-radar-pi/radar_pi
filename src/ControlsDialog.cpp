@@ -1233,6 +1233,7 @@ void ControlsDialog::OnTargetsButtonClick(wxCommandEvent& event) {
 void ControlsDialog::EnterEditMode(RadarControlButton* button) {
   m_from_control = button;  // Keep a record of which button was clicked
   m_value_text->SetLabel(button->GetLabel());
+  SwitchTo(m_edit_sizer, wxT("edit"));
 
   if (button->m_comment.length() > 0) {
     m_comment_text->SetLabel(button->m_comment);
@@ -1272,7 +1273,8 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
     m_minus_ten_button->Hide();
   }
   m_edit_sizer->Layout();
-  SwitchTo(m_edit_sizer, wxT("edit"));
+  m_top_sizer->Layout();
+  Fit();
 }
 
 void ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {

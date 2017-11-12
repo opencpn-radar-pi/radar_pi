@@ -282,14 +282,14 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_GAIN: {
       LOG_VERBOSE(wxT("radar_pi: %s Gain: value=%d state=%d"), m_name.c_str(), value, (int)state);
 
-      if (state > RCS_MANUAL) {
+      if (state >= RCS_AUTO_1) {
         pck_9.packet_type = 0x924;
         pck_9.parm1 = 2;
         r = TransmitCmd(&pck_9, sizeof(pck_9));
         pck_9.packet_type = 0x91d;
         pck_9.parm1 = (state == RCS_AUTO_1) ? 0 : 1;
         r = TransmitCmd(&pck_9, sizeof(pck_9));
-      } else {
+      } else if (state == RCS_MANUAL) {
         pck_9.packet_type = 0x924;
         pck_9.parm1 = 0;
         r = TransmitCmd(&pck_9, sizeof(pck_9));
@@ -303,18 +303,18 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_SEA: {
       LOG_VERBOSE(wxT("radar_pi: %s Sea: value=%d state=%d"), m_name.c_str(), value, (int)state);
 
-      if (state > RCS_MANUAL) {
+      if (state >= RCS_AUTO_1) {
         pck_9.packet_type = 0x939;
         pck_9.parm1 = 2;  // auto
         r = TransmitCmd(&pck_9, sizeof(pck_9));
         pck_9.packet_type = 0x93b;
-        pck_9.parm1 = (state == RCS_AUTO_1) ? 0 : 1;
+        pck_9.parm1 = state - RCS_AUTO_1;
         r = TransmitCmd(&pck_9, sizeof(pck_9));
       } else if (state == RCS_OFF) {
         pck_9.packet_type = 0x939;
         pck_9.parm1 = 0;  // off
         r = TransmitCmd(&pck_9, sizeof(pck_9));
-      } else {
+      } else if (state == RCS_MANUAL) {
         pck_9.packet_type = 0x939;
         pck_9.parm1 = 1;  // manual
         r = TransmitCmd(&pck_9, sizeof(pck_9));
@@ -332,7 +332,7 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
         pck_9.packet_type = 0x933;
         pck_9.parm1 = 0;  // off
         r = TransmitCmd(&pck_9, sizeof(pck_9));
-      } else {
+      } else if (state == RCS_MANUAL) {
         pck_9.packet_type = 0x933;
         pck_9.parm1 = 1;  // manual
         r = TransmitCmd(&pck_9, sizeof(pck_9));
