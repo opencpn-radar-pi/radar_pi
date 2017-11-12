@@ -46,7 +46,7 @@
 #endif
 
 #ifndef CTD_DEF_OFF
-#define CTD_DEF_OFF -1
+#define CTD_DEF_OFF -100000
 #endif
 #ifndef CTD_DEF_ZERO
 #define CTD_DEF_ZERO 0

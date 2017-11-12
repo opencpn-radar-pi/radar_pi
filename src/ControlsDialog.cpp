@@ -43,6 +43,7 @@ enum {  // process ID's
   ID_MINUS,
   ID_MINUS_TEN,
   ID_AUTO,
+  ID_OFF,
   ID_TRAILS_MOTION,
 
   ID_TRANSPARENCY,
@@ -123,6 +124,7 @@ EVT_BUTTON(ID_PLUS, ControlsDialog::OnPlusClick)
 EVT_BUTTON(ID_MINUS, ControlsDialog::OnMinusClick)
 EVT_BUTTON(ID_MINUS_TEN, ControlsDialog::OnMinusTenClick)
 EVT_BUTTON(ID_AUTO, ControlsDialog::OnAutoClick)
+EVT_BUTTON(ID_OFF, ControlsDialog::OnOffClick)
 EVT_BUTTON(ID_TRAILS_MOTION, ControlsDialog::OnTrailsMotionClick)
 
 EVT_BUTTON(ID_TRANSPARENCY, ControlsDialog::OnRadarControlButtonClick)
@@ -524,8 +526,6 @@ void ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar* name) {
     m_from_sizer = to;
   }
 
-  UpdateControlValues(false);
-
   to->Layout();
   m_top_sizer->Layout();
   Fit();
@@ -671,6 +671,10 @@ void ControlsDialog::CreateControls() {
   // The Auto button
   m_auto_button = new RadarButton(this, ID_AUTO, g_buttonSize, _("Auto"));
   m_edit_sizer->Add(m_auto_button, 0, wxALL, BORDER);
+
+  // The Off button
+  m_off_button = new RadarButton(this, ID_OFF, g_buttonSize, _("Off"));
+  m_edit_sizer->Add(m_off_button, 0, wxALL, BORDER);
 
   m_top_sizer->Hide(m_edit_sizer);
 
@@ -1122,6 +1126,7 @@ void ControlsDialog::OnIdOKClick(wxCommandEvent& event) { m_pi->OnControlDialogC
 void ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
   m_from_control->AdjustValue(+10);
   m_auto_button->Enable();
+  m_off_button->Enable();
 
   wxString label = m_from_control->GetLabel();
   m_value_text->SetLabel(label);
@@ -1130,6 +1135,7 @@ void ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
 void ControlsDialog::OnPlusClick(wxCommandEvent& event) {
   m_from_control->AdjustValue(+1);
   m_auto_button->Enable();
+  m_off_button->Enable();
 
   wxString label = m_from_control->GetLabel();
   m_value_text->SetLabel(label);
@@ -1154,6 +1160,13 @@ void ControlsDialog::OnAutoClick(wxCommandEvent& event) {
   else {
     m_auto_button->Disable();
   }
+  m_off_button->Enable();
+}
+
+void ControlsDialog::OnOffClick(wxCommandEvent& event) {
+  m_from_control->SetState(RCS_OFF);
+  m_auto_button->Enable();
+  m_off_button->Disable();
 }
 
 void ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
@@ -1174,6 +1187,7 @@ void ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
 void ControlsDialog::OnMinusClick(wxCommandEvent& event) {
   m_from_control->AdjustValue(-1);
   m_auto_button->Enable();
+  m_off_button->Enable();
 
   wxString label = m_from_control->GetLabel();
   m_value_text->SetLabel(label);
@@ -1182,6 +1196,7 @@ void ControlsDialog::OnMinusClick(wxCommandEvent& event) {
 void ControlsDialog::OnMinusTenClick(wxCommandEvent& event) {
   m_from_control->AdjustValue(-10);
   m_auto_button->Enable();
+  m_off_button->Enable();
 
   wxString label = m_from_control->GetLabel();
   m_value_text->SetLabel(label);
@@ -1219,8 +1234,6 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
   m_from_control = button;  // Keep a record of which button was clicked
   m_value_text->SetLabel(button->GetLabel());
 
-  SwitchTo(m_edit_sizer, wxT("edit"));
-
   if (button->m_comment.length() > 0) {
     m_comment_text->SetLabel(button->m_comment);
     m_comment_text->Show();
@@ -1230,9 +1243,20 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
 
   RadarControlState state = m_from_control->m_item->GetState();
 
+  if (m_from_control->m_hasOff) {
+    m_off_button->Show();
+    if (state == RCS_OFF) {
+      m_off_button->Disable();
+    } else {
+      m_off_button->Enable();
+    }
+  } else {
+    m_off_button->Hide();
+  }
+
   if (m_from_control->m_autoValues > 0) {
     m_auto_button->Show();
-    if (state != RCS_MANUAL) {
+    if (state > RCS_MANUAL && m_from_control->m_autoValues == 1) {
       m_auto_button->Disable();
     } else {
       m_auto_button->Enable();
@@ -1248,6 +1272,7 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
     m_minus_ten_button->Hide();
   }
   m_edit_sizer->Layout();
+  SwitchTo(m_edit_sizer, wxT("edit"));
 }
 
 void ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
@@ -1689,9 +1714,8 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   // Update the text that is currently shown in the edit box, this is a copy of the button itself
-  if (m_from_control) {
-    wxString label = m_from_control->GetLabel();
-    m_value_text->SetLabel(label);
+  if (m_from_control && m_top_sizer->IsShown(m_edit_sizer)) {
+    EnterEditMode(m_from_control);
   }
 }
 
