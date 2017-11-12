@@ -98,7 +98,7 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
     }
   }
 
-  for (; radius < m_max_spoke_len; radius++) {
+  for (; radius < len - 1; radius++) {
     PointInt point = m_ri->m_polar_lookup->GetPointInt(bearing, radius);
 
     point.x += m_trail_size / 2 + m_offset.lat;
