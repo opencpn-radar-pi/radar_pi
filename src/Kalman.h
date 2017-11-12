@@ -67,7 +67,7 @@ class KalmanFilter {
  public:
   KalmanFilter(size_t spokes);
   ~KalmanFilter();
-  void SetMeasurement(Polar* p, LocalPosition* x, Polar* expected, int range);
+  void SetMeasurement(Polar* p, LocalPosition* x, Polar* expected, double scale);
   void Predict(LocalPosition* x, double delta_time);  // measured position and expected position
   void ResetFilter();
   void Update_P();

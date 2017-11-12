@@ -51,9 +51,9 @@ GuardZone::GuardZone(radar_pi* pi, RadarInfo* ri, int zone) {
   ResetBogeys();
 }
 
-void GuardZone::ProcessSpoke(SpokeBearing angle, uint8_t* data, uint8_t* hist, size_t len, int range) {
-  size_t range_start = m_inner_range * len / range;  // Convert from meters to 0..511
-  size_t range_end = m_outer_range * len / range;    // Convert from meters to 0..511
+void GuardZone::ProcessSpoke(SpokeBearing angle, uint8_t* data, uint8_t* hist, size_t len) {
+  size_t range_start = m_inner_range * m_ri->m_pixels_per_meter;  // Convert from meters to [0..spoke_len_max>
+  size_t range_end = m_outer_range * m_ri->m_pixels_per_meter;    // Convert from meters to [0..spoke_len_max>
   bool in_guard_zone = false;
   AngleDegrees degAngle = angle / 333;
 
@@ -113,8 +113,8 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, uint8_t* data, uint8_t* hist, s
     // last bearing that could add to m_running_count, so store as bogey_count;
     m_bogey_count = m_running_count;
     m_running_count = 0;
-    LOG_GUARD(wxT("%s angle=%d last_angle=%d range=%d guardzone=%d..%d (%d - %d) bogey_count=%d"), m_log_name.c_str(), angle,
-              m_last_angle, range, range_start, range_end, m_inner_range, m_outer_range, m_bogey_count);
+    LOG_GUARD(wxT("%s angle=%d last_angle=%d guardzone=%d..%d (%d - %d) bogey_count=%d"), m_log_name.c_str(), angle,
+              m_last_angle, range_start, range_end, m_inner_range, m_outer_range, m_bogey_count);
 
     // When debugging with a static ship it is hard to find moving targets, so move
     // the guard zone instead. This slowly rotates the guard zone.
@@ -163,11 +163,11 @@ void GuardZone::SearchTargets() {
     }
   }
 
-  if (m_ri->m_range_meters == 0) {
+  if (m_ri->m_pixels_per_meter == 0.) {
     return;
   }
-  size_t range_start = m_inner_range * m_ri->m_spoke_len / m_ri->m_range_meters;  // Convert from meters to 0..511
-  size_t range_end = m_outer_range * m_ri->m_spoke_len / m_ri->m_range_meters;    // Convert from meters to 0..511
+  size_t range_start = m_inner_range / m_ri->m_pixels_per_meter;  // Convert from meters to 0..511
+  size_t range_end = m_outer_range / m_ri->m_pixels_per_meter;    // Convert from meters to 0..511
   SpokeBearing hdt = SCALE_DEGREES_TO_SPOKES(m_pi->GetHeadingTrue());
   SpokeBearing start_bearing = SCALE_DEGREES_TO_SPOKES(m_start_bearing) + hdt;
   SpokeBearing end_bearing = SCALE_DEGREES_TO_SPOKES(m_end_bearing) + hdt;
@@ -180,9 +180,9 @@ void GuardZone::SearchTargets() {
     start_bearing = 0;
     end_bearing = m_ri->m_spokes;
   }
-  if (range_start < m_ri->m_spoke_len) {
-    if (range_end > m_ri->m_spoke_len) {
-      range_end = m_ri->m_spoke_len;
+  if (range_start < m_ri->m_spoke_len_max) {
+    if (range_end > m_ri->m_spoke_len_max) {
+      range_end = m_ri->m_spoke_len_max;
     }
     if (range_end < range_start) return;
 

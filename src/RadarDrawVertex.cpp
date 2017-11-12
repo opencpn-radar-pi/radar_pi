@@ -33,13 +33,6 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-void RadarDrawVertex::SetSpokeLength(size_t spoke_len) {
-  // This is called when the spoke length changes
-  wxCriticalSectionLocker lock(m_exclusive);
-
-  m_spoke_len = spoke_len;
-}
-
 bool RadarDrawVertex::Init(size_t spokes, size_t spoke_len_max) {
   wxCriticalSectionLocker lock(m_exclusive);
 
@@ -48,8 +41,7 @@ bool RadarDrawVertex::Init(size_t spokes, size_t spoke_len_max) {
   }
   m_spokes = spokes;                // How many spokes form a circle
   m_spoke_len_max = spoke_len_max;  // How long each spoke is (max)
-  m_spoke_len = m_spoke_len_max;
-
+  
   if (!m_vertices) {
     m_vertices = (VertexLine*)calloc(sizeof(VertexLine), m_spokes);
   }
@@ -136,7 +128,7 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   int r_begin = 0;
   int r_end = 0;
 
-  if (angle < 0 || angle >= (int)m_spokes || len > m_spoke_len || !m_vertices) {
+  if (angle < 0 || angle >= (int)m_spokes || len > m_spoke_len_max || !m_vertices) {
     return;
   }
 

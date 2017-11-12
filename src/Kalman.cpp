@@ -135,7 +135,7 @@ void KalmanFilter::Update_P() {
   return;
 }
 
-void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected, int range) {
+void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected, double scale) {
 // pol measured angular position
 // x expected local position
 // expected, same but in polar coordinates
@@ -147,8 +147,8 @@ void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected,
   H(0, 1) = c * x->pos.lat / q_sum;
 
   q_sum = sqrt(q_sum);
-  H(1, 0) = x->pos.lat / q_sum * 512. / (double)range;
-  H(1, 1) = x->pos.lon / q_sum * 512. / (double)range;
+  H(1, 0) = x->pos.lat / q_sum * scale;
+  H(1, 1) = x->pos.lon / q_sum * scale;
 
   HT = H.Transpose();
 

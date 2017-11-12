@@ -41,7 +41,6 @@ class RadarDraw {
   static RadarDraw* make_Draw(RadarInfo* ri, int draw_method);
 
   virtual bool Init(size_t spokes, size_t max_spoke_len) = 0;
-  virtual void SetSpokeLength(size_t spoke_len) = 0;
   virtual void DrawRadarImage() = 0;
   virtual void ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len) = 0;
 

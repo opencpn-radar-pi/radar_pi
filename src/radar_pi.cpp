@@ -1278,7 +1278,7 @@ bool radar_pi::LoadConfig(void) {
       radar_inet_aton(s.c_str(), &m_settings.radar_interface_address[n].addr);
 
       pConf->Read(wxString::Format(wxT("Radar%dRange"), r), &v, 2000);
-      ri->m_range_meters = v;
+      ri->m_range.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dRotation"), r), &v, 0);
       if (v == ORIENTATION_HEAD_UP) {
         v = ORIENTATION_STABILIZED_UP;

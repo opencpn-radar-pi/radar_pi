@@ -52,14 +52,12 @@ class RadarDrawShader : public RadarDraw {
     m_channels = SHADER_COLOR_CHANNELS;
     m_data = 0;
     m_spokes = 0;
-    m_spoke_len = 0;
+    m_spoke_len_max = 0;
   }
 
   ~RadarDrawShader();
 
   bool Init(size_t spokes, size_t spoke_len_max);
-  void SetSpokeLength(size_t spoke_len);
-
   void DrawRadarImage();
   void ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len);
 
@@ -67,9 +65,8 @@ class RadarDrawShader : public RadarDraw {
   RadarInfo* m_ri;
 
   wxCriticalSection m_exclusive;  // protects the following data structures
-  unsigned char* m_data;          // [SHADER_COLOR_CHANNELS * m_spokes * m_spoke_len];
+  unsigned char* m_data;          // [SHADER_COLOR_CHANNELS * m_spokes * m_spoke_len_max];
   size_t m_spokes;
-  size_t m_spoke_len;
   size_t m_spoke_len_max;
 
   int m_start_line;  // First line received since last draw, or -1

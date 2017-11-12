@@ -59,7 +59,7 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_old_range = 0;
   m_dir_lat = 0;
   m_dir_lon = 0;
-  m_range_meters = 0;
+  m_pixels_per_meter = 0.;
   m_auto_range_meters = 0;
   m_previous_auto_range_meters = 0;
   m_previous_orientation = ORIENTATION_HEAD_UP;
@@ -69,7 +69,6 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_history = 0;
   m_polar_lookup = 0;
   m_spokes = 0;
-  m_spoke_len = 0;
   m_spoke_len_max = 0;
   m_trails = 0;
   CLEAR_STRUCT(m_statistics);
@@ -207,6 +206,7 @@ bool RadarInfo::Init() {
   for (size_t i = 0; i < m_spokes; i++) {
     m_history[i].line = (uint8_t *)calloc(sizeof(uint8_t), m_spoke_len_max);
   }
+  m_polar_lookup = new PolarToCartesianLookup(m_spokes, m_spoke_len_max);
 
   ComputeColourMap();
 
@@ -226,7 +226,6 @@ bool RadarInfo::Init() {
   m_trails = new TrailBuffer(this, m_spokes, m_spoke_len_max);
   ComputeTargetTrails();
 
-  m_range.Update(m_range_meters);
   UpdateControlState(true);
 
   if (!m_receive) {
@@ -348,12 +347,12 @@ void RadarInfo::ResetSpokes() {
 
   if (m_draw_panel.draw) {
     for (size_t r = 0; r < m_spokes; r++) {
-      m_draw_panel.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len);
+      m_draw_panel.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max);
     }
   }
   if (m_draw_overlay.draw) {
     for (size_t r = 0; r < m_spokes; r++) {
-      m_draw_overlay.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len);
+      m_draw_overlay.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max);
     }
   }
 
@@ -385,47 +384,17 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
     data[i] = 0;
   }
 
-  if (m_pi->m_settings.show_extreme_range) {
-    data[m_spoke_len - 1] = 255;
-    data[1] = 255;  // Main bang on purpose to show radar center
-    data[0] = 255;  // Main bang on purpose to show radar center
-  }
-  for (size_t i = m_spoke_len; i < m_spoke_len_max; i++) {
-    data[i] = 0;
-  }
+  // Recompute 'pixels_per_meter' based on the actual spoke length and range in meters.
+  double pixels_per_meter = len / (double)range_meters;
 
-  if (m_range_meters != range_meters || m_spoke_len != len) {
-    if (m_polar_lookup) {
-      delete m_polar_lookup;
-      m_polar_lookup = 0;
-    }
-    if (!m_polar_lookup) {
-      m_polar_lookup = new PolarToCartesianLookup(m_spokes, len);
-    }
-
-    if (m_draw_panel.draw && m_spoke_len != len) {
-      m_draw_panel.draw->SetSpokeLength(len);
-      LOG_VERBOSE(wxT("radar_pi: %s new size %u spokes and %u bytes per spoke"), m_name.c_str(), (unsigned)m_spokes, len);
-    }
-    if (m_draw_overlay.draw && m_spoke_len != len) {
-      m_draw_overlay.draw->SetSpokeLength(len);
-      LOG_VERBOSE(wxT("radar_pi: %s overlay new size %u spokes and %u bytes per spoke"), m_name.c_str(), (unsigned)m_spokes,
-                  (unsigned)len);
-    }
-    m_spoke_len = len;
+  if (m_pixels_per_meter != pixels_per_meter) {
+    LOG_VERBOSE(wxT("radar_pi: %s detected spoke range change from %g to %g pixels/m, %d meters"), m_name.c_str(), m_pixels_per_meter, pixels_per_meter,
+                  range_meters);
+    m_pixels_per_meter = pixels_per_meter;
     ResetSpokes();
     if (m_arpa) {
       m_arpa->ClearContours();
     }
-
-    if (m_range_meters != range_meters) {
-      LOG_VERBOSE(wxT("radar_pi: %s detected spoke range change from %d to %d meters"), m_name.c_str(), m_range_meters,
-                  range_meters);
-    } else {
-      LOG_VERBOSE(wxT("radar_pi: %s detected spoke length change from %u to %u bytes"), m_name.c_str(), (unsigned)m_spoke_len,
-                  (unsigned)len);
-    }
-    m_range_meters = range_meters;
   }
 
   orientation = GetOrientation();
@@ -448,18 +417,18 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
 
   uint8_t *hist_data = m_history[bearing].line;
   m_history[bearing].time = time_rec;
+  memset(hist_data, 0, m_spoke_len_max);
   GetRadarPosition(&m_history[bearing].pos);
   for (size_t radius = 0; radius < len; radius++) {
-    hist_data[radius] = 0;
     if (data[radius] >= weakest_normal_blob) {
       // and add 1 if above threshold and set the left 2 bits, used for ARPA
-      hist_data[radius] = hist_data[radius] | 192;
+      hist_data[radius] = 192;
     }
   }
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     if (m_guard_zone[z]->m_alarm_on) {
-      m_guard_zone[z]->ProcessSpoke(angle, data, m_history[bearing].line, len, range_meters);
+      m_guard_zone[z]->ProcessSpoke(angle, data, m_history[bearing].line, len);
     }
   }
 
@@ -475,6 +444,12 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
 
   // Relative trails
   m_trails->UpdateRelativeTrails(angle, data, len);
+
+  if (m_pi->m_settings.show_extreme_range) {
+    data[len - 1] = 255;
+    data[1] = 255;  // Main bang on purpose to show radar center
+    data[0] = 255;  // Main bang on purpose to show radar center
+  }
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
     m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len);
@@ -621,7 +596,8 @@ void RadarInfo::RenderGuardZone() {
 
   start_bearing = m_no_transmit_start.GetValue();
   end_bearing = m_no_transmit_end.GetValue();
-  if (start_bearing != end_bearing && start_bearing >= -180 && end_bearing >= -180) {
+  int range = m_range.GetValue();
+  if (start_bearing != end_bearing && start_bearing >= -180 && end_bearing >= -180 && range != 0) {
     if (start_bearing < 0) {
       start_bearing += 360;
     }
@@ -629,7 +605,7 @@ void RadarInfo::RenderGuardZone() {
       end_bearing += 360;
     }
     glColor4ub(250, 255, 255, alpha);
-    DrawFilledArc(m_range_meters, 0, m_no_transmit_start.GetValue(), m_no_transmit_end.GetValue());
+    DrawFilledArc(range, 0, m_no_transmit_start.GetValue(), m_no_transmit_end.GetValue());
   }
 }
 
@@ -641,7 +617,7 @@ void RadarInfo::SetAutoRangeMeters(int meters) {
     if (test < 95 || test > 105) {  //   range change required
       // Compute a 'standard' distance. This will be slightly smaller.
       meters = GetNearestRange(meters, m_pi->m_settings.range_units);
-      if (meters != m_range_meters) {
+      if (meters != m_range.GetValue()) {
         if (m_pi->m_settings.verbose) {
           LOG_VERBOSE(wxT("radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters,
                       m_auto_range_meters);
@@ -695,13 +671,13 @@ void RadarInfo::UpdateControlState(bool all) {
 }
 
 void RadarInfo::ResetRadarImage() {
-  if (m_range_meters) {
+  if (m_pixels_per_meter != 0.) {
     ResetSpokes();
     ClearTrails();
     if (m_arpa) {
       m_arpa->ClearContours();
     }
-    m_range_meters = 0;
+    m_pixels_per_meter = 0.;
   }
 }
 
@@ -776,7 +752,7 @@ int RadarInfo::GetOrientation() {
 }
 
 void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_rotate, bool overlay) {
-  if (!m_range_meters) {
+  if (m_pixels_per_meter == 0.) {
     return;
   }
   bool arpa_on = false;
@@ -847,8 +823,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
       glPopMatrix();
     }
 
-    double radar_pixels_per_meter = ((double)m_spoke_len_max) / m_range_meters;
-    double radar_scale = scale / radar_pixels_per_meter;
+    double radar_scale = scale / m_pixels_per_meter;
     glPushMatrix();
     glTranslated(center.x, center.y, 0);
     glRotated(panel_rotate, 0.0, 0.0, 1.0);
@@ -879,11 +854,10 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     glPopMatrix();
 
     glPushMatrix();
-    double overscan = (double)m_range_meters / (double)range;
-    double radar_scale = overscan / m_spoke_len;
+    double radar_scale = scale / m_pixels_per_meter;
     glScaled(radar_scale, radar_scale, 1.);
     glRotated(panel_rotate, 0.0, 0.0, 1.0);
-    LOG_DIALOG(wxT("radar_pi: %s render overscan=%g range=%d"), m_name.c_str(), overscan, range);
+    LOG_DIALOG(wxT("radar_pi: %s render scale=%g radar_scale=%g"), m_name.c_str(), scale, radar_scale);
     RenderRadarImage(&m_draw_panel);
     glPopMatrix();
 
@@ -921,7 +895,7 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
       s << _("Unknown");
       break;
   }
-  if (m_range_meters) {
+  if (m_range.GetValue() != 0) {
     s << wxT("\n") << GetRangeText();
   }
   if (s.Right(1) != wxT("\n")) {
@@ -1092,7 +1066,7 @@ wxString RadarInfo::GetRangeText() {
     m_range_text << wxT(")");
   }
 
-  LOG_DIALOG(wxT("radar_pi: range label '%s' for spokerange=%d range=%d auto=%d"), m_range_text.c_str(), m_range_meters, meters,
+  LOG_DIALOG(wxT("radar_pi: range label '%s' for range=%d auto=%d"), m_range_text.c_str(), meters,
              m_auto_range_mode);
   return m_range_text;
 }

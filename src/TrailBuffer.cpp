@@ -51,6 +51,7 @@ TrailBuffer::TrailBuffer(RadarInfo *ri, size_t spokes, size_t max_spoke_len) {
   m_ri = ri;
   m_spokes = spokes;
   m_max_spoke_len = max_spoke_len;
+  m_previous_pixels_per_meter = 0.;
   m_trail_size = max_spoke_len * 2 + MARGIN * 2;
   m_true_trails = (TrailRevolutionsAge *)calloc(sizeof(TrailRevolutionsAge), m_trail_size * m_trail_size);
   m_relative_trails = (TrailRevolutionsAge *)calloc(sizeof(TrailRevolutionsAge), m_spokes * m_max_spoke_len);
@@ -149,7 +150,7 @@ void TrailBuffer::ZoomTrails(float zoom_factor) {
 
   for (size_t i = 0; i < m_spokes; i++) {
     for (size_t j = 0; j < m_max_spoke_len; j++) {
-      size_t index_j = (size_t)((float)j * zoom_factor);
+      size_t index_j = (size_t)(j * zoom_factor);
       if (index_j >= m_max_spoke_len) break;
       if (M_RELATIVE_TRAILS(i, j) != 0) {
         m_copy_relative_trails[i * M_RELATIVE_TRAILS_STRIDE + index_j] = M_RELATIVE_TRAILS(i, j);
@@ -218,16 +219,16 @@ void TrailBuffer::UpdateTrailPosition() {
   }
 
   // zooming of trails required? First check conditions
-  if (m_ri->m_old_range == 0 || m_ri->m_range_meters == 0) {
+  if (m_previous_pixels_per_meter == 0. || m_ri->m_pixels_per_meter == 0.) {
     ClearTrails();
-    if (m_ri->m_range_meters == 0) {
+    if (m_ri->m_pixels_per_meter == 0.) {
       return;
     }
-    m_ri->m_old_range = m_ri->m_range_meters;
-  } else if (m_ri->m_old_range != m_ri->m_range_meters) {
+    m_previous_pixels_per_meter = m_ri->m_pixels_per_meter;
+  } else if (m_previous_pixels_per_meter != m_ri->m_pixels_per_meter) {
     // zoom trails
-    float zoom_factor = (float)m_ri->m_old_range / (float)m_ri->m_range_meters;
-    m_ri->m_old_range = m_ri->m_range_meters;
+    double zoom_factor = m_previous_pixels_per_meter / m_ri->m_pixels_per_meter;
+    m_previous_pixels_per_meter = m_ri->m_pixels_per_meter;
 
     // center the image before zooming
     // otherwise the offset might get too large
@@ -251,8 +252,8 @@ void TrailBuffer::UpdateTrailPosition() {
   m_pos = radar;
 
   // get (floating point) shift of the ship in radar pixels
-  double fshift_lat = dif_lat * 60. * 1852. / (double)m_ri->m_range_meters * (double)(m_ri->m_spoke_len);
-  double fshift_lon = dif_lon * 60. * 1852. / (double)m_ri->m_range_meters * (double)(m_ri->m_spoke_len);
+  double fshift_lat = dif_lat * 60. * 1852. * m_ri->m_pixels_per_meter;
+  double fshift_lon = dif_lon * 60. * 1852. * m_ri->m_pixels_per_meter;
   fshift_lon *= cos(deg2rad(radar.lat));  // at higher latitudes a degree of longitude is fewer meters
 
   // Get the integer pixel shift, first add previous rounding error

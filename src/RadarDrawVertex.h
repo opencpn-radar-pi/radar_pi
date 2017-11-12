@@ -48,10 +48,11 @@ class RadarDrawVertex : public RadarDraw {
     m_vertices = 0;
     m_count = 0;
     m_oom = false;
+    m_spokes = 0;
+    m_spoke_len_max = 0;
   }
 
   bool Init(size_t spokes, size_t spoke_len_max);
-  void SetSpokeLength(size_t spoke_len);
   void DrawRadarImage();
   void ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len);
 
@@ -64,7 +65,6 @@ class RadarDrawVertex : public RadarDraw {
  private:
   RadarInfo* m_ri;
   size_t m_spokes;
-  size_t m_spoke_len;
   size_t m_spoke_len_max;
 
   static const int VERTEX_PER_TRIANGLE = 3;

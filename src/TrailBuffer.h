@@ -68,6 +68,7 @@ class TrailBuffer {
   size_t m_spokes;
   size_t m_max_spoke_len;
   size_t m_trail_size;
+  double m_previous_pixels_per_meter;
 
   TrailRevolutionsAge *m_true_trails;           // m_trails_size * m_trails_size
   TrailRevolutionsAge *m_relative_trails;       // m_spokes * m_max_spoke_len

@@ -68,7 +68,16 @@ class RadarInfo {
   RadarType m_radar_type;  // Which radar type
   size_t m_spokes;         // # of spokes per rotation
   size_t m_spoke_len_max;  // Max # of bytes per spoke
-  size_t m_spoke_len;      // current # of bytes per spoke (with some radars this is dependent on range)
+
+  // Digital radars cannot produce just any range. When asked for a particular value
+  // they produce a slightly larger range.
+  //
+  // The 'official' value, which is also what we tell users, is set via m_range.Update() by
+  // the receive threads.
+  // The 'display' value (m_range_meters), used to compute the proper display, which is up to 40% larger
+  // is set by ProcessRadarSpoke.
+  // int m_range_meters;  // internal value, length of m_spoke_len_max in meters
+  double m_pixels_per_meter; // How many pixels of a line in a meter
 
   double m_course;  // m_course is the moving everage of m_hdt used for course_up
   double m_course_log[COURSE_SAMPLES];
@@ -237,15 +246,6 @@ class RadarInfo {
   GeoPosition m_mouse_pos;
   double m_mouse_ebl[ORIENTATION_NUMBER];
   double m_mouse_vrm;
-
-  // Digital radars cannot produce just any range. When asked for a particular value
-  // they produce a slightly larger range.
-  //
-  // The 'official' value, which is also what we tell users, is set via m_range.Update() by
-  // the receive threads.
-  // The 'display' value (m_range_meters), used to compute the proper display, which is up to 40% larger
-  // is set by ProcessRadarSpoke.
-  int m_range_meters;  // report from radar of what the actual length is to be displayed
 
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
   wxColour m_colour_map_rgb[BLOB_COLOURS];
