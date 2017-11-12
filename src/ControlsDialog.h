@@ -34,6 +34,9 @@
 
 #include "RadarControlItem.h"
 #include "radar_pi.h"
+#define HAVE_CONTROL(a,b,c,d,e,f,g)
+#include "SoftwareControlSet.h"
+#undef HAVE_CONTROL
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -56,6 +59,7 @@ struct ControlInfo {
   ControlType type;
   int autoValues;
   wxString *autoNames;
+  bool hasOff;
   int defaultValue;
   int minValue;
   int maxValue;
@@ -109,6 +113,7 @@ class ControlsDialog : public wxDialog {
     m_minus_button = 0;
     m_minus_ten_button = 0;
     m_auto_button = 0;
+    m_off_button = 0;
     m_power_button = 0;
     m_guard_zone = 0;
     m_guard_zone_text = 0;
@@ -196,6 +201,10 @@ class ControlsDialog : public wxDialog {
   void DefineControl(ControlType ct, int autoValues, wxString auto_names[], int defaultValue, int minValue, int maxValue,
                      int stepValue, int nameCount, wxString names[]) {
     m_ctrl.control[ct].type = ct;
+    if (defaultValue == CTD_DEF_OFF) {
+      m_ctrl.control[ct].hasOff = true;
+      defaultValue = CTD_DEF_ZERO;
+    }
     m_ctrl.control[ct].defaultValue = defaultValue;
     m_ctrl.control[ct].minValue = minValue;
     m_ctrl.control[ct].maxValue = maxValue;
@@ -251,6 +260,7 @@ class ControlsDialog : public wxDialog {
   wxButton *m_minus_button;
   wxButton *m_minus_ten_button;
   wxButton *m_auto_button;
+  wxButton *m_off_button;
 
   // Main control
   wxButton *m_guard_1_button;
@@ -346,6 +356,7 @@ class ControlsDialog : public wxDialog {
   void OnMinusClick(wxCommandEvent &event);
   void OnMinusTenClick(wxCommandEvent &event);
   void OnAutoClick(wxCommandEvent &event);
+  void OnOffClick(wxCommandEvent &event);
   void OnTrailsMotionClick(wxCommandEvent &event);
 
   void OnAdjustButtonClick(wxCommandEvent &event);
@@ -448,29 +459,6 @@ class RadarControlButton : public wxButton {
 
   };
 
-  /*
-  RadarControlButton(ControlsDialog *parent, wxWindowID id, wxSize buttonSize, const wxString &label, ControlType ct,
-                     bool newHasAuto, int newValue, const wxString &newUnit = wxT(""), const wxString &newComment = wxT("")) {
-    Create(parent, id, label + wxT("\n"), wxDefaultPosition, buttonSize, 0, wxDefaultValidator, label);
-
-    m_parent = parent;
-    m_pi = m_parent->m_pi;
-    m_minValue = 0;
-    m_maxValue = 100;
-    m_item->Update(newValue, RCS_MANUAL);
-    m_autoValues = newHasAuto ? 1 : 0;
-    autoNames = 0;
-    firstLine = label;
-    unit = newUnit;
-    m_comment = newComment;
-    names = 0;
-    controlType = ct;
-
-    this->SetFont(m_parent->m_pi->m_font);
-    UpdateLabel();
-  }
-   */
-
   RadarControlButton(ControlsDialog *parent, wxWindowID id, const wxString &label, ControlInfo &ctrl, RadarControlItem *item,
                      const wxString &newUnit = wxT(""), const wxString &newComment = wxT("")) {
     Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
@@ -482,6 +470,7 @@ class RadarControlButton : public wxButton {
     autoNames = ctrl.autoNames;
     m_minValue = ctrl.minValue;
     m_maxValue = ctrl.maxValue;
+    m_hasOff = ctrl.hasOff;
     if (ctrl.nameCount > 1) {
       names = ctrl.names;
     } else if (ctrl.nameCount == 1 && ctrl.names[0].length() > 0) {
@@ -519,6 +508,7 @@ class RadarControlButton : public wxButton {
   int m_autoValues;  // 0 = none, 1 = normal auto value, 2.. etc special, auto_names is set
   int m_minValue;
   int m_maxValue;
+  bool m_hasOff;
 
  private:
   const wxString *names;
