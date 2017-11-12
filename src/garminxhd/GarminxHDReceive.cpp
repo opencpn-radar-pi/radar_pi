@@ -60,9 +60,9 @@ struct radar_line {
   uint32_t range_meters;
   uint32_t display_meters;
   uint16_t fill_3;
-  uint16_t scan_length_bytes_s;        // Number of video bytes in the packet, Short
+  uint16_t scan_length_bytes_s;  // Number of video bytes in the packet, Short
   uint16_t fills_4;
-  uint32_t scan_length_bytes_i;        // Number of video bytes in the packet, Integer
+  uint32_t scan_length_bytes_i;  // Number of video bytes in the packet, Integer
   uint16_t fills_5;
   uint8_t line_data[GARMIN_XHD_MAX_SPOKE_LEN];
 };
@@ -545,11 +545,11 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
             case 0:
               state = RCS_AUTO_1;
               break;
-              
+
             case 1:
               state = RCS_AUTO_2;  // AUTO HIGH
               break;
-              
+
             default:
               break;
           }
@@ -580,10 +580,6 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
             m_rain_mode = RCS_MANUAL;
             return true;
           }
-          case 2: {
-            m_rain_mode = RCS_AUTO_1;
-            return true;
-          }
         }
         break;
 
@@ -609,8 +605,11 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
             return true;
           }
           case 2: {
-            // Auto sea clutter
-            m_sea_mode = RCS_AUTO_1;
+            // Auto sea clutter, but don't set it if we already have a better state
+            // via 0x093b
+            if (m_sea_mode < RCS_AUTO_1) {
+              m_sea_mode = RCS_AUTO_1;
+            }
             return true;
           }
         }
@@ -622,6 +621,16 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
         LOG_VERBOSE(wxT("0x093a: sea clutter %d"), packet10->parm1);
         m_sea_clutter = packet10->parm1 / 100;
         m_ri->m_sea.Update(m_sea_clutter, m_sea_mode);
+        return true;
+      }
+
+      case 0x093b: {
+        // Sea Clutter auto level
+        LOG_VERBOSE(wxT("0x093a: sea clutter auto %d"), packet9->parm1);
+        if (m_sea_mode >= RCS_AUTO_1) {
+          m_sea_mode = (RadarControlState) (RCS_AUTO_1 + packet9->parm1);
+          m_ri->m_sea.Update(m_sea_clutter, m_sea_mode);
+        }
         return true;
       }
 
