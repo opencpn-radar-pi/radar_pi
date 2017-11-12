@@ -59,7 +59,11 @@ struct radar_line {
   uint16_t fill_2;
   uint32_t range_meters;
   uint32_t display_meters;
-  uint32_t fill_3[2];
+  uint16_t fill_3;
+  uint16_t scan_length_bytes_s;        // Number of video bytes in the packet, Short
+  uint16_t fills_4;
+  uint32_t scan_length_bytes_i;        // Number of video bytes in the packet, Integer
+  uint16_t fills_5;
   uint8_t line_data[GARMIN_XHD_MAX_SPOKE_LEN];
 };
 
@@ -83,12 +87,14 @@ void GarminxHDReceive::ProcessFrame(const uint8_t *data, int len) {
   m_ri->m_data_timeout = now + DATA_TIMEOUT;
   m_ri->m_state.Update(RADAR_TRANSMIT);
 
+  const size_t packet_header_length = sizeof(radar_line) - GARMIN_XHD_MAX_SPOKE_LEN;
   m_ri->m_statistics.packets++;
-  if (len < (int)sizeof(packet) - GARMIN_XHD_MAX_SPOKE_LEN + packet->scan_length) {
-    // The packet is so small it contains no scan_lines, quit!
+  if (len < (int)packet_header_length || len < (int)packet_header_length + packet->scan_length_bytes_s) {
+    // The packet is incomplete!
     m_ri->m_statistics.broken_packets++;
     return;
   }
+  len -= packet_header_length;
 
   if (m_first_receive) {
     m_first_receive = false;
@@ -119,7 +125,7 @@ void GarminxHDReceive::ProcessFrame(const uint8_t *data, int len) {
   SpokeBearing b = MOD_SPOKES(bearing_raw);
 
   m_ri->m_range.Update(packet->range_meters);
-  m_ri->ProcessRadarSpoke(a, b, packet->line_data, packet->scan_length, packet->display_meters, time_rec);
+  m_ri->ProcessRadarSpoke(a, b, packet->line_data, len, packet->display_meters, time_rec);
 }
 
 SOCKET GarminxHDReceive::PickNextEthernetCard() {
