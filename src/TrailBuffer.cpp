@@ -99,7 +99,10 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
     }
   }
 
-  for (; radius < len - 1; radius++) {
+  // Now process the rest of the spoke from len to m_spoke_len_max.
+  // This will only be called when the current spoke length is smaller than the max.
+  // we need to update the trail 'age' for those points.
+  for (; radius < m_ri->m_spoke_len_max; radius++) {
     PointInt point = m_ri->m_polar_lookup->GetPointInt(bearing, radius);
 
     point.x += m_trail_size / 2 + m_offset.lat;
