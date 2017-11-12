@@ -196,7 +196,7 @@ string ControlTypeNames[CT_MAX] = {
 wxString guard_zone_names[2];
 
 void RadarControlButton::AdjustValue(int adjustment) {
-  int oldValue = m_item.GetValue();
+  int oldValue = m_item->GetValue();
   int newValue = oldValue + adjustment;
 
 
@@ -205,17 +205,17 @@ void RadarControlButton::AdjustValue(int adjustment) {
   } else if (newValue > m_maxValue) {
     newValue = m_maxValue;
   }
-  m_item.Update(newValue, RCS_MANUAL);
+  m_item->Update(newValue, RCS_MANUAL);
 
-  if (m_item.IsModified()) {
+  if (m_item->IsModified()) {
     UpdateLabel();
     LOG_VERBOSE(wxT("%s Adjusting %s by %d from %d to %d"), m_parent->m_log_name.c_str(), GetName(), adjustment, oldValue, newValue);
-    m_pi->SetControlValue(m_parent->m_ri->m_radar, controlType, m_item);
+    m_pi->SetControlValue(m_parent->m_ri->m_radar, controlType, *m_item);
   }
 }
 
 bool RadarControlButton::ToggleState() {
-  RadarControlState state = m_item.GetState();
+  RadarControlState state = m_item->GetState();
 
   if (state == RCS_OFF) {
     state = RCS_MANUAL;
@@ -233,26 +233,26 @@ bool RadarControlButton::ToggleState() {
 }
 
 void RadarControlButton::SetState(RadarControlState state) {
-  m_item.Update(m_item.GetValue(), state);
+  m_item->UpdateState(state);
   // Send state to radar TODO check if this is necessary
   LOG_VERBOSE(wxT("%s TODO %s SEND DIRECTLY state %d value %d, max=%d"), m_parent->m_log_name.c_str(), ControlTypeNames[controlType], state,
-              m_item.GetValue(), m_autoValues);
-  m_parent->m_ri->SetControlValue(controlType, m_item);
+              m_item->GetValue(), m_autoValues);
+  m_parent->m_ri->SetControlValue(controlType, *m_item);
 }
 
 void RadarControlButton::UpdateLabel() {
   RadarControlState state;
   int value;
 
-  if (m_item.GetButton(&value, &state)) {
+  if (m_item->GetButton(&value, &state)) {
     wxString label;
 
     LOG_VERBOSE(wxT("%s Set %s to state %d value %d, max=%d"), m_parent->m_log_name.c_str(), ControlTypeNames[controlType], state,
-                m_item.GetValue(), m_autoValues);
+                m_item->GetValue(), m_autoValues);
 
     label << firstLine << wxT("\n");
 
-    switch (m_item.GetState()) {
+    switch (m_item->GetState()) {
       case RCS_OFF:
         label << _("Off");
         break;
@@ -294,12 +294,12 @@ void RadarRangeControlButton::SetRangeLabel() {
 
 void RadarRangeControlButton::AdjustValue(int adjustment) {
   LOG_VERBOSE(wxT("%s Adjusting %s by %d"), m_parent->m_log_name.c_str(), GetName(), adjustment);
-  m_item.Update(m_item.GetValue(), RCS_MANUAL);
+  m_item->UpdateState(RCS_MANUAL);
   m_parent->m_ri->AdjustRange(adjustment);  // send new value to the radar
 }
 
 void RadarRangeControlButton::SetAuto(int newValue) {
-  m_item.Update(m_item.GetValue(), RCS_AUTO_1);
+  m_item->UpdateState(RCS_AUTO_1);
   m_parent->m_ri->m_auto_range_mode = true;
 }
 
@@ -687,14 +687,14 @@ void ControlsDialog::CreateControls() {
   if (m_ctrl.control[CT_NOISE_REJECTION].type) {
     // The NOISE REJECTION button
     m_noise_rejection_button = new RadarControlButton(this, ID_NOISE_REJECTION, _("Noise rejection"),
-                                                      m_ctrl.control[CT_NOISE_REJECTION], m_ri->m_noise_rejection);
+                                                      m_ctrl.control[CT_NOISE_REJECTION], &m_ri->m_noise_rejection);
     m_advanced_sizer->Add(m_noise_rejection_button, 0, wxALL, BORDER);
   }
 
   // The TARGET EXPANSION button
   if (m_ctrl.control[CT_TARGET_EXPANSION].type) {
     m_target_expansion_button = new RadarControlButton(this, ID_TARGET_EXPANSION, _("Target expansion"),
-                                                       m_ctrl.control[CT_TARGET_EXPANSION], m_ri->m_target_expansion);
+                                                       m_ctrl.control[CT_TARGET_EXPANSION], &m_ri->m_target_expansion);
     m_advanced_sizer->Add(m_target_expansion_button, 0, wxALL, BORDER);
   }
 
@@ -703,28 +703,28 @@ void ControlsDialog::CreateControls() {
   if (m_ctrl.control[CT_INTERFERENCE_REJECTION].type) {
     m_interference_rejection_button =
         new RadarControlButton(this, ID_INTERFERENCE_REJECTION, _("Interference rejection"),
-                               m_ctrl.control[CT_INTERFERENCE_REJECTION], m_ri->m_interference_rejection);
+                               m_ctrl.control[CT_INTERFERENCE_REJECTION], &m_ri->m_interference_rejection);
     m_advanced_sizer->Add(m_interference_rejection_button, 0, wxALL, BORDER);
   }
 
   // The TARGET SEPARATION button
   if (m_ctrl.control[CT_TARGET_SEPARATION].type) {
     m_target_separation_button = new RadarControlButton(this, ID_TARGET_SEPARATION, _("Target separation"),
-                                                        m_ctrl.control[CT_TARGET_SEPARATION], m_ri->m_target_separation);
+                                                        m_ctrl.control[CT_TARGET_SEPARATION], &m_ri->m_target_separation);
     m_advanced_sizer->Add(m_target_separation_button, 0, wxALL, BORDER);
   }
 
   // The SCAN SPEED button
   if (m_ctrl.control[CT_SCAN_SPEED].type) {
     m_scan_speed_button =
-        new RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), m_ctrl.control[CT_SCAN_SPEED], m_ri->m_scan_speed);
+        new RadarControlButton(this, ID_SCAN_SPEED, _("Scan speed"), m_ctrl.control[CT_SCAN_SPEED], &m_ri->m_scan_speed);
     m_advanced_sizer->Add(m_scan_speed_button, 0, wxALL, BORDER);
   }
 
   // The TARGET BOOST button
   if (m_ctrl.control[CT_TARGET_BOOST].type) {
     m_target_boost_button =
-        new RadarControlButton(this, ID_SCAN_SPEED, _("Target boost"), m_ctrl.control[CT_TARGET_BOOST], m_ri->m_target_boost);
+        new RadarControlButton(this, ID_SCAN_SPEED, _("Target boost"), m_ctrl.control[CT_TARGET_BOOST], &m_ri->m_target_boost);
     m_advanced_sizer->Add(m_target_boost_button, 0, wxALL, BORDER);
   }
 
@@ -751,28 +751,28 @@ void ControlsDialog::CreateControls() {
   // The BEARING ALIGNMENT button
   if (m_ctrl.control[CT_BEARING_ALIGNMENT].type) {
     m_bearing_alignment_button = new RadarControlButton(this, ID_BEARING_ALIGNMENT, _("Bearing alignment"),
-                                                        m_ctrl.control[CT_BEARING_ALIGNMENT], m_ri->m_bearing_alignment);
+                                                        m_ctrl.control[CT_BEARING_ALIGNMENT], &m_ri->m_bearing_alignment);
     m_installation_sizer->Add(m_bearing_alignment_button, 0, wxALL, BORDER);
   }
 
   // The NO TRANSMIT START button
   if (m_ctrl.control[CT_NO_TRANSMIT_START].type) {
     m_no_transmit_start_button = new RadarControlButton(this, ID_NO_TRANSMIT_START, _("No transmit start"),
-                                                        m_ctrl.control[CT_NO_TRANSMIT_START], m_ri->m_no_transmit_start);
+                                                        m_ctrl.control[CT_NO_TRANSMIT_START], &m_ri->m_no_transmit_start);
     m_installation_sizer->Add(m_no_transmit_start_button, 0, wxALL, BORDER);
   }
 
   // The NO TRANSMIT END button
   if (m_ctrl.control[CT_NO_TRANSMIT_END].type) {
     m_no_transmit_end_button = new RadarControlButton(this, ID_NO_TRANSMIT_END, _("No transmit end"),
-                                                        m_ctrl.control[CT_NO_TRANSMIT_END], m_ri->m_no_transmit_end);
+                                                        m_ctrl.control[CT_NO_TRANSMIT_END], &m_ri->m_no_transmit_end);
     m_installation_sizer->Add(m_no_transmit_end_button, 0, wxALL, BORDER);
   }
 
   // The ANTENNA HEIGHT button
   if (m_ctrl.control[CT_ANTENNA_HEIGHT].type) {
     m_antenna_height_button = new RadarControlButton(this, ID_ANTENNA_HEIGHT, _("Antenna height"),
-                                                     m_ctrl.control[CT_ANTENNA_HEIGHT], m_ri->m_antenna_height);
+                                                     m_ctrl.control[CT_ANTENNA_HEIGHT], &m_ri->m_antenna_height);
     m_installation_sizer->Add(m_antenna_height_button, 0, wxALL, BORDER);
   }
 
@@ -780,7 +780,7 @@ void ControlsDialog::CreateControls() {
   if (m_ctrl.control[CT_ANTENNA_FORWARD].type) {
     m_antenna_forward_button =
         new RadarControlButton(this, ID_ANTENNA_FORWARD, _("Antenna forward"), m_ctrl.control[CT_ANTENNA_FORWARD],
-                               m_ri->m_antenna_forward, _("m"), _("relative to GPS") + wxT("\n") + _("negative = behind"));
+                               &m_ri->m_antenna_forward, _("m"), _("relative to GPS") + wxT("\n") + _("negative = behind"));
     m_installation_sizer->Add(m_antenna_forward_button, 0, wxALL, BORDER);
   }
 
@@ -788,7 +788,7 @@ void ControlsDialog::CreateControls() {
   if (m_ctrl.control[CT_ANTENNA_STARBOARD].type) {
     m_antenna_starboard_button =
         new RadarControlButton(this, ID_ANTENNA_STARBOARD, _("Antenna starboard"), m_ctrl.control[CT_ANTENNA_STARBOARD],
-                               m_ri->m_antenna_starboard, _("m"), _("relative to GPS") + wxT("\n") + _("negative = port"));
+                               &m_ri->m_antenna_starboard, _("m"), _("relative to GPS") + wxT("\n") + _("negative = port"));
     m_installation_sizer->Add(m_antenna_starboard_button, 0, wxALL, BORDER);
   }
 
@@ -796,7 +796,7 @@ void ControlsDialog::CreateControls() {
   if (m_ctrl.control[CT_LOCAL_INTERFERENCE_REJECTION].type) {
     m_local_interference_rejection_button =
         new RadarControlButton(this, ID_LOCAL_INTERFERENCE_REJECTION, _("Local interference rej."),
-                               m_ctrl.control[CT_LOCAL_INTERFERENCE_REJECTION], m_ri->m_local_interference_rejection);
+                               m_ctrl.control[CT_LOCAL_INTERFERENCE_REJECTION], &m_ri->m_local_interference_rejection);
     m_installation_sizer->Add(m_local_interference_rejection_button, 0, wxALL, BORDER);
   }
 
@@ -804,14 +804,14 @@ void ControlsDialog::CreateControls() {
   if (m_ctrl.control[CT_SIDE_LOBE_SUPPRESSION].type) {
     m_side_lobe_suppression_button =
         new RadarControlButton(this, ID_SIDE_LOBE_SUPPRESSION, _("Side lobe suppression"), m_ctrl.control[CT_SIDE_LOBE_SUPPRESSION],
-                               m_ri->m_side_lobe_suppression);
+                               &m_ri->m_side_lobe_suppression);
     m_installation_sizer->Add(m_side_lobe_suppression_button, 0, wxALL, BORDER);
   }
 
   // The MAIN BANG SIZE button
   if (m_ctrl.control[CT_MAIN_BANG_SIZE].type) {
     m_main_bang_size_button = new RadarControlButton(this, ID_MAIN_BANG_SIZE, _("Main bang size"),
-                                                     m_ctrl.control[CT_MAIN_BANG_SIZE], m_ri->m_main_bang_size, _("pixels"));
+                                                     m_ctrl.control[CT_MAIN_BANG_SIZE], &m_ri->m_main_bang_size, _("pixels"));
     m_installation_sizer->Add(m_main_bang_size_button, 0, wxALL, BORDER);
   }
 
@@ -891,25 +891,25 @@ void ControlsDialog::CreateControls() {
 
   // The RANGE button
   if (m_ctrl.control[CT_RANGE].type) {
-    m_range_button = new RadarRangeControlButton(this, ID_RANGE, g_buttonSize, _("Range"));
+    m_range_button = new RadarRangeControlButton(this, ID_RANGE, g_buttonSize, _("Range"), &m_ri->m_range);
     m_adjust_sizer->Add(m_range_button, 0, wxALL, BORDER);
   }
 
   // The GAIN button
   if (m_ctrl.control[CT_GAIN].type) {
-    m_gain_button = new RadarControlButton(this, ID_GAIN, _("Gain"), m_ctrl.control[CT_GAIN], m_ri->m_gain);
+    m_gain_button = new RadarControlButton(this, ID_GAIN, _("Gain"), m_ctrl.control[CT_GAIN], &m_ri->m_gain);
     m_adjust_sizer->Add(m_gain_button, 0, wxALL, BORDER);
   }
 
   // The SEA button
   if (m_ctrl.control[CT_SEA].type) {
-    m_sea_button = new RadarControlButton(this, ID_SEA, _("Sea clutter"), m_ctrl.control[CT_SEA], m_ri->m_sea);
+    m_sea_button = new RadarControlButton(this, ID_SEA, _("Sea clutter"), m_ctrl.control[CT_SEA], &m_ri->m_sea);
     m_adjust_sizer->Add(m_sea_button, 0, wxALL, BORDER);
   }
 
   // The RAIN button
   if (m_ctrl.control[CT_RAIN].type) {
-    m_rain_button = new RadarControlButton(this, ID_RAIN, _("Rain clutter"), m_ctrl.control[CT_RAIN], m_ri->m_rain);
+    m_rain_button = new RadarControlButton(this, ID_RAIN, _("Rain clutter"), m_ctrl.control[CT_RAIN], &m_ri->m_rain);
     m_adjust_sizer->Add(m_rain_button, 0, wxALL, BORDER);
   }
 
@@ -969,14 +969,14 @@ void ControlsDialog::CreateControls() {
   // The Trails Motion button
   if (m_ctrl.control[CT_TRAILS_MOTION].type) {
     m_trails_motion_button = new RadarControlButton(this, ID_TRAILS_MOTION, _("Off/Relative/True trails"),
-                                                    m_ctrl.control[CT_TRAILS_MOTION], m_ri->m_trails_motion);
+                                                    m_ctrl.control[CT_TRAILS_MOTION], &m_ri->m_trails_motion);
     m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
   }
 
   // The TARGET_TRAIL button
   if (m_ctrl.control[CT_TARGET_TRAILS].type) {
     m_target_trails_button =
-        new RadarControlButton(this, ID_TARGET_TRAILS, _("Target trails"), m_ctrl.control[CT_TARGET_TRAILS], m_ri->m_target_trails);
+        new RadarControlButton(this, ID_TARGET_TRAILS, _("Target trails"), m_ctrl.control[CT_TARGET_TRAILS], &m_ri->m_target_trails);
     m_view_sizer->Add(m_target_trails_button, 0, wxALL, BORDER);
     m_target_trails_button->Hide();
   }
@@ -994,14 +994,14 @@ void ControlsDialog::CreateControls() {
   // The REFRESHRATE button
   if (m_ctrl.control[CT_REFRESHRATE].type) {
     m_refresh_rate_button = new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), m_ctrl.control[CT_REFRESHRATE],
-                                                   m_pi->m_settings.refreshrate);
+                                                   &m_pi->m_settings.refreshrate);
     m_view_sizer->Add(m_refresh_rate_button, 0, wxALL, BORDER);
   }
 
   // The TRANSPARENCY button
   if (m_ctrl.control[CT_TRANSPARENCY].type) {
     m_transparency_button = new RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), m_ctrl.control[CT_TRANSPARENCY],
-                                                   m_pi->m_settings.overlay_transparency);
+                                                   &m_pi->m_settings.overlay_transparency);
     m_view_sizer->Add(m_transparency_button, 0, wxALL, BORDER);
   }
 
@@ -1028,14 +1028,14 @@ void ControlsDialog::CreateControls() {
   // The TIMED TRANSMIT button
   if (m_ctrl.control[CT_TIMED_IDLE].type) {
     m_timed_idle_button = new RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), m_ctrl.control[CT_TIMED_IDLE],
-                                                 m_pi->m_settings.timed_idle);
+                                                 &m_pi->m_settings.timed_idle);
     m_power_sizer->Add(m_timed_idle_button, 0, wxALL, BORDER);
   }
 
   // The TIMED RUNTIME button
   if (m_ctrl.control[CT_TIMED_IDLE].type) {
     m_timed_run_button =
-        new RadarControlButton(this, ID_TIMED_RUN, _("Runtime"), m_ctrl.control[CT_TIMED_RUN], m_pi->m_settings.idle_run_time);
+        new RadarControlButton(this, ID_TIMED_RUN, _("Runtime"), m_ctrl.control[CT_TIMED_RUN], &m_pi->m_settings.idle_run_time);
     m_power_sizer->Add(m_timed_run_button, 0, wxALL, BORDER);
   }
 
@@ -1228,7 +1228,7 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
     m_comment_text->Hide();
   }
 
-  RadarControlState state = m_from_control->m_item.GetState();
+  RadarControlState state = m_from_control->m_item->GetState();
 
   if (m_from_control->m_autoValues > 0) {
     m_auto_button->Show();

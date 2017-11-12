@@ -448,6 +448,7 @@ class RadarControlButton : public wxButton {
 
   };
 
+  /*
   RadarControlButton(ControlsDialog *parent, wxWindowID id, wxSize buttonSize, const wxString &label, ControlType ct,
                      bool newHasAuto, int newValue, const wxString &newUnit = wxT(""), const wxString &newComment = wxT("")) {
     Create(parent, id, label + wxT("\n"), wxDefaultPosition, buttonSize, 0, wxDefaultValidator, label);
@@ -456,7 +457,7 @@ class RadarControlButton : public wxButton {
     m_pi = m_parent->m_pi;
     m_minValue = 0;
     m_maxValue = 100;
-    m_item.Update(newValue, RCS_MANUAL);
+    m_item->Update(newValue, RCS_MANUAL);
     m_autoValues = newHasAuto ? 1 : 0;
     autoNames = 0;
     firstLine = label;
@@ -468,8 +469,9 @@ class RadarControlButton : public wxButton {
     this->SetFont(m_parent->m_pi->m_font);
     UpdateLabel();
   }
+   */
 
-  RadarControlButton(ControlsDialog *parent, wxWindowID id, const wxString &label, ControlInfo &ctrl, RadarControlItem &item,
+  RadarControlButton(ControlsDialog *parent, wxWindowID id, const wxString &label, ControlInfo &ctrl, RadarControlItem *item,
                      const wxString &newUnit = wxT(""), const wxString &newComment = wxT("")) {
     Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
 
@@ -502,7 +504,7 @@ class RadarControlButton : public wxButton {
   }
 
   void Set(RadarControlItem &item) {
-    m_item = item;
+    m_item->Update(item.GetValue(), item.GetState());
 
     UpdateLabel();
   }
@@ -513,7 +515,7 @@ class RadarControlButton : public wxButton {
   virtual void UpdateLabel();
 
   wxString m_comment;
-  RadarControlItem m_item;
+  RadarControlItem *m_item;
   int m_autoValues;  // 0 = none, 1 = normal auto value, 2.. etc special, auto_names is set
   int m_minValue;
   int m_maxValue;
@@ -533,14 +535,14 @@ class RadarControlButton : public wxButton {
 
 class RadarRangeControlButton : public RadarControlButton {
  public:
-  RadarRangeControlButton(ControlsDialog *parent, wxWindowID id, wxSize buttonSize, const wxString &label) {
+  RadarRangeControlButton(ControlsDialog *parent, wxWindowID id, wxSize buttonSize, const wxString &label, RadarControlItem * item) {
     Create(parent, id, label + wxT("\n"), wxDefaultPosition, buttonSize, 0, wxDefaultValidator, label);
 
     m_parent = parent;
     m_pi = m_parent->m_pi;
     m_minValue = 0;
     m_maxValue = 0;
-    m_item.Update(0, RCS_MANUAL);  // means: never set
+    m_item = item;
     m_autoValues = 1;
     autoNames = 0;
     unit = wxT("");

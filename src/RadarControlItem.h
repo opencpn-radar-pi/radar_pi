@@ -61,32 +61,33 @@ enum RadarControlState {
 
 class RadarControlItem {
  public:
+  RadarControlItem() {
+    m_value = 0;
+    m_state = RCS_OFF;
+    m_button_v = -10000; // Unlikely value so that first actual set sets proper value + mod
+    m_button_s = RCS_OFF;
+    m_mod = true;
+  }
+
   // The copy constructor
   RadarControlItem(const RadarControlItem &other) {
-    m_value = other.m_value;
-    m_state = other.m_state;
-    m_button_v = other.m_button_v;
-    m_button_s = other.m_button_s;
-    m_mod = other.m_mod;
+    Update(other.m_value, other.m_state);
   }
 
   // The assignment constructor
   RadarControlItem &operator=(const RadarControlItem &other) {
     if (this != &other) {  // self-assignment check expected
-      m_value = other.m_value;
-      m_state = other.m_state;
-      m_button_v = other.m_button_v;
-      m_button_s = other.m_button_s;
-      m_mod = other.m_mod;
+      Update(other.m_value, other.m_state);
     }
     return *this;
   }
 
   // The assignment constructor to allow "item = value"
   RadarControlItem &operator=(int v) {
-    Update(v);
+    Update(v, RCS_MANUAL);
     return *this;
   }
+
 
   void Update(int v, RadarControlState s) {
     wxCriticalSectionLocker lock(m_exclusive);
@@ -97,6 +98,16 @@ class RadarControlItem {
       m_button_s = s;
     }
     m_value = v;
+    m_state = s;
+  };
+
+  void UpdateState(RadarControlState s) {
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    if (s != m_button_s) {
+      m_mod = true;
+      m_button_s = s;
+    }
     m_state = s;
   };
 
@@ -158,14 +169,6 @@ class RadarControlItem {
     wxCriticalSectionLocker lock(m_exclusive);
 
     return m_mod;
-  }
-
-  RadarControlItem() {
-    m_value = 0;
-    m_state = RCS_MANUAL;
-    m_button_v = 0;
-    m_button_s = RCS_MANUAL;
-    m_mod = false;
   }
 
  protected:
