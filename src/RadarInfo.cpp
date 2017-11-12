@@ -1282,7 +1282,7 @@ int RadarInfo::GetNearestRange(int range_meters, int units) {
   size_t count = RadarFactory::GetRadarRanges(m_radar_type, M_SETTINGS.range_units, &ranges);
   size_t n;
 
-  for (n = count; n > 0; n--) {
+  for (n = count - 1; n > 0; n--) {
     if (ranges[n] <= range_meters) {  // step down until past the right range value
       break;
     }
