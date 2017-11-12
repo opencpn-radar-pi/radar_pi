@@ -206,9 +206,9 @@ void RadarControlButton::AdjustValue(int adjustment) {
     newValue = m_maxValue;
   }
   m_item.Update(newValue, RCS_MANUAL);
-  UpdateLabel();
 
   if (m_item.IsModified()) {
+    UpdateLabel();
     LOG_VERBOSE(wxT("%s Adjusting %s by %d from %d to %d"), m_parent->m_log_name.c_str(), GetName(), adjustment, oldValue, newValue);
     m_pi->SetControlValue(m_parent->m_ri->m_radar, controlType, m_item);
   }
@@ -228,7 +228,7 @@ bool RadarControlButton::ToggleState() {
   } else {
     state = RCS_AUTO_1;
   }
-  m_pi->SetControlValue(m_parent->m_ri->m_radar, controlType, m_item);
+  SetState(state);
   return m_autoValues > 1;
 }
 
