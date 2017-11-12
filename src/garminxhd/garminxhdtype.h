@@ -25,9 +25,9 @@ PLUGIN_END_NAMESPACE
         1852 * 12, 1852 * 16, 1852 * 24, 1852 * 36, 1852 * 48                                                             \
   }
 
-// Garmin xHD has 1440 spokes of varying 547 - 697 bytes each
+// Garmin xHD has 1440 spokes of varying 519 - 705 bytes each
 #define GARMIN_XHD_SPOKES 1440
-#define GARMIN_XHD_MAX_SPOKE_LEN 697
+#define GARMIN_XHD_MAX_SPOKE_LEN 705
 
 #if SPOKES_MAX < GARMIN_XHD_SPOKES
 #undef SPOKES_MAX
