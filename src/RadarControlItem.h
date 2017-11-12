@@ -38,48 +38,99 @@ PLUGIN_BEGIN_NAMESPACE
 
 class radar_pi;
 
-class radar_control_item {
+//
+// a RadarControlItem encapsulates a particular control, for instance
+// sea clutter or gain.
+//
+// Some controls are always only just a value.
+// Some other controls have state as well.
+
+enum RadarControlState {
+  RCS_OFF = -1,
+  RCS_MANUAL = 0,
+  RCS_AUTO_1,
+  RCS_AUTO_2,
+  RCS_AUTO_3,
+  RCS_AUTO_4,
+  RCS_AUTO_5,
+  RCS_AUTO_6,
+  RCS_AUTO_7,
+  RCS_AUTO_8,
+  RCS_AUTO_9
+};
+
+class RadarControlItem {
  public:
   // The copy constructor
-  radar_control_item(const radar_control_item &other) {
+  RadarControlItem(const RadarControlItem &other) {
     m_value = other.m_value;
-    m_button = other.m_button;
+    m_state = other.m_state;
+    m_button_v = other.m_button_v;
+    m_button_s = other.m_button_s;
     m_mod = other.m_mod;
   }
 
   // The assignment constructor
-  radar_control_item &operator=(const radar_control_item &other) {
+  RadarControlItem &operator=(const RadarControlItem &other) {
     if (this != &other) {  // self-assignment check expected
       m_value = other.m_value;
-      m_button = other.m_button;
+      m_state = other.m_state;
+      m_button_v = other.m_button_v;
+      m_button_s = other.m_button_s;
       m_mod = other.m_mod;
     }
     return *this;
   }
 
   // The assignment constructor to allow "item = value"
-  radar_control_item &operator=(int v) {
+  RadarControlItem &operator=(int v) {
     Update(v);
     return *this;
   }
 
+  void Update(int v, RadarControlState s) {
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    if (v != m_button_v || s != m_button_s) {
+      m_mod = true;
+      m_button_v = v;
+      m_button_s = s;
+    }
+    m_value = v;
+    m_state = s;
+  };
+
   void Update(int v) {
     wxCriticalSectionLocker lock(m_exclusive);
 
-    if (v != m_button) {
+    if (v != m_button_v) {
       m_mod = true;
-      m_button = v;
+      m_button_v = v;
     }
     m_value = v;
   };
 
-  bool GetButton(int *value) {
+  bool GetButton(int *value, RadarControlState *state) {
     wxCriticalSectionLocker lock(m_exclusive);
-    bool changed = m_mod;
     if (value) {
-      *value = this->m_value;
+      *value = this->m_button_v;
+    }
+    if (state) {
+      *state = this->m_button_s;
     }
 
+    bool changed = m_mod;
+    m_mod = false;
+    return changed;
+  }
+
+  bool GetButton(int *value) {
+    wxCriticalSectionLocker lock(m_exclusive);
+    if (value) {
+      *value = this->m_button_v;
+    }
+
+    bool changed = m_mod;
     m_mod = false;
     return changed;
   }
@@ -88,7 +139,7 @@ class radar_control_item {
     wxCriticalSectionLocker lock(m_exclusive);
 
     m_mod = false;
-    return m_button;
+    return m_button_v;
   }
 
   int GetValue() {
@@ -97,22 +148,32 @@ class radar_control_item {
     return m_value;
   }
 
+  RadarControlState GetState() {
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    return m_state;
+  }
+
   bool IsModified() {
     wxCriticalSectionLocker lock(m_exclusive);
 
     return m_mod;
   }
 
-  radar_control_item() {
+  RadarControlItem() {
     m_value = 0;
-    m_button = 0;
+    m_state = RCS_MANUAL;
+    m_button_v = 0;
+    m_button_s = RCS_MANUAL;
     m_mod = false;
   }
 
  protected:
   wxCriticalSection m_exclusive;
   int m_value;
-  int m_button;
+  int m_button_v;
+  RadarControlState m_state;
+  RadarControlState m_button_s;
   bool m_mod;
 };
 

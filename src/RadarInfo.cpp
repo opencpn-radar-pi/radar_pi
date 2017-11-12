@@ -631,8 +631,8 @@ void RadarInfo::SetAutoRangeMeters(int meters) {
   }
 }
 
-bool RadarInfo::SetControlValue(ControlType controlType, int value, int autoValue) {
-  return m_control->SetControlValue(controlType, value, autoValue);
+bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item) {
+  return m_control->SetControlValue(controlType, item);
 }
 
 void RadarInfo::ShowRadarWindow(bool show) { m_radar_panel->ShowFrame(show); }

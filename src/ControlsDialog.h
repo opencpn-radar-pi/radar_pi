@@ -32,15 +32,13 @@
 #ifndef _CONTROLSDIALOG_H_
 #define _CONTROLSDIALOG_H_
 
-#include "radar_control_item.h"
+#include "RadarControlItem.h"
 #include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
 #define OFFSCREEN_CONTROL_X (-10000)
 #define OFFSCREEN_CONTROL_Y (-10000)
-
-#define AUTO_RANGE (-20000)  // Auto values are -20000 - auto_index
 
 const static wxPoint OFFSCREEN_CONTROL = wxPoint(OFFSCREEN_CONTROL_X, OFFSCREEN_CONTROL_Y);
 
@@ -443,6 +441,8 @@ class DynamicStaticText : public wxStaticText {
 };
 
 class RadarControlButton : public wxButton {
+  friend class RadarRangeControlButton;
+
  public:
   RadarControlButton(){
 
@@ -454,40 +454,32 @@ class RadarControlButton : public wxButton {
 
     m_parent = parent;
     m_pi = m_parent->m_pi;
-    minValue = 0;
-    maxValue = 100;
-    value = 0;
-    if (ct == CT_GAIN) {
-      value = 50;
-    }
-    autoValue = 0;
-    autoValues = newHasAuto ? 1 : 0;
+    m_minValue = 0;
+    m_maxValue = 100;
+    m_item.Update(newValue, RCS_MANUAL);
+    m_autoValues = newHasAuto ? 1 : 0;
     autoNames = 0;
     firstLine = label;
     unit = newUnit;
-    comment = newComment;
+    m_comment = newComment;
     names = 0;
     controlType = ct;
-    if (autoValues > 0) {
-      SetLocalAuto(AUTO_RANGE - 1);  // Not sent to radar, radar will update state
-    } else {
-      SetLocalValue(newValue);
-    }
 
     this->SetFont(m_parent->m_pi->m_font);
+    UpdateLabel();
   }
 
-  RadarControlButton(ControlsDialog *parent, wxWindowID id, const wxString &label, ControlInfo &ctrl, radar_control_item &item,
+  RadarControlButton(ControlsDialog *parent, wxWindowID id, const wxString &label, ControlInfo &ctrl, RadarControlItem &item,
                      const wxString &newUnit = wxT(""), const wxString &newComment = wxT("")) {
     Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
 
     m_parent = parent;
     m_pi = m_parent->m_pi;
-    value = ctrl.defaultValue;
-    autoValues = ctrl.autoValues;
+
+    m_autoValues = ctrl.autoValues;
     autoNames = ctrl.autoNames;
-    minValue = ctrl.minValue;
-    maxValue = ctrl.maxValue;
+    m_minValue = ctrl.minValue;
+    m_maxValue = ctrl.maxValue;
     if (ctrl.nameCount > 1) {
       names = ctrl.names;
     } else if (ctrl.nameCount == 1 && ctrl.names[0].length() > 0) {
@@ -496,40 +488,46 @@ class RadarControlButton : public wxButton {
     } else {
       names = 0;
     }
-    autoValue = 0;
     firstLine = label;
     if (newUnit.length() > 0) {
       unit = newUnit;
     }
-    comment = newComment;
+    m_comment = newComment;
     controlType = ctrl.type;
 
-    SetLocalValue(item.GetButton());
+    m_item = item;
 
     this->SetFont(m_parent->m_pi->m_font);
-    // SetLocalValue(item.GetButton());
+    UpdateLabel();
+  }
+
+  void Set(RadarControlItem &item) {
+    m_item = item;
+
+    UpdateLabel();
   }
 
   virtual void AdjustValue(int adjustment);
-  virtual void SetAuto(int newValue);
-  virtual void SetLocalValue(int newValue);
-  virtual void SetLocalAuto(int newValue);
+  virtual bool ToggleState();  // Returns desired new state for Auto/Off button show.
+  virtual void SetState(RadarControlState state);
+  virtual void UpdateLabel();
+
+  wxString m_comment;
+  RadarControlItem m_item;
+  int m_autoValues;  // 0 = none, 1 = normal auto value, 2.. etc special, auto_names is set
+  int m_minValue;
+  int m_maxValue;
+
+ private:
   const wxString *names;
   const wxString *autoNames;
   wxString unit;
-  wxString comment;
 
   wxString firstLine;
 
   ControlsDialog *m_parent;
   radar_pi *m_pi;  // could be accessed through m_parent but the M_SETTINGS macro requires it directly in this class.0
 
-  int value;
-  int autoValue;   // 0 = not auto mode, 1 = normal auto value, 2... etc special, auto_names is set
-  int autoValues;  // 0 = none, 1 = normal auto value, 2.. etc special, auto_names is set
-
-  int minValue;
-  int maxValue;
   ControlType controlType;
 };
 
@@ -540,11 +538,10 @@ class RadarRangeControlButton : public RadarControlButton {
 
     m_parent = parent;
     m_pi = m_parent->m_pi;
-    minValue = 0;
-    maxValue = 0;
-    value = -1;  // means: never set
-    autoValue = 0;
-    autoValues = 1;
+    m_minValue = 0;
+    m_maxValue = 0;
+    m_item.Update(0, RCS_MANUAL);  // means: never set
+    m_autoValues = 1;
     autoNames = 0;
     unit = wxT("");
     firstLine = label;

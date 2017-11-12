@@ -1288,16 +1288,22 @@ bool radar_pi::LoadConfig(void) {
       ri->m_boot_state.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dMinContourLength"), r), &ri->m_min_contour_length, 6);
 
+      RadarControlItem item;
       pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
-      SetControlValue(n, CT_TARGET_TRAILS, v, 0);
+      item.Update(v);
+      SetControlValue(n, CT_TARGET_TRAILS, item);
       pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);
-      SetControlValue(n, CT_TRAILS_MOTION, v, 0);
-      pConf->Read(wxT("MainBangSize"), &v, 0);
-      SetControlValue(n, CT_MAIN_BANG_SIZE, v, 0);
-      pConf->Read(wxT("AntennaForward"), &v, 0);
-      SetControlValue(n, CT_ANTENNA_FORWARD, v, 0);
-      pConf->Read(wxT("AntennaStarboard"), &v, 0);
-      SetControlValue(n, CT_ANTENNA_STARBOARD, v, 0);
+      item.Update(v);
+      SetControlValue(n, CT_TRAILS_MOTION, item);
+      pConf->Read(wxString::Format(wxT("Radar%dMainBangSize"), r), &v, 0);
+      item.Update(v);
+      SetControlValue(n, CT_MAIN_BANG_SIZE, item);
+      pConf->Read(wxString::Format(wxT("Radar%dAntennaForward"), r), &v, 0);
+      item.Update(v);
+      SetControlValue(n, CT_ANTENNA_FORWARD, item);
+      pConf->Read(wxString::Format(wxT("Radar%dAntennaStarboard"), r), &v, 0);
+      item.Update(v);
+      SetControlValue(n, CT_ANTENNA_STARBOARD, item);
 
       pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[n], n ? false : true);
       pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * n);
@@ -1695,17 +1701,16 @@ bool radar_pi::FindAIS_at_arpaPos(const GeoPosition &pos, const double &dist) {
   return hit;
 }
 
-bool radar_pi::SetControlValue(int radar, ControlType controlType, int value,
-                               int autoValue) {  // sends the command to the radar
-  LOG_TRANSMIT(wxT("radar_pi: %s set %s = %d"), m_radar[radar]->m_name.c_str(), ControlTypeNames[controlType].c_str(), value);
+bool radar_pi::SetControlValue(int radar, ControlType controlType, RadarControlItem &item) {  // sends the command to the radar
+  LOG_TRANSMIT(wxT("radar_pi: %s set %s value=%d state=%d"), m_radar[radar]->m_name.c_str(), ControlTypeNames[controlType].c_str(), item.GetValue(), item.GetState());
   switch (controlType) {
     case CT_TRANSPARENCY: {
-      m_settings.overlay_transparency = value;
+      m_settings.overlay_transparency = item;
       UpdateAllControlStates(true);
       return true;
     }
     case CT_TIMED_IDLE: {
-      m_settings.timed_idle = value;
+      m_settings.timed_idle = item;
       m_idle_standby = 0;
       m_idle_transmit = 0;
       if (m_radar[0]->m_state.GetValue() == RADAR_TRANSMIT || m_radar[1]->m_state.GetValue() == RADAR_TRANSMIT) {
@@ -1717,44 +1722,44 @@ bool radar_pi::SetControlValue(int radar, ControlType controlType, int value,
       return true;
     }
     case CT_TIMED_RUN: {
-      m_settings.idle_run_time = value;
+      m_settings.idle_run_time = item;
       UpdateAllControlStates(true);
       return true;
     }
     case CT_REFRESHRATE: {
-      m_settings.refreshrate = value;
+      m_settings.refreshrate = item;
       UpdateAllControlStates(true);
       return true;
     }
     case CT_TARGET_TRAILS: {
-      m_radar[radar]->m_target_trails.Update(value);
+      m_radar[radar]->m_target_trails = item;
       m_radar[radar]->ComputeColourMap();
       m_radar[radar]->ComputeTargetTrails();
       return true;
     }
     case CT_TRAILS_MOTION: {
-      m_radar[radar]->m_trails_motion.Update(value);
+      m_radar[radar]->m_trails_motion = item;
       m_radar[radar]->ComputeColourMap();
       m_radar[radar]->ComputeTargetTrails();
       return true;
     }
     case CT_MAIN_BANG_SIZE: {
-      m_radar[radar]->m_main_bang_size.Update(value);
+      m_radar[radar]->m_main_bang_size = item;
       return true;
     }
 
     case CT_ANTENNA_FORWARD: {
-      m_radar[radar]->m_antenna_forward.Update(value);
+      m_radar[radar]->m_antenna_forward = item;
       return true;
     }
 
     case CT_ANTENNA_STARBOARD: {
-      m_radar[radar]->m_antenna_starboard.Update(value);
+      m_radar[radar]->m_antenna_starboard = item;
       return true;
     }
 
     default: {
-      if (m_radar[radar]->SetControlValue(controlType, value, autoValue)) {
+      if (m_radar[radar]->SetControlValue(controlType, item)) {
         return true;
       }
     }

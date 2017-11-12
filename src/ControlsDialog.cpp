@@ -196,78 +196,95 @@ string ControlTypeNames[CT_MAX] = {
 wxString guard_zone_names[2];
 
 void RadarControlButton::AdjustValue(int adjustment) {
-  int newValue = value + adjustment;
+  int oldValue = m_item.GetValue();
+  int newValue = oldValue + adjustment;
 
-  autoValue = 0;  // Disable Auto
 
-  if (newValue < minValue) {
-    newValue = minValue;
-  } else if (newValue > maxValue) {
-    newValue = maxValue;
+  if (newValue < m_minValue) {
+    newValue = m_minValue;
+  } else if (newValue > m_maxValue) {
+    newValue = m_maxValue;
   }
-  if (newValue != value) {
-    LOG_VERBOSE(wxT("%s Adjusting %s by %d from %d to %d"), m_parent->m_log_name.c_str(), GetName(), adjustment, value, newValue);
-    if (m_pi->SetControlValue(m_parent->m_ri->m_radar, controlType, newValue, 0)) {
-      SetLocalValue(newValue);
+  m_item.Update(newValue, RCS_MANUAL);
+  UpdateLabel();
+
+  if (m_item.IsModified()) {
+    LOG_VERBOSE(wxT("%s Adjusting %s by %d from %d to %d"), m_parent->m_log_name.c_str(), GetName(), adjustment, oldValue, newValue);
+    m_pi->SetControlValue(m_parent->m_ri->m_radar, controlType, m_item);
+  }
+}
+
+bool RadarControlButton::ToggleState() {
+  RadarControlState state = m_item.GetState();
+
+  if (state == RCS_OFF) {
+    state = RCS_MANUAL;
+    return true;
+  } else if (state == RCS_MANUAL && m_autoValues == 0) {
+    state = RCS_OFF;
+    return false;
+  } else if (state < RCS_MANUAL + m_autoValues) {
+    state = (RadarControlState) (state + 1);
+  } else {
+    state = RCS_AUTO_1;
+  }
+  m_pi->SetControlValue(m_parent->m_ri->m_radar, controlType, m_item);
+  return m_autoValues > 1;
+}
+
+void RadarControlButton::SetState(RadarControlState state) {
+  m_item.Update(m_item.GetValue(), state);
+  // Send state to radar TODO check if this is necessary
+  LOG_VERBOSE(wxT("%s TODO %s SEND DIRECTLY state %d value %d, max=%d"), m_parent->m_log_name.c_str(), ControlTypeNames[controlType], state,
+              m_item.GetValue(), m_autoValues);
+  m_parent->m_ri->SetControlValue(controlType, m_item);
+}
+
+void RadarControlButton::UpdateLabel() {
+  RadarControlState state;
+  int value;
+
+  if (m_item.GetButton(&value, &state)) {
+    wxString label;
+
+    LOG_VERBOSE(wxT("%s Set %s to state %d value %d, max=%d"), m_parent->m_log_name.c_str(), ControlTypeNames[controlType], state,
+                m_item.GetValue(), m_autoValues);
+
+    label << firstLine << wxT("\n");
+
+    switch (m_item.GetState()) {
+      case RCS_OFF:
+        label << _("Off");
+        break;
+
+      case RCS_MANUAL:
+        if (names) {
+          label.Printf(wxT("%s\n%s"), firstLine.c_str(), names[value].c_str());
+        } else {
+          label.Printf(wxT("%s\n%d"), firstLine.c_str(), value);
+        }
+        if (unit.length() > 0) {
+          label << wxT(" ") << unit;
+        }
+        break;
+
+      default:
+        // Various AUTO states
+        if (autoNames && state > RCS_MANUAL && state <= RCS_MANUAL + m_autoValues) {
+          label << autoNames[state - RCS_AUTO_1];
+        } else {
+          label << _("Auto");
+          if (value != 0) {
+            label << wxString::Format(wxT(" %d"), value);
+            if (unit.length() > 0) {
+              label << wxT(" ") << unit;
+            }
+          }
+        }
+        break;
     }
+    this->SetLabel(label);
   }
-}
-
-void RadarControlButton::SetLocalValue(int newValue) {  // sets value in the button without sending new value to the radar
-  if (newValue <= AUTO_RANGE) {
-    SetLocalAuto(AUTO_RANGE - newValue);
-    return;
-  }
-  if (newValue != value) {
-    LOG_VERBOSE(wxT("%s Set %s value %d -> %d, range=%d..%d"), m_parent->m_log_name.c_str(), ControlTypeNames[controlType], value,
-                newValue, minValue, maxValue);
-  }
-  if (newValue < minValue) {
-    value = minValue;
-  } else if (newValue > maxValue) {
-    value = maxValue;
-  } else {
-    value = newValue;
-  }
-  autoValue = 0;
-
-  wxString label;
-
-  if (names) {
-    label.Printf(wxT("%s\n%s"), firstLine.c_str(), names[value].c_str());
-  } else {
-    label.Printf(wxT("%s\n%d"), firstLine.c_str(), value);
-  }
-  if (unit.length() > 0) {
-    label << wxT(" ") << unit;
-  }
-
-  this->SetLabel(label);
-}
-
-void RadarControlButton::SetAuto(int newAutoValue) {
-  SetLocalAuto(newAutoValue);
-  m_parent->m_ri->SetControlValue(controlType, value, newAutoValue);
-}
-
-void RadarControlButton::SetLocalAuto(int newValue) {  // sets auto in the button without sending new value
-                                                       // to the radar
-  wxString label;
-
-  autoValue = newValue;
-  LOG_VERBOSE(wxT("%s Set %s to auto value %d, max=%d"), m_parent->m_log_name.c_str(), ControlTypeNames[controlType], autoValue,
-              autoValues);
-  if (autoValue == 0) {
-    SetLocalValue(value);  // To update label to old non-auto value
-    return;
-  }
-  label << firstLine << wxT("\n");
-  if (autoNames && autoValue > 0 && autoValue <= autoValues) {
-    label << autoNames[autoValue - 1];
-  } else {
-    label << _("Auto");
-  }
-  this->SetLabel(label);
 }
 
 void RadarRangeControlButton::SetRangeLabel() {
@@ -277,12 +294,12 @@ void RadarRangeControlButton::SetRangeLabel() {
 
 void RadarRangeControlButton::AdjustValue(int adjustment) {
   LOG_VERBOSE(wxT("%s Adjusting %s by %d"), m_parent->m_log_name.c_str(), GetName(), adjustment);
-  autoValue = 0;
+  m_item.Update(m_item.GetValue(), RCS_MANUAL);
   m_parent->m_ri->AdjustRange(adjustment);  // send new value to the radar
 }
 
 void RadarRangeControlButton::SetAuto(int newValue) {
-  autoValue = newValue;
+  m_item.Update(m_item.GetValue(), RCS_AUTO_1);
   m_parent->m_ri->m_auto_range_mode = true;
 }
 
@@ -1103,8 +1120,6 @@ void ControlsDialog::OnClose(wxCloseEvent& event) { m_pi->OnControlDialogClose(m
 void ControlsDialog::OnIdOKClick(wxCommandEvent& event) { m_pi->OnControlDialogClose(m_ri); }
 
 void ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
-  LOG_DIALOG(wxT("%s OnPlustTenClick for %s value %d"), m_log_name.c_str(), m_from_control->GetLabel().c_str(),
-             m_from_control->value + 10);
   m_from_control->AdjustValue(+10);
   m_auto_button->Enable();
 
@@ -1133,13 +1148,11 @@ void ControlsDialog::OnBackClick(wxCommandEvent& event) {
 }
 
 void ControlsDialog::OnAutoClick(wxCommandEvent& event) {
-  if (m_from_control->autoValues == 1) {
-    m_from_control->SetAuto(1);
+  if (m_from_control->ToggleState()) {
+    m_auto_button->Enable();
+  }
+  else {
     m_auto_button->Disable();
-  } else if (m_from_control->autoValue < m_from_control->autoValues) {
-    m_from_control->SetAuto(m_from_control->autoValue + 1);
-  } else {
-    m_from_control->SetAuto(0);
   }
 }
 
@@ -1208,16 +1221,18 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
 
   SwitchTo(m_edit_sizer, wxT("edit"));
 
-  if (button->comment.length() > 0) {
-    m_comment_text->SetLabel(button->comment);
+  if (button->m_comment.length() > 0) {
+    m_comment_text->SetLabel(button->m_comment);
     m_comment_text->Show();
   } else {
     m_comment_text->Hide();
   }
 
-  if (m_from_control->autoValues > 0) {
+  RadarControlState state = m_from_control->m_item.GetState();
+
+  if (m_from_control->m_autoValues > 0) {
     m_auto_button->Show();
-    if (m_from_control->autoValue != 0 && m_from_control->autoValues == 1) {
+    if (state != RCS_MANUAL) {
       m_auto_button->Disable();
     } else {
       m_auto_button->Enable();
@@ -1225,7 +1240,7 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
   } else {
     m_auto_button->Hide();
   }
-  if (m_from_control->maxValue > 20) {
+  if (m_from_control->m_maxValue > 20) {
     m_plus_ten_button->Show();
     m_minus_ten_button->Show();
   } else {
@@ -1422,7 +1437,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
         o << _("Transmit");
         break;
     }
-    m_timed_idle_button->SetLocalValue(0);
+    m_timed_idle_button->SetState(RCS_OFF);
   } else {
     o << m_pi->GetTimedIdleText();
   }
@@ -1495,7 +1510,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   if (m_ri->m_target_trails.IsModified() || refreshAll) {
-    m_target_trails_button->SetLocalValue(m_ri->m_target_trails.GetButton());
+    m_target_trails_button->Set(m_ri->m_target_trails);
   }
 
   if (m_ri->m_trails_motion.IsModified() || refreshAll) {
@@ -1567,104 +1582,100 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   // gain
   if (m_gain_button && (m_ri->m_gain.IsModified() || refreshAll)) {
-    int button = m_ri->m_gain.GetButton();
-    m_gain_button->SetLocalValue(button);
-    LOG_VERBOSE(wxT("radar_pi: %s %d -> GUI gain %d auto %d"), m_ri->m_name.c_str(), button, m_gain_button->value, m_gain_button->autoValue);
+    m_gain_button->Set(m_ri->m_gain);
   }
 
   //  rain
   if (m_rain_button && (m_ri->m_rain.IsModified() || refreshAll)) {
-    m_rain_button->SetLocalValue(m_ri->m_rain.GetButton());
+    m_rain_button->Set(m_ri->m_rain);
   }
 
   //   sea
   if (m_sea_button && (m_ri->m_sea.IsModified() || refreshAll)) {
-    int button = m_ri->m_sea.GetButton();
-    m_sea_button->SetLocalValue(button);
+    m_sea_button->Set(m_ri->m_sea);
   }
 
   //   target_boost
   if (m_target_boost_button && (m_ri->m_target_boost.IsModified() || refreshAll)) {
-    m_target_boost_button->SetLocalValue(m_ri->m_target_boost.GetButton());
+    m_target_boost_button->Set(m_ri->m_target_boost);
   }
 
   //   target_expansion
   if (m_target_expansion_button && (m_ri->m_target_expansion.IsModified() || refreshAll)) {
-    m_target_expansion_button->SetLocalValue(m_ri->m_target_expansion.GetButton());
+    m_target_expansion_button->Set(m_ri->m_target_expansion);
   }
 
   //  noise_rejection
   if (m_noise_rejection_button && (m_ri->m_noise_rejection.IsModified() || refreshAll)) {
-    m_noise_rejection_button->SetLocalValue(m_ri->m_noise_rejection.GetButton());
+    m_noise_rejection_button->Set(m_ri->m_noise_rejection);
   }
 
   //  target_separation
   if (m_target_separation_button && (m_ri->m_target_separation.IsModified() || refreshAll)) {
-    m_target_separation_button->SetLocalValue(m_ri->m_target_separation.GetButton());
+    m_target_separation_button->Set(m_ri->m_target_separation);
   }
 
   //  interference_rejection
   if (m_interference_rejection_button && (m_ri->m_interference_rejection.IsModified() || refreshAll)) {
-    m_interference_rejection_button->SetLocalValue(m_ri->m_interference_rejection.GetButton());
+    m_interference_rejection_button->Set(m_ri->m_interference_rejection);
   }
 
   // scanspeed
   if (m_scan_speed_button && (m_ri->m_scan_speed.IsModified() || refreshAll)) {
-    m_scan_speed_button->SetLocalValue(m_ri->m_scan_speed.GetButton());
+    m_scan_speed_button->Set(m_ri->m_scan_speed);
   }
 
   //   antenna height
   if (m_antenna_height_button && (m_ri->m_antenna_height.IsModified() || refreshAll)) {
-    m_antenna_height_button->SetLocalValue(m_ri->m_antenna_height.GetButton());
+    m_antenna_height_button->Set(m_ri->m_antenna_height);
   }
 
   //  bearing alignment
   if (m_bearing_alignment_button && (m_ri->m_bearing_alignment.IsModified() || refreshAll)) {
-    m_bearing_alignment_button->SetLocalValue(m_ri->m_bearing_alignment.GetButton());
+    m_bearing_alignment_button->Set(m_ri->m_bearing_alignment);
   }
 
   //  no transmit zone
   if (m_no_transmit_start_button && (m_ri->m_no_transmit_start.IsModified() || refreshAll)) {
-    m_no_transmit_start_button->SetLocalValue(m_ri->m_no_transmit_start.GetButton());
+    m_no_transmit_start_button->Set(m_ri->m_no_transmit_start);
   }
   if (m_no_transmit_end_button && (m_ri->m_no_transmit_end.IsModified() || refreshAll)) {
-    m_no_transmit_end_button->SetLocalValue(m_ri->m_no_transmit_end.GetButton());
+    m_no_transmit_end_button->Set(m_ri->m_no_transmit_end);
   }
 
   //  local interference rejection
   if (m_local_interference_rejection_button && (m_ri->m_local_interference_rejection.IsModified() || refreshAll)) {
-    m_local_interference_rejection_button->SetLocalValue(m_ri->m_local_interference_rejection.GetButton());
+    m_local_interference_rejection_button->Set(m_ri->m_local_interference_rejection);
   }
 
   // side lobe suppression
   if (m_side_lobe_suppression_button && (m_ri->m_side_lobe_suppression.IsModified() || refreshAll)) {
-    int button = m_ri->m_side_lobe_suppression.GetButton();
-    m_side_lobe_suppression_button->SetLocalValue(button);
+    m_side_lobe_suppression_button->Set(m_ri->m_side_lobe_suppression);
   }
 
   if (m_main_bang_size_button && (m_ri->m_main_bang_size.IsModified() || refreshAll)) {
-    m_main_bang_size_button->SetLocalValue(m_ri->m_main_bang_size.GetButton());
+    m_main_bang_size_button->Set(m_ri->m_main_bang_size);
   }
   if (m_antenna_starboard_button && (m_ri->m_antenna_starboard.IsModified() || refreshAll)) {
-    m_antenna_starboard_button->SetLocalValue(m_ri->m_antenna_starboard.GetButton());
+    m_antenna_starboard_button->Set(m_ri->m_antenna_starboard);
   }
   if (m_antenna_forward_button && (m_ri->m_antenna_forward.IsModified() || refreshAll)) {
-    m_antenna_forward_button->SetLocalValue(m_ri->m_antenna_forward.GetButton());
+    m_antenna_forward_button->Set(m_ri->m_antenna_forward);
   }
 
   if (refreshAll) {
     // Update all buttons set from plugin settings
     if (m_transparency_button) {
-      m_transparency_button->SetLocalValue(M_SETTINGS.overlay_transparency.GetButton());
+      m_transparency_button->Set(M_SETTINGS.overlay_transparency);
     }
     if (m_timed_idle_button) {
-      m_timed_idle_button->SetLocalValue(M_SETTINGS.timed_idle.GetButton());
+      m_timed_idle_button->Set(M_SETTINGS.timed_idle);
     }
     if (m_timed_run_button) {
-      m_timed_run_button->SetLocalValue(M_SETTINGS.idle_run_time.GetButton());
+      m_timed_run_button->Set(M_SETTINGS.idle_run_time);
     }
     if (m_refresh_rate_button) {
-      m_refresh_rate_button->SetLocalValue(M_SETTINGS.refreshrate.GetButton());
+      m_refresh_rate_button->Set(M_SETTINGS.refreshrate);
     }
   }
 

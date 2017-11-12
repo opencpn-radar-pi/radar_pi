@@ -34,8 +34,8 @@
 
 #include "radar_pi.h"
 
+#include "RadarControlItem.h"
 #include "RadarReceive.h"
-#include "radar_control_item.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -77,7 +77,7 @@ class RadarInfo {
   // The 'display' value (m_range_meters), used to compute the proper display, which is up to 40% larger
   // is set by ProcessRadarSpoke.
   // int m_range_meters;  // internal value, length of m_spoke_len_max in meters
-  double m_pixels_per_meter; // How many pixels of a line in a meter
+  double m_pixels_per_meter;  // How many pixels of a line in a meter
 
   double m_course;  // m_course is the moving everage of m_hdt used for course_up
   double m_course_log[COURSE_SAMPLES];
@@ -87,9 +87,9 @@ class RadarInfo {
 
   /* User radar settings */
 
-  radar_control_item m_state;        // RadarState (observed)
-  radar_control_item m_boot_state;   // Can contain RADAR_TRANSMIT until radar is seen at boot
-  radar_control_item m_orientation;  // See below for allowed values.
+  RadarControlItem m_state;        // RadarState (observed)
+  RadarControlItem m_boot_state;   // Can contain RADAR_TRANSMIT until radar is seen at boot
+  RadarControlItem m_orientation;  // See below for allowed values.
 
 // Orientation HEAD_UP is available if there is no heading or dev mode is switched on
 // Other orientations are available if there is a heading
@@ -102,32 +102,32 @@ class RadarInfo {
 
   int m_min_contour_length;  // minimum contour length of an ARPA or MARPA target
 
-  radar_control_item m_overlay;
-  radar_control_item m_range;  // value in meters, shown on display
-  radar_control_item m_gain;
-  radar_control_item m_interference_rejection;
-  radar_control_item m_target_separation;
-  radar_control_item m_noise_rejection;
-  radar_control_item m_target_boost;
-  radar_control_item m_target_expansion;
-  radar_control_item m_sea;
-  radar_control_item m_rain;
-  radar_control_item m_scan_speed;
-  radar_control_item m_bearing_alignment;
-  radar_control_item m_no_transmit_start;
-  radar_control_item m_no_transmit_end;
-  radar_control_item m_antenna_height;
-  radar_control_item m_antenna_forward;
-  radar_control_item m_antenna_starboard;
-  radar_control_item m_main_bang_size;
-  radar_control_item m_local_interference_rejection;
-  radar_control_item m_side_lobe_suppression;
-  radar_control_item m_target_trails;
-  radar_control_item m_trails_motion;
+  RadarControlItem m_overlay;
+  RadarControlItem m_range;  // value in meters, shown on display
+  RadarControlItem m_gain;
+  RadarControlItem m_interference_rejection;
+  RadarControlItem m_target_separation;
+  RadarControlItem m_noise_rejection;
+  RadarControlItem m_target_boost;
+  RadarControlItem m_target_expansion;
+  RadarControlItem m_sea;
+  RadarControlItem m_rain;
+  RadarControlItem m_scan_speed;
+  RadarControlItem m_bearing_alignment;
+  RadarControlItem m_no_transmit_start;
+  RadarControlItem m_no_transmit_end;
+  RadarControlItem m_antenna_height;
+  RadarControlItem m_antenna_forward;
+  RadarControlItem m_antenna_starboard;
+  RadarControlItem m_main_bang_size;
+  RadarControlItem m_local_interference_rejection;
+  RadarControlItem m_side_lobe_suppression;
+  RadarControlItem m_target_trails;
+  RadarControlItem m_trails_motion;
 #define TARGET_MOTION_OFF (0)
 #define TARGET_MOTION_RELATIVE (1)
 #define TARGET_MOTION_TRUE (2)
-  radar_control_item m_warmup;
+  RadarControlItem m_warmup;
 
   /* Per radar objects */
 
@@ -180,7 +180,7 @@ class RadarInfo {
 
   void AdjustRange(int adjustment);
   void SetAutoRangeMeters(int meters);
-  bool SetControlValue(ControlType controlType, int value, int autoValue);
+  bool SetControlValue(ControlType controlType, RadarControlItem &item);
   void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint8_t *data, size_t len, int range_meters, wxLongLong time);
   void RefreshDisplay();
   void RenderGuardZone();

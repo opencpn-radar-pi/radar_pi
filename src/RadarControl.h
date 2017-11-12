@@ -81,14 +81,11 @@ class RadarControl {
   /*
    * Modify a radar setting.
    *
-   * TODO: autoValue needs to be explained, and probably given a different interface.
-   *
    * @param     controlType     Control such as CT_GAIN, etc.
-   * @param     value           Requested value.
-   * @param     autoValue       Requested auto-value.
+   * @param     item            Requested value and state.
    * @returns   true on success, false on failure.
    */
-  virtual bool SetControlValue(ControlType controlType, int value, int autoValue) = 0;
+  virtual bool SetControlValue(ControlType controlType, RadarControlItem &item) = 0;
 };
 
 PLUGIN_END_NAMESPACE
