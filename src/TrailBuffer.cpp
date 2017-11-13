@@ -74,7 +74,6 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
   int motion = m_ri->m_trails_motion.GetValue();
   uint8_t weakest_normal_blob = m_ri->m_pi->m_settings.threshold_blue;
   size_t radius = 0;
-
   for (; radius < len - 1; radius++) {  //  len - 1 : no trails on range circle
     PointInt point = m_ri->m_polar_lookup->GetPointInt(bearing, radius);
 
@@ -97,7 +96,6 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
       }
     }
   }
-
   for (; radius < len - 1; radius++) {
     PointInt point = m_ri->m_polar_lookup->GetPointInt(bearing, radius);
 
@@ -142,7 +140,6 @@ void TrailBuffer::UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t
 void TrailBuffer::ZoomTrails(float zoom_factor) {
   uint8_t *flip;
   // zoom_factor > 1 -> zoom in, enlarge image
-
   memset(m_copy_relative_trails, 0, m_spokes * m_max_spoke_len);
 
   // zoom relative trails
@@ -164,7 +161,6 @@ void TrailBuffer::ZoomTrails(float zoom_factor) {
   memset(m_copy_true_trails, 0, m_trail_size * m_trail_size);
 
   // zoom true trails
-
   for (size_t i = wxMax(m_trail_size / 2 + m_offset.lat - m_max_spoke_len, 0);
        i < wxMin(m_trail_size / 2 + m_offset.lat + m_max_spoke_len, m_trail_size); i++) {
     int index_i = (int((float)(i - m_trail_size / 2 + m_offset.lat) * zoom_factor)) + m_trail_size / 2 - m_offset.lat * zoom_factor;
@@ -202,7 +198,6 @@ void TrailBuffer::ZoomTrails(float zoom_factor) {
 void TrailBuffer::UpdateTrailPosition() {
   GeoPosition radar;
   GeoPositionPixels shift;
-
   // When position changes the trail image is not moved, only the pointer to the center
   // of the image (offset) is changed.
   // So we move the image around within the m_trails.true_trails buffer (by moving the pointer).
@@ -215,8 +210,8 @@ void TrailBuffer::UpdateTrailPosition() {
   if (m_offset.lat >= MARGIN || m_offset.lat <= -MARGIN) {
     LOG_INFO(wxT("radar_pi: offset lat too large %d"), m_offset.lat);
     m_offset.lat = 0;
+    return;
   }
-
   // zooming of trails required? First check conditions
   if (m_ri->m_old_range == 0 || m_ri->m_range_meters == 0) {
     ClearTrails();
@@ -244,7 +239,6 @@ void TrailBuffer::UpdateTrailPosition() {
   if (m_pos.lat == radar.lat && m_pos.lon == radar.lon) {
     return;
   }
-
   // Check the movement of the ship
   double dif_lat = radar.lat - m_pos.lat;  // going north is positive
   double dif_lon = radar.lon - m_pos.lon;  // moving east is positive
@@ -259,40 +253,50 @@ void TrailBuffer::UpdateTrailPosition() {
   shift.lat = (int)(fshift_lat + m_dif.lat);
   shift.lon = (int)(fshift_lon + m_dif.lon);
 
-#ifdef TODO
+
   // Check for changes in the direction of movement, part of the image buffer has to be erased
-  if (shift.lat > 0 && m_dir.lat <= 0) {
-    // change of direction of movement
-    // clear space in true_trails outside image in that direction (this area might not be empty)
-    memset(&m_trails.true_trails[TRAILS_SIZE - MARGIN + m_offset.lat][0], 0, TRAILS_SIZE * (MARGIN - m_offset.lat));
-    m_dir.lat = 1;
+  int current_margin = m_trail_size / 2 - m_ri->m_spoke_len;
+
+  if (shift.lat > 0 && m_ri->m_dir_lat <= 0) {
+    // change of direction of movement, moving north now
+    // clear space in trailbuffer above image (this area might not be empty)
+    uint8_t *start_of_area_to_clear = m_true_trails + (m_trail_size - current_margin + m_offset.lat) * m_trail_size;
+    int number_of_pixels_to_clear = (current_margin - m_offset.lat) * m_trail_size;
+    memset(start_of_area_to_clear, 0, number_of_pixels_to_clear);
+    m_ri->m_dir_lat = 1;
   }
 
-  if (shift.lat < 0 && m_dir.lat >= 0) {
-    // change of direction of movement
-    // clear space in true_trails outside image in that direction
-    memset(&m_trails.true_trails[0][0], 0, TRAILS_SIZE * (MARGIN + m_offset.lat));
-    m_dir.lat = -1;
+  if (shift.lat < 0 && m_ri->m_dir_lat >= 0) {
+    // change of direction of movement, moving south now
+    // clear space in true_trails below image
+    uint8_t *start_of_area_to_clear = m_true_trails;
+    int number_of_pixels_to_clear = (current_margin + m_offset.lat) * m_trail_size;
+    memset(start_of_area_to_clear, 0, number_of_pixels_to_clear);
+    m_ri->m_dir_lat = -1;
   }
 
-  if (shift.lon > 0 && m_dir.lon <= 0) {
-    // change of direction of movement
-    // clear space in true_trails outside image in that direction
-    for (size_t i = 0; i < TRAILS_SIZE; i++) {
-      memset(&m_trails.true_trails[i][TRAILS_SIZE - MARGIN + m_offset.lon], 0, MARGIN - m_offset.lon);
+  if (shift.lon > 0 && m_ri->m_dir_lon <= 0) {
+    // change of direction of movement, moving east now
+    // clear space in true_trails to the right of image
+    int number_of_pixels_to_clear = current_margin - m_offset.lon;
+    for (size_t i = 0; i < m_trail_size; i++) {
+      uint8_t *start_of_area_to_clear = m_true_trails + m_trail_size * i + m_trail_size - current_margin + m_offset.lon;
+      memset(start_of_area_to_clear, 0, number_of_pixels_to_clear);
     }
-    m_dir.lon = 1;
+    m_ri->m_dir_lon = 1;
   }
 
-  if (shift.lon < 0 && m_dir_lon >= 0) {
-    // change of direction of movement
+  if (shift.lon < 0 && m_ri->m_dir_lon >= 0) {
+    // change of direction of movement, moving west now
     // clear space in true_trails outside image in that direction
-    for (size_t i = 0; i < TRAILS_SIZE; i++) {
-      memset(&m_trails.true_trails[i][0], 0, MARGIN + m_offset.lon);
+    int number_of_pixels_to_clear = current_margin + m_offset.lon;
+    for (size_t i = 0; i < m_trail_size; i++) {
+      uint8_t *start_of_area_to_clear = m_true_trails + m_trail_size * i;
+      memset(start_of_area_to_clear, 0, number_of_pixels_to_clear);
     }
-    m_dir.lon = -1;
+    m_ri->m_dir_lon = -1;
   }
-#endif
+
 
   // save the rounding fraction and appy it next time
   m_dif.lat = fshift_lat + m_dif.lat - (double)shift.lat;
@@ -312,7 +316,7 @@ void TrailBuffer::UpdateTrailPosition() {
   if (abs(m_offset.lon + shift.lon) >= MARGIN) {
     ShiftImageLonToCenter();
   }
-
+ 
   // offset lat too large: shift image in lat direction
   if (abs(m_offset.lat + shift.lat) >= MARGIN) {
     ShiftImageLatToCenter();
@@ -322,58 +326,73 @@ void TrailBuffer::UpdateTrailPosition() {
   m_offset.lon += shift.lon;
 }
 
-// shifts the true trails image in lon direction to center
-void TrailBuffer::ShiftImageLonToCenter() {
-  int keep;
-  int shift;
-
-  if (m_offset.lon >= MARGIN || m_offset.lon <= -MARGIN) {  // abs no good
-    LOG_INFO(wxT("radar_pi: offset lon too large %i"), m_offset.lon);
-    ClearTrails();
-    return;
-  }
-
-  if (m_offset.lon > 0) {
-    shift = m_offset.lon;
-    keep = m_trail_size - shift;
-    for (size_t i = 0; i < m_trail_size; i++) {
-      memmove(&M_TRUE_TRAILS(i, 0), &M_TRUE_TRAILS(i, shift), keep);
-      memset(&M_TRUE_TRAILS(i, keep), 0, shift);
-    }
-  }
-  if (m_offset.lon < 0) {
-    int shift = -m_offset.lon;
-    int keep = m_trail_size - shift;
-
-    for (size_t i = 0; i < m_trail_size; i++) {
-      memmove(&M_TRUE_TRAILS(i, 0), &M_TRUE_TRAILS(i, shift), keep);
-      memset(&M_TRUE_TRAILS(i, keep), 0, shift);
-    }
-  }
-  m_offset.lon = 0;
-}
-
 // shifts the true trails image in lat direction to center
 void TrailBuffer::ShiftImageLatToCenter() {
-  size_t shift;
+  size_t shift = 0;
+  int image_size = m_trail_size * 2 * m_ri->m_spoke_len;      // number of pixels to shift up / down
+  int current_margin = m_trail_size / 2 - m_ri->m_spoke_len;  // this is where the centered image should start
 
   if (m_offset.lat >= MARGIN || m_offset.lat <= -MARGIN) {  // abs not ok
     LOG_INFO(wxT("radar_pi: offset lat too large %i"), m_offset.lat);
     ClearTrails();
     return;
   }
-
+  // current starting location of shifted image
+  uint8_t *source_address = m_true_trails + (current_margin + m_offset.lat) * m_trail_size;
+  // location where centered image should be
+  uint8_t *destination_address = m_true_trails + current_margin * m_trail_size;
+  // size of image to be shifted, extended to the full width of trailbuffer
+  image_size = m_trail_size * 2 * m_ri->m_spoke_len;
+  memmove(destination_address, source_address, image_size);
+  uint8_t *start_of_area_to_clear;
+  int number_of_pixels_to_clear = current_margin * m_trail_size;
   if (m_offset.lat > 0) {
-    shift = m_offset.lat * m_trail_size;
-    memmove(m_true_trails + shift, m_true_trails, m_trail_size * m_trail_size - shift);
-    memset(m_true_trails + m_trail_size * m_trail_size - shift, 0, shift);
+    // clear upper area of trailbuffer which is now outside the image
+    start_of_area_to_clear = m_true_trails + (m_trail_size - current_margin) * m_trail_size;
   }
-  if (m_offset.lat < 0) {
-    shift = -m_offset.lat * m_trail_size;
-    memmove(m_true_trails, m_true_trails + shift, m_trail_size * m_trail_size - shift);
-    memset(m_true_trails, 0, shift);
+  else {
+    // clear lower area of trailbuffer which is now outside the image
+    start_of_area_to_clear = m_true_trails;
   }
+  memset(start_of_area_to_clear, 0, number_of_pixels_to_clear);
   m_offset.lat = 0;
+}
+
+
+// shifts the true trails image in lon direction to center
+void TrailBuffer::ShiftImageLonToCenter() {
+  
+  if (m_offset.lon >= MARGIN || m_offset.lon <= -MARGIN) {  // abs no good
+    LOG_INFO(wxT("radar_pi: offset lon too large %i"), m_offset.lon);
+    ClearTrails();
+    return;
+  }
+  // number of pixels to shift right / left
+  int line_of_image_size = 2 * m_ri->m_spoke_len;   
+  // current_margin is where the centered line should start
+  int current_margin = m_trail_size / 2 - m_ri->m_spoke_len;
+  // shift per line, rigth / left
+  for (size_t i = 0; i < m_trail_size; i++) {
+    // current starting location of image
+    uint8_t *source_address = m_true_trails + i * m_trail_size + current_margin + m_offset.lon;
+    // location where centered image should be
+    uint8_t *destination_address = m_true_trails + i * m_trail_size + current_margin;
+    memmove(destination_address, source_address, line_of_image_size);
+
+    uint8_t *start_of_area_to_clear;
+    // offset > 0, we shifted to the left, so clear area to the right of image
+    if (m_offset.lon > 0) {
+      // start clear at end of the line minus current margin
+      start_of_area_to_clear = m_true_trails + i * m_trail_size + m_trail_size - current_margin;
+    }
+    // offset <= 0, we shifted to the right, so clear area to the left of image   
+    else {
+      // start clear at start of the line
+      start_of_area_to_clear = m_true_trails + i * m_trail_size;
+    }
+    memset(start_of_area_to_clear, 0, current_margin);
+  }
+  m_offset.lon = 0;
 }
 
 void TrailBuffer::ClearTrails() {
