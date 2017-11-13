@@ -48,7 +48,7 @@ class NavicoControl : public RadarControl {
   void RadarTxOn();
   bool RadarStayAlive();
   bool SetRange(int meters);
-  bool SetControlValue(ControlType controlType, int value, int autoValue);
+  bool SetControlValue(ControlType controlType, RadarControlItem &item);
 
  private:
   radar_pi *m_pi;

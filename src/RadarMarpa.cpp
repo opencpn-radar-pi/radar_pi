@@ -63,40 +63,41 @@ RadarArpa::~RadarArpa() {
   }
 }
 
-Position ArpaTarget::Polar2Pos(Polar pol, Position own_ship, double range) {
+Position ArpaTarget::Polar2Pos(Polar pol, Position own_ship) {
   // The "own_ship" in the function call can be the position at an earlier time than the current position
-  // converts in a radar image angular data r ( 0 - 512) and angle (0 - 2096) to position (lat, lon)
+  // converts in a radar image angular data r ( 0 - max_spoke_len ) and angle (0 - max_spokes) to position (lat, lon)
   // based on the own ship position own_ship
   Position pos;
-  pos.pos.lat = own_ship.pos.lat + ((double)pol.r / m_ri->m_spoke_len) * range  // Scale to fraction of distance from radar
+
+  pos.pos.lat = own_ship.pos.lat + ((double)pol.r / m_ri->m_pixels_per_meter)  // Scale to fraction of distance from radar
                                        * cos(deg2rad(SCALE_SPOKES_TO_DEGREES(pol.angle))) / 60. / 1852.;
-  pos.pos.lon = own_ship.pos.lon + ((double)pol.r / (double)m_ri->m_spoke_len) * range  // Scale to fraction of distance to radar
+  pos.pos.lon = own_ship.pos.lon + ((double)pol.r / m_ri->m_pixels_per_meter)  // Scale to fraction of distance to radar
                                        * sin(deg2rad(SCALE_SPOKES_TO_DEGREES(pol.angle))) / cos(deg2rad(own_ship.pos.lat)) / 60. /
                                        1852.;
   return pos;
 }
 
-Polar ArpaTarget::Pos2Polar(Position p, Position own_ship, int range) {
+Polar ArpaTarget::Pos2Polar(Position p, Position own_ship) {
   // converts in a radar image a lat-lon position to angular data
   Polar pol;
   double dif_lat = p.pos.lat;
   dif_lat -= own_ship.pos.lat;
   double dif_lon = (p.pos.lon - own_ship.pos.lon) * cos(deg2rad(own_ship.pos.lat));
-  pol.r = (int)(sqrt(dif_lat * dif_lat + dif_lon * dif_lon) * 60. * 1852. * (double)m_ri->m_spoke_len / (double)range + 1);
+  pol.r = (int)(sqrt(dif_lat * dif_lat + dif_lon * dif_lon) * 60. * 1852. * m_ri->m_pixels_per_meter + 1);
   pol.angle = (int)((atan2(dif_lon, dif_lat)) * (double)m_ri->m_spokes / (2. * PI) + 1);  // + 1 to minimize rounding errors
   if (pol.angle < 0) pol.angle += m_ri->m_spokes;
   return pol;
 }
 
 bool RadarArpa::Pix(int ang, int rad) {
-  if (rad <= 1 || rad >= (int)m_ri->m_spoke_len - 1) {  //  avoid range ring
+  if (rad <= 0 || rad >= (int)m_ri->m_spoke_len_max) {
     return false;
   }
   return ((m_ri->m_history[MOD_SPOKES(ang)].line[rad] & 128) != 0);
 }
 
 bool ArpaTarget::Pix(int ang, int rad) {
-  if (rad <= 1 || rad >= (int)m_ri->m_spoke_len - 1) {  //  avoid range ring
+  if (rad <= 0 || rad >= (int)m_ri->m_spoke_len_max) {
     return false;
   }
   if (m_check_for_duplicate) {
@@ -143,7 +144,7 @@ bool ArpaTarget::MultiPix(int ang, int rad) {  // checks if the blob has a conto
   max_angle = current;
   min_r = current;
   min_angle = current;  // check if p inside blob
-  if (start.r >= (int)m_ri->m_spoke_len - 1) {
+  if (start.r >= (int)m_ri->m_spoke_len_max) {
     return false;  //  r too large
   }
   if (start.r < 3) {
@@ -248,7 +249,7 @@ bool RadarArpa::MultiPix(int ang, int rad) {
   max_angle = current;
   min_r = current;
   min_angle = current;  // check if p inside blob
-  if (start.r >= (int)m_ri->m_spoke_len - 1) {
+  if (start.r >= (int)m_ri->m_spoke_len_max) {
     return false;  //  r too large
   }
   if (start.r < 3) {
@@ -367,7 +368,7 @@ bool ArpaTarget::FindContourFromInside(Polar* pol) {  // moves pol to contour of
   // false when failed
   int ang = pol->angle;
   int rad = pol->r;
-  if (rad >= (int)m_ri->m_spoke_len - 1 || rad < 3) {
+  if (rad >= (int)m_ri->m_spoke_len_max || rad < 3) {
     return false;
   }
   if (!(Pix(ang, rad))) {
@@ -422,7 +423,7 @@ int ArpaTarget::GetContour(Polar* pol) {
   m_min_r = current;
   m_min_angle = current;
   // check if p inside blob
-  if (start.r >= (int)m_ri->m_spoke_len - 1) {
+  if (start.r >= (int)m_ri->m_spoke_len_max) {
     return 1;  // return code 1, r too large
   }
   if (start.r < 4) {
@@ -499,7 +500,7 @@ int ArpaTarget::GetContour(Polar* pol) {
     m_max_angle.angle += m_ri->m_spokes;
   }
   pol->angle = (m_max_angle.angle + m_min_angle.angle) / 2;
-  if (m_max_r.r > (int)m_ri->m_spoke_len - 1 || m_min_r.r > (int)m_ri->m_spoke_len - 1) {
+  if (m_max_r.r >= (int)m_ri->m_spoke_len_max || m_min_r.r >= (int)m_ri->m_spoke_len_max) {
     return 10;  // return code 10 r too large
   }
   if (m_max_r.r < 2 || m_min_r.r < 2) {
@@ -528,13 +529,13 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
   for (int i = 0; i < target->m_contour_length; i++) {
     int angle = target->m_contour[i].angle + (DEGREES_PER_ROTATION + OPENGL_ROTATION) * m_ri->m_spokes / DEGREES_PER_ROTATION;
     int radius = target->m_contour[i].r;
-    if (radius <= 0 || radius >= (int)m_ri->m_spoke_len) {
+    if (radius <= 0 || radius >= (int)m_ri->m_spoke_len_max) {
       LOG_INFO(wxT("radar_pi: wrong values in DrawContour"));
       return;
     }
     vertex_array[i] = m_ri->m_polar_lookup->GetPoint(angle, radius);
-    vertex_array[i].x = vertex_array[i].x * m_ri->m_range_meters / m_ri->m_spoke_len;
-    vertex_array[i].y = vertex_array[i].y * m_ri->m_range_meters / m_ri->m_spoke_len;
+    vertex_array[i].x = vertex_array[i].x / m_ri->m_pixels_per_meter;
+    vertex_array[i].y = vertex_array[i].y / m_ri->m_pixels_per_meter;
   }
 
   glVertexPointer(2, GL_FLOAT, 0, vertex_array);
@@ -654,7 +655,7 @@ void ArpaTarget::RefreshTarget(int dist) {
   if (m_status == LOST || !m_ri->GetRadarPosition(&own_pos.pos)) {
     return;
   }
-  pol = Pos2Polar(m_position, own_pos, m_ri->m_range_meters);
+  pol = Pos2Polar(m_position, own_pos);
   wxLongLong time1 = m_ri->m_history[MOD_SPOKES(pol.angle)].time;
   int margin = SCAN_MARGIN;
   if (m_pass_nr == PASS2) margin += 100;
@@ -703,10 +704,9 @@ void ArpaTarget::RefreshTarget(int dist) {
                                          // now set the polar to expected angular position from the expected local position
   pol.angle = (int)(atan2(x_local.pos.lon, x_local.pos.lat) * m_ri->m_spokes / (2. * PI));
   if (pol.angle < 0) pol.angle += m_ri->m_spokes;
-  pol.r = (int)(sqrt(x_local.pos.lat * x_local.pos.lat + x_local.pos.lon * x_local.pos.lon) * (double)m_ri->m_spoke_len /
-                (double)m_ri->m_range_meters);
+  pol.r = (int)(sqrt(x_local.pos.lat * x_local.pos.lat + x_local.pos.lon * x_local.pos.lon) * m_ri->m_pixels_per_meter);
   // zooming and target movement may  cause r to be out of bounds
-  if (pol.r >= (int)m_ri->m_spoke_len || pol.r <= 0) {
+  if (pol.r >= (int)m_ri->m_spoke_len_max || pol.r <= 0) {
     SetStatusLost();
     return;
   }
@@ -737,7 +737,7 @@ void ArpaTarget::RefreshTarget(int dist) {
       // as this is the first measurement, move target to measured position
       Position p_own;
       p_own.pos = m_ri->m_history[MOD_SPOKES(pol.angle)].pos;    // get the position at receive time
-      m_position = Polar2Pos(pol, p_own, m_ri->m_range_meters);  // using own ship location from the time of reception
+      m_position = Polar2Pos(pol, p_own);  // using own ship location from the time of reception
       m_position.dlat_dt = 0.;
       m_position.dlon_dt = 0.;
       m_expected = pol;
@@ -753,7 +753,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     // Kalman filter to  calculate the apostriori local position and speed based on found position (pol)
     if (m_status > 1) {
       m_kalman->Update_P();
-      m_kalman->SetMeasurement(&pol, &x_local, &m_expected, m_ri->m_range_meters);  // pol is measured position in polar coordinates
+      m_kalman->SetMeasurement(&pol, &x_local, &m_expected, m_ri->m_pixels_per_meter);  // pol is measured position in polar coordinates
     }
 
     // x_local expected position in local coordinates
@@ -835,7 +835,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     m_course = rad2deg(atan2(s2, s1));
     if (m_course < 0) m_course += 360.;
     if (m_speed_kn > 20.) {
-      pol = Pos2Polar(m_position, own_pos, m_ri->m_range_meters);
+      pol = Pos2Polar(m_position, own_pos);
     }
 
     if (m_speed_kn < (double)TARGET_SPEED_DIV_SDEV * m_position.sd_speed_kn) {
@@ -849,7 +849,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     }
 
     // send target data to OCPN
-    pol = Pos2Polar(m_position, own_pos, m_ri->m_range_meters);
+    pol = Pos2Polar(m_position, own_pos);
     if (m_status >= STATUS_TO_OCPN) {
       OCPN_target_status s;
       if (m_status >= Q_NUM) s = Q;
@@ -861,7 +861,7 @@ void ArpaTarget::RefreshTarget(int dist) {
       // Check for AIS target at (M)ARPA position
       double posOffset = (double)m_pi->m_settings.AISatARPAoffset;
       // Default 40 >> look 80 meters around + 4% of distance to target
-      double dist2target = (4.0 / 100) * (double)pol.r / (double)m_ri->m_spoke_len * m_ri->m_range_meters;
+      double dist2target = (4.0 / 100) * pol.r / m_ri->m_pixels_per_meter;
       posOffset += dist2target;
       if (m_pi->FindAIS_at_arpaPos(m_position.pos, posOffset)) s = L;
       PassARPAtoOCPN(&pol, s);
@@ -1009,8 +1009,8 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
       break;
   }
 
-  double dist = (double)pol->r / (double)m_ri->m_spoke_len * (double)m_ri->m_range_meters / 1852.;
-  double bearing = (double)pol->angle * 360. / (double)m_ri->m_spokes;
+  double dist = pol->r / m_ri->m_pixels_per_meter / 1852.;
+  double bearing = pol->angle * 360. / m_ri->m_spokes;
 
   if (bearing < 0) bearing += 360;
   s_TargID = wxString::Format(wxT("%4i"), m_target_id);
@@ -1100,7 +1100,7 @@ int RadarArpa::AcquireNewARPATarget(Polar pol, int status) {
     return -1;
   }
   ArpaTarget* target = m_targets[i];
-  target_pos = target->Polar2Pos(pol, own_pos, m_ri->m_range_meters);
+  target_pos = target->Polar2Pos(pol, own_pos);
 
   target->m_position = target_pos;  // Expected position
   target->m_position.time = wxGetUTCTimeMillis();

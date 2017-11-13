@@ -37,11 +37,11 @@
 
 #include <algorithm>
 #include <vector>
+#include "RadarControlItem.h"
 #include "drawutil.h"
 #include "jsonreader.h"
 #include "nmea0183/nmea0183.h"
 #include "pi_common.h"
-#include "radar_control_item.h"
 #include "socketutil.h"
 #include "version.h"
 
@@ -278,7 +278,7 @@ static const int RangeUnitsToMeters[3] = {1852, 1000, 1852};
  */
 struct PersistentSettings {
   size_t radar_count;                              // How many radars we have
-  radar_control_item overlay_transparency;         // How transparent is the radar picture over the chart
+  RadarControlItem overlay_transparency;           // How transparent is the radar picture over the chart
   int range_index;                                 // index into range array, see RadarInfo.cpp
   int verbose;                                     // Loglevel 0..4.
   int guard_zone_threshold;                        // How many blobs must be sent by radar before we fire alarm
@@ -290,9 +290,9 @@ struct PersistentSettings {
   double skew_factor;                              // Set to -1 or other value to correct skewing
   RangeUnits range_units;                          // See enum
   int max_age;                                     // Scans older than this in seconds will be removed
-  radar_control_item timed_idle;                   // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
-  radar_control_item idle_run_time;                // 0 = 10s, 1 = 30s, 2 = 1 min
-  radar_control_item refreshrate;                  // How quickly to refresh the display
+  RadarControlItem timed_idle;                     // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
+  RadarControlItem idle_run_time;                  // 0 = 10s, 1 = 30s, 2 = 1 min
+  RadarControlItem refreshrate;                    // How quickly to refresh the display
   int chart_overlay;                               // -1 = none, otherwise = radar number
   int menu_auto_hide;                              // 0 = none, 1 = 10s, 2 = 30s
   int drawing_method;                              // VertexBuffer, Shader, etc.
@@ -404,7 +404,7 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   void logBinaryData(const wxString &what, const uint8_t *data, int size);
 
   void UpdateAllControlStates(bool all);
-  bool SetControlValue(int radar, ControlType controlType, int value, int autoValue);
+  bool SetControlValue(int radar, ControlType controlType, RadarControlItem &item);
 
   bool IsRadarOnScreen(int radar) { return m_settings.show && (m_settings.show_radar[radar] || m_settings.chart_overlay == radar); }
 

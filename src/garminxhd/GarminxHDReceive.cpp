@@ -59,7 +59,11 @@ struct radar_line {
   uint16_t fill_2;
   uint32_t range_meters;
   uint32_t display_meters;
-  uint32_t fill_3[2];
+  uint16_t fill_3;
+  uint16_t scan_length_bytes_s;  // Number of video bytes in the packet, Short
+  uint16_t fills_4;
+  uint32_t scan_length_bytes_i;  // Number of video bytes in the packet, Integer
+  uint16_t fills_5;
   uint8_t line_data[GARMIN_XHD_MAX_SPOKE_LEN];
 };
 
@@ -83,12 +87,14 @@ void GarminxHDReceive::ProcessFrame(const uint8_t *data, int len) {
   m_ri->m_data_timeout = now + DATA_TIMEOUT;
   m_ri->m_state.Update(RADAR_TRANSMIT);
 
+  const size_t packet_header_length = sizeof(radar_line) - GARMIN_XHD_MAX_SPOKE_LEN;
   m_ri->m_statistics.packets++;
-  if (len < (int)sizeof(packet) - GARMIN_XHD_MAX_SPOKE_LEN + packet->scan_length) {
-    // The packet is so small it contains no scan_lines, quit!
+  if (len < (int)packet_header_length || len < (int)packet_header_length + packet->scan_length_bytes_s) {
+    // The packet is incomplete!
     m_ri->m_statistics.broken_packets++;
     return;
   }
+  len -= packet_header_length;
 
   if (m_first_receive) {
     m_first_receive = false;
@@ -119,7 +125,7 @@ void GarminxHDReceive::ProcessFrame(const uint8_t *data, int len) {
   SpokeBearing b = MOD_SPOKES(bearing_raw);
 
   m_ri->m_range.Update(packet->range_meters);
-  m_ri->ProcessRadarSpoke(a, b, packet->line_data, packet->scan_length, packet->display_meters, time_rec);
+  m_ri->ProcessRadarSpoke(a, b, packet->line_data, len, packet->display_meters, time_rec);
 }
 
 SOCKET GarminxHDReceive::PickNextEthernetCard() {
@@ -452,7 +458,7 @@ bool GarminxHDReceive::UpdateScannerStatus(int status) {
     time_t now = time(0);
 
     switch (m_radar_status) {
-      case 1:
+      case 2:
         m_ri->m_state.Update(RADAR_WARMING_UP);
         LOG_VERBOSE(wxT("radar_pi: %s reports status WARMUP"), m_ri->m_name.c_str());
         stat = _("Warmup");
@@ -528,31 +534,30 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
 
       case 0x0925:  // Gain
         LOG_VERBOSE(wxT("0x0925: gain %d"), packet10->parm1);
-        if (!m_auto_gain) {
-          LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d)"), m_ri->m_name.c_str(), packet10->parm1 / 100);
-          m_ri->m_gain.Update(packet10->parm1 / 100);
-        }
+        m_gain = packet10->parm1 / 100;
         return true;
 
-      case 0x091d:  // Auto Gain Mode
+      case 0x091d: {  // Auto Gain Mode
         LOG_VERBOSE(wxT("0x091d: auto-gain mode %d"), packet9->parm1);
+        RadarControlState state = RCS_MANUAL;
         if (m_auto_gain) {
           switch (packet9->parm1) {
             case 0:
-              LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d)"), m_ri->m_name.c_str(), AUTO_RANGE - 1);
-              m_ri->m_gain.Update(AUTO_RANGE - 1);  // AUTO LOW
-              return true;
+              state = RCS_AUTO_1;
+              break;
 
             case 1:
-              LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d)"), m_ri->m_name.c_str(), AUTO_RANGE - 2);
-              m_ri->m_gain.Update(AUTO_RANGE - 2);  // AUTO HIGH
-              return true;
+              state = RCS_AUTO_2;  // AUTO HIGH
+              break;
 
             default:
               break;
           }
         }
-        break;
+        LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d, %d)"), m_ri->m_name.c_str(), m_gain, (int)state);
+        m_ri->m_gain.Update(m_gain, state);
+        return true;
+      }
 
       case 0x0930:  // Dome offset, called bearing alignment here
         LOG_VERBOSE(wxT("0x0930: bearing alignment %d"), (int32_t)packet12->parm1 / 32);
@@ -566,35 +571,45 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
 
       case 0x0933:  // Rain clutter mode
         LOG_VERBOSE(wxT("0x0933: rain mode %d"), packet9->parm1);
-        m_ri->m_rain.Update(AUTO_RANGE - packet9->parm1);
-        return true;
+        switch (packet9->parm1) {
+          case 0: {
+            m_rain_mode = RCS_OFF;
+            return true;
+          }
+          case 1: {
+            m_rain_mode = RCS_MANUAL;
+            return true;
+          }
+        }
+        break;
 
       case 0x0934: {
         // Rain clutter level
         LOG_VERBOSE(wxT("0x0934: rain clutter %d"), packet10->parm1);
-        m_ri->m_rain.Update(packet10->parm1 / 100);
+        m_rain_clutter = packet10->parm1 / 100;
+        m_ri->m_rain.Update(m_rain_clutter, m_rain_mode);
         return true;
       }
 
       case 0x0939: {
         // Sea Clutter On/Off
         LOG_VERBOSE(wxT("0x0939: sea mode %d"), packet9->parm1);
-        m_sea_mode = packet9->parm1;
         switch (packet9->parm1) {
           case 0: {
-            // No sea clutter
-            m_ri->m_sea.Update(AUTO_RANGE);
-            m_ri->m_sea.Update(0);
+            m_sea_mode = RCS_OFF;
             return true;
           }
           case 1: {
             // Manual sea clutter, value set via report 0x093a
-            m_ri->m_sea.Update(AUTO_RANGE);
+            m_sea_mode = RCS_MANUAL;
             return true;
           }
           case 2: {
-            // Auto sea clutter
-            m_ri->m_sea.Update(AUTO_RANGE - 1);
+            // Auto sea clutter, but don't set it if we already have a better state
+            // via 0x093b
+            if (m_sea_mode < RCS_AUTO_1) {
+              m_sea_mode = RCS_AUTO_1;
+            }
             return true;
           }
         }
@@ -604,8 +619,17 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
       case 0x093a: {
         // Sea Clutter level
         LOG_VERBOSE(wxT("0x093a: sea clutter %d"), packet10->parm1);
-        if (m_sea_mode == 1) {
-          m_ri->m_sea.Update(packet10->parm1 / 100);
+        m_sea_clutter = packet10->parm1 / 100;
+        m_ri->m_sea.Update(m_sea_clutter, m_sea_mode);
+        return true;
+      }
+
+      case 0x093b: {
+        // Sea Clutter auto level
+        LOG_VERBOSE(wxT("0x093a: sea clutter auto %d"), packet9->parm1);
+        if (m_sea_mode >= RCS_AUTO_1) {
+          m_sea_mode = (RadarControlState) (RCS_AUTO_1 + packet9->parm1);
+          m_ri->m_sea.Update(m_sea_clutter, m_sea_mode);
         }
         return true;
       }
@@ -616,22 +640,22 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
         // parm1 = 0 = Zone off, in that case we want AUTO_RANGE - 1 = 'Off'.
         // parm1 = 1 = Zone on, in that case we will receive 0x0940+0x0941.
         if (!m_no_transmit_zone_mode) {
-          m_ri->m_no_transmit_start.Update(AUTO_RANGE - 1);
-          m_ri->m_no_transmit_end.Update(AUTO_RANGE - 1);
+          m_ri->m_no_transmit_start.Update(0, RCS_OFF);
+          m_ri->m_no_transmit_end.Update(0, RCS_OFF);
         }
         return true;
       }
       case 0x0940: {
         LOG_VERBOSE(wxT("0x0940: no transmit zone start %d"), packet12->parm1 / 32);
         if (m_no_transmit_zone_mode) {
-          m_ri->m_no_transmit_start.Update(packet12->parm1 / 32);
+          m_ri->m_no_transmit_start.Update(packet12->parm1 / 32, RCS_MANUAL);
         }
         return true;
       }
       case 0x0941: {
         LOG_VERBOSE(wxT("0x0941: no transmit zone end %d"), (int32_t)packet12->parm1 / 32);
         if (m_no_transmit_zone_mode) {
-          m_ri->m_no_transmit_end.Update((int32_t)packet12->parm1 / 32);
+          m_ri->m_no_transmit_end.Update((int32_t)packet12->parm1 / 32, RCS_MANUAL);
         }
         return true;
       }
@@ -645,8 +669,8 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
 
       case 0x0993: {
         // Warmup
-        LOG_VERBOSE(wxT("0x0993: warmup %d"), packet10->parm1);
-        m_ri->m_warmup.Update(packet9->parm1);
+        LOG_VERBOSE(wxT("0x0993: warmup %d"), packet12->parm1/1000);
+        m_ri->m_warmup.Update(packet12->parm1/1000);
         return true;
       }
     }

@@ -76,7 +76,6 @@ bool RadarDrawShader::Init(size_t spokes, size_t spoke_len_max) {
   m_channels = SHADER_COLOR_CHANNELS;
   m_spokes = spokes;
   m_spoke_len_max = spoke_len_max;
-  m_spoke_len = m_spoke_len_max;
 
   if (!CompileShader && !ShadersSupported()) {
     wxLogError(wxT("radar_pi: the OpenGL system of this computer does not support shader m_programs"));
@@ -145,12 +144,6 @@ void RadarDrawShader::Reset() {
     free(m_data);
     m_data = 0;
   }
-}
-
-void RadarDrawShader::SetSpokeLength(size_t spoke_len) {
-  wxCriticalSectionLocker lock(m_exclusive);
-
-  m_spoke_len = spoke_len;
 }
 
 RadarDrawShader::~RadarDrawShader() {
@@ -243,7 +236,6 @@ void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   if (m_lines < (int)m_spokes) {
     m_lines++;
   }
-  len = wxMin(len, m_spoke_len);
 
   if (m_channels == SHADER_COLOR_CHANNELS) {
     unsigned char *d = m_data + (angle * m_spoke_len_max) * m_channels;

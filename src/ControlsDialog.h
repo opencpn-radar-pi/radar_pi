@@ -32,15 +32,16 @@
 #ifndef _CONTROLSDIALOG_H_
 #define _CONTROLSDIALOG_H_
 
-#include "radar_control_item.h"
+#include "RadarControlItem.h"
 #include "radar_pi.h"
+#define HAVE_CONTROL(a,b,c,d,e,f,g)
+#include "SoftwareControlSet.h"
+#undef HAVE_CONTROL
 
 PLUGIN_BEGIN_NAMESPACE
 
 #define OFFSCREEN_CONTROL_X (-10000)
 #define OFFSCREEN_CONTROL_Y (-10000)
-
-#define AUTO_RANGE (-20000)  // Auto values are -20000 - auto_index
 
 const static wxPoint OFFSCREEN_CONTROL = wxPoint(OFFSCREEN_CONTROL_X, OFFSCREEN_CONTROL_Y);
 
@@ -58,6 +59,7 @@ struct ControlInfo {
   ControlType type;
   int autoValues;
   wxString *autoNames;
+  bool hasOff;
   int defaultValue;
   int minValue;
   int maxValue;
@@ -111,6 +113,7 @@ class ControlsDialog : public wxDialog {
     m_minus_button = 0;
     m_minus_ten_button = 0;
     m_auto_button = 0;
+    m_off_button = 0;
     m_power_button = 0;
     m_guard_zone = 0;
     m_guard_zone_text = 0;
@@ -198,6 +201,10 @@ class ControlsDialog : public wxDialog {
   void DefineControl(ControlType ct, int autoValues, wxString auto_names[], int defaultValue, int minValue, int maxValue,
                      int stepValue, int nameCount, wxString names[]) {
     m_ctrl.control[ct].type = ct;
+    if (defaultValue == CTD_DEF_OFF) {
+      m_ctrl.control[ct].hasOff = true;
+      defaultValue = CTD_DEF_ZERO;
+    }
     m_ctrl.control[ct].defaultValue = defaultValue;
     m_ctrl.control[ct].minValue = minValue;
     m_ctrl.control[ct].maxValue = maxValue;
@@ -253,6 +260,7 @@ class ControlsDialog : public wxDialog {
   wxButton *m_minus_button;
   wxButton *m_minus_ten_button;
   wxButton *m_auto_button;
+  wxButton *m_off_button;
 
   // Main control
   wxButton *m_guard_1_button;
@@ -348,6 +356,7 @@ class ControlsDialog : public wxDialog {
   void OnMinusClick(wxCommandEvent &event);
   void OnMinusTenClick(wxCommandEvent &event);
   void OnAutoClick(wxCommandEvent &event);
+  void OnOffClick(wxCommandEvent &event);
   void OnTrailsMotionClick(wxCommandEvent &event);
 
   void OnAdjustButtonClick(wxCommandEvent &event);
@@ -443,51 +452,25 @@ class DynamicStaticText : public wxStaticText {
 };
 
 class RadarControlButton : public wxButton {
+  friend class RadarRangeControlButton;
+
  public:
   RadarControlButton(){
 
   };
 
-  RadarControlButton(ControlsDialog *parent, wxWindowID id, wxSize buttonSize, const wxString &label, ControlType ct,
-                     bool newHasAuto, int newValue, const wxString &newUnit = wxT(""), const wxString &newComment = wxT("")) {
-    Create(parent, id, label + wxT("\n"), wxDefaultPosition, buttonSize, 0, wxDefaultValidator, label);
-
-    m_parent = parent;
-    m_pi = m_parent->m_pi;
-    minValue = 0;
-    maxValue = 100;
-    value = 0;
-    if (ct == CT_GAIN) {
-      value = 50;
-    }
-    autoValue = 0;
-    autoValues = newHasAuto ? 1 : 0;
-    autoNames = 0;
-    firstLine = label;
-    unit = newUnit;
-    comment = newComment;
-    names = 0;
-    controlType = ct;
-    if (autoValues > 0) {
-      SetLocalAuto(AUTO_RANGE - 1);  // Not sent to radar, radar will update state
-    } else {
-      SetLocalValue(newValue);
-    }
-
-    this->SetFont(m_parent->m_pi->m_font);
-  }
-
-  RadarControlButton(ControlsDialog *parent, wxWindowID id, const wxString &label, ControlInfo &ctrl, radar_control_item &item,
+  RadarControlButton(ControlsDialog *parent, wxWindowID id, const wxString &label, ControlInfo &ctrl, RadarControlItem *item,
                      const wxString &newUnit = wxT(""), const wxString &newComment = wxT("")) {
     Create(parent, id, label + wxT("\n"), wxDefaultPosition, g_buttonSize, 0, wxDefaultValidator, label);
 
     m_parent = parent;
     m_pi = m_parent->m_pi;
-    value = ctrl.defaultValue;
-    autoValues = ctrl.autoValues;
+
+    m_autoValues = ctrl.autoValues;
     autoNames = ctrl.autoNames;
-    minValue = ctrl.minValue;
-    maxValue = ctrl.maxValue;
+    m_minValue = ctrl.minValue;
+    m_maxValue = ctrl.maxValue;
+    m_hasOff = ctrl.hasOff;
     if (ctrl.nameCount > 1) {
       names = ctrl.names;
     } else if (ctrl.nameCount == 1 && ctrl.names[0].length() > 0) {
@@ -496,55 +479,61 @@ class RadarControlButton : public wxButton {
     } else {
       names = 0;
     }
-    autoValue = 0;
     firstLine = label;
     if (newUnit.length() > 0) {
       unit = newUnit;
     }
-    comment = newComment;
+    m_comment = newComment;
     controlType = ctrl.type;
 
-    SetLocalValue(item.GetButton());
+    m_item = item;
 
     this->SetFont(m_parent->m_pi->m_font);
-    // SetLocalValue(item.GetButton());
+    UpdateLabel();
+  }
+
+  void Set(RadarControlItem &item) {
+    m_item->Update(item.GetValue(), item.GetState());
+
+    UpdateLabel();
   }
 
   virtual void AdjustValue(int adjustment);
-  virtual void SetAuto(int newValue);
-  virtual void SetLocalValue(int newValue);
-  virtual void SetLocalAuto(int newValue);
+  virtual bool ToggleState();  // Returns desired new state for Auto/Off button show.
+  virtual void SetState(RadarControlState state);
+  virtual void UpdateLabel();
+
+  wxString m_comment;
+  RadarControlItem *m_item;
+  int m_autoValues;  // 0 = none, 1 = normal auto value, 2.. etc special, auto_names is set
+  int m_minValue;
+  int m_maxValue;
+  bool m_hasOff;
+
+ private:
   const wxString *names;
   const wxString *autoNames;
   wxString unit;
-  wxString comment;
 
   wxString firstLine;
 
   ControlsDialog *m_parent;
   radar_pi *m_pi;  // could be accessed through m_parent but the M_SETTINGS macro requires it directly in this class.0
 
-  int value;
-  int autoValue;   // 0 = not auto mode, 1 = normal auto value, 2... etc special, auto_names is set
-  int autoValues;  // 0 = none, 1 = normal auto value, 2.. etc special, auto_names is set
-
-  int minValue;
-  int maxValue;
   ControlType controlType;
 };
 
 class RadarRangeControlButton : public RadarControlButton {
  public:
-  RadarRangeControlButton(ControlsDialog *parent, wxWindowID id, wxSize buttonSize, const wxString &label) {
+  RadarRangeControlButton(ControlsDialog *parent, wxWindowID id, wxSize buttonSize, const wxString &label, RadarControlItem * item) {
     Create(parent, id, label + wxT("\n"), wxDefaultPosition, buttonSize, 0, wxDefaultValidator, label);
 
     m_parent = parent;
     m_pi = m_parent->m_pi;
-    minValue = 0;
-    maxValue = 0;
-    value = -1;  // means: never set
-    autoValue = 0;
-    autoValues = 1;
+    m_minValue = 0;
+    m_maxValue = 0;
+    m_item = item;
+    m_autoValues = 1;
     autoNames = 0;
     unit = wxT("");
     firstLine = label;

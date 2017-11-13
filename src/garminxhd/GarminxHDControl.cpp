@@ -186,8 +186,10 @@ bool GarminxHDControl::SetRange(int meters) {
   return false;
 }
 
-bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int autoValue) {
+bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem &item) {
   bool r = false;
+  int value = item.GetValue();
+  RadarControlState state = item.GetState();
 
   rad_ctl_pkt_9 pck_9;
   rad_ctl_pkt_10 pck_10;
@@ -242,11 +244,10 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
 
     case CT_NO_TRANSMIT_START: {
       // value is already in range -180 .. +180 which is what I think radar wants...
-      if (autoValue > 0) {  // OFF
+      if (state == RCS_OFF) {  // OFF
         pck_9.packet_type = 0x93f;
         pck_9.parm1 = 0;
         r = TransmitCmd(&pck_9, sizeof(pck_9));
-        m_ri->m_no_transmit_start.Update(AUTO_RANGE - 1);  // necessary because we hacked "off" as auto value
       } else {
         pck_9.packet_type = 0x93f;
         pck_9.parm1 = 1;
@@ -256,17 +257,16 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
         r = TransmitCmd(&pck_12, sizeof(pck_12));
         m_ri->m_no_transmit_start.Update(value);  // necessary because we hacked "off" as auto value
       }
-      LOG_VERBOSE(wxT("radar_pi: %s No Transmit Start: %d off %d"), m_name.c_str(), value, autoValue);
+      LOG_VERBOSE(wxT("radar_pi: %s No Transmit Start: value=%d state=%d"), m_name.c_str(), value, (int)state);
       break;
     }
 
     case CT_NO_TRANSMIT_END: {
       // value is already in range -180 .. +180 which is what I think radar wants...
-      if (autoValue > 0) {  // OFF
+      if (state == RCS_OFF) {  // OFF
         pck_9.packet_type = 0x93f;
         pck_9.parm1 = 0;
         r = TransmitCmd(&pck_9, sizeof(pck_9));
-        m_ri->m_no_transmit_start.Update(AUTO_RANGE - 1);  // necessary because we hacked "off" as auto value
       } else {
         pck_9.packet_type = 0x93f;
         pck_9.parm1 = 1;
@@ -274,55 +274,47 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
         pck_12.packet_type = 0x941;
         pck_12.parm1 = value * 32;
         r = TransmitCmd(&pck_12, sizeof(pck_12));
-        m_ri->m_no_transmit_start.Update(value);  // necessary because we hacked "off" as auto value
       }
-      LOG_VERBOSE(wxT("radar_pi: %s No Transmit End: %d off %d"), m_name.c_str(), value, autoValue);
+      LOG_VERBOSE(wxT("radar_pi: %s No Transmit End: value=%d state=%d"), m_name.c_str(), value, (int)state);
       break;
     }
 
     case CT_GAIN: {
-      LOG_VERBOSE(wxT("radar_pi: %s Gain: %d auto %d"), m_name.c_str(), value, autoValue);
+      LOG_VERBOSE(wxT("radar_pi: %s Gain: value=%d state=%d"), m_name.c_str(), value, (int)state);
 
-      if (autoValue > 0) {
+      if (state >= RCS_AUTO_1) {
         pck_9.packet_type = 0x924;
         pck_9.parm1 = 2;
         r = TransmitCmd(&pck_9, sizeof(pck_9));
         pck_9.packet_type = 0x91d;
-        pck_9.parm1 = (autoValue == 1) ? 0 : 1;
+        pck_9.parm1 = (state == RCS_AUTO_1) ? 0 : 1;
         r = TransmitCmd(&pck_9, sizeof(pck_9));
-        LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d) (control)"), m_name.c_str(), AUTO_RANGE - autoValue);
-        m_ri->m_gain.Update(AUTO_RANGE - autoValue);
-      } else {
+      } else if (state == RCS_MANUAL) {
         pck_9.packet_type = 0x924;
         pck_9.parm1 = 0;
         r = TransmitCmd(&pck_9, sizeof(pck_9));
         pck_10.packet_type = 0x925;
         pck_10.parm1 = value * 100;
         r = TransmitCmd(&pck_10, sizeof(pck_10));
-        LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d) (control)"), m_name.c_str(), value);
-        m_ri->m_gain.Update(value);
       }
       break;
     }
 
     case CT_SEA: {
-      LOG_VERBOSE(wxT("radar_pi: %s Sea: %d auto %d"), m_name.c_str(), value, autoValue);
+      LOG_VERBOSE(wxT("radar_pi: %s Sea: value=%d state=%d"), m_name.c_str(), value, (int)state);
 
-      if (autoValue > 0) {
+      if (state >= RCS_AUTO_1) {
         pck_9.packet_type = 0x939;
         pck_9.parm1 = 2;  // auto
         r = TransmitCmd(&pck_9, sizeof(pck_9));
         pck_9.packet_type = 0x93b;
-        pck_9.parm1 = (autoValue == 1) ? 0 : 1;
+        pck_9.parm1 = state - RCS_AUTO_1;
         r = TransmitCmd(&pck_9, sizeof(pck_9));
-      } else if (value == 0) {
+      } else if (state == RCS_OFF) {
         pck_9.packet_type = 0x939;
         pck_9.parm1 = 0;  // off
         r = TransmitCmd(&pck_9, sizeof(pck_9));
-        pck_10.packet_type = 0x93a;
-        pck_10.parm1 = value * 100;
-        r = TransmitCmd(&pck_10, sizeof(pck_10));
-      } else {
+      } else if (state == RCS_MANUAL) {
         pck_9.packet_type = 0x939;
         pck_9.parm1 = 1;  // manual
         r = TransmitCmd(&pck_9, sizeof(pck_9));
@@ -334,13 +326,13 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, int value, int a
     }
 
     case CT_RAIN: {  // Rain Clutter - Manual. Range is 0x01 to 0x50
-      LOG_VERBOSE(wxT("radar_pi: %s Rain: %d"), m_name.c_str(), value);
+      LOG_VERBOSE(wxT("radar_pi: %s Rain: value=%d state=%d"), m_name.c_str(), value, (int)state);
 
-      if (value == 0) {
+      if (state == RCS_OFF) {
         pck_9.packet_type = 0x933;
         pck_9.parm1 = 0;  // off
         r = TransmitCmd(&pck_9, sizeof(pck_9));
-      } else {
+      } else if (state == RCS_MANUAL) {
         pck_9.packet_type = 0x933;
         pck_9.parm1 = 1;  // manual
         r = TransmitCmd(&pck_9, sizeof(pck_9));

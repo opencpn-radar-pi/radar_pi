@@ -133,8 +133,8 @@ class ArpaTarget {
   Polar m_expected;
   bool m_automatic;  // True for ARPA, false for MARPA.
 
-  Position Polar2Pos(Polar pol, Position own_ship, double range);
-  Polar Pos2Polar(Position p, Position own_ship, int range);
+  Position Polar2Pos(Polar pol, Position own_ship);
+  Polar Pos2Polar(Position p, Position own_ship);
 };
 
 class RadarArpa {

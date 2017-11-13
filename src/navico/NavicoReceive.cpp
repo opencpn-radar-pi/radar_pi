@@ -695,17 +695,16 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, int len) {
 
       case (99 << 8) + 0x02: {  // length 99, 02 C4
         RadarReport_02C4_99 *s = (RadarReport_02C4_99 *)report;
-        if (s->field8 == 1) {
-          m_ri->m_gain.Update(AUTO_RANGE - 1);  // auto gain
-        } else {
-          m_ri->m_gain.Update(s->gain * 100 / 255);
-        }
+        RadarControlState state;
+
+        state = (s->field8 > 0) ? RCS_AUTO_1 : RCS_MANUAL;
+        m_ri->m_gain.Update(s->gain * 100 / 255, state);
+
         m_ri->m_rain.Update(s->rain * 100 / 255);
-        if (s->sea_auto > 0) {
-          m_ri->m_sea.Update(AUTO_RANGE - s->sea_auto);
-        } else {
-          m_ri->m_sea.Update(s->sea * 100 / 255);
-        }
+
+        state = (s->sea_auto > 0) ? RCS_AUTO_1 : RCS_MANUAL;
+        m_ri->m_sea.Update(s->sea * 100 / 255, state);
+
         m_ri->m_target_boost.Update(s->target_boost);
         m_ri->m_interference_rejection.Update(s->interference_rejection);
         m_ri->m_target_expansion.Update(s->target_expansion);
@@ -804,11 +803,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, int len) {
         m_ri->m_scan_speed.Update(s08->scan_speed);
         m_ri->m_noise_rejection.Update(s08->noise_rejection);
         m_ri->m_target_separation.Update(s08->target_sep);
-        if (s08->sls_auto == 1) {
-          m_ri->m_side_lobe_suppression.Update(AUTO_RANGE - 1);
-        } else {
-          m_ri->m_side_lobe_suppression.Update(s08->side_lobe_suppression * 100 / 255);
-        }
+        m_ri->m_side_lobe_suppression.Update(s08->side_lobe_suppression * 100 / 255, s08->sls_auto ? RCS_AUTO_1 : RCS_MANUAL);
         m_ri->m_local_interference_rejection.Update(s08->local_interference_rejection);
 
         if (m_pi->m_settings.verbose >= 2) {

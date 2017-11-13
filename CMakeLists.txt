@@ -81,6 +81,7 @@ SET(SRC_RADAR
             src/RadarCanvas.cpp
             src/RadarCanvas.h
             src/RadarControl.h
+            src/RadarControlItem.h
             src/RadarDraw.cpp
             src/RadarDraw.h
             src/RadarDrawShader.cpp
@@ -113,7 +114,6 @@ SET(SRC_RADAR
             src/pi_common.h
             src/radar_pi.cpp
             src/radar_pi.h
-            src/radar_control_item.h
             src/shaderutil.cpp
             src/shaderutil.h
             src/socketutil.cpp
