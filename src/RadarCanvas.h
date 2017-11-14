@@ -51,9 +51,10 @@ class RadarCanvas : public wxGLCanvas {
  private:
   void FillCursorTexture();
   void RenderTexts(int w, int h);
-  void RenderRangeRingsAndHeading(int w, int h);
-  void RenderCursor(int w, int h);
-  void Render_EBL_VRM(int w, int h);
+  void RenderRangeRingsAndHeading(int w, int h, float radius);
+  void RenderCursor(int w, int h, float radius);
+  void Render_EBL_VRM(int w, int h, float radius);
+  wxSize RenderControlItem(wxSize loc, RadarControlItem &item, wxString name);
 
   wxWindow* m_parent;
   radar_pi* m_pi;

@@ -86,7 +86,7 @@ void RadarCanvas::OnMove(wxMoveEvent &evt) {
 
 void RadarCanvas::RenderTexts(int w, int h) {
   int x, y;
-
+  int menu_x;
   wxString s;
 
 #define MENU_ROUNDING 4
@@ -97,6 +97,7 @@ void RadarCanvas::RenderTexts(int w, int h) {
 
   s = _("Menu");
   m_FontMenu.GetTextExtent(s, &x, &y);
+  menu_x = x;
 
   // Calculate the size of the rounded rect, this is also where you can 'click'...
   m_menu_size.x = x + 2 * (MENU_BORDER + MENU_EXTRA_WIDTH);
@@ -143,11 +144,63 @@ void RadarCanvas::RenderTexts(int w, int h) {
     m_FontBig.GetTextExtent(s, &x, &y);
     m_FontBig.RenderString(s, (w - x) / 2, (h - y) / 2);
   }
+
+  wxSize i;
+  i.x = w - 5 - menu_x / 2;
+  i.y = h - 5;
+  i = RenderControlItem(i, m_ri->m_rain, _("Rain"));
+  i.y -= 5;
+  i = RenderControlItem(i, m_ri->m_sea, _("Sea"));
+  i.y -= 5;
+  i = RenderControlItem(i, m_ri->m_gain, _("Gain"));
 }
 
-void RadarCanvas::RenderRangeRingsAndHeading(int w, int h) {
+/*
+ * Receives bottom mid part of canvas to draw, returns back top mid
+ */
+wxSize RadarCanvas::RenderControlItem(wxSize loc, RadarControlItem &item, wxString name)
+{
+  int tx, ty;
+  int v = item.GetValue();
+
+  wxString label;
+
+  switch (item.GetState()) {
+    case RCS_OFF:
+      glColor4ub(100, 100, 100, 255); // Grey
+      label << _("Off");
+      v = -1;
+      break;
+
+    case RCS_MANUAL:
+      glColor4ub(255, 100, 100, 255); // Reddish
+      label.Printf(wxT("%d"), v);
+      break;
+
+    default:
+      glColor4ub(200, 255, 200, 255); // Greenish
+      label.Printf(wxT("%d"), v);
+      break;
+  }
+
+  m_FontNormal.GetTextExtent(name, &tx, &ty);
+  loc.y -= ty;
+  m_FontNormal.RenderString(name, loc.x - tx / 2, loc.y);
+
+  m_FontNormal.GetTextExtent(label, &tx, &ty);
+  loc.y -= ty;
+  m_FontNormal.RenderString(label, loc.x - tx / 2, loc.y);
+
+  // Draw a semi circle, 270 degrees when 100%
+  if (v >= 0) {
+    glLineWidth(2.0);
+    DrawArc(loc.x, loc.y + ty, ty + 3, deg2rad(-225), deg2rad(v * 270. / 100.), v / 2);
+  }
+  return loc;
+}
+
+void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, float r) {
   // Max range ringe
-  float r = wxMax(w, h) / 2.0;
 
   // Size of rendered string in pixels
   glPushMatrix();
@@ -318,7 +371,7 @@ void RadarCanvas::FillCursorTexture() {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE, cursorTexture);
 }
 
-void RadarCanvas::RenderCursor(int w, int h) {
+void RadarCanvas::RenderCursor(int w, int h, float radius) {
   double distance;
   double bearing;
   GeoPosition pos;
@@ -340,10 +393,9 @@ void RadarCanvas::RenderCursor(int w, int h) {
     }
     // LOG_DIALOG(wxT("radar_pi: Chart Mouse vrm=%f ebl=%f"), distance / 1852.0, bearing);
   }
-  double full_range = wxMax(w, h) / 2.0;
 
   int display_range = m_ri->GetDisplayRange();
-  double range = distance * full_range / display_range;
+  double range = distance * radius / display_range;
 
 #define CURSOR_SCALE 1
 
@@ -376,10 +428,9 @@ void RadarCanvas::RenderCursor(int w, int h) {
   glEnd();
 }
 
-void RadarCanvas::Render_EBL_VRM(int w, int h) {
+void RadarCanvas::Render_EBL_VRM(int w, int h, float radius) {
   static const uint8_t rgb[BEARING_LINES][3] = {{22, 129, 154}, {45, 255, 254}};
 
-  float full_range = wxMax(w, h) / 2.0;
   float center_x = w / 2.0;
   float center_y = h / 2.0;
   int display_range = m_ri->GetDisplayRange();
@@ -390,11 +441,11 @@ void RadarCanvas::Render_EBL_VRM(int w, int h) {
     glColor3ubv(rgb[b]);
     glLineWidth(1.0);
     if (!isnan(m_ri->m_vrm[b])) {
-      float scale = m_ri->m_vrm[b] * 1852.0 * full_range / display_range;
+      float scale = m_ri->m_vrm[b] * 1852.0 * radius / display_range;
       if (m_ri->m_ebl[orientation][b] != nanl("")) {
         float angle = (float)deg2rad(m_ri->m_ebl[orientation][b]);
-        x = center_x + sinf(angle) * full_range * 2.;
-        y = center_y - cosf(angle) * full_range * 2.;
+        x = center_x + sinf(angle) * radius * 2.;
+        y = center_y - cosf(angle) * radius * 2.;
         glBegin(GL_LINES);
         glVertex2f(center_x, center_y);
         glVertex2f(x, y);
@@ -415,6 +466,7 @@ static void ResetGLViewPort(int w, int h) {
 
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
+  const float CHART_SCALE = 0.95; // On how big a part of the PPI do we draw the radar picture
 
   if (!IsShown() || !m_pi->IsInitialized()) {
     return;
@@ -428,6 +480,8 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     return;
   }
   LOG_DIALOG(wxT("radar_pi: %s render OpenGL canvas %d by %d "), m_ri->m_name.c_str(), w, h);
+
+  float radar_radius = wxMax(w, h) * CHART_SCALE / 2.0;
 
   SetCurrent(*m_context);
 
@@ -457,7 +511,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
 
   // LAYER 1 - RANGE RINGS AND HEADINGS
   ResetGLViewPort(w, h);
-  RenderRangeRingsAndHeading(w, h);
+  RenderRangeRingsAndHeading(w, h, radar_radius);
 
   PlugIn_ViewPort vp;
   GeoPosition pos;
@@ -471,7 +525,6 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
     vp.m_projection_type = 4;  // Orthographic projection
-    float full_range = wxMax(w, h) / 2.0;
     int display_range = m_ri->GetDisplayRange();
 
     switch (m_ri->GetOrientation()) {
@@ -487,7 +540,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
         break;
     }
 
-    vp.view_scale_ppm = full_range / display_range;
+    vp.view_scale_ppm = radar_radius / display_range;
     vp.skew = 0.;
     vp.pix_width = w;
     vp.pix_height = h;
@@ -515,7 +568,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   // LAYER 3 - EBL & VRM
 
   ResetGLViewPort(w, h);
-  Render_EBL_VRM(w, h);
+  Render_EBL_VRM(w, h, radar_radius);
 
   // LAYER 4 - RADAR RETURNS
   glViewport(0, 0, w, h);
@@ -527,12 +580,12 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     glScaled((float)h / w, -1.0, 1.0);
   }
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
-  m_ri->RenderRadarImage(wxPoint(0, 0), 1.0, 0.0, false);
+  m_ri->RenderRadarImage(wxPoint(0, 0), CHART_SCALE, 0.0, false);
 
   // LAYER 5 - TEXTS & CURSOR
   ResetGLViewPort(w, h);
   RenderTexts(w, h);
-  RenderCursor(w, h);
+  RenderCursor(w, h, radar_radius);
 
   glPopAttrib();
   glPopMatrix();
