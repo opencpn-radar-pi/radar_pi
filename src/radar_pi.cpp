@@ -982,8 +982,8 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
 // Called between 1 and 10 times per second by timer or RenderGLOverlay call
 void radar_pi::TimedControlUpdate() {
   wxLongLong now = wxGetUTCTimeMillis();
-  if (!m_notify_control_dialog && !TIMED_OUT(now, m_notify_time_ms + 200)) {
-    return;  // Don't run this more often than 5 times per second
+  if (!m_notify_control_dialog && !TIMED_OUT(now, m_notify_time_ms + 500)) {
+    return;  // Don't run this more often than 2 times per second
   }
   m_notify_time_ms = now;
 

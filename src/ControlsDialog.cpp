@@ -249,8 +249,6 @@ void RadarControlButton::UpdateLabel() {
   if (m_item->GetButton(&value, &state)) {
     wxString label;
 
-    LOG_VERBOSE(wxT("%s Set %s to state %d value %d, max=%d"), m_parent->m_log_name.c_str(), ControlTypeNames[controlType], state,
-                m_item->GetValue(), m_autoValues);
 
     label << firstLine << wxT("\n");
 
@@ -286,6 +284,9 @@ void RadarControlButton::UpdateLabel() {
         break;
     }
     this->SetLabel(label);
+    label.Replace(wxT("\n"), wxT("/"));
+    LOG_VERBOSE(wxT("%s Button '%s' set state %d value %d, max=%d, label='%s'"), m_parent->m_log_name.c_str(), ControlTypeNames[controlType], state,
+                m_item->GetValue(), m_autoValues, label.c_str());
   }
 }
 
@@ -1430,9 +1431,14 @@ void ControlsDialog::OnMove(wxMoveEvent& event) {
 
 void ControlsDialog::UpdateControlValues(bool refreshAll) {
   wxString o;
+  bool updateEditDialog = false;
 
   if (m_ri->m_state.IsModified()) {
     refreshAll = true;
+  }
+
+  if (m_from_control && m_top_sizer->IsShown(m_edit_sizer)) {
+    updateEditDialog = m_from_control->m_item->IsModified();
   }
 
   RadarState state = (RadarState)m_ri->m_state.GetButton();
@@ -1716,7 +1722,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   // Update the text that is currently shown in the edit box, this is a copy of the button itself
-  if (m_from_control && m_top_sizer->IsShown(m_edit_sizer)) {
+  if (updateEditDialog) {
     EnterEditMode(m_from_control);
   }
 }
