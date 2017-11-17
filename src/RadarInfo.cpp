@@ -267,11 +267,8 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
       m_control_dialog->Create(parent, m_pi, this, wxID_ANY, m_name, m_pi->m_settings.control_pos[m_radar]);
     }
     m_control_dialog->ShowDialog();
-    UpdateControlState(true);
-  } else {
-    if (m_control_dialog) {
-      m_control_dialog->HideDialog();
-    }
+  } else if (m_control_dialog) {
+    m_control_dialog->HideDialog();
   }
 }
 
@@ -662,7 +659,6 @@ void RadarInfo::UpdateControlState(bool all) {
 
   if (m_control_dialog) {
     m_control_dialog->UpdateControlValues(all);
-    m_control_dialog->UpdateDialogShown();
   }
 
   if (IsPaneShown()) {

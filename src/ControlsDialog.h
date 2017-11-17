@@ -105,6 +105,7 @@ class ControlsDialog : public wxDialog {
     m_power_sizer = 0;
     m_transmit_sizer = 0;  // Controls disabled if not transmitting
     m_from_sizer = 0;      // If on edit control, this is where the button is from
+    m_current_sizer = 0;
     m_from_control = 0;    // Only set when in edit mode
     m_plus_ten_button = 0;
     m_plus_button = 0;
@@ -176,7 +177,7 @@ class ControlsDialog : public wxDialog {
   wxString &GetRangeText();
   void SetTimedIdleIndex(int index);
   void UpdateGuardZoneState();
-  void UpdateDialogShown();
+  void UpdateDialogShown(bool resize);
   void UpdateControlValues(bool force);
   void SetErrorMessage(wxString &msg);
   void ShowBogeys(wxString text, bool confirmed);
@@ -248,6 +249,7 @@ class ControlsDialog : public wxDialog {
   wxBoxSizer *m_power_sizer;
   wxBoxSizer *m_transmit_sizer;  // Controls disabled if not transmitting
   wxBoxSizer *m_from_sizer;      // If on edit control, this is where the button is from
+  wxBoxSizer *m_current_sizer;        // The currently shown sizer
 
   // Edit Controls
   RadarControlButton *m_from_control;  // Only set when in edit mode
