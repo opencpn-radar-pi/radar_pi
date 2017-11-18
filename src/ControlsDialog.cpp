@@ -221,13 +221,15 @@ void RadarControlButton::AdjustValue(int adjustment) {
 bool RadarControlButton::ToggleState() {
   RadarControlState state = m_item->GetState();
 
-  if (state == RCS_OFF) {
-    state = RCS_MANUAL;
-    return true;
-  } else if (state == RCS_MANUAL && m_ci.autoValues == 0) {
-    state = RCS_OFF;
-    return false;
-  } else if (state < RCS_MANUAL + m_ci.autoValues) {
+  if (m_ci.autoValues == 0) {
+    if (state != RCS_MANUAL) {
+      state = RCS_MANUAL;
+    }
+    else {
+      state = RCS_OFF;
+    }
+  } 
+  else if (state >= RCS_AUTO_1 && state < RCS_MANUAL + m_ci.autoValues) {
     state = (RadarControlState)(state + 1);
   } else {
     state = RCS_AUTO_1;
