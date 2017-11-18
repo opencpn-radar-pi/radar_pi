@@ -259,9 +259,8 @@ void TrailBuffer::UpdateTrailPosition() {
   shift.lat = (int)(fshift_lat + m_dif.lat);
   shift.lon = (int)(fshift_lon + m_dif.lon);
 
-
   // Check for changes in the direction of movement, part of the image buffer has to be erased
- 
+
   if (shift.lat > 0 && m_ri->m_dir_lat <= 0) {
     // change of direction of movement, moving north now
     // clear space in trailbuffer above image (this area might not be empty)
@@ -302,7 +301,6 @@ void TrailBuffer::UpdateTrailPosition() {
     m_ri->m_dir_lon = -1;
   }
 
-
   // save the rounding fraction and appy it next time
   m_dif.lat = fshift_lat + m_dif.lat - (double)shift.lat;
   m_dif.lon = fshift_lon + m_dif.lon - (double)shift.lon;
@@ -321,7 +319,7 @@ void TrailBuffer::UpdateTrailPosition() {
   if (abs(m_offset.lon + shift.lon) >= MARGIN) {
     ShiftImageLonToCenter();
   }
- 
+
   // offset lat too large: shift image in lat direction
   if (abs(m_offset.lat + shift.lat) >= MARGIN) {
     ShiftImageLatToCenter();
@@ -334,7 +332,7 @@ void TrailBuffer::UpdateTrailPosition() {
 // shifts the true trails image in lat direction to center
 void TrailBuffer::ShiftImageLatToCenter() {
   size_t shift = 0;
-  int image_size = m_trail_size * 2 * m_max_spoke_len;      // number of pixels to shift up / down
+  int image_size = m_trail_size * 2 * m_max_spoke_len;  // number of pixels to shift up / down
 
   if (m_offset.lat >= MARGIN || m_offset.lat <= -MARGIN) {  // abs not ok
     LOG_INFO(wxT("radar_pi: offset lat too large %i"), m_offset.lat);
@@ -353,8 +351,7 @@ void TrailBuffer::ShiftImageLatToCenter() {
   if (m_offset.lat > 0) {
     // clear upper area of trailbuffer which is now outside the image
     start_of_area_to_clear = m_true_trails + (m_trail_size - MARGIN) * m_trail_size;
-  }
-  else {
+  } else {
     // clear lower area of trailbuffer which is now outside the image
     start_of_area_to_clear = m_true_trails;
   }
@@ -362,17 +359,15 @@ void TrailBuffer::ShiftImageLatToCenter() {
   m_offset.lat = 0;
 }
 
-
 // shifts the true trails image in lon direction to center
 void TrailBuffer::ShiftImageLonToCenter() {
-  
   if (m_offset.lon >= MARGIN || m_offset.lon <= -MARGIN) {  // abs no good
     LOG_INFO(wxT("radar_pi: offset lon too large %i"), m_offset.lon);
     ClearTrails();
     return;
   }
   // number of pixels to shift right / left
-  int line_of_image_size = 2 * m_max_spoke_len;   
+  int line_of_image_size = 2 * m_max_spoke_len;
   // MARGIN is where the centered line should start
   // shift per line, rigth / left
   for (size_t i = 0; i < m_trail_size; i++) {
@@ -388,7 +383,7 @@ void TrailBuffer::ShiftImageLonToCenter() {
       // start clear at end of the line minus current margin
       start_of_area_to_clear = m_true_trails + i * m_trail_size + m_trail_size - MARGIN;
     }
-    // offset <= 0, we shifted to the right, so clear area to the left of image   
+    // offset <= 0, we shifted to the right, so clear area to the left of image
     else {
       // start clear at start of the line
       start_of_area_to_clear = m_true_trails + i * m_trail_size;

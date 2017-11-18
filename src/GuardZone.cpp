@@ -28,8 +28,8 @@
  ***************************************************************************
  */
 
-#include "RadarMarpa.h"
 #include "GuardZone.h"
+#include "RadarMarpa.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -113,8 +113,8 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, uint8_t* data, uint8_t* hist, s
     // last bearing that could add to m_running_count, so store as bogey_count;
     m_bogey_count = m_running_count;
     m_running_count = 0;
-    LOG_GUARD(wxT("%s angle=%d last_angle=%d guardzone=%d..%d (%d - %d) bogey_count=%d"), m_log_name.c_str(), angle,
-              m_last_angle, range_start, range_end, m_inner_range, m_outer_range, m_bogey_count);
+    LOG_GUARD(wxT("%s angle=%d last_angle=%d guardzone=%d..%d (%d - %d) bogey_count=%d"), m_log_name.c_str(), angle, m_last_angle,
+              range_start, range_end, m_inner_range, m_outer_range, m_bogey_count);
 
     // When debugging with a static ship it is hard to find moving targets, so move
     // the guard zone instead. This slowly rotates the guard zone.

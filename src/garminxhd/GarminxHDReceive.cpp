@@ -628,7 +628,7 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
         // Sea Clutter auto level
         LOG_VERBOSE(wxT("0x093a: sea clutter auto %d"), packet9->parm1);
         if (m_sea_mode >= RCS_AUTO_1) {
-          m_sea_mode = (RadarControlState) (RCS_AUTO_1 + packet9->parm1);
+          m_sea_mode = (RadarControlState)(RCS_AUTO_1 + packet9->parm1);
           m_ri->m_sea.Update(m_sea_clutter, m_sea_mode);
         }
         return true;
@@ -669,8 +669,8 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
 
       case 0x0993: {
         // Warmup
-        LOG_VERBOSE(wxT("0x0993: warmup %d"), packet12->parm1/1000);
-        m_ri->m_warmup.Update(packet12->parm1/1000);
+        LOG_VERBOSE(wxT("0x0993: warmup %d"), packet12->parm1 / 1000);
+        m_ri->m_warmup.Update(packet12->parm1 / 1000);
         return true;
       }
     }

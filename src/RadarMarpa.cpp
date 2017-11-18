@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#include "GuardZone.h"
 #include "RadarMarpa.h"
+#include "GuardZone.h"
 #include "RadarInfo.h"
 #include "drawutil.h"
 #include "radar_pi.h"
@@ -737,8 +737,8 @@ void ArpaTarget::RefreshTarget(int dist) {
     if (m_status == ACQUIRE0) {
       // as this is the first measurement, move target to measured position
       Position p_own;
-      p_own.pos = m_ri->m_history[MOD_SPOKES(pol.angle)].pos;    // get the position at receive time
-      m_position = Polar2Pos(pol, p_own);  // using own ship location from the time of reception
+      p_own.pos = m_ri->m_history[MOD_SPOKES(pol.angle)].pos;  // get the position at receive time
+      m_position = Polar2Pos(pol, p_own);                      // using own ship location from the time of reception
       m_position.dlat_dt = 0.;
       m_position.dlon_dt = 0.;
       m_expected = pol;
@@ -754,7 +754,8 @@ void ArpaTarget::RefreshTarget(int dist) {
     // Kalman filter to  calculate the apostriori local position and speed based on found position (pol)
     if (m_status > 1) {
       m_kalman->Update_P();
-      m_kalman->SetMeasurement(&pol, &x_local, &m_expected, m_ri->m_pixels_per_meter);  // pol is measured position in polar coordinates
+      m_kalman->SetMeasurement(&pol, &x_local, &m_expected,
+                               m_ri->m_pixels_per_meter);  // pol is measured position in polar coordinates
     }
 
     // x_local expected position in local coordinates

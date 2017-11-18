@@ -33,7 +33,6 @@
 #include "RadarCanvas.h"
 #include "RadarInfo.h"
 
-
 PLUGIN_BEGIN_NAMESPACE
 
 RadarPanel::RadarPanel(radar_pi* pi, RadarInfo* ri, wxWindow* parent)

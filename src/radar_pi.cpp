@@ -32,10 +32,10 @@
 #include "radar_pi.h"
 #include "GuardZone.h"
 #include "GuardZoneBogey.h"
-#include "MessageBox.h"
 #include "Kalman.h"
-#include "RadarMarpa.h"
+#include "MessageBox.h"
 #include "OptionsDialog.h"
+#include "RadarMarpa.h"
 #include "SelectDialog.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
@@ -1700,7 +1700,8 @@ bool radar_pi::FindAIS_at_arpaPos(const GeoPosition &pos, const double &dist) {
 }
 
 bool radar_pi::SetControlValue(int radar, ControlType controlType, RadarControlItem &item) {  // sends the command to the radar
-  LOG_TRANSMIT(wxT("radar_pi: %s set %s value=%d state=%d"), m_radar[radar]->m_name.c_str(), ControlTypeNames[controlType].c_str(), item.GetValue(), item.GetState());
+  LOG_TRANSMIT(wxT("radar_pi: %s set %s value=%d state=%d"), m_radar[radar]->m_name.c_str(), ControlTypeNames[controlType].c_str(),
+               item.GetValue(), item.GetState());
   switch (controlType) {
     case CT_TRANSPARENCY: {
       m_settings.overlay_transparency = item;

@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
+#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "GuardZone.h"
 #include "MessageBox.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -387,8 +387,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   double pixels_per_meter = len / (double)range_meters;
 
   if (m_pixels_per_meter != pixels_per_meter) {
-    LOG_VERBOSE(wxT("radar_pi: %s detected spoke range change from %g to %g pixels/m, %d meters"), m_name.c_str(), m_pixels_per_meter, pixels_per_meter,
-                  range_meters);
+    LOG_VERBOSE(wxT("radar_pi: %s detected spoke range change from %g to %g pixels/m, %d meters"), m_name.c_str(),
+                m_pixels_per_meter, pixels_per_meter, range_meters);
     m_pixels_per_meter = pixels_per_meter;
     ResetSpokes();
     if (m_arpa) {
@@ -1064,8 +1064,7 @@ wxString RadarInfo::GetRangeText() {
     m_range_text << wxT(")");
   }
 
-  LOG_DIALOG(wxT("radar_pi: range label '%s' for range=%d auto=%d"), m_range_text.c_str(), meters,
-             m_auto_range_mode);
+  LOG_DIALOG(wxT("radar_pi: range label '%s' for range=%d auto=%d"), m_range_text.c_str(), meters, m_auto_range_mode);
   return m_range_text;
 }
 

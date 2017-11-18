@@ -84,7 +84,7 @@ int main() {
   expected.r = 1050;
   expected.time = 6000;
 
-  filter->SetMeasurement(&pol, &x_local, &expected, 512. / 4000.);                // pol is measured position in polar coordinates
+  filter->SetMeasurement(&pol, &x_local, &expected, 512. / 4000.);        // pol is measured position in polar coordinates
   filter->Predict(&x_local, (expected.time - pol.time).GetLo() / 1000.);  // x_local is new estimated local position of the target
 
   cout << "INFO: The predicted location is: lat=" << x_local.pos.lat << " lon=" << x_local.pos.lon << "\n";

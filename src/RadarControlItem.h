@@ -64,15 +64,13 @@ class RadarControlItem {
   RadarControlItem() {
     m_value = 0;
     m_state = RCS_OFF;
-    m_button_v = -10000; // Unlikely value so that first actual set sets proper value + mod
+    m_button_v = -10000;  // Unlikely value so that first actual set sets proper value + mod
     m_button_s = RCS_OFF;
     m_mod = true;
   }
 
   // The copy constructor
-  RadarControlItem(const RadarControlItem &other) {
-    Update(other.m_value, other.m_state);
-  }
+  RadarControlItem(const RadarControlItem &other) { Update(other.m_value, other.m_state); }
 
   // The assignment constructor
   RadarControlItem &operator=(const RadarControlItem &other) {
@@ -87,7 +85,6 @@ class RadarControlItem {
     Update(v, RCS_MANUAL);
     return *this;
   }
-
 
   void Update(int v, RadarControlState s) {
     wxCriticalSectionLocker lock(m_exclusive);
@@ -111,9 +108,7 @@ class RadarControlItem {
     m_state = s;
   };
 
-  void Update(int v) {
-    Update(v, RCS_MANUAL);
-  };
+  void Update(int v) { Update(v, RCS_MANUAL); };
 
   bool GetButton(int *value, RadarControlState *state) {
     wxCriticalSectionLocker lock(m_exclusive);
@@ -165,7 +160,7 @@ class RadarControlItem {
     return m_mod;
   }
 
-protected:
+ protected:
   wxCriticalSection m_exclusive;
   int m_value;
   int m_button_v;

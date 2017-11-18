@@ -42,7 +42,7 @@ bool RadarDrawVertex::Init(size_t spokes, size_t spoke_len_max) {
   }
   m_spokes = spokes;                // How many spokes form a circle
   m_spoke_len_max = spoke_len_max;  // How long each spoke is (max)
-  
+
   if (!m_vertices) {
     m_vertices = (VertexLine*)calloc(sizeof(VertexLine), m_spokes);
   }

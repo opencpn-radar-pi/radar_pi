@@ -159,8 +159,7 @@ void RadarCanvas::RenderTexts(int w, int h) {
 /*
  * Receives bottom mid part of canvas to draw, returns back top mid
  */
-wxSize RadarCanvas::RenderControlItem(wxSize loc, RadarControlItem &item, wxString name)
-{
+wxSize RadarCanvas::RenderControlItem(wxSize loc, RadarControlItem &item, wxString name) {
   int tx, ty;
   int v = item.GetValue();
 
@@ -168,18 +167,18 @@ wxSize RadarCanvas::RenderControlItem(wxSize loc, RadarControlItem &item, wxStri
 
   switch (item.GetState()) {
     case RCS_OFF:
-      glColor4ub(100, 100, 100, 255); // Grey
+      glColor4ub(100, 100, 100, 255);  // Grey
       label << _("Off");
       v = -1;
       break;
 
     case RCS_MANUAL:
-      glColor4ub(255, 100, 100, 255); // Reddish
+      glColor4ub(255, 100, 100, 255);  // Reddish
       label.Printf(wxT("%d"), v);
       break;
 
     default:
-      glColor4ub(200, 255, 200, 255); // Greenish
+      glColor4ub(200, 255, 200, 255);  // Greenish
       label.Printf(wxT("%d"), v);
       break;
   }
@@ -467,7 +466,7 @@ static void ResetGLViewPort(int w, int h) {
 
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
-  const float CHART_SCALE = 0.95f; // On how big a part of the PPI do we draw the radar picture
+  const float CHART_SCALE = 0.95f;  // On how big a part of the PPI do we draw the radar picture
 
   if (!IsShown() || !m_pi->IsInitialized()) {
     return;

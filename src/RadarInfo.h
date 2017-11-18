@@ -34,9 +34,9 @@
 
 #include "radar_pi.h"
 
+#include "ControlsDialog.h"
 #include "RadarControlItem.h"
 #include "RadarReceive.h"
-#include "ControlsDialog.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

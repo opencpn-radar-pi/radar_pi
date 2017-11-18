@@ -34,7 +34,7 @@
 
 #include "RadarControlItem.h"
 #include "radar_pi.h"
-#define HAVE_CONTROL(a,b,c,d,e,f,g)
+#define HAVE_CONTROL(a, b, c, d, e, f, g)
 #include "SoftwareControlSet.h"
 #undef HAVE_CONTROL
 
@@ -56,7 +56,7 @@ extern string ControlTypeNames[CT_MAX];
 extern wxSize g_buttonSize;
 
 class ControlInfo {
-public:
+ public:
   ControlType type;
   int autoValues;
   wxString *autoNames;
@@ -104,7 +104,7 @@ class ControlsDialog : public wxDialog {
     m_transmit_sizer = 0;  // Controls disabled if not transmitting
     m_from_sizer = 0;      // If on edit control, this is where the button is from
     m_current_sizer = 0;
-    m_from_control = 0;    // Only set when in edit mode
+    m_from_control = 0;  // Only set when in edit mode
     m_plus_ten_button = 0;
     m_plus_button = 0;
     m_value_text = 0;
@@ -255,7 +255,7 @@ class ControlsDialog : public wxDialog {
   wxBoxSizer *m_power_sizer;
   wxBoxSizer *m_transmit_sizer;  // Controls disabled if not transmitting
   wxBoxSizer *m_from_sizer;      // If on edit control, this is where the button is from
-  wxBoxSizer *m_current_sizer;        // The currently shown sizer
+  wxBoxSizer *m_current_sizer;   // The currently shown sizer
 
   // Edit Controls
   RadarControlButton *m_from_control;  // Only set when in edit mode
@@ -474,7 +474,7 @@ class RadarControlButton : public wxButton {
     m_parent = parent;
     m_pi = m_parent->m_pi;
     m_ci = ctrl;
-    
+
     firstLine = label;
     if (newUnit.length() > 0) {
       m_ci.unit = newUnit;
@@ -504,7 +504,7 @@ class RadarControlButton : public wxButton {
 
 class RadarRangeControlButton : public RadarControlButton {
  public:
-  RadarRangeControlButton(ControlsDialog *parent, wxWindowID id, wxSize buttonSize, const wxString &label, RadarControlItem * item) {
+  RadarRangeControlButton(ControlsDialog *parent, wxWindowID id, wxSize buttonSize, const wxString &label, RadarControlItem *item) {
     Create(parent, id, label + wxT("\n"), wxDefaultPosition, buttonSize, 0, wxDefaultValidator, label);
 
     m_parent = parent;
