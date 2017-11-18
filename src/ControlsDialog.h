@@ -55,7 +55,8 @@ extern string ControlTypeNames[CT_MAX];
 
 extern wxSize g_buttonSize;
 
-struct ControlInfo {
+class ControlInfo {
+public:
   ControlType type;
   int autoValues;
   wxString *autoNames;
@@ -65,11 +66,8 @@ struct ControlInfo {
   int maxValue;
   int stepValue;
   int nameCount;
+  wxString unit;
   wxString *names;
-};
-
-struct ControlSet {
-  ControlInfo control[CT_MAX];
 };
 
 //----------------------------------------------------------------------------------------------------------
@@ -166,7 +164,11 @@ class ControlsDialog : public wxDialog {
     m_adjust_button = 0;
     m_bearing_button = 0;
 
-    CLEAR_STRUCT(m_ctrl);
+    for (int i = 0; i < ARRAY_SIZE(m_ctrl); i++) {
+      m_ctrl[i].type = CT_NONE;
+      m_ctrl[i].names = 0;
+      m_ctrl[i].autoNames = 0;
+    }
   };
   ~ControlsDialog();
 
@@ -198,38 +200,42 @@ class ControlsDialog : public wxDialog {
   bool m_manually_positioned;
 
  protected:
-  ControlSet m_ctrl;
+  ControlInfo m_ctrl[CT_MAX];
+
   void DefineControl(ControlType ct, int autoValues, wxString auto_names[], int defaultValue, int minValue, int maxValue,
                      int stepValue, int nameCount, wxString names[]) {
-    m_ctrl.control[ct].type = ct;
+    m_ctrl[ct].type = ct;
     if (defaultValue == CTD_DEF_OFF) {
-      m_ctrl.control[ct].hasOff = true;
+      m_ctrl[ct].hasOff = true;
       defaultValue = CTD_DEF_ZERO;
     }
-    m_ctrl.control[ct].defaultValue = defaultValue;
-    m_ctrl.control[ct].minValue = minValue;
-    m_ctrl.control[ct].maxValue = maxValue;
-    m_ctrl.control[ct].stepValue = stepValue;
-    m_ctrl.control[ct].nameCount = nameCount;
+    m_ctrl[ct].defaultValue = defaultValue;
+    m_ctrl[ct].minValue = minValue;
+    m_ctrl[ct].maxValue = maxValue;
+    m_ctrl[ct].stepValue = stepValue;
+    m_ctrl[ct].nameCount = nameCount;
 
     // To simplify the macros a control without autovalues passes in
     // CTD_AUTO_NO, which is an array of 1 with length zero.
     if (autoValues == 1 && auto_names[0].length() == 0) {
       autoValues = 0;
-      m_ctrl.control[ct].autoNames = 0;
+      m_ctrl[ct].autoNames = 0;
     }
-    m_ctrl.control[ct].autoValues = autoValues;
+    m_ctrl[ct].autoValues = autoValues;
 
     if (autoValues > 0) {
-      m_ctrl.control[ct].autoNames = new wxString[autoValues];
+      m_ctrl[ct].autoNames = new wxString[autoValues];
       for (int i = 0; i < autoValues; i++) {
-        m_ctrl.control[ct].autoNames[i] = auto_names[i];
+        m_ctrl[ct].autoNames[i] = auto_names[i];
       }
     }
-    if (nameCount > 0) {
-      m_ctrl.control[ct].names = new wxString[nameCount];
+
+    if (nameCount == 1 && names[0].length() > 0) {
+      m_ctrl[ct].unit = names[0];
+    } else if (nameCount > 0 && names[0].length() > 0) {
+      m_ctrl[ct].names = new wxString[nameCount];
       for (int i = 0; i < nameCount; i++) {
-        m_ctrl.control[ct].names[i] = names[i];
+        m_ctrl[ct].names[i] = names[i];
       }
     }
   }
@@ -325,8 +331,8 @@ class ControlsDialog : public wxDialog {
   RadarControlButton *m_overlay_button;
   wxButton *m_window_button;
   RadarRangeControlButton *m_range_button;
-  RadarControlButton *m_transparency_button;  // TODO: Set it on change
-  RadarControlButton *m_refresh_rate_button;  // TODO: Set it on change
+  RadarControlButton *m_transparency_button;
+  RadarControlButton *m_refresh_rate_button;
   RadarControlButton *m_gain_button;
   RadarControlButton *m_sea_button;
   RadarControlButton *m_rain_button;
@@ -467,26 +473,13 @@ class RadarControlButton : public wxButton {
 
     m_parent = parent;
     m_pi = m_parent->m_pi;
-
-    m_autoValues = ctrl.autoValues;
-    autoNames = ctrl.autoNames;
-    m_minValue = ctrl.minValue;
-    m_maxValue = ctrl.maxValue;
-    m_hasOff = ctrl.hasOff;
-    if (ctrl.nameCount > 1) {
-      names = ctrl.names;
-    } else if (ctrl.nameCount == 1 && ctrl.names[0].length() > 0) {
-      unit = ctrl.names[0];
-      names = 0;
-    } else {
-      names = 0;
-    }
+    m_ci = ctrl;
+    
     firstLine = label;
     if (newUnit.length() > 0) {
-      unit = newUnit;
+      m_ci.unit = newUnit;
     }
     m_comment = newComment;
-    controlType = ctrl.type;
 
     this->SetFont(m_parent->m_pi->m_font);
     m_item = item;
@@ -500,22 +493,13 @@ class RadarControlButton : public wxButton {
 
   wxString m_comment;
   RadarControlItem *m_item;
-  int m_autoValues;  // 0 = none, 1 = normal auto value, 2.. etc special, auto_names is set
-  int m_minValue;
-  int m_maxValue;
-  bool m_hasOff;
+  ControlInfo m_ci;
 
  private:
-  const wxString *names;
-  const wxString *autoNames;
-  wxString unit;
-
   wxString firstLine;
 
   ControlsDialog *m_parent;
   radar_pi *m_pi;  // could be accessed through m_parent but the M_SETTINGS macro requires it directly in this class.0
-
-  ControlType controlType;
 };
 
 class RadarRangeControlButton : public RadarControlButton {
@@ -525,15 +509,15 @@ class RadarRangeControlButton : public RadarControlButton {
 
     m_parent = parent;
     m_pi = m_parent->m_pi;
-    m_minValue = 0;
-    m_maxValue = 0;
     m_item = item;
-    m_autoValues = 1;
-    autoNames = 0;
-    unit = wxT("");
     firstLine = label;
-    names = 0;
-    controlType = CT_RANGE;
+    m_ci.minValue = 0;
+    m_ci.maxValue = 0;
+    m_ci.autoValues = 1;
+    m_ci.autoNames = 0;
+    m_ci.unit = wxT("");
+    m_ci.names = 0;
+    m_ci.type = CT_RANGE;
 
     SetFont(m_parent->m_pi->m_font);
   }
