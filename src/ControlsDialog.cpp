@@ -201,7 +201,6 @@ void RadarControlButton::AdjustValue(int adjustment) {
   int oldValue = m_item->GetValue();
   int newValue = oldValue + adjustment;
 
-
   if (newValue < m_minValue) {
     newValue = m_minValue;
   } else if (newValue > m_maxValue) {
@@ -210,8 +209,9 @@ void RadarControlButton::AdjustValue(int adjustment) {
   m_item->Update(newValue, RCS_MANUAL);
 
   if (m_item->IsModified()) {
+    LOG_VERBOSE(wxT("%s Adjusting '%s' by %d from %d to %d"), m_parent->m_log_name.c_str(), GetName(), adjustment, oldValue,
+                newValue);
     UpdateLabel();
-    LOG_VERBOSE(wxT("%s Adjusting %s by %d from %d to %d"), m_parent->m_log_name.c_str(), GetName(), adjustment, oldValue, newValue);
     m_pi->SetControlValue(m_parent->m_ri->m_radar, controlType, *m_item);
   }
 }
@@ -226,7 +226,7 @@ bool RadarControlButton::ToggleState() {
     state = RCS_OFF;
     return false;
   } else if (state < RCS_MANUAL + m_autoValues) {
-    state = (RadarControlState) (state + 1);
+    state = (RadarControlState)(state + 1);
   } else {
     state = RCS_AUTO_1;
   }
@@ -237,18 +237,17 @@ bool RadarControlButton::ToggleState() {
 void RadarControlButton::SetState(RadarControlState state) {
   m_item->UpdateState(state);
   // Send state to radar TODO check if this is necessary
-  LOG_VERBOSE(wxT("%s TODO %s SEND DIRECTLY state %d value %d, max=%d"), m_parent->m_log_name.c_str(), ControlTypeNames[controlType], state,
-              m_item->GetValue(), m_autoValues);
+  LOG_VERBOSE(wxT("%s Button '%s' SetState %d value %d, max=%d"), m_parent->m_log_name.c_str(),
+              ControlTypeNames[controlType], state, m_item->GetValue(), m_autoValues);
   m_parent->m_ri->SetControlValue(controlType, *m_item);
 }
 
-void RadarControlButton::UpdateLabel() {
+void RadarControlButton::UpdateLabel(bool force) {
   RadarControlState state;
   int value;
+  wxString label;
 
-  if (m_item->GetButton(&value, &state)) {
-    wxString label;
-
+  if (m_item->GetButton(&value, &state) || force) {
 
     label << firstLine << wxT("\n");
 
@@ -283,25 +282,34 @@ void RadarControlButton::UpdateLabel() {
         }
         break;
     }
-    this->SetLabel(label);
+    SetLabel(label);
     label.Replace(wxT("\n"), wxT("/"));
-    LOG_VERBOSE(wxT("%s Button '%s' set state %d value %d, max=%d, label='%s'"), m_parent->m_log_name.c_str(), ControlTypeNames[controlType], state,
-                m_item->GetValue(), m_autoValues, label.c_str());
+    LOG_VERBOSE(wxT("%s Button '%s' set state %d value %d label='%s'"), m_parent->m_log_name.c_str(),
+                ControlTypeNames[controlType], state, m_item->GetValue(), label.c_str());
+  } else {
+    label = GetLabel();
+    label.Replace(wxT("\n"), wxT("/"));
+    LOG_VERBOSE(wxT("%s Button '%s' remains %d value %d label='%s'"), m_parent->m_log_name.c_str(),
+                ControlTypeNames[controlType], state, m_item->GetValue(), label.c_str());
   }
 }
 
 void RadarRangeControlButton::SetRangeLabel() {
-  wxString text = m_parent->m_ri->GetRangeText();
-  this->SetLabel(firstLine + wxT("\n") + text);
+  wxString label = firstLine + wxT("\n") + m_parent->m_ri->GetRangeText();
+  SetLabel(label);
+  label.Replace(wxT("\n"), wxT("/"));
+  LOG_VERBOSE(wxT("%s Button '%s' set state %d value %d label='%s'"), m_parent->m_log_name.c_str(),
+              ControlTypeNames[controlType], m_item->GetState(), m_item->GetValue(), label.c_str());
 }
 
 void RadarRangeControlButton::AdjustValue(int adjustment) {
-  LOG_VERBOSE(wxT("%s Adjusting %s by %d"), m_parent->m_log_name.c_str(), GetName(), adjustment);
+  LOG_VERBOSE(wxT("%s Button '%s' adjust by %d"), m_parent->m_log_name.c_str(), GetName(), adjustment);
   m_item->UpdateState(RCS_MANUAL);
   m_parent->m_ri->AdjustRange(adjustment);  // send new value to the radar
 }
 
 void RadarRangeControlButton::SetAuto(int newValue) {
+  LOG_VERBOSE(wxT("%s Button '%s' SetAuto %d"), m_parent->m_log_name.c_str(), GetName(), newValue);
   m_item->UpdateState(RCS_AUTO_1);
   m_parent->m_ri->m_auto_range_mode = true;
 }
@@ -776,7 +784,7 @@ void ControlsDialog::CreateControls() {
   // The NO TRANSMIT END button
   if (m_ctrl.control[CT_NO_TRANSMIT_END].type) {
     m_no_transmit_end_button = new RadarControlButton(this, ID_NO_TRANSMIT_END, _("No transmit end"),
-                                                        m_ctrl.control[CT_NO_TRANSMIT_END], &m_ri->m_no_transmit_end);
+                                                      m_ctrl.control[CT_NO_TRANSMIT_END], &m_ri->m_no_transmit_end);
     m_installation_sizer->Add(m_no_transmit_end_button, 0, wxALL, BORDER);
   }
 
@@ -986,8 +994,8 @@ void ControlsDialog::CreateControls() {
 
   // The TARGET_TRAIL button
   if (m_ctrl.control[CT_TARGET_TRAILS].type) {
-    m_target_trails_button =
-        new RadarControlButton(this, ID_TARGET_TRAILS, _("Target trails"), m_ctrl.control[CT_TARGET_TRAILS], &m_ri->m_target_trails);
+    m_target_trails_button = new RadarControlButton(this, ID_TARGET_TRAILS, _("Target trails"), m_ctrl.control[CT_TARGET_TRAILS],
+                                                    &m_ri->m_target_trails);
     m_view_sizer->Add(m_target_trails_button, 0, wxALL, BORDER);
     m_target_trails_button->Hide();
   }
@@ -1120,9 +1128,6 @@ void ControlsDialog::CreateControls() {
   Layout();
   Fit();
   LOG_VERBOSE(wxT("CreateDialog fit"));
-  // wxSize size_min = GetBestSize();
-  // SetMinSize(size_min);
-  // SetSize(size_min);
 }
 
 void ControlsDialog::OnZone1ButtonClick(wxCommandEvent& event) { ShowGuardZone(0); }
@@ -1165,8 +1170,7 @@ void ControlsDialog::OnBackClick(wxCommandEvent& event) {
 void ControlsDialog::OnAutoClick(wxCommandEvent& event) {
   if (m_from_control->ToggleState()) {
     m_auto_button->Enable();
-  }
-  else {
+  } else {
     m_auto_button->Disable();
   }
   m_off_button->Enable();
@@ -1293,7 +1297,6 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
   m_top_sizer->Layout();
   Fit();
   LOG_VERBOSE(wxT("EnterEditMode fit"));
-
 }
 
 void ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
@@ -1571,23 +1574,8 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_targets_button->SetLabel(_("Show AIS/ARPA"));
   }
 
-  if (m_ri->m_target_trails.IsModified() || refreshAll) {
-    m_target_trails_button->Set(m_ri->m_target_trails);
-  }
-
-  if (m_ri->m_trails_motion.IsModified() || refreshAll) {
-    int trails_motion = m_ri->m_trails_motion.GetButton();
-    o = _("Off/Relative/True trails");
-    o << wxT("\n");
-    if (trails_motion == TARGET_MOTION_TRUE) {
-      o << _("True");
-    } else if (trails_motion == TARGET_MOTION_RELATIVE) {
-      o << _("Relative");
-    } else {
-      o << _("Off");
-    }
-    m_trails_motion_button->SetLabel(o);
-  }
+  m_target_trails_button->UpdateLabel();
+  m_trails_motion_button->UpdateLabel();
 
   if (m_ri->m_orientation.IsModified() || refreshAll) {
     int orientation = m_ri->m_orientation.GetButton();
@@ -1643,101 +1631,101 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   // gain
-  if (m_gain_button && (m_ri->m_gain.IsModified() || refreshAll)) {
-    m_gain_button->Set(m_ri->m_gain);
+  if (m_gain_button) {
+    m_gain_button->UpdateLabel();
   }
 
   //  rain
-  if (m_rain_button && (m_ri->m_rain.IsModified() || refreshAll)) {
-    m_rain_button->Set(m_ri->m_rain);
+  if (m_rain_button) {
+    m_rain_button->UpdateLabel();
   }
 
   //   sea
-  if (m_sea_button && (m_ri->m_sea.IsModified() || refreshAll)) {
-    m_sea_button->Set(m_ri->m_sea);
+  if (m_sea_button) {
+    m_sea_button->UpdateLabel();
   }
 
   //   target_boost
-  if (m_target_boost_button && (m_ri->m_target_boost.IsModified() || refreshAll)) {
-    m_target_boost_button->Set(m_ri->m_target_boost);
+  if (m_target_boost_button) {
+    m_target_boost_button->UpdateLabel();
   }
 
   //   target_expansion
-  if (m_target_expansion_button && (m_ri->m_target_expansion.IsModified() || refreshAll)) {
-    m_target_expansion_button->Set(m_ri->m_target_expansion);
+  if (m_target_expansion_button) {
+    m_target_expansion_button->UpdateLabel();
   }
 
   //  noise_rejection
-  if (m_noise_rejection_button && (m_ri->m_noise_rejection.IsModified() || refreshAll)) {
-    m_noise_rejection_button->Set(m_ri->m_noise_rejection);
+  if (m_noise_rejection_button) {
+    m_noise_rejection_button->UpdateLabel();
   }
 
   //  target_separation
-  if (m_target_separation_button && (m_ri->m_target_separation.IsModified() || refreshAll)) {
-    m_target_separation_button->Set(m_ri->m_target_separation);
+  if (m_target_separation_button) {
+    m_target_separation_button->UpdateLabel();
   }
 
   //  interference_rejection
-  if (m_interference_rejection_button && (m_ri->m_interference_rejection.IsModified() || refreshAll)) {
-    m_interference_rejection_button->Set(m_ri->m_interference_rejection);
+  if (m_interference_rejection_button) {
+    m_interference_rejection_button->UpdateLabel();
   }
 
   // scanspeed
-  if (m_scan_speed_button && (m_ri->m_scan_speed.IsModified() || refreshAll)) {
-    m_scan_speed_button->Set(m_ri->m_scan_speed);
+  if (m_scan_speed_button) {
+    m_scan_speed_button->UpdateLabel();
   }
 
   //   antenna height
-  if (m_antenna_height_button && (m_ri->m_antenna_height.IsModified() || refreshAll)) {
-    m_antenna_height_button->Set(m_ri->m_antenna_height);
+  if (m_antenna_height_button) {
+    m_antenna_height_button->UpdateLabel();
   }
 
   //  bearing alignment
-  if (m_bearing_alignment_button && (m_ri->m_bearing_alignment.IsModified() || refreshAll)) {
-    m_bearing_alignment_button->Set(m_ri->m_bearing_alignment);
+  if (m_bearing_alignment_button) {
+    m_bearing_alignment_button->UpdateLabel();
   }
 
   //  no transmit zone
-  if (m_no_transmit_start_button && (m_ri->m_no_transmit_start.IsModified() || refreshAll)) {
-    m_no_transmit_start_button->Set(m_ri->m_no_transmit_start);
+  if (m_no_transmit_start_button) {
+    m_no_transmit_start_button->UpdateLabel();
   }
-  if (m_no_transmit_end_button && (m_ri->m_no_transmit_end.IsModified() || refreshAll)) {
-    m_no_transmit_end_button->Set(m_ri->m_no_transmit_end);
+  if (m_no_transmit_end_button) {
+    m_no_transmit_end_button->UpdateLabel();
   }
 
   //  local interference rejection
-  if (m_local_interference_rejection_button && (m_ri->m_local_interference_rejection.IsModified() || refreshAll)) {
-    m_local_interference_rejection_button->Set(m_ri->m_local_interference_rejection);
+  if (m_local_interference_rejection_button) {
+    m_local_interference_rejection_button->UpdateLabel();
   }
 
   // side lobe suppression
-  if (m_side_lobe_suppression_button && (m_ri->m_side_lobe_suppression.IsModified() || refreshAll)) {
-    m_side_lobe_suppression_button->Set(m_ri->m_side_lobe_suppression);
+  if (m_side_lobe_suppression_button) {
+    m_side_lobe_suppression_button->UpdateLabel();
   }
 
-  if (m_main_bang_size_button && (m_ri->m_main_bang_size.IsModified() || refreshAll)) {
-    m_main_bang_size_button->Set(m_ri->m_main_bang_size);
+  if (m_main_bang_size_button) {
+    m_main_bang_size_button->UpdateLabel();
   }
-  if (m_antenna_starboard_button && (m_ri->m_antenna_starboard.IsModified() || refreshAll)) {
-    m_antenna_starboard_button->Set(m_ri->m_antenna_starboard);
+  if (m_antenna_starboard_button) {
+    m_antenna_starboard_button->UpdateLabel();
   }
-  if (m_antenna_forward_button && (m_ri->m_antenna_forward.IsModified() || refreshAll)) {
-    m_antenna_forward_button->Set(m_ri->m_antenna_forward);
+  if (m_antenna_forward_button) {
+    m_antenna_forward_button->UpdateLabel();
   }
 
   // For these we can't use the modified state as they are shared amongst all
   // radars and thus the modified state is reset on the first radar checking it.
   if (m_transparency_button) {
-    m_transparency_button->Set(M_SETTINGS.overlay_transparency);
+    m_transparency_button->UpdateLabel(true);
   }
   if (m_timed_idle_button) {
-    m_timed_idle_button->Set(M_SETTINGS.timed_idle);
+    m_timed_idle_button->UpdateLabel(true);
   }
   if (m_timed_run_button) {
-    m_timed_run_button->Set(M_SETTINGS.idle_run_time);
+    m_timed_run_button->UpdateLabel(true);
   }
   if (m_refresh_rate_button) {
-    m_refresh_rate_button->Set(M_SETTINGS.refreshrate);
+    m_refresh_rate_button->UpdateLabel(true);
   }
 
   int arpa_targets = m_ri->m_arpa->GetTargetCount();

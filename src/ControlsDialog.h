@@ -197,6 +197,9 @@ class ControlsDialog : public wxDialog {
   wxPoint m_panel_position;
   bool m_manually_positioned;
 
+private:
+  void SetLabel(wxString &label); // Ensure no external code calls this
+
  protected:
   ControlSet m_ctrl;
   void DefineControl(ControlType ct, int autoValues, wxString auto_names[], int defaultValue, int minValue, int maxValue,
@@ -291,7 +294,7 @@ class ControlsDialog : public wxDialog {
   // View controls
   RadarControlButton *m_target_trails_button;
   wxButton *m_targets_button;
-  wxButton *m_trails_motion_button;
+  RadarControlButton *m_trails_motion_button;
   wxButton *m_clear_trails_button;
   wxButton *m_orientation_button;
 
@@ -488,14 +491,8 @@ class RadarControlButton : public wxButton {
     m_comment = newComment;
     controlType = ctrl.type;
 
-    m_item = item;
-
     this->SetFont(m_parent->m_pi->m_font);
-    UpdateLabel();
-  }
-
-  void Set(RadarControlItem &item) {
-    m_item->Update(item.GetValue(), item.GetState());
+    m_item = item;
 
     UpdateLabel();
   }
@@ -503,7 +500,7 @@ class RadarControlButton : public wxButton {
   virtual void AdjustValue(int adjustment);
   virtual bool ToggleState();  // Returns desired new state for Auto/Off button show.
   virtual void SetState(RadarControlState state);
-  virtual void UpdateLabel();
+  virtual void UpdateLabel(bool force = false);
 
   wxString m_comment;
   RadarControlItem *m_item;

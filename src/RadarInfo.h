@@ -124,9 +124,6 @@ class RadarInfo {
   RadarControlItem m_side_lobe_suppression;
   RadarControlItem m_target_trails;
   RadarControlItem m_trails_motion;
-#define TARGET_MOTION_OFF (0)
-#define TARGET_MOTION_RELATIVE (1)
-#define TARGET_MOTION_TRUE (2)
   RadarControlItem m_warmup;
 
   /* Per radar objects */

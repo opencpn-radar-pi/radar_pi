@@ -1290,20 +1290,15 @@ bool radar_pi::LoadConfig(void) {
 
       RadarControlItem item;
       pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
-      item.Update(v);
-      SetControlValue(n, CT_TARGET_TRAILS, item);
+      m_radar[r]->m_target_trails.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);
-      item.Update(v);
-      SetControlValue(n, CT_TRAILS_MOTION, item);
+      m_radar[r]->m_trails_motion.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dMainBangSize"), r), &v, 0);
-      item.Update(v);
-      SetControlValue(n, CT_MAIN_BANG_SIZE, item);
+      m_radar[r]->m_main_bang_size.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dAntennaForward"), r), &v, 0);
-      item.Update(v);
-      SetControlValue(n, CT_ANTENNA_FORWARD, item);
+      m_radar[r]->m_antenna_forward.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dAntennaStarboard"), r), &v, 0);
-      item.Update(v);
-      SetControlValue(n, CT_ANTENNA_STARBOARD, item);
+      m_radar[r]->m_antenna_starboard.Update(v);
 
       pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[n], n ? false : true);
       pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * n);

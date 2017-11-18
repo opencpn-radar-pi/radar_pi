@@ -112,13 +112,7 @@ class RadarControlItem {
   };
 
   void Update(int v) {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    if (v != m_button_v) {
-      m_mod = true;
-      m_button_v = v;
-    }
-    m_value = v;
+    Update(v, RCS_MANUAL);
   };
 
   bool GetButton(int *value, RadarControlState *state) {
