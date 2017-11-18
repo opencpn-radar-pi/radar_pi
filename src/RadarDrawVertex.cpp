@@ -30,6 +30,7 @@
  */
 
 #include "RadarDrawVertex.h"
+#include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

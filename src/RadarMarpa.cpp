@@ -29,6 +29,7 @@
  ***************************************************************************
  */
 
+#include "GuardZone.h"
 #include "RadarMarpa.h"
 #include "RadarInfo.h"
 #include "drawutil.h"

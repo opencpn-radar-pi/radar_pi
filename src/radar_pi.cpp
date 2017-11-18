@@ -30,9 +30,12 @@
  */
 
 #include "radar_pi.h"
+#include "GuardZone.h"
 #include "GuardZoneBogey.h"
+#include "MessageBox.h"
 #include "Kalman.h"
 #include "RadarMarpa.h"
+#include "OptionsDialog.h"
 #include "SelectDialog.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
@@ -1751,6 +1754,14 @@ bool radar_pi::SetControlValue(int radar, ControlType controlType, RadarControlI
     case CT_ANTENNA_STARBOARD: {
       m_radar[radar]->m_antenna_starboard = item;
       return true;
+    }
+
+    case CT_ORIENTATION: {
+      m_radar[radar]->m_orientation = item;
+    }
+
+    case CT_OVERLAY: {
+      m_radar[radar]->m_overlay = item;
     }
 
     default: {

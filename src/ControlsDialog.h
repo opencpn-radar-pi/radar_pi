@@ -197,9 +197,6 @@ class ControlsDialog : public wxDialog {
   wxPoint m_panel_position;
   bool m_manually_positioned;
 
-private:
-  void SetLabel(wxString &label); // Ensure no external code calls this
-
  protected:
   ControlSet m_ctrl;
   void DefineControl(ControlType ct, int autoValues, wxString auto_names[], int defaultValue, int minValue, int maxValue,
@@ -296,7 +293,7 @@ private:
   wxButton *m_targets_button;
   RadarControlButton *m_trails_motion_button;
   wxButton *m_clear_trails_button;
-  wxButton *m_orientation_button;
+  RadarControlButton *m_orientation_button;
 
   // Power controls
   wxStaticText *m_power_text;
@@ -325,7 +322,7 @@ private:
   RadarControlButton *m_main_bang_size_button;
 
   // Adjust controls
-  wxButton *m_overlay_button;
+  RadarControlButton *m_overlay_button;
   wxButton *m_window_button;
   RadarRangeControlButton *m_range_button;
   RadarControlButton *m_transparency_button;  // TODO: Set it on change
@@ -493,8 +490,7 @@ class RadarControlButton : public wxButton {
 
     this->SetFont(m_parent->m_pi->m_font);
     m_item = item;
-
-    UpdateLabel();
+    UpdateLabel(true);
   }
 
   virtual void AdjustValue(int adjustment);
@@ -539,7 +535,7 @@ class RadarRangeControlButton : public RadarControlButton {
     names = 0;
     controlType = CT_RANGE;
 
-    this->SetFont(m_parent->m_pi->m_font);
+    SetFont(m_parent->m_pi->m_font);
   }
 
   virtual void AdjustValue(int adjustment);

@@ -89,6 +89,18 @@
 
 // Note that due to how the C++ preprocessor works, { } must be defined in a nested define
 
+#ifndef ORIENTATION_NAMES
+#define ORIENTATION_NAMES \
+{ _("Head up"), _("Head up (Stabilized)"), _("North up"), _("Course up"), _("Unknown") }
+#endif
+// Orientation HEAD_UP is available if there is no heading or dev mode is switched on
+// Other orientations are available if there is a heading
+#define ORIENTATION_HEAD_UP (0)  // Unstabilized heading (as if without compass)                                     // Available if no compass or in dev mode
+#define ORIENTATION_STABILIZED_UP (1)  // Stabilized heading (averaged over a few seconds)
+#define ORIENTATION_NORTH_UP (2)       // North up
+#define ORIENTATION_COG_UP (3)         // Averaged GPS COG up (same way as OpenCPN)
+#define ORIENTATION_NUMBER (4)
+
 #ifndef TIMED_IDLE_NAMES
 #define TIMED_IDLE_NAMES \
   { _("Off"), _("5 min"), _("10 min"), _("15 min"), _("20 min"), _("25 min"), _("30 min"), _("35 min") }
@@ -108,10 +120,16 @@
 #define TARGET_MOTION_OFF (0)
 #define TARGET_MOTION_RELATIVE (1)
 #define TARGET_MOTION_TRUE (2)
+#ifndef OFF_ON_NAMES
+#define OFF_ON_NAMES \
+  { _("Off"), _("On") }
+#endif
 
 HAVE_CONTROL(CT_ANTENNA_FORWARD, CTD_AUTO_NO, CTD_DEF_ZERO, -500, +500, CTD_STEP_1, CTD_NUMERIC)
 HAVE_CONTROL(CT_ANTENNA_STARBOARD, CTD_AUTO_NO, CTD_DEF_ZERO, -100, +100, CTD_STEP_1, CTD_NUMERIC)
 HAVE_CONTROL(CT_MAIN_BANG_SIZE, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_NUMERIC)
+HAVE_CONTROL(CT_ORIENTATION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, ORIENTATION_NUMBER - 1, CTD_STEP_1, ORIENTATION_NAMES)
+HAVE_CONTROL(CT_OVERLAY, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 1, CTD_STEP_1, OFF_ON_NAMES)
 HAVE_CONTROL(CT_REFRESHRATE, CTD_AUTO_NO, 1, 1, 5, CTD_STEP_1, CTD_NUMERIC)
 HAVE_CONTROL(CT_TRANSPARENCY, CTD_AUTO_NO, 5, MIN_OVERLAY_TRANSPARENCY, MAX_OVERLAY_TRANSPARENCY, CTD_STEP_1, CTD_PERCENTAGE)
 HAVE_CONTROL(CT_TARGET_TRAILS, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 6, CTD_STEP_1, TARGET_TRAIL_NAMES)

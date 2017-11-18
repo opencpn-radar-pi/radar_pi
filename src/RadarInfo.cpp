@@ -30,6 +30,8 @@
  */
 
 #include "ControlsDialog.h"
+#include "GuardZone.h"
+#include "MessageBox.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"

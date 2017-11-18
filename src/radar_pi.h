@@ -591,11 +591,4 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
 
 PLUGIN_END_NAMESPACE
 
-#include "ControlsDialog.h"
-#include "GuardZone.h"
-#include "MessageBox.h"
-#include "OptionsDialog.h"
-#include "RadarControl.h"
-#include "RadarInfo.h"
-
 #endif /* _RADAR_PI_H_ */

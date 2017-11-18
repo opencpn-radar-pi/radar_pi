@@ -31,6 +31,7 @@
  */
 
 #include "NavicoReceive.h"
+#include "MessageBox.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

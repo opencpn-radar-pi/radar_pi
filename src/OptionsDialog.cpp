@@ -31,6 +31,7 @@
 
 #include "RadarDraw.h"
 #include "radar_pi.h"
+#include "OptionsDialog.h"
 
 PLUGIN_BEGIN_NAMESPACE
 

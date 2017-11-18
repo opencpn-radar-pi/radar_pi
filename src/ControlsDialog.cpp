@@ -29,6 +29,8 @@
  */
 
 #include "ControlsDialog.h"
+#include "GuardZone.h"
+#include "MessageBox.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 
@@ -282,7 +284,7 @@ void RadarControlButton::UpdateLabel(bool force) {
         }
         break;
     }
-    SetLabel(label);
+    wxButton::SetLabel(label);
     label.Replace(wxT("\n"), wxT("/"));
     LOG_VERBOSE(wxT("%s Button '%s' set state %d value %d label='%s'"), m_parent->m_log_name.c_str(),
                 ControlTypeNames[controlType], state, m_item->GetValue(), label.c_str());
@@ -296,7 +298,7 @@ void RadarControlButton::UpdateLabel(bool force) {
 
 void RadarRangeControlButton::SetRangeLabel() {
   wxString label = firstLine + wxT("\n") + m_parent->m_ri->GetRangeText();
-  SetLabel(label);
+  wxButton::SetLabel(label);
   label.Replace(wxT("\n"), wxT("/"));
   LOG_VERBOSE(wxT("%s Button '%s' set state %d value %d label='%s'"), m_parent->m_log_name.c_str(),
               ControlTypeNames[controlType], m_item->GetState(), m_item->GetValue(), label.c_str());
@@ -1006,7 +1008,8 @@ void ControlsDialog::CreateControls() {
   m_clear_trails_button->Hide();
 
   // The Rotation button
-  m_orientation_button = new RadarButton(this, ID_ORIENTATION, g_buttonSize, _("Orientation"));
+  m_orientation_button = new RadarControlButton(this, ID_ORIENTATION, _("Orientation"), m_ctrl.control[CT_ORIENTATION],
+                                                &m_ri->m_orientation);
   m_view_sizer->Add(m_orientation_button, 0, wxALL, BORDER);
   // Updated when we receive data
 
@@ -1107,8 +1110,8 @@ void ControlsDialog::CreateControls() {
   m_control_sizer->Add(m_window_button, 0, wxALL, BORDER);
 
   // The RADAR ONLY / OVERLAY button
-  wxString overlay = _("Overlay");
-  m_overlay_button = new RadarButton(this, ID_RADAR_OVERLAY, g_buttonSize, overlay);
+  m_overlay_button = new RadarControlButton(this, ID_RADAR_OVERLAY, _("Overlay"), m_ctrl.control[CT_OVERLAY],
+                                                 &m_ri->m_overlay);
   m_control_sizer->Add(m_overlay_button, 0, wxALL, BORDER);
 
   // The Transmit button
@@ -1576,54 +1579,14 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   m_target_trails_button->UpdateLabel();
   m_trails_motion_button->UpdateLabel();
-
-  if (m_ri->m_orientation.IsModified() || refreshAll) {
-    int orientation = m_ri->m_orientation.GetButton();
-
-    o = _("Orientation");
-    o << wxT("\n");
-    switch (orientation) {
-      case ORIENTATION_HEAD_UP:
-        o << _("Head up");
-        break;
-      case ORIENTATION_STABILIZED_UP:
-        o << _("Head up");
-        o << wxT(" ");
-        o << _("(Stabilized)");
-        break;
-      case ORIENTATION_NORTH_UP:
-        o << _("North up");
-        break;
-      case ORIENTATION_COG_UP:
-        o << _("Course up");
-        break;
-      default:
-        o << _("Unknown");
-    }
-    m_orientation_button->SetLabel(o);
-  }
-  LOG_DIALOG(wxT("radar_pi: orientation=%d heading source=%d"), m_ri->GetOrientation(), m_pi->GetHeadingSource());
+  m_orientation_button->UpdateLabel();
+  m_overlay_button->UpdateLabel();
   if (m_pi->GetHeadingSource() == HEADING_NONE) {
     m_orientation_button->Disable();
   } else {
     m_orientation_button->Enable();
   }
 
-  int overlay;
-  if (m_ri->m_overlay.GetButton(&overlay) || ((m_pi->m_settings.chart_overlay == m_ri->m_radar) != (overlay != 0)) || refreshAll) {
-    o = _("Overlay");
-    o << wxT("\n");
-    if (overlay) {
-      if (M_SETTINGS.show_radar[m_ri->m_radar]) {
-        o << _("On");
-      } else {
-        o << m_ri->m_name;
-      }
-    } else {
-      o << _("Off");
-    }
-    m_overlay_button->SetLabel(o);
-  }
 
   if (m_range_button && (m_ri->m_range.IsModified() || refreshAll)) {
     m_ri->m_range.GetButton();

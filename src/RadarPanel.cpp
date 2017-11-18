@@ -31,6 +31,8 @@
 
 #include "RadarPanel.h"
 #include "RadarCanvas.h"
+#include "RadarInfo.h"
+
 
 PLUGIN_BEGIN_NAMESPACE
 

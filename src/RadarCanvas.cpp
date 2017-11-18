@@ -30,6 +30,7 @@
  */
 
 #include "RadarCanvas.h"
+#include "RadarInfo.h"
 #include "TextureFont.h"
 #include "drawutil.h"
 
@@ -194,7 +195,7 @@ wxSize RadarCanvas::RenderControlItem(wxSize loc, RadarControlItem &item, wxStri
   // Draw a semi circle, 270 degrees when 100%
   if (v >= 0) {
     glLineWidth(2.0);
-    DrawArc(loc.x, loc.y + ty, ty + 3, deg2rad(-225), deg2rad(v * 270. / 100.), v / 2);
+    DrawArc(loc.x, loc.y + ty, ty + 3, (float)deg2rad(-225), (float)deg2rad(v * 270. / 100.), v / 2);
   }
   return loc;
 }
@@ -466,7 +467,7 @@ static void ResetGLViewPort(int w, int h) {
 
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
-  const float CHART_SCALE = 0.95; // On how big a part of the PPI do we draw the radar picture
+  const float CHART_SCALE = 0.95f; // On how big a part of the PPI do we draw the radar picture
 
   if (!IsShown() || !m_pi->IsInitialized()) {
     return;

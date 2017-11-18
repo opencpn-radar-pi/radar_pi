@@ -30,6 +30,7 @@
 
 #include "MessageBox.h"
 #include "RadarFactory.h"
+#include "RadarInfo.h"
 #include "RadarPanel.h"
 
 PLUGIN_BEGIN_NAMESPACE

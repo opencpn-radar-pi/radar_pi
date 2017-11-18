@@ -165,7 +165,7 @@ class RadarControlItem {
     return m_mod;
   }
 
- protected:
+protected:
   wxCriticalSection m_exclusive;
   int m_value;
   int m_button_v;

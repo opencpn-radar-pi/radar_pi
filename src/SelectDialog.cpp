@@ -31,6 +31,7 @@
 
 #include "SelectDialog.h"
 #include "RadarFactory.h"
+#include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
