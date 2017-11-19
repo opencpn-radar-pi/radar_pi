@@ -55,7 +55,7 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, uint8_t* data, uint8_t* hist, s
   size_t range_start = m_inner_range * m_ri->m_pixels_per_meter;  // Convert from meters to [0..spoke_len_max>
   size_t range_end = m_outer_range * m_ri->m_pixels_per_meter;    // Convert from meters to [0..spoke_len_max>
   bool in_guard_zone = false;
-  AngleDegrees degAngle = angle / 333;
+  AngleDegrees degAngle = SCALE_SPOKES_TO_DEGREES(angle);
 
   switch (m_type) {
     case GZ_ARC:
