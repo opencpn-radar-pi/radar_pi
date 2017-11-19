@@ -451,10 +451,9 @@ void ControlsDialog::ShowGuardZone(int zone) {
   m_arpa_box->SetValue(m_guard_zone->m_arpa_on ? 1 : 0);
   m_guard_zone->m_show_time = time(0);
 
-  m_top_sizer->Hide(m_control_sizer);
-  SwitchTo(m_guard_sizer, wxT("guard"));
   SetGuardZoneVisibility();
-  UpdateDialogShown(true);
+  SwitchTo(m_guard_sizer, wxT("guard"));
+  //UpdateDialogShown(true);
 }
 
 void ControlsDialog::SetGuardZoneVisibility() {
