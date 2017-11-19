@@ -345,8 +345,8 @@ class ControlsDialog : public wxDialog {
   void SetGuardZoneVisibility();
   void SetMenuAutoHideTimeout();
   void SwitchTo(wxBoxSizer *to, const wxChar *name);
-  void UpdateTrailsState();
-
+  bool UpdateSizersButtonsShown();
+  void Resize(bool force);
   void CreateControls();
 
   // Methods that we know that every radar must or may implement its own way

@@ -505,20 +505,6 @@ void ControlsDialog::UpdateGuardZoneState() {
   m_guard_2_button->SetLabel(label2);
 }
 
-void ControlsDialog::UpdateTrailsState() {
-  if (m_top_sizer->IsShown(m_view_sizer)) {
-    int value = m_ri->m_trails_motion.GetValue();
-
-    if (value == TARGET_MOTION_OFF) {
-      m_target_trails_button->Hide();
-      m_clear_trails_button->Hide();
-    } else {
-      m_target_trails_button->Show();
-      m_clear_trails_button->Show();
-    }
-  }
-}
-
 void ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar* name) {
   if (!m_top_sizer || !m_from_sizer || (to == m_current_sizer && m_top_sizer->IsShown(to))) {
     return;
@@ -528,22 +514,15 @@ void ControlsDialog::SwitchTo(wxBoxSizer* to, const wxChar* name) {
   }
   m_top_sizer->Show(to);
   m_current_sizer = to;
-  LOG_VERBOSE(wxT("%s switch to control view %s"), m_log_name.c_str(), name);
-
-  UpdateRadarSpecificState();
-  UpdateTrailsState();
-  UpdateGuardZoneState();
-  SetMenuAutoHideTimeout();
-
   if (to != m_edit_sizer) {
     m_from_sizer = to;
   }
+  LOG_VERBOSE(wxT("%s switch to control view %s"), m_log_name.c_str(), name);
 
-  to->Layout();
-  m_control_sizer->Layout();
-  m_top_sizer->Layout();
-  Fit();
-  LOG_VERBOSE(wxT("SwitchTo fit"));
+  UpdateRadarSpecificState();
+  UpdateGuardZoneState();
+  SetMenuAutoHideTimeout();
+  Resize(true);
 }
 
 wxSize g_buttonSize;
@@ -1121,11 +1100,7 @@ void ControlsDialog::CreateControls() {
   m_top_sizer->Show(m_control_sizer);
 
   UpdateGuardZoneState();
-
-  DimeWindow(this);  // Call OpenCPN to change colours depending on day/night mode
-  Layout();
-  Fit();
-  LOG_VERBOSE(wxT("CreateDialog fit"));
+  Resize(true);
 }
 
 void ControlsDialog::OnZone1ButtonClick(wxCommandEvent& event) { ShowGuardZone(0); }
@@ -1190,15 +1165,7 @@ void ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
   m_ri->m_trails_motion.Update(value);
   m_ri->ComputeColourMap();
   m_ri->ComputeTargetTrails();
-  UpdateTrailsState();
-
-  m_current_sizer->Layout();
-  m_control_sizer->Layout();
-  m_top_sizer->Layout();
-  Fit();
-  LOG_VERBOSE(wxT("OnTrailsMotionClick fit"));
-
-  UpdateControlValues(false);
+  Resize(false);
 }
 
 void ControlsDialog::OnMinusClick(wxCommandEvent& event) {
@@ -1448,6 +1415,94 @@ void ControlsDialog::OnMove(wxMoveEvent& event) {
   event.Skip();
 }
 
+/**
+ * Show/Hide sizers and buttons depending on which sizer
+ * is to be shown
+ *
+ * @returns   True if the menu dialog was changed and needs to be resized
+ */
+bool ControlsDialog::UpdateSizersButtonsShown() {
+  bool resize = false;
+
+  RadarState state = (RadarState)m_ri->m_state.GetButton();
+
+  if (state == RADAR_TRANSMIT) {
+    m_standby_button->Enable();
+    m_transmit_button->Disable();
+  } else {
+    m_standby_button->Disable();
+    m_transmit_button->Enable();
+  }
+
+  if (m_top_sizer->IsShown(m_power_sizer)) {
+    if (m_ri->m_timed_idle.GetValue() > 0) {
+      if (!m_timed_run_button->IsShown()) {
+        m_power_sizer->Show(m_timed_run_button);
+        resize = true;
+      }
+    } else {
+      if (m_timed_run_button->IsShown()) {
+        m_power_sizer->Hide(m_timed_run_button);
+        resize = true;
+      }
+    }
+  }
+  if (state == RADAR_TRANSMIT) {
+    if (m_top_sizer->IsShown(m_control_sizer) && !m_control_sizer->IsShown(m_transmit_sizer)) {
+      m_control_sizer->Show(m_transmit_sizer);
+      resize = true;
+    }
+  } else {
+    if (m_control_sizer->IsShown(m_transmit_sizer)) {
+      m_control_sizer->Hide(m_transmit_sizer);
+      resize = true;
+    }
+  }
+
+  if (m_pi->GetHeadingSource() == HEADING_NONE) {
+    m_orientation_button->Disable();
+  } else {
+    m_orientation_button->Enable();
+  }
+
+  int arpa_targets = m_ri->m_arpa->GetTargetCount();
+  if (arpa_targets) {
+    m_delete_target->Enable();
+    m_delete_all->Enable();
+  } else {
+    m_delete_target->Disable();
+    m_delete_all->Disable();
+  }
+
+  if (m_top_sizer->IsShown(m_view_sizer)) {
+    int value = m_ri->m_trails_motion.GetValue();
+
+    if (value == TARGET_MOTION_OFF) {
+      m_target_trails_button->Hide();
+      m_clear_trails_button->Hide();
+    } else {
+      m_target_trails_button->Show();
+      m_clear_trails_button->Show();
+    }
+    resize = true;
+  }
+
+  return resize;
+}
+
+void ControlsDialog::Resize(bool force)
+{
+  bool resize = UpdateSizersButtonsShown();
+
+  if (resize || force) {
+    m_current_sizer->Layout();
+    m_control_sizer->Layout();
+    m_top_sizer->Layout();
+    Fit();
+    DimeWindow(this);
+  }
+}
+
 void ControlsDialog::UpdateControlValues(bool refreshAll) {
   wxString o;
   bool updateEditDialog = false;
@@ -1463,14 +1518,6 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   RadarState state = (RadarState)m_ri->m_state.GetButton();
-
-  if (state == RADAR_TRANSMIT) {
-    m_standby_button->Enable();
-    m_transmit_button->Disable();
-  } else {
-    m_standby_button->Disable();
-    m_transmit_button->Enable();
-  }
 
   o = _("Power Status");
   o << wxT("\n");
@@ -1501,31 +1548,6 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
   m_power_button->SetLabel(o);
   m_power_text->SetLabel(o);
-
-  if (m_top_sizer->IsShown(m_power_sizer)) {
-    if (m_ri->m_timed_idle.GetValue() > 0) {
-      if (!m_timed_run_button->IsShown()) {
-        m_power_sizer->Show(m_timed_run_button);
-        resize = true;
-      }
-    } else {
-      if (m_timed_run_button->IsShown()) {
-        m_power_sizer->Hide(m_timed_run_button);
-        resize = true;
-      }
-    }
-  }
-  if (state == RADAR_TRANSMIT) {
-    if (m_top_sizer->IsShown(m_control_sizer) && !m_control_sizer->IsShown(m_transmit_sizer)) {
-      m_control_sizer->Show(m_transmit_sizer);
-      resize = true;
-    }
-  } else {
-    if (m_control_sizer->IsShown(m_transmit_sizer)) {
-      m_control_sizer->Hide(m_transmit_sizer);
-      resize = true;
-    }
-  }
 
   if (M_SETTINGS.radar_count > 1) {
     bool show_other_radar = false;
@@ -1576,11 +1598,6 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   m_trails_motion_button->UpdateLabel();
   m_orientation_button->UpdateLabel();
   m_overlay_button->UpdateLabel();
-  if (m_pi->GetHeadingSource() == HEADING_NONE) {
-    m_orientation_button->Disable();
-  } else {
-    m_orientation_button->Enable();
-  }
 
   if (m_range_button && (m_ri->m_range.IsModified() || refreshAll)) {
     m_ri->m_range.GetButton();
@@ -1685,21 +1702,12 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_refresh_rate_button->UpdateLabel(true);
   }
 
-  int arpa_targets = m_ri->m_arpa->GetTargetCount();
-  if (arpa_targets) {
-    m_delete_target->Enable();
-    m_delete_all->Enable();
-  } else {
-    m_delete_target->Disable();
-    m_delete_all->Disable();
-  }
-
-  // Update the text that is currently shown in the edit box, this is a copy of the button itself
   if (updateEditDialog) {
+    // Update the text that is currently shown in the edit box, this is a copy of the button itself
     EnterEditMode(m_from_control);
+  } else {
+    Resize(resize);
   }
-
-  UpdateDialogShown(resize);
 }
 
 void ControlsDialog::UpdateDialogShown(bool resize) {
@@ -1732,6 +1740,7 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
     m_auto_hide_timeout = 0;
   }
 
+#ifdef __WXMAC__
   // Following helps on OSX where the control is SHOW_ON_TOP to not show when no part of OCPN is focused
   wxWindow* focused = FindFocus();
   if (!focused) {
@@ -1739,6 +1748,7 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
     Hide();
     return;
   }
+#endif
 
   if (!IsShown()) {
     LOG_DIALOG(wxT("%s UpdateDialogShown manually opened"), m_log_name.c_str());
@@ -1780,13 +1790,7 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
     m_panel_position = panelPos;
   }
 
-  if (resize) {
-    m_current_sizer->Layout();
-    m_control_sizer->Layout();
-    m_top_sizer->Layout();
-    Fit();
-    LOG_VERBOSE(wxT("UpdateDialogShown fit"));
-  }
+  Resize(false);
 }
 
 void ControlsDialog::HideTemporarily() {
