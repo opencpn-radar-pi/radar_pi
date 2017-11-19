@@ -287,12 +287,15 @@ void RadarControlButton::UpdateLabel(bool force) {
     label.Replace(wxT("\n"), wxT("/"));
     LOG_VERBOSE(wxT("%s Button '%s' set state %d value %d label='%s'"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type],
                 state, m_item->GetValue(), label.c_str());
-  } else {
+  }
+#if 0
+  else {
     label = GetLabel();
     label.Replace(wxT("\n"), wxT("/"));
     LOG_VERBOSE(wxT("%s Button '%s' remains %d value %d label='%s'"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type],
                 state, m_item->GetValue(), label.c_str());
   }
+#endif
 }
 
 void RadarRangeControlButton::SetRangeLabel() {
@@ -453,7 +456,6 @@ void ControlsDialog::ShowGuardZone(int zone) {
 
   SetGuardZoneVisibility();
   SwitchTo(m_guard_sizer, wxT("guard"));
-  //UpdateDialogShown(true);
 }
 
 void ControlsDialog::SetGuardZoneVisibility() {

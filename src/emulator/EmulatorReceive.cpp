@@ -31,6 +31,7 @@
  */
 
 #include "EmulatorReceive.h"
+#include "RadarFactory.h"
 
 #define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double)DEGREES_PER_ROTATION / EMULATOR_SPOKES)
 #define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double)EMULATOR_SPOKES / DEGREES_PER_ROTATION))
@@ -74,27 +75,51 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
   m_next_rotation = (m_next_rotation + 1) % EMULATOR_SPOKES;
 
   int scanlines_in_packet = EMULATOR_SPOKES * 24 / 60 * MILLIS_PER_SELECT / MILLISECONDS_PER_SECOND;
-  int range_meters = 2308;
-  int display_range_meters = 3000;
+  int range_meters = m_ri->m_range.GetValue();
+
+  const int *ranges;
+  size_t count = RadarFactory::GetRadarRanges(RT_EMULATOR, M_SETTINGS.range_units, &ranges);
+
+  if (range_meters < ranges[0]) {
+    range_meters = ranges[0];
+    m_ri->m_range.Update(range_meters);
+  }
+  if (range_meters > ranges[count - 1]) {
+    range_meters = ranges[count - 1];
+    m_ri->m_range.Update(range_meters);
+  }
+
+  int display_range_meters = range_meters * 5 / 4;
   int spots = 0;
-  m_ri->m_range.Update(display_range_meters);
 
   for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
     int angle = m_next_spoke;
     m_next_spoke = MOD_SPOKES(m_next_spoke + 1);
     m_ri->m_statistics.spokes++;
 
-    // Invent a pattern. Outermost ring, then a square pattern
-    for (size_t range = 0; range < sizeof(data); range++) {
-      size_t bit = range >> 7;
-      // use bit 'bit' of angle_raw
-      uint8_t colour = (((angle + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
-      if (range > sizeof(data) - 10) {
-        colour = ((angle + m_next_rotation) % EMULATOR_SPOKES) <= 8 ? 255 : 0;
+    if (range_meters == ranges[count - 1]) {
+      // New pattern suited for arpa / guard zone detection
+      CLEAR_STRUCT(data);
+      if (scanline < 8) {
+        for (size_t range = 384; range < 410; range++) {
+          data[range] = 255;
+          spots++;
+        }
       }
-      data[range] = colour;
-      if (colour > 0) {
-        spots++;
+    } else {
+      // The blotchy pattern
+      // Invent a pattern. Outermost ring, then a square pattern
+      for (size_t range = 0; range < sizeof(data); range++) {
+        size_t bit = range >> 7;
+        // use bit 'bit' of angle_raw
+        uint8_t colour = (((angle + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
+        if (range > sizeof(data) - 10) {
+          colour = ((angle + m_next_rotation) % EMULATOR_SPOKES) <= 8 ? 255 : 0;
+        }
+        data[range] = colour;
+        if (colour > 0) {
+          spots++;
+        }
       }
     }
 

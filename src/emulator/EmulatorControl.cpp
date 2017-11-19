@@ -59,7 +59,7 @@ void EmulatorControl::RadarTxOn() {
 
 bool EmulatorControl::RadarStayAlive() { return true; }
 
-bool EmulatorControl::SetRange(int meters) { return false; }
+bool EmulatorControl::SetRange(int meters) { m_ri->m_range.Update(meters); return true; }
 
 bool EmulatorControl::SetControlValue(ControlType controlType, RadarControlItem &item) {  // sends the command to the radar
   bool r = false;

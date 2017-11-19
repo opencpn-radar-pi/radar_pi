@@ -31,4 +31,7 @@
 
 #include "SoftwareControlSet.h"
 
-// An emulator is pretty simple. It has no controls :-)
+// An emulator is pretty simple. It has almost no controls :-)
+
+HAVE_CONTROL(CT_RANGE, CTD_AUTO_YES, 1000, CTD_MIN_ZERO, 0, CTD_STEP_1, CTD_NUMERIC)
+
