@@ -1517,10 +1517,6 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
       resize = true;
     }
   } else {
-    if (!m_top_sizer->IsShown(m_control_sizer)) {
-      SwitchTo(m_control_sizer, wxT("transmit power off"));
-      resize = true;
-    }
     if (m_control_sizer->IsShown(m_transmit_sizer)) {
       m_control_sizer->Hide(m_transmit_sizer);
       resize = true;
