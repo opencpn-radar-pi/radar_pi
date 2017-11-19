@@ -1732,7 +1732,8 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
   wxWindow* focused = FindFocus();
   if (!focused) {
     LOG_DIALOG(wxT("%s UpdateDialogShown app not focused"), m_log_name.c_str());
-    // return;
+    Hide();
+    return;
   }
 
   if (!IsShown()) {
