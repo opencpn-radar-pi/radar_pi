@@ -1046,14 +1046,14 @@ void ControlsDialog::CreateControls() {
   // The TIMED TRANSMIT button
   if (m_ctrl[CT_TIMED_IDLE].type) {
     m_timed_idle_button =
-        new RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), m_ctrl[CT_TIMED_IDLE], &m_pi->m_settings.timed_idle);
+        new RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), m_ctrl[CT_TIMED_IDLE], &m_ri->m_timed_idle);
     m_power_sizer->Add(m_timed_idle_button, 0, wxALL, BORDER);
   }
 
   // The TIMED RUNTIME button
   if (m_ctrl[CT_TIMED_IDLE].type) {
     m_timed_run_button =
-        new RadarControlButton(this, ID_TIMED_RUN, _("Runtime"), m_ctrl[CT_TIMED_RUN], &m_pi->m_settings.idle_run_time);
+        new RadarControlButton(this, ID_TIMED_RUN, _("Runtime"), m_ctrl[CT_TIMED_RUN], &m_ri->m_timed_run);
     m_power_sizer->Add(m_timed_run_button, 0, wxALL, BORDER);
   }
 
@@ -1376,13 +1376,13 @@ void ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) { EnterEditMo
 
 void ControlsDialog::OnTransmitButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
-  m_pi->m_settings.timed_idle.Update(0);
+  m_ri->m_timed_idle.Update(0);
   m_ri->RequestRadarState(RADAR_TRANSMIT);
 }
 
 void ControlsDialog::OnStandbyButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
-  m_pi->m_settings.timed_idle.Update(0);
+  m_ri->m_timed_idle.Update(0);
   m_ri->RequestRadarState(RADAR_STANDBY);
 }
 
@@ -1471,9 +1471,10 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_standby_button->Disable();
     m_transmit_button->Enable();
   }
+
   o = _("Power Status");
   o << wxT("\n");
-  if (m_pi->m_settings.timed_idle.GetValue() == 0) {
+  if (m_ri->m_timed_idle.GetValue() == 0) {
     switch (state) {
       case RADAR_OFF:
         o << _("Off");
@@ -1484,6 +1485,9 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
       case RADAR_WARMING_UP:
         o << _("Warming up") << wxString::Format(wxT(" (%d s)"), m_ri->m_warmup.GetValue());
         break;
+      case RADAR_TIMED_IDLE: // Only used with radars with 'hardware' TimedIdle
+        o << _("Timed idle");
+        break;
       case RADAR_SPINNING_UP:
         o << _("Spinning up");
         break;
@@ -1493,13 +1497,13 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
     }
     m_timed_idle_button->SetState(RCS_OFF);
   } else {
-    o << m_pi->GetTimedIdleText();
+    o << m_ri->GetTimedIdleText();
   }
   m_power_button->SetLabel(o);
   m_power_text->SetLabel(o);
 
   if (m_top_sizer->IsShown(m_power_sizer)) {
-    if (m_pi->m_settings.timed_idle.GetValue() > 0) {
+    if (m_ri->m_timed_idle.GetValue() > 0) {
       if (!m_timed_run_button->IsShown()) {
         m_power_sizer->Show(m_timed_run_button);
         resize = true;

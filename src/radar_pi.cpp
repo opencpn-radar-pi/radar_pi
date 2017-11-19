@@ -205,8 +205,6 @@ int radar_pi::Init(void) {
   m_hdm_timeout = now + WATCHDOG_TIMEOUT;
   m_var_timeout = now + WATCHDOG_TIMEOUT;
   m_cog_timeout = now;
-  m_idle_standby = 0;
-  m_idle_transmit = 0;
   m_heading_source = HEADING_NONE;
   m_radar_heading = nanl("");
   m_vp_rotation = 0.;
@@ -216,7 +214,6 @@ int radar_pi::Init(void) {
   m_settings.verbose = 0;
   m_settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
   m_settings.refreshrate = 1;
-  m_settings.timed_idle = 0;
   m_settings.threshold_blue = 255;
   m_settings.threshold_red = 255;
   m_settings.threshold_green = 255;
@@ -696,28 +693,8 @@ void radar_pi::PassHeadingToOpenCPN() {
   PushNMEABuffer(nmea);
 }
 
-wxString radar_pi::GetTimedIdleText() {
-  wxString text;
-
-  if (m_settings.timed_idle.GetValue() > 0) {
-    time_t now = time(0);
-    int left = m_idle_standby - now;
-    if (left >= 0) {
-      text = _("Standby in");
-      text << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
-    } else {
-      left = m_idle_transmit - now;
-      if (left >= 0) {
-        text = _("Transmit in");
-        text << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
-      }
-    }
-  }
-  return text;
-}
-
 wxString radar_pi::GetGuardZoneText(RadarInfo *ri) {
-  wxString text = GetTimedIdleText();
+  wxString text = ri->GetTimedIdleText();
 
   for (int z = 0; z < GUARD_ZONES; z++) {
     int bogeys = ri->m_guard_zone[z]->GetBogeyCount();
@@ -757,7 +734,7 @@ void radar_pi::CheckGuardZoneBogeys(void) {
         if (bogeys > m_settings.guard_zone_threshold) {
           bogeys_found = true;
           bogeys_found_this_radar = true;
-          m_settings.timed_idle = 0;  // reset timed idle to off
+          m_radar[r]->m_timed_idle = 0;  // reset timed idle to off
         }
         text << _(" Zone") << wxT(" ") << z + 1 << wxT(": ");
         if (bogeys > m_settings.guard_zone_threshold) {
@@ -813,41 +790,6 @@ void radar_pi::CheckGuardZoneBogeys(void) {
   }
   if (m_bogey_dialog) {
     m_bogey_dialog->ShowBogeys(text, bogeys_found, m_guard_bogey_confirmed);
-  }
-}
-
-void radar_pi::RequestStateAllRadars(RadarState state) {
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    m_radar[r]->RequestRadarState(state);
-  }
-}
-
-/**
- * See how TimedTransmit is doing.
- *
- * If the ON timer is running and has run out, start the radar and start an OFF timer.
- * If the OFF timer is running and has run out, stop the radar and start an ON timer.
- */
-void radar_pi::CheckTimedTransmit(RadarState state) {
-  if (m_settings.timed_idle.GetValue() == 0) {
-    return;  // User does not want timed idle
-  }
-
-  if (state == RADAR_OFF) {
-    return;  // Timers are just stuck at existing value if radar is off.
-  }
-
-  time_t now = time(0);
-
-  if (m_idle_standby > 0 && TIMED_OUT(now, m_idle_standby) && state == RADAR_TRANSMIT) {
-    RequestStateAllRadars(RADAR_STANDBY);
-    m_idle_transmit = now + m_settings.timed_idle.GetValue() * SECONDS_PER_TIMED_IDLE_SETTING -
-                      (m_settings.idle_run_time.GetValue() + 1) * SECONDS_PER_TIMED_RUN_SETTING;
-    m_idle_standby = 0;
-  } else if (m_idle_transmit > 0 && TIMED_OUT(now, m_idle_transmit) && state == RADAR_STANDBY) {
-    RequestStateAllRadars(RADAR_TRANSMIT);
-    m_idle_standby = now + (m_settings.idle_run_time.GetValue() + 1) * SECONDS_PER_TIMED_RUN_SETTING;
-    m_idle_transmit = 0;
   }
 }
 
@@ -1111,6 +1053,7 @@ void radar_pi::UpdateAllControlStates(bool all) {
     m_radar[r]->UpdateControlState(all);
   }
 }
+
 void radar_pi::UpdateState(void) {
   RadarState state = RADAR_OFF;
 
@@ -1123,14 +1066,17 @@ void radar_pi::UpdateState(void) {
     m_toolbar_button = TB_HIDDEN;
   } else if (state == RADAR_TRANSMIT) {
     m_toolbar_button = TB_ACTIVE;
-  } else if (m_settings.timed_idle.GetValue() > 0) {
+  } else if (state == RADAR_TIMED_IDLE) {
     m_toolbar_button = TB_SEEN;
   } else {
     m_toolbar_button = TB_STANDBY;
   }
   CacheSetToolbarToolBitmaps();
 
-  CheckTimedTransmit(state);
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    m_radar[r]->CheckTimedTransmit();
+  }
+
 }
 
 void radar_pi::SetOpenGLMode(OpenGLMode mode) {
@@ -1254,9 +1200,6 @@ bool radar_pi::LoadConfig(void) {
     m_settings.range_units = (RangeUnits)wxMax(wxMin(v, 2), 0);
 
     pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
-    pConf->Read(wxT("RunTimeOnIdle"), &v, 1);
-    m_settings.idle_run_time.Update(v);
-    m_settings.idle_run_time = wxMax(m_settings.idle_run_time.GetValue(), 2);
 
     pConf->Read(wxT("RadarCount"), &v, 0);
     M_SETTINGS.radar_count = v;
@@ -1302,6 +1245,8 @@ bool radar_pi::LoadConfig(void) {
       m_radar[r]->m_antenna_forward.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dAntennaStarboard"), r), &v, 0);
       m_radar[r]->m_antenna_starboard.Update(v);
+      pConf->Read(wxString::Format(wxT("Radar%dRunTimeOnIdle"), r), &v, 1);
+      m_radar[r]->m_timed_run.Update(v);
 
       pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[n], n ? false : true);
       pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * n);
@@ -1413,7 +1358,6 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("RangeUnits"), (int)m_settings.range_units);
     pConf->Write(wxT("Refreshrate"), m_settings.refreshrate.GetValue());
     pConf->Write(wxT("ReverseZoom"), m_settings.reverse_zoom);
-    pConf->Write(wxT("RunTimeOnIdle"), m_settings.idle_run_time.GetValue());
     pConf->Write(wxT("ScanMaxAge"), m_settings.max_age);
     pConf->Write(wxT("Show"), m_settings.show);
     pConf->Write(wxT("SkewFactor"), m_settings.skew_factor);
@@ -1458,6 +1402,7 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dMainBangSize"), r), m_radar[r]->m_main_bang_size.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dAntennaForward"), r), m_radar[r]->m_antenna_forward.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dAntennaStarboard"), r), m_radar[r]->m_antenna_starboard.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dRunTimeOnIdle"), r), m_radar[r]->m_timed_run.GetValue());
 
       // LOG_DIALOG(wxT("radar_pi: SaveConfig: show_radar[%d]=%d"), r, m_settings.show_radar[r]);
       for (int i = 0; i < GUARD_ZONES; i++) {
@@ -1709,19 +1654,19 @@ bool radar_pi::SetControlValue(int radar, ControlType controlType, RadarControlI
       return true;
     }
     case CT_TIMED_IDLE: {
-      m_settings.timed_idle = item;
-      m_idle_standby = 0;
-      m_idle_transmit = 0;
-      if (m_radar[0]->m_state.GetValue() == RADAR_TRANSMIT || m_radar[1]->m_state.GetValue() == RADAR_TRANSMIT) {
-        m_idle_standby = time(0) + 10;
+      m_radar[radar]->m_timed_idle = item;
+      m_radar[radar]->m_idle_standby = 0;
+      m_radar[radar]->m_idle_transmit = 0;
+      if (m_radar[radar]->m_state.GetValue() == RADAR_TRANSMIT) {
+        m_radar[radar]->m_idle_standby = time(0) + 10;
       } else {
-        m_idle_transmit = time(0) + 10;
+        m_radar[radar]->m_idle_transmit = time(0) + 10;
       }
       UpdateAllControlStates(true);
       return true;
     }
     case CT_TIMED_RUN: {
-      m_settings.idle_run_time = item;
+      m_radar[radar]->m_timed_run = item;
       UpdateAllControlStates(true);
       return true;
     }

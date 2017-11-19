@@ -117,6 +117,9 @@ class RadarInfo {
   RadarControlItem m_target_trails;
   RadarControlItem m_trails_motion;
   RadarControlItem m_warmup;
+  RadarControlItem m_timed_idle;     // CT_TIMED_IDLE
+  RadarControlItem m_timed_run;  // CT_TIMED_RUN
+
 
   /* Per radar objects */
 
@@ -158,6 +161,10 @@ class RadarInfo {
   int m_dir_lon;
   TrailBuffer *m_trails;
 
+  // Timed Transmit
+  time_t m_idle_standby;   // When we will change to standby
+  time_t m_idle_transmit;  // When we will change to transmit
+
   /* Methods */
 
   RadarInfo(radar_pi *pi, int radar);
@@ -192,6 +199,7 @@ class RadarInfo {
   void UpdateControlState(bool all);
   void ComputeColourMap();
   void ComputeTargetTrails();
+  void CheckTimedTransmit();
   wxString GetRangeText();
   wxString GetDisplayRangeStr(int meters, bool unit);
   int GetDisplayRange() { return m_range.GetValue(); };
@@ -231,6 +239,7 @@ class RadarInfo {
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
   wxString GetCanvasTextCenter();
+  wxString GetTimedIdleText();
 
   GeoPosition m_mouse_pos;
   double m_mouse_ebl[ORIENTATION_NUMBER];

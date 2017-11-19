@@ -163,7 +163,12 @@ enum HeadingSource {
   HEADING_RADAR_HDT
 };
 
-enum RadarState { RADAR_OFF, RADAR_WARMING_UP, RADAR_STANDBY, RADAR_TRANSMIT, RADAR_SPINNING_UP };
+//
+// The order of these is used for deciding what the 'best' representation is
+// of the radar icon in the OpenCPN toolbar. The 'highest' (last) in the enum
+// is what is shown.
+//
+enum RadarState { RADAR_OFF, RADAR_WARMING_UP, RADAR_STANDBY, RADAR_TIMED_IDLE, RADAR_TRANSMIT, RADAR_SPINNING_UP };
 
 struct receive_statistics {
   int packets;
@@ -290,8 +295,6 @@ struct PersistentSettings {
   double skew_factor;                              // Set to -1 or other value to correct skewing
   RangeUnits range_units;                          // See enum
   int max_age;                                     // Scans older than this in seconds will be removed
-  RadarControlItem timed_idle;                     // 0 = off, 1 = 5 mins, etc. to 7 = 35 mins
-  RadarControlItem idle_run_time;                  // 0 = 10s, 1 = 30s, 2 = 1 min
   RadarControlItem refreshrate;                    // How quickly to refresh the display
   int chart_overlay;                               // -1 = none, otherwise = radar number
   int menu_auto_hide;                              // 0 = none, 1 = 10s, 2 = 30s
@@ -483,8 +486,6 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   void RenderRadarBuffer(wxDC *pdc, int width, int height);
   void PassHeadingToOpenCPN();
   void CacheSetToolbarToolBitmaps();
-  void CheckTimedTransmit(RadarState state);
-  void RequestStateAllRadars(RadarState state);
   void SetRadarWindowViz(bool reparent = false);
   void UpdateContextMenu();
   void UpdateCOGAvg(double cog);
@@ -573,10 +574,6 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   bool m_initialized;      // True if Init() succeeded and DeInit() not called yet.
   bool m_first_init;       // True in first Init() call.
   wxLongLong m_boot_time;  // millis when started
-
-  // Timed Transmit
-  time_t m_idle_standby;   // When we will change to standby
-  time_t m_idle_transmit;  // When we will change to transmit
 
   OpenGLMode m_opengl_mode;
   volatile bool m_opengl_mode_changed;

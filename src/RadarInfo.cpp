@@ -73,6 +73,8 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_spokes = 0;
   m_spoke_len_max = 0;
   m_trails = 0;
+  m_idle_standby = 0;
+  m_idle_transmit = 0;
   CLEAR_STRUCT(m_statistics);
   CLEAR_STRUCT(m_course_log);
 
@@ -551,6 +553,7 @@ void RadarInfo::RequestRadarState(RadarState state) {
           break;
 
         case RADAR_SPINNING_UP:
+        case RADAR_TIMED_IDLE:
         case RADAR_WARMING_UP:
         case RADAR_OFF:
           LOG_INFO(wxT("radar_pi: %s unexpected status request %d"), m_name.c_str(), state);
@@ -1311,6 +1314,56 @@ void RadarInfo::AdjustRange(int adjustment) {
   } else if (adjustment > 0 && n < count - 1) {
     LOG_VERBOSE(wxT("radar_pi: Change radar range from %d to %d"), ranges[n], ranges[n + 1]);
     m_control->SetRange(ranges[n + 1]);
+  }
+}
+
+wxString RadarInfo::GetTimedIdleText() {
+  wxString text;
+
+  if (m_timed_idle.GetValue() > 0) {
+    time_t now = time(0);
+    int left = m_idle_standby - now;
+    if (left >= 0) {
+      text = _("Standby in");
+      text << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
+    } else {
+      left = m_idle_transmit - now;
+      if (left >= 0) {
+        text = _("Transmit in");
+        text << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
+      }
+    }
+  }
+  return text;
+}
+
+/**
+ * See how TimedTransmit is doing.
+ *
+ * If the ON timer is running and has run out, start the radar and start an OFF timer.
+ * If the OFF timer is running and has run out, stop the radar and start an ON timer.
+ */
+void RadarInfo::CheckTimedTransmit() {
+  if (m_timed_idle.GetValue() == 0) {
+    return;  // User does not want timed idle
+  }
+
+  RadarState state = (RadarState)m_state.GetValue();
+  if (state == RADAR_OFF) {
+    return;  // Timers are just stuck at existing value if radar is off.
+  }
+
+  time_t now = time(0);
+
+  if (m_idle_standby > 0 && TIMED_OUT(now, m_idle_standby) && state == RADAR_TRANSMIT) {
+    RequestRadarState(RADAR_STANDBY);
+    m_idle_transmit = now + m_timed_idle.GetValue() * SECONDS_PER_TIMED_IDLE_SETTING -
+    (m_timed_run.GetValue() + 1) * SECONDS_PER_TIMED_RUN_SETTING;
+    m_idle_standby = 0;
+  } else if (m_idle_transmit > 0 && TIMED_OUT(now, m_idle_transmit) && state == RADAR_STANDBY) {
+    RequestRadarState(RADAR_TRANSMIT);
+    m_idle_standby = now + (m_timed_run.GetValue() + 1) * SECONDS_PER_TIMED_RUN_SETTING;
+    m_idle_transmit = 0;
   }
 }
 
