@@ -301,7 +301,7 @@ SOCKET NavicoReceive::GetNewReportSocket() {
     return INVALID_SOCKET;
   }
 
-  error.Printf(wxT("%s reports: "), m_ri->m_name.c_str());
+  error = wxT("");
   socket = startUDPMulticastReceiveSocket(m_interface_addr, m_report_addr, error);
   if (socket != INVALID_SOCKET) {
     wxString addr = FormatNetworkAddress(m_interface_addr);
@@ -310,7 +310,7 @@ SOCKET NavicoReceive::GetNewReportSocket() {
     LOG_RECEIVE(wxT("radar_pi: %s scanning interface %s for data from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
 
     wxString s;
-    s << m_ri->m_name << wxT(": ") << _("Scanning interface") << wxT(" ") << addr;
+    s << _("Scanning interface") << wxT(" ") << addr;
     SetInfoStatus(s);
   } else {
     SetInfoStatus(error);
@@ -689,7 +689,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, int len) {
               stat = _("Unknown status");
               break;
           }
-          SetInfoStatus(wxString::Format(wxT("%s IP %s %s"), m_ri->m_name.c_str(), m_addr.c_str(), stat.c_str()));
+          SetInfoStatus(wxString::Format(wxT("IP %s %s"), m_addr.c_str(), stat.c_str()));
         }
         break;
       }
@@ -752,12 +752,12 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, int len) {
 
         wxString ts;
 
-        ts << wxT("Firmware date: ");
+        ts << wxT("Firmware ");
         AppendChar16String(ts, s->firmware_date);
         ts << wxT(" ");
         AppendChar16String(ts, s->firmware_time);
 
-        m_pi->m_pMessageBox->SetRadarBuildInfo(ts);
+        SetFirmware(ts);
 
         break;
       }
@@ -880,7 +880,9 @@ void NavicoReceive::Shutdown() {
 wxString NavicoReceive::GetInfoStatus() {
   wxCriticalSectionLocker lock(m_lock);
   // Called on the UI thread, so be gentle
-
+  if (m_firmware.length() > 0) {
+    return m_status + wxT("\n") + m_firmware;
+  }
   return m_status;
 }
 

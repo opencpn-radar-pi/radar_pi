@@ -204,6 +204,6 @@ void EmulatorReceive::Shutdown() {
   LOG_INFO(wxT("radar_pi: %s receive thread will take long time to stop"), m_ri->m_name.c_str());
 }
 
-wxString EmulatorReceive::GetInfoStatus() { return _("Emulator Status OK"); }
+wxString EmulatorReceive::GetInfoStatus() { return _("OK"); }
 
 PLUGIN_END_NAMESPACE

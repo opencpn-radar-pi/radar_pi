@@ -97,10 +97,15 @@ class NavicoReceive : public RadarReceive {
 
   wxCriticalSection m_lock;  // Protects m_status
   wxString m_status;         // Userfriendly string
+  wxString m_firmware;       // Userfriendly string #2
 
   void SetInfoStatus(wxString status) {
     wxCriticalSectionLocker lock(m_lock);
     m_status = status;
+  }
+  void SetFirmware(wxString s) {
+    wxCriticalSectionLocker lock(m_lock);
+    m_firmware = s;
   }
 };
 

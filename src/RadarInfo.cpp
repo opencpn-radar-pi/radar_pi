@@ -507,7 +507,6 @@ void RadarInfo::UpdateTransmitState() {
     static wxString empty;
 
     m_state.Update(RADAR_OFF);
-    m_pi->m_pMessageBox->SetRadarIPAddress(empty);
     LOG_INFO(wxT("radar_pi: %s lost presence"), m_name.c_str());
     return;
   }

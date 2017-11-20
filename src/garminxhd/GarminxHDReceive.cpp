@@ -172,7 +172,7 @@ SOCKET GarminxHDReceive::GetNewReportSocket() {
     return INVALID_SOCKET;
   }
 
-  error.Printf(wxT("%s reports: "), m_ri->m_name.c_str());
+  error = wxT("");
   socket = startUDPMulticastReceiveSocket(m_interface_addr, m_report_addr, error);
   if (socket != INVALID_SOCKET) {
     wxString addr = FormatNetworkAddress(m_interface_addr);
@@ -181,7 +181,7 @@ SOCKET GarminxHDReceive::GetNewReportSocket() {
     LOG_RECEIVE(wxT("radar_pi: %s scanning interface %s for data from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
 
     wxString s;
-    s << m_ri->m_name << wxT(": ") << _("Scanning interface") << wxT(" ") << addr;
+    s << _("Scanning interface") << wxT(" ") << addr;
     SetInfoStatus(s);
   } else {
     SetInfoStatus(error);
@@ -484,7 +484,7 @@ bool GarminxHDReceive::UpdateScannerStatus(int status) {
         ret = false;
         break;
     }
-    SetInfoStatus(wxString::Format(wxT("%s IP %s %s"), m_ri->m_name.c_str(), m_addr.c_str(), stat.c_str()));
+    SetInfoStatus(wxString::Format(wxT("IP %s %s"), m_addr.c_str(), stat.c_str()));
   }
   return ret;
 }

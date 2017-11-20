@@ -88,10 +88,6 @@ class MessageBox : public wxDialog {
 
   void CreateControls();
   bool UpdateMessage(bool force);  // Check whether message box needs to be visible, return true if shown
-  // void SetErrorMessage(wxString &msg);
-  void SetRadarBuildInfo(wxString &msg);
-  void SetRadarIPAddress(wxString &msg);
-  void SetRadarType(RadarType radar_type);
   void SetTrueHeadingInfo(wxString &msg);
   void SetMagHeadingInfo(wxString &msg);
   void SetVariationInfo(wxString &msg);
@@ -112,11 +108,6 @@ class MessageBox : public wxDialog {
   wxWindow *m_parent;
   radar_pi *m_pi;
 
-  radar_info_item m_build_info;
-  radar_info_item m_radar_type_info;
-  // radar_info_item m_error_message_info;
-  radar_info_item m_radar_addr_info;
-  radar_info_item m_mcast_addr_info;
   radar_info_item m_true_heading_info;
   radar_info_item m_mag_heading_info;
   radar_info_item m_variation_info;
@@ -131,22 +122,20 @@ class MessageBox : public wxDialog {
   wxBoxSizer *m_info_sizer;
 
   wxBoxSizer *m_message_sizer;  // Contains NO HDG and/or NO GPS
-  wxStaticBox *m_ip_box;
+
+  // For each radar we have a text box
+  wxStaticBox *m_radar_box[4];
+  wxStaticText *m_radar_text[4];
 
   // MessageBox
   wxButton *m_close_button;
   wxButton *m_hide_radar;
-  wxStaticText *m_error_message;
-  wxStaticText *m_radar_off;
   wxCheckBox *m_have_open_gl;
   wxCheckBox *m_have_boat_pos;
   wxCheckBox *m_have_true_heading;
   wxCheckBox *m_have_mag_heading;
   wxCheckBox *m_have_variation;
-  wxStaticText *m_presence;
   wxStaticText *m_statistics;
-
-  wxArrayString m_radar_names;
 };
 
 PLUGIN_END_NAMESPACE

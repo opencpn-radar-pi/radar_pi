@@ -73,9 +73,8 @@ void MessageBox::Init() {
   m_nmea_sizer = 0;
   m_info_sizer = 0;
   m_message_sizer = 0;
-  m_ip_box = 0;
-
-  RadarFactory::GetRadarTypes(m_radar_names);
+  CLEAR_STRUCT(m_radar_box);
+  CLEAR_STRUCT(m_radar_text);
 }
 
 bool MessageBox::Create(wxWindow *parent, radar_pi *pi, wxWindowID id, const wxString &caption, const wxPoint &pos) {
@@ -124,16 +123,23 @@ void MessageBox::CreateControls() {
   m_message_sizer = new wxBoxSizer(wxVERTICAL);
   m_top_sizer->Add(m_message_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
-  m_radar_off = new wxStaticText(this, ID_OFF, label, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-  m_message_sizer->Add(m_radar_off, 0, wxALL, 2);
-  m_radar_off->SetLabel(_("Cannot switch radar on as\nit is not connected or off"));
-  m_radar_off->SetFont(m_pi->m_font);
+  for (int i = 0; i < RADARS; i++) {
+    m_radar_box[i] = new wxStaticBox(this, wxID_ANY, wxT(""));
+    m_radar_box[i]->SetFont(m_pi->m_font);
+    wxStaticBoxSizer *ipSizer = new wxStaticBoxSizer(m_radar_box[i], wxVERTICAL);
+    m_message_sizer->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
-  m_error_message = new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
-  m_message_sizer->Add(m_error_message, 0, wxALL, 2);
-  m_error_message->SetFont(m_pi->m_font);
+    wxString presence;
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      presence << m_pi->m_radar[r]->GetInfoStatus() << wxT("\n");
+    }
+    m_radar_text[i] = new wxStaticText(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0);
+    m_radar_text[i]->SetFont(m_pi->m_font);
+    ipSizer->Add(m_radar_text[i], 0, wxALL, BORDER);
+    m_radar_box[i]->Hide();
+  }
 
-  wxStaticBox *optionsBox = new wxStaticBox(this, wxID_ANY, _("OpenCPN options"));
+  wxStaticBox *optionsBox = new wxStaticBox(this, wxID_ANY, _("Required OpenCPN option"));
   optionsBox->SetFont(m_pi->m_font);
   wxStaticBoxSizer *optionsSizer = new wxStaticBoxSizer(optionsBox, wxVERTICAL);
   m_message_sizer->Add(optionsSizer, 0, wxEXPAND | wxALL, BORDER * 2);
@@ -143,20 +149,6 @@ void MessageBox::CreateControls() {
   optionsSizer->Add(m_have_open_gl, 0, wxALL, BORDER);
   m_have_open_gl->SetFont(m_pi->m_font);
   m_have_open_gl->Disable();
-
-  m_ip_box = new wxStaticBox(this, wxID_ANY, _("Detected radars"));
-  m_ip_box->SetFont(m_pi->m_font);
-  wxStaticBoxSizer *ipSizer = new wxStaticBoxSizer(m_ip_box, wxVERTICAL);
-  m_message_sizer->Add(ipSizer, 0, wxEXPAND | wxALL, BORDER * 2);
-
-  wxString presence;
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    presence << m_pi->m_radar[r]->GetInfoStatus() << wxT("\n");
-  }
-  m_presence = new wxStaticText(this, wxID_ANY, presence, wxDefaultPosition, wxDefaultSize, 0);
-  ipSizer->Add(m_presence, 0, wxALL, BORDER);
-  m_presence->SetFont(m_pi->m_font);
-  // m_presence->Disable();
 
   wxStaticBox *nmeaBox = new wxStaticBox(this, wxID_ANY, _("For radar overlay also required"));
   nmeaBox->SetFont(m_pi->m_font);
@@ -331,25 +323,19 @@ bool MessageBox::UpdateMessage(bool force) {
   m_have_mag_heading->SetValue(haveMagHeading);
   m_have_variation->SetValue(haveVariation);
 
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    wxString info = m_pi->m_radar[r]->GetInfoStatus();
+    m_radar_text[r]->SetLabel(info);
+    m_radar_box[r]->SetLabel(m_pi->m_radar[r]->m_name);
+    m_radar_box[r]->Show();
+    m_radar_box[r]->Layout();
+  }
+  for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
+    m_radar_box[r]->Hide();
+  }
+
   wxString label;
 
-  m_radar_type_info.GetValue(&label);
-  if (label.Len() > 0) {
-    wxString build_info;
-
-    m_build_info.GetValue(&build_info);
-    m_radar_off->SetLabel(_("Radar type") + wxT(" ") + label + wxT("\n") + build_info);
-  }
-
-  wxString presence;
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    presence << m_pi->m_radar[r]->GetInfoStatus() << wxT("\n");
-  }
-  m_presence->SetLabel(presence);
-
-  if (m_mcast_addr_info.GetNewValue(&label)) {
-    m_ip_box->SetLabel(label);
-  }
   if (m_true_heading_info.GetNewValue(&label)) {
     m_have_true_heading->SetLabel(label);
   }
@@ -364,12 +350,6 @@ bool MessageBox::UpdateMessage(bool force) {
   }
 
   if (m_message_state != new_message_state || m_old_radar_seen != radarSeen) {
-    if (radarOn && (navOn || no_overlay)) {
-      m_error_message->SetLabel(_("Radar requirements OK:"));
-    } else {
-      m_error_message->SetLabel(_("Radar requires the following"));
-    }
-
     switch (new_message_state) {
       case HIDE:
         Show(false);
@@ -426,17 +406,6 @@ void MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
   m_message_state = HIDE;
   Hide();
   m_pi->NotifyRadarWindowViz();
-}
-
-void MessageBox::SetRadarIPAddress(wxString &msg) { m_radar_addr_info.Update(msg); }
-
-void MessageBox::SetRadarBuildInfo(wxString &msg) { m_build_info.Update(msg); }
-
-void MessageBox::SetRadarType(RadarType radar_type) {
-  wxString s;
-
-  s << m_radar_names[radar_type];
-  m_radar_type_info.Update(s);
 }
 
 void MessageBox::SetTrueHeadingInfo(wxString &msg) {
