@@ -1,2 +1,2 @@
 # shipdriver_pi
-Almost a simulator or is it a game?
+A plugin for OpenCPN. Almost a simulator or is it a game?
