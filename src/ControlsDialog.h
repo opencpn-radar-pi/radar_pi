@@ -168,6 +168,7 @@ class ControlsDialog : public wxDialog {
       m_ctrl[i].type = CT_NONE;
       m_ctrl[i].names = 0;
       m_ctrl[i].autoNames = 0;
+      m_ctrl[i].hasOff = false;
     }
   };
   ~ControlsDialog();
