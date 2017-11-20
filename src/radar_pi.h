@@ -77,7 +77,7 @@ class RadarArpa;
 #define GUARD_ZONES (2)    // Could be increased if wanted
 #define BEARING_LINES (2)  // And these as well
 
-static const int SECONDS_PER_TIMED_IDLE_SETTING = 1 * 60;  // 5 minutes increment for each setting
+static const int SECONDS_PER_TIMED_IDLE_SETTING = 5 * 60;  // 5 minutes increment for each setting
 static const int SECONDS_PER_TIMED_RUN_SETTING = 10;
 
 #define OPENGL_ROTATION (-90.0)  // Difference between 'up' and OpenGL 'up'...
