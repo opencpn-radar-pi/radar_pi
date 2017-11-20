@@ -1,0 +1,9 @@
+src/HiRes_pi.h
+src/HiRes_pi.cpp
+src/icons.h
+src/icons.cpp
+src/HiResgui.h
+src/HiResgui.cpp
+src/HiResgui_impl.cpp
+src/HiResgui_impl.h
+

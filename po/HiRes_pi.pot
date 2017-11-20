@@ -1,0 +1,107 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: HiRes_pi 0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-12-28 18:43+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/HiRes_pi.cpp:103 src/HiRes_pi.cpp:166 src/HiResgui.h:51
+msgid "HiRes"
+msgstr ""
+
+#: src/HiRes_pi.cpp:172
+msgid "HiRes Coastlines"
+msgstr ""
+
+#: src/HiRes_pi.cpp:177
+msgid "Extract HiRes coastline files"
+msgstr ""
+
+#: src/HiResgui.cpp:21
+msgid "Utility for adding HiRes coastline files"
+msgstr ""
+
+#: src/HiResgui.cpp:31
+msgid "Extract Coastline Files"
+msgstr ""
+
+#: src/HiResgui_impl.cpp:53
+msgid "Cannot open file '"
+msgstr ""
+
+#: src/HiResgui_impl.cpp:72
+msgid "Cannot read zip entry '"
+msgstr ""
+
+#: src/HiResgui_impl.cpp:80
+msgid "Cannot create file '"
+msgstr ""
+
+#: src/HiResgui_impl.cpp:124
+msgid "HiRes Files are already installed"
+msgstr ""
+
+#: src/HiResgui_impl.cpp:124
+msgid "HiRes Files"
+msgstr ""
+
+#: src/HiResgui_impl.cpp:150
+msgid "Downloading..."
+msgstr ""
+
+#: src/HiResgui_impl.cpp:150
+msgid "Download in progress"
+msgstr ""
+
+#: src/HiResgui_impl.cpp:169
+#, c-format
+msgid "Downloaded %ld of %ld bytes"
+msgstr ""
+
+#: src/HiResgui_impl.cpp:181
+msgid "Download was cancelled"
+msgstr ""
+
+#: src/HiResgui_impl.cpp:208
+msgid ""
+"Download is complete, please wait for confirmation \n"
+" that the files have been extracted"
+msgstr ""
+
+#: src/HiResgui_impl.cpp:208
+msgid "Please wait"
+msgstr ""
+
+#: src/HiResgui_impl.cpp:218
+msgid ""
+"HiRes files have been copied to OpenCPN \n"
+" Please re-start OpenCPN"
+msgstr ""
+
+#: src/HiResgui_impl.cpp:218
+msgid "Success"
+msgstr ""
+
+#: src/HiResgui_impl.cpp:222
+msgid "Unable to copy the HiRes files"
+msgstr ""
+
+#: src/HiResgui_impl.cpp:222
+msgid "Extraction failed"
+msgstr ""
+
+#: src/HiResgui_impl.h:45
+msgid "HiRes Plugin"
+msgstr ""
