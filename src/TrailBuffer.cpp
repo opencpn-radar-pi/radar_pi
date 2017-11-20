@@ -227,7 +227,7 @@ void TrailBuffer::UpdateTrailPosition() {
     m_previous_pixels_per_meter = m_ri->m_pixels_per_meter;
   } else if (m_previous_pixels_per_meter != m_ri->m_pixels_per_meter) {
     // zoom trails
-    double zoom_factor = m_previous_pixels_per_meter / m_ri->m_pixels_per_meter;
+    double zoom_factor = m_ri->m_pixels_per_meter / m_previous_pixels_per_meter;
     m_previous_pixels_per_meter = m_ri->m_pixels_per_meter;
 
     // center the image before zooming
