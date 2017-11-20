@@ -1,2 +1,2 @@
 # shipdriver_pi
-Almost a simulator
+Almost a simulator or is it a game?
