@@ -120,6 +120,7 @@ class RadarInfo {
   RadarControlItem m_timed_idle;     // CT_TIMED_IDLE
   RadarControlItem m_timed_run;  // CT_TIMED_RUN
 
+  bool m_showManualValueInAuto;  // Does radar adjust manual value in auto mode? True for Garmin, False for others
 
   /* Per radar objects */
 

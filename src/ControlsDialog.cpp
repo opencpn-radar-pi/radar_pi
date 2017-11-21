@@ -275,7 +275,7 @@ void RadarControlButton::UpdateLabel(bool force) {
         } else {
           label << _("Auto");
         }
-        if (value != 0) {
+        if (m_parent->m_ri->m_showManualValueInAuto) {
           label << wxString::Format(wxT(" %d"), value * m_ci.stepValue);
           if (m_ci.unit.length() > 0) {
             label << wxT(" ") << m_ci.unit;

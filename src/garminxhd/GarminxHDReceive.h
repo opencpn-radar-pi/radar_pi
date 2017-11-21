@@ -55,6 +55,7 @@ class GarminxHDReceive : public RadarReceive {
     m_receive_socket = GetLocalhostServerTCPSocket();
     m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
     SetInfoStatus(wxString::Format(wxT("%s: %s"), m_ri->m_name.c_str(), _("Initializing")));
+    m_ri->m_showManualValueInAuto = true;
 
     LOG_RECEIVE(wxT("radar_pi: %s receive thread created"), m_ri->m_name.c_str());
   };
