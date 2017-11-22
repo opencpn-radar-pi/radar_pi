@@ -397,7 +397,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
       m_arpa->ClearContours();
     }
   }
-
+  
   orientation = GetOrientation();
   if ((orientation == ORIENTATION_HEAD_UP || m_previous_orientation == ORIENTATION_HEAD_UP) &&
       (orientation != m_previous_orientation)) {

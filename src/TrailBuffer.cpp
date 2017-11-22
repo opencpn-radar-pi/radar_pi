@@ -50,7 +50,7 @@ PLUGIN_BEGIN_NAMESPACE
 TrailBuffer::TrailBuffer(RadarInfo *ri, size_t spokes, size_t max_spoke_len) {
   m_ri = ri;
   m_spokes = spokes;
-  m_max_spoke_len = max_spoke_len;
+  m_max_spoke_len = (int)max_spoke_len;
   m_previous_pixels_per_meter = 0.;
   m_trail_size = max_spoke_len * 2 + MARGIN * 2;
   m_true_trails = (TrailRevolutionsAge *)calloc(sizeof(TrailRevolutionsAge), m_trail_size * m_trail_size);
@@ -123,9 +123,9 @@ void TrailBuffer::UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t
   int motion = m_ri->m_trails_motion.GetValue();
   uint8_t *trail = &M_RELATIVE_TRAILS(angle, 0);
   uint8_t weakest_normal_blob = m_ri->m_pi->m_settings.threshold_blue;
-  size_t radius = 0;
-
-  for (; radius < len - 1; radius++, trail++) {  // len - 1 : no trails on range circle
+  int radius = 0;
+  int length = int(len);
+  for (; radius < length - 1; radius++, trail++) {  // len - 1 : no trails on range circle
     if (data[radius] >= weakest_normal_blob) {
       *trail = 1;
     } else {
@@ -143,16 +143,18 @@ void TrailBuffer::UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t
   }
 }
 
+// Zooms the trailbuffer (containing image of true trails) in and out
+// This version assumes m_offset.lon and m_offset.lat to be zero (earlier versions did zoom offset as well)
+// zoom_factor > 1 -> zoom in, enlarge image
 void TrailBuffer::ZoomTrails(float zoom_factor) {
   uint8_t *flip;
-  // zoom_factor > 1 -> zoom in, enlarge image
   memset(m_copy_relative_trails, 0, m_spokes * m_max_spoke_len);
 
   // zoom relative trails
 
-  for (size_t i = 0; i < m_spokes; i++) {
-    for (size_t j = 0; j < m_max_spoke_len; j++) {
-      size_t index_j = (size_t)(j * zoom_factor);
+  for (int i = 0; i < (int)m_spokes; i++) {
+    for (int j = 0; j < m_max_spoke_len; j++) {
+      int index_j = j * zoom_factor;
       if (index_j >= m_max_spoke_len) break;
       if (M_RELATIVE_TRAILS(i, j) != 0) {
         m_copy_relative_trails[i * M_RELATIVE_TRAILS_STRIDE + index_j] = M_RELATIVE_TRAILS(i, j);
@@ -167,17 +169,22 @@ void TrailBuffer::ZoomTrails(float zoom_factor) {
   memset(m_copy_true_trails, 0, m_trail_size * m_trail_size);
 
   // zoom true trails
-  for (size_t i = wxMax(m_trail_size / 2 + m_offset.lat - m_max_spoke_len, 0);
-       i < wxMin(m_trail_size / 2 + m_offset.lat + m_max_spoke_len, m_trail_size); i++) {
-    int index_i = (int((float)(i - m_trail_size / 2 + m_offset.lat) * zoom_factor)) + m_trail_size / 2 - m_offset.lat * zoom_factor;
-    if (index_i >= (int)m_trail_size - 1) break;  // allow adding an additional pixel later
-    if (index_i < 0) continue;
-    for (size_t j = wxMax(m_trail_size / 2 + m_offset.lon - m_max_spoke_len, 0);
-         j < wxMin(m_trail_size / 2 + m_offset.lon + m_max_spoke_len, m_trail_size); j++) {
-      int index_j =
-          (int((float)(j - m_trail_size / 2 + m_offset.lon) * zoom_factor)) + m_trail_size / 2 - m_offset.lon * zoom_factor;
-      if (index_j >= (int)m_trail_size - 1) break;
-      if (index_j < 0) continue;
+  for (int i = MARGIN; i < m_trail_size - MARGIN; i++) {
+    int index_i = (int)(((double)i - (double)m_trail_size / 2) * zoom_factor + (double)m_trail_size / 2);
+    if (index_i >= m_trail_size - 1) {
+      break;  // allow adding an additional pixel later
+    }
+    if (index_i < 0) {
+      continue;
+    }
+    for (int j = MARGIN; j < m_trail_size - MARGIN; j++) {
+      int index_j = (int)(((double)j - (double)m_trail_size / 2) * zoom_factor + (double)m_trail_size / 2);
+      if (index_j >= (int)m_trail_size - 1) {
+        break;
+      }
+      if (index_j < 0) {
+        continue;
+      }
       uint8_t pixel = M_TRUE_TRAILS(i, j);
       if (pixel != 0) {  // many to one mapping, prevent overwriting trails with 0
         m_copy_true_trails[index_i * M_TRUE_TRAILS_STRIDE + index_j] = pixel;
@@ -196,9 +203,6 @@ void TrailBuffer::ZoomTrails(float zoom_factor) {
   flip = m_true_trails;
   m_true_trails = m_copy_true_trails;
   m_copy_true_trails = flip;
-
-  m_offset.lon *= zoom_factor;
-  m_offset.lat *= zoom_factor;
 }
 
 void TrailBuffer::UpdateTrailPosition() {
@@ -225,11 +229,11 @@ void TrailBuffer::UpdateTrailPosition() {
       return;
     }
     m_previous_pixels_per_meter = m_ri->m_pixels_per_meter;
-  } else if (m_previous_pixels_per_meter != m_ri->m_pixels_per_meter) {
+  }
+  else if (m_previous_pixels_per_meter != m_ri->m_pixels_per_meter && m_previous_pixels_per_meter != 0.) {
     // zoom trails
     double zoom_factor = m_ri->m_pixels_per_meter / m_previous_pixels_per_meter;
     m_previous_pixels_per_meter = m_ri->m_pixels_per_meter;
-
     // center the image before zooming
     // otherwise the offset might get too large
     ShiftImageLatToCenter();
@@ -283,7 +287,7 @@ void TrailBuffer::UpdateTrailPosition() {
     // change of direction of movement, moving east now
     // clear space in true_trails to the right of image
     int number_of_pixels_to_clear = MARGIN - m_offset.lon;
-    for (size_t i = 0; i < m_trail_size; i++) {
+    for (int i = 0; i < m_trail_size; i++) {
       uint8_t *start_of_area_to_clear = m_true_trails + m_trail_size * i + m_trail_size - MARGIN + m_offset.lon;
       memset(start_of_area_to_clear, 0, number_of_pixels_to_clear);
     }
@@ -294,7 +298,7 @@ void TrailBuffer::UpdateTrailPosition() {
     // change of direction of movement, moving west now
     // clear space in true_trails outside image in that direction
     int number_of_pixels_to_clear = MARGIN + m_offset.lon;
-    for (size_t i = 0; i < m_trail_size; i++) {
+    for (int i = 0; i < m_trail_size; i++) {
       uint8_t *start_of_area_to_clear = m_true_trails + m_trail_size * i;
       memset(start_of_area_to_clear, 0, number_of_pixels_to_clear);
     }
@@ -331,7 +335,7 @@ void TrailBuffer::UpdateTrailPosition() {
 
 // shifts the true trails image in lat direction to center
 void TrailBuffer::ShiftImageLatToCenter() {
-  size_t shift = 0;
+  int shift = 0;
   int image_size = m_trail_size * 2 * m_max_spoke_len;  // number of pixels to shift up / down
 
   if (m_offset.lat >= MARGIN || m_offset.lat <= -MARGIN) {  // abs not ok
@@ -370,7 +374,7 @@ void TrailBuffer::ShiftImageLonToCenter() {
   int line_of_image_size = 2 * m_max_spoke_len;
   // MARGIN is where the centered line should start
   // shift per line, rigth / left
-  for (size_t i = 0; i < m_trail_size; i++) {
+  for (int i = 0; i < m_trail_size; i++) {
     // current starting location of image
     uint8_t *source_address = m_true_trails + i * m_trail_size + MARGIN + m_offset.lon;
     // location where centered image should be
