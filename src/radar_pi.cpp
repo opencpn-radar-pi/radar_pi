@@ -912,8 +912,6 @@ void radar_pi::ScheduleWindowRefresh() {
 
 void radar_pi::OnTimerNotify(wxTimerEvent &event) {
   if (m_settings.show) {  // Is radar enabled?
-    LOG_INFO(wxT("radar_pi: TIMER"));
-
     if (m_settings.chart_overlay >= 0) {
       // If overlay is enabled schedule another chart draw. Note this will cause another call to RenderGLOverlay,
       // which will then call ScheduleWindowRefresh again itself.
