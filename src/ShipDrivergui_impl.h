@@ -37,7 +37,8 @@
 
 #include <wx/utils.h>
 #include <wx/gdicmn.h>
-#include <sstream>      
+#include <sstream>
+#include <cmath>
 
 using namespace std;
 
@@ -47,18 +48,18 @@ class Dlg : public ShipDriverBase
 {
 public:
         Dlg( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("ShipDriver"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxCLOSE_BOX|wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
-        ShipDriver_pi *plugin; 
-     
+        ShipDriver_pi *plugin;
+
 		wxString createRMCSentence(wxDateTime myTime, double myLat, double myLon, double mySpd, double myDir);
 		wxString createGLLSentence(wxDateTime myTime, double myLat, double myLon, double mySpd, double myDir);
 		wxString createVTGSentence(double mySpd, double myDir);
-		
+
 		wxString LatitudeToString(double mLat);
 		wxString LongitudeToString(double mLon);
 		wxString DateTimeToTimeString(wxDateTime myDT);
 		wxString DateTimeToDateString(wxDateTime myDT);
 		void OnContextMenu(double m_lat, double m_lon);
-		
+
 		wxString makeCheckSum(wxString mySentence);
 
 		wxTimer *   m_Timer;
@@ -66,7 +67,7 @@ public:
 
 		double GetLatitude()  { return initLat; };
 		double GetLongitude() { return initLon; };
-		
+
 		double initLat;
 		double initLon;
 		double stepLat;
@@ -75,22 +76,22 @@ public:
 private:
 		void Notify();
 		wxString GLL, VTG;
-		
+
 		double initDir, initSpd, initRudder, myDir;
 		wxDateTime dt;
 		void SetInterval(int interval);
-		int  m_interval = 1000;
+		int  m_interval;
 		void OnSliderUpdated(wxCommandEvent& event);
 
 		wxString m_sTimeSentence;
 		wxString m_sTimeID;
-		wxString m_sNmeaTime = wxEmptyString;
-		
+		wxString m_sNmeaTime;
+
         bool dbg;
 
-		bool m_bUseSetTime = false;
-		bool m_bUseStop = true;
-		bool m_bUsePause = false;
+		bool m_bUseSetTime ;
+		bool m_bUseStop ;
+		bool m_bUsePause ;
 
 		wxString ParseNMEAIdentifier(wxString sentence);
 		wxString ParseNMEASentence(wxString sentence, wxString id);
@@ -98,7 +99,7 @@ private:
 		void SetNextStep(double inLat, double inLon, double inDir, double inSpd, double &outLat, double &outLon);
 
 		void OnStart(wxCommandEvent& event);
-		void OnStop(wxCommandEvent& event);	
+		void OnStop(wxCommandEvent& event);
 		void OnClose(wxCloseEvent& event);
 
 		void OnMidships(wxCommandEvent& event);

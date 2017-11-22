@@ -32,8 +32,7 @@
 #include "ShipDriver_pi.h"
 
 #include "folder.xpm"
-#include <windows.h>
-#include <stdio.h> 
+#include <stdio.h>
 #include <wx/timer.h>
 
 #define BUFSIZE 0x10000
@@ -44,6 +43,11 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& 
 	dbg = false; //for debug output set to true
 	initLat = 0;
 	initLon = 0;
+	m_interval = 1000;
+	m_bUseSetTime = false;
+    m_bUseStop = true;
+    m_bUsePause = false;
+    m_sNmeaTime = wxEmptyString;
 }
 
 void Dlg::OnTimer(wxTimerEvent& event){
@@ -66,13 +70,14 @@ void Dlg::OnStart(wxCommandEvent& event) {
 	dt = dt.Now();
 	GLL = createGLLSentence(dt, initLat, initLon, initSpd/3600, initDir);
 	VTG = createVTGSentence(initSpd, initDir);
+
 	m_interval = 1000;
 	m_Timer->Start(m_interval, wxTIMER_CONTINUOUS); // start timer
 	return;
 }
 
 void Dlg::OnStop(wxCommandEvent& event) {
-	
+
 	if (m_Timer->IsRunning()) m_Timer->Stop();
 
 	m_SliderSpeed->SetValue(0);
@@ -88,7 +93,7 @@ void Dlg::OnMidships(wxCommandEvent& event){
 }
 
 void Dlg::OnClose(wxCloseEvent& event)
-{	
+{
 	if (m_Timer->IsRunning()) m_Timer->Stop();
 	plugin->OnShipDriverDialogClose();
 }
@@ -100,10 +105,10 @@ void Dlg::Notify()
 
 	double myRudder = initRudder - 30;
 	if (myRudder < 0){
-		initRudder -= 30;
-		myRudder = abs(initRudder);
+		initRudder -= 30.0;
+		myRudder = std::abs(initRudder);
 		myDir -= myRudder;
-		double myPortRudder = 30 - abs(myRudder);
+		double myPortRudder = 30 - std::abs(myRudder);
 		m_gaugeRudderPort->SetValue(myPortRudder);
 		m_gaugeRudderStbd->SetValue(0);
 	}
@@ -123,7 +128,7 @@ void Dlg::Notify()
 
 	m_SliderCourse->SetValue(myDir);
 
-	SetNextStep(initLat, initLon, myDir, initSpd/3600, stepLat, stepLon);   
+	SetNextStep(initLat, initLon, myDir, initSpd/3600, stepLat, stepLon);
 
 	int ss = 1;
 	wxTimeSpan mySeconds = wxTimeSpan::Seconds(ss);
@@ -131,14 +136,14 @@ void Dlg::Notify()
 
 	GLL = createGLLSentence(mdt, initLat, initLon, initSpd, myDir);
 	VTG = createVTGSentence(initSpd, myDir);
-	
-	PushNMEABuffer(GLL + _T("\r\n"));
-	PushNMEABuffer(VTG + _T("\r\n"));
+
+	PushNMEABuffer(GLL + _T("\n"));
+	PushNMEABuffer(VTG + _T("\n"));
 
 	initLat = stepLat;
 	initLon = stepLon;
 
-	dt = mdt;	
+	dt = mdt;
 }
 
 void Dlg::OnSliderUpdated(wxCommandEvent& event)
@@ -190,7 +195,7 @@ wxString Dlg::createRMCSentence(wxDateTime myDateTime, double myLat, double myLo
 }
 
 wxString Dlg::createGLLSentence(wxDateTime myDateTime, double myLat, double myLon, double mySpd, double myDir){
-	
+
 	//$IIGLL,5027.776667,N,412.690754,W,123327,A*26
 
 	wxString nlat;
@@ -221,6 +226,7 @@ wxString Dlg::createGLLSentence(wxDateTime myDateTime, double myLat, double myLo
 
 	nForCheckSum = nGLL + nNS + nEW + nTime + _T(",A");
 	nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
+	//wxMessageBox(nFinal);
 	return nFinal;
 }
 
@@ -252,6 +258,7 @@ wxString Dlg::createVTGSentence(double mySpd, double myDir){
 	nForCheckSum = nVTG + nDir + nC + nT + nC + nM + nSpd + nN + nC + nC + nA;
 
 	nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
+	//wxMessageBox(nFinal);
 	return nFinal;
 }
 
@@ -293,7 +300,7 @@ wxString Dlg::LatitudeToString(double mLat) {
 	wxString singlezero = _T("0");
 	wxString mDegLat;
 
-	int degLat = abs((int)mLat);
+	int degLat = std::abs(mLat);
 	wxString finalDegLat = wxString::Format(_T("%i"), degLat);
 
 	int myL = finalDegLat.length();
@@ -308,10 +315,11 @@ wxString Dlg::LatitudeToString(double mLat) {
 		}
 	}
 
-	double minLat = abs(mLat) - degLat;
+	double minLat = std::abs(mLat) - degLat;
 	double decLat = minLat * 60;
 
 	wxString returnLat;
+	//wxMessageBox(returnLat, _T("returnLat"));
 
 	if (mLat >= 0){
 		if (decLat < 10){
@@ -330,8 +338,6 @@ wxString Dlg::LatitudeToString(double mLat) {
 			returnLat = mDegLat + wxString::Format(_T("%.2f"), decLat) + _T(",S,");
 		}
 	}
-
-
 
 	return returnLat;
 }
@@ -398,10 +404,12 @@ wxString Dlg::LongitudeToString(double mLon) {
 	wxString returnLon;
 	wxString doublezero = _T("00");
 	wxString singlezero = _T("0");
-	
-	int degLon = abs((int)mLon);
+
+	int degLon = fabs(mLon);
 	wxString inLon = wxString::Format(_T("%i"), degLon);
-	
+
+	//wxMessageBox(returnLon, _T("inLon"));
+
 	int myL = inLon.length();
 	switch (myL){
 		case(1) : {
@@ -417,7 +425,7 @@ wxString Dlg::LongitudeToString(double mLon) {
 			break;
 		}
 	}
-	decValue = abs(mLon) - degLon;
+	decValue = std::abs(mLon) - degLon;
 	double decLon = decValue * 60;
 
 	if (mLon >= 0){
@@ -436,6 +444,7 @@ wxString Dlg::LongitudeToString(double mLon) {
 			returnLon = mDegLon + wxString::Format(_T("%.2f"), decLon) + _T(",W,");
 		}
 	}
+	//wxMessageBox(returnLon, _T("returnLon"));
 	return returnLon;
 }
 
