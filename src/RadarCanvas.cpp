@@ -151,52 +151,64 @@ void RadarCanvas::RenderTexts(int w, int h) {
   wxSize i;
   i.x = w - 5 - menu_x / 2;
   i.y = h - 5;
-  i = RenderControlItem(i, m_ri->m_rain, _("Rain"));
+  i = RenderControlItem(i, m_ri->m_rain, CT_RAIN, _("Rain"));
   i.y -= 5;
-  i = RenderControlItem(i, m_ri->m_sea, _("Sea"));
+  i = RenderControlItem(i, m_ri->m_sea, CT_SEA, _("Sea"));
   i.y -= 5;
-  i = RenderControlItem(i, m_ri->m_gain, _("Gain"));
+  i = RenderControlItem(i, m_ri->m_gain, CT_GAIN, _("Gain"));
 }
 
 /*
  * Receives bottom mid part of canvas to draw, returns back top mid
  */
-wxSize RadarCanvas::RenderControlItem(wxSize loc, RadarControlItem &item, wxString name) {
-  int tx, ty;
-  int v = item.GetValue();
+wxSize RadarCanvas::RenderControlItem(wxSize loc, RadarControlItem &item, ControlType ct, wxString name) {
+  if (!m_ri->m_control_dialog || m_ri->m_control_dialog->m_ctrl[ct].type == CT_NONE) {
+    return loc;
+  }
 
+  ControlInfo ci = m_ri->m_control_dialog->m_ctrl[ct];
+  int tx, ty;
+  int state = item.GetState();
+  int value = item.GetValue();
   wxString label;
 
   switch (item.GetState()) {
     case RCS_OFF:
       glColor4ub(100, 100, 100, 255);  // Grey
       label << _("Off");
-      v = -1;
+      value = -1;
       break;
 
     case RCS_MANUAL:
       glColor4ub(255, 100, 100, 255);  // Reddish
-      label.Printf(wxT("%d"), v);
+      label.Printf(wxT("%d"), value);
       break;
 
     default:
       glColor4ub(200, 255, 200, 255);  // Greenish
-      label.Printf(wxT("%d"), v);
+      if (ci.autoNames && state > RCS_MANUAL && state <= RCS_MANUAL + ci.autoValues) {
+        label << ci.autoNames[state - RCS_AUTO_1]; // A little shorter than in the control, but here we have colour to indicate Auto.
+      } else {
+        label << _("Auto");
+      }
+      if (!m_ri->m_showManualValueInAuto) {
+        value = -1;
+      }
       break;
   }
-
-  m_FontNormal.GetTextExtent(name, &tx, &ty);
-  loc.y -= ty;
-  m_FontNormal.RenderString(name, loc.x - tx / 2, loc.y);
 
   m_FontNormal.GetTextExtent(label, &tx, &ty);
   loc.y -= ty;
   m_FontNormal.RenderString(label, loc.x - tx / 2, loc.y);
 
+  m_FontNormal.GetTextExtent(name, &tx, &ty);
+  loc.y -= ty;
+  m_FontNormal.RenderString(name, loc.x - tx / 2, loc.y);
+
   // Draw a semi circle, 270 degrees when 100%
-  if (v >= 0) {
+  if (value > 0) {
     glLineWidth(2.0);
-    DrawArc(loc.x, loc.y + ty, ty + 3, (float)deg2rad(-225), (float)deg2rad(v * 270. / 100.), v / 2);
+    DrawArc(loc.x, loc.y + ty, ty + 3, (float)deg2rad(-225), (float)deg2rad(value * 270. / ci.maxValue), value / 2);
   }
   return loc;
 }

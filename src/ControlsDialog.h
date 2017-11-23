@@ -199,9 +199,9 @@ class ControlsDialog : public wxDialog {
   wxBoxSizer *m_control_sizer;
   wxPoint m_panel_position;
   bool m_manually_positioned;
+  ControlInfo m_ctrl[CT_MAX];
 
  protected:
-  ControlInfo m_ctrl[CT_MAX];
 
   void DefineControl(ControlType ct, int autoValues, wxString auto_names[], int defaultValue, int minValue, int maxValue,
                      int stepValue, int nameCount, wxString names[]) {
