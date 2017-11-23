@@ -1135,8 +1135,6 @@ bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
       && m_radar[M_SETTINGS.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar transmitting
       && m_radar[M_SETTINGS.chart_overlay]->GetRadarPosition(&radar_pos)) {       // Boat position known
 
-    // Always compute m_auto_range_meters, possibly needed by SendState() called
-    // from DoTick().
     GeoPosition pos_min = {vp->lat_min, vp->lon_min};
     GeoPosition pos_max = {vp->lat_max, vp->lon_max};
     double max_distance = radar_distance(pos_min, pos_max, 'm');

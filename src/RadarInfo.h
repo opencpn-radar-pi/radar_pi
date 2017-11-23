@@ -263,7 +263,6 @@ class RadarInfo {
   wxString FormatAngle(double angle);
 
   int m_previous_auto_range_meters;
-  int m_auto_range_meters;
 
   //  wxCriticalSection m_exclusive;  // protects the following two
   DrawInfo m_draw_panel;    // Draw onto our own panel

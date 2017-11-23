@@ -312,10 +312,20 @@ void RadarRangeControlButton::AdjustValue(int adjustment) {
   m_parent->m_ri->AdjustRange(adjustment);  // send new value to the radar
 }
 
-void RadarRangeControlButton::SetAuto(int newValue) {
-  LOG_VERBOSE(wxT("%s Button '%s' SetAuto %d"), m_parent->m_log_name.c_str(), GetName(), newValue);
-  m_item->UpdateState(RCS_AUTO_1);
-  m_parent->m_ri->m_auto_range_mode = true;
+bool RadarRangeControlButton::ToggleState() {
+  RadarControlState state = m_item->GetState();
+
+  LOG_VERBOSE(wxT("%s Button '%s' toggle Auto %d"), m_parent->m_log_name.c_str(), GetName(), state);
+  if (state >= RCS_AUTO_1 || m_parent->m_ri->m_overlay.GetValue() == 0) {
+    state = RCS_MANUAL;
+    m_parent->m_ri->m_auto_range_mode = false;
+  } else {
+    state = RCS_AUTO_1;
+    m_parent->m_ri->m_auto_range_mode = true;
+  }
+  m_item->UpdateState(state);
+  SetState(state);
+  return false;
 }
 
 ControlsDialog::~ControlsDialog() {
@@ -1240,7 +1250,13 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
     m_off_button->Hide();
   }
 
-  if (m_from_control->m_ci.autoValues > 0) {
+  bool hasAuto = m_from_control->m_ci.autoValues > 0;
+
+  if (m_from_control->m_ci.type == CT_RANGE) { // Range only allows auto if overlay is on
+    hasAuto = m_ri->m_overlay.GetValue() > 0;
+  }
+
+  if (hasAuto) {
     m_auto_button->Show();
     if (state > RCS_MANUAL && m_from_control->m_ci.autoValues == 1) {
       m_auto_button->Disable();
@@ -1509,13 +1525,13 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   bool updateEditDialog = false;
   bool resize = false;
 
-  if (m_ri->m_state.IsModified()) {
+  if (m_ri->m_state.IsModified() || m_ri->m_overlay.IsModified()) {
     refreshAll = true;
     resize = true;
   }
 
   if (m_from_control && m_top_sizer->IsShown(m_edit_sizer)) {
-    updateEditDialog = m_from_control->m_item->IsModified();
+    updateEditDialog = refreshAll || m_from_control->m_item->IsModified();
   }
 
   RadarState state = (RadarState)m_ri->m_state.GetButton();

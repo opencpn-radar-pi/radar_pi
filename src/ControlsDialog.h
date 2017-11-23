@@ -524,7 +524,7 @@ class RadarRangeControlButton : public RadarControlButton {
   }
 
   virtual void AdjustValue(int adjustment);
-  virtual void SetAuto(int newValue);
+  bool ToggleState(); // Returns desired new state for Auto button show
   void SetRangeLabel();
 };
 
