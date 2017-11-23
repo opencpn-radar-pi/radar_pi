@@ -36,6 +36,8 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+const float CHART_SCALE = 0.95f;  // On how big a part of the PPI do we draw the radar picture
+
 BEGIN_EVENT_TABLE(RadarCanvas, wxGLCanvas)
 EVT_MOVE(RadarCanvas::OnMove)
 EVT_SIZE(RadarCanvas::OnSize)
@@ -466,7 +468,6 @@ static void ResetGLViewPort(int w, int h) {
 
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
-  const float CHART_SCALE = 0.95f;  // On how big a part of the PPI do we draw the radar picture
 
   if (!IsShown() || !m_pi->IsInitialized()) {
     return;
@@ -632,7 +633,7 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
 
       double angle = fmod(rad2deg(atan2(delta_y, delta_x)) + 720. + 90., 360.0);
 
-      double full_range = wxMax(w, h) / 2.0;
+      double full_range = CHART_SCALE * wxMax(w, h) / 2.0;
 
       double range = distance / (1852.0 * full_range / display_range);
 
