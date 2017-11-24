@@ -195,9 +195,9 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
   rad_ctl_pkt_10 pck_10;
   rad_ctl_pkt_12 pck_12;
 
-  pck_9.len1 = sizeof(pck_9.len1);
-  pck_10.len1 = sizeof(pck_10.len1);
-  pck_12.len1 = sizeof(pck_12.len1);
+  pck_9.len1 = sizeof(pck_9.parm1);
+  pck_10.len1 = sizeof(pck_10.parm1);
+  pck_12.len1 = sizeof(pck_12.parm1);
 
   switch (controlType) {
     // The following are settings that are not radar commands. Made them explicit so the
@@ -347,10 +347,16 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
 
     case CT_INTERFERENCE_REJECTION: {
       LOG_VERBOSE(wxT("radar_pi: %s Interference Rejection / Crosstalk: %d"), m_name.c_str(), value);
-      pck_9.packet_type = 0x91b;
       pck_9.parm1 = value;
-
+	  
+	  pck_9.packet_type = 0x91b;
       r = TransmitCmd(&pck_9, sizeof(pck_9));
+	  
+	  pck_9.packet_type = 0x932;
+	  r = TransmitCmd(&pck_9, sizeof(pck_9));
+	  	  
+	  pck_9.packet_type = 0x2b9;
+	  r = TransmitCmd(&pck_9, sizeof(pck_9));
       break;
     }
 
