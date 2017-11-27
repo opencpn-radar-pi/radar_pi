@@ -16,9 +16,10 @@
 #include <wx/colour.h>
 #include <wx/settings.h>
 #include <wx/string.h>
-#include <wx/stattext.h>
 #include <wx/sizer.h>
 #include <wx/slider.h>
+#include <wx/stattext.h>
+#include <wx/textctrl.h>
 #include <wx/button.h>
 #include <wx/dialog.h>
 #include <wx/timer.h>
@@ -35,7 +36,9 @@ class ShipDriverBase : public wxDialog
 	
 	protected:
 		wxStaticText* m_staticTextKnots;
+		wxTextCtrl* m_textCtrlRudderPort;
 		wxButton* m_buttonMid;
+		wxTextCtrl* m_textCtrlRudderStbd;
 		wxButton* m_bpPlay;
 		wxButton* m_bpStop;
 		wxStaticText* m_staticTextHeading;
@@ -44,8 +47,8 @@ class ShipDriverBase : public wxDialog
 		virtual void OnMidships( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStart( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStop( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnTimer(wxTimerEvent& event) { event.Skip(); }		
-	
+		virtual void OnTimer(wxTimerEvent& event) { event.Skip(); }
+		
 	public:
 		wxGauge* m_gaugeRudderPort;
 		wxGauge* m_gaugeRudderStbd;
@@ -53,7 +56,7 @@ class ShipDriverBase : public wxDialog
 		wxSlider* m_SliderCourse;
 		wxSlider* m_SliderSpeed;
 		
-		ShipDriverBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 376,318 ), long style = wxDEFAULT_DIALOG_STYLE ); 
+		ShipDriverBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 402,270 ), long style = wxDEFAULT_DIALOG_STYLE ); 
 		~ShipDriverBase();
 	
 };

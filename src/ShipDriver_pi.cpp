@@ -192,7 +192,7 @@ wxString ShipDriver_pi::GetShortDescription()
 
 wxString ShipDriver_pi::GetLongDescription()
 {
-      return _("For playing/controlling playback vdr files");
+      return _("Almost a simulator");
 }
 
 int ShipDriver_pi::GetToolbarToolCount(void)

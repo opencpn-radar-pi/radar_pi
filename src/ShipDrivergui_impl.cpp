@@ -64,6 +64,8 @@ void Dlg::OnStart(wxCommandEvent& event) {
 		wxMessageBox(_("Please right-click and choose vessel start position"));
 		return;
 	}
+	m_textCtrlRudderStbd->SetValue(_T(""));
+	m_textCtrlRudderPort->SetValue(_T(""));
 	initSpd = 0; // 5 knots
 	initDir = m_SliderCourse->GetValue();
 	myDir = initDir;
@@ -82,6 +84,8 @@ void Dlg::OnStop(wxCommandEvent& event) {
 
 	m_SliderSpeed->SetValue(0);
     m_SliderRudder->SetValue(30);
+	m_textCtrlRudderStbd->SetValue(_T(""));
+	m_textCtrlRudderPort->SetValue(_T(""));
 
 	m_interval = m_Timer->GetInterval();
 	m_bUseSetTime = false;
@@ -110,13 +114,24 @@ void Dlg::Notify()
 		myDir -= myRudder;
 		double myPortRudder = 30 - std::abs(myRudder);
 		m_gaugeRudderPort->SetValue(myPortRudder);
+		m_textCtrlRudderPort->SetValue(wxString::Format(_T("%.0f"), myRudder) + _T(" P"));
 		m_gaugeRudderStbd->SetValue(0);
+		m_textCtrlRudderStbd->SetValue(_T(""));
 	}
 	else if (myRudder >= 0){
+		
 		initRudder -= 30;
 		myDir += initRudder;
 		m_gaugeRudderStbd->SetValue(myRudder);
+		if (myRudder == 0){
+			m_textCtrlRudderStbd->SetValue(_T(""));
+		}
+		else {
+			m_textCtrlRudderStbd->SetValue(wxString::Format(_T("%.0f"), myRudder) + _T(" S"));
+		}
 		m_gaugeRudderPort->SetValue(0);
+		m_textCtrlRudderPort->SetValue( _T(""));
+
 	}
 
 	if (myDir < 0){
