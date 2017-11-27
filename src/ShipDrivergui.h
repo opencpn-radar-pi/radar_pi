@@ -48,7 +48,7 @@ class ShipDriverBase : public wxDialog
 		virtual void OnStart( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStop( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnTimer(wxTimerEvent& event) { event.Skip(); }
-		
+	
 	public:
 		wxGauge* m_gaugeRudderPort;
 		wxGauge* m_gaugeRudderStbd;
