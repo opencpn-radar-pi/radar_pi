@@ -35,6 +35,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_gaugeRudderStbd = new wxGauge( this, wxID_ANY, 30, wxDefaultPosition, wxSize( 150,-1 ), wxGA_HORIZONTAL );
 	m_gaugeRudderStbd->SetValue( 0 ); 
 	m_gaugeRudderStbd->SetForegroundColour( wxColour( 0, 255, 0 ) );
+	m_gaugeRudderStbd->SetBackgroundColour( wxColour( 0, 255, 0 ) );
 	
 	fgSizer8->Add( m_gaugeRudderStbd, 0, 0, 0 );
 	
