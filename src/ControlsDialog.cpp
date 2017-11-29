@@ -970,7 +970,7 @@ void ControlsDialog::CreateControls() {
   m_view_sizer->Add(bMenuBack, 0, wxALL, BORDER);
 
   // The Show Targets button
-  m_targets_button = new RadarButton(this, ID_TARGETS, g_buttonSize, _("Show AIS/ARPA"));
+  m_targets_button = new RadarButton(this, ID_TARGETS, g_buttonSize, _("Show AIS/ARPA \n Off"));
   m_view_sizer->Add(m_targets_button, 0, wxALL, BORDER);
 
   // The Trails Motion button
@@ -1606,9 +1606,9 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   if (M_SETTINGS.show_radar_target[m_ri->m_radar]) {
-    m_targets_button->SetLabel(_("Hide AIS/ARPA"));
+    m_targets_button->SetLabel(_("Show AIS/ARPA\n On"));
   } else {
-    m_targets_button->SetLabel(_("Show AIS/ARPA"));
+    m_targets_button->SetLabel(_("Show AIS/ARPA\n Off"));
   }
 
   m_target_trails_button->UpdateLabel();
