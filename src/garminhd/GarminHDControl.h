@@ -29,72 +29,39 @@
  ***************************************************************************
  */
 
-#if !defined(DEFINE_RADAR)
-#ifndef _RADARTYPE_H_
-#define _RADARTYPE_H_
+#ifndef _GARMIN_HD_CONTROL_H_
+#define _GARMIN_HD_CONTROL_H_
 
 #include "RadarInfo.h"
 #include "pi_common.h"
+#include "socketutil.h"
 
-#include "garminhd/GarminHDControl.h"
-#include "garminhd/GarminHDControlsDialog.h"
-#include "garminhd/GarminHDReceive.h"
+PLUGIN_BEGIN_NAMESPACE
 
-#include "garminxhd/GarminxHDControl.h"
-#include "garminxhd/GarminxHDControlsDialog.h"
-#include "garminxhd/GarminxHDReceive.h"
+class GarminHDControl : public RadarControl {
+ public:
+  GarminHDControl(NetworkAddress sendMultiCastAddress);
+  ~GarminHDControl();
 
-#include "navico/NavicoControl.h"
-#include "navico/NavicoControlsDialog.h"
-#include "navico/NavicoReceive.h"
+  bool Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
+  void RadarTxOff();
+  void RadarTxOn();
+  bool RadarStayAlive();
+  bool SetRange(int meters);
 
-#include "emulator/EmulatorControl.h"
-#include "emulator/EmulatorControlsDialog.h"
-#include "emulator/EmulatorReceive.h"
+  bool SetControlValue(ControlType controlType, RadarControlItem &item);
 
-#endif /* _RADARTYPE_H_ */
+ private:
+  void logBinaryData(const wxString &what, const void *data, int size);
+  bool TransmitCmd(const void *msg, int size);
 
-#define DEFINE_RADAR(t, h, x, s, l, a, b, c)
-#define INITIALIZE_RADAR
-#endif
+  radar_pi *m_pi;
+  RadarInfo *m_ri;
+  struct sockaddr_in m_addr;
+  SOCKET m_radar_socket;
+  wxString m_name;
+};
 
-#if !defined(DEFINE_RANGE_METRIC)
-#define DEFINE_RANGE_METRIC(t, x)
-#endif
+PLUGIN_END_NAMESPACE
 
-#if !defined(DEFINE_RANGE_MIXED)
-#define DEFINE_RANGE_MIXED(t, x)
-#endif
-
-#if !defined(DEFINE_RANGE_NAUTIC)
-#define DEFINE_RANGE_NAUTIC(t, x)
-#endif
-
-#ifndef SPOKES_MAX
-#define SPOKES_MAX 0
-#endif
-
-#ifndef SPOKE_LEN_MAX
-#define SPOKE_LEN_MAX 0
-#endif
-
-#include "garminhd/garminhdtype.h"
-#include "garminxhd/garminxhdtype.h"
-
-#include "navico/br24type.h"
-
-#include "navico/br4gatype.h"
-#include "navico/br4gbtype.h"
-
-#include "navico/haloatype.h"
-#include "navico/halobtype.h"
-
-// TODO: Add Garmin etc.
-
-#include "emulator/emulatortype.h"
-
-#undef DEFINE_RADAR  // Prepare for next inclusion
-#undef INITIALIZE_RADAR
-#undef DEFINE_RANGE_METRIC
-#undef DEFINE_RANGE_MIXED
-#undef DEFINE_RANGE_NAUTIC
+#endif /* _GARMIN_HD_CONTROL_H_ */

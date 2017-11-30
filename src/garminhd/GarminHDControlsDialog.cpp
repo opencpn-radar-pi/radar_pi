@@ -6,7 +6,6 @@
  *           Dave Cowell
  *           Kees Verruijt
  *           Douwe Fokkema
- *           Sean D'Epagnier
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -29,72 +28,16 @@
  ***************************************************************************
  */
 
-#if !defined(DEFINE_RADAR)
-#ifndef _RADARTYPE_H_
-#define _RADARTYPE_H_
+#include "GarminHDControlsDialog.h"
+#include "RadarMarpa.h"
+#include "RadarPanel.h"
 
-#include "RadarInfo.h"
-#include "pi_common.h"
+PLUGIN_BEGIN_NAMESPACE
 
-#include "garminhd/GarminHDControl.h"
-#include "garminhd/GarminHDControlsDialog.h"
-#include "garminhd/GarminHDReceive.h"
+GarminHDControlsDialog::GarminHDControlsDialog(){
 
-#include "garminxhd/GarminxHDControl.h"
-#include "garminxhd/GarminxHDControlsDialog.h"
-#include "garminxhd/GarminxHDReceive.h"
+#include "garminhd/GarminHDControlSet.h"
 
-#include "navico/NavicoControl.h"
-#include "navico/NavicoControlsDialog.h"
-#include "navico/NavicoReceive.h"
+}
 
-#include "emulator/EmulatorControl.h"
-#include "emulator/EmulatorControlsDialog.h"
-#include "emulator/EmulatorReceive.h"
-
-#endif /* _RADARTYPE_H_ */
-
-#define DEFINE_RADAR(t, h, x, s, l, a, b, c)
-#define INITIALIZE_RADAR
-#endif
-
-#if !defined(DEFINE_RANGE_METRIC)
-#define DEFINE_RANGE_METRIC(t, x)
-#endif
-
-#if !defined(DEFINE_RANGE_MIXED)
-#define DEFINE_RANGE_MIXED(t, x)
-#endif
-
-#if !defined(DEFINE_RANGE_NAUTIC)
-#define DEFINE_RANGE_NAUTIC(t, x)
-#endif
-
-#ifndef SPOKES_MAX
-#define SPOKES_MAX 0
-#endif
-
-#ifndef SPOKE_LEN_MAX
-#define SPOKE_LEN_MAX 0
-#endif
-
-#include "garminhd/garminhdtype.h"
-#include "garminxhd/garminxhdtype.h"
-
-#include "navico/br24type.h"
-
-#include "navico/br4gatype.h"
-#include "navico/br4gbtype.h"
-
-#include "navico/haloatype.h"
-#include "navico/halobtype.h"
-
-// TODO: Add Garmin etc.
-
-#include "emulator/emulatortype.h"
-
-#undef DEFINE_RADAR  // Prepare for next inclusion
-#undef INITIALIZE_RADAR
-#undef DEFINE_RANGE_METRIC
-#undef DEFINE_RANGE_MIXED
-#undef DEFINE_RANGE_NAUTIC
+PLUGIN_END_NAMESPACE
