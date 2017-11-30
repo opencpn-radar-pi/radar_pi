@@ -84,8 +84,7 @@ enum {  // process ID's
   ID_CLEAR_TRAILS,
   ID_ORIENTATION,
 
-  ID_TRANSMIT,
-  ID_STANDBY,
+  ID_TRANSMIT_STANDBY,
   ID_TIMED_IDLE,
   ID_TIMED_RUN,
 
@@ -179,8 +178,7 @@ EVT_BUTTON(ID_ACQUIRE_TARGET, ControlsDialog::OnAcquireTargetButtonClick)
 EVT_BUTTON(ID_DELETE_TARGET, ControlsDialog::OnDeleteTargetButtonClick)
 EVT_BUTTON(ID_DELETE_ALL_TARGETS, ControlsDialog::OnDeleteAllTargetsButtonClick)
 
-EVT_BUTTON(ID_TRANSMIT, ControlsDialog::OnTransmitButtonClick)
-EVT_BUTTON(ID_STANDBY, ControlsDialog::OnStandbyButtonClick)
+EVT_BUTTON(ID_TRANSMIT_STANDBY, ControlsDialog::OnTransmitButtonClick)
 EVT_BUTTON(ID_TIMED_IDLE, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_TIMED_RUN, ControlsDialog::OnRadarControlButtonClick)
 
@@ -1024,14 +1022,8 @@ void ControlsDialog::CreateControls() {
   RadarButton* power_back_button = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
   m_power_sizer->Add(power_back_button, 0, wxALL, BORDER);
 
-  m_power_text = new wxStaticText(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0);
-  m_power_sizer->Add(m_power_text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-
-  m_transmit_button = new RadarButton(this, ID_TRANSMIT, g_buttonSize, _("Transmit"));
-  m_power_sizer->Add(m_transmit_button, 0, wxALL, BORDER);
-
-  m_standby_button = new RadarButton(this, ID_STANDBY, g_buttonSize, _("Standby"));
-  m_power_sizer->Add(m_standby_button, 0, wxALL, BORDER);
+  m_power_sub_button = new RadarButton(this, ID_TRANSMIT_STANDBY, g_buttonSize, _("Power Status"));
+  m_power_sizer->Add(m_power_sub_button, 0, wxALL, BORDER);
 
   // The TIMED TRANSMIT button
   if (m_ctrl[CT_TIMED_IDLE].type) {
@@ -1359,9 +1351,16 @@ void ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
 void ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) { EnterEditMode((RadarControlButton*)event.GetEventObject()); }
 
 void ControlsDialog::OnTransmitButtonClick(wxCommandEvent& event) {
+  RadarState state = (RadarState)m_ri->m_state.GetButton();
   SetMenuAutoHideTimeout();
-  m_ri->m_timed_idle.Update(0);
-  m_ri->RequestRadarState(RADAR_TRANSMIT);
+  if (state == RADAR_TRANSMIT){
+    m_ri->m_timed_idle.Update(0);
+    m_ri->RequestRadarState(RADAR_STANDBY);
+  }
+  else {
+    m_ri->m_timed_idle.Update(0);
+    m_ri->RequestRadarState(RADAR_TRANSMIT);
+  }
 }
 
 void ControlsDialog::OnStandbyButtonClick(wxCommandEvent& event) {
@@ -1442,14 +1441,6 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
   bool resize = false;
 
   RadarState state = (RadarState)m_ri->m_state.GetButton();
-
-  if (state == RADAR_TRANSMIT) {
-    m_standby_button->Enable();
-    m_transmit_button->Disable();
-  } else {
-    m_standby_button->Disable();
-    m_transmit_button->Enable();
-  }
 
   if (m_top_sizer->IsShown(m_power_sizer)) {
     if (m_ri->m_timed_idle.GetValue() > 0) {
@@ -1560,11 +1551,15 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
         break;
     }
     m_timed_idle_button->SetState(RCS_OFF);
-  } else {
+  }
+  else if (state == RADAR_OFF){
+    o << _("Off");
+  }
+  else{
     o << m_ri->GetTimedIdleText();
   }
   m_power_button->SetLabel(o);
-  m_power_text->SetLabel(o);
+  m_power_sub_button->SetLabel(o);
 
   if (M_SETTINGS.radar_count > 1) {
     bool show_other_radar = false;

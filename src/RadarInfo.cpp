@@ -1332,6 +1332,9 @@ wxString RadarInfo::GetTimedIdleText() {
       }
     }
   }
+  if (m_arpa->GetTargetCount() != 0){
+    text = _("On for targets");
+  }
   return text;
 }
 
@@ -1351,8 +1354,13 @@ void RadarInfo::CheckTimedTransmit() {
     return;  // Timers are just stuck at existing value if radar is off.
   }
 
-  time_t now = time(0);
+  // If there are (M)ARPA targets being tracked we should not go to standbye, targets would be lost
+  if (m_arpa->GetTargetCount() != 0) {
+    return;
+  }
 
+  time_t now = time(0);
+ 
   if (m_idle_standby > 0 && TIMED_OUT(now, m_idle_standby) && state == RADAR_TRANSMIT) {
     RequestRadarState(RADAR_STANDBY);
     m_idle_transmit = now + m_timed_idle.GetValue() * SECONDS_PER_TIMED_IDLE_SETTING -

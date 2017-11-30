@@ -133,7 +133,7 @@ class ControlsDialog : public wxDialog {
     m_trails_motion_button = 0;
     m_clear_trails_button = 0;
     m_orientation_button = 0;
-    m_power_text = 0;
+    m_power_sub_button = 0;
     m_transmit_button = 0;
     m_standby_button = 0;
     m_timed_idle_button = 0;
@@ -303,7 +303,7 @@ class ControlsDialog : public wxDialog {
   RadarControlButton *m_orientation_button;
 
   // Power controls
-  wxStaticText *m_power_text;
+  wxButton *m_power_sub_button;
   wxButton *m_transmit_button;
   wxButton *m_standby_button;
   RadarControlButton *m_timed_idle_button;
