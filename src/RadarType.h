@@ -54,7 +54,7 @@
 
 #endif /* _RADARTYPE_H_ */
 
-#define DEFINE_RADAR(t, h, x, s, l, a, b, c)
+#define DEFINE_RADAR(t, x, s, l, a, b, c)
 #define INITIALIZE_RADAR
 #endif
 
