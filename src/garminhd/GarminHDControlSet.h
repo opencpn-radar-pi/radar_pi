@@ -29,72 +29,29 @@
  ***************************************************************************
  */
 
-#if !defined(DEFINE_RADAR)
-#ifndef _RADARTYPE_H_
-#define _RADARTYPE_H_
+#include "SoftwareControlSet.h"
 
-#include "RadarInfo.h"
-#include "pi_common.h"
-
-#include "garminhd/GarminHDControl.h"
-#include "garminhd/GarminHDControlsDialog.h"
-#include "garminhd/GarminHDReceive.h"
-
-#include "garminxhd/GarminxHDControl.h"
-#include "garminxhd/GarminxHDControlsDialog.h"
-#include "garminxhd/GarminxHDReceive.h"
-
-#include "navico/NavicoControl.h"
-#include "navico/NavicoControlsDialog.h"
-#include "navico/NavicoReceive.h"
-
-#include "emulator/EmulatorControl.h"
-#include "emulator/EmulatorControlsDialog.h"
-#include "emulator/EmulatorReceive.h"
-
-#endif /* _RADARTYPE_H_ */
-
-#define DEFINE_RADAR(t, x, s, l, a, b, c)
-#define INITIALIZE_RADAR
+#ifndef AUTO_LOW_HIGH_NAMES
+#define AUTO_LOW_HIGH_NAMES \
+  { _("Low"), _("High") }
 #endif
 
-#if !defined(DEFINE_RANGE_METRIC)
-#define DEFINE_RANGE_METRIC(t, x)
+#ifndef AUTO_CALM_MEDIUM_ROUGH_NAMES
+#define AUTO_CALM_MEDIUM_ROUGH_NAMES \
+  { _("Calm"), _("Medium"), _("Rough") }
 #endif
 
-#if !defined(DEFINE_RANGE_MIXED)
-#define DEFINE_RANGE_MIXED(t, x)
+#ifndef SLOW_FAST_NAMES
+#define SLOW_FAST_NAMES \
+  { _("Slow"), _("Fast") }
 #endif
 
-#if !defined(DEFINE_RANGE_NAUTIC)
-#define DEFINE_RANGE_NAUTIC(t, x)
-#endif
-
-#ifndef SPOKES_MAX
-#define SPOKES_MAX 0
-#endif
-
-#ifndef SPOKE_LEN_MAX
-#define SPOKE_LEN_MAX 0
-#endif
-
-#include "garminhd/garminhdtype.h"
-#include "garminxhd/garminxhdtype.h"
-
-#include "navico/br24type.h"
-
-#include "navico/br4gatype.h"
-#include "navico/br4gbtype.h"
-
-#include "navico/haloatype.h"
-#include "navico/halobtype.h"
-
-// TODO: Add Garmin etc.
-
-#include "emulator/emulatortype.h"
-
-#undef DEFINE_RADAR  // Prepare for next inclusion
-#undef INITIALIZE_RADAR
-#undef DEFINE_RANGE_METRIC
-#undef DEFINE_RANGE_MIXED
-#undef DEFINE_RANGE_NAUTIC
+HAVE_CONTROL(CT_BEARING_ALIGNMENT, CTD_AUTO_NO, CTD_DEF_ZERO, -180, +180, CTD_STEP_1, CTD_NUMERIC)
+HAVE_CONTROL(CT_NO_TRANSMIT_START, CTD_AUTO_NO, CTD_DEF_OFF, -180, +180, CTD_STEP_1, CTD_NUMERIC)
+HAVE_CONTROL(CT_NO_TRANSMIT_END, CTD_AUTO_NO, CTD_DEF_OFF, -180, +180, CTD_STEP_1, CTD_NUMERIC)
+HAVE_CONTROL(CT_GAIN, AUTO_LOW_HIGH_NAMES, 50, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
+HAVE_CONTROL(CT_INTERFERENCE_REJECTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 1, CTD_STEP_1, OFF_ON_NAMES)
+HAVE_CONTROL(CT_RAIN, CTD_AUTO_NO, CTD_DEF_OFF, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
+HAVE_CONTROL(CT_RANGE, CTD_AUTO_YES, 1000, CTD_MIN_ZERO, 0, CTD_STEP_1, CTD_NUMERIC)
+HAVE_CONTROL(CT_SCAN_SPEED, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 1, CTD_STEP_1, SLOW_FAST_NAMES)
+HAVE_CONTROL(CT_SEA, AUTO_CALM_MEDIUM_ROUGH_NAMES, CTD_DEF_OFF, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
