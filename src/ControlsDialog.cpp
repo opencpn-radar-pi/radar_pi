@@ -271,7 +271,10 @@ void RadarControlButton::UpdateLabel(bool force) {
       default:
         // Various AUTO states
         if (m_ci.autoNames && state > RCS_MANUAL && state <= RCS_MANUAL + m_ci.autoValues) {
-          label << _("Auto") << wxT(" ") << m_ci.autoNames[state - RCS_AUTO_1];
+          if (m_ci.autoValues > 1) {
+            label << _("Auto") << wxT(" ");
+          }
+          label << m_ci.autoNames[state - RCS_AUTO_1];
         } else {
           label << _("Auto");
         }
