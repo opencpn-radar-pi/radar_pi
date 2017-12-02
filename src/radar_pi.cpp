@@ -458,13 +458,14 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
 
   bool oldShow = M_SETTINGS.show;
   M_SETTINGS.show = 0;
+  M_SETTINGS.reset_radars = false;
   NotifyRadarWindowViz();
 
   if (IsRadarSelectionComplete(false)) {
     OptionsDialog dlg(parent, m_settings, m_radar[0]->m_radar_type);
     if (dlg.ShowModal() == wxID_OK) {
       m_settings = dlg.GetSettings();
-      if (IsRadarSelectionComplete(false)) {
+      if (IsRadarSelectionComplete(m_settings.reset_radars)) {
         for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
           m_radar[r]->ComputeColourMap();
           m_radar[r]->UpdateControlState(true);
@@ -473,6 +474,7 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
           m_alarm_sound_timeout = time(0) + m_settings.guard_zone_timeout;
         }
       }
+      m_settings.reset_radars = false;
     }
   }
 

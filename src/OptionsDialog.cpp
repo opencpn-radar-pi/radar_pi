@@ -251,11 +251,11 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
   m_ReverseZoom->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnReverseZoomClick), NULL, this);
 
   // Reset radars button
-  wxStaticBox *itemStaticBoxReset = new wxStaticBox(this, wxID_ANY, _("Reset"));
+  wxStaticBox *itemStaticBoxReset = new wxStaticBox(this, wxID_ANY, _("Radar types"));
   wxStaticBoxSizer *itemStaticBoxSizerReset = new wxStaticBoxSizer(itemStaticBoxReset, wxVERTICAL);
   OptionsGrid->Add(itemStaticBoxSizerReset, 0, wxEXPAND | wxALL, border_size);
 
-  wxButton *resetButton = new wxButton(this, wxID_ANY, _("Reset Radar Types"), wxDefaultPosition, small_button_size, 0);
+  wxButton *resetButton = new wxButton(this, wxID_ANY, _("Select radar types"), wxDefaultPosition, small_button_size, 0);
   resetButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(OptionsDialog::OnResetButtonClick), NULL, this);
   itemStaticBoxSizerReset->Add(resetButton, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, border_size);
 
@@ -348,7 +348,7 @@ void OptionsDialog::OnDrawingMethodClick(wxCommandEvent &event) { m_settings.dra
 void OptionsDialog::OnReverseZoomClick(wxCommandEvent &event) { m_settings.reverse_zoom = m_ReverseZoom->GetValue(); }
 
 void OptionsDialog::OnResetButtonClick(wxCommandEvent &event) {
-  m_settings.radar_count = 0;
+  m_settings.reset_radars = true;
   EndModal(wxID_OK);
 }
 

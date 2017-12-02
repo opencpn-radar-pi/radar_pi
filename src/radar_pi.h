@@ -309,6 +309,7 @@ struct PersistentSettings {
   bool ignore_radar_heading;                       // For testing purposes
   bool reverse_zoom;                               // false = normal, true = reverse
   bool show_extreme_range;                         // Show red ring at extreme range and center
+  bool reset_radars;                               // True on exit of OptionsDialog when reset of radars is pressed
   int threshold_red;                               // Radar data has to be this strong to show as STRONG
   int threshold_green;                             // Radar data has to be this strong to show as INTERMEDIATE
   int threshold_blue;                              // Radar data has to be this strong to show as WEAK
