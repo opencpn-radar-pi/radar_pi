@@ -332,6 +332,7 @@ class ControlsDialog : public wxDialog {
   RadarControlButton *m_gain_button;
   RadarControlButton *m_sea_button;
   RadarControlButton *m_rain_button;
+  RadarControlButton *m_ftc_button;
   wxButton *m_adjust_button;
   wxButton *m_bearing_button;
 

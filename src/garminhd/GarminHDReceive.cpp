@@ -53,17 +53,21 @@ PLUGIN_BEGIN_NAMESPACE
 struct radar_line {
   uint32_t packet_type;
   uint32_t len1;
-  uint16_t fill_1;
-  uint16_t scan_length;
   uint16_t angle;
-  uint16_t fill_2;
-  uint32_t range_meters;
+  uint16_t scan_length;
   uint32_t display_meters;
+  uint32_t range_meters;
+  uint8_t  gain_level[4];
+  uint8_t  sea_clutter[4];
+  uint8_t  rain_clutter[4];
+  uint16_t dome_offset;
+  uint8_t  FTC_mode;
+  uint8_t  crosstalk_onoff;
+  uint16_t fill_2;
   uint16_t fill_3;
-  uint16_t scan_length_bytes_s;  // Number of video bytes in the packet, Short
-  uint16_t fills_4;
-  uint32_t scan_length_bytes_i;  // Number of video bytes in the packet, Integer
-  uint16_t fills_5;
+  uint8_t  timed_transmit[4];
+  uint8_t  dome_speed;
+  uint8_t  fill_4[7];
   uint8_t  line_data[GARMIN_HD_MAX_SPOKE_LEN];
 };
 
@@ -74,27 +78,46 @@ struct radar_line {
 // Process one radar line, which contains exactly one line or spoke of data extending outwards
 // from the radar up to the range indicated in the packet.
 //
-void GarminHDReceive::ProcessFrame(const uint8_t *data, int len) {
+// Note that Garmin HD only has 1 bit per point, not 8 bits like most other radars.
+//
+void GarminHDReceive::ProcessFrame(radar_line * packet) {
   // log_line.time_rec = wxGetUTCTimeMillis();
   wxLongLong time_rec = wxGetUTCTimeMillis();
   time_t now = (time_t)(time_rec.GetValue() / MILLISECONDS_PER_SECOND);
+  uint8_t line[GARMIN_HD_MAX_SPOKE_LEN];
+  int i;
+  uint8_t *p, *s;
 
-  radar_line *packet = (radar_line *)data;
+  if (packet->scan_length * 8 > GARMIN_HD_MAX_SPOKE_LEN) {
+    LOG_INFO(wxT("radar_pi: %s truncating data, %d longer than expected max length %d"), packet->scan_length * 8, GARMIN_HD_MAX_SPOKE_LEN);
+    packet->scan_length = GARMIN_HD_MAX_SPOKE_LEN / 8;
+  }
+  for (p = line, s = packet->line_data, i = 0; i < packet->scan_length; i++, s++)
+  {
+    *p++ = (*s & 0x01) > 0 ? 255 : 0;
+    *p++ = (*s & 0x02) > 0 ? 255 : 0;
+    *p++ = (*s & 0x04) > 0 ? 255 : 0;
+    *p++ = (*s & 0x08) > 0 ? 255 : 0;
+    *p++ = (*s & 0x10) > 0 ? 255 : 0;
+    *p++ = (*s & 0x20) > 0 ? 255 : 0;
+    *p++ = (*s & 0x40) > 0 ? 255 : 0;
+    *p++ = (*s & 0x80) > 0 ? 255 : 0;
+  }
+
+  m_ri->m_state.Update(RADAR_TRANSMIT);
+  m_ri->m_range.Update(packet->range_meters);
+  m_ri->m_gain.Update(packet->gain_level[0], packet->gain_level[1] ? RCS_AUTO_1 : RCS_MANUAL);
+  m_ri->m_rain.Update(packet->sea_clutter[0], packet->sea_clutter[1] ? RCS_AUTO_1 : RCS_MANUAL);
+  m_ri->m_rain.Update(packet->rain_clutter[0]);
+  m_ri->m_bearing_alignment.Update(packet->dome_offset);
+  m_ri->m_ftc.Update(packet->FTC_mode);
+  m_ri->m_interference_rejection.Update(packet->crosstalk_onoff);
+  m_ri->m_scan_speed.Update(packet->dome_speed);
 
   wxCriticalSectionLocker lock(m_ri->m_exclusive);
 
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
   m_ri->m_data_timeout = now + DATA_TIMEOUT;
-  m_ri->m_state.Update(RADAR_TRANSMIT);
-
-  const size_t packet_header_length = sizeof(radar_line) - GARMIN_HD_MAX_SPOKE_LEN;
-  m_ri->m_statistics.packets++;
-  if (len < (int)packet_header_length || len < (int)packet_header_length + packet->scan_length_bytes_s) {
-    // The packet is incomplete!
-    m_ri->m_statistics.broken_packets++;
-    return;
-  }
-  len -= packet_header_length;
 
   if (m_first_receive) {
     m_first_receive = false;
@@ -102,7 +125,7 @@ void GarminHDReceive::ProcessFrame(const uint8_t *data, int len) {
     LOG_INFO(wxT("radar_pi: %s first radar spoke received after %llu ms\n"), m_ri->m_name.c_str(), startup_elapsed);
   }
 
-  int angle_raw = packet->angle / 8;
+  int angle_raw = packet->angle;
   int spoke = angle_raw;  // Garmin does not have radar heading, so there is no difference between spoke and angle
   m_ri->m_statistics.spokes++;
   if (m_next_spoke >= 0 && spoke != m_next_spoke) {
@@ -124,8 +147,7 @@ void GarminHDReceive::ProcessFrame(const uint8_t *data, int len) {
   SpokeBearing a = MOD_SPOKES(angle_raw);
   SpokeBearing b = MOD_SPOKES(bearing_raw);
 
-  m_ri->m_range.Update(packet->range_meters);
-  m_ri->ProcessRadarSpoke(a, b, packet->line_data, len, packet->display_meters, time_rec);
+  m_ri->ProcessRadarSpoke(a, b, line, p - line, packet->display_meters, time_rec);
 }
 
 SOCKET GarminHDReceive::PickNextEthernetCard() {
@@ -190,28 +212,6 @@ SOCKET GarminHDReceive::GetNewReportSocket() {
   return socket;
 }
 
-SOCKET GarminHDReceive::GetNewDataSocket() {
-  SOCKET socket;
-  wxString error;
-
-  if (m_interface_addr.addr.s_addr == 0) {
-    return INVALID_SOCKET;
-  }
-
-  error.Printf(wxT("%s data: "), m_ri->m_name.c_str());
-  socket = startUDPMulticastReceiveSocket(m_interface_addr, m_data_addr, error);
-  if (socket != INVALID_SOCKET) {
-    wxString addr = FormatNetworkAddress(m_interface_addr);
-    wxString rep_addr = FormatNetworkAddressPort(m_data_addr);
-
-    LOG_RECEIVE(wxT("radar_pi: %s listening for data on %s from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
-  } else {
-    SetInfoStatus(error);
-    wxLogError(wxT("radar_pi: Unable to listen to socket: %s"), error.c_str());
-  }
-  return socket;
-}
-
 /*
  * Entry
  *
@@ -221,7 +221,6 @@ SOCKET GarminHDReceive::GetNewDataSocket() {
 void *GarminHDReceive::Entry(void) {
   int r = 0;
   int no_data_timeout = 0;
-  int no_spoke_timeout = 0;
   union {
     sockaddr_storage addr;
     sockaddr_in ipv4;
@@ -231,10 +230,10 @@ void *GarminHDReceive::Entry(void) {
   uint8_t data[sizeof(radar_line)];
   m_interface_array = 0;
   m_interface = 0;
+  m_no_spoke_timeout = 0;
   struct sockaddr_in radarFoundAddr;
   sockaddr_in *radar_addr = 0;
 
-  SOCKET dataSocket = INVALID_SOCKET;
   SOCKET reportSocket = INVALID_SOCKET;
 
   LOG_VERBOSE(wxT("radar_pi: GarminHDReceive thread %s starting"), m_ri->m_name.c_str());
@@ -248,22 +247,7 @@ void *GarminHDReceive::Entry(void) {
       reportSocket = PickNextEthernetCard();
       if (reportSocket != INVALID_SOCKET) {
         no_data_timeout = 0;
-        no_spoke_timeout = 0;
-      }
-    }
-    if (radar_addr) {
-      // If we have detected a radar antenna at this address start opening more sockets.
-      // We do this later for 2 reasons:
-      // - Resource consumption
-      // - Timing. If we start processing radar data before the rest of the system
-      //           is initialized then we get ordering/race condition issues.
-      if (dataSocket == INVALID_SOCKET) {
-        dataSocket = GetNewDataSocket();
-      }
-    } else {
-      if (dataSocket != INVALID_SOCKET) {
-        closesocket(dataSocket);
-        dataSocket = INVALID_SOCKET;
+        m_no_spoke_timeout = 0;
       }
     }
 
@@ -281,10 +265,6 @@ void *GarminHDReceive::Entry(void) {
       FD_SET(reportSocket, &fdin);
       maxFd = MAX(reportSocket, maxFd);
     }
-    if (dataSocket != INVALID_SOCKET) {
-      FD_SET(dataSocket, &fdin);
-      maxFd = MAX(dataSocket, maxFd);
-    }
 
     wxLongLong start = wxGetUTCTimeMillis();
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
@@ -297,20 +277,6 @@ void *GarminHDReceive::Entry(void) {
         if (r > 0) {
           LOG_VERBOSE(wxT("radar_pi: %s received stop instruction"), m_ri->m_name.c_str());
           break;
-        }
-      }
-
-      if (dataSocket != INVALID_SOCKET && FD_ISSET(dataSocket, &fdin)) {
-        rx_len = sizeof(rx_addr);
-        r = recvfrom(dataSocket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
-        if (r > 0) {
-          ProcessFrame(data, r);
-          no_data_timeout = -15;
-          no_spoke_timeout = -5;
-        } else {
-          closesocket(dataSocket);
-          dataSocket = INVALID_SOCKET;
-          wxLogError(wxT("radar_pi: %s illegal frame"), m_ri->m_name.c_str());
         }
       }
 
@@ -362,27 +328,16 @@ void *GarminHDReceive::Entry(void) {
         no_data_timeout++;
       }
 
-      if (no_spoke_timeout >= SECONDS_SELECT(2)) {
-        no_spoke_timeout = 0;
+      if (m_no_spoke_timeout >= SECONDS_SELECT(2)) {
+        m_no_spoke_timeout = 0;
         m_ri->ResetRadarImage();
       } else {
-        no_spoke_timeout++;
-      }
-    }
-
-    if (reportSocket == INVALID_SOCKET) {
-      // If we closed the reportSocket then close the command and data socket
-      if (dataSocket != INVALID_SOCKET) {
-        closesocket(dataSocket);
-        dataSocket = INVALID_SOCKET;
+        m_no_spoke_timeout++;
       }
     }
 
   }  // endless loop until thread destroy
 
-  if (dataSocket != INVALID_SOCKET) {
-    closesocket(dataSocket);
-  }
   if (reportSocket != INVALID_SOCKET) {
     closesocket(reportSocket);
   }
@@ -518,8 +473,16 @@ bool GarminHDReceive::ProcessReport(const uint8_t *report, int len) {
     uint16_t packet_type = packet->packet_type;
 
     switch (packet_type) {
-		
-      case 0x2a5:
+
+      case 0x2a3: {
+        radar_line * line = (radar_line *)report;
+
+        ProcessFrame(line);
+        m_no_spoke_timeout = -5;
+        return true;
+      }
+
+      case 0x2a5: {
         // Scanner state
         if (!UpdateScannerStatus(packet->scanner_state)) {
           return false;
@@ -527,10 +490,10 @@ bool GarminHDReceive::ProcessReport(const uint8_t *report, int len) {
         LOG_VERBOSE(wxT("0x02a5: warmup %d"), packet->warmup);
         m_ri->m_warmup.Update(packet->warmup);
         return true;
-
+      }
 		
-      case 0x2a7:
-		LOG_VERBOSE(wxT("0x02a7: range %d"), packet->range_meters);       // Range in meters
+      case 0x2a7: {
+ 		LOG_VERBOSE(wxT("0x02a7: range %d"), packet->range_meters);       // Range in meters
         m_ri->m_range.Update(packet->range_meters);
 
 		
@@ -589,31 +552,26 @@ bool GarminHDReceive::ProcessReport(const uint8_t *report, int len) {
         m_rain_clutter = packet->rain_clutter_level;
         m_ri->m_rain.Update(m_rain_clutter, m_rain_mode);	
 
-		
         // Dome offset, called bearing alignment here
         LOG_VERBOSE(wxT("0x02a7: bearing alignment %d"), (int32_t)packet->dome_offset);
         m_ri->m_bearing_alignment.Update((int32_t)packet->dome_offset);
 
-		
         // FTC mode
- //       LOG_VERBOSE(wxT("0x02a7: crosstalk/interference rejection %d"), packet->FTC_mode);
- //       m_ri->m_interference_rejection.Update(packet->FTC_mode); 
+        LOG_VERBOSE(wxT("0x02a7: FTC %d"), packet->FTC_mode);
+        m_ri->m_ftc.Update(packet->FTC_mode);
 
-		
         // Crosstalk reject, I guess this is the same as interference rejection?
         LOG_VERBOSE(wxT("0x02a7: crosstalk/interference rejection %d"), packet->crosstalk_onoff);
         m_ri->m_interference_rejection.Update(packet->crosstalk_onoff);
 
-
         // Timed transmit status should go here 
-
 
         // Dome Speed
         LOG_VERBOSE(wxT("0x02a7: scan speed %d"), packet->dome_speed);
         m_ri->m_scan_speed.Update(packet->dome_speed);
 
         return true;
-
+      }
     }
   }
 

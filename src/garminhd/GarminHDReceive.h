@@ -37,6 +37,8 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+struct radar_line;
+
 //
 // An intermediary class that implements the common parts of any Navico radar.
 //
@@ -44,7 +46,6 @@ PLUGIN_BEGIN_NAMESPACE
 class GarminHDReceive : public RadarReceive {
  public:
   GarminHDReceive(radar_pi *pi, RadarInfo *ri, NetworkAddress reportAddr, NetworkAddress dataAddr) : RadarReceive(pi, ri) {
-    m_data_addr = dataAddr;
     m_report_addr = reportAddr;
     m_next_spoke = -1;
     m_radar_status = 0;
@@ -67,19 +68,17 @@ class GarminHDReceive : public RadarReceive {
   wxString GetInfoStatus();
 
   NetworkAddress m_interface_addr;
-  NetworkAddress m_data_addr;
   NetworkAddress m_report_addr;
 
   wxLongLong m_shutdown_time_requested;  // Main thread asks this thread to stop
   volatile bool m_is_shutdown;
 
  private:
-  void ProcessFrame(const uint8_t *data, int len);
+  void ProcessFrame(radar_line * packet);
   bool ProcessReport(const uint8_t *data, int len);
 
   SOCKET PickNextEthernetCard();
   SOCKET GetNewReportSocket();
-  SOCKET GetNewDataSocket();
 
   wxString m_ip;
 
@@ -105,6 +104,7 @@ class GarminHDReceive : public RadarReceive {
   RadarControlState m_rain_mode;  // RCS_OFF, RCS_MANUAL, RCS_AUTO_1
   int m_rain_clutter;             // 0..100
   bool m_no_transmit_zone_mode;   // True if there is a zone
+  int m_no_spoke_timeout;
 
   bool UpdateScannerStatus(int status);
 

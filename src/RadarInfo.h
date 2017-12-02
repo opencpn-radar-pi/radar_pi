@@ -104,6 +104,7 @@ class RadarInfo {
   RadarControlItem m_target_expansion;
   RadarControlItem m_sea;
   RadarControlItem m_rain;
+  RadarControlItem m_ftc;
   RadarControlItem m_scan_speed;
   RadarControlItem m_bearing_alignment;
   RadarControlItem m_no_transmit_start;

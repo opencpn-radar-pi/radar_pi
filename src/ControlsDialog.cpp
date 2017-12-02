@@ -73,6 +73,7 @@ enum {  // process ID's
   ID_GAIN,
   ID_SEA,
   ID_RAIN,
+  ID_FTC,
 
   ID_CLEAR_CURSOR,
   ID_ACQUIRE_TARGET,
@@ -156,6 +157,7 @@ EVT_BUTTON(ID_RANGE, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_GAIN, ControlsDialog::OnRadarGainButtonClick)
 EVT_BUTTON(ID_SEA, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_RAIN, ControlsDialog::OnRadarControlButtonClick)
+EVT_BUTTON(ID_FTC, ControlsDialog::OnRadarControlButtonClick)
 
 EVT_BUTTON(ID_TARGETS, ControlsDialog::OnTargetsButtonClick)
 EVT_BUTTON(ID_TARGET_TRAILS, ControlsDialog::OnRadarControlButtonClick)
@@ -917,6 +919,12 @@ void ControlsDialog::CreateControls() {
     m_adjust_sizer->Add(m_rain_button, 0, wxALL, BORDER);
   }
 
+  // The FTC button
+  if (m_ctrl[CT_FTC].type) {
+    m_ftc_button = new RadarControlButton(this, ID_FTC, _("FTC"), m_ctrl[CT_FTC], &m_ri->m_ftc);
+    m_adjust_sizer->Add(m_ftc_button, 0, wxALL, BORDER);
+  }
+
   m_top_sizer->Hide(m_adjust_sizer);
 
   //**************** CURSOR BOX ******************//
@@ -1617,6 +1625,11 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   //  rain
   if (m_rain_button) {
     m_rain_button->UpdateLabel();
+  }
+
+  //  FTC
+  if (m_ftc_button) {
+    m_ftc_button->UpdateLabel();
   }
 
   //   sea

@@ -342,8 +342,14 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
       }
       break;
     }
-	
-	// FTC mode should go here
+
+    case CT_FTC: {
+      LOG_VERBOSE(wxT("radar_pi: %s FTC: value=%d"), m_name.c_str(), value);
+      pck_9.packet_type = 0x2b8;
+      pck_9.parm1 = value;
+      r = TransmitCmd(&pck_9, sizeof(pck_9));
+      break;
+    }
 
     case CT_RAIN: {  // Rain Clutter
       LOG_VERBOSE(wxT("radar_pi: %s Rain: value=%d state=%d"), m_name.c_str(), value, (int)state);

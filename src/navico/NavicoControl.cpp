@@ -197,6 +197,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
     case CT_ANTENNA_STARBOARD:
     case CT_NO_TRANSMIT_START:
     case CT_NO_TRANSMIT_END:
+    case CT_FTC:
       // The above are not settings that are not radar commands or not supported by Navico radar.
       // Made them explicit so the compiler can catch missing control types.
       break;
