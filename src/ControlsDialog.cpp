@@ -1022,7 +1022,7 @@ void ControlsDialog::CreateControls() {
   RadarButton* power_back_button = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
   m_power_sizer->Add(power_back_button, 0, wxALL, BORDER);
 
-  m_power_sub_button = new RadarButton(this, ID_TRANSMIT_STANDBY, g_buttonSize, _("Power Status"));
+  m_power_sub_button = new RadarButton(this, ID_TRANSMIT_STANDBY, g_buttonSize, _("Transmit / Standby"));
   m_power_sizer->Add(m_power_sub_button, 0, wxALL, BORDER);
 
   // The TIMED TRANSMIT button
@@ -1527,7 +1527,12 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   RadarState state = (RadarState)m_ri->m_state.GetButton();
 
-  o = _("Power Status");
+  if (state == RADAR_STANDBY || state == RADAR_OFF){
+    o = _("Transmit / Standby");
+  }
+  else {
+    o = _("Standby / Transmit");
+  }
   o << wxT("\n");
   if (m_ri->m_timed_idle.GetValue() == 0) {
     switch (state) {
