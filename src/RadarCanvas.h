@@ -35,6 +35,8 @@
 #include "TextureFont.h"
 #include "radar_pi.h"
 
+#include "macos/RetinaHelper.h"
+
 PLUGIN_BEGIN_NAMESPACE
 
 class RadarCanvas : public wxGLCanvas {
@@ -62,7 +64,10 @@ class RadarCanvas : public wxGLCanvas {
 
   wxGLContext* m_context;  // Our GL context
   wxGLContext* m_zero_context;
-
+#ifdef __WXOSX__
+  RetinaHelper * m_retinaHelper;
+#endif
+  
   TextureFont m_FontNormal;
   TextureFont m_FontBig;
   TextureFont m_FontMenu;

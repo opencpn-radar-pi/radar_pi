@@ -143,6 +143,18 @@ SET(SRC_JSON
         src/wxJSON/jsonval.cpp
         # We don't use jsonwriter.cpp yet ...
 )
+
+IF(APPLE)
+  SET(SRC_MACOS
+          src/macos/RetinaHelper.h
+          src/macos/RetinaHelperImpl.h
+          src/macos/RetinaHelperImpl.mm
+  )
+ELSE(APPLE)
+  SET(SRC_MACOS
+  )
+ENDIF(APPLE)
+
 INCLUDE_DIRECTORIES(src/nmea0183)
 INCLUDE_DIRECTORIES(src/wxJSON)
 INCLUDE_DIRECTORIES(src)
@@ -154,7 +166,7 @@ IF(WIN32)
   FIND_PACKAGE(wxWidgets REQUIRED)
 ENDIF(WIN32)
 
-ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_RADAR} ${SRC_NMEA0183} ${SRC_JSON} ${SRC_EMULATOR} ${SRC_GARMIN_XHD} ${SRC_NAVICO})
+ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_RADAR} ${SRC_NMEA0183} ${SRC_JSON} ${SRC_EMULATOR} ${SRC_GARMIN_XHD} ${SRC_NAVICO} ${SRC_MACOS})
 
 SET(TEST_KALMAN kalman-test)
 SET(SRC_KALMAN

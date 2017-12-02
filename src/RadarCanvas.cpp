@@ -60,7 +60,14 @@ RadarCanvas::RadarCanvas(radar_pi *pi, RadarInfo *ri, wxWindow *parent, wxSize s
   m_last_mousewheel_zoom_out = 0;
 
   LOG_VERBOSE(wxT("radar_pi: %s create OpenGL canvas"), m_ri->m_name.c_str());
-  Refresh(false);
+
+#ifdef __WXOSX__
+  m_retinaHelper = new RetinaHelper(this);
+  m_retinaHelper->setViewWantsBestResolutionOpenGLSurface(true);
+#endif
+
+  wxSizeEvent evt;
+  OnSize(evt);
 }
 
 RadarCanvas::~RadarCanvas() {
@@ -71,11 +78,20 @@ RadarCanvas::~RadarCanvas() {
     glDeleteTextures(1, &m_cursor_texture);
     m_cursor_texture = 0;
   }
+
+#ifdef __WXOSX__
+  delete m_retinaHelper;
+#endif
 }
 
 void RadarCanvas::OnSize(wxSizeEvent &evt) {
   wxSize parentSize = m_parent->GetSize();
+
+  parentSize.x = RETINA_SCALE(parentSize.x);
+  parentSize.y = RETINA_SCALE(parentSize.y);
+
   LOG_DIALOG(wxT("radar_pi: %s resize OpenGL canvas to %d, %d"), m_ri->m_name.c_str(), parentSize.x, parentSize.y);
+
   Refresh(false);
   if (GetSize() != parentSize) {
     SetSize(parentSize);
@@ -502,15 +518,17 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glPushAttrib(GL_ALL_ATTRIB_BITS);
 
   wxFont font = GetOCPNGUIScaledFont_PlugIn(_T("StatusBar"));
+  font.SetPointSize(RETINA_SCALE(font.GetPointSize()));
   m_FontNormal.Build(font);
   wxFont bigFont = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
-  bigFont.SetPointSize(bigFont.GetPointSize() + 2);
+  int points = bigFont.GetPointSize();
+  bigFont.SetPointSize(RETINA_SCALE(points + 2));
   bigFont.SetWeight(wxFONTWEIGHT_BOLD);
   m_FontBig.Build(bigFont);
-  bigFont.SetPointSize(bigFont.GetPointSize() + 2);
+  bigFont.SetPointSize(RETINA_SCALE(points + 4));
   bigFont.SetWeight(wxFONTWEIGHT_NORMAL);
   m_FontMenu.Build(bigFont);
-  bigFont.SetPointSize(bigFont.GetPointSize() + 10);
+  bigFont.SetPointSize(RETINA_SCALE(points + 10));
   bigFont.SetWeight(wxFONTWEIGHT_BOLD);
   m_FontMenuBold.Build(bigFont);
 
@@ -619,6 +637,9 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
 
   event.GetPosition(&x, &y);
   GetClientSize(&w, &h);
+
+  x = RETINA_SCALE(x);
+  y = RETINA_SCALE(y);
 
   int center_x = w / 2;
   int center_y = h / 2;
