@@ -186,6 +186,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
     case CT_TIMED_RUN:
     case CT_TRANSPARENCY:
     case CT_REFRESHRATE:
+    case CT_TARGET_ON_PPI:
     case CT_TARGET_TRAILS:
     case CT_TRAILS_MOTION:
     case CT_MAIN_BANG_SIZE:

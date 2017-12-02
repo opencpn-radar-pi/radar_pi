@@ -216,6 +216,7 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_ANTENNA_STARBOARD:
     case CT_ORIENTATION:
     case CT_OVERLAY:
+    case CT_TARGET_ON_PPI:
 
     // The following are settings not supported by Garmin xHD.
     case CT_SIDE_LOBE_SUPPRESSION:

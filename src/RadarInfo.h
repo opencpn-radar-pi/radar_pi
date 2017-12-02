@@ -116,6 +116,7 @@ class RadarInfo {
   RadarControlItem m_side_lobe_suppression;
   RadarControlItem m_target_trails;
   RadarControlItem m_trails_motion;
+  RadarControlItem m_target_on_ppi;
   RadarControlItem m_warmup;
   RadarControlItem m_timed_idle;     // CT_TIMED_IDLE
   RadarControlItem m_timed_run;  // CT_TIMED_RUN

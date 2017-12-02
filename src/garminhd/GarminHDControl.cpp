@@ -227,6 +227,7 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
     case CT_ANTENNA_STARBOARD:
     case CT_ORIENTATION:
     case CT_OVERLAY:
+    case CT_TARGET_ON_PPI:
 
     // The following are settings not supported by Garmin HD.
     case CT_SIDE_LOBE_SUPPRESSION:
@@ -236,6 +237,8 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
     case CT_NOISE_REJECTION:
     case CT_TARGET_SEPARATION:
     case CT_ANTENNA_HEIGHT:
+    case CT_NO_TRANSMIT_END:
+    case CT_NO_TRANSMIT_START:
 
       break;
 

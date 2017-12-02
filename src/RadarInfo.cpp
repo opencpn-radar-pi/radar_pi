@@ -1319,21 +1319,23 @@ wxString RadarInfo::GetTimedIdleText() {
   wxString text;
 
   if (m_timed_idle.GetValue() > 0) {
-    time_t now = time(0);
-    int left = m_idle_standby - now;
-    if (left >= 0) {
-      text = _("Standby in");
-      text << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
-    } else {
-      left = m_idle_transmit - now;
+    if (m_arpa->GetTargetCount() != 0){
+      text = _("Transmit for targets");
+    }
+    else {
+      time_t now = time(0);
+      int left = m_idle_standby - now;
       if (left >= 0) {
-        text = _("Transmit in");
+        text = _("Transmit for");
         text << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
+      } else {
+        left = m_idle_transmit - now;
+        if (left >= 0) {
+          text = _("Standby for");
+          text << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
+        }
       }
     }
-  }
-  if (m_arpa->GetTargetCount() != 0){
-    text = _("On for targets");
   }
   return text;
 }

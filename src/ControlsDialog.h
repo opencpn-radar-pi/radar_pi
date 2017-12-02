@@ -297,7 +297,7 @@ class ControlsDialog : public wxDialog {
 
   // View controls
   RadarControlButton *m_target_trails_button;
-  wxButton *m_targets_button;
+  RadarControlButton *m_targets_button;
   RadarControlButton *m_trails_motion_button;
   wxButton *m_clear_trails_button;
   RadarControlButton *m_orientation_button;

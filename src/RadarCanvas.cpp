@@ -529,7 +529,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   PlugIn_ViewPort vp;
   GeoPosition pos;
 
-  if (m_pi->GetHeadingSource() != HEADING_NONE && m_ri->GetRadarPosition(&pos) && M_SETTINGS.show_radar_target[m_ri->m_radar]) {
+  if (m_pi->GetHeadingSource() != HEADING_NONE && m_ri->GetRadarPosition(&pos) && m_ri->m_target_on_ppi.GetValue() > 0) {
     // LAYER 2 - AIS AND ARPA TARGETS
 
     ResetGLViewPort(w, h);

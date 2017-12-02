@@ -558,7 +558,6 @@ void ControlsDialog::CreateControls() {
   m_top_sizer->Add(testBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   wxString label;
-  label << _("Standby / Transmit") << wxT("\n");
   label << _("Scan speed") << wxT("\n");
   label << _("Installation") << wxT("\n");
   label << _("Antenna height") << wxT("\n");
@@ -968,12 +967,12 @@ void ControlsDialog::CreateControls() {
   m_view_sizer->Add(bMenuBack, 0, wxALL, BORDER);
 
   // The Show Targets button
-  m_targets_button = new RadarButton(this, ID_TARGETS, g_buttonSize, _("Show AIS/ARPA \n Off"));
+  m_targets_button = new RadarControlButton(this, ID_TARGETS, _("AIS/ARPA on PPI"), m_ctrl[CT_TARGET_ON_PPI], &m_ri->m_target_on_ppi);
   m_view_sizer->Add(m_targets_button, 0, wxALL, BORDER);
 
   // The Trails Motion button
   if (m_ctrl[CT_TRAILS_MOTION].type) {
-    m_trails_motion_button = new RadarControlButton(this, ID_TRAILS_MOTION, _("Off/Relative/True trails"), m_ctrl[CT_TRAILS_MOTION],
+    m_trails_motion_button = new RadarControlButton(this, ID_TRAILS_MOTION, _("Trails motion"), m_ctrl[CT_TRAILS_MOTION],
                                                     &m_ri->m_trails_motion);
     m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
   }
@@ -981,7 +980,7 @@ void ControlsDialog::CreateControls() {
   // The TARGET_TRAIL button
   if (m_ctrl[CT_TARGET_TRAILS].type) {
     m_target_trails_button =
-        new RadarControlButton(this, ID_TARGET_TRAILS, _("Target trails"), m_ctrl[CT_TARGET_TRAILS], &m_ri->m_target_trails);
+        new RadarControlButton(this, ID_TARGET_TRAILS, _("Trails duration"), m_ctrl[CT_TARGET_TRAILS], &m_ri->m_target_trails);
     m_view_sizer->Add(m_target_trails_button, 0, wxALL, BORDER);
     m_target_trails_button->Hide();
   }
@@ -1022,20 +1021,20 @@ void ControlsDialog::CreateControls() {
   RadarButton* power_back_button = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
   m_power_sizer->Add(power_back_button, 0, wxALL, BORDER);
 
-  m_power_sub_button = new RadarButton(this, ID_TRANSMIT_STANDBY, g_buttonSize, _("Transmit / Standby"));
+  m_power_sub_button = new RadarButton(this, ID_TRANSMIT_STANDBY, g_buttonSize, wxT(""));
   m_power_sizer->Add(m_power_sub_button, 0, wxALL, BORDER);
 
-  // The TIMED TRANSMIT button
+  // The TIMED STANDBY button
   if (m_ctrl[CT_TIMED_IDLE].type) {
     m_timed_idle_button =
-        new RadarControlButton(this, ID_TIMED_IDLE, _("Timed Transmit"), m_ctrl[CT_TIMED_IDLE], &m_ri->m_timed_idle);
+        new RadarControlButton(this, ID_TIMED_IDLE, _("Timed Standby"), m_ctrl[CT_TIMED_IDLE], &m_ri->m_timed_idle);
     m_power_sizer->Add(m_timed_idle_button, 0, wxALL, BORDER);
   }
 
-  // The TIMED RUNTIME button
-  if (m_ctrl[CT_TIMED_IDLE].type) {
+  // The TIMED TRANSMIT button
+  if (m_ctrl[CT_TIMED_RUN].type) {
     m_timed_run_button =
-        new RadarControlButton(this, ID_TIMED_RUN, _("Runtime"), m_ctrl[CT_TIMED_RUN], &m_ri->m_timed_run);
+        new RadarControlButton(this, ID_TIMED_RUN, _("Timed Transmit"), m_ctrl[CT_TIMED_RUN], &m_ri->m_timed_run);
     m_power_sizer->Add(m_timed_run_button, 0, wxALL, BORDER);
   }
 
@@ -1212,8 +1211,7 @@ void ControlsDialog::OnMessageButtonClick(wxCommandEvent& event) {
 }
 
 void ControlsDialog::OnTargetsButtonClick(wxCommandEvent& event) {
-  M_SETTINGS.show_radar_target[m_ri->m_radar] = !(M_SETTINGS.show_radar_target[m_ri->m_radar]);
-
+  m_ri->m_target_on_ppi.Update(1 - m_ri->m_target_on_ppi.GetValue());
   UpdateControlValues(false);
 }
 
@@ -1527,12 +1525,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   RadarState state = (RadarState)m_ri->m_state.GetButton();
 
-  if (state == RADAR_STANDBY || state == RADAR_OFF){
-    o = _("Transmit / Standby");
-  }
-  else {
-    o = _("Standby / Transmit");
-  }
+  o = _("Radar");
   o << wxT("\n");
   if (m_ri->m_timed_idle.GetValue() == 0) {
     switch (state) {
@@ -1605,12 +1598,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_bearing_buttons[b]->SetLabel(o);
   }
 
-  if (M_SETTINGS.show_radar_target[m_ri->m_radar]) {
-    m_targets_button->SetLabel(_("Show AIS/ARPA\n On"));
-  } else {
-    m_targets_button->SetLabel(_("Show AIS/ARPA\n Off"));
-  }
-
+  m_targets_button->UpdateLabel();
   m_target_trails_button->UpdateLabel();
   m_trails_motion_button->UpdateLabel();
   m_orientation_button->UpdateLabel();
