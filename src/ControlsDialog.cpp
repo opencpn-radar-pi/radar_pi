@@ -1079,9 +1079,9 @@ void ControlsDialog::CreateControls() {
   RadarButton* bView = new RadarButton(this, ID_VIEW, g_buttonSize, _("View"));
   m_transmit_sizer->Add(bView, 0, wxALL, BORDER);
 
-  // The BEARING button
-  m_bearing_button = new RadarButton(this, ID_BEARING, g_buttonSize, _("Cursor"));
-  m_transmit_sizer->Add(m_bearing_button, 0, wxALL, BORDER);
+  // The CURSOR button
+  m_cursor_menu = new RadarButton(this, ID_BEARING, g_buttonSize, _("Cursor"));
+  m_transmit_sizer->Add(m_cursor_menu, 0, wxALL, BORDER);
 
   // The GUARD ZONE 1 button
   m_guard_1_button = new RadarButton(this, ID_ZONE1, g_buttonSize, wxT(""));
@@ -1469,6 +1469,34 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
       m_control_sizer->Show(m_transmit_sizer);
       resize = true;
     }
+    if (M_SETTINGS.show_radar[m_ri->m_radar]) {
+      if (!m_transmit_sizer->IsShown(m_cursor_menu)) {
+        m_transmit_sizer->Show(m_cursor_menu);
+        resize = true;
+      }
+      if (m_top_sizer->IsShown(m_view_sizer) && !m_view_sizer->IsShown(m_targets_button)) {
+        m_view_sizer->Show(m_targets_button);
+        resize = true;
+      }
+      if (m_top_sizer->IsShown(m_view_sizer) && !m_view_sizer->IsShown(m_orientation_button)) {
+        m_view_sizer->Show(m_orientation_button);
+        resize = true;
+      }
+    } else {
+      if (m_transmit_sizer->IsShown(m_cursor_menu)) {
+        m_transmit_sizer->Hide(m_cursor_menu);
+        resize = true;
+      }
+      if (m_top_sizer->IsShown(m_view_sizer) && m_view_sizer->IsShown(m_targets_button)) {
+        m_view_sizer->Hide(m_targets_button);
+        resize = true;
+      }
+      if (m_top_sizer->IsShown(m_view_sizer) && m_view_sizer->IsShown(m_orientation_button)) {
+        m_view_sizer->Hide(m_orientation_button);
+        resize = true;
+      }
+    }
+
   } else {
     if (m_control_sizer->IsShown(m_transmit_sizer)) {
       m_control_sizer->Hide(m_transmit_sizer);
