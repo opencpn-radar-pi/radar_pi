@@ -516,6 +516,8 @@ class RadarRangeControlButton : public RadarControlButton {
     m_ci.unit = wxT("");
     m_ci.names = 0;
     m_ci.type = CT_RANGE;
+    m_ci.hasOff = false;
+    m_ci.defaultValue = 0;
 
     SetFont(m_parent->m_pi->m_font);
   }
