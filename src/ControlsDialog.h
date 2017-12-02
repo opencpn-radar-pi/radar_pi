@@ -337,6 +337,9 @@ class ControlsDialog : public wxDialog {
   wxButton *m_adjust_button;
   wxButton *m_cursor_menu;
 
+  // Status text
+  wxStaticText *m_status_text;
+
   // Methods common to any radar
   void EnsureWindowNearOpenCPNWindow();
   void ShowGuardZone(int zone);

@@ -47,6 +47,7 @@ enum {  // process ID's
   ID_AUTO,
   ID_OFF,
   ID_TRAILS_MOTION,
+  ID_STATUS_TEXT,
 
   ID_TRANSPARENCY,
   ID_INTERFERENCE_REJECTION,
@@ -1062,6 +1063,11 @@ void ControlsDialog::CreateControls() {
   m_control_sizer = new wxBoxSizer(wxVERTICAL);
   m_top_sizer->Add(m_control_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
+  //**************** STATUS TEXT ***************//
+
+  m_status_text = new wxStaticText(this, ID_STATUS_TEXT, wxT(""), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
+  m_control_sizer->Add(m_status_text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
   //***************** TRANSMIT SIZER, items hidden when not transmitting ****************//
 
   m_transmit_sizer = new wxBoxSizer(wxVERTICAL);
@@ -1464,6 +1470,7 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
       }
     }
   }
+
   if (state == RADAR_TRANSMIT) {
     if (m_top_sizer->IsShown(m_control_sizer) && !m_control_sizer->IsShown(m_transmit_sizer)) {
       m_control_sizer->Show(m_transmit_sizer);
@@ -1496,11 +1503,32 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
         resize = true;
       }
     }
-
-  } else {
-    if (m_control_sizer->IsShown(m_transmit_sizer)) {
-      m_control_sizer->Hide(m_transmit_sizer);
+    if (m_control_sizer->IsShown(m_status_text)) {
+      m_control_sizer->Hide(m_status_text);
+      m_status_text->SetLabel(wxT(""));
       resize = true;
+    }
+  } else {
+    if (m_top_sizer->IsShown(m_control_sizer)) {
+      if (m_control_sizer->IsShown(m_transmit_sizer)) {
+        m_control_sizer->Hide(m_transmit_sizer);
+        resize = true;
+      }
+      if (!m_control_sizer->IsShown(m_status_text)) {
+        m_top_sizer->Show(m_status_text);
+        resize = true;
+      }
+
+      wxString info;
+      if (state == RADAR_OFF) {
+        info << _("Radar not on or not detected");
+        info << wxT("\n");
+        info << m_ri->GetInfoStatus();
+        resize = true;
+      } else if (state == RADAR_STANDBY) {
+        info << _("Radar detected\nPress 'Radar'\nbelow to transmit");
+      }
+      m_status_text->SetLabel(info);
     }
   }
 
