@@ -1591,7 +1591,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
       }
     }
   } else {
-    o = (m_pi->m_settings.show_radar[m_ri->m_radar]) ? _("Hide PPI") : _("Show PPI");
+    o = (m_pi->m_settings.show_radar[m_ri->m_radar]) ? _("Hide PPI window") : _("Show PPI window");
   }
   m_window_button->SetLabel(o);
 
