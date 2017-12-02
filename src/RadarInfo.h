@@ -144,6 +144,8 @@ class RadarInfo {
 
   bool m_auto_range_mode;
 
+  bool m_status_text_hide;
+
   int m_refresh_millis;
 
   GuardZone *m_guard_zone[GUARD_ZONES];
