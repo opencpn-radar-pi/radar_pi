@@ -75,7 +75,7 @@ bool RadarPanel::Create() {
   pane.MinSize(256, 256);
   pane.BestSize(m_best_size);
   pane.FloatingSize(512, 512);
-  pane.FloatingPosition(m_pi->m_settings.window_pos[m_ri->m_radar]);
+  pane.FloatingPosition(M_SETTINGS.window_pos[m_ri->m_radar]);
   pane.Float();
   pane.dock_proportion = 100000;  // Secret sauce to get panels to use entire bar
 

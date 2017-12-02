@@ -1770,9 +1770,9 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
     // If the corresponding radar panel is now in a different position from what we remembered
     // then reset the dialog to the left or right of the radar panel.
     wxPoint panelPos = m_ri->m_radar_panel->GetPos();
-    bool controlInitialShow = m_pi->m_settings.control_pos[m_ri->m_radar] == OFFSCREEN_CONTROL;
+    bool controlInitialShow = !m_pi->m_settings.control_pos[m_ri->m_radar].IsFullySpecified();
     bool panelShown = m_ri->m_radar_panel->IsShown();
-    bool panelMoved = m_panel_position.IsFullySpecified() && panelPos != m_panel_position;
+    bool panelMoved = !m_panel_position.IsFullySpecified() || panelPos != m_panel_position;
 
     if (panelShown                                  // if the radar pane is shown and
         && ((panelMoved && !m_manually_positioned)  // has moved this session and user did not touch pos, or

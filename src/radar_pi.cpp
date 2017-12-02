@@ -405,6 +405,7 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
 
   LOG_DIALOG(wxT("radar_pi: IsRadarSelectionComplete not yet so show selection dialog"));
 
+  m_initialized = false;
   SelectDialog dlg(m_parent_window, this);
   if (dlg.ShowModal() == wxID_OK) {
     size_t r = 0;
@@ -419,6 +420,8 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
           m_radar[r] = 0;
         }
         if (!m_radar[r]) {
+          m_settings.window_pos[r] = wxPoint(100 + 512 * r, 100);
+          m_settings.control_pos[r] = wxDefaultPosition;
           m_radar[r] = new RadarInfo(this, r);
         }
         m_radar[r]->m_radar_type = (RadarType)i;
@@ -443,7 +446,10 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
         m_radar[r] = 0;
       }
     }
+    SetRadarWindowViz();
+    TimedControlUpdate();
   }
+  m_initialized = true;
   return ret;
 }
 
@@ -459,7 +465,6 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
     if (dlg.ShowModal() == wxID_OK) {
       m_settings = dlg.GetSettings();
       if (IsRadarSelectionComplete(false)) {
-        SaveConfig();
         for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
           m_radar[r]->ComputeColourMap();
           m_radar[r]->UpdateControlState(true);
@@ -502,6 +507,7 @@ void radar_pi::UpdateContextMenu() {
   int arpa_targets = 0;
 
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (m_radar[r]->m_arpa)
     arpa_targets += m_radar[r]->m_arpa->GetTargetCount();
   }
   bool show = m_settings.show;
@@ -620,9 +626,12 @@ void radar_pi::OnToolbarToolCallback(int id) {
 }
 
 void radar_pi::OnContextMenuItemCallback(int id) {
+  if (!IsRadarSelectionComplete(false)) {
+    return;
+  }
   if (id == m_context_menu_control_id) {
     bool done = false;
-    if (m_settings.chart_overlay >= 0) {
+    if (m_settings.chart_overlay >= 0 && m_settings.chart_overlay < M_SETTINGS.radar_count) {
       LOG_DIALOG(wxT("radar_pi: OnToolbarToolCallback: overlay is active -> show control"));
       ShowRadarControl(m_settings.chart_overlay, true);
       done = true;
@@ -1252,8 +1261,8 @@ bool radar_pi::LoadConfig(void) {
       pConf->Read(wxString::Format(wxT("Radar%dTargetShow"), r), &v, true);
       m_radar[r]->m_target_on_ppi.Update(v);
 
-      pConf->Read(wxString::Format(wxT("Radar%dControlPosX"), r), &x, OFFSCREEN_CONTROL_X);
-      pConf->Read(wxString::Format(wxT("Radar%dControlPosY"), r), &y, OFFSCREEN_CONTROL_Y);
+      pConf->Read(wxString::Format(wxT("Radar%dControlPosX"), r), &x, wxDefaultPosition.x);
+      pConf->Read(wxString::Format(wxT("Radar%dControlPosY"), r), &y, wxDefaultPosition.y);
       m_settings.control_pos[n] = wxPoint(x, y);
       LOG_DIALOG(wxT("radar_pi: LoadConfig: show_radar[%d]=%d control=%d,%d"), n, v, x, y);
       for (int i = 0; i < GUARD_ZONES; i++) {

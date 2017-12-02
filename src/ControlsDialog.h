@@ -40,11 +40,6 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-#define OFFSCREEN_CONTROL_X (-10000)
-#define OFFSCREEN_CONTROL_Y (-10000)
-
-const static wxPoint OFFSCREEN_CONTROL = wxPoint(OFFSCREEN_CONTROL_X, OFFSCREEN_CONTROL_Y);
-
 class RadarControlButton;
 class RadarRangeControlButton;
 class RadarButton;
@@ -174,7 +169,7 @@ class ControlsDialog : public wxDialog {
   ~ControlsDialog();
 
   bool Create(wxWindow *parent, radar_pi *pi, RadarInfo *ri, wxWindowID id = wxID_ANY, const wxString &caption = _("Radar"),
-              const wxPoint &pos = OFFSCREEN_CONTROL);
+              const wxPoint &pos = wxDefaultPosition);
 
   void AdjustRange(int adjustment);
   wxString &GetRangeText();
