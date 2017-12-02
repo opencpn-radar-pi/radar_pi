@@ -156,6 +156,7 @@ class ControlsDialog : public wxDialog {
     m_gain_button = 0;
     m_sea_button = 0;
     m_rain_button = 0;
+    m_ftc_button = 0;
     m_adjust_button = 0;
     m_bearing_button = 0;
 
