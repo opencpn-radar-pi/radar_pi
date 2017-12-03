@@ -1640,7 +1640,7 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
   if (m_top_sizer->IsShown(m_window_sizer)) {
     int overlay = m_ri->m_overlay.GetValue();
 
-    if (overlay == m_ri->m_radar) {
+    if (overlay > 0) {
       m_transparency_button->Enable();
     } else {
       m_transparency_button->Disable();
