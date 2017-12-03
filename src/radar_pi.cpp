@@ -633,7 +633,7 @@ void radar_pi::OnContextMenuItemCallback(int id) {
   }
   if (id == m_context_menu_control_id) {
     bool done = false;
-    if (m_settings.chart_overlay >= 0 && m_settings.chart_overlay < M_SETTINGS.radar_count) {
+    if (m_settings.chart_overlay >= 0 && m_settings.chart_overlay < (int)M_SETTINGS.radar_count) {
       LOG_DIALOG(wxT("radar_pi: OnToolbarToolCallback: overlay is active -> show control"));
       ShowRadarControl(m_settings.chart_overlay, true);
       done = true;
