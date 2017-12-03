@@ -902,7 +902,8 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
   }
 
   int motion = m_trails_motion.GetValue();
-  if (motion != TARGET_MOTION_OFF) {
+  RadarControlState trails = m_target_trails.GetState();
+  if (trails != RCS_OFF) {
     if (motion == TARGET_MOTION_TRUE) {
       s << wxT("RM(T)");
     } else {

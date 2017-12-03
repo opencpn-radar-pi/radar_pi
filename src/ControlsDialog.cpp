@@ -220,14 +220,20 @@ wxString guard_zone_names[2];
 
 void RadarControlButton::AdjustValue(int adjustment) {
   int oldValue = m_item->GetValue();
-  int newValue = oldValue + adjustment;
+  int newValue = oldValue;
 
-  if (newValue < m_ci.minValue) {
-    newValue = m_ci.minValue;
-  } else if (newValue > m_ci.maxValue) {
-    newValue = m_ci.maxValue;
+  if (m_item->GetState() == RCS_OFF) {
+    m_item->UpdateState(RCS_MANUAL);
   }
-  m_item->Update(newValue, RCS_MANUAL);
+  else {
+    newValue += adjustment;
+    if (newValue < m_ci.minValue) {
+      newValue = m_ci.minValue;
+    } else if (newValue > m_ci.maxValue) {
+      newValue = m_ci.maxValue;
+    }
+    m_item->Update(newValue, RCS_MANUAL);
+  }
 
   if (m_item->IsModified()) {
     LOG_VERBOSE(wxT("%s Adjusting '%s' by %d from %d to %d"), m_parent->m_log_name.c_str(), GetName(), adjustment, oldValue,
@@ -1020,19 +1026,19 @@ void ControlsDialog::CreateControls() {
       new RadarControlButton(this, ID_TARGETS, _("AIS/ARPA on PPI"), m_ctrl[CT_TARGET_ON_PPI], &m_ri->m_target_on_ppi);
   m_view_sizer->Add(m_targets_button, 0, wxALL, BORDER);
 
-  // The Trails Motion button
-  if (m_ctrl[CT_TRAILS_MOTION].type) {
-    m_trails_motion_button =
-        new RadarControlButton(this, ID_TRAILS_MOTION, _("Trails motion"), m_ctrl[CT_TRAILS_MOTION], &m_ri->m_trails_motion);
-    m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
-  }
-
   // The TARGET_TRAIL button
   if (m_ctrl[CT_TARGET_TRAILS].type) {
     m_target_trails_button =
-        new RadarControlButton(this, ID_TARGET_TRAILS, _("Trails duration"), m_ctrl[CT_TARGET_TRAILS], &m_ri->m_target_trails);
+        new RadarControlButton(this, ID_TARGET_TRAILS, _("Target trails"), m_ctrl[CT_TARGET_TRAILS], &m_ri->m_target_trails);
     m_view_sizer->Add(m_target_trails_button, 0, wxALL, BORDER);
     m_target_trails_button->Hide();
+  }
+
+  // The Trails Motion button
+  if (m_ctrl[CT_TRAILS_MOTION].type) {
+    m_trails_motion_button =
+    new RadarControlButton(this, ID_TRAILS_MOTION, _("Trails motion"), m_ctrl[CT_TRAILS_MOTION], &m_ri->m_trails_motion);
+    m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
   }
 
   // The Clear Trails button
@@ -1587,14 +1593,14 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
   }
 
   if (m_top_sizer->IsShown(m_view_sizer)) {
-    int value = m_ri->m_trails_motion.GetValue();
+    RadarControlState trails = m_ri->m_target_trails.GetState();
 
-    if (value == TARGET_MOTION_OFF) {
-      m_target_trails_button->Hide();
-      m_clear_trails_button->Hide();
+    if (trails == RCS_OFF) {
+      m_trails_motion_button->Disable();
+      m_clear_trails_button->Disable();
     } else {
-      m_target_trails_button->Show();
-      m_clear_trails_button->Show();
+      m_trails_motion_button->Enable();
+      m_clear_trails_button->Enable();
     }
     resize = true;
   }

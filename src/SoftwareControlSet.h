@@ -121,9 +121,8 @@
 #define TRAIL_MOTION_NAMES \
   { _("Relative"), _("True") }
 #endif
-#define TARGET_MOTION_OFF (0)
-#define TARGET_MOTION_RELATIVE (1)
-#define TARGET_MOTION_TRUE (2)
+#define TARGET_MOTION_RELATIVE (0)
+#define TARGET_MOTION_TRUE (1)
 #ifndef OFF_ON_NAMES
 #define OFF_ON_NAMES \
   { _("Off"), _("On") }

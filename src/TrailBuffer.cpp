@@ -73,6 +73,9 @@ TrailBuffer::~TrailBuffer() {
 
 void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t len) {
   int motion = m_ri->m_trails_motion.GetValue();
+  RadarControlState trails = m_ri->m_target_trails.GetState();
+  bool update_targets_true = trails != RCS_OFF && motion == TARGET_MOTION_TRUE;
+
   uint8_t weakest_normal_blob = m_ri->m_pi->m_settings.threshold_blue;
   size_t radius = 0;
 
@@ -92,7 +95,7 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
         if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
           (*trail)++;
         }
-        if (motion == TARGET_MOTION_TRUE) {
+        if (update_targets_true) {
           data[radius] = m_ri->m_trail_colour[*trail];
         }
       }
@@ -121,6 +124,9 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
 
 void TrailBuffer::UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t len) {
   int motion = m_ri->m_trails_motion.GetValue();
+  RadarControlState trails = m_ri->m_target_trails.GetState();
+  bool update_relative_motion = trails != RCS_OFF && motion == TARGET_MOTION_RELATIVE;
+
   uint8_t *trail = &M_RELATIVE_TRAILS(angle, 0);
   uint8_t weakest_normal_blob = m_ri->m_pi->m_settings.threshold_blue;
   int radius = 0;
@@ -132,7 +138,7 @@ void TrailBuffer::UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t
       if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
         (*trail)++;
       }
-      if (motion == TARGET_MOTION_RELATIVE) {
+      if (update_relative_motion) {
         data[radius] = m_ri->m_trail_colour[*trail];
       }
     }
