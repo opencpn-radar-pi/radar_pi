@@ -483,7 +483,17 @@ class RadarControlButton : public wxButton {
     m_pi = m_parent->m_pi;
     m_ci = ctrl;
 
-    firstLine = label;
+    if (label.StartsWith(wxT("-"))) {
+      firstLine = label.Mid(1);
+      m_no_edit = true;
+    } else if (m_ci.maxValue < m_ci.minValue + 4) {
+      firstLine = label;
+      m_no_edit = true;
+    } else {
+      firstLine = label;
+      m_no_edit = false;
+    }
+    
     if (newUnit.length() > 0) {
       m_ci.unit = newUnit;
     }
@@ -495,13 +505,16 @@ class RadarControlButton : public wxButton {
   }
 
   virtual void AdjustValue(int adjustment);
+  virtual bool ToggleValue();  // Returns true if value was toggled to next value
   virtual bool ToggleState();  // Returns desired new state for Auto/Off button show.
   virtual void SetState(RadarControlState state);
   virtual void UpdateLabel(bool force = false);
+  wxString GetLabel();
 
   wxString m_comment;
   RadarControlItem *m_item;
   ControlInfo m_ci;
+  bool m_no_edit;
 
  private:
   wxString firstLine;

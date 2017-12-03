@@ -52,6 +52,8 @@ PLUGIN_BEGIN_NAMESPACE
 #define MENU_WINDOW(x) (x + wxT(" ..."))
 #endif
 
+#define MENU_NO_EDIT(x) (wxT("-") + x)
+
 enum {  // process ID's
   ID_TEXTCTRL1 = 10000,
   ID_BACK,
@@ -244,6 +246,27 @@ void RadarControlButton::AdjustValue(int adjustment) {
   }
 }
 
+bool RadarControlButton::ToggleValue() {
+  if (m_no_edit) {
+    int oldValue = m_item->GetValue();
+    int newValue = oldValue;
+
+    if (m_item->GetState() == RCS_OFF ) {
+      m_item->UpdateState(RCS_MANUAL);
+    } else {
+      newValue += 1;
+      if (newValue < m_ci.minValue) {
+        newValue = m_ci.minValue;
+      } else if (newValue > m_ci.maxValue) {
+        newValue = m_ci.minValue;
+      }
+      m_item->Update(newValue, RCS_MANUAL);
+    }
+    return true;
+  }
+  return false;
+}
+
 bool RadarControlButton::ToggleState() {
   RadarControlState state = m_item->GetState();
 
@@ -270,6 +293,13 @@ void RadarControlButton::SetState(RadarControlState state) {
   m_parent->m_ri->SetControlValue(m_ci.type, *m_item);
 }
 
+wxString RadarControlButton::GetLabel() {
+  wxString label = wxButton::GetLabel();
+
+  label = firstLine + "\n" + label.AfterFirst('\n');
+  return label;
+}
+
 void RadarControlButton::UpdateLabel(bool force) {
   RadarControlState state;
   int value;
@@ -277,7 +307,12 @@ void RadarControlButton::UpdateLabel(bool force) {
 
   if (m_item->GetButton(&value, &state) || force) {
     // label << MENU_EDIT(firstLine) << wxT("\n");
-    label << firstLine << wxT("\n");
+    if (m_no_edit) {
+      label << firstLine;
+    } else {
+      label << MENU_EDIT(firstLine);
+    }
+    label << wxT("\n");
 
     switch (m_item->GetState()) {
       case RCS_OFF:
@@ -320,18 +355,10 @@ void RadarControlButton::UpdateLabel(bool force) {
     LOG_VERBOSE(wxT("%s Button '%s' set state %d value %d label='%s'"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type],
                 state, m_item->GetValue(), label.c_str());
   }
-#if 0
-  else {
-    label = GetLabel();
-    label.Replace(wxT("\n"), wxT("/"));
-    LOG_VERBOSE(wxT("%s Button '%s' remains %d value %d label='%s'"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type],
-                state, m_item->GetValue(), label.c_str());
-  }
-#endif
 }
 
 void RadarRangeControlButton::SetRangeLabel() {
-  wxString label = firstLine + wxT("\n") + m_parent->m_ri->GetRangeText();
+  wxString label = MENU_EDIT(firstLine) + wxT("\n") + m_parent->m_ri->GetRangeText();
   wxButton::SetLabel(label);
   label.Replace(wxT("\n"), wxT("/"));
   LOG_VERBOSE(wxT("%s Button '%s' set state %d value %d label='%s'"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type],
@@ -1046,7 +1073,7 @@ void ControlsDialog::CreateControls() {
   // The Trails Motion button
   if (m_ctrl[CT_TRAILS_MOTION].type) {
     m_trails_motion_button =
-        new RadarControlButton(this, ID_TRAILS_MOTION, _("Trails motion"), m_ctrl[CT_TRAILS_MOTION], &m_ri->m_trails_motion);
+        new RadarControlButton(this, ID_TRAILS_MOTION, MENU_NO_EDIT(_("Trails motion")), m_ctrl[CT_TRAILS_MOTION], &m_ri->m_trails_motion);
     m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
   }
 
@@ -1355,7 +1382,11 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
 }
 
 void ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
-  EnterEditMode((RadarControlButton*)event.GetEventObject());
+  RadarControlButton * button = (RadarControlButton*)event.GetEventObject();
+
+  if (!button->ToggleValue()) {
+    EnterEditMode(button);
+  }
 }
 
 void ControlsDialog::OnRadarShowPPIButtonClick(wxCommandEvent& event) {
