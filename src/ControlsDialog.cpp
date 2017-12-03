@@ -673,7 +673,7 @@ void ControlsDialog::CreateControls() {
   m_edit_sizer->Add(m_plus_button, 0, wxALL, BORDER);
 
   // The VALUE text
-  wxSize valueSize = wxSize(g_buttonSize.x, g_buttonSize.y);
+  wxSize valueSize = wxSize(g_buttonSize.x, g_buttonSize.y + 10);
   m_value_text = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, valueSize, wxALIGN_CENTRE_HORIZONTAL);
   m_edit_sizer->Add(m_value_text, 0, wxALL, BORDER);
   m_value_text->SetFont(m_pi->m_fat_font);
