@@ -109,6 +109,7 @@ enum {  // process ID's
   ID_RADAR_OVERLAY,
   ID_ADJUST,
   ID_ADVANCED,
+  ID_GUARDZONE,
   ID_WINDOW,
   ID_VIEW,
   ID_BEARING,
@@ -183,6 +184,7 @@ EVT_BUTTON(ID_ORIENTATION, ControlsDialog::OnOrientationButtonClick)
 
 EVT_BUTTON(ID_ADJUST, ControlsDialog::OnAdjustButtonClick)
 EVT_BUTTON(ID_ADVANCED, ControlsDialog::OnAdvancedButtonClick)
+EVT_BUTTON(ID_GUARDZONE, ControlsDialog::OnGuardZoneButtonClick)
 EVT_BUTTON(ID_WINDOW, ControlsDialog::OnWindowButtonClick)
 EVT_BUTTON(ID_VIEW, ControlsDialog::OnViewButtonClick)
 
@@ -1093,6 +1095,26 @@ void ControlsDialog::CreateControls() {
 
   m_top_sizer->Hide(m_power_sizer);
 
+  //***************** GUARD ZONE BOX *************//
+
+  m_guardzone_sizer = new wxBoxSizer(wxVERTICAL);
+  m_top_sizer->Add(m_guardzone_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
+  // The <<Back button
+  RadarButton* bGuardZoneBack = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
+  m_guardzone_sizer->Add(bGuardZoneBack, 0, wxALL, BORDER);
+
+
+  // The GUARD ZONE 1 button
+  m_guard_1_button = new RadarButton(this, ID_ZONE1, g_buttonSize, wxT(""));
+  m_guardzone_sizer->Add(m_guard_1_button, 0, wxALL, BORDER);
+
+  // The GUARD ZONE 2 button
+  m_guard_2_button = new RadarButton(this, ID_ZONE2, g_buttonSize, wxT(""));
+  m_guardzone_sizer->Add(m_guard_2_button, 0, wxALL, BORDER);
+
+  m_top_sizer->Hide(m_guardzone_sizer);
+
   //**************** CONTROL BOX ******************//
   // These are the controls that the users sees when the dialog is started
 
@@ -1130,13 +1152,9 @@ void ControlsDialog::CreateControls() {
   m_cursor_menu = new RadarButton(this, ID_BEARING, g_buttonSize, MENU(_("Cursor")));
   m_transmit_sizer->Add(m_cursor_menu, 0, wxALL, BORDER);
 
-  // The GUARD ZONE 1 button
-  m_guard_1_button = new RadarButton(this, ID_ZONE1, g_buttonSize, wxT(""));
-  m_transmit_sizer->Add(m_guard_1_button, 0, wxALL, BORDER);
-
-  // The GUARD ZONE 2 button
-  m_guard_2_button = new RadarButton(this, ID_ZONE2, g_buttonSize, wxT(""));
-  m_transmit_sizer->Add(m_guard_2_button, 0, wxALL, BORDER);
+  // The GUARDZONE menu
+  RadarButton* bGuardZone = new RadarButton(this, ID_GUARDZONE, g_buttonSize, MENU(_("Guard zones")));
+  m_control_sizer->Add(bGuardZone, 0, wxALL, BORDER);
 
   // The WINDOW menu
   RadarButton* bWindow = new RadarButton(this, ID_WINDOW, g_buttonSize, MENU(_("Window")));
@@ -1244,9 +1262,12 @@ void ControlsDialog::OnMinusTenClick(wxCommandEvent& event) {
   m_value_text->SetLabel(label);
 }
 
+
 void ControlsDialog::OnAdjustButtonClick(wxCommandEvent& event) { SwitchTo(m_adjust_sizer, wxT("adjust")); }
 
 void ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event) { SwitchTo(m_advanced_sizer, wxT("advanced")); }
+
+void ControlsDialog::OnGuardZoneButtonClick(wxCommandEvent& event) { SwitchTo(m_guardzone_sizer, wxT("guard zone")); }
 
 void ControlsDialog::OnWindowButtonClick(wxCommandEvent& event) { SwitchTo(m_window_sizer, wxT("window")); }
 
@@ -1902,7 +1923,7 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
     LOG_DIALOG(wxT("%s UpdateDialogShown manually opened"), m_log_name.c_str());
     if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_view_sizer) &&
         !m_top_sizer->IsShown(m_edit_sizer) && !m_top_sizer->IsShown(m_installation_sizer) && !m_top_sizer->IsShown(m_window_sizer) &&
-        !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_cursor_sizer) &&
+        !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_guardzone_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_cursor_sizer) &&
         !m_top_sizer->IsShown(m_power_sizer)) {
       SwitchTo(m_control_sizer, wxT("main (manual open)"));
     }

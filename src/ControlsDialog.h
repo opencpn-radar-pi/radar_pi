@@ -247,7 +247,8 @@ class ControlsDialog : public wxDialog {
   wxBoxSizer *m_window_sizer;
   wxBoxSizer *m_view_sizer;
   wxBoxSizer *m_edit_sizer;
-  wxBoxSizer *m_guard_sizer;
+  wxBoxSizer *m_guard_sizer; // The edit sizer for guard zone 1 or 2
+  wxBoxSizer *m_guardzone_sizer; // The menu sizer with Guard Zone 1 + 2
   wxBoxSizer *m_adjust_sizer;
   wxBoxSizer *m_cursor_sizer;
   wxBoxSizer *m_installation_sizer;
@@ -372,6 +373,7 @@ class ControlsDialog : public wxDialog {
 
   void OnAdjustButtonClick(wxCommandEvent &event);
   void OnAdvancedButtonClick(wxCommandEvent &event);
+  void OnGuardZoneButtonClick(wxCommandEvent &event);
   void OnWindowButtonClick(wxCommandEvent &event);
   void OnViewButtonClick(wxCommandEvent &event);
   void OnInstallationButtonClick(wxCommandEvent &event);
