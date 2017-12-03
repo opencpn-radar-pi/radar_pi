@@ -29,7 +29,6 @@
  ***************************************************************************
  */
 
-#include "radar_pi.h"
 #include "GuardZone.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
@@ -39,6 +38,7 @@
 #include "SelectDialog.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -509,8 +509,7 @@ void radar_pi::UpdateContextMenu() {
   int arpa_targets = 0;
 
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (m_radar[r]->m_arpa)
-    arpa_targets += m_radar[r]->m_arpa->GetTargetCount();
+    if (m_radar[r]->m_arpa) arpa_targets += m_radar[r]->m_arpa->GetTargetCount();
   }
   bool show = m_settings.show;
   bool control = false;
@@ -1085,7 +1084,6 @@ void radar_pi::UpdateState(void) {
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->CheckTimedTransmit();
   }
-
 }
 
 void radar_pi::SetOpenGLMode(OpenGLMode mode) {
@@ -1140,10 +1138,10 @@ bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     m_vp_rotation = vp->rotation;
   }
 
-  if (M_SETTINGS.show                                                             // Radar shown
-      && M_SETTINGS.chart_overlay >= 0                                            // Overlay desired
-      && M_SETTINGS.chart_overlay < (int)M_SETTINGS.radar_count                   // and still valid
-      && m_radar[M_SETTINGS.chart_overlay]->GetRadarPosition(&radar_pos)) {       // Boat position known
+  if (M_SETTINGS.show                                                        // Radar shown
+      && M_SETTINGS.chart_overlay >= 0                                       // Overlay desired
+      && M_SETTINGS.chart_overlay < (int)M_SETTINGS.radar_count              // and still valid
+      && m_radar[M_SETTINGS.chart_overlay]->GetRadarPosition(&radar_pos)) {  // Boat position known
 
     GeoPosition pos_min = {vp->lat_min, vp->lon_min};
     GeoPosition pos_max = {vp->lat_max, vp->lon_max};
@@ -1243,7 +1241,7 @@ bool radar_pi::LoadConfig(void) {
       RadarControlItem item;
       pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
       m_radar[r]->m_target_trails.Update(v);
-      pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);
+      pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 1);
       m_radar[r]->m_trails_motion.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dMainBangSize"), r), &v, 0);
       m_radar[r]->m_main_bang_size.Update(v);
