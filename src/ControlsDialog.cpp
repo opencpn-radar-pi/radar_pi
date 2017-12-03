@@ -1779,7 +1779,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
         o << _("Start/stop radar \u2713") << wxT("\n") << _("Spinning up");
         break;
       case RADAR_TRANSMIT:
-        o << _("Start/stop radar \u2713") << wxT("\n") << _("Transmit");
+        o << _("Start/stop radar \u2713") << wxT("\n") << _("Transmitting");
         break;
     }
     m_timed_idle_button->SetState(RCS_OFF);
