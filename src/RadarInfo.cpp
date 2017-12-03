@@ -1021,29 +1021,30 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
 
 wxString RadarInfo::GetCanvasTextCenter() {
   wxString s;
+  RadarState state = (RadarState) m_state.GetValue();
+
+  if (state == RADAR_TRANSMIT && m_draw_panel.draw) {
+    return s;
+  }
 
   s << m_name << wxT(" - ");
   switch (m_state.GetValue()) {
     case RADAR_OFF:
-      s << _("no radar") << wxT("\n") << GetInfoStatus();
+      s << _("No radar") << wxT("\n") << GetInfoStatus();
       break;
     case RADAR_STANDBY:
-      s << _("standby");
+      s << _("Standby");
       break;
     case RADAR_WARMING_UP:
-      s << _("warming up") << wxString::Format(wxT(" (%d s)"), m_warmup.GetValue());
+      s << _("Warming up") << wxString::Format(wxT(" (%d s)"), m_warmup.GetValue());
       break;
     case RADAR_SPINNING_UP:
-      s << _("spinning up");
+      s << _("Spinning up");
       break;
     case RADAR_TRANSMIT:
-      if (m_draw_panel.draw) {
-        return s;
-      }
-      s << _("not transmitting");
+      s << _("Initializing OpenGL");
       break;
   }
-
 
   return s;
 }
