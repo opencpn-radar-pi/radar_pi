@@ -36,6 +36,21 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+#if defined(__WXOSX__) || defined(__WXMSW__) || defined(__WXGTK__)
+# define HAS_UNICODE_CHARS
+#endif
+
+#ifdef HAS_UNICODE_CHARS
+#define MENU_BACK(x) (wxT("\u25c4 ") + x)
+#define MENU(x) (x + wxT(" \u25ba"))
+#define MENU_WINDOW(x) (x + wxT(" ..."))
+#else
+#define MENU_BACK(x) (wxT("<< ") + x)
+#define MENU(x) (x + wxT(" >>"))
+#define MENU_WINDOW(x) (x + wxT(" ..."))
+#endif
+
+
 enum {  // process ID's
   ID_TEXTCTRL1 = 10000,
   ID_BACK,
@@ -513,10 +528,10 @@ void ControlsDialog::UpdateGuardZoneState() {
     label4 << _(" Off");
   }
 
-  label1 << _("Guard zone") << wxT(" 1 Green\n") << guard_zone_names[m_ri->m_guard_zone[0]->m_type] << label3;
+  label1 << MENU(_("Guard zone") + wxT(" 1 Green")) + wxT("\n") + guard_zone_names[m_ri->m_guard_zone[0]->m_type] + label3;
   m_guard_1_button->SetLabel(label1);
 
-  label2 << _("Guard zone") << wxT(" 2 Blue\n") << guard_zone_names[m_ri->m_guard_zone[1]->m_type] << label4;
+  label2 << MENU(_("Guard zone") + wxT(" 2 Blue")) + wxT("\n") + guard_zone_names[m_ri->m_guard_zone[1]->m_type] + label4;
   m_guard_2_button->SetLabel(label2);
 }
 
@@ -545,7 +560,7 @@ wxSize g_buttonSize;
 void ControlsDialog::CreateControls() {
   static int BORDER = 0;
   wxString backButtonStr;
-  backButtonStr << wxT("<<\n") << _("Back");
+  backButtonStr << MENU_BACK(_("Back"));
 
   // A top-level sizer
   m_top_sizer = new wxBoxSizer(wxVERTICAL);
@@ -740,11 +755,11 @@ void ControlsDialog::CreateControls() {
   }
 
   // The INSTALLATION button
-  RadarButton* bInstallation = new RadarButton(this, ID_INSTALLATION, g_buttonSize, _("Installation") + wxT(" ..."));
+  RadarButton* bInstallation = new RadarButton(this, ID_INSTALLATION, g_buttonSize, MENU(_("Installation")));
   m_advanced_sizer->Add(bInstallation, 0, wxALL, BORDER);
 
   // The PREFERENCES button
-  RadarButton* bPreferences = new RadarButton(this, ID_PREFERENCES, g_buttonSize, _("Preferences") + wxT(" ..."));
+  RadarButton* bPreferences = new RadarButton(this, ID_PREFERENCES, g_buttonSize, MENU_WINDOW(_("Preferences")));
   m_advanced_sizer->Add(bPreferences, 0, wxALL, BORDER);
 
   m_top_sizer->Hide(m_advanced_sizer);
@@ -1077,19 +1092,19 @@ void ControlsDialog::CreateControls() {
   m_control_sizer->Add(m_transmit_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
   // The ADJUST button
-  m_adjust_button = new RadarButton(this, ID_ADJUST, g_buttonSize, _("Adjust") + wxT(" ..."));
+  m_adjust_button = new RadarButton(this, ID_ADJUST, g_buttonSize, MENU(_("Adjust")));
   m_transmit_sizer->Add(m_adjust_button, 0, wxALL, BORDER);
 
   // The ADVANCED button
-  RadarButton* bAdvanced = new RadarButton(this, ID_ADVANCED, g_buttonSize, _("Advanced") + wxT(" ..."));
+  RadarButton* bAdvanced = new RadarButton(this, ID_ADVANCED, g_buttonSize, MENU(_("Advanced")));
   m_transmit_sizer->Add(bAdvanced, 0, wxALL, BORDER);
 
   // The VIEW menu
-  RadarButton* bView = new RadarButton(this, ID_VIEW, g_buttonSize, _("View") + wxT(" ..."));
+  RadarButton* bView = new RadarButton(this, ID_VIEW, g_buttonSize, MENU(_("View")));
   m_transmit_sizer->Add(bView, 0, wxALL, BORDER);
 
   // The CURSOR button
-  m_cursor_menu = new RadarButton(this, ID_BEARING, g_buttonSize, _("Cursor") + wxT(" ..."));
+  m_cursor_menu = new RadarButton(this, ID_BEARING, g_buttonSize, MENU(_("Cursor")));
   m_transmit_sizer->Add(m_cursor_menu, 0, wxALL, BORDER);
 
   // The GUARD ZONE 1 button
