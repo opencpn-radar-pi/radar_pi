@@ -97,7 +97,7 @@ enum {  // process ID's
   ID_DELETE_TARGET,
   ID_DELETE_ALL_TARGETS,
 
-  ID_TARGETS,
+  ID_TARGETS_ON_PPI,
   ID_TARGET_TRAILS,
   ID_CLEAR_TRAILS,
   ID_ORIENTATION,
@@ -106,7 +106,7 @@ enum {  // process ID's
   ID_TIMED_IDLE,
   ID_TIMED_RUN,
 
-  ID_SHOW_RADAR,
+  ID_SHOW_RADAR_PPI,
   ID_RADAR_OVERLAY,
   ID_ADJUST,
   ID_ADVANCED,
@@ -170,7 +170,7 @@ EVT_BUTTON(ID_SIDE_LOBE_SUPPRESSION, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_MAIN_BANG_SIZE, ControlsDialog::OnRadarControlButtonClick)
 
 EVT_BUTTON(ID_POWER, ControlsDialog::OnPowerButtonClick)
-EVT_BUTTON(ID_SHOW_RADAR, ControlsDialog::OnRadarShowButtonClick)
+EVT_BUTTON(ID_SHOW_RADAR_PPI, ControlsDialog::OnRadarShowPPIButtonClick)
 EVT_BUTTON(ID_RADAR_OVERLAY, ControlsDialog::OnRadarOverlayButtonClick)
 EVT_BUTTON(ID_RANGE, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_GAIN, ControlsDialog::OnRadarGainButtonClick)
@@ -178,7 +178,7 @@ EVT_BUTTON(ID_SEA, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_RAIN, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_FTC, ControlsDialog::OnRadarControlButtonClick)
 
-EVT_BUTTON(ID_TARGETS, ControlsDialog::OnTargetsButtonClick)
+EVT_BUTTON(ID_TARGETS_ON_PPI, ControlsDialog::OnTargetsOnPPIButtonClick)
 EVT_BUTTON(ID_TARGET_TRAILS, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_CLEAR_TRAILS, ControlsDialog::OnClearTrailsButtonClick)
 EVT_BUTTON(ID_ORIENTATION, ControlsDialog::OnOrientationButtonClick)
@@ -226,8 +226,7 @@ void RadarControlButton::AdjustValue(int adjustment) {
 
   if (m_item->GetState() == RCS_OFF) {
     m_item->UpdateState(RCS_MANUAL);
-  }
-  else {
+  } else {
     newValue += adjustment;
     if (newValue < m_ci.minValue) {
       newValue = m_ci.minValue;
@@ -1004,10 +1003,9 @@ void ControlsDialog::CreateControls() {
   RadarButton* bWindowBack = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
   m_window_sizer->Add(bWindowBack, 0, wxALL, BORDER);
 
-  // The SHOW / HIDE AIS/ARPA ON PPI button
-  m_targets_button =
-    new RadarControlButton(this, ID_TARGETS, _("AIS/ARPA on PPI"), m_ctrl[CT_TARGET_ON_PPI], &m_ri->m_target_on_ppi);
-  m_window_sizer->Add(m_targets_button, 0, wxALL, BORDER);
+  // The SHOW PPI button
+  m_show_ppi_button = new RadarButton(this, ID_SHOW_RADAR_PPI, g_buttonSize, _(""));
+  m_window_sizer->Add(m_show_ppi_button, 0, wxALL, BORDER);
 
   // The RADAR ONLY / OVERLAY button
   m_overlay_button = new RadarControlButton(this, ID_RADAR_OVERLAY, _("Overlay"), m_ctrl[CT_OVERLAY], &m_ri->m_overlay);
@@ -1015,7 +1013,7 @@ void ControlsDialog::CreateControls() {
 
   // The TRANSPARENCY button
   m_transparency_button = new RadarControlButton(this, ID_TRANSPARENCY, _("Overlay transparency"), m_ctrl[CT_TRANSPARENCY],
-                                                &m_pi->m_settings.overlay_transparency);
+                                                 &m_pi->m_settings.overlay_transparency);
   m_window_sizer->Add(m_transparency_button, 0, wxALL, BORDER);
 
   m_top_sizer->Hide(m_window_sizer);
@@ -1030,6 +1028,11 @@ void ControlsDialog::CreateControls() {
   RadarButton* bMenuBack = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
   m_view_sizer->Add(bMenuBack, 0, wxALL, BORDER);
 
+  // The SHOW / HIDE AIS/ARPA ON PPI button
+  m_targets_on_ppi_button =
+      new RadarControlButton(this, ID_TARGETS_ON_PPI, _("AIS/ARPA on PPI"), m_ctrl[CT_TARGET_ON_PPI], &m_ri->m_target_on_ppi);
+  m_view_sizer->Add(m_targets_on_ppi_button, 0, wxALL, BORDER);
+
   // The TARGET_TRAIL button
   if (m_ctrl[CT_TARGET_TRAILS].type) {
     m_target_trails_button =
@@ -1041,7 +1044,7 @@ void ControlsDialog::CreateControls() {
   // The Trails Motion button
   if (m_ctrl[CT_TRAILS_MOTION].type) {
     m_trails_motion_button =
-    new RadarControlButton(this, ID_TRAILS_MOTION, _("Trails motion"), m_ctrl[CT_TRAILS_MOTION], &m_ri->m_trails_motion);
+        new RadarControlButton(this, ID_TRAILS_MOTION, _("Trails motion"), m_ctrl[CT_TRAILS_MOTION], &m_ri->m_trails_motion);
     m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
   }
 
@@ -1288,7 +1291,7 @@ void ControlsDialog::OnMessageButtonClick(wxCommandEvent& event) {
   }
 }
 
-void ControlsDialog::OnTargetsButtonClick(wxCommandEvent& event) {
+void ControlsDialog::OnTargetsOnPPIButtonClick(wxCommandEvent& event) {
   m_ri->m_target_on_ppi.Update(1 - m_ri->m_target_on_ppi.GetValue());
   UpdateControlValues(false);
 }
@@ -1353,7 +1356,7 @@ void ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
   EnterEditMode((RadarControlButton*)event.GetEventObject());
 }
 
-void ControlsDialog::OnRadarShowButtonClick(wxCommandEvent& event) {
+void ControlsDialog::OnRadarShowPPIButtonClick(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
 
   bool show = true;
@@ -1550,8 +1553,8 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
       m_transmit_sizer->Show(m_cursor_menu);
       resize = true;
     }
-    if (m_top_sizer->IsShown(m_window_sizer) && !m_window_sizer->IsShown(m_targets_button)) {
-      m_window_sizer->Show(m_targets_button);
+    if (m_top_sizer->IsShown(m_view_sizer) && !m_view_sizer->IsShown(m_targets_on_ppi_button)) {
+      m_view_sizer->Show(m_targets_on_ppi_button);
       resize = true;
     }
     if (m_top_sizer->IsShown(m_view_sizer) && !m_view_sizer->IsShown(m_orientation_button)) {
@@ -1564,8 +1567,8 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
       m_transmit_sizer->Hide(m_cursor_menu);
       resize = true;
     }
-    if (m_top_sizer->IsShown(m_window_sizer) && m_window_sizer->IsShown(m_targets_button)) {
-      m_window_sizer->Hide(m_targets_button);
+    if (m_top_sizer->IsShown(m_view_sizer) && m_view_sizer->IsShown(m_targets_on_ppi_button)) {
+      m_view_sizer->Hide(m_targets_on_ppi_button);
       resize = true;
     }
     if (m_top_sizer->IsShown(m_view_sizer) && m_view_sizer->IsShown(m_orientation_button)) {
@@ -1776,7 +1779,8 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
         o << _("Start/stop radar") << wxT("\n") << _("Standby");
         break;
       case RADAR_WARMING_UP:
-        o << _("Start/stop radar \u2713") << wxT("\n") << _("Warming up") << wxString::Format(wxT(" (%d s)"), m_ri->m_warmup.GetValue());
+        o << _("Start/stop radar \u2713") << wxT("\n") << _("Warming up")
+          << wxString::Format(wxT(" (%d s)"), m_ri->m_warmup.GetValue());
         break;
       case RADAR_TIMED_IDLE:  // Only used with radars with 'hardware' TimedIdle
         o << _("Start/stop radar") << wxT("\n") << _("Timed idle");
@@ -1823,7 +1827,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   } else {
     o = (m_pi->m_settings.show_radar[m_ri->m_radar]) ? _("Hide PPI window") : _("Show PPI window");
   }
-  m_targets_button->SetLabel(o);
+  m_show_ppi_button->SetLabel(o);
 
   for (int b = 0; b < BEARING_LINES; b++) {
     if (!isnan(m_ri->m_vrm[b])) {
@@ -1836,7 +1840,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_bearing_buttons[b]->SetLabel(o);
   }
 
-  m_targets_button->UpdateLabel();
+  m_targets_on_ppi_button->UpdateLabel();
   m_target_trails_button->UpdateLabel();
   m_trails_motion_button->UpdateLabel();
   m_orientation_button->UpdateLabel();

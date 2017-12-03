@@ -125,7 +125,7 @@ class ControlsDialog : public wxDialog {
     m_delete_target = 0;
     m_delete_all = 0;
     m_target_trails_button = 0;
-    m_targets_button = 0;
+    m_targets_on_ppi_button = 0;
     m_trails_motion_button = 0;
     m_clear_trails_button = 0;
     m_orientation_button = 0;
@@ -149,6 +149,7 @@ class ControlsDialog : public wxDialog {
     m_local_interference_rejection_button = 0;
     m_side_lobe_suppression_button = 0;
     m_main_bang_size_button = 0;
+    m_show_ppi_button = 0;
     m_overlay_button = 0;
     m_range_button = 0;
     m_transparency_button = 0;  // TODO: Set it on change
@@ -198,7 +199,6 @@ class ControlsDialog : public wxDialog {
   ControlInfo m_ctrl[CT_MAX];
 
  protected:
-
   void DefineControl(ControlType ct, int autoValues, wxString auto_names[], int defaultValue, int minValue, int maxValue,
                      int stepValue, int nameCount, wxString names[]) {
     m_ctrl[ct].type = ct;
@@ -246,8 +246,8 @@ class ControlsDialog : public wxDialog {
   wxBoxSizer *m_window_sizer;
   wxBoxSizer *m_view_sizer;
   wxBoxSizer *m_edit_sizer;
-  wxBoxSizer *m_guard_sizer; // The edit sizer for guard zone 1 or 2
-  wxBoxSizer *m_guardzone_sizer; // The menu sizer with Guard Zone 1 + 2
+  wxBoxSizer *m_guard_sizer;      // The edit sizer for guard zone 1 or 2
+  wxBoxSizer *m_guardzone_sizer;  // The menu sizer with Guard Zone 1 + 2
   wxBoxSizer *m_adjust_sizer;
   wxBoxSizer *m_cursor_sizer;
   wxBoxSizer *m_installation_sizer;
@@ -294,8 +294,8 @@ class ControlsDialog : public wxDialog {
   wxButton *m_delete_all;
 
   // View controls
+  RadarControlButton *m_targets_on_ppi_button;
   RadarControlButton *m_target_trails_button;
-  RadarControlButton *m_targets_button;
   RadarControlButton *m_trails_motion_button;
   wxButton *m_clear_trails_button;
   RadarControlButton *m_orientation_button;
@@ -326,10 +326,13 @@ class ControlsDialog : public wxDialog {
   RadarControlButton *m_side_lobe_suppression_button;
   RadarControlButton *m_main_bang_size_button;
 
-  // Adjust controls
+  // Window controls
+  RadarButton *m_show_ppi_button;
   RadarControlButton *m_overlay_button;
-  RadarRangeControlButton *m_range_button;
   RadarControlButton *m_transparency_button;
+
+  // Adjust controls
+  RadarRangeControlButton *m_range_button;
   RadarControlButton *m_refresh_rate_button;
   RadarControlButton *m_gain_button;
   RadarControlButton *m_sea_button;
@@ -382,11 +385,11 @@ class ControlsDialog : public wxDialog {
   void OnRadarGainButtonClick(wxCommandEvent &event);
 
   void OnPowerButtonClick(wxCommandEvent &event);
-  void OnRadarShowButtonClick(wxCommandEvent &event);
+  void OnRadarShowPPIButtonClick(wxCommandEvent &event);
   void OnRadarOverlayButtonClick(wxCommandEvent &event);
   void OnMessageButtonClick(wxCommandEvent &event);
 
-  void OnTargetsButtonClick(wxCommandEvent &event);
+  void OnTargetsOnPPIButtonClick(wxCommandEvent &event);
   void OnClearTrailsButtonClick(wxCommandEvent &event);
   void OnOrientationButtonClick(wxCommandEvent &event);
 
@@ -530,7 +533,7 @@ class RadarRangeControlButton : public RadarControlButton {
   }
 
   virtual void AdjustValue(int adjustment);
-  bool ToggleState(); // Returns desired new state for Auto button show
+  bool ToggleState();  // Returns desired new state for Auto button show
   void SetRangeLabel();
 };
 
