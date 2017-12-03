@@ -249,7 +249,7 @@ bool RadarInfo::Init() {
 }
 
 void RadarInfo::ShowControlDialog(bool show, bool reparent) {
-  if (show) {
+  if (show && m_state.GetValue() != RADAR_OFF) {
     wxPoint panel_pos = wxDefaultPosition;
     bool manually_positioned = false;
 

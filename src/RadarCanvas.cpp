@@ -91,6 +91,7 @@ void RadarCanvas::RenderTexts(int w, int h) {
   int x, y;
   int menu_x;
   wxString s;
+  RadarState state = (RadarState) m_ri->m_state.GetValue();
 
 #define MENU_ROUNDING 4
 #define MENU_BORDER 8
@@ -106,33 +107,34 @@ void RadarCanvas::RenderTexts(int w, int h) {
   m_menu_size.x = x + 2 * (MENU_BORDER + MENU_EXTRA_WIDTH);
   m_menu_size.y = y + 2 * (MENU_BORDER);
 
-  glColor4ub(40, 40, 100, 128);
+  if (state != RADAR_OFF) {
+    glColor4ub(40, 40, 100, 128);
 
-  DrawRoundRect(w - m_menu_size.x, 0, m_menu_size.x, m_menu_size.y, 4);
+    DrawRoundRect(w - m_menu_size.x, 0, m_menu_size.x, m_menu_size.y, 4);
 
-  glColor4ub(100, 255, 255, 255);
-  // The Menu text is slightly inside the rect
-  m_FontMenu.RenderString(s, w - m_menu_size.x + MENU_BORDER + MENU_EXTRA_WIDTH, MENU_BORDER);
+    glColor4ub(100, 255, 255, 255);
+    // The Menu text is slightly inside the rect
+    m_FontMenu.RenderString(s, w - m_menu_size.x + MENU_BORDER + MENU_EXTRA_WIDTH, MENU_BORDER);
 
-  // Draw - + in mid bottom
+    // Draw - + in mid bottom
 
-  s = wxT("  -   + ");
-  m_FontMenuBold.GetTextExtent(s, &x, &y);
+    s = wxT("  -   + ");
+    m_FontMenuBold.GetTextExtent(s, &x, &y);
 
-  // Calculate the size of the rounded rect, this is also where you can 'click'...
-  m_zoom_size.x = x + 2 * (MENU_BORDER);
-  m_zoom_size.y = y + 2 * (MENU_BORDER);
+    // Calculate the size of the rounded rect, this is also where you can 'click'...
+    m_zoom_size.x = x + 2 * (MENU_BORDER);
+    m_zoom_size.y = y + 2 * (MENU_BORDER);
 
-  glColor4ub(80, 80, 80, 128);
+    glColor4ub(80, 80, 80, 128);
 
-  DrawRoundRect(w / 2 - m_zoom_size.x / 2, h - m_zoom_size.y + MENU_ROUNDING, m_zoom_size.x, m_zoom_size.y, MENU_ROUNDING);
+    DrawRoundRect(w / 2 - m_zoom_size.x / 2, h - m_zoom_size.y + MENU_ROUNDING, m_zoom_size.x, m_zoom_size.y, MENU_ROUNDING);
 
-  glColor4ub(200, 200, 200, 255);
-  // The Menu text is slightly inside the rect
-  m_FontMenuBold.RenderString(s, w / 2 - m_zoom_size.x / 2 + MENU_BORDER, h - m_zoom_size.y + MENU_BORDER);
+    glColor4ub(200, 200, 200, 255);
+    // The Menu text is slightly inside the rect
+    m_FontMenuBold.RenderString(s, w / 2 - m_zoom_size.x / 2 + MENU_BORDER, h - m_zoom_size.y + MENU_BORDER);
+  }
 
   glColor4ub(200, 255, 200, 255);
-
   s = m_ri->GetCanvasTextTopLeft();
   m_FontBig.RenderString(s, 0, 0);
 
@@ -148,14 +150,16 @@ void RadarCanvas::RenderTexts(int w, int h) {
     m_FontBig.RenderString(s, (w - x) / 2, (h - y) / 2);
   }
 
-  wxSize i;
-  i.x = w - 5 - menu_x / 2;
-  i.y = h - 5;
-  i = RenderControlItem(i, m_ri->m_rain, CT_RAIN, _("Rain"));
-  i.y -= 5;
-  i = RenderControlItem(i, m_ri->m_sea, CT_SEA, _("Sea"));
-  i.y -= 5;
-  i = RenderControlItem(i, m_ri->m_gain, CT_GAIN, _("Gain"));
+  if (state != RADAR_OFF) {
+    wxSize i;
+    i.x = w - 5 - menu_x / 2;
+    i.y = h - 5;
+    i = RenderControlItem(i, m_ri->m_rain, CT_RAIN, _("Rain"));
+    i.y -= 5;
+    i = RenderControlItem(i, m_ri->m_sea, CT_SEA, _("Sea"));
+    i.y -= 5;
+    i = RenderControlItem(i, m_ri->m_gain, CT_GAIN, _("Gain"));
+  }
 }
 
 /*
