@@ -405,7 +405,6 @@ class ControlsDialog : public wxDialog {
   void OnConfirmBogeyButtonClick(wxCommandEvent &event);
 
   void OnTransmitButtonClick(wxCommandEvent &event);
-  void OnStandbyButtonClick(wxCommandEvent &event);
 
   void EnterEditMode(RadarControlButton *button);
 
