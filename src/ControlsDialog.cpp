@@ -41,12 +41,14 @@ PLUGIN_BEGIN_NAMESPACE
 #endif
 
 #ifdef HAS_UNICODE_CHARS
-#define MENU_BACK(x) (wxT("\u25c4 ") + x)
-#define MENU(x) (x + wxT(" \u25ba"))
+#define MENU_BACK(x) (wxT("\u25c0 ") + x)
+#define MENU(x) (x + wxT(" \u25b6"))
+#define MENU_EDIT(x) (x + wxT(" \u25b7"))
 #define MENU_WINDOW(x) (x + wxT(" ..."))
 #else
 #define MENU_BACK(x) (wxT("<< ") + x)
 #define MENU(x) (x + wxT(" >>"))
+#define MENU_EDIT(x) (x + wxT(" >"))
 #define MENU_WINDOW(x) (x + wxT(" ..."))
 #endif
 
@@ -275,6 +277,7 @@ void RadarControlButton::UpdateLabel(bool force) {
   wxString label;
 
   if (m_item->GetButton(&value, &state) || force) {
+    // label << MENU_EDIT(firstLine) << wxT("\n");
     label << firstLine << wxT("\n");
 
     switch (m_item->GetState()) {
@@ -284,9 +287,9 @@ void RadarControlButton::UpdateLabel(bool force) {
 
       case RCS_MANUAL:
         if (m_ci.names) {
-          label.Printf(wxT("%s\n%s"), firstLine.c_str(), m_ci.names[value].c_str());
+          label << m_ci.names[value];
         } else {
-          label.Printf(wxT("%s\n%d"), firstLine.c_str(), value * m_ci.stepValue);
+          label << value * m_ci.stepValue;
         }
         if (m_ci.unit.length() > 0) {
           label << wxT(" ") << m_ci.unit;
@@ -1002,8 +1005,9 @@ void ControlsDialog::CreateControls() {
   m_window_sizer->Add(bWindowBack, 0, wxALL, BORDER);
 
   // The SHOW / HIDE AIS/ARPA ON PPI button
-  m_window_button = new RadarButton(this, ID_SHOW_RADAR, g_buttonSize, wxT(""));
-  m_window_sizer->Add(m_window_button, 0, wxALL, BORDER);
+  m_targets_button =
+    new RadarControlButton(this, ID_TARGETS, _("AIS/ARPA on PPI"), m_ctrl[CT_TARGET_ON_PPI], &m_ri->m_target_on_ppi);
+  m_window_sizer->Add(m_targets_button, 0, wxALL, BORDER);
 
   // The RADAR ONLY / OVERLAY button
   m_overlay_button = new RadarControlButton(this, ID_RADAR_OVERLAY, _("Overlay"), m_ctrl[CT_OVERLAY], &m_ri->m_overlay);
@@ -1020,11 +1024,6 @@ void ControlsDialog::CreateControls() {
   // The Back button
   RadarButton* bMenuBack = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
   m_view_sizer->Add(bMenuBack, 0, wxALL, BORDER);
-
-  // The Show Targets button
-  m_targets_button =
-      new RadarControlButton(this, ID_TARGETS, _("AIS/ARPA on PPI"), m_ctrl[CT_TARGET_ON_PPI], &m_ri->m_target_on_ppi);
-  m_view_sizer->Add(m_targets_button, 0, wxALL, BORDER);
 
   // The TARGET_TRAIL button
   if (m_ctrl[CT_TARGET_TRAILS].type) {
@@ -1549,7 +1548,7 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
 
   if (M_SETTINGS.show_radar[m_ri->m_radar]) {
     // Show PPI related buttons
-    if (m_top_sizer->IsShown(m_transmit_sizer) && !m_transmit_sizer->IsShown(m_cursor_menu)) {
+    if (m_control_sizer->IsShown(m_transmit_sizer) && !m_transmit_sizer->IsShown(m_cursor_menu)) {
       m_transmit_sizer->Show(m_cursor_menu);
       resize = true;
     }
@@ -1557,13 +1556,13 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
       m_window_sizer->Show(m_targets_button);
       resize = true;
     }
-    if (m_top_sizer->IsShown(m_view_sizer) && !m_window_sizer->IsShown(m_orientation_button)) {
+    if (m_top_sizer->IsShown(m_view_sizer) && !m_view_sizer->IsShown(m_orientation_button)) {
       m_view_sizer->Show(m_orientation_button);
       resize = true;
     }
   } else {
     // Hide PPI related buttons
-    if (m_top_sizer->IsShown(m_transmit_sizer) && m_transmit_sizer->IsShown(m_cursor_menu)) {
+    if (m_control_sizer->IsShown(m_transmit_sizer) && m_transmit_sizer->IsShown(m_cursor_menu)) {
       m_transmit_sizer->Hide(m_cursor_menu);
       resize = true;
     }
@@ -1823,7 +1822,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   } else {
     o = (m_pi->m_settings.show_radar[m_ri->m_radar]) ? _("Hide PPI window") : _("Show PPI window");
   }
-  m_window_button->SetLabel(o);
+  m_targets_button->SetLabel(o);
 
   for (int b = 0; b < BEARING_LINES; b++) {
     if (!isnan(m_ri->m_vrm[b])) {

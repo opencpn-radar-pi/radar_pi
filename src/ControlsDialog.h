@@ -150,7 +150,6 @@ class ControlsDialog : public wxDialog {
     m_side_lobe_suppression_button = 0;
     m_main_bang_size_button = 0;
     m_overlay_button = 0;
-    m_window_button = 0;
     m_range_button = 0;
     m_transparency_button = 0;  // TODO: Set it on change
     m_refresh_rate_button = 0;  // TODO: Set it on change
@@ -329,7 +328,6 @@ class ControlsDialog : public wxDialog {
 
   // Adjust controls
   RadarControlButton *m_overlay_button;
-  wxButton *m_window_button;
   RadarRangeControlButton *m_range_button;
   RadarControlButton *m_transparency_button;
   RadarControlButton *m_refresh_rate_button;
