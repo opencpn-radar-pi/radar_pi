@@ -286,7 +286,9 @@ void RadarControlButton::UpdateLabel(bool force) {
 
       case RCS_MANUAL:
         if (m_ci.names) {
-          label << m_ci.names[value];
+          if (value >= 0 && value < m_ci.nameCount) {
+            label << m_ci.names[value];
+          }
         } else {
           label << value * m_ci.stepValue;
         }
