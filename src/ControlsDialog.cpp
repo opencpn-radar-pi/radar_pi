@@ -37,7 +37,7 @@
 PLUGIN_BEGIN_NAMESPACE
 
 #if defined(__WXOSX__) || defined(__WXMSW__) || defined(__WXGTK__)
-# define HAS_UNICODE_CHARS
+#define HAS_UNICODE_CHARS
 #endif
 
 #ifdef HAS_UNICODE_CHARS
@@ -49,7 +49,6 @@ PLUGIN_BEGIN_NAMESPACE
 #define MENU(x) (x + wxT(" >>"))
 #define MENU_WINDOW(x) (x + wxT(" ..."))
 #endif
-
 
 enum {  // process ID's
   ID_TEXTCTRL1 = 10000,
@@ -1006,7 +1005,6 @@ void ControlsDialog::CreateControls() {
 
   m_top_sizer->Hide(m_window_sizer);
 
-
   //**************** VIEW BOX ******************//
   // These are the controls that the users sees when the View button is selected
 
@@ -1018,13 +1016,14 @@ void ControlsDialog::CreateControls() {
   m_view_sizer->Add(bMenuBack, 0, wxALL, BORDER);
 
   // The Show Targets button
-  m_targets_button = new RadarControlButton(this, ID_TARGETS, _("AIS/ARPA on PPI"), m_ctrl[CT_TARGET_ON_PPI], &m_ri->m_target_on_ppi);
+  m_targets_button =
+      new RadarControlButton(this, ID_TARGETS, _("AIS/ARPA on PPI"), m_ctrl[CT_TARGET_ON_PPI], &m_ri->m_target_on_ppi);
   m_view_sizer->Add(m_targets_button, 0, wxALL, BORDER);
 
   // The Trails Motion button
   if (m_ctrl[CT_TRAILS_MOTION].type) {
-    m_trails_motion_button = new RadarControlButton(this, ID_TRAILS_MOTION, _("Trails motion"), m_ctrl[CT_TRAILS_MOTION],
-                                                    &m_ri->m_trails_motion);
+    m_trails_motion_button =
+        new RadarControlButton(this, ID_TRAILS_MOTION, _("Trails motion"), m_ctrl[CT_TRAILS_MOTION], &m_ri->m_trails_motion);
     m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
   }
 
@@ -1084,8 +1083,7 @@ void ControlsDialog::CreateControls() {
 
   // The TIMED TRANSMIT button
   if (m_ctrl[CT_TIMED_RUN].type) {
-    m_timed_run_button =
-        new RadarControlButton(this, ID_TIMED_RUN, _("Timed Transmit"), m_ctrl[CT_TIMED_RUN], &m_ri->m_timed_run);
+    m_timed_run_button = new RadarControlButton(this, ID_TIMED_RUN, _("Timed Transmit"), m_ctrl[CT_TIMED_RUN], &m_ri->m_timed_run);
     m_power_sizer->Add(m_timed_run_button, 0, wxALL, BORDER);
   }
 
@@ -1103,7 +1101,6 @@ void ControlsDialog::CreateControls() {
   // The <<Back button
   RadarButton* bGuardZoneBack = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
   m_guardzone_sizer->Add(bGuardZoneBack, 0, wxALL, BORDER);
-
 
   // The GUARD ZONE 1 button
   m_guard_1_button = new RadarButton(this, ID_ZONE1, g_buttonSize, wxT(""));
@@ -1130,7 +1127,7 @@ void ControlsDialog::CreateControls() {
   m_status_text->SetFont(f);
   m_control_sizer->Add(m_status_text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 #endif
-  
+
   //***************** TRANSMIT SIZER, items hidden when not transmitting ****************//
 
   m_transmit_sizer = new wxBoxSizer(wxVERTICAL);
@@ -1262,7 +1259,6 @@ void ControlsDialog::OnMinusTenClick(wxCommandEvent& event) {
   m_value_text->SetLabel(label);
 }
 
-
 void ControlsDialog::OnAdjustButtonClick(wxCommandEvent& event) { SwitchTo(m_adjust_sizer, wxT("adjust")); }
 
 void ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event) { SwitchTo(m_advanced_sizer, wxT("advanced")); }
@@ -1321,7 +1317,7 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
 
   bool hasAuto = m_from_control->m_ci.autoValues > 0;
 
-  if (m_from_control->m_ci.type == CT_RANGE) { // Range only allows auto if overlay is on
+  if (m_from_control->m_ci.type == CT_RANGE) {  // Range only allows auto if overlay is on
     hasAuto = m_ri->m_overlay.GetValue() > 0;
   }
 
@@ -1432,11 +1428,10 @@ void ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) { EnterEditMo
 void ControlsDialog::OnTransmitButtonClick(wxCommandEvent& event) {
   RadarState state = (RadarState)m_ri->m_state.GetButton();
   SetMenuAutoHideTimeout();
-  if (state == RADAR_STANDBY){
+  if (state == RADAR_STANDBY) {
     m_ri->m_timed_idle.Update(0);
     m_ri->RequestRadarState(RADAR_TRANSMIT);
-  }
-  else {
+  } else {
     m_ri->m_timed_idle.Update(0);
     m_ri->RequestRadarState(RADAR_STANDBY);
   }
@@ -1529,7 +1524,7 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
     }
   }
 
-#define HIDE_TRANSMIT
+//#define HIDE_TRANSMIT
 #ifdef HIDE_TRANSMIT
   if (state != RADAR_OFF) {
     if (m_top_sizer->IsShown(m_control_sizer) && !m_control_sizer->IsShown(m_transmit_sizer)) {
@@ -1589,7 +1584,6 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
   } else {
     // Radar is NOT transmit, so standby, off or some intermediate state
     if (m_top_sizer->IsShown(m_control_sizer)) {
-
 #ifdef STATUS_ON_MENU
       if (!m_ri->m_status_text_hide && (state == RADAR_OFF || state == RADAR_STANDBY)) {
         if (!m_control_sizer->IsShown(m_status_text)) {
@@ -1649,8 +1643,7 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
   return resize;
 }
 
-void ControlsDialog::Resize(bool force)
-{
+void ControlsDialog::Resize(bool force) {
   bool resize = UpdateSizersButtonsShown();
 
   if (resize || force) {
@@ -1659,6 +1652,135 @@ void ControlsDialog::Resize(bool force)
     m_top_sizer->Layout();
     Fit();
     DimeWindow(this);
+  }
+}
+
+//
+// Radar is Off. Disable all controls that send commands to radar.
+//
+void ControlsDialog::DisableRadarControls() {
+  if (m_ftc_button) {
+    m_ftc_button->Disable();
+  }
+  if (m_sea_button) {
+    m_sea_button->Disable();
+  }
+  if (m_gain_button) {
+    m_gain_button->Disable();
+  }
+  if (m_rain_button) {
+    m_rain_button->Disable();
+  }
+  if (m_interference_rejection_button) {
+    m_interference_rejection_button->Disable();
+  }
+  if (m_target_separation_button) {
+    m_target_separation_button->Disable();
+  }
+  if (m_noise_rejection_button) {
+    m_noise_rejection_button->Disable();
+  }
+  if (m_target_boost_button) {
+    m_target_boost_button->Disable();
+  }
+  if (m_target_expansion_button) {
+    m_target_expansion_button->Disable();
+  }
+  if (m_scan_speed_button) {
+    m_scan_speed_button->Disable();
+  }
+  if (m_bearing_alignment_button) {
+    m_bearing_alignment_button->Disable();
+  }
+  if (m_no_transmit_start_button) {
+    m_no_transmit_start_button->Disable();
+  }
+  if (m_no_transmit_end_button) {
+    m_no_transmit_end_button->Disable();
+  }
+  if (m_antenna_height_button) {
+    m_antenna_height_button->Disable();
+  }
+  if (m_local_interference_rejection_button) {
+    m_local_interference_rejection_button->Disable();
+  }
+  if (m_side_lobe_suppression_button) {
+    m_side_lobe_suppression_button->Disable();
+  }
+  if (m_range_button) {
+    m_range_button->Disable();
+  }
+  if (m_transparency_button) {
+    m_transparency_button->Disable();
+  }
+  if (m_power_button) {
+    m_power_button->Disable();
+  }
+  if (m_power_sub_button) {
+    m_power_sub_button->Disable();
+  }
+}
+
+void ControlsDialog::EnableRadarControls() {
+  if (m_ftc_button) {
+    m_ftc_button->Enable();
+  }
+  if (m_sea_button) {
+    m_sea_button->Enable();
+  }
+  if (m_gain_button) {
+    m_gain_button->Enable();
+  }
+  if (m_rain_button) {
+    m_rain_button->Enable();
+  }
+  if (m_interference_rejection_button) {
+    m_interference_rejection_button->Enable();
+  }
+  if (m_target_separation_button) {
+    m_target_separation_button->Enable();
+  }
+  if (m_noise_rejection_button) {
+    m_noise_rejection_button->Enable();
+  }
+  if (m_target_boost_button) {
+    m_target_boost_button->Enable();
+  }
+  if (m_target_expansion_button) {
+    m_target_expansion_button->Enable();
+  }
+  if (m_scan_speed_button) {
+    m_scan_speed_button->Enable();
+  }
+  if (m_bearing_alignment_button) {
+    m_bearing_alignment_button->Enable();
+  }
+  if (m_no_transmit_start_button) {
+    m_no_transmit_start_button->Enable();
+  }
+  if (m_no_transmit_end_button) {
+    m_no_transmit_end_button->Enable();
+  }
+  if (m_antenna_height_button) {
+    m_antenna_height_button->Enable();
+  }
+  if (m_local_interference_rejection_button) {
+    m_local_interference_rejection_button->Enable();
+  }
+  if (m_side_lobe_suppression_button) {
+    m_side_lobe_suppression_button->Enable();
+  }
+  if (m_range_button) {
+    m_range_button->Enable();
+  }
+  if (m_transparency_button) {
+    m_transparency_button->Enable();
+  }
+  if (m_power_button) {
+    m_power_button->Enable();
+  }
+  if (m_power_sub_button) {
+    m_power_sub_button->Enable();
   }
 }
 
@@ -1678,12 +1800,10 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   RadarState state = (RadarState)m_ri->m_state.GetButton();
 
-  if (state == RADAR_OFF){
+  if (state == RADAR_OFF) {
     o << _("Radar is Off");
-    m_power_button->Disable();
-    m_power_sub_button->Disable();
-  }
-  else if (m_ri->m_timed_idle.GetValue() == 0) {
+    DisableRadarControls();
+  } else if (m_ri->m_timed_idle.GetValue() == 0) {
     switch (state) {
       case RADAR_OFF:
         break;
@@ -1693,7 +1813,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
       case RADAR_WARMING_UP:
         o << _("Stop radar") << wxT("\n") << _("Warming up") << wxString::Format(wxT(" (%d s)"), m_ri->m_warmup.GetValue());
         break;
-      case RADAR_TIMED_IDLE: // Only used with radars with 'hardware' TimedIdle
+      case RADAR_TIMED_IDLE:  // Only used with radars with 'hardware' TimedIdle
         o << _("Stop radar") << wxT("\n") << _("Timed idle");
         break;
       case RADAR_SPINNING_UP:
@@ -1704,13 +1824,10 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
         break;
     }
     m_timed_idle_button->SetState(RCS_OFF);
-    m_power_button->Enable();
-    m_power_sub_button->Enable();
-  }
-  else {
+    EnableRadarControls();
+  } else {
     o << m_ri->GetTimedIdleText();
-    m_power_button->Enable();
-    m_power_sub_button->Enable();
+    EnableRadarControls();
   }
   m_power_button->SetLabel(o);
   m_power_sub_button->SetLabel(o);
@@ -1919,9 +2036,9 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
   if (!IsShown()) {
     LOG_DIALOG(wxT("%s UpdateDialogShown manually opened"), m_log_name.c_str());
     if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_view_sizer) &&
-        !m_top_sizer->IsShown(m_edit_sizer) && !m_top_sizer->IsShown(m_installation_sizer) && !m_top_sizer->IsShown(m_window_sizer) &&
-        !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_guardzone_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_cursor_sizer) &&
-        !m_top_sizer->IsShown(m_power_sizer)) {
+        !m_top_sizer->IsShown(m_edit_sizer) && !m_top_sizer->IsShown(m_installation_sizer) &&
+        !m_top_sizer->IsShown(m_window_sizer) && !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_guardzone_sizer) &&
+        !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_cursor_sizer) && !m_top_sizer->IsShown(m_power_sizer)) {
       SwitchTo(m_control_sizer, wxT("main (manual open)"));
     }
     Show();

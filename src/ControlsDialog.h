@@ -352,6 +352,8 @@ class ControlsDialog : public wxDialog {
   bool UpdateSizersButtonsShown();
   void Resize(bool force);
   void CreateControls();
+  void DisableRadarControls();
+  void EnableRadarControls();
 
   // Methods that we know that every radar must or may implement its own way
   virtual void UpdateRadarSpecificState(){};
