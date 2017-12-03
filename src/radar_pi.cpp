@@ -1186,7 +1186,7 @@ bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
 
 bool radar_pi::LoadConfig(void) {
   wxFileConfig *pConf = m_pconfig;
-  int v, x, y;
+  int v, x, y, state;
   wxString s;
 
   if (pConf) {
@@ -1239,8 +1239,9 @@ bool radar_pi::LoadConfig(void) {
       pConf->Read(wxString::Format(wxT("Radar%dMinContourLength"), r), &ri->m_min_contour_length, 6);
 
       RadarControlItem item;
+      pConf->Read(wxString::Format(wxT("Radar%dTrailsState"), r), &state, RCS_OFF);
       pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
-      m_radar[r]->m_target_trails.Update(v);
+      m_radar[r]->m_target_trails.Update(v, (RadarControlState) state);
       pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 1);
       m_radar[r]->m_trails_motion.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dMainBangSize"), r), &v, 0);
@@ -1398,6 +1399,7 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
       pConf->Write(wxString::Format(wxT("Radar%dControlShow"), r), m_settings.show_radar_control[r]);
       pConf->Write(wxString::Format(wxT("Radar%dTargetShow"), r), m_radar[r]->m_target_on_ppi.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dTrailsState"), r), (int) m_radar[r]->m_target_trails.GetState());
       pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->m_target_trails.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTrueMotion"), r), m_radar[r]->m_trails_motion.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dWindowPosX"), r), m_settings.window_pos[r].x);
