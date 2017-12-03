@@ -633,7 +633,10 @@ void RadarInfo::SetAutoRangeMeters(int meters) {
 }
 
 bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item) {
-  return m_control->SetControlValue(controlType, item);
+  if (m_control) {
+    return m_control->SetControlValue(controlType, item);
+  }
+  return false;
 }
 
 void RadarInfo::ShowRadarWindow(bool show) { m_radar_panel->ShowFrame(show); }
@@ -1019,28 +1022,28 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
 wxString RadarInfo::GetCanvasTextCenter() {
   wxString s;
 
+  s << m_name << wxT(" - ");
   switch (m_state.GetValue()) {
     case RADAR_OFF:
-      s << _("No radar");
+      s << _("no radar") << wxT("\n") << GetInfoStatus();
       break;
     case RADAR_STANDBY:
-      s << _("Radar is in Standby");
+      s << _("standby");
       break;
     case RADAR_WARMING_UP:
-      s << _("Radar warming up") << wxString::Format(wxT(" (%d s)"), m_warmup.GetValue());
+      s << _("warming up") << wxString::Format(wxT(" (%d s)"), m_warmup.GetValue());
       break;
     case RADAR_SPINNING_UP:
-      s << _("Radar is spinning up");
+      s << _("spinning up");
       break;
     case RADAR_TRANSMIT:
       if (m_draw_panel.draw) {
         return s;
       }
-      s << _("Radar not transmitting");
+      s << _("not transmitting");
       break;
   }
 
-  s << wxT("\n") << m_name;
 
   return s;
 }

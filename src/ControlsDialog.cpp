@@ -1078,14 +1078,15 @@ void ControlsDialog::CreateControls() {
   m_control_sizer = new wxBoxSizer(wxVERTICAL);
   m_top_sizer->Add(m_control_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
+#ifdef STATUS_ON_MENU
   //**************** STATUS TEXT ***************//
-
   m_status_text = new wxStaticText(this, ID_STATUS_TEXT, wxT(""), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
   wxFont f = m_status_text->GetFont();
   f.SetPointSize(f.GetPointSize() - 1);
   m_status_text->SetFont(f);
   m_control_sizer->Add(m_status_text, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-
+#endif
+  
   //***************** TRANSMIT SIZER, items hidden when not transmitting ****************//
 
   m_transmit_sizer = new wxBoxSizer(wxVERTICAL);
@@ -1489,18 +1490,33 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
     }
   }
 
+#define HIDE_TRANSMIT
+#ifdef HIDE_TRANSMIT
+  if (state != RADAR_OFF) {
+    if (m_top_sizer->IsShown(m_control_sizer) && !m_control_sizer->IsShown(m_transmit_sizer)) {
+      m_control_sizer->Show(m_transmit_sizer);
+      resize = true;
+    }
+  } else {
+    if (m_top_sizer->IsShown(m_control_sizer)) {
+      if (m_control_sizer->IsShown(m_transmit_sizer)) {
+        m_control_sizer->Hide(m_transmit_sizer);
+        resize = true;
+      }
+    }
+  }
+#endif
+
   if (state == RADAR_TRANSMIT) {
+#ifdef STATUS_ON_MENU
     m_ri->m_status_text_hide = true;
     if (m_control_sizer->IsShown(m_status_text)) {
       m_control_sizer->Hide(m_status_text);
       m_status_text->SetLabel(wxT(""));
       resize = true;
     }
+#endif
 
-    if (m_top_sizer->IsShown(m_control_sizer) && !m_control_sizer->IsShown(m_transmit_sizer)) {
-      m_control_sizer->Show(m_transmit_sizer);
-      resize = true;
-    }
     if (m_top_sizer->IsShown(m_control_sizer) && m_control_sizer->IsShown(m_transmit_sizer)) {
       // Show/hide stuff on the transmit sizer
       if (M_SETTINGS.show_radar[m_ri->m_radar]) {
@@ -1534,11 +1550,8 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
   } else {
     // Radar is NOT transmit, so standby, off or some intermediate state
     if (m_top_sizer->IsShown(m_control_sizer)) {
-      if (m_control_sizer->IsShown(m_transmit_sizer)) {
-        m_control_sizer->Hide(m_transmit_sizer);
-        resize = true;
-      }
 
+#ifdef STATUS_ON_MENU
       if (!m_ri->m_status_text_hide && (state == RADAR_OFF || state == RADAR_STANDBY)) {
         if (!m_control_sizer->IsShown(m_status_text)) {
           m_control_sizer->Show(m_status_text);
@@ -1562,6 +1575,7 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
         }
         m_status_text->SetLabel(info);
       }
+#endif
     }
   }
 
