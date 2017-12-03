@@ -1541,74 +1541,33 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
   }
 #endif
 
-  if (state == RADAR_TRANSMIT) {
-#ifdef STATUS_ON_MENU
-    m_ri->m_status_text_hide = true;
-    if (m_control_sizer->IsShown(m_status_text)) {
-      m_control_sizer->Hide(m_status_text);
-      m_status_text->SetLabel(wxT(""));
+  if (M_SETTINGS.show_radar[m_ri->m_radar]) {
+    // Show PPI related buttons
+    if (m_top_sizer->IsShown(m_transmit_sizer) && !m_transmit_sizer->IsShown(m_cursor_menu)) {
+      m_transmit_sizer->Show(m_cursor_menu);
       resize = true;
     }
-#endif
-
-    if (M_SETTINGS.show_radar[m_ri->m_radar]) {
-      // Show PPI related buttons
-      if (m_top_sizer->IsShown(m_transmit_sizer) && !m_transmit_sizer->IsShown(m_cursor_menu)) {
-        m_transmit_sizer->Show(m_cursor_menu);
-        resize = true;
-      }
-      if (m_top_sizer->IsShown(m_window_sizer) && !m_window_sizer->IsShown(m_targets_button)) {
-        m_window_sizer->Show(m_targets_button);
-        resize = true;
-      }
-      if (m_top_sizer->IsShown(m_view_sizer) && !m_window_sizer->IsShown(m_orientation_button)) {
-        m_view_sizer->Show(m_orientation_button);
-        resize = true;
-      }
-    } else {
-      // Hide PPI related buttons
-      if (m_top_sizer->IsShown(m_transmit_sizer) && m_transmit_sizer->IsShown(m_cursor_menu)) {
-        m_transmit_sizer->Hide(m_cursor_menu);
-        resize = true;
-      }
-      if (m_top_sizer->IsShown(m_window_sizer) && m_window_sizer->IsShown(m_targets_button)) {
-        m_window_sizer->Hide(m_targets_button);
-        resize = true;
-      }
-      if (m_top_sizer->IsShown(m_view_sizer) && m_view_sizer->IsShown(m_orientation_button)) {
-        m_view_sizer->Hide(m_orientation_button);
-        resize = true;
-      }
+    if (m_top_sizer->IsShown(m_window_sizer) && !m_window_sizer->IsShown(m_targets_button)) {
+      m_window_sizer->Show(m_targets_button);
+      resize = true;
     }
-
+    if (m_top_sizer->IsShown(m_view_sizer) && !m_window_sizer->IsShown(m_orientation_button)) {
+      m_view_sizer->Show(m_orientation_button);
+      resize = true;
+    }
   } else {
-    // Radar is NOT transmit, so standby, off or some intermediate state
-    if (m_top_sizer->IsShown(m_control_sizer)) {
-#ifdef STATUS_ON_MENU
-      if (!m_ri->m_status_text_hide && (state == RADAR_OFF || state == RADAR_STANDBY)) {
-        if (!m_control_sizer->IsShown(m_status_text)) {
-          m_control_sizer->Show(m_status_text);
-          resize = true;
-        }
-      } else if (m_control_sizer->IsShown(m_status_text)) {
-        m_control_sizer->Hide(m_status_text);
-        m_status_text->SetLabel(wxT(""));
-        resize = true;
-      }
-
-      if (m_control_sizer->IsShown(m_status_text)) {
-        wxString info;
-        if (state == RADAR_OFF) {
-          info << _("Radar not on or not detected");
-          info << wxT("\n");
-          info << m_ri->GetInfoStatus();
-          resize = true;
-        } else if (state == RADAR_STANDBY) {
-          info << _("Radar detected\nPress 'Radar'\nbelow to transmit");
-        }
-        m_status_text->SetLabel(info);
-      }
-#endif
+    // Hide PPI related buttons
+    if (m_top_sizer->IsShown(m_transmit_sizer) && m_transmit_sizer->IsShown(m_cursor_menu)) {
+      m_transmit_sizer->Hide(m_cursor_menu);
+      resize = true;
+    }
+    if (m_top_sizer->IsShown(m_window_sizer) && m_window_sizer->IsShown(m_targets_button)) {
+      m_window_sizer->Hide(m_targets_button);
+      resize = true;
+    }
+    if (m_top_sizer->IsShown(m_view_sizer) && m_view_sizer->IsShown(m_orientation_button)) {
+      m_view_sizer->Hide(m_orientation_button);
+      resize = true;
     }
   }
 
