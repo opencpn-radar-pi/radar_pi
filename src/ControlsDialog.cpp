@@ -1686,7 +1686,12 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   o = _("Radar");
   o << wxT("\n");
-  if (m_ri->m_timed_idle.GetValue() == 0) {
+  if (state == RADAR_OFF){
+    o << _("Off");
+    m_power_button->Disable();
+    m_power_sub_button->Disable();
+  }
+  else if (m_ri->m_timed_idle.GetValue() == 0) {
     switch (state) {
       case RADAR_OFF:
         o << _("Off");
@@ -1708,12 +1713,13 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
         break;
     }
     m_timed_idle_button->SetState(RCS_OFF);
+    m_power_button->Enable();
+    m_power_sub_button->Enable();
   }
-  else if (state == RADAR_OFF){
-    o << _("Off");
-  }
-  else{
+  else {
     o << m_ri->GetTimedIdleText();
+    m_power_button->Enable();
+    m_power_sub_button->Enable();
   }
   m_power_button->SetLabel(o);
   m_power_sub_button->SetLabel(o);

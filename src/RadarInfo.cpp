@@ -674,13 +674,10 @@ void RadarInfo::UpdateControlState(bool all) {
 }
 
 void RadarInfo::ResetRadarImage() {
-  if (m_pixels_per_meter != 0.) {
-    ResetSpokes();
-    ClearTrails();
-    if (m_arpa) {
-      m_arpa->ClearContours();
-    }
-    m_pixels_per_meter = 0.;
+  ResetSpokes();
+  ClearTrails();
+  if (m_arpa) {
+    m_arpa->ClearContours();
   }
 }
 
@@ -701,7 +698,6 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
   int state = m_state.GetValue();
 
   if (state != RADAR_TRANSMIT) {
-    ResetRadarImage();
     return;
   }
 

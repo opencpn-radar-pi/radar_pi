@@ -1143,7 +1143,6 @@ bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   if (M_SETTINGS.show                                                             // Radar shown
       && M_SETTINGS.chart_overlay >= 0                                            // Overlay desired
       && M_SETTINGS.chart_overlay < (int)M_SETTINGS.radar_count                   // and still valid
-      && m_radar[M_SETTINGS.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar transmitting
       && m_radar[M_SETTINGS.chart_overlay]->GetRadarPosition(&radar_pos)) {       // Boat position known
 
     GeoPosition pos_min = {vp->lat_min, vp->lon_min};
