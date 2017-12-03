@@ -167,7 +167,7 @@ EVT_BUTTON(ID_LOCAL_INTERFERENCE_REJECTION, ControlsDialog::OnRadarControlButton
 EVT_BUTTON(ID_SIDE_LOBE_SUPPRESSION, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_MAIN_BANG_SIZE, ControlsDialog::OnRadarControlButtonClick)
 
-EVT_BUTTON(ID_POWER, ControlsDialog::OnTransmitButtonClick) // Was OnPowerButtonClick
+EVT_BUTTON(ID_POWER, ControlsDialog::OnPowerButtonClick)
 EVT_BUTTON(ID_SHOW_RADAR, ControlsDialog::OnRadarShowButtonClick)
 EVT_BUTTON(ID_RADAR_OVERLAY, ControlsDialog::OnRadarOverlayButtonClick)
 EVT_BUTTON(ID_RANGE, ControlsDialog::OnRadarControlButtonClick)
@@ -1142,8 +1142,12 @@ void ControlsDialog::CreateControls() {
   RadarButton* bWindow = new RadarButton(this, ID_WINDOW, g_buttonSize, MENU(_("Window")));
   m_control_sizer->Add(bWindow, 0, wxALL, BORDER);
 
+  // The Timer menu
+  RadarButton* bTimedTransmit = new RadarButton(this, ID_POWER, g_buttonSize, MENU(_("Timed transmit")));
+  m_control_sizer->Add(bTimedTransmit, 0, wxALL, BORDER);
+
   // The Transmit button
-  m_power_button = new RadarButton(this, ID_POWER, g_buttonSize, _("Unknown"));
+  m_power_button = new RadarButton(this, ID_TRANSMIT_STANDBY, g_buttonSize, _("Unknown"));
   m_control_sizer->Add(m_power_button, 0, wxALL, BORDER);
   // Updated when we receive data
 
