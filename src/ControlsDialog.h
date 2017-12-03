@@ -89,6 +89,7 @@ class ControlsDialog : public wxDialog {
     m_control_sizer = 0;
     m_parent = 0;
     m_advanced_sizer = 0;
+    m_window_sizer = 0;
     m_view_sizer = 0;
     m_edit_sizer = 0;
     m_guard_sizer = 0;
@@ -243,6 +244,7 @@ class ControlsDialog : public wxDialog {
 
   wxWindow *m_parent;
   wxBoxSizer *m_advanced_sizer;
+  wxBoxSizer *m_window_sizer;
   wxBoxSizer *m_view_sizer;
   wxBoxSizer *m_edit_sizer;
   wxBoxSizer *m_guard_sizer;
@@ -370,6 +372,7 @@ class ControlsDialog : public wxDialog {
 
   void OnAdjustButtonClick(wxCommandEvent &event);
   void OnAdvancedButtonClick(wxCommandEvent &event);
+  void OnWindowButtonClick(wxCommandEvent &event);
   void OnViewButtonClick(wxCommandEvent &event);
   void OnInstallationButtonClick(wxCommandEvent &event);
   void OnPreferencesButtonClick(wxCommandEvent &event);

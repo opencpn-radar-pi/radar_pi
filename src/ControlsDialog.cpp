@@ -109,6 +109,7 @@ enum {  // process ID's
   ID_RADAR_OVERLAY,
   ID_ADJUST,
   ID_ADVANCED,
+  ID_WINDOW,
   ID_VIEW,
   ID_BEARING,
   ID_ZONE1,
@@ -166,7 +167,7 @@ EVT_BUTTON(ID_LOCAL_INTERFERENCE_REJECTION, ControlsDialog::OnRadarControlButton
 EVT_BUTTON(ID_SIDE_LOBE_SUPPRESSION, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_MAIN_BANG_SIZE, ControlsDialog::OnRadarControlButtonClick)
 
-EVT_BUTTON(ID_POWER, ControlsDialog::OnPowerButtonClick)
+EVT_BUTTON(ID_POWER, ControlsDialog::OnTransmitButtonClick) // Was OnPowerButtonClick
 EVT_BUTTON(ID_SHOW_RADAR, ControlsDialog::OnRadarShowButtonClick)
 EVT_BUTTON(ID_RADAR_OVERLAY, ControlsDialog::OnRadarOverlayButtonClick)
 EVT_BUTTON(ID_RANGE, ControlsDialog::OnRadarControlButtonClick)
@@ -182,6 +183,7 @@ EVT_BUTTON(ID_ORIENTATION, ControlsDialog::OnOrientationButtonClick)
 
 EVT_BUTTON(ID_ADJUST, ControlsDialog::OnAdjustButtonClick)
 EVT_BUTTON(ID_ADVANCED, ControlsDialog::OnAdvancedButtonClick)
+EVT_BUTTON(ID_WINDOW, ControlsDialog::OnWindowButtonClick)
 EVT_BUTTON(ID_VIEW, ControlsDialog::OnViewButtonClick)
 
 EVT_BUTTON(ID_BEARING, ControlsDialog::OnBearingButtonClick)
@@ -983,6 +985,26 @@ void ControlsDialog::CreateControls() {
 
   m_top_sizer->Hide(m_cursor_sizer);
 
+  //**************** WINDOW BOX ****************//
+
+  m_window_sizer = new wxBoxSizer(wxVERTICAL);
+  m_top_sizer->Add(m_window_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
+  // The Back button
+  RadarButton* bWindowBack = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
+  m_window_sizer->Add(bWindowBack, 0, wxALL, BORDER);
+
+  // The SHOW / HIDE AIS/ARPA ON PPI button
+  m_window_button = new RadarButton(this, ID_SHOW_RADAR, g_buttonSize, wxT(""));
+  m_window_sizer->Add(m_window_button, 0, wxALL, BORDER);
+
+  // The RADAR ONLY / OVERLAY button
+  m_overlay_button = new RadarControlButton(this, ID_RADAR_OVERLAY, _("Overlay"), m_ctrl[CT_OVERLAY], &m_ri->m_overlay);
+  m_window_sizer->Add(m_overlay_button, 0, wxALL, BORDER);
+
+  m_top_sizer->Hide(m_window_sizer);
+
+
   //**************** VIEW BOX ******************//
   // These are the controls that the users sees when the View button is selected
 
@@ -1116,15 +1138,9 @@ void ControlsDialog::CreateControls() {
   m_guard_2_button = new RadarButton(this, ID_ZONE2, g_buttonSize, wxT(""));
   m_transmit_sizer->Add(m_guard_2_button, 0, wxALL, BORDER);
 
-  ///// Following three are shown even when radar is not transmitting
-
-  // The SHOW / HIDE RADAR button
-  m_window_button = new RadarButton(this, ID_SHOW_RADAR, g_buttonSize, wxT(""));
-  m_control_sizer->Add(m_window_button, 0, wxALL, BORDER);
-
-  // The RADAR ONLY / OVERLAY button
-  m_overlay_button = new RadarControlButton(this, ID_RADAR_OVERLAY, _("Overlay"), m_ctrl[CT_OVERLAY], &m_ri->m_overlay);
-  m_control_sizer->Add(m_overlay_button, 0, wxALL, BORDER);
+  // The WINDOW menu
+  RadarButton* bWindow = new RadarButton(this, ID_WINDOW, g_buttonSize, MENU(_("Window")));
+  m_control_sizer->Add(bWindow, 0, wxALL, BORDER);
 
   // The Transmit button
   m_power_button = new RadarButton(this, ID_POWER, g_buttonSize, _("Unknown"));
@@ -1227,6 +1243,8 @@ void ControlsDialog::OnMinusTenClick(wxCommandEvent& event) {
 void ControlsDialog::OnAdjustButtonClick(wxCommandEvent& event) { SwitchTo(m_adjust_sizer, wxT("adjust")); }
 
 void ControlsDialog::OnAdvancedButtonClick(wxCommandEvent& event) { SwitchTo(m_advanced_sizer, wxT("advanced")); }
+
+void ControlsDialog::OnWindowButtonClick(wxCommandEvent& event) { SwitchTo(m_window_sizer, wxT("window")); }
 
 void ControlsDialog::OnViewButtonClick(wxCommandEvent& event) { SwitchTo(m_view_sizer, wxT("view")); }
 
@@ -1372,7 +1390,9 @@ void ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
 
     if (!m_pi->m_radar[other_radar]->m_control_dialog || !m_pi->m_radar[other_radar]->m_control_dialog->IsShown()) {
       m_pi->ShowRadarControl(other_radar, true);
-      m_pi->m_radar[other_radar]->m_control_dialog->SetPosition(pos);
+      if (m_pi->m_radar[other_radar]->m_control_dialog) {
+        m_pi->m_radar[other_radar]->m_control_dialog->SetPosition(pos);
+      }
     }
   } else {
     // If a radar window is shown, switch overlay off
@@ -1517,36 +1537,36 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
     }
 #endif
 
-    if (m_top_sizer->IsShown(m_control_sizer) && m_control_sizer->IsShown(m_transmit_sizer)) {
-      // Show/hide stuff on the transmit sizer
-      if (M_SETTINGS.show_radar[m_ri->m_radar]) {
-        if (!m_transmit_sizer->IsShown(m_cursor_menu)) {
-          m_transmit_sizer->Show(m_cursor_menu);
-          resize = true;
-        }
-        if (m_top_sizer->IsShown(m_view_sizer) && !m_view_sizer->IsShown(m_targets_button)) {
-          m_view_sizer->Show(m_targets_button);
-          resize = true;
-        }
-        if (m_top_sizer->IsShown(m_view_sizer) && !m_view_sizer->IsShown(m_orientation_button)) {
-          m_view_sizer->Show(m_orientation_button);
-          resize = true;
-        }
-      } else {
-        if (m_transmit_sizer->IsShown(m_cursor_menu)) {
-          m_transmit_sizer->Hide(m_cursor_menu);
-          resize = true;
-        }
-        if (m_top_sizer->IsShown(m_view_sizer) && m_view_sizer->IsShown(m_targets_button)) {
-          m_view_sizer->Hide(m_targets_button);
-          resize = true;
-        }
-        if (m_top_sizer->IsShown(m_view_sizer) && m_view_sizer->IsShown(m_orientation_button)) {
-          m_view_sizer->Hide(m_orientation_button);
-          resize = true;
-        }
+    if (M_SETTINGS.show_radar[m_ri->m_radar]) {
+      // Show PPI related buttons
+      if (m_top_sizer->IsShown(m_transmit_sizer) && !m_transmit_sizer->IsShown(m_cursor_menu)) {
+        m_transmit_sizer->Show(m_cursor_menu);
+        resize = true;
+      }
+      if (m_top_sizer->IsShown(m_window_sizer) && !m_window_sizer->IsShown(m_targets_button)) {
+        m_window_sizer->Show(m_targets_button);
+        resize = true;
+      }
+      if (m_top_sizer->IsShown(m_view_sizer) && !m_window_sizer->IsShown(m_orientation_button)) {
+        m_view_sizer->Show(m_orientation_button);
+        resize = true;
+      }
+    } else {
+      // Hide PPI related buttons
+      if (m_top_sizer->IsShown(m_transmit_sizer) && m_transmit_sizer->IsShown(m_cursor_menu)) {
+        m_transmit_sizer->Hide(m_cursor_menu);
+        resize = true;
+      }
+      if (m_top_sizer->IsShown(m_window_sizer) && m_window_sizer->IsShown(m_targets_button)) {
+        m_window_sizer->Hide(m_targets_button);
+        resize = true;
+      }
+      if (m_top_sizer->IsShown(m_view_sizer) && m_view_sizer->IsShown(m_orientation_button)) {
+        m_view_sizer->Hide(m_orientation_button);
+        resize = true;
       }
     }
+
   } else {
     // Radar is NOT transmit, so standby, off or some intermediate state
     if (m_top_sizer->IsShown(m_control_sizer)) {
@@ -1877,7 +1897,7 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
   if (!IsShown()) {
     LOG_DIALOG(wxT("%s UpdateDialogShown manually opened"), m_log_name.c_str());
     if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_view_sizer) &&
-        !m_top_sizer->IsShown(m_edit_sizer) && !m_top_sizer->IsShown(m_installation_sizer) &&
+        !m_top_sizer->IsShown(m_edit_sizer) && !m_top_sizer->IsShown(m_installation_sizer) && !m_top_sizer->IsShown(m_window_sizer) &&
         !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_cursor_sizer) &&
         !m_top_sizer->IsShown(m_power_sizer)) {
       SwitchTo(m_control_sizer, wxT("main (manual open)"));
