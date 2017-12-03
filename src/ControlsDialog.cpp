@@ -609,7 +609,7 @@ void ControlsDialog::CreateControls() {
   label << _("Off/Relative/True trails") << wxT("\n");
   label << _("Clear trails") << wxT("\n");
   label << _("Orientation") << wxT("\n");
-  label << _("Transparency") << wxT("\n");
+  label << _("Overlay transparency") << wxT("\n");
   label << _("Overlay") << wxT("\n");
   label << _("Adjust") << wxT("\n");
   label << _("Advanced") << wxT("\n");
@@ -1013,6 +1013,11 @@ void ControlsDialog::CreateControls() {
   m_overlay_button = new RadarControlButton(this, ID_RADAR_OVERLAY, _("Overlay"), m_ctrl[CT_OVERLAY], &m_ri->m_overlay);
   m_window_sizer->Add(m_overlay_button, 0, wxALL, BORDER);
 
+  // The TRANSPARENCY button
+  m_transparency_button = new RadarControlButton(this, ID_TRANSPARENCY, _("Overlay transparency"), m_ctrl[CT_TRANSPARENCY],
+                                                &m_pi->m_settings.overlay_transparency);
+  m_window_sizer->Add(m_transparency_button, 0, wxALL, BORDER);
+
   m_top_sizer->Hide(m_window_sizer);
 
   //**************** VIEW BOX ******************//
@@ -1056,13 +1061,6 @@ void ControlsDialog::CreateControls() {
     m_refresh_rate_button =
         new RadarControlButton(this, ID_REFRESHRATE, _("Refresh rate"), m_ctrl[CT_REFRESHRATE], &m_pi->m_settings.refreshrate);
     m_view_sizer->Add(m_refresh_rate_button, 0, wxALL, BORDER);
-  }
-
-  // The TRANSPARENCY button
-  if (m_ctrl[CT_TRANSPARENCY].type) {
-    m_transparency_button = new RadarControlButton(this, ID_TRANSPARENCY, _("Transparency"), m_ctrl[CT_TRANSPARENCY],
-                                                   &m_pi->m_settings.overlay_transparency);
-    m_view_sizer->Add(m_transparency_button, 0, wxALL, BORDER);
   }
 
   m_top_sizer->Hide(m_view_sizer);
@@ -1601,7 +1599,16 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
       m_trails_motion_button->Enable();
       m_clear_trails_button->Enable();
     }
-    resize = true;
+  }
+
+  if (m_top_sizer->IsShown(m_window_sizer)) {
+    int overlay = m_ri->m_overlay.GetValue();
+
+    if (overlay == m_ri->m_radar) {
+      m_transparency_button->Enable();
+    } else {
+      m_transparency_button->Disable();
+    }
   }
 
   return resize;
@@ -1674,9 +1681,6 @@ void ControlsDialog::DisableRadarControls() {
   if (m_range_button) {
     m_range_button->Disable();
   }
-  if (m_transparency_button) {
-    m_transparency_button->Disable();
-  }
   if (m_power_button) {
     m_power_button->Disable();
   }
@@ -1736,9 +1740,6 @@ void ControlsDialog::EnableRadarControls() {
   }
   if (m_range_button) {
     m_range_button->Enable();
-  }
-  if (m_transparency_button) {
-    m_transparency_button->Enable();
   }
   if (m_power_button) {
     m_power_button->Enable();
