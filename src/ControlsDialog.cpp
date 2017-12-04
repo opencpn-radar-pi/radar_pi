@@ -1801,28 +1801,28 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   RadarState state = (RadarState)m_ri->m_state.GetButton();
 
+  o << _("Start/Stop radar") << wxT("\n");
   if (state == RADAR_OFF) {
-    o << _("Start/stop Radar\nOff");
+    o << _("Off");
     DisableRadarControls();
   } else if (m_ri->m_timed_idle.GetValue() == 0) {
     switch (state) {
       case RADAR_OFF:
         break;
       case RADAR_STANDBY:
-        o << _("Start/stop radar") << wxT("\n") << _("Standby");
+        o << _("Standby");
         break;
       case RADAR_WARMING_UP:
-        o << _("Start/stop radar \u2713") << wxT("\n") << _("Warming up")
-          << wxString::Format(wxT(" (%d s)"), m_ri->m_warmup.GetValue());
+        o << _("Warming up") << wxString::Format(wxT(" (%d s)"), m_ri->m_warmup.GetValue());
         break;
       case RADAR_TIMED_IDLE:  // Only used with radars with 'hardware' TimedIdle
-        o << _("Start/stop radar") << wxT("\n") << _("Timed idle");
+        o << _("Timed idle");
         break;
       case RADAR_SPINNING_UP:
-        o << _("Start/stop radar \u2713") << wxT("\n") << _("Spinning up");
+        o << _("Spinning up");
         break;
       case RADAR_TRANSMIT:
-        o << _("Start/stop radar \u2713") << wxT("\n") << _("Transmitting");
+        o << _("Transmitting");
         break;
     }
     m_timed_idle_button->SetState(RCS_OFF);
