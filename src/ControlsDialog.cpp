@@ -251,17 +251,17 @@ bool RadarControlButton::ToggleValue() {
     int oldValue = m_item->GetValue();
     int newValue = oldValue;
 
-    if (m_item->GetState() == RCS_OFF) {
-    } else {
+    if (m_item->GetState() == RCS_MANUAL) {
       newValue += 1;
       if (newValue < m_ci.minValue) {
         newValue = m_ci.minValue;
       } else if (newValue > m_ci.maxValue) {
         newValue = m_ci.minValue;
       }
-      m_item->Update(newValue, RCS_MANUAL);
+      m_item->Update(newValue);
     }
     SetState(RCS_MANUAL);
+    UpdateLabel();
     return true;
   }
   return false;
