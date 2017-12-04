@@ -493,7 +493,7 @@ class RadarControlButton : public wxButton {
       firstLine = label;
       m_no_edit = false;
     }
-    
+
     if (newUnit.length() > 0) {
       m_ci.unit = newUnit;
     }
@@ -514,10 +514,10 @@ class RadarControlButton : public wxButton {
   wxString m_comment;
   RadarControlItem *m_item;
   ControlInfo m_ci;
-  bool m_no_edit;
 
  private:
   wxString firstLine;
+  bool m_no_edit;
 
   ControlsDialog *m_parent;
   radar_pi *m_pi;  // could be accessed through m_parent but the M_SETTINGS macro requires it directly in this class.0
@@ -531,6 +531,7 @@ class RadarRangeControlButton : public RadarControlButton {
     m_parent = parent;
     m_pi = m_parent->m_pi;
     m_item = item;
+    m_no_edit = false;
     firstLine = label;
     m_ci.minValue = 0;
     m_ci.maxValue = 0;
