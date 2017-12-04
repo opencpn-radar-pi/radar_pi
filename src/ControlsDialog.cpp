@@ -252,7 +252,6 @@ bool RadarControlButton::ToggleValue() {
     int newValue = oldValue;
 
     if (m_item->GetState() == RCS_OFF) {
-      m_item->UpdateState(RCS_MANUAL);
     } else {
       newValue += 1;
       if (newValue < m_ci.minValue) {
@@ -262,6 +261,7 @@ bool RadarControlButton::ToggleValue() {
       }
       m_item->Update(newValue, RCS_MANUAL);
     }
+    SetState(RCS_MANUAL);
     return true;
   }
   return false;
@@ -287,7 +287,6 @@ bool RadarControlButton::ToggleState() {
 
 void RadarControlButton::SetState(RadarControlState state) {
   m_item->UpdateState(state);
-  // Send state to radar TODO check if this is necessary
   LOG_VERBOSE(wxT("%s Button '%s' SetState %d value %d, max=%d"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type], state,
               m_item->GetValue(), m_ci.autoValues);
   m_parent->m_ri->SetControlValue(m_ci.type, *m_item);
