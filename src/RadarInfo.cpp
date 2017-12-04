@@ -312,7 +312,7 @@ void RadarInfo::ComputeColourMap() {
   m_colour_map_rgb[BLOB_INTERMEDIATE] = m_pi->m_settings.intermediate_colour;
   m_colour_map_rgb[BLOB_WEAK] = m_pi->m_settings.weak_colour;
 
-  if (m_trails_motion.GetValue() > 0) {
+  if (m_target_trails.GetState() != RCS_OFF) {
     float r1 = m_pi->m_settings.trail_start_colour.Red();
     float g1 = m_pi->m_settings.trail_start_colour.Green();
     float b1 = m_pi->m_settings.trail_start_colour.Blue();
@@ -900,10 +900,8 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
     s << wxT("\n");
   }
 
-  int motion = m_trails_motion.GetValue();
-  RadarControlState trails = m_target_trails.GetState();
-  if (trails != RCS_OFF) {
-    if (motion == TARGET_MOTION_TRUE) {
+  if (m_target_trails.GetState() != RCS_OFF) {
+    if (m_trails_motion.GetValue() == TARGET_MOTION_TRUE) {
       s << wxT("RM(T)");
     } else {
       s << wxT("RM(R)");
@@ -1233,10 +1231,10 @@ void RadarInfo::ComputeTargetTrails() {
       SECONDS_TO_REVOLUTIONS(300), SECONDS_TO_REVOLUTIONS(600), TRAIL_MAX_REVOLUTIONS + 1};
 
   int target_trails = m_target_trails.GetValue();
-  int trails_motion = m_trails_motion.GetValue();
+  RadarControlState trails_state = m_target_trails.GetState();
 
   TrailRevolutionsAge maxRev = maxRevs[target_trails];
-  if (trails_motion == 0) {
+  if (trails_state == RCS_OFF) {
     maxRev = 0;
   }
   TrailRevolutionsAge revolution;
@@ -1244,7 +1242,7 @@ void RadarInfo::ComputeTargetTrails() {
   double colour = 0.;
 
   // Like plotter, continuous trails are all very white (non transparent)
-  if ((trails_motion > 0) && (target_trails < TRAIL_CONTINUOUS)) {
+  if ((trails_state != RCS_OFF) && (target_trails < TRAIL_CONTINUOUS)) {
     coloursPerRevolution = BLOB_HISTORY_COLOURS / (double)maxRev;
   }
 

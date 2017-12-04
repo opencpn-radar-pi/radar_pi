@@ -148,8 +148,7 @@ EVT_BUTTON(ID_MINUS, ControlsDialog::OnMinusClick)
 EVT_BUTTON(ID_MINUS_TEN, ControlsDialog::OnMinusTenClick)
 EVT_BUTTON(ID_AUTO, ControlsDialog::OnAutoClick)
 EVT_BUTTON(ID_OFF, ControlsDialog::OnOffClick)
-EVT_BUTTON(ID_TRAILS_MOTION, ControlsDialog::OnTrailsMotionClick)
-
+EVT_BUTTON(ID_TRAILS_MOTION, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_TRANSPARENCY, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_INTERFERENCE_REJECTION, ControlsDialog::OnRadarControlButtonClick)
 EVT_BUTTON(ID_TARGET_BOOST, ControlsDialog::OnRadarControlButtonClick)
@@ -1260,19 +1259,6 @@ void ControlsDialog::OnOffClick(wxCommandEvent& event) {
   m_from_control->SetState(RCS_OFF);
   m_auto_button->Enable();
   m_off_button->Disable();
-}
-
-void ControlsDialog::OnTrailsMotionClick(wxCommandEvent& event) {
-  int value = m_ri->m_trails_motion.GetValue();
-
-  value++;
-  if (value > TARGET_MOTION_TRUE) {
-    value = 0;
-  }
-  m_ri->m_trails_motion.Update(value);
-  m_ri->ComputeColourMap();
-  m_ri->ComputeTargetTrails();
-  Resize(false);
 }
 
 void ControlsDialog::OnMinusClick(wxCommandEvent& event) {

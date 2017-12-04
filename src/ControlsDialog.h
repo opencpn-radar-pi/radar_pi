@@ -372,8 +372,7 @@ class ControlsDialog : public wxDialog {
   void OnMinusTenClick(wxCommandEvent &event);
   void OnAutoClick(wxCommandEvent &event);
   void OnOffClick(wxCommandEvent &event);
-  void OnTrailsMotionClick(wxCommandEvent &event);
-
+  
   void OnAdjustButtonClick(wxCommandEvent &event);
   void OnAdvancedButtonClick(wxCommandEvent &event);
   void OnGuardZoneButtonClick(wxCommandEvent &event);
