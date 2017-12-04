@@ -129,7 +129,7 @@
 #endif
 #ifndef TARGET_ON_PPI_NAMES
 #define TARGET_ON_PPI_NAMES \
-  { _("Hidden"), _("Shown") }
+  { _("Off"), _("On") }
 #endif
 
 HAVE_CONTROL(CT_ANTENNA_FORWARD, CTD_AUTO_NO, CTD_DEF_ZERO, -500, +500, CTD_STEP_1, CTD_NUMERIC)
