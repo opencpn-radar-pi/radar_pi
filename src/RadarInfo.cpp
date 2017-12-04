@@ -665,6 +665,7 @@ void RadarInfo::UpdateControlState(bool all) {
 
   if (m_control_dialog) {
     m_control_dialog->UpdateControlValues(all);
+    m_control_dialog->UpdateDialogShown(false);
   }
 
   if (IsPaneShown()) {
