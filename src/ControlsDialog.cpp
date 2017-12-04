@@ -1938,16 +1938,14 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
 
   if (m_hide_temporarily) {
     if (IsShown()) {
-      LOG_DIALOG(wxT("%s UpdateDialogShown temporarily hidden"), m_log_name.c_str());
       Hide();
     }
     return;
   }
 
   if (m_top_sizer->IsShown(m_control_sizer)) {
-    if (m_auto_hide_timeout && TIMED_OUT(time(0), m_auto_hide_timeout)) {
+    if (m_auto_hide_timeout > 0 && TIMED_OUT(time(0), m_auto_hide_timeout)) {
       if (IsShown()) {
-        LOG_DIALOG(wxT("%s UpdateDialogShown auto-hide"), m_log_name.c_str());
         Hide();
       }
       return;
@@ -1957,7 +1955,7 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
     m_auto_hide_timeout = 0;
   }
 
-#ifdef __WXMAC__
+#ifdef __WXMAC__NEVER
   // Following helps on OSX where the control is SHOW_ON_TOP to not show when no part of OCPN is focused
   wxWindow* focused = FindFocus();
   if (!focused) {
@@ -1968,7 +1966,6 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
 #endif
 
   if (!IsShown()) {
-    LOG_DIALOG(wxT("%s UpdateDialogShown manually opened"), m_log_name.c_str());
     if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_view_sizer) &&
         !m_top_sizer->IsShown(m_edit_sizer) && !m_top_sizer->IsShown(m_installation_sizer) &&
         !m_top_sizer->IsShown(m_window_sizer) && !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_guardzone_sizer) &&
