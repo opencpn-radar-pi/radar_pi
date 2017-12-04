@@ -789,7 +789,7 @@ void ControlsDialog::CreateControls() {
   // The TARGET BOOST button
   if (m_ctrl[CT_TARGET_BOOST].type) {
     m_target_boost_button =
-        new RadarControlButton(this, ID_SCAN_SPEED, _("Target boost"), m_ctrl[CT_TARGET_BOOST], &m_ri->m_target_boost);
+        new RadarControlButton(this, ID_TARGET_BOOST, _("Target boost"), m_ctrl[CT_TARGET_BOOST], &m_ri->m_target_boost);
     m_advanced_sizer->Add(m_target_boost_button, 0, wxALL, BORDER);
   }
 
