@@ -1044,6 +1044,10 @@ void ControlsDialog::CreateControls() {
                                                  &m_pi->m_settings.overlay_transparency);
   m_window_sizer->Add(m_transparency_button, 0, wxALL, BORDER);
 
+  // The INFO button
+  RadarButton* bMessage = new RadarButton(this, ID_MESSAGE, g_buttonSize, MENU_WINDOW(_("Info")));
+  m_window_sizer->Add(bMessage, 0, wxALL, BORDER);
+
   m_top_sizer->Hide(m_window_sizer);
 
   //**************** VIEW BOX ******************//
@@ -1120,10 +1124,6 @@ void ControlsDialog::CreateControls() {
     m_timed_run_button = new RadarControlButton(this, ID_TIMED_RUN, _("Timed Transmit"), m_ctrl[CT_TIMED_RUN], &m_ri->m_timed_run);
     m_power_sizer->Add(m_timed_run_button, 0, wxALL, BORDER);
   }
-
-  // The INFO button
-  RadarButton* bMessage = new RadarButton(this, ID_MESSAGE, g_buttonSize, _("Info"));
-  m_power_sizer->Add(bMessage, 0, wxALL, BORDER);
 
   m_top_sizer->Hide(m_power_sizer);
 
