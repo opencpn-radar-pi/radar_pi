@@ -235,8 +235,7 @@ void TrailBuffer::UpdateTrailPosition() {
       return;
     }
     m_previous_pixels_per_meter = m_ri->m_pixels_per_meter;
-  }
-  else if (m_previous_pixels_per_meter != m_ri->m_pixels_per_meter && m_previous_pixels_per_meter != 0.) {
+  } else if (m_previous_pixels_per_meter != m_ri->m_pixels_per_meter && m_previous_pixels_per_meter != 0.) {
     // zoom trails
     double zoom_factor = m_ri->m_pixels_per_meter / m_previous_pixels_per_meter;
     m_previous_pixels_per_meter = m_ri->m_pixels_per_meter;

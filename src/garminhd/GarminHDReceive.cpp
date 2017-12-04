@@ -57,18 +57,18 @@ struct radar_line {
   uint16_t scan_length;
   uint32_t display_meters;
   uint32_t range_meters;
-  uint8_t  gain_level[4];
-  uint8_t  sea_clutter[4];
-  uint8_t  rain_clutter[4];
+  uint8_t gain_level[4];
+  uint8_t sea_clutter[4];
+  uint8_t rain_clutter[4];
   uint16_t dome_offset;
-  uint8_t  FTC_mode;
-  uint8_t  crosstalk_onoff;
+  uint8_t FTC_mode;
+  uint8_t crosstalk_onoff;
   uint16_t fill_2;
   uint16_t fill_3;
-  uint8_t  timed_transmit[4];
-  uint8_t  dome_speed;
-  uint8_t  fill_4[7];
-  uint8_t  line_data[GARMIN_HD_MAX_SPOKE_LEN];
+  uint8_t timed_transmit[4];
+  uint8_t dome_speed;
+  uint8_t fill_4[7];
+  uint8_t line_data[GARMIN_HD_MAX_SPOKE_LEN];
 };
 
 #pragma pack(pop)
@@ -80,7 +80,7 @@ struct radar_line {
 //
 // Note that Garmin HD only has 1 bit per point, not 8 bits like most other radars.
 //
-void GarminHDReceive::ProcessFrame(radar_line * packet) {
+void GarminHDReceive::ProcessFrame(radar_line *packet) {
   // log_line.time_rec = wxGetUTCTimeMillis();
   wxLongLong time_rec = wxGetUTCTimeMillis();
   time_t now = (time_t)(time_rec.GetValue() / MILLISECONDS_PER_SECOND);
@@ -89,11 +89,11 @@ void GarminHDReceive::ProcessFrame(radar_line * packet) {
   uint8_t *p, *s;
 
   if (packet->scan_length * 8 > GARMIN_HD_MAX_SPOKE_LEN) {
-    LOG_INFO(wxT("radar_pi: %s truncating data, %d longer than expected max length %d"), packet->scan_length * 8, GARMIN_HD_MAX_SPOKE_LEN);
+    LOG_INFO(wxT("radar_pi: %s truncating data, %d longer than expected max length %d"), packet->scan_length * 8,
+             GARMIN_HD_MAX_SPOKE_LEN);
     packet->scan_length = GARMIN_HD_MAX_SPOKE_LEN / 8;
   }
-  for (p = line, s = packet->line_data, i = 0; i < packet->scan_length; i++, s++)
-  {
+  for (p = line, s = packet->line_data, i = 0; i < packet->scan_length; i++, s++) {
     *p++ = (*s & 0x01) > 0 ? 255 : 0;
     *p++ = (*s & 0x02) > 0 ? 255 : 0;
     *p++ = (*s & 0x04) > 0 ? 255 : 0;
@@ -389,34 +389,31 @@ typedef struct {
   uint32_t parm1;
 } rad_ctl_pkt_12;
 
-
-
-
 typedef struct {
   uint32_t packet_type;
   uint32_t len1;
   uint16_t scanner_state;
   uint16_t warmup;
   uint32_t range_meters;
-  uint8_t  gain_level;
-  uint8_t  gain_mode;
-  uint16_t fill_1;  
-  uint8_t  sea_clutter_level;
-  uint8_t  sea_clutter_mode;
-  uint16_t fill_2;  
-  uint8_t  rain_clutter_level;
-  uint8_t  fill_3[3];
-  int16_t  dome_offset;
-  uint8_t  FTC_mode;
-  uint8_t  crosstalk_onoff;
+  uint8_t gain_level;
+  uint8_t gain_mode;
+  uint16_t fill_1;
+  uint8_t sea_clutter_level;
+  uint8_t sea_clutter_mode;
+  uint16_t fill_2;
+  uint8_t rain_clutter_level;
+  uint8_t fill_3[3];
+  int16_t dome_offset;
+  uint8_t FTC_mode;
+  uint8_t crosstalk_onoff;
   uint16_t fill_4[2];
-  uint8_t  timed_transmit_mode;
-  uint8_t  timed_transmit_transmit;
-  uint8_t  timed_transmit_standby;
-  uint8_t  fill_5;
-  uint8_t  dome_speed;
-  uint8_t  fill_6[7];
-}rad_response_pkt;
+  uint8_t timed_transmit_mode;
+  uint8_t timed_transmit_transmit;
+  uint8_t timed_transmit_standby;
+  uint8_t fill_5;
+  uint8_t dome_speed;
+  uint8_t fill_6[7];
+} rad_response_pkt;
 
 #pragma pack(pop)
 
@@ -473,9 +470,8 @@ bool GarminHDReceive::ProcessReport(const uint8_t *report, int len) {
     uint16_t packet_type = packet->packet_type;
 
     switch (packet_type) {
-
       case 0x2a3: {
-        radar_line * line = (radar_line *)report;
+        radar_line *line = (radar_line *)report;
 
         ProcessFrame(line);
         m_no_spoke_timeout = -5;
@@ -491,17 +487,15 @@ bool GarminHDReceive::ProcessReport(const uint8_t *report, int len) {
         m_ri->m_warmup.Update(packet->warmup);
         return true;
       }
-		
+
       case 0x2a7: {
- 		LOG_VERBOSE(wxT("0x02a7: range %d"), packet->range_meters);       // Range in meters
+        LOG_VERBOSE(wxT("0x02a7: range %d"), packet->range_meters);  // Range in meters
         m_ri->m_range.Update(packet->range_meters);
 
-		
-		LOG_VERBOSE(wxT("0x02a7: gain %d"), packet->gain_level);          // Gain
+        LOG_VERBOSE(wxT("0x02a7: gain %d"), packet->gain_level);  // Gain
         m_gain = packet->gain_level;
 
-		
-        LOG_VERBOSE(wxT("0x02a7: auto-gain mode %d"), packet->gain_mode); // Auto Gain Mode
+        LOG_VERBOSE(wxT("0x02a7: auto-gain mode %d"), packet->gain_mode);  // Auto Gain Mode
         RadarControlState state = RCS_MANUAL;
         if (m_auto_gain) {
           switch (packet->gain_mode) {
@@ -520,13 +514,11 @@ bool GarminHDReceive::ProcessReport(const uint8_t *report, int len) {
         LOG_VERBOSE(wxT("radar_pi: %s m_gain.Update(%d, %d)"), m_ri->m_name.c_str(), m_gain, (int)state);
         m_ri->m_gain.Update(m_gain, state);
 
-		
         // Sea Clutter level
         LOG_VERBOSE(wxT("0x02a7: sea clutter %d"), packet->sea_clutter_level);
         m_sea_clutter = packet->sea_clutter_level;
         m_ri->m_sea.Update(m_sea_clutter, m_sea_mode);
 
-	
         // Sea Clutter On/Off
         LOG_VERBOSE(wxT("0x02a7: sea mode %d"), packet->sea_clutter_mode);
         switch (packet->sea_clutter_mode) {
@@ -543,14 +535,14 @@ bool GarminHDReceive::ProcessReport(const uint8_t *report, int len) {
               m_sea_mode = RCS_AUTO_1;
             }
           }
-		  default : break;
+          default:
+            break;
         }
 
-		
         // Rain clutter level
         LOG_VERBOSE(wxT("0x02a7: rain clutter %d"), packet->rain_clutter_level);
         m_rain_clutter = packet->rain_clutter_level;
-        m_ri->m_rain.Update(m_rain_clutter, m_rain_mode);	
+        m_ri->m_rain.Update(m_rain_clutter, m_rain_mode);
 
         // Dome offset, called bearing alignment here
         LOG_VERBOSE(wxT("0x02a7: bearing alignment %d"), (int32_t)packet->dome_offset);
@@ -564,7 +556,7 @@ bool GarminHDReceive::ProcessReport(const uint8_t *report, int len) {
         LOG_VERBOSE(wxT("0x02a7: crosstalk/interference rejection %d"), packet->crosstalk_onoff);
         m_ri->m_interference_rejection.Update(packet->crosstalk_onoff);
 
-        // Timed transmit status should go here 
+        // Timed transmit status should go here
 
         // Dome Speed
         LOG_VERBOSE(wxT("0x02a7: scan speed %d"), packet->dome_speed);

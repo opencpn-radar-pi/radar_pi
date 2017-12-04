@@ -74,7 +74,7 @@ class GarminHDReceive : public RadarReceive {
   volatile bool m_is_shutdown;
 
  private:
-  void ProcessFrame(radar_line * packet);
+  void ProcessFrame(radar_line *packet);
   bool ProcessReport(const uint8_t *data, int len);
 
   SOCKET PickNextEthernetCard();

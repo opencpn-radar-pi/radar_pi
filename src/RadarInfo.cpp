@@ -398,7 +398,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
       m_arpa->ClearContours();
     }
   }
-  
+
   orientation = GetOrientation();
   if ((orientation == ORIENTATION_HEAD_UP || m_previous_orientation == ORIENTATION_HEAD_UP) &&
       (orientation != m_previous_orientation)) {
@@ -620,8 +620,7 @@ void RadarInfo::SetAutoRangeMeters(int meters) {
       meters = GetNearestRange(meters, m_pi->m_settings.range_units);
       if (meters != m_range.GetValue()) {
         if (m_pi->m_settings.verbose) {
-          LOG_VERBOSE(wxT("radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters,
-                      meters);
+          LOG_VERBOSE(wxT("radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters, meters);
         }
         m_control->SetRange(meters);
         m_previous_auto_range_meters = meters;
@@ -1018,7 +1017,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
 
 wxString RadarInfo::GetCanvasTextCenter() {
   wxString s;
-  RadarState state = (RadarState) m_state.GetValue();
+  RadarState state = (RadarState)m_state.GetValue();
 
   if (state == RADAR_TRANSMIT && m_draw_panel.draw) {
     return s;
@@ -1321,10 +1320,9 @@ wxString RadarInfo::GetTimedIdleText() {
   wxString text;
 
   if (m_timed_idle.GetValue() > 0) {
-    if (m_arpa->GetTargetCount() != 0){
+    if (m_arpa->GetTargetCount() != 0) {
       text = _("Transmit for targets");
-    }
-    else {
+    } else {
       time_t now = time(0);
       int left = m_idle_standby - now;
       if (left >= 0) {
@@ -1364,11 +1362,11 @@ void RadarInfo::CheckTimedTransmit() {
   }
 
   time_t now = time(0);
- 
+
   if (m_idle_standby > 0 && TIMED_OUT(now, m_idle_standby) && state == RADAR_TRANSMIT) {
     RequestRadarState(RADAR_STANDBY);
     m_idle_transmit = now + m_timed_idle.GetValue() * SECONDS_PER_TIMED_IDLE_SETTING -
-    (m_timed_run.GetValue() + 1) * SECONDS_PER_TIMED_RUN_SETTING;
+                      (m_timed_run.GetValue() + 1) * SECONDS_PER_TIMED_RUN_SETTING;
     m_idle_standby = 0;
   } else if (m_idle_transmit > 0 && TIMED_OUT(now, m_idle_transmit) && state == RADAR_STANDBY) {
     RequestRadarState(RADAR_TRANSMIT);

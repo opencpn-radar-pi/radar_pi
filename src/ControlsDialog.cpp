@@ -251,7 +251,7 @@ bool RadarControlButton::ToggleValue() {
     int oldValue = m_item->GetValue();
     int newValue = oldValue;
 
-    if (m_item->GetState() == RCS_OFF ) {
+    if (m_item->GetState() == RCS_OFF) {
       m_item->UpdateState(RCS_MANUAL);
     } else {
       newValue += 1;
@@ -1072,8 +1072,8 @@ void ControlsDialog::CreateControls() {
 
   // The Trails Motion button
   if (m_ctrl[CT_TRAILS_MOTION].type) {
-    m_trails_motion_button =
-        new RadarControlButton(this, ID_TRAILS_MOTION, MENU_NO_EDIT(_("Trails motion")), m_ctrl[CT_TRAILS_MOTION], &m_ri->m_trails_motion);
+    m_trails_motion_button = new RadarControlButton(this, ID_TRAILS_MOTION, MENU_NO_EDIT(_("Trails motion")),
+                                                    m_ctrl[CT_TRAILS_MOTION], &m_ri->m_trails_motion);
     m_view_sizer->Add(m_trails_motion_button, 0, wxALL, BORDER);
   }
 
@@ -1382,7 +1382,7 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
 }
 
 void ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
-  RadarControlButton * button = (RadarControlButton*)event.GetEventObject();
+  RadarControlButton* button = (RadarControlButton*)event.GetEventObject();
 
   if (!button->ToggleValue()) {
     EnterEditMode(button);

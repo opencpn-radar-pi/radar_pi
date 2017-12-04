@@ -91,7 +91,7 @@ void RadarCanvas::RenderTexts(int w, int h) {
   int x, y;
   int menu_x;
   wxString s;
-  RadarState state = (RadarState) m_ri->m_state.GetValue();
+  RadarState state = (RadarState)m_ri->m_state.GetValue();
 
 #define MENU_ROUNDING 4
 #define MENU_BORDER 8
@@ -191,7 +191,8 @@ wxSize RadarCanvas::RenderControlItem(wxSize loc, RadarControlItem &item, Contro
     default:
       glColor4ub(200, 255, 200, 255);  // Greenish
       if (ci.autoNames && state > RCS_MANUAL && state <= RCS_MANUAL + ci.autoValues) {
-        label << ci.autoNames[state - RCS_AUTO_1]; // A little shorter than in the control, but here we have colour to indicate Auto.
+        label
+            << ci.autoNames[state - RCS_AUTO_1];  // A little shorter than in the control, but here we have colour to indicate Auto.
       } else {
         label << _("Auto");
       }

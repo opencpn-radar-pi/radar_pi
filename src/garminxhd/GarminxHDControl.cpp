@@ -350,15 +350,15 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_INTERFERENCE_REJECTION: {
       LOG_VERBOSE(wxT("radar_pi: %s Interference Rejection / Crosstalk: %d"), m_name.c_str(), value);
       pck_9.parm1 = value;
-	  
-	  pck_9.packet_type = 0x91b;
+
+      pck_9.packet_type = 0x91b;
       r = TransmitCmd(&pck_9, sizeof(pck_9));
-	  
-	  pck_9.packet_type = 0x932;
-	  r = TransmitCmd(&pck_9, sizeof(pck_9));
-	  	  
-	  pck_9.packet_type = 0x2b9;
-	  r = TransmitCmd(&pck_9, sizeof(pck_9));
+
+      pck_9.packet_type = 0x932;
+      r = TransmitCmd(&pck_9, sizeof(pck_9));
+
+      pck_9.packet_type = 0x2b9;
+      r = TransmitCmd(&pck_9, sizeof(pck_9));
       break;
     }
 

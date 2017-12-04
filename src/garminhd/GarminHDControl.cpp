@@ -38,7 +38,7 @@ PLUGIN_BEGIN_NAMESPACE
 typedef struct {
   uint32_t packet_type;
   uint32_t len1;
-  uint8_t  parm1;
+  uint8_t parm1;
 } rad_ctl_pkt_9;
 
 typedef struct {
@@ -56,11 +56,11 @@ typedef struct {
 typedef struct {
   uint32_t packet_type;
   uint32_t len1;
-  uint8_t  parm1;
-  uint8_t  parm2;
-  uint8_t  parm3;
-  uint8_t  parm4;
-}rad_ctl_pkt_12_4b;
+  uint8_t parm1;
+  uint8_t parm2;
+  uint8_t parm3;
+  uint8_t parm4;
+} rad_ctl_pkt_12_4b;
 
 #pragma pack(pop)
 
@@ -200,14 +200,14 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
   int value = item.GetValue();
   RadarControlState state = item.GetState();
 
-  rad_ctl_pkt_9     pck_9;
-  rad_ctl_pkt_10    pck_10;
-  rad_ctl_pkt_12    pck_12;
+  rad_ctl_pkt_9 pck_9;
+  rad_ctl_pkt_10 pck_10;
+  rad_ctl_pkt_12 pck_12;
   rad_ctl_pkt_12_4b pck_12_4b;
 
-  pck_9.len1     = sizeof(pck_9.parm1);
-  pck_10.len1    = sizeof(pck_10.parm1);
-  pck_12.len1    = sizeof(pck_12.parm1);
+  pck_9.len1 = sizeof(pck_9.parm1);
+  pck_10.len1 = sizeof(pck_10.parm1);
+  pck_12.len1 = sizeof(pck_12.parm1);
   pck_12_4b.len1 = sizeof(pck_12_4b.parm1);
 
   switch (controlType) {
@@ -258,42 +258,42 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
       break;
     }
 
-/*    case CT_NO_TRANSMIT_START: {
-      // value is already in range -180 .. +180 which is what I think radar wants...
-      if (state == RCS_OFF) {  // OFF
-        pck_9.packet_type = 0x93f;
-        pck_9.parm1 = 0;
-        r = TransmitCmd(&pck_9, sizeof(pck_9));
-      } else {
-        pck_9.packet_type = 0x93f;
-        pck_9.parm1 = 1;
-        r = TransmitCmd(&pck_9, sizeof(pck_9));
-        pck_12.packet_type = 0x940;
-        pck_12.parm1 = value * 32;
-        r = TransmitCmd(&pck_12, sizeof(pck_12));
-        m_ri->m_no_transmit_start.Update(value);  // necessary because we hacked "off" as auto value
-      }
-      LOG_VERBOSE(wxT("radar_pi: %s No Transmit Start: value=%d state=%d"), m_name.c_str(), value, (int)state);
-      break;
-    }
+    /*    case CT_NO_TRANSMIT_START: {
+          // value is already in range -180 .. +180 which is what I think radar wants...
+          if (state == RCS_OFF) {  // OFF
+            pck_9.packet_type = 0x93f;
+            pck_9.parm1 = 0;
+            r = TransmitCmd(&pck_9, sizeof(pck_9));
+          } else {
+            pck_9.packet_type = 0x93f;
+            pck_9.parm1 = 1;
+            r = TransmitCmd(&pck_9, sizeof(pck_9));
+            pck_12.packet_type = 0x940;
+            pck_12.parm1 = value * 32;
+            r = TransmitCmd(&pck_12, sizeof(pck_12));
+            m_ri->m_no_transmit_start.Update(value);  // necessary because we hacked "off" as auto value
+          }
+          LOG_VERBOSE(wxT("radar_pi: %s No Transmit Start: value=%d state=%d"), m_name.c_str(), value, (int)state);
+          break;
+        }
 
-    case CT_NO_TRANSMIT_END: {
-      // value is already in range -180 .. +180 which is what I think radar wants...
-      if (state == RCS_OFF) {  // OFF
-        pck_9.packet_type = 0x93f;
-        pck_9.parm1 = 0;
-        r = TransmitCmd(&pck_9, sizeof(pck_9));
-      } else {
-        pck_9.packet_type = 0x93f;
-        pck_9.parm1 = 1;
-        r = TransmitCmd(&pck_9, sizeof(pck_9));
-        pck_12.packet_type = 0x941;
-        pck_12.parm1 = value * 32;
-        r = TransmitCmd(&pck_12, sizeof(pck_12));
-      }
-      LOG_VERBOSE(wxT("radar_pi: %s No Transmit End: value=%d state=%d"), m_name.c_str(), value, (int)state);
-      break;
-    } */
+        case CT_NO_TRANSMIT_END: {
+          // value is already in range -180 .. +180 which is what I think radar wants...
+          if (state == RCS_OFF) {  // OFF
+            pck_9.packet_type = 0x93f;
+            pck_9.parm1 = 0;
+            r = TransmitCmd(&pck_9, sizeof(pck_9));
+          } else {
+            pck_9.packet_type = 0x93f;
+            pck_9.parm1 = 1;
+            r = TransmitCmd(&pck_9, sizeof(pck_9));
+            pck_12.packet_type = 0x941;
+            pck_12.parm1 = value * 32;
+            r = TransmitCmd(&pck_12, sizeof(pck_12));
+          }
+          LOG_VERBOSE(wxT("radar_pi: %s No Transmit End: value=%d state=%d"), m_name.c_str(), value, (int)state);
+          break;
+        } */
 
     case CT_GAIN: {
       LOG_VERBOSE(wxT("radar_pi: %s Gain: value=%d state=%d"), m_name.c_str(), value, (int)state);
@@ -312,32 +312,32 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
     case CT_SEA: {
       LOG_VERBOSE(wxT("radar_pi: %s Sea: value=%d state=%d"), m_name.c_str(), value, (int)state);
       pck_12_4b.parm3 = 0;
-	  pck_12_4b.parm4 = 0;
-	  
+      pck_12_4b.parm4 = 0;
+
       if (state == RCS_AUTO_1) {
         pck_12_4b.packet_type = 0x2b5;
-		pck_12_4b.parm1 = 33;  // calm
+        pck_12_4b.parm1 = 33;  // calm
         pck_12_4b.parm2 = 1;   // auto
         r = TransmitCmd(&pck_12, sizeof(pck_12));
       } else if (state == RCS_AUTO_2) {
         pck_12_4b.packet_type = 0x2b5;
-		pck_12_4b.parm1 = 67;  // medium
+        pck_12_4b.parm1 = 67;  // medium
         pck_12_4b.parm2 = 2;   // auto
         r = TransmitCmd(&pck_12, sizeof(pck_12));
       } else if (state == RCS_AUTO_3) {
         pck_12_4b.packet_type = 0x2b5;
-		pck_12_4b.parm1 = 100; // rough
-        pck_12_4b.parm2 = 2;   // auto
+        pck_12_4b.parm1 = 100;  // rough
+        pck_12_4b.parm2 = 2;    // auto
         r = TransmitCmd(&pck_12, sizeof(pck_12));
       } else if (state == RCS_OFF) {
         pck_12_4b.packet_type = 0x2b5;
-        pck_12_4b.parm1 = 0;   // off
-		pck_12_4b.parm2 = 0;   // off
+        pck_12_4b.parm1 = 0;  // off
+        pck_12_4b.parm2 = 0;  // off
         r = TransmitCmd(&pck_12_4b, sizeof(pck_12_4b));
       } else if (state == RCS_MANUAL) {
         pck_12_4b.packet_type = 0x2b5;
         pck_12_4b.parm1 = value;
-        pck_12_4b.parm1 = 0;   // manual
+        pck_12_4b.parm1 = 0;  // manual
         r = TransmitCmd(&pck_12_4b, sizeof(pck_12_4b));
       }
       break;

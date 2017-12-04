@@ -119,8 +119,8 @@ class RadarInfo {
   RadarControlItem m_trails_motion;
   RadarControlItem m_target_on_ppi;
   RadarControlItem m_warmup;
-  RadarControlItem m_timed_idle;     // CT_TIMED_IDLE
-  RadarControlItem m_timed_run;  // CT_TIMED_RUN
+  RadarControlItem m_timed_idle;  // CT_TIMED_IDLE
+  RadarControlItem m_timed_run;   // CT_TIMED_RUN
 
   bool m_showManualValueInAuto;  // Does radar adjust manual value in auto mode? True for Garmin, False for others
 
