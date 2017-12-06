@@ -1015,13 +1015,13 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   double bearing = pol->angle * 360. / m_ri->m_spokes;
 
   if (bearing < 0) bearing += 360;
-  s_TargID = wxString::Format(wxT("%4i"), m_target_id);
+  s_TargID = wxString::Format(wxT("%2i"), m_target_id);
   s_speed = wxString::Format(wxT("%4.2f"), m_speed_kn);
   s_course = wxString::Format(wxT("%3.1f"), m_course);
   if (m_automatic) {
-    s_target_name = wxString::Format(wxT("ARPA%4i"), m_target_id);
+    s_target_name = wxString::Format(wxT("ARPA%2i"), m_target_id);
   } else {
-    s_target_name = wxString::Format(wxT("MARPA%4i"), m_target_id);
+    s_target_name = wxString::Format(wxT("MARPA%2i"), m_target_id);
   }
   s_distance = wxString::Format(wxT("%f"), dist);
   s_bearing = wxString::Format(wxT("%f"), bearing);
