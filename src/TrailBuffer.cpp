@@ -219,15 +219,12 @@ void TrailBuffer::UpdateTrailPosition() {
   // So we move the image around within the m_trails.true_trails buffer (by moving the pointer).
   // But when there is no room anymore (margin used) the whole trails image is shifted
   // and the offset is reset
-  if (m_offset.lon >= MARGIN || m_offset.lon <= -MARGIN) {
-    LOG_INFO(wxT("radar_pi: offset lon too large %d"), m_offset.lon);
-    m_offset.lon = 0;
-  }
-  if (m_offset.lat >= MARGIN || m_offset.lat <= -MARGIN) {
-    LOG_INFO(wxT("radar_pi: offset lat too large %d"), m_offset.lat);
-    m_offset.lat = 0;
+  if (m_offset.lon >= MARGIN || m_offset.lon <= -MARGIN || m_offset.lat >= MARGIN || m_offset.lat <= -MARGIN) {
+    LOG_INFO(wxT("radar_pi: offset lat %d or lon too large %d"), m_offset.lat, m_offset.lon);
+    ClearTrails();
     return;
   }
+ 
   // zooming of trails required? First check conditions
   if (m_previous_pixels_per_meter == 0. || m_ri->m_pixels_per_meter == 0.) {
     ClearTrails();
@@ -263,7 +260,6 @@ void TrailBuffer::UpdateTrailPosition() {
   double fshift_lat = dif_lat * 60. * 1852. * m_ri->m_pixels_per_meter;
   double fshift_lon = dif_lon * 60. * 1852. * m_ri->m_pixels_per_meter;
   fshift_lon *= cos(deg2rad(radar.lat));  // at higher latitudes a degree of longitude is fewer meters
-
   // Get the integer pixel shift, first add previous rounding error
   shift.lat = (int)(fshift_lat + m_dif.lat);
   shift.lon = (int)(fshift_lon + m_dif.lon);
@@ -408,6 +404,8 @@ void TrailBuffer::ClearTrails() {
     memset(m_true_trails, 0, m_trail_size * m_trail_size);
     m_offset.lat = 0;
     m_offset.lon = 0;
+    m_dif.lat = 0.;
+    m_dif.lon = 0.;
   }
   if (m_relative_trails) {
     memset(m_relative_trails, 0, m_spokes * m_max_spoke_len);
