@@ -861,11 +861,8 @@ void ArpaTarget::RefreshTarget(int dist) {
         s = Q;
       }
       // Check for AIS target at (M)ARPA position
-      double posOffset = (double)m_pi->m_settings.AISatARPAoffset;
-      // Default 40 >> look 80 meters around + 4% of distance to target
-      double dist2target = (4.0 / 100) * pol.r / m_ri->m_pixels_per_meter;
-      posOffset += dist2target;
-      if (m_pi->FindAIS_at_arpaPos(m_position.pos, posOffset)) s = L;
+      double dist2target = pol.r / m_ri->m_pixels_per_meter;
+      if (m_pi->FindAIS_at_arpaPos(m_position.pos, dist2target)) s = L;
       PassARPAtoOCPN(&pol, s);
     }
   }

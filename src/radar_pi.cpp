@@ -1288,8 +1288,8 @@ bool radar_pi::LoadConfig(void) {
       pConf->Read(wxT("AlarmPosY"), &y, 175);
       m_settings.alarm_pos = wxPoint(x, y);
       pConf->Read(wxT("EnableCOGHeading"), &m_settings.enable_cog_heading, false);
-      pConf->Read(wxT("AISatARPAoffset"), &m_settings.AISatARPAoffset, 40);
-      if (m_settings.AISatARPAoffset < 10 || m_settings.AISatARPAoffset > 200) m_settings.AISatARPAoffset = 40;
+      pConf->Read(wxT("AISatARPAoffset"), &m_settings.AISatARPAoffset, 50);
+      if (m_settings.AISatARPAoffset < 10 || m_settings.AISatARPAoffset > 300) m_settings.AISatARPAoffset = 50;
 
       n++;
     }
@@ -1586,85 +1586,77 @@ void radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
     // Check for ARPA targets
     bool arpa_is_present = false;
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-        if (m_radar[r]->m_arpa) {
-            arpa_is_present = true;
-            break;
-        }
+      if (m_radar[r]->m_arpa->GetTargetCount() > 0) {
+        arpa_is_present = true;
+        break;
+      }
     }
     if (arpa_is_present) {
-        // Find max size of ARPA zone(s) 
-        double ArpaMaxRange = 0.0;
-        bool ArpaGuardOn = false;
-        for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-          if (m_radar[r]->m_state.GetValue() != RADAR_OFF) {  // One radar is on. Check for guardzones
-            for (size_t i = 0; i < M_SETTINGS.radar_count; i++) {
-              for (size_t z = 0; z < GUARD_ZONES; z++) {
-                if (m_radar[i]->m_guard_zone[z]->m_arpa_on) {
-                  ArpaGuardOn = true;
-                  int t = m_radar[i]->m_guard_zone[z]->m_outer_range;
-                  if (t > ArpaMaxRange) ArpaMaxRange = t;
+        wxJSONReader reader;
+        wxJSONValue message;
+        if (!reader.Parse(message_body, &message)) {
+        wxJSONValue defaultValue(999);
+        long json_ais_mmsi = message.Get(_T("mmsi"), defaultValue).AsLong();
+        if (json_ais_mmsi > 200000000) {  // Neither ARPA targets nor SAR_aircraft
+            wxJSONValue defaultValue("90.0");
+            double f_AISLat = wxAtof(message.Get(_T("lat"), defaultValue).AsString());
+            double f_AISLon = wxAtof(message.Get(_T("lon"), defaultValue).AsString());
+              
+            // Rectangle around own ship to look for AIS targets.
+            double d_side = arpa_max_range / 1852.0 / 60.0;
+            if (f_AISLat < (m_ownship.lat + d_side) && 
+                f_AISLat > (m_ownship.lat - d_side) &&
+                f_AISLon < (m_ownship.lon + d_side * 2) && 
+                f_AISLon > (m_ownship.lon - d_side * 2)) {
+            bool updated = false;
+            for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) {  // Check for existing mmsi
+                if (m_ais_in_arpa_zone[i].ais_mmsi == json_ais_mmsi) {
+                m_ais_in_arpa_zone[i].ais_time_upd = time(0);
+                m_ais_in_arpa_zone[i].ais_lat = f_AISLat;
+                m_ais_in_arpa_zone[i].ais_lon = f_AISLon;
+                updated = true;
+                break;
                 }
-              }
             }
-            break;
-          }
-        }
-        if (ArpaGuardOn) {
-          wxJSONReader reader;
-          wxJSONValue message;
-          if (!reader.Parse(message_body, &message)) {
-            wxJSONValue defaultValue(999);
-            long json_ais_mmsi = message.Get(_T("mmsi"), defaultValue).AsLong();
-            if (json_ais_mmsi > 200000000) {  // Neither ARPA targets nor SAR_aircraft
-              wxJSONValue defaultValue("90.0");
-              double f_AISLat = wxAtof(message.Get(_T("lat"), defaultValue).AsString());
-              double f_AISLon = wxAtof(message.Get(_T("lon"), defaultValue).AsString());
-              // Rectangle around own ship to look for AIS targets.
-              double d_side = ArpaMaxRange / 1852.0 / 60.0;
-              if (f_AISLat < (m_ownship.lat + d_side) && f_AISLat > (m_ownship.lat - d_side) &&
-                  f_AISLon < (m_ownship.lon + d_side * 2) && f_AISLon > (m_ownship.lon - d_side * 2)) {
-                bool updated = false;
-                for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) {  // Check for existing mmsi
-                  if (m_ais_in_arpa_zone[i].ais_mmsi == json_ais_mmsi) {
-                    m_ais_in_arpa_zone[i].ais_time_upd = time(0);
-                    m_ais_in_arpa_zone[i].ais_lat = f_AISLat;
-                    m_ais_in_arpa_zone[i].ais_lon = f_AISLon;
-                    updated = true;
-                    break;
-                  }
-                }
-                if (!updated) {  // Add a new target to the list
-                  AisArpa m_new_ais_target;
-                  m_new_ais_target.ais_mmsi = json_ais_mmsi;
-                  m_new_ais_target.ais_time_upd = time(0);
-                  m_new_ais_target.ais_lat = f_AISLat;
-                  m_new_ais_target.ais_lon = f_AISLon;
-                  m_ais_in_arpa_zone.push_back(m_new_ais_target);
-                }
-              }
+            if (!updated) {  // Add a new target to the list
+                AisArpa m_new_ais_target;
+                m_new_ais_target.ais_mmsi = json_ais_mmsi;
+                m_new_ais_target.ais_time_upd = time(0);
+                m_new_ais_target.ais_lat = f_AISLat;
+                m_new_ais_target.ais_lon = f_AISLon;
+                m_ais_in_arpa_zone.push_back(m_new_ais_target);
             }
           }
         }
+      }
     }
     // Delete > 3 min old AIS items or at once if no active ARPA
     if (m_ais_in_arpa_zone.size() > 0) {
       for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) {
-        if (m_ais_in_arpa_zone[i].ais_mmsi > 0 && ((time(0) - m_ais_in_arpa_zone[i].ais_time_upd) > (3 * 60) || !arpa_is_present)) {
+        if (m_ais_in_arpa_zone[i].ais_mmsi > 0 && (time(0) - m_ais_in_arpa_zone[i].ais_time_upd > 3 * 60 || !arpa_is_present)) {
           m_ais_in_arpa_zone.erase(m_ais_in_arpa_zone.begin() + i);
+          arpa_max_range = BASE_ARPA_DIST; // Renew AIS search area
         }
       }
     }
   }
 }
 
-bool radar_pi::FindAIS_at_arpaPos(const GeoPosition &pos, const double &dist) {
+bool radar_pi::FindAIS_at_arpaPos(const GeoPosition &pos, const double &arpa_dist) {
+  arpa_max_range = MAX(arpa_dist + 200, arpa_max_range);  // For AIS search area
   if (m_ais_in_arpa_zone.size() < 1) return false;
   bool hit = false;
-  double offset = dist / 1852. / 60.;
+  // Default 50 >> look 100 meters around + 4% of distance to target
+  double offset = (double)m_settings.AISatARPAoffset;
+  double dist2target = (4.0 / 100) * arpa_dist;
+  offset += dist2target;
+  offset = offset / 1852. / 60.;
   for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) {
     if (m_ais_in_arpa_zone[i].ais_mmsi != 0) {  // Avtive post
-      if (pos.lat + offset > m_ais_in_arpa_zone[i].ais_lat && pos.lat - offset < m_ais_in_arpa_zone[i].ais_lat &&
-          pos.lon + (offset * 1.75) > m_ais_in_arpa_zone[i].ais_lon && pos.lon - (offset * 1.75) < m_ais_in_arpa_zone[i].ais_lon) {
+      if (pos.lat + offset > m_ais_in_arpa_zone[i].ais_lat && 
+          pos.lat - offset < m_ais_in_arpa_zone[i].ais_lat &&
+          pos.lon + (offset * 1.75) > m_ais_in_arpa_zone[i].ais_lon && 
+          pos.lon - (offset * 1.75) < m_ais_in_arpa_zone[i].ais_lon) {
         hit = true;
         break;
       }
