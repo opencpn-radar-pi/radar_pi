@@ -1258,6 +1258,8 @@ void ControlsDialog::OnTargetsOnPPIButtonClick(wxCommandEvent& event) {
 }
 
 void ControlsDialog::EnterEditMode(RadarControlButton* button) {
+  wxString label1, label2, label3, label4;
+  
   m_from_control = button;  // Keep a record of which button was clicked
   m_value_text->SetLabel(button->GetLabel());
   SwitchTo(m_edit_sizer, wxT("edit"));
@@ -1284,9 +1286,38 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
 
   bool hasAuto = m_from_control->m_ci.autoValues > 0;
 
-  if (m_from_control->m_ci.type == CT_RANGE) {  // Range only allows auto if overlay is on
+  if (m_from_control->m_ci.type == CT_RANGE) {         // Range only allows auto if overlay is on
     hasAuto = m_ri->m_overlay.GetValue() > 0;
   }
+
+  if (m_from_control->m_ci.type == CT_GAIN ||
+      m_from_control->m_ci.type == CT_SEA ||
+      m_from_control->m_ci.type == CT_RAIN ||
+      m_from_control->m_ci.type == CT_TRANSPARENCY) {
+    if (m_from_control->m_ci.type == CT_TRANSPARENCY && (m_from_control->m_ci.stepValue > 1)){
+      label1 << wxString::Format(wxT("+ %d "), m_from_control->m_ci.stepValue);
+      label2 << wxString::Format(wxT("- %d "), m_from_control->m_ci.stepValue);
+      label1 << _("%");
+      label2 << _("%");
+	  label3 << _("+10 %");
+      label4 << _("-10 %");
+    } else {
+      label1 << _("+1 %");
+      label2 << _("-1 %");
+      label3 << _("+10 %");
+      label4 << _("-10 %");
+    }
+  } else { 
+    label1 << _("+");
+    label2 << _("-");
+    label3 << _("+10");
+    label4 << _("-10");
+  }
+
+  m_plus_button->SetLabel(label1);
+  m_minus_button->SetLabel(label2);
+  m_plus_ten_button->SetLabel(label3);
+  m_minus_ten_button->SetLabel(label4);
 
   if (hasAuto) {
     m_auto_button->Show();
