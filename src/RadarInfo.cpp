@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "GuardZone.h"
 #include "MessageBox.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
+#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -57,6 +57,8 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_radar = radar;
   m_arpa = 0;
   m_range.UpdateState(RCS_AUTO_1);
+  m_timed_run.Update(0, RCS_OFF);
+  m_timed_idle.Update(0, RCS_OFF);
   m_course_index = 0;
   m_old_range = 0;
   m_dir_lat = 0;
@@ -1319,7 +1321,7 @@ void RadarInfo::AdjustRange(int adjustment) {
 wxString RadarInfo::GetTimedIdleText() {
   wxString text;
 
-  if (m_timed_idle.GetValue() > 0) {
+  if (m_timed_idle.GetState() == RCS_MANUAL) {
     if (m_arpa->GetTargetCount() != 0) {
       text = _("Transmit for targets");
     } else {
@@ -1347,7 +1349,7 @@ wxString RadarInfo::GetTimedIdleText() {
  * If the OFF timer is running and has run out, stop the radar and start an ON timer.
  */
 void RadarInfo::CheckTimedTransmit() {
-  if (m_timed_idle.GetValue() == 0) {
+  if (m_timed_idle.GetState() == RCS_OFF) {
     return;  // User does not want timed idle
   }
 
@@ -1365,12 +1367,12 @@ void RadarInfo::CheckTimedTransmit() {
 
   if (m_idle_standby > 0 && TIMED_OUT(now, m_idle_standby) && state == RADAR_TRANSMIT) {
     RequestRadarState(RADAR_STANDBY);
-    m_idle_transmit = now + m_timed_idle.GetValue() * SECONDS_PER_TIMED_IDLE_SETTING -
-                      (m_timed_run.GetValue() + 1) * SECONDS_PER_TIMED_RUN_SETTING;
+    m_idle_transmit =
+        now + m_timed_idle.GetValue() * SECONDS_PER_TIMED_IDLE_SETTING - m_timed_run.GetValue() * SECONDS_PER_TIMED_RUN_SETTING;
     m_idle_standby = 0;
   } else if (m_idle_transmit > 0 && TIMED_OUT(now, m_idle_transmit) && state == RADAR_STANDBY) {
     RequestRadarState(RADAR_TRANSMIT);
-    m_idle_standby = now + (m_timed_run.GetValue() + 1) * SECONDS_PER_TIMED_RUN_SETTING;
+    m_idle_standby = now + m_timed_run.GetValue() * SECONDS_PER_TIMED_RUN_SETTING;
     m_idle_transmit = 0;
   }
 }

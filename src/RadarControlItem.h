@@ -61,10 +61,12 @@ enum RadarControlState {
 
 class RadarControlItem {
  public:
+  const int VALUE_NOT_SET = -10000;
+
   RadarControlItem() {
     m_value = 0;
     m_state = RCS_OFF;
-    m_button_v = -10000;  // Unlikely value so that first actual set sets proper value + mod
+    m_button_v = VALUE_NOT_SET;  // Unlikely value so that first actual set sets proper value + mod
     m_button_s = RCS_OFF;
     m_mod = true;
   }
@@ -180,7 +182,7 @@ class RadarRangeControlItem : public RadarControlItem {
   RadarRangeControlItem() {
     m_value = 0;
     m_state = RCS_OFF;
-    m_button_v = -10000;  // Unlikely value so that first actual set sets proper value + mod
+    m_button_v = VALUE_NOT_SET;  // Unlikely value so that first actual set sets proper value + mod
     m_button_s = RCS_OFF;
     m_mod = true;
   }

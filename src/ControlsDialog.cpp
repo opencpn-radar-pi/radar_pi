@@ -259,7 +259,7 @@ void RadarControlButton::UpdateLabel(bool force) {
     }
     label << wxT("\n");
 
-    switch (m_item->GetState()) {
+    switch (state) {
       case RCS_OFF:
         label << _("Off");
         break;
@@ -1505,7 +1505,7 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
   RadarState state = (RadarState)m_ri->m_state.GetButton();
 
   if (m_top_sizer->IsShown(m_power_sizer)) {
-    if (m_ri->m_timed_idle.GetValue() > 0) {
+    if (m_ri->m_timed_idle.GetState() == RCS_MANUAL) {
       if (!m_timed_run_button->IsShown()) {
         m_power_sizer->Show(m_timed_run_button);
         resize = true;
@@ -1760,7 +1760,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (state == RADAR_OFF) {
     o << _("Off");
     DisableRadarControls();
-  } else if (m_ri->m_timed_idle.GetValue() == 0) {
+  } else if (m_ri->m_timed_idle.GetState() == RCS_OFF) {
     switch (state) {
       case RADAR_OFF:
         break;
@@ -1780,7 +1780,6 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
         o << _("Transmitting");
         break;
     }
-    m_timed_idle_button->SetState(RCS_OFF);
     EnableRadarControls();
   } else {
     o << m_ri->GetTimedIdleText();
