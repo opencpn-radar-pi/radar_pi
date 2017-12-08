@@ -169,6 +169,33 @@ class RadarControlItem {
   bool m_mod;
 };
 
+/*
+ * RadarRange is a little different. Since the 'Auto' range is computed
+ * by the plugin and not a state coming from the radar any range change
+ * coming from the radar should not be interpreted as being a change back
+ * to manual state (RCS_MANUAL.)
+ */
+class RadarRangeControlItem : public RadarControlItem {
+public:
+    RadarRangeControlItem() {
+        m_value = 0;
+        m_state = RCS_OFF;
+        m_button_v = -10000;  // Unlikely value so that first actual set sets proper value + mod
+        m_button_s = RCS_OFF;
+        m_mod = true;
+    }
+
+    void Update(int v) {
+        wxCriticalSectionLocker lock(m_exclusive);
+        
+        if (v != m_button_v) {
+            m_mod = true;
+            m_button_v = v;
+        }
+        m_value = v;
+    };
+};
+
 PLUGIN_END_NAMESPACE
 
 #endif

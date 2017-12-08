@@ -56,7 +56,7 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_pi = pi;
   m_radar = radar;
   m_arpa = 0;
-  m_auto_range_mode = true;
+  m_range.UpdateState(RCS_AUTO_1);
   m_course_index = 0;
   m_old_range = 0;
   m_dir_lat = 0;
@@ -612,7 +612,7 @@ void RadarInfo::RenderGuardZone() {
 }
 
 void RadarInfo::SetAutoRangeMeters(int meters) {
-  if (m_state.GetValue() == RADAR_TRANSMIT && m_auto_range_mode) {
+  if (m_state.GetValue() == RADAR_TRANSMIT && m_range.GetState() == RCS_AUTO_1) {
     // Don't adjust auto range meters continuously when it is oscillating a little bit (< 5%)
     int test = 100 * m_previous_auto_range_meters / meters;
     if (test < 95 || test > 105) {  //   range change required
@@ -1047,7 +1047,7 @@ wxString RadarInfo::GetCanvasTextCenter() {
 wxString RadarInfo::GetRangeText() {
   int meters = m_range.GetValue();
 
-  bool auto_range = m_auto_range_mode && (m_overlay.GetValue() > 0);
+  bool auto_range = m_range.GetState() == RCS_AUTO_1 && m_overlay.GetValue() > 0;
 
   m_range_text = wxT("");
   if (auto_range) {
@@ -1065,7 +1065,7 @@ wxString RadarInfo::GetRangeText() {
     m_range_text << wxT(")");
   }
 
-  LOG_DIALOG(wxT("radar_pi: range label '%s' for range=%d auto=%d"), m_range_text.c_str(), meters, m_auto_range_mode);
+  LOG_DIALOG(wxT("radar_pi: range label '%s' for range=%d auto=%d"), m_range_text.c_str(), meters, auto_range);
   return m_range_text;
 }
 
@@ -1294,7 +1294,7 @@ void RadarInfo::AdjustRange(int adjustment) {
   size_t count = RadarFactory::GetRadarRanges(m_radar_type, M_SETTINGS.range_units, &ranges);
   size_t n;
 
-  m_auto_range_mode = false;
+  m_range.UpdateState(RCS_MANUAL);
   m_previous_auto_range_meters = 0;
 
   for (n = count - 1; n > 0; n--) {

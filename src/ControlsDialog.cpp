@@ -322,10 +322,8 @@ bool RadarRangeControlButton::ToggleState() {
   LOG_VERBOSE(wxT("%s Button '%s' toggle Auto %d"), m_parent->m_log_name.c_str(), GetName(), state);
   if (state >= RCS_AUTO_1 || m_parent->m_ri->m_overlay.GetValue() == 0) {
     state = RCS_MANUAL;
-    m_parent->m_ri->m_auto_range_mode = false;
   } else {
     state = RCS_AUTO_1;
-    m_parent->m_ri->m_auto_range_mode = true;
   }
   m_item->UpdateState(state);
   SetState(state);

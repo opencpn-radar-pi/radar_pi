@@ -541,6 +541,7 @@ class RadarRangeControlButton : public RadarControlButton {
     m_ci.type = CT_RANGE;
     m_ci.hasOff = false;
     m_ci.defaultValue = 0;
+    m_ci.stepValue = 1;
 
     SetFont(m_parent->m_pi->m_font);
   }

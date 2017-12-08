@@ -95,7 +95,7 @@ class RadarInfo {
   int m_min_contour_length;  // minimum contour length of an ARPA or MARPA target
 
   RadarControlItem m_overlay;
-  RadarControlItem m_range;  // value in meters, shown on display
+  RadarRangeControlItem m_range;  // value in meters, shown on display
   RadarControlItem m_gain;
   RadarControlItem m_interference_rejection;
   RadarControlItem m_target_separation;
@@ -141,8 +141,6 @@ class RadarInfo {
   time_t m_stayalive_timeout;  // When we will send another stayalive ping
 #define STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
 #define DATA_TIMEOUT (5)
-
-  bool m_auto_range_mode;
 
   bool m_status_text_hide;
 
