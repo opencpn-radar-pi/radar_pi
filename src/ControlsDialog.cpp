@@ -699,15 +699,15 @@ void ControlsDialog::CreateControls() {
 
   if (m_ctrl[CT_NOISE_REJECTION].type) {
     // The NOISE REJECTION button
-    m_noise_rejection_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Noise rejection"), m_ctrl[CT_NOISE_REJECTION],
-                                                      &m_ri->m_noise_rejection);
+    m_noise_rejection_button =
+        new RadarControlButton(this, ID_CONTROL_BUTTON, _("Noise rejection"), m_ctrl[CT_NOISE_REJECTION], &m_ri->m_noise_rejection);
     m_advanced_sizer->Add(m_noise_rejection_button, 0, wxALL, BORDER);
   }
 
   // The TARGET EXPANSION button
   if (m_ctrl[CT_TARGET_EXPANSION].type) {
-    m_target_expansion_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Target expansion"),
-                                                       m_ctrl[CT_TARGET_EXPANSION], &m_ri->m_target_expansion);
+    m_target_expansion_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Target expansion"), m_ctrl[CT_TARGET_EXPANSION],
+                                                       &m_ri->m_target_expansion);
     m_advanced_sizer->Add(m_target_expansion_button, 0, wxALL, BORDER);
   }
 
@@ -728,7 +728,8 @@ void ControlsDialog::CreateControls() {
 
   // The SCAN SPEED button
   if (m_ctrl[CT_SCAN_SPEED].type) {
-    m_scan_speed_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Scan speed"), m_ctrl[CT_SCAN_SPEED], &m_ri->m_scan_speed);
+    m_scan_speed_button =
+        new RadarControlButton(this, ID_CONTROL_BUTTON, _("Scan speed"), m_ctrl[CT_SCAN_SPEED], &m_ri->m_scan_speed);
     m_advanced_sizer->Add(m_scan_speed_button, 0, wxALL, BORDER);
   }
 
@@ -775,8 +776,8 @@ void ControlsDialog::CreateControls() {
 
   // The NO TRANSMIT END button
   if (m_ctrl[CT_NO_TRANSMIT_END].type) {
-    m_no_transmit_end_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("No transmit end"), m_ctrl[CT_NO_TRANSMIT_END],
-                                                      &m_ri->m_no_transmit_end);
+    m_no_transmit_end_button =
+        new RadarControlButton(this, ID_CONTROL_BUTTON, _("No transmit end"), m_ctrl[CT_NO_TRANSMIT_END], &m_ri->m_no_transmit_end);
     m_installation_sizer->Add(m_no_transmit_end_button, 0, wxALL, BORDER);
   }
 
@@ -806,8 +807,8 @@ void ControlsDialog::CreateControls() {
   // The LOCAL INTERFERENCE REJECTION button
   if (m_ctrl[CT_LOCAL_INTERFERENCE_REJECTION].type) {
     m_local_interference_rejection_button =
-        new RadarControlButton(this, ID_CONTROL_BUTTON, _("Local interference rej."),
-                               m_ctrl[CT_LOCAL_INTERFERENCE_REJECTION], &m_ri->m_local_interference_rejection);
+        new RadarControlButton(this, ID_CONTROL_BUTTON, _("Local interference rej."), m_ctrl[CT_LOCAL_INTERFERENCE_REJECTION],
+                               &m_ri->m_local_interference_rejection);
     m_installation_sizer->Add(m_local_interference_rejection_button, 0, wxALL, BORDER);
   }
 
@@ -1067,7 +1068,8 @@ void ControlsDialog::CreateControls() {
 
   // The TIMED TRANSMIT button
   if (m_ctrl[CT_TIMED_RUN].type) {
-    m_timed_run_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Timed Transmit"), m_ctrl[CT_TIMED_RUN], &m_ri->m_timed_run);
+    m_timed_run_button =
+        new RadarControlButton(this, ID_CONTROL_BUTTON, _("Timed Transmit"), m_ctrl[CT_TIMED_RUN], &m_ri->m_timed_run);
     m_power_sizer->Add(m_timed_run_button, 0, wxALL, BORDER);
   }
 
@@ -1259,7 +1261,7 @@ void ControlsDialog::OnTargetsOnPPIButtonClick(wxCommandEvent& event) {
 
 void ControlsDialog::EnterEditMode(RadarControlButton* button) {
   wxString label1, label2, label3, label4;
-  
+
   m_from_control = button;  // Keep a record of which button was clicked
   m_value_text->SetLabel(button->GetLabel());
   SwitchTo(m_edit_sizer, wxT("edit"));
@@ -1286,32 +1288,25 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
 
   bool hasAuto = m_from_control->m_ci.autoValues > 0;
 
-  if (m_from_control->m_ci.type == CT_RANGE) {         // Range only allows auto if overlay is on
+  if (m_from_control->m_ci.type == CT_RANGE) {  // Range only allows auto if overlay is on
     hasAuto = m_ri->m_overlay.GetValue() > 0;
   }
 
-  if (m_from_control->m_ci.type == CT_GAIN ||
-      m_from_control->m_ci.type == CT_SEA ||
-      m_from_control->m_ci.type == CT_RAIN ||
-      m_from_control->m_ci.type == CT_TRANSPARENCY) {
-    if (m_from_control->m_ci.type == CT_TRANSPARENCY && (m_from_control->m_ci.stepValue > 1)){
-      label1 << wxString::Format(wxT("+ %d "), m_from_control->m_ci.stepValue);
-      label2 << wxString::Format(wxT("- %d "), m_from_control->m_ci.stepValue);
-      label1 << _("%");
-      label2 << _("%");
-	  label3 << _("+10 %");
-      label4 << _("-10 %");
+  if (m_from_control->m_ci.unit.length() > 0) {
+    label1 << wxT("+") << m_from_control->m_ci.stepValue << wxT(" ") << m_from_control->m_ci.unit;
+    label2 << wxT("-") << m_from_control->m_ci.stepValue << wxT(" ") << m_from_control->m_ci.unit;
+    label3 << wxT("+") << (10 * m_from_control->m_ci.stepValue) << wxT(" ") << m_from_control->m_ci.unit;
+    label4 << wxT("-") << (10 * m_from_control->m_ci.stepValue) << wxT(" ") << m_from_control->m_ci.unit;
+  } else {
+    if (m_from_control->m_ci.stepValue > 1) {
+      label1 << wxT("+") << m_from_control->m_ci.stepValue;
+      label2 << wxT("-") << m_from_control->m_ci.stepValue;
     } else {
-      label1 << _("+1 %");
-      label2 << _("-1 %");
-      label3 << _("+10 %");
-      label4 << _("-10 %");
+      label1 << wxT("+");
+      label2 << wxT("-");
     }
-  } else { 
-    label1 << _("+");
-    label2 << _("-");
-    label3 << _("+10");
-    label4 << _("-10");
+    label3 << wxT("+") << (10 * m_from_control->m_ci.stepValue);
+    label4 << wxT("-") << (10 * m_from_control->m_ci.stepValue);
   }
 
   m_plus_button->SetLabel(label1);
