@@ -1304,6 +1304,7 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
     pConf->Read(wxT("GuardZoneDebugInc"), &m_settings.guard_zone_debug_inc, 0);
     pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, true);
+    pConf->Read(wxT("OverlayStandby"), &m_settings.overlay_on_standby, true);
     pConf->Read(wxT("GuardZoneTimeout"), &m_settings.guard_zone_timeout, 30);
     pConf->Read(wxT("GuardZonesRenderStyle"), &m_settings.guard_zone_render_style, 0);
     pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
@@ -1355,6 +1356,7 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("EnableCOGHeading"), m_settings.enable_cog_heading);
     pConf->Write(wxT("GuardZoneDebugInc"), m_settings.guard_zone_debug_inc);
     pConf->Write(wxT("GuardZoneOnOverlay"), m_settings.guard_zone_on_overlay);
+    pConf->Write(wxT("OverlayStandby"), m_settings.overlay_on_standby);
     pConf->Write(wxT("GuardZoneTimeout"), m_settings.guard_zone_timeout);
     pConf->Write(wxT("GuardZonesRenderStyle"), m_settings.guard_zone_render_style);
     pConf->Write(wxT("GuardZonesThreshold"), m_settings.guard_zone_threshold);

@@ -811,37 +811,38 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   }
 
   if (overlay) {
-    if (m_pi->m_settings.guard_zone_on_overlay) {
+    if (M_SETTINGS.overlay_on_standby || m_state.GetValue() == RADAR_TRANSMIT) {
+      if (M_SETTINGS.guard_zone_on_overlay) {
+        glPushMatrix();
+        glTranslated(center.x, center.y, 0);
+        glRotated(guard_rotate, 0.0, 0.0, 1.0);
+        glScaled(scale, scale, 1.);
+
+        // LOG_DIALOG(wxT("radar_pi: %s render guard zone on overlay"), m_name.c_str());
+        RenderGuardZone();
+        glPopMatrix();
+      }
+
+      double radar_scale = scale / m_pixels_per_meter;
       glPushMatrix();
       glTranslated(center.x, center.y, 0);
-      glRotated(guard_rotate, 0.0, 0.0, 1.0);
-      glScaled(scale, scale, 1.);
+      glRotated(panel_rotate, 0.0, 0.0, 1.0);
+      glScaled(radar_scale, radar_scale, 1.);
 
-      // LOG_DIALOG(wxT("radar_pi: %s render guard zone on overlay"), m_name.c_str());
-      RenderGuardZone();
+      RenderRadarImage(&m_draw_overlay);
       glPopMatrix();
+
+      if (arpa_on) {
+        glPushMatrix();
+        glTranslated(center.x, center.y, 0);
+        LOG_VERBOSE(wxT("radar_pi: %s render ARPA targets on overlay with rot=%f"), m_name.c_str(), arpa_rotate);
+
+        glRotated(arpa_rotate, 0.0, 0.0, 1.0);
+        glScaled(scale, scale, 1.);
+        m_arpa->DrawArpaTargets();
+        glPopMatrix();
+      }
     }
-
-    double radar_scale = scale / m_pixels_per_meter;
-    glPushMatrix();
-    glTranslated(center.x, center.y, 0);
-    glRotated(panel_rotate, 0.0, 0.0, 1.0);
-    glScaled(radar_scale, radar_scale, 1.);
-
-    RenderRadarImage(&m_draw_overlay);
-    glPopMatrix();
-
-    if (arpa_on) {
-      glPushMatrix();
-      glTranslated(center.x, center.y, 0);
-      LOG_VERBOSE(wxT("radar_pi: %s render ARPA targets on overlay with rot=%f"), m_name.c_str(), arpa_rotate);
-
-      glRotated(arpa_rotate, 0.0, 0.0, 1.0);
-      glScaled(scale, scale, 1.);
-      m_arpa->DrawArpaTargets();
-      glPopMatrix();
-    }
-
   } else if (range != 0) {
     wxStopWatch stopwatch;
 

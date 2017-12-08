@@ -282,15 +282,16 @@ static const int RangeUnitsToMeters[3] = {1852, 1000, 1852};
  * some of it is 'secret' and can only be set by manipulating the ini file directly.
  */
 struct PersistentSettings {
-  size_t radar_count;                              // How many radars we have
-  RadarControlItem overlay_transparency;           // How transparent is the radar picture over the chart
-  int range_index;                                 // index into range array, see RadarInfo.cpp
-  int verbose;                                     // Loglevel 0..4.
-  int guard_zone_threshold;                        // How many blobs must be sent by radar before we fire alarm
-  int guard_zone_render_style;                     // 0 = Shading, 1 = Outline, 2 = Shading + Outline
-  int guard_zone_timeout;                          // How long before we warn again when bogeys are found
-  bool guard_zone_on_overlay;                      // 0 = false, 1 = true
-  bool trails_on_overlay;                          // 0 = false, 1 = true
+  size_t radar_count;                     // How many radars we have
+  RadarControlItem overlay_transparency;  // How transparent is the radar picture over the chart
+  int range_index;                        // index into range array, see RadarInfo.cpp
+  int verbose;                            // Loglevel 0..4.
+  int guard_zone_threshold;               // How many blobs must be sent by radar before we fire alarm
+  int guard_zone_render_style;            // 0 = Shading, 1 = Outline, 2 = Shading + Outline
+  int guard_zone_timeout;                 // How long before we warn again when bogeys are found
+  bool guard_zone_on_overlay;
+  bool trails_on_overlay;
+  bool overlay_on_standby;
   int guard_zone_debug_inc;                        // Value to add on every cycle to guard zone bearings, for testing.
   double skew_factor;                              // Set to -1 or other value to correct skewing
   RangeUnits range_units;                          // See enum

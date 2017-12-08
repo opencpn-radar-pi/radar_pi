@@ -201,30 +201,12 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
 
   //  Options
 
-  wxFlexGridSizer *OptionsGrid = new wxFlexGridSizer(2, 1, 5);
+  wxFlexGridSizer *OptionsGrid = new wxFlexGridSizer(3, 1, 5);
   topSizer->Add(OptionsGrid, 0, wxALIGN_CENTER_HORIZONTAL | wxALL | wxEXPAND, 2);
 
   wxStaticBox *itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
   wxStaticBoxSizer *itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
   OptionsGrid->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
-
-  m_ShowExtremeRange = new wxCheckBox(this, wxID_ANY, _("Show ring at extreme range"));
-  itemStaticBoxSizerOptions->Add(m_ShowExtremeRange, 0, wxALL, border_size);
-  m_ShowExtremeRange->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnShowExtremeRangeClick), NULL,
-                              this);
-  m_ShowExtremeRange->SetValue(m_settings.show_extreme_range);
-
-  m_GuardZoneOnOverlay = new wxCheckBox(this, wxID_ANY, _("Show Guard Zone on overlay"));
-  itemStaticBoxSizerOptions->Add(m_GuardZoneOnOverlay, 0, wxALL, border_size);
-  m_GuardZoneOnOverlay->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnGuardZoneOnOverlayClick),
-                                NULL, this);
-  m_GuardZoneOnOverlay->SetValue(m_settings.guard_zone_on_overlay);
-
-  m_TrailsOnOverlay = new wxCheckBox(this, wxID_ANY, _("Show Target trails on overlay"));
-  itemStaticBoxSizerOptions->Add(m_TrailsOnOverlay, 0, wxALL, border_size);
-  m_TrailsOnOverlay->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnTrailsOnOverlayClick), NULL,
-                             this);
-  m_TrailsOnOverlay->SetValue(m_settings.trails_on_overlay);
 
   m_IgnoreHeading = new wxCheckBox(this, wxID_ANY, _("Ignore radar heading"), wxDefaultPosition, wxDefaultSize,
                                    wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
@@ -249,6 +231,36 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
   itemStaticBoxSizerOptions->Add(m_ReverseZoom, 0, wxALL, border_size);
   m_ReverseZoom->SetValue(m_settings.reverse_zoom ? true : false);
   m_ReverseZoom->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnReverseZoomClick), NULL, this);
+
+  //  Display options
+
+  wxStaticBox *itemStaticBoxDisplayOptions = new wxStaticBox(this, wxID_ANY, _("Display options"));
+  wxStaticBoxSizer *itemStaticBoxSizerDisplayOptions = new wxStaticBoxSizer(itemStaticBoxDisplayOptions, wxVERTICAL);
+  OptionsGrid->Add(itemStaticBoxSizerDisplayOptions, 0, wxEXPAND | wxALL, border_size);
+
+  m_ShowExtremeRange = new wxCheckBox(this, wxID_ANY, _("Show ring at extreme range"));
+  itemStaticBoxSizerDisplayOptions->Add(m_ShowExtremeRange, 0, wxALL, border_size);
+  m_ShowExtremeRange->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnShowExtremeRangeClick), NULL,
+                              this);
+  m_ShowExtremeRange->SetValue(m_settings.show_extreme_range);
+
+  m_GuardZoneOnOverlay = new wxCheckBox(this, wxID_ANY, _("Show Guard Zone on overlay"));
+  itemStaticBoxSizerDisplayOptions->Add(m_GuardZoneOnOverlay, 0, wxALL, border_size);
+  m_GuardZoneOnOverlay->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnGuardZoneOnOverlayClick),
+                                NULL, this);
+  m_GuardZoneOnOverlay->SetValue(m_settings.guard_zone_on_overlay);
+
+  m_TrailsOnOverlay = new wxCheckBox(this, wxID_ANY, _("Show Target trails on overlay"));
+  itemStaticBoxSizerDisplayOptions->Add(m_TrailsOnOverlay, 0, wxALL, border_size);
+  m_TrailsOnOverlay->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnTrailsOnOverlayClick), NULL,
+                             this);
+  m_TrailsOnOverlay->SetValue(m_settings.trails_on_overlay);
+
+  m_OverlayStandby = new wxCheckBox(this, wxID_ANY, _("Show data on overlay when radar is standby"));
+  itemStaticBoxSizerDisplayOptions->Add(m_OverlayStandby, 0, wxALL, border_size);
+  m_OverlayStandby->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnOverlayOnStandbyClick), NULL,
+                            this);
+  m_OverlayStandby->SetValue(m_settings.overlay_on_standby);
 
   // Reset radars button
   wxStaticBox *itemStaticBoxReset = new wxStaticBox(this, wxID_ANY, _("Radar types"));
@@ -283,6 +295,8 @@ void OptionsDialog::OnGuardZoneOnOverlayClick(wxCommandEvent &event) {
 void OptionsDialog::OnShowExtremeRangeClick(wxCommandEvent &event) {
   m_settings.show_extreme_range = m_ShowExtremeRange->GetValue();
 }
+
+void OptionsDialog::OnOverlayOnStandbyClick(wxCommandEvent &event) { m_settings.overlay_on_standby = m_OverlayStandby->GetValue(); }
 
 void OptionsDialog::OnTrailsOnOverlayClick(wxCommandEvent &event) { m_settings.trails_on_overlay = m_TrailsOnOverlay->GetValue(); }
 

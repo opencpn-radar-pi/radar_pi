@@ -49,6 +49,7 @@ class OptionsDialog : public wxDialog {
   void OnDisplayModeClick(wxCommandEvent& event);
   void OnGuardZoneStyleClick(wxCommandEvent& event);
   void OnGuardZoneOnOverlayClick(wxCommandEvent& event);
+  void OnOverlayOnStandbyClick(wxCommandEvent& event);
   void OnGuardZoneTimeoutClick(wxCommandEvent& event);
   void OnShowExtremeRangeClick(wxCommandEvent& event);
   void OnTrailsOnOverlayClick(wxCommandEvent& event);
@@ -89,6 +90,7 @@ class OptionsDialog : public wxDialog {
   wxCheckBox* m_ShowExtremeRange;
   wxCheckBox* m_GuardZoneOnOverlay;
   wxCheckBox* m_TrailsOnOverlay;
+  wxCheckBox* m_OverlayStandby;
   wxCheckBox* m_IgnoreHeading;
   wxCheckBox* m_PassHeading;
   wxCheckBox* m_COGHeading;

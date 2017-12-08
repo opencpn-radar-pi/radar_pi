@@ -224,7 +224,7 @@ void TrailBuffer::UpdateTrailPosition() {
     ClearTrails();
     return;
   }
- 
+
   // zooming of trails required? First check conditions
   if (m_previous_pixels_per_meter == 0. || m_ri->m_pixels_per_meter == 0.) {
     ClearTrails();

@@ -176,24 +176,24 @@ class RadarControlItem {
  * to manual state (RCS_MANUAL.)
  */
 class RadarRangeControlItem : public RadarControlItem {
-public:
-    RadarRangeControlItem() {
-        m_value = 0;
-        m_state = RCS_OFF;
-        m_button_v = -10000;  // Unlikely value so that first actual set sets proper value + mod
-        m_button_s = RCS_OFF;
-        m_mod = true;
-    }
+ public:
+  RadarRangeControlItem() {
+    m_value = 0;
+    m_state = RCS_OFF;
+    m_button_v = -10000;  // Unlikely value so that first actual set sets proper value + mod
+    m_button_s = RCS_OFF;
+    m_mod = true;
+  }
 
-    void Update(int v) {
-        wxCriticalSectionLocker lock(m_exclusive);
-        
-        if (v != m_button_v) {
-            m_mod = true;
-            m_button_v = v;
-        }
-        m_value = v;
-    };
+  void Update(int v) {
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    if (v != m_button_v) {
+      m_mod = true;
+      m_button_v = v;
+    }
+    m_value = v;
+  };
 };
 
 PLUGIN_END_NAMESPACE
