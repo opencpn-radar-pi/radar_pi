@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
+#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "GuardZone.h"
 #include "MessageBox.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -436,7 +436,13 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
     }
   }
 
-  bool draw_trails_on_overlay = (m_pi->m_settings.trails_on_overlay == 1);
+  size_t trail_len = len;
+  if (m_pi->m_settings.show_extreme_range) {
+    data[len - 1] = 255;
+    trail_len--;
+  }
+
+  bool draw_trails_on_overlay = M_SETTINGS.trails_on_overlay;
   if (m_draw_overlay.draw && !draw_trails_on_overlay) {
     m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len);
   }
@@ -444,16 +450,10 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   m_trails->UpdateTrailPosition();
 
   // True trails
-  m_trails->UpdateTrueTrails(bearing, data, len);
+  m_trails->UpdateTrueTrails(bearing, data, trail_len);
 
   // Relative trails
-  m_trails->UpdateRelativeTrails(angle, data, len);
-
-  if (m_pi->m_settings.show_extreme_range) {
-    data[len - 1] = 255;
-    data[1] = 255;  // Main bang on purpose to show radar center
-    data[0] = 255;  // Main bang on purpose to show radar center
-  }
+  m_trails->UpdateRelativeTrails(angle, data, trail_len);
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
     m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len);
