@@ -447,14 +447,14 @@ typedef struct {
 } rad_respond_pkt_16;
 
 typedef struct {
-    uint32_t packet_type;
-    uint32_t len1;
-    uint16_t parm1;
-    uint16_t parm2;
-    uint32_t parm3;
-    uint32_t parm4;
-    uint32_t parm5;
-    char     info[64];
+  uint32_t packet_type;
+  uint32_t len1;
+  uint16_t parm1;
+  uint16_t parm2;
+  uint32_t parm3;
+  uint32_t parm4;
+  uint32_t parm5;
+  char info[64];
 } rad_pkt_0x099b;
 
 #pragma pack(pop)
@@ -490,17 +490,17 @@ bool GarminxHDReceive::UpdateScannerStatus(int status) {
         LOG_VERBOSE(wxT("radar_pi: %s reports status TRANSMIT"), m_ri->m_name.c_str());
         stat = _("Transmit");
         break;
-        case 6:
-            m_ri->m_state.Update(RADAR_STOPPING);
-            m_ri->m_data_timeout = now + DATA_TIMEOUT;
-            LOG_VERBOSE(wxT("radar_pi: %s reports status STOPPING"), m_ri->m_name.c_str());
-            stat = _("Stopping");
-            break;
-        case 7:
-            m_ri->m_state.Update(RADAR_SPINNING_DOWN);
-            LOG_VERBOSE(wxT("radar_pi: %s reports status SPINNING DOWN"), m_ri->m_name.c_str());
-            stat = _("Spinning down");
-            break;
+      case 6:
+        m_ri->m_state.Update(RADAR_STOPPING);
+        m_ri->m_data_timeout = now + DATA_TIMEOUT;
+        LOG_VERBOSE(wxT("radar_pi: %s reports status STOPPING"), m_ri->m_name.c_str());
+        stat = _("Stopping");
+        break;
+      case 7:
+        m_ri->m_state.Update(RADAR_SPINNING_DOWN);
+        LOG_VERBOSE(wxT("radar_pi: %s reports status SPINNING DOWN"), m_ri->m_name.c_str());
+        stat = _("Spinning down");
+        break;
       default:
         LOG_VERBOSE(wxT("radar_pi: %s reports status %d"), m_ri->m_name.c_str(), m_radar_status);
         stat << _("Unknown status") << wxString::Format(wxT(" %d"), m_radar_status);
@@ -527,7 +527,7 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
 
     switch (packet_type) {
       case 0x0916:  // Dome Speed
-            LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x0916: scan speed %d"), packet9->parm1);
+        LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x0916: scan speed %d"), packet9->parm1);
         m_ri->m_scan_speed.Update(packet9->parm1 >> 1);
         return true;
 
@@ -696,19 +696,17 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
         m_ri->m_warmup.Update(packet12->parm1 / 1000);
         return true;
       }
-            
+
       case 0x099b: {
-          rad_pkt_0x099b *packet = (rad_pkt_0x099b *)report;
-          
-          // Not sure that this always contains an error message
-          // Observed with Timed Transmit (hardware control via plotter) it reports
-          // 'State machine event fault - unhandled state transition request'
+        rad_pkt_0x099b *packet = (rad_pkt_0x099b *)report;
+
+        // Not sure that this always contains an error message
+        // Observed with Timed Transmit (hardware control via plotter) it reports
+        // 'State machine event fault - unhandled state transition request'
 
         LOG_INFO(wxT("radar_pi: Garmin xHD 0x099b: error '%s'"), packet->info);
-            return true;
-        }
-            
-            
+        return true;
+      }
     }
   }
 

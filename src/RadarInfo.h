@@ -203,6 +203,7 @@ class RadarInfo {
   void ComputeColourMap();
   void ComputeTargetTrails();
   void CheckTimedTransmit();
+  void SetTimedNextStateTimer(int ms);
   wxString GetRangeText();
   wxString GetDisplayRangeStr(int meters, bool unit);
   int GetDisplayRange() { return m_range.GetValue(); };

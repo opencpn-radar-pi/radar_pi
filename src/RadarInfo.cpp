@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
+#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "GuardZone.h"
 #include "MessageBox.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -558,6 +558,8 @@ void RadarInfo::RequestRadarState(RadarState state) {
         case RADAR_TIMED_IDLE:
         case RADAR_WARMING_UP:
         case RADAR_OFF:
+        case RADAR_STOPPING:
+        case RADAR_SPINNING_DOWN:
           LOG_INFO(wxT("radar_pi: %s unexpected status request %d"), m_name.c_str(), state);
       }
       m_stayalive_timeout = now + STAYALIVE_TIMEOUT;
@@ -830,7 +832,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   glRotated(panel_rotate, 0.0, 0.0, 1.0);
   glScaled(radar_scale, radar_scale, 1.);
 
-    RenderRadarImage(overlay ? &m_draw_overlay : &m_draw_panel);
+  RenderRadarImage(overlay ? &m_draw_overlay : &m_draw_panel);
   glPopMatrix();
 
   if (arpa_on) {

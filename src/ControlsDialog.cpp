@@ -1779,6 +1779,12 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
       case RADAR_TRANSMIT:
         o << _("Transmitting");
         break;
+      case RADAR_STOPPING:
+        o << _("Stopping");
+        break;
+      case RADAR_SPINNING_DOWN:
+        o << _("Spinning down");
+        break;
     }
     EnableRadarControls();
   } else {

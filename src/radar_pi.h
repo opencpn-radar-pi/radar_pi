@@ -163,12 +163,25 @@ enum HeadingSource {
   HEADING_RADAR_HDT
 };
 
+enum ToolbarIconColor { TB_NONE, TB_HIDDEN, TB_SEARCHING, TB_SEEN, TB_STANDBY, TB_ACTIVE };
+
 //
 // The order of these is used for deciding what the 'best' representation is
 // of the radar icon in the OpenCPN toolbar. The 'highest' (last) in the enum
-// is what is shown.
+// across all radar states is what is shown.
+// If you add a RadarState also add an entry to g_toolbarIconColor...
 //
-enum RadarState { RADAR_OFF, RADAR_WARMING_UP, RADAR_STANDBY, RADAR_TIMED_IDLE, RADAR_TRANSMIT, RADAR_SPINNING_UP };
+enum RadarState {
+  RADAR_OFF,
+  RADAR_STANDBY,
+  RADAR_WARMING_UP,
+  RADAR_TIMED_IDLE,
+  RADAR_STOPPING,
+  RADAR_SPINNING_DOWN,
+  RADAR_SPINNING_UP,
+  RADAR_TRANSMIT
+};
+static ToolbarIconColor g_toolbarIconColor[8] = {TB_SEARCHING, TB_STANDBY, TB_SEEN, TB_SEEN, TB_SEEN, TB_SEEN, TB_SEEN, TB_ACTIVE};
 
 struct receive_statistics {
   int packets;
@@ -253,7 +266,6 @@ extern double local_distance(GeoPosition pos1, GeoPosition pos2);
 extern double local_bearing(GeoPosition pos1, GeoPosition pos2);
 
 enum DisplayModeType { DM_CHART_OVERLAY, DM_CHART_NONE };
-enum ToolbarIconColor { TB_NONE, TB_HIDDEN, TB_SEARCHING, TB_SEEN, TB_STANDBY, TB_ACTIVE };
 enum VariationSource { VARIATION_SOURCE_NONE, VARIATION_SOURCE_NMEA, VARIATION_SOURCE_FIX, VARIATION_SOURCE_WMM };
 enum OpenGLMode { OPENGL_UNKOWN, OPENGL_OFF, OPENGL_ON };
 

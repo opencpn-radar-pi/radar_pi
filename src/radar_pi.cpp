@@ -29,6 +29,7 @@
  ***************************************************************************
  */
 
+#include "radar_pi.h"
 #include "GuardZone.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
@@ -38,7 +39,6 @@
 #include "SelectDialog.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
-#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -1071,21 +1071,14 @@ void radar_pi::UpdateAllControlStates(bool all) {
 }
 
 void radar_pi::UpdateState(void) {
-  RadarState state = RADAR_OFF;
-
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    state = wxMax(state, (RadarState)m_radar[r]->m_state.GetValue());
-  }
-  if (state == RADAR_OFF) {
-    m_toolbar_button = TB_SEARCHING;
-  } else if (m_settings.show == false) {
+  if (m_settings.show == false) {
     m_toolbar_button = TB_HIDDEN;
-  } else if (state == RADAR_TRANSMIT) {
-    m_toolbar_button = TB_ACTIVE;
-  } else if (state == RADAR_TIMED_IDLE) {
-    m_toolbar_button = TB_SEEN;
   } else {
-    m_toolbar_button = TB_STANDBY;
+    RadarState state = RADAR_OFF;
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      state = wxMax(state, (RadarState)m_radar[r]->m_state.GetValue());
+    }
+    m_toolbar_button = g_toolbarIconColor[state];
   }
   CacheSetToolbarToolBitmaps();
 
