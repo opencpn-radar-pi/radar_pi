@@ -728,7 +728,7 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
       case 0x0993: {
         // State change announce
         LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x0993: state-change in %d ms"), packet12->parm1);
-        m_ri->m_warmup.Update(packet12->parm1 / 1000);
+        m_ri->m_next_state_change.Update(packet12->parm1 / 1000);
         return true;
       }
 

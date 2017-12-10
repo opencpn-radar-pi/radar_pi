@@ -123,7 +123,8 @@ class RadarInfo {
   RadarControlItem m_timed_run;   // CT_TIMED_RUN
 
   bool m_showManualValueInAuto;  // Does radar adjust manual value in auto mode? True for Garmin, False for others
-
+  bool m_timed_idle_hardware;    // Does radar handle timed idle itself?
+  
   /* Per radar objects */
 
   RadarControl *m_control;
@@ -244,6 +245,7 @@ class RadarInfo {
   wxString GetCanvasTextBottomLeft();
   wxString GetCanvasTextCenter();
   wxString GetTimedIdleText();
+  wxString GetRadarStateText();
 
   GeoPosition m_mouse_pos;
   double m_mouse_ebl[ORIENTATION_NUMBER];

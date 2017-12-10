@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "GuardZone.h"
 #include "MessageBox.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
+#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -57,8 +57,8 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_radar = radar;
   m_arpa = 0;
   m_range.UpdateState(RCS_AUTO_1);
-  m_timed_run.Update(0, RCS_OFF);
-  m_timed_idle.Update(0, RCS_OFF);
+  m_timed_run.Update(1, RCS_MANUAL);
+  m_timed_idle.Update(1, RCS_OFF);
   m_course_index = 0;
   m_old_range = 0;
   m_dir_lat = 0;
@@ -77,6 +77,7 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_idle_standby = 0;
   m_idle_transmit = 0;
   m_showManualValueInAuto = false;
+  m_timed_idle_hardware = false;
   m_status_text_hide = false;
   CLEAR_STRUCT(m_statistics);
   CLEAR_STRUCT(m_course_log);
@@ -538,29 +539,19 @@ void RadarInfo::RequestRadarState(RadarState state) {
     if (oldState != state && !(oldState != RADAR_STANDBY && state == RADAR_TRANSMIT)) {  // and change is wanted
       time_t now = time(0);
 
-      switch (state) {
-        case RADAR_TRANSMIT:
-          m_control->RadarTxOn();
-          // Refresh radar immediately so that we generate draw mechanisms
-          if (m_pi->m_settings.chart_overlay == m_radar) {
-            GetOCPNCanvasWindow()->Refresh(false);
-          }
-          if (m_radar_panel) {
-            m_radar_panel->Refresh();
-          }
-          break;
-
-        case RADAR_STANDBY:
-          m_control->RadarTxOff();
-          break;
-
-        case RADAR_SPINNING_UP:
-        case RADAR_TIMED_IDLE:
-        case RADAR_WARMING_UP:
-        case RADAR_OFF:
-        case RADAR_STOPPING:
-        case RADAR_SPINNING_DOWN:
-          LOG_INFO(wxT("radar_pi: %s unexpected status request %d"), m_name.c_str(), state);
+      if (state == RADAR_TRANSMIT) {
+        m_control->RadarTxOn();
+        // Refresh radar immediately so that we generate draw mechanisms
+        if (m_pi->m_settings.chart_overlay == m_radar) {
+          GetOCPNCanvasWindow()->Refresh(false);
+        }
+        if (m_radar_panel) {
+          m_radar_panel->Refresh();
+        }
+      } else if (state == RADAR_STANDBY) {
+        m_control->RadarTxOff();
+      } else {
+        LOG_INFO(wxT("radar_pi: %s unexpected status request %d"), m_name.c_str(), state);
       }
       m_stayalive_timeout = now + STAYALIVE_TIMEOUT;
     }
@@ -636,9 +627,89 @@ void RadarInfo::SetAutoRangeMeters(int meters) {
 }
 
 bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item) {
-  if (m_control) {
-    return m_control->SetControlValue(controlType, item);
+  LOG_TRANSMIT(wxT("radar_pi: %s set %s value=%d state=%d"), m_name.c_str(), ControlTypeNames[controlType].c_str(),
+               item.GetValue(), item.GetState());
+  
+  switch (controlType) {
+    case CT_TRANSPARENCY: {
+      M_SETTINGS.overlay_transparency = item;
+      m_pi->UpdateAllControlStates(true);
+      return true;
+    }
+    case CT_REFRESHRATE: {
+      M_SETTINGS.refreshrate = item;
+      m_pi->UpdateAllControlStates(true);
+      return true;
+    }
+    case CT_TARGET_TRAILS: {
+      m_target_trails = item;
+      ComputeColourMap();
+      ComputeTargetTrails();
+      return true;
+    }
+    case CT_TRAILS_MOTION: {
+      m_trails_motion = item;
+      ComputeColourMap();
+      ComputeTargetTrails();
+      return true;
+    }
+    case CT_MAIN_BANG_SIZE: {
+      m_main_bang_size = item;
+      return true;
+    }
+      
+    case CT_ANTENNA_FORWARD: {
+      m_antenna_forward = item;
+      return true;
+    }
+      
+    case CT_ANTENNA_STARBOARD: {
+      m_antenna_starboard = item;
+      return true;
+    }
+      
+    case CT_ORIENTATION: {
+      m_orientation = item;
+    }
+      
+    case CT_OVERLAY: {
+      m_overlay = item;
+    }
+      
+    // Careful, we're selectively falling through to the next case label
+    // for controls that have both hardware and software implementations
+    case CT_TIMED_IDLE: {
+      if (!m_timed_idle_hardware) {
+        m_timed_idle = item;
+        m_idle_standby = 0;
+        m_idle_transmit = 0;
+        if (m_state.GetValue() == RADAR_TRANSMIT) {
+          m_idle_standby = time(0) + 10;
+        } else {
+          m_idle_transmit = time(0) + 10;
+        }
+        m_pi->UpdateAllControlStates(true);
+        return true;
+      }
+      // FALLTHRU
+    }
+    case CT_TIMED_RUN: {
+      if (!m_timed_idle_hardware) {
+        m_timed_run = item;
+        m_pi->UpdateAllControlStates(true);
+        return true;
+      }
+      // FALLTHRU
+    }
+    default: {
+      if (m_control) {
+        return m_control->SetControlValue(controlType, item);
+      }
+    }
   }
+  wxLogError(wxT("radar_pi: %s unhandled control setting for control %s"), m_name.c_str(),
+             ControlTypeNames[controlType].c_str());
+  
   return false;
 }
 
@@ -998,27 +1069,16 @@ wxString RadarInfo::GetCanvasTextCenter() {
   wxString s;
   RadarState state = (RadarState)m_state.GetValue();
 
-  if (state == RADAR_TRANSMIT && m_draw_panel.draw) {
+  if ((state == RADAR_TRANSMIT || state == RADAR_STANDBY) && m_draw_panel.draw) {
     return s;
   }
 
   s << m_name << wxT(" - ");
-  switch (m_state.GetValue()) {
-    case RADAR_OFF:
-      s << _("No radar") << wxT("\n") << GetInfoStatus();
-      break;
-    case RADAR_STANDBY:
-      s << _("Standby");
-      break;
-    case RADAR_WARMING_UP:
-      s << _("Warming up") << wxString::Format(wxT(" (%d s)"), m_next_state_change.GetValue());
-      break;
-    case RADAR_SPINNING_UP:
-      s << _("Spinning up");
-      break;
-    case RADAR_TRANSMIT:
-      s << _("Initializing OpenGL");
-      break;
+
+  if (state == RADAR_OFF) {
+    s << _("No radar") << wxT("\n") << GetInfoStatus();
+  } else {
+    s << GetRadarStateText();
   }
 
   return s;
@@ -1296,27 +1356,50 @@ void RadarInfo::AdjustRange(int adjustment) {
 }
 
 wxString RadarInfo::GetTimedIdleText() {
-  wxString text;
-
-  if (m_timed_idle.GetState() == RCS_MANUAL) {
-    if (m_arpa->GetTargetCount() != 0) {
-      text = _("Transmit for targets");
-    } else {
-      time_t now = time(0);
-      int left = m_idle_standby - now;
-      if (left >= 0) {
-        text = _("Transmit for");
-        text << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
-      } else {
-        left = m_idle_transmit - now;
-        if (left >= 0) {
-          text = _("Standby for");
-          text << wxString::Format(wxT(" %d:%02d"), left / 60, left % 60);
-        }
-      }
-    }
+  if (m_timed_idle.GetState() == RCS_MANUAL && m_next_state_change.GetValue() > 0) {
+    return GetRadarStateText();
   }
-  return text;
+  return wxT("");
+}
+
+wxString RadarInfo::GetRadarStateText() {
+  wxString o;
+  RadarState state = (RadarState)m_state.GetValue();
+
+  switch (state) {
+    case RADAR_OFF:
+      o = _("Off");
+      break;
+    case RADAR_STANDBY:
+      o = _("Standby");
+      break;
+    case RADAR_WARMING_UP:
+      o = _("Warming up");
+      break;
+    case RADAR_TIMED_IDLE:  // Only used with radars with 'hardware' TimedIdle
+      o = _("Timed idle");
+      break;
+    case RADAR_SPINNING_UP:
+      o = _("Spinning up");
+      break;
+    case RADAR_TRANSMIT:
+      o = _("Transmitting");
+      break;
+    case RADAR_STOPPING:
+      o = _("Stopping");
+      break;
+    case RADAR_STARTING:
+      o = _("Starting");
+      break;
+    case RADAR_SPINNING_DOWN:
+      o = _("Spinning down");
+      break;
+  }
+  int next_state_change = m_next_state_change.GetValue();
+  if (next_state_change > 0) {
+    o << wxString::Format(wxT(" for %d s"), next_state_change);
+  }
+  return o;
 }
 
 /**
@@ -1326,10 +1409,14 @@ wxString RadarInfo::GetTimedIdleText() {
  * If the OFF timer is running and has run out, stop the radar and start an ON timer.
  */
 void RadarInfo::CheckTimedTransmit() {
+  if (m_timed_idle_hardware) {
+    return;  // hardware versions do not need this
+  }
+  
   if (m_timed_idle.GetState() == RCS_OFF) {
     return;  // User does not want timed idle
   }
-
+  
   RadarState state = (RadarState)m_state.GetValue();
   if (state == RADAR_OFF) {
     return;  // Timers are just stuck at existing value if radar is off.
@@ -1341,17 +1428,34 @@ void RadarInfo::CheckTimedTransmit() {
   }
 
   time_t now = time(0);
-
-  if (m_idle_standby > 0 && TIMED_OUT(now, m_idle_standby) && state == RADAR_TRANSMIT) {
-    RequestRadarState(RADAR_STANDBY);
-    m_idle_transmit =
-        now + m_timed_idle.GetValue() * SECONDS_PER_TIMED_IDLE_SETTING - m_timed_run.GetValue() * SECONDS_PER_TIMED_RUN_SETTING;
-    m_idle_standby = 0;
-  } else if (m_idle_transmit > 0 && TIMED_OUT(now, m_idle_transmit) && state == RADAR_STANDBY) {
-    RequestRadarState(RADAR_TRANSMIT);
-    m_idle_standby = now + m_timed_run.GetValue() * SECONDS_PER_TIMED_RUN_SETTING;
-    m_idle_transmit = 0;
+  int    time_to_go;
+  
+  if (m_idle_standby > 0) {
+    if (TIMED_OUT(now, m_idle_standby) && state == RADAR_TRANSMIT) {
+      RequestRadarState(RADAR_STANDBY);
+      time_to_go = m_timed_idle.GetValue() * SECONDS_PER_TIMED_IDLE_SETTING;
+      m_idle_transmit = now + time_to_go;
+      m_idle_standby = 0;
+    }
+    else {
+      time_to_go = m_idle_standby - now;
+    }
+  } else if (m_idle_transmit > 0) {
+    if (TIMED_OUT(now, m_idle_transmit) && state == RADAR_STANDBY) {
+      RequestRadarState(RADAR_TRANSMIT);
+      time_to_go = m_timed_run.GetValue() * SECONDS_PER_TIMED_RUN_SETTING;
+      m_idle_standby = now + time_to_go;
+      m_idle_transmit = 0;
+    }
+    else {
+      time_to_go = m_idle_transmit - now;
+    }
   }
+  else {
+    time_to_go = 0;
+  }
+  time_to_go = wxMax(time_to_go, 0);
+  m_next_state_change.Update(time_to_go);
 }
 
 PLUGIN_END_NAMESPACE

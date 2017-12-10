@@ -483,8 +483,8 @@ bool GarminHDReceive::ProcessReport(const uint8_t *report, int len) {
         if (!UpdateScannerStatus(packet->scanner_state)) {
           return false;
         }
-        LOG_VERBOSE(wxT("0x02a5: warmup %d"), packet->warmup);
-        m_ri->m_warmup.Update(packet->warmup);
+        LOG_VERBOSE(wxT("0x02a5: next-state-change %d"), packet->warmup);
+        m_ri->m_next_state_change.Update(packet->warmup);
         return true;
       }
 

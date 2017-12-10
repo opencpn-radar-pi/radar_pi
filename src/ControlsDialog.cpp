@@ -188,7 +188,7 @@ void RadarControlButton::AdjustValue(int adjustment) {
     LOG_VERBOSE(wxT("%s Adjusting '%s' by %d from %d to %d"), m_parent->m_log_name.c_str(), GetName(), adjustment, oldValue,
                 newValue);
     UpdateLabel();
-    m_pi->SetControlValue(m_parent->m_ri->m_radar, m_ci.type, *m_item);
+    m_parent->m_ri->SetControlValue(m_ci.type, *m_item);
   }
 }
 
@@ -1425,11 +1425,10 @@ void ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) { EnterEditMo
 void ControlsDialog::OnTransmitButtonClick(wxCommandEvent& event) {
   RadarState state = (RadarState)m_ri->m_state.GetButton();
   SetMenuAutoHideTimeout();
-  if (state == RADAR_STANDBY) {
-    m_ri->m_timed_idle.Update(0);
+  m_ri->m_timed_idle.UpdateState(RCS_OFF);
+  if (state == RADAR_STANDBY || state == RADAR_STOPPING || state == RADAR_SPINNING_DOWN) {
     m_ri->RequestRadarState(RADAR_TRANSMIT);
   } else {
-    m_ri->m_timed_idle.Update(0);
     m_ri->RequestRadarState(RADAR_STANDBY);
   }
 }
@@ -1759,38 +1758,10 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   RadarState state = (RadarState)m_ri->m_state.GetButton();
 
   o << _("Start/Stop radar") << wxT("\n");
+  o << m_ri->GetRadarStateText();
   if (state == RADAR_OFF) {
-    o << _("Off");
     DisableRadarControls();
-  } else if (m_ri->m_timed_idle.GetState() == RCS_OFF) {
-    switch (state) {
-      case RADAR_OFF:
-        break;
-      case RADAR_STANDBY:
-        o << _("Standby");
-        break;
-      case RADAR_WARMING_UP:
-        o << _("Warming up") << wxString::Format(wxT(" (%d s)"), m_ri->m_next_state_change.GetValue());
-        break;
-      case RADAR_TIMED_IDLE:  // Only used with radars with 'hardware' TimedIdle
-        o << _("Timed idle");
-        break;
-      case RADAR_SPINNING_UP:
-        o << _("Spinning up");
-        break;
-      case RADAR_TRANSMIT:
-        o << _("Transmitting");
-        break;
-      case RADAR_STOPPING:
-        o << _("Stopping");
-        break;
-      case RADAR_SPINNING_DOWN:
-        o << _("Spinning down");
-        break;
-    }
-    EnableRadarControls();
   } else {
-    o << m_ri->GetTimedIdleText();
     EnableRadarControls();
   }
   m_power_button->SetLabel(o);

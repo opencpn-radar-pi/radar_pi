@@ -77,8 +77,8 @@ class RadarArpa;
 #define GUARD_ZONES (2)    // Could be increased if wanted
 #define BEARING_LINES (2)  // And these as well
 
-static const int SECONDS_PER_TIMED_IDLE_SETTING = 5 * 60;  // 5 minutes increment for each setting
-static const int SECONDS_PER_TIMED_RUN_SETTING = 10;
+static const int SECONDS_PER_TIMED_IDLE_SETTING = 60;  // Can't change this anymore, has to be same as Garmin hardware
+static const int SECONDS_PER_TIMED_RUN_SETTING = 60;
 
 #define OPENGL_ROTATION (-90.0)  // Difference between 'up' and OpenGL 'up'...
 
@@ -422,8 +422,7 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   void logBinaryData(const wxString &what, const uint8_t *data, int size);
 
   void UpdateAllControlStates(bool all);
-  bool SetControlValue(int radar, ControlType controlType, RadarControlItem &item);
-
+  
   bool IsRadarOnScreen(int radar) { return m_settings.show && (m_settings.show_radar[radar] || m_settings.chart_overlay == radar); }
 
   bool LoadConfig();
