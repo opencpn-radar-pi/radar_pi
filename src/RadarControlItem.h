@@ -61,7 +61,7 @@ enum RadarControlState {
 
 class RadarControlItem {
  public:
-  const int VALUE_NOT_SET = -10000;
+  static const int VALUE_NOT_SET = -10000;
 
   RadarControlItem() {
     m_value = 0;
