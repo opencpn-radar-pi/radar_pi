@@ -823,17 +823,17 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     glPopMatrix();
   }
 
-    if (m_pixels_per_meter != 0.) {
-  double radar_scale = scale / m_pixels_per_meter;
-  glPushMatrix();
-  glTranslated(center.x, center.y, 0);
-  glRotated(panel_rotate, 0.0, 0.0, 1.0);
-  glScaled(radar_scale, radar_scale, 1.);
+  if (m_pixels_per_meter != 0.) {
+    double radar_scale = scale / m_pixels_per_meter;
+    glPushMatrix();
+    glTranslated(center.x, center.y, 0);
+    glRotated(panel_rotate, 0.0, 0.0, 1.0);
+    glScaled(radar_scale, radar_scale, 1.);
 
-  RenderRadarImage(overlay ? &m_draw_overlay : &m_draw_panel);
-  glPopMatrix();
-    }
-    
+    RenderRadarImage(overlay ? &m_draw_overlay : &m_draw_panel);
+    glPopMatrix();
+  }
+
   if (arpa_on) {
     glPushMatrix();
     glTranslated(center.x, center.y, 0);

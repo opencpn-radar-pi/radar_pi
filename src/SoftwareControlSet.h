@@ -73,6 +73,10 @@
 #define CTD_PERCENTAGE \
   { wxT("%") }
 #endif
+#ifndef CTD_MINUTES
+#define CTD_MINUTES \
+  { _("min") }
+#endif
 
 //
 // Make an entry for all control types. Specify all supported (or all?) controls.
@@ -105,14 +109,6 @@
 #define ORIENTATION_COG_UP (3)         // Averaged GPS COG up (same way as OpenCPN)
 #define ORIENTATION_NUMBER (4)
 
-#ifndef TIMED_IDLE_NAMES
-#define TIMED_IDLE_NAMES \
-  { _("5 min"), _("10 min"), _("15 min"), _("20 min"), _("25 min"), _("30 min"), _("35 min") }
-#endif
-#ifndef TIMED_RUN_NAMES
-#define TIMED_RUN_NAMES \
-  { _("10 sec"), _("20 sec"), _("30 sec") }
-#endif
 #ifndef TARGET_TRAIL_NAMES
 #define TARGET_TRAIL_NAMES \
   { _("15 sec"), _("30 sec"), _("1 min"), _("3 min"), _("5 min"), _("10 min"), _("Continuous") }
@@ -141,6 +137,4 @@ HAVE_CONTROL(CT_REFRESHRATE, CTD_AUTO_NO, 1, 1, 5, CTD_STEP_1, CTD_NUMERIC)
 HAVE_CONTROL(CT_TRANSPARENCY, CTD_AUTO_NO, 5, MIN_OVERLAY_TRANSPARENCY, MAX_OVERLAY_TRANSPARENCY, CTD_STEP_10, CTD_PERCENTAGE)
 HAVE_CONTROL(CT_TARGET_TRAILS, CTD_AUTO_NO, CTD_DEF_OFF, CTD_MIN_ZERO, 6, CTD_STEP_1, TARGET_TRAIL_NAMES)
 HAVE_CONTROL(CT_TRAILS_MOTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 1, CTD_STEP_1, TRAIL_MOTION_NAMES)
-HAVE_CONTROL(CT_TIMED_IDLE, CTD_AUTO_NO, CTD_DEF_OFF, CTD_MIN_ZERO, 7, CTD_STEP_1, TIMED_IDLE_NAMES)
-HAVE_CONTROL(CT_TIMED_RUN, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2, CTD_STEP_1, TIMED_RUN_NAMES)
 HAVE_CONTROL(CT_TARGET_ON_PPI, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 1, CTD_STEP_1, TARGET_ON_PPI_NAMES)

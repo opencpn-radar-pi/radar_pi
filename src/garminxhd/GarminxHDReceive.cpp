@@ -682,6 +682,28 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
         }
         return true;
       }
+      case 0x02bb: {
+        LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x02bb: something %d"), (int32_t)packet12->parm1);
+        return true;
+      }
+      case 0x02ec: {
+        LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x02ec: something %d"), (int32_t)packet12->parm1);
+        return true;
+      }
+      case 0x0942: {
+        LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x0942: timed idle something %d"), (int32_t)packet9->parm1);
+        return true;
+      }
+
+      case 0x0943: {
+        LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x0943: timed idle time %ds"), (int32_t)packet10->parm1);
+        return true;
+      }
+
+      case 0x0944: {
+        LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x0944: timed run time %ds"), (int32_t)packet10->parm1);
+        return true;
+      }
 
       case 0x0992: {
         // Scanner state

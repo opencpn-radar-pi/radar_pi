@@ -1047,31 +1047,31 @@ void ControlsDialog::CreateControls() {
 
   //***************** POWER BOX *************//
 
-  m_power_sizer = new wxBoxSizer(wxVERTICAL);
-  m_top_sizer->Add(m_power_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
-
-  // The <<Back button
-  RadarButton* power_back_button = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
-  m_power_sizer->Add(power_back_button, 0, wxALL, BORDER);
-
-  m_power_sub_button = new RadarButton(this, ID_TRANSMIT_STANDBY, g_buttonSize, wxT(""));
-  m_power_sizer->Add(m_power_sub_button, 0, wxALL, BORDER);
-
-  // The TIMED STANDBY button
   if (m_ctrl[CT_TIMED_IDLE].type) {
+    m_power_sizer = new wxBoxSizer(wxVERTICAL);
+    m_top_sizer->Add(m_power_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
+
+    // The <<Back button
+    RadarButton* power_back_button = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
+    m_power_sizer->Add(power_back_button, 0, wxALL, BORDER);
+
+    m_power_sub_button = new RadarButton(this, ID_TRANSMIT_STANDBY, g_buttonSize, wxT(""));
+    m_power_sizer->Add(m_power_sub_button, 0, wxALL, BORDER);
+
+    // The TIMED STANDBY button
     m_timed_idle_button =
         new RadarControlButton(this, ID_CONTROL_BUTTON, _("Timed Standby"), m_ctrl[CT_TIMED_IDLE], &m_ri->m_timed_idle);
     m_power_sizer->Add(m_timed_idle_button, 0, wxALL, BORDER);
-  }
 
-  // The TIMED TRANSMIT button
-  if (m_ctrl[CT_TIMED_RUN].type) {
-    m_timed_run_button =
-        new RadarControlButton(this, ID_CONTROL_BUTTON, _("Timed Transmit"), m_ctrl[CT_TIMED_RUN], &m_ri->m_timed_run);
-    m_power_sizer->Add(m_timed_run_button, 0, wxALL, BORDER);
-  }
+    // The TIMED TRANSMIT button
+    if (m_ctrl[CT_TIMED_RUN].type) {
+      m_timed_run_button =
+          new RadarControlButton(this, ID_CONTROL_BUTTON, _("Timed Transmit"), m_ctrl[CT_TIMED_RUN], &m_ri->m_timed_run);
+      m_power_sizer->Add(m_timed_run_button, 0, wxALL, BORDER);
+    }
 
-  m_top_sizer->Hide(m_power_sizer);
+    m_top_sizer->Hide(m_power_sizer);
+  }
 
   //***************** GUARD ZONE BOX *************//
 
@@ -1137,9 +1137,11 @@ void ControlsDialog::CreateControls() {
   RadarButton* bWindow = new RadarButton(this, ID_WINDOW, g_buttonSize, MENU(_("Window")));
   m_control_sizer->Add(bWindow, 0, wxALL, BORDER);
 
-  // The Timer menu
-  RadarButton* bTimedTransmit = new RadarButton(this, ID_POWER, g_buttonSize, MENU(_("Timed transmit")));
-  m_control_sizer->Add(bTimedTransmit, 0, wxALL, BORDER);
+  if (m_ctrl[CT_TIMED_IDLE].type) {
+    // The Timer menu
+    RadarButton* bTimedTransmit = new RadarButton(this, ID_POWER, g_buttonSize, MENU(_("Timed transmit")));
+    m_control_sizer->Add(bTimedTransmit, 0, wxALL, BORDER);
+  }
 
   // The Transmit button
   m_power_button = new RadarButton(this, ID_TRANSMIT_STANDBY, g_buttonSize, _("Unknown"));
@@ -1504,7 +1506,7 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
 
   RadarState state = (RadarState)m_ri->m_state.GetButton();
 
-  if (m_top_sizer->IsShown(m_power_sizer)) {
+  if (m_power_sizer && m_top_sizer->IsShown(m_power_sizer)) {
     if (m_ri->m_timed_idle.GetState() == RCS_MANUAL) {
       if (!m_timed_run_button->IsShown()) {
         m_power_sizer->Show(m_timed_run_button);
@@ -1792,7 +1794,9 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
     EnableRadarControls();
   }
   m_power_button->SetLabel(o);
-  m_power_sub_button->SetLabel(o);
+  if (m_power_sizer) {
+    m_power_sub_button->SetLabel(o);
+  }
 
   if (M_SETTINGS.radar_count > 1) {
     bool show_other_radar = false;
@@ -1997,7 +2001,8 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
     if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_view_sizer) &&
         !m_top_sizer->IsShown(m_edit_sizer) && !m_top_sizer->IsShown(m_installation_sizer) &&
         !m_top_sizer->IsShown(m_window_sizer) && !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_guardzone_sizer) &&
-        !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_cursor_sizer) && !m_top_sizer->IsShown(m_power_sizer)) {
+        !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_cursor_sizer) &&
+        (m_power_sizer && !m_top_sizer->IsShown(m_power_sizer))) {
       SwitchTo(m_control_sizer, wxT("main (manual open)"));
     }
     Show();
