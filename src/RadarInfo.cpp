@@ -755,9 +755,6 @@ int RadarInfo::GetOrientation() {
 }
 
 void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_rotate, bool overlay) {
-  if (m_pixels_per_meter == 0.) {
-    return;
-  }
   bool arpa_on = false;
   if (m_arpa) {
     for (int i = 0; i < GUARD_ZONES; i++) {
@@ -826,6 +823,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     glPopMatrix();
   }
 
+    if (m_pixels_per_meter != 0.) {
   double radar_scale = scale / m_pixels_per_meter;
   glPushMatrix();
   glTranslated(center.x, center.y, 0);
@@ -834,7 +832,8 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
 
   RenderRadarImage(overlay ? &m_draw_overlay : &m_draw_panel);
   glPopMatrix();
-
+    }
+    
   if (arpa_on) {
     glPushMatrix();
     glTranslated(center.x, center.y, 0);
