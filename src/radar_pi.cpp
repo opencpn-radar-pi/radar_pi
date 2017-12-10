@@ -29,7 +29,6 @@
  ***************************************************************************
  */
 
-#include "radar_pi.h"
 #include "GuardZone.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
@@ -39,6 +38,7 @@
 #include "SelectDialog.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -388,10 +388,10 @@ void radar_pi::SetDefaults(void) {
 }
 
 bool radar_pi::IsRadarSelectionComplete(bool force) {
-    RadarType oldRadarType[RADARS];
+  RadarType oldRadarType[RADARS];
   bool ret = false;
   bool any = false;
-    size_t r;
+  size_t r;
 
   if (!force) {
     for (r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -406,41 +406,40 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
 
   LOG_DIALOG(wxT("radar_pi: IsRadarSelectionComplete not yet so show selection dialog"));
 
-    for (r = 0; r < RADARS; r++) {
-        if (m_radar[r]) {
-          oldRadarType[r] = m_radar[r]->m_radar_type;
-        } else {
-            oldRadarType[r] = RT_MAX;
-        }
+  for (r = 0; r < RADARS; r++) {
+    if (m_radar[r]) {
+      oldRadarType[r] = m_radar[r]->m_radar_type;
+    } else {
+      oldRadarType[r] = RT_MAX;
     }
-    
+  }
+
   m_initialized = false;
   SelectDialog dlg(m_parent_window, this);
   if (dlg.ShowModal() == wxID_OK) {
-
-      m_settings.radar_count = 0;
-      r = 0;
-      for (size_t i = 0; i < RT_MAX; i++) {
-          if (dlg.m_selected[i]->GetValue()) {
-              if (!m_radar[r]) {
-                  m_settings.window_pos[r] = wxPoint(100 + 512 * r, 100);
-                  m_settings.control_pos[r] = wxDefaultPosition;
-                  m_radar[r] = new RadarInfo(this, r);
-              }
-              m_radar[r]->m_radar_type = (RadarType) i;
-              r++;
-              m_settings.radar_count = r;
-              ret = true;
-          }
-      }
-    SaveConfig();
-      
-    for (r = 0; r < M_SETTINGS.radar_count; r++) {
-      if (m_radar[r] && m_radar[r]->m_radar_type != oldRadarType[r]) {
-          m_radar[r]->Shutdown();
-          delete m_radar[r];
+    m_settings.radar_count = 0;
+    r = 0;
+    for (size_t i = 0; i < RT_MAX; i++) {
+      if (dlg.m_selected[i]->GetValue()) {
+        if (!m_radar[r]) {
+          m_settings.window_pos[r] = wxPoint(100 + 512 * r, 100);
+          m_settings.control_pos[r] = wxDefaultPosition;
           m_radar[r] = new RadarInfo(this, r);
         }
+        m_radar[r]->m_radar_type = (RadarType)i;
+        r++;
+        m_settings.radar_count = r;
+        ret = true;
+      }
+    }
+    SaveConfig();
+
+    for (r = 0; r < M_SETTINGS.radar_count; r++) {
+      if (m_radar[r] && m_radar[r]->m_radar_type != oldRadarType[r]) {
+        m_radar[r]->Shutdown();
+        delete m_radar[r];
+        m_radar[r] = new RadarInfo(this, r);
+      }
     }
 
     LoadConfig();
@@ -908,8 +907,8 @@ void radar_pi::ScheduleWindowRefresh() {
   TimedControlUpdate();  // Update the controls. Method is self-limiting if called too often.
 
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    drawTime += m_radar[r]->GetDrawTime();
     m_radar[r]->RefreshDisplay();
+    drawTime += m_radar[r]->GetDrawTime();
   }
 
   int refreshrate = m_settings.refreshrate.GetValue();

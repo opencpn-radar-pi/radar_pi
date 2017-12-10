@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "GuardZone.h"
 #include "MessageBox.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
+#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -812,67 +812,43 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     m_arpa->RefreshArpaTargets();
   }
 
-  if (overlay) {
-    if (M_SETTINGS.overlay_on_standby || m_state.GetValue() == RADAR_TRANSMIT) {
-      if (M_SETTINGS.guard_zone_on_overlay) {
-        glPushMatrix();
-        glTranslated(center.x, center.y, 0);
-        glRotated(guard_rotate, 0.0, 0.0, 1.0);
-        glScaled(scale, scale, 1.);
+  wxStopWatch stopwatch;
 
-        // LOG_DIALOG(wxT("radar_pi: %s render guard zone on overlay"), m_name.c_str());
-        RenderGuardZone();
-        glPopMatrix();
-      }
-
-      double radar_scale = scale / m_pixels_per_meter;
-      glPushMatrix();
-      glTranslated(center.x, center.y, 0);
-      glRotated(panel_rotate, 0.0, 0.0, 1.0);
-      glScaled(radar_scale, radar_scale, 1.);
-
-      RenderRadarImage(&m_draw_overlay);
-      glPopMatrix();
-
-      if (arpa_on) {
-        glPushMatrix();
-        glTranslated(center.x, center.y, 0);
-        LOG_VERBOSE(wxT("radar_pi: %s render ARPA targets on overlay with rot=%f"), m_name.c_str(), arpa_rotate);
-
-        glRotated(arpa_rotate, 0.0, 0.0, 1.0);
-        glScaled(scale, scale, 1.);
-        m_arpa->DrawArpaTargets();
-        glPopMatrix();
-      }
-    }
-  } else if (range != 0) {
-    wxStopWatch stopwatch;
-
+  // Render the guard zone
+  if (!overlay || (M_SETTINGS.guard_zone_on_overlay && (M_SETTINGS.overlay_on_standby || m_state.GetValue() == RADAR_TRANSMIT))) {
     glPushMatrix();
-    scale = 1.0 / range;
+    glTranslated(center.x, center.y, 0);
     glRotated(guard_rotate, 0.0, 0.0, 1.0);
     glScaled(scale, scale, 1.);
     RenderGuardZone();
     glPopMatrix();
-
-    glPushMatrix();
-    double radar_scale = scale / m_pixels_per_meter;
-    glScaled(radar_scale, radar_scale, 1.);
-    glRotated(panel_rotate, 0.0, 0.0, 1.0);
-    LOG_DIALOG(wxT("radar_pi: %s render scale=%g radar_scale=%g"), m_name.c_str(), scale, radar_scale);
-    RenderRadarImage(&m_draw_panel);
-    glPopMatrix();
-
-    if (arpa_on) {
-      glPushMatrix();
-      glScaled(scale, scale, 1.);
-      glRotated(arpa_rotate, 0.0, 0.0, 1.0);
-      m_arpa->DrawArpaTargets();
-      glPopMatrix();
-    }
-    glFinish();
-    m_draw_time_ms = stopwatch.Time();
   }
+
+  double radar_scale = scale / m_pixels_per_meter;
+  glPushMatrix();
+  glTranslated(center.x, center.y, 0);
+  glRotated(panel_rotate, 0.0, 0.0, 1.0);
+  glScaled(radar_scale, radar_scale, 1.);
+
+    RenderRadarImage(overlay ? &m_draw_overlay : &m_draw_panel);
+  glPopMatrix();
+
+  if (arpa_on) {
+    glPushMatrix();
+    glTranslated(center.x, center.y, 0);
+    LOG_VERBOSE(wxT("radar_pi: %s render ARPA targets on overlay with rot=%f"), m_name.c_str(), arpa_rotate);
+
+    glRotated(arpa_rotate, 0.0, 0.0, 1.0);
+    glScaled(scale, scale, 1.);
+    m_arpa->DrawArpaTargets();
+    glPopMatrix();
+  }
+
+  if (!overlay) {
+    glFinish();
+  }
+
+  m_draw_time_ms = stopwatch.Time();
 
   glPopAttrib();
 }

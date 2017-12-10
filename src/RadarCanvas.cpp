@@ -36,7 +36,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-const float CHART_SCALE = 0.95f;  // On how big a part of the PPI do we draw the radar picture
+const float CHART_SCALE = 0.9f;  // On how big a part of the PPI do we draw the radar picture
 
 BEGIN_EVENT_TABLE(RadarCanvas, wxGLCanvas)
 EVT_MOVE(RadarCanvas::OnMove)
@@ -598,7 +598,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     glScaled((float)h / w, -1.0, 1.0);
   }
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
-  m_ri->RenderRadarImage(wxPoint(0, 0), CHART_SCALE, 0.0, false);
+  m_ri->RenderRadarImage(wxPoint(0, 0), CHART_SCALE / m_ri->m_range.GetValue(), 0.0, false);
 
   // LAYER 5 - TEXTS & CURSOR
   ResetGLViewPort(w, h);
