@@ -1770,7 +1770,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
         o << _("Standby");
         break;
       case RADAR_WARMING_UP:
-        o << _("Warming up") << wxString::Format(wxT(" (%d s)"), m_ri->m_warmup.GetValue());
+        o << _("Warming up") << wxString::Format(wxT(" (%d s)"), m_ri->m_next_state_change.GetValue());
         break;
       case RADAR_TIMED_IDLE:  // Only used with radars with 'hardware' TimedIdle
         o << _("Timed idle");

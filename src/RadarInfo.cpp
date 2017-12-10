@@ -1011,7 +1011,7 @@ wxString RadarInfo::GetCanvasTextCenter() {
       s << _("Standby");
       break;
     case RADAR_WARMING_UP:
-      s << _("Warming up") << wxString::Format(wxT(" (%d s)"), m_warmup.GetValue());
+      s << _("Warming up") << wxString::Format(wxT(" (%d s)"), m_next_state_change.GetValue());
       break;
     case RADAR_SPINNING_UP:
       s << _("Spinning up");

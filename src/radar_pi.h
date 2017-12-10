@@ -178,10 +178,12 @@ enum RadarState {
   RADAR_TIMED_IDLE,
   RADAR_STOPPING,
   RADAR_SPINNING_DOWN,
+  RADAR_STARTING,
   RADAR_SPINNING_UP,
   RADAR_TRANSMIT
 };
-static ToolbarIconColor g_toolbarIconColor[8] = {TB_SEARCHING, TB_STANDBY, TB_SEEN, TB_SEEN, TB_SEEN, TB_SEEN, TB_SEEN, TB_ACTIVE};
+static ToolbarIconColor g_toolbarIconColor[9] = {TB_SEARCHING, TB_STANDBY, TB_SEEN,   TB_SEEN,  TB_SEEN,
+                                                 TB_SEEN,      TB_ACTIVE,  TB_ACTIVE, TB_ACTIVE};
 
 struct receive_statistics {
   int packets;
