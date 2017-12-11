@@ -831,7 +831,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     for (int i = 0; i < GUARD_ZONES; i++) {
       if (m_guard_zone[i]->m_arpa_on) arpa_on = true;
     }
-    if (m_arpa->GetTargetCount()) {
+    if (m_arpa->GetTargetCount() > 0) {
       arpa_on = true;
     }
   }
@@ -1370,7 +1370,8 @@ void RadarInfo::AdjustRange(int adjustment) {
 }
 
 wxString RadarInfo::GetTimedIdleText() {
-  if (m_timed_idle.GetState() == RCS_MANUAL && m_next_state_change.GetValue() > 0) {
+  // if (m_timed_idle.GetState() == RCS_MANUAL && m_next_state_change.GetValue() > 0)
+  {
     return GetRadarStateText();
   }
   return wxT("");
@@ -1427,15 +1428,28 @@ wxString RadarInfo::GetRadarStateText() {
  * If the OFF timer is running and has run out, stop the radar and start an ON timer.
  */
 void RadarInfo::CheckTimedTransmit() {
-  if (m_timed_idle_hardware) {
-    return;  // hardware versions do not need this
-  }
-  
   if (m_timed_idle.GetState() == RCS_OFF) {
-    m_idle_transmit = 0;
-    m_idle_standby = 0;
-    m_next_state_change.Update(0);
+    if (!m_timed_idle_hardware) {
+      m_idle_transmit = 0;
+      m_idle_standby = 0;
+      m_next_state_change.Update(0);
+    }
     return;  // User does not want timed idle
+  }
+
+  if (m_timed_idle_hardware) {
+    // Send a reset of the countdown if ARPA targets are found
+    if (m_control && m_arpa && m_arpa->GetTargetCount() > 0) {
+      // Send another 'enable timed transmit' followed by a transmit command..
+      // The idea is that this enables transmit but does reset the countdown timer
+      // in the radar.
+      // TODO: This is just a guess as to whether it works.
+      SetControlValue(CT_TIMED_RUN, m_timed_run);
+      SetControlValue(CT_TIMED_IDLE, m_timed_idle);
+      m_control->RadarTxOn();
+    }
+
+    return;  // hardware versions do not need the rest of the code
   }
   
   RadarState state = (RadarState)m_state.GetValue();
@@ -1444,7 +1458,7 @@ void RadarInfo::CheckTimedTransmit() {
   }
 
   // If there are (M)ARPA targets being tracked we should not go to standbye, targets would be lost
-  if (m_arpa->GetTargetCount() != 0) {
+  if (m_arpa->GetTargetCount() > 0) {
     return;
   }
 
