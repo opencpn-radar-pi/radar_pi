@@ -1432,6 +1432,9 @@ void RadarInfo::CheckTimedTransmit() {
   }
   
   if (m_timed_idle.GetState() == RCS_OFF) {
+    m_idle_transmit = 0;
+    m_idle_standby = 0;
+    m_next_state_change.Update(0);
     return;  // User does not want timed idle
   }
   
