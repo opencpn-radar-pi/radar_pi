@@ -1425,7 +1425,7 @@ void ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) { EnterEditMo
 void ControlsDialog::OnTransmitButtonClick(wxCommandEvent& event) {
   RadarState state = (RadarState)m_ri->m_state.GetButton();
   SetMenuAutoHideTimeout();
-  m_ri->m_timed_idle.UpdateState(RCS_OFF);
+  m_timed_idle_button->SetState(RCS_OFF);
   if (state == RADAR_STANDBY || state == RADAR_STOPPING || state == RADAR_SPINNING_DOWN) {
     m_ri->RequestRadarState(RADAR_TRANSMIT);
   } else {
