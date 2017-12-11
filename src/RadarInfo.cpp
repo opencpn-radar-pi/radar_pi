@@ -1014,6 +1014,8 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
   GeoPosition radar_pos;
   wxString s = GetTimedIdleText();
 
+  LOG_VERBOSE(wxT("radar_pi: %s BottomLeft = %s"), m_name.c_str(), s.c_str());
+
   for (int z = 0; z < GUARD_ZONES; z++) {
     int bogeys = m_guard_zone[z]->GetBogeyCount();
     if (bogeys > 0 || (m_pi->m_guard_bogey_confirmed && bogeys == 0)) {
@@ -1370,16 +1372,25 @@ void RadarInfo::AdjustRange(int adjustment) {
 }
 
 wxString RadarInfo::GetTimedIdleText() {
-  // if (m_timed_idle.GetState() == RCS_MANUAL && m_next_state_change.GetValue() > 0)
+  RadarState state = (RadarState)m_state.GetValue();
+  wxString s;
+
+#ifdef NEVER
+  s << wxT("state=") << (int) state << wxT(" TTX=") << (int) m_timed_idle.GetState();
+  s << wxT(" timer=") << (int) m_next_state_change.GetValue() << wxT(" ");
+#endif
+  
+  if (m_timed_idle.GetState() == RCS_MANUAL && m_next_state_change.GetValue() > 0)
   {
-    return GetRadarStateText();
+    s << GetRadarStateText();
   }
-  return wxT("");
+  return s;
 }
 
 wxString RadarInfo::GetRadarStateText() {
   wxString o;
   RadarState state = (RadarState)m_state.GetValue();
+  int next_state_change = m_next_state_change.GetValue();
 
   switch (state) {
     case RADAR_OFF:
@@ -1399,6 +1410,11 @@ wxString RadarInfo::GetRadarStateText() {
       break;
     case RADAR_TRANSMIT:
       o = _("Transmitting");
+      if (next_state_change > 0 && m_timed_idle.GetState() == RCS_MANUAL && m_arpa &&
+          m_arpa->GetTargetCount() > 0) {
+        o << wxT(" ") << _("for targets");
+        return o;
+      }
       break;
     case RADAR_STOPPING:
       o = _("Stopping");
@@ -1410,7 +1426,6 @@ wxString RadarInfo::GetRadarStateText() {
       o = _("Spinning down");
       break;
   }
-  int next_state_change = m_next_state_change.GetValue();
   if (next_state_change >= 10) {
     o << wxT(" ") << wxString::Format(_("for %ds"), next_state_change);
   } else if (next_state_change > 0) {

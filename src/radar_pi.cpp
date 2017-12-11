@@ -29,7 +29,6 @@
  ***************************************************************************
  */
 
-#include "radar_pi.h"
 #include "GuardZone.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
@@ -39,6 +38,7 @@
 #include "SelectDialog.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -733,7 +733,6 @@ void radar_pi::CheckGuardZoneBogeys(void) {
         if (bogeys > m_settings.guard_zone_threshold) {
           bogeys_found = true;
           bogeys_found_this_radar = true;
-          m_radar[r]->m_timed_idle.UpdateState(RCS_OFF);  // reset timed idle to off
         }
         text << _(" Zone") << wxT(" ") << z + 1 << wxT(": ");
         if (bogeys > m_settings.guard_zone_threshold) {
