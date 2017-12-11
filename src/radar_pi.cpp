@@ -711,25 +711,6 @@ void radar_pi::PassHeadingToOpenCPN() {
   PushNMEABuffer(nmea);
 }
 
-wxString radar_pi::GetGuardZoneText(RadarInfo *ri) {
-  wxString text = ri->GetTimedIdleText();
-
-  for (int z = 0; z < GUARD_ZONES; z++) {
-    int bogeys = ri->m_guard_zone[z]->GetBogeyCount();
-    if (bogeys > 0 || (m_guard_bogey_confirmed && bogeys == 0)) {
-      if (text.length() > 0) {
-        text << wxT("\n");
-      }
-      text << _("Zone") << wxT(" ") << z + 1 << wxT(": ") << bogeys;
-      if (m_guard_bogey_confirmed) {
-        text << wxT(" ") << _("(Confirmed)");
-      }
-    }
-  }
-
-  return text;
-}
-
 /**
  * Check any guard zones
  *

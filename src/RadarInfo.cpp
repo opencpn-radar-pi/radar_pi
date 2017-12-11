@@ -1009,9 +1009,23 @@ wxString RadarInfo::FormatAngle(double angle) {
   return s;
 }
 
+
 wxString RadarInfo::GetCanvasTextBottomLeft() {
   GeoPosition radar_pos;
-  wxString s = m_pi->GetGuardZoneText(this);
+  wxString s = GetTimedIdleText();
+
+  for (int z = 0; z < GUARD_ZONES; z++) {
+    int bogeys = m_guard_zone[z]->GetBogeyCount();
+    if (bogeys > 0 || (m_pi->m_guard_bogey_confirmed && bogeys == 0)) {
+      if (s.length() > 0) {
+        s << wxT("\n");
+      }
+      s << _("Zone") << wxT(" ") << z + 1 << wxT(": ") << bogeys;
+      if (m_pi->m_guard_bogey_confirmed) {
+        s << wxT(" ") << _("(Confirmed)");
+      }
+    }
+  }
 
   if (m_state.GetValue() == RADAR_TRANSMIT) {
     double distance = 0.0, bearing = nan("");
@@ -1069,7 +1083,7 @@ wxString RadarInfo::GetCanvasTextCenter() {
   wxString s;
   RadarState state = (RadarState)m_state.GetValue();
 
-  if ((state == RADAR_TRANSMIT || state == RADAR_STANDBY) && m_draw_panel.draw) {
+  if ((state == RADAR_TRANSMIT || (state == RADAR_STANDBY && m_timed_idle.GetState() != RCS_OFF)) && m_draw_panel.draw) {
     return s;
   }
 
@@ -1396,8 +1410,12 @@ wxString RadarInfo::GetRadarStateText() {
       break;
   }
   int next_state_change = m_next_state_change.GetValue();
-  if (next_state_change > 0) {
-    o << wxString::Format(wxT(" for %d s"), next_state_change);
+  if (next_state_change >= 10) {
+    o << wxT(" ") << wxString::Format(_("for %ds"), next_state_change);
+  } else if (next_state_change > 0) {
+    for (int i = 1; i <= next_state_change; i++) {
+      o << wxT(".");
+    }
   }
   return o;
 }

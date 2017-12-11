@@ -431,9 +431,6 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   long GetRangeMeters();
   long GetOptimalRangeMeters();
 
-  wxString GetTimedIdleText();
-  wxString GetGuardZoneText(RadarInfo *ri);
-
   void SetRadarInterfaceAddress(int r, NetworkAddress &addr) {
     wxCriticalSectionLocker lock(m_exclusive);
     m_settings.radar_interface_address[r] = addr;
