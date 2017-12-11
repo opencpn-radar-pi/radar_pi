@@ -711,25 +711,6 @@ void radar_pi::PassHeadingToOpenCPN() {
   PushNMEABuffer(nmea);
 }
 
-wxString radar_pi::GetGuardZoneText(RadarInfo *ri) {
-  wxString text = ri->GetTimedIdleText();
-
-  for (int z = 0; z < GUARD_ZONES; z++) {
-    int bogeys = ri->m_guard_zone[z]->GetBogeyCount();
-    if (bogeys > 0 || (m_guard_bogey_confirmed && bogeys == 0)) {
-      if (text.length() > 0) {
-        text << wxT("\n");
-      }
-      text << _("Zone") << wxT(" ") << z + 1 << wxT(": ") << bogeys;
-      if (m_guard_bogey_confirmed) {
-        text << wxT(" ") << _("(Confirmed)");
-      }
-    }
-  }
-
-  return text;
-}
-
 /**
  * Check any guard zones
  *
@@ -752,7 +733,7 @@ void radar_pi::CheckGuardZoneBogeys(void) {
         if (bogeys > m_settings.guard_zone_threshold) {
           bogeys_found = true;
           bogeys_found_this_radar = true;
-          m_radar[r]->m_timed_idle = 0;  // reset timed idle to off
+          m_radar[r]->m_timed_idle.UpdateState(RCS_OFF);  // reset timed idle to off
         }
         text << _(" Zone") << wxT(" ") << z + 1 << wxT(": ");
         if (bogeys > m_settings.guard_zone_threshold) {
@@ -1653,83 +1634,6 @@ bool radar_pi::FindAIS_at_arpaPos(const GeoPosition &pos, const double &dist) {
     }
   }
   return hit;
-}
-
-bool radar_pi::SetControlValue(int radar, ControlType controlType, RadarControlItem &item) {  // sends the command to the radar
-  LOG_TRANSMIT(wxT("radar_pi: %s set %s value=%d state=%d"), m_radar[radar]->m_name.c_str(), ControlTypeNames[controlType].c_str(),
-               item.GetValue(), item.GetState());
-  switch (controlType) {
-    case CT_TRANSPARENCY: {
-      m_settings.overlay_transparency = item;
-      UpdateAllControlStates(true);
-      return true;
-    }
-    case CT_TIMED_IDLE: {
-      m_radar[radar]->m_timed_idle = item;
-      m_radar[radar]->m_idle_standby = 0;
-      m_radar[radar]->m_idle_transmit = 0;
-      if (m_radar[radar]->m_state.GetValue() == RADAR_TRANSMIT) {
-        m_radar[radar]->m_idle_standby = time(0) + 10;
-      } else {
-        m_radar[radar]->m_idle_transmit = time(0) + 10;
-      }
-      UpdateAllControlStates(true);
-      return true;
-    }
-    case CT_TIMED_RUN: {
-      m_radar[radar]->m_timed_run = item;
-      UpdateAllControlStates(true);
-      return true;
-    }
-    case CT_REFRESHRATE: {
-      m_settings.refreshrate = item;
-      UpdateAllControlStates(true);
-      return true;
-    }
-    case CT_TARGET_TRAILS: {
-      m_radar[radar]->m_target_trails = item;
-      m_radar[radar]->ComputeColourMap();
-      m_radar[radar]->ComputeTargetTrails();
-      return true;
-    }
-    case CT_TRAILS_MOTION: {
-      m_radar[radar]->m_trails_motion = item;
-      m_radar[radar]->ComputeColourMap();
-      m_radar[radar]->ComputeTargetTrails();
-      return true;
-    }
-    case CT_MAIN_BANG_SIZE: {
-      m_radar[radar]->m_main_bang_size = item;
-      return true;
-    }
-
-    case CT_ANTENNA_FORWARD: {
-      m_radar[radar]->m_antenna_forward = item;
-      return true;
-    }
-
-    case CT_ANTENNA_STARBOARD: {
-      m_radar[radar]->m_antenna_starboard = item;
-      return true;
-    }
-
-    case CT_ORIENTATION: {
-      m_radar[radar]->m_orientation = item;
-    }
-
-    case CT_OVERLAY: {
-      m_radar[radar]->m_overlay = item;
-    }
-
-    default: {
-      if (m_radar[radar]->SetControlValue(controlType, item)) {
-        return true;
-      }
-    }
-  }
-  wxLogError(wxT("radar_pi: %s unhandled control setting for control %s"), m_radar[radar]->m_name.c_str(),
-             ControlTypeNames[controlType].c_str());
-  return false;
 }
 
 //*****************************************************************************************************
