@@ -861,11 +861,8 @@ void ArpaTarget::RefreshTarget(int dist) {
         s = Q;
       }
       // Check for AIS target at (M)ARPA position
-      double posOffset = (double)m_pi->m_settings.AISatARPAoffset;
-      // Default 40 >> look 80 meters around + 4% of distance to target
-      double dist2target = (4.0 / 100) * pol.r / m_ri->m_pixels_per_meter;
-      posOffset += dist2target;
-      if (m_pi->FindAIS_at_arpaPos(m_position.pos, posOffset)) s = L;
+      double dist2target = pol.r / m_ri->m_pixels_per_meter;
+      if (m_pi->FindAIS_at_arpaPos(m_position.pos, dist2target)) s = L;
       PassARPAtoOCPN(&pol, s);
     }
   }
@@ -1015,13 +1012,13 @@ void ArpaTarget::PassARPAtoOCPN(Polar* pol, OCPN_target_status status) {
   double bearing = pol->angle * 360. / m_ri->m_spokes;
 
   if (bearing < 0) bearing += 360;
-  s_TargID = wxString::Format(wxT("%4i"), m_target_id);
+  s_TargID = wxString::Format(wxT("%2i"), m_target_id);
   s_speed = wxString::Format(wxT("%4.2f"), m_speed_kn);
   s_course = wxString::Format(wxT("%3.1f"), m_course);
   if (m_automatic) {
-    s_target_name = wxString::Format(wxT("ARPA%4i"), m_target_id);
+    s_target_name = wxString::Format(wxT("ARPA%2i"), m_target_id);
   } else {
-    s_target_name = wxString::Format(wxT("MARPA%4i"), m_target_id);
+    s_target_name = wxString::Format(wxT("MARPA%2i"), m_target_id);
   }
   s_distance = wxString::Format(wxT("%f"), dist);
   s_bearing = wxString::Format(wxT("%f"), bearing);

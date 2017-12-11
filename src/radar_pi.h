@@ -484,8 +484,10 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
 
   // Check for AIS targets inside ARPA zone
   vector<AisArpa> m_ais_in_arpa_zone;  // Array for AIS targets in ARPA zone(s)
-  bool FindAIS_at_arpaPos(const GeoPosition &pos, const double &dist);
-
+  bool FindAIS_at_arpaPos(const GeoPosition &pos, const double &arpa_dist);
+#define BASE_ARPA_DIST (750.)
+  double arpa_max_range = BASE_ARPA_DIST;  //  Temporary distance(m) fron own ship to collect AIS targets.
+  
  private:
   void RadarSendState(void);
   void UpdateState(void);
