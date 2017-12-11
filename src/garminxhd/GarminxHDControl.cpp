@@ -376,12 +376,12 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
         pck_9.parm1 = 0;  // off
         r = TransmitCmd(&pck_9, sizeof(pck_9));
       } else if (state == RCS_MANUAL) {
-        pck_9.packet_type = 0x942;
-        pck_9.parm1 = 1;  // manual
-        r = TransmitCmd(&pck_9, sizeof(pck_9));
         pck_10.packet_type = 0x943;
         pck_10.parm1 = value * 60;
         r = TransmitCmd(&pck_10, sizeof(pck_10));
+        pck_9.packet_type = 0x942;
+        pck_9.parm1 = 1;  // manual
+        r = TransmitCmd(&pck_9, sizeof(pck_9));
       }
       break;
     }
