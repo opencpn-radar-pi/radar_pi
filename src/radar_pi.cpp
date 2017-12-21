@@ -1218,6 +1218,7 @@ bool radar_pi::LoadConfig(void) {
       pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
       ri->m_boot_state.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dMinContourLength"), r), &ri->m_min_contour_length, 6);
+      if (ri->m_min_contour_length > 10) ri->m_min_contour_length = 6;  // Prevent user and system error
 
       RadarControlItem item;
       pConf->Read(wxString::Format(wxT("Radar%dTrailsState"), r), &state, RCS_OFF);
@@ -1389,7 +1390,6 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dWindowPosY"), r), m_settings.window_pos[r].y);
       pConf->Write(wxString::Format(wxT("Radar%dControlPosX"), r), m_settings.control_pos[r].x);
       pConf->Write(wxString::Format(wxT("Radar%dControlPosY"), r), m_settings.control_pos[r].y);
-      pConf->Write(wxString::Format(wxT("Radar%dMinContourLength"), r), m_radar[r]->m_min_contour_length);
       pConf->Write(wxString::Format(wxT("Radar%dMainBangSize"), r), m_radar[r]->m_main_bang_size.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dAntennaForward"), r), m_radar[r]->m_antenna_forward.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dAntennaStarboard"), r), m_radar[r]->m_antenna_starboard.GetValue());
