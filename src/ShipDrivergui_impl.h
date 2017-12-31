@@ -127,7 +127,7 @@ private:
 
 		void OnTest(wxCommandEvent& event);
 		int mainTest(int argc, char *argv[]);
-		void SendAIS(double cse, double spd, double lat, double lon);
+		//void SendAIS(double cse, double spd, double lat, double lon);
 
 		void OnMidships(wxCommandEvent& event);		
 		void OnMinus10(wxCommandEvent& event);

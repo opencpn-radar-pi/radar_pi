@@ -34,7 +34,6 @@
 #include "folder.xpm"
 #include <stdio.h>
 #include <wx/timer.h>
-//#include "pyfunctions.h"
 
 
 
@@ -548,7 +547,7 @@ void Dlg::OnContextMenu(double m_lat, double m_lon){
 	initLon = m_lon;
 }
 
-
+/*
 void Dlg::SendAIS(double cse, double spd, double lat, double lon){
 
 	wxString myCse = wxString::Format(wxT("%3.0f"), cse);
@@ -602,3 +601,4 @@ void Dlg::OnTest(wxCommandEvent& event){
 
 }
 
+*/

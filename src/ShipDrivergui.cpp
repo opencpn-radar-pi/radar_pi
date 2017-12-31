@@ -50,11 +50,11 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_SliderRudder = new wxSlider( this, wxID_ANY, 30, 0, 60, wxDefaultPosition, wxSize( 300,-1 ), wxSL_HORIZONTAL );
 	m_SliderRudder->SetForegroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_WINDOW ) );
 	m_SliderRudder->SetBackgroundColour( wxColour( 201, 201, 201 ) );
-	m_SliderRudder->SetToolTip( wxT("Tiller control") );
+	m_SliderRudder->SetToolTip( _("Tiller control") );
 	
 	fgSizer9->Add( m_SliderRudder, 0, wxALIGN_LEFT, 5 );
 	
-	m_staticTextKnots = new wxStaticText( this, wxID_ANY, wxT("         Knots"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticTextKnots = new wxStaticText( this, wxID_ANY, _("         Knots"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticTextKnots->Wrap( -1 );
 	m_staticTextKnots->SetFont( wxFont( 10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
 	
@@ -91,7 +91,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_buttonMid = new wxButton( this, wxID_ANY, wxT("|"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonMid->SetFont( wxFont( 11, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
 	m_buttonMid->SetBackgroundColour( wxColour( 250, 203, 107 ) );
-	m_buttonMid->SetToolTip( wxT("Midships") );
+	m_buttonMid->SetToolTip( _("Midships") );
 	
 	fgSizer12->Add( m_buttonMid, 0, wxALIGN_LEFT, 0 );
 	
@@ -106,7 +106,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	
 	fgSizer12->Add( 0, 0, 1, wxEXPAND, 5 );
 	
-	m_bpPlay = new wxButton( this, wxID_ANY, wxT("Start"), wxDefaultPosition, wxSize( 140,60 ), 0 );
+	m_bpPlay = new wxButton( this, wxID_ANY, _("Start"), wxDefaultPosition, wxSize( 140,60 ), 0 );
 	m_bpPlay->SetFont( wxFont( 14, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
 	m_bpPlay->SetBackgroundColour( wxColour( 0, 255, 0 ) );
 	
@@ -118,14 +118,14 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	
 	fgSizer12->Add( 0, 0, 1, wxEXPAND, 0 );
 	
-	m_bpStop = new wxButton( this, wxID_ANY, wxT("Emerg. Stop"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_bpStop = new wxButton( this, wxID_ANY, _("Emerg. Stop"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_bpStop->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
 	m_bpStop->SetBackgroundColour( wxColour( 255, 0, 0 ) );
 	m_bpStop->SetMinSize( wxSize( 140,30 ) );
 	
 	fgSizer12->Add( m_bpStop, 0, wxALIGN_LEFT|wxALL, 0 );
 	
-	m_staticTextHeading = new wxStaticText( this, wxID_ANY, wxT("Heading:  "), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticTextHeading = new wxStaticText( this, wxID_ANY, _("Heading:  "), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticTextHeading->Wrap( -1 );
 	m_staticTextHeading->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
 	
@@ -150,7 +150,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_SliderSpeed->SetFont( wxFont( 9, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
 	m_SliderSpeed->SetForegroundColour( wxColour( 0, 0, 0 ) );
 	m_SliderSpeed->SetBackgroundColour( wxColour( 201, 201, 201 ) );
-	m_SliderSpeed->SetToolTip( wxT("Engine control") );
+	m_SliderSpeed->SetToolTip( _("Engine control") );
 	
 	fgSizer3->Add( m_SliderSpeed, 0, wxALL, 0 );
 	
@@ -162,13 +162,13 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	fgSizer82->SetFlexibleDirection( wxVERTICAL );
 	fgSizer82->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 	
-	m_buttonStandby = new wxButton( this, wxID_ANY, wxT("Standby"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonStandby = new wxButton( this, wxID_ANY, _("Standby"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonStandby->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
 	m_buttonStandby->SetBackgroundColour( wxColour( 0, 255, 0 ) );
 	
 	fgSizer82->Add( m_buttonStandby, 0, wxALL, 0 );
 	
-	m_buttonAuto = new wxButton( this, wxID_ANY, wxT("Auto"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonAuto = new wxButton( this, wxID_ANY, _("Auto"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonAuto->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
 	
 	fgSizer82->Add( m_buttonAuto, 0, wxALL, 0 );
