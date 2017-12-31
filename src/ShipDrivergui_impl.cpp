@@ -34,6 +34,15 @@
 #include "folder.xpm"
 #include <stdio.h>
 #include <wx/timer.h>
+//#include "pyfunctions.h"
+
+
+
+void assign(char *dest, char *arrTest2)
+{
+	strcpy(dest, arrTest2);
+}
+
 
 #define BUFSIZE 0x10000
 
@@ -67,7 +76,8 @@ void Dlg::OnStart(wxCommandEvent& event) {
 	m_textCtrlRudderStbd->SetValue(_T(""));
 	m_textCtrlRudderPort->SetValue(_T(""));
 	initSpd = 0; // 5 knots
-	initDir = m_SliderCourse->GetValue();
+	wxString myHeading = m_stHeading->GetLabel();
+	myHeading.ToDouble(&initDir);
 	myDir = initDir;
 	dt = dt.Now();
 	GLL = createGLLSentence(dt, initLat, initLon, initSpd/3600, initDir);
@@ -75,7 +85,8 @@ void Dlg::OnStart(wxCommandEvent& event) {
 
 	m_interval = 1000;
 	m_Timer->Start(m_interval, wxTIMER_CONTINUOUS); // start timer
-	return;
+	m_bAuto = false;
+
 }
 
 void Dlg::OnStop(wxCommandEvent& event) {
@@ -90,11 +101,57 @@ void Dlg::OnStop(wxCommandEvent& event) {
 	m_interval = m_Timer->GetInterval();
 	m_bUseSetTime = false;
 	m_bUseStop = true;
+	m_bAuto = false;
 }
 
 void Dlg::OnMidships(wxCommandEvent& event){
 	m_SliderRudder->SetValue(30);
 }
+
+void Dlg::OnMinus10(wxCommandEvent& event){
+	if (m_bAuto){
+		myDir -= 10;
+		wxString mystring = wxString::Format(wxT("%.0f"), myDir);
+		m_stHeading->SetLabel(mystring);
+	}
+}
+
+void Dlg::OnPlus10(wxCommandEvent& event){
+	if (m_bAuto){
+		myDir += 10;
+		wxString mystring = wxString::Format(wxT("%.0f"), myDir);
+		m_stHeading->SetLabel(mystring);
+	}
+}
+
+void Dlg::OnMinus1(wxCommandEvent& event){
+	if (m_bAuto){
+		myDir -= 1;
+		wxString mystring = wxString::Format(wxT("%.0f"), myDir);
+		m_stHeading->SetLabel(mystring);
+	}
+}
+
+void Dlg::OnPlus1(wxCommandEvent& event){
+	if (m_bAuto){
+		myDir += 1;
+		wxString mystring = wxString::Format(wxT("%.0f"), myDir);
+		m_stHeading->SetLabel(mystring);
+	}
+}
+
+void Dlg::OnAuto(wxCommandEvent& event){
+
+	m_bAuto = true;
+	m_buttonStandby->SetBackgroundColour(wxColour(255, 0, 0));
+}
+
+void Dlg::OnStandby(wxCommandEvent& event){
+
+	m_bAuto = false;
+	m_buttonStandby->SetBackgroundColour(wxColour(0, 255, 0));
+}
+
 
 void Dlg::OnClose(wxCloseEvent& event)
 {
@@ -141,9 +198,13 @@ void Dlg::Notify()
 		myDir -= 360;
 	}
 
-	m_SliderCourse->SetValue(myDir);
+	wxString mystring = wxString::Format(wxT("%.0f"), myDir);
+	m_stHeading->SetLabel(mystring);
 
 	SetNextStep(initLat, initLon, myDir, initSpd/3600, stepLat, stepLon);
+
+
+	//SendAIS(myDir, initSpd, stepLat, stepLon); // Use Python to make and send the AIS sentence
 
 	int ss = 1;
 	wxTimeSpan mySeconds = wxTimeSpan::Seconds(ss);
@@ -164,7 +225,6 @@ void Dlg::Notify()
 void Dlg::OnSliderUpdated(wxCommandEvent& event)
 {
 	initSpd = m_SliderSpeed->GetValue();
-	initDir = m_SliderCourse->GetValue();
 }
 
 void Dlg::SetInterval(int interval)
@@ -338,19 +398,19 @@ wxString Dlg::LatitudeToString(double mLat) {
 
 	if (mLat >= 0){
 		if (decLat < 10){
-			returnLat = mDegLat + _T("0") + wxString::Format(_T("%.2f"), decLat) + _T(",N,");
+			returnLat = mDegLat + _T("0") + wxString::Format(_T("%.6f"), decLat) + _T(",N,");
 		}
 		else {
-			returnLat = mDegLat + wxString::Format(_T("%.2f"), decLat) + _T(",N,");
+			returnLat = mDegLat + wxString::Format(_T("%.6f"), decLat) + _T(",N,");
 		}
 
 	}
 	else if (mLat < 0) {
 		if (decLat < 10){
-			returnLat = mDegLat + _T("0") + wxString::Format(_T("%.2f"), decLat) + _T(",S,");
+			returnLat = mDegLat + _T("0") + wxString::Format(_T("%.6f"), decLat) + _T(",S,");
 		}
 		else {
-			returnLat = mDegLat + wxString::Format(_T("%.2f"), decLat) + _T(",S,");
+			returnLat = mDegLat + wxString::Format(_T("%.6f"), decLat) + _T(",S,");
 		}
 	}
 
@@ -445,18 +505,18 @@ wxString Dlg::LongitudeToString(double mLon) {
 
 	if (mLon >= 0){
 		if (decLon < 10){
-			returnLon = mDegLon + _T("0") + wxString::Format(_T("%.2f"), decLon) + _T(",E,");
+			returnLon = mDegLon + _T("0") + wxString::Format(_T("%.6f"), decLon) + _T(",E,");
 		}
 		else {
-			returnLon = mDegLon + wxString::Format(_T("%.2f"), decLon) + _T(",E,");
+			returnLon = mDegLon + wxString::Format(_T("%.6f"), decLon) + _T(",E,");
 		}
 
 	} else  {
 		if (decLon < 10){
-			returnLon = mDegLon + _T("0") + wxString::Format(_T("%.2f"), decLon) + _T(",W,");
+			returnLon = mDegLon + _T("0") + wxString::Format(_T("%.6f"), decLon) + _T(",W,");
 		}
 		else {
-			returnLon = mDegLon + wxString::Format(_T("%.2f"), decLon) + _T(",W,");
+			returnLon = mDegLon + wxString::Format(_T("%.6f"), decLon) + _T(",W,");
 		}
 	}
 	//wxMessageBox(returnLon, _T("returnLon"));
@@ -487,3 +547,58 @@ void Dlg::OnContextMenu(double m_lat, double m_lon){
 	initLat = m_lat;
 	initLon = m_lon;
 }
+
+
+void Dlg::SendAIS(double cse, double spd, double lat, double lon){
+
+	wxString myCse = wxString::Format(wxT("%3.0f"), cse);
+	wxString mySpd = wxString::Format(wxT("%4.0f"), spd*10);
+	wxString myLat = wxString::Format(wxT("%7.5f"), lat);
+	wxString myLon = wxString::Format(wxT("%7.5f"), lon);
+
+
+	wxString cmdstart; // = _T("C:/ppp/play.bat");
+	wxString dir = _T("c:/ppp/6/");
+	cmdstart = dir + _T("pyconsole.exe") + _T(" ") + _T("MyAISplayer.py") + _T(" ") + myCse + _T(" ") + mySpd + _T(" ") + myLat + _T(" ") + myLon;
+	//wxMessageBox(cmdstart);
+	//wxProcess* process;
+
+	//process = new wxProcess;
+
+	int m_server_pid;
+
+	m_server_pid = wxExecute(cmdstart, wxEXEC_ASYNC | wxEXEC_HIDE_CONSOLE, 0);
+
+
+
+	//char* myArgs[] = { "c:/ppp/3/MyAISplayer.py",   , "222" };
+
+	//mainTest(3, myArgs);
+
+}
+
+void Dlg::OnTest(wxCommandEvent& event){
+	
+	//wxString cmdstart; // = _T("C:/ppp/play.bat");
+	//wxString dir = _T("c:/ppp/6/");
+	//cmdstart = dir + _T("pyconsole.exe") + _T(" ") + _T("MyAISplayer.py") + _T(" ") + _T("111") + _T(" ") + _T("111") + _T(" ") + _T("53.4") + _T(" ") + _T("6.2");
+	//wxProcess* process;
+
+	//process = new wxProcess;
+
+	//int m_server_pid;
+
+	//m_server_pid = wxExecute(cmdstart, wxEXEC_ASYNC | wxEXEC_SHOW_CONSOLE | wxEXEC_MAKE_GROUP_LEADER, process, 0);
+
+	SendAIS(55, 6.6, 53.4, 6.2);
+
+	//char* myArgs[] = { "this", "MyAISplayer.py", "111"  , "111", "53.4", "6.2" };
+
+	//int myTest;
+
+	//myTest = mainTest(6, myArgs);
+
+	//wxMessageBox(wxString::Format(_T("%i"), myTest));
+
+}
+

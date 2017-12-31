@@ -79,8 +79,8 @@ ShipDriver_pi::ShipDriver_pi(void *ppimgr)
 
 ShipDriver_pi::~ShipDriver_pi(void)
 {
-     delete _img_ShipDriver_pi;
-     delete _img_ShipDriver;
+     //delete _img_ShipDriver_pi;
+     delete _img_ShipDriverIcon;
      
 }
 
@@ -104,7 +104,7 @@ int ShipDriver_pi::Init(void)
 
       //    This PlugIn needs a toolbar icon, so request its insertion
 	if(m_bShipDriverShowIcon)
-      m_leftclick_tool_id  = InsertPlugInTool(_T(""), _img_ShipDriver, _img_ShipDriver, wxITEM_CHECK,
+		m_leftclick_tool_id = InsertPlugInTool(_T(""), _img_ShipDriverIcon, _img_ShipDriverIcon, wxITEM_CHECK,
             _("ShipDriver"), _T(""), NULL,
              ShipDriver_TOOL_POSITION, 0, this);
 
@@ -123,6 +123,8 @@ int ShipDriver_pi::Init(void)
               WANTS_TOOLBAR_CALLBACK    |
               INSTALLS_TOOLBAR_TOOL     |   
 			  WANTS_CURSOR_LATLON |
+			  WANTS_NMEA_SENTENCES|
+			  WANTS_AIS_SENTENCES|
               WANTS_CONFIG           
            );
 }
@@ -176,7 +178,7 @@ int ShipDriver_pi::GetPlugInVersionMinor()
 
 wxBitmap *ShipDriver_pi::GetPlugInBitmap()
 {
-      return _img_ShipDriver_pi;
+      return _img_ShipDriverIcon;
 }
 
 wxString ShipDriver_pi::GetCommonName()
@@ -219,8 +221,7 @@ void ShipDriver_pi::OnToolbarToolCallback(int id)
       {
             m_pDialog = new Dlg(m_parent_window);
             m_pDialog->plugin = this;
-			m_pDialog->m_Timer = new wxTimer(m_pDialog);
-			m_pDialog->m_SliderCourse->SetValue(0);
+			m_pDialog->m_Timer = new wxTimer(m_pDialog);			
             m_pDialog->Move(wxPoint(m_hr_dialog_x, m_hr_dialog_y));			
       }
 

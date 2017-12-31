@@ -39,10 +39,33 @@
 #include <wx/gdicmn.h>
 #include <sstream>
 #include <cmath>
+#include <wx/stdpaths.h>
+#include "wx/process.h"
 
 using namespace std;
 
 class ShipDriver_pi;
+
+// ----------------------------------------------------------------------------
+// a simple thread
+// ----------------------------------------------------------------------------
+
+
+
+class MyThread : public wxThread
+{
+public:
+	MyThread();
+	virtual ~MyThread();
+
+	// thread execution starts here
+	virtual void *Entry();
+
+public:
+	unsigned m_count;
+};
+
+// An identifier to notify the application when the // work is done #define ID_COUNTED_COLORS    100
 
 class Dlg : public ShipDriverBase
 {
@@ -102,7 +125,20 @@ private:
 		void OnStop(wxCommandEvent& event);
 		void OnClose(wxCloseEvent& event);
 
-		void OnMidships(wxCommandEvent& event);
+		void OnTest(wxCommandEvent& event);
+		int mainTest(int argc, char *argv[]);
+		void SendAIS(double cse, double spd, double lat, double lon);
+
+		void OnMidships(wxCommandEvent& event);		
+		void OnMinus10(wxCommandEvent& event);
+		void OnPlus10(wxCommandEvent& event);
+		void OnMinus1(wxCommandEvent& event);
+		void OnPlus1(wxCommandEvent& event);
+		void OnStandby(wxCommandEvent& event);
+		void OnAuto(wxCommandEvent& event);
+
+		bool m_bAuto;
+
 };
 
 #endif

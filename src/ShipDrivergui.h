@@ -21,8 +21,8 @@
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/button.h>
-#include <wx/dialog.h>
 #include <wx/timer.h>
+#include <wx/dialog.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -42,21 +42,37 @@ class ShipDriverBase : public wxDialog
 		wxButton* m_bpPlay;
 		wxButton* m_bpStop;
 		wxStaticText* m_staticTextHeading;
+		wxButton* m_buttonStandby;
+		wxButton* m_buttonAuto;
+		wxButton* m_button7;
+		wxButton* m_button8;
+		wxButton* m_buttonMinus1;
+		wxButton* m_buttonMinus10;
+		wxButton* m_buttonPlus10;
+		wxButton* m_buttonPlus1;
 		
 		// Virtual event handlers, overide them in your derived class
 		virtual void OnMidships( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStart( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStop( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnTimer(wxTimerEvent& event) { event.Skip(); }
+		virtual void OnStandby( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnAuto( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnMinus1( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnMinus10( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnPlus10( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnPlus1( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnTimer( wxTimerEvent& event ) { event.Skip(); }
+		
 	
 	public:
 		wxGauge* m_gaugeRudderPort;
 		wxGauge* m_gaugeRudderStbd;
 		wxSlider* m_SliderRudder;
-		wxSlider* m_SliderCourse;
+		wxStaticText* m_stHeading;
 		wxSlider* m_SliderSpeed;
+		wxTimer m_timer1;
 		
-		ShipDriverBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 402,270 ), long style = wxDEFAULT_DIALOG_STYLE ); 
+		ShipDriverBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 411,329 ), long style = wxDEFAULT_DIALOG_STYLE ); 
 		~ShipDriverBase();
 	
 };
