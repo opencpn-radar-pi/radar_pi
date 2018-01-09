@@ -1,0 +1,75 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: opencpn\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-31 16:13+0000\n"
+"PO-Revision-Date: 2018-01-08 16:56-0500\n"
+"Last-Translator: nohal <pavel@kalian.cz>\n"
+"Language-Team: Italian\n"
+"Language: it_IT\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: opencpn\n"
+"X-Crowdin-Language: it\n"
+"X-Crowdin-File: /plugins/shipdriver_pi/po/ShipDriver_pi.pot\n"
+
+#: src/ShipDriver_pi.cpp:108 src/ShipDriver_pi.cpp:186
+#: src/ShipDrivergui_impl.h:73
+msgid "ShipDriver"
+msgstr ""
+
+#: src/ShipDriver_pi.cpp:113
+msgid "Select Vessel Start Position"
+msgstr ""
+
+#: src/ShipDriver_pi.cpp:192
+msgid "ShipDriver player"
+msgstr ""
+
+#: src/ShipDriver_pi.cpp:197
+msgid "Almost a simulator"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:53
+msgid "Tiller control"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:57
+msgid "         Knots"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:94
+msgid "Midships"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:109
+msgid "Start"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:121
+msgid "Emerg. Stop"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:128
+msgid "Heading:  "
+msgstr ""
+
+#: src/ShipDrivergui.cpp:153
+msgid "Engine control"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:165
+msgid "Standby"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:171
+msgid "Auto"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:72
+msgid "Please right-click and choose vessel start position"
+msgstr ""
+
