@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-31 16:13+0000\n"
+"POT-Creation-Date: 2018-01-09 10:52+0000\n"
 "PO-Revision-Date: 2018-01-08 16:56-0500\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Swedish\n"
@@ -15,61 +15,63 @@ msgstr ""
 "X-Crowdin-Project: opencpn\n"
 "X-Crowdin-Language: sv-SE\n"
 "X-Crowdin-File: /plugins/shipdriver_pi/po/ShipDriver_pi.pot\n"
-
-#: src/ShipDriver_pi.cpp:108 src/ShipDriver_pi.cpp:186
-#: src/ShipDrivergui_impl.h:73
-msgid "ShipDriver"
-msgstr "ShipDriver"
-
-#: src/ShipDriver_pi.cpp:113
-msgid "Select Vessel Start Position"
-msgstr "Välj startposition"
-
-#: src/ShipDriver_pi.cpp:192
-msgid "ShipDriver player"
-msgstr "ShipDriver Spela upp"
-
-#: src/ShipDriver_pi.cpp:197
+#
+msgid "             Speed: "
+msgstr ""
+#
+#, fuzzy
+msgid "        Kts"
+msgstr "         Knop"
+#
+#, fuzzy
+msgid "  Heading:  "
+msgstr "Kurs:  "
+#
 msgid "Almost a simulator"
 msgstr "Nästan en simulator"
-
-#: src/ShipDrivergui.cpp:53
-msgid "Tiller control"
-msgstr "Rorkultmanövrering"
-
-#: src/ShipDrivergui.cpp:57
-msgid "         Knots"
-msgstr "         Knop"
-
-#: src/ShipDrivergui.cpp:94
-msgid "Midships"
-msgstr "Midskepps"
-
-#: src/ShipDrivergui.cpp:109
-msgid "Start"
-msgstr "Starta"
-
-#: src/ShipDrivergui.cpp:121
-msgid "Emerg. Stop"
-msgstr "Nödstopp"
-
-#: src/ShipDrivergui.cpp:128
-msgid "Heading:  "
-msgstr "Kurs:  "
-
-#: src/ShipDrivergui.cpp:153
-msgid "Engine control"
-msgstr "Motorstyrning"
-
-#: src/ShipDrivergui.cpp:165
-msgid "Standby"
-msgstr "Standby"
-
-#: src/ShipDrivergui.cpp:171
+#
 msgid "Auto"
 msgstr "Auto"
-
-#: src/ShipDrivergui_impl.cpp:72
+#
+msgid "Autopilot Control"
+msgstr ""
+#
+msgid "Hand Steering"
+msgstr ""
+#
+msgid "Midships"
+msgstr "Midskepps"
+#
 msgid "Please right-click and choose vessel start position"
 msgstr "Vänligen högerklicka och välj fartygets startposition"
-
+#
+msgid "Select Vessel Start Position"
+msgstr "Välj startposition"
+#
+msgid "ShipDriver"
+msgstr "ShipDriver"
+#
+msgid "ShipDriver player"
+msgstr "ShipDriver Spela upp"
+#
+msgid "Speed Control"
+msgstr ""
+#
+msgid "Standby"
+msgstr "Standby"
+#
+msgid "Start"
+msgstr "Starta"
+#
+msgid "Stop"
+msgstr ""
+#
+#, fuzzy
+msgid "Tiller Control"
+msgstr "Rorkultmanövrering"
+#
+#~ msgid "Emerg. Stop"
+#~ msgstr "Nödstopp"
+#
+#~ msgid "Engine control"
+#~ msgstr "Motorstyrning"

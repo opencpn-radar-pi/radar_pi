@@ -110,7 +110,7 @@ void Dlg::OnMidships(wxCommandEvent& event){
 void Dlg::OnMinus10(wxCommandEvent& event){
 	if (m_bAuto){
 		myDir -= 10;
-		wxString mystring = wxString::Format(wxT("%.0f"), myDir);
+		wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
 		m_stHeading->SetLabel(mystring);
 	}
 }
@@ -118,7 +118,7 @@ void Dlg::OnMinus10(wxCommandEvent& event){
 void Dlg::OnPlus10(wxCommandEvent& event){
 	if (m_bAuto){
 		myDir += 10;
-		wxString mystring = wxString::Format(wxT("%.0f"), myDir);
+		wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
 		m_stHeading->SetLabel(mystring);
 	}
 }
@@ -126,7 +126,7 @@ void Dlg::OnPlus10(wxCommandEvent& event){
 void Dlg::OnMinus1(wxCommandEvent& event){
 	if (m_bAuto){
 		myDir -= 1;
-		wxString mystring = wxString::Format(wxT("%.0f"), myDir);
+		wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
 		m_stHeading->SetLabel(mystring);
 	}
 }
@@ -134,7 +134,7 @@ void Dlg::OnMinus1(wxCommandEvent& event){
 void Dlg::OnPlus1(wxCommandEvent& event){
 	if (m_bAuto){
 		myDir += 1;
-		wxString mystring = wxString::Format(wxT("%.0f"), myDir);
+		wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
 		m_stHeading->SetLabel(mystring);
 	}
 }
@@ -143,12 +143,14 @@ void Dlg::OnAuto(wxCommandEvent& event){
 
 	m_bAuto = true;
 	m_buttonStandby->SetBackgroundColour(wxColour(255, 0, 0));
+	m_buttonAuto->SetBackgroundColour(wxColour(0, 255, 0));
 }
 
 void Dlg::OnStandby(wxCommandEvent& event){
 
 	m_bAuto = false;
 	m_buttonStandby->SetBackgroundColour(wxColour(0, 255, 0));
+	m_buttonAuto->SetBackgroundColour(wxColour(255, 255, 255));
 }
 
 
@@ -197,8 +199,11 @@ void Dlg::Notify()
 		myDir -= 360;
 	}
 
-	wxString mystring = wxString::Format(wxT("%.0f"), myDir);
+	wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
 	m_stHeading->SetLabel(mystring);
+
+	m_stSpeed->SetLabel(wxString::Format(_T("%3.0f"), initSpd));
+
 
 	SetNextStep(initLat, initLon, myDir, initSpd/3600, stepLat, stepLon);
 
@@ -219,11 +224,6 @@ void Dlg::Notify()
 	initLon = stepLon;
 
 	dt = mdt;
-}
-
-void Dlg::OnSliderUpdated(wxCommandEvent& event)
-{
-	initSpd = m_SliderSpeed->GetValue();
 }
 
 void Dlg::SetInterval(int interval)

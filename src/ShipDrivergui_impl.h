@@ -99,12 +99,11 @@ public:
 private:
 		void Notify();
 		wxString GLL, VTG;
-
 		double initDir, initSpd, initRudder, myDir;
+
 		wxDateTime dt;
 		void SetInterval(int interval);
 		int  m_interval;
-		void OnSliderUpdated(wxCommandEvent& event);
 
 		wxString m_sTimeSentence;
 		wxString m_sTimeID;

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-31 16:13+0000\n"
+"POT-Creation-Date: 2018-01-09 10:52+0000\n"
 "PO-Revision-Date: 2018-01-08 16:57-0500\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Turkish\n"
@@ -15,61 +15,63 @@ msgstr ""
 "X-Crowdin-Project: opencpn\n"
 "X-Crowdin-Language: tr\n"
 "X-Crowdin-File: /plugins/shipdriver_pi/po/ShipDriver_pi.pot\n"
-
-#: src/ShipDriver_pi.cpp:108 src/ShipDriver_pi.cpp:186
-#: src/ShipDrivergui_impl.h:73
-msgid "ShipDriver"
-msgstr "Gemi Sürücüsü"
-
-#: src/ShipDriver_pi.cpp:113
-msgid "Select Vessel Start Position"
-msgstr "Geminin başlangıç pozisyonunu seçin"
-
-#: src/ShipDriver_pi.cpp:192
-msgid "ShipDriver player"
-msgstr "GemiSürücü oyuncusu"
-
-#: src/ShipDriver_pi.cpp:197
+#
+msgid "             Speed: "
+msgstr ""
+#
+#, fuzzy
+msgid "        Kts"
+msgstr "         Deniz mili(sürat)"
+#
+#, fuzzy
+msgid "  Heading:  "
+msgstr "Rota:  "
+#
 msgid "Almost a simulator"
 msgstr "Neredeyse bir simülasyon"
-
-#: src/ShipDrivergui.cpp:53
-msgid "Tiller control"
-msgstr "Dümen kontrolü"
-
-#: src/ShipDrivergui.cpp:57
-msgid "         Knots"
-msgstr "         Deniz mili(sürat)"
-
-#: src/ShipDrivergui.cpp:94
-msgid "Midships"
-msgstr "Gemi ortası"
-
-#: src/ShipDrivergui.cpp:109
-msgid "Start"
-msgstr "Başlangıç"
-
-#: src/ShipDrivergui.cpp:121
-msgid "Emerg. Stop"
-msgstr "Acil Dur"
-
-#: src/ShipDrivergui.cpp:128
-msgid "Heading:  "
-msgstr "Rota:  "
-
-#: src/ShipDrivergui.cpp:153
-msgid "Engine control"
-msgstr "Motor Kontrol"
-
-#: src/ShipDrivergui.cpp:165
-msgid "Standby"
-msgstr "Kapatma"
-
-#: src/ShipDrivergui.cpp:171
+#
 msgid "Auto"
 msgstr "Otomatik"
-
-#: src/ShipDrivergui_impl.cpp:72
+#
+msgid "Autopilot Control"
+msgstr ""
+#
+msgid "Hand Steering"
+msgstr ""
+#
+msgid "Midships"
+msgstr "Gemi ortası"
+#
 msgid "Please right-click and choose vessel start position"
 msgstr "Lütfen sağ tıklayıp geminin başlangıç posiyonunu seçin"
-
+#
+msgid "Select Vessel Start Position"
+msgstr "Geminin başlangıç pozisyonunu seçin"
+#
+msgid "ShipDriver"
+msgstr "Gemi Sürücüsü"
+#
+msgid "ShipDriver player"
+msgstr "GemiSürücü oyuncusu"
+#
+msgid "Speed Control"
+msgstr ""
+#
+msgid "Standby"
+msgstr "Kapatma"
+#
+msgid "Start"
+msgstr "Başlangıç"
+#
+msgid "Stop"
+msgstr ""
+#
+#, fuzzy
+msgid "Tiller Control"
+msgstr "Dümen kontrolü"
+#
+#~ msgid "Emerg. Stop"
+#~ msgstr "Acil Dur"
+#
+#~ msgid "Engine control"
+#~ msgstr "Motor Kontrol"

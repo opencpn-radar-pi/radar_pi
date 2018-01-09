@@ -18,9 +18,9 @@
 #include <wx/string.h>
 #include <wx/sizer.h>
 #include <wx/slider.h>
-#include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/button.h>
+#include <wx/stattext.h>
 #include <wx/timer.h>
 #include <wx/dialog.h>
 
@@ -35,13 +35,16 @@ class ShipDriverBase : public wxDialog
 	private:
 	
 	protected:
-		wxStaticText* m_staticTextKnots;
 		wxTextCtrl* m_textCtrlRudderPort;
 		wxButton* m_buttonMid;
 		wxTextCtrl* m_textCtrlRudderStbd;
 		wxButton* m_bpPlay;
 		wxButton* m_bpStop;
 		wxStaticText* m_staticTextHeading;
+		wxStaticText* m_staticTextKnots;
+		wxStaticText* m_staticText81;
+		wxStaticText* m_staticText7;
+		wxStaticText* m_staticText8;
 		wxButton* m_buttonStandby;
 		wxButton* m_buttonAuto;
 		wxButton* m_button7;
@@ -69,10 +72,11 @@ class ShipDriverBase : public wxDialog
 		wxGauge* m_gaugeRudderStbd;
 		wxSlider* m_SliderRudder;
 		wxStaticText* m_stHeading;
+		wxStaticText* m_stSpeed;
 		wxSlider* m_SliderSpeed;
 		wxTimer m_timer1;
 		
-		ShipDriverBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 411,329 ), long style = wxDEFAULT_DIALOG_STYLE ); 
+		ShipDriverBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 375,241 ), long style = wxDEFAULT_DIALOG_STYLE ); 
 		~ShipDriverBase();
 	
 };

@@ -91,6 +91,8 @@ int ShipDriver_pi::Init(void)
       // Set some default private member parameters
       m_hr_dialog_x = 40;
       m_hr_dialog_y = 80;
+	  m_hr_dialog_sx = 400;
+	  m_hr_dialog_sy = 300;
       ::wxDisplaySize(&m_display_width, &m_display_height);
 
       //    Get a pointer to the opencpn display canvas, to use as a parent for the POI Manager dialog
@@ -136,8 +138,12 @@ bool ShipDriver_pi::DeInit(void)
       {
             //Capture dialog position
             wxPoint p = m_pDialog->GetPosition();
+			wxRect r = m_pDialog->GetRect();
             SetShipDriverDialogX(p.x);
             SetShipDriverDialogY(p.y);
+			SetShipDriverDialogSizeX(r.GetWidth());
+			SetShipDriverDialogSizeY(r.GetHeight());
+
 			if ((m_pDialog->m_Timer != NULL) && (m_pDialog->m_Timer->IsRunning())){ // need to stop the timer or crash on exit
 				m_pDialog->m_Timer->Stop();
 			}
@@ -222,22 +228,36 @@ void ShipDriver_pi::OnToolbarToolCallback(int id)
             m_pDialog = new Dlg(m_parent_window);
             m_pDialog->plugin = this;
 			m_pDialog->m_Timer = new wxTimer(m_pDialog);			
-            m_pDialog->Move(wxPoint(m_hr_dialog_x, m_hr_dialog_y));			
+            m_pDialog->Move(wxPoint(m_hr_dialog_x, m_hr_dialog_y));	
+			m_pDialog->SetSize(m_hr_dialog_sx, m_hr_dialog_sy);			
       }
 
-	  m_pDialog->Fit();
+	 // m_pDialog->Fit();
 	  //Toggle 
 	  m_bShowShipDriver = !m_bShowShipDriver;	  
 
       //    Toggle dialog? 
       if(m_bShowShipDriver) {
+		  m_pDialog->Move(wxPoint(m_hr_dialog_x, m_hr_dialog_y));
+		  m_pDialog->SetSize(m_hr_dialog_sx, m_hr_dialog_sy);
           m_pDialog->Show();         
-      } else
-          m_pDialog->Hide();
+	  }
+	  else {
+		  m_pDialog->Hide();
+	  }
      
       // Toggle is handled by the toolbar but we must keep plugin manager b_toggle updated
       // to actual status to ensure correct status upon toolbar rebuild
       SetToolbarItemState( m_leftclick_tool_id, m_bShowShipDriver);
+
+	  //Capture dialog position
+	  wxPoint p = m_pDialog->GetPosition();
+	  wxRect r = m_pDialog->GetRect();
+	  SetShipDriverDialogX(p.x);
+	  SetShipDriverDialogY(p.y);
+	  SetShipDriverDialogSizeX(r.GetWidth());
+	  SetShipDriverDialogSizeY(r.GetHeight());
+
 
       RequestRefresh(m_parent_window); // refresh main window
 }
@@ -252,7 +272,9 @@ bool ShipDriver_pi::LoadConfig(void)
 			pConf->Read ( _T( "ShowShipDriverIcon" ), &m_bShipDriverShowIcon, 1 );
            
             m_hr_dialog_x =  pConf->Read ( _T ( "DialogPosX" ), 40L );
-            m_hr_dialog_y =  pConf->Read ( _T ( "DialogPosY" ), 140L );
+            m_hr_dialog_y =  pConf->Read ( _T ( "DialogPosY" ), 140L);
+			m_hr_dialog_sx = pConf->Read ( _T ( "DialogSizeX"), 300L);
+			m_hr_dialog_sy = pConf->Read ( _T ( "DialogSizeY"), 540L);
          
             if((m_hr_dialog_x < 0) || (m_hr_dialog_x > m_display_width))
                   m_hr_dialog_x = 40;
@@ -276,6 +298,8 @@ bool ShipDriver_pi::SaveConfig(void)
           
             pConf->Write ( _T ( "DialogPosX" ),   m_hr_dialog_x );
             pConf->Write ( _T ( "DialogPosY" ),   m_hr_dialog_y );
+			pConf->Write ( _T ( "DialogSizeX"),   m_hr_dialog_sx);
+			pConf->Write ( _T ( "DialogSizeY"),   m_hr_dialog_sy);
             
             return true;
       }

@@ -41,7 +41,7 @@
 #include "ShipDrivergui_impl.h"
 
 #define     PLUGIN_VERSION_MAJOR    0
-#define     PLUGIN_VERSION_MINOR    3
+#define     PLUGIN_VERSION_MINOR    4
 
 #define     MY_API_VERSION_MAJOR    1
 #define     MY_API_VERSION_MINOR    6
@@ -90,7 +90,9 @@ public:
       void SetShipDriverDialogX         (int x){ m_hr_dialog_x = x;};
       void SetShipDriverDialogY         (int x){ m_hr_dialog_y = x;};
       void SetShipDriverDialogWidth     (int x){ m_hr_dialog_width = x;};
-      void SetShipDriverDialogHeight    (int x){ m_hr_dialog_height = x;};      
+      void SetShipDriverDialogHeight    (int x){ m_hr_dialog_height = x;};  
+	  void SetShipDriverDialogSizeX     (int x){ m_hr_dialog_sx = x; }
+	  void SetShipDriverDialogSizeY     (int x){ m_hr_dialog_sy = x; }
 	  void OnShipDriverDialogClose();
 	  
 
@@ -120,6 +122,7 @@ private:
       bool              SaveConfig(void);
 	  
       int				m_hr_dialog_width,m_hr_dialog_height;
+	  int               m_hr_dialog_sx, m_hr_dialog_sy;
       int               m_display_width, m_display_height;      
       int				m_leftclick_tool_id;
 	  bool				m_bShipDriverShowIcon;

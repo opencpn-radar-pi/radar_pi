@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-31 16:13+0000\n"
+"POT-Creation-Date: 2018-01-09 10:52+0000\n"
 "PO-Revision-Date: 2018-01-08 16:56-0500\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: French\n"
@@ -15,61 +15,65 @@ msgstr ""
 "X-Crowdin-Project: opencpn\n"
 "X-Crowdin-Language: fr\n"
 "X-Crowdin-File: /plugins/shipdriver_pi/po/ShipDriver_pi.pot\n"
-
-#: src/ShipDriver_pi.cpp:108 src/ShipDriver_pi.cpp:186
-#: src/ShipDrivergui_impl.h:73
-msgid "ShipDriver"
-msgstr "Piloter le bateau"
-
-#: src/ShipDriver_pi.cpp:113
-msgid "Select Vessel Start Position"
-msgstr "Choisissez la position de départ du bateau"
-
-#: src/ShipDriver_pi.cpp:192
-msgid "ShipDriver player"
-msgstr "Exécuter Shipdriver"
-
-#: src/ShipDriver_pi.cpp:197
+#
+msgid "             Speed: "
+msgstr ""
+#
+#, fuzzy
+msgid "        Kts"
+msgstr "         Noeuds"
+#
+#, fuzzy
+msgid "  Heading:  "
+msgstr "Direction : "
+#
 msgid "Almost a simulator"
 msgstr "Presque un simulateur"
-
-#: src/ShipDrivergui.cpp:53
-msgid "Tiller control"
-msgstr "Contrôle de la barre"
-
-#: src/ShipDrivergui.cpp:57
-msgid "         Knots"
-msgstr "         Noeuds"
-
-#: src/ShipDrivergui.cpp:94
-msgid "Midships"
-msgstr ""
-
-#: src/ShipDrivergui.cpp:109
-msgid "Start"
-msgstr "Départ"
-
-#: src/ShipDrivergui.cpp:121
-msgid "Emerg. Stop"
-msgstr "Arrêt d'urgence"
-
-#: src/ShipDrivergui.cpp:128
-msgid "Heading:  "
-msgstr "Direction : "
-
-#: src/ShipDrivergui.cpp:153
-msgid "Engine control"
-msgstr "Contrôle du moteur"
-
-#: src/ShipDrivergui.cpp:165
-msgid "Standby"
-msgstr "Mise en veille"
-
-#: src/ShipDrivergui.cpp:171
+#
 msgid "Auto"
 msgstr "Auto"
-
-#: src/ShipDrivergui_impl.cpp:72
+#
+msgid "Autopilot Control"
+msgstr ""
+#
+msgid "Hand Steering"
+msgstr ""
+#
+msgid "Midships"
+msgstr ""
+#
 msgid "Please right-click and choose vessel start position"
-msgstr "S’il vous plaît, faites un clic droit & choisissez la position de départ du bateau"
-
+msgstr ""
+"S’il vous plaît, faites un clic droit & choisissez la position de départ du "
+"bateau"
+#
+msgid "Select Vessel Start Position"
+msgstr "Choisissez la position de départ du bateau"
+#
+msgid "ShipDriver"
+msgstr "Piloter le bateau"
+#
+msgid "ShipDriver player"
+msgstr "Exécuter Shipdriver"
+#
+msgid "Speed Control"
+msgstr ""
+#
+msgid "Standby"
+msgstr "Mise en veille"
+#
+msgid "Start"
+msgstr "Départ"
+#
+msgid "Stop"
+msgstr ""
+#
+#, fuzzy
+msgid "Tiller Control"
+msgstr "Contrôle de la barre"
+#
+#~ msgid "Emerg. Stop"
+#~ msgstr "Arrêt d'urgence"
+#
+#~ msgid "Engine control"
+#~ msgstr "Contrôle du moteur"
