@@ -29,7 +29,6 @@
  ***************************************************************************
  */
 
-#include "radar_pi.h"
 #include "GuardZone.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
@@ -39,6 +38,7 @@
 #include "SelectDialog.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -1344,7 +1344,6 @@ bool radar_pi::SaveConfig(void) {
   wxFileConfig *pConf = m_pconfig;
 
   if (pConf) {
-    pConf->DeleteGroup(wxT("/Plugins/BR24Radar"));
     pConf->DeleteGroup(wxT("/Plugins/Radar"));
     pConf->SetPath(wxT("/Plugins/Radar"));
 
