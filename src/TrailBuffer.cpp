@@ -235,6 +235,11 @@ void TrailBuffer::UpdateTrailPosition() {
   } else if (m_previous_pixels_per_meter != m_ri->m_pixels_per_meter && m_previous_pixels_per_meter != 0.) {
     // zoom trails
     double zoom_factor = m_ri->m_pixels_per_meter / m_previous_pixels_per_meter;
+
+    if (zoom_factor < 0.25 || zoom_factor > 4.00) {
+      ClearTrails();
+      return;
+    }
     m_previous_pixels_per_meter = m_ri->m_pixels_per_meter;
     // center the image before zooming
     // otherwise the offset might get too large
@@ -312,10 +317,6 @@ void TrailBuffer::UpdateTrailPosition() {
 
   if (shift.lat >= MARGIN || shift.lat <= -MARGIN || shift.lon >= MARGIN || shift.lon <= -MARGIN) {  // huge shift, reset trails
     ClearTrails();
-    if (!m_ri->GetRadarPosition(&m_pos)) {
-      m_pos.lat = 0.;
-      m_pos.lon = 0.;
-    }
     LOG_INFO(wxT("radar_pi: %s Large movement trails reset"), m_ri->m_name.c_str());
     return;
   }
@@ -409,6 +410,10 @@ void TrailBuffer::ClearTrails() {
   }
   if (m_relative_trails) {
     memset(m_relative_trails, 0, m_spokes * m_max_spoke_len);
+  }
+  if (!m_ri->GetRadarPosition(&m_pos)) {
+    m_pos.lat = 0.;
+    m_pos.lon = 0.;
   }
 }
 
