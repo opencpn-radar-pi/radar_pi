@@ -30,8 +30,8 @@
  ***************************************************************************
  */
 
-#include "NavicoReceive.h"
 #include "MessageBox.h"
+#include "NavicoReceive.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -198,38 +198,56 @@ void NavicoReceive::ProcessFrame(const uint8_t *data, int len) {
 
     heading_raw = (line->common.heading[1] << 8) | line->common.heading[0];
 
-    if (memcmp(line->br24.mark, BR24MARK, sizeof(BR24MARK)) == 0) {
-      // BR24 and 3G mode
-      range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
-      angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
-      range_meters = (int)((double)range_raw * 10.0 / sqrt(2.0));
-#ifdef TODO
-      if (m_ri->m_radar_type == RT_UNKNOWN) {
-        LOG_INFO(wxT("radar_pi: %s is Navico type BR24 or 3G"), m_ri->m_name.c_str());
-        m_ri->m_radar_type = RT_BR24;
-        m_pi->m_pMessageBox->SetRadarType(RT_BR24);
+    switch (m_ri->m_radar_type) {
+      case RT_BR24: {
+        range_raw = ((line->br24.range[2] & 0xff) << 16 | (line->br24.range[1] & 0xff) << 8 | (line->br24.range[0] & 0xff));
+        angle_raw = (line->br24.angle[1] << 8) | line->br24.angle[0];
+        range_meters = (int)((double)range_raw * 10.0 / sqrt(2.0));
+        break;
       }
-#endif
-    } else {
-      // 4G mode
-      short int large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
-      short int small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
-      angle_raw = (line->br4g.angle[1] << 8) | line->br4g.angle[0];
-      if (large_range == 0x80) {
-        if (small_range == -1) {
-          range_raw = 0;  // Invalid range received
+
+      case RT_4GA:
+      case RT_4GB: {
+        short int large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
+        short int small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
+        angle_raw = (line->br4g.angle[1] << 8) | line->br4g.angle[0];
+        if (large_range == 0x80) {
+          if (small_range == -1) {
+            range_meters = 0;  // Invalid range received
+          } else {
+            range_meters = small_range / 4;
+          }
         } else {
-          range_raw = small_range;
+          range_meters = large_range * 64;
         }
-      } else {
-        range_raw = large_range * 256;
+        break;
       }
-      range_meters = range_raw / 4;
+
+      case RT_HaloA:
+      case RT_HaloB: {
+        short int large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
+        short int small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
+        angle_raw = (line->br4g.angle[1] << 8) | line->br4g.angle[0];
+        if (large_range == 0x80) {
+          if (small_range == -1) {
+            range_meters = 0;  // Invalid range received
+          } else {
+            range_meters = small_range / 4;
+          }
+        } else {
+          range_meters = large_range;
+        }
+        break;
+      }
+
+      default:
+        return;
     }
 
     /*
-    LOG_BINARY_RECEIVE(wxString::Format(wxT("range=%d, angle=%d hdg=%d"), range_raw, angle_raw, heading_raw),
-                       (uint8_t *)&line->br24, sizeof(line->br24));
+        LOG_BINARY_RECEIVE(wxString::Format(wxT("display=%d range=%d, angle=%d hdg=%d"), m_ri->GetDisplayRange(), range_meters,
+                                            angle_raw, heading_raw),
+                           (uint8_t *)&line->br24, sizeof(line->br24));
     */
 
     bool radar_heading_valid = HEADING_VALID(heading_raw);
