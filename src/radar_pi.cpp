@@ -208,6 +208,7 @@ int radar_pi::Init(void) {
   m_heading_source = HEADING_NONE;
   m_radar_heading = nanl("");
   m_vp_rotation = 0.;
+  m_arpa_max_range = BASE_ARPA_DIST;
 
   // Set default settings before we load config. Prevents random behavior on uninitalized behavior.
   // For instance, LOG_XXX messages before config is loaded.
@@ -711,25 +712,6 @@ void radar_pi::PassHeadingToOpenCPN() {
   PushNMEABuffer(nmea);
 }
 
-wxString radar_pi::GetGuardZoneText(RadarInfo *ri) {
-  wxString text = ri->GetTimedIdleText();
-
-  for (int z = 0; z < GUARD_ZONES; z++) {
-    int bogeys = ri->m_guard_zone[z]->GetBogeyCount();
-    if (bogeys > 0 || (m_guard_bogey_confirmed && bogeys == 0)) {
-      if (text.length() > 0) {
-        text << wxT("\n");
-      }
-      text << _("Zone") << wxT(" ") << z + 1 << wxT(": ") << bogeys;
-      if (m_guard_bogey_confirmed) {
-        text << wxT(" ") << _("(Confirmed)");
-      }
-    }
-  }
-
-  return text;
-}
-
 /**
  * Check any guard zones
  *
@@ -752,7 +734,6 @@ void radar_pi::CheckGuardZoneBogeys(void) {
         if (bogeys > m_settings.guard_zone_threshold) {
           bogeys_found = true;
           bogeys_found_this_radar = true;
-          m_radar[r]->m_timed_idle = 0;  // reset timed idle to off
         }
         text << _(" Zone") << wxT(" ") << z + 1 << wxT(": ");
         if (bogeys > m_settings.guard_zone_threshold) {
@@ -1238,6 +1219,7 @@ bool radar_pi::LoadConfig(void) {
       pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
       ri->m_boot_state.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dMinContourLength"), r), &ri->m_min_contour_length, 6);
+      if (ri->m_min_contour_length > 10) ri->m_min_contour_length = 6;  // Prevent user and system error
 
       RadarControlItem item;
       pConf->Read(wxString::Format(wxT("Radar%dTrailsState"), r), &state, RCS_OFF);
@@ -1280,8 +1262,8 @@ bool radar_pi::LoadConfig(void) {
       pConf->Read(wxT("AlarmPosY"), &y, 175);
       m_settings.alarm_pos = wxPoint(x, y);
       pConf->Read(wxT("EnableCOGHeading"), &m_settings.enable_cog_heading, false);
-      pConf->Read(wxT("AISatARPAoffset"), &m_settings.AISatARPAoffset, 40);
-      if (m_settings.AISatARPAoffset < 10 || m_settings.AISatARPAoffset > 200) m_settings.AISatARPAoffset = 40;
+      pConf->Read(wxT("AISatARPAoffset"), &m_settings.AISatARPAoffset, 50);
+      if (m_settings.AISatARPAoffset < 10 || m_settings.AISatARPAoffset > 300) m_settings.AISatARPAoffset = 50;
 
       n++;
     }
@@ -1408,7 +1390,6 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dWindowPosY"), r), m_settings.window_pos[r].y);
       pConf->Write(wxString::Format(wxT("Radar%dControlPosX"), r), m_settings.control_pos[r].x);
       pConf->Write(wxString::Format(wxT("Radar%dControlPosY"), r), m_settings.control_pos[r].y);
-      pConf->Write(wxString::Format(wxT("Radar%dMinContourLength"), r), m_radar[r]->m_min_contour_length);
       pConf->Write(wxString::Format(wxT("Radar%dMainBangSize"), r), m_radar[r]->m_main_bang_size.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dAntennaForward"), r), m_radar[r]->m_antenna_forward.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dAntennaStarboard"), r), m_radar[r]->m_antenna_starboard.GetValue());
@@ -1574,161 +1555,86 @@ void radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
       }
     }
   } else if (message_id == wxS("AIS") || m_ais_in_arpa_zone.size() > 0) {
-    // Check if any Radar and ARPA zone is active
-    double ArpaMaxRange = 0.0;
-    bool ArpaGuardOn = false;
+    // Check for ARPA targets
+    bool arpa_is_present = false;
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      if (m_radar[r]->m_state.GetValue() != RADAR_OFF) {  // One radar is on. Check for guardzones
-        for (size_t i = 0; i < M_SETTINGS.radar_count; i++) {
-          for (size_t z = 0; z < GUARD_ZONES; z++) {
-            if (m_radar[i]->m_guard_zone[z]->m_arpa_on) {
-              ArpaGuardOn = true;
-              int t = m_radar[i]->m_guard_zone[z]->m_outer_range;
-              if (t > ArpaMaxRange) ArpaMaxRange = t;
-            }
-          }
-        }
+      if (m_radar[r]->m_arpa->GetTargetCount() > 0) {
+        arpa_is_present = true;
         break;
       }
     }
-    if (ArpaGuardOn) {
-      wxJSONReader reader;
-      wxJSONValue message;
-      if (!reader.Parse(message_body, &message)) {
+    if (arpa_is_present) {
+        wxJSONReader reader;
+        wxJSONValue message;
+        if (!reader.Parse(message_body, &message)) {
         wxJSONValue defaultValue(999);
         long json_ais_mmsi = message.Get(_T("mmsi"), defaultValue).AsLong();
         if (json_ais_mmsi > 200000000) {  // Neither ARPA targets nor SAR_aircraft
-          wxJSONValue defaultValue("90.0");
-          double f_AISLat = wxAtof(message.Get(_T("lat"), defaultValue).AsString());
-          double f_AISLon = wxAtof(message.Get(_T("lon"), defaultValue).AsString());
-          // Rectangle around own ship to look for AIS targets.
-          double d_side = ArpaMaxRange / 1852.0 / 60.0;
-          if (f_AISLat < (m_ownship.lat + d_side) && f_AISLat > (m_ownship.lat - d_side) &&
-              f_AISLon < (m_ownship.lon + d_side * 2) && f_AISLon > (m_ownship.lon - d_side * 2)) {
+            wxJSONValue defaultValue("90.0");
+            double f_AISLat = wxAtof(message.Get(_T("lat"), defaultValue).AsString());
+            double f_AISLon = wxAtof(message.Get(_T("lon"), defaultValue).AsString());
+              
+            // Rectangle around own ship to look for AIS targets.
+            double d_side = m_arpa_max_range / 1852.0 / 60.0;
+            if (f_AISLat < (m_ownship.lat + d_side) && 
+                f_AISLat > (m_ownship.lat - d_side) &&
+                f_AISLon < (m_ownship.lon + d_side * 2) && 
+                f_AISLon > (m_ownship.lon - d_side * 2)) {
             bool updated = false;
             for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) {  // Check for existing mmsi
-              if (m_ais_in_arpa_zone[i].ais_mmsi == json_ais_mmsi) {
+                if (m_ais_in_arpa_zone[i].ais_mmsi == json_ais_mmsi) {
                 m_ais_in_arpa_zone[i].ais_time_upd = time(0);
                 m_ais_in_arpa_zone[i].ais_lat = f_AISLat;
                 m_ais_in_arpa_zone[i].ais_lon = f_AISLon;
                 updated = true;
                 break;
-              }
+                }
             }
-            if (!updated) {  // Add a new target
-              AisArpa m_new_ais_target;
-              m_new_ais_target.ais_mmsi = json_ais_mmsi;
-              m_new_ais_target.ais_time_upd = time(0);
-              m_new_ais_target.ais_lat = f_AISLat;
-              m_new_ais_target.ais_lon = f_AISLon;
-              m_ais_in_arpa_zone.push_back(m_new_ais_target);
+            if (!updated) {  // Add a new target to the list
+                AisArpa m_new_ais_target;
+                m_new_ais_target.ais_mmsi = json_ais_mmsi;
+                m_new_ais_target.ais_time_upd = time(0);
+                m_new_ais_target.ais_lat = f_AISLat;
+                m_new_ais_target.ais_lon = f_AISLon;
+                m_ais_in_arpa_zone.push_back(m_new_ais_target);
             }
           }
         }
       }
     }
-    // Delete > 3 min old AIS items or at once if neither active ARPA zone nor Radar
+    // Delete > 3 min old AIS items or at once if no active ARPA
     if (m_ais_in_arpa_zone.size() > 0) {
       for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) {
-        if (m_ais_in_arpa_zone[i].ais_mmsi > 0 && ((time(0) - m_ais_in_arpa_zone[i].ais_time_upd) > (3 * 60) || !ArpaGuardOn)) {
+        if (m_ais_in_arpa_zone[i].ais_mmsi > 0 && (time(0) - m_ais_in_arpa_zone[i].ais_time_upd > 3 * 60 || !arpa_is_present)) {
           m_ais_in_arpa_zone.erase(m_ais_in_arpa_zone.begin() + i);
+          m_arpa_max_range = BASE_ARPA_DIST; // Renew AIS search area
         }
       }
     }
   }
 }
 
-bool radar_pi::FindAIS_at_arpaPos(const GeoPosition &pos, const double &dist) {
+bool radar_pi::FindAIS_at_arpaPos(const GeoPosition &pos, const double &arpa_dist) {
+  m_arpa_max_range = MAX(arpa_dist + 200, m_arpa_max_range);  // For AIS search area
   if (m_ais_in_arpa_zone.size() < 1) return false;
   bool hit = false;
-  double offset = dist / 1852. / 60.;
+  // Default 50 >> look 100 meters around + 4% of distance to target
+  double offset = (double)m_settings.AISatARPAoffset;
+  double dist2target = (4.0 / 100) * arpa_dist;
+  offset += dist2target;
+  offset = offset / 1852. / 60.;
   for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) {
     if (m_ais_in_arpa_zone[i].ais_mmsi != 0) {  // Avtive post
-      if (pos.lat + offset > m_ais_in_arpa_zone[i].ais_lat && pos.lat - offset < m_ais_in_arpa_zone[i].ais_lat &&
-          pos.lon + (offset * 1.75) > m_ais_in_arpa_zone[i].ais_lon && pos.lon - (offset * 1.75) < m_ais_in_arpa_zone[i].ais_lon) {
+      if (pos.lat + offset > m_ais_in_arpa_zone[i].ais_lat && 
+          pos.lat - offset < m_ais_in_arpa_zone[i].ais_lat &&
+          pos.lon + (offset * 1.75) > m_ais_in_arpa_zone[i].ais_lon && 
+          pos.lon - (offset * 1.75) < m_ais_in_arpa_zone[i].ais_lon) {
         hit = true;
         break;
       }
     }
   }
   return hit;
-}
-
-bool radar_pi::SetControlValue(int radar, ControlType controlType, RadarControlItem &item) {  // sends the command to the radar
-  LOG_TRANSMIT(wxT("radar_pi: %s set %s value=%d state=%d"), m_radar[radar]->m_name.c_str(), ControlTypeNames[controlType].c_str(),
-               item.GetValue(), item.GetState());
-  switch (controlType) {
-    case CT_TRANSPARENCY: {
-      m_settings.overlay_transparency = item;
-      UpdateAllControlStates(true);
-      return true;
-    }
-    case CT_TIMED_IDLE: {
-      m_radar[radar]->m_timed_idle = item;
-      m_radar[radar]->m_idle_standby = 0;
-      m_radar[radar]->m_idle_transmit = 0;
-      if (m_radar[radar]->m_state.GetValue() == RADAR_TRANSMIT) {
-        m_radar[radar]->m_idle_standby = time(0) + 10;
-      } else {
-        m_radar[radar]->m_idle_transmit = time(0) + 10;
-      }
-      UpdateAllControlStates(true);
-      return true;
-    }
-    case CT_TIMED_RUN: {
-      m_radar[radar]->m_timed_run = item;
-      UpdateAllControlStates(true);
-      return true;
-    }
-    case CT_REFRESHRATE: {
-      m_settings.refreshrate = item;
-      UpdateAllControlStates(true);
-      return true;
-    }
-    case CT_TARGET_TRAILS: {
-      m_radar[radar]->m_target_trails = item;
-      m_radar[radar]->ComputeColourMap();
-      m_radar[radar]->ComputeTargetTrails();
-      return true;
-    }
-    case CT_TRAILS_MOTION: {
-      m_radar[radar]->m_trails_motion = item;
-      m_radar[radar]->ComputeColourMap();
-      m_radar[radar]->ComputeTargetTrails();
-      return true;
-    }
-    case CT_MAIN_BANG_SIZE: {
-      m_radar[radar]->m_main_bang_size = item;
-      return true;
-    }
-
-    case CT_ANTENNA_FORWARD: {
-      m_radar[radar]->m_antenna_forward = item;
-      return true;
-    }
-
-    case CT_ANTENNA_STARBOARD: {
-      m_radar[radar]->m_antenna_starboard = item;
-      return true;
-    }
-
-    case CT_ORIENTATION: {
-      m_radar[radar]->m_orientation = item;
-    }
-
-    case CT_OVERLAY: {
-      m_radar[radar]->m_overlay = item;
-    }
-
-    default: {
-      if (m_radar[radar]->SetControlValue(controlType, item)) {
-        return true;
-      }
-    }
-  }
-  wxLogError(wxT("radar_pi: %s unhandled control setting for control %s"), m_radar[radar]->m_name.c_str(),
-             ControlTypeNames[controlType].c_str());
-  return false;
 }
 
 //*****************************************************************************************************

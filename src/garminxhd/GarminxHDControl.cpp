@@ -204,8 +204,6 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
     // compiler can catch missing control types.
     case CT_NONE:
     case CT_RANGE:
-    case CT_TIMED_IDLE:
-    case CT_TIMED_RUN:
     case CT_TRANSPARENCY:
     case CT_REFRESHRATE:
     case CT_TARGET_TRAILS:
@@ -366,10 +364,37 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
       LOG_VERBOSE(wxT("radar_pi: %s Scan speed: %d"), m_name.c_str(), value);
       pck_9.packet_type = 0x916;
       pck_9.parm1 = value * 2;
-
+      
       r = TransmitCmd(&pck_9, sizeof(pck_9));
       break;
     }
+      
+    case CT_TIMED_IDLE: {
+      LOG_VERBOSE(wxT("radar_pi: %s Timed idle: value=%d state=%d"), m_name.c_str(), value, (int)state);
+      if (state == RCS_OFF) {
+        pck_9.packet_type = 0x942;
+        pck_9.parm1 = 0;  // off
+        r = TransmitCmd(&pck_9, sizeof(pck_9));
+      } else if (state == RCS_MANUAL) {
+        pck_10.packet_type = 0x943;
+        pck_10.parm1 = value * 60;
+        r = TransmitCmd(&pck_10, sizeof(pck_10));
+        pck_9.packet_type = 0x942;
+        pck_9.parm1 = 1;  // manual
+        r = TransmitCmd(&pck_9, sizeof(pck_9));
+      }
+      break;
+    }
+      
+    case CT_TIMED_RUN: {
+      LOG_VERBOSE(wxT("radar_pi: %s Timed run: %d"), m_name.c_str(), value);
+      pck_10.packet_type = 0x944;
+      pck_10.parm1 = value * 60;
+      r = TransmitCmd(&pck_10, sizeof(pck_10));
+      break;
+    }
+      
+
   }
 
   return r;

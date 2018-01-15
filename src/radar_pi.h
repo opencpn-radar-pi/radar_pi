@@ -77,8 +77,8 @@ class RadarArpa;
 #define GUARD_ZONES (2)    // Could be increased if wanted
 #define BEARING_LINES (2)  // And these as well
 
-static const int SECONDS_PER_TIMED_IDLE_SETTING = 5 * 60;  // 5 minutes increment for each setting
-static const int SECONDS_PER_TIMED_RUN_SETTING = 10;
+static const int SECONDS_PER_TIMED_IDLE_SETTING = 60;  // Can't change this anymore, has to be same as Garmin hardware
+static const int SECONDS_PER_TIMED_RUN_SETTING = 60;
 
 #define OPENGL_ROTATION (-90.0)  // Difference between 'up' and OpenGL 'up'...
 
@@ -178,10 +178,12 @@ enum RadarState {
   RADAR_TIMED_IDLE,
   RADAR_STOPPING,
   RADAR_SPINNING_DOWN,
+  RADAR_STARTING,
   RADAR_SPINNING_UP,
   RADAR_TRANSMIT
 };
-static ToolbarIconColor g_toolbarIconColor[8] = {TB_SEARCHING, TB_STANDBY, TB_SEEN, TB_SEEN, TB_SEEN, TB_SEEN, TB_SEEN, TB_ACTIVE};
+static ToolbarIconColor g_toolbarIconColor[9] = {TB_SEARCHING, TB_STANDBY, TB_SEEN,   TB_SEEN,  TB_SEEN,
+                                                 TB_SEEN,      TB_ACTIVE,  TB_ACTIVE, TB_ACTIVE};
 
 struct receive_statistics {
   int packets;
@@ -420,8 +422,7 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   void logBinaryData(const wxString &what, const uint8_t *data, int size);
 
   void UpdateAllControlStates(bool all);
-  bool SetControlValue(int radar, ControlType controlType, RadarControlItem &item);
-
+  
   bool IsRadarOnScreen(int radar) { return m_settings.show && (m_settings.show_radar[radar] || m_settings.chart_overlay == radar); }
 
   bool LoadConfig();
@@ -429,9 +430,6 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
 
   long GetRangeMeters();
   long GetOptimalRangeMeters();
-
-  wxString GetTimedIdleText();
-  wxString GetGuardZoneText(RadarInfo *ri);
 
   void SetRadarInterfaceAddress(int r, NetworkAddress &addr) {
     wxCriticalSectionLocker lock(m_exclusive);
@@ -486,8 +484,10 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
 
   // Check for AIS targets inside ARPA zone
   vector<AisArpa> m_ais_in_arpa_zone;  // Array for AIS targets in ARPA zone(s)
-  bool FindAIS_at_arpaPos(const GeoPosition &pos, const double &dist);
-
+  bool FindAIS_at_arpaPos(const GeoPosition &pos, const double &arpa_dist);
+#define BASE_ARPA_DIST (750.)
+  double m_arpa_max_range;  //  Temporary distance(m) fron own ship to collect AIS targets.
+  
  private:
   void RadarSendState(void);
   void UpdateState(void);

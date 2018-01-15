@@ -56,6 +56,7 @@ class GarminxHDReceive : public RadarReceive {
     m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
     SetInfoStatus(wxString::Format(wxT("%s: %s"), m_ri->m_name.c_str(), _("Initializing")));
     m_ri->m_showManualValueInAuto = true;
+    m_ri->m_timed_idle_hardware = true;
 
     LOG_RECEIVE(wxT("radar_pi: %s receive thread created"), m_ri->m_name.c_str());
   };
@@ -98,13 +99,14 @@ class GarminxHDReceive : public RadarReceive {
   wxCriticalSection m_lock;  // Protects m_status
   wxString m_status;         // Userfriendly string
 
-  bool m_auto_gain;               // True if auto gain mode is on
-  int m_gain;                     // 0..100
-  RadarControlState m_sea_mode;   // RCS_OFF, RCS_MANUAL, RCS_AUTO_1
-  int m_sea_clutter;              // 0..100
-  RadarControlState m_rain_mode;  // RCS_OFF, RCS_MANUAL, RCS_AUTO_1
-  int m_rain_clutter;             // 0..100
-  bool m_no_transmit_zone_mode;   // True if there is a zone
+  bool m_auto_gain;                     // True if auto gain mode is on
+  int m_gain;                           // 0..100
+  RadarControlState m_sea_mode;         // RCS_OFF, RCS_MANUAL, RCS_AUTO_1
+  int m_sea_clutter;                    // 0..100
+  RadarControlState m_rain_mode;        // RCS_OFF, RCS_MANUAL, RCS_AUTO_1
+  RadarControlState m_timed_idle_mode;  // RCS_OFF, RCS_MANUAL
+  int m_rain_clutter;                   // 0..100
+  bool m_no_transmit_zone_mode;         // True if there is a zone
 
   bool UpdateScannerStatus(int status);
 

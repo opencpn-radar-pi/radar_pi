@@ -501,6 +501,11 @@ bool GarminxHDReceive::UpdateScannerStatus(int status) {
         LOG_VERBOSE(wxT("radar_pi: %s reports status SPINNING DOWN"), m_ri->m_name.c_str());
         stat = _("Spinning down");
         break;
+      case 10:
+        m_ri->m_state.Update(RADAR_STARTING);
+        LOG_VERBOSE(wxT("radar_pi: %s reports status STARTING"), m_ri->m_name.c_str());
+        stat = _("Starting");
+        break;
       default:
         LOG_VERBOSE(wxT("radar_pi: %s reports status %d"), m_ri->m_name.c_str(), m_radar_status);
         stat << _("Unknown status") << wxString::Format(wxT(" %d"), m_radar_status);
@@ -682,6 +687,36 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
         }
         return true;
       }
+      case 0x02bb: {
+        LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x02bb: something %d"), (int32_t)packet12->parm1);
+        return true;
+      }
+      case 0x02ec: {
+        LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x02ec: something %d"), (int32_t)packet12->parm1);
+        return true;
+      }
+      case 0x0942: {
+        LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x0942: timed idle mode %d"), (int32_t)packet9->parm1);
+        if (packet9->parm1 == 0) {
+          m_timed_idle_mode = RCS_OFF;
+        } else {
+          m_timed_idle_mode = RCS_MANUAL;
+        }
+        return true;
+      }
+
+      case 0x0943: {
+        LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x0943: timed idle time %d s"), (int32_t)packet10->parm1);
+        m_ri->m_timed_idle.Update(packet10->parm1 / 60, m_timed_idle_mode);
+
+        return true;
+      }
+
+      case 0x0944: {
+        LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x0944: timed run time %d s"), (int32_t)packet10->parm1);
+        m_ri->m_timed_run.Update(packet10->parm1 / 60);
+        return true;
+      }
 
       case 0x0992: {
         // Scanner state
@@ -693,7 +728,7 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
       case 0x0993: {
         // State change announce
         LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x0993: state-change in %d ms"), packet12->parm1);
-        m_ri->m_warmup.Update(packet12->parm1 / 1000);
+        m_ri->m_next_state_change.Update(packet12->parm1 / 1000);
         return true;
       }
 
