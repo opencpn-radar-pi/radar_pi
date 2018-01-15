@@ -364,11 +364,11 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
       LOG_VERBOSE(wxT("radar_pi: %s Scan speed: %d"), m_name.c_str(), value);
       pck_9.packet_type = 0x916;
       pck_9.parm1 = value * 2;
-      
+
       r = TransmitCmd(&pck_9, sizeof(pck_9));
       break;
     }
-      
+
     case CT_TIMED_IDLE: {
       LOG_VERBOSE(wxT("radar_pi: %s Timed idle: value=%d state=%d"), m_name.c_str(), value, (int)state);
       if (state == RCS_OFF) {
@@ -385,7 +385,7 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
       }
       break;
     }
-      
+
     case CT_TIMED_RUN: {
       LOG_VERBOSE(wxT("radar_pi: %s Timed run: %d"), m_name.c_str(), value);
       pck_10.packet_type = 0x944;
@@ -393,8 +393,6 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
       r = TransmitCmd(&pck_10, sizeof(pck_10));
       break;
     }
-      
-
   }
 
   return r;

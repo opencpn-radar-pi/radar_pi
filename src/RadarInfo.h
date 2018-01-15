@@ -124,7 +124,7 @@ class RadarInfo {
 
   bool m_showManualValueInAuto;  // Does radar adjust manual value in auto mode? True for Garmin, False for others
   bool m_timed_idle_hardware;    // Does radar handle timed idle itself?
-  
+
   /* Per radar objects */
 
   RadarControl *m_control;

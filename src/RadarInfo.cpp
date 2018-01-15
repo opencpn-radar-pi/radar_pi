@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
+#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "GuardZone.h"
 #include "MessageBox.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -627,9 +627,9 @@ void RadarInfo::SetAutoRangeMeters(int meters) {
 }
 
 bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item) {
-  LOG_TRANSMIT(wxT("radar_pi: %s set %s value=%d state=%d"), m_name.c_str(), ControlTypeNames[controlType].c_str(),
-               item.GetValue(), item.GetState());
-  
+  LOG_TRANSMIT(wxT("radar_pi: %s set %s value=%d state=%d"), m_name.c_str(), ControlTypeNames[controlType].c_str(), item.GetValue(),
+               item.GetState());
+
   switch (controlType) {
     case CT_TRANSPARENCY: {
       M_SETTINGS.overlay_transparency = item;
@@ -657,25 +657,25 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item)
       m_main_bang_size = item;
       return true;
     }
-      
+
     case CT_ANTENNA_FORWARD: {
       m_antenna_forward = item;
       return true;
     }
-      
+
     case CT_ANTENNA_STARBOARD: {
       m_antenna_starboard = item;
       return true;
     }
-      
+
     case CT_ORIENTATION: {
       m_orientation = item;
     }
-      
+
     case CT_OVERLAY: {
       m_overlay = item;
     }
-      
+
     // Careful, we're selectively falling through to the next case label
     // for controls that have both hardware and software implementations
     case CT_TIMED_IDLE: {
@@ -707,9 +707,8 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item)
       }
     }
   }
-  wxLogError(wxT("radar_pi: %s unhandled control setting for control %s"), m_name.c_str(),
-             ControlTypeNames[controlType].c_str());
-  
+  wxLogError(wxT("radar_pi: %s unhandled control setting for control %s"), m_name.c_str(), ControlTypeNames[controlType].c_str());
+
   return false;
 }
 
@@ -1008,7 +1007,6 @@ wxString RadarInfo::FormatAngle(double angle) {
 
   return s;
 }
-
 
 wxString RadarInfo::GetCanvasTextBottomLeft() {
   GeoPosition radar_pos;
@@ -1376,12 +1374,11 @@ wxString RadarInfo::GetTimedIdleText() {
   wxString s;
 
 #ifdef NEVER
-  s << wxT("state=") << (int) state << wxT(" TTX=") << (int) m_timed_idle.GetState();
-  s << wxT(" timer=") << (int) m_next_state_change.GetValue() << wxT(" ");
+  s << wxT("state=") << (int)state << wxT(" TTX=") << (int)m_timed_idle.GetState();
+  s << wxT(" timer=") << (int)m_next_state_change.GetValue() << wxT(" ");
 #endif
-  
-  if (m_timed_idle.GetState() == RCS_MANUAL && m_next_state_change.GetValue() > 0)
-  {
+
+  if (m_timed_idle.GetState() == RCS_MANUAL && m_next_state_change.GetValue() > 0) {
     s << GetRadarStateText();
   }
   return s;
@@ -1410,8 +1407,7 @@ wxString RadarInfo::GetRadarStateText() {
       break;
     case RADAR_TRANSMIT:
       o = _("Transmitting");
-      if (next_state_change > 0 && m_timed_idle.GetState() == RCS_MANUAL && m_arpa &&
-          m_arpa->GetTargetCount() > 0) {
+      if (next_state_change > 0 && m_timed_idle.GetState() == RCS_MANUAL && m_arpa && m_arpa->GetTargetCount() > 0) {
         o << wxT(" ") << _("for targets");
         return o;
       }
@@ -1466,7 +1462,7 @@ void RadarInfo::CheckTimedTransmit() {
 
     return;  // hardware versions do not need the rest of the code
   }
-  
+
   RadarState state = (RadarState)m_state.GetValue();
   if (state == RADAR_OFF) {
     return;  // Timers are just stuck at existing value if radar is off.
@@ -1478,16 +1474,15 @@ void RadarInfo::CheckTimedTransmit() {
   }
 
   time_t now = time(0);
-  int    time_to_go;
-  
+  int time_to_go;
+
   if (m_idle_standby > 0) {
     if (TIMED_OUT(now, m_idle_standby) && state == RADAR_TRANSMIT) {
       RequestRadarState(RADAR_STANDBY);
       time_to_go = m_timed_idle.GetValue() * SECONDS_PER_TIMED_IDLE_SETTING;
       m_idle_transmit = now + time_to_go;
       m_idle_standby = 0;
-    }
-    else {
+    } else {
       time_to_go = m_idle_standby - now;
     }
   } else if (m_idle_transmit > 0) {
@@ -1496,12 +1491,10 @@ void RadarInfo::CheckTimedTransmit() {
       time_to_go = m_timed_run.GetValue() * SECONDS_PER_TIMED_RUN_SETTING;
       m_idle_standby = now + time_to_go;
       m_idle_transmit = 0;
-    }
-    else {
+    } else {
       time_to_go = m_idle_transmit - now;
     }
-  }
-  else {
+  } else {
     time_to_go = 0;
   }
   time_to_go = wxMax(time_to_go, 0);

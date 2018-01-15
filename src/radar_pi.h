@@ -422,7 +422,7 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   void logBinaryData(const wxString &what, const uint8_t *data, int size);
 
   void UpdateAllControlStates(bool all);
-  
+
   bool IsRadarOnScreen(int radar) { return m_settings.show && (m_settings.show_radar[radar] || m_settings.chart_overlay == radar); }
 
   bool LoadConfig();
@@ -487,7 +487,7 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   bool FindAIS_at_arpaPos(const GeoPosition &pos, const double &arpa_dist);
 #define BASE_ARPA_DIST (750.)
   double m_arpa_max_range;  //  Temporary distance(m) fron own ship to collect AIS targets.
-  
+
  private:
   void RadarSendState(void);
   void UpdateState(void);
