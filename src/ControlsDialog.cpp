@@ -977,7 +977,7 @@ void ControlsDialog::CreateControls() {
   m_window_sizer->Add(bWindowBack, 0, wxALL, BORDER);
 
   // The SHOW PPI button
-  m_show_ppi_button = new RadarButton(this, ID_SHOW_RADAR_PPI, g_buttonSize, _(""));
+  m_show_ppi_button = new RadarButton(this, ID_SHOW_RADAR_PPI, g_buttonSize, _T(""));
   m_window_sizer->Add(m_show_ppi_button, 0, wxALL, BORDER);
 
   // The RADAR ONLY / OVERLAY button

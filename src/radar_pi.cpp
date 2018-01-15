@@ -29,6 +29,7 @@
  ***************************************************************************
  */
 
+#include "radar_pi.h"
 #include "GuardZone.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
@@ -38,7 +39,6 @@
 #include "SelectDialog.h"
 #include "icons.h"
 #include "nmea0183/nmea0183.h"
-#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -208,6 +208,7 @@ int radar_pi::Init(void) {
   m_heading_source = HEADING_NONE;
   m_radar_heading = nanl("");
   m_vp_rotation = 0.;
+  m_arpa_max_range = BASE_ARPA_DIST;
 
   // Set default settings before we load config. Prevents random behavior on uninitalized behavior.
   // For instance, LOG_XXX messages before config is loaded.
@@ -1218,6 +1219,7 @@ bool radar_pi::LoadConfig(void) {
       pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
       ri->m_boot_state.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dMinContourLength"), r), &ri->m_min_contour_length, 6);
+      if (ri->m_min_contour_length > 10) ri->m_min_contour_length = 6;  // Prevent user and system error
 
       RadarControlItem item;
       pConf->Read(wxString::Format(wxT("Radar%dTrailsState"), r), &state, RCS_OFF);
@@ -1324,7 +1326,6 @@ bool radar_pi::SaveConfig(void) {
   wxFileConfig *pConf = m_pconfig;
 
   if (pConf) {
-    pConf->DeleteGroup(wxT("/Plugins/BR24Radar"));
     pConf->DeleteGroup(wxT("/Plugins/Radar"));
     pConf->SetPath(wxT("/Plugins/Radar"));
 
@@ -1389,7 +1390,6 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dWindowPosY"), r), m_settings.window_pos[r].y);
       pConf->Write(wxString::Format(wxT("Radar%dControlPosX"), r), m_settings.control_pos[r].x);
       pConf->Write(wxString::Format(wxT("Radar%dControlPosY"), r), m_settings.control_pos[r].y);
-      pConf->Write(wxString::Format(wxT("Radar%dMinContourLength"), r), m_radar[r]->m_min_contour_length);
       pConf->Write(wxString::Format(wxT("Radar%dMainBangSize"), r), m_radar[r]->m_main_bang_size.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dAntennaForward"), r), m_radar[r]->m_antenna_forward.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dAntennaStarboard"), r), m_radar[r]->m_antenna_starboard.GetValue());
@@ -1564,39 +1564,37 @@ void radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
       }
     }
     if (arpa_is_present) {
-        wxJSONReader reader;
-        wxJSONValue message;
-        if (!reader.Parse(message_body, &message)) {
+      wxJSONReader reader;
+      wxJSONValue message;
+      if (!reader.Parse(message_body, &message)) {
         wxJSONValue defaultValue(999);
         long json_ais_mmsi = message.Get(_T("mmsi"), defaultValue).AsLong();
         if (json_ais_mmsi > 200000000) {  // Neither ARPA targets nor SAR_aircraft
-            wxJSONValue defaultValue("90.0");
-            double f_AISLat = wxAtof(message.Get(_T("lat"), defaultValue).AsString());
-            double f_AISLon = wxAtof(message.Get(_T("lon"), defaultValue).AsString());
-              
-            // Rectangle around own ship to look for AIS targets.
-            double d_side = arpa_max_range / 1852.0 / 60.0;
-            if (f_AISLat < (m_ownship.lat + d_side) && 
-                f_AISLat > (m_ownship.lat - d_side) &&
-                f_AISLon < (m_ownship.lon + d_side * 2) && 
-                f_AISLon > (m_ownship.lon - d_side * 2)) {
+          wxJSONValue defaultValue("90.0");
+          double f_AISLat = wxAtof(message.Get(_T("lat"), defaultValue).AsString());
+          double f_AISLon = wxAtof(message.Get(_T("lon"), defaultValue).AsString());
+
+          // Rectangle around own ship to look for AIS targets.
+          double d_side = m_arpa_max_range / 1852.0 / 60.0;
+          if (f_AISLat < (m_ownship.lat + d_side) && f_AISLat > (m_ownship.lat - d_side) &&
+              f_AISLon < (m_ownship.lon + d_side * 2) && f_AISLon > (m_ownship.lon - d_side * 2)) {
             bool updated = false;
             for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) {  // Check for existing mmsi
-                if (m_ais_in_arpa_zone[i].ais_mmsi == json_ais_mmsi) {
+              if (m_ais_in_arpa_zone[i].ais_mmsi == json_ais_mmsi) {
                 m_ais_in_arpa_zone[i].ais_time_upd = time(0);
                 m_ais_in_arpa_zone[i].ais_lat = f_AISLat;
                 m_ais_in_arpa_zone[i].ais_lon = f_AISLon;
                 updated = true;
                 break;
-                }
+              }
             }
             if (!updated) {  // Add a new target to the list
-                AisArpa m_new_ais_target;
-                m_new_ais_target.ais_mmsi = json_ais_mmsi;
-                m_new_ais_target.ais_time_upd = time(0);
-                m_new_ais_target.ais_lat = f_AISLat;
-                m_new_ais_target.ais_lon = f_AISLon;
-                m_ais_in_arpa_zone.push_back(m_new_ais_target);
+              AisArpa m_new_ais_target;
+              m_new_ais_target.ais_mmsi = json_ais_mmsi;
+              m_new_ais_target.ais_time_upd = time(0);
+              m_new_ais_target.ais_lat = f_AISLat;
+              m_new_ais_target.ais_lon = f_AISLon;
+              m_ais_in_arpa_zone.push_back(m_new_ais_target);
             }
           }
         }
@@ -1607,7 +1605,7 @@ void radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
       for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) {
         if (m_ais_in_arpa_zone[i].ais_mmsi > 0 && (time(0) - m_ais_in_arpa_zone[i].ais_time_upd > 3 * 60 || !arpa_is_present)) {
           m_ais_in_arpa_zone.erase(m_ais_in_arpa_zone.begin() + i);
-          arpa_max_range = BASE_ARPA_DIST; // Renew AIS search area
+          m_arpa_max_range = BASE_ARPA_DIST;  // Renew AIS search area
         }
       }
     }
@@ -1615,7 +1613,7 @@ void radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
 }
 
 bool radar_pi::FindAIS_at_arpaPos(const GeoPosition &pos, const double &arpa_dist) {
-  arpa_max_range = MAX(arpa_dist + 200, arpa_max_range);  // For AIS search area
+  m_arpa_max_range = MAX(arpa_dist + 200, m_arpa_max_range);  // For AIS search area
   if (m_ais_in_arpa_zone.size() < 1) return false;
   bool hit = false;
   // Default 50 >> look 100 meters around + 4% of distance to target
@@ -1625,10 +1623,8 @@ bool radar_pi::FindAIS_at_arpaPos(const GeoPosition &pos, const double &arpa_dis
   offset = offset / 1852. / 60.;
   for (size_t i = 0; i < m_ais_in_arpa_zone.size(); i++) {
     if (m_ais_in_arpa_zone[i].ais_mmsi != 0) {  // Avtive post
-      if (pos.lat + offset > m_ais_in_arpa_zone[i].ais_lat && 
-          pos.lat - offset < m_ais_in_arpa_zone[i].ais_lat &&
-          pos.lon + (offset * 1.75) > m_ais_in_arpa_zone[i].ais_lon && 
-          pos.lon - (offset * 1.75) < m_ais_in_arpa_zone[i].ais_lon) {
+      if (pos.lat + offset > m_ais_in_arpa_zone[i].ais_lat && pos.lat - offset < m_ais_in_arpa_zone[i].ais_lat &&
+          pos.lon + (offset * 1.75) > m_ais_in_arpa_zone[i].ais_lon && pos.lon - (offset * 1.75) < m_ais_in_arpa_zone[i].ais_lon) {
         hit = true;
         break;
       }

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-11 17:48+0200\n"
-"PO-Revision-Date: 2017-09-16 06:21-0400\n"
+"POT-Creation-Date: 2018-01-15 13:41+0100\n"
+"PO-Revision-Date: 2018-01-15 13:42+0100\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Estonian\n"
 "Language: et_EE\n"
@@ -11,929 +11,1393 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: crowdin.com\n"
+"X-Generator: Poedit 1.8.6\n"
 "X-Crowdin-Project: opencpn\n"
 "X-Crowdin-Language: et\n"
 "X-Crowdin-File: /plugins/BR24radar_pi/po/br24radar_pi.pot\n"
 
-#: src\br24ControlsDialog.cpp:403 src\br24ControlsDialog.cpp:627
-#: src\RadarInfo.cpp:1426
-msgid "Auto"
-msgstr "Automaatne"
-
-#: src\br24ControlsDialog.cpp:479
-msgid "Back"
-msgstr "Tagasi"
-
-#: src\br24ControlsDialog.cpp:498
-msgid "Standby / Transmit"
-msgstr "Ootel / Kiirga"
-
-#: src\br24ControlsDialog.cpp:499 src\br24ControlsDialog.cpp:648
-msgid "Noise rejection"
-msgstr "Müra tagasilükkamine"
-
-#: src\br24ControlsDialog.cpp:500 src\br24ControlsDialog.cpp:662
-msgid "Target expansion"
-msgstr "Märgi laiendamine"
-
-#: src\br24ControlsDialog.cpp:501 src\br24ControlsDialog.cpp:677
-msgid "Interference rejection"
-msgstr "Häiringute tagasilükkamine"
-
-#: src\br24ControlsDialog.cpp:502 src\br24ControlsDialog.cpp:692
-msgid "Target separation"
-msgstr "Märgi eraldamine"
-
-#: src\br24ControlsDialog.cpp:503 src\br24ControlsDialog.cpp:702
-msgid "Scan speed"
-msgstr "Skaneerimise kiirus"
-
-#: src\br24ControlsDialog.cpp:504 src\br24ControlsDialog.cpp:713
-msgid "Target boost"
-msgstr "Märgi suurendamine"
-
-#: src\br24ControlsDialog.cpp:505 src\br24ControlsDialog.cpp:721
-msgid "Installation"
-msgstr "Paigaldamine"
-
-#: src\br24ControlsDialog.cpp:506 src\br24ControlsDialog.cpp:742
-msgid "Bearing alignment"
-msgstr "Kursi joondamine"
-
-#: src\br24ControlsDialog.cpp:507 src\br24ControlsDialog.cpp:749
-msgid "Antenna height"
-msgstr "Antenni kõrgus"
-
-#: src\br24ControlsDialog.cpp:508
-msgid "Antenna forward of GPS"
-msgstr "Antenn eespool GPS'i"
-
-#: src\br24ControlsDialog.cpp:509
-msgid "Antenna starboard of GPS"
-msgstr "Antenn GPS'st tüürpoordis"
-
-#: src\br24ControlsDialog.cpp:510 src\br24ControlsDialog.cpp:773
-msgid "Local interference rej."
-msgstr "Kohalike häirete tagasilükk."
-
-#: src\br24ControlsDialog.cpp:511 src\br24ControlsDialog.cpp:782
-msgid "Side lobe suppression"
-msgstr "Külgsagara summutamine"
-
-#: src\br24ControlsDialog.cpp:512 src\br24ControlsDialog.cpp:790
-msgid "Main bang size"
-msgstr "Põhikiirguse surnud ala suurus"
-
-#: src\br24ControlsDialog.cpp:513 src\br24ControlsDialog.cpp:515
-#: src\br24ControlsDialog.cpp:807
-msgid "Guard zones"
-msgstr "Valvetsoonid"
-
-#: src\br24ControlsDialog.cpp:514 src\br24ControlsDialog.cpp:810
-msgid "Zone type"
-msgstr "Tsooni liik"
-
-#: src\br24ControlsDialog.cpp:516 src\br24ControlsDialog.cpp:825
-msgid "Inner range"
-msgstr "Sisemine ulatus"
-
-#: src\br24ControlsDialog.cpp:517 src\br24ControlsDialog.cpp:832
-msgid "Outer range"
-msgstr "Välimine ulatus"
-
-#: src\br24ControlsDialog.cpp:518 src\br24ControlsDialog.cpp:839
-msgid "Start bearing"
-msgstr "Alguspeiling"
-
-#: src\br24ControlsDialog.cpp:519 src\br24ControlsDialog.cpp:847
-msgid "End bearing"
-msgstr "Lõpp-peiling"
-
-#: src\br24ControlsDialog.cpp:520 src\br24ControlsDialog.cpp:876
-msgid "Range"
-msgstr "Ulatus"
-
-#: src\br24ControlsDialog.cpp:521 src\br24ControlsDialog.cpp:880
-msgid "Gain"
-msgstr "Võimendus"
-
-#: src\br24ControlsDialog.cpp:522 src\br24ControlsDialog.cpp:886
-msgid "Sea clutter"
-msgstr "Meresäri"
-
-#: src\br24ControlsDialog.cpp:523 src\br24ControlsDialog.cpp:893
-msgid "Rain clutter"
-msgstr "Sademesäri"
-
-#: src\br24ControlsDialog.cpp:524 src\br24ControlsDialog.cpp:908
-msgid "Clear cursor"
-msgstr "Kursor tühjaks"
-
-#: src\br24ControlsDialog.cpp:525 src\br24ControlsDialog.cpp:925
-#: src\br24ControlsDialog.cpp:1578
-msgid "Place EBL/VRM"
-msgstr "Pane EBL/VRM"
-
-#: src\br24ControlsDialog.cpp:526 src\br24ControlsDialog.cpp:962
-#: src\br24OptionsDialog.cpp:129
-msgid "Target trails"
-msgstr "Märgi jäljed"
-
-#: src\br24ControlsDialog.cpp:527 src\br24ControlsDialog.cpp:950
-#: src\br24ControlsDialog.cpp:1596
-msgid "Off/Relative/True trails"
-msgstr "Väljas/suhtelised/tegelikud jäljed"
-
-#: src\br24ControlsDialog.cpp:528 src\br24ControlsDialog.cpp:971
-msgid "Clear trails"
-msgstr "Kõrvalda jäljed"
-
-#: src\br24ControlsDialog.cpp:529 src\br24ControlsDialog.cpp:976
-#: src\br24ControlsDialog.cpp:1611
-msgid "Orientation"
-msgstr "Orientatsioon"
-
-#: src\br24ControlsDialog.cpp:530 src\br24ControlsDialog.cpp:982
-msgid "Refresh rate"
-msgstr "Värskenduse kiirus"
-
-#: src\br24ControlsDialog.cpp:531 src\br24ControlsDialog.cpp:988
-msgid "Transparency"
-msgstr "Läbipaistvus"
-
-#: src\br24ControlsDialog.cpp:532 src\br24ControlsDialog.cpp:1093
-#: src\br24ControlsDialog.cpp:1642
-msgid "Overlay"
-msgstr "Ülekate"
-
-#: src\br24ControlsDialog.cpp:533 src\br24ControlsDialog.cpp:1063
-msgid "Adjust"
-msgstr "Kohanda"
-
-#: src\br24ControlsDialog.cpp:534 src\br24ControlsDialog.cpp:1067
-msgid "Advanced"
-msgstr "Lisavalikud"
-
-#: src\br24ControlsDialog.cpp:535 src\br24ControlsDialog.cpp:1071
-msgid "View"
-msgstr "Vaade"
-
-#: src\br24ControlsDialog.cpp:536
-msgid "EBL/VRM"
-msgstr "EBL/VRM"
-
-#: src\br24ControlsDialog.cpp:537 src\br24ControlsDialog.cpp:1025
-msgid "Timed Transmit"
-msgstr "Ajastatud kiirgamine"
-
-#: src\br24ControlsDialog.cpp:538 src\br24ControlsDialog.cpp:1045
-msgid "Info"
-msgstr "Info"
-
-#: src\br24ControlsDialog.cpp:599
-msgid "+10"
-msgstr "+ 10"
-
-#: src\br24ControlsDialog.cpp:603
-msgid "+"
-msgstr "+"
-
-#: src\br24ControlsDialog.cpp:608
-msgid "Value"
-msgstr "Väärtus"
-
-#: src\br24ControlsDialog.cpp:619
-msgid "-"
-msgstr "-"
-
-#: src\br24ControlsDialog.cpp:623
-msgid "-10"
-msgstr "-10"
-
-#: src\br24ControlsDialog.cpp:643 src\br24ControlsDialog.cpp:659
-#: src\br24ControlsDialog.cpp:671 src\br24ControlsDialog.cpp:686
-#: src\br24ControlsDialog.cpp:710 src\br24ControlsDialog.cpp:1015
-#: src\br24ControlsDialog.cpp:1503 src\br24ControlsDialog.cpp:1603
-#: src\br24ControlsDialog.cpp:1645 src\br24ControlsDialog.cpp:1647
+#
+#: src\ControlsDialog.cpp:264 src\ControlsDialog.cpp:683
+#: src\RadarCanvas.cpp:182 src\RadarInfo.cpp:1397 src\SoftwareControlSet.h:45
+#: src\SoftwareControlSet.h:124 src\SoftwareControlSet.h:128
+#: src\navico\NavicoControlSet.h:56 src\navico\NavicoControlSet.h:60
 msgid "Off"
 msgstr "Väljas"
 
-#: src\br24ControlsDialog.cpp:644 src\br24ControlsDialog.cpp:672
-#: src\br24ControlsDialog.cpp:687 src\br24ControlsDialog.cpp:711
-msgid "Low"
-msgstr "Madal"
+#
+#: src\ControlsDialog.cpp:284 src\ControlsDialog.cpp:288
+#: src\ControlsDialog.cpp:679 src\RadarCanvas.cpp:197 src\RadarInfo.cpp:1110
+#: src\SoftwareControlSet.h:41
+msgid "Auto"
+msgstr "Automaatne"
 
-#: src\br24ControlsDialog.cpp:645 src\br24ControlsDialog.cpp:674
-#: src\br24ControlsDialog.cpp:689 src\br24ControlsDialog.cpp:712
-msgid "High"
-msgstr "Kõrge"
-
-#: src\br24ControlsDialog.cpp:660 src\br24ControlsDialog.cpp:1647
-msgid "On"
-msgstr "Sees"
-
-#: src\br24ControlsDialog.cpp:673 src\br24ControlsDialog.cpp:688
-msgid "Medium"
-msgstr "Keskmine"
-
-#: src\br24ControlsDialog.cpp:700
-msgid "Normal"
-msgstr "Tavaline"
-
-#: src\br24ControlsDialog.cpp:701
-msgid "Fast"
-msgstr "Kiire"
-
-#: src\br24ControlsDialog.cpp:725
-msgid "Preferences"
-msgstr "Eelistused"
-
-#: src\br24ControlsDialog.cpp:743
-msgid "degrees"
-msgstr "kraadi"
-
-#: src\br24ControlsDialog.cpp:743
-msgid "relative to bow"
-msgstr "vööri suhtes"
-
-#: src\br24ControlsDialog.cpp:750 src\br24ControlsDialog.cpp:757
-#: src\br24ControlsDialog.cpp:765
-msgid "m"
-msgstr "m"
-
-#: src\br24ControlsDialog.cpp:750
-msgid "above sealevel"
-msgstr "üle merepinna"
-
-#: src\br24ControlsDialog.cpp:756
-msgid "Antenna forward"
-msgstr "Antenn eespool"
-
-#: src\br24ControlsDialog.cpp:758 src\br24ControlsDialog.cpp:766
-msgid "relative to GPS"
-msgstr "GPS'i suhtes"
-
-#: src\br24ControlsDialog.cpp:758
-msgid "negative = behind"
-msgstr "negatiivne = tagapool"
-
-#: src\br24ControlsDialog.cpp:764
-msgid "Antenna starboard"
-msgstr "Antenn tüürpoordis"
-
-#: src\br24ControlsDialog.cpp:766
-msgid "negative = port"
-msgstr "negatiivne = pakpoordis"
-
-#: src\br24ControlsDialog.cpp:814
+#
+#: src\ControlsDialog.cpp:364
 msgid "Arc"
 msgstr "Kaar"
 
-#: src\br24ControlsDialog.cpp:815
+#
+#: src\ControlsDialog.cpp:365
 msgid "Circle"
 msgstr "Ring"
 
-#: src\br24ControlsDialog.cpp:855
-msgid "ARPA On"
-msgstr "ARPA sees"
-
-#: src\br24ControlsDialog.cpp:860
-msgid "Alarm On"
-msgstr "Häire sees"
-
-#: src\br24ControlsDialog.cpp:884
-msgid "Harbour"
-msgstr "Sadam"
-
-#: src\br24ControlsDialog.cpp:885
-msgid "Offshore"
-msgstr "Avameri"
-
-#: src\br24ControlsDialog.cpp:912
-msgid "Acquire Target"
-msgstr "Haara märk"
-
-#: src\br24ControlsDialog.cpp:916
-msgid "Delete target"
-msgstr "Kustuta märk"
-
-#: src\br24ControlsDialog.cpp:920
-msgid "Delete all targets"
-msgstr "Kustuta kõik märgid"
-
-#: src\br24ControlsDialog.cpp:946 src\br24ControlsDialog.cpp:1587
-msgid "Show AIS/ARPA"
-msgstr "Näita AIS/ARPA"
-
-#: src\br24ControlsDialog.cpp:954
-msgid "15 sec"
-msgstr "15 sec"
-
-#: src\br24ControlsDialog.cpp:955 src\br24OptionsDialog.cpp:119
-msgid "30 sec"
-msgstr "30 sec"
-
-#: src\br24ControlsDialog.cpp:956
-msgid "1 min"
-msgstr "1 min"
-
-#: src\br24ControlsDialog.cpp:957
-msgid "3 min"
-msgstr "3 min"
-
-#: src\br24ControlsDialog.cpp:958 src\br24ControlsDialog.cpp:1016
-msgid "5 min"
-msgstr "5 min"
-
-#: src\br24ControlsDialog.cpp:959 src\br24ControlsDialog.cpp:1017
-msgid "10 min"
-msgstr "10 min"
-
-#: src\br24ControlsDialog.cpp:960
-msgid "Continuous"
-msgstr "Pidev"
-
-#: src\br24ControlsDialog.cpp:1008 src\br24ControlsDialog.cpp:1512
-msgid "Transmit"
-msgstr "Kiirga"
-
-#: src\br24ControlsDialog.cpp:1011 src\br24ControlsDialog.cpp:1506
-msgid "Standby"
-msgstr "Ootel"
-
-#: src\br24ControlsDialog.cpp:1018
-msgid "15 min"
-msgstr "15 min"
-
-#: src\br24ControlsDialog.cpp:1019
-msgid "20 min"
-msgstr "20 min"
-
-#: src\br24ControlsDialog.cpp:1020
-msgid "25 min"
-msgstr "25 min"
-
-#: src\br24ControlsDialog.cpp:1021
-msgid "30 min"
-msgstr "30 min"
-
-#: src\br24ControlsDialog.cpp:1022
-msgid "35 min"
-msgstr "35 min"
-
-#: src\br24ControlsDialog.cpp:1033
-msgid "10 s"
-msgstr "10 s"
-
-#: src\br24ControlsDialog.cpp:1034
-msgid "20 s"
-msgstr "20 s"
-
-#: src\br24ControlsDialog.cpp:1035
-msgid "30 s"
-msgstr "30 s"
-
-#: src\br24ControlsDialog.cpp:1037
-msgid "Runtime"
-msgstr "Käitusaeg"
-
-#: src\br24ControlsDialog.cpp:1075
-msgid "Cursor"
-msgstr "Kursor"
-
-#: src\br24ControlsDialog.cpp:1098 src\br24ControlsDialog.cpp:1629
-#: src\RadarInfo.cpp:1248
-msgid "Unknown"
-msgstr "Tundmatu"
-
-#: src\br24ControlsDialog.cpp:1165 src\br24ControlsDialog.cpp:1175
-msgid " + Alarm"
-msgstr " + häire"
-
-#: src\br24ControlsDialog.cpp:1168 src\br24ControlsDialog.cpp:1178
-msgid " + Arpa"
-msgstr " + Arpa"
-
-#: src\br24ControlsDialog.cpp:1171 src\br24ControlsDialog.cpp:1181
-msgid " Off"
-msgstr " Väljas"
-
-#: src\br24ControlsDialog.cpp:1184 src\br24ControlsDialog.cpp:1187
-msgid "Guard zone"
-msgstr "Valvetsoon"
-
-#: src\br24ControlsDialog.cpp:1498
-msgid "Power Status"
-msgstr "Toite olek"
-
-#: src\br24ControlsDialog.cpp:1509
-msgid "Waking up"
-msgstr "Soojenemine"
-
-#: src\br24ControlsDialog.cpp:1520 src\br24radar_pi.cpp:625
-msgid "Standby in"
-msgstr "Ootel"
-
-#: src\br24ControlsDialog.cpp:1525 src\br24radar_pi.cpp:630
-msgid "Transmit in"
-msgstr "Kiirga"
-
-#: src\br24ControlsDialog.cpp:1557
-msgid "Hide both windows"
-msgstr "Peida mõlemad aknad"
-
-#: src\br24ControlsDialog.cpp:1559
-msgid "Show other window"
-msgstr "Kuva teine aken"
-
-#: src\br24ControlsDialog.cpp:1563
-msgid "Show this window"
-msgstr "Kuva see aken"
-
-#: src\br24ControlsDialog.cpp:1565
-msgid "Show both windows"
-msgstr "Kuva mõlemad aknad"
-
-#: src\br24ControlsDialog.cpp:1569
-msgid "Hide window"
-msgstr "Peida aken"
-
-#: src\br24ControlsDialog.cpp:1569
-msgid "Show window"
-msgstr "Kuva aken"
-
-#: src\br24ControlsDialog.cpp:1575
-msgid "Clear EBL/VRM"
-msgstr "Puhasta EBL/VRM"
-
-#: src\br24ControlsDialog.cpp:1585
-msgid "Hide AIS/ARPA"
-msgstr "Peida AIS/ARPA"
-
-#: src\br24ControlsDialog.cpp:1599
-msgid "True"
-msgstr "Tõene"
-
-#: src\br24ControlsDialog.cpp:1601
-msgid "Relative"
-msgstr "Suhteline"
-
-#: src\br24ControlsDialog.cpp:1615 src\br24ControlsDialog.cpp:1618
-msgid "Head up"
-msgstr "Vöör üleval"
-
-#: src\br24ControlsDialog.cpp:1620
-msgid "(Stabilized)"
-msgstr "(Stabiliseeritud)"
-
-#: src\br24ControlsDialog.cpp:1623
-msgid "North up"
-msgstr "N-üleval"
-
-#: src\br24ControlsDialog.cpp:1626
-msgid "Course up"
-msgstr "kurss üleval"
-
-#: src\br24ControlsDialog.cpp:1932
+#
+#: src\ControlsDialog.cpp:445
 msgid "Guard Zone 1 Green"
 msgstr "Valvetsoon 1 roheline"
 
-#: src\br24ControlsDialog.cpp:1935
+#
+#: src\ControlsDialog.cpp:448
 msgid "Guard Zone 2 Blue"
 msgstr "Valvetsoon 2 sinine"
 
-#: src\br24ControlsDialog.h:62 src\br24MessageBox.h:86 src\br24radar_pi.cpp:249
+#
+#: src\ControlsDialog.cpp:495 src\ControlsDialog.cpp:505
+msgid " + Alarm"
+msgstr " + häire"
+
+#
+#: src\ControlsDialog.cpp:498 src\ControlsDialog.cpp:508
+msgid " + Arpa"
+msgstr " + Arpa"
+
+#
+#: src\ControlsDialog.cpp:501 src\ControlsDialog.cpp:511
+msgid " Off"
+msgstr " Väljas"
+
+#
+#: src\ControlsDialog.cpp:514 src\ControlsDialog.cpp:517
+msgid "Guard zone"
+msgstr "Valvetsoon"
+
+#
+#: src\ControlsDialog.cpp:546
+msgid "Back"
+msgstr "Tagasi"
+
+#
+#: src\ControlsDialog.cpp:565 src\ControlsDialog.cpp:730
+msgid "Scan speed"
+msgstr "Skaneerimise kiirus"
+
+#
+#: src\ControlsDialog.cpp:566 src\ControlsDialog.cpp:742
+msgid "Installation"
+msgstr "Paigaldamine"
+
+#
+#: src\ControlsDialog.cpp:567 src\ControlsDialog.cpp:785
+msgid "Antenna height"
+msgstr "Antenni kõrgus"
+
+#
+#: src\ControlsDialog.cpp:568
+msgid "Antenna forward of GPS"
+msgstr "Antenn eespool GPS'i"
+
+#
+#: src\ControlsDialog.cpp:569
+msgid "Antenna starboard of GPS"
+msgstr "Antenn GPS'st tüürpoordis"
+
+#
+#: src\ControlsDialog.cpp:570 src\ControlsDialog.cpp:808
+msgid "Local interference rej."
+msgstr "Kohalike häirete tagasilükk."
+
+#
+#: src\ControlsDialog.cpp:571 src\ControlsDialog.cpp:573
+#: src\ControlsDialog.cpp:838 src\ControlsDialog.cpp:1133
+msgid "Guard zones"
+msgstr "Valvetsoonid"
+
+#
+#: src\ControlsDialog.cpp:572 src\ControlsDialog.cpp:841
+msgid "Zone type"
+msgstr "Tsooni liik"
+
+#
+#: src\ControlsDialog.cpp:574 src\ControlsDialog.cpp:852
+msgid "Inner range"
+msgstr "Sisemine ulatus"
+
+#
+#: src\ControlsDialog.cpp:575 src\ControlsDialog.cpp:859
+msgid "Outer range"
+msgstr "Välimine ulatus"
+
+#
+#: src\ControlsDialog.cpp:576 src\ControlsDialog.cpp:866
+msgid "Start bearing"
+msgstr "Alguspeiling"
+
+#
+#: src\ControlsDialog.cpp:577 src\ControlsDialog.cpp:873
+msgid "End bearing"
+msgstr "Lõpp-peiling"
+
+#
+#: src\ControlsDialog.cpp:578 src\ControlsDialog.cpp:943
+msgid "Clear cursor"
+msgstr "Kursor tühjaks"
+
+#
+#: src\ControlsDialog.cpp:579 src\ControlsDialog.cpp:960
+#: src\ControlsDialog.cpp:1810
+msgid "Place EBL/VRM"
+msgstr "Pane EBL/VRM"
+
+#
+#: src\ControlsDialog.cpp:580
+msgid "Off/Relative/True trails"
+msgstr "Väljas/suhtelised/tegelikud jäljed"
+
+#
+#: src\ControlsDialog.cpp:581 src\ControlsDialog.cpp:1029
+msgid "Clear trails"
+msgstr "Kõrvalda jäljed"
+
+#
+#: src\ControlsDialog.cpp:582 src\ControlsDialog.cpp:1035
+msgid "Orientation"
+msgstr "Orientatsioon"
+
+#
+#: src\ControlsDialog.cpp:583 src\ControlsDialog.cpp:988
+#, fuzzy
+msgid "Overlay transparency"
+msgstr "Läbipaistvus"
+
+#
+#: src\ControlsDialog.cpp:584 src\ControlsDialog.cpp:984
+msgid "Overlay"
+msgstr "Ülekate"
+
+#
+#: src\ControlsDialog.cpp:585 src\ControlsDialog.cpp:1117
+msgid "Adjust"
+msgstr "Kohanda"
+
+#
+#: src\ControlsDialog.cpp:586 src\ControlsDialog.cpp:1121
+msgid "Advanced"
+msgstr "Lisavalikud"
+
+#
+#: src\ControlsDialog.cpp:587 src\ControlsDialog.cpp:1125
+msgid "View"
+msgstr "Vaade"
+
+#
+#: src\ControlsDialog.cpp:588
+msgid "EBL/VRM"
+msgstr "EBL/VRM"
+
+#
+#: src\ControlsDialog.cpp:589 src\ControlsDialog.cpp:1069
+msgid "Timed Transmit"
+msgstr "Ajastatud kiirgamine"
+
+#
+#: src\ControlsDialog.cpp:590 src\ControlsDialog.cpp:993
+msgid "Info"
+msgstr "Info"
+
+#
+#: src\ControlsDialog.cpp:651
+msgid "+10"
+msgstr "+ 10"
+
+#
+#: src\ControlsDialog.cpp:655
+msgid "+"
+msgstr "+"
+
+#
+#: src\ControlsDialog.cpp:660
+msgid "Value"
+msgstr "Väärtus"
+
+#
+#: src\ControlsDialog.cpp:671
+msgid "-"
+msgstr "-"
+
+#
+#: src\ControlsDialog.cpp:675
+msgid "-10"
+msgstr "-10"
+
+#
+#: src\ControlsDialog.cpp:701
+msgid "Noise rejection"
+msgstr "Müra tagasilükkamine"
+
+#
+#: src\ControlsDialog.cpp:707
+msgid "Target expansion"
+msgstr "Märgi laiendamine"
+
+#
+#: src\ControlsDialog.cpp:715
+msgid "Interference rejection"
+msgstr "Häiringute tagasilükkamine"
+
+#
+#: src\ControlsDialog.cpp:722
+msgid "Target separation"
+msgstr "Märgi eraldamine"
+
+#
+#: src\ControlsDialog.cpp:737
+msgid "Target boost"
+msgstr "Märgi suurendamine"
+
+#
+#: src\ControlsDialog.cpp:746
+msgid "Preferences"
+msgstr "Eelistused"
+
+#
+#: src\ControlsDialog.cpp:763
+msgid "Bearing alignment"
+msgstr "Kursi joondamine"
+
+#
+#: src\ControlsDialog.cpp:770
+msgid "No transmit start"
+msgstr ""
+
+#
+#: src\ControlsDialog.cpp:778
+#, fuzzy
+msgid "No transmit end"
+msgstr "Kiirga"
+
+#
+#: src\ControlsDialog.cpp:792
+msgid "Antenna forward"
+msgstr "Antenn eespool"
+
+#
+#: src\ControlsDialog.cpp:793 src\ControlsDialog.cpp:801
+msgid "m"
+msgstr "m"
+
+#
+#: src\ControlsDialog.cpp:793 src\ControlsDialog.cpp:801
+msgid "relative to GPS"
+msgstr "GPS'i suhtes"
+
+#
+#: src\ControlsDialog.cpp:793
+msgid "negative = behind"
+msgstr "negatiivne = tagapool"
+
+#
+#: src\ControlsDialog.cpp:800
+msgid "Antenna starboard"
+msgstr "Antenn tüürpoordis"
+
+#
+#: src\ControlsDialog.cpp:801
+msgid "negative = port"
+msgstr "negatiivne = pakpoordis"
+
+#
+#: src\ControlsDialog.cpp:815
+msgid "Side lobe suppression"
+msgstr "Külgsagara summutamine"
+
+#
+#: src\ControlsDialog.cpp:822
+msgid "Main bang size"
+msgstr "Põhikiirguse surnud ala suurus"
+
+#
+#: src\ControlsDialog.cpp:823
+msgid "pixels"
+msgstr ""
+
+#
+#: src\ControlsDialog.cpp:881
+msgid "ARPA On"
+msgstr "ARPA sees"
+
+#
+#: src\ControlsDialog.cpp:886
+msgid "Alarm On"
+msgstr "Häire sees"
+
+#
+#: src\ControlsDialog.cpp:903
+msgid "Range"
+msgstr "Ulatus"
+
+#
+#: src\ControlsDialog.cpp:909 src\RadarCanvas.cpp:161
+msgid "Gain"
+msgstr "Võimendus"
+
+#
+#: src\ControlsDialog.cpp:915
+msgid "Sea clutter"
+msgstr "Meresäri"
+
+#
+#: src\ControlsDialog.cpp:921
+msgid "Rain clutter"
+msgstr "Sademesäri"
+
+#
+#: src\ControlsDialog.cpp:927
+msgid "FTC"
+msgstr ""
+
+#
+#: src\ControlsDialog.cpp:947
+msgid "Acquire Target"
+msgstr "Haara märk"
+
+#
+#: src\ControlsDialog.cpp:951
+msgid "Delete target"
+msgstr "Kustuta märk"
+
+#
+#: src\ControlsDialog.cpp:955
+msgid "Delete all targets"
+msgstr "Kustuta kõik märgid"
+
+#
+#: src\ControlsDialog.cpp:1010
+msgid "AIS/ARPA on PPI"
+msgstr ""
+
+#
+#: src\ControlsDialog.cpp:1016 src\OptionsDialog.cpp:128
+msgid "Target trails"
+msgstr "Märgi jäljed"
+
+#
+#: src\ControlsDialog.cpp:1023
+#, fuzzy
+msgid "Trails motion"
+msgstr "Jälje alguse värv"
+
+#
+#: src\ControlsDialog.cpp:1042
+msgid "Refresh rate"
+msgstr "Värskenduse kiirus"
+
+#
+#: src\ControlsDialog.cpp:1063
+#, fuzzy
+msgid "Timed Standby"
+msgstr "Ootel"
+
+#
+#: src\ControlsDialog.cpp:1129
+msgid "Cursor"
+msgstr "Kursor"
+
+#
+#: src\ControlsDialog.cpp:1137
+msgid "Window"
+msgstr ""
+
+#
+#: src\ControlsDialog.cpp:1142
+#, fuzzy
+msgid "Timed transmit"
+msgstr "Ajastatud kiirgamine"
+
+#
+#: src\ControlsDialog.cpp:1147 src\RadarInfo.cpp:945
+#: src\SoftwareControlSet.h:101
+msgid "Unknown"
+msgstr "Tundmatu"
+
+#
+#: src\ControlsDialog.cpp:1765
+#, fuzzy
+msgid "Start/Stop radar"
+msgstr "Näita radarit"
+
+#
+#: src\ControlsDialog.cpp:1789
+#, fuzzy
+msgid "Hide all PPI windows"
+msgstr "Peida aken"
+
+#
+#: src\ControlsDialog.cpp:1791
+#, fuzzy
+msgid "Show other PPI windows"
+msgstr "Kuva teine aken"
+
+#
+#: src\ControlsDialog.cpp:1795 src\ControlsDialog.cpp:1801
+#, fuzzy
+msgid "Show PPI window"
+msgstr "Kuva aken"
+
+#
+#: src\ControlsDialog.cpp:1797
+#, fuzzy
+msgid "Show all PPI windows"
+msgstr "Kuva aken"
+
+#
+#: src\ControlsDialog.cpp:1801
+#, fuzzy
+msgid "Hide PPI window"
+msgstr "Peida aken"
+
+#
+#: src\ControlsDialog.cpp:1807
+msgid "Clear EBL/VRM"
+msgstr "Puhasta EBL/VRM"
+
+#
+#: src\ControlsDialog.h:173 src\MessageBox.h:86
 msgid "Radar"
 msgstr "Radar"
 
-#: src\br24MessageBox.cpp:125
-msgid "Cannot switch radar on as\n"
-"it is not connected or off"
-msgstr "Ei saa radarit siise lülitada sest\n"
-" ta kas pole ühendatud või on välja lülitatud"
-
-#: src\br24MessageBox.cpp:132
-msgid "OpenCPN options"
-msgstr "OpenCPN'i valikud"
-
-#: src\br24MessageBox.cpp:137
-msgid "Accelerated Graphics (OpenGL)"
-msgstr "Graafikakiirendi (OpenGL)"
-
-#: src\br24MessageBox.cpp:143
-msgid "ZeroConf via Ethernet"
-msgstr "ZeroConf üle võrgu"
-
-#: src\br24MessageBox.cpp:149
-msgid "Radar present"
-msgstr "Radar on olemas"
-
-#: src\br24MessageBox.cpp:155
-msgid "Radar sending data"
-msgstr "Radar saadab andmeid"
-
-#: src\br24MessageBox.cpp:160
-msgid "For radar overlay also required"
-msgstr "Radari ülekatte jaoks on ka vaja"
-
-#: src\br24MessageBox.cpp:168
-msgid "Boat position"
-msgstr "Aluse asukoht"
-
-#: src\br24MessageBox.cpp:174
-msgid "and"
-msgstr "ja"
-
-#: src\br24MessageBox.cpp:179
-msgid "True Heading"
-msgstr "Tegelik kurss"
-
-#: src\br24MessageBox.cpp:184
-msgid "or"
-msgstr "või"
-
-#: src\br24MessageBox.cpp:188 src\br24MessageBox.cpp:472
-msgid "Magnetic heading"
-msgstr "Magnetkurss"
-
-#: src\br24MessageBox.cpp:195 src\br24MessageBox.cpp:479
-msgid "Variation"
-msgstr "Variatsioon"
-
-#: src\br24MessageBox.cpp:200 src\br24MessageBox.cpp:205
-msgid "Statistics"
-msgstr "Statistika"
-
-#: src\br24MessageBox.cpp:210
-msgid "&Close"
-msgstr "%Sulge"
-
-#: src\br24MessageBox.cpp:216
-msgid "&Hide Radar"
-msgstr "&Peida radar"
-
-#: src\br24MessageBox.cpp:342
-msgid "Radar type"
-msgstr "Radari tüüp"
-
-#: src\br24MessageBox.cpp:346
-msgid "Radar IP"
-msgstr "Radari IP"
-
-#: src\br24MessageBox.cpp:366
-msgid "Radar requirements OK:"
-msgstr "Radari nõuded on OK:"
-
-#: src\br24MessageBox.cpp:368
-msgid "Radar requires the following"
-msgstr "Radar nõuab järgmist"
-
-#: src\br24MessageBox.cpp:450 src\RadarInfo.cpp:1252
-msgid "Emulator"
-msgstr "Emulaator"
-
-#: src\br24MessageBox.cpp:458
-msgid "Ethernet card"
-msgstr "Võrgukaart"
-
-#: src\br24MessageBox.cpp:465
-msgid "True heading"
-msgstr "Tegelik kurss"
-
-#: src\br24OptionsDialog.cpp:38
-msgid "BR24 Display Preferences"
-msgstr "BR24 kuvamise eelistused"
-
-#: src\br24OptionsDialog.cpp:58
-msgid "Nautical Miles"
-msgstr "meremiilid"
-
-#: src\br24OptionsDialog.cpp:58
-msgid "Kilometers"
-msgstr "kilomeetrid"
-
-#: src\br24OptionsDialog.cpp:62
-msgid "Range Units"
-msgstr "Ulatuse ühikud"
-
-#: src\br24OptionsDialog.cpp:69
-msgid "Shading"
-msgstr "varjustus"
-
-#: src\br24OptionsDialog.cpp:69
-msgid "Outline"
-msgstr "kontuur"
-
-#: src\br24OptionsDialog.cpp:69
-msgid "Shading + Outline"
-msgstr "varjustus + kontuur"
-
-#: src\br24OptionsDialog.cpp:71
-msgid "Guard Zone Styling"
-msgstr "Valvetsooni stiil"
-
-#: src\br24OptionsDialog.cpp:80
-msgid "Guard Zone Sound"
-msgstr "Valvetsooni heli"
-
-#: src\br24OptionsDialog.cpp:83
-msgid "Select Alert Sound"
-msgstr "Vali häire heli"
-
-#: src\br24OptionsDialog.cpp:87
-msgid "Test Alert Sound"
-msgstr "Testi häire heli"
-
-#: src\br24OptionsDialog.cpp:92
-msgid "Repeat alarm after (sec)"
-msgstr "korda häiret sekundi järel"
-
-#: src\br24OptionsDialog.cpp:103
-msgid "GPU drawing method"
-msgstr "GPU joonistusmeetod"
-
-#: src\br24OptionsDialog.cpp:109
-msgid "Drawing Method"
-msgstr "Joonistusmeetod"
-
-#: src\br24OptionsDialog.cpp:116
-msgid "Control Menu Auto Hide"
-msgstr "Kontrollmenüü automaatne peitmine"
-
-#: src\br24OptionsDialog.cpp:119
-msgid "Never"
-msgstr "Mitte kunagi"
-
-#: src\br24OptionsDialog.cpp:119
-msgid "10 sec"
-msgstr "10 sec"
-
-#: src\br24OptionsDialog.cpp:122
-msgid "Auto hide after"
-msgstr "Peida automaatselt pärast"
-
-#: src\br24OptionsDialog.cpp:132
-msgid "Trail start color"
-msgstr "Jälje alguse värv"
-
-#: src\br24OptionsDialog.cpp:139
-msgid "Trail end color"
-msgstr "Jälje lõpu värv"
-
-#: src\br24OptionsDialog.cpp:148
-msgid "Target colors"
-msgstr "Märgi värvid"
-
-#: src\br24OptionsDialog.cpp:151
-msgid "Weak return color"
-msgstr "Nõrga tagastuse värv"
-
-#: src\br24OptionsDialog.cpp:157
-msgid "Intermediate return color"
-msgstr "Keskmise tagastuse värv"
-
-#: src\br24OptionsDialog.cpp:164
-msgid "Strong return color"
-msgstr "Tugeva tagastuse värv"
-
-#: src\br24OptionsDialog.cpp:170
-msgid "ARPA edge color"
-msgstr "ARPA serva värv"
-
-#: src\br24OptionsDialog.cpp:178
-msgid "Radar window colors"
-msgstr "Radari akna värvid"
-
-#: src\br24OptionsDialog.cpp:181
-msgid "Background color"
-msgstr "Taustavärv"
-
-#: src\br24OptionsDialog.cpp:189
-msgid "AIS text color"
-msgstr "AIS-teksti värv"
-
-#: src\br24OptionsDialog.cpp:205
-msgid "Options"
-msgstr "Valikud"
-
-#: src\br24OptionsDialog.cpp:209
-msgid "Show ring at extreme range"
-msgstr "Näita ringi ülikaugel"
-
-#: src\br24OptionsDialog.cpp:215
-msgid "Show Guard Zone on overlay"
-msgstr "Kuva valvetsooni ülekattel"
-
-#: src\br24OptionsDialog.cpp:221
-msgid "Show Target trails on overlay"
-msgstr "Kuva märgi jälgi ülekattel"
-
-#: src\br24OptionsDialog.cpp:227
-msgid "Enable dual radar, 4G only"
-msgstr "Topelt-radari võimaldamine, 4G ainult"
-
-#: src\br24OptionsDialog.cpp:239
-msgid "Ignore radar heading"
-msgstr "Ignoreeri radari kurssi"
-
-#: src\br24OptionsDialog.cpp:246
-msgid "Pass radar heading to OpenCPN"
-msgstr "Saada radari kurss edasi OpenCPN'i"
-
-#: src\br24OptionsDialog.cpp:252
-msgid "Enable COG as heading"
-msgstr "Võimalda COG kursina"
-
-#: src\br24OptionsDialog.cpp:260
-msgid "Emulator mode"
-msgstr "Emulaatorrežiim"
-
-#: src\br24OptionsDialog.cpp:265
-msgid "Reverse mouse wheel zoom direction"
-msgstr "Pööra hiireratta suumisuund ümber"
-
-#: src\br24OptionsDialog.cpp:332
-msgid "Select Sound File"
-msgstr "Vali helifail"
-
-#: src\br24OptionsDialog.cpp:333
-msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
-msgstr "WAV-failid (*.wav)|*.wav|Kõik failid (*.*)|*.*"
-
-#: src\br24radar_pi.cpp:249 src\br24radar_pi.cpp:382
-msgid "Radar A"
-msgstr "Radar A"
-
-#: src\br24radar_pi.cpp:250
-msgid "Radar B"
-msgstr "Radar B"
-
-#: src\br24radar_pi.cpp:258
-msgid "Navico BR24, 3G and 4G RADAR"
-msgstr "Navico BR24, 3G ja 4G radar"
-
-#: src\br24radar_pi.cpp:267
-msgid "Show radar"
-msgstr "Näita radarit"
-
-#: src\br24radar_pi.cpp:268
-msgid "Hide radar"
-msgstr "Peida radar"
-
-#: src\br24radar_pi.cpp:269
-msgid "Radar Control..."
-msgstr "Radari kontroll..."
-
-#: src\br24radar_pi.cpp:270
-msgid "Acquire radar target"
-msgstr "Haara radari märk"
-
-#: src\br24radar_pi.cpp:271
-msgid "Delete radar target"
-msgstr "Kustuta radari märk"
-
-#: src\br24radar_pi.cpp:272
-msgid "Delete all radar targets"
-msgstr "Kustuta kõik radari märgid"
-
-#: src\br24radar_pi.cpp:275 src\RadarCanvas.cpp:98
-msgid "Menu"
-msgstr "Menüü"
-
-#: src\br24radar_pi.cpp:360
-msgid "Navico Radar PlugIn for OpenCPN"
-msgstr "Navico radari plugIn OpenCPN'i jaoks"
-
-#: src\br24radar_pi.cpp:362
-msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
-msgstr "Navico BR24/3G/4G lairibaradari plugin OpenCPN'i jaoks\n"
-
-#: src\br24radar_pi.cpp:643
-msgid "Zone"
-msgstr "Tsoon"
-
-#: src\br24radar_pi.cpp:645
-msgid "(Confirmed)"
-msgstr "(Kinnitatud)"
-
-#: src\br24radar_pi.cpp:677
-msgid " Zone"
-msgstr " Tsoon"
-
-#: src\br24radar_pi.cpp:721
-msgid "Next alarm in"
-msgstr "Järgmine häire"
-
-#: src\br24radar_pi.cpp:950
-msgid "COG"
-msgstr "COG"
-
-#: src\br24radar_pi.cpp:954
-msgid "HDT"
-msgstr "HDT"
-
-#: src\br24radar_pi.cpp:957 src\br24radar_pi.cpp:977 src\RadarPanel.cpp:38
-msgid "RADAR"
-msgstr "RADAR"
-
-#: src\br24radar_pi.cpp:974
-msgid "HDM"
-msgstr "HDM"
-
-#: src\br24radar_pi.cpp:1375
-msgid "GPS"
-msgstr "GPS"
-
-#: src\br24radar_pi.cpp:1496
-msgid "WMM"
-msgstr "WMM"
-
-#: src\br24radar_pi.cpp:1729
-msgid "NMEA"
-msgstr "NMEA"
-
+#
 #: src\GuardZoneBogey.cpp:94
 msgid "Confirm"
 msgstr "Kinnita"
 
+#
 #: src\GuardZoneBogey.cpp:97
 msgid "Close"
 msgstr "Sulge"
 
+#
 #: src\GuardZoneBogey.h:53
 msgid "Alarm"
 msgstr "Häire"
 
-#: src\RadarCanvas.cpp:471
+#
+#: src\MessageBox.cpp:142
+#, fuzzy
+msgid "Required OpenCPN option"
+msgstr "OpenCPN'i valikud"
+
+#
+#: src\MessageBox.cpp:147
+msgid "Accelerated Graphics (OpenGL)"
+msgstr "Graafikakiirendi (OpenGL)"
+
+#
+#: src\MessageBox.cpp:153
+msgid "For radar overlay also required"
+msgstr "Radari ülekatte jaoks on ka vaja"
+
+#
+#: src\MessageBox.cpp:161
+msgid "Boat position"
+msgstr "Aluse asukoht"
+
+#
+#: src\MessageBox.cpp:167
+msgid "and"
+msgstr "ja"
+
+#
+#: src\MessageBox.cpp:172
+msgid "True Heading"
+msgstr "Tegelik kurss"
+
+#
+#: src\MessageBox.cpp:177
+msgid "or"
+msgstr "või"
+
+#
+#: src\MessageBox.cpp:181 src\MessageBox.cpp:421
+msgid "Magnetic heading"
+msgstr "Magnetkurss"
+
+#
+#: src\MessageBox.cpp:188 src\MessageBox.cpp:428
+msgid "Variation"
+msgstr "Variatsioon"
+
+#
+#: src\MessageBox.cpp:193 src\MessageBox.cpp:198
+msgid "Statistics"
+msgstr "Statistika"
+
+#
+#: src\MessageBox.cpp:203
+msgid "&Close"
+msgstr "%Sulge"
+
+#
+#: src\MessageBox.cpp:209
+msgid "&Hide Radar"
+msgstr "&Peida radar"
+
+#
+#: src\MessageBox.cpp:414
+msgid "True heading"
+msgstr "Tegelik kurss"
+
+#
+#: src\OptionsDialog.cpp:39
+#, fuzzy
+msgid "Radar Display Preferences"
+msgstr "BR24 kuvamise eelistused"
+
+#
+#: src\OptionsDialog.cpp:59
+msgid "Mixed NM / short range m"
+msgstr ""
+
+#
+#: src\OptionsDialog.cpp:59
+msgid "Kilometers"
+msgstr "kilomeetrid"
+
+#
+#: src\OptionsDialog.cpp:59
+msgid "Nautical Miles"
+msgstr "meremiilid"
+
+#
+#: src\OptionsDialog.cpp:62
+msgid "Range Units"
+msgstr "Ulatuse ühikud"
+
+#
+#: src\OptionsDialog.cpp:70
+msgid "Shading"
+msgstr "varjustus"
+
+#
+#: src\OptionsDialog.cpp:70
+msgid "Outline"
+msgstr "kontuur"
+
+#
+#: src\OptionsDialog.cpp:70
+msgid "Shading + Outline"
+msgstr "varjustus + kontuur"
+
+#
+#: src\OptionsDialog.cpp:72
+msgid "Guard Zone Styling"
+msgstr "Valvetsooni stiil"
+
+#
+#: src\OptionsDialog.cpp:81
+msgid "Guard Zone Sound"
+msgstr "Valvetsooni heli"
+
+#
+#: src\OptionsDialog.cpp:84
+msgid "Select Alert Sound"
+msgstr "Vali häire heli"
+
+#
+#: src\OptionsDialog.cpp:88
+msgid "Test Alert Sound"
+msgstr "Testi häire heli"
+
+#
+#: src\OptionsDialog.cpp:93
+msgid "Repeat alarm after (sec)"
+msgstr "korda häiret sekundi järel"
+
+#
+#: src\OptionsDialog.cpp:104
+msgid "GPU drawing method"
+msgstr "GPU joonistusmeetod"
+
+#
+#: src\OptionsDialog.cpp:110
+msgid "Drawing Method"
+msgstr "Joonistusmeetod"
+
+#
+#: src\OptionsDialog.cpp:116
+msgid "Control Menu Auto Hide"
+msgstr "Kontrollmenüü automaatne peitmine"
+
+#
+#: src\OptionsDialog.cpp:119
+msgid "Never"
+msgstr "Mitte kunagi"
+
+#
+#: src\OptionsDialog.cpp:119
+msgid "10 sec"
+msgstr "10 sec"
+
+#
+#: src\OptionsDialog.cpp:119 src\SoftwareControlSet.h:114
+msgid "30 sec"
+msgstr "30 sec"
+
+#
+#: src\OptionsDialog.cpp:122
+msgid "Auto hide after"
+msgstr "Peida automaatselt pärast"
+
+#
+#: src\OptionsDialog.cpp:131
+msgid "Trail start color"
+msgstr "Jälje alguse värv"
+
+#
+#: src\OptionsDialog.cpp:138
+msgid "Trail end color"
+msgstr "Jälje lõpu värv"
+
+#
+#: src\OptionsDialog.cpp:146
+msgid "Target colors"
+msgstr "Märgi värvid"
+
+#
+#: src\OptionsDialog.cpp:149
+msgid "Weak return color"
+msgstr "Nõrga tagastuse värv"
+
+#
+#: src\OptionsDialog.cpp:155
+msgid "Intermediate return color"
+msgstr "Keskmise tagastuse värv"
+
+#
+#: src\OptionsDialog.cpp:162
+msgid "Strong return color"
+msgstr "Tugeva tagastuse värv"
+
+#
+#: src\OptionsDialog.cpp:168
+msgid "ARPA edge color"
+msgstr "ARPA serva värv"
+
+#
+#: src\OptionsDialog.cpp:176
+msgid "Radar window colors"
+msgstr "Radari akna värvid"
+
+#
+#: src\OptionsDialog.cpp:179
+msgid "Background color"
+msgstr "Taustavärv"
+
+#
+#: src\OptionsDialog.cpp:187
+msgid "AIS text color"
+msgstr "AIS-teksti värv"
+
+#
+#: src\OptionsDialog.cpp:207
+msgid "Options"
+msgstr "Valikud"
+
+#
+#: src\OptionsDialog.cpp:211
+msgid "Ignore radar heading"
+msgstr "Ignoreeri radari kurssi"
+
+#
+#: src\OptionsDialog.cpp:217
+msgid "Pass radar heading to OpenCPN"
+msgstr "Saada radari kurss edasi OpenCPN'i"
+
+#
+#: src\OptionsDialog.cpp:223
+msgid "Enable COG as heading"
+msgstr "Võimalda COG kursina"
+
+#
+#: src\OptionsDialog.cpp:229
+msgid "Reverse mouse wheel zoom direction"
+msgstr "Pööra hiireratta suumisuund ümber"
+
+#
+#: src\OptionsDialog.cpp:237
+#, fuzzy
+msgid "Display options"
+msgstr "OpenCPN'i valikud"
+
+#
+#: src\OptionsDialog.cpp:241
+msgid "Show ring at extreme range"
+msgstr "Näita ringi ülikaugel"
+
+#
+#: src\OptionsDialog.cpp:247
+msgid "Show Guard Zone on overlay"
+msgstr "Kuva valvetsooni ülekattel"
+
+#
+#: src\OptionsDialog.cpp:253
+msgid "Show Target trails on overlay"
+msgstr "Kuva märgi jälgi ülekattel"
+
+#
+#: src\OptionsDialog.cpp:259
+msgid "Show data on overlay when radar is standby"
+msgstr ""
+
+#
+#: src\OptionsDialog.cpp:266
+#, fuzzy
+msgid "Radar types"
+msgstr "Radari tüüp"
+
+#
+#: src\OptionsDialog.cpp:270
+#, fuzzy
+msgid "Select radar types"
+msgstr "Kustuta radari märk"
+
+#
+#: src\OptionsDialog.cpp:332
+msgid "Select Sound File"
+msgstr "Vali helifail"
+
+#
+#: src\OptionsDialog.cpp:333
+msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+msgstr "WAV-failid (*.wav)|*.wav|Kõik failid (*.*)|*.*"
+
+#
+#: src\RadarCanvas.cpp:102 src\radar_pi.cpp:283
+msgid "Menu"
+msgstr "Menüü"
+
+#
+#: src\RadarCanvas.cpp:157
+msgid "Rain"
+msgstr ""
+
+#
+#: src\RadarCanvas.cpp:159
+msgid "Sea"
+msgstr ""
+
+#
+#: src\RadarCanvas.cpp:568
 msgid "AIS Target Name"
 msgstr "AIS-märgi nimi"
 
+#
 #: src\RadarDraw.cpp:54
 msgid "Vertex Array"
 msgstr "Tipp-massiiv"
 
+#
 #: src\RadarDraw.cpp:54
 msgid "Shader"
 msgstr "Varjutaja"
 
-#: src\RadarInfo.cpp:1236 src\RadarInfo.cpp:1239
+#
+#: src\RadarInfo.cpp:933 src\RadarInfo.cpp:936
 msgid "Head Up"
 msgstr "Vöör üleval"
 
-#: src\RadarInfo.cpp:1239
+#
+#: src\RadarInfo.cpp:936
 msgid "Stabilized"
 msgstr "Stabiliseeritud"
 
-#: src\RadarInfo.cpp:1242
+#
+#: src\RadarInfo.cpp:939
 msgid "Course Up"
 msgstr "kurss üleval"
 
-#: src\RadarInfo.cpp:1245
+#
+#: src\RadarInfo.cpp:942
 msgid "North Up"
 msgstr "N-üleval"
 
-#: src\RadarInfo.cpp:1379
+#
+#: src\RadarInfo.cpp:1025
+msgid "Zone"
+msgstr "Tsoon"
+
+#
+#: src\RadarInfo.cpp:1027
+msgid "(Confirmed)"
+msgstr "(Kinnitatud)"
+
+#
+#: src\RadarInfo.cpp:1095
 msgid "No radar"
 msgstr "Radarit pole"
 
-#: src\RadarInfo.cpp:1382
-msgid "Radar is in Standby"
-msgstr "Radar on ooterežiimil"
+#
+#: src\RadarInfo.cpp:1324
+#, fuzzy
+msgid "Uninitialized"
+msgstr "Stabiliseeritud"
 
-#: src\RadarInfo.cpp:1385
-msgid "Radar is waking up"
-msgstr "Radar on soojenemas"
+#
+#: src\RadarInfo.cpp:1400 src\garminhd\GarminHDReceive.cpp:438
+#: src\garminxhd\GarminxHDReceive.cpp:480 src\navico\NavicoReceive.cpp:674
+msgid "Standby"
+msgstr "Ootel"
 
-#: src\RadarInfo.cpp:1391
-msgid "Radar not transmitting"
-msgstr "Radar ei kiirga"
+#
+#: src\RadarInfo.cpp:1403
+#, fuzzy
+msgid "Warming up"
+msgstr "Soojenemine"
 
-#: src\RadarPanel.cpp:156
+#
+#: src\RadarInfo.cpp:1406
+msgid "Timed idle"
+msgstr ""
+
+#
+#: src\RadarInfo.cpp:1409 src\garminhd\GarminHDReceive.cpp:444
+#: src\garminxhd\GarminxHDReceive.cpp:486
+#, fuzzy
+msgid "Spinning up"
+msgstr "Soojenemine"
+
+#
+#: src\RadarInfo.cpp:1412
+#, fuzzy
+msgid "Transmitting"
+msgstr "Kiirga"
+
+#
+#: src\RadarInfo.cpp:1415
+msgid "for targets"
+msgstr ""
+
+#
+#: src\RadarInfo.cpp:1420 src\garminxhd\GarminxHDReceive.cpp:497
+msgid "Stopping"
+msgstr ""
+
+#
+#: src\RadarInfo.cpp:1423 src\garminxhd\GarminxHDReceive.cpp:507
+#, fuzzy
+msgid "Starting"
+msgstr "Alguspeiling"
+
+#
+#: src\RadarInfo.cpp:1426 src\garminxhd\GarminxHDReceive.cpp:502
+msgid "Spinning down"
+msgstr ""
+
+#
+#: src\RadarInfo.cpp:1430
+#, c-format
+msgid "for %ds"
+msgstr ""
+
+#
+#: src\RadarPanel.cpp:39 src\radar_pi.cpp:1015 src\radar_pi.cpp:1035
+msgid "RADAR"
+msgstr "RADAR"
+
+#
+#: src\RadarPanel.cpp:157
 msgid "OpenGL mode required"
 msgstr "OpenGL-režiim on nõutav"
 
-#: src\RadarPanel.cpp:167
+#
+#: src\RadarPanel.cpp:168
 msgid "Unable to create OpenGL canvas"
 msgstr "Ei saa luua OpenGL kanvaad"
 
-#: src\socketutil.cpp:179
+#
+#: src\radar_pi.cpp:266
+msgid "Radar plugin with support for multiple radars"
+msgstr ""
+
+#
+#: src\radar_pi.cpp:275
+msgid "Show radar"
+msgstr "Näita radarit"
+
+#
+#: src\radar_pi.cpp:276
+msgid "Hide radar"
+msgstr "Peida radar"
+
+#
+#: src\radar_pi.cpp:277
+msgid "Radar Control..."
+msgstr "Radari kontroll..."
+
+#
+#: src\radar_pi.cpp:278
+msgid "Acquire radar target"
+msgstr "Haara radari märk"
+
+#
+#: src\radar_pi.cpp:279
+msgid "Delete radar target"
+msgstr "Kustuta radari märk"
+
+#
+#: src\radar_pi.cpp:280
+msgid "Delete all radar targets"
+msgstr "Kustuta kõik radari märgid"
+
+#
+#: src\radar_pi.cpp:382
+#, fuzzy
+msgid "Radar PlugIn"
+msgstr "Radari IP"
+
+#
+#: src\radar_pi.cpp:384
+msgid "Radar PlugIn with support for Navico Broadband radars (and more soon)\n"
+msgstr ""
+
+#
+#: src\radar_pi.cpp:738
+msgid " Zone"
+msgstr " Tsoon"
+
+#
+#: src\radar_pi.cpp:782
+msgid "Next alarm in"
+msgstr "Järgmine häire"
+
+#
+#: src\radar_pi.cpp:1008
+msgid "COG"
+msgstr "COG"
+
+#
+#: src\radar_pi.cpp:1012
+msgid "HDT"
+msgstr "HDT"
+
+#
+#: src\radar_pi.cpp:1032
+msgid "HDM"
+msgstr "HDM"
+
+#
+#: src\radar_pi.cpp:1431
+msgid "GPS"
+msgstr "GPS"
+
+#
+#: src\radar_pi.cpp:1552
+msgid "WMM"
+msgstr "WMM"
+
+#
+#: src\radar_pi.cpp:1705
+msgid "NMEA"
+msgstr "NMEA"
+
+#
+#: src\SelectDialog.cpp:39
+#, fuzzy
+msgid "Radar Selection"
+msgstr "Radar on olemas"
+
+#
+#: src\SelectDialog.cpp:53
+#, c-format
+msgid "Select (max) %d radar scanner types"
+msgstr ""
+
+#
+#: src\socketutil.cpp:188
 msgid "Cannot create UDP socket"
 msgstr "Ei suuda luua UDP-sokkelit"
 
-#: src\socketutil.cpp:183
+#
+#: src\socketutil.cpp:192
 msgid "Cannot set reuse address option on socket"
 msgstr "Ei suuda luua korduvkasutamise aadressi valikut soklis"
 
-#: src\socketutil.cpp:188
+#
+#: src\socketutil.cpp:197
 msgid "Cannot bind UDP socket to port "
 msgstr "Ei suuda siduda UDP-soklit pordiga "
 
-#: src\socketutil.cpp:197
-msgid "Invalid multicast address"
-msgstr "Kehtetu multisaate aadress"
-
-#: src\socketutil.cpp:202
+#
+#: src\socketutil.cpp:207
 msgid "Invalid IP address for UDP multicast"
 msgstr "UDP-multisaate IP-aadress on kehtetu"
 
+#
+#: src\SoftwareControlSet.h:78
+#, fuzzy
+msgid "min"
+msgstr "1 min"
+
+#
+#: src\SoftwareControlSet.h:101
+msgid "Head up"
+msgstr "Vöör üleval"
+
+#
+#: src\SoftwareControlSet.h:101
+#, fuzzy
+msgid "Head up (Stabilized)"
+msgstr "(Stabiliseeritud)"
+
+#
+#: src\SoftwareControlSet.h:101
+msgid "North up"
+msgstr "N-üleval"
+
+#
+#: src\SoftwareControlSet.h:101
+msgid "Course up"
+msgstr "kurss üleval"
+
+#
+#: src\SoftwareControlSet.h:114
+msgid "15 sec"
+msgstr "15 sec"
+
+#
+#: src\SoftwareControlSet.h:114
+msgid "1 min"
+msgstr "1 min"
+
+#
+#: src\SoftwareControlSet.h:114
+msgid "3 min"
+msgstr "3 min"
+
+#
+#: src\SoftwareControlSet.h:114
+msgid "5 min"
+msgstr "5 min"
+
+#
+#: src\SoftwareControlSet.h:114
+msgid "10 min"
+msgstr "10 min"
+
+#
+#: src\SoftwareControlSet.h:114
+msgid "Continuous"
+msgstr "Pidev"
+
+#
+#: src\SoftwareControlSet.h:118
+msgid "Relative"
+msgstr "Suhteline"
+
+#
+#: src\SoftwareControlSet.h:118
+msgid "True"
+msgstr "Tõene"
+
+#
+#: src\SoftwareControlSet.h:124 src\SoftwareControlSet.h:128
+msgid "On"
+msgstr "Sees"
+
+#
+#: src\emulator\EmulatorReceive.cpp:207
+msgid "OK"
+msgstr ""
+
+#
+#: src\garminhd\GarminHDControlSet.h:36 src\garminxhd\GarminxHDControlSet.h:36
+#: src\navico\NavicoControlSet.h:56 src\navico\NavicoControlSet.h:60
+msgid "Low"
+msgstr "Madal"
+
+#
+#: src\garminhd\GarminHDControlSet.h:36 src\garminxhd\GarminxHDControlSet.h:36
+#: src\navico\NavicoControlSet.h:56 src\navico\NavicoControlSet.h:60
+msgid "High"
+msgstr "Kõrge"
+
+#
+#: src\garminhd\GarminHDControlSet.h:41 src\garminxhd\GarminxHDControlSet.h:41
+msgid "Calm"
+msgstr ""
+
+#
+#: src\garminhd\GarminHDControlSet.h:41 src\garminxhd\GarminxHDControlSet.h:41
+#: src\navico\NavicoControlSet.h:56
+msgid "Medium"
+msgstr "Keskmine"
+
+#
+#: src\garminhd\GarminHDControlSet.h:41 src\garminxhd\GarminxHDControlSet.h:41
+msgid "Rough"
+msgstr ""
+
+#
+#: src\garminhd\GarminHDControlSet.h:46 src\garminxhd\GarminxHDControlSet.h:46
+#: src\navico\NavicoControlSet.h:64
+msgid "Slow"
+msgstr ""
+
+#
+#: src\garminhd\GarminHDControlSet.h:46 src\garminxhd\GarminxHDControlSet.h:46
+#: src\navico\NavicoControlSet.h:64
+msgid "Fast"
+msgstr "Kiire"
+
+#
+#: src\garminhd\GarminHDReceive.cpp:206 src\garminxhd\GarminxHDReceive.cpp:184
+#: src\navico\NavicoReceive.cpp:313
+msgid "Scanning interface"
+msgstr ""
+
+#
+#: src\garminhd\GarminHDReceive.cpp:433 src\garminxhd\GarminxHDReceive.cpp:475
+msgid "Warmup"
+msgstr ""
+
+#
+#: src\garminhd\GarminHDReceive.cpp:449 src\garminxhd\GarminxHDReceive.cpp:491
+#: src\navico\NavicoReceive.cpp:679
+msgid "Transmit"
+msgstr "Kiirga"
+
+#
+#: src\garminhd\GarminHDReceive.cpp:452 src\garminxhd\GarminxHDReceive.cpp:511
+#: src\navico\NavicoReceive.cpp:689
+#, fuzzy
+msgid "Unknown status"
+msgstr "Tundmatu"
+
+#
+#: src\garminhd\GarminHDReceive.h:58 src\garminxhd\GarminxHDReceive.h:57
+#: src\navico\NavicoReceive.h:58
+msgid "Initializing"
+msgstr ""
+
+#
+#: src\navico\NavicoControlSet.h:68 src\navico\NavicoControlSet.h:72
+msgid "Harbour"
+msgstr "Sadam"
+
+#
+#: src\navico\NavicoControlSet.h:68 src\navico\NavicoControlSet.h:72
+msgid "Offshore"
+msgstr "Avameri"
+
+#
+#: src\navico\NavicoControlSet.h:72
+msgid "Weather"
+msgstr ""
+
+#
+#: src\navico\NavicoControlSet.h:72
+msgid "Bird"
+msgstr ""
+
+#
+#: src\navico\NavicoReceive.cpp:685
+msgid "Waking up"
+msgstr "Soojenemine"
+
+#
+#
+#~ msgid "10 s"
+#~ msgstr "10 s"
+
+#
+#
+#~ msgid "15 min"
+#~ msgstr "15 min"
+
+#
+#
+#~ msgid "20 min"
+#~ msgstr "20 min"
+
+#
+#
+#~ msgid "20 s"
+#~ msgstr "20 s"
+
+#
+#
+#~ msgid "25 min"
+#~ msgstr "25 min"
+
+#
+#
+#~ msgid "30 min"
+#~ msgstr "30 min"
+
+#
+#
+#~ msgid "30 s"
+#~ msgstr "30 s"
+
+#
+#
+#~ msgid "35 min"
+#~ msgstr "35 min"
+
+#
+#
+#~ msgid ""
+#~ "Cannot switch radar on as\n"
+#~ "it is not connected or off"
+#~ msgstr ""
+#~ "Ei saa radarit siise lülitada sest\n"
+#~ " ta kas pole ühendatud või on välja lülitatud"
+
+#
+#
+#~ msgid "Emulator"
+#~ msgstr "Emulaator"
+
+#
+#
+#~ msgid "Emulator mode"
+#~ msgstr "Emulaatorrežiim"
+
+#
+#
+#~ msgid "Enable dual radar, 4G only"
+#~ msgstr "Topelt-radari võimaldamine, 4G ainult"
+
+#
+#
+#~ msgid "Ethernet card"
+#~ msgstr "Võrgukaart"
+
+#
+#
+#~ msgid "Hide AIS/ARPA"
+#~ msgstr "Peida AIS/ARPA"
+
+#
+#
+#~ msgid "Hide both windows"
+#~ msgstr "Peida mõlemad aknad"
+
+#
+#
+#~ msgid "Invalid multicast address"
+#~ msgstr "Kehtetu multisaate aadress"
+
+#
+#
+#~ msgid "Navico BR24, 3G and 4G RADAR"
+#~ msgstr "Navico BR24, 3G ja 4G radar"
+
+#
+#
+#~ msgid "Navico Broadband BR24/3G/4G Radar PlugIn for OpenCPN\n"
+#~ msgstr "Navico BR24/3G/4G lairibaradari plugin OpenCPN'i jaoks\n"
+
+#
+#
+#~ msgid "Navico Radar PlugIn for OpenCPN"
+#~ msgstr "Navico radari plugIn OpenCPN'i jaoks"
+
+#
+#
+#~ msgid "Normal"
+#~ msgstr "Tavaline"
+
+#
+#
+#~ msgid "Power Status"
+#~ msgstr "Toite olek"
+
+#
+#
+#~ msgid "Radar A"
+#~ msgstr "Radar A"
+
+#
+#
+#~ msgid "Radar B"
+#~ msgstr "Radar B"
+
+#
+#
+#~ msgid "Radar is in Standby"
+#~ msgstr "Radar on ooterežiimil"
+
+#
+#
+#~ msgid "Radar is waking up"
+#~ msgstr "Radar on soojenemas"
+
+#
+#
+#~ msgid "Radar not transmitting"
+#~ msgstr "Radar ei kiirga"
+
+#
+#
+#~ msgid "Radar requirements OK:"
+#~ msgstr "Radari nõuded on OK:"
+
+#
+#
+#~ msgid "Radar requires the following"
+#~ msgstr "Radar nõuab järgmist"
+
+#
+#
+#~ msgid "Radar sending data"
+#~ msgstr "Radar saadab andmeid"
+
+#
+#
+#~ msgid "Runtime"
+#~ msgstr "Käitusaeg"
+
+#
+#
+#~ msgid "Show AIS/ARPA"
+#~ msgstr "Näita AIS/ARPA"
+
+#
+#
+#~ msgid "Show both windows"
+#~ msgstr "Kuva mõlemad aknad"
+
+#
+#
+#~ msgid "Show this window"
+#~ msgstr "Kuva see aken"
+
+#
+#
+#~ msgid "Standby / Transmit"
+#~ msgstr "Ootel / Kiirga"
+
+#
+#
+#~ msgid "Standby in"
+#~ msgstr "Ootel"
+
+#
+#
+#~ msgid "ZeroConf via Ethernet"
+#~ msgstr "ZeroConf üle võrgu"
+
+#
+#
+#~ msgid "above sealevel"
+#~ msgstr "üle merepinna"
+
+#
+#
+#~ msgid "degrees"
+#~ msgstr "kraadi"
+
+#
+#
+#~ msgid "relative to bow"
+#~ msgstr "vööri suhtes"
