@@ -1,0 +1,22 @@
+language: cpp
+
+os:
+  - linux
+  - osx
+
+branches:
+  only:
+    - master
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade; fi
+
+install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install build-essential cmake gettext git-core gpsd gpsd-clients libgps-dev wx-common libwxgtk3.0-dev libglu1-mesa-dev libgtk2.0-dev wx3.0-headers libbz2-dev libtinyxml-dev libportaudio2 portaudio19-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install cairo libexif libarchive wxmac; export PATH="/usr/local/opt/gettext/bin:$PATH";  echo 'export PATH="/usr/local/opt/gettext/bin:$PATH"' >> ~/.bash_profile; fi
+script:
+  - mkdir -p build
+  - cd build
+  - cmake ..
+  - make
