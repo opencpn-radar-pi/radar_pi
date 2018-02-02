@@ -23,7 +23,13 @@ SET( wxWidgets_USE_UNICODE ON)
 SET( wxWidgets_USE_UNIVERSAL OFF)
 SET( wxWidgets_USE_STATIC OFF)
 
+OPTION(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
+
 INCLUDE("cmake/PluginConfigure.cmake")
+
+IF(SHIPDRIVER_USE_SVG)
+  ADD_DEFINITIONS(-DSHIPDRIVER_USE_SVG)
+ENDIF(SHIPDRIVER_USE_SVG)
 
 SET(SRC_ShipDriver
         src/ShipDriver_pi.h

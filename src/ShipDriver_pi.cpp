@@ -105,11 +105,16 @@ int ShipDriver_pi::Init(void)
       LoadConfig();
 
       //    This PlugIn needs a toolbar icon, so request its insertion
-	if(m_bShipDriverShowIcon)
+	if(m_bShipDriverShowIcon) {
+#ifdef SHIPDRIVER_USE_SVG
+        m_leftclick_tool_id = InsertPlugInToolSVG(_T( "ShipDriver" ), _svg_shipdriver, _svg_shipdriver_rollover, _svg_shipdriver_toggled,
+            wxITEM_CHECK, _("ShipDriver"), _T( "" ), NULL, ShipDriver_TOOL_POSITION, 0, this);
+#else
 		m_leftclick_tool_id = InsertPlugInTool(_T(""), _img_ShipDriverIcon, _img_ShipDriverIcon, wxITEM_CHECK,
             _("ShipDriver"), _T(""), NULL,
              ShipDriver_TOOL_POSITION, 0, this);
-
+#endif
+    }
 	wxMenu dummy_menu;
 	m_position_menu_id = AddCanvasContextMenuItem
 		(new wxMenuItem(&dummy_menu, -1, _("Select Vessel Start Position")), this);
