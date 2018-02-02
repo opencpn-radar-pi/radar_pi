@@ -278,9 +278,12 @@ bool ShipDriver_pi::LoadConfig(void)
            
             m_hr_dialog_x =  pConf->Read ( _T ( "DialogPosX" ), 40L );
             m_hr_dialog_y =  pConf->Read ( _T ( "DialogPosY" ), 140L);
-			m_hr_dialog_sx = pConf->Read ( _T ( "DialogSizeX"), 300L);
-			m_hr_dialog_sy = pConf->Read ( _T ( "DialogSizeY"), 540L);
-         
+			m_hr_dialog_sx = pConf->Read ( _T ( "DialogSizeX"), 330L);
+#ifdef __WXOSX__
+			m_hr_dialog_sy = pConf->Read ( _T ( "DialogSizeY"), 250L);
+#else
+            m_hr_dialog_sy = pConf->Read ( _T ( "DialogSizeY"), 300L);
+#endif
             if((m_hr_dialog_x < 0) || (m_hr_dialog_x > m_display_width))
                   m_hr_dialog_x = 40;
             if((m_hr_dialog_y < 0) || (m_hr_dialog_y > m_display_height))

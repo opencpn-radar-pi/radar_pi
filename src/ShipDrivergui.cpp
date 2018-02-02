@@ -11,7 +11,7 @@
 
 ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
-	this->SetSizeHints( wxSize( 330,240 ), wxDefaultSize );
+	this->SetSizeHints( wxSize( 300,250 ), wxDefaultSize );
 	this->SetFont( wxFont( 10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
 	this->SetBackgroundColour( wxColour( 201, 201, 201 ) );
 	

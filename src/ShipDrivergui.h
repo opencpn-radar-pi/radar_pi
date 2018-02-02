@@ -77,7 +77,7 @@ class ShipDriverBase : public wxDialog
 		wxSlider* m_SliderSpeed;
 		wxTimer m_timer1;
 		
-		ShipDriverBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 330,240 ), long style = wxDEFAULT_DIALOG_STYLE ); 
+		ShipDriverBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 300,300 ), long style = wxDEFAULT_DIALOG_STYLE ); 
 		~ShipDriverBase();
 	
 };
