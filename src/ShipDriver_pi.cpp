@@ -105,11 +105,16 @@ int ShipDriver_pi::Init(void)
       LoadConfig();
 
       //    This PlugIn needs a toolbar icon, so request its insertion
-	if(m_bShipDriverShowIcon)
+	if(m_bShipDriverShowIcon) {
+#ifdef SHIPDRIVER_USE_SVG
+        m_leftclick_tool_id = InsertPlugInToolSVG(_T( "ShipDriver" ), _svg_shipdriver, _svg_shipdriver_rollover, _svg_shipdriver_toggled,
+            wxITEM_CHECK, _("ShipDriver"), _T( "" ), NULL, ShipDriver_TOOL_POSITION, 0, this);
+#else
 		m_leftclick_tool_id = InsertPlugInTool(_T(""), _img_ShipDriverIcon, _img_ShipDriverIcon, wxITEM_CHECK,
             _("ShipDriver"), _T(""), NULL,
              ShipDriver_TOOL_POSITION, 0, this);
-
+#endif
+    }
 	wxMenu dummy_menu;
 	m_position_menu_id = AddCanvasContextMenuItem
 		(new wxMenuItem(&dummy_menu, -1, _("Select Vessel Start Position")), this);
@@ -273,9 +278,12 @@ bool ShipDriver_pi::LoadConfig(void)
            
             m_hr_dialog_x =  pConf->Read ( _T ( "DialogPosX" ), 40L );
             m_hr_dialog_y =  pConf->Read ( _T ( "DialogPosY" ), 140L);
-			m_hr_dialog_sx = pConf->Read ( _T ( "DialogSizeX"), 300L);
-			m_hr_dialog_sy = pConf->Read ( _T ( "DialogSizeY"), 540L);
-         
+			m_hr_dialog_sx = pConf->Read ( _T ( "DialogSizeX"), 330L);
+#ifdef __WXOSX__
+			m_hr_dialog_sy = pConf->Read ( _T ( "DialogSizeY"), 250L);
+#else
+            m_hr_dialog_sy = pConf->Read ( _T ( "DialogSizeY"), 300L);
+#endif
             if((m_hr_dialog_x < 0) || (m_hr_dialog_x > m_display_width))
                   m_hr_dialog_x = 40;
             if((m_hr_dialog_y < 0) || (m_hr_dialog_y > m_display_height))
