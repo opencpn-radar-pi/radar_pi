@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version Dec 21 2016)
+// C++ code generated with wxFormBuilder (version Jan 25 2018)
 // http://www.wxformbuilder.org/
 //
-// PLEASE DO "NOT" EDIT THIS FILE!
+// PLEASE DO *NOT* EDIT THIS FILE!
 ///////////////////////////////////////////////////////////////////////////
 
 #ifndef __SHIPDRIVERGUI_H__
@@ -10,6 +10,7 @@
 
 #include <wx/artprov.h>
 #include <wx/xrc/xmlres.h>
+#include <wx/intl.h>
 #include <wx/gauge.h>
 #include <wx/gdicmn.h>
 #include <wx/font.h>
@@ -76,7 +77,7 @@ class ShipDriverBase : public wxDialog
 		wxSlider* m_SliderSpeed;
 		wxTimer m_timer1;
 		
-		ShipDriverBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 375,241 ), long style = wxDEFAULT_DIALOG_STYLE ); 
+		ShipDriverBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 330,240 ), long style = wxDEFAULT_DIALOG_STYLE ); 
 		~ShipDriverBase();
 	
 };

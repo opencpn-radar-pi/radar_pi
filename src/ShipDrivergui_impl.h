@@ -42,6 +42,11 @@
 #include <wx/stdpaths.h>
 #include "wx/process.h"
 
+#ifdef __WXOSX__
+#define SHIPDRIVER_DLG_STYLE wxCLOSE_BOX|wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxSTAY_ON_TOP
+#else
+#define SHIPDRIVER_DLG_STYLE wxCLOSE_BOX|wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER
+#endif
 using namespace std;
 
 class ShipDriver_pi;
@@ -70,7 +75,7 @@ public:
 class Dlg : public ShipDriverBase
 {
 public:
-        Dlg( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("ShipDriver"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxCLOSE_BOX|wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
+        Dlg( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("ShipDriver"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = SHIPDRIVER_DLG_STYLE );
         ShipDriver_pi *plugin;
 
 		wxString createRMCSentence(wxDateTime myTime, double myLat, double myLon, double mySpd, double myDir);

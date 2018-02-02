@@ -142,15 +142,19 @@ void Dlg::OnPlus1(wxCommandEvent& event){
 void Dlg::OnAuto(wxCommandEvent& event){
 
 	m_bAuto = true;
+
 	m_buttonStandby->SetBackgroundColour(wxColour(255, 0, 0));
 	m_buttonAuto->SetBackgroundColour(wxColour(0, 255, 0));
+    Refresh();
 }
 
 void Dlg::OnStandby(wxCommandEvent& event){
 
 	m_bAuto = false;
+
 	m_buttonStandby->SetBackgroundColour(wxColour(0, 255, 0));
 	m_buttonAuto->SetBackgroundColour(wxColour(255, 255, 255));
+    Refresh();
 }
 
 
