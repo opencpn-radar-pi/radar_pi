@@ -41,11 +41,11 @@
             <property name="hidden">0</property>
             <property name="id">wxID_ANY</property>
             <property name="maximum_size"></property>
-            <property name="minimum_size">300,250</property>
+            <property name="minimum_size">-1,-1</property>
             <property name="name">ShipDriverBase</property>
             <property name="pos"></property>
-            <property name="size">300,300</property>
-            <property name="style">wxDEFAULT_DIALOG_STYLE</property>
+            <property name="size">-1,-1</property>
+            <property name="style">wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER</property>
             <property name="subclass"></property>
             <property name="title"></property>
             <property name="tooltip"></property>
@@ -2409,8 +2409,8 @@
             <property name="minimum_size"></property>
             <property name="name">shipdriverPreferences</property>
             <property name="pos"></property>
-            <property name="size">222,214</property>
-            <property name="style">wxCAPTION</property>
+            <property name="size">-1,-1</property>
+            <property name="style">wxCAPTION|wxRESIZE_BORDER</property>
             <property name="subclass">; forward_declare</property>
             <property name="title">Preferences</property>
             <property name="tooltip"></property>
