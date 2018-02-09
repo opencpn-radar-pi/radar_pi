@@ -34,13 +34,14 @@
 #include "folder.xpm"
 #include <stdio.h>
 #include <wx/timer.h>
-
+#include "wx/textfile.h"
 
 
 void assign(char *dest, char *arrTest2)
 {
 	strcpy(dest, arrTest2);
 }
+
 
 
 #define BUFSIZE 0x10000
@@ -51,12 +52,24 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& 
 	dbg = false; //for debug output set to true
 	initLat = 0;
 	initLon = 0;
-	m_interval = 1000;
+	m_interval = 500;
 	m_bUseSetTime = false;
     m_bUseStop = true;
     m_bUsePause = false;
     m_sNmeaTime = wxEmptyString;
+
+	wxFileConfig *pConf = GetOCPNConfigObject();
+
+	if (pConf) {
+		pConf->SetPath(_T("/Settings/ShipDriver_pi"));
+
+		pConf->Read(_T("shipdriverUseAis"), &m_bUseAis);
+		pConf->Read(_T("shipdriverUseFile"), &m_bUseFile);
+		pConf->Read(_T("shipdriverMMSI"), &m_tMMSI);
+	}
+
 }
+
 
 void Dlg::OnTimer(wxTimerEvent& event){
   Notify();
@@ -72,6 +85,24 @@ void Dlg::OnStart(wxCommandEvent& event) {
 		wxMessageBox(_("Please right-click and choose vessel start position"));
 		return;
 	}
+
+	if (!m_tMMSI.ToLong(&m_iMMSI)) {
+		wxMessageBox(_("MMSI must be a number, please change in Preferences"));
+		return;
+	}
+
+	if (m_bUseFile){
+		wxFileDialog filedlg(this->m_parent, "Save AIS .txt file...",
+			"", "",
+			"Save Files (*.txt) | *.txt | All files (*.*)|*.*", wxFD_OPEN | wxFD_OVERWRITE_PROMPT);
+		if (filedlg.ShowModal() == wxID_OK)
+		{
+			nmeafile = new wxTextFile(filedlg.GetPath());
+
+			nmeafile->Open();
+			nmeafile->Clear();
+		}
+	}
 	m_textCtrlRudderStbd->SetValue(_T(""));
 	m_textCtrlRudderPort->SetValue(_T(""));
 	initSpd = 0; // 5 knots
@@ -79,12 +110,14 @@ void Dlg::OnStart(wxCommandEvent& event) {
 	myHeading.ToDouble(&initDir);
 	myDir = initDir;
 	dt = dt.Now();
-	GLL = createGLLSentence(dt, initLat, initLon, initSpd/3600, initDir);
+	GLL = createGLLSentence(dt, initLat, initLon, initSpd/7200, initDir);
 	VTG = createVTGSentence(initSpd, initDir);
 
-	m_interval = 1000;
+	m_interval = 500;
 	m_Timer->Start(m_interval, wxTIMER_CONTINUOUS); // start timer
 	m_bAuto = false;
+
+	myAIS = new AisMaker();
 
 }
 
@@ -101,6 +134,11 @@ void Dlg::OnStop(wxCommandEvent& event) {
 	m_bUseSetTime = false;
 	m_bUseStop = true;
 	m_bAuto = false;
+
+	if (m_bUseFile){
+		nmeafile->Write();
+		nmeafile->Close();
+	}
 }
 
 void Dlg::OnMidships(wxCommandEvent& event){
@@ -166,68 +204,72 @@ void Dlg::OnClose(wxCloseEvent& event)
 
 void Dlg::Notify()
 {
-	initSpd = m_SliderSpeed->GetValue();
-	initRudder = m_SliderRudder->GetValue();
+		initSpd = m_SliderSpeed->GetValue();
+		initRudder = m_SliderRudder->GetValue();
 
-	double myRudder = initRudder - 30;
-	if (myRudder < 0){
-		initRudder -= 30.0;
-		myRudder = std::abs(initRudder);
-		myDir -= myRudder;
-		double myPortRudder = 30 - std::abs(myRudder);
-		m_gaugeRudderPort->SetValue(myPortRudder);
-		m_textCtrlRudderPort->SetValue(wxString::Format(_T("%.0f"), myRudder) + _T(" P"));
-		m_gaugeRudderStbd->SetValue(0);
-		m_textCtrlRudderStbd->SetValue(_T(""));
-	}
-	else if (myRudder >= 0){
-		
-		initRudder -= 30;
-		myDir += initRudder;
-		m_gaugeRudderStbd->SetValue(myRudder);
-		if (myRudder == 0){
+		double myRudder = initRudder - 30;
+		if (myRudder < 0){
+			initRudder -= 30.0;
+			myRudder = std::abs(initRudder);
+			myDir -= myRudder;
+			double myPortRudder = 30 - std::abs(myRudder);
+			m_gaugeRudderPort->SetValue(myPortRudder);
+			m_textCtrlRudderPort->SetValue(wxString::Format(_T("%.0f"), myRudder) + _T(" P"));
+			m_gaugeRudderStbd->SetValue(0);
 			m_textCtrlRudderStbd->SetValue(_T(""));
 		}
-		else {
-			m_textCtrlRudderStbd->SetValue(wxString::Format(_T("%.0f"), myRudder) + _T(" S"));
+		else if (myRudder >= 0){
+
+			initRudder -= 30;
+			myDir += initRudder;
+			m_gaugeRudderStbd->SetValue(myRudder);
+			if (myRudder == 0){
+				m_textCtrlRudderStbd->SetValue(_T(""));
+			}
+			else {
+				m_textCtrlRudderStbd->SetValue(wxString::Format(_T("%.0f"), myRudder) + _T(" S"));
+			}
+			m_gaugeRudderPort->SetValue(0);
+			m_textCtrlRudderPort->SetValue(_T(""));
+
 		}
-		m_gaugeRudderPort->SetValue(0);
-		m_textCtrlRudderPort->SetValue( _T(""));
 
-	}
+		if (myDir < 0){
+			myDir += 360;
+		}
+		else if (myDir > 360){
+			myDir -= 360;
+		}
 
-	if (myDir < 0){
-		myDir += 360;
-	}
-	else if (myDir > 360){
-		myDir -= 360;
-	}
+		wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
+		m_stHeading->SetLabel(mystring);
 
-	wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
-	m_stHeading->SetLabel(mystring);
-
-	m_stSpeed->SetLabel(wxString::Format(_T("%3.0f"), initSpd));
+		m_stSpeed->SetLabel(wxString::Format(_T("%3.0f"), initSpd));
 
 
-	SetNextStep(initLat, initLon, myDir, initSpd/3600, stepLat, stepLon);
+		SetNextStep(initLat, initLon, myDir, initSpd/7200, stepLat, stepLon);
+		wxString timeStamp = wxString::Format(_T("%i"), wxGetUTCTime());
+	
+		wxString myNMEAais = myAIS->nmeaEncode(_T("18"), m_iMMSI, _T("5"), initSpd, initLat, initLon, myDir, myDir, _T("B"), timeStamp);
+		
+		if (m_bUseFile)	nmeafile->AddLine(myNMEAais);
 
+		int ss = 1;
+		wxTimeSpan mySeconds = wxTimeSpan::Seconds(ss);
+		wxDateTime mdt = dt.Add(mySeconds);
 
-	//SendAIS(myDir, initSpd, stepLat, stepLon); // Use Python to make and send the AIS sentence
+		GLL = createGLLSentence(mdt, initLat, initLon, initSpd, myDir);
+		VTG = createVTGSentence(initSpd, myDir);
 
-	int ss = 1;
-	wxTimeSpan mySeconds = wxTimeSpan::Seconds(ss);
-	wxDateTime mdt = dt.Add(mySeconds);
+		PushNMEABuffer(GLL + _T("\n"));
+		PushNMEABuffer(VTG + _T("\n"));
+		if (m_bUseAis) PushNMEABuffer(myNMEAais + _T("\n"));
 
-	GLL = createGLLSentence(mdt, initLat, initLon, initSpd, myDir);
-	VTG = createVTGSentence(initSpd, myDir);
+		initLat = stepLat;
+		initLon = stepLon;
 
-	PushNMEABuffer(GLL + _T("\n"));
-	PushNMEABuffer(VTG + _T("\n"));
+		dt = mdt;
 
-	initLat = stepLat;
-	initLon = stepLon;
-
-	dt = mdt;
 }
 
 void Dlg::SetInterval(int interval)
@@ -263,8 +305,8 @@ wxString Dlg::createRMCSentence(wxDateTime myDateTime, double myLat, double myLo
 	nTime = DateTimeToTimeString(myDateTime);
 	nNS = LatitudeToString(myLat);
 	nEW = LongitudeToString(myLon);
-	nSpd = wxString::Format(_T("%2.1f"),mySpd);
-	nDir = wxString::Format(_T("%3.0f"), myDir);
+	nSpd = wxString::Format(_T("%f"),mySpd);
+	nDir = wxString::Format(_T("%f"), myDir);
 	nDate = DateTimeToDateString(myDateTime);
 
 	nForCheckSum = nRMC + nTime + nC + nNS + nEW + nSpd + nC + nDir + nC + nDate + _T(",,,A");
@@ -298,8 +340,8 @@ wxString Dlg::createGLLSentence(wxDateTime myDateTime, double myLat, double myLo
 	nTime = DateTimeToTimeString(myDateTime);
 	nNS = LatitudeToString(myLat);
 	nEW = LongitudeToString(myLon);
-	nSpd = wxString::Format(_T("%2.1f"), mySpd);
-	nDir = wxString::Format(_T("%3.0f"), myDir);
+	nSpd = wxString::Format(_T("%f"), mySpd);
+	nDir = wxString::Format(_T("%f"), myDir);
 	nDate = DateTimeToDateString(myDateTime);
 
 	nForCheckSum = nGLL + nNS + nEW + nTime + _T(",A");
@@ -330,8 +372,8 @@ wxString Dlg::createVTGSentence(double mySpd, double myDir){
 	wxString ndlr = _T("$");
 	wxString nast = _T("*");
 
-	nSpd = wxString::Format(_T("%2.1f"), mySpd);
-	nDir = wxString::Format(_T("%3.0f"), myDir);
+	nSpd = wxString::Format(_T("%f"), mySpd);
+	nDir = wxString::Format(_T("%f"), myDir);
 
 	nForCheckSum = nVTG + nDir + nC + nT + nC + nM + nSpd + nN + nC + nC + nA;
 
@@ -551,58 +593,3 @@ void Dlg::OnContextMenu(double m_lat, double m_lon){
 	initLon = m_lon;
 }
 
-/*
-void Dlg::SendAIS(double cse, double spd, double lat, double lon){
-
-	wxString myCse = wxString::Format(wxT("%3.0f"), cse);
-	wxString mySpd = wxString::Format(wxT("%4.0f"), spd*10);
-	wxString myLat = wxString::Format(wxT("%7.5f"), lat);
-	wxString myLon = wxString::Format(wxT("%7.5f"), lon);
-
-
-	wxString cmdstart; // = _T("C:/ppp/play.bat");
-	wxString dir = _T("c:/ppp/6/");
-	cmdstart = dir + _T("pyconsole.exe") + _T(" ") + _T("MyAISplayer.py") + _T(" ") + myCse + _T(" ") + mySpd + _T(" ") + myLat + _T(" ") + myLon;
-	//wxMessageBox(cmdstart);
-	//wxProcess* process;
-
-	//process = new wxProcess;
-
-	int m_server_pid;
-
-	m_server_pid = wxExecute(cmdstart, wxEXEC_ASYNC | wxEXEC_HIDE_CONSOLE, 0);
-
-
-
-	//char* myArgs[] = { "c:/ppp/3/MyAISplayer.py",   , "222" };
-
-	//mainTest(3, myArgs);
-
-}
-
-void Dlg::OnTest(wxCommandEvent& event){
-	
-	//wxString cmdstart; // = _T("C:/ppp/play.bat");
-	//wxString dir = _T("c:/ppp/6/");
-	//cmdstart = dir + _T("pyconsole.exe") + _T(" ") + _T("MyAISplayer.py") + _T(" ") + _T("111") + _T(" ") + _T("111") + _T(" ") + _T("53.4") + _T(" ") + _T("6.2");
-	//wxProcess* process;
-
-	//process = new wxProcess;
-
-	//int m_server_pid;
-
-	//m_server_pid = wxExecute(cmdstart, wxEXEC_ASYNC | wxEXEC_SHOW_CONSOLE | wxEXEC_MAKE_GROUP_LEADER, process, 0);
-
-	SendAIS(55, 6.6, 53.4, 6.2);
-
-	//char* myArgs[] = { "this", "MyAISplayer.py", "111"  , "111", "53.4", "6.2" };
-
-	//int myTest;
-
-	//myTest = mainTest(6, myArgs);
-
-	//wxMessageBox(wxString::Format(_T("%i"), myTest));
-
-}
-
-*/

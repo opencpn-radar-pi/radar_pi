@@ -34,7 +34,7 @@
 
 #include "ShipDrivergui.h"
 #include "ShipDriver_pi.h"
-
+#include "AisMaker.h"
 #include <wx/utils.h>
 #include <wx/gdicmn.h>
 #include <sstream>
@@ -72,6 +72,8 @@ public:
 
 // An identifier to notify the application when the // work is done #define ID_COUNTED_COLORS    100
 
+class AisMaker;
+
 class Dlg : public ShipDriverBase
 {
 public:
@@ -100,6 +102,12 @@ public:
 		double initLon;
 		double stepLat;
 		double stepLon;
+		AisMaker* myAIS;
+		wxTextFile* nmeafile;
+
+		bool m_bUseAis;
+		bool m_bUseFile;
+		wxString m_tMMSI;
 
 private:
 		void Notify();
@@ -141,7 +149,8 @@ private:
 		void OnStandby(wxCommandEvent& event);
 		void OnAuto(wxCommandEvent& event);
 
-		bool m_bAuto;
+		bool m_bAuto;	
+		long m_iMMSI;
 
 };
 

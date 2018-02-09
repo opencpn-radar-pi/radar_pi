@@ -15,7 +15,7 @@ SET(TITLE_NAME ShipDriver)
 SET(CPACK_PACKAGE_CONTACT "Mike Rossiter")
 
 SET(VERSION_MAJOR "0")
-SET(VERSION_MINOR "4")
+SET(VERSION_MINOR "5")
 
 #SET(CMAKE_BUILD_TYPE Debug)
 
@@ -38,6 +38,8 @@ SET(SRC_ShipDriver
 	    src/ShipDrivergui_impl.h
 		src/ocpn_plugin.h
 		src/folder.xpm
+		src/AisMaker.h
+		src/AisMaker.cpp
 	)
 
 

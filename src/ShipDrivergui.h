@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version Jan 25 2018)
+// C++ code generated with wxFormBuilder (version Jan 23 2018)
 // http://www.wxformbuilder.org/
 //
 // PLEASE DO *NOT* EDIT THIS FILE!
@@ -24,6 +24,8 @@
 #include <wx/stattext.h>
 #include <wx/timer.h>
 #include <wx/dialog.h>
+#include <wx/checkbox.h>
+#include <wx/statbox.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -56,6 +58,7 @@ class ShipDriverBase : public wxDialog
 		wxButton* m_buttonPlus1;
 		
 		// Virtual event handlers, overide them in your derived class
+		virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
 		virtual void OnMidships( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStart( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStop( wxCommandEvent& event ) { event.Skip(); }
@@ -79,6 +82,28 @@ class ShipDriverBase : public wxDialog
 		
 		ShipDriverBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 300,300 ), long style = wxDEFAULT_DIALOG_STYLE ); 
 		~ShipDriverBase();
+	
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class shipdriverPreferences
+///////////////////////////////////////////////////////////////////////////////
+class shipdriverPreferences : public wxDialog 
+{
+	private:
+	
+	protected:
+		wxStdDialogButtonSizer* m_sdbSizer1;
+		wxButton* m_sdbSizer1OK;
+		wxButton* m_sdbSizer1Cancel;
+	
+	public:
+		wxCheckBox* m_cbTransmitAis;
+		wxCheckBox* m_cbAisToFile;
+		wxTextCtrl* m_textCtrlMMSI;
+		
+		shipdriverPreferences( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Preferences"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 222,214 ), long style = wxCAPTION ); 
+		~shipdriverPreferences();
 	
 };
 

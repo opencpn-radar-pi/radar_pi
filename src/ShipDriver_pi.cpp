@@ -81,6 +81,20 @@ ShipDriver_pi::~ShipDriver_pi(void)
 {
      //delete _img_ShipDriver_pi;
      delete _img_ShipDriverIcon;
+
+	 if (m_pDialog){
+
+		 wxFileConfig *pConf = GetOCPNConfigObject();;
+
+		 if (pConf) {
+
+			 pConf->SetPath(_T("/Settings/otidalroute"));
+
+			 pConf->Write(_T("shipdriverUseAis"), m_bCopyUseAis);
+			 pConf->Write(_T("shipdriverUseFile"), m_bCopyUseFile);
+			 pConf->Write(_T("shipdriverMMSI"), m_tCopyMMSI);
+		 }
+	 }
      
 }
 
@@ -132,6 +146,7 @@ int ShipDriver_pi::Init(void)
 			  WANTS_CURSOR_LATLON |
 			  WANTS_NMEA_SENTENCES|
 			  WANTS_AIS_SENTENCES|
+			  WANTS_PREFERENCES|
               WANTS_CONFIG           
            );
 }
@@ -221,6 +236,41 @@ void ShipDriver_pi::SetColorScheme(PI_ColorScheme cs)
       DimeWindow(m_pDialog);
 }
 
+void ShipDriver_pi::ShowPreferencesDialog(wxWindow* parent)
+{
+	shipdriverPreferences *Pref = new shipdriverPreferences(parent);
+
+	Pref->m_cbTransmitAis->SetValue(m_bCopyUseAis);
+	Pref->m_cbAisToFile->SetValue(m_bCopyUseFile);
+	Pref->m_textCtrlMMSI->SetValue(m_tCopyMMSI);
+
+	if (Pref->ShowModal() == wxID_OK) {
+		
+		bool copyAis = Pref->m_cbTransmitAis->GetValue();
+		bool copyFile = Pref->m_cbAisToFile->GetValue();
+		wxString copyMMSI = Pref->m_textCtrlMMSI->GetValue();
+
+		if (m_bCopyUseAis != copyAis || m_bCopyUseFile != copyFile || m_tCopyMMSI != copyMMSI) {
+			m_bCopyUseAis = copyAis;
+			m_bCopyUseFile = copyFile;
+			m_tCopyMMSI = copyMMSI;
+		}
+
+		if (m_pDialog)
+		{		
+			m_pDialog->m_bUseAis = m_bCopyUseAis;
+			m_pDialog->m_bUseFile = m_bCopyUseFile;
+			m_pDialog->m_tMMSI = m_tCopyMMSI;
+		}
+		
+		SaveConfig();
+
+		RequestRefresh(m_parent_window); // refresh main window
+	}
+
+}
+
+
 void ShipDriver_pi::OnToolbarToolCallback(int id)
 {
 	bool starting = false;
@@ -275,7 +325,10 @@ bool ShipDriver_pi::LoadConfig(void)
       {
             pConf->SetPath ( _T( "/Settings/ShipDriver_pi" ) );
 			pConf->Read ( _T( "ShowShipDriverIcon" ), &m_bShipDriverShowIcon, 1 );
-           
+			m_bCopyUseAis = pConf->Read(_T("shipdriverUseAis"), 1);
+			m_bCopyUseFile = pConf->Read(_T("shipdriverUseFile"), 1);
+			m_tCopyMMSI = pConf->Read(_T("shipdriverMMSI"), _T("12345"));
+
             m_hr_dialog_x =  pConf->Read ( _T ( "DialogPosX" ), 40L );
             m_hr_dialog_y =  pConf->Read ( _T ( "DialogPosY" ), 140L);
 			m_hr_dialog_sx = pConf->Read ( _T ( "DialogSizeX"), 330L);
@@ -303,7 +356,10 @@ bool ShipDriver_pi::SaveConfig(void)
       {
             pConf->SetPath ( _T ( "/Settings/ShipDriver_pi" ) );
 			pConf->Write ( _T ( "ShowShipDriverIcon" ), m_bShipDriverShowIcon );
-          
+			pConf->Write(_T("shipdriverUseAis"), m_bCopyUseAis);
+			pConf->Write(_T("shipdriverUseFile"), m_bCopyUseFile);
+			pConf->Write(_T("shipdriverMMSI"), m_tCopyMMSI);
+
             pConf->Write ( _T ( "DialogPosX" ),   m_hr_dialog_x );
             pConf->Write ( _T ( "DialogPosY" ),   m_hr_dialog_y );
 			pConf->Write ( _T ( "DialogSizeX"),   m_hr_dialog_sx);
@@ -320,7 +376,7 @@ void ShipDriver_pi::OnShipDriverDialogClose()
     m_bShowShipDriver = false;
     SetToolbarItemState( m_leftclick_tool_id, m_bShowShipDriver);
     m_pDialog->Hide();
-   // SaveConfig();
+    SaveConfig();
 
     RequestRefresh(m_parent_window); // refresh main window
 }

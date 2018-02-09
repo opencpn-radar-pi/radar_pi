@@ -41,7 +41,7 @@
 #include "ShipDrivergui_impl.h"
 
 #define     PLUGIN_VERSION_MAJOR    0
-#define     PLUGIN_VERSION_MINOR    4
+#define     PLUGIN_VERSION_MINOR    5
 
 #define     MY_API_VERSION_MAJOR    1
 #define     MY_API_VERSION_MINOR    6
@@ -101,7 +101,7 @@ public:
       double GetCursorLat(void) { return m_cursor_lat; }
 	  double GetCursorLon(void) { return m_cursor_lon; }
 	  
-	  
+	  void ShowPreferencesDialog(wxWindow* parent);
 	  
 private:
 
@@ -127,6 +127,11 @@ private:
       int				m_leftclick_tool_id;
 	  bool				m_bShipDriverShowIcon;
 	  bool				m_bShowShipDriver;
+
+	  bool m_bCopyUseAis;
+	  bool m_bCopyUseFile;
+	  wxString m_tCopyMMSI;
+
 };
 
 
