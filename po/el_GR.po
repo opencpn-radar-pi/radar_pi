@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-09 10:52+0000\n"
+"POT-Creation-Date: 2018-02-10 12:43+0000\n"
 "PO-Revision-Date: 2018-01-08 16:56-0500\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Greek\n"
@@ -25,6 +25,30 @@ msgstr ""
 msgid "  Heading:  "
 msgstr ""
 #
+msgid "+1"
+msgstr ""
+#
+msgid "+10"
+msgstr ""
+#
+msgid "-1"
+msgstr ""
+#
+msgid "-10"
+msgstr ""
+#
+msgid "0"
+msgstr ""
+#
+msgid "000"
+msgstr ""
+#
+msgid "100"
+msgstr ""
+#
+msgid "AIS"
+msgstr ""
+#
 msgid "Almost a simulator"
 msgstr ""
 #
@@ -37,10 +61,22 @@ msgstr ""
 msgid "Hand Steering"
 msgstr ""
 #
+msgid "MMSI"
+msgstr ""
+#
+msgid "MMSI must be a number, please change in Preferences"
+msgstr ""
+#
 msgid "Midships"
 msgstr ""
 #
 msgid "Please right-click and choose vessel start position"
+msgstr ""
+#
+msgid "Preferences"
+msgstr ""
+#
+msgid "Save to file"
 msgstr ""
 #
 msgid "Select Vessel Start Position"
@@ -55,14 +91,20 @@ msgstr ""
 msgid "Speed Control"
 msgstr ""
 #
-msgid "Standby"
+msgid "Start"
 msgstr ""
 #
-msgid "Start"
+msgid "Stby"
 msgstr ""
 #
 msgid "Stop"
 msgstr ""
 #
 msgid "Tiller Control"
+msgstr ""
+#
+msgid "Transmit"
+msgstr ""
+#
+msgid "|"
 msgstr ""

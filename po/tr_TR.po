@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-09 10:52+0000\n"
+"POT-Creation-Date: 2018-02-10 12:43+0000\n"
 "PO-Revision-Date: 2018-01-08 16:57-0500\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Turkish\n"
@@ -27,6 +27,30 @@ msgstr "         Deniz mili(sürat)"
 msgid "  Heading:  "
 msgstr "Rota:  "
 #
+msgid "+1"
+msgstr ""
+#
+msgid "+10"
+msgstr ""
+#
+msgid "-1"
+msgstr ""
+#
+msgid "-10"
+msgstr ""
+#
+msgid "0"
+msgstr ""
+#
+msgid "000"
+msgstr ""
+#
+msgid "100"
+msgstr ""
+#
+msgid "AIS"
+msgstr ""
+#
 msgid "Almost a simulator"
 msgstr "Neredeyse bir simülasyon"
 #
@@ -39,11 +63,23 @@ msgstr ""
 msgid "Hand Steering"
 msgstr ""
 #
+msgid "MMSI"
+msgstr ""
+#
+msgid "MMSI must be a number, please change in Preferences"
+msgstr ""
+#
 msgid "Midships"
 msgstr "Gemi ortası"
 #
 msgid "Please right-click and choose vessel start position"
 msgstr "Lütfen sağ tıklayıp geminin başlangıç posiyonunu seçin"
+#
+msgid "Preferences"
+msgstr ""
+#
+msgid "Save to file"
+msgstr ""
 #
 msgid "Select Vessel Start Position"
 msgstr "Geminin başlangıç pozisyonunu seçin"
@@ -57,11 +93,11 @@ msgstr "GemiSürücü oyuncusu"
 msgid "Speed Control"
 msgstr ""
 #
-msgid "Standby"
-msgstr "Kapatma"
-#
 msgid "Start"
 msgstr "Başlangıç"
+#
+msgid "Stby"
+msgstr ""
 #
 msgid "Stop"
 msgstr ""
@@ -70,8 +106,20 @@ msgstr ""
 msgid "Tiller Control"
 msgstr "Dümen kontrolü"
 #
+msgid "Transmit"
+msgstr ""
+#
+msgid "|"
+msgstr ""
+#
+#
 #~ msgid "Emerg. Stop"
 #~ msgstr "Acil Dur"
 #
+#
 #~ msgid "Engine control"
 #~ msgstr "Motor Kontrol"
+#
+#
+#~ msgid "Standby"
+#~ msgstr "Kapatma"

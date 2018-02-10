@@ -102,6 +102,9 @@ void Dlg::OnStart(wxCommandEvent& event) {
 			nmeafile->Open();
 			nmeafile->Clear();
 		}
+		else {
+			m_bUseFile = false;
+		}
 	}
 	m_textCtrlRudderStbd->SetValue(_T(""));
 	m_textCtrlRudderPort->SetValue(_T(""));

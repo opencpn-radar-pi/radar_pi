@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-09 10:52+0000\n"
+"POT-Creation-Date: 2018-02-10 12:43+0000\n"
 "PO-Revision-Date: 2018-01-08 16:56-0500\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: French\n"
@@ -27,6 +27,30 @@ msgstr "         Noeuds"
 msgid "  Heading:  "
 msgstr "Direction : "
 #
+msgid "+1"
+msgstr ""
+#
+msgid "+10"
+msgstr ""
+#
+msgid "-1"
+msgstr ""
+#
+msgid "-10"
+msgstr ""
+#
+msgid "0"
+msgstr ""
+#
+msgid "000"
+msgstr ""
+#
+msgid "100"
+msgstr ""
+#
+msgid "AIS"
+msgstr ""
+#
 msgid "Almost a simulator"
 msgstr "Presque un simulateur"
 #
@@ -39,6 +63,12 @@ msgstr ""
 msgid "Hand Steering"
 msgstr ""
 #
+msgid "MMSI"
+msgstr ""
+#
+msgid "MMSI must be a number, please change in Preferences"
+msgstr ""
+#
 msgid "Midships"
 msgstr ""
 #
@@ -46,6 +76,12 @@ msgid "Please right-click and choose vessel start position"
 msgstr ""
 "S’il vous plaît, faites un clic droit & choisissez la position de départ du "
 "bateau"
+#
+msgid "Preferences"
+msgstr ""
+#
+msgid "Save to file"
+msgstr ""
 #
 msgid "Select Vessel Start Position"
 msgstr "Choisissez la position de départ du bateau"
@@ -59,11 +95,11 @@ msgstr "Exécuter Shipdriver"
 msgid "Speed Control"
 msgstr ""
 #
-msgid "Standby"
-msgstr "Mise en veille"
-#
 msgid "Start"
 msgstr "Départ"
+#
+msgid "Stby"
+msgstr ""
 #
 msgid "Stop"
 msgstr ""
@@ -72,8 +108,20 @@ msgstr ""
 msgid "Tiller Control"
 msgstr "Contrôle de la barre"
 #
+msgid "Transmit"
+msgstr ""
+#
+msgid "|"
+msgstr ""
+#
+#
 #~ msgid "Emerg. Stop"
 #~ msgstr "Arrêt d'urgence"
 #
+#
 #~ msgid "Engine control"
 #~ msgstr "Contrôle du moteur"
+#
+#
+#~ msgid "Standby"
+#~ msgstr "Mise en veille"
