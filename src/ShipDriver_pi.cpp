@@ -325,8 +325,8 @@ bool ShipDriver_pi::LoadConfig(void)
       {
             pConf->SetPath ( _T( "/Settings/ShipDriver_pi" ) );
 			pConf->Read ( _T( "ShowShipDriverIcon" ), &m_bShipDriverShowIcon, 1 );
-			m_bCopyUseAis = pConf->Read(_T("shipdriverUseAis"), 0);
-			m_bCopyUseFile = pConf->Read(_T("shipdriverUseFile"), 0);
+			pConf->Read(_T("shipdriverUseAis"), &m_bCopyUseAis, 0);
+			pConf->Read(_T("shipdriverUseFile"), &m_bCopyUseFile, 0);
 			m_tCopyMMSI = pConf->Read(_T("shipdriverMMSI"), _T("12345"));
 
             m_hr_dialog_x =  pConf->Read ( _T ( "DialogPosX" ), 40L );
