@@ -190,44 +190,44 @@ static const std::vector<std::pair<uint8_t, char>> SIXBIT_ASCII_TABLE = {
 		string RepeatIndicator = Int2BString(0, 2);
 
 		wxString MMSI = wxString::Format(_T("%i"), iMMSI);
-		string sMMSI = MMSI.mb_str();
+		string sMMSI = (const char*)MMSI.mb_str();
 
 		string oMMSI = Int2BString(Str2Int(sMMSI, ""), 30);
 
 		string Spare1 = Int2BString(0, 8);
 
 		wxString sChannel;
-		string Channel = sChannel.mb_str();
+		string Channel = (const char*)sChannel.mb_str();
 
 		wxString SPEED = wxString::Format(_T("%f"), spd*10);
-		string sSPEED = SPEED.mb_str();
+		string sSPEED = (const char*)SPEED.mb_str();
 		float  sog = Str2Float(sSPEED, "");
 		string SOG = Int2BString(sog, 10);
 
 		string PosAccuracy = Int2BString(1, 1);
 
 		wxString LON = wxString::Format(_T("%f"), ilon);
-		string sLON = LON.mb_str();
+		string sLON = (const char*)LON.mb_str();
 		float flon = Str2Float(sLON, "");
 		string Longitude = Int2BString(int(flon * 600000), 28);
 
 		wxString LAT = wxString::Format(_T("%f"), ilat);
-		string sLAT = LAT.mb_str();
+		string sLAT = (const char*)LAT.mb_str();
 		float flat = Str2Float(sLAT, "");
 		string Latitude = Int2BString(int(flat * 600000), 27);
 
 		wxString COURSE = wxString::Format(_T("%f"), crse);
-		string sCOURSE = COURSE.mb_str();
+		string sCOURSE = (const char*)COURSE.mb_str();
 		float cog = Str2Float(sCOURSE, "");
 		string COG = Int2BString(int(cog * 10), 12);
 
 		wxString HEADING = wxString::Format(_T("%f"), hdg);
-		string sHEADING = HEADING.mb_str();
+		string sHEADING = (const char*)HEADING.mb_str();
 		int	heading = Str2Int(sHEADING, "");
 		string Heading = Int2BString(heading, 9);
 
 		wxString TIMESTAMP;
-		string sTIMESTAMP = TIMESTAMP.mb_str();
+		string sTIMESTAMP = (const char*)TIMESTAMP.mb_str();
 		string tStamp = sTIMESTAMP;
 		int	tSecond = wxGetUTCTime();
 		//123456; // Str2Int(tStamp[tStamp.length() - 2:len(tStamp)], "");
