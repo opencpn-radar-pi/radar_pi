@@ -63,9 +63,9 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& 
 	if (pConf) {
 		pConf->SetPath(_T("/Settings/ShipDriver_pi"));
 
-		pConf->Read(_T("shipdriverUseAis"), &m_bUseAis);
-		pConf->Read(_T("shipdriverUseFile"), &m_bUseFile);
-		pConf->Read(_T("shipdriverMMSI"), &m_tMMSI);
+		pConf->Read(_T("shipdriverUseAis"), &m_bUseAis, 0);
+		pConf->Read(_T("shipdriverUseFile"), &m_bUseFile, 0);
+		pConf->Read(_T("shipdriverMMSI"), &m_tMMSI, "12345");
 	}
 
 }
