@@ -27,6 +27,12 @@ IF(SHIPDRIVER_USE_SVG)
   ADD_DEFINITIONS(-DSHIPDRIVER_USE_SVG)
 ENDIF(SHIPDRIVER_USE_SVG)
 
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-std=c++11 HAS_STD_CPP11_FLAG)
+if(HAS_STD_CPP11_FLAG)
+  add_compile_options(-std=c++11)
+endif()
+
 SET(SRC_ShipDriver
         src/ShipDriver_pi.h
         src/ShipDriver_pi.cpp
