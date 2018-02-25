@@ -114,7 +114,7 @@ bool GarminHDControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, N
     s.sin_len = sizeof(sockaddr_in);
 #endif
 
-    r = bind(m_radar_socket, (struct sockaddr *)&s, sizeof(s));
+    r = ::bind(m_radar_socket, (struct sockaddr *)&s, sizeof(s));
   }
 
   if (r) {

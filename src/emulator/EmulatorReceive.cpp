@@ -166,10 +166,7 @@ void *EmulatorReceive::Entry(void) {
     if (r > 0) {
       if (m_receive_socket != INVALID_SOCKET && FD_ISSET(m_receive_socket, &fdin)) {
         uint8_t data[10];
-        union {
-          sockaddr_storage addr;
-          sockaddr_in ipv4;
-        } rx_addr;
+        sockaddr_in rx_addr;
 
         socklen_t rx_len = sizeof(rx_addr);
         r = recvfrom(m_receive_socket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);

@@ -42,13 +42,13 @@ extern GLdouble GetShaderLinkTime(void);
 
 extern void SetUniformValues(GLuint program, struct uniform_info uniforms[]);
 
+PLUGIN_END_NAMESPACE
+
 /*
- * These pointers are only valid after calling ShadersSupported.
- */
+* These pointers are only valid after calling ShadersSupported.
+*/
 #define SHADER_FUNCTION_LIST(proc, name) extern proc name;
 #include "shaderutil.inc"
 #undef SHADER_FUNCTION_LIST
-
-PLUGIN_END_NAMESPACE
 
 #endif /* SHADER_UTIL_H */

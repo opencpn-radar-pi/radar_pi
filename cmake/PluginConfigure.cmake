@@ -48,7 +48,7 @@ IF(MSVC)
     ADD_DEFINITIONS(-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_DEPRECATE)
 ENDIF(MSVC)
 
-SET(wxWidgets_USE_LIBS base core net xml html adv gl)
+SET(wxWidgets_USE_LIBS base core net xml html adv gl aui)
 SET(BUILD_SHARED_LIBS TRUE)
 
 SET( wxWidgets_USE_DEBUG OFF)

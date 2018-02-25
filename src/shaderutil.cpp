@@ -32,8 +32,6 @@
 
 #include "shaderutil.h"
 
-PLUGIN_BEGIN_NAMESPACE
-
 #if defined(WIN32)
 #define SET_FUNCTION_POINTER(name) wglGetProcAddress(name)
 typedef PROC FunctionPointer;
@@ -50,6 +48,8 @@ typedef __GLXextFuncPtr FunctionPointer;
 #define SHADER_FUNCTION_LIST(proc, name) proc name;
 #include "shaderutil.inc"
 #undef SHADER_FUNCTION_LIST
+
+PLUGIN_BEGIN_NAMESPACE
 
 GLboolean ShadersSupported(void) {
   GLboolean ok = 1;

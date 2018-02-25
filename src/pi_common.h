@@ -47,14 +47,10 @@ extern "C" {
 #include "GL/gl.h"
 #include "GL/glext.h"
 #include "GL/glu.h"
-#endif
-
-#ifdef __WXOSX__
+#elif __WXOSX__
 #include <OpenGL/gl3.h>  // from ..../Frameworks/OpenGL.framework/Headers/gl.h
 #define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
-#endif
-
-#ifdef WIN32
+#else
 #include <WinSock2.h>
 #include <ws2tcpip.h>
 #pragma comment(lib, "Ws2_32.lib")

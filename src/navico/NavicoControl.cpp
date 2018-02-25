@@ -93,7 +93,7 @@ bool NavicoControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, Net
     s.sin_len = sizeof(sockaddr_in);
 #endif
 
-    r = bind(m_radar_socket, (struct sockaddr *)&s, sizeof(s));
+    r = ::bind(m_radar_socket, (struct sockaddr *)&s, sizeof(s));
   }
 
   if (r) {
@@ -235,7 +235,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
       if (v > 255) {
         v = 255;
       }
-      uint8_t cmd[] = {0x06, 0xc1, 0x02, 0, 0, 0, autoValue, 0, 0, 0, (uint8_t)v};
+      uint8_t cmd[] = {0x06, 0xc1, 0x02, 0, 0, 0, (uint8_t) autoValue, 0, 0, 0, (uint8_t)v};
       LOG_VERBOSE(wxT("radar_pi: %s Sea: %d auto %d"), m_name.c_str(), value, autoValue);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
@@ -257,7 +257,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
       if (v > 255) {
         v = 255;
       }
-      uint8_t cmd[] = {0x6, 0xc1, 0x05, 0, 0, 0, autoValue, 0, 0, 0, (uint8_t)v};
+      uint8_t cmd[] = {0x6, 0xc1, 0x05, 0, 0, 0, (uint8_t) autoValue, 0, 0, 0, (uint8_t)v};
       LOG_VERBOSE(wxT("radar_pi: %s command Tx CT_SIDE_LOBE_SUPPRESSION: %d auto %d"), m_name.c_str(), value, autoValue);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;

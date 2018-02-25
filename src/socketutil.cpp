@@ -193,7 +193,7 @@ SOCKET startUDPMulticastReceiveSocket(NetworkAddress &interface_address, Network
     goto fail;
   }
 
-  if (bind(rx_socket, (struct sockaddr *)&listenAddress, sizeof(listenAddress))) {
+  if (::bind(rx_socket, (struct sockaddr *)&listenAddress, sizeof(listenAddress)) < 0) {
     error_message << _("Cannot bind UDP socket to port ") << ntohs(mcast_address.port);
     goto fail;
   }
@@ -238,7 +238,7 @@ SOCKET GetLocalhostServerTCPSocket() {
     return INVALID_SOCKET;
   }
 
-  if (bind(server, (struct sockaddr *)&adr, sizeof(adr))) {
+  if (::bind(server, (struct sockaddr *)&adr, sizeof(adr)) < 0) {
     wxLogError(wxT("radar_pi: cannot bind socket to loopback address"));
     closesocket(server);
     return INVALID_SOCKET;
