@@ -1407,7 +1407,8 @@ wxString RadarInfo::GetRadarStateText() {
       break;
     case RADAR_TRANSMIT:
       o = _("Transmitting");
-      if (next_state_change > 0 && m_timed_idle.GetState() == RCS_MANUAL && m_arpa && m_arpa->GetTargetCount() > 0) {
+      if (next_state_change > 0 && m_timed_idle.GetState() == RCS_MANUAL &&
+        (m_arpa && m_arpa->GetTargetCount() > 0 || m_pi->m_guard_bogey_seen)) {
         o << wxT(" ") << _("for targets");
         return o;
       }
@@ -1450,7 +1451,8 @@ void RadarInfo::CheckTimedTransmit() {
 
   if (m_timed_idle_hardware) {
     // Send a reset of the countdown if ARPA targets are found
-    if (m_control && m_arpa && m_arpa->GetTargetCount() > 0) {
+    if ((m_control && m_arpa && m_arpa->GetTargetCount() > 0) ||
+                                       m_pi->m_guard_bogey_seen) {
       // Send another 'enable timed transmit' followed by a transmit command..
       // The idea is that this enables transmit but does reset the countdown timer
       // in the radar.
@@ -1468,8 +1470,8 @@ void RadarInfo::CheckTimedTransmit() {
     return;  // Timers are just stuck at existing value if radar is off.
   }
 
-  // If there are (M)ARPA targets being tracked we should not go to standbye, targets would be lost
-  if (m_arpa->GetTargetCount() > 0) {
+  // If there are (M)ARPA targets being tracked or zone alarm we should not go to standbye, targets would be lost
+  if (m_arpa->GetTargetCount() > 0 || m_pi->m_guard_bogey_seen) {
     return;
   }
 
