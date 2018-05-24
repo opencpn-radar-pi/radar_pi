@@ -17,9 +17,9 @@ SET(TITLE_NAME Radar)
 SET(CPACK_PACKAGE_CONTACT "kees@verruijt.net")
 SET(VERSION_MAJOR "4")
 #SET(CMAKE_BUILD_TYPE Debug)
-SET(VERSION_MINOR "927")
+SET(VERSION_MINOR "928")
 SET(VERSION_PATCH "0")
-SET(VERSION_DATE "2017-09-27")
+SET(VERSION_DATE "2018-05-24")
 
 INCLUDE("cmake/PluginConfigure.cmake")
 
@@ -62,6 +62,7 @@ SET(SRC_GARMIN_XHD
 
 SET(SRC_NAVICO
             src/navico/br24type.h
+            src/navico/br3gtype.h
             src/navico/br4gatype.h
             src/navico/br4gbtype.h
             src/navico/haloatype.h
