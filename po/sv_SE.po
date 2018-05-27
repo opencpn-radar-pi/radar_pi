@@ -237,7 +237,7 @@ msgstr "Brusfilter"
 #
 #: src\ControlsDialog.cpp:707
 msgid "Target expansion"
-msgstr "Målförstärkning"
+msgstr "Målförstoring"
 
 #
 #: src\ControlsDialog.cpp:715

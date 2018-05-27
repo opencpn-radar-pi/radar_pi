@@ -82,7 +82,7 @@
 #include "garminxhd/garminxhdtype.h"
 
 #include "navico/br24type.h"
-
+#include "navico/br3gtype.h"
 #include "navico/br4gatype.h"
 #include "navico/br4gbtype.h"
 
