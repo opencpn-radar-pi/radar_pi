@@ -403,6 +403,7 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   void SetCursorLatLon(double lat, double lon);
   bool MouseEventHook(wxMouseEvent &event);
   bool m_guard_bogey_confirmed;
+  bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
 
   // Other public methods
 
@@ -561,7 +562,6 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
 #define HEADING_TIMEOUT (5)
 
   GuardZoneBogey *m_bogey_dialog;
-  bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
   time_t m_alarm_sound_timeout;
   time_t m_guard_bogey_timeout;  // If we haven't seen bogeys for this long we reset confirm
 #define CONFIRM_RESET_TIMEOUT (15)
