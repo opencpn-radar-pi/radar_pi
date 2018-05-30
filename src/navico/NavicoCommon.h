@@ -4,7 +4,7 @@
 #endif
 
 #ifndef NAVICO_SPOKE_LEN
-#define NAVICO_SPOKE_LEN 512
+#define NAVICO_SPOKE_LEN 1024
 #endif
 
 #if SPOKES_MAX < NAVICO_SPOKES

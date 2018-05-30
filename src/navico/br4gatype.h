@@ -36,3 +36,4 @@ DEFINE_RADAR(RT_4GA,                                      /* Type */
              NavicoReceive(pi, ri, report4G_A, data4G_A), /* Receive class constructor */
              NavicoControl(send4G_A)                      /* Send/Control class constructor */
 )
+
