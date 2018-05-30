@@ -206,6 +206,7 @@ void NavicoReceive::ProcessFrame(const uint8_t *data, int len) {
         break;
       }
 
+      case RT_3G:
       case RT_4GA:
       case RT_4GB: {
         short int large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
@@ -622,7 +623,7 @@ struct RadarReport_02C4_99 {       // length 99
 struct RadarReport_03C4_129 {
   uint8_t what;
   uint8_t command;
-  uint8_t radar_type;  // I hope! 01 = 4G, 08 = 3G, 0F = BR24
+  uint8_t radar_type;  // I hope! 01 = 4G and new 3G, 08 = 3G, 0F = BR24
   uint8_t u00[55];     // Lots of unknown
   uint16_t firmware_date[16];
   uint16_t firmware_time[16];
@@ -652,6 +653,13 @@ struct RadarReport_08C4_18 {             // 08 c4  length 18
   uint16_t field10;                      // 10-11
   uint8_t noise_rejection;               // 12    noise rejection
   uint8_t target_sep;                    // 13
+};
+
+struct RadarReport_12C4_66 {   // 12 C4 with length 66
+  // Device Serial number is sent once upon network initialization only
+  uint8_t what;                // 0   0x12
+  uint8_t command;             // 1   0xC4
+  uint8_t serialno[12];        // 2-13 Device serial number at 3G (All?)  
 };
 #pragma pack(pop)
 
@@ -738,7 +746,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, int len) {
                     s->target_expansion);
         break;
       }
-
+      
       case (129 << 8) + 0x03: {  // 129 bytes starting with 03 C4
         RadarReport_03C4_129 *s = (RadarReport_03C4_129 *)report;
         LOG_RECEIVE(wxT("radar_pi: %s RadarReport_03C4_129 radar_type=%u"), m_ri->m_name.c_str(), s->radar_type);
@@ -834,6 +842,16 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, int len) {
         }
         break;
       }
+
+      case (66 << 8) + 0x12: {  // 66 bytes starting with 12 C4
+        RadarReport_12C4_66 *s = (RadarReport_12C4_66 *)report;
+        wxString sn = "#";
+        sn << s->serialno;
+        LOG_INFO(wxT("radar_pi: %s serial number is: %s"), m_ri->m_name.c_str(), sn);
+        LOG_RECEIVE(wxT("radar_pi: %s RadarReport_12C4_66 serialno=%s"), m_ri->m_name.c_str(), sn);
+        break;
+      }
+      
       default: {
         if (m_pi->m_settings.verbose >= 2) {
           LOG_BINARY_RECEIVE(wxT("received unknown report"), report, len);
