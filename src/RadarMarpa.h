@@ -51,8 +51,8 @@ class Position;
 #define TARGET_SEARCH_RADIUS2 (15)  // radius of target search area for pass 1
 #define SCAN_MARGIN (150)           // number of lines that a next scan of the target may have moved
 #define SCAN_MARGIN2 (1000)         // if target is refreshed after this time you will be shure it is the next sweep
-#define MAX_CONTOUR_LENGTH (601)    // defines maximal size of target contour
-#define MAX_TARGET_DIAMETER (200)   // target will be set lost if diameter larger than this value
+#define MAX_CONTOUR_LENGTH (601)    // defines maximal size of target contour in pixels
+#define MAX_TARGET_DIAMETER (200)   // target will be set lost if diameter in pixels is larger than this value
 #define MAX_LOST_COUNT (3)          // number of sweeps that target can be missed before it is set to lost
 
 #define FOR_DELETION (-2)  // status of a duplicate target used to delete a target

@@ -688,6 +688,7 @@ void ArpaTarget::RefreshTarget(int dist) {
    }*/
 
   // PREDICTION CYCLE
+
   m_position.time = time1;                                                // estimated new target time
   delta_t = ((double)((m_position.time - prev_X.time).GetLo())) / 1000.;  // in seconds
   if (m_status == 0) {
@@ -712,7 +713,9 @@ void ArpaTarget::RefreshTarget(int dist) {
     return;
   }
   m_expected = pol;  // save expected polar position
-  // Measurement cycle
+
+  //MEASUREMENT CYCLE
+
   // now search for the target at the expected polar position in pol
   int dist1 = dist;
   Polar back = pol;
@@ -880,13 +883,14 @@ void ArpaTarget::RefreshTarget(int dist) {
 bool ArpaTarget::FindNearestContour(Polar* pol, int dist) {
   // make a search pattern along a square
   // returns the position of the nearest blob found in pol
-  // dist is search radius (1 more or less)
+  // dist is search radius (1 more or less) in radial pixels
   int a = pol->angle;
   int r = pol->r;
   if (dist < 2) dist = 2;
   for (int j = 1; j <= dist; j++) {
     int dist_r = j;
     int dist_a = (int)(326. / (double)r * j);  // 326/r: conversion factor to make squares
+	                                       // if r == 326 circle would be 28 * PI * 326 = 2048
     if (dist_a == 0) dist_a = 1;
     for (int i = 0; i <= dist_a; i++) {  // "upper" side
       PIX(a - i, r + dist_r);            // search starting from the middle
