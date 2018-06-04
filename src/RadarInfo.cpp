@@ -606,24 +606,24 @@ void RadarInfo::RenderGuardZone() {
   }
 }
 
-void RadarInfo::SetAutoRangeMeters(int meters) {
-  if (m_state.GetValue() == RADAR_TRANSMIT && m_range.GetState() == RCS_AUTO_1) {
-    // Don't adjust auto range meters continuously when it is oscillating a little bit (< 5%)
-    int test = 100 * m_previous_auto_range_meters / meters;
-    if (test < 95 || test > 105) {  //   range change required
-      // Compute a 'standard' distance. This will be slightly smaller.
-      meters = GetNearestRange(meters, m_pi->m_settings.range_units);
-      if (meters != m_range.GetValue()) {
-        if (m_pi->m_settings.verbose) {
-          LOG_VERBOSE(wxT("radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters, meters);
-        }
-        m_control->SetRange(meters);
-        m_previous_auto_range_meters = meters;
-      }
-    }
-  } else {
-    m_previous_auto_range_meters = 0;
-  }
+void RadarInfo::SetAutoRangeMeters(int autorange_to_set) {
+	int meters = autorange_to_set;
+	if (m_state.GetValue() == RADAR_TRANSMIT && m_range.GetState() == RCS_AUTO_1) {
+		// Compute a 'standard' distance. This will be slightly smaller.
+		meters = GetNearestRange(meters, m_pi->m_settings.range_units);
+		// Don't adjust auto range meters continuously when it is oscillating a little bit (< 5%)
+		int test = 100 * m_previous_auto_range_meters / meters;
+		if (test < 90 || test > 110) {  //   range change required
+			if (meters != m_range.GetValue()) {
+				LOG_VERBOSE(wxT("radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters, meters);
+				m_control->SetRange(meters);
+				m_previous_auto_range_meters = meters;
+			}
+		}
+	}
+	else {
+		m_previous_auto_range_meters = 0;
+	}
 }
 
 bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item) {
