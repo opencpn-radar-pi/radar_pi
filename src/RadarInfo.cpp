@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
-#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "GuardZone.h"
 #include "MessageBox.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
+#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -1407,7 +1407,7 @@ wxString RadarInfo::GetRadarStateText() {
     case RADAR_TRANSMIT:
       o = _("Transmitting");
       if (next_state_change > 0 && m_timed_idle.GetState() == RCS_MANUAL &&
-          (m_arpa && m_arpa->GetTargetCount() > 0 || m_pi->m_guard_bogey_seen)) {
+          ((m_arpa && m_arpa->GetTargetCount() > 0) || m_pi->m_guard_bogey_seen)) {
         o << wxT(" ") << _("for targets");
         return o;
       }
