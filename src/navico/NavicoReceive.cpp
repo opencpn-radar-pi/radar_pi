@@ -30,8 +30,8 @@
  ***************************************************************************
  */
 
-#include "MessageBox.h"
 #include "NavicoReceive.h"
+#include "MessageBox.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -270,12 +270,12 @@ void NavicoReceive::ProcessFrame(const uint8_t *data, int len) {
 
     SpokeBearing a = MOD_SPOKES(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
     SpokeBearing b = MOD_SPOKES(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
-    size_t len = NAVICO_SPOKE_LEN ;
-	uint8_t data_highres[NAVICO_SPOKE_LEN];
-	for (int i = 0; i < NAVICO_SPOKE_LEN / 2; i++) {
-		data_highres[2 * i] = (line->data[i] & 0x0f) << 4;
-		data_highres[2 * i + 1] = line->data[i] & 0xf0;
-	}
+    size_t len = NAVICO_SPOKE_LEN;
+    uint8_t data_highres[NAVICO_SPOKE_LEN];
+    for (int i = 0; i < NAVICO_SPOKE_LEN / 2; i++) {
+      data_highres[2 * i] = (line->data[i] & 0x0f) << 4;
+      data_highres[2 * i + 1] = line->data[i] & 0xf0;
+    }
     m_ri->ProcessRadarSpoke(a, b, data_highres, len, range_meters, time_rec);
   }
 }
@@ -655,11 +655,11 @@ struct RadarReport_08C4_18 {             // 08 c4  length 18
   uint8_t target_sep;                    // 13
 };
 
-struct RadarReport_12C4_66 {   // 12 C4 with length 66
+struct RadarReport_12C4_66 {  // 12 C4 with length 66
   // Device Serial number is sent once upon network initialization only
-  uint8_t what;                // 0   0x12
-  uint8_t command;             // 1   0xC4
-  uint8_t serialno[12];        // 2-13 Device serial number at 3G (All?)  
+  uint8_t what;          // 0   0x12
+  uint8_t command;       // 1   0xC4
+  uint8_t serialno[12];  // 2-13 Device serial number at 3G (All?)
 };
 #pragma pack(pop)
 
@@ -746,7 +746,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, int len) {
                     s->target_expansion);
         break;
       }
-      
+
       case (129 << 8) + 0x03: {  // 129 bytes starting with 03 C4
         RadarReport_03C4_129 *s = (RadarReport_03C4_129 *)report;
         LOG_RECEIVE(wxT("radar_pi: %s RadarReport_03C4_129 radar_type=%u"), m_ri->m_name.c_str(), s->radar_type);
@@ -851,7 +851,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, int len) {
         LOG_RECEIVE(wxT("radar_pi: %s RadarReport_12C4_66 serialno=%s"), m_ri->m_name.c_str(), sn);
         break;
       }
-      
+
       default: {
         if (m_pi->m_settings.verbose >= 2) {
           LOG_BINARY_RECEIVE(wxT("received unknown report"), report, len);

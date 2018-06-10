@@ -548,12 +548,12 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
         m_ri->m_range.Update(packet12->parm1);  // Range in meters
         return true;
 
-      //
-      // Garmin sends range in three separate packets, in the order 0x924, 0x925, 0x91d every
-      // two seconds.
-      // Auto High: 0x924 = 2, 0x925 = gain, 0x91d = 1
-      // Auto Low:  0x924 = 2, 0x925 = gain, 0x91d = 0
-      // Manual:    0x924 = 0, 0x925 = gain, 0x91d = 0 (could be last one used?)
+        //
+        // Garmin sends range in three separate packets, in the order 0x924, 0x925, 0x91d every
+        // two seconds.
+        // Auto High: 0x924 = 2, 0x925 = gain, 0x91d = 1
+        // Auto Low:  0x924 = 2, 0x925 = gain, 0x91d = 0
+        // Manual:    0x924 = 0, 0x925 = gain, 0x91d = 0 (could be last one used?)
 
       case 0x0924:  // AutoGain on/off
         LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x0924: autogain %d"), packet9->parm1);

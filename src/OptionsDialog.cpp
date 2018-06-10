@@ -56,7 +56,9 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
   //  Range Units options
 
   wxString RangeModeStrings[] = {
-      _("Mixed NM / short range m"), _("Kilometers"), _("Nautical Miles"),
+      _("Mixed NM / short range m"),
+      _("Kilometers"),
+      _("Nautical Miles"),
   };
 
   m_RangeUnits = new wxRadioBox(this, wxID_ANY, _("Range Units"), wxDefaultPosition, wxDefaultSize, ARRAY_SIZE(RangeModeStrings),
@@ -67,7 +69,9 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
   m_RangeUnits->SetSelection(m_settings.range_units);
 
   wxString GuardZoneStyleStrings[] = {
-      _("Shading"), _("Outline"), _("Shading + Outline"),
+      _("Shading"),
+      _("Outline"),
+      _("Shading + Outline"),
   };
   m_GuardZoneStyle = new wxRadioBox(this, wxID_ANY, _("Guard Zone Styling"), wxDefaultPosition, wxDefaultSize,
                                     ARRAY_SIZE(GuardZoneStyleStrings), GuardZoneStyleStrings, 1, wxRA_SPECIFY_COLS);

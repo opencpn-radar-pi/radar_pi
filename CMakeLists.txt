@@ -17,9 +17,9 @@ SET(TITLE_NAME Radar)
 SET(CPACK_PACKAGE_CONTACT "kees@verruijt.net")
 SET(VERSION_MAJOR "4")
 #SET(CMAKE_BUILD_TYPE Debug)
-SET(VERSION_MINOR "928")
+SET(VERSION_MINOR "610")
 SET(VERSION_PATCH "0")
-SET(VERSION_DATE "2018-05-24")
+SET(VERSION_DATE "2018-06-10")
 
 INCLUDE("cmake/PluginConfigure.cmake")
 
@@ -48,7 +48,6 @@ SET(SRC_GARMIN_HD
             src/garminhd/garminhdtype.h
 )
 
-			
 SET(SRC_GARMIN_XHD
             src/garminxhd/GarminxHDControl.cpp        
             src/garminxhd/GarminxHDControl.h          

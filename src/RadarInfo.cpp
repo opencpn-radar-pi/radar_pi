@@ -609,21 +609,20 @@ void RadarInfo::RenderGuardZone() {
 void RadarInfo::SetAutoRangeMeters(int autorange_to_set) {
   int meters = autorange_to_set;
   if (m_state.GetValue() == RADAR_TRANSMIT && m_range.GetState() == RCS_AUTO_1) {
-         // Compute a 'standard' distance. This will be slightly smaller.
+    // Compute a 'standard' distance. This will be slightly smaller.
     meters = GetNearestRange(meters, m_pi->m_settings.range_units);
-		    // Don't adjust auto range meters continuously when it is oscillating a little bit (< 10%)
+    // Don't adjust auto range meters continuously when it is oscillating a little bit (< 10%)
     int test = 100 * m_previous_auto_range_meters / meters;
-    if (test < 90 || test > 110) {      //   range change required
+    if (test < 90 || test > 110) {  //   range change required
       if (meters != m_range.GetValue()) {
-			  LOG_VERBOSE(wxT("radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters, meters);
-				m_control->SetRange(meters);
-				m_previous_auto_range_meters = meters;
-			}
-		}
-	}
-	else {
-		m_previous_auto_range_meters = 0;
-	}
+        LOG_VERBOSE(wxT("radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters, meters);
+        m_control->SetRange(meters);
+        m_previous_auto_range_meters = meters;
+      }
+    }
+  } else {
+    m_previous_auto_range_meters = 0;
+  }
 }
 
 bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item) {
@@ -1408,7 +1407,7 @@ wxString RadarInfo::GetRadarStateText() {
     case RADAR_TRANSMIT:
       o = _("Transmitting");
       if (next_state_change > 0 && m_timed_idle.GetState() == RCS_MANUAL &&
-        (m_arpa && m_arpa->GetTargetCount() > 0 || m_pi->m_guard_bogey_seen)) {
+          (m_arpa && m_arpa->GetTargetCount() > 0 || m_pi->m_guard_bogey_seen)) {
         o << wxT(" ") << _("for targets");
         return o;
       }
@@ -1451,8 +1450,7 @@ void RadarInfo::CheckTimedTransmit() {
 
   if (m_timed_idle_hardware) {
     // Send a reset of the countdown if ARPA targets are found
-    if ((m_control && m_arpa && m_arpa->GetTargetCount() > 0) ||
-                                       m_pi->m_guard_bogey_seen) {
+    if ((m_control && m_arpa && m_arpa->GetTargetCount() > 0) || m_pi->m_guard_bogey_seen) {
       // Send another 'enable timed transmit' followed by a transmit command..
       // The idea is that this enables transmit but does reset the countdown timer
       // in the radar.

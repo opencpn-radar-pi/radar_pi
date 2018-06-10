@@ -202,8 +202,8 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
       // Made them explicit so the compiler can catch missing control types.
       break;
 
-    // Ordering the radar commands by the first byte value.
-    // Some interesting holes here, seems there could be more commands!
+      // Ordering the radar commands by the first byte value.
+      // Some interesting holes here, seems there could be more commands!
 
     case CT_BEARING_ALIGNMENT: {  // to be consistent with the local bearing alignment of the pi
                                   // this bearing alignment works opposite to the one an a Lowrance display
@@ -235,7 +235,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
       if (v > 255) {
         v = 255;
       }
-      uint8_t cmd[] = {0x06, 0xc1, 0x02, 0, 0, 0, (uint8_t) autoValue, 0, 0, 0, (uint8_t)v};
+      uint8_t cmd[] = {0x06, 0xc1, 0x02, 0, 0, 0, (uint8_t)autoValue, 0, 0, 0, (uint8_t)v};
       LOG_VERBOSE(wxT("radar_pi: %s Sea: %d auto %d"), m_name.c_str(), value, autoValue);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
@@ -257,13 +257,13 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
       if (v > 255) {
         v = 255;
       }
-      uint8_t cmd[] = {0x6, 0xc1, 0x05, 0, 0, 0, (uint8_t) autoValue, 0, 0, 0, (uint8_t)v};
+      uint8_t cmd[] = {0x6, 0xc1, 0x05, 0, 0, 0, (uint8_t)autoValue, 0, 0, 0, (uint8_t)v};
       LOG_VERBOSE(wxT("radar_pi: %s command Tx CT_SIDE_LOBE_SUPPRESSION: %d auto %d"), m_name.c_str(), value, autoValue);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
 
-    // What would command 7 be?
+      // What would command 7 be?
 
     case CT_INTERFERENCE_REJECTION: {
       uint8_t cmd[] = {0x08, 0xc1, (uint8_t)value};
@@ -286,7 +286,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
       break;
     }
 
-    // What would command b through d be?
+      // What would command b through d be?
 
     case CT_LOCAL_INTERFERENCE_REJECTION: {
       if (value < 0) value = 0;
@@ -304,7 +304,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
       break;
     }
 
-    // What would command 10 through 20 be?
+      // What would command 10 through 20 be?
 
     case CT_NOISE_REJECTION: {
       uint8_t cmd[] = {0x21, 0xc1, (uint8_t)value};
@@ -320,7 +320,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
       break;
     }
 
-    // What would command 23 through 2f be?
+      // What would command 23 through 2f be?
 
     case CT_ANTENNA_HEIGHT: {
       int v = value * 1000;  // radar wants millimeters, not meters :-)
