@@ -228,8 +228,8 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
 
       break;
 
-    // Ordering the radar commands by the first byte value.
-    // Some interesting holes here, seems there could be more commands!
+      // Ordering the radar commands by the first byte value.
+      // Some interesting holes here, seems there could be more commands!
 
     case CT_BEARING_ALIGNMENT: {
       if (value < 0) {

@@ -3,8 +3,6 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-
-
 static const NetworkAddress data3G(236, 6, 7, 8, 6678);
 static const NetworkAddress report3G(236, 6, 7, 9, 6679);
 static const NetworkAddress send3G(236, 6, 7, 10, 6680);
@@ -28,11 +26,11 @@ PLUGIN_END_NAMESPACE
 
 #include "NavicoCommon.h"
 
-DEFINE_RADAR(RT_3G,                                     /* Type */
-             wxT("Navico 3G"),                          /* Name */
-             NAVICO_SPOKES,                             /* Spokes */
-             NAVICO_SPOKE_LEN,                          /* Spoke length (max) */
-             NavicoControlsDialog(RT_3G),               /* ControlsDialog class constructor */
-             NavicoReceive(pi, ri, report3G, data3G),   /* Receive class constructor */
-             NavicoControl(send3G)                      /* Send/Control class constructor */
+DEFINE_RADAR(RT_3G,                                   /* Type */
+             wxT("Navico 3G"),                        /* Name */
+             NAVICO_SPOKES,                           /* Spokes */
+             NAVICO_SPOKE_LEN,                        /* Spoke length (max) */
+             NavicoControlsDialog(RT_3G),             /* ControlsDialog class constructor */
+             NavicoReceive(pi, ri, report3G, data3G), /* Receive class constructor */
+             NavicoControl(send3G)                    /* Send/Control class constructor */
 )

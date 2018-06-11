@@ -714,7 +714,7 @@ void ArpaTarget::RefreshTarget(int dist) {
   }
   m_expected = pol;  // save expected polar position
 
-  //MEASUREMENT CYCLE
+  // MEASUREMENT CYCLE
 
   // now search for the target at the expected polar position in pol
   int dist1 = dist;
@@ -890,7 +890,7 @@ bool ArpaTarget::FindNearestContour(Polar* pol, int dist) {
   for (int j = 1; j <= dist; j++) {
     int dist_r = j;
     int dist_a = (int)(326. / (double)r * j);  // 326/r: conversion factor to make squares
-	                                       // if r == 326 circle would be 28 * PI * 326 = 2048
+                                               // if r == 326 circle would be 28 * PI * 326 = 2048
     if (dist_a == 0) dist_a = 1;
     for (int i = 0; i <= dist_a; i++) {  // "upper" side
       PIX(a - i, r + dist_r);            // search starting from the middle
