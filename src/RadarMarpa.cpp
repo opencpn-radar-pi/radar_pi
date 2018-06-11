@@ -873,7 +873,7 @@ void ArpaTarget::RefreshTarget(int dist) {
 }
 
 #define PIX(aa, rr)       \
-  if (rr > 510) continue; \
+  if (rr >= (int)m_ri->m_spoke_len_max - 1) continue; \
   if (MultiPix(aa, rr)) { \
     pol->angle = aa;      \
     pol->r = rr;          \
