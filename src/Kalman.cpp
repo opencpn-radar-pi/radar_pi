@@ -91,7 +91,7 @@ void KalmanFilter::ResetFilter() {
   // P(1, 1) = .0000027 * range * range;   ???
   P = ZeroMatrix4;
   P(0, 0) = 20.;
-  P(1, 1) = P(1, 1);
+  P(1, 1) = 20.;
   P(2, 2) = 4.;
   P(3, 3) = 4.;
 
