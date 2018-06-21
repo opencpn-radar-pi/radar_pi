@@ -28,7 +28,7 @@ PLUGIN_END_NAMESPACE
 
 #include "NavicoCommon.h"
 
-// 4G has 2048 spokes of exactly 512 bytes each
+// 4G has 2048 spokes of exactly 1024 pixels of 4 bits each, packed in 512 bytes
 
 DEFINE_RADAR(RT_4GB,                                      /* Type */
              wxT("Navico 4G B"),                          /* Name */
