@@ -1501,4 +1501,56 @@ void RadarInfo::CheckTimedTransmit() {
   m_next_state_change.Update(time_to_go);
 }
 
+bool RadarInfo::GetRadarPosition(GeoPosition *pos) {
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  if (m_pi->IsBoatPositionValid() && VALID_GEO(m_radar_position.lat) && VALID_GEO(m_radar_position.lon)) {
+    *pos = m_radar_position;
+    return true;
+  }
+  pos->lat = nan("");
+  pos->lon = nan("");
+  return false;
+}
+
+bool RadarInfo::GetRadarPosition(Position *radar_pos) {
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  if (m_pi->IsBoatPositionValid() && VALID_GEO(m_radar_position.lat) && VALID_GEO(m_radar_position.lon)) {
+    radar_pos->pos = m_radar_position;
+    return true;
+  }
+  radar_pos->pos.lat = nan("");
+  radar_pos->pos.lon = nan("");
+  return false;
+}
+
+// Comparable to GetRadarPosition(), but returns an intermediate position based on a regression of previous positions.
+// The returned position will normally have a higher accuracy than the position returned by GetRadarPosition().
+// GetRadarPosition() however is much faster than GetRadarPredictedPosition().
+bool RadarInfo::GetRadarPredictedPosition(Position* radar_pos) {
+  wxCriticalSectionLocker lock(m_exclusive);
+  Position intermediate_pos;
+  if (m_predicted_position_initialised) {
+    m_GPS_filter->Predict(&m_expected_position, &intermediate_pos);
+  }
+  // Update radar position offset from GPS
+  if (m_pi->m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt) &&
+    (m_antenna_starboard.GetValue != 0 || m_antenna_forward.GetValue != 0)) {
+    double sine = sin(deg2rad(m_hdt));
+    double cosine = cos(deg2rad(m_hdt));
+    double dist_forward = (double)m_antenna_forward.GetValue / 1852. / 60.;
+    double dist_starboard = (double)m_antenna_starboard.GetValue / 1852. / 60.;
+    intermediate_pos.pos.lat += dist_forward * cosine - dist_starboard * sine;
+    intermediate_pos.pos.lon += (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_ownship_lat));
+  }
+
+  if (m_bpos_set && VALID_GEO(intermediate_pos.lat) && VALID_GEO(intermediate_pos.lon) && m_predicted_position_initialised) {
+    *radar_pos = intermediate_pos;
+    return true;
+  }
+  return false;
+}
+
+
 PLUGIN_END_NAMESPACE

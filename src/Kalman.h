@@ -34,6 +34,7 @@
 #define _KALMAN_H_
 
 #include "Matrix.h"
+#include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -42,6 +43,7 @@ PLUGIN_BEGIN_NAMESPACE
            // critical for the performance of target tracking
            // lower value makes target go straight
            // higher values allow target to make curves
+class Position;
 
 class Polar {
  public:
@@ -87,6 +89,28 @@ class KalmanFilter {
  private:
   size_t m_spokes;
 };
+
+class GPSKalmanFilter {
+public:
+  GPSKalmanFilter();
+  ~GPSKalmanFilter();
+  void SetMeasurement(Position* gps, Position* updated);
+  void Predict(Position* old, Position* updated);
+  void Update_P();
+
+  Matrix<double, 4> A;
+  Matrix<double, 4> AT;
+  Matrix<double, 4, 2> W;
+  Matrix<double, 2, 4> WT;
+  Matrix<double, 2, 4> H;
+  Matrix<double, 4, 2> HT;
+  Matrix<double, 4> P;
+  Matrix<double, 2> Q;
+  Matrix<double, 2> R;
+  Matrix<double, 4, 2> K;
+  Matrix<double, 4> I;
+};
+
 
 PLUGIN_END_NAMESPACE
 #endif

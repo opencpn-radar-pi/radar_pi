@@ -229,17 +229,26 @@ class RadarInfo {
       m_radar_position = boat_pos;
     }
   }
-  bool GetRadarPosition(GeoPosition *pos) {
-    wxCriticalSectionLocker lock(m_exclusive);
 
-    if (m_pi->IsBoatPositionValid() && VALID_GEO(m_radar_position.lat) && VALID_GEO(m_radar_position.lon)) {
-      *pos = m_radar_position;
-      return true;
-    }
-    pos->lat = nan("");
-    pos->lon = nan("");
-    return false;
-  }
+public:  
+class Position {
+  public:
+    GeoPosition pos;
+    double dlat_dt;   // m / sec
+    double dlon_dt;   // m / sec
+    wxLongLong time;  // millis
+    double speed_kn;
+    double sd_speed_kn;  // standard deviation of the speed in knots
+  };
+
+  bool GetRadarPosition(GeoPosition *pos);
+  bool GetRadarPosition(Position *radar_pos);
+  bool GetRadarPredictedPosition(Position* radar_pos);
+
+  GPSKalmanFilter* m_GPS_filter;
+public:
+  Position m_expected_position;  // updated own position at time of last GPS update
+  bool m_predicted_position_initialised = false;
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();

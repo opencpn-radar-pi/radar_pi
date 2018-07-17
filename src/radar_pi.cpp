@@ -235,6 +235,8 @@ int radar_pi::Init(void) {
   for (size_t r = 0; r < RADARS; r++) {
     m_radar[r] = new RadarInfo(this, r);
   }
+  m_GPS_filter = new GPSKalmanFilter();
+  LOG_INFO(wxT("BR24radar_pi: $$$ GPSFiler done"));
 
   //    And load the configuration items
   if (LoadConfig()) {
@@ -831,6 +833,7 @@ void radar_pi::UpdateHeadingPositionState() {
       // If the position data is 10s old reset our position.
       // Note that the watchdog is reset every time we receive a position.
       m_bpos_set = false;
+      m_predicted_position_initialised = false;
       LOG_VERBOSE(wxT("radar_pi: Lost Boat Position data"));
     }
 
@@ -1480,12 +1483,45 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     m_bpos_timestamp = now;
   }
 
-  if (!wxIsNaN(pfix.Cog)) {
-    UpdateCOGAvg(pfix.Cog);
-  }
-  if (TIMED_OUT(now, m_cog_timeout)) {
-    m_cog_timeout = now + m_COGAvgSec;
-    m_cog = m_COGAvg;
+  if (!wxIsNaN(m_ownship_lat) && !wxIsNaN(m_ownship_lon)) {
+    if (!m_predicted_position_initialised) {
+      m_expected_position.lat = m_ownship_lat;
+      m_expected_position.lon = m_ownship_lon;
+      m_expected_position.dlat_dt = 0;
+      m_expected_position.dlon_dt = 0;
+      m_expected_position.time = wxGetUTCTimeMillis();
+      m_expected_position.speed_kn = 0.;
+      m_predicted_position_initialised = true;
+      LOG_INFO(wxT("BR24radar_p $$$ position init"));
+      LOG_INFO(wxT("$$$ init m_ownship_lat= %f, m_ownship_lon= %f \n"), m_ownship_lat, m_ownship_lon);
+    }
+    Position GPS_position;
+    GPS_position.lat = m_ownship_lat;
+    GPS_position.lon = m_ownship_lon;
+    GPS_position.time = wxGetUTCTimeMillis();
+    LOG_INFO(wxT("$$$ m_ownship_lat= %f, m_ownship_lon= %f \n"), m_ownship_lat, m_ownship_lon);
+    m_GPS_filter->Predict(&m_expected_position, &m_expected_position);  // update expected position based on speed
+
+
+    LOG_INFO(wxT("$$$ predict m_expected_position.lat= %f, m_expected_position.lon= %f, dlat_dt= %f, dlon_dt= %f"), m_expected_position.lat,
+      m_expected_position.lon, m_expected_position.dlat_dt, m_expected_position.dlon_dt);
+
+    m_GPS_filter->Update_P();                                   // update error covariance matrix
+    m_GPS_filter->SetMeasurement(&GPS_position, &m_expected_position);                             // improve expected postition with GPS
+
+    LOG_INFO(wxT("$$$         m_expected.lat= %f, m_expected.lon= %f, dlat_dt= %f, dlon_dt= %f"), m_expected_position.lat,
+      m_expected_position.lon, m_expected_position.dlat_dt, m_expected_position.dlon_dt);
+    double exp_course = rad2deg(atan2(m_expected_position.dlon_dt, m_expected_position.dlat_dt * cos(m_expected_position.lat / 360. * 2. * PI)));
+    LOG_INFO(wxT("$$$ SOG %f, calculated speed %f, COG %f"), pfix.Sog, m_expected_position.speed_kn, exp_course);
+
+
+    if (!wxIsNaN(pfix.Cog)) {
+      UpdateCOGAvg(pfix.Cog);
+    }
+    if (TIMED_OUT(now, m_cog_timeout)) {
+      m_cog_timeout = now + m_COGAvgSec;
+      m_cog = m_COGAvg;
+    }
   }
 }
 

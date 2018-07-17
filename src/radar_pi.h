@@ -518,7 +518,9 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   double m_radar_heading;          // Last heading obtained from radar, or nan if none
   bool m_radar_heading_true;       // Was TRUE flag set on radar heading?
   time_t m_radar_heading_timeout;  // When last heading was obtained from radar, or 0 if not
+  public:
   HeadingSource m_heading_source;
+  private:
   bool m_bpos_set;
   time_t m_bpos_timestamp;
 

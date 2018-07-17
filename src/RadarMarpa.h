@@ -78,15 +78,7 @@ enum OCPN_target_status {
   L   // lost
 };
 
-class Position {
- public:
-  GeoPosition pos;
-  double dlat_dt;   // m / sec
-  double dlon_dt;   // m / sec
-  wxLongLong time;  // millis
-  double speed_kn;
-  double sd_speed_kn;  // standard deviation of the speed in knots
-};
+
 
 enum TargetProcessStatus { UNKNOWN, NOT_FOUND_IN_PASS1 };
 enum PassN { PASS1, PASS2 };
