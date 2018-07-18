@@ -1513,7 +1513,7 @@ bool RadarInfo::GetRadarPosition(GeoPosition *pos) {
   return false;
 }
 
-bool RadarInfo::GetRadarPosition(Position *radar_pos) {
+bool RadarInfo::GetRadarPosition(ExtendedPosition *radar_pos) {
   wxCriticalSectionLocker lock(m_exclusive);
 
   if (m_pi->IsBoatPositionValid() && VALID_GEO(m_radar_position.lat) && VALID_GEO(m_radar_position.lon)) {
@@ -1528,24 +1528,25 @@ bool RadarInfo::GetRadarPosition(Position *radar_pos) {
 // Comparable to GetRadarPosition(), but returns an intermediate position based on a regression of previous positions.
 // The returned position will normally have a higher accuracy than the position returned by GetRadarPosition().
 // GetRadarPosition() however is much faster than GetRadarPredictedPosition().
-bool RadarInfo::GetRadarPredictedPosition(Position* radar_pos) {
+bool RadarInfo::GetRadarPredictedPosition(ExtendedPosition* radar_pos) {
   wxCriticalSectionLocker lock(m_exclusive);
-  Position intermediate_pos;
-  if (m_predicted_position_initialised) {
-    m_GPS_filter->Predict(&m_expected_position, &intermediate_pos);
+  ExtendedPosition intermediate_pos;
+  if (m_pi->m_predicted_position_initialised) {
+    m_pi->m_GPS_filter->Predict(&m_pi->m_expected_position, &intermediate_pos);
   }
   // Update radar position offset from GPS
-  if (m_pi->m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt) &&
-    (m_antenna_starboard.GetValue != 0 || m_antenna_forward.GetValue != 0)) {
-    double sine = sin(deg2rad(m_hdt));
-    double cosine = cos(deg2rad(m_hdt));
-    double dist_forward = (double)m_antenna_forward.GetValue / 1852. / 60.;
-    double dist_starboard = (double)m_antenna_starboard.GetValue / 1852. / 60.;
+double hdt = m_pi->GetHeadingTrue();
+  if (m_pi->m_heading_source != HEADING_NONE && !wxIsNaN(hdt) &&
+    (m_antenna_starboard.GetValue() != 0 || m_antenna_forward.GetValue() != 0)) {
+    double sine = sin(deg2rad(hdt));
+    double cosine = cos(deg2rad(hdt));
+    double dist_forward = (double)m_antenna_forward.GetValue() / 1852. / 60.;
+    double dist_starboard = (double)m_antenna_starboard.GetValue() / 1852. / 60.;
     intermediate_pos.pos.lat += dist_forward * cosine - dist_starboard * sine;
-    intermediate_pos.pos.lon += (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_ownship_lat));
+    intermediate_pos.pos.lon += (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_radar_position.lat));
   }
 
-  if (m_bpos_set && VALID_GEO(intermediate_pos.lat) && VALID_GEO(intermediate_pos.lon) && m_predicted_position_initialised) {
+  if (m_pi->IsBoatPositionValid() && VALID_GEO(intermediate_pos.pos.lat) && VALID_GEO(intermediate_pos.pos.lon) && m_pi->m_predicted_position_initialised) {
     *radar_pos = intermediate_pos;
     return true;
   }

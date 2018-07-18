@@ -38,6 +38,7 @@
  */
 
 #include "Kalman.h"
+#include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -248,13 +249,13 @@ GPSKalmanFilter::GPSKalmanFilter() {
 
 GPSKalmanFilter::~GPSKalmanFilter() {}
 
-void GPSKalmanFilter::Predict(Position* old, Position* updated) {
+void GPSKalmanFilter::Predict(ExtendedPosition* old, ExtendedPosition* updated) {
   // predicts current position xx at time now
   // starting from given position m_expected_position
   wxLongLong now = wxGetUTCTimeMillis();  // millis
   Matrix<double, 4, 1> X;
-  X(0, 0) = old->lat;                                // X in meters and m / sec
-  X(1, 0) = old->lon;
+  X(0, 0) = old->pos.lat;                                // X in meters and m / sec
+  X(1, 0) = old->pos.lon;
   X(2, 0) = old->dlat_dt;
   X(3, 0) = old->dlon_dt;
   A(0, 2) = (now - old->time).GetLo() / 1000.;  // delta time in seconds
@@ -265,8 +266,8 @@ void GPSKalmanFilter::Predict(Position* old, Position* updated) {
   AT(3, 1) = A(0, 2);
 
   X = A * X;
-  updated->lat = X(0, 0);                                 // lat and lon in degrees
-  updated->lon = X(1, 0);
+  updated->pos.lat = X(0, 0);                                 // lat and lon in degrees
+  updated->pos.lon = X(1, 0);
   updated->dlat_dt = X(2, 0);                                           // speeds in m / sec
   updated->dlon_dt = X(3, 0);
   updated->time = now;
@@ -283,7 +284,7 @@ void GPSKalmanFilter::Update_P() {
   return;
 }
 
-void GPSKalmanFilter::SetMeasurement(Position* gps, Position* updated) {
+void GPSKalmanFilter::SetMeasurement(ExtendedPosition* gps, ExtendedPosition* updated) {
   // m_GPS_position is measured position
   // m_expected_position is expected position, updated by SetMeasurement
   // before calling SetMeasurement, Predict should be called first
@@ -292,12 +293,12 @@ void GPSKalmanFilter::SetMeasurement(Position* gps, Position* updated) {
 
   Matrix<double, 2, 1> Z;
   // Z is  difference between expected and measured
-  Z(0, 0) = (gps->lat - updated->lat);
-  Z(1, 0) = (gps->lon - updated->lon);
+  Z(0, 0) = (gps->pos.lat - updated->pos.lat);
+  Z(1, 0) = (gps->pos.lon - updated->pos.lon);
   LOG_INFO(wxT("$$$ delta lat= %f delta lon= %f"), Z(0, 0), Z(1, 0));
   Matrix<double, 4, 1> X;
-  X(0, 0) = updated->lat;                                // X in meters and m / sec
-  X(1, 0) = updated->lon;
+  X(0, 0) = updated->pos.lat;                                // X in meters and m / sec
+  X(1, 0) = updated->pos.lon;
   X(2, 0) = updated->dlat_dt;
   X(3, 0) = updated->dlon_dt;
 
@@ -306,11 +307,11 @@ void GPSKalmanFilter::SetMeasurement(Position* gps, Position* updated) {
 
   // calculate apostriori expected position
   X = X + K * Z;
-  updated->lat = X(0, 0);                                 // lat and lon in degrees
-  updated->lon = X(1, 0);
+  updated->pos.lat = X(0, 0);                                 // lat and lon in degrees
+  updated->pos.lon = X(1, 0);
   updated->dlat_dt = X(2, 0);
   updated->dlon_dt = X(3, 0);
-  double cosin = cos(updated->lat / 360. * 2. * PI);
+  double cosin = cos(updated->pos.lat / 360. * 2. * PI);
   updated->speed_kn = sqrt(X(2, 0)*X(2, 0) + X(3, 0) * X(3, 0) * cosin * cosin) * 60. * 3600.;
 
   // update covariance P

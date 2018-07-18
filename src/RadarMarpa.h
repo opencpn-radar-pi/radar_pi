@@ -44,7 +44,6 @@ PLUGIN_BEGIN_NAMESPACE
 
 //    Forward definitions
 class KalmanFilter;
-class Position;
 
 #define MAX_NUMBER_OF_TARGETS (100)
 #define TARGET_SEARCH_RADIUS1 (2)   // radius of target search area for pass 1 (on top of the size of the blob)
@@ -110,7 +109,7 @@ class ArpaTarget {
   KalmanFilter* m_kalman;
   int m_target_id;
   target_status m_status;
-  Position m_position;   // holds actual position of target
+  ExtendedPosition m_position;   // holds actual position of target
   double m_speed_kn;     // Average speed of target. TODO: Merge with m_position.speed?
   wxLongLong m_refresh;  // time of last refresh
   double m_course;
@@ -125,8 +124,8 @@ class ArpaTarget {
   Polar m_expected;
   bool m_automatic;  // True for ARPA, false for MARPA.
 
-  Position Polar2Pos(Polar pol, Position own_ship);
-  Polar Pos2Polar(Position p, Position own_ship);
+  ExtendedPosition Polar2Pos(Polar pol, ExtendedPosition own_ship);
+  Polar Pos2Polar(ExtendedPosition p, ExtendedPosition own_ship);
 };
 
 class RadarArpa {
@@ -136,8 +135,8 @@ class RadarArpa {
   void DrawArpaTargets();
   void RefreshArpaTargets();
   int AcquireNewARPATarget(Polar pol, int status);
-  void AcquireNewMARPATarget(Position p);
-  void DeleteTarget(Position p);
+  void AcquireNewMARPATarget(ExtendedPosition p);
+  void DeleteTarget(ExtendedPosition p);
   bool MultiPix(int ang, int rad);
   void DeleteAllTargets();
   void CleanUpLostTargets();
@@ -154,7 +153,7 @@ class RadarArpa {
   radar_pi* m_pi;
   RadarInfo* m_ri;
 
-  void AcquireOrDeleteMarpaTarget(Position p, int status);
+  void AcquireOrDeleteMarpaTarget(ExtendedPosition p, int status);
   void CalculateCentroid(ArpaTarget* t);
   void DrawContour(ArpaTarget* t);
   bool Pix(int ang, int rad);

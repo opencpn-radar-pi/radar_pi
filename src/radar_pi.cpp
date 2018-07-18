@@ -672,7 +672,7 @@ void radar_pi::OnContextMenuItemCallback(int id) {
         && m_settings.chart_overlay >= 0                                            // overlay desired
         && m_radar[m_settings.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
         && !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon)) {
-      Position target_pos;
+      ExtendedPosition target_pos;
       target_pos.pos = m_cursor_pos;
       m_radar[m_settings.chart_overlay]->m_arpa->AcquireNewMARPATarget(target_pos);
     }
@@ -680,7 +680,7 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     // Targets can also be deleted when the overlay is not shown
     // In this case targets can be made by a guard zone in a radarwindow
     if (m_settings.show && m_settings.chart_overlay >= 0) {
-      Position target_pos;
+      ExtendedPosition target_pos;
       target_pos.pos = m_cursor_pos;
       if (m_radar[m_settings.chart_overlay]->m_arpa) {
         m_radar[m_settings.chart_overlay]->m_arpa->DeleteTarget(target_pos);
@@ -1482,36 +1482,35 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     m_bpos_set = true;
     m_bpos_timestamp = now;
   }
-
-  if (!wxIsNaN(m_ownship_lat) && !wxIsNaN(m_ownship_lon)) {
+  if (IsBoatPositionValid()) {
     if (!m_predicted_position_initialised) {
-      m_expected_position.lat = m_ownship_lat;
-      m_expected_position.lon = m_ownship_lon;
+      m_expected_position.pos.lat = m_ownship.lat;
+      m_expected_position.pos.lon = m_ownship.lon;
       m_expected_position.dlat_dt = 0;
       m_expected_position.dlon_dt = 0;
       m_expected_position.time = wxGetUTCTimeMillis();
       m_expected_position.speed_kn = 0.;
       m_predicted_position_initialised = true;
       LOG_INFO(wxT("BR24radar_p $$$ position init"));
-      LOG_INFO(wxT("$$$ init m_ownship_lat= %f, m_ownship_lon= %f \n"), m_ownship_lat, m_ownship_lon);
+      LOG_INFO(wxT("$$$ init m_ownship.lat= %f, m_ownship.lon= %f \n"), m_ownship.lat, m_ownship.lon);
     }
-    Position GPS_position;
-    GPS_position.lat = m_ownship_lat;
-    GPS_position.lon = m_ownship_lon;
+    ExtendedPosition GPS_position;
+    GPS_position.pos.lat = m_ownship.lat;
+    GPS_position.pos.lon = m_ownship.lon;
     GPS_position.time = wxGetUTCTimeMillis();
-    LOG_INFO(wxT("$$$ m_ownship_lat= %f, m_ownship_lon= %f \n"), m_ownship_lat, m_ownship_lon);
+    LOG_INFO(wxT("$$$ m_ownship.lat= %f, m_ownship.lon= %f \n"), m_ownship.lat, m_ownship.lon);
     m_GPS_filter->Predict(&m_expected_position, &m_expected_position);  // update expected position based on speed
 
 
-    LOG_INFO(wxT("$$$ predict m_expected_position.lat= %f, m_expected_position.lon= %f, dlat_dt= %f, dlon_dt= %f"), m_expected_position.lat,
-      m_expected_position.lon, m_expected_position.dlat_dt, m_expected_position.dlon_dt);
+    LOG_INFO(wxT("$$$ predict m_expected_position.lat= %f, m_expected_position.lon= %f, dlat_dt= %f, dlon_dt= %f"), m_expected_position.pos.lat,
+      m_expected_position.pos.lon, m_expected_position.dlat_dt, m_expected_position.dlon_dt);
 
     m_GPS_filter->Update_P();                                   // update error covariance matrix
     m_GPS_filter->SetMeasurement(&GPS_position, &m_expected_position);                             // improve expected postition with GPS
 
-    LOG_INFO(wxT("$$$         m_expected.lat= %f, m_expected.lon= %f, dlat_dt= %f, dlon_dt= %f"), m_expected_position.lat,
-      m_expected_position.lon, m_expected_position.dlat_dt, m_expected_position.dlon_dt);
-    double exp_course = rad2deg(atan2(m_expected_position.dlon_dt, m_expected_position.dlat_dt * cos(m_expected_position.lat / 360. * 2. * PI)));
+    LOG_INFO(wxT("$$$         m_expected.lat= %f, m_expected.lon= %f, dlat_dt= %f, dlon_dt= %f"), m_expected_position.pos.lat,
+      m_expected_position.pos.lon, m_expected_position.dlat_dt, m_expected_position.dlon_dt);
+    double exp_course = rad2deg(atan2(m_expected_position.dlon_dt, m_expected_position.dlat_dt * cos(m_expected_position.pos.lat / 360. * 2. * PI)));
     LOG_INFO(wxT("$$$ SOG %f, calculated speed %f, COG %f"), pfix.Sog, m_expected_position.speed_kn, exp_course);
 
 

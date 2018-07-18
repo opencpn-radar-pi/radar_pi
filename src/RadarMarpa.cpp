@@ -64,11 +64,11 @@ RadarArpa::~RadarArpa() {
   }
 }
 
-Position ArpaTarget::Polar2Pos(Polar pol, Position own_ship) {
+ExtendedPosition ArpaTarget::Polar2Pos(Polar pol, ExtendedPosition own_ship) {
   // The "own_ship" in the function call can be the position at an earlier time than the current position
   // converts in a radar image angular data r ( 0 - max_spoke_len ) and angle (0 - max_spokes) to position (lat, lon)
   // based on the own ship position own_ship
-  Position pos;
+  ExtendedPosition pos;
 
   pos.pos.lat = own_ship.pos.lat + ((double)pol.r / m_ri->m_pixels_per_meter)  // Scale to fraction of distance from radar
                                        * cos(deg2rad(SCALE_SPOKES_TO_DEGREES(pol.angle))) / 60. / 1852.;
@@ -78,7 +78,7 @@ Position ArpaTarget::Polar2Pos(Polar pol, Position own_ship) {
   return pos;
 }
 
-Polar ArpaTarget::Pos2Polar(Position p, Position own_ship) {
+Polar ArpaTarget::Pos2Polar(ExtendedPosition p, ExtendedPosition own_ship) {
   // converts in a radar image a lat-lon position to angular data
   Polar pol;
   double dif_lat = p.pos.lat;
@@ -318,11 +318,11 @@ bool RadarArpa::MultiPix(int ang, int rad) {
   return false;
 }
 
-void RadarArpa::AcquireNewMARPATarget(Position target_pos) { AcquireOrDeleteMarpaTarget(target_pos, ACQUIRE0); }
+void RadarArpa::AcquireNewMARPATarget(ExtendedPosition target_pos) { AcquireOrDeleteMarpaTarget(target_pos, ACQUIRE0); }
 
-void RadarArpa::DeleteTarget(Position target_pos) { AcquireOrDeleteMarpaTarget(target_pos, FOR_DELETION); }
+void RadarArpa::DeleteTarget(ExtendedPosition target_pos) { AcquireOrDeleteMarpaTarget(target_pos, FOR_DELETION); }
 
-void RadarArpa::AcquireOrDeleteMarpaTarget(Position target_pos, int status) {
+void RadarArpa::AcquireOrDeleteMarpaTarget(ExtendedPosition target_pos, int status) {
   // acquires new target from mouse click position
   // no contour taken yet
   // target status acquire0
@@ -588,7 +588,7 @@ void RadarArpa::RefreshArpaTargets() {
   }
   if (target_to_delete != -1) {
     // delete the target that is closest to the target with status FOR_DELETION
-    Position* deletePosition = &m_targets[target_to_delete]->m_position;
+    ExtendedPosition* deletePosition = &m_targets[target_to_delete]->m_position;
     double min_dist = 1000;
     int del_target = -1;
     for (int i = 0; i < m_number_of_targets; i++) {
@@ -645,9 +645,9 @@ void RadarArpa::RefreshArpaTargets() {
 }
 
 void ArpaTarget::RefreshTarget(int dist) {
-  Position prev_X;
-  Position prev2_X;
-  Position own_pos;
+  ExtendedPosition prev_X;
+  ExtendedPosition prev2_X;
+  ExtendedPosition own_pos;
   Polar pol;
   double delta_t;
   LocalPosition x_local;
@@ -739,7 +739,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     m_lost_count = 0;
     if (m_status == ACQUIRE0) {
       // as this is the first measurement, move target to measured position
-      Position p_own;
+      ExtendedPosition p_own;
       p_own.pos = m_ri->m_history[MOD_SPOKES(pol.angle)].pos;  // get the position at receive time
       m_position = Polar2Pos(pol, p_own);                      // using own ship location from the time of reception
       m_position.dlat_dt = 0.;
@@ -1085,8 +1085,8 @@ int RadarArpa::AcquireNewARPATarget(Polar pol, int status) {
   // target status status, normally 0, if dummy target to delete a target -2
   // returns in X metric coordinates of click
   // constructs Kalman filter
-  Position own_pos;
-  Position target_pos;
+  ExtendedPosition own_pos;
+  ExtendedPosition target_pos;
   if (!m_ri->GetRadarPosition(&own_pos.pos)) {
     return -1;
   }

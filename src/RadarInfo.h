@@ -53,6 +53,15 @@ struct DrawInfo {
   bool color_option;
 };
 
+//struct ExtendedPosition {
+//  GeoPosition pos;
+//  double dlat_dt;   // m / sec
+//  double dlon_dt;   // m / sec
+//  wxLongLong time;  // millis
+//  double speed_kn;
+//  double sd_speed_kn;  // standard deviation of the speed in knots
+//};
+
 #define SECONDS_TO_REVOLUTIONS(x) ((x)*2 / 5)
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(600) + 1
 enum { TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_5MIN, TRAIL_10MIN, TRAIL_CONTINUOUS, TRAIL_ARRAY_SIZE };
@@ -230,25 +239,9 @@ class RadarInfo {
     }
   }
 
-public:  
-class Position {
-  public:
-    GeoPosition pos;
-    double dlat_dt;   // m / sec
-    double dlon_dt;   // m / sec
-    wxLongLong time;  // millis
-    double speed_kn;
-    double sd_speed_kn;  // standard deviation of the speed in knots
-  };
-
   bool GetRadarPosition(GeoPosition *pos);
-  bool GetRadarPosition(Position *radar_pos);
-  bool GetRadarPredictedPosition(Position* radar_pos);
-
-  GPSKalmanFilter* m_GPS_filter;
-public:
-  Position m_expected_position;  // updated own position at time of last GPS update
-  bool m_predicted_position_initialised = false;
+  bool GetRadarPosition(ExtendedPosition *radar_pos);
+  bool GetRadarPredictedPosition(ExtendedPosition* radar_pos);
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();

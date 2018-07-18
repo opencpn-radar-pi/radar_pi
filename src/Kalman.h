@@ -43,7 +43,6 @@ PLUGIN_BEGIN_NAMESPACE
            // critical for the performance of target tracking
            // lower value makes target go straight
            // higher values allow target to make curves
-class Position;
 
 class Polar {
  public:
@@ -94,8 +93,8 @@ class GPSKalmanFilter {
 public:
   GPSKalmanFilter();
   ~GPSKalmanFilter();
-  void SetMeasurement(Position* gps, Position* updated);
-  void Predict(Position* old, Position* updated);
+  void SetMeasurement(ExtendedPosition* gps, ExtendedPosition* updated);
+  void Predict(ExtendedPosition* old, ExtendedPosition* updated);
   void Update_P();
 
   Matrix<double, 4> A;
