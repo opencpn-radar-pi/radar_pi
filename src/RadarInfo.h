@@ -53,14 +53,6 @@ struct DrawInfo {
   bool color_option;
 };
 
-//struct ExtendedPosition {
-//  GeoPosition pos;
-//  double dlat_dt;   // m / sec
-//  double dlon_dt;   // m / sec
-//  wxLongLong time;  // millis
-//  double speed_kn;
-//  double sd_speed_kn;  // standard deviation of the speed in knots
-//};
 
 #define SECONDS_TO_REVOLUTIONS(x) ((x)*2 / 5)
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(600) + 1
@@ -242,6 +234,7 @@ class RadarInfo {
   bool GetRadarPosition(GeoPosition *pos);
   bool GetRadarPosition(ExtendedPosition *radar_pos);
   bool GetRadarPredictedPosition(ExtendedPosition* radar_pos);
+  bool GetRadarPredictedPosition(GeoPosition* radar_pos);
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();

@@ -423,7 +423,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   uint8_t *hist_data = m_history[bearing].line;
   m_history[bearing].time = time_rec;
   memset(hist_data, 0, m_spoke_len_max);
-  GetRadarPosition(&m_history[bearing].pos);
+  GetRadarPredictedPosition(&m_history[bearing].pos);
   for (size_t radius = 0; radius < len; radius++) {
     if (data[radius] >= weakest_normal_blob) {
       // and add 1 if above threshold and set the left 2 bits, used for ARPA
@@ -1553,5 +1553,29 @@ double hdt = m_pi->GetHeadingTrue();
   return false;
 }
 
+bool RadarInfo::GetRadarPredictedPosition(GeoPosition* radar_pos) {
+  wxCriticalSectionLocker lock(m_exclusive);
+  ExtendedPosition intermediate_pos;
+  if (m_pi->m_predicted_position_initialised) {
+    m_pi->m_GPS_filter->Predict(&m_pi->m_expected_position, &intermediate_pos);
+  }
+  // Update radar position offset from GPS
+  double hdt = m_pi->GetHeadingTrue();
+  if (m_pi->m_heading_source != HEADING_NONE && !wxIsNaN(hdt) &&
+    (m_antenna_starboard.GetValue() != 0 || m_antenna_forward.GetValue() != 0)) {
+    double sine = sin(deg2rad(hdt));
+    double cosine = cos(deg2rad(hdt));
+    double dist_forward = (double)m_antenna_forward.GetValue() / 1852. / 60.;
+    double dist_starboard = (double)m_antenna_starboard.GetValue() / 1852. / 60.;
+    intermediate_pos.pos.lat += dist_forward * cosine - dist_starboard * sine;
+    intermediate_pos.pos.lon += (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_radar_position.lat));
+  }
+
+  if (m_pi->IsBoatPositionValid() && VALID_GEO(intermediate_pos.pos.lat) && VALID_GEO(intermediate_pos.pos.lon) && m_pi->m_predicted_position_initialised) {
+    *radar_pos = intermediate_pos.pos;
+    return true;
+  }
+  return false;
+}
 
 PLUGIN_END_NAMESPACE
