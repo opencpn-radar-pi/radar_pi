@@ -423,7 +423,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   uint8_t *hist_data = m_history[bearing].line;
   m_history[bearing].time = time_rec;
   memset(hist_data, 0, m_spoke_len_max);
-  GetRadarPredictedPosition(&m_history[bearing].pos);
+  GetRadarPosition(&m_history[bearing].pos);
   for (size_t radius = 0; radius < len; radius++) {
     if (data[radius] >= weakest_normal_blob) {
       // and add 1 if above threshold and set the left 2 bits, used for ARPA
@@ -1532,7 +1532,7 @@ bool RadarInfo::GetRadarPredictedPosition(ExtendedPosition* radar_pos) {
   wxCriticalSectionLocker lock(m_exclusive);
   ExtendedPosition intermediate_pos;
   if (m_pi->m_predicted_position_initialised) {
-    m_pi->m_GPS_filter->Predict(&m_pi->m_expected_position, &intermediate_pos);
+    m_pi->m_GPS_filter->Predict(&m_pi->m_expected_position, &intermediate_pos);  // $$$$
   }
   // Update radar position offset from GPS
 double hdt = m_pi->GetHeadingTrue();

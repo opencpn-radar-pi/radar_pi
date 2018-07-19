@@ -914,6 +914,19 @@ void radar_pi::ScheduleWindowRefresh() {
 
 void radar_pi::OnTimerNotify(wxTimerEvent &event) {
   if (m_settings.show) {  // Is radar enabled?
+    ExtendedPosition intermediate_pos;
+    if (m_predicted_position_initialised) {
+      m_GPS_filter->Predict(&m_expected_position, &intermediate_pos);  
+    }
+    // update ships position to best estimate
+    m_ownship = intermediate_pos.pos;
+                                        // Update radar position offset from GPS
+    if (m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt)) {
+      for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+        m_radar[r]->SetRadarPosition(m_ownship, m_hdt);
+      }
+    }
+
     if (m_settings.chart_overlay >= 0) {
       // If overlay is enabled schedule another chart draw. Note this will cause another call to RenderGLOverlay,
       // which will then call ScheduleWindowRefresh again itself.
@@ -1483,6 +1496,7 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     m_bpos_timestamp = now;
   }
   if (IsBoatPositionValid()) {
+// here a condition for position improvement based on a preference should be set  $$$
     if (!m_predicted_position_initialised) {
       m_expected_position.pos.lat = m_ownship.lat;
       m_expected_position.pos.lon = m_ownship.lon;
@@ -1507,6 +1521,10 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
 
     m_GPS_filter->Update_P();                                   // update error covariance matrix
     m_GPS_filter->SetMeasurement(&GPS_position, &m_expected_position);                             // improve expected postition with GPS
+
+// Now set the expected position from the Kalmanfilter as the boat position
+m_ownship = m_expected_position.pos;
+
 
     LOG_INFO(wxT("$$$         m_expected.lat= %f, m_expected.lon= %f, dlat_dt= %f, dlon_dt= %f"), m_expected_position.pos.lat,
       m_expected_position.pos.lon, m_expected_position.dlat_dt, m_expected_position.dlon_dt);
