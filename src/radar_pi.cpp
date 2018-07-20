@@ -1484,13 +1484,14 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       m_hdt_timeout = now + HEADING_TIMEOUT;
     }
   }
-
+  ExtendedPosition GPS_position;
   if (pfix.FixTime > 0 && NOT_TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT)) {
-    m_ownship.lat = pfix.Lat;
-    m_ownship.lon = pfix.Lon;
+    GPS_position.pos.lat = pfix.Lat;
+    GPS_position.pos.lon = pfix.Lon;
+    GPS_position.time = wxGetUTCTimeMillis();
 
     if (!m_bpos_set) {
-      LOG_VERBOSE(wxT("radar_pi: GPS position is now known"));
+      LOG_VERBOSE(wxT("radar_pi: GPS position is now known m_ownship.lat= %f, m_ownship.lon = %f"), m_ownship.lat, m_ownship.lon);
     }
     m_bpos_set = true;
     m_bpos_timestamp = now;
@@ -1498,20 +1499,15 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   if (IsBoatPositionValid()) {
 // here a condition for position improvement based on a preference should be set  $$$
     if (!m_predicted_position_initialised) {
-      m_expected_position.pos.lat = m_ownship.lat;
-      m_expected_position.pos.lon = m_ownship.lon;
+      m_expected_position = GPS_position;
       m_expected_position.dlat_dt = 0;
       m_expected_position.dlon_dt = 0;
-      m_expected_position.time = wxGetUTCTimeMillis();
       m_expected_position.speed_kn = 0.;
       m_predicted_position_initialised = true;
       LOG_INFO(wxT("BR24radar_p $$$ position init"));
       LOG_INFO(wxT("$$$ init m_ownship.lat= %f, m_ownship.lon= %f \n"), m_ownship.lat, m_ownship.lon);
     }
-    ExtendedPosition GPS_position;
-    GPS_position.pos.lat = m_ownship.lat;
-    GPS_position.pos.lon = m_ownship.lon;
-    GPS_position.time = wxGetUTCTimeMillis();
+   
     LOG_INFO(wxT("$$$ m_ownship.lat= %f, m_ownship.lon= %f \n"), m_ownship.lat, m_ownship.lon);
     m_GPS_filter->Predict(&m_expected_position, &m_expected_position);  // update expected position based on speed
 
