@@ -1118,6 +1118,7 @@ bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   if (!m_initialized) {
     return true;
   }
+m_vp = vp;
 
   LOG_DIALOG(wxT("radar_pi: RenderGLOverlay context=%p"), pcontext);
   m_opencpn_gl_context = pcontext;

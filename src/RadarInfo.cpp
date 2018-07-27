@@ -339,7 +339,8 @@ void RadarInfo::ComputeColourMap() {
 
 void RadarInfo::ResetSpokes() {
   uint8_t zap[SPOKE_LEN_MAX];
-
+GeoPosition pos;
+GetRadarPosition (&pos);
   LOG_VERBOSE(wxT("radar_pi: reset spokes"));
 
   CLEAR_STRUCT(zap);
@@ -352,12 +353,12 @@ void RadarInfo::ResetSpokes() {
 
   if (m_draw_panel.draw) {
     for (size_t r = 0; r < m_spokes; r++) {
-      m_draw_panel.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max);
+      m_draw_panel.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max, pos);
     }
   }
   if (m_draw_overlay.draw) {
     for (size_t r = 0; r < m_spokes; r++) {
-      m_draw_overlay.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max);
+      m_draw_overlay.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max, pos);
     }
   }
 
@@ -388,7 +389,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
     data[i] = 0;
   }
-
   // Recompute 'pixels_per_meter' based on the actual spoke length and range in meters.
   double pixels_per_meter = len / (double)range_meters;
 
@@ -445,7 +445,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
 
   bool draw_trails_on_overlay = M_SETTINGS.trails_on_overlay;
   if (m_draw_overlay.draw && !draw_trails_on_overlay) {
-    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len);
+    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len, m_history[bearing].pos);
   }
 
   m_trails->UpdateTrailPosition();
@@ -457,11 +457,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   m_trails->UpdateRelativeTrails(angle, data, trail_len);
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
-    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len);
+    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len, m_history[bearing].pos);
   }
 
   if (m_draw_panel.draw) {
-    m_draw_panel.draw->ProcessRadarSpoke(4, stabilized_mode ? bearing : angle, data, len);
+    m_draw_panel.draw->ProcessRadarSpoke(4, stabilized_mode ? bearing : angle, data, len, m_history[bearing].pos);
   }
 }
 
@@ -765,7 +765,7 @@ void RadarInfo::RefreshDisplay() {
   }
 }
 
-void RadarInfo::RenderRadarImage(DrawInfo *di) {
+void RadarInfo::RenderRadarImage(DrawInfo *di, double radar_scale, double panel_rotate) {
   wxCriticalSectionLocker lock(m_exclusive);
   int drawing_method = m_pi->m_settings.drawing_method;
   int state = m_state.GetValue();
@@ -802,7 +802,7 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
     }
   }
 
-  di->draw->DrawRadarImage();
+  di->draw->DrawRadarImage(radar_scale, panel_rotate);
   if (g_first_render) {
     g_first_render = false;
     wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->GetBootMillis();
@@ -894,13 +894,14 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
 
   if (m_pixels_per_meter != 0.) {
     double radar_scale = scale / m_pixels_per_meter;
-    glPushMatrix();
+    /*glPushMatrix();*/
+/*
     glTranslated(center.x, center.y, 0);
     glRotated(panel_rotate, 0.0, 0.0, 1.0);
-    glScaled(radar_scale, radar_scale, 1.);
+    glScaled(radar_scale, radar_scale, 1.);*/
 
-    RenderRadarImage(overlay ? &m_draw_overlay : &m_draw_panel);
-    glPopMatrix();
+    RenderRadarImage(overlay ? &m_draw_overlay : &m_draw_panel, radar_scale, panel_rotate);
+    /*glPopMatrix();*/
   }
 
   if (arpa_on) {

@@ -406,6 +406,7 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
 
   bool m_guard_bogey_confirmed;
   bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
+  PlugIn_ViewPort* m_vp;
   
 
   // Other public methods

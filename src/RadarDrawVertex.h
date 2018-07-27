@@ -50,11 +50,13 @@ class RadarDrawVertex : public RadarDraw {
     m_oom = false;
     m_spokes = 0;
     m_spoke_len_max = 0;
+    m_prev_pos.lat = 0.;
+    m_prev_pos.lon = 0.;
   }
 
   bool Init(size_t spokes, size_t spoke_len_max);
-  void DrawRadarImage();
-  void ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len);
+  void DrawRadarImage(double radar_scale, double panel_rotate);
+  void ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len, GeoPosition spoke_pos);
 
   ~RadarDrawVertex() {
     wxCriticalSectionLocker lock(m_exclusive);
@@ -66,6 +68,7 @@ class RadarDrawVertex : public RadarDraw {
   RadarInfo* m_ri;
   size_t m_spokes;
   size_t m_spoke_len_max;
+  GeoPosition m_prev_pos;
 
   static const int VERTEX_PER_TRIANGLE = 3;
   static const int VERTEX_PER_QUAD = 2 * VERTEX_PER_TRIANGLE;
@@ -84,6 +87,7 @@ class RadarDrawVertex : public RadarDraw {
     time_t timeout;
     size_t count;
     size_t allocated;
+    GeoPosition spoke_pos;
   };
 
   void SetBlob(VertexLine* line, int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green, GLubyte blue,

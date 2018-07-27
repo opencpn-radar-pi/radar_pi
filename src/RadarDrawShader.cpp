@@ -153,7 +153,7 @@ RadarDrawShader::~RadarDrawShader() {
   Reset();
 }
 
-void RadarDrawShader::DrawRadarImage() {
+void RadarDrawShader::DrawRadarImage(double radar_scale, double panel_rotate) {
   wxCriticalSectionLocker lock(m_exclusive);
 
   if (!m_program || !m_texture || !m_data) {
@@ -227,7 +227,7 @@ void RadarDrawShader::DrawRadarImage() {
   glPopAttrib();
 }
 
-void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t *data, size_t len) {
+void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t *data, size_t len, GeoPosition spoke_pos) {
   GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
   wxCriticalSectionLocker lock(m_exclusive);
 

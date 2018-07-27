@@ -258,7 +258,7 @@ class RadarInfo {
 
  private:
   void ResetSpokes();
-  void RenderRadarImage(DrawInfo *di);
+  void RenderRadarImage(DrawInfo *di, double radar_scale, double panel_rotate);
   wxString FormatDistance(double distance);
   wxString FormatAngle(double angle);
 
