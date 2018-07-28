@@ -1156,6 +1156,8 @@ m_vp = vp;
     wxPoint boat_center;
     GetCanvasPixLL(vp, &boat_center, radar_pos.lat, radar_pos.lon);
 
+    LOG_INFO(wxT("radar_pi: $$$RenderOverlay , position lat %f lon %f x= %i y=%i"), radar_pos.lat, radar_pos.lat, boat_center.x, boat_center.y);
+
     m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
 
     //    Calculate image scale factor
@@ -1169,10 +1171,11 @@ m_vp = vp;
       v_scale_ppm = vp->pix_height / dist_y;  // pixel height of screen div by equivalent meters
     }
 
+    LOG_INFO(wxT("radar_pi: $$$RenderOverlay scale= %f, position lat %f lon %f x= %i y=%i"), v_scale_ppm, radar_pos.lat, radar_pos.lat, boat_center.x, boat_center.y);
     double rotation = fmod(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor) + 720.0, 360);
 
-    LOG_DIALOG(wxT("radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat,
-               vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale, rotation);
+    LOG_INFO(wxT("radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat,
+               vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale, rotation);   // $$$ was log_dialogue
     m_radar[m_settings.chart_overlay]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
   }
 
@@ -1492,7 +1495,7 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     GPS_position.time = wxGetUTCTimeMillis();
 
     if (!m_bpos_set) {
-      LOG_VERBOSE(wxT("radar_pi: GPS position is now known m_ownship.lat= %f, m_ownship.lon = %f"), m_ownship.lat, m_ownship.lon);
+      LOG_VERBOSE(wxT("radar_pi: GPS position is now known m_ownship.lat= %f, m_ownship.lon = %f"), GPS_position.pos.lat, GPS_position.pos.lon);
     }
     m_bpos_set = true;
     m_bpos_timestamp = now;
@@ -1505,10 +1508,9 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       m_expected_position.dlon_dt = 0;
       m_expected_position.speed_kn = 0.;
       m_predicted_position_initialised = true;
-      LOG_INFO(wxT("$$$ init m_ownship.lat= %f, m_ownship.lon= %f \n"), m_ownship.lat, m_ownship.lon);
     }
    
-    LOG_INFO(wxT("$$$ m_ownship.lat= %f, m_ownship.lon= %f \n"), m_ownship.lat, m_ownship.lon);
+    
     m_GPS_filter->Predict(&m_expected_position, &m_expected_position);  // update expected position based on speed
 
 
@@ -1520,6 +1522,7 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
 
 // Now set the expected position from the Kalmanfilter as the boat position
 m_ownship = m_expected_position.pos;
+LOG_INFO(wxT("$$$ m_ownship.lat= %f, m_ownship.lon= %f \n"), m_ownship.lat, m_ownship.lon);
 
 
     LOG_INFO(wxT("$$$         m_expected.lat= %f, m_expected.lon= %f, dlat_dt= %f, dlon_dt= %f"), m_expected_position.pos.lat,
