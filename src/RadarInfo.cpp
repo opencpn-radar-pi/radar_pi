@@ -765,7 +765,7 @@ void RadarInfo::RefreshDisplay() {
   }
 }
 
-void RadarInfo::RenderRadarImage(DrawInfo *di, double radar_scale, double panel_rotate) {
+void RadarInfo::RenderRadarImage2(DrawInfo *di, double radar_scale, double panel_rotate) {
   wxCriticalSectionLocker lock(m_exclusive);
   int drawing_method = m_pi->m_settings.drawing_method;
   int state = m_state.GetValue();
@@ -823,7 +823,7 @@ int RadarInfo::GetOrientation() {
   return orientation;
 }
 
-void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_rotate, bool overlay) {
+void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_rotate, bool overlay) {
   bool arpa_on = false;
   if (m_arpa) {
     for (int i = 0; i < GUARD_ZONES; i++) {
@@ -900,7 +900,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     glRotated(panel_rotate, 0.0, 0.0, 1.0);
     glScaled(radar_scale, radar_scale, 1.);*/
 
-    RenderRadarImage(overlay ? &m_draw_overlay : &m_draw_panel, radar_scale, panel_rotate);
+    RenderRadarImage2(overlay ? &m_draw_overlay : &m_draw_panel, radar_scale, panel_rotate);
     /*glPopMatrix();*/
   }
 

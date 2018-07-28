@@ -1173,7 +1173,7 @@ m_vp = vp;
 
     LOG_DIALOG(wxT("radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat,
                vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale, rotation);
-    m_radar[m_settings.chart_overlay]->RenderRadarImage(boat_center, v_scale_ppm, rotation, true);
+    m_radar[m_settings.chart_overlay]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
   }
 
   ScheduleWindowRefresh();
@@ -1505,7 +1505,6 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       m_expected_position.dlon_dt = 0;
       m_expected_position.speed_kn = 0.;
       m_predicted_position_initialised = true;
-      LOG_INFO(wxT("BR24radar_p $$$ position init"));
       LOG_INFO(wxT("$$$ init m_ownship.lat= %f, m_ownship.lon= %f \n"), m_ownship.lat, m_ownship.lon);
     }
    

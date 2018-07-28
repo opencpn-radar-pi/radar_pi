@@ -598,7 +598,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     glScaled((float)h / w, -1.0, 1.0);
   }
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
-  m_ri->RenderRadarImage(wxPoint(0, 0), CHART_SCALE / m_ri->m_range.GetValue(), 0.0, false);
+  m_ri->RenderRadarImage1(wxPoint(0, 0), CHART_SCALE / m_ri->m_range.GetValue(), 0.0, false);
 
   // LAYER 5 - TEXTS & CURSOR
   ResetGLViewPort(w, h);

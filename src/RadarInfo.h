@@ -188,7 +188,7 @@ class RadarInfo {
   void ResetRadarImage();
   void ShiftImageLonToCenter();
   void ShiftImageLatToCenter();
-  void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
+  void RenderRadarImage1(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
   void ShowControlDialog(bool show, bool reparent);
   void Shutdown();
@@ -258,7 +258,7 @@ class RadarInfo {
 
  private:
   void ResetSpokes();
-  void RenderRadarImage(DrawInfo *di, double radar_scale, double panel_rotate);
+  void RenderRadarImage2(DrawInfo *di, double radar_scale, double panel_rotate);
   wxString FormatDistance(double distance);
   wxString FormatAngle(double angle);
 
