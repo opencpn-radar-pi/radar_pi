@@ -50,8 +50,6 @@ class RadarDrawVertex : public RadarDraw {
     m_oom = false;
     m_spokes = 0;
     m_spoke_len_max = 0;
-    m_prev_pos.lat = 0.;
-    m_prev_pos.lon = 0.;
   }
 
   bool Init(size_t spokes, size_t spoke_len_max);
@@ -68,7 +66,6 @@ class RadarDrawVertex : public RadarDraw {
   RadarInfo* m_ri;
   size_t m_spokes;
   size_t m_spoke_len_max;
-  GeoPosition m_prev_pos;
 
   static const int VERTEX_PER_TRIANGLE = 3;
   static const int VERTEX_PER_QUAD = 2 * VERTEX_PER_TRIANGLE;

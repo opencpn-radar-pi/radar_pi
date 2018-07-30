@@ -193,58 +193,57 @@ void RadarDrawVertex::DrawRadarImage(double radar_scale, double panel_rotate) {
   GeoPosition posi;
   m_ri->GetRadarPosition(&posi);
 
-  GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, posi.lat, posi.lon);
-  LOG_INFO(wxT("radar_pi: $$$ scale= %f, position lat %f lon %f x= %i y=%i"), radar_scale, posi.lat, posi.lon, boat_center.x, boat_center.y);
-  // move display to the location where the spoke was recorded
-//  glPushMatrix();
- // glTranslated(boat_center.x, boat_center.y, 0);
- // glRotated(panel_rotate, 0.0, 0.0, 1.0);
-//  glScaled(radar_scale, radar_scale, 1.);
-
-
+ GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, posi.lat, posi.lon);
+ LOG_INFO(wxT("radar_pi: $$$$ scale= %f, position lat %f lon %f x= %i y=%i"), radar_scale, posi.lat, posi.lon, boat_center.x, boat_center.y);
+ //  move display to the location where the spoke was recorded
+  
+  
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
 
   time_t now = time(0);
 
- 
-
+GeoPosition prev_pos;  
+prev_pos.lat = 0;
+prev_pos.lon = 0;
 
   {
     wxCriticalSectionLocker lock(m_exclusive);
     
-
+     glPushMatrix();
     for (size_t i = 0; i < m_spokes; i++) {
       VertexLine* line = &m_vertices[i];
       if (!line->count || TIMED_OUT(now, line->timeout)) {
         continue;
       }
 
-      //if (line->spoke_pos.lat != m_prev_pos.lat || line->spoke_pos.lon != m_prev_pos.lon) {
-      //  m_prev_pos = line->spoke_pos;
-      //  GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, line->spoke_pos.lat, line->spoke_pos.lon);
-      //  // move display to the location where the spoke was recorded
-      //  glPushMatrix();
-      //  glTranslated(boat_center.x, boat_center.y, 0);
-      //  glRotated(panel_rotate, 0.0, 0.0, 1.0);
-      //  glScaled(radar_scale, radar_scale, 1.);
-        glVertexPointer(2, GL_FLOAT, sizeof(VertexPoint), &line->points[0].xy);
-        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(VertexPoint), &line->points[0].red);
-        glDrawArrays(GL_TRIANGLES, 0, line->count);
-  //      glPopMatrix();
-      /*}
-      else {
-        glVertexPointer(2, GL_FLOAT, sizeof(VertexPoint), &line->points[0].xy);
-        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(VertexPoint), &line->points[0].red);
-        glDrawArrays(GL_TRIANGLES, 0, line->count);
-      }*/
+      if (line->spoke_pos.lat != prev_pos.lat || line->spoke_pos.lon != prev_pos.lon) {
+
+        // LOG_INFO(wxT("radar_pi: $$$ draw new pos %f %f"), line->spoke_pos.lat, line->spoke_pos.lon);
+
+        prev_pos = line->spoke_pos;
+        GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, line->spoke_pos.lat, line->spoke_pos.lon);
+        // move display to the location where the spoke was recorded
+        LOG_INFO(wxT("radar_pi: $$$ scale= %f, position lat %f lon %f x= %i y=%i"), radar_scale, line->spoke_pos.lat, line->spoke_pos.lon, boat_center.x, boat_center.y);
+
+        glPopMatrix();
+        glPushMatrix();
+        glTranslated(boat_center.x, boat_center.y, 0);
+        glRotated(panel_rotate, 0.0, 0.0, 1.0);
+        glScaled(radar_scale, radar_scale, 1.);
+      }
+
+      glVertexPointer(2, GL_FLOAT, sizeof(VertexPoint), &line->points[0].xy);
+      glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(VertexPoint), &line->points[0].red);
+      glDrawArrays(GL_TRIANGLES, 0, line->count);
+
     }
-    
-  }
-  
+    glPopMatrix();
+}
+
   glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
   glDisableClientState(GL_COLOR_ARRAY);
-  glPopMatrix();
+
 }
 
 PLUGIN_END_NAMESPACE

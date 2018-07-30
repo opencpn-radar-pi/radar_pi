@@ -1156,7 +1156,7 @@ m_vp = vp;
     wxPoint boat_center;
     GetCanvasPixLL(vp, &boat_center, radar_pos.lat, radar_pos.lon);
 
-    LOG_INFO(wxT("radar_pi: $$$RenderOverlay , position lat %f lon %f x= %i y=%i"), radar_pos.lat, radar_pos.lat, boat_center.x, boat_center.y);
+    LOG_INFO(wxT("radar_pi: $$$RenderOverlay , position lat %f lon %f x= %i y=%i"), radar_pos.lat, radar_pos.lon, boat_center.x, boat_center.y);
 
     m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
 
