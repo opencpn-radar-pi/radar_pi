@@ -913,13 +913,7 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
     m_arpa->DrawArpaTargets();
     glPopMatrix();
   }
-
-  if (!overlay) {
-    glFinish();
-  }
-
   m_draw_time_ms = stopwatch.Time();
-
   glPopAttrib();
 }
 

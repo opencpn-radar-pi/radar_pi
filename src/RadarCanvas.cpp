@@ -608,7 +608,6 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glPopAttrib();
   glPopMatrix();
   glFlush();
-  glFinish();
   SwapBuffers();
 
   wxGLContext *chart_context = m_pi->GetChartOpenGLContext();
