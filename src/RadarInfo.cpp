@@ -389,6 +389,21 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
     data[i] = 0;
   }
+
+
+
+  for (int i = 0; i < 1024; i++) {
+    data[i] = 15;
+  
+
+if (angle > 512 && angle < 530 && i > 512 && i < 530) data[i] = 200;
+
+
+
+
+  }   // set picture to 0 except one dot
+
+
   // Recompute 'pixels_per_meter' based on the actual spoke length and range in meters.
   double pixels_per_meter = len / (double)range_meters;
 
