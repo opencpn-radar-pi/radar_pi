@@ -516,7 +516,7 @@ int ArpaTarget::GetContour(Polar* pol) {
 }
 
 void RadarArpa::DrawContour(ArpaTarget* target) {
-  // should be improved using vertex arrays
+  
   if (target->m_lost_count > 0) {
     return;  // don't draw targets that were not seen last sweep
   }
@@ -549,7 +549,15 @@ void RadarArpa::DrawArpaTargets() {
   for (int i = 0; i < m_number_of_targets; i++) {
     if (!m_targets[i]) continue;
     if (m_targets[i]->m_status != LOST) {
+      glPushMatrix();
+      GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, line->spoke_pos.lat, line->spoke_pos.lon);
+      glTranslated(center.x, center.y, 0);
+      LOG_VERBOSE(wxT("radar_pi: %s render ARPA targets on overlay with rot=%f"), m_name.c_str(), arpa_rotate);
+
+      glRotated(arpa_rotate, 0.0, 0.0, 1.0);
+      glScaled(scale, scale, 1.);
       DrawContour(m_targets[i]);
+      glPopMatrix();
     }
   }
 }

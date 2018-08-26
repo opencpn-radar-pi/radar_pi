@@ -392,16 +392,16 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
 
 
 
-  for (int i = 0; i < 1024; i++) {
-    data[i] = 15;
-  
-
-if (angle > 512 && angle < 530 && i > 512 && i < 530) data[i] = 200;
-
-
-
-
-  }   // set picture to 0 except one dot
+//  for (int i = 0; i < 1024; i++) {
+//    data[i] = 15;
+//  
+//
+//if (angle > 512 && angle < 530 && i > 512 && i < 530) data[i] = 200;
+//
+//
+//
+//
+//  }   // set picture to 0 except one dot
 
 
   // Recompute 'pixels_per_meter' based on the actual spoke length and range in meters.
@@ -920,14 +920,7 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
   }
 
   if (arpa_on) {
-    glPushMatrix();
-    glTranslated(center.x, center.y, 0);
-    LOG_VERBOSE(wxT("radar_pi: %s render ARPA targets on overlay with rot=%f"), m_name.c_str(), arpa_rotate);
-
-    glRotated(arpa_rotate, 0.0, 0.0, 1.0);
-    glScaled(scale, scale, 1.);
     m_arpa->DrawArpaTargets();
-    glPopMatrix();
   }
 
   if (!overlay) {
