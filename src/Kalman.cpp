@@ -76,7 +76,7 @@ void KalmanFilter::ResetFilter() {
 
   // Observation matrix, jacobian of observation function h
   // dhi / dvj
-  // angle = atan2 (lat,lon) * 2048 / (2 * pi) + v1
+  // angle = atan2 (lat,lon) * m_spokes / (2 * pi) + v1
   // r = sqrt(x * x + y * y) + v2
   // v is measurement noise
   H = ZeroMatrix24;
@@ -143,10 +143,7 @@ void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected,
 #define SQUARED(x) ((x) * (x))
   double q_sum = SQUARED(x->pos.lon) + SQUARED(x->pos.lat);
 
-    // fill the observation matrix H
-    // Jacobian, partial derivatives of observation function z
-    // dzi/dxi
-  double c = 2048. / (2. * PI);
+  double c = m_spokes / (2. * PI);
   H(0, 0) = -c * x->pos.lon / q_sum;
   H(0, 1) = c * x->pos.lat / q_sum;
 
