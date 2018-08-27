@@ -53,7 +53,8 @@ class RadarDrawVertex : public RadarDraw {
   }
 
   bool Init(size_t spokes, size_t spoke_len_max);
-  void DrawRadarImage(double radar_scale, double panel_rotate);
+  void DrawRadarOverlayImage(double radar_scale, double panel_rotate);
+  void DrawRadarPanelImage();
   void ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len, GeoPosition spoke_pos);
 
   ~RadarDrawVertex() {

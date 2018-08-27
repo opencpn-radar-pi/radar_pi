@@ -79,7 +79,7 @@ ExtendedPosition ArpaTarget::Polar2Pos(Polar pol, ExtendedPosition own_ship) {
 }
 
 Polar ArpaTarget::Pos2Polar(ExtendedPosition p, ExtendedPosition own_ship) {
-  // converts in a radar image a lat-lon position to angular data
+  // converts in a radar image a lat-lon position to angular data relative to position own_ship
   Polar pol;
   double dif_lat = p.pos.lat;
   dif_lat -= own_ship.pos.lat;
@@ -512,6 +512,8 @@ int ArpaTarget::GetContour(Polar* pol) {
   }
   pol->r = (m_max_r.r + m_min_r.r) / 2;
   pol->time = m_ri->m_history[MOD_SPOKES(pol->angle)].time;
+  m_radar_pos = m_ri->m_history[MOD_SPOKES(pol->angle)].pos;
+
   return 0;  //  success, blob found
 }
 
@@ -545,17 +547,20 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
   glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
 }
 
-void RadarArpa::DrawArpaTargets() {
+void RadarArpa::DrawArpaTargets(double scale, double arpa_rotate) {
+wxPoint boat_center;
   for (int i = 0; i < m_number_of_targets; i++) {
     if (!m_targets[i]) continue;
     if (m_targets[i]->m_status != LOST) {
+      GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, m_targets[i]->m_radar_pos.lat, m_targets[i]->m_radar_pos.lon);
       glPushMatrix();
-      GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, line->spoke_pos.lat, line->spoke_pos.lon);
-      glTranslated(center.x, center.y, 0);
-      LOG_VERBOSE(wxT("radar_pi: %s render ARPA targets on overlay with rot=%f"), m_name.c_str(), arpa_rotate);
+      
+      glTranslated(boat_center.x, boat_center.y, 0);
+      LOG_INFO(wxT("radar_pi:  $$$$ Draw ARPA targets on overlay with scale=%f,  rot=%f, boat_center.x=%i, boat_center.y=%i"),  scale, arpa_rotate, boat_center.x, boat_center.y);
 
       glRotated(arpa_rotate, 0.0, 0.0, 1.0);
       glScaled(scale, scale, 1.);
+      LOG_INFO(wxT("radar_pi:  $$$$ draw contour"));
       DrawContour(m_targets[i]);
       glPopMatrix();
     }

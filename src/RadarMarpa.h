@@ -99,7 +99,6 @@ class ArpaTarget {
   void PassARPAtoOCPN(Polar* p, OCPN_target_status s);
   void SetStatusLost();
   void ResetPixels();
-  void GetSpeed();
   bool Pix(int ang, int rad);
   bool MultiPix(int ang, int rad);
 
@@ -109,6 +108,8 @@ class ArpaTarget {
   KalmanFilter* m_kalman;
   int m_target_id;
   target_status m_status;
+  // radar position at time of last target fix, the polars in the contour refer to this origin
+  GeoPosition m_radar_pos; 
   ExtendedPosition m_position;   // holds actual position of target
   double m_speed_kn;     // Average speed of target. TODO: Merge with m_position.speed?
   wxLongLong m_refresh;  // time of last refresh
@@ -132,7 +133,7 @@ class RadarArpa {
  public:
   RadarArpa(radar_pi* pi, RadarInfo* ri);
   ~RadarArpa();
-  void DrawArpaTargets();
+  void DrawArpaTargets(double scale, double arpa_rotate);
   void RefreshArpaTargets();
   int AcquireNewARPATarget(Polar pol, int status);
   void AcquireNewMARPATarget(ExtendedPosition p);

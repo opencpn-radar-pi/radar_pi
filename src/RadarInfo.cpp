@@ -816,8 +816,24 @@ void RadarInfo::RenderRadarImage2(DrawInfo *di, double radar_scale, double panel
       return;
     }
   }
+  if (di == &m_draw_overlay) {
+    di->draw->DrawRadarOverlayImage(radar_scale, panel_rotate);
+  }
+  else {
+    wxPoint boat_center;
 
-  di->draw->DrawRadarImage(radar_scale, panel_rotate);
+    GeoPosition radar_pos;
+    GetRadarPosition(&radar_pos);
+    GetCanvasPixLL(m_pi->m_vp, &boat_center, radar_pos.lat, radar_pos.lon);
+    glPushMatrix();
+    glTranslated(boat_center.x, boat_center.y, 0);
+    glRotated(panel_rotate, 0.0, 0.0, 1.0);
+    glScaled(radar_scale, radar_scale, 1.);
+    di->draw->DrawRadarPanelImage();
+
+    glPopMatrix();
+  }
+
   if (g_first_render) {
     g_first_render = false;
     wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->GetBootMillis();
@@ -909,18 +925,11 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
 
   if (m_pixels_per_meter != 0.) {
     double radar_scale = scale / m_pixels_per_meter;
-    /*glPushMatrix();*/
-/*
-    glTranslated(center.x, center.y, 0);
-    glRotated(panel_rotate, 0.0, 0.0, 1.0);
-    glScaled(radar_scale, radar_scale, 1.);*/
-
     RenderRadarImage2(overlay ? &m_draw_overlay : &m_draw_panel, radar_scale, panel_rotate);
-    /*glPopMatrix();*/
   }
 
   if (arpa_on) {
-    m_arpa->DrawArpaTargets();
+    m_arpa->DrawArpaTargets(scale, arpa_rotate);
   }
 
   if (!overlay) {
@@ -928,7 +937,6 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
   }
 
   m_draw_time_ms = stopwatch.Time();
-
   glPopAttrib();
 }
 
