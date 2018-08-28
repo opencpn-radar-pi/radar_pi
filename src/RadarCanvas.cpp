@@ -36,8 +36,6 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-const float CHART_SCALE = 0.9f;  // On how big a part of the PPI do we draw the radar picture
-
 BEGIN_EVENT_TABLE(RadarCanvas, wxGLCanvas)
 EVT_MOVE(RadarCanvas::OnMove)
 EVT_SIZE(RadarCanvas::OnSize)
