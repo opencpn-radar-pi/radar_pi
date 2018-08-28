@@ -869,13 +869,6 @@ void radar_pi::UpdateHeadingPositionState() {
       LOG_VERBOSE(wxT("radar_pi: Lost Variation source"));
     }
   }
-
-  // Update radar position offset from GPS
-  if (m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt)) {
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      m_radar[r]->SetRadarPosition(m_ownship, m_hdt);
-    }
-  }
 }
 
 /**
@@ -916,10 +909,10 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
   if (m_settings.show) {  // Is radar enabled?
     ExtendedPosition intermediate_pos;
     if (m_predicted_position_initialised) {
-      m_GPS_filter->Predict(&m_expected_position, &intermediate_pos);  
+      m_GPS_filter->Predict(&m_expected_position, &m_expected_position);
     }
     // update ships position to best estimate
-    m_ownship = intermediate_pos.pos;
+    m_ownship = m_expected_position.pos;
                                         // Update radar position offset from GPS
     if (m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt)) {
       for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -1510,9 +1503,7 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       m_predicted_position_initialised = true;
     }
    
-    
-    m_GPS_filter->Predict(&m_expected_position, &m_expected_position);  // update expected position based on speed
-
+    m_GPS_filter->Predict(&m_expected_position, &m_expected_position);  // update expected position based on previous positions
 
     LOG_INFO(wxT("$$$ predict m_expected_position.lat= %f, m_expected_position.lon= %f, dlat_dt= %f, dlon_dt= %f"), m_expected_position.pos.lat,
       m_expected_position.pos.lon, m_expected_position.dlat_dt, m_expected_position.dlon_dt);

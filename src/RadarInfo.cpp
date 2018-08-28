@@ -829,7 +829,7 @@ void RadarInfo::RenderRadarImage2(DrawInfo *di, double radar_scale, double panel
     glTranslated(boat_center.x, boat_center.y, 0);
     glRotated(panel_rotate, 0.0, 0.0, 1.0);
     glScaled(radar_scale, radar_scale, 1.);
-    di->draw->DrawRadarPanelImage();
+    di->draw->DrawRadarOverlayImage(radar_scale, panel_rotate);
 
     glPopMatrix();
   }
