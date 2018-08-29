@@ -388,6 +388,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
 
   for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
     data[i] = 0;
+    if (i < 7) data[i] = 200;   // $$$ dot in the middle
   }
 
 
@@ -824,16 +825,17 @@ void RadarInfo::RenderRadarImage2(DrawInfo *di, double radar_scale, double panel
 
     GeoPosition radar_pos;
    // m_ri->RenderRadarImage(wxPoint(0, 0), CHART_SCALE / m_ri->m_range.GetValue(), 0.0, false);
-    double panel_scale = CHART_SCALE / m_range.GetValue();
-    GetRadarPosition(&radar_pos);
-   // GetCanvasPixLL(m_pi->m_vp, &boat_center, radar_pos.lat, radar_pos.lon);
-    glPushMatrix();
-   // glTranslated(boat_center.x, boat_center.y, 0);
-    glRotated(panel_rotate, 0.0, 0.0, 1.0);
-    glScaled(panel_scale, panel_scale, 1.);
-    di->draw->DrawRadarPanelImage();
+    double panel_scale = (CHART_SCALE / m_range.GetValue()) / m_pixels_per_meter;
+    LOG_INFO(wxT("radar_pi: $$$ panel_scale=%f, m_range.GetValue()=%i,  m_pixels_per_meter=%f"),panel_scale,  m_range.GetValue(),  m_pixels_per_meter);
+   // // GetRadarPosition(&radar_pos);
+   //// GetCanvasPixLL(m_pi->m_vp, &boat_center, radar_pos.lat, radar_pos.lon);
+   // glPushMatrix();
+   // glTranslated(.5, 0., 0);
+   // glRotated(panel_rotate, 0.0, 0.0, 1.0);
+   // glScaled(panel_scale, panel_scale, 1.);
+    di->draw->DrawRadarPanelImage(panel_scale, panel_rotate);
 
-    glPopMatrix();
+    /*glPopMatrix();*/
   }
 
   if (g_first_render) {

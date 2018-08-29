@@ -59,7 +59,7 @@ class RadarDrawShader : public RadarDraw {
 
   bool Init(size_t spokes, size_t spoke_len_max);
   void DrawRadarOverlayImage(double radar_scale, double panel_rotate);
-  void DrawRadarPanelImage();
+  void DrawRadarPanelImage(double panel_scale, double panel_rotate);
   void ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len, GeoPosition spoke_pos);
 
  private:

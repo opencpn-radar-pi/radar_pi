@@ -227,7 +227,7 @@ void RadarDrawShader::DrawRadarOverlayImage(double radar_scale, double panel_rot
   glPopAttrib();
 }
 
-void RadarDrawShader::DrawRadarPanelImage() {
+void RadarDrawShader::DrawRadarPanelImage(double panel_scale, double panel_rotate) {
   DrawRadarOverlayImage(1., 0.);
 }
 
