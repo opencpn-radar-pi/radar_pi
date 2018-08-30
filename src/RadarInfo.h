@@ -53,6 +53,7 @@ struct DrawInfo {
   bool color_option;
 };
 
+
 #define SECONDS_TO_REVOLUTIONS(x) ((x)*2 / 5)
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(600) + 1
 enum { TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_5MIN, TRAIL_10MIN, TRAIL_CONTINUOUS, TRAIL_ARRAY_SIZE };
@@ -187,7 +188,7 @@ class RadarInfo {
   void ResetRadarImage();
   void ShiftImageLonToCenter();
   void ShiftImageLatToCenter();
-  void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
+  void RenderRadarImage1(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
   void ShowControlDialog(bool show, bool reparent);
   void Shutdown();
@@ -229,17 +230,11 @@ class RadarInfo {
       m_radar_position = boat_pos;
     }
   }
-  bool GetRadarPosition(GeoPosition *pos) {
-    wxCriticalSectionLocker lock(m_exclusive);
 
-    if (m_pi->IsBoatPositionValid() && VALID_GEO(m_radar_position.lat) && VALID_GEO(m_radar_position.lon)) {
-      *pos = m_radar_position;
-      return true;
-    }
-    pos->lat = nan("");
-    pos->lon = nan("");
-    return false;
-  }
+  bool GetRadarPosition(GeoPosition *pos);
+  bool GetRadarPosition(ExtendedPosition *radar_pos);
+  bool GetRadarPredictedPosition(ExtendedPosition* radar_pos);
+  bool GetRadarPredictedPosition(GeoPosition* radar_pos);
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
@@ -263,7 +258,7 @@ class RadarInfo {
 
  private:
   void ResetSpokes();
-  void RenderRadarImage(DrawInfo *di);
+  void RenderRadarImage2(DrawInfo *di, double radar_scale, double panel_rotate);
   wxString FormatDistance(double distance);
   wxString FormatAngle(double angle);
 

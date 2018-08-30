@@ -44,7 +44,6 @@ PLUGIN_BEGIN_NAMESPACE
 
 //    Forward definitions
 class KalmanFilter;
-class Position;
 
 #define MAX_NUMBER_OF_TARGETS (100)
 #define TARGET_SEARCH_RADIUS1 (2)   // radius of target search area for pass 1 (on top of the size of the blob)
@@ -78,15 +77,7 @@ enum OCPN_target_status {
   L   // lost
 };
 
-class Position {
- public:
-  GeoPosition pos;
-  double dlat_dt;   // m / sec
-  double dlon_dt;   // m / sec
-  wxLongLong time;  // millis
-  double speed_kn;
-  double sd_speed_kn;  // standard deviation of the speed in knots
-};
+
 
 enum TargetProcessStatus { UNKNOWN, NOT_FOUND_IN_PASS1 };
 enum PassN { PASS1, PASS2 };
@@ -108,7 +99,6 @@ class ArpaTarget {
   void PassARPAtoOCPN(Polar* p, OCPN_target_status s);
   void SetStatusLost();
   void ResetPixels();
-  void GetSpeed();
   bool Pix(int ang, int rad);
   bool MultiPix(int ang, int rad);
 
@@ -118,7 +108,9 @@ class ArpaTarget {
   KalmanFilter* m_kalman;
   int m_target_id;
   target_status m_status;
-  Position m_position;   // holds actual position of target
+  // radar position at time of last target fix, the polars in the contour refer to this origin
+  GeoPosition m_radar_pos; 
+  ExtendedPosition m_position;   // holds actual position of target
   double m_speed_kn;     // Average speed of target. TODO: Merge with m_position.speed?
   wxLongLong m_refresh;  // time of last refresh
   double m_course;
@@ -133,19 +125,19 @@ class ArpaTarget {
   Polar m_expected;
   bool m_automatic;  // True for ARPA, false for MARPA.
 
-  Position Polar2Pos(Polar pol, Position own_ship);
-  Polar Pos2Polar(Position p, Position own_ship);
+  ExtendedPosition Polar2Pos(Polar pol, ExtendedPosition own_ship);
+  Polar Pos2Polar(ExtendedPosition p, ExtendedPosition own_ship);
 };
 
 class RadarArpa {
  public:
   RadarArpa(radar_pi* pi, RadarInfo* ri);
   ~RadarArpa();
-  void DrawArpaTargets();
+  void DrawArpaTargets(double scale, double arpa_rotate);
   void RefreshArpaTargets();
   int AcquireNewARPATarget(Polar pol, int status);
-  void AcquireNewMARPATarget(Position p);
-  void DeleteTarget(Position p);
+  void AcquireNewMARPATarget(ExtendedPosition p);
+  void DeleteTarget(ExtendedPosition p);
   bool MultiPix(int ang, int rad);
   void DeleteAllTargets();
   void CleanUpLostTargets();
@@ -162,7 +154,7 @@ class RadarArpa {
   radar_pi* m_pi;
   RadarInfo* m_ri;
 
-  void AcquireOrDeleteMarpaTarget(Position p, int status);
+  void AcquireOrDeleteMarpaTarget(ExtendedPosition p, int status);
   void CalculateCentroid(ArpaTarget* t);
   void DrawContour(ArpaTarget* t);
   bool Pix(int ang, int rad);

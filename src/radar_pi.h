@@ -72,6 +72,7 @@ class RadarControl;
 class radar_pi;
 class GuardZoneBogey;
 class RadarArpa;
+class GPSKalmanFilter;
 
 #define RADARS (4)         // Arbitrary limit, anyone running this many is already crazy!
 #define GUARD_ZONES (2)    // Could be increased if wanted
@@ -371,7 +372,7 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
  public:
   radar_pi(void *ppimgr);
   ~radar_pi();
-  void PrepareRadarImage(int angle);
+  //void PrepareRadarImage(int angle); remove?
 
   //    The required PlugIn Methods
   int Init(void);
@@ -402,8 +403,11 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   void SetCursorPosition(GeoPosition pos);
   void SetCursorLatLon(double lat, double lon);
   bool MouseEventHook(wxMouseEvent &event);
+
   bool m_guard_bogey_confirmed;
   bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
+  PlugIn_ViewPort* m_vp;
+  
 
   // Other public methods
 
@@ -518,7 +522,10 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   double m_radar_heading;          // Last heading obtained from radar, or nan if none
   bool m_radar_heading_true;       // Was TRUE flag set on radar heading?
   time_t m_radar_heading_timeout;  // When last heading was obtained from radar, or 0 if not
+  public:
   HeadingSource m_heading_source;
+  
+  private:
   bool m_bpos_set;
   time_t m_bpos_timestamp;
 
@@ -583,7 +590,11 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   // Cursor position. Used to show position in radar window
   GeoPosition m_cursor_pos;
   GeoPosition m_ownship;
-
+public:
+  GPSKalmanFilter* m_GPS_filter;
+  bool m_predicted_position_initialised = false;
+  ExtendedPosition m_expected_position;  // updated own position at time of last GPS update
+private:
   bool m_initialized;      // True if Init() succeeded and DeInit() not called yet.
   bool m_first_init;       // True in first Init() call.
   wxLongLong m_boot_time;  // millis when started

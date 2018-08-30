@@ -235,6 +235,8 @@ int radar_pi::Init(void) {
   for (size_t r = 0; r < RADARS; r++) {
     m_radar[r] = new RadarInfo(this, r);
   }
+  m_GPS_filter = new GPSKalmanFilter();
+  LOG_INFO(wxT("BR24radar_pi: $$$ GPSFiler done"));
 
   //    And load the configuration items
   if (LoadConfig()) {
@@ -670,7 +672,7 @@ void radar_pi::OnContextMenuItemCallback(int id) {
         && m_settings.chart_overlay >= 0                                            // overlay desired
         && m_radar[m_settings.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
         && !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon)) {
-      Position target_pos;
+      ExtendedPosition target_pos;
       target_pos.pos = m_cursor_pos;
       m_radar[m_settings.chart_overlay]->m_arpa->AcquireNewMARPATarget(target_pos);
     }
@@ -678,7 +680,7 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     // Targets can also be deleted when the overlay is not shown
     // In this case targets can be made by a guard zone in a radarwindow
     if (m_settings.show && m_settings.chart_overlay >= 0) {
-      Position target_pos;
+      ExtendedPosition target_pos;
       target_pos.pos = m_cursor_pos;
       if (m_radar[m_settings.chart_overlay]->m_arpa) {
         m_radar[m_settings.chart_overlay]->m_arpa->DeleteTarget(target_pos);
@@ -831,6 +833,7 @@ void radar_pi::UpdateHeadingPositionState() {
       // If the position data is 10s old reset our position.
       // Note that the watchdog is reset every time we receive a position.
       m_bpos_set = false;
+      m_predicted_position_initialised = false;
       LOG_VERBOSE(wxT("radar_pi: Lost Boat Position data"));
     }
 
@@ -864,13 +867,6 @@ void radar_pi::UpdateHeadingPositionState() {
     if (m_var_source != VARIATION_SOURCE_NONE && TIMED_OUT(now, m_var_timeout)) {
       m_var_source = VARIATION_SOURCE_NONE;
       LOG_VERBOSE(wxT("radar_pi: Lost Variation source"));
-    }
-  }
-
-  // Update radar position offset from GPS
-  if (m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt)) {
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      m_radar[r]->SetRadarPosition(m_ownship, m_hdt);
     }
   }
 }
@@ -911,6 +907,19 @@ void radar_pi::ScheduleWindowRefresh() {
 
 void radar_pi::OnTimerNotify(wxTimerEvent &event) {
   if (m_settings.show) {  // Is radar enabled?
+    ExtendedPosition intermediate_pos;
+    if (m_predicted_position_initialised) {
+      m_GPS_filter->Predict(&m_expected_position, &m_expected_position);
+    }
+    // update ships position to best estimate
+    m_ownship = m_expected_position.pos;
+                                        // Update radar position offset from GPS
+    if (m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt)) {
+      for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+        m_radar[r]->SetRadarPosition(m_ownship, m_hdt);
+      }
+    }
+
     if (m_settings.chart_overlay >= 0) {
       // If overlay is enabled schedule another chart draw. Note this will cause another call to RenderGLOverlay,
       // which will then call ScheduleWindowRefresh again itself.
@@ -1102,6 +1111,7 @@ bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   if (!m_initialized) {
     return true;
   }
+m_vp = vp;
 
   LOG_DIALOG(wxT("radar_pi: RenderGLOverlay context=%p"), pcontext);
   m_opencpn_gl_context = pcontext;
@@ -1139,6 +1149,8 @@ bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
     wxPoint boat_center;
     GetCanvasPixLL(vp, &boat_center, radar_pos.lat, radar_pos.lon);
 
+    LOG_INFO(wxT("radar_pi: $$$RenderOverlay , position lat %f lon %f x= %i y=%i"), radar_pos.lat, radar_pos.lon, boat_center.x, boat_center.y);
+
     m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
 
     //    Calculate image scale factor
@@ -1152,11 +1164,12 @@ bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
       v_scale_ppm = vp->pix_height / dist_y;  // pixel height of screen div by equivalent meters
     }
 
+    LOG_INFO(wxT("radar_pi: $$$RenderOverlay scale= %f, position lat %f lon %f x= %i y=%i"), v_scale_ppm, radar_pos.lat, radar_pos.lat, boat_center.x, boat_center.y);
     double rotation = fmod(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor) + 720.0, 360);
 
-    LOG_DIALOG(wxT("radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat,
-               vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale, rotation);
-    m_radar[m_settings.chart_overlay]->RenderRadarImage(boat_center, v_scale_ppm, rotation, true);
+    LOG_INFO(wxT("radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat,
+               vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale, rotation);   // $$$ was log_dialogue
+    m_radar[m_settings.chart_overlay]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
   }
 
   ScheduleWindowRefresh();
@@ -1468,24 +1481,54 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       m_hdt_timeout = now + HEADING_TIMEOUT;
     }
   }
-
+  ExtendedPosition GPS_position;
   if (pfix.FixTime > 0 && NOT_TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT)) {
-    m_ownship.lat = pfix.Lat;
-    m_ownship.lon = pfix.Lon;
+    GPS_position.pos.lat = pfix.Lat;
+    GPS_position.pos.lon = pfix.Lon;
+    GPS_position.time = wxGetUTCTimeMillis();
 
     if (!m_bpos_set) {
-      LOG_VERBOSE(wxT("radar_pi: GPS position is now known"));
+      LOG_VERBOSE(wxT("radar_pi: GPS position is now known m_ownship.lat= %f, m_ownship.lon = %f"), GPS_position.pos.lat, GPS_position.pos.lon);
     }
     m_bpos_set = true;
     m_bpos_timestamp = now;
   }
+  if (IsBoatPositionValid()) {
+// here a condition for position improvement based on a preference should be set  $$$
+    if (!m_predicted_position_initialised) {
+      m_expected_position = GPS_position;
+      m_expected_position.dlat_dt = 0;
+      m_expected_position.dlon_dt = 0;
+      m_expected_position.speed_kn = 0.;
+      m_predicted_position_initialised = true;
+    }
+   
+    m_GPS_filter->Predict(&m_expected_position, &m_expected_position);  // update expected position based on previous positions
 
-  if (!wxIsNaN(pfix.Cog)) {
-    UpdateCOGAvg(pfix.Cog);
-  }
-  if (TIMED_OUT(now, m_cog_timeout)) {
-    m_cog_timeout = now + m_COGAvgSec;
-    m_cog = m_COGAvg;
+    LOG_INFO(wxT("$$$ predict m_expected_position.lat= %f, m_expected_position.lon= %f, dlat_dt= %f, dlon_dt= %f"), m_expected_position.pos.lat,
+      m_expected_position.pos.lon, m_expected_position.dlat_dt, m_expected_position.dlon_dt);
+
+    m_GPS_filter->Update_P();                                   // update error covariance matrix
+    m_GPS_filter->SetMeasurement(&GPS_position, &m_expected_position);                             // improve expected postition with GPS
+
+// Now set the expected position from the Kalmanfilter as the boat position
+m_ownship = m_expected_position.pos;
+LOG_INFO(wxT("$$$ m_ownship.lat= %f, m_ownship.lon= %f \n"), m_ownship.lat, m_ownship.lon);
+
+
+    LOG_INFO(wxT("$$$         m_expected.lat= %f, m_expected.lon= %f, dlat_dt= %f, dlon_dt= %f"), m_expected_position.pos.lat,
+      m_expected_position.pos.lon, m_expected_position.dlat_dt, m_expected_position.dlon_dt);
+    double exp_course = rad2deg(atan2(m_expected_position.dlon_dt, m_expected_position.dlat_dt * cos(m_expected_position.pos.lat / 360. * 2. * PI)));
+    LOG_INFO(wxT("$$$ SOG %f, calculated speed %f, COG %f"), pfix.Sog, m_expected_position.speed_kn, exp_course);
+
+
+    if (!wxIsNaN(pfix.Cog)) {
+      UpdateCOGAvg(pfix.Cog);
+    }
+    if (TIMED_OUT(now, m_cog_timeout)) {
+      m_cog_timeout = now + m_COGAvgSec;
+      m_cog = m_COGAvg;
+    }
   }
 }
 

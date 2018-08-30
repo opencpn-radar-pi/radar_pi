@@ -339,7 +339,8 @@ void RadarInfo::ComputeColourMap() {
 
 void RadarInfo::ResetSpokes() {
   uint8_t zap[SPOKE_LEN_MAX];
-
+GeoPosition pos;
+GetRadarPosition (&pos);
   LOG_VERBOSE(wxT("radar_pi: reset spokes"));
 
   CLEAR_STRUCT(zap);
@@ -352,12 +353,12 @@ void RadarInfo::ResetSpokes() {
 
   if (m_draw_panel.draw) {
     for (size_t r = 0; r < m_spokes; r++) {
-      m_draw_panel.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max);
+      m_draw_panel.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max, pos);
     }
   }
   if (m_draw_overlay.draw) {
     for (size_t r = 0; r < m_spokes; r++) {
-      m_draw_overlay.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max);
+      m_draw_overlay.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max, pos);
     }
   }
 
@@ -387,7 +388,22 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
 
   for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
     data[i] = 0;
+    if (i < 7) data[i] = 200;   // $$$ dot in the middle
   }
+
+
+
+//  for (int i = 0; i < 1024; i++) {
+//    data[i] = 15;
+//  
+//
+//if (angle > 512 && angle < 530 && i > 512 && i < 530) data[i] = 200;
+//
+//
+//
+//
+//  }   // set picture to 0 except one dot
+
 
   // Recompute 'pixels_per_meter' based on the actual spoke length and range in meters.
   double pixels_per_meter = len / (double)range_meters;
@@ -445,7 +461,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
 
   bool draw_trails_on_overlay = M_SETTINGS.trails_on_overlay;
   if (m_draw_overlay.draw && !draw_trails_on_overlay) {
-    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len);
+    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len, m_history[bearing].pos);
   }
 
   m_trails->UpdateTrailPosition();
@@ -457,11 +473,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   m_trails->UpdateRelativeTrails(angle, data, trail_len);
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
-    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len);
+    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len, m_history[bearing].pos);
   }
 
   if (m_draw_panel.draw) {
-    m_draw_panel.draw->ProcessRadarSpoke(4, stabilized_mode ? bearing : angle, data, len);
+    m_draw_panel.draw->ProcessRadarSpoke(4, stabilized_mode ? bearing : angle, data, len, m_history[bearing].pos);
   }
 }
 
@@ -765,7 +781,7 @@ void RadarInfo::RefreshDisplay() {
   }
 }
 
-void RadarInfo::RenderRadarImage(DrawInfo *di) {
+void RadarInfo::RenderRadarImage2(DrawInfo *di, double radar_scale, double panel_rotate) {
   wxCriticalSectionLocker lock(m_exclusive);
   int drawing_method = m_pi->m_settings.drawing_method;
   int state = m_state.GetValue();
@@ -801,8 +817,27 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
       return;
     }
   }
+  if (di == &m_draw_overlay) {
+    di->draw->DrawRadarOverlayImage(radar_scale, panel_rotate);
+  }
+  else {
+    wxPoint boat_center;
 
-  di->draw->DrawRadarImage();
+    GeoPosition radar_pos;
+   // m_ri->RenderRadarImage(wxPoint(0, 0), CHART_SCALE / m_ri->m_range.GetValue(), 0.0, false);
+    double panel_scale = (CHART_SCALE / m_range.GetValue()) / m_pixels_per_meter;
+    LOG_INFO(wxT("radar_pi: $$$ panel_scale=%f, m_range.GetValue()=%i,  m_pixels_per_meter=%f"),panel_scale,  m_range.GetValue(),  m_pixels_per_meter);
+   // // GetRadarPosition(&radar_pos);
+   //// GetCanvasPixLL(m_pi->m_vp, &boat_center, radar_pos.lat, radar_pos.lon);
+   // glPushMatrix();
+   // glTranslated(.5, 0., 0);
+   // glRotated(panel_rotate, 0.0, 0.0, 1.0);
+   // glScaled(panel_scale, panel_scale, 1.);
+    di->draw->DrawRadarPanelImage(panel_scale, panel_rotate);
+
+    /*glPopMatrix();*/
+  }
+
   if (g_first_render) {
     g_first_render = false;
     wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->GetBootMillis();
@@ -823,7 +858,7 @@ int RadarInfo::GetOrientation() {
   return orientation;
 }
 
-void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_rotate, bool overlay) {
+void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_rotate, bool overlay) {
   bool arpa_on = false;
   if (m_arpa) {
     for (int i = 0; i < GUARD_ZONES; i++) {
@@ -894,32 +929,13 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
 
   if (m_pixels_per_meter != 0.) {
     double radar_scale = scale / m_pixels_per_meter;
-    glPushMatrix();
-    glTranslated(center.x, center.y, 0);
-    glRotated(panel_rotate, 0.0, 0.0, 1.0);
-    glScaled(radar_scale, radar_scale, 1.);
-
-    RenderRadarImage(overlay ? &m_draw_overlay : &m_draw_panel);
-    glPopMatrix();
+    RenderRadarImage2(overlay ? &m_draw_overlay : &m_draw_panel, radar_scale, panel_rotate);
   }
 
   if (arpa_on) {
-    glPushMatrix();
-    glTranslated(center.x, center.y, 0);
-    LOG_VERBOSE(wxT("radar_pi: %s render ARPA targets on overlay with rot=%f"), m_name.c_str(), arpa_rotate);
-
-    glRotated(arpa_rotate, 0.0, 0.0, 1.0);
-    glScaled(scale, scale, 1.);
-    m_arpa->DrawArpaTargets();
-    glPopMatrix();
+    m_arpa->DrawArpaTargets(scale, arpa_rotate);
   }
-
-  if (!overlay) {
-    glFinish();
-  }
-
   m_draw_time_ms = stopwatch.Time();
-
   glPopAttrib();
 }
 
@@ -1499,6 +1515,83 @@ void RadarInfo::CheckTimedTransmit() {
   }
   time_to_go = wxMax(time_to_go, 0);
   m_next_state_change.Update(time_to_go);
+}
+
+bool RadarInfo::GetRadarPosition(GeoPosition *pos) {
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  if (m_pi->IsBoatPositionValid() && VALID_GEO(m_radar_position.lat) && VALID_GEO(m_radar_position.lon)) {
+    *pos = m_radar_position;
+    return true;
+  }
+  pos->lat = nan("");
+  pos->lon = nan("");
+  return false;
+}
+
+bool RadarInfo::GetRadarPosition(ExtendedPosition *radar_pos) {
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  if (m_pi->IsBoatPositionValid() && VALID_GEO(m_radar_position.lat) && VALID_GEO(m_radar_position.lon)) {
+    radar_pos->pos = m_radar_position;
+    return true;
+  }
+  radar_pos->pos.lat = nan("");
+  radar_pos->pos.lon = nan("");
+  return false;
+}
+
+// Comparable to GetRadarPosition(), but returns an intermediate position based on a regression of previous positions.
+// The returned position will normally have a higher accuracy than the position returned by GetRadarPosition().
+// GetRadarPosition() however is much faster than GetRadarPredictedPosition().
+bool RadarInfo::GetRadarPredictedPosition(ExtendedPosition* radar_pos) {
+  wxCriticalSectionLocker lock(m_exclusive);
+  ExtendedPosition intermediate_pos;
+  if (m_pi->m_predicted_position_initialised) {
+    m_pi->m_GPS_filter->Predict(&m_pi->m_expected_position, &intermediate_pos);  // $$$$
+  }
+  // Update radar position offset from GPS
+double hdt = m_pi->GetHeadingTrue();
+  if (m_pi->m_heading_source != HEADING_NONE && !wxIsNaN(hdt) &&
+    (m_antenna_starboard.GetValue() != 0 || m_antenna_forward.GetValue() != 0)) {
+    double sine = sin(deg2rad(hdt));
+    double cosine = cos(deg2rad(hdt));
+    double dist_forward = (double)m_antenna_forward.GetValue() / 1852. / 60.;
+    double dist_starboard = (double)m_antenna_starboard.GetValue() / 1852. / 60.;
+    intermediate_pos.pos.lat += dist_forward * cosine - dist_starboard * sine;
+    intermediate_pos.pos.lon += (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_radar_position.lat));
+  }
+
+  if (m_pi->IsBoatPositionValid() && VALID_GEO(intermediate_pos.pos.lat) && VALID_GEO(intermediate_pos.pos.lon) && m_pi->m_predicted_position_initialised) {
+    *radar_pos = intermediate_pos;
+    return true;
+  }
+  return false;
+}
+
+bool RadarInfo::GetRadarPredictedPosition(GeoPosition* radar_pos) {
+  wxCriticalSectionLocker lock(m_exclusive);
+  ExtendedPosition intermediate_pos;
+  if (m_pi->m_predicted_position_initialised) {
+    m_pi->m_GPS_filter->Predict(&m_pi->m_expected_position, &intermediate_pos);
+  }
+  // Update radar position offset from GPS
+  double hdt = m_pi->GetHeadingTrue();
+  if (m_pi->m_heading_source != HEADING_NONE && !wxIsNaN(hdt) &&
+    (m_antenna_starboard.GetValue() != 0 || m_antenna_forward.GetValue() != 0)) {
+    double sine = sin(deg2rad(hdt));
+    double cosine = cos(deg2rad(hdt));
+    double dist_forward = (double)m_antenna_forward.GetValue() / 1852. / 60.;
+    double dist_starboard = (double)m_antenna_starboard.GetValue() / 1852. / 60.;
+    intermediate_pos.pos.lat += dist_forward * cosine - dist_starboard * sine;
+    intermediate_pos.pos.lon += (dist_forward * sine + dist_starboard * cosine) / cos(deg2rad(m_radar_position.lat));
+  }
+
+  if (m_pi->IsBoatPositionValid() && VALID_GEO(intermediate_pos.pos.lat) && VALID_GEO(intermediate_pos.pos.lon) && m_pi->m_predicted_position_initialised) {
+    *radar_pos = intermediate_pos.pos;
+    return true;
+  }
+  return false;
 }
 
 PLUGIN_END_NAMESPACE

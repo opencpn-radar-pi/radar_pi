@@ -38,6 +38,7 @@
  */
 
 #include "Kalman.h"
+#include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -129,7 +130,7 @@ void KalmanFilter::Predict(LocalPosition* xx, double delta_time) {
 
 void KalmanFilter::Update_P() {
   // calculate apriori P
-  // separated from the predict to prevent the update being done both in pass 1 and pass2
+  // separated from the predict to prevent the update being done both in pass1 and pass2
 
   P = A * P * AT + W * Q * WT;
   return;
@@ -183,5 +184,139 @@ void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected,
   x->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed
   return;
 }
+
+// Kalman filter to stabilize the GPS position and to calculate intermediate positions (Predict())
+GPSKalmanFilter::GPSKalmanFilter() {
+  // as the measurement to state transformation is non-linear, the extended Kalman filter is used
+  // as the state transformation is linear, the state transformation matrix F is equal to the jacobian A
+  // f is the state transformation function Xk <- Xk-1
+  // Ai,j is jacobian matrix dfi / dxj
+  LOG_INFO(wxT("BR24radar_p $$$ GPSKalmanFilter() init "));
+  I = I.Identity();
+  Q = ZeroMatrix2;
+  R = ZeroMatrix2;
+  A = I;
+
+  // transpose of A
+  AT = A;
+
+  // Jacobian matrix of partial derivatives dfi / dwj
+  W = ZeroMatrix42;
+  W(2, 0) = 1.;
+  W(3, 1) = 1.;
+
+  // transpose of W
+  WT = ZeroMatrix24;
+  WT = W.Transpose();
+
+  // Observation matrix, jacobian of observation function h
+  // dhi / dvj
+
+  // v is measurement noise
+  H = ZeroMatrix24;
+  H(0, 0) = 1.;
+  H(1, 1) = 1.;
+
+  // Transpose of observation matrix
+  HT = H.Transpose();
+
+  // Jacobian V, dhi / dvj
+  // As V is the identity matrix, it is left out of the calculation of the Kalman gain
+
+  // P estimate error covariance
+  // initial values follow, large initial values as initial speed is unkown
+  P = ZeroMatrix4;
+  P(0, 0) = 20. / 1852. / 1852. / 60. / 60.;   // in degrees2
+  P(1, 1) = P(1, 1);
+  P(2, 2) = 8. / 1852. / 1852. / 60. / 60.;
+  P(3, 3) = P(2, 2);
+
+
+  // Q Process noise covariance matrix
+  // convert meters2 to deg2
+  double convert = 1. / 1852. / 1852. / 60. / 60.;
+  //  Q(0, 0) = .004 * convert;  // variance in lat speed, (deg / sec)2 // 25 sec for 20 deg turn
+  Q(0, 0) = .1 * convert;  // variance in lat speed, (deg / sec)2     // 10 sec for 20 deg turn
+  Q(1, 1) = Q(0, 0);  // variance in lon speed, (deg / sec)2
+
+                      // R measurement noise covariance matrix
+  R(0, 0) = 36. * convert;  // in deg2 assume standard deviation of GPS is 6 m
+  R(1, 1) = R(0, 0);    // variance in y (lon)
+}
+
+GPSKalmanFilter::~GPSKalmanFilter() {}
+
+void GPSKalmanFilter::Predict(ExtendedPosition* old, ExtendedPosition* updated) {
+  // predicts current position xx at time now
+  // starting from given position m_expected_position
+  wxLongLong now = wxGetUTCTimeMillis();  // millis
+  Matrix<double, 4, 1> X;
+  X(0, 0) = old->pos.lat;                                // X in meters and m / sec
+  X(1, 0) = old->pos.lon;
+  X(2, 0) = old->dlat_dt;
+  X(3, 0) = old->dlon_dt;
+  A(0, 2) = (now - old->time).GetLo() / 1000.;  // delta time in seconds
+  LOG_INFO(wxT("$$$ Predict delta t= %f"), A(0, 2));
+  A(1, 3) = A(0, 2);
+
+  AT(2, 0) = A(0, 2);
+  AT(3, 1) = A(0, 2);
+
+  X = A * X;
+  updated->pos.lat = X(0, 0);                                 // lat and lon in degrees
+  updated->pos.lon = X(1, 0);
+  updated->dlat_dt = X(2, 0);                                           // speeds in m / sec
+  updated->dlon_dt = X(3, 0);
+  updated->time = now;
+  //    updated->sd_speed_kn = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed  in kn!!
+  return;
+}
+
+void GPSKalmanFilter::Update_P() {
+  // calculate apriori P
+  // separated from the predict to prevent the update being done both in pass 1 and pass2
+  // This function uses the A (and delta T) from the last Predict()
+
+  P = A * P * AT + W * Q * WT;
+  return;
+}
+
+void GPSKalmanFilter::SetMeasurement(ExtendedPosition* gps, ExtendedPosition* updated) {
+  // m_GPS_position is measured position
+  // m_expected_position is expected position, updated by SetMeasurement
+  // before calling SetMeasurement, Predict should be called first
+  // the timestamp of updated position is the time from the Predict
+
+
+  Matrix<double, 2, 1> Z;
+  // Z is  difference between expected and measured
+  Z(0, 0) = (gps->pos.lat - updated->pos.lat);
+  Z(1, 0) = (gps->pos.lon - updated->pos.lon);
+  LOG_INFO(wxT("$$$ delta lat= %f delta lon= %f"), Z(0, 0), Z(1, 0));
+  Matrix<double, 4, 1> X;
+  X(0, 0) = updated->pos.lat;                                // X in meters and m / sec
+  X(1, 0) = updated->pos.lon;
+  X(2, 0) = updated->dlat_dt;
+  X(3, 0) = updated->dlon_dt;
+
+  // calculate Kalman gain
+  K = P * HT * ((H * P * HT + R).Inverse());
+
+  // calculate apostriori expected position
+  X = X + K * Z;
+  updated->pos.lat = X(0, 0);                                 // lat and lon in degrees
+  updated->pos.lon = X(1, 0);
+  updated->dlat_dt = X(2, 0);
+  updated->dlon_dt = X(3, 0);
+  double cosin = cos(updated->pos.lat / 360. * 2. * PI);
+  updated->speed_kn = sqrt(X(2, 0)*X(2, 0) + X(3, 0) * X(3, 0) * cosin * cosin) * 60. * 3600.;
+
+  // update covariance P
+  P = (I - K * H) * P;
+  //  x->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed
+  return;
+}
+
+
 
 PLUGIN_END_NAMESPACE

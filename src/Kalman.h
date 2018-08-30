@@ -34,6 +34,7 @@
 #define _KALMAN_H_
 
 #include "Matrix.h"
+#include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -87,6 +88,28 @@ class KalmanFilter {
  private:
   size_t m_spokes;
 };
+
+class GPSKalmanFilter {
+public:
+  GPSKalmanFilter();
+  ~GPSKalmanFilter();
+  void SetMeasurement(ExtendedPosition* gps, ExtendedPosition* updated);
+  void Predict(ExtendedPosition* old, ExtendedPosition* updated);
+  void Update_P();
+
+  Matrix<double, 4> A;
+  Matrix<double, 4> AT;
+  Matrix<double, 4, 2> W;
+  Matrix<double, 2, 4> WT;
+  Matrix<double, 2, 4> H;
+  Matrix<double, 4, 2> HT;
+  Matrix<double, 4> P;
+  Matrix<double, 2> Q;
+  Matrix<double, 2> R;
+  Matrix<double, 4, 2> K;
+  Matrix<double, 4> I;
+};
+
 
 PLUGIN_END_NAMESPACE
 #endif

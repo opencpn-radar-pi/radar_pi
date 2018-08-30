@@ -161,16 +161,6 @@ INCLUDE_DIRECTORIES(src)
 
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_RADAR} ${SRC_NMEA0183} ${SRC_JSON} ${SRC_EMULATOR} ${SRC_GARMIN_HD} ${SRC_GARMIN_XHD} ${SRC_NAVICO})
 
-SET(TEST_KALMAN kalman-test)
-SET(SRC_KALMAN
-              src/Kalman-test.cpp
-              src/Kalman.h
-              src/Kalman.cpp
-              src/Matrix.h
-              src/RadarMarpa.h
-)
-ADD_EXECUTABLE(${TEST_KALMAN} ${SRC_KALMAN})
-TARGET_LINK_LIBRARIES(${TEST_KALMAN} ${wxWidgets_LIBRARIES})
 
 INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginLocalization.cmake")
