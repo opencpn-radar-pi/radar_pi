@@ -78,7 +78,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_textCtrlRudderStbd = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_CENTRE|wxTE_READONLY );
 	m_textCtrlRudderStbd->SetFont( wxFont( 10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
 	
-	bSizer131->Add( m_textCtrlRudderStbd, 0, wxALIGN_BOTTOM|wxALIGN_CENTER_VERTICAL, 0 );
+	bSizer131->Add( m_textCtrlRudderStbd, 0, wxALIGN_CENTER_VERTICAL, 0 );
 	
 	
 	bSizer131->Add( 0, 0, 1, wxEXPAND, 5 );
@@ -217,10 +217,13 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	
 	fgSizer82->Add( m_button7, 1, wxALL|wxEXPAND, 2 );
 	
-	m_button8 = new wxButton( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
-	m_button8->SetMinSize( wxSize( 50,-1 ) );
+	m_buttonWind = new wxButton( this, wxID_ANY, _("Sail"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonWind->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_buttonWind->SetBackgroundColour( wxColour( 0, 255, 0 ) );
+	m_buttonWind->SetToolTip( _("Using Sails") );
+	m_buttonWind->SetMinSize( wxSize( 50,-1 ) );
 	
-	fgSizer82->Add( m_button8, 1, wxALL|wxEXPAND, 2 );
+	fgSizer82->Add( m_buttonWind, 1, wxALL|wxEXPAND, 2 );
 	
 	m_buttonMinus1 = new wxButton( this, wxID_ANY, _("-1"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonMinus1->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
@@ -252,6 +255,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	
 	this->SetSizer( bSizer10 );
 	this->Layout();
+	bSizer10->Fit( this );
 	m_timer1.SetOwner( this, wxID_ANY );
 	
 	this->Centre( wxBOTH );
@@ -263,6 +267,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_bpStop->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnStop ), NULL, this );
 	m_buttonStandby->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnStandby ), NULL, this );
 	m_buttonAuto->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnAuto ), NULL, this );
+	m_buttonWind->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnWind ), NULL, this );
 	m_buttonMinus1->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnMinus1 ), NULL, this );
 	m_buttonMinus10->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnMinus10 ), NULL, this );
 	m_buttonPlus10->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnPlus10 ), NULL, this );
@@ -279,6 +284,7 @@ ShipDriverBase::~ShipDriverBase()
 	m_bpStop->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnStop ), NULL, this );
 	m_buttonStandby->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnStandby ), NULL, this );
 	m_buttonAuto->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnAuto ), NULL, this );
+	m_buttonWind->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnWind ), NULL, this );
 	m_buttonMinus1->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnMinus1 ), NULL, this );
 	m_buttonMinus10->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnMinus10 ), NULL, this );
 	m_buttonPlus10->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnPlus10 ), NULL, this );
@@ -329,6 +335,7 @@ shipdriverPreferences::shipdriverPreferences( wxWindow* parent, wxWindowID id, c
 	
 	this->SetSizer( sbSizer1 );
 	this->Layout();
+	sbSizer1->Fit( this );
 	
 	this->Centre( wxBOTH );
 }

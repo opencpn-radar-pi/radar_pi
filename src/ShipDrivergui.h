@@ -51,7 +51,7 @@ class ShipDriverBase : public wxDialog
 		wxButton* m_buttonStandby;
 		wxButton* m_buttonAuto;
 		wxButton* m_button7;
-		wxButton* m_button8;
+		wxButton* m_buttonWind;
 		wxButton* m_buttonMinus1;
 		wxButton* m_buttonMinus10;
 		wxButton* m_buttonPlus10;
@@ -64,6 +64,7 @@ class ShipDriverBase : public wxDialog
 		virtual void OnStop( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStandby( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnAuto( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnWind( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnMinus1( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnMinus10( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnPlus10( wxCommandEvent& event ) { event.Skip(); }
@@ -80,7 +81,7 @@ class ShipDriverBase : public wxDialog
 		wxSlider* m_SliderSpeed;
 		wxTimer m_timer1;
 		
-		ShipDriverBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 300,300 ), long style = wxDEFAULT_DIALOG_STYLE ); 
+		ShipDriverBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER ); 
 		~ShipDriverBase();
 	
 };
@@ -102,7 +103,7 @@ class shipdriverPreferences : public wxDialog
 		wxCheckBox* m_cbAisToFile;
 		wxTextCtrl* m_textCtrlMMSI;
 		
-		shipdriverPreferences( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Preferences"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 222,214 ), long style = wxCAPTION ); 
+		shipdriverPreferences( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Preferences"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxCAPTION|wxRESIZE_BORDER ); 
 		~shipdriverPreferences();
 	
 };
