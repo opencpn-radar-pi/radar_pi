@@ -247,8 +247,8 @@ GPSKalmanFilter::GPSKalmanFilter() {
 GPSKalmanFilter::~GPSKalmanFilter() {}
 
 void GPSKalmanFilter::Predict(ExtendedPosition* old, ExtendedPosition* updated) {
-  // predicts current position xx at time now
-  // starting from given position m_expected_position
+  // predicts current position based on position old in updated at time now
+
   wxLongLong now = wxGetUTCTimeMillis();  // millis
   Matrix<double, 4, 1> X;
   X(0, 0) = old->pos.lat;                                // X in meters and m / sec
@@ -282,9 +282,9 @@ void GPSKalmanFilter::Update_P() {
 }
 
 void GPSKalmanFilter::SetMeasurement(ExtendedPosition* gps, ExtendedPosition* updated) {
-  // m_GPS_position is measured position
-  // m_expected_position is expected position, updated by SetMeasurement
-  // before calling SetMeasurement, Predict should be called first
+  // gps is measured position
+  // updated is expected position, that will be updated by SetMeasurement
+  // before calling SetMeasurement, Predict should be called first on updated
   // the timestamp of updated position is the time from the Predict
 
 

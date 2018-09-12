@@ -909,7 +909,7 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
   if (m_settings.show) {  // Is radar enabled?
     ExtendedPosition intermediate_pos;
     if (m_predicted_position_initialised) {
-      m_GPS_filter->Predict(&m_expected_position, &m_expected_position);
+      m_GPS_filter->Predict(&m_last_fixed, &m_expected_position);
     }
     // update ships position to best estimate
     m_ownship = m_expected_position.pos;
@@ -1494,7 +1494,7 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     m_bpos_timestamp = now;
   }
   if (IsBoatPositionValid()) {
-// here a condition for position improvement based on a preference should be set  $$$
+    // here a condition for position improvement based on a preference should be set  $$$
     if (!m_predicted_position_initialised) {
       m_expected_position = GPS_position;
       m_expected_position.dlat_dt = 0;
@@ -1502,23 +1502,24 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       m_expected_position.speed_kn = 0.;
       m_predicted_position_initialised = true;
     }
-   
-    m_GPS_filter->Predict(&m_expected_position, &m_expected_position);  // update expected position based on previous positions
 
-    LOG_INFO(wxT("$$$ predict m_expected_position.lat= %f, m_expected_position.lon= %f, dlat_dt= %f, dlon_dt= %f"), m_expected_position.pos.lat,
-      m_expected_position.pos.lon, m_expected_position.dlat_dt, m_expected_position.dlon_dt);
+    m_GPS_filter->Predict(&m_last_fixed, &m_expected_position);  // update expected position based on previous positions
 
-    m_GPS_filter->Update_P();                                   // update error covariance matrix
-    m_GPS_filter->SetMeasurement(&GPS_position, &m_expected_position);                             // improve expected postition with GPS
+    LOG_INFO(wxT("$$$ predict m_expected_position.lat= %f, m_expected_position.lon= %f, dlat_dt= %f, dlon_dt= %f"),
+             m_expected_position.pos.lat, m_expected_position.pos.lon, m_expected_position.dlat_dt, m_expected_position.dlon_dt);
 
-// Now set the expected position from the Kalmanfilter as the boat position
-m_ownship = m_expected_position.pos;
-LOG_INFO(wxT("$$$ m_ownship.lat= %f, m_ownship.lon= %f \n"), m_ownship.lat, m_ownship.lon);
+    m_GPS_filter->Update_P();                                           // update error covariance matrix
+    m_GPS_filter->SetMeasurement(&GPS_position, &m_expected_position);  // improve expected postition with GPS
 
+    // Now set the expected position from the Kalmanfilter as the boat position
+    m_ownship = m_expected_position.pos;
+    m_last_fixed = m_expected_position;
+    LOG_INFO(wxT("$$$ m_ownship.lat= %f, m_ownship.lon= %f \n"), m_ownship.lat, m_ownship.lon);
 
     LOG_INFO(wxT("$$$         m_expected.lat= %f, m_expected.lon= %f, dlat_dt= %f, dlon_dt= %f"), m_expected_position.pos.lat,
-      m_expected_position.pos.lon, m_expected_position.dlat_dt, m_expected_position.dlon_dt);
-    double exp_course = rad2deg(atan2(m_expected_position.dlon_dt, m_expected_position.dlat_dt * cos(m_expected_position.pos.lat / 360. * 2. * PI)));
+             m_expected_position.pos.lon, m_expected_position.dlat_dt, m_expected_position.dlon_dt);
+    double exp_course = rad2deg(
+        atan2(m_expected_position.dlon_dt, m_expected_position.dlat_dt * cos(m_expected_position.pos.lat / 360. * 2. * PI)));
     LOG_INFO(wxT("$$$ SOG %f, calculated speed %f, COG %f"), pfix.Sog, m_expected_position.speed_kn, exp_course);
 
 

@@ -233,8 +233,6 @@ class RadarInfo {
 
   bool GetRadarPosition(GeoPosition *pos);
   bool GetRadarPosition(ExtendedPosition *radar_pos);
-  bool GetRadarPredictedPosition(ExtendedPosition* radar_pos);
-  bool GetRadarPredictedPosition(GeoPosition* radar_pos);
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();

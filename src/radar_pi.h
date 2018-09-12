@@ -594,7 +594,8 @@ public:
   GPSKalmanFilter* m_GPS_filter;
   bool m_predicted_position_initialised = false;
   ExtendedPosition m_expected_position;  // updated own position at time of last GPS update
-private:
+  ExtendedPosition m_last_fixed;         // best estimate position at last measurement
+  private:
   bool m_initialized;      // True if Init() succeeded and DeInit() not called yet.
   bool m_first_init;       // True in first Init() call.
   wxLongLong m_boot_time;  // millis when started
