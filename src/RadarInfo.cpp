@@ -823,19 +823,9 @@ void RadarInfo::RenderRadarImage2(DrawInfo *di, double radar_scale, double panel
   else {
     wxPoint boat_center;
 
-    GeoPosition radar_pos;
-   // m_ri->RenderRadarImage(wxPoint(0, 0), CHART_SCALE / m_ri->m_range.GetValue(), 0.0, false);
     double panel_scale = (CHART_SCALE / m_range.GetValue()) / m_pixels_per_meter;
     LOG_INFO(wxT("radar_pi: $$$ panel_scale=%f, m_range.GetValue()=%i,  m_pixels_per_meter=%f"),panel_scale,  m_range.GetValue(),  m_pixels_per_meter);
-   // // GetRadarPosition(&radar_pos);
-   //// GetCanvasPixLL(m_pi->m_vp, &boat_center, radar_pos.lat, radar_pos.lon);
-   // glPushMatrix();
-   // glTranslated(.5, 0., 0);
-   // glRotated(panel_rotate, 0.0, 0.0, 1.0);
-   // glScaled(panel_scale, panel_scale, 1.);
     di->draw->DrawRadarPanelImage(panel_scale, panel_rotate);
-
-    /*glPopMatrix();*/
   }
 
   if (g_first_render) {
