@@ -687,6 +687,10 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item)
       m_orientation = item;
     }
 
+    case CT_TRUE_MOTION: {
+      m_true_motion = item;
+    }
+
     case CT_OVERLAY: {
       m_overlay = item;
     }
@@ -817,6 +821,8 @@ void RadarInfo::RenderRadarImage2(DrawInfo *di, double radar_scale, double panel
       return;
     }
   }
+  LOG_INFO(wxT("radar_pi $$$$$ draw overlay called from radarinfo")); 
+if (di == &m_draw_overlay) LOG_INFO(wxT("radar_pi $$$$$ draw overlay true"));
   if (di == &m_draw_overlay) {
     di->draw->DrawRadarOverlayImage(radar_scale, panel_rotate);
   }

@@ -92,6 +92,7 @@ class RadarInfo {
   RadarControlItem m_state;        // RadarState (observed)
   RadarControlItem m_boot_state;   // Can contain RADAR_TRANSMIT until radar is seen at boot
   RadarControlItem m_orientation;  // See below for allowed values.
+  RadarControlItem m_true_motion;
 
   int m_min_contour_length;  // minimum contour length of an ARPA or MARPA target
 

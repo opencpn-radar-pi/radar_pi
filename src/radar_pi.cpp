@@ -1229,6 +1229,10 @@ bool radar_pi::LoadConfig(void) {
         v = ORIENTATION_STABILIZED_UP;
       }
       ri->m_orientation.Update(v);
+
+      pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 2);
+      ri->m_true_motion.Update(v);
+
       pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
       ri->m_boot_state.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dMinContourLength"), r), &ri->m_min_contour_length, 6);
@@ -1238,7 +1242,7 @@ bool radar_pi::LoadConfig(void) {
       pConf->Read(wxString::Format(wxT("Radar%dTrailsState"), r), &state, RCS_OFF);
       pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
       m_radar[r]->m_target_trails.Update(v, (RadarControlState)state);
-      pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 1);
+      pConf->Read(wxString::Format(wxT("Radar%dTrueTrailsMotion"), r), &v, 1);
       m_radar[r]->m_trails_motion.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dMainBangSize"), r), &v, 0);
       m_radar[r]->m_main_bang_size.Update(v);
@@ -1392,13 +1396,14 @@ bool radar_pi::SaveConfig(void) {
 
       pConf->Write(wxString::Format(wxT("Radar%dRange"), r), m_radar[r]->m_range.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dTrueMotion"), r), m_radar[r]->m_true_motion.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->m_state.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
       pConf->Write(wxString::Format(wxT("Radar%dControlShow"), r), m_settings.show_radar_control[r]);
       pConf->Write(wxString::Format(wxT("Radar%dTargetShow"), r), m_radar[r]->m_target_on_ppi.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTrailsState"), r), (int)m_radar[r]->m_target_trails.GetState());
       pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->m_target_trails.GetValue());
-      pConf->Write(wxString::Format(wxT("Radar%dTrueMotion"), r), m_radar[r]->m_trails_motion.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dTrueTrailsMotion"), r), m_radar[r]->m_trails_motion.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dWindowPosX"), r), m_settings.window_pos[r].x);
       pConf->Write(wxString::Format(wxT("Radar%dWindowPosY"), r), m_settings.window_pos[r].y);
       pConf->Write(wxString::Format(wxT("Radar%dControlPosX"), r), m_settings.control_pos[r].x);
@@ -1486,9 +1491,13 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     GPS_position.pos.lat = pfix.Lat;
     GPS_position.pos.lon = pfix.Lon;
     GPS_position.time = wxGetUTCTimeMillis();
+    GPS_position.dlat_dt = 0.;
+    GPS_position.dlon_dt = 0.;
+    GPS_position.sd_speed_kn = 0.;
 
     if (!m_bpos_set) {
-      LOG_VERBOSE(wxT("radar_pi: GPS position is now known m_ownship.lat= %f, m_ownship.lon = %f"), GPS_position.pos.lat, GPS_position.pos.lon);
+      LOG_VERBOSE(wxT("radar_pi: GPS position is now known m_ownship.lat= %f, m_ownship.lon = %f"), GPS_position.pos.lat,
+                  GPS_position.pos.lon);
     }
     m_bpos_set = true;
     m_bpos_timestamp = now;
@@ -1497,8 +1506,9 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     // here a condition for position improvement based on a preference should be set  $$$
     if (!m_predicted_position_initialised) {
       m_expected_position = GPS_position;
-      m_expected_position.dlat_dt = 0;
-      m_expected_position.dlon_dt = 0;
+      m_last_fixed = GPS_position;
+      m_expected_position.dlat_dt = 0.;
+      m_expected_position.dlon_dt = 0.;
       m_expected_position.speed_kn = 0.;
       m_predicted_position_initialised = true;
     }

@@ -79,6 +79,7 @@ enum {  // process ID's
   ID_TARGETS_ON_PPI,
   ID_CLEAR_TRAILS,
   ID_ORIENTATION,
+  ID_TRUE_MOTION,
 
   ID_TRANSMIT_STANDBY,
 
@@ -132,6 +133,7 @@ EVT_BUTTON(ID_GAIN, ControlsDialog::OnRadarGainButtonClick)
 EVT_BUTTON(ID_TARGETS_ON_PPI, ControlsDialog::OnTargetsOnPPIButtonClick)
 EVT_BUTTON(ID_CLEAR_TRAILS, ControlsDialog::OnClearTrailsButtonClick)
 EVT_BUTTON(ID_ORIENTATION, ControlsDialog::OnOrientationButtonClick)
+EVT_BUTTON(ID_TRUE_MOTION, ControlsDialog::OnTrueMotionButtonClick)
 
 EVT_BUTTON(ID_ADJUST, ControlsDialog::OnAdjustButtonClick)
 EVT_BUTTON(ID_ADVANCED, ControlsDialog::OnAdvancedButtonClick)
@@ -1036,6 +1038,11 @@ void ControlsDialog::CreateControls() {
   m_view_sizer->Add(m_orientation_button, 0, wxALL, BORDER);
   // Updated when we receive data
 
+// The True Motion button
+  m_true_motion_button =
+      new RadarControlButton(this, ID_TRUE_MOTION, _("True Motion"), m_ctrl[CT_TRUE_MOTION], &m_ri->m_true_motion);
+  m_view_sizer->Add(m_true_motion_button, 0, wxALL, BORDER);
+
   // The REFRESHRATE button
   if (m_ctrl[CT_REFRESHRATE].type) {
     m_refresh_rate_button =
@@ -1459,6 +1466,24 @@ void ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
   UpdateControlValues(false);
 }
 
+void ControlsDialog::OnTrueMotionButtonClick(wxCommandEvent& event) {
+  int value = m_ri->m_true_motion.GetValue() + 1;
+  if (value > TRUE_MOTION_ON) {
+    value = TRUE_MOTION_OFF;
+  }
+  GeoPosition pos;
+  if (m_ri->GetRadarPosition(&pos)) {
+    if (value == TRUE_MOTION_WANTED) value = TRUE_MOTION_ON;
+  } else {  // no position available
+    if (value == TRUE_MOTION_ON) {
+      value = TRUE_MOTION_WANTED;
+    }
+  }
+  m_ri->m_true_motion.Update(value);
+  UpdateControlValues(false);
+}
+
+
 void ControlsDialog::OnBearingSetButtonClick(wxCommandEvent& event) {
   int bearing = event.GetId() - ID_BEARING_SET;
   LOG_DIALOG(wxT("%s OnBearingSetButtonClick for bearing #%d"), m_log_name.c_str(), bearing + 1);
@@ -1817,6 +1842,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   m_target_trails_button->UpdateLabel();
   m_trails_motion_button->UpdateLabel();
   m_orientation_button->UpdateLabel();
+  m_true_motion_button->UpdateLabel();
   m_overlay_button->UpdateLabel();
 
   if (m_range_button && (m_ri->m_range.IsModified() || refreshAll)) {
