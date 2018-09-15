@@ -1230,7 +1230,7 @@ bool radar_pi::LoadConfig(void) {
       }
       ri->m_orientation.Update(v);
 
-      pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 2);
+      pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);
       ri->m_true_motion.Update(v);
 
       pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
