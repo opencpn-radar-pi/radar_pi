@@ -161,7 +161,7 @@ class ControlsDialog : public wxDialog {
     m_adjust_button = 0;
     m_cursor_menu = 0;
 
-    for (int i = 0; i < ARRAY_SIZE(m_ctrl); i++) {
+    for (size_t i = 0; i < ARRAY_SIZE(m_ctrl); i++) {
       m_ctrl[i].type = CT_NONE;
       m_ctrl[i].names = 0;
       m_ctrl[i].autoNames = 0;

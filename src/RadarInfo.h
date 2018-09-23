@@ -65,7 +65,7 @@ class RadarInfo {
  public:
   wxString m_name;         // Either "Radar", "Radar A", "Radar B".
   radar_pi *m_pi;          // Pointer back to the plugin
-  int m_radar;             // Which radar this is [0..RADARS>
+  size_t m_radar;          // Which radar this is [0..RADARS>
   RadarType m_radar_type;  // Which radar type
   size_t m_spokes;         // # of spokes per rotation
   size_t m_spoke_len_max;  // Max # of bytes per spoke

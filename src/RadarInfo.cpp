@@ -29,13 +29,13 @@
  ***************************************************************************
  */
 
+#include "RadarInfo.h"
 #include "ControlsDialog.h"
 #include "GuardZone.h"
 #include "MessageBox.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
-#include "RadarInfo.h"
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
@@ -542,7 +542,7 @@ void RadarInfo::RequestRadarState(RadarState state) {
       if (state == RADAR_TRANSMIT) {
         m_control->RadarTxOn();
         // Refresh radar immediately so that we generate draw mechanisms
-        if (m_pi->m_settings.chart_overlay == m_radar) {
+        if (m_pi->m_settings.chart_overlay == (int)m_radar) {
           GetOCPNCanvasWindow()->Refresh(false);
         }
         if (m_radar_panel) {
@@ -718,7 +718,7 @@ bool RadarInfo::IsPaneShown() { return m_radar_panel->IsPaneShown(); }
 void RadarInfo::UpdateControlState(bool all) {
   wxCriticalSectionLocker lock(m_exclusive);
 
-  m_overlay.Update(m_pi->m_settings.chart_overlay == m_radar);
+  m_overlay.Update(m_pi->m_settings.chart_overlay == (int)m_radar);
 
 #ifdef OPENCPN_NO_LONGER_MIXES_GL_CONTEXT
   //

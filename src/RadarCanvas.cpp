@@ -263,24 +263,22 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, float r) {
   }
 
   if (m_pi->GetHeadingSource() != HEADING_NONE) {
-    double heading;
-    double predictor;
+    double heading = 180.;
+    double predictor = 180.;
     switch (m_ri->GetOrientation()) {
       case ORIENTATION_HEAD_UP:
-        heading = m_pi->GetHeadingTrue() + 180.;
-        predictor = 180.;
+        heading += m_pi->GetHeadingTrue();
         break;
       case ORIENTATION_STABILIZED_UP:
-        heading = m_ri->m_course + 180.;
-        predictor = m_pi->GetHeadingTrue() + 180. - m_ri->m_course;
+        heading += m_ri->m_course;
+        predictor += m_pi->GetHeadingTrue() - m_ri->m_course;
         break;
       case ORIENTATION_NORTH_UP:
-        heading = 180;
-        predictor = m_pi->GetHeadingTrue() + 180;
+        predictor += m_pi->GetHeadingTrue();
         break;
       case ORIENTATION_COG_UP:
-        heading = m_pi->GetCOG() + 180.;
-        predictor = m_pi->GetHeadingTrue() + 180. - heading;
+        heading += m_pi->GetCOG();
+        predictor += m_pi->GetHeadingTrue() - heading;
         break;
     }
 

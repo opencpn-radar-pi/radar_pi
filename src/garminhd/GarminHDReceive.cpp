@@ -288,7 +288,7 @@ void *GarminHDReceive::Entry(void) {
           radar_address.addr = rx_addr.ipv4.sin_addr;
           radar_address.port = rx_addr.ipv4.sin_port;
 
-          if (ProcessReport(data, r)) {
+          if (ProcessReport(data, (size_t)r)) {
             if (!radar_addr) {
               wxCriticalSectionLocker lock(m_lock);
               m_ri->DetectedRadar(m_interface_addr, radar_address);  // enables transmit data
@@ -458,7 +458,7 @@ bool GarminHDReceive::UpdateScannerStatus(int status) {
   return ret;
 }
 
-bool GarminHDReceive::ProcessReport(const uint8_t *report, int len) {
+bool GarminHDReceive::ProcessReport(const uint8_t *report, size_t len) {
   LOG_BINARY_RECEIVE(wxT("ProcessReport"), report, len);
 
   time_t now = time(0);

@@ -180,7 +180,6 @@ void DrawRoundRect(float x, float y, float width, float height, float radius) {
     radius *= 0.10f;  // 10%
   }
 
-  int i;
   float x_offset, y_offset;
   float step = (float)(2.0f * PI) / (ROUNDING_POINT_COUNT * 4.f);
   float angle = 0.0f;
@@ -190,7 +189,7 @@ void DrawRoundRect(float x, float y, float width, float height, float radius) {
   const unsigned int segment_count = ROUNDING_POINT_COUNT;
   Point top_left_corner = {x + radius, y + radius};
 
-  for (i = 0; i < segment_count; i++) {
+  for (size_t i = 0; i < segment_count; i++) {
     x_offset = cosf(angle);
     y_offset = sinf(angle);
 
@@ -212,7 +211,7 @@ void DrawRoundRect(float x, float y, float width, float height, float radius) {
   glBegin(GL_TRIANGLE_STRIP);
   {
     // Top
-    for (i = segment_count - 1; i >= 0; i--) {
+    for (size_t i = segment_count - 1; i >= 0; i--) {
       glVertex2f(top_right[i].x, top_right[i].y);
       glVertex2f(top_left[i].x, top_left[i].y);
     }
@@ -228,7 +227,7 @@ void DrawRoundRect(float x, float y, float width, float height, float radius) {
     glVertex2f(bottom_left[0].x, bottom_left[0].y);
 
     // Bottom
-    for (i = 0; i < segment_count; i++) {
+    for (size_t i = 0; i < segment_count; i++) {
       glVertex2f(bottom_right[i].x, bottom_right[i].y);
       glVertex2f(bottom_left[i].x, bottom_left[i].y);
     }

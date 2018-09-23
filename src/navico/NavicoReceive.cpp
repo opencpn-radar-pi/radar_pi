@@ -134,7 +134,7 @@ struct radar_frame_pkt {
 // Process one radar frame packet, which can contain up to 32 'spokes' or lines extending outwards
 // from the radar up to the range indicated in the packet.
 //
-void NavicoReceive::ProcessFrame(const uint8_t *data, int len) {
+void NavicoReceive::ProcessFrame(const uint8_t *data, size_t len) {
   time_t now = time(0);
 
   // log_line.time_rec = wxGetUTCTimeMillis();
@@ -149,12 +149,12 @@ void NavicoReceive::ProcessFrame(const uint8_t *data, int len) {
   m_ri->m_state.Update(RADAR_TRANSMIT);
 
   m_ri->m_statistics.packets++;
-  if (len < (int)sizeof(packet->frame_hdr)) {
+  if (len < sizeof(packet->frame_hdr)) {
     // The packet is so small it contains no scan_lines, quit!
     m_ri->m_statistics.broken_packets++;
     return;
   }
-  int scanlines_in_packet = (len - sizeof(packet->frame_hdr)) / sizeof(radar_line);
+  size_t scanlines_in_packet = (len - sizeof(packet->frame_hdr)) / sizeof(radar_line);
   if (scanlines_in_packet != 32) {
     m_ri->m_statistics.broken_packets++;
   }
@@ -165,7 +165,7 @@ void NavicoReceive::ProcessFrame(const uint8_t *data, int len) {
     LOG_INFO(wxT("radar_pi: %s first radar spoke received after %llu ms\n"), m_ri->m_name.c_str(), startup_elapsed);
   }
 
-  for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
+  for (size_t scanline = 0; scanline < scanlines_in_packet; scanline++) {
     radar_line *line = &packet->line[scanline];
 
     // Validate the spoke
@@ -456,7 +456,7 @@ void *NavicoReceive::Entry(void) {
         rx_len = sizeof(rx_addr);
         r = recvfrom(dataSocket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
         if (r > 0) {
-          ProcessFrame(data, r);
+          ProcessFrame(data, (size_t)r);
           no_data_timeout = -15;
           no_spoke_timeout = -5;
         } else {
@@ -474,7 +474,7 @@ void *NavicoReceive::Entry(void) {
           radar_address.addr = rx_addr.ipv4.sin_addr;
           radar_address.port = rx_addr.ipv4.sin_port;
 
-          if (ProcessReport(data, r)) {
+          if (ProcessReport(data, (size_t)r)) {
             if (!radar_addr) {
               wxCriticalSectionLocker lock(m_lock);
               m_ri->DetectedRadar(m_interface_addr, radar_address);  // enables transmit data
@@ -670,7 +670,7 @@ static void AppendChar16String(wxString &dest, uint16_t *src) {
   }
 }
 
-bool NavicoReceive::ProcessReport(const uint8_t *report, int len) {
+bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
   LOG_BINARY_RECEIVE(wxT("ProcessReport"), report, len);
 
   time_t now = time(0);

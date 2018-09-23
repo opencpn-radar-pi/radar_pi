@@ -1362,7 +1362,7 @@ void ControlsDialog::OnRadarShowPPIButtonClick(wxCommandEvent& event) {
     }
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       m_pi->m_settings.show_radar[r] = show;
-      if (!show && m_pi->m_settings.chart_overlay != r) {
+      if (!show && m_pi->m_settings.chart_overlay != (int)r) {
         m_pi->m_settings.show_radar_control[r] = false;
       }
       LOG_DIALOG(wxT("%s OnRadarShowButton: show_radar[%d]=%d"), m_log_name.c_str(), r, show);

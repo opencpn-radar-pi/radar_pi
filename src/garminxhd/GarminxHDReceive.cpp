@@ -74,7 +74,7 @@ struct radar_line {
 // Process one radar line, which contains exactly one line or spoke of data extending outwards
 // from the radar up to the range indicated in the packet.
 //
-void GarminxHDReceive::ProcessFrame(const uint8_t *data, int len) {
+void GarminxHDReceive::ProcessFrame(const uint8_t *data, size_t len) {
   // log_line.time_rec = wxGetUTCTimeMillis();
   wxLongLong time_rec = wxGetUTCTimeMillis();
   time_t now = (time_t)(time_rec.GetValue() / MILLISECONDS_PER_SECOND);
@@ -89,7 +89,7 @@ void GarminxHDReceive::ProcessFrame(const uint8_t *data, int len) {
 
   const size_t packet_header_length = sizeof(radar_line) - GARMIN_XHD_MAX_SPOKE_LEN;
   m_ri->m_statistics.packets++;
-  if (len < (int)packet_header_length || len < (int)packet_header_length + packet->scan_length_bytes_s) {
+  if (len < packet_header_length || len < packet_header_length + packet->scan_length_bytes_s) {
     // The packet is incomplete!
     m_ri->m_statistics.broken_packets++;
     return;
@@ -304,7 +304,7 @@ void *GarminxHDReceive::Entry(void) {
         rx_len = sizeof(rx_addr);
         r = recvfrom(dataSocket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
         if (r > 0) {
-          ProcessFrame(data, r);
+          ProcessFrame(data, (size_t)r);
           no_data_timeout = -15;
           no_spoke_timeout = -5;
         } else {
@@ -322,7 +322,7 @@ void *GarminxHDReceive::Entry(void) {
           radar_address.addr = rx_addr.ipv4.sin_addr;
           radar_address.port = rx_addr.ipv4.sin_port;
 
-          if (ProcessReport(data, r)) {
+          if (ProcessReport(data, (size_t)r)) {
             if (!radar_addr) {
               wxCriticalSectionLocker lock(m_lock);
               m_ri->DetectedRadar(m_interface_addr, radar_address);  // enables transmit data
@@ -517,7 +517,7 @@ bool GarminxHDReceive::UpdateScannerStatus(int status) {
   return ret;
 }
 
-bool GarminxHDReceive::ProcessReport(const uint8_t *report, int len) {
+bool GarminxHDReceive::ProcessReport(const uint8_t *report, size_t len) {
   LOG_BINARY_RECEIVE(wxT("ProcessReport"), report, len);
 
   time_t now = time(0);
