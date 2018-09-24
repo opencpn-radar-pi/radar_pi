@@ -218,10 +218,45 @@ wxSize RadarCanvas::RenderControlItem(wxSize loc, RadarControlItem &item, Contro
 
 void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, float r) {
   // Max range ringe
-
   // Size of rendered string in pixels
   glPushMatrix();
   glPushAttrib(GL_ALL_ATTRIB_BITS);
+  double offset = r / 2.;  // half of the radar_radius
+  double heading;
+  if (m_pi->GetHeadingSource() != HEADING_NONE) {
+    switch (m_ri->GetOrientation()) {
+    case ORIENTATION_HEAD_UP:
+      heading = m_pi->GetHeadingTrue() + 180.;
+      m_ri->m_predictor = 0.;
+      break;
+    case ORIENTATION_STABILIZED_UP:
+      heading = m_ri->m_course;
+      m_ri->m_predictor = m_pi->GetHeadingTrue() - m_ri->m_course;
+      break;
+    case ORIENTATION_NORTH_UP:
+      heading = 180;
+      m_ri->m_predictor = m_pi->GetHeadingTrue();
+      break;
+    case ORIENTATION_COG_UP:
+      heading = m_pi->GetCOG();
+      m_ri->m_predictor = m_pi->GetHeadingTrue() - heading;
+      break;
+    }
+  }
+  else {
+    m_ri->m_predictor = 0.;
+  }
+// set off center offset in the direction of the predictor
+  if (m_ri->m_view_center.GetValue()) {
+    glRotated(m_ri->m_predictor, 0., 0., 1.);
+    if (m_ri->m_view_center.GetValue() == FORWARD_VIEW) {
+      glTranslated(0., offset, 0.);  // shift range rings and predictor
+    }
+    else {
+      glTranslated(0., -offset, 0.);
+    }
+    glRotated(-m_ri->m_predictor, 0., 0., 1.);
+  }
 
   glColor3ub(0, 126, 29);  // same color as HDS
   glLineWidth(1.0);
@@ -261,30 +296,11 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, float r) {
   }
 
   if (m_pi->GetHeadingSource() != HEADING_NONE) {
-    double heading;
-    double predictor;
-    switch (m_ri->GetOrientation()) {
-      case ORIENTATION_HEAD_UP:
-        heading = m_pi->GetHeadingTrue() + 180.;
-        predictor = 180.;
-        break;
-      case ORIENTATION_STABILIZED_UP:
-        heading = m_ri->m_course + 180.;
-        predictor = m_pi->GetHeadingTrue() + 180. - m_ri->m_course;
-        break;
-      case ORIENTATION_NORTH_UP:
-        heading = 180;
-        predictor = m_pi->GetHeadingTrue() + 180;
-        break;
-      case ORIENTATION_COG_UP:
-        heading = m_pi->GetCOG() + 180.;
-        predictor = m_pi->GetHeadingTrue() + 180. - heading;
-        break;
-    }
 
-    x = -sinf(deg2rad(predictor));
-    y = cosf(deg2rad(predictor));
+    x = sinf((float)deg2rad(m_ri->m_predictor));
+    y = -cosf((float)deg2rad(m_ri->m_predictor));
     glLineWidth(1.0);
+
     glBegin(GL_LINES);
     glVertex2f(center_x, center_y);
     glVertex2f(center_x + x * r * 2, center_y + y * r * 2);
@@ -422,7 +438,7 @@ void RadarCanvas::RenderCursor(int w, int h, float radius) {
   double x = center_x + sin(angle) * range - CURSOR_WIDTH * CURSOR_SCALE / 2;
   double y = center_y - cos(angle) * range - CURSOR_WIDTH * CURSOR_SCALE / 2;
 
-  // LOG_DIALOG(wxT("radar_pi: draw cursor angle=%.1f bearing=%.1f"), rad2deg(angle), bearing);
+   LOG_INFO(wxT("radar_pi: $$$draw cursor angle=%.1f bearing=%.1f"), rad2deg(angle), bearing);
 
   if (!m_cursor_texture) {
     glGenTextures(1, &m_cursor_texture);
@@ -483,7 +499,6 @@ static void ResetGLViewPort(int w, int h) {
 
 void RadarCanvas::Render(wxPaintEvent &evt) {
   int w, h;
-
   if (!IsShown() || !m_pi->IsInitialized()) {
     return;
   }
@@ -495,9 +510,9 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   if (!m_pi->IsOpenGLEnabled()) {
     return;
   }
-  LOG_DIALOG(wxT("radar_pi: %s render OpenGL canvas %d by %d "), m_ri->m_name.c_str(), w, h);
+  LOG_VERBOSE(wxT("radar_pi: %s render OpenGL canvas %d by %d "), m_ri->m_name.c_str(), w, h);
 
-  float radar_radius = wxMax(w, h) * CHART_SCALE / 2.0;
+  float radar_radius = (float)wxMax(w, h) * (float)CHART_SCALE / 2.0;
 
   SetCurrent(*m_context);
 
@@ -527,7 +542,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
 
   // LAYER 1 - RANGE RINGS AND HEADINGS
   ResetGLViewPort(w, h);
-  RenderRangeRingsAndHeading(w, h, radar_radius);
+  RenderRangeRingsAndHeading(w, h, radar_radius);          //*********************************************************************************************$$$
 
   PlugIn_ViewPort vp;
   GeoPosition pos;
@@ -596,16 +611,31 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     glScaled((float)h / w, -1.0, 1.0);
   }
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
+
   m_ri->RenderRadarImage1(wxPoint(0, 0), CHART_SCALE / m_ri->m_range.GetValue(), 0.0, false);
 
   // LAYER 5 - TEXTS & CURSOR
   ResetGLViewPort(w, h);
+  //glLoadIdentity();   //$$$ ??
   RenderTexts(w, h);
+  glPushMatrix();
+  double offset = (double)wxMax(w, h) * CHART_SCALE / 4.;
+  if (m_ri->m_view_center.GetValue()) {
+    glRotated(m_ri->m_predictor, 0., 0., 1.);
+    if (m_ri->m_view_center.GetValue() == FORWARD_VIEW) {
+      LOG_INFO(wxT("$$$ m_ri->m_predictor= %f"), m_ri->m_predictor);
+      glTranslated(0., offset, 0.);       // shift mouse pointer
+    }
+    else {                                 // aft view
+      glTranslated(0., -offset, 0.);
+    }
+    glRotated(-m_ri->m_predictor, 0., 0., 1.);
+  }
   RenderCursor(w, h, radar_radius);
+  glPopMatrix();
 
   glPopAttrib();
   glPopMatrix();
-  glFlush();
   SwapBuffers();
 
   wxGLContext *chart_context = m_pi->GetChartOpenGLContext();
@@ -624,25 +654,43 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
 
   int center_x = w / 2;
   int center_y = h / 2;
-
-  //  LOG_DIALOG(wxT("radar_pi: %s Mouse clicked at %d, %d"), m_ri->m_name.c_str(), x, y);
+  LOG_INFO(wxT("$$$ center x= %i, y=%i"), center_x, center_y);
+  double offset = (double)wxMax(w, h) * CHART_SCALE / 4.;  // half of the radar_radius
+  if (m_ri->m_view_center.GetValue()) {
+    
+    if (m_ri->m_view_center.GetValue() == 1) {
+      center_x -= offset * sin(deg2rad(m_ri->m_predictor));  // horizontal
+      center_y += offset * cos(deg2rad(m_ri->m_predictor));
+    }
+    else {
+      center_x -= int (offset * sin(deg2rad(m_ri->m_predictor)));
+      center_y -= int (offset * cos(deg2rad(m_ri->m_predictor)));
+    }
+  }
+  LOG_INFO(wxT("$$$ center after x= %i, y=%i, m_ri->m_predictor=%f, offset=%f"), center_x, center_y, m_ri->m_predictor, offset);
+    LOG_INFO(wxT("radar_pi: %s Mouse clicked at %d, %d"), m_ri->m_name.c_str(), x, y);  //$$$ dialo
   if (x > 0 && x < w && y > 0 && y < h) {
+    LOG_INFO(wxT("$$$ center1"));
     if (x >= w - m_menu_size.x && y < m_menu_size.y) {
+      LOG_INFO(wxT("$$$ center2"));
       m_pi->ShowRadarControl(m_ri->m_radar, true);
     } else if ((x >= center_x - m_zoom_size.x / 2) && (x <= center_x + m_zoom_size.x / 2) &&
                (y > h - m_zoom_size.y + MENU_ROUNDING)) {
+      LOG_INFO(wxT("$$$ center3"));
       if (x > center_x) {
+        LOG_INFO(wxT("$$$ center4"));
         m_ri->AdjustRange(+1);
       } else {
+        LOG_INFO(wxT("$$$ center5"));
         m_ri->AdjustRange(-1);
       }
 
     } else {
       double delta_x = x - center_x;
       double delta_y = y - center_y;
-
+      
       double distance = sqrt(delta_x * delta_x + delta_y * delta_y);
-
+      LOG_INFO(wxT("$$$ center6 delta_x=$f  delta_y=%f, distance=%f"), delta_x, delta_y, distance);
       int display_range = m_ri->GetDisplayRange();
 
       double angle = fmod(rad2deg(atan2(delta_y, delta_x)) + 720. + 90., 360.0);

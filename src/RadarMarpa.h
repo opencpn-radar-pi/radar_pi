@@ -133,7 +133,8 @@ class RadarArpa {
  public:
   RadarArpa(radar_pi* pi, RadarInfo* ri);
   ~RadarArpa();
-  void DrawArpaTargets(double scale, double arpa_rotate);
+  void DrawArpaTargetsOverlay(double scale, double arpa_rotate);
+  void DrawArpaTargetsPanel(double scale, double arpa_rotate);
   void RefreshArpaTargets();
   int AcquireNewARPATarget(Polar pol, int status);
   void AcquireNewMARPATarget(ExtendedPosition p);

@@ -82,6 +82,7 @@ class RadarInfo {
   double m_pixels_per_meter;  // How many pixels of a line in a meter
 
   double m_course;  // m_course is the moving everage of m_hdt used for course_up
+  double m_predictor;
   double m_course_log[COURSE_SAMPLES];
   int m_course_index;
   RadarArpa *m_arpa;
@@ -93,6 +94,7 @@ class RadarInfo {
   RadarControlItem m_boot_state;   // Can contain RADAR_TRANSMIT until radar is seen at boot
   RadarControlItem m_orientation;  // See below for allowed values.
   RadarControlItem m_true_motion;
+  RadarControlItem m_view_center;
 
   int m_min_contour_length;  // minimum contour length of an ARPA or MARPA target
 
@@ -244,6 +246,7 @@ class RadarInfo {
   GeoPosition m_mouse_pos;
   double m_mouse_ebl[ORIENTATION_NUMBER];
   double m_mouse_vrm;
+  double m_panel_scale;
 
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
   wxColour m_colour_map_rgb[BLOB_COLOURS];

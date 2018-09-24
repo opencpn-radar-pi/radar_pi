@@ -34,6 +34,7 @@
 #include "RadarInfo.h"
 #include "drawutil.h"
 #include "radar_pi.h"
+#include "RadarCanvas.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -547,23 +548,87 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
   glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
 }
 
-void RadarArpa::DrawArpaTargets(double scale, double arpa_rotate) {
-wxPoint boat_center;
-  for (int i = 0; i < m_number_of_targets; i++) {
-    if (!m_targets[i]) continue;
-    if (m_targets[i]->m_status != LOST) {
+void RadarArpa::DrawArpaTargetsOverlay(double scale, double arpa_rotate) {
+  wxPoint boat_center;
+  GeoPosition radar_pos;
+  if (m_ri->m_true_motion.GetValue() && m_ri->GetRadarPosition(&radar_pos)) {
+    for (int i = 0; i < m_number_of_targets; i++) {
+      if (!m_targets[i]) {
+        continue;
+      }
+      if (m_targets[i]->m_status == LOST) {
+        continue;
+      }
       GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, m_targets[i]->m_radar_pos.lat, m_targets[i]->m_radar_pos.lon);
       glPushMatrix();
-      
       glTranslated(boat_center.x, boat_center.y, 0);
-      LOG_INFO(wxT("radar_pi:  $$$$ Draw ARPA targets on overlay with scale=%f,  rot=%f, boat_center.x=%i, boat_center.y=%i"),  scale, arpa_rotate, boat_center.x, boat_center.y);
-
       glRotated(arpa_rotate, 0.0, 0.0, 1.0);
       glScaled(scale, scale, 1.);
-      LOG_INFO(wxT("radar_pi:  $$$$ draw contour"));
       DrawContour(m_targets[i]);
       glPopMatrix();
     }
+  }
+  else {
+    m_ri->GetRadarPosition(&radar_pos);
+    GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, radar_pos.lat, radar_pos.lon);
+    glPushMatrix();
+    glTranslated(boat_center.x, boat_center.y, 0);
+    glRotated(arpa_rotate, 0.0, 0.0, 1.0);
+    glScaled(scale, scale, 1.);
+    for (int i = 0; i < m_number_of_targets; i++) {
+      if (!m_targets[i]) {
+continue;
+}
+      if (m_targets[i]->m_status != LOST) {
+        DrawContour(m_targets[i]);
+      }
+    }
+    glPopMatrix();
+  }
+}
+
+void RadarArpa::DrawArpaTargetsPanel(double scale, double arpa_rotate) {
+  wxPoint boat_center;
+  GeoPosition radar_pos, target_pos;
+  double offset_lat = 0.;
+  double offset_lon = 0.;
+  if (m_ri->m_true_motion.GetValue() && m_ri->GetRadarPosition(&radar_pos)) {
+    m_ri->GetRadarPosition(&radar_pos);
+    for (int i = 0; i < m_number_of_targets; i++) {
+      if (!m_targets[i]) {
+        continue;
+      }
+      if (m_targets[i]->m_status == LOST) {
+        continue;
+      }
+      target_pos = m_targets[i]->m_radar_pos;
+      offset_lat = (radar_pos.lat - target_pos.lat) * 60. * 1852. * CHART_SCALE / m_ri->m_range.GetValue();
+      offset_lon =
+        (radar_pos.lon - target_pos.lon) * 60. * 1852. * cos(deg2rad(target_pos.lat)) * CHART_SCALE / m_ri->m_range.GetValue();
+      glPushMatrix();
+      glRotated(arpa_rotate, 0.0, 0.0, 1.0);
+      glTranslated(-offset_lon, offset_lat, 0);
+      glScaled(scale, scale, 1.);
+      DrawContour(m_targets[i]);
+      glPopMatrix();
+    }
+  }
+
+  else {
+    glPushMatrix();
+    glTranslated(0., 0., 0.);
+    glRotated(arpa_rotate, 0.0, 0.0, 1.0);
+    glScaled(scale, scale, 1.);
+    for (int i = 0; i < m_number_of_targets; i++) {
+      if (!m_targets[i]) {
+        continue;
+      }
+      if (m_targets[i]->m_status == LOST) {
+        continue;
+      }
+      DrawContour(m_targets[i]);
+    }
+    glPopMatrix();
   }
 }
 

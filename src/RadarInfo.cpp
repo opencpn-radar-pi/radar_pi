@@ -386,11 +386,10 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   // calculate course as the moving average of m_hdt over one revolution
   SampleCourse(angle);  // used for course_up mode
 
-  for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
-    data[i] = 0;
-    if (i < 7) data[i] = 200;   // $$$ dot in the middle
-  }
-
+  //for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
+  //  data[i] = 0;
+  //  if (i < 7) data[i] = 200;   // put a dot in the middle for testing
+  //}
 
 
 //  for (int i = 0; i < 1024; i++) {
@@ -402,7 +401,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
 //
 //
 //
-//  }   // set picture to 0 except one dot
+//  }   // set picture to 0 except one dot for testing
 
 
   // Recompute 'pixels_per_meter' based on the actual spoke length and range in meters.
@@ -688,7 +687,11 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item)
     }
 
     case CT_TRUE_MOTION: {
-      m_true_motion = item;
+      m_view_center = item;
+    }
+
+    case CT_CENTER_VIEW: {
+      m_view_center = item;
     }
 
     case CT_OVERLAY: {
@@ -821,17 +824,12 @@ void RadarInfo::RenderRadarImage2(DrawInfo *di, double radar_scale, double panel
       return;
     }
   }
-  LOG_INFO(wxT("radar_pi $$$$$ draw overlay called from radarinfo")); 
-if (di == &m_draw_overlay) LOG_INFO(wxT("radar_pi $$$$$ draw overlay true"));
   if (di == &m_draw_overlay) {
     di->draw->DrawRadarOverlayImage(radar_scale, panel_rotate);
   }
   else {
-    wxPoint boat_center;
-
-    double panel_scale = (CHART_SCALE / m_range.GetValue()) / m_pixels_per_meter;
-    LOG_INFO(wxT("radar_pi: $$$ panel_scale=%f, m_range.GetValue()=%i,  m_pixels_per_meter=%f"),panel_scale,  m_range.GetValue(),  m_pixels_per_meter);
-    di->draw->DrawRadarPanelImage(panel_scale, panel_rotate);
+    m_panel_scale = (CHART_SCALE / m_range.GetValue()) / m_pixels_per_meter;
+    di->draw->DrawRadarPanelImage(m_panel_scale, panel_rotate);
   }
 
   if (g_first_render) {
@@ -902,7 +900,20 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
         arpa_rotate += -m_pi->GetHeadingTrue();  // Undo the actual heading calculation always done for ARPA
         break;
     }
-  } else {
+    if (m_view_center.GetValue()) {
+      glPushMatrix();
+      glRotated(m_predictor, 0., 0., 1.);
+      // following will set the off-center view in radar panel for tahe radar image
+      if (m_view_center.GetValue() == FORWARD_VIEW) {
+        glTranslated(0., 0.5 * CHART_SCALE, 0.);
+      }
+      else {
+        glTranslated(0., -0.5 * CHART_SCALE, 0.);
+      }
+      glRotated(-m_predictor, 0., 0., 1.);
+    }
+  }
+  else {
     guard_rotate += m_pi->GetHeadingTrue();
     arpa_rotate = overlay_rotate - OPENGL_ROTATION;
   }
@@ -912,7 +923,6 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
   }
 
   wxStopWatch stopwatch;
-
   // Render the guard zone
   if (!overlay || (M_SETTINGS.guard_zone_on_overlay && (M_SETTINGS.overlay_on_standby || m_state.GetValue() == RADAR_TRANSMIT))) {
     glPushMatrix();
@@ -922,22 +932,31 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
     RenderGuardZone();
     glPopMatrix();
   }
-
   if (m_pixels_per_meter != 0.) {
     double radar_scale = scale / m_pixels_per_meter;
     RenderRadarImage2(overlay ? &m_draw_overlay : &m_draw_panel, radar_scale, panel_rotate);
   }
 
   if (arpa_on) {
-    m_arpa->DrawArpaTargets(scale, arpa_rotate);
+    if (overlay) {
+      m_arpa->DrawArpaTargetsOverlay(scale, arpa_rotate);
+    }
+    else {
+      m_arpa->DrawArpaTargetsPanel(scale, arpa_rotate);
+    }
   }
   m_draw_time_ms = stopwatch.Time();
   glPopAttrib();
+  if (!overlay && m_view_center.GetValue()) {
+    glPopMatrix();
+  }
 }
 
 wxString RadarInfo::GetCanvasTextTopLeft() {
   wxString s;
-
+  if (m_true_motion.GetValue() == TRUE_MOTION_ON) {
+    s << _("True Motion") << wxT("\n");
+  }
   switch (GetOrientation()) {
     case ORIENTATION_HEAD_UP:
       s << _("Head Up");
@@ -1248,7 +1267,6 @@ void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
       bearing = ebl + m_pi->GetHeadingTrue();
       break;
   }
-
   static double R = 6378.1e3 / 1852.;  // Radius of the Earth in nm
   double brng = deg2rad(bearing);
   double d = vrm;  // Distance in nm

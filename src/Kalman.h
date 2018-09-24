@@ -43,6 +43,7 @@ PLUGIN_BEGIN_NAMESPACE
            // critical for the performance of target tracking
            // lower value makes target go straight
            // higher values allow target to make curves
+#define CONVERT ((((1. / 1852.) / 1852.) / 60.) / 60.)  // converts meters ^ 2 to degrees ^ 2
 
 class Polar {
  public:

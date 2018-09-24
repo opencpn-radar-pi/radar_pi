@@ -137,9 +137,9 @@ void KalmanFilter::Update_P() {
 }
 
 void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected, double scale) {
-// pol measured angular position
-// x expected local position
-// expected, same but in polar coordinates
+  // pol measured angular position
+  // x expected local position
+  // expected, same but in polar coordinates
 #define SQUARED(x) ((x) * (x))
   double q_sum = SQUARED(x->pos.lon) + SQUARED(x->pos.lat);
 
@@ -191,7 +191,6 @@ GPSKalmanFilter::GPSKalmanFilter() {
   // as the state transformation is linear, the state transformation matrix F is equal to the jacobian A
   // f is the state transformation function Xk <- Xk-1
   // Ai,j is jacobian matrix dfi / dxj
-  LOG_INFO(wxT("BR24radar_p $$$ GPSKalmanFilter() init "));
   I = I.Identity();
   Q = ZeroMatrix2;
   R = ZeroMatrix2;
@@ -225,22 +224,23 @@ GPSKalmanFilter::GPSKalmanFilter() {
 
   // P estimate error covariance
   // initial values follow, large initial values as initial speed is unkown
+
   P = ZeroMatrix4;
-  P(0, 0) = 20. / 1852. / 1852. / 60. / 60.;   // in degrees2
+  P(0, 0) = 6. * CONVERT;   // in degrees ^ 2
   P(1, 1) = P(1, 1);
-  P(2, 2) = 8. / 1852. / 1852. / 60. / 60.;
+  P(2, 2) = 2. * CONVERT;
   P(3, 3) = P(2, 2);
 
 
   // Q Process noise covariance matrix
   // convert meters2 to deg2
-  double convert = 1. / 1852. / 1852. / 60. / 60.;
+
   //  Q(0, 0) = .004 * convert;  // variance in lat speed, (deg / sec)2 // 25 sec for 20 deg turn
-  Q(0, 0) = .1 * convert;  // variance in lat speed, (deg / sec)2     // 10 sec for 20 deg turn
+  Q(0, 0) = .1 * CONVERT;  // variance in lat speed, (deg / sec)2     value of .1 allows for a 90 degree turn in about 9 seconds
   Q(1, 1) = Q(0, 0);  // variance in lon speed, (deg / sec)2
 
                       // R measurement noise covariance matrix
-  R(0, 0) = 36. * convert;  // in deg2 assume standard deviation of GPS is 6 m
+  R(0, 0) = 36. * CONVERT;  // in deg2 assume standard deviation of GPS is 6 m
   R(1, 1) = R(0, 0);    // variance in y (lon)
 }
 
@@ -256,7 +256,6 @@ void GPSKalmanFilter::Predict(ExtendedPosition* old, ExtendedPosition* updated) 
   X(2, 0) = old->dlat_dt;
   X(3, 0) = old->dlon_dt;
   A(0, 2) = (now - old->time).GetLo() / 1000.;  // delta time in seconds
-  LOG_INFO(wxT("$$$ Predict delta t= %f"), A(0, 2));
   A(1, 3) = A(0, 2);
 
   AT(2, 0) = A(0, 2);
@@ -292,7 +291,7 @@ void GPSKalmanFilter::SetMeasurement(ExtendedPosition* gps, ExtendedPosition* up
   // Z is  difference between expected and measured
   Z(0, 0) = (gps->pos.lat - updated->pos.lat);
   Z(1, 0) = (gps->pos.lon - updated->pos.lon);
-  LOG_INFO(wxT("$$$ delta lat= %f delta lon= %f"), Z(0, 0), Z(1, 0));
+  
   Matrix<double, 4, 1> X;
   X(0, 0) = updated->pos.lat;                                // X in meters and m / sec
   X(1, 0) = updated->pos.lon;

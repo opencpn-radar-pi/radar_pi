@@ -301,6 +301,7 @@ class ControlsDialog : public wxDialog {
   wxButton *m_clear_trails_button;
   RadarControlButton *m_orientation_button;
   RadarControlButton *m_true_motion_button;
+  RadarControlButton *m_view_center_button;
 
   // Power controls
   wxButton *m_power_sub_button;
@@ -394,6 +395,7 @@ class ControlsDialog : public wxDialog {
   void OnClearTrailsButtonClick(wxCommandEvent &event);
   void OnOrientationButtonClick(wxCommandEvent &event);
   void OnTrueMotionButtonClick(wxCommandEvent &event);
+  void OnViewCenterButtonClick(wxCommandEvent &event);
 
   void OnRadarControlButtonClick(wxCommandEvent &event);
 
