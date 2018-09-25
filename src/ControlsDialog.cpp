@@ -1861,6 +1861,9 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   m_orientation_button->UpdateLabel();
   m_true_motion_button->UpdateLabel();
   if (m_pi->m_settings.drawing_method) {
+    if (m_ri->m_true_motion.GetValue() == TRUE_MOTION_ON) {
+      m_ri->m_true_motion.Update(TRUE_MOTION_WANTED);
+    }
     m_true_motion_button->Disable();
   }
   else {
