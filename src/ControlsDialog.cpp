@@ -1860,6 +1860,12 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   m_trails_motion_button->UpdateLabel();
   m_orientation_button->UpdateLabel();
   m_true_motion_button->UpdateLabel();
+  if (m_pi->m_settings.drawing_method) {
+    m_true_motion_button->Disable();
+  }
+  else {
+    m_true_motion_button->Enable();
+  }
   m_view_center_button->UpdateLabel();
   m_overlay_button->UpdateLabel();
 
