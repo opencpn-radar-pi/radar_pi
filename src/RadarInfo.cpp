@@ -807,9 +807,9 @@ void RadarInfo::RenderRadarImage2(DrawInfo *di, double radar_scale, double panel
       wxArrayString methods;
       RadarDraw::GetDrawingMethods(methods);
       if (di == &m_draw_overlay) {
-        LOG_VERBOSE(wxT("radar_pi: %s new drawing method %s for overlay"), m_name.c_str(), methods[drawing_method].c_str());
+        LOG_VERBOSE(wxT("radar_pi: %s new drawing method %s for overlay $$$drawing_method=%i "), m_name.c_str(), methods[drawing_method].c_str(), drawing_method);
       } else {
-        LOG_VERBOSE(wxT("radar_pi: %s new drawing method %s for panel"), m_name.c_str(), methods[drawing_method].c_str());
+        LOG_VERBOSE(wxT("radar_pi: %s new drawing method %s for panel $$$drawing_method=%i"), m_name.c_str(), methods[drawing_method].c_str(), drawing_method);
       }
       if (di->draw) {
         delete di->draw;
@@ -932,9 +932,20 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
     RenderGuardZone();
     glPopMatrix();
   }
+
   if (m_pixels_per_meter != 0.) {
     double radar_scale = scale / m_pixels_per_meter;
+    if (m_pi->m_settings.drawing_method) {  // for shader
+      LOG_VERBOSE(wxT("radar_pi: drawing method $$$drawing_method=%i "), m_pi->m_settings.drawing_method);
+      glPushMatrix();
+      glTranslated(center.x, center.y, 0);
+      glRotated(panel_rotate, 0.0, 0.0, 1.0);
+      glScaled(radar_scale, radar_scale, 1.);
+    }
     RenderRadarImage2(overlay ? &m_draw_overlay : &m_draw_panel, radar_scale, panel_rotate);
+    if (m_pi->m_settings.drawing_method) {
+      glPopMatrix();
+    }
   }
 
   if (arpa_on) {
