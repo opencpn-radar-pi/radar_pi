@@ -662,8 +662,8 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
       center_x -= offset * sin(deg2rad(m_ri->m_predictor));  // horizontal
       center_y += offset * cos(deg2rad(m_ri->m_predictor));
     }
-    else {
-      center_x -= int (offset * sin(deg2rad(m_ri->m_predictor)));
+    else {                                                 // look aft
+      center_x += int (offset * sin(deg2rad(m_ri->m_predictor)));
       center_y -= int (offset * cos(deg2rad(m_ri->m_predictor)));
     }
   }
