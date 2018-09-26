@@ -1500,7 +1500,13 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     m_bpos_set = true;
     m_bpos_timestamp = now;
   }
-  if (IsBoatPositionValid()) {
+  if (IsBoatPositionValid() && !m_settings.drawing_method) {   // not shader
+    // check if m_true_motion needs to be updated
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      if (m_radar[r]->m_true_motion.GetValue() == TRUE_MOTION_WANTED) {
+        m_radar[r]->m_true_motion.Update(TRUE_MOTION_ON);
+      }
+    }
     if (!m_predicted_position_initialised) {
       m_expected_position = GPS_position;
       m_last_fixed = GPS_position;
@@ -1508,12 +1514,6 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       m_expected_position.dlon_dt = 0.;
       m_expected_position.speed_kn = 0.;
       m_predicted_position_initialised = true;
-// check if m_true_motion needs to be updated
-      for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-        if (m_radar[r]->m_true_motion.GetValue() == TRUE_MOTION_WANTED) {
-          m_radar[r]->m_true_motion.Update(TRUE_MOTION_ON);
-        }
-      }
     }
 
     m_GPS_filter->Predict(&m_last_fixed, &m_expected_position);  // update expected position based on previous positions
