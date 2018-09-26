@@ -34,6 +34,7 @@
 #include "RadarInfo.h"
 #include "drawutil.h"
 #include "radar_pi.h"
+#include "RadarCanvas.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -64,11 +65,11 @@ RadarArpa::~RadarArpa() {
   }
 }
 
-Position ArpaTarget::Polar2Pos(Polar pol, Position own_ship) {
+ExtendedPosition ArpaTarget::Polar2Pos(Polar pol, ExtendedPosition own_ship) {
   // The "own_ship" in the function call can be the position at an earlier time than the current position
   // converts in a radar image angular data r ( 0 - max_spoke_len ) and angle (0 - max_spokes) to position (lat, lon)
   // based on the own ship position own_ship
-  Position pos;
+  ExtendedPosition pos;
 
   pos.pos.lat = own_ship.pos.lat + ((double)pol.r / m_ri->m_pixels_per_meter)  // Scale to fraction of distance from radar
                                        * cos(deg2rad(SCALE_SPOKES_TO_DEGREES(pol.angle))) / 60. / 1852.;
@@ -78,8 +79,8 @@ Position ArpaTarget::Polar2Pos(Polar pol, Position own_ship) {
   return pos;
 }
 
-Polar ArpaTarget::Pos2Polar(Position p, Position own_ship) {
-  // converts in a radar image a lat-lon position to angular data
+Polar ArpaTarget::Pos2Polar(ExtendedPosition p, ExtendedPosition own_ship) {
+  // converts in a radar image a lat-lon position to angular data relative to position own_ship
   Polar pol;
   double dif_lat = p.pos.lat;
   dif_lat -= own_ship.pos.lat;
@@ -318,11 +319,11 @@ bool RadarArpa::MultiPix(int ang, int rad) {
   return false;
 }
 
-void RadarArpa::AcquireNewMARPATarget(Position target_pos) { AcquireOrDeleteMarpaTarget(target_pos, ACQUIRE0); }
+void RadarArpa::AcquireNewMARPATarget(ExtendedPosition target_pos) { AcquireOrDeleteMarpaTarget(target_pos, ACQUIRE0); }
 
-void RadarArpa::DeleteTarget(Position target_pos) { AcquireOrDeleteMarpaTarget(target_pos, FOR_DELETION); }
+void RadarArpa::DeleteTarget(ExtendedPosition target_pos) { AcquireOrDeleteMarpaTarget(target_pos, FOR_DELETION); }
 
-void RadarArpa::AcquireOrDeleteMarpaTarget(Position target_pos, int status) {
+void RadarArpa::AcquireOrDeleteMarpaTarget(ExtendedPosition target_pos, int status) {
   // acquires new target from mouse click position
   // no contour taken yet
   // target status acquire0
@@ -512,11 +513,13 @@ int ArpaTarget::GetContour(Polar* pol) {
   }
   pol->r = (m_max_r.r + m_min_r.r) / 2;
   pol->time = m_ri->m_history[MOD_SPOKES(pol->angle)].time;
+  m_radar_pos = m_ri->m_history[MOD_SPOKES(pol->angle)].pos;
+
   return 0;  //  success, blob found
 }
 
 void RadarArpa::DrawContour(ArpaTarget* target) {
-  // should be improved using vertex arrays
+  
   if (target->m_lost_count > 0) {
     return;  // don't draw targets that were not seen last sweep
   }
@@ -545,12 +548,87 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
   glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
 }
 
-void RadarArpa::DrawArpaTargets() {
-  for (int i = 0; i < m_number_of_targets; i++) {
-    if (!m_targets[i]) continue;
-    if (m_targets[i]->m_status != LOST) {
+void RadarArpa::DrawArpaTargetsOverlay(double scale, double arpa_rotate) {
+  wxPoint boat_center;
+  GeoPosition radar_pos;
+  if (m_ri->m_true_motion.GetValue() && m_ri->GetRadarPosition(&radar_pos)) {
+    for (int i = 0; i < m_number_of_targets; i++) {
+      if (!m_targets[i]) {
+        continue;
+      }
+      if (m_targets[i]->m_status == LOST) {
+        continue;
+      }
+      GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, m_targets[i]->m_radar_pos.lat, m_targets[i]->m_radar_pos.lon);
+      glPushMatrix();
+      glTranslated(boat_center.x, boat_center.y, 0);
+      glRotated(arpa_rotate, 0.0, 0.0, 1.0);
+      glScaled(scale, scale, 1.);
+      DrawContour(m_targets[i]);
+      glPopMatrix();
+    }
+  }
+  else {
+    m_ri->GetRadarPosition(&radar_pos);
+    GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, radar_pos.lat, radar_pos.lon);
+    glPushMatrix();
+    glTranslated(boat_center.x, boat_center.y, 0);
+    glRotated(arpa_rotate, 0.0, 0.0, 1.0);
+    glScaled(scale, scale, 1.);
+    for (int i = 0; i < m_number_of_targets; i++) {
+      if (!m_targets[i]) {
+continue;
+}
+      if (m_targets[i]->m_status != LOST) {
+        DrawContour(m_targets[i]);
+      }
+    }
+    glPopMatrix();
+  }
+}
+
+void RadarArpa::DrawArpaTargetsPanel(double scale, double arpa_rotate) {
+  wxPoint boat_center;
+  GeoPosition radar_pos, target_pos;
+  double offset_lat = 0.;
+  double offset_lon = 0.;
+  if (m_ri->m_true_motion.GetValue() && m_ri->GetRadarPosition(&radar_pos)) {
+    m_ri->GetRadarPosition(&radar_pos);
+    for (int i = 0; i < m_number_of_targets; i++) {
+      if (!m_targets[i]) {
+        continue;
+      }
+      if (m_targets[i]->m_status == LOST) {
+        continue;
+      }
+      target_pos = m_targets[i]->m_radar_pos;
+      offset_lat = (radar_pos.lat - target_pos.lat) * 60. * 1852. * CHART_SCALE / m_ri->m_range.GetValue();
+      offset_lon =
+        (radar_pos.lon - target_pos.lon) * 60. * 1852. * cos(deg2rad(target_pos.lat)) * CHART_SCALE / m_ri->m_range.GetValue();
+      glPushMatrix();
+      glRotated(arpa_rotate, 0.0, 0.0, 1.0);
+      glTranslated(-offset_lon, offset_lat, 0);
+      glScaled(scale, scale, 1.);
+      DrawContour(m_targets[i]);
+      glPopMatrix();
+    }
+  }
+
+  else {
+    glPushMatrix();
+    glTranslated(0., 0., 0.);
+    glRotated(arpa_rotate, 0.0, 0.0, 1.0);
+    glScaled(scale, scale, 1.);
+    for (int i = 0; i < m_number_of_targets; i++) {
+      if (!m_targets[i]) {
+        continue;
+      }
+      if (m_targets[i]->m_status == LOST) {
+        continue;
+      }
       DrawContour(m_targets[i]);
     }
+    glPopMatrix();
   }
 }
 
@@ -588,7 +666,7 @@ void RadarArpa::RefreshArpaTargets() {
   }
   if (target_to_delete != -1) {
     // delete the target that is closest to the target with status FOR_DELETION
-    Position* deletePosition = &m_targets[target_to_delete]->m_position;
+    ExtendedPosition* deletePosition = &m_targets[target_to_delete]->m_position;
     double min_dist = 1000;
     int del_target = -1;
     for (int i = 0; i < m_number_of_targets; i++) {
@@ -645,9 +723,9 @@ void RadarArpa::RefreshArpaTargets() {
 }
 
 void ArpaTarget::RefreshTarget(int dist) {
-  Position prev_X;
-  Position prev2_X;
-  Position own_pos;
+  ExtendedPosition prev_X;
+  ExtendedPosition prev2_X;
+  ExtendedPosition own_pos;
   Polar pol;
   double delta_t;
   LocalPosition x_local;
@@ -739,7 +817,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     m_lost_count = 0;
     if (m_status == ACQUIRE0) {
       // as this is the first measurement, move target to measured position
-      Position p_own;
+      ExtendedPosition p_own;
       p_own.pos = m_ri->m_history[MOD_SPOKES(pol.angle)].pos;  // get the position at receive time
       m_position = Polar2Pos(pol, p_own);                      // using own ship location from the time of reception
       m_position.dlat_dt = 0.;
@@ -1085,8 +1163,8 @@ int RadarArpa::AcquireNewARPATarget(Polar pol, int status) {
   // target status status, normally 0, if dummy target to delete a target -2
   // returns in X metric coordinates of click
   // constructs Kalman filter
-  Position own_pos;
-  Position target_pos;
+  ExtendedPosition own_pos;
+  ExtendedPosition target_pos;
   if (!m_ri->GetRadarPosition(&own_pos.pos)) {
     return -1;
   }

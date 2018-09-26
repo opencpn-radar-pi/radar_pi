@@ -53,6 +53,7 @@ struct DrawInfo {
   bool color_option;
 };
 
+
 #define SECONDS_TO_REVOLUTIONS(x) ((x)*2 / 5)
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(600) + 1
 enum { TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_5MIN, TRAIL_10MIN, TRAIL_CONTINUOUS, TRAIL_ARRAY_SIZE };
@@ -81,6 +82,7 @@ class RadarInfo {
   double m_pixels_per_meter;  // How many pixels of a line in a meter
 
   double m_course;  // m_course is the moving everage of m_hdt used for course_up
+  double m_predictor;
   double m_course_log[COURSE_SAMPLES];
   int m_course_index;
   RadarArpa *m_arpa;
@@ -91,6 +93,8 @@ class RadarInfo {
   RadarControlItem m_state;        // RadarState (observed)
   RadarControlItem m_boot_state;   // Can contain RADAR_TRANSMIT until radar is seen at boot
   RadarControlItem m_orientation;  // See below for allowed values.
+  RadarControlItem m_true_motion;
+  RadarControlItem m_view_center;
 
   int m_min_contour_length;  // minimum contour length of an ARPA or MARPA target
 
@@ -187,7 +191,7 @@ class RadarInfo {
   void ResetRadarImage();
   void ShiftImageLonToCenter();
   void ShiftImageLatToCenter();
-  void RenderRadarImage(wxPoint center, double scale, double rotation, bool overlay);
+  void RenderRadarImage1(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
   void ShowControlDialog(bool show, bool reparent);
   void Shutdown();
@@ -229,17 +233,9 @@ class RadarInfo {
       m_radar_position = boat_pos;
     }
   }
-  bool GetRadarPosition(GeoPosition *pos) {
-    wxCriticalSectionLocker lock(m_exclusive);
 
-    if (m_pi->IsBoatPositionValid() && VALID_GEO(m_radar_position.lat) && VALID_GEO(m_radar_position.lon)) {
-      *pos = m_radar_position;
-      return true;
-    }
-    pos->lat = nan("");
-    pos->lon = nan("");
-    return false;
-  }
+  bool GetRadarPosition(GeoPosition *pos);
+  bool GetRadarPosition(ExtendedPosition *radar_pos);
 
   wxString GetCanvasTextTopLeft();
   wxString GetCanvasTextBottomLeft();
@@ -250,6 +246,7 @@ class RadarInfo {
   GeoPosition m_mouse_pos;
   double m_mouse_ebl[ORIENTATION_NUMBER];
   double m_mouse_vrm;
+  double m_panel_scale;
 
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
   wxColour m_colour_map_rgb[BLOB_COLOURS];
@@ -263,7 +260,7 @@ class RadarInfo {
 
  private:
   void ResetSpokes();
-  void RenderRadarImage(DrawInfo *di);
+  void RenderRadarImage2(DrawInfo *di, double radar_scale, double panel_rotate);
   wxString FormatDistance(double distance);
   wxString FormatAngle(double angle);
 

@@ -31,6 +31,7 @@
 
 #include "RadarDrawVertex.h"
 #include "RadarInfo.h"
+#include "RadarCanvas.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -117,7 +118,7 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
   line->count = count;
 }
 
-void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len) {
+void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len, GeoPosition spoke_pos) {
   wxColour colour;
   GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
   BlobColour previous_colour = BLOB_NONE;
@@ -132,7 +133,6 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   if (angle < 0 || angle >= (int)m_spokes || len > m_spoke_len_max || !m_vertices) {
     return;
   }
-
   VertexLine* line = &m_vertices[angle];
 
   if (!line->points) {
@@ -152,6 +152,7 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   }
   line->count = 0;
   line->timeout = now + m_ri->m_pi->m_settings.max_age;
+  line->spoke_pos = spoke_pos;
 
   for (size_t radius = 0; radius < len; radius++) {
     strength = data[radius];
@@ -185,24 +186,95 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   }
 }
 
-void RadarDrawVertex::DrawRadarImage() {
+void RadarDrawVertex::DrawRadarOverlayImage(double radar_scale, double panel_rotate) {
+  wxPoint boat_center;
+  GeoPosition posi;
+  if (!m_ri->GetRadarPosition(&posi)) {
+    return;   // no position, no overlay
+  }
+  GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, posi.lat, posi.lon);
+  //  move display to the location where the spoke was recorded
+
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
-
   time_t now = time(0);
+  GeoPosition prev_pos = posi;
   {
     wxCriticalSectionLocker lock(m_exclusive);
-
+    
+    glPushMatrix();
+    glTranslated(boat_center.x, boat_center.y, 0);
+    glRotated(panel_rotate, 0.0, 0.0, 1.0);
+    glScaled(radar_scale, radar_scale, 1.);
     for (size_t i = 0; i < m_spokes; i++) {
       VertexLine* line = &m_vertices[i];
       if (!line->count || TIMED_OUT(now, line->timeout)) {
         continue;
       }
-
+      if ((line->spoke_pos.lat != prev_pos.lat || line->spoke_pos.lon != prev_pos.lon) && m_ri->m_true_motion.GetValue()) {
+        prev_pos = line->spoke_pos;
+        GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, line->spoke_pos.lat, line->spoke_pos.lon);
+        // move display to the location where the spoke was recorded
+        glPopMatrix();
+        glPushMatrix();
+        glTranslated(boat_center.x, boat_center.y, 0);
+        glRotated(panel_rotate, 0.0, 0.0, 1.0);
+        glScaled(radar_scale, radar_scale, 1.);
+      }
       glVertexPointer(2, GL_FLOAT, sizeof(VertexPoint), &line->points[0].xy);
       glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(VertexPoint), &line->points[0].red);
       glDrawArrays(GL_TRIANGLES, 0, line->count);
     }
+    glPopMatrix();
+  }
+  glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
+  glDisableClientState(GL_COLOR_ARRAY);
+}
+
+void RadarDrawVertex::DrawRadarPanelImage(double panel_scale, double panel_rotate) {
+  double offset_lat = 0.;
+  double offset_lon = 0.;
+  double prev_offset_lat = 0.;
+  double prev_offset_lon = 0.;
+  GeoPosition radar_pos, line_pos;
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableClientState(GL_COLOR_ARRAY);
+  {
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    time_t now = time(0);
+    glPushMatrix();
+    glRotated(panel_rotate, 0.0, 0.0, 1.0);
+    glScaled(panel_scale, panel_scale, 1.);
+    for (size_t i = 0; i < m_spokes; i++) {
+      VertexLine* line = &m_vertices[i];
+      if (!line->count || TIMED_OUT(now, line->timeout)) {
+        continue;
+      }
+      line_pos = line->spoke_pos;
+
+      // In the scaling used, a translation of 1. corresponds to the distance from center to the edge of the image
+      // that is a distance of m_range.GetValue() / CHART_SCALE
+      // that means, a distance of 1 meter corresponds to a ranslation of CHART_SCALE / m_range.GetValue() units
+      if (m_ri->GetRadarPosition(&radar_pos) && m_ri->m_true_motion.GetValue()) {
+        offset_lat = (line_pos.lat - radar_pos.lat) * 60. * 1852. * CHART_SCALE / m_ri->m_range.GetValue();
+        offset_lon =
+            (line_pos.lon - radar_pos.lon) * 60. * 1852. * cos(deg2rad(line_pos.lat)) * CHART_SCALE / m_ri->m_range.GetValue();
+        if (offset_lat != prev_offset_lat || offset_lon != prev_offset_lon) {
+          prev_offset_lat = offset_lat;
+          prev_offset_lon = offset_lon;
+          glPopMatrix();
+          glPushMatrix();
+          glRotated(panel_rotate, 0.0, 0.0, 1.0);
+          glTranslated(offset_lat, offset_lon, 0);  
+          glScaled(panel_scale, panel_scale, 1.);
+        }
+      }
+      glVertexPointer(2, GL_FLOAT, sizeof(VertexPoint), &line->points[0].xy);
+      glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(VertexPoint), &line->points[0].red);
+      glDrawArrays(GL_TRIANGLES, 0, line->count);
+    }
+    glPopMatrix();
   }
   glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
   glDisableClientState(GL_COLOR_ARRAY);

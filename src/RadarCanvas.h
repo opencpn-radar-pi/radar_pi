@@ -37,6 +37,8 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+const double CHART_SCALE = 1.05;  // On how big a part of the PPI do we draw the radar picture
+
 class RadarCanvas : public wxGLCanvas {
  public:
   RadarCanvas(radar_pi* pi, RadarInfo* ri, wxWindow* parent, wxSize size);

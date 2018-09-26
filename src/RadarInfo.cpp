@@ -339,7 +339,8 @@ void RadarInfo::ComputeColourMap() {
 
 void RadarInfo::ResetSpokes() {
   uint8_t zap[SPOKE_LEN_MAX];
-
+GeoPosition pos;
+GetRadarPosition (&pos);
   LOG_VERBOSE(wxT("radar_pi: reset spokes"));
 
   CLEAR_STRUCT(zap);
@@ -352,12 +353,12 @@ void RadarInfo::ResetSpokes() {
 
   if (m_draw_panel.draw) {
     for (size_t r = 0; r < m_spokes; r++) {
-      m_draw_panel.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max);
+      m_draw_panel.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max, pos);
     }
   }
   if (m_draw_overlay.draw) {
     for (size_t r = 0; r < m_spokes; r++) {
-      m_draw_overlay.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max);
+      m_draw_overlay.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max, pos);
     }
   }
 
@@ -385,9 +386,23 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   // calculate course as the moving average of m_hdt over one revolution
   SampleCourse(angle);  // used for course_up mode
 
-  for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
-    data[i] = 0;
-  }
+  //for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
+  //  data[i] = 0;
+  //  if (i < 7) data[i] = 200;   // put a dot in the middle for testing
+  //}
+
+
+//  for (int i = 0; i < 1024; i++) {
+//    data[i] = 15;
+//  
+//
+//if (angle > 512 && angle < 530 && i > 512 && i < 530) data[i] = 200;
+//
+//
+//
+//
+//  }   // set picture to 0 except one dot for testing
+
 
   // Recompute 'pixels_per_meter' based on the actual spoke length and range in meters.
   double pixels_per_meter = len / (double)range_meters;
@@ -445,7 +460,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
 
   bool draw_trails_on_overlay = M_SETTINGS.trails_on_overlay;
   if (m_draw_overlay.draw && !draw_trails_on_overlay) {
-    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len);
+    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len, m_history[bearing].pos);
   }
 
   m_trails->UpdateTrailPosition();
@@ -457,11 +472,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   m_trails->UpdateRelativeTrails(angle, data, trail_len);
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
-    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len);
+    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len, m_history[bearing].pos);
   }
 
   if (m_draw_panel.draw) {
-    m_draw_panel.draw->ProcessRadarSpoke(4, stabilized_mode ? bearing : angle, data, len);
+    m_draw_panel.draw->ProcessRadarSpoke(4, stabilized_mode ? bearing : angle, data, len, m_history[bearing].pos);
   }
 }
 
@@ -671,6 +686,14 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item)
       m_orientation = item;
     }
 
+    case CT_TRUE_MOTION: {
+      m_view_center = item;
+    }
+
+    case CT_CENTER_VIEW: {
+      m_view_center = item;
+    }
+
     case CT_OVERLAY: {
       m_overlay = item;
     }
@@ -765,7 +788,7 @@ void RadarInfo::RefreshDisplay() {
   }
 }
 
-void RadarInfo::RenderRadarImage(DrawInfo *di) {
+void RadarInfo::RenderRadarImage2(DrawInfo *di, double radar_scale, double panel_rotate) {
   wxCriticalSectionLocker lock(m_exclusive);
   int drawing_method = m_pi->m_settings.drawing_method;
   int state = m_state.GetValue();
@@ -801,8 +824,14 @@ void RadarInfo::RenderRadarImage(DrawInfo *di) {
       return;
     }
   }
+  if (di == &m_draw_overlay) {
+    di->draw->DrawRadarOverlayImage(radar_scale, panel_rotate);
+  }
+  else {
+    m_panel_scale = (CHART_SCALE / m_range.GetValue()) / m_pixels_per_meter;
+    di->draw->DrawRadarPanelImage(m_panel_scale, panel_rotate);
+  }
 
-  di->draw->DrawRadarImage();
   if (g_first_render) {
     g_first_render = false;
     wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->GetBootMillis();
@@ -823,7 +852,7 @@ int RadarInfo::GetOrientation() {
   return orientation;
 }
 
-void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_rotate, bool overlay) {
+void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_rotate, bool overlay) {
   bool arpa_on = false;
   if (m_arpa) {
     for (int i = 0; i < GUARD_ZONES; i++) {
@@ -871,7 +900,20 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
         arpa_rotate += -m_pi->GetHeadingTrue();  // Undo the actual heading calculation always done for ARPA
         break;
     }
-  } else {
+    if (m_view_center.GetValue()) {
+      glPushMatrix();
+      glRotated(m_predictor, 0., 0., 1.);
+      // following will set the off-center view in radar panel for tahe radar image
+      if (m_view_center.GetValue() == FORWARD_VIEW) {
+        glTranslated(0., 0.5 * CHART_SCALE, 0.);
+      }
+      else {
+        glTranslated(0., -0.5 * CHART_SCALE, 0.);
+      }
+      glRotated(-m_predictor, 0., 0., 1.);
+    }
+  }
+  else {
     guard_rotate += m_pi->GetHeadingTrue();
     arpa_rotate = overlay_rotate - OPENGL_ROTATION;
   }
@@ -881,7 +923,6 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
   }
 
   wxStopWatch stopwatch;
-
   // Render the guard zone
   if (!overlay || (M_SETTINGS.guard_zone_on_overlay && (M_SETTINGS.overlay_on_standby || m_state.GetValue() == RADAR_TRANSMIT))) {
     glPushMatrix();
@@ -894,32 +935,38 @@ void RadarInfo::RenderRadarImage(wxPoint center, double scale, double overlay_ro
 
   if (m_pixels_per_meter != 0.) {
     double radar_scale = scale / m_pixels_per_meter;
-    glPushMatrix();
-    glTranslated(center.x, center.y, 0);
-    glRotated(panel_rotate, 0.0, 0.0, 1.0);
-    glScaled(radar_scale, radar_scale, 1.);
-
-    RenderRadarImage(overlay ? &m_draw_overlay : &m_draw_panel);
-    glPopMatrix();
+    if (m_pi->m_settings.drawing_method) {  // for shader
+      glPushMatrix();
+      glTranslated(center.x, center.y, 0);
+      glRotated(panel_rotate, 0.0, 0.0, 1.0);
+      glScaled(radar_scale, radar_scale, 1.);
+    }
+    RenderRadarImage2(overlay ? &m_draw_overlay : &m_draw_panel, radar_scale, panel_rotate);
+    if (m_pi->m_settings.drawing_method) {
+      glPopMatrix();
+    }
   }
 
   if (arpa_on) {
-    glPushMatrix();
-    glTranslated(center.x, center.y, 0);
-    LOG_VERBOSE(wxT("radar_pi: %s render ARPA targets on overlay with rot=%f"), m_name.c_str(), arpa_rotate);
-
-    glRotated(arpa_rotate, 0.0, 0.0, 1.0);
-    glScaled(scale, scale, 1.);
-    m_arpa->DrawArpaTargets();
-    glPopMatrix();
+    if (overlay) {
+      m_arpa->DrawArpaTargetsOverlay(scale, arpa_rotate);
+    }
+    else {
+      m_arpa->DrawArpaTargetsPanel(scale, arpa_rotate);
+    }
   }
   m_draw_time_ms = stopwatch.Time();
   glPopAttrib();
+  if (!overlay && m_view_center.GetValue()) {
+    glPopMatrix();
+  }
 }
 
 wxString RadarInfo::GetCanvasTextTopLeft() {
   wxString s;
-
+  if (m_true_motion.GetValue() == TRUE_MOTION_ON) {
+    s << _("True Motion") << wxT("\n");
+  }
   switch (GetOrientation()) {
     case ORIENTATION_HEAD_UP:
       s << _("Head Up");
@@ -1230,7 +1277,6 @@ void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
       bearing = ebl + m_pi->GetHeadingTrue();
       break;
   }
-
   static double R = 6378.1e3 / 1852.;  // Radius of the Earth in nm
   double brng = deg2rad(bearing);
   double d = vrm;  // Distance in nm
@@ -1493,6 +1539,30 @@ void RadarInfo::CheckTimedTransmit() {
   }
   time_to_go = wxMax(time_to_go, 0);
   m_next_state_change.Update(time_to_go);
+}
+
+bool RadarInfo::GetRadarPosition(GeoPosition *pos) {
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  if (m_pi->IsBoatPositionValid() && VALID_GEO(m_radar_position.lat) && VALID_GEO(m_radar_position.lon)) {
+    *pos = m_radar_position;
+    return true;
+  }
+  pos->lat = nan("");
+  pos->lon = nan("");
+  return false;
+}
+
+bool RadarInfo::GetRadarPosition(ExtendedPosition *radar_pos) {
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  if (m_pi->IsBoatPositionValid() && VALID_GEO(m_radar_position.lat) && VALID_GEO(m_radar_position.lon)) {
+    radar_pos->pos = m_radar_position;
+    return true;
+  }
+  radar_pos->pos.lat = nan("");
+  radar_pos->pos.lon = nan("");
+  return false;
 }
 
 PLUGIN_END_NAMESPACE
