@@ -211,7 +211,7 @@ void DrawRoundRect(float x, float y, float width, float height, float radius) {
   glBegin(GL_TRIANGLE_STRIP);
   {
     // Top
-    for (size_t i = segment_count - 1; i >= 0; i--) {
+    for (size_t i = segment_count - 1; (int) i >= 0; i--) {
       glVertex2f(top_right[i].x, top_right[i].y);
       glVertex2f(top_left[i].x, top_left[i].y);
     }
