@@ -686,10 +686,6 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item)
       m_orientation = item;
     }
 
-    case CT_TRUE_MOTION: {
-      m_view_center = item;
-    }
-
     case CT_CENTER_VIEW: {
       m_view_center = item;
     }
@@ -964,9 +960,7 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
 
 wxString RadarInfo::GetCanvasTextTopLeft() {
   wxString s;
-  if (m_true_motion.GetValue() == TRUE_MOTION_ON) {
-    s << _("True Motion") << wxT("\n");
-  }
+  
   switch (GetOrientation()) {
     case ORIENTATION_HEAD_UP:
       s << _("Head Up");

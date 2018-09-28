@@ -833,11 +833,6 @@ void radar_pi::UpdateHeadingPositionState() {
       // Note that the watchdog is reset every time we receive a position.
       m_bpos_set = false;
       m_predicted_position_initialised = false;
-      for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-        if (m_radar[r]->m_true_motion.GetValue() == TRUE_MOTION_ON) {
-          m_radar[r]->m_true_motion.Update(TRUE_MOTION_WANTED);
-        }
-      }
       LOG_VERBOSE(wxT("radar_pi: Lost Boat Position data"));
     }
 
@@ -1228,9 +1223,6 @@ bool radar_pi::LoadConfig(void) {
       }
       ri->m_orientation.Update(v);
 
-      pConf->Read(wxString::Format(wxT("Radar%dTrueMotion"), r), &v, 0);
-      ri->m_true_motion.Update(v);
-
       pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
       ri->m_boot_state.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dMinContourLength"), r), &ri->m_min_contour_length, 6);
@@ -1394,7 +1386,6 @@ bool radar_pi::SaveConfig(void) {
 
       pConf->Write(wxString::Format(wxT("Radar%dRange"), r), m_radar[r]->m_range.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.GetValue());
-      pConf->Write(wxString::Format(wxT("Radar%dTrueMotion"), r), m_radar[r]->m_true_motion.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->m_state.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
       pConf->Write(wxString::Format(wxT("Radar%dControlShow"), r), m_settings.show_radar_control[r]);
@@ -1501,12 +1492,7 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     m_bpos_timestamp = now;
   }
   if (IsBoatPositionValid() && !m_settings.drawing_method) {   // not shader
-    // check if m_true_motion needs to be updated
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      if (m_radar[r]->m_true_motion.GetValue() == TRUE_MOTION_WANTED) {
-        m_radar[r]->m_true_motion.Update(TRUE_MOTION_ON);
-      }
-    }
+   
     if (!m_predicted_position_initialised) {
       m_expected_position = GPS_position;
       m_last_fixed = GPS_position;

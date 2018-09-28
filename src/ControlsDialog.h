@@ -129,7 +129,6 @@ class ControlsDialog : public wxDialog {
     m_trails_motion_button = 0;
     m_clear_trails_button = 0;
     m_orientation_button = 0;
-    m_true_motion_button = 0;
     m_power_sub_button = 0;
     m_transmit_button = 0;
     m_standby_button = 0;
@@ -300,7 +299,6 @@ class ControlsDialog : public wxDialog {
   RadarControlButton *m_trails_motion_button;
   wxButton *m_clear_trails_button;
   RadarControlButton *m_orientation_button;
-  RadarControlButton *m_true_motion_button;
   RadarControlButton *m_view_center_button;
 
   // Power controls
@@ -394,7 +392,6 @@ class ControlsDialog : public wxDialog {
   void OnTargetsOnPPIButtonClick(wxCommandEvent &event);
   void OnClearTrailsButtonClick(wxCommandEvent &event);
   void OnOrientationButtonClick(wxCommandEvent &event);
-  void OnTrueMotionButtonClick(wxCommandEvent &event);
   void OnViewCenterButtonClick(wxCommandEvent &event);
 
   void OnRadarControlButtonClick(wxCommandEvent &event);

@@ -551,7 +551,7 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
 void RadarArpa::DrawArpaTargetsOverlay(double scale, double arpa_rotate) {
   wxPoint boat_center;
   GeoPosition radar_pos;
-  if (m_ri->m_true_motion.GetValue() && m_ri->GetRadarPosition(&radar_pos)) {
+  if (!m_pi->m_settings.drawing_method && m_ri->GetRadarPosition(&radar_pos)) {
     for (int i = 0; i < m_number_of_targets; i++) {
       if (!m_targets[i]) {
         continue;
@@ -592,7 +592,7 @@ void RadarArpa::DrawArpaTargetsPanel(double scale, double arpa_rotate) {
   GeoPosition radar_pos, target_pos;
   double offset_lat = 0.;
   double offset_lon = 0.;
-  if (m_ri->m_true_motion.GetValue() && m_ri->GetRadarPosition(&radar_pos)) {
+  if (!m_pi->m_settings.drawing_method && m_ri->GetRadarPosition(&radar_pos)) {
     m_ri->GetRadarPosition(&radar_pos);
     for (int i = 0; i < m_number_of_targets; i++) {
       if (!m_targets[i]) {

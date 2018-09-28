@@ -79,7 +79,6 @@ enum {  // process ID's
   ID_TARGETS_ON_PPI,
   ID_CLEAR_TRAILS,
   ID_ORIENTATION,
-  ID_TRUE_MOTION,
   ID_VIEW_CENTER,
 
   ID_TRANSMIT_STANDBY,
@@ -134,7 +133,6 @@ EVT_BUTTON(ID_GAIN, ControlsDialog::OnRadarGainButtonClick)
 EVT_BUTTON(ID_TARGETS_ON_PPI, ControlsDialog::OnTargetsOnPPIButtonClick)
 EVT_BUTTON(ID_CLEAR_TRAILS, ControlsDialog::OnClearTrailsButtonClick)
 EVT_BUTTON(ID_ORIENTATION, ControlsDialog::OnOrientationButtonClick)
-EVT_BUTTON(ID_TRUE_MOTION, ControlsDialog::OnTrueMotionButtonClick)
 EVT_BUTTON(ID_VIEW_CENTER, ControlsDialog::OnViewCenterButtonClick)
 
 
@@ -1041,11 +1039,6 @@ void ControlsDialog::CreateControls() {
   m_view_sizer->Add(m_orientation_button, 0, wxALL, BORDER);
   // Updated when we receive data
 
-// The True Motion button
-  m_true_motion_button =
-      new RadarControlButton(this, ID_TRUE_MOTION, _("True Motion"), m_ctrl[CT_TRUE_MOTION], &m_ri->m_true_motion);
-  m_view_sizer->Add(m_true_motion_button, 0, wxALL, BORDER);
-
   // The Center Forward Aft button
   m_view_center_button =
     new RadarControlButton(this, ID_VIEW_CENTER, _("Center Forward Aft"), m_ctrl[CT_CENTER_VIEW], &m_ri->m_view_center);
@@ -1475,23 +1468,6 @@ void ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
   UpdateControlValues(false);
 }
 
-void ControlsDialog::OnTrueMotionButtonClick(wxCommandEvent& event) {
-  int value = m_ri->m_true_motion.GetValue() + 1;
-  if (value > TRUE_MOTION_ON) {
-    value = TRUE_MOTION_OFF;
-  }
-  GeoPosition pos;
-  if (m_ri->GetRadarPosition(&pos)) {
-    if (value == TRUE_MOTION_WANTED) value = TRUE_MOTION_ON;
-  } else {  // no position available
-    if (value == TRUE_MOTION_ON) {
-      value = TRUE_MOTION_WANTED;
-    }
-  }
-  m_ri->m_true_motion.Update(value);
-  UpdateControlValues(false);
-}
-
 void ControlsDialog::OnViewCenterButtonClick(wxCommandEvent& event) {
   int value = m_ri->m_view_center.GetValue() + 1;
   if (value > BACKWARD_VIEW) {
@@ -1859,16 +1835,6 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   m_target_trails_button->UpdateLabel();
   m_trails_motion_button->UpdateLabel();
   m_orientation_button->UpdateLabel();
-  m_true_motion_button->UpdateLabel();
-  if (m_pi->m_settings.drawing_method) {
-    if (m_ri->m_true_motion.GetValue() == TRUE_MOTION_ON) {
-      m_ri->m_true_motion.Update(TRUE_MOTION_WANTED);
-    }
-    m_true_motion_button->Disable();
-  }
-  else {
-    m_true_motion_button->Enable();
-  }
   m_view_center_button->UpdateLabel();
   m_overlay_button->UpdateLabel();
 
