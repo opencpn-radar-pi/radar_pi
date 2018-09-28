@@ -437,7 +437,6 @@ void RadarCanvas::RenderCursor(int w, int h, float radius) {
   double x = center_x + sin(angle) * range - CURSOR_WIDTH * CURSOR_SCALE / 2;
   double y = center_y - cos(angle) * range - CURSOR_WIDTH * CURSOR_SCALE / 2;
 
-   LOG_INFO(wxT("radar_pi: $$$draw cursor angle=%.1f bearing=%.1f"), rad2deg(angle), bearing);
 
   if (!m_cursor_texture) {
     glGenTextures(1, &m_cursor_texture);
@@ -468,6 +467,20 @@ void RadarCanvas::Render_EBL_VRM(int w, int h, float radius) {
   int display_range = m_ri->GetDisplayRange();
   int orientation = m_ri->GetOrientation();
 
+  glPushMatrix();
+  double offset = (double)wxMax(w, h) * CHART_SCALE / 4.;
+  if (m_ri->m_view_center.GetValue()) {
+    glRotated(m_ri->m_predictor, 0., 0., 1.);
+    if (m_ri->m_view_center.GetValue() == FORWARD_VIEW) {
+      glTranslated(0., offset, 0.);
+    }
+    else {                                 // aft view
+      glTranslated(0., -offset, 0.);
+    }
+    glRotated(-m_ri->m_predictor, 0., 0., 1.);
+  }
+
+
   for (int b = 0; b < BEARING_LINES; b++) {
     float x, y;
     glColor3ubv(rgb[b]);
@@ -486,6 +499,7 @@ void RadarCanvas::Render_EBL_VRM(int w, int h, float radius) {
       DrawArc(center_x, center_y, scale, 0.f, 2.f * (float)PI, 360);
     }
   }
+  glPopMatrix();
 }
 
 static void ResetGLViewPort(int w, int h) {
@@ -541,7 +555,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
 
   // LAYER 1 - RANGE RINGS AND HEADINGS
   ResetGLViewPort(w, h);
-  RenderRangeRingsAndHeading(w, h, radar_radius);          //*********************************************************************************************$$$
+  RenderRangeRingsAndHeading(w, h, radar_radius);
 
   PlugIn_ViewPort vp;
   GeoPosition pos;
@@ -615,14 +629,12 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
 
   // LAYER 5 - TEXTS & CURSOR
   ResetGLViewPort(w, h);
-  //glLoadIdentity();   //$$$ ??
   RenderTexts(w, h);
   glPushMatrix();
   double offset = (double)wxMax(w, h) * CHART_SCALE / 4.;
   if (m_ri->m_view_center.GetValue()) {
     glRotated(m_ri->m_predictor, 0., 0., 1.);
     if (m_ri->m_view_center.GetValue() == FORWARD_VIEW) {
-      LOG_INFO(wxT("$$$ m_ri->m_predictor= %f"), m_ri->m_predictor);
       glTranslated(0., offset, 0.);       // shift mouse pointer
     }
     else {                                 // aft view
@@ -653,7 +665,6 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
 
   int center_x = w / 2;
   int center_y = h / 2;
-  LOG_INFO(wxT("$$$ center x= %i, y=%i"), center_x, center_y);
   double offset = (double)wxMax(w, h) * CHART_SCALE / 4.;  // half of the radar_radius
   if (m_ri->m_view_center.GetValue()) {
     
@@ -666,21 +677,15 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
       center_y -= int (offset * cos(deg2rad(m_ri->m_predictor)));
     }
   }
-  LOG_INFO(wxT("$$$ center after x= %i, y=%i, m_ri->m_predictor=%f, offset=%f"), center_x, center_y, m_ri->m_predictor, offset);
-    LOG_INFO(wxT("radar_pi: %s Mouse clicked at %d, %d"), m_ri->m_name.c_str(), x, y);  //$$$ dialo
+    LOG_DIALOG(wxT("radar_pi: %s Mouse clicked at %d, %d"), m_ri->m_name.c_str(), x, y);
   if (x > 0 && x < w && y > 0 && y < h) {
-    LOG_INFO(wxT("$$$ center1"));
     if (x >= w - m_menu_size.x && y < m_menu_size.y) {
-      LOG_INFO(wxT("$$$ center2"));
       m_pi->ShowRadarControl(m_ri->m_radar, true);
     } else if ((x >= center_x - m_zoom_size.x / 2) && (x <= center_x + m_zoom_size.x / 2) &&
                (y > h - m_zoom_size.y + MENU_ROUNDING)) {
-      LOG_INFO(wxT("$$$ center3"));
       if (x > center_x) {
-        LOG_INFO(wxT("$$$ center4"));
         m_ri->AdjustRange(+1);
       } else {
-        LOG_INFO(wxT("$$$ center5"));
         m_ri->AdjustRange(-1);
       }
 
@@ -689,7 +694,6 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
       double delta_y = y - center_y;
       
       double distance = sqrt(delta_x * delta_x + delta_y * delta_y);
-      LOG_INFO(wxT("$$$ center6 delta_x=$f  delta_y=%f, distance=%f"), delta_x, delta_y, distance);
       int display_range = m_ri->GetDisplayRange();
 
       double angle = fmod(rad2deg(atan2(delta_y, delta_x)) + 720. + 90., 360.0);
