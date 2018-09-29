@@ -230,15 +230,19 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, float r) {
       m_ri->m_predictor = 0.;    // predictor in the direction of the line on the radar window
       break;
     case ORIENTATION_STABILIZED_UP:
+      LOG_INFO(wxT("radar_pi: $$$ stab_UP1 orientation = %i, heading = %f, m_predictor=%f, m_pi->GetCOG()=%f"), m_ri->GetOrientation(), heading, m_ri->m_predictor, m_pi->GetCOG());
       heading += m_ri->m_course;
       m_ri->m_predictor = m_pi->GetHeadingTrue() - m_ri->m_course;
+      LOG_INFO(wxT("radar_pi: $$$ stab_UP2 orientation = %i, heading = %f, m_predictor=%f"), m_ri->GetOrientation(), heading, m_ri->m_predictor);
       break;
     case ORIENTATION_NORTH_UP:
       m_ri->m_predictor = m_pi->GetHeadingTrue();
       break;
     case ORIENTATION_COG_UP:
-      heading = m_pi->GetCOG();
+      LOG_INFO(wxT("radar_pi: $$$ COURSE_UP1 orientation = %i, heading = %f, m_predictor=%f, m_pi->GetCOG()=%f"), m_ri->GetOrientation(), heading, m_ri->m_predictor, m_pi->GetCOG());
+      heading += m_pi->GetCOG();
       m_ri->m_predictor = m_pi->GetHeadingTrue() - heading;
+      LOG_INFO(wxT("radar_pi: $$$ COURSE_UP2 orientation = %i, heading = %f, m_predictor=%f"), m_ri->GetOrientation(), heading, m_ri->m_predictor);
       break;
     }
   }
@@ -313,7 +317,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, float r) {
       glVertex2f(center_x + x * 1.02, center_y + y * 1.02);
     }
     glEnd();
-
+    LOG_INFO(wxT("radar_pi: $$$ orientation = %i, heading = %f, m_predictor=%f"), m_ri->GetOrientation(), heading, m_ri->m_predictor);
     for (int i = 0; i < 360; i += 30) {
       x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
       y = cosf(deg2rad(i - heading)) * (r * 1.00 - 1);

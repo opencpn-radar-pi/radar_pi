@@ -888,7 +888,7 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
         panel_rotate -= cog;  // Panel only needs stabilized heading applied
         arpa_rotate -= cog;
         guard_rotate += m_pi->GetHeadingTrue() - cog;
-      } break;
+       } break;
       case ORIENTATION_NORTH_UP:
         guard_rotate += m_pi->GetHeadingTrue();
         break;

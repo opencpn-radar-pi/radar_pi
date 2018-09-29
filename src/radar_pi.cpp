@@ -205,6 +205,8 @@ int radar_pi::Init(void) {
   m_hdm_timeout = now + WATCHDOG_TIMEOUT;
   m_var_timeout = now + WATCHDOG_TIMEOUT;
   m_cog_timeout = now;
+  m_cog = 0.;
+  m_COGAvg = 0.;
   m_heading_source = HEADING_NONE;
   m_radar_heading = nanl("");
   m_vp_rotation = 0.;
@@ -1520,6 +1522,7 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     if (TIMED_OUT(now, m_cog_timeout)) {
       m_cog_timeout = now + m_COGAvgSec;
       m_cog = m_COGAvg;
+      LOG_INFO(wxT("$$$$ COG updated, m_cog=%f"),    m_cog);
     }
   }
 }
@@ -1562,6 +1565,7 @@ void radar_pi::UpdateCOGAvg(double cog) {
   } else {
     m_COGAvg = cog;
   }
+  LOG_INFO(wxT("$$$$ COG updated, m_COGAvg=%f"), m_COGAvg);
 }
 
 void radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
