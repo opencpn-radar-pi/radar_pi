@@ -820,11 +820,18 @@ void RadarInfo::RenderRadarImage2(DrawInfo *di, double radar_scale, double panel
       return;
     }
   }
+  double chart_scale;
+  if (m_view_center.GetValue()) {
+    chart_scale = CHART_SCALE_OFFSET;
+  }
+  else {
+    chart_scale = CHART_SCALE_CENTER;
+  }
   if (di == &m_draw_overlay) {
     di->draw->DrawRadarOverlayImage(radar_scale, panel_rotate);
   }
   else {
-    m_panel_scale = (CHART_SCALE / m_range.GetValue()) / m_pixels_per_meter;
+    m_panel_scale = (chart_scale / m_range.GetValue()) / m_pixels_per_meter;
     di->draw->DrawRadarPanelImage(m_panel_scale, panel_rotate);
   }
 
@@ -888,7 +895,7 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
         panel_rotate -= cog;  // Panel only needs stabilized heading applied
         arpa_rotate -= cog;
         guard_rotate += m_pi->GetHeadingTrue() - cog;
-      } break;
+       } break;
       case ORIENTATION_NORTH_UP:
         guard_rotate += m_pi->GetHeadingTrue();
         break;
@@ -901,10 +908,10 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
       glRotated(m_predictor, 0., 0., 1.);
       // following will set the off-center view in radar panel for tahe radar image
       if (m_view_center.GetValue() == FORWARD_VIEW) {
-        glTranslated(0., 0.5 * CHART_SCALE, 0.);
+        glTranslated(0., 0.5 * CHART_SCALE_OFFSET, 0.);
       }
       else {
-        glTranslated(0., -0.5 * CHART_SCALE, 0.);
+        glTranslated(0., -0.5 * CHART_SCALE_OFFSET, 0.);
       }
       glRotated(-m_predictor, 0., 0., 1.);
     }
@@ -963,13 +970,13 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
   
   switch (GetOrientation()) {
     case ORIENTATION_HEAD_UP:
-      s << _("Head Up");
+      s << _("Head Up") << wxT("\n") << _("Relative Bearings");
       break;
     case ORIENTATION_STABILIZED_UP:
       s << _("Head Up") << wxT("\n") << _("Stabilized");
       break;
     case ORIENTATION_COG_UP:
-      s << _("Course Up");
+      s << _("COG Up");
       break;
     case ORIENTATION_NORTH_UP:
       s << _("North Up");

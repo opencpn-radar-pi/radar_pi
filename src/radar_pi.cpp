@@ -205,6 +205,8 @@ int radar_pi::Init(void) {
   m_hdm_timeout = now + WATCHDOG_TIMEOUT;
   m_var_timeout = now + WATCHDOG_TIMEOUT;
   m_cog_timeout = now;
+  m_cog = 0.;
+  m_COGAvg = 0.;
   m_heading_source = HEADING_NONE;
   m_radar_heading = nanl("");
   m_vp_rotation = 0.;
@@ -1161,7 +1163,7 @@ m_vp = vp;
     }
     double rotation = fmod(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor) + 720.0, 360);
     LOG_DIALOG(wxT("radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat,
-               vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, vp->chart_scale, rotation);
+               vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
     m_radar[m_settings.chart_overlay]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
   }
 
@@ -1455,7 +1457,8 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       m_hdt = pfix.Hdt;
       m_hdt_timeout = now + HEADING_TIMEOUT;
     }
-  } else if (!wxIsNaN(pfix.Hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
+  }
+  else if (!wxIsNaN(pfix.Hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
     if (m_heading_source < HEADING_FIX_HDM) {
       LOG_VERBOSE(wxT("radar_pi: Heading source is now HDM from OpenCPN + VAR (%d->%d)"), m_heading_source, HEADING_FIX_HDM);
       m_heading_source = HEADING_FIX_HDM;
@@ -1465,7 +1468,8 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       m_hdt = pfix.Hdm + m_var;
       m_hdm_timeout = now + HEADING_TIMEOUT;
     }
-  } else if (!wxIsNaN(pfix.Cog) && m_settings.enable_cog_heading) {
+  }
+  else if (!wxIsNaN(pfix.Cog) && m_settings.enable_cog_heading) {
     if (m_heading_source < HEADING_FIX_COG) {
       LOG_VERBOSE(wxT("radar_pi: Heading source is now COG from OpenCPN (%d->%d)"), m_heading_source, HEADING_FIX_COG);
       m_heading_source = HEADING_FIX_COG;
@@ -1486,13 +1490,13 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
 
     if (!m_bpos_set) {
       LOG_VERBOSE(wxT("radar_pi: GPS position is now known m_ownship.lat= %f, m_ownship.lon = %f"), GPS_position.pos.lat,
-                  GPS_position.pos.lon);
+        GPS_position.pos.lon);
     }
     m_bpos_set = true;
     m_bpos_timestamp = now;
   }
-  if (IsBoatPositionValid() && !m_settings.drawing_method) {   // not shader
-   
+  if (IsBoatPositionValid()) {   
+
     if (!m_predicted_position_initialised) {
       m_expected_position = GPS_position;
       m_last_fixed = GPS_position;
@@ -1510,18 +1514,18 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     m_ownship = m_expected_position.pos;
     m_last_fixed = m_expected_position;
     double exp_course = rad2deg(
-        atan2(m_expected_position.dlon_dt, m_expected_position.dlat_dt * cos(m_expected_position.pos.lat / 360. * 2. * PI)));
+      atan2(m_expected_position.dlon_dt, m_expected_position.dlat_dt * cos(m_expected_position.pos.lat / 360. * 2. * PI)));
     LOG_VERBOSE(wxT("pfixSOG %f, calculated speed %f, calculated COG %f"), pfix.Sog, m_expected_position.speed_kn, exp_course);
-
-
-    if (!wxIsNaN(pfix.Cog)) {
-      UpdateCOGAvg(pfix.Cog);
-    }
-    if (TIMED_OUT(now, m_cog_timeout)) {
-      m_cog_timeout = now + m_COGAvgSec;
-      m_cog = m_COGAvg;
-    }
   }
+
+  if (!wxIsNaN(pfix.Cog)) {
+    UpdateCOGAvg(pfix.Cog);
+  }
+  if (TIMED_OUT(now, m_cog_timeout)) {
+    m_cog_timeout = now + m_COGAvgSec;
+    m_cog = m_COGAvg;
+  }
+
 }
 
 void radar_pi::UpdateCOGAvg(double cog) {

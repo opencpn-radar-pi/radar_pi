@@ -226,7 +226,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, float r) {
   if (m_pi->GetHeadingSource() != HEADING_NONE) {
     switch (m_ri->GetOrientation()) {
     case ORIENTATION_HEAD_UP:
-      heading += m_pi->GetHeadingTrue();
+      heading += 0.;
       m_ri->m_predictor = 0.;    // predictor in the direction of the line on the radar window
       break;
     case ORIENTATION_STABILIZED_UP:
@@ -237,8 +237,8 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, float r) {
       m_ri->m_predictor = m_pi->GetHeadingTrue();
       break;
     case ORIENTATION_COG_UP:
-      heading = m_pi->GetCOG();
-      m_ri->m_predictor = m_pi->GetHeadingTrue() - heading;
+      heading += m_pi->GetCOG();
+      m_ri->m_predictor = m_pi->GetHeadingTrue() - heading - 180.;
       break;
     }
   }
@@ -294,7 +294,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, float r) {
     }
   }
 
-  if (m_pi->GetHeadingSource() != HEADING_NONE) {
+  //if (m_pi->GetHeadingSource() != HEADING_NONE) {
 
     x = sinf((float)deg2rad(m_ri->m_predictor));
     y = -cosf((float)deg2rad(m_ri->m_predictor));
@@ -313,13 +313,12 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, float r) {
       glVertex2f(center_x + x * 1.02, center_y + y * 1.02);
     }
     glEnd();
-
     for (int i = 0; i < 360; i += 30) {
       x = -sinf(deg2rad(i - heading)) * (r * 1.00 - 1);
       y = cosf(deg2rad(i - heading)) * (r * 1.00 - 1);
 
       wxString s;
-      if (i % 90 == 0) {
+      if (i % 90 == 0 && (m_pi->GetHeadingSource() != HEADING_NONE)) {
         static char nesw[4] = {'N', 'E', 'S', 'W'};
         s = wxString::Format(wxT("%c"), nesw[i / 90]);
       } else {
@@ -335,7 +334,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, float r) {
       }
       m_FontNormal.RenderString(s, center_x + x, center_y + y);
     }
-  }
+  //}
 
   glPopAttrib();
   glPopMatrix();
@@ -468,8 +467,8 @@ void RadarCanvas::Render_EBL_VRM(int w, int h, float radius) {
   int orientation = m_ri->GetOrientation();
 
   glPushMatrix();
-  double offset = (double)wxMax(w, h) * CHART_SCALE / 4.;
   if (m_ri->m_view_center.GetValue()) {
+    double offset = (double)wxMax(w, h) * CHART_SCALE_OFFSET / 4.;
     glRotated(m_ri->m_predictor, 0., 0., 1.);
     if (m_ri->m_view_center.GetValue() == FORWARD_VIEW) {
       glTranslated(0., offset, 0.);
@@ -524,8 +523,15 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     return;
   }
   LOG_VERBOSE(wxT("radar_pi: %s render OpenGL canvas %d by %d "), m_ri->m_name.c_str(), w, h);
+  double chart_scale;
+  if (m_ri->m_view_center.GetValue()) {
+    chart_scale = CHART_SCALE_OFFSET;
+  }
+  else {
+    chart_scale = CHART_SCALE_CENTER;
+  }
 
-  float radar_radius = (float)wxMax(w, h) * (float)CHART_SCALE / 2.0;
+  float radar_radius = (float)wxMax(w, h) * (float)chart_scale / 2.0;
 
   SetCurrent(*m_context);
 
@@ -566,6 +572,20 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     ResetGLViewPort(w, h);
     glPushMatrix();
     glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+    
+    if (m_ri->m_view_center.GetValue()) {
+      double offset = (double)wxMax(w, h) * CHART_SCALE_OFFSET / 4.;
+      glRotated(m_ri->m_predictor, 0., 0., 1.);
+      if (m_ri->m_view_center.GetValue() == FORWARD_VIEW) {
+        glTranslated(0., offset, 0.);
+      }
+      else {                                 // aft view
+        glTranslated(0., -offset, 0.);
+      }
+      glRotated(-m_ri->m_predictor, 0., 0., 1.);
+    }
+
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
     vp.m_projection_type = 4;  // Orthographic projection
@@ -625,13 +645,13 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   }
   glMatrixMode(GL_MODELVIEW);  // Reset matrick stack target back to GL_MODELVIEW
 
-  m_ri->RenderRadarImage1(wxPoint(0, 0), CHART_SCALE / m_ri->m_range.GetValue(), 0.0, false);
+  m_ri->RenderRadarImage1(wxPoint(0, 0), chart_scale / m_ri->m_range.GetValue(), 0.0, false);
 
   // LAYER 5 - TEXTS & CURSOR
   ResetGLViewPort(w, h);
   RenderTexts(w, h);
   glPushMatrix();
-  double offset = (double)wxMax(w, h) * CHART_SCALE / 4.;
+  double offset = (double)wxMax(w, h) * chart_scale / 4.;
   if (m_ri->m_view_center.GetValue()) {
     glRotated(m_ri->m_predictor, 0., 0., 1.);
     if (m_ri->m_view_center.GetValue() == FORWARD_VIEW) {
@@ -665,7 +685,15 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
 
   int center_x = w / 2;
   int center_y = h / 2;
-  double offset = (double)wxMax(w, h) * CHART_SCALE / 4.;  // half of the radar_radius
+
+  double chart_scale;
+  if (m_ri->m_view_center.GetValue()) {
+    chart_scale = CHART_SCALE_OFFSET;
+  }
+  else {
+    chart_scale = CHART_SCALE_CENTER;
+  }
+  double offset = (double)wxMax(w, h) * chart_scale / 4.;  // half of the radar_radius
   if (m_ri->m_view_center.GetValue()) {
     
     if (m_ri->m_view_center.GetValue() == 1) {
@@ -698,7 +726,7 @@ void RadarCanvas::OnMouseClick(wxMouseEvent &event) {
 
       double angle = fmod(rad2deg(atan2(delta_y, delta_x)) + 720. + 90., 360.0);
 
-      double full_range = CHART_SCALE * wxMax(w, h) / 2.0;
+      double full_range = chart_scale * wxMax(w, h) / 2.0;
 
       double range = distance / (1852.0 * full_range / display_range);
 
