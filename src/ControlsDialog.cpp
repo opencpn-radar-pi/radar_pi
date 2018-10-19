@@ -1041,7 +1041,7 @@ void ControlsDialog::CreateControls() {
 
   // The Center Forward Aft button
   m_view_center_button =
-    new RadarControlButton(this, ID_VIEW_CENTER, _("Center Forward Aft"), m_ctrl[CT_CENTER_VIEW], &m_ri->m_view_center);
+    new RadarControlButton(this, ID_VIEW_CENTER, _("PPI Forward Aft View"), m_ctrl[CT_CENTER_VIEW], &m_ri->m_view_center);
   m_view_sizer->Add(m_view_center_button, 0, wxALL, BORDER);
 
 
@@ -1470,11 +1470,16 @@ void ControlsDialog::OnOrientationButtonClick(wxCommandEvent& event) {
 
 void ControlsDialog::OnViewCenterButtonClick(wxCommandEvent& event) {
   int value = m_ri->m_view_center.GetValue() + 1;
+  if (value == CENTER_VIEW) {
+    m_ri->m_off_center.x = 0;
+    m_ri->m_off_center.y = 0;   // reset dragging
+  }
   if (value > BACKWARD_VIEW) {
     value = CENTER_VIEW;
   }
   m_ri->m_view_center.Update(value);
   UpdateControlValues(false);
+  value = m_ri->m_view_center.GetValue();
 }
 
 void ControlsDialog::OnBearingSetButtonClick(wxCommandEvent& event) {

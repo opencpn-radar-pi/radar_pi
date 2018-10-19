@@ -103,6 +103,13 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_state.Update(RADAR_OFF);
   m_refresh_millis = 50;
 
+  m_drag.x = 0.;
+  m_drag.y = 0.;
+  m_off_center.x = 0.;
+  m_off_center.y = 0.;
+  m_panel_zoom = 0.;
+  m_view_center = 1;
+
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     m_guard_zone[z] = new GuardZone(m_pi, this, z);
   }
@@ -820,19 +827,13 @@ void RadarInfo::RenderRadarImage2(DrawInfo *di, double radar_scale, double panel
       return;
     }
   }
-  double chart_scale;
-  if (m_view_center.GetValue()) {
-    chart_scale = CHART_SCALE_OFFSET;
-  }
-  else {
-    chart_scale = CHART_SCALE_CENTER;
-  }
+  
   if (di == &m_draw_overlay) {
     di->draw->DrawRadarOverlayImage(radar_scale, panel_rotate);
   }
   else {
-    m_panel_scale = (chart_scale / m_range.GetValue()) / m_pixels_per_meter;
-    di->draw->DrawRadarPanelImage(m_panel_scale, panel_rotate);
+    double panel_scale = (m_panel_zoom / m_range.GetValue()) / m_pixels_per_meter;  // typical value 0.001
+    di->draw->DrawRadarPanelImage(panel_scale, panel_rotate);
   }
 
   if (g_first_render) {
@@ -885,36 +886,30 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
   if (!overlay) {
     arpa_rotate = 0.;
     switch (orientation) {
-      case ORIENTATION_STABILIZED_UP:
-        panel_rotate -= m_course;  // Panel only needs stabilized heading applied
-        arpa_rotate -= m_course;
-        guard_rotate += m_pi->GetHeadingTrue() - m_course;
-        break;
-      case ORIENTATION_COG_UP: {
-        double cog = m_pi->GetCOG();
-        panel_rotate -= cog;  // Panel only needs stabilized heading applied
-        arpa_rotate -= cog;
-        guard_rotate += m_pi->GetHeadingTrue() - cog;
-       } break;
-      case ORIENTATION_NORTH_UP:
-        guard_rotate += m_pi->GetHeadingTrue();
-        break;
-      case ORIENTATION_HEAD_UP:
-        arpa_rotate += -m_pi->GetHeadingTrue();  // Undo the actual heading calculation always done for ARPA
-        break;
+    case ORIENTATION_STABILIZED_UP:
+      panel_rotate -= m_course;  // Panel only needs stabilized heading applied
+      arpa_rotate -= m_course;
+      guard_rotate += m_pi->GetHeadingTrue() - m_course;
+      break;
+    case ORIENTATION_COG_UP: {
+      double cog = m_pi->GetCOG();
+      panel_rotate -= cog;  // Panel only needs stabilized heading applied
+      arpa_rotate -= cog;
+      guard_rotate += m_pi->GetHeadingTrue() - cog;
+    } break;
+    case ORIENTATION_NORTH_UP:
+      guard_rotate += m_pi->GetHeadingTrue();
+      break;
+    case ORIENTATION_HEAD_UP:
+      arpa_rotate += -m_pi->GetHeadingTrue();  // Undo the actual heading calculation always done for ARPA
+      break;
     }
-    if (m_view_center.GetValue()) {
-      glPushMatrix();
-      glRotated(m_predictor, 0., 0., 1.);
-      // following will set the off-center view in radar panel for tahe radar image
-      if (m_view_center.GetValue() == FORWARD_VIEW) {
-        glTranslated(0., 0.5 * CHART_SCALE_OFFSET, 0.);
-      }
-      else {
-        glTranslated(0., -0.5 * CHART_SCALE_OFFSET, 0.);
-      }
-      glRotated(-m_predictor, 0., 0., 1.);
-    }
+
+    glPushMatrix();
+    double x,y;
+    x = (double)(m_off_center.x + m_drag.x) * m_panel_zoom / m_radar_radius;
+    y = (double)(m_off_center.y + m_drag.y) * m_panel_zoom / m_radar_radius;
+    glTranslated(x, y, 0.);
   }
   else {
     guard_rotate += m_pi->GetHeadingTrue();
@@ -960,7 +955,7 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
   }
   m_draw_time_ms = stopwatch.Time();
   glPopAttrib();
-  if (!overlay && m_view_center.GetValue()) {
+  if (!overlay) {
     glPopMatrix();
   }
 }

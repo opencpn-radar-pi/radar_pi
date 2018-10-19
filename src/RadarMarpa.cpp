@@ -592,13 +592,7 @@ void RadarArpa::DrawArpaTargetsPanel(double scale, double arpa_rotate) {
   GeoPosition radar_pos, target_pos;
   double offset_lat = 0.;
   double offset_lon = 0.;
-  double chart_scale;
-  if (m_ri->m_view_center.GetValue()) {
-    chart_scale = CHART_SCALE_OFFSET;
-  }
-  else {
-    chart_scale = CHART_SCALE_CENTER;
-  }
+ 
   if (!m_pi->m_settings.drawing_method && m_ri->GetRadarPosition(&radar_pos)) {
     m_ri->GetRadarPosition(&radar_pos);
     for (int i = 0; i < m_number_of_targets; i++) {
@@ -609,9 +603,9 @@ void RadarArpa::DrawArpaTargetsPanel(double scale, double arpa_rotate) {
         continue;
       }
       target_pos = m_targets[i]->m_radar_pos;
-      offset_lat = (radar_pos.lat - target_pos.lat) * 60. * 1852. * chart_scale / m_ri->m_range.GetValue();
+      offset_lat = (radar_pos.lat - target_pos.lat) * 60. * 1852. * m_ri->m_panel_zoom / m_ri->m_range.GetValue();
       offset_lon =
-        (radar_pos.lon - target_pos.lon) * 60. * 1852. * cos(deg2rad(target_pos.lat)) * chart_scale / m_ri->m_range.GetValue();
+        (radar_pos.lon - target_pos.lon) * 60. * 1852. * cos(deg2rad(target_pos.lat)) * m_ri->m_panel_zoom / m_ri->m_range.GetValue();
       glPushMatrix();
       glRotated(arpa_rotate, 0.0, 0.0, 1.0);
       glTranslated(-offset_lon, offset_lat, 0);

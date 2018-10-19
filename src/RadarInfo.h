@@ -85,6 +85,10 @@ class RadarInfo {
   double m_predictor;
   double m_course_log[COURSE_SAMPLES];
   int m_course_index;
+  wxPoint m_off_center, m_drag;
+  double m_radar_radius;  // radius in pixels of the outer ring in the panel
+  double m_panel_zoom;   // zooming factor for the panel image
+
   RadarArpa *m_arpa;
   wxCriticalSection m_exclusive;
 
@@ -245,7 +249,6 @@ class RadarInfo {
   GeoPosition m_mouse_pos;
   double m_mouse_ebl[ORIENTATION_NUMBER];
   double m_mouse_vrm;
-  double m_panel_scale;
 
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
   wxColour m_colour_map_rgb[BLOB_COLOURS];
