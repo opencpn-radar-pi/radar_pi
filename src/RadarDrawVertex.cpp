@@ -254,12 +254,12 @@ void RadarDrawVertex::DrawRadarPanelImage(double panel_scale, double panel_rotat
       line_pos = line->spoke_pos;
 
       // In the scaling used, a translation of 1. corresponds to the distance from center to the edge of the image
-      // that is a distance of m_range.GetValue() / CHART_SCALE
-      // that means, a distance of 1 meter corresponds to a ranslation of CHART_SCALE / m_range.GetValue() units
+      // that is a distance of m_range.GetValue() / m_ri->m_panel_zoom
+      // that means, a distance of 1 meter corresponds to a ranslation of m_ri->m_panel_zoom / m_range.GetValue() units
       if (m_ri->GetRadarPosition(&radar_pos)) {
-        offset_lat = (line_pos.lat - radar_pos.lat) * 60. * 1852. * CHART_SCALE / m_ri->m_range.GetValue();
+        offset_lat = (line_pos.lat - radar_pos.lat) * 60. * 1852. * m_ri->m_panel_zoom / m_ri->m_range.GetValue();
         offset_lon =
-            (line_pos.lon - radar_pos.lon) * 60. * 1852. * cos(deg2rad(line_pos.lat)) * CHART_SCALE / m_ri->m_range.GetValue();
+            (line_pos.lon - radar_pos.lon) * 60. * 1852. * cos(deg2rad(line_pos.lat)) * m_ri->m_panel_zoom / m_ri->m_range.GetValue();
         if (offset_lat != prev_offset_lat || offset_lon != prev_offset_lon) {
           prev_offset_lat = offset_lat;
           prev_offset_lon = offset_lon;
