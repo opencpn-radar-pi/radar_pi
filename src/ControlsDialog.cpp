@@ -1578,6 +1578,10 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
       m_view_sizer->Show(m_orientation_button);
       resize = true;
     }
+    if (m_top_sizer->IsShown(m_view_sizer) && !m_view_sizer->IsShown(m_view_center_button)) {
+      m_view_sizer->Show(m_view_center_button);
+      resize = true;
+    }
   } else {
     // Hide PPI related buttons
     if (m_control_sizer->IsShown(m_transmit_sizer) && m_transmit_sizer->IsShown(m_cursor_menu)) {
@@ -1590,6 +1594,10 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
     }
     if (m_top_sizer->IsShown(m_view_sizer) && m_view_sizer->IsShown(m_orientation_button)) {
       m_view_sizer->Hide(m_orientation_button);
+      resize = true;
+    }
+    if (m_top_sizer->IsShown(m_view_sizer) && m_view_sizer->IsShown(m_view_center_button)) {
+      m_view_sizer->Hide(m_view_center_button);
       resize = true;
     }
   }

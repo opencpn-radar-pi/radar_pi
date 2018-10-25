@@ -270,6 +270,16 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, float r) {
 
   float x = sinf((float)(0.25 * PI)) * r / (double)rings;
   float y = cosf((float)(0.25 * PI)) * r / (double)rings;
+  float x1 = 0;
+  float y1 = 0;
+  if (m_ri->m_off_center.y > 10) {
+    y = -y;       // position text opposite the direction of off-center
+    y1 = -16;     // additional offset to position text outside the ring
+  }
+  if (m_ri->m_off_center.x > 10) {
+    x = -x;
+    x1 = -16;     // additional offset to position text outside the ring
+  }
   // Position of the range texts
   float center_x = w / 2.0;
   float center_y = h / 2.0;
@@ -281,7 +291,7 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, float r) {
     if (meters != 0) {
       wxString s = m_ri->GetDisplayRangeStr(meters * i / rings, false);
       if (s.length() > 0) {
-        m_FontNormal.RenderString(s, center_x + x * i, center_y + y * i);
+        m_FontNormal.RenderString(s, center_x + x1 + x * i, center_y + y1 + y * i);
       }
     }
   }
@@ -509,10 +519,10 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   wxPoint off = m_ri->m_off_center + m_ri->m_drag;
   double move = sqrt(off.x * off.x + off.y * off.y);
 
-  if (m_ri->m_view_center.GetValue() == 1){
+  if (m_ri->m_view_center.GetValue() == CENTER_VIEW){
     m_ri->m_panel_zoom = ZOOM_FACTOR_CENTER;   // if off center with the button, fixed zoom
   }
-  if (m_ri->m_view_center.GetValue() > 1) {
+  if (m_ri->m_view_center.GetValue() > CENTER_VIEW) {
     m_ri->m_panel_zoom = ZOOM_FACTOR_OFFSET;   // if off center with the button, fixed zoom
   }
   float radar_radius = (float)wxMax(w, h) * (float)m_ri->m_panel_zoom / 2.0;
