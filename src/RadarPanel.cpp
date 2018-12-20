@@ -52,10 +52,9 @@ bool RadarPanel::Create() {
                            .CaptionVisible(true)  // Show caption even when docked
                            .TopDockable(false)
                            .BottomDockable(false)
-                           .RightDockable(true)
-                           .LeftDockable(true)
-                           .CloseButton(true)
-                           .Gripper(false);
+                           .RightDockable(false)
+                           .LeftDockable(false)
+                           .CloseButton(true);
 
   m_sizer = new wxBoxSizer(wxHORIZONTAL);
 
