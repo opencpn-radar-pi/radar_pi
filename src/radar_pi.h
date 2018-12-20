@@ -33,7 +33,7 @@
 #define _RADARPI_H_
 
 #define MY_API_VERSION_MAJOR 1
-#define MY_API_VERSION_MINOR 14  // Needed for PluginAISDrawGL().
+#define MY_API_VERSION_MINOR 16  // Needed for PluginAISDrawGL().
 
 #include <algorithm>
 #include <vector>
