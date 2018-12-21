@@ -101,7 +101,8 @@ class RadarInfo {
 
   int m_min_contour_length;  // minimum contour length of an ARPA or MARPA target
 
-  RadarControlItem m_overlay;
+  RadarControlItem m_overlay_canvas0;
+  RadarControlItem m_overlay_canvas1;
   RadarRangeControlItem m_range;  // value in meters, shown on display
   RadarControlItem m_gain;
   RadarControlItem m_interference_rejection;

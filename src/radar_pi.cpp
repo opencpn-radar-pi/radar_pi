@@ -120,7 +120,7 @@ END_EVENT_TABLE()
 //
 //---------------------------------------------------------------------------------------------------------
 
-radar_pi::radar_pi(void *ppimgr) : opencpn_plugin_114(ppimgr) {
+radar_pi::radar_pi(void *ppimgr) : opencpn_plugin_116(ppimgr) {
   m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
 
@@ -179,6 +179,8 @@ int radar_pi::Init(void) {
   m_fat_font = m_font;
   m_fat_font.SetWeight(wxFONTWEIGHT_BOLD);
   m_fat_font.SetPointSize(m_font.GetPointSize() + 1);
+  m_canvas0 = NULL;
+  m_canvas1 = NULL;
 
   m_var = 0.0;
   m_var_source = VARIATION_SOURCE_NONE;
@@ -1108,6 +1110,36 @@ bool radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 
 bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
   GeoPosition radar_pos;
+wxWindow*  current_canvas = PluginGetOverlayRenderCanvas();
+
+if (m_canvas0 == NULL) {
+     m_canvas0 = current_canvas;
+
+}
+else if (m_canvas0 != current_canvas) {
+     m_canvas1 = current_canvas;
+}
+m_settings.chart_overlay = -1;
+
+if (current_canvas == m_canvas0) {
+     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+          if (m_radar[r]->m_overlay_canvas0.GetValue() == 1) {
+               m_settings.chart_overlay = r;
+          }
+     }
+}
+
+
+
+//     m_settings.chart_overlay = m_settings.chart_overlay = m_settings.chart_overlay_canvas0;
+if (current_canvas == m_canvas1) {
+   //  LOG_INFO(wxT("$$$  handle canvas1"));
+     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+          if (m_radar[r]->m_overlay_canvas1.GetValue() == 1) {
+               m_settings.chart_overlay = r;
+          }
+     }
+}
 
   if (!m_initialized) {
     return true;

@@ -697,8 +697,12 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item)
       m_view_center = item;
     }
 
-    case CT_OVERLAY: {
-      m_overlay = item;
+    case CT_OVERLAY_CANVAS0: {
+      m_overlay_canvas0 = item;
+    }
+
+    case CT_OVERLAY_CANVAS1: {
+         m_overlay_canvas1 = item;
     }
 
     // Careful, we're selectively falling through to the next case label
@@ -744,7 +748,8 @@ bool RadarInfo::IsPaneShown() { return m_radar_panel->IsPaneShown(); }
 void RadarInfo::UpdateControlState(bool all) {
   wxCriticalSectionLocker lock(m_exclusive);
 
-  m_overlay.Update(m_pi->m_settings.chart_overlay == (int)m_radar);
+  m_overlay_canvas0.Update(m_pi->m_settings.chart_overlay_canvas0 == (int)m_radar);
+  m_overlay_canvas1.Update(m_pi->m_settings.chart_overlay_canvas1 == (int)m_radar);
 
 #ifdef OPENCPN_NO_LONGER_MIXES_GL_CONTEXT
   //
@@ -1137,7 +1142,7 @@ wxString RadarInfo::GetCanvasTextCenter() {
 wxString RadarInfo::GetRangeText() {
   int meters = m_range.GetValue();
 
-  bool auto_range = m_range.GetState() == RCS_AUTO_1 && m_overlay.GetValue() > 0;
+  bool auto_range = m_range.GetState() == RCS_AUTO_1 && (m_overlay_canvas0.GetValue() > 0 || m_overlay_canvas1.GetValue()) > 0;
 
   m_range_text = wxT("");
   if (auto_range) {

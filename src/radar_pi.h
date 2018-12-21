@@ -312,7 +312,9 @@ struct PersistentSettings {
   RangeUnits range_units;                          // See enum
   int max_age;                                     // Scans older than this in seconds will be removed
   RadarControlItem refreshrate;                    // How quickly to refresh the display
-  int chart_overlay;                               // -1 = none, otherwise = radar number
+  int chart_overlay;                               // The current overlay, -1 = none, otherwise = radar number
+  int chart_overlay_canvas0;                       // The overlay for canvas0, -1 = none, otherwise = radar number
+  int chart_overlay_canvas1;                       // The overlay for canvas1, -1 = none, otherwise = radar number
   int menu_auto_hide;                              // 0 = none, 1 = 10s, 2 = 30s
   int drawing_method;                              // VertexBuffer, Shader, etc.
   bool developer_mode;                             // Readonly from config, allows head up mode
@@ -368,7 +370,7 @@ struct AisArpa {
    INSTALLS_TOOLBAR_TOOL | USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS | WANTS_NMEA_SENTENCES | WANTS_PREFERENCES |  \
    WANTS_PLUGIN_MESSAGING | WANTS_CURSOR_LATLON | WANTS_MOUSE_EVENTS)
 
-class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
+class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
  public:
   radar_pi(void *ppimgr);
   ~radar_pi();
@@ -524,6 +526,8 @@ class radar_pi : public opencpn_plugin_114, public wxEvtHandler {
   time_t m_radar_heading_timeout;  // When last heading was obtained from radar, or 0 if not
   public:
   HeadingSource m_heading_source;
+  wxWindow* m_canvas0;
+  wxWindow* m_canvas1;
   
   private:
   bool m_bpos_set;
