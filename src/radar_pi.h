@@ -391,7 +391,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   wxString GetLongDescription();
 
   //    The required override PlugIn Methods
-  bool RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp);
+  bool RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort *vp, int max_canvas);
   bool RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp);
   void SetPositionFix(PlugIn_Position_Fix &pfix);
   void SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix);

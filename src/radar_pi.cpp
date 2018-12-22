@@ -1108,32 +1108,27 @@ bool radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 
 // Called by Plugin Manager on main system process cycle
 
-bool radar_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp) {
-  GeoPosition radar_pos;
-wxWindow*  current_canvas = PluginGetOverlayRenderCanvas();
+bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort *vp, int max_canvas) {
+     GeoPosition radar_pos;
+     wxWindow*  current_canvas = PluginGetOverlayRenderCanvas();
 
-if (m_canvas0 == NULL) {
-     m_canvas0 = current_canvas;
+     if (m_canvas0 == NULL) {
+          m_canvas0 = current_canvas;
+     }
+     else if (m_canvas0 != current_canvas) {
+          m_canvas1 = current_canvas;
+     }
+     m_settings.chart_overlay = -1;
 
-}
-else if (m_canvas0 != current_canvas) {
-     m_canvas1 = current_canvas;
-}
-m_settings.chart_overlay = -1;
-
-if (current_canvas == m_canvas0) {
-     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-          if (m_radar[r]->m_overlay_canvas0.GetValue() == 1) {
-               m_settings.chart_overlay = r;
+     if (current_canvas == m_canvas0) {
+          for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+               if (m_radar[r]->m_overlay_canvas0.GetValue() == 1) {
+                    m_settings.chart_overlay = r;
+               }
           }
      }
-}
 
-
-
-//     m_settings.chart_overlay = m_settings.chart_overlay = m_settings.chart_overlay_canvas0;
 if (current_canvas == m_canvas1) {
-   //  LOG_INFO(wxT("$$$  handle canvas1"));
      for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
           if (m_radar[r]->m_overlay_canvas1.GetValue() == 1) {
                m_settings.chart_overlay = r;
