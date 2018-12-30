@@ -929,7 +929,10 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
     if (m_settings.chart_overlay >= 0) {
       // If overlay is enabled schedule another chart draw. Note this will cause another call to RenderGLOverlay,
       // which will then call ScheduleWindowRefresh again itself.
-      GetOCPNCanvasWindow()->Refresh(false);
+      m_canvas0->Refresh(false);
+      if (m_max_canvas > 0) {
+        m_canvas1->Refresh(false);
+      }
     } else {
       ScheduleWindowRefresh();
     }
