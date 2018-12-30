@@ -534,9 +534,9 @@ public:
 class DECL_EXP opencpn_plugin_116 : public opencpn_plugin_115
 {
 public:
-     opencpn_plugin_116(void *pmgr);
-     virtual ~opencpn_plugin_116();
-     virtual bool RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort *vp, int max_canvas);
+    opencpn_plugin_116(void *pmgr);
+    virtual ~opencpn_plugin_116();
+    virtual bool RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort *vp, int max_canvas);
 };
 
 //------------------------------------------------------------------

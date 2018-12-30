@@ -312,7 +312,7 @@ struct PersistentSettings {
   RangeUnits range_units;                          // See enum
   int max_age;                                     // Scans older than this in seconds will be removed
   RadarControlItem refreshrate;                    // How quickly to refresh the display
-  int chart_overlay;                               // The current overlay, -1 = none, otherwise = radar number
+  int chart_overlay;                               // Overlay for the current RenderGLOverlayMultiCanvas, -1 = none, otherwise = radar number
   int chart_overlay_canvas0;                       // The overlay for canvas0, -1 = none, otherwise = radar number
   int chart_overlay_canvas1;                       // The overlay for canvas1, -1 = none, otherwise = radar number
   int menu_auto_hide;                              // 0 = none, 1 = 10s, 2 = 30s
@@ -408,6 +408,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
 
   bool m_guard_bogey_confirmed;
   bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
+  int m_max_canvas;         // Number of canvasses in OCPN -1, 0 == single canvas, > 0  multi 
   PlugIn_ViewPort* m_vp;
   
 

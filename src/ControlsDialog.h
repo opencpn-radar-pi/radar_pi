@@ -513,6 +513,7 @@ class RadarControlButton : public wxButton {
   virtual bool ToggleState();  // Returns desired new state for Auto/Off button show.
   virtual void SetState(RadarControlState state);
   virtual void UpdateLabel(bool force = false);
+  virtual void SetFirstLine(wxString first_line);
   wxString GetLabel();
 
   wxString m_comment;

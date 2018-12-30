@@ -181,6 +181,7 @@ int radar_pi::Init(void) {
   m_fat_font.SetPointSize(m_font.GetPointSize() + 1);
   m_canvas0 = NULL;
   m_canvas1 = NULL;
+  m_max_canvas = 0;
 
   m_var = 0.0;
   m_var_source = VARIATION_SOURCE_NONE;
@@ -224,6 +225,7 @@ int radar_pi::Init(void) {
   m_settings.threshold_green = 255;
   CLEAR_STRUCT(m_settings.radar_interface_address);
   m_settings.radar_count = 0;
+  m_settings.chart_overlay = -1;
 
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
@@ -513,6 +515,7 @@ void radar_pi::SetRadarWindowViz(bool reparent) {
     bool showThisControl = m_settings.show && m_settings.show_radar_control[r];
     LOG_DIALOG(wxT("radar_pi: RadarWindow[%d] show=%d showcontrol=%d"), r, showThisRadar, showThisControl);
     m_radar[r]->ShowRadarWindow(showThisRadar);
+
     m_radar[r]->ShowControlDialog(showThisControl, reparent);
     m_radar[r]->UpdateTransmitState();
   }
@@ -1109,32 +1112,33 @@ bool radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 // Called by Plugin Manager on main system process cycle
 
 bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort *vp, int max_canvas) {
-     GeoPosition radar_pos;
-     wxWindow*  current_canvas = PluginGetOverlayRenderCanvas();
+  GeoPosition radar_pos;
+  wxWindow*  current_canvas = PluginGetOverlayRenderCanvas();
 
-     if (m_canvas0 == NULL) {
-          m_canvas0 = current_canvas;
-     }
-     else if (m_canvas0 != current_canvas) {
-          m_canvas1 = current_canvas;
-     }
-     m_settings.chart_overlay = -1;
+  m_max_canvas = max_canvas;
+  if (m_canvas0 == NULL) {
+    m_canvas0 = current_canvas;
+  }
+  else if (m_canvas0 != current_canvas) {
+    m_canvas1 = current_canvas;
+  }
+  m_settings.chart_overlay = -1;
 
-     if (current_canvas == m_canvas0) {
-          for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-               if (m_radar[r]->m_overlay_canvas0.GetValue() == 1) {
-                    m_settings.chart_overlay = r;
-               }
-          }
-     }
+  if (current_canvas == m_canvas0) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      if (m_radar[r]->m_overlay_canvas0.GetValue() == 1) {
+        m_settings.chart_overlay = r;
+      }
+    }
+  }
 
-if (current_canvas == m_canvas1) {
-     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-          if (m_radar[r]->m_overlay_canvas1.GetValue() == 1) {
-               m_settings.chart_overlay = r;
-          }
-     }
-}
+  if (current_canvas == m_canvas1) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      if (m_radar[r]->m_overlay_canvas1.GetValue() == 1) {
+        m_settings.chart_overlay = r;
+      }
+    }
+  }
 
   if (!m_initialized) {
     return true;
@@ -1272,6 +1276,11 @@ bool radar_pi::LoadConfig(void) {
       pConf->Read(wxString::Format(wxT("Radar%dRunTimeOnIdle"), r), &v, 1);
       m_radar[r]->m_timed_run.Update(v);
 
+      pConf->Read(wxString::Format(wxT("Radar%dOverlayCanvas0"), r), &v, 0);
+      m_radar[r]->m_overlay_canvas0.Update(v);
+      pConf->Read(wxString::Format(wxT("Radar%dOverlayCanvas1"), r), &v, 0);
+      m_radar[r]->m_overlay_canvas1.Update(v);
+
       pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[n], n ? false : true);
       pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * n);
       pConf->Read(wxString::Format(wxT("Radar%dWindowPosY"), r), &y, 120);
@@ -1304,9 +1313,7 @@ bool radar_pi::LoadConfig(void) {
       n++;
     }
     m_settings.radar_count = n;
-
     pConf->Read(wxT("AlertAudioFile"), &m_settings.alert_audio_file, m_shareLocn + wxT("alarm.wav"));
-    pConf->Read(wxT("ChartOverlay"), &m_settings.chart_overlay, 0);
     pConf->Read(wxT("ColourStrong"), &s, "red");
     m_settings.strong_colour = wxColour(s);
     pConf->Read(wxT("ColourIntermediate"), &s, "green");
@@ -1368,7 +1375,7 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("AlarmPosX"), m_settings.alarm_pos.x);
     pConf->Write(wxT("AlarmPosY"), m_settings.alarm_pos.y);
     pConf->Write(wxT("AlertAudioFile"), m_settings.alert_audio_file);
-    pConf->Write(wxT("ChartOverlay"), m_settings.chart_overlay);
+   // pConf->Write(wxT("ChartOverlay"), m_settings.chart_overlay);
     pConf->Write(wxT("DeveloperMode"), m_settings.developer_mode);
     pConf->Write(wxT("DrawingMethod"), m_settings.drawing_method);
     pConf->Write(wxT("EnableCOGHeading"), m_settings.enable_cog_heading);
@@ -1430,6 +1437,8 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dAntennaForward"), r), m_radar[r]->m_antenna_forward.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dAntennaStarboard"), r), m_radar[r]->m_antenna_starboard.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dRunTimeOnIdle"), r), m_radar[r]->m_timed_run.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dOverlayCanvas0"), r), m_radar[r]->m_overlay_canvas0.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dOverlayCanvas1"), r), m_radar[r]->m_overlay_canvas1.GetValue());
 
       // LOG_DIALOG(wxT("radar_pi: SaveConfig: show_radar[%d]=%d"), r, m_settings.show_radar[r]);
       for (int i = 0; i < GUARD_ZONES; i++) {

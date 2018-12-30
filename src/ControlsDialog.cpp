@@ -250,11 +250,14 @@ wxString RadarControlButton::GetLabel() {
   return label;
 }
 
+void RadarControlButton::SetFirstLine(wxString first_line) {
+     firstLine = first_line;
+}
+
 void RadarControlButton::UpdateLabel(bool force) {
   RadarControlState state;
   int value;
   wxString label;
-
   if (m_item->GetButton(&value, &state) || force) {
     // label << MENU_EDIT(firstLine) << wxT("\n");
     if (m_no_edit) {
@@ -1375,7 +1378,7 @@ void ControlsDialog::OnRadarShowPPIButtonClick(wxCommandEvent& event) {
         }
       }
     }
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) { 
       m_pi->m_settings.show_radar[r] = show;
       if (!show && m_pi->m_settings.chart_overlay != (int)r) {
         m_pi->m_settings.show_radar_control[r] = false;
@@ -1396,87 +1399,39 @@ void ControlsDialog::OnRadarShowPPIButtonClick(wxCommandEvent& event) {
 void ControlsDialog::OnRadarOverlayButton0Click(wxCommandEvent& event) {
   SetMenuAutoHideTimeout();
 
-  int this_radar = m_ri->m_radar;
-  int next_radar = (this_radar + 1) % M_SETTINGS.radar_count;
-
-  int other_radar = -1;
-  if (M_SETTINGS.radar_count > 1 && !M_SETTINGS.show_radar[this_radar]) {
+  if (m_ri->m_overlay_canvas0.GetValue() == 0) {
+    m_ri->m_overlay_canvas0.Update(1);
+    // flip overlay to on and overlay for all other radars to off
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      if (next_radar != this_radar && M_SETTINGS.show_radar[r] == false) {
-        other_radar = next_radar;
-        break;
-      }
-      next_radar = (next_radar + 1) % M_SETTINGS.radar_count;
-    }
-  }
-
-  if (m_pi->m_settings.chart_overlay_canvas0 != this_radar) {
-    m_pi->m_settings.chart_overlay_canvas0 = this_radar;
-  } else if (other_radar > -1) {
-    // If no radar window shown, toggle overlay to different radar with hidden window
-    m_pi->m_settings.chart_overlay_canvas0 = other_radar;
-
-    wxPoint pos = m_pi->m_radar[this_radar]->m_control_dialog->GetPosition();
-
-    // Flip which control is visible.
-    m_pi->ShowRadarControl(this_radar, false);
-
-    if (!m_pi->m_radar[other_radar]->m_control_dialog || !m_pi->m_radar[other_radar]->m_control_dialog->IsShown()) {
-      m_pi->ShowRadarControl(other_radar, true);
-      if (m_pi->m_radar[other_radar]->m_control_dialog) {
-        m_pi->m_radar[other_radar]->m_control_dialog->SetPosition(pos);
+      if (m_pi->m_radar[r] != m_ri) {
+        m_pi->m_radar[r]->m_overlay_canvas0.Update(0);
       }
     }
-  } else {
-    // If a radar window is shown, switch overlay off
-    m_pi->m_settings.chart_overlay_canvas0 = -1;
   }
-  m_ri->m_overlay_canvas0.Update(m_pi->m_settings.chart_overlay_canvas0 == this_radar);
+  else {
+    // flip overlay to off
+    m_ri->m_overlay_canvas0.Update(0);
+  }
   UpdateControlValues(true);
 }
 
 void ControlsDialog::OnRadarOverlayButton1Click(wxCommandEvent& event) {
-     SetMenuAutoHideTimeout();
+  SetMenuAutoHideTimeout();
 
-     int this_radar = m_ri->m_radar;
-     int next_radar = (this_radar + 1) % M_SETTINGS.radar_count;
-
-     int other_radar = -1;
-     if (M_SETTINGS.radar_count > 1 && !M_SETTINGS.show_radar[this_radar]) {
-          for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-               if (next_radar != this_radar && M_SETTINGS.show_radar[r] == false) {
-                    other_radar = next_radar;
-                    break;
-               }
-               next_radar = (next_radar + 1) % M_SETTINGS.radar_count;
-          }
-     }
-
-     if (m_pi->m_settings.chart_overlay_canvas1 != this_radar) {
-          m_pi->m_settings.chart_overlay_canvas1 = this_radar;
-     }
-     else if (other_radar > -1) {
-          // If no radar window shown, toggle overlay to different radar with hidden window
-          m_pi->m_settings.chart_overlay_canvas1 = other_radar;
-
-          wxPoint pos = m_pi->m_radar[this_radar]->m_control_dialog->GetPosition();
-
-          // Flip which control is visible.
-          m_pi->ShowRadarControl(this_radar, false);
-
-          if (!m_pi->m_radar[other_radar]->m_control_dialog || !m_pi->m_radar[other_radar]->m_control_dialog->IsShown()) {
-               m_pi->ShowRadarControl(other_radar, true);
-               if (m_pi->m_radar[other_radar]->m_control_dialog) {
-                    m_pi->m_radar[other_radar]->m_control_dialog->SetPosition(pos);
-               }
-          }
-     }
-     else {
-          // If a radar window is shown, switch overlay off
-          m_pi->m_settings.chart_overlay_canvas1 = -1;
-     }
-     m_ri->m_overlay_canvas1.Update(m_pi->m_settings.chart_overlay_canvas1 == this_radar);
-     UpdateControlValues(true);
+  if (m_ri->m_overlay_canvas1.GetValue() == 0) {
+    m_ri->m_overlay_canvas1.Update(1);
+    // flip overlay to on and overlay for all other radars to off
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      if (m_pi->m_radar[r] != m_ri) {
+        m_pi->m_radar[r]->m_overlay_canvas1.Update(0);
+      }
+    }
+  }
+  else {
+    // flip overlay to off
+    m_ri->m_overlay_canvas1.Update(0);
+  }
+  UpdateControlValues(true);
 }
 
 void ControlsDialog::OnRadarGainButtonClick(wxCommandEvent& event) { EnterEditMode((RadarControlButton*)event.GetEventObject()); }
@@ -1652,6 +1607,23 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
     }
   }
 
+    if (m_pi->m_max_canvas > 0) {
+      if (m_top_sizer->IsShown(m_window_sizer) && m_window_sizer->IsShown(m_overlay_button1)) {
+        m_window_sizer->Show(m_overlay_button1);
+      }
+      m_overlay_button0->SetFirstLine(wxT("Overlay Left"));
+      m_overlay_button0->UpdateLabel(true);
+    }
+    else {
+      if (m_top_sizer->IsShown(m_window_sizer) && m_window_sizer->IsShown(m_overlay_button1)) {
+        m_window_sizer->Hide(m_overlay_button1);
+      }
+      m_overlay_button0->SetFirstLine(wxT("Radar Overlay"));
+      m_overlay_button0->UpdateLabel(true);
+    }
+  
+
+  
   if (m_pi->GetHeadingSource() == HEADING_NONE) {
     m_orientation_button->Disable();
   } else {
@@ -1840,9 +1812,9 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   if (m_from_control && m_top_sizer->IsShown(m_edit_sizer)) {
-    updateEditDialog = refreshAll || m_from_control->m_item->IsModified();
+       updateEditDialog = refreshAll || m_from_control->m_item->IsModified();
   }
-
+ 
   RadarState state = (RadarState)m_ri->m_state.GetButton();
 
   o << _("Start/Stop radar") << wxT("\n");

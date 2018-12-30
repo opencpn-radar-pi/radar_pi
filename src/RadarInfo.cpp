@@ -281,7 +281,7 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
       LOG_VERBOSE(wxT("radar_pi %s: Creating control dialog"), m_name.c_str());
       m_control_dialog->Create(parent, m_pi, this, wxID_ANY, m_name, m_pi->m_settings.control_pos[m_radar]);
     }
-    m_control_dialog->ShowDialog();
+    if (m_control_dialog) m_control_dialog->ShowDialog();
   } else if (m_control_dialog) {
     m_control_dialog->HideDialog();
   }
@@ -748,14 +748,12 @@ bool RadarInfo::IsPaneShown() { return m_radar_panel->IsPaneShown(); }
 void RadarInfo::UpdateControlState(bool all) {
   wxCriticalSectionLocker lock(m_exclusive);
 
-  m_overlay_canvas0.Update(m_pi->m_settings.chart_overlay_canvas0 == (int)m_radar);
-  m_overlay_canvas1.Update(m_pi->m_settings.chart_overlay_canvas1 == (int)m_radar);
 
 #ifdef OPENCPN_NO_LONGER_MIXES_GL_CONTEXT
   //
   // Once OpenCPN doesn't mess up with OpenGL context anymore we can do this
   //
-  if (m_overlay.value == 0 && m_draw_overlay.draw) {
+  if (m_overlay_canvas0.value == 0 && m_overlay_canvas1.value == 0 && m_draw_overlay.draw) {
     LOG_DIALOG(wxT("radar_pi: Removing draw method as radar overlay is not shown"));
     delete m_draw_overlay.draw;
     m_draw_overlay.draw = 0;
@@ -1142,7 +1140,7 @@ wxString RadarInfo::GetCanvasTextCenter() {
 wxString RadarInfo::GetRangeText() {
   int meters = m_range.GetValue();
 
-  bool auto_range = m_range.GetState() == RCS_AUTO_1 && (m_overlay_canvas0.GetValue() > 0 || m_overlay_canvas1.GetValue()) > 0;
+  bool auto_range = int((m_range.GetState()) > 0) == RCS_AUTO_1 && (int((m_overlay_canvas0.GetValue()) > 0 || m_overlay_canvas1.GetValue()) > 0);
 
   m_range_text = wxT("");
   if (auto_range) {
