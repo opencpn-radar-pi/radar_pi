@@ -1183,8 +1183,18 @@ m_vp = vp;
 
     wxPoint boat_center;
     GetCanvasPixLL(vp, &boat_center, radar_pos.lat, radar_pos.lon);
-    m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
 
+    // check if same radar is overlayed on both canvas, if so autorange only on canvas 0
+    bool same_radar_both_canvas = false;
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      if (m_radar[r]->m_overlay_canvas0.GetValue() == m_radar[r]->m_overlay_canvas1.GetValue()) {
+        same_radar_both_canvas = true;
+      }
+    }
+   
+    if (current_canvas == m_canvas0 || !same_radar_both_canvas) {
+      m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
+    }
     //    Calculate image scale factor
     double dist_y, v_scale_ppm;
     GetCanvasLLPix(vp, wxPoint(0, vp->pix_height - 1), &pos_max.lat, &pos_max.lon);  // is pix_height a mapable coordinate?
