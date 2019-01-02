@@ -31,16 +31,18 @@
 #include <wx/wx.h>
 #include "ShipDriver_pi.h"
 
+#include "folder.xpm"
 #include <stdio.h>
 #include <wx/timer.h>
 #include "wx/textfile.h"
 
-class GribRecordSet;
 
 void assign(char *dest, char *arrTest2)
 {
 	strcpy(dest, arrTest2);
 }
+
+
 
 #define BUFSIZE 0x10000
 
@@ -55,13 +57,8 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& 
     m_bUseStop = true;
     m_bUsePause = false;
     m_sNmeaTime = wxEmptyString;
-	
-	m_bUsingWind = false;
-	m_bInvalidPolarsFile = false;
-	m_bInvalidGribFile = false;
-	m_bShipDriverHasStarted = false;
-	
-	wxFileConfig *pConf = GetOCPNConfigObject();	
+
+	wxFileConfig *pConf = GetOCPNConfigObject();
 
 	if (pConf) {
 		pConf->SetPath(_T("/Settings/ShipDriver_pi"));
@@ -70,6 +67,7 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& 
 		pConf->Read(_T("shipdriverUseFile"), &m_bUseFile, 0);
 		pConf->Read(_T("shipdriverMMSI"), &m_tMMSI, "12345");
 	}
+
 }
 
 
@@ -88,39 +86,26 @@ void Dlg::OnStart(wxCommandEvent& event) {
 		return;
 	}
 
-	m_bShipDriverHasStarted = true;
-	m_bUsingWind = false;
-
 	if (!m_tMMSI.ToLong(&m_iMMSI)) {
 		wxMessageBox(_("MMSI must be a number, please change in Preferences"));
 		return;
 	}
 
 	if (m_bUseFile){
-
-		wxString caption = wxT("Choose a file"); 
-		wxString wildcard = wxT("Text files (*.txt)|*.txt|All files (*.*)|*.*");
-		
-		wxString s = _T("/");
-		wxString defaultDir = *GetpSharedDataLocation() + _T("plugins")
-			+ s + _T("ShipDriver_pi") + s + _T("data") + s;
-
-		wxString defaultFilename = wxEmptyString;
-		wxFileDialog filedlg(this->m_parent, caption, defaultDir, defaultFilename, wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-
-
-		if (filedlg.ShowModal() != wxID_OK)
+		wxFileDialog filedlg(this->m_parent, "Save AIS .txt file...",
+			"", "",
+			"Save Files (*.txt) | *.txt | All files (*.*)|*.*", wxFD_OPEN | wxFD_OVERWRITE_PROMPT);
+		if (filedlg.ShowModal() == wxID_OK)
 		{
-			wxMessageBox(_("ShipDriver has been stopped"));
-			return;
-		}
-		else{
 			nmeafile = new wxTextFile(filedlg.GetPath());
+
 			nmeafile->Open();
 			nmeafile->Clear();
 		}
+		else {
+			m_bUseFile = false;
+		}
 	}
-	
 	m_textCtrlRudderStbd->SetValue(_T(""));
 	m_textCtrlRudderPort->SetValue(_T(""));
 	initSpd = 0; // 5 knots
@@ -152,16 +137,11 @@ void Dlg::OnStop(wxCommandEvent& event) {
 	m_bUseSetTime = false;
 	m_bUseStop = true;
 	m_bAuto = false;
-	m_bUsingWind = false;
-
-	m_buttonWind->SetBackgroundColour(wxColour(0, 255, 0));
 
 	if (m_bUseFile){
 		nmeafile->Write();
 		nmeafile->Close();
 	}
-	initSpd = 0.0;
-	m_stSpeed->SetLabel(wxString::Format(_T("%3.1f"), initSpd));
 }
 
 void Dlg::OnMidships(wxCommandEvent& event){
@@ -267,21 +247,7 @@ void Dlg::Notify()
 		wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
 		m_stHeading->SetLabel(mystring);
 
-		if (m_bUsingWind){
-			double polarBoatSpeed = GetPolarSpeed(initLat, initLon, myDir);
-			if (polarBoatSpeed != -1){
-				initSpd = polarBoatSpeed;
-			}
-		}
-
-		m_stSpeed->SetLabel(wxString::Format(_T("%3.1f"), initSpd));
-
-		if (m_bUsingWind){
-			double polarBoatSpeed = GetPolarSpeed(initLat, initLon, myDir);
-			if (polarBoatSpeed != -1){
-				initSpd = polarBoatSpeed;
-			}
-		}
+		m_stSpeed->SetLabel(wxString::Format(_T("%3.0f"), initSpd));
 
 
 		SetNextStep(initLat, initLon, myDir, initSpd/7200, stepLat, stepLon);
@@ -295,25 +261,11 @@ void Dlg::Notify()
 		wxTimeSpan mySeconds = wxTimeSpan::Seconds(ss);
 		wxDateTime mdt = dt.Add(mySeconds);
 
-		double wspd, wdir;
-		bool m_bGrib = GetGribSpdDir(dt, initLat, initLon, wspd, wdir);
-		if (m_bGrib && m_bUsingWind){
-			MWVA = createMWVASentence(initSpd, myDir, wdir, wspd);
-			MWVT = createMWVTSentence(initSpd, myDir, wdir, wspd);
-			PushNMEABuffer(MWVA + _T("\n"));
-			PushNMEABuffer(MWVT + _T("\n"));
-		}
-
 		GLL = createGLLSentence(mdt, initLat, initLon, initSpd, myDir);
 		VTG = createVTGSentence(initSpd, myDir);
-		HDG = createHDGSentence(myDir);
-		VHW = createVHWSentence(initSpd, myDir);
-
 
 		PushNMEABuffer(GLL + _T("\n"));
 		PushNMEABuffer(VTG + _T("\n"));
-		PushNMEABuffer(VHW + _T("\n"));
-
 		if (m_bUseAis) PushNMEABuffer(myNMEAais + _T("\n"));
 
 		initLat = stepLat;
@@ -330,219 +282,6 @@ void Dlg::SetInterval(int interval)
 		m_Timer->Start(m_interval, wxTIMER_CONTINUOUS); // restart timer with new interval
 }
 
-wxString Dlg::createVHWSentence(double stw, double hdg){
-	/*
-	VHW Water Speed and Heading
-	1   2   3   4   5   6   7   8 9
-	|   |   |   |   |   |   |   | |
-	$--VHW, x.x, T, x.x, M, x.x, N, x.x, K*hh
-	1) Degress	True
-	2) T = True
-	3) Degrees Magnetic
-	4) M = Magnetic
-	5) Knots(speed of vessel relative to the water)
-	6) N = Knots
-	7) Kilometers (speed of vessel relative to the water)
-	8) K = Kilometres
-	9) Checksum
-	*/
-	wxString nVHW;
-	wxString nDir;
-	wxString nTrueMag;
-	wxString nSpd;
-	wxString nValid;
-	wxString nForCheckSum;
-	wxString nFinal;
-	wxString nUnits;
-	wxString nC = _T(",");
-	wxString nA = _T("A");
-	nUnits = _T("N");
-	nVHW = _T("IIVHW");
-	nTrueMag = _T("T");
-	wxString ndlr = _T("$");
-	wxString nast = _T("*");
-
-	nSpd = wxString::Format(_T("%f"), stw);
-	nDir = wxString::Format(_T("%f"), hdg);
-
-	nForCheckSum = nVHW + nC + nDir + nC + nTrueMag + nC + nC + nC + nSpd + nC + nUnits;
-	nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
-	return nFinal;
-
-}
-
-wxString Dlg::createMWVTSentence(double spd, double hdg, double winddirection, double windspeed){
-	/*
-	1    2   3   4        5
-	|    |   |   |        |
-	$--MWV, x.x, a, x.x, a*hh
-
-	Field Number :
-	1. Wind Angle, 0 to 360 degrees
-	2.Reference, R = Relative, T = True (theoretical)
-	3.Wind Speed
-	4.Wind Speed Units, K / M / N
-	5.Status, A = Data Valid
-	Checksum
-	*/
-
-	/*
-	+     * $WIMWD,<1>,<2>,<3>,<4>,<5>,<6>,<7>,<8>*hh
-	+     *
-	+     * NMEA 0183 standard Wind Direction and Speed, with respect to north.
-	+     *
-	+     * <1> Wind direction, 0.0 to 359.9 degrees True, to the nearest 0.1 degree
-	+     * <2> T = True
-	+     * <3> Wind direction, 0.0 to 359.9 degrees Magnetic, to the nearest 0.1
-	degree
-	+     * <4> M = Magnetic
-	+     * <5> Wind speed, knots, to the nearest 0.1 knot.
-	+     * <6> N = Knots
-	+     * <7> Wind speed, meters/second, to the nearest 0.1 m/s.
-	+     * <8> M = Meters/second
-	+
-	*/
-
-	double twa = 360 - ((hdg - winddirection) - 360);
-	if (twa > 360){
-		twa -= 360;
-		if (twa > 360){
-			twa -= 360;
-		}
-	}
-
-	double tws = windspeed;
-
-	wxString nMWV;
-	wxString nMWD;
-	wxString nDir;
-	wxString nRelTrue;
-	wxString nSpd;
-	wxString nValid;
-	wxString nForCheckSum;
-	wxString nFinal;
-	wxString nUnits;
-	wxString nC = _T(",");
-	wxString nA = _T("A");
-	nUnits = _T("N");
-	nMWV = _T("WIMWV");
-	nMWD = _T("WIMWD");
-	nRelTrue = _T("T");
-	nValid = _T("A,A");
-	wxString ndlr = _T("$");
-	wxString nast = _T("*");
-
-	nSpd = wxString::Format(_T("%f"), tws);
-	nDir = wxString::Format(_T("%f"), twa);
-
-	nForCheckSum = nMWV + nC + nDir + nC + nRelTrue + nC + nSpd + nC + nUnits + nC + nA;
-	//$--MWD, x.x, T, x.x, M, x.x, N, x.x, M*hh<CR><LF>
-	//MWD,270.7,T,,,20.5,N,,
-	//nForCheckSum = nMWD + nC + nDir + nC + nRelTrue + nC  + nC + nC + nSpd + nC + nUnits + nC + nC ;
-	nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
-	return nFinal;
-
-}
-
-wxString Dlg::createMWVASentence(double spd, double hdg, double winddirection, double windspeed){
-	/*
-	1    2   3   4        5
-	|    |   |   |        |
-	$--MWV, x.x, a, x.x, a*hh
-
-	Field Number :
-	1. Wind Angle, 0 to 360 degrees
-	2.Reference, R = Relative, T = True (theoretical)
-	3.Wind Speed
-	4.Wind Speed Units, K / M / N
-	5.Status, A = Data Valid
-	Checksum
-	*/
-
-	/*
-	+     * $WIMWD,<1>,<2>,<3>,<4>,<5>,<6>,<7>,<8>*hh
-	+     *
-	+     * NMEA 0183 standard Wind Direction and Speed, with respect to north.
-	+     *
-	+     * <1> Wind direction, 0.0 to 359.9 degrees True, to the nearest 0.1 degree
-	+     * <2> T = True
-	+     * <3> Wind direction, 0.0 to 359.9 degrees Magnetic, to the nearest 0.1
-	degree
-	+     * <4> M = Magnetic
-	+     * <5> Wind speed, knots, to the nearest 0.1 knot.
-	+     * <6> N = Knots
-	+     * <7> Wind speed, meters/second, to the nearest 0.1 m/s.
-	+     * <8> M = Meters/second
-	+
-	*/
-
-	double twa = 360 - ((hdg - winddirection) - 360);
-	if (twa > 360){
-		twa -= 360;
-		if (twa > 360){
-			twa -= 360;
-		}
-	}
-	wxString leftright = wxEmptyString;
-
-	if (twa <= 180){
-		leftright = _T("R");
-	}
-	if (twa > 180){
-		leftright = _T("L");
-		twa = 360 - twa;
-	}
-
-	double aws, twd, tws, awd, awa;
-	twa = 180 - twa;  // we need the complement of the twa for the internal angle of the triangle
-	twa = twa * M_PI / 180; // convert to radians
-	tws = windspeed;
-	double alpha, bravo, charlie, delta;
-	alpha = pow(spd, 2) + pow(windspeed, 2) - 2 * spd*windspeed*cos(twa);
-	aws = sqrt(alpha);
-
-	//spd / charlie = aws / twa;
-
-	charlie = spd * sin(twa) / aws;
-	charlie = asin(charlie);
-	twa = M_PI - twa;  // complement in radians
-	awa = twa - charlie;
-	awa = awa * 180 / M_PI; // back to degrees
-
-	if (leftright == _T("L")) {
-		awa = 360 - awa;
-	}
-
-	wxString nMWV;
-	wxString nMWD;
-	wxString nDir;
-	wxString nRelTrue;
-	wxString nSpd;
-	wxString nValid;
-	wxString nForCheckSum;
-	wxString nFinal;
-	wxString nUnits;
-	wxString nC = _T(",");
-	wxString nA = _T("A");
-	nUnits = _T("N");
-	nMWV = _T("WIMWV");
-	nMWD = _T("WIMWD");
-	nRelTrue = _T("R");
-	nValid = _T("A,A");
-	wxString ndlr = _T("$");
-	wxString nast = _T("*");
-
-	nSpd = wxString::Format(_T("%f"), aws);
-	nDir = wxString::Format(_T("%f"), awa);
-
-	nForCheckSum = nMWV + nC + nDir + nC + nRelTrue + nC + nSpd + nC + nUnits + nC + nA;
-	//$--MWD, x.x, T, x.x, M, x.x, N, x.x, M*hh<CR><LF>
-	//MWD,270.7,T,,,20.5,N,,
-	//nForCheckSum = nMWD + nC + nDir + nC + nRelTrue + nC  + nC + nC + nSpd + nC + nUnits + nC + nC ;
-	nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
-	return nFinal;
-
-}
 wxString Dlg::createRMCSentence(wxDateTime myDateTime, double myLat, double myLon, double mySpd, double myDir){
 	//$GPRMC, 110858.989, A, 4549.9135, N, 00612.2671, E, 003.7, 207.5, 050513, , , A * 60
 	//$GPRMC,110858.989,A,4549.9135,N,00612.2671,E,003.7,207.5,050513,,,A*60
@@ -640,40 +379,6 @@ wxString Dlg::createVTGSentence(double mySpd, double myDir){
 	nDir = wxString::Format(_T("%f"), myDir);
 
 	nForCheckSum = nVTG + nDir + nC + nT + nC + nM + nSpd + nN + nC + nC + nA;
-
-	nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
-	//wxMessageBox(nFinal);
-	return nFinal;
-}
-
-wxString Dlg::createHDGSentence(double myDir){
-	/*
-	1   2 3
-	|   | |
-	$--HDT, x.x, T*hh<CR><LF>
-	*/
-	wxString nSpd;
-	wxString nDir;
-	wxString nTime;
-	wxString nDate;
-	wxString nValid;
-	wxString nForCheckSum;
-	wxString nFinal;
-	wxString nC = _T(",");
-	wxString nA = _T("A");
-	wxString nT = _T("T,");
-	wxString nM = _T("M,");
-	wxString nN = _T("N,");
-	wxString nK = _T("K,");
-
-	wxString nHDG = _T("IIHDG,");
-	nValid = _T("A,A");
-	wxString ndlr = _T("$");
-	wxString nast = _T("*");
-
-	nDir = wxString::Format(_T("%f"), myDir);
-
-	nForCheckSum = nHDG + nDir + nC + nT;
 
 	nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
 	//wxMessageBox(nFinal);
@@ -887,237 +592,7 @@ wxString Dlg::DateTimeToDateString(wxDateTime myDT) {
 
 void Dlg::OnContextMenu(double m_lat, double m_lon){
 
-	m_buttonWind->SetBackgroundColour(wxColour(0, 255, 0));
-	m_bUsingWind = false;
-
 	initLat = m_lat;
 	initLon = m_lon;
 }
 
-void Dlg::RequestGrib(wxDateTime time){
-
-	wxJSONValue v;
-	time = time.FromUTC();
-
-	v[_T("Day")] = time.GetDay();
-	v[_T("Month")] = time.GetMonth();
-	v[_T("Year")] = time.GetYear();
-	v[_T("Hour")] = time.GetHour();
-	v[_T("Minute")] = time.GetMinute();
-	v[_T("Second")] = time.GetSecond();
-
-	wxJSONWriter w;
-	wxString out;
-	w.Write(v, out);
-
-	SendPluginMessage(wxString(_T("GRIB_TIMELINE_RECORD_REQUEST")), out);
-
-	Lock();
-	m_bNeedsGrib = false;
-	Unlock();
-}
-
-bool Dlg::GetGribSpdDir(wxDateTime dt, double lat, double lon, double &spd, double &dir){
-
-	wxDateTime dtime = dt;
-
-	plugin->m_grib_lat = lat;
-	plugin->m_grib_lon = lon;
-	RequestGrib(dtime);
-	if (plugin->m_bGribValid){
-		spd = plugin->m_tr_spd;
-		dir = plugin->m_tr_dir;
-		return true;
-	}
-	else {
-		return false;
-	}
-
-}
-
-void Dlg::OnWind(wxCommandEvent& event){
-
-	if (initLat == 0.0){
-		wxMessageBox(_("Please right-click and choose vessel start position"));
-		return;
-	}
-	if (!m_bShipDriverHasStarted){
-		wxMessageBox(_("Please start ShipDriver"));
-		return;
-	}
-
-	m_SliderSpeed->SetValue(0);
-
-	if (!m_bUsingWind){
-		m_buttonWind->SetBackgroundColour(wxColour(255, 0, 0));
-		m_bUsingWind = true;
-		double myPolarSpeed = GetPolarSpeed(initLat, initLon, initDir);
-		if (myPolarSpeed == -1){
-			if (m_bInvalidPolarsFile){
-				wxMessageBox(_T("Invalid Boat Polars file"));
-			}
-
-			if (m_bInvalidGribFile){
-				wxMessageBox(_T("Grib data is not available for the present date/time or location"));
-			}
-			m_buttonWind->SetBackgroundColour(wxColour(0, 255, 0));
-			m_bUsingWind = false;
-		}
-	}
-	else {
-		m_buttonWind->SetBackgroundColour(wxColour(0, 255, 0));
-		m_bUsingWind = false;
-	}
-}
-
-double Dlg::GetPolarSpeed(double lat, double lon, double cse){
-	double lati = lat;
-	double loni = lon;
-	double spd;
-	double dir;
-
-	wxDateTime dt;
-	dt = wxDateTime::UNow();
-
-	bool m_bGrib = GetGribSpdDir(dt, lati, loni, spd, dir);
-	if (!m_bGrib){
-		m_bInvalidGribFile = true;
-		return -1;
-	}
-
-	wxString error;
-	wxString s = _T("/");
-	wxString polars_path = *GetpSharedDataLocation() + _T("plugins")
-		+ s + _T("ShipDriver_pi") + s + _T("data") + s;
-	wxString myFile = polars_path + _T("arcona.xml");
-
-	double twa = 360 - ((cse - dir) - 360);
-	if (twa > 360){
-		twa -= 360;
-		if (twa > 360){
-			twa -= 360;
-		}
-	}
-
-	if (twa > 180){
-		twa = 360 - twa;
-	}
-	/*
-	double relWind = cse - dir;
-
-	relWind = abs(relWind);
-	if (relWind > 180){
-	relWind = 360 - relWind;
-	}
-	*/
-	//wxMessageBox(wxString::Format(_T("%f"), relWind));
-
-	double polarSpeed = ReadPolars(myFile, twa, spd);
-	return polarSpeed;
-}
-
-double Dlg::ReadPolars(wxString filename, double windangle, double windspeed){
-
-	bool foundWindAngle = false;
-	bool foundWindSpeed = false;
-	bool foundPreviousWindAngle = false;
-
-	double myWindAngle = -1;
-	double myWindSpeed = -1;
-	double prevAngle = -1;
-	double prevSpeed = -1;
-	double dSpeed = -1;
-	double prevPolarSpeed = -1;
-	wxString myPolarSpeed;
-
-	wxString theWindAngle;
-
-	TiXmlDocument doc;
-	wxString error;
-
-	wxFileName fn(filename);
-
-	if (!doc.LoadFile(filename.mb_str())){
-		m_bInvalidPolarsFile = true;
-		return -1;
-	}
-	else {
-		TiXmlHandle root(doc.RootElement());
-
-		if (strcmp(root.Element()->Value(), "ShipDriver")){
-			m_bInvalidPolarsFile = true;
-			return -1;
-		}
-
-		int count = 0;
-		for (TiXmlElement* e = root.FirstChild().Element(); e; e = e->NextSiblingElement())
-			count++;
-
-		int i = 0;
-		for (TiXmlElement* e = root.FirstChild().Element(); e; e = e->NextSiblingElement(), i++) {
-
-			if (!strcmp(e->Value(), "TWA") && windangle > myWindAngle && !foundWindAngle && !foundWindSpeed) {
-				myWindAngle = AttributeDouble(e, "WindAngle", NAN);
-				if (prevAngle < windangle && windangle < myWindAngle){
-					theWindAngle = wxString::Format(_T("%5.2f"), prevAngle);
-					foundWindAngle = true;
-					break;
-				}
-				prevAngle = myWindAngle;
-			}
-		}
-
-		if (foundWindAngle){
-
-			// we have found the polar for the next highest wind speed
-			// need to move back to the previous polar ... given by windAngle
-
-			TiXmlElement* e;
-			for (e = root.FirstChild().Element(); e; e = e->NextSiblingElement(), i++) {
-
-				if (!strcmp(e->Value(), "TWA")) {
-					myWindAngle = AttributeDouble(e, "WindAngle", NAN);
-					wxString angleOut = wxString::Format(_T("%5.2f"), myWindAngle);
-					if (angleOut == theWindAngle){  // we have found the correct section of the polars file	for the relative wind													
-						for (TiXmlElement* g = e->FirstChildElement(); g; g = g->NextSiblingElement()) {
-
-							if (!strcmp(g->Value(), "SPD") && windspeed > myWindSpeed) {
-								myWindSpeed = AttributeDouble(g, "WindSpeed", NAN);
-								wxString myPolarSpeed = g->GetText();
-								double dSpeed;
-								myPolarSpeed.ToDouble(&dSpeed);
-
-								if (prevSpeed < windspeed && windspeed < myWindSpeed){
-									//wxString boatSpeed = wxString::Format(_T("%5.2f"), prevPolarSpeed);
-									return prevPolarSpeed;
-								}
-
-								prevSpeed = myWindSpeed;// attribute for wind speed
-								prevPolarSpeed = dSpeed; // value for boat speed
-
-							}
-						}
-					}
-				}
-			}
-
-		}
-
-	}
-
-	m_bInvalidPolarsFile = true;
-	return -1;
-
-}
-
-double Dlg::AttributeDouble(TiXmlElement *e, const char *name, double def)
-{
-	const char *attr = e->Attribute(name);
-	if (!attr)
-		return def;
-	char *end;
-	double d = strtod(attr, &end);
-	if (end == attr)
-		return def;
-	return d;
-}

@@ -41,13 +41,6 @@
 #include <cmath>
 #include <wx/stdpaths.h>
 #include "wx/process.h"
-#include "wx/jsonreader.h"
-#include "wx/jsonwriter.h"
-#include <wx/thread.h>
-#include "tinyxml.h"
-#include "tinystr.h"
-#include <wx/filedlg.h>
-#include "ocpn_plugin.h"
 
 #ifdef __WXOSX__
 #define SHIPDRIVER_DLG_STYLE wxCLOSE_BOX|wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxSTAY_ON_TOP
@@ -87,13 +80,9 @@ public:
         Dlg( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("ShipDriver"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = SHIPDRIVER_DLG_STYLE );
         ShipDriver_pi *plugin;
 
-		wxString createVHWSentence(double stw, double hdg);
-		wxString createMWVTSentence(double spd, double hdg, double winddirection, double windspeed);
-		wxString createMWVASentence(double spd, double hdg, double winddirection, double windspeed);
 		wxString createRMCSentence(wxDateTime myTime, double myLat, double myLon, double mySpd, double myDir);
 		wxString createGLLSentence(wxDateTime myTime, double myLat, double myLon, double mySpd, double myDir);
 		wxString createVTGSentence(double mySpd, double myDir);
-		wxString createHDGSentence(double myDir);
 
 		wxString LatitudeToString(double mLat);
 		wxString LongitudeToString(double mLon);
@@ -120,14 +109,9 @@ public:
 		bool m_bUseFile;
 		wxString m_tMMSI;
 
-		wxDateTime m_GribTimelineTime;
-
-protected:
-	bool m_bNeedsGrib;
-
 private:
 		void Notify();
-		wxString VHW, MWVA, MWVT, GLL, VTG, HDG;
+		wxString GLL, VTG;
 		double initDir, initSpd, initRudder, myDir;
 
 		wxDateTime dt;
@@ -167,24 +151,6 @@ private:
 
 		bool m_bAuto;	
 		long m_iMMSI;
-
-		virtual void Lock() { routemutex.Lock(); }
-		virtual void Unlock() { routemutex.Unlock(); }
-		wxMutex routemutex;
-
-
-		void RequestGrib(wxDateTime time);
-		bool GetGribSpdDir(wxDateTime dt, double lat, double lon, double &spd, double &dir);
-		void OnWind(wxCommandEvent& event);
-		double GetPolarSpeed(double lat, double lon, double cse);
-
-		double AttributeDouble(TiXmlElement *e, const char *name, double def);
-		double ReadPolars(wxString filename, double windangle, double windspeed);
-
-		bool m_bUsingWind;
-		bool m_bInvalidPolarsFile;
-		bool m_bInvalidGribFile;
-		bool m_bShipDriverHasStarted;
 
 };
 

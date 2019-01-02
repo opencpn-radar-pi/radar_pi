@@ -14,8 +14,8 @@ SET(VERBOSE_NAME ShipDriver)
 SET(TITLE_NAME ShipDriver)
 SET(CPACK_PACKAGE_CONTACT "Mike Rossiter")
 
-SET(VERSION_MAJOR "2")
-SET(VERSION_MINOR "0")
+SET(VERSION_MAJOR "0")
+SET(VERSION_MINOR "5")
 
 #SET(CMAKE_BUILD_TYPE Debug)
 
@@ -43,25 +43,13 @@ SET(SRC_ShipDriver
 	    src/ShipDrivergui_impl.cpp
 	    src/ShipDrivergui_impl.h
 		src/ocpn_plugin.h
+		src/folder.xpm
 		src/AisMaker.h
 		src/AisMaker.cpp
-		src/GribRecord.cpp
-	    src/tinystr.h
-	    src/tinyxml.h
-		src/tinyxml.cpp
-	    src/tinyxmlerror.cpp
-		src/tinyxmlparser.cpp
-
-		src/wxJSON/jsonval.cpp
-        src/wxJSON/jsonreader.cpp
-        src/wxJSON/jsonwriter.cpp
-
 	)
 
 
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_ShipDriver})
-
-ADD_DEFINITIONS(-DTIXML_USE_STL)
 
 INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginLocalization.cmake")

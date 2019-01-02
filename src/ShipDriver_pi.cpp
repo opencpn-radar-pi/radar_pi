@@ -35,6 +35,7 @@
 #include "ShipDrivergui_impl.h"
 #include "ShipDrivergui.h"
 #include "ocpn_plugin.h" 
+#include "folder.xpm"
 
 class ShipDriver_pi;
 class Dlg;
@@ -87,7 +88,7 @@ ShipDriver_pi::~ShipDriver_pi(void)
 
 		 if (pConf) {
 
-			 pConf->SetPath(_T("/Settings/ShipDriver_pi"));
+			 pConf->SetPath(_T("/Settings/otidalroute"));
 
 			 pConf->Write(_T("shipdriverUseAis"), m_bCopyUseAis);
 			 pConf->Write(_T("shipdriverUseFile"), m_bCopyUseFile);
@@ -146,7 +147,6 @@ int ShipDriver_pi::Init(void)
 			  WANTS_NMEA_SENTENCES|
 			  WANTS_AIS_SENTENCES|
 			  WANTS_PREFERENCES|
-			  WANTS_PLUGIN_MESSAGING |
               WANTS_CONFIG           
            );
 }
@@ -264,7 +264,6 @@ void ShipDriver_pi::ShowPreferencesDialog(wxWindow* parent)
 		}
 		
 		SaveConfig();
-
 
 		RequestRefresh(m_parent_window); // refresh main window
 	}
@@ -403,122 +402,6 @@ void ShipDriver_pi::SetCursorLatLon(double lat, double lon)
 	m_cursor_lon = lon;
 }
 
-void ShipDriver_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
-{
-	if (message_id == _T("GRIB_TIMELINE"))
-	{
-		wxJSONReader r;
-		wxJSONValue v;
-		r.Parse(message_body, &v);
-
-		wxDateTime time;
-		time.Set
-			(v[_T("Day")].AsInt(), (wxDateTime::Month)v[_T("Month")].AsInt(), v[_T("Year")].AsInt(),
-			v[_T("Hour")].AsInt(), v[_T("Minute")].AsInt(), v[_T("Second")].AsInt());
-
-		wxString dt;
-		dt = time.Format(_T("%Y-%m-%d  %H:%M "));
-
-		if (m_pDialog){
-			m_pDialog->m_GribTimelineTime = time.ToUTC();
-			//m_pDialog->m_textCtrl1->SetValue(dt);
-		}
-	}
-	if (message_id == _T("GRIB_TIMELINE_RECORD"))
-	{
-		wxJSONReader r;
-		wxJSONValue v;
-		r.Parse(message_body, &v);
-
-		static bool shown_warnings;
-		if (!shown_warnings) {
-			shown_warnings = true;
-
-			int grib_version_major = v[_T("GribVersionMajor")].AsInt();
-			int grib_version_minor = v[_T("GribVersionMinor")].AsInt();
-
-			int grib_version = 1000 * grib_version_major + grib_version_minor;
-			int grib_min = 1000 * GRIB_MIN_MAJOR + GRIB_MIN_MINOR;
-			int grib_max = 1000 * GRIB_MAX_MAJOR + GRIB_MAX_MINOR;
-
-			if (grib_version < grib_min || grib_version > grib_max) {
-				wxMessageDialog mdlg(m_parent_window,
-					_("Grib plugin version not supported.")
-					+ _T("\n\n") +
-					wxString::Format(_("Use versions %d.%d to %d.%d"), GRIB_MIN_MAJOR, GRIB_MIN_MINOR, GRIB_MAX_MAJOR, GRIB_MAX_MINOR),
-					_("Weather Routing"), wxOK | wxICON_WARNING);
-				mdlg.ShowModal();
-			}
-		}
-
-		wxString sptr = v[_T("TimelineSetPtr")].AsString();
-		wxCharBuffer bptr = sptr.To8BitData();
-		const char* ptr = bptr.data();
-
-		GribRecordSet *gptr;
-		sscanf(ptr, "%p", &gptr);
-
-		double dir, spd;
-
-		m_bGribValid = GribCurrent(gptr, m_grib_lat, m_grib_lon, dir, spd);
-
-		m_tr_spd = spd;
-		m_tr_dir = dir;
-
-		//wxMessageBox(wxString::Format(_T("%5.2f"), spd));
-	}
-}
-
-bool ShipDriver_pi::GribWind(GribRecordSet *grib, double lat, double lon,
-	double &WG, double &VWG)
-{
-	if (!grib)
-		return false;
-
-	if (!GribRecord::getInterpolatedValues(VWG, WG,
-		grib->m_GribRecordPtrArray[Idx_WIND_VX],
-		grib->m_GribRecordPtrArray[Idx_WIND_VY], lon, lat))
-		return false;
-
-	VWG *= 3.6 / 1.852; // knots
-	return true;
-}
-
-wxString ShipDriver_pi::StandardPath()
-{
-	wxStandardPathsBase& std_path = wxStandardPathsBase::Get();
-	wxString s = wxFileName::GetPathSeparator();
-
-#if defined(__WXMSW__)
-	wxString stdPath = std_path.GetConfigDir();
-#elif defined(__WXGTK__) || defined(__WXQT__)
-	wxString stdPath = std_path.GetUserDataDir();
-#elif defined(__WXOSX__)
-	wxString stdPath = (std_path.GetUserConfigDir() + s + _T("opencpn"));
-#endif
-
-	stdPath += s + _T("plugins");
-	if (!wxDirExists(stdPath))
-		wxMkdir(stdPath);
-
-	stdPath += s + _T("ShipDriver");
-
-#ifdef __WXOSX__
-	// Compatibility with pre-OCPN-4.2; move config dir to
-	// ~/Library/Preferences/opencpn if it exists
-	wxString oldPath = (std_path.GetUserConfigDir() + s + _T("plugins") + s + _T("ShipDriver"));
-	if (wxDirExists(oldPath) && !wxDirExists(stdPath)) {
-		wxLogMessage("ShipDriver_pi: moving config dir %s to %s", oldPath, stdPath);
-		wxRenameFile(oldPath, stdPath);
-	}
-#endif
-
-	if (!wxDirExists(stdPath))
-		wxMkdir(stdPath);
-
-	stdPath += s; // is this necessary?
-	return stdPath;
-}
 
 
 
