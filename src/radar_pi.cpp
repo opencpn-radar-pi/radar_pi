@@ -1199,7 +1199,7 @@ m_vp = vp;
       }
     }
    
-    if (current_canvas == m_canvas0 || !same_radar_both_canvas) {
+    if (current_canvas == m_canvas1 || !same_radar_both_canvas || m_max_canvas == 0) {
       m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
     }
     //    Calculate image scale factor
