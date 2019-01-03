@@ -328,7 +328,7 @@ bool RadarRangeControlButton::ToggleState() {
   RadarControlState state = m_item->GetState();
 
   LOG_VERBOSE(wxT("%s Button '%s' toggle Auto %d"), m_parent->m_log_name.c_str(), GetName(), state);
-  if (state >= RCS_AUTO_1 || m_parent->m_ri->m_overlay_canvas0.GetValue() == 0 || m_parent->m_ri->m_overlay_canvas1.GetValue() == 0) {
+  if (state >= RCS_AUTO_1 || (m_parent->m_ri->m_overlay_canvas0.GetValue() == 0 && m_parent->m_ri->m_overlay_canvas1.GetValue() == 0)) {
     state = RCS_MANUAL;
   } else {
     state = RCS_AUTO_1;
