@@ -113,12 +113,15 @@ msgid "|"
 msgstr ""
 #
 #
+#
 #~ msgid "Emerg. Stop"
 #~ msgstr "Notstop"
 #
 #
+#
 #~ msgid "Engine control"
 #~ msgstr "Maschinensteuerung"
+#
 #
 #
 #~ msgid "Standby"

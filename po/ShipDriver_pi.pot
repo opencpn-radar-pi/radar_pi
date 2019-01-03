@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: ShipDriver_pi 0.5\n"
+"Project-Id-Version: ShipDriver_pi 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-10 12:43+0000\n"
+"POT-Creation-Date: 2019-01-03 15:34+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,8 +17,8 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/ShipDriver_pi.cpp:125 src/ShipDriver_pi.cpp:128 src/ShipDriver_pi.cpp:212
-#: src/ShipDrivergui_impl.h:80
+#: src/ShipDriver_pi.cpp:125 src/ShipDriver_pi.cpp:128 src/ShipDriver_pi.cpp:213
+#: src/ShipDrivergui_impl.h:87
 msgid "ShipDriver"
 msgstr ""
 
@@ -26,15 +26,28 @@ msgstr ""
 msgid "Select Vessel Start Position"
 msgstr ""
 
-#: src/ShipDriver_pi.cpp:218
+#: src/ShipDriver_pi.cpp:219
 msgid "ShipDriver player"
 msgstr ""
 
-#: src/ShipDriver_pi.cpp:223
+#: src/ShipDriver_pi.cpp:224
 msgid "Almost a simulator"
 msgstr ""
 
-#: src/ShipDrivergui.h:105
+#: src/ShipDriver_pi.cpp:446
+msgid "Grib plugin version not supported."
+msgstr ""
+
+#: src/ShipDriver_pi.cpp:448
+#, c-format
+msgid "Use versions %d.%d to %d.%d"
+msgstr ""
+
+#: src/ShipDriver_pi.cpp:449
+msgid "Weather Routing"
+msgstr ""
+
+#: src/ShipDrivergui.h:108
 msgid "Preferences"
 msgstr ""
 
@@ -102,42 +115,58 @@ msgstr ""
 msgid "Autopilot Control"
 msgstr ""
 
-#: src/ShipDrivergui.cpp:225
+#: src/ShipDrivergui.cpp:220
+msgid "Sail"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:223
+msgid "Using Sail"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:228
 msgid "-1"
 msgstr ""
 
-#: src/ShipDrivergui.cpp:231
+#: src/ShipDrivergui.cpp:234
 msgid "-10"
 msgstr ""
 
-#: src/ShipDrivergui.cpp:237
+#: src/ShipDrivergui.cpp:240
 msgid "+10"
 msgstr ""
 
-#: src/ShipDrivergui.cpp:243
+#: src/ShipDrivergui.cpp:246
 msgid "+1"
 msgstr ""
 
-#: src/ShipDrivergui.cpp:295
+#: src/ShipDrivergui.cpp:301
 msgid "AIS"
 msgstr ""
 
-#: src/ShipDrivergui.cpp:302
+#: src/ShipDrivergui.cpp:308
 msgid "Transmit"
 msgstr ""
 
-#: src/ShipDrivergui.cpp:305
+#: src/ShipDrivergui.cpp:311
 msgid "Save to file"
 msgstr ""
 
-#: src/ShipDrivergui.cpp:312
+#: src/ShipDrivergui.cpp:318
 msgid "MMSI"
 msgstr ""
 
-#: src/ShipDrivergui_impl.cpp:85
+#: src/ShipDrivergui_impl.cpp:87 src/ShipDrivergui_impl.cpp:987
 msgid "Please right-click and choose vessel start position"
 msgstr ""
 
-#: src/ShipDrivergui_impl.cpp:90
+#: src/ShipDrivergui_impl.cpp:95
 msgid "MMSI must be a number, please change in Preferences"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:114
+msgid "ShipDriver has been stopped"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:991
+msgid "Please start ShipDriver"
 msgstr ""
