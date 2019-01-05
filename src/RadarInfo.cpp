@@ -556,10 +556,10 @@ void RadarInfo::UpdateTransmitState() {
 
 void RadarInfo::RequestRadarState(RadarState state) {
   int oldState = m_state.GetValue();
-
   if (m_pi->IsRadarOnScreen(m_radar) && oldState != RADAR_OFF) {                         // if radar is visible and detected
     if (oldState != state && !(oldState != RADAR_STANDBY && state == RADAR_TRANSMIT)) {  // and change is wanted
       time_t now = time(0);
+
 
       if (state == RADAR_TRANSMIT) {
         m_control->RadarTxOn();

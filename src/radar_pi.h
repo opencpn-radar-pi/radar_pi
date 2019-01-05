@@ -431,7 +431,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
 
   void UpdateAllControlStates(bool all);
 
-  bool IsRadarOnScreen(int radar) { return m_settings.show && (m_settings.show_radar[radar] || m_settings.chart_overlay == radar); }
+  bool IsRadarOnScreen(int radar);
 
   bool LoadConfig();
   bool SaveConfig();

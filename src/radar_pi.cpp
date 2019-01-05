@@ -1869,4 +1869,8 @@ void radar_pi::logBinaryData(const wxString &what, const uint8_t *data, int size
   wxLogMessage(explain);
 }
 
+bool radar_pi::IsRadarOnScreen(int radar) {
+  return m_settings.show && (m_settings.show_radar[radar] || m_radar[radar]->m_overlay_canvas0.GetValue() == 1 || m_radar[radar]->m_overlay_canvas1.GetValue() == 1);
+}
+
 PLUGIN_END_NAMESPACE
