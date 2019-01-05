@@ -155,7 +155,7 @@ bool NavicoControl::RadarStayAlive() {
 }
 
 bool NavicoControl::SetRange(int meters) {
-  if (meters >= 50 && meters <= 72704) {
+  if (meters >= 50 && meters <= 72704 && m_radar_socket != INVALID_SOCKET) {
     unsigned int decimeters = (unsigned int)meters * 10;
     uint8_t pck[] = {0x03,
                      0xc1,
