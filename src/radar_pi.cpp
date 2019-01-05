@@ -919,28 +919,33 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
     }
     // update ships position to best estimate
     m_ownship = m_expected_position.pos;
-                                        // Update radar position offset from GPS
+    // Update radar position offset from GPS
     if (m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt)) {
       for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
         m_radar[r]->SetRadarPosition(m_ownship, m_hdt);
       }
     }
 
-    bool overlay = false;
+    bool overlay0 = false;
+    bool overlay1 = false;
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      if (m_radar[r]->m_overlay_canvas0.GetValue() == 1 || m_radar[r]->m_overlay_canvas1.GetValue() == 1) {
-        overlay = true;
+      if (m_radar[r]->m_overlay_canvas0.GetValue() == 1) {
+        overlay0 = true;
+      }
+      if (m_radar[r]->m_overlay_canvas1.GetValue() == 1) {
+        overlay1 = true;
       }
     }
 
-    if (overlay) {
+    if (overlay0) {
       // If overlay is enabled schedule another chart draw. Note this will cause another call to RenderGLOverlay,
       // which will then call ScheduleWindowRefresh again itself.
       m_canvas0->Refresh(false);
-      if (m_max_canvas > 0) {
-        m_canvas1->Refresh(false);
-      }
-    } else {
+    }
+    if (overlay1 && (m_max_canvas > 0)) {
+      m_canvas1->Refresh(false);
+    }
+    if (!overlay0 && !(overlay1 && m_max_canvas > 0)) {
       ScheduleWindowRefresh();
     }
   }
