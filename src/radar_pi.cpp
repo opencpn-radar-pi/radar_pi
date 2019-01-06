@@ -182,6 +182,8 @@ int radar_pi::Init(void) {
   m_canvas0 = NULL;
   m_canvas1 = NULL;
   m_max_canvas = 0;
+  m_chart_overlay_canvas0 = -1;
+  m_chart_overlay_canvas1 = -1;
 
   m_var = 0.0;
   m_var_source = VARIATION_SOURCE_NONE;
@@ -674,7 +676,7 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     m_settings.show = true;
     SetRadarWindowViz();
   } else if (id == m_context_menu_acquire_radar_target) {
-    if (m_settings.show                                                             // radar shown
+    if (m_settings.show                                                             // radar shown    //$$$$$$$$$$$$$$$$$$$$$$$
         && m_settings.chart_overlay >= 0                                            // overlay desired
         && m_radar[m_settings.chart_overlay]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
         && !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon)) {
@@ -926,16 +928,8 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
       }
     }
 
-    bool overlay0 = false;
-    bool overlay1 = false;
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      if (m_radar[r]->m_overlay_canvas0.GetValue() == 1) {
-        overlay0 = true;
-      }
-      if (m_radar[r]->m_overlay_canvas1.GetValue() == 1) {
-        overlay1 = true;
-      }
-    }
+    bool overlay0 = m_chart_overlay_canvas0 >= 0;
+    bool overlay1 = m_chart_overlay_canvas1 >= 0;
 
     if (overlay0) {
       // If overlay is enabled schedule another chart draw. Note this will cause another call to RenderGLOverlay,
@@ -1138,11 +1132,15 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     m_canvas1 = current_canvas;
   }
   m_settings.chart_overlay = -1;
+  if (max_canvas < 0){ 
+    m_chart_overlay_canvas1 = -1;
+  }
 
   if (current_canvas == m_canvas0) {
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       if (m_radar[r]->m_overlay_canvas0.GetValue() == 1) {
         m_settings.chart_overlay = r;
+        m_chart_overlay_canvas0 = r;
       }
     }
   }
@@ -1151,6 +1149,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       if (m_radar[r]->m_overlay_canvas1.GetValue() == 1) {
         m_settings.chart_overlay = r;
+        m_chart_overlay_canvas1 = r;
       }
     }
   }
@@ -1196,14 +1195,8 @@ m_vp = vp;
     wxPoint boat_center;
     GetCanvasPixLL(vp, &boat_center, radar_pos.lat, radar_pos.lon);
 
-    // check if same radar is overlayed on both canvas, if so autorange only on canvas 0
-    bool same_radar_both_canvas = false;
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      if (m_radar[r]->m_overlay_canvas0.GetValue() == m_radar[r]->m_overlay_canvas1.GetValue()) {
-        same_radar_both_canvas = true;
-      }
-    }
-   
+    // check if same radar is overlayed on both canvas, if so autorange only on canvas1
+    bool same_radar_both_canvas = m_chart_overlay_canvas0 == m_chart_overlay_canvas1;
     if (current_canvas == m_canvas1 || !same_radar_both_canvas || m_max_canvas == 0) {
       m_radar[m_settings.chart_overlay]->SetAutoRangeMeters(auto_range_meters);
     }

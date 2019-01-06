@@ -313,8 +313,6 @@ struct PersistentSettings {
   int max_age;                                     // Scans older than this in seconds will be removed
   RadarControlItem refreshrate;                    // How quickly to refresh the display
   int chart_overlay;                               // Overlay for the current RenderGLOverlayMultiCanvas, -1 = none, otherwise = radar number
-  int chart_overlay_canvas0;                       // The overlay for canvas0, -1 = none, otherwise = radar number
-  int chart_overlay_canvas1;                       // The overlay for canvas1, -1 = none, otherwise = radar number
   int menu_auto_hide;                              // 0 = none, 1 = 10s, 2 = 30s
   int drawing_method;                              // VertexBuffer, Shader, etc.
   bool developer_mode;                             // Readonly from config, allows head up mode
@@ -529,6 +527,8 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   HeadingSource m_heading_source;
   wxWindow* m_canvas0;
   wxWindow* m_canvas1;
+  int m_chart_overlay_canvas0;                       // The overlay for canvas0, -1 = none, otherwise = radar number
+  int m_chart_overlay_canvas1;                       // The overlay for canvas1, -1 = none, otherwise = radar number
   
   private:
   bool m_bpos_set;
