@@ -280,10 +280,10 @@ bool MessageBox::UpdateMessage(bool force) {
 
   bool radarOn = haveOpenGL && radarSeen;
   bool navOn = haveGPS && haveHeading;
-  bool no_overlay = !(m_pi->m_settings.show && m_pi->m_settings.chart_overlay >= 0);
+  bool no_overlay = !(m_pi->m_settings.show && (m_pi->m_chart_overlay_canvas0 >= 0 || m_pi->m_chart_overlay_canvas1 >= 0));
 
-  LOG_DIALOG(wxT("radar_pi: messagebox decision: show=%d overlay=%d auto_hide=%d opengl=%d radarOn=%d navOn=%d"), showRadar,
-             m_pi->m_settings.chart_overlay, m_allow_auto_hide, haveOpenGL, radarOn, navOn);
+  LOG_DIALOG(wxT("radar_pi: messagebox decision: show=%d overlay0=%d overlay0=%d auto_hide=%d opengl=%d radarOn=%d navOn=%d"), showRadar,
+             m_pi->m_chart_overlay_canvas0, m_pi->m_chart_overlay_canvas1, m_allow_auto_hide, haveOpenGL, radarOn, navOn);
 
   if (!m_allow_auto_hide) {
     LOG_DIALOG(wxT("radar_pi: messagebox explicit wanted: SHOW_CLOSE"));

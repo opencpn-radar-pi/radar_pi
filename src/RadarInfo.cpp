@@ -564,8 +564,11 @@ void RadarInfo::RequestRadarState(RadarState state) {
       if (state == RADAR_TRANSMIT) {
         m_control->RadarTxOn();
         // Refresh radar immediately so that we generate draw mechanisms
-        if (m_pi->m_settings.chart_overlay == (int)m_radar) {
-          GetOCPNCanvasWindow()->Refresh(false);
+        if (m_pi->m_chart_overlay_canvas0 == (int)m_radar) {
+          m_pi->m_canvas0->Refresh(false);
+        }
+        if (m_pi->m_chart_overlay_canvas1 == (int)m_radar) {
+          m_pi->m_canvas1->Refresh(false);
         }
         if (m_radar_panel) {
           m_radar_panel->Refresh();
