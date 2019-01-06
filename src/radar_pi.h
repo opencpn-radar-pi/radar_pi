@@ -312,7 +312,6 @@ struct PersistentSettings {
   RangeUnits range_units;                          // See enum
   int max_age;                                     // Scans older than this in seconds will be removed
   RadarControlItem refreshrate;                    // How quickly to refresh the display
-  int chart_overlay;                               // Overlay for the current RenderGLOverlayMultiCanvas, -1 = none, otherwise = radar number
   int menu_auto_hide;                              // 0 = none, 1 = 10s, 2 = 30s
   int drawing_method;                              // VertexBuffer, Shader, etc.
   bool developer_mode;                             // Readonly from config, allows head up mode
