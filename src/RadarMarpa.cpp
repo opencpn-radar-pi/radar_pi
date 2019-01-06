@@ -329,13 +329,11 @@ void RadarArpa::AcquireOrDeleteMarpaTarget(ExtendedPosition target_pos, int stat
   // target status acquire0
   // returns in X metric coordinates of click
   // constructs Kalman filter
-  LOG_INFO(wxT("radar_pi: $$$ aquire target"));
   // make new target
   int i_target;
   if (m_number_of_targets < MAX_NUMBER_OF_TARGETS - 1 ||
       (m_number_of_targets == MAX_NUMBER_OF_TARGETS - 1 && status == FOR_DELETION)) {
     if (m_targets[m_number_of_targets] == 0) {
-      LOG_INFO(wxT("radar_pi: $$$ aquire target1"));
       m_targets[m_number_of_targets] = new ArpaTarget(m_pi, m_ri);
     }
     i_target = m_number_of_targets;
@@ -369,7 +367,6 @@ void RadarArpa::AcquireOrDeleteMarpaTarget(ExtendedPosition target_pos, int stat
 bool ArpaTarget::FindContourFromInside(Polar* pol) {  // moves pol to contour of blob
   // true if success
   // false when failed
-  LOG_INFO(wxT("radar_pi: $$$ FindContourFromInside target"));
   int ang = pol->angle;
   int rad = pol->r;
   if (rad >= (int)m_ri->m_spoke_len_max || rad < 3) {

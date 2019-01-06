@@ -662,11 +662,9 @@ void radar_pi::OnContextMenuItemCallback(int id) {
   // find out which canvas the click is on
   wxWindow* canvas = PluginGetFocusCanvas();
   if (canvas == m_canvas0) {
-    LOG_DIALOG(wxT("menu $$$ canvas0"));
     current_radar = m_chart_overlay_canvas0;
   }
   if (canvas == m_canvas1) {
-    LOG_DIALOG(wxT("menu $$$ canvas1"));
     current_radar = m_chart_overlay_canvas1;
   }
   if (id == m_context_menu_control_id) {
@@ -702,7 +700,6 @@ void radar_pi::OnContextMenuItemCallback(int id) {
         && m_chart_overlay_canvas0 >= 0 || m_chart_overlay_canvas1 >= 0             // overlay desired
         && m_radar[current_radar]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
         && !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon)) {
-      LOG_DIALOG(wxT("radar $$$ position %f %f radar=%i"), m_cursor_pos.lat, m_cursor_pos.lon, current_radar);
       ExtendedPosition target_pos;
       target_pos.pos = m_cursor_pos;
       m_radar[current_radar]->m_arpa->AcquireNewMARPATarget(target_pos);
