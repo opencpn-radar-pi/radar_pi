@@ -1607,20 +1607,24 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
     }
   }
 
-    if (m_pi->m_max_canvas > 0) {
-      if (m_top_sizer->IsShown(m_window_sizer) && m_window_sizer->IsShown(m_overlay_button1)) {
-        m_window_sizer->Show(m_overlay_button1);
-      }
+  if (m_pi->m_max_canvas > 0) {
+    if (m_top_sizer->IsShown(m_window_sizer) && m_window_sizer->IsShown(m_overlay_button1)) {
+      m_window_sizer->Show(m_overlay_button1);
+    }
+    if (m_top_sizer->IsShown(m_window_sizer) && m_window_sizer->IsShown(m_overlay_button0)) {
       m_overlay_button0->SetFirstLine(wxT("Overlay Left"));
       m_overlay_button0->UpdateLabel(true);
     }
-    else {
-      if (m_top_sizer->IsShown(m_window_sizer) && m_window_sizer->IsShown(m_overlay_button1)) {
-        m_window_sizer->Hide(m_overlay_button1);
-      }
+  }
+  else {
+    if (m_top_sizer->IsShown(m_window_sizer) && m_window_sizer->IsShown(m_overlay_button1)) {
+      m_window_sizer->Hide(m_overlay_button1);
+    }
+    if (m_top_sizer->IsShown(m_window_sizer) && m_window_sizer->IsShown(m_overlay_button0)) {
       m_overlay_button0->SetFirstLine(wxT("Radar Overlay"));
       m_overlay_button0->UpdateLabel(true);
     }
+  }
   
 
   
