@@ -1148,7 +1148,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
   GeoPosition radar_pos;
   wxWindow*  current_canvas = PluginGetOverlayRenderCanvas();
   int current_overlay;
-
+LOG_INFO(wxT("$$$ render0"));
   m_max_canvas = max_canvas;
   if (m_canvas0 == NULL) {
     m_canvas0 = current_canvas;
@@ -1162,15 +1162,18 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
   }
 
   if (current_canvas == m_canvas0) {
+    m_chart_overlay_canvas0 = -1;
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       if (m_radar[r]->m_overlay_canvas0.GetValue() == 1) {
         current_overlay = r;
         m_chart_overlay_canvas0 = r;
+        LOG_INFO(wxT("$$$ canvas0==current m_chart_overlay_canvas0=%i"), m_chart_overlay_canvas0);
       }
     }
   }
 
   if (current_canvas == m_canvas1) {
+    m_chart_overlay_canvas1 = -1;
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       if (m_radar[r]->m_overlay_canvas1.GetValue() == 1) {
         current_overlay = r;
