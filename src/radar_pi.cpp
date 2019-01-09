@@ -971,6 +971,10 @@ void radar_pi::TimedControlUpdate() {
   if (!m_notify_control_dialog && !TIMED_OUT(now, m_notify_time_ms + 500)) {
     return;  // Don't run this more often than 2 times per second
   }
+  wxWindow*  current_canvas = PluginGetOverlayRenderCanvas();
+   // in dual canvas run SetRadarWindowViz only on canvas 1, 
+   // otherwise crash in ShowFrame on m_aui_mgr->Update(); line 225
+  if (current_canvas != m_canvas1 && m_max_canvas > 0) return; 
   m_notify_time_ms = now;
 
   bool updateAllControls = m_notify_control_dialog;
