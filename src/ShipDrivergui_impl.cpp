@@ -290,15 +290,22 @@ void Dlg::Notify()
 	double wspd, wdir;
 	bool m_bGrib = GetGribSpdDir(dt, initLat, initLon, wspd, wdir);
 	if (m_bGrib && m_bUsingWind){
-		MWD = createMWDSentence(wdir, wspd);
-		PushNMEABuffer(MWD + _T("\n"));
+		MWVA = createMWVASentence(initSpd, myDir, wdir, wspd);
+		MWVT = createMWVTSentence(initSpd, myDir, wdir, wspd);
+			
+		PushNMEABuffer(MWVA + _T("\n"));
+		PushNMEABuffer(MWVT + _T("\n"));
+		
 	}
 
 	GLL = createGLLSentence(mdt, initLat, initLon, initSpd, myDir);
 	VTG = createVTGSentence(initSpd, myDir);
+	VHW = createVHWSentence(initSpd, myDir);
 
 	PushNMEABuffer(GLL + _T("\n"));
 	PushNMEABuffer(VTG + _T("\n"));
+	PushNMEABuffer(VHW + _T("\n"));
+
 	if (m_bUseAis) PushNMEABuffer(myNMEAais + _T("\n"));
 
 	initLat = stepLat;
