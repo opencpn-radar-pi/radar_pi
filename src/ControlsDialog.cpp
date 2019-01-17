@@ -500,20 +500,20 @@ void ControlsDialog::SetGuardZoneVisibility() {
 void ControlsDialog::UpdateGuardZoneState() {
   wxString label1, label2, label3, label4;
   if (m_ri->m_guard_zone[0]->m_alarm_on) {
-    label3 << _(" + Alarm");
+    label3 << _T(" + ") << _("Alarm");
   }
   if (m_ri->m_guard_zone[0]->m_arpa_on) {
-    label3 << _(" + Arpa");
+    label3 << _T(" + ") << _("Arpa");
   }
   if (!m_ri->m_guard_zone[0]->m_alarm_on && !m_ri->m_guard_zone[0]->m_arpa_on) {
     label3 << _(" Off");
   }
 
   if (m_ri->m_guard_zone[1]->m_alarm_on) {
-    label4 << _(" + Alarm");
+    label4 << _T(" + ") << _("Alarm");
   }
   if (m_ri->m_guard_zone[1]->m_arpa_on) {
-    label4 << _(" + Arpa");
+    label4 << _T(" + ") << _("Arpa");
   }
   if (!m_ri->m_guard_zone[1]->m_alarm_on && !m_ri->m_guard_zone[1]->m_arpa_on) {
     label4 << _(" Off");
@@ -656,11 +656,11 @@ void ControlsDialog::CreateControls() {
   m_edit_sizer->Add(back_button, 0, wxALL, BORDER);
 
   // The +10 button
-  m_plus_ten_button = new RadarButton(this, ID_PLUS_TEN, g_buttonSize, _("+10"));
+  m_plus_ten_button = new RadarButton(this, ID_PLUS_TEN, g_buttonSize, wxT("+10"));
   m_edit_sizer->Add(m_plus_ten_button, 0, wxALL, BORDER);
 
   // The + button
-  m_plus_button = new RadarButton(this, ID_PLUS, g_buttonSize, _("+"));
+  m_plus_button = new RadarButton(this, ID_PLUS, g_buttonSize, wxT("+"));
   m_edit_sizer->Add(m_plus_button, 0, wxALL, BORDER);
 
   // The VALUE text
@@ -676,11 +676,11 @@ void ControlsDialog::CreateControls() {
   m_comment_text->SetBackgroundColour(*wxLIGHT_GREY);
 
   // The - button
-  m_minus_button = new RadarButton(this, ID_MINUS, g_buttonSize, _("-"));
+  m_minus_button = new RadarButton(this, ID_MINUS, g_buttonSize, wxT("-"));
   m_edit_sizer->Add(m_minus_button, 0, wxALL, BORDER);
 
   // The -10 button
-  m_minus_ten_button = new RadarButton(this, ID_MINUS_TEN, g_buttonSize, _("-10"));
+  m_minus_ten_button = new RadarButton(this, ID_MINUS_TEN, g_buttonSize, wxT("-10"));
   m_edit_sizer->Add(m_minus_ten_button, 0, wxALL, BORDER);
 
   // The Auto button
