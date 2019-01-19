@@ -36,12 +36,19 @@
 #endif
 #endif
 
+#ifdef __WXMSW__
+#ifdef MAKING_PLUGIN
+#  define DECL_IMP     __declspec(dllimport)
+#endif
+#endif    
 
 #include <wx/xml/xml.h>
 
 #ifdef ocpnUSE_SVG
-#include "wxsvg/include/wxSVG/svg.h"
+#include "wxSVG/svg.h"
 #endif // ocpnUSE_SVG
+
+#include <memory>
 
 class wxGLContext;
 
@@ -724,6 +731,9 @@ extern DECL_EXP wxString getUsrDistanceUnit_Plugin( int unit = -1 );
 extern DECL_EXP wxString getUsrSpeedUnit_Plugin( int unit = -1 );
 extern DECL_EXP wxString GetNewGUID();
 extern "C" DECL_EXP bool PlugIn_GSHHS_CrossesLand(double lat1, double lon1, double lat2, double lon2);
+/**
+ * Synchronous play a sound file. Supported formats depends on sound backend.
+*/
 extern DECL_EXP void PlugInPlaySound( wxString &sound_file );
 
 
@@ -1074,6 +1084,10 @@ extern DECL_EXP wxColour GetFontColour_PlugIn(wxString TextElement);
 extern DECL_EXP double GetCanvasTilt();
 extern DECL_EXP void SetCanvasTilt(double tilt);
 
+/**
+* Synchronous play a sound file. Supported formats depends on sound backend. The
+* deviceIx is only used on platforms using the portaudio sound backend.
+*/
 extern DECL_EXP bool PlugInPlaySoundEx( wxString &sound_file, int deviceIndex=-1 );
 extern DECL_EXP void AddChartDirectory( wxString &path );
 extern DECL_EXP void ForceChartDBUpdate();
@@ -1222,8 +1236,13 @@ private:
 };
 
 
-//DECLARE_EVENT_TYPE(wxEVT_DOWNLOAD_EVENT, -1)          // Macro expanded manually below
-extern WXDLLIMPEXP_CORE const wxEventType wxEVT_DOWNLOAD_EVENT;
+//extern WXDLLIMPEXP_CORE const wxEventType wxEVT_DOWNLOAD_EVENT;
+
+#ifdef MAKING_PLUGIN
+extern   DECL_IMP wxEventType wxEVT_DOWNLOAD_EVENT;
+#else
+extern   DECL_EXP wxEventType wxEVT_DOWNLOAD_EVENT;
+#endif
 
 // API 1.14 Extra canvas Support
 
@@ -1264,11 +1283,28 @@ extern DECL_EXP void PlugInHandleAutopilotRoute(bool enable);
  */
 extern DECL_EXP wxString GetPluginDataDir(const char* plugin_name);
 
+extern DECL_EXP bool ShuttingDown( void );
+
 //  Support for MUI MultiCanvas model
 
 extern DECL_EXP wxWindow* PluginGetFocusCanvas();
 extern DECL_EXP wxWindow* PluginGetOverlayRenderCanvas();
 
 extern "C"  DECL_EXP void CanvasJumpToPosition( wxWindow *canvas, double lat, double lon, double scale);
+extern "C"  DECL_EXP  int AddCanvasMenuItem(wxMenuItem *pitem, opencpn_plugin *pplugin, const char *name = "");
+extern "C"  DECL_EXP void RemoveCanvasMenuItem(int item, const char *name = "");      // Fully remove this item
+extern "C"  DECL_EXP void SetCanvasMenuItemViz(int item, bool viz, const char *name = ""); // Temporarily change context menu options
+extern "C"  DECL_EXP void SetCanvasMenuItemGrey(int item, bool grey, const char *name = "");
+
+// Extract waypoints, routes and tracks
+extern DECL_EXP wxString GetSelectedWaypointGUID_Plugin( );
+extern DECL_EXP wxString GetSelectedRouteGUID_Plugin( );
+extern DECL_EXP wxString GetSelectedTrackGUID_Plugin( );
+
+extern DECL_EXP std::unique_ptr<PlugIn_Waypoint> GetWaypoint_Plugin( const wxString& ); // doublon with GetSingleWaypoint
+extern DECL_EXP std::unique_ptr<PlugIn_Route> GetRoute_Plugin( const wxString& );
+extern DECL_EXP std::unique_ptr<PlugIn_Track> GetTrack_Plugin( const wxString& );
+
+extern DECL_EXP wxWindow* GetCanvasUnderMouse( );
 
 #endif //_PLUGIN_H_
