@@ -179,8 +179,8 @@ int radar_pi::Init(void) {
   m_fat_font = m_font;
   m_fat_font.SetWeight(wxFONTWEIGHT_BOLD);
   m_fat_font.SetPointSize(m_font.GetPointSize() + 1);
-  m_canvas0 = NULL;
-  m_canvas1 = NULL;
+  m_canvas[0] = NULL;
+  m_canvas[1] = NULL;
   m_max_canvas = 0;
   m_chart_overlay_canvas0 = -1;
   m_chart_overlay_canvas1 = -1;
@@ -661,10 +661,10 @@ void radar_pi::OnContextMenuItemCallback(int id) {
   int current_radar = -1;
   // find out which canvas the click is on
   wxWindow* canvas = PluginGetFocusCanvas();
-  if (canvas == m_canvas0) {
+  if (canvas == m_canvas[0]) {
     current_radar = m_chart_overlay_canvas0;
   }
-  if (canvas == m_canvas1) {
+  if (canvas == m_canvas[1]) {
     current_radar = m_chart_overlay_canvas1;
   }
   if (id == m_context_menu_control_id) {
@@ -954,10 +954,10 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
     if (overlay0) {
       // If overlay is enabled schedule another chart draw. Note this will cause another call to RenderGLOverlay,
       // which will then call ScheduleWindowRefresh again itself.
-      m_canvas0->Refresh(false);
+      m_canvas[0]->Refresh(false);
     }
     if (overlay1 && (m_max_canvas > 0)) {
-      m_canvas1->Refresh(false);
+      m_canvas[1]->Refresh(false);
     }
     if (!overlay0 && !(overlay1 && m_max_canvas > 0)) {
       ScheduleWindowRefresh();
@@ -974,7 +974,7 @@ void radar_pi::TimedControlUpdate() {
   wxWindow*  current_canvas = PluginGetOverlayRenderCanvas();
    // in dual canvas run SetRadarWindowViz only on canvas 1, 
    // otherwise crash in ShowFrame on m_aui_mgr->Update(); line 225
-  if (current_canvas != m_canvas1 && m_max_canvas > 0) return; 
+  if (current_canvas != m_canvas[1] && m_max_canvas > 0) return; 
   m_notify_time_ms = now;
 
   bool updateAllControls = m_notify_control_dialog;
@@ -1149,14 +1149,14 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
   wxWindow*  current_canvas = PluginGetOverlayRenderCanvas();
   int current_overlay;
   m_max_canvas = GetCanvasCount() - 1;
-  if (/*m_canvas0 == NULL && */index == 0) {
-    m_canvas0 = current_canvas;
+  if (m_max_canvas < 0 || m_max_canvas > 1 || index < 0 || index > 1) {
+    return true;
   }
-  if (/*m_canvas1 == NULL &&*/ index == 1) {
-    m_canvas1 = current_canvas;
-  }
-  if (m_max_canvas <= 0) {
-    m_canvas1 = NULL;
+  
+  m_canvas[index] = current_canvas;
+  
+  if (m_max_canvas == 0) {
+    m_canvas[1] = NULL;
   }
   
   current_overlay = -1;
@@ -1164,7 +1164,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     m_chart_overlay_canvas1 = -1;
   }
 
-  if (current_canvas == m_canvas0) {
+  if (current_canvas == m_canvas[0]) {
     m_chart_overlay_canvas0 = -1;
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       if (m_radar[r]->m_overlay_canvas0.GetValue() == 1) {
@@ -1174,7 +1174,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     }
   }
 
-  if (current_canvas == m_canvas1) {
+  if (current_canvas == m_canvas[1]) {
     m_chart_overlay_canvas1 = -1;
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       if (m_radar[r]->m_overlay_canvas1.GetValue() == 1) {
@@ -1227,7 +1227,7 @@ m_vp = vp;
 
     // check if same radar is overlayed on both canvas, if so autorange only on canvas1
     bool same_radar_both_canvas = m_chart_overlay_canvas0 == m_chart_overlay_canvas1;
-    if (current_canvas == m_canvas1 || !same_radar_both_canvas || m_max_canvas == 0) {
+    if (current_canvas == m_canvas[1] || !same_radar_both_canvas || m_max_canvas == 0) {
       m_radar[current_overlay]->SetAutoRangeMeters(auto_range_meters);
     }
     //    Calculate image scale factor

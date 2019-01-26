@@ -524,8 +524,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   time_t m_radar_heading_timeout;  // When last heading was obtained from radar, or 0 if not
   public:
   HeadingSource m_heading_source;
-  wxWindow* m_canvas0;
-  wxWindow* m_canvas1;
+  wxWindow* m_canvas[2];
   int m_chart_overlay_canvas0;                       // The overlay for canvas0, -1 = none, otherwise = radar number
   int m_chart_overlay_canvas1;                       // The overlay for canvas1, -1 = none, otherwise = radar number
   
