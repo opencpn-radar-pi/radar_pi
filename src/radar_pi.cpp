@@ -1144,19 +1144,23 @@ bool radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 
 // Called by Plugin Manager on main system process cycle
 
-bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort *vp, int max_canvas) {
+bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort *vp, int index) {
   GeoPosition radar_pos;
   wxWindow*  current_canvas = PluginGetOverlayRenderCanvas();
   int current_overlay;
-  m_max_canvas = max_canvas;
-  if (m_canvas0 == NULL) {
+  m_max_canvas = GetCanvasCount() - 1;
+  if (/*m_canvas0 == NULL && */index == 0) {
     m_canvas0 = current_canvas;
   }
-  else if (m_canvas0 != current_canvas) {
+  if (/*m_canvas1 == NULL &&*/ index == 1) {
     m_canvas1 = current_canvas;
   }
+  if (m_max_canvas <= 0) {
+    m_canvas1 = NULL;
+  }
+  
   current_overlay = -1;
-  if (max_canvas < 0){ 
+  if (m_max_canvas < 0){ 
     m_chart_overlay_canvas1 = -1;
   }
 
