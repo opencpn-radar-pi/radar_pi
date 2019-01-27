@@ -41,9 +41,6 @@ enum {  // process ID's
   ID_RADAR,
   ID_DATA,
   ID_HEADING,
-  ID_VALUE,
-  ID_BPOS,
-  ID_OFF
 };
 
 //---------------------------------------------------------------------------------------
@@ -158,7 +155,7 @@ void MessageBox::CreateControls() {
   m_message_sizer->Hide(m_nmea_sizer);
 
   m_have_boat_pos =
-      new wxCheckBox(this, ID_BPOS, _("Boat position"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+      new wxCheckBox(this, wxID_ANY, _("Boat position"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   m_nmea_sizer->Add(m_have_boat_pos, 0, wxALL, BORDER);
   m_have_boat_pos->SetFont(m_pi->m_font);
   m_have_boat_pos->Disable();
@@ -195,7 +192,7 @@ void MessageBox::CreateControls() {
   m_info_sizer = new wxStaticBoxSizer(infoBox, wxVERTICAL);
   m_message_sizer->Add(m_info_sizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
-  m_statistics = new wxStaticText(this, ID_VALUE, _("Statistics"), wxDefaultPosition, wxDefaultSize, 0);
+  m_statistics = new wxStaticText(this, wxID_ANY, _("Statistics"), wxDefaultPosition, wxDefaultSize, 0);
   m_statistics->SetFont(GetOCPNGUIScaledFont_PlugIn(_T("StatusBar")));
   m_info_sizer->Add(m_statistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
 

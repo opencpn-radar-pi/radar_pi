@@ -83,9 +83,10 @@ class RadarControl {
    *
    * @param     controlType     Control such as CT_GAIN, etc.
    * @param     item            Requested value and state.
+   * @param     button          Button that this originates from.
    * @returns   true on success, false on failure.
    */
-  virtual bool SetControlValue(ControlType controlType, RadarControlItem &item) = 0;
+  virtual bool SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button) = 0;
 };
 
 PLUGIN_END_NAMESPACE

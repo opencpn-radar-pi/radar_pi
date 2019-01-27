@@ -64,7 +64,8 @@ bool EmulatorControl::SetRange(int meters) {
   return true;
 }
 
-bool EmulatorControl::SetControlValue(ControlType controlType, RadarControlItem &item) {  // sends the command to the radar
+bool EmulatorControl::SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button) {
+  // sends the command to the radar
   bool r = false;
 
   return r;

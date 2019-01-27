@@ -169,7 +169,7 @@ bool NavicoControl::SetRange(int meters) {
   return false;
 }
 
-bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &item) {  // sends the command to the radar
+bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button) {
   bool r = false;
 
   int value = item.GetValue();

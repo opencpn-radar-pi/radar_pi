@@ -54,57 +54,6 @@ PLUGIN_BEGIN_NAMESPACE
 
 #define MENU_NO_EDIT(x) (wxT("-") + x)
 
-enum {  // process ID's
-  ID_TEXTCTRL1 = 10000,
-  ID_BACK,
-  ID_PLUS_TEN,
-  ID_PLUS,
-  ID_VALUE,
-  ID_MINUS,
-  ID_MINUS_TEN,
-  ID_AUTO,
-  ID_OFF,
-  ID_CONTROL_BUTTON,
-
-  ID_INSTALLATION,
-  ID_PREFERENCES,
-
-  ID_GAIN,
-
-  ID_CLEAR_CURSOR,
-  ID_ACQUIRE_TARGET,
-  ID_DELETE_TARGET,
-  ID_DELETE_ALL_TARGETS,
-
-  ID_TARGETS_ON_PPI,
-  ID_CLEAR_TRAILS,
-  ID_ORIENTATION,
-  ID_VIEW_CENTER,
-
-  ID_TRANSMIT_STANDBY,
-
-  ID_SHOW_RADAR_PPI,
-  ID_RADAR_OVERLAY0,
-  ID_ADJUST = ID_RADAR_OVERLAY0 + MAX_CHART_CANVAS,
-  ID_ADVANCED,
-  ID_GUARDZONE,
-  ID_WINDOW,
-  ID_VIEW,
-  ID_BEARING,
-  ID_ZONE1,
-  ID_ZONE2,
-  ID_POWER,
-
-  ID_CONFIRM_BOGEY,
-
-  ID_MESSAGE,
-  ID_BPOS,
-
-  ID_BEARING_SET,  // next one should be BEARING_LINES higher
-  ID_NEXT = ID_BEARING_SET + BEARING_LINES,
-
-};
-
 //---------------------------------------------------------------------------------------
 //          Radar Control Implementation
 //---------------------------------------------------------------------------------------
@@ -191,7 +140,7 @@ void RadarControlButton::AdjustValue(int adjustment) {
     LOG_VERBOSE(wxT("%s Adjusting '%s' by %d from %d to %d"), m_parent->m_log_name.c_str(), GetName(), adjustment, oldValue,
                 newValue);
     UpdateLabel();
-    m_parent->m_ri->SetControlValue(m_ci.type, *m_item);
+    m_parent->m_ri->SetControlValue(m_ci.type, *m_item, this);
   }
 }
 
@@ -238,7 +187,7 @@ void RadarControlButton::SetState(RadarControlState state) {
   m_item->UpdateState(state);
   LOG_VERBOSE(wxT("%s Button '%s' SetState %d value %d, max=%d"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type], state,
               m_item->GetValue(), m_ci.autoValues);
-  m_parent->m_ri->SetControlValue(m_ci.type, *m_item);
+  m_parent->m_ri->SetControlValue(m_ci.type, *m_item, this);
 }
 
 wxString RadarControlButton::GetLabel() {
@@ -1402,7 +1351,7 @@ void ControlsDialog::OnRadarShowPPIButtonClick(wxCommandEvent& event) {
       if (!show) {
         bool doHide = true;
         for (int i = 0; i < MAX_CHART_CANVAS; i++) {
-          if (m_pi->m_chart_overlay[i] == r)
+          if (m_pi->m_chart_overlay[i] == (int) r)
           {
             doHide = false;
           }
@@ -1430,12 +1379,16 @@ void ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
   RadarControlButton *button = (RadarControlButton *)event.GetEventObject();
   int canvasIndex = button->GetId() - ID_RADAR_OVERLAY0;
 
+  LOG_DIALOG(wxT("OnRadarOverlayButtonClick button=%p canvas=%d"), button, canvasIndex);
+
   if (button->m_item->GetValue() == 0) {
+    // flip overlay to on
     button->m_item->Update(1);
-    // flip overlay to on and overlay for all other radars to off
+    // no other radars can do overlay on same canvas
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       if (m_pi->m_radar[r] != m_ri) {
         m_pi->m_radar[r]->m_overlay_canvas[canvasIndex].Update(0);
+        m_pi->m_radar[r]->UpdateControlState(false);
       }
     }
   }
@@ -1891,6 +1844,9 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   m_trails_motion_button->UpdateLabel();
   m_orientation_button->UpdateLabel();
   m_view_center_button->UpdateLabel();
+  for (int i = 0; i < CANVAS_COUNT; i++) {
+    m_overlay_button[i]->UpdateLabel();
+  }
 
   if (m_range_button && (m_ri->m_range.IsModified() || refreshAll)) {
     m_ri->m_range.GetButton();

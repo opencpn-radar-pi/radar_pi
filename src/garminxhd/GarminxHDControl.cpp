@@ -186,7 +186,7 @@ bool GarminxHDControl::SetRange(int meters) {
   return false;
 }
 
-bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem &item) {
+bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button) {
   bool r = false;
   int value = item.GetValue();
   RadarControlState state = item.GetState();

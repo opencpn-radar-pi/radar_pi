@@ -49,7 +49,7 @@ class GarminHDControl : public RadarControl {
   bool RadarStayAlive();
   bool SetRange(int meters);
 
-  bool SetControlValue(ControlType controlType, RadarControlItem &item);
+  bool SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button);
 
  private:
   void logBinaryData(const wxString &what, const void *data, int size);

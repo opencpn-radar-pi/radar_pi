@@ -649,8 +649,12 @@ void RadarInfo::SetAutoRangeMeters(int autorange_to_set) {
   }
 }
 
-bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item) {
-  LOG_TRANSMIT(wxT("radar_pi: %s set %s value=%d state=%d"), m_name.c_str(), ControlTypeNames[controlType].c_str(), item.GetValue(),
+bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button) {
+  LOG_DIALOG(wxT("radar_pi: %s SetControlValue %s button=%s value=%d state=%d"),
+               m_name.c_str(),
+               ControlTypeNames[controlType].c_str(),
+               button->GetLabel().c_str(),
+               item.GetValue(),
                item.GetState());
 
   switch (controlType) {
@@ -700,8 +704,16 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item)
     }
 
     case CT_OVERLAY_CANVAS: {
-      // TODO INDEX BY CANVAS #
-      // m_overlay_canvas0 = item;
+      int canvas = button->GetId() - ID_RADAR_OVERLAY0;
+      int radar = item.GetValue() > 0 ? (int) m_radar : -1;
+
+      LOG_DIALOG(wxT("radar_pi: %s SetControlValue %s canvas=%d radar=%d"),
+                 m_name.c_str(),
+                 ControlTypeNames[controlType].c_str(),
+                 canvas,
+                 radar);
+
+      m_overlay_canvas[canvas] = radar;
     }
 
     // Careful, we're selectively falling through to the next case label
@@ -731,7 +743,7 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item)
     }
     default: {
       if (m_control) {
-        return m_control->SetControlValue(controlType, item);
+        return m_control->SetControlValue(controlType, item, button);
       }
     }
   }
@@ -1493,8 +1505,8 @@ void RadarInfo::CheckTimedTransmit() {
       // The idea is that this enables transmit but does reset the countdown timer
       // in the radar.
       // TODO: This is just a guess as to whether it works.
-      SetControlValue(CT_TIMED_RUN, m_timed_run);
-      SetControlValue(CT_TIMED_IDLE, m_timed_idle);
+      SetControlValue(CT_TIMED_RUN, m_timed_run, 0);
+      SetControlValue(CT_TIMED_IDLE, m_timed_idle, 0);
       m_control->RadarTxOn();
     }
 
