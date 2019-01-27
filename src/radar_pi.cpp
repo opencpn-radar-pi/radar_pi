@@ -951,12 +951,12 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
     bool overlay0 = m_chart_overlay_canvas0 >= 0;
     bool overlay1 = m_chart_overlay_canvas1 >= 0;
 
-    if (overlay0) {
+    if (overlay0 && m_canvas[0]) {
       // If overlay is enabled schedule another chart draw. Note this will cause another call to RenderGLOverlay,
       // which will then call ScheduleWindowRefresh again itself.
       m_canvas[0]->Refresh(false);
     }
-    if (overlay1 && (m_max_canvas > 0)) {
+    if (overlay1 && (m_max_canvas > 0) && m_canvas[1]) {
       m_canvas[1]->Refresh(false);
     }
     if (!overlay0 && !(overlay1 && m_max_canvas > 0)) {
@@ -1157,12 +1157,10 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
   
   if (m_max_canvas == 0) {
     m_canvas[1] = NULL;
+    m_chart_overlay_canvas1 = -1;
   }
   
   current_overlay = -1;
-  if (m_max_canvas < 0){ 
-    m_chart_overlay_canvas1 = -1;
-  }
 
   if (current_canvas == m_canvas[0]) {
     m_chart_overlay_canvas0 = -1;
