@@ -540,6 +540,9 @@ void radar_pi::PrepareContextMenu(int canvasIndex) {
     enableShowRadarControl = !m_settings.show_radar_control[m_chart_overlay[canvasIndex]];
   }
 
+  LOG_DIALOG(wxT("radar_pi: PrepareContextMenu for canvas %d radar %d"), canvasIndex, m_chart_overlay[canvasIndex]);
+  LOG_DIALOG(wxT("radar_pi: arpa=%d show=%d enableShowRadarControl=%d"), arpa, show, enableShowRadarControl);
+
   SetCanvasContextMenuItemGrey(m_context_menu_delete_radar_target, arpa);
   SetCanvasContextMenuItemGrey(m_context_menu_delete_all_radar_targets, arpa);
   SetCanvasContextMenuItemGrey(m_context_menu_control_id, enableShowRadarControl);
