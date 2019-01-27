@@ -696,9 +696,9 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     m_settings.show = true;
     SetRadarWindowViz();
   } else if (id == m_context_menu_acquire_radar_target) {
-    if (m_settings.show                                                             // radar shown
-        && m_chart_overlay_canvas0 >= 0 || m_chart_overlay_canvas1 >= 0             // overlay desired
-        && m_radar[current_radar]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
+    if (m_settings.show                                                     // radar shown
+        && (m_chart_overlay_canvas0 >= 0 || m_chart_overlay_canvas1 >= 0)   // overlay desired
+        && m_radar[current_radar]->m_state.GetValue() == RADAR_TRANSMIT     // Radar  transmitting
         && !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon)) {
       ExtendedPosition target_pos;
       target_pos.pos = m_cursor_pos;
