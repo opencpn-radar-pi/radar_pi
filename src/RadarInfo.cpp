@@ -564,11 +564,10 @@ void RadarInfo::RequestRadarState(RadarState state) {
       if (state == RADAR_TRANSMIT) {
         m_control->RadarTxOn();
         // Refresh radar immediately so that we generate draw mechanisms
-        if (m_pi->m_chart_overlay_canvas0 == (int)m_radar) {
-          m_pi->m_canvas[0]->Refresh(false);
-        }
-        if (m_pi->m_chart_overlay_canvas1 == (int)m_radar) {
-          m_pi->m_canvas[1]->Refresh(false);
+        for (int i = 0; i < wxMax(MAX_CHART_CANVAS, GetCanvasCount()); i++) {
+          if (m_pi->m_chart_overlay[i] == (int)m_radar) {
+            GetCanvasByIndex(i)->Refresh(false);
+          }
         }
         if (m_radar_panel) {
           m_radar_panel->Refresh();
@@ -700,12 +699,9 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item)
       m_view_center = item;
     }
 
-    case CT_OVERLAY_CANVAS0: {
-      m_overlay_canvas0 = item;
-    }
-
-    case CT_OVERLAY_CANVAS1: {
-         m_overlay_canvas1 = item;
+    case CT_OVERLAY_CANVAS: {
+      // TODO INDEX BY CANVAS #
+      // m_overlay_canvas0 = item;
     }
 
     // Careful, we're selectively falling through to the next case label
@@ -1143,7 +1139,7 @@ wxString RadarInfo::GetCanvasTextCenter() {
 wxString RadarInfo::GetRangeText() {
   int meters = m_range.GetValue();
 
-  bool auto_range = int((m_range.GetState()) > 0) == RCS_AUTO_1 && (int((m_overlay_canvas0.GetValue()) > 0 || m_overlay_canvas1.GetValue()) > 0);
+  bool auto_range = int((m_range.GetState()) > 0) == RCS_AUTO_1 && (GetOverlayCanvasIndex() > -1);
 
   m_range_text = wxT("");
   if (auto_range) {

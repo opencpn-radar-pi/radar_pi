@@ -193,8 +193,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
     case CT_MAX:
     case CT_ORIENTATION:
     case CT_CENTER_VIEW:
-    case CT_OVERLAY_CANVAS0:
-    case CT_OVERLAY_CANVAS1:
+    case CT_OVERLAY_CANVAS:
     case CT_ANTENNA_FORWARD:
     case CT_ANTENNA_STARBOARD:
     case CT_NO_TRANSMIT_START:

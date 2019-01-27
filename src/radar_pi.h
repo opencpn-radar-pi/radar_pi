@@ -74,9 +74,12 @@ class GuardZoneBogey;
 class RadarArpa;
 class GPSKalmanFilter;
 
-#define RADARS (4)         // Arbitrary limit, anyone running this many is already crazy!
-#define GUARD_ZONES (2)    // Could be increased if wanted
-#define BEARING_LINES (2)  // And these as well
+#define MAX_CHART_CANVAS (2)  // How many canvases OpenCPN supports
+#define RADARS (4)            // Arbitrary limit, anyone running this many is already crazy!
+#define GUARD_ZONES (2)       // Could be increased if wanted
+#define BEARING_LINES (2)     // And these as well
+
+#define CANVAS_COUNT (wxMax(MAX_CHART_CANVAS, GetCanvasCount()))
 
 static const int SECONDS_PER_TIMED_IDLE_SETTING = 60;  // Can't change this anymore, has to be same as Garmin hardware
 static const int SECONDS_PER_TIMED_RUN_SETTING = 60;
@@ -365,7 +368,7 @@ struct AisArpa {
 #define PLUGIN_OPTIONS                                                                                                       \
   (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK | WANTS_OPENGL_OVERLAY_CALLBACK | WANTS_OVERLAY_CALLBACK | WANTS_TOOLBAR_CALLBACK | \
    INSTALLS_TOOLBAR_TOOL | USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS | WANTS_NMEA_SENTENCES | WANTS_PREFERENCES |  \
-   WANTS_PLUGIN_MESSAGING | WANTS_CURSOR_LATLON | WANTS_MOUSE_EVENTS)
+   WANTS_PLUGIN_MESSAGING | WANTS_CURSOR_LATLON | WANTS_MOUSE_EVENTS | INSTALLS_CONTEXTMENU_ITEMS )
 
 class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
  public:
@@ -402,12 +405,8 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   void SetCursorPosition(GeoPosition pos);
   void SetCursorLatLon(double lat, double lon);
   bool MouseEventHook(wxMouseEvent &event);
+  void PrepareContextMenu(int canvasIndex);
 
-  bool m_guard_bogey_confirmed;
-  bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
-  int m_max_canvas;         // Number of canvasses in OCPN -1, 0 == single canvas, > 0  multi 
-  PlugIn_ViewPort* m_vp;
-  
 
   // Other public methods
 
@@ -477,6 +476,22 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   bool IsOpenGLEnabled() { return m_opengl_mode == OPENGL_ON; }
   wxGLContext *GetChartOpenGLContext();
 
+  bool HaveOverlay() {
+    for (int i = 0; i < CANVAS_COUNT; i++)
+    {
+      if (m_chart_overlay[i] > -1)
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool m_guard_bogey_confirmed;
+  bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
+  int m_max_canvas;         // Number of canvasses in OCPN -1, 0 == single canvas, > 0  multi
+  PlugIn_ViewPort* m_vp;
+
   wxFont m_font;      // The dialog font at a normal size
   wxFont m_fat_font;  // The dialog font at a bigger size, bold
 
@@ -505,12 +520,12 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   void PassHeadingToOpenCPN();
   void CacheSetToolbarToolBitmaps();
   void SetRadarWindowViz(bool reparent = false);
-  void UpdateContextMenu();
   void UpdateCOGAvg(double cog);
   void OnTimerNotify(wxTimerEvent &event);
   void TimedControlUpdate();
   void ScheduleWindowRefresh();
   void SetOpenGLMode(OpenGLMode mode);
+  int GetArpaTargetCount(void);
 
   wxCriticalSection m_exclusive;  // protects callbacks that come from multiple radars
 
@@ -524,11 +539,9 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   time_t m_radar_heading_timeout;  // When last heading was obtained from radar, or 0 if not
   public:
   HeadingSource m_heading_source;
-  wxWindow* m_canvas[2];
-  int m_chart_overlay_canvas0;                       // The overlay for canvas0, -1 = none, otherwise = radar number
-  int m_chart_overlay_canvas1;                       // The overlay for canvas1, -1 = none, otherwise = radar number
-  
-  private:
+  int m_chart_overlay[MAX_CHART_CANVAS]; // The overlay for canvas x, -1 = none, otherwise = radar #
+  int m_context_menu_canvas_index;       // PrepareContextMenu() was last called for this canvas
+
   bool m_bpos_set;
   time_t m_bpos_timestamp;
 

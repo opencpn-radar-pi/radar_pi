@@ -150,8 +150,7 @@ class ControlsDialog : public wxDialog {
     m_side_lobe_suppression_button = 0;
     m_main_bang_size_button = 0;
     m_show_ppi_button = 0;
-    m_overlay_button0 = 0;
-    m_overlay_button1 = 0;
+    CLEAR_STRUCT(m_overlay_button);
     m_range_button = 0;
     m_transparency_button = 0;  // TODO: Set it on change
     m_refresh_rate_button = 0;  // TODO: Set it on change
@@ -330,8 +329,7 @@ class ControlsDialog : public wxDialog {
 
   // Window controls
   RadarButton *m_show_ppi_button;
-  RadarControlButton *m_overlay_button0;
-  RadarControlButton *m_overlay_button1;
+  RadarControlButton *m_overlay_button[MAX_CHART_CANVAS];
   RadarControlButton *m_transparency_button;
 
   // Adjust controls
@@ -388,8 +386,7 @@ class ControlsDialog : public wxDialog {
 
   void OnPowerButtonClick(wxCommandEvent &event);
   void OnRadarShowPPIButtonClick(wxCommandEvent &event);
-  void OnRadarOverlayButton0Click(wxCommandEvent &event);
-  void OnRadarOverlayButton1Click(wxCommandEvent &event);
+  void OnRadarOverlayButtonClick(wxCommandEvent &event);
   void OnMessageButtonClick(wxCommandEvent &event);
 
   void OnTargetsOnPPIButtonClick(wxCommandEvent &event);

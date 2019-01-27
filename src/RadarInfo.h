@@ -101,8 +101,7 @@ class RadarInfo {
 
   int m_min_contour_length;  // minimum contour length of an ARPA or MARPA target
 
-  RadarControlItem m_overlay_canvas0;
-  RadarControlItem m_overlay_canvas1;
+  RadarControlItem m_overlay_canvas[MAX_CHART_CANVAS];
   RadarRangeControlItem m_range;  // value in meters, shown on display
   RadarControlItem m_gain;
   RadarControlItem m_interference_rejection;
@@ -260,6 +259,15 @@ class RadarInfo {
 
   void AdjustRange(int adjustment, int current_range_meters);
   int GetNearestRange(int range_meters, int units);
+
+  int GetOverlayCanvasIndex() {
+    for (int i = 0; i < CANVAS_COUNT; i++) {
+      if (m_overlay_canvas[i].GetValue() > 0) {
+        return i;
+      }
+    }
+    return -1;
+  }
 
  private:
   void ResetSpokes();
