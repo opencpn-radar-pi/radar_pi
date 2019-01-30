@@ -53,7 +53,6 @@ struct DrawInfo {
   bool color_option;
 };
 
-
 #define SECONDS_TO_REVOLUTIONS(x) ((x)*2 / 5)
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(600) + 1
 enum { TRAIL_15SEC, TRAIL_30SEC, TRAIL_1MIN, TRAIL_3MIN, TRAIL_5MIN, TRAIL_10MIN, TRAIL_CONTINUOUS, TRAIL_ARRAY_SIZE };
@@ -87,7 +86,7 @@ class RadarInfo {
   int m_course_index;
   wxPoint m_off_center, m_drag;
   double m_radar_radius;  // radius in pixels of the outer ring in the panel
-  double m_panel_zoom;   // zooming factor for the panel image
+  double m_panel_zoom;    // zooming factor for the panel image
 
   RadarArpa *m_arpa;
   wxCriticalSection m_exclusive;

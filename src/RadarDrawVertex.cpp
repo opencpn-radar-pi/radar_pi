@@ -30,8 +30,8 @@
  */
 
 #include "RadarDrawVertex.h"
-#include "RadarInfo.h"
 #include "RadarCanvas.h"
+#include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -190,7 +190,7 @@ void RadarDrawVertex::DrawRadarOverlayImage(double radar_scale, double panel_rot
   wxPoint boat_center;
   GeoPosition posi;
   if (!m_ri->GetRadarPosition(&posi)) {
-    return;   // no position, no overlay
+    return;  // no position, no overlay
   }
   GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, posi.lat, posi.lon);
   //  move display to the location where the spoke was recorded
@@ -201,7 +201,7 @@ void RadarDrawVertex::DrawRadarOverlayImage(double radar_scale, double panel_rot
   GeoPosition prev_pos = posi;
   {
     wxCriticalSectionLocker lock(m_exclusive);
-    
+
     glPushMatrix();
     glTranslated(boat_center.x, boat_center.y, 0);
     glRotated(panel_rotate, 0.0, 0.0, 1.0);
@@ -258,15 +258,15 @@ void RadarDrawVertex::DrawRadarPanelImage(double panel_scale, double panel_rotat
       // that means, a distance of 1 meter corresponds to a ranslation of m_ri->m_panel_zoom / m_range.GetValue() units
       if (m_ri->GetRadarPosition(&radar_pos)) {
         offset_lat = (line_pos.lat - radar_pos.lat) * 60. * 1852. * m_ri->m_panel_zoom / m_ri->m_range.GetValue();
-        offset_lon =
-            (line_pos.lon - radar_pos.lon) * 60. * 1852. * cos(deg2rad(line_pos.lat)) * m_ri->m_panel_zoom / m_ri->m_range.GetValue();
+        offset_lon = (line_pos.lon - radar_pos.lon) * 60. * 1852. * cos(deg2rad(line_pos.lat)) * m_ri->m_panel_zoom /
+                     m_ri->m_range.GetValue();
         if (offset_lat != prev_offset_lat || offset_lon != prev_offset_lon) {
           prev_offset_lat = offset_lat;
           prev_offset_lon = offset_lon;
           glPopMatrix();
           glPushMatrix();
           glRotated(panel_rotate, 0.0, 0.0, 1.0);
-          glTranslated(offset_lat, offset_lon, 0);  
+          glTranslated(offset_lat, offset_lon, 0);
           glScaled(panel_scale, panel_scale, 1.);
         }
       }

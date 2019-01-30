@@ -226,22 +226,21 @@ GPSKalmanFilter::GPSKalmanFilter() {
   // initial values follow, large initial values as initial speed is unkown
 
   P = ZeroMatrix4;
-  P(0, 0) = 6. * CONVERT;   // in degrees ^ 2
+  P(0, 0) = 6. * CONVERT;  // in degrees ^ 2
   P(1, 1) = P(1, 1);
   P(2, 2) = 2. * CONVERT;
   P(3, 3) = P(2, 2);
-
 
   // Q Process noise covariance matrix
   // convert meters2 to deg2
 
   //  Q(0, 0) = .004 * convert;  // variance in lat speed, (deg / sec)2 // 25 sec for 20 deg turn
   Q(0, 0) = .1 * CONVERT;  // variance in lat speed, (deg / sec)2     value of .1 allows for a 90 degree turn in about 9 seconds
-  Q(1, 1) = Q(0, 0);  // variance in lon speed, (deg / sec)2
+  Q(1, 1) = Q(0, 0);       // variance in lon speed, (deg / sec)2
 
-                      // R measurement noise covariance matrix
+  // R measurement noise covariance matrix
   R(0, 0) = 36. * CONVERT;  // in deg2 assume standard deviation of GPS is 6 m
-  R(1, 1) = R(0, 0);    // variance in y (lon)
+  R(1, 1) = R(0, 0);        // variance in y (lon)
 }
 
 GPSKalmanFilter::~GPSKalmanFilter() {}
@@ -251,7 +250,7 @@ void GPSKalmanFilter::Predict(ExtendedPosition* old, ExtendedPosition* updated) 
 
   wxLongLong now = wxGetUTCTimeMillis();  // millis
   Matrix<double, 4, 1> X;
-  X(0, 0) = old->pos.lat;                                // X in meters and m / sec
+  X(0, 0) = old->pos.lat;  // X in meters and m / sec
   X(1, 0) = old->pos.lon;
   X(2, 0) = old->dlat_dt;
   X(3, 0) = old->dlon_dt;
@@ -262,9 +261,9 @@ void GPSKalmanFilter::Predict(ExtendedPosition* old, ExtendedPosition* updated) 
   AT(3, 1) = A(0, 2);
 
   X = A * X;
-  updated->pos.lat = X(0, 0);                                 // lat and lon in degrees
+  updated->pos.lat = X(0, 0);  // lat and lon in degrees
   updated->pos.lon = X(1, 0);
-  updated->dlat_dt = X(2, 0);                                           // speeds in m / sec
+  updated->dlat_dt = X(2, 0);  // speeds in m / sec
   updated->dlon_dt = X(3, 0);
   updated->time = now;
   //    updated->sd_speed_kn = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed  in kn!!
@@ -286,14 +285,13 @@ void GPSKalmanFilter::SetMeasurement(ExtendedPosition* gps, ExtendedPosition* up
   // before calling SetMeasurement, Predict should be called first on updated
   // the timestamp of updated position is the time from the Predict
 
-
   Matrix<double, 2, 1> Z;
   // Z is  difference between expected and measured
   Z(0, 0) = (gps->pos.lat - updated->pos.lat);
   Z(1, 0) = (gps->pos.lon - updated->pos.lon);
-  
+
   Matrix<double, 4, 1> X;
-  X(0, 0) = updated->pos.lat;                                // X in meters and m / sec
+  X(0, 0) = updated->pos.lat;  // X in meters and m / sec
   X(1, 0) = updated->pos.lon;
   X(2, 0) = updated->dlat_dt;
   X(3, 0) = updated->dlon_dt;
@@ -303,19 +301,17 @@ void GPSKalmanFilter::SetMeasurement(ExtendedPosition* gps, ExtendedPosition* up
 
   // calculate apostriori expected position
   X = X + K * Z;
-  updated->pos.lat = X(0, 0);                                 // lat and lon in degrees
+  updated->pos.lat = X(0, 0);  // lat and lon in degrees
   updated->pos.lon = X(1, 0);
   updated->dlat_dt = X(2, 0);
   updated->dlon_dt = X(3, 0);
   double cosin = cos(updated->pos.lat / 360. * 2. * PI);
-  updated->speed_kn = sqrt(X(2, 0)*X(2, 0) + X(3, 0) * X(3, 0) * cosin * cosin) * 60. * 3600.;
+  updated->speed_kn = sqrt(X(2, 0) * X(2, 0) + X(3, 0) * X(3, 0) * cosin * cosin) * 60. * 3600.;
 
   // update covariance P
   P = (I - K * H) * P;
   //  x->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed
   return;
 }
-
-
 
 PLUGIN_END_NAMESPACE

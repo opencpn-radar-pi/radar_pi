@@ -111,13 +111,12 @@
 
 #ifndef VIEW_NAMES
 #define VIEW_NAMES \
-  {  _("Dragged View"),_("Center View"), _("Forward View"), _("Aft View")}
+  { _("Dragged View"), _("Center View"), _("Forward View"), _("Aft View") }
 #endif
 #define DRAGGED_VIEW (0)
-#define CENTER_VIEW (1)  
+#define CENTER_VIEW (1)
 #define FORWARD_VIEW (2)
 #define BACKWARD_VIEW (3)
-
 
 #ifndef TARGET_TRAIL_NAMES
 #define TARGET_TRAIL_NAMES \

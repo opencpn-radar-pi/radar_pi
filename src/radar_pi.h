@@ -368,13 +368,13 @@ struct AisArpa {
 #define PLUGIN_OPTIONS                                                                                                       \
   (WANTS_DYNAMIC_OPENGL_OVERLAY_CALLBACK | WANTS_OPENGL_OVERLAY_CALLBACK | WANTS_OVERLAY_CALLBACK | WANTS_TOOLBAR_CALLBACK | \
    INSTALLS_TOOLBAR_TOOL | USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS | WANTS_NMEA_SENTENCES | WANTS_PREFERENCES |  \
-   WANTS_PLUGIN_MESSAGING | WANTS_CURSOR_LATLON | WANTS_MOUSE_EVENTS | INSTALLS_CONTEXTMENU_ITEMS )
+   WANTS_PLUGIN_MESSAGING | WANTS_CURSOR_LATLON | WANTS_MOUSE_EVENTS | INSTALLS_CONTEXTMENU_ITEMS)
 
 class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
  public:
   radar_pi(void *ppimgr);
   ~radar_pi();
-  //void PrepareRadarImage(int angle); remove?
+  // void PrepareRadarImage(int angle); remove?
 
   //    The required PlugIn Methods
   int Init(void);
@@ -406,7 +406,6 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   void SetCursorLatLon(double lat, double lon);
   bool MouseEventHook(wxMouseEvent &event);
   void PrepareContextMenu(int canvasIndex);
-
 
   // Other public methods
 
@@ -477,10 +476,8 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   wxGLContext *GetChartOpenGLContext();
 
   bool HaveOverlay() {
-    for (int i = 0; i < CANVAS_COUNT; i++)
-    {
-      if (m_chart_overlay[i] > -1)
-      {
+    for (int i = 0; i < CANVAS_COUNT; i++) {
+      if (m_chart_overlay[i] > -1) {
         return true;
       }
     }
@@ -490,7 +487,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   bool m_guard_bogey_confirmed;
   bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
   int m_max_canvas;         // Number of canvasses in OCPN -1, 0 == single canvas, > 0  multi
-  PlugIn_ViewPort* m_vp;
+  PlugIn_ViewPort *m_vp;
 
   wxFont m_font;      // The dialog font at a normal size
   wxFont m_fat_font;  // The dialog font at a bigger size, bold
@@ -537,10 +534,10 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   double m_radar_heading;          // Last heading obtained from radar, or nan if none
   bool m_radar_heading_true;       // Was TRUE flag set on radar heading?
   time_t m_radar_heading_timeout;  // When last heading was obtained from radar, or 0 if not
-  public:
+ public:
   HeadingSource m_heading_source;
-  int m_chart_overlay[MAX_CHART_CANVAS]; // The overlay for canvas x, -1 = none, otherwise = radar #
-  int m_context_menu_canvas_index;       // PrepareContextMenu() was last called for this canvas
+  int m_chart_overlay[MAX_CHART_CANVAS];  // The overlay for canvas x, -1 = none, otherwise = radar #
+  int m_context_menu_canvas_index;        // PrepareContextMenu() was last called for this canvas
 
   bool m_bpos_set;
   time_t m_bpos_timestamp;
@@ -606,12 +603,13 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   // Cursor position. Used to show position in radar window
   GeoPosition m_cursor_pos;
   GeoPosition m_ownship;
-public:
-  GPSKalmanFilter* m_GPS_filter;
+
+ public:
+  GPSKalmanFilter *m_GPS_filter;
   bool m_predicted_position_initialised = false;
   ExtendedPosition m_expected_position;  // updated own position at time of last GPS update
   ExtendedPosition m_last_fixed;         // best estimate position at last measurement
-  private:
+ private:
   bool m_initialized;      // True if Init() succeeded and DeInit() not called yet.
   bool m_first_init;       // True in first Init() call.
   wxLongLong m_boot_time;  // millis when started

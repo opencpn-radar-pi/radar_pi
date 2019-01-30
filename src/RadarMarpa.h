@@ -77,8 +77,6 @@ enum OCPN_target_status {
   L   // lost
 };
 
-
-
 enum TargetProcessStatus { UNKNOWN, NOT_FOUND_IN_PASS1 };
 enum PassN { PASS1, PASS2 };
 
@@ -109,10 +107,10 @@ class ArpaTarget {
   int m_target_id;
   target_status m_status;
   // radar position at time of last target fix, the polars in the contour refer to this origin
-  GeoPosition m_radar_pos; 
-  ExtendedPosition m_position;   // holds actual position of target
-  double m_speed_kn;     // Average speed of target. TODO: Merge with m_position.speed?
-  wxLongLong m_refresh;  // time of last refresh
+  GeoPosition m_radar_pos;
+  ExtendedPosition m_position;  // holds actual position of target
+  double m_speed_kn;            // Average speed of target. TODO: Merge with m_position.speed?
+  wxLongLong m_refresh;         // time of last refresh
   double m_course;
   int m_stationary;  // number of sweeps target was stationary
   int m_lost_count;

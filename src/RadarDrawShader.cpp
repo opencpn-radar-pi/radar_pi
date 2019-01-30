@@ -227,10 +227,7 @@ void RadarDrawShader::DrawRadarOverlayImage(double radar_scale, double panel_rot
   glPopAttrib();
 }
 
-void RadarDrawShader::DrawRadarPanelImage(double panel_scale, double panel_rotate) {
-  DrawRadarOverlayImage(1., 0.);
-}
-
+void RadarDrawShader::DrawRadarPanelImage(double panel_scale, double panel_rotate) { DrawRadarOverlayImage(1., 0.); }
 
 void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t *data, size_t len, GeoPosition spoke_pos) {
   GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;

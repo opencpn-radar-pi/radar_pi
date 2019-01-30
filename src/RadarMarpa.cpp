@@ -31,10 +31,10 @@
 
 #include "RadarMarpa.h"
 #include "GuardZone.h"
+#include "RadarCanvas.h"
 #include "RadarInfo.h"
 #include "drawutil.h"
 #include "radar_pi.h"
-#include "RadarCanvas.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -518,7 +518,6 @@ int ArpaTarget::GetContour(Polar* pol) {
 }
 
 void RadarArpa::DrawContour(ArpaTarget* target) {
-  
   if (target->m_lost_count > 0) {
     return;  // don't draw targets that were not seen last sweep
   }
@@ -566,8 +565,7 @@ void RadarArpa::DrawArpaTargetsOverlay(double scale, double arpa_rotate) {
       DrawContour(m_targets[i]);
       glPopMatrix();
     }
-  }
-  else {
+  } else {
     m_ri->GetRadarPosition(&radar_pos);
     GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, radar_pos.lat, radar_pos.lon);
     glPushMatrix();
@@ -576,8 +574,8 @@ void RadarArpa::DrawArpaTargetsOverlay(double scale, double arpa_rotate) {
     glScaled(scale, scale, 1.);
     for (int i = 0; i < m_number_of_targets; i++) {
       if (!m_targets[i]) {
-continue;
-}
+        continue;
+      }
       if (m_targets[i]->m_status != LOST) {
         DrawContour(m_targets[i]);
       }
@@ -591,7 +589,7 @@ void RadarArpa::DrawArpaTargetsPanel(double scale, double arpa_rotate) {
   GeoPosition radar_pos, target_pos;
   double offset_lat = 0.;
   double offset_lon = 0.;
- 
+
   if (!m_pi->m_settings.drawing_method && m_ri->GetRadarPosition(&radar_pos)) {
     m_ri->GetRadarPosition(&radar_pos);
     for (int i = 0; i < m_number_of_targets; i++) {
@@ -603,8 +601,8 @@ void RadarArpa::DrawArpaTargetsPanel(double scale, double arpa_rotate) {
       }
       target_pos = m_targets[i]->m_radar_pos;
       offset_lat = (radar_pos.lat - target_pos.lat) * 60. * 1852. * m_ri->m_panel_zoom / m_ri->m_range.GetValue();
-      offset_lon =
-        (radar_pos.lon - target_pos.lon) * 60. * 1852. * cos(deg2rad(target_pos.lat)) * m_ri->m_panel_zoom / m_ri->m_range.GetValue();
+      offset_lon = (radar_pos.lon - target_pos.lon) * 60. * 1852. * cos(deg2rad(target_pos.lat)) * m_ri->m_panel_zoom /
+                   m_ri->m_range.GetValue();
       glPushMatrix();
       glRotated(arpa_rotate, 0.0, 0.0, 1.0);
       glTranslated(-offset_lon, offset_lat, 0);
@@ -950,12 +948,12 @@ void ArpaTarget::RefreshTarget(int dist) {
   return;
 }
 
-#define PIX(aa, rr)       \
+#define PIX(aa, rr)                                   \
   if (rr >= (int)m_ri->m_spoke_len_max - 1) continue; \
-  if (MultiPix(aa, rr)) { \
-    pol->angle = aa;      \
-    pol->r = rr;          \
-    return true;          \
+  if (MultiPix(aa, rr)) {                             \
+    pol->angle = aa;                                  \
+    pol->r = rr;                                      \
+    return true;                                      \
   }
 
 bool ArpaTarget::FindNearestContour(Polar* pol, int dist) {

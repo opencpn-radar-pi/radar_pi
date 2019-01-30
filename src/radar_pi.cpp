@@ -180,8 +180,7 @@ int radar_pi::Init(void) {
   m_fat_font.SetWeight(wxFONTWEIGHT_BOLD);
   m_fat_font.SetPointSize(m_font.GetPointSize() + 1);
   m_max_canvas = 0;
-  for (int i = 0; i < MAX_CHART_CANVAS; i++)
-  {
+  for (int i = 0; i < MAX_CHART_CANVAS; i++) {
     m_chart_overlay[i] = -1;
   }
   m_context_menu_canvas_index = -1;
@@ -535,8 +534,7 @@ void radar_pi::PrepareContextMenu(int canvasIndex) {
   bool enableShowRadarControl = false;
   bool arpa = arpa_targets == 0;
 
-  if (m_chart_overlay[canvasIndex] > -1)
-  {
+  if (m_chart_overlay[canvasIndex] > -1) {
     enableShowRadarControl = !m_settings.show_radar_control[m_chart_overlay[canvasIndex]];
   }
 
@@ -555,8 +553,7 @@ void radar_pi::PrepareContextMenu(int canvasIndex) {
   SetCanvasContextMenuItemViz(m_context_menu_delete_all_radar_targets, show);
 }
 
-int radar_pi::GetArpaTargetCount(void)
-{
+int radar_pi::GetArpaTargetCount(void) {
   int arpa_targets = 0;
 
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -564,7 +561,6 @@ int radar_pi::GetArpaTargetCount(void)
   }
   return arpa_targets;
 }
-
 
 //********************************************************************************
 // Operation Dialogs - Control, Manual, and Options
@@ -629,7 +625,7 @@ void radar_pi::OnToolbarToolCallback(int id) {
     // Show the control dialogs of all overlay radars
     for (int i = 0; i < CANVAS_COUNT; i++) {
       if (m_chart_overlay[i] > -1 &&
-        (!m_radar[m_chart_overlay[i]]->m_control_dialog || !m_radar[m_chart_overlay[i]]->m_control_dialog->IsShown())) {
+          (!m_radar[m_chart_overlay[i]]->m_control_dialog || !m_radar[m_chart_overlay[i]]->m_control_dialog->IsShown())) {
         LOG_DIALOG(wxT("radar_pi: OnToolbarToolCallback: Show control canvas %d"), i);
         ShowRadarControl(m_chart_overlay[i], true);
       }
@@ -656,8 +652,7 @@ void radar_pi::OnContextMenuItemCallback(int id) {
   int current_radar = -1;
   // find out which canvas the click is on
   m_context_menu_canvas_index = GetCanvasIndexUnderMouse();
-  if (m_context_menu_canvas_index > -1 && m_context_menu_canvas_index < CANVAS_COUNT)
-  {
+  if (m_context_menu_canvas_index > -1 && m_context_menu_canvas_index < CANVAS_COUNT) {
     current_canvas_index = m_context_menu_canvas_index;
     current_radar = m_chart_overlay[m_context_menu_canvas_index];
   }
@@ -691,9 +686,9 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     m_settings.show = true;
     SetRadarWindowViz();
   } else if (id == m_context_menu_acquire_radar_target) {
-    if (m_settings.show                                                    // radar shown
-        && HaveOverlay()                                                   // overlay desired
-        && m_radar[current_radar]->m_state.GetValue() == RADAR_TRANSMIT    // Radar  transmitting
+    if (m_settings.show                                                  // radar shown
+        && HaveOverlay()                                                 // overlay desired
+        && m_radar[current_radar]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
         && !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon)) {
       ExtendedPosition target_pos;
       target_pos.pos = m_cursor_pos;
@@ -952,7 +947,7 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
         refreshing = true;
       }
     }
-    if (!refreshing) { // In case we didn't scheduled a RenderGLOverlay callback do it ourselves.
+    if (!refreshing) {  // In case we didn't scheduled a RenderGLOverlay callback do it ourselves.
       ScheduleWindowRefresh();
     }
   }
@@ -1172,7 +1167,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     m_vp_rotation = vp->rotation;
   }
 
-  if (M_SETTINGS.show                                               // Radar shown
+  if (M_SETTINGS.show                                                     // Radar shown
       && current_overlay_radar > -1                                       // Overlay desired
       && current_overlay_radar < (int)M_SETTINGS.radar_count              // and still valid
       && m_radar[current_overlay_radar]->GetRadarPosition(&radar_pos)) {  // Boat position known
@@ -1203,7 +1198,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     if (canvasIndex == highest) {
       m_radar[current_overlay_radar]->SetAutoRangeMeters(auto_range_meters);
     }
-    
+
     //    Calculate image scale factor
     double dist_y, v_scale_ppm;
     GetCanvasLLPix(vp, wxPoint(0, vp->pix_height - 1), &pos_max.lat, &pos_max.lon);  // is pix_height a mapable coordinate?
@@ -1459,7 +1454,7 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dAntennaStarboard"), r), m_radar[r]->m_antenna_starboard.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dRunTimeOnIdle"), r), m_radar[r]->m_timed_run.GetValue());
       for (int i = 0; i < MAX_CHART_CANVAS; i++) {
-        pConf->Write(wxString::Format(wxT("Radar%dOverlayCanvas%d"), r, i ), m_radar[r]->m_overlay_canvas[i].GetValue());
+        pConf->Write(wxString::Format(wxT("Radar%dOverlayCanvas%d"), r, i), m_radar[r]->m_overlay_canvas[i].GetValue());
       }
 
       // LOG_DIALOG(wxT("radar_pi: SaveConfig: show_radar[%d]=%d"), r, m_settings.show_radar[r]);

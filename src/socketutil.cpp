@@ -150,8 +150,7 @@ int radar_inet_aton(const char *cp, struct in_addr *addr) {
 bool socketReady(SOCKET sockfd, int timeout) {
   int r = 0;
   fd_set fdin;
-  struct timeval tv = {(int)timeout / MILLISECONDS_PER_SECOND,
-                       (int)(timeout % MILLISECONDS_PER_SECOND) * MILLISECONDS_PER_SECOND};
+  struct timeval tv = {(int)timeout / MILLISECONDS_PER_SECOND, (int)(timeout % MILLISECONDS_PER_SECOND) * MILLISECONDS_PER_SECOND};
 
   FD_ZERO(&fdin);
   if (sockfd != INVALID_SOCKET) {

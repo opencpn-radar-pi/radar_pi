@@ -39,10 +39,10 @@
 PLUGIN_BEGIN_NAMESPACE
 
 #define NOISE \
-  (0.015)  // Allowed covariance of target speed in lat and lon
-           // critical for the performance of target tracking
-           // lower value makes target go straight
-           // higher values allow target to make curves
+  (0.015)                                               // Allowed covariance of target speed in lat and lon
+                                                        // critical for the performance of target tracking
+                                                        // lower value makes target go straight
+                                                        // higher values allow target to make curves
 #define CONVERT ((((1. / 1852.) / 1852.) / 60.) / 60.)  // converts meters ^ 2 to degrees ^ 2
 
 class Polar {
@@ -91,7 +91,7 @@ class KalmanFilter {
 };
 
 class GPSKalmanFilter {
-public:
+ public:
   GPSKalmanFilter();
   ~GPSKalmanFilter();
   void SetMeasurement(ExtendedPosition* gps, ExtendedPosition* updated);
@@ -110,7 +110,6 @@ public:
   Matrix<double, 4, 2> K;
   Matrix<double, 4> I;
 };
-
 
 PLUGIN_END_NAMESPACE
 #endif
