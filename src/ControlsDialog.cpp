@@ -949,7 +949,7 @@ void ControlsDialog::CreateControls() {
     m_overlay_button[i] =
         new RadarControlButton(this, ID_RADAR_OVERLAY0 + i, name, m_ctrl[CT_OVERLAY_CANVAS], &m_ri->m_overlay_canvas[i]);
     m_window_sizer->Add(m_overlay_button[i], 0, wxALL, BORDER);
-    m_bearing_buttons[i]->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ControlsDialog::OnRadarOverlayButtonClick), 0,
+    m_overlay_button[i]->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ControlsDialog::OnRadarOverlayButtonClick), 0,
                                   this);
   }
 
