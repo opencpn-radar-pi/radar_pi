@@ -76,8 +76,6 @@ EVT_BUTTON(ID_PREFERENCES, ControlsDialog::OnPreferencesButtonClick)
 
 EVT_BUTTON(ID_POWER, ControlsDialog::OnPowerButtonClick)
 EVT_BUTTON(ID_SHOW_RADAR_PPI, ControlsDialog::OnRadarShowPPIButtonClick)
-// EVT_BUTTON(ID_RADAR_OVERLAY0, ControlsDialog::OnRadarOverlayButtonClick)
-// EVT_BUTTON(ID_RADAR_OVERLAY0 + 1, ControlsDialog::OnRadarOverlayButtonClick)
 EVT_BUTTON(ID_GAIN, ControlsDialog::OnRadarGainButtonClick)
 
 EVT_BUTTON(ID_TARGETS_ON_PPI, ControlsDialog::OnTargetsOnPPIButtonClick)
