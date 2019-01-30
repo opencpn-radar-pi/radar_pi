@@ -79,7 +79,7 @@ class GPSKalmanFilter;
 #define GUARD_ZONES (2)       // Could be increased if wanted
 #define BEARING_LINES (2)     // And these as well
 
-#define CANVAS_COUNT (wxMax(MAX_CHART_CANVAS, GetCanvasCount()))
+#define CANVAS_COUNT (wxMin(MAX_CHART_CANVAS, GetCanvasCount()))
 
 static const int SECONDS_PER_TIMED_IDLE_SETTING = 60;  // Can't change this anymore, has to be same as Garmin hardware
 static const int SECONDS_PER_TIMED_RUN_SETTING = 60;
