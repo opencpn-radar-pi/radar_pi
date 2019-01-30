@@ -77,6 +77,7 @@ EVT_BUTTON(ID_PREFERENCES, ControlsDialog::OnPreferencesButtonClick)
 EVT_BUTTON(ID_POWER, ControlsDialog::OnPowerButtonClick)
 EVT_BUTTON(ID_SHOW_RADAR_PPI, ControlsDialog::OnRadarShowPPIButtonClick)
 EVT_BUTTON(ID_RADAR_OVERLAY0, ControlsDialog::OnRadarOverlayButtonClick)
+EVT_BUTTON(ID_RADAR_OVERLAY0 + 1, ControlsDialog::OnRadarOverlayButtonClick)
 EVT_BUTTON(ID_GAIN, ControlsDialog::OnRadarGainButtonClick)
 
 EVT_BUTTON(ID_TARGETS_ON_PPI, ControlsDialog::OnTargetsOnPPIButtonClick)
@@ -1379,11 +1380,13 @@ void ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
   RadarControlButton *button = (RadarControlButton *)event.GetEventObject();
   int canvasIndex = button->GetId() - ID_RADAR_OVERLAY0;
 
-  LOG_DIALOG(wxT("OnRadarOverlayButtonClick button=%p canvas=%d"), button, canvasIndex);
+  LOG_DIALOG(wxT("OnRadarOverlayButtonClick button=%p canvas=%d, buttonid=%i"), button, canvasIndex, button->GetId());
 
   if (button->m_item->GetValue() == 0) {
     // flip overlay to on
     button->m_item->Update(1);
+    m_ri->m_overlay_canvas[canvasIndex].Update(1);
+    m_ri->UpdateControlState(false);
     // no other radars can do overlay on same canvas
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       if (m_pi->m_radar[r] != m_ri) {

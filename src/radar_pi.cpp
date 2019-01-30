@@ -1136,17 +1136,25 @@ bool radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 
 // Called by Plugin Manager on main system process cycle
 
-bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort *vp, int canvas) {
+bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort *vp, int canvasIndex) {
   GeoPosition radar_pos;
 
-  int current_overlay = m_chart_overlay[canvas];
+// Update m_overlay[] by checking all radars, value may be modified by the buttons
+  m_chart_overlay[canvasIndex] = -1;
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (m_radar[r]->m_overlay_canvas[canvasIndex].GetValue() != 0) {
+      m_chart_overlay[canvasIndex] = r;
+    }
+  }
+
+  int current_overlay = m_chart_overlay[canvasIndex];
 
   if (!m_initialized) {
     return true;
   }
   m_vp = vp;
 
-  LOG_DIALOG(wxT("radar_pi: RenderGLOverlayMultiCanvas context=%p canvas=%d"), pcontext, canvas);
+  LOG_DIALOG(wxT("radar_pi: RenderGLOverlayMultiCanvas context=%p canvas=%d"), pcontext, canvasIndex);
   m_opencpn_gl_context = pcontext;
   if (!m_opencpn_gl_context && !m_opencpn_gl_context_broken) {
     LOG_INFO(wxT("radar_pi: OpenCPN does not pass OpenGL context. Resize of OpenCPN window may be broken!"));
