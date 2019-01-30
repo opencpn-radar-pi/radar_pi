@@ -1148,7 +1148,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     }
   }
 
-  int current_overlay = m_chart_overlay[canvasIndex];
+  int current_overlay_radar = m_chart_overlay[canvasIndex];
 
   if (!m_initialized) {
     return true;
@@ -1173,9 +1173,9 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
   }
 
   if (M_SETTINGS.show                                               // Radar shown
-      && current_overlay > -1                                       // Overlay desired
-      && current_overlay < (int)M_SETTINGS.radar_count              // and still valid
-      && m_radar[current_overlay]->GetRadarPosition(&radar_pos)) {  // Boat position known
+      && current_overlay_radar > -1                                       // Overlay desired
+      && current_overlay_radar < (int)M_SETTINGS.radar_count              // and still valid
+      && m_radar[current_overlay_radar]->GetRadarPosition(&radar_pos)) {  // Boat position known
 
     GeoPosition pos_min = {vp->lat_min, vp->lon_min};
     GeoPosition pos_max = {vp->lat_max, vp->lon_max};
@@ -1195,12 +1195,13 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     // we choose the highest canvas, which is just an arbitrary choice by us.
     int highest = -1;
     for (int i = 0; i < CANVAS_COUNT; i++) {
-      if (m_chart_overlay[i] == current_overlay) {
+      if (m_chart_overlay[i] == current_overlay_radar) {
         highest = i;
       }
     }
-    if (current_overlay == highest) {
-      m_radar[current_overlay]->SetAutoRangeMeters(auto_range_meters);
+
+    if (canvasIndex == highest) {
+      m_radar[current_overlay_radar]->SetAutoRangeMeters(auto_range_meters);
     }
     
     //    Calculate image scale factor
@@ -1216,7 +1217,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     double rotation = fmod(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor) + 720.0, 360);
     LOG_DIALOG(wxT("radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat,
                vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
-    m_radar[current_overlay]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
+    m_radar[current_overlay_radar]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
   }
 
   ScheduleWindowRefresh();
