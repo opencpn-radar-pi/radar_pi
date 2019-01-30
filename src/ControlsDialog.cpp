@@ -76,8 +76,8 @@ EVT_BUTTON(ID_PREFERENCES, ControlsDialog::OnPreferencesButtonClick)
 
 EVT_BUTTON(ID_POWER, ControlsDialog::OnPowerButtonClick)
 EVT_BUTTON(ID_SHOW_RADAR_PPI, ControlsDialog::OnRadarShowPPIButtonClick)
-EVT_BUTTON(ID_RADAR_OVERLAY0, ControlsDialog::OnRadarOverlayButtonClick)
-EVT_BUTTON(ID_RADAR_OVERLAY0 + 1, ControlsDialog::OnRadarOverlayButtonClick)
+//EVT_BUTTON(ID_RADAR_OVERLAY0, ControlsDialog::OnRadarOverlayButtonClick)
+//EVT_BUTTON(ID_RADAR_OVERLAY0 + 1, ControlsDialog::OnRadarOverlayButtonClick)
 EVT_BUTTON(ID_GAIN, ControlsDialog::OnRadarGainButtonClick)
 
 EVT_BUTTON(ID_TARGETS_ON_PPI, ControlsDialog::OnTargetsOnPPIButtonClick)
@@ -956,6 +956,8 @@ void ControlsDialog::CreateControls() {
                                                  m_ctrl[CT_OVERLAY_CANVAS],
                                                  &m_ri->m_overlay_canvas[i]);
     m_window_sizer->Add(m_overlay_button[i], 0, wxALL, BORDER);
+    m_bearing_buttons[i]->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ControlsDialog::OnRadarOverlayButtonClick),
+                                  0, this);
   }
 
   // The TRANSPARENCY button
