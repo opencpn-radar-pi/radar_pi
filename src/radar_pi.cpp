@@ -652,12 +652,13 @@ void radar_pi::OnContextMenuItemCallback(int id) {
   if (!IsRadarSelectionComplete(false)) {
     return;
   }
-  int current_canvas = -1;
+  int current_canvas_index = -1;
   int current_radar = -1;
   // find out which canvas the click is on
+  m_context_menu_canvas_index = GetCanvasIndexUnderMouse();
   if (m_context_menu_canvas_index > -1 && m_context_menu_canvas_index < CANVAS_COUNT)
   {
-    current_canvas = m_context_menu_canvas_index;
+    current_canvas_index = m_context_menu_canvas_index;
     current_radar = m_chart_overlay[m_context_menu_canvas_index];
   }
 
