@@ -548,14 +548,18 @@ void radar_pi::PrepareContextMenu(int canvasIndex) {
   bool show = m_settings.show;
   bool enableShowRadarControl = false;
   bool arpa = arpa_targets == 0;
-  bool overlay = m_chart_overlay[canvasIndex] >= 0;
+  bool overlay = m_settings.show                                                           // radar shown
+        && m_chart_overlay[canvasIndex] >= 0                                               // overlay desired
+        && m_radar[m_chart_overlay[canvasIndex]]->m_state.GetValue() == RADAR_TRANSMIT     // Radar  transmitting
+        && !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon);                           // position available
+
   bool show_acq_delete = overlay && targets_tracked;
 
   LOG_DIALOG(wxT("radar_pi: PrepareContextMenu for canvas %d radar %d"), canvasIndex, m_chart_overlay[canvasIndex]);
   LOG_DIALOG(wxT("radar_pi: arpa=%d show=%d enableShowRadarControl=%d"), arpa, show, enableShowRadarControl);
 
-  SetCanvasContextMenuItemGrey(m_context_menu_delete_radar_target, arpa);
-  SetCanvasContextMenuItemGrey(m_context_menu_delete_all_radar_targets, arpa);
+  //SetCanvasContextMenuItemGrey(m_context_menu_delete_radar_target, arpa);
+  //SetCanvasContextMenuItemGrey(m_context_menu_delete_all_radar_targets, arpa);
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     if (m_settings.show_radar_control[r] == 0) {
    // SetCanvasContextMenuItemGrey(m_context_menu_control_id[r], enableShowRadarControl);
