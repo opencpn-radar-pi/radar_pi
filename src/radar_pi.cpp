@@ -297,8 +297,8 @@ int radar_pi::Init(void) {
 
   wxMenuItem *mi1 = new wxMenuItem(&dummy_menu, -1, _("Show radar"));
   wxMenuItem *mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
-  wxMenuItem *mi3[4];
-  if (M_SETTINGS.radar_count > 4) M_SETTINGS.radar_count = 4;
+  wxMenuItem *mi3[RADARS];
+  if (M_SETTINGS.radar_count > RADARS) M_SETTINGS.radar_count = RADARS;
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     wxString t;
     t =  _("");
