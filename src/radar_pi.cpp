@@ -275,42 +275,6 @@ int radar_pi::Init(void) {
 
   // CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_BLANK);
 
-  //    In order to avoid an ASSERT on msw debug builds,
-  //    we need to create a dummy menu to act as a surrogate parent of the created MenuItems
-  //    The Items will be re-parented when added to the real context meenu
-  wxMenu dummy_menu;
-
-  wxMenuItem *mi1 = new wxMenuItem(&dummy_menu, -1, _("Show radar"));
-  wxMenuItem *mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
-  wxMenuItem *mi3 = new wxMenuItem(&dummy_menu, -1, _("Radar Control..."));
-  wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Acquire radar target"));
-  wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete radar target"));
-  wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all radar targets"));
-
-#ifdef __WXMSW__
-  wxFont *qFont = OCPNGetFont(_("Menu"), 10);
-  mi1->SetFont(*qFont);
-  mi2->SetFont(*qFont);
-  mi3->SetFont(*qFont);
-  mi4->SetFont(*qFont);
-  mi5->SetFont(*qFont);
-  mi6->SetFont(*qFont);
-#endif
-  m_context_menu_show_id = AddCanvasContextMenuItem(mi1, this);
-  m_context_menu_hide_id = AddCanvasContextMenuItem(mi2, this);
-  m_context_menu_control_id = AddCanvasContextMenuItem(mi3, this);
-  m_context_menu_acquire_radar_target = AddCanvasContextMenuItem(mi4, this);
-  m_context_menu_delete_radar_target = AddCanvasContextMenuItem(mi5, this);
-  m_context_menu_delete_all_radar_targets = AddCanvasContextMenuItem(mi6, this);
-  m_context_menu_show = true;
-  m_context_menu_control = false;
-  m_context_menu_arpa = false;
-  SetCanvasContextMenuItemViz(m_context_menu_show_id, false);
-
-  LOG_VERBOSE(wxT("radar_pi: Initialized plugin transmit=%d/%d "), m_settings.show_radar[0], m_settings.show_radar[1]);
-
-  m_notify_time_ms = 0;
-  m_timer = new wxTimer(this, TIMER_ID);
 
   // Now that the settings are made we can initialize the RadarInfos
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -324,6 +288,56 @@ int radar_pi::Init(void) {
   m_initialized = true;
   SetRadarWindowViz();
   TimedControlUpdate();
+
+//    In order to avoid an ASSERT on msw debug builds,
+  //    we need to create a dummy menu to act as a surrogate parent of the created MenuItems
+  //    The Items will be re-parented when added to the real context meenu
+
+  wxMenu dummy_menu;
+
+  wxMenuItem *mi1 = new wxMenuItem(&dummy_menu, -1, _("Show radar"));
+  wxMenuItem *mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
+  wxMenuItem *mi3[4];
+  if (M_SETTINGS.radar_count > 4) M_SETTINGS.radar_count = 4;
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    wxString t;
+    t =  _("");
+    t << _("Control ") << m_radar[r]->m_name.c_str();
+    mi3[r] = new wxMenuItem(&dummy_menu, -1, t);
+  }
+
+  wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Acquire radar target"));
+  wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete radar target"));
+  wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all radar targets"));
+
+#ifdef __WXMSW__
+  wxFont *qFont = OCPNGetFont(_("Menu"), 10);
+  mi1->SetFont(*qFont);
+  mi2->SetFont(*qFont);
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    mi3[r]->SetFont(*qFont);
+  }
+  mi4->SetFont(*qFont);
+  mi5->SetFont(*qFont);
+  mi6->SetFont(*qFont);
+#endif
+  m_context_menu_show_id = AddCanvasContextMenuItem(mi1, this);
+  m_context_menu_hide_id = AddCanvasContextMenuItem(mi2, this);
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    m_context_menu_control_id[r] = AddCanvasContextMenuItem(mi3[r], this);
+  }
+  m_context_menu_acquire_radar_target = AddCanvasContextMenuItem(mi4, this);
+  m_context_menu_delete_radar_target = AddCanvasContextMenuItem(mi5, this);
+  m_context_menu_delete_all_radar_targets = AddCanvasContextMenuItem(mi6, this);
+  m_context_menu_show = true;
+  m_context_menu_control = false;
+  m_context_menu_arpa = false;
+  SetCanvasContextMenuItemViz(m_context_menu_show_id, false);
+
+  LOG_VERBOSE(wxT("radar_pi: Initialized plugin transmit=%d/%d "), m_settings.show_radar[0], m_settings.show_radar[1]);
+
+  m_notify_time_ms = 0;
+  m_timer = new wxTimer(this, TIMER_ID);
 
   return PLUGIN_OPTIONS;
 }
@@ -530,27 +544,32 @@ void radar_pi::SetRadarWindowViz(bool reparent) {
  */
 void radar_pi::PrepareContextMenu(int canvasIndex) {
   int arpa_targets = GetArpaTargetCount();
+  bool targets_tracked = arpa_targets > 0;
   bool show = m_settings.show;
   bool enableShowRadarControl = false;
   bool arpa = arpa_targets == 0;
-
-  if (m_chart_overlay[canvasIndex] > -1) {
-    enableShowRadarControl = !m_settings.show_radar_control[m_chart_overlay[canvasIndex]];
-  }
+  bool overlay = m_chart_overlay[canvasIndex] >= 0;
+  bool show_acq_delete = overlay && targets_tracked;
 
   LOG_DIALOG(wxT("radar_pi: PrepareContextMenu for canvas %d radar %d"), canvasIndex, m_chart_overlay[canvasIndex]);
   LOG_DIALOG(wxT("radar_pi: arpa=%d show=%d enableShowRadarControl=%d"), arpa, show, enableShowRadarControl);
 
   SetCanvasContextMenuItemGrey(m_context_menu_delete_radar_target, arpa);
   SetCanvasContextMenuItemGrey(m_context_menu_delete_all_radar_targets, arpa);
-  SetCanvasContextMenuItemGrey(m_context_menu_control_id, enableShowRadarControl);
-
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (m_settings.show_radar_control[r] == 0) {
+   // SetCanvasContextMenuItemGrey(m_context_menu_control_id[r], enableShowRadarControl);
+    SetCanvasContextMenuItemViz(m_context_menu_control_id[r], show);
+   }else {
+      SetCanvasContextMenuItemViz(m_context_menu_control_id[r], false);
+   }
+    
+  }
   SetCanvasContextMenuItemViz(m_context_menu_show_id, !show);
-  SetCanvasContextMenuItemViz(m_context_menu_hide_id, show);
-  SetCanvasContextMenuItemViz(m_context_menu_control_id, show);
-  SetCanvasContextMenuItemViz(m_context_menu_acquire_radar_target, show);
-  SetCanvasContextMenuItemViz(m_context_menu_delete_radar_target, show);
-  SetCanvasContextMenuItemViz(m_context_menu_delete_all_radar_targets, show);
+  SetCanvasContextMenuItemViz(m_context_menu_hide_id, show);  
+  SetCanvasContextMenuItemViz(m_context_menu_acquire_radar_target, overlay);
+  SetCanvasContextMenuItemViz(m_context_menu_delete_radar_target, show_acq_delete);
+  SetCanvasContextMenuItemViz(m_context_menu_delete_all_radar_targets, targets_tracked);
 }
 
 int radar_pi::GetArpaTargetCount(void) {
@@ -657,29 +676,7 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     current_radar = m_chart_overlay[m_context_menu_canvas_index];
   }
 
-  if (id == m_context_menu_control_id) {
-    bool done = false;
-    if (current_radar > -1) {
-      LOG_DIALOG(wxT("radar_pi: OnToolbarToolCallback: overlay is active -> show control"));
-      ShowRadarControl(current_radar, true);
-      done = true;
-    } else {
-      LOG_DIALOG(wxT("radar_pi: OnToolbarToolCallback: show controls of visible radars"));
-      for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-        if (m_settings.show_radar[r]) {
-          ShowRadarControl(r, true);
-          done = true;
-        }
-      }
-    }
-    if (!done) {
-      LOG_DIALOG(wxT("radar_pi: OnToolbarToolCallback: nothing visible, make radar A overlay"));
-      m_radar[0]->m_overlay_canvas[0].Update(1);
-      m_chart_overlay[0] = 0;
-      current_radar = 0;
-      ShowRadarControl(0, true);
-    }
-  } else if (id == m_context_menu_hide_id) {
+  if (id == m_context_menu_hide_id) {
     m_settings.show = false;
     SetRadarWindowViz();
   } else if (id == m_context_menu_show_id) {
@@ -711,7 +708,14 @@ void radar_pi::OnContextMenuItemCallback(int id) {
       }
     }
   } else {
-    wxLogError(wxT("radar_pi: Unknown context menu item callback"));
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      if (id == m_context_menu_control_id[r]) {
+        LOG_DIALOG(wxT("radar_pi: OnToolbarToolCallback: show controls for radar %i"), r);
+        if (m_settings.show_radar_control[r] == 0) {
+          ShowRadarControl(r, true);
+        }
+      }
+    }
   }
 }
 

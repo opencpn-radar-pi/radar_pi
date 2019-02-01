@@ -552,7 +552,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   time_t m_var_timeout;
 
   wxFileConfig *m_pconfig;
-  int m_context_menu_control_id;
+  int m_context_menu_control_id[4];
   int m_context_menu_show_id;
   int m_context_menu_hide_id;
   int m_context_menu_acquire_radar_target;
