@@ -1577,12 +1577,12 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
 
   if (CANVAS_COUNT == 1) {
     if (m_top_sizer->IsShown(m_window_sizer) && m_window_sizer->IsShown(m_overlay_button[0])) {
-      m_overlay_button[0]->SetFirstLine(wxT("Radar Overlay"));
+      m_overlay_button[0]->SetFirstLine(_("Radar Overlay"));
       m_overlay_button[0]->UpdateLabel(true);
     }
   } else {
     if (m_top_sizer->IsShown(m_window_sizer) && m_window_sizer->IsShown(m_overlay_button[0])) {
-      m_overlay_button[0]->SetFirstLine(wxT("Overlay 1"));
+      m_overlay_button[0]->SetFirstLine(_("Overlay 1"));
       m_overlay_button[0]->UpdateLabel(true);
     }
   }
