@@ -6,15 +6,15 @@ msgstr ""
 "POT-Creation-Date: 2019-02-03 14:11+0100\n"
 "PO-Revision-Date: 2019-02-03 13:35\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
-"Language-Team: Dutch\n"
-"Language: nl_NL\n"
+"Language-Team: Korean\n"
+"Language: ko_KR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: crowdin.com\n"
 "X-Crowdin-Project: opencpn\n"
-"X-Crowdin-Language: nl\n"
+"X-Crowdin-Language: ko\n"
 "X-Crowdin-File: /plugins/radar_pi/po/radar_pi.pot\n"
 
 #: src\ControlsDialog.cpp:215 src\ControlsDialog.cpp:643 src\RadarCanvas.cpp:182
@@ -22,7 +22,7 @@ msgstr ""
 #: src\SoftwareControlSet.h:133 src\SoftwareControlSet.h:137
 #: src\navico\NavicoControlSet.h:56 src\navico\NavicoControlSet.h:60
 msgid "Off"
-msgstr "uit"
+msgstr ""
 
 #: src\ControlsDialog.cpp:235 src\ControlsDialog.cpp:239
 #: src\ControlsDialog.cpp:639 src\RadarCanvas.cpp:197 src\RadarInfo.cpp:1144
@@ -32,19 +32,19 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:324
 msgid "Arc"
-msgstr "sector"
+msgstr ""
 
 #: src\ControlsDialog.cpp:325
 msgid "Circle"
-msgstr "cirkel"
+msgstr ""
 
 #: src\ControlsDialog.cpp:405
 msgid "Guard Zone 1 Green"
-msgstr "Bewakingszone 1 Groen"
+msgstr ""
 
 #: src\ControlsDialog.cpp:408
 msgid "Guard Zone 2 Blue"
-msgstr "Bewakingszone 2 Blauw"
+msgstr ""
 
 #: src\ControlsDialog.cpp:455 src\ControlsDialog.cpp:465 src\GuardZoneBogey.h:53
 msgid "Alarm"
@@ -56,85 +56,85 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:461 src\ControlsDialog.cpp:471
 msgid " Off"
-msgstr " Uit"
+msgstr ""
 
 #: src\ControlsDialog.cpp:474 src\ControlsDialog.cpp:477
 msgid "Guard zone"
-msgstr "Bewakingszone"
+msgstr ""
 
 #: src\ControlsDialog.cpp:506
 msgid "Back"
-msgstr "Terug"
+msgstr ""
 
 #: src\ControlsDialog.cpp:525 src\ControlsDialog.cpp:690
 msgid "Scan speed"
-msgstr "Rotatiesnelheid"
+msgstr ""
 
 #: src\ControlsDialog.cpp:526 src\ControlsDialog.cpp:702
 msgid "Installation"
-msgstr "Installatie"
+msgstr ""
 
 #: src\ControlsDialog.cpp:527 src\ControlsDialog.cpp:745
 msgid "Antenna height"
-msgstr "Antennehoogte"
+msgstr ""
 
 #: src\ControlsDialog.cpp:528
 msgid "Antenna forward of GPS"
-msgstr "Antenne voor tov GPS"
+msgstr ""
 
 #: src\ControlsDialog.cpp:529
 msgid "Antenna starboard of GPS"
-msgstr "Antenne sb tov GPS"
+msgstr ""
 
 #: src\ControlsDialog.cpp:530 src\ControlsDialog.cpp:768
 msgid "Local interference rej."
-msgstr "Onderdruk plaatselijke storing"
+msgstr ""
 
 #: src\ControlsDialog.cpp:531 src\ControlsDialog.cpp:533
 #: src\ControlsDialog.cpp:798 src\ControlsDialog.cpp:1105
 msgid "Guard zones"
-msgstr "Bewakingszones"
+msgstr ""
 
 #: src\ControlsDialog.cpp:532 src\ControlsDialog.cpp:801
 msgid "Zone type"
-msgstr "Zonetype"
+msgstr ""
 
 #: src\ControlsDialog.cpp:534 src\ControlsDialog.cpp:812
 msgid "Inner range"
-msgstr "Minste afstand"
+msgstr ""
 
 #: src\ControlsDialog.cpp:535 src\ControlsDialog.cpp:819
 msgid "Outer range"
-msgstr "Grootste afstand"
+msgstr ""
 
 #: src\ControlsDialog.cpp:536 src\ControlsDialog.cpp:826
 msgid "Start bearing"
-msgstr "Startpeiling"
+msgstr ""
 
 #: src\ControlsDialog.cpp:537 src\ControlsDialog.cpp:833
 msgid "End bearing"
-msgstr "Eindpeiling"
+msgstr ""
 
 #: src\ControlsDialog.cpp:538 src\ControlsDialog.cpp:903
 msgid "Clear cursor"
-msgstr "Verberg cursor"
+msgstr ""
 
 #: src\ControlsDialog.cpp:539 src\ControlsDialog.cpp:920
 #: src\ControlsDialog.cpp:1839
 msgid "Place EBL/VRM"
-msgstr "Toon EBL en VRM"
+msgstr ""
 
 #: src\ControlsDialog.cpp:540
 msgid "Off/Relative/True trails"
-msgstr "Tracks: Uit/Relatief/Waar"
+msgstr ""
 
 #: src\ControlsDialog.cpp:541 src\ControlsDialog.cpp:996
 msgid "Clear trails"
-msgstr "Verberg echosporen"
+msgstr ""
 
 #: src\ControlsDialog.cpp:542 src\ControlsDialog.cpp:1002
 msgid "Orientation"
-msgstr "Oriëntatie"
+msgstr ""
 
 #: src\ControlsDialog.cpp:543 src\ControlsDialog.cpp:955
 msgid "Overlay transparency"
@@ -142,19 +142,19 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:544
 msgid "Overlay"
-msgstr "Op kaart tonen"
+msgstr ""
 
 #: src\ControlsDialog.cpp:545 src\ControlsDialog.cpp:1089
 msgid "Adjust"
-msgstr "Aanpassen"
+msgstr ""
 
 #: src\ControlsDialog.cpp:546 src\ControlsDialog.cpp:1093
 msgid "Advanced"
-msgstr "Uitgebreid"
+msgstr ""
 
 #: src\ControlsDialog.cpp:547 src\ControlsDialog.cpp:1097
 msgid "View"
-msgstr "Weergave"
+msgstr ""
 
 #: src\ControlsDialog.cpp:548
 msgid "EBL/VRM"
@@ -162,7 +162,7 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:549 src\ControlsDialog.cpp:1041
 msgid "Timed Transmit"
-msgstr "Periodiek zenden"
+msgstr ""
 
 #: src\ControlsDialog.cpp:550 src\ControlsDialog.cpp:960
 msgid "Info"
@@ -170,35 +170,35 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:620
 msgid "Value"
-msgstr "Waarde"
+msgstr ""
 
 #: src\ControlsDialog.cpp:661
 msgid "Noise rejection"
-msgstr "Ruisonderdrukking"
+msgstr ""
 
 #: src\ControlsDialog.cpp:667
 msgid "Target expansion"
-msgstr "Echovergroting"
+msgstr ""
 
 #: src\ControlsDialog.cpp:675
 msgid "Interference rejection"
-msgstr "Storingsdemping"
+msgstr ""
 
 #: src\ControlsDialog.cpp:682
 msgid "Target separation"
-msgstr "Echoscheiding"
+msgstr ""
 
 #: src\ControlsDialog.cpp:697
 msgid "Target boost"
-msgstr "Echoversterking"
+msgstr ""
 
 #: src\ControlsDialog.cpp:706
 msgid "Preferences"
-msgstr "Voorkeuren"
+msgstr ""
 
 #: src\ControlsDialog.cpp:723
 msgid "Bearing alignment"
-msgstr "Richting oplijnen"
+msgstr ""
 
 #: src\ControlsDialog.cpp:730
 msgid "No transmit start"
@@ -210,7 +210,7 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:752
 msgid "Antenna forward"
-msgstr "Antenne voorwaarts"
+msgstr ""
 
 #: src\ControlsDialog.cpp:753 src\ControlsDialog.cpp:761
 msgid "m"
@@ -218,27 +218,27 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:753 src\ControlsDialog.cpp:761
 msgid "relative to GPS"
-msgstr "ten opzichte van GPS"
+msgstr ""
 
 #: src\ControlsDialog.cpp:753
 msgid "negative = behind"
-msgstr "negatief = achter"
+msgstr ""
 
 #: src\ControlsDialog.cpp:760
 msgid "Antenna starboard"
-msgstr "Antenne zijwaarts"
+msgstr ""
 
 #: src\ControlsDialog.cpp:761
 msgid "negative = port"
-msgstr "negatief = bakboord"
+msgstr ""
 
 #: src\ControlsDialog.cpp:775
 msgid "Side lobe suppression"
-msgstr "Zijbundelonderdrukking"
+msgstr ""
 
 #: src\ControlsDialog.cpp:782
 msgid "Main bang size"
-msgstr "Min. detectieafstand"
+msgstr ""
 
 #: src\ControlsDialog.cpp:783
 msgid "pixels"
@@ -246,27 +246,27 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:841
 msgid "ARPA On"
-msgstr "ARPA Aan"
+msgstr ""
 
 #: src\ControlsDialog.cpp:846
 msgid "Alarm On"
-msgstr "Alarm Aan"
+msgstr ""
 
 #: src\ControlsDialog.cpp:863
 msgid "Range"
-msgstr "Bereik"
+msgstr ""
 
 #: src\ControlsDialog.cpp:869 src\RadarCanvas.cpp:161
 msgid "Gain"
-msgstr "Versterking"
+msgstr ""
 
 #: src\ControlsDialog.cpp:875
 msgid "Sea clutter"
-msgstr "Zee clutter"
+msgstr ""
 
 #: src\ControlsDialog.cpp:881
 msgid "Rain clutter"
-msgstr "Regen clutter"
+msgstr ""
 
 #: src\ControlsDialog.cpp:887
 msgid "FTC"
@@ -274,15 +274,15 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:907
 msgid "Acquire Target"
-msgstr "Verkrijg target"
+msgstr ""
 
 #: src\ControlsDialog.cpp:911
 msgid "Delete target"
-msgstr "Verwijder object"
+msgstr ""
 
 #: src\ControlsDialog.cpp:915
 msgid "Delete all targets"
-msgstr "Alle objecten verwijderen"
+msgstr ""
 
 #: src\ControlsDialog.cpp:946
 msgid "Overlay "
@@ -294,7 +294,7 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:983 src\OptionsDialog.cpp:132
 msgid "Target trails"
-msgstr "Echosporen"
+msgstr ""
 
 #: src\ControlsDialog.cpp:990
 msgid "Trails motion"
@@ -306,7 +306,7 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:1014
 msgid "Refresh rate"
-msgstr "Vernieuwingsfrequentie"
+msgstr ""
 
 #: src\ControlsDialog.cpp:1035
 msgid "Timed Standby"
@@ -327,7 +327,7 @@ msgstr ""
 #: src\ControlsDialog.cpp:1119 src\RadarInfo.cpp:980
 #: src\SoftwareControlSet.h:101
 msgid "Unknown"
-msgstr "Onbekend"
+msgstr ""
 
 #: src\ControlsDialog.cpp:1580
 msgid "Radar Overlay"
@@ -363,7 +363,7 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:1836
 msgid "Clear EBL/VRM"
-msgstr "Verberg EBL en VRM"
+msgstr ""
 
 #: src\ControlsDialog.h:224 src\MessageBox.h:86
 msgid "Radar"
@@ -371,11 +371,11 @@ msgstr ""
 
 #: src\GuardZoneBogey.cpp:94
 msgid "Confirm"
-msgstr "Accepteren"
+msgstr ""
 
 #: src\GuardZoneBogey.cpp:97
 msgid "Close"
-msgstr "Sluiten"
+msgstr ""
 
 #: src\MessageBox.cpp:139
 msgid "Required OpenCPN option"
@@ -383,51 +383,51 @@ msgstr ""
 
 #: src\MessageBox.cpp:144
 msgid "Accelerated Graphics (OpenGL)"
-msgstr "'Accelerated Graphics' (OpenGL)"
+msgstr ""
 
 #: src\MessageBox.cpp:150
 msgid "For radar overlay also required"
-msgstr "Over kaart tonen vereist ook"
+msgstr ""
 
 #: src\MessageBox.cpp:158
 msgid "Boat position"
-msgstr "Vaartuigpositie"
+msgstr ""
 
 #: src\MessageBox.cpp:164
 msgid "and"
-msgstr "en"
+msgstr ""
 
 #: src\MessageBox.cpp:169
 msgid "True Heading"
-msgstr "Koers (W)"
+msgstr ""
 
 #: src\MessageBox.cpp:174
 msgid "or"
-msgstr "of"
+msgstr ""
 
 #: src\MessageBox.cpp:178 src\MessageBox.cpp:417
 msgid "Magnetic heading"
-msgstr "Koers (M)"
+msgstr ""
 
 #: src\MessageBox.cpp:185 src\MessageBox.cpp:424
 msgid "Variation"
-msgstr "Variatie"
+msgstr ""
 
 #: src\MessageBox.cpp:190 src\MessageBox.cpp:195
 msgid "Statistics"
-msgstr "Statistieken"
+msgstr ""
 
 #: src\MessageBox.cpp:200
 msgid "&Close"
-msgstr "&Sluiten"
+msgstr ""
 
 #: src\MessageBox.cpp:206
 msgid "&Hide Radar"
-msgstr "&Verberg Radar"
+msgstr ""
 
 #: src\MessageBox.cpp:410
 msgid "True heading"
-msgstr "Koers (W)"
+msgstr ""
 
 #: src\OptionsDialog.cpp:39
 msgid "Radar Display Preferences"
@@ -443,59 +443,59 @@ msgstr ""
 
 #: src\OptionsDialog.cpp:61
 msgid "Nautical Miles"
-msgstr "zeemijl"
+msgstr ""
 
 #: src\OptionsDialog.cpp:64
 msgid "Range Units"
-msgstr "Afstandseenheid"
+msgstr ""
 
 #: src\OptionsDialog.cpp:72
 msgid "Shading"
-msgstr "Gekleurd"
+msgstr ""
 
 #: src\OptionsDialog.cpp:73
 msgid "Outline"
-msgstr "Omlijnd"
+msgstr ""
 
 #: src\OptionsDialog.cpp:74
 msgid "Shading + Outline"
-msgstr "Gekleurd en omlijnd"
+msgstr ""
 
 #: src\OptionsDialog.cpp:76
 msgid "Guard Zone Styling"
-msgstr "Weergave bewakingszone"
+msgstr ""
 
 #: src\OptionsDialog.cpp:85
 msgid "Guard Zone Sound"
-msgstr "Bewakingsgeluid"
+msgstr ""
 
 #: src\OptionsDialog.cpp:88
 msgid "Select Alert Sound"
-msgstr "Kies waarschuwingsgeluid"
+msgstr ""
 
 #: src\OptionsDialog.cpp:92
 msgid "Test Alert Sound"
-msgstr "Test waarschuwingsgeluid"
+msgstr ""
 
 #: src\OptionsDialog.cpp:97
 msgid "Repeat alarm after (sec)"
-msgstr "Herhaal alarm na (sec)"
+msgstr ""
 
 #: src\OptionsDialog.cpp:108
 msgid "GPU drawing method"
-msgstr "GPU methode"
+msgstr ""
 
 #: src\OptionsDialog.cpp:114
 msgid "Drawing Method"
-msgstr "Tekenmethode"
+msgstr ""
 
 #: src\OptionsDialog.cpp:120
 msgid "Control Menu Auto Hide"
-msgstr "Bedieningsmenu automatisch verbergen"
+msgstr ""
 
 #: src\OptionsDialog.cpp:123
 msgid "Never"
-msgstr "Nooit"
+msgstr ""
 
 #: src\OptionsDialog.cpp:123
 msgid "10 sec"
@@ -507,67 +507,67 @@ msgstr ""
 
 #: src\OptionsDialog.cpp:126
 msgid "Auto hide after"
-msgstr "Automatisch verbergen na"
+msgstr ""
 
 #: src\OptionsDialog.cpp:135
 msgid "Trail start color"
-msgstr "Trail startkleur"
+msgstr ""
 
 #: src\OptionsDialog.cpp:142
 msgid "Trail end color"
-msgstr "Trail eindkleur"
+msgstr ""
 
 #: src\OptionsDialog.cpp:150
 msgid "Target colors"
-msgstr "Echo kleuren"
+msgstr ""
 
 #: src\OptionsDialog.cpp:153
 msgid "Weak return color"
-msgstr "Zwakke echo kleur"
+msgstr ""
 
 #: src\OptionsDialog.cpp:159
 msgid "Intermediate return color"
-msgstr "Gemiddelde echo kleur"
+msgstr ""
 
 #: src\OptionsDialog.cpp:166
 msgid "Strong return color"
-msgstr "Sterke echo kleur"
+msgstr ""
 
 #: src\OptionsDialog.cpp:172
 msgid "ARPA edge color"
-msgstr "ARPA rand kleur"
+msgstr ""
 
 #: src\OptionsDialog.cpp:180
 msgid "Radar window colors"
-msgstr "Radar vensterkleuren"
+msgstr ""
 
 #: src\OptionsDialog.cpp:183
 msgid "Background color"
-msgstr "Achtergrondkleur"
+msgstr ""
 
 #: src\OptionsDialog.cpp:191
 msgid "AIS text color"
-msgstr "AIS tekstkleur"
+msgstr ""
 
 #: src\OptionsDialog.cpp:211
 msgid "Options"
-msgstr "Opties"
+msgstr ""
 
 #: src\OptionsDialog.cpp:215
 msgid "Ignore radar heading"
-msgstr "Negeer koers afkomstig van radar"
+msgstr ""
 
 #: src\OptionsDialog.cpp:221
 msgid "Pass radar heading to OpenCPN"
-msgstr "Koers vanaf radar doorgeven aan OpenCPN"
+msgstr ""
 
 #: src\OptionsDialog.cpp:227
 msgid "Enable COG as heading"
-msgstr "Gebruik GrK als koers"
+msgstr ""
 
 #: src\OptionsDialog.cpp:233
 msgid "Reverse mouse wheel zoom direction"
-msgstr "Zoomrichting van muiswiel omkeren"
+msgstr ""
 
 #: src\OptionsDialog.cpp:241
 msgid "Display options"
@@ -575,15 +575,15 @@ msgstr ""
 
 #: src\OptionsDialog.cpp:245
 msgid "Show ring at extreme range"
-msgstr "Toon ring op extreme range"
+msgstr ""
 
 #: src\OptionsDialog.cpp:251
 msgid "Show Guard Zone on overlay"
-msgstr "Toon Guard Zone op kaart"
+msgstr ""
 
 #: src\OptionsDialog.cpp:257
 msgid "Show Target trails on overlay"
-msgstr "Toon echosporen op kaart"
+msgstr ""
 
 #: src\OptionsDialog.cpp:263
 msgid "Show data on overlay when radar is standby"
@@ -599,11 +599,11 @@ msgstr ""
 
 #: src\OptionsDialog.cpp:336
 msgid "Select Sound File"
-msgstr "Selecteer geluidbestand"
+msgstr ""
 
 #: src\OptionsDialog.cpp:337
 msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
-msgstr "WAV bestanden (*.wav)|*.wav|Alle bestanden (*.*)|*.*"
+msgstr ""
 
 #: src\RadarCanvas.cpp:102 src\radar_pi.cpp:314
 msgid "Menu"
@@ -619,11 +619,11 @@ msgstr ""
 
 #: src\RadarCanvas.cpp:620
 msgid "AIS Target Name"
-msgstr "AIS objectnaam"
+msgstr ""
 
 #: src\RadarDraw.cpp:54
 msgid "Vertex Array"
-msgstr "Vertex"
+msgstr ""
 
 #: src\RadarDraw.cpp:54
 msgid "Shader"
@@ -631,7 +631,7 @@ msgstr ""
 
 #: src\RadarInfo.cpp:968 src\RadarInfo.cpp:971
 msgid "Head Up"
-msgstr "Koers-Boven"
+msgstr ""
 
 #: src\RadarInfo.cpp:968
 msgid "Relative Bearings"
@@ -639,7 +639,7 @@ msgstr ""
 
 #: src\RadarInfo.cpp:971
 msgid "Stabilized"
-msgstr "Gestabiliseerd"
+msgstr ""
 
 #: src\RadarInfo.cpp:974
 msgid "COG Up"
@@ -647,7 +647,7 @@ msgstr ""
 
 #: src\RadarInfo.cpp:977
 msgid "North Up"
-msgstr "Noord-Boven"
+msgstr ""
 
 #: src\RadarInfo.cpp:1059
 msgid "Zone"
@@ -655,11 +655,11 @@ msgstr ""
 
 #: src\RadarInfo.cpp:1061
 msgid "(Confirmed)"
-msgstr "(Bevestigd)"
+msgstr ""
 
 #: src\RadarInfo.cpp:1129
 msgid "No radar"
-msgstr "Geen radar"
+msgstr ""
 
 #: src\RadarInfo.cpp:1357
 msgid "Uninitialized"
@@ -668,7 +668,7 @@ msgstr ""
 #: src\RadarInfo.cpp:1432 src\garminhd\GarminHDReceive.cpp:438
 #: src\garminxhd\GarminxHDReceive.cpp:480 src\navico\NavicoReceive.cpp:704
 msgid "Standby"
-msgstr "Stand-by"
+msgstr ""
 
 #: src\RadarInfo.cpp:1435
 msgid "Warming up"
@@ -714,11 +714,11 @@ msgstr ""
 
 #: src\RadarPanel.cpp:156
 msgid "OpenGL mode required"
-msgstr "OpenGL modus is vereist"
+msgstr ""
 
 #: src\RadarPanel.cpp:167
 msgid "Unable to create OpenGL canvas"
-msgstr "Kan OpenGL canvas niet maken"
+msgstr ""
 
 #: src\radar_pi.cpp:274
 msgid "Radar plugin with support for multiple radars"
@@ -726,11 +726,11 @@ msgstr ""
 
 #: src\radar_pi.cpp:298
 msgid "Show radar"
-msgstr "Toon radar"
+msgstr ""
 
 #: src\radar_pi.cpp:299
 msgid "Hide radar"
-msgstr "Verberg radar"
+msgstr ""
 
 #: src\radar_pi.cpp:305
 msgid "Control "
@@ -738,15 +738,15 @@ msgstr ""
 
 #: src\radar_pi.cpp:309
 msgid "Acquire radar target"
-msgstr "Verkrijg radar target"
+msgstr ""
 
 #: src\radar_pi.cpp:310
 msgid "Delete radar target"
-msgstr "Verwijder radar target"
+msgstr ""
 
 #: src\radar_pi.cpp:311
 msgid "Delete all radar targets"
-msgstr "Verwijder alle radar targets"
+msgstr ""
 
 #: src\radar_pi.cpp:403
 msgid "Radar PlugIn"
@@ -762,11 +762,11 @@ msgstr ""
 
 #: src\radar_pi.cpp:810
 msgid "Next alarm in"
-msgstr "Volgend alarm over"
+msgstr ""
 
 #: src\radar_pi.cpp:1052
 msgid "COG"
-msgstr "GrK"
+msgstr ""
 
 #: src\radar_pi.cpp:1056
 msgid "HDT"
@@ -799,19 +799,19 @@ msgstr ""
 
 #: src\socketutil.cpp:187
 msgid "Cannot create UDP socket"
-msgstr "Kan geen UDP socket aanmaken"
+msgstr ""
 
 #: src\socketutil.cpp:191
 msgid "Cannot set reuse address option on socket"
-msgstr "Kan hergebruik-optie van socket niet aanzetten"
+msgstr ""
 
 #: src\socketutil.cpp:196
 msgid "Cannot bind UDP socket to port "
-msgstr "Kan UDP socket niet aan poort binden "
+msgstr ""
 
 #: src\socketutil.cpp:206
 msgid "Invalid IP address for UDP multicast"
-msgstr "Ongeldig IP-adres voor multicast-UDP"
+msgstr ""
 
 #: src\SoftwareControlSet.h:78
 msgid "min"
@@ -819,7 +819,7 @@ msgstr ""
 
 #: src\SoftwareControlSet.h:101
 msgid "Head up"
-msgstr "Koers-Boven"
+msgstr ""
 
 #: src\SoftwareControlSet.h:101
 msgid "Head up (Stabilized)"
@@ -827,11 +827,11 @@ msgstr ""
 
 #: src\SoftwareControlSet.h:101
 msgid "North up"
-msgstr "Noord-Boven"
+msgstr ""
 
 #: src\SoftwareControlSet.h:101
 msgid "Course up"
-msgstr "Koers-Boven"
+msgstr ""
 
 #: src\SoftwareControlSet.h:114
 msgid "Dragged View"
@@ -871,19 +871,19 @@ msgstr ""
 
 #: src\SoftwareControlSet.h:123
 msgid "Continuous"
-msgstr "Continu"
+msgstr ""
 
 #: src\SoftwareControlSet.h:127
 msgid "Relative"
-msgstr "Relatief"
+msgstr ""
 
 #: src\SoftwareControlSet.h:127
 msgid "True"
-msgstr "Waar"
+msgstr ""
 
 #: src\SoftwareControlSet.h:133 src\SoftwareControlSet.h:137
 msgid "On"
-msgstr "Aan"
+msgstr ""
 
 #: src\emulator\EmulatorReceive.cpp:204
 msgid "OK"
@@ -892,12 +892,12 @@ msgstr ""
 #: src\garminhd\GarminHDControlSet.h:36 src\garminxhd\GarminxHDControlSet.h:36
 #: src\navico\NavicoControlSet.h:56 src\navico\NavicoControlSet.h:60
 msgid "Low"
-msgstr "Laag"
+msgstr ""
 
 #: src\garminhd\GarminHDControlSet.h:36 src\garminxhd\GarminxHDControlSet.h:36
 #: src\navico\NavicoControlSet.h:56 src\navico\NavicoControlSet.h:60
 msgid "High"
-msgstr "Hoog"
+msgstr ""
 
 #: src\garminhd\GarminHDControlSet.h:41 src\garminxhd\GarminxHDControlSet.h:41
 msgid "Calm"
@@ -906,7 +906,7 @@ msgstr ""
 #: src\garminhd\GarminHDControlSet.h:41 src\garminxhd\GarminxHDControlSet.h:41
 #: src\navico\NavicoControlSet.h:56
 msgid "Medium"
-msgstr "Middel"
+msgstr ""
 
 #: src\garminhd\GarminHDControlSet.h:41 src\garminxhd\GarminxHDControlSet.h:41
 msgid "Rough"
@@ -920,7 +920,7 @@ msgstr ""
 #: src\garminhd\GarminHDControlSet.h:46 src\garminxhd\GarminxHDControlSet.h:46
 #: src\navico\NavicoControlSet.h:64
 msgid "Fast"
-msgstr "Hoog"
+msgstr ""
 
 #: src\garminhd\GarminHDReceive.cpp:206 src\garminxhd\GarminxHDReceive.cpp:184
 #: src\navico\NavicoReceive.cpp:336
@@ -934,7 +934,7 @@ msgstr ""
 #: src\garminhd\GarminHDReceive.cpp:449 src\garminxhd\GarminxHDReceive.cpp:491
 #: src\navico\NavicoReceive.cpp:709
 msgid "Transmit"
-msgstr "Zenden"
+msgstr ""
 
 #: src\garminhd\GarminHDReceive.cpp:452 src\garminxhd\GarminxHDReceive.cpp:511
 #: src\navico\NavicoReceive.cpp:719
@@ -948,7 +948,7 @@ msgstr ""
 
 #: src\navico\NavicoControlSet.h:68 src\navico\NavicoControlSet.h:72
 msgid "Harbour"
-msgstr "Haven"
+msgstr ""
 
 #: src\navico\NavicoControlSet.h:68 src\navico\NavicoControlSet.h:72
 msgid "Offshore"
@@ -964,5 +964,5 @@ msgstr ""
 
 #: src\navico\NavicoReceive.cpp:715
 msgid "Waking up"
-msgstr "Ontwaken"
+msgstr ""
 
