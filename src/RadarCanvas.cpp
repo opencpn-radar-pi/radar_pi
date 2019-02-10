@@ -667,12 +667,14 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glPopMatrix();
   SwapBuffers();
 
+#ifdef CRASH
   wxGLContext *chart_context = m_pi->GetChartOpenGLContext();
   if (chart_context) {
     SetCurrent(*chart_context);
   } else {
     SetCurrent(*m_zero_context);  // Make sure OpenCPN -at least- doesn't overwrite our context info
   }
+#endif
 }
 
 void RadarCanvas::OnMouseMotion(wxMouseEvent &event) {
