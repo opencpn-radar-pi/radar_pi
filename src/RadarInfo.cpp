@@ -167,10 +167,10 @@ void RadarInfo::Shutdown() {
 RadarInfo::~RadarInfo() {
   Shutdown();
 
-// delete context menu item for radar control
-// it does not harm to remove an non existing menu
+  // delete context menu item for radar control
+  // it does not harm to remove an non existing menu
   RemoveCanvasContextMenuItem(m_pi->m_context_menu_control_id[m_radar]);
-  
+
   if (m_draw_panel.draw) {
     delete m_draw_panel.draw;
     m_draw_panel.draw = 0;
@@ -220,7 +220,7 @@ bool RadarInfo::Init() {
   m_name = RadarTypeName[m_radar_type];
   m_spokes = RadarSpokes[m_radar_type];
   m_spoke_len_max = RadarSpokeLenMax[m_radar_type];
-  
+
   m_history = (line_history *)calloc(sizeof(line_history), m_spokes);
   for (size_t i = 0; i < m_spokes; i++) {
     m_history[i].line = (uint8_t *)calloc(sizeof(uint8_t), m_spoke_len_max);
@@ -234,11 +234,15 @@ bool RadarInfo::Init() {
     // add context menu for control
     wxString t;
     wxMenu dummy_menu;
-    wxFont *qFont = OCPNGetFont(_("Menu"), 10);
     t = _("");
     t << _("Control ") << m_name;
     m_pi->m_mi3[m_radar] = new wxMenuItem(&dummy_menu, -1, t);
+
+#ifdef __WXMSW__
+    wxFont *qFont = OCPNGetFont(_("Menu"), 10);
     m_pi->m_mi3[m_radar]->SetFont(*qFont);
+#endif
+
     m_pi->m_context_menu_control_id[m_radar] = AddCanvasContextMenuItem(m_pi->m_mi3[m_radar], m_pi);
   }
   if (!m_radar_panel) {

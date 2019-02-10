@@ -306,13 +306,11 @@ int radar_pi::Init(void) {
   wxFont *qFont = OCPNGetFont(_("Menu"), 10);
   mi1->SetFont(*qFont);
   mi2->SetFont(*qFont);
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    m_mi3[r]->SetFont(*qFont);
-  }
   mi4->SetFont(*qFont);
   mi5->SetFont(*qFont);
   mi6->SetFont(*qFont);
 #endif
+
   m_context_menu_show_id = AddCanvasContextMenuItem(mi1, this);
   m_context_menu_hide_id = AddCanvasContextMenuItem(mi2, this);
   m_context_menu_acquire_radar_target = AddCanvasContextMenuItem(mi4, this);
