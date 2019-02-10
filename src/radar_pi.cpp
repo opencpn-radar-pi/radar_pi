@@ -123,6 +123,7 @@ END_EVENT_TABLE()
 radar_pi::radar_pi(void *ppimgr) : opencpn_plugin_116(ppimgr) {
   m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
+  m_predicted_position_initialised = false;
 
   // Create the PlugIn icons
   initialize_images();
@@ -275,7 +276,6 @@ int radar_pi::Init(void) {
 
   // CacheSetToolbarToolBitmaps(BM_ID_RED, BM_ID_BLANK);
 
-
   // Now that the settings are made we can initialize the RadarInfos
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->Init();
@@ -289,7 +289,7 @@ int radar_pi::Init(void) {
   SetRadarWindowViz();
   TimedControlUpdate();
 
-//    In order to avoid an ASSERT on msw debug builds,
+  //    In order to avoid an ASSERT on msw debug builds,
   //    we need to create a dummy menu to act as a surrogate parent of the created MenuItems
   //    The Items will be re-parented when added to the real context meenu
 
@@ -466,7 +466,7 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
         m_radar[r] = 0;
       }
     }
-    
+
     SetRadarWindowViz();
     TimedControlUpdate();
   }
@@ -539,29 +539,28 @@ void radar_pi::PrepareContextMenu(int canvasIndex) {
   bool show = m_settings.show;
   bool enableShowRadarControl = false;
   bool arpa = arpa_targets == 0;
-  bool overlay = m_settings.show                                                           // radar shown
-        && m_chart_overlay[canvasIndex] >= 0                                               // overlay desired
-        && m_radar[m_chart_overlay[canvasIndex]]->m_state.GetValue() == RADAR_TRANSMIT     // Radar  transmitting
-        && !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon);                           // position available
+  bool overlay = m_settings.show                                                                 // radar shown
+                 && m_chart_overlay[canvasIndex] >= 0                                            // overlay desired
+                 && m_radar[m_chart_overlay[canvasIndex]]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
+                 && !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon);                        // position available
 
   bool show_acq_delete = overlay && targets_tracked;
 
   LOG_DIALOG(wxT("radar_pi: PrepareContextMenu for canvas %d radar %d"), canvasIndex, m_chart_overlay[canvasIndex]);
   LOG_DIALOG(wxT("radar_pi: arpa=%d show=%d enableShowRadarControl=%d"), arpa, show, enableShowRadarControl);
 
-  //SetCanvasContextMenuItemGrey(m_context_menu_delete_radar_target, arpa);
-  //SetCanvasContextMenuItemGrey(m_context_menu_delete_all_radar_targets, arpa);
+  // SetCanvasContextMenuItemGrey(m_context_menu_delete_radar_target, arpa);
+  // SetCanvasContextMenuItemGrey(m_context_menu_delete_all_radar_targets, arpa);
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     if (m_settings.show_radar_control[r] == 0) {
-   // SetCanvasContextMenuItemGrey(m_context_menu_control_id[r], enableShowRadarControl);
-    SetCanvasContextMenuItemViz(m_context_menu_control_id[r], show);
-   }else {
+      // SetCanvasContextMenuItemGrey(m_context_menu_control_id[r], enableShowRadarControl);
+      SetCanvasContextMenuItemViz(m_context_menu_control_id[r], show);
+    } else {
       SetCanvasContextMenuItemViz(m_context_menu_control_id[r], false);
-   }
-    
+    }
   }
   SetCanvasContextMenuItemViz(m_context_menu_show_id, !show);
-  SetCanvasContextMenuItemViz(m_context_menu_hide_id, show);  
+  SetCanvasContextMenuItemViz(m_context_menu_hide_id, show);
   SetCanvasContextMenuItemViz(m_context_menu_acquire_radar_target, overlay);
   SetCanvasContextMenuItemViz(m_context_menu_delete_radar_target, show_acq_delete);
   SetCanvasContextMenuItemViz(m_context_menu_delete_all_radar_targets, targets_tracked);

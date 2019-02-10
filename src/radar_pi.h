@@ -606,7 +606,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
 
  public:
   GPSKalmanFilter *m_GPS_filter;
-  bool m_predicted_position_initialised = false;
+  bool m_predicted_position_initialised;
   ExtendedPosition m_expected_position;  // updated own position at time of last GPS update
   ExtendedPosition m_last_fixed;         // best estimate position at last measurement
  private:
