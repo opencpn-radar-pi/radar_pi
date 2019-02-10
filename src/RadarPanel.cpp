@@ -45,7 +45,7 @@ RadarPanel::RadarPanel(radar_pi* pi, RadarInfo* ri, wxWindow* parent)
 bool RadarPanel::Create() {
   m_aui_mgr = GetFrameAuiManager();
 
-  m_aui_name = wxString::Format(wxT("radar_pi-%d"), m_ri->m_radar);
+  m_aui_name = wxString::Format(wxT("radar_pi-%d"), (int) m_ri->m_radar);
   wxAuiPaneInfo pane = wxAuiPaneInfo()
                            .Name(m_aui_name)
                            .Caption(m_ri->m_name)
@@ -124,7 +124,7 @@ RadarPanel::~RadarPanel() {
     m_ri->m_radar_canvas = 0;
   }
   m_aui_mgr->DetachPane(this);
-  m_aui_mgr->Update();
+  // m_aui_mgr->Update();
   LOG_DIALOG(wxT("radar_pi: %s panel removed"), m_ri->m_name.c_str());
 }
 
