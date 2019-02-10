@@ -303,7 +303,7 @@ bool ControlsDialog::Create(wxWindow* parent, radar_pi* ppi, RadarInfo* ri, wxWi
   m_pi = ppi;
   m_ri = ri;
 
-  m_log_name = wxString::Format(wxT("radar_pi: Radar %c ControlDialog:"), ri->m_radar + 'A');
+  m_log_name = wxString::Format(wxT("radar_pi: Radar %c ControlDialog:"), (char) (ri->m_radar + 'A'));
 
 #ifdef __WXMSW__
   long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
