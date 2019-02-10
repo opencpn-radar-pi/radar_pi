@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-02-03 14:11+0100\n"
-"PO-Revision-Date: 2019-02-03 13:35\n"
+"PO-Revision-Date: 2019-02-10 14:12\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Dutch\n"
 "Language: nl_NL\n"
@@ -28,7 +28,7 @@ msgstr "uit"
 #: src\ControlsDialog.cpp:639 src\RadarCanvas.cpp:197 src\RadarInfo.cpp:1144
 #: src\SoftwareControlSet.h:41
 msgid "Auto"
-msgstr ""
+msgstr "Auto"
 
 #: src\ControlsDialog.cpp:324
 msgid "Arc"
@@ -48,7 +48,7 @@ msgstr "Bewakingszone 2 Blauw"
 
 #: src\ControlsDialog.cpp:455 src\ControlsDialog.cpp:465 src\GuardZoneBogey.h:53
 msgid "Alarm"
-msgstr ""
+msgstr "Alarm"
 
 #: src\ControlsDialog.cpp:458 src\ControlsDialog.cpp:468
 msgid "Arpa"
@@ -138,7 +138,7 @@ msgstr "Oriëntatie"
 
 #: src\ControlsDialog.cpp:543 src\ControlsDialog.cpp:955
 msgid "Overlay transparency"
-msgstr ""
+msgstr "Overlay transparantie"
 
 #: src\ControlsDialog.cpp:544
 msgid "Overlay"
@@ -158,7 +158,7 @@ msgstr "Weergave"
 
 #: src\ControlsDialog.cpp:548
 msgid "EBL/VRM"
-msgstr ""
+msgstr "EBL/VRM"
 
 #: src\ControlsDialog.cpp:549 src\ControlsDialog.cpp:1041
 msgid "Timed Transmit"
@@ -166,7 +166,7 @@ msgstr "Periodiek zenden"
 
 #: src\ControlsDialog.cpp:550 src\ControlsDialog.cpp:960
 msgid "Info"
-msgstr ""
+msgstr "Info"
 
 #: src\ControlsDialog.cpp:620
 msgid "Value"
@@ -214,7 +214,7 @@ msgstr "Antenne voorwaarts"
 
 #: src\ControlsDialog.cpp:753 src\ControlsDialog.cpp:761
 msgid "m"
-msgstr ""
+msgstr "m"
 
 #: src\ControlsDialog.cpp:753 src\ControlsDialog.cpp:761
 msgid "relative to GPS"
@@ -242,7 +242,7 @@ msgstr "Min. detectieafstand"
 
 #: src\ControlsDialog.cpp:783
 msgid "pixels"
-msgstr ""
+msgstr "pixels"
 
 #: src\ControlsDialog.cpp:841
 msgid "ARPA On"
@@ -270,7 +270,7 @@ msgstr "Regen clutter"
 
 #: src\ControlsDialog.cpp:887
 msgid "FTC"
-msgstr ""
+msgstr "FTC"
 
 #: src\ControlsDialog.cpp:907
 msgid "Acquire Target"
@@ -286,11 +286,11 @@ msgstr "Alle objecten verwijderen"
 
 #: src\ControlsDialog.cpp:946
 msgid "Overlay "
-msgstr ""
+msgstr "Overlay"
 
 #: src\ControlsDialog.cpp:977
 msgid "AIS/ARPA on PPI"
-msgstr ""
+msgstr "AIS/ARPA op PPI"
 
 #: src\ControlsDialog.cpp:983 src\OptionsDialog.cpp:132
 msgid "Target trails"
@@ -314,11 +314,11 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:1101
 msgid "Cursor"
-msgstr ""
+msgstr "Cursor"
 
 #: src\ControlsDialog.cpp:1109
 msgid "Window"
-msgstr ""
+msgstr "Venster"
 
 #: src\ControlsDialog.cpp:1114
 msgid "Timed transmit"
@@ -331,35 +331,35 @@ msgstr "Onbekend"
 
 #: src\ControlsDialog.cpp:1580
 msgid "Radar Overlay"
-msgstr ""
+msgstr "Radar overlay"
 
 #: src\ControlsDialog.cpp:1585
 msgid "Overlay 1"
-msgstr ""
+msgstr "Overlay 1"
 
 #: src\ControlsDialog.cpp:1794
 msgid "Start/Stop radar"
-msgstr ""
+msgstr "Start/stop radar"
 
 #: src\ControlsDialog.cpp:1818
 msgid "Hide all PPI windows"
-msgstr ""
+msgstr "Alle PPI-vensters verbergen"
 
 #: src\ControlsDialog.cpp:1820
 msgid "Show other PPI windows"
-msgstr ""
+msgstr "Toon andere PPI-vensters"
 
 #: src\ControlsDialog.cpp:1824 src\ControlsDialog.cpp:1830
 msgid "Show PPI window"
-msgstr ""
+msgstr "Toon PPI-venster"
 
 #: src\ControlsDialog.cpp:1826
 msgid "Show all PPI windows"
-msgstr ""
+msgstr "Toon alle PPI-venster"
 
 #: src\ControlsDialog.cpp:1830
 msgid "Hide PPI window"
-msgstr ""
+msgstr "Verberg PPI-venster"
 
 #: src\ControlsDialog.cpp:1836
 msgid "Clear EBL/VRM"
@@ -367,7 +367,7 @@ msgstr "Verberg EBL en VRM"
 
 #: src\ControlsDialog.h:224 src\MessageBox.h:86
 msgid "Radar"
-msgstr ""
+msgstr "Radar"
 
 #: src\GuardZoneBogey.cpp:94
 msgid "Confirm"
@@ -379,7 +379,7 @@ msgstr "Sluiten"
 
 #: src\MessageBox.cpp:139
 msgid "Required OpenCPN option"
-msgstr ""
+msgstr "Vereiste OpenCPN optie"
 
 #: src\MessageBox.cpp:144
 msgid "Accelerated Graphics (OpenGL)"
@@ -431,15 +431,15 @@ msgstr "Koers (W)"
 
 #: src\OptionsDialog.cpp:39
 msgid "Radar Display Preferences"
-msgstr ""
+msgstr "Radarscherm voorkeuren"
 
 #: src\OptionsDialog.cpp:59
 msgid "Mixed NM / short range m"
-msgstr ""
+msgstr "Gemengd NM / korte afstand m"
 
 #: src\OptionsDialog.cpp:60
 msgid "Kilometers"
-msgstr ""
+msgstr "Kilometers"
 
 #: src\OptionsDialog.cpp:61
 msgid "Nautical Miles"
@@ -499,11 +499,11 @@ msgstr "Nooit"
 
 #: src\OptionsDialog.cpp:123
 msgid "10 sec"
-msgstr ""
+msgstr "10 sec"
 
 #: src\OptionsDialog.cpp:123 src\SoftwareControlSet.h:123
 msgid "30 sec"
-msgstr ""
+msgstr "30 sec"
 
 #: src\OptionsDialog.cpp:126
 msgid "Auto hide after"
@@ -571,7 +571,7 @@ msgstr "Zoomrichting van muiswiel omkeren"
 
 #: src\OptionsDialog.cpp:241
 msgid "Display options"
-msgstr ""
+msgstr "Scherm opties"
 
 #: src\OptionsDialog.cpp:245
 msgid "Show ring at extreme range"
@@ -587,15 +587,15 @@ msgstr "Toon echosporen op kaart"
 
 #: src\OptionsDialog.cpp:263
 msgid "Show data on overlay when radar is standby"
-msgstr ""
+msgstr "Toon data op overlay als radar standby is"
 
 #: src\OptionsDialog.cpp:270
 msgid "Radar types"
-msgstr ""
+msgstr "Radartypes"
 
 #: src\OptionsDialog.cpp:274
 msgid "Select radar types"
-msgstr ""
+msgstr "Selecteer radartypes"
 
 #: src\OptionsDialog.cpp:336
 msgid "Select Sound File"
@@ -607,15 +607,15 @@ msgstr "WAV bestanden (*.wav)|*.wav|Alle bestanden (*.*)|*.*"
 
 #: src\RadarCanvas.cpp:102 src\radar_pi.cpp:314
 msgid "Menu"
-msgstr ""
+msgstr "Menu"
 
 #: src\RadarCanvas.cpp:157
 msgid "Rain"
-msgstr ""
+msgstr "Neerslag"
 
 #: src\RadarCanvas.cpp:159
 msgid "Sea"
-msgstr ""
+msgstr "Zee"
 
 #: src\RadarCanvas.cpp:620
 msgid "AIS Target Name"
@@ -627,7 +627,7 @@ msgstr "Vertex"
 
 #: src\RadarDraw.cpp:54
 msgid "Shader"
-msgstr ""
+msgstr "Shader"
 
 #: src\RadarInfo.cpp:968 src\RadarInfo.cpp:971
 msgid "Head Up"
@@ -672,20 +672,20 @@ msgstr "Stand-by"
 
 #: src\RadarInfo.cpp:1435
 msgid "Warming up"
-msgstr ""
+msgstr "Opwarmen"
 
 #: src\RadarInfo.cpp:1438
 msgid "Timed idle"
-msgstr ""
+msgstr "Timed inactief"
 
 #: src\RadarInfo.cpp:1441 src\garminhd\GarminHDReceive.cpp:444
 #: src\garminxhd\GarminxHDReceive.cpp:486
 msgid "Spinning up"
-msgstr ""
+msgstr "Op toeren komen"
 
 #: src\RadarInfo.cpp:1444
 msgid "Transmitting"
-msgstr ""
+msgstr "Zenden"
 
 #: src\RadarInfo.cpp:1447
 msgid "for targets"

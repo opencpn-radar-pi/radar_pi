@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-02-03 14:11+0100\n"
-"PO-Revision-Date: 2019-02-03 13:38\n"
+"PO-Revision-Date: 2019-02-08 02:21\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Estonian\n"
 "Language: et_EE\n"
@@ -286,7 +286,7 @@ msgstr "Kustuta kõik märgid"
 
 #: src\ControlsDialog.cpp:946
 msgid "Overlay "
-msgstr ""
+msgstr "Ülekate "
 
 #: src\ControlsDialog.cpp:977
 msgid "AIS/ARPA on PPI"
@@ -331,11 +331,11 @@ msgstr "Tundmatu"
 
 #: src\ControlsDialog.cpp:1580
 msgid "Radar Overlay"
-msgstr ""
+msgstr "Radari ülekate"
 
 #: src\ControlsDialog.cpp:1585
 msgid "Overlay 1"
-msgstr ""
+msgstr "Ülekate 1"
 
 #: src\ControlsDialog.cpp:1794
 msgid "Start/Stop radar"
@@ -734,7 +734,7 @@ msgstr "Peida radar"
 
 #: src\radar_pi.cpp:305
 msgid "Control "
-msgstr ""
+msgstr "Ohje "
 
 #: src\radar_pi.cpp:309
 msgid "Acquire radar target"
