@@ -562,7 +562,7 @@ class RadarControlButton : public wxButton {
   virtual void SetState(RadarControlState state);
   virtual void UpdateLabel(bool force = false);
   virtual void SetFirstLine(wxString first_line);
-  wxString GetLabel();
+  wxString GetLabel() const;
 
   wxString m_comment;
   RadarControlItem *m_item;

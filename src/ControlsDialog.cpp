@@ -188,7 +188,7 @@ void RadarControlButton::SetState(RadarControlState state) {
   m_parent->m_ri->SetControlValue(m_ci.type, *m_item, this);
 }
 
-wxString RadarControlButton::GetLabel() {
+wxString RadarControlButton::GetLabel() const {
   wxString label = wxButton::GetLabel();
 
   label = firstLine + "\n" + label.AfterFirst('\n');
@@ -948,7 +948,7 @@ void ControlsDialog::CreateControls() {
         new RadarControlButton(this, ID_RADAR_OVERLAY0 + i, name, m_ctrl[CT_OVERLAY_CANVAS], &m_ri->m_overlay_canvas[i]);
     m_window_sizer->Add(m_overlay_button[i], 0, wxALL, BORDER);
     m_overlay_button[i]->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ControlsDialog::OnRadarOverlayButtonClick), 0,
-                                  this);
+                                 this);
   }
 
   // The TRANSPARENCY button
@@ -1492,8 +1492,6 @@ void ControlsDialog::OnMove(wxMoveEvent& event) {
  */
 bool ControlsDialog::UpdateSizersButtonsShown() {
   bool resize = false;
-
-  RadarState state = (RadarState)m_ri->m_state.GetButton();
 
   if (m_power_sizer && m_top_sizer->IsShown(m_power_sizer)) {
     if (m_ri->m_timed_idle.GetState() == RCS_MANUAL) {

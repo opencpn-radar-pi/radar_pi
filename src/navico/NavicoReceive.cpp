@@ -56,9 +56,6 @@ PLUGIN_BEGIN_NAMESPACE
 // Note that 3G scanners are BR24's with better power, so they are more BR24+ than 4G-.
 // As far as we know they 3G's use exactly the same command set.
 
-// If BR24MARK is found, we switch to BR24 mode, otherwise 4G.
-static uint8_t BR24MARK[] = {0x00, 0x44, 0x0d, 0x0e};
-
 /*
  Heading on radar. Observed in field:
  - Hakan: BR24, no RI: 0x9234 = negative, with recognisable 1234 in hex?

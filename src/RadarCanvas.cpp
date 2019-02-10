@@ -223,7 +223,6 @@ void RadarCanvas::RenderRangeRingsAndHeading(int w, int h, float r) {
   // Size of rendered string in pixels
   glPushMatrix();
   glPushAttrib(GL_ALL_ATTRIB_BITS);
-  double offset = r / 2.;  // half of the radar_radius
   double heading = 180.;
   if (m_pi->GetHeadingSource() != HEADING_NONE) {
     switch (m_ri->GetOrientation()) {
@@ -512,10 +511,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     return;
   }
   LOG_VERBOSE(wxT("radar_pi: %s render OpenGL canvas %d by %d "), m_ri->m_name.c_str(), w, h);
-  double size = wxMax(w, h);
   double look_forward_dist = (double)wxMax(w, h) * ZOOM_FACTOR_OFFSET / 4.;
-  wxPoint off = m_ri->m_off_center + m_ri->m_drag;
-  double move = sqrt(off.x * off.x + off.y * off.y);
 
   if (m_ri->m_view_center.GetValue() == CENTER_VIEW) {
     m_ri->m_panel_zoom = ZOOM_FACTOR_CENTER;  // if off center with the button, fixed zoom
@@ -657,7 +653,6 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   ResetGLViewPort(w, h);
   RenderTexts(w, h);
   glPushMatrix();
-  double offset = (double)wxMax(w, h) * m_ri->m_panel_zoom / 4.;
 
   glTranslated(m_ri->m_off_center.x + m_ri->m_drag.x, m_ri->m_off_center.y + m_ri->m_drag.y, 0.);
   RenderCursor(w, h, radar_radius);

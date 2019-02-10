@@ -89,7 +89,6 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
     m_ri->m_range.Update(range_meters);
   }
 
-  int display_range_meters = range_meters * 5 / 4;
   int spots = 0;
 
   for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {

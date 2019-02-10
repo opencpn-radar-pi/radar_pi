@@ -103,7 +103,6 @@ class GarminHDReceive : public RadarReceive {
   int m_sea_clutter;              // 0..100
   RadarControlState m_rain_mode;  // RCS_OFF, RCS_MANUAL, RCS_AUTO_1
   int m_rain_clutter;             // 0..100
-  bool m_no_transmit_zone_mode;   // True if there is a zone
   int m_no_spoke_timeout;
 
   bool UpdateScannerStatus(int status);

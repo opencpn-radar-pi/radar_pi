@@ -900,7 +900,6 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
   // So many combinations here
 
   int orientation = GetOrientation();
-  int range = m_range.GetValue();
 
   if (!overlay) {
     arpa_rotate = 0.;
@@ -1422,10 +1421,11 @@ void RadarInfo::AdjustRange(int adjustment) {
 }
 
 wxString RadarInfo::GetTimedIdleText() {
-  RadarState state = (RadarState)m_state.GetValue();
   wxString s;
 
 #ifdef NEVER
+  RadarState state = (RadarState)m_state.GetValue();
+
   s << wxT("state=") << (int)state << wxT(" TTX=") << (int)m_timed_idle.GetState();
   s << wxT(" timer=") << (int)m_next_state_change.GetValue() << wxT(" ");
 #endif

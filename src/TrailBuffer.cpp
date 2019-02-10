@@ -337,7 +337,6 @@ void TrailBuffer::UpdateTrailPosition() {
 
 // shifts the true trails image in lat direction to center
 void TrailBuffer::ShiftImageLatToCenter() {
-  int shift = 0;
   int image_size = m_trail_size * 2 * m_max_spoke_len;  // number of pixels to shift up / down
 
   if (m_offset.lat >= MARGIN || m_offset.lat <= -MARGIN) {  // abs not ok

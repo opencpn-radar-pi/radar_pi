@@ -429,7 +429,6 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
     r = 0;
     for (size_t i = 0; i < RT_MAX; i++) {
       if (dlg.m_selected[i]->GetValue()) {
-        wxFont *qFont = OCPNGetFont(_("Menu"), 10);
         if (!m_radar[r]) {
           m_settings.window_pos[r] = wxPoint(100 + 512 * r, 100);
           m_settings.control_pos[r] = wxDefaultPosition;
@@ -955,7 +954,6 @@ void radar_pi::TimedControlUpdate() {
   if (!m_notify_control_dialog && !TIMED_OUT(now, m_notify_time_ms + 500)) {
     return;  // Don't run this more often than 2 times per second
   }
-  wxWindow *current_canvas = PluginGetOverlayRenderCanvas();
 
   // The following is, I think, no longer necessary now that we're not storing pointers
   // to canvas windows any more.
