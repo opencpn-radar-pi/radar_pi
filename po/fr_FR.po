@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-02-03 14:11+0100\n"
-"PO-Revision-Date: 2019-02-03 13:33\n"
+"PO-Revision-Date: 2019-02-10 14:11\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -286,7 +286,7 @@ msgstr "Supprimer toutes les cibles"
 
 #: src\ControlsDialog.cpp:946
 msgid "Overlay "
-msgstr ""
+msgstr "Superposition "
 
 #: src\ControlsDialog.cpp:977
 msgid "AIS/ARPA on PPI"
@@ -335,7 +335,7 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:1585
 msgid "Overlay 1"
-msgstr ""
+msgstr "Superposition 1"
 
 #: src\ControlsDialog.cpp:1794
 msgid "Start/Stop radar"

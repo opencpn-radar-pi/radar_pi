@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-02-03 14:11+0100\n"
-"PO-Revision-Date: 2019-02-03 13:33\n"
+"PO-Revision-Date: 2019-02-10 14:11\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -286,7 +286,7 @@ msgstr "Borrar todos los objetivos"
 
 #: src\ControlsDialog.cpp:946
 msgid "Overlay "
-msgstr ""
+msgstr "Superposición "
 
 #: src\ControlsDialog.cpp:977
 msgid "AIS/ARPA on PPI"
@@ -331,11 +331,11 @@ msgstr "Desconocido"
 
 #: src\ControlsDialog.cpp:1580
 msgid "Radar Overlay"
-msgstr ""
+msgstr "Superposición de radar"
 
 #: src\ControlsDialog.cpp:1585
 msgid "Overlay 1"
-msgstr ""
+msgstr "Superposición 1"
 
 #: src\ControlsDialog.cpp:1794
 msgid "Start/Stop radar"
@@ -734,7 +734,7 @@ msgstr "Ocultar radar"
 
 #: src\radar_pi.cpp:305
 msgid "Control "
-msgstr ""
+msgstr "Control "
 
 #: src\radar_pi.cpp:309
 msgid "Acquire radar target"
