@@ -487,6 +487,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   bool m_guard_bogey_confirmed;
   bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
   int m_max_canvas;         // Number of canvasses in OCPN -1, 0 == single canvas, > 0  multi
+  wxMenuItem *m_mi3[RADARS];
   PlugIn_ViewPort *m_vp;
 
   wxFont m_font;      // The dialog font at a normal size
@@ -597,7 +598,6 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
 
   // Keep last state of ContextMenu state sent, to avoid redraws
   bool m_context_menu_show;
-  bool m_context_menu_control;
   bool m_context_menu_arpa;
 
   // Cursor position. Used to show position in radar window

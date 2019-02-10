@@ -297,14 +297,6 @@ int radar_pi::Init(void) {
 
   wxMenuItem *mi1 = new wxMenuItem(&dummy_menu, -1, _("Show radar"));
   wxMenuItem *mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
-  wxMenuItem *mi3[RADARS];
-  if (M_SETTINGS.radar_count > RADARS) M_SETTINGS.radar_count = RADARS;
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    wxString t;
-    t =  _("");
-    t << _("Control ") << m_radar[r]->m_name.c_str();
-    mi3[r] = new wxMenuItem(&dummy_menu, -1, t);
-  }
 
   wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Acquire radar target"));
   wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete radar target"));
@@ -315,7 +307,7 @@ int radar_pi::Init(void) {
   mi1->SetFont(*qFont);
   mi2->SetFont(*qFont);
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    mi3[r]->SetFont(*qFont);
+    m_mi3[r]->SetFont(*qFont);
   }
   mi4->SetFont(*qFont);
   mi5->SetFont(*qFont);
@@ -323,14 +315,10 @@ int radar_pi::Init(void) {
 #endif
   m_context_menu_show_id = AddCanvasContextMenuItem(mi1, this);
   m_context_menu_hide_id = AddCanvasContextMenuItem(mi2, this);
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    m_context_menu_control_id[r] = AddCanvasContextMenuItem(mi3[r], this);
-  }
   m_context_menu_acquire_radar_target = AddCanvasContextMenuItem(mi4, this);
   m_context_menu_delete_radar_target = AddCanvasContextMenuItem(mi5, this);
   m_context_menu_delete_all_radar_targets = AddCanvasContextMenuItem(mi6, this);
   m_context_menu_show = true;
-  m_context_menu_control = false;
   m_context_menu_arpa = false;
   SetCanvasContextMenuItemViz(m_context_menu_show_id, false);
 
@@ -443,6 +431,7 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
     r = 0;
     for (size_t i = 0; i < RT_MAX; i++) {
       if (dlg.m_selected[i]->GetValue()) {
+        wxFont *qFont = OCPNGetFont(_("Menu"), 10);
         if (!m_radar[r]) {
           m_settings.window_pos[r] = wxPoint(100 + 512 * r, 100);
           m_settings.control_pos[r] = wxDefaultPosition;
@@ -459,6 +448,7 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
     for (r = 0; r < M_SETTINGS.radar_count; r++) {
       if (m_radar[r] && m_radar[r]->m_radar_type != oldRadarType[r]) {
         m_radar[r]->Shutdown();
+        RemoveCanvasContextMenuItem(m_context_menu_control_id[r]);
         delete m_radar[r];
         m_radar[r] = new RadarInfo(this, r);
       }
@@ -476,6 +466,7 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
         m_radar[r] = 0;
       }
     }
+    
     SetRadarWindowViz();
     TimedControlUpdate();
   }
@@ -974,6 +965,9 @@ void radar_pi::TimedControlUpdate() {
   // in dual canvas run SetRadarWindowViz only on canvas 1,
   // otherwise crash in ShowFrame on m_aui_mgr->Update(); line 225
   // if (current_canvas != m_canvas[1] && m_max_canvas > 0) return;
+  /*if (m_max_canvas > 0) {   // new version of crash prevention?
+    if (current_canvas != GetCanvasByIndex(1)) return;
+  }*/
   m_notify_time_ms = now;
 
   bool updateAllControls = m_notify_control_dialog;
