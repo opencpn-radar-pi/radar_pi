@@ -115,7 +115,7 @@
 															<key>GID</key>
 															<integer>80</integer>
 															<key>PATH</key>
-															<string>plugins</string>
+															<string>Plugins</string>
 															<key>PATH_TYPE</key>
 															<integer>0</integer>
 															<key>PERMISSIONS</key>
@@ -1005,7 +1005,7 @@
 										<key>LANGUAGE</key>
 										<string>French</string>
 										<key>VALUE</key>
-										<string>${TITLE_NAME} Complément (plugin) pour OpenCPN</string>
+										<string>${TITLE_NAME} Complément (Plugin) pour OpenCPN</string>
 									</dict>
 									<dict>
 										<key>LANGUAGE</key>
@@ -1533,7 +1533,7 @@
 				</dict>
 			</array>
 			<key>NAME</key>
-			<string>${VERBOSE_NAME}-Plugin_${VERSION_MAJOR}.${VERSION_MINOR}</string>
+			<string>${VERBOSE_NAME}-Plugin-${OCPN_MIN_VERSION}_${VERSION_MAJOR}.${VERSION_MINOR}</string>
 			<key>REFERENCE_FOLDER_PATH</key>
 			<string>.</string>
 		</dict>
