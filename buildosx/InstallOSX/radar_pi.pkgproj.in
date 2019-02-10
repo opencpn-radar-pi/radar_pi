@@ -297,7 +297,7 @@
 															<key>GID</key>
 															<integer>80</integer>
 															<key>PATH</key>
-															<string>pl.lproj</string>
+															<string>nl.lproj</string>
 															<key>PATH_TYPE</key>
 															<integer>0</integer>
 															<key>PERMISSIONS</key>
@@ -1247,7 +1247,7 @@
 							<key>LANGUAGE</key>
 							<string>Czech</string>
 							<key>SECONDARY_VALUE</key>
-							<string>Please install OpenCPN version 4.8 (or later) in Applications folder.</string>
+							<string>Please install OpenCPN version 5.0 (or later) in Applications folder.</string>
 							<key>VALUE</key>
 							<string>OpenCPN not found.</string>
 						</dict>
@@ -1255,7 +1255,7 @@
 							<key>LANGUAGE</key>
 							<string>Dutch</string>
 							<key>SECONDARY_VALUE</key>
-							<string>Please install OpenCPN version 4.8 (or later) in Applications folder.</string>
+							<string>Please install OpenCPN version 5.0 (or later) in Applications folder.</string>
 							<key>VALUE</key>
 							<string>OpenCPN not found.</string>
 						</dict>
@@ -1263,7 +1263,7 @@
 							<key>LANGUAGE</key>
 							<string>English</string>
 							<key>SECONDARY_VALUE</key>
-							<string>Please install OpenCPN version 4.8 (or later) in Applications folder.</string>
+							<string>Please install OpenCPN version 5.0 (or later) in Applications folder.</string>
 							<key>VALUE</key>
 							<string>OpenCPN not found.</string>
 						</dict>
@@ -1271,7 +1271,7 @@
 							<key>LANGUAGE</key>
 							<string>French</string>
 							<key>SECONDARY_VALUE</key>
-							<string>S'il vous plait, installez la version 4.8 (or later) dans le dossier des applications.</string>
+							<string>S'il vous plait, installez la version 5.0 (or later) dans le dossier des applications.</string>
 							<key>VALUE</key>
 							<string>OpenCPN n'existe pas</string>
 						</dict>
@@ -1279,7 +1279,7 @@
 							<key>LANGUAGE</key>
 							<string>German</string>
 							<key>SECONDARY_VALUE</key>
-							<string>Bitte erst OpenCPN Version 4.8 (or later) im Programme Ordner installieren.</string>
+							<string>Bitte erst OpenCPN Version 5.0 (or later) im Programme Ordner installieren.</string>
 							<key>VALUE</key>
 							<string>OpenCPN nicht gefunden.
 </string>
@@ -1288,7 +1288,7 @@
 							<key>LANGUAGE</key>
 							<string>Italian</string>
 							<key>SECONDARY_VALUE</key>
-							<string>Please install first OpenCPN version 4.8 (or later) in Applications folder.</string>
+							<string>Please install first OpenCPN version 5.0 (or later) in Applications folder.</string>
 							<key>VALUE</key>
 							<string>OpenCPN not found.</string>
 						</dict>
@@ -1296,7 +1296,7 @@
 							<key>LANGUAGE</key>
 							<string>Spanish</string>
 							<key>SECONDARY_VALUE</key>
-							<string>Instale por favor primero OpenCPN versió n4.8 (or later) en la carpeta de Aplicaciones</string>
+							<string>Instale por favor primero OpenCPN versió 5.08 (or later) en la carpeta de Aplicaciones</string>
 							<key>VALUE</key>
 							<string>OpenCPN no encontrado</string>
 						</dict>
@@ -1330,7 +1330,7 @@
 							<key>SECONDARY_VALUE</key>
 							<string></string>
 							<key>VALUE</key>
-							<string>OpenCPN Version undetermined.  Assuming 4.8 or later.</string>
+							<string>OpenCPN Version undetermined.  Assuming 5.0 or later.</string>
 						</dict>
 					</array>
 					<key>NAME</key>
@@ -1535,7 +1535,7 @@
 			<key>NAME</key>
 			<string>${VERBOSE_NAME}-Plugin-${OCPN_MIN_VERSION}_${VERSION_MAJOR}.${VERSION_MINOR}</string>
 			<key>REFERENCE_FOLDER_PATH</key>
-			<string>.</string>
+                        <string>${CMAKE_CURRENT_BINARY_DIR}</string>
 		</dict>
 	</dict>
 	<key>SHARED_GLOBAL_DATA</key>
@@ -1564,7 +1564,7 @@ if (chk_flag) {
 // is it the right version of OpenCPN?
   ocpn_data = system.files.bundleAtPath('/Applications/OpenCPN.app');
 ocpn_vers = ocpn_data.CFBundleShortVersionString;
-chk_flag = (ocpn_vers &gt;= '4.8'); }
+chk_flag = (ocpn_vers &gt;= '4.99'); }
 } catch (e) {
 // an exception just occurred
  return (false)

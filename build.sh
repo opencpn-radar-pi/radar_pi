@@ -2,8 +2,8 @@
 #
 #
 echo <<EOD
-Build script for BR24radar_pi
------------------------------
+Build script for radar_pi
+-------------------------
 
 This script is intended for use by @canboat only, otherwise he forgets which VM to build
 on such that it works on as many systems as possible.
@@ -57,7 +57,7 @@ else
   echo "-------------------------- BUILD $STATE -----------------------"
 fi
 
-[ $(uname) = "Darwin" ] && export MACOSX_DEPLOYMENT_TARGET=10.7
+[ $(uname) = "Darwin" ] && export MACOSX_DEPLOYMENT_TARGET=10.9
 [ -d $BUILDDIR ] && rm -rf $BUILDDIR
 mkdir -p $BUILDDIR
 cd $BUILDDIR
@@ -66,22 +66,22 @@ echo "-------------------------- MAKE $TARGET -----------------------"
 make $TARGET
 
 # Check for proper file mods on .so file, case VBox mount is screwed.
-if [ -s libbr24radar_pi.so ]
+if [ -s libradar_pi.so ]
 then
-  if ls -l libbr24radar_pi.so | grep -- '^-rwxr-xr-x'
+  if ls -l libradar_pi.so | grep -- '^-rwxr-xr-x'
   then
     :
   else
-    echo "ERROR: libbr24radar_pi.so has incorrect permissions."
+    echo "ERROR: libradar_pi.so has incorrect permissions."
     exit 1
   fi
 fi
 
-if [ -d ../../OpenCPN-Navico-Radar-Plugin.github.io/$STATE/ -a "$PACKAGE" != "" ]
-then
-  echo "-------------------------- COPY FILES TO $STATE -----------------------"
-  chmod 755 $PACKAGE
-  cp $PACKAGE ../../OpenCPN-Navico-Radar-Plugin.github.io/$STATE/
-fi
+#if [ -d ../../OpenCPN-Navico-Radar-Plugin.github.io/$STATE/ -a "$PACKAGE" != "" ]
+#then
+  #echo "-------------------------- COPY FILES TO $STATE -----------------------"
+  #chmod 755 $PACKAGE
+  #cp $PACKAGE ../../OpenCPN-Navico-Radar-Plugin.github.io/$STATE/
+#fi
 
   
