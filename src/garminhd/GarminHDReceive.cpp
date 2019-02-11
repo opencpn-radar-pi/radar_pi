@@ -461,7 +461,7 @@ bool GarminHDReceive::ProcessReport(const uint8_t *report, size_t len) {
 
   time_t now = time(0);
 
-  m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
+  m_ri->resetTimeout(now);
 
   if (len >= sizeof(rad_response_pkt)) {  //  sizeof(rad_response_pkt)) {
     rad_response_pkt *packet = (rad_response_pkt *)report;

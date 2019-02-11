@@ -672,7 +672,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
 
   time_t now = time(0);
 
-  m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
+  m_ri->resetTimeout(now);
 
 #ifdef TODO
   if (m_ri->m_radar == 1) {
@@ -707,7 +707,6 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
               break;
             case 0x05:
               m_ri->m_state.Update(RADAR_SPINNING_UP);
-              m_ri->m_data_timeout = now + DATA_TIMEOUT;
               LOG_VERBOSE(wxT("radar_pi: %s reports status SPINNING UP"), m_ri->m_name.c_str());
               stat = _("Waking up");
               break;

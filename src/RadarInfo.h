@@ -206,6 +206,12 @@ class RadarInfo {
   };
   bool IsPaneShown();
 
+  void resetTimeout(time_t now) {
+    wxCriticalSectionLocker lock(m_exclusive);
+
+    m_radar_timeout = now + WATCHDOG_TIMEOUT;
+  };
+
   void UpdateControlState(bool all);
   void ComputeColourMap();
   void ComputeTargetTrails();
