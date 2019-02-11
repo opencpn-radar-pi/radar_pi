@@ -1251,7 +1251,7 @@ bool radar_pi::LoadConfig(void) {
     M_SETTINGS.radar_count = v;
 
     size_t n = 0;
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    for (int r = 0; r < (int)M_SETTINGS.radar_count; r++) {
       RadarInfo *ri = m_radar[n];
       pConf->Read(wxString::Format(wxT("Radar%dType"), r), &s, "unknown");
       ri->m_radar_type = RT_MAX;  // = not used
