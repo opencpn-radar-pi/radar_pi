@@ -102,6 +102,7 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_control_dialog = 0;
   m_state.Update(RADAR_OFF);
   m_refresh_millis = 50;
+  m_pi->m_context_menu_control_id[m_radar] = -1;
 
   m_drag.x = 0.;
   m_drag.y = 0.;
@@ -169,7 +170,10 @@ RadarInfo::~RadarInfo() {
 
   // delete context menu item for radar control
   // it does not harm to remove an non existing menu
-  RemoveCanvasContextMenuItem(m_pi->m_context_menu_control_id[m_radar]);
+  if (m_pi->m_context_menu_control_id[m_radar] != -1) {
+    RemoveCanvasContextMenuItem(m_pi->m_context_menu_control_id[m_radar]);
+    m_pi->m_context_menu_control_id[m_radar] = -1;
+  }
 
   if (m_draw_panel.draw) {
     delete m_draw_panel.draw;

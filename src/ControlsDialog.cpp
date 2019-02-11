@@ -201,6 +201,7 @@ void RadarControlButton::UpdateLabel(bool force) {
   RadarControlState state;
   int value;
   wxString label;
+
   if (m_item->GetButton(&value, &state) || force) {
     // label << MENU_EDIT(firstLine) << wxT("\n");
     if (m_no_edit) {
@@ -247,18 +248,30 @@ void RadarControlButton::UpdateLabel(bool force) {
         break;
     }
     wxButton::SetLabel(label);
-    label.Replace(wxT("\n"), wxT("/"));
-    LOG_VERBOSE(wxT("%s Button '%s' set state %d value %d label='%s'"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type],
-                state, m_item->GetValue(), label.c_str());
+
+    IF_LOG_AT_LEVEL(LOGLEVEL_VERBOSE) {
+      wxString loglabel;
+
+      loglabel << label;
+      loglabel.Replace(wxT("\n"), wxT("/"));
+      LOG_VERBOSE(wxT("%s Button '%s' set state %d value %d label='%s'"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type],
+                  state, m_item->GetValue(), loglabel.c_str());
+    }
   }
 }
 
 void RadarRangeControlButton::SetRangeLabel() {
   wxString label = MENU_EDIT(firstLine) + wxT("\n") + m_parent->m_ri->GetRangeText();
   wxButton::SetLabel(label);
-  label.Replace(wxT("\n"), wxT("/"));
-  LOG_VERBOSE(wxT("%s Button '%s' set state %d value %d label='%s'"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type],
-              m_item->GetState(), m_item->GetValue(), label.c_str());
+
+  IF_LOG_AT_LEVEL(LOGLEVEL_VERBOSE) {
+    wxString loglabel;
+
+    loglabel << label;
+    loglabel.Replace(wxT("\n"), wxT("/"));
+    LOG_VERBOSE(wxT("%s Button '%s' set state %d value %d label='%s'"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type],
+                m_item->GetState(), m_item->GetValue(), loglabel.c_str());
+  }
 }
 
 void RadarRangeControlButton::AdjustValue(int adjustment) {
@@ -303,7 +316,7 @@ bool ControlsDialog::Create(wxWindow* parent, radar_pi* ppi, RadarInfo* ri, wxWi
   m_pi = ppi;
   m_ri = ri;
 
-  m_log_name = wxString::Format(wxT("radar_pi: Radar %c ControlDialog:"), (char) (ri->m_radar + 'A'));
+  m_log_name = wxString::Format(wxT("radar_pi: Radar %c ControlDialog:"), (char)(ri->m_radar + 'A'));
 
 #ifdef __WXMSW__
   long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;

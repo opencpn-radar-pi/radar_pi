@@ -135,6 +135,9 @@ radar_pi::radar_pi(void *ppimgr) : opencpn_plugin_116(ppimgr) {
   m_opencpn_gl_context_broken = false;
 
   m_timer = 0;
+  for (int r = 0; r < RADARS; r++) {
+    m_context_menu_control_id[r] = -1;
+  }
 
   m_first_init = true;
 }
@@ -280,6 +283,7 @@ int radar_pi::Init(void) {
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->Init();
   }
+  // and get rid of any radars we're not using
   for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
     delete m_radar[r];
     m_radar[r] = 0;
@@ -1012,9 +1016,12 @@ void radar_pi::TimedControlUpdate() {
       }
     }
     m_pMessageBox->SetStatisticsInfo(t);
-    if (t.length() > 0) {
-      t.Replace(wxT("\n"), wxT(" "));
-      LOG_RECEIVE(wxT("radar_pi: %s"), t.c_str());
+
+    IF_LOG_AT_LEVEL(LOGLEVEL_RECEIVE) {
+      if (t.length() > 0) {
+        t.Replace(wxT("\n"), wxT(" "));
+        LOG_RECEIVE(wxT("radar_pi: %s"), t.c_str());
+      }
     }
   }
 
@@ -1244,7 +1251,7 @@ bool radar_pi::LoadConfig(void) {
     M_SETTINGS.radar_count = v;
 
     size_t n = 0;
-    for (int r = 0; r < M_SETTINGS.radar_count; r++) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       RadarInfo *ri = m_radar[n];
       pConf->Read(wxString::Format(wxT("Radar%dType"), r), &s, "unknown");
       ri->m_radar_type = RT_MAX;  // = not used
@@ -1425,7 +1432,7 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ColourPPIBackground"), m_settings.ppi_background_colour.GetAsString());
     pConf->Write(wxT("RadarCount"), m_settings.radar_count);
 
-    for (int r = 0; r < m_settings.radar_count; r++) {
+    for (int r = 0; r < (int)m_settings.radar_count; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);
 
       wxString addr;
