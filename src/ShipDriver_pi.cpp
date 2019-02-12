@@ -68,6 +68,8 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p)
 
 
 
+// An Event handler class to catch events from S63 UI dialog
+//      Implementation
 
 ShipDriver_pi::ShipDriver_pi(void *ppimgr)
       :opencpn_plugin_16 (ppimgr)
@@ -96,6 +98,12 @@ ShipDriver_pi::~ShipDriver_pi(void)
 		 }
 	 }
      
+}
+
+void ShipDriver_pi::testKey(wxKeyEvent& event){
+
+wxMessageBox(wxString::Format("KeyDown: %i\n", (int)event.GetKeyCode()));
+event.Skip();
 }
 
 int ShipDriver_pi::Init(void)

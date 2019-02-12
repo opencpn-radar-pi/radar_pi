@@ -70,11 +70,18 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& 
 		pConf->Read(_T("shipdriverUseFile"), &m_bUseFile, 0);
 		pConf->Read(_T("shipdriverMMSI"), &m_tMMSI, "12345");
 	}
+
 }
 
 
 void Dlg::OnTimer(wxTimerEvent& event){
+<<<<<<< HEAD
+
+  Notify();
+
+=======
 	Notify();
+>>>>>>> 0821679c298470c42536becbbb64534b4381fa41
 }
 
 void Dlg::SetNextStep(double inLat, double inLon, double inDir, double inSpd, double &outLat, double &outLon){

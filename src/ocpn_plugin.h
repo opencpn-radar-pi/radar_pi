@@ -36,12 +36,20 @@
 #endif
 #endif
 
+#ifdef __WXMSW__
+#ifdef MAKING_PLUGIN
+#  define DECL_IMP     __declspec(dllimport)
+#endif
+#endif    
 
 #include <wx/xml/xml.h>
 
 #ifdef ocpnUSE_SVG
-#include "wxsvg/include/wxSVG/svg.h"
+#include "wxSVG/svg.h"
 #endif // ocpnUSE_SVG
+
+#include <memory>
+#include <vector>
 
 class wxGLContext;
 
@@ -50,7 +58,7 @@ class wxGLContext;
 //    PlugIns conforming to API Version less then the most modern will also
 //    be correctly supported.
 #define API_VERSION_MAJOR           1
-#define API_VERSION_MINOR           13
+#define API_VERSION_MINOR           16
 
 //    Fwd Definitions
 class       wxFileConfig;
@@ -58,6 +66,7 @@ class       wxNotebook;
 class       wxFont;
 class       wxAuiManager;
 class       wxScrolledWindow;
+class       wxGLCanvas;
 
 //---------------------------------------------------------------------------------------------------------
 //
@@ -461,7 +470,6 @@ class DECL_EXP opencpn_plugin_18 : public opencpn_plugin
 
             virtual bool RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp);
             virtual bool RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp);
-
             virtual void SetPluginMessage(wxString &message_id, wxString &message_body);
             virtual void SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix);
 
@@ -513,6 +521,33 @@ public:
     virtual bool KeyboardEventHook( wxKeyEvent &event );
     virtual void OnToolbarToolDownCallback(int id);
     virtual void OnToolbarToolUpCallback(int id);
+};
+
+class DECL_EXP opencpn_plugin_114 : public opencpn_plugin_113
+{
+public:
+  opencpn_plugin_114(void *pmgr);
+  virtual ~opencpn_plugin_114();
+
+};
+
+class DECL_EXP opencpn_plugin_115 : public opencpn_plugin_114
+{
+public:
+    opencpn_plugin_115(void *pmgr);
+    virtual ~opencpn_plugin_115();
+
+};
+
+class DECL_EXP opencpn_plugin_116 : public opencpn_plugin_115
+{
+public:
+    opencpn_plugin_116(void *pmgr);
+    virtual ~opencpn_plugin_116();
+    virtual bool RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort *vp, int canvasIndex);
+    virtual bool RenderOverlayMultiCanvas(wxDC &dc, PlugIn_ViewPort *vp, int canvasIndex);
+    virtual void PrepareContextMenu( int canvasIndex);
+
 };
 
 //------------------------------------------------------------------
@@ -700,6 +735,10 @@ extern DECL_EXP wxString getUsrDistanceUnit_Plugin( int unit = -1 );
 extern DECL_EXP wxString getUsrSpeedUnit_Plugin( int unit = -1 );
 extern DECL_EXP wxString GetNewGUID();
 extern "C" DECL_EXP bool PlugIn_GSHHS_CrossesLand(double lat1, double lon1, double lat2, double lon2);
+/**
+ * Start playing a sound file asynchronously. Supported formats depends
+ * on sound backend.
+ */
 extern DECL_EXP void PlugInPlaySound( wxString &sound_file );
 
 
@@ -727,7 +766,7 @@ extern DECL_EXP bool UpdatePlugInTrack ( PlugIn_Track *ptrack );
 wxColour DECL_EXP GetBaseGlobalColor(wxString colorName);
 int DECL_EXP OCPNMessageBox_PlugIn(wxWindow *parent,
                           const wxString& message,
-                          const wxString& caption = _("Message"),
+                          const wxString& caption = _T("Message"),
                           int style = wxOK, int x = -1, int y = -1);
 
 extern DECL_EXP wxString toSDMM_PlugIn(int NEflag, double a, bool hi_precision = true);
@@ -781,6 +820,41 @@ public:
     
 };
 
+
+// ----------------------------------------------------------------------------
+// PlugInChartBaseExtended
+//  Derived from PlugInChartBase, add extended chart support methods
+// ----------------------------------------------------------------------------
+
+class DECL_EXP PlugInChartBaseExtended : public PlugInChartBase
+{
+public:
+    PlugInChartBaseExtended();
+    virtual ~PlugInChartBaseExtended();
+    
+    virtual int RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewPort& VPoint,
+                                      const wxRegion &Region, bool b_use_stencil );
+    
+    virtual wxBitmap &RenderRegionViewOnDCNoText(  const PlugIn_ViewPort& VPoint, const wxRegion &Region);
+    virtual bool RenderRegionViewOnDCTextOnly( wxMemoryDC &dc, const PlugIn_ViewPort& VPoint, const wxRegion &Region);
+    
+    virtual int RenderRegionViewOnGLNoText( const wxGLContext &glc, const PlugIn_ViewPort& VPoint,
+                                            const wxRegion &Region, bool b_use_stencil );
+
+    virtual int RenderRegionViewOnGLTextOnly( const wxGLContext &glc, const PlugIn_ViewPort& VPoint,
+                                              const wxRegion &Region, bool b_use_stencil );
+    
+    virtual ListOfPI_S57Obj *GetObjRuleListAtLatLon(float lat, float lon, float select_radius, PlugIn_ViewPort *VPoint);
+    virtual wxString CreateObjDescriptions( ListOfPI_S57Obj* obj_list );
+    
+    virtual int GetNoCOVREntries();
+    virtual int GetNoCOVRTablePoints(int iTable);
+    virtual int  GetNoCOVRTablenPoints(int iTable);
+    virtual float *GetNoCOVRTableHead(int iTable);
+    
+    virtual void ClearPLIBTextList();
+    
+};
 
 
 
@@ -1015,6 +1089,11 @@ extern DECL_EXP wxColour GetFontColour_PlugIn(wxString TextElement);
 extern DECL_EXP double GetCanvasTilt();
 extern DECL_EXP void SetCanvasTilt(double tilt);
 
+/**
+ * Start playing a sound file asynchronously. Supported formats depends
+ * on sound backend. The deviceIx is only used on platforms using the
+ * portaudio sound backend where -1 indicates the default device.
+ */
 extern DECL_EXP bool PlugInPlaySoundEx( wxString &sound_file, int deviceIndex=-1 );
 extern DECL_EXP void AddChartDirectory( wxString &path );
 extern DECL_EXP void ForceChartDBUpdate();
@@ -1022,6 +1101,7 @@ extern DECL_EXP void ForceChartDBUpdate();
 extern  DECL_EXP wxString GetWritableDocumentsDir( void );
 extern  DECL_EXP wxDialog *GetActiveOptionsDialog();
 extern  DECL_EXP wxArrayString GetWaypointGUIDArray( void );
+extern  DECL_EXP wxArrayString GetIconNameArray(void);
 
 extern  DECL_EXP bool AddPersistentFontKey(wxString TextElement);
 extern  DECL_EXP wxString GetActiveStyleName();
@@ -1161,9 +1241,92 @@ private:
     bool m_b_complete;
 };
 
-//DECLARE_EVENT_TYPE(wxEVT_DOWNLOAD_EVENT, -1)
-//extern const wxEventType DECL_EXP wxEVT_DOWNLOAD_EVENT;
 
-extern WXDLLIMPEXP_CORE const wxEventType wxEVT_DOWNLOAD_EVENT;
+//extern WXDLLIMPEXP_CORE const wxEventType wxEVT_DOWNLOAD_EVENT;
+
+#ifdef MAKING_PLUGIN
+extern   DECL_IMP wxEventType wxEVT_DOWNLOAD_EVENT;
+#else
+extern   DECL_EXP wxEventType wxEVT_DOWNLOAD_EVENT;
+#endif
+
+// API 1.14 Extra canvas Support
+
+/* Allow drawing of objects onto other OpenGL canvases */
+extern DECL_EXP void PlugInAISDrawGL( wxGLCanvas* glcanvas, const PlugIn_ViewPort& vp );
+extern DECL_EXP bool PlugInSetFontColor(const wxString TextElement, const wxColour color);
+
+// API 1.15
+extern DECL_EXP double PlugInGetDisplaySizeMM();
+
+// 
+extern DECL_EXP wxFont* FindOrCreateFont_PlugIn( int point_size, wxFontFamily family, 
+                    wxFontStyle style, wxFontWeight weight, bool underline = false,
+                    const wxString &facename = wxEmptyString,
+                    wxFontEncoding encoding = wxFONTENCODING_DEFAULT );
+
+extern DECL_EXP int PlugInGetMinAvailableGshhgQuality();
+extern DECL_EXP int PlugInGetMaxAvailableGshhgQuality();
+
+extern DECL_EXP void PlugInHandleAutopilotRoute(bool enable);
+
+// API 1.16
+//
+/**
+ * Return the plugin data directory for a given directory name.
+ *
+ * On Linux, the returned data path is an existing directory ending in
+ * "opencpn/plugins/<plugin_name>" where the last part is the plugin_name
+ * argument. The prefix part is one of the directories listed in the
+ * environment variable XDG_DATA_DIRS, by default
+ * ~/.local/share:/usr/local/share:/usr/share.
+ *
+ * On other platforms, the returned value is GetSharedDataDir() +
+ * "/opencpn/plugins/" + plugin_name (with native path separators)
+ * if that path exists.
+ *
+ * Return "" if no existing directory is found.
+ */
+extern DECL_EXP wxString GetPluginDataDir(const char* plugin_name);
+
+extern DECL_EXP bool ShuttingDown( void );
+
+//  Support for MUI MultiCanvas model
+
+extern DECL_EXP wxWindow* PluginGetFocusCanvas();
+extern DECL_EXP wxWindow* PluginGetOverlayRenderCanvas();
+
+extern "C"  DECL_EXP void CanvasJumpToPosition( wxWindow *canvas, double lat, double lon, double scale);
+extern "C"  DECL_EXP  int AddCanvasMenuItem(wxMenuItem *pitem, opencpn_plugin *pplugin, const char *name = "");
+extern "C"  DECL_EXP void RemoveCanvasMenuItem(int item, const char *name = "");      // Fully remove this item
+extern "C"  DECL_EXP void SetCanvasMenuItemViz(int item, bool viz, const char *name = ""); // Temporarily change context menu options
+extern "C"  DECL_EXP void SetCanvasMenuItemGrey(int item, bool grey, const char *name = "");
+
+// Extract waypoints, routes and tracks
+extern DECL_EXP wxString GetSelectedWaypointGUID_Plugin( );
+extern DECL_EXP wxString GetSelectedRouteGUID_Plugin( );
+extern DECL_EXP wxString GetSelectedTrackGUID_Plugin( );
+
+extern DECL_EXP std::unique_ptr<PlugIn_Waypoint> GetWaypoint_Plugin( const wxString& ); // doublon with GetSingleWaypoint
+extern DECL_EXP std::unique_ptr<PlugIn_Route> GetRoute_Plugin( const wxString& );
+extern DECL_EXP std::unique_ptr<PlugIn_Track> GetTrack_Plugin( const wxString& );
+
+extern DECL_EXP wxWindow* GetCanvasUnderMouse( );
+extern DECL_EXP int GetCanvasIndexUnderMouse( );
+//extern DECL_EXP std::vector<wxWindow *> GetCanvasArray();
+extern DECL_EXP wxWindow *GetCanvasByIndex( int canvasIndex );
+extern DECL_EXP int GetCanvasCount( );
+extern DECL_EXP bool CheckMUIEdgePan_PlugIn( int x, int y, bool dragging, int margin, int delta, int canvasIndex );
+extern DECL_EXP void SetMUICursor_PlugIn( wxCursor *pCursor, int canvasIndex );
+
+enum SDDMFORMAT
+{
+    DEGREES_DECIMAL_MINUTES = 0,
+    DECIMAL_DEGREES,
+    DEGREES_MINUTES_SECONDS,
+    END_SDDMFORMATS
+};
+
+extern DECL_EXP int GetLatLonFormat(void);
 
 #endif //_PLUGIN_H_

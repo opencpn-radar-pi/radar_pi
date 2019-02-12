@@ -28,7 +28,7 @@ IF(WIN32)
 # CPACK_BUILDWIN_DIR ??
 # CPACK_PACKAGE_ICON ??
 
-  SET(CPACK_NSIS_PACKAGE_NAME "${PACKAGE_NAME}")
+  SET(CPACK_PACKAGE_VERSION "${PACKAGE_VERSION}-ov50")
 
   # Let cmake find NSIS.template.in
   SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/buildwin")
@@ -36,6 +36,8 @@ IF(WIN32)
 #  These lines set the name of the Windows Start Menu shortcut and the icon that goes with it
 #  SET(CPACK_NSIS_INSTALLED_ICON_NAME "${PACKAGE_NAME}")
 SET(CPACK_NSIS_DISPLAY_NAME "OpenCPN ${PACKAGE_NAME}")
+
+#  SET(CPACK_PACKAGE_FILE_NAME "${PACKAGE_NAME}_${VERSION_MAJOR}.${VERSION_MINOR}_setup" )
 
   SET(CPACK_NSIS_DIR "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode")  #Gunther
   SET(CPACK_BUILDWIN_DIR "${PROJECT_SOURCE_DIR}/buildwin")  #Gunther
@@ -145,9 +147,8 @@ ENDIF(TWIN32 AND NOT UNIX)
 
 INCLUDE(CPack)
 
-IF(NOT STANDALONE MATCHES "BUNDLED")
+
 IF(APPLE)
-MESSAGE (STATUS "*** Staging to build PlugIn OSX Package ***")
 
  #  Copy a bunch of files so the Packages installer builder can find them
  #  relative to ${CMAKE_CURRENT_BINARY_DIR}
@@ -180,18 +181,3 @@ configure_file(${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jpg
 
 
 ENDIF(APPLE)
-
-IF(WIN32)
-  SET(CPACK_PACKAGE_FILE_NAME "${PACKAGE_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}-win32.exe" )
-  MESSAGE(STATUS "FILE: ${CPACK_PACKAGE_FILE_NAME}")
-  add_custom_command(OUTPUT ${CPACK_PACKAGE_FILE_NAME}
-	  COMMAND signtool sign /v /f \\cert\\OpenCPNSPC.pfx /d http://www.opencpn.org /t http://timestamp.verisign.com/scripts/timstamp.dll ${CPACK_PACKAGE_FILE_NAME}
-	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-	  DEPENDS ${PACKAGE_NAME}
-	  COMMENT "Code-Signing: ${CPACK_PACKAGE_FILE_NAME}")
-  ADD_CUSTOM_TARGET(codesign COMMENT "code signing: Done."
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME} )
-
-ENDIF(WIN32)
-ENDIF(NOT STANDALONE MATCHES "BUNDLED")
-

@@ -127,9 +127,16 @@ protected:
 	bool m_bNeedsGrib;
 
 private:
+<<<<<<< HEAD
+	    
+		void Notify();
+		wxString VHW, MWVA, MWVT, GLL, VTG, HDG;
+		double initDir, initSpd, initRudder, myDir;
+=======
 	void Notify();
 	wxString MWD, VHW, MWVA, MWVT, GLL, VTG, HDG;
 	double initDir, initSpd, initRudder, myDir;
+>>>>>>> 0821679c298470c42536becbbb64534b4381fa41
 
 	wxDateTime dt;
 	void SetInterval(int interval);
