@@ -78,11 +78,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_textCtrlRudderStbd = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_CENTER );
 	m_textCtrlRudderStbd->SetFont( wxFont( 10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
 
-<<<<<<< HEAD
-	bSizer131->Add( m_textCtrlRudderStbd, 0, wxALIGN_CENTER_VERTICAL, 0 );
-=======
 	bSizer131->Add( m_textCtrlRudderStbd, 0, wxALIGN_BOTTOM|wxALIGN_CENTER_VERTICAL, 0 );
->>>>>>> 0821679c298470c42536becbbb64534b4381fa41
 
 
 	bSizer131->Add( 0, 0, 1, wxEXPAND, 5 );
@@ -266,7 +262,6 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 
 	// Connect Events
 	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( ShipDriverBase::OnClose ) );
-	this->Connect( wxEVT_KEY_DOWN, wxKeyEventHandler( ShipDriverBase::testKey ) );
 	m_buttonMid->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnMidships ), NULL, this );
 	m_bpPlay->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnStart ), NULL, this );
 	m_bpStop->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnStop ), NULL, this );
@@ -284,7 +279,6 @@ ShipDriverBase::~ShipDriverBase()
 {
 	// Disconnect Events
 	this->Disconnect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( ShipDriverBase::OnClose ) );
-	this->Disconnect( wxEVT_KEY_DOWN, wxKeyEventHandler( ShipDriverBase::testKey ) );
 	m_buttonMid->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnMidships ), NULL, this );
 	m_bpPlay->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnStart ), NULL, this );
 	m_bpStop->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnStop ), NULL, this );

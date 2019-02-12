@@ -59,8 +59,6 @@
 
 class Dlg;
 
-
-
 static inline bool GribCurrent(GribRecordSet *grib, double lat, double lon,
 	double &C, double &VC)
 {
@@ -98,8 +96,6 @@ public:
 //    The required PlugIn Methods
       int Init(void);
       bool DeInit(void);
-
-	  void ShipDriver_pi::testKey(wxKeyEvent& event);
 
       int GetAPIVersionMajor();
       int GetAPIVersionMinor();
