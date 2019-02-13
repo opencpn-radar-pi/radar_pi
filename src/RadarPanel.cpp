@@ -207,6 +207,12 @@ void RadarPanel::ShowFrame(bool visible) {
 
   pane.Show(visible);
   pane.Caption(m_ri->m_name);
+  
+  // m_aui_mgr->Update() will crash if executed on wrong canvas
+  if (m_pi->m_max_canvas <= 0 || (m_pi->m_max_canvas > 1 && m_pi->m_current_canvas == 0)) {
+    return;
+  }
+
   m_aui_mgr->Update();  // causes recursive calls on OS X when not in OpenGL mode
 
   if (visible && (m_dock_size > 0)) {

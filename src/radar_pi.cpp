@@ -959,14 +959,6 @@ void radar_pi::TimedControlUpdate() {
     return;  // Don't run this more often than 2 times per second
   }
 
-  // The following is, I think, no longer necessary now that we're not storing pointers
-  // to canvas windows any more.
-  // in dual canvas run SetRadarWindowViz only on canvas 1,
-  // otherwise crash in ShowFrame on m_aui_mgr->Update(); line 225
-  // if (current_canvas != m_canvas[1] && m_max_canvas > 0) return;
-  /*if (m_max_canvas > 0) {   // new version of crash prevention?
-    if (current_canvas != GetCanvasByIndex(1)) return;
-  }*/
   m_notify_time_ms = now;
 
   bool updateAllControls = m_notify_control_dialog;
@@ -1146,9 +1138,9 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
       m_chart_overlay[canvasIndex] = r;
     }
   }
-
+  m_current_canvas = canvasIndex;
   int current_overlay_radar = m_chart_overlay[canvasIndex];
-
+  m_max_canvas = GetCanvasCount( );
   if (!m_initialized) {
     return true;
   }
