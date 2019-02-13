@@ -147,7 +147,7 @@ int ShipDriver_pi::Init(void)
 			  WANTS_NMEA_SENTENCES|
 			  WANTS_AIS_SENTENCES|
 			  WANTS_PREFERENCES|
-			  WANTS_PLUGIN_MESSAGING |
+			  WANTS_PLUGIN_MESSAGING|
               WANTS_CONFIG           
            );
 }
@@ -452,6 +452,7 @@ void ShipDriver_pi::SetPluginMessage(wxString &message_id, wxString &message_bod
 		}
 
 		wxString sptr = v[_T("TimelineSetPtr")].AsString();
+
 		wxCharBuffer bptr = sptr.To8BitData();
 		const char* ptr = bptr.data();
 
@@ -482,6 +483,13 @@ bool ShipDriver_pi::GribWind(GribRecordSet *grib, double lat, double lon,
 		return false;
 
 	VWG *= 3.6 / 1.852; // knots
+
+#if 0
+// test
+	VWG = 0.;
+	WG = 0.;
+#endif
+
 	return true;
 }
 

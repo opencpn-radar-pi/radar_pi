@@ -47,6 +47,8 @@ SET(SRC_ShipDriver
 		src/AisMaker.h
 		src/AisMaker.cpp
 		src/GribRecord.cpp
+		src/GribRecordSet.h
+		src/GribRecord.h
 	    src/tinyxml.h
 		src/tinyxml.cpp
 	    src/tinyxmlerror.cpp
@@ -57,7 +59,11 @@ IF(WIN32)
 SET(SRC_JSON
          src/wxJSON/jsonval.cpp
          src/wxJSON/jsonreader.cpp
-         src/wxJSON/jsonwriter.cpp)
+         src/wxJSON/jsonwriter.cpp
+         src/wx/json_defs.h
+         src/wx/jsonval.h
+         src/wx/jsonreader.h
+         src/wx/jsonwriter.h)
 ENDIF(WIN32)
 
 
