@@ -487,7 +487,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   bool m_guard_bogey_confirmed;
   bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
   int m_max_canvas;         // Number of canvasses in OCPN -1, 0 == single canvas, > 0  multi
-  int m_current_canvas;
+  int m_current_canvas_index;
   wxMenuItem *m_mi3[RADARS];
   PlugIn_ViewPort *m_vp;
 

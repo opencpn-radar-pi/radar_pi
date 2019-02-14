@@ -250,7 +250,7 @@ bool RadarInfo::Init() {
     m_pi->m_context_menu_control_id[m_radar] = AddCanvasContextMenuItem(m_pi->m_mi3[m_radar], m_pi);
   }
   if (!m_radar_panel) {
-    m_radar_panel = new RadarPanel(m_pi, this, GetOCPNCanvasWindow());
+    m_radar_panel = new RadarPanel(m_pi, this, m_pi->m_parent_window);
     if (!m_radar_panel || !m_radar_panel->Create()) {
       wxLogError(wxT("radar_pi %s: Unable to create RadarPanel"), m_name.c_str());
       return false;
@@ -297,7 +297,7 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
       m_control_dialog->m_manually_positioned = manually_positioned;
       wxWindow *parent = (wxWindow *)m_radar_panel;
       if (!m_pi->m_settings.show_radar[m_radar]) {
-        parent = GetOCPNCanvasWindow();
+        parent = m_pi->m_parent_window;
       }
       LOG_VERBOSE(wxT("radar_pi %s: Creating control dialog"), m_name.c_str());
       m_control_dialog->Create(parent, m_pi, this, wxID_ANY, m_name, m_pi->m_settings.control_pos[m_radar]);

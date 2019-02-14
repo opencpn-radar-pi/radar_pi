@@ -958,7 +958,10 @@ void radar_pi::TimedControlUpdate() {
   if (!m_notify_control_dialog && !TIMED_OUT(now, m_notify_time_ms + 500)) {
     return;  // Don't run this more often than 2 times per second
   }
-
+  // following is to prevent crash in RadarPanel::Showframe on m_aui_mgr->Update() line 211, 
+ if (m_max_canvas <= 0 || (m_max_canvas > 1 && m_current_canvas_index == 0)) {
+    return;
+  }
   m_notify_time_ms = now;
 
   bool updateAllControls = m_notify_control_dialog;
@@ -1138,12 +1141,17 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
       m_chart_overlay[canvasIndex] = r;
     }
   }
-  m_current_canvas = canvasIndex;
+  m_current_canvas_index = canvasIndex;
   int current_overlay_radar = m_chart_overlay[canvasIndex];
   m_max_canvas = GetCanvasCount( );
+  if (m_max_canvas <= 0 || m_current_canvas_index >= m_max_canvas){
+    return true;
+  }
+  
   if (!m_initialized) {
     return true;
   }
+  
   m_vp = vp;
 
   LOG_DIALOG(wxT("radar_pi: RenderGLOverlayMultiCanvas context=%p canvas=%d"), pcontext, canvasIndex);
