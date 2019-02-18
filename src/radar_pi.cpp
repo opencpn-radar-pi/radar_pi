@@ -205,6 +205,8 @@ int radar_pi::Init(void) {
   m_notify_radar_window_viz = false;
   m_notify_control_dialog = false;
 
+  m_render_busy=false;
+
   m_bogey_dialog = 0;
   m_alarm_sound_timeout = 0;
   m_guard_bogey_timeout = 0;
@@ -231,6 +233,7 @@ int radar_pi::Init(void) {
   m_settings.threshold_green = 255;
   CLEAR_STRUCT(m_settings.radar_interface_address);
   m_settings.radar_count = 0;
+
 
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
@@ -268,7 +271,6 @@ int radar_pi::Init(void) {
     wxLogError(wxT("radar_pi: configuration file values initialisation failed"));
     return 0;  // give up
   }
-
   //    This PlugIn needs a toolbar icon
 
   wxString svg_normal = m_shareLocn + wxT("radar_standby.svg");
@@ -898,8 +900,6 @@ void radar_pi::ScheduleWindowRefresh() {
   int drawTime = 0;
   int millis;
 
-  TimedControlUpdate();  // Update the controls. Method is self-limiting if called too often.
-
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->RefreshDisplay();
     drawTime += m_radar[r]->GetDrawTime();
@@ -939,15 +939,8 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
 
     bool refreshing = false;
     for (int i = 0; i < CANVAS_COUNT; i++) {
-      if (m_chart_overlay[i] > -1) {
-        // If overlay is enabled schedule another chart draw. Note this will cause another call to RenderGLOverlay,
-        // which will then call ScheduleWindowRefresh again itself.
         GetCanvasByIndex(i)->Refresh(false);
         refreshing = true;
-      }
-    }
-    if (!refreshing) {  // In case we didn't scheduled a RenderGLOverlay callback do it ourselves.
-      ScheduleWindowRefresh();
     }
   }
 }
@@ -958,8 +951,8 @@ void radar_pi::TimedControlUpdate() {
   if (!m_notify_control_dialog && !TIMED_OUT(now, m_notify_time_ms + 500)) {
     return;  // Don't run this more often than 2 times per second
   }
-  // following is to prevent crash in RadarPanel::Showframe on m_aui_mgr->Update() line 211, 
- if (m_max_canvas <= 0 || (m_max_canvas > 1 && m_current_canvas_index == 0)) {
+  // following is to prevent crash in RadarPanel::Showframe on m_aui_mgr->Update() line 211,
+  if (m_max_canvas <= 0 || (m_max_canvas > 1 && m_current_canvas_index == 0)) {
     return;
   }
   m_notify_time_ms = now;
@@ -1133,7 +1126,11 @@ bool radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 
 bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort *vp, int canvasIndex) {
   GeoPosition radar_pos;
-
+  if(m_render_busy){
+    LOG_INFO(wxT("error render busy"));
+    return true;
+  }
+  m_render_busy = true;
   // Update m_overlay[canvasIndex] by checking all radars, value may be modified by the buttons
   m_chart_overlay[canvasIndex] = -1;
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -1145,10 +1142,12 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
   int current_overlay_radar = m_chart_overlay[canvasIndex];
   m_max_canvas = GetCanvasCount( );
   if (m_max_canvas <= 0 || m_current_canvas_index >= m_max_canvas){
+    m_render_busy = false;
     return true;
   }
   
   if (!m_initialized) {
+    m_render_busy = false;
     return true;
   }
   
@@ -1218,8 +1217,11 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
                vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
     m_radar[current_overlay_radar]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
   }
-
-  ScheduleWindowRefresh();
+  if(canvasIndex == 0){
+    ScheduleWindowRefresh();
+  }
+  TimedControlUpdate();
+  m_render_busy = false;
 
   return true;
 }

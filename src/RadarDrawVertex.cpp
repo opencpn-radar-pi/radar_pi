@@ -153,7 +153,6 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   line->count = 0;
   line->timeout = now + m_ri->m_pi->m_settings.max_age;
   line->spoke_pos = spoke_pos;
-
   for (size_t radius = 0; radius < len; radius++) {
     strength = data[radius];
     BlobColour actual_colour = m_ri->m_colour_map[strength];

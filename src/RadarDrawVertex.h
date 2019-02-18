@@ -92,7 +92,6 @@ class RadarDrawVertex : public RadarDraw {
                GLubyte alpha);
 
   void Reset();
-
   wxCriticalSection m_exclusive;  // protects the following
   VertexLine* m_vertices;
   unsigned int m_count;

@@ -546,13 +546,13 @@ void RadarInfo::UpdateTransmitState() {
 
   if (state == RADAR_TRANSMIT && TIMED_OUT(now, m_data_timeout)) {
     m_state.Update(RADAR_STANDBY);
-    LOG_INFO(wxT("radar_pi: %s data lost"), m_name.c_str());
+    LOG_VERBOSE(wxT("radar_pi: %s data lost"), m_name.c_str());
   }
   if (state == RADAR_STANDBY && TIMED_OUT(now, m_radar_timeout)) {
     static wxString empty;
 
     m_state.Update(RADAR_OFF);
-    LOG_INFO(wxT("radar_pi: %s lost presence"), m_name.c_str());
+    LOG_VERBOSE(wxT("radar_pi: %s lost presence"), m_name.c_str());
     return;
   }
 
@@ -586,9 +586,6 @@ void RadarInfo::RequestRadarState(RadarState state) {
           if (m_pi->m_chart_overlay[i] == (int)m_radar) {
             GetCanvasByIndex(i)->Refresh(false);
           }
-        }
-        if (m_radar_panel) {
-          m_radar_panel->Refresh();
         }
       } else if (state == RADAR_STANDBY) {
         m_control->RadarTxOff();
@@ -789,10 +786,6 @@ void RadarInfo::UpdateControlState(bool all) {
   if (m_control_dialog) {
     m_control_dialog->UpdateControlValues(all);
     m_control_dialog->UpdateDialogShown(false);
-  }
-
-  if (IsPaneShown()) {
-    m_radar_panel->Refresh(false);
   }
 }
 
