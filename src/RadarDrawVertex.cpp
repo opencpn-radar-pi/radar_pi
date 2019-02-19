@@ -93,7 +93,6 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
     const size_t extra = 8 * VERTEX_PER_QUAD;
     line->points = (VertexPoint*)realloc(line->points, (line->allocated + extra) * sizeof(VertexPoint));
     line->allocated += extra;
-    m_count += extra;
   }
 
   if (!line->points) {
@@ -137,8 +136,8 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
 
   if (!line->points) {
     static size_t INITIAL_ALLOCATION = 600;  // Empirically found to be enough for a complicated picture
-    line->allocated = INITIAL_ALLOCATION * VERTEX_PER_QUAD;
-    m_count += INITIAL_ALLOCATION * VERTEX_PER_QUAD;
+    line->allocated = INITIAL_ALLOCATION;
+    m_count += INITIAL_ALLOCATION;
     line->points = (VertexPoint*)malloc(line->allocated * sizeof(VertexPoint));
     if (!line->points) {
       if (!m_oom) {
@@ -269,9 +268,13 @@ void RadarDrawVertex::DrawRadarPanelImage(double panel_scale, double panel_rotat
           glScaled(panel_scale, panel_scale, 1.);
         }
       }
-      glVertexPointer(2, GL_FLOAT, sizeof(VertexPoint), &line->points[0].xy);
-      glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(VertexPoint), &line->points[0].red);
-      glDrawArrays(GL_TRIANGLES, 0, line->count);
+      if (line->count >= line->allocated || line->count < 0) {
+        LOG_INFO(wxT("line length exceeded, too many vertices, count=%i"), line->count);
+      } else {
+        glVertexPointer(2, GL_FLOAT, sizeof(VertexPoint), &line->points[0].xy);
+        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(VertexPoint), &line->points[0].red);
+        glDrawArrays(GL_TRIANGLES, 0, line->count);
+      }
     }
     glPopMatrix();
   }
