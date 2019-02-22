@@ -124,8 +124,6 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   GLubyte strength = 0;
   time_t now = time(0);
 
-  wxCriticalSectionLocker lock(m_exclusive);
-
   int r_begin = 0;
   int r_end = 0;
 
@@ -165,10 +163,10 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
       r_end = r_begin + 1;
       previous_colour = actual_colour;  // new color
     } else if (previous_colour != BLOB_NONE && (previous_colour != actual_colour)) {
-      colour = m_ri->m_colour_map_rgb[previous_colour];
-
-      SetBlob(line, angle, angle + 1, r_begin, r_end, colour.Red(), colour.Green(), colour.Blue(), alpha);
-
+      unsigned char red = m_ri->m_colour_map_rgb[previous_colour].Red();
+      unsigned char green = m_ri->m_colour_map_rgb[previous_colour].Green();
+      unsigned char blue = m_ri->m_colour_map_rgb[previous_colour].Blue();
+      SetBlob(line, angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
       previous_colour = actual_colour;
       if (actual_colour != BLOB_NONE) {  // change of color, start new blob
         r_begin = radius;
@@ -176,11 +174,11 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
       }
     }
   }
-
   if (previous_colour != BLOB_NONE) {  // Draw final blob
-    colour = m_ri->m_colour_map_rgb[previous_colour];
-
-    SetBlob(line, angle, angle + 1, r_begin, r_end, colour.Red(), colour.Green(), colour.Blue(), alpha);
+    unsigned char red   = m_ri->m_colour_map_rgb[previous_colour].Red();
+    unsigned char green = m_ri->m_colour_map_rgb[previous_colour].Green();
+    unsigned char blue  = m_ri->m_colour_map_rgb[previous_colour].Blue();
+    SetBlob(line, angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
   }
 }
 
@@ -268,13 +266,9 @@ void RadarDrawVertex::DrawRadarPanelImage(double panel_scale, double panel_rotat
           glScaled(panel_scale, panel_scale, 1.);
         }
       }
-      if (line->count >= line->allocated || line->count < 0) {
-        LOG_INFO(wxT("line length exceeded, too many vertices, count=%i"), line->count);
-      } else {
-        glVertexPointer(2, GL_FLOAT, sizeof(VertexPoint), &line->points[0].xy);
-        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(VertexPoint), &line->points[0].red);
-        glDrawArrays(GL_TRIANGLES, 0, line->count);
-      }
+      glVertexPointer(2, GL_FLOAT, sizeof(VertexPoint), &line->points[0].xy);
+      glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(VertexPoint), &line->points[0].red);
+      glDrawArrays(GL_TRIANGLES, 0, line->count);
     }
     glPopMatrix();
   }

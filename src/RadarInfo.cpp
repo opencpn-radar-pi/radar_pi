@@ -342,7 +342,7 @@ void RadarInfo::ComputeColourMap() {
   m_colour_map_rgb[BLOB_STRONG] = m_pi->m_settings.strong_colour;
   m_colour_map_rgb[BLOB_INTERMEDIATE] = m_pi->m_settings.intermediate_colour;
   m_colour_map_rgb[BLOB_WEAK] = m_pi->m_settings.weak_colour;
-
+ 
   if (m_target_trails.GetState() != RCS_OFF) {
     float r1 = m_pi->m_settings.trail_start_colour.Red();
     float g1 = m_pi->m_settings.trail_start_colour.Green();
@@ -417,18 +417,16 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   // for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
   //  data[i] = 0;
   //  if (i < 7) data[i] = 200;   // put a dot in the middle for testing
-  //}
+  // }
 
-  //  for (int i = 0; i < 1024; i++) {
-  //    data[i] = 15;
-  //
-  //
+// // following sets an image of 512 circles
+//    for (int i = 0; i < 1020; i += 2) {
+//      data[i] = 0;
+//      data[i + 1] = 200;
+  
   // if (angle > 512 && angle < 530 && i > 512 && i < 530) data[i] = 200;
-  //
-  //
-  //
-  //
-  //  }   // set picture to 0 except one dot for testing
+  
+  // }   // set picture to 0 except one dot for testing
 
   // Recompute 'pixels_per_meter' based on the actual spoke length and range in meters.
   double pixels_per_meter = len / (double)range_meters;
