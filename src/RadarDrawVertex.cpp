@@ -93,7 +93,6 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
     const size_t extra = 8 * VERTEX_PER_QUAD;
     line->points = (VertexPoint*)realloc(line->points, (line->allocated + extra) * sizeof(VertexPoint));
     line->allocated += extra;
-    m_count += extra;
   }
 
   if (!line->points) {
@@ -124,9 +123,8 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   BlobColour previous_colour = BLOB_NONE;
   GLubyte strength = 0;
   time_t now = time(0);
-
+  unsigned char red, green, blue;
   wxCriticalSectionLocker lock(m_exclusive);
-
   int r_begin = 0;
   int r_end = 0;
 
@@ -137,8 +135,8 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
 
   if (!line->points) {
     static size_t INITIAL_ALLOCATION = 600;  // Empirically found to be enough for a complicated picture
-    line->allocated = INITIAL_ALLOCATION * VERTEX_PER_QUAD;
-    m_count += INITIAL_ALLOCATION * VERTEX_PER_QUAD;
+    line->allocated = INITIAL_ALLOCATION;
+    m_count += INITIAL_ALLOCATION;
     line->points = (VertexPoint*)malloc(line->allocated * sizeof(VertexPoint));
     if (!line->points) {
       if (!m_oom) {
@@ -166,10 +164,10 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
       r_end = r_begin + 1;
       previous_colour = actual_colour;  // new color
     } else if (previous_colour != BLOB_NONE && (previous_colour != actual_colour)) {
-      colour = m_ri->m_colour_map_rgb[previous_colour];
-
-      SetBlob(line, angle, angle + 1, r_begin, r_end, colour.Red(), colour.Green(), colour.Blue(), alpha);
-
+      red   = m_ri->m_colour_map_rgb[previous_colour].Red();
+      green = m_ri->m_colour_map_rgb[previous_colour].Green();
+      blue  = m_ri->m_colour_map_rgb[previous_colour].Blue();
+      SetBlob(line, angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
       previous_colour = actual_colour;
       if (actual_colour != BLOB_NONE) {  // change of color, start new blob
         r_begin = radius;
@@ -177,11 +175,11 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
       }
     }
   }
-
   if (previous_colour != BLOB_NONE) {  // Draw final blob
-    colour = m_ri->m_colour_map_rgb[previous_colour];
-
-    SetBlob(line, angle, angle + 1, r_begin, r_end, colour.Red(), colour.Green(), colour.Blue(), alpha);
+    red   = m_ri->m_colour_map_rgb[previous_colour].Red();
+    green = m_ri->m_colour_map_rgb[previous_colour].Green();
+    blue  = m_ri->m_colour_map_rgb[previous_colour].Blue();
+    SetBlob(line, angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
   }
 }
 
