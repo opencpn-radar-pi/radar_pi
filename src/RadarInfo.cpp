@@ -419,12 +419,12 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   //  if (i < 7) data[i] = 200;   // put a dot in the middle for testing
   // }
 
-// // following sets an image of 512 circles
-//    for (int i = 0; i < 1020; i += 2) {
-//      data[i] = 0;
-//      data[i + 1] = 200;
+// following sets an image of 512 circles
+  //  for (int i = 0; i < 1020; i += 2) {
+  //    data[i] = 0;
+  //    data[i + 1] = 200;
   
-  // if (angle > 512 && angle < 530 && i > 512 && i < 530) data[i] = 200;
+  // // if (angle > 512 && angle < 530 && i > 512 && i < 530) data[i] = 200;
   
   // }   // set picture to 0 except one dot for testing
 
