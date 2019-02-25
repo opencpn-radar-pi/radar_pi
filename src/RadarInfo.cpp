@@ -932,7 +932,7 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
     m_arpa->RefreshArpaTargets();
   }
 
-  wxStopWatch stopwatch;
+  wxLongLong now = wxGetUTCTimeMillis();
   // Render the guard zone
   if (!overlay || (M_SETTINGS.guard_zone_on_overlay && (M_SETTINGS.overlay_on_standby || m_state.GetValue() == RADAR_TRANSMIT))) {
     glPushMatrix();
@@ -964,7 +964,7 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
       m_arpa->DrawArpaTargetsPanel(scale, arpa_rotate);
     }
   }
-  m_draw_time_ms = stopwatch.Time();
+  m_draw_time_ms = (wxGetUTCTimeMillis() - now).GetLo();
   glPopAttrib();
   if (!overlay) {
     glPopMatrix();

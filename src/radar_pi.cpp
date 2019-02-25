@@ -290,6 +290,9 @@ int radar_pi::Init(void) {
     delete m_radar[r];
     m_radar[r] = 0;
   }
+  for (size_t r = 0; r < MAX_CHART_CANVAS; r++) {
+    m_draw_time_overlay_ms[r] = 0;
+  }
 
   m_initialized = true;
   SetRadarWindowViz();
@@ -899,12 +902,18 @@ void radar_pi::UpdateHeadingPositionState() {
 void radar_pi::ScheduleWindowRefresh() {
   int drawTime = 0;
   int millis;
-
+  int renderPPI[2];
+  int render_overlay[MAX_CHART_CANVAS];
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->RefreshDisplay();
     drawTime += m_radar[r]->GetDrawTime();
+    renderPPI[r] = m_radar[r]->GetDrawTime();
   }
-
+  int max_canvas = GetCanvasCount();
+  for (size_t r = 0; r < max_canvas; r++) {
+    drawTime += m_draw_time_overlay_ms[r];
+    render_overlay[r] = m_draw_time_overlay_ms[r];
+  }
   int refreshrate = m_settings.refreshrate.GetValue();
 
   if (refreshrate > 1 && drawTime < 500) {
@@ -915,10 +924,13 @@ void radar_pi::ScheduleWindowRefresh() {
     // 5 = 16 per s,  64ms
     millis = (1000 - drawTime) / (1 << (refreshrate - 1)) + drawTime;
 
+    LOG_VERBOSE(wxT("radar_pi: rendering took %i ms, PPI0= %i ms, PPI1= %i, Overlay0= %i, Overlay1= %i next render in %i ms"), 
+    drawTime, renderPPI[0], renderPPI[1], render_overlay[0],render_overlay[1], millis);
+
     m_timer->StartOnce(millis);
-    LOG_VERBOSE(wxT("radar_pi: rendering PPI window(s) took %dms, next extra render is in %dms"), drawTime, millis);
+    
   } else {
-    LOG_VERBOSE(wxT("radar_pi: rendering PPI window(s) took %dms, refreshrate=%d, no next extra render"), drawTime, refreshrate);
+    LOG_VERBOSE(wxT("radar_pi: rendering took %dms, refreshrate=%d, no next extra render"), drawTime, refreshrate);
   }
 }
 
@@ -936,16 +948,24 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
         m_radar[r]->SetRadarPosition(m_ownship, m_hdt);
       }
     }
+    bool ppi_visible = false;
 
-    bool refreshing = false;
-    for (int i = 0; i < CANVAS_COUNT; i++) {
-        GetCanvasByIndex(i)->Refresh(false);
-        refreshing = true;
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      if (m_settings.show_radar[r]) {
+        ppi_visible = true;
+      }
+    }
+    // always refresh canvas0 if radar window is visible
+    // and refresh canvas with overlay
+    for (size_t r = 0; r < CANVAS_COUNT; r++) {
+      if (m_chart_overlay[r] >= 0 || (r == 0 && ppi_visible)) {
+        GetCanvasByIndex(r)->Refresh(false);
+      }
     }
   }
 }
 
-// Called between 1 and 10 times per second by timer or RenderGLOverlay call
+// Called between 1 and 10 times per second by RenderGLOverlay call
 void radar_pi::TimedControlUpdate() {
   wxLongLong now = wxGetUTCTimeMillis();
   if (!m_notify_control_dialog && !TIMED_OUT(now, m_notify_time_ms + 500)) {
@@ -955,6 +975,15 @@ void radar_pi::TimedControlUpdate() {
   if (m_max_canvas <= 0 || (m_max_canvas > 1 && m_current_canvas_index == 0)) {
     return;
   }
+
+// // for overlay testing only, simple trick to get position and heading
+//   wxString nmea;
+//   nmea = wxT("$APHDM,000.0,M*33<0x0D><0x0A>");
+//   PushNMEABuffer(nmea);
+//   nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
+//   PushNMEABuffer(nmea);
+
+
   m_notify_time_ms = now;
 
   bool updateAllControls = m_notify_control_dialog;
@@ -1126,11 +1155,15 @@ bool radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 
 bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort *vp, int canvasIndex) {
   GeoPosition radar_pos;
+  // prevent this being called recursively
+  // no critical section locker (will wait), better to return immediately
   if(m_render_busy){
     LOG_INFO(wxT("error render busy"));
     return true;
   }
+
   m_render_busy = true;
+  wxLongLong now = wxGetUTCTimeMillis();
   // Update m_overlay[canvasIndex] by checking all radars, value may be modified by the buttons
   m_chart_overlay[canvasIndex] = -1;
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -1217,12 +1250,15 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
                vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
     m_radar[current_overlay_radar]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
   }
-  if(canvasIndex == 0){
+  
+  m_draw_time_overlay_ms[canvasIndex] = (wxGetUTCTimeMillis() - now).GetLo();
+
+  if (canvasIndex == 0) {
     ScheduleWindowRefresh();
   }
   TimedControlUpdate();
   m_render_busy = false;
-
+  int total_rendering = (wxGetUTCTimeMillis() - now).GetLo();
   return true;
 }
 

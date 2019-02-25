@@ -541,6 +541,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   int m_chart_overlay[MAX_CHART_CANVAS];  // The overlay for canvas x, -1 = none, otherwise = radar #
   int m_context_menu_canvas_index;        // PrepareContextMenu() was last called for this canvas
   bool m_render_busy;
+  int m_draw_time_overlay_ms[MAX_CHART_CANVAS];
 
   bool m_bpos_set;
   time_t m_bpos_timestamp;
