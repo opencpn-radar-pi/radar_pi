@@ -910,7 +910,7 @@ void radar_pi::ScheduleWindowRefresh() {
     renderPPI[r] = m_radar[r]->GetDrawTime();
   }
   int max_canvas = GetCanvasCount();
-  for (size_t r = 0; r < max_canvas; r++) {
+  for (int r = 0; r < max_canvas; r++) {
     drawTime += m_draw_time_overlay_ms[r];
     render_overlay[r] = m_draw_time_overlay_ms[r];
   }
@@ -957,7 +957,7 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
     }
     // always refresh canvas0 if radar window is visible
     // and refresh canvas with overlay
-    for (size_t r = 0; r < CANVAS_COUNT; r++) {
+    for (int r = 0; r < CANVAS_COUNT; r++) {
       if (m_chart_overlay[r] >= 0 || (r == 0 && ppi_visible)) {
         GetCanvasByIndex(r)->Refresh(false);
       }
