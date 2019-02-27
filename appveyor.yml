@@ -1,4 +1,4 @@
-clone_folder: c:\project\weather_routing_pi
+clone_folder: c:\project\shipdriver_pi
 shallow_clone: true
 image:
 - Visual Studio 2017
@@ -32,7 +32,7 @@ install:
   - set
 
 before_build:
-  - cd c:\project\weather_routing_pi
+  - cd c:\project\shipdriver_pi
   - cd buildwin
   - ps: Start-FileDownload https://downloads.sourceforge.net/project/opencpnplugins/opencpn_packaging_data/PVW32Con.exe
   - cd ..
@@ -40,7 +40,7 @@ before_build:
   - cd build
   - ps: Start-FileDownload https://downloads.sourceforge.net/project/opencpnplugins/opencpn_lib/4.99.1405-vc141_xp/opencpn.lib
   - ps: Start-FileDownload http://opencpn.navnux.org/build_deps/OpenCPN_buildwin-4.99a.7z
-  - cmd: 7z x -y OpenCPN_buildwin-4.99a.7z -oc:\project\weather_routing_pi\buildwin
+  - cmd: 7z x -y OpenCPN_buildwin-4.99a.7z -oc:\project\shipdriver_pi\buildwin
   - cmake -T v141_xp ..
 
 build_script:
