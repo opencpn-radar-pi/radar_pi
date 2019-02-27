@@ -94,7 +94,7 @@ public:
 	wxString createRMCSentence(wxDateTime myTime, double myLat, double myLon, double mySpd, double myDir);
 	wxString createGLLSentence(wxDateTime myTime, double myLat, double myLon, double mySpd, double myDir);
 	wxString createVTGSentence(double mySpd, double myDir);
-	wxString createHDGSentence(double myDir);
+	wxString createHDTSentence(double myDir);
 
 	wxString LatitudeToString(double mLat);
 	wxString LongitudeToString(double mLon);
@@ -128,7 +128,7 @@ protected:
 
 private:
 	void Notify();
-	wxString MWD, VHW, MWVA, MWVT, GLL, VTG, HDG;
+	wxString MWD, VHW, MWVA, MWVT, GLL, VTG, HDT;
 	double initDir, initSpd, initRudder, myDir;
 
 	wxDateTime dt;

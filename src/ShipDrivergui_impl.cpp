@@ -130,6 +130,7 @@ void Dlg::OnStart(wxCommandEvent& event) {
 	dt = dt.Now();
 	GLL = createGLLSentence(dt, initLat, initLon, initSpd / 7200, initDir);
 	VTG = createVTGSentence(initSpd, initDir);
+	
 
 	m_interval = 500;
 	m_Timer->Start(m_interval, wxTIMER_CONTINUOUS); // start timer
@@ -292,19 +293,23 @@ void Dlg::Notify()
 	if (m_bGrib && m_bUsingWind){
 		MWVA = createMWVASentence(initSpd, myDir, wdir, wspd);
 		MWVT = createMWVTSentence(initSpd, myDir, wdir, wspd);
+		MWD = createMWDSentence(wdir, wspd);
 			
 		PushNMEABuffer(MWVA + _T("\n"));
 		PushNMEABuffer(MWVT + _T("\n"));
+		PushNMEABuffer(MWD + _T("\n"));
 		
 	}
 
 	GLL = createGLLSentence(mdt, initLat, initLon, initSpd, myDir);
 	VTG = createVTGSentence(initSpd, myDir);
 	VHW = createVHWSentence(initSpd, myDir);
+	
 
 	PushNMEABuffer(GLL + _T("\n"));
 	PushNMEABuffer(VTG + _T("\n"));
 	PushNMEABuffer(VHW + _T("\n"));
+	
 
 	if (m_bUseAis) PushNMEABuffer(myNMEAais + _T("\n"));
 
@@ -375,8 +380,8 @@ wxString Dlg::createMWDSentence(double winddirection, double windspeed){
 	nSpd = wxString::Format(_T("%f"), windspeed);
 	nDir = wxString::Format(_T("%f"), winddirection);
 
-	nForCheckSum = nMWV + nC + nDir + nC + nRelTrue + nC + nSpd + nC + nUnits + nC + nA;
-	//nForCheckSum = nMWD + nC + nDir + nC + nRelTrue + nC  + nC + nC + nSpd + nC + nUnits + nC + nC ;
+	//nForCheckSum = nMWV + nC + nDir + nC + nRelTrue + nC + nSpd + nC + nUnits + nC + nA;
+	nForCheckSum = nMWD + nC + nDir + nC + nRelTrue + nC  + nC + nC + nSpd + nC + nUnits + nC + nC ;
 	nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
 	return nFinal;
 
@@ -698,7 +703,7 @@ wxString Dlg::createVTGSentence(double mySpd, double myDir){
 	return nFinal;
 }
 
-wxString Dlg::createHDGSentence(double myDir){
+wxString Dlg::createHDTSentence(double myDir){
 	/*
 	1   2 3
 	|   | |
@@ -718,7 +723,7 @@ wxString Dlg::createHDGSentence(double myDir){
 	wxString nN = _T("N,");
 	wxString nK = _T("K,");
 
-	wxString nHDG = _T("IIHDG,");
+	wxString nHDG = _T("IIHDT,");
 	nValid = _T("A,A");
 	wxString ndlr = _T("$");
 	wxString nast = _T("*");
