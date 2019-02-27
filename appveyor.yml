@@ -1,0 +1,63 @@
+clone_folder: c:\project\weather_routing_pi
+shallow_clone: true
+image:
+- Visual Studio 2017
+
+platform: 
+# - x64
+- Win32
+
+configuration: Release
+test: OFF
+
+install:
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
+
+  # sent environment variables for wxWidgets
+  - set WXWIN=C:\wxWidgets-3.1.2
+  - set wxWidgets_ROOT_DIR=%WXWIN%
+  - set wxWidgets_LIB_DIR=%WXWIN%\lib\vc_dll
+  - cmd: SET PATH=%PATH%;%WXWIN%;%wxWidgets_LIB_DIR%;C:\Program Files (x86)\Poedit\Gettexttools\bin;
+
+  # install dependencies:
+  - choco install poedit
+
+  - ps: Start-FileDownload http://opencpn.navnux.org/build_deps/nsis-3.04-setup.exe
+  - cmd: nsis-3.04-setup.exe /S
+
+  # Download and unzip wxwidgets
+  - ps: Start-FileDownload http://opencpn.navnux.org/build_deps/wxWidgets-3.1.2.7z
+  - cmd: 7z x wxWidgets-3.1.2.7z -o%WXWIN% > null
+
+  - set
+
+before_build:
+  - cd c:\project\weather_routing_pi
+  - cd buildwin
+  - ps: Start-FileDownload https://downloads.sourceforge.net/project/opencpnplugins/opencpn_packaging_data/PVW32Con.exe
+  - cd ..
+  - mkdir build
+  - cd build
+  - ps: Start-FileDownload https://downloads.sourceforge.net/project/opencpnplugins/opencpn_lib/4.99.1405-vc141_xp/opencpn.lib
+  - ps: Start-FileDownload http://opencpn.navnux.org/build_deps/OpenCPN_buildwin-4.99a.7z
+  - cmd: 7z x -y OpenCPN_buildwin-4.99a.7z -oc:\project\weather_routing_pi\buildwin
+  - cmake -T v141_xp ..
+
+build_script:
+  # - cmake --build . --config debug
+  - cmake --build . --target package --config release
+
+artifacts:
+  - path: 'build\*.exe'
+    name: installer
+
+deploy:
+  description: 'release created by AppVeyor CI'
+  provider: GitHub
+  auth_token: '%GitHub_auth_token%'
+  artifact: installer
+  draft: true
+  prerelease: true
+  on:
+    appveyor_repo_tag: true # deploy on tag push only
+    configuration: Release  # Debug contains non-redist MS DLLs
