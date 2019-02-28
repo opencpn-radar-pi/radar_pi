@@ -12,7 +12,6 @@ wxBitmap *_img_ShipDriverIcon;
 #ifdef SHIPDRIVER_USE_SVG
 #include "ocpn_plugin.h"
 wxString _svg_shipdriver;
-wxString _svg_shipdriver_rollover;
 wxString _svg_shipdriver_toggled;
 #endif
 
@@ -31,8 +30,6 @@ void initialize_images(void)
     fn.AppendDir(_T("data"));
     fn.SetFullName(_T("shipdriver_pi.svg"));
     _svg_shipdriver = fn.GetFullPath();
-    fn.SetFullName(_T("shipdriver_pi_rollover.svg"));
-    _svg_shipdriver_rollover = fn.GetFullPath();
     fn.SetFullName(_T("shipdriver_pi_toggled.svg"));
     _svg_shipdriver_toggled = fn.GetFullPath();
 #endif

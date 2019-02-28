@@ -13,7 +13,6 @@ extern wxBitmap *_img_ShipDriverIcon;
 
 #ifdef SHIPDRIVER_USE_SVG
 extern wxString _svg_shipdriver;
-extern wxString _svg_shipdriver_rollover;
 extern wxString _svg_shipdriver_toggled;
 #endif
 
