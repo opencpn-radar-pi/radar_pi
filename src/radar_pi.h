@@ -417,7 +417,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   void OnControlDialogClose(RadarInfo *ri);
   void SetDisplayMode(DisplayModeType mode);
 
-  void ShowRadarControl(int radar, bool show = true, bool reparent = true);
+  void ShowRadarControl(int radar, bool show = true);
   void ShowGuardZoneDialog(int radar, int zone);
   void OnGuardZoneDialogClose(RadarInfo *ri);
   void ConfirmGuardZoneBogeys();
@@ -518,7 +518,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   void RenderRadarBuffer(wxDC *pdc, int width, int height);
   void PassHeadingToOpenCPN();
   void CacheSetToolbarToolBitmaps();
-  void SetRadarWindowViz(bool reparent = false);
+  void SetRadarWindowViz();
   void UpdateCOGAvg(double cog);
   void OnTimerNotify(wxTimerEvent &event);
   void TimedControlUpdate();

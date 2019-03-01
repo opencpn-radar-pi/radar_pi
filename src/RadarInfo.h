@@ -195,7 +195,7 @@ class RadarInfo {
   void ShiftImageLatToCenter();
   void RenderRadarImage1(wxPoint center, double scale, double rotation, bool overlay);
   void ShowRadarWindow(bool show);
-  void ShowControlDialog(bool show, bool reparent);
+  void ShowControlDialog(bool show);
   void Shutdown();
   // void DeleteReceive();
   void UpdateTransmitState();

@@ -520,14 +520,14 @@ void radar_pi::NotifyRadarWindowViz() { m_notify_radar_window_viz = true; }
 //
 void radar_pi::NotifyControlDialog() { m_notify_control_dialog = true; }
 
-void radar_pi::SetRadarWindowViz(bool reparent) {
+void radar_pi::SetRadarWindowViz() {
   for (size_t r = 0; r < m_settings.radar_count; r++) {
     bool showThisRadar = m_settings.show && m_settings.show_radar[r];
     bool showThisControl = m_settings.show && m_settings.show_radar_control[r];
     LOG_DIALOG(wxT("radar_pi: RadarWindow[%d] show=%d showcontrol=%d"), r, showThisRadar, showThisControl);
     m_radar[r]->ShowRadarWindow(showThisRadar);
 
-    m_radar[r]->ShowControlDialog(showThisControl, reparent);
+    m_radar[r]->ShowControlDialog(showThisControl);
     m_radar[r]->UpdateTransmitState();
   }
 }
@@ -584,10 +584,10 @@ int radar_pi::GetArpaTargetCount(void) {
 //********************************************************************************
 // Operation Dialogs - Control, Manual, and Options
 
-void radar_pi::ShowRadarControl(int radar, bool show, bool reparent) {
-  LOG_DIALOG(wxT("radar_pi: ShowRadarControl(%d, %d, %i)"), radar, (int)show), (int)reparent;
+void radar_pi::ShowRadarControl(int radar, bool show) {
+  LOG_DIALOG(wxT("radar_pi: ShowRadarControl(%d, %d"), radar, (int)show);
   m_settings.show_radar_control[radar] = show;
-  m_radar[radar]->ShowControlDialog(show, reparent);
+  m_radar[radar]->ShowControlDialog(show);
 }
 
 void radar_pi::OnControlDialogClose(RadarInfo *ri) {
@@ -976,12 +976,12 @@ void radar_pi::TimedControlUpdate() {
     return;
   }
 
-// // for overlay testing only, simple trick to get position and heading
-//   wxString nmea;
-//   nmea = wxT("$APHDM,000.0,M*33<0x0D><0x0A>");
-//   PushNMEABuffer(nmea);
-//   nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
-//   PushNMEABuffer(nmea);
+// for overlay testing only, simple trick to get position and heading
+  wxString nmea;
+  nmea = wxT("$APHDM,000.0,M*33<0x0D><0x0A>");
+  PushNMEABuffer(nmea);
+  nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
+  PushNMEABuffer(nmea);
 
 
   m_notify_time_ms = now;
@@ -990,7 +990,7 @@ void radar_pi::TimedControlUpdate() {
   if (m_opengl_mode_changed || m_notify_radar_window_viz) {
     m_opengl_mode_changed = false;
     m_notify_radar_window_viz = false;
-    SetRadarWindowViz(true);
+    SetRadarWindowViz();
     updateAllControls = true;
   }
   UpdateHeadingPositionState();
