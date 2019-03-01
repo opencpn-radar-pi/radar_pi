@@ -1343,36 +1343,37 @@ void ControlsDialog::OnRadarShowPPIButtonClick(wxCommandEvent& event) {
 
   bool show = true;
 
-  if (M_SETTINGS.radar_count > 1) {
-    if (m_pi->m_settings.show_radar[m_ri->m_radar]) {
+  if (M_SETTINGS.radar_count > 0) {
+    /*if (m_pi->m_settings.show_radar[m_ri->m_radar]) {
       for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
         if (r != m_ri->m_radar && M_SETTINGS.show_radar[r] == true) {
           show = false;
         }
       }
-    }
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      m_pi->m_settings.show_radar[r] = show;
-      if (!show) {
-        bool doHide = true;
-        for (int i = 0; i < MAX_CHART_CANVAS; i++) {
-          if (m_pi->m_chart_overlay[i] == (int)r) {
-            doHide = false;
-          }
-        }
-        if (doHide) {
-          m_pi->m_settings.show_radar_control[r] = false;
-        }
-      }
-      LOG_DIALOG(wxT("%s OnRadarShowButton: show_radar[%d]=%d"), m_log_name.c_str(), r, show);
-    }
-  } else {
+
+    }*/
+   // for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    m_pi->m_settings.show_radar[m_ri->m_radar] = !m_pi->m_settings.show_radar[m_ri->m_radar];
+      //if (!show) {
+      //  bool doHide = true;
+      //  for (int i = 0; i < MAX_CHART_CANVAS; i++) {
+      //    if (m_pi->m_chart_overlay[i] == (int)r) {
+      //      doHide = false;
+      //    }
+      //  }
+      //  if (doHide) {
+      //    //m_pi->m_settings.show_radar_control[r] = false;
+      //  }
+      //}
+    LOG_DIALOG(wxT("%s OnRadarShowButton: show_radar[%d]=%d"), m_log_name.c_str(), m_ri->m_radar, show);
+   // }
+  } /*else {
     if (m_ri->IsPaneShown()) {
       show = false;
     }
     m_pi->m_settings.show_radar[0] = show;
     LOG_DIALOG(wxT("%s OnRadarShowButton: show_radar[%d]=%d"), m_log_name.c_str(), 0, show);
-  }
+  }*/
 
   m_pi->NotifyRadarWindowViz();
 }
@@ -1813,33 +1814,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_power_sizer) {
     m_power_sub_button->SetLabel(o);
   }
-
-  if (M_SETTINGS.radar_count > 1) {
-    bool show_other_radar = false;
-    if (m_pi->m_settings.show_radar[m_ri->m_radar]) {
-      for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-        if (r != m_ri->m_radar && M_SETTINGS.show_radar[r] == true) {
-          show_other_radar = true;
-        }
-      }
-    }
-
-    if (m_pi->m_settings.show_radar[m_ri->m_radar]) {
-      if (show_other_radar) {
-        o = _("Hide all PPI windows");
-      } else {
-        o = _("Show other PPI windows");
-      }
-    } else {
-      if (show_other_radar) {
-        o = _("Show PPI window");  // can happen if this window hidden but control is for overlay
-      } else {
-        o = _("Show all PPI windows");
-      }
-    }
-  } else {
-    o = (m_pi->m_settings.show_radar[m_ri->m_radar]) ? _("Hide PPI window") : _("Show PPI window");
-  }
+  o = (m_pi->m_settings.show_radar[m_ri->m_radar]) ? _("Hide PPI window") : _("Show PPI window");
   m_show_ppi_button->SetLabel(o);
 
   for (int b = 0; b < BEARING_LINES; b++) {
@@ -2006,6 +1981,7 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
     m_auto_hide_timeout = 0;
   }
 
+
 #ifdef __WXMAC__NEVER
   // Following helps on OSX where the control is SHOW_ON_TOP to not show when no part of OCPN is focused
   wxWindow* focused = FindFocus();
@@ -2055,7 +2031,6 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
     m_pi->m_settings.show_radar_control[m_ri->m_radar] = true;
     m_panel_position = panelPos;
   }
-
   Resize(false);
 }
 
