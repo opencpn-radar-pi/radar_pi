@@ -237,7 +237,7 @@ int radar_pi::Init(void) {
 
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
-  m_parent_window = GetOCPNCanvasWindow();
+  m_parent_window = GetCanvasByIndex(0);
   m_shareLocn = *GetpSharedDataLocation() + _T("plugins") + wxFileName::GetPathSeparator() + _T("radar_pi") +
                 wxFileName::GetPathSeparator() + _T("data") + wxFileName::GetPathSeparator();
 
@@ -585,7 +585,7 @@ int radar_pi::GetArpaTargetCount(void) {
 // Operation Dialogs - Control, Manual, and Options
 
 void radar_pi::ShowRadarControl(int radar, bool show, bool reparent) {
-  LOG_DIALOG(wxT("radar_pi: ShowRadarControl(%d, %d)"), radar, (int)show);
+  LOG_DIALOG(wxT("radar_pi: ShowRadarControl(%d, %d, %i)"), radar, (int)show), (int)reparent;
   m_settings.show_radar_control[radar] = show;
   m_radar[radar]->ShowControlDialog(show, reparent);
 }
@@ -985,7 +985,6 @@ void radar_pi::TimedControlUpdate() {
 
 
   m_notify_time_ms = now;
-
   bool updateAllControls = m_notify_control_dialog;
   m_notify_control_dialog = false;
   if (m_opengl_mode_changed || m_notify_radar_window_viz) {

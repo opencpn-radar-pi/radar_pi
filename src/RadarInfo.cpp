@@ -295,14 +295,13 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
       m_control_dialog = RadarFactory::MakeControlsDialog(m_radar_type, m_radar);
       m_control_dialog->m_panel_position = panel_pos;
       m_control_dialog->m_manually_positioned = manually_positioned;
-      wxWindow *parent = (wxWindow *)m_radar_panel;
-      if (!m_pi->m_settings.show_radar[m_radar]) {
-        parent = m_pi->m_parent_window;
-      }
+      wxWindow *parent = GetCanvasByIndex(0);
       LOG_VERBOSE(wxT("radar_pi %s: Creating control dialog"), m_name.c_str());
       m_control_dialog->Create(parent, m_pi, this, wxID_ANY, m_name, m_pi->m_settings.control_pos[m_radar]);
     }
-    if (m_control_dialog) m_control_dialog->ShowDialog();
+    if (m_control_dialog) {
+      m_control_dialog->ShowDialog();
+    }
   } else if (m_control_dialog) {
     m_control_dialog->HideDialog();
   }
