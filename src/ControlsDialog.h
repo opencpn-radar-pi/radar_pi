@@ -132,7 +132,6 @@ class ControlsDialog : public wxDialog {
     m_from_control = 0;
 
     m_panel_position = wxDefaultPosition;
-    m_manually_positioned = false;
 
     m_pi = 0;
     m_ri = 0;
@@ -246,7 +245,6 @@ class ControlsDialog : public wxDialog {
   wxBoxSizer *m_top_sizer;
   wxBoxSizer *m_control_sizer;
   wxPoint m_panel_position;
-  bool m_manually_positioned;
   ControlInfo m_ctrl[CT_MAX];
 
  protected:

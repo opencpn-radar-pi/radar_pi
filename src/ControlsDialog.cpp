@@ -1494,7 +1494,6 @@ void ControlsDialog::OnDeleteAllTargetsButtonClick(wxCommandEvent& event) {
 }
 
 void ControlsDialog::OnMove(wxMoveEvent& event) {
-  m_manually_positioned = true;
   event.Skip();
 }
 
@@ -2008,12 +2007,10 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
     // then reset the dialog to the left or right of the radar panel.
     wxPoint panelPos = m_ri->m_radar_panel->GetPos();
     bool controlInitialShow = !m_pi->m_settings.control_pos[m_ri->m_radar].IsFullySpecified();
-    bool panelShown = m_ri->m_radar_panel->IsShown();
-    bool panelMoved = !m_panel_position.IsFullySpecified() || panelPos != m_panel_position;
+    // bool panelShown = m_ri->m_radar_panel->IsShown();
+    // bool panelMoved = !m_panel_position.IsFullySpecified() || panelPos != m_panel_position;
 
-    if (panelShown                                  // if the radar pane is shown and
-        && ((panelMoved && !m_manually_positioned)  // has moved this session and user did not touch pos, or
-            || controlInitialShow)) {               // the position has never been set at all, ever
+    if (controlInitialShow) {               // the position has never been set at all, ever
       wxSize panelSize = m_ri->m_radar_panel->GetSize();
       wxSize mySize = this->GetSize();
 
