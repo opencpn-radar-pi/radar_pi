@@ -936,18 +936,7 @@ void radar_pi::ScheduleWindowRefresh() {
 
 void radar_pi::OnTimerNotify(wxTimerEvent &event) {
   if (m_settings.show) {  // Is radar enabled?
-    ExtendedPosition intermediate_pos;
-    if (m_predicted_position_initialised) {
-      m_GPS_filter->Predict(&m_last_fixed, &m_expected_position);
-    }
-    // update ships position to best estimate
-    m_ownship = m_expected_position.pos;
-    // Update radar position offset from GPS
-    if (m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt)) {
-      for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-        m_radar[r]->SetRadarPosition(m_ownship, m_hdt);
-      }
-    }
+    
     bool ppi_visible = false;
 
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -1160,8 +1149,21 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     LOG_INFO(wxT("error render busy"));
     return true;
   }
-
   m_render_busy = true;
+
+  // update own ship position to best estimate
+  ExtendedPosition intermediate_pos;
+  if (m_predicted_position_initialised) {
+    m_GPS_filter->Predict(&m_last_fixed, &m_expected_position);
+  }
+  m_ownship = m_expected_position.pos;
+  // Update radar position offset from GPS
+  if (m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt)) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      m_radar[r]->SetRadarPosition(m_ownship, m_hdt);
+    }
+  }
+
   wxLongLong now = wxGetUTCTimeMillis();
   // Update m_overlay[canvasIndex] by checking all radars, value may be modified by the buttons
   m_chart_overlay[canvasIndex] = -1;
