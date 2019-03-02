@@ -917,10 +917,6 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
     arpa_rotate = overlay_rotate - OPENGL_ROTATION;
   }
 
-  if (arpa_on) {
-    m_arpa->RefreshArpaTargets();
-  }
-
   wxLongLong now = wxGetUTCTimeMillis();
   // Render the guard zone
   if (!overlay || (M_SETTINGS.guard_zone_on_overlay && (M_SETTINGS.overlay_on_standby || m_state.GetValue() == RADAR_TRANSMIT))) {

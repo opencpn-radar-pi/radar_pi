@@ -1184,6 +1184,27 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     m_render_busy = false;
     return true;
   }
+
+// refresh ARPA targets only with canvas 0
+if (canvasIndex == 0) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      bool arpa_on = false;
+      if (m_radar[r]->m_arpa) {
+        for (int i = 0; i < GUARD_ZONES; i++) {
+          if (m_radar[r]->m_guard_zone[i]->m_arpa_on) {
+            arpa_on = true;
+          }
+        }
+        if (m_radar[r]->m_arpa->GetTargetCount() > 0) {
+          arpa_on = true;
+        }
+      }
+      if (arpa_on) {
+        m_radar[r]->m_arpa->RefreshArpaTargets();
+      }
+    }
+  }
+
   
   m_vp = vp;
 
