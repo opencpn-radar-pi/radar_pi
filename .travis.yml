@@ -35,6 +35,7 @@ env:
    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
    #   via the "travis encrypt" command using the project repo's public key
    - secure: "zBn9XMA29qdbS7/bb1mASfS8WdvHoQFXqIb9Q/5ry5Z3bl0VrRFTw+5/3UJ41VUScZyfQR7lKtsBYv6QyF8pI6p16HepH4OUX/Ixsc3aKsI5Xy8ypuj9AlCycwhVQQeWxTQ3N+OXm1aMuEcKxJLvvFd3Rc6BL7vq1gNFn2GsnFxZg61f+qpafTV7RB85y3yaWdw12KtICH2uFIhW/3BWoHweNoVlV2PjjIaFfm4qQnOxS1S+d+3OlCQ8B4hTEhIv1MvHmUNMB4oXhCaCSppJH6JKpuTT+7W5RpFMEkQecgBVcLYzdHICt9YjztThTMO3dNYs6vIeXOmKk0NEq61Eba/v10vS84pcAI9tkbnyswLF8QaYJ2qItBin1Wsn8mkWoO2/0fs/k7CIMPsr/omix4V2oAc3mV/nX+4xK4xRPUfrxaLNODsggJF0Bu9rDLQWk6bfq7TG5GpW3ch/CTszhP6ZbKtNUa4CmqEcD1T0IoXNWnP0j5l/+rIpSR3415F4V87Ms+n8ujZ0FM+Cak3PzkYv/kZa0T1hbdCPhGmu+TA7+T+QgYQQflwdSai080Qtrv5otjQFj+jbjV6y4+fCt7RrBjXW/xmFOXIr5VdRdawfPle5Cj8kpwrIYBsQbPLkTJKd7se2H8WD0dVf38GCBfd3ReaFrgM56YoOlL1g5Gc="
+   - PROJECT_NAME: "opencpn-radar-pi/radar_pi"
 
 before_install:
   - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
