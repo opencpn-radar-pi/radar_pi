@@ -3,9 +3,9 @@ os:
 - linux
 - osx
 dist: xenial
-before_install:
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+# before_install:
+# - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update; fi
+# - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
 install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install build-essential
   cmake gettext git-core wx-common libwxgtk3.0-dev libglu1-mesa-dev
@@ -34,11 +34,10 @@ env:
   global:
    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
    #   via the "travis encrypt" command using the project repo's public key
-   - secure: "zBn9XMA29qdbS7/bb1mASfS8WdvHoQFXqIb9Q/5ry5Z3bl0VrRFTw+5/3UJ41VUScZyfQR7lKtsBYv6QyF8pI6p16HepH4OUX/Ixsc3aKsI5Xy8ypuj9AlCycwhVQQeWxTQ3N+OXm1aMuEcKxJLvvFd3Rc6BL7vq1gNFn2GsnFxZg61f+qpafTV7RB85y3yaWdw12KtICH2uFIhW/3BWoHweNoVlV2PjjIaFfm4qQnOxS1S+d+3OlCQ8B4hTEhIv1MvHmUNMB4oXhCaCSppJH6JKpuTT+7W5RpFMEkQecgBVcLYzdHICt9YjztThTMO3dNYs6vIeXOmKk0NEq61Eba/v10vS84pcAI9tkbnyswLF8QaYJ2qItBin1Wsn8mkWoO2/0fs/k7CIMPsr/omix4V2oAc3mV/nX+4xK4xRPUfrxaLNODsggJF0Bu9rDLQWk6bfq7TG5GpW3ch/CTszhP6ZbKtNUa4CmqEcD1T0IoXNWnP0j5l/+rIpSR3415F4V87Ms+n8ujZ0FM+Cak3PzkYv/kZa0T1hbdCPhGmu+TA7+T+QgYQQflwdSai080Qtrv5otjQFj+jbjV6y4+fCt7RrBjXW/xmFOXIr5VdRdawfPle5Cj8kpwrIYBsQbPLkTJKd7se2H8WD0dVf38GCBfd3ReaFrgM56YoOlL1g5Gc="
-   - PROJECT_NAME: "opencpn-radar-pi/radar_pi"
+   secure: "TkRgzTyQLs12HekORSYPoSJw6UvaWmhOUEmJP2Ht5aPd9pdSHmYfZQuWxoBjJl16cJFOG2AqHYQLg8Gz0hJvMh6uHaZXSzcWmTY2ZFU+m50MrMt7Z6hK3IG1zV9RhCQqyEqK6KNP6pfmiB6JNT4OUvxHKVDJ5+KCm6h6572kC+uIeHvsV7W5gSTIOBUPcdedZjAxuTnrP6wESxDHqplpwZlxiuslVAUsiTuXjVIHvtno+wcY3dlHXvHm1NF/P6VNwI1vT+A+yLn6IBztL5Cq9BAZUzRJ1fAccMgNIOtZLA0RkYfo5Is/2TLe+bk9kFNWNllORkVP9ul7+lhqeV2URl7ZD3WFI7qB9PJMtgKNd0mRVpfzMP3IB/N/l9FWxMw4yM+Ix6znIHDoylSrOxj34MbczJIcKNszzYws+1wTrzLNfgvl/c+J9uFR6DDazsTSePYfss6IBdv8N9n3RopZo1TsdsIubsj/c2iyueX6Kku6WKQauvM3YZ5hs80fzEwWQh6YRuLVXT5irrLin3co0SCyw/Bzc3p3ll1gt4PcK3WAUpYbrKp7R7O8JwOCluDcpUQjb3EBnA9MN/zMUMUQbMBiUtdJDR8vrWf8j2Dg5/OLFpoIx428qmJDK3WQXFDHdTU/IuktsYfC9vGks52dfVQ3RVsot8sYesd0Fo5Ewww="
 
 before_install:
-  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 
 addons:
   coverity_scan:
