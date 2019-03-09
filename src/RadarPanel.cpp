@@ -136,7 +136,7 @@ void RadarPanel::close(wxAuiManagerEvent& event) {
   // Save position of radar control before it is too late
   if (m_ri->m_control_dialog) {
     wxPoint pos = m_ri->m_control_dialog->GetPosition();
-    LOG_DIALOG(wxT("$$$X saved position ,%i, %i"), pos.x, pos.y);
+    LOG_DIALOG(wxT("X saved position ,%i, %i"), pos.x, pos.y);
     m_pi->m_settings.control_pos[m_ri->m_radar] = pos;
   }
 

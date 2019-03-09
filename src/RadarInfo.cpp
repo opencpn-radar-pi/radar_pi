@@ -292,7 +292,6 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
     if (!m_control_dialog) {
       m_control_dialog = RadarFactory::MakeControlsDialog(m_radar_type, m_radar);
       m_control_dialog->m_panel_position = panel_pos;
-      LOG_INFO(wxT("$$$1 posX=%i, posY=%i"), panel_pos.x, panel_pos.y);
       wxWindow *parent = (wxWindow *)m_radar_panel;
       if (!m_pi->m_settings.show_radar[m_radar]) {
         parent = m_pi->m_parent_window;

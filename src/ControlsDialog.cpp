@@ -305,7 +305,8 @@ bool RadarRangeControlButton::ToggleState() {
 
 ControlsDialog::~ControlsDialog() {
   wxPoint pos = GetPosition();
-  if (pos.x < 4000 && pos.y < 4000 && pos.x >= 0 && pos.y >= 0) {
+// When radar panel is hidden GetPosition() sometimes may return very large numbers
+  if (pos.x < 5000 && pos.y < 5000 && pos.x > -500 && pos.y > -500) {
     m_pi->m_settings.control_pos[m_ri->m_radar] = pos;
     LOG_DIALOG(wxT("%s saved position %d,%d"), m_log_name.c_str(), pos.x, pos.y);
   }
