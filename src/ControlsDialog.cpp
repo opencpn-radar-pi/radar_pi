@@ -305,9 +305,10 @@ bool RadarRangeControlButton::ToggleState() {
 
 ControlsDialog::~ControlsDialog() {
   wxPoint pos = GetPosition();
-
-  LOG_DIALOG(wxT("%s saved position %d,%d"), m_log_name.c_str(), pos.x, pos.y);
-  m_pi->m_settings.control_pos[m_ri->m_radar] = pos;
+  if (pos.x < 4000 && pos.y < 4000 && pos.x >= 0 && pos.y >= 0) {
+    m_pi->m_settings.control_pos[m_ri->m_radar] = pos;
+    LOG_DIALOG(wxT("%s saved position %d,%d"), m_log_name.c_str(), pos.x, pos.y);
+  }
 }
 
 bool ControlsDialog::Create(wxWindow* parent, radar_pi* ppi, RadarInfo* ri, wxWindowID id, const wxString& caption,
