@@ -902,7 +902,7 @@ void radar_pi::UpdateHeadingPositionState() {
 void radar_pi::ScheduleWindowRefresh() {
   int drawTime = 0;
   int millis;
-  int renderPPI[2];
+  int renderPPI[RADARS];
   int render_overlay[MAX_CHART_CANVAS];
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->RefreshDisplay();
@@ -960,7 +960,7 @@ void radar_pi::TimedControlUpdate() {
   if (!m_notify_control_dialog && !TIMED_OUT(now, m_notify_time_ms + 500)) {
     return;  // Don't run this more often than 2 times per second
   }
-  // following is to prevent crash in RadarPanel::Showframe on m_aui_mgr->Update() line 211,
+  // following is to prevent crash in RadarPanel::ShowFrame on m_aui_mgr->Update() line 222,
   if (m_max_canvas <= 0 || (m_max_canvas > 1 && m_current_canvas_index == 0)) {
     return;
   }
