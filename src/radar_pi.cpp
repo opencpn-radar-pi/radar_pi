@@ -1273,6 +1273,9 @@ if (canvasIndex == 0) {
     LOG_DIALOG(wxT("radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat,
                vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
     m_radar[current_overlay_radar]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
+  } else {
+    LOG_INFO(wxT("$$$ not overlay current_overlay_radar=%i, pos=%i"), current_overlay_radar, (int)m_radar[current_overlay_radar]->GetRadarPosition(&radar_pos));
+    LOG_INFO(wxT("$$$ radar_pos.lat=%f, radar_pos.lon=%f"), radar_pos.lat, radar_pos.lon);
   }
   
   m_draw_time_overlay_ms[canvasIndex] = (wxGetUTCTimeMillis() - now).GetLo();
