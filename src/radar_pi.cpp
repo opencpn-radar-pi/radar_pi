@@ -936,7 +936,6 @@ void radar_pi::ScheduleWindowRefresh() {
 
 void radar_pi::OnTimerNotify(wxTimerEvent &event) {
   if (m_settings.show) {  // Is radar enabled?
-    
     bool ppi_visible = false;
 
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -947,8 +946,8 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
     // always refresh canvas0 if radar window is visible
     // and refresh canvas with overlay
     for (int r = 0; r < CANVAS_COUNT; r++) {
-      if (m_chart_overlay[r] >= 0 || (r == 0 && ppi_visible)) {
-        GetCanvasByIndex(r)->Refresh(false);
+      if (m_chart_overlay[r] >= 0 || (r == 0 && ppi_visible)) {        
+        GetCanvasByIndex(r)->Refresh(false);  
       }
     }
   }
@@ -967,11 +966,11 @@ void radar_pi::TimedControlUpdate() {
 
 
 //// for overlay testing only, simple trick to get position and heading
-//  wxString nmea;
-//  nmea = wxT("$APHDM,000.0,M*33<0x0D><0x0A>");
-//  PushNMEABuffer(nmea);
-//  nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
-//  PushNMEABuffer(nmea);
+// wxString nmea;
+// nmea = wxT("$APHDM,000.0,M*33<0x0D><0x0A>");
+// PushNMEABuffer(nmea);
+// nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
+// PushNMEABuffer(nmea);
 
 
   m_notify_time_ms = now;
@@ -1273,10 +1272,7 @@ if (canvasIndex == 0) {
     LOG_DIALOG(wxT("radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat,
                vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
     m_radar[current_overlay_radar]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
-  } else {
-    LOG_INFO(wxT("$$$ not overlay current_overlay_radar=%i, pos=%i"), current_overlay_radar, (int)m_radar[current_overlay_radar]->GetRadarPosition(&radar_pos));
-    LOG_INFO(wxT("$$$ radar_pos.lat=%f, radar_pos.lon=%f"), radar_pos.lat, radar_pos.lon);
-  }
+  } 
   
   m_draw_time_overlay_ms[canvasIndex] = (wxGetUTCTimeMillis() - now).GetLo();
 
@@ -1599,22 +1595,39 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
       m_hdt_timeout = now + HEADING_TIMEOUT;
     }
   }
-  ExtendedPosition GPS_position;
-  if (pfix.FixTime > 0 && NOT_TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT)) {
-    GPS_position.pos.lat = pfix.Lat;
-    GPS_position.pos.lon = pfix.Lon;
-    GPS_position.time = wxGetUTCTimeMillis();
-    GPS_position.dlat_dt = 0.;
-    GPS_position.dlon_dt = 0.;
-    GPS_position.sd_speed_kn = 0.;
-
-    if (!m_bpos_set) {
-      LOG_VERBOSE(wxT("radar_pi: GPS position is now known m_ownship.lat= %f, m_ownship.lon = %f"), GPS_position.pos.lat,
-                  GPS_position.pos.lon);
-    }
-    m_bpos_set = true;
-    m_bpos_timestamp = now;
+  if (!wxIsNaN(pfix.Cog)) {
+    UpdateCOGAvg(pfix.Cog);
   }
+  if (TIMED_OUT(now, m_cog_timeout)) {
+    m_cog_timeout = now + m_COGAvgSec;
+    m_cog = m_COGAvg;
+  }
+
+  if (pfix.Lat > 90. || pfix.Lat < -90. || pfix.Lon < -180. || pfix.Lon > 180. || isnan(pfix.Lon) || isnan(pfix.Lat)) {
+    LOG_INFO(wxT(" **error wrong position from opencpn pfix.Lat=%f, pfix.Lon=%f"), pfix.Lat, pfix.Lon);
+    return;
+  }
+  LOG_INFO(wxT("$$$E pfix.FixTime = %i"), pfix.FixTime - now);
+  ExtendedPosition GPS_position;
+  if (pfix.FixTime <= 0 || TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT) || pfix.FixTime > now) {
+    LOG_INFO(wxT("radar_pi: **error invalid GPS position pfix.Lat= %f, pfix.Lon = %f, pfix.FixTime=%f"), pfix.Lat, pfix.Lon,
+             pfix.FixTime - now);
+    return;
+  }
+  GPS_position.pos.lat = pfix.Lat;
+  GPS_position.pos.lon = pfix.Lon;
+  GPS_position.time = wxGetUTCTimeMillis();
+  GPS_position.dlat_dt = 0.;
+  GPS_position.dlon_dt = 0.;
+  GPS_position.sd_speed_kn = 0.;
+
+  if (!m_bpos_set) {
+    LOG_VERBOSE(wxT("radar_pi: GPS position is now known m_ownship.lat= %f, m_ownship.lon = %f"), GPS_position.pos.lat,
+                GPS_position.pos.lon);
+  }
+  m_bpos_set = true;
+  m_bpos_timestamp = now;
+
   if (IsBoatPositionValid()) {
     if (!m_predicted_position_initialised) {
       m_expected_position = GPS_position;
@@ -1629,20 +1642,24 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     m_GPS_filter->Update_P();                                           // update error covariance matrix
     m_GPS_filter->SetMeasurement(&GPS_position, &m_expected_position);  // improve expected postition with GPS
 
+    // check validity of this position
+    if (m_expected_position.pos.lat > 90. || m_expected_position.pos.lat < -90. || m_expected_position.pos.lon < -180. ||
+        m_expected_position.pos.lat > 180. || isnan(m_expected_position.pos.lat) || isnan(m_expected_position.pos.lon)) {
+      // if not valid, reset the Kalman filter
+      LOG_INFO(wxT("$$$ GPSfilter reset "));
+      m_expected_position = GPS_position;
+      m_last_fixed = GPS_position;
+      m_expected_position.dlat_dt = 0.;
+      m_expected_position.dlon_dt = 0.;
+      m_expected_position.speed_kn = 0.;
+      m_predicted_position_initialised = true;
+    }
     // Now set the expected position from the Kalmanfilter as the boat position
     m_ownship = m_expected_position.pos;
     m_last_fixed = m_expected_position;
+
     double exp_course = rad2deg(
         atan2(m_expected_position.dlon_dt, m_expected_position.dlat_dt * cos(m_expected_position.pos.lat / 360. * 2. * PI)));
-    LOG_VERBOSE(wxT("pfixSOG %f, calculated speed %f, calculated COG %f"), pfix.Sog, m_expected_position.speed_kn, exp_course);
-  }
-
-  if (!wxIsNaN(pfix.Cog)) {
-    UpdateCOGAvg(pfix.Cog);
-  }
-  if (TIMED_OUT(now, m_cog_timeout)) {
-    m_cog_timeout = now + m_COGAvgSec;
-    m_cog = m_COGAvg;
   }
 }
 

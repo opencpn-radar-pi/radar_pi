@@ -260,7 +260,6 @@ void TrailBuffer::UpdateTrailPosition() {
   double dif_lat = radar.lat - m_pos.lat;  // going north is positive
   double dif_lon = radar.lon - m_pos.lon;  // moving east is positive
   m_pos = radar;
-
   // get (floating point) shift of the ship in radar pixels
   double fshift_lat = dif_lat * 60. * 1852. * m_ri->m_pixels_per_meter;
   double fshift_lon = dif_lon * 60. * 1852. * m_ri->m_pixels_per_meter;
@@ -333,7 +332,7 @@ void TrailBuffer::UpdateTrailPosition() {
   // apply the shifts to the offset
   m_offset.lat += shift.lat;
   m_offset.lon += shift.lon;
-}
+  }
 
 // shifts the true trails image in lat direction to center
 void TrailBuffer::ShiftImageLatToCenter() {
