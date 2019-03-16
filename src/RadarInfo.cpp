@@ -580,7 +580,10 @@ void RadarInfo::RequestRadarState(RadarState state) {
         // Refresh radar immediately so that we generate draw mechanisms
         for (int i = 0; i < wxMax(MAX_CHART_CANVAS, GetCanvasCount()); i++) {
           if (m_pi->m_chart_overlay[i] == (int)m_radar) {
-            GetCanvasByIndex(i)->Refresh(false);
+            wxWindow *canvas = GetCanvasByIndex(i);
+            if (canvas) {
+              canvas->Refresh(false);
+            }
           }
         }
       } else if (state == RADAR_STANDBY) {

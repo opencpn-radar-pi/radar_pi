@@ -946,8 +946,13 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
     // always refresh canvas0 if radar window is visible
     // and refresh canvas with overlay
     for (int r = 0; r < CANVAS_COUNT; r++) {
-      if (m_chart_overlay[r] >= 0 || (r == 0 && ppi_visible)) {        
-        GetCanvasByIndex(r)->Refresh(false);  
+      wxWindow *canvas = GetCanvasByIndex(r);
+      if (m_chart_overlay[r] >= 0 || (r == 0 && ppi_visible)) {
+        if (canvas) {
+          canvas->Refresh(false);
+        } else {
+          LOG_INFO(wxT("$$$ test canvas NOT OK, r=%i"), r);
+        }
       }
     }
   }
