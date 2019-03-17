@@ -1607,17 +1607,15 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     m_cog_timeout = now + m_COGAvgSec;
     m_cog = m_COGAvg;
   }
-
+  if (pfix.FixTime <= 0 || TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT) || pfix.FixTime > now) {
+    return;
+  }
   if (pfix.Lat > 90. || pfix.Lat < -90. || pfix.Lon < -180. || pfix.Lon > 180. || isnan(pfix.Lon) || isnan(pfix.Lat)) {
     LOG_INFO(wxT(" **error wrong position from opencpn pfix.Lat=%f, pfix.Lon=%f"), pfix.Lat, pfix.Lon);
     return;
   }
   ExtendedPosition GPS_position;
-  if (pfix.FixTime <= 0 || TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT) || pfix.FixTime > now) {
-    LOG_INFO(wxT("radar_pi: **error invalid GPS position pfix.Lat= %f, pfix.Lon = %f, pfix.FixTime=%f"), pfix.Lat, pfix.Lon,
-             pfix.FixTime - now);
-    return;
-  }
+  
   GPS_position.pos.lat = pfix.Lat;
   GPS_position.pos.lon = pfix.Lon;
   GPS_position.time = wxGetUTCTimeMillis();

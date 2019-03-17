@@ -89,6 +89,9 @@
 #include "navico/haloatype.h"
 #include "navico/halobtype.h"
 
+#include "navico/halo24atype.h"
+#include "navico/halo24btype.h"
+
 // TODO: Add Garmin etc.
 
 #include "emulator/emulatortype.h"
