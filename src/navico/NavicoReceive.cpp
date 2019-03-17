@@ -222,7 +222,10 @@ void NavicoReceive::ProcessFrame(const uint8_t *data, size_t len) {
       }
 
       case RT_HaloA:
-      case RT_HaloB: {
+      case RT_HaloB:
+      case RT_Halo24A:
+      case RT_Halo24B:
+      {
         short int large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
         short int small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
         angle_raw = (line->br4g.angle[1] << 8) | line->br4g.angle[0];
