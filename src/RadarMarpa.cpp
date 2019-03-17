@@ -568,6 +568,7 @@ void RadarArpa::DrawArpaTargetsOverlay(double scale, double arpa_rotate) {
       // some additional logging, to be removed later
       if (poslat > 90. || poslat < -90. || poslon > 180. || poslon < -180.) {
         LOG_INFO(wxT("**error wrong target pos, nr = %i, poslat = %f, poslon = %f"), i, poslat, poslon);
+        continue;
       }
 
       GetCanvasPixLL(m_ri->m_pi->m_vp, &boat_center, m_targets[i]->m_radar_pos.lat, m_targets[i]->m_radar_pos.lon);
