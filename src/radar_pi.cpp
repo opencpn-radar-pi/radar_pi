@@ -951,7 +951,7 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
         if (canvas) {
           canvas->Refresh(false);
         } else {
-          LOG_INFO(wxT("$$$ test canvas NOT OK, r=%i"), r);
+          LOG_INFO(wxT("**error canvas NOT OK, r=%i"), r);
         }
       }
     }
@@ -1612,7 +1612,6 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     LOG_INFO(wxT(" **error wrong position from opencpn pfix.Lat=%f, pfix.Lon=%f"), pfix.Lat, pfix.Lon);
     return;
   }
-  LOG_INFO(wxT("$$$E pfix.FixTime = %i"), pfix.FixTime - now);
   ExtendedPosition GPS_position;
   if (pfix.FixTime <= 0 || TIMED_OUT(now, pfix.FixTime + WATCHDOG_TIMEOUT) || pfix.FixTime > now) {
     LOG_INFO(wxT("radar_pi: **error invalid GPS position pfix.Lat= %f, pfix.Lon = %f, pfix.FixTime=%f"), pfix.Lat, pfix.Lon,
@@ -1651,7 +1650,8 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     if (m_expected_position.pos.lat > 90. || m_expected_position.pos.lat < -90. || m_expected_position.pos.lon < -180. ||
         m_expected_position.pos.lat > 180. || isnan(m_expected_position.pos.lat) || isnan(m_expected_position.pos.lon)) {
       // if not valid, reset the Kalman filter
-      LOG_INFO(wxT("$$$ GPSfilter reset "));
+      LOG_INFO(wxT("** error in position, GPSfilter reset lat=%f, lon=%f"), m_expected_position.pos.lat,
+               m_expected_position.pos.lon);
       m_expected_position = GPS_position;
       m_last_fixed = GPS_position;
       m_expected_position.dlat_dt = 0.;
