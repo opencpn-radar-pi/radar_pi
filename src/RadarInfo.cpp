@@ -282,20 +282,22 @@ bool RadarInfo::Init() {
 void RadarInfo::ShowControlDialog(bool show, bool reparent) {
   if (show) {
     wxPoint panel_pos = wxDefaultPosition;
-
-    /*if (m_control_dialog && reparent) {
+#ifdef __WXOSX__
+    if (m_control_dialog && reparent) {
       panel_pos = m_control_dialog->m_panel_position;
       delete m_control_dialog;
       m_control_dialog = 0;
       LOG_VERBOSE(wxT("radar_pi %s: Reparenting control dialog"), m_name.c_str());
-    }*/
+    }
+#endif
     if (!m_control_dialog) {
       m_control_dialog = RadarFactory::MakeControlsDialog(m_radar_type, m_radar);
       m_control_dialog->m_panel_position = panel_pos;
       wxWindow *parent = (wxWindow *)m_radar_panel;
-      //if (!m_pi->m_settings.show_radar[m_radar]) {
+#ifdef __WXOSX__
+      if (!m_pi->m_settings.show_radar[m_radar]) 
+#endif
         parent = m_pi->m_parent_window;
-      //}
       LOG_VERBOSE(wxT("radar_pi %s: Creating control dialog"), m_name.c_str());
       m_control_dialog->Create(parent, m_pi, this, wxID_ANY, m_name, m_pi->m_settings.control_pos[m_radar]);
     }
