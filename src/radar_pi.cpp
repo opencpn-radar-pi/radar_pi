@@ -196,7 +196,9 @@ int radar_pi::Init(void) {
   m_ownship.lon = nan("");
   m_cursor_pos.lat = nan("");
   m_cursor_pos.lon = nan("");
-  
+  m_cursor_pos_right_click.lat = nan("");
+  m_cursor_pos_right_click.lon = nan("");
+
   m_guard_bogey_seen = false;
   m_guard_bogey_confirmed = false;
   m_sent_toolbar_button = TB_NONE;
@@ -698,7 +700,7 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     // In this case targets can be made by a guard zone in a radarwindow
     if (m_settings.show && current_radar >= 0) {
       ExtendedPosition target_pos;
-      target_pos.pos = m_radar[current_radar]->m_mouse_pos_right_click;
+      target_pos.pos = m_cursor_pos;
       if (m_radar[current_radar]->m_arpa) {
         m_radar[current_radar]->m_arpa->DeleteTarget(target_pos);
       }
