@@ -196,6 +196,8 @@ int radar_pi::Init(void) {
   m_ownship.lon = nan("");
   m_cursor_pos.lat = nan("");
   m_cursor_pos.lon = nan("");
+  m_cursor_pos_right_click.lat = nan("");
+  m_cursor_pos_right_click.lon = nan("");
 
   m_guard_bogey_seen = false;
   m_guard_bogey_confirmed = false;
@@ -683,12 +685,14 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     m_settings.show = true;
     SetRadarWindowViz();
   } else if (id == m_context_menu_acquire_radar_target) {
+    // notice the difference between m_cursor_pos = position of last click and
+    // m_ri->m_mouse_pos_right_click = (per radar) position of last right click
     if (m_settings.show                                                  // radar shown
         && HaveOverlay()                                                 // overlay desired
         && m_radar[current_radar]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
-        && !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon)) {
+        && !isnan(m_radar[current_radar]->m_mouse_pos_right_click.lat) && !isnan(m_radar[current_radar]->m_mouse_pos_right_click.lon)) {
       ExtendedPosition target_pos;
-      target_pos.pos = m_cursor_pos;
+      target_pos.pos = m_radar[current_radar]->m_mouse_pos_right_click;
       m_radar[current_radar]->m_arpa->AcquireNewMARPATarget(target_pos);
     }
   } else if (id == m_context_menu_delete_radar_target) {
@@ -1918,6 +1922,7 @@ void radar_pi::SetNMEASentence(wxString &sentence) {
 // is not called anywhere
 void radar_pi::SetCursorPosition(GeoPosition pos) { m_cursor_pos = pos; }
 
+// called by OpenCPN
 void radar_pi::SetCursorLatLon(double lat, double lon) {
   m_cursor_pos.lat = lat;
   m_cursor_pos.lon = lon;
@@ -1929,7 +1934,13 @@ bool radar_pi::MouseEventHook(wxMouseEvent &event) {
       m_radar[r]->SetMousePosition(m_cursor_pos);
     }
   }
+  else if ((event.RightDown())) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      m_radar[r]->SetMouseRightClickPosition(m_cursor_pos);
+    }
+  }
   return false;
+
 }
 
 void radar_pi::logBinaryData(const wxString &what, const uint8_t *data, int size) {

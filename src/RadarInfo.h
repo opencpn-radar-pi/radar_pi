@@ -222,6 +222,7 @@ class RadarInfo {
   int GetDisplayRange() { return m_range.GetValue(); };
   void DetectedRadar(NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
   void SetMousePosition(GeoPosition pos);
+  void RadarInfo::SetMouseRightClickPosition(GeoPosition pos);
   void SetMouseVrmEbl(double vrm, double ebl);
   void SetBearing(int bearing);
   void SampleCourse(int angle);
@@ -252,6 +253,7 @@ class RadarInfo {
   wxString GetRadarStateText();
 
   GeoPosition m_mouse_pos;
+  GeoPosition m_mouse_pos_right_click;
   double m_mouse_ebl[ORIENTATION_NUMBER];
   double m_mouse_vrm;
 

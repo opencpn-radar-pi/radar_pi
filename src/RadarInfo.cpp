@@ -1252,6 +1252,11 @@ void RadarInfo::SetMousePosition(GeoPosition pos) {
   LOG_DIALOG(wxT("radar_pi: SetMousePosition(%f, %f)"), pos.lat, pos.lon);
 }
 
+void RadarInfo::SetMouseRightClickPosition(GeoPosition pos) {
+  m_mouse_pos_right_click = pos;
+  LOG_DIALOG(wxT("radar_pi: SetMousePositionRightClick(%f, %f)"), pos.lat, pos.lon);
+}
+
 void RadarInfo::SetMouseVrmEbl(double vrm, double ebl) {
   double bearing;
   int orientation = GetOrientation();
