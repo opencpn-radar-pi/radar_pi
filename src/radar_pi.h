@@ -605,6 +605,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
 
   // Cursor position. Used to show position in radar window
   GeoPosition m_cursor_pos;
+  GeoPosition m_right_click_pos;
   GeoPosition m_ownship;
 
  public:

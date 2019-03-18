@@ -196,6 +196,8 @@ int radar_pi::Init(void) {
   m_ownship.lon = nan("");
   m_cursor_pos.lat = nan("");
   m_cursor_pos.lon = nan("");
+  m_right_click_pos.lat = nan("");
+  m_right_click_pos.lon = nan("");
 
   m_guard_bogey_seen = false;
   m_guard_bogey_confirmed = false;
@@ -679,24 +681,33 @@ void radar_pi::OnContextMenuItemCallback(int id) {
   if (id == m_context_menu_hide_id) {
     m_settings.show = false;
     SetRadarWindowViz();
-  } else if (id == m_context_menu_show_id) {
+  }
+  else if (id == m_context_menu_show_id) {
     m_settings.show = true;
     SetRadarWindowViz();
-  } else if (id == m_context_menu_acquire_radar_target) {
+  }
+  else if (id == m_context_menu_acquire_radar_target) {
     if (m_settings.show                                                  // radar shown
-        && HaveOverlay()                                                 // overlay desired
-        && m_radar[current_radar]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
-        && !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon)) {
-      ExtendedPosition target_pos;
-      target_pos.pos = m_cursor_pos;
-      m_radar[current_radar]->m_arpa->AcquireNewMARPATarget(target_pos);
+      && HaveOverlay()                                                 // overlay desired
+      && m_radar[current_radar]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
+      && !isnan(m_right_click_pos.lat) && !isnan(m_right_click_pos.lon))
+    {
+      if (m_right_click_pos.lat < 90. && m_right_click_pos.lat > -90.
+        && m_right_click_pos.lon < 180. && m_right_click_pos.lon > -180.) {
+        ExtendedPosition target_pos;
+        target_pos.pos = m_right_click_pos;
+        m_radar[current_radar]->m_arpa->AcquireNewMARPATarget(target_pos);
+      }
+      else {
+        LOG_INFO(wxT(" **error right click pos lat=%f, lon=%f"), m_right_click_pos.lat, m_right_click_pos.lon);
+      }
     }
   } else if (id == m_context_menu_delete_radar_target) {
     // Targets can also be deleted when the overlay is not shown
     // In this case targets can be made by a guard zone in a radarwindow
     if (m_settings.show && current_radar >= 0) {
       ExtendedPosition target_pos;
-      target_pos.pos = m_cursor_pos;
+      target_pos.pos = m_right_click_pos;
       if (m_radar[current_radar]->m_arpa) {
         m_radar[current_radar]->m_arpa->DeleteTarget(target_pos);
       }
@@ -1928,6 +1939,9 @@ bool radar_pi::MouseEventHook(wxMouseEvent &event) {
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       m_radar[r]->SetMousePosition(m_cursor_pos);
     }
+  }
+  if (event.RightDown()) {
+    m_right_click_pos = m_cursor_pos;
   }
   return false;
 }
