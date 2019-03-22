@@ -62,6 +62,7 @@ TrailBuffer::TrailBuffer(RadarInfo *ri, size_t spokes, size_t max_spoke_len) {
     wxLogError(wxT("radar_pi: Out Of Memory, fatal!"));
     wxAbort();
   }
+  ClearTrails();
 }
 
 TrailBuffer::~TrailBuffer() {
@@ -259,6 +260,7 @@ void TrailBuffer::UpdateTrailPosition() {
   // Check the movement of the ship
   double dif_lat = radar.lat - m_pos.lat;  // going north is positive
   double dif_lon = radar.lon - m_pos.lon;  // moving east is positive
+
   m_pos = radar;
   // get (floating point) shift of the ship in radar pixels
   double fshift_lat = dif_lat * 60. * 1852. * m_ri->m_pixels_per_meter;
@@ -315,8 +317,9 @@ void TrailBuffer::UpdateTrailPosition() {
   m_dif.lon = fshift_lon + m_dif.lon - (double)shift.lon;
 
   if (shift.lat >= MARGIN || shift.lat <= -MARGIN || shift.lon >= MARGIN || shift.lon <= -MARGIN) {  // huge shift, reset trails
+   
+    LOG_INFO(wxT("radar_pi: %s Large movement trails reset, shift.lat= %f, shift.lon=%f"), m_ri->m_name.c_str(), shift.lat, shift.lon);
     ClearTrails();
-    LOG_INFO(wxT("radar_pi: %s Large movement trails reset"), m_ri->m_name.c_str());
     return;
   }
 
@@ -405,6 +408,8 @@ void TrailBuffer::ClearTrails() {
     m_offset.lon = 0;
     m_dif.lat = 0.;
     m_dif.lon = 0.;
+    m_offset.lat = 0.;
+    m_offset.lon = 0.;
   }
   if (m_relative_trails) {
     memset(m_relative_trails, 0, m_spokes * m_max_spoke_len);
