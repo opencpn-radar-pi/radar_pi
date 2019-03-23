@@ -402,14 +402,12 @@ void TrailBuffer::ShiftImageLonToCenter() {
 
 void TrailBuffer::ClearTrails() {
   LOG_VERBOSE(wxT("radar_pi: ClearTrails"));
+  m_offset.lat = 0;
+  m_offset.lon = 0;
+  m_dif.lat = 0.;
+  m_dif.lon = 0.;
   if (m_true_trails) {
     memset(m_true_trails, 0, m_trail_size * m_trail_size);
-    m_offset.lat = 0;
-    m_offset.lon = 0;
-    m_dif.lat = 0.;
-    m_dif.lon = 0.;
-    m_offset.lat = 0.;
-    m_offset.lon = 0.;
   }
   if (m_relative_trails) {
     memset(m_relative_trails, 0, m_spokes * m_max_spoke_len);
