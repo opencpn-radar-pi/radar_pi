@@ -75,6 +75,8 @@ SET(SRC_NAVICO
             src/navico/NavicoControlSet.h
             src/navico/NavicoControlsDialog.cpp
             src/navico/NavicoControlsDialog.h
+            src/navico/NavicoLocate.cpp
+            src/navico/NavicoLocate.h
 )
 
 SET(SRC_RADAR
