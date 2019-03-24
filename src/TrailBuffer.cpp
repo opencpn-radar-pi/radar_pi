@@ -406,6 +406,8 @@ void TrailBuffer::ClearTrails() {
   m_offset.lon = 0;
   m_dif.lat = 0.;
   m_dif.lon = 0.;
+  // prevent zooming of trails in next trail update
+  m_previous_pixels_per_meter = m_ri->m_pixels_per_meter;
   if (m_true_trails) {
     memset(m_true_trails, 0, m_trail_size * m_trail_size);
   }
