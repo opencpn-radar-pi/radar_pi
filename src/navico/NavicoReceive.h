@@ -33,6 +33,7 @@
 #define _NAVICORECEIVE_H_
 
 #include "NavicoCommon.h"
+#include "NavicoLocate.h"
 #include "RadarReceive.h"
 #include "socketutil.h"
 
@@ -69,6 +70,7 @@ class NavicoReceive : public RadarReceive {
   NetworkAddress m_interface_addr;
   NetworkAddress m_data_addr;
   NetworkAddress m_report_addr;
+  NetworkAddress m_send_addr;
 
   wxLongLong m_shutdown_time_requested;  // Main thread asks this thread to stop
   volatile bool m_is_shutdown;
@@ -81,7 +83,7 @@ class NavicoReceive : public RadarReceive {
   SOCKET GetNewReportSocket();
   SOCKET GetNewDataSocket();
 
-  wxString m_ip;
+  void SetRadarType(RadarType t);
 
   SOCKET m_receive_socket;  // Where we listen for message from m_send_socket
   SOCKET m_send_socket;     // A message to this socket will interrupt select() and allow immediate shutdown
@@ -92,8 +94,6 @@ class NavicoReceive : public RadarReceive {
   int m_next_spoke;
   char m_radar_status;
   bool m_first_receive;
-
-  wxString m_addr;  // Radar's IP address
 
   wxCriticalSection m_lock;  // Protects m_status
   wxString m_status;         // Userfriendly string

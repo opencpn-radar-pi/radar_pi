@@ -401,7 +401,8 @@ class ControlsDialog : public wxDialog {
   void SetMenuAutoHideTimeout();
   void SwitchTo(wxBoxSizer *to, const wxChar *name);
   bool UpdateSizersButtonsShown();
-  public:
+
+ public:
   void Resize(bool force);
   void CreateControls();
   void DisableRadarControls();

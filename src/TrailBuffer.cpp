@@ -335,7 +335,7 @@ void TrailBuffer::UpdateTrailPosition() {
   // apply the shifts to the offset
   m_offset.lat += shift.lat;
   m_offset.lon += shift.lon;
-  }
+}
 
 // shifts the true trails image in lat direction to center
 void TrailBuffer::ShiftImageLatToCenter() {

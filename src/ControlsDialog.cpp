@@ -305,7 +305,7 @@ bool RadarRangeControlButton::ToggleState() {
 
 ControlsDialog::~ControlsDialog() {
   wxPoint pos = GetPosition();
-// When radar panel is hidden GetPosition() sometimes may return very large numbers
+  // When radar panel is hidden GetPosition() sometimes may return very large numbers
   if (pos.x < 5000 && pos.y < 5000 && pos.x > -500 && pos.y > -500) {
     m_pi->m_settings.control_pos[m_ri->m_radar] = pos;
     LOG_DIALOG(wxT("%s saved position %d,%d"), m_log_name.c_str(), pos.x, pos.y);
@@ -1354,21 +1354,21 @@ void ControlsDialog::OnRadarShowPPIButtonClick(wxCommandEvent& event) {
       }
 
     }*/
-   // for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    // for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_pi->m_settings.show_radar[m_ri->m_radar] = !m_pi->m_settings.show_radar[m_ri->m_radar];
-      //if (!show) {
-      //  bool doHide = true;
-      //  for (int i = 0; i < MAX_CHART_CANVAS; i++) {
-      //    if (m_pi->m_chart_overlay[i] == (int)r) {
-      //      doHide = false;
-      //    }
-      //  }
-      //  if (doHide) {
-      //    //m_pi->m_settings.show_radar_control[r] = false;
-      //  }
-      //}
+    // if (!show) {
+    //  bool doHide = true;
+    //  for (int i = 0; i < MAX_CHART_CANVAS; i++) {
+    //    if (m_pi->m_chart_overlay[i] == (int)r) {
+    //      doHide = false;
+    //    }
+    //  }
+    //  if (doHide) {
+    //    //m_pi->m_settings.show_radar_control[r] = false;
+    //  }
+    //}
     LOG_DIALOG(wxT("%s OnRadarShowButton: show_radar[%d]=%d"), m_log_name.c_str(), m_ri->m_radar, show);
-   // }
+    // }
   } /*else {
     if (m_ri->IsPaneShown()) {
       show = false;
@@ -1495,9 +1495,7 @@ void ControlsDialog::OnDeleteAllTargetsButtonClick(wxCommandEvent& event) {
   }
 }
 
-void ControlsDialog::OnMove(wxMoveEvent& event) {
-  event.Skip();
-}
+void ControlsDialog::OnMove(wxMoveEvent& event) { event.Skip(); }
 
 /**
  * Show/Hide sizers and buttons depending on which sizer
@@ -1982,7 +1980,6 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
     m_auto_hide_timeout = 0;
   }
 
-
 #ifdef __WXMAC__NEVER
   // Following helps on OSX where the control is SHOW_ON_TOP to not show when no part of OCPN is focused
   wxWindow* focused = FindFocus();
@@ -2012,7 +2009,7 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
     // bool panelShown = m_ri->m_radar_panel->IsShown();
     // bool panelMoved = !m_panel_position.IsFullySpecified() || panelPos != m_panel_position;
 
-    if (controlInitialShow) {               // the position has never been set at all, ever
+    if (controlInitialShow) {  // the position has never been set at all, ever
       wxSize panelSize = m_ri->m_radar_panel->GetSize();
       wxSize mySize = this->GetSize();
 
