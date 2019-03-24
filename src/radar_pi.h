@@ -73,6 +73,7 @@ class radar_pi;
 class GuardZoneBogey;
 class RadarArpa;
 class GPSKalmanFilter;
+class NavicoLocate;
 
 #define MAX_CHART_CANVAS (2)  // How many canvases OpenCPN supports
 #define RADARS (4)            // Arbitrary limit, anyone running this many is already crazy!
@@ -200,18 +201,23 @@ struct receive_statistics {
 typedef enum GuardZoneType { GZ_ARC, GZ_CIRCLE } GuardZoneType;
 
 typedef enum RadarType {
-#define DEFINE_RADAR(t, n, s, l, a, b, c) t,
+#define DEFINE_RADAR(t, n, s, l, a, b, c, d) t,
 #include "RadarType.h"
   RT_MAX
 } RadarType;
 
 const size_t RadarSpokes[RT_MAX] = {
-#define DEFINE_RADAR(t, n, s, l, a, b, c) s,
+#define DEFINE_RADAR(t, n, s, l, a, b, c, d) s,
 #include "RadarType.h"
 };
 
 const size_t RadarSpokeLenMax[RT_MAX] = {
-#define DEFINE_RADAR(t, n, s, l, a, b, c) l,
+#define DEFINE_RADAR(t, n, s, l, a, b, c, d) l,
+#include "RadarType.h"
+};
+
+const static int RadarOrder[RT_MAX] = {
+#define DEFINE_RADAR(t, x, s, l, a, b, c, d) d,
 #include "RadarType.h"
 };
 
@@ -338,7 +344,9 @@ struct PersistentSettings {
   wxPoint window_pos[RADARS];                      // Saved position of radar windows, when floating and not docked
   wxPoint alarm_pos;                               // Saved position of alarm window
   wxString alert_audio_file;                       // Filepath of alarm audio file. Must be WAV.
-  NetworkAddress radar_interface_address[RADARS];  // Saved address of radar. Used to speed up next boot.
+  NetworkAddress radar_interface_address[RADARS];  // Saved address of interface used to see radar. Used to speed up next boot.
+  NetworkAddress radar_address[RADARS];            // Saved address of IP address of radar.
+  wxString radar_serial_no[RADARS];                // Serial # of radar, if known
   wxColour trail_start_colour;                     // Starting colour of a trail
   wxColour trail_end_colour;                       // Ending colour of a trail
   wxColour strong_colour;                          // Colour for STRONG returns
@@ -417,7 +425,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   void OnControlDialogClose(RadarInfo *ri);
   void SetDisplayMode(DisplayModeType mode);
 
-  void ShowRadarControl(int radar, bool show = true);
+  void ShowRadarControl(int radar, bool show = true, bool reparent = true);
   void ShowGuardZoneDialog(int radar, int zone);
   void OnGuardZoneDialogClose(RadarInfo *ri);
   void ConfirmGuardZoneBogeys();
@@ -434,14 +442,25 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   long GetRangeMeters();
   long GetOptimalRangeMeters();
 
-  void SetRadarInterfaceAddress(int r, NetworkAddress &addr) {
+  void SetRadarInterfaceAddress(int r, NetworkAddress &ifaddr, NetworkAddress &addr) {
     wxCriticalSectionLocker lock(m_exclusive);
-    m_settings.radar_interface_address[r] = addr;
+    m_settings.radar_interface_address[r] = ifaddr;
+    m_settings.radar_address[r] = addr;
   };
+
   NetworkAddress &GetRadarInterfaceAddress(int r) {
     wxCriticalSectionLocker lock(m_exclusive);
     return m_settings.radar_interface_address[r];
   }
+
+  NetworkAddress &GetRadarAddress(int r) {
+    wxCriticalSectionLocker lock(m_exclusive);
+    return m_settings.radar_address[r];
+  }
+
+  void FoundRadar(const wxString &serial, const NetworkAddress &addr);
+  bool HaveRadarSerialNo(size_t r);
+  wxString &GetRadarSerialNo(size_t r);
 
   void SetRadarHeading(double heading = nan(""), bool isTrue = false);
   double GetHeadingTrue() {
@@ -497,6 +516,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   PersistentSettings m_settings;
   RadarInfo *m_radar[RADARS];
   wxString m_perspective[RADARS];  // Temporary storage of window location when plugin is disabled
+  NavicoLocate *m_locator;
 
   MessageBox *m_pMessageBox;
   wxWindow *m_parent_window;
@@ -518,7 +538,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   void RenderRadarBuffer(wxDC *pdc, int width, int height);
   void PassHeadingToOpenCPN();
   void CacheSetToolbarToolBitmaps();
-  void SetRadarWindowViz();
+  void SetRadarWindowViz(bool reparent = false);
   void UpdateCOGAvg(double cog);
   void OnTimerNotify(wxTimerEvent &event);
   void TimedControlUpdate();
@@ -605,6 +625,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
 
   // Cursor position. Used to show position in radar window
   GeoPosition m_cursor_pos;
+  GeoPosition m_right_click_pos;
   GeoPosition m_ownship;
 
  public:

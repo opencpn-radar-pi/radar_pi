@@ -15,7 +15,7 @@
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
+ *   the Free Software Foundation; either verion 2 of the License, or     *
  *   (at your option) any later version.                                   *
  *                                                                         *
  *   This program is distributed in the hope that it will be useful,       *
@@ -46,12 +46,25 @@ PLUGIN_BEGIN_NAMESPACE
 
 #define IPV4_PORT(p) (htons(p))
 
+#pragma pack(push, 1)
+struct PackedAddress {
+  struct in_addr addr;
+  uint16_t port;
+};
+#pragma pack(pop)
+
 class NetworkAddress {
  public:
   NetworkAddress() {
     addr.s_addr = 0;
     port = 0;
   }
+
+  NetworkAddress(PackedAddress packed) {
+    addr.s_addr = packed.addr.s_addr;
+    port = packed.port;
+  }
+
   NetworkAddress(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t p) {
     union {
       uint8_t byte[4];
@@ -66,19 +79,40 @@ class NetworkAddress {
     addr.s_addr = u.word;
     port = htons(p);
   }
+
+  bool operator<(const NetworkAddress &other) const {
+    if (other.addr.s_addr < this->addr.s_addr) {
+      return true;
+    }
+
+    return other.port < this->port;
+  }
+
+  NetworkAddress &operator=(const NetworkAddress &other) {
+    if (this != &other) {
+      this->addr.s_addr = other.addr.s_addr;
+      this->port = other.port;
+    }
+
+    return *this;
+  }
+
   struct in_addr addr;
   uint16_t port;
 };
 
-extern wxString FormatNetworkAddress(NetworkAddress &addr);
-extern wxString FormatNetworkAddressPort(NetworkAddress &addr);
+extern wxString FormatNetworkAddress(const NetworkAddress &addr);
+extern wxString FormatNetworkAddressPort(const NetworkAddress &addr);
+extern wxString FormatPackedAddress(const PackedAddress &addr);
 
 extern bool socketReady(SOCKET sockfd, int timeout);
 
 extern int radar_inet_aton(const char *cp, struct in_addr *addr);
-extern SOCKET startUDPMulticastReceiveSocket(NetworkAddress &addr, NetworkAddress &mcast_address, wxString &error_message);
+extern SOCKET startUDPMulticastReceiveSocket(const NetworkAddress &addr, const NetworkAddress &mcast_address,
+                                             wxString &error_message);
 extern SOCKET GetLocalhostServerTCPSocket();
 extern SOCKET GetLocalhostSendTCPSocket(SOCKET receive_socket);
+extern bool socketAddMembership(SOCKET socket, const NetworkAddress &interface_address, const NetworkAddress &mcast_address);
 
 #ifndef __WXMSW__
 

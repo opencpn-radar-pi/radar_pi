@@ -1,4 +1,3 @@
-
 #ifdef INITIALIZE_RADAR
 
 PLUGIN_BEGIN_NAMESPACE
@@ -34,5 +33,6 @@ DEFINE_RADAR(RT_HaloB,                                        /* Type */
              NAVICO_SPOKE_LEN,                                /* Spoke length (max) */
              NavicoControlsDialog(RT_HaloB),                  /* ControlsDialog class constructor */
              NavicoReceive(pi, ri, reportHalo_B, dataHalo_B), /* Receive class constructor */
-             NavicoControl(sendHalo_B)                        /* Send/Control class constructor */
+             NavicoControl(sendHalo_B),                       /* Send/Control class constructor */
+             RO_SECONDARY                                     /* This type has two radars and this is the second */
 )

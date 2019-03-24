@@ -266,6 +266,10 @@ void GPSKalmanFilter::Predict(ExtendedPosition* old, ExtendedPosition* updated) 
   updated->dlat_dt = X(2, 0);  // speeds in m / sec
   updated->dlon_dt = X(3, 0);
   updated->time = now;
+  if (updated->pos.lat > 90.) updated->pos.lat = 180. - updated->pos.lat;
+  if (updated->pos.lat < -90.) updated->pos.lat = -180. - updated->pos.lat;
+  if (updated->pos.lon > 180.) updated->pos.lon = -360. + updated->pos.lon;
+  if (updated->pos.lon < -180.) updated->pos.lon = 360. + updated->pos.lon;
   //    updated->sd_speed_kn = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed  in kn!!
   return;
 }
@@ -305,8 +309,12 @@ void GPSKalmanFilter::SetMeasurement(ExtendedPosition* gps, ExtendedPosition* up
   updated->pos.lon = X(1, 0);
   updated->dlat_dt = X(2, 0);
   updated->dlon_dt = X(3, 0);
+  if (updated->pos.lat > 90.) updated->pos.lat = 180. - updated->pos.lat;
+  if (updated->pos.lat < -90.) updated->pos.lat = -180. - updated->pos.lat;
+  if (updated->pos.lon > 180.) updated->pos.lon = -360. + updated->pos.lon;
+  if (updated->pos.lon < -180.) updated->pos.lon = 360. + updated->pos.lon;
   double cosin = cos(updated->pos.lat / 360. * 2. * PI);
-  updated->speed_kn = sqrt(X(2, 0) * X(2, 0) + X(3, 0) * X(3, 0) * cosin * cosin) * 60. * 3600.;
+  updated->speed_kn = sqrt(X(2, 0) * X(2, 0) + X(3, 0) * X(3, 0) * cosin * cosin) * 3600. / 1852.;
 
   // update covariance P
   P = (I - K * H) * P;

@@ -1,4 +1,3 @@
-
 #ifdef INITIALIZE_RADAR
 
 PLUGIN_BEGIN_NAMESPACE
@@ -33,5 +32,6 @@ DEFINE_RADAR(RT_EMULATOR,             /* Type */
              EMULATOR_MAX_SPOKE_LEN,  /* Spoke length */
              EmulatorControlsDialog,  /* Controls class */
              EmulatorReceive(pi, ri), /* Receive class */
-             EmulatorControl          /* Send/Control class */
+             EmulatorControl,         /* Send/Control class */
+             RO_SINGLE                /* This type only has a single radar and does not need locating */
 )

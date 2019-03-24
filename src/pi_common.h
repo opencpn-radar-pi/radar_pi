@@ -154,7 +154,7 @@ using namespace std;
 #define METERS_PER_NM 1852
 #define NM(x) (METERS_PER_NM * x)  // Define this such that NM(1/8) works even with integer division
 
-#define DEFINE_RADAR(t, n, s, l, a, b, c)
+#define DEFINE_RADAR(t, n, s, l, a, b, c, d)
 #include "RadarType.h"
 
 // So now SPOKES_MAX and SPOKE_LEN_MAX are the maxima over all radar types...

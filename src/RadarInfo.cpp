@@ -279,26 +279,37 @@ bool RadarInfo::Init() {
   return true;
 }
 
-void RadarInfo::ShowControlDialog(bool show) {
+void RadarInfo::ShowControlDialog(bool show, bool reparent) {
   if (show) {
     wxPoint panel_pos = wxDefaultPosition;
+#ifdef __WXOSX__
+    if (m_control_dialog && reparent) {
+      panel_pos = m_control_dialog->m_panel_position;
+      delete m_control_dialog;
+      m_control_dialog = 0;
+      LOG_VERBOSE(wxT("radar_pi %s: Reparenting control dialog"), m_name.c_str());
+    }
+#endif
     if (!m_control_dialog) {
       m_control_dialog = RadarFactory::MakeControlsDialog(m_radar_type, m_radar);
       m_control_dialog->m_panel_position = panel_pos;
-      wxWindow *parent = GetCanvasByIndex(0);
+      wxWindow *parent = (wxWindow *)m_radar_panel;
+#ifdef __WXOSX__
+      if (!m_pi->m_settings.show_radar[m_radar]) 
+#endif
+        parent = m_pi->m_parent_window;
       LOG_VERBOSE(wxT("radar_pi %s: Creating control dialog"), m_name.c_str());
       m_control_dialog->Create(parent, m_pi, this, wxID_ANY, m_name, m_pi->m_settings.control_pos[m_radar]);
     }
-    if (m_control_dialog) {
-      m_control_dialog->ShowDialog();
-    }
+    m_control_dialog->m_panel_position = panel_pos;
+    if (m_control_dialog) m_control_dialog->ShowDialog();
   } else if (m_control_dialog) {
     m_control_dialog->HideDialog();
   }
 }
 
 void RadarInfo::DetectedRadar(NetworkAddress &interfaceAddress, NetworkAddress &radarAddress) {
-  m_pi->SetRadarInterfaceAddress(m_radar, interfaceAddress);
+  m_pi->SetRadarInterfaceAddress(m_radar, interfaceAddress, radarAddress);
   if (!m_control->Init(m_pi, this, interfaceAddress, radarAddress)) {
     wxLogError(wxT("radar_pi %s: Unable to create transmit socket"), m_name.c_str());
   }
@@ -331,7 +342,7 @@ void RadarInfo::ComputeColourMap() {
   m_colour_map_rgb[BLOB_STRONG] = m_pi->m_settings.strong_colour;
   m_colour_map_rgb[BLOB_INTERMEDIATE] = m_pi->m_settings.intermediate_colour;
   m_colour_map_rgb[BLOB_WEAK] = m_pi->m_settings.weak_colour;
- 
+
   if (m_target_trails.GetState() != RCS_OFF) {
     float r1 = m_pi->m_settings.trail_start_colour.Red();
     float g1 = m_pi->m_settings.trail_start_colour.Green();
@@ -408,13 +419,13 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   //  if (i < 7) data[i] = 200;   // put a dot in the middle for testing
   // }
 
-// following sets an image of 512 circles
+  // following sets an image of 512 circles
   //  for (int i = 0; i < 1020; i += 2) {
   //    data[i] = 0;
   //    data[i + 1] = 200;
-  
+
   // // if (angle > 512 && angle < 530 && i > 512 && i < 530) data[i] = 200;
-  
+
   // }   // set picture to 0 except one dot for testing
 
   // Recompute 'pixels_per_meter' based on the actual spoke length and range in meters.
@@ -571,7 +582,10 @@ void RadarInfo::RequestRadarState(RadarState state) {
         // Refresh radar immediately so that we generate draw mechanisms
         for (int i = 0; i < wxMax(MAX_CHART_CANVAS, GetCanvasCount()); i++) {
           if (m_pi->m_chart_overlay[i] == (int)m_radar) {
-            GetCanvasByIndex(i)->Refresh(false);
+            wxWindow *canvas = GetCanvasByIndex(i);
+            if (canvas) {
+              canvas->Refresh(false);
+            }
           }
         }
       } else if (state == RADAR_STANDBY) {

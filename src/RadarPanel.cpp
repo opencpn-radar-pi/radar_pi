@@ -45,7 +45,7 @@ RadarPanel::RadarPanel(radar_pi* pi, RadarInfo* ri, wxWindow* parent)
 bool RadarPanel::Create() {
   m_aui_mgr = GetFrameAuiManager();
 
-  m_aui_name = wxString::Format(wxT("radar_pi-%d"), (int) m_ri->m_radar);
+  m_aui_name = wxString::Format(wxT("radar_pi-%d"), (int)m_ri->m_radar);
   wxAuiPaneInfo pane = wxAuiPaneInfo()
                            .Name(m_aui_name)
                            .Caption(m_ri->m_name)
@@ -79,7 +79,7 @@ bool RadarPanel::Create() {
   pane.dock_proportion = 100000;  // Secret sauce to get panels to use entire bar
 
   m_aui_mgr->AddPane(this, pane);
-  m_aui_mgr->Update();
+  // m_aui_mgr->Update();
   m_aui_mgr->Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(RadarPanel::close), NULL, this);
 
   m_dock_size = 0;
@@ -132,6 +132,13 @@ void RadarPanel::SetCaption(wxString name) { m_aui_mgr->GetPane(this).Caption(na
 
 void RadarPanel::close(wxAuiManagerEvent& event) {
   event.Skip();
+
+  // Save position of radar control before it is too late
+  if (m_ri->m_control_dialog) {
+    wxPoint pos = m_ri->m_control_dialog->GetPosition();
+    LOG_DIALOG(wxT("X saved position ,%i, %i"), pos.x, pos.y);
+    m_pi->m_settings.control_pos[m_ri->m_radar] = pos;
+  }
 
   wxAuiPaneInfo* pane = event.GetPane();
 
@@ -205,14 +212,14 @@ void RadarPanel::ShowFrame(bool visible) {
     pane.Position(m_ri->m_radar);
   }
 
-  pane.Show(visible);
-  pane.Caption(m_ri->m_name);
-  
-  // m_aui_mgr->Update() will crash if executed on inconsistent canvas
-  if (m_pi->m_max_canvas <= 0 ) {
+  if (IsPaneShown() == visible) {
     return;
   }
-  m_aui_mgr->Update();  // causes recursive calls on OS X when not in OpenGL mode
+
+  pane.Show(visible);
+  pane.Caption(m_ri->m_name);
+
+  m_aui_mgr->Update();
 
   if (visible && (m_dock_size > 0)) {
     // Now the reverse: take the new perspective string and replace the dock size of the dock that our pane is in and
