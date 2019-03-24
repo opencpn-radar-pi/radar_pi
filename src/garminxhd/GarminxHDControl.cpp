@@ -224,6 +224,7 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_LOCAL_INTERFERENCE_REJECTION:
     case CT_NOISE_REJECTION:
     case CT_TARGET_SEPARATION:
+    case CT_DOPPLER:
     case CT_ANTENNA_HEIGHT:
     case CT_FTC:
 

@@ -127,6 +127,61 @@ struct radar_frame_pkt {
 };
 #pragma pack(pop)
 
+enum LookupSpokeEnum {
+  LOOKUP_SPOKE_LOW_NORMAL,
+  LOOKUP_SPOKE_LOW_BOTH,
+  LOOKUP_SPOKE_LOW_APPROACHING,
+  LOOKUP_SPOKE_HIGH_NORMAL,
+  LOOKUP_SPOKE_HIGH_BOTH,
+  LOOKUP_SPOKE_HIGH_APPROACHING
+};
+
+static uint8_t lookupData[6][256];
+
+void NavicoReceive::InitializeLookupData() {
+  if (lookupData[5][255] == 0) {
+    for (int j = 0; j <= UINT8_MAX; j++) {
+      uint8_t low = (j & 0x0f) << 4;
+      uint8_t high = (j & 0xf0);
+
+      lookupData[LOOKUP_SPOKE_LOW_NORMAL][j] = low;
+      lookupData[LOOKUP_SPOKE_HIGH_NORMAL][j] = high;
+
+      switch (low) {
+        case 0xf0:
+          lookupData[LOOKUP_SPOKE_LOW_BOTH][j] = 0xff;
+          lookupData[LOOKUP_SPOKE_LOW_APPROACHING][j] = 0xff;
+          break;
+
+        case 0xe0:
+          lookupData[LOOKUP_SPOKE_LOW_BOTH][j] = 0xfe;
+          lookupData[LOOKUP_SPOKE_LOW_APPROACHING][j] = low;
+          break;
+
+        default:
+          lookupData[LOOKUP_SPOKE_LOW_BOTH][j] = low;
+          lookupData[LOOKUP_SPOKE_LOW_APPROACHING][j] = low;
+      }
+
+      switch (high) {
+        case 0xf0:
+          lookupData[LOOKUP_SPOKE_HIGH_BOTH][j] = 0xff;
+          lookupData[LOOKUP_SPOKE_HIGH_APPROACHING][j] = 0xff;
+          break;
+
+        case 0xe0:
+          lookupData[LOOKUP_SPOKE_HIGH_BOTH][j] = 0xfe;
+          lookupData[LOOKUP_SPOKE_HIGH_APPROACHING][j] = high;
+          break;
+
+        default:
+          lookupData[LOOKUP_SPOKE_HIGH_BOTH][j] = high;
+          lookupData[LOOKUP_SPOKE_HIGH_APPROACHING][j] = high;
+      }
+    }
+  }
+}
+
 // ProcessFrame
 // ------------
 // Process one radar frame packet, which can contain up to 32 'spokes' or lines extending outwards
@@ -270,9 +325,16 @@ void NavicoReceive::ProcessFrame(const uint8_t *data, size_t len) {
     SpokeBearing b = MOD_SPOKES(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
     size_t len = NAVICO_SPOKE_LEN;
     uint8_t data_highres[NAVICO_SPOKE_LEN];
+
+    int doppler = m_ri->m_doppler.GetValue();
+    if (doppler < 0 || doppler > 2) {
+      doppler = 0;
+    }
+    uint8_t *lookup_low = lookupData[LOOKUP_SPOKE_LOW_NORMAL + doppler];
+    uint8_t *lookup_high = lookupData[LOOKUP_SPOKE_HIGH_NORMAL + doppler];
     for (int i = 0; i < NAVICO_SPOKE_LEN / 2; i++) {
-      data_highres[2 * i] = (line->data[i] & 0x0f) << 4;
-      data_highres[2 * i + 1] = line->data[i] & 0xf0;
+      data_highres[2 * i] = lookup_low[line->data[i]];
+      data_highres[2 * i + 1] = lookup_high[line->data[i]];
     }
     m_ri->ProcessRadarSpoke(a, b, data_highres, len, range_meters, time_rec);
   }
@@ -696,6 +758,16 @@ struct RadarReport_08C4_18 {             // 08 c4  length 18
   uint16_t field10;                      // 10-11
   uint8_t noise_rejection;               // 12    noise rejection
   uint8_t target_sep;                    // 13
+  uint8_t field11;                       // 14
+  uint8_t field12;                       // 15
+  uint8_t field13;                       // 16
+  uint8_t field14;                       // 17
+};
+
+struct RadarReport_08C4_21 {
+  RadarReport_08C4_18 old;
+  uint8_t doppler_state;
+  uint16_t doppler_speed;
 };
 
 struct RadarReport_12C4_66 {  // 12 C4 with length 66
@@ -751,21 +823,9 @@ static void AppendChar16String(wxString &dest, uint16_t *src) {
 }
 
 bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
-  LOG_BINARY_RECEIVE(wxT("ProcessReport"), report, len);
-
   time_t now = time(0);
 
   m_ri->resetTimeout(now);
-
-#ifdef TODO
-  if (m_ri->m_radar == 1) {
-    if (m_ri->m_radar_type != RT_4G) {
-      //   LOG_INFO(wxT("radar_pi: Radar report from 2nd radar tells us this a Navico 4G"));
-      m_ri->m_radar_type = RT_4G;
-      m_pi->m_pMessageBox->SetRadarType(RT_4G);
-    }
-  }
-#endif
 
   if (report[1] == 0xC4) {
     // Looks like a radar report. Is it a known one?
@@ -918,13 +978,27 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
       }
 #endif
 
-      case (18 << 8) + 0x08: {  // length 18, 08 C4
+      case (21 << 8) + 0x08:
+      {  // length 21, 08 C4
+         // contains Doppler data in extra 3 bytes
+        RadarReport_08C4_21 *s08 = (RadarReport_08C4_21 *)report;
+
+        LOG_RECEIVE(wxT("%u 08C4: doppler=%d speed=%d"), m_ri->m_radar, s08->doppler_state, s08->doppler_speed);
+        // TODO: Doppler speed
+
+        m_ri->m_doppler.Update(s08->doppler_state);
+      } // FALLTHRU to old length
+
+      case (18 << 8) + 0x08:
+      {  // length 18, 08 C4
         // contains scan speed, noise rejection and target_separation and sidelobe suppression
         RadarReport_08C4_18 *s08 = (RadarReport_08C4_18 *)report;
 
-        LOG_BINARY_RECEIVE(wxString::Format(wxT("scanspeed= %d, noise = %u target_sep %u"), s08->scan_speed, s08->noise_rejection,
-                                            s08->target_sep),
-                           report, len);
+        LOG_RECEIVE(wxT("%u 08C4: scanspeed=%d noise=%u target_sep=%u"), m_ri->m_radar, s08->scan_speed, s08->noise_rejection, s08->target_sep);
+        LOG_RECEIVE(wxT("%u 08C4: f2=%u f6=%u f7=%u f8=%u f10=%u"), m_ri->m_radar, s08->field2, s08->field6, s08->field7, s08->field8, s08->field10);
+        LOG_RECEIVE(wxT("%u 08C4: f11=%u f12=%u f13=%u f14=%u"), m_ri->m_radar, s08->field11, s08->field12, s08->field13, s08->field14);
+        LOG_RECEIVE(wxT("%u 08C4: if=%u slsa=%u sls=%u"), m_ri->m_radar, s08->local_interference_rejection, s08->sls_auto, s08->side_lobe_suppression);
+
         m_ri->m_scan_speed.Update(s08->scan_speed);
         m_ri->m_noise_rejection.Update(s08->noise_rejection);
         m_ri->m_target_separation.Update(s08->target_sep);

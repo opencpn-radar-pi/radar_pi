@@ -57,6 +57,8 @@ class OptionsDialog : public wxDialog {
   void OnTrailEndColourClick(wxCommandEvent& event);
   void OnWeakColourClick(wxCommandEvent& event);
   void OnArpaColourClick(wxCommandEvent& event);
+  void OnDopplerApproachingColourClick(wxCommandEvent& event);
+  void OnDopplerRecedingColourClick(wxCommandEvent& event);
   void OnPPIBackgroundColourClick(wxCommandEvent& event);
   void OnAisTextColourClick(wxCommandEvent& event);
   void OnIntermediateColourClick(wxCommandEvent& event);
@@ -87,6 +89,8 @@ class OptionsDialog : public wxDialog {
   wxColourPickerCtrl* m_ArpaColour;
   wxColourPickerCtrl* m_AisTextColour;
   wxColourPickerCtrl* m_PPIBackgroundColour;
+  wxColourPickerCtrl* m_DopplerApproachingColour;
+  wxColourPickerCtrl* m_DopplerRecedingColour;
   wxCheckBox* m_ShowExtremeRange;
   wxCheckBox* m_GuardZoneOnOverlay;
   wxCheckBox* m_TrailsOnOverlay;

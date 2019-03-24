@@ -325,7 +325,14 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
       break;
     }
 
-      // What would command 23 through 2f be?
+    case CT_DOPPLER: {
+      uint8_t cmd[] = {0x23, 0xc1, (uint8_t)value};
+      LOG_VERBOSE(wxT("radar_pi: %s Doppler state: %d"), m_name.c_str(), value);
+      r = TransmitCmd(cmd, sizeof(cmd));
+      break;
+    }
+
+      // What would command 24 through 2f be?
 
     case CT_ANTENNA_HEIGHT: {
       int v = value * 1000;  // radar wants millimeters, not meters :-)

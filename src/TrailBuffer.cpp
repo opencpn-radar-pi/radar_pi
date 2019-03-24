@@ -317,8 +317,9 @@ void TrailBuffer::UpdateTrailPosition() {
   m_dif.lon = fshift_lon + m_dif.lon - (double)shift.lon;
 
   if (shift.lat >= MARGIN || shift.lat <= -MARGIN || shift.lon >= MARGIN || shift.lon <= -MARGIN) {  // huge shift, reset trails
-   
-    LOG_INFO(wxT("radar_pi: %s Large movement trails reset, shift.lat= %f, shift.lon=%f"), m_ri->m_name.c_str(), shift.lat, shift.lon);
+
+    LOG_INFO(wxT("radar_pi: %s Large movement trails reset, shift.lat= %f, shift.lon=%f"), m_ri->m_name.c_str(), shift.lat,
+             shift.lon);
     ClearTrails();
     return;
   }
@@ -401,7 +402,6 @@ void TrailBuffer::ShiftImageLonToCenter() {
 }
 
 void TrailBuffer::ClearTrails() {
-  LOG_VERBOSE(wxT("radar_pi: ClearTrails"));
   m_offset.lat = 0;
   m_offset.lon = 0;
   m_dif.lat = 0.;

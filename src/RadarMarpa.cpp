@@ -519,7 +519,7 @@ int ArpaTarget::GetContour(Polar* pol) {
   if (poslat > 90. || poslat < -90. || poslon > 180. || poslon < -180.) {
     // some additional logging, to be removed later
     LOG_INFO(wxT("**error wrong target pos, poslat = %f, poslon = %f"), poslat, poslon);
-    }
+  }
   return 0;  //  success, blob found
 }
 

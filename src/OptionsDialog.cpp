@@ -145,6 +145,22 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
   m_TrailEndColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(OptionsDialog::OnTrailEndColourClick), NULL, this);
   trailSizer->Add(m_TrailEndColour);
 
+  wxStaticText *dopplerApproachingText = new wxStaticText(this, wxID_ANY, _("Doppler Approaching color"));
+  trailSizer->Add(dopplerApproachingText, 0, wxALL, border_size);
+  m_DopplerApproachingColour =
+      new wxColourPickerCtrl(this, wxID_ANY, m_settings.doppler_approaching_colour, wxDefaultPosition, wxSize(150, 30));
+  m_DopplerApproachingColour->Connect(wxEVT_COLOURPICKER_CHANGED,
+                                      wxCommandEventHandler(OptionsDialog::OnDopplerApproachingColourClick), NULL, this);
+  trailSizer->Add(m_DopplerApproachingColour);
+
+  wxStaticText *dopplerRecedingText = new wxStaticText(this, wxID_ANY, _("Doppler Receding color"));
+  trailSizer->Add(dopplerRecedingText, 0, wxALL, border_size);
+  m_DopplerRecedingColour =
+      new wxColourPickerCtrl(this, wxID_ANY, m_settings.doppler_receding_colour, wxDefaultPosition, wxSize(150, 30));
+  m_DopplerRecedingColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(OptionsDialog::OnDopplerRecedingColourClick),
+                                   NULL, this);
+  trailSizer->Add(m_DopplerRecedingColour);
+
   // Target colours
 
   wxStaticBox *colourBox = new wxStaticBox(this, wxID_ANY, _("Target colors"));
@@ -322,6 +338,14 @@ void OptionsDialog::OnPPIBackgroundColourClick(wxCommandEvent &event) {
 
 void OptionsDialog::OnIntermediateColourClick(wxCommandEvent &event) {
   m_settings.intermediate_colour = m_IntermediateColour->GetColour();
+}
+
+void OptionsDialog::OnDopplerApproachingColourClick(wxCommandEvent &event) {
+  m_settings.doppler_approaching_colour = m_DopplerApproachingColour->GetColour();
+}
+
+void OptionsDialog::OnDopplerRecedingColourClick(wxCommandEvent &event) {
+  m_settings.doppler_receding_colour = m_DopplerRecedingColour->GetColour();
 }
 
 void OptionsDialog::OnStrongColourClick(wxCommandEvent &event) { m_settings.strong_colour = m_StrongColour->GetColour(); }
