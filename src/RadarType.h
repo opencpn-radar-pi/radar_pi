@@ -54,7 +54,7 @@
 
 #endif /* _RADARTYPE_H_ */
 
-#define DEFINE_RADAR(t, x, s, l, a, b, c)
+#define DEFINE_RADAR(t, x, s, l, a, b, c, d)
 #define INITIALIZE_RADAR
 #endif
 
@@ -78,6 +78,12 @@
 #define SPOKE_LEN_MAX 0
 #endif
 
+#ifndef RO_SINGLE
+#define RO_SINGLE (0)
+#define RO_PRIMARY (1)
+#define RO_SECONDARY (2)
+#endif
+
 #include "garminhd/garminhdtype.h"
 #include "garminxhd/garminxhdtype.h"
 
@@ -88,9 +94,6 @@
 
 #include "navico/haloatype.h"
 #include "navico/halobtype.h"
-
-#include "navico/halo24atype.h"
-#include "navico/halo24btype.h"
 
 // TODO: Add Garmin etc.
 

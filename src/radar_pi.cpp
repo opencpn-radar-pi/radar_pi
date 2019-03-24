@@ -38,6 +38,7 @@
 #include "RadarMarpa.h"
 #include "SelectDialog.h"
 #include "icons.h"
+#include "navico/NavicoLocate.h"
 #include "nmea0183/nmea0183.h"
 
 PLUGIN_BEGIN_NAMESPACE
@@ -207,7 +208,7 @@ int radar_pi::Init(void) {
   m_notify_radar_window_viz = false;
   m_notify_control_dialog = false;
 
-  m_render_busy=false;
+  m_render_busy = false;
 
   m_bogey_dialog = 0;
   m_alarm_sound_timeout = 0;
@@ -236,7 +237,6 @@ int radar_pi::Init(void) {
   CLEAR_STRUCT(m_settings.radar_interface_address);
   m_settings.radar_count = 0;
 
-
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
   m_parent_window = GetOCPNCanvasWindow();
@@ -245,6 +245,8 @@ int radar_pi::Init(void) {
 
   m_pMessageBox = new MessageBox;
   m_pMessageBox->Create(m_parent_window, this);
+
+  m_locator = 0;
 
   // Create objects before config, so config can set data in it
   // This does not start any threads or generate any UI.
@@ -286,6 +288,14 @@ int radar_pi::Init(void) {
   // Now that the settings are made we can initialize the RadarInfos
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->Init();
+
+    if (m_radar[r]->m_radar_type >= RT_4GA && m_radar[r]->m_radar_type <= RT_HaloB && m_locator == NULL) {
+      m_locator = new NavicoLocate(this);
+      if (m_locator->Run() != wxTHREAD_NO_ERROR) {
+        wxLogError(wxT("radar_pi: unable to start Navico Radar Locator thread"));
+        return 0;
+      }
+    }
   }
   // and get rid of any radars we're not using
   for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
@@ -380,6 +390,10 @@ bool radar_pi::DeInit(void) {
     m_radar[r] = 0;
   }
 
+  if (m_locator != NULL) {
+    delete m_locator;
+    m_locator = 0;
+  }
   // No need to delete wxWindow stuff, wxWidgets does this for us.
   LOG_VERBOSE(wxT("radar_pi: DeInit of plugin done"));
   return true;
@@ -935,11 +949,11 @@ void radar_pi::ScheduleWindowRefresh() {
     // 5 = 16 per s,  64ms
     millis = (1000 - drawTime) / (1 << (refreshrate - 1)) + drawTime;
 
-    LOG_VERBOSE(wxT("radar_pi: rendering took %i ms, PPI0= %i ms, PPI1= %i, Overlay0= %i, Overlay1= %i next render in %i ms"), 
-    drawTime, renderPPI[0], renderPPI[1], render_overlay[0],render_overlay[1], millis);
+    LOG_VERBOSE(wxT("radar_pi: rendering took %i ms, PPI0= %i ms, PPI1= %i, Overlay0= %i, Overlay1= %i next render in %i ms"),
+                drawTime, renderPPI[0], renderPPI[1], render_overlay[0], render_overlay[1], millis);
 
     m_timer->StartOnce(millis);
-    
+
   } else {
     LOG_VERBOSE(wxT("radar_pi: rendering took %dms, refreshrate=%d, no next extra render"), drawTime, refreshrate);
   }
@@ -980,14 +994,12 @@ void radar_pi::TimedControlUpdate() {
     return;
   }
 
-
-//// for overlay testing only, simple trick to get position and heading
-// wxString nmea;
-// nmea = wxT("$APHDM,000.0,M*33<0x0D><0x0A>");
-// PushNMEABuffer(nmea);
-// nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
-// PushNMEABuffer(nmea);
-
+  //// for overlay testing only, simple trick to get position and heading
+  // wxString nmea;
+  // nmea = wxT("$APHDM,000.0,M*33<0x0D><0x0A>");
+  // PushNMEABuffer(nmea);
+  // nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
+  // PushNMEABuffer(nmea);
 
   m_notify_time_ms = now;
 
@@ -1162,7 +1174,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
   GeoPosition radar_pos;
   // prevent this being called recursively
   // no critical section locker (will wait), better to return immediately
-  if(m_render_busy){
+  if (m_render_busy) {
     LOG_INFO(wxT("error render busy"));
     return true;
   }
@@ -1191,19 +1203,19 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
   }
   m_current_canvas_index = canvasIndex;
   int current_overlay_radar = m_chart_overlay[canvasIndex];
-  m_max_canvas = GetCanvasCount( );
-  if (m_max_canvas <= 0 || m_current_canvas_index >= m_max_canvas){
+  m_max_canvas = GetCanvasCount();
+  if (m_max_canvas <= 0 || m_current_canvas_index >= m_max_canvas) {
     m_render_busy = false;
     return true;
   }
-  
+
   if (!m_initialized) {
     m_render_busy = false;
     return true;
   }
 
-// refresh ARPA targets only with canvas 0
-if (canvasIndex == 0) {
+  // refresh ARPA targets only with canvas 0
+  if (canvasIndex == 0) {
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       bool arpa_on = false;
       if (m_radar[r]->m_arpa) {
@@ -1222,7 +1234,6 @@ if (canvasIndex == 0) {
     }
   }
 
-  
   m_vp = vp;
 
   LOG_DIALOG(wxT("radar_pi: RenderGLOverlayMultiCanvas context=%p canvas=%d"), pcontext, canvasIndex);
@@ -1288,8 +1299,8 @@ if (canvasIndex == 0) {
     LOG_DIALOG(wxT("radar_pi: RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat,
                vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
     m_radar[current_overlay_radar]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
-  } 
-  
+  }
+
   m_draw_time_overlay_ms[canvasIndex] = (wxGetUTCTimeMillis() - now).GetLo();
 
   if (canvasIndex == 0) {
@@ -1345,6 +1356,11 @@ bool radar_pi::LoadConfig(void) {
 
       pConf->Read(wxString::Format(wxT("Radar%dInterface"), r), &s, "0.0.0.0");
       radar_inet_aton(s.c_str(), &m_settings.radar_interface_address[n].addr);
+      m_settings.radar_interface_address[n].port = 0;
+      pConf->Read(wxString::Format(wxT("Radar%dAddress"), r), &s, "0.0.0.0");
+      radar_inet_aton(s.c_str(), &m_settings.radar_address[n].addr);
+      m_settings.radar_address[n].port = htons(RadarOrder[ri->m_radar_type]);
+      pConf->Read(wxString::Format(wxT("Radar%dSerialNo"), r), m_settings.radar_serial_no[r]);
 
       pConf->Read(wxString::Format(wxT("Radar%dRange"), r), &v, 2000);
       ri->m_range.Update(v);
@@ -1511,12 +1527,9 @@ bool radar_pi::SaveConfig(void) {
 
     for (int r = 0; r < (int)m_settings.radar_count; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);
-
-      wxString addr;
-      uint8_t *a = (uint8_t *)&m_settings.radar_interface_address[r].addr;
-      addr.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
-      pConf->Write(wxString::Format(wxT("Radar%dInterface"), r), addr);
-
+      pConf->Write(wxString::Format(wxT("Radar%dSerialNo"), r), m_settings.radar_serial_no[r]);
+      pConf->Write(wxString::Format(wxT("Radar%dAddress"), r), FormatNetworkAddress(m_settings.radar_address[r]));
+      pConf->Write(wxString::Format(wxT("Radar%dInterface"), r), FormatNetworkAddress(m_settings.radar_interface_address[r]));
       pConf->Write(wxString::Format(wxT("Radar%dRange"), r), m_radar[r]->m_range.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->m_state.GetValue());
@@ -1556,6 +1569,35 @@ bool radar_pi::SaveConfig(void) {
   }
 
   return false;
+}
+
+void radar_pi::FoundRadar(const wxString &serial, const NetworkAddress &addr) {
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  for (size_t r = 0; r < RADARS; r++) {
+    if (ntohs(addr.port) == RadarOrder[m_radar[r]->m_radar_type]) {  // Only put primary in primary slots, etc.
+      if (M_SETTINGS.radar_serial_no[r] == serial) {
+        M_SETTINGS.radar_address[r] = addr;
+      } else if (M_SETTINGS.radar_serial_no[r].IsNull()) {
+        M_SETTINGS.radar_serial_no[r] = serial;
+        M_SETTINGS.radar_address[r] = addr;
+        LOG_INFO(wxT("radar_pi: Radar %u is now #%s at IP %s"), r, serial, FormatNetworkAddress(addr));
+        break;
+      }
+    }
+  }
+}
+
+bool radar_pi::HaveRadarSerialNo(size_t r) {
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  return !M_SETTINGS.radar_serial_no[r].IsNull();
+}
+
+wxString &radar_pi::GetRadarSerialNo(size_t r) {
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  return M_SETTINGS.radar_serial_no[r];
 }
 
 // Positional Data passed from NMEA to plugin
@@ -1626,7 +1668,7 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     return;
   }
   ExtendedPosition GPS_position;
-  
+
   GPS_position.pos.lat = pfix.Lat;
   GPS_position.pos.lon = pfix.Lon;
   GPS_position.time = wxGetUTCTimeMillis();

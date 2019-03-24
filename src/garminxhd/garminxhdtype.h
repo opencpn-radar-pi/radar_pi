@@ -1,4 +1,3 @@
-
 #ifdef INITIALIZE_RADAR
 
 PLUGIN_BEGIN_NAMESPACE
@@ -44,5 +43,6 @@ DEFINE_RADAR(RT_GARMIN_XHD,                                /* Type */
              GARMIN_XHD_MAX_SPOKE_LEN,                     /* Spoke length */
              GarminxHDControlsDialog,                      /* Controls class */
              GarminxHDReceive(pi, ri, gx_report, gx_data), /* Receive class */
-             GarminxHDControl(gx_send)                     /* Send/Control class */
+             GarminxHDControl(gx_send),                    /* Send/Control class */
+             RO_SINGLE                                     /* This type only has a single radar and does not need locating */
 )

@@ -45,7 +45,7 @@ RadarPanel::RadarPanel(radar_pi* pi, RadarInfo* ri, wxWindow* parent)
 bool RadarPanel::Create() {
   m_aui_mgr = GetFrameAuiManager();
 
-  m_aui_name = wxString::Format(wxT("radar_pi-%d"), (int) m_ri->m_radar);
+  m_aui_name = wxString::Format(wxT("radar_pi-%d"), (int)m_ri->m_radar);
   wxAuiPaneInfo pane = wxAuiPaneInfo()
                            .Name(m_aui_name)
                            .Caption(m_ri->m_name)
@@ -79,7 +79,7 @@ bool RadarPanel::Create() {
   pane.dock_proportion = 100000;  // Secret sauce to get panels to use entire bar
 
   m_aui_mgr->AddPane(this, pane);
-  m_aui_mgr->Update();
+  // m_aui_mgr->Update();
   m_aui_mgr->Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(RadarPanel::close), NULL, this);
 
   m_dock_size = 0;
@@ -212,15 +212,13 @@ void RadarPanel::ShowFrame(bool visible) {
     pane.Position(m_ri->m_radar);
   }
 
-
-  if (IsPaneShown() == visible)
-  {
+  if (IsPaneShown() == visible) {
     return;
   }
 
   pane.Show(visible);
   pane.Caption(m_ri->m_name);
-  
+
   m_aui_mgr->Update();
 
   if (visible && (m_dock_size > 0)) {

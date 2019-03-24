@@ -34,7 +34,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-wxString FormatNetworkAddress(NetworkAddress &addr) {
+wxString FormatNetworkAddress(const NetworkAddress &addr) {
   uint8_t *a = (uint8_t *)&addr.addr;  // sin_addr is in network layout
   wxString address;
   address.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
@@ -42,7 +42,15 @@ wxString FormatNetworkAddress(NetworkAddress &addr) {
   return address;
 }
 
-wxString FormatNetworkAddressPort(NetworkAddress &addr) {
+wxString FormatNetworkAddressPort(const NetworkAddress &addr) {
+  uint8_t *a = (uint8_t *)&addr.addr;  // sin_addr is in network layout
+  wxString address;
+  address.Printf(wxT("%u.%u.%u.%u port %u"), a[0], a[1], a[2], a[3], ntohs(addr.port));
+
+  return address;
+}
+
+wxString FormatPackedAddress(const PackedAddress &addr) {
   uint8_t *a = (uint8_t *)&addr.addr;  // sin_addr is in network layout
   wxString address;
   address.Printf(wxT("%u.%u.%u.%u port %u"), a[0], a[1], a[2], a[3], htons(addr.port));
@@ -170,7 +178,8 @@ bool socketReady(SOCKET sockfd, int timeout) {
   return r > 0;
 }
 
-SOCKET startUDPMulticastReceiveSocket(NetworkAddress &interface_address, NetworkAddress &mcast_address, wxString &error_message) {
+SOCKET startUDPMulticastReceiveSocket(const NetworkAddress &interface_address, const NetworkAddress &mcast_address,
+                                      wxString &error_message) {
   SOCKET rx_socket;
   struct sockaddr_in listenAddress;
   int one = 1;
@@ -197,18 +206,10 @@ SOCKET startUDPMulticastReceiveSocket(NetworkAddress &interface_address, Network
     goto fail;
   }
 
-  // Subscribe rx_socket to a multicast group
-  struct ip_mreq mreq;
-  mreq.imr_interface = interface_address.addr;
-  mreq.imr_multiaddr = mcast_address.addr;
-
-  if (setsockopt(rx_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *)&mreq, sizeof(mreq))) {
+  if (socketAddMembership(rx_socket, interface_address, mcast_address)) {
     error_message << _("Invalid IP address for UDP multicast");
     goto fail;
   }
-
-  wxLogMessage(wxT("radar_pi: multicast reception for %s on interface %s"), FormatNetworkAddressPort(mcast_address),
-               FormatNetworkAddress(interface_address));
 
   // Hurrah! Success!
   return rx_socket;
@@ -218,6 +219,25 @@ fail:
     closesocket(rx_socket);
   }
   return INVALID_SOCKET;
+}
+
+bool socketAddMembership(SOCKET socket, const NetworkAddress &interface_address, const NetworkAddress &mcast_address) {
+  // Subscribe rx_socket to an extra multicast address
+  struct ip_mreq mreq;
+  mreq.imr_interface = interface_address.addr;
+  mreq.imr_multiaddr = mcast_address.addr;
+
+  if (setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *)&mreq, sizeof(mreq))) {
+    wxLogMessage(wxT("radar_pi: failed to add multicast reception for %s on interface %s"), FormatNetworkAddressPort(mcast_address),
+                 FormatNetworkAddress(interface_address));
+    return true;
+  }
+
+  wxLogMessage(wxT("radar_pi: multicast reception for %s on interface %s"), FormatNetworkAddressPort(mcast_address),
+               FormatNetworkAddress(interface_address));
+
+  // Hurrah! Success!
+  return false;
 }
 
 SOCKET GetLocalhostServerTCPSocket() {

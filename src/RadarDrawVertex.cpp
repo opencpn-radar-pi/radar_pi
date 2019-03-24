@@ -164,9 +164,9 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
       r_end = r_begin + 1;
       previous_colour = actual_colour;  // new color
     } else if (previous_colour != BLOB_NONE && (previous_colour != actual_colour)) {
-      red   = m_ri->m_colour_map_rgb[previous_colour].Red();
+      red = m_ri->m_colour_map_rgb[previous_colour].Red();
       green = m_ri->m_colour_map_rgb[previous_colour].Green();
-      blue  = m_ri->m_colour_map_rgb[previous_colour].Blue();
+      blue = m_ri->m_colour_map_rgb[previous_colour].Blue();
       SetBlob(line, angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
       previous_colour = actual_colour;
       if (actual_colour != BLOB_NONE) {  // change of color, start new blob
@@ -176,9 +176,9 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
     }
   }
   if (previous_colour != BLOB_NONE) {  // Draw final blob
-    red   = m_ri->m_colour_map_rgb[previous_colour].Red();
+    red = m_ri->m_colour_map_rgb[previous_colour].Red();
     green = m_ri->m_colour_map_rgb[previous_colour].Green();
-    blue  = m_ri->m_colour_map_rgb[previous_colour].Blue();
+    blue = m_ri->m_colour_map_rgb[previous_colour].Blue();
     SetBlob(line, angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
   }
 }

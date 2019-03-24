@@ -36,14 +36,14 @@
 PLUGIN_BEGIN_NAMESPACE
 
 const wchar_t* RadarTypeName[RT_MAX] = {
-#define DEFINE_RADAR(t, n, s, l, a, b, c) n,
+#define DEFINE_RADAR(t, n, s, l, a, b, c, d) n,
 #include "RadarType.h"
 };
 
 ControlsDialog* RadarFactory::MakeControlsDialog(size_t radarType, int radar) {
   switch (radarType) {
-#define DEFINE_RADAR(t, x, s, l, a, b, c) \
-  case t:                                 \
+#define DEFINE_RADAR(t, x, s, l, a, b, c, d) \
+  case t:                                    \
     return new a;
 #include "RadarType.h"
   };
@@ -52,8 +52,8 @@ ControlsDialog* RadarFactory::MakeControlsDialog(size_t radarType, int radar) {
 
 RadarReceive* RadarFactory::MakeRadarReceive(size_t radarType, radar_pi* pi, RadarInfo* ri) {
   switch (radarType) {
-#define DEFINE_RADAR(t, x, s, l, a, b, c) \
-  case t:                                 \
+#define DEFINE_RADAR(t, x, s, l, a, b, c, d) \
+  case t:                                    \
     return new b;
 #include "RadarType.h"
   };
@@ -62,8 +62,8 @@ RadarReceive* RadarFactory::MakeRadarReceive(size_t radarType, radar_pi* pi, Rad
 
 RadarControl* RadarFactory::MakeRadarControl(size_t radarType) {
   switch (radarType) {
-#define DEFINE_RADAR(t, x, s, l, a, b, c) \
-  case t:                                 \
+#define DEFINE_RADAR(t, x, s, l, a, b, c, d) \
+  case t:                                    \
     return new c;
 #include "RadarType.h"
   };
@@ -77,12 +77,12 @@ size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const in
   switch (units) {
     case RANGE_MIXED:
       switch (radarType) {
-#define DEFINE_RADAR(t, x, s, l, a, b, c)   \
-  case t: {                                 \
-    static const int r[] = RANGE_MIXED_##t; \
-    *ranges = r;                            \
-    n = ARRAY_SIZE(r);                      \
-    break;                                  \
+#define DEFINE_RADAR(t, x, s, l, a, b, c, d) \
+  case t: {                                  \
+    static const int r[] = RANGE_MIXED_##t;  \
+    *ranges = r;                             \
+    n = ARRAY_SIZE(r);                       \
+    break;                                   \
   }
 
 #include "RadarType.h"
@@ -91,7 +91,7 @@ size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const in
 
     case RANGE_METRIC:
       switch (radarType) {
-#define DEFINE_RADAR(t, x, s, l, a, b, c)    \
+#define DEFINE_RADAR(t, x, s, l, a, b, c, d) \
   case t: {                                  \
     static const int r[] = RANGE_METRIC_##t; \
     *ranges = r;                             \
@@ -104,7 +104,7 @@ size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const in
 
     case RANGE_NAUTIC:
       switch (radarType) {
-#define DEFINE_RADAR(t, x, s, l, a, b, c)    \
+#define DEFINE_RADAR(t, x, s, l, a, b, c, d) \
   case t: {                                  \
     static const int r[] = RANGE_NAUTIC_##t; \
     *ranges = r;                             \
@@ -125,7 +125,7 @@ size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const in
 
 void RadarFactory::GetRadarTypes(wxArrayString& radarTypes) {
   wxString names[] = {
-#define DEFINE_RADAR(t, x, s, l, a, b, c) x,
+#define DEFINE_RADAR(t, x, s, l, a, b, c, d) x,
 #include "RadarType.h"
   };
 
