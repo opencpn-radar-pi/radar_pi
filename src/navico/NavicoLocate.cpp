@@ -123,6 +123,8 @@ void *NavicoLocate::Entry(void) {
 
   LOG_VERBOSE(wxT("radar_pi: NavicoLocate thread starting"));
 
+  m_is_shutdown = false;
+
   UpdateEthernetCards();
 
   while (!m_shutdown) {
@@ -175,6 +177,7 @@ void *NavicoLocate::Entry(void) {
   CleanupCards();
 
   LOG_VERBOSE(wxT("radar_pi: NavicoLocate thread stopping"));
+  m_is_shutdown = true;
   return 0;
 }
 
