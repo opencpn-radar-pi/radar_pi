@@ -92,10 +92,10 @@ bool GuardZoneBogey::Create(wxWindow *parent, radar_pi *pi, wxWindowID id, const
   GuardZoneBogeySizer->Add(m_bogey_text, 0, wxALIGN_LEFT | wxALL, border);
 
   m_confirm_button = new wxButton(this, ID_CONFIRM, _("Confirm"), wxDefaultPosition, wxDefaultSize, 0);
-  GuardZoneBogeySizer->Add(m_confirm_button, 0, wxALIGN_CENTER_VERTICAL | wxALL, border);
+  GuardZoneBogeySizer->Add(m_confirm_button, 0, wxALL, border);
 
   wxButton *bClose = new wxButton(this, ID_CLOSE, _("Close"), wxDefaultPosition, wxDefaultSize, 0);
-  GuardZoneBogeySizer->Add(bClose, 0, wxALIGN_CENTER_VERTICAL | wxALL, border);
+  GuardZoneBogeySizer->Add(bClose, 0, wxALL, border);
 
   DimeWindow(this);
 
