@@ -295,7 +295,7 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
       m_control_dialog->m_panel_position = panel_pos;
       wxWindow *parent = (wxWindow *)m_radar_panel;
 #ifdef __WXOSX__
-      if (!m_pi->m_settings.show_radar[m_radar]) 
+      if (!m_pi->m_settings.show_radar[m_radar])
 #endif
         parent = m_pi->m_parent_window;
       LOG_VERBOSE(wxT("radar_pi %s: Creating control dialog"), m_name.c_str());
@@ -330,18 +330,29 @@ void RadarInfo::SetName(wxString name) {
 
 void RadarInfo::ComputeColourMap() {
   for (int i = 0; i <= UINT8_MAX; i++) {
-    m_colour_map[i] = (i >= m_pi->m_settings.threshold_red) ? BLOB_STRONG
-                                                            : (i >= m_pi->m_settings.threshold_green)
-                                                                  ? BLOB_INTERMEDIATE
-                                                                  : (i >= m_pi->m_settings.threshold_blue) ? BLOB_WEAK : BLOB_NONE;
+    if (i == UINT8_MAX && m_doppler.GetValue() > 0) {
+      m_colour_map[i] = BLOB_DOPPLER_APPROACHING;
+    } else if ((i == UINT8_MAX - 1) && m_doppler.GetValue() == 1) {
+      m_colour_map[i] = BLOB_DOPPLER_RECEDING;
+    } else if (i >= m_pi->m_settings.threshold_red) {
+      m_colour_map[i] = BLOB_STRONG;
+    } else if (i >= m_pi->m_settings.threshold_green) {
+      m_colour_map[i] = BLOB_INTERMEDIATE;
+    } else if (i >= m_pi->m_settings.threshold_blue) {
+      m_colour_map[i] = BLOB_WEAK;
+    } else {
+      m_colour_map[i] = BLOB_NONE;
+    }
   }
 
   for (int i = 0; i < BLOB_COLOURS; i++) {
     m_colour_map_rgb[i] = wxColour(0, 0, 0);
   }
-  m_colour_map_rgb[BLOB_STRONG] = m_pi->m_settings.strong_colour;
-  m_colour_map_rgb[BLOB_INTERMEDIATE] = m_pi->m_settings.intermediate_colour;
-  m_colour_map_rgb[BLOB_WEAK] = m_pi->m_settings.weak_colour;
+  m_colour_map_rgb[BLOB_DOPPLER_APPROACHING] = M_SETTINGS.doppler_approaching_colour;
+  m_colour_map_rgb[BLOB_DOPPLER_RECEDING] = M_SETTINGS.doppler_receding_colour;
+  m_colour_map_rgb[BLOB_STRONG] = M_SETTINGS.strong_colour;
+  m_colour_map_rgb[BLOB_INTERMEDIATE] = M_SETTINGS.intermediate_colour;
+  m_colour_map_rgb[BLOB_WEAK] = M_SETTINGS.weak_colour;
 
   if (m_target_trails.GetState() != RCS_OFF) {
     float r1 = m_pi->m_settings.trail_start_colour.Red();
@@ -709,10 +720,12 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item,
 
     case CT_ORIENTATION: {
       m_orientation = item;
+      return true;
     }
 
     case CT_CENTER_VIEW: {
       m_view_center = item;
+      return true;
     }
 
     case CT_OVERLAY_CANVAS: {
@@ -723,6 +736,16 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item,
                  canvas, radar);
 
       m_overlay_canvas[canvas] = radar;
+      return true;
+    }
+
+    case CT_DOPPLER: {
+      m_doppler = item;
+      ComputeColourMap();
+      if (m_control) {
+        return m_control->SetControlValue(controlType, item, button);
+      }
+      break;
     }
 
     // Careful, we're selectively falling through to the next case label

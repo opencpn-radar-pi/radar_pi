@@ -344,6 +344,7 @@ class ControlsDialog : public wxDialog {
 
   // View controls
   RadarControlButton *m_targets_on_ppi_button;
+  RadarControlButton *m_doppler_button;
   RadarControlButton *m_target_trails_button;
   RadarControlButton *m_trails_motion_button;
   wxButton *m_clear_trails_button;

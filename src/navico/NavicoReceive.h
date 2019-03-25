@@ -59,10 +59,13 @@ class NavicoReceive : public RadarReceive {
     SetInfoStatus(wxString::Format(wxT("%s: %s"), m_ri->m_name.c_str(), _("Initializing")));
     SetPriority(wxPRIORITY_MAX);
     LOG_INFO(wxT("radar_pi: %s receive thread created, prio= %i"), m_ri->m_name.c_str(), GetPriority());
+    InitializeLookupData();
   };
 
-  ~NavicoReceive() {}
+  ~NavicoReceive() {};
 
+  void InitializeLookupData();
+  
   void *Entry(void);
   void Shutdown(void);
   wxString GetInfoStatus();
@@ -107,6 +110,7 @@ class NavicoReceive : public RadarReceive {
     wxCriticalSectionLocker lock(m_lock);
     m_firmware = s;
   }
+
 };
 
 PLUGIN_END_NAMESPACE

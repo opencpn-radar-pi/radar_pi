@@ -267,11 +267,13 @@ enum BlobColour {
   BLOB_HISTORY_31,
   BLOB_WEAK,
   BLOB_INTERMEDIATE,
-  BLOB_STRONG
+  BLOB_STRONG,
+  BLOB_DOPPLER_RECEDING,
+  BLOB_DOPPLER_APPROACHING
 };
 #define BLOB_HISTORY_MAX BLOB_HISTORY_31
 #define BLOB_HISTORY_COLOURS (BLOB_HISTORY_MAX - BLOB_NONE)
-#define BLOB_COLOURS (BLOB_STRONG + 1)
+#define BLOB_COLOURS (BLOB_DOPPLER_APPROACHING + 1)
 
 extern const char *convertRadarToString(int range_meters, int units, int index);
 extern double local_distance(GeoPosition pos1, GeoPosition pos2);
@@ -349,6 +351,8 @@ struct PersistentSettings {
   wxString radar_serial_no[RADARS];                // Serial # of radar, if known
   wxColour trail_start_colour;                     // Starting colour of a trail
   wxColour trail_end_colour;                       // Ending colour of a trail
+  wxColour doppler_approaching_colour;             // Colour for Doppler Approaching returns
+  wxColour doppler_receding_colour;                // Colour for Doppler Receding returns
   wxColour strong_colour;                          // Colour for STRONG returns
   wxColour intermediate_colour;                    // Colour for INTERMEDIATE returns
   wxColour weak_colour;                            // Colour for WEAK returns

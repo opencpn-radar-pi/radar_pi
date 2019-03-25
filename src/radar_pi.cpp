@@ -289,7 +289,7 @@ int radar_pi::Init(void) {
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->Init();
 
-    if (m_radar[r]->m_radar_type >= RT_4GA && m_radar[r]->m_radar_type <= RT_HaloB && m_locator == NULL) {
+    if (RadarOrder[m_radar[r]->m_radar_type] >= RO_PRIMARY && m_locator == NULL) {
       m_locator = new NavicoLocate(this);
       if (m_locator->Run() != wxTHREAD_NO_ERROR) {
         wxLogError(wxT("radar_pi: unable to start Navico Radar Locator thread"));
@@ -302,6 +302,7 @@ int radar_pi::Init(void) {
     delete m_radar[r];
     m_radar[r] = 0;
   }
+  
   for (size_t r = 0; r < MAX_CHART_CANVAS; r++) {
     m_draw_time_overlay_ms[r] = 0;
   }
@@ -368,6 +369,10 @@ bool radar_pi::DeInit(void) {
     m_timer->Stop();
     delete m_timer;
     m_timer = 0;
+  }
+
+  if (m_locator) {
+    m_locator->Shutdown();
   }
 
   // Stop processing in all radars.
@@ -695,24 +700,20 @@ void radar_pi::OnContextMenuItemCallback(int id) {
   if (id == m_context_menu_hide_id) {
     m_settings.show = false;
     SetRadarWindowViz();
-  }
-  else if (id == m_context_menu_show_id) {
+  } else if (id == m_context_menu_show_id) {
     m_settings.show = true;
     SetRadarWindowViz();
-  }
-  else if (id == m_context_menu_acquire_radar_target) {
+  } else if (id == m_context_menu_acquire_radar_target) {
     if (m_settings.show                                                  // radar shown
-      && HaveOverlay()                                                 // overlay desired
-      && m_radar[current_radar]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
-      && !isnan(m_right_click_pos.lat) && !isnan(m_right_click_pos.lon))
-    {
-      if (m_right_click_pos.lat < 90. && m_right_click_pos.lat > -90.
-        && m_right_click_pos.lon < 180. && m_right_click_pos.lon > -180.) {
+        && HaveOverlay()                                                 // overlay desired
+        && m_radar[current_radar]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
+        && !isnan(m_right_click_pos.lat) && !isnan(m_right_click_pos.lon)) {
+      if (m_right_click_pos.lat < 90. && m_right_click_pos.lat > -90. && m_right_click_pos.lon < 180. &&
+          m_right_click_pos.lon > -180.) {
         ExtendedPosition target_pos;
         target_pos.pos = m_right_click_pos;
         m_radar[current_radar]->m_arpa->AcquireNewMARPATarget(target_pos);
-      }
-      else {
+      } else {
         LOG_INFO(wxT(" **error right click pos lat=%f, lon=%f"), m_right_click_pos.lat, m_right_click_pos.lon);
       }
     }
@@ -1440,6 +1441,10 @@ bool radar_pi::LoadConfig(void) {
     m_settings.ais_text_colour = wxColour(s);
     pConf->Read(wxT("ColourPPIBackground"), &s, "rgb(0,0,50)");
     m_settings.ppi_background_colour = wxColour(s);
+    pConf->Read(wxT("ColourDopplerApproaching"), &s, "yellow");
+    m_settings.doppler_approaching_colour = wxColour(s);
+    pConf->Read(wxT("ColourDopplerReceding"), &s, "cyan");
+    m_settings.doppler_receding_colour = wxColour(s);
     pConf->Read(wxT("DeveloperMode"), &m_settings.developer_mode, false);
     pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
     pConf->Read(wxT("GuardZoneDebugInc"), &m_settings.guard_zone_debug_inc, 0);
@@ -1520,6 +1525,8 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ColourStrong"), m_settings.strong_colour.GetAsString());
     pConf->Write(wxT("ColourIntermediate"), m_settings.intermediate_colour.GetAsString());
     pConf->Write(wxT("ColourWeak"), m_settings.weak_colour.GetAsString());
+    pConf->Write(wxT("ColourDopplerApproaching"), m_settings.doppler_approaching_colour.GetAsString());
+    pConf->Write(wxT("ColourDopplerReceding"), m_settings.doppler_receding_colour.GetAsString());
     pConf->Write(wxT("ColourArpaEdge"), m_settings.arpa_colour.GetAsString());
     pConf->Write(wxT("ColourAISText"), m_settings.ais_text_colour.GetAsString());
     pConf->Write(wxT("ColourPPIBackground"), m_settings.ppi_background_colour.GetAsString());
@@ -1574,7 +1581,7 @@ bool radar_pi::SaveConfig(void) {
 void radar_pi::FoundRadar(const wxString &serial, const NetworkAddress &addr) {
   wxCriticalSectionLocker lock(m_exclusive);
 
-  for (size_t r = 0; r < RADARS; r++) {
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     if (ntohs(addr.port) == RadarOrder[m_radar[r]->m_radar_type]) {  // Only put primary in primary slots, etc.
       if (M_SETTINGS.radar_serial_no[r] == serial) {
         M_SETTINGS.radar_address[r] = addr;

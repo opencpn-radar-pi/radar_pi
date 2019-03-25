@@ -62,6 +62,7 @@ class NavicoLocate : public wxThread {
     Create(64 * 1024);  // Stack size
     m_pi = pi;          // This allows you to access the main plugin stuff
     m_shutdown = false;
+    m_is_shutdown = true;
 
     m_interface_addr = 0;
     m_socket = 0;
@@ -78,11 +79,19 @@ class NavicoLocate : public wxThread {
    */
   void Shutdown(void) { m_shutdown = true; }
 
+  ~NavicoLocate() {
+    while (!m_is_shutdown) {
+      wxMilliSleep(50);
+    }
+  }
+
   /*
    * Find the multicast addresses for a particular radar.
    * The port of the radar_ip should be 0 for radar A and 1 for radar B.
    */
   const NavicoRadarInfo *getRadarInfo(const NetworkAddress &radar_ip);
+
+  volatile bool m_is_shutdown;
 
  protected:
   void *Entry(void);

@@ -992,6 +992,12 @@ void ControlsDialog::CreateControls() {
       new RadarControlButton(this, ID_TARGETS_ON_PPI, _("AIS/ARPA on PPI"), m_ctrl[CT_TARGET_ON_PPI], &m_ri->m_target_on_ppi);
   m_view_sizer->Add(m_targets_on_ppi_button, 0, wxALL, BORDER);
 
+  // The DOPPLER button
+  if (m_ctrl[CT_DOPPLER].type) {
+    m_doppler_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Doppler"), m_ctrl[CT_DOPPLER], &m_ri->m_doppler);
+    m_view_sizer->Add(m_doppler_button, 0, wxALL, BORDER);
+  }
+
   // The TARGET_TRAIL button
   if (m_ctrl[CT_TARGET_TRAILS].type) {
     m_target_trails_button =
@@ -1716,6 +1722,9 @@ void ControlsDialog::DisableRadarControls() {
   if (m_power_sub_button) {
     m_power_sub_button->Disable();
   }
+  if (m_doppler_button) {
+    m_doppler_button->Disable();
+  }
 }
 
 void ControlsDialog::EnableRadarControls() {
@@ -1775,6 +1784,9 @@ void ControlsDialog::EnableRadarControls() {
   }
   if (m_power_sub_button) {
     m_power_sub_button->Enable();
+  }
+  if (m_doppler_button) {
+    m_doppler_button->Enable();
   }
 }
 
@@ -1942,6 +1954,10 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
   if (m_refresh_rate_button) {
     m_refresh_rate_button->UpdateLabel(true);
+  }
+
+  if (m_doppler_button) {
+    m_doppler_button->UpdateLabel();
   }
 
   if (updateEditDialog) {

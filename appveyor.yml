@@ -51,7 +51,8 @@ artifacts:
 deploy:
   description: 'release created by AppVeyor CI'
   provider: GitHub
-  auth_token: '%GitHub_auth_token%'
+  auth_token:
+    secure: 2caGomOXF3oh8vp/OJfmEyD/6V0rzeHVI1GnH8E+clL7AaPhzQCl9M4Y9xlsmX+2
   artifact: installer,portable
   draft: true
   prerelease: true
