@@ -44,9 +44,7 @@ static const uint8_t COMMAND_STAY_ON_B[2] = {0x03, 0xc2};
 static const uint8_t COMMAND_STAY_ON_C[2] = {0x04, 0xc2};
 static const uint8_t COMMAND_STAY_ON_D[2] = {0x05, 0xc2};
 
-NavicoControl::NavicoControl(NetworkAddress sendMultiCastAddress) {
-  SetMultiCastAddress(sendMultiCastAddress);
-
+NavicoControl::NavicoControl() {
   m_radar_socket = INVALID_SOCKET;
   m_name = wxT("Navico radar");
 }

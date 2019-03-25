@@ -197,8 +197,8 @@ SOCKET GarminHDReceive::GetNewReportSocket() {
   error = wxT("");
   socket = startUDPMulticastReceiveSocket(m_interface_addr, m_report_addr, error);
   if (socket != INVALID_SOCKET) {
-    wxString addr = FormatNetworkAddress(m_interface_addr);
-    wxString rep_addr = FormatNetworkAddressPort(m_report_addr);
+    wxString addr = m_interface_addr.FormatNetworkAddress();
+    wxString rep_addr = m_report_addr.FormatNetworkAddressPort();
 
     LOG_RECEIVE(wxT("radar_pi: %s scanning interface %s for data from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
 
@@ -295,7 +295,7 @@ void *GarminHDReceive::Entry(void) {
 
               radarFoundAddr = rx_addr.ipv4;
               radar_addr = &radarFoundAddr;
-              m_addr = FormatNetworkAddress(radar_address);
+              m_addr = radar_address.FormatNetworkAddress();
 
               if (m_ri->m_state.GetValue() == RADAR_OFF) {
                 LOG_INFO(wxT("radar_pi: %s detected at %s"), m_ri->m_name.c_str(), m_addr.c_str());

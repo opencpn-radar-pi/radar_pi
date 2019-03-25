@@ -34,22 +34,6 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-wxString FormatNetworkAddress(const NetworkAddress &addr) {
-  uint8_t *a = (uint8_t *)&addr.addr;  // sin_addr is in network layout
-  wxString address;
-  address.Printf(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
-
-  return address;
-}
-
-wxString FormatNetworkAddressPort(const NetworkAddress &addr) {
-  uint8_t *a = (uint8_t *)&addr.addr;  // sin_addr is in network layout
-  wxString address;
-  address.Printf(wxT("%u.%u.%u.%u port %u"), a[0], a[1], a[2], a[3], ntohs(addr.port));
-
-  return address;
-}
-
 wxString FormatPackedAddress(const PackedAddress &addr) {
   uint8_t *a = (uint8_t *)&addr.addr;  // sin_addr is in network layout
   wxString address;
@@ -228,13 +212,13 @@ bool socketAddMembership(SOCKET socket, const NetworkAddress &interface_address,
   mreq.imr_multiaddr = mcast_address.addr;
 
   if (setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *)&mreq, sizeof(mreq))) {
-    wxLogMessage(wxT("radar_pi: failed to add multicast reception for %s on interface %s"), FormatNetworkAddressPort(mcast_address),
-                 FormatNetworkAddress(interface_address));
+    wxLogMessage(wxT("radar_pi: failed to add multicast reception for %s on interface %s"), mcast_address.FormatNetworkAddressPort(),
+                 interface_address.FormatNetworkAddress());
     return true;
   }
 
-  wxLogMessage(wxT("radar_pi: multicast reception for %s on interface %s"), FormatNetworkAddressPort(mcast_address),
-               FormatNetworkAddress(interface_address));
+  wxLogMessage(wxT("radar_pi: multicast reception for %s on interface %s"), mcast_address.FormatNetworkAddressPort(),
+               interface_address.FormatNetworkAddress());
 
   // Hurrah! Success!
   return false;

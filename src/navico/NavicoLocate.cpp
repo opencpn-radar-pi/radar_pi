@@ -92,7 +92,7 @@ void NavicoLocate::UpdateEthernetCards() {
             socketAddMembership(m_socket[0], m_interface_addr[i], reportNavicoCommon);
             m_socket[i] = INVALID_SOCKET;
           }
-          LOG_VERBOSE(wxT("radar_pi: NavicoLocate scanning interface %s for radars"), FormatNetworkAddress(m_interface_addr[i]));
+          LOG_VERBOSE(wxT("radar_pi: NavicoLocate scanning interface %s for radars"), m_interface_addr[i].FormatNetworkAddress());
           i++;
         }
       }
@@ -293,11 +293,9 @@ void NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const uint
     radar_ipA.port = htons(RO_PRIMARY);
     m_radar_map[radar_ipA] = infoA;
 
-    LOG_VERBOSE(wxT("radar_pi: Located radar %s IP %s [%s,%s,%s]"), infoA.serialNr, FormatNetworkAddressPort(radar_ipA),
-                FormatNetworkAddressPort(infoA.report_addr), FormatNetworkAddressPort(infoA.spoke_data_addr),
-                FormatNetworkAddressPort(infoA.send_command_addr));
+    LOG_VERBOSE(wxT("radar_pi: Located radar IP %s [%s]"), radar_ipA.FormatNetworkAddressPort(), infoA.to_string());
 
-    m_pi->FoundRadar(infoA.serialNr, radar_ipA);
+    m_pi->FoundNavicoRadarInfo(radar_ipA, infoA);
 
     NavicoRadarInfo infoB;
     infoB.serialNr = wxString::FromAscii(data->serialno);
@@ -308,14 +306,12 @@ void NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const uint
     radar_ipB.port = htons(RO_SECONDARY);
     m_radar_map[radar_ipB] = infoB;
 
-    LOG_VERBOSE(wxT("radar_pi: Located radar %s IP %s [%s,%s,%s]"), infoB.serialNr, FormatNetworkAddressPort(radar_ipB),
-                FormatNetworkAddressPort(infoB.report_addr), FormatNetworkAddressPort(infoB.spoke_data_addr),
-                FormatNetworkAddressPort(infoB.send_command_addr));
+    LOG_VERBOSE(wxT("radar_pi: Located radar IP %s [%s]"), radar_ipB.FormatNetworkAddressPort(), infoB.to_string());
 
-    m_pi->FoundRadar(infoA.serialNr, radar_ipB);
+    m_pi->FoundNavicoRadarInfo(radar_ipB, infoB);
 
 #define LOG_ADDR_N(n) \
-  LOG_RECEIVE(wxT("NavicoLocate %s addr %s = %s"), FormatNetworkAddress(radar_address), #n, FormatPackedAddress(data->addr##n));
+  LOG_RECEIVE(wxT("NavicoLocate %s addr %s = %s"), radar_address.FormatNetworkAddress(), #n, FormatPackedAddress(data->addr##n));
 
     IF_LOG_AT_LEVEL(LOGLEVEL_RECEIVE) {
       LOG_ADDR_N(0);

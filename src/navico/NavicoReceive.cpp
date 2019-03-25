@@ -377,6 +377,7 @@ SOCKET NavicoReceive::PickNextEthernetCard() {
 }
 
 SOCKET NavicoReceive::GetNewReportSocket() {
+  NavicoRadarInfo info = m_pi->GetNavicoRadarInfo(m_ri->m_radar);
   SOCKET socket;
   wxString error = wxT("");
   wxString s = wxT("");
@@ -384,18 +385,21 @@ SOCKET NavicoReceive::GetNewReportSocket() {
   if (m_interface_addr.addr.s_addr == 0) {
     return INVALID_SOCKET;
   }
+
   if (RadarOrder[m_ri->m_radar_type] >= RO_PRIMARY) {
+    
     if (!m_pi->HaveRadarSerialNo(m_ri->m_radar)) {
       return INVALID_SOCKET;
     }
-    s << _("Serial #") << m_pi->GetRadarSerialNo(m_ri->m_radar) << wxT("\n");
+    NavicoRadarInfo info = m_pi->GetNavicoRadarInfo(m_ri->m_radar);
+    s << _("Serial #") << info.serialNr << wxT("\n");
   }
 
   socket = startUDPMulticastReceiveSocket(m_interface_addr, m_report_addr, error);
 
   if (socket != INVALID_SOCKET) {
-    wxString addr = FormatNetworkAddress(m_interface_addr);
-    wxString rep_addr = FormatNetworkAddressPort(m_report_addr);
+    wxString addr = m_interface_addr.FormatNetworkAddress();
+    wxString rep_addr = m_report_addr.FormatNetworkAddressPort();
 
     LOG_RECEIVE(wxT("radar_pi: %s scanning interface %s for data from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
 
@@ -420,8 +424,8 @@ SOCKET NavicoReceive::GetNewDataSocket() {
   error.Printf(wxT("%s data: "), m_ri->m_name.c_str());
   socket = startUDPMulticastReceiveSocket(m_interface_addr, m_data_addr, error);
   if (socket != INVALID_SOCKET) {
-    wxString addr = FormatNetworkAddress(m_interface_addr);
-    wxString rep_addr = FormatNetworkAddressPort(m_data_addr);
+    wxString addr = m_interface_addr.FormatNetworkAddress();
+    wxString rep_addr = m_data_addr.FormatNetworkAddressPort();
 
     LOG_RECEIVE(wxT("radar_pi: %s listening for data on %s from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
   } else {
@@ -543,6 +547,7 @@ void *NavicoReceive::Entry(void) {
             if (!radar_addr) {
               wxCriticalSectionLocker lock(m_lock);
               m_ri->DetectedRadar(m_interface_addr, radar_address);  // enables transmit data
+              UpdateSendCommand();
 
               // the dataSocket is opened in the next loop
 
@@ -550,7 +555,7 @@ void *NavicoReceive::Entry(void) {
               radar_addr = &radarFoundAddr;
 
               if (m_ri->m_state.GetValue() == RADAR_OFF) {
-                LOG_INFO(wxT("radar_pi: %s detected at %s"), m_ri->m_name.c_str(), FormatNetworkAddress(radar_address));
+                LOG_INFO(wxT("radar_pi: %s detected at %s"), m_ri->m_name.c_str(), radar_address.FormatNetworkAddress());
                 m_ri->m_state.Update(RADAR_STANDBY);
               }
             }
@@ -605,11 +610,9 @@ void *NavicoReceive::Entry(void) {
         m_data_addr = me->spoke_data_addr;
         m_send_addr = me->send_command_addr;
 
-        NavicoControl *control = (NavicoControl *)m_ri->m_control;
-        control->SetMultiCastAddress(m_send_addr);
-        LOG_INFO(wxT("radar_pi: Locator found radar %u at IP %s [%s,%s,%s]"), m_ri->m_radar, FormatNetworkAddressPort(ip),
-                 FormatNetworkAddressPort(m_report_addr), FormatNetworkAddressPort(m_data_addr),
-                 FormatNetworkAddressPort(m_send_addr));
+        UpdateSendCommand();
+        LOG_INFO(wxT("radar_pi: Locator found radar %u at IP %s [%s]"), m_ri->m_radar, ip.FormatNetworkAddressPort(),
+                 me->to_string());
       }
       // Else we wait for the locator to fill in the IP address of any radar that hasn't been detected yet.
     }
@@ -647,6 +650,14 @@ void NavicoReceive::SetRadarType(RadarType t) {
   m_ri->m_radar_type = t;
   // m_pi->m_pMessageBox->SetRadarType(t);
 }
+
+void NavicoReceive::UpdateSendCommand() {
+  if (!m_send_addr.IsNull() && m_ri->m_control) {
+    NavicoControl *control = (NavicoControl *)m_ri->m_control;
+    control->SetMultiCastAddress(m_send_addr);
+  }
+}
+
 
 /*
  RADAR REPORTS
@@ -860,9 +871,10 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
           }
 
           wxString s =
-              wxString::Format(wxT("IP %s %s"), FormatNetworkAddress(m_pi->m_settings.radar_address[m_ri->m_radar]), stat.c_str());
+              wxString::Format(wxT("IP %s %s"), m_pi->m_settings.radar_address[m_ri->m_radar].FormatNetworkAddress(), stat.c_str());
           if (RadarOrder[m_ri->m_radar_type] >= RO_PRIMARY) {
-            s << wxT("\n") << _("Serial #") << m_pi->GetRadarSerialNo(m_ri->m_radar);
+            NavicoRadarInfo info = m_pi->GetNavicoRadarInfo(m_ri->m_radar);
+            s << wxT("\n") << _("Serial #") << info.serialNr;
           }
           SetInfoStatus(s);
         }

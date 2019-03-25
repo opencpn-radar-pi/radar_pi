@@ -29,40 +29,50 @@
  ***************************************************************************
  */
 
-#ifndef _NAVICOCONTROL_H_
-#define _NAVICOCONTROL_H_
+#ifndef _NAVICORADARINFO_H_
+#define _NAVICORADARINFO_H_
 
-#include "RadarInfo.h"
-#include "pi_common.h"
-#include "socketutil.h"
+#include <wx/tokenzr.h>
 
 PLUGIN_BEGIN_NAMESPACE
 
-class NavicoControl : public RadarControl {
+class NavicoRadarInfo {
  public:
-  NavicoControl();
-  ~NavicoControl();
+  wxString serialNr;                 // Serial # for this radar
+  NetworkAddress spoke_data_addr;    // Where the radar will send data spokes
+  NetworkAddress report_addr;        // Where the radar will send reports
+  NetworkAddress send_command_addr;  // Where displays will send commands to the radar
 
-  void SetMultiCastAddress(NetworkAddress sendMultiCastAddress);
+  wxString to_string() const {
+    return wxString::Format(wxT("%s/%s/%s/%s"), serialNr,
+                            spoke_data_addr.to_string(),
+                            report_addr.to_string(),
+                            send_command_addr.to_string());
+  }
 
-  bool Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
-  void RadarTxOff();
-  void RadarTxOn();
-  bool RadarStayAlive();
-  bool SetRange(int meters);
-  bool SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button);
+  NavicoRadarInfo()
+  {
+  }
+  
+  NavicoRadarInfo(wxString &str) {
+    wxStringTokenizer tokenizer(str, "/");
 
- private:
-  radar_pi *m_pi;
-  RadarInfo *m_ri;
-  struct sockaddr_in m_addr;
-  SOCKET m_radar_socket;
-  wxString m_name;
+    if (tokenizer.HasMoreTokens()) {
+      serialNr = tokenizer.GetNextToken();
+    }
+    if (tokenizer.HasMoreTokens()) {
+      spoke_data_addr = NetworkAddress(tokenizer.GetNextToken());
+    }
+    if (tokenizer.HasMoreTokens()) {
+      report_addr = NetworkAddress(tokenizer.GetNextToken());
+    }
+    if (tokenizer.HasMoreTokens()) {
+      send_command_addr = NetworkAddress(tokenizer.GetNextToken());
+    }
+  }
 
-  bool TransmitCmd(const uint8_t *msg, int size);
-  void logBinaryData(const wxString &what, const uint8_t *data, int size);
 };
 
 PLUGIN_END_NAMESPACE
 
-#endif /* _NAVICOCONTROL_H_ */
+#endif /* _NAVICORADARINFO_H_ */
