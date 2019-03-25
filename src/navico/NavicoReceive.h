@@ -45,9 +45,10 @@ PLUGIN_BEGIN_NAMESPACE
 
 class NavicoReceive : public RadarReceive {
  public:
-  NavicoReceive(radar_pi *pi, RadarInfo *ri, NetworkAddress reportAddr, NetworkAddress dataAddr) : RadarReceive(pi, ri) {
+  NavicoReceive(radar_pi *pi, RadarInfo *ri, NetworkAddress reportAddr, NetworkAddress dataAddr, NetworkAddress sendAddr) : RadarReceive(pi, ri) {
     m_data_addr = dataAddr;
     m_report_addr = reportAddr;
+    m_send_addr = sendAddr;
     m_next_spoke = -1;
     m_radar_status = 0;
     m_shutdown_time_requested = 0;
@@ -60,6 +61,17 @@ class NavicoReceive : public RadarReceive {
     SetPriority(wxPRIORITY_MAX);
     LOG_INFO(wxT("radar_pi: %s receive thread created, prio= %i"), m_ri->m_name.c_str(), GetPriority());
     InitializeLookupData();
+    if (m_ri->m_radar_type < RT_HaloA) {
+      NavicoRadarInfo info = m_pi->GetNavicoRadarInfo(m_ri->m_radar);
+
+      if (info.report_addr.IsNull()) {
+        info.spoke_data_addr = m_data_addr;
+        info.report_addr = m_report_addr;
+        info.send_command_addr = m_send_addr;
+
+        m_pi->SetNavicoRadarInfo(m_ri->m_radar, info);
+      }
+    }
   };
 
   ~NavicoReceive() {};
@@ -86,6 +98,7 @@ class NavicoReceive : public RadarReceive {
   SOCKET GetNewReportSocket();
   SOCKET GetNewDataSocket();
 
+  void UpdateSendCommand();
   void SetRadarType(RadarType t);
 
   SOCKET m_receive_socket;  // Where we listen for message from m_send_socket

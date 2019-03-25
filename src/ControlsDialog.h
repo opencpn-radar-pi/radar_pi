@@ -210,6 +210,7 @@ class ControlsDialog : public wxDialog {
     m_ftc_button = 0;
     m_adjust_button = 0;
     m_cursor_menu = 0;
+    m_doppler_button = 0;
 
     for (size_t i = 0; i < ARRAY_SIZE(m_ctrl); i++) {
       m_ctrl[i].type = CT_NONE;

@@ -2,11 +2,12 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-// Note that the order of the ports is different on A and B. I guess someone
+// HALO used dynamic mcast address + port, so don't even try anything.
+// Let the NavicoLocate thread find it for us.
 // in Navico just didn't realize this. Or it is just a bit of obfuscation.
-static const NetworkAddress dataHalo_B(236, 6, 7, 103, 6135);
-static const NetworkAddress reportHalo_B(236, 6, 7, 105, 6137);
-static const NetworkAddress sendHalo_B(236, 6, 7, 104, 6136);
+static const NetworkAddress dataHalo_B(0,0,0,0, 0);
+static const NetworkAddress reportHalo_B(0,0,0,0, 0);
+static const NetworkAddress sendHalo_B(0,0,0,0, 0);
 
 #define RANGE_METRIC_RT_HaloB \
   { 50, 75, 100, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000, 12000, 16000, 24000, 36000, 48000 }
@@ -32,7 +33,7 @@ DEFINE_RADAR(RT_HaloB,                                        /* Type */
              NAVICO_SPOKES,                                   /* Spokes */
              NAVICO_SPOKE_LEN,                                /* Spoke length (max) */
              NavicoControlsDialog(RT_HaloB),                  /* ControlsDialog class constructor */
-             NavicoReceive(pi, ri, reportHalo_B, dataHalo_B), /* Receive class constructor */
-             NavicoControl(sendHalo_B),                       /* Send/Control class constructor */
+             NavicoReceive(pi, ri, reportHalo_B, dataHalo_B, sendHalo_B), /* Receive class constructor */
+             NavicoControl(),                       /* Send/Control class constructor */
              RO_SECONDARY                                     /* This type has two radars and this is the second */
 )

@@ -49,13 +49,6 @@ PLUGIN_BEGIN_NAMESPACE
 // The individual radars will then listen to multicast data on those ports.
 //
 
-struct NavicoRadarInfo {
-  wxString serialNr;                 // Serial # for this radar
-  NetworkAddress spoke_data_addr;    // Where the radar will send data spokes
-  NetworkAddress report_addr;        // Where the radar will send reports
-  NetworkAddress send_command_addr;  // Where displays will send commands to the radar
-};
-
 class NavicoLocate : public wxThread {
  public:
   NavicoLocate(radar_pi *pi) : wxThread(wxTHREAD_JOINABLE) {

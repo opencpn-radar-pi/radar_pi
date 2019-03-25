@@ -34,6 +34,7 @@
 #define _SOCKETUTIL_H_
 
 #include "pi_common.h"
+#include <wx/tokenzr.h>
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -66,18 +67,36 @@ class NetworkAddress {
   }
 
   NetworkAddress(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t p) {
-    union {
-      uint8_t byte[4];
-      uint32_t word;
-    } u;
+    uint8_t * paddr = (uint8_t *)&addr;
 
-    u.byte[0] = a;
-    u.byte[1] = b;
-    u.byte[2] = c;
-    u.byte[3] = d;
+    paddr[0] = a;
+    paddr[1] = b;
+    paddr[2] = c;
+    paddr[3] = d;
 
-    addr.s_addr = u.word;
     port = htons(p);
+  }
+
+  NetworkAddress(const wxString str) {
+    uint8_t * paddr = (uint8_t *)&addr;
+    unsigned int a, b, c, d, prt;
+    wxStringTokenizer tokenizer(str, wxT(",:"));
+
+    if (tokenizer.HasMoreTokens()) {
+      paddr[0] = wxAtoi(tokenizer.GetNextToken());
+    }
+    if (tokenizer.HasMoreTokens()) {
+      paddr[1] = wxAtoi(tokenizer.GetNextToken());
+    }
+    if (tokenizer.HasMoreTokens()) {
+      paddr[2] = wxAtoi(tokenizer.GetNextToken());
+    }
+    if (tokenizer.HasMoreTokens()) {
+      paddr[3] = wxAtoi(tokenizer.GetNextToken());
+    }
+    if (tokenizer.HasMoreTokens()) {
+      port = htons(wxAtoi(tokenizer.GetNextToken()));
+    }
   }
 
   bool operator<(const NetworkAddress &other) const {
@@ -90,19 +109,39 @@ class NetworkAddress {
 
   NetworkAddress &operator=(const NetworkAddress &other) {
     if (this != &other) {
-      this->addr.s_addr = other.addr.s_addr;
-      this->port = other.port;
+      addr.s_addr = other.addr.s_addr;
+      port = other.port;
     }
 
     return *this;
   }
 
+  wxString to_string() const {
+    if (addr.s_addr != 0) {
+      uint8_t *a = (uint8_t *)&addr;  // sin_addr is in network layout
+      return wxString::Format(wxT("%u.%u.%u.%u:%u"), a[0], a[1], a[2], a[3], ntohs(port));
+    }
+    return wxT("");
+  }
+
+  wxString FormatNetworkAddress() const {
+    uint8_t *a = (uint8_t *)&addr;  // sin_addr is in network layout
+    return wxString::Format(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
+  }
+
+  wxString FormatNetworkAddressPort() const {
+    uint8_t *a = (uint8_t *)&addr;  // sin_addr is in network layout
+    return wxString::Format(wxT("%u.%u.%u.%u port %u"), a[0], a[1], a[2], a[3], ntohs(port));
+  }
+
+  bool IsNull() const {
+    return (addr.s_addr == 0);
+  }
+  
   struct in_addr addr;
   uint16_t port;
 };
 
-extern wxString FormatNetworkAddress(const NetworkAddress &addr);
-extern wxString FormatNetworkAddressPort(const NetworkAddress &addr);
 extern wxString FormatPackedAddress(const PackedAddress &addr);
 
 extern bool socketReady(SOCKET sockfd, int timeout);

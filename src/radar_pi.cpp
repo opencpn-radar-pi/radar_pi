@@ -1361,7 +1361,8 @@ bool radar_pi::LoadConfig(void) {
       pConf->Read(wxString::Format(wxT("Radar%dAddress"), r), &s, "0.0.0.0");
       radar_inet_aton(s.c_str(), &m_settings.radar_address[n].addr);
       m_settings.radar_address[n].port = htons(RadarOrder[ri->m_radar_type]);
-      pConf->Read(wxString::Format(wxT("Radar%dSerialNo"), r), m_settings.radar_serial_no[r]);
+      pConf->Read(wxString::Format(wxT("Radar%dNavicoInfo"), r), &s, "");
+      m_settings.navico_radar_info[r] = NavicoRadarInfo(s);
 
       pConf->Read(wxString::Format(wxT("Radar%dRange"), r), &v, 2000);
       ri->m_range.Update(v);
@@ -1534,9 +1535,9 @@ bool radar_pi::SaveConfig(void) {
 
     for (int r = 0; r < (int)m_settings.radar_count; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);
-      pConf->Write(wxString::Format(wxT("Radar%dSerialNo"), r), m_settings.radar_serial_no[r]);
-      pConf->Write(wxString::Format(wxT("Radar%dAddress"), r), FormatNetworkAddress(m_settings.radar_address[r]));
-      pConf->Write(wxString::Format(wxT("Radar%dInterface"), r), FormatNetworkAddress(m_settings.radar_interface_address[r]));
+      pConf->Write(wxString::Format(wxT("Radar%dNavicoInfo"), r), m_settings.navico_radar_info[r].to_string());
+      pConf->Write(wxString::Format(wxT("Radar%dAddress"), r), m_settings.radar_address[r].FormatNetworkAddress());
+      pConf->Write(wxString::Format(wxT("Radar%dInterface"), r), m_settings.radar_interface_address[r].FormatNetworkAddress());
       pConf->Write(wxString::Format(wxT("Radar%dRange"), r), m_radar[r]->m_range.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->m_state.GetValue());
@@ -1578,17 +1579,24 @@ bool radar_pi::SaveConfig(void) {
   return false;
 }
 
-void radar_pi::FoundRadar(const wxString &serial, const NetworkAddress &addr) {
+void radar_pi::SetNavicoRadarInfo(size_t r, const NavicoRadarInfo &info                                 ) {
+  wxCriticalSectionLocker lock(m_exclusive);
+
+  M_SETTINGS.navico_radar_info[r] = info;
+}
+
+void radar_pi::FoundNavicoRadarInfo(const NetworkAddress &addr, const NavicoRadarInfo &info) {
   wxCriticalSectionLocker lock(m_exclusive);
 
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     if (ntohs(addr.port) == RadarOrder[m_radar[r]->m_radar_type]) {  // Only put primary in primary slots, etc.
-      if (M_SETTINGS.radar_serial_no[r] == serial) {
+      if (M_SETTINGS.navico_radar_info[r].serialNr == info.serialNr) {
         M_SETTINGS.radar_address[r] = addr;
-      } else if (M_SETTINGS.radar_serial_no[r].IsNull()) {
-        M_SETTINGS.radar_serial_no[r] = serial;
+        M_SETTINGS.navico_radar_info[r] = info; // Update the multicast addresses
+      } else if (M_SETTINGS.navico_radar_info[r].serialNr.IsNull()) {
+        M_SETTINGS.navico_radar_info[r] = info;
         M_SETTINGS.radar_address[r] = addr;
-        LOG_INFO(wxT("radar_pi: Radar %u is now #%s at IP %s"), r, serial, FormatNetworkAddress(addr));
+        LOG_INFO(wxT("radar_pi: Radar %u is navico radar #%s at IP %s"), r, info.serialNr, addr.FormatNetworkAddress());
         break;
       }
     }
@@ -1598,13 +1606,13 @@ void radar_pi::FoundRadar(const wxString &serial, const NetworkAddress &addr) {
 bool radar_pi::HaveRadarSerialNo(size_t r) {
   wxCriticalSectionLocker lock(m_exclusive);
 
-  return !M_SETTINGS.radar_serial_no[r].IsNull();
+  return !M_SETTINGS.navico_radar_info[r].serialNr.IsNull();
 }
 
-wxString &radar_pi::GetRadarSerialNo(size_t r) {
+NavicoRadarInfo &radar_pi::GetNavicoRadarInfo(size_t r) {
   wxCriticalSectionLocker lock(m_exclusive);
 
-  return M_SETTINGS.radar_serial_no[r];
+  return M_SETTINGS.navico_radar_info[r];
 }
 
 // Positional Data passed from NMEA to plugin
