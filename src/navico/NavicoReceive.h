@@ -45,7 +45,8 @@ PLUGIN_BEGIN_NAMESPACE
 
 class NavicoReceive : public RadarReceive {
  public:
-  NavicoReceive(radar_pi *pi, RadarInfo *ri, NetworkAddress reportAddr, NetworkAddress dataAddr, NetworkAddress sendAddr) : RadarReceive(pi, ri) {
+  NavicoReceive(radar_pi *pi, RadarInfo *ri, NetworkAddress reportAddr, NetworkAddress dataAddr, NetworkAddress sendAddr)
+      : RadarReceive(pi, ri) {
     m_data_addr = dataAddr;
     m_report_addr = reportAddr;
     m_send_addr = sendAddr;
@@ -61,23 +62,33 @@ class NavicoReceive : public RadarReceive {
     SetPriority(wxPRIORITY_MAX);
     LOG_INFO(wxT("radar_pi: %s receive thread created, prio= %i"), m_ri->m_name.c_str(), GetPriority());
     InitializeLookupData();
-    if (m_ri->m_radar_type < RT_HaloA) {
-      NavicoRadarInfo info = m_pi->GetNavicoRadarInfo(m_ri->m_radar);
 
-      if (info.report_addr.IsNull()) {
-        info.spoke_data_addr = m_data_addr;
-        info.report_addr = m_report_addr;
-        info.send_command_addr = m_send_addr;
+    NavicoRadarInfo info = m_pi->GetNavicoRadarInfo(m_ri->m_radar);
 
-        m_pi->SetNavicoRadarInfo(m_ri->m_radar, info);
-      }
+    if (info.report_addr.IsNull() && !m_data_addr.IsNull()) {
+      // BR24, 3G, 4G initial setup, when ini file doesn't contain multicast addresses yet
+      // In this case m_data_addr etc. are correct, these don't really change in the wild according to our data,
+      // so write them into the NavicoRadarInfo object.
+      info.spoke_data_addr = m_data_addr;
+      info.report_addr = m_report_addr;
+      info.send_command_addr = m_send_addr;
+
+      m_pi->SetNavicoRadarInfo(m_ri->m_radar, info);
+    } else if (!info.report_addr.IsNull() && m_data_addr.IsNull()) {
+      // HALO restart, when ini file contains multicast addresses, that are hopefully still correct.
+      // If not we will time-out and then NavicoLocate will find the radar.
+      info.spoke_data_addr = m_data_addr;
+      info.report_addr = m_report_addr;
+      info.send_command_addr = m_send_addr;
+
+      m_pi->SetNavicoRadarInfo(m_ri->m_radar, info);
     }
   };
 
-  ~NavicoReceive() {};
+  ~NavicoReceive(){};
 
   void InitializeLookupData();
-  
+
   void *Entry(void);
   void Shutdown(void);
   wxString GetInfoStatus();
@@ -123,7 +134,6 @@ class NavicoReceive : public RadarReceive {
     wxCriticalSectionLocker lock(m_lock);
     m_firmware = s;
   }
-
 };
 
 PLUGIN_END_NAMESPACE

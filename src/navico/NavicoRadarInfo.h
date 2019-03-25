@@ -44,16 +44,15 @@ class NavicoRadarInfo {
   NetworkAddress send_command_addr;  // Where displays will send commands to the radar
 
   wxString to_string() const {
-    return wxString::Format(wxT("%s/%s/%s/%s"), serialNr,
-                            spoke_data_addr.to_string(),
-                            report_addr.to_string(),
+    if (spoke_data_addr.IsNull() && serialNr.IsNull()) {
+      return wxT("");
+    }
+    return wxString::Format(wxT("%s/%s/%s/%s"), serialNr, spoke_data_addr.to_string(), report_addr.to_string(),
                             send_command_addr.to_string());
   }
 
-  NavicoRadarInfo()
-  {
-  }
-  
+  NavicoRadarInfo() {}
+
   NavicoRadarInfo(wxString &str) {
     wxStringTokenizer tokenizer(str, "/");
 
@@ -70,7 +69,6 @@ class NavicoRadarInfo {
       send_command_addr = NetworkAddress(tokenizer.GetNextToken());
     }
   }
-
 };
 
 PLUGIN_END_NAMESPACE

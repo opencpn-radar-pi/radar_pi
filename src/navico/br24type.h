@@ -25,12 +25,12 @@ PLUGIN_END_NAMESPACE
 
 #include "NavicoCommon.h"
 
-DEFINE_RADAR(RT_BR24,                                     /* Type */
-             wxT("Navico BR24"),                          /* Name */
-             NAVICO_SPOKES,                               /* Spokes */
-             NAVICO_SPOKE_LEN,                            /* Spoke length */
-             NavicoControlsDialog(RT_BR24),               /* Controls class */
+DEFINE_RADAR(RT_BR24,                                               /* Type */
+             wxT("Navico BR24"),                                    /* Name */
+             NAVICO_SPOKES,                                         /* Spokes */
+             NAVICO_SPOKE_LEN,                                      /* Spoke length */
+             NavicoControlsDialog(RT_BR24),                         /* Controls class */
              NavicoReceive(pi, ri, reportBR24, dataBR24, sendBR24), /* Receive class */
-             NavicoControl(),                     /* Send/Control class */
-             RO_SINGLE                                    /* This type only has a single radar and does not need locating */
+             NavicoControl(),                                       /* Send/Control class */
+             RO_SINGLE /* This type only has a single radar and does not need locating */
 )

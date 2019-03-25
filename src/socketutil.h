@@ -33,8 +33,8 @@
 #ifndef _SOCKETUTIL_H_
 #define _SOCKETUTIL_H_
 
-#include "pi_common.h"
 #include <wx/tokenzr.h>
+#include "pi_common.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -67,7 +67,7 @@ class NetworkAddress {
   }
 
   NetworkAddress(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t p) {
-    uint8_t * paddr = (uint8_t *)&addr;
+    uint8_t *paddr = (uint8_t *)&addr;
 
     paddr[0] = a;
     paddr[1] = b;
@@ -78,8 +78,11 @@ class NetworkAddress {
   }
 
   NetworkAddress(const wxString str) {
-    uint8_t * paddr = (uint8_t *)&addr;
-    wxStringTokenizer tokenizer(str, wxT(",:"));
+    uint8_t *paddr = (uint8_t *)&addr;
+    wxStringTokenizer tokenizer(str, wxT(".:"));
+
+    addr.s_addr = 0;
+    port = 0;
 
     if (tokenizer.HasMoreTokens()) {
       paddr[0] = wxAtoi(tokenizer.GetNextToken());
@@ -105,6 +108,8 @@ class NetworkAddress {
 
     return other.port < this->port;
   }
+
+  bool operator==(const NetworkAddress &other) const { return other.addr.s_addr == this->addr.s_addr && other.port == this->port; }
 
   NetworkAddress &operator=(const NetworkAddress &other) {
     if (this != &other) {
@@ -133,10 +138,8 @@ class NetworkAddress {
     return wxString::Format(wxT("%u.%u.%u.%u port %u"), a[0], a[1], a[2], a[3], ntohs(port));
   }
 
-  bool IsNull() const {
-    return (addr.s_addr == 0);
-  }
-  
+  bool IsNull() const { return (addr.s_addr == 0); }
+
   struct in_addr addr;
   uint16_t port;
 };

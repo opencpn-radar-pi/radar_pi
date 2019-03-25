@@ -302,7 +302,7 @@ int radar_pi::Init(void) {
     delete m_radar[r];
     m_radar[r] = 0;
   }
-  
+
   for (size_t r = 0; r < MAX_CHART_CANVAS; r++) {
     m_draw_time_overlay_ms[r] = 0;
   }
@@ -1579,7 +1579,7 @@ bool radar_pi::SaveConfig(void) {
   return false;
 }
 
-void radar_pi::SetNavicoRadarInfo(size_t r, const NavicoRadarInfo &info                                 ) {
+void radar_pi::SetNavicoRadarInfo(size_t r, const NavicoRadarInfo &info) {
   wxCriticalSectionLocker lock(m_exclusive);
 
   M_SETTINGS.navico_radar_info[r] = info;
@@ -1588,17 +1588,48 @@ void radar_pi::SetNavicoRadarInfo(size_t r, const NavicoRadarInfo &info         
 void radar_pi::FoundNavicoRadarInfo(const NetworkAddress &addr, const NavicoRadarInfo &info) {
   wxCriticalSectionLocker lock(m_exclusive);
 
+  // First, check if we already know this serial#
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (ntohs(addr.port) == RadarOrder[m_radar[r]->m_radar_type]) {  // Only put primary in primary slots, etc.
-      if (M_SETTINGS.navico_radar_info[r].serialNr == info.serialNr) {
-        M_SETTINGS.radar_address[r] = addr;
-        M_SETTINGS.navico_radar_info[r] = info; // Update the multicast addresses
-      } else if (M_SETTINGS.navico_radar_info[r].serialNr.IsNull()) {
-        M_SETTINGS.navico_radar_info[r] = info;
-        M_SETTINGS.radar_address[r] = addr;
-        LOG_INFO(wxT("radar_pi: Radar %u is navico radar #%s at IP %s"), r, info.serialNr, addr.FormatNetworkAddress());
-        break;
-      }
+    if (ntohs(addr.port) == RadarOrder[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
+        M_SETTINGS.navico_radar_info[r].serialNr == info.serialNr) {
+      M_SETTINGS.radar_address[r] = addr;      // If we look by serial# we can even update the IP address
+      M_SETTINGS.navico_radar_info[r] = info;  // Update the multicast addresses
+      return;
+    }
+  }
+
+  // Second loop, put it in radar with same report address but no serial#
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (ntohs(addr.port) == RadarOrder[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
+        M_SETTINGS.navico_radar_info[r].serialNr.IsNull() && !info.report_addr.IsNull() &&
+        M_SETTINGS.navico_radar_info[r].report_addr == info.report_addr) {
+      M_SETTINGS.radar_address[r] = addr;      // Update the address
+      M_SETTINGS.navico_radar_info[r] = info;  // Update the serial #
+      LOG_INFO(wxT("radar_pi: Radar %u is navico radar #%s at IP %s"), r, info.serialNr, addr.FormatNetworkAddress());
+      break;
+    }
+  }
+
+  // Third loop, put it in radar with same IP address but no serial# nor report address
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (ntohs(addr.port) == RadarOrder[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
+        M_SETTINGS.radar_address[r] == addr && M_SETTINGS.navico_radar_info[r].serialNr.IsNull() &&
+        M_SETTINGS.navico_radar_info[r].report_addr.IsNull()) {
+      M_SETTINGS.navico_radar_info[r] = info;
+      LOG_INFO(wxT("radar_pi: Radar %u is navico radar #%s at IP %s"), r, info.serialNr, addr.FormatNetworkAddress());
+      break;
+    }
+  }
+
+  // In case of desperation, put it in a free slot without serial# or address
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (ntohs(addr.port) == RadarOrder[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
+        M_SETTINGS.radar_address[r].IsNull() && M_SETTINGS.navico_radar_info[r].serialNr.IsNull() &&
+        M_SETTINGS.navico_radar_info[r].report_addr.IsNull()) {
+      M_SETTINGS.navico_radar_info[r] = info;
+      M_SETTINGS.radar_address[r] = addr;
+      LOG_INFO(wxT("radar_pi: Radar %u is navico radar #%s at IP %s"), r, info.serialNr, addr.FormatNetworkAddress());
+      break;
     }
   }
 }

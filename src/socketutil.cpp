@@ -212,8 +212,8 @@ bool socketAddMembership(SOCKET socket, const NetworkAddress &interface_address,
   mreq.imr_multiaddr = mcast_address.addr;
 
   if (setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *)&mreq, sizeof(mreq))) {
-    wxLogMessage(wxT("radar_pi: failed to add multicast reception for %s on interface %s"), mcast_address.FormatNetworkAddressPort(),
-                 interface_address.FormatNetworkAddress());
+    wxLogMessage(wxT("radar_pi: failed to add multicast reception for %s on interface %s"),
+                 mcast_address.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress());
     return true;
   }
 

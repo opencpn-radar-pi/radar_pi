@@ -29,12 +29,12 @@ PLUGIN_END_NAMESPACE
 
 // 4G has 2048 spokes of exactly 1024 pixels of 4 bits each, packed in 512 bytes
 
-DEFINE_RADAR(RT_4GB,                                      /* Type */
-             wxT("Navico 4G B"),                          /* Name */
-             NAVICO_SPOKES,                               /* Spokes */
-             NAVICO_SPOKE_LEN,                            /* Spoke length (max) */
-             NavicoControlsDialog(RT_4GB),                /* ControlsDialog class constructor */
+DEFINE_RADAR(RT_4GB,                                                /* Type */
+             wxT("Navico 4G B"),                                    /* Name */
+             NAVICO_SPOKES,                                         /* Spokes */
+             NAVICO_SPOKE_LEN,                                      /* Spoke length (max) */
+             NavicoControlsDialog(RT_4GB),                          /* ControlsDialog class constructor */
              NavicoReceive(pi, ri, report4G_B, data4G_B, send4G_B), /* Receive class constructor */
-             NavicoControl(),                     /* Send/Control class constructor */
-             RO_SECONDARY                                 /* This type has two radars and this is the second */
+             NavicoControl(),                                       /* Send/Control class constructor */
+             RO_SECONDARY                                           /* This type has two radars and this is the second */
 )

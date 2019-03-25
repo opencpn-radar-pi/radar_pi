@@ -382,17 +382,15 @@ SOCKET NavicoReceive::GetNewReportSocket() {
   wxString error = wxT("");
   wxString s = wxT("");
 
-  if (m_interface_addr.addr.s_addr == 0) {
+  if (m_interface_addr.IsNull() || m_report_addr.IsNull()) {
     return INVALID_SOCKET;
   }
 
   if (RadarOrder[m_ri->m_radar_type] >= RO_PRIMARY) {
-    
-    if (!m_pi->HaveRadarSerialNo(m_ri->m_radar)) {
-      return INVALID_SOCKET;
-    }
     NavicoRadarInfo info = m_pi->GetNavicoRadarInfo(m_ri->m_radar);
-    s << _("Serial #") << info.serialNr << wxT("\n");
+    if (!info.serialNr.IsNull()) {
+      s << _("Serial #") << info.serialNr << wxT("\n");
+    }
   }
 
   socket = startUDPMulticastReceiveSocket(m_interface_addr, m_report_addr, error);
@@ -462,7 +460,7 @@ void *NavicoReceive::Entry(void) {
 
   LOG_VERBOSE(wxT("radar_pi: NavicoReceive thread %s starting"), m_ri->m_name.c_str());
 
-  reportSocket = GetNewReportSocket();
+  reportSocket = GetNewReportSocket();  // Start using the same interface_addr as previous time
 
   while (m_receive_socket != INVALID_SOCKET) {
     if (reportSocket == INVALID_SOCKET) {
@@ -657,7 +655,6 @@ void NavicoReceive::UpdateSendCommand() {
     control->SetMultiCastAddress(m_send_addr);
   }
 }
-
 
 /*
  RADAR REPORTS
@@ -990,26 +987,28 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
       }
 #endif
 
-      case (21 << 8) + 0x08:
-      {  // length 21, 08 C4
-         // contains Doppler data in extra 3 bytes
+      case (21 << 8) + 0x08: {  // length 21, 08 C4
+                                // contains Doppler data in extra 3 bytes
         RadarReport_08C4_21 *s08 = (RadarReport_08C4_21 *)report;
 
         LOG_RECEIVE(wxT("%u 08C4: doppler=%d speed=%d"), m_ri->m_radar, s08->doppler_state, s08->doppler_speed);
         // TODO: Doppler speed
 
         m_ri->m_doppler.Update(s08->doppler_state);
-      } // FALLTHRU to old length
+      }  // FALLTHRU to old length
 
-      case (18 << 8) + 0x08:
-      {  // length 18, 08 C4
+      case (18 << 8) + 0x08: {  // length 18, 08 C4
         // contains scan speed, noise rejection and target_separation and sidelobe suppression
         RadarReport_08C4_18 *s08 = (RadarReport_08C4_18 *)report;
 
-        LOG_RECEIVE(wxT("%u 08C4: scanspeed=%d noise=%u target_sep=%u"), m_ri->m_radar, s08->scan_speed, s08->noise_rejection, s08->target_sep);
-        LOG_RECEIVE(wxT("%u 08C4: f2=%u f6=%u f7=%u f8=%u f10=%u"), m_ri->m_radar, s08->field2, s08->field6, s08->field7, s08->field8, s08->field10);
-        LOG_RECEIVE(wxT("%u 08C4: f11=%u f12=%u f13=%u f14=%u"), m_ri->m_radar, s08->field11, s08->field12, s08->field13, s08->field14);
-        LOG_RECEIVE(wxT("%u 08C4: if=%u slsa=%u sls=%u"), m_ri->m_radar, s08->local_interference_rejection, s08->sls_auto, s08->side_lobe_suppression);
+        LOG_RECEIVE(wxT("%u 08C4: scanspeed=%d noise=%u target_sep=%u"), m_ri->m_radar, s08->scan_speed, s08->noise_rejection,
+                    s08->target_sep);
+        LOG_RECEIVE(wxT("%u 08C4: f2=%u f6=%u f7=%u f8=%u f10=%u"), m_ri->m_radar, s08->field2, s08->field6, s08->field7,
+                    s08->field8, s08->field10);
+        LOG_RECEIVE(wxT("%u 08C4: f11=%u f12=%u f13=%u f14=%u"), m_ri->m_radar, s08->field11, s08->field12, s08->field13,
+                    s08->field14);
+        LOG_RECEIVE(wxT("%u 08C4: if=%u slsa=%u sls=%u"), m_ri->m_radar, s08->local_interference_rejection, s08->sls_auto,
+                    s08->side_lobe_suppression);
 
         m_ri->m_scan_speed.Update(s08->scan_speed);
         m_ri->m_noise_rejection.Update(s08->noise_rejection);
