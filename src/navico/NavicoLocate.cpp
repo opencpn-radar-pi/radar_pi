@@ -118,8 +118,6 @@ void *NavicoLocate::Entry(void) {
   socklen_t rx_len;
 
   uint8_t data[1500];
-  struct sockaddr_in radarFoundAddr;
-  sockaddr_in *radar_addr = 0;
 
   LOG_VERBOSE(wxT("radar_pi: NavicoLocate thread starting"));
 

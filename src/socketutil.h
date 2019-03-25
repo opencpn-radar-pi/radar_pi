@@ -79,7 +79,6 @@ class NetworkAddress {
 
   NetworkAddress(const wxString str) {
     uint8_t * paddr = (uint8_t *)&addr;
-    unsigned int a, b, c, d, prt;
     wxStringTokenizer tokenizer(str, wxT(",:"));
 
     if (tokenizer.HasMoreTokens()) {
