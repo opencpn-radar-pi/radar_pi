@@ -77,7 +77,7 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
   RadarControlState trails = m_ri->m_target_trails.GetState();
   bool update_targets_true = trails != RCS_OFF && motion == TARGET_MOTION_TRUE;
 
-  uint8_t weakest_normal_blob = m_ri->m_pi->m_settings.threshold_blue;
+  uint8_t weakest_normal_blob = m_ri->m_pi->m_settings.threshold_red;
   size_t radius = 0;
 
   for (; radius < len - 1; radius++) {  //  len - 1 : no trails on range circle
@@ -129,7 +129,7 @@ void TrailBuffer::UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t
   bool update_relative_motion = trails != RCS_OFF && motion == TARGET_MOTION_RELATIVE;
 
   uint8_t *trail = &M_RELATIVE_TRAILS(angle, 0);
-  uint8_t weakest_normal_blob = m_ri->m_pi->m_settings.threshold_blue;
+  uint8_t weakest_normal_blob = m_ri->m_pi->m_settings.threshold_red;
   int radius = 0;
   int length = int(len);
   for (; radius < length - 1; radius++, trail++) {  // len - 1 : no trails on range circle

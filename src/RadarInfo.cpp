@@ -468,7 +468,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   // with relative data.
   //
   int stabilized_mode = orientation != ORIENTATION_HEAD_UP;
-  uint8_t weakest_normal_blob = m_pi->m_settings.threshold_blue;
+  uint8_t weakest_normal_blob = m_pi->m_settings.threshold_red;
 
   uint8_t *hist_data = m_history[bearing].line;
   m_history[bearing].time = time_rec;
