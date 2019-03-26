@@ -33,6 +33,7 @@
 #define _NAVICORADARINFO_H_
 
 #include <wx/tokenzr.h>
+#include "socketutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
