@@ -77,7 +77,8 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
   RadarControlState trails = m_ri->m_target_trails.GetState();
   bool update_targets_true = trails != RCS_OFF && motion == TARGET_MOTION_TRUE;
 
-  uint8_t weakest_normal_blob = m_ri->m_pi->m_settings.threshold_red;
+  uint8_t weak_target = M_SETTINGS.threshold_blue;
+  uint8_t strong_target = M_SETTINGS.threshold_red;
   size_t radius = 0;
 
   for (; radius < len - 1; radius++) {  //  len - 1 : no trails on range circle
@@ -90,15 +91,14 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
       uint8_t *trail = &M_TRUE_TRAILS(point.x, point.y);
       // when ship moves north, offset.lat > 0. Add to move trails image in opposite direction
       // when ship moves east, offset.lon > 0. Add to move trails image in opposite direction
-      if (data[radius] >= weakest_normal_blob) {
+      if (data[radius] >= strong_target) {
         *trail = 1;
-      } else {
-        if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-          (*trail)++;
-        }
-        if (update_targets_true) {
-          data[radius] = m_ri->m_trail_colour[*trail];
-        }
+      } else if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+        (*trail)++;
+      }
+
+      if (update_targets_true && (data[radius] < weak_target)) {
+        data[radius] = m_ri->m_trail_colour[*trail];
       }
     }
   }
@@ -129,21 +129,23 @@ void TrailBuffer::UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t
   bool update_relative_motion = trails != RCS_OFF && motion == TARGET_MOTION_RELATIVE;
 
   uint8_t *trail = &M_RELATIVE_TRAILS(angle, 0);
-  uint8_t weakest_normal_blob = m_ri->m_pi->m_settings.threshold_red;
+  uint8_t weak_target = M_SETTINGS.threshold_blue;
+  uint8_t strong_target = M_SETTINGS.threshold_red;
   int radius = 0;
   int length = int(len);
+
   for (; radius < length - 1; radius++, trail++) {  // len - 1 : no trails on range circle
-    if (data[radius] >= weakest_normal_blob) {
+    if (data[radius] >= strong_target) {
       *trail = 1;
-    } else {
-      if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-        (*trail)++;
-      }
-      if (update_relative_motion) {
-        data[radius] = m_ri->m_trail_colour[*trail];
-      }
+    } else if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+      (*trail)++;
+    }
+
+    if (update_relative_motion && (data[radius] < weak_target)) {
+      data[radius] = m_ri->m_trail_colour[*trail];
     }
   }
+
   for (; radius < m_max_spoke_len; radius++, trail++)  // And clear out empty bit of spoke when spoke_len < max_spoke_len
   {
     *trail = 0;
