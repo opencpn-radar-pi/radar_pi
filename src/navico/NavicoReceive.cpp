@@ -383,6 +383,7 @@ SOCKET NavicoReceive::GetNewReportSocket() {
   wxString s = wxT("");
 
   if (m_interface_addr.IsNull() || m_report_addr.IsNull()) {
+    LOG_RECEIVE(wxT("radar_pi: %s no address to listen on"), m_ri->m_name);
     return INVALID_SOCKET;
   }
 
@@ -399,14 +400,14 @@ SOCKET NavicoReceive::GetNewReportSocket() {
     wxString addr = m_interface_addr.FormatNetworkAddress();
     wxString rep_addr = m_report_addr.FormatNetworkAddressPort();
 
-    LOG_RECEIVE(wxT("radar_pi: %s scanning interface %s for data from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
+    LOG_RECEIVE(wxT("radar_pi: %s scanning interface %s for data from %s"), m_ri->m_name, addr.c_str(), rep_addr.c_str());
 
     s << _("Scanning interface") << wxT(" ") << addr;
     SetInfoStatus(s);
   } else {
     s << error;
     SetInfoStatus(s);
-    wxLogError(wxT("radar_pi: Unable to listen to socket: %s"), error.c_str());
+    wxLogError(wxT("radar_pi: %s Unable to listen to socket: %s"), m_ri->m_name, error.c_str());
   }
   return socket;
 }

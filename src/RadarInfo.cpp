@@ -338,41 +338,48 @@ void RadarInfo::ComputeColourMap() {
       m_colour_map[i] = BLOB_STRONG;
     } else if (i >= m_pi->m_settings.threshold_green) {
       m_colour_map[i] = BLOB_INTERMEDIATE;
-    } else if (i >= m_pi->m_settings.threshold_blue) {
+    } else if (i >= m_pi->m_settings.threshold_blue && i > BLOB_HISTORY_MAX) {
       m_colour_map[i] = BLOB_WEAK;
     } else {
-      m_colour_map[i] = BLOB_NONE;
+      m_colour_map[i] = BLOB_NONE;  // maybe trail colour, see below
     }
+
+    LOG_VERBOSE(wxT("radar_pi: %d colour_map[%d] = %d"), m_radar, i, m_colour_map[i]);
   }
 
   for (int i = 0; i < BLOB_COLOURS; i++) {
-    m_colour_map_rgb[i] = wxColour(0, 0, 0);
+    m_colour_map_rgb[i] = PixelColour(0, 0, 0);
   }
+  float r1 = M_SETTINGS.trail_start_colour.Red();
+  float g1 = M_SETTINGS.trail_start_colour.Green();
+  float b1 = M_SETTINGS.trail_start_colour.Blue();
+  float r2 = M_SETTINGS.trail_end_colour.Red();
+  float g2 = M_SETTINGS.trail_end_colour.Green();
+  float b2 = M_SETTINGS.trail_end_colour.Blue();
+  float delta_r = (r2 - r1) / BLOB_HISTORY_COLOURS;
+  float delta_g = (g2 - g1) / BLOB_HISTORY_COLOURS;
+  float delta_b = (b2 - b1) / BLOB_HISTORY_COLOURS;
+
+  for (BlobColour history = BLOB_HISTORY_0; history <= BLOB_HISTORY_MAX; history = (BlobColour)(history + 1)) {
+    if (m_target_trails.GetState() != RCS_OFF) {
+      m_colour_map[history] = history;
+    }
+    m_colour_map_rgb[history] = PixelColour(r1, g1, b1);
+    r1 += delta_r;
+    g1 += delta_g;
+    b1 += delta_b;
+  }
+  // }
+
   m_colour_map_rgb[BLOB_DOPPLER_APPROACHING] = M_SETTINGS.doppler_approaching_colour;
   m_colour_map_rgb[BLOB_DOPPLER_RECEDING] = M_SETTINGS.doppler_receding_colour;
   m_colour_map_rgb[BLOB_STRONG] = M_SETTINGS.strong_colour;
   m_colour_map_rgb[BLOB_INTERMEDIATE] = M_SETTINGS.intermediate_colour;
   m_colour_map_rgb[BLOB_WEAK] = M_SETTINGS.weak_colour;
 
-  if (m_target_trails.GetState() != RCS_OFF) {
-    float r1 = m_pi->m_settings.trail_start_colour.Red();
-    float g1 = m_pi->m_settings.trail_start_colour.Green();
-    float b1 = m_pi->m_settings.trail_start_colour.Blue();
-    float r2 = m_pi->m_settings.trail_end_colour.Red();
-    float g2 = m_pi->m_settings.trail_end_colour.Green();
-    float b2 = m_pi->m_settings.trail_end_colour.Blue();
-    float delta_r = (r2 - r1) / BLOB_HISTORY_COLOURS;
-    float delta_g = (g2 - g1) / BLOB_HISTORY_COLOURS;
-    float delta_b = (b2 - b1) / BLOB_HISTORY_COLOURS;
-
-    for (BlobColour history = BLOB_HISTORY_0; history <= BLOB_HISTORY_MAX; history = (BlobColour)(history + 1)) {
-      m_colour_map[history] = history;
-
-      m_colour_map_rgb[history] = wxColour(r1, g1, b1);
-      r1 += delta_r;
-      g1 += delta_g;
-      b1 += delta_b;
-    }
+  for (int i = 0; i < BLOB_COLOURS; i++) {
+    LOG_VERBOSE(wxT("radar_pi: %d colour_map_rgb[%d] = %d,%d,%d"), m_radar, i, m_colour_map_rgb[i].Red(),
+                m_colour_map_rgb[i].Green(), m_colour_map_rgb[i].Blue());
   }
 }
 

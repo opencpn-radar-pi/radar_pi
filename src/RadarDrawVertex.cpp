@@ -118,12 +118,11 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
 }
 
 void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len, GeoPosition spoke_pos) {
-  wxColour colour;
   GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
   BlobColour previous_colour = BLOB_NONE;
   GLubyte strength = 0;
   time_t now = time(0);
-  unsigned char red, green, blue;
+  uint8_t red, green, blue;
   wxCriticalSectionLocker lock(m_exclusive);
   int r_begin = 0;
   int r_end = 0;
