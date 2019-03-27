@@ -914,14 +914,14 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
             }
             break;
           case REPORT_TYPE_3G:
-            if (m_ri->m_radar_type != RT_3G) {
-              LOG_INFO(wxT("radar_pi: Radar report tells us this a Navico 3G"));
-              SetRadarType(RT_3G);
+            if (m_ri->m_radar_type != RT_3G && m_ri->m_radar_type != RT_BR24) {
+              LOG_INFO(wxT("radar_pi: Radar report tells us this an old Navico 3G, use BR24 instead"));
+              SetRadarType(RT_BR24);
             }
             break;
           case REPORT_TYPE_4G:
-            if (m_ri->m_radar_type != RT_4GA && m_ri->m_radar_type != RT_4GB) {
-              LOG_INFO(wxT("radar_pi: Radar report tells us this a Navico 4G"));
+            if (m_ri->m_radar_type != RT_4GA && m_ri->m_radar_type != RT_4GB && m_ri->m_radar_type != RT_3G) {
+              LOG_INFO(wxT("radar_pi: Radar report tells us this a Navico 4G or a modern 3G"));
               if (m_ri->m_radar_type == RT_HaloB) {
                 SetRadarType(RT_4GB);
               } else {
@@ -931,7 +931,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
             break;
           case REPORT_TYPE_HALO:
             if (m_ri->m_radar_type != RT_HaloA && m_ri->m_radar_type != RT_HaloB) {
-              LOG_INFO(wxT("radar_pi: Radar report tells us this a Navico 4G"));
+              LOG_INFO(wxT("radar_pi: Radar report tells us this a Navico HALO"));
               if (m_ri->m_radar_type == RT_4GB) {
                 SetRadarType(RT_HaloB);
               } else {
