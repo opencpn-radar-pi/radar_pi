@@ -57,9 +57,7 @@ NavicoControl::~NavicoControl() {
 }
 
 void NavicoControl::SetMultiCastAddress(NetworkAddress sendMultiCastAddress) {
-  m_addr.sin_family = AF_INET;
-  m_addr.sin_addr = sendMultiCastAddress.addr;
-  m_addr.sin_port = sendMultiCastAddress.port;
+  m_addr = sendMultiCastAddress.GetSockAddrIn();
 }
 
 bool NavicoControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) {
@@ -86,14 +84,7 @@ bool NavicoControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, Net
   }
 
   if (!r) {
-    struct sockaddr_in s;
-
-    s.sin_addr = ifadr.addr;
-    s.sin_port = ifadr.port;
-    s.sin_family = AF_INET;
-#ifdef __WX_MAC__
-    s.sin_len = sizeof(sockaddr_in);
-#endif
+    struct sockaddr_in s = ifadr.GetSockAddrIn();
 
     r = ::bind(m_radar_socket, (struct sockaddr *)&s, sizeof(s));
   }

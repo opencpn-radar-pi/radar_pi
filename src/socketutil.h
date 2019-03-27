@@ -138,6 +138,19 @@ class NetworkAddress {
     return wxString::Format(wxT("%u.%u.%u.%u port %u"), a[0], a[1], a[2], a[3], ntohs(port));
   }
 
+  struct sockaddr_in GetSockAddrIn() const {
+    struct sockaddr_in sin;
+
+    sin.sin_family = AF_INET;
+    sin.sin_addr = this->addr;
+    sin.sin_port = this->port;
+#ifdef __WX_MAC__
+    sin.sin_len = sizeof(sockaddr_in);
+#endif
+
+    return sin;
+  }
+
   bool IsNull() const { return (addr.s_addr == 0); }
 
   struct in_addr addr;

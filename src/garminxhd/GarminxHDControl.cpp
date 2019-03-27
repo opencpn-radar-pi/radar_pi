@@ -56,9 +56,7 @@ typedef struct {
 #pragma pack(pop)
 
 GarminxHDControl::GarminxHDControl(NetworkAddress sendAddress) {
-  m_addr.sin_family = AF_INET;
-  m_addr.sin_addr = sendAddress.addr;  // Overwritten by actual radar addr
-  m_addr.sin_port = sendAddress.port;
+  m_addr = sendAddress.GetSockAddrIn();  // addr part overwritten by actual radar addr
 
   m_radar_socket = INVALID_SOCKET;
   m_name = wxT("Navico radar");
@@ -96,14 +94,7 @@ bool GarminxHDControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, 
   }
 
   if (!r) {
-    struct sockaddr_in s;
-
-    s.sin_addr = ifadr.addr;
-    s.sin_port = ifadr.port;
-    s.sin_family = AF_INET;
-#ifdef __WX_MAC__
-    s.sin_len = sizeof(sockaddr_in);
-#endif
+    struct sockaddr_in s = ifadr.GetSockAddrIn();
 
     r = ::bind(m_radar_socket, (struct sockaddr *)&s, sizeof(s));
   }
