@@ -50,6 +50,7 @@ bool RadarPanel::Create() {
                            .Name(m_aui_name)
                            .Caption(m_ri->m_name)
                            .CaptionVisible(true)  // Show caption even when docked
+                           .Movable(true)
                            .TopDockable(false)
                            .BottomDockable(false)
                            .RightDockable(false)
