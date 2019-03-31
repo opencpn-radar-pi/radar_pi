@@ -1,0 +1,5 @@
+opencpn-plugin-radar (5.0.0-1) unstable; urgency=medium
+
+  * Initial release for O5 using CI
+
+ -- Pavel Kalian <pavel@kalian.cz>  Tue, 12 Mar 2019 09:01:17 -0300
