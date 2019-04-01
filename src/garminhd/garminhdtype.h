@@ -24,9 +24,12 @@ PLUGIN_END_NAMESPACE
         1852 * 12, 1852 * 16, 1852 * 24, 1852 * 36, 1852 * 48                                                             \
   }
 
-// Garmin HD has 720 spokes of varying 519 - 705 bytes each
+// Garmin HD has 720 spokes
+// Each packet contains 4 spokes buffers, packed sequentially
+// Each of the 4 spoke buffers in the line buffer can be between 128 and 252 bytes
+// Each byte in a spoke buffer contains 8 samples.
 #define GARMIN_HD_SPOKES 720
-#define GARMIN_HD_MAX_SPOKE_LEN 705
+#define GARMIN_HD_MAX_SPOKE_LEN 252 * 8                 // Bytes in internal 1 byte/sample format            
 
 #if SPOKES_MAX < GARMIN_HD_SPOKES
 #undef SPOKES_MAX
