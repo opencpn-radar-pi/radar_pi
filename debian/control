@@ -1,0 +1,16 @@
+Source: opencpn-plugin-radar
+Section: misc
+Priority: optional
+Maintainer: Pavel Kalian <pavel@kalian.cz>
+Build-Depends: debhelper (>= 9), cmake, gettext, git-core, gpsd, gpsd-clients, libgps-dev, wx-common, libwxgtk3.0-dev, libglu1-mesa-dev, libgtk2.0-dev, wx3.0-headers, libbz2-dev, libtinyxml-dev, libportaudio2, portaudio19-dev, libcurl4-openssl-dev, libexpat1-dev, libcairo2-dev, libarchive-dev, liblzma-dev, libexif-dev, libelf-dev, libsqlite3-dev
+Standards-Version: 4.1.2
+Homepage: https://github.com/opencpn-radar-pi/radar_pi
+#Vcs-Git: https://anonscm.debian.org/git/collab-maint/opencpn-plugin-radar.git
+#Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/opencpn-plugin-radar.git
+
+Package: opencpn-plugin-radar
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}, opencpn (>= 4.99.0)
+Description: Broadband digital radar plugin for OpenCPN
+ Allows graphical display of radar as chart overlay or in own window.
+ Supports Garmin HD and xHD, Navico BR24 (also good for "old" 3G manufactured until Oct-2014) and 4G (also good for "new" 3G), Navico HALO-3, HALO-4, HALO-6 and HALO24.
