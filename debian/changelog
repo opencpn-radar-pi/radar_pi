@@ -1,3 +1,10 @@
+opencpn-plugin-radar (5.0.1-1) unstable; urgency=medium
+
+  * Implement Garmin HD radar packet protocol.
+  * Debian release files.
+
+ -- Kees Verruijt <kees@verruijt.net>  Mon, 1 Apr 2019 08:49:11 -0200
+
 opencpn-plugin-radar (5.0.0-1) unstable; urgency=medium
 
   * Initial release for O5 using CI
