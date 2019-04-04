@@ -94,7 +94,26 @@ bool RadarPanel::Create() {
   } else {
     LOG_DIALOG(wxT("radar_pi: Added panel %s to AUI control manager"), m_aui_name.c_str());
   }
-
+  // dock or undock
+  if (m_pi->m_settings.dock_radar[m_ri->m_radar]) {  // dock PPI
+    pane.dock_layer = 1;
+    pane.Dockable(true);
+    pane.CaptionVisible();
+    pane.CloseButton(false);
+    pane.CaptionVisible();
+    pane.Right();
+    pane.Dock();
+    pane.Show();
+    m_aui_mgr->Update();
+  } else {
+    wxAuiPaneInfo& pane = m_ri->m_radar_panel->m_aui_mgr->GetPane(m_ri->m_radar_panel);
+    pane.Dockable(false);
+    pane.Movable(true);
+    pane.CloseButton();
+    pane.CaptionVisible();
+    pane.Float();
+    m_aui_mgr->Update();
+  }
   return true;
 }
 

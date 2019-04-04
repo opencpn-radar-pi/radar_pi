@@ -29,7 +29,6 @@
  ***************************************************************************
  */
 
-#include "radar_pi.h"
 #include "GuardZone.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
@@ -40,6 +39,7 @@
 #include "icons.h"
 #include "navico/NavicoLocate.h"
 #include "nmea0183/nmea0183.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
