@@ -70,6 +70,8 @@ enum {  // process ID's
   ID_TRANSMIT_STANDBY,
 
   ID_SHOW_RADAR_PPI,
+  ID_DOCK_RADAR_PPI,
+
   ID_RADAR_OVERLAY0,
   ID_ADJUST = ID_RADAR_OVERLAY0 + MAX_CHART_CANVAS,
   ID_ADVANCED,
@@ -380,6 +382,7 @@ class ControlsDialog : public wxDialog {
 
   // Window controls
   RadarButton *m_show_ppi_button;
+  RadarButton *m_dock_ppi_button;
   RadarControlButton *m_overlay_button[MAX_CHART_CANVAS];
   RadarControlButton *m_transparency_button;
 
@@ -439,6 +442,7 @@ class ControlsDialog : public wxDialog {
 
   void OnPowerButtonClick(wxCommandEvent &event);
   void OnRadarShowPPIButtonClick(wxCommandEvent &event);
+  void OnRadarDockPPIButtonClick(wxCommandEvent &event);
   void OnRadarOverlayButtonClick(wxCommandEvent &event);
   void OnMessageButtonClick(wxCommandEvent &event);
 

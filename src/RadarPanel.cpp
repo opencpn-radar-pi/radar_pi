@@ -133,7 +133,6 @@ void RadarPanel::SetCaption(wxString name) { m_aui_mgr->GetPane(this).Caption(na
 
 void RadarPanel::close(wxAuiManagerEvent& event) {
   event.Skip();
-
   // Save position of radar control before it is too late
   if (m_ri->m_control_dialog) {
     wxPoint pos = m_ri->m_control_dialog->GetPosition();

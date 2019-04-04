@@ -377,6 +377,7 @@ struct PersistentSettings {
   bool developer_mode;                             // Readonly from config, allows head up mode
   bool show;                                       // whether to show any radar (overlay or window)
   bool show_radar[RADARS];                         // whether to show radar window
+  bool dock_radar[RADARS];                         // whether to dock radar window
   bool show_radar_control[RADARS];                 // whether to show radar menu (control) window
   bool transmit_radar[RADARS];                     // whether radar should be transmitting (persistent)
   bool pass_heading_to_opencpn;                    // Pass heading coming from radar as NMEA data to OpenCPN
