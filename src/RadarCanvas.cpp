@@ -457,6 +457,57 @@ void RadarCanvas::RenderCursor(int w, int h, float radius) {
   glEnd();
 }
 
+void RadarCanvas::RenderCursor2(int w, int h, float radius) {
+  double distance;
+  double bearing;
+  GeoPosition pos;
+ 
+  int orientation = m_ri->GetOrientation();
+
+  if (isnan(m_pi->m_cursor_pos.lat) || isnan(m_pi->m_cursor_pos.lon) || !m_ri->GetRadarPosition(&pos)) {
+    return;
+  }
+  // Can't compute this upfront, ownship may move...
+  distance = local_distance(pos, m_pi->m_cursor_pos) * 1852.;
+  bearing = local_bearing(pos, m_pi->m_cursor_pos);
+  if (m_ri->GetOrientation() != ORIENTATION_NORTH_UP) {
+    bearing -= m_pi->GetHeadingTrue();
+  }
+   LOG_DIALOG(wxT("radar_pi: $$$Chart Mouse vrm=%f ebl=%f"), distance / 1852.0, bearing);
+
+
+  int display_range = m_ri->GetDisplayRange();
+  double range = distance * radius / display_range;
+
+#define CURSOR_SCALE 1
+
+  double center_x = w / 2.0;
+  double center_y = h / 2.0;
+  double angle = deg2rad(bearing);
+  double x = center_x + sin(angle) * range - CURSOR_WIDTH * CURSOR_SCALE / 2;
+  double y = center_y - cos(angle) * range - CURSOR_WIDTH * CURSOR_SCALE / 2;
+
+  if (!m_cursor_texture) {
+    glGenTextures(1, &m_cursor_texture);
+    glBindTexture(GL_TEXTURE_2D, m_cursor_texture);
+    FillCursorTexture();
+    LOG_DIALOG(wxT("radar_pi: generated cursor texture # %u"), m_cursor_texture);
+  }
+
+  glColor3f(1.0f, 0.0f, 0.0f);
+  glBindTexture(GL_TEXTURE_2D, m_cursor_texture);
+  glBegin(GL_QUADS);
+  glTexCoord2i(0, 0);
+  glVertex2i(x, y);
+  glTexCoord2i(1, 0);
+  glVertex2i(x + CURSOR_SCALE * CURSOR_WIDTH, y);
+  glTexCoord2i(1, 1);
+  glVertex2i(x + CURSOR_SCALE * CURSOR_WIDTH, y + CURSOR_SCALE * CURSOR_HEIGHT);
+  glTexCoord2i(0, 1);
+  glVertex2i(x, y + CURSOR_SCALE * CURSOR_HEIGHT);
+  glEnd();
+}
+
 void RadarCanvas::Render_EBL_VRM(int w, int h, float radius) {
   static const uint8_t rgb[BEARING_LINES][3] = {{22, 129, 154}, {45, 255, 254}};
 
@@ -656,6 +707,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
 
   glTranslated(m_ri->m_off_center.x + m_ri->m_drag.x, m_ri->m_off_center.y + m_ri->m_drag.y, 0.);
   RenderCursor(w, h, radar_radius);
+  RenderCursor2(w, h, radar_radius);  // dynamic cursor coupled to chart cursor
   glPopMatrix();
 
   glPopAttrib();
