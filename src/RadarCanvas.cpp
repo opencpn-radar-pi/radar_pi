@@ -99,7 +99,7 @@ void RadarCanvas::RenderTexts(int w, int h) {
 
   // Draw Menu in the top right
 
-  s = _("Menu");
+  s = _("Menu ") + m_ri->m_name;
   m_FontMenu.GetTextExtent(s, &x, &y);
   menu_x = x;
 
