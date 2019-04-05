@@ -494,7 +494,7 @@ void RadarCanvas::RenderCursor2(int w, int h, float radius) {
     LOG_DIALOG(wxT("radar_pi: generated cursor texture # %u"), m_cursor_texture);
   }
 
-  glColor3f(1.0f, 0.0f, 0.0f);
+  glColor3f(0.0f, 1.0f, 1.0f);
   glBindTexture(GL_TEXTURE_2D, m_cursor_texture);
   glBegin(GL_QUADS);
   glTexCoord2i(0, 0);
