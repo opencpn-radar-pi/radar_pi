@@ -69,12 +69,13 @@ bool RadarPanel::Create() {
   // SetMinSize(GetBestSize());
 
   m_best_size = wxGetDisplaySize();
-  m_best_size.x /= 2;
-  m_best_size.y /= 2;
+  wxSize opencpn_window = GetOCPNCanvasWindow()->GetSize();
+  m_best_size.x = wxMin(wxMin(m_best_size.x / 2, 512), opencpn_window.x / 3);
+  m_best_size.y = wxMin(wxMin(m_best_size.y / 2, 512), opencpn_window.y / 2);
 
   pane.MinSize(256, 256);
   pane.BestSize(m_best_size);
-  pane.FloatingSize(512, 512);
+  pane.FloatingSize(m_best_size);
   pane.FloatingPosition(M_SETTINGS.window_pos[m_ri->m_radar]);
   pane.Float();
   pane.dock_proportion = 100000;  // Secret sauce to get panels to use entire bar
@@ -97,20 +98,10 @@ bool RadarPanel::Create() {
   // dock or undock
   if (m_pi->m_settings.dock_radar[m_ri->m_radar]) {  // dock PPI
     pane.dock_layer = 1;
-    pane.Dockable(true);
-    pane.CaptionVisible();
-    pane.CaptionVisible();
-    pane.Right();
-    pane.Dock();
-    pane.Show();
+    pane.Dockable(true).CaptionVisible().CaptionVisible().Right().Dock().Show();
     m_aui_mgr->Update();
   } else {
-    wxAuiPaneInfo& pane = m_ri->m_radar_panel->m_aui_mgr->GetPane(m_ri->m_radar_panel);
-    pane.Dockable(false);
-    pane.Movable(true);
-    pane.CloseButton();
-    pane.CaptionVisible();
-    pane.Float();
+    pane.Dockable(false).Movable(true).CloseButton().CaptionVisible().Float();
     m_aui_mgr->Update();
   }
   return true;

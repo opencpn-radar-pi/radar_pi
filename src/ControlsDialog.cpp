@@ -1356,25 +1356,15 @@ void ControlsDialog::OnRadarDockPPIButtonClick(wxCommandEvent& event) {
   // make radar visible
   m_ri->m_radar_panel->ShowFrame(true);
   m_pi->m_settings.show_radar[m_ri->m_radar] = 1;
-  if (m_pi->m_settings.dock_radar[m_ri->m_radar]) {   // dock PPI
+  if (m_pi->m_settings.dock_radar[m_ri->m_radar]) {  // dock PPI
     wxAuiPaneInfo& pane = m_ri->m_radar_panel->m_aui_mgr->GetPane(m_ri->m_radar_panel);
     pane.dock_layer = 1;
-    
-    pane.Dockable(true);
-    pane.CaptionVisible();
-    pane.CloseButton(false);
-    pane.CaptionVisible();
-    pane.Right();
-    pane.Dock();
+
+    pane.Dockable(true).CaptionVisible().CloseButton(false).CaptionVisible().Right().Dock();
     m_ri->m_radar_panel->m_aui_mgr->Update();
-  }
-  else {
+  } else {
     wxAuiPaneInfo& pane = m_ri->m_radar_panel->m_aui_mgr->GetPane(m_ri->m_radar_panel);
-    pane.Dockable(false);
-    pane.Movable(true);
-    pane.CloseButton();
-    pane.CaptionVisible();
-    pane.Float();
+    pane.Dockable(false).Movable(true).CloseButton().CaptionVisible().Float();
     m_ri->m_radar_panel->m_aui_mgr->Update();
   }
 }
