@@ -66,17 +66,17 @@ bool RadarPanel::Create() {
   DimeWindow(this);
   Fit();
   Layout();
-  // SetMinSize(GetBestSize());
-
   m_best_size = wxGetDisplaySize();
   wxSize opencpn_window = GetOCPNCanvasWindow()->GetSize();
   m_best_size.x = wxMin(wxMin(m_best_size.x / 2, 512), opencpn_window.x / 3);
   m_best_size.y = wxMin(wxMin(m_best_size.y / 2, 512), opencpn_window.y / 2);
+  LOG_INFO(wxT("$$$ best size %i, %i "), m_best_size.x, m_best_size.y);
 
   pane.MinSize(256, 256);
   pane.BestSize(m_best_size);
   pane.FloatingSize(m_best_size);
   pane.FloatingPosition(M_SETTINGS.window_pos[m_ri->m_radar]);
+  pane.Right();
   pane.Float();
   pane.dock_proportion = 100000;  // Secret sauce to get panels to use entire bar
 
@@ -198,6 +198,22 @@ void RadarPanel::ShowFrame(bool visible) {
 
   if (IsPaneShown() == visible) {
     return;
+  }
+  if (m_pi->m_settings.dock_radar[m_ri->m_radar] && IsPaneShown()) {
+    // if docked and visible float first before hiding
+    pane.Float();
+    m_aui_mgr->Update();
+  }
+  if (m_pi->m_settings.dock_radar[m_ri->m_radar] && !IsPaneShown()) {
+    // first show it floating 
+    pane.Show(true);
+    m_aui_mgr->Update();
+    // and then show it docked
+    // this is required for older intel graphics
+    // but is causing a flicker in the display
+    pane.Right();
+    pane.Dock();
+    m_aui_mgr->Update();
   }
 
   pane.Show(visible);

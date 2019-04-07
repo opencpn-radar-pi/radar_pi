@@ -476,7 +476,7 @@ void RadarCanvas::RenderCursor2(int w, int h, float radius) {
   if (m_ri->GetOrientation() != ORIENTATION_NORTH_UP) {
     bearing -= m_pi->GetHeadingTrue();
   }
-   LOG_DIALOG(wxT("radar_pi: $$$Chart Mouse vrm=%f ebl=%f"), distance / 1852.0, bearing);
+   LOG_DIALOG(wxT("radar_pi: Chart Mouse vrm=%f ebl=%f"), distance / 1852.0, bearing);
 
 
   int display_range = m_ri->GetDisplayRange();
