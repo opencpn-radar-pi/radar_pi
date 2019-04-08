@@ -70,7 +70,7 @@ bool RadarPanel::Create() {
   wxSize opencpn_window = GetOCPNCanvasWindow()->GetSize();
   m_best_size.x = wxMin(wxMin(m_best_size.x / 2, 512), opencpn_window.x / 3);
   m_best_size.y = wxMin(wxMin(m_best_size.y / 2, 512), opencpn_window.y / 2);
-  LOG_INFO(wxT("$$$ best size %i, %i "), m_best_size.x, m_best_size.y);
+  LOG_DIALOG(wxT("radar_pi: best size %i, %i"), m_best_size.x, m_best_size.y);
 
   pane.MinSize(256, 256);
   pane.BestSize(m_best_size);
@@ -205,7 +205,7 @@ void RadarPanel::ShowFrame(bool visible) {
     m_aui_mgr->Update();
   }
   if (m_pi->m_settings.dock_radar[m_ri->m_radar] && !IsPaneShown()) {
-    // first show it floating 
+    // first show it floating
     pane.Show(true);
     m_aui_mgr->Update();
     // and then show it docked
