@@ -1356,19 +1356,15 @@ void ControlsDialog::OnRadarDockPPIButtonClick(wxCommandEvent& event) {
  
   wxAuiPaneInfo& pane = m_ri->m_radar_panel->m_aui_mgr->GetPane(m_ri->m_radar_panel);
   if (m_pi->m_settings.dock_radar[m_ri->m_radar]) {  // dock PPI
-    LOG_INFO(wxT("$$$ docking PPI"));
     pane.dock_layer = 1;
     
     pane.Dockable(true).CaptionVisible().Right().Dock();
     m_ri->m_radar_panel->m_aui_mgr->Update();
     // and restore dock size if available
     if (m_ri->m_radar_panel->m_dock_size > 0) {
-      LOG_INFO(wxT("$$$ docking PPI. restoring"));
       wxString perspective = m_ri->m_radar_panel->m_aui_mgr->SavePerspective();
-      LOG_INFO(wxT("$$$ docking PPI, perspective= %s"), perspective.c_str());
       int p = perspective.Find(m_ri->m_radar_panel->m_dock);
       if (p != wxNOT_FOUND) {
-        LOG_INFO(wxT("$$$ docking PPI, found"));
         wxString newPerspective = perspective.Left(p);
         newPerspective << m_ri->m_radar_panel->m_dock;
         newPerspective << m_ri->m_radar_panel->m_dock_size;
@@ -1376,8 +1372,8 @@ void ControlsDialog::OnRadarDockPPIButtonClick(wxCommandEvent& event) {
         newPerspective << wxT("|");
         newPerspective << perspective.AfterFirst(wxT('|'));
         m_ri->m_radar_panel->m_aui_mgr->LoadPerspective(newPerspective);
-        LOG_INFO(wxT("radar_pi: %s: $$$new perspective %s"), m_ri->m_name.c_str(), newPerspective.c_str());
-      } else LOG_INFO(wxT("$$$ docking PPI, not found %s"), m_ri->m_radar_panel->m_dock.c_str());
+        LOG_DIALOG(wxT("radar_pi: %s: new perspective %s"), m_ri->m_name.c_str(), newPerspective.c_str());
+      } 
     }
     m_ri->m_radar_panel->m_aui_mgr->Update();
 
@@ -1391,7 +1387,7 @@ void ControlsDialog::OnRadarDockPPIButtonClick(wxCommandEvent& event) {
       perspective = perspective.Mid(p + m_ri->m_radar_panel->m_dock.length());
       perspective = perspective.BeforeFirst(wxT('|'));
       m_ri->m_radar_panel->m_dock_size = wxAtoi(perspective);
-      LOG_INFO(wxT("radar_pi: %s: $$$replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(), m_ri->m_radar_panel->m_dock_size);
+      LOG_DIALOG(wxT("radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(), m_ri->m_radar_panel->m_dock_size);
     }
 
     wxAuiPaneInfo& pane = m_ri->m_radar_panel->m_aui_mgr->GetPane(m_ri->m_radar_panel);
