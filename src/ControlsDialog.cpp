@@ -1353,19 +1353,53 @@ void ControlsDialog::OnRadarControlButtonClick(wxCommandEvent& event) {
 
 void ControlsDialog::OnRadarDockPPIButtonClick(wxCommandEvent& event) {
   m_pi->m_settings.dock_radar[m_ri->m_radar] = !m_pi->m_settings.dock_radar[m_ri->m_radar];
-  // make radar visible
-  m_ri->m_radar_panel->ShowFrame(true);
-  m_pi->m_settings.show_radar[m_ri->m_radar] = 1;
+ 
+  wxAuiPaneInfo& pane = m_ri->m_radar_panel->m_aui_mgr->GetPane(m_ri->m_radar_panel);
   if (m_pi->m_settings.dock_radar[m_ri->m_radar]) {  // dock PPI
-    wxAuiPaneInfo& pane = m_ri->m_radar_panel->m_aui_mgr->GetPane(m_ri->m_radar_panel);
+    LOG_INFO(wxT("$$$ docking PPI"));
     pane.dock_layer = 1;
-    pane.Dockable(true).CaptionVisible().Right().Dock().Show();
+    
+    pane.Dockable(true).CaptionVisible().Right().Dock();
     m_ri->m_radar_panel->m_aui_mgr->Update();
+    // and restore dock size if available
+    if (m_ri->m_radar_panel->m_dock_size > 0) {
+      LOG_INFO(wxT("$$$ docking PPI. restoring"));
+      wxString perspective = m_ri->m_radar_panel->m_aui_mgr->SavePerspective();
+      LOG_INFO(wxT("$$$ docking PPI, perspective= %s"), perspective.c_str());
+      int p = perspective.Find(m_ri->m_radar_panel->m_dock);
+      if (p != wxNOT_FOUND) {
+        LOG_INFO(wxT("$$$ docking PPI, found"));
+        wxString newPerspective = perspective.Left(p);
+        newPerspective << m_ri->m_radar_panel->m_dock;
+        newPerspective << m_ri->m_radar_panel->m_dock_size;
+        perspective = perspective.Mid(p + m_ri->m_radar_panel->m_dock.length());
+        newPerspective << wxT("|");
+        newPerspective << perspective.AfterFirst(wxT('|'));
+        m_ri->m_radar_panel->m_aui_mgr->LoadPerspective(newPerspective);
+        LOG_INFO(wxT("radar_pi: %s: $$$new perspective %s"), m_ri->m_name.c_str(), newPerspective.c_str());
+      } else LOG_INFO(wxT("$$$ docking PPI, not found %s"), m_ri->m_radar_panel->m_dock.c_str());
+    }
+    m_ri->m_radar_panel->m_aui_mgr->Update();
+
+
   } else {                                          // float PPI
+    // first save dock size with Kees's hack
+    m_ri->m_radar_panel->m_dock = wxString::Format(wxT("|dock_size(%d,%d,%d)="), pane.dock_direction, pane.dock_layer, pane.dock_row);
+    wxString perspective = m_ri->m_radar_panel->m_aui_mgr->SavePerspective();
+    int p = perspective.Find(m_ri->m_radar_panel->m_dock);
+    if (p != wxNOT_FOUND) {
+      perspective = perspective.Mid(p + m_ri->m_radar_panel->m_dock.length());
+      perspective = perspective.BeforeFirst(wxT('|'));
+      m_ri->m_radar_panel->m_dock_size = wxAtoi(perspective);
+      LOG_INFO(wxT("radar_pi: %s: $$$replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(), m_ri->m_radar_panel->m_dock_size);
+    }
+
     wxAuiPaneInfo& pane = m_ri->m_radar_panel->m_aui_mgr->GetPane(m_ri->m_radar_panel);
     pane.Dockable(false).Movable(true).CloseButton().CaptionVisible().Float();
     m_ri->m_radar_panel->m_aui_mgr->Update();
   }
+  m_ri->m_radar_panel->ShowFrame(true);
+  m_pi->m_settings.show_radar[m_ri->m_radar] = 1;
 }
 
 void ControlsDialog::OnRadarShowPPIButtonClick(wxCommandEvent& event) {

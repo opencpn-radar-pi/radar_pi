@@ -76,12 +76,11 @@ bool RadarPanel::Create() {
   pane.BestSize(m_best_size);
   pane.FloatingSize(m_best_size);
   pane.FloatingPosition(M_SETTINGS.window_pos[m_ri->m_radar]);
-  pane.Right();
-  pane.Float();
+  pane.Right().Float();
   pane.dock_proportion = 100000;  // Secret sauce to get panels to use entire bar
+  pane.dock_layer = 1;
 
   m_aui_mgr->AddPane(this, pane);
-  // m_aui_mgr->Update();
   m_aui_mgr->Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(RadarPanel::close), NULL, this);
 
   m_dock_size = 0;
@@ -95,13 +94,15 @@ bool RadarPanel::Create() {
   } else {
     LOG_DIALOG(wxT("radar_pi: Added panel %s to AUI control manager"), m_aui_name.c_str());
   }
+
   // dock or undock
   if (m_pi->m_settings.dock_radar[m_ri->m_radar]) {  // dock PPI
     pane.dock_layer = 1;
-    pane.Dockable(true).CaptionVisible().CaptionVisible().Right().Dock().Show();
+    pane.Dockable(true).CaptionVisible().Right().Dock();
     m_aui_mgr->Update();
-  } else {
+  } else {                                           // float PPI
     pane.Dockable(false).Movable(true).CloseButton().CaptionVisible().Float();
+    pane.dock_layer = 1;
     m_aui_mgr->Update();
   }
   return true;
@@ -185,7 +186,6 @@ void RadarPanel::ShowFrame(bool visible) {
       } else {
         m_sizer->Hide(m_text);
         m_sizer->Add(m_ri->m_radar_canvas, 0, wxEXPAND | wxALL, 0);
-
         Fit();
         Layout();
       }
@@ -208,13 +208,13 @@ void RadarPanel::ShowFrame(bool visible) {
     if (pane.IsDocked()) {
       m_dock = wxString::Format(wxT("|dock_size(%d,%d,%d)="), pane.dock_direction, pane.dock_layer, pane.dock_row);
       wxString perspective = m_aui_mgr->SavePerspective();
-
       int p = perspective.Find(m_dock);
       if (p != wxNOT_FOUND) {
         perspective = perspective.Mid(p + m_dock.length());
         perspective = perspective.BeforeFirst(wxT('|'));
         m_dock_size = wxAtoi(perspective);
-        LOG_DIALOG(wxT("radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(), m_dock_size);
+        LOG_INFO(wxT("radar_pi: %s: $$$replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(), m_dock_size);
+        LOG_INFO(wxT("$$$ save dock size %s"), m_dock.c_str());
       }
     }
   } else {
@@ -225,32 +225,30 @@ void RadarPanel::ShowFrame(bool visible) {
     return;
   }
   if (m_pi->m_settings.dock_radar[m_ri->m_radar] && IsPaneShown()) {
-    // if docked and visible float first before hiding
+    // if docked and visible, float first before hiding
     pane.Float();
     m_aui_mgr->Update();
   }
   if (m_pi->m_settings.dock_radar[m_ri->m_radar] && !IsPaneShown()) {
+    LOG_INFO(wxT("$$$ show floating"));
     // first show it floating
-    pane.Show(true);
+    pane.Float().Show(true);
     m_aui_mgr->Update();
     // and then show it docked
     // this is required for older intel graphics
     // but is causing a flicker in the display
-    pane.Right();
-    pane.Dock();
+    pane.Dockable(true).CaptionVisible().Right().Dock().Show(true);
     m_aui_mgr->Update();
   }
 
   pane.Show(visible);
-  pane.Caption(m_ri->m_name);
-
   m_aui_mgr->Update();
 
   if (visible && (m_dock_size > 0)) {
     // Now the reverse: take the new perspective string and replace the dock size of the dock that our pane is in and
     // reset it to the width it was before the hide.
+    LOG_INFO(wxT("$$$ restore dock size %s"), m_dock.c_str());
     wxString perspective = m_aui_mgr->SavePerspective();
-
     int p = perspective.Find(m_dock);
     if (p != wxNOT_FOUND) {
       wxString newPerspective = perspective.Left(p);
@@ -259,9 +257,8 @@ void RadarPanel::ShowFrame(bool visible) {
       perspective = perspective.Mid(p + m_dock.length());
       newPerspective << wxT("|");
       newPerspective << perspective.AfterFirst(wxT('|'));
-
       m_aui_mgr->LoadPerspective(newPerspective);
-      LOG_DIALOG(wxT("radar_pi: %s: new perspective %s"), m_ri->m_name.c_str(), newPerspective.c_str());
+      LOG_INFO(wxT("radar_pi: %s: $$$new perspective %s"), m_ri->m_name.c_str(), newPerspective.c_str());
     }
   }
 }
