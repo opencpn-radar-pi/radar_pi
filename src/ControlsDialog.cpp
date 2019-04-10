@@ -1847,10 +1847,10 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_power_sizer) {
     m_power_sub_button->SetLabel(o);
   }
-  o = (m_pi->m_settings.show_radar[m_ri->m_radar]) ? _("PPI Window Shown") : _("PPI Window Hidden");
+  o = (m_pi->m_settings.show_radar[m_ri->m_radar]) ? _("Hide / Show PPI\n Shown") : _("Show / Hide PPI\nHidden");
   m_show_ppi_button->SetLabel(o);
 
-  o = (m_pi->m_settings.dock_radar[m_ri->m_radar]) ? _("PPI Window Docked") : _("PPI Window Floating");
+  o = (m_pi->m_settings.dock_radar[m_ri->m_radar]) ? _("Float / Dock PPI\nDocked") : _("Dock / Float PPI\nFloating");
   m_dock_ppi_button->SetLabel(o);
 
   for (int b = 0; b < BEARING_LINES; b++) {
