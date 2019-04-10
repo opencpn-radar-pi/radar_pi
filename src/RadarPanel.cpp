@@ -83,8 +83,6 @@ bool RadarPanel::Create() {
   m_aui_mgr->AddPane(this, pane);
   m_aui_mgr->Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(RadarPanel::close), NULL, this);
 
-  m_dock_size = 0;
-
   if (m_pi->m_perspective[m_ri->m_radar].length()) {
     // Do this first and it doesn't work if the pane starts docked.
     LOG_DIALOG(wxT("radar_pi: Restoring panel %s to AUI control manager: %s"), m_aui_name.c_str(),
@@ -204,7 +202,6 @@ void RadarPanel::ShowFrame(bool visible) {
   // perspective string, as there is no other way to access the dock information through wxAUI.
 
   if (!visible) {
-    m_dock_size = 0;
     if (pane.IsDocked()) {
       m_dock = wxString::Format(wxT("|dock_size(%d,%d,%d)="), pane.dock_direction, pane.dock_layer, pane.dock_row);
       wxString perspective = m_aui_mgr->SavePerspective();
@@ -212,8 +209,8 @@ void RadarPanel::ShowFrame(bool visible) {
       if (p != wxNOT_FOUND) {
         perspective = perspective.Mid(p + m_dock.length());
         perspective = perspective.BeforeFirst(wxT('|'));
-        m_dock_size = wxAtoi(perspective);
-        LOG_DIALOG(wxT("radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(), m_dock_size);
+        m_pi->m_settings.dock_size = wxAtoi(perspective);
+        LOG_DIALOG(wxT("radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(), m_pi->m_settings.dock_size);
       }
     }
   } else {
@@ -227,7 +224,7 @@ void RadarPanel::ShowFrame(bool visible) {
   pane.Show(visible);
   m_aui_mgr->Update();
 
-  if (visible && (m_dock_size > 0)) {
+  if (visible && (m_pi->m_settings.dock_size > 0)) {
     // Now the reverse: take the new perspective string and replace the dock size of the dock that our pane is in and
     // reset it to the width it was before the hide.
     wxString perspective = m_aui_mgr->SavePerspective();
@@ -235,7 +232,7 @@ void RadarPanel::ShowFrame(bool visible) {
     if (p != wxNOT_FOUND) {
       wxString newPerspective = perspective.Left(p);
       newPerspective << m_dock;
-      newPerspective << m_dock_size;
+      newPerspective << m_pi->m_settings.dock_size;
       perspective = perspective.Mid(p + m_dock.length());
       newPerspective << wxT("|");
       newPerspective << perspective.AfterFirst(wxT('|'));

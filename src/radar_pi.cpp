@@ -1339,6 +1339,9 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("RadarCount"), &v, 0);
     M_SETTINGS.radar_count = v;
 
+    pConf->Read(wxT("DockSize"), &v, 0);
+    m_settings.dock_size = v;
+
     size_t n = 0;
     for (int r = 0; r < (int)M_SETTINGS.radar_count; r++) {
       RadarInfo *ri = m_radar[n];
@@ -1533,6 +1536,7 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ColourAISText"), m_settings.ais_text_colour.GetAsString());
     pConf->Write(wxT("ColourPPIBackground"), m_settings.ppi_background_colour.GetAsString());
     pConf->Write(wxT("RadarCount"), m_settings.radar_count);
+    pConf->Write(wxT("DockSize"), m_settings.dock_size);
 
     for (int r = 0; r < (int)m_settings.radar_count; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);

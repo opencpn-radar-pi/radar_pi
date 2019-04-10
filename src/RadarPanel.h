@@ -51,7 +51,6 @@ class RadarPanel : public wxPanel {
   wxPoint GetPos();
   wxAuiManager* m_aui_mgr;
   wxString m_dock;
-  int m_dock_size;
 
  private:
   wxWindow* m_parent;
