@@ -136,6 +136,7 @@ void MessageBox::CreateControls() {
     m_radar_text[i]->SetFont(m_pi->m_font);
     ipSizer->Add(m_radar_text[i], 0, wxALL, BORDER);
     m_radar_box[i]->Hide();
+    m_radar_text[i]->Hide();
   }
 
   wxStaticBox *optionsBox = new wxStaticBox(this, wxID_ANY, _("Required OpenCPN option"));
@@ -329,12 +330,15 @@ bool MessageBox::UpdateMessage(bool force) {
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     wxString info = m_pi->m_radar[r]->GetInfoStatus();
     m_radar_text[r]->SetLabel(info);
+    m_radar_text[r]->Show();
     m_radar_box[r]->SetLabel(m_pi->m_radar[r]->m_name);
     m_radar_box[r]->Show();
     m_radar_box[r]->Layout();
   }
   for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
+    m_radar_text[r]->Hide();
     m_radar_box[r]->Hide();
+    m_radar_box[r]->Layout();
   }
 
   wxString label;
@@ -364,7 +368,6 @@ bool MessageBox::UpdateMessage(bool force) {
         m_message_sizer->Hide(m_info_sizer);
         m_close_button->Hide();
         m_hide_radar->Show();
-        Layout();
         break;
 
       case SHOW_NO_NMEA:
@@ -387,6 +390,10 @@ bool MessageBox::UpdateMessage(bool force) {
   } else {
     LOG_DIALOG(wxT("radar_pi: no change"));
   }
+
+  m_nmea_sizer->Layout();
+  m_info_sizer->Layout();
+  m_message_sizer->Layout();
   m_top_sizer->Layout();
   Layout();
   Fit();
