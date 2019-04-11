@@ -411,10 +411,6 @@ void RadarCanvas::FillCursorTexture() {
 void RadarCanvas::RenderCursor(const wxSize &clientSize, float radius) {
   glColor3f(1.0f, 1.0f, 1.0f);
 
-  double distance;
-  double bearing;
-  GeoPosition pos;
-
   if (!isnan(m_ri->m_mouse_vrm)) {
     RenderCursor(clientSize, radius, m_ri->m_mouse_vrm * 1852., m_ri->m_mouse_ebl[m_ri->GetOrientation()]);
   } else {

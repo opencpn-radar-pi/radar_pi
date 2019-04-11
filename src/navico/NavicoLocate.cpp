@@ -350,7 +350,6 @@ void NavicoLocate::WakeRadar() {
   static const uint8_t WAKE_COMMAND[] = {0x01, 0xb1};
   struct sockaddr_in send_addr = NetworkAddress(236, 6, 7, 5, 6878).GetSockAddrIn();
 
-  int r;
   int one = 1;
 
   for (size_t i = 0; i < m_interface_count; i++) {
