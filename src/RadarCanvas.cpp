@@ -159,6 +159,7 @@ void RadarCanvas::RenderTexts(const wxSize &loc) {
     wxSize i;
     i.x = loc.GetWidth() - 5 - menu_x / 2;
     i.y = loc.GetHeight() - 5;
+
     i = RenderControlItem(i, m_ri->m_rain, CT_RAIN, _("Rain"));
     i.y -= 5;
     i = RenderControlItem(i, m_ri->m_sea, CT_SEA, _("Sea"));
@@ -219,9 +220,9 @@ wxSize RadarCanvas::RenderControlItem(const wxSize &loc, RadarControlItem &item,
   // Draw a semi circle, 270 degrees when 100%
   if (value > 0) {
     glLineWidth(2.0);
-    DrawArc(loc.x, loc.y + ty, ty + 3, (float)deg2rad(-225), (float)deg2rad(value * 270. / ci.maxValue), value / 2);
+    DrawArc(where.x, where.y + ty, ty + 3, (float)deg2rad(-225), (float)deg2rad(value * 270. / ci.maxValue), value / 2);
   }
-  return loc;
+  return where;
 }
 
 void RadarCanvas::RenderRangeRingsAndHeading(const wxSize &clientSize, float r) {
