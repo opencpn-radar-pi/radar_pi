@@ -56,9 +56,7 @@ NavicoControl::~NavicoControl() {
   }
 }
 
-void NavicoControl::SetMultiCastAddress(NetworkAddress sendMultiCastAddress) {
-  m_addr = sendMultiCastAddress.GetSockAddrIn();
-}
+void NavicoControl::SetMultiCastAddress(NetworkAddress sendMultiCastAddress) { m_addr = sendMultiCastAddress.GetSockAddrIn(); }
 
 bool NavicoControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) {
   int r;

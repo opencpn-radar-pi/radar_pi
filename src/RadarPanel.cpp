@@ -66,24 +66,22 @@ bool RadarPanel::Create() {
   DimeWindow(this);
   Fit();
   Layout();
-  // SetMinSize(GetBestSize());
-
   m_best_size = wxGetDisplaySize();
-  m_best_size.x /= 2;
-  m_best_size.y /= 2;
+  wxSize opencpn_window = GetOCPNCanvasWindow()->GetSize();
+  m_best_size.x = wxMin(wxMin(m_best_size.x / 2, 512), opencpn_window.x / 3);
+  m_best_size.y = wxMin(wxMin(m_best_size.y / 2, 512), opencpn_window.y / 2);
+  LOG_DIALOG(wxT("radar_pi: best size %i, %i"), m_best_size.x, m_best_size.y);
 
   pane.MinSize(256, 256);
   pane.BestSize(m_best_size);
-  pane.FloatingSize(512, 512);
+  pane.FloatingSize(m_best_size);
   pane.FloatingPosition(M_SETTINGS.window_pos[m_ri->m_radar]);
-  pane.Float();
+  pane.Right().Float();
   pane.dock_proportion = 100000;  // Secret sauce to get panels to use entire bar
+  pane.dock_layer = 1;
 
   m_aui_mgr->AddPane(this, pane);
-  // m_aui_mgr->Update();
   m_aui_mgr->Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(RadarPanel::close), NULL, this);
-
-  m_dock_size = 0;
 
   if (m_pi->m_perspective[m_ri->m_radar].length()) {
     // Do this first and it doesn't work if the pane starts docked.
@@ -95,6 +93,16 @@ bool RadarPanel::Create() {
     LOG_DIALOG(wxT("radar_pi: Added panel %s to AUI control manager"), m_aui_name.c_str());
   }
 
+  // dock or undock
+  if (m_pi->m_settings.dock_radar[m_ri->m_radar]) {  // dock PPI
+    pane.dock_layer = 1;
+    pane.Dockable(true).CaptionVisible().Right().Dock();
+    m_aui_mgr->Update();
+  } else {  // float PPI
+    pane.Dockable(false).Movable(true).CloseButton().CaptionVisible().Float();
+    pane.dock_layer = 1;
+    m_aui_mgr->Update();
+  }
   return true;
 }
 
@@ -133,7 +141,6 @@ void RadarPanel::SetCaption(wxString name) { m_aui_mgr->GetPane(this).Caption(na
 
 void RadarPanel::close(wxAuiManagerEvent& event) {
   event.Skip();
-
   // Save position of radar control before it is too late
   if (m_ri->m_control_dialog) {
     wxPoint pos = m_ri->m_control_dialog->GetPosition();
@@ -177,7 +184,6 @@ void RadarPanel::ShowFrame(bool visible) {
       } else {
         m_sizer->Hide(m_text);
         m_sizer->Add(m_ri->m_radar_canvas, 0, wxEXPAND | wxALL, 0);
-
         Fit();
         Layout();
       }
@@ -196,17 +202,16 @@ void RadarPanel::ShowFrame(bool visible) {
   // perspective string, as there is no other way to access the dock information through wxAUI.
 
   if (!visible) {
-    m_dock_size = 0;
     if (pane.IsDocked()) {
       m_dock = wxString::Format(wxT("|dock_size(%d,%d,%d)="), pane.dock_direction, pane.dock_layer, pane.dock_row);
       wxString perspective = m_aui_mgr->SavePerspective();
-
       int p = perspective.Find(m_dock);
       if (p != wxNOT_FOUND) {
         perspective = perspective.Mid(p + m_dock.length());
         perspective = perspective.BeforeFirst(wxT('|'));
-        m_dock_size = wxAtoi(perspective);
-        LOG_DIALOG(wxT("radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(), m_dock_size);
+        m_pi->m_settings.dock_size = wxAtoi(perspective);
+        LOG_DIALOG(wxT("radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(),
+                   m_pi->m_settings.dock_size);
       }
     }
   } else {
@@ -218,28 +223,25 @@ void RadarPanel::ShowFrame(bool visible) {
   }
 
   pane.Show(visible);
-  pane.Caption(m_ri->m_name);
-
   m_aui_mgr->Update();
 
-  if (visible && (m_dock_size > 0)) {
+  if (visible && (m_pi->m_settings.dock_size > 0)) {
     // Now the reverse: take the new perspective string and replace the dock size of the dock that our pane is in and
     // reset it to the width it was before the hide.
     wxString perspective = m_aui_mgr->SavePerspective();
-
     int p = perspective.Find(m_dock);
     if (p != wxNOT_FOUND) {
       wxString newPerspective = perspective.Left(p);
       newPerspective << m_dock;
-      newPerspective << m_dock_size;
+      newPerspective << m_pi->m_settings.dock_size;
       perspective = perspective.Mid(p + m_dock.length());
       newPerspective << wxT("|");
       newPerspective << perspective.AfterFirst(wxT('|'));
-
       m_aui_mgr->LoadPerspective(newPerspective);
       LOG_DIALOG(wxT("radar_pi: %s: new perspective %s"), m_ri->m_name.c_str(), newPerspective.c_str());
     }
   }
+  m_aui_mgr->Update();
 }
 
 bool RadarPanel::IsPaneShown() {

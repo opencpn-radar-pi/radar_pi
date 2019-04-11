@@ -29,7 +29,7 @@ PLUGIN_END_NAMESPACE
 // Each of the 4 spoke buffers in the line buffer can be between 128 and 252 bytes
 // Each byte in a spoke buffer contains 8 samples.
 #define GARMIN_HD_SPOKES 720
-#define GARMIN_HD_MAX_SPOKE_LEN 252 * 8                 // Bytes in internal 1 byte/sample format            
+#define GARMIN_HD_MAX_SPOKE_LEN 252 * 8  // Bytes in internal 1 byte/sample format
 
 #if SPOKES_MAX < GARMIN_HD_SPOKES
 #undef SPOKES_MAX

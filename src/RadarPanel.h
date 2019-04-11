@@ -49,18 +49,17 @@ class RadarPanel : public wxPanel {
   void close(wxAuiManagerEvent& event);
 
   wxPoint GetPos();
+  wxAuiManager* m_aui_mgr;
+  wxString m_dock;
 
  private:
   wxWindow* m_parent;
   radar_pi* m_pi;
   RadarInfo* m_ri;
-  wxAuiManager* m_aui_mgr;
   wxString m_aui_name;
   wxBoxSizer* m_sizer;
   wxStaticText* m_text;
   wxSize m_best_size;
-  wxString m_dock;
-  int m_dock_size;
 };
 
 PLUGIN_END_NAMESPACE

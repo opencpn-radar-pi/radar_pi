@@ -347,11 +347,9 @@ const NavicoRadarInfo *NavicoLocate::getRadarInfo(const NetworkAddress &radar_ip
 }
 
 void NavicoLocate::WakeRadar() {
-
-  static const uint8_t WAKE_COMMAND[] = { 0x01, 0xb1 };
+  static const uint8_t WAKE_COMMAND[] = {0x01, 0xb1};
   struct sockaddr_in send_addr = NetworkAddress(236, 6, 7, 5, 6878).GetSockAddrIn();
 
-  int r;
   int one = 1;
 
   for (size_t i = 0; i < m_interface_count; i++) {
@@ -359,14 +357,12 @@ void NavicoLocate::WakeRadar() {
     struct sockaddr_in s = m_interface_addr[i].GetSockAddrIn();
 
     if (sock != INVALID_SOCKET) {
-      if (!setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one))
-          && !::bind(sock, (struct sockaddr *)&s, sizeof(s))
-          && sendto(sock, (const char *)WAKE_COMMAND, sizeof WAKE_COMMAND, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) == sizeof WAKE_COMMAND)
-      {
+      if (!setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one)) &&
+          !::bind(sock, (struct sockaddr *)&s, sizeof(s)) &&
+          sendto(sock, (const char *)WAKE_COMMAND, sizeof WAKE_COMMAND, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) ==
+              sizeof WAKE_COMMAND) {
         LOG_VERBOSE(wxT("Sent wake command to radar on %s"), m_interface_addr[i].FormatNetworkAddress());
-      }
-      else
-      {
+      } else {
         wxLogError(wxT("Failed to send wake command to radars on %s"), m_interface_addr[i].FormatNetworkAddress());
       }
       closesocket(sock);

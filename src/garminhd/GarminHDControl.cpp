@@ -65,7 +65,7 @@ typedef struct {
 #pragma pack(pop)
 
 GarminHDControl::GarminHDControl(NetworkAddress sendAddress) {
-  m_addr = sendAddress.GetSockAddrIn(); // Overwritten by actual radar addr
+  m_addr = sendAddress.GetSockAddrIn();  // Overwritten by actual radar addr
 
   m_radar_socket = INVALID_SOCKET;
   m_name = wxT("Navico radar");

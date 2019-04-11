@@ -1339,6 +1339,9 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("RadarCount"), &v, 0);
     M_SETTINGS.radar_count = v;
 
+    pConf->Read(wxT("DockSize"), &v, 0);
+    m_settings.dock_size = v;
+
     size_t n = 0;
     for (int r = 0; r < (int)M_SETTINGS.radar_count; r++) {
       RadarInfo *ri = m_radar[n];
@@ -1398,6 +1401,7 @@ bool radar_pi::LoadConfig(void) {
       }
 
       pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[n], n ? false : true);
+      pConf->Read(wxString::Format(wxT("Radar%dWindowDock"), r), &m_settings.dock_radar[n], n ? false : true);
       pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * n);
       pConf->Read(wxString::Format(wxT("Radar%dWindowPosY"), r), &y, 120);
       m_settings.window_pos[n] = wxPoint(x, y);
@@ -1532,6 +1536,7 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ColourAISText"), m_settings.ais_text_colour.GetAsString());
     pConf->Write(wxT("ColourPPIBackground"), m_settings.ppi_background_colour.GetAsString());
     pConf->Write(wxT("RadarCount"), m_settings.radar_count);
+    pConf->Write(wxT("DockSize"), m_settings.dock_size);
 
     for (int r = 0; r < (int)m_settings.radar_count; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);
@@ -1542,6 +1547,7 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->m_state.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dWindowShow"), r), m_settings.show_radar[r]);
+      pConf->Write(wxString::Format(wxT("Radar%dWindowDock"), r), m_settings.dock_radar[r]);
       pConf->Write(wxString::Format(wxT("Radar%dControlShow"), r), m_settings.show_radar_control[r]);
       pConf->Write(wxString::Format(wxT("Radar%dTargetShow"), r), m_radar[r]->m_target_on_ppi.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTrailsState"), r), (int)m_radar[r]->m_target_trails.GetState());
