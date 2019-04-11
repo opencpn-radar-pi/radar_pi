@@ -93,7 +93,7 @@ void GarminHDReceive::ProcessFrame(radar_line *packet) {
              GARMIN_HD_MAX_SPOKE_LEN);
     packet->scan_length = GARMIN_HD_MAX_SPOKE_LEN / 2;
   }
-  
+
   int angle_raw = packet->angle * 2;
   int spoke = angle_raw;
   m_ri->m_statistics.spokes++;
@@ -125,20 +125,19 @@ void GarminHDReceive::ProcessFrame(radar_line *packet) {
   }
   wxCriticalSectionLocker lock(m_ri->m_exclusive);
 
-  for(int j = 0 ; j < 4 ; j++){
-    s = &packet->line_data[ packet->scan_length/4 * j]; 
-    for (p = line, i = 0; i < packet->scan_length/4; i++, s++) {
-        *p++ = (*s & 0x01) > 0 ? 255 : 0;
-        *p++ = (*s & 0x02) > 0 ? 255 : 0;
-        *p++ = (*s & 0x04) > 0 ? 255 : 0;
-        *p++ = (*s & 0x08) > 0 ? 255 : 0;
-        *p++ = (*s & 0x10) > 0 ? 255 : 0;
-        *p++ = (*s & 0x20) > 0 ? 255 : 0;
-        *p++ = (*s & 0x40) > 0 ? 255 : 0;
-        *p++ = (*s & 0x80) > 0 ? 255 : 0;
+  for (int j = 0; j < 4; j++) {
+    s = &packet->line_data[packet->scan_length / 4 * j];
+    for (p = line, i = 0; i < packet->scan_length / 4; i++, s++) {
+      *p++ = (*s & 0x01) > 0 ? 255 : 0;
+      *p++ = (*s & 0x02) > 0 ? 255 : 0;
+      *p++ = (*s & 0x04) > 0 ? 255 : 0;
+      *p++ = (*s & 0x08) > 0 ? 255 : 0;
+      *p++ = (*s & 0x10) > 0 ? 255 : 0;
+      *p++ = (*s & 0x20) > 0 ? 255 : 0;
+      *p++ = (*s & 0x40) > 0 ? 255 : 0;
+      *p++ = (*s & 0x80) > 0 ? 255 : 0;
     }
 
-    
     m_next_spoke = (spoke + 1) % GARMIN_HD_SPOKES;
 
     short int heading_raw = 0;
@@ -151,7 +150,7 @@ void GarminHDReceive::ProcessFrame(radar_line *packet) {
     SpokeBearing b = MOD_SPOKES(bearing_raw);
 
     m_ri->ProcessRadarSpoke(a, b, line, p - line, packet->display_meters, time_rec);
-    
+
     angle_raw++;
     spoke++;
   }
@@ -470,7 +469,7 @@ bool GarminHDReceive::ProcessReport(const uint8_t *report, size_t len) {
 
   m_ri->resetTimeout(now);
 
-  if (len >= 12/*sizeof(rad_response_pkt)*/) {  //  sizeof(rad_response_pkt)) {
+  if (len >= 12 /*sizeof(rad_response_pkt)*/) {  //  sizeof(rad_response_pkt)) {
     rad_response_pkt *packet = (rad_response_pkt *)report;
     uint16_t packet_type = packet->packet_type;
 

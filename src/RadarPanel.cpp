@@ -98,7 +98,7 @@ bool RadarPanel::Create() {
     pane.dock_layer = 1;
     pane.Dockable(true).CaptionVisible().Right().Dock();
     m_aui_mgr->Update();
-  } else {                                           // float PPI
+  } else {  // float PPI
     pane.Dockable(false).Movable(true).CloseButton().CaptionVisible().Float();
     pane.dock_layer = 1;
     m_aui_mgr->Update();
@@ -210,7 +210,8 @@ void RadarPanel::ShowFrame(bool visible) {
         perspective = perspective.Mid(p + m_dock.length());
         perspective = perspective.BeforeFirst(wxT('|'));
         m_pi->m_settings.dock_size = wxAtoi(perspective);
-        LOG_DIALOG(wxT("radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(), m_pi->m_settings.dock_size);
+        LOG_DIALOG(wxT("radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(),
+                   m_pi->m_settings.dock_size);
       }
     }
   } else {
