@@ -65,7 +65,7 @@ class NavicoReceive : public RadarReceive {
 
     NavicoRadarInfo info = m_pi->GetNavicoRadarInfo(m_ri->m_radar);
 
-    if (info.report_addr.IsNull() && !m_data_addr.IsNull()) {
+    if (info.report_addr.IsNull() && !m_report_addr.IsNull()) {
       // BR24, 3G, 4G initial setup, when ini file doesn't contain multicast addresses yet
       // In this case m_data_addr etc. are correct, these don't really change in the wild according to our data,
       // so write them into the NavicoRadarInfo object.
@@ -74,7 +74,7 @@ class NavicoReceive : public RadarReceive {
       info.send_command_addr = m_send_addr;
 
       m_pi->SetNavicoRadarInfo(m_ri->m_radar, info);
-    } else if (!info.report_addr.IsNull() && m_data_addr.IsNull()) {
+    } else if (info.report_addr.IsNull() && !m_report_addr.IsNull()) {
       // HALO restart, when ini file contains multicast addresses, that are hopefully still correct.
       // If not we will time-out and then NavicoLocate will find the radar.
       info.spoke_data_addr = m_data_addr;

@@ -382,13 +382,20 @@ SOCKET NavicoReceive::GetNewReportSocket() {
   wxString error = wxT("");
   wxString s = wxT("");
 
+  if (m_report_addr.IsNull() && !info.report_addr.IsNull()) {
+    m_report_addr = info.report_addr;
+    m_send_addr = info.send_command_addr;
+    m_data_addr = info.spoke_data_addr;
+    UpdateSendCommand();
+    LOG_INFO(wxT("radar_pi: %s Locator found radar at IP %s [%s]"), m_ri->m_name,
+             M_SETTINGS.radar_address[m_ri->m_radar].FormatNetworkAddressPort(), info.to_string());
+  }
   if (m_interface_addr.IsNull() || m_report_addr.IsNull()) {
     LOG_RECEIVE(wxT("radar_pi: %s no address to listen on"), m_ri->m_name);
     return INVALID_SOCKET;
   }
 
   if (RadarOrder[m_ri->m_radar_type] >= RO_PRIMARY) {
-    NavicoRadarInfo info = m_pi->GetNavicoRadarInfo(m_ri->m_radar);
     if (!info.serialNr.IsNull()) {
       s << _("Serial #") << info.serialNr << wxT("\n");
     }
@@ -602,16 +609,13 @@ void *NavicoReceive::Entry(void) {
       // Check if the locator has found something. If so, use it.
       NetworkAddress ip = m_pi->GetRadarAddress(m_ri->m_radar);
       ip.port = htons(RadarOrder[m_ri->m_radar_type]);
-      const NavicoRadarInfo *me = m_pi->m_locator->getRadarInfo(ip);
+      const NavicoRadarInfo *locatorInfo = m_pi->m_locator->getRadarInfo(ip);
 
-      if (me) {
-        m_report_addr = me->report_addr;
-        m_data_addr = me->spoke_data_addr;
-        m_send_addr = me->send_command_addr;
-
-        UpdateSendCommand();
-        LOG_INFO(wxT("radar_pi: Locator found radar %u at IP %s [%s]"), m_ri->m_radar, ip.FormatNetworkAddressPort(),
-                 me->to_string());
+      if (locatorInfo) {
+        if (reportSocket != INVALID_SOCKET) {
+          closesocket(reportSocket);
+          reportSocket = INVALID_SOCKET;
+        }
       }
       // Else we wait for the locator to fill in the IP address of any radar that hasn't been detected yet.
     }
