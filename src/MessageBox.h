@@ -102,6 +102,7 @@ class MessageBox : public wxDialog {
 
   void OnMessageCloseButtonClick(wxCommandEvent &event);
   void OnMessageHideRadarClick(wxCommandEvent &event);
+  void OnMessageChooseRadarClick(wxCommandEvent &event);
 
   bool IsModalDialogShown();
 
@@ -128,8 +129,9 @@ class MessageBox : public wxDialog {
   wxStaticText *m_radar_text[4];
 
   // MessageBox
-  wxButton *m_close_button;
+  wxButton *m_choose_button;
   wxButton *m_hide_radar;
+  wxButton *m_close_button;
   wxCheckBox *m_have_open_gl;
   wxCheckBox *m_have_boat_pos;
   wxCheckBox *m_have_true_heading;

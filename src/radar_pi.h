@@ -472,7 +472,8 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
 
   // Other public methods
 
-  bool IsRadarSelectionComplete(bool force);
+  bool EnsureRadarSelectionComplete(bool force);
+  bool MakeRadarSelection();
 
   void NotifyRadarWindowViz();
   void NotifyControlDialog();

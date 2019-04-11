@@ -252,7 +252,11 @@ int radar_pi::Init(void) {
   // This does not start any threads or generate any UI.
   for (size_t r = 0; r < RADARS; r++) {
     m_radar[r] = new RadarInfo(this, r);
+    m_settings.show_radar[r] = true;
+    m_settings.dock_radar[r] = false;
+    m_settings.window_pos[r] = wxPoint(30 + 540 * r, 120);
   }
+
   m_GPS_filter = new GPSKalmanFilter();
 
   //    And load the configuration items
@@ -425,8 +429,7 @@ void radar_pi::SetDefaults(void) {
   // We don't need to do anything special here.
 }
 
-bool radar_pi::IsRadarSelectionComplete(bool force) {
-  RadarType oldRadarType[RADARS];
+bool radar_pi::EnsureRadarSelectionComplete(bool force) {
   bool ret = false;
   bool any = false;
   size_t r;
@@ -442,7 +445,15 @@ bool radar_pi::IsRadarSelectionComplete(bool force) {
     return true;
   }
 
-  LOG_DIALOG(wxT("radar_pi: IsRadarSelectionComplete not yet so show selection dialog"));
+  LOG_DIALOG(wxT("radar_pi: EnsureRadarSelectionComplete not yet so show selection dialog"));
+  return MakeRadarSelection();
+}
+
+bool radar_pi::MakeRadarSelection() {
+  bool ret = false;
+
+  RadarType oldRadarType[RADARS];
+  size_t r;
 
   for (r = 0; r < RADARS; r++) {
     if (m_radar[r]) {
@@ -509,20 +520,16 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
   M_SETTINGS.reset_radars = false;
   NotifyRadarWindowViz();
 
-  if (IsRadarSelectionComplete(false)) {
+  if (EnsureRadarSelectionComplete(false)) {
     OptionsDialog dlg(parent, m_settings, m_radar[0]->m_radar_type);
     if (dlg.ShowModal() == wxID_OK) {
       m_settings = dlg.GetSettings();
-      if (IsRadarSelectionComplete(m_settings.reset_radars)) {
-        for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-          m_radar[r]->ComputeColourMap();
-          m_radar[r]->UpdateControlState(true);
-        }
-        if (!m_guard_bogey_confirmed && m_alarm_sound_timeout && m_settings.guard_zone_timeout) {
-          m_alarm_sound_timeout = time(0) + m_settings.guard_zone_timeout;
-        }
+      if (EnsureRadarSelectionComplete(m_settings.reset_radars)) {
+        M_SETTINGS.reset_radars = false;
       }
-      m_settings.reset_radars = false;
+      if (!m_guard_bogey_confirmed && m_alarm_sound_timeout && m_settings.guard_zone_timeout) {
+        m_alarm_sound_timeout = time(0) + m_settings.guard_zone_timeout;
+      }
     }
   }
 
@@ -646,7 +653,7 @@ void radar_pi::OnToolbarToolCallback(int id) {
   if (!m_initialized) {
     return;
   }
-  if (!IsRadarSelectionComplete(false)) {
+  if (!EnsureRadarSelectionComplete(false)) {
     return;
   }
 
@@ -685,7 +692,7 @@ void radar_pi::OnToolbarToolCallback(int id) {
 }
 
 void radar_pi::OnContextMenuItemCallback(int id) {
-  if (!IsRadarSelectionComplete(false)) {
+  if (!EnsureRadarSelectionComplete(false)) {
     return;
   }
   int current_canvas_index = -1;
@@ -961,6 +968,10 @@ void radar_pi::ScheduleWindowRefresh() {
 }
 
 void radar_pi::OnTimerNotify(wxTimerEvent &event) {
+  if (!EnsureRadarSelectionComplete(false)) {
+    return;
+  }
+
   if (m_settings.show) {  // Is radar enabled?
     bool ppi_visible = false;
 
@@ -1400,8 +1411,8 @@ bool radar_pi::LoadConfig(void) {
         m_radar[r]->m_overlay_canvas[i].Update(v);
       }
 
-      pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[n], n ? false : true);
-      pConf->Read(wxString::Format(wxT("Radar%dWindowDock"), r), &m_settings.dock_radar[n], n ? false : true);
+      pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[n], true);
+      pConf->Read(wxString::Format(wxT("Radar%dWindowDock"), r), &m_settings.dock_radar[n], false);
       pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * n);
       pConf->Read(wxString::Format(wxT("Radar%dWindowPosY"), r), &y, 120);
       m_settings.window_pos[n] = wxPoint(x, y);
