@@ -41,6 +41,7 @@ static const NetworkAddress reportNavicoCommon(236, 6, 7, 5, 6878);
 
 #define SECONDS_PER_SELECT (1)
 #define PERIOD_UNTIL_CARD_REFRESH (60)
+#define PERIOD_UNTIL_WAKE_RADAR (30)
 
 void NavicoLocate::CleanupCards() {
   if (m_interface_addr) {
@@ -112,7 +113,8 @@ void NavicoLocate::UpdateEthernetCards() {
  */
 void *NavicoLocate::Entry(void) {
   int r = 0;
-  int report_timeout = 0;
+  int rescan_network_cards = 0;
+  int wake_timeout = 0;
   union {
     sockaddr_storage addr;
     sockaddr_in ipv4;
@@ -146,7 +148,7 @@ void *NavicoLocate::Entry(void) {
       int err = errno;
       wxLogError(wxT("radar_pi: NavicoLocate select %s"), strerror(err));
       UpdateEthernetCards();
-      report_timeout = 0;
+      rescan_network_cards = 0;
     }
     if (r > 0) {
       for (size_t i = 0; i < m_interface_count; i++) {
@@ -158,17 +160,23 @@ void *NavicoLocate::Entry(void) {
             radar_address.addr = rx_addr.ipv4.sin_addr;
             radar_address.port = rx_addr.ipv4.sin_port;
 
-            ProcessReport(radar_address, data, (size_t)r);
+            if (ProcessReport(radar_address, data, (size_t)r)) {
+              rescan_network_cards = -PERIOD_UNTIL_CARD_REFRESH;  // Give double time until we rescan
+              wake_timeout = -PERIOD_UNTIL_WAKE_RADAR;
+            }
           }
         }
       }
     } else {  // no data received -> select timeout
-      if (report_timeout >= PERIOD_UNTIL_CARD_REFRESH) {
-        LOG_VERBOSE(wxT("radar_pi: NavicoLocate t=%d max=%d"), report_timeout, PERIOD_UNTIL_CARD_REFRESH);
+      if (++rescan_network_cards >= PERIOD_UNTIL_CARD_REFRESH) {
         UpdateEthernetCards();
-        report_timeout = 0;
-      } else {
-        report_timeout++;
+        rescan_network_cards = 0;
+        wake_timeout = PERIOD_UNTIL_WAKE_RADAR - 2;  // Wake radar soon, but not immediately
+      }
+
+      if (++wake_timeout >= PERIOD_UNTIL_WAKE_RADAR) {
+        WakeRadar();
+        wake_timeout = 0;
       }
     }
 
@@ -274,12 +282,15 @@ struct RadarReport_01B2 {
 
 #pragma pack(pop)
 
-void NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const uint8_t *report, size_t len) {
+bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const uint8_t *report, size_t len) {
   time_t now = time(0);
 
+  if (report[0] == 01 && report[1] == 0xB1) {  // Wake radar
+    LOG_VERBOSE(wxT("radar_pi: Wake radar request from %s"), radar_address.FormatNetworkAddress());
+  }
   if (report[0] == 01 && report[1] == 0xB2) {  // Common Navico message from 4G++
     if (m_pi->m_settings.verbose >= 2) {
-      LOG_BINARY_RECEIVE(wxT("NavicoLocate received RadarReport_01B2"), report, len);
+      LOG_BINARY_RECEIVE(wxT("radar_pi: NavicoLocate received RadarReport_01B2"), report, len);
     }
     RadarReport_01B2 *data = (RadarReport_01B2 *)report;
     wxCriticalSectionLocker lock(m_exclusive);
@@ -310,8 +321,9 @@ void NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const uint
 
     m_pi->FoundNavicoRadarInfo(radar_ipB, infoB);
 
-#define LOG_ADDR_N(n) \
-  LOG_RECEIVE(wxT("NavicoLocate %s addr %s = %s"), radar_address.FormatNetworkAddress(), #n, FormatPackedAddress(data->addr##n));
+#define LOG_ADDR_N(n)                                                                                  \
+  LOG_RECEIVE(wxT("radar_pi: NavicoLocate %s addr %s = %s"), radar_address.FormatNetworkAddress(), #n, \
+              FormatPackedAddress(data->addr##n));
 
     IF_LOG_AT_LEVEL(LOGLEVEL_RECEIVE) {
       LOG_ADDR_N(0);
@@ -332,9 +344,11 @@ void NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const uint
       LOG_ADDR_N(15);
       LOG_ADDR_N(16);
     }
-  } else {
-    LOG_BINARY_RECEIVE(wxT("NavicoLocate received unknown message"), report, len);
+    return true;
   }
+
+  LOG_BINARY_RECEIVE(wxT("radar_pi: NavicoLocate received unknown message"), report, len);
+  return false;
 }
 
 const NavicoRadarInfo *NavicoLocate::getRadarInfo(const NetworkAddress &radar_ip) {
@@ -361,9 +375,9 @@ void NavicoLocate::WakeRadar() {
           !::bind(sock, (struct sockaddr *)&s, sizeof(s)) &&
           sendto(sock, (const char *)WAKE_COMMAND, sizeof WAKE_COMMAND, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) ==
               sizeof WAKE_COMMAND) {
-        LOG_VERBOSE(wxT("Sent wake command to radar on %s"), m_interface_addr[i].FormatNetworkAddress());
+        LOG_VERBOSE(wxT("radar_pi: Sent wake command to radar on %s"), m_interface_addr[i].FormatNetworkAddress());
       } else {
-        wxLogError(wxT("Failed to send wake command to radars on %s"), m_interface_addr[i].FormatNetworkAddress());
+        wxLogError(wxT("radar_pi: Failed to send wake command to radars on %s"), m_interface_addr[i].FormatNetworkAddress());
       }
       closesocket(sock);
     }

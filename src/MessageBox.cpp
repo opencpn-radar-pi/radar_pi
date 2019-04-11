@@ -38,6 +38,7 @@ PLUGIN_BEGIN_NAMESPACE
 enum {  // process ID's
   ID_MSG_CLOSE,
   ID_MSG_HIDE,
+  ID_MSG_CHOOSE,
   ID_RADAR,
   ID_DATA,
   ID_HEADING,
@@ -51,6 +52,7 @@ IMPLEMENT_CLASS(MessageBox, wxDialog)
 BEGIN_EVENT_TABLE(MessageBox, wxDialog)
 
 EVT_CLOSE(MessageBox::OnClose)
+EVT_BUTTON(ID_MSG_CHOOSE, MessageBox::OnMessageChooseRadarClick)
 EVT_BUTTON(ID_MSG_CLOSE, MessageBox::OnMessageCloseButtonClick)
 EVT_BUTTON(ID_MSG_HIDE, MessageBox::OnMessageHideRadarClick)
 
@@ -134,6 +136,7 @@ void MessageBox::CreateControls() {
     m_radar_text[i]->SetFont(m_pi->m_font);
     ipSizer->Add(m_radar_text[i], 0, wxALL, BORDER);
     m_radar_box[i]->Hide();
+    m_radar_text[i]->Hide();
   }
 
   wxStaticBox *optionsBox = new wxStaticBox(this, wxID_ANY, _("Required OpenCPN option"));
@@ -196,17 +199,22 @@ void MessageBox::CreateControls() {
   m_statistics->SetFont(GetOCPNGUIScaledFont_PlugIn(_T("StatusBar")));
   m_info_sizer->Add(m_statistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
 
-  // The <Close> button
-  m_close_button = new wxButton(this, ID_MSG_CLOSE, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
-  m_message_sizer->Add(m_close_button, 0, wxALL, BORDER);
-  m_close_button->SetFont(m_pi->m_font);
-  m_message_sizer->Hide(m_close_button);
+  // The <Choose Radar> button
+  m_choose_button = new wxButton(this, ID_MSG_CHOOSE, _("Select radar types"), wxDefaultPosition, wxDefaultSize, 0);
+  m_choose_button->SetFont(m_pi->m_font);
+  m_message_sizer->Add(m_choose_button, 0, wxALL, BORDER);
 
   // The <Hide Radar> button
   m_hide_radar = new wxButton(this, ID_MSG_HIDE, _("&Hide Radar"), wxDefaultPosition, wxDefaultSize, 0);
-  m_message_sizer->Add(m_hide_radar, 0, wxALL, BORDER);
   m_hide_radar->SetFont(m_pi->m_font);
+  m_message_sizer->Add(m_hide_radar, 0, wxALL, BORDER);
   m_message_sizer->Hide(m_hide_radar);
+
+  // The <Close> button
+  m_close_button = new wxButton(this, ID_MSG_CLOSE, _("&Close"), wxDefaultPosition, wxDefaultSize, 0);
+  m_close_button->SetFont(m_pi->m_font);
+  m_message_sizer->Add(m_close_button, 0, wxALL, BORDER);
+  m_message_sizer->Hide(m_close_button);
 }
 
 void MessageBox::OnMove(wxMoveEvent &event) { event.Skip(); }
@@ -322,12 +330,15 @@ bool MessageBox::UpdateMessage(bool force) {
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     wxString info = m_pi->m_radar[r]->GetInfoStatus();
     m_radar_text[r]->SetLabel(info);
+    m_radar_text[r]->Show();
     m_radar_box[r]->SetLabel(m_pi->m_radar[r]->m_name);
     m_radar_box[r]->Show();
     m_radar_box[r]->Layout();
   }
   for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
+    m_radar_text[r]->Hide();
     m_radar_box[r]->Hide();
+    m_radar_box[r]->Layout();
   }
 
   wxString label;
@@ -357,7 +368,6 @@ bool MessageBox::UpdateMessage(bool force) {
         m_message_sizer->Hide(m_info_sizer);
         m_close_button->Hide();
         m_hide_radar->Show();
-        Layout();
         break;
 
       case SHOW_NO_NMEA:
@@ -380,6 +390,10 @@ bool MessageBox::UpdateMessage(bool force) {
   } else {
     LOG_DIALOG(wxT("radar_pi: no change"));
   }
+
+  m_nmea_sizer->Layout();
+  m_info_sizer->Layout();
+  m_message_sizer->Layout();
   m_top_sizer->Layout();
   Layout();
   Fit();
@@ -403,6 +417,8 @@ void MessageBox::OnMessageHideRadarClick(wxCommandEvent &event) {
   Hide();
   m_pi->NotifyRadarWindowViz();
 }
+
+void MessageBox::OnMessageChooseRadarClick(wxCommandEvent &event) { m_pi->MakeRadarSelection(); }
 
 void MessageBox::SetTrueHeadingInfo(wxString &msg) {
   wxString label;
