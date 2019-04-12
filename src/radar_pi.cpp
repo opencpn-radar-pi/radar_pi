@@ -245,6 +245,7 @@ int radar_pi::Init(void) {
 
   m_pMessageBox = new MessageBox;
   m_pMessageBox->Create(m_parent_window, this);
+  LOG_INFO(wxT(PLUGIN_VERSION_WITH_DATE));
 
   m_locator = 0;
 
@@ -422,7 +423,9 @@ wxString radar_pi::GetCommonName() { return wxT("Radar"); }
 
 wxString radar_pi::GetShortDescription() { return _("Radar PlugIn"); }
 
-wxString radar_pi::GetLongDescription() { return _("Radar PlugIn with support for Navico Broadband radars (and more soon)\n"); }
+wxString radar_pi::GetLongDescription() {
+  return _("Radar PlugIn with support for Garmin and Navico radars") + wxT("\n") + wxT(PLUGIN_VERSION_WITH_DATE);
+}
 
 void radar_pi::SetDefaults(void) {
   // This will be called upon enabling a PlugIn via the user Dialog.
@@ -430,7 +433,6 @@ void radar_pi::SetDefaults(void) {
 }
 
 bool radar_pi::EnsureRadarSelectionComplete(bool force) {
-  bool ret = false;
   bool any = false;
   size_t r;
 
@@ -1320,7 +1322,6 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
   }
   TimedControlUpdate();
   m_render_busy = false;
-  int total_rendering = (wxGetUTCTimeMillis() - now).GetLo();
   return true;
 }
 
@@ -1776,9 +1777,6 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     // Now set the expected position from the Kalmanfilter as the boat position
     m_ownship = m_expected_position.pos;
     m_last_fixed = m_expected_position;
-
-    double exp_course = rad2deg(
-        atan2(m_expected_position.dlon_dt, m_expected_position.dlat_dt * cos(m_expected_position.pos.lat / 360. * 2. * PI)));
   }
 }
 

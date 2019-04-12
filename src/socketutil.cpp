@@ -217,9 +217,6 @@ bool socketAddMembership(SOCKET socket, const NetworkAddress &interface_address,
     return true;
   }
 
-  wxLogMessage(wxT("radar_pi: multicast reception for %s on interface %s"), mcast_address.FormatNetworkAddressPort(),
-               interface_address.FormatNetworkAddress());
-
   // Hurrah! Success!
   return false;
 }

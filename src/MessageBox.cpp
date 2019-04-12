@@ -76,7 +76,7 @@ void MessageBox::Init() {
   CLEAR_STRUCT(m_radar_text);
 }
 
-bool MessageBox::Create(wxWindow *parent, radar_pi *pi, wxWindowID id, const wxString &caption, const wxPoint &pos) {
+bool MessageBox::Create(wxWindow *parent, radar_pi *pi) {
   m_parent = parent;
   m_pi = pi;
 
@@ -89,7 +89,8 @@ bool MessageBox::Create(wxWindow *parent, radar_pi *pi, wxWindowID id, const wxS
   wstyle |= wxSTAY_ON_TOP;  // FLOAT_ON_PARENT is broken on Mac, I know this is not optimal
 #endif
 
-  if (!wxDialog::Create(parent, id, caption, pos, wxDefaultSize, wstyle)) {
+  const wxString caption = wxT(PLUGIN_VERSION);
+  if (!wxDialog::Create(parent, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize, wstyle)) {
     return false;
   }
 

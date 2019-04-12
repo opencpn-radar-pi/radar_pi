@@ -142,7 +142,6 @@ void *NavicoLocate::Entry(void) {
       }
     }
 
-    wxLongLong start = wxGetUTCTimeMillis();
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
     if (r < 0) {
       int err = errno;
@@ -283,8 +282,6 @@ struct RadarReport_01B2 {
 #pragma pack(pop)
 
 bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const uint8_t *report, size_t len) {
-  time_t now = time(0);
-
   if (report[0] == 01 && report[1] == 0xB1) {  // Wake radar
     LOG_VERBOSE(wxT("radar_pi: Wake radar request from %s"), radar_address.FormatNetworkAddress());
   }

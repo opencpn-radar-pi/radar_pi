@@ -36,7 +36,8 @@
 PLUGIN_BEGIN_NAMESPACE
 
 OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, RadarType radar_type)
-    : wxDialog(parent, wxID_ANY, _("Radar Display Preferences"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE) {
+    : wxDialog(parent, wxID_ANY, _("Radar Display Preferences") + wxT(" ") + wxT(PLUGIN_VERSION), wxDefaultPosition, wxDefaultSize,
+               wxDEFAULT_DIALOG_STYLE) {
   wxString m_temp;
 
   m_parent = parent;

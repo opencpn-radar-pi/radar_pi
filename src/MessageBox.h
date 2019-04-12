@@ -83,9 +83,7 @@ class MessageBox : public wxDialog {
   void Init();
   bool Show(bool show = true);
 
-  bool Create(wxWindow *parent, radar_pi *pi, wxWindowID id = wxID_ANY, const wxString &caption = _("Radar"),
-              const wxPoint &pos = wxDefaultPosition);
-
+  bool Create(wxWindow *parent, radar_pi *pi);
   void CreateControls();
   bool UpdateMessage(bool force);  // Check whether message box needs to be visible, return true if shown
   void SetTrueHeadingInfo(wxString &msg);
