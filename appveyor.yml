@@ -42,7 +42,6 @@ before_build:
 
 build_script:
   - cmake --build . --target package --config release
-  # --target package doesn't work because of nsis not correctly installed
 
 artifacts:
   - path: 'build\*.exe'
@@ -56,8 +55,8 @@ deploy:
   artifact: installer,portable
   draft: true
   prerelease: true
+  tag: $(APPVEYOR_REPO_TAG_NAME)
   on:
-    appveyor_repo_tag: true # deploy on tag push only
-    configuration: Release  # Debug contains non-redist MS DLLs
+    APPVEYOR_REPO_TAG: true # deploy on tag push only
 
 
