@@ -1,63 +1,37 @@
 language: cpp
-os:
-- linux
-- osx
-dist: xenial
-before_install:
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-install:
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install build-essential
-  cmake gettext git-core wx-common libwxgtk3.0-dev libglu1-mesa-dev
-  libgtk2.0-dev wx3.0-headers libbz2-dev libtinyxml-dev libportaudio2 portaudio19-dev
-  libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev;
-  fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    brew install cairo libexif xz libarchive;
-    wget http://opencpn.navnux.org/build_deps/wx312_opencpn50_macos109.tar.xz;
-    tar xJf wx312_opencpn50_macos109.tar.xz -C /tmp;
-    export PATH="/usr/local/opt/gettext/bin:$PATH";
-    echo 'export PATH="/usr/local/opt/gettext/bin:$PATH"' >> ~/.bash_profile;
-    wget http://opencpn.navnux.org/build_deps/Packages.dmg;
-    hdiutil attach Packages.dmg;
-    sudo installer -pkg "/Volumes/Packages 1.2.5/Install Packages.pkg" -target "/";
-  fi
-script:
-- mkdir -p build
-- cd build
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cmake -DwxWidgets_CONFIG_EXECUTABLE=/tmp/wx312_opencpn50_macos109/bin/wx-config -DwxWidgets_CONFIG_OPTIONS="--prefix=/tmp/wx312_opencpn50_macos109" -DCMAKE_INSTALL_PREFIX=/tmp/opencpn -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 ..; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cmake ..; fi
-- make
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make create-pkg; ls -la; pwd; fi
+matrix:
+  include:
+  - env:
+    - OCPN_TARGET=xenial
+    dist: xenial
+    compiler: gcc
+    script:
+    - "./ci/travis-build-debian.sh"
+  - env:
+    - OCPN_TARGET=fedora
+    services:
+    - docker
+    script:
+    - "./ci/travis-build-fedora.sh"
+  - env:
+    - OCPN_TARGET=osx
+    os: osx
+    compiler: clang
+    script:
+    - "./ci/travis-build-osx.sh"
 
-env:
-  global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   #   via the "travis encrypt" command using the project repo's public key
-   - secure: "zBn9XMA29qdbS7/bb1mASfS8WdvHoQFXqIb9Q/5ry5Z3bl0VrRFTw+5/3UJ41VUScZyfQR7lKtsBYv6QyF8pI6p16HepH4OUX/Ixsc3aKsI5Xy8ypuj9AlCycwhVQQeWxTQ3N+OXm1aMuEcKxJLvvFd3Rc6BL7vq1gNFn2GsnFxZg61f+qpafTV7RB85y3yaWdw12KtICH2uFIhW/3BWoHweNoVlV2PjjIaFfm4qQnOxS1S+d+3OlCQ8B4hTEhIv1MvHmUNMB4oXhCaCSppJH6JKpuTT+7W5RpFMEkQecgBVcLYzdHICt9YjztThTMO3dNYs6vIeXOmKk0NEq61Eba/v10vS84pcAI9tkbnyswLF8QaYJ2qItBin1Wsn8mkWoO2/0fs/k7CIMPsr/omix4V2oAc3mV/nX+4xK4xRPUfrxaLNODsggJF0Bu9rDLQWk6bfq7TG5GpW3ch/CTszhP6ZbKtNUa4CmqEcD1T0IoXNWnP0j5l/+rIpSR3415F4V87Ms+n8ujZ0FM+Cak3PzkYv/kZa0T1hbdCPhGmu+TA7+T+QgYQQflwdSai080Qtrv5otjQFj+jbjV6y4+fCt7RrBjXW/xmFOXIr5VdRdawfPle5Cj8kpwrIYBsQbPLkTJKd7se2H8WD0dVf38GCBfd3ReaFrgM56YoOlL1g5Gc="
+notifications:
+  email: false
 
-before_install:
-  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+git:
+  depth: 10
 
-addons:
-  coverity_scan:
-    project:
-      name: "opencpn-radar-pi/radar_pi"
-      description: "Build submitted via Travis CI"
-    notification_email: kees@verruijt.net
-    build_command_prepend: mkdir -p build; cd build; cmake ..; make clean
-    build_command: make
-    branch_pattern: coverity_scan
-before_deploy:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export RELEASE_PKG_FILE=$(ls *.pkg); fi
 deploy:
-  provider: releases
-  api_key:
-    secure: "PwPgK+fiTtUo6fKF1e3gC3EwqCderV+utXHG/Lf7fXeXvNWFfBvSFXPfbo3lb9NschrbRlwyv5V56ci7hsWzhZCgwlnSrFf/7NWWTKJnWKsaTzdkI+q02pDUkhCed5jgEoDSbxQlf3Dc5ygxMK8gOeqbPZDJ5Z5N6PMtHQogjZu4yqabycC5Bwr2yFmkaNqZUygcKvwD3OOuIO7ysxSDCpuyvS7lHtkKRjlhAJZ/7c/nhZVz0CxUPgiCpzCfjMPF8svAz3uZtwkxGd7nK3cSzMscDrYXjiIP4H8fOiXVRxf7+hEWMor9hBzHcGQODnVI+pb/olgq0At9cEgM/KcUpqoCVvNCUSzNwTgzY61sm7Tu8gSPpW8A7N9wIEPmAmTMu3FWrFSnDJbR6+byrMhg12ahYa9ZBmIDG4TQXR9lmX6J/fUnAD8A7G2RdzPn2y5Jy22L93t77As0tcyPPaLgTpiMlDK7Pkup4LmwnIHNxlRo/zaCmKb/ypUU6QzsZgZU/SiQYOak2rtQ+BSou7qIH02nyjGSPSiPfOIzn1FJvJO8H/Sp/kxcV0BvMAGvwd/HlAmYHk3UwqxJiTYrtFCN2+/6LrxhH/vIIwQ2SbI3zqj3kFrUgcgZbReRi3pkSjqbszAoCXPhhct97AH2aTDZeLzJnykwU0mXjJeQFGHkpMQ="
-  file: "${RELEASE_PKG_FILE}"
+  provider: bintray
+  file: ci/bintray.js
+  user: leamas
   skip_cleanup: true
   on:
-    tags: true
-    all_branches: true
-    os: osx
-    repo: opencpn-radar-pi/radar_pi
+      all_branches: true
+  key:
+      secure: "IIpE1Bvvaiz96tlgdezt2awd9drdy9q4+0yCno8wlEOJuoEXxlkZCExj434KI7RbcCrXDK68IC6d7anhmoGyJ6OQSCnmbFvpTLzMR0YNVSm6oli1pKTPVzydr9DG7ZFTSzT37nKvNyyby74iWHAgtHSolW5UY3chBKE8iRiCrlGGvQzmUUxmXHHJYjzCWPk5OA2julZdR0qIDubAv3zCumL4b/F61JQk0SWNFiJUno+czCdGcBJDYVA5gfn/iNFmNJKyEBQ7hq946WSLuoX6AkBMryz3sJnUVMZFzIoHJz8FmuF+agyX9NQl1dwzrhF1pbaMJJpnx6m/j3Nm65bFSZA8m7nr0zxj+GfCePAcobmnfpwRPqhJMKUqNXGzYNnPdP725E3gVryBECvvAtxiEjql1qaIgTy75wANBO/80XwcF4OfaEHsyQp5gh6BknL5qNzKpAKA4g5oY6vbmz7yddI55yIIyRjnJnBbX3NfkauyJ5mHqz0ZU/h8tin/LFvOyAsPay/3WgLf8JsLsBIGydIAcMCNW/tEMf9L9wKLMOXMsOxFMDbABznb7AlIjUXTtWQJoNHaWaPTKwo8VXSQs+qHt+lf135HUMG0sFnLOzElDqsnbAj0P9MINaxWNetHM880LIZFPdJTW1pBAeoN8qHz7QyL0jhIKQ1kpdxpiD8="
