@@ -22,6 +22,14 @@ SET(VERSION_PATCH "4-beta2")
 SET(VERSION_DATE "2019-09-11")
 SET(OCPN_MIN_VERSION "ov50")
 
+SET(PACKAGE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+SET(PKG_RELEASE "1")
+SET(PKG_API_VERSION "1.16")
+SET(PKG_AUTHOR "David S Register")
+SET(PKG_NVR ${PACKAGE_NAME}-${PACKAGE_VERSION}-${PKG_RELEASE})
+
+
+
 INCLUDE("cmake/PluginConfigure.cmake")
 
 # For convenience we define the sources as a variable. You can add
@@ -168,5 +176,6 @@ ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_RADAR} ${SRC_NMEA0183} ${SRC_JSON} ${SR
 
 
 INCLUDE("cmake/PluginInstall.cmake")
+INCLUDE("cmake/PluginSetup.cmake")
 INCLUDE("cmake/PluginLocalization.cmake")
 INCLUDE("cmake/PluginPackage.cmake")
