@@ -179,3 +179,11 @@ INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginSetup.cmake")
 INCLUDE("cmake/PluginLocalization.cmake")
 INCLUDE("cmake/PluginPackage.cmake")
+
+set(PLUGIN_NAME radar-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
+message(STATUS "Build target: ${PKG_TARGET}-${PKG_TARGET_VERSION}")
+configure_file(
+  ${CMAKE_SOURCE_DIR}/radar-plugin.xml.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME}.xml
+)
+

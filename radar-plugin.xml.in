@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opencpn-plugin version="1">
+  <name> radar </name>
+  <version> ${PACKAGE_VERSION} </version>
+  <release> ${PKG_RELEASE} </release>
+  <summary> Overlays the radar picture on OpenCPN </summary>
+
+  <api-version> ${PKG_API_VERSION} </api-version>
+  <open-source> no </open-source>
+  <author> ${PKG_AUTHOR} </author>
+  <source> https://github.com/opencpn-radar-pi/radar_pi </source>
+
+  <description>
+This plugin overlays the radar picture on OpenCPN. A versatile plugin that
+can be easily adapted to most broadband radars. 
+
+Support for OpenCPN V 5.0 and multi canvas with simultaneous overlay of two
+different radars. Revised multi radar type architecture.  Adding a new radar
+only requires radar knowledge and can reuse the existing display technology.
+Support for four simultaneously active radars.  Multiple brands can be mixed.
+  </description>
+
+  <target>${PKG_TARGET}</target>
+  <target-version>${PKG_TARGET_VERSION}</target-version>
+  <tarball-url>
+    https://bintray.com/leamas/OpenCPN/download_file?file_path=${PKG_NVR}_${PKG_TARGET_NVR}.tar.gz
+  </tarball-url>
+  <info-url> https://opencpn.org/OpenCPN/plugins/radarPI.html </info-url>
+</opencpn-plugin>
+
