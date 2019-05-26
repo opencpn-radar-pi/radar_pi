@@ -8,6 +8,9 @@
 
 # define minimum cmake version
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.2)
+if (POLICY CMP0053)
+    CMAKE_POLICY(SET CMP0053 NEW)
+endif ()
 
 PROJECT(radar_pi)
 
@@ -15,7 +18,6 @@ SET(PACKAGE_NAME radar_pi)
 SET(VERBOSE_NAME Radar)
 SET(TITLE_NAME Radar)
 SET(CPACK_PACKAGE_CONTACT "kees@verruijt.net")
-#SET(CMAKE_BUILD_TYPE Debug)
 SET(VERSION_MAJOR "5")
 SET(VERSION_MINOR "0")
 SET(VERSION_PATCH "4-beta2")
@@ -28,6 +30,38 @@ SET(PKG_API_VERSION "1.16")
 SET(PKG_AUTHOR "David S Register")
 SET(PKG_NVR ${PACKAGE_NAME}-${PACKAGE_VERSION}-${PKG_RELEASE})
 
+include("cmake/PluginSetup.cmake")
+set(PLUGIN_NAME radar-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
+
+
+OPTION(OCPN_FLATPAK "Build flatpak plugin" OFF)
+
+
+if (OCPN_FLATPAK)
+    find_program(TAR NAMES gtar tar)
+    if (NOT TAR)
+        message(FATAL_ERROR "tar not found, required for OCPN_FLATPAK")
+    endif ()
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/radar-plugin.xml.in
+        ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME}.xml
+    )
+    add_custom_target(flatpak-build ALL
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/flatpak
+        COMMAND flatpak-builder --force-clean
+            ${CMAKE_CURRENT_BINARY_DIR}/app
+            org.opencpn.OpenCPN.Plugin.radar.yaml
+    )
+    add_custom_target("package")
+    add_custom_command(
+        TARGET package
+        COMMAND ${TAR}
+            -czf ${PKG_NVR}_${PKG_TARGET_NVR}.tar.gz
+            --transform 's|.*/files/|radar_pi-flatpak-${PACKAGE_VERSION}/|'
+            ${CMAKE_CURRENT_BINARY_DIR}/app/files
+    )
+    return ()
+endif()
 
 
 INCLUDE("cmake/PluginConfigure.cmake")
@@ -176,12 +210,10 @@ ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_RADAR} ${SRC_NMEA0183} ${SRC_JSON} ${SR
 
 
 INCLUDE("cmake/PluginInstall.cmake")
-INCLUDE("cmake/PluginSetup.cmake")
 INCLUDE("cmake/PluginLocalization.cmake")
 INCLUDE("cmake/PluginPackage.cmake")
 
-set(PLUGIN_NAME radar-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
-message(STATUS "Build target: ${PKG_TARGET}-${PKG_TARGET_VERSION}")
+message(STATUS "Build target: ${PLUGIN_NAME}")
 configure_file(
   ${CMAKE_SOURCE_DIR}/radar-plugin.xml.in
   ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME}.xml

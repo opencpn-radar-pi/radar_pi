@@ -8,6 +8,12 @@ matrix:
     script:
     - "./ci/travis-build-debian.sh"
   - env:
+    - OCPN_TARGET=flatpak
+    services:
+    - docker
+    script:
+    - "./ci/travis-build-flatpak.sh"
+  - env:
     - OCPN_TARGET=fedora
     services:
     - docker

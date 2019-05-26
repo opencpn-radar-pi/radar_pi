@@ -1,0 +1,22 @@
+id: org.opencpn.OpenCPN.Plugin.radar
+runtime: org.opencpn.OpenCPN
+runtime-version: stable
+sdk: org.freedesktop.Sdk//18.08
+build-extension: true
+separate-locales: false
+appstream-compose: false
+modules:
+  - name: radar
+    no-autogen: true
+    buildsystem: cmake
+    builddir: true
+    config-opts:
+        - -DCMAKE_INSTALL_PREFIX=/app/extensions/radar
+        - -DOCPN_FLATPAK=ON
+    build-options:
+        cflags: -fPIC
+        cxxflags: -fPIC
+    sources:
+       - type: git
+         url: https://github.com/opencpn-radar-pi/radar_pi.git
+         tag: v5.0.2-beta1
