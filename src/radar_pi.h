@@ -690,6 +690,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   bool m_predicted_position_initialised;
   ExtendedPosition m_expected_position;  // updated own position at time of last GPS update
   ExtendedPosition m_last_fixed;         // best estimate position at last measurement
+  wxGLContext *m_opencpn_gl_context;
  private:
   bool m_initialized;      // True if Init() succeeded and DeInit() not called yet.
   bool m_first_init;       // True in first Init() call.
@@ -698,7 +699,6 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   OpenGLMode m_opengl_mode;
   volatile bool m_opengl_mode_changed;
 
-  wxGLContext *m_opencpn_gl_context;
   bool m_opencpn_gl_context_broken;
 
   wxTimer *m_timer;

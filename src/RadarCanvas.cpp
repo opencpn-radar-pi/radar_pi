@@ -679,6 +679,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
 
   glPopAttrib();
   glPopMatrix();
+  SetCurrent(*m_pi->m_opencpn_gl_context);
   SwapBuffers();
 
 #ifdef CRASH
