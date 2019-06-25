@@ -37,6 +37,7 @@
 
 class GribRecordSet;
 
+
 void assign(char *dest, char *arrTest2)
 {
 	strcpy(dest, arrTest2);
@@ -57,6 +58,7 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& 
 	m_sNmeaTime = wxEmptyString;
 
 	m_bUsingWind = false;
+	m_bUsingFollow = false;
 	m_bInvalidPolarsFile = false;
 	m_bInvalidGribFile = false;
 	m_bShipDriverHasStarted = false;
@@ -81,7 +83,59 @@ void Dlg::SetNextStep(double inLat, double inLon, double inDir, double inSpd, do
 	PositionBearingDistanceMercator_Plugin(inLat, inLon, inDir, inSpd, &stepLat, &stepLon);
 }
 
+void Dlg::SetFollowStep(double inLat, double inLon, double inDir, double inSpd, double &outLat, double &outLon) {
+
+	double myBrg;
+
+	PositionBearingDistanceMercator_Plugin(inLat, inLon, inDir, inSpd, &stepLat, &stepLon);
+	DistanceBearingMercator_Plugin(nextLat, nextLon, stepLat, stepLon, &myBrg, &myDist);
+
+	if (myDist <= initSpd / 7200) {
+
+		//wxString sDist = wxString::Format(_T("%5.2f"), myDist);
+		//wxMessageBox(sDist, _T("Dist <15"));
+		//return;
+
+		stepLat = nextLat;
+		stepLon = nextLon;
+		
+		nextRoutePointIndex++;
+
+		if (nextRoutePointIndex > (countRoutePoints - 1)) {			
+			SetStop();
+			return;
+		}
+
+		for (std::vector<rtept>::iterator it = routePoints.begin(); it != routePoints.end(); it++) {
+
+			//wxString sIndex = wxString::Format(_T("%i"), (*it).index);
+			//wxMessageBox(sIndex, _T("index"));			
+
+			double value;
+
+			if ((*it).index == nextRoutePointIndex) {
+
+				(*it).lat.ToDouble(&value);
+				nextLat = value;
+
+				(*it).lon.ToDouble(&value);
+				nextLon = value;
+			}
+		}
+		DistanceBearingMercator_Plugin(nextLat, nextLon, stepLat, stepLon, &followDir, &myDist);
+		PositionBearingDistanceMercator_Plugin(stepLat, stepLon, followDir, inSpd, &stepLat, &stepLon);
+		myDir = followDir;
+
+	}
+	
+
+}
+
 void Dlg::OnStart(wxCommandEvent& event) {
+	StartDriving();
+}
+
+void Dlg::StartDriving() {
 
 	if (initLat == 0.0){
 		wxMessageBox(_("Please right-click and choose vessel start position"));
@@ -124,9 +178,18 @@ void Dlg::OnStart(wxCommandEvent& event) {
 	m_textCtrlRudderStbd->SetValue(_T(""));
 	m_textCtrlRudderPort->SetValue(_T(""));
 	initSpd = 0; // 5 knots
-	wxString myHeading = m_stHeading->GetLabel();
-	myHeading.ToDouble(&initDir);
-	myDir = initDir;
+
+	if (!m_bUsingFollow) {
+
+		wxString myHeading = m_stHeading->GetLabel();
+		myHeading.ToDouble(&initDir);
+		myDir = initDir;
+
+	}
+	else {
+		myDir = followDir;
+	}
+
 	dt = dt.Now();
 	GLL = createGLLSentence(dt, initLat, initLon, initSpd / 7200, initDir);
 	VTG = createVTGSentence(initSpd, initDir);
@@ -142,7 +205,20 @@ void Dlg::OnStart(wxCommandEvent& event) {
 
 void Dlg::OnStop(wxCommandEvent& event) {
 
+	SetStop();
+
+}
+
+
+void Dlg::SetStop() {
+
+	
+
 	if (m_Timer->IsRunning()) m_Timer->Stop();
+
+	if (m_bUsingFollow) {
+		wxMessageBox(_T("Vessel is stopping"));
+	}
 
 	m_SliderSpeed->SetValue(0);
 	m_SliderRudder->SetValue(30);
@@ -154,6 +230,7 @@ void Dlg::OnStop(wxCommandEvent& event) {
 	m_bUseStop = true;
 	m_bAuto = false;
 	m_bUsingWind = false;
+	m_bUsingFollow = false;
 
 	m_buttonWind->SetBackgroundColour(wxColour(0, 255, 0));
 
@@ -163,6 +240,7 @@ void Dlg::OnStop(wxCommandEvent& event) {
 	}
 	initSpd = 0.0;
 	m_stSpeed->SetLabel(wxString::Format(_T("%3.1f"), initSpd));
+
 }
 
 void Dlg::OnMidships(wxCommandEvent& event){
@@ -276,8 +354,16 @@ void Dlg::Notify()
 
 	m_stSpeed->SetLabel(wxString::Format(_T("%3.1f"), initSpd));
 
+	if (!m_bUsingFollow) {
+		
+		SetNextStep(initLat, initLon, myDir, initSpd / 7200, stepLat, stepLon);
+		
+	}
+	else {
+		SetFollowStep(initLat, initLon, myDir, initSpd / 7200, stepLat, stepLon);
+	}
 
-	SetNextStep(initLat, initLon, myDir, initSpd / 7200, stepLat, stepLon);
+	
 	wxString timeStamp = wxString::Format(_T("%i"), wxGetUTCTime());
 
 	wxString myNMEAais = myAIS->nmeaEncode(_T("18"), m_iMMSI, _T("5"), initSpd, initLat, initLon, myDir, myDir, _T("B"), timeStamp);
@@ -288,8 +374,12 @@ void Dlg::Notify()
 	wxTimeSpan mySeconds = wxTimeSpan::Seconds(ss);
 	wxDateTime mdt = dt.Add(mySeconds);
 
+    bool m_bGrib;
 	double wspd, wdir;
-	bool m_bGrib = GetGribSpdDir(dt, initLat, initLon, wspd, wdir);
+	if (m_bUsingWind) {
+		m_bGrib = GetGribSpdDir(dt, initLat, initLon, wspd, wdir);
+	}
+
 	if (m_bGrib && m_bUsingWind){
 		MWVA = createMWVASentence(initSpd, myDir, wdir, wspd);
 		MWVT = createMWVTSentence(initSpd, myDir, wdir, wspd);
@@ -995,6 +1085,8 @@ bool Dlg::GetGribSpdDir(wxDateTime dt, double lat, double lon, double &spd, doub
 
 void Dlg::OnWind(wxCommandEvent& event){
 
+	m_bUsingFollow = false;
+
 	if (initLat == 0.0){
 		wxMessageBox(_("Please right-click and choose vessel start position"));
 		return;
@@ -1005,6 +1097,8 @@ void Dlg::OnWind(wxCommandEvent& event){
 	}
 
 	m_SliderSpeed->SetValue(0);
+	double scale_factor = GetOCPNGUIToolScaleFactor_PlugIn();
+	JumpToPosition(initLat, initLon, scale_factor);
 
 	if (!m_bUsingWind){
 		m_buttonWind->SetBackgroundColour(wxColour(255, 0, 0));
@@ -1025,6 +1119,7 @@ void Dlg::OnWind(wxCommandEvent& event){
 	else {
 		m_buttonWind->SetBackgroundColour(wxColour(0, 255, 0));
 		m_bUsingWind = false;
+		
 	}
 }
 
@@ -1179,3 +1274,302 @@ double Dlg::AttributeDouble(TiXmlElement *e, const char *name, double def)
 		return def;
 	return d;
 }
+
+double Dlg::ReadNavobj() {
+
+	rte myRte;
+	rtept myRtePt;
+	vector<rtept> my_points;
+
+	my_routes.clear();		
+	
+	
+	wxString rte_lat;
+	wxString rte_lon;
+
+	wxString wpt_guid;
+
+	wxString navobj_path = Dlg::StandardPath();
+	wxString myFile = navobj_path + _T("navobj.xml");
+
+	//wxMessageBox(myFile);
+
+	TiXmlDocument doc;
+	wxString error;	
+
+	if (!doc.LoadFile(myFile.mb_str())) {
+		wxMessageBox(_T("Unable to read navobj file"));
+		return -1;
+	}
+	else {
+		TiXmlElement *root = doc.RootElement();
+		if (!strcmp(root->Value(), "rte")) {
+			wxMessageBox(_("Invalid xml file"));
+			return -1;
+		}
+
+		int i = 0;
+		int myIndex = 0;
+		bool nameFound = false;
+		
+		for (TiXmlElement* e = root->FirstChildElement(); e; e = e->NextSiblingElement(), i++) {
+			
+			if (!strcmp(e->Value(), "rte")) {	
+				nameFound = false;
+				my_points.clear();
+
+				for (TiXmlElement* f = e->FirstChildElement(); f; f = f->NextSiblingElement()) {
+					
+					
+					if (!strcmp(f->Value(), "name")) {
+						myRte.Name = wxString::FromUTF8(f->GetText());	
+						nameFound = true;						
+					}
+					
+
+					if (!strcmp(f->Value(), "rtept")) {
+					
+						rte_lat = wxString::FromUTF8(f->Attribute("lat"));
+						rte_lon = wxString::FromUTF8(f->Attribute("lon"));
+
+						myRtePt.lat = rte_lat;
+						myRtePt.lon = rte_lon;
+						//wxMessageBox(_T("lat: ") + rte_lat);
+						//wxMessageBox(_T("lon: ") + rte_lon);
+
+						//wxMessageBox(wxString::FromUTF8(f->Value()));			
+
+						for (TiXmlElement* i = f->FirstChildElement(); i; i = i->NextSiblingElement()) {
+
+							//wxMessageBox(wxString::FromUTF8(i->Value()));
+
+							if (!strcmp(i->Value(), "extensions")) {
+
+								for (TiXmlElement* j = i->FirstChildElement(); j; j = j->NextSiblingElement()) {
+
+									if (!strcmp(j->Value(), "opencpn:guid")) {
+										wpt_guid = wxString::FromUTF8(j->GetText());
+
+										myRtePt.m_GUID = wpt_guid;
+
+										//wxMessageBox(_T("guid: ") + wpt_guid);
+									}
+
+								}
+							}
+						}
+
+						myRtePt.index = myIndex;
+						myIndex++;
+						my_points.push_back(myRtePt);						
+					}					
+					
+				}
+				myRte.m_rteptList = my_points;
+				if (!nameFound) {
+					myRte.Name = _T("Unnamed");
+				}
+				my_routes.push_back(myRte);
+				myIndex = 0;
+				my_points.clear();
+			}
+
+			my_points.clear();
+			myIndex = 0;
+		}
+
+		
+	}
+
+
+	return -1;
+
+}
+
+void Dlg::OnFollow(wxCommandEvent& event) {
+
+	m_bUsingFollow = true;
+
+	ReadNavobj();
+
+	GetRouteDialog RouteDialog(this, -1, _("Select the route to follow"), wxPoint(200, 200), wxSize(300, 200), wxRESIZE_BORDER);
+
+	RouteDialog.dialogText->InsertColumn(0, _T(""), 0, wxLIST_AUTOSIZE);
+	RouteDialog.dialogText->SetColumnWidth(0, 290);
+	RouteDialog.dialogText->InsertColumn(1, _T(""), 0, wxLIST_AUTOSIZE);
+	RouteDialog.dialogText->SetColumnWidth(1, 0);
+	RouteDialog.dialogText->DeleteAllItems();
+	
+	int in = 0;
+	wxString routeName = _T("");
+	for (std::vector<rte>::iterator it = my_routes.begin(); it != my_routes.end(); it++) {
+		
+		routeName = (*it).Name;		
+
+		RouteDialog.dialogText->InsertItem(in, _T(""), -1);
+		RouteDialog.dialogText->SetItem(in, 0, routeName);
+		in++;
+	}
+	this->Fit();
+	this->Refresh();
+
+	long si = -1;
+	long itemIndex = -1;
+	int f = 0;
+
+	wxListItem     row_info;
+	wxString       cell_contents_string = wxEmptyString;
+	bool foundRoute;
+
+	if (RouteDialog.ShowModal() != wxID_OK) {
+		m_bUsingFollow = false;		
+	}
+	else {		
+
+		for (;;) {
+			itemIndex = RouteDialog.dialogText->GetNextItem(itemIndex,
+				wxLIST_NEXT_ALL,
+				wxLIST_STATE_SELECTED);
+
+			if (itemIndex == -1) break;
+
+			// Got the selected item index
+			if (RouteDialog.dialogText->IsSelected(itemIndex)) {
+				si = itemIndex;
+				foundRoute = true;
+				break;
+			}
+		}
+
+		if (foundRoute) {
+
+			// Set what row it is (m_itemId is a member of the regular wxListCtrl class)
+			row_info.m_itemId = si;
+			// Set what column of that row we want to query for information.
+			row_info.m_col = 0;
+			// Set text mask
+			row_info.m_mask = wxLIST_MASK_TEXT;
+
+			// Get the info and store it in row_info variable.   
+			RouteDialog.dialogText->GetItem(row_info);
+			// Extract the text out that cell
+			cell_contents_string = row_info.m_text;
+			//wxMessageBox(cell_contents_string);
+			double value;
+			rtept initPoint;
+
+			for (std::vector<rte>::iterator it = my_routes.begin(); it != my_routes.end(); it++) {
+				wxString routeName = (*it).Name;
+				if (routeName == cell_contents_string) {
+
+					routePoints = (*it).m_rteptList;
+
+					countRoutePoints = 0;
+					for (std::vector<rtept>::iterator it = routePoints.begin(); it != routePoints.end(); it++)
+						countRoutePoints++;
+
+					wxString xcountRoutePoints = wxString::Format(_T("%i"), countRoutePoints);
+					//wxMessageBox(xcountRoutePoints, _T("countRoutePoints"));
+
+					for (std::vector<rtept>::iterator it = routePoints.begin(); it != routePoints.end(); it++) {
+						
+						wxString sIndex = wxString::Format(_T("%i"), (*it).index);
+						//wxMessageBox(sIndex, _T("index"));
+
+						if ((*it).index == 0) {
+
+							(*it).lat.ToDouble(&value);
+							initLat = value;
+
+							(*it).lon.ToDouble(&value);
+							initLon = value;
+
+							nextRoutePointIndex = 1;
+						}
+
+						if ((*it).index == nextRoutePointIndex) {
+
+							(*it).lat.ToDouble(&value);
+							nextLat = value;
+
+							(*it).lon.ToDouble(&value);
+							nextLon = value;
+
+							DistanceBearingMercator_Plugin(nextLat, nextLon, initLat, initLon, &followDir, &myDist);
+
+						}
+
+
+					}
+				}		
+			}
+		
+		}
+		else {	
+			wxMessageBox(_T("Route not found"));
+			m_bUsingFollow = false;
+			return;
+		}
+		
+		double scale_factor = GetOCPNGUIToolScaleFactor_PlugIn();
+		JumpToPosition(initLat, initLon, scale_factor);
+		StartDriving();
+	}
+
+}
+
+wxString Dlg::StandardPath()
+{
+	wxStandardPathsBase& std_path = wxStandardPathsBase::Get();
+	wxString s = wxFileName::GetPathSeparator();
+
+#if defined(__WXMSW__)
+	wxString stdPath = std_path.GetConfigDir();
+#elif defined(__WXGTK__) || defined(__WXQT__)
+	wxString stdPath = std_path.GetUserDataDir();
+#elif defined(__WXOSX__)
+	wxString stdPath = (std_path.GetUserConfigDir() + s + _T("opencpn"));
+#endif
+
+
+#ifdef __WXOSX__
+	// Compatibility with pre-OCPN-4.2; move config dir to
+	// ~/Library/Preferences/opencpn if it exists
+	wxString oldPath = (std_path.GetUserConfigDir() + s);
+	if (wxDirExists(oldPath) && !wxDirExists(stdPath)) {
+		wxLogMessage("ShipDriver_pi: moving config dir %s to %s", oldPath, stdPath);
+		wxRenameFile(oldPath, stdPath);
+	}
+#endif
+
+	stdPath += s; // is this necessary?
+	return stdPath;
+}
+
+GetRouteDialog::GetRouteDialog(wxWindow * parent, wxWindowID id, const wxString & title,
+	const wxPoint & position, const wxSize & size, long style)
+	: wxDialog(parent, id, title, position, size, style)
+{
+
+	wxString dimensions = wxT(""), s;
+	wxPoint p;
+	wxSize  sz;
+
+	sz.SetWidth(size.GetWidth() - 20);
+	sz.SetHeight(size.GetHeight() - 70);
+
+	p.x = 6; p.y = 2;
+
+	dialogText = new wxListView(this, wxID_ANY, p, sz, wxLC_NO_HEADER | wxLC_REPORT | wxLC_SINGLE_SEL, wxDefaultValidator, wxT(""));
+
+	wxFont *pVLFont = wxTheFontList->FindOrCreateFont(12, wxFONTFAMILY_SWISS, wxNORMAL, wxFONTWEIGHT_NORMAL,
+		FALSE, wxString(_T("Arial")));
+	dialogText->SetFont(*pVLFont);
+
+	p.y += sz.GetHeight() + 10;
+
+	p.x += 30;
+	wxButton * b = new wxButton(this, wxID_OK, _("OK"), p, wxDefaultSize);
+	p.x += 140;
+	wxButton * c = new wxButton(this, wxID_CANCEL, _("Cancel"), p, wxDefaultSize);
+};

@@ -66,6 +66,7 @@ class ShipDriverBase : public wxDialog
 		virtual void OnStop( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStandby( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnAuto( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnFollow(wxCommandEvent& event) { event.Skip(); }
 		virtual void OnWind( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnMinus1( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnMinus10( wxCommandEvent& event ) { event.Skip(); }

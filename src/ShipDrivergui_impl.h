@@ -48,6 +48,7 @@
 #include "tinystr.h"
 #include <wx/filedlg.h>
 #include "ocpn_plugin.h"
+#include <wx/listctrl.h>
 
 #ifdef __WXOSX__
 #define SHIPDRIVER_DLG_STYLE wxCLOSE_BOX|wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxSTAY_ON_TOP
@@ -57,10 +58,33 @@
 using namespace std;
 
 class ShipDriver_pi;
+//class rte_table;
+
+//lass rtept;
 
 // ----------------------------------------------------------------------------
 // a simple thread
 // ----------------------------------------------------------------------------
+
+class rtept
+{
+public:
+
+	wxString Name, m_GUID;
+	int index;
+	wxString lat, lon;
+
+};
+
+class rte
+{
+public:
+
+	wxString Name;
+
+	vector<rtept> m_rteptList;
+
+};
 
 
 
@@ -112,6 +136,9 @@ public:
 
 	double initLat;
 	double initLon;
+	double nextLat;
+	double nextLon;
+
 	double stepLat;
 	double stepLon;
 	AisMaker* myAIS;
@@ -129,7 +156,15 @@ protected:
 private:
 	void Notify();
 	wxString MWD, VHW, MWVA, MWVT, GLL, VTG, HDT;
-	double initDir, initSpd, initRudder, myDir;
+	double initDir, initSpd, initRudder, myDir, myDist, followStepDistance;
+
+	vector<rte> my_routes;
+	vector<rtept> routePoints;
+
+	int nextRoutePointIndex;
+	double nextRoutePoint;
+	double followDir;
+	int countRoutePoints;
 
 	wxDateTime dt;
 	void SetInterval(int interval);
@@ -149,12 +184,16 @@ private:
 	wxString ParseNMEASentence(wxString sentence, wxString id);
 
 	void SetNextStep(double inLat, double inLon, double inDir, double inSpd, double &outLat, double &outLon);
+	void SetFollowStep(double inLat, double inLon, double inDir, double inSpd, double &outLat, double &outLon);
 
 	void OnStart(wxCommandEvent& event);
 	void OnStop(wxCommandEvent& event);
 	void OnClose(wxCloseEvent& event);
 
-	void OnTest(wxCommandEvent& event);
+	void SetStop();
+	void StartDriving();
+
+	void OnFollow(wxCommandEvent& event);
 	int mainTest(int argc, char *argv[]);
 	//void SendAIS(double cse, double spd, double lat, double lon);
 
@@ -182,11 +221,37 @@ private:
 	double AttributeDouble(TiXmlElement *e, const char *name, double def);
 	double ReadPolars(wxString filename, double windangle, double windspeed);
 
+	double ReadNavobj();
+	static wxString StandardPath();
+
 	bool m_bUsingWind;
+	bool m_bUsingFollow;
 	bool m_bInvalidPolarsFile;
 	bool m_bInvalidGribFile;
 	bool m_bShipDriverHasStarted;
 
 };
 
+class GetRouteDialog : public wxDialog
+{
+public:
+
+	GetRouteDialog(wxWindow * parent, wxWindowID id, const wxString & title,
+		const wxPoint & pos = wxDefaultPosition,
+		const wxSize & size = wxDefaultSize,
+		long style = wxDEFAULT_DIALOG_STYLE);
+
+	wxListView * dialogText;
+	wxString GetText();
+
+private:
+
+	void OnOk(wxCommandEvent & event);
+
+};
+
+
 #endif
+
+
+

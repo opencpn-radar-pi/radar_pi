@@ -15,7 +15,7 @@ SET(TITLE_NAME ShipDriver)
 SET(CPACK_PACKAGE_CONTACT "Mike Rossiter")
 
 SET(VERSION_MAJOR "2")
-SET(VERSION_MINOR "1")
+SET(VERSION_MINOR "2")
 
 SET(NAME_SUFFIX "ov50")
 
@@ -59,7 +59,7 @@ SET(SRC_ShipDriver
 	    src/tinyxml.h
 		src/tinyxml.cpp
 	    src/tinyxmlerror.cpp
-		src/tinyxmlparser.cpp
+		src/tinyxmlparser.cpp		
 	)
 
 IF(WIN32)
