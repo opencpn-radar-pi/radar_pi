@@ -248,35 +248,43 @@ void Dlg::OnMidships(wxCommandEvent& event){
 }
 
 void Dlg::OnMinus10(wxCommandEvent& event){
-	if (m_bAuto){
-		myDir -= 10;
-		wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
-		m_stHeading->SetLabel(mystring);
-	}
+	
+	m_bAuto = false;
+	GoToStandby();
+	myDir -= 10;
+	wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
+	m_stHeading->SetLabel(mystring);
+	
 }
 
 void Dlg::OnPlus10(wxCommandEvent& event){
-	if (m_bAuto){
-		myDir += 10;
-		wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
-		m_stHeading->SetLabel(mystring);
-	}
+	
+	m_bAuto = false;
+	GoToStandby();
+	myDir += 10;
+	wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
+	m_stHeading->SetLabel(mystring);
+	
 }
 
 void Dlg::OnMinus1(wxCommandEvent& event){
-	if (m_bAuto){
-		myDir -= 1;
-		wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
-		m_stHeading->SetLabel(mystring);
-	}
+	
+	m_bAuto = false;
+	GoToStandby();
+	myDir -= 1;
+	wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
+	m_stHeading->SetLabel(mystring);
+	
 }
 
 void Dlg::OnPlus1(wxCommandEvent& event){
-	if (m_bAuto){
-		myDir += 1;
-		wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
-		m_stHeading->SetLabel(mystring);
-	}
+	
+	m_bAuto = false;
+	GoToStandby();
+	myDir += 1;
+	wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
+	m_stHeading->SetLabel(mystring);
+	
 }
 
 void Dlg::OnAuto(wxCommandEvent& event){
@@ -290,13 +298,18 @@ void Dlg::OnAuto(wxCommandEvent& event){
 
 void Dlg::OnStandby(wxCommandEvent& event){
 
+	GoToStandby();
+}
+
+void Dlg::GoToStandby() {
+
 	m_bAuto = false;
 
 	m_buttonStandby->SetBackgroundColour(wxColour(0, 255, 0));
 	m_buttonAuto->SetBackgroundColour(wxColour(255, 255, 255));
 	Refresh();
-}
 
+}
 
 void Dlg::OnClose(wxCloseEvent& event)
 {
@@ -305,6 +318,10 @@ void Dlg::OnClose(wxCloseEvent& event)
 }
 void Dlg::Notify()
 {
+	wxString mySentence;
+	plugin->SetNMEASentence(mySentence);
+	
+
 	initSpd = m_SliderSpeed->GetValue();
 	initRudder = m_SliderRudder->GetValue();
 

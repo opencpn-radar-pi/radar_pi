@@ -43,6 +43,7 @@
 #include "wx/jsonwriter.h"
 #include <wx/datetime.h>
 #include "GribRecordSet.h"
+#include <wx/tokenzr.h>
 
 // Define minimum and maximum versions of the grib plugin supported
 #define GRIB_MAX_MAJOR 4
@@ -52,7 +53,7 @@
 
 
 #define     PLUGIN_VERSION_MAJOR    2
-#define     PLUGIN_VERSION_MINOR    2
+#define     PLUGIN_VERSION_MINOR    3
 
 #define     MY_API_VERSION_MAJOR    1
 #define     MY_API_VERSION_MINOR    6
@@ -118,6 +119,7 @@ public:
 //    The override PlugIn Methods
 	  void OnContextMenuItemCallback(int id);
 	  void SetCursorLatLon(double lat, double lon);
+	  void SetNMEASentence(wxString &sentence);
 
 //    Other public methods
       void SetShipDriverDialogX         (int x){ m_hr_dialog_x = x;};
@@ -144,6 +146,7 @@ public:
 	  double m_tr_dir;
 
 	  wxString StandardPath();
+	  
 	  
 private:
 

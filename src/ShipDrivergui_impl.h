@@ -148,7 +148,10 @@ public:
 	bool m_bUseFile;
 	wxString m_tMMSI;
 
+	bool m_bAuto;
 	wxDateTime m_GribTimelineTime;
+
+	double myDir;
 
 protected:
 	bool m_bNeedsGrib;
@@ -156,7 +159,7 @@ protected:
 private:
 	void Notify();
 	wxString MWD, VHW, MWVA, MWVT, GLL, VTG, HDT;
-	double initDir, initSpd, initRudder, myDir, myDist, followStepDistance;
+	double initDir, initSpd, initRudder, myDist, followStepDistance;
 
 	vector<rte> my_routes;
 	vector<rtept> routePoints;
@@ -202,10 +205,13 @@ private:
 	void OnPlus10(wxCommandEvent& event);
 	void OnMinus1(wxCommandEvent& event);
 	void OnPlus1(wxCommandEvent& event);
+	
 	void OnStandby(wxCommandEvent& event);
+	void GoToStandby();
+
 	void OnAuto(wxCommandEvent& event);
 
-	bool m_bAuto;
+	
 	long m_iMMSI;
 
 	virtual void Lock() { routemutex.Lock(); }
