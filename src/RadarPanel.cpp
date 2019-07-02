@@ -55,8 +55,8 @@ bool RadarPanel::Create() {
                            .BottomDockable(false)
                            .RightDockable(false)
                            .LeftDockable(false)
-                           .CloseButton(true)
-                           .Hide();
+                           .CloseButton(true);
+                          // .Hide(); don't hide at creation, does not work on Mac
 
   m_sizer = new wxBoxSizer(wxHORIZONTAL);
 
