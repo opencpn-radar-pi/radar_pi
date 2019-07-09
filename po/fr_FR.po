@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-02-10 12:43+0000\n"
-"PO-Revision-Date: 2018-01-08 16:56-0500\n"
-"Last-Translator: nohal <pavel@kalian.cz>\n"
+"PO-Revision-Date: 2019-07-06 17:07\n"
+"Last-Translator: Pavel Kalian (nohal)\n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
@@ -15,116 +15,129 @@ msgstr ""
 "X-Crowdin-Project: opencpn\n"
 "X-Crowdin-Language: fr\n"
 "X-Crowdin-File: /plugins/shipdriver_pi/po/ShipDriver_pi.pot\n"
-#
-msgid "             Speed: "
-msgstr ""
-#
-#, fuzzy
-msgid "        Kts"
-msgstr "         Noeuds"
-#
-#, fuzzy
-msgid "  Heading:  "
-msgstr "Direction : "
-#
-msgid "+1"
-msgstr ""
-#
-msgid "+10"
-msgstr ""
-#
-msgid "-1"
-msgstr ""
-#
-msgid "-10"
-msgstr ""
-#
-msgid "0"
-msgstr ""
-#
-msgid "000"
-msgstr ""
-#
-msgid "100"
-msgstr ""
-#
-msgid "AIS"
-msgstr ""
-#
-msgid "Almost a simulator"
-msgstr "Presque un simulateur"
-#
-msgid "Auto"
-msgstr "Auto"
-#
-msgid "Autopilot Control"
-msgstr ""
-#
-msgid "Hand Steering"
-msgstr ""
-#
-msgid "MMSI"
-msgstr ""
-#
-msgid "MMSI must be a number, please change in Preferences"
-msgstr ""
-#
-msgid "Midships"
-msgstr ""
-#
-msgid "Please right-click and choose vessel start position"
-msgstr ""
-"S’il vous plaît, faites un clic droit & choisissez la position de départ du "
-"bateau"
-#
-msgid "Preferences"
-msgstr ""
-#
-msgid "Save to file"
-msgstr ""
-#
-msgid "Select Vessel Start Position"
-msgstr "Choisissez la position de départ du bateau"
-#
+
+#: src/ShipDriver_pi.cpp:125 src/ShipDriver_pi.cpp:128 src/ShipDriver_pi.cpp:212
+#: src/ShipDrivergui_impl.h:80
 msgid "ShipDriver"
 msgstr "Piloter le bateau"
-#
+
+#: src/ShipDriver_pi.cpp:134
+msgid "Select Vessel Start Position"
+msgstr "Choisissez la position de départ du bateau"
+
+#: src/ShipDriver_pi.cpp:218
 msgid "ShipDriver player"
 msgstr "Exécuter Shipdriver"
-#
-msgid "Speed Control"
-msgstr ""
-#
-msgid "Start"
-msgstr "Départ"
-#
-msgid "Stby"
-msgstr ""
-#
-msgid "Stop"
-msgstr ""
-#
-#, fuzzy
+
+#: src/ShipDriver_pi.cpp:223
+msgid "Almost a simulator"
+msgstr "Presque un simulateur"
+
+#: src/ShipDrivergui.h:105
+msgid "Preferences"
+msgstr "Préférences"
+
+#: src/ShipDrivergui.cpp:50
 msgid "Tiller Control"
 msgstr "Contrôle de la barre"
-#
-msgid "Transmit"
-msgstr ""
-#
+
+#: src/ShipDrivergui.cpp:71
 msgid "|"
-msgstr ""
-#
-#
-#
-#~ msgid "Emerg. Stop"
-#~ msgstr "Arrêt d'urgence"
-#
-#
-#
-#~ msgid "Engine control"
-#~ msgstr "Contrôle du moteur"
-#
-#
-#
-#~ msgid "Standby"
-#~ msgstr "Mise en veille"
+msgstr "|"
+
+#: src/ShipDrivergui.cpp:74
+msgid "Midships"
+msgstr "Milieu bateau"
+
+#: src/ShipDrivergui.cpp:95
+msgid "Start"
+msgstr "Départ"
+
+#: src/ShipDrivergui.cpp:102
+msgid "Stop"
+msgstr "Stop"
+
+#: src/ShipDrivergui.cpp:120
+msgid "  Heading:  "
+msgstr "  Cap M:  "
+
+#: src/ShipDrivergui.cpp:126
+msgid "000"
+msgstr "000"
+
+#: src/ShipDrivergui.cpp:132
+msgid "             Speed: "
+msgstr "             Vitesse : "
+
+#: src/ShipDrivergui.cpp:138 src/ShipDrivergui.cpp:165
+msgid "0"
+msgstr "0"
+
+#: src/ShipDrivergui.cpp:144
+msgid "        Kts"
+msgstr "        Noeuds"
+
+#: src/ShipDrivergui.cpp:175
+msgid "Speed Control"
+msgstr "Commande au moteur"
+
+#: src/ShipDrivergui.cpp:179
+msgid "100"
+msgstr "100"
+
+#: src/ShipDrivergui.cpp:199
+msgid "Stby"
+msgstr "En attente"
+
+#: src/ShipDrivergui.cpp:202
+msgid "Hand Steering"
+msgstr "Barrer à la main"
+
+#: src/ShipDrivergui.cpp:207
+msgid "Auto"
+msgstr "Auto"
+
+#: src/ShipDrivergui.cpp:210
+msgid "Autopilot Control"
+msgstr "Commande du pilote automatique"
+
+#: src/ShipDrivergui.cpp:225
+msgid "-1"
+msgstr "-1"
+
+#: src/ShipDrivergui.cpp:231
+msgid "-10"
+msgstr "-10"
+
+#: src/ShipDrivergui.cpp:237
+msgid "+10"
+msgstr "+10"
+
+#: src/ShipDrivergui.cpp:243
+msgid "+1"
+msgstr "+1"
+
+#: src/ShipDrivergui.cpp:295
+msgid "AIS"
+msgstr "AIS"
+
+#: src/ShipDrivergui.cpp:302
+msgid "Transmit"
+msgstr "Transmettre"
+
+#: src/ShipDrivergui.cpp:305
+msgid "Save to file"
+msgstr "Sauver dans un fichier"
+
+#: src/ShipDrivergui.cpp:312
+msgid "MMSI"
+msgstr "MMSI"
+
+#: src/ShipDrivergui_impl.cpp:85
+msgid "Please right-click and choose vessel start position"
+msgstr "S’il vous plaît, faites un clic droit (sur la carte) & choisissez la position de départ du bateau"
+
+#: src/ShipDrivergui_impl.cpp:90
+msgid "MMSI must be a number, please change in Preferences"
+msgstr "Le MMSI doit être un nombre. S’il vous plaît changer dans les préférences"
+

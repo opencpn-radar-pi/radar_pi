@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-02-10 12:43+0000\n"
-"PO-Revision-Date: 2018-01-08 16:56-0500\n"
-"Last-Translator: nohal <pavel@kalian.cz>\n"
+"PO-Revision-Date: 2019-05-17 00:43\n"
+"Last-Translator: Pavel Kalian (nohal)\n"
 "Language-Team: Dutch\n"
 "Language: nl_NL\n"
 "MIME-Version: 1.0\n"
@@ -15,96 +15,129 @@ msgstr ""
 "X-Crowdin-Project: opencpn\n"
 "X-Crowdin-Language: nl\n"
 "X-Crowdin-File: /plugins/shipdriver_pi/po/ShipDriver_pi.pot\n"
-#
-msgid "             Speed: "
-msgstr ""
-#
-msgid "        Kts"
-msgstr ""
-#
-msgid "  Heading:  "
-msgstr ""
-#
-msgid "+1"
-msgstr ""
-#
-msgid "+10"
-msgstr ""
-#
-msgid "-1"
-msgstr ""
-#
-msgid "-10"
-msgstr ""
-#
-msgid "0"
-msgstr ""
-#
-msgid "000"
-msgstr ""
-#
-msgid "100"
-msgstr ""
-#
-msgid "AIS"
-msgstr ""
-#
-msgid "Almost a simulator"
-msgstr ""
-#
-msgid "Auto"
-msgstr ""
-#
-msgid "Autopilot Control"
-msgstr ""
-#
-msgid "Hand Steering"
-msgstr ""
-#
-msgid "MMSI"
-msgstr ""
-#
-msgid "MMSI must be a number, please change in Preferences"
-msgstr ""
-#
-msgid "Midships"
-msgstr ""
-#
-msgid "Please right-click and choose vessel start position"
-msgstr ""
-#
-msgid "Preferences"
-msgstr ""
-#
-msgid "Save to file"
-msgstr ""
-#
-msgid "Select Vessel Start Position"
-msgstr ""
-#
+
+#: src/ShipDriver_pi.cpp:125 src/ShipDriver_pi.cpp:128 src/ShipDriver_pi.cpp:212
+#: src/ShipDrivergui_impl.h:80
 msgid "ShipDriver"
-msgstr ""
-#
+msgstr "ScheepBestuurder"
+
+#: src/ShipDriver_pi.cpp:134
+msgid "Select Vessel Start Position"
+msgstr "Selecteer startpositie"
+
+#: src/ShipDriver_pi.cpp:218
 msgid "ShipDriver player"
-msgstr ""
-#
-msgid "Speed Control"
-msgstr ""
-#
-msgid "Start"
-msgstr ""
-#
-msgid "Stby"
-msgstr ""
-#
-msgid "Stop"
-msgstr ""
-#
+msgstr "Roerganger-speler"
+
+#: src/ShipDriver_pi.cpp:223
+msgid "Almost a simulator"
+msgstr "Bijna een simulator"
+
+#: src/ShipDrivergui.h:105
+msgid "Preferences"
+msgstr "Voorkeuren"
+
+#: src/ShipDrivergui.cpp:50
 msgid "Tiller Control"
-msgstr ""
-#
-msgid "Transmit"
-msgstr ""
-#
+msgstr "Helmstokbesturing"
+
+#: src/ShipDrivergui.cpp:71
 msgid "|"
-msgstr ""
+msgstr "|"
+
+#: src/ShipDrivergui.cpp:74
+msgid "Midships"
+msgstr "Midscheeps"
+
+#: src/ShipDrivergui.cpp:95
+msgid "Start"
+msgstr "Start"
+
+#: src/ShipDrivergui.cpp:102
+msgid "Stop"
+msgstr "Stop"
+
+#: src/ShipDrivergui.cpp:120
+msgid "  Heading:  "
+msgstr "  Koers:  "
+
+#: src/ShipDrivergui.cpp:126
+msgid "000"
+msgstr "000"
+
+#: src/ShipDrivergui.cpp:132
+msgid "             Speed: "
+msgstr "             Vaart: "
+
+#: src/ShipDrivergui.cpp:138 src/ShipDrivergui.cpp:165
+msgid "0"
+msgstr "0"
+
+#: src/ShipDrivergui.cpp:144
+msgid "        Kts"
+msgstr "        kn"
+
+#: src/ShipDrivergui.cpp:175
+msgid "Speed Control"
+msgstr "Vaartregeling"
+
+#: src/ShipDrivergui.cpp:179
+msgid "100"
+msgstr "100"
+
+#: src/ShipDrivergui.cpp:199
+msgid "Stby"
+msgstr "Stand by"
+
+#: src/ShipDrivergui.cpp:202
+msgid "Hand Steering"
+msgstr "Handbesturing"
+
+#: src/ShipDrivergui.cpp:207
+msgid "Auto"
+msgstr "Auto"
+
+#: src/ShipDrivergui.cpp:210
+msgid "Autopilot Control"
+msgstr "Autopilot-sturing"
+
+#: src/ShipDrivergui.cpp:225
+msgid "-1"
+msgstr "-1"
+
+#: src/ShipDrivergui.cpp:231
+msgid "-10"
+msgstr "-10"
+
+#: src/ShipDrivergui.cpp:237
+msgid "+10"
+msgstr "+10"
+
+#: src/ShipDrivergui.cpp:243
+msgid "+1"
+msgstr "+1"
+
+#: src/ShipDrivergui.cpp:295
+msgid "AIS"
+msgstr "AIS"
+
+#: src/ShipDrivergui.cpp:302
+msgid "Transmit"
+msgstr "Zenden"
+
+#: src/ShipDrivergui.cpp:305
+msgid "Save to file"
+msgstr "Opslaan in bestand"
+
+#: src/ShipDrivergui.cpp:312
+msgid "MMSI"
+msgstr "MMSI"
+
+#: src/ShipDrivergui_impl.cpp:85
+msgid "Please right-click and choose vessel start position"
+msgstr "Rechts klikken en startpositie schip kiezen"
+
+#: src/ShipDrivergui_impl.cpp:90
+msgid "MMSI must be a number, please change in Preferences"
+msgstr "MMSI moet een getal zijn. Past dit aan in Voorkeuren."
+

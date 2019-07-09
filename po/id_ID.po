@@ -3,141 +3,141 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-02-10 12:43+0000\n"
-"PO-Revision-Date: 2018-03-03 08:22-0500\n"
+"PO-Revision-Date: 2018-03-16 19:12-0400\n"
 "Last-Translator: nohal <pavel@kalian.cz>\n"
-"Language-Team: Arabic\n"
-"Language: ar_SA\n"
+"Language-Team: Indonesian\n"
+"Language: id_ID\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: crowdin.com\n"
 "X-Crowdin-Project: opencpn\n"
-"X-Crowdin-Language: ar\n"
+"X-Crowdin-Language: id\n"
 "X-Crowdin-File: /plugins/shipdriver_pi/po/ShipDriver_pi.pot\n"
 
 #: src/ShipDriver_pi.cpp:125 src/ShipDriver_pi.cpp:128 src/ShipDriver_pi.cpp:212
 #: src/ShipDrivergui_impl.h:80
 msgid "ShipDriver"
-msgstr ""
+msgstr "NakhodaKapal"
 
 #: src/ShipDriver_pi.cpp:134
 msgid "Select Vessel Start Position"
-msgstr ""
+msgstr "Pilih posisi keberangkatan kapal"
 
 #: src/ShipDriver_pi.cpp:218
 msgid "ShipDriver player"
-msgstr ""
+msgstr "Pemain ShipDriver"
 
 #: src/ShipDriver_pi.cpp:223
 msgid "Almost a simulator"
-msgstr ""
+msgstr "Simulator hampir selesai"
 
 #: src/ShipDrivergui.h:105
 msgid "Preferences"
-msgstr ""
+msgstr "Preferensi"
 
 #: src/ShipDrivergui.cpp:50
 msgid "Tiller Control"
-msgstr ""
+msgstr "Pengontrol kemudi perahu"
 
 #: src/ShipDrivergui.cpp:71
 msgid "|"
-msgstr ""
+msgstr "|"
 
 #: src/ShipDrivergui.cpp:74
 msgid "Midships"
-msgstr ""
+msgstr "TengahKapal"
 
 #: src/ShipDrivergui.cpp:95
 msgid "Start"
-msgstr ""
+msgstr "Mulai"
 
 #: src/ShipDrivergui.cpp:102
 msgid "Stop"
-msgstr ""
+msgstr "Berhenti"
 
 #: src/ShipDrivergui.cpp:120
 msgid "  Heading:  "
-msgstr ""
+msgstr "  Bagian atas:  "
 
 #: src/ShipDrivergui.cpp:126
 msgid "000"
-msgstr ""
+msgstr "000"
 
 #: src/ShipDrivergui.cpp:132
 msgid "             Speed: "
-msgstr ""
+msgstr "             Kecepatan: "
 
 #: src/ShipDrivergui.cpp:138 src/ShipDrivergui.cpp:165
 msgid "0"
-msgstr ""
+msgstr "0"
 
 #: src/ShipDrivergui.cpp:144
 msgid "        Kts"
-msgstr ""
+msgstr "        Kts"
 
 #: src/ShipDrivergui.cpp:175
 msgid "Speed Control"
-msgstr ""
+msgstr "Mengontrol kecepatan"
 
 #: src/ShipDrivergui.cpp:179
 msgid "100"
-msgstr ""
+msgstr "100"
 
 #: src/ShipDrivergui.cpp:199
 msgid "Stby"
-msgstr ""
+msgstr "Stby"
 
 #: src/ShipDrivergui.cpp:202
 msgid "Hand Steering"
-msgstr ""
+msgstr "Mengemudi dengan tangan"
 
 #: src/ShipDrivergui.cpp:207
 msgid "Auto"
-msgstr ""
+msgstr "Otomatis"
 
 #: src/ShipDrivergui.cpp:210
 msgid "Autopilot Control"
-msgstr ""
+msgstr "Kontrol pilot otomatis"
 
 #: src/ShipDrivergui.cpp:225
 msgid "-1"
-msgstr ""
+msgstr "-1"
 
 #: src/ShipDrivergui.cpp:231
 msgid "-10"
-msgstr ""
+msgstr "-10"
 
 #: src/ShipDrivergui.cpp:237
 msgid "+10"
-msgstr ""
+msgstr "+10"
 
 #: src/ShipDrivergui.cpp:243
 msgid "+1"
-msgstr ""
+msgstr "+1"
 
 #: src/ShipDrivergui.cpp:295
 msgid "AIS"
-msgstr ""
+msgstr "AIS"
 
 #: src/ShipDrivergui.cpp:302
 msgid "Transmit"
-msgstr ""
+msgstr "Mengirimkan"
 
 #: src/ShipDrivergui.cpp:305
 msgid "Save to file"
-msgstr ""
+msgstr "Menyimpan ke dalam berkas"
 
 #: src/ShipDrivergui.cpp:312
 msgid "MMSI"
-msgstr ""
+msgstr "MMSI"
 
 #: src/ShipDrivergui_impl.cpp:85
 msgid "Please right-click and choose vessel start position"
-msgstr ""
+msgstr "Silahkan klik kanan dan pilih posisi keberangkatan kapal"
 
 #: src/ShipDrivergui_impl.cpp:90
 msgid "MMSI must be a number, please change in Preferences"
-msgstr ""
+msgstr "MMSI harus menggunakan angka, tolong ganti preferensi"
 
