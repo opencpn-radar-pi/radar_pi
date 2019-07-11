@@ -138,6 +138,8 @@ int ShipDriver_pi::Init(void)
 
       m_pDialog = NULL;
 
+	  PlugInHandleAutopilotRoute(true);
+
       return (
 			  WANTS_OVERLAY_CALLBACK |
 			  WANTS_OPENGL_OVERLAY_CALLBACK |
@@ -282,10 +284,11 @@ void ShipDriver_pi::OnToolbarToolCallback(int id)
 	if(NULL == m_pDialog)
       {
             m_pDialog = new Dlg(m_parent_window);
-            m_pDialog->plugin = this;
+            m_pDialog->plugin = this;						
 			m_pDialog->m_Timer = new wxTimer(m_pDialog);			
             m_pDialog->Move(wxPoint(m_hr_dialog_x, m_hr_dialog_y));	
-			m_pDialog->SetSize(m_hr_dialog_sx, m_hr_dialog_sy);			
+			m_pDialog->SetSize(m_hr_dialog_sx, m_hr_dialog_sy);	
+			
       }
 
 	 // m_pDialog->Fit();
