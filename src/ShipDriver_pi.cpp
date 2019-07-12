@@ -74,7 +74,7 @@ ShipDriver_pi::ShipDriver_pi(void *ppimgr)
 {
       // Create the PlugIn icons
       initialize_images();
-	  m_bShowShipDriver = false;
+	  m_bShowShipDriver = false;	  
 }
 
 ShipDriver_pi::~ShipDriver_pi(void)
@@ -138,7 +138,7 @@ int ShipDriver_pi::Init(void)
 
       m_pDialog = NULL;
 
-	  PlugInHandleAutopilotRoute(true);
+	  
 
       return (
 			  WANTS_OVERLAY_CALLBACK |
@@ -293,13 +293,16 @@ void ShipDriver_pi::OnToolbarToolCallback(int id)
 
 	 // m_pDialog->Fit();
 	  //Toggle 
-	  m_bShowShipDriver = !m_bShowShipDriver;	  
+	  m_bShowShipDriver = !m_bShowShipDriver;	
+
+	  
 
       //    Toggle dialog? 
       if(m_bShowShipDriver) {
 		  m_pDialog->Move(wxPoint(m_hr_dialog_x, m_hr_dialog_y));
 		  m_pDialog->SetSize(m_hr_dialog_sx, m_hr_dialog_sy);
-          m_pDialog->Show();         
+          m_pDialog->Show(); 
+		  
 	  }
 	  else {
 		  m_pDialog->Hide();
@@ -499,6 +502,8 @@ bool ShipDriver_pi::GribWind(GribRecordSet *grib, double lat, double lon,
 void ShipDriver_pi::SetNMEASentence(wxString &sentence) {
 
 	// $GPAPB,A,A,0.10,R,N,V,V,011,M,DEST,011,M,011,M*3C 
+
+	if (NULL == m_pDialog) return;
 
 	wxString token[40];
 	wxString s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;

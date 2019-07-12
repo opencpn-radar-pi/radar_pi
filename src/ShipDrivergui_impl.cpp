@@ -133,7 +133,7 @@ void Dlg::SetFollowStep(double inLat, double inLon, double inDir, double inSpd, 
 
 void Dlg::OnStart(wxCommandEvent& event) {
 
-	PlugInHandleAutopilotRoute(false);
+	
 	StartDriving();
 }
 
