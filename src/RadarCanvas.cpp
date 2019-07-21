@@ -679,17 +679,27 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
 
   glPopAttrib();
   glPopMatrix();
-  SetCurrent(*m_pi->m_opencpn_gl_context);
+
+  // Do the swapbuffers first, before restoring the context. If we don't then various artifacts
+  // occur on MacOS with the radar PPI window getting completely distorted.
+  // Also it seems much more logical to call SwapBuffers() *before* going back to the OpenCPN
+  // context.
   SwapBuffers();
 
-#ifdef CRASH
+  // Restore the OpenGL context, so that AIS rollover doesn't break.
+  // Apparently this is executed in a timer on Windows and Linux in such
+  // a way that it is using the radar's OpenGL context.
+  //
+  // This used to break on Mac, where timing is different and we are not
+  // allowed to set the context from a class that is derived from a window
+  // where the context is for a different window, but with wx 3.1.2 + OpenCPN
+  // patches this seems to be fixed.
   wxGLContext *chart_context = m_pi->GetChartOpenGLContext();
   if (chart_context) {
     SetCurrent(*chart_context);
   } else {
     SetCurrent(*m_zero_context);  // Make sure OpenCPN -at least- doesn't overwrite our context info
   }
-#endif
 }
 
 void RadarCanvas::OnMouseMotion(wxMouseEvent &event) {
