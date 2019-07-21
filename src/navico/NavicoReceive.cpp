@@ -279,17 +279,17 @@ void NavicoReceive::ProcessFrame(const uint8_t *data, size_t len) {
 
       case RT_HaloA:
       case RT_HaloB: {
-        short int large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
-        short int small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
+        uint16_t large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
+        uint16_t small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
         angle_raw = (line->br4g.angle[1] << 8) | line->br4g.angle[0];
         if (large_range == 0x80) {
-          if (small_range == -1) {
+          if (small_range == 0xffff) {
             range_meters = 0;  // Invalid range received
           } else {
             range_meters = small_range / 4;
           }
         } else {
-          range_meters = large_range;
+          range_meters = large_range * small_range / 512;
         }
         break;
       }
