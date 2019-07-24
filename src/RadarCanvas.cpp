@@ -738,7 +738,7 @@ void RadarCanvas::OnMouseClickUp(wxMouseEvent &event) {
         m_pi->ShowRadarControl(m_ri->m_radar, true);
       } else if ((x >= center_x - m_zoom_size.x / 2) && (x <= center_x + m_zoom_size.x / 2) &&
                  (y > h - m_zoom_size.y + MENU_ROUNDING)) {
-        if (x > center_x) {
+        if (x < center_x) {
           m_ri->AdjustRange(+1);
         } else {
           m_ri->AdjustRange(-1);
