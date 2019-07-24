@@ -156,6 +156,30 @@ void GarminHDReceive::ProcessFrame(radar_line *packet) {
   }
 }
 
+// Check that this interface is valid for
+// Garmin HD radar, e.g. is on the same network.
+// We know that the radar is on 172.16.2.0 and that
+// the netmask is 12 bits, eg 255.240.0.0.
+
+bool GarminHDReceive::IsValidGarminAddress(struct ifaddrs * nif) {
+  if (VALID_IPV4_ADDRESS(nif)) {
+
+    in_addr_t addr = ntohl(((struct sockaddr_in *) nif->ifa_addr)->sin_addr.s_addr);
+    in_addr_t mask = ntohl(((struct sockaddr_in *) nif->ifa_netmask)->sin_addr.s_addr);
+    static in_addr_t radar = IPV4_ADDR(172, 16, 2, 0);
+    static in_addr_t radarmask = IPV4_ADDR(172, 16, 0, 0);
+
+    if ((addr & mask) == radarmask
+        && (radar & mask) == radarmask)
+    {
+      LOG_RECEIVE(wxT("radar_pi: %s found garmin addr=%X mask=%X req=%X"), m_ri->m_name.c_str(), addr, mask, radarmask);
+      return true;
+    }
+    LOG_RECEIVE(wxT("radar_pi: %s not garmin addr=%X mask=%X req=%X"), m_ri->m_name.c_str(), addr, mask, radarmask);
+  }
+  return false;
+}
+
 SOCKET GarminHDReceive::PickNextEthernetCard() {
   SOCKET socket = INVALID_SOCKET;
   CLEAR_STRUCT(m_interface_addr);
@@ -165,8 +189,8 @@ SOCKET GarminHDReceive::PickNextEthernetCard() {
   if (m_interface) {
     m_interface = m_interface->ifa_next;
   }
-  // Loop until card with a valid IPv4 address
-  while (m_interface && !VALID_IPV4_ADDRESS(m_interface)) {
+  // Loop until card with a valid Garmin address
+  while (m_interface && !IsValidGarminAddress(m_interface)) {
     m_interface = m_interface->ifa_next;
   }
   if (!m_interface) {
@@ -177,17 +201,26 @@ SOCKET GarminHDReceive::PickNextEthernetCard() {
     if (!getifaddrs(&m_interface_array)) {
       m_interface = m_interface_array;
     }
-    // Loop until card with a valid IPv4 address
-    while (m_interface && !VALID_IPV4_ADDRESS(m_interface)) {
+    // Loop until card with a valid Garmin address
+    while (m_interface && !IsValidGarminAddress(m_interface)) {
       m_interface = m_interface->ifa_next;
     }
   }
-  if (m_interface && VALID_IPV4_ADDRESS(m_interface)) {
+  if (m_interface) {
     m_interface_addr.addr = ((struct sockaddr_in *)m_interface->ifa_addr)->sin_addr;
     m_interface_addr.port = 0;
-  }
 
-  socket = GetNewReportSocket();
+    socket = GetNewReportSocket();
+  }
+  else {
+    wxString s;
+    s << _("No interface found") << wxT("\n");
+    s <<_("Interface must match") << wxT(" 172.16/12");
+    SetInfoStatus(s);
+
+    socket = GetNewReportSocket();
+
+  }
 
   return socket;
 }

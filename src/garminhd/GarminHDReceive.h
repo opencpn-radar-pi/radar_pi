@@ -77,6 +77,7 @@ class GarminHDReceive : public RadarReceive {
   void ProcessFrame(radar_line *packet);
   bool ProcessReport(const uint8_t *data, size_t len);
 
+  bool IsValidGarminAddress(struct ifaddrs * nif);
   SOCKET PickNextEthernetCard();
   SOCKET GetNewReportSocket();
 
