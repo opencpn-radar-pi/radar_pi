@@ -316,11 +316,14 @@ int getifaddrs(struct ifaddrs **ifap) {
 
   for (unsigned i = 0; i < iilen; i++) {
     ift->ifa.ifa_addr = (sockaddr *)&ift->addr;
+    ift->ifa.ifa_netmask = (sockaddr *)&ift->netmask;
     if (ii) {
       memcpy(ift->ifa.ifa_addr, &ii[i].iiAddress.AddressIn, sizeof(struct sockaddr_in));
+      memcpy(ift->ifa.ifa_netmask, &ii[i].iiNetmask.AddressIn, sizeof(struct sockaddr_in));
       ift->ifa.ifa_flags = ii[i].iiFlags;
     } else {
       memcpy(ift->ifa.ifa_addr, iix[i].iiAddress.lpSockaddr, iix[i].iiAddress.iSockaddrLength);
+      memcpy(ift->ifa.ifa_netmask, iix[i].iiNetmask.lpSockaddr, iix[i].iiNetmask.iSockaddrLength);
       ift->ifa.ifa_flags = iix[i].iiFlags;
     }
 

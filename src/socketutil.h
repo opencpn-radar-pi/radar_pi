@@ -186,12 +186,14 @@ extern bool socketAddMembership(SOCKET socket, const NetworkAddress &interface_a
 struct ifaddrs {
   struct ifaddrs *ifa_next;
   struct sockaddr *ifa_addr;
+  struct sockaddr *ifa_netmask;
   ULONG ifa_flags;
 };
 
 struct ifaddrs_storage {
   struct ifaddrs ifa;
   struct sockaddr_storage addr;
+  struct sockaddr_storage netmask;
 };
 
 extern int getifaddrs(struct ifaddrs **ifap);

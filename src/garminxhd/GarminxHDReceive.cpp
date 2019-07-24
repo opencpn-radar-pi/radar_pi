@@ -136,10 +136,10 @@ void GarminxHDReceive::ProcessFrame(const uint8_t *data, size_t len) {
 bool GarminxHDReceive::IsValidGarminAddress(struct ifaddrs * nif) {
   if (VALID_IPV4_ADDRESS(nif)) {
 
-    in_addr_t addr = ntohl(((struct sockaddr_in *) nif->ifa_addr)->sin_addr.s_addr);
-    in_addr_t mask = ntohl(((struct sockaddr_in *) nif->ifa_netmask)->sin_addr.s_addr);
-    static in_addr_t radar = IPV4_ADDR(172, 16, 2, 0);
-    static in_addr_t radarmask = IPV4_ADDR(172, 16, 0, 0);
+    uint32_t addr = ntohl(((struct sockaddr_in *) nif->ifa_addr)->sin_addr.s_addr);
+    uint32_t mask = ntohl(((struct sockaddr_in *) nif->ifa_netmask)->sin_addr.s_addr);
+    static uint32_t radar = IPV4_ADDR(172, 16, 2, 0);
+    static uint32_t radarmask = IPV4_ADDR(172, 16, 0, 0);
 
     if ((addr & mask) == radarmask
         && (radar & mask) == radarmask)
