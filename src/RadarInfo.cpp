@@ -149,6 +149,7 @@ void RadarInfo::Shutdown() {
     }
 #endif
 
+    wxLog::FlushActive();  // Flush any log messages written by the thread
     LOG_INFO(wxT("radar_pi: %s receive thread stopped in %llu ms"), m_name.c_str(), threadEndWait - threadStartWait);
 
     delete m_receive;
