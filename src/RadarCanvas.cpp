@@ -788,7 +788,7 @@ void RadarCanvas::OnMouseWheel(wxMouseEvent &event) {
     }
     double zoom_time = m_ri->m_view_center.GetValue() ? ZOOM_TIME_RANGE : ZOOM_TIME_LOCAL;
     if (rotation > ZOOM_SENSITIVITY && m_last_mousewheel_zoom_in < now - zoom_time) {
-      LOG_INFO(wxT("radar_pi: %s Mouse zoom in"), m_ri->m_name.c_str());
+      LOG_VERBOSE(wxT("radar_pi: %s Mouse zoom in"), m_ri->m_name.c_str());
       if (m_ri->m_view_center.GetValue()) {
         m_ri->AdjustRange(+1);
       } else {
