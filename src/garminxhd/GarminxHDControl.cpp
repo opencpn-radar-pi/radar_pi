@@ -225,10 +225,6 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
       // Some interesting holes here, seems there could be more commands!
 
     case CT_BEARING_ALIGNMENT: {
-      if (value < 0) {
-        value += 360;
-      }
-
       pck_12.packet_type = 0x930;
       pck_12.parm1 = value << 5;
 
