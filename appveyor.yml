@@ -50,7 +50,12 @@ build_script:
   - cmake -G "Visual Studio 15 2017"   ..
   - cmake --build . --target install --config RelWithDebInfo
   - cmake --build . --target package --config RelWithDebInfo
-  - dir *.*
+  - choco install git
+  - python -m ensurepip
+  - python -m pip install -q setuptools
+  - python -m pip install -q cloudsmith-cli
+  - bash ../ci/appveyor-upload.sh
+
 
 artifacts:
   - path: 'build\*gz'

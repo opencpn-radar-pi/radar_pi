@@ -33,11 +33,9 @@ git:
   depth: 10
 
 deploy:
-  provider: bintray
-  file: ci/bintray.js
-  user: leamas
+  provider: script
+  script: ci/travis-upload.sh
   skip_cleanup: true
   on:
-      all_branches: true
-  key:
-      secure: "IIpE1Bvvaiz96tlgdezt2awd9drdy9q4+0yCno8wlEOJuoEXxlkZCExj434KI7RbcCrXDK68IC6d7anhmoGyJ6OQSCnmbFvpTLzMR0YNVSm6oli1pKTPVzydr9DG7ZFTSzT37nKvNyyby74iWHAgtHSolW5UY3chBKE8iRiCrlGGvQzmUUxmXHHJYjzCWPk5OA2julZdR0qIDubAv3zCumL4b/F61JQk0SWNFiJUno+czCdGcBJDYVA5gfn/iNFmNJKyEBQ7hq946WSLuoX6AkBMryz3sJnUVMZFzIoHJz8FmuF+agyX9NQl1dwzrhF1pbaMJJpnx6m/j3Nm65bFSZA8m7nr0zxj+GfCePAcobmnfpwRPqhJMKUqNXGzYNnPdP725E3gVryBECvvAtxiEjql1qaIgTy75wANBO/80XwcF4OfaEHsyQp5gh6BknL5qNzKpAKA4g5oY6vbmz7yddI55yIIyRjnJnBbX3NfkauyJ5mHqz0ZU/h8tin/LFvOyAsPay/3WgLf8JsLsBIGydIAcMCNW/tEMf9L9wKLMOXMsOxFMDbABznb7AlIjUXTtWQJoNHaWaPTKwo8VXSQs+qHt+lf135HUMG0sFnLOzElDqsnbAj0P9MINaxWNetHM880LIZFPdJTW1pBAeoN8qHz7QyL0jhIKQ1kpdxpiD8="
+    branch: master
+    tags: false

@@ -23,7 +23,7 @@ Support for four simultaneously active radars.  Multiple brands can be mixed.
   <target>${PKG_TARGET}</target>
   <target-version>${PKG_TARGET_VERSION}</target-version>
   <tarball-url>
-    https://bintray.com/leamas/OpenCPN/download_file?file_path=${PKG_NVR}_${PKG_TARGET_NVR}.tar.gz
+          ${PKG_BASE_URL}/${PKG_NVR}_${PKG_TARGET_NVR}.tar.gz
   </tarball-url>
   <info-url> https://opencpn.org/OpenCPN/plugins/radarPI.html </info-url>
 </opencpn-plugin>

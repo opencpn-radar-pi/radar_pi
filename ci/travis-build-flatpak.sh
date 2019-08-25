@@ -19,6 +19,7 @@ sleep 5;
 sudo docker pull fedora:28;
 
 docker run --privileged -d -ti -e "container=docker"  \
+    -e "TOPDIR=/opencpn-ci" \
     -v /sys/fs/cgroup:/sys/fs/cgroup \
     -v $(pwd):/opencpn-ci:rw \
     fedora:28   /usr/sbin/init
@@ -30,3 +31,4 @@ docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -xec \
 docker ps -a
 docker stop $DOCKER_CONTAINER_ID
 docker rm -v $DOCKER_CONTAINER_ID
+sudo apt-get install python3-pip python3-setuptools
