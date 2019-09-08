@@ -35,4 +35,8 @@ Just push a version, just don't tag it -- Appveyor and Travis will still build i
 * [https://ci.appveyor.com/project/keesverruijt/radar-pi]
 * [https://travis-ci.org/opencpn-radar-pi/radar_pi]
 
+_Travis release build fails on Linux_
+
+This is a known issue at this time, the travis code for pushing the artifacts uses an obsolete function that doesn't work. Normal
+(builds without tags) work OK.
 
