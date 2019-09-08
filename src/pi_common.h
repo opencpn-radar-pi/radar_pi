@@ -51,7 +51,7 @@ extern "C" {
 #include <OpenGL/gl3.h>  // from ..../Frameworks/OpenGL.framework/Headers/gl.h
 #define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
 #else
-#include <WinSock2.h>
+#include <winsock2.h>
 #include <ws2tcpip.h>
 #pragma comment(lib, "Ws2_32.lib")
 #include <windows.h>
