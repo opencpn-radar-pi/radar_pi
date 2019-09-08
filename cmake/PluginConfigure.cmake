@@ -87,3 +87,7 @@ SET(BUILD_SHARED_LIBS TRUE)
 
 FIND_PACKAGE(Gettext REQUIRED)
 
+if (MINGW)
+    find_library(WINSOCK_LIBRARY NAMES "ws2_32" "wsock32")
+endif ()
+
