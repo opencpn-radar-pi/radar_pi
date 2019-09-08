@@ -143,7 +143,7 @@ void *NavicoLocate::Entry(void) {
     }
 
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
-    if (r == SOCKET_ERROR && errno != 0) {
+    if (r == -1 && errno != 0) {
       int err = errno;
       wxLogError(wxT("radar_pi: NavicoLocate select %s"), strerror(err));
       UpdateEthernetCards();
