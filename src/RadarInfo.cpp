@@ -1246,7 +1246,7 @@ wxString RadarInfo::GetDisplayRangeStr(int meters, bool unit) {
         break;
       case NM(3 / 8):
       case NM(3 / 8) + 1:
-        s = wxT("3/4");
+        s = wxT("3/8");
         break;
       case NM(1 / 16):
       case NM(1 / 16) + 1:
