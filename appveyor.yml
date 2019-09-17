@@ -56,22 +56,18 @@ build_script:
   - python -m pip install -q cloudsmith-cli
   - bash ../ci/appveyor-upload.sh
 
-
 artifacts:
-  - path: 'build\*gz'
-    name: plugin_archive
-  - path: '**\*msvc*xml'
-    name: plugin_xml
+  - path: 'build\*.exe'
+    name: installer
 
 deploy:
-  - provider: BinTray
-    username: leamas
-    api_key: 
-       secure: XleVzEPm+/uKCbcKlN9iMz7ueZPhqGlfNc4NgfJm4chdDOPUo4/S3iwVtTDz0QVC
-    subject: leamas
-    repo: OpenCPN
-    package: plugins
-    version: 1.15-0.beta2
-    publish: true
-    override: true
-    explode: false
+  description: 'release created by AppVeyor CI'
+  provider: GitHub
+  auth_token:
+    secure: 2caGomOXF3oh8vp/OJfmEyD/6V0rzeHVI1GnH8E+clL7AaPhzQCl9M4Y9xlsmX+2
+  artifact: installer,portable
+  draft: true
+  prerelease: true
+  tag: $(APPVEYOR_REPO_TAG_NAME)
+  on:
+    APPVEYOR_REPO_TAG: true # deploy on tag push only
