@@ -1044,24 +1044,30 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
 wxString RadarInfo::FormatDistance(double distance) {
   wxString s;
 
-  if (m_pi->m_settings.range_units > 0) {
-    distance *= 1.852;
+  switch (m_pi->m_settings.range_units) { 
+    case 0:     // Mixed
+          if (distance < 0.25 * 1.852) {
+            int meters = distance * 1852.0;
+            s << meters;
+            s << "m";
+          } else {
+            s << wxString::Format(wxT("%.2fNM"), distance);
+          }
+          break;
 
-    if (distance < 1.000) {
-      int meters = distance * 1000.0;
-      s << meters;
-      s << "m";
-    } else {
-      s << wxString::Format(wxT("%.2fkm"), distance);
-    }
-  } else {
-    if (distance < 0.25 * 1.852) {
-      int meters = distance * 1852.0;
-      s << meters;
-      s << "m";
-    } else {
-      s << wxString::Format(wxT("%.2fnm"), distance);
-    }
+    case 1:   // km
+          distance *= 1.852;
+          if (distance < 1.000) {
+            int meters = distance * 1000.0;
+            s << meters;
+            s << "m";
+          } else {
+            s << wxString::Format(wxT("%.2fkm"), distance);
+          }
+          break;
+
+    default:  // nm  
+          s << wxString::Format(wxT("%.2fNM"), distance);
   }
 
   return s;
