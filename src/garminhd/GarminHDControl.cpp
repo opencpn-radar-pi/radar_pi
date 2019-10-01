@@ -179,7 +179,7 @@ bool GarminHDControl::SetRange(int meters) {
 
     packet.packet_type = 0x2b3;
     packet.len1 = sizeof(packet.parm1);
-    packet.parm1 = meters;
+    packet.parm1 = meters-1;
     LOG_VERBOSE(wxT("radar_pi: %s transmit: range %d meters"), m_name.c_str(), meters);
     return TransmitCmd(&packet, sizeof(packet));
   }
