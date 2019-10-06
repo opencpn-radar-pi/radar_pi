@@ -106,7 +106,7 @@ void GarminHDReceive::ProcessFrame(radar_line *packet) {
   }
 
   m_ri->m_state.Update(RADAR_TRANSMIT);
-  m_ri->m_range.Update(packet->range_meters);
+  m_ri->m_range.Update(packet->range_meters+1);
   m_ri->m_gain.Update(packet->gain_level[0], packet->gain_level[1] ? RCS_AUTO_1 : RCS_MANUAL);
   m_ri->m_rain.Update(packet->sea_clutter[0], packet->sea_clutter[1] ? RCS_AUTO_1 : RCS_MANUAL);
   m_ri->m_rain.Update(packet->rain_clutter[0]);
