@@ -405,6 +405,9 @@ bool radar_pi::DeInit(void) {
     delete m_locator;
     m_locator = 0;
   }
+
+  delete m_pMessageBox;
+
   // No need to delete wxWindow stuff, wxWidgets does this for us.
   LOG_VERBOSE(wxT("radar_pi: DeInit of plugin done"));
   return true;
