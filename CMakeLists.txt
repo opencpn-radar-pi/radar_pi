@@ -37,7 +37,11 @@ set(PLUGIN_NAME radar-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
 
 OPTION(OCPN_FLATPAK "Build flatpak plugin" OFF)
 
-
+configure_file(
+  # Required in flatpak, done early.
+  ${CMAKE_SOURCE_DIR}/pkg_version.sh.in
+  ${CMAKE_CURRENT_BINARY_DIR}/pkg_version.sh
+)
 if (OCPN_FLATPAK)
     find_program(TAR NAMES gtar tar)
     if (NOT TAR)
@@ -222,4 +226,7 @@ configure_file(
   ${CMAKE_SOURCE_DIR}/radar-plugin.xml.in
   ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME}.xml
 )
-
+configure_file(
+  ${CMAKE_SOURCE_DIR}/pkg_version.sh.in
+  ${CMAKE_CURRENT_BINARY_DIR}/pkg_version.sh
+)

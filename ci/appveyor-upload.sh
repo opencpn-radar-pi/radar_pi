@@ -4,10 +4,10 @@
 # Upload the .tar.gz and .xml artifacts to cloudsmith
 #
 
-REPO='alec-leamas/opencpn-plugins-unstable'
+STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'alec-leamas/opencpn-plugins-stable'}
+UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'alec-leamas/opencpn-plugins-unstable'}
 
-branch=$(git symbolic-ref --short HEAD)
-if [ "$branch" != 'master' ]; then
+if [ "$(git rev-parse master)" != "$(git rev-parse HEAD)" ]; then
     echo "Not on master branch, skipping deployment."
     exit 0
 fi
@@ -28,9 +28,38 @@ python -m pip install -q cloudsmith-cli
 commit=$(git rev-parse --short=7 HEAD) || commit="unknown"
 now=$(date --rfc-3339=seconds) || now=$(date)
 
+
+BUILD_ID=${APPVEYOR_BUILD_NUMBER:-1}
+commit=$(git rev-parse --short=7 HEAD) || commit="unknown"
+tag=$(git tag --contains HEAD)
+
 tarball=$(ls *.tar.gz)
 xml=$(ls *.xml)
-echo '<!--'" Date: $now Commit: $commit Build nr: $BUILD_ID -->" >> $xml
 
-cloudsmith push raw --republish --no-wait-for-sync $REPO $tarball
-cloudsmith push raw --republish --no-wait-for-sync $REPO $xml
+source ../build/pkg_version.sh
+test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}+${BUILD_ID}.${commit}"
+test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
+
+if [ -n "$tag" ]; then
+    # There is no sed available in git bash. This is nasty, but seems
+    # to work:
+    while read line; do
+        echo ${line/opencpn-plugins-unstable/opencpn-plugins-stable}
+    done < $xml > xml.tmp && cp xml.tmp $xml && rm xml.tmp
+fi
+
+cloudsmith push raw \
+    --republish \
+    --no-wait-for-sync \
+    --name radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
+    --version ${VERSION} \
+    --summary "radar opencpn plugin metadata for automatic installation" \
+    $REPO $xml
+
+cloudsmith push raw  \
+    --republish \
+    --no-wait-for-sync \
+    --name radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball \
+    --version ${VERSION} \
+    --summary "radar opencpn plugin tarball for automatic installation" \
+    $REPO $tarball
