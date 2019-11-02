@@ -48,26 +48,28 @@ BUILD_ID=${CIRCLE_BUILD_NUM:-1}
 commit=$(git rev-parse --short=7 HEAD) || commit="unknown"
 tag=$(git tag --contains HEAD)
 
-tarball=$(ls $HOME/project/build/*.tar.gz)
 xml=$(ls $HOME/project/build/*.xml)
-test -z "$tag" || sudo sed -i -e "s|$UNSTABLE_REPO|$STABLE_REPO|" $xml
+tarball=$(ls $HOME/project/build/*.tar.gz)
+tarball_basename=${tarball##*/}
 
 source $HOME/project/build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}+${BUILD_ID}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
+tarball_name=radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
 
-cloudsmith push raw \
-    --republish \
-    --no-wait-for-sync \
+sudo sed -i -e "s|@pkg_repo@|$REPO|"  $xml
+sudo sed -i -e "s|@name@|$tarball_name|" $xml
+sudo sed -i -e "s|@version@|$VERSION|" $xml
+sudo sed -i -e "s|@filename@|$tarball_basename|" $xml
+
+cloudsmith push raw --republish --no-wait-for-sync \
     --name radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
     --version ${VERSION} \
     --summary "radar opencpn plugin metadata for automatic installation" \
     $REPO $xml
 
-cloudsmith push raw \
-    --republish \
-    --no-wait-for-sync \
-    --name radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball \
+cloudsmith push raw --republish --no-wait-for-sync \
+    --name $tarball_name \
     --version ${VERSION} \
     --summary "radar opencpn plugin tarball for automatic installation" \
     $REPO $tarball
