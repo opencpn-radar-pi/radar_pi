@@ -370,9 +370,7 @@ SOCKET NavicoReceive::PickNextEthernetCard() {
     m_interface_addr.addr = ((struct sockaddr_in *)m_interface->ifa_addr)->sin_addr;
     m_interface_addr.port = 0;
   }
-
   socket = GetNewReportSocket();
-
   return socket;
 }
 
@@ -381,8 +379,7 @@ SOCKET NavicoReceive::GetNewReportSocket() {
   SOCKET socket;
   wxString error = wxT("");
   wxString s = wxT("");
-
-  if (m_report_addr.IsNull() && !info.report_addr.IsNull()) {
+  if ((!info.report_addr.IsNull()) && (m_report_addr.IsNull() || !(info.report_addr == m_report_addr))) {
     m_report_addr = info.report_addr;
     m_send_addr = info.send_command_addr;
     m_data_addr = info.spoke_data_addr;
@@ -487,14 +484,15 @@ void *NavicoReceive::Entry(void) {
       if (dataSocket == INVALID_SOCKET) {
         dataSocket = GetNewDataSocket();
       }
-    } else {
+    }
+    else {
       if (dataSocket != INVALID_SOCKET) {
         closesocket(dataSocket);
         dataSocket = INVALID_SOCKET;
       }
     }
 
-    struct timeval tv = {(long)0, (long)(MILLIS_PER_SELECT * 1000)};
+    struct timeval tv = { (long)0, (long)(MILLIS_PER_SELECT * 1000) };
 
     fd_set fdin;
     FD_ZERO(&fdin);
@@ -534,7 +532,8 @@ void *NavicoReceive::Entry(void) {
           ProcessFrame(data, (size_t)r);
           no_data_timeout = -15;
           no_spoke_timeout = -5;
-        } else {
+        }
+        else {
           closesocket(dataSocket);
           dataSocket = INVALID_SOCKET;
           wxLogError(wxT("radar_pi: %s illegal frame"), m_ri->m_name.c_str());
@@ -567,15 +566,16 @@ void *NavicoReceive::Entry(void) {
             }
             no_data_timeout = SECONDS_SELECT(-15);
           }
-        } else {
+        }
+        else {
           wxLogError(wxT("radar_pi: %s illegal report"), m_ri->m_name.c_str());
           closesocket(reportSocket);
           reportSocket = INVALID_SOCKET;
         }
       }
 
-    } else {  // no data received -> select timeout
-
+    }
+    else {  // no data received -> select timeout
       if (no_data_timeout >= SECONDS_SELECT(2)) {
         no_data_timeout = 0;
         if (reportSocket != INVALID_SOCKET) {
@@ -585,17 +585,25 @@ void *NavicoReceive::Entry(void) {
           CLEAR_STRUCT(m_interface_addr);
           radar_addr = 0;
         }
-      } else {
+      }
+      else {
         no_data_timeout++;
       }
 
       if (no_spoke_timeout >= SECONDS_SELECT(2)) {
         no_spoke_timeout = 0;
         m_ri->ResetRadarImage();
-      } else {
+      }
+      else {
         no_spoke_timeout++;
       }
     }
+
+    if (!(m_report_addr == m_pi->GetNavicoRadarInfo(m_ri->m_radar).report_addr)) {
+    // it seems that Navicolocate modified the report_addr
+      closesocket(reportSocket);
+      reportSocket = INVALID_SOCKET;
+    };
 
     if (reportSocket == INVALID_SOCKET) {
       // If we closed the reportSocket then close the command and data socket
@@ -604,22 +612,7 @@ void *NavicoReceive::Entry(void) {
         dataSocket = INVALID_SOCKET;
       }
     }
-
-    if (!radar_addr && m_pi->m_locator) {
-      // Check if the locator has found something. If so, use it.
-      NetworkAddress ip = m_pi->GetRadarAddress(m_ri->m_radar);
-      ip.port = htons(RadarOrder[m_ri->m_radar_type]);
-      const NavicoRadarInfo *locatorInfo = m_pi->m_locator->getRadarInfo(ip);
-
-      if (locatorInfo) {
-        if (reportSocket != INVALID_SOCKET) {
-          closesocket(reportSocket);
-          reportSocket = INVALID_SOCKET;
-        }
-      }
-      // Else we wait for the locator to fill in the IP address of any radar that hasn't been detected yet.
-    }
-
+    
   }  // endless loop until thread destroy
 
   if (dataSocket != INVALID_SOCKET) {

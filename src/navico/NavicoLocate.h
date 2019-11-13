@@ -78,12 +78,6 @@ class NavicoLocate : public wxThread {
     }
   }
 
-  /*
-   * Find the multicast addresses for a particular radar.
-   * The port of the radar_ip should be 0 for radar A and 1 for radar B.
-   */
-  const NavicoRadarInfo *getRadarInfo(const NetworkAddress &radar_ip);
-
   volatile bool m_is_shutdown;
 
  protected:
@@ -105,8 +99,6 @@ class NavicoLocate : public wxThread {
   NetworkAddress *m_interface_addr;
   SOCKET *m_socket;
   size_t m_interface_count;
-
-  std::map<NetworkAddress, NavicoRadarInfo> m_radar_map;
 
   wxCriticalSection m_exclusive;
 };

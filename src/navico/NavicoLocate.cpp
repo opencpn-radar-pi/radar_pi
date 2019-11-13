@@ -299,7 +299,6 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const uint
     infoA.send_command_addr = NetworkAddress(data->addrSendA);
     NetworkAddress radar_ipA = radar_address;
     radar_ipA.port = htons(RO_PRIMARY);
-    m_radar_map[radar_ipA] = infoA;
 
     LOG_VERBOSE(wxT("radar_pi: Located radar IP %s [%s]"), radar_ipA.FormatNetworkAddressPort(), infoA.to_string());
 
@@ -312,7 +311,6 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const uint
     infoB.send_command_addr = NetworkAddress(data->addrSendB);
     NetworkAddress radar_ipB = radar_address;
     radar_ipB.port = htons(RO_SECONDARY);
-    m_radar_map[radar_ipB] = infoB;
 
     LOG_VERBOSE(wxT("radar_pi: Located radar IP %s [%s]"), radar_ipB.FormatNetworkAddressPort(), infoB.to_string());
 
@@ -346,15 +344,6 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const uint
 
   LOG_BINARY_RECEIVE(wxT("radar_pi: NavicoLocate received unknown message"), report, len);
   return false;
-}
-
-const NavicoRadarInfo *NavicoLocate::getRadarInfo(const NetworkAddress &radar_ip) {
-  wxCriticalSectionLocker lock(m_exclusive);
-
-  if (m_radar_map.count(radar_ip) > 0) {
-    return &m_radar_map.at(radar_ip);
-  }
-  return 0;
 }
 
 void NavicoLocate::WakeRadar() {
