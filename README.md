@@ -114,6 +114,6 @@ The plugin was started by @cowelld, who took @bdbcat's Garmin radar plugin and t
 
 @Hakansv did a lot of testing and contributed the idle timer, and contributed work on the translations.
 
-@douwefokkema also tested a lot and implemented the heading on radar functionality, optimised the OpenGL drawing, implemented the refresh rate code and optimised the target trails code.
+@douwefokkema also tested a lot and implemented the heading on radar functionality, optimised the OpenGL drawing, implemented the refresh rate code and optimised the target trails code. Douwe also made the MARPA and ARPA functionality.
 
 @seandepagnier shader support and some optimizations.
