@@ -84,7 +84,7 @@ class NavicoLocate : public wxThread {
   void *Entry(void);
 
  private:
-  bool ProcessReport(const NetworkAddress &radar_address, const uint8_t *data, size_t len);
+  bool ProcessReport(const NetworkAddress &radar_address, const NetworkAddress &interface_address, const uint8_t *data, size_t len);
   bool DetectedRadar(const NetworkAddress &radar_address);
   void WakeRadar();
 

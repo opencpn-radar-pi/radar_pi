@@ -86,13 +86,7 @@ void NavicoLocate::UpdateEthernetCards() {
           struct sockaddr_in *sa = (struct sockaddr_in *)addr->ifa_addr;
           m_interface_addr[i].addr = sa->sin_addr;
           m_interface_addr[i].port = 0;
-
-          if (i == 0) {
-            m_socket[0] = startUDPMulticastReceiveSocket(m_interface_addr[i], reportNavicoCommon, error);
-          } else {
-            socketAddMembership(m_socket[0], m_interface_addr[i], reportNavicoCommon);
-            m_socket[i] = INVALID_SOCKET;
-          }
+          m_socket[i] = startUDPMulticastReceiveSocket(m_interface_addr[i], reportNavicoCommon, error);
           LOG_VERBOSE(wxT("radar_pi: NavicoLocate scanning interface %s for radars"), m_interface_addr[i].FormatNetworkAddress());
           i++;
         }
@@ -130,7 +124,7 @@ void *NavicoLocate::Entry(void) {
   UpdateEthernetCards();
 
   while (!m_shutdown) {
-    struct timeval tv = {(long)1, (long)(0)};
+    struct timeval tv = { (long)1, (long)(0) };
     fd_set fdin;
     FD_ZERO(&fdin);
 
@@ -145,7 +139,6 @@ void *NavicoLocate::Entry(void) {
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
     if (r == -1 && errno != 0) {
       int err = errno;
-      wxLogError(wxT("radar_pi: NavicoLocate select %s"), strerror(err));
       UpdateEthernetCards();
       rescan_network_cards = 0;
     }
@@ -154,19 +147,20 @@ void *NavicoLocate::Entry(void) {
         if (m_socket[i] != INVALID_SOCKET && FD_ISSET(m_socket[i], &fdin)) {
           rx_len = sizeof(rx_addr);
           r = recvfrom(m_socket[i], (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
-          if (r > 0) {
+          if (r > 2) {   // we are not interested in 2 byte messages
             NetworkAddress radar_address;
             radar_address.addr = rx_addr.ipv4.sin_addr;
             radar_address.port = rx_addr.ipv4.sin_port;
 
-            if (ProcessReport(radar_address, data, (size_t)r)) {
+            if (ProcessReport(radar_address, m_interface_addr[i], data, (size_t)r)) {
               rescan_network_cards = -PERIOD_UNTIL_CARD_REFRESH;  // Give double time until we rescan
               wake_timeout = -PERIOD_UNTIL_WAKE_RADAR;
             }
           }
         }
       }
-    } else {  // no data received -> select timeout
+    }
+    else {  // no data received -> select timeout
       if (++rescan_network_cards >= PERIOD_UNTIL_CARD_REFRESH) {
         UpdateEthernetCards();
         rescan_network_cards = 0;
@@ -202,10 +196,10 @@ void *NavicoLocate::Entry(void) {
 
  */
 
-//
-// The following is the received radar state. It sends this regularly
-// but especially after something sends it a state change.
-//
+ //
+ // The following is the received radar state. It sends this regularly
+ // but especially after something sends it a state change.
+ //
 #pragma pack(push, 1)
 
 /*
@@ -281,7 +275,7 @@ struct RadarReport_01B2 {
 
 #pragma pack(pop)
 
-bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const uint8_t *report, size_t len) {
+bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const NetworkAddress &interface_address, const uint8_t *report, size_t len) {
   if (report[0] == 01 && report[1] == 0xB1) {  // Wake radar
     LOG_VERBOSE(wxT("radar_pi: Wake radar request from %s"), radar_address.FormatNetworkAddress());
   }
@@ -300,9 +294,9 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const uint
     NetworkAddress radar_ipA = radar_address;
     radar_ipA.port = htons(RO_PRIMARY);
 
-    LOG_VERBOSE(wxT("radar_pi: Located radar IP %s [%s]"), radar_ipA.FormatNetworkAddressPort(), infoA.to_string());
+    LOG_VERBOSE(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoA.to_string());
 
-    m_pi->FoundNavicoRadarInfo(radar_ipA, infoA);
+    m_pi->FoundNavicoRadarInfo(radar_ipA, interface_address, infoA);
 
     NavicoRadarInfo infoB;
     infoB.serialNr = wxString::FromAscii(data->serialno);
@@ -312,9 +306,9 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const uint
     NetworkAddress radar_ipB = radar_address;
     radar_ipB.port = htons(RO_SECONDARY);
 
-    LOG_VERBOSE(wxT("radar_pi: Located radar IP %s [%s]"), radar_ipB.FormatNetworkAddressPort(), infoB.to_string());
+    LOG_VERBOSE(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipB.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoB.to_string());
 
-    m_pi->FoundNavicoRadarInfo(radar_ipB, infoB);
+    m_pi->FoundNavicoRadarInfo(radar_ipB, interface_address, infoB);
 
 #define LOG_ADDR_N(n)                                                                                  \
   LOG_RECEIVE(wxT("radar_pi: NavicoLocate %s addr %s = %s"), radar_address.FormatNetworkAddress(), #n, \
@@ -347,7 +341,7 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const uint
 }
 
 void NavicoLocate::WakeRadar() {
-  static const uint8_t WAKE_COMMAND[] = {0x01, 0xb1};
+  static const uint8_t WAKE_COMMAND[] = { 0x01, 0xb1 };
   struct sockaddr_in send_addr = NetworkAddress(236, 6, 7, 5, 6878).GetSockAddrIn();
 
   int one = 1;
@@ -358,11 +352,12 @@ void NavicoLocate::WakeRadar() {
 
     if (sock != INVALID_SOCKET) {
       if (!setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one)) &&
-          !::bind(sock, (struct sockaddr *)&s, sizeof(s)) &&
-          sendto(sock, (const char *)WAKE_COMMAND, sizeof WAKE_COMMAND, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) ==
-              sizeof WAKE_COMMAND) {
+        !::bind(sock, (struct sockaddr *)&s, sizeof(s)) &&
+        sendto(sock, (const char *)WAKE_COMMAND, sizeof WAKE_COMMAND, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) ==
+        sizeof WAKE_COMMAND) {
         LOG_VERBOSE(wxT("radar_pi: Sent wake command to radar on %s"), m_interface_addr[i].FormatNetworkAddress());
-      } else {
+      }
+      else {
         wxLogError(wxT("radar_pi: Failed to send wake command to radars on %s"), m_interface_addr[i].FormatNetworkAddress());
       }
       closesocket(sock);

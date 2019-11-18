@@ -374,35 +374,35 @@ SOCKET NavicoReceive::PickNextEthernetCard() {
   return socket;
 }
 
-SOCKET NavicoReceive::GetNewReportSocket() {
-  NavicoRadarInfo info = m_pi->GetNavicoRadarInfo(m_ri->m_radar);
+SOCKET NavicoReceive::GetNewReportSocket() {  
   SOCKET socket;
   wxString error = wxT("");
   wxString s = wxT("");
-  if ((!info.report_addr.IsNull()) && (m_report_addr.IsNull() || !(info.report_addr == m_report_addr))) {
-    m_report_addr = info.report_addr;
-    m_send_addr = info.send_command_addr;
-    m_data_addr = info.spoke_data_addr;
+  
+  if (!(m_info == m_pi->GetNavicoRadarInfo(m_ri->m_radar))) {   // initial values or NavicoLocate modified the info
+    m_info = m_pi->GetNavicoRadarInfo(m_ri->m_radar);
+    m_interface_addr = m_pi->GetRadarInterfaceAddress(m_ri->m_radar);
     UpdateSendCommand();
     LOG_INFO(wxT("radar_pi: %s Locator found radar at IP %s [%s]"), m_ri->m_name,
-             M_SETTINGS.radar_address[m_ri->m_radar].FormatNetworkAddressPort(), info.to_string());
-  }
-  if (m_interface_addr.IsNull() || m_report_addr.IsNull()) {
+      M_SETTINGS.radar_address[m_ri->m_radar].FormatNetworkAddressPort(), m_info.to_string());
+  };
+
+  if (m_interface_addr.IsNull() || m_info.report_addr.IsNull()) {
     LOG_RECEIVE(wxT("radar_pi: %s no address to listen on"), m_ri->m_name);
     return INVALID_SOCKET;
   }
 
   if (RadarOrder[m_ri->m_radar_type] >= RO_PRIMARY) {
-    if (!info.serialNr.IsNull()) {
-      s << _("Serial #") << info.serialNr << wxT("\n");
+    if (!m_info.serialNr.IsNull()) {
+      s << _("Serial #") << m_info.serialNr << wxT("\n");
     }
   }
 
-  socket = startUDPMulticastReceiveSocket(m_interface_addr, m_report_addr, error);
+  socket = startUDPMulticastReceiveSocket(m_interface_addr, m_info.report_addr, error);
 
   if (socket != INVALID_SOCKET) {
     wxString addr = m_interface_addr.FormatNetworkAddress();
-    wxString rep_addr = m_report_addr.FormatNetworkAddressPort();
+    wxString rep_addr = m_info.report_addr.FormatNetworkAddressPort();
 
     LOG_RECEIVE(wxT("radar_pi: %s scanning interface %s for data from %s"), m_ri->m_name, addr.c_str(), rep_addr.c_str());
 
@@ -425,10 +425,10 @@ SOCKET NavicoReceive::GetNewDataSocket() {
   }
 
   error.Printf(wxT("%s data: "), m_ri->m_name.c_str());
-  socket = startUDPMulticastReceiveSocket(m_interface_addr, m_data_addr, error);
+  socket = startUDPMulticastReceiveSocket(m_interface_addr, m_info.spoke_data_addr, error);
   if (socket != INVALID_SOCKET) {
     wxString addr = m_interface_addr.FormatNetworkAddress();
-    wxString rep_addr = m_data_addr.FormatNetworkAddressPort();
+    wxString rep_addr = m_info.spoke_data_addr.FormatNetworkAddressPort();
 
     LOG_RECEIVE(wxT("radar_pi: %s listening for data on %s from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
   } else {
@@ -464,7 +464,6 @@ void *NavicoReceive::Entry(void) {
   SOCKET reportSocket = INVALID_SOCKET;
 
   LOG_VERBOSE(wxT("radar_pi: NavicoReceive thread %s starting"), m_ri->m_name.c_str());
-
   reportSocket = GetNewReportSocket();  // Start using the same interface_addr as previous time
 
   while (m_receive_socket != INVALID_SOCKET) {
@@ -599,8 +598,8 @@ void *NavicoReceive::Entry(void) {
       }
     }
 
-    if (!(m_report_addr == m_pi->GetNavicoRadarInfo(m_ri->m_radar).report_addr)) {
-    // it seems that Navicolocate modified the report_addr
+    if (!(m_info == m_pi->GetNavicoRadarInfo(m_ri->m_radar))) {
+    // Navicolocate modified the RadarInfo in settings
       closesocket(reportSocket);
       reportSocket = INVALID_SOCKET;
     };
@@ -648,9 +647,9 @@ void NavicoReceive::SetRadarType(RadarType t) {
 }
 
 void NavicoReceive::UpdateSendCommand() {
-  if (!m_send_addr.IsNull() && m_ri->m_control) {
+  if (!m_info.send_command_addr.IsNull() && m_ri->m_control) {
     NavicoControl *control = (NavicoControl *)m_ri->m_control;
-    control->SetMultiCastAddress(m_send_addr);
+    control->SetMultiCastAddress(m_info.send_command_addr);
   }
 }
 
@@ -918,7 +917,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
             break;
           case REPORT_TYPE_4G:
             if (m_ri->m_radar_type != RT_4GA && m_ri->m_radar_type != RT_4GB && m_ri->m_radar_type != RT_3G) {
-              LOG_INFO(wxT("radar_pi: Radar report tells us this a Navico 4G or a modern 3G"));
+              LOG_INFO(wxT("radar_pi: 4Radar report tells us this a Navico 4G or a modern 3G"));
               if (m_ri->m_radar_type == RT_HaloB) {
                 SetRadarType(RT_4GB);
               } else {
