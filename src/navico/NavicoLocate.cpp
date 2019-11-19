@@ -298,18 +298,19 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const Netw
 
     m_pi->FoundNavicoRadarInfo(radar_ipA, interface_address, infoA);
 
-    NavicoRadarInfo infoB;
-    infoB.serialNr = wxString::FromAscii(data->serialno);
-    infoB.spoke_data_addr = NetworkAddress(data->addrDataB);
-    infoB.report_addr = NetworkAddress(data->addrReportB);
-    infoB.send_command_addr = NetworkAddress(data->addrSendB);
-    NetworkAddress radar_ipB = radar_address;
-    radar_ipB.port = htons(RO_SECONDARY);
+    if (len > 150) {  // for 3G radar len == 150, no B available
+      NavicoRadarInfo infoB;
+      infoB.serialNr = wxString::FromAscii(data->serialno);
+      infoB.spoke_data_addr = NetworkAddress(data->addrDataB);
+      infoB.report_addr = NetworkAddress(data->addrReportB);
+      infoB.send_command_addr = NetworkAddress(data->addrSendB);
+      NetworkAddress radar_ipB = radar_address;
+      radar_ipB.port = htons(RO_SECONDARY);
 
-    LOG_VERBOSE(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipB.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoB.to_string());
+      LOG_VERBOSE(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipB.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoB.to_string());
 
-    m_pi->FoundNavicoRadarInfo(radar_ipB, interface_address, infoB);
-
+      m_pi->FoundNavicoRadarInfo(radar_ipB, interface_address, infoB);
+    }
 #define LOG_ADDR_N(n)                                                                                  \
   LOG_RECEIVE(wxT("radar_pi: NavicoLocate %s addr %s = %s"), radar_address.FormatNetworkAddress(), #n, \
               FormatPackedAddress(data->addr##n));

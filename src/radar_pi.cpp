@@ -1629,36 +1629,50 @@ void radar_pi::FoundNavicoRadarInfo(const NetworkAddress &addr, const NetworkAdd
     radar_order[i] = RadarOrder[i];
   }
 
-
   // When NavicoLocate finds a Halo type we should only put it in a info field of an Halo radar
    /*As far as we know:
    13 and 14 = 4G
    15 = old Halo
    16
    17
-   18 = new 3G
+   18 & serialNr[4] == '4' = new 3G (or 4G?)
    19 = Halo24
    */
-  if (info.serialNr[0] == '1' && (info.serialNr[1] == '9'  || info.serialNr[1] == '7' || 
-    info.serialNr[1] == '6' || info.serialNr[1] == '5')) {  // It seems that serial # starting with 15 - 19  refers to Halo type radars
-    halo_type = true;
-  }
 
-  if (halo_type) {
-    radar_order[4] = 0;
-    radar_order[5] = 0;
-  }
-  else {
-    radar_order[6] = 0;
-    radar_order[7] = 0;
+  // Find the number of physical Navico radars
+  size_t navicos = 0;  // number of hard Navico radars
+  bool navico[RT_MAX];
+  CLEAR_STRUCT(navico);
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (m_radar[r]->m_radar_type == RT_3G)    navico[RT_3G] = true;
+    if (m_radar[r]->m_radar_type == RT_4GA)   navico[RT_4GA] = true;
+    if (m_radar[r]->m_radar_type == RT_4GB)   navico[RT_4GB] = true;
+    if (m_radar[r]->m_radar_type == RT_HaloA) navico[RT_HaloA] = true;
+    if (m_radar[r]->m_radar_type == RT_HaloB) navico[RT_HaloB] = true;
+   }
+  
+  navicos = (size_t) navico[RT_3G] + (size_t) (navico[RT_4GA] || navico[RT_4GB]) + (size_t) (navico[RT_HaloA] || navico[RT_HaloB]);
+
+  // more then 2 Navico radars: associate the info found with the right type of radar 
+  if (navicos > 1) {
+    if (info.serialNr[0] == '1' && (info.serialNr[1] == '9' || info.serialNr[1] == '7' ||
+      info.serialNr[1] == '6' || info.serialNr[1] == '5')) {  // It seems that serial # starting with 15 - 19  refers to Halo type radars
+      halo_type = true;
+    }
+
+    if (halo_type) {
+      radar_order[RT_4GA] = 0;
+      radar_order[RT_4GB] = 0;
+    }
+    else {
+      radar_order[RT_HaloA] = 0;
+      radar_order[RT_HaloB] = 0;
+    }
   }
 
   if (info.serialNr[0] == '1' && info.serialNr[1] == '8' && info.serialNr[4] == '4') {
-    // this is a new 3G which will handle NavicoLocate
-    radar_order[3] = 1;
-    for (size_t t = 4; t < 8; t++) {
-      radar_order[t] = 0;
-    }
+    // this is a new 3G or (may be) a 4G which will handle NavicoLocate
+    radar_order[RT_3G] = 1;
   }
 
   NetworkAddress int_face_addr = interface_addr;
