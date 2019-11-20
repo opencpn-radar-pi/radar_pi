@@ -50,6 +50,7 @@ PLUGIN_BEGIN_NAMESPACE
 //
 
 class NavicoLocate : public wxThread {
+#define MAX_REPORT 10
  public:
   NavicoLocate(radar_pi *pi) : wxThread(wxTHREAD_JOINABLE) {
     Create(64 * 1024);  // Stack size
@@ -60,6 +61,7 @@ class NavicoLocate : public wxThread {
     m_interface_addr = 0;
     m_socket = 0;
     m_interface_count = 0;
+    m_report_count = 0;
 
     LOG_INFO(wxT("radar_pi: NavicoLocate thread created, prio= %i"), GetPriority());
   }
@@ -99,6 +101,7 @@ class NavicoLocate : public wxThread {
   NetworkAddress *m_interface_addr;
   SOCKET *m_socket;
   size_t m_interface_count;
+  size_t m_report_count;
 
   wxCriticalSection m_exclusive;
 };

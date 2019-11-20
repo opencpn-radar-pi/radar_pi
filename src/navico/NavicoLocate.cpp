@@ -293,9 +293,13 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const Netw
     infoA.send_command_addr = NetworkAddress(data->addrSendA);
     NetworkAddress radar_ipA = radar_address;
     radar_ipA.port = htons(RO_PRIMARY);
-
-    LOG_VERBOSE(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoA.to_string());
-
+    if (m_report_count < MAX_REPORT) {
+      LOG_INFO(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoA.to_string());
+      m_report_count++;
+    }
+    else {
+      LOG_RECEIVE(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoA.to_string());
+    }
     m_pi->FoundNavicoRadarInfo(radar_ipA, interface_address, infoA);
 
     if (len > 150) {  // for 3G radar len == 150, no B available
@@ -306,9 +310,12 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const Netw
       infoB.send_command_addr = NetworkAddress(data->addrSendB);
       NetworkAddress radar_ipB = radar_address;
       radar_ipB.port = htons(RO_SECONDARY);
-
-      LOG_VERBOSE(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipB.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoB.to_string());
-
+      if (m_report_count < MAX_REPORT) {
+        LOG_INFO(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipB.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoB.to_string());
+      } else {
+        LOG_RECEIVE(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoA.to_string());
+        m_report_count++;
+      }
       m_pi->FoundNavicoRadarInfo(radar_ipB, interface_address, infoB);
     }
 #define LOG_ADDR_N(n)                                                                                  \
