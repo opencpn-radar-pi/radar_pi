@@ -50,6 +50,7 @@ PLUGIN_BEGIN_NAMESPACE
 //
 
 class NavicoLocate : public wxThread {
+#define MAX_REPORT 10
  public:
   NavicoLocate(radar_pi *pi) : wxThread(wxTHREAD_JOINABLE) {
     Create(64 * 1024);  // Stack size
@@ -60,6 +61,7 @@ class NavicoLocate : public wxThread {
     m_interface_addr = 0;
     m_socket = 0;
     m_interface_count = 0;
+    m_report_count = 0;
 
     LOG_INFO(wxT("radar_pi: NavicoLocate thread created, prio= %i"), GetPriority());
   }
@@ -78,19 +80,13 @@ class NavicoLocate : public wxThread {
     }
   }
 
-  /*
-   * Find the multicast addresses for a particular radar.
-   * The port of the radar_ip should be 0 for radar A and 1 for radar B.
-   */
-  const NavicoRadarInfo *getRadarInfo(const NetworkAddress &radar_ip);
-
   volatile bool m_is_shutdown;
 
  protected:
   void *Entry(void);
 
  private:
-  bool ProcessReport(const NetworkAddress &radar_address, const uint8_t *data, size_t len);
+  bool ProcessReport(const NetworkAddress &radar_address, const NetworkAddress &interface_address, const uint8_t *data, size_t len);
   bool DetectedRadar(const NetworkAddress &radar_address);
   void WakeRadar();
 
@@ -105,8 +101,7 @@ class NavicoLocate : public wxThread {
   NetworkAddress *m_interface_addr;
   SOCKET *m_socket;
   size_t m_interface_count;
-
-  std::map<NetworkAddress, NavicoRadarInfo> m_radar_map;
+  size_t m_report_count;
 
   wxCriticalSection m_exclusive;
 };

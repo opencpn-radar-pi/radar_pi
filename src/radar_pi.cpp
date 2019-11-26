@@ -293,8 +293,7 @@ int radar_pi::Init(void) {
   // Now that the settings are made we can initialize the RadarInfos
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->Init();
-
-    if (RadarOrder[m_radar[r]->m_radar_type] >= RO_PRIMARY && m_locator == NULL) {
+    if ((m_radar[r]->m_radar_type == RT_3G || m_radar[r]->m_radar_type == RT_4GA || m_radar[r]->m_radar_type == RT_HaloA) && m_locator == NULL) {
       m_locator = new NavicoLocate(this);
       if (m_locator->Run() != wxTHREAD_NO_ERROR) {
         wxLogError(wxT("radar_pi: unable to start Navico Radar Locator thread"));
@@ -463,10 +462,14 @@ bool radar_pi::MakeRadarSelection() {
   for (r = 0; r < RADARS; r++) {
     if (m_radar[r]) {
       oldRadarType[r] = m_radar[r]->m_radar_type;
+      LOG_INFO(wxT("OLD radarnr= %i, type = %i"), r, m_radar[r]->m_radar_type);
     } else {
       oldRadarType[r] = RT_MAX;
     }
   }
+
+  NetworkAddress null = NetworkAddress(wxT(""));
+#define CLEAR_RADAR_INFO CLEAR_STRUCT(m_settings.navico_radar_info[r]); 
 
   m_initialized = false;
   SelectDialog dlg(m_parent_window, this);
@@ -478,7 +481,8 @@ bool radar_pi::MakeRadarSelection() {
         if (!m_radar[r]) {
           m_settings.window_pos[r] = wxPoint(100 + 512 * r, 100);
           m_settings.control_pos[r] = wxDefaultPosition;
-          m_radar[r] = new RadarInfo(this, r);
+          CLEAR_RADAR_INFO;
+          m_radar[r] = new RadarInfo(this, r);        
         }
         m_radar[r]->m_radar_type = (RadarType)i;
         r++;
@@ -486,18 +490,26 @@ bool radar_pi::MakeRadarSelection() {
         ret = true;
       }
     }
-    SaveConfig();
-
+   
     for (r = 0; r < M_SETTINGS.radar_count; r++) {
       if (m_radar[r] && m_radar[r]->m_radar_type != oldRadarType[r]) {
         m_radar[r]->Shutdown();
         RemoveCanvasContextMenuItem(m_context_menu_control_id[r]);
         delete m_radar[r];
+        CLEAR_RADAR_INFO;
         m_radar[r] = new RadarInfo(this, r);
       }
     }
 
-    LoadConfig();
+    // And now set the radar types for the selected radars
+    r = 0;
+    for (size_t i = 0; i < RT_MAX; i++) {
+      if (dlg.m_selected[i]->GetValue()) {
+        m_radar[r]->m_radar_type = (RadarType)i;
+        r++;
+        m_settings.radar_count = r;
+      }
+    }
 
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       m_radar[r]->Init();
@@ -505,6 +517,7 @@ bool radar_pi::MakeRadarSelection() {
     for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
       if (m_radar[r]) {
         m_radar[r]->Shutdown();
+        CLEAR_RADAR_INFO;
         delete m_radar[r];
         m_radar[r] = 0;
       }
@@ -514,6 +527,7 @@ bool radar_pi::MakeRadarSelection() {
     TimedControlUpdate();
   }
   m_initialized = true;
+  SaveConfig();
   return ret;
 }
 
@@ -1606,53 +1620,116 @@ void radar_pi::SetNavicoRadarInfo(size_t r, const NavicoRadarInfo &info) {
   M_SETTINGS.navico_radar_info[r] = info;
 }
 
-void radar_pi::FoundNavicoRadarInfo(const NetworkAddress &addr, const NavicoRadarInfo &info) {
+void radar_pi::FoundNavicoRadarInfo(const NetworkAddress &addr, const NetworkAddress &interface_addr, const NavicoRadarInfo &info) {
   wxCriticalSectionLocker lock(m_exclusive);
+
+  bool halo_type = false;
+  int radar_order[RT_MAX];
+  for (int i = 0; i < RT_MAX; i++) {
+    radar_order[i] = RadarOrder[i];
+  }
+
+  // When NavicoLocate finds a Halo type we should only put it in a info field of an Halo radar
+   /*As far as we know:
+   13 and 14 = 4G
+   15 = old Halo
+   16
+   17
+   18 & serialNr[4] == '4' = new 3G (or 4G?)
+   19 = Halo24
+   */
+
+  // Find the number of physical Navico radars
+  size_t navicos = 0;  // number of hard Navico radars
+  bool navico[RT_MAX];
+  CLEAR_STRUCT(navico);
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (m_radar[r]->m_radar_type == RT_3G)    navico[RT_3G] = true;
+    if (m_radar[r]->m_radar_type == RT_4GA)   navico[RT_4GA] = true;
+    if (m_radar[r]->m_radar_type == RT_4GB)   navico[RT_4GB] = true;
+    if (m_radar[r]->m_radar_type == RT_HaloA) navico[RT_HaloA] = true;
+    if (m_radar[r]->m_radar_type == RT_HaloB) navico[RT_HaloB] = true;
+   }
+  
+  navicos = (size_t) navico[RT_3G] + (size_t) (navico[RT_4GA] || navico[RT_4GB]) + (size_t) (navico[RT_HaloA] || navico[RT_HaloB]);
+
+  // more then 2 Navico radars: associate the info found with the right type of radar 
+  if (navicos > 1) {
+    if (info.serialNr[0] == '1' && (info.serialNr[1] == '9' || info.serialNr[1] == '7' ||
+      info.serialNr[1] == '6' || info.serialNr[1] == '5')) {  // It seems that serial # starting with 15 - 19  refers to Halo type radars
+      halo_type = true;
+    }
+
+    if (halo_type) {
+      radar_order[RT_4GA] = 0;
+      radar_order[RT_4GB] = 0;
+    }
+    else {
+      radar_order[RT_HaloA] = 0;
+      radar_order[RT_HaloB] = 0;
+    }
+  }
+
+  if (info.serialNr[0] == '1' && info.serialNr[1] == '8' && info.serialNr[4] == '4') {
+    // this is a new 3G or (may be) a 4G which will handle NavicoLocate
+    radar_order[RT_3G] = 1;
+  }
+
+  NetworkAddress int_face_addr = interface_addr;
+  NetworkAddress radar_addr = addr;
 
   // First, check if we already know this serial#
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (ntohs(addr.port) == RadarOrder[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
-        M_SETTINGS.navico_radar_info[r].serialNr == info.serialNr) {
-      M_SETTINGS.radar_address[r] = addr;      // If we look by serial# we can even update the IP address
-      M_SETTINGS.navico_radar_info[r] = info;  // Update the multicast addresses
+    if (ntohs(addr.port) == radar_order[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
+      M_SETTINGS.navico_radar_info[r].serialNr == info.serialNr) {
+      SetNavicoRadarInfo(r, info);
+      SetRadarInterfaceAddress(r, int_face_addr, radar_addr);
       return;
     }
   }
 
   // Second loop, put it in radar with same report address but no serial#
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (ntohs(addr.port) == RadarOrder[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
-        M_SETTINGS.navico_radar_info[r].serialNr.IsNull() && !info.report_addr.IsNull() &&
-        M_SETTINGS.navico_radar_info[r].report_addr == info.report_addr) {
-      M_SETTINGS.radar_address[r] = addr;      // Update the address
-      M_SETTINGS.navico_radar_info[r] = info;  // Update the serial #
-      LOG_INFO(wxT("radar_pi: Radar %u is navico radar #%s at IP %s"), r, info.serialNr, addr.FormatNetworkAddress());
-      break;
+    if (ntohs(addr.port) == radar_order[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
+      !info.report_addr.IsNull() &&                               // If the report address fits, override the serial
+      M_SETTINGS.navico_radar_info[r].report_addr == info.report_addr) {
+      SetNavicoRadarInfo(r, info);
+      SetRadarInterfaceAddress(r, int_face_addr, radar_addr);
+      return;
     }
   }
 
   // Third loop, put it in radar with same IP address but no serial# nor report address
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (ntohs(addr.port) == RadarOrder[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
-        M_SETTINGS.radar_address[r] == addr && M_SETTINGS.navico_radar_info[r].serialNr.IsNull() &&
-        M_SETTINGS.navico_radar_info[r].report_addr.IsNull()) {
-      M_SETTINGS.navico_radar_info[r] = info;
-      LOG_INFO(wxT("radar_pi: Radar %u is navico radar #%s at IP %s"), r, info.serialNr, addr.FormatNetworkAddress());
-      break;
+    if (ntohs(addr.port) == radar_order[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
+      M_SETTINGS.radar_address[r] == addr && M_SETTINGS.navico_radar_info[r].serialNr.IsNull() &&
+      M_SETTINGS.navico_radar_info[r].report_addr.IsNull()) {
+      SetNavicoRadarInfo(r, info);
+      SetRadarInterfaceAddress(r, int_face_addr, radar_addr);
+      return;
     }
   }
 
   // In case of desperation, put it in a free slot without serial# or address
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (ntohs(addr.port) == RadarOrder[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
-        M_SETTINGS.radar_address[r].IsNull() && M_SETTINGS.navico_radar_info[r].serialNr.IsNull() &&
-        M_SETTINGS.navico_radar_info[r].report_addr.IsNull()) {
-      M_SETTINGS.navico_radar_info[r] = info;
-      M_SETTINGS.radar_address[r] = addr;
-      LOG_INFO(wxT("radar_pi: Radar %u is navico radar #%s at IP %s"), r, info.serialNr, addr.FormatNetworkAddress());
-      break;
+    if (ntohs(addr.port) == radar_order[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
+      M_SETTINGS.radar_address[r].IsNull() && M_SETTINGS.navico_radar_info[r].serialNr.IsNull() &&
+      M_SETTINGS.navico_radar_info[r].report_addr.IsNull()) {
+      SetNavicoRadarInfo(r, info);
+      SetRadarInterfaceAddress(r, int_face_addr, radar_addr);
+      return;
     }
   }
+
+  // No free slot, override the first radar A with A, B with B but only Halo with Halo
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (ntohs(addr.port) == radar_order[m_radar[r]->m_radar_type]) {  // Only put primary in primary slots, etc.
+      SetNavicoRadarInfo(r, info);
+      SetRadarInterfaceAddress(r, int_face_addr, radar_addr);
+      return;
+    }
+  }
+  LOG_INFO(wxT("radar_pi: Failed to allocate info from NavicoLocate to a radar"));
 }
 
 bool radar_pi::HaveRadarSerialNo(size_t r) {

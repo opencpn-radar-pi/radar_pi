@@ -70,6 +70,15 @@ class NavicoRadarInfo {
       send_command_addr = NetworkAddress(tokenizer.GetNextToken());
     }
   }
+  bool operator == (NavicoRadarInfo inf) {
+    if (serialNr == inf.serialNr && report_addr == inf.report_addr && spoke_data_addr == inf.spoke_data_addr
+      && send_command_addr == inf.send_command_addr) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  };
 };
 
 PLUGIN_END_NAMESPACE

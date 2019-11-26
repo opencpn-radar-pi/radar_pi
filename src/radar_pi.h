@@ -515,7 +515,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   }
 
   void SetNavicoRadarInfo(size_t r, const NavicoRadarInfo &info);
-  void FoundNavicoRadarInfo(const NetworkAddress &addr, const NavicoRadarInfo &info);
+  void FoundNavicoRadarInfo(const NetworkAddress &radar_addr, const NetworkAddress &interface_addr, const NavicoRadarInfo &info);
   bool HaveRadarSerialNo(size_t r);
   NavicoRadarInfo &GetNavicoRadarInfo(size_t r);
 
