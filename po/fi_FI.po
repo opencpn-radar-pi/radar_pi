@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-04-11 13:37+0200\n"
-"PO-Revision-Date: 2019-06-04 15:07\n"
+"PO-Revision-Date: 2019-11-27 15:32\n"
 "Last-Translator: Pavel Kalian (nohal)\n"
 "Language-Team: Finnish\n"
 "Language: fi_FI\n"
@@ -295,7 +295,7 @@ msgstr "AIS/ARPA tutkaikkunalla"
 
 #: src\ControlsDialog.cpp:1002
 msgid "Doppler"
-msgstr ""
+msgstr "Doppler"
 
 #: src\ControlsDialog.cpp:1009 src\OptionsDialog.cpp:132
 msgid "Target trails"
@@ -348,27 +348,27 @@ msgstr "Käynnistä/pysäytä tutka"
 
 #: src\ControlsDialog.cpp:1852
 msgid "Hide/Show PPI"
-msgstr ""
+msgstr "Näytä/Piilota PPI"
 
 #: src\ControlsDialog.cpp:1853
 msgid "Shown"
-msgstr ""
+msgstr "Näkyvissä"
 
 #: src\ControlsDialog.cpp:1853
 msgid "Hidden"
-msgstr ""
+msgstr "Piilotettu"
 
 #: src\ControlsDialog.cpp:1856
 msgid "Float/Dock PPI"
-msgstr ""
+msgstr "Kelluta/telakoi PPI"
 
 #: src\ControlsDialog.cpp:1857
 msgid "Docked"
-msgstr ""
+msgstr "Telakoitu"
 
 #: src\ControlsDialog.cpp:1857
 msgid "Floating"
-msgstr ""
+msgstr "Kelluva"
 
 #: src\ControlsDialog.cpp:1862
 msgid "Clear EBL/VRM"
@@ -528,11 +528,11 @@ msgstr "Jäljen lopetusväri"
 
 #: src\OptionsDialog.cpp:148
 msgid "Doppler Approaching color"
-msgstr ""
+msgstr "Lähestyvien kohteiden väri"
 
 #: src\OptionsDialog.cpp:156
 msgid "Doppler Receding color"
-msgstr ""
+msgstr "Etääntyvien kohteiden väri"
 
 #: src\OptionsDialog.cpp:166
 msgid "Target colors"
@@ -628,7 +628,7 @@ msgstr "Valikkko"
 
 #: src\RadarCanvas.cpp:104
 msgid "Menu "
-msgstr ""
+msgstr "Valikko "
 
 #: src\RadarCanvas.cpp:162
 msgid "Rain"
@@ -985,15 +985,15 @@ msgstr "Lintu"
 
 #: src\navico\NavicoControlSet.h:76
 msgid "Normal"
-msgstr ""
+msgstr "Normaali"
 
 #: src\navico\NavicoControlSet.h:76
 msgid "Approaching"
-msgstr ""
+msgstr "Lähestyvä"
 
 #: src\navico\NavicoReceive.cpp:393 src\navico\NavicoReceive.cpp:875
 msgid "Serial #"
-msgstr ""
+msgstr "Sarjanumero #"
 
 #: src\navico\NavicoReceive.cpp:863
 msgid "Waking up"

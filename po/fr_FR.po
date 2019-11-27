@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-04-11 13:37+0200\n"
-"PO-Revision-Date: 2019-06-04 15:05\n"
+"PO-Revision-Date: 2019-11-27 15:31\n"
 "Last-Translator: Pavel Kalian (nohal)\n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -69,7 +69,7 @@ msgstr "Retour"
 
 #: src\ControlsDialog.cpp:541 src\ControlsDialog.cpp:706
 msgid "Scan speed"
-msgstr "Vitesse de scan"
+msgstr "Vitesse de balayage"
 
 #: src\ControlsDialog.cpp:542 src\ControlsDialog.cpp:718
 msgid "Installation"
@@ -303,7 +303,7 @@ msgstr "Traces des cibles"
 
 #: src\ControlsDialog.cpp:1016
 msgid "Trails motion"
-msgstr ""
+msgstr "Mouvement du sillage des échos"
 
 #: src\ControlsDialog.cpp:1034
 msgid "PPI Forward Aft View"
