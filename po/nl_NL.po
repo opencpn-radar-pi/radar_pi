@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-04-11 13:37+0200\n"
-"PO-Revision-Date: 2019-05-17 00:43\n"
+"PO-Revision-Date: 2019-11-27 15:32\n"
 "Last-Translator: Pavel Kalian (nohal)\n"
 "Language-Team: Dutch\n"
 "Language: nl_NL\n"
@@ -53,7 +53,7 @@ msgstr "Alarm"
 
 #: src\ControlsDialog.cpp:474 src\ControlsDialog.cpp:484
 msgid "Arpa"
-msgstr ""
+msgstr "Arpa"
 
 #: src\ControlsDialog.cpp:477 src\ControlsDialog.cpp:487
 msgid " Off"
@@ -295,7 +295,7 @@ msgstr "AIS/ARPA op PPI"
 
 #: src\ControlsDialog.cpp:1002
 msgid "Doppler"
-msgstr ""
+msgstr "Doppler"
 
 #: src\ControlsDialog.cpp:1009 src\OptionsDialog.cpp:132
 msgid "Target trails"
@@ -315,7 +315,7 @@ msgstr "Vernieuwingsfrequentie"
 
 #: src\ControlsDialog.cpp:1061
 msgid "Timed Standby"
-msgstr ""
+msgstr "Tijdelijk Standby"
 
 #: src\ControlsDialog.cpp:1127
 msgid "Cursor"
@@ -352,11 +352,11 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:1853
 msgid "Shown"
-msgstr ""
+msgstr "Getoond"
 
 #: src\ControlsDialog.cpp:1853
 msgid "Hidden"
-msgstr ""
+msgstr "Verborgen"
 
 #: src\ControlsDialog.cpp:1856
 msgid "Float/Dock PPI"
@@ -368,7 +368,7 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:1857
 msgid "Floating"
-msgstr ""
+msgstr "Zwevend"
 
 #: src\ControlsDialog.cpp:1862
 msgid "Clear EBL/VRM"
@@ -628,7 +628,7 @@ msgstr "Menu"
 
 #: src\RadarCanvas.cpp:104
 msgid "Menu "
-msgstr ""
+msgstr "Menu "
 
 #: src\RadarCanvas.cpp:162
 msgid "Rain"
@@ -668,7 +668,7 @@ msgstr "Gestabiliseerd"
 
 #: src\RadarInfo.cpp:1014
 msgid "COG Up"
-msgstr ""
+msgstr "GrK omhoog"
 
 #: src\RadarInfo.cpp:1017
 msgid "North Up"
@@ -676,7 +676,7 @@ msgstr "Noord-Boven"
 
 #: src\RadarInfo.cpp:1099
 msgid "Zone"
-msgstr ""
+msgstr "Zone"
 
 #: src\RadarInfo.cpp:1101
 msgid "(Confirmed)"
@@ -718,11 +718,11 @@ msgstr ""
 
 #: src\RadarInfo.cpp:1493 src\garminxhd\GarminxHDReceive.cpp:495
 msgid "Stopping"
-msgstr ""
+msgstr "Stoppend"
 
 #: src\RadarInfo.cpp:1496 src\garminxhd\GarminxHDReceive.cpp:505
 msgid "Starting"
-msgstr ""
+msgstr "Startend"
 
 #: src\RadarInfo.cpp:1499 src\garminxhd\GarminxHDReceive.cpp:500
 msgid "Spinning down"
@@ -735,7 +735,7 @@ msgstr ""
 
 #: src\RadarPanel.cpp:39 src\radar_pi.cpp:1090 src\radar_pi.cpp:1110
 msgid "RADAR"
-msgstr ""
+msgstr "RADAR"
 
 #: src\RadarPanel.cpp:171
 msgid "OpenGL mode required"
@@ -747,7 +747,7 @@ msgstr "Kan OpenGL canvas niet maken"
 
 #: src\radar_pi.cpp:284
 msgid "Radar plugin with support for multiple radars"
-msgstr ""
+msgstr "Radar plugin met ondersteuning voor meerdere radars"
 
 #: src\radar_pi.cpp:320
 msgid "Show radar"
@@ -771,15 +771,15 @@ msgstr "Verwijder alle radar targets"
 
 #: src\radar_pi.cpp:419
 msgid "Radar PlugIn"
-msgstr ""
+msgstr "Radar Plug-In"
 
 #: src\radar_pi.cpp:421
 msgid "Radar PlugIn with support for Navico Broadband radars (and more soon)\n"
-msgstr ""
+msgstr "Radar Plug-In met ondersteuning voor Navico Broadband radars (en meer binnenkort)\n"
 
 #: src\radar_pi.cpp:788
 msgid " Zone"
-msgstr ""
+msgstr " Zone"
 
 #: src\radar_pi.cpp:832
 msgid "Next alarm in"
@@ -791,23 +791,23 @@ msgstr "GrK"
 
 #: src\radar_pi.cpp:1087
 msgid "HDT"
-msgstr ""
+msgstr "HDT"
 
 #: src\radar_pi.cpp:1107
 msgid "HDM"
-msgstr ""
+msgstr "HDM"
 
 #: src\radar_pi.cpp:1667
 msgid "GPS"
-msgstr ""
+msgstr "GPS"
 
 #: src\radar_pi.cpp:1833
 msgid "WMM"
-msgstr ""
+msgstr "WMM"
 
 #: src\radar_pi.cpp:1982
 msgid "NMEA"
-msgstr ""
+msgstr "NMEA"
 
 #: src\SelectDialog.cpp:39
 msgid "Radar Selection"
@@ -816,7 +816,7 @@ msgstr ""
 #: src\SelectDialog.cpp:53
 #, c-format
 msgid "Select (max) %d radar scanner types"
-msgstr ""
+msgstr "Selecteer (max) %d radar scanner types"
 
 #: src\socketutil.cpp:180
 msgid "Cannot create UDP socket"
@@ -836,7 +836,7 @@ msgstr "Ongeldig IP-adres voor multicast-UDP"
 
 #: src\SoftwareControlSet.h:78
 msgid "min"
-msgstr ""
+msgstr "min"
 
 #: src\SoftwareControlSet.h:101
 msgid "Head up"
@@ -860,7 +860,7 @@ msgstr ""
 
 #: src\SoftwareControlSet.h:114
 msgid "Center View"
-msgstr ""
+msgstr "Centreer beeld op positie"
 
 #: src\SoftwareControlSet.h:114
 msgid "Forward View"
@@ -872,23 +872,23 @@ msgstr ""
 
 #: src\SoftwareControlSet.h:123
 msgid "15 sec"
-msgstr ""
+msgstr "15 sec"
 
 #: src\SoftwareControlSet.h:123
 msgid "1 min"
-msgstr ""
+msgstr "1 min"
 
 #: src\SoftwareControlSet.h:123
 msgid "3 min"
-msgstr ""
+msgstr "3 min"
 
 #: src\SoftwareControlSet.h:123
 msgid "5 min"
-msgstr ""
+msgstr "5 min"
 
 #: src\SoftwareControlSet.h:123
 msgid "10 min"
-msgstr ""
+msgstr "10 min"
 
 #: src\SoftwareControlSet.h:123
 msgid "Continuous"
