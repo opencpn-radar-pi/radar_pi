@@ -184,6 +184,7 @@ int radar_pi::Init(void) {
   m_fat_font = m_font;
   m_fat_font.SetWeight(wxFONTWEIGHT_BOLD);
   m_fat_font.SetPointSize(m_font.GetPointSize() + 1);
+  m_small_font.SetPointSize(m_font.GetPointSize() - 1);
   m_max_canvas = 0;
   for (int i = 0; i < MAX_CHART_CANVAS; i++) {
     m_chart_overlay[i] = -1;

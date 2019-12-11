@@ -197,7 +197,7 @@ void MessageBox::CreateControls() {
   m_message_sizer->Add(m_info_sizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
   m_statistics = new wxStaticText(this, wxID_ANY, _("Statistics"), wxDefaultPosition, wxDefaultSize, 0);
-  m_statistics->SetFont(GetOCPNGUIScaledFont_PlugIn(_T("StatusBar")));
+  m_statistics->SetFont(m_pi->m_small_font);
   m_info_sizer->Add(m_statistics, 0, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE, BORDER);
 
   // The <Choose Radar> button

@@ -567,8 +567,9 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   wxMenuItem *m_mi3[RADARS];
   PlugIn_ViewPort *m_vp;
 
-  wxFont m_font;      // The dialog font at a normal size
-  wxFont m_fat_font;  // The dialog font at a bigger size, bold
+  wxFont m_font;        // The dialog font at a normal size
+  wxFont m_fat_font;    // The dialog font at a bigger size, bold
+  wxFont m_small_font;  // The dialog font at a smaller size
 
   PersistentSettings m_settings;
   RadarInfo *m_radar[RADARS];
