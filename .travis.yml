@@ -67,11 +67,10 @@ addons:
 # for tagged commits to GitHub Releases.
 deploy:
 - provider: releases
-  api_key: 
-    secure:c226c56a3e5bb89b63abf6595cb0753e7886caa5
+  api_key: $GitHub_auth_token
   file_glob: true
   file: $TRAVIS_BUILD_DIR/build/*.{deb,rpm,dmg,txz,pkg.tar.xz}
   skip_cleanup: true
   draft: true
-  edge: true
+  
  
