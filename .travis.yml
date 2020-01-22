@@ -72,5 +72,6 @@ deploy:
   file: $TRAVIS_BUILD_DIR/build/*.{deb,rpm,dmg,txz,pkg.tar.xz}
   skip_cleanup: true
   draft: true
-  
+  on:
+    branch: master
  
