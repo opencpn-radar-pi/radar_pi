@@ -60,5 +60,4 @@ deploy:
   draft: true
   prerelease: true
   on:
-    appveyor_repo_tag: true # deploy on tag push only
     configuration: Release  # Debug contains non-redist MS DLLs
