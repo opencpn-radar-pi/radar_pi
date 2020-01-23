@@ -1,7 +1,7 @@
 ---
 version: 2
 jobs:
-   build-debian:
+   build-xenial:
      docker:
        - image: circleci/buildpack-deps:xenial-scm
      environment:
@@ -15,6 +15,15 @@ jobs:
            echo "deb-src http://us.archive.ubuntu.com/ubuntu/ xenial-updates main"
            | sudo tee -a /etc/apt/sources.list
        - run: cat /etc/apt/sources.list
+       - run: ci/circleci-build-debian.sh
+       - run: ci/circleci-upload.sh
+   build-buster:
+     docker:
+       - image: circleci/buildpack-deps:buster-scm
+     environment:
+       - OCPN_TARGET:  buster
+     steps:
+       - checkout
        - run: ci/circleci-build-debian.sh
        - run: ci/circleci-upload.sh
    build-flatpak:
@@ -60,23 +69,27 @@ workflows:
   version: 2
   build_all:
     jobs:
-      - build-debian:
+      - build-buster:
           filters:
             branches:
-              only: tmp
+              only: master
+      - build-xenial:
+          filters:
+            branches:
+              only: master
       - build-flatpak:
           filters:
             branches:
-              only: tmp
+              only: master
       - build-fedora:
           filters:
             branches:
-              only: tmp
+              only: master
       - build-macos:
           filters:
             branches:
-              only: tmp
+              only: master
       - build-mingw:
           filters:
             branches:
-              only: tmp
+              only: master
