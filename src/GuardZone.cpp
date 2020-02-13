@@ -147,21 +147,14 @@ void GuardZone::SearchTargets() {
   if (m_pi->m_radar[0] == 0 && m_pi->m_radar[1] == 0) {
     return;
   }
-  if (m_pi->m_radar[0] != 0 && m_pi->m_radar[1] != 0) {
-    if (m_pi->m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT &&
-        m_pi->m_radar[1]->m_state.GetValue() != RADAR_TRANSMIT)  // Both radars exist, No radar transmitting
-      return;
-  }
-  if (m_pi->m_radar[0] != 0 && m_pi->m_radar[1] == 0) {
-    if (m_pi->m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT) {  // Radar0 not transmitting, radar1 non existent
-      return;
+  for (size_t r = 0; r < RADARS; r++) {
+    if (m_pi->m_radar[r] != 0) {
+      if (m_pi->m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT)  // There is at least one radar transmitting
+        break;
     }
+    return;
   }
-  if (m_pi->m_radar[0] == 0 && m_pi->m_radar[1] != 0) {
-    if (m_pi->m_radar[1]->m_state.GetValue() != RADAR_TRANSMIT) {  // Radar1 not transmitting, radar0 non existent
-      return;
-    }
-  }
+  
 
   if (m_ri->m_pixels_per_meter == 0.) {
     return;
