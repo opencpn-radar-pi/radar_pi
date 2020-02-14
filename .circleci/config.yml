@@ -72,24 +72,24 @@ workflows:
       - build-buster:
           filters:
             branches:
-              only: master
+              only: ci
       - build-xenial:
           filters:
             branches:
-              only: master
+              only: ci
       - build-flatpak:
           filters:
             branches:
-              only: master
+              only: ci
       - build-fedora:
           filters:
             branches:
-              only: master
+              only: ci
       - build-macos:
           filters:
             branches:
-              only: master
+              only: ci
       - build-mingw:
           filters:
             branches:
-              only: master
+              only: ci
