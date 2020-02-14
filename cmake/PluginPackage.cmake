@@ -18,8 +18,9 @@ SET(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_CURRENT_BINARY_DIR};${PACKAGE_NAME};AL
 SET(CPACK_PACKAGE_EXECUTABLES OpenCPN ${PACKAGE_NAME})
 
 IF(WIN32)
-# to protect against confusable windows users, let us _not_ generate zip packages
-#  SET(CPACK_GENERATOR "NSIS;ZIP")
+# The TGZ (tar.gz) is used by experimental plugin manager,
+  SET(CPACK_GENERATOR "NSIS;TGZ")
+
 
   # override install directory to put package files in the opencpn directory
   SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenCPN")
@@ -82,9 +83,9 @@ IF(UNIX AND NOT APPLE)
   IF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
     SET (ARCH "armhf")
     # don't bother with rpm on armhf
-    SET(CPACK_GENERATOR "DEB;RPM;TBZ2")
+    SET(CPACK_GENERATOR "DEB;TGZ")
   ELSE ()
-    SET(CPACK_GENERATOR "DEB;RPM;TBZ2")
+    SET(CPACK_GENERATOR "DEB;TGZ")
 
     IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
       SET (ARCH "amd64")
@@ -146,7 +147,6 @@ ENDIF(TWIN32 AND NOT UNIX)
 #ADD_CUSTOM_TARGET(dummy COMMENT "dummy: Done." DEPENDS ${PACKAGE_NAME})
 
 
-INCLUDE(CPack)
 
 
 IF(APPLE)
@@ -180,5 +180,14 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jp
  ADD_CUSTOM_TARGET(create-pkg COMMENT "create-pkg: Done."
  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin.pkg )
 
+ SET(CPACK_GENERATOR "TGZ")
 
 ENDIF(APPLE)
+
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PACKAGE_NAME} S63 chart PlugIn for OpenCPN")
+SET(CPACK_PACKAGE_DESCRIPTION "${PACKAGE_NAME} S63 chart PlugIn for OpenCPN")
+SET(CPACK_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+
+SET(CPACK_PACKAGE_FILE_NAME "${PKG_NVR}_${PKG_TARGET}-${PKG_TARGET_VERSION}")
+
+INCLUDE(CPack)

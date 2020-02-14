@@ -8,6 +8,9 @@
 
 # define minimum cmake version
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.2)
+if (POLICY CMP0053)
+    CMAKE_POLICY(SET CMP0053 NEW)
+endif ()
 
 PROJECT(radar_pi)
 
@@ -15,12 +18,59 @@ SET(PACKAGE_NAME radar_pi)
 SET(VERBOSE_NAME Radar)
 SET(TITLE_NAME Radar)
 SET(CPACK_PACKAGE_CONTACT "kees@verruijt.net")
-#SET(CMAKE_BUILD_TYPE Debug)
 SET(VERSION_MAJOR "5")
 SET(VERSION_MINOR "0")
 SET(VERSION_PATCH "4-beta6")
 SET(VERSION_DATE "2019-11-28")
 SET(OCPN_MIN_VERSION "ov50")
+
+SET(PACKAGE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+SET(PKG_RELEASE "3")
+SET(PKG_API_VERSION "1.16")
+SET(PKG_AUTHOR "David S Register")
+SET(PKG_NVR ${PACKAGE_NAME}-${PACKAGE_VERSION}.${PKG_RELEASE})
+
+# The @keyword@ references are patched to actual values by upload script.
+SET(TARBALL_URL "https://dl.cloudsmith.io/public/@pkg_repo@/raw")
+SET(TARBALL_URL ${TARBALL_URL}/names/@name@/versions/@version@/@filename@)
+
+include("cmake/PluginSetup.cmake")
+set(PLUGIN_NAME radar-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
+
+
+OPTION(OCPN_FLATPAK "Build flatpak plugin" OFF)
+
+configure_file(
+  # Required in flatpak, done early.
+  ${CMAKE_SOURCE_DIR}/pkg_version.sh.in
+  ${CMAKE_CURRENT_BINARY_DIR}/pkg_version.sh
+)
+if (OCPN_FLATPAK)
+    find_program(TAR NAMES gtar tar)
+    if (NOT TAR)
+        message(FATAL_ERROR "tar not found, required for OCPN_FLATPAK")
+    endif ()
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/radar-plugin.xml.in
+        ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME}.xml
+    )
+    add_custom_target(flatpak-build ALL
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/flatpak
+        COMMAND flatpak-builder --force-clean
+            ${CMAKE_CURRENT_BINARY_DIR}/app
+            org.opencpn.OpenCPN.Plugin.radar.yaml
+    )
+    add_custom_target("package")
+    add_custom_command(
+        TARGET package
+        COMMAND ${TAR}
+            -czf ${PKG_NVR}_${PKG_TARGET_NVR}.tar.gz
+            --transform 's|.*/files/|radar_pi-flatpak-${PACKAGE_VERSION}/|'
+            ${CMAKE_CURRENT_BINARY_DIR}/app/files
+    )
+    return ()
+endif()
+
 
 INCLUDE("cmake/PluginConfigure.cmake")
 
@@ -162,10 +212,24 @@ SET(SRC_JSON
 INCLUDE_DIRECTORIES(src/nmea0183)
 INCLUDE_DIRECTORIES(src/wxJSON)
 INCLUDE_DIRECTORIES(src)
+INCLUDE_DIRECTORIES(api-16)
 
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_RADAR} ${SRC_NMEA0183} ${SRC_JSON} ${SRC_EMULATOR} ${SRC_GARMIN_HD} ${SRC_GARMIN_XHD} ${SRC_NAVICO})
+if (MINGW)
+    TARGET_LINK_LIBRARIES(${PACKAGE_NAME} ${wxWidgets_LIBRARIES} ${WINSOCK_LIBRARY})
+endif ()
 
 
 INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginLocalization.cmake")
 INCLUDE("cmake/PluginPackage.cmake")
+
+message(STATUS "Build target: ${PLUGIN_NAME}")
+configure_file(
+  ${CMAKE_SOURCE_DIR}/radar-plugin.xml.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME}.xml
+)
+configure_file(
+  ${CMAKE_SOURCE_DIR}/pkg_version.sh.in
+  ${CMAKE_CURRENT_BINARY_DIR}/pkg_version.sh
+)
