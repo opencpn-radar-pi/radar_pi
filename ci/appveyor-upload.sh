@@ -4,13 +4,13 @@
 # Upload the .tar.gz and .xml artifacts to cloudsmith
 #
 
-STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'alec-leamas/opencpn-plugins-stable'}
-UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'alec-leamas/opencpn-plugins-unstable'}
+STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'david-register/ocpn-plugins-stable'}
+UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'david-register/ocpn-plugins-unstable'}
 
-if [ "$(git rev-parse master)" != "$(git rev-parse HEAD)" ]; then
-    echo "Not on master branch, skipping deployment."
-    exit 0
-fi
+#if [ "$(git rev-parse master)" != "$(git rev-parse HEAD)" ]; then
+#    echo "Not on master branch, skipping deployment."
+#    exit 0
+#fi
 
 if [ -z "$CLOUDSMITH_API_KEY" ]; then
     echo 'Cannot deploy to cloudsmith, missing $CLOUDSMITH_API_KEY'
@@ -38,7 +38,7 @@ tarball=$(ls *.tar.gz)
 tarball_basename=${tarball##*/}
 
 source ../build/pkg_version.sh
-test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}+${BUILD_ID}.${commit}"
+test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
 tarball_name=radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
 
