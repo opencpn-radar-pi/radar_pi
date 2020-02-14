@@ -14,8 +14,8 @@
 
 set -xe
 
-STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'alec-leamas/opencpn-plugins-stable'}
-UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'alec-leamas/opencpn-plugins-unstable'}
+STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'david-register/ocpn-plugins-stable'}
+UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'david-register/ocpn-plugins-unstable'}
 
 if [ -z "$CIRCLECI" ]; then
     exit 0;
@@ -53,7 +53,7 @@ tarball=$(ls $HOME/project/build/*.tar.gz)
 tarball_basename=${tarball##*/}
 
 source $HOME/project/build/pkg_version.sh
-test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}+${BUILD_ID}.${commit}"
+test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
 tarball_name=radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
 
