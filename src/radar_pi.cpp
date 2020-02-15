@@ -241,8 +241,9 @@ int radar_pi::Init(void) {
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
   m_parent_window = GetOCPNCanvasWindow();
-  m_shareLocn = *GetpSharedDataLocation() + _T("plugins") + wxFileName::GetPathSeparator() + _T("radar_pi") +
-                wxFileName::GetPathSeparator() + _T("data") + wxFileName::GetPathSeparator();
+  m_shareLocn = GetPluginDataDir("radar_pi")
+      + wxFileName::GetPathSeparator() + _T("data")
+      + wxFileName::GetPathSeparator();
 
   m_pMessageBox = new MessageBox;
   m_pMessageBox->Create(m_parent_window, this);

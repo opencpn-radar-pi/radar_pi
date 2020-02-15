@@ -1,19 +1,22 @@
-clone_folder: c:\projects\radar_pi
-shallow_clone: true
+clone_folder: c:\project\opencpn\radar_pi
+shallow_clone: false
+clone_depth: 10
+
 image:
 - Visual Studio 2017
 
-platform:
-  - Win32
+platform: 
+# - x64
+- Win32
 
-configuration: Release
+configuration: RelWithDebInfo
 test: OFF
 
 install:
+  # VS2015 and earlier version - '"C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x86'
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
-
-  # sent environment variables for wxWidgets
-  - set WXPARENT=C:\
+  
+  # set environment variables for wxWidgets
   - set WXWIN=C:\wxWidgets-3.1.2
   - set wxWidgets_ROOT_DIR=%WXWIN%
   - set wxWidgets_LIB_DIR=%WXWIN%\lib\vc_dll
@@ -22,26 +25,36 @@ install:
   # install dependencies:
   - choco install poedit
 
-  - ps: Start-FileDownload http://opencpn.navnux.org/build_deps/nsis-3.04-setup.exe
-  - cmd: nsis-3.04-setup.exe /S
-
   # Download and unzip wxwidgets
   - ps: Start-FileDownload http://opencpn.navnux.org/build_deps/wxWidgets-3.1.2.7z
   - cmd: 7z x wxWidgets-3.1.2.7z -o%WXWIN% > null
 
-  - set
+  # some debugging information
+  # - cmake --help
+  # - set Displays sensitive password!
+
+  # build wxWidgets - Disabled as we provide prebuilt WX to save time
+  #- cmd: cd %WXWIN%\build\msw\
+  #- cmd: nmake -f makefile.vc BUILD=release SHARED=1 CFLAGS=/D_USING_V120_SDK71_ CXXFLAGS=/D_USING_V120_SDK71_
+  #- cmd: nmake -f makefile.vc BUILD=debug SHARED=1 CFLAGS=/D_USING_V120_SDK71_ CXXFLAGS=/D_USING_V120_SDK71_
 
 before_build:
-  - cd c:\projects\radar_pi
+  - cd c:\project\opencpn\radar_pi
   - mkdir build
   - cd build
-  - ps: Start-FileDownload https://downloads.sourceforge.net/project/opencpnplugins/opencpn_lib/4.99.1405-vc141_xp/opencpn.lib
-  - ps: Start-FileDownload http://opencpn.navnux.org/build_deps/OpenCPN_buildwin-4.99a.7z
-  - cmd: 7z x -y OpenCPN_buildwin-4.99a.7z -oc:\project\radar_pi\buildwin
-  - cmake -T v141_xp ..
+#  - ps: Start-FileDownload http://opencpn.navnux.org/build_deps/OpenCPN_buildwin-4.99a.7z
+#  - cmd: 7z x -y OpenCPN_buildwin-4.99a.7z -oc:\project\opencpn\buildwin
+  - cmake -T v141_xp -DOCPN_CI_BUILD=ON ..
 
 build_script:
-  - cmake --build . --target package --config release
+  - cmake -G "Visual Studio 15 2017"   ..
+  - cmake --build . --target install --config RelWithDebInfo
+  - cmake --build . --target package --config RelWithDebInfo
+  - choco install git
+  - python -m ensurepip
+  - python -m pip install -q setuptools
+  - python -m pip install -q cloudsmith-cli
+  - bash ../ci/appveyor-upload.sh
 
 artifacts:
   - path: 'build\*.exe'
@@ -58,5 +71,3 @@ deploy:
   tag: $(APPVEYOR_REPO_TAG_NAME)
   on:
     APPVEYOR_REPO_TAG: true # deploy on tag push only
-
-
