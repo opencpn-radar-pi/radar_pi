@@ -106,7 +106,7 @@ void GarminHDReceive::ProcessFrame(radar_line *packet) {
   }
 
   m_ri->m_state.Update(RADAR_TRANSMIT);
-  m_ri->m_range.Update(packet->range_meters);
+  m_ri->m_range.Update(packet->range_meters+1);
   m_ri->m_gain.Update(packet->gain_level[0], packet->gain_level[1] ? RCS_AUTO_1 : RCS_MANUAL);
   m_ri->m_rain.Update(packet->sea_clutter[0], packet->sea_clutter[1] ? RCS_AUTO_1 : RCS_MANUAL);
   m_ri->m_rain.Update(packet->rain_clutter[0]);
@@ -526,8 +526,8 @@ bool GarminHDReceive::ProcessReport(const uint8_t *report, size_t len) {
       }
 
       case 0x2a7: {
-        LOG_VERBOSE(wxT("0x02a7: range %d"), packet->range_meters);  // Range in meters
-        m_ri->m_range.Update(packet->range_meters);
+        LOG_VERBOSE(wxT("0x02a7: range %d"), packet->range_meters+1);  // Range in meters
+        m_ri->m_range.Update(packet->range_meters+1);
 
         LOG_VERBOSE(wxT("0x02a7: gain %d"), packet->gain_level);  // Gain
         m_gain = packet->gain_level;
