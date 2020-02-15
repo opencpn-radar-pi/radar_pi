@@ -17,6 +17,22 @@ jobs:
        - run: cat /etc/apt/sources.list
        - run: ci/circleci-build-debian.sh
        - run: ci/circleci-upload.sh
+   build-bionic:
+     docker:
+       - image: circleci/buildpack-deps:bionic-scm
+     environment:
+       - OCPN_TARGET:  bionic
+     steps:
+       - checkout
+       - run: >
+           echo "deb-src http://us.archive.ubuntu.com/ubuntu/ bionic main"
+           | sudo tee -a /etc/apt/sources.list
+       - run: >
+           echo "deb-src http://us.archive.ubuntu.com/ubuntu/ bionic-updates main"
+           | sudo tee -a /etc/apt/sources.list
+       - run: cat /etc/apt/sources.list
+       - run: ci/circleci-build-debian.sh
+       - run: ci/circleci-upload.sh
    build-buster:
      docker:
        - image: circleci/buildpack-deps:buster-scm
@@ -74,6 +90,10 @@ workflows:
             branches:
               only: ci
       - build-xenial:
+          filters:
+            branches:
+              only: ci
+      - build-bionic:
           filters:
             branches:
               only: ci
