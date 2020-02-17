@@ -6,8 +6,8 @@ matrix:
   - env:
     - OCPN_TARGET=stretch-armhf
     - OCPN_BRANCH=ci
-    - OCPN_STABLE_REPO=david-register/ocpn-plugins-stable
-    - OCPN_UNSTABLE_REPO=david-register/ocpn-plugins-unstable
+    - OCPN_STABLE_REPO=kees-verruijt/ocpn-plugins-stable
+    - OCPN_UNSTABLE_REPO=kees-verruijt/ocpn-plugins-unstable
     - DOCKER_IMAGE=raspbian/stretch
     services:
     - docker
@@ -16,8 +16,8 @@ matrix:
   - env:
     - OCPN_TARGET=buster-armhf
     - OCPN_BRANCH=ci
-    - OCPN_STABLE_REPO=david-register/ocpn-plugins-stable
-    - OCPN_UNSTABLE_REPO=david-register/ocpn-plugins-unstable
+    - OCPN_STABLE_REPO=kees-verruijt/ocpn-plugins-stable
+    - OCPN_UNSTABLE_REPO=kees-verruijt/ocpn-plugins-unstable
     - DOCKER_IMAGE=opencpn/raspbian-buster:plugin_build_tooling
     services:
     - docker
