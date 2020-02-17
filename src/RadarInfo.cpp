@@ -173,6 +173,7 @@ RadarInfo::~RadarInfo() {
   // it does not harm to remove an non existing menu
   if (m_pi->m_context_menu_control_id[m_radar] != -1) {
     RemoveCanvasContextMenuItem(m_pi->m_context_menu_control_id[m_radar]);
+
     m_pi->m_context_menu_control_id[m_radar] = -1;
   }
 
