@@ -394,6 +394,13 @@ bool radar_pi::DeInit(void) {
 
   SaveConfig();
 
+  RemoveCanvasContextMenuItem(m_context_menu_show_id);
+  RemoveCanvasContextMenuItem(m_context_menu_hide_id);
+  RemoveCanvasContextMenuItem(m_context_menu_acquire_radar_target);
+  RemoveCanvasContextMenuItem(m_context_menu_delete_radar_target);
+  RemoveCanvasContextMenuItem(m_context_menu_delete_all_radar_targets);
+  LOG_INFO(wxT("radar_pi Context menus removed"));
+
   // Delete the RadarInfo objects. This will call their destructor and delete all data.
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     delete m_radar[r];
