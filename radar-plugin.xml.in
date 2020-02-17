@@ -11,14 +11,17 @@
   <source> https://github.com/opencpn-radar-pi/radar_pi </source>
 
   <description>
-This plugin overlays the radar picture on OpenCPN. A versatile plugin that
-can be easily adapted to most broadband radars. 
+This plugin connects OpenCPN to Garmin (x)HD and Navico Broadband and HALO radars.
 
-Support for OpenCPN V 5.0 and multi canvas with simultaneous overlay of two
-different radars. Revised multi radar type architecture.  Adding a new radar
-only requires radar knowledge and can reuse the existing display technology.
-Support for four simultaneously active radars.  Multiple brands can be mixed.
-  </description>
+Works with Garmin HD, xHD, Navico BR24, 3G, 4G, HALOxx radars.
+
+When a compass heading is provided it will allow radar overlay on the chart(s).
+It also allows separate display of a traditional radar picture (PPI).
+
+Supports MARPA (even on radars that do not support this themselves), Guard zones,
+AIS overlay on PPI, and various radar dependent features such as 
+dual radar range and Doppler.
+</description>
 
   <target>${PKG_TARGET}</target>
   <target-version>${PKG_TARGET_VERSION}</target-version>
