@@ -78,7 +78,17 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
     git checkout master
     git merge upstream/master
     ```
+   or for unstable:
+    ```
+    git checkout Beta
+    git merge upstream/Beta
+    ```
+
 3. Copy the XML files from CloudSmith to your local plugins repo:
+    ```
+    ./cloudsmith-sync.sh radar_pi kees-verruijt ocpn-plugins-stable
+    ```
+   Or for unstable/Beta:
     ```
     ./cloudsmith-sync.sh radar_pi kees-verruijt ocpn-plugins-unstable
     ```
@@ -86,6 +96,8 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
    e.g. you should have the `plugins` directory in the same directory as `radar_pi`, and 
    `radar_pi` must be on an up-to-date `ci` branch.
    The script determines the last commit-id and then downloads those files from Cloudsmith.
+   It also checks that `-stable` downloads go into the `master` branch and `-unstable`
+   downloads go into the `Beta` branch of the plugin repo.
 
 4. Check that all radar_pi files are updated in the `metadata` subdirectory.
 
@@ -97,7 +109,6 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
     ```
 
 6. Create a Pull Request:
-
     ```
     git add .
     git commit -m"Radar plugin version X.YZ"
@@ -106,6 +117,8 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
 
 7. Go to github.com and create a Pull Request for `OpenCPN/plugins`
 
+   For stable/master: https://github.com/OpenCPN/plugins/compare/master...opencpn-radar-pi:master?expand=1
+   For unstable/Beta: https://github.com/OpenCPN/plugins/compare/Beta...opencpn-radar-pi:Beta?expand=1
 
 
 ## Oops
