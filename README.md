@@ -5,6 +5,10 @@ radar_pi - Radar Plugin for OpenCPN
 This is a work in progress. It will support Navico Broadband and Halo radars as well as Garmin xHD and possibly others.
 It is meant as the community effort to only write the common parts of radar support once.
 
+End Users
+---------
+Please see the documentation Wiki at https://github.com/opencpn-radar-pi/radar_pi/wiki
+
 Compiling
 ---------
 
