@@ -27,7 +27,7 @@ SET(OCPN_MIN_VERSION "ov51")
 SET(PACKAGE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 SET(PKG_RELEASE "3")
 SET(PKG_API_VERSION "1.16")
-SET(PKG_AUTHOR "Håkan Svensson / Douwe Fokkema / Kees Verruijt / David S Register")
+SET(PKG_AUTHOR "Hakan Svensson / Douwe Fokkema / Kees Verruijt / David S Register")
 SET(PKG_NVR ${PACKAGE_NAME}-${PACKAGE_VERSION}.${PKG_RELEASE})
 
 # The @keyword@ references are patched to actual values by upload script.
