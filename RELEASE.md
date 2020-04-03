@@ -76,13 +76,22 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
     ```
     git fetch upstream
     git checkout master
-    git merge upstream/master
+    git pull
+    git merge -s recursive -X theirs upstream/master
     ```
    or for unstable:
     ```
+    git fetch upstream
     git checkout Beta
-    git merge upstream/Beta
+    git pull
+    git merge -s recursive -X theirs upstream/Beta
     ```
+
+    The `fetch upstream` gets the work done upstream, but doesn't merge yet. The `checkout <branch>` moves
+    your version to that branch, but just the version as you had it before. Since others in the team may have
+    made a release, you need to merge those first with `pull`. Now you are ready to update to the upstream
+    versio. Since that may have changed dramatically, we merge this in a way that always takes 'their' files
+    not 'ours'. This should give no conflicts.
 
 3. Copy the XML files from CloudSmith to your local plugins repo:
     ```
@@ -92,8 +101,8 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
     ```
     ./cloudsmith-sync.sh radar_pi kees-verruijt ocpn-plugins-unstable
     ```
-   This assumes that an up-to-date version of _radar_pi_ is in the directory `../radar_pi`; 
-   e.g. you should have the `plugins` directory in the same directory as `radar_pi`, and 
+   This assumes that an up-to-date version of _radar_pi_ is in the directory `../radar_pi`;
+   e.g. you should have the `plugins` directory in the same directory as `radar_pi`, and
    `radar_pi` must be on an up-to-date `ci` branch.
    The script determines the last commit-id and then downloads those files from Cloudsmith.
    It also checks that `-stable` downloads go into the `master` branch and `-unstable`
