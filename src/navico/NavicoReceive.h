@@ -47,6 +47,7 @@ class NavicoReceive : public RadarReceive {
  public:
   NavicoReceive(radar_pi *pi, RadarInfo *ri, NetworkAddress reportAddr, NetworkAddress dataAddr, NetworkAddress sendAddr)
       : RadarReceive(pi, ri) {
+    m_info.serialNr = wxT(" ");
     m_info.spoke_data_addr = dataAddr;
     m_info.report_addr = reportAddr;
     m_info.send_command_addr = sendAddr;
