@@ -477,7 +477,9 @@ bool radar_pi::MakeRadarSelection() {
   }
 
   NetworkAddress null = NetworkAddress(wxT(""));
-#define CLEAR_RADAR_INFO CLEAR_STRUCT(m_settings.navico_radar_info[r]); 
+#define CLEAR_RADAR_INFO                         \
+  CLEAR_STRUCT(m_settings.navico_radar_info[r]); \
+  m_settings.navico_radar_info[r].serialNr = wxT(" ");
 
   m_initialized = false;
   SelectDialog dlg(m_parent_window, this);
