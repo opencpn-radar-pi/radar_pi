@@ -12,7 +12,7 @@ if [ -n "$CI" ]; then
         https://raw.githubusercontent.com/Homebrew/install/master/uninstall \
         > uninstall
     chmod 755 uninstall
-    ./uninstall -f
+    ./uninstall -f -q
     inst="https://raw.githubusercontent.com/Homebrew/install/master/install"
     /usr/bin/ruby -e "$(curl -fsSL $inst)"
 fi

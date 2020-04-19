@@ -17,6 +17,8 @@ set -xe
 STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'kees-verruijt/ocpn-plugins-stable'}
 UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'kees-verruijt/ocpn-plugins-unstable'}
 
+source $HOME/project/ci/commons.sh
+
 if [ -z "$CIRCLECI" ]; then
     exit 0;
 fi
@@ -61,6 +63,11 @@ sudo sed -i -e "s|@pkg_repo@|$REPO|"  $xml
 sudo sed -i -e "s|@name@|$tarball_name|" $xml
 sudo sed -i -e "s|@version@|$VERSION|" $xml
 sudo sed -i -e "s|@filename@|$tarball_basename|" $xml
+
+# Repack using gnu tar (cmake's is problematic) and add metadata.
+sudo cp $xml metadata.xml
+sudo chmod 666 $tarball
+repack $tarball metadata.xml
 
 cloudsmith push raw --republish --no-wait-for-sync \
     --name radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \

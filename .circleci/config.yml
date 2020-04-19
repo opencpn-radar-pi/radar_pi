@@ -33,6 +33,22 @@ jobs:
        - run: cat /etc/apt/sources.list
        - run: ci/circleci-build-debian.sh
        - run: ci/circleci-upload.sh
+   build-focal:
+     docker:
+       - image: circleci/buildpack-deps:focal-scm
+     environment:
+       - OCPN_TARGET:  focal
+     steps:
+       - checkout
+       - run: >
+           echo "deb-src http://us.archive.ubuntu.com/ubuntu/ focal main"
+           | sudo tee -a /etc/apt/sources.list
+       - run: >
+           echo "deb-src http://us.archive.ubuntu.com/ubuntu/ focal-updates main"
+           | sudo tee -a /etc/apt/sources.list
+       - run: cat /etc/apt/sources.list
+       - run: ci/circleci-build-debian.sh
+       - run: ci/circleci-upload.sh
    build-buster:
      docker:
        - image: circleci/buildpack-deps:buster-scm
@@ -94,6 +110,10 @@ workflows:
             branches:
               only: ci
       - build-bionic:
+          filters:
+            branches:
+              only: ci
+      - build-focal:
           filters:
             branches:
               only: ci

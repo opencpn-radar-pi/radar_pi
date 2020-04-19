@@ -52,6 +52,10 @@ while read line; do
     echo $line
 done < $xml > xml.tmp && cp xml.tmp $xml && rm xml.tmp
 
+source ../ci/commons.sh
+cp $xml metadata.xml
+repack $tarball metadata.xml
+
 cloudsmith push raw --republish --no-wait-for-sync \
     --name radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
     --version ${VERSION} \
