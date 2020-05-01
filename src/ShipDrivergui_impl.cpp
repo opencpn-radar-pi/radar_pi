@@ -158,8 +158,8 @@ void Dlg::StartDriving() {
 		wxString wildcard = wxT("Text files (*.txt)|*.txt|All files (*.*)|*.*");
 
 		wxString s = _T("/");
-		wxString defaultDir = *GetpSharedDataLocation() + _T("plugins")
-			+ s + _T("ShipDriver_pi") + s + _T("data") + s;
+		char * pName = "ShipDriver_pi";
+		wxString defaultDir = GetPluginDataDir(pName) + s + _T("data") + s;
 
 		wxString defaultFilename = wxEmptyString;
 		wxFileDialog filedlg(this->m_parent, caption, defaultDir, defaultFilename, wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
@@ -1159,8 +1159,10 @@ double Dlg::GetPolarSpeed(double lat, double lon, double cse){
 
 	wxString error;
 	wxString s = _T("/");
-	wxString polars_path = *GetpSharedDataLocation() + _T("plugins")
-		+ s + _T("ShipDriver_pi") + s + _T("data") + s;
+
+	char * pName = "ShipDriver_pi";	
+
+	wxString polars_path = GetPluginDataDir(pName) + s + _T("data") + s;
 	wxString myFile = polars_path + _T("arcona.xml");
 
 	double twa = 360 - ((cse - dir) - 360);
