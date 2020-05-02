@@ -1063,19 +1063,21 @@ void Dlg::OnContextMenu(double m_lat, double m_lon){
 
 void Dlg::RequestGrib(wxDateTime time){
 
-	wxJSONValue v;
+	Json::Value value;
 	time = time.FromUTC();
 
-	v[_T("Day")] = time.GetDay();
-	v[_T("Month")] = time.GetMonth();
-	v[_T("Year")] = time.GetYear();
-	v[_T("Hour")] = time.GetHour();
-	v[_T("Minute")] = time.GetMinute();
-	v[_T("Second")] = time.GetSecond();
+	value["Day"] = time.GetDay();
+	value["Month"] = time.GetMonth();
+	value["Year"] = time.GetYear();
+	value["Hour"] = time.GetHour();
+	value["Minute"] = time.GetMinute();
+	value["Second"] = time.GetSecond();
 
-	wxJSONWriter w;
 	wxString out;
-	w.Write(v, out);
+    
+    Json::FastWriter writer;
+    out = writer.write(value);
+        
 
 	SendPluginMessage(wxString(_T("GRIB_TIMELINE_RECORD_REQUEST")), out);
 

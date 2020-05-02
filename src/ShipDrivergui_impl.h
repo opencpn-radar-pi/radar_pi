@@ -41,8 +41,8 @@
 #include <cmath>
 #include <wx/stdpaths.h>
 #include "wx/process.h"
-#include "wx/jsonreader.h"
-#include "wx/jsonwriter.h"
+#include "jsoncpp/json/reader.h"
+#include "jsoncpp/json/writer.h"
 #include <wx/thread.h>
 #include "tinyxml.h"
 #include "tinystr.h"

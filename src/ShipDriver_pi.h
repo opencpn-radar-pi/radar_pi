@@ -39,8 +39,8 @@
 
 #include "ocpn_plugin.h" //Required for OCPN plugin functions
 #include "ShipDrivergui_impl.h"
-#include "wx/jsonreader.h"
-#include "wx/jsonwriter.h"
+#include "jsoncpp/json/reader.h"
+#include "jsoncpp/json/writer.h"
 #include <wx/datetime.h>
 #include "GribRecordSet.h"
 #include <wx/tokenzr.h>

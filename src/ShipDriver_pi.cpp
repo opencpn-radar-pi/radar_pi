@@ -40,6 +40,8 @@
 class ShipDriver_pi;
 class Dlg;
 
+using namespace std;
+
 // the class factories, used to create and destroy instances of the PlugIn
 
 extern "C" DECL_EXP opencpn_plugin* create_pi(void *ppimgr)
@@ -413,14 +415,21 @@ void ShipDriver_pi::SetPluginMessage(wxString &message_id, wxString &message_bod
 {
 	if (message_id == _T("GRIB_TIMELINE"))
 	{
-		wxJSONReader r;
-		wxJSONValue v;
-		r.Parse(message_body, &v);
-
+		Json::Reader reader;
+		Json::Value value;
+        
+        if (!reader.parse((std::string)message_body,value)) {
+            wxLogMessage("Grib_TimeLine error");
+            return;
+        }
+		
+        //int day = value["Day"].asInt();
+        
+        
 		wxDateTime time;
 		time.Set
-			(v[_T("Day")].AsInt(), (wxDateTime::Month)v[_T("Month")].AsInt(), v[_T("Year")].AsInt(),
-			v[_T("Hour")].AsInt(), v[_T("Minute")].AsInt(), v[_T("Second")].AsInt());
+			(value["Day"].asInt(), (wxDateTime::Month)value["Month"].asInt(), value["Year"].asInt(),
+			value["Hour"].asInt(), value["Minute"].asInt(), value["Second"].asInt());
 
 		wxString dt;
 		dt = time.Format(_T("%Y-%m-%d  %H:%M "));
@@ -432,16 +441,21 @@ void ShipDriver_pi::SetPluginMessage(wxString &message_id, wxString &message_bod
 	}
 	if (message_id == _T("GRIB_TIMELINE_RECORD"))
 	{
-		wxJSONReader r;
-		wxJSONValue v;
-		r.Parse(message_body, &v);
+		Json::Reader reader;
+		Json::Value value;
+        
+        if (!reader.parse((std::string)message_body,value)) {
+            wxLogMessage("Grib_TimeLine_Record error");
+            return;
+        }
+		
 
 		static bool shown_warnings;
 		if (!shown_warnings) {
 			shown_warnings = true;
 
-			int grib_version_major = v[_T("GribVersionMajor")].AsInt();
-			int grib_version_minor = v[_T("GribVersionMinor")].AsInt();
+			int grib_version_major = value["GribVersionMajor"].asInt();
+			int grib_version_minor = value["GribVersionMinor"].asInt();
 
 			int grib_version = 1000 * grib_version_major + grib_version_minor;
 			int grib_min = 1000 * GRIB_MIN_MAJOR + GRIB_MIN_MINOR;
@@ -457,7 +471,7 @@ void ShipDriver_pi::SetPluginMessage(wxString &message_id, wxString &message_bod
 			}
 		}
 
-		wxString sptr = v[_T("TimelineSetPtr")].AsString();
+		wxString sptr = value["TimelineSetPtr"].asString();
 
 		wxCharBuffer bptr = sptr.To8BitData();
 		const char* ptr = bptr.data();

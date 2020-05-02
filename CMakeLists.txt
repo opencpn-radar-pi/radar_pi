@@ -21,14 +21,17 @@ SET(NAME_SUFFIX "ov50")
 
 set (CMAKE_CXX_STANDARD 11)
 
-
-
-
 #SET(CMAKE_BUILD_TYPE Debug)
+SET( wxWidgets_USE_DEBUG OFF)
+SET( wxWidgets_USE_UNICODE ON)
+SET( wxWidgets_USE_UNIVERSAL OFF)
+SET( wxWidgets_USE_STATIC OFF)
+
 
 OPTION(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 
 INCLUDE("cmake/PluginConfigure.cmake")
+INCLUDE("cmake/PluginJSON.cmake")
 
 IF(SHIPDRIVER_USE_SVG)
   ADD_DEFINITIONS(-DSHIPDRIVER_USE_SVG)
@@ -61,17 +64,6 @@ SET(SRC_ShipDriver
 	    src/tinyxmlerror.cpp
 		src/tinyxmlparser.cpp		
 	)
-
-IF(WIN32)
-SET(SRC_JSON
-         src/wxJSON/jsonval.cpp
-         src/wxJSON/jsonreader.cpp
-         src/wxJSON/jsonwriter.cpp
-         src/wx/json_defs.h
-         src/wx/jsonval.h
-         src/wx/jsonreader.h
-         src/wx/jsonwriter.h)
-ENDIF(WIN32)
 
 
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_ShipDriver} ${SRC_JSON}
