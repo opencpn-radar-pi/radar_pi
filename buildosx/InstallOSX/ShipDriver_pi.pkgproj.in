@@ -1334,7 +1334,7 @@
 				</dict>
 			</array>
 			<key>NAME</key>
-			<string>${VERBOSE_NAME}-Plugin_${VERSION_MAJOR}.${VERSION_MINOR}</string>
+			<string>${VERBOSE_NAME}-Plugin_${VERSION_MAJOR}.${VERSION_MINOR}-${OCPN_MIN_VERSION}</string>
 			<key>REFERENCE_FOLDER_PATH</key>
 			<string>.</string>
 		</dict>
