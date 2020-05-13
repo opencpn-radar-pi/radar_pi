@@ -24,9 +24,9 @@ void initialize_images(void)
 
 #ifdef SHIPDRIVER_USE_SVG
     wxFileName fn;
-    fn.SetPath(*GetpSharedDataLocation());
-    fn.AppendDir(_T("plugins"));
-    fn.AppendDir(_T("ShipDriver_pi"));
+	char * pName = "ShipDriver_pi";
+	wxString tmp_path = GetPluginDataDir(pName);
+    fn.SetPath(tmp_path);
     fn.AppendDir(_T("data"));
     fn.SetFullName(_T("shipdriver_pi.svg"));
     _svg_shipdriver = fn.GetFullPath();
