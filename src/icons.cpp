@@ -8,6 +8,8 @@
 #include "icons.h"
 
 wxBitmap *_img_ShipDriverIcon;
+bool m_managedPlugin;
+
 
 #ifdef SHIPDRIVER_USE_SVG
 #include "ocpn_plugin.h"
@@ -22,12 +24,27 @@ void initialize_images(void)
 		_img_ShipDriverIcon = new wxBitmap(wxImage(sm));
 	}
 
+#ifdef MANAGED_PLUGIN
+	m_managedPlugin = true;
+#else
+	m_managedPlugin = false;
+#endif
+
 #ifdef SHIPDRIVER_USE_SVG
     wxFileName fn;
-	char * pName = "ShipDriver_pi";
-	wxString tmp_path = GetPluginDataDir(pName);
-    fn.SetPath(tmp_path);
-    fn.AppendDir(_T("data"));
+	wxString tmp_path;
+	if (m_managedPlugin) {
+		tmp_path = GetPluginDataDir("shipdriver_pi");
+		fn.SetPath(tmp_path);
+		fn.AppendDir(_T("data"));
+	}
+	else {
+		fn.SetPath(*GetpSharedDataLocation());
+		fn.AppendDir(_T("plugins"));
+		fn.AppendDir(_T("shipdriver_pi"));
+		fn.AppendDir(_T("data"));
+	}
+
     fn.SetFullName(_T("shipdriver_pi.svg"));
     _svg_shipdriver = fn.GetFullPath();
     fn.SetFullName(_T("shipdriver_pi_toggled.svg"));

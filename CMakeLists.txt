@@ -30,6 +30,9 @@ SET( wxWidgets_USE_STATIC OFF)
 
 
 OPTION(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
+# For OpenCPN version 5.x, NOT 5.0 ON. For version 5.0 OFF
+OPTION(MANAGED_PLUGIN "Use managed plugin" OFF)
+
 
 INCLUDE("cmake/PluginConfigure.cmake")
 INCLUDE("cmake/PluginJSON.cmake")
@@ -37,6 +40,10 @@ INCLUDE("cmake/PluginJSON.cmake")
 IF(SHIPDRIVER_USE_SVG)
   ADD_DEFINITIONS(-DSHIPDRIVER_USE_SVG)
 ENDIF(SHIPDRIVER_USE_SVG)
+
+IF(MANAGED_PLUGIN)
+ADD_DEFINITIONS(-DMANAGED_PLUGIN)
+ENDIF(MANAGED_PLUGIN)
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-std=c++11 HAS_STD_CPP11_FLAG)

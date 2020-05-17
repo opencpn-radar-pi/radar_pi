@@ -147,7 +147,6 @@ public:
 
 	  wxString StandardPath();
 	  
-	  
 private:
 
 	double m_cursor_lat;
