@@ -24,24 +24,24 @@ void initialize_images(void)
 		_img_ShipDriverIcon = new wxBitmap(wxImage(sm));
 	}
 
+m_managedPlugin = false;
+
 #ifdef MANAGED_PLUGIN
 	m_managedPlugin = true;
-#else
-	m_managedPlugin = false;
 #endif
 
 #ifdef SHIPDRIVER_USE_SVG
     wxFileName fn;
 	wxString tmp_path;
 	if (m_managedPlugin) {
-		tmp_path = GetPluginDataDir("shipdriver_pi");
+		tmp_path = GetPluginDataDir("ShipDriver_pi");
 		fn.SetPath(tmp_path);
 		fn.AppendDir(_T("data"));
 	}
 	else {
 		fn.SetPath(*GetpSharedDataLocation());
 		fn.AppendDir(_T("plugins"));
-		fn.AppendDir(_T("shipdriver_pi"));
+		fn.AppendDir(_T("ShipDriver_pi"));
 		fn.AppendDir(_T("data"));
 	}
 
@@ -49,7 +49,8 @@ void initialize_images(void)
     _svg_shipdriver = fn.GetFullPath();
     fn.SetFullName(_T("shipdriver_pi_toggled.svg"));
     _svg_shipdriver_toggled = fn.GetFullPath();
-#endif
+
+#endif // SHIPDRIVER_USE_SVG
 
 	return;
 }
