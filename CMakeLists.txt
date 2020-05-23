@@ -36,9 +36,6 @@ SET(PKG_NVR ${PACKAGE_NAME}-${PACKAGE_VERSION}.${PKG_RELEASE})
 SET(TARBALL_URL "https://dl.cloudsmith.io/public/@pkg_repo@/raw")
 SET(TARBALL_URL ${TARBALL_URL}/names/@name@/versions/@version@/@filename@)
 
-include("cmake/PluginSetup.cmake")
-set(PLUGIN_NAME radar-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
-
 
 OPTION(OCPN_FLATPAK "Build flatpak plugin" OFF)
 
@@ -48,6 +45,16 @@ configure_file(
   ${CMAKE_CURRENT_BINARY_DIR}/pkg_version.sh
 )
 if (OCPN_FLATPAK)
+    # Lie to PluginSetup that we have found wxWidgets so it don't barfs.
+    SET(wxWidgets_LIBRARIES FOOBAR)
+    INCLUDE("cmake/PluginSetup.cmake")
+    configure_file(
+      # Required in flatpak, done early.
+      ${CMAKE_SOURCE_DIR}/pkg_version.sh.in
+      ${CMAKE_CURRENT_BINARY_DIR}/pkg_version.sh
+    )
+    set(PLUGIN_NAME ${VERBOSE_NAME}-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
+
     find_program(TAR NAMES gtar tar)
     if (NOT TAR)
         message(FATAL_ERROR "tar not found, required for OCPN_FLATPAK")
@@ -220,6 +227,9 @@ if (MINGW)
     TARGET_LINK_LIBRARIES(${PACKAGE_NAME} ${wxWidgets_LIBRARIES} ${WINSOCK_LIBRARY})
 endif ()
 
+INCLUDE("cmake/PluginSetup.cmake")
+
+set(PLUGIN_NAME radar-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
 
 INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginLocalization.cmake")
