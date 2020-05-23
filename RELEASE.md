@@ -95,18 +95,15 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
 
 3. Copy the XML files from CloudSmith to your local plugins repo:
     ```
-    ./cloudsmith-sync.sh radar_pi kees-verruijt ocpn-plugins-stable
+    ./cloudsmith-sync.sh radar_pi kees-verruijt ocpn-plugins-stable 5.1.4.0.abcdef
     ```
    Or for unstable/Beta:
     ```
-    ./cloudsmith-sync.sh radar_pi kees-verruijt ocpn-plugins-unstable
+    ./cloudsmith-sync.sh radar_pi kees-verruijt ocpn-plugins-unstable 5.1.3.0.1231231
     ```
-   This assumes that an up-to-date version of _radar_pi_ is in the directory `../radar_pi`;
-   e.g. you should have the `plugins` directory in the same directory as `radar_pi`, and
-   `radar_pi` must be on an up-to-date `ci` branch.
-   The script determines the last commit-id and then downloads those files from Cloudsmith.
-   It also checks that `-stable` downloads go into the `master` branch and `-unstable`
-   downloads go into the `Beta` branch of the plugin repo.
+
+   Unlike earlier versions of the sync script you must determine yourself what version+commit
+   to download.
 
 4. Check that all radar_pi files are updated in the `metadata` subdirectory.
 
