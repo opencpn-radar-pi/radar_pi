@@ -22,13 +22,14 @@ if (OCPN_TARGET AND OCPN_TARGET_ARCH AND OCPN_TARGET_VERSION)
     set(PKG_TARGET_VERSION ${OCPN_TARGET_VERSION})
 elseif (OCPN_FLATPAK)
     set(PKG_TARGET "flatpak")
+    set(PKG_TARGET_ARCH "x86_64")
     set(PKG_TARGET_VERSION "18.08")    # As of flatpak/*yaml
 elseif (MINGW)
     set(PKG_TARGET "mingw")
     if (CMAKE_SYSTEM_VERSION)
         set(PKG_TARGET_VERSION ${CMAKE_SYSTEM_VERSION})
     else ()
-	set(PKG_TARGET_VERSION 10)
+        set(PKG_TARGET_VERSION 10)
     endif ()
 elseif (MSVC)
     set(PKG_TARGET "msvc")
@@ -52,7 +53,7 @@ elseif (UNIX)
                     OUTPUT_VARIABLE PKG_TARGET_VERSION
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    # Handle gtk3 build variant                
+    # Handle gtk3 build variant
     if (NOT DEFINED wxWidgets_LIBRARIES)
         message(FATAL_ERROR "PluginSetup: required wxWidgets_LIBRARIES missing")
     elseif ("${wxWidgets_LIBRARIES}" MATCHES "gtk3u" AND PKG_TARGET MATCHES "ubuntu*")
@@ -76,6 +77,10 @@ endif ()
 
 if (NOT PKG_TARGET_ARCH)
     set(PKG_TARGET_ARCH ${ARCH})
+endif ()
+
+if (NOT PKG_TARGET_ARCH)
+    message(FATAL_ERROR "PluginSetup: no ARCH or OPENCPN_TARGET_ARCH defined})
 endif ()
 
 string(STRIP "${PKG_TARGET}" PKG_TARGET)

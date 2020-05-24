@@ -227,13 +227,13 @@ if (MINGW)
     TARGET_LINK_LIBRARIES(${PACKAGE_NAME} ${wxWidgets_LIBRARIES} ${WINSOCK_LIBRARY})
 endif ()
 
-INCLUDE("cmake/PluginSetup.cmake")
-
-set(PLUGIN_NAME radar-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
-
 INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginLocalization.cmake")
 INCLUDE("cmake/PluginPackage.cmake")
+
+INCLUDE("cmake/PluginSetup.cmake")
+
+set(PLUGIN_NAME radar-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
 
 message(STATUS "Build target: ${PLUGIN_NAME}")
 configure_file(
