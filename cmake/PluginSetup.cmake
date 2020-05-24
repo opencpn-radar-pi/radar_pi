@@ -61,6 +61,13 @@ elseif (UNIX)
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
     string(TOLOWER "${PKG_TARGET}" PKG_TARGET)
 
+    # Handle gtk3 build variant
+    if (NOT DEFINED wxWidgets_LIBRARIES)
+        message(FATAL_ERROR "PluginSetup: required wxWidgets_LIBRARIES missing")
+    elseif ("${wxWidgets_LIBRARIES}" MATCHES "gtk3u" AND PKG_TARGET MATCHES "ubuntu.*")
+        set(PKG_TARGET "${PKG_TARGET}-gtk3")
+    endif ()
+
     IF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
       SET (PKG_TARGET_ARCH "arm64")
     ELSEIF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
@@ -75,13 +82,6 @@ elseif (UNIX)
       ENDIF ()
     ENDIF ()
     set(PKG_TARGET "${PKG_TARGET}-${PKG_TARGET_ARCH}")
-
-    # Handle gtk3 build variant
-    if (NOT DEFINED wxWidgets_LIBRARIES)
-        message(FATAL_ERROR "PluginSetup: required wxWidgets_LIBRARIES missing")
-    elseif ("${wxWidgets_LIBRARIES}" MATCHES "gtk3u" AND PKG_TARGET MATCHES "ubuntu.*")
-        set(PKG_TARGET "${PKG_TARGET}-gtk3")
-    endif ()
 endif ()
 
 if (NOT PKG_TARGET_ARCH)
