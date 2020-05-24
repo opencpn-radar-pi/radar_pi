@@ -4,7 +4,9 @@ language: cpp
 matrix:
   include:
   - env:
-    - OCPN_TARGET=stretch-armhf
+    - OCPN_TARGET=raspbian
+    - OCPN_TARGET_ARCH=armhf
+    - OCPN_TARGET_VERSION=9.4
     - OCPN_BRANCH=ci
     - OCPN_STABLE_REPO=kees-verruijt/ocpn-plugins-stable
     - OCPN_UNSTABLE_REPO=kees-verruijt/ocpn-plugins-unstable
@@ -14,7 +16,9 @@ matrix:
     script:
     - "./ci/travis-build-raspbian-armhf.sh"
   - env:
-    - OCPN_TARGET=buster-armhf
+    - OCPN_TARGET=raspbian
+    - OCPN_TARGET_ARCH=armhf
+    - OCPN_TARGET_VERSION=10
     - OCPN_BRANCH=ci
     - OCPN_STABLE_REPO=kees-verruijt/ocpn-plugins-stable
     - OCPN_UNSTABLE_REPO=kees-verruijt/ocpn-plugins-unstable

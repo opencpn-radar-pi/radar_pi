@@ -25,7 +25,7 @@ dual radar range and Doppler.
 
   <target>${PKG_TARGET}</target>
   <target-version>${PKG_TARGET_VERSION}</target-version>
-  <target-arch>${ARCH}</target-arch>
+  <target-arch>${PKG_TARGET_ARCH}</target-arch>
   <tarball-url> ${TARBALL_URL} </tarball-url>
   <info-url> https://opencpn.org/OpenCPN/plugins/radarPI.html </info-url>
 </opencpn-plugin>
