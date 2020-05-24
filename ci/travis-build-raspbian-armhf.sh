@@ -100,7 +100,7 @@ echo $tarball_basename
 echo $tarball
 
 source ../build/pkg_version.sh
-source ../build/ci/commons.sh
+source ../ci/commons.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
 tarball_name=${PKG_UPLOAD_NAME}-tarball
