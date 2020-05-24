@@ -96,10 +96,8 @@ PROJECT=$(ls *.xml | awk '{split($0,a,"-"); print a[1]}')
 echo "Check 2"
 echo $PROJECT
 echo $xml
-echo $tarball_name
 echo $tarball_basename
 echo $tarball
-
 
 source ../build/pkg_version.sh
 source ../build/ci/commons.sh
