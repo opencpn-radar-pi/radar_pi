@@ -123,7 +123,7 @@ sudo tar xf $tarball
 tar_dir=${tarball%%.tar.gz}
 ls -la
 sudo cp $xml $tar_dir/metadata.xml
-tar_dir_her=${tar_dir##*/}
+tar_dir_here=${tar_dir##*/}
 sudo tar czf $tarball $tar_dir_here
 
 ls -l "$tarball" "$xml"
