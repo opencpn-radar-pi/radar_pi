@@ -15,14 +15,14 @@ endif ()
 PROJECT(radar_pi)
 
 SET(PACKAGE_NAME radar_pi)
-SET(VERBOSE_NAME Radar)
+SET(VERBOSE_NAME radar)
 SET(TITLE_NAME Radar)
 SET(CPACK_PACKAGE_CONTACT "kees@verruijt.net")
 
 SET(VERSION_MAJOR "5")
 SET(VERSION_MINOR "1")
 SET(VERSION_PATCH "4")
-SET(PKG_RELEASE "6")
+SET(PKG_RELEASE "7")
 SET(VERSION_DATE "2020-05-24")
 
 SET(OCPN_MIN_VERSION "ov51")
@@ -53,7 +53,6 @@ if (OCPN_FLATPAK)
       ${CMAKE_SOURCE_DIR}/pkg_version.sh.in
       ${CMAKE_CURRENT_BINARY_DIR}/pkg_version.sh
     )
-    set(PLUGIN_NAME ${VERBOSE_NAME}-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
 
     find_program(TAR NAMES gtar tar)
     if (NOT TAR)
@@ -61,7 +60,7 @@ if (OCPN_FLATPAK)
     endif ()
     configure_file(
         ${CMAKE_SOURCE_DIR}/radar-plugin.xml.in
-        ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME}.xml
+        ${CMAKE_CURRENT_BINARY_DIR}/${PKG_XML_FILE}.xml
     )
     add_custom_target(flatpak-build ALL
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/flatpak
@@ -73,7 +72,7 @@ if (OCPN_FLATPAK)
     add_custom_command(
         TARGET package
         COMMAND ${TAR}
-            -czf ${PKG_NVR}_${PKG_TARGET_NVR}.tar.gz
+            -czf ${PKG_TAR_FILE}
             --transform 's|.*/files/|radar_pi-flatpak-${PACKAGE_VERSION}/|'
             ${CMAKE_CURRENT_BINARY_DIR}/app/files
     )
@@ -229,16 +228,14 @@ endif ()
 
 INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginLocalization.cmake")
-INCLUDE("cmake/PluginPackage.cmake")
 
 INCLUDE("cmake/PluginSetup.cmake")
 
-set(PLUGIN_NAME radar-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
+INCLUDE("cmake/PluginPackage.cmake")
 
-message(STATUS "Build target: ${PLUGIN_NAME}")
 configure_file(
   ${CMAKE_SOURCE_DIR}/radar-plugin.xml.in
-  ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME}.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/${PKG_XML_FILE}
 )
 configure_file(
   ${CMAKE_SOURCE_DIR}/pkg_version.sh.in

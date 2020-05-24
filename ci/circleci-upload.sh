@@ -58,7 +58,7 @@ tarball_basename=${tarball##*/}
 source $HOME/project/build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
-tarball_name=radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
+tarball_name=${PKG_UPLOAD_NAME}-tarball
 
 sudo sed -i -e "s|@pkg_repo@|$REPO|"  $xml
 sudo sed -i -e "s|@name@|$tarball_name|" $xml
@@ -70,10 +70,12 @@ sudo cp $xml metadata.xml
 sudo chmod 666 $tarball
 repack $tarball metadata.xml
 
+ls -l "$tarball" "$xml"
+
 _cloudsmith_options="push raw --republish --verbose"
 
 cloudsmith ${_cloudsmith_options}                                               \
-    --name radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata                   \
+    --name ${PKG_UPLOAD_NAME}-metadata                                          \
     --version ${VERSION}                                                        \
     --summary "radar opencpn plugin metadata for automatic installation"        \
     $REPO $xml

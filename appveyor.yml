@@ -44,7 +44,7 @@ before_build:
   - cd build
 #  - ps: Start-FileDownload http://opencpn.navnux.org/build_deps/OpenCPN_buildwin-4.99a.7z
 #  - cmd: 7z x -y OpenCPN_buildwin-4.99a.7z -oc:\project\opencpn\buildwin
-  - cmake -T v141_xp -DOCPN_CI_BUILD=ON ..
+  - cmake -T v141_xp ..
 
 build_script:
   - cmake -G "Visual Studio 15 2017"   ..

@@ -1,6 +1,10 @@
 #
 #  Export variables used in plugin setup: GIT_HASH, GIT_COMMIT,
 #  PKG_TARGET, PKG_TARGET_VERSION and PKG_NVR
+#
+#  Modified from the oesenc version. This one is independent of the 
+#  cmake/* files and can be run first, it generates the
+#  CPACK_PACKAGE_FILE_NAME for all builds; ci and normal.
 
 execute_process(
   COMMAND git log -1 --format=%h
@@ -55,11 +59,12 @@ elseif (UNIX)
     execute_process(COMMAND "lsb_release" "-rs"
                     OUTPUT_VARIABLE PKG_TARGET_VERSION
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
+    string(TOLOWER "${PKG_TARGET}" PKG_TARGET)
 
     # Handle gtk3 build variant
     if (NOT DEFINED wxWidgets_LIBRARIES)
         message(FATAL_ERROR "PluginSetup: required wxWidgets_LIBRARIES missing")
-    elseif ("${wxWidgets_LIBRARIES}" MATCHES "gtk3u" AND PKG_TARGET MATCHES "[Uu]buntu.*")
+    elseif ("${wxWidgets_LIBRARIES}" MATCHES "gtk3u" AND PKG_TARGET MATCHES "ubuntu.*")
         set(PKG_TARGET "${PKG_TARGET}-gtk3")
     endif ()
 
@@ -67,7 +72,7 @@ elseif (UNIX)
       SET (PKG_TARGET_ARCH "arm64")
     ELSEIF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
       SET (PKG_TARGET_ARCH "armhf")
-    ELSEIF (PKG_TARGET MATCHES "[Rr]aspbian")
+    ELSEIF (PKG_TARGET MATCHES "raspbian")
       SET (PKG_TARGET_ARCH "armhf")
     ELSE ()
       IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
@@ -89,6 +94,22 @@ string(STRIP "${PKG_TARGET_VERSION}" PKG_TARGET_VERSION)
 string(TOLOWER "${PKG_TARGET_VERSION}" PKG_TARGET_VERSION)
 set(PKG_TARGET_NVR "${PKG_TARGET}-${PKG_TARGET_VERSION}")
 
+if (OCPN_CI_BUILD)
+    set(CPACK_PACKAGE_FILE_NAME "${VERBOSE_NAME}-plugin-${PKG_TARGET_NVR}"
+else ()
+    set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_NAME}-${PKG_TARGET_NVR}"
+endif ()
+
+set(PKG_UPLOAD_NAME "${VERBOSE_NAME}-${PKG_TARGET_NVR}")
+set(PKG_TAR_FILE    "${CPACK_PACKAGE_FILE_NAME}.tar.gz")
+set(PKG_XML_FILE    "${CPACK_PACKAGE_FILE_NAME}.xml")
+
 message(STATUS "PluginSetup: PKG_TARGET: ${PKG_TARGET}")
 message(STATUS "PluginSetup: PKG_TARGET_ARCH: ${PKG_TARGET_ARCH}")
 message(STATUS "PluginSetup: PKG_TARGET_VERSION: ${PKG_TARGET_VERSION}")
+message(STATUS "PluginSetup: PKG_TARGET_NVR: ${PKG_TARGET_NVR}")
+message(STATUS "PluginSetup: PKG_UPLOAD_NAME: ${PKG_UPLOAD_NAME}")
+message(STATUS "PluginSetup: PKG_TAR_FILE: ${PKG_TAR_FILE}")
+message(STATUS "PluginSetup: PKG_XML_FILE: ${PKG_XML_FILE}")
+message(STATUS "PluginSetup: CPACK_PACKAGE_FILE_NAME: ${CPACK_PACKAGE_FILE_NAME}")
+
