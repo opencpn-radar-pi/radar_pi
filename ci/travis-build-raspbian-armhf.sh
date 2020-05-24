@@ -123,7 +123,7 @@ cat $xml
 # Repack using gnu tar (cmake's is problematic) and add metadata.
 sudo cp $xml metadata.xml
 sudo chmod 666 $tarball
-repack $tarball metadata.xml
+sudo repack $tarball metadata.xml
 
 ls -l "$tarball" "$xml"
 
