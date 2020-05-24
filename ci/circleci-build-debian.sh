@@ -3,7 +3,9 @@
 #
 # Build the Debian artifacts
 #
-set -xe
+set -euo pipefail
+set -x
+
 sudo apt-get -qq update
 sudo apt-get install devscripts equivs
 

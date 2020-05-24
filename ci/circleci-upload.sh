@@ -12,7 +12,8 @@
 # value. Likewise for CLOUDSMITH_UNSTABLE_REPO and UNSTABLE_REPO.
 #
 
-set -xe
+set -euo pipefail
+set -x
 
 STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'kees-verruijt/ocpn-plugins-stable'}
 UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'kees-verruijt/ocpn-plugins-unstable'}
@@ -69,14 +70,16 @@ sudo cp $xml metadata.xml
 sudo chmod 666 $tarball
 repack $tarball metadata.xml
 
-cloudsmith push raw --republish --no-wait-for-sync \
-    --name radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
-    --version ${VERSION} \
-    --summary "radar opencpn plugin metadata for automatic installation" \
+_cloudsmith_options="push raw --republish --verbose"
+
+cloudsmith ${_cloudsmith_options}                                               \
+    --name radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata                   \
+    --version ${VERSION}                                                        \
+    --summary "radar opencpn plugin metadata for automatic installation"        \
     $REPO $xml
 
-cloudsmith push raw --republish --no-wait-for-sync \
-    --name $tarball_name \
-    --version ${VERSION} \
-    --summary "radar opencpn plugin tarball for automatic installation" \
+cloudsmith ${_cloudsmith_options}                                               \
+    --name $tarball_name                                                        \
+    --version ${VERSION}                                                        \
+    --summary "radar opencpn plugin tarball for automatic installation"         \
     $REPO $tarball

@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+set -x
+
 #
 # Upload the .tar.gz and .xml artifacts to cloudsmith
 #
@@ -56,14 +59,16 @@ source ../ci/commons.sh
 cp $xml metadata.xml
 repack $tarball metadata.xml
 
-cloudsmith push raw --republish --no-wait-for-sync \
-    --name radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
-    --version ${VERSION} \
-    --summary "radar opencpn plugin metadata for automatic installation" \
+_cloudsmith_options="push raw --republish --verbose"
+
+cloudsmith ${_cloudsmith_options}                                               \
+    --name radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata                   \
+    --version ${VERSION}                                                        \
+    --summary "radar opencpn plugin metadata for automatic installation"        \
     $REPO $xml
 
-cloudsmith push raw --republish --no-wait-for-sync \
-    --name $tarball_name  \
-    --version ${VERSION} \
-    --summary "radar opencpn plugin tarball for automatic installation" \
+cloudsmith ${_cloudsmith_options}                                               \
+    --name $tarball_name                                                        \
+    --version ${VERSION}                                                        \
+    --summary "radar opencpn plugin tarball for automatic installation"         \
     $REPO $tarball

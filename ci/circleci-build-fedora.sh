@@ -3,7 +3,8 @@
 #
 # Build the mingw artifacts inside the Fedora container
 #
-set -xe
+set -euo pipefail
+set -x
 
 su -c "dnf install -y sudo dnf-plugins-core"
 sudo dnf builddep  -y ci/opencpn-fedora.spec

@@ -5,32 +5,37 @@
 
 # bailout on errors and echo commands.
 set -xe
-sudo apt-get -qq update
 
-DOCKER_SOCK="unix:///var/run/docker.sock"
+if [ ! -s "build/radar_pi-5.1.3.0_raspbian-10.tar.gz" ]
+then
 
-echo "DOCKER_OPTS=\"-H tcp://127.0.0.1:2375 -H $DOCKER_SOCK -s devicemapper\"" \
-    | sudo tee /etc/default/docker > /dev/null
-sudo service docker restart;
-sleep 5;
-
+if [ -z "${DOCKER_CONTAINER_ID:-}" ]
+then
 docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
 docker run --privileged -d -ti -e "container=docker" \
-      -v ~/source_top:/source_top \
+      -v ~/keversoft/git/radar_pi:/source_top \
       -v $(pwd):/ci-source:rw \
       $DOCKER_IMAGE /bin/bash
 
 DOCKER_CONTAINER_ID=$(sudo docker ps | grep raspbian | awk '{print $1}')
+fi
 
-#echo $DOCKER_CONTAINER_ID 
 
-docker exec -ti $DOCKER_CONTAINER_ID apt-get update || \
-docker exec -ti $DOCKER_CONTAINER_ID apt-get update
-docker exec -ti $DOCKER_CONTAINER_ID echo "------\nEND apt-get update\n" 
+echo Docker Container = $DOCKER_CONTAINER_ID
 
-docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essential cmake gettext wx-common libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release || \
-docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essential cmake gettext wx-common libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release 
+# docker exec -ti $DOCKER_CONTAINER_ID apt-get update
+# docker exec -ti $DOCKER_CONTAINER_ID echo "------\nEND apt-get update\n" 
+
+# Try install twice, seen to fail.
+docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essential cmake gettext wx-common \
+                                                        libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev \
+                                                        libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev \
+                                                        libexif-dev lsb-release \
+  || \
+docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essential cmake gettext wx-common \
+                                                        libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev \
+                                                        libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev
 
 
 #docker exec -ti $DOCKER_CONTAINER_ID echo $OCPN_BRANCH
@@ -39,11 +44,8 @@ docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essentia
 #docker exec -ti $DOCKER_CONTAINER_ID tar -xzf $OCPN_BRANCH -C source_top --strip-components=1
 
 
-#docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
-#    'mkdir source_top/build; cd source_top/build; cmake ..; make; make package;'
-
-travis_wait docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
-    'mkdir ci-source/build; cd ci-source/build; cmake ..; make; make package;'
+docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
+    'mkdir -p ci-source/build; cd ci-source/build; cmake ..; make; make package;'
  
 echo "Stopping"
 docker ps -a
@@ -51,14 +53,15 @@ docker stop $DOCKER_CONTAINER_ID
 docker rm -v $DOCKER_CONTAINER_ID
 
 sudo apt-get install python3-pip python3-setuptools
+fi
 
 #  Upload to cloudsmith
 
 STABLE_REPO=${OCPN_STABLE_REPO}
 UNSTABLE_REPO=${OCPN_UNSTABLE_REPO}
 
-#UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'kees-verruijt/ocpn-plugins-unstable'}
-#STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'kees-verruijt/ocpn-plugins-stable'}
+UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'kees-verruijt/ocpn-plugins-unstable'}
+STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'kees-verruijt/ocpn-plugins-stable'}
 
 echo "Check 0.5"
 echo $STABLE_REPO

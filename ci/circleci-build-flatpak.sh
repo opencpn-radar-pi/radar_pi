@@ -11,7 +11,8 @@
 #
 
 # bailout on errors and echo commands.
-set -xe
+set -euo pipefail
+set -x
 ##sudo apt-get -qq update
 
 PLUGIN=bsb4

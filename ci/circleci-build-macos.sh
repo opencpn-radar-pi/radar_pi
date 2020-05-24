@@ -4,7 +4,8 @@
 # Build the  MacOS artifacts 
 #
 
-set -xe
+set -euo pipefail
+set -x
 
 # Fix broken homebrew on the CircleCI image:
 if [ -n "$CI" ]; then
