@@ -15,8 +15,6 @@ set -euo pipefail
 set -x
 ##sudo apt-get -qq update
 
-PLUGIN=bsb4
-
 DOCKER_SOCK="unix:///var/run/docker.sock"
 if [ -n "${TRAVIS:-}" ]; then
     TOPDIR=/opencpn-ci
