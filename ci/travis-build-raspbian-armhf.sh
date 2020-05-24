@@ -4,7 +4,9 @@
 #
 
 # bailout on errors and echo commands.
-set -xe
+set -euo pipefail
+set -x
+
 sudo apt-get -qq update
 
 DOCKER_SOCK="unix:///var/run/docker.sock"
@@ -30,27 +32,17 @@ docker exec -ti $DOCKER_CONTAINER_ID apt-get update
 docker exec -ti $DOCKER_CONTAINER_ID echo "------\nEND apt-get update\n" 
 
 docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essential cmake gettext wx-common libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release || \
-docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essential cmake gettext wx-common libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release 
+docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essential cmake gettext wx-common libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release
 
+docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
+    'set -x; mkdir ci-source/build; cd ci-source/build; cmake ..; make; make package'
 
-#docker exec -ti $DOCKER_CONTAINER_ID echo $OCPN_BRANCH
-
-#docker exec -ti $DOCKER_CONTAINER_ID wget https://github.com/bdbcat/oernc_pi/tarball/$OCPN_BRANCH
-#docker exec -ti $DOCKER_CONTAINER_ID tar -xzf $OCPN_BRANCH -C source_top --strip-components=1
-
-
-#docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
-#    'mkdir source_top/build; cd source_top/build; cmake ..; make; make package;'
-
-travis_wait docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
-    'mkdir ci-source/build; cd ci-source/build; cmake ..; make; make package;'
- 
 echo "Stopping"
 docker ps -a
 docker stop $DOCKER_CONTAINER_ID
 docker rm -v $DOCKER_CONTAINER_ID
 
-sudo apt-get install python3-pip python3-setuptools
+sudo apt-get install python3-pip python3-setuptools || :
 
 #  Upload to cloudsmith
 
@@ -110,23 +102,17 @@ echo $tarball
 
 
 source ../build/pkg_version.sh
+source ../build/ci/commons.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
-tarball_name=${PROJECT}-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
+tarball_name=${PKG_UPLOAD_NAME}-tarball
 
 echo "Check 3"
-echo $tarball_name
-# There is no sed available in git bash. This is nasty, but seems
-# to work:
-touch ~/xml.tmp
-while read line; do
-    line=${line/@pkg_repo@/$REPO}
-    line=${line/@name@/$tarball_name}
-    line=${line/@version@/$VERSION}
-    line=${line/@filename@/$tarball_basename}
-    echo $line
-done < $xml > ~/xml.tmp
-cp ~/xml.tmp ~/$xml
+
+sudo sed -i -e "s|@pkg_repo@|$REPO|"  $xml
+sudo sed -i -e "s|@name@|$tarball_name|" $xml
+sudo sed -i -e "s|@version@|$VERSION|" $xml
+sudo sed -i -e "s|@filename@|$tarball_basename|" $xml
 
 echo "Check 4"
 #echo $PKG_TARGET
@@ -134,31 +120,25 @@ echo "Check 4"
 #echo $PKG_TARGET_VERSION
 #10
 
-cat ~/$xml
+cat $xml
 
-#sudo gunzip $tarball
-#tarball_tar=$(ls *.tar)
-#sudo cp ~/$xml metadata.xml 
-#sudo tar -rf $tarball_tar metadata.xml
-#sudo gzip $tarball_tar
+# Repack using gnu tar (cmake's is problematic) and add metadata.
+sudo cp $xml metadata.xml
+sudo chmod 666 $tarball
+repack $tarball metadata.xml
 
-sudo tar xf $tarball
-tar_dir=${tarball%%.tar.gz}
-ls -la
-ls -la $tar_dir
-sudo cp $xml $tar_dir/metadata.xml
-tar_dir_here=${tar_dir##*/}
-sudo tar czf $tarball $tar_dir_here
+ls -l "$tarball" "$xml"
 
-cloudsmith push raw --republish --no-wait-for-sync \
-    --name ${PROJECT}-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
-    --version ${VERSION} \
-    --summary "opencpn plugin metadata for automatic installation" \
-    $REPO ~/$xml
+_cloudsmith_options="push raw --republish --verbose"
 
-cloudsmith push raw --republish --no-wait-for-sync \
-    --name $tarball_name  \
-    --version ${VERSION} \
-    --summary "opencpn plugin tarball for automatic installation" \
+cloudsmith ${_cloudsmith_options}                                               \
+    --name ${PKG_UPLOAD_NAME}-metadata                                          \
+    --version ${VERSION}                                                        \
+    --summary "radar opencpn plugin metadata for automatic installation"        \
+    $REPO $xml
+
+cloudsmith ${_cloudsmith_options}                                               \
+    --name $tarball_name                                                        \
+    --version ${VERSION}                                                        \
+    --summary "radar opencpn plugin tarball for automatic installation"         \
     $REPO $tarball
-
