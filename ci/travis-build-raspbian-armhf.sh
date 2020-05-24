@@ -100,7 +100,6 @@ echo $tarball_basename
 echo $tarball
 
 source ../build/pkg_version.sh
-source ../ci/commons.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
 tarball_name=${PKG_UPLOAD_NAME}-tarball
@@ -120,11 +119,12 @@ echo "Check 4"
 
 cat $xml
 
-# Repack using gnu tar (cmake's is problematic) and add metadata.
-sudo cp $xml metadata.xml
-sudo chmod 777 $tarball
-repack $tarball metadata.xml
-sudo chmod 666 $tarball
+sudo tar xf $tarball
+tar_dir=${tarball%%.tar.gz}
+ls -la
+sudo cp $xml $tar_dir/metadata.xml
+tar_dir_her=${tar_dir##*/}
+sudo tar czf $tarball $tar_dir_here
 
 ls -l "$tarball" "$xml"
 
