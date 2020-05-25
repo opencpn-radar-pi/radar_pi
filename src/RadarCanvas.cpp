@@ -87,6 +87,24 @@ void RadarCanvas::OnMove(wxMoveEvent &evt) {
   LOG_DIALOG(wxT("radar_pi: %s move OpenGL canvas to %d, %d"), m_ri->m_name.c_str(), pos.x, pos.y);
 }
 
+wxSize RadarCanvas::GetScaledSize(wxSize size)
+{
+#ifdef __WXGTK3__
+  return size * GetContentScaleFactor();
+#else
+  return size;
+#endif
+}
+
+int RadarCanvas::GetScaledSize(int size)
+{
+#ifdef __WXGTK3__
+  return size * GetContentScaleFactor();
+#else
+  return size;
+#endif
+}
+
 void RadarCanvas::RenderTexts(const wxSize &loc) {
   int x, y;
   int menu_x;
@@ -134,7 +152,7 @@ void RadarCanvas::RenderTexts(const wxSize &loc) {
                   m_zoom_size.y, MENU_ROUNDING);
 
     glColor4ub(200, 200, 200, 255);
-    // The Menu text is slightly inside the rect
+    // The -+ text is slightly inside the rect
     m_FontMenuBold.RenderString(s, loc.GetWidth() / 2 - m_zoom_size.x / 2 + MENU_BORDER,
                                 loc.GetHeight() - m_zoom_size.y + MENU_BORDER);
   }
@@ -520,7 +538,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     return;
   }
 
-  const wxSize clientSize = GetClientSize();
+  const wxSize clientSize = GetScaledSize(GetClientSize());
   wxPaintDC(this);  // only to be used in paint events. use wxClientDC to paint
                     // outside the paint event
 
@@ -547,17 +565,17 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   glPushAttrib(GL_ALL_ATTRIB_BITS);
 
   wxFont font = GetOCPNGUIScaledFont_PlugIn(_T("StatusBar"));
+  font.SetPointSize(GetScaledSize(font.GetPointSize()));
   m_FontNormal.Build(font);
-  wxFont bigFont = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
-  bigFont.SetPointSize(bigFont.GetPointSize() + 2);
-  bigFont.SetWeight(wxFONTWEIGHT_BOLD);
-  m_FontBig.Build(bigFont);
-  bigFont.SetPointSize(bigFont.GetPointSize() + 2);
-  bigFont.SetWeight(wxFONTWEIGHT_NORMAL);
-  m_FontMenu.Build(bigFont);
-  bigFont.SetPointSize(bigFont.GetPointSize() + 10);
-  bigFont.SetWeight(wxFONTWEIGHT_BOLD);
-  m_FontMenuBold.Build(bigFont);
+
+  font = GetOCPNGUIScaledFont_PlugIn(_T("Dialog"));
+  font.SetPointSize(GetScaledSize(font.GetPointSize() + 2));
+  font.SetWeight(wxFONTWEIGHT_NORMAL);
+  m_FontMenu.Build(font);
+  font.SetWeight(wxFONTWEIGHT_BOLD);
+  m_FontBig.Build(font);
+  font.SetPointSize(font.GetPointSize() * 2); // Zoom text is really big
+  m_FontMenuBold.Build(font);
 
   wxColour bg = M_SETTINGS.ppi_background_colour;
   glClearColor(bg.Red() / 256.0, bg.Green() / 256.0, bg.Blue() / 256.0, bg.Alpha() / 256.0);
