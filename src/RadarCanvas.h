@@ -63,6 +63,8 @@ class RadarCanvas : public wxGLCanvas {
   void RenderChartCursor(const wxSize& clientSize, float radius);
   void Render_EBL_VRM(const wxSize& clientSize, float radius);
   wxSize RenderControlItem(const wxSize& loc, RadarControlItem& item, ControlType ct, const wxString& name);
+  wxSize GetScaledSize(wxSize size);
+  int GetScaledSize(int size);
 
   wxWindow* m_parent;
   radar_pi* m_pi;
