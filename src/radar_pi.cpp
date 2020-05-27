@@ -378,6 +378,7 @@ bool radar_pi::DeInit(void) {
 
   if (m_locator) {
     m_locator->Shutdown();
+    m_locator->Wait();
   }
 
   // Stop processing in all radars.
