@@ -24,12 +24,12 @@ case $host in
     PACKAGE="*.pkg"
     ;;
 
-  openplotter)      # 'Raspian/Openplotter' on real RPi3 or Qemu 
+  openplotter)      # 'Raspian/Openplotter' on real RPi3 or Qemu
     BUILDDIR=build-linux-armhf
     PACKAGE="*.deb *.rpm *.bz2"
     ;;
 
-  debian7)      # 'Debian 7' VirtualBox vm
+  debian7|kees-tp)      # 'Debian 7' VirtualBox vm
     BUILDDIR=build-linux-x86_64
     PACKAGE="*.deb *.rpm *.bz2"
     ;;
@@ -77,11 +77,3 @@ then
   fi
 fi
 
-#if [ -d ../../OpenCPN-Navico-Radar-Plugin.github.io/$STATE/ -a "$PACKAGE" != "" ]
-#then
-  #echo "-------------------------- COPY FILES TO $STATE -----------------------"
-  #chmod 755 $PACKAGE
-  #cp $PACKAGE ../../OpenCPN-Navico-Radar-Plugin.github.io/$STATE/
-#fi
-
-  
