@@ -16,6 +16,7 @@ set -e -u # Fail on first error
 BUILDDIR=""
 STATE="Unofficial"
 TARGET="package"
+MAKE_OPTIONS=""
 host=$(hostname)
 case $host in
   kees-mbp)
@@ -29,7 +30,13 @@ case $host in
     PACKAGE="*.deb *.rpm *.bz2"
     ;;
 
-  debian7|kees-tp)      # 'Debian 7' VirtualBox vm
+  debian7)      # 'Debian 7' VirtualBox vm
+    BUILDDIR=build-linux-x86_64
+    PACKAGE="*.deb *.rpm *.bz2"
+    ;;
+
+  kees-tp)      # Lenovo X1E2 8core
+    MAKE_OPTIONS="-j8"
     BUILDDIR=build-linux-x86_64
     PACKAGE="*.deb *.rpm *.bz2"
     ;;
@@ -63,7 +70,7 @@ mkdir -p $BUILDDIR
 cd $BUILDDIR
 cmake ..
 echo "-------------------------- MAKE $TARGET -----------------------"
-make $TARGET
+make $MAKE_OPTIONS $TARGET
 
 # Check for proper file mods on .so file, case VBox mount is screwed.
 if [ -s libradar_pi.so ]
