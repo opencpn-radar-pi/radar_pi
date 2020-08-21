@@ -18,8 +18,8 @@ SET(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_CURRENT_BINARY_DIR};${PACKAGE_NAME};AL
 SET(CPACK_PACKAGE_EXECUTABLES OpenCPN ${PACKAGE_NAME})
 
 IF(WIN32)
-# to protect against confusable windows users, let us _not_ generate zip packages
-#  SET(CPACK_GENERATOR "NSIS;ZIP")
+  #  The  TGZ i. e., tar.gz package is used by the new installer
+  SET(CPACK_GENERATOR "NSIS;TGZ")
 
   # override install directory to put package files in the opencpn directory
   SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenCPN")
@@ -77,10 +77,9 @@ IF(UNIX AND NOT APPLE)
 
   IF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
     SET (ARCH "armhf")
-    # don't bother with rpm on armhf
-    SET(CPACK_GENERATOR "DEB;RPM;TBZ2")
+    SET(CPACK_GENERATOR "DEB;TGZ")
   ELSE ()
-    SET(CPACK_GENERATOR "DEB;RPM;TBZ2")
+    SET(CPACK_GENERATOR "DEB;TGZ")
 
     IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
       SET (ARCH "amd64")
@@ -176,5 +175,19 @@ configure_file(${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jpg
  ADD_CUSTOM_TARGET(create-pkg COMMENT "create-pkg: Done."
  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin.pkg )
 
+ SET(CPACK_GENERATOR "TGZ")
 
 ENDIF(APPLE)
+
+IF(WIN32)
+  SET(CPACK_PACKAGE_FILE_NAME "${PACKAGE_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}-win32.exe" )
+  MESSAGE(STATUS "FILE: ${CPACK_PACKAGE_FILE_NAME}")
+  add_custom_command(OUTPUT ${CPACK_PACKAGE_FILE_NAME}
+	  COMMAND signtool sign /v /f \\cert\\OpenCPNSPC.pfx /d http://www.opencpn.org /t http://timestamp.verisign.com/scripts/timstamp.dll ${CPACK_PACKAGE_FILE_NAME}
+	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	  DEPENDS ${PACKAGE_NAME}
+	  COMMENT "Code-Signing: ${CPACK_PACKAGE_FILE_NAME}")
+  ADD_CUSTOM_TARGET(codesign COMMENT "code signing: Done."
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME} )
+
+ENDIF(WIN32)
