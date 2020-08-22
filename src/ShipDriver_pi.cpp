@@ -278,12 +278,8 @@ void ShipDriver_pi::ShowPreferencesDialog(wxWindow* parent)
 
 void ShipDriver_pi::OnToolbarToolCallback(int id)
 {
-	bool starting = false;
 
-	double scale_factor = GetOCPNGUIToolScaleFactor_PlugIn();
-	if (scale_factor != m_GUIScaleFactor) starting = true;
-    
-	if(NULL == m_pDialog)
+      if(NULL == m_pDialog)
       {
             m_pDialog = new Dlg(m_parent_window);
             m_pDialog->plugin = this;						
