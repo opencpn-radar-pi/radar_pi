@@ -71,14 +71,14 @@ static const std::vector<std::pair<uint8_t, char>> SIXBIT_ASCII_TABLE = {
 };
 
 
-	string AisMaker::Str2Str(string str, char* charsToRemove) {
+	string AisMaker::Str2Str(string str, const char* charsToRemove) {
 		for (unsigned int i = 0; i < strlen(charsToRemove); ++i) {
 			str.erase(remove(str.begin(), str.end(), charsToRemove[i]), str.end());
 		}
 		return str;
 	}
 
-	float AisMaker::Str2Float(string str, char* exc){
+	float AisMaker::Str2Float(string str, const char* exc){
 		float result;
 		string floatString = Str2Str(str, exc);
 		result = strtof((floatString).c_str(), 0); // string to float
@@ -86,7 +86,7 @@ static const std::vector<std::pair<uint8_t, char>> SIXBIT_ASCII_TABLE = {
 		return result;
 	}
 
-	int AisMaker::Str2Int(string str, char* exc){
+	int AisMaker::Str2Int(string str, const char* exc){
 		int result;
 		string intString = Str2Str(str, exc);
 		result = atoi((intString).c_str()); // string to float
