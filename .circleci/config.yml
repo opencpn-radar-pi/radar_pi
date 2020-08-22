@@ -22,6 +22,75 @@ jobs:
       - run: ci/circleci-build-macos.sh
       - run: cd build; /bin/bash < upload.sh
 
+  build-xenial:
+    docker:
+      - image: circleci/buildpack-deps:xenial-scm
+    environment:
+      - OCPN_TARGET:  xenial
+    steps:
+      - checkout
+      - run: >
+          echo "deb-src http://us.archive.ubuntu.com/ubuntu/ xenial main"
+          | sudo tee -a /etc/apt/sources.list
+      - run: >
+          echo "deb-src http://us.archive.ubuntu.com/ubuntu/ xenial-updates main"
+          | sudo tee -a /etc/apt/sources.list
+      - run: cat /etc/apt/sources.list
+      - run: ci/circleci-build-debian.sh
+      - run: cd build; /bin/bash < upload.sh
+
+  build-bionic:
+    docker:
+      - image: circleci/buildpack-deps:bionic-scm
+    environment:
+      - OCPN_TARGET:  bionic
+    steps:
+      - checkout
+      - run: >
+          echo "deb-src http://us.archive.ubuntu.com/ubuntu/ bionic main"
+          | sudo tee -a /etc/apt/sources.list
+      - run: >
+          echo "deb-src http://us.archive.ubuntu.com/ubuntu/ bionic-updates main"
+          | sudo tee -a /etc/apt/sources.list
+      - run: cat /etc/apt/sources.list
+      - run: ci/circleci-build-debian.sh
+      - run: cd build; /bin/bash < upload.sh
+
+  build-focal:
+    docker:
+      - image: circleci/buildpack-deps:focal-scm
+    environment:
+      - OCPN_TARGET:  focal
+    steps:
+      - checkout
+      - run: >
+          echo "deb-src http://us.archive.ubuntu.com/ubuntu/ focal main"
+          | sudo tee -a /etc/apt/sources.list
+      - run: >
+          echo "deb-src http://us.archive.ubuntu.com/ubuntu/ focal-updates main"
+          | sudo tee -a /etc/apt/sources.list
+      - run: cat /etc/apt/sources.list
+      - run: ci/circleci-build-debian.sh
+      - run: cd build; /bin/bash < upload.sh
+
+  build-bionic-gtk3:
+    docker:
+      - image: circleci/buildpack-deps:bionic-scm
+    environment:
+      - BUILD_GTK3: 1
+      - OCPN_TARGET:  bionic-gtk3
+    steps:
+      - checkout
+      - run: >
+          echo "deb-src http://us.archive.ubuntu.com/ubuntu/ bionic main"
+          | sudo tee -a /etc/apt/sources.list
+      - run: >
+          echo "deb-src http://us.archive.ubuntu.com/ubuntu/ bionic-updates main"
+          | sudo tee -a /etc/apt/sources.list
+      - run: cat /etc/apt/sources.list
+      - run: ci/circleci-build-debian.sh
+      - run: cd build; /bin/bash < upload.sh
+
 workflows:
   version: 2
   build_all:
@@ -39,3 +108,30 @@ workflows:
                   - master
                   - build
 
+      - build-xenial:
+          filters:
+            branches:
+              only: 
+                  - master
+                  - build
+
+      - build-bionic-gtk3:
+          filters:
+            branches:
+              only: 
+                  - master
+                  - build
+
+      - build-bionic:
+          filters:
+            branches:
+              only: 
+                  - master
+                  - build
+
+      - build-focal:
+          filters:
+            branches:
+              only: 
+                  - master
+                  - build
