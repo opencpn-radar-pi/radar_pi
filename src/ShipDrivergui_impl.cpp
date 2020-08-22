@@ -848,13 +848,13 @@ wxString Dlg::createHDTSentence(double myDir){
 
 
 wxString Dlg::makeCheckSum(wxString mySentence){
-	int i;
+	size_t i;
 	unsigned char XOR;
 
 	wxString s(mySentence);
 	wxCharBuffer buffer = s.ToUTF8();
 	char *Buff = buffer.data();	// data() returns const char *
-	unsigned long iLen = strlen(Buff);
+	size_t iLen = strlen(Buff);
 	for (XOR = 0, i = 0; i < iLen; i++)
 		XOR ^= (unsigned char)Buff[i];
 	stringstream tmpss;

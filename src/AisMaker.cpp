@@ -112,7 +112,7 @@ static const std::vector<std::pair<uint8_t, char>> SIXBIT_ASCII_TABLE = {
 	char AisMaker::findCharFromNumber(int mp){
 
 		auto i = std::find_if(NMEA_TABLE.begin(), NMEA_TABLE.end(),
-			[mp](const std::pair<char, uint32_t > p) { return p.second == mp; });
+			[mp](const std::pair<char, uint32_t > p) { return p.second == (unsigned) mp; });
 		return i != NMEA_TABLE.end() ? i->first : 0xff;
 	}
 
@@ -122,13 +122,13 @@ static const std::vector<std::pair<uint8_t, char>> SIXBIT_ASCII_TABLE = {
 		string result;
 		char letter;
 
-		for (int i = 0; i < str.size(); i++){
+		for (size_t i = 0; i < str.size(); i++){
 
 			letter = str[i];
 			int si = findIntFromLetter(letter);
 			result = Int2BString(si, 6) + result;
 		}
-		while (result.size() < length){
+		while (result.size() < (size_t) length){
 
 			int sj = findIntFromLetter('@');
 			result = Int2BString(sj, 6) + result;
@@ -168,13 +168,13 @@ static const std::vector<std::pair<uint8_t, char>> SIXBIT_ASCII_TABLE = {
 	}
 
 	wxString AisMaker::makeCheckSum(wxString mySentence){
-		int i;
+		size_t i;
 		unsigned char XOR;
 
 		wxString s(mySentence);
 		wxCharBuffer buffer = s.ToUTF8();
 		char *Buff = buffer.data();	// data() returns const char *
-		unsigned long iLen = strlen(Buff);
+		size_t iLen = strlen(Buff);
 		for (XOR = 0, i = 0; i < iLen; i++)
 			XOR ^= (unsigned char)Buff[i];
 		stringstream tmpss;
@@ -185,7 +185,7 @@ static const std::vector<std::pair<uint8_t, char>> SIXBIT_ASCII_TABLE = {
 
 	wxString AisMaker::nmeaEncode(wxString type, int iMMSI, wxString status, double spd, double ilat, double ilon, double crse, double hdg, wxString channel, wxString timestamp){
 
-		string MessageID = Int2BString(Str2Int("18", ""), 6);
+		string MessageID(Int2BString(Str2Int("18", ""), 6));
 
 		string RepeatIndicator = Int2BString(0, 2);
 
