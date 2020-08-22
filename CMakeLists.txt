@@ -9,6 +9,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6.2)
 
 PROJECT(ShipDriver_pi)
 
+# Prefer libGL.so to libOpenGL.so, see CMP0072
+set(OpenGL_GL_PREFERENCE "LEGACY")
+
+
 SET(PACKAGE_NAME ShipDriver_pi)
 SET(VERBOSE_NAME ShipDriver)
 SET(TITLE_NAME ShipDriver)
