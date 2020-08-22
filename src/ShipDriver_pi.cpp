@@ -35,7 +35,6 @@
 #include "ShipDrivergui_impl.h"
 #include "ShipDrivergui.h"
 #include "ocpn_plugin.h" 
-#include "folder.xpm"
 
 class ShipDriver_pi;
 class Dlg;

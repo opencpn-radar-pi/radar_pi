@@ -70,7 +70,6 @@ SET(SRC_ShipDriver
 	    src/ShipDrivergui.cpp
 	    src/ShipDrivergui_impl.cpp
 	    src/ShipDrivergui_impl.h
-		src/folder.xpm
 		src/AisMaker.h
 		src/AisMaker.cpp
 		src/GribRecord.cpp
