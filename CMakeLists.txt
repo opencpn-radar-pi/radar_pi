@@ -111,6 +111,9 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/api-16)
 INCLUDE_DIRECTORIES("${CMAKE_BINARY_DIR}/include")
 ADD_DEFINITIONS(-DTIXML_USE_STL)
 
+INCLUDE("GetArch")
+GetArch()
+
 INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginSetup.cmake")
 INCLUDE("cmake/PluginLocalization.cmake")
