@@ -32,6 +32,7 @@ endif ()
 
 SET(PACKAGE_NAME ShipDriver_pi)
 SET(VERBOSE_NAME ShipDriver)
+SET(PLUGIN_API_NAME ShipDriver)         # As of GetCommonName() in plugin API
 SET(TITLE_NAME ShipDriver)
 SET(CPACK_PACKAGE_CONTACT "Mike Rossiter")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Simulate ship movements")
@@ -60,6 +61,10 @@ SET( wxWidgets_USE_UNIVERSAL OFF)
 SET( wxWidgets_USE_STATIC OFF)
 
 
+SET(OCPN_UNSTABLE_REPO "david-register/ocpn-plugins-unstable"
+    CACHE STRING "Default cloudsmith repository for untagged builds")
+SET(OCPN_STABLE_REPO "david-register/ocpn-plugins-stable"
+    CACHE STRING "Default cloudsmith repository for tagged builds")
 OPTION(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 # For OpenCPN version 5.x, NOT 5.0 ON. For version 5.0 OFF
 OPTION(MANAGED_PLUGIN "Use managed plugin" OFF)
@@ -108,7 +113,7 @@ SET(SRC_ShipDriver
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_ShipDriver} ${SRC_JSON}
 )
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/api-16)
-INCLUDE_DIRECTORIES("${CMAKE_BINARY_DIR}/include")
+INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include)
 ADD_DEFINITIONS(-DTIXML_USE_STL)
 
 INCLUDE("GetArch")
@@ -117,4 +122,11 @@ GetArch()
 INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginSetup.cmake")
 INCLUDE("cmake/PluginLocalization.cmake")
+INCLUDE("cmake/metadata.cmake")
 INCLUDE("cmake/PluginPackage.cmake")
+
+configure_file(
+  ${CMAKE_SOURCE_DIR}/shipdriver-plugin.xml.in
+  ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
+  @ONLY
+)

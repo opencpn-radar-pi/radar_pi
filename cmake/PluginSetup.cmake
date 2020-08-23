@@ -1,6 +1,6 @@
 #
 #  Export variables used in plugin setup: GIT_HASH, GIT_COMMIT,
-#  PKG_TARGET, PKG_TARGET_VERSION and PKG_NVR
+#  GIT_TAG, PKG_TARGET, PKG_TARGET_VERSION and PKG_NVR
 
 execute_process(
   COMMAND git log -1 --format=%h
@@ -15,6 +15,14 @@ execute_process(
   OUTPUT_VARIABLE GIT_COMMIT_DATE
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+
+execute_process(
+  COMMAND git tag --contains HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_TAG
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 
 if (OCPN_FLATPAK)
     set(PKG_TARGET "flatpak")
