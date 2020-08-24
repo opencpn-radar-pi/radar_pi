@@ -1,0 +1,19 @@
+language: cpp
+  
+matrix:
+  include:
+  - env:
+    - OCPN_TARGET=stretch-armhf
+    - OCPN_BRANCH=master
+    - DOCKER_IMAGE=raspbian/stretch
+    services:
+    - docker
+    script:
+    - "./ci/travis-build-raspbian-armhf.sh"
+    - "cd build; bash < upload.sh"
+
+branches:
+  only:
+    - master
+    - build
+
