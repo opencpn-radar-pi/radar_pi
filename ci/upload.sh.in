@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+#
+# Upload the .tar.gz and .xml artifacts to cloudsmith
+#
+# Uploading requires that the environment variable CLOUDSMITH_API_KEY is
+# set to value available in the Cloudsmith GUI. Usually, also the repos
+# used for tagged and untagged builds  needs to be set using the
+# environment variables CLOUDSMITH_STABLE_REPO and CLOUDSMITH_UNSTABLE_REPO
+
+set -xe
+
+@pkg_python@ -m cloudsmith_cli push raw --no-wait-for-sync \
+    --name @pkg_displayname@-metadata \
+    --version @pkg_semver@ \
+    --summary "Plugin metadata for automatic installation" \
+    @pkg_repo@ @pkg_displayname@.xml
+
+@pkg_python@ -m cloudsmith_cli push raw --no-wait-for-sync \
+    --name @pkg_displayname@-tarball \
+    --version @pkg_semver@ \
+    --summary "Plugin tarball for automatic installation" \
+    @pkg_repo@ @pkg_tarname@.tar.gz
+
+set +x
