@@ -62,17 +62,33 @@ SET( wxWidgets_USE_STATIC OFF)
 
 
 SET(OCPN_UNSTABLE_REPO "david-register/ocpn-plugins-unstable"
-    CACHE STRING "Default cloudsmith repository for untagged builds")
+    CACHE STRING "Default repository for untagged builds")
 SET(OCPN_STABLE_REPO "david-register/ocpn-plugins-stable"
-    CACHE STRING "Default cloudsmith repository for tagged builds")
+    CACHE STRING "Default repository for tagged builds")
 OPTION(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 # For OpenCPN version 5.x, NOT 5.0 ON. For version 5.0 OFF
 OPTION(MANAGED_PLUGIN "Use managed plugin" OFF)
 OPTION(OCPN_FLATPAK "Build flatpak plugin" OFF)
 
 
-INCLUDE("cmake/PluginConfigure.cmake")
 INCLUDE("cmake/PluginJSON.cmake")
+# The cloudsmith upload script
+function (configure_upload)
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/ci/upload.sh.in
+    ${CMAKE_BINARY_DIR}/upload.sh
+    @ONLY
+  )
+endfunction (configure_upload)
+
+# The XML metadata file
+function (configure_metadata)
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/shipdriver-plugin.xml.in
+    ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
+    @ONLY
+  )
+endfunction (configure_metadata)
 
 IF(SHIPDRIVER_USE_SVG)
   ADD_DEFINITIONS(-DSHIPDRIVER_USE_SVG)
@@ -117,53 +133,42 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/api-16)
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include)
 ADD_DEFINITIONS(-DTIXML_USE_STL)
 
-INCLUDE("GetArch")
-GetArch()
-
 if (OCPN_FLATPAK)
-    # Lie to PluginSetup that we have found wxWidgets so it don't barfs.
-    set(wxWidgets_LIBRARIES FOOBAR)
-    include("GetArch")
-    GetArch()
-    include("cmake/PluginSetup.cmake")
-    include(metadata)
-    configure_file(
-      # Required in flatpak, done early.
-      ${CMAKE_SOURCE_DIR}/pkg_version.sh.in
-      ${CMAKE_CURRENT_BINARY_DIR}/pkg_version.sh
-    )
-    configure_file(
-      ${CMAKE_SOURCE_DIR}/ci/upload.sh.in
-      ${CMAKE_BINARY_DIR}/upload.sh
-      @ONLY
-    )
+  include(GetArch)
+  GetArch()
+  # Lie to PluginSetup that we have found wxWidgets so it don't barfs.
+  set(wxWidgets_LIBRARIES FOOBAR)
+  include(PluginSetup)
+  unset(wxWidgets_LIBRARIES)
+  include(metadata)
 
-    find_program(TAR NAMES gtar tar)
-    if (NOT TAR)
-        message(FATAL_ERROR "tar not found, required for OCPN_FLATPAK")
-    endif ()
-    configure_file(
-      ${CMAKE_SOURCE_DIR}/shipdriver-plugin.xml.in
-      ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
-      @ONLY
-    )
-    add_custom_target(flatpak-build ALL
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/flatpak
-        COMMAND flatpak-builder --force-clean
-            ${CMAKE_CURRENT_BINARY_DIR}/app
-            org.opencpn.OpenCPN.Plugin.shipdriver.yaml
-    )
-    add_custom_target("flatpak-pkg")
-    add_custom_command(
-        TARGET flatpak-pkg
-        COMMAND ${TAR}
-            -czf ${pkg_tarname}.tar.gz
-            --transform 's|.*/files/|shipdriver-flatpak-${PACKAGE_VERSION}/|'
-            ${CMAKE_CURRENT_BINARY_DIR}/app/files
-    )
-    return ()
+  configure_upload()
+  configure_metadata()
+
+  find_program(TAR NAMES gtar tar)
+  if (NOT TAR)
+      message(FATAL_ERROR "tar not found, required for OCPN_FLATPAK")
+  endif ()
+  set (FLATPAK_DIR ${PROJECT_SOURCE_DIR}/flatpak)
+  add_custom_target(flatpak-build ALL
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMAND flatpak-builder --force-clean
+          ${CMAKE_CURRENT_BINARY_DIR}/app
+          ${FLATPAK_DIR}/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+  )
+  add_custom_target("flatpak-pkg")
+  add_custom_command(
+      TARGET flatpak-pkg
+      COMMAND ${TAR}
+          -czf ${pkg_tarname}.tar.gz
+          --transform 's|.*/files/|shipdriver-flatpak-${PACKAGE_VERSION}/|'
+          ${CMAKE_CURRENT_BINARY_DIR}/app/files
+  )
+  return ()
 endif()
 
+INCLUDE("GetArch")
+GetArch()
 INCLUDE("cmake/PluginConfigure.cmake")
 INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginSetup.cmake")
@@ -171,8 +176,5 @@ INCLUDE("cmake/PluginLocalization.cmake")
 INCLUDE("cmake/metadata.cmake")
 INCLUDE("cmake/PluginPackage.cmake")
 
-configure_file(
-  ${CMAKE_SOURCE_DIR}/shipdriver-plugin.xml.in
-  ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
-  @ONLY
-)
+configure_metadata()
+configure_upload()
