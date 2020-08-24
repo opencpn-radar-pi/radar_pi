@@ -1,0 +1,24 @@
+---
+version: 2
+jobs:
+  build-flatpak:
+    machine:
+      image: circleci/classic:201808-01
+    environment:
+      - OCPN_TARGET:  flatpak
+    steps:
+      - checkout
+      - run: pyenv local 3.6.5
+      - run: ci/circleci-build-flatpak.sh
+      - run: cd build; /bin/bash < upload.sh
+workflows:
+  version: 2
+  build_all:
+    jobs:
+      - build-flatpak:
+          filters:
+            branches:
+              only:
+                  - master
+                  - build
+

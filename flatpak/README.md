@@ -22,9 +22,13 @@ package. To build and install:
       $ make flatpak-build
       $ make flatpak-pkg
 
+Build produces a plugin tarball and metadata file, to be used with the new
+plugin installer available from 5.2.0. See the README.md in top directory.
+
 The actual version built depends on the source stanza in the end of the
 yaml file. By default, the tip of the master branch is used.
 
-BUGS: As of today, building against the flathub version does not work since
-the headers are stripped. Until fixed, build and install the opencpn
-flatpak version locally as documented in flatpak/README.md
+NOTE: As of today building against the flathub version does not work 
+unless the .yaml file is patched, see comments in file. The long story
+is that the development headers are unavailable in the flathub version, 
+but exists in the nightly builds.
