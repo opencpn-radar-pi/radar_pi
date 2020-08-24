@@ -17,6 +17,19 @@ set(OpenGL_GL_PREFERENCE "LEGACY")
 
 PROJECT(ShipDriver_pi)
 
+# Locations where cmake looks for cmake modules.
+set(
+  CMAKE_MODULE_PATH
+  ${CMAKE_SOURCE_DIR}/build
+  ${CMAKE_SOURCE_DIR}/
+  ${CMAKE_SOURCE_DIR}/cmake
+)
+
+if (WIN32)
+  SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/buildwin)
+endif ()
+
+
 SET(PACKAGE_NAME ShipDriver_pi)
 SET(VERBOSE_NAME ShipDriver)
 SET(TITLE_NAME ShipDriver)
