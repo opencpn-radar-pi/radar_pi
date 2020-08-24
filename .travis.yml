@@ -11,6 +11,8 @@ matrix:
     script:
     - "./ci/travis-build-raspbian-armhf.sh"
     - "cd build; bash < upload.sh"
+    os: Linux
+    dist: bionic
 
 branches:
   only:
