@@ -158,7 +158,7 @@ void Dlg::StartDriving() {
 		wxString wildcard = wxT("Text files (*.txt)|*.txt|All files (*.*)|*.*");
 
 		wxString s = _T("/");
-		char * pName = "ShipDriver_pi";
+		const char * pName = "ShipDriver_pi";
 		wxString defaultDir = GetPluginDataDir(pName) + s + _T("data") + s;
 
 		wxString defaultFilename = wxEmptyString;
@@ -659,11 +659,13 @@ wxString Dlg::createMWVASentence(double spd, double hdg, double winddirection, d
 		twa = 360 - twa;
 	}
 
-	double aws, twd, tws, awd, awa;
+	// double aws, twd, tws, awd, awa;
+	double  aws, awa;
 	twa = 180 - twa;  // we need the complement of the twa for the internal angle of the triangle
 	twa = twa * M_PI / 180; // convert to radians
-	tws = windspeed;
-	double alpha, bravo, charlie, delta;
+	// tws = windspeed;
+	// double alpha, bravo, charlie, delta;
+	double alpha, charlie;
 	alpha = pow(spd, 2) + pow(windspeed, 2) - 2 * spd*windspeed*cos(twa);
 	aws = sqrt(alpha);
 
@@ -1162,7 +1164,7 @@ double Dlg::GetPolarSpeed(double lat, double lon, double cse){
 	wxString error;
 	wxString s = _T("/");
 
-	char * pName = "ShipDriver_pi";	
+	const char * pName = "ShipDriver_pi";	
 
 	wxString polars_path = GetPluginDataDir(pName) + s + _T("data") + s;
 	wxString myFile = polars_path + _T("arcona.xml");
@@ -1196,13 +1198,13 @@ double Dlg::ReadPolars(wxString filename, double windangle, double windspeed){
 
 	bool foundWindAngle = false;
 	bool foundWindSpeed = false;
-	bool foundPreviousWindAngle = false;
+	// bool foundPreviousWindAngle = false;
 
 	double myWindAngle = -1;
 	double myWindSpeed = -1;
 	double prevAngle = -1;
 	double prevSpeed = -1;
-	double dSpeed = -1;
+	// double dSpeed = -1;
 	double prevPolarSpeed = -1;
 	wxString myPolarSpeed;
 
@@ -1438,7 +1440,7 @@ void Dlg::OnFollow(wxCommandEvent& event) {
 
 	long si = -1;
 	long itemIndex = -1;
-	int f = 0;
+	// int f = 0;
 
 	wxListItem     row_info;
 	wxString       cell_contents_string = wxEmptyString;
@@ -1592,7 +1594,7 @@ GetRouteDialog::GetRouteDialog(wxWindow * parent, wxWindowID id, const wxString 
 	p.y += sz.GetHeight() + 10;
 
 	p.x += 30;
-	wxButton * b = new wxButton(this, wxID_OK, _("OK"), p, wxDefaultSize);
+	// wxButton * b = new wxButton(this, wxID_OK, _("OK"), p, wxDefaultSize);
 	p.x += 140;
-	wxButton * c = new wxButton(this, wxID_CANCEL, _("Cancel"), p, wxDefaultSize);
+	// wxButton * c = new wxButton(this, wxID_CANCEL, _("Cancel"), p, wxDefaultSize);
 };
