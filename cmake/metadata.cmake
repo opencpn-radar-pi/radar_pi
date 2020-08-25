@@ -79,6 +79,13 @@ else ()
   set (pkg_python python)
 endif ()
 
+# pkg_target_arch: os + optional -arch suffix
+if (OCPN_FLATPAK)
+    set (pkg_target_arch "flatpak-${ARCH}")
+else ()
+  set (pkg_target_arch "${PKG_TARGET}")
+endif ()
+
 
 #
 # Setup the repack-tarball target which repacks the tarball
