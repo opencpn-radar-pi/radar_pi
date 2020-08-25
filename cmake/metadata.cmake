@@ -91,10 +91,10 @@ tmpdir=repack.$$
 rm -rf $tmpdir && mkdir $tmpdir
 tar -C $tmpdir -xf $1
 rm -rf $tmpdir/root
-cp $2 $tmpdir/*/
+topdir=$(ls -d $tmpdir/*-*-*)
+cp $2 $topdir/metadata.xml
 tar -C $tmpdir -czf $1 .
-rm -rf $tmpdir
-touch repack-stamp"
+rm -rf $tmpdir"
 )
  
 if (NOT TARGET repack-tarball)
