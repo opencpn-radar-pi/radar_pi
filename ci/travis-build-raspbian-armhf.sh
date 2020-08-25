@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+
+# bailout on errors and echo commands.
+set -xe
+
+DOCKER_SOCK="unix:///var/run/docker.sock"
+echo "DOCKER_OPTS=\"-H tcp://127.0.0.1:2375 -H $DOCKER_SOCK -s devicemapper\"" \
+    | sudo tee /etc/default/docker > /dev/null
+sudo systemctl restart docker.service
+
+docker run --rm --privileged multiarch/qemu-user-static:register --reset
+docker run --privileged -d -ti \
+      -v $(pwd):/ci-source:rw \
+      -e "container=docker" \
+      -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
+      -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
+      -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
+      $DOCKER_IMAGE /bin/bash
+sudo docker ps
+DOCKER_CONTAINER_ID=$(sudo docker ps | awk '/raspbian/ {print $1}')
+
+cat << "EOF" >build.sh
+apt-get -qq update
+apt-get -q -y install \
+    git cmake build-essential gettext wx-common \
+    libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev \
+    libexpat1-dev libcairo2-dev libarchive-dev \
+    liblzma-dev libexif-dev lsb-release
+
+mkdir ci-source/build
+cd ci-source/build
+cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+make
+make package
+EOF
+
+docker exec -ti \
+    $DOCKER_CONTAINER_ID /bin/bash -xec "bash -xe /ci-source/build.sh"
+
+docker ps -a
+docker stop $DOCKER_CONTAINER_ID
+docker rm -v $DOCKER_CONTAINER_ID
+rm -f build.sh
+
+sudo apt-get -qq update
+sudo apt -q install python3-pip python3-setuptools
+pip3 install -q cloudsmith-cli
