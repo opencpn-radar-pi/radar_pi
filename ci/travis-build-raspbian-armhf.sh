@@ -33,6 +33,7 @@ cd ci-source/build
 cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 make
 make package
+make repack-tarball
 EOF
 
 docker exec -ti \

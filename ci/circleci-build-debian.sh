@@ -21,6 +21,7 @@ fi
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=/usr ..
 make -sj2
 make package
+make repack-tarball
 
 sudo apt-get install python3-pip python3-setuptools
 sudo python3 -m pip install -q cloudsmith-cli
