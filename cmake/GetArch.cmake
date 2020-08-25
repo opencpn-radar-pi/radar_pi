@@ -30,7 +30,7 @@ function(GetArch)
   else (NOT WIN32)
     # Should really be i386 since we are on win32. However, it's
     # x86_64 for now, see #2027
-    set (ARCH "i386")
+    set (ARCH "x86_64")
   endif (NOT WIN32)
   set (ARCH ${ARCH} PARENT_SCOPE)
 endfunction(GetArch)
