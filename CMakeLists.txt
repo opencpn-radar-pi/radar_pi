@@ -41,7 +41,7 @@ SET(CPACK_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
 SET(VERSION_MAJOR "2")
 SET(VERSION_MINOR "4")
-SET(VERSION_PATCH "2")
+SET(VERSION_PATCH "3")
 
 SET(VERSION_DATE "2020-05-09")
 SET(OCPN_MIN_VERSION "ov50")
@@ -60,7 +60,6 @@ SET( wxWidgets_USE_UNICODE ON)
 SET( wxWidgets_USE_UNIVERSAL OFF)
 SET( wxWidgets_USE_STATIC OFF)
 
-SET(OCPN_STABLE_REPO "mike-rossiter/shipdriver-prod"
 
 SET(OCPN_UNSTABLE_REPO "mike-rossiter/shipdriver-beta"
     CACHE STRING "Default repository for untagged builds")
