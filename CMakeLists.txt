@@ -41,7 +41,7 @@ SET(CPACK_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
 SET(VERSION_MAJOR "2")
 SET(VERSION_MINOR "4")
-SET(VERSION_PATCH "1")
+SET(VERSION_PATCH "2")
 
 SET(VERSION_DATE "2020-05-09")
 SET(OCPN_MIN_VERSION "ov50")
@@ -60,10 +60,11 @@ SET( wxWidgets_USE_UNICODE ON)
 SET( wxWidgets_USE_UNIVERSAL OFF)
 SET( wxWidgets_USE_STATIC OFF)
 
+SET(OCPN_STABLE_REPO "mike-rossiter/shipdriver-prod"
 
-SET(OCPN_UNSTABLE_REPO "david-register/ocpn-plugins-unstable"
+SET(OCPN_UNSTABLE_REPO "mike-rossiter/shipdriver-beta"
     CACHE STRING "Default repository for untagged builds")
-SET(OCPN_STABLE_REPO "david-register/ocpn-plugins-stable"
+SET(OCPN_STABLE_REPO "mike-rossiter/shipdriver-prod"
     CACHE STRING "Default repository for tagged builds")
 OPTION(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 # For OpenCPN version 5.x, NOT 5.0 ON. For version 5.0 OFF
