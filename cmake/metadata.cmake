@@ -90,6 +90,7 @@ set(repack_tarball_script
 tmpdir=repack.$$
 rm -rf $tmpdir && mkdir $tmpdir
 tar -C $tmpdir -xf $1
+rm -rf $tmpdir/root
 cp $2 $tmpdir/*/
 tar -C $tmpdir -czf $1 .
 rm -rf $tmpdir
