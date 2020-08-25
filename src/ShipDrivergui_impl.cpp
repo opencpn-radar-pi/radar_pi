@@ -393,7 +393,7 @@ void Dlg::Notify()
 	wxTimeSpan mySeconds = wxTimeSpan::Seconds(ss);
 	wxDateTime mdt = dt.Add(mySeconds);
 
-    bool m_bGrib;
+        bool m_bGrib = false;
 	double wspd, wdir;
 	if (m_bUsingWind) {
 		m_bGrib = GetGribSpdDir(dt, initLat, initLon, wspd, wdir);
@@ -1444,7 +1444,7 @@ void Dlg::OnFollow(wxCommandEvent& event) {
 
 	wxListItem     row_info;
 	wxString       cell_contents_string = wxEmptyString;
-	bool foundRoute;
+	bool foundRoute = false;
 
 	if (RouteDialog.ShowModal() != wxID_OK) {
 		m_bUsingFollow = false;		
