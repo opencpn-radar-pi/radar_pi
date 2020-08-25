@@ -39,6 +39,7 @@ cmake -DOCPN_CI_BUILD=$CI_BUILD \
   ..
 make -sj2
 make package
+make repack-tarball
 
 sudo -H python3 -m ensurepip
 sudo -H python3 -m pip install -q setuptools
