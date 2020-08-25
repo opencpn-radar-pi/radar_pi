@@ -61,7 +61,7 @@ MACRO(GETTEXT_BUILD_MO)
       )
 
     IF(APPLE)
-      INSTALL(FILES ${_gmoFile} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/OpenCPN.app/Contents/Resources/${_poBasename}.lproj RENAME opencpn-${PACKAGE_NAME}.mo )
+      INSTALL(FILES ${_gmoFile} DESTINATION OpenCPN.app/Contents/Resources/${_poBasename}.lproj RENAME opencpn-${PACKAGE_NAME}.mo )
     ELSE(APPLE)
       INSTALL(FILES ${_gmoFile} DESTINATION ${PREFIX_DATA}/locale/${_poBasename}/LC_MESSAGES RENAME opencpn-${PACKAGE_NAME}.mo )
     ENDIF(APPLE)

@@ -16,10 +16,11 @@ SET(CPACK_PACKAGE_VERSION_MINOR ${VERSION_MINOR})
 SET(CPACK_PACKAGE_VERSION_PATCH ${VERSION_PATCH})
 SET(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_CURRENT_BINARY_DIR};${PACKAGE_NAME};ALL;/")
 SET(CPACK_PACKAGE_EXECUTABLES OpenCPN ${PACKAGE_NAME})
+SET(CPACK_PACKAGE_FILE_NAME "${pkg_tarname}" )
 
 IF(WIN32)
-# to protect against confusable windows users, let us _not_ generate zip packages
-#  SET(CPACK_GENERATOR "NSIS;ZIP")
+  #  The  TGZ i. e., tar.gz package is used by the new installer
+  SET(CPACK_GENERATOR "NSIS;TGZ")
 
   # override install directory to put package files in the opencpn directory
   SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenCPN")
@@ -30,9 +31,6 @@ IF(WIN32)
 
   SET(CPACK_PACKAGE_VERSION "${PACKAGE_VERSION}-${OCPN_MIN_VERSION}")
 
-  # Let cmake find NSIS.template.in
-  SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/buildwin")
-
 #  These lines set the name of the Windows Start Menu shortcut and the icon that goes with it
 #  SET(CPACK_NSIS_INSTALLED_ICON_NAME "${PACKAGE_NAME}")
 SET(CPACK_NSIS_DISPLAY_NAME "OpenCPN ${PACKAGE_NAME}")
@@ -41,6 +39,7 @@ SET(CPACK_NSIS_DISPLAY_NAME "OpenCPN ${PACKAGE_NAME}")
 
   SET(CPACK_NSIS_DIR "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode")  #Gunther
   SET(CPACK_BUILDWIN_DIR "${PROJECT_SOURCE_DIR}/buildwin")  #Gunther
+
 
 ELSE(WIN32)
   SET(CPACK_PACKAGE_INSTALL_DIRECTORY ${PACKAGE_NAME})
@@ -68,32 +67,12 @@ set(CPACK_SOURCE_IGNORE_FILES
 )
 
 IF(UNIX AND NOT APPLE)
-#    INCLUDE(UseRPMTools)
-#    IF(RPMTools_FOUND)
-#        RPMTools_ADD_RPM_TARGETS(packagename ${PROJECT_SOURCE_DIR}/package.spec)
-#    ENDIF(RPMTools_FOUND)
 
 # need apt-get install rpm, for rpmbuild
     SET(PACKAGE_DEPS "opencpn, bzip2, gzip")
     SET(PACKAGE_RELEASE 1)
 
-
-  IF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
-    SET (ARCH "armhf")
-    # don't bother with rpm on armhf
-    SET(CPACK_GENERATOR "DEB;RPM;TBZ2")
-  ELSE ()
-    SET(CPACK_GENERATOR "DEB;RPM;TBZ2")
-
-    IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
-      SET (ARCH "amd64")
-      SET(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
-    ELSE (CMAKE_SIZEOF_VOID_P MATCHES "8")
-      SET (ARCH "i386")
-      # note: in a chroot must use "setarch i686 make package"
-      SET(CPACK_RPM_PACKAGE_ARCHITECTURE "i686")
-    ENDIF (CMAKE_SIZEOF_VOID_P MATCHES "8")
-  ENDIF ()
+    SET(CPACK_GENERATOR "DEB;TGZ")
 
     SET(CPACK_DEBIAN_PACKAGE_DEPENDS ${PACKAGE_DEPS})
     SET(CPACK_DEBIAN_PACKAGE_RECOMMENDS ${PACKAGE_RECS})
@@ -102,21 +81,12 @@ IF(UNIX AND NOT APPLE)
     SET(CPACK_DEBIAN_PACKAGE_SECTION "misc")
     SET(CPACK_DEBIAN_COMPRESSION_TYPE "xz") # requires my patches to cmake
 
-    SET(CPACK_RPM_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}")
-    SET(CPACK_RPM_PACKAGE_REQUIRES  ${PACKAGE_DEPS})
-#    SET(CPACK_RPM_PACKAGE_GROUP "Applications/Engineering")
-    SET(CPACK_RPM_PACKAGE_LICENSE "gplv3+")
-
-    SET(CPACK_RPM_COMPRESSION_TYPE "xz")
-#    SET(CPACK_RPM_USER_BINARY_SPECFILE "${PROJECT_SOURCE_DIR}/opencpn.spec.in")
 
     SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PACKAGE_NAME} PlugIn for OpenCPN")
     SET(CPACK_PACKAGE_DESCRIPTION "${PACKAGE_NAME} PlugIn for OpenCPN")
 #    SET(CPACK_SET_DESTDIR ON)
     SET(CPACK_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
-
-    SET(CPACK_PACKAGE_FILE_NAME "${PACKAGE_NAME}_${PACKAGE_VERSION}-${PACKAGE_RELEASE}_${ARCH}" )
 ENDIF(UNIX AND NOT APPLE)
 
 IF(TWIN32 AND NOT UNIX)
@@ -143,7 +113,6 @@ ENDIF(TWIN32 AND NOT UNIX)
 # this dummy target is necessary to make sure the ADDITIONAL_MAKE_CLEAN_FILES directive is executed.
 # apparently, the base CMakeLists.txt file must have "some" target to activate all the clean steps.
 #ADD_CUSTOM_TARGET(dummy COMMENT "dummy: Done." DEPENDS ${PACKAGE_NAME})
-
 
 INCLUDE(CPack)
 
@@ -179,5 +148,18 @@ configure_file(${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jpg
  ADD_CUSTOM_TARGET(create-pkg COMMENT "create-pkg: Done."
  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin.pkg )
 
+ SET(CPACK_GENERATOR "TGZ")
 
 ENDIF(APPLE)
+
+IF(WIN32)
+  MESSAGE(STATUS "FILE: ${CPACK_PACKAGE_FILE_NAME}")
+  add_custom_command(OUTPUT ${CPACK_PACKAGE_FILE_NAME}
+	  COMMAND signtool sign /v /f \\cert\\OpenCPNSPC.pfx /d http://www.opencpn.org /t http://timestamp.verisign.com/scripts/timstamp.dll ${CPACK_PACKAGE_FILE_NAME}
+	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	  DEPENDS ${PACKAGE_NAME}
+	  COMMENT "Code-Signing: ${CPACK_PACKAGE_FILE_NAME}")
+  ADD_CUSTOM_TARGET(codesign COMMENT "code signing: Done."
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME} )
+
+ENDIF(WIN32)

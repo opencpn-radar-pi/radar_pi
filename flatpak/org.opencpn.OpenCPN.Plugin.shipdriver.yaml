@@ -1,0 +1,28 @@
+id: org.opencpn.OpenCPN.Plugin.shipdriver
+runtime: org.opencpn.OpenCPN
+# runtime-version: stable   # official build at flathub
+runtime-version: master   # for nightly builds
+sdk: org.freedesktop.Sdk//18.08
+build-extension: true
+separate-locales: false
+appstream-compose: false
+finish-args:
+    - --socket=x11
+    - --socket=pulseaudio
+    - --filesystem=home
+    - --device=all
+
+modules:
+    - name: shipdriver
+      no-autogen: true
+      buildsystem: cmake
+      config-opts:
+          - -DCMAKE_INSTALL_PREFIX=/app/extensions/shipdriver/
+          - -DPREFIX_PLUGINS=lib/opencpn
+      build-options:
+          cxxflags: -DFLATPAK
+          cflags: -DFLATPAK
+      sources:
+          - type: git
+            url: ..
+            branch: master

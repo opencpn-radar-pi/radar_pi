@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin version="1">
+  <name> ShipDriver </name>
+  <version> @pkg_semver@ </version>
+  <release> @PKG_RELEASE@ </release>
+  <summary> Ship movements simulator - or is it a game? </summary>
+
+  <api-version> @PKG_API_VERSION@ </api-version>
+  <open-source> yes </open-source>
+  <author> @PKG_AUTHOR@ </author>
+  <source> https://github.com/Rasbats/shipdriver_pi </source>
+  <info-url> https://opencpn.org/OpenCPN/plugins/shipdriver.html </info-url>
+
+  <description>
+Simulates navigation of a vessel. Using the sail option and a current
+grib file for wind data, simulates how a sailing vessel might react in
+those conditions. Using 'Preferences' the simulator is able to record AIS
+data from itself. This can be replayed to simulate collision situations.
+  </description>
+
+  <target>@PKG_TARGET@</target>
+  <target-version>@PKG_TARGET_VERSION@</target-version>
+  <target-arch>@ARCH@</target-arch>
+  <tarball-url> @pkg_tarball_url@ </tarball-url>
+</plugin>
