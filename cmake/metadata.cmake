@@ -79,6 +79,13 @@ else ()
   set (pkg_python python)
 endif ()
 
+# pkg_target_arch: os + optional -arch suffix
+if (OCPN_FLATPAK)
+    set (pkg_target_arch "flatpak-${ARCH}")
+else ()
+  set (pkg_target_arch "${PKG_TARGET}")
+endif ()
+
 
 #
 # Setup the repack-tarball target which repacks the tarball
@@ -91,10 +98,10 @@ tmpdir=repack.$$
 rm -rf $tmpdir && mkdir $tmpdir
 tar -C $tmpdir -xf $1
 rm -rf $tmpdir/root
-cp $2 $tmpdir/*/
+topdir=$(ls -d $tmpdir/*-*-*)
+cp $2 $topdir/metadata.xml
 tar -C $tmpdir -czf $1 .
-rm -rf $tmpdir
-touch repack-stamp"
+rm -rf $tmpdir"
 )
  
 if (NOT TARGET repack-tarball)

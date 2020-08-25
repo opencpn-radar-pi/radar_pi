@@ -18,7 +18,7 @@ those conditions. Using 'Preferences' the simulator is able to record AIS
 data from itself. This can be replayed to simulate collision situations.
   </description>
 
-  <target>@PKG_TARGET@</target>
+  <target>@pkg_target_arch@</target>
   <target-version>@PKG_TARGET_VERSION@</target-version>
   <target-arch>@ARCH@</target-arch>
   <tarball-url> @pkg_tarball_url@ </tarball-url>
