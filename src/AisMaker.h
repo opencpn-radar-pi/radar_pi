@@ -17,9 +17,9 @@ class AisMaker{
 
 public:
 
-	string Str2Str(string str, char* charsToRemove);
-	float Str2Float(string str, char* exc);
-	int Str2Int(string str, char* exc);
+	string Str2Str(string str, const char* charsToRemove);
+	float Str2Float(string str, const char* exc);
+	int Str2Int(string str, const char* exc);
 	string Int2BString(int value, int length);
 	int findIntFromLetter(char letter);
 	char findCharFromNumber(int mp);

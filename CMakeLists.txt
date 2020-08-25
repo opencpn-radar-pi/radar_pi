@@ -7,6 +7,14 @@
 # define minimum cmake version
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.2)
 
+if (POLICY CMP0077)
+  cmake_policy(SET CMP0077 NEW)
+endif ()
+
+# Prefer libGL.so to libOpenGL.so, see CMP0072
+set(OpenGL_GL_PREFERENCE "LEGACY")
+
+
 PROJECT(ShipDriver_pi)
 
 SET(PACKAGE_NAME ShipDriver_pi)
@@ -51,7 +59,9 @@ if(HAS_STD_CPP11_FLAG)
   add_compile_options(-std=c++11)
 endif()
 
+
 SET(SRC_ShipDriver
+        api-16/ocpn_plugin.h
         src/ShipDriver_pi.h
         src/ShipDriver_pi.cpp
         src/icons.h
@@ -60,8 +70,6 @@ SET(SRC_ShipDriver
 	    src/ShipDrivergui.cpp
 	    src/ShipDrivergui_impl.cpp
 	    src/ShipDrivergui_impl.h
-		src/ocpn_plugin.h
-		src/folder.xpm
 		src/AisMaker.h
 		src/AisMaker.cpp
 		src/GribRecord.cpp
@@ -76,7 +84,8 @@ SET(SRC_ShipDriver
 
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_ShipDriver} ${SRC_JSON}
 )
-
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/api-16)
+INCLUDE_DIRECTORIES("${CMAKE_BINARY_DIR}/include")
 ADD_DEFINITIONS(-DTIXML_USE_STL)
 
 INCLUDE("cmake/PluginInstall.cmake")
