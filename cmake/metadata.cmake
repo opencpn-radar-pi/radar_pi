@@ -78,9 +78,15 @@ else ()
   set(pkg_python python)
 endif ()
 
-# pkg_target_arch: os + optional -arch suffix
+# pkg_target_arch: os + optional -arch suffix. See: Opencpn bug #2003
 if (OCPN_FLATPAK)
   set(pkg_target_arch "flatpak-${ARCH}")
+elseif ("${PKG_TARGET}" STREQUAL "ubuntu")
+  set(pkg_target_arch "ubuntu-${ARCH}")
+elseif ("${PKG_TARGET}" STREQUAL "raspbian")
+  set(pkg_target_arch "raspbian-${ARCH}")
+elseif ("${PKG_TARGET}" STREQUAL "debian")
+  set(pkg_target_arch "debian-${ARCH}")
 else ()
   set(pkg_target_arch "${PKG_TARGET}")
 endif ()
