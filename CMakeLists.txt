@@ -7,6 +7,10 @@
 # define minimum cmake version
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.2)
 
+if (POLICY CMP0042)
+  cmake_policy(SET CMP0042 NEW)
+endif ()
+
 if (POLICY CMP0077)
   cmake_policy(SET CMP0077 NEW)
 endif ()
