@@ -17,10 +17,10 @@ package. To build and install:
 
   - The shipdriver flatpak plugin can now be built and installed using
 
-      $ cd build
-      $ cmake .. -DOCPN_FLATPAK:BOOL=ON
-      $ make flatpak-build
-      $ make flatpak-pkg
+        $ cd build
+        $ cmake .. -DOCPN_FLATPAK:BOOL=ON
+        $ make flatpak-build
+        $ make flatpak-pkg
 
 Build produces a plugin tarball and metadata file, to be used with the new
 plugin installer available from 5.2.0. See the README.md in top directory.
