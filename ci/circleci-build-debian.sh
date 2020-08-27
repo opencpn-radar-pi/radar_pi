@@ -4,13 +4,12 @@
 # Build the Debian artifacts
 #
 set -xe
-sudo apt-get -qq update
+sudo apt -qq update || apt update
 sudo apt-get -q install  devscripts equivs
 
 mkdir  build
 cd build
-mk-build-deps ../ci/control
-sudo apt-get -q install  ./*all.deb  || :
+sudo mk-build-deps -ir ../ci/control
 sudo apt-get -q --allow-unauthenticated install -f
 
 if [ -n "$BUILD_GTK3" ]; then

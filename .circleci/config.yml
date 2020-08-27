@@ -33,6 +33,16 @@ jobs:
       - run: ci/circleci-build-macos.sh
       - run: cd build; /bin/bash < upload.sh
 
+  build-trusty:
+    docker:
+      - image: circleci/buildpack-deps:trusty-scm
+    environment:
+      - OCPN_TARGET:  trusty
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian.sh
+      - run: cd build; /bin/bash < upload.sh
+
   build-xenial:
     docker:
       - image: circleci/buildpack-deps:xenial-scm
@@ -138,12 +148,20 @@ workflows:
                   - master
                   - build
 
+      - build-trusty:
+          filters:
+            branches:
+              only:
+                  - master
+                  - build
+
       - build-xenial:
           filters:
             branches:
               only:
                   - master
                   - build
+
 
       - build-bionic-gtk3:
           filters:
