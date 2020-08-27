@@ -31,7 +31,7 @@ cores=$(lscpu | grep 'Core(s)' | sed 's/.*://') || cores=1
 cores=$((cores + 1))
 apt-get -qq update
 apt-get -y install \
-   git cmake build-essential cmake gettext \
+   build-essential cmake gettext git \
    wx-common libgtk2.0-dev libwxgtk3.0-dev \
    libbz2-dev libcurl4-openssl-dev libexpat1-dev \
    libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release
