@@ -8,6 +8,12 @@
 # used for tagged and untagged builds  needs to be set using the
 # environment variables CLOUDSMITH_STABLE_REPO and CLOUDSMITH_UNSTABLE_REPO
 
+if [ -z "$CLOUDSMITH_API_KEY" ]; then
+    echo 'Warning: $CLOUDSMITH_API_KEY is not available, upload will fail.'
+else
+    echo "Using CLOUDSMITH_API_KEY: ${CLOUDSMITH_API_KEY:0:4}..."
+fi
+
 set -xe
 
 @pkg_python@ -m cloudsmith_cli push raw --no-wait-for-sync \
