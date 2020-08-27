@@ -51,12 +51,6 @@ jobs:
       - OCPN_TARGET:  bionic
     steps:
       - checkout
-      - run: >
-          echo "deb-src http://us.archive.ubuntu.com/ubuntu/ bionic main"
-          | sudo tee -a /etc/apt/sources.list
-      - run: >
-          echo "deb-src http://us.archive.ubuntu.com/ubuntu/ bionic-updates main"
-          | sudo tee -a /etc/apt/sources.list
       - run: cat /etc/apt/sources.list
       - run: ci/circleci-build-debian.sh
       - run: cd build; /bin/bash < upload.sh
@@ -69,13 +63,6 @@ jobs:
         - OCPN_TARGET:  bionic-gtk3
         steps:
         - checkout
-        - run: >
-            echo "deb-src http://us.archive.ubuntu.com/ubuntu/ bionic main"
-            | sudo tee -a /etc/apt/sources.list
-        - run: >
-            echo
-            "deb-src http://us.archive.ubuntu.com/ubuntu/ bionic-updates main"
-            | sudo tee -a /etc/apt/sources.list
         - run: ci/circleci-build-debian.sh
         - run: cd build; /bin/bash < upload.sh
 
@@ -87,12 +74,6 @@ jobs:
       - BUILD_GTK3: true
     steps:
       - checkout
-      - run: >
-          echo "deb-src http://us.archive.ubuntu.com/ubuntu/ focal main"
-          | sudo tee -a /etc/apt/sources.list
-      - run: >
-          echo "deb-src http://us.archive.ubuntu.com/ubuntu/ focal-updates main"
-          | sudo tee -a /etc/apt/sources.list
       - run: cat /etc/apt/sources.list
       - run: ci/circleci-build-debian.sh
       - run: cd build; /bin/bash < upload.sh
@@ -104,12 +85,6 @@ jobs:
       - OCPN_TARGET: buster
     steps:
       - checkout
-      - run: >
-          echo "deb-src http://ftp.us.debian.org/debian buster main"
-          | sudo tee -a /etc/apt/sources.list
-      - run: >
-          echo "deb-src http://ftp.us.debian.org/debian buster-updates main"
-          | sudo tee -a /etc/apt/sources.list
       - run: ci/circleci-build-debian.sh
       - run: cd build; /bin/bash < upload.sh
 
