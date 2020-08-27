@@ -80,7 +80,7 @@ ShipDriver_pi::ShipDriver_pi(void *ppimgr)
 
 ShipDriver_pi::~ShipDriver_pi(void)
 {
-     //delete _img_ShipDriver_pi;
+
      delete _img_ShipDriverIcon;
 
 	 if (m_pDialog){
@@ -135,11 +135,7 @@ int ShipDriver_pi::Init(void)
 		(new wxMenuItem(&dummy_menu, -1, _("Select Vessel Start Position")), this);
 	SetCanvasContextMenuItemViz(m_position_menu_id, true);
 
-
-
-      m_pDialog = NULL;
-
-	  
+      m_pDialog = NULL;	  
 
       return (
 			  WANTS_OVERLAY_CALLBACK |

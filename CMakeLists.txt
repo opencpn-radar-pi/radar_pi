@@ -45,7 +45,7 @@ SET(CPACK_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
 SET(VERSION_MAJOR "2")
 SET(VERSION_MINOR "4")
-SET(VERSION_PATCH "8")
+SET(VERSION_PATCH "9")
 
 SET(VERSION_DATE "2020-05-09")
 SET(OCPN_MIN_VERSION "ov50")
@@ -70,10 +70,8 @@ SET(OCPN_UNSTABLE_REPO "mike-rossiter/shipdriver-beta"
 SET(OCPN_STABLE_REPO "mike-rossiter/shipdriver-prod"
     CACHE STRING "Default repository for tagged builds")
 OPTION(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
-# For OpenCPN version 5.x, NOT 5.0 ON. For version 5.0 OFF
-OPTION(MANAGED_PLUGIN "Use managed plugin" OFF)
-OPTION(OCPN_FLATPAK "Build flatpak plugin" OFF)
 
+OPTION(OCPN_FLATPAK "Build flatpak plugin" OFF)
 
 INCLUDE("cmake/PluginJSON.cmake")
 # The cloudsmith upload script
@@ -97,12 +95,6 @@ endfunction (configure_metadata)
 IF(SHIPDRIVER_USE_SVG)
   ADD_DEFINITIONS(-DSHIPDRIVER_USE_SVG)
 ENDIF(SHIPDRIVER_USE_SVG)
-
-ADD_DEFINITIONS(-DMANAGED_PLUGIN:ON)
-
-IF(MANAGED_PLUGIN)
-ADD_DEFINITIONS(-DMANAGED_PLUGIN)
-ENDIF(MANAGED_PLUGIN)
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-std=c++11 HAS_STD_CPP11_FLAG)
