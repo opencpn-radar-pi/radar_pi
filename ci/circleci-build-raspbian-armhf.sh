@@ -55,6 +55,4 @@ rm -f build.sh
 
 
 # Install cloudsmith-cli,  required by upload.sh.
-sudo apt-get -q update
-sudo apt-get install python3-pip python3-setuptools
 pip3 install cloudsmith-cli
