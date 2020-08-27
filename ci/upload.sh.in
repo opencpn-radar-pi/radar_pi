@@ -3,10 +3,6 @@
 #
 # Upload the .tar.gz and .xml artifacts to cloudsmith
 #
-# Uploading requires that the environment variable CLOUDSMITH_API_KEY is
-# set to value available in the Cloudsmith GUI. Usually, also the repos
-# used for tagged and untagged builds  needs to be set using the
-# environment variables CLOUDSMITH_STABLE_REPO and CLOUDSMITH_UNSTABLE_REPO
 
 if [ -z "$CLOUDSMITH_API_KEY" ]; then
     echo 'Warning: $CLOUDSMITH_API_KEY is not available, upload will fail.'
@@ -27,5 +23,3 @@ set -xe
     --version @pkg_semver@ \
     --summary "Plugin tarball for automatic installation" \
     @pkg_repo@ @pkg_tarname@.tar.gz
-
-set +x
