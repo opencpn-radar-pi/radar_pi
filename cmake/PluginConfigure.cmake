@@ -10,8 +10,6 @@ set(PLUGIN_SOURCE_DIR .)
 
 message(STATUS "*** Staging to build ${PACKAGE_NAME} ***")
 
-configure_file(cmake/version.h.in ${CMAKE_BINARY_DIR}/include/version.h)
-
 set(PACKAGE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 # SET(CMAKE_BUILD_TYPE Debug)
