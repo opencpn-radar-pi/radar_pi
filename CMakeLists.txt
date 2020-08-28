@@ -70,8 +70,6 @@ option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 
 option(OCPN_FLATPAK "Build flatpak plugin" OFF)
 
-include("cmake/PluginJSON.cmake")
-
 # cmake-format: off
 # The cloudsmith upload script
 function (configure_upload)
@@ -122,10 +120,13 @@ set(SRC_ShipDriver
     src/tinyxmlparser.cpp
 )
 
-add_library(${PACKAGE_NAME} SHARED ${SRC_ShipDriver} ${SRC_JSON})
+add_library(${PACKAGE_NAME} SHARED ${SRC_ShipDriver})
 include_directories(${PROJECT_SOURCE_DIR}/api-16)
 include_directories(${CMAKE_BINARY_DIR}/include)
 add_definitions(-DTIXML_USE_STL)
+
+add_subdirectory("libs/jsoncpp")
+target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
 
 if (OCPN_FLATPAK)
   include(GetArch)
