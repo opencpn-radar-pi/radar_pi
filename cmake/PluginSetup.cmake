@@ -1,6 +1,6 @@
 #
 # Export variables used in plugin setup: GIT_HASH, GIT_COMMIT, GIT_TAG,
-# PKG_TARGET, PKG_TARGET_VERSION and PKG_NVR
+# PKG_TARGET  and PKG_TARGET_VERSION.
 
 execute_process(
   COMMAND git log -1 --format=%h
@@ -68,7 +68,6 @@ string(STRIP "${PKG_TARGET}" PKG_TARGET)
 string(TOLOWER "${PKG_TARGET}" PKG_TARGET)
 string(STRIP "${PKG_TARGET_VERSION}" PKG_TARGET_VERSION)
 string(TOLOWER "${PKG_TARGET_VERSION}" PKG_TARGET_VERSION)
-set(PKG_TARGET_NVR "${PKG_TARGET}-${PKG_TARGET_VERSION}")
 if (NOT DEFINED wxWidgets_LIBRARIES)
   message(FATAL_ERROR "PluginSetup: required wxWidgets_LIBRARIES missing")
 elseif ("${wxWidgets_LIBRARIES}" MATCHES "gtk3u" 
