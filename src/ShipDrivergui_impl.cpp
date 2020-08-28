@@ -1076,10 +1076,13 @@ void Dlg::RequestGrib(wxDateTime time){
 	value["Second"] = time.GetSecond();
 
 	wxString out;
-    
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     Json::FastWriter writer;
     out = writer.write(value);
         
+#pragma GCC diagnostic pop
 
 	SendPluginMessage(wxString(_T("GRIB_TIMELINE_RECORD_REQUEST")), out);
 

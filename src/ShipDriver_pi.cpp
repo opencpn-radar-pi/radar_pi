@@ -36,6 +36,9 @@
 #include "ShipDrivergui.h"
 #include "ocpn_plugin.h" 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 class ShipDriver_pi;
 class Dlg;
 
@@ -541,6 +544,4 @@ void ShipDriver_pi::SetNMEASentence(wxString &sentence) {
 	}
 }
 
-
-
-
+#pragma GCC diagnostic pop

@@ -114,10 +114,6 @@ set(SRC_ShipDriver
     src/GribRecord.cpp
     src/GribRecordSet.h
     src/GribRecord.h
-    src/tinyxml.h
-    src/tinyxml.cpp
-    src/tinyxmlerror.cpp
-    src/tinyxmlparser.cpp
 )
 
 add_library(${PACKAGE_NAME} SHARED ${SRC_ShipDriver})
@@ -125,8 +121,6 @@ include_directories(${PROJECT_SOURCE_DIR}/api-16)
 include_directories(${CMAKE_BINARY_DIR}/include)
 add_definitions(-DTIXML_USE_STL)
 
-add_subdirectory("libs/jsoncpp")
-target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
 
 if (OCPN_FLATPAK)
   include(GetArch)
@@ -170,6 +164,15 @@ include("cmake/PluginSetup.cmake")
 include("cmake/PluginLocalization.cmake")
 include("cmake/metadata.cmake")
 include("cmake/PluginPackage.cmake")
+
+add_subdirectory("libs/jsoncpp")
+target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
+
+add_subdirectory("libs/tinyxml")
+target_link_libraries(${PACKAGE_NAME} ocpn::tinyxml)
+
+add_subdirectory("libs/wxJSON")
+target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
 
 configure_metadata()
 configure_upload()

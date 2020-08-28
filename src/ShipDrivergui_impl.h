@@ -45,7 +45,6 @@
 #include "json/writer.h"
 #include <wx/thread.h>
 #include "tinyxml.h"
-#include "tinystr.h"
 #include <wx/filedlg.h>
 #include "ocpn_plugin.h"
 #include <wx/listctrl.h>
