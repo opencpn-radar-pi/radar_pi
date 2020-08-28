@@ -1,11 +1,11 @@
-##---------------------------------------------------------------------------
-## Author:      Rasbats aka. Mike Rossiter
-## Copyright:
-## License:     wxWidgets License
-##---------------------------------------------------------------------------
+# ~~~
+# Author:      Rasbats aka. Mike Rossiter
+# Copyright:
+# License:     wxWidgets License
+# ~~~
 
 # define minimum cmake version
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6.2)
+cmake_minimum_required(VERSION 2.6.2)
 
 if (POLICY CMP0042)
   cmake_policy(SET CMP0042 NEW)
@@ -18,67 +18,66 @@ endif ()
 # Prefer libGL.so to libOpenGL.so, see CMP0072
 set(OpenGL_GL_PREFERENCE "LEGACY")
 
-
-PROJECT(ShipDriver_pi)
+project(ShipDriver_pi)
 
 # Locations where cmake looks for cmake modules.
-set(
-  CMAKE_MODULE_PATH
-  ${CMAKE_SOURCE_DIR}/build
-  ${CMAKE_SOURCE_DIR}/
-  ${CMAKE_SOURCE_DIR}/cmake
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build ${CMAKE_SOURCE_DIR}/
+                      ${CMAKE_SOURCE_DIR}/cmake
 )
 
 if (WIN32)
-  SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/buildwin)
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/buildwin)
 endif ()
 
+set(PACKAGE_NAME ShipDriver_pi)
+set(VERBOSE_NAME ShipDriver)
+set(PLUGIN_API_NAME ShipDriver) # As of GetCommonName() in plugin API
+set(TITLE_NAME ShipDriver)
+set(CPACK_PACKAGE_CONTACT "Mike Rossiter")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Simulate ship movements")
+set(CPACK_PACKAGE_DESCRIPTION "Simulate ship movements - or is it a game?")
+set(CPACK_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
-SET(PACKAGE_NAME ShipDriver_pi)
-SET(VERBOSE_NAME ShipDriver)
-SET(PLUGIN_API_NAME ShipDriver)         # As of GetCommonName() in plugin API
-SET(TITLE_NAME ShipDriver)
-SET(CPACK_PACKAGE_CONTACT "Mike Rossiter")
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Simulate ship movements")
-SET(CPACK_PACKAGE_DESCRIPTION "Simulate ship movements - or is it a game?")
-SET(CPACK_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+set(VERSION_MAJOR "2")
+set(VERSION_MINOR "4")
+set(VERSION_PATCH "9")
 
-SET(VERSION_MAJOR "2")
-SET(VERSION_MINOR "4")
-SET(VERSION_PATCH "9")
+set(VERSION_DATE "2020-05-09")
+set(OCPN_MIN_VERSION "ov50")
 
-SET(VERSION_DATE "2020-05-09")
-SET(OCPN_MIN_VERSION "ov50")
+set(CMAKE_CXX_STANDARD 11)
 
-set (CMAKE_CXX_STANDARD 11)
+set(PACKAGE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+set(PKG_RELEASE "1")
+set(PKG_API_VERSION "1.16")
+set(PKG_AUTHOR "Mike Rossiter")
+set(PKG_NVR ${PACKAGE_NAME}-${PACKAGE_VERSION}-${PKG_RELEASE})
 
-SET(PACKAGE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
-SET(PKG_RELEASE "1")
-SET(PKG_API_VERSION "1.16")
-SET(PKG_AUTHOR "Mike Rossiter")
-SET(PKG_NVR ${PACKAGE_NAME}-${PACKAGE_VERSION}-${PKG_RELEASE})
+# SET(CMAKE_BUILD_TYPE Debug)
+set(wxWidgets_USE_DEBUG OFF)
+set(wxWidgets_USE_UNICODE ON)
+set(wxWidgets_USE_UNIVERSAL OFF)
+set(wxWidgets_USE_STATIC OFF)
 
-#SET(CMAKE_BUILD_TYPE Debug)
-SET( wxWidgets_USE_DEBUG OFF)
-SET( wxWidgets_USE_UNICODE ON)
-SET( wxWidgets_USE_UNIVERSAL OFF)
-SET( wxWidgets_USE_STATIC OFF)
+set(OCPN_UNSTABLE_REPO
+    "mike-rossiter/shipdriver-beta"
+    CACHE STRING "Default repository for untagged builds"
+)
+set(OCPN_STABLE_REPO
+    "mike-rossiter/shipdriver-prod"
+    CACHE STRING "Default repository for tagged builds"
+)
+option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 
+option(OCPN_FLATPAK "Build flatpak plugin" OFF)
 
-SET(OCPN_UNSTABLE_REPO "mike-rossiter/shipdriver-beta"
-    CACHE STRING "Default repository for untagged builds")
-SET(OCPN_STABLE_REPO "mike-rossiter/shipdriver-prod"
-    CACHE STRING "Default repository for tagged builds")
-OPTION(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
+include("cmake/PluginJSON.cmake")
 
-OPTION(OCPN_FLATPAK "Build flatpak plugin" OFF)
-
-INCLUDE("cmake/PluginJSON.cmake")
+# cmake-format: off
 # The cloudsmith upload script
 function (configure_upload)
   configure_file(
-    ${CMAKE_SOURCE_DIR}/ci/upload.sh.in
-    ${CMAKE_BINARY_DIR}/upload.sh
+    ${CMAKE_SOURCE_DIR}/ci/upload.sh.in ${CMAKE_BINARY_DIR}/upload.sh
     @ONLY
   )
 endfunction (configure_upload)
@@ -91,49 +90,47 @@ function (configure_metadata)
     @ONLY
   )
 endfunction (configure_metadata)
+# cmake-format: on
 
-IF(SHIPDRIVER_USE_SVG)
-  ADD_DEFINITIONS(-DSHIPDRIVER_USE_SVG)
-ENDIF(SHIPDRIVER_USE_SVG)
+if (SHIPDRIVER_USE_SVG)
+  add_definitions(-DSHIPDRIVER_USE_SVG)
+endif (SHIPDRIVER_USE_SVG)
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-std=c++11 HAS_STD_CPP11_FLAG)
-if(HAS_STD_CPP11_FLAG)
+if (HAS_STD_CPP11_FLAG)
   add_compile_options(-std=c++11)
-endif()
+endif ()
 
-
-SET(SRC_ShipDriver
-        api-16/ocpn_plugin.h
-        src/ShipDriver_pi.h
-        src/ShipDriver_pi.cpp
-        src/icons.h
-        src/icons.cpp
-	    src/ShipDrivergui.h
-	    src/ShipDrivergui.cpp
-	    src/ShipDrivergui_impl.cpp
-	    src/ShipDrivergui_impl.h
-		src/AisMaker.h
-		src/AisMaker.cpp
-		src/GribRecord.cpp
-		src/GribRecordSet.h
-		src/GribRecord.h
-	    src/tinyxml.h
-		src/tinyxml.cpp
-	    src/tinyxmlerror.cpp
-		src/tinyxmlparser.cpp		
-	)
-
-
-ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_ShipDriver} ${SRC_JSON}
+set(SRC_ShipDriver
+    api-16/ocpn_plugin.h
+    src/ShipDriver_pi.h
+    src/ShipDriver_pi.cpp
+    src/icons.h
+    src/icons.cpp
+    src/ShipDrivergui.h
+    src/ShipDrivergui.cpp
+    src/ShipDrivergui_impl.cpp
+    src/ShipDrivergui_impl.h
+    src/AisMaker.h
+    src/AisMaker.cpp
+    src/GribRecord.cpp
+    src/GribRecordSet.h
+    src/GribRecord.h
+    src/tinyxml.h
+    src/tinyxml.cpp
+    src/tinyxmlerror.cpp
+    src/tinyxmlparser.cpp
 )
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/api-16)
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include)
-ADD_DEFINITIONS(-DTIXML_USE_STL)
+
+add_library(${PACKAGE_NAME} SHARED ${SRC_ShipDriver} ${SRC_JSON})
+include_directories(${PROJECT_SOURCE_DIR}/api-16)
+include_directories(${CMAKE_BINARY_DIR}/include)
+add_definitions(-DTIXML_USE_STL)
 
 if (OCPN_FLATPAK)
   include(GetArch)
-  GetArch()
+  getarch()
   # Lie to PluginSetup that we have found wxWidgets so it don't barfs.
   set(wxWidgets_LIBRARIES FOOBAR)
   include(PluginSetup)
@@ -145,34 +142,34 @@ if (OCPN_FLATPAK)
 
   find_program(TAR NAMES gtar tar)
   if (NOT TAR)
-      message(FATAL_ERROR "tar not found, required for OCPN_FLATPAK")
+    message(FATAL_ERROR "tar not found, required for OCPN_FLATPAK")
   endif ()
-  set (FLATPAK_DIR ${PROJECT_SOURCE_DIR}/flatpak)
-  add_custom_target(flatpak-build ALL
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-      COMMAND flatpak-builder --force-clean
-          ${CMAKE_CURRENT_BINARY_DIR}/app
-          ${FLATPAK_DIR}/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+  set(FLATPAK_DIR ${PROJECT_SOURCE_DIR}/flatpak)
+  add_custom_target(
+    flatpak-build ALL
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMAND flatpak-builder --force-clean ${CMAKE_CURRENT_BINARY_DIR}/app
+            ${FLATPAK_DIR}/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
   )
   add_custom_target("flatpak-pkg")
   add_custom_command(
-      TARGET flatpak-pkg
-      COMMAND ${TAR}
-          -czf ${pkg_tarname}.tar.gz
-          --transform 's|.*/files/|shipdriver-flatpak-${PACKAGE_VERSION}/|'
-          ${CMAKE_CURRENT_BINARY_DIR}/app/files
+    TARGET flatpak-pkg
+    COMMAND
+      ${TAR} -czf ${pkg_tarname}.tar.gz --transform
+      's|.*/files/|shipdriver-flatpak-${PACKAGE_VERSION}/|'
+      ${CMAKE_CURRENT_BINARY_DIR}/app/files
   )
-  return ()
-endif()
+  return()
+endif ()
 
-INCLUDE("GetArch")
-GetArch()
-INCLUDE("cmake/PluginConfigure.cmake")
-INCLUDE("cmake/PluginInstall.cmake")
-INCLUDE("cmake/PluginSetup.cmake")
-INCLUDE("cmake/PluginLocalization.cmake")
-INCLUDE("cmake/metadata.cmake")
-INCLUDE("cmake/PluginPackage.cmake")
+include("GetArch")
+getarch()
+include("cmake/PluginConfigure.cmake")
+include("cmake/PluginInstall.cmake")
+include("cmake/PluginSetup.cmake")
+include("cmake/PluginLocalization.cmake")
+include("cmake/metadata.cmake")
+include("cmake/PluginPackage.cmake")
 
 configure_metadata()
 configure_upload()
