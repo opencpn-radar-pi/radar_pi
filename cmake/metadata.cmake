@@ -102,7 +102,7 @@ set(repack_tarball_script
 tmpdir=repack.$$
 rm -rf $tmpdir && mkdir $tmpdir
 tar -C $tmpdir -xf $1
-rm -rf $tmpdir/root
+rm -rf $tmpdir/root $tmpdir/home
 topdir=$(ls -d $tmpdir/*-*-*)
 cp $2 $topdir/metadata.xml
 tar -C $tmpdir -czf $1 .
