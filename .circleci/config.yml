@@ -50,7 +50,6 @@ jobs:
       - OCPN_TARGET:  xenial
     steps:
       - checkout
-      - run: cat /etc/apt/sources.list
       - run: ci/circleci-build-debian.sh
       - run: cd build; /bin/bash < upload.sh
 
@@ -61,30 +60,27 @@ jobs:
       - OCPN_TARGET:  bionic
     steps:
       - checkout
-      - run: cat /etc/apt/sources.list
       - run: ci/circleci-build-debian.sh
       - run: cd build; /bin/bash < upload.sh
 
   build-bionic-gtk3:
-        docker:
-        - image: circleci/buildpack-deps:bionic-scm
-        environment:
-        - BUILD_GTK3: true
-        - OCPN_TARGET:  bionic-gtk3
-        steps:
-        - checkout
-        - run: ci/circleci-build-debian.sh
-        - run: cd build; /bin/bash < upload.sh
+    docker:
+      - image: circleci/buildpack-deps:bionic-scm
+    environment:
+      - BUILD_GTK3: true
+      - OCPN_TARGET:  bionic-gtk3
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian.sh
+      - run: cd build; /bin/bash < upload.sh
 
   build-focal:
     docker:
       - image: circleci/buildpack-deps:focal-scm
     environment:
       - OCPN_TARGET:  focal
-      - BUILD_GTK3: true
     steps:
       - checkout
-      - run: cat /etc/apt/sources.list
       - run: ci/circleci-build-debian.sh
       - run: cd build; /bin/bash < upload.sh
 
