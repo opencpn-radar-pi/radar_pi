@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
+#
+# Build for raspbian armhf in a qemu docker container
+#
 
-# bailout on errors and echo commands.
 set -xe
 
+# Start up the docker instance
 DOCKER_SOCK="unix:///var/run/docker.sock"
 echo "DOCKER_OPTS=\"-H tcp://127.0.0.1:2375 -H $DOCKER_SOCK -s devicemapper\"" \
     | sudo tee /etc/default/docker > /dev/null
@@ -36,14 +39,17 @@ make package
 make repack-tarball
 EOF
 
+# Run the build script
 docker exec -ti \
     $DOCKER_CONTAINER_ID /bin/bash -xec "bash -xe /ci-source/build.sh"
 
+# Stop docker container and get rid of it
 docker ps -a
 docker stop $DOCKER_CONTAINER_ID
 docker rm -v $DOCKER_CONTAINER_ID
 rm -f build.sh
 
+# Install cloudsmith-cli, required by upload.sh
 sudo apt-get -qq update
 sudo apt -q install python3-pip python3-setuptools
 pip3 install -q cloudsmith-cli
