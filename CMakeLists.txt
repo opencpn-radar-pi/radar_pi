@@ -168,7 +168,8 @@ include("cmake/PluginLocalization.cmake")
 include("cmake/metadata.cmake")
 include("cmake/PluginPackage.cmake")
 
-add_subdirectory("libs/jsoncpp")
+
+add_subdirectory("libs/jsoncpp" EXCLUDE_FROM_ALL)
 target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
 
 add_subdirectory("libs/tinyxml")
