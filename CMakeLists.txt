@@ -120,6 +120,9 @@ add_library(${PACKAGE_NAME} SHARED ${SRC_ShipDriver})
 include_directories(${PROJECT_SOURCE_DIR}/api-16)
 include_directories(${CMAKE_BINARY_DIR}/include)
 add_definitions(-DTIXML_USE_STL)
+if (UNIX AND NOT APPLE)   # linux.
+  set_target_properties(${PACKAGE_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN:$ORIGIN/..")
+endif ()
 
 
 if (OCPN_FLATPAK)
