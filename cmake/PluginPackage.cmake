@@ -63,9 +63,11 @@ set(CPACK_SOURCE_IGNORE_FILES
 
 if (UNIX AND NOT APPLE)
 
-  # need apt-get install rpm, for rpmbuild
-  set(PACKAGE_DEPS "opencpn, bzip2, gzip")
-  set(PACKAGE_RELEASE 1)
+  set(PACKAGE_DEPS opencpn)
+  # autogenerate additional dependency information
+  set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+
+  set(PACKAGE_RELEASE ${PKG_RELEASE})
 
   set(CPACK_GENERATOR "DEB;TGZ")
 
