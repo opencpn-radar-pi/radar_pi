@@ -574,10 +574,6 @@ void RadarInfo::UpdateTransmitState() {
     return;
   }
 
-  if (!m_pi->IsRadarOnScreen(m_radar)) {
-    return;
-  }
-
   if (state != RADAR_OFF && TIMED_OUT(now, m_stayalive_timeout)) {
     m_control->RadarStayAlive();
     m_stayalive_timeout = now + STAYALIVE_TIMEOUT;
