@@ -704,9 +704,9 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, size_t len) {
         return true;
       }
       case 0x0940: {
-        LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x0940: no transmit zone start %d"), packet12->parm1 / 32);
+        LOG_VERBOSE(wxT("radar_pi: Garmin xHD 0x0940: no transmit zone start %d"), (int32_t)packet12->parm1 / 32);
         if (m_no_transmit_zone_mode) {
-          m_ri->m_no_transmit_start.Update(packet12->parm1 / 32, RCS_MANUAL);
+          m_ri->m_no_transmit_start.Update((int32_t)packet12->parm1 / 32, RCS_MANUAL);
         }
         return true;
       }
