@@ -100,7 +100,6 @@ if (HAS_STD_CPP11_FLAG)
 endif ()
 
 set(SRC_ShipDriver
-    api-16/ocpn_plugin.h
     src/ShipDriver_pi.h
     src/ShipDriver_pi.cpp
     src/icons.h
@@ -117,7 +116,6 @@ set(SRC_ShipDriver
 )
 
 add_library(${PACKAGE_NAME} SHARED ${SRC_ShipDriver})
-include_directories(${PROJECT_SOURCE_DIR}/api-16)
 include_directories(${CMAKE_BINARY_DIR}/include)
 add_definitions(-DTIXML_USE_STL)
 if (UNIX AND NOT APPLE)   # linux.
@@ -169,7 +167,10 @@ include("cmake/metadata.cmake")
 include("cmake/PluginPackage.cmake")
 
 
-add_subdirectory("libs/jsoncpp" EXCLUDE_FROM_ALL)
+add_subdirectory("libs/api-16")
+target_link_libraries(${PACKAGE_NAME} ocpn::api)
+
+add_subdirectory("libs/jsoncpp")
 target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
 
 add_subdirectory("libs/tinyxml")
