@@ -43,7 +43,7 @@ endif (WIN32)
 
 set(CPACK_STRIP_FILES "${PACKAGE_NAME}")
 
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/gpl.txt")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 
 if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/README")
   # MESSAGE(STATUS "Using generic cpack package description file.")
@@ -182,7 +182,7 @@ if (APPLE)
   # chartdldr_pi.pkgproj file
 
   configure_file(
-    ${PROJECT_SOURCE_DIR}/cmake/gpl.txt ${CMAKE_CURRENT_BINARY_DIR}/license.txt
+    ${PROJECT_SOURCE_DIR}/COPYING ${CMAKE_CURRENT_BINARY_DIR}/license.txt
     COPYONLY
   )
 
