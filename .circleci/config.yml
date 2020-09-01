@@ -98,7 +98,7 @@ jobs:
     machine: true
     environment:
       - OCPN_TARGET=stretch-armhf
-      - DOCKER_IMAGE=jongough/raspbian-stretch:latest
+      - DOCKER_IMAGE=balenalib/raspberry-pi-debian:stretch
     steps:
       - checkout
       - run: pyenv local 3.5.2
@@ -111,7 +111,7 @@ jobs:
     machine: true
     environment:
       - OCPN_TARGET=buster-armhf
-      - DOCKER_IMAGE=jongough/raspbian-buster:plugin_build_tooling_current
+      - DOCKER_IMAGE=balenalib/raspberry-pi-debian:buster
     steps:
       - checkout
       - run: pyenv local 3.5.2

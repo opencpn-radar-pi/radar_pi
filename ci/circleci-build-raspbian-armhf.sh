@@ -3,6 +3,7 @@
 #
 # Build for Raspbian in a docker container
 #
+# Bugs: The buster build is real slow: https://forums.balena.io/t/85743
 
 set -xe
 
@@ -22,16 +23,18 @@ docker run --privileged -d -ti \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
     -v $(pwd):/ci-source:rw \
     $DOCKER_IMAGE /bin/bash
-DOCKER_CONTAINER_ID=$(docker ps | awk '/raspbian/ {print $1}')
+DOCKER_CONTAINER_ID=$(docker ps | awk '/balenalib/ {print $1}')
 
 
 # Run build script
 cat > build.sh << "EOF"
 cores=$(lscpu | grep 'Core(s)' | sed 's/.*://') || cores=1
 cores=$((cores + 1))
-apt-get -qq update
-apt-get -y install \
-   build-essential cmake gettext git \
+curl http://mirrordirector.raspbian.org/raspbian.public.key  | apt-key add -
+curl http://archive.raspbian.org/raspbian.public.key  | apt-key add -
+sudo apt -q update
+sudo apt-get -y install --no-install-recommends \
+   build-essential cmake file gettext git \
    wx-common libgtk2.0-dev libwxgtk3.0-dev \
    libbz2-dev libcurl4-openssl-dev libexpat1-dev \
    libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release
