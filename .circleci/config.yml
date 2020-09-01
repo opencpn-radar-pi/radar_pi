@@ -102,9 +102,7 @@ jobs:
     steps:
       - checkout
       - run: pyenv local 3.5.2
-      - run:
-          command: ci/circleci-build-raspbian-armhf.sh
-          no_output_timeout: 30m
+      - run: ci/circleci-build-raspbian-armhf.sh
       - run: cd build; /bin/bash < upload.sh
 
   build-armhf-buster:
@@ -115,9 +113,7 @@ jobs:
     steps:
       - checkout
       - run: pyenv local 3.5.2
-      - run:
-          command: ci/circleci-build-raspbian-armhf.sh
-          no_output_timeout: 30m
+      - run: ci/circleci-build-raspbian-armhf.sh
       - run: cd build; /bin/bash < upload.sh
 
 
