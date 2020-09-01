@@ -22,6 +22,7 @@ modules:
       build-options:
           cxxflags: -DFLATPAK
           cflags: -DFLATPAK
+          strip: true
       sources:
           - type: git
             url: ..
