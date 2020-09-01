@@ -35,9 +35,10 @@ curl http://archive.raspbian.org/raspbian.public.key  | apt-key add -
 sudo apt -q update
 sudo apt-get -y install --no-install-recommends \
    build-essential cmake file gettext git \
-   wx-common libgtk2.0-dev libwxgtk3.0-dev \
-   libbz2-dev libcurl4-openssl-dev libexpat1-dev \
-   libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release
+   libarchive-dev libbz2-dev libcairo2-dev \
+   libcurl4-openssl-dev libexif-dev libexpat1-dev \
+   libgtk2.0-dev libjsoncpp-dev libtinyxml-dev liblzma-dev \
+   libwxgtk3.0-dev lsb-release wx-common
 
 cd /ci-source
 rm -rf build; mkdir build; cd build
