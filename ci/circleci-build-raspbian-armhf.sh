@@ -59,4 +59,5 @@ rm -f build.sh
 
 
 # Install cloudsmith-cli,  required by upload.sh.
+pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
 pip3 install cloudsmith-cli

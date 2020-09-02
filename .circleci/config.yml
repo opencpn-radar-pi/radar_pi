@@ -8,7 +8,6 @@ jobs:
       - OCPN_TARGET:  mingw
     steps:
       - checkout
-      - run: pyenv local 3.6.5
       - run: ci/circleci-build-mingw.sh
       - run: cd build; /bin/bash < upload.sh
 
@@ -19,7 +18,6 @@ jobs:
       - OCPN_TARGET:  flatpak
     steps:
       - checkout
-      - run: pyenv local 3.6.5
       - run: ci/circleci-build-flatpak.sh
       - run: cd build; /bin/bash < upload.sh
 

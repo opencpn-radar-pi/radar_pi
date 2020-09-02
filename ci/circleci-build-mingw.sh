@@ -57,12 +57,11 @@ docker stop $DOCKER_CONTAINER_ID
 docker rm -v $DOCKER_CONTAINER_ID
 rm -f build.sh
 
-# Wait for apt-daily to complete, install cloudsmith-cli required by upload.sh.
-# apt-daily should not restart, it's masked.
+# Wait for apt-daily to complete, apt-daily should not restart, it's masked.
 # https://unix.stackexchange.com/questions/315502
 echo -n "Waiting for apt_daily lock..."
 sudo flock /var/lib/apt/daily_lock echo done
 
-sudo apt-get -q update
-sudo apt-get install python3-pip python3-setuptools
+# Select latest available python, install cloudsmith required by upload script
+pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
 pip3 install cloudsmith-cli

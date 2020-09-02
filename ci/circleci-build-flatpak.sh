@@ -69,6 +69,5 @@ rm -f build.sh
 echo -n "Waiting for apt_daily lock..."
 sudo flock /var/lib/apt/daily_lock echo done
 
-sudo apt-get -q update
-sudo apt-get install python3-pip python3-setuptools
+pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
 pip3 install cloudsmith-cli
