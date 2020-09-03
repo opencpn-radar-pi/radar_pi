@@ -2,6 +2,10 @@
 # Export variables used in plugin setup: GIT_HASH, GIT_COMMIT, GIT_TAG,
 # PKG_TARGET  and PKG_TARGET_VERSION.
 
+if (DEFINED PKG_TARGET)
+  return ()
+endif ()
+
 execute_process(
   COMMAND git log -1 --format=%h
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -69,7 +73,7 @@ string(TOLOWER "${PKG_TARGET}" PKG_TARGET)
 string(STRIP "${PKG_TARGET_VERSION}" PKG_TARGET_VERSION)
 string(TOLOWER "${PKG_TARGET_VERSION}" PKG_TARGET_VERSION)
 if (NOT DEFINED wxWidgets_LIBRARIES)
-  message(FATAL_ERROR "PluginSetup: required wxWidgets_LIBRARIES missing")
+  message(STATUS "PluginSetup: Not configuring ubuntu gtk3 target")
 elseif ("${wxWidgets_LIBRARIES}" MATCHES "gtk3u" 
         AND PKG_TARGET STREQUAL "ubuntu"
 )

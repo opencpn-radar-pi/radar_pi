@@ -14,7 +14,9 @@ set -xe
 
 # Give the apt update daemons a chance to leave the scene.
 sudo systemctl stop apt-daily.service apt-daily.timer
-sudo systemctl kill --kill-who=all apt-daily.service
+sudo systemctl kill --kill-who=all apt-daily.service apt-daily-upgrade.service
+sudo systemctl mask apt-daily.service apt-daily-upgrade.service
+sudo systemctl daemon-reload
 
 
 # Start up the docker instance
@@ -61,9 +63,12 @@ docker stop $DOCKER_CONTAINER_ID
 docker rm -v $DOCKER_CONTAINER_ID
 rm -f build.sh
 
-# Get rid of blocking daemon, install cloudsmith-cli required by upload.sh.
-sudo systemctl kill --kill-who=all --signal KILL apt-daily.service
-sudo rm -f /var/lib/dpkg/lock
+# Wait for apt-daily to complete, install cloudsmith-cli required by upload.sh.
+# apt-daily should not restart, it's masked.
+# https://unix.stackexchange.com/questions/315502
+echo -n "Waiting for apt_daily lock..."
+sudo flock /var/lib/apt/daily_lock echo done
+
 sudo apt-get -q update
 sudo apt-get install python3-pip python3-setuptools
 pip3 install cloudsmith-cli

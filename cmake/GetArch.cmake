@@ -32,8 +32,7 @@ function (GetArch)
     # see #2027
     set(ARCH "x86_64")
   endif (NOT WIN32)
-  set(ARCH
-      ${ARCH}
-      PARENT_SCOPE
-  )
+  set(ARCH ${ARCH} PARENT_SCOPE)
 endfunction (GetArch)
+
+getarch()
