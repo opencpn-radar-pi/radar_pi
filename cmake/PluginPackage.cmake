@@ -1,13 +1,7 @@
-#~~~
-# Author:      Pavel Kalian (Based on the work of Sean D'Epagnier)
-# Copyright:   2014
-# License:     GPLv3+
-#
-# Set up CPack package generation.
-#~~~
-
-include(GetArch)
-include(Metadata)
+# ---------------------------------------------------------------------------
+# Author:      Pavel Kalian (Based on the work of Sean D'Epagnier) Copyright:
+# 2014 License:     GPLv3+
+# ---------------------------------------------------------------------------
 
 set(CPACK_PACKAGE_NAME "${PACKAGE_NAME}")
 set(CPACK_PACKAGE_VENDOR "opencpn.org")
@@ -175,6 +169,11 @@ if (TWIN32 AND NOT UNIX)
     @ONLY
   )
 endif (TWIN32 AND NOT UNIX)
+
+# this dummy target is necessary to make sure the ADDITIONAL_MAKE_CLEAN_FILES
+# directive is executed. apparently, the base CMakeLists.txt file must have
+# "some" target to activate all the clean steps. ADD_CUSTOM_TARGET(dummy COMMENT
+# "dummy: Done." DEPENDS ${PACKAGE_NAME})
 
 include(CPack)
 

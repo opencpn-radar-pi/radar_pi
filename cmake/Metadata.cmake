@@ -10,9 +10,6 @@ if (DEFINED _pkg_metadata_done)
 endif ()
 set(_pkg_metadata_done 1)
 
-include(GetArch)
-include(PluginSetup)
-
 # some helper vars (_ prefix)
 
 if (NOT "$ENV{CIRCLE_BUILD_NUM}" STREQUAL "")

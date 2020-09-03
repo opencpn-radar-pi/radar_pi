@@ -2,8 +2,6 @@
 # Author:      Pavel Kalian / Sean D'Epagnier
 # Copyright:
 # License:     GPLv3+
-#
-# Purpose:     Generate and install translations
 # ~~~
 
 find_program(GETTEXT_XGETTEXT_EXECUTABLE xgettext)
@@ -81,7 +79,7 @@ macro (GETTEXT_BUILD_MO)
     else (APPLE)
       install(
         FILES ${_gmoFile}
-        DESTINATION share/locale/${_poBasename}/LC_MESSAGES
+        DESTINATION ${PREFIX_DATA}/locale/${_poBasename}/LC_MESSAGES
         RENAME opencpn-${PACKAGE_NAME}.mo
       )
     endif (APPLE)
