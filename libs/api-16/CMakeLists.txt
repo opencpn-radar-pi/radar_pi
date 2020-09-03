@@ -1,8 +1,15 @@
+#
+# Include API header and, on win32, link import libs. Set API_VERSION  and
+# API_OCPN_MIN_VERSION
+#
 cmake_minimum_required(VERSION 3.1)
 
 if (TARGET ocpn::api)
   return ()
 endif ()
+
+set(API_VERSION "1.16" PARENT_SCOPE)
+set(API_OCPN_MIN_VERSION "5.0.0" PARENT_SCOPE)
 
 add_library(OCPN_API INTERFACE)
 add_library(ocpn::api ALIAS OCPN_API)

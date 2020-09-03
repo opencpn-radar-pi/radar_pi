@@ -62,10 +62,7 @@ set(CPACK_PACKAGE_CONTACT "Mike Rossiter")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Simulate ship movements")
 set(CPACK_PACKAGE_DESCRIPTION "Simulate ship movements - or is it a game?")
 
-set(OCPN_MIN_VERSION "ov50")
-
 set(PKG_RELEASE "1")
-set(PKG_API_VERSION "1.16")
 set(PKG_AUTHOR "Mike Rossiter")
 
 set(SRC
@@ -87,18 +84,25 @@ set(SRC
 
 # -------- Setup completed, build the plugin --------
 #
+add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC})
+include_directories(${CMAKE_BINARY_DIR}/include)
+
+add_subdirectory("libs/api-16")
+target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
+
 set(VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(VERSION_PATCH ${PROJECT_VERSION_PATCH})
 set(PACKAGE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 set(PACKAGE_NAME ${CMAKE_PROJECT_NAME})
 
+# Create the minimim ocpn version id string like ov50
+string(REGEX REPLACE "\([0-9]\)\.\([0-9]\).*" "ov\\1\\2"
+       OCPN_MIN_VERSION ${API_OCPN_MIN_VERSION})
+
 if (SHIPDRIVER_USE_SVG)
   add_definitions(-DSHIPDRIVER_USE_SVG)
-endif (SHIPDRIVER_USE_SVG)
-
-add_library(${PACKAGE_NAME} SHARED ${SRC})
-include_directories(${CMAKE_BINARY_DIR}/include)
+endif ()
 
 if (OCPN_FLATPAK)
   include(Flatpak)
@@ -107,16 +111,13 @@ if (OCPN_FLATPAK)
     ${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
     ${pkg_tarname}.tar.gz
   )
-else (OCPN_FLATPAK)
+else ()
   include(PluginCompiler)
   include(PluginLibs)
-  include(PluginInstall)
   include(PluginLocalization)
+  include(PluginInstall)
   include(PluginPackage)
-  
-  add_subdirectory("libs/api-16")
-  target_link_libraries(${PACKAGE_NAME} ocpn::api)
-  
+
   add_subdirectory("libs/jsoncpp")
   target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
   
@@ -125,7 +126,7 @@ else (OCPN_FLATPAK)
   
   add_subdirectory("libs/wxJSON")
   target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
-endif (OCPN_FLATPAK)
+endif ()
 
 configure_file(
   # The cloudsmith upload script

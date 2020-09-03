@@ -5,7 +5,7 @@
   <release> @PKG_RELEASE@ </release>
   <summary> Ship movements simulator - or is it a game? </summary>
 
-  <api-version> @PKG_API_VERSION@ </api-version>
+  <api-version> @API_VERSION@ </api-version>
   <open-source> yes </open-source>
   <author> @PKG_AUTHOR@ </author>
   <source> https://github.com/Rasbats/shipdriver_pi </source>
