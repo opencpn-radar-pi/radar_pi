@@ -119,7 +119,7 @@ if (NOT TARGET repack-tarball)
   add_custom_target(repack-tarball)
   add_custom_command(
     TARGET repack-tarball
-    COMMAND bash ./repack.sh *.tar.gz *.xml
+    COMMAND bash ./repack.sh ${pkg_tarname}.tar.gz ${pkg_displayname}.xml
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS ${PACKAGE_NAME} VERBATIM
     COMMENT "Repacking tarball"
