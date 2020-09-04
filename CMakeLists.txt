@@ -34,6 +34,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+message(STATUS "Building: ${BUILD_TYPE}")
 
 
 # -------- Options ----------
@@ -47,8 +48,6 @@ set(OCPN_STABLE_REPO
     CACHE STRING "Default repository for tagged builds"
 )
 option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
-
-option(OCPN_FLATPAK "Build flatpak plugin" OFF)
 
 
 # -------  Plugin setup --------
@@ -104,14 +103,22 @@ if (SHIPDRIVER_USE_SVG)
   add_definitions(-DSHIPDRIVER_USE_SVG)
 endif ()
 
-if (OCPN_FLATPAK)
-  include(Flatpak)
-  include(Metadata)
-  FlatpakTargets(
-    ${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
-    ${pkg_tarname}.tar.gz
-  )
-else ()
+
+# Set up targets. Targets sets up a recursive call with BUILD_TYPE set to
+# 'flatpak', 'pkg' or 'tarball'. The initial call without BUILD_TYPE ends
+# here.
+#
+include(Targets)
+create_targets(
+  ${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+)
+if ("${BUILD_TYPE}" STREQUAL "")
+  return ()
+endif ()
+
+if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
+  # Build package as required (flatpak already dealt with).
+  #
   include(PluginCompiler)
   include(PluginLibs)
   include(PluginLocalization)

@@ -24,8 +24,7 @@ set(CPACK_PACKAGE_EXECUTABLES OpenCPN ${PACKAGE_NAME})
 set(CPACK_PACKAGE_FILE_NAME "${pkg_tarname}")
 
 if (WIN32)
-  # The  TGZ i. e., tar.gz package is used by the new installer
-  set(CPACK_GENERATOR "NSIS;TGZ")
+  set(CPACK_GENERATOR "NSIS")
 
   # override install directory to put package files in the opencpn directory
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenCPN")
@@ -58,8 +57,6 @@ if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/README")
   set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README")
 endif ()
 
-# SET(CPACK_SOURCE_GENERATOR "TGZ")
-
 # The following components are regex's to match anywhere (unless anchored) in
 # absolute path + filename to find files or directories to be excluded from
 # source tarball.
@@ -76,7 +73,7 @@ if (UNIX AND NOT APPLE)
 
   set(PACKAGE_RELEASE ${PKG_RELEASE})
 
-  set(CPACK_GENERATOR "DEB;TGZ")
+  set(CPACK_GENERATOR "DEB")
 
   set(CPACK_DEBIAN_PACKAGE_DEPENDS ${PACKAGE_DEPS})
   set(CPACK_DEBIAN_PACKAGE_RECOMMENDS ${PACKAGE_RECS})
@@ -218,8 +215,6 @@ if (APPLE)
     COMMENT "create-pkg: Done."
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin.pkg
   )
-
-  set(CPACK_GENERATOR "TGZ")
 
 endif (APPLE)
 

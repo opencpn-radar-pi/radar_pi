@@ -19,6 +19,8 @@ modules:
       config-opts:
           - -DCMAKE_INSTALL_PREFIX=/app/extensions/shipdriver/
           - -DPREFIX_PLUGINS=lib/opencpn
+          - -DBUILD_TYPE:STRING=tarball
+          - -UPKG_TARGET
       build-options:
           cxxflags: -DFLATPAK
           cflags: -DFLATPAK

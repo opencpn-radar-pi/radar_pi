@@ -6,6 +6,8 @@
 # Installation items and layout.
 # ~~~
 
+include(Metadata)
+
 if (APPLE)
   install(
     TARGETS ${PACKAGE_NAME}
@@ -49,3 +51,9 @@ elseif (UNIX AND NOT APPLE)
     install(DIRECTORY data DESTINATION share/opencpn/plugins/${PACKAGE_NAME})
   endif ()
 endif ()
+
+# Hardcoded destination for tarball generation
+install(FILES ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
+        DESTINATION "${CMAKE_BINARY_DIR}/app/files"
+        RENAME metadata.xml
+)
