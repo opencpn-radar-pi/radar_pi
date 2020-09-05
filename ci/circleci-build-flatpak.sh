@@ -49,10 +49,8 @@ sed -i '/^runtime-version/s/:.*/: stable/' \
     flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
 
 mkdir build; cd build
-cmake -DOCPN_FLATPAK=ON ..
-make flatpak-build
-make flatpak-pkg
-make repack-tarball
+cmake  ..
+make flatpak
 EOF
 
 # Run the build in docker

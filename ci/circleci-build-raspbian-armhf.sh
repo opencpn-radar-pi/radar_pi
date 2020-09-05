@@ -43,9 +43,7 @@ sudo apt-get -y install --no-install-recommends \
 cd /ci-source
 rm -rf build; mkdir build; cd build
 cmake ..
-make -j$cores
-make package
-make repack-tarball
+make tarball
 EOF
 
 docker exec -ti \
@@ -59,5 +57,10 @@ rm -f build.sh
 
 
 # Install cloudsmith-cli,  required by upload.sh.
-pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
-pip3 install cloudsmith-cli
+# pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
+# pip3 install cloudsmith-cli
+
+# fix for broken cloudsmith release 0.24.0
+pyenv local 3.5.2
+wget https://files.pythonhosted.org/packages/59/4a/dbd1cc20156d0a9c10e2b085b8c14480166b0f765086ba2d9150495ec626/cloudsmith_cli-0.23.0-py2.py3-none-any.whl
+pip3 install --user cloudsmith_cli-0.23.0-py2.py3-none-any.whl

@@ -11,7 +11,7 @@ set -xe
 brew install ruby || brew install ruby || :
 export PATH="/usr/local/opt/ruby/bin:$PATH"
 
-for pkg in cairo cmake libarchive libexif python3 wget; do
+for pkg in cairo cmake gnu-tar libarchive libexif python3 wget; do
     brew list $pkg >/dev/null 2>&1 || brew install $pkg
 done
 
@@ -26,9 +26,7 @@ cmake \
   -DCMAKE_INSTALL_PREFIX= "/" \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
   ..
-make -sj2
-make package
-make repack-tarball
+make tarball
 
 # Install cloudsmith-cli, required by upload script.
 sudo -H python3 -m ensurepip

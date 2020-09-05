@@ -47,10 +47,8 @@ before_build:
   - cmake -T v141_xp ..
 
 build_script:
-  - cmake -G "Visual Studio 15 2017"   ..
-  - cmake --build . --target install --config RelWithDebInfo
-  - cmake --build . --target package --config RelWithDebInfo
-  - cmake --build . --target repack-tarball --config RelWithDebInfo
+  - cmake -G "Visual Studio 15 2017" --config RelWithDebInfo  ..
+  - cmake --build . --target tarball --config RelWithDebInfo
   - choco install git
   - py -m ensurepip
   - py -m pip install -q setuptools

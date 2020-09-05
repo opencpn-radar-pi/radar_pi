@@ -33,10 +33,8 @@ apt-get -q -y install \
 
 mkdir ci-source/build
 cd ci-source/build
-cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-make
-make package
-make repack-tarball
+cmake ..
+make tarball
 EOF
 
 # Run the build script
