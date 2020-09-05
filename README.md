@@ -12,15 +12,29 @@ The plugin uses a continous integration setup described in CI.md.
 
 ## Building
 
-    $ rm -rf build && mkdir build && cd build
+Start using  `rm -rf build; mkdir build; cd build`
+
+#### Regular installer tarball
+
+Generate a tar.gz tarball which can be used by the new plugin installer,
+available from OpenCPN 5.2.0: 
+
     $ cmake ..
-    $ make
+    $ make tarball           
+
+#### flatpak tarball
+
+Build a installer tarball to be used by the flatpak'ed opencpn plugin 
+installer:
+
+    $ cmake ..
+    $ make flatpak
+
+#### Legacy installer 
+
+On most platforms besides flatpak: build a platform-dependent legacy
+installer like a NSIS .exe on Windows, a Debian .deb package on Linux
+and a .dmg image for MacOS:
+
+    $ cmake ..
     $ make package
-    $ make repack-tarball
-
-*flatpak* builds does not follow this scheme, see flatpak/README.md
-
-The build generates a tar.gz tarball which can be used by the new plugin
-installer, available from OpenCPN 5.2.0. On most platforms it also builds
-a platform-dependent legacy installer like an NSIS .exe on Windows, a Debian
-.deb package on Linux and a .dmg image for MacOS.
