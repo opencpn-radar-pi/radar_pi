@@ -53,7 +53,7 @@ option(OCPN_FLATPAK "Build flatpak plugin" OFF)
 
 # -------  Plugin setup --------
 #
-project(ShipDriver_pi VERSION 2.4.9)
+project(ShipDriver_pi VERSION 2.5.0)
 
 set(VERBOSE_NAME ShipDriver)    # Legacy installers artifact names
 set(TITLE_NAME ShipDriver)      # Legacy installer dialogs
