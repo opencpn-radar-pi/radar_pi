@@ -37,4 +37,4 @@ installer like a NSIS .exe on Windows, a Debian .deb package on Linux
 and a .dmg image for MacOS:
 
     $ cmake ..
-    $ make package
+    $ make pkg
