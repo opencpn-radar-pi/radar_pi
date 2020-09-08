@@ -21,7 +21,10 @@ elseif (COMPILER STREQUAL "MSVC")
   add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_DEPRECATE)
 endif ()
 
-if (UNIX AND NOT APPLE)   # linux.
+if (UNIX AND NOT APPLE)   # linux, see OpenCPN/OpenCPN#1977
   set_target_properties(${PACKAGE_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN:$ORIGIN/..")
 endif ()
 
+if (NOT COMPILER STREQUAL "MSVC")
+  set(OBJ_VISIBILITY "-fvisibility=hidden")
+endif ()
