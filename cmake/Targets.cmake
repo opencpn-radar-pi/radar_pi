@@ -24,9 +24,12 @@ endif ()
 
 # Set up _build_cmd
 if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 10)
-  set(_build_cmd make)
+  set(_build_cmd make -j2)
 else ()
-  set(_build_cmd cmake --build ${CMAKE_BINARY_DIR} --config $<CONFIG>)
+  set(_build_cmd
+    cmake --build ${CMAKE_BINARY_DIR} ${_parallel_cmake_opt}
+    --config $<CONFIG>
+  )
 endif ()
 
 # Set up _build_target_cmd and _install_cmd
@@ -40,7 +43,7 @@ else ()
   set(_install_cmd cmake --install ${CMAKE_BINARY_DIR} --config $<CONFIG>)
 endif ()
 
-
+# Create the tarball.sh script which generates the tarball
 find_program(TAR NAMES gtar tar REQUIRED)
 set (tar_script
 "#!/bin/bash
@@ -67,13 +70,11 @@ function (tarball_target)
   add_custom_target(tarball-build)
   add_custom_command(
     TARGET tarball-build
-    COMMAND cmake --build ${CMAKE_BINARY_DIR} ${_parallel_cmake_opt}
-                  --config $<CONFIG>
+    COMMAND ${_build_cmd}
   )
   add_custom_target(tarball-install)
   add_custom_command(
     TARGET tarball-install
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMAND ${_install_cmd}
   )
   add_custom_target(tarball-tar)
@@ -94,12 +95,6 @@ endfunction ()
 function (flatpak_target manifest)
 
   # flatpak target setup
-  execute_process(
-    # Get the part after last dot in the manifest id: stanza
-    COMMAND /bin/bash -c "sed -n /^id:/s/.*\\\\.//p <  ${manifest}"
-    OUTPUT_VARIABLE plugin_name
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
   add_custom_target(flatpak-conf)
   add_custom_command(
     TARGET flatpak-conf
@@ -118,14 +113,10 @@ function (flatpak_target manifest)
     COMMAND flatpak-builder --force-clean ${CMAKE_CURRENT_BINARY_DIR}/app
             ${manifest}
   )
-  string(CONCAT _COPY_CMD
-    "cp ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml"
-    " ${CMAKE_BINARY_DIR}/app/files/metadata.xml"
-  )
   add_custom_target(
-    flatpak-pkg            # Create tarball
+    flatpak-pkg            # Move metadata in place.
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND bash -c ${_COPY_CMD}
+    COMMAND bash -c \"cp ${pkg_displayname}.xml app/files/metadata.xml\"
   )
   add_dependencies(flatpak-build flatpak-conf)
   add_dependencies(flatpak-pkg flatpak-build)
