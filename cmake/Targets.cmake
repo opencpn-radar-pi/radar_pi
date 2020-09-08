@@ -48,7 +48,6 @@ find_program(TAR NAMES gtar tar REQUIRED)
 #   Handle paths containing slashes, using / also on Windows
 string(REPLACE "\\" "/" TAR ${TAR})
 string(REPLACE " " "\\ " TAR ${TAR})
-message(STATUS "TAR: ${TAR}")
 set (tar_script
 "#!/bin/bash
 set -x
@@ -173,18 +172,18 @@ function (help_target)
   )
 
   if ("${BUILD_TYPE}" STREQUAL "" )
-  add_dependencies(${PACKAGE_NAME} make-warning)
+    add_dependencies(${PACKAGE_NAME} make-warning)
   endif ()
 endfunction ()
 
 function (create_targets manifest)
- # Add the primary build targets pkg, flatpak and tarball together
- # with helper targets. Parameters:
- # - manifest: Flatpak build manifest
+  # Add the primary build targets pkg, flatpak and tarball together
+  # with helper targets. Parameters:
+  # - manifest: Flatpak build manifest
 
- tarball_target()
- flatpak_target(${manifest})
- pkg_target()
- help_target()
+  tarball_target()
+  flatpak_target(${manifest})
+  pkg_target()
+  help_target()
 endfunction ()
 
