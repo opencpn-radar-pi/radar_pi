@@ -50,10 +50,10 @@ set (tar_script
 set -x
 TAR=$(echo ${TAR} | tr ' ' '*')
 
-$TAR -C ${CMAKE_BINARY_DIR} \
+$TAR -C ${CMAKE_BINARY_DIR}/app \
      -czf ${pkg_tarname}.tar.gz \
-     --transform 's|.*/files|${pkg_displayname}|' \
-     app"
+     --transform 's|files|${pkg_displayname}|' \
+     files"
 )
 file(WRITE ${CMAKE_BINARY_DIR}/tarball.sh ${tar_script})
 
@@ -100,13 +100,6 @@ function (flatpak_target manifest)
     TARGET flatpak-conf
     COMMAND cmake -DBUILD_TYPE:STRING=flatpak -UPKG_TARGET ${CMAKE_BINARY_DIR}
   )
-  add_custom_target(flatpak-tar)
-  add_custom_command(
-    TARGET flatpak-tar
-    COMMAND bash < ${CMAKE_BINARY_DIR}/tarball.sh
-    VERBATIM
-    COMMENT "building ${pkg_tarname}.tar.gz"
-  )
   add_custom_target(
     flatpak-build          # Build the package using flatpak-builder
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
@@ -117,6 +110,13 @@ function (flatpak_target manifest)
     flatpak-pkg            # Move metadata in place.
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMAND bash -c \"cp ${pkg_displayname}.xml app/files/metadata.xml\"
+  )
+  add_custom_target(flatpak-tar)
+  add_custom_command(
+    TARGET flatpak-tar
+    COMMAND bash < ${CMAKE_BINARY_DIR}/tarball.sh
+    VERBATIM
+    COMMENT "building ${pkg_tarname}.tar.gz"
   )
   add_dependencies(flatpak-build flatpak-conf)
   add_dependencies(flatpak-pkg flatpak-build)
