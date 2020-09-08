@@ -45,15 +45,17 @@ endif ()
 
 # Create the tarball.sh script which generates the tarball
 find_program(TAR NAMES gtar tar REQUIRED)
+#   Handle paths containing slashes, using / also on Windows
+string(REPLACE "\\" "/" TAR ${TAR})
+string(REPLACE " " "\\ " TAR ${TAR})
+message(STATUS "TAR: ${TAR}")
 set (tar_script
 "#!/bin/bash
 set -x
-TAR=$(echo ${TAR} | tr ' ' '*')
-
-$TAR -C ${CMAKE_BINARY_DIR}/app \
-     -czf ${pkg_tarname}.tar.gz \
-     --transform 's|files|${pkg_displayname}|' \
-     files"
+${TAR} -C ${CMAKE_BINARY_DIR}/app \
+    -czf ${pkg_tarname}.tar.gz \
+    --transform 's|files|${pkg_displayname}|' \
+    files"
 )
 file(WRITE ${CMAKE_BINARY_DIR}/tarball.sh ${tar_script})
 
