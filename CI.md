@@ -16,6 +16,9 @@ metadata file and a tarball.
 In next step the build artifacts are uploaded to a cloudsmith [[4]](#fn4)
 deployment server.
 
+In a last step, the metadata XML file is pushed to a remote git clone
+of the opencpn plugins project.
+
 All steps could be configured after cloning the shipdriver\_pi sources.
 
 Builders
@@ -59,6 +62,52 @@ when built. The builder logs usually reveals possible errors.
 The setup is complete when cloudsmith repos contains tarball(s) and metadata 
 file(s). It is essential to check that the url in the metadata file matches
 the actual url to the tarball.
+
+Git plugins repository sync
+---------------------------
+
+Syncing to a remote plugins repository basically automates the following
+a flow like:
+
+    $ git clone  ${PLUGINS_REPO}
+    $ cp plugin_pi.xml plugins/metadata
+    $ cd plugins
+    $ git commit -am "Updating plugins_pi.xml"
+    $ git push origin master:master
+
+For this to work, the builder needs access to a valid ssh key. This means
+that the key must be available in the git tree. Since this is public, the
+key must be encrypted. Create a encrypted key like:
+
+     $ mkdir git-ssh
+     $ ssh-keygen -f git-ssh/id_ocpn
+     $ chmod 700 git-ssh
+     $ tar cf git-ssh.tar  git-ssh
+     $ ccencrypt git-ssh.tar 
+     Enter encryption key: 
+     Enter encryption key: (repeat) 
+     $
+
+Use a reasonably lock encryption key, and don't forget it...Then copy to
+project's ci directory and check in:
+
+     $ cp git-ssh.tar.cpt ci/
+     $ git add ci/git-ssh.tar.cpt
+     $ git commit -am "Add ssh deployment key"
+
+At this point the id\_ocpn.pub key should be registered on for example
+github so the ssh user can push data to the server.
+
+The git repository sync is activated by two environment variables in
+the builder:
+
+GIT\_REMOTE\_REPO is the ssh url to the clone of github.com/OpenCPN/plugins
+which should be updated.
+
+GIT\_ENCRYPTION\_KEY is the key used to decrypt the ssh key, the same as
+used when encrypting.
+
+
 
 
 Using the generated artifacts
