@@ -52,7 +52,7 @@ option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 
 # -------  Plugin setup --------
 #
-project(ShipDriver_pi VERSION 2.5.3)
+project(ShipDriver_pi VERSION 2.5.2)
 
 set(VERBOSE_NAME ShipDriver)    # Legacy installers artifact names
 set(TITLE_NAME ShipDriver)      # Legacy installer dialogs
