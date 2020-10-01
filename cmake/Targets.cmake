@@ -45,6 +45,7 @@ endif ()
 
 # Create the tarball.sh script which generates the tarball
 find_program(TAR NAMES gtar tar REQUIRED)
+message(STATUS "Using tar program: ${TAR}")
 #   Handle paths containing slashes, using / also on Windows
 string(REPLACE "\\" "/" TAR ${TAR})
 string(REPLACE " " "\\ " TAR ${TAR})
