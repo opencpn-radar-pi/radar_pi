@@ -49,6 +49,12 @@ message(STATUS "Using tar program: ${TAR}")
 string(REPLACE "\\" "/" TAR ${TAR})
 string(REPLACE " " "\\ " TAR ${TAR})
 
+if (WIN32)
+  set(MVDIR rename)
+else ()
+  set(MVDIR mv)
+endif ()
+
 function (tarball_target)
 
   # tarball target setup
@@ -69,20 +75,26 @@ function (tarball_target)
     TARGET tarball-install
     COMMAND ${_install_cmd}
   )
+  add_custom_target(tarball-finish)
+  add_custom_command(
+    TARGET tarball-finish     # Change top-level directory name
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
+    COMMAND ${MVDIR} files ${pkg_displayname}
+  )
   add_custom_target(tarball-tar)
   add_custom_command(
     TARGET tarball-tar
     COMMAND
       ${TAR} -C ${CMAKE_BINARY_DIR}/app
         -czf ${pkg_tarname}.tar.gz
-        --transform s|files|${pkg_displayname}|
-        files
+        ${pkg_displayname}
     VERBATIM
     COMMENT "Building ${pkg_tarname}.tar.gz"
   )
   add_dependencies(tarball-build tarball-conf)
   add_dependencies(tarball-install tarball-build)
-  add_dependencies(tarball-tar tarball-install)
+  add_dependencies(tarball-finish tarball-install)
+  add_dependencies(tarball-tar tarball-finish)
 
   add_custom_target(tarball)
   add_dependencies(tarball tarball-tar)
@@ -107,20 +119,25 @@ function (flatpak_target manifest)
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMAND cmake -E copy ${pkg_displayname}.xml app/files/metadata.xml
   )
+  add_custom_target(
+    flatpak-pkg-finish            # Change name of top directory
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
+    COMMAND ${MVDIR} files ${pkg_displayname}
+  )
   add_custom_target(flatpak-tar)
   add_custom_command(
     TARGET flatpak-tar
     COMMAND
       ${TAR} -C ${CMAKE_BINARY_DIR}/app
         -czf ${pkg_tarname}.tar.gz
-        --transform s|files|${pkg_displayname}|
-        files
+        ${pkg_displayname}
     VERBATIM
     COMMENT "building ${pkg_tarname}.tar.gz"
   )
   add_dependencies(flatpak-build flatpak-conf)
   add_dependencies(flatpak-pkg flatpak-build)
-  add_dependencies(flatpak-tar flatpak-pkg)
+  add_dependencies(flatpak-pkg-finish flatpak-pkg)
+  add_dependencies(flatpak-tar flatpak-pkg-finish)
 
   add_custom_target(flatpak)
   add_dependencies(flatpak flatpak-tar)
