@@ -29,7 +29,6 @@ if (APPLE)
 
 elseif (WIN32)
   message(STATUS "Install Prefix: ${CMAKE_INSTALL_PREFIX}")
-  set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/../OpenCPN)
   if (CMAKE_CROSSCOMPILING)
     install(TARGETS ${PACKAGE_NAME} RUNTIME DESTINATION "plugins")
     set(INSTALL_DIRECTORY "plugins/${PACKAGE_NAME}")
@@ -52,8 +51,10 @@ elseif (UNIX AND NOT APPLE)
   endif ()
 endif ()
 
-# Hardcoded destination for tarball generation
-install(FILES ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
-        DESTINATION "${CMAKE_BINARY_DIR}/app/files"
-        RENAME metadata.xml
-)
+# Hardcoded, absolute destination for tarball generation
+if (${BUILD_TYPE} STREQUAL "tarball" OR ${BUILD_TYPE} STREQUAL "flatpak")
+  install(FILES ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
+          DESTINATION "${CMAKE_BINARY_DIR}/app/files"
+          RENAME metadata.xml
+  )
+endif()
