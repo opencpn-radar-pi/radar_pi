@@ -43,21 +43,11 @@ else ()
   set(_install_cmd cmake --install ${CMAKE_BINARY_DIR} --config $<CONFIG>)
 endif ()
 
-# Create the tarball.sh script which generates the tarball
-find_program(TAR NAMES gtar tar REQUIRED)
+find_program(TAR NAMES gtar tar HINTS ENV TAR_DIRECTORY REQUIRED)
 message(STATUS "Using tar program: ${TAR}")
 #   Handle paths containing slashes, using / also on Windows
 string(REPLACE "\\" "/" TAR ${TAR})
 string(REPLACE " " "\\ " TAR ${TAR})
-set (tar_script
-"#!/bin/bash
-set -x
-${TAR} -C ${CMAKE_BINARY_DIR}/app \
-    -czf ${pkg_tarname}.tar.gz \
-    --transform 's|files|${pkg_displayname}|' \
-    files"
-)
-file(WRITE ${CMAKE_BINARY_DIR}/tarball.sh ${tar_script})
 
 function (tarball_target)
 
@@ -82,7 +72,11 @@ function (tarball_target)
   add_custom_target(tarball-tar)
   add_custom_command(
     TARGET tarball-tar
-    COMMAND bash < ${CMAKE_BINARY_DIR}/tarball.sh
+    COMMAND
+      ${TAR} -C ${CMAKE_BINARY_DIR}/app
+        -czf ${pkg_tarname}.tar.gz
+        --transform s|files|${pkg_displayname}|
+        files
     VERBATIM
     COMMENT "Building ${pkg_tarname}.tar.gz"
   )
@@ -111,12 +105,16 @@ function (flatpak_target manifest)
   add_custom_target(
     flatpak-pkg            # Move metadata in place.
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND bash -c \"cp ${pkg_displayname}.xml app/files/metadata.xml\"
+    COMMAND cmake -E copy ${pkg_displayname}.xml app/files/metadata.xml
   )
   add_custom_target(flatpak-tar)
   add_custom_command(
     TARGET flatpak-tar
-    COMMAND bash < ${CMAKE_BINARY_DIR}/tarball.sh
+    COMMAND
+      ${TAR} -C ${CMAKE_BINARY_DIR}/app
+        -czf ${pkg_tarname}.tar.gz
+        --transform s|files|${pkg_displayname}|
+        files
     VERBATIM
     COMMENT "building ${pkg_tarname}.tar.gz"
   )
