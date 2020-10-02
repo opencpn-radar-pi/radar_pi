@@ -43,12 +43,6 @@ else ()
   set(_install_cmd cmake --install ${CMAKE_BINARY_DIR} --config $<CONFIG>)
 endif ()
 
-find_program(TAR NAMES gtar tar HINTS ENV TAR_DIRECTORY REQUIRED)
-message(STATUS "Using tar program: ${TAR}")
-#   Handle paths containing slashes, using / also on Windows
-string(REPLACE "\\" "/" TAR ${TAR})
-string(REPLACE " " "\\ " TAR ${TAR})
-
 if (WIN32)
   set(MVDIR rename)
 else ()
@@ -84,10 +78,10 @@ function (tarball_target)
   add_custom_target(tarball-tar)
   add_custom_command(
     TARGET tarball-tar
+    WORKING_DIRECTORY  ${CMAKE_BINARY_DIR}/app
     COMMAND
-      ${TAR} -C ${CMAKE_BINARY_DIR}/app
-        -czf ${pkg_tarname}.tar.gz
-        ${pkg_displayname}
+      cmake -E
+      tar -czf ../${pkg_tarname}.tar.gz --format=gnutar ${pkg_displayname}
     VERBATIM
     COMMENT "Building ${pkg_tarname}.tar.gz"
   )
@@ -127,10 +121,9 @@ function (flatpak_target manifest)
   add_custom_target(flatpak-tar)
   add_custom_command(
     TARGET flatpak-tar
-    COMMAND
-      ${TAR} -C ${CMAKE_BINARY_DIR}/app
-        -czf ${pkg_tarname}.tar.gz
-        ${pkg_displayname}
+    WORKING_DIRECTORY  ${CMAKE_BINARY_DIR}/app
+    COMMAND cmake -E
+       tar -czf ../${pkg_tarname}.tar.gz --format=gnutar ${pkg_displayname}
     VERBATIM
     COMMENT "building ${pkg_tarname}.tar.gz"
   )
