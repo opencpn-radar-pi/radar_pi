@@ -1,11 +1,18 @@
 ---
-version: 2
+version: 2.1
+
+debian-steps: &debian-steps
+  steps:
+    - checkout
+    - run: ci/circleci-build-debian.sh
+    - run: cd build; /bin/bash < upload.sh
+
 jobs:
   build-mingw:
     machine:
       image: circleci/classic:201808-01
     environment:
-      - OCPN_TARGET:  mingw
+      - OCPN_TARGET: mingw
     steps:
       - checkout
       - run: ci/circleci-build-mingw.sh
@@ -15,99 +22,81 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
     environment:
-      - OCPN_TARGET:  flatpak
+      - OCPN_TARGET: flatpak
     steps:
       - checkout
       - restore_cache:
-           keys:
-              - fp-v1-{{ checksum "ci/circleci-build-flatpak.sh" }}
+          keys:
+            - fp-v1-{{ checksum "ci/circleci-build-flatpak.sh" }}
       - run: ci/circleci-build-flatpak.sh
       - save_cache:
-           key: fp-v1-{{ checksum "ci/circleci-build-flatpak.sh" }}
-           paths:
-             - /home/circleci/.local/share/flatpak/repo
+          key: fp-v1-{{ checksum "ci/circleci-build-flatpak.sh" }}
+          paths:
+            - /home/circleci/.local/share/flatpak/repo
       - run: cd build; /bin/bash < upload.sh
 
   build-macos:
     macos:
       xcode: "11.0.0"
     environment:
-      - OCPN_TARGET:  macos
+      - OCPN_TARGET: macos
     steps:
       - checkout
       - restore_cache:
-           keys:
-              - macos-cache-v1-{{checksum "ci/circleci-build-macos.sh"}}
+          keys:
+            - macos-cache-v1-{{checksum "ci/circleci-build-macos.sh"}}
       - run: ci/circleci-build-macos.sh
       - save_cache:
-           key: macos-cache-v1-{{checksum "ci/circleci-build-macos.sh"}}
-           paths:
-             - /usr/local/Homebrew
-             - /usr/local/Cellar
-             - /usr/local/lib
-             - /usr/local/include
+          key: macos-cache-v1-{{checksum "ci/circleci-build-macos.sh"}}
+          paths:
+            - /usr/local/Homebrew
+            - /usr/local/Cellar
+            - /usr/local/lib
+            - /usr/local/include
       - run: cd build; /bin/bash < upload.sh
 
   build-trusty:
     docker:
       - image: circleci/buildpack-deps:trusty-scm
     environment:
-      - OCPN_TARGET:  trusty
-    steps:
-      - checkout
-      - run: ci/circleci-build-debian.sh
-      - run: cd build; /bin/bash < upload.sh
+      - OCPN_TARGET: trusty
+    <<: *debian-steps
 
   build-xenial:
     docker:
       - image: circleci/buildpack-deps:xenial-scm
     environment:
-      - OCPN_TARGET:  xenial
-    steps:
-      - checkout
-      - run: ci/circleci-build-debian.sh
-      - run: cd build; /bin/bash < upload.sh
+      - OCPN_TARGET: xenial
+    <<: *debian-steps
 
   build-bionic:
     docker:
       - image: circleci/buildpack-deps:bionic-scm
     environment:
-      - OCPN_TARGET:  bionic
-    steps:
-      - checkout
-      - run: ci/circleci-build-debian.sh
-      - run: cd build; /bin/bash < upload.sh
+      - OCPN_TARGET: bionic
+    <<: *debian-steps
 
   build-bionic-gtk3:
     docker:
       - image: circleci/buildpack-deps:bionic-scm
     environment:
       - BUILD_GTK3: true
-      - OCPN_TARGET:  bionic-gtk3
-    steps:
-      - checkout
-      - run: ci/circleci-build-debian.sh
-      - run: cd build; /bin/bash < upload.sh
+      - OCPN_TARGET: bionic-gtk3
+    <<: *debian-steps
 
   build-focal:
     docker:
       - image: circleci/buildpack-deps:focal-scm
     environment:
-      - OCPN_TARGET:  focal
-    steps:
-      - checkout
-      - run: ci/circleci-build-debian.sh
-      - run: cd build; /bin/bash < upload.sh
+      - OCPN_TARGET: focal
+    <<: *debian-steps
 
   build-buster:
     docker:
       - image: circleci/buildpack-deps:buster-scm
     environment:
       - OCPN_TARGET: buster
-    steps:
-      - checkout
-      - run: ci/circleci-build-debian.sh
-      - run: cd build; /bin/bash < upload.sh
+    <<: *debian-steps
 
   build-armhf-stretch:
     machine: true
@@ -131,84 +120,46 @@ jobs:
       - run: ci/circleci-build-raspbian-armhf.sh
       - run: cd build; /bin/bash < upload.sh
 
+std-filters: &std-filters
+  filters:
+    branches:
+      only:
+        - master
+        - build
 
 workflows:
   version: 2
   build_all:
     jobs:
       - build-mingw:
-          filters:
-            branches:
-              only:
-                  - master
-                  - build
+          <<: *std-filters
+
       - build-flatpak:
-          filters:
-            branches:
-              only:
-                  - master
-                  - build
+          <<: *std-filters
+
       - build-macos:
-          filters:
-            branches:
-              only:
-                  - master
-                  - build
+          <<: *std-filters
 
       - build-trusty:
-          filters:
-            branches:
-              only:
-                  - master
-                  - build
+          <<: *std-filters
 
       - build-xenial:
-          filters:
-            branches:
-              only:
-                  - master
-                  - build
-
+          <<: *std-filters
 
       - build-bionic-gtk3:
-          filters:
-            branches:
-              only:
-                  - master
-                  - build
+          <<: *std-filters
 
       - build-bionic:
-          filters:
-            branches:
-              only:
-                  - master
-                  - build
+          <<: *std-filters
 
       - build-focal:
-          filters:
-            branches:
-              only:
-                  - master
-                  - build
+          <<: *std-filters
 
       - build-buster:
-          filters:
-            branches:
-              only:
-                  - master
-                  - build
+          <<: *std-filters
 
       - build-armhf-stretch:
-          filters:
-            branches:
-              only:
-                  - master
-                  - build
-
+          <<: *std-filters
 
       - build-armhf-buster:
-          filters:
-            branches:
-              only:
-                  - master
-                  - build
+          <<: *std-filters
