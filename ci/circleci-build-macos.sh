@@ -1,34 +1,41 @@
 #!/usr/bin/env bash
 
 #
-# Build the Travis MacOS artifacts
+# Build the  MacOS artifacts
 #
+
+# Fix broken ruby on the CircleCI image:
+if [ -n "$CI" ]; then
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+fi
 
 set -xe
 
-# Install updated ruby, system's is too old. Installations
-# fails, but seems to work anyway at last.
-brew install ruby || brew install ruby || :
-export PATH="/usr/local/opt/ruby/bin:$PATH"
-
-for pkg in cairo cmake gnu-tar libarchive libexif python3 wget; do
-    brew list $pkg >/dev/null 2>&1 || brew install $pkg
+set -o pipefail
+for pkg in cairo cmake libarchive libexif wget; do
+    brew list $pkg 2>&1 >/dev/null || brew install $pkg 2>&1 >/dev/null || brew upgrade $pkg
 done
+brew list python@2 2>&1 >/dev/null && brew unlink python@2
+brew reinstall python3
 
-wget http://opencpn.navnux.org/build_deps/wx312_opencpn50_macos109.tar.xz
+wget -q http://opencpn.navnux.org/build_deps/wx312_opencpn50_macos109.tar.xz
 tar xJf wx312_opencpn50_macos109.tar.xz -C /tmp
 export PATH="/usr/local/opt/gettext/bin:$PATH"
+echo 'export PATH="/usr/local/opt/gettext/bin:$PATH"' >> ~/.bash_profile
 
 rm -rf build && mkdir build && cd build
 cmake \
   -DwxWidgets_CONFIG_EXECUTABLE=/tmp/wx312_opencpn50_macos109/bin/wx-config \
   -DwxWidgets_CONFIG_OPTIONS="--prefix=/tmp/wx312_opencpn50_macos109" \
-  -DCMAKE_INSTALL_PREFIX= "/" \
+  -DCMAKE_INSTALL_PREFIX= \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
+  "/" \
   ..
-make tarball
+make -sj2
+make package
 
-# Install cloudsmith-cli, required by upload script.
-sudo -H python3 -m ensurepip
-sudo -H python3 -m pip install -q setuptools
-sudo -H python3 -m pip install -q cloudsmith-cli
+wget -q http://opencpn.navnux.org/build_deps/Packages.dmg
+hdiutil attach Packages.dmg
+sudo installer -pkg "/Volumes/Packages 1.2.5/Install Packages.pkg" -target "/"
+make create-pkg
+
