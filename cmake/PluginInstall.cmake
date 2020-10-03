@@ -19,7 +19,6 @@ if (APPLE)
     RUNTIME
     LIBRARY DESTINATION OpenCPN.app/Contents/PlugIns
   )
-
   if (EXISTS ${PROJECT_SOURCE_DIR}/data)
     install(
       DIRECTORY data

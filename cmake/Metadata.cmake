@@ -1,6 +1,6 @@
 #
 # Set up variables for configuration of xml metadata and upload scripts, all of
-# which with a pkg_ prefix. Also add the repack-tarball target
+# which with a pkg_ prefix.
 #
 
 #cmake-format: off

@@ -177,7 +177,6 @@ endif (TWIN32 AND NOT UNIX)
 include(CPack)
 
 if (APPLE)
-
   # Copy a bunch of files so the Packages installer builder can find them
   # relative to ${CMAKE_CURRENT_BINARY_DIR} This avoids absolute paths in the
   # chartdldr_pi.pkgproj file
@@ -186,7 +185,6 @@ if (APPLE)
     ${PROJECT_SOURCE_DIR}/COPYING ${CMAKE_CURRENT_BINARY_DIR}/license.txt
     COPYONLY
   )
-
   configure_file(
     ${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jpg
     ${CMAKE_CURRENT_BINARY_DIR}/pkg_background.jpg COPYONLY
@@ -200,7 +198,6 @@ if (APPLE)
     ${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/${PACKAGE_NAME}.pkgproj.in
     ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}.pkgproj
   )
-
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin.pkg
     COMMAND /usr/local/bin/packagesbuild -F ${CMAKE_CURRENT_BINARY_DIR}
@@ -209,13 +206,11 @@ if (APPLE)
     DEPENDS ${PACKAGE_NAME}
     COMMENT "create-pkg [${PACKAGE_NAME}]: Generating pkg file."
   )
-
   add_custom_target(
     create-pkg
     COMMENT "create-pkg: Done."
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin.pkg
   )
-
 endif (APPLE)
 
 if (WIN32)
@@ -235,5 +230,4 @@ if (WIN32)
     COMMENT "code signing: Done."
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}
   )
-
-endif (WIN32)
+endif ()
