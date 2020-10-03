@@ -43,7 +43,7 @@ else ()
   set(_install_cmd cmake --install ${CMAKE_BINARY_DIR} --config $<CONFIG>)
 endif ()
 
-if (WIN32)
+if (WIN32 AND NOT MINGW)
   set(MVDIR rename)
 else ()
   set(MVDIR mv)
