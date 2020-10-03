@@ -1,8 +1,8 @@
 Shipdriver flatpak README
 -------------------------
 
-This is a simple packaging to be used together with  opencpn's flatpak
-package. To build and install:
+A simple packaging to be used together with  opencpn's flatpak package.
+To build and install:
 
   - Install flatpak and flatpak-builder as described in https://flatpak.org/
   - Install the opencpn  flatpak package using latest official version on

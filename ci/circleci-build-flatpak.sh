@@ -18,48 +18,26 @@ sudo systemctl kill --kill-who=all apt-daily.service apt-daily-upgrade.service
 sudo systemctl mask apt-daily.service apt-daily-upgrade.service
 sudo systemctl daemon-reload
 
+sudo add-apt-repository -y ppa:alexlarsson/flatpak
+wget -q -O - https://dl.google.com/linux/linux_signing_key.pub \
+    | sudo apt-key add -
+sudo apt update
 
-# Start up the docker instance
-DOCKER_SOCK="unix:///var/run/docker.sock"
-echo "DOCKER_OPTS=\"-H tcp://127.0.0.1:2375 -H $DOCKER_SOCK -s devicemapper\"" \
-    | sudo tee /etc/default/docker > /dev/null
-
-sudo systemctl restart docker.service
-sudo docker pull fedora:30
-docker run --privileged -d -ti -e "container=docker"  \
-    -v /sys/fs/cgroup:/sys/fs/cgroup \
-    -v "$(pwd):/topdir:rw" \
-    -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
-    -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
-    -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
-    fedora:30   /bin/bash
-DOCKER_CONTAINER_ID=$(docker ps | awk '/fedora/ {print $1}')
-docker logs $DOCKER_CONTAINER_ID
-
-
-cat > build.sh  << "EOF"
-cd  /topdir
-su -c "dnf install -q -y sudo cmake gcc-c++ flatpak-builder flatpak make tar"
+sudo apt install build-essential flatpak-builder flatpak tar
 flatpak remote-add --user --if-not-exists flathub \
     https://flathub.org/repo/flathub.flatpakrepo
 flatpak install --user -y flathub org.opencpn.OpenCPN > /dev/null
 flatpak install --user -y flathub org.freedesktop.Sdk//18.08  >/dev/null
-
+cp flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml flatpak.yaml.bak
 sed -i '/^runtime-version/s/:.*/: stable/' \
     flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
 
 mkdir build; cd build
 cmake  ..
 make flatpak
-EOF
 
-# Run the build in docker
-docker exec -ti \
-    $DOCKER_CONTAINER_ID /bin/bash -xec "bash -xe /topdir/build.sh"
-docker ps -a
-docker stop $DOCKER_CONTAINER_ID
-docker rm -v $DOCKER_CONTAINER_ID
-rm -f build.sh
+# Restore file so the cache checksumming is ok.
+cp ../flatpak.yaml.bak org.opencpn.OpenCPN.Plugin.shipdriver.yaml
 
 # Wait for apt-daily to complete, install cloudsmith-cli required by upload.sh.
 # apt-daily should not restart, it's masked.
