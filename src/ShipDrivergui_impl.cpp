@@ -1074,17 +1074,12 @@ void Dlg::RequestGrib(wxDateTime time){
 	value["Hour"] = time.GetHour();
 	value["Minute"] = time.GetMinute();
 	value["Second"] = time.GetSecond();
+	
+	Json::StreamWriterBuilder builder;
+	builder["indentation"] = "";  // assume default for comments is None
+	std::string str = Json::writeString(builder, value);
 
-	wxString out;
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    Json::FastWriter writer;
-    out = writer.write(value);
-        
-#pragma GCC diagnostic pop
-
-	SendPluginMessage(wxString(_T("GRIB_TIMELINE_RECORD_REQUEST")), out);
+	SendPluginMessage(wxString(_T("GRIB_TIMELINE_RECORD_REQUEST")), str);
 
 	Lock();
 	m_bNeedsGrib = false;
