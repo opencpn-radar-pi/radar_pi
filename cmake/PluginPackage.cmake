@@ -34,7 +34,7 @@ endif ()
 
 set(CPACK_STRIP_FILES "${PACKAGE_NAME}")
 
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
 
 if (EXISTS "${PROJECT_SOURCE_DIR}/README.md")
   set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/README.md")
@@ -45,7 +45,7 @@ endif ()
 # absolute path + filename to find files or directories to be excluded from
 # source tarball.
 set(CPACK_SOURCE_IGNORE_FILES
-    "^${CMAKE_CURRENT_SOURCE_DIR}/.git/*" "^${CMAKE_CURRENT_SOURCE_DIR}/build*"
+  "^${PROJECT_SOURCE_DIR}/.git/*" "^${PROJECT_SOURCE_DIR}/build*"
     "^${CPACK_PACKAGE_INSTALL_DIRECTORY}/*"
 )
 
