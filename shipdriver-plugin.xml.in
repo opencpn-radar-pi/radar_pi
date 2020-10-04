@@ -11,12 +11,7 @@
   <source> https://github.com/Rasbats/shipdriver_pi </source>
   <info-url> https://opencpn.org/OpenCPN/plugins/shipdriver.html </info-url>
 
-  <description>
-Simulates navigation of a vessel. Using the sail option and a current
-grib file for wind data, simulates how a sailing vessel might react in
-those conditions. Using 'Preferences' the simulator is able to record AIS
-data from itself. This can be replayed to simulate collision situations.
-  </description>
+  <description> @CPACK_PACKAGE_DESCRIPTION@ </description>
 
   <target>@pkg_target_arch@</target>
   <target-version>@PKG_TARGET_VERSION@</target-version>

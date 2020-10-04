@@ -59,7 +59,12 @@ set(TITLE_NAME ShipDriver)      # Legacy installer dialogs
 set(PLUGIN_API_NAME ShipDriver) # As of GetCommonName() in plugin API
 set(CPACK_PACKAGE_CONTACT "Mike Rossiter")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Simulate ship movements")
-set(CPACK_PACKAGE_DESCRIPTION "Simulate ship movements - or is it a game?")
+set(CPACK_PACKAGE_DESCRIPTION [=[
+Simulates navigation of a vessel. Using the sail option and a current
+grib file for wind data, simulates how a sailing vessel might react in
+those conditions. Using 'Preferences' the simulator is able to record AIS
+data from itself. This can be replayed to simulate collision situations.
+]=])
 
 set(PKG_RELEASE "1")
 set(PKG_AUTHOR "Mike Rossiter")
