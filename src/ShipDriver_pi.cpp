@@ -36,6 +36,9 @@
 #include "ShipDrivergui.h"
 #include "ocpn_plugin.h" 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 class ShipDriver_pi;
 class Dlg;
 
@@ -406,16 +409,10 @@ void ShipDriver_pi::SetPluginMessage(wxString &message_id, wxString &message_bod
 {
 	if (message_id == _T("GRIB_TIMELINE"))
 	{
-		Json::CharReaderBuilder builder;
-		Json::CharReader * reader = builder.newCharReader();
-		
+		Json::Reader reader;
 		Json::Value value;
-		string errors;
-
-		bool parsingSuccessful = reader->parse(message_body.c_str(), message_body.c_str() + message_body.size(), &value, &errors);
-		delete reader;	
-      
-        if (!parsingSuccessful) {
+        
+        if (!reader.parse((std::string)message_body,value)) {
             wxLogMessage("Grib_TimeLine error");
             return;
         }
@@ -438,16 +435,10 @@ void ShipDriver_pi::SetPluginMessage(wxString &message_id, wxString &message_bod
 	}
 	if (message_id == _T("GRIB_TIMELINE_RECORD"))
 	{
-		Json::CharReaderBuilder builder;
-		Json::CharReader * reader = builder.newCharReader();
-
+		Json::Reader reader;
 		Json::Value value;
-		string errors;
-
-		bool parsingSuccessful = reader->parse(message_body.c_str(), message_body.c_str() + message_body.size(), &value, &errors);
-		delete reader;
         
-        if (!parsingSuccessful) {
+        if (!reader.parse((std::string)message_body,value)) {
             wxLogMessage("Grib_TimeLine_Record error");
             return;
         }
@@ -552,3 +543,5 @@ void ShipDriver_pi::SetNMEASentence(wxString &sentence) {
 
 	}
 }
+
+#pragma GCC diagnostic pop
