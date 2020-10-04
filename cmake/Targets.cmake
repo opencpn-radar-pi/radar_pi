@@ -152,7 +152,7 @@ function (pkg_target)
   add_custom_command(
     TARGET pkg-package
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND cpack -C $<CONFIG>
+    COMMAND cpack $<$<BOOL:$<CONFIG>>:"-C $<CONFIG>">
   )
   add_dependencies(pkg-build pkg-conf)
   add_dependencies(pkg-package pkg-build)
