@@ -38,3 +38,15 @@ and a .dmg image for MacOS:
 
     $ cmake ..
     $ make pkg
+
+#### Building on windows (MSVC)
+On windows, a somewhat different workflow is used:
+
+    > cmake -T v141\_xp ..
+    > cmake -G "Visual Studio 15 2017" --config RelWithDebInfo  ..
+    > cmake --build . --target tarball --config RelWithDebInfo
+
+This is to build the installer tarball. Use _--target pkg_ to build the
+legacy NSIS installer. The build requires access to a specific wxWidgets
+3.1.2 build, see the appveyour.yml file for details.
+
