@@ -21,32 +21,24 @@ if (WIN32)
   # override install directory to put package files in the opencpn directory
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenCPN")
 
-  # CPACK_NSIS_DIR ?? CPACK_BUILDWIN_DIR ?? CPACK_PACKAGE_ICON ??
-
   set(CPACK_PACKAGE_VERSION "${PACKAGE_VERSION}-${OCPN_MIN_VERSION}")
 
-  # These lines set the name of the Windows Start Menu shortcut and the icon
-  # that goes with it SET(CPACK_NSIS_INSTALLED_ICON_NAME "${PACKAGE_NAME}")
+  # Menu label in Add/Remove program etc.
   set(CPACK_NSIS_DISPLAY_NAME "OpenCPN ${PACKAGE_NAME}")
-
-  # SET(CPACK_PACKAGE_FILE_NAME
-  # "${PACKAGE_NAME}_${VERSION_MAJOR}.${VERSION_MINOR}_setup" )
-
   set(CPACK_NSIS_DIR "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode") # Gunther
   set(CPACK_BUILDWIN_DIR "${PROJECT_SOURCE_DIR}/buildwin") # Gunther
 
-else (WIN32)
+else ()
   set(CPACK_PACKAGE_INSTALL_DIRECTORY ${PACKAGE_NAME})
-endif (WIN32)
+endif ()
 
 set(CPACK_STRIP_FILES "${PACKAGE_NAME}")
 
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 
-if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/README")
-  # MESSAGE(STATUS "Using generic cpack package description file.")
-  set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
-  set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README")
+if (EXISTS "${PROJECT_SOURCE_DIR}/README.md")
+  set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/README.md")
+  set(CPACK_RESOURCE_FILE_README "${PROJECT_SOURCE_DIR}/README.md")
 endif ()
 
 # The following components are regex's to match anywhere (unless anchored) in
@@ -66,103 +58,14 @@ elseif (UNIX)
   # autogenerate additional dependency information
   set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
-  set(PACKAGE_RELEASE ${PKG_RELEASE})
-
   set(CPACK_GENERATOR "DEB")
 
   set(CPACK_DEBIAN_PACKAGE_DEPENDS ${PACKAGE_DEPS})
-  set(CPACK_DEBIAN_PACKAGE_RECOMMENDS ${PACKAGE_RECS})
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE ${ARCH})
-  set(CPACK_DEBIAN_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}")
   set(CPACK_DEBIAN_PACKAGE_SECTION "misc")
   set(CPACK_DEBIAN_COMPRESSION_TYPE "xz") # requires my patches to cmake
 
 endif ()
-
-if (TWIN32 AND NOT UNIX)
-  # configure_file(${PROJECT_SOURCE_DIR}/src/opencpn.rc.in
-  # ${PROJECT_SOURCE_DIR}/src/opencpn.rc)
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_GERMAN.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_GERMAN.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_FRENCH.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_FRENCH.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_CZECH.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_CZECH.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_DANISH.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_DANISH.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_SPANISH.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_SPANISH.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_ITALIAN.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_ITALIAN.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_DUTCH.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_DUTCH.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_POLISH.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_POLISH.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_PORTUGUESEBR.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_PORTUGUESEBR.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_PORTUGUESE.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_PORTUGUESE.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_RUSSIAN.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_RUSSIAN.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_SWEDISH.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_SWEDISH.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_FINNISH.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_FINNISH.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_NORWEGIAN.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_NORWEGIAN.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_CHINESETW.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_CHINESETW.nsh"
-    @ONLY
-  )
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/buildwin/NSIS_Unicode/Language files/Langstrings_TURKISH.nsh.in"
-    "${PROJECT_SOURCE_DIR}//buildwin/NSIS_Unicode/Include/Langstrings_TURKISH.nsh"
-    @ONLY
-  )
-endif (TWIN32 AND NOT UNIX)
 
 include(CPack)
 
