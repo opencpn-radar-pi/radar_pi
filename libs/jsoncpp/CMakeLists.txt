@@ -20,7 +20,11 @@ if (JSONCPP_LIBRARY AND JSONCPP_INCLUDE_DIR AND USE_SYSTEM_JSONCPP)
   return ()
 endif ()
 
-if (${CMAKE_VERSION} VERSION_GREATER "3.8.0" AND NOT WIN32)
+if ((${CMAKE_VERSION} VERSION_GREATER "3.8.0" AND NOT WIN32)
+  # FIXME: Always bundles large jsoncpp library, should use system when
+  # available.
+  AND NOT ${BUILD_TYPE} STREQUAL "tarball"
+)
   include("CMakeLists-org.txt")
 else ()
   set(SRC src/lib_json/json_reader.cpp
