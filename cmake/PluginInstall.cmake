@@ -11,8 +11,7 @@ include(Metadata)
 if (APPLE)
   install(
     TARGETS ${PACKAGE_NAME}
-    RUNTIME
-    LIBRARY DESTINATION OpenCPN.app/Contents/PlugIns
+    RUNTIME LIBRARY DESTINATION OpenCPN.app/Contents/PlugIns
   )
   if (EXISTS ${PROJECT_SOURCE_DIR}/data)
     install(
@@ -33,9 +32,9 @@ elseif (WIN32)
 
   if (EXISTS ${PROJECT_SOURCE_DIR}/data)
     install(DIRECTORY data DESTINATION "${INSTALL_DIRECTORY}")
-  endif (EXISTS ${PROJECT_SOURCE_DIR}/data)
+  endif ()
 
-elseif (UNIX AND NOT APPLE)
+elseif (UNIX)
   install(
     TARGETS ${PACKAGE_NAME}
     RUNTIME LIBRARY DESTINATION lib/opencpn
