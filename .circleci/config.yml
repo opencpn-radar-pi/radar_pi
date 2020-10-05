@@ -25,6 +25,7 @@ jobs:
       - OCPN_TARGET: flatpak
     steps:
       - checkout
+      - run: pyenv local 3.5.2
       - restore_cache:
           keys:
             - fp-v1-{{ checksum "ci/circleci-build-flatpak.sh" }}
