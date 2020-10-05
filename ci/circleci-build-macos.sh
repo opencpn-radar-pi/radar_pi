@@ -26,7 +26,6 @@ cmake \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
   ..
 make tarball
-make pkg
 
 wget -q http://opencpn.navnux.org/build_deps/Packages.dmg
 hdiutil attach Packages.dmg
