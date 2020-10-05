@@ -90,7 +90,7 @@ elseif (UNIX)
   # SET(CPACK_SET_DESTDIR ON)
   set(CPACK_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
-endif (UNIX AND NOT APPLE)
+endif ()
 
 if (TWIN32 AND NOT UNIX)
   # configure_file(${PROJECT_SOURCE_DIR}/src/opencpn.rc.in
