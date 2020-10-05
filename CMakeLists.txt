@@ -54,8 +54,7 @@ option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 #
 project(ShipDriver_pi VERSION 2.5.40)
 
-set(VERBOSE_NAME ShipDriver)    # Legacy installers artifact names
-set(TITLE_NAME ShipDriver)      # Legacy installer dialogs
+set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
 set(PLUGIN_API_NAME ShipDriver) # As of GetCommonName() in plugin API
 set(CPACK_PACKAGE_CONTACT "Mike Rossiter")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Simulate ship movements")

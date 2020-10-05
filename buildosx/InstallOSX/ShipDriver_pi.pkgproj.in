@@ -642,7 +642,7 @@
 				<key>LOCATION</key>
 				<integer>0</integer>
 				<key>NAME</key>
-				<string>${VERBOSE_NAME}-Plugin</string>
+				<string>${DISPLAY_NAME}-Plugin</string>
 				<key>OVERWRITE_PERMISSIONS</key>
 				<false/>
 				<key>USE_HFS+_COMPRESSION</key>
@@ -788,43 +788,43 @@
 										<key>LANGUAGE</key>
 										<string>Czech</string>
 										<key>VALUE</key>
-										<string>${TITLE_NAME} Plugin for OpenCPN</string>
+										<string>${DISPLAY_NAME} Plugin for OpenCPN</string>
 									</dict>
 									<dict>
 										<key>LANGUAGE</key>
 										<string>Dutch</string>
 										<key>VALUE</key>
-										<string>${TITLE_NAME} Plugin for OpenCPN</string>
+										<string>${DISPLAY_NAME} Plugin for OpenCPN</string>
 									</dict>
 									<dict>
 										<key>LANGUAGE</key>
 										<string>English</string>
 										<key>VALUE</key>
-										<string>${TITLE_NAME} Plugin for OpenCPN</string>
+										<string>${DISPLAY_NAME} Plugin for OpenCPN</string>
 									</dict>
 									<dict>
 										<key>LANGUAGE</key>
 										<string>French</string>
 										<key>VALUE</key>
-										<string>${TITLE_NAME} Complément (plugin) pour OpenCPN</string>
+										<string>${DISPLAY_NAME} Complément (plugin) pour OpenCPN</string>
 									</dict>
 									<dict>
 										<key>LANGUAGE</key>
 										<string>German</string>
 										<key>VALUE</key>
-										<string>${TITLE_NAME} Plugin für OpenCPN</string>
+										<string>${DISPLAY_NAME} Plugin für OpenCPN</string>
 									</dict>
 									<dict>
 										<key>LANGUAGE</key>
 										<string>Italian</string>
 										<key>VALUE</key>
-										<string>${TITLE_NAME} Plugin for OpenCPN</string>
+										<string>${DISPLAY_NAME} Plugin for OpenCPN</string>
 									</dict>
 									<dict>
 										<key>LANGUAGE</key>
 										<string>Spanish</string>
 										<key>VALUE</key>
-										<string>Plugin ${TITLE_NAME} para OpenCPN</string>
+										<string>Plugin ${DISPLAY_NAME} para OpenCPN</string>
 									</dict>
 								</array>
 								<key>TOOLTIP</key>
@@ -1019,7 +1019,7 @@
 						<key>LANGUAGE</key>
 						<string>English</string>
 						<key>VALUE</key>
-						<string>${TITLE_NAME} Plugin</string>
+						<string>${DISPLAY_NAME} Plugin</string>
 					</dict>
 				</array>
 			</dict>
@@ -1334,7 +1334,7 @@
 				</dict>
 			</array>
 			<key>NAME</key>
-			<string>${VERBOSE_NAME}-Plugin_${VERSION_MAJOR}.${VERSION_MINOR}-${OCPN_MIN_VERSION}</string>
+			<string>${DISPLAY_NAME}-Plugin_${VERSION_MAJOR}.${VERSION_MINOR}-${OCPN_MIN_VERSION}</string>
 			<key>REFERENCE_FOLDER_PATH</key>
 			<string>.</string>
 		</dict>
