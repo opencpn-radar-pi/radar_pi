@@ -15,6 +15,22 @@ set(CPACK_INSTALL_CMAKE_PROJECTS
 )
 set(CPACK_PACKAGE_FILE_NAME "${pkg_tarname}")
 
+set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
+if (EXISTS "${PROJECT_SOURCE_DIR}/README.md")
+  set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/README.md")
+  set(CPACK_RESOURCE_FILE_README "${PROJECT_SOURCE_DIR}/README.md")
+endif ()
+
+set(CPACK_STRIP_FILES "${PACKAGE_NAME}")
+
+# The following components are regex's to match anywhere (unless anchored) in
+# absolute path + filename to find files or directories to be excluded from
+# source tarball.
+set(CPACK_SOURCE_IGNORE_FILES
+  "^${PROJECT_SOURCE_DIR}/.git/*" "^${PROJECT_SOURCE_DIR}/build*"
+    "^${CPACK_PACKAGE_INSTALL_DIRECTORY}/*"
+)
+
 if (WIN32)
   set(CPACK_GENERATOR "NSIS")
 
@@ -32,28 +48,10 @@ else ()
   set(CPACK_PACKAGE_INSTALL_DIRECTORY ${PACKAGE_NAME})
 endif ()
 
-set(CPACK_STRIP_FILES "${PACKAGE_NAME}")
-
-set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
-
-if (EXISTS "${PROJECT_SOURCE_DIR}/README.md")
-  set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/README.md")
-  set(CPACK_RESOURCE_FILE_README "${PROJECT_SOURCE_DIR}/README.md")
-endif ()
-
-# The following components are regex's to match anywhere (unless anchored) in
-# absolute path + filename to find files or directories to be excluded from
-# source tarball.
-set(CPACK_SOURCE_IGNORE_FILES
-  "^${PROJECT_SOURCE_DIR}/.git/*" "^${PROJECT_SOURCE_DIR}/build*"
-    "^${CPACK_PACKAGE_INSTALL_DIRECTORY}/*"
-)
-
 if (APPLE)
   set(CPACK_GENERATOR ZIP)   # make sure we don't overwrite 'make tarball''
 
 elseif (UNIX)
-
   set(PACKAGE_DEPS opencpn)
   # autogenerate additional dependency information
   set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
