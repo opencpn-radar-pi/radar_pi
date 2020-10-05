@@ -65,7 +65,10 @@ set(CPACK_SOURCE_IGNORE_FILES
     "^${CPACK_PACKAGE_INSTALL_DIRECTORY}/*"
 )
 
-if (UNIX AND NOT APPLE)
+if (APPLE)
+  set(CPACK_GENERATOR ZIP)   # make sure we don't overwrite 'make tarball''
+
+elseif (UNIX)
 
   set(PACKAGE_DEPS opencpn)
   # autogenerate additional dependency information
