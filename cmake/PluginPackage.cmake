@@ -37,7 +37,7 @@ if (WIN32)
   # override install directory to put package files in the opencpn directory
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenCPN")
 
-  set(CPACK_PACKAGE_VERSION "${PACKAGE_VERSION}-${OCPN_MIN_VERSION}")
+  set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}-${OCPN_MIN_VERSION}")
 
   # Menu label in Add/Remove program etc.
   set(CPACK_NSIS_DISPLAY_NAME "OpenCPN ${PACKAGE_NAME}")
