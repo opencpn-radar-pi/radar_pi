@@ -18,10 +18,8 @@ endif ()
 set(OpenGL_GL_PREFERENCE "LEGACY")
 
 # Locations where cmake looks for cmake modules.
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build
-                      ${CMAKE_SOURCE_DIR}/
-                      ${CMAKE_SOURCE_DIR}/cmake
-)
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build ${CMAKE_SOURCE_DIR}/cmake)
+
 if (WIN32)
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/buildwin)
 endif ()
