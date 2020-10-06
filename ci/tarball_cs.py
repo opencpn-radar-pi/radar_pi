@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 #
 #  Compute the sha256 hash for a given file, optionally update a file
-#  by substituting $checksum$ with said sha256 hash.
+#  by substituting @checksum@ with said sha256 hash.
 
 import argparse
 import hashlib
@@ -30,14 +30,14 @@ def compute_cs(path):
             sha256_hash.update(byte_block)
     return sha256_hash.hexdigest()
 
-def substitute_cs(metadata, cs):
-    """ Replace $checksum$ in metadata (a path) with cs. """
+def substitute_cs(metadata_in, cs):
+    """ Replace @checksum@ in metadata (a path) with cs. """
 
     try:
-        with open(metadata) as f:
+        with open(metadata_in) as f:
             contents = f.read();
-        with open(metadata, "w") as f:
-            f.write(contents.replace("$checksum$", cs));
+        with open(metadata_in.replace(".in", ""), "w") as f:
+            f.write(contents.replace("@checksum@", cs));
     except IOError as e:
         print( "Error accessing file %s: %s" % (metadata, e))
 

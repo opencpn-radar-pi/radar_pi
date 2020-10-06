@@ -142,9 +142,10 @@ configure_file(
   @ONLY
 )
 
+set(checksum "@checksum@")
 configure_file(
   # The XML metadata file
   ${CMAKE_SOURCE_DIR}/shipdriver-plugin.xml.in
-  ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
+  ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml.in
   @ONLY
 )

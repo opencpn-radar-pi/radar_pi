@@ -46,7 +46,7 @@ endif ()
 
 # Hardcoded, absolute destination for tarball generation
 if (${BUILD_TYPE} STREQUAL "tarball" OR ${BUILD_TYPE} STREQUAL "flatpak")
-  install(FILES ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
+  install(FILES ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml.in
           DESTINATION "${CMAKE_BINARY_DIR}/app/files"
           RENAME metadata.xml
   )
