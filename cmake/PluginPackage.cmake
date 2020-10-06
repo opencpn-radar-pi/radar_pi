@@ -184,10 +184,9 @@ if (APPLE)
   # relative to ${CMAKE_CURRENT_BINARY_DIR} This avoids absolute paths in the
   # chartdldr_pi.pkgproj file
 
-  configure_file(
-    ${PROJECT_SOURCE_DIR}/COPYING ${CMAKE_CURRENT_BINARY_DIR}/license.txt
-    COPYONLY
-  )
+  configure_file(${PROJECT_SOURCE_DIR}/cmake/gpl.txt
+            ${CMAKE_CURRENT_BINARY_DIR}/license.txt COPYONLY)
+                      
   configure_file(
     ${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jpg
     ${CMAKE_CURRENT_BINARY_DIR}/pkg_background.jpg COPYONLY
