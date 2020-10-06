@@ -23,6 +23,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build ${CMAKE_SOURCE_DIR}/cmake)
 if (WIN32)
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/buildwin)
 endif ()
+message(STATUS "Cmake version: ${CMAKE_VERSION}.")
 
 
 # -------- Build setup (mostly in PluginCompiler) --------
