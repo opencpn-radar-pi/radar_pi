@@ -95,9 +95,7 @@ function(cs_target target_name)
   add_custom_target(${target_name})
   add_custom_command(
     TARGET ${target_name}      # Compute checksum
-    COMMAND ${pkg_python} ${CMAKE_SOURCE_DIR}/ci/tarball_cs.py
-       -m ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
-       ${CMAKE_BINARY_DIR}/${pkg_tarname}.tar.gz
+    COMMAND cmake -P ${CMAKE_BINARY_DIR}/checksum.cmake
     VERBATIM
     COMMENT "Computing checksum in ${pkg_displayname}.xml"
   )
