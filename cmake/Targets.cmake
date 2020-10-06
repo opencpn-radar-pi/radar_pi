@@ -49,6 +49,60 @@ else ()
   set(MVDIR mv)
 endif ()
 
+# Cmake batch file to compute and patch metadata checksum
+#
+set(CS_SCRIPT "
+  execute_process(
+    COMMAND cmake -E sha256sum  ${CMAKE_BINARY_DIR}/${pkg_tarname}.tar.gz
+    OUTPUT_FILE ${CMAKE_BINARY_DIR}/${pkg_tarname}.sha256
+  )
+  file(READ ${CMAKE_BINARY_DIR}/${pkg_tarname}.sha256 _SHA256)
+  string(REGEX MATCH \"^[^ ]*\" checksum \${_SHA256} )
+  configure_file(
+    ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml.in
+    ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
+    @ONLY
+)")
+file(WRITE "${CMAKE_BINARY_DIR}/checksum.cmake" ${CS_SCRIPT})
+
+
+# General post-process targets. Functions with a name parameter are used to
+# break dependency chains.
+#
+function(topdir_target target_name)
+  add_custom_target(${target_name})
+  add_custom_command(
+    TARGET ${target_name}     # Change top-level directory name
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
+    COMMAND ${MVDIR} files ${pkg_displayname}
+  )
+endfunction ()
+
+function(tar_target target_name)
+  add_custom_target(${target_name})
+  add_custom_command(
+    TARGET ${target_name}     # Build the tarball
+    WORKING_DIRECTORY  ${CMAKE_BINARY_DIR}/app
+    COMMAND
+      cmake -E
+      tar -czf ../${pkg_tarname}.tar.gz --format=gnutar ${pkg_displayname}
+    VERBATIM
+    COMMENT "Building ${pkg_tarname}.tar.gz"
+  )
+endfunction ()
+
+function(cs_target target_name)
+  add_custom_target(${target_name})
+  add_custom_command(
+    TARGET ${target_name}      # Compute checksum
+    COMMAND ${pkg_python} ${CMAKE_SOURCE_DIR}/ci/tarball_cs.py
+       -m ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
+       ${CMAKE_BINARY_DIR}/${pkg_tarname}.tar.gz
+    VERBATIM
+    COMMENT "Computing checksum in ${pkg_displayname}.xml"
+  )
+endfunction ()
+
 function (tarball_target)
 
   # tarball target setup
@@ -69,35 +123,13 @@ function (tarball_target)
     TARGET tarball-install
     COMMAND ${_install_cmd}
   )
-  add_custom_target(tarball-finish)
-  add_custom_command(
-    TARGET tarball-finish     # Change top-level directory name
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
-    COMMAND ${MVDIR} files ${pkg_displayname}
-  )
-  add_custom_target(tarball-tar)
-  add_custom_command(
-    TARGET tarball-tar        # Build the tarball
-    WORKING_DIRECTORY  ${CMAKE_BINARY_DIR}/app
-    COMMAND
-      cmake -E
-      tar -czf ../${pkg_tarname}.tar.gz --format=gnutar ${pkg_displayname}
-    VERBATIM
-    COMMENT "Building ${pkg_tarname}.tar.gz"
-  )
-  add_custom_target(tarball-cs)
-  add_custom_command(
-    TARGET tarball-cs         # Compute checksum
-    COMMAND ${pkg_python} ${CMAKE_SOURCE_DIR}/ci/tarball_cs.py
-       -m ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
-       ${CMAKE_BINARY_DIR}/${pkg_tarname}.tar.gz
-    VERBATIM
-    COMMENT "Computing checksum in ${pkg_displayname}.xml"
-  )
+  topdir_target("tarball-topdir")
+  tar_target("tarball-tar")
+  cs_target("tarball-cs")
   add_dependencies(tarball-build tarball-conf)
   add_dependencies(tarball-install tarball-build)
-  add_dependencies(tarball-finish tarball-install)
-  add_dependencies(tarball-tar tarball-finish)
+  add_dependencies(tarball-topdir tarball-install)
+  add_dependencies(tarball-tar tarball-topdir)
   add_dependencies(tarball-cs tarball-tar)
 
   add_custom_target(tarball)
@@ -118,39 +150,12 @@ function (flatpak_target manifest)
     COMMAND flatpak-builder --force-clean ${CMAKE_CURRENT_BINARY_DIR}/app
             ${manifest}
   )
-  add_custom_target(
-    flatpak-pkg            # Move metadata in place.
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND cmake -E copy ${pkg_displayname}.xml app/files/metadata.xml
-  )
-  add_custom_target(
-    flatpak-pkg-finish     # Change name of top directory
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
-    COMMAND ${MVDIR} files ${pkg_displayname}
-  )
-  add_custom_target(flatpak-tar)
-  add_custom_command(
-    TARGET flatpak-tar     # Build the tarball
-    WORKING_DIRECTORY  ${CMAKE_BINARY_DIR}/app
-    COMMAND cmake -E
-       tar -czf ../${pkg_tarname}.tar.gz --format=gnutar ${pkg_displayname}
-    VERBATIM
-    COMMENT "building ${pkg_tarname}.tar.gz"
-  )
-  add_custom_target(flatpak-cs)
-  add_custom_command(
-    TARGET flatpak-cs      # Compute checksum
-    COMMAND ${pkg_python} ${CMAKE_SOURCE_DIR}/ci/tarball_cs.py
-       -m ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
-       ${CMAKE_BINARY_DIR}/${pkg_tarname}.tar.gz
-    VERBATIM
-    COMMENT "Computing checksum in ${pkg_displayname}.xml"
-  )
-
+  topdir_target("flatpak-topdir")
+  tar_target("flatpak-tar")
+  cs_target("flatpak-cs")
   add_dependencies(flatpak-build flatpak-conf)
-  add_dependencies(flatpak-pkg flatpak-build)
-  add_dependencies(flatpak-pkg-finish flatpak-pkg)
-  add_dependencies(flatpak-tar flatpak-pkg-finish)
+  add_dependencies(flatpak-topdir flatpak-build)
+  add_dependencies(flatpak-tar flatpak-topdir)
   add_dependencies(flatpak-cs flatpak-tar)
 
   add_custom_target(flatpak)
