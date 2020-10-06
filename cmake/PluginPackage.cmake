@@ -180,40 +180,34 @@ endif (TWIN32 AND NOT UNIX)
 include(CPack)
 
 if (APPLE)
-  # Copy a bunch of files so the Packages installer builder can find them
-  # relative to ${CMAKE_CURRENT_BINARY_DIR} This avoids absolute paths in the
-  # chartdldr_pi.pkgproj file
 
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/gpl.txt
-            ${CMAKE_CURRENT_BINARY_DIR}/license.txt COPYONLY)
-                      
-  configure_file(
-    ${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jpg
-    ${CMAKE_CURRENT_BINARY_DIR}/pkg_background.jpg COPYONLY
-  )
+        message(STATUS "${CMLOC}*** Staging to build PlugIn OSX Package ***")
 
-  # Patch the pkgproj.in file to make the output package name conform to
-  # Xxx-Plugin_x.x.pkg format Key is: <key>NAME</key>
-  # <string>${VERBOSE_NAME}-Plugin_${VERSION_MAJOR}.${VERSION_MINOR}</string>
+        # Copy a bunch of files so the Packages installer builder can find them relative to ${CMAKE_CURRENT_BINARY_DIR} This avoids absolute paths in the chartdldr_pi.pkgproj file
 
-  configure_file(
-    ${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/${PACKAGE_NAME}.pkgproj.in
-    ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}.pkgproj
-  )
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin.pkg
-    COMMAND /usr/local/bin/packagesbuild -F ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}.pkgproj
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    DEPENDS ${PACKAGE_NAME}
-    COMMENT "create-pkg [${PACKAGE_NAME}]: Generating pkg file."
-  )
-  ADD_CUSTOM_TARGET(create-pkg COMMENT "create-pkg: Done."
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin.pkg )
+        configure_file(${PROJECT_SOURCE_DIR}/cmake/gpl.txt ${CMAKE_CURRENT_BINARY_DIR}/license.txt COPYONLY)
 
-  SET(CPACK_GENERATOR "TGZ")
- 
+        configure_file(${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jpg ${CMAKE_CURRENT_BINARY_DIR}/pkg_background.jpg COPYONLY)
+
+        # Patch the pkgproj.in file to make the output package name conform to Xxx-Plugin_x.x.pkg format Key is: <key>NAME</key> <string>${VERBOSE_NAME}-Plugin_${VERSION_MAJOR}.${VERSION_MINOR}</string>
+
+        configure_file(${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/plugin.pkgproj.in ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}.pkgproj)
+
+        add_custom_command(
+            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin_${PACKAGE_VERSION}_${OCPN_MIN_VERSION}.pkg
+            COMMAND /usr/local/bin/packagesbuild -F ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}.pkgproj
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            DEPENDS ${PACKAGE_NAME}
+            COMMENT "create-pkg [${PACKAGE_NAME}]: Generating pkg file.")
+
+        add_custom_target(
+            create-pkg
+            COMMENT "create-pkg: Done."
+            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin_${PACKAGE_VERSION}_${OCPN_MIN_VERSION}.pkg)
+
+        set(CPACK_GENERATOR "TGZ")
+
 endif (APPLE)
-
 
 if (WIN32)
   message(STATUS "FILE: ${CPACK_PACKAGE_FILE_NAME}")
