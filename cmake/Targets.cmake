@@ -69,6 +69,12 @@ function (tarball_target)
     TARGET tarball-install
     COMMAND ${_install_cmd}
   )
+  add_custom_target(tarball-pkg)
+  add_custom_target(
+    TARGET tarball-pkg            # Move metadata in place.
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMAND cmake -E copy ${pkg_displayname}.xml app/files/metadata.xml
+  )
   add_custom_target(tarball-finish)
   add_custom_command(
     TARGET tarball-finish     # Change top-level directory name
@@ -88,7 +94,8 @@ function (tarball_target)
   add_dependencies(tarball-build tarball-conf)
   add_dependencies(tarball-install tarball-build)
   add_dependencies(tarball-finish tarball-install)
-  add_dependencies(tarball-tar tarball-finish)
+  add_dependencies(tarball-pkg tarball-finish)
+  add_dependencies(tarball-tar tarball-pkg)
 
   add_custom_target(tarball)
   add_dependencies(tarball tarball-tar)
@@ -152,7 +159,7 @@ function (pkg_target)
   add_custom_command(
     TARGET pkg-package
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND cpack -C $<CONFIG>
+    COMMAND cpack $<$<BOOL:$<CONFIG>>:"-C $<CONFIG>">
   )
   add_dependencies(pkg-build pkg-conf)
   add_dependencies(pkg-package pkg-build)

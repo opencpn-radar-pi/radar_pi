@@ -65,7 +65,10 @@ set(CPACK_SOURCE_IGNORE_FILES
     "^${CPACK_PACKAGE_INSTALL_DIRECTORY}/*"
 )
 
-if (UNIX AND NOT APPLE)
+if (APPLE)
+  set(CPACK_GENERATOR ZIP)   # make sure we don't overwrite 'make tarball''
+
+elseif (UNIX)
 
   set(PACKAGE_DEPS opencpn)
   # autogenerate additional dependency information
@@ -87,7 +90,7 @@ if (UNIX AND NOT APPLE)
   # SET(CPACK_SET_DESTDIR ON)
   set(CPACK_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
-endif (UNIX AND NOT APPLE)
+endif ()
 
 if (TWIN32 AND NOT UNIX)
   # configure_file(${PROJECT_SOURCE_DIR}/src/opencpn.rc.in
