@@ -73,12 +73,12 @@ function (tarball_target)
   add_custom_target(
     TARGET tarball-pkg            # Move metadata in place.
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND cmake -E copy ${pkg_displayname}.xml app/metadata.xml
+    COMMAND cmake -E copy ${pkg_displayname}.xml app/files/metadata.xml
   )
   add_custom_target(tarball-finish)
   add_custom_command(
     TARGET tarball-finish     # Change top-level directory name
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app/files
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
     COMMAND ${MVDIR} files ${pkg_displayname}
   )
   add_custom_target(tarball-tar)
