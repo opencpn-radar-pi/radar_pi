@@ -202,18 +202,18 @@ if (APPLE)
   )
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin.pkg
-    COMMAND /usr/local/bin/packagesbuild -F ${CMAKE_CURRENT_BINARY_DIR}
-            ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}.pkgproj
+    COMMAND /usr/local/bin/packagesbuild -F ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}.pkgproj
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS ${PACKAGE_NAME}
     COMMENT "create-pkg [${PACKAGE_NAME}]: Generating pkg file."
   )
-  add_custom_target(
-    create-pkg
-    COMMENT "create-pkg: Done."
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin.pkg
-  )
+  ADD_CUSTOM_TARGET(create-pkg COMMENT "create-pkg: Done."
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin.pkg )
+
+  SET(CPACK_GENERATOR "TGZ")
+ 
 endif (APPLE)
+
 
 if (WIN32)
   message(STATUS "FILE: ${CPACK_PACKAGE_FILE_NAME}")
