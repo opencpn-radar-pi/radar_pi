@@ -44,14 +44,14 @@ else ()
 endif ()
 
 if (WIN32 AND NOT MINGW)
-  set(MVDIR rename)
+  set(_mvdir rename)
 else ()
-  set(MVDIR mv)
+  set(_mvdir mv)
 endif ()
 
 # Cmake batch file to compute and patch metadata checksum
 #
-set(CS_SCRIPT "
+set(_cs_script "
   execute_process(
     COMMAND cmake -E sha256sum  ${CMAKE_BINARY_DIR}/${pkg_tarname}.tar.gz
     OUTPUT_FILE ${CMAKE_BINARY_DIR}/${pkg_tarname}.sha256
@@ -63,7 +63,7 @@ set(CS_SCRIPT "
     ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
     @ONLY
 )")
-file(WRITE "${CMAKE_BINARY_DIR}/checksum.cmake" ${CS_SCRIPT})
+file(WRITE "${CMAKE_BINARY_DIR}/checksum.cmake" ${_cs_script})
 
 
 # General post-process targets. Functions with a name parameter are used to
@@ -74,7 +74,7 @@ function(topdir_target target_name)
   add_custom_command(
     TARGET ${target_name}     # Change top-level directory name
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
-    COMMAND ${MVDIR} files ${pkg_displayname}
+    COMMAND ${_mvdir} files ${pkg_displayname}
   )
 endfunction ()
 
