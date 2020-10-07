@@ -56,7 +56,7 @@ function (tarball_target)
   add_custom_target(tarball-conf)
   add_custom_command(
     TARGET tarball-conf
-    COMMAND cmake -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/Contents/files
+    COMMAND cmake -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/files
             -DBUILD_TYPE:STRING=tarball ${CMAKE_BINARY_DIR}
   )
   add_custom_target(tarball-build)
