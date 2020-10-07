@@ -12,11 +12,6 @@ if (APPLE)
   install(
     TARGETS ${PACKAGE_NAME}
     RUNTIME
-    LIBRARY DESTINATION OpenCPN.app/Contents/SharedSupport/plugins
-  )
-  install(
-    TARGETS ${PACKAGE_NAME}
-    RUNTIME
     LIBRARY DESTINATION OpenCPN.app/Contents/PlugIns
   )
   if (EXISTS ${PROJECT_SOURCE_DIR}/data)
