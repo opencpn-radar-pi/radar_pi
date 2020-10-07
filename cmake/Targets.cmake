@@ -56,7 +56,7 @@ function (tarball_target)
   add_custom_target(tarball-conf)
   add_custom_command(
     TARGET tarball-conf
-    COMMAND cmake -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/files
+    COMMAND cmake -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/Contents/files
             -DBUILD_TYPE:STRING=tarball ${CMAKE_BINARY_DIR}
   )
   add_custom_target(tarball-build)
@@ -73,15 +73,9 @@ function (tarball_target)
   add_custom_target(
     TARGET tarball-pkg            # Move metadata in place.
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND cmake -E copy ${pkg_displayname}.xml app/files/metadata.xml
+    COMMAND cmake -E copy ${pkg_displayname}.xml app/metadata.xml
   )
   add_custom_target(tarball-finish)
-  
-  add_custom_target(
-     ${CMAKE_BINARY_DIR}/app/Contents ALL
-               COMMAND ${CMAKE_COMMAND} -E make_directory ${directory}
-  )	
-  
   add_custom_command(
     TARGET tarball-finish     # Change top-level directory name
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
