@@ -79,7 +79,18 @@ function (tarball_target)
   add_custom_command(
     TARGET tarball-finish     # Change top-level directory name
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
-    COMMAND ${MVDIR} files ${pkg_displayname}
+ 
+    if (APPLE)
+	   add_custom_target(${CMAKE_BINARY_DIR}/app/Contents ALL
+               COMMAND ${CMAKE_COMMAND} -E make_directory ${directory})	
+    
+      COMMAND ${MVDIR} files ${directory} 
+      COMMAND ${MVDIR} ${directory} ${pkg_displayname} 
+      
+    else (APPLE)     
+      COMMAND ${MVDIR} files ${pkg_displayname}
+    endif (APPLE)
+      
   )
   add_custom_target(tarball-tar)
   add_custom_command(
