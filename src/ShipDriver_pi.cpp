@@ -36,9 +36,6 @@
 #include "ShipDrivergui.h"
 #include "ocpn_plugin.h" 
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-
 class ShipDriver_pi;
 class Dlg;
 
@@ -78,6 +75,24 @@ ShipDriver_pi::ShipDriver_pi(void *ppimgr)
 {
       // Create the PlugIn icons
       initialize_images();
+
+	  wxFileName fn;
+	  wxString tmp_path;
+
+	  tmp_path = GetPluginDataDir("ShipDriver_pi");
+	  fn.SetPath(tmp_path);
+	  fn.AppendDir(_T("data"));
+	  fn.SetFullName("shipdriver_panel_icon.png");
+
+	  wxString shareLocn = fn.GetFullPath();
+
+	  wxImage panelIcon(shareLocn);
+	  if (panelIcon.IsOk())
+		  m_panelBitmap = wxBitmap(panelIcon);
+	  else
+		  wxLogMessage(_("    ShipDriver panel icon has NOT been loaded"));
+
+
 	  m_bShowShipDriver = false;	  
 }
 
@@ -207,7 +222,7 @@ int ShipDriver_pi::GetPlugInVersionMinor()
 
 wxBitmap *ShipDriver_pi::GetPlugInBitmap()
 {
-      return _img_ShipDriverIcon;
+	return &m_panelBitmap;
 }
 
 wxString ShipDriver_pi::GetCommonName()
@@ -409,10 +424,16 @@ void ShipDriver_pi::SetPluginMessage(wxString &message_id, wxString &message_bod
 {
 	if (message_id == _T("GRIB_TIMELINE"))
 	{
-		Json::Reader reader;
+		Json::CharReaderBuilder builder;
+		Json::CharReader * reader = builder.newCharReader();
+		
 		Json::Value value;
-        
-        if (!reader.parse((std::string)message_body,value)) {
+		string errors;
+
+		bool parsingSuccessful = reader->parse(message_body.c_str(), message_body.c_str() + message_body.size(), &value, &errors);
+		delete reader;	
+      
+        if (!parsingSuccessful) {
             wxLogMessage("Grib_TimeLine error");
             return;
         }
@@ -435,10 +456,16 @@ void ShipDriver_pi::SetPluginMessage(wxString &message_id, wxString &message_bod
 	}
 	if (message_id == _T("GRIB_TIMELINE_RECORD"))
 	{
-		Json::Reader reader;
+		Json::CharReaderBuilder builder;
+		Json::CharReader * reader = builder.newCharReader();
+
 		Json::Value value;
+		string errors;
+
+		bool parsingSuccessful = reader->parse(message_body.c_str(), message_body.c_str() + message_body.size(), &value, &errors);
+		delete reader;
         
-        if (!reader.parse((std::string)message_body,value)) {
+        if (!parsingSuccessful) {
             wxLogMessage("Grib_TimeLine_Record error");
             return;
         }
@@ -543,5 +570,3 @@ void ShipDriver_pi::SetNMEASentence(wxString &sentence) {
 
 	}
 }
-
-#pragma GCC diagnostic pop

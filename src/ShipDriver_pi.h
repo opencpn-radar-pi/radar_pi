@@ -146,6 +146,7 @@ public:
 	  double m_tr_dir;
 
 	  wxString StandardPath();
+	  wxBitmap m_panelBitmap;
 	  
 private:
 
