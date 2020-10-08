@@ -49,7 +49,6 @@ elseif (MSVC)
 elseif (APPLE)
   set(PKG_TARGET "darwin")
   set(PKG_TARGET_VERSION "10.13.6")
-  )
 elseif (UNIX)
   # Some linux dist:
   execute_process(
