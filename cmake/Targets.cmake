@@ -155,11 +155,19 @@ function (flatpak_target manifest)
     COMMAND flatpak-builder --force-clean ${CMAKE_CURRENT_BINARY_DIR}/app
             ${manifest}
   )
+  add_custom_target(
+    flatpak-metadata       # Move metadata into install tree
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMAND bash -c "sed -e '/@checksum@/d' \
+        < ${pkg_displayname}.xml.in > app/files/metadata.xml"
+    VERBATIM
+  )
   topdir_target("flatpak-topdir")
   tar_target("flatpak-tar")
   cs_target("flatpak-cs")
   add_dependencies(flatpak-build flatpak-conf)
-  add_dependencies(flatpak-topdir flatpak-build)
+  add_dependencies(flatpak-metadata flatpak-build)
+  add_dependencies(flatpak-topdir flatpak-metadata)
   add_dependencies(flatpak-tar flatpak-topdir)
   add_dependencies(flatpak-cs flatpak-tar)
 
