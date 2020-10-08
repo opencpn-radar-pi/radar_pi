@@ -56,7 +56,7 @@
 #define     PLUGIN_VERSION_MINOR    5
 
 #define     MY_API_VERSION_MAJOR    1
-#define     MY_API_VERSION_MINOR    6
+#define     MY_API_VERSION_MINOR    16
 
 class Dlg;
 
@@ -88,7 +88,7 @@ static inline bool GribCurrent(GribRecordSet *grib, double lat, double lon,
 
 #define ShipDriver_TOOL_POSITION    -1          // Request default positioning of toolbar tool
 
-class ShipDriver_pi : public opencpn_plugin_16
+class ShipDriver_pi : public opencpn_plugin_116
 {
 public:
       ShipDriver_pi(void *ppimgr);
