@@ -48,8 +48,7 @@ elseif (MSVC)
   endif ()
 elseif (APPLE)
   set(PKG_TARGET "darwin")
-  execute_process(
-    COMMAND "sw_vers" "-productVersion" OUTPUT_VARIABLE PKG_TARGET_VERSION
+  set(PKG_TARGET_VERSION "10.13.6")
   )
 elseif (UNIX)
   # Some linux dist:
