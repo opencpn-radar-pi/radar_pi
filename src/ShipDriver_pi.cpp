@@ -84,6 +84,8 @@ ShipDriver_pi::ShipDriver_pi(void *ppimgr)
     fn.SetFullName("shipdriver_panel_icon.png");
 
     path = fn.GetFullPath();
+    
+    wxInitAllImageHandlers();
 
     wxLogDebug(wxString("Using icon path: ") + path);
     if (!wxImage::CanRead(path)) {
