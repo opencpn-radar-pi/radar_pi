@@ -73,27 +73,29 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p)
 ShipDriver_pi::ShipDriver_pi(void *ppimgr)
       :opencpn_plugin_116 (ppimgr)
 {
-      // Create the PlugIn icons
-      initialize_images();
+    // Create the PlugIn icons
+    initialize_images();
 
-	  wxFileName fn;
-	  wxString tmp_path;
+    wxFileName fn;
 
-	  tmp_path = GetPluginDataDir("ShipDriver_pi");
-	  fn.SetPath(tmp_path);
-	  fn.AppendDir(_T("data"));
-	  fn.SetFullName("shipdriver_panel_icon.png");
+    auto path = GetPluginDataDir("ShipDriver_pi");
+    fn.SetPath(path);
+    fn.AppendDir("data");
+    fn.SetFullName("shipdriver_panel_icon.png");
 
-	  wxString shareLocn = fn.GetFullPath();
+    path = fn.GetFullPath();
 
-	  wxImage panelIcon(shareLocn);
-	  if (panelIcon.IsOk())
-		  m_panelBitmap = wxBitmap(panelIcon);
-	  else
-		  wxLogMessage(_("    ShipDriver panel icon has NOT been loaded"));
-
-
-	  m_bShowShipDriver = false;	  
+    wxLogDebug(wxString("Using icon path: ") + path);
+    if (!wxImage::CanRead(path)) {
+        wxLogDebug("Initiating image handlers.");
+        wxInitAllImageHandlers();
+    }
+    wxImage panelIcon(path);
+    if (panelIcon.IsOk())
+        m_panelBitmap = wxBitmap(panelIcon);
+    else
+        wxLogWarning("ShipDriver panel icon has NOT been loaded");
+    m_bShowShipDriver = false;
 }
 
 ShipDriver_pi::~ShipDriver_pi(void)
