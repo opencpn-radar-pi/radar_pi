@@ -47,12 +47,12 @@ set(OCPN_STABLE_REPO
     "mike-rossiter/shipdriver-prod"
     CACHE STRING "Default repository for tagged builds"
 )
-option(SHIPDRIVER_USE_SVG "Use SVG graphics" OFF)
+option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 
 
 # -------  Plugin setup --------
 #
-project(ShipDriver_pi VERSION 2.5.33)
+project(ShipDriver_pi VERSION 2.5.34)
 
 set(VERBOSE_NAME ShipDriver)    # Legacy installers artifact names
 set(TITLE_NAME ShipDriver)      # Legacy installer dialogs
