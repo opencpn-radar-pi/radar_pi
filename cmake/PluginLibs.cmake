@@ -7,7 +7,7 @@ set(wxWidgets_USE_DEBUG OFF)
 set(wxWidgets_USE_UNICODE ON)
 set(wxWidgets_USE_UNIVERSAL OFF)
 set(wxWidgets_USE_STATIC OFF)
-if (NOT QT_ANDROID AND NOT DEFINED wxWidgets_USE_FILE)
+if (NOT QT_ANDROID)
   # QT_ANDROID is a cross-build, so the native FIND_PACKAGE(OpenGL) is
   # not useful.
   find_package(OpenGL)
