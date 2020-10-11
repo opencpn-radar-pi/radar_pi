@@ -24,11 +24,9 @@ if (NOT QT_ANDROID)
   set(_LIBS base core net xml html adv ${GL_LIB})
   find_package(wxWidgets COMPONENTS ${_LIBS} REQUIRED)
   include(${wxWidgets_USE_FILE})
-endif ()
-
-if (NOT APPLE)
   target_link_libraries(${PACKAGE_NAME} ${wxWidgets_LIBRARIES})
 endif ()
+
 
 if (MINGW)
   target_link_libraries(${PACKAGE_NAME} ${OPENGL_LIBRARIES})
