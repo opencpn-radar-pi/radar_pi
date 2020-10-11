@@ -52,3 +52,12 @@ if (${BUILD_TYPE} STREQUAL "tarball" OR ${BUILD_TYPE} STREQUAL "flatpak")
           RENAME metadata.xml
   )
 endif()
+
+# On macos, fix paths which points to the build environment, make sure they
+# refers to runtime locations
+if (${BUILD_TYPE} STREQUAL "tarball" AND APPLE)
+  install(CODE
+    "execute_process(
+      COMMAND bash -c ${PROJECT_SOURCE_DIR}/cmake/fix-macos-libs.sh)"
+  )
+endif()
