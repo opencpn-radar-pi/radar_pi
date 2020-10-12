@@ -55,13 +55,6 @@ jobs:
             - /usr/local/include
       - run: cd build; /bin/bash < upload.sh
 
-  build-trusty:
-    docker:
-      - image: circleci/buildpack-deps:trusty-scm
-    environment:
-      - OCPN_TARGET: trusty
-    <<: *debian-steps
-
   build-xenial:
     docker:
       - image: circleci/buildpack-deps:xenial-scm
