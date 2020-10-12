@@ -99,7 +99,6 @@ jobs:
       - DOCKER_IMAGE=balenalib/raspberry-pi-debian:stretch
     steps:
       - checkout
-      - run: pyenv local 3.5.2
       - run: ci/circleci-build-raspbian-armhf.sh
       - run: cd build; /bin/bash < upload.sh
 
@@ -110,7 +109,6 @@ jobs:
       - DOCKER_IMAGE=balenalib/raspberry-pi-debian:buster
     steps:
       - checkout
-      - run: pyenv local 3.5.2
       - run: ci/circleci-build-raspbian-armhf.sh
       - run: cd build; /bin/bash < upload.sh
 

@@ -20,8 +20,5 @@ fi
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 make tarball
 
-#sudo apt-get install python3-pip python3-setuptools
-#sudo python3 -m pip install -q cloudsmith-cli
-
-wget https://files.pythonhosted.org/packages/59/4a/dbd1cc20156d0a9c10e2b085b8c14480166b0f765086ba2d9150495ec626/cloudsmith_cli-0.23.0-py2.py3-none-any.whl
-sudo pip3 install cloudsmith_cli-0.23.0-py2.py3-none-any.whl
+sudo apt-get install python3-pip python3-setuptools
+sudo python3 -m pip install -q cloudsmith-cli
