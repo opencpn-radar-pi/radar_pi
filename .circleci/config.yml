@@ -133,9 +133,6 @@ workflows:
       - build-macos:
           <<: *std-filters
 
-      - build-trusty:
-          <<: *std-filters
-
       - build-xenial:
           <<: *std-filters
 
