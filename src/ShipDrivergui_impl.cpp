@@ -1066,6 +1066,7 @@ void Dlg::OnContextMenu(double m_lat, double m_lon){
 void Dlg::RequestGrib(wxDateTime time){
 
 	Json::Value value;
+	
 	time = time.FromUTC();
 
 	value["Day"] = time.GetDay();
@@ -1076,15 +1077,14 @@ void Dlg::RequestGrib(wxDateTime time){
 	value["Second"] = time.GetSecond();
 
 	wxString out;
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    Json::FastWriter writer;
-    out = writer.write(value);
-        
-#pragma GCC diagnostic pop
-
-	SendPluginMessage(wxString(_T("GRIB_TIMELINE_RECORD_REQUEST")), out);
+	
+	Json::StreamWriterBuilder builder;
+	std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+	std::ostringstream outStream;
+    writer->write(value, &outStream);
+	std::string str = outStream.str();
+	
+	SendPluginMessage(wxString(_T("GRIB_TIMELINE_RECORD_REQUEST")), str);
 
 	Lock();
 	m_bNeedsGrib = false;
@@ -1590,14 +1590,14 @@ GetRouteDialog::GetRouteDialog(wxWindow * parent, wxWindowID id, const wxString 
 
 	dialogText = new wxListView(this, wxID_ANY, p, sz, wxLC_NO_HEADER | wxLC_REPORT | wxLC_SINGLE_SEL, wxDefaultValidator, wxT(""));
 
-	wxFont *pVLFont = wxTheFontList->FindOrCreateFont(12, wxFONTFAMILY_SWISS, wxNORMAL, wxFONTWEIGHT_NORMAL,
-		FALSE, wxString(_T("Arial")));
-	dialogText->SetFont(*pVLFont);
+	wxFont pVLFont(wxFontInfo(12).FaceName("Arial"));
+		
+	dialogText->SetFont(pVLFont);
 
 	p.y += sz.GetHeight() + 10;
 
 	p.x += 30;
-	// wxButton * b = new wxButton(this, wxID_OK, _("OK"), p, wxDefaultSize);
+	wxButton * b = new wxButton(this, wxID_OK, _("OK"), p, wxDefaultSize);
 	p.x += 140;
-	// wxButton * c = new wxButton(this, wxID_CANCEL, _("Cancel"), p, wxDefaultSize);
+	wxButton * c = new wxButton(this, wxID_CANCEL, _("Cancel"), p, wxDefaultSize);
 };
