@@ -1,0 +1,45 @@
+Experimental metadata git push  README
+======================================
+
+This plugin has experimental support for pushing metadata to a remote git
+repository. The goal is to make the process for creating pull requests 
+against OpenCPN/plugins simpler.
+
+When enabled, all metadata files are replicated to a remote repo
+defined by the user. This repo can be used to make a PR against 
+OpenCPN/plugins without further actions.
+
+To enable this support:
+
+  - Run the script new-credentials. This script will create a new ssh key,
+    ask for a password and then encrypt the secret part of this key.
+  - Dont forget the password...
+  - Register the new public key (displayed by new-credentials) as a deployment
+    key with write permissions on your github repo.
+  - Set the environment variable GIT_KEY_PASSWORD in the builder
+    environment, the password entered to new-credentials.
+  - Set the variable GIT_REPO in the environment to the ssh-based
+    url to your repository.
+
+When the build is run, the git-push part will
+      
+  - Clone your repository
+  - Add the new metadata file
+  - Commit and push the change. 
+
+By default the changes are pushed to the 'auto' branch. The branch name can be
+tweaked using the GIT_BRANCH environment variable in the builder.
+
+SECURITY
+
+The private ssh key created by new-credentials is encrypted using a standard DES 
+alghorithm. There is probably some room to crack this given the fact that part of 
+ciphertext is known. The encryption would be stronger if the header and trailer
+of the key wasn't encrypted.
+
+That said, given the context this should be reasonably safe.
+
+
+BUGS:
+
+Probably plenty.
