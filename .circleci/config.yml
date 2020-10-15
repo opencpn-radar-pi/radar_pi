@@ -6,6 +6,8 @@ debian-steps: &debian-steps
     - checkout
     - run: ci/circleci-build-debian.sh
     - run: cd build; /bin/bash < upload.sh
+    - run: pip3 install cryptography
+    - run: python3 ci/git-push
 
 jobs:
   build-mingw:
@@ -17,6 +19,8 @@ jobs:
       - checkout
       - run: ci/circleci-build-mingw.sh
       - run: cd build; /bin/bash < upload.sh
+      - run: pip3 install cryptography
+      - run: python3 ci/git-push
 
   build-flatpak:
     machine:
@@ -35,6 +39,8 @@ jobs:
           paths:
             - /home/circleci/.local/share/flatpak/repo
       - run: cd build; /bin/bash < upload.sh
+      - run: pip3 install cryptography
+      - run: python3 ci/git-push
 
   build-macos:
     macos:
@@ -55,6 +61,8 @@ jobs:
             - /usr/local/lib
             - /usr/local/include
       - run: cd build; /bin/bash < upload.sh
+      - run: pip3 install cryptography
+      - run: python3 ci/git-push
 
   build-xenial:
     docker:
@@ -101,6 +109,8 @@ jobs:
       - checkout
       - run: ci/circleci-build-raspbian-armhf.sh
       - run: cd build; /bin/bash < upload.sh
+      - run: pip3 install cryptography
+      - run: python3 ci/git-push
 
   build-armhf-buster:
     machine: true
@@ -111,6 +121,8 @@ jobs:
       - checkout
       - run: ci/circleci-build-raspbian-armhf.sh
       - run: cd build; /bin/bash < upload.sh
+      - run: pip3 install cryptography
+      - run: python3 ci/git-push
 
 std-filters: &std-filters
   filters:
