@@ -54,6 +54,11 @@ build_script:
   - py -m pip install -q setuptools
   - py -m pip install -q cloudsmith-cli
   - bash ./upload.sh
+  - PATH=C:\Python38;%PATH%
+  - python --version
+  - python -m pip install -q cryptography
+  - cd ..\ci
+  - python git-push
 
 artifacts:
   - path: 'build\*.exe'
