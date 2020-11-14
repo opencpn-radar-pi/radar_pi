@@ -39,11 +39,11 @@ message(STATUS "Building: ${BUILD_TYPE}")
 # -------- Options ----------
 #
 set(OCPN_UNSTABLE_REPO
-    "mike-rossiter/shipdriver-beta"
+    "opencpn/shipdriver-beta"
     CACHE STRING "Default repository for untagged builds"
 )
 set(OCPN_STABLE_REPO
-    "mike-rossiter/shipdriver-prod"
+    "opencpn/shipdriver-prod"
     CACHE STRING "Default repository for tagged builds"
 )
 option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
@@ -51,7 +51,7 @@ option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 
 # -------  Plugin setup --------
 #
-project(ShipDriver_pi VERSION 2.5.50)
+project(ShipDriver_pi VERSION 2.5.51)
 
 set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
 set(PLUGIN_API_NAME ShipDriver) # As of GetCommonName() in plugin API
