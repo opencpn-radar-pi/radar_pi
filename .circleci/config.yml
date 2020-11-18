@@ -46,16 +46,6 @@ jobs:
        - checkout
        - run: ci/circleci-build-flatpak.sh
        - run: ci/circleci-upload.sh
-   build-fedora:
-     docker:
-         - image: fedora:29
-     environment:
-       - OCPN_TARGET:  fedora
-     steps:
-       - run: su -c "dnf install -q -y git openssh-clients openssh-server"
-       - checkout
-       - run: ci/circleci-build-fedora.sh
-       - run: ci/circleci-upload.sh
    build-mingw:
      docker:
          - image: fedora:29
@@ -97,10 +87,6 @@ workflows:
             branches:
               only: ci
       - build-flatpak:
-          filters:
-            branches:
-              only: ci
-      - build-fedora:
           filters:
             branches:
               only: ci
