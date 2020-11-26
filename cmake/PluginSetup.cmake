@@ -70,10 +70,19 @@ string(STRIP "${PKG_TARGET}" PKG_TARGET)
 string(TOLOWER "${PKG_TARGET}" PKG_TARGET)
 string(STRIP "${PKG_TARGET_VERSION}" PKG_TARGET_VERSION)
 string(TOLOWER "${PKG_TARGET_VERSION}" PKG_TARGET_VERSION)
-if (NOT DEFINED wxWidgets_LIBRARIES)
-  message(STATUS "PluginSetup: Not configuring ubuntu gtk3 target")
-elseif ("${wxWidgets_LIBRARIES}" MATCHES "gtk3u" 
-        AND PKG_TARGET STREQUAL "ubuntu"
-)
-  set(PKG_TARGET "${PKG_TARGET}-gtk3")
+
+if (PKG_TARGET STREQUAL "ubuntu")
+  find_program(_WX_CONFIG_PROG NAMES $ENV{WX_CONFIG} wx-config )
+  if (_WX_CONFIG_PROG)
+    execute_process(
+      COMMAND ${_WX_CONFIG_PROG} --selected-config
+      OUTPUT_VARIABLE _WX_SELECTED_CONFIG
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    if (_WX_SELECTED_CONFIG MATCHES gtk3)
+      set(PKG_TARGET ubuntu-gtk3)
+    endif ()
+  else ()
+    message(WARNING "Cannot locate wx-config utility")
+  endif ()
 endif ()
