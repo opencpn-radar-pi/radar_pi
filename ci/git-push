@@ -56,8 +56,13 @@ def get_password():
 def private_key_setup(ci, user, password): 
     """ Decrypt ssh key and setup up GIT_SSH_COMMAND in environment. """
 
-    with open(os.path.join(ci, user + ".enc"), 'r') as f:
-        encrypted = f.read()
+    try: 
+        with open(os.path.join(ci, user + ".enc"), 'r') as f:
+            encrypted = f.read()
+    except FileNotFoundError:
+        print("No private key found, cannot push metadata to git repo.")
+        print("See the file README-git.md for more.")
+        sys.exit(0)
     decrypted = decrypt1(encrypted.encode(), password.encode())
     with open(os.path.join(ci, user ), 'wb') as f:
         f.write(decrypted)
