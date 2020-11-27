@@ -193,7 +193,7 @@ void Dlg::StartDriving() {
 	}
 
 	dt = dt.Now();
-	GLL = createGLLSentence(dt, initLat, initLon, initSpd / 7200, initDir);
+	GLL = createGLLSentence(dt, initLat, initLon, initSpd, initDir);
 	VTG = createVTGSentence(initSpd, initDir);
 	
 
