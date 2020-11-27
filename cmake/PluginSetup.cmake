@@ -72,7 +72,11 @@ string(STRIP "${PKG_TARGET_VERSION}" PKG_TARGET_VERSION)
 string(TOLOWER "${PKG_TARGET_VERSION}" PKG_TARGET_VERSION)
 
 if (PKG_TARGET STREQUAL "ubuntu")
-  find_program(_WX_CONFIG_PROG NAMES $ENV{WX_CONFIG} wx-config )
+  if (DEFINED wxWidgets_CONFIG_EXECUTABLE)
+    set(_WX_CONFIG_PROG ${wxWidgets_CONFIG_EXECUTABLE})
+  else ()
+    find_program(_WX_CONFIG_PROG NAMES $ENV{WX_CONFIG} wx-config )
+  endif ()
   if (_WX_CONFIG_PROG)
     execute_process(
       COMMAND ${_WX_CONFIG_PROG} --selected-config
