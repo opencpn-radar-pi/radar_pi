@@ -44,7 +44,7 @@ sudo dnf -q builddep  -y /project/mingw/fedora/opencpn-deps.spec
 cd /project
 rm -rf build; mkdir build; cd build
 cmake -DCMAKE_TOOLCHAIN_FILE=../mingw/fedora/toolchain.cmake ..
-make tarball
+make VERBOSE=1 tarball
 EOF
 
 # Run the build in docker
