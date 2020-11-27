@@ -5,7 +5,10 @@
 #
 
 if [ -z "$CLOUDSMITH_API_KEY" ]; then
-    echo 'Warning: $CLOUDSMITH_API_KEY is not available, upload will fail.'
+    echo 'Warning: $CLOUDSMITH_API_KEY is not available, giving up.'
+    echo 'Metadata: @pkg_displayname@.xml'
+    echo 'Tarball:  @pkg_tarname@.tar.gz'
+    exit 0
 else
     echo "Using CLOUDSMITH_API_KEY: ${CLOUDSMITH_API_KEY:0:4}..."
 fi
