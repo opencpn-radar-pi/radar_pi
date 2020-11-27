@@ -56,7 +56,10 @@ endif ()
 set(pkg_semver "${PROJECT_VERSION}+${_build_id}.${_gitversion}")
 
 # pkg_displayname: Used for xml metadata and GUI name
-set(pkg_displayname "${PLUGIN_API_NAME}-${PKG_TARGET}-${PKG_TARGET_VERSION}")
+string(CONCAT pkg_displayname
+  "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}"
+  "-${PKG_TARGET}-${PKG_TARGET_VERSION}"
+)
 
 # pkg_tarname: Tarball basename
 string(CONCAT pkg_tarname 
