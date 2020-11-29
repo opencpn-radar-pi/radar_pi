@@ -48,12 +48,19 @@ That concludes the building actions.
 
 ## Where can I find the builds
 
-You can check the build progress at the following sites. Note that the CI builders are used for different 
-things on the CI branch than on master.
+You can check the build progress at the following sites.
 
 [Circle CI pipelines](https://app.circleci.com/github/opencpn-radar-pi/radar_pi/pipelines) for Linux x86 and macOS builds
-[Travis](https://travis-ci.org/opencpn-radar-pi/radar_pi) for Raspberry Pi (armhf) builds (on CI branch)
+[Travis](https://travis-ci.org/opencpn-radar-pi/radar_pi) for Raspberry Pi (armhf) builds
 [Appveyor](https://ci.appveyor.com/project/keesverruijt/radar-pi) for Microsoft Windows
+
+### New cloudsmith packages (>= 5.1.5)
+
+[CloudSmith Prod Packages](https://cloudsmith.io/~opencpn-radar-pi/repos/opencpn-radar-pi-prod/packages/)
+[CloudSmith Beta Packages](https://cloudsmith.io/~opencpn-radar-pi/repos/opencpn-radar-pi-beta/packages/)
+
+### Old cloudsmith packages (<= 5.1.4)
+
 [CloudSmith Stable Packages](https://cloudsmith.io/~kees-verruijt/repos/ocpn-plugins-stable/packages/)
 [CloudSmith Unstable Packages](https://cloudsmith.io/~kees-verruijt/repos/ocpn-plugins-unstable/packages/)
 

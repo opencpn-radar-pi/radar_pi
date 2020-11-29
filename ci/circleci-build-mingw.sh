@@ -13,4 +13,4 @@ rm -rf build; mkdir build; cd build
 cmake -DCMAKE_TOOLCHAIN_FILE=../mingw/fedora/toolchain.cmake ..
 make -j2
 make package
-find . -name '*.dll' -exec ls -l {} \;
+ls -lR .
