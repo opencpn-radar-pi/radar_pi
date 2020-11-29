@@ -1,63 +1,37 @@
 ---
-version: 2
+version: 2.1
+
+debian-steps: &debian-steps
+  steps:
+    - checkout
+    - run: ci/circleci-build-debian.sh
+    - run: ci/circleci-upload.sh
+
 jobs:
    build-xenial:
      docker:
        - image: circleci/buildpack-deps:xenial-scm
      environment:
        - OCPN_TARGET:  xenial
-     steps:
-       - checkout
-       - run: >
-           echo "deb-src http://us.archive.ubuntu.com/ubuntu/ xenial main"
-           | sudo tee -a /etc/apt/sources.list
-       - run: >
-           echo "deb-src http://us.archive.ubuntu.com/ubuntu/ xenial-updates main"
-           | sudo tee -a /etc/apt/sources.list
-       - run: cat /etc/apt/sources.list
-       - run: ci/circleci-build-debian.sh
-       - run: ci/circleci-upload.sh
+     <<: *debian-steps
    build-bionic:
      docker:
        - image: circleci/buildpack-deps:bionic-scm
      environment:
        - OCPN_TARGET:  bionic
-     steps:
-       - checkout
-       - run: >
-           echo "deb-src http://us.archive.ubuntu.com/ubuntu/ bionic main"
-           | sudo tee -a /etc/apt/sources.list
-       - run: >
-           echo "deb-src http://us.archive.ubuntu.com/ubuntu/ bionic-updates main"
-           | sudo tee -a /etc/apt/sources.list
-       - run: cat /etc/apt/sources.list
-       - run: ci/circleci-build-debian.sh
-       - run: ci/circleci-upload.sh
+     <<: *debian-steps
    build-focal:
      docker:
        - image: circleci/buildpack-deps:focal-scm
      environment:
        - OCPN_TARGET:  focal
-     steps:
-       - checkout
-       - run: >
-           echo "deb-src http://us.archive.ubuntu.com/ubuntu/ focal main"
-           | sudo tee -a /etc/apt/sources.list
-       - run: >
-           echo "deb-src http://us.archive.ubuntu.com/ubuntu/ focal-updates main"
-           | sudo tee -a /etc/apt/sources.list
-       - run: cat /etc/apt/sources.list
-       - run: ci/circleci-build-debian.sh
-       - run: ci/circleci-upload.sh
+     <<: *debian-steps
    build-buster:
      docker:
        - image: circleci/buildpack-deps:buster-scm
      environment:
        - OCPN_TARGET:  buster
-     steps:
-       - checkout
-       - run: ci/circleci-build-debian.sh
-       - run: ci/circleci-upload.sh
+     <<: *debian-steps
    build-flatpak:
      machine:
        image: circleci/classic:201808-01
@@ -66,16 +40,6 @@ jobs:
      steps:
        - checkout
        - run: ci/circleci-build-flatpak.sh
-       - run: ci/circleci-upload.sh
-   build-fedora:
-     docker:
-         - image: fedora:29
-     environment:
-       - OCPN_TARGET:  fedora
-     steps:
-       - run: su -c "dnf install -q -y git openssh-clients openssh-server"
-       - checkout
-       - run: ci/circleci-build-fedora.sh
        - run: ci/circleci-upload.sh
    build-mingw:
      docker:
@@ -97,39 +61,27 @@ jobs:
        - run: ci/circleci-build-macos.sh
        - run: ci/circleci-upload.sh
 
+std-filters: &std-filters
+  filters:
+    branches:
+      only:
+        - ci
+
 workflows:
   version: 2
   build_all:
     jobs:
       - build-buster:
-          filters:
-            branches:
-              only: ci
+          <<: *std-filters
       - build-xenial:
-          filters:
-            branches:
-              only: ci
+          <<: *std-filters
       - build-bionic:
-          filters:
-            branches:
-              only: ci
+          <<: *std-filters
       - build-focal:
-          filters:
-            branches:
-              only: ci
+          <<: *std-filters
       - build-flatpak:
-          filters:
-            branches:
-              only: ci
-      - build-fedora:
-          filters:
-            branches:
-              only: ci
+          <<: *std-filters
       - build-macos:
-          filters:
-            branches:
-              only: ci
+          <<: *std-filters
       - build-mingw:
-          filters:
-            branches:
-              only: ci
+          <<: *std-filters
