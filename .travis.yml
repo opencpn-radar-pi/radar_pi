@@ -31,5 +31,6 @@ matrix:
 
 branches:
   only:
-    - ci
+    - master
+    - beta
 
