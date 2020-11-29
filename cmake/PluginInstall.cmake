@@ -96,7 +96,7 @@ IF(UNIX AND NOT APPLE)
 ENDIF(UNIX AND NOT APPLE)
 
 
-if (${BUILD_TYPE} STREQUAL "tarball" AND MINGW)
+if (MINGW)
   find_program(STRIP_UTIL NAMES strip REQUIRED)
   install(CODE
     "execute_process(

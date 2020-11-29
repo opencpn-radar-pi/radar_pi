@@ -43,9 +43,9 @@ jobs:
        - run: ci/circleci-upload.sh
    build-mingw:
      docker:
-         - image: fedora:29
+       - image: fedora:29
      environment:
-       - OCPN_TARGET:  mingw
+       - OCPN_TARGET: mingw
      steps:
        - run: su -c "dnf install -q -y git openssh-clients openssh-server"
        - checkout
