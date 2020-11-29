@@ -21,18 +21,6 @@ elseif (COMPILER STREQUAL "MSVC")
   add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_DEPRECATE)
 endif ()
 
-# QT_ANDROID is a cross-build, so the native FIND_PACKAGE(wxWidgets...) and
-# wxWidgets_USE_FILE is not useful.
-if (NOT QT_ANDROID)
-  if (NOT DEFINED wxWidgets_USE_FILE)
-    set(wxWidgets_USE_LIBS base core net xml html adv)
-    set(BUILD_SHARED_LIBS TRUE)
-    find_package(wxWidgets REQUIRED)
-  endif (NOT DEFINED wxWidgets_USE_FILE)
-
-  include(${wxWidgets_USE_FILE})
-endif (NOT QT_ANDROID)
-
 if (UNIX AND NOT APPLE)   # linux, see OpenCPN/OpenCPN#1977
   set_target_properties(${PACKAGE_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN:$ORIGIN/..")
 endif ()
