@@ -1578,8 +1578,6 @@ GetRouteDialog::GetRouteDialog(wxWindow * parent, wxWindowID id, const wxString 
 	const wxPoint & position, const wxSize & size, long style)
 	: wxDialog(parent, id, title, position, size, style)
 {
-
-	wxString dimensions = wxT(""), s;
 	wxPoint p;
 	wxSize  sz;
 
@@ -1589,15 +1587,25 @@ GetRouteDialog::GetRouteDialog(wxWindow * parent, wxWindowID id, const wxString 
 	p.x = 6; p.y = 2;
 
 	dialogText = new wxListView(this, wxID_ANY, p, sz, wxLC_NO_HEADER | wxLC_REPORT | wxLC_SINGLE_SEL, wxDefaultValidator, wxT(""));
-
-	wxFont pVLFont(wxFontInfo(12).FaceName("Arial"));
-		
+	wxFont pVLFont(wxFontInfo(12).FaceName("Arial"));		
 	dialogText->SetFont(pVLFont);
 
-	p.y += sz.GetHeight() + 10;
+	auto sizerlist = new wxBoxSizer(wxVERTICAL);
+	sizerlist->Add(-1, -1, 100, wxEXPAND);
+	sizerlist->Add(dialogText);
 
-	p.x += 30;
-	wxButton * b = new wxButton(this, wxID_OK, _("OK"), p, wxDefaultSize);
-	p.x += 140;
-	wxButton * c = new wxButton(this, wxID_CANCEL, _("Cancel"), p, wxDefaultSize);
+	using CmdEvt = wxCommandEvent;
+
+	auto sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto flags = wxSizerFlags().Right().Bottom().Border();
+	sizer->Add(1, 1, 100, wxEXPAND);   // Expanding spacer
+	auto cancel = new wxButton(this, wxID_CANCEL, _("Cancel"));
+	sizer->Add(cancel, flags);
+	auto m_ok = new wxButton(this, wxID_OK, _("OK"));
+	m_ok->Enable(true);
+	sizer->Add(m_ok, flags);
+	sizerlist->Add(sizer);
+	SetSizer(sizerlist);
+	Fit();
+	SetFocus();
 };
