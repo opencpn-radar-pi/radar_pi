@@ -7,16 +7,16 @@
 # repo. If there is a tag pointing to current commit it goes
 # to stable, otherwise to unstable.
 #
-# If the environment variable CLOUDSMITH_STABLE_REPO exists it is
-# used as the stable repo, defaulting to the hardcoded STABLE_REPO
-# value. Likewise for CLOUDSMITH_UNSTABLE_REPO and UNSTABLE_REPO.
+# If the environment variable CLOUDSMITH_PROD_REPO exists it is
+# used as the stable repo, defaulting to the hardcoded PROD_REPO
+# value. Likewise for CLOUDSMITH_BETA_REPO and BETA_REPO.
 #
 
 set -euo pipefail
 set -x
 
-STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'kees-verruijt/ocpn-plugins-stable'}
-UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'kees-verruijt/ocpn-plugins-unstable'}
+PROD_REPO=${CLOUDSMITH_PROD_REPO:-'opencpn-radar-pi/opencpn-radar-pi-prod'}
+BETA_REPO=${CLOUDSMITH_BETA_REPO:-'opencpn-radar-pi/opencpn-radar-pi-beta'}
 
 source $HOME/project/ci/commons.sh
 
@@ -57,7 +57,7 @@ tarball_basename=${tarball##*/}
 
 source $HOME/project/build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}.${commit}"
-test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
+test -n "$tag" && REPO="$PROD_REPO" || REPO="$BETA_REPO"
 tarball_name=${PKG_UPLOAD_NAME}-tarball
 
 sudo sed -i -e "s|@pkg_repo@|$REPO|"  $xml
