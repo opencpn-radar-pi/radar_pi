@@ -35,7 +35,7 @@ cmake -DOCPN_USE_LIBCPP=ON \
   -DwxWidgets_CONFIG_EXECUTABLE=/tmp/wx312_opencpn50_macos109/bin/wx-config \
   -DwxWidgets_CONFIG_OPTIONS="--prefix=/tmp/wx312_opencpn50_macos109" \
   -DCMAKE_INSTALL_PREFIX=/tmp/opencpn -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
-  ..
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 make -sj2
 make package
-find . -name '*.so' -exec ls -l {} \;
+ls -lR

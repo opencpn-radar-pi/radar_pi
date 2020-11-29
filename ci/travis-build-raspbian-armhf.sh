@@ -35,7 +35,7 @@ docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essentia
 docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essential cmake gettext wx-common libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release
 
 docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
-    'set -x; mkdir ci-source/build; cd ci-source/build; cmake ..; make; make package'
+    'set -x; mkdir ci-source/build; cd ci-source/build; cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..; make; make package'
 
 echo "Stopping"
 docker ps -a

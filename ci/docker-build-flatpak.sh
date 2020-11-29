@@ -14,8 +14,8 @@ flatpak install --user  -y \
         http://opencpn.duckdns.org/opencpn/opencpn.flatpakref > /dev/null
 flatpak install --user -y  flathub org.freedesktop.Sdk//18.08  > /dev/null
 rm -rf build && mkdir build && cd build
-cmake -DOCPN_FLATPAK=ON ..
+cmake -DOCPN_FLATPAK=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 make flatpak-build
 make package
 
-find . -name '*.so' -exec ls -l {} \;
+ls -lR

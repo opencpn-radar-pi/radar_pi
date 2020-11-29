@@ -100,7 +100,7 @@ if (MINGW)
   find_program(STRIP_UTIL NAMES strip REQUIRED)
   install(CODE
     "execute_process(
-      COMMAND ${STRIP_UTIL} app/files/plugins/lib${PACKAGE_NAME}.dll
+      COMMAND ${STRIP_UTIL} lib${PACKAGE_NAME}.dll
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR})"
   )
 endif ()

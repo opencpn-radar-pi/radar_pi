@@ -14,7 +14,7 @@ mk-build-deps ../ci/control
 sudo apt-get install  ./*all.deb  || :
 sudo apt-get --allow-unauthenticated install -f
 
-cmake -DCMAKE_BUILD_TYPE=Debug ..
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 make -sj2
 make package
-find . -name '*.so' -exec ls -l {} \;
+ls -lR
