@@ -17,3 +17,5 @@ rm -rf build && mkdir build && cd build
 cmake -DOCPN_FLATPAK=ON ..
 make flatpak-build
 make package
+
+find . -name '*.so' -exec ls -l {} \;

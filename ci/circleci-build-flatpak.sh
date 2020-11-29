@@ -44,3 +44,4 @@ docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -xec \
 docker ps -a
 docker stop $DOCKER_CONTAINER_ID
 docker rm -v $DOCKER_CONTAINER_ID
+

@@ -38,3 +38,4 @@ cmake -DOCPN_USE_LIBCPP=ON \
   ..
 make -sj2
 make package
+find . -name '*.so' -exec ls -l {} \;
