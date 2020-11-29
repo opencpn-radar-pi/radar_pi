@@ -16,6 +16,7 @@ modules:
     build-options:
         cflags: -fPIC
         cxxflags: -fPIC
+        strip: true
     sources:
        - type: git
          url: https://github.com/opencpn-radar-pi/radar_pi.git
