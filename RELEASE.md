@@ -14,9 +14,9 @@ but we don't need to document their work here.
 
 Follow these steps:
 
-1. Check that you are using the _ci_ branch and not _master_ or any other!
+1. Check that you are using the _master_ branch.
     ```
-    git checkout ci
+    git checkout master
     ```
 
 2. Edit the following lines in CMakeLists.txt to reflect the new status:
