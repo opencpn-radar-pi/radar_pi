@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opencpn-plugin version="1">
+  <name> Radar </name>
+  <version> ${PACKAGE_VERSION} </version>
+  <release> ${PKG_RELEASE} </release>
+  <summary> Overlays the radar picture on OpenCPN </summary>
+
+  <api-version> ${PKG_API_VERSION} </api-version>
+  <open-source> no </open-source>
+  <author> ${PKG_AUTHOR} </author>
+  <source> https://github.com/opencpn-radar-pi/radar_pi </source>
+
+  <description>
+Garmin and Navico radar support
+
+Works with Garmin HD, xHD, Navico BR24, 3G, 4G, HALOxx radars.
+
+When a compass heading is provided it will allow radar overlay on the chart(s).
+It also allows separate display of a traditional radar picture (PPI).
+
+Supports MARPA (even on radars that do not support this themselves),
+Guard zones, AIS overlay on PPI, and various radar dependent features
+such as dual radar range and Doppler.
+</description>
+
+  <target>${PKG_TARGET}</target>
+  <target-version>${PKG_TARGET_VERSION}</target-version>
+  <target-arch>${PKG_TARGET_ARCH}</target-arch>
+  <tarball-url> ${TARBALL_URL} </tarball-url>
+  <info-url> https://opencpn.org/OpenCPN/plugins/radarPI.html </info-url>
+</opencpn-plugin>
+

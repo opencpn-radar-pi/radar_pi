@@ -1,13 +1,87 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
+---
 version: 2.1
-# Use a package of configuration called an orb.
-orbs:
-  # Declare a dependency on the welcome-orb
-  welcome: circleci/welcome-orb@0.4.1
-# Orchestrate or schedule a set of jobs
+
+debian-steps: &debian-steps
+  steps:
+    - checkout
+    - run: ci/circleci-build-debian.sh
+    - run: ci/circleci-upload.sh
+
+jobs:
+   build-xenial:
+     docker:
+       - image: circleci/buildpack-deps:xenial-scm
+     environment:
+       - OCPN_TARGET:  xenial
+     <<: *debian-steps
+   build-bionic:
+     docker:
+       - image: circleci/buildpack-deps:bionic-scm
+     environment:
+       - OCPN_TARGET:  bionic
+     <<: *debian-steps
+   build-focal:
+     docker:
+       - image: circleci/buildpack-deps:focal-scm
+     environment:
+       - OCPN_TARGET:  focal
+     <<: *debian-steps
+   build-buster:
+     docker:
+       - image: circleci/buildpack-deps:buster-scm
+     environment:
+       - OCPN_TARGET:  buster
+     <<: *debian-steps
+   build-flatpak:
+     machine:
+       image: circleci/classic:201808-01
+     environment:
+       - OCPN_TARGET:  flatpak
+     steps:
+       - checkout
+       - run: ci/circleci-build-flatpak.sh
+       - run: ci/circleci-upload.sh
+   build-mingw:
+     docker:
+       - image: fedora:29
+     environment:
+       - OCPN_TARGET: mingw
+     steps:
+       - run: su -c "dnf install -q -y git openssh-clients openssh-server"
+       - checkout
+       - run: ci/circleci-build-mingw.sh
+       - run: ci/circleci-upload.sh
+   build-macos:
+     macos:
+       xcode: "10.0.0"
+     environment:
+       - OCPN_TARGET:  macos
+     steps:
+       - checkout
+       - run: ci/circleci-build-macos.sh
+       - run: ci/circleci-upload.sh
+
+std-filters: &std-filters
+  filters:
+    branches:
+      only:
+        - ci
+
 workflows:
-  # Name the workflow "welcome"
-  welcome:
-    # Run the welcome/run job in its own container
+  version: 2
+  build_all:
     jobs:
-      - welcome/run
+      - build-buster:
+          <<: *std-filters
+      - build-xenial:
+          <<: *std-filters
+      - build-bionic:
+          <<: *std-filters
+      - build-focal:
+          <<: *std-filters
+      - build-flatpak:
+          <<: *std-filters
+      - build-macos:
+          <<: *std-filters
+      - build-mingw:
+          <<: *std-filters

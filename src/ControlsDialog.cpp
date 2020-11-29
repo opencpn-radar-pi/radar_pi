@@ -29,6 +29,7 @@
  */
 
 #include "ControlsDialog.h"
+
 #include "GuardZone.h"
 #include "MessageBox.h"
 #include "RadarMarpa.h"
@@ -757,8 +758,8 @@ void ControlsDialog::CreateControls() {
 
   // The ANTENNA HEIGHT button
   if (m_ctrl[CT_ANTENNA_HEIGHT].type) {
-    m_antenna_height_button =
-        new RadarControlButton(this, ID_CONTROL_BUTTON, _("Antenna height"), m_ctrl[CT_ANTENNA_HEIGHT], &m_ri->m_antenna_height);
+    m_antenna_height_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Antenna height"), m_ctrl[CT_ANTENNA_HEIGHT],
+                                                     &m_ri->m_antenna_height, _("m"));
     m_installation_sizer->Add(m_antenna_height_button, 0, wxALL, BORDER);
   }
 

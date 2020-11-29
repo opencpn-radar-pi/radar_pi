@@ -51,7 +51,7 @@ IF(MSVC)
     ADD_DEFINITIONS(-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_DEPRECATE)
 ENDIF(MSVC)
 
-SET(wxWidgets_USE_LIBS base core net xml html adv gl aui)
+SET(wxWidgets_FIND_COMPONENTS base core net xml html adv gl aui)
 SET(BUILD_SHARED_LIBS TRUE)
 
 SET( wxWidgets_USE_DEBUG OFF)
@@ -60,7 +60,8 @@ SET( wxWidgets_USE_UNIVERSAL OFF)
 SET( wxWidgets_USE_STATIC OFF)
 ADD_DEFINITIONS(-DwxDEBUG_LEVEL=0)
 
-FIND_PACKAGE(wxWidgets REQUIRED)
+FIND_PACKAGE(wxWidgets REQUIRED COMPONENTS ${wxWidgets_FIND_COMPONENTS})
+message(STATUS "wxWidgets libs: ${wxWidgets_LIBRARIES}")
 
 IF(MSYS)
 # this is just a hack. I think the bug is in FindwxWidgets.cmake
@@ -85,4 +86,8 @@ ENDIF(OPENGL_FOUND)
 SET(BUILD_SHARED_LIBS TRUE)
 
 FIND_PACKAGE(Gettext REQUIRED)
+
+if (MINGW)
+    find_library(WINSOCK_LIBRARY NAMES "ws2_32" "wsock32")
+endif ()
 
