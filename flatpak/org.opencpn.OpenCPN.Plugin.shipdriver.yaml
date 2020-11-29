@@ -20,7 +20,6 @@ modules:
           - -DCMAKE_INSTALL_PREFIX=/app/extensions/shipdriver/
           - -DCMAKE_BUILD_TYPE:STRING=Release
           - -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-          - -DPREFIX_PLUGINS=lib/opencpn
           - -DBUILD_TYPE:STRING=tarball
           - -UPKG_TARGET
       build-options:
