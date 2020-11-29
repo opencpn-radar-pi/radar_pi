@@ -121,3 +121,8 @@ The plugin was started by @cowelld, who took @bdbcat's Garmin radar plugin and t
 @douwefokkema also tested a lot and implemented the heading on radar functionality, optimised the OpenGL drawing, implemented the refresh rate code and optimised the target trails code. Douwe also made the MARPA and ARPA functionality.
 
 @seandepagnier shader support and some optimizations.
+
+[![Hosted By: Cloudsmith](https://img.shields.io/badge/OSS%20hosting%20by-cloudsmith-blue?logo=cloudsmith&style=for-the-badge)](https://cloudsmith.com)
+
+Package repository hosting is graciously provided by  [Cloudsmith](https://cloudsmith.com).
+Cloudsmith is doing this for free for open source projects, great stuff.
