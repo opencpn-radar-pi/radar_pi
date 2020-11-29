@@ -9,12 +9,11 @@
 message(STATUS "*** Staging to build ${PACKAGE_NAME} ***")
 
 set(COMPILER ${CMAKE_CXX_COMPILER_ID})
-if (COMPILER STREQUAL "Clang" OR COMPILER STREQUAL "GNU")
-  # ADD_DEFINITIONS( "-Wall -g -fexceptions" )
-  add_definitions("-Wall -Wno-unused-result -g -O2 -fexceptions")
-elseif (COMPILER STREQUAL "GNU")
+if (COMPILER STREQUAL "GNU")
+  add_definitions("-Wall -Wno-unused-result -fexceptions")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-Bsymbolic")
 elseif (COMPILER MATCHES   "Clang")              # Apple is AppleClang
+  add_definitions("-Wall -Wno-unused-result -fexceptions")
   set(CMAKE_SHARED_LINKER_FLAGS
       "${CMAKE_SHARED_LINKER_FLAGS} -Wl -undefined dynamic_lookup")
 elseif (COMPILER STREQUAL "MSVC")

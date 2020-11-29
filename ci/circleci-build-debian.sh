@@ -17,7 +17,7 @@ if [ -n "$BUILD_GTK3" ]; then
         /usr/lib/*-linux-*/wx/config/gtk3-unicode-3.0
 fi
 
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make VERBOSE=1 tarball
 
 sudo apt-get install python3-pip python3-setuptools

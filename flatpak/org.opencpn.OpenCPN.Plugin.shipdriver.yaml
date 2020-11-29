@@ -18,12 +18,15 @@ modules:
       buildsystem: cmake
       config-opts:
           - -DCMAKE_INSTALL_PREFIX=/app/extensions/shipdriver/
+          - -DCMAKE_BUILD_TYPE:STRING=Release
+          - -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
           - -DPREFIX_PLUGINS=lib/opencpn
           - -DBUILD_TYPE:STRING=tarball
           - -UPKG_TARGET
       build-options:
-          cxxflags: -DFLATPAK
-          cflags: -DFLATPAK
+          cxxflags: -DFLATPAK -O3
+          cflags: -DFLATPAK -O3
+          # The flatpak-builder default CFLAGS adds -g
           strip: true
       sources:
           - type: git

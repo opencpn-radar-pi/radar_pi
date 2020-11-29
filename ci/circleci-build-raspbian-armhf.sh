@@ -40,7 +40,7 @@ sudo apt-get -y install --no-install-recommends \
 
 cd /ci-source
 rm -rf build; mkdir build; cd build
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make VERBOSE=1 tarball
 EOF
 

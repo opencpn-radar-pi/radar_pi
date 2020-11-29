@@ -22,6 +22,7 @@ export MACOSX_DEPLOYMENT_TARGET=10.9
 
 rm -rf build && mkdir build && cd build
 cmake \
+  -DCMAKE_BUILD_TYPE=Release \
   -DwxWidgets_CONFIG_EXECUTABLE=/tmp/wx312_opencpn50_macos109/bin/wx-config \
   -DCMAKE_INSTALL_PREFIX="/" \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
