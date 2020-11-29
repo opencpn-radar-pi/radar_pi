@@ -238,11 +238,7 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
       // Ordering the radar commands by the first byte value.
       // Some interesting holes here, seems there could be more commands!
 
-    case CT_BEARING_ALIGNMENT: {
-      if (value < 0) {
-        value += 360;
-      }
-
+    case CT_BEARING_ALIGNMENT: {      
       pck_10.packet_type = 0x2b7;
       pck_10.parm1 = value;
 
