@@ -8,15 +8,16 @@
 
 message(STATUS "*** Staging to build ${PACKAGE_NAME} ***")
 
-set(COMPILER ${CMAKE_CXX_COMPILER_ID})
-if (COMPILER STREQUAL "GNU")
-  add_definitions("-Wall -Wno-unused-result -fexceptions")
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-Bsymbolic")
-elseif (COMPILER MATCHES   "Clang")              # Apple is AppleClang
-  add_definitions("-Wall -Wno-unused-result -fexceptions")
-  set(CMAKE_SHARED_LINKER_FLAGS
-      "${CMAKE_SHARED_LINKER_FLAGS} -Wl -undefined dynamic_lookup")
-elseif (COMPILER STREQUAL "MSVC")
+set(_ocpn_cflags " -Wall -Wno-unused-result -fexceptions")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  string(APPEND CMAKE_C_FLAGS " ${_ocpn_cflags}")
+  string(APPEND CMAKE_CXX_FLAGS " ${_ocpn_cflags}")
+  string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-Bsymbolic")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")              # Apple is AppleClang
+  string(APPEND CMAKE_C_FLAGS " ${_ocpn_cflags}")
+  string(APPEND CMAKE_CXX_FLAGS " ${_ocpn_cflags}")
+  string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl -undefined dynamic_lookup")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_DEPRECATE)
 endif ()
 
