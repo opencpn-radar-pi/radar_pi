@@ -1594,8 +1594,6 @@ GetRouteDialog::GetRouteDialog(wxWindow * parent, wxWindowID id, const wxString 
 	sizerlist->Add(-1, -1, 100, wxEXPAND);
 	sizerlist->Add(dialogText);
 
-	using CmdEvt = wxCommandEvent;
-
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto flags = wxSizerFlags().Right().Bottom().Border();
 	sizer->Add(1, 1, 100, wxEXPAND);   // Expanding spacer
