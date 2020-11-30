@@ -53,8 +53,10 @@ builders are up & running):
        account (available in the cloudsmith ui).
      - **CLOUDSMITH_UNSTABLE_REPO**: The name of the repo for unstable
        (untagged) commits. My is *alec-leamas/opencpn-plugins-unstable*
+     - **CLOUDSMITH_BETA_REPO**: The name of the repo for tagged builds
+       with a tag name matching "beta".
      - **CLOUDSMITH_STABLE_REPO**: The name of the repo for stable (tagged)
-       commits.
+       commits, with a tag not matching 'beta'.
 
 After these steps, the artifacts built should start to show up in cloudsmith
 when built. The builder logs usually reveals possible errors.
