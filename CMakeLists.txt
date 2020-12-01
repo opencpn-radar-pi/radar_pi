@@ -47,11 +47,11 @@ set(OCPN_BETA_REPO
     CACHE STRING 
     "Default repository for tagged builds matching 'beta'"
 )
-#set(OCPN_RELEASE_REPO
-#    "opencpn/shipdriver-prod"
-#    CACHE STRING 
-#    "Default repository for tagged builds not matching 'beta'"
-#)
+set(OCPN_RELEASE_REPO
+    "opencpn/shipdriver-prod"
+    CACHE STRING 
+    "Default repository for tagged builds not matching 'beta'"
+)
 option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 
 
