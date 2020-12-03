@@ -43,7 +43,7 @@ cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=../mingw/fedora/toolchain.cmake \
     ..
-make VERBOSE=1 tarball
+make -j $(nproc) VERBOSE=1 tarball
 EOF
 
 # Run the build in docker

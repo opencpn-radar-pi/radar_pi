@@ -34,7 +34,7 @@ sed -i '/^runtime-version/s/:.*/: stable/' \
 
 mkdir build; cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make VERBOSE=1 flatpak
+make -j $(nproc) VERBOSE=1 flatpak
 
 # Restore file so the cache checksumming is ok.
 cp ../flatpak.yaml.bak org.opencpn.OpenCPN.Plugin.shipdriver.yaml

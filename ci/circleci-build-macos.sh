@@ -27,7 +27,7 @@ cmake \
   -DCMAKE_INSTALL_PREFIX="/" \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
   ..
-make VERBOSE=1 tarball
+make -j $(sysctl -n hw.physicalcpu) VERBOSE=1 tarball
 
 wget -q http://opencpn.navnux.org/build_deps/Packages.dmg
 hdiutil attach Packages.dmg
