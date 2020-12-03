@@ -14,13 +14,6 @@ execute_process(
 )
 
 execute_process(
-  COMMAND git log -1 --format=%ci
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE GIT_COMMIT_DATE
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-execute_process(
   COMMAND git tag --contains HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE GIT_TAG
