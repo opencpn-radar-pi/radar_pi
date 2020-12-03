@@ -15,6 +15,21 @@ include(PluginSetup)
 
 # some helper vars (_ prefix)
 
+execute_process(
+  COMMAND git log -1 --format=%h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE _git_hash
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+execute_process(
+  COMMAND git tag --contains HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE _git_tag
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+
 if (NOT "$ENV{CIRCLE_BUILD_NUM}" STREQUAL "")
   set(_build_id "$ENV{CIRCLE_BUILD_NUM}")
 elseif (NOT "$ENV{TRAVIS_BUILD_NUMBER}" STREQUAL "")
@@ -25,10 +40,10 @@ else ()
   string(TIMESTAMP _build_id "%y%m%d%H%M" UTC)
 endif ()
 
-if ("${GIT_TAG}" STREQUAL "")
-  set(_gitversion "${GIT_HASH}")
+if ("${_git_tag}" STREQUAL "")
+  set(_gitversion "${_git_hash}")
 else ()
-  set(_gitversion "${GIT_TAG}")
+  set(_gitversion "${_git_tag}")
 endif ()
 
 if (WIN32)
@@ -38,14 +53,13 @@ else ()
 endif ()
 
 # pkg_repo: Repository to use for upload
-if ("${GIT_TAG}" STREQUAL "")
+if ("${_git_tag}" STREQUAL "")
   set(pkg_repo "$ENV{CLOUDSMITH_UNSTABLE_REPO}")
   if ("${pkg_repo}" STREQUAL "")
     set(pkg_repo ${OCPN_TEST_REPO})
   endif ()
-
 else ()
-  string(TOLOWER  ${GIT_TAG}  _lc_git_tag)
+  string(TOLOWER  ${_git_tag}  _lc_git_tag)
   if (_lc_git_tag MATCHES "beta")
     set(pkg_repo "$ENV{CLOUDSMITH_BETA_REPO}")
     if ("${pkg_repo}" STREQUAL "")

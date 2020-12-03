@@ -1,24 +1,9 @@
 #
-# Export variables used in plugin setup: GIT_HASH, GIT_COMMIT, GIT_TAG,
-# PKG_TARGET  and PKG_TARGET_VERSION.
-
+# Export variables used in plugin setup: PKG_TARGET and PKG_TARGET_VERSION.
+#
 if (DEFINED PKG_TARGET)
   return ()
 endif ()
-
-execute_process(
-  COMMAND git log -1 --format=%h
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE GIT_HASH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-execute_process(
-  COMMAND git tag --contains HEAD
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE GIT_TAG
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
 
 if ("${BUILD_TYPE}" STREQUAL "flatpak")
   set(PKG_TARGET "flatpak")
