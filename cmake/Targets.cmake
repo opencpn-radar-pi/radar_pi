@@ -147,7 +147,8 @@ function (flatpak_target manifest)
   add_custom_target(flatpak-conf)
   add_custom_command(
     TARGET flatpak-conf
-    COMMAND cmake -DBUILD_TYPE:STRING=flatpak -UPKG_TARGET ${CMAKE_BINARY_DIR}
+    COMMAND cmake -DBUILD_TYPE:STRING=flatpak -Uplugin_target
+            ${CMAKE_BINARY_DIR}
   )
   add_custom_target(
     flatpak-build          # Build the package using flatpak-builder

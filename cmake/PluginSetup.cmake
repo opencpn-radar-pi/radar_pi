@@ -1,55 +1,56 @@
 #
-# Export variables used in plugin setup: PKG_TARGET and PKG_TARGET_VERSION.
+# Export variables used in plugin setup: plugin_target and
+# plugin_target_version.
 #
-if (DEFINED PKG_TARGET)
+if (DEFINED plugin_target)
   return ()
 endif ()
 
 if ("${BUILD_TYPE}" STREQUAL "flatpak")
-  set(PKG_TARGET "flatpak")
-  set(PKG_TARGET_VERSION "18.08") # As of flatpak/*yaml
+  set(plugin_target "flatpak")
+  set(plugin_target_version "18.08") # As of flatpak/*yaml
 elseif (MINGW)
-  set(PKG_TARGET "mingw")
+  set(plugin_target "mingw")
   if (CMAKE_SYSTEM_VERSION)
-    set(PKG_TARGET_VERSION ${CMAKE_SYSTEM_VERSION})
+    set(plugin_target_version ${CMAKE_SYSTEM_VERSION})
   else ()
-    set(PKG_TARGET_VERSION 10)
+    set(plugin_target_version 10)
   endif ()
 elseif (MSVC)
-  set(PKG_TARGET "msvc")
+  set(plugin_target "msvc")
   if (CMAKE_SYSTEM_VERSION)
-    set(PKG_TARGET_VERSION ${CMAKE_SYSTEM_VERSION})
+    set(plugin_target_version ${CMAKE_SYSTEM_VERSION})
   elseif (CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION)
-    set(PKG_TARGET_VERSION ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION})
+    set(plugin_target_version ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION})
   else ()
-    set(PKG_TARGET_VERSION 10)
+    set(plugin_target_version 10)
   endif ()
 elseif (APPLE)
-  set(PKG_TARGET "darwin")
-  set(PKG_TARGET_VERSION "10.13.6")
+  set(plugin_target "darwin")
+  set(plugin_target_version "10.13.6")
 elseif (UNIX)
   # Some linux dist:
   execute_process(
     COMMAND "lsb_release" "-is"
-    OUTPUT_VARIABLE PKG_TARGET
+    OUTPUT_VARIABLE plugin_target
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
   execute_process(
     COMMAND "lsb_release" "-rs"
-    OUTPUT_VARIABLE PKG_TARGET_VERSION
+    OUTPUT_VARIABLE plugin_target_version
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 else ()
-  set(PKG_TARGET "unknown")
-  set(PKG_TARGET_VERSION 1)
+  set(plugin_target "unknown")
+  set(plugin_target_version 1)
 endif ()
 
-string(STRIP "${PKG_TARGET}" PKG_TARGET)
-string(TOLOWER "${PKG_TARGET}" PKG_TARGET)
-string(STRIP "${PKG_TARGET_VERSION}" PKG_TARGET_VERSION)
-string(TOLOWER "${PKG_TARGET_VERSION}" PKG_TARGET_VERSION)
+string(STRIP "${plugin_target}" plugin_target)
+string(TOLOWER "${plugin_target}" plugin_target)
+string(STRIP "${plugin_target_version}" plugin_target_version)
+string(TOLOWER "${plugin_target_version}" plugin_target_version)
 
-if (PKG_TARGET STREQUAL "ubuntu")
+if (plugin_target STREQUAL "ubuntu")
   if (DEFINED wxWidgets_CONFIG_EXECUTABLE)
     set(_WX_CONFIG_PROG ${wxWidgets_CONFIG_EXECUTABLE})
   else ()
@@ -62,7 +63,7 @@ if (PKG_TARGET STREQUAL "ubuntu")
       OUTPUT_STRIP_TRAILING_WHITESPACE
     )
     if (_WX_SELECTED_CONFIG MATCHES gtk3)
-      set(PKG_TARGET ubuntu-gtk3)
+      set(plugin_target ubuntu-gtk3)
     endif ()
   else ()
     message(WARNING "Cannot locate wx-config utility")

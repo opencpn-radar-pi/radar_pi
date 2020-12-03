@@ -80,13 +80,13 @@ set(pkg_semver "${PROJECT_VERSION}+${_build_id}.${_gitversion}")
 # pkg_displayname: Used for xml metadata and GUI name
 string(CONCAT pkg_displayname
   "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}"
-  "-${PKG_TARGET}-${PKG_TARGET_VERSION}"
+  "-${plugin_target}-${plugin_target_version}"
 )
 
 # pkg_tarname: Tarball basename
 string(CONCAT pkg_tarname 
   "${PLUGIN_API_NAME}-${pkg_semver}_"
-  "${PKG_TARGET}-${PKG_TARGET_VERSION}-${_pkg_arch}"
+  "${plugin_target}-${plugin_target_version}-${_pkg_arch}"
 )
 
 # pkg_tarball_url: Tarball location at cloudsmith
@@ -110,10 +110,10 @@ endif ()
 # pkg_target_arch: os + optional -arch suffix. See: Opencpn bug #2003
 if ("${BUILD_TYPE}" STREQUAL "flatpak")
   set(pkg_target_arch "flatpak-${ARCH}")
-elseif ("${PKG_TARGET}" MATCHES "ubuntu|raspbian|debian|mingw")
-  set(pkg_target_arch "${PKG_TARGET}-${ARCH}")
+elseif ("${plugin_target}" MATCHES "ubuntu|raspbian|debian|mingw")
+  set(pkg_target_arch "${plugin_target}-${ARCH}")
 else ()
-  set(pkg_target_arch "${PKG_TARGET}")
+  set(pkg_target_arch "${plugin_target}")
 endif ()
 
 #cmake-format: on

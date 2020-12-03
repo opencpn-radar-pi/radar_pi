@@ -14,7 +14,7 @@
   <description> @CPACK_PACKAGE_DESCRIPTION@ </description>
 
   <target>@pkg_target_arch@</target>
-  <target-version>@PKG_TARGET_VERSION@</target-version>
+  <target-version>@plugin_target_version@</target-version>
   <target-arch>@ARCH@</target-arch>
   <tarball-url> @pkg_tarball_url@ </tarball-url>
   <tarball-checksum> @checksum@ </tarball-checksum>

@@ -21,7 +21,7 @@ modules:
           - -DCMAKE_BUILD_TYPE:STRING=Release
           - -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
           - -DBUILD_TYPE:STRING=tarball
-          - -UPKG_TARGET
+          - -Uplugin_target
       build-options:
           cxxflags: -DFLATPAK -O3
           cflags: -DFLATPAK -O3
