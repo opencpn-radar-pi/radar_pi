@@ -8,7 +8,7 @@ readonly RUNTIME_PATH="/Applications/OpenCPN.app/Contents/Frameworks"
 
 plugin=$(find app/files -name '*.dylib')
 
-for lib in $(otool -L "$plugin" | grep wx | awk '{print $1}'); do
+for lib in $(otool -L "$plugin" | awk ' /wx/ {print $1}'); do
     libdir=${lib%/*}
     if [ "$libdir" = "$lib" ]; then
         continue
