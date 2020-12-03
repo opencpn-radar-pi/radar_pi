@@ -21,14 +21,14 @@ echo "DOCKER_OPTS=\"-H tcp://127.0.0.1:2375 -H $DOCKER_SOCK -s devicemapper\"" \
     | sudo tee /etc/default/docker > /dev/null
 
 sudo systemctl restart docker.service
-sudo docker pull fedora:31
+sudo docker pull fedora:33
 docker run --privileged -d -ti -e "container=docker"  \
     -v /sys/fs/cgroup:/sys/fs/cgroup \
     -v "$(pwd):/project:rw" \
     -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
     -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
-    fedora:31   /bin/bash
+    fedora:33   /bin/bash
 DOCKER_CONTAINER_ID=$(docker ps | awk '/fedora/ {print $1}')
 docker logs $DOCKER_CONTAINER_ID
 
