@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
 
 #
-# Build the flatpak artifacts. Uses docker to run Fedora on
+# Build the mingw artifacts. Uses docker to run Fedora
 # in full-fledged VM; the actual build is done in the Fedora
-# container. 
-#
-# flatpak-builder can be run in a docker image. However, this
-# must then be run in privileged mode, which means we need 
-# a full-fledged VM to run it.
+# container (Fedora's mingw support is better).
 #
 
 set -xe
