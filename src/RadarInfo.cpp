@@ -1417,9 +1417,7 @@ void RadarInfo::ClearTrails() {
 
 int RadarInfo::GetNearestRange(int range_meters, int units) {
   const int *ranges;
-  const int *tests;
   size_t count = RadarFactory::GetRadarRanges(this, M_SETTINGS.range_units, &ranges);
- 
   size_t n;
 
   for (n = count - 1; n > 0; n--) {
