@@ -69,6 +69,10 @@ class RadarInfo {
   RadarType m_radar_type;  // Which radar type
   size_t m_spokes;         // # of spokes per rotation
   size_t m_spoke_len_max;  // Max # of bytes per spoke
+  int m_radar_ranges[20];  // Ranges actually in use (values displayed). Always in meters, also if units is NM. Currently
+                                  // only used for Raymarine.
+
+  NetworkAddress m_radar_address; // current network address of the radar. Only when radar has been seen. Only used for Raymarine
 
   // Digital radars cannot produce just any range. When asked for a particular value
   // they produce a slightly larger range.
@@ -128,7 +132,19 @@ class RadarInfo {
   RadarControlItem m_timed_idle;  // CT_TIMED_IDLE
   RadarControlItem m_timed_run;   // CT_TIMED_RUN
   RadarControlItem m_doppler;
-
+  RadarControlItem m_tune_fine;       // Following added for Raymarine E120
+  RadarControlItem m_tune_coarse;
+  RadarControlItem m_main_bang_suppression;  // Main bang suppression for Raymarine E120. 0 is OFF, 1 is ON
+  RadarControlItem m_warmup_time;
+  RadarControlItem m_signal_strength;
+  RadarControlItem m_display_timing;
+  RadarControlItem m_stc;
+  RadarControlItem m_magnetron_time;
+  RadarControlItem m_rotation_period;
+  RadarControlItem m_stc_curve;
+  RadarControlItem m_coarse_tune;
+  RadarControlItem m_magnetron_current;
+  
   bool m_showManualValueInAuto;  // Does radar adjust manual value in auto mode? True for Garmin, False for others
   bool m_timed_idle_hardware;    // Does radar handle timed idle itself?
 
@@ -141,8 +157,6 @@ class RadarInfo {
   RadarCanvas *m_radar_canvas;
 
   /* Abstractions of our own. Some filled by RadarReceive. */
-
-  double m_viewpoint_rotation;
 
   time_t m_radar_timeout;      // When we consider the radar no longer valid
   time_t m_data_timeout;       // When we consider the data to be obsolete (radar no longer sending data)
@@ -255,6 +269,7 @@ class RadarInfo {
   GeoPosition m_mouse_pos;
   double m_mouse_ebl[ORIENTATION_NUMBER];
   double m_mouse_vrm;
+
 
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
   PixelColour m_colour_map_rgb[BLOB_COLOURS];

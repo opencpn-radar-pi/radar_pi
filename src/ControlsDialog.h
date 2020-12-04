@@ -213,7 +213,13 @@ class ControlsDialog : public wxDialog {
     m_adjust_button = 0;
     m_cursor_menu = 0;
     m_doppler_button = 0;
-
+    m_stc_button = 0;
+    m_fine_tune_button = 0;
+    m_coarse_tune_button = 0;
+    m_stc_curve_button = 0;
+    m_display_timing_button = 0;
+    m_main_bang_suppression_button = 0;
+    
     for (size_t i = 0; i < ARRAY_SIZE(m_ctrl); i++) {
       m_ctrl[i].type = CT_NONE;
       m_ctrl[i].names = 0;
@@ -368,6 +374,11 @@ class ControlsDialog : public wxDialog {
   RadarControlButton *m_target_boost_button;
   RadarControlButton *m_target_expansion_button;
   RadarControlButton *m_scan_speed_button;
+  RadarControlButton *m_stc_button;
+  RadarControlButton *m_fine_tune_button;
+  RadarControlButton *m_coarse_tune_button;
+  RadarControlButton *m_stc_curve_button;
+
 
   // Installation controls
   RadarControlButton *m_bearing_alignment_button;
@@ -379,6 +390,8 @@ class ControlsDialog : public wxDialog {
   RadarControlButton *m_local_interference_rejection_button;
   RadarControlButton *m_side_lobe_suppression_button;
   RadarControlButton *m_main_bang_size_button;
+  RadarControlButton *m_display_timing_button;
+  RadarControlButton *m_main_bang_suppression_button;
 
   // Window controls
   RadarButton *m_show_ppi_button;

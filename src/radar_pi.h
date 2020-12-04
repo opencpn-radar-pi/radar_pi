@@ -40,7 +40,8 @@
 #include "RadarControlItem.h"
 #include "drawutil.h"
 #include "jsonreader.h"
-#include "navico/NavicoRadarInfo.h"
+#include "RadarLocationInfo.h"
+#include "raymarine/RaymarineLocate.h"
 #include "nmea0183/nmea0183.h"
 #include "pi_common.h"
 #include "socketutil.h"
@@ -74,7 +75,9 @@ class radar_pi;
 class GuardZoneBogey;
 class RadarArpa;
 class GPSKalmanFilter;
+class RaymarineLocate;
 class NavicoLocate;
+
 
 #define MAX_CHART_CANVAS (2)  // How many canvases OpenCPN supports
 #define RADARS (4)            // Arbitrary limit, anyone running this many is already crazy!
@@ -345,11 +348,11 @@ static const bool HasBitCount2[8] = {
 
 #define DEFAULT_OVERLAY_TRANSPARENCY (5)
 #define MIN_OVERLAY_TRANSPARENCY (0)
-#define MAX_OVERLAY_TRANSPARENCY (9)
+#define MAX_OVERLAY_TRANSPARENCY (90)
 #define MIN_AGE (4)
 #define MAX_AGE (12)
 
-enum RangeUnits { RANGE_MIXED, RANGE_METRIC, RANGE_NAUTIC };
+enum RangeUnits { RANGE_MIXED, RANGE_METRIC, RANGE_NAUTIC, RANGE_UNITS_UNDEFINED };
 static const int RangeUnitsToMeters[3] = {1852, 1000, 1852};
 
 /**
@@ -399,7 +402,7 @@ struct PersistentSettings {
   wxString alert_audio_file;                       // Filepath of alarm audio file. Must be WAV.
   NetworkAddress radar_interface_address[RADARS];  // Saved address of interface used to see radar. Used to speed up next boot.
   NetworkAddress radar_address[RADARS];            // Saved address of IP address of radar.
-  NavicoRadarInfo navico_radar_info[RADARS];       // Navico specific stuff (multicast addresses + serial nr)
+  RadarLocationInfo radar_location_info[RADARS];   // Navico and Raymarine specific stuff (multicast addresses + serial nr)
   wxColour trail_start_colour;                     // Starting colour of a trail
   wxColour trail_end_colour;                       // Ending colour of a trail
   wxColour doppler_approaching_colour;             // Colour for Doppler Approaching returns
@@ -487,6 +490,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   void ConfirmGuardZoneBogeys();
   void ResetOpenGLContext();
   void logBinaryData(const wxString &what, const uint8_t *data, int size);
+  void StartRadarLocators(size_t r);
 
   void UpdateAllControlStates(bool all);
 
@@ -514,10 +518,11 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
     return m_settings.radar_address[r];
   }
 
-  void SetNavicoRadarInfo(size_t r, const NavicoRadarInfo &info);
-  void FoundNavicoRadarInfo(const NetworkAddress &radar_addr, const NetworkAddress &interface_addr, const NavicoRadarInfo &info);
+  void SetRadarLocationInfo(size_t r, const RadarLocationInfo &info);
+  void FoundRadarLocationInfo(const NetworkAddress &radar_addr, const NetworkAddress &interface_addr, const RadarLocationInfo &info);
+  void FoundRaymarineRadarInfo(const NetworkAddress &radar_addr, const NetworkAddress &interface_addr, const RadarLocationInfo &info);
   bool HaveRadarSerialNo(size_t r);
-  NavicoRadarInfo &GetNavicoRadarInfo(size_t r);
+  RadarLocationInfo &GetRadarLocationInfo(size_t r);
 
   void SetRadarHeading(double heading = nan(""), bool isTrue = false);
   double GetHeadingTrue() {
@@ -559,7 +564,6 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
     }
     return false;
   }
-
   bool m_guard_bogey_confirmed;
   bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
   int m_max_canvas;         // Number of canvasses in OCPN -1, 0 == single canvas, > 0  multi
@@ -575,6 +579,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   RadarInfo *m_radar[RADARS];
   wxString m_perspective[RADARS];  // Temporary storage of window location when plugin is disabled
   NavicoLocate *m_locator;
+  RaymarineLocate *m_raymarine_locator;
 
   MessageBox *m_pMessageBox;
   wxWindow *m_parent_window;

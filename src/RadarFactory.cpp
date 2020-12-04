@@ -60,7 +60,7 @@ RadarReceive* RadarFactory::MakeRadarReceive(size_t radarType, radar_pi* pi, Rad
   return 0;
 }
 
-RadarControl* RadarFactory::MakeRadarControl(size_t radarType) {
+RadarControl* RadarFactory::MakeRadarControl(size_t radarType, radar_pi* pi, RadarInfo* ri) {
   switch (radarType) {
 #define DEFINE_RADAR(t, x, s, l, a, b, c, d) \
   case t:                                    \
@@ -122,6 +122,67 @@ size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const in
   }
   return n;
 }
+
+size_t RadarFactory::GetRadarRanges(RadarInfo* ri, RangeUnits units, const int** ranges) {
+  size_t n = 0;
+  if (ri->m_radar_type == RM_E120) {
+    *ranges = ri->m_radar_ranges;
+    return 11;
+  }
+
+  
+  
+    switch (units) {
+      case RANGE_MIXED:
+        switch (ri->m_radar_type) {
+#define DEFINE_RADAR(t, x, s, l, a, b, c, d) \
+  case t: {                                  \
+    static const int r[] = RANGE_MIXED_##t;  \
+    *ranges = r;                             \
+    n = ARRAY_SIZE(r);                       \
+    break;                                   \
+  }
+
+#include "RadarType.h"
+        };
+        break;
+
+      case RANGE_METRIC:
+        switch (ri->m_radar_type) {
+#define DEFINE_RADAR(t, x, s, l, a, b, c, d) \
+  case t: {                                  \
+    static const int r[] = RANGE_METRIC_##t; \
+    *ranges = r;                             \
+    n = ARRAY_SIZE(r);                       \
+    break;                                   \
+  }
+#include "RadarType.h"
+        };
+        break;
+
+      case RANGE_NAUTIC:
+        switch (ri->m_radar_type) {
+#define DEFINE_RADAR(t, x, s, l, a, b, c, d) \
+  case t: {                                  \
+    static const int r[] = RANGE_NAUTIC_##t; \
+    *ranges = r;                             \
+    n = ARRAY_SIZE(r);                       \
+    break;                                   \
+  }
+#include "RadarType.h"
+        };
+        break;
+    }
+
+    if (n == 0) {
+      wxLogError(wxT("Internal error: Programmer forgot to define ranges for radar type %d units %d"), (int)ri->m_radar_type,
+                 (int)units);
+      wxAbort();
+    }
+    return n;
+  }
+
+
 
 void RadarFactory::GetRadarTypes(wxArrayString& radarTypes) {
   wxString names[] = {

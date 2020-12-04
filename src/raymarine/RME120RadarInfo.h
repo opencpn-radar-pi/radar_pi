@@ -29,82 +29,58 @@
  ***************************************************************************
  */
 
-#ifndef _NAVICOLOCATE_H_
-#define _NAVICOLOCATE_H_
+#ifndef _RMRADARINFO_H_
+#define _RMRADARINFO_H_
 
-#include <map>
-
-#include "NavicoCommon.h"
-#include "radar_pi.h"
+#include <wx/tokenzr.h>
 #include "socketutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
-//
-// Listens for (possibly unknown) Navico radars and known ones.
-// A single instance of this class will exist, and run a thread, if one or more
-// Navico radars of 4G or newer is selected.
-//
-// It will fill a map that given a radar IP address will give its listening ports.
-// The individual radars will then listen to multicast data on those ports.
-//
-
-class NavicoLocate : public wxThread {
+class RadarLocationInfo {
  public:
-  NavicoLocate(radar_pi *pi) : wxThread(wxTHREAD_JOINABLE) {
-    Create(64 * 1024);  // Stack size
-    m_pi = pi;          // This allows you to access the main plugin stuff
-    m_shutdown = false;
-    m_is_shutdown = true;
+  wxString serialNr;                 // Serial # for this radar
+  NetworkAddress spoke_data_addr;    // Where the radar will send data spokes
+  NetworkAddress report_addr;        // Where the radar will send reports
+  NetworkAddress send_command_addr;  // Where displays will send commands to the radar
 
-    m_interface_addr = 0;
-    m_socket = 0;
-    m_interface_count = 0;
-    m_report_count = 0;
-    SetPriority(wxPRIORITY_MAX);
-    LOG_INFO(wxT("radar_pi: NavicoLocate thread created, prio= %i"), GetPriority());
+  wxString to_string() const {
+    if (spoke_data_addr.IsNull() && serialNr.IsNull()) {
+      return wxT("");
+    }
+    return wxString::Format(wxT("%s/%s/%s/%s"), serialNr, spoke_data_addr.to_string(), report_addr.to_string(),
+                            send_command_addr.to_string());
   }
 
-  /*
-   * Shutdown
-   *
-   * Called when the thread should stop.
-   * It should stop running.
-   */
-  void Shutdown(void) { m_shutdown = true; }
+  RadarLocationInfo() {}
 
-  ~NavicoLocate() {
-    while (!m_is_shutdown) {
-      wxMilliSleep(50);
+  RadarLocationInfo(wxString &str) {
+    wxStringTokenizer tokenizer(str, "/");
+
+    if (tokenizer.HasMoreTokens()) {
+      serialNr = tokenizer.GetNextToken();
+    }
+    if (tokenizer.HasMoreTokens()) {
+      spoke_data_addr = NetworkAddress(tokenizer.GetNextToken());
+    }
+    if (tokenizer.HasMoreTokens()) {
+      report_addr = NetworkAddress(tokenizer.GetNextToken());
+    }
+    if (tokenizer.HasMoreTokens()) {
+      send_command_addr = NetworkAddress(tokenizer.GetNextToken());
     }
   }
-
-  volatile bool m_is_shutdown;
-
- protected:
-  void *Entry(void);
-
- private:
-  bool ProcessReport(const NetworkAddress &radar_address, const NetworkAddress &interface_address, const uint8_t *data, size_t len);
-  bool DetectedRadar(const NetworkAddress &radar_address);
-  void WakeRadar();
-
-  void UpdateEthernetCards();
-  void CleanupCards();
-
-  radar_pi *m_pi;
-  volatile bool m_shutdown;
-
-  // Three arrays, all created on each call to UpdateEthernetCards.
-  // One entry for each ethernet card.
-  NetworkAddress *m_interface_addr;
-  SOCKET *m_socket;
-  size_t m_interface_count;
-  size_t m_report_count;
-
-  wxCriticalSection m_exclusive;
+  bool operator == (RadarLocationInfo inf) {
+    if (serialNr == inf.serialNr && report_addr == inf.report_addr && spoke_data_addr == inf.spoke_data_addr
+      && send_command_addr == inf.send_command_addr) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  };
 };
 
 PLUGIN_END_NAMESPACE
 
-#endif /* _NAVICORECEIVE_H_ */
+#endif /* _RMRADARINFO_H_ */

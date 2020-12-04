@@ -7,6 +7,7 @@
  *           Kees Verruijt
  *           Douwe Fokkema
  *           Sean D'Epagnier
+ *           Martin Hassellov: testing the Raymarine radar
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -29,58 +30,40 @@
  ***************************************************************************
  */
 
-#ifndef _NAVICORADARINFO_H_
-#define _NAVICORADARINFO_H_
+#ifndef _RM_CONTROL_H_
+#define _RM_CONTROL_H_
 
-#include <wx/tokenzr.h>
+#include "RadarInfo.h"
+#include "pi_common.h"
 #include "socketutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
-class NavicoRadarInfo {
+class RME120Control : public RadarControl {
  public:
-  wxString serialNr;                 // Serial # for this radar
-  NetworkAddress spoke_data_addr;    // Where the radar will send data spokes
-  NetworkAddress report_addr;        // Where the radar will send reports
-  NetworkAddress send_command_addr;  // Where displays will send commands to the radar
+  RME120Control(radar_pi *pi, RadarInfo *ri);
+  ~RME120Control();
 
-  wxString to_string() const {
-    if (spoke_data_addr.IsNull() && serialNr.IsNull()) {
-      return wxT("");
-    }
-    return wxString::Format(wxT("%s/%s/%s/%s"), serialNr, spoke_data_addr.to_string(), report_addr.to_string(),
-                            send_command_addr.to_string());
-  }
+  bool Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr);
 
-  NavicoRadarInfo() {}
+  void RadarTxOff();
+  void RadarTxOn();
+  bool RadarStayAlive();
+  bool SetRange(int meters);
+  bool SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button);
 
-  NavicoRadarInfo(wxString &str) {
-    wxStringTokenizer tokenizer(str, "/");
+ private:
+  radar_pi *m_pi;
+  RadarInfo *m_ri;
 
-    if (tokenizer.HasMoreTokens()) {
-      serialNr = tokenizer.GetNextToken();
-    }
-    if (tokenizer.HasMoreTokens()) {
-      spoke_data_addr = NetworkAddress(tokenizer.GetNextToken());
-    }
-    if (tokenizer.HasMoreTokens()) {
-      report_addr = NetworkAddress(tokenizer.GetNextToken());
-    }
-    if (tokenizer.HasMoreTokens()) {
-      send_command_addr = NetworkAddress(tokenizer.GetNextToken());
-    }
-  }
-  bool operator == (NavicoRadarInfo inf) {
-    if (serialNr == inf.serialNr && report_addr == inf.report_addr && spoke_data_addr == inf.spoke_data_addr
-      && send_command_addr == inf.send_command_addr) {
-      return true;
-    }
-    else {
-      return false;
-    }
-  };
+  SOCKET m_radar_socket;
+  wxString m_name;
+
+  bool TransmitCmd(const uint8_t *msg, int size);
+  void logBinaryData(const wxString &what, const uint8_t *data, int size);
+  void SetRangeIndex(size_t index);
 };
 
 PLUGIN_END_NAMESPACE
 
-#endif /* _NAVICORADARINFO_H_ */
+#endif /* _RM_CONTROL_H_ */

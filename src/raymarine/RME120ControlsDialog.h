@@ -7,6 +7,7 @@
  *           Kees Verruijt
  *           Douwe Fokkema
  *           Sean D'Epagnier
+ *           Martin Hassellov: testing the Raymarine radar
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -29,21 +30,21 @@
  ***************************************************************************
  */
 
-#ifndef _RADAR_FACTORY_H_
-#define _RADAR_FACTORY_H_
+#ifndef _RME120CONTROLSDIALOG_H_
+#define _RME120CONTROLSDIALOG_H_
 
-#include "radar_pi.h"
+#include "ControlsDialog.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
-class RadarFactory {
+//----------------------------------------------------------------------------------------------------------
+//    Radar Control Dialog Specification
+//----------------------------------------------------------------------------------------------------------
+class RME120ControlsDialog : public ControlsDialog {
  public:
-  static ControlsDialog* MakeControlsDialog(size_t radarType, int radar);
-  static RadarReceive* MakeRadarReceive(size_t radarType, radar_pi* pi, RadarInfo* ri);
-  static RadarControl* MakeRadarControl(size_t radarType, radar_pi* pi, RadarInfo* ri);
-  static size_t GetRadarRanges(size_t radarType, RangeUnits units, const int** ranges);
-  static size_t GetRadarRanges(RadarInfo* ri, RangeUnits units, const int** ranges);
-  static void GetRadarTypes(wxArrayString& radarTypes);
+  RME120ControlsDialog(size_t radarType);
+
+  ~RME120ControlsDialog(){};
 };
 
 PLUGIN_END_NAMESPACE

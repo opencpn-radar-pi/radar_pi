@@ -39,7 +39,9 @@ PLUGIN_BEGIN_NAMESPACE
 
 class RadarControl {
  public:
-  RadarControl(){};
+  RadarControl(){ 
+    m_sendMultiCastAddresss_set = false;
+  };
   virtual ~RadarControl(){};
 
   /*
@@ -52,6 +54,8 @@ class RadarControl {
    */
   virtual bool Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &interfaceAddress, NetworkAddress &radarAddress) = 0;
 
+  struct sockaddr_in m_addr;
+  bool m_sendMultiCastAddresss_set;
   /*
    * Ask the radar to switch off.
    */
@@ -87,6 +91,10 @@ class RadarControl {
    * @returns   true on success, false on failure.
    */
   virtual bool SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button) = 0;
+  void SetMultiCastAddress(NetworkAddress sendMultiCastAddress) { 
+    m_addr = sendMultiCastAddress.GetSockAddrIn(); 
+    m_sendMultiCastAddresss_set = true;
+  }
 };
 
 PLUGIN_END_NAMESPACE

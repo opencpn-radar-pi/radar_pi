@@ -29,7 +29,7 @@
  ***************************************************************************
  */
 
-#include "NavicoControl.h"
+#include "RME120Control.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -44,11 +44,9 @@ static const uint8_t COMMAND_STAY_ON_B[2] = {0x03, 0xc2};
 static const uint8_t COMMAND_STAY_ON_C[2] = {0x04, 0xc2};
 static const uint8_t COMMAND_STAY_ON_D[2] = {0x05, 0xc2};
 
-NavicoControl::NavicoControl(radar_pi *pi, RadarInfo *ri) {
-  m_pi = pi;
-  m_ri = ri;
+NavicoControl::NavicoControl() {
   m_radar_socket = INVALID_SOCKET;
-  m_name = ri->m_name;
+  m_name = wxT("Navico radar");
 }
 
 NavicoControl::~NavicoControl() {
@@ -58,7 +56,7 @@ NavicoControl::~NavicoControl() {
   }
 }
 
-//void NavicoControl::SetMultiCastAddress(NetworkAddress sendMultiCastAddress) { m_addr = sendMultiCastAddress.GetSockAddrIn(); }
+void NavicoControl::SetMultiCastAddress(NetworkAddress sendMultiCastAddress) { m_addr = sendMultiCastAddress.GetSockAddrIn(); }
 
 bool NavicoControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) {
   int r;
@@ -68,6 +66,10 @@ bool NavicoControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, Net
   if (radaradr.port != 0) {
     // Null
   }
+
+  m_pi = pi;
+  m_ri = ri;
+  m_name = ri->m_name;
 
   if (m_radar_socket != INVALID_SOCKET) {
     closesocket(m_radar_socket);
@@ -111,13 +113,8 @@ void NavicoControl::logBinaryData(const wxString &what, const uint8_t *data, int
 
 bool NavicoControl::TransmitCmd(const uint8_t *msg, int size) {
   if (m_radar_socket == INVALID_SOCKET) {
-    wxLogError(wxT("radar_pi:  INVALID_SOCKET Unable to transmit command to unknown radar"));
+    wxLogError(wxT("radar_pi: Unable to transmit command to unknown radar"));
     return false;
-  }
-  if (!m_sendMultiCastAddresss_set) {
-     wxLogError(wxT("radar_pi: !m_multicast_send_address_set, Unable to transmit command to unknown radar"));
-     IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("not transmitted"), msg, size));
-     return false;
   }
   if (sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&m_addr, sizeof(m_addr)) < size) {
     wxLogError(wxT("radar_pi: Unable to transmit command to %s: %s"), m_name.c_str(), SOCKETERRSTR);

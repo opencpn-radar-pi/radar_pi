@@ -48,6 +48,10 @@
 #include "navico/NavicoControlsDialog.h"
 #include "navico/NavicoReceive.h"
 
+#include "raymarine/RME120Control.h"
+#include "raymarine/RME120ControlsDialog.h"
+#include "raymarine/RME120Receive.h"
+
 #include "emulator/EmulatorControl.h"
 #include "emulator/EmulatorControlsDialog.h"
 #include "emulator/EmulatorReceive.h"
@@ -95,7 +99,7 @@
 #include "navico/haloatype.h"
 #include "navico/halobtype.h"
 
-// TODO: Add Garmin etc.
+#include "raymarine/RME120type.h"
 
 #include "emulator/emulatortype.h"
 

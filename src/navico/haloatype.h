@@ -34,6 +34,6 @@ DEFINE_RADAR(RT_HaloA,                                                    /* Typ
              NAVICO_SPOKE_LEN,                                            /* Spoke length (max) */
              NavicoControlsDialog(RT_HaloA),                              /* ControlsDialog class constructor */
              NavicoReceive(pi, ri, reportHalo_A, dataHalo_A, sendHalo_A), /* Receive class constructor */
-             NavicoControl(),                                             /* Send/Control class constructor */
+             NavicoControl(pi, ri),                                       /* Send/Control class constructor */
              RO_PRIMARY                                                   /* This type has two radars and this is the first */
 )

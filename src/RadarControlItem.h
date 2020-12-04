@@ -69,6 +69,9 @@ class RadarControlItem {
     m_button_v = VALUE_NOT_SET;  // Unlikely value so that first actual set sets proper value + mod
     m_button_s = RCS_OFF;
     m_mod = true;
+    m_min = VALUE_NOT_SET;
+    m_max = VALUE_NOT_SET;
+    m_fraction = 0;
   }
 
   // The copy constructor
@@ -90,7 +93,6 @@ class RadarControlItem {
 
   void Update(int v, RadarControlState s) {
     wxCriticalSectionLocker lock(m_exclusive);
-
     if (v != m_button_v || s != m_button_s) {
       m_mod = true;
       m_button_v = v;
@@ -162,6 +164,30 @@ class RadarControlItem {
     return m_mod;
   }
 
+  void SetMax(int max) { m_max = max; }
+  void SetMin(int min) { m_min = min; }
+  int GetMax() { return m_max; }
+  int GetMin() { return m_min; }
+
+  void TransformAndUpdate(int x) {  // Transforms the received value to the value shown on the button for Raymarine
+    if (m_max == VALUE_NOT_SET || m_min == VALUE_NOT_SET || m_max == m_min) {
+      Update(x);
+      return;
+    }
+    double new_value = (double)((x - m_min) * 100.) / (m_max - m_min) + .5;
+    Update((int)new_value);
+    m_fraction = new_value - (double) m_value;
+    //wxLogMessage(wxT("new_value=%f, m_value=%i, m_fraction=%f"), new_value, m_value, m_fraction);
+  }
+
+  int DeTransform(int value) {          // Reverse transform, transforms value to value to be transmitted to radar
+    if (m_max == VALUE_NOT_SET || m_min == VALUE_NOT_SET || m_max == m_min) {
+      return m_value;
+    }
+    double transformed = ((double) (value) + m_fraction -.5) * (m_max - m_min) / 100. + m_min;
+    return (int)(((double) (value) + m_fraction -.5) * (m_max - m_min) / 100. + m_min + .5);
+  }
+
  protected:
   wxCriticalSection m_exclusive;
   int m_value;
@@ -169,6 +195,11 @@ class RadarControlItem {
   RadarControlState m_state;
   RadarControlState m_button_s;
   bool m_mod;
+  int m_max;   // added for Raymarine
+  int m_min;
+
+ public:
+  double m_fraction;
 };
 
 /*

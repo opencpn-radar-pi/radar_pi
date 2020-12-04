@@ -137,7 +137,7 @@ class MessageBox : public wxDialog {
   wxCheckBox *m_have_variation;
   wxStaticText *m_statistics;
 };
-
+  
 PLUGIN_END_NAMESPACE
 
 #endif

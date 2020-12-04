@@ -69,3 +69,12 @@ CONTROL_TYPE(CT_TARGET_EXPANSION, "Target expansion")
 CONTROL_TYPE(CT_TARGET_SEPARATION, "Target separation")
 CONTROL_TYPE(CT_TRANSPARENCY, "Transparency")
 CONTROL_TYPE(CT_DOPPLER, "Doppler")
+
+// Following added for Raymarine
+CONTROL_TYPE(CT_STC, "Sensitivity Time Control")
+CONTROL_TYPE(CT_TUNE_FINE, "Fine tune")
+CONTROL_TYPE(CT_TUNE_COARSE, "Coarse tune")
+CONTROL_TYPE(CT_STC_CURVE, "STC curve")
+CONTROL_TYPE(CT_DISPLAY_TIMING, "Display timing")
+CONTROL_TYPE(CT_MAIN_BANG_SUPPRESSION, "Main bang suppression")
+CONTROL_TYPE(CT_BEARING_OFFSET, "Bearing offset")

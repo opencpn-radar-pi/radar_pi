@@ -110,6 +110,12 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_off_center.y = 0.;
   m_panel_zoom = 0.;
   m_view_center = 1;
+  m_radar_type = RT_MAX;
+
+  m_magnetron_time.Update(0);
+  m_rotation_period.Update(0);
+  m_magnetron_current.Update(0);
+  m_rotation_period.Update(0);
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     m_guard_zone[z] = new GuardZone(m_pi, this, z);
@@ -123,39 +129,13 @@ void RadarInfo::Shutdown() {
     m_receive->Wait();
     wxLongLong threadEndWait = wxGetUTCTimeMillis();
 
-#ifdef NEVER
-    wxLongLong threadExtraWait = 0;
-
-    // See if Douwe is right and Wait() doesn't work properly -- attests it returns
-    // before the thread is dead.
-    while (!m_receive->m_is_shutdown) {
-      wxYield();
-      wxMilliSleep(10);
-      threadExtraWait = wxGetUTCTimeMillis();
-    }
-
-    // Now log what we have done
-    if (threadExtraWait != 0) {
-      LOG_INFO(wxT("radar_pi: %s receive thread wait did not work, had to wait for %lu ms extra"), m_name.c_str(),
-               threadExtraWait - threadEndWait);
-      threadEndWait = threadExtraWait;
-    }
-    if (m_receive->m_shutdown_time_requested != 0) {
-      LOG_INFO(wxT("radar_pi: %s receive thread stopped in %lu ms, had to wait for %lu ms"), m_name.c_str(),
-               threadEndWait - m_receive->m_shutdown_time_requested, threadEndWait - threadStartWait);
-    } else {
-      LOG_INFO(wxT("radar_pi: %s receive thread stopped in %lu ms, had to wait for %lu ms"), m_name.c_str(),
-               threadEndWait - m_receive->m_shutdown_time_requested, threadEndWait - threadStartWait);
-    }
-#endif
-
     wxLog::FlushActive();  // Flush any log messages written by the thread
     LOG_INFO(wxT("radar_pi: %s receive thread stopped in %llu ms"), m_name.c_str(), threadEndWait - threadStartWait);
-
-    delete m_receive;
-    m_receive = 0;
+    if (m_receive) {
+      delete m_receive;
+      m_receive = 0;
+    }
   }
-
   if (m_control_dialog) {
     delete m_control_dialog;
     m_control_dialog = 0;
@@ -168,7 +148,6 @@ void RadarInfo::Shutdown() {
 
 RadarInfo::~RadarInfo() {
   Shutdown();
-
   // delete context menu item for radar control
   // it does not harm to remove an non existing menu
   if (m_pi->m_context_menu_control_id[m_radar] != -1) {
@@ -226,17 +205,15 @@ bool RadarInfo::Init() {
   m_name = RadarTypeName[m_radar_type];
   m_spokes = RadarSpokes[m_radar_type];
   m_spoke_len_max = RadarSpokeLenMax[m_radar_type];
-
+  m_radar_address = NetworkAddress(0, 0, 0, 0, 0);
   m_history = (line_history *)calloc(sizeof(line_history), m_spokes);
   for (size_t i = 0; i < m_spokes; i++) {
     m_history[i].line = (uint8_t *)calloc(sizeof(uint8_t), m_spoke_len_max);
   }
   m_polar_lookup = new PolarToCartesianLookup(m_spokes, m_spoke_len_max);
-
   ComputeColourMap();
-
   if (!m_control) {
-    m_control = RadarFactory::MakeRadarControl(m_radar_type);
+    m_control = RadarFactory::MakeRadarControl(m_radar_type, m_pi, this);
     // add context menu for control
     wxString t;
     wxMenu dummy_menu;
@@ -248,12 +225,15 @@ bool RadarInfo::Init() {
     wxFont *qFont = OCPNGetFont(_("Menu"), 10);
     m_pi->m_mi3[m_radar]->SetFont(*qFont);
 #endif
-
     m_pi->m_context_menu_control_id[m_radar] = AddCanvasContextMenuItem(m_pi->m_mi3[m_radar], m_pi);
   }
   if (!m_radar_panel) {
     m_radar_panel = new RadarPanel(m_pi, this, m_pi->m_parent_window);
-    if (!m_radar_panel || !m_radar_panel->Create()) {
+    if (!m_radar_panel) {
+      wxLogError(wxT("radar_pi %s: Unable to create RadarPanel"), m_name.c_str());
+      return false;
+    }
+    if (!m_radar_panel->Create()) {
       wxLogError(wxT("radar_pi %s: Unable to create RadarPanel"), m_name.c_str());
       return false;
     }
@@ -263,25 +243,28 @@ bool RadarInfo::Init() {
   }
   m_trails = new TrailBuffer(this, m_spokes, m_spoke_len_max);
   ComputeTargetTrails();
-
   UpdateControlState(true);
-
   if (!m_receive) {
     LOG_RECEIVE(wxT("radar_pi: %s starting receive thread"), m_name.c_str());
     m_receive = RadarFactory::MakeRadarReceive(m_radar_type, m_pi, this);
-    if (!m_receive || (m_receive->Run() != wxTHREAD_NO_ERROR)) {
+    if (!m_receive) {
       LOG_INFO(wxT("radar_pi: %s unable to start receive thread."), m_name.c_str());
-      if (m_receive) {
-        delete m_receive;
+    } else {
+      if (m_receive->Run() != wxTHREAD_NO_ERROR) {
+        LOG_INFO(wxT("radar_pi: %s unable to start receive thread."), m_name.c_str());
+        if (m_receive) {
+          delete m_receive;
+        }
+        m_receive = 0;
       }
-      m_receive = 0;
     }
   }
-
+  wxLog::FlushActive();  // Flush any log messages written by the thread
   return true;
 }
 
 void RadarInfo::ShowControlDialog(bool show, bool reparent) {
+
   if (show) {
     wxPoint panel_pos = wxDefaultPosition;
 #ifdef __WXOSX__
@@ -294,8 +277,13 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
 #endif
     if (!m_control_dialog) {
       m_control_dialog = RadarFactory::MakeControlsDialog(m_radar_type, m_radar);
+      if (!m_control_dialog) {
+        LOG_INFO(wxT(" Error making control dialog"));
+        return;
+      }
       m_control_dialog->m_panel_position = panel_pos;
-      wxWindow *parent = (wxWindow *)m_radar_panel;
+      wxWindow *parent;
+      if (m_radar_panel) parent = (wxWindow *)m_radar_panel;
 #ifdef __WXOSX__
       if (!m_pi->m_settings.show_radar[m_radar])
 #endif
@@ -312,8 +300,13 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
 
 void RadarInfo::DetectedRadar(NetworkAddress &interfaceAddress, NetworkAddress &radarAddress) {
   m_pi->SetRadarInterfaceAddress(m_radar, interfaceAddress, radarAddress);
-  if (!m_control->Init(m_pi, this, interfaceAddress, radarAddress)) {
-    wxLogError(wxT("radar_pi %s: Unable to create transmit socket"), m_name.c_str());
+  LOG_RECEIVE(wxT("DetectedRadar interfaceAddress= %s, radarAddress= %s"), interfaceAddress.to_string(), radarAddress.to_string());
+  if (m_control) {
+    if (!m_control->Init(m_pi, this, interfaceAddress, radarAddress)) {
+      wxLogError(wxT("radar_pi %s: Unable to create transmit socket"), m_name.c_str());
+    } else {
+      LOG_TRANSMIT(wxT("radar_pi %s: Created transmit socket"), m_name.c_str());
+    }
   }
   m_stayalive_timeout = 0;  // Allow immediate restart of any TxOn or TxOff command
   m_pi->NotifyControlDialog();
@@ -323,7 +316,7 @@ void RadarInfo::SetName(wxString name) {
   if (name != m_name) {
     LOG_DIALOG(wxT("radar_pi: Changing name of radar #%d from '%s' to '%s'"), m_radar, m_name.c_str(), name.c_str());
     m_name = name;
-    m_radar_panel->SetCaption(name);
+    if (m_radar_panel) m_radar_panel->SetCaption(name);
     if (m_control_dialog) {
       m_control_dialog->SetTitle(name);
     }
@@ -574,7 +567,7 @@ void RadarInfo::UpdateTransmitState() {
     return;
   }
 
-  if (state != RADAR_OFF && TIMED_OUT(now, m_stayalive_timeout)) {
+  if (state != RADAR_OFF && TIMED_OUT(now, m_stayalive_timeout && m_control)) {
     m_control->RadarStayAlive();
     m_stayalive_timeout = now + STAYALIVE_TIMEOUT;
   }
@@ -589,7 +582,7 @@ void RadarInfo::UpdateTransmitState() {
 
 void RadarInfo::RequestRadarState(RadarState state) {
   int oldState = m_state.GetValue();
-  if (/*m_pi->IsRadarOnScreen(m_radar) &&*/ oldState != RADAR_OFF) {                     // if radar is visible and detected
+  if (/*m_pi->IsRadarOnScreen(m_radar) &&*/ oldState != RADAR_OFF && m_control) {        // if radar is visible and detected
     if (oldState != state && !(oldState != RADAR_STANDBY && state == RADAR_TRANSMIT)) {  // and change is wanted
       time_t now = time(0);
 
@@ -663,15 +656,22 @@ void RadarInfo::RenderGuardZone() {
 }
 
 void RadarInfo::SetAutoRangeMeters(int autorange_to_set) {
+  m_previous_auto_range_meters = m_range.GetValue();
   int meters = autorange_to_set;
-  if (m_state.GetValue() == RADAR_TRANSMIT && m_range.GetState() == RCS_AUTO_1) {
+  LOG_VERBOSE(wxT("radar_pi: Automatic range changed 1 from %d to %d meters"), m_previous_auto_range_meters, meters);
+  if (m_state.GetValue() == RADAR_TRANSMIT && m_range.GetState() == RCS_AUTO_1 && m_control) {
     // Compute a 'standard' distance. This will be slightly smaller.
     meters = GetNearestRange(meters, m_pi->m_settings.range_units);
     // Don't adjust auto range meters continuously when it is oscillating a little bit (< 10%)
     int test = 100 * m_previous_auto_range_meters / meters;
+    LOG_VERBOSE(wxT("radar_pi: Automatic range changed 2 from %d to %d meters, m_range.GetValue()=%i"),
+                                  m_previous_auto_range_meters,
+                               meters, m_range.GetValue());
+
     if (test < 90 || test > 110) {  //   range change required
       if (meters != m_range.GetValue()) {
-        LOG_VERBOSE(wxT("radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters, meters);
+        LOG_VERBOSE(wxT("radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters,
+                                      meters);
         m_control->SetRange(meters);
         m_previous_auto_range_meters = meters;
       }
@@ -789,9 +789,16 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item,
   return false;
 }
 
-void RadarInfo::ShowRadarWindow(bool show) { m_radar_panel->ShowFrame(show); }
+void RadarInfo::ShowRadarWindow(bool show) {
+  if (m_radar_panel) m_radar_panel->ShowFrame(show);
+}
 
-bool RadarInfo::IsPaneShown() { return m_radar_panel->IsPaneShown(); }
+bool RadarInfo::IsPaneShown() {
+  if (m_radar_panel)
+    return m_radar_panel->IsPaneShown();
+  else
+    return false;
+}
 
 void RadarInfo::UpdateControlState(bool all) {
   wxCriticalSectionLocker lock(m_exclusive);
@@ -833,7 +840,7 @@ void RadarInfo::ResetRadarImage() {
  */
 void RadarInfo::RefreshDisplay() {
   if (IsPaneShown()) {
-    m_radar_panel->Refresh(false);
+    if (m_radar_panel) m_radar_panel->Refresh(false);
   }
 }
 
@@ -1041,30 +1048,30 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
 wxString RadarInfo::FormatDistance(double distance) {
   wxString s;
 
-  switch (m_pi->m_settings.range_units) { 
-    case 0:     // Mixed
-          if (distance < 0.25 * 1.852) {
-            int meters = distance * 1852.0;
-            s << meters;
-            s << "m";
-          } else {
-            s << wxString::Format(wxT("%.2fNM"), distance);
-          }
-          break;
+  switch (m_pi->m_settings.range_units) {
+    case 0:  // Mixed
+      if (distance < 0.25 * 1.852) {
+        int meters = distance * 1852.0;
+        s << meters;
+        s << "m";
+      } else {
+        s << wxString::Format(wxT("%.2fNM"), distance);
+      }
+      break;
 
-    case 1:   // km
-          distance *= 1.852;
-          if (distance < 1.000) {
-            int meters = distance * 1000.0;
-            s << meters;
-            s << "m";
-          } else {
-            s << wxString::Format(wxT("%.2fkm"), distance);
-          }
-          break;
+    case 1:  // km
+      distance *= 1.852;
+      if (distance < 1.000) {
+        int meters = distance * 1000.0;
+        s << meters;
+        s << "m";
+      } else {
+        s << wxString::Format(wxT("%.2fkm"), distance);
+      }
+      break;
 
-    default:  // nm  
-          s << wxString::Format(wxT("%.2fNM"), distance);
+    default:  // nm
+      s << wxString::Format(wxT("%.2fNM"), distance);
   }
 
   return s;
@@ -1410,7 +1417,9 @@ void RadarInfo::ClearTrails() {
 
 int RadarInfo::GetNearestRange(int range_meters, int units) {
   const int *ranges;
-  size_t count = RadarFactory::GetRadarRanges(m_radar_type, M_SETTINGS.range_units, &ranges);
+  const int *tests;
+  size_t count = RadarFactory::GetRadarRanges(this, M_SETTINGS.range_units, &ranges);
+ 
   size_t n;
 
   for (n = count - 1; n > 0; n--) {
@@ -1422,29 +1431,30 @@ int RadarInfo::GetNearestRange(int range_meters, int units) {
 }
 
 void RadarInfo::AdjustRange(int adjustment) {
-  int current_range_meters = m_range.GetValue();
-  const int *ranges;
-  size_t count = RadarFactory::GetRadarRanges(m_radar_type, M_SETTINGS.range_units, &ranges);
-  size_t n;
+  if (m_control) {
+    int current_range_meters = m_range.GetValue();
+    const int *ranges;
+    size_t count = RadarFactory::GetRadarRanges(this, M_SETTINGS.range_units, &ranges);
+    size_t n;
+    
+    m_range.UpdateState(RCS_MANUAL);
+    m_previous_auto_range_meters = 0;
 
-  m_range.UpdateState(RCS_MANUAL);
-  m_previous_auto_range_meters = 0;
-
-  for (n = count - 1; n > 0; n--) {
-    if (ranges[n] <= current_range_meters) {  // step down until past the right range value
-      break;
+    for (n = count - 1; n > 0; n--) {
+      if (ranges[n] <= current_range_meters) {  // step down until past the right range value
+        break;
+      }
     }
-  }
 
-  // Note that we don't actually use m_settings.units here, so that if we are metric and
-  // the plotter in NM, and it chose the last range, we start using nautic miles as well.
-
-  if (adjustment < 0 && n > 0) {
-    LOG_VERBOSE(wxT("radar_pi: Change radar range from %d to %d"), ranges[n], ranges[n - 1]);
-    m_control->SetRange(ranges[n - 1]);
-  } else if (adjustment > 0 && n < count - 1) {
-    LOG_VERBOSE(wxT("radar_pi: Change radar range from %d to %d"), ranges[n], ranges[n + 1]);
-    m_control->SetRange(ranges[n + 1]);
+    // Note that we don't actually use m_settings.units here, so that if we are metric and
+    // the plotter in NM, and it chose the last range, we start using nautic miles as well.
+    
+    if (adjustment < 0 && n > 0) {
+      m_control->SetRange(ranges[n - 1]);
+    } else if (adjustment > 0 && n < count - 1) {
+      LOG_VERBOSE(wxT("radar_pi: Change radar range from %d to %d, n=%i"), ranges[n], ranges[n + 1], n);
+      m_control->SetRange(ranges[n + 1]);
+    }
   }
 }
 

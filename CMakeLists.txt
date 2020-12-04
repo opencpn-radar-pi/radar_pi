@@ -134,7 +134,19 @@ SET(SRC_NAVICO
             src/navico/NavicoControlsDialog.h
             src/navico/NavicoLocate.cpp
             src/navico/NavicoLocate.h
-            src/navico/NavicoRadarInfo.h
+)
+
+SET(SRC_RAYMARINE
+            src/raymarine/RME120type.h
+            src/raymarine/RME120Receive.cpp
+            src/raymarine/RME120Receive.h
+            src/raymarine/RME120Control.cpp
+            src/raymarine/RME120Control.h
+            src/raymarine/RME120ControlSet.h
+            src/raymarine/RME120ControlsDialog.cpp
+            src/raymarine/RME120ControlsDialog.h 
+            src/raymarine/RaymarineLocate.h
+            src/raymarine/RaymarineLocate.cpp
 )
 
 SET(SRC_RADAR
@@ -191,7 +203,7 @@ SET(SRC_RADAR
             src/shaderutil.h
             src/socketutil.cpp
             src/socketutil.h
-
+            src/RadarLocationInfo.h
 )
 
 SET(SRC_NMEA0183
@@ -221,7 +233,7 @@ INCLUDE_DIRECTORIES(src/wxJSON)
 INCLUDE_DIRECTORIES(src)
 INCLUDE_DIRECTORIES(api-16)
 
-ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_RADAR} ${SRC_NMEA0183} ${SRC_JSON} ${SRC_EMULATOR} ${SRC_GARMIN_HD} ${SRC_GARMIN_XHD} ${SRC_NAVICO})
+ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_RADAR} ${SRC_NMEA0183} ${SRC_JSON} ${SRC_EMULATOR} ${SRC_GARMIN_HD} ${SRC_GARMIN_XHD} ${SRC_NAVICO} ${SRC_RAYMARINE})
 if (MINGW)
     TARGET_LINK_LIBRARIES(${PACKAGE_NAME} ${wxWidgets_LIBRARIES} ${WINSOCK_LIBRARY})
 endif ()

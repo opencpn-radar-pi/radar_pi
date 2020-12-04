@@ -7,6 +7,7 @@
  *           Kees Verruijt
  *           Douwe Fokkema
  *           Sean D'Epagnier
+ *           Martin Hassellov: testing the Raymarine radar
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -29,14 +30,14 @@
  ***************************************************************************
  */
 
-#ifndef _NAVICOLOCATE_H_
-#define _NAVICOLOCATE_H_
+#ifndef _RAYMARINELOCATE_H_
+#define _RAYMARINELOCATE_H_
 
 #include <map>
 
-#include "NavicoCommon.h"
 #include "radar_pi.h"
 #include "socketutil.h"
+
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -49,9 +50,10 @@ PLUGIN_BEGIN_NAMESPACE
 // The individual radars will then listen to multicast data on those ports.
 //
 
-class NavicoLocate : public wxThread {
+class RaymarineLocate : public wxThread {
+#define MAX_REPORT 3
  public:
-  NavicoLocate(radar_pi *pi) : wxThread(wxTHREAD_JOINABLE) {
+  RaymarineLocate(radar_pi *pi) : wxThread(wxTHREAD_JOINABLE) {
     Create(64 * 1024);  // Stack size
     m_pi = pi;          // This allows you to access the main plugin stuff
     m_shutdown = false;
@@ -62,7 +64,7 @@ class NavicoLocate : public wxThread {
     m_interface_count = 0;
     m_report_count = 0;
     SetPriority(wxPRIORITY_MAX);
-    LOG_INFO(wxT("radar_pi: NavicoLocate thread created, prio= %i"), GetPriority());
+    //LOG_INFO(wxT("radar_pi: RaymarineLocate thread created, prio= %i"), GetPriority());
   }
 
   /*
@@ -73,7 +75,7 @@ class NavicoLocate : public wxThread {
    */
   void Shutdown(void) { m_shutdown = true; }
 
-  ~NavicoLocate() {
+  ~RaymarineLocate() {
     while (!m_is_shutdown) {
       wxMilliSleep(50);
     }
@@ -82,12 +84,11 @@ class NavicoLocate : public wxThread {
   volatile bool m_is_shutdown;
 
  protected:
-  void *Entry(void);
+  void *Entry(void) ;
 
  private:
   bool ProcessReport(const NetworkAddress &radar_address, const NetworkAddress &interface_address, const uint8_t *data, size_t len);
   bool DetectedRadar(const NetworkAddress &radar_address);
-  void WakeRadar();
 
   void UpdateEthernetCards();
   void CleanupCards();
@@ -107,4 +108,4 @@ class NavicoLocate : public wxThread {
 
 PLUGIN_END_NAMESPACE
 
-#endif /* _NAVICORECEIVE_H_ */
+#endif /* _RAYMARINELOCATE_H_ */

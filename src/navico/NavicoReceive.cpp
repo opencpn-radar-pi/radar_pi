@@ -376,11 +376,11 @@ SOCKET NavicoReceive::PickNextEthernetCard() {
 
 SOCKET NavicoReceive::GetNewReportSocket() {  
   SOCKET socket;
-  wxString error = wxT("");
-  wxString s = wxT("");
+  wxString error = wxT(" ");
+  wxString s = wxT(" ");
   
-  if (!(m_info == m_pi->GetNavicoRadarInfo(m_ri->m_radar))) {   // initial values or NavicoLocate modified the info
-    m_info = m_pi->GetNavicoRadarInfo(m_ri->m_radar);
+  if (!(m_info == m_pi->GetRadarLocationInfo(m_ri->m_radar))) {   // initial values or NavicoLocate modified the info
+    m_info = m_pi->GetRadarLocationInfo(m_ri->m_radar);
     m_interface_addr = m_pi->GetRadarInterfaceAddress(m_ri->m_radar);
     UpdateSendCommand();
     LOG_INFO(wxT("radar_pi: %s Locator found radar at IP %s [%s]"), m_ri->m_name,
@@ -598,7 +598,7 @@ void *NavicoReceive::Entry(void) {
       }
     }
 
-    if (!(m_info == m_pi->GetNavicoRadarInfo(m_ri->m_radar))) {
+    if (!(m_info == m_pi->GetRadarLocationInfo(m_ri->m_radar))) {
     // Navicolocate modified the RadarInfo in settings
       closesocket(reportSocket);
       reportSocket = INVALID_SOCKET;
@@ -641,7 +641,7 @@ void *NavicoReceive::Entry(void) {
   return 0;
 }
 
-void NavicoReceive::SetRadarType(RadarType t) {
+void NavicoReceive::SetRadarType(RadarType t) {  // should be forbidden to set RadarType on the fly, will create inconsistencies, TO_DO (DF)
   m_ri->m_radar_type = t;
   // m_pi->m_pMessageBox->SetRadarType(t);
 }
@@ -867,7 +867,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
           wxString s =
               wxString::Format(wxT("IP %s %s"), m_pi->m_settings.radar_address[m_ri->m_radar].FormatNetworkAddress(), stat.c_str());
           if (RadarOrder[m_ri->m_radar_type] >= RO_PRIMARY) {
-            NavicoRadarInfo info = m_pi->GetNavicoRadarInfo(m_ri->m_radar);
+            RadarLocationInfo info = m_pi->GetRadarLocationInfo(m_ri->m_radar);
             s << wxT("\n") << _("Serial #") << info.serialNr;
           }
           SetInfoStatus(s);
