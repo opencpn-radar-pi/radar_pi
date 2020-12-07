@@ -57,7 +57,7 @@ option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 
 # -------  Plugin setup --------
 #
-project(ShipDriver_pi VERSION 2.5.62)
+project(ShipDriver_pi VERSION 2.5.63)
 
 set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
 set(PLUGIN_API_NAME ShipDriver) # As of GetCommonName() in plugin API
