@@ -26,6 +26,7 @@ docker run --privileged -d -ti -e "container=docker"  \
     -v /sys/fs/cgroup:/sys/fs/cgroup \
     -v "$(pwd):/project:rw" \
     -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
+    -e "CLOUDSMITH_BETA_REPO=$CLOUDSMITH_BETA_REPO" \
     -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
     fedora:33   /bin/bash
