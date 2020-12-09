@@ -100,9 +100,9 @@ string(CONCAT pkg_tarball_url
 find_program(PY_WRAPPER py) # (at least) appveyor build machines
 find_program(PYTHON3 python3)
 if (PY_WRAPPER)
-  set(pkg_python py)
+  set(pkg_python ${PY_WRAPPER})
 elseif (PYTHON3)
-  set(pkg_python python3)
+  set(pkg_python ${PYTHON3})
 else ()
   set(pkg_python python)
 endif ()
