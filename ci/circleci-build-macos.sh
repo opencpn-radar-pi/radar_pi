@@ -15,15 +15,16 @@ for pkg in cairo cmake gettext libarchive libexif python wget; do
     brew link --overwrite $pkg || brew install $pkg
 done
 
-wget -q http://opencpn.navnux.org/build_deps/wx312_opencpn50_macos109.tar.xz
-tar xJf wx312_opencpn50_macos109.tar.xz -C /tmp
+wget -q https://download.opencpn.org/s/rwoCNGzx6G34tbC/download \
+    -O /tmp/wx312B_opencpn50_macos109.tar.xz
+tar -C /tmp -xJf /tmp/wx312B_opencpn50_macos109.tar.xz 
 
 export MACOSX_DEPLOYMENT_TARGET=10.9
 
 rm -rf build && mkdir build && cd build
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DwxWidgets_CONFIG_EXECUTABLE=/tmp/wx312_opencpn50_macos109/bin/wx-config \
+  -DwxWidgets_CONFIG_EXECUTABLE=/tmp/wx312B_opencpn50_macos109/bin/wx-config \
   -DCMAKE_INSTALL_PREFIX="/" \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
   ..
