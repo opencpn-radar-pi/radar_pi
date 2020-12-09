@@ -20,5 +20,9 @@ fi
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc) VERBOSE=1 tarball
 
-sudo apt-get install python3-pip python3-setuptools
-sudo python3 -m pip install -q cloudsmith-cli
+sudo apt-get install \
+    python3-pip python3-setuptools python3-dev python3-wheel \
+    build-essential libssl-dev libffi-dev 
+
+pip3 install --user --upgrade pip
+pip3 install --user -q cloudsmith-cli
