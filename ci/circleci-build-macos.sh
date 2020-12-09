@@ -8,12 +8,28 @@ set -xe
 
 #
 # Check if the cache is with us. If not, re-install brew.
-brew list --versions libexif || brew update-reset
+brew list --versions libexif || {
+    brew update-reset
+    # As indicated by warning message in CircleCI build log:
+    git -C "/usr/local/Homebrew/Library/Taps/homebrew/homebrew-core" \
+        fetch --unshallow
+    git -C "/usr/local/Homebrew/Library/Taps/homebrew/homebrew-cask" \
+        fetch --unshallow
+}
 
 for pkg in cairo cmake gettext libarchive libexif python wget; do
     brew list --versions $pkg || brew install $pkg || brew install $pkg || :
     brew link --overwrite $pkg || brew install $pkg
 done
+
+if brew list --cask --versions packages; then
+    version=$(pkg_version packages '--cask')
+    sudo installer \
+        -pkg /usr/local/Caskroom/packages/$version/packages/Packages.pkg \
+        -target /
+else
+    brew install --cask packages
+fi
 
 wget -q https://download.opencpn.org/s/rwoCNGzx6G34tbC/download \
     -O /tmp/wx312B_opencpn50_macos109.tar.xz
