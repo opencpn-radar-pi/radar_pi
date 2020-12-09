@@ -28,7 +28,6 @@ flatpak remote-add --user --if-not-exists flathub \
     https://flathub.org/repo/flathub.flatpakrepo
 flatpak install --user -y flathub org.opencpn.OpenCPN > /dev/null
 flatpak install --user -y flathub org.freedesktop.Sdk//18.08  >/dev/null
-cp flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml flatpak.yaml.bak
 sed -i '/^runtime-version/s/:.*/: stable/' \
     flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
 
@@ -37,7 +36,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc) VERBOSE=1 flatpak
 
 # Restore file so the cache checksumming is ok.
-cp ../flatpak.yaml.bak org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+git checkout ../flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
 
 # Wait for apt-daily to complete, install cloudsmith-cli required by upload.sh.
 # apt-daily should not restart, it's masked.
