@@ -8,6 +8,7 @@
  *           Douwe Fokkema
  *           Sean D'Epagnier
  *           Martin Hassellov: testing the Raymarine radar
+ *           Matt McShea: testing the Raymarine radar
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -70,7 +71,7 @@
   { _("Harbour"), _("Offshore"), _("Coastal") }
 #endif
 
-HAVE_CONTROL(CT_BEARING_ALIGNMENT, CTD_AUTO_NO, CTD_DEF_ZERO, -1800, +1800, CTD_STEP_1, {wxT("/10 degrees")})
+HAVE_CONTROL(CT_BEARING_ALIGNMENT, CTD_AUTO_NO, CTD_DEF_ZERO, -1800, +1800, CTD_STEP_1, {wxT("*0.1 degrees")})
 HAVE_CONTROL(CT_GAIN, CTD_AUTO_YES, 50, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
 HAVE_CONTROL(CT_INTERFERENCE_REJECTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2, CTD_STEP_1, OFF_LOW_MEDIUM_HIGH_NAMES)
 
@@ -85,8 +86,8 @@ HAVE_CONTROL(CT_FTC, CTD_AUTO_NO, CTD_DEF_OFF, CTD_MIN_ZERO, 100, CTD_STEP_2, CT
 //HAVE_CONTROL(CT_SIDE_LOBE_SUPPRESSION, CTD_AUTO_YES, CTD_DEF_ZERO, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
 HAVE_CONTROL(CT_TARGET_BOOST, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2, CTD_STEP_1, OFF_LOW_HIGH_NAMES)
 
-HAVE_CONTROL(CT_STC, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 8, CTD_STEP_1, CTD_NUMERIC)
+//HAVE_CONTROL(CT_STC, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 8, CTD_STEP_1, CTD_NUMERIC)
 HAVE_CONTROL(CT_DISPLAY_TIMING, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 255, CTD_STEP_1, CTD_NUMERIC)  // display timing
 HAVE_CONTROL(CT_MAIN_BANG_SUPPRESSION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 1, CTD_STEP_1, OFF_ON_NAMES)
 
-
+// Don't forget to enable buttons and update labels in ControlsDialog.cpp around 1950

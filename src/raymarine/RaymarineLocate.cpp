@@ -9,6 +9,7 @@
  *           Douwe Fokkema
  *           Sean D'Epagnier
  *           Martin Hassellov: testing the Raymarine radar
+ *           Matt McShea: testing the Raymarine radar
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -126,7 +127,8 @@ void *RaymarineLocate::Entry(void) {
 
   UpdateEthernetCards();
 
-  while (!m_shutdown) {
+  while (!success && !m_shutdown) {  // will run until the Raymarine radar location info has been found
+                      // after that we stop the Raymarine locate, saves load and prevents that the serial nr gets overwritten
     struct timeval tv = { (long)1, (long)(0) };
     fd_set fdin;
     FD_ZERO(&fdin);
@@ -155,11 +157,10 @@ void *RaymarineLocate::Entry(void) {
             NetworkAddress radar_address;
             radar_address.addr = rx_addr.ipv4.sin_addr;
             radar_address.port = rx_addr.ipv4.sin_port;
-
             if (ProcessReport(radar_address, m_interface_addr[i], data, (size_t)r)) {
               rescan_network_cards = -PERIOD_UNTIL_CARD_REFRESH;  // Give double time until we rescan
+              success = true;
             }
-            success = true;
           }
         }
       }
@@ -175,6 +176,7 @@ void *RaymarineLocate::Entry(void) {
   
   CleanupCards();
   m_is_shutdown = true;
+  LOG_INFO(wxT("radar_pi: Ramarine locate stopped after success"));
   return 0;
 }
 

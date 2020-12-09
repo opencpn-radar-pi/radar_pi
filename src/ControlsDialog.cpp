@@ -1790,7 +1790,7 @@ void ControlsDialog::DisableRadarControls() {
   }
 
   if (m_stc_button) {
-    m_stc_button->Enable();
+    m_stc_button->Disable();
   }
   if (m_fine_tune_button) {
     m_fine_tune_button->Disable();
@@ -1804,6 +1804,10 @@ void ControlsDialog::DisableRadarControls() {
   if (m_display_timing_button) {
     m_display_timing_button->Disable();
   }
+  if (m_main_bang_suppression_button) {
+    m_main_bang_suppression_button->Disable();
+  }
+
 }
 
 void ControlsDialog::EnableRadarControls() {
@@ -1882,6 +1886,9 @@ void ControlsDialog::EnableRadarControls() {
   }
   if (m_display_timing_button) {
     m_display_timing_button->Enable();
+  }
+  if (m_main_bang_suppression_button) {
+    m_main_bang_suppression_button->Enable();
   }
 }
 
@@ -2056,6 +2063,9 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
   if (m_display_timing_button) {
     m_display_timing_button->UpdateLabel();
+  }
+  if (m_main_bang_suppression_button) {
+    m_main_bang_suppression_button->UpdateLabel();
   }
 
   // For these we can't use the modified state as they are shared amongst all
