@@ -17,6 +17,7 @@ docker run --privileged -d -ti \
       -v $(pwd):/ci-source:rw \
       -e "container=docker" \
       -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
+      -e "CLOUDSMITH_BETA_REPO=$CLOUDSMITH_BETA_REPO" \
       -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
       -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
       $DOCKER_IMAGE /bin/bash

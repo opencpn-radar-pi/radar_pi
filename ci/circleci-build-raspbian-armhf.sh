@@ -19,6 +19,7 @@ docker run --privileged -d -ti \
     -e "container=docker" \
     -e "OCPN_TARGET=$OCPN_TARGET" \
     -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
+    -e "CLOUDSMITH_BETA_REPO=$CLOUDSMITH_BETA_REPO" \
     -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
     -v $(pwd):/ci-source:rw \
