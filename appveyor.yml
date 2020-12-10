@@ -50,15 +50,18 @@ build_script:
   - cmake -G "Visual Studio 15 2017" --config RelWithDebInfo  ..
   - cmake --build . --target tarball --config RelWithDebInfo
   - choco install git
+  - cmd: SET PATH=C:\Python38;C:\Python38-x64\Scripts;%PATH%
+  - py --version
   - py -m ensurepip
-  - py -m pip install -q setuptools
+  - py -m pip install --upgrade pip
+  - py -m pip install -q setuptools wheel
   - py -m pip install -q cloudsmith-cli
   - bash ./upload.sh
-  - PATH=C:\Python38;%PATH%
-  - python --version
-  - python -m pip install -q cryptography
-  - cd ..\ci
-  - python git-push
+    # Disabled, installing cryptography fails, see #88
+    # - choco install openssl.light
+    # - pip install cryptography
+    # - cd ..\ci
+    # - py git-push
 
 artifacts:
   - path: 'build\*.exe'
