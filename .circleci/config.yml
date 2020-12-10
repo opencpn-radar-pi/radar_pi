@@ -61,7 +61,6 @@ jobs:
             - /usr/local/lib
             - /usr/local/include
       - run: cd build; /bin/bash < upload.sh
-      - run: pip3 install cryptography
       - run: python3 ci/git-push
 
   build-xenial:

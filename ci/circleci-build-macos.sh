@@ -34,3 +34,6 @@ make create-pkg
 
 # Install cloudsmith needed by upload script
 pip3 install cloudsmith-cli
+
+# Required by git-push
+pip3 install cryptography
