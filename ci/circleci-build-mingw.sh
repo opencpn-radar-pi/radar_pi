@@ -61,5 +61,12 @@ echo -n "Waiting for apt_daily lock..."
 sudo flock /var/lib/apt/daily_lock echo done
 
 # Select latest available python, install cloudsmith required by upload script
-pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
-pip3 install cloudsmith-cli
+pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1 \
+    > $HOME/.python-version
+python3 -m pip install --user cloudsmith-cli
+
+# Required by git-push
+python3 -m pip install --user cryptography
+
+# python install scripts in ~/.local/bin:
+echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.uploadrc

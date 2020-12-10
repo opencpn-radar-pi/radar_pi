@@ -56,6 +56,11 @@ rm -f build.sh
 
 
 # Install cloudsmith-cli,  required by upload.sh.
+pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1 \
+    > $HOME/.python-version
+python3 -m pip install --upgrade pip
+python3 -m pip install --user cloudsmith-cli
+python3 -m pip install --user cryptography
 
-pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
-pip3 install --user cloudsmith-cli
+# python install scripts in ~/.local/bin:
+echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.uploadrc

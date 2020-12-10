@@ -49,7 +49,13 @@ make -j $(sysctl -n hw.physicalcpu) VERBOSE=1 tarball
 make create-pkg
 
 # Install cloudsmith needed by upload script
-pip3 install cloudsmith-cli
+python3 -m pip install --user cloudsmith-cli
 
 # Required by git-push
-pip3 install cryptography
+python3 -m pip install --user cryptography
+
+# python3 installs in odd place not on PATH:
+pyvers=$(python3 --version | awk '{ print $2 }')
+pyvers=$(echo $pyvers | sed -E 's/[\.][0-9]+$//')    # drop last .z in x.y.z
+echo "export PATH=\$PATH:/Users/distiller/Library/Python/$pyvers/bin" \
+    >> ~/.uploadrc

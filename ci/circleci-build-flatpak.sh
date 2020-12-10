@@ -31,6 +31,10 @@ flatpak install --user -y flathub org.freedesktop.Sdk//18.08  >/dev/null
 sed -i '/^runtime-version/s/:.*/: stable/' \
     flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
 
+# The flatpak checksumming needs python3:
+pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
+cp .python-version $HOME
+
 mkdir build; cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc) VERBOSE=1 flatpak
@@ -44,5 +48,12 @@ git checkout ../flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
 echo -n "Waiting for apt_daily lock..."
 sudo flock /var/lib/apt/daily_lock echo done
 
-pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
-pip3 install cloudsmith-cli
+# Install cloudsmith, requiered by upload script
+python3 -m pip install --user --upgrade pip
+python3 -m pip install --user cloudsmith-cli
+
+# Required by git-push
+python3 -m pip install --user cryptography
+
+# python install scripts in ~/.local/bin:
+echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.uploadrc

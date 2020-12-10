@@ -6,7 +6,6 @@ debian-steps: &debian-steps
     - checkout
     - run: ci/circleci-build-debian.sh
     - run: cd build; /bin/bash < upload.sh
-    - run: pip3 install cryptography
     - run: python3 ci/git-push
 
 jobs:
@@ -19,7 +18,6 @@ jobs:
       - checkout
       - run: ci/circleci-build-mingw.sh
       - run: cd build; /bin/bash < upload.sh
-      - run: pip3 install cryptography
       - run: python3 ci/git-push
 
   build-flatpak:
@@ -29,7 +27,6 @@ jobs:
       - OCPN_TARGET: flatpak
     steps:
       - checkout
-      - run: pyenv local 3.5.2
       - restore_cache:
           keys:
             - fp-v1-{{ checksum "ci/circleci-build-flatpak.sh" }}
@@ -39,7 +36,6 @@ jobs:
           paths:
             - /home/circleci/.local/share/flatpak/repo
       - run: cd build; /bin/bash < upload.sh
-      - run: pip3 install cryptography
       - run: python3 ci/git-push
 
   build-macos:
@@ -108,7 +104,6 @@ jobs:
       - checkout
       - run: ci/circleci-build-raspbian-armhf.sh
       - run: cd build; /bin/bash < upload.sh
-      - run: pip3 install cryptography
       - run: python3 ci/git-push
 
   build-armhf-buster:
@@ -120,7 +115,6 @@ jobs:
       - checkout
       - run: ci/circleci-build-raspbian-armhf.sh
       - run: cd build; /bin/bash < upload.sh
-      - run: pip3 install cryptography
       - run: python3 ci/git-push
 
 std-filters: &std-filters
