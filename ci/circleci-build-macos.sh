@@ -30,9 +30,6 @@ cmake \
   ..
 make -j $(sysctl -n hw.physicalcpu) VERBOSE=1 tarball
 
-wget -q http://opencpn.navnux.org/build_deps/Packages.dmg
-hdiutil attach Packages.dmg
-sudo installer -pkg "/Volumes/Packages 1.2.5/Install Packages.pkg" -target "/"
 make create-pkg
 
 # Install cloudsmith needed by upload script
