@@ -53,6 +53,7 @@ jobs:
           key: macos-cache-v1-{{checksum "ci/circleci-build-macos.sh"}}
           paths:
             - /usr/local/Homebrew
+            - /usr/local/Caskroom
             - /usr/local/Cellar
             - /usr/local/lib
             - /usr/local/include
