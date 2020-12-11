@@ -37,16 +37,16 @@ message(STATUS "Building: ${BUILD_TYPE}")
 
 
 # -------- Options ----------
-#
-#set(OCPN_TEST_REPO
-#    "opencpn/shipdriver-alpha"
-#    CACHE STRING "Default repository for untagged builds"
-#)
-#set(OCPN_BETA_REPO
-#    "opencpn/shipdriver-beta"
-#    CACHE STRING 
-#    "Default repository for tagged builds matching 'beta'"
-#)
+
+set(OCPN_TEST_REPO
+    "opencpn/shipdriver-alpha"
+    CACHE STRING "Default repository for untagged builds"
+)
+set(OCPN_BETA_REPO
+    "opencpn/shipdriver-beta"
+    CACHE STRING 
+    "Default repository for tagged builds matching 'beta'"
+)
 set(OCPN_RELEASE_REPO
     "opencpn/shipdriver-prod"
     CACHE STRING 
