@@ -42,7 +42,7 @@ before_build:
   # Unless removed, this interferes with the 32-bit python installation
   - rmdir /Q /S C:\Python38-x64
 
-  # python stuff required by upload.sh and git-push
+  # python stuff required by upload.bat and git-push
   - cmd: SET PATH=C:\Python38;C:\Python38\Scripts;%PATH%
   - py --version
   - py -m ensurepip
@@ -50,8 +50,6 @@ before_build:
   - pip install -q setuptools wheel
   - pip install -q cloudsmith-cli
   - pip install -q cryptography
-  # Required to run upload.sh
-  - choco install git
 
 build_script:
   - mkdir build
@@ -59,8 +57,7 @@ build_script:
   - cmake -T v141_xp ..
   - cmake -G "Visual Studio 15 2017" --config RelWithDebInfo  ..
   - cmake --build . --target tarball --config RelWithDebInfo
-  - choco install git
-  - bash ./upload.sh
-  - cd ..\ci
-  - py git-push
+  - cmd: upload.bat
+  - py ..\ci\git-push
+
 

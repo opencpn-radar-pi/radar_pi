@@ -10,13 +10,12 @@ if [ -z "$CLOUDSMITH_API_KEY" ]; then
     echo 'Tarball: @pkg_tarname@.tar.gz'
     echo 'Version: @pkg_semver@'
     exit 0
-else
-    echo "Using CLOUDSMITH_API_KEY: ${CLOUDSMITH_API_KEY:0:4}..."
 fi
+
+echo "Using CLOUDSMITH_API_KEY: ${CLOUDSMITH_API_KEY:0:4}..."
 
 if [ -f ~/.uploadrc ]; then source ~/.uploadrc; fi
 set -xe
-
 
 cloudsmith push raw --no-wait-for-sync \
     --name @pkg_displayname@-metadata \
