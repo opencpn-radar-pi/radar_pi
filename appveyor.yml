@@ -39,29 +39,33 @@ install:
   #- cmd: nmake -f makefile.vc BUILD=debug SHARED=1 CFLAGS=/D_USING_V120_SDK71_ CXXFLAGS=/D_USING_V120_SDK71_
 
 before_build:
-  - cd c:\project\opencpn\shipdriver_pi
+  # Unless removed, these interferes with the 32-bit python installation
+  - rmdir /Q /S C:\Python26-x64
+  - rmdir /Q /S C:\Python27-x64
+  - rmdir /Q /S C:\Python33-x64
+  - rmdir /Q /S C:\Python34-x64
+  - rmdir /Q /S C:\Python35-x64
+  - rmdir /Q /S C:\Python36-x64
+  - rmdir /Q /S C:\Python37-x64
+  - rmdir /Q /S C:\Python38-x64
+  - cmd: SET PATH=C:\Python38;C:\Python38\Scripts;%PATH%
+  - py --version
+  - py -m ensurepip
+  - py -m pip install --upgrade pip
+  - py -m pip install -q setuptools wheel
+  - py -m pip install -q cloudsmith-cli
+  - pip install cryptography
   - mkdir build
   - cd build
-#  - ps: Start-FileDownload http://opencpn.navnux.org/build_deps/OpenCPN_buildwin-4.99a.7z
-#  - cmd: 7z x -y OpenCPN_buildwin-4.99a.7z -oc:\project\opencpn\buildwin
   - cmake -T v141_xp ..
 
 build_script:
   - cmake -G "Visual Studio 15 2017" --config RelWithDebInfo  ..
   - cmake --build . --target tarball --config RelWithDebInfo
   - choco install git
-  - cmd: SET PATH=C:\Python38;C:\Python38-x64\Scripts;%PATH%
-  - py --version
-  - py -m ensurepip
-  - py -m pip install --upgrade pip
-  - py -m pip install -q setuptools wheel
-  - py -m pip install -q cloudsmith-cli
   - bash ./upload.sh
-    # Disabled, installing cryptography fails, see #88
-    # - choco install openssl.light
-    # - pip install cryptography
-    # - cd ..\ci
-    # - py git-push
+  - cd ..\ci
+  - py git-push
 
 artifacts:
   - path: 'build\*.exe'
