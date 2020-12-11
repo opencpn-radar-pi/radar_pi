@@ -39,27 +39,24 @@ install:
   #- cmd: nmake -f makefile.vc BUILD=debug SHARED=1 CFLAGS=/D_USING_V120_SDK71_ CXXFLAGS=/D_USING_V120_SDK71_
 
 before_build:
-  # Unless removed, these interferes with the 32-bit python installation
-  - rmdir /Q /S C:\Python26-x64
-  - rmdir /Q /S C:\Python27-x64
-  - rmdir /Q /S C:\Python33-x64
-  - rmdir /Q /S C:\Python34-x64
-  - rmdir /Q /S C:\Python35-x64
-  - rmdir /Q /S C:\Python36-x64
-  - rmdir /Q /S C:\Python37-x64
+  # Unless removed, this interferes with the 32-bit python installation
   - rmdir /Q /S C:\Python38-x64
+
+  # python stuff required by upload.sh and git-push
   - cmd: SET PATH=C:\Python38;C:\Python38\Scripts;%PATH%
   - py --version
   - py -m ensurepip
   - py -m pip install --upgrade pip
-  - py -m pip install -q setuptools wheel
-  - py -m pip install -q cloudsmith-cli
-  - pip install cryptography
+  - pip install -q setuptools wheel
+  - pip install -q cloudsmith-cli
+  - pip install -q cryptography
+  # Required to run upload.sh
+  - choco install git
+
+build_script:
   - mkdir build
   - cd build
   - cmake -T v141_xp ..
-
-build_script:
   - cmake -G "Visual Studio 15 2017" --config RelWithDebInfo  ..
   - cmake --build . --target tarball --config RelWithDebInfo
   - choco install git
