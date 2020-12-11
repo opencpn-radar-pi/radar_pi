@@ -191,6 +191,9 @@ RadarInfo::~RadarInfo() {
     }
     free(m_history);
   }
+  if (m_polar_lookup) {
+    delete m_polar_lookup;
+  }
 }
 
 /**
