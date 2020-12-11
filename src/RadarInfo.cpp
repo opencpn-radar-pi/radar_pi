@@ -193,6 +193,7 @@ RadarInfo::~RadarInfo() {
   }
   if (m_polar_lookup) {
     delete m_polar_lookup;
+    m_polar_lookup = 0;
   }
 }
 
