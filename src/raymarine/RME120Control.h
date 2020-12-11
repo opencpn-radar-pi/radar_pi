@@ -8,6 +8,7 @@
  *           Douwe Fokkema
  *           Sean D'Epagnier
  *           Martin Hassellov: testing the Raymarine radar
+ *           Matt McShea: testing the Raymarine radar
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *

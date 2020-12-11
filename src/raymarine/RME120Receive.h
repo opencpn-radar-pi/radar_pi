@@ -8,6 +8,7 @@
  *           Douwe Fokkema
  *           Sean D'Epagnier
  *           Martin Hassellov: testing the Raymarine radar
+ *           Matt McShea: testing the Raymarine radar
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -53,7 +54,6 @@ class RME120Receive : public RadarReceive {
     m_info.report_addr = reportAddr;
     m_info.send_command_addr = sendAddr;
     m_next_spoke = -1;
-    m_radar_status = 0;
     m_range_meters = 0;
     M_SETTINGS.range_units = RANGE_UNITS_UNDEFINED;  // this overwrites the value from the ini file. 
     // However radar is leading for range_units, will be overwritten with value from the radar
@@ -113,7 +113,6 @@ class RME120Receive : public RadarReceive {
   struct ifaddrs *m_interface;
 
   int m_next_spoke;
-  char m_radar_status;
   bool m_first_receive;
 
   wxCriticalSection m_lock;  // Protects m_status
@@ -128,7 +127,15 @@ class RME120Receive : public RadarReceive {
   
   void SetFirmware(wxString s);
   void UpdateSendCommand();
+
+  void SetInfoStatus(wxString status) {
+    wxCriticalSectionLocker lock(m_lock);
+    m_status = status;
+  }
+
+
 };
+
 
 PLUGIN_END_NAMESPACE
 #endif /* _RME120RECEIVE_H_ */

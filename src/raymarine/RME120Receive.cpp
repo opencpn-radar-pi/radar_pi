@@ -9,6 +9,7 @@
  *           Douwe Fokkema
  *           Sean D'Epagnier
  *           Martin Hassellov: testing the Raymarine radar
+ *           Matt McShea: testing the Raymarine radar
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -297,6 +298,8 @@ void *RME120Receive::Entry(void) {
 void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {   // This is the original ProcessFrame from RMradar_pi
   wxLongLong nowMillis = wxGetLocalTimeMillis();
   time_t now = time(0);
+  wxString MOD_serial; 
+  wxString IF_serial;
   m_ri->resetTimeout(now);
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
   int spoke = 0;
@@ -316,6 +319,11 @@ void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {   // This is t
         m_ri->m_data_timeout = now + DATA_TIMEOUT;
         break;
       case 0x00010006:
+        IF_serial = wxString::FromAscii(data + 4, 7);
+        MOD_serial = wxString::FromAscii(data + 20, 7);
+        m_info = m_pi->GetRadarLocationInfo(m_ri->m_radar);
+        M_SETTINGS.radar_location_info[m_ri->m_radar].serialNr = IF_serial;
+        break;
       case 0x00010007:
       case 0x00010008:
       case 0x00010009:
@@ -415,7 +423,6 @@ struct RMRadarFixedReport {
 void RME120Receive::logBinaryData(const wxString &what, const uint8_t *data, int size) {
   wxString explain;
   int i = 0;
-
   explain.Alloc(size * 3 + 50);
   explain += wxT("radar_pi: ") + m_ri->m_name.c_str() + wxT(" ");
   explain += what;
@@ -429,6 +436,7 @@ void RME120Receive::logBinaryData(const wxString &what, const uint8_t *data, int
 void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
   if (len == sizeof(RMRadarReport)) {
     RMRadarReport *bl_pter = (RMRadarReport *)data;
+    wxString s;
     if (LOGLEVEL_RECEIVE) {
     logBinaryData(wxT("RMRadarReport"), data, len);
     }
@@ -444,7 +452,7 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
           break;
         case 2:  // Warmup
           LOG_RECEIVE(wxT("radar_pi: %s radar is warming up %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
-          m_ri->m_state.Update(RADAR_STARTING);
+          m_ri->m_state.Update(RADAR_WARMING_UP);
           break;
         case 3:  // Off
           LOG_RECEIVE(wxT("radar_pi: %s radar is off %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
@@ -483,10 +491,6 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
       RadarControlState state;
       state = (bl_pter->auto_gain > 0) ? RCS_AUTO_1 : RCS_MANUAL;
       m_ri->m_gain.TransformAndUpdate(bl_pter->gain);
-      int gain = m_ri->m_gain.GetValue();
-      gain -= 4;                             // special correction only for gain
-      if (gain < 0) gain = 0;
-      m_ri->m_gain.Update(gain);
       m_ri->m_gain.UpdateState(state);
       LOG_RECEIVE(wxT("gain updated received1= %i, displayed = %i"), bl_pter->gain, m_ri->m_gain.GetValue());
 
@@ -497,7 +501,7 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
                   state);
 
       state = (bl_pter->rain_enabled) ? RCS_MANUAL : RCS_OFF;
-      LOG_INFO(wxT("$$$ rain state=%i bl_pter->rain_enabled=%i"), state, bl_pter->rain_enabled);
+      LOG_RECEIVE(wxT("rain state=%i bl_pter->rain_enabled=%i"), state, bl_pter->rain_enabled);
       m_ri->m_rain.TransformAndUpdate(bl_pter->rain_value);
       m_ri->m_rain.UpdateState(state);
       LOG_RECEIVE(wxT("rain updated received= %i, displayed = %i state=%i"), bl_pter->rain_value, m_ri->m_rain.GetValue(), state);
@@ -517,14 +521,50 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
       m_ri->m_tune_fine.Update(bl_pter->tune, state);
 
       state = (bl_pter->auto_tune > 0) ? RCS_AUTO_1 : RCS_MANUAL;
+
       m_ri->m_tune_coarse.UpdateState(state);
 
       state = (bl_pter->mbs_enabled > 0) ? RCS_MANUAL : RCS_OFF;
-      m_ri->m_main_bang_suppression.Update(bl_pter->mbs_enabled, state);
+      m_ri->m_main_bang_suppression.Update(bl_pter->mbs_enabled, RCS_MANUAL);
 
       m_ri->m_warmup_time.Update(bl_pter->warmup_time);
       m_ri->m_signal_strength.Update(bl_pter->signal_strength);
     }
+
+    int status = m_ri->m_state.GetValue();
+    wxString stat;
+    switch (status) {
+      case RADAR_OFF:
+        LOG_VERBOSE(wxT("radar_pi: %s reports status RADAR_OFF"), m_ri->m_name.c_str());
+        stat = _("Off");
+        break;
+
+      case RADAR_STANDBY:
+        LOG_VERBOSE(wxT("radar_pi: %s reports status STANDBY"), m_ri->m_name.c_str());
+        stat = _("Standby");
+        break;
+       
+      case RADAR_WARMING_UP:
+        LOG_VERBOSE(wxT("radar_pi: %s reports status RADAR_WARMING_UP"), m_ri->m_name.c_str());
+        stat = _("Warming up");
+        break;
+
+      case RADAR_TRANSMIT:
+        LOG_VERBOSE(wxT("radar_pi: %s reports status RADAR_TRANSMIT"), m_ri->m_name.c_str());
+        stat = _("Transmit");
+        break;
+
+      default:
+        //LOG_BINARY_RECEIVE(wxT("received unknown radar status"), report, len);
+        stat = _("Unknown status");
+        break;
+    }
+
+    s = wxString::Format(wxT("IP %s %s"), m_pi->m_settings.radar_address[m_ri->m_radar].FormatNetworkAddress(), stat.c_str());
+    
+      RadarLocationInfo info = m_pi->GetRadarLocationInfo(m_ri->m_radar);
+      s << wxT("\n") << _("IF-Serial #") << info.serialNr;
+    SetInfoStatus(s);
   }
 }
 
@@ -607,6 +647,9 @@ void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
               pHeader->nspokes, pHeader->fieldx_3);
       return;
     }
+    time_t now = time(0);
+    m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
+    m_ri->m_data_timeout = now + DATA_TIMEOUT;
     m_ri->m_state.Update(RADAR_TRANSMIT);
 
     if (pHeader->fieldx_4 == 0x400) {

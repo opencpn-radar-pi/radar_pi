@@ -71,7 +71,7 @@ class NavicoReceive : public RadarReceive {
       // In this case m_info.spoke_data_addr etc. are correct, these don't really change in the wild according to our data,
       // so write them into the RadarLocationInfo object.
       m_pi->SetRadarLocationInfo(m_ri->m_radar, m_info);
-      LOG_INFO(wxT("radar_pi: %s $$$ info van constuctor RadarReceive SetRadarLocationInfo m_info= %s "), m_ri->m_name, m_info.to_string());
+      LOG_INFO(wxT("radar_pi: %s info van constuctor RadarReceive SetRadarLocationInfo m_info= %s "), m_ri->m_name, m_info.to_string());
     } else if (!info.report_addr.IsNull() && ri->m_radar_type != RT_BR24) {
       // Restart, when ini file contains multicast addresses, that are hopefully still correct.
       // This will also overwrite the initial addresses for 3G and 4G with those from the ini file

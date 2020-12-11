@@ -191,6 +191,9 @@ RadarInfo::~RadarInfo() {
     }
     free(m_history);
   }
+  if (m_polar_lookup) {
+    delete m_polar_lookup;
+  }
 }
 
 /**
@@ -1419,7 +1422,6 @@ int RadarInfo::GetNearestRange(int range_meters, int units) {
   const int *ranges;
   size_t count = RadarFactory::GetRadarRanges(this, M_SETTINGS.range_units, &ranges);
   size_t n;
-
   for (n = count - 1; n > 0; n--) {
     if (ranges[n] <= range_meters) {  // step down until past the right range value
       break;

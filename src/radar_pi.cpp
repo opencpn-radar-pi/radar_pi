@@ -126,8 +126,7 @@ radar_pi::radar_pi(void *ppimgr) : opencpn_plugin_116(ppimgr) {
   m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
   m_predicted_position_initialised = false;
-  LOG_INFO(wxT("$$$ radar_pi version RMtest12 01-12-2020"));
-
+  
   // Create the PlugIn icons
   initialize_images();
   m_pdeficon = new wxBitmap(*_img_radar_blank);
@@ -253,7 +252,7 @@ int radar_pi::Init(void) {
   m_pMessageBox->Create(m_parent_window, this);
   LOG_INFO(wxT(PLUGIN_VERSION_WITH_DATE));
 
-  m_locator = 0;
+  m_navico_locator = 0;
   m_raymarine_locator = 0;
 
   // Create objects before config, so config can set data in it
@@ -356,9 +355,9 @@ int radar_pi::Init(void) {
 
 void radar_pi::StartRadarLocators(size_t r) {
   if ((m_radar[r]->m_radar_type == RT_3G || m_radar[r]->m_radar_type == RT_4GA || m_radar[r]->m_radar_type == RT_HaloA) &&
-      m_locator == NULL) {
-    m_locator = new NavicoLocate(this);
-    if (m_locator->Run() != wxTHREAD_NO_ERROR) {
+      m_navico_locator == NULL) {
+    m_navico_locator = new NavicoLocate(this);
+    if (m_navico_locator->Run() != wxTHREAD_NO_ERROR) {
       wxLogError(wxT("radar_pi: unable to start Navico Radar Locator thread"));
     }
   }
@@ -366,6 +365,8 @@ void radar_pi::StartRadarLocators(size_t r) {
     m_raymarine_locator = new RaymarineLocate(this);
     if (m_raymarine_locator->Run() != wxTHREAD_NO_ERROR) {
       wxLogError(wxT("radar_pi: unable to start Raymarine Radar Locator thread"));
+    } else {
+      LOG_INFO(wxT("radar_pi Raymarine locator started"));
     }
   }
 }
@@ -391,16 +392,19 @@ bool radar_pi::DeInit(void) {
     m_timer = 0;
   }
 
-  if (m_locator) {
-    m_locator->Shutdown();
-    m_locator->Wait();
+  if (m_navico_locator) {
+    m_navico_locator->Shutdown();
+    m_navico_locator->Wait();
   }
+  delete m_navico_locator;
+  m_navico_locator = 0;
 
   if (m_raymarine_locator) {
     m_raymarine_locator->Shutdown();
     m_raymarine_locator->Wait();
   }
-
+  delete m_raymarine_locator;
+  m_raymarine_locator = 0;
   // Stop processing in all radars.
   // This waits for the receive threads to stop and removes the dialog, so that its settings
   // can be saved.
@@ -427,9 +431,9 @@ bool radar_pi::DeInit(void) {
     m_radar[r] = 0;
   }
 
-  if (m_locator != NULL) {
-    delete m_locator;
-    m_locator = 0;
+  if (m_navico_locator != NULL) {
+    delete m_navico_locator;
+    m_navico_locator = 0;
   }
 
   if (m_raymarine_locator != NULL) {
@@ -509,18 +513,20 @@ bool radar_pi::MakeRadarSelection() {
   SelectDialog dlg(m_parent_window, this);
   if (dlg.ShowModal() == wxID_OK) {
     // stop the locators, otherwise they keep running without radars
-    if (m_locator) {
-      m_locator->Shutdown();
-      m_locator->Wait();
+    if (m_navico_locator) {
+      m_navico_locator->Shutdown();
+      m_navico_locator->Wait();
     }
-    LOG_INFO(wxT("radar_pi: Navico locator deleted"));
-    m_locator = 0;
+    delete m_navico_locator;
+    m_navico_locator = 0;
+    LOG_INFO(wxT("radar_pi: Navico locator deleted by MakeRadarSelection"));
     if (m_raymarine_locator) {
       m_raymarine_locator->Shutdown();
       m_raymarine_locator->Wait();
     }
+    delete m_raymarine_locator;
     m_raymarine_locator = 0;
-    LOG_INFO(wxT("radar_pi: Raymarine locator deleted"));
+    LOG_INFO(wxT("radar_pi: Raymarine locator deleted MakeRadarSelection"));
 
     // delete all radars
     for (size_t r = 0; r < m_settings.radar_count; r++) {
@@ -563,7 +569,6 @@ bool radar_pi::MakeRadarSelection() {
         m_radar[r] = 0;
       }
     }
-
     SetRadarWindowViz();
     TimedControlUpdate();
   }
@@ -1121,7 +1126,8 @@ void radar_pi::TimedControlUpdate() {
                               m_radar[r]->m_statistics.missing_spokes);
         if (m_radar[r]->m_radar_type == RM_E120) {
           t << wxString::Format(wxT("Magnetron current %d\n"), m_radar[r]->m_magnetron_current.GetValue());
-          t << wxString::Format(wxT("Magnetron hours %d\n"), m_radar[r]->m_magnetron_time.GetValue());
+          double mag_hours = (double)m_radar[r]->m_magnetron_time.GetValue() / 10.;
+          t << wxString::Format(wxT("Magnetron hours %5.1f\n"), mag_hours);
           t << wxString::Format(wxT("Rotation period %d msec\n"), m_radar[r]->m_rotation_period.GetValue());
           t << wxString::Format(wxT("Signal strength %d\n"), m_radar[r]->m_signal_strength.GetValue());
         }
@@ -1258,7 +1264,6 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     return true;
   }
   m_render_busy = true;
-
   // update own ship position to best estimate
   ExtendedPosition intermediate_pos;
   if (m_predicted_position_initialised) {
@@ -1820,14 +1825,6 @@ void radar_pi::FoundRaymarineRadarInfo(const NetworkAddress &addr, const Network
   size_t r = (size_t)ray_nr;
   SetRadarLocationInfo(r, info);
   SetRadarInterfaceAddress(r, int_face_addr, radar_addr);
-  /*if (m_raymarine_locator) {  // stop the locator after having found the radar?
-    m_raymarine_locator->Shutdown();
-    m_raymarine_locator->Wait();
-  }
-  if (m_raymarine_locator) {
-    delete m_raymarine_locator;
-    m_raymarine_locator = 0;
-    }*/
   return;
 }
 

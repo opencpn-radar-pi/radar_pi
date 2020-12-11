@@ -9,6 +9,7 @@
  *           Douwe Fokkema
  *           Sean D'Epagnier
  *           Martin Hassellov: testing the Raymarine radar
+ *           Matt McShea: testing the Raymarine radar
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -331,8 +332,11 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
                                       0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                       0x00,  // MBS Enable (1) at offset 16
                                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-      rd_msg_mbs_control[16] = value;  //
+      if (state == RCS_OFF) {
+        rd_msg_mbs_control[16] = 0;
+      } else if (state == RCS_MANUAL) {
+        rd_msg_mbs_control[16] = 1;
+      }
       r = TransmitCmd(rd_msg_mbs_control, sizeof(rd_msg_mbs_control));
       break;
     }
@@ -341,8 +345,7 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
       uint8_t rd_msg_set_display_timing[] = {0x02, 0x82, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
                                              0x6d,  // Display timing value at offset 8
                                              0x00, 0x00, 0x00};
-
-      rd_msg_set_display_timing[16] = value;
+      rd_msg_set_display_timing[8] = value;
       r = TransmitCmd(rd_msg_set_display_timing, sizeof(rd_msg_set_display_timing));
       break;
     }
