@@ -126,8 +126,7 @@ radar_pi::radar_pi(void *ppimgr) : opencpn_plugin_116(ppimgr) {
   m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
   m_predicted_position_initialised = false;
-  LOG_INFO(wxT("$$$ radar_pi version RMtest13 08-12-2020"));
-
+  
   // Create the PlugIn icons
   initialize_images();
   m_pdeficon = new wxBitmap(*_img_radar_blank);
@@ -253,7 +252,7 @@ int radar_pi::Init(void) {
   m_pMessageBox->Create(m_parent_window, this);
   LOG_INFO(wxT(PLUGIN_VERSION_WITH_DATE));
 
-  m_locator = 0;
+  m_navico_locator = 0;
   m_raymarine_locator = 0;
 
   // Create objects before config, so config can set data in it
@@ -356,9 +355,9 @@ int radar_pi::Init(void) {
 
 void radar_pi::StartRadarLocators(size_t r) {
   if ((m_radar[r]->m_radar_type == RT_3G || m_radar[r]->m_radar_type == RT_4GA || m_radar[r]->m_radar_type == RT_HaloA) &&
-      m_locator == NULL) {
-    m_locator = new NavicoLocate(this);
-    if (m_locator->Run() != wxTHREAD_NO_ERROR) {
+      m_navico_locator == NULL) {
+    m_navico_locator = new NavicoLocate(this);
+    if (m_navico_locator->Run() != wxTHREAD_NO_ERROR) {
       wxLogError(wxT("radar_pi: unable to start Navico Radar Locator thread"));
     }
   }
@@ -393,16 +392,19 @@ bool radar_pi::DeInit(void) {
     m_timer = 0;
   }
 
-  if (m_locator) {
-    m_locator->Shutdown();
-    m_locator->Wait();
+  if (m_navico_locator) {
+    m_navico_locator->Shutdown();
+    m_navico_locator->Wait();
   }
+  delete m_navico_locator;
+  m_navico_locator = 0;
 
   if (m_raymarine_locator) {
     m_raymarine_locator->Shutdown();
     m_raymarine_locator->Wait();
   }
-
+  delete m_raymarine_locator;
+  m_raymarine_locator = 0;
   // Stop processing in all radars.
   // This waits for the receive threads to stop and removes the dialog, so that its settings
   // can be saved.
@@ -429,9 +431,9 @@ bool radar_pi::DeInit(void) {
     m_radar[r] = 0;
   }
 
-  if (m_locator != NULL) {
-    delete m_locator;
-    m_locator = 0;
+  if (m_navico_locator != NULL) {
+    delete m_navico_locator;
+    m_navico_locator = 0;
   }
 
   if (m_raymarine_locator != NULL) {
@@ -511,16 +513,18 @@ bool radar_pi::MakeRadarSelection() {
   SelectDialog dlg(m_parent_window, this);
   if (dlg.ShowModal() == wxID_OK) {
     // stop the locators, otherwise they keep running without radars
-    if (m_locator) {
-      m_locator->Shutdown();
-      m_locator->Wait();
+    if (m_navico_locator) {
+      m_navico_locator->Shutdown();
+      m_navico_locator->Wait();
     }
+    delete m_navico_locator;
+    m_navico_locator = 0;
     LOG_INFO(wxT("radar_pi: Navico locator deleted by MakeRadarSelection"));
-    m_locator = 0;
     if (m_raymarine_locator) {
       m_raymarine_locator->Shutdown();
       m_raymarine_locator->Wait();
     }
+    delete m_raymarine_locator;
     m_raymarine_locator = 0;
     LOG_INFO(wxT("radar_pi: Raymarine locator deleted MakeRadarSelection"));
 

@@ -578,7 +578,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   PersistentSettings m_settings;
   RadarInfo *m_radar[RADARS];
   wxString m_perspective[RADARS];  // Temporary storage of window location when plugin is disabled
-  NavicoLocate *m_locator;
+  NavicoLocate *m_navico_locator;
   RaymarineLocate *m_raymarine_locator;
 
   MessageBox *m_pMessageBox;
