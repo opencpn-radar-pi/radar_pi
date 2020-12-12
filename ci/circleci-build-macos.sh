@@ -6,6 +6,9 @@
 
 set -xe
 
+# Return latest version of $1, optiomally using option $2
+pkg_version() { brew list --versions $2 $1 | tail -1 | awk '{print $2}'; }
+
 #
 # Check if the cache is with us. If not, re-install brew.
 brew list --versions libexif || brew update-reset
