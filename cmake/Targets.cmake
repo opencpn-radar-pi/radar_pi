@@ -143,37 +143,47 @@ endfunction ()
 
 function (flatpak_target manifest)
 
-  # flatpak target setup
   add_custom_target(flatpak-conf)
   add_custom_command(
     TARGET flatpak-conf
-    COMMAND cmake -DBUILD_TYPE:STRING=flatpak -Uplugin_target
-            ${CMAKE_BINARY_DIR}
+    COMMAND
+      cmake -DBUILD_TYPE:STRING=flatpak -Uplugin_target ${CMAKE_BINARY_DIR}
   )
-  add_custom_target(
-    flatpak-build          # Build the package using flatpak-builder
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND flatpak-builder --force-clean ${CMAKE_CURRENT_BINARY_DIR}/app
-            ${manifest}
-  )
-  add_custom_target(
-    flatpak-metadata       # Move metadata into install tree
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND bash -c "sed -e '/@checksum@/d' \
-        < ${pkg_displayname}.xml.in > app/files/metadata.xml"
+  add_custom_target(flatpak-build)
+  set(_fp_script "
+    execute_process(
+      COMMAND
+        flatpak-builder --force-clean ${CMAKE_CURRENT_BINARY_DIR}/app
+          ${manifest}
+    )
+    execute_process(
+      COMMAND bash -c \"sed -e '/@checksum@/d' \
+          < ${pkg_displayname}.xml.in > app/files/metadata.xml\"
+    )
+    execute_process(
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
+      COMMAND mv files ${pkg_displayname}
+    )
+    execute_process(
+      WORKING_DIRECTORY  ${CMAKE_BINARY_DIR}/app
+      COMMAND
+        cmake -E
+        tar -czf ../${pkg_tarname}.tar.gz --format=gnutar ${pkg_displayname}
+    )
+    message(STATUS \"Building ${pkg_tarname}.tar.gz\")
+    execute_process(
+      COMMAND cmake -P ${CMAKE_BINARY_DIR}/checksum.cmake
+    )
+    message(STATUS \"Computing checksum in ${pkg_displayname}.xml\")
+  ")
+  file(WRITE "${CMAKE_BINARY_DIR}/build_flatpak.cmake" ${_fp_script})
+  add_custom_target(flatpak)
+  add_custom_command(
+    TARGET flatpak      # Compute checksum
+    COMMAND cmake -P ${CMAKE_BINARY_DIR}/build_flatpak.cmake
     VERBATIM
   )
-  topdir_target("flatpak-topdir")
-  tar_target("flatpak-tar")
-  cs_target("flatpak-cs")
-  add_dependencies(flatpak-build flatpak-conf)
-  add_dependencies(flatpak-metadata flatpak-build)
-  add_dependencies(flatpak-topdir flatpak-metadata)
-  add_dependencies(flatpak-tar flatpak-topdir)
-  add_dependencies(flatpak-cs flatpak-tar)
-
-  add_custom_target(flatpak)
-  add_dependencies(flatpak flatpak-cs)
+  add_dependencies(flatpak flatpak-conf)
 endfunction ()
 
 function (pkg_target)
