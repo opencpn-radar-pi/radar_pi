@@ -67,7 +67,3 @@ build_script:
   - cd ..\ci
   - py git-push
 
-artifacts:
-  - path: 'build\*.exe'
-    name: installer
-
