@@ -71,14 +71,3 @@ artifacts:
   - path: 'build\*.exe'
     name: installer
 
-deploy:
-  description: 'release created by AppVeyor CI'
-  provider: GitHub
-  auth_token:
-    secure: 7c7f490c533dab87ca6592dcae9d5cd158ad0f58
-  artifact: installer,portable
-  draft: true
-  prerelease: true
-  tag: $(APPVEYOR_REPO_TAG_NAME)
-  on:
-    APPVEYOR_REPO_TAG: true # deploy on tag push only
