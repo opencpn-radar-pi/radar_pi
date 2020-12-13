@@ -2,8 +2,9 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-static const NetworkAddress report(0, 0, 0, 0, 0);
-static const NetworkAddress data(0, 0, 0, 0, 0);
+// Dummy addresses below to avoid "Unable to listen to socket" when no radar
+static const NetworkAddress report(236, 6, 7, 9, 1);  
+static const NetworkAddress data(236, 6, 7, 9, 1);
 static const NetworkAddress send(0, 0, 0, 0, 0);
 
 // Ranges below are indicative only, actual ranges are received from the radar
