@@ -26,10 +26,7 @@ endif ()
 if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 10)
   set(_build_cmd make -j2)
 else ()
-  set(_build_cmd
-    cmake --build ${CMAKE_BINARY_DIR} ${_parallel_cmake_opt}
-    --config $<CONFIG>
-  )
+  set(_build_cmd cmake --build ${CMAKE_BINARY_DIR} ${_parallel_cmake_opt})
 endif ()
 
 # Set up _build_target_cmd and _install_cmd
