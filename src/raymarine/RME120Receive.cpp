@@ -116,12 +116,12 @@ SOCKET RME120Receive::GetNewReportSocket() {
 
   if (m_interface_addr.IsNull()) {
     LOG_RECEIVE(wxT("radar_pi: %s no interface address to listen on"), m_ri->m_name);
-    wxMilliSleep(200);
+    wxMilliSleep(1000);
     return INVALID_SOCKET;
   }
   if (m_info.report_addr.IsNull()) {
     LOG_RECEIVE(wxT("radar_pi: %s no report address to listen on"), m_ri->m_name);
-    wxMilliSleep(200);
+    wxMilliSleep(1000);
     return INVALID_SOCKET;
   }
 
@@ -132,11 +132,9 @@ SOCKET RME120Receive::GetNewReportSocket() {
   }
 
   socket = startUDPMulticastReceiveSocket(m_interface_addr, m_info.report_addr, error);
-
+  wxString addr = m_interface_addr.FormatNetworkAddress();
+  wxString rep_addr = m_info.report_addr.FormatNetworkAddressPort();
   if (socket != INVALID_SOCKET) {
-    wxString addr = m_interface_addr.FormatNetworkAddress();
-    wxString rep_addr = m_info.report_addr.FormatNetworkAddressPort();
-
     LOG_RECEIVE(wxT("radar_pi: %s scanning interface %s for data from %s"), m_ri->m_name, addr.c_str(), rep_addr.c_str());
 
     s << _("Scanning interface") << wxT(" ") << addr;
@@ -145,6 +143,7 @@ SOCKET RME120Receive::GetNewReportSocket() {
     s << error;
     SetInfoStatus(s);
     wxLogError(wxT("radar_pi: %s Unable to listen to socket: %s"), m_ri->m_name, error.c_str());
+    LOG_RECEIVE(wxT("radar_pi: %s invalid socket interface= %s for reportaddr= %s"), m_ri->m_name, addr.c_str(), rep_addr.c_str());
   }
   return socket;
 }
