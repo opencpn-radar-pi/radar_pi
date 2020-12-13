@@ -41,10 +41,10 @@ else ()
       cmake --install ${CMAKE_BINARY_DIR} --config $<CONFIG>)
 endif ()
 
-if (WIN32 AND NOT MINGW)
-  set(_mvdir rename)
-else ()
+if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 12)
   set(_mvdir mv)
+else ()
+  set(_mvdir cmake -E rename)
 endif ()
 
 # Command to compute sha256 checksum
