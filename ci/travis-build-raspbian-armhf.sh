@@ -46,20 +46,8 @@ sudo apt-get install python3-pip python3-setuptools || :
 
 #  Upload to cloudsmith
 
-STABLE_REPO=${OCPN_STABLE_REPO}
-UNSTABLE_REPO=${OCPN_UNSTABLE_REPO}
-
-#UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'kees-verruijt/ocpn-plugins-unstable'}
-#STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'kees-verruijt/ocpn-plugins-stable'}
-
 echo "Check 0.5"
-echo $STABLE_REPO
-echo $UNSTABLE_REPO
-
-if [ -z "$CLOUDSMITH_API_KEY" ]; then
-    echo 'Cannot deploy to cloudsmith, missing $CLOUDSMITH_API_KEY'
-    exit 0
-fi
+source "./ci/cloudsmith-repo.sh"
 
 echo "Using \$CLOUDSMITH_API_KEY: ${CLOUDSMITH_API_KEY:0:4}..."
 
