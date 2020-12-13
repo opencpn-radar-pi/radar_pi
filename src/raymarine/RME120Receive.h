@@ -55,7 +55,6 @@ class RME120Receive : public RadarReceive {
     m_info.send_command_addr = sendAddr;
     m_next_spoke = -1;
     m_range_meters = 0;
-    M_SETTINGS.range_units = RANGE_UNITS_UNDEFINED;  // this overwrites the value from the ini file. 
     // However radar is leading for range_units, will be overwritten with value from the radar
     m_shutdown_time_requested = 0;
     m_is_shutdown = false;
