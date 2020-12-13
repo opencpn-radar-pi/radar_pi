@@ -34,7 +34,7 @@ jobs:
      <<: *debian-steps
    build-flatpak:
      machine:
-       image: circleci/classic:201808-01
+       image: ubuntu-1604:201903-01
      environment:
        - OCPN_TARGET:  flatpak
      steps:
@@ -43,7 +43,7 @@ jobs:
        - run: ci/circleci-upload.sh
    build-mingw:
      docker:
-       - image: fedora:29
+       - image: fedora:33
      environment:
        - OCPN_TARGET: mingw
      steps:
@@ -53,12 +53,25 @@ jobs:
        - run: ci/circleci-upload.sh
    build-macos:
      macos:
-       xcode: "10.0.0"
+       xcode: "11.3.0"
      environment:
        - OCPN_TARGET:  macos
      steps:
        - checkout
+       - restore_cache:
+          keys:
+            - macos-cache-v1-{{checksum "ci/circleci-build-macos.sh"}}
        - run: ci/circleci-build-macos.sh
+       - save_cache:
+          key: macos-cache-v1-{{checksum "ci/circleci-build-macos.sh"}}
+          paths:
+            - /usr/local/Homebrew
+            - /usr/local/Caskroom
+            - /usr/local/Cellar
+            - /usr/local/bin
+            - /usr/local/include
+            - /usr/local/lib
+            - /usr/local/opt
        - run: ci/circleci-upload.sh
 
 std-filters: &std-filters

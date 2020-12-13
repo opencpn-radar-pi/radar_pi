@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 
-STABLE_REPO='opencpn-radar-pi/opencpn-radar-pi-prod'
-UNSTABLE_REPO='opencpn-radar-pi/opencpn-radar-pi-beta'
+PROD_REPO='opencpn-radar-pi/opencpn-radar-pi-prod'
+BETA_REPO='opencpn-radar-pi/opencpn-radar-pi-beta'
 
 if [ -z "$CLOUDSMITH_API_KEY" ]; then
     echo 'Cannot deploy to cloudsmith, missing $CLOUDSMITH_API_KEY'

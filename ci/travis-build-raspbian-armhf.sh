@@ -89,7 +89,7 @@ echo $tarball
 
 source ../build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}.${commit}"
-test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
+test -n "$tag" && REPO="$PROD_REPO" || REPO="$BETA_REPO"
 tarball_name=${PKG_UPLOAD_NAME}-tarball
 
 echo "Check 3"

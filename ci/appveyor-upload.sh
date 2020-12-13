@@ -27,7 +27,7 @@ tarball_basename=${tarball##*/}
 
 source ../build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}.${commit}"
-test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
+test -n "$tag" && REPO="$PROD_REPO" || REPO="$BETA_REPO"
 tarball_name=radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
 
 # There is no sed available in git bash. This is nasty, but seems
