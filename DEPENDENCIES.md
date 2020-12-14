@@ -2,7 +2,7 @@ Plugin build dependencies
 =========================
 
 In order to build, the cmake setup requires build dependencies to be
-installed. This document aimes the describe this for all platforms besides
+installed. This document aimes to describe this for all platforms besides
 flatpak, which is documented in flatpak/README.md
 
 Windows

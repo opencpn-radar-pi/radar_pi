@@ -13,8 +13,8 @@ The plugin uses a continous integration setup described in CI.md.
 Install dependencies as described in DEPENDENCIES.md. Then clone
 this repository, enter it and make `rm -rf build; mkdir build; cd build`.
 
-Generate a tar.gz tarball which can be used by the new plugin installer,
-available from OpenCPN 5.2.0 is built using:
+A tar.gz tarball which can be used by the new plugin installer, available
+from OpenCPN 5.2.0 is built using:
 
     $ cmake ..
     $ make tarball
