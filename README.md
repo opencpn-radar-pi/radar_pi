@@ -1,6 +1,6 @@
 # shipdriver\_pi README
 
-A plugin for OpenCPN. Almost a simulator or is it a game? 
+A plugin for OpenCPN. Almost a simulator or is it a game?
 
 More user info: https://opencpn.org/OpenCPN/plugins/shipdriver.html
 
@@ -8,25 +8,22 @@ The plugin uses a continous integration setup described in CI.md.
 
 ## Building
 
-Start using  `rm -rf build; mkdir build; cd build`
+### General
 
-#### Regular installer tarball
+Install dependencies as described in DEPENDENCIES.md. Then clone
+this repository, enter it and make `rm -rf build; mkdir build; cd build`.
 
 Generate a tar.gz tarball which can be used by the new plugin installer,
-available from OpenCPN 5.2.0: 
+available from OpenCPN 5.2.0 is built using:
 
     $ cmake ..
-    $ make tarball           
+    $ make tarball
 
-#### flatpak tarball
-
-Build a installer tarball to be used by the flatpak'ed opencpn plugin 
-installer:
+An installer tarball to be used by the flatpak'ed opencpn plugin
+installer is built by:
 
     $ cmake ..
     $ make flatpak
-
-#### Legacy installer 
 
 On most platforms besides flatpak: build a platform-dependent legacy
 installer like a NSIS .exe on Windows, a Debian .deb package on Linux
