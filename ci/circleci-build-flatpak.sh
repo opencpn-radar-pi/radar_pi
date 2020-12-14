@@ -11,7 +11,7 @@
 #
 
 set -xe
-MANIFEST=flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+MANIFEST=org.opencpn.OpenCPN.Plugin.shipdriver.yaml
 
 # Give the apt update daemons a chance to leave the scene.
 sudo systemctl stop apt-daily.service apt-daily.timer
