@@ -4,12 +4,12 @@
 
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP
-#	include <wx/wx.h>
+#include <wx/wx.h>
 #endif
 
 extern void initialize_images(void);
 
-extern wxBitmap *_img_ShipDriverIcon;
+extern wxBitmap* _img_ShipDriverIcon;
 
 #ifdef SHIPDRIVER_USE_SVG
 extern wxString _svg_shipdriver;
