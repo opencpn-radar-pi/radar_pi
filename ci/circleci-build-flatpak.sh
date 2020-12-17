@@ -10,8 +10,12 @@
 # a full-fledged VM to run it.
 #
 
-set -xe
-MANIFEST=org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+set -e
+
+MANIFEST=$(find flatpak -name org.opencpn.OpenCPN.Plugin\*yaml)
+MANIFEST=${MANIFEST/flatpak\//}
+echo "Using manifest file: $MANIFEST"
+set -x
 
 # Give the apt update daemons a chance to leave the scene.
 sudo systemctl stop apt-daily.service apt-daily.timer
