@@ -11,8 +11,6 @@
 #
 
 set -e
-pwd
-ls 
 
 MANIFEST=$(cd flatpak; ls org.opencpn.OpenCPN.Plugin*yaml)
 echo "Using manifest file: $MANIFEST"
