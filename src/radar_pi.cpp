@@ -234,11 +234,6 @@ int radar_pi::Init(void) {
   m_settings.threshold_blue = 255;
   m_settings.threshold_red = 255;
   m_settings.threshold_green = 255;
-  CLEAR_STRUCT(m_settings.radar_interface_address);
-  wxString empty_info = wxT(" / / / ");
-  for (size_t r = 0; r < RADARS; r++) {
-    m_settings.radar_location_info[r] = RadarLocationInfo(empty_info);
-  }
   m_settings.radar_count = 0;
 
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
@@ -504,11 +499,6 @@ bool radar_pi::MakeRadarSelection() {
       oldRadarType[r] = RT_MAX;
     }
   }
-
-#define CLEAR_RADAR_INFO                \
-  wxString empty_info = wxT(" / / / "); \
-  m_settings.radar_location_info[r] = RadarLocationInfo(empty_info);
-
   m_initialized = false;
   SelectDialog dlg(m_parent_window, this);
   if (dlg.ShowModal() == wxID_OK) {
@@ -526,7 +516,7 @@ bool radar_pi::MakeRadarSelection() {
     }
     delete m_raymarine_locator;
     m_raymarine_locator = 0;
-    LOG_INFO(wxT("radar_pi: Raymarine locator deleted MakeRadarSelection"));
+    LOG_INFO(wxT("radar_pi: Raymarine locator deleted by MakeRadarSelection"));
 
     // delete all radars
     for (size_t r = 0; r < m_settings.radar_count; r++) {
@@ -536,7 +526,7 @@ bool radar_pi::MakeRadarSelection() {
         RemoveCanvasContextMenuItem(m_context_menu_control_id[r]);
         delete m_radar[r];
         m_radar[r] = 0;
-        CLEAR_RADAR_INFO;
+        
         LOG_INFO(wxT("radar_pi: Shutdown radar %i ready"), r);
       }
     }
@@ -564,7 +554,6 @@ bool radar_pi::MakeRadarSelection() {
     for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
       if (m_radar[r]) {
         m_radar[r]->Shutdown();
-        CLEAR_RADAR_INFO;
         delete m_radar[r];
         m_radar[r] = 0;
       }
@@ -1440,13 +1429,13 @@ bool radar_pi::LoadConfig(void) {
       }
 
       pConf->Read(wxString::Format(wxT("Radar%dInterface"), r), &s, "0.0.0.0");
-      radar_inet_aton(s.c_str(), &m_settings.radar_interface_address[n].addr);
-      m_settings.radar_interface_address[n].port = 0;
+      radar_inet_aton(s.c_str(), &m_radar[r]->m_radar_interface_address.addr);
+      m_radar[r]->m_radar_interface_address.port = 0;
       pConf->Read(wxString::Format(wxT("Radar%dAddress"), r), &s, "0.0.0.0");
-      radar_inet_aton(s.c_str(), &m_settings.radar_address[n].addr);
-      m_settings.radar_address[n].port = htons(RadarOrder[ri->m_radar_type]);
+      radar_inet_aton(s.c_str(), &m_radar[r]->m_radar_address.addr);
+      m_radar[r]->m_radar_address.port = htons(RadarOrder[ri->m_radar_type]);
       pConf->Read(wxString::Format(wxT("Radar%dLocationInfo"), r), &s, " ");
-      m_settings.radar_location_info[r] = RadarLocationInfo(s);
+      m_radar[r]->m_radar_location_info = RadarLocationInfo(s);
 
       pConf->Read(wxString::Format(wxT("Radar%dRange"), r), &v, 2000);
       ri->m_range.Update(v);
@@ -1620,9 +1609,9 @@ bool radar_pi::SaveConfig(void) {
 
     for (int r = 0; r < (int)m_settings.radar_count; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);
-      pConf->Write(wxString::Format(wxT("Radar%dLocationInfo"), r), m_settings.radar_location_info[r].to_string());
-      pConf->Write(wxString::Format(wxT("Radar%dAddress"), r), m_settings.radar_address[r].FormatNetworkAddress());
-      pConf->Write(wxString::Format(wxT("Radar%dInterface"), r), m_settings.radar_interface_address[r].FormatNetworkAddress());
+      pConf->Write(wxString::Format(wxT("Radar%dLocationInfo"), r), m_radar[r]->m_radar_location_info.to_string());
+      pConf->Write(wxString::Format(wxT("Radar%dAddress"), r), m_radar[r]->m_radar_address.FormatNetworkAddress());
+      pConf->Write(wxString::Format(wxT("Radar%dInterface"), r), m_radar[r]->m_radar_interface_address.FormatNetworkAddress());
       pConf->Write(wxString::Format(wxT("Radar%dRange"), r), m_radar[r]->m_range.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->m_state.GetValue());
@@ -1663,180 +1652,6 @@ bool radar_pi::SaveConfig(void) {
   }
 
   return false;
-}
-
-void radar_pi::SetRadarLocationInfo(size_t r, const RadarLocationInfo &info) {
-  wxCriticalSectionLocker lock(m_exclusive);
-
-  M_SETTINGS.radar_location_info[r] = info;
-}
-
-void radar_pi::FoundRadarLocationInfo(const NetworkAddress &addr, const NetworkAddress &interface_addr,
-                                       const RadarLocationInfo &info) {
-  wxCriticalSectionLocker lock(m_exclusive);
-  bool halo_type = false;
-  int radar_order[RT_MAX];
-  for (int i = 0; i < RT_MAX; i++) {
-    radar_order[i] = RadarOrder[i];
-  }
-  // When NavicoLocate finds a Halo type we should only put it in a info field of an Halo radar
-  /*As far as we know:
-  13 and 14 = 4G
-  15 = old Halo
-  16
-  17
-  18 & serialNr[4] == '4' = new 3G (or 4G?)
-  19 = Halo24
-  */
-
-  // Find the number of physical Navico and Raymarineradars
-  size_t navicos = 0;  // number of hard Navico radars
-  bool navico[RT_MAX];
-  CLEAR_STRUCT(navico);
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (m_radar[r]->m_radar_type == RT_3G) navico[RT_3G] = true;
-    if (m_radar[r]->m_radar_type == RT_4GA) navico[RT_4GA] = true;
-    if (m_radar[r]->m_radar_type == RT_4GB) navico[RT_4GB] = true;
-    if (m_radar[r]->m_radar_type == RT_HaloA) navico[RT_HaloA] = true;
-    if (m_radar[r]->m_radar_type == RT_HaloB) navico[RT_HaloB] = true;
-  }
-
-  navicos = (size_t)navico[RT_3G] + (size_t)(navico[RT_4GA] || navico[RT_4GB]) +
-            (size_t)(navico[RT_HaloA] || navico[RT_HaloB] + (size_t)navico[RM_E120]);
-
-  // more then 2 Navico radars: associate the info found with the right type of radar
-  if (navicos > 1) {
-    if (info.serialNr[0] == '1' &&
-        (info.serialNr[1] == '9' || info.serialNr[1] == '7' || info.serialNr[1] == '6' ||
-         info.serialNr[1] == '5')) {  // It seems that serial # starting with 15 - 19  refers to Halo type radars
-      halo_type = true;
-    }
-
-    if (halo_type) {
-      radar_order[RT_4GA] = 0;
-      radar_order[RT_4GB] = 0;
-    } else {
-      radar_order[RT_HaloA] = 0;
-      radar_order[RT_HaloB] = 0;
-    }
-  }
-
-  if (info.serialNr[0] == '1' && info.serialNr[1] == '8' && info.serialNr[4] == '4') {
-    // this is a new 3G or (may be) a 4G which will handle NavicoLocate
-    radar_order[RT_3G] = 1;
-  }
-
-  NetworkAddress int_face_addr = interface_addr;
-  NetworkAddress radar_addr = addr;
-
-  // First, check if we already know this serial#
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (ntohs(addr.port) == radar_order[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
-        M_SETTINGS.radar_location_info[r].serialNr == info.serialNr) {
-      SetRadarLocationInfo(r, info);
-      SetRadarInterfaceAddress(r, int_face_addr, radar_addr);
-      return;
-    }
-  }
-
-  // Second loop, put it in radar with same report address but no serial#
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (ntohs(addr.port) == radar_order[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
-        !info.report_addr.IsNull() &&                                 // If the report address fits, override the serial
-        M_SETTINGS.radar_location_info[r].report_addr == info.report_addr) {
-      SetRadarLocationInfo(r, info);
-      SetRadarInterfaceAddress(r, int_face_addr, radar_addr);
-      return;
-    }
-  }
-
-  // Third loop, put it in radar with same IP address but no serial# nor report address
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (ntohs(addr.port) == radar_order[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
-        M_SETTINGS.radar_address[r] == addr && M_SETTINGS.radar_location_info[r].serialNr.IsNull() &&
-        M_SETTINGS.radar_location_info[r].report_addr.IsNull()) {
-      SetRadarLocationInfo(r, info);
-      SetRadarInterfaceAddress(r, int_face_addr, radar_addr);
-      return;
-    }
-  }
-
-  // In case of desperation, put it in a free slot without serial# or address
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (ntohs(addr.port) == radar_order[m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
-        M_SETTINGS.radar_address[r].IsNull() && M_SETTINGS.radar_location_info[r].serialNr.IsNull() &&
-        M_SETTINGS.radar_location_info[r].report_addr.IsNull()) {
-      SetRadarLocationInfo(r, info);
-      SetRadarInterfaceAddress(r, int_face_addr, radar_addr);
-      return;
-    }
-  }
-
-  // No free slot, override the first radar A with A, B with B but only Halo with Halo
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (ntohs(addr.port) == radar_order[m_radar[r]->m_radar_type]) {  // Only put primary in primary slots, etc.
-      SetRadarLocationInfo(r, info);
-      SetRadarInterfaceAddress(r, int_face_addr, radar_addr);
-      return;
-    }
-  }
-  LOG_INFO(wxT("radar_pi: Failed to allocate info from NavicoLocate to a radar"));
-}
-
-void radar_pi::FoundRaymarineRadarInfo(const NetworkAddress &addr, const NetworkAddress &interface_addr,
-                                       const RadarLocationInfo &info) {
-  wxCriticalSectionLocker lock(m_exclusive);
-  bool halo_type = false;
-  int radar_order[RT_MAX];
-  for (int i = 0; i < RT_MAX; i++) {
-    radar_order[i] = RadarOrder[i];
-  }
-
-  // Check if the info is OK
-  if (info.report_addr.IsNull() || info.send_command_addr.IsNull()) {
-    return;
-  }
-
-  // Find the number of physical Raymarine radars; only needed in case of more than one Raymarine radar
-  size_t raymarines = 0;  // number of hard Raymarine radars
-
-  int ray_nr = -1;
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (m_radar[r]->m_radar_type == RM_E120) {
-      ray_nr = r;
-      raymarines++;  // later more Raymarine radars may be covered
-      break;         // RM_120 found, there should only be one
-    }
-  }
-  if (ray_nr == -1) {  // no raymarine radar found
-    LOG_INFO(wxT("No raymarine radar found"));
-    return;
-  }
-  // more then 2 Raymarine radars: associate the info found with the right type of radar
-  if (raymarines > 1) {
-    LOG_INFO(wxT(" radar_pi: Software doen not yet allow more than one Raymarine radar type"));
-  }
-
-  NetworkAddress int_face_addr = interface_addr;
-  NetworkAddress radar_addr = addr;
-
-  // First, check if we already know this serial#
-
-  size_t r = (size_t)ray_nr;
-  SetRadarLocationInfo(r, info);
-  SetRadarInterfaceAddress(r, int_face_addr, radar_addr);
-  return;
-}
-
-bool radar_pi::HaveRadarSerialNo(size_t r) {
-  wxCriticalSectionLocker lock(m_exclusive);
-
-  return !M_SETTINGS.radar_location_info[r].serialNr.IsNull();
-}
-
-RadarLocationInfo &radar_pi::GetRadarLocationInfo(size_t r) {
-  wxCriticalSectionLocker lock(m_exclusive);
-  return M_SETTINGS.radar_location_info[r];
 }
 
 // Positional Data passed from NMEA to plugin

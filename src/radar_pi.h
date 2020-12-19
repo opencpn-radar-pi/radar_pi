@@ -400,9 +400,6 @@ struct PersistentSettings {
   wxPoint window_pos[RADARS];                      // Saved position of radar windows, when floating and not docked
   wxPoint alarm_pos;                               // Saved position of alarm window
   wxString alert_audio_file;                       // Filepath of alarm audio file. Must be WAV.
-  NetworkAddress radar_interface_address[RADARS];  // Saved address of interface used to see radar. Used to speed up next boot.
-  NetworkAddress radar_address[RADARS];            // Saved address of IP address of radar.
-  RadarLocationInfo radar_location_info[RADARS];   // Navico and Raymarine specific stuff (multicast addresses + serial nr)
   wxColour trail_start_colour;                     // Starting colour of a trail
   wxColour trail_end_colour;                       // Ending colour of a trail
   wxColour doppler_approaching_colour;             // Colour for Doppler Approaching returns
@@ -501,26 +498,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
 
   long GetRangeMeters();
   long GetOptimalRangeMeters();
-
-  void SetRadarInterfaceAddress(int r, NetworkAddress &ifaddr, NetworkAddress &addr) {
-    wxCriticalSectionLocker lock(m_exclusive);
-    m_settings.radar_interface_address[r] = ifaddr;
-    m_settings.radar_address[r] = addr;
-  };
-
-  NetworkAddress &GetRadarInterfaceAddress(int r) {
-    wxCriticalSectionLocker lock(m_exclusive);
-    return m_settings.radar_interface_address[r];
-  }
-
-  NetworkAddress &GetRadarAddress(int r) {
-    wxCriticalSectionLocker lock(m_exclusive);
-    return m_settings.radar_address[r];
-  }
-
-  void SetRadarLocationInfo(size_t r, const RadarLocationInfo &info);
-  void FoundRadarLocationInfo(const NetworkAddress &radar_addr, const NetworkAddress &interface_addr, const RadarLocationInfo &info);
-  void FoundRaymarineRadarInfo(const NetworkAddress &radar_addr, const NetworkAddress &interface_addr, const RadarLocationInfo &info);
+  
   bool HaveRadarSerialNo(size_t r);
   RadarLocationInfo &GetRadarLocationInfo(size_t r);
 

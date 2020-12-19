@@ -72,8 +72,6 @@ class RadarInfo {
   int m_radar_ranges[20];  // Ranges actually in use (values displayed). Always in meters, also if units is NM. Currently
                                   // only used for Raymarine.
 
-  NetworkAddress m_radar_address; // current network address of the radar. Only when radar has been seen. Only used for Raymarine
-
   // Digital radars cannot produce just any range. When asked for a particular value
   // they produce a slightly larger range.
   //
@@ -149,7 +147,10 @@ class RadarInfo {
   bool m_timed_idle_hardware;    // Does radar handle timed idle itself?
 
   /* Per radar objects */
-
+ 
+  NetworkAddress m_radar_interface_address;  // Saved address of interface used to see radar. Used to speed up next boot.
+  NetworkAddress m_radar_address;            // Saved address of IP address of radar.
+  RadarLocationInfo m_radar_location_info;   // Navico and Raymarine specific stuff (multicast addresses + serial nr)
   RadarControl *m_control;
   RadarReceive *m_receive;
   ControlsDialog *m_control_dialog;
@@ -265,6 +266,13 @@ class RadarInfo {
   wxString GetCanvasTextCenter();
   wxString GetTimedIdleText();
   wxString GetRadarStateText();
+
+  bool HaveRadarSerialNo(size_t r);
+  RadarLocationInfo GetRadarLocationInfo();
+  void SetRadarLocationInfo(const RadarLocationInfo &info);
+  void SetRadarInterfaceAddress(NetworkAddress &ifaddr, NetworkAddress &addr);
+  NetworkAddress GetRadarAddress();
+  NetworkAddress GetRadarInterfaceAddress();
 
   GeoPosition m_mouse_pos;
   double m_mouse_ebl[ORIENTATION_NUMBER];
