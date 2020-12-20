@@ -1453,21 +1453,21 @@ bool radar_pi::LoadConfig(void) {
       RadarControlItem item;
       pConf->Read(wxString::Format(wxT("Radar%dTrailsState"), r), &state, RCS_OFF);
       pConf->Read(wxString::Format(wxT("Radar%dTrails"), r), &v, 0);
-      m_radar[r]->m_target_trails.Update(v, (RadarControlState)state);
+      ri->m_target_trails.Update(v, (RadarControlState)state);
       pConf->Read(wxString::Format(wxT("Radar%dTrueTrailsMotion"), r), &v, 1);
-      m_radar[r]->m_trails_motion.Update(v);
+      ri->m_trails_motion.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dMainBangSize"), r), &v, 0);
-      m_radar[r]->m_main_bang_size.Update(v);
+      ri->m_main_bang_size.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dAntennaForward"), r), &v, 0);
-      m_radar[r]->m_antenna_forward.Update(v);
+      ri->m_antenna_forward.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dAntennaStarboard"), r), &v, 0);
-      m_radar[r]->m_antenna_starboard.Update(v);
+      ri->m_antenna_starboard.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dRunTimeOnIdle"), r), &v, 1);
-      m_radar[r]->m_timed_run.Update(v);
+      ri->m_timed_run.Update(v);
 
       for (int i = 0; i < MAX_CHART_CANVAS; i++) {
         pConf->Read(wxString::Format(wxT("Radar%dOverlayCanvas%d"), r, i), &v, 0);
-        m_radar[r]->m_overlay_canvas[i].Update(v);
+        ri->m_overlay_canvas[i].Update(v);
       }
 
       pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[n], true);
@@ -1477,7 +1477,7 @@ bool radar_pi::LoadConfig(void) {
       m_settings.window_pos[n] = wxPoint(x, y);
       pConf->Read(wxString::Format(wxT("Radar%dControlShow"), r), &m_settings.show_radar_control[n], false);
       pConf->Read(wxString::Format(wxT("Radar%dTargetShow"), r), &v, true);
-      m_radar[r]->m_target_on_ppi.Update(v);
+      ri->m_target_on_ppi.Update(v);
 
       pConf->Read(wxString::Format(wxT("Radar%dControlPosX"), r), &x, wxDefaultPosition.x);
       pConf->Read(wxString::Format(wxT("Radar%dControlPosY"), r), &y, wxDefaultPosition.y);
