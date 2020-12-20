@@ -1429,13 +1429,13 @@ bool radar_pi::LoadConfig(void) {
       }
 
       pConf->Read(wxString::Format(wxT("Radar%dInterface"), r), &s, "0.0.0.0");
-      radar_inet_aton(s.c_str(), &m_radar[r]->m_radar_interface_address.addr);
-      m_radar[r]->m_radar_interface_address.port = 0;
+      radar_inet_aton(s.c_str(), &ri->m_radar_interface_address.addr);
+      ri->m_radar_interface_address.port = 0;
       pConf->Read(wxString::Format(wxT("Radar%dAddress"), r), &s, "0.0.0.0");
-      radar_inet_aton(s.c_str(), &m_radar[r]->m_radar_address.addr);
-      m_radar[r]->m_radar_address.port = htons(RadarOrder[ri->m_radar_type]);
+      radar_inet_aton(s.c_str(), &ri->m_radar_address.addr);
+      ri->m_radar_address.port = htons(RadarOrder[ri->m_radar_type]);
       pConf->Read(wxString::Format(wxT("Radar%dLocationInfo"), r), &s, " ");
-      m_radar[r]->m_radar_location_info = RadarLocationInfo(s);
+      ri->SetRadarLocationInfo(RadarLocationInfo(s));
 
       pConf->Read(wxString::Format(wxT("Radar%dRange"), r), &v, 2000);
       ri->m_range.Update(v);
@@ -1609,9 +1609,9 @@ bool radar_pi::SaveConfig(void) {
 
     for (int r = 0; r < (int)m_settings.radar_count; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);
-      pConf->Write(wxString::Format(wxT("Radar%dLocationInfo"), r), m_radar[r]->m_radar_location_info.to_string());
+      pConf->Write(wxString::Format(wxT("Radar%dLocationInfo"), r), m_radar[r]->GetRadarLocationInfo().to_string());
       pConf->Write(wxString::Format(wxT("Radar%dAddress"), r), m_radar[r]->m_radar_address.FormatNetworkAddress());
-      pConf->Write(wxString::Format(wxT("Radar%dInterface"), r), m_radar[r]->m_radar_interface_address.FormatNetworkAddress());
+      pConf->Write(wxString::Format(wxT("Radar%dInterface"), r), m_radar[r]->GetRadarInterfaceAddress().FormatNetworkAddress());
       pConf->Write(wxString::Format(wxT("Radar%dRange"), r), m_radar[r]->m_range.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dRotation"), r), m_radar[r]->m_orientation.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTransmit"), r), m_radar[r]->m_state.GetValue());
