@@ -11,7 +11,6 @@
 #
 
 set -xe
-MANIFEST=org.opencpn.OpenCPN.Plugin.shipdriver.yaml
 
 # Give the apt update daemons a chance to leave the scene.
 sudo systemctl stop apt-daily.service apt-daily.timer
@@ -29,7 +28,8 @@ flatpak remote-add --user --if-not-exists flathub \
     https://flathub.org/repo/flathub.flatpakrepo
 flatpak install --user -y flathub org.opencpn.OpenCPN > /dev/null
 flatpak install --user -y flathub org.freedesktop.Sdk//18.08  >/dev/null
-sed -i '/^runtime-version/s/:.*/: stable/' flatpak/$MANIFEST
+sed -i '/^runtime-version/s/:.*/: stable/' \
+    flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
 
 # The flatpak checksumming needs python3:
 pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
@@ -40,7 +40,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc) VERBOSE=1 flatpak
 
 # Restore file so the cache checksumming is ok.
-git checkout ../flatpak/$MANIFEST
+git checkout ../flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
 
 # Wait for apt-daily to complete, install cloudsmith-cli required by upload.sh.
 # apt-daily should not restart, it's masked.

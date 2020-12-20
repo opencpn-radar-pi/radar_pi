@@ -21,19 +21,10 @@ if (NOT QT_ANDROID)
   else ()
     message(STATUS "OpenGL not found...")
   endif ()
-  
-  set(wxWidgets_USE_LIBS base core net xml html adv stc)
-  set(BUILD_SHARED_LIBS TRUE)
-
-  find_package(wxWidgets REQUIRED base core net xml html adv stc)
-
-  if(MSYS)
-  # this is just a hack. I think the bug is in FindwxWidgets.cmake
-    string( REGEX REPLACE "/usr/local" "\\\\;C:/MinGW/msys/1.0/usr/local" wxWidgets_INCLUDE_DIRS ${wxWidgets_INCLUDE_DIRS} )
-  endif()
-
-  include(${wxWidgets_USE_FILE})	
-	
+  set(_LIBS base core net xml html adv ${GL_LIB})
+  find_package(wxWidgets COMPONENTS ${_LIBS} REQUIRED)
+  include(${wxWidgets_USE_FILE})
+  target_link_libraries(${PACKAGE_NAME} ${wxWidgets_LIBRARIES})
 endif ()
 
 
