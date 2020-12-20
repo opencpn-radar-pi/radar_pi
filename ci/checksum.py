@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 #
-#  Compute the sha256 hash for a given file. Output is compatible with
-#  cmake -E sha256sum
-#
+#  Compute the sha256 hash for a given file.
 
 import hashlib
 import sys

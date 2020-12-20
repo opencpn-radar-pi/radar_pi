@@ -6,8 +6,6 @@
 
 set -xe
 
-export MACOSX_DEPLOYMENT_TARGET=10.9
-
 # Return latest version of $1, optiomally using option $2
 pkg_version() { brew list --versions $2 $1 | tail -1 | awk '{print $2}'; }
 
@@ -15,7 +13,7 @@ pkg_version() { brew list --versions $2 $1 | tail -1 | awk '{print $2}'; }
 # Check if the cache is with us. If not, re-install brew.
 brew list --versions libexif || brew update-reset
 
-# install packaged dependencies
+
 for pkg in cairo cmake gettext libarchive libexif python wget; do
     brew list --versions $pkg || brew install $pkg || brew install $pkg || :
     brew link --overwrite $pkg || brew install $pkg
@@ -30,13 +28,12 @@ else
     brew install --cask packages
 fi
 
-# Install the pre-built wxWidgets package
 wget -q https://download.opencpn.org/s/rwoCNGzx6G34tbC/download \
     -O /tmp/wx312B_opencpn50_macos109.tar.xz
 tar -C /tmp -xJf /tmp/wx312B_opencpn50_macos109.tar.xz 
 
+export MACOSX_DEPLOYMENT_TARGET=10.9
 
-# Build and package
 rm -rf build && mkdir build && cd build
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
@@ -55,7 +52,7 @@ python3 -m pip install --user cloudsmith-cli
 # Required by git-push
 python3 -m pip install --user cryptography
 
-# python3 installs in odd place not on PATH, teach upload.sh to use it:
+# python3 installs in odd place not on PATH:
 pyvers=$(python3 --version | awk '{ print $2 }')
 pyvers=$(echo $pyvers | sed -E 's/[\.][0-9]+$//')    # drop last .z in x.y.z
 echo "export PATH=\$PATH:/Users/distiller/Library/Python/$pyvers/bin" \

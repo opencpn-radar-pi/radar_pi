@@ -28,7 +28,7 @@ else ()
   target_compile_definitions(TINYXML PUBLIC -DTIXML_USE_STL)
   target_include_directories(TINYXML
                              PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-  set_property(TARGET TINYXML PROPERTY COMPILE_FLAGS "${OBJ_VISIBILITY}")                             
+  set_property(TARGET TINYXML PROPERTY COMPILE_FLAGS "${OBJ_VISIBILITY}")
   target_link_libraries(TINYXML_IF INTERFACE TINYXML)
   message(STATUS "Using bundled tinyxml")
 endif ()
