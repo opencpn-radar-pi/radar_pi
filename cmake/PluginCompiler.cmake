@@ -24,7 +24,3 @@ endif ()
 if (UNIX AND NOT APPLE)   # linux, see OpenCPN/OpenCPN#1977
   set_target_properties(${PACKAGE_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN:$ORIGIN/..")
 endif ()
-
-if (NOT COMPILER STREQUAL "MSVC")
-  set(OBJ_VISIBILITY "-fvisibility=hidden")
-endif ()

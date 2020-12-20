@@ -245,4 +245,3 @@ function (create_targets manifest)
   pkg_target()
   help_target()
 endfunction ()
-

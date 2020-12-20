@@ -37,7 +37,6 @@ if (NOT QT_ANDROID)
 endif ()
 
 
-
 if (MINGW)
   target_link_libraries(${PACKAGE_NAME} ${OPENGL_LIBRARIES})
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L../buildwin")

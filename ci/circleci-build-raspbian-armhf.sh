@@ -62,5 +62,5 @@ python3 -m pip install --upgrade pip
 python3 -m pip install --user cloudsmith-cli
 python3 -m pip install --user cryptography
 
-# python install scripts in ~/.local/bin:
+# python install scripts in ~/.local/bin, teach upload.sh to use it in PATH:
 echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.uploadrc

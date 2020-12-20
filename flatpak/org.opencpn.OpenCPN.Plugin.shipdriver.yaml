@@ -26,7 +26,6 @@ modules:
           cxxflags: -DFLATPAK -O3
           cflags: -DFLATPAK -O3
           # The flatpak-builder default CFLAGS adds -g
-          strip: true
       sources:
           - type: git
             url: ..

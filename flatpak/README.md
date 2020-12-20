@@ -13,7 +13,7 @@ To build and install:
     Or use the provisionary beta repo at fedorapeople.org (mirrors master):
 
           $ flatpak install --user \
-              https://leamas.fedorapeople.org/opencpn/opencpn.flatpakref
+              https://opencpn.duckdns.org/opencpn/opencpn.flatpakref
 
   - The shipdriver flatpak plugin can now be built and installed using
 
