@@ -83,8 +83,8 @@ if (CMAKE_BUILD_TYPE MATCHES "Release|MinSizeRel")
     )
     install(CODE
       "execute_process(
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMAND ${STRIP_UTIL} app/files/${_striplib}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       )"
     )
   endif ()
