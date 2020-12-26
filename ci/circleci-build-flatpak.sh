@@ -30,9 +30,15 @@ sudo apt update
 sudo apt install build-essential flatpak-builder flatpak tar
 flatpak remote-add --user --if-not-exists flathub \
     https://flathub.org/repo/flathub.flatpakrepo
-flatpak install --user -y flathub org.opencpn.OpenCPN > /dev/null
 flatpak install --user -y flathub org.freedesktop.Sdk//18.08  >/dev/null
-sed -i '/^runtime-version/s/:.*/: stable/' flatpak/$MANIFEST
+
+if false
+then
+  flatpak install --user -y flathub org.opencpn.OpenCPN > /dev/null
+  sed -i '/^runtime-version/s/:.*/: stable/' flatpak/$MANIFEST
+else
+  flatpak install --user -y --no-gpg-verify http://opencpn.duckdns.org/opencpn-flatpak-beta/opencpn.flatpakref
+fi
 
 # The flatpak checksumming needs python3:
 pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
