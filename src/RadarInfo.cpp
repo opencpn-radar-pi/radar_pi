@@ -81,6 +81,10 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_status_text_hide = false;
   CLEAR_STRUCT(m_statistics);
   CLEAR_STRUCT(m_course_log);
+  wxString empty_info = wxT(" / / / ");
+  m_radar_location_info = RadarLocationInfo(empty_info);
+  CLEAR_STRUCT(m_radar_interface_address);
+  CLEAR_STRUCT(m_radar_address);
 
   m_mouse_pos.lat = NAN;
   m_mouse_pos.lon = NAN;
@@ -209,7 +213,6 @@ bool RadarInfo::Init() {
   m_name = RadarTypeName[m_radar_type];
   m_spokes = RadarSpokes[m_radar_type];
   m_spoke_len_max = RadarSpokeLenMax[m_radar_type];
-  m_radar_address = NetworkAddress(0, 0, 0, 0, 0);
   m_history = (line_history *)calloc(sizeof(line_history), m_spokes);
   for (size_t i = 0; i < m_spokes; i++) {
     m_history[i].line = (uint8_t *)calloc(sizeof(uint8_t), m_spoke_len_max);
@@ -303,7 +306,7 @@ void RadarInfo::ShowControlDialog(bool show, bool reparent) {
 }
 
 void RadarInfo::DetectedRadar(NetworkAddress &interfaceAddress, NetworkAddress &radarAddress) {
-  m_pi->SetRadarInterfaceAddress(m_radar, interfaceAddress, radarAddress);
+  SetRadarInterfaceAddress(interfaceAddress, radarAddress);
   LOG_RECEIVE(wxT("DetectedRadar interfaceAddress= %s, radarAddress= %s"), interfaceAddress.to_string(), radarAddress.to_string());
   if (m_control) {
     if (!m_control->Init(m_pi, this, interfaceAddress, radarAddress)) {
@@ -666,6 +669,9 @@ void RadarInfo::SetAutoRangeMeters(int autorange_to_set) {
   if (m_state.GetValue() == RADAR_TRANSMIT && m_range.GetState() == RCS_AUTO_1 && m_control) {
     // Compute a 'standard' distance. This will be slightly smaller.
     meters = GetNearestRange(meters, m_pi->m_settings.range_units);
+    if (meters == 0) {  // Raymarine radar has not yet received the ranges
+      return;
+    }
     // Don't adjust auto range meters continuously when it is oscillating a little bit (< 10%)
     int test = 100 * m_previous_auto_range_meters / meters;
     LOG_VERBOSE(wxT("radar_pi: Automatic range changed 2 from %d to %d meters, m_range.GetValue()=%i"),
@@ -1615,6 +1621,37 @@ bool RadarInfo::GetRadarPosition(ExtendedPosition *radar_pos) {
   radar_pos->pos.lat = nan("");
   radar_pos->pos.lon = nan("");
   return false;
+}
+
+bool RadarInfo::HaveRadarSerialNo(size_t r) {
+  wxCriticalSectionLocker lock(m_exclusive);
+  return !m_radar_location_info.serialNr.IsNull();
+}
+
+RadarLocationInfo RadarInfo::GetRadarLocationInfo() {
+  wxCriticalSectionLocker lock(m_exclusive);
+  return m_radar_location_info;
+}
+
+void RadarInfo::SetRadarLocationInfo(const RadarLocationInfo &info) {
+  wxCriticalSectionLocker lock(m_exclusive);
+  m_radar_location_info = info;
+}
+
+void RadarInfo::SetRadarInterfaceAddress(NetworkAddress &ifaddr, NetworkAddress &addr) {
+  wxCriticalSectionLocker lock(m_exclusive);
+  m_radar_interface_address = ifaddr;
+  m_radar_address = addr;
+};
+
+NetworkAddress RadarInfo::GetRadarAddress() {
+  wxCriticalSectionLocker lock(m_exclusive);
+  return m_radar_address;
+}
+
+NetworkAddress RadarInfo::GetRadarInterfaceAddress() {
+  wxCriticalSectionLocker lock(m_exclusive);
+  return m_radar_interface_address;
 }
 
 PLUGIN_END_NAMESPACE

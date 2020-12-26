@@ -52,7 +52,7 @@ class GarminHDReceive : public RadarReceive {
     m_shutdown_time_requested = 0;
     m_is_shutdown = false;
     m_first_receive = true;
-    m_interface_addr = m_pi->GetRadarInterfaceAddress(ri->m_radar);
+    m_interface_addr = m_ri->GetRadarInterfaceAddress();
     m_receive_socket = GetLocalhostServerTCPSocket();
     m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
     SetInfoStatus(wxString::Format(wxT("%s: %s"), m_ri->m_name.c_str(), _("Initializing")));

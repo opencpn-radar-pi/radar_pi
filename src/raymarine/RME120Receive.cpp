@@ -103,15 +103,15 @@ SOCKET RME120Receive::GetNewReportSocket() {
   wxString error = wxT(" ");
   wxString s = wxT(" ");
 
-  if (!(m_info == m_pi->GetRadarLocationInfo(m_ri->m_radar))) {  // initial values or NavicoLocate modified the info
+  if (!(m_info == m_ri->GetRadarLocationInfo())) {  // initial values or NavicoLocate modified the info
     LOG_INFO(wxT("radar_pi: %s old radar address at IP %s [%s]"), m_ri->m_name,
-             M_SETTINGS.radar_address[m_ri->m_radar].FormatNetworkAddressPort(), m_info.to_string());
-    m_info = m_pi->GetRadarLocationInfo(m_ri->m_radar);
+             m_ri->m_radar_address.FormatNetworkAddressPort(), m_info.to_string());
+    m_info = m_ri->GetRadarLocationInfo();
     
-    m_interface_addr = m_pi->GetRadarInterfaceAddress(m_ri->m_radar);
+    m_interface_addr = m_ri->GetRadarInterfaceAddress();
     UpdateSendCommand();
     LOG_INFO(wxT("radar_pi: %s Locator found radar at IP %s [%s]"), m_ri->m_name,
-             M_SETTINGS.radar_address[m_ri->m_radar].FormatNetworkAddressPort(), m_info.to_string());
+             m_ri->m_radar_address.FormatNetworkAddressPort(), m_info.to_string());
   };
 
   if (m_interface_addr.IsNull()) {
@@ -256,7 +256,7 @@ void *RME120Receive::Entry(void) {
       }
     }
 
-    if (!(m_info == m_pi->GetRadarLocationInfo(m_ri->m_radar))) {
+    if (!(m_info == m_ri->GetRadarLocationInfo())) {
       // Navicolocate modified the RadarInfo in settings
       closesocket(reportSocket);
       reportSocket = INVALID_SOCKET;
@@ -320,8 +320,8 @@ void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {   // This is t
       case 0x00010006:
         IF_serial = wxString::FromAscii(data + 4, 7);
         MOD_serial = wxString::FromAscii(data + 20, 7);
-        m_info = m_pi->GetRadarLocationInfo(m_ri->m_radar);
-        M_SETTINGS.radar_location_info[m_ri->m_radar].serialNr = IF_serial;
+        m_info = m_ri->GetRadarLocationInfo();
+        m_ri->m_radar_location_info.serialNr = IF_serial;
         break;
       case 0x00010007:
       case 0x00010008:
@@ -559,9 +559,9 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
         break;
     }
 
-    s = wxString::Format(wxT("IP %s %s"), m_pi->m_settings.radar_address[m_ri->m_radar].FormatNetworkAddress(), stat.c_str());
+    s = wxString::Format(wxT("IP %s %s"), m_ri->m_radar_address.FormatNetworkAddress(), stat.c_str());
     
-      RadarLocationInfo info = m_pi->GetRadarLocationInfo(m_ri->m_radar);
+      RadarLocationInfo info = m_ri->GetRadarLocationInfo();
       s << wxT("\n") << _("IF-Serial #") << info.serialNr;
     SetInfoStatus(s);
   }
