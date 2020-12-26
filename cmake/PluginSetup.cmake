@@ -30,9 +30,7 @@ elseif (OCPN_FLATPAK)
     set(PKG_TARGET_ARCH "x86_64")
     set(PKG_TARGET_VERSION "18.08")    # As of flatpak/*yaml
 elseif (MINGW)
-    # See Opencpn bug #2061. x86_64 is basically wrong, but still
-    # the value to use.
-    set(PKG_TARGET "mingw-x86_64")
+    set(PKG_TARGET "mingw")
     set(PKG_TARGET_ARCH "x86_64")
     if (CMAKE_SYSTEM_VERSION)
         set(PKG_TARGET_VERSION ${CMAKE_SYSTEM_VERSION})
