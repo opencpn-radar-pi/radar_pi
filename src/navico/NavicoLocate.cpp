@@ -405,15 +405,14 @@ void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const Net
   }
 
   navicos = (size_t)navico[RT_3G] + (size_t)(navico[RT_4GA] || navico[RT_4GB]) +
-            (size_t)(navico[RT_HaloA] || navico[RT_HaloB] + (size_t)navico[RM_E120]);
+            (size_t)(navico[RT_HaloA] || navico[RT_HaloB]);
 
-  // more then 2 Navico radars: associate the info found with the right type of radar
-  if (navicos > 1) {
-    if (info.serialNr[0] == '1' &&
-        (info.serialNr[1] == '9' || info.serialNr[1] == '7' || info.serialNr[1] == '6' ||
-         info.serialNr[1] == '5')) {  // It seems that serial # starting with 15 - 19  refers to Halo type radars
-      halo_type = true;
-    }
+  // associate the info found with the right type of radar
+
+  if (info.serialNr[0] == '1' &&
+      (info.serialNr[1] == '9' || info.serialNr[1] == '7' || info.serialNr[1] == '6' ||
+       info.serialNr[1] == '5')) {  // It seems that serial # starting with 15 - 19  refers to Halo type radars
+    halo_type = true;
 
     if (halo_type) {
       radar_order[RT_4GA] = 0;
@@ -478,6 +477,9 @@ void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const Net
   // No free slot, override the first radar A with A, B with B but only Halo with Halo
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     if (ntohs(addr.port) == radar_order[m_pi->m_radar[r]->m_radar_type]) {  // Only put primary in primary slots, etc.
+      if ((m_pi->m_radar[r]->m_radar_type == RT_HaloA || m_pi->m_radar[r]->m_radar_type == RT_HaloB) && !halo_type) {
+        continue;
+      }
       m_pi->m_radar[r]->SetRadarLocationInfo(info);
       m_pi->m_radar[r]->SetRadarInterfaceAddress(int_face_addr, radar_addr);
       return;
