@@ -61,6 +61,7 @@ if (OCPN_FLATPAK)
     configure_file(
         ${CMAKE_SOURCE_DIR}/radar-plugin.xml.in
         ${CMAKE_CURRENT_BINARY_DIR}/${PKG_XML_FILE}
+        NEWLINE_STYLE UNIX
     )
     add_custom_target(flatpak-build ALL
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/flatpak

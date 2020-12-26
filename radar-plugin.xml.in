@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin version="1">
-  <name>Radar</name>
-  <version>${PACKAGE_VERSION}</version>
-  <release>${PKG_RELEASE}</release>
-  <summary>Overlays the radar picture on OpenCPN</summary>
-
-  <api-version>${PKG_API_VERSION}</api-version>
-  <open-source>yes</open-source>
-  <author>${PKG_AUTHOR}</author>
-  <source>https://github.com/opencpn-radar-pi/radar_pi</source>
-
-  <description>
+<name>Radar</name>
+<version>${PACKAGE_VERSION}</version>
+<release>${PKG_RELEASE}</release>
+<summary>Overlays the radar picture on OpenCPN</summary>
+<api-version>${PKG_API_VERSION}</api-version>
+<open-source>yes</open-source>
+<author>${PKG_AUTHOR}</author>
+<source>https://github.com/opencpn-radar-pi/radar_pi</source>
+<description>
 Garmin, Navico and Raymarine radar support
 
 WARNING: OPENGL MODE IS REQUIRED!
@@ -24,11 +22,9 @@ Supports MARPA (even on radars that do not support this themselves),
 Guard zones, AIS overlay on PPI, and various radar dependent features
 such as dual radar range and Doppler.
 </description>
-
-  <target>${PKG_TARGET}</target>
-  <target-version>${PKG_TARGET_VERSION}</target-version>
-  <target-arch>${PKG_TARGET_ARCH}</target-arch>
-  <tarball-url>${TARBALL_URL}</tarball-url>
-  <info-url>https://opencpn.org/OpenCPN/plugins/radarPI.html</info-url>
+<target>${PKG_TARGET}</target>
+<target-version>${PKG_TARGET_VERSION}</target-version>
+<target-arch>${PKG_TARGET_ARCH}</target-arch>
+<tarball-url>${TARBALL_URL}</tarball-url>
+<info-url>https://opencpn.org/OpenCPN/plugins/radarPI.html</info-url>
 </plugin>
-
