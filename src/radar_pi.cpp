@@ -436,7 +436,15 @@ bool radar_pi::DeInit(void) {
     m_raymarine_locator = 0;
   }
 
-  delete m_pMessageBox;
+  if (m_pMessageBox) {
+    delete m_pMessageBox;
+    m_pMessageBox = 0;
+  }
+
+  if (m_GPS_filter) {
+    delete m_GPS_filter;
+    m_GPS_filter = 0;
+  }
 
   // No need to delete wxWindow stuff, wxWidgets does this for us.
   LOG_VERBOSE(wxT("radar_pi: DeInit of plugin done"));
