@@ -206,17 +206,19 @@ bool ShipDriver_pi::DeInit(void)
 
 int ShipDriver_pi::GetAPIVersionMajor()
 {
-      return MY_API_VERSION_MAJOR;
+    return atoi(API_VERSION);
 }
 
 int ShipDriver_pi::GetAPIVersionMinor()
 {
-      return MY_API_VERSION_MINOR;
+    std::string v(API_VERSION);
+    size_t dotpos = v.find('.');
+    return atoi(v.substr(dotpos + 1).c_str());
 }
 
 int ShipDriver_pi::GetPlugInVersionMajor()
 {
-      return PLUGIN_VERSION_MAJOR;
+    return PLUGIN_VERSION_MAJOR;
 }
 
 int ShipDriver_pi::GetPlugInVersionMinor()

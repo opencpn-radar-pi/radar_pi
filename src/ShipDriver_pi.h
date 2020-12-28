@@ -36,14 +36,17 @@
 #endif //precompiled headers
 
 #include <wx/fileconf.h>
+#include <wx/datetime.h>
+#include <wx/tokenzr.h>
+
+#include "config.h"
+
+#include "json/reader.h"
+#include "json/writer.h"
 
 #include "ocpn_plugin.h" //Required for OCPN plugin functions
 #include "ShipDrivergui_impl.h"
-#include "json/reader.h"
-#include "json/writer.h"
-#include <wx/datetime.h>
 #include "GribRecordSet.h"
-#include <wx/tokenzr.h>
 
 // Define minimum and maximum versions of the grib plugin supported
 #define GRIB_MAX_MAJOR 4
@@ -51,12 +54,6 @@
 #define GRIB_MIN_MAJOR 4
 #define GRIB_MIN_MINOR 1
 
-
-#define     PLUGIN_VERSION_MAJOR    2
-#define     PLUGIN_VERSION_MINOR    5
-
-#define     MY_API_VERSION_MAJOR    1
-#define     MY_API_VERSION_MINOR    16
 
 class Dlg;
 
