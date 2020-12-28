@@ -28,7 +28,7 @@ else ()
   target_compile_definitions(TINYXML PUBLIC -DTIXML_USE_STL)
   target_include_directories(TINYXML
                              PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-  if (CMAKE_CX_COMPILER_ID MATCHES "Clang|GNU")
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     set_property(TARGET TINYXML PROPERTY COMPILE_FLAGS "-fvisibility=hidden")
   endif ()
   target_link_libraries(TINYXML_IF INTERFACE TINYXML)
