@@ -1069,11 +1069,11 @@ void radar_pi::TimedControlUpdate() {
   }
 
   //// for overlay testing only, simple trick to get position and heading
-  // wxString nmea;
-  // nmea = wxT("$APHDM,000.0,M*33");
-  // PushNMEABuffer(nmea);
-  // nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
-  // PushNMEABuffer(nmea);
+   wxString nmea;
+   nmea = wxT("$APHDM,000.0,M*33");
+   PushNMEABuffer(nmea);
+   nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
+   PushNMEABuffer(nmea);
 
   m_notify_time_ms = now;
 
@@ -1309,6 +1309,10 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
           arpa_on = true;
         }
       }
+      if (m_radar[r]->m_doppler.GetValue() > 0) {  // $$$ add button here as well
+        arpa_on = true;
+      }
+
       if (arpa_on) {
         m_radar[r]->m_arpa->RefreshArpaTargets();
       }

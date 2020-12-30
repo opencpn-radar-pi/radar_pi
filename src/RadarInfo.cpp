@@ -486,7 +486,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   for (size_t radius = 0; radius < len; radius++) {
     if (data[radius] >= weakest_normal_blob) {
       // and add 1 if above threshold and set the left 2 bits, used for ARPA
-      hist_data[radius] = 192;
+      hist_data[radius] = 192;   // this is C0, 1100 0000
+    }
+    if (data[radius] == 255) {  // approaching doppler target
+      // and add 1 if above threshold and set the left 2 bits, used for ARPA
+      hist_data[radius] = 0xE0;  // this is  1110 0000, bit 3 indicates this is an approaching target
     }
   }
 

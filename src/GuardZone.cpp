@@ -47,7 +47,7 @@ GuardZone::GuardZone(radar_pi* pi, RadarInfo* ri, int zone) {
   m_arpa_on = 0;
   m_alarm_on = 0;
   m_show_time = 0;
-  CLEAR_STRUCT(arpa_update_time);
+  CLEAR_STRUCT(m_arpa_update_time);
   ResetBogeys();
 }
 
@@ -188,22 +188,22 @@ void GuardZone::SearchTargets() {
 
       // check if target has been refreshed since last time
       // and if the beam has passed the target location with SCAN_MARGIN spokes
-      if ((time1 > (arpa_update_time[angle] + SCAN_MARGIN2) && time2 >= time1)) {  // the beam sould have passed our "angle" AND a
+      if ((time1 > (m_arpa_update_time[angle] + SCAN_MARGIN2) && time2 >= time1)) {  // the beam sould have passed our "angle" AND a
                                                                                    // point SCANMARGIN further set new refresh time
-        arpa_update_time[angle] = time1;
+        m_arpa_update_time[angle] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
           if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 1) {
             LOG_INFO(wxT("radar_pi: No more scanning for ARPA targets in loop, maximum number of targets reached"));
             return;
           }
-          if (m_ri->m_arpa->MultiPix(angle, rrr)) {
+          if (m_ri->m_arpa->MultiPix(angle, rrr, 0)) {
             bool next_r = false;
             if (next_r) continue;
             // pixel found that does not belong to a known target
             Polar pol;
             pol.angle = angle;
             pol.r = rrr;
-            int target_i = m_ri->m_arpa->AcquireNewARPATarget(pol, 0);
+            int target_i = m_ri->m_arpa->AcquireNewARPATarget(pol, 0, 0);
             if (target_i == -1) break;
           }
         }

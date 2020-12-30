@@ -122,6 +122,7 @@ class ArpaTarget {
   Polar m_max_angle, m_min_angle, m_max_r, m_min_r;  // charasterictics of contour
   Polar m_expected;
   bool m_automatic;  // True for ARPA, false for MARPA.
+  uint8_t m_doppler_target; // 0: no doppler, 1 approaching, 2 receiding; 3 any
 
   ExtendedPosition Polar2Pos(Polar pol, ExtendedPosition own_ship);
   Polar Pos2Polar(ExtendedPosition p, ExtendedPosition own_ship);
@@ -134,10 +135,10 @@ class RadarArpa {
   void DrawArpaTargetsOverlay(double scale, double arpa_rotate);
   void DrawArpaTargetsPanel(double scale, double arpa_rotate);
   void RefreshArpaTargets();
-  int AcquireNewARPATarget(Polar pol, int status);
+  int AcquireNewARPATarget(Polar pol, int status, uint8_t doppler);
   void AcquireNewMARPATarget(ExtendedPosition p);
   void DeleteTarget(ExtendedPosition p);
-  bool MultiPix(int ang, int rad);
+  bool MultiPix(int ang, int rad, bool doppler);
   void DeleteAllTargets();
   void CleanUpLostTargets();
   void RadarLost() {
@@ -149,6 +150,7 @@ class RadarArpa {
  private:
   int m_number_of_targets;
   ArpaTarget* m_targets[MAX_NUMBER_OF_TARGETS];
+  wxLongLong m_doppler_arpa_update_time[SPOKES_MAX];
 
   radar_pi* m_pi;
   RadarInfo* m_ri;
@@ -156,7 +158,8 @@ class RadarArpa {
   void AcquireOrDeleteMarpaTarget(ExtendedPosition p, int status);
   void CalculateCentroid(ArpaTarget* t);
   void DrawContour(ArpaTarget* t);
-  bool Pix(int ang, int rad);
+  bool Pix(int ang, int rad, bool doppler);
+  void SearchDopplerTargets();
 };
 
 PLUGIN_END_NAMESPACE

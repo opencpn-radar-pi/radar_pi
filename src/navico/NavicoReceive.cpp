@@ -984,7 +984,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
                                 // contains Doppler data in extra 3 bytes
         RadarReport_08C4_21 *s08 = (RadarReport_08C4_21 *)report;
 
-        LOG_RECEIVE(wxT("%u 08C4: doppler=%d speed=%d"), m_ri->m_radar, s08->doppler_state, s08->doppler_speed);
+        LOG_RECEIVE(wxT("%u 08C4: doppler=%d speed=%d, state=%d"), m_ri->m_radar, s08->doppler_state, s08->doppler_speed, s08->doppler_state);
         // TODO: Doppler speed
 
         m_ri->m_doppler.Update(s08->doppler_state);
