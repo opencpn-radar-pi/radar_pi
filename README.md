@@ -35,8 +35,7 @@ and a .dmg image for MacOS:
 #### Building on windows (MSVC)
 On windows, a somewhat different workflow is used:
 
-    > cmake -T v141_xp ..
-    > cmake -G "Visual Studio 15 2017" --config RelWithDebInfo  ..
+    > cmake -T v141_xp -G "Visual Studio 15 2017" --config RelWithDebInfo  ..
     > cmake --build . --target tarball --config RelWithDebInfo
 
 This is to build the installer tarball. Use _--target pkg_ to build the
