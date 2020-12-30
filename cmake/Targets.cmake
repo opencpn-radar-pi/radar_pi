@@ -43,11 +43,6 @@ else ()
   set(_install_cmd cmake --install ${CMAKE_BINARY_DIR} --config $<CONFIG>)
 endif ()
 
-if (WIN32 AND NOT MINGW)
-  set(_mvdir rename)
-else ()
-  set(_mvdir mv)
-endif ()
 
 # Command to compute sha256 checksum
 if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 10)
@@ -73,41 +68,6 @@ set(_cs_script "
 file(WRITE "${CMAKE_BINARY_DIR}/checksum.cmake" ${_cs_script})
 
 
-# General post-process targets. Functions with a name parameter are used to
-# break dependency chains.
-#
-function(topdir_target target_name)
-  add_custom_target(${target_name})
-  add_custom_command(
-    TARGET ${target_name}     # Change top-level directory name
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
-    COMMAND ${_mvdir} files ${pkg_displayname}
-  )
-endfunction ()
-
-function(tar_target target_name)
-  add_custom_target(${target_name})
-  add_custom_command(
-    TARGET ${target_name}     # Build the tarball
-    WORKING_DIRECTORY  ${CMAKE_BINARY_DIR}/app
-    COMMAND
-      cmake -E
-      tar -czf ../${pkg_tarname}.tar.gz --format=gnutar ${pkg_displayname}
-    VERBATIM
-    COMMENT "Building ${pkg_tarname}.tar.gz"
-  )
-endfunction ()
-
-function(cs_target target_name)
-  add_custom_target(${target_name})
-  add_custom_command(
-    TARGET ${target_name}      # Compute checksum
-    COMMAND cmake -P ${CMAKE_BINARY_DIR}/checksum.cmake
-    VERBATIM
-    COMMENT "Computing checksum in ${pkg_displayname}.xml"
-  )
-endfunction ()
-
 function (tarball_target)
 
   # tarball target setup
@@ -118,27 +78,43 @@ function (tarball_target)
     COMMAND cmake -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/files
             -DBUILD_TYPE:STRING=tarball ${CMAKE_BINARY_DIR}
   )
+
   add_custom_target(tarball-build)
-  add_custom_command(
-    TARGET tarball-build
-    COMMAND ${_build_cmd}
-  )
+  add_custom_command(TARGET tarball-build COMMAND ${_build_cmd})
+
   add_custom_target(tarball-install)
+  add_custom_command(TARGET tarball-install COMMAND ${_install_cmd})
+
+  set(_finish_script "
+    execute_process(
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
+      COMMAND cmake -E rename files ${pkg_displayname}
+    )
+    execute_process(
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
+      COMMAND
+        cmake -E
+        tar -czf ../${pkg_tarname}.tar.gz --format=gnutar ${pkg_displayname}
+    )
+    message(STATUS \"Creating tarball ${pkg_tarname}.tar.gz\")
+
+    execute_process(COMMAND cmake -P ${CMAKE_BINARY_DIR}/checksum.cmake)
+    message(STATUS \"Computing checksum in ${pkg_displayname}.xml\")
+  ")
+  file(WRITE "${CMAKE_BINARY_DIR}/finish_tarball.cmake" "${_finish_script}")
+  add_custom_target(tarball-finish)
   add_custom_command(
-    TARGET tarball-install
-    COMMAND ${_install_cmd}
+    TARGET tarball-finish      # Compute checksum
+    COMMAND cmake -P ${CMAKE_BINARY_DIR}/finish_tarball.cmake
+    VERBATIM
   )
-  topdir_target("tarball-topdir")
-  tar_target("tarball-tar")
-  cs_target("tarball-cs")
+
   add_dependencies(tarball-build tarball-conf)
   add_dependencies(tarball-install tarball-build)
-  add_dependencies(tarball-topdir tarball-install)
-  add_dependencies(tarball-tar tarball-topdir)
-  add_dependencies(tarball-cs tarball-tar)
+  add_dependencies(tarball-finish tarball-install)
 
   add_custom_target(tarball)
-  add_dependencies(tarball tarball-cs)
+  add_dependencies(tarball tarball-finish)
 endfunction ()
 
 function (flatpak_target manifest)
