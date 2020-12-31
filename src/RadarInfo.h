@@ -130,6 +130,7 @@ class RadarInfo {
   RadarControlItem m_timed_idle;  // CT_TIMED_IDLE
   RadarControlItem m_timed_run;   // CT_TIMED_RUN
   RadarControlItem m_doppler;
+  RadarControlItem m_autotrack_doppler;
   RadarControlItem m_tune_fine;       // Following added for Raymarine E120
   RadarControlItem m_tune_coarse;
   RadarControlItem m_main_bang_suppression;  // Main bang suppression for Raymarine E120. 0 is OFF, 1 is ON

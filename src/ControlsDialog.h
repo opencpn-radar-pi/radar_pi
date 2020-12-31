@@ -213,6 +213,7 @@ class ControlsDialog : public wxDialog {
     m_adjust_button = 0;
     m_cursor_menu = 0;
     m_doppler_button = 0;
+    m_autotrack_doppler_button = 0;
     m_stc_button = 0;
     m_fine_tune_button = 0;
     m_coarse_tune_button = 0;
@@ -354,6 +355,7 @@ class ControlsDialog : public wxDialog {
   // View controls
   RadarControlButton *m_targets_on_ppi_button;
   RadarControlButton *m_doppler_button;
+  RadarControlButton *m_autotrack_doppler_button;
   RadarControlButton *m_target_trails_button;
   RadarControlButton *m_trails_motion_button;
   wxButton *m_clear_trails_button;

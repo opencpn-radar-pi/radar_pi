@@ -96,8 +96,9 @@ bool RadarArpa::Pix(int ang, int rad, bool doppler) {
   if (rad <= 0 || rad >= (int)m_ri->m_spoke_len_max) {
     return false;
   }
-  bool bit0 = (m_ri->m_history[MOD_SPOKES(ang)].line[rad] & 128) != 0;
-  bool bit2 = (m_ri->m_history[MOD_SPOKES(ang)].line[rad] &  32) != 0;
+  int angle = MOD_SPOKES(ang);
+  bool bit0 = (m_ri->m_history[angle].line[rad] & 128) != 0;
+  bool bit2 = (m_ri->m_history[angle].line[rad] & 32) != 0;
   if (!doppler) {
   return (bit0);
   } else {
@@ -109,18 +110,17 @@ bool ArpaTarget::Pix(int ang, int rad) {
   if (rad <= 0 || rad >= (int)m_ri->m_spoke_len_max) {
     return false;
   }
-  bool bit0 = (m_ri->m_history[MOD_SPOKES(ang)].line[rad] & 128) > 0;
-  bool bit1 = (m_ri->m_history[MOD_SPOKES(ang)].line[rad] & 64) > 0;
-  bool bit2 = (m_ri->m_history[MOD_SPOKES(ang)].line[rad] & 32) > 0;
+  int angle = MOD_SPOKES(ang);
+  bool bit0 = (m_ri->m_history[angle].line[rad] & 128) > 0;
+  bool bit1 = (m_ri->m_history[angle].line[rad] & 64) > 0;
+  bool bit2 = (m_ri->m_history[angle].line[rad] & 32) > 0;
 
   if (m_doppler_target > 0 && !bit2) {  // we are looking for doppler targets and this is not doppler
     return false;
   }
   if (m_check_for_duplicate) {
-    // check bit 1
     return (bit1);
   } else {
-    // check bit 0
     return (bit0);
   }
 }
@@ -749,7 +749,7 @@ void RadarArpa::RefreshArpaTargets() {
   for (int i = 0; i < GUARD_ZONES; i++) {
     m_ri->m_guard_zone[i]->SearchTargets();
   }
-  if (m_ri->m_doppler.GetValue() > 0) {   // switch off here
+  if (m_ri->m_doppler.GetValue() > 0 && m_ri->m_autotrack_doppler.GetValue() > 0) {
     SearchDopplerTargets();
   }
 }
@@ -1089,7 +1089,7 @@ bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
   }
   int cont = GetContour(pol);
   if (cont != 0) {
-    // LOG_ARPA(wxT("radar_pi: ARPA contour error %d at %d, %d"), cont, a, r);
+     LOG_ARPA(wxT("radar_pi: ARPA contour error %d at %d, %d"), cont, a, r);
     // reset pol in case of error
     pol->angle = a;
     pol->r = r;
@@ -1192,10 +1192,9 @@ void RadarArpa::DeleteAllTargets() {
 }
 
 int RadarArpa::AcquireNewARPATarget(Polar pol, int status, uint8_t doppler) {
-  // acquires new target from mouse click position
+  // acquires new target at polar position pol
   // no contour taken yet
   // target status status, normally 0, if dummy target to delete a target -2
-  // returns in X metric coordinates of click
   // constructs Kalman filter
   ExtendedPosition own_pos;
   ExtendedPosition target_pos;
@@ -1243,9 +1242,9 @@ void ArpaTarget::ResetPixels() {
   // We not only reset the blob but all pixels in a radial "square" covering the blob
   for (int r = wxMax(m_min_r.r - DISTANCE_BETWEEN_TARGETS, 0);
        r <= wxMin(m_max_r.r + DISTANCE_BETWEEN_TARGETS, (int)m_ri->m_spoke_len_max - 1); r++) {
-    for (int a = wxMax(m_min_angle.angle - DISTANCE_BETWEEN_TARGETS, 0);
-         a <= wxMin(m_max_angle.angle + DISTANCE_BETWEEN_TARGETS, (int)m_ri->m_spokes - 1); a++) {
-      m_ri->m_history[a].line[r] = m_ri->m_history[a].line[r] & 127;
+    for (int a = m_min_angle.angle - DISTANCE_BETWEEN_TARGETS;
+         a <= m_max_angle.angle + DISTANCE_BETWEEN_TARGETS; a++) {
+      m_ri->m_history[MOD_SPOKES(a)].line[r] = m_ri->m_history[MOD_SPOKES(a)].line[r] & 127;
     }
   }
 }

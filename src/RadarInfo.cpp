@@ -767,6 +767,11 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item,
       break;
     }
 
+    case CT_AUTOTTRACKDOPPLER: {
+      m_autotrack_doppler = item;
+      break;
+    }
+
     // Careful, we're selectively falling through to the next case label
     // for controls that have both hardware and software implementations
     case CT_TIMED_IDLE: {

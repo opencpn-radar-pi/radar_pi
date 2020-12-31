@@ -1069,11 +1069,11 @@ void radar_pi::TimedControlUpdate() {
   }
 
   //// for overlay testing only, simple trick to get position and heading
-   wxString nmea;
-   nmea = wxT("$APHDM,000.0,M*33");
-   PushNMEABuffer(nmea);
-   nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
-   PushNMEABuffer(nmea);
+   //wxString nmea;
+   //nmea = wxT("$APHDM,000.0,M*33");
+   //PushNMEABuffer(nmea);
+   //nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
+   //PushNMEABuffer(nmea);
 
   m_notify_time_ms = now;
 
@@ -1309,7 +1309,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
           arpa_on = true;
         }
       }
-      if (m_radar[r]->m_doppler.GetValue() > 0) {  // $$$ add button here as well
+      if (m_radar[r]->m_doppler.GetValue() > 0 && m_radar[r]->m_autotrack_doppler.GetValue() > 0) {
         arpa_on = true;
       }
 
@@ -1461,6 +1461,8 @@ bool radar_pi::LoadConfig(void) {
       ri->m_boot_state.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dMinContourLength"), r), &ri->m_min_contour_length, 6);
       if (ri->m_min_contour_length > 10) ri->m_min_contour_length = 6;  // Prevent user and system error
+      pConf->Read(wxString::Format(wxT("Radar%dDopplerAutoTrack"), r), &v, 0);
+      ri->m_autotrack_doppler.Update(v);
 
       RadarControlItem item;
       pConf->Read(wxString::Format(wxT("Radar%dTrailsState"), r), &state, RCS_OFF);
@@ -1642,6 +1644,9 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dAntennaForward"), r), m_radar[r]->m_antenna_forward.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dAntennaStarboard"), r), m_radar[r]->m_antenna_starboard.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dRunTimeOnIdle"), r), m_radar[r]->m_timed_run.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dDopplerAutoTrack"), r), m_radar[r]->m_autotrack_doppler.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dMinContourLength"), r), m_radar[r]->m_min_contour_length);
+      
       for (int i = 0; i < MAX_CHART_CANVAS; i++) {
         pConf->Write(wxString::Format(wxT("Radar%dOverlayCanvas%d"), r, i), m_radar[r]->m_overlay_canvas[i].GetValue());
       }

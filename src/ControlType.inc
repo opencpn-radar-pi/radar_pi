@@ -69,6 +69,7 @@ CONTROL_TYPE(CT_TARGET_EXPANSION, "Target expansion")
 CONTROL_TYPE(CT_TARGET_SEPARATION, "Target separation")
 CONTROL_TYPE(CT_TRANSPARENCY, "Transparency")
 CONTROL_TYPE(CT_DOPPLER, "Doppler")
+CONTROL_TYPE(CT_AUTOTTRACKDOPPLER, "DopplerAutoTrack")
 
 // Following added for Raymarine
 CONTROL_TYPE(CT_STC, "Sensitivity Time Control")

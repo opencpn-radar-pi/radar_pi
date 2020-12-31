@@ -1042,6 +1042,13 @@ void ControlsDialog::CreateControls() {
     m_view_sizer->Add(m_doppler_button, 0, wxALL, BORDER);
   }
 
+  // The DOPPLERAUTOTRACK button
+  if (m_ctrl[CT_AUTOTTRACKDOPPLER].type) {
+    m_autotrack_doppler_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("DopplerAutoTrack"), m_ctrl[CT_AUTOTTRACKDOPPLER],
+                                                        &m_ri->m_autotrack_doppler);
+    m_view_sizer->Add(m_autotrack_doppler_button, 0, wxALL, BORDER);
+  }
+
   // The TARGET_TRAIL button
   if (m_ctrl[CT_TARGET_TRAILS].type) {
     m_target_trails_button =
@@ -1788,7 +1795,9 @@ void ControlsDialog::DisableRadarControls() {
   if (m_doppler_button) {
     m_doppler_button->Disable();
   }
-
+  if (m_autotrack_doppler_button) {
+    m_autotrack_doppler_button->Disable();
+  }
   if (m_stc_button) {
     m_stc_button->Disable();
   }
@@ -1871,7 +1880,9 @@ void ControlsDialog::EnableRadarControls() {
   if (m_doppler_button) {
     m_doppler_button->Enable();
   }
-
+  if (m_autotrack_doppler_button) {
+    m_autotrack_doppler_button->Enable();
+  }
   if (m_stc_button) {
     m_stc_button->Enable();
   }
@@ -2082,11 +2093,12 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_refresh_rate_button) {
     m_refresh_rate_button->UpdateLabel(true);
   }
-
   if (m_doppler_button) {
     m_doppler_button->UpdateLabel();
   }
-
+  if (m_autotrack_doppler_button) {
+    m_autotrack_doppler_button->UpdateLabel();
+  }
   if (updateEditDialog) {
     // Update the text that is currently shown in the edit box, this is a copy of the button itself
     EnterEditMode(m_from_control);
