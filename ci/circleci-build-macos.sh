@@ -45,6 +45,9 @@ cmake \
   -DCMAKE_INSTALL_PREFIX= \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
   ..
+
+if [ "$1" = 'local_build' ]; then exit 0; fi
+
 make -j $(sysctl -n hw.physicalcpu) VERBOSE=1 tarball
 
 make create-pkg
