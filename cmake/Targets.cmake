@@ -67,6 +67,13 @@ set(_cs_script "
 )")
 file(WRITE "${CMAKE_BINARY_DIR}/checksum.cmake" ${_cs_script})
 
+# Command to build legacy package
+if (APPLE)
+    set(_build_pkg_cmd ${_build_target_cmd} create-pkg)
+else ()
+    set(_build_pkg_cmd ${_build_target_cmd} package)
+endif ()
+
 
 function (tarball_target)
 
@@ -178,7 +185,7 @@ function (pkg_target)
   add_custom_command(
     TARGET pkg-package
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND cpack $<$<BOOL:$<CONFIG>>:"-C $<CONFIG>">
+    COMMAND ${_build_pkg_cmd}
   )
   add_dependencies(pkg-build pkg-conf)
   add_dependencies(pkg-package pkg-build)
