@@ -23,14 +23,11 @@ Install build dependencies using something like:
 ## Flatpak
 Install runtime and opencpn as described in flatpak/README.md
 
-
 ## MacOS
+Use the ci script, which just installs the build deps and configures
+when used in a non-CI environment:
 
-Use the ci script, which just builds the artifacts used like
+    $ ci/circleci-build-macos
 
-    $ cd build
-    $ ../ci/circleci-build-macos local_build
-
-After the initial run the build dependencies are in place and configured,
-builds could be done using `make tarball` etc. Note that MacOS also
-supports `make create-pkg` which creates a .pkg installer.
+After the initial run the build dependencies are in place and configured.
+Make for example the tarball using `cd build; make tarball`
