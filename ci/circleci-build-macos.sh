@@ -17,7 +17,7 @@ brew list --versions libexif || brew update-reset
 
 # Install packaged dependencies
 here=$(cd "$(dirname "$0")"; pwd)
-for pkg in $(sed '/#/d' < $here/macos-deps);  do
+for pkg in $(sed '/#/d' < $here/../build-deps/macos-deps);  do
     brew list --versions $pkg || brew install $pkg || brew install $pkg || :
     brew link --overwrite $pkg || brew install $pkg
 done

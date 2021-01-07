@@ -37,7 +37,7 @@ docker logs $DOCKER_CONTAINER_ID
 cat > build.sh << "EOF"
 su -c "dnf install -q -y sudo dnf-plugins-core"
 sudo dnf -y copr enable leamas/opencpn-mingw
-sudo dnf -q builddep  -y /project/mingw/fedora/opencpn-deps.spec
+sudo dnf -q builddep  -y /project/build-deps/opencpn-deps.spec
 cd /project
 rm -rf build; mkdir build; cd build
 cmake \

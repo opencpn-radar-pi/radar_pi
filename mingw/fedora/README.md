@@ -6,7 +6,7 @@ Tools to build a windows 32-bit executable using the mingw toolchain.
 How?
 ====
     $ sudo  dnf copr enable leamas/opencpn-mingw
-    $ sudo dnf builddep opencpn-deps.spec
+    $ sudo dnf builddep ../../build-deps/opencpn-deps.spec
     $ cd ../..
     $ rm -rf build; mkdir build
     $ cd build;
