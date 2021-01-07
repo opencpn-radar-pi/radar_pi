@@ -111,6 +111,7 @@ if (SHIPDRIVER_USE_SVG)
   add_definitions(-DSHIPDRIVER_USE_SVG)
 endif ()
 
+-DUSE_SYSTEM_JSONCPP:BOOL=OFF
 
 # Set up targets. Targets sets up a recursive call with BUILD_TYPE set to
 # 'flatpak', 'pkg' or 'tarball'. The initial call without BUILD_TYPE ends
