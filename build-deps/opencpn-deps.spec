@@ -1,7 +1,7 @@
-Name:		opencpn-deps
+Name:		opencpn-plugin-deps
 Version:	0.1
 Release:	1%{?dist}
-Summary:	Empty package with opencpn build dependencies
+Summary:	Empty package with opencpn plugin build dependencies
 
 License:	MIT
 URL:		https://github.com/leamas/opencpn
@@ -31,7 +31,7 @@ BuildRequires: mingw32-wxWidgets3 >= 3.0.2
 
 %description
 
-Empty package used to catch build dependencies for opencpn using
+Empty package used to catch build dependencies for opencpn plugins using
 the mingw tools to create a Windows 32-bit executable
 
 Use dnf builddep opencpn-deps.spec to install the dependencies.
@@ -50,5 +50,5 @@ Use dnf builddep opencpn-deps.spec to install the dependencies.
 
 
 %changelog
-* Fri Mar 01 2019 Alec Leamas <leamas.alec@gmail.com> - 0.1-1
+* Thu Jan 07 2021 Alec Leamas <leamas.alec@gmail.com> - 0.1-1
 - Initial release
