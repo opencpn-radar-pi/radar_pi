@@ -15,8 +15,9 @@ pkg_version() { brew list --versions $2 $1 | tail -1 | awk '{print $2}'; }
 # Check if the cache is with us. If not, re-install brew.
 brew list --versions libexif || brew update-reset
 
-# install packaged dependencies
-for pkg in cmake gettext libexif python wget; do
+# Install packaged dependencies
+here=$(cd "$(dirname "$0")"; pwd)
+for pkg in $(sed '/#/d' < $here/macos-deps);  do
     brew list --versions $pkg || brew install $pkg || brew install $pkg || :
     brew link --overwrite $pkg || brew install $pkg
 done

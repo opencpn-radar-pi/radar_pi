@@ -32,14 +32,10 @@ cat > build.sh << "EOF"
 curl http://mirrordirector.raspbian.org/raspbian.public.key  | apt-key add -
 curl http://archive.raspbian.org/raspbian.public.key  | apt-key add -
 sudo apt -q update
-sudo apt-get -y install --no-install-recommends \
-   build-essential cmake file gettext git \
-   libgtk2.0-dev \
-   libjsoncpp-dev \
-   libtinyxml-dev  \
-   libwxgtk3.0-dev \
-   lsb-release \
-   wx-common
+
+sudo apt install devscripts equivs
+sudo mk-build-deps -ir /ci-source/ci/control-raspbian
+sudo apt-get -q --allow-unauthenticated install -f
 
 cd /ci-source
 rm -rf build; mkdir build; cd build
