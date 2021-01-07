@@ -103,7 +103,7 @@ jobs:
       - DOCKER_IMAGE=balenalib/raspberry-pi-debian:stretch
     steps:
       - checkout
-      - run: ci/circleci-build-raspbian-armhf.sh
+      - run: ci/generic-build-raspbian-armhf.sh
       - run: cd build; /bin/bash < upload.sh
       - run: python3 ci/git-push
 
@@ -114,7 +114,7 @@ jobs:
       - DOCKER_IMAGE=balenalib/raspberry-pi-debian:buster
     steps:
       - checkout
-      - run: ci/circleci-build-raspbian-armhf.sh
+      - run: ci/generic-build-raspbian-armhf.sh
       - run: cd build; /bin/bash < upload.sh
       - run: python3 ci/git-push
 
