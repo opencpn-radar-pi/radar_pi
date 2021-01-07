@@ -4,12 +4,11 @@ matrix:
   include:
   - env:
     - OCPN_TARGET=stretch-armhf
-    - OCPN_BRANCH=master
-    - DOCKER_IMAGE=raspbian/stretch
+    - DOCKER_IMAGE=balenalib/raspberry-pi-debian:stretch
     services:
     - docker
     script:
-    - "./ci/travis-build-raspbian-armhf.sh"
+    - "./ci/generic-build-raspbian-armhf.sh"
     - "cd build; bash < upload.sh"
     os: Linux
     dist: focal

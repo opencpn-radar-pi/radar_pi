@@ -132,7 +132,6 @@ function (flatpak_target manifest)
     COMMAND
       cmake -DBUILD_TYPE:STRING=flatpak -Uplugin_target ${CMAKE_BINARY_DIR}
   )
-  add_custom_target(flatpak-build)
   set(_fp_script "
     execute_process(
       COMMAND
@@ -182,11 +181,8 @@ function (pkg_target)
   add_custom_command(TARGET pkg-build COMMAND ${_build_cmd})
 
   add_custom_target(pkg-package)
-  add_custom_command(
-    TARGET pkg-package
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND ${_build_pkg_cmd}
-  )
+  add_custom_command(TARGET pkg-package COMMAND ${_build_pkg_cmd})
+
   add_dependencies(pkg-build pkg-conf)
   add_dependencies(pkg-package pkg-build)
 
