@@ -266,7 +266,7 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
       if (!autoValue) {
         rd_msg_sea_auto[16] = 0;
         r = TransmitCmd(rd_msg_sea_auto, sizeof(rd_msg_sea_auto)); // set auto off
-        rd_msg_set_sea[20] = m_ri->m_gain.DeTransform(value);  // scaling for gain
+        rd_msg_set_sea[20] = m_ri->m_sea.DeTransform(value);  // scaling for gain
         LOG_TRANSMIT(wxT("send2 sea command sea value = %i, transmitted= %i"), value, rd_msg_set_sea[20]);
         r = TransmitCmd(rd_msg_set_sea, sizeof(rd_msg_set_sea));
       } else {

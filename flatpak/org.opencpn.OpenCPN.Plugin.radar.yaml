@@ -1,10 +1,17 @@
 id: org.opencpn.OpenCPN.Plugin.radar
 runtime: org.opencpn.OpenCPN
+# runtime-version: stable
 runtime-version: master
 sdk: org.freedesktop.Sdk//18.08
 build-extension: true
 separate-locales: false
 appstream-compose: false
+finish-args:
+  - --socket=x11
+  - --socket=pulseaudio
+  - --filesystem=home
+  - --device=all
+
 modules:
   - name: radar
     no-autogen: true
@@ -19,5 +26,5 @@ modules:
         strip: true
     sources:
        - type: git
-         url: https://github.com/opencpn-radar-pi/radar_pi.git
-         tag: v5.0.2-beta1
+         url: ..
+         branch: beta

@@ -20,10 +20,10 @@ SET(TITLE_NAME Radar)
 SET(CPACK_PACKAGE_CONTACT "kees@verruijt.net")
 
 SET(VERSION_MAJOR "5")
-SET(VERSION_MINOR "1")
-SET(VERSION_PATCH "5")
+SET(VERSION_MINOR "2")
+SET(VERSION_PATCH "0-beta2")
 SET(PKG_RELEASE "0")
-SET(VERSION_DATE "2020-11-29")
+SET(VERSION_DATE "2020-12-26")
 
 SET(OCPN_MIN_VERSION "ov51")
 
@@ -61,6 +61,7 @@ if (OCPN_FLATPAK)
     configure_file(
         ${CMAKE_SOURCE_DIR}/radar-plugin.xml.in
         ${CMAKE_CURRENT_BINARY_DIR}/${PKG_XML_FILE}
+        NEWLINE_STYLE UNIX
     )
     add_custom_target(flatpak-build ALL
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/flatpak

@@ -7,22 +7,7 @@ set -x
 # Upload the .tar.gz and .xml artifacts to cloudsmith
 #
 
-STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'kees-verruijt/ocpn-plugins-stable'}
-UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'kees-verruijt/ocpn-plugins-unstable'}
-
-#if [ "$(git rev-parse master)" != "$(git rev-parse HEAD)" ]; then
-#    echo "Not on master branch, skipping deployment."
-#    exit 0
-#fi
-
-if [ -z "$CLOUDSMITH_API_KEY" ]; then
-    echo 'Cannot deploy to cloudsmith, missing $CLOUDSMITH_API_KEY'
-    exit 0
-fi
-
-echo "Using \$CLOUDSMITH_API_KEY: ${CLOUDSMITH_API_KEY:0:4}..."
-
-set -xe
+source "../ci/cloudsmith-repo.sh"
 
 python -m ensurepip
 python -m pip install -q setuptools
@@ -42,7 +27,7 @@ tarball_basename=${tarball##*/}
 
 source ../build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}.${commit}"
-test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
+test -n "$tag" && REPO="$PROD_REPO" || REPO="$BETA_REPO"
 tarball_name=radar-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
 
 # There is no sed available in git bash. This is nasty, but seems

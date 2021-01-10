@@ -33,8 +33,10 @@
  */
 
 #include "raymarine/RaymarineLocate.h"
+#include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
+
 
 //
 // Raymarine E120 radars and compatible report their addresses here, (including the version?) #.
@@ -219,12 +221,57 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
       LOG_INFO(wxT("radar_pi: Located raymarine radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoA.to_string());
       m_report_count++;
     }
-    m_pi->FoundRaymarineRadarInfo(radar_ipA, interface_address, infoA);
+    FoundRaymarineLocationInfo(radar_ipA, interface_address, infoA);
     return true;
   }
 
   //LOG_BINARY_RECEIVE(wxT("radar_pi: RaymarineLocate received unknown message"), report, len);
   return false;
+}
+
+void RaymarineLocate::FoundRaymarineLocationInfo(const NetworkAddress &addr, const NetworkAddress &interface_addr,
+                                       const RadarLocationInfo &info) {
+  wxCriticalSectionLocker lock(m_exclusive);
+  bool halo_type = false;
+  int radar_order[RT_MAX];
+  for (int i = 0; i < RT_MAX; i++) {
+    radar_order[i] = RadarOrder[i];
+  }
+
+  // Check if the info is OK
+  if (info.report_addr.IsNull() || info.send_command_addr.IsNull()) {
+    return;
+  }
+
+  // Find the number of physical Raymarine radars; only needed in case of more than one Raymarine radar
+  size_t raymarines = 0;  // number of hard Raymarine radars
+  
+  int ray_nr = -1;
+  for (size_t r = 0; r < m_pi->m_settings.radar_count; r++) {
+
+    if (m_pi->m_radar[r]->m_radar_type == RM_E120) {
+      ray_nr = r;
+      raymarines++;  // later more Raymarine radars may be covered
+      break;         // RM_120 found, there should only be one
+    }
+  }
+  if (ray_nr == -1) {  // no raymarine radar found
+    LOG_INFO(wxT("No raymarine radar found"));
+    return;
+  }
+  // more then 2 Raymarine radars: associate the info found with the right type of radar
+  if (raymarines > 1) {
+    LOG_INFO(wxT(" radar_pi: Software doen not yet allow more than one Raymarine radar type"));
+  }
+
+  NetworkAddress int_face_addr = interface_addr;
+  NetworkAddress radar_addr = addr;
+
+  // First, check if we already know this serial#
+
+  m_pi->m_radar[ray_nr]->SetRadarLocationInfo(info);
+  m_pi->m_radar[ray_nr]->SetRadarInterfaceAddress(int_face_addr, radar_addr);
+  return;
 }
 
 PLUGIN_END_NAMESPACE

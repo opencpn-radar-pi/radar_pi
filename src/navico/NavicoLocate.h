@@ -91,6 +91,7 @@ class NavicoLocate : public wxThread {
 
   void UpdateEthernetCards();
   void CleanupCards();
+  void FoundNavicoLocationInfo(const NetworkAddress &addr, const NetworkAddress &interface_addr, const RadarLocationInfo &info);
 
   radar_pi *m_pi;
   volatile bool m_shutdown;

@@ -15,21 +15,12 @@
 set -euo pipefail
 set -x
 
-PROD_REPO=${CLOUDSMITH_PROD_REPO:-'opencpn-radar-pi/opencpn-radar-pi-prod'}
-BETA_REPO=${CLOUDSMITH_BETA_REPO:-'opencpn-radar-pi/opencpn-radar-pi-beta'}
-
-source $HOME/project/ci/commons.sh
+source "$HOME/project/ci/cloudsmith-repo.sh"
+source "$HOME/project/ci/commons.sh"
 
 if [ -z "$CIRCLECI" ]; then
     exit 0;
 fi
-
-if [ -z "$CLOUDSMITH_API_KEY" ]; then
-    echo 'Cannot deploy to cloudsmith, missing $CLOUDSMITH_API_KEY'
-    exit 0
-fi
-
-echo "Using \$CLOUDSMITH_API_KEY: ${CLOUDSMITH_API_KEY:0:4}..."
 
 if pyenv versions 2>&1 >/dev/null; then
     pyenv global 3.7.0

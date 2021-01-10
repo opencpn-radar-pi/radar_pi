@@ -30,9 +30,7 @@ elseif (OCPN_FLATPAK)
     set(PKG_TARGET_ARCH "x86_64")
     set(PKG_TARGET_VERSION "18.08")    # As of flatpak/*yaml
 elseif (MINGW)
-    # See Opencpn bug #2061. x86_64 is basically wrong, but still
-    # the value to use.
-    set(PKG_TARGET "mingw-x86_64")
+    set(PKG_TARGET "mingw")
     set(PKG_TARGET_ARCH "x86_64")
     if (CMAKE_SYSTEM_VERSION)
         set(PKG_TARGET_VERSION ${CMAKE_SYSTEM_VERSION})
@@ -97,11 +95,7 @@ string(STRIP "${PKG_TARGET_VERSION}" PKG_TARGET_VERSION)
 string(TOLOWER "${PKG_TARGET_VERSION}" PKG_TARGET_VERSION)
 set(PKG_TARGET_NVR "${PKG_TARGET}-${PKG_TARGET_VERSION}")
 
-if (OCPN_CI_BUILD)
-    set(CPACK_PACKAGE_FILE_NAME "${VERBOSE_NAME}-plugin-${PKG_TARGET_NVR}")
-else ()
-    set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_NAME}-${PKG_TARGET_NVR}")
-endif ()
+set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_NAME}-${PACKAGE_VERSION}-${OCPN_MIN_VERSION}-${PKG_TARGET_NVR}")
 
 set(PKG_UPLOAD_NAME "${VERBOSE_NAME}-${PKG_TARGET_NVR}")
 set(PKG_TAR_FILE    "${CPACK_PACKAGE_FILE_NAME}.tar.gz")

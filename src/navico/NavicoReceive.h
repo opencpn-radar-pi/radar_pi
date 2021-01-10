@@ -56,7 +56,7 @@ class NavicoReceive : public RadarReceive {
     m_shutdown_time_requested = 0;
     m_is_shutdown = false;
     m_first_receive = true;
-    m_interface_addr = m_pi->GetRadarInterfaceAddress(ri->m_radar);
+    m_interface_addr = m_ri->GetRadarInterfaceAddress();
     
     m_receive_socket = GetLocalhostServerTCPSocket();
     m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
@@ -65,23 +65,22 @@ class NavicoReceive : public RadarReceive {
     LOG_INFO(wxT("radar_pi: %s receive thread created, prio= %i"), m_ri->m_name.c_str(), GetPriority());
     InitializeLookupData();
 
-    RadarLocationInfo info = m_pi->GetRadarLocationInfo(m_ri->m_radar);
+    RadarLocationInfo info = m_ri->GetRadarLocationInfo();
     if (info.report_addr.IsNull() && !m_info.report_addr.IsNull()) {
       // BR24, 3G, 4G initial setup, when ini file doesn't contain multicast addresses yet
       // In this case m_info.spoke_data_addr etc. are correct, these don't really change in the wild according to our data,
       // so write them into the RadarLocationInfo object.
-      m_pi->SetRadarLocationInfo(m_ri->m_radar, m_info);
+      m_ri->SetRadarLocationInfo(m_info);
       LOG_INFO(wxT("radar_pi: %s info van constuctor RadarReceive SetRadarLocationInfo m_info= %s "), m_ri->m_name, m_info.to_string());
     } else if (!info.report_addr.IsNull() && ri->m_radar_type != RT_BR24) {
       // Restart, when ini file contains multicast addresses, that are hopefully still correct.
       // This will also overwrite the initial addresses for 3G and 4G with those from the ini file
       // If not we will time-out and then NavicoLocate will find the radar.
-      m_info = m_pi->GetRadarLocationInfo(m_ri->m_radar);
+      m_info = m_ri->GetRadarLocationInfo();
       LOG_INFO(wxT(" radar_pi: radar addresses from ini file loaded"));
     }
     LOG_INFO(wxT(" radar_pi: %s navico receive using addresses: %s"), m_ri->m_name, m_info.to_string());
-    m_pi->SetRadarLocationInfo(m_ri->m_radar,
-                             m_info);  //  in case the initial value from constuctor are used, write these to radar_pi
+    m_ri->SetRadarLocationInfo(m_info);  //  in case the initial value from constuctor are used, write these to radar_pi
   };
 
   ~NavicoReceive(){};
