@@ -103,12 +103,10 @@ function (tarball_target)
 
   set(_finish_script "
     execute_process(
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
-      COMMAND cmake -E ${_rmdir_cmd} ${pkg_displayname}
+      COMMAND cmake -E ${_rmdir_cmd} app/${pkg_displayname}
     )
      execute_process(
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
-      COMMAND cmake -E rename files ${pkg_displayname}
+      COMMAND cmake -E rename app/files app/${pkg_displayname}
     )
     execute_process(
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
