@@ -51,6 +51,14 @@ else ()
   set(_cs_command "cmake -E sha256sum" )
 endif ()
 
+# Command to remove directory
+if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 17)
+  set(_rmdir_cmd "cmake -E remove_directory")
+else ()
+  set(_rmdir_cmd "cmake -E rm -rf" )
+endif ()
+
+
 # Cmake batch file to compute and patch metadata checksum
 #
 set(_cs_script "
@@ -95,7 +103,9 @@ function (tarball_target)
   set(_finish_script "
     execute_process(
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
-      COMMAND cmake -E rename files ${pkg_displayname}
+      COMMAND
+        cmake -E ${_rmdir_cmd} ${pkg_displayname} &&
+        cmake -E rename files ${pkg_displayname}
     )
     execute_process(
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
