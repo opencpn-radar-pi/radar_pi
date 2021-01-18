@@ -53,9 +53,9 @@ endif ()
 
 # Command to remove directory
 if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 17)
-  set(_rmdir_cmd "cmake -E remove_directory")
+  set(_rmdir_cmd "remove_directory")
 else ()
-  set(_rmdir_cmd "cmake -E rm -rf" )
+  set(_rmdir_cmd "rm -rf" )
 endif ()
 
 
@@ -100,12 +100,15 @@ function (tarball_target)
   add_custom_target(tarball-install)
   add_custom_command(TARGET tarball-install COMMAND ${_install_cmd})
 
+
   set(_finish_script "
     execute_process(
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
-      COMMAND
-        cmake -E ${_rmdir_cmd} ${pkg_displayname} &&
-        cmake -E rename files ${pkg_displayname}
+      COMMAND cmake -E ${_rmdir_cmd} ${pkg_displayname}
+    )
+     execute_process(
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
+      COMMAND cmake -E rename files ${pkg_displayname}
     )
     execute_process(
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
@@ -154,7 +157,7 @@ function (flatpak_target manifest)
     )
     execute_process(
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
-      COMMAND mv files ${pkg_displayname}
+      COMMAND mv -fT files ${pkg_displayname}
     )
     execute_process(
       WORKING_DIRECTORY  ${CMAKE_BINARY_DIR}/app
