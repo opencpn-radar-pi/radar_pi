@@ -2,7 +2,6 @@ Source: opencpn
 Build-Depends: debhelper (>= 9),
  base-files (>>8) | mesa-common-dev,
  base-files (>>8) | libgl1-mesa-dev,
- cmake3 | cmake (>> 3.5.0),
  libgtk2.0-dev,
  libjsoncpp-dev,
  libtinyxml-dev,
