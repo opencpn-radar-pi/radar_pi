@@ -1,7 +1,6 @@
 Source: opencpn
 Build-Depends: debhelper (>= 9),
  build-essential,
- cmake,
  file,
  gettext,
  git,
@@ -10,6 +9,7 @@ Build-Depends: debhelper (>= 9),
  libtinyxml-dev,
  libwxgtk3.0-dev,
  lsb-release,
+ wget,
  wx-common
 
 Standards-Version: 4.3.0
