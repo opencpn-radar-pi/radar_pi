@@ -410,7 +410,7 @@ void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const Net
   // associate the info found with the right type of radar
 
   if (info.serialNr[0] == '1' &&
-      (info.serialNr[1] == '9' || info.serialNr[1] == '7' || info.serialNr[1] == '6' ||
+      (info.serialNr[1] == '9' || info.serialNr[1] == '8' || info.serialNr[1] == '7' || info.serialNr[1] == '6' ||
        info.serialNr[1] == '5')) {  // It seems that serial # starting with 15 - 19  refers to Halo type radars
     halo_type = true;
 
