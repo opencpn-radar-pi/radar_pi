@@ -292,7 +292,9 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const Netw
     infoA.spoke_data_addr = NetworkAddress(data->addrDataA);
     infoA.report_addr = NetworkAddress(data->addrReportA);
     infoA.send_command_addr = NetworkAddress(data->addrSendA);
-    NetworkAddress radar_ipA = radar_address;
+    NetworkAddress radar_ipA =
+        NetworkAddress(data->addr0);  // This is the address the radar will send data and reports from
+                                      // This address may be different from the address this location info is received from
     radar_ipA.port = htons(RO_PRIMARY);
     if (m_report_count < MAX_REPORT) {
       LOG_INFO(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoA.to_string());
@@ -309,7 +311,9 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const Netw
       infoB.spoke_data_addr = NetworkAddress(data->addrDataB);
       infoB.report_addr = NetworkAddress(data->addrReportB);
       infoB.send_command_addr = NetworkAddress(data->addrSendB);
-      NetworkAddress radar_ipB = radar_address;
+      NetworkAddress radar_ipB =
+          NetworkAddress(data->addr0);  // This is the address the radar will send data and reports from
+                                        // This address may be different from the address this location info is received from
       radar_ipB.port = htons(RO_SECONDARY);
       if (m_report_count < MAX_REPORT) {
         LOG_INFO(wxT("radar_pi: Located Navico radar IP %s, interface %s [%s]"), radar_ipB.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoB.to_string());
