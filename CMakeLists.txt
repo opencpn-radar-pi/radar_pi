@@ -10,12 +10,13 @@ cmake_minimum_required(VERSION 3.5.1)
 
 cmake_policy(SET CMP0042 NEW)
 
+if (POLICY CMP0072)
+  cmake_policy(SET CMP0072 NEW)
+endif ()
+
 if (POLICY CMP0077)
   cmake_policy(SET CMP0077 NEW)
 endif ()
-
-# Prefer libGL.so to libOpenGL.so, see CMP0072
-set(OpenGL_GL_PREFERENCE "LEGACY")
 
 # Locations where cmake looks for cmake modules.
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build ${CMAKE_SOURCE_DIR}/cmake)
