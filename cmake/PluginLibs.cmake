@@ -47,11 +47,6 @@ if (NOT QT_ANDROID)
   include(${wxWidgets_USE_FILE})	
 endif ()
 
-if (MINGW)
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L../buildwin")
-endif ()
-
-
 # On Android, PlugIns need a specific linkage set....
 if (QT_ANDROID)
   # These libraries are needed to create PlugIns on Android.
