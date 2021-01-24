@@ -35,7 +35,6 @@ if (NOT QT_ANDROID)
   endif ()
 
   set(wxWidgets_USE_LIBS base core net xml html adv stc)
-  set(BUILD_SHARED_LIBS TRUE)
 
   find_package(wxWidgets REQUIRED base core net xml html adv stc)
   if (MSYS)
