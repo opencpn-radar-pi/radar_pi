@@ -54,9 +54,6 @@
 #define GRIB_MIN_MAJOR 4
 #define GRIB_MIN_MINOR 1
 
-#define PLUGIN_VERSION_MAJOR 2
-#define PLUGIN_VERSION_MINOR 5
-
 class Dlg;
 
 static inline bool GribCurrent(
