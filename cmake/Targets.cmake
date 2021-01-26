@@ -15,12 +15,9 @@ if (WIN32)
   endif ()
 endif ()
 
-# Set up _parallel_cmake_opt
-set(_parallel_cmake_opt "--parallel")
-
 # Set up _build_cmd
 set(_build_cmd
-  cmake --build ${CMAKE_BINARY_DIR} ${_parallel_cmake_opt} --config $<CONFIG>
+  cmake --build ${CMAKE_BINARY_DIR} --parallel --config $<CONFIG>
 )
 
 # Set up _build_target_cmd and _install_cmd
