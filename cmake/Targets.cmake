@@ -16,21 +16,12 @@ if (WIN32)
 endif ()
 
 # Set up _parallel_cmake_opt
-if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 12)
-  set(_parallel_cmake_opt "")
-else ()
-  set(_parallel_cmake_opt "--parallel")
-endif ()
+set(_parallel_cmake_opt "--parallel")
 
 # Set up _build_cmd
-if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 10)
-  set(_build_cmd make -j2)
-else ()
-  set(_build_cmd
-    cmake --build ${CMAKE_BINARY_DIR} ${_parallel_cmake_opt}
-    --config $<CONFIG>
-  )
-endif ()
+set(_build_cmd
+  cmake --build ${CMAKE_BINARY_DIR} ${_parallel_cmake_opt} --config $<CONFIG>
+)
 
 # Set up _build_target_cmd and _install_cmd
 if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 16)
@@ -41,14 +32,6 @@ else ()
       cmake --build ${CMAKE_BINARY_DIR} --config $<CONFIG> --target
   )
   set(_install_cmd cmake --install ${CMAKE_BINARY_DIR} --config $<CONFIG>)
-endif ()
-
-
-# Command to compute sha256 checksum
-if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 10)
-  set(_cs_command "${pkg_python} ${PROJECT_SOURCE_DIR}/ci/checksum.py")
-else ()
-  set(_cs_command "cmake -E sha256sum" )
 endif ()
 
 # Command to remove directory
@@ -63,7 +46,7 @@ endif ()
 #
 set(_cs_script "
   execute_process(
-    COMMAND ${_cs_command}  ${CMAKE_BINARY_DIR}/${pkg_tarname}.tar.gz
+    COMMAND  cmake -E sha256sum ${CMAKE_BINARY_DIR}/${pkg_tarname}.tar.gz
     OUTPUT_FILE ${CMAKE_BINARY_DIR}/${pkg_tarname}.sha256
   )
   file(READ ${CMAKE_BINARY_DIR}/${pkg_tarname}.sha256 _SHA256)
