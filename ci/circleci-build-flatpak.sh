@@ -36,6 +36,10 @@ sed -i '/^runtime-version/s/:.*/: stable/' flatpak/$MANIFEST
 pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
 cp .python-version $HOME
 
+# Install a recent python, flatpak's is too old.
+export PATH=$HOME/.local/bin:$PATH
+python -m pip install --user cmake
+
 # Configure and build the plugin tarball and metadata.
 mkdir build; cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
