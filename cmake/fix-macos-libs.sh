@@ -4,7 +4,7 @@
 # location ot the target MacOS system where they are installed
 # as part of OpenCPN
 
-readonly RUNTIME_PATH="/Applications/OpenCPN.app/Contents/Frameworks"
+readonly RUNTIME_PATH="@executable_path/../Frameworks/"
 
 plugin=$(find app/files -name '*.dylib')
 
