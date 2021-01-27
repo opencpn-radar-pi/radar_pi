@@ -56,6 +56,7 @@ build_script:
   - cd build
   - cmake -T v141_xp -G "Visual Studio 15 2017" --config RelWithDebInfo  ..
   - cmake --build . --target tarball --config RelWithDebInfo
+  - py ..\ci\windows-ldd
   - cmd: upload.bat
   - py ..\ci\git-push
 
