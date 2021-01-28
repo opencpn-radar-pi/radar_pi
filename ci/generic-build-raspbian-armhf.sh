@@ -48,6 +48,7 @@ cd /ci-source
 rm -rf build; mkdir build; cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc) VERBOSE=1 tarball
+ldd  app/*/lib/opencpn/*.so
 EOF
 
 docker exec -ti \
