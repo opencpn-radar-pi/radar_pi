@@ -3,12 +3,10 @@
 # the plugin dll.
 
 import subprocess
-import sys
 import glob
 dumpbin = glob.glob(
   "C:/Program Files (x86)/*Visual Studio/2017/Community/VC/Tools/MSVC/*/bin/Hostx64/x64")[0]
 dumpbin += "/dumpbin"
-subprocess.run(["dir", "C:/project/opencpn/photolayer_pi/build/app"])
 lib = glob.glob("C:/project/opencpn/*/build/app/*/plugins/*.dll")[0]
 subprocess.run([dumpbin, "/dependents", lib])
 
