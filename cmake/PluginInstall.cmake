@@ -35,10 +35,18 @@ elseif (WIN32)
   endif ()
 
 elseif (UNIX)
-  install(
-    TARGETS ${PACKAGE_NAME}
-    RUNTIME LIBRARY DESTINATION lib/opencpn
-  )
+  if (${ARCH} STREQUAL "x86_64") 
+    install(
+      TARGETS ${PACKAGE_NAME}
+      RUNTIME LIBRARY DESTINATION lib64/opencpn
+    )
+  else ()
+    install(
+      TARGETS ${PACKAGE_NAME}
+      RUNTIME LIBRARY DESTINATION lib/opencpn
+    )
+  endif()
+
   if (EXISTS ${PROJECT_SOURCE_DIR}/data)
     install(DIRECTORY data DESTINATION share/opencpn/plugins/${PACKAGE_NAME})
   endif ()
