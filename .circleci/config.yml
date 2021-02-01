@@ -5,6 +5,7 @@ debian-steps: &debian-steps
   steps:
     - checkout
     - run: ci/circleci-build-debian.sh
+    - run: sh -c "ldd  build/app/*/lib/opencpn/*.so"
     - run: cd build; /bin/bash < upload.sh
     - run: python3 ci/git-push
 
