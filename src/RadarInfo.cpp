@@ -434,10 +434,9 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   // calculate course as the moving average of m_hdt over one revolution
   SampleCourse(angle);  // used for course_up mode
 
-  // for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
-  //  data[i] = 0;
-  //  if (i < 7) data[i] = 200;   // put a dot in the middle for testing
-  // }
+   for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
+    data[i] = 0;
+   }
 
   // following sets an image of 512 circles
   //  for (int i = 0; i < 1020; i += 2) {
