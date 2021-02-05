@@ -6,7 +6,10 @@ endif ()
 
 # Based on code from nohal
 function (GetArch)
-  if (NOT WIN32)
+  if (NOT "${OCPN_TARGET_TUPLE}" STREQUAL "")
+    # Return last element from tuple like "Android-armhf;16;armhf"
+    list(GET OCPN_TARGET_TUPLE 2 ARCH)
+  elseif (NOT WIN32)
     # default
     set(ARCH "x86_64")
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
@@ -31,7 +34,7 @@ function (GetArch)
     # Should really be i386 since we are on win32. However, it's x86_64 for now,
     # see #2027
     set(ARCH "x86_64")
-  endif (NOT WIN32)
+  endif ()
   set(ARCH ${ARCH} PARENT_SCOPE)
 endfunction (GetArch)
 

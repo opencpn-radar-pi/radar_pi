@@ -6,7 +6,10 @@ if (DEFINED plugin_target)
   return ()
 endif ()
 
-if ("${BUILD_TYPE}" STREQUAL "flatpak")
+if (NOT "${OCPN_TARGET_TUPLE}" STREQUAL "")
+  list(GET OCPN_TARGET_TUPLE 0 plugin_target)
+  list(GET OCPN_TARGET_TUPLE 1 plugin_target_version)
+elseif ("${BUILD_TYPE}" STREQUAL "flatpak")
   set(plugin_target "flatpak")
   set(plugin_target_version "18.08") # As of flatpak/*yaml
 elseif (MINGW)
