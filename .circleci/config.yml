@@ -123,9 +123,9 @@ jobs:
 std-filters: &std-filters
   filters:
     branches:
-      only:
-        - master
-        - build
+      ignore:
+        - tmp
+        - /tmp-.*/
 
 workflows:
   version: 2
