@@ -14,26 +14,7 @@ sudo systemctl kill --kill-who=all apt-daily.service apt-daily-upgrade.service
 sudo systemctl mask apt-daily.service apt-daily-upgrade.service
 sudo systemctl daemon-reload
 
-
-# Start up the docker instance
-DOCKER_SOCK="unix:///var/run/docker.sock"
-echo "DOCKER_OPTS=\"-H tcp://127.0.0.1:2375 -H $DOCKER_SOCK -s devicemapper\"" \
-    | sudo tee /etc/default/docker > /dev/null
-
-sudo systemctl restart docker.service
-sudo docker pull fedora:33
-docker run --privileged -d -ti -e "container=docker"  \
-    -v /sys/fs/cgroup:/sys/fs/cgroup \
-    -v "$(pwd):/project:rw" \
-    -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
-    -e "CLOUDSMITH_BETA_REPO=$CLOUDSMITH_BETA_REPO" \
-    -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
-    -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
-    fedora:33   /bin/bash
-DOCKER_CONTAINER_ID=$(docker ps | awk '/fedora/ {print $1}')
-docker logs $DOCKER_CONTAINER_ID
-
-# Create the  fedora build script
+# Create the fedora build script
 cat > build.sh << "EOF"
 su -c "dnf install -q -y sudo dnf-plugins-core"
 sudo dnf -y copr enable leamas/opencpn-mingw
@@ -47,12 +28,17 @@ cmake \
 make -j $(nproc) VERBOSE=1 tarball
 EOF
 
-# Run the build in docker
-docker exec -ti \
-    $DOCKER_CONTAINER_ID /bin/bash -xec "bash -xe /project/build.sh"
-docker ps -a
-docker stop $DOCKER_CONTAINER_ID
-docker rm -v $DOCKER_CONTAINER_ID
+# Run script in docker instance
+sudo systemctl restart docker.service
+sudo docker pull fedora:33
+docker run --privileged -ti \
+    -v /sys/fs/cgroup:/sys/fs/cgroup \
+    -v "$(pwd):/project:rw" \
+    -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
+    -e "CLOUDSMITH_BETA_REPO=$CLOUDSMITH_BETA_REPO" \
+    -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
+    -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
+    fedora:33  /bin/bash -xe /project/build.sh
 rm -f build.sh
 
 # Wait for apt-daily to complete, apt-daily should not restart, it's masked.
@@ -60,13 +46,12 @@ rm -f build.sh
 echo -n "Waiting for apt_daily lock..."
 sudo flock /var/lib/apt/daily_lock echo done
 
-# Select latest available python, install cloudsmith required by upload script
+# Select latest available python
 pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1 \
     > $HOME/.python-version
-python3 -m pip install --user cloudsmith-cli
 
-# Required by git-push
-python3 -m pip install --user cryptography
+# Install cloudsmith(for upload script) and cryptography (for git-push).
+python3 -m pip install --user cloudsmith-cli cryptography
 
-# python install scripts in ~/.local/bin, teach upload.sh to use it in PATH:
+# python installs scripts in ~/.local/bin, teach upload.sh to use it in PATH:
 echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.uploadrc

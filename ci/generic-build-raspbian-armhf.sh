@@ -7,14 +7,8 @@
 
 set -xe
 
-# Start up the docker image
+# Create build script
 #
-DOCK_SOCK="unix:///var/run/docker.sock"
-echo "DOCKER_OPTS=\"-H tcp://127.0.0.1:2375 -H $DOCK_SOCK -s devicemapper\"" \
-    | sudo tee /etc/default/docker > /dev/null
-sudo service docker restart
-sleep 5;
-
 if [ -n "$TRAVIS_BUILD_DIR" ]; then
     ci_source="$TRAVIS_BUILD_DIR"
 elif [ -d ~/project ]; then
@@ -23,25 +17,7 @@ else
     ci_source="$(pwd)"
 fi
 
-
-docker run --rm --privileged multiarch/qemu-user-static:register --reset
-docker run --privileged -d -ti \
-    -e "container=docker" \
-    -e "OCPN_TARGET=$OCPN_TARGET" \
-    -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
-    -e "CLOUDSMITH_BETA_REPO=$CLOUDSMITH_BETA_REPO" \
-    -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
-    -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
-    -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
-    -v "$ci_source:/ci-source:rw" \
-    $DOCKER_IMAGE /bin/bash
-
-DOCKER_CONTAINER_ID=$(docker ps | awk '/balenalib/ {print $1}')
-
-
-# Run build script
-#
-cat > build.sh << "EOF"
+cat > $ci_source/build.sh << "EOF"
 curl http://mirrordirector.raspbian.org/raspbian.public.key  | apt-key add -
 curl http://archive.raspbian.org/raspbian.public.key  | apt-key add -
 sudo apt -q update
@@ -64,15 +40,20 @@ make -j $(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
 EOF
 
-docker exec -ti \
-    $DOCKER_CONTAINER_ID /bin/bash -xec "bash -xe /ci-source/build.sh"
 
-
-# Stop and remove the container
+# Run script in docker image
 #
-docker stop $DOCKER_CONTAINER_ID
-docker rm -v $DOCKER_CONTAINER_ID
-rm -f build.sh
+docker run --rm --privileged multiarch/qemu-user-static:register --reset
+docker run --privileged -ti \
+    -e "OCPN_TARGET=$OCPN_TARGET" \
+    -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
+    -e "CLOUDSMITH_BETA_REPO=$CLOUDSMITH_BETA_REPO" \
+    -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
+    -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
+    -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
+    -v "$ci_source:/ci-source:rw" \
+    $DOCKER_IMAGE /bin/bash -xe /ci-source/build.sh
+rm -f $ci_source/build.sh
 
 
 # Install cloudsmith-cli (for upload) and cryptography (for git-push).
@@ -81,8 +62,7 @@ pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1 \
     > $HOME/.python-version
 # Latest pip 21.0.0 is broken:
 python3 -m pip install --force-reinstall pip==20.3.4
-python3 -m pip install --user cloudsmith-cli
-python3 -m pip install --user cryptography
+python3 -m pip install --user cloudsmith-cli cryptography
 
-# python install scripts in ~/.local/bin, teach upload.sh to use it in PATH:
+# python install scripts in ~/.local/bin, teach upload.sh to use in it's PATH:
 echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.uploadrc
