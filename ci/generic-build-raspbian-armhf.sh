@@ -8,11 +8,21 @@
 set -xe
 
 # Start up the docker image
+#
 DOCK_SOCK="unix:///var/run/docker.sock"
 echo "DOCKER_OPTS=\"-H tcp://127.0.0.1:2375 -H $DOCK_SOCK -s devicemapper\"" \
     | sudo tee /etc/default/docker > /dev/null
 sudo service docker restart
 sleep 5;
+
+if [ -n "$TRAVIS_BUILD_DIR" ]; then
+    ci_source="$TRAVIS_BUILD_DIR"
+elif [ -d ~/project ]; then
+    ci_source=~/project
+else
+    ci_source="$(pwd)"
+fi
+
 
 docker run --rm --privileged multiarch/qemu-user-static:register --reset
 docker run --privileged -d -ti \
@@ -22,12 +32,15 @@ docker run --privileged -d -ti \
     -e "CLOUDSMITH_BETA_REPO=$CLOUDSMITH_BETA_REPO" \
     -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
-    -v $(pwd):/ci-source:rw \
+    -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
+    -v "$ci_source:/ci-source:rw" \
     $DOCKER_IMAGE /bin/bash
+
 DOCKER_CONTAINER_ID=$(docker ps | awk '/balenalib/ {print $1}')
 
 
 # Run build script
+#
 cat > build.sh << "EOF"
 curl http://mirrordirector.raspbian.org/raspbian.public.key  | apt-key add -
 curl http://archive.raspbian.org/raspbian.public.key  | apt-key add -
@@ -56,12 +69,14 @@ docker exec -ti \
 
 
 # Stop and remove the container
+#
 docker stop $DOCKER_CONTAINER_ID
 docker rm -v $DOCKER_CONTAINER_ID
 rm -f build.sh
 
 
-# Install cloudsmith-cli,  required by upload.sh.
+# Install cloudsmith-cli (for upload) and cryptography (for git-push).
+#
 pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1 \
     > $HOME/.python-version
 # Latest pip 21.0.0 is broken:
