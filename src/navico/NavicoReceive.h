@@ -39,6 +39,8 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+extern SOCKET g_HaloInfoSocket;
+
 //
 // An intermediary class that implements the common parts of any Navico radar.
 //
@@ -57,11 +59,14 @@ class NavicoReceive : public RadarReceive {
     m_is_shutdown = false;
     m_first_receive = true;
     m_interface_addr = m_ri->GetRadarInterfaceAddress();
-    
+    m_halo_received_info = wxGetUTCTimeMillis();
+    m_halo_sent_heading = m_halo_received_info;
+    m_halo_sent_mystery = m_halo_received_info;
+
     m_receive_socket = GetLocalhostServerTCPSocket();
     m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
     SetInfoStatus(wxString::Format(wxT("%s: %s"), m_ri->m_name.c_str(), _("Initializing")));
-    SetPriority(70);   // Priority of receive thread should be lower than prio of Navicolocate
+    SetPriority(70);  // Priority of receive thread should be lower than prio of Navicolocate
     LOG_INFO(wxT("radar_pi: %s receive thread created, prio= %i"), m_ri->m_name.c_str(), GetPriority());
     InitializeLookupData();
 
@@ -71,7 +76,8 @@ class NavicoReceive : public RadarReceive {
       // In this case m_info.spoke_data_addr etc. are correct, these don't really change in the wild according to our data,
       // so write them into the RadarLocationInfo object.
       m_ri->SetRadarLocationInfo(m_info);
-      LOG_INFO(wxT("radar_pi: %s info van constuctor RadarReceive SetRadarLocationInfo m_info= %s "), m_ri->m_name, m_info.to_string());
+      LOG_INFO(wxT("radar_pi: %s info van constuctor RadarReceive SetRadarLocationInfo m_info= %s "), m_ri->m_name,
+               m_info.to_string());
     } else if (!info.report_addr.IsNull() && ri->m_radar_type != RT_BR24) {
       // Restart, when ini file contains multicast addresses, that are hopefully still correct.
       // This will also overwrite the initial addresses for 3G and 4G with those from the ini file
@@ -104,6 +110,10 @@ class NavicoReceive : public RadarReceive {
   SOCKET PickNextEthernetCard();
   SOCKET GetNewReportSocket();
   SOCKET GetNewDataSocket();
+  SOCKET GetNewInfoSocket();
+  void ReleaseInfoSocket(void);
+  void SendHeadingPacket(SOCKET s);
+  void SendMysteryPacket(SOCKET s);
 
   void UpdateSendCommand();
   void SetRadarType(RadarType t);
@@ -117,6 +127,10 @@ class NavicoReceive : public RadarReceive {
   int m_next_spoke;
   char m_radar_status;
   bool m_first_receive;
+
+  wxLongLong m_halo_received_info; // When some mfd sent info
+  wxLongLong m_halo_sent_heading; // When we send it, every 100 ms
+  wxLongLong m_halo_sent_mystery; // When we send it, every 250 ms
 
   wxCriticalSection m_lock;  // Protects m_status
   wxString m_status;         // Userfriendly string

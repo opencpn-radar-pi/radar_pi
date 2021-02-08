@@ -58,8 +58,6 @@ NavicoControl::~NavicoControl() {
   }
 }
 
-//void NavicoControl::SetMultiCastAddress(NetworkAddress sendMultiCastAddress) { m_addr = sendMultiCastAddress.GetSockAddrIn(); }
-
 bool NavicoControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) {
   int r;
   int one = 1;
@@ -115,9 +113,9 @@ bool NavicoControl::TransmitCmd(const uint8_t *msg, int size) {
     return false;
   }
   if (!m_sendMultiCastAddresss_set) {
-     wxLogError(wxT("radar_pi: !m_multicast_send_address_set, Unable to transmit command to unknown radar"));
-     IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("not transmitted"), msg, size));
-     return false;
+    wxLogError(wxT("radar_pi: !m_multicast_send_address_set, Unable to transmit command to unknown radar"));
+    IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("not transmitted"), msg, size));
+    return false;
   }
   if (sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&m_addr, sizeof(m_addr)) < size) {
     wxLogError(wxT("radar_pi: Unable to transmit command to %s: %s"), m_name.c_str(), SOCKETERRSTR);
