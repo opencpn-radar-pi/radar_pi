@@ -76,7 +76,7 @@ if (CMAKE_BUILD_TYPE MATCHES "Release|MinSizeRel")
     if (APPLE)
       set(STRIP_UTIL "${STRIP_UTIL} -x")
     endif ()
-    install(CODE "message(STATUS \"Stripping ${_striplib}\"")
+    install(CODE "message(STATUS \"Stripping ${_striplib}\")")
     install(CODE "
       execute_process(
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
