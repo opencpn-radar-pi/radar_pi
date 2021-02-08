@@ -594,9 +594,6 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   time_t m_hdt_timeout;            // When we consider heading is lost
   double m_hdm;                    // Last magnetic heading obtained
   time_t m_hdm_timeout;            // When we consider heading is lost
-  double m_radar_heading;          // Last heading obtained from radar, or nan if none
-  bool m_radar_heading_true;       // Was TRUE flag set on radar heading?
-  time_t m_radar_heading_timeout;  // When last heading was obtained from radar, or 0 if not
  public:
   HeadingSource m_heading_source;
   int m_chart_overlay[MAX_CHART_CANVAS];  // The overlay for canvas x, -1 = none, otherwise = radar #

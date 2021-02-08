@@ -222,7 +222,6 @@ int radar_pi::Init(void) {
   m_cog = 0.;
   m_COGAvg = 0.;
   m_heading_source = HEADING_NONE;
-  m_radar_heading = nanl("");
   m_vp_rotation = 0.;
   m_arpa_max_range = BASE_ARPA_DIST;
 
@@ -913,27 +912,17 @@ void radar_pi::CheckGuardZoneBogeys(void) {
 
 void radar_pi::SetRadarHeading(double heading, bool isTrue) {
   wxCriticalSectionLocker lock(m_exclusive);
-  m_radar_heading = heading;
-  m_radar_heading_true = isTrue;
   time_t now = time(0);
-  if (!wxIsNaN(m_radar_heading)) {
-    if (m_radar_heading_true) {
-      if (m_heading_source != HEADING_RADAR_HDT) {
-        m_heading_source = HEADING_RADAR_HDT;
-      }
-      if (m_heading_source == HEADING_RADAR_HDT) {
-        m_hdt = m_radar_heading;
-        m_hdt_timeout = now + HEADING_TIMEOUT;
-      }
+  if (!wxIsNaN(heading)) {
+    if (isTrue) {
+      m_heading_source = HEADING_RADAR_HDT;
+      m_hdt = heading;
+      m_hdt_timeout = now + HEADING_TIMEOUT;
     } else {
-      if (m_heading_source != HEADING_RADAR_HDM) {
-        m_heading_source = HEADING_RADAR_HDM;
-      }
-      if (m_heading_source == HEADING_RADAR_HDM) {
-        m_hdm = m_radar_heading;
-        m_hdt = m_radar_heading + m_var;
-        m_hdm_timeout = now + HEADING_TIMEOUT;
-      }
+      m_heading_source = HEADING_RADAR_HDM;
+      m_hdm = heading;
+      m_hdt = heading + m_var;
+      m_hdm_timeout = now + HEADING_TIMEOUT;
     }
   } else if (m_heading_source == HEADING_RADAR_HDM || m_heading_source == HEADING_RADAR_HDT) {
     // no heading on radar and heading source is still radar
