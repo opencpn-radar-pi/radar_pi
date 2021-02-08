@@ -62,7 +62,8 @@ pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1 \
     > $HOME/.python-version
 # Latest pip 21.0.0 is broken:
 python3 -m pip install --force-reinstall pip==20.3.4
-python3 -m pip install --user cloudsmith-cli cryptography
+# https://github.com/pyca/cryptography/issues/5753 -> cryptography < 3.4
+python3 -m pip install --user cloudsmith-cli 'cryptography<3.4'
 
 # python install scripts in ~/.local/bin, teach upload.sh to use in it's PATH:
 echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.uploadrc
