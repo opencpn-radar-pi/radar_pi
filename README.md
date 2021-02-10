@@ -4,7 +4,8 @@ A plugin for OpenCPN. Almost a simulator or is it a game?
 
 More user info: https://opencpn.org/OpenCPN/plugins/shipdriver.html
 
-The plugin uses a continous integration setup described in CI.md.
+The plugin uses a continous integration setup described in the
+[wiki](https://github.com/Rasbats/managed_plugins/wiki/Alternative-Workflow)
 
 ## Building
 
