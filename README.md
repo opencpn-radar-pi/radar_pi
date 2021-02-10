@@ -11,9 +11,8 @@ The plugin uses a continous integration setup described in the
 
 ### General
 
-Install dependencies as described in DEPENDENCIES.md.
-For flatpak, see the
-[wiki](https://github.com/Rasbats/managed_plugins/wiki/Building-Flatpak-Plugins)
+Install build dependencies as described in the
+[wiki](https://github.com/Rasbats/managed_plugins/wiki/Local-Build)
 Then clone this repository, enter it and make
 `rm -rf build; mkdir build; cd build`.
 
