@@ -11,8 +11,11 @@ The plugin uses a continous integration setup described in the
 
 ### General
 
-Install dependencies as described in DEPENDENCIES.md. Then clone
-this repository, enter it and make `rm -rf build; mkdir build; cd build`.
+Install dependencies as described in DEPENDENCIES.md.
+For flatpak, see the
+[wiki](https://github.com/Rasbats/managed_plugins/wiki/Building-Flatpak-Plugins)
+Then clone this repository, enter it and make
+`rm -rf build; mkdir build; cd build`.
 
 A tar.gz tarball which can be used by the new plugin installer, available
 from OpenCPN 5.2.0 is built using:
@@ -20,8 +23,7 @@ from OpenCPN 5.2.0 is built using:
     $ cmake ..
     $ make tarball
 
-An installer tarball to be used by the flatpak'ed opencpn plugin
-installer is built by:
+To build the tarball:
 
     $ cmake ..
     $ make flatpak
