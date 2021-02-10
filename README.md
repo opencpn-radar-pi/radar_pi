@@ -42,6 +42,14 @@ This is to build the installer tarball. Use _--target pkg_ to build the
 legacy NSIS installer. The build requires access to a specific wxWidgets
 3.1.2 build, see the appveyour.yml file for details.
 
+## Plugin Catalog Git Push Integration
+
+The build system is able to push all metadata changes to a local clone
+of the plugins catalog project at https://github.com/opencpn/plugins.
+The purpose is to make it easier to make pull requests to update the
+catalog. See
+https://github.com/Rasbats/managed_plugins/wiki/Catalog-PR-git-integration
+
 
 ## Copyright and licensing
 
