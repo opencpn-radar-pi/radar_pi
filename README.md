@@ -50,7 +50,7 @@ The build system is able to push all metadata changes to a local clone
 of the plugins catalog project at https://github.com/opencpn/plugins.
 The purpose is to make it easier to make pull requests to update the
 catalog. See
-https://github.com/Rasbats/managed_plugins/wiki/Catalog-PR-git-integration
+https://github.com/Rasbats/managed_plugins/wiki/OpenCPN-Plugins-Catalog-and-Github-Integration
 
 
 ## Copyright and licensing
