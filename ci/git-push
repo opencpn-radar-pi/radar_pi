@@ -76,7 +76,8 @@ def private_key_setup(ci, user, password):
             encrypted = f.read()
     except FileNotFoundError:
         print("No private key found, cannot push metadata to git repo.")
-        print("See %s/Catalog-PR-git-integration" % WIKI_BASE)
+        print("See %s/OpenCPN-Plugins-Catalog-and-Github-Integration"
+                % WIKI_BASE)
         sys.exit(0)
     decrypted = decrypt1(encrypted.encode(), password.encode())
     with open(os.path.join(ci, user ), 'wb') as f:
