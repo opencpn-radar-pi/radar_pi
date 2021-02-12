@@ -59,6 +59,7 @@ option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 # -------  Plugin setup --------
 #
 project(ShipDriver_pi VERSION 2.6.2.0)
+set(PKG_RELEASE "1")
 
 set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
 set(PLUGIN_API_NAME ShipDriver) # As of GetCommonName() in plugin API
@@ -71,8 +72,10 @@ those conditions. Using 'Preferences' the simulator is able to record AIS
 data from itself. This can be replayed to simulate collision situations.
 ]=])
 
-set(PKG_RELEASE "1")
 set(PKG_AUTHOR "Mike Rossiter")
+set(PKG_IS_OPEN_SOURCE "yes")
+set(CPACK_PACKAGE_HOMEPAGE_URL https://github.com/Rasbats/shipdriver_pi)
+set(PKG_INFO_URL https://opencpn.org/OpenCPN/plugins/shipdriver.html)
 
 set(SRC
     src/ShipDriver_pi.h
