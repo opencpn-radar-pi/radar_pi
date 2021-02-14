@@ -4,14 +4,17 @@ A plugin for OpenCPN. Almost a simulator or is it a game?
 
 More user info: https://opencpn.org/OpenCPN/plugins/shipdriver.html
 
-The plugin uses a continous integration setup described in CI.md.
+The plugin uses a continous integration setup described in the
+[wiki](https://github.com/Rasbats/managed_plugins/wiki/Alternative-Workflow)
 
 ## Building
 
 ### General
 
-Install dependencies as described in DEPENDENCIES.md. Then clone
-this repository, enter it and make `rm -rf build; mkdir build; cd build`.
+Install build dependencies as described in the
+[wiki](https://github.com/Rasbats/managed_plugins/wiki/Local-Build)
+Then clone this repository, enter it and make
+`rm -rf build; mkdir build; cd build`.
 
 A tar.gz tarball which can be used by the new plugin installer, available
 from OpenCPN 5.2.0 is built using:
@@ -19,8 +22,7 @@ from OpenCPN 5.2.0 is built using:
     $ cmake ..
     $ make tarball
 
-An installer tarball to be used by the flatpak'ed opencpn plugin
-installer is built by:
+To build the tarball:
 
     $ cmake ..
     $ make flatpak
@@ -41,6 +43,14 @@ On windows, a somewhat different workflow is used:
 This is to build the installer tarball. Use _--target pkg_ to build the
 legacy NSIS installer. The build requires access to a specific wxWidgets
 3.1.2 build, see the appveyour.yml file for details.
+
+## Plugin Catalog Git Push Integration
+
+The build system is able to push all metadata changes to a local clone
+of the plugins catalog project at https://github.com/opencpn/plugins.
+The purpose is to make it easier to make pull requests to update the
+catalog. See
+https://github.com/Rasbats/managed_plugins/wiki/OpenCPN-Plugins-Catalog-and-Github-Integration
 
 
 ## Copyright and licensing

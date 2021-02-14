@@ -67,6 +67,7 @@ jobs:
       - image: circleci/buildpack-deps:xenial-scm
     environment:
       - OCPN_TARGET: xenial
+      - USE_DEADSNAKES_PY37: 1
     <<: *debian-steps
 
   build-bionic:

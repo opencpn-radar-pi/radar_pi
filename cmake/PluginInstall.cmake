@@ -67,7 +67,8 @@ if (CMAKE_BUILD_TYPE MATCHES "Release|MinSizeRel")
     set(_striplib OpenCPN.app/Contents/PlugIns/lib${PACKAGE_NAME}.dylib)
   elseif (MINGW)
     set(_striplib plugins/lib${PACKAGE_NAME}.dll)
-  elseif (UNIX AND NOT CMAKE_CROSSCOMPILING)  # linux
+  elseif (UNIX AND NOT CMAKE_CROSSCOMPILING AND NOT DEFINED ENV{FLATPAK_ID})
+    # Plain, native linux
     set(_striplib lib/opencpn/lib${PACKAGE_NAME}.so)
   endif ()
   if (BUILD_TYPE STREQUAL "tarball" AND DEFINED _striplib)
@@ -75,14 +76,12 @@ if (CMAKE_BUILD_TYPE MATCHES "Release|MinSizeRel")
     if (APPLE)
       set(STRIP_UTIL "${STRIP_UTIL} -x")
     endif ()
-    install(CODE
-      "execute_process(COMMAND cmake -E echo Stripping ${_striplib})"
-    )
-    install(CODE
-      "execute_process(
+    install(CODE "message(STATUS \"Stripping ${_striplib}\")")
+    install(CODE "
+      execute_process(
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMAND ${STRIP_UTIL} app/files/${_striplib}
-      )"
-    )
+      )
+    ")
   endif ()
 endif ()

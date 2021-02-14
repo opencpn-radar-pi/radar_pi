@@ -1,4 +1,4 @@
-clone_folder: c:\project\opencpn\shipdriver_pi
+clone_folder: c:\project\opencpn\plugin_src
 shallow_clone: false
 clone_depth: 10
 

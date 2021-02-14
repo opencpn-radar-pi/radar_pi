@@ -133,6 +133,12 @@ function (flatpak_target manifest)
       COMMAND bash -c \"sed -e '/@checksum@/d' \
           < ${pkg_displayname}.xml.in > app/files/metadata.xml\"
     )
+    if (${CMAKE_BUILD_TYPE} MATCHES Release|MinSizeRel)
+      message(STATUS \"Stripping app/files/lib/opencpn/lib${PACKAGE_NAME}.so\")
+      execute_process(
+        COMMAND strip app/files/lib/opencpn/lib${PACKAGE_NAME}.so
+      )
+    endif ()
     execute_process(
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
       COMMAND mv -fT files ${pkg_displayname}
