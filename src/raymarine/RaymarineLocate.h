@@ -39,7 +39,6 @@
 #include "radar_pi.h"
 #include "socketutil.h"
 
-
 PLUGIN_BEGIN_NAMESPACE
 
 //
@@ -65,7 +64,7 @@ class RaymarineLocate : public wxThread {
     m_interface_count = 0;
     m_report_count = 0;
     SetPriority(wxPRIORITY_MAX);
-    //LOG_INFO(wxT("radar_pi: RaymarineLocate thread created, prio= %i"), GetPriority());
+    // LOG_INFO(wxT("radar_pi: RaymarineLocate thread created, prio= %i"), GetPriority());
   }
 
   /*
@@ -85,7 +84,7 @@ class RaymarineLocate : public wxThread {
   volatile bool m_is_shutdown;
 
  protected:
-  void *Entry(void) ;
+  void *Entry(void);
 
  private:
   bool ProcessReport(const NetworkAddress &radar_address, const NetworkAddress &interface_address, const uint8_t *data, size_t len);

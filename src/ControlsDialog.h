@@ -220,7 +220,7 @@ class ControlsDialog : public wxDialog {
     m_stc_curve_button = 0;
     m_display_timing_button = 0;
     m_main_bang_suppression_button = 0;
-    
+
     for (size_t i = 0; i < ARRAY_SIZE(m_ctrl); i++) {
       m_ctrl[i].type = CT_NONE;
       m_ctrl[i].names = 0;
@@ -380,7 +380,6 @@ class ControlsDialog : public wxDialog {
   RadarControlButton *m_fine_tune_button;
   RadarControlButton *m_coarse_tune_button;
   RadarControlButton *m_stc_curve_button;
-
 
   // Installation controls
   RadarControlButton *m_bearing_alignment_button;

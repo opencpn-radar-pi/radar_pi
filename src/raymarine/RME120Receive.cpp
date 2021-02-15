@@ -32,9 +32,10 @@
  ***************************************************************************
  */
 
+#include "RME120Receive.h"
+
 #include "MessageBox.h"
 #include "RME120Control.h"
-#include "RME120Receive.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -58,11 +59,9 @@ PLUGIN_BEGIN_NAMESPACE
 #define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double)DEGREES_PER_ROTATION / SPOKES)
 #define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double)SPOKES / DEGREES_PER_ROTATION))
 
-
 #define HEADING_TRUE_FLAG 0x4000
 #define HEADING_MASK (SPOKES - 1)
 #define HEADING_VALID(x) (((x) & ~(HEADING_TRUE_FLAG | HEADING_MASK)) == 0)
-
 
 SOCKET RME120Receive::PickNextEthernetCard() {
   SOCKET socket = INVALID_SOCKET;
@@ -104,14 +103,14 @@ SOCKET RME120Receive::GetNewReportSocket() {
   wxString s = wxT(" ");
 
   if (!(m_info == m_ri->GetRadarLocationInfo())) {  // initial values or NavicoLocate modified the info
-    LOG_INFO(wxT("radar_pi: %s old radar address at IP %s [%s]"), m_ri->m_name,
-             m_ri->m_radar_address.FormatNetworkAddressPort(), m_info.to_string());
+    LOG_INFO(wxT("radar_pi: %s old radar address at IP %s [%s]"), m_ri->m_name, m_ri->m_radar_address.FormatNetworkAddressPort(),
+             m_info.to_string());
     m_info = m_ri->GetRadarLocationInfo();
-    
+
     m_interface_addr = m_ri->GetRadarInterfaceAddress();
     UpdateSendCommand();
-    LOG_INFO(wxT("radar_pi: %s Locator found radar at IP %s [%s]"), m_ri->m_name,
-             m_ri->m_radar_address.FormatNetworkAddressPort(), m_info.to_string());
+    LOG_INFO(wxT("radar_pi: %s Locator found radar at IP %s [%s]"), m_ri->m_name, m_ri->m_radar_address.FormatNetworkAddressPort(),
+             m_info.to_string());
   };
 
   if (m_interface_addr.IsNull()) {
@@ -147,7 +146,6 @@ SOCKET RME120Receive::GetNewReportSocket() {
   }
   return socket;
 }
-
 
 /*
  * Entry
@@ -217,20 +215,21 @@ void *RME120Receive::Entry(void) {
           radar_address.port = rx_addr.ipv4.sin_port;
 
           ProcessFrame(data, (size_t)r);
-            if (!radar_addr) {
-              wxCriticalSectionLocker lock(m_lock);
-              m_ri->DetectedRadar(m_interface_addr, radar_address);  // enables transmit data, if radar multicast address is also known
-              UpdateSendCommand();
-      
-              radarFoundAddr = rx_addr.ipv4;
-              radar_addr = &radarFoundAddr;
+          if (!radar_addr) {
+            wxCriticalSectionLocker lock(m_lock);
+            m_ri->DetectedRadar(m_interface_addr,
+                                radar_address);  // enables transmit data, if radar multicast address is also known
+            UpdateSendCommand();
 
-              if (m_ri->m_state.GetValue() == RADAR_OFF) {
-                LOG_INFO(wxT("radar_pi: %s detected at %s"), m_ri->m_name.c_str(), radar_address.FormatNetworkAddress());
-                m_ri->m_state.Update(RADAR_STANDBY);
-              }
+            radarFoundAddr = rx_addr.ipv4;
+            radar_addr = &radarFoundAddr;
+
+            if (m_ri->m_state.GetValue() == RADAR_OFF) {
+              LOG_INFO(wxT("radar_pi: %s detected at %s"), m_ri->m_name.c_str(), radar_address.FormatNetworkAddress());
+              m_ri->m_state.Update(RADAR_STANDBY);
             }
-            no_data_timeout = SECONDS_SELECT(-15);
+          }
+          no_data_timeout = SECONDS_SELECT(-15);
         }
       }
 
@@ -268,7 +267,7 @@ void *RME120Receive::Entry(void) {
   }  // endless loop until thread destroy
 
   LOG_VERBOSE(wxT("radar_pi: %s received stop instruction, stopping"), m_ri->m_name.c_str());
-  
+
   if (reportSocket != INVALID_SOCKET) {
     closesocket(reportSocket);
   }
@@ -290,14 +289,14 @@ void *RME120Receive::Entry(void) {
 #endif
   m_is_shutdown = true;
   LOG_VERBOSE(wxT("radar_pi: %s received stop instruction, shutting down"), m_ri->m_name.c_str());
-  
+
   return 0;
 }
 
-void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {   // This is the original ProcessFrame from RMradar_pi
+void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {  // This is the original ProcessFrame from RMradar_pi
   wxLongLong nowMillis = wxGetLocalTimeMillis();
   time_t now = time(0);
-  wxString MOD_serial; 
+  wxString MOD_serial;
   wxString IF_serial;
   m_ri->resetTimeout(now);
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
@@ -342,35 +341,34 @@ void RME120Receive::UpdateSendCommand() {
   }
 }
 
-
 #pragma pack(push, 1)
 
 struct RMRadarReport {
-  uint32_t field01;  // 0x010001  // 0-3
-  uint32_t ranges[11];  // 4 - 7
-  uint32_t fieldx_1[33];   // 48 - 
+  uint32_t field01;       // 0x010001  // 0-3
+  uint32_t ranges[11];    // 4 - 7
+  uint32_t fieldx_1[33];  // 48 -
 
-  uint8_t status;  // 2 - warmup, 1 - transmit, 0 - standby, 6 - shutting down (warmup time - countdown), 3 - shutdown  // 180
-  uint8_t fieldx_2[3]; // 181
-  uint8_t warmup_time;   // 184
+  uint8_t status;       // 2 - warmup, 1 - transmit, 0 - standby, 6 - shutting down (warmup time - countdown), 3 - shutdown  // 180
+  uint8_t fieldx_2[3];  // 181
+  uint8_t warmup_time;  // 184
   uint8_t signal_strength;  // number of bars   // 185
 
   uint8_t fieldx_3[7];  // 186
-  uint8_t range_id;        // 193
+  uint8_t range_id;     // 193
   uint8_t fieldx_4[2];  // 194
-  uint8_t auto_gain;       // 196
+  uint8_t auto_gain;    // 196
 
-  uint8_t fieldx_5[3];  // 197
-  uint32_t gain;           // 200
-  uint8_t auto_sea;  // 0 - disabled; 1 - harbour, 2 - offshore, 3 - coastal   // 204
-  uint8_t fieldx_6[3];     // 205
-  uint8_t sea_value;          // 208
-  uint8_t rain_enabled;       // 209
-  uint8_t fieldx_7[3];     // 210
-  uint8_t rain_value;         // 213
-  uint8_t ftc_enabled;        // 214
-  uint8_t fieldx_8[3];     // 215
-  uint8_t ftc_value;          // 218
+  uint8_t fieldx_5[3];   // 197
+  uint32_t gain;         // 200
+  uint8_t auto_sea;      // 0 - disabled; 1 - harbour, 2 - offshore, 3 - coastal   // 204
+  uint8_t fieldx_6[3];   // 205
+  uint8_t sea_value;     // 208
+  uint8_t rain_enabled;  // 209
+  uint8_t fieldx_7[3];   // 210
+  uint8_t rain_value;    // 213
+  uint8_t ftc_enabled;   // 214
+  uint8_t fieldx_8[3];   // 215
+  uint8_t ftc_value;     // 218
   uint8_t auto_tune;
   uint8_t fieldx_9[3];
   uint8_t tune;
@@ -383,22 +381,22 @@ struct RMRadarReport {
 };
 
 struct RMRadarFixedReport {
-  uint32_t field01;             // 0x010002
-  uint8_t fieldx_1[213];  // 221 - magnetron current; 233, 234 - rotation time ms (251 total) // 4
-  uint16_t magnetron_time;  // 217
-  uint8_t fieldx_2[6];    // 219
-  uint8_t magnetron_current; // 225
-  uint8_t fieldx_3[11];   // 226
-  uint16_t rotation_time;    // 237
-  uint8_t fieldx_4[13];   // 239
+  uint32_t field01;           // 0x010002
+  uint8_t fieldx_1[213];      // 221 - magnetron current; 233, 234 - rotation time ms (251 total) // 4
+  uint16_t magnetron_time;    // 217
+  uint8_t fieldx_2[6];        // 219
+  uint8_t magnetron_current;  // 225
+  uint8_t fieldx_3[11];       // 226
+  uint16_t rotation_time;     // 237
+  uint8_t fieldx_4[13];       // 239
   uint8_t fieldx_41;          // 252
-  uint8_t fieldx_5[2];    // 253
-  uint8_t fieldx_42[3];        // 255
-  uint8_t fieldx_43[3];    // 0, 1, 2 - fine tune value for SP, MP, LP  // 258
-  uint8_t fieldx_6[6];    // 261
-  uint8_t display_timing;  // 267
-  uint8_t fieldx_7[12];   // 268
-  uint8_t fieldx_71;        // 280
+  uint8_t fieldx_5[2];        // 253
+  uint8_t fieldx_42[3];       // 255
+  uint8_t fieldx_43[3];       // 0, 1, 2 - fine tune value for SP, MP, LP  // 258
+  uint8_t fieldx_6[6];        // 261
+  uint8_t display_timing;     // 267
+  uint8_t fieldx_7[12];       // 268
+  uint8_t fieldx_71;          // 280
   uint8_t fieldx_8[12];
   uint8_t gain_min;
   uint8_t gain_max;
@@ -418,7 +416,6 @@ struct RMRadarFixedReport {
 
 #pragma pack(pop)
 
-
 void RME120Receive::logBinaryData(const wxString &what, const uint8_t *data, int size) {
   wxString explain;
   int i = 0;
@@ -437,7 +434,7 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
     RMRadarReport *bl_pter = (RMRadarReport *)data;
     wxString s;
     if (LOGLEVEL_RECEIVE) {
-    logBinaryData(wxT("RMRadarReport"), data, len);
+      logBinaryData(wxT("RMRadarReport"), data, len);
     }
     if (bl_pter->field01 == 0x010001) {
       switch (bl_pter->status) {
@@ -462,9 +459,9 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
           break;
       }
       if (bl_pter->ranges[0] == 125) {
-        M_SETTINGS.range_units = RANGE_NAUTIC;     // We don't know yet how Raymarine switches range units
-      } else if (bl_pter->ranges[0] == 135) {  // Raymarine has no RANGE_MIXED
-                                                   // Ray marine alse has units statue miles, not supported by radar_pi
+        M_SETTINGS.range_units = RANGE_NAUTIC;  // We don't know yet how Raymarine switches range units
+      } else if (bl_pter->ranges[0] == 135) {   // Raymarine has no RANGE_MIXED
+                                                // Ray marine alse has units statue miles, not supported by radar_pi
         M_SETTINGS.range_units = RANGE_METRIC;
       } else {
         LOG_INFO(wxT("Other range units found, bl_pter->ranges[0]= %i"), bl_pter->ranges[0]);
@@ -472,8 +469,8 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
       }
 
       for (int i = 0; i < 11; i++) {
-          m_ri->m_radar_ranges[i] = (int) (1.852 * (double)bl_pter->ranges[i]);
-          LOG_RECEIVE(wxT("received range= %i, radar_ranges=  %d "), bl_pter->ranges[i], m_ri->m_radar_ranges[i]);
+        m_ri->m_radar_ranges[i] = (int)(1.852 * (double)bl_pter->ranges[i]);
+        LOG_RECEIVE(wxT("received range= %i, radar_ranges=  %d "), bl_pter->ranges[i], m_ri->m_radar_ranges[i]);
       }
 
       if ((m_ri->m_radar_ranges[bl_pter->range_id] * 2) != m_range_meters) {
@@ -493,11 +490,10 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
       m_ri->m_gain.UpdateState(state);
       LOG_RECEIVE(wxT("gain updated received1= %i, displayed = %i"), bl_pter->gain, m_ri->m_gain.GetValue());
 
-      state = (RadarControlState) bl_pter->auto_sea;
+      state = (RadarControlState)bl_pter->auto_sea;
       m_ri->m_sea.TransformAndUpdate(bl_pter->sea_value);
       m_ri->m_sea.UpdateState(state);
-      LOG_RECEIVE(wxT("sea updated received= %i, displayed = %i, state=%i"), bl_pter->sea_value, m_ri->m_sea.GetValue(),
-                  state);
+      LOG_RECEIVE(wxT("sea updated received= %i, displayed = %i, state=%i"), bl_pter->sea_value, m_ri->m_sea.GetValue(), state);
 
       state = (bl_pter->rain_enabled) ? RCS_MANUAL : RCS_OFF;
       LOG_RECEIVE(wxT("rain state=%i bl_pter->rain_enabled=%i"), state, bl_pter->rain_enabled);
@@ -542,7 +538,7 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
         LOG_VERBOSE(wxT("radar_pi: %s reports status STANDBY"), m_ri->m_name.c_str());
         stat = _("Standby");
         break;
-       
+
       case RADAR_WARMING_UP:
         LOG_VERBOSE(wxT("radar_pi: %s reports status RADAR_WARMING_UP"), m_ri->m_name.c_str());
         stat = _("Warming up");
@@ -554,15 +550,15 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
         break;
 
       default:
-        //LOG_BINARY_RECEIVE(wxT("received unknown radar status"), report, len);
+        // LOG_BINARY_RECEIVE(wxT("received unknown radar status"), report, len);
         stat = _("Unknown status");
         break;
     }
 
     s = wxString::Format(wxT("IP %s %s"), m_ri->m_radar_address.FormatNetworkAddress(), stat.c_str());
-    
-      RadarLocationInfo info = m_ri->GetRadarLocationInfo();
-      s << wxT("\n") << _("IF-Serial #") << info.serialNr;
+
+    RadarLocationInfo info = m_ri->GetRadarLocationInfo();
+    s << wxT("\n") << _("IF-Serial #") << info.serialNr;
     SetInfoStatus(s);
   }
 }
@@ -577,7 +573,7 @@ void RME120Receive::ProcessFixedReport(const UINT8 *data, int len) {
     LOG_RECEIVE(wxT("bl_pter->sea_min=%i , bl_pter->sea_max=%i"), bl_pter->sea_min, bl_pter->sea_max);
     LOG_RECEIVE(wxT("bl_pter->rain_min=%i , bl_pter->rain_max=%i"), bl_pter->rain_min, bl_pter->rain_max);
     LOG_RECEIVE(wxT("bl_pter->ftc_min=%i , bl_pter->ftc_maxn=%i"), bl_pter->ftc_min, bl_pter->ftc_max);
-    
+
     m_ri->m_gain.SetMin(bl_pter->gain_min);
     m_ri->m_gain.SetMax(bl_pter->gain_max);
     m_ri->m_sea.SetMin(bl_pter->sea_min);
@@ -597,7 +593,7 @@ void RME120Receive::ProcessFixedReport(const UINT8 *data, int len) {
 struct Header1 {
   uint32_t field01;  // 0x00010003
   uint32_t zero_1;
-  uint32_t fieldx_1;  // 0x0000001c
+  uint32_t fieldx_1;     // 0x0000001c
   uint32_t nspokes;      // 0x00000008 - usually but changes
   uint32_t spoke_count;  // 0x00000000 in regular, counting in HD
   uint32_t zero_3;
@@ -612,8 +608,8 @@ struct Header2 {
 };
 
 struct Header3 {
-  uint32_t field01;    // 0x00000001
-  uint32_t length;  // 0x00000028
+  uint32_t field01;  // 0x00000001
+  uint32_t length;   // 0x00000028
   uint32_t azimuth;
   uint32_t fieldx_2;  // 0x00000001 - 0x03 - HD
   uint32_t fieldx_3;  // 0x00000002
@@ -624,9 +620,9 @@ struct Header3 {
   uint32_t fieldx_7;  // 0x00000001
 };
 
-struct Header4 {  // No idea what is in there
-  uint32_t field01;       // 0x00000002
-  uint32_t length;     // 0x0000001c
+struct Header4 {     // No idea what is in there
+  uint32_t field01;  // 0x00000002
+  uint32_t length;   // 0x0000001c
   uint32_t zero_2[5];
 };
 
@@ -635,8 +631,6 @@ struct SpokeData {
   uint32_t length;
   uint32_t data_len;
 };
-
-
 
 void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
   if (len > sizeof(Header1) + sizeof(Header3)) {
@@ -652,8 +646,8 @@ void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
     m_ri->m_state.Update(RADAR_TRANSMIT);
 
     if (pHeader->fieldx_4 == 0x400) {
-        LOG_RECEIVE(wxT(" different radar type found"));
-    } 
+      LOG_RECEIVE(wxT(" different radar type found"));
+    }
     wxLongLong nowMillis = wxGetLocalTimeMillis();
     int headerIdx = 0;
     int nextOffset = sizeof(Header1);
@@ -670,10 +664,10 @@ void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
           sHeader->fieldx_5 != 0x00000001 || sHeader->fieldx_6 != 0x000001f4 || sHeader->fieldx_7 != 0x00000001) {
         if (sHeader->fieldx_2 != 3 || sHeader->fieldx_3 != 2 || sHeader->fieldx_4 != 3 || sHeader->fieldx_5 != 0 ||
             sHeader->fieldx_6 != 0 || sHeader->fieldx_7 != 1) {
-            LOG_RECEIVE(wxT("ProcessScanData::Scan header #%d part 2 check failed.\n"), headerIdx);
+          LOG_RECEIVE(wxT("ProcessScanData::Scan header #%d part 2 check failed.\n"), headerIdx);
           break;
-        } 
-      } 
+        }
+      }
 
       nextOffset += sizeof(Header3);
 
@@ -688,51 +682,52 @@ void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
       SpokeData *pSData = (SpokeData *)(data + nextOffset);
 
       if ((pSData->field01 & 0x7fffffff) != 0x00000003 || pSData->length < pSData->data_len + 8) {
-        LOG_RECEIVE(wxT("ProcessScanData::Scan data header #%d check failed %x, %d, %d.\n"), headerIdx, pSData->field01, pSData->length, pSData->data_len);
+        LOG_RECEIVE(wxT("ProcessScanData::Scan data header #%d check failed %x, %d, %d.\n"), headerIdx, pSData->field01,
+                    pSData->length, pSData->data_len);
         break;
       }
       UINT8 unpacked_data[1024], *dataPtr = 0;
-      
-        uint8_t *dData = (uint8_t *)unpacked_data;
-        uint8_t *sData = (uint8_t *)data + nextOffset + sizeof(SpokeData);
 
-        int iS = 0;
-        int iD = 0;
-        while (iS < (int) pSData->data_len) {
-          if (*sData != 0x5c) {
-            *dData++ = (((*sData) & 0x0f) << 4) + 0x0f;
-            *dData++ = ((*sData) & 0xf0) + 0x0f;
-            sData++;
-            iS++;
-            iD += 2;
-          } else {
-            uint8_t nFill = sData[1];
-            uint8_t cFill = sData[2];
+      uint8_t *dData = (uint8_t *)unpacked_data;
+      uint8_t *sData = (uint8_t *)data + nextOffset + sizeof(SpokeData);
 
-            for (int i = 0; i < nFill; i++) {
-              *dData++ = ((cFill & 0x0f) << 4) + 0x0f;
-              *dData++ = (cFill & 0xf0) + 0x0f;
-            }
-            sData += 3;
-            iS += 3;
-            iD += nFill * 2;
+      int iS = 0;
+      int iD = 0;
+      while (iS < (int)pSData->data_len) {
+        if (*sData != 0x5c) {
+          *dData++ = (((*sData) & 0x0f) << 4) + 0x0f;
+          *dData++ = ((*sData) & 0xf0) + 0x0f;
+          sData++;
+          iS++;
+          iD += 2;
+        } else {
+          uint8_t nFill = sData[1];
+          uint8_t cFill = sData[2];
+
+          for (int i = 0; i < nFill; i++) {
+            *dData++ = ((cFill & 0x0f) << 4) + 0x0f;
+            *dData++ = (cFill & 0xf0) + 0x0f;
           }
+          sData += 3;
+          iS += 3;
+          iD += nFill * 2;
         }
-        if (iD != 512) {
-          while (iS < (int)pSData->length - 8 && iD < 512) {
-            *dData++ = ((*sData) & 0x0f) << 4;
-            *dData++ = (*sData) & 0xf0;
-            sData++;
-            iS++;
-            iD += 2;
-          }
+      }
+      if (iD != 512) {
+        while (iS < (int)pSData->length - 8 && iD < 512) {
+          *dData++ = ((*sData) & 0x0f) << 4;
+          *dData++ = (*sData) & 0xf0;
+          sData++;
+          iS++;
+          iD += 2;
         }
-        if (iD != 512) {
-         /* LOG_INFO(wxT("ProcessScanData::Packet %d line %d (%d/%x) not complete %d.\n"), packetIdx, headerIdx,
-           	scan_idx, scan_idx, iD);*/
-        }
-        dataPtr = unpacked_data;
-       
+      }
+      if (iD != 512) {
+        /* LOG_INFO(wxT("ProcessScanData::Packet %d line %d (%d/%x) not complete %d.\n"), packetIdx, headerIdx,
+               scan_idx, scan_idx, iD);*/
+      }
+      dataPtr = unpacked_data;
+
       nextOffset += pSData->length;
       m_ri->m_statistics.spokes++;
       unsigned int spoke = sHeader->azimuth;
@@ -764,7 +759,6 @@ void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
     }
   }
 }
-
 
 void RME120Receive::Shutdown() {
   if (m_send_socket != INVALID_SOCKET) {

@@ -77,65 +77,65 @@ PLUGIN_BEGIN_NAMESPACE
 static const NetworkAddress haloInfoAddress(239, 238, 55, 73, 7527);
 
 SOCKET g_HaloInfoSocket = INVALID_SOCKET;  // Only _one_ radar is able to create this socket at a time.
-bool   g_pi_sent_heading_to_halo = false;  // Onle _one_ instance sets this
+bool g_pi_sent_heading_to_halo = false;    // Onle _one_ instance sets this
 wxCriticalSection g_HaloInfoSocketLock;
 
 #pragma pack(push, 1)
 
 struct halo_heading_packet {
-  char marker[4];      // 4 bytes containing 'NKOE'
-  uint8_t u00[4];      // 4 bytes containing '00 01 90 02'
-  uint16_t counter;    // 2 byte counter incrementing by 1 every transmission, in BigEndian
-  //10
-  uint8_t u01[26];     // 25 bytes of unknown stuff that doesn't seem to vary
-  //36
-  uint8_t u02[2];      // 2 bytes containing '12 f1'
-  uint8_t u03[2];      // 2 bytes containing '01 00'
-  //40
-  wxLongLong epoch;    // 8 bytes containing millis since 1970
-  //48
-  uint64_t u04;        // 8 bytes containing 2
-  //56
-  uint32_t u05a;       // 4 bytes containing some fixed data, could be position?
-  //60
-  uint32_t u05b;       // 4 bytes containing some fixed data, could be position?
-  //64
-  uint8_t u06[1];      // 1 byte containing counter or 0xff
-  //65
-  uint16_t heading;    // 2 bytes containing heading
-  //67
-  uint8_t u07[5];      // 5 bytes containing varying unknown data
-  //72
+  char marker[4];    // 4 bytes containing 'NKOE'
+  uint8_t u00[4];    // 4 bytes containing '00 01 90 02'
+  uint16_t counter;  // 2 byte counter incrementing by 1 every transmission, in BigEndian
+  // 10
+  uint8_t u01[26];  // 25 bytes of unknown stuff that doesn't seem to vary
+  // 36
+  uint8_t u02[2];  // 2 bytes containing '12 f1'
+  uint8_t u03[2];  // 2 bytes containing '01 00'
+  // 40
+  wxLongLong epoch;  // 8 bytes containing millis since 1970
+  // 48
+  uint64_t u04;  // 8 bytes containing 2
+  // 56
+  uint32_t u05a;  // 4 bytes containing some fixed data, could be position?
+  // 60
+  uint32_t u05b;  // 4 bytes containing some fixed data, could be position?
+  // 64
+  uint8_t u06[1];  // 1 byte containing counter or 0xff
+  // 65
+  uint16_t heading;  // 2 bytes containing heading
+  // 67
+  uint8_t u07[5];  // 5 bytes containing varying unknown data
+  // 72
 };
 
 struct halo_mystery_packet {
-  char marker[4];      // 4 bytes containing 'NKOE'
-  uint8_t u00[4];      // 4 bytes containing '00 01 90 02'
-  uint16_t counter;    // 2 byte counter incrementing by 1 every transmission, in BigEndian
-  //10
-  uint8_t u01[26];     // 25 bytes of unknown stuff that doesn't seem to vary
-  //36
-  uint8_t u02[2];      // 2 bytes containing '02 f8'...
-  uint8_t u03[2];      // 2 bytes containing '01 00'
-  //40
-  wxLongLong epoch;    // 8 bytes containing millis since 1970
-  //48
-  uint64_t u04;        // 8 bytes containing 2
-  //56
-  uint32_t u05a;       // 4 bytes containing some fixed data, could be position?
-  //60
-  uint32_t u05b;       // 4 bytes containing some fixed data, could be position?
-  //64
-  uint8_t u06[1];      // 1 byte containing counter or 0xff
-  //65
-  uint8_t u07[1];      // 1 byte containing 0xfc
-  //66
-  uint16_t mystery1;    // 2 bytes containing some varying field
-  //68
-  uint16_t mystery2;    // 2 bytes containing some varying field
-  //70
-  uint8_t u08[2];      // 2 bytes containg 0xff 0xff
-  //72
+  char marker[4];    // 4 bytes containing 'NKOE'
+  uint8_t u00[4];    // 4 bytes containing '00 01 90 02'
+  uint16_t counter;  // 2 byte counter incrementing by 1 every transmission, in BigEndian
+  // 10
+  uint8_t u01[26];  // 25 bytes of unknown stuff that doesn't seem to vary
+  // 36
+  uint8_t u02[2];  // 2 bytes containing '02 f8'...
+  uint8_t u03[2];  // 2 bytes containing '01 00'
+  // 40
+  wxLongLong epoch;  // 8 bytes containing millis since 1970
+  // 48
+  uint64_t u04;  // 8 bytes containing 2
+  // 56
+  uint32_t u05a;  // 4 bytes containing some fixed data, could be position?
+  // 60
+  uint32_t u05b;  // 4 bytes containing some fixed data, could be position?
+  // 64
+  uint8_t u06[1];  // 1 byte containing counter or 0xff
+  // 65
+  uint8_t u07[1];  // 1 byte containing 0xfc
+  // 66
+  uint16_t mystery1;  // 2 bytes containing some varying field
+  // 68
+  uint16_t mystery2;  // 2 bytes containing some varying field
+  // 70
+  uint8_t u08[2];  // 2 bytes containg 0xff 0xff
+  // 72
 };
 
 struct common_header {
@@ -382,8 +382,7 @@ void NavicoReceive::ProcessFrame(const uint8_t *data, size_t len) {
       if (!IS_HALO || !g_pi_sent_heading_to_halo) {
         heading = MOD_DEGREES_FLOAT(SCALE_RAW_TO_DEGREES(heading_raw));
         m_pi->SetRadarHeading(heading, radar_heading_true);
-      }
-      else {
+      } else {
         m_pi->SetRadarHeading();
       }
     } else {
@@ -570,34 +569,34 @@ static halo_heading_packet g_heading_msg = {
     {'N', 'K', 'O', 'E'},  // marker
     {0, 1, 0x90, 0x02},    // u00 bytes containing '00 01 90 02'
     {0},                   // counter
-    {0, 0, 0x10, 0, 0, 0x14, 0, 0, 4, 0, 0, 0, 0, 0, 5, 0x3C, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x20},                   // u01
-    {0x12, 0xf1},          // u02
-    {0x01, 0x00},          // u03
-    {0},                   // epoch
-    {2},                   // u04
-    {0},                   // u05a, likely position
-    {0},                   // u05b, likely position
-    {0xff},                // u06
-    {0},                   // heading
-    {0xff, 0x7f, 0x79, 0xf8, 0xfc} // u07
+    {0, 0, 0x10, 0, 0, 0x14, 0, 0, 4, 0, 0, 0, 0, 0, 5, 0x3C, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x20},  // u01
+    {0x12, 0xf1},                                                                                // u02
+    {0x01, 0x00},                                                                                // u03
+    {0},                                                                                         // epoch
+    {2},                                                                                         // u04
+    {0},                                                                                         // u05a, likely position
+    {0},                                                                                         // u05b, likely position
+    {0xff},                                                                                      // u06
+    {0},                                                                                         // heading
+    {0xff, 0x7f, 0x79, 0xf8, 0xfc}                                                               // u07
 };
 
 static halo_mystery_packet g_mystery_msg = {
     {'N', 'K', 'O', 'E'},  // marker
     {0, 1, 0x90, 0x02},    // u00 bytes containing '00 01 90 02'
     {0},                   // counter
-    {0, 0, 0x10, 0, 0, 0x14, 0, 0, 4, 0, 0, 0, 0, 0, 5, 0x3C, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x20},                   // u01
-    {0x02, 0xf8},          // u02
-    {0x01, 0x00},          // u03
-    {0},                   // epoch
-    {2},                   // u04
-    {0},                   // u05a, likely position
-    {0},                   // u05b, likely position
-    {0xff},                // u06
-    {0xfc},                // u07
-    {0},                // mystery1
-    {0},                // mystery2
-    {0xff, 0xff} // u08
+    {0, 0, 0x10, 0, 0, 0x14, 0, 0, 4, 0, 0, 0, 0, 0, 5, 0x3C, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x20},  // u01
+    {0x02, 0xf8},                                                                                // u02
+    {0x01, 0x00},                                                                                // u03
+    {0},                                                                                         // epoch
+    {2},                                                                                         // u04
+    {0},                                                                                         // u05a, likely position
+    {0},                                                                                         // u05b, likely position
+    {0xff},                                                                                      // u06
+    {0xfc},                                                                                      // u07
+    {0},                                                                                         // mystery1
+    {0},                                                                                         // mystery2
+    {0xff, 0xff}                                                                                 // u08
 };
 
 static uint16_t g_counter;
@@ -608,13 +607,13 @@ void NavicoReceive::SendHeadingPacket(SOCKET s) {
   g_counter++;
   g_heading_msg.counter = htons(g_counter);
   g_heading_msg.epoch = wxGetUTCTimeMillis();
-  g_heading_msg.heading = (uint16_t) (m_pi->GetHeadingTrue() * 63488.0 / 360.0);
+  g_heading_msg.heading = (uint16_t)(m_pi->GetHeadingTrue() * 63488.0 / 360.0);
 
-  LOG_TRANSMIT(wxT("radar_pi: SendHeadingPacket ctr=%u hdt=%g hdg=%u"), ntohs(g_heading_msg.counter),
-  m_pi->GetHeadingTrue(), g_heading_msg.heading);
+  LOG_TRANSMIT(wxT("radar_pi: SendHeadingPacket ctr=%u hdt=%g hdg=%u"), ntohs(g_heading_msg.counter), m_pi->GetHeadingTrue(),
+               g_heading_msg.heading);
 
-  if (sendto(s, (char *)&g_heading_msg, sizeof g_heading_msg, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) < sizeof
-  g_heading_msg) {
+  if (sendto(s, (char *)&g_heading_msg, sizeof g_heading_msg, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) <
+      sizeof g_heading_msg) {
     wxLogError(wxT("radar_pi: Unable to transmit command to %s: %s"), m_ri->m_name.c_str(), SOCKETERRSTR);
     return;
   }
@@ -632,8 +631,8 @@ void NavicoReceive::SendMysteryPacket(SOCKET s) {
 
   LOG_TRANSMIT(wxT("radar_pi: SendMysteryPacket ctr=%u"), ntohs(g_mystery_msg.counter));
 
-  if (sendto(s, (char *)&g_mystery_msg, sizeof g_mystery_msg, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) < sizeof
-  g_mystery_msg) {
+  if (sendto(s, (char *)&g_mystery_msg, sizeof g_mystery_msg, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) <
+      sizeof g_mystery_msg) {
     wxLogError(wxT("radar_pi: Unable to transmit command to %s: %s"), m_ri->m_name.c_str(), SOCKETERRSTR);
     return;
   }
@@ -725,7 +724,7 @@ void *NavicoReceive::Entry(void) {
     wxLongLong start = wxGetUTCTimeMillis();
     int64_t wait = MILLIS_PER_SELECT - (start.GetValue() % MILLIS_PER_SELECT);
 
-    struct timeval tv = {(long)0, (long) (wait * 1000)};
+    struct timeval tv = {(long)0, (long)(wait * 1000)};
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
     wxLongLong now = wxGetUTCTimeMillis();
     LOG_RECEIVE(wxT("radar_pi: select maxFd=%d r=%d elapsed=%lld"), maxFd, r, now - start);
@@ -794,32 +793,27 @@ void *NavicoReceive::Entry(void) {
           NetworkAddress mfd_address;
           mfd_address.addr = rx_addr.ipv4.sin_addr;
           mfd_address.port = 0;
-          if (m_interface_addr == mfd_address)
-          {
-            LOG_RECEIVE(wxT("radar_pi: %s active mfd detected at %s but that is us"), m_ri->m_name.c_str(), mfd_address.FormatNetworkAddress());
+          if (m_interface_addr == mfd_address) {
+            LOG_RECEIVE(wxT("radar_pi: %s active mfd detected at %s but that is us"), m_ri->m_name.c_str(),
+                        mfd_address.FormatNetworkAddress());
             g_pi_sent_heading_to_halo = true;
-          }
-          else
-          {
+          } else {
             LOG_RECEIVE(wxT("radar_pi: %s active mfd detected at %s"), m_ri->m_name.c_str(), mfd_address.FormatNetworkAddress());
             m_halo_received_info = wxGetUTCTimeMillis();
             g_pi_sent_heading_to_halo = false;
           }
           IF_LOG_AT(LOGLEVEL_RECEIVE, m_pi->logBinaryData(wxT("halo receive"), data, r));
 
-          halo_heading_packet *msg = (halo_heading_packet *) data;
+          halo_heading_packet *msg = (halo_heading_packet *)data;
 
-          if (msg->u02[0] == 0x12 && msg->u02[1] == 0xf1)
-          {
+          if (msg->u02[0] == 0x12 && msg->u02[1] == 0xf1) {
             LOG_RECEIVE(wxT("msg.counter = %u"), msg->counter);
             LOG_RECEIVE(wxT("msg.epoch   = %lld"), msg->epoch);
-            LOG_RECEIVE(wxT("msg.heading = %u -> %f"), msg->heading, (double) msg->heading * 360.0 / 63488.0);
+            LOG_RECEIVE(wxT("msg.heading = %u -> %f"), msg->heading, (double)msg->heading * 360.0 / 63488.0);
             LOG_RECEIVE(wxT("msg.u05a    = %x"), msg->u05a);
             LOG_RECEIVE(wxT("msg.u05b    = %x"), msg->u05b);
-          }
-          else
-          {
-            halo_mystery_packet *msg2 = (halo_mystery_packet *) data;
+          } else {
+            halo_mystery_packet *msg2 = (halo_mystery_packet *)data;
             LOG_RECEIVE(wxT("msg.counter = %u"), msg2->counter);
             LOG_RECEIVE(wxT("msg.epoch   = %lld"), msg2->epoch);
             LOG_RECEIVE(wxT("msg.mystery1 = %u"), msg2->mystery1);
@@ -850,8 +844,8 @@ void *NavicoReceive::Entry(void) {
       }
     }
 
-    LOG_TRANSMIT(wxT("radar_pi: halo infoSocket=%d received=%lld sent=%lld\n"), infoSocket, now - m_halo_received_info, now -
-    m_halo_sent_heading);
+    LOG_TRANSMIT(wxT("radar_pi: halo infoSocket=%d received=%lld sent=%lld\n"), infoSocket, now - m_halo_received_info,
+                 now - m_halo_sent_heading);
     if (infoSocket != INVALID_SOCKET && m_halo_received_info + 10000 < now) {
       if (m_halo_sent_heading + 100 < now) {
         g_pi_sent_heading_to_halo = true;

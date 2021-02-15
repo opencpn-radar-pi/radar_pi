@@ -30,6 +30,7 @@
  */
 
 #include "RadarCanvas.h"
+
 #include "RadarInfo.h"
 #include "TextureFont.h"
 #include "drawutil.h"
@@ -87,8 +88,7 @@ void RadarCanvas::OnMove(wxMoveEvent &evt) {
   LOG_DIALOG(wxT("radar_pi: %s move OpenGL canvas to %d, %d"), m_ri->m_name.c_str(), pos.x, pos.y);
 }
 
-wxSize RadarCanvas::GetScaledSize(wxSize size)
-{
+wxSize RadarCanvas::GetScaledSize(wxSize size) {
 #ifdef __WXGTK3__
   return size * GetContentScaleFactor();
 #else
@@ -96,8 +96,7 @@ wxSize RadarCanvas::GetScaledSize(wxSize size)
 #endif
 }
 
-int RadarCanvas::GetScaledSize(int size)
-{
+int RadarCanvas::GetScaledSize(int size) {
 #ifdef __WXGTK3__
   return size * GetContentScaleFactor();
 #else
@@ -574,7 +573,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   m_FontMenu.Build(font);
   font.SetWeight(wxFONTWEIGHT_BOLD);
   m_FontBig.Build(font);
-  font.SetPointSize(font.GetPointSize() * 2); // Zoom text is really big
+  font.SetPointSize(font.GetPointSize() * 2);  // Zoom text is really big
   m_FontMenuBold.Build(font);
 
   wxColour bg = M_SETTINGS.ppi_background_colour;

@@ -30,6 +30,7 @@
  */
 
 #include <math.h>
+
 #include "nmea0183.h"
 
 PLUGIN_BEGIN_NAMESPACE

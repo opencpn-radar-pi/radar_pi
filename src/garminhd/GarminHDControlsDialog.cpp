@@ -29,6 +29,7 @@
  */
 
 #include "GarminHDControlsDialog.h"
+
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 

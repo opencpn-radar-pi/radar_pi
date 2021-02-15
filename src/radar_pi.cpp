@@ -30,6 +30,7 @@
  */
 
 #include "radar_pi.h"
+
 #include "GuardZone.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
@@ -126,7 +127,7 @@ radar_pi::radar_pi(void *ppimgr) : opencpn_plugin_116(ppimgr) {
   m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
   m_predicted_position_initialised = false;
-  
+
   // Create the PlugIn icons
   initialize_images();
   m_pdeficon = new wxBitmap(*_img_radar_blank);
@@ -238,9 +239,7 @@ int radar_pi::Init(void) {
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
   m_parent_window = GetOCPNCanvasWindow();
-  m_shareLocn = GetPluginDataDir("radar_pi")
-      + wxFileName::GetPathSeparator() + _T("data")
-      + wxFileName::GetPathSeparator();
+  m_shareLocn = GetPluginDataDir("radar_pi") + wxFileName::GetPathSeparator() + _T("data") + wxFileName::GetPathSeparator();
 
   m_pMessageBox = new MessageBox;
   m_pMessageBox->Create(m_parent_window, this);
@@ -533,7 +532,7 @@ bool radar_pi::MakeRadarSelection() {
         RemoveCanvasContextMenuItem(m_context_menu_control_id[r]);
         delete m_radar[r];
         m_radar[r] = 0;
-        
+
         LOG_INFO(wxT("radar_pi: Shutdown radar %i ready"), r);
       }
     }
@@ -1012,14 +1011,16 @@ void radar_pi::ScheduleWindowRefresh() {
     // 5 = 16 per s,  64ms
     millis = (1000 - drawTime) / (1 << (refreshrate - 1)) + drawTime;
 
-    LOG_VERBOSE(wxT("radar_pi: rendering took %i ms, PPI0=%i ms, PPI1=%i, Overlay0=%i, Overlay1=%i, doppler=%d next render in %i ms"),
-                drawTime, renderPPI[0], renderPPI[1], render_overlay[0], render_overlay[1], doppler_count, millis);
+    LOG_VERBOSE(
+        wxT("radar_pi: rendering took %i ms, PPI0=%i ms, PPI1=%i, Overlay0=%i, Overlay1=%i, doppler=%d next render in %i ms"),
+        drawTime, renderPPI[0], renderPPI[1], render_overlay[0], render_overlay[1], doppler_count, millis);
 
     m_timer->StartOnce(millis);
 
   } else {
-    LOG_VERBOSE(wxT("radar_pi: rendering took %i ms, PPI0=%i ms, PPI1=%i, Overlay0=%i, Overlay1=%i, doppler=%d no next extra render"),
-                drawTime, renderPPI[0], renderPPI[1], render_overlay[0], render_overlay[1], doppler_count);
+    LOG_VERBOSE(
+        wxT("radar_pi: rendering took %i ms, PPI0=%i ms, PPI1=%i, Overlay0=%i, Overlay1=%i, doppler=%d no next extra render"),
+        drawTime, renderPPI[0], renderPPI[1], render_overlay[0], render_overlay[1], doppler_count);
   }
 }
 
@@ -1063,11 +1064,11 @@ void radar_pi::TimedControlUpdate() {
   }
 
   //// for overlay testing only, simple trick to get position and heading
-   //wxString nmea;
-   //nmea = wxT("$APHDM,000.0,M*33");
-   //PushNMEABuffer(nmea);
-   //nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
-   //PushNMEABuffer(nmea);
+  // wxString nmea;
+  // nmea = wxT("$APHDM,000.0,M*33");
+  // PushNMEABuffer(nmea);
+  // nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
+  // PushNMEABuffer(nmea);
 
   m_notify_time_ms = now;
 
@@ -1187,7 +1188,7 @@ void radar_pi::TimedControlUpdate() {
       info = _("RADAR");
       break;
   }
-  
+
   m_pMessageBox->SetMagHeadingInfo(info);
   m_pMessageBox->UpdateMessage(false);
 
@@ -1640,7 +1641,7 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dRunTimeOnIdle"), r), m_radar[r]->m_timed_run.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dDopplerAutoTrack"), r), m_radar[r]->m_autotrack_doppler.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dMinContourLength"), r), m_radar[r]->m_min_contour_length);
-      
+
       for (int i = 0; i < MAX_CHART_CANVAS; i++) {
         pConf->Write(wxString::Format(wxT("Radar%dOverlayCanvas%d"), r, i), m_radar[r]->m_overlay_canvas[i].GetValue());
       }

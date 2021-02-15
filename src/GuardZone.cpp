@@ -29,6 +29,7 @@
  */
 
 #include "GuardZone.h"
+
 #include "RadarMarpa.h"
 
 PLUGIN_BEGIN_NAMESPACE
@@ -154,7 +155,6 @@ void GuardZone::SearchTargets() {
     }
     return;
   }
-  
 
   if (m_ri->m_pixels_per_meter == 0.) {
     return;
@@ -188,8 +188,9 @@ void GuardZone::SearchTargets() {
 
       // check if target has been refreshed since last time
       // and if the beam has passed the target location with SCAN_MARGIN spokes
-      if ((time1 > (m_arpa_update_time[angle] + SCAN_MARGIN2) && time2 >= time1)) {  // the beam sould have passed our "angle" AND a
-                                                                                   // point SCANMARGIN further set new refresh time
+      if ((time1 > (m_arpa_update_time[angle] + SCAN_MARGIN2) &&
+           time2 >= time1)) {  // the beam sould have passed our "angle" AND a
+                               // point SCANMARGIN further set new refresh time
         m_arpa_update_time[angle] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
           if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 1) {

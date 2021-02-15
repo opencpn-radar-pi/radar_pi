@@ -29,6 +29,7 @@
  */
 
 #include "NavicoControlsDialog.h"
+
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 

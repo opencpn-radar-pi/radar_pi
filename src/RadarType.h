@@ -34,27 +34,22 @@
 #define _RADARTYPE_H_
 
 #include "RadarInfo.h"
-#include "pi_common.h"
-
-#include "garminhd/GarminHDControl.h"
-#include "garminhd/GarminHDControlsDialog.h"
-#include "garminhd/GarminHDReceive.h"
-
-#include "garminxhd/GarminxHDControl.h"
-#include "garminxhd/GarminxHDControlsDialog.h"
-#include "garminxhd/GarminxHDReceive.h"
-
-#include "navico/NavicoControl.h"
-#include "navico/NavicoControlsDialog.h"
-#include "navico/NavicoReceive.h"
-
-#include "raymarine/RME120Control.h"
-#include "raymarine/RME120ControlsDialog.h"
-#include "raymarine/RME120Receive.h"
-
 #include "emulator/EmulatorControl.h"
 #include "emulator/EmulatorControlsDialog.h"
 #include "emulator/EmulatorReceive.h"
+#include "garminhd/GarminHDControl.h"
+#include "garminhd/GarminHDControlsDialog.h"
+#include "garminhd/GarminHDReceive.h"
+#include "garminxhd/GarminxHDControl.h"
+#include "garminxhd/GarminxHDControlsDialog.h"
+#include "garminxhd/GarminxHDReceive.h"
+#include "navico/NavicoControl.h"
+#include "navico/NavicoControlsDialog.h"
+#include "navico/NavicoReceive.h"
+#include "pi_common.h"
+#include "raymarine/RME120Control.h"
+#include "raymarine/RME120ControlsDialog.h"
+#include "raymarine/RME120Receive.h"
 
 #endif /* _RADARTYPE_H_ */
 
@@ -88,20 +83,16 @@
 #define RO_SECONDARY (2)
 #endif
 
+#include "emulator/emulatortype.h"
 #include "garminhd/garminhdtype.h"
 #include "garminxhd/garminxhdtype.h"
-
 #include "navico/br24type.h"
 #include "navico/br3gtype.h"
 #include "navico/br4gatype.h"
 #include "navico/br4gbtype.h"
-
 #include "navico/haloatype.h"
 #include "navico/halobtype.h"
-
 #include "raymarine/RME120type.h"
-
-#include "emulator/emulatortype.h"
 
 #undef DEFINE_RADAR  // Prepare for next inclusion
 #undef INITIALIZE_RADAR

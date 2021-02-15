@@ -34,6 +34,7 @@
 #define _SOCKETUTIL_H_
 
 #include <wx/tokenzr.h>
+
 #include "pi_common.h"
 
 PLUGIN_BEGIN_NAMESPACE

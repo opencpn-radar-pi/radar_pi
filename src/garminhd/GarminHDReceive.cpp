@@ -106,7 +106,7 @@ void GarminHDReceive::ProcessFrame(radar_line *packet) {
   }
 
   m_ri->m_state.Update(RADAR_TRANSMIT);
-  m_ri->m_range.Update(packet->range_meters+1);
+  m_ri->m_range.Update(packet->range_meters + 1);
   m_ri->m_gain.Update(packet->gain_level[0], packet->gain_level[1] ? RCS_AUTO_1 : RCS_MANUAL);
   m_ri->m_rain.Update(packet->sea_clutter[0], packet->sea_clutter[1] ? RCS_AUTO_1 : RCS_MANUAL);
   m_ri->m_rain.Update(packet->rain_clutter[0]);
@@ -161,17 +161,14 @@ void GarminHDReceive::ProcessFrame(radar_line *packet) {
 // We know that the radar is on 172.16.2.0 and that
 // the netmask is 12 bits, eg 255.240.0.0.
 
-bool GarminHDReceive::IsValidGarminAddress(struct ifaddrs * nif) {
+bool GarminHDReceive::IsValidGarminAddress(struct ifaddrs *nif) {
   if (VALID_IPV4_ADDRESS(nif)) {
-
-    uint32_t addr = ntohl(((struct sockaddr_in *) nif->ifa_addr)->sin_addr.s_addr);
-    uint32_t mask = ntohl(((struct sockaddr_in *) nif->ifa_netmask)->sin_addr.s_addr);
+    uint32_t addr = ntohl(((struct sockaddr_in *)nif->ifa_addr)->sin_addr.s_addr);
+    uint32_t mask = ntohl(((struct sockaddr_in *)nif->ifa_netmask)->sin_addr.s_addr);
     static uint32_t radar = IPV4_ADDR(172, 16, 2, 0);
     static uint32_t radarmask = IPV4_ADDR(172, 16, 0, 0);
 
-    if ((addr & mask) == radarmask
-        && (radar & mask) == radarmask)
-    {
+    if ((addr & mask) == radarmask && (radar & mask) == radarmask) {
       LOG_RECEIVE(wxT("radar_pi: %s found garmin addr=%X mask=%X req=%X"), m_ri->m_name.c_str(), addr, mask, radarmask);
       return true;
     }
@@ -211,15 +208,13 @@ SOCKET GarminHDReceive::PickNextEthernetCard() {
     m_interface_addr.port = 0;
 
     socket = GetNewReportSocket();
-  }
-  else {
+  } else {
     wxString s;
     s << _("No interface found") << wxT("\n");
-    s <<_("Interface must match") << wxT(" 172.16/12");
+    s << _("Interface must match") << wxT(" 172.16/12");
     SetInfoStatus(s);
 
     socket = GetNewReportSocket();
-
   }
 
   return socket;
@@ -526,8 +521,8 @@ bool GarminHDReceive::ProcessReport(const uint8_t *report, size_t len) {
       }
 
       case 0x2a7: {
-        LOG_VERBOSE(wxT("0x02a7: range %d"), packet->range_meters+1);  // Range in meters
-        m_ri->m_range.Update(packet->range_meters+1);
+        LOG_VERBOSE(wxT("0x02a7: range %d"), packet->range_meters + 1);  // Range in meters
+        m_ri->m_range.Update(packet->range_meters + 1);
 
         LOG_VERBOSE(wxT("0x02a7: gain %d"), packet->gain_level);  // Gain
         m_gain = packet->gain_level;

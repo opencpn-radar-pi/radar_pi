@@ -59,7 +59,7 @@ class GarminHDReceive : public RadarReceive {
     m_ri->m_showManualValueInAuto = true;
 
     LOG_RECEIVE(wxT("radar_pi: %s receive thread created"), m_ri->m_name.c_str());
-    };
+  };
 
   ~GarminHDReceive() {}
 
@@ -77,7 +77,7 @@ class GarminHDReceive : public RadarReceive {
   void ProcessFrame(radar_line *packet);
   bool ProcessReport(const uint8_t *data, size_t len);
 
-  bool IsValidGarminAddress(struct ifaddrs * nif);
+  bool IsValidGarminAddress(struct ifaddrs *nif);
   SOCKET PickNextEthernetCard();
   SOCKET GetNewReportSocket();
 

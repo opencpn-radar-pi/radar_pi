@@ -133,17 +133,14 @@ void GarminxHDReceive::ProcessFrame(const uint8_t *data, size_t len) {
 // We know that the radar is on 172.16.2.0 and that
 // the netmask is 12 bits, eg 255.240.0.0.
 
-bool GarminxHDReceive::IsValidGarminAddress(struct ifaddrs * nif) {
+bool GarminxHDReceive::IsValidGarminAddress(struct ifaddrs *nif) {
   if (VALID_IPV4_ADDRESS(nif)) {
-
-    uint32_t addr = ntohl(((struct sockaddr_in *) nif->ifa_addr)->sin_addr.s_addr);
-    uint32_t mask = ntohl(((struct sockaddr_in *) nif->ifa_netmask)->sin_addr.s_addr);
+    uint32_t addr = ntohl(((struct sockaddr_in *)nif->ifa_addr)->sin_addr.s_addr);
+    uint32_t mask = ntohl(((struct sockaddr_in *)nif->ifa_netmask)->sin_addr.s_addr);
     static uint32_t radar = IPV4_ADDR(172, 16, 2, 0);
     static uint32_t radarmask = IPV4_ADDR(172, 16, 0, 0);
 
-    if ((addr & mask) == radarmask
-        && (radar & mask) == radarmask)
-    {
+    if ((addr & mask) == radarmask && (radar & mask) == radarmask) {
       LOG_RECEIVE(wxT("radar_pi: %s found garmin addr=%X mask=%X req=%X"), m_ri->m_name.c_str(), addr, mask, radarmask);
       return true;
     }
@@ -183,11 +180,10 @@ SOCKET GarminxHDReceive::PickNextEthernetCard() {
     m_interface_addr.port = 0;
 
     socket = GetNewReportSocket();
-  }
-  else {
+  } else {
     wxString s;
     s << _("No interface found") << wxT("\n");
-    s <<_("Interface must match") << wxT(" 172.16/12");
+    s << _("Interface must match") << wxT(" 172.16/12");
     SetInfoStatus(s);
 
     socket = GetNewReportSocket();

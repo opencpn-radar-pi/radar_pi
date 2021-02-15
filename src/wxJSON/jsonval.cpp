@@ -19,6 +19,7 @@
 
 #include <wx/debug.h>
 #include <wx/log.h>
+
 #include <wx/arrimpl.cpp>
 
 #include "jsonval.h"

@@ -63,7 +63,7 @@ class RadarReceive : public wxThread {
    * a translated string.
    */
   virtual wxString GetInfoStatus() = 0;
-  virtual void SetInfoStatus(wxString s) {};
+  virtual void SetInfoStatus(wxString s){};
 
   /*
    * Shutdown

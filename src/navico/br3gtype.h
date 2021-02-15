@@ -31,6 +31,6 @@ DEFINE_RADAR(RT_3G,                                           /* Type */
              NAVICO_SPOKE_LEN,                                /* Spoke length (max) */
              NavicoControlsDialog(RT_3G),                     /* ControlsDialog class constructor */
              NavicoReceive(pi, ri, report3G, data3G, send3G), /* Receive class constructor */
-             NavicoControl(pi, ri),                         /* Send/Control class constructor */
+             NavicoControl(pi, ri),                           /* Send/Control class constructor */
              RO_SINGLE                                        /* This type only has a single radar and does not need locating */
 )

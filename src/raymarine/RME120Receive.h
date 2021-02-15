@@ -34,10 +34,10 @@
 #ifndef _RME120RECEIVE_H_
 #define _RME120RECEIVE_H_
 
+#include "RadarFactory.h"
 #include "RadarReceive.h"
 #include "RaymarineLocate.h"
 #include "socketutil.h"
-#include "RadarFactory.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -84,7 +84,7 @@ class RME120Receive : public RadarReceive {
       LOG_INFO(wxT(" radar_pi: radar addresses from ini file loaded"));
     }
     LOG_INFO(wxT(" radar_pi: %s using addresses: %s"), m_ri->m_name, m_info.to_string());
-    m_ri->SetRadarLocationInfo(m_info); //  in case the initial values from constuctor are used, write these to radar_pi
+    m_ri->SetRadarLocationInfo(m_info);  //  in case the initial values from constuctor are used, write these to radar_pi
   };
 
   ~RME120Receive(){};
@@ -92,7 +92,7 @@ class RME120Receive : public RadarReceive {
   void *Entry(void);
   void Shutdown(void);
   wxString GetInfoStatus();
-  
+
   NetworkAddress m_interface_addr;
   RadarLocationInfo m_info;
 
@@ -123,7 +123,7 @@ class RME120Receive : public RadarReceive {
   void ProcessFixedReport(const UINT8 *data, int len);
   void ProcessScanData(const UINT8 *data, int len);
   void logBinaryData(const wxString &what, const uint8_t *data, int size);
-  
+
   void SetFirmware(wxString s);
   void UpdateSendCommand();
 
@@ -131,10 +131,7 @@ class RME120Receive : public RadarReceive {
     wxCriticalSectionLocker lock(m_lock);
     m_status = status;
   }
-
-
 };
-
 
 PLUGIN_END_NAMESPACE
 #endif /* _RME120RECEIVE_H_ */

@@ -8,9 +8,8 @@
 // Licence:     wxWidgets licence
 /////////////////////////////////////////////////////////////////////////////
 
-#include <wx/jsonwriter.h>
-
 #include <wx/debug.h>
+#include <wx/jsonwriter.h>
 #include <wx/log.h>
 #include <wx/mstream.h>
 #include <wx/sstream.h>

@@ -128,9 +128,9 @@ class NavicoReceive : public RadarReceive {
   char m_radar_status;
   bool m_first_receive;
 
-  wxLongLong m_halo_received_info; // When some mfd sent info
-  wxLongLong m_halo_sent_heading; // When we send it, every 100 ms
-  wxLongLong m_halo_sent_mystery; // When we send it, every 250 ms
+  wxLongLong m_halo_received_info;  // When some mfd sent info
+  wxLongLong m_halo_sent_heading;   // When we send it, every 100 ms
+  wxLongLong m_halo_sent_mystery;   // When we send it, every 250 ms
 
   wxCriticalSection m_lock;  // Protects m_status
   wxString m_status;         // Userfriendly string

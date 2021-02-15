@@ -30,6 +30,7 @@
  */
 
 #include "RadarMarpa.h"
+
 #include "GuardZone.h"
 #include "RadarCanvas.h"
 #include "RadarInfo.h"
@@ -100,7 +101,7 @@ bool RadarArpa::Pix(int ang, int rad, bool doppler) {
   bool bit0 = (m_ri->m_history[angle].line[rad] & 128) != 0;
   bool bit2 = (m_ri->m_history[angle].line[rad] & 32) != 0;
   if (!doppler) {
-  return (bit0);
+    return (bit0);
   } else {
     return (bit0 && bit2);
   }
@@ -1089,7 +1090,7 @@ bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
   }
   int cont = GetContour(pol);
   if (cont != 0) {
-     LOG_ARPA(wxT("radar_pi: ARPA contour error %d at %d, %d"), cont, a, r);
+    LOG_ARPA(wxT("radar_pi: ARPA contour error %d at %d, %d"), cont, a, r);
     // reset pol in case of error
     pol->angle = a;
     pol->r = r;
@@ -1242,8 +1243,7 @@ void ArpaTarget::ResetPixels() {
   // We not only reset the blob but all pixels in a radial "square" covering the blob
   for (int r = wxMax(m_min_r.r - DISTANCE_BETWEEN_TARGETS, 0);
        r <= wxMin(m_max_r.r + DISTANCE_BETWEEN_TARGETS, (int)m_ri->m_spoke_len_max - 1); r++) {
-    for (int a = m_min_angle.angle - DISTANCE_BETWEEN_TARGETS;
-         a <= m_max_angle.angle + DISTANCE_BETWEEN_TARGETS; a++) {
+    for (int a = m_min_angle.angle - DISTANCE_BETWEEN_TARGETS; a <= m_max_angle.angle + DISTANCE_BETWEEN_TARGETS; a++) {
       m_ri->m_history[MOD_SPOKES(a)].line[r] = m_ri->m_history[MOD_SPOKES(a)].line[r] & 127;
     }
   }

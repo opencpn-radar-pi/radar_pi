@@ -31,6 +31,7 @@
  */
 
 #include "EmulatorReceive.h"
+
 #include "RadarFactory.h"
 
 #define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double)DEGREES_PER_ROTATION / EMULATOR_SPOKES)

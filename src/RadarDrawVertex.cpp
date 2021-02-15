@@ -30,6 +30,7 @@
  */
 
 #include "RadarDrawVertex.h"
+
 #include "RadarCanvas.h"
 #include "RadarInfo.h"
 

@@ -30,6 +30,7 @@
  */
 
 #include "RadarInfo.h"
+
 #include "ControlsDialog.h"
 #include "GuardZone.h"
 #include "MessageBox.h"
@@ -271,7 +272,6 @@ bool RadarInfo::Init() {
 }
 
 void RadarInfo::ShowControlDialog(bool show, bool reparent) {
-
   if (show) {
     wxPoint panel_pos = wxDefaultPosition;
 #ifdef __WXOSX__
@@ -331,7 +331,6 @@ void RadarInfo::SetName(wxString name) {
 }
 
 void RadarInfo::ComputeColourMap() {
-
   int doppler_states = m_doppler.GetValue();
 
   LOG_VERBOSE(wxT("radar_pi: %s computing colour map, doppler=%d"), m_name.c_str(), doppler_states);
@@ -435,7 +434,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
     data[i] = 0;
   }
 
-
   // Recompute 'pixels_per_meter' based on the actual spoke length and range in meters.
   double pixels_per_meter = len / (double)range_meters;
 
@@ -474,7 +472,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   for (size_t radius = 0; radius < len; radius++) {
     if (data[radius] >= weakest_normal_blob) {
       // and add 1 if above threshold and set the left 2 bits, used for ARPA
-      hist_data[radius] = 192;   // this is C0, 1100 0000
+      hist_data[radius] = 192;  // this is C0, 1100 0000
     }
     if (data[radius] == 255) {  // approaching doppler target
       // and add 1 if above threshold and set the left 2 bits, used for ARPA
@@ -668,13 +666,11 @@ void RadarInfo::SetAutoRangeMeters(int autorange_to_set) {
     // Don't adjust auto range meters continuously when it is oscillating a little bit (< 10%)
     int test = 100 * m_previous_auto_range_meters / meters;
     LOG_VERBOSE(wxT("radar_pi: Automatic range changed 2 from %d to %d meters, m_range.GetValue()=%i"),
-                                  m_previous_auto_range_meters,
-                               meters, m_range.GetValue());
+                m_previous_auto_range_meters, meters, m_range.GetValue());
 
     if (test < 90 || test > 110) {  //   range change required
       if (meters != m_range.GetValue()) {
-        LOG_VERBOSE(wxT("radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters,
-                                      meters);
+        LOG_VERBOSE(wxT("radar_pi: Automatic range changed from %d to %d meters"), m_previous_auto_range_meters, meters);
         m_control->SetRange(meters);
         m_previous_auto_range_meters = meters;
       }
@@ -1441,7 +1437,7 @@ void RadarInfo::AdjustRange(int adjustment) {
     const int *ranges;
     size_t count = RadarFactory::GetRadarRanges(this, M_SETTINGS.range_units, &ranges);
     size_t n;
-    
+
     m_range.UpdateState(RCS_MANUAL);
     m_previous_auto_range_meters = 0;
 
@@ -1453,7 +1449,7 @@ void RadarInfo::AdjustRange(int adjustment) {
 
     // Note that we don't actually use m_settings.units here, so that if we are metric and
     // the plotter in NM, and it chose the last range, we start using nautic miles as well.
-    
+
     if (adjustment < 0 && n > 0) {
       m_control->SetRange(ranges[n - 1]);
     } else if (adjustment > 0 && n < count - 1) {

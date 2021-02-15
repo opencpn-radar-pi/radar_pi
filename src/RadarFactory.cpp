@@ -30,6 +30,7 @@
  */
 
 #include "RadarFactory.h"
+
 #include "RadarType.h"
 #include "pi_common.h"
 
@@ -103,7 +104,8 @@ size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const in
       break;
 
     case RANGE_UNITS_UNDEFINED:
-      wxLogError(wxT("Internal error: RANGE_UNITS_UNDEFINED, RANGE_NAUTIC applied instead for radar type %d units %d"), (int)radarType, (int)units);
+      wxLogError(wxT("Internal error: RANGE_UNITS_UNDEFINED, RANGE_NAUTIC applied instead for radar type %d units %d"),
+                 (int)radarType, (int)units);
     case RANGE_NAUTIC:
       switch (radarType) {
 #define DEFINE_RADAR(t, x, s, l, a, b, c, d) \
@@ -122,7 +124,7 @@ size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const in
       static const int r[] = {0};
       *ranges = r;
       n = ARRAY_SIZE(r);
-      break; 
+      break;
   }
 
   if (n == 0) {
@@ -139,9 +141,9 @@ size_t RadarFactory::GetRadarRanges(RadarInfo* ri, RangeUnits units, const int**
     return 11;
   }
 
-    switch (units) {
-      case RANGE_MIXED:
-        switch (ri->m_radar_type) {
+  switch (units) {
+    case RANGE_MIXED:
+      switch (ri->m_radar_type) {
 #define DEFINE_RADAR(t, x, s, l, a, b, c, d) \
   case t: {                                  \
     static const int r[] = RANGE_MIXED_##t;  \
@@ -151,11 +153,11 @@ size_t RadarFactory::GetRadarRanges(RadarInfo* ri, RangeUnits units, const int**
   }
 
 #include "RadarType.h"
-        };
-        break;
+      };
+      break;
 
-      case RANGE_METRIC:
-        switch (ri->m_radar_type) {
+    case RANGE_METRIC:
+      switch (ri->m_radar_type) {
 #define DEFINE_RADAR(t, x, s, l, a, b, c, d) \
   case t: {                                  \
     static const int r[] = RANGE_METRIC_##t; \
@@ -164,13 +166,14 @@ size_t RadarFactory::GetRadarRanges(RadarInfo* ri, RangeUnits units, const int**
     break;                                   \
   }
 #include "RadarType.h"
-        };
-        break;
+      };
+      break;
 
-      case RANGE_UNITS_UNDEFINED: wxLogError(wxT("Internal error: RANGE_UNITS_UNDEFINED, RANGE_NAUTIC applied instead for radar type %d units %d"),
-                   (int)ri->m_radar_type, (int)units);
-      case RANGE_NAUTIC:
-        switch (ri->m_radar_type) {
+    case RANGE_UNITS_UNDEFINED:
+      wxLogError(wxT("Internal error: RANGE_UNITS_UNDEFINED, RANGE_NAUTIC applied instead for radar type %d units %d"),
+                 (int)ri->m_radar_type, (int)units);
+    case RANGE_NAUTIC:
+      switch (ri->m_radar_type) {
 #define DEFINE_RADAR(t, x, s, l, a, b, c, d) \
   case t: {                                  \
     static const int r[] = RANGE_NAUTIC_##t; \
@@ -179,26 +182,24 @@ size_t RadarFactory::GetRadarRanges(RadarInfo* ri, RangeUnits units, const int**
     break;                                   \
   }
 #include "RadarType.h"
-        };
-        break;
-      default:
-        wxLogError(wxT("Internal error: illegal value for range units for radar type %d units %d"), (int)ri->m_radar_type,
-                   (int)units);
-        static const int r[] = {0};
-        *ranges = r;
-        n = ARRAY_SIZE(r);
-        break;
-    }
-
-    if (n == 0) {
-      wxLogError(wxT("Internal error: Programmer forgot to define ranges for radar type %d units %d"), (int)ri->m_radar_type,
+      };
+      break;
+    default:
+      wxLogError(wxT("Internal error: illegal value for range units for radar type %d units %d"), (int)ri->m_radar_type,
                  (int)units);
-      wxAbort();
-    }
-    return n;
+      static const int r[] = {0};
+      *ranges = r;
+      n = ARRAY_SIZE(r);
+      break;
   }
 
-
+  if (n == 0) {
+    wxLogError(wxT("Internal error: Programmer forgot to define ranges for radar type %d units %d"), (int)ri->m_radar_type,
+               (int)units);
+    wxAbort();
+  }
+  return n;
+}
 
 void RadarFactory::GetRadarTypes(wxArrayString& radarTypes) {
   wxString names[] = {

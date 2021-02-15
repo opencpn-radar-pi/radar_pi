@@ -29,6 +29,7 @@
  */
 
 #include "EmulatorControlsDialog.h"
+
 #include "RadarMarpa.h"
 #include "RadarPanel.h"
 

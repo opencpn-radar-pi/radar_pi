@@ -39,9 +39,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 class RadarControl {
  public:
-  RadarControl(){ 
-    m_sendMultiCastAddresss_set = false;
-  };
+  RadarControl() { m_sendMultiCastAddresss_set = false; };
   virtual ~RadarControl(){};
 
   /*
@@ -91,8 +89,8 @@ class RadarControl {
    * @returns   true on success, false on failure.
    */
   virtual bool SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button) = 0;
-  void SetMultiCastAddress(NetworkAddress sendMultiCastAddress) { 
-    m_addr = sendMultiCastAddress.GetSockAddrIn(); 
+  void SetMultiCastAddress(NetworkAddress sendMultiCastAddress) {
+    m_addr = sendMultiCastAddress.GetSockAddrIn();
     m_sendMultiCastAddresss_set = true;
   }
 };

@@ -32,11 +32,10 @@
 #ifndef _RADAR_INFO_H_
 #define _RADAR_INFO_H_
 
-#include "radar_pi.h"
-
 #include "ControlsDialog.h"
 #include "RadarControlItem.h"
 #include "RadarReceive.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -70,7 +69,7 @@ class RadarInfo {
   size_t m_spokes;         // # of spokes per rotation
   size_t m_spoke_len_max;  // Max # of bytes per spoke
   int m_radar_ranges[20];  // Ranges actually in use (values displayed). Always in meters, also if units is NM. Currently
-                                  // only used for Raymarine.
+                           // only used for Raymarine.
 
   // Digital radars cannot produce just any range. When asked for a particular value
   // they produce a slightly larger range.
@@ -131,7 +130,7 @@ class RadarInfo {
   RadarControlItem m_timed_run;   // CT_TIMED_RUN
   RadarControlItem m_doppler;
   RadarControlItem m_autotrack_doppler;
-  RadarControlItem m_tune_fine;       // Following added for Raymarine E120
+  RadarControlItem m_tune_fine;  // Following added for Raymarine E120
   RadarControlItem m_tune_coarse;
   RadarControlItem m_main_bang_suppression;  // Main bang suppression for Raymarine E120. 0 is OFF, 1 is ON
   RadarControlItem m_warmup_time;
@@ -285,7 +284,6 @@ class RadarInfo {
   double m_mouse_ebl[ORIENTATION_NUMBER];
   double m_mouse_vrm;
 
-
   // Speedup lookup tables of color to r,g,b, set dependent on m_settings.display_option.
   PixelColour m_colour_map_rgb[BLOB_COLOURS];
   BlobColour m_colour_map[UINT8_MAX + 1];
@@ -318,8 +316,8 @@ class RadarInfo {
   DrawInfo m_draw_overlay;  // Abstract painting method
 
   int m_verbose;
-  int m_draw_time_ms;  // Number of millis spent drawing
-  int m_doppler_count; // Number of doppler approaching targets seen
+  int m_draw_time_ms;   // Number of millis spent drawing
+  int m_doppler_count;  // Number of doppler approaching targets seen
 
   wxString m_range_text;
 

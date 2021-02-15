@@ -1044,8 +1044,8 @@ void ControlsDialog::CreateControls() {
 
   // The DOPPLERAUTOTRACK button
   if (m_ctrl[CT_AUTOTTRACKDOPPLER].type) {
-    m_autotrack_doppler_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("DopplerAutoTrack"), m_ctrl[CT_AUTOTTRACKDOPPLER],
-                                                        &m_ri->m_autotrack_doppler);
+    m_autotrack_doppler_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("DopplerAutoTrack"),
+                                                        m_ctrl[CT_AUTOTTRACKDOPPLER], &m_ri->m_autotrack_doppler);
     m_view_sizer->Add(m_autotrack_doppler_button, 0, wxALL, BORDER);
   }
 
@@ -1255,7 +1255,7 @@ void ControlsDialog::OnOffClick(wxCommandEvent& event) {
 }
 
 void ControlsDialog::OnMinusClick(wxCommandEvent& event) {
-  m_from_control->AdjustValue(- m_from_control->m_ci.stepValue);
+  m_from_control->AdjustValue(-m_from_control->m_ci.stepValue);
   m_auto_button->Enable();
   m_off_button->Enable();
 
@@ -1816,7 +1816,6 @@ void ControlsDialog::DisableRadarControls() {
   if (m_main_bang_suppression_button) {
     m_main_bang_suppression_button->Disable();
   }
-
 }
 
 void ControlsDialog::EnableRadarControls() {
@@ -2062,7 +2061,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_stc_button) {
     m_stc_button->UpdateLabel();
   }
-  
+
   if (m_fine_tune_button) {
     m_fine_tune_button->UpdateLabel(true);
   }

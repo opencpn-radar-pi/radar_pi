@@ -30,6 +30,7 @@
  */
 
 #include "nmea0183.h"
+
 #include <wx/listimpl.cpp>
 
 PLUGIN_BEGIN_NAMESPACE

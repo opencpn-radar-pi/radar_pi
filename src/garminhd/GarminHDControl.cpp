@@ -179,8 +179,8 @@ bool GarminHDControl::SetRange(int meters) {
 
     packet.packet_type = 0x2b3;
     packet.len1 = sizeof(packet.parm1);
-    packet.parm1 = meters-1;
-    LOG_VERBOSE(wxT("radar_pi: %s transmit: range %d meters"), m_name.c_str(), meters-1);
+    packet.parm1 = meters - 1;
+    LOG_VERBOSE(wxT("radar_pi: %s transmit: range %d meters"), m_name.c_str(), meters - 1);
     return TransmitCmd(&packet, sizeof(packet));
   }
   return false;
@@ -238,7 +238,7 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
       // Ordering the radar commands by the first byte value.
       // Some interesting holes here, seems there could be more commands!
 
-    case CT_BEARING_ALIGNMENT: {      
+    case CT_BEARING_ALIGNMENT: {
       pck_10.packet_type = 0x2b7;
       pck_10.parm1 = value;
 

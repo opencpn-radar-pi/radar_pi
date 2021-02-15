@@ -31,6 +31,7 @@
  */
 
 #include "NavicoLocate.h"
+
 #include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
@@ -125,7 +126,7 @@ void *NavicoLocate::Entry(void) {
   UpdateEthernetCards();
 
   while (!m_shutdown) {
-    struct timeval tv = { (long)1, (long)(0) };
+    struct timeval tv = {(long)1, (long)(0)};
     fd_set fdin;
     FD_ZERO(&fdin);
 
@@ -148,7 +149,7 @@ void *NavicoLocate::Entry(void) {
         if (m_socket[i] != INVALID_SOCKET && FD_ISSET(m_socket[i], &fdin)) {
           rx_len = sizeof(rx_addr);
           r = recvfrom(m_socket[i], (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
-          if (r > 2) {   // we are not interested in 2 byte messages
+          if (r > 2) {  // we are not interested in 2 byte messages
             NetworkAddress radar_address;
             radar_address.addr = rx_addr.ipv4.sin_addr;
             radar_address.port = rx_addr.ipv4.sin_port;
@@ -160,8 +161,7 @@ void *NavicoLocate::Entry(void) {
           }
         }
       }
-    }
-    else {  // no data received -> select timeout
+    } else {  // no data received -> select timeout
       if (++rescan_network_cards >= PERIOD_UNTIL_CARD_REFRESH) {
         UpdateEthernetCards();
         rescan_network_cards = 0;
@@ -197,10 +197,10 @@ void *NavicoLocate::Entry(void) {
 
  */
 
- //
- // The following is the received radar state. It sends this regularly
- // but especially after something sends it a state change.
- //
+//
+// The following is the received radar state. It sends this regularly
+// but especially after something sends it a state change.
+//
 #pragma pack(push, 1)
 
 /*
@@ -276,7 +276,8 @@ struct RadarReport_01B2 {
 
 #pragma pack(pop)
 
-bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const NetworkAddress &interface_address, const uint8_t *report, size_t len) {
+bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const NetworkAddress &interface_address,
+                                 const uint8_t *report, size_t len) {
   if (report[0] == 01 && report[1] == 0xB1) {  // Wake radar
     LOG_VERBOSE(wxT("radar_pi: Wake radar request from %s"), radar_address.FormatNetworkAddress());
   }
@@ -297,11 +298,12 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const Netw
                                       // This address may be different from the address this location info is received from
     radar_ipA.port = htons(RO_PRIMARY);
     if (m_report_count < MAX_REPORT) {
-      LOG_INFO(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoA.to_string());
+      LOG_INFO(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(),
+               interface_address.FormatNetworkAddress(), infoA.to_string());
       m_report_count++;
-    }
-    else {
-      LOG_RECEIVE(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoA.to_string());
+    } else {
+      LOG_RECEIVE(wxT("radar_pi: Located radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(),
+                  interface_address.FormatNetworkAddress(), infoA.to_string());
     }
     FoundNavicoLocationInfo(radar_ipA, interface_address, infoA);
 
@@ -316,9 +318,11 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const Netw
                                         // This address may be different from the address this location info is received from
       radar_ipB.port = htons(RO_SECONDARY);
       if (m_report_count < MAX_REPORT) {
-        LOG_INFO(wxT("radar_pi: Located Navico radar IP %s, interface %s [%s]"), radar_ipB.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoB.to_string());
+        LOG_INFO(wxT("radar_pi: Located Navico radar IP %s, interface %s [%s]"), radar_ipB.FormatNetworkAddressPort(),
+                 interface_address.FormatNetworkAddress(), infoB.to_string());
       } else {
-        LOG_RECEIVE(wxT("radar_pi: Located Navico radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress(), infoA.to_string());
+        LOG_RECEIVE(wxT("radar_pi: Located Navico radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(),
+                    interface_address.FormatNetworkAddress(), infoA.to_string());
         m_report_count++;
       }
       FoundNavicoLocationInfo(radar_ipB, interface_address, infoB);
@@ -354,7 +358,7 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const Netw
 }
 
 void NavicoLocate::WakeRadar() {
-  static const uint8_t WAKE_COMMAND[] = { 0x01, 0xb1 };
+  static const uint8_t WAKE_COMMAND[] = {0x01, 0xb1};
   struct sockaddr_in send_addr = NetworkAddress(236, 6, 7, 5, 6878).GetSockAddrIn();
 
   int one = 1;
@@ -365,12 +369,11 @@ void NavicoLocate::WakeRadar() {
 
     if (sock != INVALID_SOCKET) {
       if (!setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one)) &&
-        !::bind(sock, (struct sockaddr *)&s, sizeof(s)) &&
-        sendto(sock, (const char *)WAKE_COMMAND, sizeof WAKE_COMMAND, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) ==
-        sizeof WAKE_COMMAND) {
+          !::bind(sock, (struct sockaddr *)&s, sizeof(s)) &&
+          sendto(sock, (const char *)WAKE_COMMAND, sizeof WAKE_COMMAND, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) ==
+              sizeof WAKE_COMMAND) {
         LOG_VERBOSE(wxT("radar_pi: Sent wake command to radar on %s"), m_interface_addr[i].FormatNetworkAddress());
-      }
-      else {
+      } else {
         wxLogError(wxT("radar_pi: Failed to send wake command to radars on %s"), m_interface_addr[i].FormatNetworkAddress());
       }
       closesocket(sock);
@@ -379,7 +382,7 @@ void NavicoLocate::WakeRadar() {
 }
 
 void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const NetworkAddress &interface_addr,
-                                      const RadarLocationInfo &info) {
+                                           const RadarLocationInfo &info) {
   wxCriticalSectionLocker lock(m_exclusive);
   bool halo_type = false;
   int radar_order[RT_MAX];
@@ -408,8 +411,7 @@ void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const Net
     if (m_pi->m_radar[r]->m_radar_type == RT_HaloB) navico[RT_HaloB] = true;
   }
 
-  navicos = (size_t)navico[RT_3G] + (size_t)(navico[RT_4GA] || navico[RT_4GB]) +
-            (size_t)(navico[RT_HaloA] || navico[RT_HaloB]);
+  navicos = (size_t)navico[RT_3G] + (size_t)(navico[RT_4GA] || navico[RT_4GB]) + (size_t)(navico[RT_HaloA] || navico[RT_HaloB]);
 
   // associate the info found with the right type of radar
 
@@ -428,7 +430,6 @@ void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const Net
     radar_order[RT_HaloA] = 0;
     radar_order[RT_HaloB] = 0;
   }
-  
 
   if (info.serialNr[0] == '1' && info.serialNr[1] == '8' && info.serialNr[4] == '4') {
     // this is a new 3G or (may be) a 4G which will handle NavicoLocate
@@ -451,7 +452,7 @@ void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const Net
   // Second loop, put it in radar with same report address but no serial#
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     if (ntohs(addr.port) == radar_order[m_pi->m_radar[r]->m_radar_type] &&  // Only put primary in primary slots, etc.
-        !info.report_addr.IsNull() &&                                 // If the report address fits, override the serial
+        !info.report_addr.IsNull() &&                                       // If the report address fits, override the serial
         m_pi->m_radar[r]->m_radar_location_info.report_addr == info.report_addr) {
       m_pi->m_radar[r]->SetRadarLocationInfo(info);
       m_pi->m_radar[r]->SetRadarInterfaceAddress(int_face_addr, radar_addr);
@@ -491,7 +492,5 @@ void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const Net
   }
   LOG_INFO(wxT("radar_pi: Failed to allocate info from NavicoLocate to a radar"));
 }
-
-
 
 PLUGIN_END_NAMESPACE

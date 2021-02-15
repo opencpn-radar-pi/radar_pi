@@ -60,7 +60,7 @@ bool RME120Control::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, Net
   if (radaradr.port != 0) {
     // Null
   }
-  
+
   if (m_radar_socket != INVALID_SOCKET) {
     closesocket(m_radar_socket);
   }
@@ -83,7 +83,7 @@ bool RME120Control::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, Net
     // Might as well give up now
     return false;
   }
-  if (m_radar_socket == INVALID_SOCKET) {   // just another check...
+  if (m_radar_socket == INVALID_SOCKET) {  // just another check...
     wxLogError(wxT("radar_pi: INVALID_SOCKET Unable to create UDP sending socket"));
     // Might as well give up now
     return false;
@@ -116,7 +116,7 @@ bool RME120Control::TransmitCmd(const uint8_t *msg, int size) {
     wxLogError(wxT("radar_pi: INVALID_SOCKET, Unable to transmit command to unknown radar"));
     return false;
   }
-  
+
   int sendlen;
   sendlen = sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&m_addr, sizeof(m_addr));
   if (sendlen < size) {
@@ -154,12 +154,9 @@ bool RME120Control::RadarStayAlive() {
 
 static uint8_t rd_msg_set_range[] = {0x01, 0x81, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
                                      0x01,  // Range at offset 8 (0 - 1/8, 1 - 1/4, 2 - 1/2, 3 - 3/4, 4 - 1, 5 - 1.5, 6 - 3...)
-                                     0x00, 0x00, 0x00};   // length == 12
-
-
+                                     0x00, 0x00, 0x00};  // length == 12
 
 bool RME120Control::SetRange(int meters) {
- 
   LOG_INFO(wxT(" SetRangeMeters = %i"), meters);
   for (int i = 0; i < 11; i++) {
     if (meters <= m_ri->m_radar_ranges[i]) {
@@ -205,7 +202,7 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
     case CT_ANTENNA_STARBOARD:
     case CT_NO_TRANSMIT_START:
     case CT_NO_TRANSMIT_END:
- 
+
       // The above are not settings that are not radar commands or not supported by Navico radar.
       // Made them explicit so the compiler can catch missing control types.
       break;
@@ -228,20 +225,19 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
       break;
     }
 
-    case CT_GAIN: {   // tested OK by Martin
+    case CT_GAIN: {  // tested OK by Martin
       uint8_t cmd[] = {0x01, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
                        0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                        0x00,  // Gain value at offset 20
                        0x00, 0x00, 0x00};
 
-      uint8_t cmd2[] = {0x01, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      uint8_t cmd2[] = {0x01, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                         0x01,  // Gain auto - 1, manual - 0 at offset 16
                         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
       if (!autoValue) {
         cmd2[16] = 0;
-        r = TransmitCmd(cmd2, sizeof(cmd2));  // set auto off
+        r = TransmitCmd(cmd2, sizeof(cmd2));        // set auto off
         cmd[20] = m_ri->m_gain.DeTransform(value);  // scaling for gain
         r = TransmitCmd(cmd, sizeof(cmd));
         LOG_TRANSMIT(wxT("send gain command gain value= %i, transmitted = %i"), value, cmd[20]);
@@ -255,18 +251,18 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
 
     case CT_SEA: {
       uint8_t rd_msg_set_sea[] = {0x02, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
-                       0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                       0x00,  // Sea value at offset 20
-                       0x00, 0x00, 0x00};
+                                  0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                  0x00,  // Sea value at offset 20
+                                  0x00, 0x00, 0x00};
 
       uint8_t rd_msg_sea_auto[] = {0x02, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x01,  // Sea auto value at offset 16
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                                   0x01,  // Sea auto value at offset 16
+                                   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
       if (!autoValue) {
         rd_msg_sea_auto[16] = 0;
-        r = TransmitCmd(rd_msg_sea_auto, sizeof(rd_msg_sea_auto)); // set auto off
-        rd_msg_set_sea[20] = m_ri->m_sea.DeTransform(value);  // scaling for gain
+        r = TransmitCmd(rd_msg_sea_auto, sizeof(rd_msg_sea_auto));  // set auto off
+        rd_msg_set_sea[20] = m_ri->m_sea.DeTransform(value);        // scaling for gain
         LOG_TRANSMIT(wxT("send2 sea command sea value = %i, transmitted= %i"), value, rd_msg_set_sea[20]);
         r = TransmitCmd(rd_msg_set_sea, sizeof(rd_msg_set_sea));
       } else {
@@ -350,45 +346,45 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
       break;
     }
 
-    //case CT_STC: {
-    //  uint8_t rd_msg_set_stc_preset[] = {0x03, 0x82, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
-    //                                     0x74,  // STC preset value at offset 8
-    //                                     0x00, 0x00, 0x00};
-    //  rd_msg_set_stc_preset[16] = value;
-    //  r = TransmitCmd(rd_msg_set_stc_preset, sizeof(rd_msg_set_stc_preset));
-    //  break;
+      // case CT_STC: {
+      //  uint8_t rd_msg_set_stc_preset[] = {0x03, 0x82, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
+      //                                     0x74,  // STC preset value at offset 8
+      //                                     0x00, 0x00, 0x00};
+      //  rd_msg_set_stc_preset[16] = value;
+      //  r = TransmitCmd(rd_msg_set_stc_preset, sizeof(rd_msg_set_stc_preset));
+      //  break;
 
-    //  break;
-    //}
+      //  break;
+      //}
 
-    //case CT_TUNE_COARSE: {  // coarse tuning
-    //  uint8_t rd_msg_tune_coarse[] = {0x04, 0x82, 0x01, 0x00,
-    //                                  0x00,  // Coarse tune at offset 4
-    //                                  0x00, 0x00, 0x00};
-    //  rd_msg_tune_coarse[4] = value;
-    //  r = TransmitCmd(rd_msg_tune_coarse, sizeof(rd_msg_tune_coarse));
-    //  break;
-    //}
+      // case CT_TUNE_COARSE: {  // coarse tuning
+      //  uint8_t rd_msg_tune_coarse[] = {0x04, 0x82, 0x01, 0x00,
+      //                                  0x00,  // Coarse tune at offset 4
+      //                                  0x00, 0x00, 0x00};
+      //  rd_msg_tune_coarse[4] = value;
+      //  r = TransmitCmd(rd_msg_tune_coarse, sizeof(rd_msg_tune_coarse));
+      //  break;
+      //}
 
-    //case CT_TUNE_FINE: {
-    //  uint8_t rd_msg_tune_auto[] = {0x05, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    //                                       0x01,  // Enable at offset 12
-    //                                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+      // case CT_TUNE_FINE: {
+      //  uint8_t rd_msg_tune_auto[] = {0x05, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      //                                       0x01,  // Enable at offset 12
+      //                                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-    //  uint8_t rd_msg_tune_fine[] = {0x05, 0x83, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
-    //                                       0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    //                                       0x00,  // Tune value at offset 16
-    //                                       0x00, 0x00, 0x00};
+      //  uint8_t rd_msg_tune_fine[] = {0x05, 0x83, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+      //                                       0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      //                                       0x00,  // Tune value at offset 16
+      //                                       0x00, 0x00, 0x00};
 
-    //  if (!autoValue) {
-    //    rd_msg_tune_fine[16] = value;
-    //    r = TransmitCmd(rd_msg_tune_fine, sizeof(rd_msg_tune_fine));
-    //  } else {
-    //    rd_msg_tune_auto[12] = 1;
-    //    r = TransmitCmd(rd_msg_tune_auto, sizeof(rd_msg_tune_auto));
-    //  }
-    //  break;
-    //}
+      //  if (!autoValue) {
+      //    rd_msg_tune_fine[16] = value;
+      //    r = TransmitCmd(rd_msg_tune_fine, sizeof(rd_msg_tune_fine));
+      //  } else {
+      //    rd_msg_tune_auto[12] = 1;
+      //    r = TransmitCmd(rd_msg_tune_auto, sizeof(rd_msg_tune_auto));
+      //  }
+      //  break;
+      //}
 
     case CT_TARGET_BOOST: {
       uint8_t rd_msg_target_expansion[] = {0x06, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
@@ -410,66 +406,63 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
       break;
     }
 
-    //case CT_STC_CURVE: {
-    //  uint8_t curve_values[] = {0, 1, 2, 4, 6, 8, 10, 13};
-    //  uint8_t rd_msg_curve_select[] = {
-    //      0x0a, 0x83, 0x01, 0x00,
-    //      0x01  // Curve value at offset 4
-    //  };
-    //  rd_msg_curve_select[4] = curve_values[value - 1];
-    //  r = TransmitCmd(rd_msg_curve_select, sizeof(rd_msg_curve_select));
-    //  break;
-    //}
+      // case CT_STC_CURVE: {
+      //  uint8_t curve_values[] = {0, 1, 2, 4, 6, 8, 10, 13};
+      //  uint8_t rd_msg_curve_select[] = {
+      //      0x0a, 0x83, 0x01, 0x00,
+      //      0x01  // Curve value at offset 4
+      //  };
+      //  rd_msg_curve_select[4] = curve_values[value - 1];
+      //  r = TransmitCmd(rd_msg_curve_select, sizeof(rd_msg_curve_select));
+      //  break;
+      //}
 
+      // case CT_SIDE_LOBE_SUPPRESSION: {
+      //  int v = value * 256 / 100;
+      //  if (v > 255) {
+      //    v = 255;
+      //  }
+      //  uint8_t cmd[] = {0x6, 0xc1, 0x05, 0, 0, 0, (uint8_t)autoValue, 0, 0, 0, (uint8_t)v};
+      //  LOG_VERBOSE(wxT("radar_pi: %s command Tx CT_SIDE_LOBE_SUPPRESSION: %d auto %d"), m_name.c_str(), value, autoValue);
+      //  r = TransmitCmd(cmd, sizeof(cmd));
+      //  break;
+      //}
 
+      //  // What would command 7 be?
 
-    //case CT_SIDE_LOBE_SUPPRESSION: {
-    //  int v = value * 256 / 100;
-    //  if (v > 255) {
-    //    v = 255;
-    //  }
-    //  uint8_t cmd[] = {0x6, 0xc1, 0x05, 0, 0, 0, (uint8_t)autoValue, 0, 0, 0, (uint8_t)v};
-    //  LOG_VERBOSE(wxT("radar_pi: %s command Tx CT_SIDE_LOBE_SUPPRESSION: %d auto %d"), m_name.c_str(), value, autoValue);
-    //  r = TransmitCmd(cmd, sizeof(cmd));
-    //  break;
-    //}
+      //  // What would command b through d be?
 
-    //  // What would command 7 be?
+      // case CT_SCAN_SPEED: {
+      //  uint8_t cmd[] = {0x0f, 0xc1, (uint8_t)value};
+      //  LOG_VERBOSE(wxT("radar_pi: %s Scan speed: %d"), m_name.c_str(), value);
+      //  r = TransmitCmd(cmd, sizeof(cmd));
+      //  break;
+      //}
 
-    //  // What would command b through d be?
+      //  // What would command 10 through 20 be?
 
-    //case CT_SCAN_SPEED: {
-    //  uint8_t cmd[] = {0x0f, 0xc1, (uint8_t)value};
-    //  LOG_VERBOSE(wxT("radar_pi: %s Scan speed: %d"), m_name.c_str(), value);
-    //  r = TransmitCmd(cmd, sizeof(cmd));
-    //  break;
-    //}
+      // case CT_NOISE_REJECTION: {
+      //  uint8_t cmd[] = {0x21, 0xc1, (uint8_t)value};
+      //  LOG_VERBOSE(wxT("radar_pi: %s Noise rejection: %d"), m_name.c_str(), value);
+      //  r = TransmitCmd(cmd, sizeof(cmd));
+      //  break;
+      //}
 
-    //  // What would command 10 through 20 be?
+      // case CT_TARGET_SEPARATION: {
+      //  uint8_t cmd[] = {0x22, 0xc1, (uint8_t)value};
+      //  LOG_VERBOSE(wxT("radar_pi: %s Target separation: %d"), m_name.c_str(), value);
+      //  r = TransmitCmd(cmd, sizeof(cmd));
+      //  break;
+      //}
 
-    //case CT_NOISE_REJECTION: {
-    //  uint8_t cmd[] = {0x21, 0xc1, (uint8_t)value};
-    //  LOG_VERBOSE(wxT("radar_pi: %s Noise rejection: %d"), m_name.c_str(), value);
-    //  r = TransmitCmd(cmd, sizeof(cmd));
-    //  break;
-    //}
+      // case CT_DOPPLER: {
+      //  uint8_t cmd[] = {0x23, 0xc1, (uint8_t)value};
+      //  LOG_VERBOSE(wxT("radar_pi: %s Doppler state: %d"), m_name.c_str(), value);
+      //  r = TransmitCmd(cmd, sizeof(cmd));
+      //  break;
+      //}
 
-    //case CT_TARGET_SEPARATION: {
-    //  uint8_t cmd[] = {0x22, 0xc1, (uint8_t)value};
-    //  LOG_VERBOSE(wxT("radar_pi: %s Target separation: %d"), m_name.c_str(), value);
-    //  r = TransmitCmd(cmd, sizeof(cmd));
-    //  break;
-    //}
-
-    //case CT_DOPPLER: {
-    //  uint8_t cmd[] = {0x23, 0xc1, (uint8_t)value};
-    //  LOG_VERBOSE(wxT("radar_pi: %s Doppler state: %d"), m_name.c_str(), value);
-    //  r = TransmitCmd(cmd, sizeof(cmd));
-    //  break;
-    //}
-
-    //  // What would command 24 through 2f be?
-
+      //  // What would command 24 through 2f be?
   }
 
   return r;

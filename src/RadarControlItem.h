@@ -176,16 +176,16 @@ class RadarControlItem {
     }
     double new_value = (double)((x - m_min) * 100.) / (m_max - m_min) + .5;
     Update((int)new_value);
-    m_fraction = new_value - (double) m_value;
-    //wxLogMessage(wxT("new_value=%f, m_value=%i, m_fraction=%f"), new_value, m_value, m_fraction);
+    m_fraction = new_value - (double)m_value;
+    // wxLogMessage(wxT("new_value=%f, m_value=%i, m_fraction=%f"), new_value, m_value, m_fraction);
   }
 
-  int DeTransform(int value) {          // Reverse transform, transforms value to value to be transmitted to radar
+  int DeTransform(int value) {  // Reverse transform, transforms value to value to be transmitted to radar
     if (m_max == VALUE_NOT_SET || m_min == VALUE_NOT_SET || m_max == m_min) {
       return m_value;
     }
-    double transformed = ((double) (value) + m_fraction -.5) * (m_max - m_min) / 100. + m_min;
-    return (int)(((double) (value) + m_fraction -.5) * (m_max - m_min) / 100. + m_min + .5);
+    double transformed = ((double)(value) + m_fraction - .5) * (m_max - m_min) / 100. + m_min;
+    return (int)(((double)(value) + m_fraction - .5) * (m_max - m_min) / 100. + m_min + .5);
   }
 
  protected:
@@ -195,7 +195,7 @@ class RadarControlItem {
   RadarControlState m_state;
   RadarControlState m_button_s;
   bool m_mod;
-  int m_max;   // added for Raymarine
+  int m_max;  // added for Raymarine
   int m_min;
 
  public:

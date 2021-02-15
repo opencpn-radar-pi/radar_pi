@@ -30,6 +30,7 @@
  */
 
 #include "SelectDialog.h"
+
 #include "RadarFactory.h"
 #include "RadarInfo.h"
 

@@ -30,6 +30,7 @@
  */
 
 #include "RadarPanel.h"
+
 #include "RadarCanvas.h"
 #include "RadarInfo.h"
 
@@ -240,7 +241,7 @@ void RadarPanel::ShowFrame(bool visible) {
       newPerspective << wxT("|");
       newPerspective << perspective.AfterFirst(wxT('|'));
       m_aui_mgr->LoadPerspective(newPerspective);
-      //LOG_DIALOG(wxT("radar_pi: %s: new perspective %s"), m_ri->m_name.c_str(), newPerspective.c_str());
+      // LOG_DIALOG(wxT("radar_pi: %s: new perspective %s"), m_ri->m_name.c_str(), newPerspective.c_str());
     }
   }
   m_aui_mgr->Update();
