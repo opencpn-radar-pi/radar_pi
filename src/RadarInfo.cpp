@@ -331,10 +331,14 @@ void RadarInfo::SetName(wxString name) {
 }
 
 void RadarInfo::ComputeColourMap() {
+
+  int doppler_states = m_doppler.GetValue();
+
+  LOG_VERBOSE(wxT("radar_pi: %s computing colour map, doppler=%d"), m_name.c_str(), doppler_states);
   for (int i = 0; i <= UINT8_MAX; i++) {
-    if (i == UINT8_MAX && m_doppler.GetValue() > 0) {
+    if (i == UINT8_MAX && doppler_states > 0) {
       m_colour_map[i] = BLOB_DOPPLER_APPROACHING;
-    } else if ((i == UINT8_MAX - 1) && m_doppler.GetValue() == 1) {
+    } else if ((i == UINT8_MAX - 1) && doppler_states == 1) {
       m_colour_map[i] = BLOB_DOPPLER_RECEDING;
     } else if (i >= m_pi->m_settings.threshold_red) {
       m_colour_map[i] = BLOB_STRONG;
@@ -345,8 +349,6 @@ void RadarInfo::ComputeColourMap() {
     } else {
       m_colour_map[i] = BLOB_NONE;  // maybe trail colour, see below
     }
-
-    LOG_VERBOSE(wxT("radar_pi: %d colour_map[%d] = %d"), m_radar, i, m_colour_map[i]);
   }
 
   for (int i = 0; i < BLOB_COLOURS; i++) {
@@ -378,11 +380,6 @@ void RadarInfo::ComputeColourMap() {
   m_colour_map_rgb[BLOB_STRONG] = M_SETTINGS.strong_colour;
   m_colour_map_rgb[BLOB_INTERMEDIATE] = M_SETTINGS.intermediate_colour;
   m_colour_map_rgb[BLOB_WEAK] = M_SETTINGS.weak_colour;
-
-  for (int i = 0; i < BLOB_COLOURS; i++) {
-    LOG_VERBOSE(wxT("radar_pi: %d colour_map_rgb[%d] = %d,%d,%d"), m_radar, i, m_colour_map_rgb[i].Red(),
-                m_colour_map_rgb[i].Green(), m_colour_map_rgb[i].Blue());
-  }
 }
 
 void RadarInfo::ResetSpokes() {
@@ -434,18 +431,10 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   // calculate course as the moving average of m_hdt over one revolution
   SampleCourse(angle);  // used for course_up mode
 
-   for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
+  for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
     data[i] = 0;
-   }
+  }
 
-  // following sets an image of 512 circles
-  //  for (int i = 0; i < 1020; i += 2) {
-  //    data[i] = 0;
-  //    data[i + 1] = 200;
-
-  // // if (angle > 512 && angle < 530 && i > 512 && i < 530) data[i] = 200;
-
-  // }   // set picture to 0 except one dot for testing
 
   // Recompute 'pixels_per_meter' based on the actual spoke length and range in meters.
   double pixels_per_meter = len / (double)range_meters;
@@ -490,6 +479,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
     if (data[radius] == 255) {  // approaching doppler target
       // and add 1 if above threshold and set the left 2 bits, used for ARPA
       hist_data[radius] = 0xE0;  // this is  1110 0000, bit 3 indicates this is an approaching target
+      m_doppler_count++;
     }
   }
 

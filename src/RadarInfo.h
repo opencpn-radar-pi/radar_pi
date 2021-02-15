@@ -143,12 +143,12 @@ class RadarInfo {
   RadarControlItem m_stc_curve;
   RadarControlItem m_coarse_tune;
   RadarControlItem m_magnetron_current;
-  
+
   bool m_showManualValueInAuto;  // Does radar adjust manual value in auto mode? True for Garmin, False for others
   bool m_timed_idle_hardware;    // Does radar handle timed idle itself?
 
   /* Per radar objects */
- 
+
   NetworkAddress m_radar_interface_address;  // Saved address of interface used to see radar. Used to speed up next boot.
   NetworkAddress m_radar_address;            // Saved address of IP address of radar.
   RadarLocationInfo m_radar_location_info;   // Navico and Raymarine specific stuff (multicast addresses + serial nr)
@@ -221,6 +221,12 @@ class RadarInfo {
     wxCriticalSectionLocker lock(m_exclusive);
     return IsPaneShown() ? m_draw_time_ms : 0;
   };
+  int GetDopplerCount() {
+    wxCriticalSectionLocker lock(m_exclusive);
+    int r = m_doppler_count;
+    m_doppler_count = 0;
+    return r;
+  }
   bool IsPaneShown();
 
   void resetTimeout(time_t now) {
@@ -313,6 +319,7 @@ class RadarInfo {
 
   int m_verbose;
   int m_draw_time_ms;  // Number of millis spent drawing
+  int m_doppler_count; // Number of doppler approaching targets seen
 
   wxString m_range_text;
 

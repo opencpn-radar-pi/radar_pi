@@ -988,18 +988,22 @@ void radar_pi::ScheduleWindowRefresh() {
   int millis;
   int renderPPI[RADARS];
   int render_overlay[MAX_CHART_CANVAS];
+  int doppler_count = 0;
+
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->RefreshDisplay();
     drawTime += m_radar[r]->GetDrawTime();
     renderPPI[r] = m_radar[r]->GetDrawTime();
+    doppler_count += m_radar[r]->GetDopplerCount();
   }
+
   int max_canvas = GetCanvasCount();
   for (int r = 0; r < max_canvas; r++) {
     drawTime += m_draw_time_overlay_ms[r];
     render_overlay[r] = m_draw_time_overlay_ms[r];
   }
-  int refreshrate = m_settings.refreshrate.GetValue();
 
+  int refreshrate = m_settings.refreshrate.GetValue();
   if (refreshrate > 1 && drawTime < 500) {
     // 1 = 1 per s, 1000ms between draws, no additional refreshes
     // 2 = 2 per s,  500ms
@@ -1008,13 +1012,14 @@ void radar_pi::ScheduleWindowRefresh() {
     // 5 = 16 per s,  64ms
     millis = (1000 - drawTime) / (1 << (refreshrate - 1)) + drawTime;
 
-    LOG_VERBOSE(wxT("radar_pi: rendering took %i ms, PPI0= %i ms, PPI1= %i, Overlay0= %i, Overlay1= %i next render in %i ms"),
-                drawTime, renderPPI[0], renderPPI[1], render_overlay[0], render_overlay[1], millis);
+    LOG_VERBOSE(wxT("radar_pi: rendering took %i ms, PPI0=%i ms, PPI1=%i, Overlay0=%i, Overlay1=%i, doppler=%d next render in %i ms"),
+                drawTime, renderPPI[0], renderPPI[1], render_overlay[0], render_overlay[1], doppler_count, millis);
 
     m_timer->StartOnce(millis);
 
   } else {
-    LOG_VERBOSE(wxT("radar_pi: rendering took %dms, refreshrate=%d, no next extra render"), drawTime, refreshrate);
+    LOG_VERBOSE(wxT("radar_pi: rendering took %i ms, PPI0=%i ms, PPI1=%i, Overlay0=%i, Overlay1=%i, doppler=%d no next extra render"),
+                drawTime, renderPPI[0], renderPPI[1], render_overlay[0], render_overlay[1], doppler_count);
   }
 }
 

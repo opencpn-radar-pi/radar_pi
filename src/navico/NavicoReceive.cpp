@@ -677,7 +677,6 @@ void *NavicoReceive::Entry(void) {
         no_spoke_timeout = 0;
       }
     }
-    LOG_VERBOSE(wxT("%s: radar_addr=%p infoSocket=%d"), m_ri->m_name.c_str(), radar_addr, infoSocket);
     if (radar_addr) {
       // If we have detected a radar antenna at this address, start opening more sockets.
       // We do this later for 2 reasons:
@@ -1256,6 +1255,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         // TODO: Doppler speed
 
         m_ri->m_doppler.Update(s08->doppler_state);
+        m_ri->ComputeColourMap();
       }  // FALLTHRU to old length
 
       case (18 << 8) + 0x08: {  // length 18, 08 C4
