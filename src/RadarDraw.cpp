@@ -44,7 +44,7 @@ RadarDraw* RadarDraw::make_Draw(RadarInfo* ri, int draw_method) {
     case 1:
       return new RadarDrawShader(ri);
     default:
-      wxLogError(wxT("radar_pi: unsupported draw method %d"), draw_method);
+      wxLogError(wxT("unsupported draw method %d"), draw_method);
   }
   return 0;
 }

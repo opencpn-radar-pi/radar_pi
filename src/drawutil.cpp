@@ -152,13 +152,13 @@ void CheckOpenGLError(const wxString& after) {
     }
 
     if (err == errLast) {
-      wxLogError(wxT("radar_pi: OpenGL error could not be reset"));
+      wxLogError(wxT("OpenGL error could not be reset"));
       return;
     }
 
     errLast = err;
 
-    wxLogError(wxT("radar_pi: OpenGL error %d after %s"), err, after.c_str());
+    wxLogError(wxT("OpenGL error %d after %s"), err, after.c_str());
   }
 }
 

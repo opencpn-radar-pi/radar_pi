@@ -58,7 +58,7 @@ class GarminxHDReceive : public RadarReceive {
     m_ri->m_showManualValueInAuto = true;
     m_ri->m_timed_idle_hardware = true;
 
-    LOG_RECEIVE(wxT("radar_pi: %s receive thread created"), m_ri->m_name.c_str());
+    LOG_RECEIVE(wxT("%s receive thread created"), m_ri->m_name.c_str());
   };
 
   ~GarminxHDReceive() {}

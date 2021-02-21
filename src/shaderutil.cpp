@@ -83,7 +83,7 @@ bool CompileShaderText(GLuint *shader, GLenum shaderType, const char *text) {
     GLchar log[1000];
     GLsizei len;
     GetShaderInfoLog(*shader, 1000, &len, log);
-    wxLogError(wxT("radar_pi: problem compiling shader: %s"), log);
+    wxLogError(wxT("problem compiling shader: %s"), log);
     return false;
   }
   return true;
@@ -110,7 +110,7 @@ GLuint LinkShaders3(GLuint vertShader, GLuint geomShader, GLuint fragShader) {
       GLchar log[1000];
       GLsizei len;
       GetProgramInfoLog(program, 1000, &len, log);
-      wxLogError(wxT("radar_pi: problem linking program: %s"), log);
+      wxLogError(wxT("problem linking program: %s"), log);
       return 0;
     }
   }
@@ -127,7 +127,7 @@ GLboolean ValidateShaderProgram(GLuint program) {
     GLchar log[1000];
     GLsizei len;
     GetProgramInfoLog(program, 1000, &len, log);
-    wxLogError(wxT("radar_pi: program validation error: %s"), log);
+    wxLogError(wxT("program validation error: %s"), log);
     return 0;
   }
 

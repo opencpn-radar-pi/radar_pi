@@ -212,7 +212,7 @@ bool socketAddMembership(SOCKET socket, const NetworkAddress &interface_address,
   mreq.imr_multiaddr = mcast_address.addr;
 
   if (setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *)&mreq, sizeof(mreq))) {
-    wxLogMessage(wxT("radar_pi: failed to add multicast reception for %s on interface %s"),
+    wxLogMessage(wxT("failed to add multicast reception for %s on interface %s"),
                  mcast_address.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress());
     return true;
   }
@@ -234,12 +234,12 @@ SOCKET GetLocalhostServerTCPSocket() {
   adr.sin_port = 0;
 
   if (server == INVALID_SOCKET) {
-    wxLogError(wxT("radar_pi: cannot get socket"));
+    wxLogError(wxT("cannot get socket"));
     return INVALID_SOCKET;
   }
 
   if (::bind(server, (struct sockaddr *)&adr, sizeof(adr)) < 0) {
-    wxLogError(wxT("radar_pi: cannot bind socket to loopback address"));
+    wxLogError(wxT("cannot bind socket to loopback address"));
     closesocket(server);
     return INVALID_SOCKET;
   }
@@ -256,18 +256,18 @@ SOCKET GetLocalhostSendTCPSocket(SOCKET server) {
   adrlen = sizeof(adr);
 
   if (client == INVALID_SOCKET) {
-    wxLogError(wxT("radar_pi: cannot get socket"));
+    wxLogError(wxT("cannot get socket"));
     return INVALID_SOCKET;
   }
 
   if (getsockname(server, (struct sockaddr *)&adr, &adrlen)) {
-    wxLogError(wxT("radar_pi: cannot get sockname"));
+    wxLogError(wxT("cannot get sockname"));
     closesocket(client);
     return INVALID_SOCKET;
   }
 
   if (connect(client, (struct sockaddr *)&adr, adrlen)) {
-    wxLogError(wxT("radar_pi: cannot connect socket"));
+    wxLogError(wxT("cannot connect socket"));
     closesocket(client);
     return INVALID_SOCKET;
   }
@@ -282,12 +282,12 @@ int getifaddrs(struct ifaddrs **ifap) {
 
   int sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {
-    wxLogError(wxT("radar_pi: Cannot get socket"));
+    wxLogError(wxT("Cannot get socket"));
     return -1;
   }
 
   if (WSAIoctl(sock, SIO_GET_INTERFACE_LIST, 0, 0, buf, sizeof(buf), &bytesReturned, 0, 0) < 0) {
-    wxLogError(wxT("radar_pi: Cannot get interface list"));
+    wxLogError(wxT("Cannot get interface list"));
     closesocket(sock);
     return -1;
   }

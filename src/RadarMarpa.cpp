@@ -355,11 +355,11 @@ void RadarArpa::AcquireOrDeleteMarpaTarget(ExtendedPosition target_pos, int stat
     i_target = m_number_of_targets;
     m_number_of_targets++;
   } else {
-    LOG_INFO(wxT("radar_pi: RadarArpa:: Error, max targets exceeded "));
+    wxLogError(wxT("Error, max targets exceeded "));
     return;
   }
 
-  LOG_ARPA(wxT("radar_pi: Adding (M)ARPA target at position %f / %f"), target_pos.pos.lat, target_pos.pos.lon);
+  LOG_ARPA(wxT("Adding (M)ARPA target at position %f / %f"), target_pos.pos.lat, target_pos.pos.lon);
 
   ArpaTarget* target = m_targets[i_target];
   target->m_position = target_pos;  // Expected position
@@ -554,7 +554,7 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
     int angle = target->m_contour[i].angle + (DEGREES_PER_ROTATION + OPENGL_ROTATION) * m_ri->m_spokes / DEGREES_PER_ROTATION;
     int radius = target->m_contour[i].r;
     if (radius <= 0 || radius >= (int)m_ri->m_spoke_len_max) {
-      LOG_INFO(wxT("radar_pi: wrong values in DrawContour"));
+      LOG_INFO(wxT("wrong values in DrawContour"));
       return;
     }
     vertex_array[i] = m_ri->m_polar_lookup->GetPoint(angle, radius);
@@ -725,7 +725,7 @@ void RadarArpa::RefreshArpaTargets() {
   int dist = TARGET_SEARCH_RADIUS1;
   for (int i = 0; i < m_number_of_targets; i++) {
     if (!m_targets[i]) {
-      LOG_INFO(wxT("radar_pi:  error target non existent i=%i"), i);
+      LOG_INFO(wxT(" error target non existent i=%i"), i);
       continue;
     }
     m_targets[i]->m_pass_nr = PASS1;
@@ -739,7 +739,7 @@ void RadarArpa::RefreshArpaTargets() {
   dist = TARGET_SEARCH_RADIUS2;
   for (int i = 0; i < m_number_of_targets; i++) {
     if (!m_targets[i]) {
-      LOG_INFO(wxT("radar_pi: error target non existent i=%i"), i);
+      LOG_INFO(wxT("error target non existent i=%i"), i);
       continue;
     }
     if (m_targets[i]->m_pass1_result == UNKNOWN) continue;
@@ -780,7 +780,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     wxLongLong now = wxGetUTCTimeMillis();  // millis
     int diff = now.GetLo() - m_refresh.GetLo();
     if (diff > 8000) {
-      LOG_ARPA(wxT("radar_pi: target not refreshed, missing spokes, set lost, status= %i, target_id= %i timediff= %i"), m_status,
+      LOG_ARPA(wxT("target not refreshed, missing spokes, set lost, status= %i, target_id= %i timediff= %i"), m_status,
                m_target_id, diff);
       SetStatusLost();
     }
@@ -842,7 +842,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     // check if target has a new later time than previous target
     if (pol.time <= prev_X.time && m_status > 1) {
       // found old target again, reset what we have done
-      LOG_INFO(wxT("radar_pi: Error Gettarget same time found"));
+      LOG_INFO(wxT("Error Gettarget same time found"));
       m_position = prev_X;
       prev_X = prev2_X;
       return;
@@ -1090,7 +1090,7 @@ bool ArpaTarget::GetTarget(Polar* pol, int dist1) {
   }
   int cont = GetContour(pol);
   if (cont != 0) {
-    LOG_ARPA(wxT("radar_pi: ARPA contour error %d at %d, %d"), cont, a, r);
+    LOG_ARPA(wxT("ARPA contour error %d at %d, %d"), cont, a, r);
     // reset pol in case of error
     pol->angle = a;
     pol->r = r;
@@ -1211,7 +1211,7 @@ int RadarArpa::AcquireNewARPATarget(Polar pol, int status, uint8_t doppler) {
     i = m_number_of_targets;
     m_number_of_targets++;
   } else {
-    LOG_INFO(wxT("radar_pi: RadarArpa:: Error, max targets exceeded %i"), m_number_of_targets);
+    wxLogError(wxT("Error, max targets exceeded %i"), m_number_of_targets);
     return -1;
   }
   ArpaTarget* target = m_targets[i];
@@ -1258,7 +1258,7 @@ void RadarArpa::ClearContours() {
 void RadarArpa::SearchDopplerTargets() {
   ExtendedPosition own_pos;
   if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 2) {
-    LOG_INFO(wxT("radar_pi: No more scanning for ARPA targets, maximum number of targets reached"));
+    LOG_INFO(wxT("No more scanning for ARPA targets, maximum number of targets reached"));
     return;
   }
   if (!m_pi->m_settings.show                       // No radar shown
@@ -1299,7 +1299,7 @@ void RadarArpa::SearchDopplerTargets() {
       m_doppler_arpa_update_time[angle] = time1;
       for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
         if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 1) {
-          LOG_INFO(wxT("radar_pi: No more scanning for ARPA targets in loop, maximum number of targets reached"));
+          LOG_INFO(wxT("No more scanning for ARPA targets in loop, maximum number of targets reached"));
           return;
         }
 

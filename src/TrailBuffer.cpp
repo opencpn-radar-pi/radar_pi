@@ -59,7 +59,7 @@ TrailBuffer::TrailBuffer(RadarInfo *ri, size_t spokes, size_t max_spoke_len) {
   m_copy_relative_trails = (TrailRevolutionsAge *)calloc(sizeof(TrailRevolutionsAge), m_spokes * m_max_spoke_len);
 
   if (!m_true_trails || !m_relative_trails || !m_copy_true_trails || !m_copy_relative_trails) {
-    wxLogError(wxT("radar_pi: Out Of Memory, fatal!"));
+    wxLogError(wxT("Out Of Memory, fatal!"));
     wxAbort();
   }
   ClearTrails();
@@ -73,51 +73,54 @@ TrailBuffer::~TrailBuffer() {
 }
 
 void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t len) {
-  int motion = m_ri->m_trails_motion.GetValue();
   RadarControlState trails = m_ri->m_target_trails.GetState();
-  bool update_targets_true = trails != RCS_OFF && motion == TARGET_MOTION_TRUE;
 
-  uint8_t weak_target = M_SETTINGS.threshold_blue;
-  uint8_t strong_target = M_SETTINGS.threshold_red;
-  size_t radius = 0;
+  if (trails != RCS_OFF) {
+    int motion = m_ri->m_trails_motion.GetValue();
+    bool update_targets_true = (motion == TARGET_MOTION_TRUE);
 
-  for (; radius < len - 1; radius++) {  //  len - 1 : no trails on range circle
-    PointInt point = m_ri->m_polar_lookup->GetPointInt(bearing, radius);
+    uint8_t weak_target = M_SETTINGS.threshold_blue;
+    uint8_t strong_target = M_SETTINGS.threshold_red;
+    size_t radius = 0;
 
-    point.x += m_trail_size / 2 + m_offset.lat;
-    point.y += m_trail_size / 2 + m_offset.lon;
+    for (; radius < len - 1; radius++) {  //  len - 1 : no trails on range circle
+      PointInt point = m_ri->m_polar_lookup->GetPointInt(bearing, radius);
 
-    if (point.x >= 0 && point.x < (int)m_trail_size && point.y >= 0 && point.y < (int)m_trail_size) {
-      uint8_t *trail = &M_TRUE_TRAILS(point.x, point.y);
-      // when ship moves north, offset.lat > 0. Add to move trails image in opposite direction
-      // when ship moves east, offset.lon > 0. Add to move trails image in opposite direction
-      if (data[radius] >= strong_target) {
-        *trail = 1;
-      } else if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-        (*trail)++;
-      }
+      point.x += m_trail_size / 2 + m_offset.lat;
+      point.y += m_trail_size / 2 + m_offset.lon;
 
-      if (update_targets_true && (data[radius] < weak_target)) {
-        data[radius] = m_ri->m_trail_colour[*trail];
+      if (point.x >= 0 && point.x < (int)m_trail_size && point.y >= 0 && point.y < (int)m_trail_size) {
+        uint8_t *trail = &M_TRUE_TRAILS(point.x, point.y);
+        // when ship moves north, offset.lat > 0. Add to move trails image in opposite direction
+        // when ship moves east, offset.lon > 0. Add to move trails image in opposite direction
+        if (data[radius] >= strong_target) {
+          *trail = 1;
+        } else if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+          (*trail)++;
+        }
+
+        if (update_targets_true && (data[radius] < weak_target)) {
+          data[radius] = m_ri->m_trail_colour[*trail];
+        }
       }
     }
-  }
 
-  // Now process the rest of the spoke from len to m_spoke_len_max.
-  // This will only be called when the current spoke length is smaller than the max.
-  // we need to update the trail 'age' for those points.
-  for (; radius < m_ri->m_spoke_len_max; radius++) {
-    PointInt point = m_ri->m_polar_lookup->GetPointInt(bearing, radius);
+    // Now process the rest of the spoke from len to m_spoke_len_max.
+    // This will only be called when the current spoke length is smaller than the max.
+    // we need to update the trail 'age' for those points.
+    for (; radius < m_ri->m_spoke_len_max; radius++) {
+      PointInt point = m_ri->m_polar_lookup->GetPointInt(bearing, radius);
 
-    point.x += m_trail_size / 2 + m_offset.lat;
-    point.y += m_trail_size / 2 + m_offset.lon;
+      point.x += m_trail_size / 2 + m_offset.lat;
+      point.y += m_trail_size / 2 + m_offset.lon;
 
-    if (point.x >= 0 && point.x < (int)m_trail_size && point.y >= 0 && point.y < (int)m_trail_size) {
-      uint8_t *trail = &M_TRUE_TRAILS(point.x, m_trail_size + point.y);
-      // when ship moves north, offset.lat > 0. Add to move trails image in opposite direction
-      // when ship moves east, offset.lon > 0. Add to move trails image in opposite direction
-      if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-        (*trail)++;
+      if (point.x >= 0 && point.x < (int)m_trail_size && point.y >= 0 && point.y < (int)m_trail_size) {
+        uint8_t *trail = &M_TRUE_TRAILS(point.x, m_trail_size + point.y);
+        // when ship moves north, offset.lat > 0. Add to move trails image in opposite direction
+        // when ship moves east, offset.lon > 0. Add to move trails image in opposite direction
+        if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+          (*trail)++;
+        }
       }
     }
   }
@@ -126,23 +129,26 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
 void TrailBuffer::UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t len) {
   int motion = m_ri->m_trails_motion.GetValue();
   RadarControlState trails = m_ri->m_target_trails.GetState();
-  bool update_relative_motion = trails != RCS_OFF && motion == TARGET_MOTION_RELATIVE;
-
   uint8_t *trail = &M_RELATIVE_TRAILS(angle, 0);
-  uint8_t weak_target = M_SETTINGS.threshold_blue;
-  uint8_t strong_target = M_SETTINGS.threshold_red;
-  int radius = 0;
-  int length = int(len);
+  size_t radius = 0;
 
-  for (; radius < length - 1; radius++, trail++) {  // len - 1 : no trails on range circle
-    if (data[radius] >= strong_target) {
-      *trail = 1;
-    } else if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
-      (*trail)++;
-    }
+  if (trails != RCS_OFF) {
+    bool update_relative_motion = motion == TARGET_MOTION_RELATIVE;
 
-    if (update_relative_motion && (data[radius] < weak_target)) {
-      data[radius] = m_ri->m_trail_colour[*trail];
+    uint8_t weak_target = M_SETTINGS.threshold_blue;
+    uint8_t strong_target = M_SETTINGS.threshold_red;
+    size_t radius;
+
+    for (radius = 0; radius < len - 1; radius++, trail++) {  // len - 1 : no trails on range circle
+      if (data[radius] >= strong_target) {
+        *trail = 1;
+      } else if (*trail > 0 && *trail < TRAIL_MAX_REVOLUTIONS) {
+        (*trail)++;
+      }
+
+      if (update_relative_motion && (data[radius] < weak_target)) {
+        data[radius] = m_ri->m_trail_colour[*trail];
+      }
     }
   }
 
@@ -223,7 +229,7 @@ void TrailBuffer::UpdateTrailPosition() {
   // But when there is no room anymore (margin used) the whole trails image is shifted
   // and the offset is reset
   if (m_offset.lon >= MARGIN || m_offset.lon <= -MARGIN || m_offset.lat >= MARGIN || m_offset.lat <= -MARGIN) {
-    LOG_INFO(wxT("radar_pi: offset lat %d or lon too large %d"), m_offset.lat, m_offset.lon);
+    LOG_INFO(wxT("offset lat %d or lon too large %d"), m_offset.lat, m_offset.lon);
     ClearTrails();
     return;
   }
@@ -320,7 +326,7 @@ void TrailBuffer::UpdateTrailPosition() {
 
   if (shift.lat >= MARGIN || shift.lat <= -MARGIN || shift.lon >= MARGIN || shift.lon <= -MARGIN) {  // huge shift, reset trails
 
-    LOG_INFO(wxT("radar_pi: %s Large movement trails reset, shift.lat= %f, shift.lon=%f"), m_ri->m_name.c_str(), shift.lat,
+    LOG_INFO(wxT("%s Large movement trails reset, shift.lat= %f, shift.lon=%f"), m_ri->m_name.c_str(), shift.lat,
              shift.lon);
     ClearTrails();
     return;
@@ -345,7 +351,7 @@ void TrailBuffer::ShiftImageLatToCenter() {
   int image_size = m_trail_size * 2 * m_max_spoke_len;  // number of pixels to shift up / down
 
   if (m_offset.lat >= MARGIN || m_offset.lat <= -MARGIN) {  // abs not ok
-    LOG_INFO(wxT("radar_pi: offset lat too large %i"), m_offset.lat);
+    LOG_INFO(wxT("offset lat too large %i"), m_offset.lat);
     ClearTrails();
     return;
   }
@@ -372,7 +378,7 @@ void TrailBuffer::ShiftImageLatToCenter() {
 // shifts the true trails image in lon direction to center
 void TrailBuffer::ShiftImageLonToCenter() {
   if (m_offset.lon >= MARGIN || m_offset.lon <= -MARGIN) {  // abs no good
-    LOG_INFO(wxT("radar_pi: offset lon too large %i"), m_offset.lon);
+    LOG_INFO(wxT("offset lon too large %i"), m_offset.lon);
     ClearTrails();
     return;
   }

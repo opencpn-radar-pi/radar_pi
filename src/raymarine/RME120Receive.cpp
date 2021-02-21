@@ -103,23 +103,23 @@ SOCKET RME120Receive::GetNewReportSocket() {
   wxString s = wxT(" ");
 
   if (!(m_info == m_ri->GetRadarLocationInfo())) {  // initial values or NavicoLocate modified the info
-    LOG_INFO(wxT("radar_pi: %s old radar address at IP %s [%s]"), m_ri->m_name, m_ri->m_radar_address.FormatNetworkAddressPort(),
+    LOG_INFO(wxT("%s old radar address at IP %s [%s]"), m_ri->m_name, m_ri->m_radar_address.FormatNetworkAddressPort(),
              m_info.to_string());
     m_info = m_ri->GetRadarLocationInfo();
 
     m_interface_addr = m_ri->GetRadarInterfaceAddress();
     UpdateSendCommand();
-    LOG_INFO(wxT("radar_pi: %s Locator found radar at IP %s [%s]"), m_ri->m_name, m_ri->m_radar_address.FormatNetworkAddressPort(),
+    LOG_INFO(wxT("%s Locator found radar at IP %s [%s]"), m_ri->m_name, m_ri->m_radar_address.FormatNetworkAddressPort(),
              m_info.to_string());
   };
 
   if (m_interface_addr.IsNull()) {
-    LOG_RECEIVE(wxT("radar_pi: %s no interface address to listen on"), m_ri->m_name);
+    LOG_RECEIVE(wxT("%s no interface address to listen on"), m_ri->m_name);
     wxMilliSleep(1000);
     return INVALID_SOCKET;
   }
   if (m_info.report_addr.IsNull()) {
-    LOG_RECEIVE(wxT("radar_pi: %s no report address to listen on"), m_ri->m_name);
+    LOG_RECEIVE(wxT("%s no report address to listen on"), m_ri->m_name);
     wxMilliSleep(1000);
     return INVALID_SOCKET;
   }
@@ -134,15 +134,15 @@ SOCKET RME120Receive::GetNewReportSocket() {
   wxString addr = m_interface_addr.FormatNetworkAddress();
   wxString rep_addr = m_info.report_addr.FormatNetworkAddressPort();
   if (socket != INVALID_SOCKET) {
-    LOG_RECEIVE(wxT("radar_pi: %s scanning interface %s for data from %s"), m_ri->m_name, addr.c_str(), rep_addr.c_str());
+    LOG_RECEIVE(wxT("%s scanning interface %s for data from %s"), m_ri->m_name, addr.c_str(), rep_addr.c_str());
 
     s << _("Scanning interface") << wxT(" ") << addr;
     SetInfoStatus(s);
   } else {
     s << error;
     SetInfoStatus(s);
-    wxLogError(wxT("radar_pi: %s Unable to listen to socket: %s"), m_ri->m_name, error.c_str());
-    LOG_RECEIVE(wxT("radar_pi: %s invalid socket interface= %s for reportaddr= %s"), m_ri->m_name, addr.c_str(), rep_addr.c_str());
+    wxLogError(wxT("%s Unable to listen to socket: %s"), m_ri->m_name, error.c_str());
+    LOG_RECEIVE(wxT("%s invalid socket interface= %s for reportaddr= %s"), m_ri->m_name, addr.c_str(), rep_addr.c_str());
   }
   return socket;
 }
@@ -170,7 +170,7 @@ void *RME120Receive::Entry(void) {
   sockaddr_in *radar_addr = 0;
 
   SOCKET reportSocket = INVALID_SOCKET;
-  LOG_VERBOSE(wxT("radar_pi: RamarineReceive thread %s starting"), m_ri->m_name.c_str());
+  LOG_VERBOSE(wxT("RamarineReceive thread %s starting"), m_ri->m_name.c_str());
   reportSocket = GetNewReportSocket();  // Start using the same interface_addr as previous time
   while (m_receive_socket != INVALID_SOCKET) {
     if (reportSocket == INVALID_SOCKET) {
@@ -201,7 +201,7 @@ void *RME120Receive::Entry(void) {
         rx_len = sizeof(rx_addr);
         r = recvfrom(m_receive_socket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
         if (r > 0) {
-          LOG_VERBOSE(wxT("radar_pi: %s received stop instruction"), m_ri->m_name.c_str());
+          LOG_VERBOSE(wxT("%s received stop instruction"), m_ri->m_name.c_str());
           break;
         }
       }
@@ -225,7 +225,7 @@ void *RME120Receive::Entry(void) {
             radar_addr = &radarFoundAddr;
 
             if (m_ri->m_state.GetValue() == RADAR_OFF) {
-              LOG_INFO(wxT("radar_pi: %s detected at %s"), m_ri->m_name.c_str(), radar_address.FormatNetworkAddress());
+              LOG_INFO(wxT("%s detected at %s"), m_ri->m_name.c_str(), radar_address.FormatNetworkAddress());
               m_ri->m_state.Update(RADAR_STANDBY);
             }
           }
@@ -266,7 +266,7 @@ void *RME120Receive::Entry(void) {
     }
   }  // endless loop until thread destroy
 
-  LOG_VERBOSE(wxT("radar_pi: %s received stop instruction, stopping"), m_ri->m_name.c_str());
+  LOG_VERBOSE(wxT("%s received stop instruction, stopping"), m_ri->m_name.c_str());
 
   if (reportSocket != INVALID_SOCKET) {
     closesocket(reportSocket);
@@ -284,11 +284,11 @@ void *RME120Receive::Entry(void) {
   }
 
 #ifdef TEST_THREAD_RACES
-  LOG_VERBOSE(wxT("radar_pi: %s receive thread sleeping"), m_ri->m_name.c_str());
+  LOG_VERBOSE(wxT("%s receive thread sleeping"), m_ri->m_name.c_str());
   wxMilliSleep(1000);
 #endif
   m_is_shutdown = true;
-  LOG_VERBOSE(wxT("radar_pi: %s received stop instruction, shutting down"), m_ri->m_name.c_str());
+  LOG_VERBOSE(wxT("%s received stop instruction, shutting down"), m_ri->m_name.c_str());
 
   return 0;
 }
@@ -420,7 +420,7 @@ void RME120Receive::logBinaryData(const wxString &what, const uint8_t *data, int
   wxString explain;
   int i = 0;
   explain.Alloc(size * 3 + 50);
-  explain += wxT("radar_pi: ") + m_ri->m_name.c_str() + wxT(" ");
+  explain += wxT("") + m_ri->m_name.c_str() + wxT(" ");
   explain += what;
   explain += wxString::Format(wxT(" %d bytes: "), size);
   for (i = 0; i < size; i++) {
@@ -439,19 +439,19 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
     if (bl_pter->field01 == 0x010001) {
       switch (bl_pter->status) {
         case 0:
-          LOG_RECEIVE(wxT("radar_pi: %s received transmit off from %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
+          LOG_RECEIVE(wxT("%s received transmit off from %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
           m_ri->m_state.Update(RADAR_STANDBY);
           break;
         case 1:
-          LOG_RECEIVE(wxT("radar_pi: %s received transmit on from %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
+          LOG_RECEIVE(wxT("%s received transmit on from %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
           m_ri->m_state.Update(RADAR_TRANSMIT);
           break;
         case 2:  // Warmup
-          LOG_RECEIVE(wxT("radar_pi: %s radar is warming up %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
+          LOG_RECEIVE(wxT("%s radar is warming up %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
           m_ri->m_state.Update(RADAR_WARMING_UP);
           break;
         case 3:  // Off
-          LOG_RECEIVE(wxT("radar_pi: %s radar is off %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
+          LOG_RECEIVE(wxT("%s radar is off %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
           m_ri->m_state.Update(RADAR_OFF);
           break;
         default:
@@ -475,7 +475,7 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
 
       if ((m_ri->m_radar_ranges[bl_pter->range_id] * 2) != m_range_meters) {
         if (m_pi->m_settings.verbose >= 1) {
-          LOG_RECEIVE(wxT("radar_pi: %s now scanning with range %d meters (was %d meters)"), m_ri->m_name.c_str(),
+          LOG_RECEIVE(wxT("%s now scanning with range %d meters (was %d meters)"), m_ri->m_name.c_str(),
                       m_ri->m_radar_ranges[bl_pter->range_id] * 2, m_range_meters);
         }
         m_range_meters = m_ri->m_radar_ranges[bl_pter->range_id] * 2;  // displayed values are half of scanned values
@@ -530,22 +530,22 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
     wxString stat;
     switch (status) {
       case RADAR_OFF:
-        LOG_VERBOSE(wxT("radar_pi: %s reports status RADAR_OFF"), m_ri->m_name.c_str());
+        LOG_VERBOSE(wxT("%s reports status RADAR_OFF"), m_ri->m_name.c_str());
         stat = _("Off");
         break;
 
       case RADAR_STANDBY:
-        LOG_VERBOSE(wxT("radar_pi: %s reports status STANDBY"), m_ri->m_name.c_str());
+        LOG_VERBOSE(wxT("%s reports status STANDBY"), m_ri->m_name.c_str());
         stat = _("Standby");
         break;
 
       case RADAR_WARMING_UP:
-        LOG_VERBOSE(wxT("radar_pi: %s reports status RADAR_WARMING_UP"), m_ri->m_name.c_str());
+        LOG_VERBOSE(wxT("%s reports status RADAR_WARMING_UP"), m_ri->m_name.c_str());
         stat = _("Warming up");
         break;
 
       case RADAR_TRANSMIT:
-        LOG_VERBOSE(wxT("radar_pi: %s reports status RADAR_TRANSMIT"), m_ri->m_name.c_str());
+        LOG_VERBOSE(wxT("%s reports status RADAR_TRANSMIT"), m_ri->m_name.c_str());
         stat = _("Transmit");
         break;
 
@@ -767,7 +767,7 @@ void RME120Receive::Shutdown() {
       return;
     }
   }
-  LOG_INFO(wxT("radar_pi: %s receive thread will take long time to stop"), m_ri->m_name.c_str());
+  LOG_INFO(wxT("%s receive thread will take long time to stop"), m_ri->m_name.c_str());
 }
 
 wxString RME120Receive::GetInfoStatus() {

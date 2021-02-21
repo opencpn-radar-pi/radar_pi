@@ -80,7 +80,7 @@ bool RadarDrawShader::Init(size_t spokes, size_t spoke_len_max) {
   m_spoke_len_max = spoke_len_max;
 
   if (!CompileShader && !ShadersSupported()) {
-    wxLogError(wxT("radar_pi: the OpenGL system of this computer does not support shader m_programs"));
+    wxLogError(wxT("the OpenGL system of this computer does not support shader m_programs"));
     return false;
   }
 
@@ -88,13 +88,13 @@ bool RadarDrawShader::Init(size_t spokes, size_t spoke_len_max) {
 
   if (!CompileShaderText(&m_vertex, GL_VERTEX_SHADER, VertexShaderText) ||
       !CompileShaderText(&m_fragment, GL_FRAGMENT_SHADER, FragmentShaderColorText)) {
-    wxLogError(wxT("radar_pi: the OpenGL system of this computer failed to compile shader programs"));
+    wxLogError(wxT("the OpenGL system of this computer failed to compile shader programs"));
     return false;
   }
 
   m_program = LinkShaders(m_vertex, m_fragment);
   if (m_program == 0) {
-    wxLogError(wxT("radar_pi: GPU oriented OpenGL failed to link shader program"));
+    wxLogError(wxT("GPU oriented OpenGL failed to link shader program"));
     return false;
   }
 

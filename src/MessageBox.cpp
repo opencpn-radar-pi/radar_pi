@@ -104,7 +104,7 @@ bool MessageBox::Create(wxWindow *parent, radar_pi *pi) {
   m_old_radar_seen = false;
   m_allow_auto_hide = true;
 
-  LOG_DIALOG(wxT("radar_pi: MessageBox created"));
+  LOG_DIALOG(wxT("MessageBox created"));
 
   return true;
 }
@@ -247,7 +247,7 @@ bool MessageBox::IsModalDialogShown() {
 }
 
 bool MessageBox::Show(bool show) {
-  LOG_DIALOG(wxT("radar_pi: message box show = %d"), (int)show);
+  LOG_DIALOG(wxT("message box show = %d"), (int)show);
 
   if (show) {
     CenterOnParent();
@@ -288,36 +288,36 @@ bool MessageBox::UpdateMessage(bool force) {
   bool radarOn = haveOpenGL && radarSeen;
   bool navOn = haveGPS && haveHeading;
   bool no_overlay = !(m_pi->m_settings.show && m_pi->HaveOverlay());
-  LOG_DIALOG(wxT("radar_pi: messagebox decision: show=%d no_overlay=%d auto_hide=%d opengl=%d radarOn=%d navOn=%d"), showRadar,
+  LOG_DIALOG(wxT("messagebox decision: show=%d no_overlay=%d auto_hide=%d opengl=%d radarOn=%d navOn=%d"), showRadar,
              no_overlay, m_allow_auto_hide, haveOpenGL, radarOn, navOn);
 
   if (!m_allow_auto_hide) {
-    LOG_DIALOG(wxT("radar_pi: messagebox explicit wanted: SHOW_CLOSE"));
+    LOG_DIALOG(wxT("messagebox explicit wanted: SHOW_CLOSE"));
     new_message_state = SHOW_CLOSE;
   } else if (IsModalDialogShown()) {
-    LOG_DIALOG(wxT("radar_pi: messagebox modal dialog shown: HIDE"));
+    LOG_DIALOG(wxT("messagebox modal dialog shown: HIDE"));
     new_message_state = HIDE;
   } else if (!showRadar) {
-    LOG_DIALOG(wxT("radar_pi: messagebox no radar wanted: HIDE"));
+    LOG_DIALOG(wxT("messagebox no radar wanted: HIDE"));
     new_message_state = HIDE;
   } else if (!haveOpenGL) {
-    LOG_DIALOG(wxT("radar_pi: messagebox no OpenGL: SHOW"));
+    LOG_DIALOG(wxT("messagebox no OpenGL: SHOW"));
     new_message_state = SHOW;
     ret = true;
   } else if (no_overlay) {
     if (radarOn) {
-      LOG_DIALOG(wxT("radar_pi: messagebox radar window needs met: HIDE"));
+      LOG_DIALOG(wxT("messagebox radar window needs met: HIDE"));
       new_message_state = HIDE;
     } else {
-      LOG_DIALOG(wxT("radar_pi: messagebox radar window needs not met: SHOW_NO_NMEA"));
+      LOG_DIALOG(wxT("messagebox radar window needs not met: SHOW_NO_NMEA"));
       new_message_state = SHOW_NO_NMEA;
     }
   } else {  // overlay
     if (navOn && radarOn) {
-      LOG_DIALOG(wxT("radar_pi: messagebox overlay needs met: HIDE"));
+      LOG_DIALOG(wxT("messagebox overlay needs met: HIDE"));
       new_message_state = HIDE;
     } else {
-      LOG_DIALOG(wxT("radar_pi: messagebox overlay needs not met: SHOW"));
+      LOG_DIALOG(wxT("messagebox overlay needs not met: SHOW"));
       new_message_state = SHOW;
       ret = true;
     }
@@ -388,9 +388,9 @@ bool MessageBox::UpdateMessage(bool force) {
         m_hide_radar->Hide();
         break;
     }
-    LOG_DIALOG(wxT("radar_pi: messagebox case=%d"), new_message_state);
+    LOG_DIALOG(wxT("messagebox case=%d"), new_message_state);
   } else {
-    LOG_DIALOG(wxT("radar_pi: no change"));
+    LOG_DIALOG(wxT("no change"));
   }
 
   m_nmea_sizer->Layout();

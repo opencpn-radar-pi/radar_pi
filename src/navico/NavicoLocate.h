@@ -62,7 +62,7 @@ class NavicoLocate : public wxThread {
     m_interface_count = 0;
     m_report_count = 0;
     SetPriority(wxPRIORITY_MAX);
-    LOG_INFO(wxT("radar_pi: NavicoLocate thread created, prio= %i"), GetPriority());
+    LOG_INFO(wxT("NavicoLocate thread created, prio= %i"), GetPriority());
   }
 
   /*

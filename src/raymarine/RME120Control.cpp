@@ -46,7 +46,7 @@ RME120Control::RME120Control(radar_pi *pi, RadarInfo *ri) {
 RME120Control::~RME120Control() {
   if (m_radar_socket != INVALID_SOCKET) {
     closesocket(m_radar_socket);
-    LOG_TRANSMIT(wxT("radar_pi: %s transmit socket closed"), m_name.c_str());
+    LOG_TRANSMIT(wxT("%s transmit socket closed"), m_name.c_str());
   }
   int i = 0;
   i++;
@@ -78,17 +78,17 @@ bool RME120Control::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, Net
   }
 
   if (r) {
-    wxLogError(wxT("radar_pi: Unable to create UDP sending socket"));
+    wxLogError(wxT("Unable to create UDP sending socket"));
     LOG_INFO(wxT(" tx socketerror "));
     // Might as well give up now
     return false;
   }
   if (m_radar_socket == INVALID_SOCKET) {  // just another check...
-    wxLogError(wxT("radar_pi: INVALID_SOCKET Unable to create UDP sending socket"));
+    wxLogError(wxT("INVALID_SOCKET Unable to create UDP sending socket"));
     // Might as well give up now
     return false;
   }
-  LOG_TRANSMIT(wxT("radar_pi: %s transmit socket open"), m_name.c_str());
+  LOG_TRANSMIT(wxT("%s transmit socket open"), m_name.c_str());
   return true;
 }
 
@@ -97,7 +97,7 @@ void RME120Control::logBinaryData(const wxString &what, const uint8_t *data, int
   int i = 0;
 
   explain.Alloc(size * 3 + 50);
-  explain += wxT("radar_pi: ") + m_name.c_str() + wxT(" ");
+  explain += wxT("") + m_name.c_str() + wxT(" ");
   explain += what;
   explain += wxString::Format(wxT(" %d bytes: "), size);
   for (i = 0; i < size; i++) {
@@ -108,19 +108,19 @@ void RME120Control::logBinaryData(const wxString &what, const uint8_t *data, int
 
 bool RME120Control::TransmitCmd(const uint8_t *msg, int size) {
   if (!m_sendMultiCastAddresss_set) {
-    wxLogError(wxT("radar_pi: !m_multicast_send_address_set, Unable to transmit command to unknown radar"));
+    wxLogError(wxT("!m_multicast_send_address_set, Unable to transmit command to unknown radar"));
     IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("not transmitted"), msg, size));
     return false;
   }
   if (m_radar_socket == INVALID_SOCKET) {
-    wxLogError(wxT("radar_pi: INVALID_SOCKET, Unable to transmit command to unknown radar"));
+    wxLogError(wxT("INVALID_SOCKET, Unable to transmit command to unknown radar"));
     return false;
   }
 
   int sendlen;
   sendlen = sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&m_addr, sizeof(m_addr));
   if (sendlen < size) {
-    wxLogError(wxT("radar_pi: Unable to transmit command to %s: %s"), m_name.c_str(), SOCKETERRSTR);
+    wxLogError(wxT("Unable to transmit command to %s: %s"), m_name.c_str(), SOCKETERRSTR);
     IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("transmit"), msg, size));
     return false;
   }
@@ -220,7 +220,7 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
       rd_msg_bearing_offset[5] = (value >> 8) & 0xff;
       rd_msg_bearing_offset[6] = (value >> 16) & 0xff;
       rd_msg_bearing_offset[7] = (value >> 24) & 0xff;
-      LOG_VERBOSE(wxT("radar_pi: %s Bearing alignment: %d"), m_name.c_str(), value);
+      LOG_VERBOSE(wxT("%s Bearing alignment: %d"), m_name.c_str(), value);
       r = TransmitCmd(rd_msg_bearing_offset, sizeof(rd_msg_bearing_offset));
       break;
     }
@@ -245,7 +245,7 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
         cmd2[16] = 1;
         r = TransmitCmd(cmd2, sizeof(cmd2));  // set auto on
       }
-      LOG_VERBOSE(wxT("radar_pi: %s Gain: %d auto %d"), m_name.c_str(), value, autoValue);
+      LOG_VERBOSE(wxT("%s Gain: %d auto %d"), m_name.c_str(), value, autoValue);
       break;
     }
 
@@ -423,7 +423,7 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
       //    v = 255;
       //  }
       //  uint8_t cmd[] = {0x6, 0xc1, 0x05, 0, 0, 0, (uint8_t)autoValue, 0, 0, 0, (uint8_t)v};
-      //  LOG_VERBOSE(wxT("radar_pi: %s command Tx CT_SIDE_LOBE_SUPPRESSION: %d auto %d"), m_name.c_str(), value, autoValue);
+      //  LOG_VERBOSE(wxT("%s command Tx CT_SIDE_LOBE_SUPPRESSION: %d auto %d"), m_name.c_str(), value, autoValue);
       //  r = TransmitCmd(cmd, sizeof(cmd));
       //  break;
       //}
@@ -434,7 +434,7 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
 
       // case CT_SCAN_SPEED: {
       //  uint8_t cmd[] = {0x0f, 0xc1, (uint8_t)value};
-      //  LOG_VERBOSE(wxT("radar_pi: %s Scan speed: %d"), m_name.c_str(), value);
+      //  LOG_VERBOSE(wxT("%s Scan speed: %d"), m_name.c_str(), value);
       //  r = TransmitCmd(cmd, sizeof(cmd));
       //  break;
       //}
@@ -443,21 +443,21 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
 
       // case CT_NOISE_REJECTION: {
       //  uint8_t cmd[] = {0x21, 0xc1, (uint8_t)value};
-      //  LOG_VERBOSE(wxT("radar_pi: %s Noise rejection: %d"), m_name.c_str(), value);
+      //  LOG_VERBOSE(wxT("%s Noise rejection: %d"), m_name.c_str(), value);
       //  r = TransmitCmd(cmd, sizeof(cmd));
       //  break;
       //}
 
       // case CT_TARGET_SEPARATION: {
       //  uint8_t cmd[] = {0x22, 0xc1, (uint8_t)value};
-      //  LOG_VERBOSE(wxT("radar_pi: %s Target separation: %d"), m_name.c_str(), value);
+      //  LOG_VERBOSE(wxT("%s Target separation: %d"), m_name.c_str(), value);
       //  r = TransmitCmd(cmd, sizeof(cmd));
       //  break;
       //}
 
       // case CT_DOPPLER: {
       //  uint8_t cmd[] = {0x23, 0xc1, (uint8_t)value};
-      //  LOG_VERBOSE(wxT("radar_pi: %s Doppler state: %d"), m_name.c_str(), value);
+      //  LOG_VERBOSE(wxT("%s Doppler state: %d"), m_name.c_str(), value);
       //  r = TransmitCmd(cmd, sizeof(cmd));
       //  break;
       //}

@@ -74,7 +74,7 @@ class PolarToCartesianLookup {
     m_xyi = (PointInt *)malloc(sizeof(PointInt) * m_spokes * m_spoke_len);
 
     if (!m_xy || !m_xyi) {
-      wxLogError(wxT("radar_pi: Out Of Memory, fatal!"));
+      wxLogError(wxT("Out Of Memory, fatal!"));
       wxAbort();
     }
 

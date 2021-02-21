@@ -67,7 +67,7 @@ class NavicoReceive : public RadarReceive {
     m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
     SetInfoStatus(wxString::Format(wxT("%s: %s"), m_ri->m_name.c_str(), _("Initializing")));
     SetPriority(70);  // Priority of receive thread should be lower than prio of Navicolocate
-    LOG_INFO(wxT("radar_pi: %s receive thread created, prio= %i"), m_ri->m_name.c_str(), GetPriority());
+    LOG_INFO(wxT("%s receive thread created, prio= %i"), m_ri->m_name.c_str(), GetPriority());
     InitializeLookupData();
 
     RadarLocationInfo info = m_ri->GetRadarLocationInfo();
@@ -76,16 +76,16 @@ class NavicoReceive : public RadarReceive {
       // In this case m_info.spoke_data_addr etc. are correct, these don't really change in the wild according to our data,
       // so write them into the RadarLocationInfo object.
       m_ri->SetRadarLocationInfo(m_info);
-      LOG_INFO(wxT("radar_pi: %s info van constuctor RadarReceive SetRadarLocationInfo m_info= %s "), m_ri->m_name,
+      LOG_INFO(wxT("%s info van constuctor RadarReceive SetRadarLocationInfo m_info= %s "), m_ri->m_name,
                m_info.to_string());
     } else if (!info.report_addr.IsNull() && ri->m_radar_type != RT_BR24) {
       // Restart, when ini file contains multicast addresses, that are hopefully still correct.
       // This will also overwrite the initial addresses for 3G and 4G with those from the ini file
       // If not we will time-out and then NavicoLocate will find the radar.
       m_info = m_ri->GetRadarLocationInfo();
-      LOG_INFO(wxT(" radar_pi: radar addresses from ini file loaded"));
+      LOG_INFO(wxT("radar addresses from ini file loaded"));
     }
-    LOG_INFO(wxT(" radar_pi: %s navico receive using addresses: %s"), m_ri->m_name, m_info.to_string());
+    LOG_INFO(wxT("%s navico receive using addresses: %s"), m_ri->m_name, m_info.to_string());
     m_ri->SetRadarLocationInfo(m_info);  //  in case the initial value from constuctor are used, write these to radar_pi
   };
 

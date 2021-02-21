@@ -39,7 +39,7 @@ PLUGIN_BEGIN_NAMESPACE
 GuardZone::GuardZone(radar_pi* pi, RadarInfo* ri, int zone) {
   m_pi = pi;
   m_ri = ri;
-  m_log_name = wxString::Format(wxT("radar_pi: Radar %c GuardZone %d:"), m_ri->m_radar + 'A', zone + 1);
+  m_log_name = wxString::Format(wxT("Radar %c GuardZone %d:"), m_ri->m_radar + 'A', zone + 1);
   m_type = GZ_CIRCLE;
   m_start_bearing = 0;
   m_end_bearing = 0;
@@ -138,7 +138,7 @@ void GuardZone::SearchTargets() {
     return;
   }
   if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 2) {
-    LOG_INFO(wxT("radar_pi: No more scanning for ARPA targets, maximum number of targets reached"));
+    LOG_INFO(wxT("No more scanning for ARPA targets, maximum number of targets reached"));
     return;
   }
   if (!m_pi->m_settings.show                       // No radar shown
@@ -194,7 +194,7 @@ void GuardZone::SearchTargets() {
         m_arpa_update_time[angle] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
           if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 1) {
-            LOG_INFO(wxT("radar_pi: No more scanning for ARPA targets in loop, maximum number of targets reached"));
+            LOG_INFO(wxT("No more scanning for ARPA targets in loop, maximum number of targets reached"));
             return;
           }
           if (m_ri->m_arpa->MultiPix(angle, rrr, 0)) {

@@ -91,7 +91,7 @@ void RaymarineLocate::UpdateEthernetCards() {
           m_interface_addr[i].addr = sa->sin_addr;
           m_interface_addr[i].port = 0;
           m_socket[i] = startUDPMulticastReceiveSocket(m_interface_addr[i], reportRaymarineCommon, error);
-          LOG_VERBOSE(wxT("radar_pi: RaymarineLocate scanning interface %s for radars"),
+          LOG_VERBOSE(wxT("RaymarineLocate scanning interface %s for radars"),
                       m_interface_addr[i].FormatNetworkAddress());
           i++;
         }
@@ -124,7 +124,7 @@ void *RaymarineLocate::Entry(void) {
 #define MAX_DATA 500
   uint8_t data[MAX_DATA];
 
-  LOG_INFO(wxT("radar_pi: RaymarineLocate thread starting"));
+  LOG_INFO(wxT("RaymarineLocate thread starting"));
 
   m_is_shutdown = false;
 
@@ -178,7 +178,7 @@ void *RaymarineLocate::Entry(void) {
 
   CleanupCards();
   m_is_shutdown = true;
-  LOG_INFO(wxT("radar_pi: Ramarine locate stopped after success"));
+  LOG_INFO(wxT("Ramarine locate stopped after success"));
   return 0;
 }
 
@@ -205,7 +205,7 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
   if (len == sizeof(LocationInfoBlock) &&
       rRec->field3 == 1) {  // only length 36 is processed with id==1, others (28, 37, 40, 56) to be investigated
     if (m_pi->m_settings.verbose >= 2) {
-      LOG_BINARY_RECEIVE(wxT("radar_pi: RaymarineLocate received RadarReport"), report, len);
+      LOG_BINARY_RECEIVE(wxT("RaymarineLocate received RadarReport"), report, len);
     }
     RadarLocationInfo infoA;
     infoA.serialNr = wxT(" ");  // empty
@@ -218,7 +218,7 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
     NetworkAddress radar_ipA = radar_address;
     radar_ipA.port = htons(RO_PRIMARY);
     if (m_report_count < MAX_REPORT) {
-      LOG_INFO(wxT("radar_pi: Located raymarine radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(),
+      LOG_INFO(wxT("Located raymarine radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(),
                interface_address.FormatNetworkAddress(), infoA.to_string());
       m_report_count++;
     }
@@ -226,7 +226,7 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
     return true;
   }
 
-  // LOG_BINARY_RECEIVE(wxT("radar_pi: RaymarineLocate received unknown message"), report, len);
+  // LOG_BINARY_RECEIVE(wxT("RaymarineLocate received unknown message"), report, len);
   return false;
 }
 
@@ -261,7 +261,7 @@ void RaymarineLocate::FoundRaymarineLocationInfo(const NetworkAddress &addr, con
   }
   // more then 2 Raymarine radars: associate the info found with the right type of radar
   if (raymarines > 1) {
-    LOG_INFO(wxT(" radar_pi: Software doen not yet allow more than one Raymarine radar type"));
+    LOG_INFO(wxT("Software doen not yet allow more than one Raymarine radar type"));
   }
 
   NetworkAddress int_face_addr = interface_addr;

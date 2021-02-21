@@ -50,7 +50,7 @@ bool RadarDrawVertex::Init(size_t spokes, size_t spoke_len_max) {
   }
   if (!m_vertices) {
     if (!m_oom) {
-      wxLogError(wxT("radar_pi: Out of memory"));
+      wxLogError(wxT("Out of memory"));
       m_oom = true;
     }
     return false;
@@ -98,7 +98,7 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
 
   if (!line->points) {
     if (!m_oom) {
-      wxLogError(wxT("radar_pi: Out of memory"));
+      wxLogError(wxT("Out of memory"));
       m_oom = true;
     }
     return;
@@ -140,7 +140,7 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
     line->points = (VertexPoint*)malloc(line->allocated * sizeof(VertexPoint));
     if (!line->points) {
       if (!m_oom) {
-        wxLogError(wxT("radar_pi: Out of memory"));
+        wxLogError(wxT("Out of memory"));
         m_oom = true;
       }
       line->allocated = 0;

@@ -49,7 +49,7 @@ class EmulatorReceive : public RadarReceive {
     m_next_rotation = 0;
     m_receive_socket = GetLocalhostServerTCPSocket();
     m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
-    LOG_RECEIVE(wxT("radar_pi: %s receive thread created"), m_ri->m_name.c_str());
+    LOG_RECEIVE(wxT("%s receive thread created"), m_ri->m_name.c_str());
   };
 
   ~EmulatorReceive() {

@@ -320,7 +320,7 @@ bool ControlsDialog::Create(wxWindow* parent, radar_pi* ppi, RadarInfo* ri, wxWi
   m_pi = ppi;
   m_ri = ri;
 
-  m_log_name = wxString::Format(wxT("radar_pi: Radar %c ControlDialog:"), (char)(ri->m_radar + 'A'));
+  m_log_name = wxString::Format(wxT("Radar %c ControlDialog:"), (char)(ri->m_radar + 'A'));
 
 #ifdef __WXMSW__
   long wstyle = wxSYSTEM_MENU | wxCLOSE_BOX | wxCAPTION | wxCLIP_CHILDREN;
@@ -1419,7 +1419,7 @@ void ControlsDialog::OnRadarDockPPIButtonClick(wxCommandEvent& event) {
         newPerspective << wxT("|");
         newPerspective << perspective.AfterFirst(wxT('|'));
         m_ri->m_radar_panel->m_aui_mgr->LoadPerspective(newPerspective);
-        LOG_DIALOG(wxT("radar_pi: %s: new perspective %s"), m_ri->m_name.c_str(), newPerspective.c_str());
+        LOG_DIALOG(wxT("%s: new perspective %s"), m_ri->m_name.c_str(), newPerspective.c_str());
       }
     }
     m_ri->m_radar_panel->m_aui_mgr->Update();
@@ -1434,7 +1434,7 @@ void ControlsDialog::OnRadarDockPPIButtonClick(wxCommandEvent& event) {
       perspective = perspective.Mid(p + m_ri->m_radar_panel->m_dock.length());
       perspective = perspective.BeforeFirst(wxT('|'));
       m_pi->m_settings.dock_size = wxAtoi(perspective);
-      LOG_DIALOG(wxT("radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(),
+      LOG_DIALOG(wxT("%s: replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(),
                  m_pi->m_settings.dock_size);
     }
 

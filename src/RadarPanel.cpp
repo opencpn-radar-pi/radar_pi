@@ -74,7 +74,7 @@ bool RadarPanel::Create() {
   wxSize opencpn_window = GetOCPNCanvasWindow()->GetSize();
   m_best_size.x = wxMin(wxMin(m_best_size.x / 2, 512), opencpn_window.x / 3);
   m_best_size.y = wxMin(wxMin(m_best_size.y / 2, 512), opencpn_window.y / 2);
-  LOG_DIALOG(wxT("radar_pi: best size %i, %i"), m_best_size.x, m_best_size.y);
+  LOG_DIALOG(wxT("best size %i, %i"), m_best_size.x, m_best_size.y);
 
   pane.MinSize(256, 256);
   pane.BestSize(m_best_size);
@@ -89,12 +89,12 @@ bool RadarPanel::Create() {
 
   if (m_pi->m_perspective[m_ri->m_radar].length()) {
     // Do this first and it doesn't work if the pane starts docked.
-    LOG_DIALOG(wxT("radar_pi: Restoring panel %s to AUI control manager: %s"), m_aui_name.c_str(),
+    LOG_DIALOG(wxT("Restoring panel %s to AUI control manager: %s"), m_aui_name.c_str(),
                m_pi->m_perspective[m_ri->m_radar].c_str());
     m_aui_mgr->LoadPaneInfo(m_pi->m_perspective[m_ri->m_radar], pane);
     m_aui_mgr->Update();
   } else {
-    LOG_DIALOG(wxT("radar_pi: Added panel %s to AUI control manager"), m_aui_name.c_str());
+    LOG_DIALOG(wxT("Added panel %s to AUI control manager"), m_aui_name.c_str());
   }
 
   // dock or undock
@@ -138,7 +138,7 @@ RadarPanel::~RadarPanel() {
   }
   m_aui_mgr->DetachPane(this);
   // m_aui_mgr->Update();
-  LOG_DIALOG(wxT("radar_pi: %s panel removed"), m_ri->m_name.c_str());
+  LOG_DIALOG(wxT("%s panel removed"), m_ri->m_name.c_str());
 }
 
 void RadarPanel::SetCaption(wxString name) { m_aui_mgr->GetPane(this).Caption(name); }
@@ -156,10 +156,10 @@ void RadarPanel::close(wxAuiManagerEvent& event) {
 
   if (pane->window == this) {
     m_pi->m_settings.show_radar[m_ri->m_radar] = 0;
-    LOG_DIALOG(wxT("radar_pi: RadarPanel::close: show_radar[%d]=%d"), m_ri->m_radar, 0);
+    LOG_DIALOG(wxT("RadarPanel::close: show_radar[%d]=%d"), m_ri->m_radar, 0);
     m_pi->NotifyRadarWindowViz();
   } else {
-    LOG_DIALOG(wxT("radar_pi: RadarPanel::close: ignore close of window %s in window %s"), pane->name.c_str(), m_aui_name.c_str());
+    LOG_DIALOG(wxT("RadarPanel::close: ignore close of window %s in window %s"), pane->name.c_str(), m_aui_name.c_str());
   }
 }
 
@@ -196,7 +196,7 @@ void RadarPanel::ShowFrame(bool visible) {
 
   if (visible) {
     m_pi->m_settings.show_radar[m_ri->m_radar] = 1;
-    LOG_DIALOG(wxT("radar_pi: RadarPanel::ShowFrame: show_radar[%d]=%d"), m_ri->m_radar, 1);
+    LOG_DIALOG(wxT("RadarPanel::ShowFrame: show_radar[%d]=%d"), m_ri->m_radar, 1);
   }
 
   // What should have been a simple 'pane.Show(visible)' has devolved into a terrible hack.
@@ -214,7 +214,7 @@ void RadarPanel::ShowFrame(bool visible) {
         perspective = perspective.Mid(p + m_dock.length());
         perspective = perspective.BeforeFirst(wxT('|'));
         m_pi->m_settings.dock_size = wxAtoi(perspective);
-        LOG_DIALOG(wxT("radar_pi: %s: replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(),
+        LOG_DIALOG(wxT("%s: replaced=%s, saved dock_size = %d"), m_ri->m_name.c_str(), perspective.c_str(),
                    m_pi->m_settings.dock_size);
       }
     }
@@ -241,7 +241,7 @@ void RadarPanel::ShowFrame(bool visible) {
       newPerspective << wxT("|");
       newPerspective << perspective.AfterFirst(wxT('|'));
       m_aui_mgr->LoadPerspective(newPerspective);
-      // LOG_DIALOG(wxT("radar_pi: %s: new perspective %s"), m_ri->m_name.c_str(), newPerspective.c_str());
+      // LOG_DIALOG(wxT("%s: new perspective %s"), m_ri->m_name.c_str(), newPerspective.c_str());
     }
   }
   m_aui_mgr->Update();

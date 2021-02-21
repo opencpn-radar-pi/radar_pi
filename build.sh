@@ -36,7 +36,7 @@ case $host in
     ;;
 
   kees-tp)      # Lenovo X1E2 8core
-    MAKE_OPTIONS="-j8"
+    export CMAKE_BUILD_PARALLEL_LEVEL=8
     BUILDDIR=build-linux-x86_64
     PACKAGE="*.deb *.rpm *.bz2"
     ;;
@@ -68,7 +68,7 @@ fi
 [ -d $BUILDDIR ] && rm -rf $BUILDDIR
 mkdir -p $BUILDDIR
 cd $BUILDDIR
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 echo "-------------------------- MAKE $TARGET -----------------------"
 make $MAKE_OPTIONS $TARGET
 
