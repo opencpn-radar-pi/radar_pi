@@ -86,7 +86,8 @@ def private_key_setup(ci, user, password):
     hostpath = os.path.normpath(os.path.join(ci, user))
     print("Using identity file: " + hostpath)
     os.environ['GIT_SSH_COMMAND'] = \
-            "ssh -o IdentitiesOnly=yes -i " + hostpath.replace("\\", "\\\\")
+            "ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -i " \
+                + hostpath.replace("\\", "\\\\")
 
 
 def get_target(metadata_path):
@@ -181,14 +182,18 @@ def main():
     password = get_password()
     branch = os.environ.get('GIT_BRANCH')
     branch = branch if branch else "auto"
-    print("Using repository: " + os.environ.get("GIT_REPO"))
+    print("Using repository: "
+            + os.environ.get("GIT_REPO").replace('@', ' @ '))
     print("Using branch: " + branch)
 
     git = Git(branch)
     git.configure()
 
     private_key_setup(ci, user, password)
-
+    try:
+        subprocess.check_call(['ssh-keygen', '-R', 'github.com'])
+    except subprocess.CalledProcessError as cpe:
+        print("Error resetting github keys (ignored)")
     # Clone the repo if it does not exist.
     if not os.path.exists(os.path.join(top, 'plugins')):
         subprocess.check_call(git.clone, cwd=top)
@@ -203,7 +208,8 @@ def main():
 
     if git.commit(metadata[0]):
         git.push()
-
+    print("Pushed metadata to "
+            + os.environ.get("GIT_REPO").replace('@', ' @ '))
     os.remove(os.path.join(ci, user))     # Drop the private key
 
 
