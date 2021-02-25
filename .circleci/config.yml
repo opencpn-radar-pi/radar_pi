@@ -88,17 +88,6 @@ jobs:
       - OCPN_TARGET: buster
     <<: *debian-steps
 
-  build-armhf-stretch:
-    machine: true
-    environment:
-      - OCPN_TARGET=stretch-armhf
-      - DOCKER_IMAGE=balenalib/raspberry-pi-debian:stretch
-    steps:
-      - checkout
-      - run: ci/generic-build-raspbian-armhf.sh
-      - run: cd build; /bin/bash < upload.sh
-      - run: python3 ci/git-push
-
 std-filters: &std-filters
   filters:
     branches:
@@ -129,7 +118,4 @@ workflows:
           <<: *std-filters
 
       - build-buster:
-          <<: *std-filters
-
-      - build-armhf-stretch:
           <<: *std-filters
