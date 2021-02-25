@@ -1,7 +1,7 @@
 ---
 kind: pipeline
 type: docker
-name: default
+name: fedora-amd64
 
 steps:
   - name: mingw
@@ -15,6 +15,10 @@ steps:
         from_secret: CLOUDSMITH_UNSTABLE_REPO
       CLOUDSMITH_BETA_REPO:
           from_secret: CLOUDSMITH_BETA_REPO
+      GIT_REPO:
+        from_secret: GIT_REPO
+      GIT_KEY_PASSWORD:
+        from_secret: GIT_KEY_PASSWORD
     commands:
       - ci/drone-build-mingw.sh
       - bash -c "cd build; /bin/bash < upload.sh"
@@ -23,17 +27,17 @@ steps:
 ---
 kind: pipeline
 type: docker
-name: raspbian
+name: raspbian-arm
 
 platform:
   os: linux
   arch: arm
 
 steps:
-  - name: raspbian-buster
-    image: balenalib/raspberry-pi-debian:stretch
+  - name: buster
+    image: balenalib/raspberry-pi-debian:buster
     environment: 
-      OCPN_TARGET: stretch-armhf
+      OCPN_TARGET: buster-armhf
       CLOUDSMITH_API_KEY:
         from_secret: CLOUDSMITH_API_KEY
       CLOUDSMITH_STABLE_REPO:
@@ -42,6 +46,10 @@ steps:
         from_secret: CLOUDSMITH_UNSTABLE_REPO
       CLOUDSMITH_BETA_REPO:
         from_secret: CLOUDSMITH_BETA_REPO
+      GIT_REPO:
+        from_secret: GIT_REPO
+      GIT_KEY_PASSWORD:
+        from_secret: GIT_KEY_PASSWORD
     commands:
       - export PATH=$HOME/.local/bin:$PATH
       - ci/drone-build-raspbian.sh

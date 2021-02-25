@@ -2,7 +2,7 @@
 
 set -x
 
-su -c "dnf install -q -y sudo dnf-plugins-core python3-pip"
+su -c "dnf install -q -y sudo dnf-plugins-core python3-pip openssh"
 sudo dnf -y copr enable leamas/opencpn-mingw
 sudo dnf -q builddep  -y build-deps/opencpn-deps.spec
 rm -rf build; mkdir build; cd build

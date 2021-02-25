@@ -27,8 +27,8 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
 
-# Initiate python setup, install cryptography for git-push.
-apt-get install -q python3-pip python3-cryptography
+# Initiate python setup, install cryptography and ssh-client for git-push.
+apt-get install -q python3-pip python3-cryptography openssh-client
 
 # Latest pip 21.0.0 is broken:
 python3 -m pip install --user --force-reinstall pip==20.3.4 setuptools wheel
