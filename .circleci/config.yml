@@ -110,17 +110,6 @@ jobs:
       - run: cd build; /bin/bash < upload.sh
       - run: python3 ci/git-push
 
-  build-armhf-buster:
-    machine: true
-    environment:
-      - OCPN_TARGET=buster-armhf
-      - DOCKER_IMAGE=balenalib/raspberry-pi-debian:buster
-    steps:
-      - checkout
-      - run: ci/generic-build-raspbian-armhf.sh
-      - run: cd build; /bin/bash < upload.sh
-      - run: python3 ci/git-push
-
 std-filters: &std-filters
   filters:
     branches:
@@ -157,7 +146,4 @@ workflows:
           <<: *std-filters
 
       - build-armhf-stretch:
-          <<: *std-filters
-
-      - build-armhf-buster:
           <<: *std-filters
