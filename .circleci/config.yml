@@ -10,25 +10,7 @@ debian-steps: &debian-steps
     - run: python3 ci/git-push
 
 jobs:
-  build-flatpak:
-    machine:
-      image: ubuntu-1604:201903-01
-    environment:
-      - OCPN_TARGET: flatpak
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - fp-v1-{{ checksum "ci/circleci-build-flatpak.sh" }}
-      - run: ci/circleci-build-flatpak.sh
-      - save_cache:
-          key: fp-v1-{{ checksum "ci/circleci-build-flatpak.sh" }}
-          paths:
-            - /home/circleci/.local/share/flatpak/repo
-      - run: cd build; /bin/bash < upload.sh
-      - run: python3 ci/git-push
-
-  build-macos:
+ build-macos:
     macos:
       xcode: "11.0.0"
     environment:
@@ -99,9 +81,6 @@ workflows:
   version: 2
   build_all:
     jobs:
-      - build-flatpak:
-          <<: *std-filters
-
       - build-macos:
           <<: *std-filters
 
