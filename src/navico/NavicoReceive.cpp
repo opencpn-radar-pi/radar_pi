@@ -850,6 +850,7 @@ void *NavicoReceive::Entry(void) {
       if (m_halo_sent_heading + 100 < now) {
         g_pi_sent_heading_to_halo = true;
         SendHeadingPacket(infoSocket);
+        m_halo_sent_heading = now;
       }
       if (m_halo_sent_mystery + 250 < now) {
         SendMysteryPacket(infoSocket);
