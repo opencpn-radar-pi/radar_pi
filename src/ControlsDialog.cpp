@@ -530,7 +530,7 @@ void ControlsDialog::CreateControls() {
    * Here be dragons...
    * Since I haven't been able to create buttons that adapt up, and at the same
    * time calculate the biggest button, and I want all buttons to be the same width I use a trick.
-   * I generate a multiline StaticText containing all the (long) button labels and find out what the
+   * I generate a multiline StaticText containing the longest button labels and find out what the
    * width of that is, and then generate the buttons using that width.
    * I know, this is a hack, but this way it works relatively nicely even with translations.
    */
@@ -538,36 +538,11 @@ void ControlsDialog::CreateControls() {
   wxBoxSizer* testBox = new wxBoxSizer(wxVERTICAL);
   m_top_sizer->Add(testBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
   wxString label;
-  label << _("Scan speed") << wxT("\n");
-  label << _("Installation") << wxT("\n");
-  label << _("Antenna height") << wxT("\n");
-  label << _("Antenna forward of GPS") << wxT("\n");
   label << _("Antenna starboard of GPS") << wxT("\n");
   label << _("Local interference rej.") << wxT("\n");
-  label << _("Guard zones") << wxT("\n");
-  label << _("Zone type") << wxT("\n");
-  label << _("Guard zones") << wxT("\n");
-  label << _("Inner range") << wxT("\n");
-  label << _("Outer range") << wxT("\n");
-  label << _("Start bearing") << wxT("\n");
-  label << _("End bearing") << wxT("\n");
-  label << _("Clear cursor") << wxT("\n");
-  label << _("Place EBL/VRM") << wxT("\n");
   label << _("Off/Relative/True trails") << wxT("\n");
-  label << _("Clear trails") << wxT("\n");
-  label << _("Orientation") << wxT("\n");
   label << _("Overlay transparency") << wxT("\n");
-  label << _("Overlay") << wxT("\n");
-  label << _("Adjust") << wxT("\n");
-  label << _("Advanced") << wxT("\n");
-  label << _("View") << wxT("\n");
-  label << _("EBL/VRM") << wxT("\n");
   label << _("Timed Transmit") << wxT("\n");
-  label << _("Info") << wxT("\n");
-
-  for (int i = 0; i < CT_MAX; i++) {
-    label << _(ControlTypeNames[i]) << wxT("\n");
-  }
 
   wxStaticText* testMessage =
       new wxStaticText(this, ID_BPOS, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
