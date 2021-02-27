@@ -220,6 +220,7 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
     case CT_CENTER_VIEW:
     case CT_OVERLAY_CANVAS:
     case CT_TARGET_ON_PPI:
+    case CT_AUTOTTRACKDOPPLER:
 
     // The following are settings not supported by Garmin HD.
     case CT_SIDE_LOBE_SUPPRESSION:
@@ -230,8 +231,12 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
     case CT_TARGET_SEPARATION:
     case CT_DOPPLER:
     case CT_ANTENNA_HEIGHT:
-    case CT_NO_TRANSMIT_END:
+    case CT_STC:
+    case CT_TUNE_FINE:
+    case CT_TUNE_COARSE:
+    case CT_DISPLAY_TIMING:
     case CT_NO_TRANSMIT_START:
+    case CT_NO_TRANSMIT_END:
 
       break;
 

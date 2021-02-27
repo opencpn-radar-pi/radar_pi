@@ -132,7 +132,7 @@ void *RaymarineLocate::Entry(void) {
 
   while (!success && !m_shutdown) {  // will run until the Raymarine radar location info has been found
     // after that we stop the Raymarine locate, saves load and prevents that the serial nr gets overwritten
-    struct timeval tv = {(long)1, (long)(0)};
+    struct timeval tv = {1, 0};
     fd_set fdin;
     FD_ZERO(&fdin);
 

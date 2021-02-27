@@ -153,7 +153,7 @@ void *EmulatorReceive::Entry(void) {
     struct timeval tv;
 
     tv.tv_sec = 0;
-    tv.tv_usec = (long)(MILLIS_PER_SELECT * 1000);
+    tv.tv_usec = (int)(MILLIS_PER_SELECT * 1000);
 
     fd_set fdin;
     FD_ZERO(&fdin);

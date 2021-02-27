@@ -568,34 +568,34 @@ void NavicoReceive::ReleaseInfoSocket(void) {
 static halo_heading_packet g_heading_msg = {
     {'N', 'K', 'O', 'E'},  // marker
     {0, 1, 0x90, 0x02},    // u00 bytes containing '00 01 90 02'
-    {0},                   // counter
+    0,                     // counter
     {0, 0, 0x10, 0, 0, 0x14, 0, 0, 4, 0, 0, 0, 0, 0, 5, 0x3C, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x20},  // u01
     {0x12, 0xf1},                                                                                // u02
     {0x01, 0x00},                                                                                // u03
-    {0},                                                                                         // epoch
-    {2},                                                                                         // u04
-    {0},                                                                                         // u05a, likely position
-    {0},                                                                                         // u05b, likely position
-    {0xff},                                                                                      // u06
-    {0},                                                                                         // heading
+    0,                                                                                           // epoch
+    2,                                                                                           // u04
+    0,                                                                                           // u05a, likely position
+    0,                                                                                           // u05b, likely position
+    0xff,                                                                                        // u06
+    0,                                                                                           // heading
     {0xff, 0x7f, 0x79, 0xf8, 0xfc}                                                               // u07
 };
 
 static halo_mystery_packet g_mystery_msg = {
     {'N', 'K', 'O', 'E'},  // marker
     {0, 1, 0x90, 0x02},    // u00 bytes containing '00 01 90 02'
-    {0},                   // counter
+    0,                     // counter
     {0, 0, 0x10, 0, 0, 0x14, 0, 0, 4, 0, 0, 0, 0, 0, 5, 0x3C, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x20},  // u01
     {0x02, 0xf8},                                                                                // u02
     {0x01, 0x00},                                                                                // u03
-    {0},                                                                                         // epoch
-    {2},                                                                                         // u04
-    {0},                                                                                         // u05a, likely position
-    {0},                                                                                         // u05b, likely position
-    {0xff},                                                                                      // u06
-    {0xfc},                                                                                      // u07
-    {0},                                                                                         // mystery1
-    {0},                                                                                         // mystery2
+    0,                                                                                           // epoch
+    2,                                                                                           // u04
+    0,                                                                                           // u05a, likely position
+    0,                                                                                           // u05b, likely position
+    0xff,                                                                                        // u06
+    0xfc,                                                                                        // u07
+    0,                                                                                           // mystery1
+    0,                                                                                           // mystery2
     {0xff, 0xff}                                                                                 // u08
 };
 
@@ -724,7 +724,7 @@ void *NavicoReceive::Entry(void) {
     wxLongLong start = wxGetUTCTimeMillis();
     int64_t wait = MILLIS_PER_SELECT - (start.GetValue() % MILLIS_PER_SELECT);
 
-    struct timeval tv = {(long)0, (long)(wait * 1000)};
+    struct timeval tv = {0, (int)(wait * 1000)};
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
     wxLongLong now = wxGetUTCTimeMillis();
     LOG_RECEIVE(wxT("select maxFd=%d r=%d elapsed=%lld"), maxFd, r, now - start);

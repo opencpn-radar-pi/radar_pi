@@ -295,7 +295,7 @@ void *GarminxHDReceive::Entry(void) {
       }
     }
 
-    struct timeval tv = {(long)0, (long)(MILLIS_PER_SELECT * 1000)};
+    struct timeval tv = {0, (int)(MILLIS_PER_SELECT * 1000)};
 
     fd_set fdin;
     FD_ZERO(&fdin);

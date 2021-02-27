@@ -218,6 +218,10 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_DOPPLER:
     case CT_ANTENNA_HEIGHT:
     case CT_FTC:
+    case CT_STC:
+    case CT_TUNE_FINE:
+    case CT_TUNE_COARSE:
+    case CT_DISPLAY_TIMING:
 
       break;
 

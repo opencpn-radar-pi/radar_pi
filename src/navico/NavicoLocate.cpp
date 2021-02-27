@@ -130,7 +130,7 @@ void *NavicoLocate::Entry(void) {
   UpdateEthernetCards();
 
   while (!m_shutdown) {
-    struct timeval tv = {(long)1, (long)(0)};
+    struct timeval tv = {1, 0};
     fd_set fdin;
     FD_ZERO(&fdin);
 
