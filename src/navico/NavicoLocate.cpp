@@ -77,6 +77,7 @@ void NavicoLocate::UpdateEthernetCards() {
         m_interface_count++;
       }
     }
+    LOG_VERBOSE(wxT("Found %d ethernet cards"), m_interface_count);
 
     // If there are any fill packed array (m_socket, m_interface_addr) with them.
     if (m_interface_count > 0) {
@@ -96,6 +97,9 @@ void NavicoLocate::UpdateEthernetCards() {
     }
 
     freeifaddrs(addr_list);
+  }
+  else {
+    wxLogError(wxT("No ethernet cards found"));
   }
 
   WakeRadar();
@@ -178,7 +182,7 @@ void *NavicoLocate::Entry(void) {
 
   CleanupCards();
 
-  LOG_VERBOSE(wxT("NavicoLocate thread stopping"));
+  LOG_VERBOSE(wxT("thread stopping"));
   m_is_shutdown = true;
   return 0;
 }
@@ -283,7 +287,7 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const Netw
   }
   if (report[0] == 01 && report[1] == 0xB2) {  // Common Navico message from 4G++
     if (m_pi->m_settings.verbose >= 2) {
-      LOG_BINARY_RECEIVE(wxT("NavicoLocate received RadarReport_01B2"), report, len);
+      LOG_BINARY_RECEIVE(wxT("received RadarReport_01B2"), report, len);
     }
     RadarReport_01B2 *data = (RadarReport_01B2 *)report;
     wxCriticalSectionLocker lock(m_exclusive);
@@ -328,7 +332,7 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const Netw
       FoundNavicoLocationInfo(radar_ipB, interface_address, infoB);
     }
 #define LOG_ADDR_N(n)                                                                                  \
-  LOG_RECEIVE(wxT("NavicoLocate %s addr %s = %s"), radar_address.FormatNetworkAddress(), #n, \
+  LOG_RECEIVE(wxT("radar %s addr %s = %s"), radar_address.FormatNetworkAddress(), #n, \
               FormatPackedAddress(data->addr##n));
 
     IF_LOG_AT_LEVEL(LOGLEVEL_RECEIVE) {
@@ -353,7 +357,7 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const Netw
     return true;
   }
 
-  LOG_BINARY_RECEIVE(wxT("NavicoLocate received unknown message"), report, len);
+  LOG_BINARY_RECEIVE(wxT("received unknown message"), report, len);
   return false;
 }
 
