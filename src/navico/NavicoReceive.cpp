@@ -417,7 +417,7 @@ void NavicoReceive::ProcessFrame(const uint8_t *data, size_t len) {
 
 SOCKET NavicoReceive::PickNextEthernetCard() {
   SOCKET socket = INVALID_SOCKET;
-  CLEAR_STRUCT(m_interface_addr);
+  m_interface_addr = NetworkAddress();
 
   // Pick the next ethernet card
   // If set, we used this one last time. Go to the next card.
@@ -524,7 +524,6 @@ SOCKET NavicoReceive::GetNewDataSocket() {
  * info that was previously done via the RI-10/11.
  */
 SOCKET NavicoReceive::GetNewInfoSocket() {
-  SOCKET socket;
   wxString error;
 
   // This is only necessary on HALO radars
@@ -613,7 +612,7 @@ void NavicoReceive::SendHeadingPacket(SOCKET s) {
                g_heading_msg.heading);
 
   if (sendto(s, (char *)&g_heading_msg, sizeof g_heading_msg, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) <
-      sizeof g_heading_msg) {
+      (int)sizeof g_heading_msg) {
     wxLogError(wxT("Unable to transmit command to %s: %s"), m_ri->m_name.c_str(), SOCKETERRSTR);
     return;
   }
@@ -632,7 +631,7 @@ void NavicoReceive::SendMysteryPacket(SOCKET s) {
   LOG_TRANSMIT(wxT("SendMysteryPacket ctr=%u"), ntohs(g_mystery_msg.counter));
 
   if (sendto(s, (char *)&g_mystery_msg, sizeof g_mystery_msg, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) <
-      sizeof g_mystery_msg) {
+      (int)sizeof g_mystery_msg) {
     wxLogError(wxT("Unable to transmit command to %s: %s"), m_ri->m_name.c_str(), SOCKETERRSTR);
     return;
   }
@@ -829,7 +828,7 @@ void *NavicoReceive::Entry(void) {
           closesocket(reportSocket);
           reportSocket = INVALID_SOCKET;
           m_ri->m_state.Update(RADAR_OFF);
-          CLEAR_STRUCT(m_interface_addr);
+          m_interface_addr = NetworkAddress();
           radar_addr = 0;
         }
       } else {

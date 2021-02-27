@@ -29,6 +29,7 @@
  ***************************************************************************
  */
 
+#define RADAR_PI_GLOBALS
 #include "radar_pi.h"
 
 #include "GuardZone.h"
@@ -494,17 +495,8 @@ bool radar_pi::EnsureRadarSelectionComplete(bool force) {
 bool radar_pi::MakeRadarSelection() {
   bool ret = false;
 
-  RadarType oldRadarType[RADARS];
   size_t r;
 
-  for (r = 0; r < RADARS; r++) {
-    if (m_radar[r]) {
-      oldRadarType[r] = m_radar[r]->m_radar_type;
-      LOG_INFO(wxT("OLD radarnr= %i, type = %i"), r, m_radar[r]->m_radar_type);
-    } else {
-      oldRadarType[r] = RT_MAX;
-    }
-  }
   m_initialized = false;
   SelectDialog dlg(m_parent_window, this);
   if (dlg.ShowModal() == wxID_OK) {
@@ -755,12 +747,10 @@ void radar_pi::OnContextMenuItemCallback(int id) {
   if (!EnsureRadarSelectionComplete(false)) {
     return;
   }
-  int current_canvas_index = -1;
   int current_radar = -1;
   // find out which canvas the click is on
   m_context_menu_canvas_index = GetCanvasIndexUnderMouse();
   if (m_context_menu_canvas_index > -1 && m_context_menu_canvas_index < CANVAS_COUNT) {
-    current_canvas_index = m_context_menu_canvas_index;
     current_radar = m_chart_overlay[m_context_menu_canvas_index];
   }
 
@@ -1011,16 +1001,14 @@ void radar_pi::ScheduleWindowRefresh() {
     // 5 = 16 per s,  64ms
     millis = (1000 - drawTime) / (1 << (refreshrate - 1)) + drawTime;
 
-    LOG_VERBOSE(
-        wxT("rendering took %i ms, PPI0=%i ms, PPI1=%i, Overlay0=%i, Overlay1=%i, doppler=%d next render in %i ms"),
-        drawTime, renderPPI[0], renderPPI[1], render_overlay[0], render_overlay[1], doppler_count, millis);
+    LOG_VERBOSE(wxT("rendering took %i ms, PPI0=%i ms, PPI1=%i, Overlay0=%i, Overlay1=%i, doppler=%d next render in %i ms"),
+                drawTime, renderPPI[0], renderPPI[1], render_overlay[0], render_overlay[1], doppler_count, millis);
 
     m_timer->StartOnce(millis);
 
   } else {
-    LOG_VERBOSE(
-        wxT("rendering took %i ms, PPI0=%i ms, PPI1=%i, Overlay0=%i, Overlay1=%i, doppler=%d no next extra render"),
-        drawTime, renderPPI[0], renderPPI[1], render_overlay[0], render_overlay[1], doppler_count);
+    LOG_VERBOSE(wxT("rendering took %i ms, PPI0=%i ms, PPI1=%i, Overlay0=%i, Overlay1=%i, doppler=%d no next extra render"),
+                drawTime, renderPPI[0], renderPPI[1], render_overlay[0], render_overlay[1], doppler_count);
   }
 }
 
@@ -1375,8 +1363,8 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
       v_scale_ppm = vp->pix_height / dist_y;  // pixel height of screen div by equivalent meters
     }
     double rotation = fmod(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor) + 720.0, 360);
-    LOG_DIALOG(wxT("RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat,
-               vp->clon, vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
+    LOG_DIALOG(wxT("RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat, vp->clon,
+               vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
     m_radar[current_overlay_radar]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
   }
 
@@ -1743,8 +1731,7 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   GPS_position.sd_speed_kn = 0.;
 
   if (!m_bpos_set) {
-    LOG_VERBOSE(wxT("GPS position is now known m_ownship.lat= %f, m_ownship.lon = %f"), GPS_position.pos.lat,
-                GPS_position.pos.lon);
+    LOG_VERBOSE(wxT("GPS position is now known m_ownship.lat= %f, m_ownship.lon = %f"), GPS_position.pos.lat, GPS_position.pos.lon);
   }
   m_bpos_set = true;
   m_bpos_timestamp = now;

@@ -65,7 +65,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 SOCKET RME120Receive::PickNextEthernetCard() {
   SOCKET socket = INVALID_SOCKET;
-  CLEAR_STRUCT(m_interface_addr);
+  m_interface_addr = NetworkAddress();
 
   // Pick the next ethernet card
   // If set, we used this one last time. Go to the next card.
@@ -194,7 +194,6 @@ void *RME120Receive::Entry(void) {
       FD_SET(reportSocket, &fdin);
       maxFd = MAX(reportSocket, maxFd);
     }
-    wxLongLong start = wxGetUTCTimeMillis();
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
     if (r > 0) {
       if (m_receive_socket != INVALID_SOCKET && FD_ISSET(m_receive_socket, &fdin)) {
@@ -240,7 +239,7 @@ void *RME120Receive::Entry(void) {
           closesocket(reportSocket);
           reportSocket = INVALID_SOCKET;
           m_ri->m_state.Update(RADAR_OFF);
-          CLEAR_STRUCT(m_interface_addr);
+          m_interface_addr = NetworkAddress();
           radar_addr = 0;
         }
       } else {
@@ -294,13 +293,11 @@ void *RME120Receive::Entry(void) {
 }
 
 void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {  // This is the original ProcessFrame from RMradar_pi
-  wxLongLong nowMillis = wxGetLocalTimeMillis();
   time_t now = time(0);
   wxString MOD_serial;
   wxString IF_serial;
   m_ri->resetTimeout(now);
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
-  int spoke = 0;
   m_ri->m_statistics.packets++;
   if (len >= 4) {
     uint32_t msgId = 0;
@@ -633,7 +630,7 @@ struct SpokeData {
 };
 
 void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
-  if (len > sizeof(Header1) + sizeof(Header3)) {
+  if (len > (int)(sizeof(Header1) + sizeof(Header3))) {
     Header1 *pHeader = (Header1 *)data;
     if (pHeader->field01 != 0x00010003 || pHeader->fieldx_1 != 0x0000001c || pHeader->fieldx_3 != 0x0000001) {
       fprintf(stderr, "ProcessScanData::Packet header mismatch %x, %x, %x, %x.\n", pHeader->field01, pHeader->fieldx_1,
@@ -731,7 +728,7 @@ void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
       nextOffset += pSData->length;
       m_ri->m_statistics.spokes++;
       unsigned int spoke = sHeader->azimuth;
-      if (m_next_spoke >= 0 && spoke != m_next_spoke) {
+      if (m_next_spoke >= 0 && (int)spoke != m_next_spoke) {
         if ((int)spoke > m_next_spoke) {
           m_ri->m_statistics.missing_spokes += spoke - m_next_spoke;
         } else {

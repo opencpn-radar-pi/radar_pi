@@ -151,7 +151,7 @@ bool GarminxHDReceive::IsValidGarminAddress(struct ifaddrs *nif) {
 
 SOCKET GarminxHDReceive::PickNextEthernetCard() {
   SOCKET socket = INVALID_SOCKET;
-  CLEAR_STRUCT(m_interface_addr);
+  m_interface_addr = NetworkAddress();
 
   // Pick the next ethernet card
   // If set, we used this one last time. Go to the next card.
@@ -381,7 +381,7 @@ void *GarminxHDReceive::Entry(void) {
           closesocket(reportSocket);
           reportSocket = INVALID_SOCKET;
           m_ri->m_state.Update(RADAR_OFF);
-          CLEAR_STRUCT(m_interface_addr);
+          m_interface_addr = NetworkAddress();
           radar_addr = 0;
         }
       } else {

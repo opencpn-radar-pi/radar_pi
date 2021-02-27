@@ -2721,7 +2721,7 @@ wxJSONRefData* wxJSONValue::COW() {
   UnShare();
   data = GetRefData();
   wxLogTrace(cowTraceMask, _T("(%s) COW() END data=%p data->m_count=%d"), __PRETTY_FUNCTION__, data, data->GetRefCount());
-  return GetRefData();
+  return data;
 }
 
 //! Makes a private copy of the referenced data

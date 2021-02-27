@@ -267,7 +267,6 @@ bool MessageBox::UpdateMessage(bool force) {
   bool haveHeading = haveTrueHeading || haveMagHeading;
   bool haveVariation = m_pi->GetVariationSource() != VARIATION_SOURCE_NONE;
   bool radarSeen = false;
-  bool haveData = false;
   bool showRadar = m_pi->m_settings.show != 0;
   bool ret = false;
 
@@ -280,16 +279,13 @@ bool MessageBox::UpdateMessage(bool force) {
     if (state != RADAR_OFF) {
       radarSeen = true;
     }
-    if (state == RADAR_TRANSMIT) {
-      haveData = true;
-    }
   }
 
   bool radarOn = haveOpenGL && radarSeen;
   bool navOn = haveGPS && haveHeading;
   bool no_overlay = !(m_pi->m_settings.show && m_pi->HaveOverlay());
-  LOG_DIALOG(wxT("messagebox decision: show=%d no_overlay=%d auto_hide=%d opengl=%d radarOn=%d navOn=%d"), showRadar,
-             no_overlay, m_allow_auto_hide, haveOpenGL, radarOn, navOn);
+  LOG_DIALOG(wxT("messagebox decision: show=%d no_overlay=%d auto_hide=%d opengl=%d radarOn=%d navOn=%d"), showRadar, no_overlay,
+             m_allow_auto_hide, haveOpenGL, radarOn, navOn);
 
   if (!m_allow_auto_hide) {
     LOG_DIALOG(wxT("messagebox explicit wanted: SHOW_CLOSE"));

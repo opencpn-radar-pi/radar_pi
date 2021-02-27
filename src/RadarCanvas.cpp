@@ -544,8 +544,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   if (!m_pi->IsOpenGLEnabled()) {
     return;
   }
-  LOG_VERBOSE(wxT("%s render OpenGL canvas %d by %d "), m_ri->m_name.c_str(), clientSize.GetWidth(),
-              clientSize.GetHeight());
+  LOG_VERBOSE(wxT("%s render OpenGL canvas %d by %d "), m_ri->m_name.c_str(), clientSize.GetWidth(), clientSize.GetHeight());
   double look_forward_dist = (double)wxMax(clientSize.GetWidth(), clientSize.GetHeight()) * ZOOM_FACTOR_OFFSET / 4.;
 
   if (m_ri->m_view_center.GetValue() == CENTER_VIEW) {

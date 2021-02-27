@@ -97,8 +97,7 @@ void NavicoLocate::UpdateEthernetCards() {
     }
 
     freeifaddrs(addr_list);
-  }
-  else {
+  } else {
     wxLogError(wxT("No ethernet cards found"));
   }
 
@@ -144,7 +143,6 @@ void *NavicoLocate::Entry(void) {
 
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
     if (r == -1 && errno != 0) {
-      int err = errno;
       UpdateEthernetCards();
       rescan_network_cards = 0;
     }
@@ -331,9 +329,8 @@ bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const Netw
       }
       FoundNavicoLocationInfo(radar_ipB, interface_address, infoB);
     }
-#define LOG_ADDR_N(n)                                                                                  \
-  LOG_RECEIVE(wxT("radar %s addr %s = %s"), radar_address.FormatNetworkAddress(), #n, \
-              FormatPackedAddress(data->addr##n));
+#define LOG_ADDR_N(n) \
+  LOG_RECEIVE(wxT("radar %s addr %s = %s"), radar_address.FormatNetworkAddress(), #n, FormatPackedAddress(data->addr##n));
 
     IF_LOG_AT_LEVEL(LOGLEVEL_RECEIVE) {
       LOG_ADDR_N(0);
@@ -403,8 +400,7 @@ void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const Net
   19 = Halo24
   */
 
-  // Find the number of physical Navico and Raymarineradars
-  size_t navicos = 0;  // number of hard Navico radars
+  // Find the number of physical Navico
   bool navico[RT_MAX];
   CLEAR_STRUCT(navico);
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -414,8 +410,6 @@ void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const Net
     if (m_pi->m_radar[r]->m_radar_type == RT_HaloA) navico[RT_HaloA] = true;
     if (m_pi->m_radar[r]->m_radar_type == RT_HaloB) navico[RT_HaloB] = true;
   }
-
-  navicos = (size_t)navico[RT_3G] + (size_t)(navico[RT_4GA] || navico[RT_4GB]) + (size_t)(navico[RT_HaloA] || navico[RT_HaloB]);
 
   // associate the info found with the right type of radar
 

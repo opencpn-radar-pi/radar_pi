@@ -191,8 +191,11 @@ enum RadarState {
   RADAR_SPINNING_UP,
   RADAR_TRANSMIT
 };
+
+#ifdef RADAR_PI_GLOBALS
 static ToolbarIconColor g_toolbarIconColor[9] = {TB_SEARCHING, TB_STANDBY, TB_SEEN,   TB_SEEN,  TB_SEEN,
                                                  TB_SEEN,      TB_ACTIVE,  TB_ACTIVE, TB_ACTIVE};
+#endif
 
 struct receive_statistics {
   int packets;

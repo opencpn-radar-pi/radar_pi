@@ -60,11 +60,6 @@ class LocalPosition {
   double sd_speed_m_s;  // standard deviation of the speed, m/s
 };
 
-static Matrix<double, 4, 2> ZeroMatrix42;
-static Matrix<double, 2, 4> ZeroMatrix24;
-static Matrix<double, 4> ZeroMatrix4;
-static Matrix<double, 2> ZeroMatrix2;
-
 class KalmanFilter {
  public:
   KalmanFilter(size_t spokes);

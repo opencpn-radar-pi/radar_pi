@@ -184,24 +184,37 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
   }
 
   switch (controlType) {
-    case CT_NONE:
-    case CT_RANGE:
-    case CT_TIMED_IDLE:
-    case CT_TIMED_RUN:
-    case CT_TRANSPARENCY:
-    case CT_REFRESHRATE:
-    case CT_TARGET_ON_PPI:
-    case CT_TARGET_TRAILS:
-    case CT_TRAILS_MOTION:
+    case CT_ANTENNA_FORWARD:
+    case CT_ANTENNA_HEIGHT:
+    case CT_ANTENNA_STARBOARD:
+    case CT_AUTOTTRACKDOPPLER:
+    case CT_CENTER_VIEW:
+    case CT_DOPPLER:
+    case CT_LOCAL_INTERFERENCE_REJECTION:
     case CT_MAIN_BANG_SIZE:
     case CT_MAX:
-    case CT_ORIENTATION:
-    case CT_CENTER_VIEW:
-    case CT_OVERLAY_CANVAS:
-    case CT_ANTENNA_FORWARD:
-    case CT_ANTENNA_STARBOARD:
-    case CT_NO_TRANSMIT_START:
+    case CT_NOISE_REJECTION:
+    case CT_NONE:
     case CT_NO_TRANSMIT_END:
+    case CT_NO_TRANSMIT_START:
+    case CT_ORIENTATION:
+    case CT_OVERLAY_CANVAS:
+    case CT_RANGE:
+    case CT_REFRESHRATE:
+    case CT_SCAN_SPEED:
+    case CT_SIDE_LOBE_SUPPRESSION:
+    case CT_STC:
+    case CT_STC_CURVE:
+    case CT_TARGET_EXPANSION:
+    case CT_TARGET_ON_PPI:
+    case CT_TARGET_SEPARATION:
+    case CT_TARGET_TRAILS:
+    case CT_TIMED_IDLE:
+    case CT_TIMED_RUN:
+    case CT_TRAILS_MOTION:
+    case CT_TRANSPARENCY:
+    case CT_TUNE_COARSE:
+    case CT_TUNE_FINE:
 
       // The above are not settings that are not radar commands or not supported by Navico radar.
       // Made them explicit so the compiler can catch missing control types.

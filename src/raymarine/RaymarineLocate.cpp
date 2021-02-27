@@ -91,8 +91,7 @@ void RaymarineLocate::UpdateEthernetCards() {
           m_interface_addr[i].addr = sa->sin_addr;
           m_interface_addr[i].port = 0;
           m_socket[i] = startUDPMulticastReceiveSocket(m_interface_addr[i], reportRaymarineCommon, error);
-          LOG_VERBOSE(wxT("RaymarineLocate scanning interface %s for radars"),
-                      m_interface_addr[i].FormatNetworkAddress());
+          LOG_VERBOSE(wxT("RaymarineLocate scanning interface %s for radars"), m_interface_addr[i].FormatNetworkAddress());
           i++;
         }
       }
@@ -146,7 +145,6 @@ void *RaymarineLocate::Entry(void) {
 
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
     if (r == -1 && errno != 0) {
-      int err = errno;
       UpdateEthernetCards();
       rescan_network_cards = 0;
     }
@@ -233,11 +231,6 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
 void RaymarineLocate::FoundRaymarineLocationInfo(const NetworkAddress &addr, const NetworkAddress &interface_addr,
                                                  const RadarLocationInfo &info) {
   wxCriticalSectionLocker lock(m_exclusive);
-  bool halo_type = false;
-  int radar_order[RT_MAX];
-  for (int i = 0; i < RT_MAX; i++) {
-    radar_order[i] = RadarOrder[i];
-  }
 
   // Check if the info is OK
   if (info.report_addr.IsNull() || info.send_command_addr.IsNull()) {

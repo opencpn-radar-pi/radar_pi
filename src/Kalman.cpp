@@ -43,6 +43,11 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+static Matrix<double, 4, 2> ZeroMatrix42;
+static Matrix<double, 2, 4> ZeroMatrix24;
+static Matrix<double, 4> ZeroMatrix4;
+static Matrix<double, 2> ZeroMatrix2;
+
 KalmanFilter::KalmanFilter(size_t spokes) {
   m_spokes = spokes;
 

@@ -152,7 +152,7 @@ void TrailBuffer::UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t
     }
   }
 
-  for (; radius < m_max_spoke_len; radius++, trail++)  // And clear out empty bit of spoke when spoke_len < max_spoke_len
+  for (; radius < (size_t)m_max_spoke_len; radius++, trail++)  // And clear out empty bit of spoke when spoke_len < max_spoke_len
   {
     *trail = 0;
   }
@@ -326,8 +326,7 @@ void TrailBuffer::UpdateTrailPosition() {
 
   if (shift.lat >= MARGIN || shift.lat <= -MARGIN || shift.lon >= MARGIN || shift.lon <= -MARGIN) {  // huge shift, reset trails
 
-    LOG_INFO(wxT("%s Large movement trails reset, shift.lat= %f, shift.lon=%f"), m_ri->m_name.c_str(), shift.lat,
-             shift.lon);
+    LOG_INFO(wxT("%s Large movement trails reset, shift.lat= %f, shift.lon=%f"), m_ri->m_name.c_str(), shift.lat, shift.lon);
     ClearTrails();
     return;
   }

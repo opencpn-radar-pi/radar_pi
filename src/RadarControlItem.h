@@ -184,7 +184,6 @@ class RadarControlItem {
     if (m_max == VALUE_NOT_SET || m_min == VALUE_NOT_SET || m_max == m_min) {
       return m_value;
     }
-    double transformed = ((double)(value) + m_fraction - .5) * (m_max - m_min) / 100. + m_min;
     return (int)(((double)(value) + m_fraction - .5) * (m_max - m_min) / 100. + m_min + .5);
   }
 

@@ -84,8 +84,8 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   CLEAR_STRUCT(m_course_log);
   wxString empty_info = wxT(" / / / ");
   m_radar_location_info = RadarLocationInfo(empty_info);
-  CLEAR_STRUCT(m_radar_interface_address);
-  CLEAR_STRUCT(m_radar_address);
+  m_radar_interface_address = NetworkAddress();
+  m_radar_address = NetworkAddress();
 
   m_mouse_pos.lat = NAN;
   m_mouse_pos.lon = NAN;
@@ -438,8 +438,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   double pixels_per_meter = len / (double)range_meters;
 
   if (m_pixels_per_meter != pixels_per_meter) {
-    LOG_VERBOSE(wxT("%s detected spoke range change from %g to %g pixels/m, %d meters"), m_name.c_str(),
-                m_pixels_per_meter, pixels_per_meter, range_meters);
+    LOG_VERBOSE(wxT("%s detected spoke range change from %g to %g pixels/m, %d meters"), m_name.c_str(), m_pixels_per_meter,
+                pixels_per_meter, range_meters);
     m_pixels_per_meter = pixels_per_meter;
     ResetSpokes();
     if (m_arpa) {
@@ -665,8 +665,8 @@ void RadarInfo::SetAutoRangeMeters(int autorange_to_set) {
     }
     // Don't adjust auto range meters continuously when it is oscillating a little bit (< 10%)
     int test = 100 * m_previous_auto_range_meters / meters;
-    LOG_VERBOSE(wxT("Automatic range changed 2 from %d to %d meters, m_range.GetValue()=%i"),
-                m_previous_auto_range_meters, meters, m_range.GetValue());
+    LOG_VERBOSE(wxT("Automatic range changed 2 from %d to %d meters, m_range.GetValue()=%i"), m_previous_auto_range_meters, meters,
+                m_range.GetValue());
 
     if (test < 90 || test > 110) {  //   range change required
       if (meters != m_range.GetValue()) {
@@ -681,8 +681,8 @@ void RadarInfo::SetAutoRangeMeters(int autorange_to_set) {
 }
 
 bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button) {
-  LOG_DIALOG(wxT("%s SetControlValue %s button=%s value=%d state=%d"), m_name.c_str(),
-             ControlTypeNames[controlType].c_str(), button->GetLabel().c_str(), item.GetValue(), item.GetState());
+  LOG_DIALOG(wxT("%s SetControlValue %s button=%s value=%d state=%d"), m_name.c_str(), ControlTypeNames[controlType].c_str(),
+             button->GetLabel().c_str(), item.GetValue(), item.GetState());
 
   switch (controlType) {
     case CT_TRANSPARENCY: {
@@ -736,8 +736,8 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item,
       int canvas = button->GetId() - ID_RADAR_OVERLAY0;
       int radar = item.GetValue() > 0 ? (int)m_radar : -1;
 
-      LOG_DIALOG(wxT("%s SetControlValue %s canvas=%d radar=%d"), m_name.c_str(), ControlTypeNames[controlType].c_str(),
-                 canvas, radar);
+      LOG_DIALOG(wxT("%s SetControlValue %s canvas=%d radar=%d"), m_name.c_str(), ControlTypeNames[controlType].c_str(), canvas,
+                 radar);
 
       m_overlay_canvas[canvas] = radar;
       return true;

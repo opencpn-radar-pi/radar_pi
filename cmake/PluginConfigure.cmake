@@ -29,11 +29,12 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/src)
 
 #  IF NOT DEBUGGING CFLAGS="-O2 -march=native"
 IF(NOT MSVC)
+ ADD_DEFINITIONS( "-Wall -Werror" )
  IF(PROFILING)
-  ADD_DEFINITIONS( "-Wall -g -fprofile-arcs -ftest-coverage -fexceptions" )
+  ADD_DEFINITIONS( "-g -fprofile-arcs -ftest-coverage -fexceptions" )
  ELSE(PROFILING)
-#  ADD_DEFINITIONS( "-Wall -g -fexceptions" )
-#  ADD_DEFINITIONS( "-Wall -Wno-unused-result -g -O2 -fexceptions" )
+#  ADD_DEFINITIONS( "-g -fexceptions" )
+#  ADD_DEFINITIONS( "-Wno-unused-result -g -O2 -fexceptions" )
  ENDIF(PROFILING)
 
  IF(APPLE)

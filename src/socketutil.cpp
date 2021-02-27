@@ -147,7 +147,7 @@ bool socketReady(SOCKET sockfd, int timeout) {
   FD_ZERO(&fdin);
   if (sockfd != INVALID_SOCKET) {
     FD_SET(sockfd, &fdin);
-    r = select(sockfd + 1, &fdin, 0, &fdin, &tv);
+    r = select(sockfd + 1, &fdin, 0, 0, &tv);
   } else {
 #ifndef __WXMSW__
     // Common UNIX style sleep, unlike 'sleep' this causes no alarms
@@ -212,8 +212,8 @@ bool socketAddMembership(SOCKET socket, const NetworkAddress &interface_address,
   mreq.imr_multiaddr = mcast_address.addr;
 
   if (setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *)&mreq, sizeof(mreq))) {
-    wxLogMessage(wxT("failed to add multicast reception for %s on interface %s"),
-                 mcast_address.FormatNetworkAddressPort(), interface_address.FormatNetworkAddress());
+    wxLogMessage(wxT("failed to add multicast reception for %s on interface %s"), mcast_address.FormatNetworkAddressPort(),
+                 interface_address.FormatNetworkAddress());
     return true;
   }
 

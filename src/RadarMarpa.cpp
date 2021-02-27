@@ -780,8 +780,8 @@ void ArpaTarget::RefreshTarget(int dist) {
     wxLongLong now = wxGetUTCTimeMillis();  // millis
     int diff = now.GetLo() - m_refresh.GetLo();
     if (diff > 8000) {
-      LOG_ARPA(wxT("target not refreshed, missing spokes, set lost, status= %i, target_id= %i timediff= %i"), m_status,
-               m_target_id, diff);
+      LOG_ARPA(wxT("target not refreshed, missing spokes, set lost, status= %i, target_id= %i timediff= %i"), m_status, m_target_id,
+               diff);
       SetStatusLost();
     }
     return;
