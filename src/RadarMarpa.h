@@ -160,6 +160,7 @@ class RadarArpa {
   void DrawContour(ArpaTarget* t);
   bool Pix(int ang, int rad, bool doppler);
   void SearchDopplerTargets();
+  bool IsAtLeastOneRadarTransmitting();
 };
 
 PLUGIN_END_NAMESPACE

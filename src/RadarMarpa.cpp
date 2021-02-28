@@ -1255,6 +1255,15 @@ void RadarArpa::ClearContours() {
   }
 }
 
+bool RadarArpa::IsAtLeastOneRadarTransmitting() {
+  for (size_t r = 0; r < RADARS; r++) {
+    if (m_pi->m_radar[r] != NULL && m_pi->m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void RadarArpa::SearchDopplerTargets() {
   ExtendedPosition own_pos;
   if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 2) {
@@ -1265,19 +1274,11 @@ void RadarArpa::SearchDopplerTargets() {
       || !m_ri->GetRadarPosition(&own_pos.pos)) {  // No position
     return;
   }
-  if (m_pi->m_radar[0] == 0 && m_pi->m_radar[1] == 0) {
+
+  if (m_ri->m_pixels_per_meter == 0. || !IsAtLeastOneRadarTransmitting()) {
     return;
   }
-  for (size_t r = 0; r < RADARS; r++) {
-    if (m_pi->m_radar[r] != 0) {
-      if (m_pi->m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT)  // There is at least one radar transmitting
-        break;
-    }
-    return;
-  }
-  if (m_ri->m_pixels_per_meter == 0.) {
-    return;
-  }
+
   size_t range_start = 20;                       // Convert from meters to 0..511
   size_t range_end = m_ri->m_spoke_len_max - 5;  // Convert from meters to 0..511
 
