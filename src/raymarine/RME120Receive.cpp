@@ -102,7 +102,7 @@ SOCKET RME120Receive::GetNewReportSocket() {
   wxString error = wxT(" ");
   wxString s = wxT(" ");
 
-  if (!(m_info == m_ri->GetRadarLocationInfo())) {  // initial values or NavicoLocate modified the info
+  if (!(m_info == m_ri->GetRadarLocationInfo())) {  // initial values or RaymarineLocate modified the info
     LOG_INFO(wxT("%s old radar address at IP %s [%s]"), m_ri->m_name, m_ri->m_radar_address.FormatNetworkAddressPort(),
              m_info.to_string());
     m_info = m_ri->GetRadarLocationInfo();
@@ -333,8 +333,8 @@ void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {  // This is th
 
 void RME120Receive::UpdateSendCommand() {
   if (!m_info.send_command_addr.IsNull() && m_ri->m_control) {
-    RadarControl *control = (RadarControl *)m_ri->m_control;
-    control->SetMultiCastAddress(m_info.send_command_addr);
+    RME120Control *control = (RME120Control *)m_ri->m_control;
+    control->SetSendAddress(m_info.send_command_addr);
   }
 }
 

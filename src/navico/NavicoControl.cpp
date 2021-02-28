@@ -44,20 +44,6 @@ static const uint8_t COMMAND_STAY_ON_B[2] = {0x03, 0xc2};
 static const uint8_t COMMAND_STAY_ON_C[2] = {0x04, 0xc2};
 static const uint8_t COMMAND_STAY_ON_D[2] = {0x05, 0xc2};
 
-NavicoControl::NavicoControl(radar_pi *pi, RadarInfo *ri) {
-  m_pi = pi;
-  m_ri = ri;
-  m_radar_socket = INVALID_SOCKET;
-  m_name = ri->m_name;
-}
-
-NavicoControl::~NavicoControl() {
-  if (m_radar_socket != INVALID_SOCKET) {
-    closesocket(m_radar_socket);
-    LOG_TRANSMIT(wxT("%s transmit socket closed"), m_name.c_str());
-  }
-}
-
 bool NavicoControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) {
   int r;
   int one = 1;
@@ -107,22 +93,29 @@ void NavicoControl::logBinaryData(const wxString &what, const uint8_t *data, int
   LOG_TRANSMIT(explain);
 }
 
-bool NavicoControl::TransmitCmd(const uint8_t *msg, int size) {
+bool NavicoControl::TransmitCmd(const NetworkAddress &send_address, const uint8_t *msg, int size) {
   if (m_radar_socket == INVALID_SOCKET) {
     wxLogError(wxT(" INVALID_SOCKET Unable to transmit command to unknown radar"));
     return false;
   }
-  if (!m_sendMultiCastAddresss_set) {
-    wxLogError(wxT("!m_multicast_send_address_set, Unable to transmit command to unknown radar"));
-    IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("not transmitted"), msg, size));
-    return false;
-  }
-  if (sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&m_addr, sizeof(m_addr)) < size) {
-    wxLogError(wxT("Unable to transmit command to %s: %s"), m_name.c_str(), SOCKETERRSTR);
+
+  struct sockaddr_in send_sock_addr = send_address.GetSockAddrIn();
+
+  if (sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&send_sock_addr, sizeof(send_sock_addr)) < size) {
+    wxLogError(wxT("%s Unable to transmit command: %s"), m_name.c_str(), SOCKETERRSTR);
     return false;
   }
   IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("transmit"), msg, size));
   return true;
+}
+
+bool NavicoControl::TransmitCmd(const uint8_t *msg, int size) {
+  if (m_send_address.IsNull()) {
+    wxLogError(wxT("%s Unable to transmit command to unknown radar"), m_name.c_str());
+    IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("not transmitted"), msg, size));
+    return false;
+  }
+  return TransmitCmd(m_send_address, msg, size);
 }
 
 void NavicoControl::RadarTxOff() {

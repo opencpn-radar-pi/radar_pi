@@ -36,22 +36,6 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-RME120Control::RME120Control(radar_pi *pi, RadarInfo *ri) {
-  m_radar_socket = INVALID_SOCKET;
-  m_pi = pi;
-  m_ri = ri;
-  m_name = ri->m_name;
-}
-
-RME120Control::~RME120Control() {
-  if (m_radar_socket != INVALID_SOCKET) {
-    closesocket(m_radar_socket);
-    LOG_TRANSMIT(wxT("%s transmit socket closed"), m_name.c_str());
-  }
-  int i = 0;
-  i++;
-}
-
 bool RME120Control::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) {
   int r;
   int one = 1;
@@ -107,20 +91,21 @@ void RME120Control::logBinaryData(const wxString &what, const uint8_t *data, int
 }
 
 bool RME120Control::TransmitCmd(const uint8_t *msg, int size) {
-  if (!m_sendMultiCastAddresss_set) {
-    wxLogError(wxT("!m_multicast_send_address_set, Unable to transmit command to unknown radar"));
+  if (m_send_address.IsNull()) {
+    wxLogError(wxT("%s Unable to transmit command to unknown radar"), m_name.c_str());
     IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("not transmitted"), msg, size));
     return false;
   }
   if (m_radar_socket == INVALID_SOCKET) {
-    wxLogError(wxT("INVALID_SOCKET, Unable to transmit command to unknown radar"));
+    wxLogError(wxT("%s INVALID_SOCKET, Unable to transmit command to unknown radar"), m_name.c_str());
     return false;
   }
 
-  int sendlen;
-  sendlen = sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&m_addr, sizeof(m_addr));
+  struct sockaddr_in send_sock_addr = m_send_address.GetSockAddrIn();
+
+  int sendlen = sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&send_sock_addr, sizeof(send_sock_addr));
   if (sendlen < size) {
-    wxLogError(wxT("Unable to transmit command to %s: %s"), m_name.c_str(), SOCKETERRSTR);
+    wxLogError(wxT("%s Unable to transmit command: %s"), m_name.c_str(), SOCKETERRSTR);
     IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("transmit"), msg, size));
     return false;
   }

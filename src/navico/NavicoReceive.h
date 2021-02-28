@@ -103,18 +103,16 @@ class NavicoReceive : public RadarReceive {
   volatile bool m_is_shutdown;
 
  private:
-  void ProcessFrame(const uint8_t *data, size_t len);
-  bool ProcessReport(const uint8_t *data, size_t len);
-
-  SOCKET PickNextEthernetCard();
-  SOCKET GetNewReportSocket();
   SOCKET GetNewDataSocket();
   SOCKET GetNewInfoSocket();
-  void ReleaseInfoSocket(void);
-  void SendHeadingPacket(SOCKET s);
-  void SendMysteryPacket(SOCKET s);
-
-  void UpdateSendCommand();
+  SOCKET GetNewReportSocket();
+  SOCKET PickNextEthernetCard();
+  bool ProcessReport(const uint8_t *data, size_t len);
+  void DetectedRadar(NetworkAddress &radar_address);
+  void ProcessFrame(const uint8_t *data, size_t len);
+  void ReleaseInfoSocket();
+  void SendHeadingPacket();
+  void SendMysteryPacket();
   void SetRadarType(RadarType t);
 
   SOCKET m_receive_socket;  // Where we listen for message from m_send_socket
