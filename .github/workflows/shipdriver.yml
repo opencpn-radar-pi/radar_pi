@@ -5,7 +5,10 @@ on: push
 jobs: 
   build:
     name: build-shipdriver
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [fedora, aarch64]
+    runs-on: ${{ matrix.platform }}
     env:
       OCPN_TARGET: flatpak
       GIT_REPO: ${{ secrets.GIT_REPO}}

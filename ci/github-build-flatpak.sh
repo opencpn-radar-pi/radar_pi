@@ -9,18 +9,12 @@ MANIFEST=$(cd flatpak; ls org.opencpn.OpenCPN.Plugin*yaml)
 echo "Using manifest file: $MANIFEST"
 set -x
 
-# Install the flatpak PPA so we can access a usable flatpak version
-# (not available on Ubuntu Xenial 16.04, the VM this runs on)
-sudo add-apt-repository -y ppa:alexlarsson/flatpak
-wget -q -O - https://dl.google.com/linux/linux_signing_key.pub \
-    | sudo apt-key add -
-sudo apt update
-
 # Install the dependencies: openpcn and the flatpak SDK.
-sudo apt install build-essential flatpak-builder flatpak tar
+sudo dnf install -y cmake flatpak-builder flatpak gcc-c++ tar
 flatpak remote-add --user --if-not-exists flathub \
     https://flathub.org/repo/flathub.flatpakrepo
-flatpak install --user -y flathub org.opencpn.OpenCPN > /dev/null
+flatpak install --user -y --or-update flathub org.opencpn.OpenCPN >/dev/null \
+    || echo "(Ignored)"
 flatpak install --user -y flathub org.freedesktop.Sdk//18.08  >/dev/null
 
 # Patch the runtime version so it matches the nightly builds'
@@ -35,7 +29,7 @@ make -j $(nproc) VERBOSE=1 flatpak
 git checkout ../flatpak/$MANIFEST
 
 # Install cloudsmith, requiered by upload script
-sudo apt install python3-setuptools python3-pip
+sudo dnf install -y python3-setuptools python3-pip
 python3 -m pip install --user --upgrade pip
 python3 -m pip install --user cloudsmith-cli
 
