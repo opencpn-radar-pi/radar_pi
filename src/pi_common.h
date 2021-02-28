@@ -53,7 +53,9 @@ extern "C" {
 #else
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#ifdef _MSC_VER
 #pragma comment(lib, "Ws2_32.lib")
+#endif
 #include <windows.h>
 #define GL_GLEXT_LEGACY
 #include <GL/gl.h>
