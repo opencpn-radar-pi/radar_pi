@@ -164,7 +164,7 @@ PLUGIN_BEGIN_NAMESPACE
 // trace messages by setting the:
 // WXTRACE=traceReader StoreComment
 // environment variable
-#if wxUSE_LOG_TRACE || defined(__WXMSW__)
+#if wxUSE_LOG_TRACE
 static const wxChar* traceMask = _T("traceReader");
 static const wxChar* storeTraceMask = _T("StoreComment");
 #endif

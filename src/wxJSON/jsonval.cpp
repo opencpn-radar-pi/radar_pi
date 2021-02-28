@@ -29,8 +29,7 @@ PLUGIN_BEGIN_NAMESPACE
 WX_DEFINE_OBJARRAY(wxJSONInternalArray);
 
 // the trace mask used in wxLogTrace() function
-// static const wxChar* traceMask = _T("jsonval");
-#if wxUSE_LOG_TRACE || defined(__WXMSW__)
+#if wxUSE_LOG_TRACE
 static const wxChar* traceMask = _T("jsonval");
 static const wxChar* compareTraceMask = _T("sameas");
 static const wxChar* cowTraceMask = _T("traceCOW" );
