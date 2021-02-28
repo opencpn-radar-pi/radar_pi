@@ -55,8 +55,38 @@ set -xe
 
 #python -m ensurepip
 
-python3 -m pip install -q setuptools
-python3 -m pip install -q cloudsmith-cli
+if pyenv versions 2>&1 >/dev/null; then
+    pyenv versions
+    if ! pyenv global 3.7.1 2>&1 >/dev/null; then
+        if ! pyenv global 3.7.0 2>&1>/dev/null; then
+            pyenv global 3.5.2
+        fi
+    fi
+   #pyenv global 3.7.1
+    python3 -m pip install --upgrade pip
+    python3 -m pip install -q cloudsmith-cli
+    pyenv rehash
+elif dnf --version 2>&1 >/dev/null; then
+    sudo dnf install python3-pip python3-setuptools
+    sudo python3 -m pip install -q cloudsmith-cli
+elif apt-get --version 2>&1 >/dev/null; then
+    COUNTER=0
+    until
+        sudo apt-get install python3-pip python3-setuptools
+    do
+        if [ "$COUNTER" -gt  "20" ]; then
+            exit -1
+        fi
+        sleep 5
+        ((COUNTER++))
+    done
+    sudo python3 -m pip install -q cloudsmith-cli
+else
+    sudo -H python3 -m ensurepip
+    sudo -H python3 -m pip install -q setuptools
+    sudo -H python3 -m pip install -q cloudsmith-cli
+fi
+
 
 BUILD_ID=${APPVEYOR_BUILD_NUMBER:-1}
 commit=$(git rev-parse --short=7 HEAD) || commit="unknown"

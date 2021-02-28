@@ -23,19 +23,35 @@ if [ -z "$CIRCLECI" ]; then
 fi
 
 if pyenv versions 2>&1 >/dev/null; then
-    pyenv global 3.7.0
-    python -m pip install cloudsmith-cli || :
+    pyenv versions
+    if ! pyenv global 3.7.1 2>&1 >/dev/null; then
+        if ! pyenv global 3.7.0 2>&1>/dev/null; then
+            pyenv global 3.5.2
+        fi
+    fi
+   #pyenv global 3.7.1
+    python3 -m pip install --upgrade pip
+    python3 -m pip install -q cloudsmith-cli
     pyenv rehash
 elif dnf --version 2>&1 >/dev/null; then
-    sudo dnf install python3-pip python3-setuptools || :
-    sudo python3 -m pip install -q cloudsmith-cli || :
+    sudo dnf install python3-pip python3-setuptools
+    sudo python3 -m pip install -q cloudsmith-cli
 elif apt-get --version 2>&1 >/dev/null; then
-    sudo apt-get install python3-pip python3-setuptools || :
-    sudo python3 -m pip install -q cloudsmith-cli || :
+    COUNTER=0
+    until
+        sudo apt-get install python3-pip python3-setuptools
+    do
+        if [ "$COUNTER" -gt  "20" ]; then
+            exit -1
+        fi
+        sleep 5
+        ((COUNTER++))
+    done
+    sudo python3 -m pip install -q cloudsmith-cli
 else
     sudo -H python3 -m ensurepip
-    sudo -H python3 -m pip install -q setuptools || :
-    sudo -H python3 -m pip install -q cloudsmith-cli || :
+    sudo -H python3 -m pip install -q setuptools
+    sudo -H python3 -m pip install -q cloudsmith-cli
 fi
 
 BUILD_ID=${CIRCLE_BUILD_NUM:-1}
