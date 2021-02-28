@@ -78,9 +78,12 @@ message(STATUS "Selected upload repository: ${pkg_repo}")
 set(pkg_semver "${PROJECT_VERSION}+${_build_id}.${_gitversion}")
 
 # pkg_displayname: Used for xml metadata and GUI name
+if (ARCH MATCHES "arm|aarch64")
+  set(_display_arch "-A64")
+endif()
 string(CONCAT pkg_displayname
   "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}"
-  "-${plugin_target}-${plugin_target_version}"
+  "-${plugin_target}${_display_arch}-${plugin_target_version}"
 )
 
 # pkg_tarname: Tarball basename
