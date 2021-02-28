@@ -575,7 +575,7 @@ static halo_heading_packet g_heading_msg = {
     2,                                                                                           // u04
     0,                                                                                           // u05a, likely position
     0,                                                                                           // u05b, likely position
-    0xff,                                                                                        // u06
+    {0xff},                                                                                      // u06
     0,                                                                                           // heading
     {0xff, 0x7f, 0x79, 0xf8, 0xfc}                                                               // u07
 };
@@ -591,8 +591,8 @@ static halo_mystery_packet g_mystery_msg = {
     2,                                                                                           // u04
     0,                                                                                           // u05a, likely position
     0,                                                                                           // u05b, likely position
-    0xff,                                                                                        // u06
-    0xfc,                                                                                        // u07
+    {0xff},                                                                                      // u06
+    {0xfc},                                                                                      // u07
     0,                                                                                           // mystery1
     0,                                                                                           // mystery2
     {0xff, 0xff}                                                                                 // u08
