@@ -317,7 +317,7 @@ class RadarInfo {
 
   int m_verbose;
   int m_draw_time_ms;   // Number of millis spent drawing
-  int m_doppler_count;  // Number of doppler approaching targets seen
+  int m_doppler_count;  // Number of doppler approaching pixels seen
 
   wxString m_range_text;
 
