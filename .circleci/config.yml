@@ -10,7 +10,7 @@ debian-steps: &debian-steps
     - run: python3 ci/git-push
 
 jobs:
- build-macos:
+  build-macos:
     macos:
       xcode: "11.0.0"
     environment:
