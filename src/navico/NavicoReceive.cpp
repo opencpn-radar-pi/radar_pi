@@ -1136,9 +1136,8 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         state = (RadarControlState)(RCS_MANUAL + s->sea_auto);
         m_ri->m_sea.Update(s->sea * 100 / 255, state);
 
-        m_ri->m_target_boost.Update(1);
+        m_ri->m_target_boost.Update(s->target_boost);
         m_ri->m_interference_rejection.Update(s->interference_rejection);
-        s->target_expansion = 0;
         m_ri->m_target_expansion.Update(s->target_expansion);
         m_ri->m_range.Update(s->range / 10);
 
