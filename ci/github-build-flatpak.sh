@@ -30,11 +30,11 @@ git checkout ../flatpak/$MANIFEST
 
 # Install cloudsmith, requiered by upload script
 sudo dnf install -y python3-setuptools python3-pip
-python3 -m pip install --user --upgrade pip
-python3 -m pip install --user cloudsmith-cli
+python3 -m pip install --user -q --upgrade pip
+python3 -m pip install --user -q cloudsmith-cli
 
 # Required by git-push
-python3 -m pip install --user cryptography
+python3 -m pip install --user -q cryptography
 
 # python install scripts in ~/.local/bin, teach upload.sh to use this in PATH
 echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.uploadrc
