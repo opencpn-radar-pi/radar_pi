@@ -55,7 +55,7 @@ set(OCPN_RELEASE_REPO
 )
 option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 
-
+#
 # -------  Plugin setup --------
 #
 project(ShipDriver_pi VERSION 2.6.3.0)
