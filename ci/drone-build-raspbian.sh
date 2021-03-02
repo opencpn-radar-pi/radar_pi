@@ -30,8 +30,8 @@ ldd  app/*/lib/opencpn/*.so
 # Initiate python setup, install cryptography and ssh-client for git-push.
 apt-get install -q python3-pip python3-cryptography openssh-client
 
-# Latest pip 21.0.0 is broken:
-python3 -m pip install --user --force-reinstall pip==20.3.4 setuptools wheel
+# Latest pip 21.0.0 requires python 3.6+, we have only 3.5:
+python3 -m pip install --user -q --force-reinstall pip==20.3.4 setuptools wheel
 
 # Install cloudsmith-cli for upload script. 
 python3 -m pip install --user -q cloudsmith-cli
