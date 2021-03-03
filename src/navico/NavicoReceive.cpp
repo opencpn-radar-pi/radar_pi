@@ -835,8 +835,9 @@ void *NavicoReceive::Entry(void) {
     LOG_TRANSMIT(wxT("%s infoSocket=%d received=%lld sent=%lld\n"), m_ri->m_name.c_str(), infoSocket, now - m_halo_received_info,
                  now - m_halo_sent_heading);
     if (infoSocket != INVALID_SOCKET && m_halo_received_info + 10000 < now) {
-      if (m_halo_sent_heading + 100 < now) {
-        g_pi_sent_heading_to_halo = true;
+      g_pi_sent_heading_to_halo = true;
+      HeadingSource hsrc = m_pi->m_heading_source;  // don't send invalid heading or heading received from radar
+      if (m_halo_sent_heading + 100 < now && hsrc > HEADING_NONE && hsrc < HEADING_RADAR_HDM) {
         SendHeadingPacket();
         m_halo_sent_heading = now;
       }
