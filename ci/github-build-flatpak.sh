@@ -14,26 +14,25 @@ sudo dnf install -y -q cmake flatpak-builder flatpak gcc-c++ tar
 
 # For now, horrible hack: aarch 64 builds are using the updated runtime
 # 20.08 and the opencpn beta version using same runtime.
-case $(uname -m) in
-    arm64|aarch64)
+if [ "$FLATPAK_BRANCH" = 'beta' ]; then
         flatpak install --user -y flathub org.freedesktop.Sdk//20.08 >/dev/null
         flatpak remote-add --user --if-not-exists flathub-beta \
             https://flathub.org/beta-repo/flathub-beta.flatpakrepo
         flatpak install --user -y --or-update flathub-beta \
             org.opencpn.OpenCPN >/dev/null
         sed -i '/sdk:/s/18.08/20.08/'  flatpak/org.opencpn.*.yaml
-        ;;
-    *)
+else
         flatpak install --user -y flathub org.freedesktop.Sdk//18.08 >/dev/null
         flatpak remote-add --user --if-not-exists flathub \
             https://flathub.org/repo/flathub.flatpakrepo
         flatpak install --user -y --or-update flathub \
             org.opencpn.OpenCPN >/dev/null
-        ;;
-esac
+        FLATPAK_BRANCH='stable'
+fi
 
-# Patch the runtime version so it matches the nightly builds'
-sed -i '/^runtime-version/s/:.*/: stable/' flatpak/$MANIFEST
+# Patch the runtime version so it matches the nightly builds
+# or beta as appropriate.
+sed -i "/^runtime-version/s/:.*/: $FLATPAK_BRANCH/" flatpak/$MANIFEST
 
 # Configure and build the plugin tarball and metadata.
 mkdir build; cd build

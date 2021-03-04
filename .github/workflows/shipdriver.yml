@@ -17,6 +17,7 @@ jobs:
       CLOUDSMITH_STABLE_REPO: ${{ secrets.CLOUDSMITH_STABLE_REPO}}
       CLOUDSMITH_UNSTABLE_REPO: ${{ secrets.CLOUDSMITH_UNSTABLE_REPO}}
       CLOUDSMITH_BETA_REPO: ${{ secrets.CLOUDSMITH_BETA_REPO}}
+      FLATPAK_BRANCH: beta
 
     steps:
       - name: Git checkout
