@@ -77,7 +77,6 @@ PLUGIN_BEGIN_NAMESPACE
 static const NetworkAddress haloInfoAddress(239, 238, 55, 73, 7527);
 
 SOCKET g_HaloInfoSocket = INVALID_SOCKET;  // Only _one_ radar is able to create this socket at a time.
-bool g_pi_sent_heading_to_halo = false;    // Onle _one_ instance sets this
 wxCriticalSection g_HaloInfoSocketLock;
 
 #pragma pack(push, 1)
@@ -379,11 +378,9 @@ void NavicoReceive::ProcessFrame(const uint8_t *data, size_t len) {
     if (radar_heading_valid && !m_pi->m_settings.ignore_radar_heading) {
       // On HALO, we can be the ones that are sending heading to the radar;
       // in that case do NOT pass it back down to avoid feedback loop!
-      if (!IS_HALO || !g_pi_sent_heading_to_halo) {
+      if (!IS_HALO) {
         heading = MOD_DEGREES_FLOAT(SCALE_RAW_TO_DEGREES(heading_raw));
         m_pi->SetRadarHeading(heading, radar_heading_true);
-      } else {
-        m_pi->SetRadarHeading();
       }
     } else {
       m_pi->SetRadarHeading();
@@ -784,17 +781,21 @@ void *NavicoReceive::Entry(void) {
           if (m_interface_addr == mfd_address) {
             LOG_RECEIVE(wxT("%s active mfd detected at %s but that is us"), m_ri->m_name.c_str(),
                         mfd_address.FormatNetworkAddress());
-            g_pi_sent_heading_to_halo = true;
           } else {
             LOG_RECEIVE(wxT("%s active mfd detected at %s"), m_ri->m_name.c_str(), mfd_address.FormatNetworkAddress());
             m_halo_received_info = wxGetUTCTimeMillis();
-            g_pi_sent_heading_to_halo = false;
           }
           IF_LOG_AT(LOGLEVEL_RECEIVE, m_pi->logBinaryData(wxT("halo receive"), data, r));
 
           halo_heading_packet *msg = (halo_heading_packet *)data;
 
           if (msg->u02[0] == 0x12 && msg->u02[1] == 0xf1) {
+            double heading = (double)msg->heading * 360.0 / 63488.0;  // assume that this is a true heading ?
+            if (m_pi->m_heading_source <= HEADING_FIX_COG || m_pi->m_heading_source >= HEADING_RADAR_HDM) {
+              LOG_RECEIVE(wxT("Received and set radar_heading from network %f"), heading);
+              m_pi->SetRadarHeading(heading, true);  // only set HEADING_RADAR_HDT if nothing better is available
+            }
+
             LOG_RECEIVE(wxT("msg.counter = %u"), msg->counter);
             LOG_RECEIVE(wxT("msg.epoch   = %lld"), msg->epoch);
             LOG_RECEIVE(wxT("msg.heading = %u -> %f"), msg->heading, (double)msg->heading * 360.0 / 63488.0);
@@ -832,18 +833,18 @@ void *NavicoReceive::Entry(void) {
       }
     }
 
-    LOG_TRANSMIT(wxT("%s infoSocket=%d received=%lld sent=%lld\n"), m_ri->m_name.c_str(), infoSocket, now - m_halo_received_info,
-                 now - m_halo_sent_heading);
-    if (infoSocket != INVALID_SOCKET && m_halo_received_info + 10000 < now) {
-      g_pi_sent_heading_to_halo = true;
-      HeadingSource hsrc = m_pi->m_heading_source;  // don't send invalid heading or heading received from radar
-      if (m_halo_sent_heading + 100 < now && hsrc > HEADING_NONE && hsrc < HEADING_RADAR_HDM) {
-        SendHeadingPacket();
-        m_halo_sent_heading = now;
-      }
-      if (m_halo_sent_mystery + 250 < now) {
-        SendMysteryPacket();
-        m_halo_sent_mystery = now;
+    if (m_pi->m_heading_source > HEADING_NONE && m_pi->m_heading_source < HEADING_RADAR_HDM) {
+      LOG_TRANSMIT(wxT("%s infoSocket=%d received=%lld sent=%lld\n"), m_ri->m_name.c_str(), infoSocket, now - m_halo_received_info,
+                   now - m_halo_sent_heading);
+      if (infoSocket != INVALID_SOCKET && m_halo_received_info + 10000 < now) {
+        if (m_halo_sent_heading + 100 < now) {
+          SendHeadingPacket();
+          m_halo_sent_heading = now;
+        }
+        if (m_halo_sent_mystery + 250 < now) {
+          SendMysteryPacket();
+          m_halo_sent_mystery = now;
+        }
       }
     }
 
