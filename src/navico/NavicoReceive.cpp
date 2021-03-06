@@ -833,7 +833,7 @@ void *NavicoReceive::Entry(void) {
       }
     }
 
-    if (m_pi->m_heading_source > HEADING_NONE && m_pi->m_heading_source < HEADING_RADAR_HDM) {
+    if (m_pi->m_heading_source > HEADING_FIX_COG && m_pi->m_heading_source < HEADING_RADAR_HDM) {
       LOG_TRANSMIT(wxT("%s infoSocket=%d received=%lld sent=%lld\n"), m_ri->m_name.c_str(), infoSocket, now - m_halo_received_info,
                    now - m_halo_sent_heading);
       if (infoSocket != INVALID_SOCKET && m_halo_received_info + 10000 < now) {
