@@ -27,10 +27,13 @@ wget -q -O - https://dl.google.com/linux/linux_signing_key.pub \
     | sudo apt-key add -
 sudo apt update
 
-sudo apt install build-essential flatpak-builder flatpak tar
+sudo apt install build-essential flatpak-builder flatpak tar 
+sudo apt install libwxgtk3.0-dev || :
+
 flatpak remote-add --user --if-not-exists flathub \
     https://flathub.org/repo/flathub.flatpakrepo
-flatpak install --user -y flathub org.freedesktop.Sdk//18.08  >/dev/null
+flatpak install --user -y org.freedesktop.Platform//18.08
+flatpak install --user -y flathub org.freedesktop.Sdk//18.08
 
 if true
 then
