@@ -32,7 +32,7 @@ flatpak remote-add --user --if-not-exists flathub \
     https://flathub.org/repo/flathub.flatpakrepo
 flatpak install --user -y flathub org.freedesktop.Sdk//18.08  >/dev/null
 
-if false
+if true
 then
   flatpak install --user -y flathub org.opencpn.OpenCPN > /dev/null
   sed -i '/^runtime-version/s/:.*/: stable/' flatpak/$MANIFEST
@@ -43,6 +43,10 @@ fi
 # The flatpak checksumming needs python3:
 pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
 cp .python-version $HOME
+
+# Install a recent cmake, flatpak's is too old
+export PATH=$HOME/.local/bin:$PATH
+python -m pip install --user cmake
 
 mkdir build; cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -57,7 +61,7 @@ git checkout ../flatpak/$MANIFEST
 echo -n "Waiting for apt_daily lock..."
 sudo flock /var/lib/apt/daily_lock echo done
 
-# Install cloudsmith, requiered by upload script
+# Install cloudsmith, required by upload script
 python3 -m pip install --user --upgrade pip
 python3 -m pip install --user cloudsmith-cli
 
