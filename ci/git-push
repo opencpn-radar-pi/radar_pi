@@ -1,0 +1,212 @@
+#!/usr/bin/env python3
+#
+# Push metadata to remote git clone of plugins project.
+#
+# Environment variables:
+#   - GIT_REPO: ssh url to clone of plugins project e. g.,
+#     git@github.com:Rasbats/plugins.git
+#   - GIT_KEY_PASSWORD, used to decrypt private ssh key
+#     as entered to new-credentials script.
+#
+# Keys:
+#   Uses keys created by new credentials. These lives in ci/ with names
+#   like  ci/user.enc and ci/user.pub where 'user' is as present in GIT_REPO.
+
+
+import base64
+import getpass
+import os
+import re
+import subprocess
+import sys
+import time
+
+from glob import glob
+from shutil import copy
+
+from cryptography.fernet import Fernet, InvalidToken
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+WIKI_BASE="https://github.com/Rasbats/managed_plugins/wiki"
+
+
+def cipherFernet(password):
+    key = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b'abcd',
+                     iterations=1000,
+                     backend=default_backend()).derive(password)
+    return Fernet(base64.urlsafe_b64encode(key))
+
+
+def decrypt1(ciphertext, password):
+    return cipherFernet(password).decrypt(ciphertext)
+
+
+def get_user():
+    """ Return user name derived from ssh URL, ensure GIT_REPO is here."""
+
+    url = os.environ.get('GIT_REPO')
+    if not url:
+        print( "No $GIT_REPO found, cannot push to git repo.")
+        sys.exit(0)
+    if (not url.startswith("git@")):
+        print("$GIT_REPO is not a SSH url. Giving up.")
+        sys.exit(1)
+    user = url.split(':')[1]
+    user = user.split('/')[0]
+    return user
+
+
+def get_password():
+    """ Retreive password from environment, exit if not available. """
+
+    pw = os.environ.get('GIT_KEY_PASSWORD')
+    if not pw:
+        print( "No $GIT_KEY_PASSWORD found, cannot push to git repo.")
+        sys.exit(0)
+    return pw
+
+
+def private_key_setup(ci, user, password):
+    """ Decrypt ssh key and setup up GIT_SSH_COMMAND in environment. """
+
+    try:
+        with open(os.path.join(ci, user + ".enc"), 'r') as f:
+            encrypted = f.read()
+    except FileNotFoundError:
+        print("No private key found, cannot push metadata to git repo.")
+        print("See %s/OpenCPN-Plugins-Catalog-and-Github-Integration"
+                % WIKI_BASE)
+        sys.exit(0)
+    decrypted = decrypt1(encrypted.encode(), password.encode())
+    with open(os.path.join(ci, user ), 'wb') as f:
+        f.write(decrypted)
+    os.chmod(os.path.join(ci, user ), 0o600)
+    hostpath = os.path.normpath(os.path.join(ci, user))
+    print("Using identity file: " + hostpath)
+    os.environ['GIT_SSH_COMMAND'] = \
+        "ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i " \
+        + hostpath.replace("\\", "\\\\")
+
+
+def get_target(metadata_path):
+    """ Return <target> element in metadata. """
+
+    with open(metadata_path, 'r') as f:
+        metadata = f.read()
+    lines = metadata.split("\n")
+    for line in lines:
+        if not '<target>' in line:
+            continue
+        line = re.sub('^[^>]*>', '', line)
+        line = re.sub('<[^<]*$', '', line)
+        return line
+    return "Target-??"
+
+
+def get_subject(git, metadata_path):
+    """ Build subject line to use in commit. """
+
+    target = get_target(metadata_path)
+    p = subprocess.run(git.log, stdout = subprocess.PIPE)
+    if not p.stdout:
+        return target + ": Auto update."
+    subject = p.stdout.decode('utf-8').replace('@trg@', target)
+    return (subject[:71] + '...') if len(subject) > 71 else subject
+
+
+class Git:
+    def __init__(self, branch):
+        self.clone = [
+                'git', 'clone', os.environ.get('GIT_REPO'), '-b', branch,
+                '--depth', '2' ]
+        self.log = [
+                'git', '-C', '..', 'log', '-1', '--format=format:%h: @trg@: %s']
+        self._rebase = ['git', 'rebase', 'origin/' + branch]
+        self._update = ['git', 'remote', 'update', 'origin']
+        self._push = ['git', 'push', 'origin' , branch]
+        self._status = ['git', 'status', '--porcelain']
+        self._add = ['git', 'add', 'metadata']
+        self._commit = [ "git", "commit", "-m"]
+        self._config_check = ['git', 'config', 'user.name']
+        self._config1 = [
+                'git', 'config', '--global', 'user.name', 'Auto updater']
+        self._config2 = [
+                'git', 'config', '--global', 'user.email', 'auto@nowhere.net']
+
+    def configure(self):
+        """Set up fake user.name and user.email if required to commit"""
+
+        p = subprocess.run(self._config_check, stdout = subprocess.PIPE)
+        if not p.stdout:
+            subprocess.check_call(self._config1)
+            subprocess.check_call(self._config2)
+
+    def commit(self, metadata_path):
+        """ Commit changes, return True if there is anything committed."""
+
+        subprocess.check_call(self._add)
+        if not subprocess.run(self._status, stdout = subprocess.PIPE).stdout:
+            print("No changes to commit.")
+            return False
+        subject = get_subject(self, metadata_path)
+        self._commit.append(subject)
+        subprocess.check_call(self._commit)
+        return True
+
+    def push(self):
+        """ Push the change"""
+
+        for tries in range(10):
+            try:
+                subprocess.check_call(self._update)
+                subprocess.check_call(self._rebase)
+                subprocess.check_call(self._push)
+                return
+            except subprocess.CalledProcessError:
+                print("Commit error (collision?). Sleep and retry.")
+                time.sleep(tries * 5)
+        print("Cannot commit after 10 tries, giving up")
+        return
+
+
+def main():
+    """Indeed: main function."""
+
+    # Set up (const) variables.
+    here = os.path.dirname(sys.argv[0])
+    ci = os.path.abspath(os.path.join(here, '..', 'ci'))
+    top = os.path.abspath(os.path.join(here, '..'))
+    user = get_user()
+    password = get_password()
+    branch = os.environ.get('GIT_BRANCH')
+    branch = branch if branch else "auto"
+    print("Using repository: " + os.environ.get("GIT_REPO"))
+    print("Using branch: " + branch)
+
+    git = Git(branch)
+    git.configure()
+
+    private_key_setup(ci, user, password)
+
+    # Clone the repo if it does not exist.
+    if not os.path.exists(os.path.join(top, 'plugins')):
+        subprocess.check_call(git.clone, cwd=top)
+    os.chdir(os.path.join(top, 'plugins'))
+
+    # Bring the new metadata file into repo.
+    metadata = glob(os.path.join(top, 'build', '*.xml'))
+    if len(metadata) != 1:
+        print("A single metadata file cannot be located, giving up")
+        sys.exit(1);
+    copy(metadata[0], 'metadata')
+
+    if git.commit(metadata[0]):
+        git.push()
+
+    os.remove(os.path.join(ci, user))     # Drop the private key
+
+
+if __name__ == '__main__':
+    main()

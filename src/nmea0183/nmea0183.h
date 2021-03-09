@@ -35,7 +35,7 @@
 
 #include "pi_common.h"
 
-PLUGIN_BEGIN_NAMESPACE
+namespace RadarPlugin {
 
 /*
 ** Author: Samuel R. Blackburn
@@ -105,7 +105,7 @@ wxString& expand_talker_id(const wxString&);
 wxString& Hex(int value);
 wxString& talker_id(const wxString& sentence);
 
-PLUGIN_END_NAMESPACE
+}  // namespace
 
 #include "nmea0183.hpp"
 

@@ -1,7 +1,7 @@
 id: org.opencpn.OpenCPN.Plugin.radar
 runtime: org.opencpn.OpenCPN
-# runtime-version: stable
-runtime-version: master
+runtime-version: stable
+# runtime-version: master
 sdk: org.freedesktop.Sdk//18.08
 build-extension: true
 separate-locales: false
@@ -18,13 +18,16 @@ modules:
     buildsystem: cmake
     builddir: true
     config-opts:
-        - -DCMAKE_INSTALL_PREFIX=/app/extensions/radar
-        - -DOCPN_FLATPAK=ON
+      - -DCMAKE_INSTALL_PREFIX=/app/extensions/shipdriver/
+      - -DCMAKE_BUILD_TYPE:STRING=Release
+      - -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      - -DBUILD_TYPE:STRING=tarball
+      - -Uplugin_target
     build-options:
-        cflags: -fPIC
-        cxxflags: -fPIC
+        cflags: -fPIC -I/run/build/radar/bundled-gl
+        cxxflags: -fPIC -I/run/build/radar/bundled-gl
         strip: true
     sources:
-       - type: git
-         url: ..
-         branch: master
+      - type: git
+        url: ..
+        branch: master 

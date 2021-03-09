@@ -1,256 +1,237 @@
-##---------------------------------------------------------------------------
-## Plagiarized by: Dave Cowell for WINDOWS
-##
-## Author:      bdbcat aka. dsr (Dave Register)
-## Copyright:
-## License:     wxWidgets License
-##---------------------------------------------------------------------------
+# ~~~
+# Author:      Rasbats aka. Mike Rossiter
+# Copyright:
+# License:     wxWidgets License
+# ~~~
 
-# define minimum cmake version
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6.2)
+# -------- Cmake setup ---------
+#
+cmake_minimum_required(VERSION 3.12.0)
+
+cmake_policy(SET CMP0042 NEW)
+
 if (POLICY CMP0053)
     CMAKE_POLICY(SET CMP0053 NEW)
 endif ()
 
-PROJECT(radar_pi)
-
-SET(PACKAGE_NAME radar_pi)
-SET(VERBOSE_NAME radar)
-SET(TITLE_NAME Radar)
-SET(CPACK_PACKAGE_CONTACT "kees@verruijt.net")
-
-SET(VERSION_MAJOR "5")
-SET(VERSION_MINOR "2")
-SET(VERSION_PATCH "0-beta4")
-SET(PKG_RELEASE "0")
-SET(VERSION_DATE "2021-03-06")
-
-SET(OCPN_MIN_VERSION "ov51")
-
-SET(PACKAGE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
-SET(PKG_API_VERSION "1.16")
-SET(PKG_AUTHOR "Hakan Svensson / Douwe Fokkema / Kees Verruijt / David S Register")
-SET(PKG_NVR ${PACKAGE_NAME}-${PACKAGE_VERSION}.${PKG_RELEASE})
-
-# The @keyword@ references are patched to actual values by upload script.
-SET(TARBALL_URL "https://dl.cloudsmith.io/public/@pkg_repo@/raw")
-SET(TARBALL_URL ${TARBALL_URL}/names/@name@/versions/@version@/@filename@)
-
-
-OPTION(OCPN_FLATPAK "Build flatpak plugin" OFF)
-
-configure_file(
-  # Required in flatpak, done early.
-  ${CMAKE_SOURCE_DIR}/pkg_version.sh.in
-  ${CMAKE_CURRENT_BINARY_DIR}/pkg_version.sh
-)
-if (OCPN_FLATPAK)
-    # Lie to PluginSetup that we have found wxWidgets so it don't barfs.
-    SET(wxWidgets_LIBRARIES FOOBAR)
-    INCLUDE("cmake/PluginSetup.cmake")
-    configure_file(
-      # Required in flatpak, done early.
-      ${CMAKE_SOURCE_DIR}/pkg_version.sh.in
-      ${CMAKE_CURRENT_BINARY_DIR}/pkg_version.sh
-    )
-
-    find_program(TAR NAMES gtar tar)
-    if (NOT TAR)
-        message(FATAL_ERROR "tar not found, required for OCPN_FLATPAK")
-    endif ()
-    configure_file(
-        ${CMAKE_SOURCE_DIR}/radar-plugin.xml.in
-        ${CMAKE_CURRENT_BINARY_DIR}/${PKG_XML_FILE}
-        NEWLINE_STYLE UNIX
-    )
-    add_custom_target(flatpak-build ALL
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/flatpak
-        COMMAND flatpak-builder --force-clean
-            ${CMAKE_CURRENT_BINARY_DIR}/app
-            org.opencpn.OpenCPN.Plugin.radar.yaml
-    )
-    add_custom_target("package")
-    add_custom_command(
-        TARGET package
-        COMMAND ${TAR}
-            -czf ${PKG_TAR_FILE}
-            --transform 's|.*/files/|radar_pi-flatpak-${PACKAGE_VERSION}/|'
-            ${CMAKE_CURRENT_BINARY_DIR}/app/files
-    )
-    return ()
-endif()
-
-INCLUDE("cmake/PluginConfigure.cmake")
-
-# For convenience we define the sources as a variable. You can add
-# header files and cpp/c files and CMake will sort them out
-
-SET(SRC_EMULATOR
-            src/emulator/EmulatorControl.cpp        
-            src/emulator/EmulatorControl.h          
-            src/emulator/EmulatorControlSet.h       
-            src/emulator/EmulatorControlsDialog.cpp 
-            src/emulator/EmulatorControlsDialog.h   
-            src/emulator/EmulatorReceive.cpp        
-            src/emulator/EmulatorReceive.h          
-            src/emulator/emulatortype.h
-)
-
-SET(SRC_GARMIN_HD
-            src/garminhd/GarminHDControl.cpp        
-            src/garminhd/GarminHDControl.h          
-            src/garminhd/GarminHDControlSet.h       
-            src/garminhd/GarminHDControlsDialog.cpp 
-            src/garminhd/GarminHDControlsDialog.h   
-            src/garminhd/GarminHDReceive.cpp        
-            src/garminhd/GarminHDReceive.h          
-            src/garminhd/garminhdtype.h
-)
-
-SET(SRC_GARMIN_XHD
-            src/garminxhd/GarminxHDControl.cpp        
-            src/garminxhd/GarminxHDControl.h          
-            src/garminxhd/GarminxHDControlSet.h       
-            src/garminxhd/GarminxHDControlsDialog.cpp 
-            src/garminxhd/GarminxHDControlsDialog.h   
-            src/garminxhd/GarminxHDReceive.cpp        
-            src/garminxhd/GarminxHDReceive.h          
-            src/garminxhd/garminxhdtype.h
-)
-
-SET(SRC_NAVICO
-            src/navico/br24type.h
-            src/navico/br3gtype.h
-            src/navico/br4gatype.h
-            src/navico/br4gbtype.h
-            src/navico/haloatype.h
-            src/navico/halobtype.h
-            src/navico/NavicoCommon.h
-            src/navico/NavicoReceive.cpp
-            src/navico/NavicoReceive.h
-            src/navico/NavicoControl.cpp
-            src/navico/NavicoControl.h
-            src/navico/NavicoControlSet.h
-            src/navico/NavicoControlsDialog.cpp
-            src/navico/NavicoControlsDialog.h
-            src/navico/NavicoLocate.cpp
-            src/navico/NavicoLocate.h
-)
-
-SET(SRC_RAYMARINE
-            src/raymarine/RME120type.h
-            src/raymarine/RME120Receive.cpp
-            src/raymarine/RME120Receive.h
-            src/raymarine/RME120Control.cpp
-            src/raymarine/RME120Control.h
-            src/raymarine/RME120ControlSet.h
-            src/raymarine/RME120ControlsDialog.cpp
-            src/raymarine/RME120ControlsDialog.h 
-            src/raymarine/RaymarineLocate.h
-            src/raymarine/RaymarineLocate.cpp
-)
-
-SET(SRC_RADAR
-            src/ControlsDialog.cpp
-            src/ControlsDialog.h
-            src/GuardZone.cpp
-            src/GuardZone.h
-            src/GuardZoneBogey.cpp
-            src/GuardZoneBogey.h
-            src/Kalman.cpp
-            src/Kalman.h
-            src/Matrix.h
-            src/MessageBox.cpp
-            src/MessageBox.h
-            src/OptionsDialog.cpp
-            src/OptionsDialog.h
-            src/RadarCanvas.cpp
-            src/RadarCanvas.h
-            src/RadarControl.h
-            src/RadarControlItem.h
-            src/RadarDraw.cpp
-            src/RadarDraw.h
-            src/RadarDrawShader.cpp
-            src/RadarDrawShader.h
-            src/RadarDrawVertex.cpp
-            src/RadarDrawVertex.h
-            src/RadarFactory.cpp
-            src/RadarFactory.h
-            src/RadarInfo.cpp
-            src/RadarInfo.h
-            src/RadarMarpa.cpp
-            src/RadarMarpa.h
-            src/RadarPanel.cpp
-            src/RadarPanel.h
-            src/RadarReceive.h
-            src/RadarType.h
-            src/SelectDialog.cpp
-            src/SelectDialog.h
-            src/SoftwareControlSet.h
-            src/TextureFont.cpp
-            src/TextureFont.h
-            src/TrailBuffer.h
-            src/TrailBuffer.cpp
-            src/ControlsDialog.cpp
-            src/ControlsDialog.h
-            src/drawutil.cpp
-            src/drawutil.h
-            src/icons.cpp
-            src/icons.h
-            src/pi_common.h
-            src/radar_pi.cpp
-            src/radar_pi.h
-            src/shaderutil.cpp
-            src/shaderutil.h
-            src/socketutil.cpp
-            src/socketutil.h
-            src/RadarLocationInfo.h
-)
-
-SET(SRC_NMEA0183
-        src/nmea0183/nmea0183.cpp
-        src/nmea0183/nmea0183.hpp
-        src/nmea0183/Response.hpp
-        src/nmea0183/response.cpp
-        src/nmea0183/Sentence.hpp
-        src/nmea0183/sentence.cpp
-        src/nmea0183/talkerid.cpp
-        src/nmea0183/hexvalue.cpp
-        src/nmea0183/expid.cpp
-        src/nmea0183/hdt.hpp
-        src/nmea0183/hdt.cpp
-        src/nmea0183/hdg.hpp
-        src/nmea0183/hdg.cpp
-        src/nmea0183/hdm.hpp
-        src/nmea0183/hdm.cpp
-)
-SET(SRC_JSON
-        src/wxJSON/jsonreader.cpp
-        src/wxJSON/jsonval.cpp
-        # We don't use jsonwriter.cpp yet ...
-)
-INCLUDE_DIRECTORIES(src/nmea0183)
-INCLUDE_DIRECTORIES(src/wxJSON)
-INCLUDE_DIRECTORIES(src)
-INCLUDE_DIRECTORIES(api-16)
-
-ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_RADAR} ${SRC_NMEA0183} ${SRC_JSON} ${SRC_EMULATOR} ${SRC_GARMIN_HD} ${SRC_GARMIN_XHD} ${SRC_NAVICO} ${SRC_RAYMARINE})
-if (MINGW)
-    TARGET_LINK_LIBRARIES(${PACKAGE_NAME} ${wxWidgets_LIBRARIES} ${WINSOCK_LIBRARY})
+if (POLICY CMP0072)
+  cmake_policy(SET CMP0072 NEW)
 endif ()
 
-INCLUDE("cmake/PluginInstall.cmake")
-INCLUDE("cmake/PluginLocalization.cmake")
+if (POLICY CMP0077)
+  cmake_policy(SET CMP0077 NEW)
+endif ()
 
-INCLUDE("cmake/PluginSetup.cmake")
+# Locations where cmake looks for cmake modules.
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build ${CMAKE_SOURCE_DIR}/cmake)
 
-INCLUDE("cmake/PluginPackage.cmake")
+if (WIN32)
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/buildwin)
+endif ()
+message(STATUS "Cmake version: ${CMAKE_VERSION}.")
+
+
+# -------- Build setup (mostly in PluginCompiler) --------
+#
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+message(STATUS "Building: ${BUILD_TYPE}")
+
+
+# -------- Options ----------
+
+set(OCPN_TEST_REPO
+    "kees-verruijt/ocpn-plugins-unstable"
+    CACHE STRING "Default repository for untagged builds"
+)
+set(OCPN_BETA_REPO
+    "kees-verruijt/ocpn-plugins-stable"
+    CACHE STRING 
+    "Default repository for tagged builds matching 'beta'"
+)
+set(OCPN_RELEASE_REPO
+    "kees-verruijt/ocpn-plugins-stable"
+    CACHE STRING 
+    "Default repository for tagged builds not matching 'beta'"
+)
+option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
+
+#
+# -------  Plugin setup --------
+#
+project(radar_pi VERSION 5.2.0.1)
+set(PKG_RELEASE "1")
+
+set(DISPLAY_NAME radar)    # Dialogs, installer artifacts, ...
+set(PLUGIN_API_NAME Radar) # As of GetCommonName() in plugin API
+SET(CPACK_PACKAGE_CONTACT "kees@verruijt.net")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Overlays the radar picture on OpenCPN")
+set(CPACK_PACKAGE_DESCRIPTION [=[
+Garmin, Navico and Raymarine radar support
+
+WARNING: OPENGL MODE IS REQUIRED!
+
+Works with Garmin HD, xHD, Navico BR24, 3G, 4G, HALOxx and older Raymarine radars.
+
+When a compass heading is provided it will allow radar overlay on the chart(s).
+It also allows separate display of a traditional radar picture (PPI).
+
+Supports MARPA (even on radars that do not support this themselves),
+Guard zones, AIS overlay on PPI, and various radar dependent features
+such as dual radar range and Doppler.
+]=])
+
+set(PKG_AUTHOR "Hakan Svensson / Douwe Fokkema / Kees Verruijt / David S Register")
+set(PKG_IS_OPEN_SOURCE "yes")
+set(CPACK_PACKAGE_HOMEPAGE_URL https://github.com/opencpn-radar-pi/radar_pi)
+set(PKG_INFO_URL https://opencpn.org/OpenCPN/plugins/radarPI.html)
+
+
+set(SRC
+  include/radar_pi.h
+  include/ControlsDialog.h
+  include/Kalman.h
+  include/Matrix.h
+  include/MessageBox.h
+  include/RadarControl.h
+  include/RadarControlItem.h
+  include/RadarFactory.h
+  include/RadarInfo.h
+  include/RadarLocationInfo.h
+  include/RadarMarpa.h
+  include/RadarPanel.h
+  include/RadarReceive.h
+  include/RadarType.h
+  include/SoftwareControlSet.h
+  include/pi_common.h
+  include/radar_pi.h
+  include/socketutil.h
+  include/drawutil.h
+
+  include/ControlType.inc
+
+  src/ControlsDialog.cpp
+  src/GuardZone.cpp
+  src/GuardZone.h
+  src/GuardZoneBogey.cpp
+  src/GuardZoneBogey.h
+  src/Kalman.cpp
+  src/MessageBox.cpp
+  src/OptionsDialog.cpp
+  src/OptionsDialog.h
+  src/RadarCanvas.cpp
+  src/RadarCanvas.h
+  src/RadarDraw.cpp
+  src/RadarDraw.h
+  src/RadarDrawShader.cpp
+  src/RadarDrawShader.h
+  src/RadarDrawVertex.cpp
+  src/RadarDrawVertex.h
+  src/RadarFactory.cpp
+  src/RadarInfo.cpp
+  src/RadarMarpa.cpp
+  src/RadarPanel.cpp
+  src/SelectDialog.cpp
+  src/SelectDialog.h
+  src/TextureFont.cpp
+  src/TextureFont.h
+  src/TrailBuffer.h
+  src/TrailBuffer.cpp
+  src/drawutil.cpp
+  src/icons.cpp
+  src/icons.h
+  src/radar_pi.cpp
+  src/shaderutil.cpp
+  src/shaderutil.h
+  src/socketutil.cpp
+)
+
+
+# -------- Setup completed, build the plugin --------
+#
+add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC})
+include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+
+add_subdirectory("libs/api-16")
+target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
+
+set(VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(PACKAGE_NAME ${CMAKE_PROJECT_NAME})
+
+# Create the minimim ocpn version id string like ov50
+string(REGEX REPLACE "\([0-9]\)\.\([0-9]\).*" "ov\\1\\2"
+       OCPN_MIN_VERSION ${API_OCPN_MIN_VERSION})
+
+# Set up targets. Targets sets up a recursive call with BUILD_TYPE set to
+# 'flatpak', 'pkg' or 'tarball'. The initial call without BUILD_TYPE ends
+# here.
+#
+include(Targets)
+create_targets(
+  ${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.OpenCPN.Plugin.radar.yaml
+)
+if ("${BUILD_TYPE}" STREQUAL "")
+  return ()
+endif ()
+
+if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
+  # Build package as required (flatpak already dealt with).
+  #
+  include(PluginCompiler)
+  include(PluginLibs)
+  include(PluginLocalization)
+  include(PluginInstall)
+  include(PluginPackage)
+
+  add_subdirectory("libs/nmea0183")
+  target_link_libraries(${PACKAGE_NAME} ocpn::nmea0183)
+  
+  add_subdirectory("libs/wxJSON")
+  target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
+
+  add_subdirectory("libs/emulator")
+  target_link_libraries(${PACKAGE_NAME} radar::emulator)
+
+  add_subdirectory("libs/garminhd")
+  target_link_libraries(${PACKAGE_NAME} radar::garminhd)
+
+  add_subdirectory("libs/garminxhd")
+  target_link_libraries(${PACKAGE_NAME} radar::garminxhd)
+
+  add_subdirectory("libs/navico")
+  target_link_libraries(${PACKAGE_NAME} radar::navico)
+
+  add_subdirectory("libs/raymarine")
+  target_link_libraries(${PACKAGE_NAME} radar::raymarine)
+
+endif ()
 
 configure_file(
-  ${CMAKE_SOURCE_DIR}/radar-plugin.xml.in
-  ${CMAKE_CURRENT_BINARY_DIR}/${PKG_XML_FILE}
+  ${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/include//config.h
+  @ONLY
+)
+
+configure_file(
+  # The cloudsmith upload script
+  ${CMAKE_SOURCE_DIR}/ci/upload.sh.in ${CMAKE_BINARY_DIR}/upload.sh
+  @ONLY
 )
 configure_file(
-  ${CMAKE_SOURCE_DIR}/pkg_version.sh.in
-  ${CMAKE_CURRENT_BINARY_DIR}/pkg_version.sh
+  # The cloudsmith upload script, windows bat file.
+  ${CMAKE_SOURCE_DIR}/ci/upload.bat.in ${CMAKE_BINARY_DIR}/upload.bat
+  @ONLY
+)
+
+set(checksum "@checksum@")
+configure_file(
+  # The XML metadata file
+  ${CMAKE_SOURCE_DIR}/radar-plugin.xml.in
+  ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml.in
+  @ONLY
 )

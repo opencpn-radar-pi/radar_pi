@@ -1,30 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin version="1">
-<name>Radar</name>
-<version>${PACKAGE_VERSION}</version>
-<release>${PKG_RELEASE}</release>
-<summary>Overlays the radar picture on OpenCPN</summary>
-<api-version>${PKG_API_VERSION}</api-version>
-<open-source>yes</open-source>
-<author>${PKG_AUTHOR}</author>
-<source>https://github.com/opencpn-radar-pi/radar_pi</source>
-<description>
-Garmin, Navico and Raymarine radar support
 
-WARNING: OPENGL MODE IS REQUIRED!
+  <name> @PLUGIN_API_NAME@ </name>
+  <version> @pkg_semver@ </version>
+  <release> @PKG_RELEASE@ </release>
+  <summary> @CPACK_PACKAGE_DESCRIPTION_SUMMARY@ </summary>
 
-Works with Garmin HD, xHD, Navico BR24, 3G, 4G, HALOxx and older Raymarine radars.
+  <api-version> @API_VERSION@ </api-version>
+  <open-source> @PKG_IS_OPEN_SOURCE@ </open-source>
+  <author> @PKG_AUTHOR@ </author>
+  <source> @CPACK_PACKAGE_HOMEPAGE_URL@ </source>
+  <info-url> @PKG_INFO_URL@ </info-url>
 
-When a compass heading is provided it will allow radar overlay on the chart(s).
-It also allows separate display of a traditional radar picture (PPI).
+  <description> @CPACK_PACKAGE_DESCRIPTION@ </description>
 
-Supports MARPA (even on radars that do not support this themselves),
-Guard zones, AIS overlay on PPI, and various radar dependent features
-such as dual radar range and Doppler.
-</description>
-<target>${PKG_TARGET}</target>
-<target-version>${PKG_TARGET_VERSION}</target-version>
-<target-arch>${PKG_TARGET_ARCH}</target-arch>
-<tarball-url>${TARBALL_URL}</tarball-url>
-<info-url>https://opencpn.org/OpenCPN/plugins/radarPI.html</info-url>
+  <target>@pkg_target_arch@</target>
+  <target-version>@plugin_target_version@</target-version>
+  <target-arch>@ARCH@</target-arch>
+  <tarball-url> @pkg_tarball_url@ </tarball-url>
+  <tarball-checksum> @checksum@ </tarball-checksum>
+
 </plugin>

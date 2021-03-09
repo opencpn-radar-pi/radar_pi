@@ -31,10 +31,34 @@
 
 #ifndef _SELECTDIALOG_H_
 #define _SELECTDIALOG_H_
+//////////////////////////77
 
-#include "radar_pi.h"
 
-PLUGIN_BEGIN_NAMESPACE
+// #include <algorithm>
+// #include <vector>
+// 
+
+//  #include "RadarControlItem.h"
+//  #include "RadarLocationInfo.h"
+//  #include "drawutil.h"
+//  #include "wx/jsonreader.h"
+//  #include "nmea0183.h"
+#include "pi_common.h"
+#include "raymarine/RaymarineLocate.h"
+#include "socketutil.h"
+#include "config.h"
+#include "nmea0183.hpp"
+
+
+//////////////////////////////
+
+#include <wx/checkbox.h>
+#include <wx/dialog.h>
+
+class radar_pi;
+
+
+namespace RadarPlugin {
 
 class SelectDialog : public wxDialog {
  public:
@@ -44,6 +68,6 @@ class SelectDialog : public wxDialog {
   wxCheckBox* m_selected[RT_MAX];
 };
 
-PLUGIN_END_NAMESPACE
+}  // namespace
 
 #endif /* _SELECTDIALOG_H_ */

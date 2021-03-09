@@ -27,7 +27,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************
  */
-
+#include "radar_pi.h"
 #include "GuardZone.h"
 
 #include "RadarMarpa.h"

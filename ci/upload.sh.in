@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+#
+# Upload the .tar.gz and .xml artifacts to cloudsmith
+#
+
+if [ -z "$CLOUDSMITH_API_KEY" ]; then
+    echo 'Warning: $CLOUDSMITH_API_KEY is not available, giving up.'
+    echo 'Metadata: @pkg_displayname@.xml'
+    echo 'Tarball: @pkg_tarname@.tar.gz'
+    echo 'Version: @pkg_semver@'
+    exit 0
+fi
+
+echo "Using CLOUDSMITH_API_KEY: ${CLOUDSMITH_API_KEY:0:4}..."
+
+if [ -f ~/.uploadrc ]; then source ~/.uploadrc; fi
+set -xe
+
+cloudsmith push raw --no-wait-for-sync \
+    --name @pkg_displayname@-metadata \
+    --version @pkg_semver@ \
+    --summary "Plugin metadata for automatic installation" \
+    @pkg_repo@ @pkg_displayname@.xml
+
+cloudsmith push raw --no-wait-for-sync \
+    --name @pkg_displayname@-tarball \
+    --version @pkg_semver@ \
+    --summary "Plugin tarball for automatic installation" \
+    @pkg_repo@ @pkg_tarname@.tar.gz

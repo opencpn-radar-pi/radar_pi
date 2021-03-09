@@ -32,9 +32,7 @@
 #ifndef _GUARDZONE_H_
 #define _GUARDZONE_H_
 
-#include "radar_pi.h"
-
-PLUGIN_BEGIN_NAMESPACE
+namespace RadarPlugin {
 
 class GuardZone {
  public:
@@ -118,6 +116,6 @@ class GuardZone {
   void UpdateSettings();
 };
 
-PLUGIN_END_NAMESPACE
+}  // namespace
 
 #endif /* _GUARDZONE_H_ */

@@ -1,0 +1,12 @@
+#
+# Python script running the Visual Studio dumpbin tool on
+# the plugin dll.
+
+import subprocess
+import glob
+dumpbin = glob.glob(
+  "C:/Program Files (x86)/*Visual Studio/2017/Community/VC/Tools/MSVC/*/bin/Hostx64/x64")[0]
+dumpbin += "/dumpbin"
+lib = glob.glob("C:/project/opencpn/*/build/app/*/plugins/*.dll")[0]
+subprocess.run([dumpbin, "/dependents", lib])
+

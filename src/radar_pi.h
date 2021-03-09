@@ -41,12 +41,12 @@
 #include "RadarControlItem.h"
 #include "RadarLocationInfo.h"
 #include "drawutil.h"
-#include "jsonreader.h"
+#include "wx/jsonreader.h"
 #include "nmea0183/nmea0183.h"
 #include "pi_common.h"
 #include "raymarine/RaymarineLocate.h"
 #include "socketutil.h"
-#include "version.h"
+#include "config.h"
 
 // Load the ocpn_plugin. On OS X this generates many warnings, suppress these.
 #ifdef __WXOSX__

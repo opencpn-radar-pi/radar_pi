@@ -30,8 +30,10 @@
  */
 
 #define RADAR_PI_GLOBALS
-#include "radar_pi.h"
 
+#include "nmea0183.h"
+#include "nmea0183.hpp"
+#include "radar_pi.h"
 #include "GuardZone.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
@@ -40,11 +42,14 @@
 #include "RadarMarpa.h"
 #include "SelectDialog.h"
 #include "icons.h"
+
 #include "navico/NavicoLocate.h"
-#include "nmea0183/nmea0183.h"
+
+
 #include "raymarine/RaymarineLocate.h"
 
-PLUGIN_BEGIN_NAMESPACE
+namespace RadarPlugin {
+using ::NMEA0183;
 
 #undef M_SETTINGS
 #define M_SETTINGS m_settings
@@ -2056,4 +2061,4 @@ bool radar_pi::IsRadarOnScreen(int radar) {
   return m_settings.show && (m_settings.show_radar[radar] || m_radar[radar]->GetOverlayCanvasIndex() > -1);
 }
 
-PLUGIN_END_NAMESPACE
+}  // namespace
