@@ -53,7 +53,7 @@ python -m pip install --user cmake
 
 mkdir build; cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j $(nproc) VERBOSE=1 flatpak
+make flatpak-build
 
 # Restore file so the cache checksumming is ok.
 git checkout ../flatpak/$MANIFEST
