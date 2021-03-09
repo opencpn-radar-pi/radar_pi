@@ -52,8 +52,9 @@ export PATH=$HOME/.local/bin:$PATH
 python -m pip install --user cmake
 
 mkdir build; cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make
+cmake -DCMAKE_BUILD_TYPE=Release -DOCPN_FLATPAK=ON ..
+make flatpak-build
+make package || :
 
 # Restore file so the cache checksumming is ok.
 git checkout ../flatpak/$MANIFEST
