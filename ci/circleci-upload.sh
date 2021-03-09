@@ -58,6 +58,8 @@ BUILD_ID=${CIRCLE_BUILD_NUM:-1}
 commit=$(git rev-parse --short=7 HEAD) || commit="unknown"
 tag=$(git tag --contains HEAD)
 
+ls -lR "$HOME/project/build"
+
 xml=$(ls $HOME/project/build/*.xml)
 tarball=$(ls $HOME/project/build/*.tar.gz)
 tarball_basename=${tarball##*/}
