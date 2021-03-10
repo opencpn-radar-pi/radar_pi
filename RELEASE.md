@@ -10,6 +10,8 @@ process:
 There is actually a third step involved, where the OpenCPN developers merge the pull request,
 but we don't need to document their work here.
 
+For step 2 you need a Linux or macOS+homebrew installation, with the 'jq' and 'curl' tools installed.
+
 ## Publish the "download files" on Cloudsmith
 
 Follow these steps:
@@ -61,6 +63,8 @@ You can check the build progress at the following sites.
 
 ### Old cloudsmith packages (<= 5.1.4)
 
+These were used for old releases, once we have 5.2.0 out in both production and beta they can be removed:
+
 [CloudSmith Stable Packages](https://cloudsmith.io/~kees-verruijt/repos/ocpn-plugins-stable/packages/)
 [CloudSmith Unstable Packages](https://cloudsmith.io/~kees-verruijt/repos/ocpn-plugins-unstable/packages/)
 
@@ -102,24 +106,29 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
 
 3. Copy the XML files from CloudSmith to your local plugins repo:
     ```
-    ./cloudsmith-sync.sh radar_pi kees-verruijt ocpn-plugins-stable 5.1.4.0.abcdef
+    ./cloudsmith-sync.sh radar_pi opencpn-radar-pi opencpn-radar-pi-prod 5.2.0.eecba41
     ```
    Or for unstable/Beta:
     ```
-    ./cloudsmith-sync.sh radar_pi kees-verruijt ocpn-plugins-unstable 5.1.3.0.1231231
+    ./cloudsmith-sync.sh radar_pi opencpn-radar-pi opencpn-radar-pi-beta 5.2.0-beta4.0.eecba41
+
     ```
 
    Unlike earlier versions of the sync script you must determine yourself what version+commit
    to download.
 
-4. Check that all radar_pi files are updated in the `metadata` subdirectory.
+   The output should be verbose with each XML url mentioned as well as the XML for that file.
+   If you don't, run it using `sh -x`, copy the shown curl command and run this yourself to see what you are doing wrong.
+
+
+4. Check that there are new radar_pi files in the `metadata` subdirectory. Remove any old files, for instance:
+
+    ls metadata/*radar*
+    # Yes, see 5.2.0-beta3 (old) and 5.2.0-beta4 (new) files
+    rm metadata/*radar*-5.2.0-beta3 
 
    Check that there are no missing platforms, certainly for a stable release.
-
-5. Create a new combined plugin .xml:
-    ```
-    make
-    ```
+   The new files will be added by `git add .` in step 5.
 
 6. Create a Pull Request:
     ```
@@ -127,6 +136,9 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
     git commit -m"Radar plugin version X.YZ"
     git push
     ```
+
+    DO NOT RUN MAKE WHICH UPDATES OCPN-PLUGINS.XML ! This will be done later by bdbcat
+    when he merges the request.
 
 7. Go to github.com and create a Pull Request for `OpenCPN/plugins`
 
