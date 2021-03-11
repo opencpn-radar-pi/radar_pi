@@ -44,20 +44,19 @@ message(STATUS "Building: ${BUILD_TYPE}")
 # -------- Options ----------
 
 set(OCPN_TEST_REPO
-    "kees-verruijt/ocpn-plugins-unstable"
+    "opencpn-radar-pi/opencpn-radar-pi-unstable"
     CACHE STRING "Default repository for untagged builds"
 )
 set(OCPN_BETA_REPO
-    "kees-verruijt/ocpn-plugins-stable"
+    "opencpn-radar-pi/opencpn-radar-pi-beta"
     CACHE STRING 
     "Default repository for tagged builds matching 'beta'"
 )
 set(OCPN_RELEASE_REPO
-    "kees-verruijt/ocpn-plugins-stable"
+    "opencpn-radar-pi/opencpn-radar-pi-prod"
     CACHE STRING 
     "Default repository for tagged builds not matching 'beta'"
 )
-option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 
 #
 # -------  Plugin setup --------
