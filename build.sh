@@ -20,29 +20,33 @@ MAKE_OPTIONS=""
 host=$(hostname)
 case $host in
   kees-mbp)
-    BUILDDIR=build-mac
+    BUILDDIR=rel-mac
     TARGET="create-pkg"
     PACKAGE="*.pkg"
     ;;
 
   openplotter)      # 'Raspian/Openplotter' on real RPi3 or Qemu
-    BUILDDIR=build-linux-armhf
+    BUILDDIR=rel-linux-armhf
     PACKAGE="*.deb *.rpm *.bz2"
     ;;
 
+  pvlinux*)      # Parallels box with small RAM allocation
+    MAKE_OPTIONS="-j1"
+    ;;
+
   debian7)      # 'Debian 7' VirtualBox vm
-    BUILDDIR=build-linux-x86_64
+    BUILDDIR=rel-linux-x86_64
     PACKAGE="*.deb *.rpm *.bz2"
     ;;
 
   kees-tp)      # Lenovo X1E2 8core
     export CMAKE_BUILD_PARALLEL_LEVEL=8
-    BUILDDIR=build-linux-x86_64
+    BUILDDIR=rel-linux-x86_64
     PACKAGE="*.deb *.rpm *.bz2"
     ;;
 
   vlxkees)      # 'Debian 6' VirtualBox vm
-    BUILDDIR=build-linux-x86
+    BUILDDIR=rel-linux-x86
     PACKAGE="*.deb *.rpm *.bz2"
     ;;
 esac
@@ -52,7 +56,7 @@ then
   echo "Building unofficial release, old style package."
   TARGET="pkg"
   STATE="unofficial"
-  BUILDDIR="build-`uname`-`uname -m`"
+  BUILDDIR="rel-`uname`-`uname -m`"
 else
   STATE=`cat release-state`
   if [ "$STATE" = "" ]
