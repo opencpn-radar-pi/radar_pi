@@ -15,7 +15,7 @@ set -e -u # Fail on first error
 
 BUILDDIR=""
 STATE="Unofficial"
-TARGET="package"
+TARGET="pkg"
 MAKE_OPTIONS=""
 host=$(hostname)
 case $host in
@@ -49,10 +49,9 @@ esac
 
 if [ "$BUILDDIR" = "" ]
 then
-  echo "Building unofficial release, without packages."
-  TARGET=""
+  echo "Building unofficial release, old style package."
+  TARGET="pkg"
   STATE="unofficial"
-  PACKAGE=""
   BUILDDIR="build-`uname`-`uname -m`"
 else
   STATE=`cat release-state`

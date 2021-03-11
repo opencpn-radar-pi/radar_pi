@@ -30,20 +30,22 @@ Follow these steps:
     SET(VERSION_DATE "2019-09-08")
     ```
 
-3. Add the file to the git staging area, commit this then push it to github:
+3. For Beta releases: Add the file to the git staging area, commit this then push it to github:
     ```
     git add CMakeLists.txt
     git commit -m"v5.0.4-beta1"
     git push
     ```
 
-   If you wait a while you will see builds turn up in Cloudsmith, built by Appveyor, Travis and Cloud CI. See below for the URLs.
-4. For "stable" releases only: add a tag and push this tag to github:
-    ```
-    git tag v5.0.4
-    git push --tags
-    ```
+   If you wait a while you will see builds turn up in Cloudsmith, built by Appveyor, drone and Cloud CI. See below for the URLs.
 
+4. For production releases only: Add the file, commit, add a tag and push both code and tags in 1 step:
+    ```
+    git add CMakeLists.txt
+    git commit -m"v5.0.4"
+    git tag v5.0.4
+    git push origin refs/tags/v5.0.4
+    ```
 The process of adding and pushing the tag will put the releases in the "stable" repository on Cloudsmith.
 
 That concludes the building actions.
