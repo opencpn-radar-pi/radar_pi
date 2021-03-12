@@ -90,13 +90,19 @@ set(PKG_INFO_URL https://opencpn.org/OpenCPN/plugins/radarPI.html)
 
 
 set(SRC
-  include/radar_pi.h
   include/ControlsDialog.h
+  include/GuardZone.h
+  include/GuardZoneBogey.h
   include/Kalman.h
   include/Matrix.h
   include/MessageBox.h
+  include/OptionsDialog.h
+  include/RadarCanvas.h
   include/RadarControl.h
   include/RadarControlItem.h
+  include/RadarDraw.h
+  include/RadarDrawShader.h
+  include/RadarDrawVertex.h
   include/RadarFactory.h
   include/RadarInfo.h
   include/RadarLocationInfo.h
@@ -104,48 +110,45 @@ set(SRC
   include/RadarPanel.h
   include/RadarReceive.h
   include/RadarType.h
+  include/SelectDialog.h
   include/SoftwareControlSet.h
+  include/TextureFont.h
+  include/TrailBuffer.h
+  include/drawutil.h
+  include/icons.h
   include/pi_common.h
   include/radar_pi.h
+  include/shaderutil.h
   include/socketutil.h
-  include/drawutil.h
 
+  # Source files that are repeatedly included to get a 
+  # different effect every time
   include/ControlType.inc
+  include/shaderutil.inc
 
   src/ControlsDialog.cpp
   src/GuardZone.cpp
-  src/GuardZone.h
   src/GuardZoneBogey.cpp
-  src/GuardZoneBogey.h
   src/Kalman.cpp
   src/MessageBox.cpp
   src/OptionsDialog.cpp
-  src/OptionsDialog.h
   src/RadarCanvas.cpp
-  src/RadarCanvas.h
   src/RadarDraw.cpp
-  src/RadarDraw.h
   src/RadarDrawShader.cpp
-  src/RadarDrawShader.h
   src/RadarDrawVertex.cpp
-  src/RadarDrawVertex.h
   src/RadarFactory.cpp
   src/RadarInfo.cpp
   src/RadarMarpa.cpp
   src/RadarPanel.cpp
   src/SelectDialog.cpp
-  src/SelectDialog.h
   src/TextureFont.cpp
-  src/TextureFont.h
-  src/TrailBuffer.h
   src/TrailBuffer.cpp
   src/drawutil.cpp
   src/icons.cpp
-  src/icons.h
   src/radar_pi.cpp
   src/shaderutil.cpp
-  src/shaderutil.h
   src/socketutil.cpp
+
 )
 
 
@@ -194,19 +197,22 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   add_subdirectory("libs/wxJSON")
   target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
 
-  add_subdirectory("libs/emulator")
+  #
+  # Radar specific directories
+  #
+  add_subdirectory("src/emulator")
   target_link_libraries(${PACKAGE_NAME} radar::emulator)
 
-  add_subdirectory("libs/garminhd")
+  add_subdirectory("src/garminhd")
   target_link_libraries(${PACKAGE_NAME} radar::garminhd)
 
-  add_subdirectory("libs/garminxhd")
+  add_subdirectory("src/garminxhd")
   target_link_libraries(${PACKAGE_NAME} radar::garminxhd)
 
-  add_subdirectory("libs/navico")
+  add_subdirectory("src/navico")
   target_link_libraries(${PACKAGE_NAME} radar::navico)
 
-  add_subdirectory("libs/raymarine")
+  add_subdirectory("src/raymarine")
   target_link_libraries(${PACKAGE_NAME} radar::raymarine)
 
 endif ()

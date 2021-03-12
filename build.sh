@@ -31,7 +31,7 @@ case $host in
     ;;
 
   pvlinux*)      # Parallels box with small RAM allocation
-    MAKE_OPTIONS="-j1"
+    export CMAKE_BUILD_PARALLEL_LEVEL=2
     ;;
 
   debian7)      # 'Debian 7' VirtualBox vm
@@ -72,7 +72,7 @@ fi
 mkdir -p $BUILDDIR
 cd $BUILDDIR
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-echo "-------------------------- MAKE $TARGET -----------------------"
+echo "-------------------------- MAKE $MAKE_OPTIONS $TARGET -----------------------"
 make $MAKE_OPTIONS $TARGET
 
 # Check for proper file mods on .so file, case VBox mount is screwed.
