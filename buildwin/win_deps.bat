@@ -22,6 +22,7 @@ set wxWidgets_LIB_DIR=%WXWIN%\lib\vc_dll
 SET PATH=%PATH%;%WXWIN%;%wxWidgets_LIB_DIR%
 if not exist %WXWIN% (
   wget --version > nul 2>&1 || choco install -y wget
+  7z --version > nul 2>&1 || choco install -y 7zip
   wget https://download.opencpn.org/s/E2p4nLDzeqx4SdX/download -O wxWidgets-3.1.2.7z
   7z i > nul 2>&1 || choco install -y 7z
   7z x wxWidgets-3.1.2.7z -o%WXWIN%
