@@ -6,7 +6,7 @@
 
 # -------- Cmake setup ---------
 #
-cmake_minimum_required(VERSION 3.12.0)
+cmake_minimum_required(VERSION 3.16.0)
 
 cmake_policy(SET CMP0042 NEW)
 
@@ -127,6 +127,44 @@ set(SRC
   include/ControlType.inc
   include/shaderutil.inc
 
+  # Headers for radar specific files
+
+  include/emulator/EmulatorControl.h
+  include/emulator/EmulatorControlSet.h
+  include/emulator/EmulatorControlsDialog.h
+  include/emulator/EmulatorReceive.h
+  include/emulator/emulatortype.h
+  include/garminhd/GarminHDControl.h
+  include/garminhd/GarminHDControlSet.h
+  include/garminhd/GarminHDControlsDialog.h
+  include/garminhd/GarminHDReceive.h
+  include/garminhd/garminhdtype.h
+  include/garminxhd/GarminxHDControl.h
+  include/garminxhd/GarminxHDControlSet.h
+  include/garminxhd/GarminxHDControlsDialog.h
+  include/garminxhd/GarminxHDReceive.h
+  include/garminxhd/garminxhdtype.h
+  include/navico/Header.h
+  include/navico/NavicoCommon.h
+  include/navico/NavicoControl.h
+  include/navico/NavicoControlSet.h
+  include/navico/NavicoControlsDialog.h
+  include/navico/NavicoLocate.h
+  include/navico/NavicoReceive.h
+  include/navico/br24type.h
+  include/navico/br3gtype.h
+  include/navico/br4gatype.h
+  include/navico/br4gbtype.h
+  include/navico/haloatype.h
+  include/navico/halobtype.h
+  include/raymarine/RME120Control.h
+  include/raymarine/RME120ControlSet.h
+  include/raymarine/RME120ControlsDialog.h
+  include/raymarine/RME120Receive.h
+  include/raymarine/RME120type.h
+  include/raymarine/RaymarineCommon.h
+  include/raymarine/RaymarineLocate.h
+
   src/ControlsDialog.cpp
   src/GuardZone.cpp
   src/GuardZoneBogey.cpp
@@ -150,6 +188,24 @@ set(SRC
   src/shaderutil.cpp
   src/socketutil.cpp
 
+  src/emulator/EmulatorControl.cpp
+  src/emulator/EmulatorControlsDialog.cpp
+  src/emulator/EmulatorReceive.cpp
+  src/garminhd/GarminHDControl.cpp
+  src/garminhd/GarminHDControlsDialog.cpp
+  src/garminhd/GarminHDReceive.cpp
+  src/garminxhd/GarminxHDControl.cpp
+  src/garminxhd/GarminxHDControlsDialog.cpp
+  src/garminxhd/GarminxHDReceive.cpp
+  src/navico/NavicoControl.cpp
+  src/navico/NavicoControlsDialog.cpp
+  src/navico/NavicoLocate.cpp
+  src/navico/NavicoReceive.cpp
+  src/raymarine/RME120Control.cpp
+  src/raymarine/RME120ControlsDialog.cpp
+  src/raymarine/RME120Receive.cpp
+  src/raymarine/RaymarineLocate.cpp
+
 )
 
 
@@ -158,6 +214,11 @@ set(SRC
 add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC})
 include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include/emulator)
+include_directories(${PROJECT_SOURCE_DIR}/include/garminhd)
+include_directories(${PROJECT_SOURCE_DIR}/include/garminxhd)
+include_directories(${PROJECT_SOURCE_DIR}/include/navico)
+include_directories(${PROJECT_SOURCE_DIR}/include/raymarine)
 
 add_subdirectory("libs/api-16")
 target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
@@ -197,24 +258,6 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   
   add_subdirectory("libs/wxJSON")
   target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
-
-  #
-  # Radar specific directories
-  #
-  add_subdirectory("src/emulator")
-  target_link_libraries(${PACKAGE_NAME} radar::emulator)
-
-  add_subdirectory("src/garminhd")
-  target_link_libraries(${PACKAGE_NAME} radar::garminhd)
-
-  add_subdirectory("src/garminxhd")
-  target_link_libraries(${PACKAGE_NAME} radar::garminxhd)
-
-  add_subdirectory("src/navico")
-  target_link_libraries(${PACKAGE_NAME} radar::navico)
-
-  add_subdirectory("src/raymarine")
-  target_link_libraries(${PACKAGE_NAME} radar::raymarine)
 
 endif ()
 

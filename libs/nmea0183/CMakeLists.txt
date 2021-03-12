@@ -32,7 +32,7 @@ SET(SRC
 
 add_library(NMEA0183 STATIC ${SRC})
 add_library(ocpn::nmea0183 ALIAS NMEA0183)
-target_link_libraries(NMEA0183 PRIVATE radar::garminhd radar::garminxhd radar::navico radar::raymarine)
+target_link_libraries(NMEA0183)
 
 set_property(TARGET NMEA0183 PROPERTY COMPILE_FLAGS "${OBJ_VISIBILITY}")
 target_include_directories(NMEA0183 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
