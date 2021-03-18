@@ -208,6 +208,11 @@ set(SRC
 
 )
 
+#
+# Fix OpenGL deprecated warnings in Xcode
+#
+add_definitions(-DGL_SILENCE_DEPRECATION)
+
 
 # -------- Setup completed, build the plugin --------
 #

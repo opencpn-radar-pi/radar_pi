@@ -206,7 +206,7 @@ function (help_target)
     COMMAND cmake -E echo
       "   - pkg: Legacy installer package on Windows, Mac and Debian."
     COMMAND cmake -E echo ""
-    COMMAND dont-use-plain-make   # will fail
+    # COMMAND dont-use-plain-make   # will fail
   )
 
   if ("${BUILD_TYPE}" STREQUAL "" )

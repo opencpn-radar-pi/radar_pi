@@ -25,6 +25,7 @@
 
 
 #include <wx/log.h>
+
 #include <wx/arrimpl.cpp>
 
 #include <wx/jsonval.h>
@@ -3064,7 +3065,8 @@ wxJSONRefData*
 wxJSONValue::COW()
 {
     wxJSONRefData* data = GetRefData();
-    if (data); // Get rid of compiler warning that lvalue is never used
+    if (data)
+      ; // Get rid of compiler warning that lvalue is never used
     wxLogTrace( cowTraceMask, _T("(%s) COW() START data=%p data->m_count=%d"),
              __PRETTY_FUNCTION__, data, data->GetRefCount());
     UnShare();
@@ -3572,4 +3574,3 @@ wxJSONValue::operator = ( wxUint64 ui )
 {
 }
 */
-

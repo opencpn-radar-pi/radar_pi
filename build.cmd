@@ -1,56 +1,74 @@
-@echo off
-echo Build script for BR24radar_pi
-echo -----------------------------
-echo.
-echo This script is intended for use by @canboat only, otherwise he forgets which VM to build
-echo on such that it works on as many systems as possible."
-echo.
-echo Feel free to adapt this to your own situation.
+@echo on
 
-set BUILDDIR=build-win32
-set CMAKE_TARGET=
-set PACKAGE=br24radar_pi*-win32.exe
-set VARS="C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-set TARGET=
+setlocal enableextensions
 
-rem Official build machines
-if "%COMPUTERNAME%" == "MERRIMAC1" (
-    echo Running on "Merrimac" vbox with wxWidgets 2.8.12 with VS 2010.
-    set VARS="C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-    set OPENCPNLIB=buildwin\opencpn_v400_wx28.lib
-    set CMAKE_TARGET=
-    set TARGET=--config release --target package
+if "%1" == "" (
+  echo Usage: build.cmd [ide^|cli]
+  echo.
+  echo Build script for radar_pi
+  echo -------------------------
+  echo.
+  echo This script is intended for use by @canboat, @hakansv and @douwefokkema only.
+  echo We use it to set preconditions on our build machines to run in IDE.
+  echo.
+  echo Any others: use at own risk.
+  echo.
+  echo Feel free to adapt this to your own situation.
+  echo.
+  goto :EOF
 )
 
-if "%TARGET%" == "" (
-  echo Building unofficial release, without packages.
-  set TARGET=--build .
-  set STATE=unofficial
-  set PACKAGE=
+set "BUILD_TYPE=%1"
+set "BUILDDIR=rel-%COMPUTERNAME%"
+set "STATE=Unofficial"
+set "TARGET=pkg"
+set "CMAKE_OPTIONS="
+set "MAKE_OPTIONS="
+
+set "CMAKE_BUILD_PARALLEL_LEVEL=2"
+
+rem On Windows, ide means Visual Studio
+if "%BUILD_TYPE%" == "ide" (
+  set "BUILDDIR=%BUILDDIR%-vs"
+)
+
+if "%COMPUTERNAME%" == "PVW10X64" ( 
+  rem Adapt for Kees VM on kees-mbp
+  set "WXWIN=Y:\src\wx312_win32"
+  call :setup_kees
+) else if "%COMPUTERNAME%" == "W7" (
+  rem Adapt for Kees VM on kees-mbp
+  set "WXWIN=E:\src\wx312_win32"
+  call :setup_kees
+) else if "%COMPUTERNAME%" == "HakansV" (
+  rem This is an example 
+)
+
+if exist "%BUILDDIR%" (
+  rmdir /s/q "%BUILDDIR%"
+)
+mkdir "%BUILDDIR%"
+cd "%BUILDDIR%"
+
+cmake -T v141_xp -G "Visual Studio 15 2017" --config Debug -DBUILD_TYPE="%BUILD_TYPE%" %CMAKE_OPTIONS% ..
+if errorlevel 1 goto :EOF
+if "%BUILD_TYPE%" == "ide" (
+  start radar_pi.sln
 ) else (
-  for /f %%l in (release-state) do set STATE=%%l
-  if "%STATE" == "" (
-    echo Please set release state of package
-    exit 1
-  )
-  echo -------------------------- BUILD %STATE% -----------------------
+  dir
+  cmake --build .
 )
+goto :EOF
 
-call %VARS%
+:setup_kees
+  set "PATH=C:\Windows\system32;C:\windows"
+  set "PATH=%PATH%;c:\Program Files (x86)\nasm"
+  set "PATH=%PATH%;C:\Program Files (x86)\poedit\gettexttools\bin"
+  set "PATH=%PATH%;C:\Program Files\cmake\bin"
+  set "PATH=%PATH%;C:\Python36;c:\Python36\Scripts"
+  call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
+  set "wxWidgets_ROOT_DIR=%WXWIN%"
+  set "wxWidgets_LIB_DIR=%WXWIN%\lib\vc_dll"
+  set "PATH=%PATH%;%WXWIN%;%wxWidgets_LIB_DIR%"
+  goto :EOF
 
-if exist %BUILDDIR% rmdir /s /q %BUILDDIR%
-mkdir %BUILDDIR%
-copy %OPENCPNLIB% %BUILDDIR%\opencpn.lib
-cd %BUILDDIR%
-cmake .. %CMAKE_TARGET%
-
-echo -------------------------- MAKE %TARGET% -----------------------
-cmake --build . %TARGET%
-
-if exist ..\..\OpenCPN-Navico-Radar-Plugin.github.io\%STATE% if not "%PACKAGE%" == "" (
-  echo -------------------------- COPY FILES TO %STATE% -----------------------
-  copy %PACKAGE% ..\..\OpenCPN-Navico-Radar-Plugin.github.io\%STATE%
-)
-
-cd ..
-  
