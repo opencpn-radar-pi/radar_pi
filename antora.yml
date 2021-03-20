@@ -1,4 +1,4 @@
 name: shipdriver
 title: ShipDriver OpenCPN plugin docs.
 version: '0.0.1'
-start_page: ROOT:shipdriver.adoc 
+start_page: docs:modules:ROOT:shipdriver.adoc 
