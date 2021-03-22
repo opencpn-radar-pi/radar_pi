@@ -588,6 +588,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   void UpdateCOGAvg(double cog);
   void OnTimerNotify(wxTimerEvent &event);
   void TimedControlUpdate();
+  void TimedUpdate(wxTimerEvent &event);
   void ScheduleWindowRefresh();
   void SetOpenGLMode(OpenGLMode mode);
   int GetArpaTargetCount(void);
@@ -688,6 +689,7 @@ class radar_pi : public opencpn_plugin_116, public wxEvtHandler {
   bool m_opencpn_gl_context_broken;
 
   wxTimer *m_timer;
+  wxTimer *m_update_timer;
 
   DECLARE_EVENT_TABLE()
 };

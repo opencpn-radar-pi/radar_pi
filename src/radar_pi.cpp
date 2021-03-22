@@ -118,9 +118,12 @@ static double radar_distance(GeoPosition pos1, GeoPosition pos2, char unit) {
 //---------------------------------------------------------------------------------------------------------
 
 enum { TIMER_ID = 51 };
+enum { UPDATE_TIMER_ID = 52 };
 
+#define UPDATE_INTERVAL 500
 BEGIN_EVENT_TABLE(radar_pi, wxEvtHandler)
 EVT_TIMER(TIMER_ID, radar_pi::OnTimerNotify)
+EVT_TIMER(UPDATE_TIMER_ID, radar_pi::TimedUpdate)
 END_EVENT_TABLE()
 
 //---------------------------------------------------------------------------------------------------------
@@ -144,6 +147,7 @@ radar_pi::radar_pi(void *ppimgr) : opencpn_plugin_116(ppimgr) {
   m_opencpn_gl_context_broken = false;
 
   m_timer = 0;
+  m_update_timer = 0;
   for (int r = 0; r < RADARS; r++) {
     m_context_menu_control_id[r] = -1;
   }
@@ -348,6 +352,8 @@ int radar_pi::Init(void) {
 
   m_notify_time_ms = 0;
   m_timer = new wxTimer(this, TIMER_ID);
+  m_update_timer = new wxTimer(this, UPDATE_TIMER_ID);
+  m_update_timer->Start(UPDATE_INTERVAL);
 
   return PLUGIN_OPTIONS;
 }
@@ -389,6 +395,11 @@ bool radar_pi::DeInit(void) {
     m_timer->Stop();
     delete m_timer;
     m_timer = 0;
+  }
+  if (m_update_timer) {
+    m_update_timer->Stop();
+    delete m_update_timer;
+    m_update_timer = 0;
   }
 
   if (m_navico_locator) {
@@ -1056,13 +1067,6 @@ void radar_pi::TimedControlUpdate() {
     return;
   }
 
-  //// for overlay testing only, simple trick to get position and heading
-  // wxString nmea;
-  // nmea = wxT("$APHDM,000.0,M*33");
-  // PushNMEABuffer(nmea);
-  // nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
-  // PushNMEABuffer(nmea);
-
   m_notify_time_ms = now;
 
   bool updateAllControls = m_notify_control_dialog;
@@ -1072,31 +1076,6 @@ void radar_pi::TimedControlUpdate() {
     m_notify_radar_window_viz = false;
     SetRadarWindowViz(true);
     updateAllControls = true;
-  }
-  UpdateHeadingPositionState();
-
-  // Check the age of "radar_seen", if too old radar_seen = false
-  bool any_data_seen = false;
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    int state = m_radar[r]->m_state.GetValue();  // Safe, protected by lock
-    if (state == RADAR_TRANSMIT) {
-      any_data_seen = true;
-    }
-    if (!m_settings.show            // No radar shown
-        || state != RADAR_TRANSMIT  // Radar not transmitting
-        || !m_bpos_set) {           // No overlay possible (yet)
-                                    // Conditions for ARPA not fulfilled, delete all targets
-      m_radar[r]->m_arpa->RadarLost();
-    }
-    m_radar[r]->UpdateTransmitState();
-  }
-
-  if (any_data_seen && m_settings.show) {
-    CheckGuardZoneBogeys();
-  }
-
-  if (m_settings.pass_heading_to_opencpn && m_heading_source >= HEADING_RADAR_HDM) {
-    PassHeadingToOpenCPN();
   }
 
   if (m_pMessageBox->IsShown() || (m_settings.verbose != 0)) {
@@ -1187,6 +1166,84 @@ void radar_pi::TimedControlUpdate() {
 
   UpdateAllControlStates(updateAllControls);
   UpdateState();
+}
+
+void radar_pi::TimedUpdate(wxTimerEvent &event) {
+  // Started in Init(), running every 500 ms
+  // No screen output in this thread
+
+  // Check if initialized
+  if (!m_initialized) {
+    return;
+  }
+
+   //// for testing only, simple trick to get position and heading
+   /*wxString nmea;   
+   nmea = wxT("$APHDM,000.0,M*33");
+   PushNMEABuffer(nmea);
+   nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
+   PushNMEABuffer(nmea);*/
+
+  // update own ship position to best estimate
+  ExtendedPosition intermediate_pos;
+  if (m_predicted_position_initialised) {
+    m_GPS_filter->Predict(&m_last_fixed, &m_expected_position);
+  }
+  m_ownship = m_expected_position.pos;
+  // Update radar position offset from GPS
+  if (m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt)) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      m_radar[r]->SetRadarPosition(m_ownship, m_hdt);
+    }
+  }
+
+  // refresh ARPA targets
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      bool arpa_on = false;
+      if (m_radar[r]->m_arpa) {
+        for (int i = 0; i < GUARD_ZONES; i++) {
+          if (m_radar[r]->m_guard_zone[i]->m_arpa_on) {
+            arpa_on = true;
+          }
+        }
+        if (m_radar[r]->m_arpa->GetTargetCount() > 0) {
+          arpa_on = true;
+        }
+      }
+      if (m_radar[r]->m_doppler.GetValue() > 0 && m_radar[r]->m_autotrack_doppler.GetValue() > 0) {
+        arpa_on = true;
+      }
+      if (arpa_on) {
+        m_radar[r]->m_arpa->RefreshArpaTargets();
+      }
+    }
+
+    UpdateHeadingPositionState();
+
+    // Check the age of "radar_seen", if too old radar_seen = false
+    bool any_data_seen = false;
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      int state = m_radar[r]->m_state.GetValue();  // Safe, protected by lock
+      if (state == RADAR_TRANSMIT) {
+        any_data_seen = true;
+      }
+      if (!m_settings.show            // No radar shown
+          || state != RADAR_TRANSMIT  // Radar not transmitting
+          || !m_bpos_set) {           // No overlay possible (yet)
+                                      // Conditions for ARPA not fulfilled, delete all targets
+        m_radar[r]->m_arpa->RadarLost();
+      }
+      m_radar[r]->UpdateTransmitState();
+    }
+
+    if (any_data_seen && m_settings.show) {
+      CheckGuardZoneBogeys();
+    }
+
+    if (m_settings.pass_heading_to_opencpn && m_heading_source >= HEADING_RADAR_HDM) {
+      PassHeadingToOpenCPN();
+    }
+  
 }
 
 void radar_pi::UpdateAllControlStates(bool all) {
@@ -1281,30 +1338,6 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
   if (!m_initialized) {
     m_render_busy = false;
     return true;
-  }
-
-  // refresh ARPA targets only with canvas 0
-  if (canvasIndex == 0) {
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      bool arpa_on = false;
-      if (m_radar[r]->m_arpa) {
-        for (int i = 0; i < GUARD_ZONES; i++) {
-          if (m_radar[r]->m_guard_zone[i]->m_arpa_on) {
-            arpa_on = true;
-          }
-        }
-        if (m_radar[r]->m_arpa->GetTargetCount() > 0) {
-          arpa_on = true;
-        }
-      }
-      if (m_radar[r]->m_doppler.GetValue() > 0 && m_radar[r]->m_autotrack_doppler.GetValue() > 0) {
-        arpa_on = true;
-      }
-
-      if (arpa_on) {
-        m_radar[r]->m_arpa->RefreshArpaTargets();
-      }
-    }
   }
 
   m_vp = vp;
