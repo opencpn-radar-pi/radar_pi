@@ -31,3 +31,4 @@ if not exist "C:\Program Files (x86)\Poedit" (
   choco install -y  poedit
 )
 SET PATH=%PATH%;C:\Program Files (x86)\Poedit\Gettexttools\bin
+SET PATH=%PATH%;C:\Program Files (x86)\Poedit
