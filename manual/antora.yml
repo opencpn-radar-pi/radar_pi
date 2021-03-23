@@ -1,6 +1,7 @@
 name: shipdriver
 title: ShipDriver
 version: dev
+start_page: ROOT:index.adoc
 nav:
 - modules/ROOT/nav.adoc
 
