@@ -1,6 +1,3 @@
 name: shipdriver
 title: Ship Driver Manual
 version: '0.1'
-start_page: ROOT:Home.adoc 
-nav: 
-- modules/ROOT/nav.adoc
