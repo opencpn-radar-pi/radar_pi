@@ -1176,7 +1176,7 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   if (!m_initialized) {
     return;
   }
-
+  
    //// for testing only, simple trick to get position and heading
    /*wxString nmea;   
    nmea = wxT("$APHDM,000.0,M*33");
@@ -1193,13 +1193,18 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   // Update radar position offset from GPS
   if (m_heading_source != HEADING_NONE && !wxIsNaN(m_hdt)) {
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      m_radar[r]->SetRadarPosition(m_ownship, m_hdt);
+      wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
+      if (m_radar[r]) {
+        m_radar[r]->SetRadarPosition(m_ownship, m_hdt);
+      }
     }
   }
 
   // refresh ARPA targets
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      bool arpa_on = false;
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    bool arpa_on = false;
+    if (m_radar[r]) {
+      wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
       if (m_radar[r]->m_arpa) {
         for (int i = 0; i < GUARD_ZONES; i++) {
           if (m_radar[r]->m_guard_zone[i]->m_arpa_on) {
@@ -1217,25 +1222,28 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
         m_radar[r]->m_arpa->RefreshArpaTargets();
       }
     }
+  }
 
     UpdateHeadingPositionState();
 
     // Check the age of "radar_seen", if too old radar_seen = false
     bool any_data_seen = false;
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      int state = m_radar[r]->m_state.GetValue();  // Safe, protected by lock
-      if (state == RADAR_TRANSMIT) {
-        any_data_seen = true;
+      if (m_radar[r]) {
+        wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
+        int state = m_radar[r]->m_state.GetValue();  // Safe, protected by lock
+        if (state == RADAR_TRANSMIT) {
+          any_data_seen = true;
+        }
+        if (!m_settings.show            // No radar shown
+            || state != RADAR_TRANSMIT  // Radar not transmitting
+            || !m_bpos_set) {           // No overlay possible (yet)
+                                        // Conditions for ARPA not fulfilled, delete all targets
+          m_radar[r]->m_arpa->RadarLost();
+        }
+        m_radar[r]->UpdateTransmitState();
       }
-      if (!m_settings.show            // No radar shown
-          || state != RADAR_TRANSMIT  // Radar not transmitting
-          || !m_bpos_set) {           // No overlay possible (yet)
-                                      // Conditions for ARPA not fulfilled, delete all targets
-        m_radar[r]->m_arpa->RadarLost();
-      }
-      m_radar[r]->UpdateTransmitState();
     }
-
     if (any_data_seen && m_settings.show) {
       CheckGuardZoneBogeys();
     }
