@@ -1,1 +1,1 @@
-* xref:Home.adoc[ShipDriver Manual]
+* xref:shipdriver:Home.adoc[ShipDriver Manual]
