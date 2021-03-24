@@ -1,2 +1,5 @@
 name: shipdriver
 version: '0.1'
+start_page: ROOT:Home.adoc 
+nav: 
+- modules/ROOT/nav.adoc
