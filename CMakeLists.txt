@@ -60,6 +60,7 @@ option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 #
 project(ShipDriver_pi VERSION 2.6.3.0)
 set(PKG_RELEASE "1")
+set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
 set(PLUGIN_API_NAME ShipDriver) # As of GetCommonName() in plugin API
