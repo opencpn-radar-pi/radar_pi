@@ -59,7 +59,6 @@ option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 # -------  Plugin setup --------
 #
 project(ShipDriver_pi VERSION 2.6.3.0)
-set(PKG_RELEASE "1")
 set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
@@ -106,6 +105,8 @@ target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
 set(VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(PKG_RELEASE   ${PROJECT_VERSION_TWEAK})
+
 set(PACKAGE_NAME ${CMAKE_PROJECT_NAME})
 
 # Create the minimim ocpn version id string like ov50
