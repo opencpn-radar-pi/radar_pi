@@ -1,8 +1,6 @@
 
 == ShipDriver
 
-image::sd0.png[]
-
 === Links
 
 
@@ -17,7 +15,7 @@ Forum ShipDriver Thread]
 
 === 1. What and Why
 
-image::sd10.png[]
+image::images/sd10.png[]
 
 ShipDriver is intended as a very basic ship simulator. It allows a
 simulated vessel to be driven across the chart and mimics the appearance
@@ -43,8 +41,7 @@ Press the Enable button.
 image::sd1.png[]
 
 The AIS Preferences are used later
-link:/opencpn/opencpn_user_manual/plugins/other/shipdriver#ais[(See this
-section)]. They can be left unchecked.
+link:/opencpn/opencpn_user_manual/plugins/other/shipdriver#ais[(See this section)]. They can be left unchecked.
 
 image::sd2.png[sd2.png]
 
