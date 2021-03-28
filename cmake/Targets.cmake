@@ -19,6 +19,10 @@ endif ()
 if (DEFINED ENV{CMAKE_BUILD_PARALLEL_LEVEL})
   set(MAX_JOBS $ENV{CMAKE_BUILD_PARALLEL_LEVEL})
 endif ()
+if ("${ARCH}" MATCHES "armhf")
+  set (MAX_JOBS 2)
+  message(STATUS "Targets.cmake. Detected ARCH is: ${ARCH} MAX PARALLEL JOBS is set to: ${MAX_JOBS}.")
+endif ()
 set(_build_cmd
   cmake --build ${CMAKE_BINARY_DIR} --parallel ${MAX_JOBS} --config $<CONFIG>
 )
