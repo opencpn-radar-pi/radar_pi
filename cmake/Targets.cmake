@@ -8,6 +8,7 @@ if (TARGET tarball-build)
 endif ()
 
 include(Metadata)
+include(PluginCompiler)
 
 if (WIN32)
   if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 16)
@@ -17,7 +18,7 @@ endif ()
 
 # Set up _build_cmd
 set(_build_cmd
-  cmake --build ${CMAKE_BINARY_DIR} --parallel --config $<CONFIG>
+  cmake --build ${CMAKE_BINARY_DIR} --parallel ${OCPN_NPROC} --config $<CONFIG>
 )
 
 # Set up _build_target_cmd and _install_cmd

@@ -35,4 +35,4 @@ python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 mkdir  build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j $(nproc) VERBOSE=1 tarball
+make VERBOSE=1 tarball
