@@ -53,7 +53,7 @@ if [[ -z "$CI" ]]; then
     exit 0 
 fi
 
-make -j $(sysctl -n hw.physicalcpu) VERBOSE=1 tarball
+make VERBOSE=1 tarball
 
 make create-pkg
 

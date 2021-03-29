@@ -8,6 +8,7 @@ if (TARGET tarball-build)
 endif ()
 
 include(Metadata)
+include(PluginCompiler)
 
 if (WIN32)
   if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 16)
@@ -16,15 +17,8 @@ if (WIN32)
 endif ()
 
 # Set up _build_cmd
-if (DEFINED ENV{CMAKE_BUILD_PARALLEL_LEVEL})
-  set(MAX_JOBS $ENV{CMAKE_BUILD_PARALLEL_LEVEL})
-endif ()
-if ("${ARCH}" MATCHES "armhf")
-  set (MAX_JOBS 2)
-  message(STATUS "Targets.cmake. Detected ARCH is: ${ARCH} MAX PARALLEL JOBS is set to: ${MAX_JOBS}.")
-endif ()
 set(_build_cmd
-  cmake --build ${CMAKE_BINARY_DIR} --parallel ${MAX_JOBS} --config $<CONFIG>
+  cmake --build ${CMAKE_BINARY_DIR} --parallel ${OCPN_NPROC} --config $<CONFIG>
 )
 
 # Set up _build_target_cmd and _install_cmd
