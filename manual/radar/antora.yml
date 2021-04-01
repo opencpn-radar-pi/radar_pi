@@ -1,0 +1,4 @@
+name: radar
+title: Radar Manual
+version: '0.1'
+start_page: ROOT:Home.adoc 

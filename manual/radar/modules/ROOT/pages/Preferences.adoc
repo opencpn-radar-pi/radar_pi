@@ -1,0 +1,61 @@
+You can change various preferences for the plugin.
+
+The preferences dialog can be reached via _OpenCPN Options > Plugins >
+Radar > Preferences_ or via the PPI menu _Advanced > Preferences_.
+
+It looks like this:
+
+image::preferences.png[Preferences]
+
+== Range units
+
+You can choose Nautical Miles, Mixed or Kilometers. Not all radars
+support all types, in which case this setting will not change the
+reported settings.
+
+== GPU drawing method
+
+You can choose between two types of drawing the picture; Vertex Array
+and Shader. Depending on the hardware and OS it is possible that one
+performs better than the other. Shader will perform the same regardless
+of how ``busy'' the radar picture is, whereas Vertex Array will use more
+CPU when there is more to draw. Also, Shader draws a little more
+``soft'' image on most devices.
+
+== Control Menu Auto Hide
+
+If you have a small display, or just prefer it that way, you can make
+the _Control Menu_ dialog disappear automatically if you are not using
+it. You then need to access it by pressing the _Menu_ area on the PPI
+window or via the _Context_ menu (right mouse button.)
+
+== Guard zone styling
+
+Depending on the colors and transparency it can be hard to see where the
+guard zones are. Change the styling of the guard zones to fix this.
+
+== Guard zone sound
+
+If you don’t like the woman’s voice announcing a guard zone, you can
+change the alert sound, as well as the repetition time of such alarms
+when they are not confirmed.
+
+== Colors
+
+You can change the color palette for Target trails, Targets, and the
+Radar PPI window background and AIS targets.
+
+== Options
+
+You can choose whether to: * Ignore any radar heading passed in via
+RI10/11 (Navico Broadband only) * Pass RI10/11 radar heading to OpenCPN
+(Navico Broadband only) * Enable COG as heading, allows overlay when you
+do not have a compass heading input * Reverse the mouse wheel zoom
+direction
+
+You can choose the following display options: * Show ring at extreme
+range, allows you to see the exact maximum range that the radar is
+producing * Show guard zones on overlay * Show target trails on overlay
+* Show data (such as guard zones) on overlay when radar is standby
+
+And lastly, you can re-select your radar types.
