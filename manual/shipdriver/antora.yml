@@ -1,4 +1,4 @@
 name: shipdriver
-title: Ship Driver Manual
+title: ShipDriver
 version: '0.1'
 start_page: ROOT:shipdriver.adoc 
