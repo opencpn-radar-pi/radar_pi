@@ -83,8 +83,11 @@ class RME120Receive : public RadarReceive {
       m_info = m_ri->GetRadarLocationInfo();
       LOG_INFO(wxT("radar addresses from ini file loaded"));
     }
-    LOG_INFO(wxT("%s using addresses: %s"), m_ri->m_name, m_info.to_string());
-    m_ri->SetRadarLocationInfo(m_info);  //  in case the initial values from constuctor are used, write these to radar_pi
+    LOG_INFO(wxT(" %s using addresses: %s"), m_ri->m_name, m_info.to_string());
+    m_ri->SetRadarLocationInfo(m_info); //  in case the initial values from constuctor are used, write these to radar_pi
+   
+    m_range_meters = 1;  // this will be considered an invalid value.
+    m_previous_angle = 0;
   };
 
   ~RME120Receive(){};
@@ -113,6 +116,7 @@ class RME120Receive : public RadarReceive {
 
   int m_next_spoke;
   bool m_first_receive;
+  SpokeBearing m_previous_angle;
 
   wxCriticalSection m_lock;  // Protects m_status
   wxString m_status;         // Userfriendly string
