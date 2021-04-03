@@ -33,7 +33,6 @@
  */
 
 #include "RME120Receive.h"
-
 #include "MessageBox.h"
 #include "RME120Control.h"
 
@@ -48,7 +47,7 @@ PLUGIN_BEGIN_NAMESPACE
 #define MILLIS_PER_SELECT 250
 #define SECONDS_SELECT(x) ((x)*MILLISECONDS_PER_SECOND / MILLIS_PER_SELECT)
 #define MOD_ROTATION2048(raw) (((raw) + 2 * LINES_PER_ROTATION) % LINES_PER_ROTATION)
-#define LINES_PER_ROTATION (2048)  // but use only half that in practice
+#define LINES_PER_ROTATION (2048)  // with lower ranges only 1024 lines used
 #define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double)SPOKES / DEGREES_PER_ROTATION))
 
 //
@@ -172,6 +171,7 @@ void *RME120Receive::Entry(void) {
   SOCKET reportSocket = INVALID_SOCKET;
   LOG_VERBOSE(wxT("RamarineReceive thread %s starting"), m_ri->m_name.c_str());
   reportSocket = GetNewReportSocket();  // Start using the same interface_addr as previous time
+
   while (m_receive_socket != INVALID_SOCKET) {
     if (reportSocket == INVALID_SOCKET) {
       reportSocket = PickNextEthernetCard();
@@ -180,7 +180,7 @@ void *RME120Receive::Entry(void) {
         no_spoke_timeout = 0;
       }
     }
-    struct timeval tv = {0, (int)(MILLIS_PER_SELECT * 1000)};
+    struct timeval tv = {(long)0, (long)(MILLIS_PER_SELECT * 1000)};
 
     fd_set fdin;
     FD_ZERO(&fdin);
@@ -296,6 +296,7 @@ void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {  // This is th
   time_t now = time(0);
   wxString MOD_serial;
   wxString IF_serial;
+  // LOG_BINARY_RECEIVE(wxT("received frame"), data, len);
   m_ri->resetTimeout(now);
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
   m_ri->m_statistics.packets++;
@@ -319,13 +320,17 @@ void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {  // This is th
         m_info = m_ri->GetRadarLocationInfo();
         m_ri->m_radar_location_info.serialNr = IF_serial;
         break;
+      case 0x00018801:  // HD radar
+        ProcessRMReport(data, len);
+        break;
       case 0x00010007:
       case 0x00010008:
       case 0x00010009:
       case 0x00018942:
         break;
       default:
-        // fprintf(stderr, "Unknown message ID %08X.\n", (int)msgId);
+        //logBinaryData(wxT("report "), data, len);
+        //fprintf(stderr, "Unknown message ID %08X.\n", (int)msgId);
         break;
     }
   }
@@ -342,7 +347,7 @@ void RME120Receive::UpdateSendCommand() {
 
 struct RMRadarReport {
   uint32_t field01;       // 0x010001  // 0-3
-  uint32_t ranges[11];    // 4 - 7
+  uint32_t ranges[11];    // 4 - 47
   uint32_t fieldx_1[33];  // 48 -
 
   uint8_t status;       // 2 - warmup, 1 - transmit, 0 - standby, 6 - shutting down (warmup time - countdown), 3 - shutdown  // 180
@@ -421,143 +426,154 @@ void RME120Receive::logBinaryData(const wxString &what, const uint8_t *data, int
   explain += what;
   explain += wxString::Format(wxT(" %d bytes: "), size);
   for (i = 0; i < size; i++) {
+    if (i % 16 == 0) explain += wxString::Format(wxT(" \n %d    "), i);
     explain += wxString::Format(wxT(" %02X"), data[i]);
+    
   }
-  LOG_TRANSMIT(explain);
+  LOG_INFO(explain);
 }
 
 void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
-  if (len == sizeof(RMRadarReport)) {
-    RMRadarReport *bl_pter = (RMRadarReport *)data;
-    wxString s;
-    if (LOGLEVEL_RECEIVE) {
-      logBinaryData(wxT("RMRadarReport"), data, len);
-    }
-    if (bl_pter->field01 == 0x010001) {
-      switch (bl_pter->status) {
-        case 0:
-          LOG_RECEIVE(wxT("%s received transmit off from %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
-          m_ri->m_state.Update(RADAR_STANDBY);
-          break;
-        case 1:
-          LOG_RECEIVE(wxT("%s received transmit on from %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
-          m_ri->m_state.Update(RADAR_TRANSMIT);
-          break;
-        case 2:  // Warmup
-          LOG_RECEIVE(wxT("%s radar is warming up %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
-          m_ri->m_state.Update(RADAR_WARMING_UP);
-          break;
-        case 3:  // Off
-          LOG_RECEIVE(wxT("%s radar is off %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
-          m_ri->m_state.Update(RADAR_OFF);
-          break;
-        default:
-          m_ri->m_state.Update(RADAR_STANDBY);
-          break;
-      }
-      if (bl_pter->ranges[0] == 125) {
-        M_SETTINGS.range_units = RANGE_NAUTIC;  // We don't know yet how Raymarine switches range units
-      } else if (bl_pter->ranges[0] == 135) {   // Raymarine has no RANGE_MIXED
-                                                // Ray marine alse has units statue miles, not supported by radar_pi
-        M_SETTINGS.range_units = RANGE_METRIC;
-      } else {
-        LOG_INFO(wxT("Other range units found, bl_pter->ranges[0]= %i"), bl_pter->ranges[0]);
-        M_SETTINGS.range_units = RANGE_NAUTIC;  // to be adapted to RANGE_MIXED if that exists with Raymarine
-      }
+  RMRadarReport *bl_pter = (RMRadarReport *)data;
+  wxString s;
+  // logBinaryData(wxT("RMRadarReport"), data, len);
+  bool HDtype = bl_pter->field01 == 0x00018801;
 
-      for (int i = 0; i < 11; i++) {
-        m_ri->m_radar_ranges[i] = (int)(1.852 * (double)bl_pter->ranges[i]);
-        LOG_RECEIVE(wxT("received range= %i, radar_ranges=  %d "), bl_pter->ranges[i], m_ri->m_radar_ranges[i]);
-      }
-
-      if ((m_ri->m_radar_ranges[bl_pter->range_id] * 2) != m_range_meters) {
-        if (m_pi->m_settings.verbose >= 1) {
-          LOG_RECEIVE(wxT("%s now scanning with range %d meters (was %d meters)"), m_ri->m_name.c_str(),
-                      m_ri->m_radar_ranges[bl_pter->range_id] * 2, m_range_meters);
-        }
-        m_range_meters = m_ri->m_radar_ranges[bl_pter->range_id] * 2;  // displayed values are half of scanned values
-        m_updated_range = true;
-        m_ri->m_range.Update(m_range_meters / 2);  // RM MFD shows half of what is received
-        LOG_RECEIVE(wxT("m_range updated to %i"), (m_range_meters / 2));
-      }
-
-      RadarControlState state;
-      state = (bl_pter->auto_gain > 0) ? RCS_AUTO_1 : RCS_MANUAL;
-      m_ri->m_gain.TransformAndUpdate(bl_pter->gain);
-      m_ri->m_gain.UpdateState(state);
-      LOG_RECEIVE(wxT("gain updated received1= %i, displayed = %i"), bl_pter->gain, m_ri->m_gain.GetValue());
-
-      state = (RadarControlState)bl_pter->auto_sea;
-      m_ri->m_sea.TransformAndUpdate(bl_pter->sea_value);
-      m_ri->m_sea.UpdateState(state);
-      LOG_RECEIVE(wxT("sea updated received= %i, displayed = %i, state=%i"), bl_pter->sea_value, m_ri->m_sea.GetValue(), state);
-
-      state = (bl_pter->rain_enabled) ? RCS_MANUAL : RCS_OFF;
-      LOG_RECEIVE(wxT("rain state=%i bl_pter->rain_enabled=%i"), state, bl_pter->rain_enabled);
-      m_ri->m_rain.TransformAndUpdate(bl_pter->rain_value);
-      m_ri->m_rain.UpdateState(state);
-      LOG_RECEIVE(wxT("rain updated received= %i, displayed = %i state=%i"), bl_pter->rain_value, m_ri->m_rain.GetValue(), state);
-
-      state = (bl_pter->ftc_enabled) ? RCS_MANUAL : RCS_OFF;
-      m_ri->m_ftc.TransformAndUpdate(bl_pter->ftc_value);
-      m_ri->m_ftc.UpdateState(state);
-      LOG_RECEIVE(wxT("ftc updated received= %i, displayed = %i state=%i"), bl_pter->ftc_value, m_ri->m_ftc.GetValue(), state);
-
-      m_ri->m_target_expansion.Update(bl_pter->target_expansion);
-      m_ri->m_interference_rejection.Update(bl_pter->interference_rejection);
-
-      int ba = (int)bl_pter->bearing_offset;
-      m_ri->m_bearing_alignment.Update(ba);
-
-      state = (bl_pter->auto_tune > 0) ? RCS_AUTO_1 : RCS_MANUAL;
-      m_ri->m_tune_fine.Update(bl_pter->tune, state);
-
-      state = (bl_pter->auto_tune > 0) ? RCS_AUTO_1 : RCS_MANUAL;
-
-      m_ri->m_tune_coarse.UpdateState(state);
-
-      state = (bl_pter->mbs_enabled > 0) ? RCS_MANUAL : RCS_OFF;
-      m_ri->m_main_bang_suppression.Update(bl_pter->mbs_enabled, RCS_MANUAL);
-
-      m_ri->m_warmup_time.Update(bl_pter->warmup_time);
-      m_ri->m_signal_strength.Update(bl_pter->signal_strength);
-    }
-
-    int status = m_ri->m_state.GetValue();
-    wxString stat;
-    switch (status) {
-      case RADAR_OFF:
-        LOG_VERBOSE(wxT("%s reports status RADAR_OFF"), m_ri->m_name.c_str());
-        stat = _("Off");
+  if (bl_pter->field01 == 0x00018801 || bl_pter->field01 == 0x010001) {  // HD radar or analog
+    switch (bl_pter->status) {
+      case 0:
+        LOG_RECEIVE(wxT("%s received transmit off from %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
+        m_ri->m_state.Update(RADAR_STANDBY);
         break;
-
-      case RADAR_STANDBY:
-        LOG_VERBOSE(wxT("%s reports status STANDBY"), m_ri->m_name.c_str());
-        stat = _("Standby");
+      case 1:
+        LOG_RECEIVE(wxT("%s received transmit on from %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
+        m_ri->m_state.Update(RADAR_TRANSMIT);
         break;
-
-      case RADAR_WARMING_UP:
-        LOG_VERBOSE(wxT("%s reports status RADAR_WARMING_UP"), m_ri->m_name.c_str());
-        stat = _("Warming up");
+      case 2:  // Warmup
+        LOG_RECEIVE(wxT("%s radar is warming up %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
+        m_ri->m_state.Update(RADAR_WARMING_UP);
         break;
-
-      case RADAR_TRANSMIT:
-        LOG_VERBOSE(wxT("%s reports status RADAR_TRANSMIT"), m_ri->m_name.c_str());
-        stat = _("Transmit");
+      case 3:  // Off
+        LOG_RECEIVE(wxT("%s radar is off %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
+        m_ri->m_state.Update(RADAR_OFF);
         break;
-
       default:
-        // LOG_BINARY_RECEIVE(wxT("received unknown radar status"), report, len);
-        stat = _("Unknown status");
+        m_ri->m_state.Update(RADAR_STANDBY);
         break;
     }
+    if (bl_pter->ranges[0] == 125) {
+      M_SETTINGS.range_units = RANGE_NAUTIC;  // We don't know yet how Raymarine switches range units
+    } else if (bl_pter->ranges[0] == 135) {   // Raymarine has no RANGE_MIXED
+                                              // Ray marine alse has units statue miles, not supported by radar_pi
+      M_SETTINGS.range_units = RANGE_METRIC;
+    } else {
+      LOG_INFO(wxT("Other range units found, bl_pter->ranges[0]= %i"), bl_pter->ranges[0]);
+      M_SETTINGS.range_units = RANGE_NAUTIC;  // to be adapted to RANGE_MIXED if that exists with Raymarine
+    }
 
-    s = wxString::Format(wxT("IP %s %s"), m_ri->m_radar_address.FormatNetworkAddress(), stat.c_str());
+    for (int i = 0; i < 11; i++) {
+      m_ri->m_radar_ranges[i] = (int)(1.852 * (double)bl_pter->ranges[i]);
+      LOG_RECEIVE(wxT("received range= %i, radar_ranges=  %d "), bl_pter->ranges[i], m_ri->m_radar_ranges[i]);
+    }
+    int range_id;
+    if (HDtype) {
+      range_id = data[296];
+    } else {
+      range_id = bl_pter->range_id;
+    }
+    
+    if ((m_ri->m_radar_ranges[range_id] * 2) != m_range_meters) {
+      if (m_pi->m_settings.verbose >= 1) {
+        LOG_RECEIVE(wxT("%s now scanning with range %d meters (was %d meters)"), m_ri->m_name.c_str(),
+                    m_ri->m_radar_ranges[range_id] * 2, m_range_meters);
+      }
+      if (m_ri->m_radar_ranges[range_id] > 0) {
+        m_range_meters = m_ri->m_radar_ranges[range_id] * 2;  // displayed values are half of scanned values
+      m_updated_range = true;
+      m_ri->m_range.Update(m_range_meters / 2);  // RM MFD shows half of what is received
+      LOG_RECEIVE(wxT("m_range updated to %i"), (m_range_meters / 2));
+      } else {
+        m_range_meters = 1; // prevent accidents down the road
+        return;
+      }
+    }
 
-    RadarLocationInfo info = m_ri->GetRadarLocationInfo();
-    s << wxT("\n") << _("IF-Serial #") << info.serialNr;
-    SetInfoStatus(s);
+    RadarControlState state;
+    state = (bl_pter->auto_gain > 0) ? RCS_AUTO_1 : RCS_MANUAL;
+    m_ri->m_gain.TransformAndUpdate(bl_pter->gain);
+    m_ri->m_gain.UpdateState(state);
+    LOG_RECEIVE(wxT("gain updated received1= %i, displayed = %i"), bl_pter->gain, m_ri->m_gain.GetValue());
+
+    state = (RadarControlState)bl_pter->auto_sea;
+    m_ri->m_sea.TransformAndUpdate(bl_pter->sea_value);
+    m_ri->m_sea.UpdateState(state);
+    LOG_RECEIVE(wxT("sea updated received= %i, displayed = %i, state=%i"), bl_pter->sea_value, m_ri->m_sea.GetValue(), state);
+
+    state = (bl_pter->rain_enabled) ? RCS_MANUAL : RCS_OFF;
+    LOG_RECEIVE(wxT("rain state=%i bl_pter->rain_enabled=%i"), state, bl_pter->rain_enabled);
+    m_ri->m_rain.TransformAndUpdate(bl_pter->rain_value);
+    m_ri->m_rain.UpdateState(state);
+    LOG_RECEIVE(wxT("rain updated received= %i, displayed = %i state=%i"), bl_pter->rain_value, m_ri->m_rain.GetValue(), state);
+
+    state = (bl_pter->ftc_enabled) ? RCS_MANUAL : RCS_OFF;
+    m_ri->m_ftc.TransformAndUpdate(bl_pter->ftc_value);
+    m_ri->m_ftc.UpdateState(state);
+    LOG_RECEIVE(wxT("ftc updated received= %i, displayed = %i state=%i"), bl_pter->ftc_value, m_ri->m_ftc.GetValue(), state);
+
+    m_ri->m_target_expansion.Update(bl_pter->target_expansion);
+    m_ri->m_interference_rejection.Update(bl_pter->interference_rejection);
+
+    int ba = (int)bl_pter->bearing_offset;
+    m_ri->m_bearing_alignment.Update(ba);
+
+    state = (bl_pter->auto_tune > 0) ? RCS_AUTO_1 : RCS_MANUAL;
+    m_ri->m_tune_fine.Update(bl_pter->tune, state);
+
+    state = (bl_pter->auto_tune > 0) ? RCS_AUTO_1 : RCS_MANUAL;
+
+    m_ri->m_tune_coarse.UpdateState(state);
+
+    state = (bl_pter->mbs_enabled > 0) ? RCS_MANUAL : RCS_OFF;
+    m_ri->m_main_bang_suppression.Update(bl_pter->mbs_enabled, RCS_MANUAL);
+
+    m_ri->m_warmup_time.Update(bl_pter->warmup_time);
+    m_ri->m_signal_strength.Update(bl_pter->signal_strength);
   }
+
+  int status = m_ri->m_state.GetValue();
+  wxString stat;
+  switch (status) {
+    case RADAR_OFF:
+      LOG_VERBOSE(wxT("%s reports status RADAR_OFF"), m_ri->m_name.c_str());
+      stat = _("Off");
+      break;
+
+    case RADAR_STANDBY:
+      LOG_VERBOSE(wxT("%s reports status STANDBY"), m_ri->m_name.c_str());
+      stat = _("Standby");
+      break;
+
+    case RADAR_WARMING_UP:
+      LOG_VERBOSE(wxT("%s reports status RADAR_WARMING_UP"), m_ri->m_name.c_str());
+      stat = _("Warming up");
+      break;
+
+    case RADAR_TRANSMIT:
+      LOG_VERBOSE(wxT("%s reports status RADAR_TRANSMIT"), m_ri->m_name.c_str());
+      stat = _("Transmit");
+      break;
+
+    default:
+      // LOG_BINARY_RECEIVE(wxT("received unknown radar status"), report, len);
+      stat = _("Unknown status");
+      break;
+  }
+
+  s = wxString::Format(wxT("IP %s %s"), m_ri->m_radar_address.FormatNetworkAddress(), stat.c_str());
+
+  RadarLocationInfo info = m_ri->GetRadarLocationInfo();
+  s << wxT("\n") << _("IF-Serial #") << info.serialNr;
+  SetInfoStatus(s);
 }
 
 void RME120Receive::ProcessFixedReport(const UINT8 *data, int len) {
@@ -630,8 +646,15 @@ struct SpokeData {
 };
 
 void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
+  if (m_range_meters == 1) {
+    LOG_RECEIVE(wxT("Invalid range"));
+    return;
+  }
+  //logBinaryData(wxT("Scandata"), data, len);
   if (len > (int)(sizeof(Header1) + sizeof(Header3))) {
     Header1 *pHeader = (Header1 *)data;
+    bool HDtype = false;
+    u_int returns_per_line;
     if (pHeader->field01 != 0x00010003 || pHeader->fieldx_1 != 0x0000001c || pHeader->fieldx_3 != 0x0000001) {
       fprintf(stderr, "ProcessScanData::Packet header mismatch %x, %x, %x, %x.\n", pHeader->field01, pHeader->fieldx_1,
               pHeader->nspokes, pHeader->fieldx_3);
@@ -657,17 +680,20 @@ void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
         break;
       }
 
-      if (sHeader->fieldx_2 != 0x00000001 || sHeader->fieldx_3 != 0x00000002 || sHeader->fieldx_4 != 0x00000001 ||
-          sHeader->fieldx_5 != 0x00000001 || sHeader->fieldx_6 != 0x000001f4 || sHeader->fieldx_7 != 0x00000001) {
-        if (sHeader->fieldx_2 != 3 || sHeader->fieldx_3 != 2 || sHeader->fieldx_4 != 3 || sHeader->fieldx_5 != 0 ||
-            sHeader->fieldx_6 != 0 || sHeader->fieldx_7 != 1) {
-          LOG_RECEIVE(wxT("ProcessScanData::Scan header #%d part 2 check failed.\n"), headerIdx);
-          break;
-        }
+      if (sHeader->fieldx_2 == 0x00000001 && sHeader->fieldx_3 == 0x00000002 && sHeader->fieldx_4 == 0x00000001 &&
+          sHeader->fieldx_5 == 0x00000001 && sHeader->fieldx_6 == 0x000001f4 && sHeader->fieldx_7 == 0x00000001) {
+        HDtype = false;
+        returns_per_line = 512;
+      } else if (sHeader->fieldx_2 == 3 && sHeader->fieldx_3 == 2 && sHeader->fieldx_4 == 3 && sHeader->fieldx_5 == 1 &&
+                 sHeader->fieldx_6 == 0 && sHeader->fieldx_7 == 1) {
+        HDtype = true;
+        returns_per_line = 1024;
+      } else {
+        LOG_RECEIVE(wxT("ProcessScanData::Scan header #%d part 2 check failed.\n"), headerIdx);
+        break;
       }
 
       nextOffset += sizeof(Header3);
-
       Header2 *nHeader = (Header2 *)(data + nextOffset);
       if (nHeader->field01 == 0x00000002) {
         if (nHeader->length != 0x0000001c) {
@@ -675,54 +701,79 @@ void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
         }
         nextOffset += nHeader->length;
       }
-
       SpokeData *pSData = (SpokeData *)(data + nextOffset);
-
       if ((pSData->field01 & 0x7fffffff) != 0x00000003 || pSData->length < pSData->data_len + 8) {
         LOG_RECEIVE(wxT("ProcessScanData::Scan data header #%d check failed %x, %d, %d.\n"), headerIdx, pSData->field01,
                     pSData->length, pSData->data_len);
         break;
       }
-      UINT8 unpacked_data[1024], *dataPtr = 0;
+      UINT8 unpacked_data[10240], *dataPtr = 0;
 
       uint8_t *dData = (uint8_t *)unpacked_data;
       uint8_t *sData = (uint8_t *)data + nextOffset + sizeof(SpokeData);
 
       int iS = 0;
       int iD = 0;
+      // LOG_BINARY_RECEIVE(wxT("spoke data sData"), sData, pSData->data_len);
       while (iS < (int)pSData->data_len) {
-        if (*sData != 0x5c) {
-          *dData++ = (((*sData) & 0x0f) << 4) + 0x0f;
-          *dData++ = ((*sData) & 0xf0) + 0x0f;
-          sData++;
-          iS++;
-          iD += 2;
-        } else {
-          uint8_t nFill = sData[1];
-          uint8_t cFill = sData[2];
-
-          for (int i = 0; i < nFill; i++) {
-            *dData++ = ((cFill & 0x0f) << 4) + 0x0f;
-            *dData++ = (cFill & 0xf0) + 0x0f;
+        if (HDtype) {
+          if (iD >= 1024) {  // remove trailing zero's
+            break;
           }
-          sData += 3;
-          iS += 3;
-          iD += nFill * 2;
+          if (*sData != 0x5c) {
+            *dData++ = *sData;
+            sData++;
+            iS++;
+            iD++;
+          } else {
+            uint8_t nFill = sData[1];  // number to be filled
+            uint8_t cFill = sData[2];  // data to be filled
+            for (int i = 0; i < nFill; i++) {
+              *dData++ = cFill;
+            }
+            sData += 3;
+            iS += 3;
+            iD += nFill;
+          }
+        } else {  // not HDtype
+          if (*sData != 0x5c) {
+            *dData++ = (((*sData) & 0x0f) << 4) + 0x0f;
+            *dData++ = ((*sData) & 0xf0) + 0x0f;
+            sData++;
+            iS++;
+            iD += 2;
+          } else {
+            uint8_t nFill = sData[1];
+            uint8_t cFill = sData[2];
+
+            for (int i = 0; i < nFill; i++) {
+              *dData++ = ((cFill & 0x0f) << 4) + 0x0f;
+              *dData++ = (cFill & 0xf0) + 0x0f;
+            }
+            sData += 3;
+            iS += 3;
+            iD += nFill * 2;
+          }
         }
       }
-      if (iD != 512) {
-        while (iS < (int)pSData->length - 8 && iD < 512) {
-          *dData++ = ((*sData) & 0x0f) << 4;
-          *dData++ = (*sData) & 0xf0;
-          sData++;
-          iS++;
-          iD += 2;
+      if (iD != returns_per_line) {
+        while (iS < (int)pSData->length - 8 && iD <= returns_per_line) {
+          if (HDtype) {
+            *dData++ = *sData;
+            sData++;
+            iS++;
+            iD++;
+          } else {
+            *dData++ = ((*sData) & 0x0f) << 4;
+            *dData++ = (*sData) & 0xf0;
+            sData++;
+            iS++;
+            iD += 2;
+          }
         }
       }
-      if (iD != 512) {
-        /* LOG_INFO(wxT("ProcessScanData::Packet %d line %d (%d/%x) not complete %d.\n"), packetIdx, headerIdx,
-               scan_idx, scan_idx, iD);*/
-      }
+
+      // LOG_BINARY_RECEIVE(wxT("spoke data dData"), unpacked_data, pSData->data_len);
       dataPtr = unpacked_data;
 
       nextOffset += pSData->length;
@@ -750,9 +801,26 @@ void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
       int angle_raw = spoke * 2 + SCALE_DEGREES_TO_RAW(180);  // Compensate openGL rotation compared to North UP
       int bearing_raw = angle_raw + hdt_raw;
 
-      SpokeBearing a = MOD_ROTATION2048(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
-      SpokeBearing b = MOD_ROTATION2048(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
-      m_ri->ProcessRadarSpoke(a, b, dataPtr, RETURNS_PER_LINE, m_range_meters, nowMillis);
+      SpokeBearing angle = MOD_ROTATION2048(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
+      SpokeBearing bearing = MOD_ROTATION2048(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
+      bool spokes_1024;
+      if (int(angle - m_previous_angle) == 2 || int(angle - m_previous_angle) == -2046) {
+        spokes_1024 = true;
+      } else {
+        spokes_1024 = false;
+      }
+      m_previous_angle = angle;
+      if (m_range_meters == 1) {
+        LOG_INFO(wxT("Error range invalid"));
+        return;
+        }
+      /*LOG_INFO(wxT("ProcessRadarSpoke a=%i, angle_raw=%i b=%i, bearing_raw=%i, returns_per_line=%i range=%i spokes=%i"), angle, angle_raw, bearing, bearing_raw, returns_per_line,
+               m_range_meters, m_ri->m_spokes);*/
+      m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, m_range_meters, nowMillis);
+      // When te HD radar is transmitting in a mode with 1024 spokes, insert additional spokes to fill the image
+      if (spokes_1024 && angle + 1 < m_ri->m_spokes && bearing + 1 < m_ri->m_spokes) {
+        m_ri->ProcessRadarSpoke(angle + 1, bearing + 1, dataPtr, returns_per_line, m_range_meters, nowMillis);
+      }
     }
   }
 }
