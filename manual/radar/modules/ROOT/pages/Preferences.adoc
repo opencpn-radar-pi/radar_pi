@@ -1,3 +1,5 @@
+:imagesdir: ../images/
+== Preferences dialog
 You can change various preferences for the plugin.
 
 The preferences dialog can be reached via _OpenCPN Options > Plugins >
@@ -18,9 +20,9 @@ reported settings.
 You can choose between two types of drawing the picture; Vertex Array
 and Shader. Depending on the hardware and OS it is possible that one
 performs better than the other. Shader will perform the same regardless
-of how ``busy'' the radar picture is, whereas Vertex Array will use more
+of how "busy" the radar picture is, whereas Vertex Array will use more
 CPU when there is more to draw. Also, Shader draws a little more
-``soft'' image on most devices.
+"soft" image on most devices.
 
 == Control Menu Auto Hide
 
@@ -47,15 +49,21 @@ Radar PPI window background and AIS targets.
 
 == Options
 
-You can choose whether to: * Ignore any radar heading passed in via
-RI10/11 (Navico Broadband only) * Pass RI10/11 radar heading to OpenCPN
-(Navico Broadband only) * Enable COG as heading, allows overlay when you
-do not have a compass heading input * Reverse the mouse wheel zoom
-direction
+You can choose whether to:
 
-You can choose the following display options: * Show ring at extreme
-range, allows you to see the exact maximum range that the radar is
-producing * Show guard zones on overlay * Show target trails on overlay
-* Show data (such as guard zones) on overlay when radar is standby
+* _Ignore radar heading_ passed in via RI10/11 (Navico Broadband only) 
+* _Pass RI10/11 radar heading to OpenCPN_ (Navico Broadband only) 
+* _Enable COG as heading_, allows overlay when you do not have a compass heading input. 
+* _Reverse the mouse wheel zoom direction_
+
+You can choose the following display options: 
+
+* _Show ring at extreme range_, allows you to see the exact maximum range that the radar is
+producing 
+* _Show guard zones on overlay_ 
+* _Show target trails on overlay_
+* _Show data on overlay when radar is standby._ (Such as guard zones)
 
 And lastly, you can re-select your radar types.
+
+xref:Home.adoc[Back to overview Plugin radar_pi]

@@ -1,3 +1,4 @@
+:imagesdir: ../images/
 The supported Raymarine radars are very easy to use with OpenCPN. All
 you need is a wired Ethernet connection.
 
@@ -19,3 +20,5 @@ Connect an Ethernet switch and link it to the Seatalk _hs_ port on your
 display.
 
 << more to come >>
+
+xref:Home.adoc[Back to overview Plugin radar_pi]

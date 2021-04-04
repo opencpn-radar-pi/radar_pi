@@ -1,12 +1,14 @@
+:imagesdir: ../images/
+== Radar operations
+
 == The toolbar button
+.The toolbar button shows the state of the radar:
+* Radar not detected image:radar_notdetected_n.png[] 
+* Radar standby  image:radar_standby_n.png[] 
+* Radar transmitting  image:radar_transmit_n.png[] 
+* Radar windows hidden image:radar_hidden_n.png[] 
 
-The toolbar button shows the state of the radar:
-
-= Radar not detected = Radar standby = Radar transmitting = Radar
-windows hidden
-
-The action taken when clicking the icon depends on the current state:
-
+.The action taken when clicking the icon depends on the current state:
 * When radar overlay is enabled but the control menu is not shown it
 shows the control menu.
 * Otherwise it toggles the radar windows and overlay off (hidden) or on
@@ -18,14 +20,14 @@ and not have the distraction of radar windows and paints over your
 charts. The radar keeps its current settings (it keeps transmitting if
 this was on) until you un-hide (show) it again.
 
-== The context menu
-
+== The OpenCPN context menu
 There are also entries in the _context menu_ for the radar plugin. The
 context menu is usually accessed by clicking the right mouse button on
-the chart window.
+the chart window. 
 
-These are:
+image::radar_context_menu_1.png[]
 
+.These are:
 * Hide radar
 * Show radar
 * Radar control…
@@ -42,8 +44,8 @@ Up to four classic radar displays, known as Position Plot Indicators
 (which makes sense only if you enabled the overlay over the chart). You
 can resize, move or dock them into the chart display. To close them you
 use the default OS button on the top of the window. To dock or undock
-them, open the radar control menu and select `’Windows > Float/Dock
-PPI'’.
+them, open the radar control menu and select _Windows > Float/Dock
+PPI_ .
 
 The author likes to use two radar ranges with the windows docked on the
 right side of the display, one above the other. But just try it out to
@@ -79,7 +81,7 @@ When the radar is not transmitting the menu looks like this:
 |Guard zones | |Controlling the guard zones
 |Window | |How the PPI or overlay is displayed
 |Timed transmit | |Schedule radar transmission
-|Start/Stop radar |Standby, Transmit |Toggle radar transmit state
+|Start/Stop radar |Standby, Transmitting, Timed state |Toggle radar transmit state
 |===
 
 _Note:_ Your radar may not support all shown items, in which case they
@@ -123,6 +125,8 @@ your radar is having trouble with reliable target detection. It can also
 be used as a poor-mans doppler effect: if the radar heading
 stabilization would be perfect, only moving targets will show a large
 trail.
+You can switch between _true_ and _relative_ trails. The latter shows the 
+targets motion relative your own course and speed.
 
 You can also modify whether AIS and ARPA triangles are shown on the PPI
 windows.
@@ -143,7 +147,7 @@ position will be marked with a white cursor.
 The cursor menu will allow you to use this white cursor mark. You can
 either use it as an EBL/VRM mark, which shows an Electronic Bearing Line
 (EBL) with a range ring (Virtual Range Mark). The EBL/VRM can be used as
-a ``memory'' so that you can compare the current position of a target
+a "memory" so that you can compare the current position of a target
 with an earlier position and range.
 
 The other use is that you can have the radar acquire a target that is at
@@ -196,5 +200,7 @@ Timed transmit is useful for magnetron radars that (a) use a lot of
 power and (b) have a limited life span. For modern non-magnetron digital
 radars this is not really useful.
 
-It allows you to set both the ``on'' time and the ``standby'' time of
-the radar.
+It allows you to set both the _on_ time and the _standby_ time of
+the radar. When activated the status will be shown at the _Control menu > Start/Stopp_ button.
+
+xref:Home.adoc[Back to overview Plugin radar_pi]

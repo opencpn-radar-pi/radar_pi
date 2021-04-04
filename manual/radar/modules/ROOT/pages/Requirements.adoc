@@ -1,3 +1,5 @@
+:imagesdir: ../images/
+== Requirements
 The plugin has very few hard requirements nowadays, but the
 functionality does increase with more sensors. Let’s start with a
 minimal setup and grow this step by step, and see what functionality is
@@ -32,7 +34,11 @@ direction) is stored with the data.
 == GPS/GNSS location
 
 The plugin requires a GNSS location (usually GPS) to be able to draw the
-radar image over the chart (`’overlay'’). By default it also requires a
+radar image over the chart (_overlay_). By default it also requires a
 compass heading, as COG is not useful at low speeds. There is a setting
 that allows the use of COG for overlay, but it does mean that the radar
-overlay is not useful at anchor or other zero/low speed situations.
+overlay is not useful at anchor or other zero/low speed situations. 
+Also is the COG affected by leeway and currents and may point sideways 
+leading to a misplaced overlay picture.
+
+xref:Home.adoc[Back to overview Plugin radar_pi]
