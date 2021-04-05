@@ -1,3 +1,5 @@
+:imagesdir: ../images/
+== Garmin hardware installation.
 The Garmin HD and xHD radars are very easy to use with OpenCPN. All you
 need is a wired Ethernet connection.
 
@@ -29,8 +31,7 @@ to ground (the shield of the ethernet cable.)
 
 A typical installation with a generic switch would look like this:
 
-image::radar_garmin_with_switch.png[Garmin connection via Ethernet
-Switch]
+image::radar_garmin_with_switch.png[Garmin direct connection]
 
 == Installation with only a scanner
 
@@ -112,9 +113,11 @@ different (and not explained here yet.)
 ==== Microsoft Windows
 
 In Microsoft Windows, it is also possible to setup alias IP addresses.
-For example, in Windows XP you may select _Network Adapter ­>
-Properties­ > TCP/IP­ > Properties­ > Advanced_. Here you may enter any
-additional IP addresses (aliases) as required. Use IP address
+For example, in Windows you may select _Network Adapter ­>
+Properties­ > TCP/IP­/IPv4 > Properties­ > Advanced_. Here you may add an
+additional IP address (aliases) as required. Use IP address
 `172.16.1.1` with a netmask of `255.255.240.0`. Note that on Windows,
-alias IP addresses may only be set if all static IP addresses are
+alias IP addresses may only be set if a static IP addresses are
 enabled, and DHCP auto configuration is not used.
+
+xref:Home.adoc[Back to overview Plugin radar_pi]

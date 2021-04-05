@@ -1,3 +1,4 @@
+:imagesdir: ../images/
 Release 5.2.0 contains support for (older) Raymarine radars.
 
 This is based on the Raymarine plugin project originally written by
@@ -56,3 +57,5 @@ Plugin Support: * ? = We hope that this will work, we just don’t know
 yet * Yes = This is what the original plugin by ab2knovs
 (https://github.com/ab2nkovs/RMRadar_pi) claimed to support * NY = Not
 yet, please help if you have such a scanner
+
+xref:Home.adoc[Back to overview Plugin radar_pi]

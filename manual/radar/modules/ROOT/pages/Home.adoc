@@ -1,3 +1,6 @@
+:imagesdir: ../images/
+== Plugin radar_pi
+
 radar_pi is a plugin for http://www.opencpn.org[OpenCPN] that allows
 full integration of certain radar scanners.
 
@@ -11,8 +14,9 @@ The following radar scanners are supported:
 * Navico HALO (20, 20+, 24, 4, 6, 8)
 * xref:Raymarine-radome-model-support.adoc[Raymarine (older) radars]
 * A simple emulator
+* (Not fully verified support for Garmin GMR18 is reported)
 
-The plugin can be operated as the only control station for your scanner,
+The plugin can be operated as the only control station for your radar scanner,
 as it allows access to all setup operations such as antenna direction
 correction and antenna height, as well as cooperate in a multi-station
 setup – whether multiple OpenCPN installations or one or more
@@ -27,10 +31,11 @@ both physical radars, combining to four different scans simultaneously
 on your computer screen.
 
 The plugin has class leading ARPA and MARPA support, supporting 50 ARPA
-and MARPA targets as well as _target trails_ support comparable to
-commercial level radars as well as _guard zone_ support. It supports two
-guard zones per radar as well as two _Electronic Bearing Lines_ (EBL)
-and Variable Range Markers (VRM) per radar.
+and MARPA targets independent of used scanner type. 
+For Navico Halo types also the doppler function is supported.
+_Target trails_ support comparable to commercial level radars as well 
+as _guard zone_ support. It supports two guard zones per radar as well 
+as two _Electronic Bearing Lines_ (EBL) and Variable Range Markers (VRM) per radar.
 
 The following pages document the plugin for end users:
 
@@ -50,7 +55,7 @@ The following pages document the plugin for end users:
 == Further development
 
 For more insight in what it takes to add a new radar type, such as
-Furuno or Raymarine, see [[Adding new radar types]].
+Furuno or more Raymarine, see xref:Adding-new-radar-types.adoc[Adding new radar types].
 
 == Credits
 
@@ -59,4 +64,4 @@ took Dave Register’s Garmin plugin and modified it to work with the
 BR24. Over the years code was contributed by @Hakansv, @douwefokkema,
 @seandepagnier, @nohal, @chucksk, @ab2nkovs and @canboat. After v3.0 was
 released the code was changed again to support multiple radar types, and
-adding Garmin support back in with the help of @trudK45.
+adding Garmin support back in with the help of @trudK45 and @bdbcat.

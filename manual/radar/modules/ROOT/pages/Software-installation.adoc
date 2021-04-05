@@ -1,8 +1,9 @@
-== Requirements
+:imagesdir: ../images/
+== Software installation
 
 The plugin requires the following software requirements:
 
-* OpenCPN 5.0.
+* OpenCPN 5.0. or later
 * Firewall disabled or with exceptions enabled for opencpn.exe.
 * OpenGL mode enabled in OpenCPN.
 
@@ -10,7 +11,7 @@ The plugin requires the following software requirements:
 
 If you use Microsoft Windows, you will generally have a firewall, and
 some Linux systems also have this. As the radars use multicast, it can
-be hard to setup a firewall rule as you don’t just ``open'' a particular
+be hard to setup a firewall rule as you don’t just 'open' a particular
 port. The simplest solution is to allow `opencpn.exe` full access to the
 network for both receive and transmit.
 
@@ -29,31 +30,24 @@ objects. Most computers produced after 2005 have a GPU and operating
 system that supports OpenGL.
 
 _Note:_ If you use a Raspberry Pi 2 or older, performance will be too
-low. A Raspberry Pi 3 or 4 might work. With the very latest Raspbian it
-should work but you need to enable OpenGL in the video driver as well.
+low. A Raspberry Pi 3 or 4 might work. With the very latest Raspbian and RPi4 it
+would work but you need to enable OpenGL in OpenCPN.
 
 === Installing the plugin
 
-Download the latest production version and run the installation package.
-
-* Microsoft Windows and macOS releases are available from the
-https://github.com/canboat/radar_pi/releases[release page on this site].
-* Linux (apt): see the http://opencpn.org/ocpn/download[standard
-instructions] for installing OpenCPN on Linux. The plugin package name
-is `opencpn-plugin-radar`.
-
-=== Enabling the plugin
+The recent radar_pi plugin version is avaiable in OpenCPN plugin manager.
 
 * Start OpenCPN
-* Go to Options > Plugins > Radar. Click *Enable*.
+* Go to _Options > Plugins_
+* Update the master catalog, or any other desired catalog. 
+* Select radar_pi and install a possible update. Click _Enabled._
 
 image::radar_pi_enable.png[Enable plugin]
 
 The plugin should then show the _Radar Selection_ dialog. If it does
 not, click _Preferences_ for the Radar plugin on the plugin pane.
 
-image::radar_pi_selection.png[Radar Selection]
-
+image::radar_pi_selection.png[Radar Selection,175, 275] 
 On the selection dialog choose your radar. If you have a dual range
 radar and want to view multiple ranges, you can choose both the A and B
 radars. If you intend to use one of your ranges for the chartplotter and
@@ -90,36 +84,39 @@ found and it will be quicker once OpenCPN restarts. If the radar remains
 initializing immediately after enabling the plugin, try restarting
 OpenCPN.
 
-The _Info_ dialog shows if: * No interface has a proper address (Garmin
-only) * The radar has not been detected yet (all radars send out regular
-``I’m here'' messages) * The OpenGL option has not been selected *
-Overlay is desired and True Heading or (Magnetic heading plus Variation)
+The _Info_ dialog shows if: 
+
+* _No interface has a proper address (Garmin only)_ The radar has not been detected yet (all radars send out regular
+_I’m here_ messages) 
+* The OpenGL option has not been selected. 
+* Overlay is desired and True Heading or (Magnetic heading plus Variation)
 is not present
 
 Once the _Info_ dialog disappears, the radar has been found and is ready
 for operation.
 
-You now have a new icon in the toolbar. If the radar has not been
-detected yet it will show as:
+You now have a another icon in the toolbar. 
 
-and if the radar has been detected it will show:
+* If the radar has not been detected yet it will show as: image:radar_notdetected_n.png[]
+* If the radar has been detected it will show: image:radar_standby_n.png[]
+* If the radar is detected but hidden it will show: image:radar_hidden_n.png[]
+* And if the radar is transmitting it will show: image:radar_transmit_n.png[]
 
-There is also an information window that shows whether the scanner has
-been detected, and whether there is a valid heading input:
-
+The _info_ window will show whether the scanner has
+been detected, and whether there is a valid heading input.
 If a condition is not satisfied this dialog will open automatically. You
 can also open it using the control menu.
-
-As you can see the Info dialog shows whether you have OpenGL mode
+As you can see in the Info dialog shows whether you have OpenGL mode
 enabled. It also shows whether radar presence has been detected, and
 whether the overlay/heading conditions have been fulfilled.
 
+image::radar_halo_scanning.png[Halo scanning, 200, 200]
 In the above image the radar type and serial numbers are shown, this
 shows that the radar has been detected successfully.
 
 === Heading and position
 
-For *North Up* display and radar overlay you must have a heading sensor
+For _North Up_ display and radar overlay you must have a heading sensor
 attached, either via the RI10/11 (Navico Broadband only, preferred) or
 via NMEA0183 input to OpenCPN directly. If you use a magnetic sensor the
 variation is also required, but that is easy to do by enabling the WMM
@@ -128,7 +125,9 @@ plugin.
 For radar overlay you must have a boat position via GNSS input to
 OpenCPN. The most common is a GPS sensor sending NMEA0183 data.
 
-By customer demand it has been made possible to use Course Over Ground
-from your GPS as the heading input, but this is not enabled by default;
-using compass heading works much better. Go to the _Options > Plugins >
+By user requests it has been made possible to occasional use Course Over Ground, COG,
+from your GNSS as the heading input, but this is not enabled by default.
+(Using compass heading works more securely.) Go to the _Options > Plugins >
 Radar > Preferences_ page to enable it.
+
+xref:Home.adoc[Back to overview Plugin radar_pi]
