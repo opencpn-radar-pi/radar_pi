@@ -4,6 +4,8 @@
 radar_pi is a plugin for http://www.opencpn.org[OpenCPN] that allows
 full integration of certain radar scanners.
 
+_This manual is updated to include radar_pi version 5.2.0-beta4_
+
 The following radar scanners are supported:
 
 * Garmin HD
