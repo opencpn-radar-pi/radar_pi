@@ -126,7 +126,7 @@ be used as a poor-mans doppler effect: if the radar heading
 stabilization would be perfect, only moving targets will show a large
 trail.
 You can switch between _true_ and _relative_ trails. The latter shows the 
-targets motion relative your own course and speed.
+target's motion relative your own course and speed.
 
 You can also modify whether AIS and ARPA triangles are shown on the PPI
 windows.
