@@ -59,6 +59,11 @@ The following pages document the plugin for end users:
 For more insight in what it takes to add a new radar type, such as
 Furuno or more Raymarine, see xref:Adding-new-radar-types.adoc[Adding new radar types].
 
+== Links
+
+* xref:https://github.com/opencpn-radar-pi/radar_pi[Source:]
+* xref:https://www.cruisersforum.com/forums/f134/radar-plugin-v5-0-0-released-216057.html[Forum:]
+
 == Credits
 
 This plugin was initially developed as a BR24 plugin by Dave Cowell who
