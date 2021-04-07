@@ -126,6 +126,7 @@ class RME120Receive : public RadarReceive {
   int m_range_meters, m_updated_range;
   void ProcessFixedReport(const UINT8 *data, int len);
   void ProcessScanData(const UINT8 *data, int len);
+  void ProcessQuantumScanData(const UINT8 *data, int len);
   void logBinaryData(const wxString &what, const uint8_t *data, int size);
 
   void SetFirmware(wxString s);
