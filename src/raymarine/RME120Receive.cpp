@@ -296,7 +296,7 @@ void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {  // This is th
   time_t now = time(0);
   wxString MOD_serial;
   wxString IF_serial;
-  // LOG_BINARY_RECEIVE(wxT("received frame"), data, len);
+   //LOG_BINARY_RECEIVE(wxT("received frame"), data, len);
   m_ri->resetTimeout(now);
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
   m_ri->m_statistics.packets++;
@@ -312,6 +312,10 @@ void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {  // This is th
         break;
       case 0x00010003:
         ProcessScanData(data, len);
+        m_ri->m_data_timeout = now + DATA_TIMEOUT;
+        break;
+      case 0x00280003:
+        ProcessQuantumScanData(data, len);
         m_ri->m_data_timeout = now + DATA_TIMEOUT;
         break;
       case 0x00010006:
@@ -633,6 +637,16 @@ struct Header3 {
   uint32_t fieldx_7;  // 0x00000001
 };
 
+struct QuantumHeader {
+  uint32_t field01;   //
+  uint16_t counter1;  //
+  uint16_t field02;
+  uint32_t field03;
+  uint32_t field04;   //
+  uint16_t counter2;  //
+  uint16_t data_len;
+};
+
 struct Header4 {     // No idea what is in there
   uint32_t field01;  // 0x00000002
   uint32_t length;   // 0x0000001c
@@ -650,16 +664,19 @@ void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
     LOG_RECEIVE(wxT("Invalid range"));
     return;
   }
-  //logBinaryData(wxT("Scandata"), data, len);
+  logBinaryData(wxT("Scandata"), data, len);
   if (len > (int)(sizeof(Header1) + sizeof(Header3))) {
     Header1 *pHeader = (Header1 *)data;
     bool HDtype = false;
     u_int returns_per_line;
+    
     if (pHeader->field01 != 0x00010003 || pHeader->fieldx_1 != 0x0000001c || pHeader->fieldx_3 != 0x0000001) {
-      fprintf(stderr, "ProcessScanData::Packet header mismatch %x, %x, %x, %x.\n", pHeader->field01, pHeader->fieldx_1,
-              pHeader->nspokes, pHeader->fieldx_3);
+      
+      LOG_INFO(wxT("ProcessScanData::Packet header mismatch %x, %x, %x, %x.\n"), pHeader->field01, pHeader->fieldx_1,
+               pHeader->nspokes, pHeader->fieldx_3);
       return;
-    }
+    } 
+         
     time_t now = time(0);
     m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
     m_ri->m_data_timeout = now + DATA_TIMEOUT;
@@ -822,6 +839,141 @@ void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
         m_ri->ProcessRadarSpoke(angle + 1, bearing + 1, dataPtr, returns_per_line, m_range_meters, nowMillis);
       }
     }
+  }
+}
+
+void RME120Receive::ProcessQuantumScanData(const UINT8 *data, int len) {
+  if (m_range_meters == 1) {
+    LOG_RECEIVE(wxT("Invalid range"));
+    m_range_meters = 100;
+    // return;  $$$
+  }
+  logBinaryData(wxT("Scandata_x"), data, len);
+  if (len > (int)(sizeof(Header1) /* + sizeof(Header3)*/)) {
+    Header1 *pHeader = (Header1 *)data;
+    bool HDtype = true;
+    u_int returns_per_line;
+
+    if (pHeader->field01 == 0x280003) {
+      LOG_INFO(wxT("$$$ quantum found"));
+    } else {
+      LOG_INFO(wxT("ProcessScanData::Packet header mismatch %x, %x, %x, %x.\n"), pHeader->field01, pHeader->fieldx_1,
+               pHeader->nspokes, pHeader->fieldx_3);
+      return;
+    }
+    QuantumHeader *qheader = (QuantumHeader *)data;
+    LOG_INFO(wxT("$$$ counters counter1=%i, 2= %i, 3=%i"), qheader->counter1, qheader->counter2, qheader->data_len);
+
+    time_t now = time(0);
+    m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
+    m_ri->m_data_timeout = now + DATA_TIMEOUT;
+    m_ri->m_state.Update(RADAR_TRANSMIT);
+
+    wxLongLong nowMillis = wxGetLocalTimeMillis();
+    int headerIdx = 0;
+    int nextOffset = sizeof(QuantumHeader);
+    //returns_per_line = 1024; $$$
+
+    
+      LOG_INFO(wxT("$$$0 nextOffset=%i "), nextOffset);
+      
+      UINT8 unpacked_data[10240], *dataPtr = 0;
+
+      uint8_t *dData = (uint8_t *)unpacked_data;
+      uint8_t *sData = (uint8_t *)data + nextOffset;
+
+      int iS = 0;
+      int iD = 0;
+      //LOG_BINARY_RECEIVE(wxT("$$$spoke data sData"), sData, qheader->data_len);
+      while (iS < (int)qheader->data_len) {
+        //LOG_INFO(wxT("$$$a iS=%i, len = %i"), iS, (int)qheader->data_len);
+
+        if (iD >= 1024) {  // remove trailing zero's
+          break;
+        }
+        if (*sData != 0x5c) {
+          //LOG_INFO(wxT("$$$q iS=%i, iD = %i *sData=%0x"), iS, iD, *sData);
+          *dData++ = *sData;
+          sData++;
+          iS++;
+          iD++;
+          
+        } else {
+          uint8_t nFill = sData[1];  // number to be filled
+          uint8_t cFill = sData[2];  // data to be filled
+          for (int i = 0; i < nFill; i++) {
+            *dData++ = cFill;
+            
+          }
+          //LOG_INFO(wxT("$$$loop iS=%i, iD = %i nFill= %i, cFill=%0x"), iS, iD, nFill, cFill);
+          sData += 3;
+          iS += 3;
+          iD += nFill;
+          //LOG_INFO(wxT("$$$1 iS=%i, iD = %i"), iS, iD);
+        }
+        //LOG_INFO(wxT("$$$b iS=%i, iD = %i"), iS, iD);
+
+        //LOG_INFO(wxT("$$$c iS=%i, len = %i"), iS, (int)qheader->data_len);  crashing???
+      }  // end of while, only one spoke per packet
+      int idorg = iD;
+      //LOG_INFO(wxT("$$$ test iD=%i"), iD);
+      /*while (iD < returns_per_line) {
+        *dData++ = 0;
+        iD++;
+      }*/
+      LOG_INFO(wxT("$$$2 test iD=%i idorg=%i"), iD, idorg);
+      returns_per_line = iD;
+
+       LOG_BINARY_RECEIVE(wxT("spoke data dData"), unpacked_data, idorg);
+      dataPtr = unpacked_data;
+
+      /*nextOffset += pSData->length;*/
+      m_ri->m_statistics.spokes++;
+      unsigned int spoke = qheader->counter1;
+      if (m_next_spoke >= 0 && (int)spoke != m_next_spoke) {
+        if ((int)spoke > m_next_spoke) {
+          m_ri->m_statistics.missing_spokes += spoke - m_next_spoke;
+        } else {
+          m_ri->m_statistics.missing_spokes += SPOKES + spoke - m_next_spoke;
+        }
+      }
+      m_next_spoke = (spoke + 1) % 2048;
+      LOG_INFO(wxT("$$$ m_next_spoke=%i"), m_next_spoke);
+
+      //if ((pSData->field01 & 0x80000000) != 0 && nextOffset < len) {
+      //  // fprintf(stderr, "ProcessScanData::Last record %d (%d) in packet %d but still data to go %d:%d.\n",
+      //  // 	headerIdx, scan_idx, packetIdx, nextOffset, len);
+      //}
+      headerIdx++;
+
+      m_pi->SetRadarHeading();
+
+      int hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->GetHeadingTrue() + m_pi->m_vp_rotation);
+
+      int angle_raw = spoke * 2 + SCALE_DEGREES_TO_RAW(180);  // Compensate openGL rotation compared to North UP
+      int bearing_raw = angle_raw + hdt_raw;
+
+      SpokeBearing angle = MOD_ROTATION2048(angle_raw / 2);      // divide by 2 to map on 2048 scanlines
+      SpokeBearing bearing = MOD_ROTATION2048(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
+      bool spokes_1024;
+      if (int(angle - m_previous_angle) == 2 || int(angle - m_previous_angle) == -2046) {
+        spokes_1024 = true;
+      } else {
+        spokes_1024 = false;
+      }
+      m_previous_angle = angle;
+      if (m_range_meters == 1) {
+        LOG_INFO(wxT("Error range invalid"));
+        return;
+      }
+      LOG_INFO(wxT("ProcessRadarSpoke a=%i, angle_raw=%i b=%i, bearing_raw=%i, returns_per_line=%i range=%i spokes=%i"), angle,
+         angle_raw, bearing, bearing_raw, returns_per_line, m_range_meters, m_ri->m_spokes);
+      m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, m_range_meters, nowMillis);
+      // When te HD radar is transmitting in a mode with 1024 spokes, insert additional spokes to fill the image
+      if (spokes_1024 && angle + 1 < m_ri->m_spokes && bearing + 1 < m_ri->m_spokes) {
+        m_ri->ProcessRadarSpoke(angle + 1, bearing + 1, dataPtr, returns_per_line, m_range_meters, nowMillis);
+      }
+    
   }
 }
 

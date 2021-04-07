@@ -301,7 +301,7 @@ int radar_pi::Init(void) {
   // Now that the settings are made we can initialize the RadarInfos
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->Init();
-    StartRadarLocators(r);
+    //StartRadarLocators(r);  $$$
   }
   // and get rid of any radars we're not using
   for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
@@ -2087,18 +2087,32 @@ bool radar_pi::MouseEventHook(wxMouseEvent &event) {
   return false;
 }
 
+//void radar_pi::logBinaryData(const wxString &what, const uint8_t *data, int size) { $$$
+//  wxString explain;
+//  int i = 0;
+//
+//  explain.Alloc(size * 3 + 50);
+//  explain += wxT("");
+//  explain += what;
+//  explain += wxString::Format(wxT(" %d bytes: "), size);
+//  for (i = 0; i < size; i++) {
+//    explain += wxString::Format(wxT(" %02X"), data[i]);
+//  }
+//  wxLogMessage(explain);
+//}
+
 void radar_pi::logBinaryData(const wxString &what, const uint8_t *data, int size) {
   wxString explain;
   int i = 0;
-
   explain.Alloc(size * 3 + 50);
   explain += wxT("");
   explain += what;
   explain += wxString::Format(wxT(" %d bytes: "), size);
   for (i = 0; i < size; i++) {
+    if (i % 16 == 0) explain += wxString::Format(wxT(" \n %d    "), i);
     explain += wxString::Format(wxT(" %02X"), data[i]);
   }
-  wxLogMessage(explain);
+  LOG_INFO(explain);
 }
 
 bool radar_pi::IsRadarOnScreen(int radar) {

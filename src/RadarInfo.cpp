@@ -435,7 +435,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
     data[i] = 0;
   }
-
+  LOG_INFO(wxT("$$$ m_main_bang_size.GetValue()=%i, len=%i"), m_main_bang_size.GetValue(), len);
   // Recompute 'pixels_per_meter' based on the actual spoke length and range in meters.
   if (range_meters == 0){
     LOG_INFO(wxT("Error ProcessRadarSpoke range is zero"));
@@ -444,7 +444,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   double pixels_per_meter = (len / (double)range_meters) * (1. - (double)m_range_adjustment.GetValue() * 0.001);
 
   if (m_pixels_per_meter != pixels_per_meter) {
-    LOG_VERBOSE(wxT("%s detected spoke range change from %g to %g pixels/m, %d meters"), m_name.c_str(), m_pixels_per_meter,
+    LOG_INFO(wxT("$$$ %s detected spoke range change from %g to %g pixels/m, %d meters"), m_name.c_str(), m_pixels_per_meter,
                 pixels_per_meter, range_meters);
     m_pixels_per_meter = pixels_per_meter;
     ResetSpokes();
@@ -517,6 +517,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   }
 
   if (m_draw_panel.draw) {
+    LOG_INFO(wxT("$$$ panel draw"));
     m_draw_panel.draw->ProcessRadarSpoke(4, stabilized_mode ? bearing : angle, data, len, m_history[bearing].pos);
   }
 }
