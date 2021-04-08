@@ -1,6 +1,6 @@
 #
-# Add the primary build targets pkg, flatpak and tarball together
-# with helper targets.
+# Add the primary build targets pkg, flatpak,tarball and gettext-pot
+# together with helper targets.
 #
 
 if (TARGET tarball-build)
@@ -9,6 +9,7 @@ endif ()
 
 include(Metadata)
 include(PluginCompiler)
+include(PluginLocalization)
 
 if (WIN32)
   if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 16)
@@ -53,7 +54,8 @@ set(_cs_script "
     ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml.in
     ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml
     @ONLY
-)")
+  )
+")
 file(WRITE "${CMAKE_BINARY_DIR}/checksum.cmake" ${_cs_script})
 
 # Command to build legacy package
@@ -188,6 +190,16 @@ function (pkg_target)
   add_dependencies(pkg pkg-package)
 endfunction ()
 
+function (gettext_target)
+  string(REPLACE ";"  "\n"  _potfiles "${SRC}")
+  file(WRITE ${CMAKE_BINARY_DIR}/POTFILES.in ${_potfiles}\n)
+  add_custom_target(gettext-pot)
+  if (TARGET pot-update)
+    # First run we havn't included PluginLocalization. But now we have.
+    add_dependencies(gettext-pot pot-update)
+  endif ()
+endfunction ()
+
 function (help_target)
 
   # Help message for plain 'make' without target
@@ -203,6 +215,8 @@ function (help_target)
       "   - flatpak: Plugin installer tarball for flatpak builds."
     COMMAND cmake -E echo
       "   - pkg: Legacy installer package on Windows, Mac and Debian."
+    COMMAND cmake -E echo
+      "   - gettext-pot: Update po/${PACKAGE_NAME}.pot, requires xgettext."
     COMMAND cmake -E echo ""
     COMMAND dont-use-plain-make   # will fail
   )
@@ -221,4 +235,5 @@ function (create_targets manifest)
   flatpak_target(${manifest})
   pkg_target()
   help_target()
+  gettext_target()
 endfunction ()
