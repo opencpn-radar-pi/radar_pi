@@ -164,7 +164,7 @@ class RadarInfo {
   time_t m_data_timeout;       // When we consider the data to be obsolete (radar no longer sending data)
   time_t m_stayalive_timeout;  // When we will send another stayalive ping
 #define STAYALIVE_TIMEOUT (5)  // Send data every 5 seconds to ping radar
-#define DATA_TIMEOUT (5)
+#define DATA_TIMEOUT (100)   // $$$ back to 5
 
   bool m_status_text_hide;
 
