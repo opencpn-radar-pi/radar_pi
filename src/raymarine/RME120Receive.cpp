@@ -316,7 +316,11 @@ void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {  // This is th
         break;
       case 0x00280003:
         ProcessQuantumScanData(data, len);
-        m_ri->m_data_timeout = now + DATA_TIMEOUT;
+        m_ri->m_data_timeout = now + DATA_TIMEOUT + 100; //$$$
+        break;
+      case 0x00280002:
+        ProcessQuantumScanData(data, len);
+        m_ri->m_data_timeout = now + DATA_TIMEOUT + 100;  //$$$
         break;
       case 0x00010006:
         IF_serial = wxString::FromAscii(data + 4, 7);
@@ -848,6 +852,7 @@ void RME120Receive::ProcessQuantumScanData(const UINT8 *data, int len) {
     m_range_meters = 100;
     // return;  $$$
   }
+  QuantumHeader *qheader = (QuantumHeader *)data;
   logBinaryData(wxT("Scandata_x"), data, len);
   if (len > (int)(sizeof(Header1) /* + sizeof(Header3)*/)) {
     Header1 *pHeader = (Header1 *)data;
@@ -855,13 +860,16 @@ void RME120Receive::ProcessQuantumScanData(const UINT8 *data, int len) {
     u_int returns_per_line;
 
     if (pHeader->field01 == 0x280003) {
-      LOG_INFO(wxT("$$$ quantum found"));
-    } else {
-      LOG_INFO(wxT("ProcessScanData::Packet header mismatch %x, %x, %x, %x.\n"), pHeader->field01, pHeader->fieldx_1,
-               pHeader->nspokes, pHeader->fieldx_3);
+      LOG_INFO(wxT("$$$ quantum found 0x280003"));
+    } else if (pHeader->field01 == 0x280002) {
+      LOG_INFO(wxT("$$$ counters 0x280002 counter1=%i, 2= %i, 3=%i"), qheader->counter1, qheader->counter2, qheader->data_len);
+      logBinaryData(wxT("Scandata_x"), data, len);
+
+      //LOG_INFO(wxT("ProcessScanData::Packet header mismatch %x, %x, %x, %x.\n"), pHeader->field01, pHeader->fieldx_1,
+      //         pHeader->nspokes, pHeader->fieldx_3);
       return;
     }
-    QuantumHeader *qheader = (QuantumHeader *)data;
+    
     LOG_INFO(wxT("$$$ counters counter1=%i, 2= %i, 3=%i"), qheader->counter1, qheader->counter2, qheader->data_len);
 
     time_t now = time(0);

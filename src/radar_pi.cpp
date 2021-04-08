@@ -1178,11 +1178,11 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   }
   
    //// for testing only, simple trick to get position and heading
-   /*wxString nmea;   
+   wxString nmea;   
    nmea = wxT("$APHDM,000.0,M*33");
    PushNMEABuffer(nmea);
    nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
-   PushNMEABuffer(nmea);*/
+   PushNMEABuffer(nmea);
 
   // update own ship position to best estimate
   ExtendedPosition intermediate_pos;
