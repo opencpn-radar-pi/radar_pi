@@ -61,8 +61,8 @@ Furuno or more Raymarine, see xref:Adding-new-radar-types.adoc[Adding new radar 
 
 == Links
 
-* xref:https://github.com/opencpn-radar-pi/radar_pi[Source:]
-* xref:https://www.cruisersforum.com/forums/f134/radar-plugin-v5-0-0-released-216057.html[Forum:]
+* https://github.com/opencpn-radar-pi/radar_pi/[Radar_pi source:]
+* https://www.cruisersforum.com/forums/f134/radar-plugin-v5-0-0-released-216057.html[OpenCPN forum plugin radar_pi:]
 
 == Credits
 
