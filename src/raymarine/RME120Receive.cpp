@@ -931,13 +931,17 @@ void RME120Receive::ProcessQuantumScanData(const UINT8 *data, int len) {
       }*/
       LOG_INFO(wxT("$$$2 test iD=%i idorg=%i"), iD, idorg);
       returns_per_line = iD;
+      if (returns_per_line >= 250) {
+        returns_per_line = 249;
+        LOG_INFO(wxT("$$$ returns_per_line too large %i"), returns_per_line);
+        }
 
        LOG_BINARY_RECEIVE(wxT("spoke data dData"), unpacked_data, idorg);
       dataPtr = unpacked_data;
 
       /*nextOffset += pSData->length;*/
       m_ri->m_statistics.spokes++;
-      unsigned int spoke = qheader->counter1;
+      unsigned int spoke = qheader->counter2;
       if (m_next_spoke >= 0 && (int)spoke != m_next_spoke) {
         if ((int)spoke > m_next_spoke) {
           m_ri->m_statistics.missing_spokes += spoke - m_next_spoke;
@@ -945,7 +949,7 @@ void RME120Receive::ProcessQuantumScanData(const UINT8 *data, int len) {
           m_ri->m_statistics.missing_spokes += SPOKES + spoke - m_next_spoke;
         }
       }
-      m_next_spoke = (spoke + 1) % 2048;
+      m_next_spoke = (spoke + 1)/* % 2048*/;
       LOG_INFO(wxT("$$$ m_next_spoke=%i"), m_next_spoke);
 
       //if ((pSData->field01 & 0x80000000) != 0 && nextOffset < len) {
@@ -956,20 +960,37 @@ void RME120Receive::ProcessQuantumScanData(const UINT8 *data, int len) {
 
       m_pi->SetRadarHeading();
 
-      int hdt_raw = SCALE_DEGREES_TO_RAW(m_pi->GetHeadingTrue() + m_pi->m_vp_rotation);
+      int hdt_raw = 250. * (m_pi->GetHeadingTrue() + m_pi->m_vp_rotation) / 360.;
 
-      int angle_raw = spoke * 2 + SCALE_DEGREES_TO_RAW(180);  // Compensate openGL rotation compared to North UP
+
+      int angle_raw = spoke;  // Compensate openGL rotation compared to North UP
       int bearing_raw = angle_raw + hdt_raw;
 
-      SpokeBearing angle = MOD_ROTATION2048(angle_raw / 2);      // divide by 2 to map on 2048 scanlines
-      SpokeBearing bearing = MOD_ROTATION2048(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
-      bool spokes_1024;
+      SpokeBearing angle = angle_raw;      
+      SpokeBearing bearing = bearing_raw;  // divide by 2 to map on 2048 scanlines
+      while (angle >= 250) {
+        LOG_INFO(wxT("$$$ to large angle=%i"), angle);
+        angle -= 250;
+      }
+      while (angle < 0) {
+        LOG_INFO(wxT("$$$ to small angle=%i"), angle);
+        angle += 250;
+      }
+      while (bearing >= 250) {
+        LOG_INFO(wxT("$$$ to large bearing=%i"), bearing);
+        bearing -= 250;
+      }
+      while (bearing < 0) {
+        LOG_INFO(wxT("$$$ to small angle=%i"), bearing);
+        bearing += 250;
+      }
+      /*bool spokes_1024;
       if (int(angle - m_previous_angle) == 2 || int(angle - m_previous_angle) == -2046) {
         spokes_1024 = true;
       } else {
         spokes_1024 = false;
       }
-      m_previous_angle = angle;
+      m_previous_angle = angle;*/
       if (m_range_meters == 1) {
         LOG_INFO(wxT("Error range invalid"));
         return;
@@ -978,9 +999,9 @@ void RME120Receive::ProcessQuantumScanData(const UINT8 *data, int len) {
          angle_raw, bearing, bearing_raw, returns_per_line, m_range_meters, m_ri->m_spokes);
       m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, m_range_meters, nowMillis);
       // When te HD radar is transmitting in a mode with 1024 spokes, insert additional spokes to fill the image
-      if (spokes_1024 && angle + 1 < m_ri->m_spokes && bearing + 1 < m_ri->m_spokes) {
+     /* if (spokes_1024 && angle + 1 < m_ri->m_spokes && bearing + 1 < m_ri->m_spokes) {
         m_ri->ProcessRadarSpoke(angle + 1, bearing + 1, dataPtr, returns_per_line, m_range_meters, nowMillis);
-      }
+      }*/
     
   }
 }
