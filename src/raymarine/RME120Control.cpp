@@ -143,6 +143,7 @@ static uint8_t rd_msg_set_range[] = {0x01, 0x81, 0x01, 0x00, 0x01, 0x00, 0x00, 0
 
 bool RME120Control::SetRange(int meters) {
   LOG_INFO(wxT(" SetRangeMeters = %i"), meters);
+  return false;  //$$$
   for (int i = 0; i < 11; i++) {
     if (meters <= m_ri->m_radar_ranges[i]) {
       SetRangeIndex(i);
