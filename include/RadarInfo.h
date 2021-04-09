@@ -68,7 +68,7 @@ class RadarInfo {
   RadarType m_radar_type;  // Which radar type
   size_t m_spokes;         // # of spokes per rotation
   size_t m_spoke_len_max;  // Max # of bytes per spoke
-  int m_radar_ranges[20];  // Ranges actually in use (values displayed). Always in meters, also if units is NM. Currently
+  int m_radar_ranges[21];  // Ranges actually in use (values displayed). Always in meters, also if units is NM. Currently
                            // only used for Raymarine.
 
   // Digital radars cannot produce just any range. When asked for a particular value
