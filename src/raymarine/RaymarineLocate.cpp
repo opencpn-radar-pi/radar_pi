@@ -129,7 +129,7 @@ void *RaymarineLocate::Entry(void) {
 
   UpdateEthernetCards();
 
-  while (!success && !m_shutdown) {  // will run until the Raymarine radar location info has been found
+  while (!m_shutdown) {  // will run until the Raymarine radar location info has been found
     // after that we stop the Raymarine locate, saves load and prevents that the serial nr gets overwritten
     struct timeval tv = {1, 0};
     fd_set fdin;
@@ -183,15 +183,15 @@ void *RaymarineLocate::Entry(void) {
 #pragma pack(push, 1)
 
 struct LocationInfoBlock {
-  uint32_t field1;
-  uint32_t field2;
-  uint32_t field3;  // 1
-  uint32_t field4;
-  uint32_t field5;
-  uint32_t data_ip;
-  uint32_t data_port;
-  uint32_t radar_ip;
-  uint32_t radar_port;
+  uint32_t field1; // 0
+  uint32_t field2; // 4
+  uint32_t field3;  // 0x28 byte 8
+  uint32_t field4;  // 12
+  uint32_t field5;  // 16
+  uint32_t data_ip;  // 20
+  uint32_t data_port;  // 24
+  uint32_t radar_ip;   // 28
+  uint32_t radar_port; // 32
 };
 #pragma pack(pop)
 
@@ -200,8 +200,19 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
   LocationInfoBlock *rRec = (LocationInfoBlock *)report;
   wxCriticalSectionLocker lock(m_exclusive);
 
+  int raymarine_radar_code;
+  for (size_t r = 0; r < m_pi->m_settings.radar_count; r++) {
+    if (m_pi->m_radar[r]->m_radar_type == RM_E120) {  // only one Raymarine radar allowed
+      raymarine_radar_code = 01;
+      break;
+    }
+    if (m_pi->m_radar[r]->m_radar_type == RM_QUANTUM) {
+      raymarine_radar_code = 0x28;
+      break;
+    }
+  }
   if (len == sizeof(LocationInfoBlock) &&
-      rRec->field3 == 1) {  // only length 36 is processed with id==1, others (28, 37, 40, 56) to be investigated
+        rRec->field3 == raymarine_radar_code) {  // only length 36 is used
     if (m_pi->m_settings.verbose >= 2) {
       LOG_BINARY_RECEIVE(wxT("RaymarineLocate received RadarReport"), report, len);
     }
@@ -215,11 +226,11 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
     infoA.send_command_addr.port = ntohs(rRec->radar_port);
     NetworkAddress radar_ipA = radar_address;
     radar_ipA.port = htons(RO_PRIMARY);
-    if (m_report_count < MAX_REPORT) {
+    
       LOG_INFO(wxT("Located raymarine radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(),
                interface_address.FormatNetworkAddress(), infoA.to_string());
       m_report_count++;
-    }
+    
     FoundRaymarineLocationInfo(radar_ipA, interface_address, infoA);
     return true;
   }
@@ -242,7 +253,7 @@ void RaymarineLocate::FoundRaymarineLocationInfo(const NetworkAddress &addr, con
 
   int ray_nr = -1;
   for (size_t r = 0; r < m_pi->m_settings.radar_count; r++) {
-    if (m_pi->m_radar[r]->m_radar_type == RM_E120) {
+    if (m_pi->m_radar[r]->m_radar_type == RM_E120 || m_pi->m_radar[r]->m_radar_type == RM_QUANTUM) {
       ray_nr = r;
       raymarines++;  // later more Raymarine radars may be covered
       break;         // RM_120 found, there should only be one
