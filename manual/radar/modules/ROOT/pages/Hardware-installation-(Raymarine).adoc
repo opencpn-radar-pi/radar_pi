@@ -7,8 +7,8 @@ operation from all connected MFDs (plotters) and computers.
 
 == Shared setup with a Raymarine MFD
 
-The radars supported by the plugin are the _old_ radars, not the Quantum
-generation radars. See Most of these connect via a thick cable directly
+The radars supported by the plugin are the _old_ analog radars, not yet the digital and the Quantum
+generation radars. See table. Most of these radomes connect via a thick cable directly
 into a Radar display or an older MFD like the ``E Series Classic legacy
 Display''.
 
