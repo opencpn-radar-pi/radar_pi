@@ -359,14 +359,15 @@ int radar_pi::Init(void) {
 }
 
 void radar_pi::StartRadarLocators(size_t r) {
-  if ((m_radar[r]->m_radar_type == RT_3G || m_radar[r]->m_radar_type == RT_4GA || m_radar[r]->m_radar_type == RT_HaloA) &&
+  if ((m_radar[r]->m_radar_type == RT_3G || m_radar[r]->m_radar_type == RT_4GA || m_radar[r]->m_radar_type == RT_HaloA ||
+       m_radar[r]->m_radar_type == RT_HaloB) &&
       m_navico_locator == NULL) {
     m_navico_locator = new NavicoLocate(this);
     if (m_navico_locator->Run() != wxTHREAD_NO_ERROR) {
       wxLogError(wxT("unable to start Navico Radar Locator thread"));
     }
   }
-  if (m_radar[r]->m_radar_type == RM_E120 && m_raymarine_locator == NULL) {
+  if (m_radar[r]->m_radar_type == RM_E120 && m_raymarine_locator == NULL || m_radar[r]->m_radar_type == RM_QUANTUM) {
     m_raymarine_locator = new RaymarineLocate(this);
     if (m_raymarine_locator->Run() != wxTHREAD_NO_ERROR) {
       wxLogError(wxT("unable to start Raymarine Radar Locator thread"));
@@ -2095,7 +2096,11 @@ void radar_pi::logBinaryData(const wxString &what, const uint8_t *data, int size
   explain += what;
   explain += wxString::Format(wxT(" %d bytes: "), size);
   for (i = 0; i < size; i++) {
-    if (i % 16 == 0) explain += wxString::Format(wxT(" \n %d    "), i);
+    if (i % 16 == 0) {
+      explain += wxString::Format(wxT(" \n %3d    "), i);
+    } else if (i % 8 == 0) {
+      explain += wxString::Format(wxT("  "), i);
+    }
     explain += wxString::Format(wxT(" %02X"), data[i]);
   }
   LOG_INFO(explain);
