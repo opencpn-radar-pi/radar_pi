@@ -32,11 +32,11 @@
  ***************************************************************************
  */
 
-#include "RME120Control.h"
+#include "RMQuantumControl.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
-bool RME120Control::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) {
+bool RMQuantumControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) {
   int r;
   int one = 1;
 
@@ -76,7 +76,7 @@ bool RME120Control::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, Net
   return true;
 }
 
-void RME120Control::logBinaryData(const wxString &what, const uint8_t *data, int size) {
+void RMQuantumControl::logBinaryData(const wxString &what, const uint8_t *data, int size) {
   wxString explain;
   int i = 0;
 
@@ -90,7 +90,7 @@ void RME120Control::logBinaryData(const wxString &what, const uint8_t *data, int
   LOG_TRANSMIT(explain);
 }
 
-bool RME120Control::TransmitCmd(const uint8_t *msg, int size) {
+bool RMQuantumControl::TransmitCmd(const uint8_t *msg, int size) {
   if (m_send_address.IsNull()) {
     wxLogError(wxT("%s Unable to transmit command to unknown radar"), m_name.c_str());
     IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("not transmitted"), msg, size));
@@ -117,12 +117,12 @@ static uint8_t rd_msg_tx_control[] = {0x01, 0x80, 0x01, 0x00,
                                       0x00,  // Control value at offset 4 : 0 - off, 1 - on
                                       0x00, 0x00, 0x00};
 
-void RME120Control::RadarTxOff() {
+void RMQuantumControl::RadarTxOff() {
   rd_msg_tx_control[4] = 0;
   TransmitCmd(rd_msg_tx_control, sizeof(rd_msg_tx_control));
 }
 
-void RME120Control::RadarTxOn() {
+void RMQuantumControl::RadarTxOn() {
   rd_msg_tx_control[4] = 1;
   TransmitCmd(rd_msg_tx_control, sizeof(rd_msg_tx_control));
 };
@@ -132,7 +132,7 @@ static uint8_t rd_msg_5s[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x68, 0x01, 0x00, 0x00,
     0x9e, 0x03, 0x00, 0x00, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-bool RME120Control::RadarStayAlive() {
+bool RMQuantumControl::RadarStayAlive() {
   TransmitCmd(rd_msg_5s, sizeof(rd_msg_5s));
   return true;
 }
@@ -141,7 +141,7 @@ static uint8_t rd_msg_set_range[] = {0x01, 0x81, 0x01, 0x00, 0x01, 0x00, 0x00, 0
                                      0x01,  // Range at offset 8 (0 - 1/8, 1 - 1/4, 2 - 1/2, 3 - 3/4, 4 - 1, 5 - 1.5, 6 - 3...)
                                      0x00, 0x00, 0x00};  // length == 12
 
-bool RME120Control::SetRange(int meters) {
+bool RMQuantumControl::SetRange(int meters) {
   LOG_INFO(wxT(" SetRangeMeters = %i"), meters);
   for (int i = 0; i < 11; i++) {
     if (meters <= m_ri->m_radar_ranges[i]) {
@@ -153,13 +153,13 @@ bool RME120Control::SetRange(int meters) {
   return false;
 }
 
-void RME120Control::SetRangeIndex(size_t index) {
+void RMQuantumControl::SetRangeIndex(size_t index) {
   LOG_VERBOSE(wxT(" SetRangeIndex index = %i"), index);
   rd_msg_set_range[8] = index;
   TransmitCmd(rd_msg_set_range, sizeof(rd_msg_set_range));
 }
 
-bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button) {
+bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button) {
   bool r = false;
   int value = item.GetValue();
   RadarControlState state = item.GetState();
@@ -185,7 +185,6 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
     case CT_ORIENTATION:
     case CT_OVERLAY_CANVAS:
     case CT_RANGE:
-    case CT_RANGE_ADJUSTMENT:
     case CT_REFRESHRATE:
     case CT_SCAN_SPEED:
     case CT_SIDE_LOBE_SUPPRESSION:

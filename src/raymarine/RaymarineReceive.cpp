@@ -32,7 +32,7 @@
  ***************************************************************************
  */
 
-#include "RME120Receive.h"
+#include "RaymarineReceive.h"
 #include "MessageBox.h"
 #include "RME120Control.h"
 
@@ -62,7 +62,7 @@ PLUGIN_BEGIN_NAMESPACE
 #define HEADING_MASK (SPOKES - 1)
 #define HEADING_VALID(x) (((x) & ~(HEADING_TRUE_FLAG | HEADING_MASK)) == 0)
 
-SOCKET RME120Receive::PickNextEthernetCard() {
+SOCKET RaymarineReceive::PickNextEthernetCard() {
   SOCKET socket = INVALID_SOCKET;
   m_interface_addr = NetworkAddress();
 
@@ -96,7 +96,7 @@ SOCKET RME120Receive::PickNextEthernetCard() {
   return socket;
 }
 
-SOCKET RME120Receive::GetNewReportSocket() {
+SOCKET RaymarineReceive::GetNewReportSocket() {
   SOCKET socket;
   wxString error = wxT(" ");
   wxString s = wxT(" ");
@@ -152,7 +152,7 @@ SOCKET RME120Receive::GetNewReportSocket() {
  * Called by wxThread when the new thread is running.
  * It should remain running until Shutdown is called.
  */
-void *RME120Receive::Entry(void) {
+void *RaymarineReceive::Entry(void) {
   int r = 0;
   int no_data_timeout = 0;
   int no_spoke_timeout = 0;
@@ -292,7 +292,7 @@ void *RME120Receive::Entry(void) {
   return 0;
 }
 
-void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {  // This is the original ProcessFrame from RMradar_pi
+void RaymarineReceive::ProcessFrame(const UINT8 *data, size_t len) {  // This is the original ProcessFrame from RMradar_pi
   time_t now = time(0);
   wxString MOD_serial;
   wxString IF_serial;
@@ -316,11 +316,11 @@ void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {  // This is th
         break;
       case 0x00280003:
         ProcessQuantumScanData(data, len);
-        m_ri->m_data_timeout = now + DATA_TIMEOUT + 100; //$$$
+        m_ri->m_data_timeout = now + DATA_TIMEOUT;
         break;
       case 0x00280002:
         ProcessQuantumReport(data, len);
-        m_ri->m_data_timeout = now + DATA_TIMEOUT + 100;  //$$$
+        m_ri->m_data_timeout = now + DATA_TIMEOUT;
         break;
       case 0x00010006:
         IF_serial = wxString::FromAscii(data + 4, 7);
@@ -344,7 +344,7 @@ void RME120Receive::ProcessFrame(const UINT8 *data, size_t len) {  // This is th
   }
 }
 
-void RME120Receive::UpdateSendCommand() {
+void RaymarineReceive::UpdateSendCommand() {
   if (!m_info.send_command_addr.IsNull() && m_ri->m_control) {
     RME120Control *control = (RME120Control *)m_ri->m_control;
     control->SetSendAddress(m_info.send_command_addr);
@@ -472,7 +472,7 @@ struct RMRadarFixedReport {
 
 #pragma pack(pop)
 
-void RME120Receive::logBinaryData(const wxString &what, const uint8_t *data, int size) {
+void RaymarineReceive::logBinaryData(const wxString &what, const uint8_t *data, int size) {
   wxString explain;
   int i = 0;
   explain.Alloc(size * 3 + 50);
@@ -487,7 +487,7 @@ void RME120Receive::logBinaryData(const wxString &what, const uint8_t *data, int
   LOG_INFO(explain);
 }
 
-void RME120Receive::ProcessQuantumReport(const UINT8 *data, int len) {
+void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   QuantumRadarReport *bl_pter = (QuantumRadarReport *)data;
   wxString s;
    logBinaryData(wxT("ProcessQuantumReport"), data, len);
@@ -627,7 +627,7 @@ void RME120Receive::ProcessQuantumReport(const UINT8 *data, int len) {
   //SetInfoStatus(s);
 }
 
-void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
+void RaymarineReceive::ProcessRMReport(const UINT8 *data, int len) {
   RMRadarReport *bl_pter = (RMRadarReport *)data;
   wxString s;
   // logBinaryData(wxT("RMRadarReport"), data, len);
@@ -771,7 +771,7 @@ void RME120Receive::ProcessRMReport(const UINT8 *data, int len) {
 }
 
 
-void RME120Receive::ProcessFixedReport(const UINT8 *data, int len) {
+void RaymarineReceive::ProcessFixedReport(const UINT8 *data, int len) {
   if (len == sizeof(RMRadarFixedReport)) {
     RMRadarFixedReport *bl_pter = (RMRadarFixedReport *)data;
     RadarControlState state;
@@ -850,7 +850,7 @@ struct SpokeData {
   uint32_t data_len;
 };
 
-void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
+void RaymarineReceive::ProcessScanData(const UINT8 *data, int len) {
   if (m_range_meters == 1) {
     LOG_RECEIVE(wxT("Invalid range"));
     return;
@@ -1033,11 +1033,10 @@ void RME120Receive::ProcessScanData(const UINT8 *data, int len) {
   }
 }
 
-void RME120Receive::ProcessQuantumScanData(const UINT8 *data, int len) {
+void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
   if (m_range_meters == 1) {
     LOG_RECEIVE(wxT("Invalid range"));
-    m_range_meters = 100;
-    // return;  $$$
+    return;
   }
   QuantumHeader *qheader = (QuantumHeader *)data;
   //logBinaryData(wxT("Scandata_x"), data, len);
@@ -1050,14 +1049,10 @@ void RME120Receive::ProcessQuantumScanData(const UINT8 *data, int len) {
       LOG_INFO(wxT("$$$ quantum found 0x280003"));
     } else if (pHeader->field01 == 0x280002) {
       LOG_INFO(wxT("$$$ counters 0x280002 counter1=%i, 2= %i, 3=%i"), qheader->counter1, qheader->counter2, qheader->data_len);
-      logBinaryData(wxT("Scandata_x"), data, len);
+      logBinaryData(wxT("Scandata_x"), data, len);  // $$$ remove
 
-      //LOG_INFO(wxT("ProcessScanData::Packet header mismatch %x, %x, %x, %x.\n"), pHeader->field01, pHeader->fieldx_1,
-      //         pHeader->nspokes, pHeader->fieldx_3);
       return;
     }
-    
-    LOG_INFO(wxT("$$$ counters counter1=%i, 2= %i, 3=%i"), qheader->counter1, qheader->counter2, qheader->data_len);
 
     time_t now = time(0);
     m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
@@ -1067,27 +1062,21 @@ void RME120Receive::ProcessQuantumScanData(const UINT8 *data, int len) {
     wxLongLong nowMillis = wxGetLocalTimeMillis();
     int headerIdx = 0;
     int nextOffset = sizeof(QuantumHeader);
-    //returns_per_line = 1024; $$$
-
     
       LOG_INFO(wxT("$$$0 nextOffset=%i "), nextOffset);
       
-      UINT8 unpacked_data[10240], *dataPtr = 0;
+      UINT8 unpacked_data[1024], *dataPtr = 0;
 
       uint8_t *dData = (uint8_t *)unpacked_data;
       uint8_t *sData = (uint8_t *)data + nextOffset;
 
       int iS = 0;
       int iD = 0;
-      //LOG_BINARY_RECEIVE(wxT("$$$spoke data sData"), sData, qheader->data_len);
       while (iS < (int)qheader->data_len) {
-        //LOG_INFO(wxT("$$$a iS=%i, len = %i"), iS, (int)qheader->data_len);
-
         if (iD >= 1024) {  // remove trailing zero's
           break;
         }
         if (*sData != 0x5c) {
-          //LOG_INFO(wxT("$$$q iS=%i, iD = %i *sData=%0x"), iS, iD, *sData);
           *dData++ = *sData;
           sData++;
           iS++;
@@ -1100,23 +1089,12 @@ void RME120Receive::ProcessQuantumScanData(const UINT8 *data, int len) {
             *dData++ = cFill;
             
           }
-          //LOG_INFO(wxT("$$$loop iS=%i, iD = %i nFill= %i, cFill=%0x"), iS, iD, nFill, cFill);
           sData += 3;
           iS += 3;
           iD += nFill;
-          //LOG_INFO(wxT("$$$1 iS=%i, iD = %i"), iS, iD);
         }
-        //LOG_INFO(wxT("$$$b iS=%i, iD = %i"), iS, iD);
-
-        //LOG_INFO(wxT("$$$c iS=%i, len = %i"), iS, (int)qheader->data_len);  crashing???
       }  // end of while, only one spoke per packet
       int idorg = iD;
-      //LOG_INFO(wxT("$$$ test iD=%i"), iD);
-      /*while (iD < returns_per_line) {
-        *dData++ = 0;
-        iD++;
-      }*/
-      LOG_INFO(wxT("$$$2 test iD=%i idorg=%i"), iD, idorg);
       returns_per_line = iD;
       if (returns_per_line >= 250) {
         returns_per_line = 249;
@@ -1136,19 +1114,10 @@ void RME120Receive::ProcessQuantumScanData(const UINT8 *data, int len) {
           m_ri->m_statistics.missing_spokes += SPOKES + spoke - m_next_spoke;
         }
       }
-      m_next_spoke = (spoke + 1)/* % 2048*/;
-      LOG_INFO(wxT("$$$ m_next_spoke=%i"), m_next_spoke);
-
-      //if ((pSData->field01 & 0x80000000) != 0 && nextOffset < len) {
-      //  // fprintf(stderr, "ProcessScanData::Last record %d (%d) in packet %d but still data to go %d:%d.\n",
-      //  // 	headerIdx, scan_idx, packetIdx, nextOffset, len);
-      //}
+      m_next_spoke = spoke + 1;
       headerIdx++;
-
       m_pi->SetRadarHeading();
-
       int hdt_raw = 250. * (m_pi->GetHeadingTrue() + m_pi->m_vp_rotation) / 360.;
-
 
       int angle_raw = spoke;  // Compensate openGL rotation compared to North UP
       int bearing_raw = angle_raw + hdt_raw;
@@ -1156,28 +1125,22 @@ void RME120Receive::ProcessQuantumScanData(const UINT8 *data, int len) {
       SpokeBearing angle = angle_raw;      
       SpokeBearing bearing = bearing_raw;  // divide by 2 to map on 2048 scanlines
       while (angle >= 250) {
-        LOG_INFO(wxT("$$$ to large angle=%i"), angle);
+        LOG_INFO(wxT("$$$ too large angle=%i"), angle);
         angle -= 250;
       }
       while (angle < 0) {
-        LOG_INFO(wxT("$$$ to small angle=%i"), angle);
+        LOG_INFO(wxT("$$$ too small angle=%i"), angle);
         angle += 250;
       }
       while (bearing >= 250) {
-        LOG_INFO(wxT("$$$ to large bearing=%i"), bearing);
+        LOG_INFO(wxT("$$$ too large bearing=%i"), bearing);
         bearing -= 250;
       }
       while (bearing < 0) {
-        LOG_INFO(wxT("$$$ to small angle=%i"), bearing);
+        LOG_INFO(wxT("$$$ too small angle=%i"), bearing);
         bearing += 250;
       }
-      /*bool spokes_1024;
-      if (int(angle - m_previous_angle) == 2 || int(angle - m_previous_angle) == -2046) {
-        spokes_1024 = true;
-      } else {
-        spokes_1024 = false;
-      }
-      m_previous_angle = angle;*/
+      
       if (m_range_meters == 1) {
         LOG_INFO(wxT("Error range invalid"));
         return;
@@ -1185,15 +1148,10 @@ void RME120Receive::ProcessQuantumScanData(const UINT8 *data, int len) {
       LOG_INFO(wxT("ProcessRadarSpoke a=%i, angle_raw=%i b=%i, bearing_raw=%i, returns_per_line=%i range=%i spokes=%i"), angle,
          angle_raw, bearing, bearing_raw, returns_per_line, m_range_meters, m_ri->m_spokes);
       m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, m_range_meters, nowMillis);
-      // When te HD radar is transmitting in a mode with 1024 spokes, insert additional spokes to fill the image
-     /* if (spokes_1024 && angle + 1 < m_ri->m_spokes && bearing + 1 < m_ri->m_spokes) {
-        m_ri->ProcessRadarSpoke(angle + 1, bearing + 1, dataPtr, returns_per_line, m_range_meters, nowMillis);
-      }*/
-    
   }
 }
 
-void RME120Receive::Shutdown() {
+void RaymarineReceive::Shutdown() {
   if (m_send_socket != INVALID_SOCKET) {
     m_shutdown_time_requested = wxGetUTCTimeMillis();
     if (send(m_send_socket, "!", 1, MSG_DONTROUTE) > 0) {
@@ -1203,7 +1161,7 @@ void RME120Receive::Shutdown() {
   LOG_INFO(wxT("%s receive thread will take long time to stop"), m_ri->m_name.c_str());
 }
 
-wxString RME120Receive::GetInfoStatus() {
+wxString RaymarineReceive::GetInfoStatus() {
   wxCriticalSectionLocker lock(m_lock);
   // Called on the UI thread, so be gentle
   if (m_firmware.length() > 0) {

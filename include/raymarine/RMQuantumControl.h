@@ -7,6 +7,8 @@
  *           Kees Verruijt
  *           Douwe Fokkema
  *           Sean D'Epagnier
+ *           Martin Hassellov: testing the Raymarine radar
+ *           Matt McShea: testing the Raymarine radar
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -29,76 +31,58 @@
  ***************************************************************************
  */
 
-#if !defined(DEFINE_RADAR)
-#ifndef _RADARTYPE_H_
-#define _RADARTYPE_H_
+#ifndef _RM_QUANTUMCONTROL_H_
+#define _RM_QUANTUMCONTROL_H_
 
 #include "RadarInfo.h"
-#include "emulator/EmulatorControl.h"
-#include "emulator/EmulatorControlsDialog.h"
-#include "emulator/EmulatorReceive.h"
-#include "garminhd/GarminHDControl.h"
-#include "garminhd/GarminHDControlsDialog.h"
-#include "garminhd/GarminHDReceive.h"
-#include "garminxhd/GarminxHDControl.h"
-#include "garminxhd/GarminxHDControlsDialog.h"
-#include "garminxhd/GarminxHDReceive.h"
-#include "navico/NavicoControl.h"
-#include "navico/NavicoControlsDialog.h"
-#include "navico/NavicoReceive.h"
 #include "pi_common.h"
-#include "raymarine/RME120Control.h"
-#include "raymarine/RMQuantumControl.h"
-#include "raymarine/RME120ControlsDialog.h"
-#include "raymarine/RaymarineReceive.h"
+#include "socketutil.h"
 
-#endif /* _RADARTYPE_H_ */
+PLUGIN_BEGIN_NAMESPACE
 
-#define DEFINE_RADAR(t, x, s, l, a, b, c, d)
-#define INITIALIZE_RADAR
-#endif
+class RMQuantumControl : public RadarControl {
+ public:
+  RMQuantumControl(radar_pi *pi, RadarInfo *ri) {
+    m_radar_socket = INVALID_SOCKET;
+    m_pi = pi;
+    m_ri = ri;
+    m_name = ri->m_name;
+    m_send_address = NetworkAddress();
+  }
 
-#if !defined(DEFINE_RANGE_METRIC)
-#define DEFINE_RANGE_METRIC(t, x)
-#endif
+  ~RMQuantumControl() {
+    if (m_radar_socket != INVALID_SOCKET) {
+      closesocket(m_radar_socket);
+      LOG_TRANSMIT(wxT("%s transmit socket closed"), m_name.c_str());
+    }
+  }
 
-#if !defined(DEFINE_RANGE_MIXED)
-#define DEFINE_RANGE_MIXED(t, x)
-#endif
+  bool Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr);
 
-#if !defined(DEFINE_RANGE_NAUTIC)
-#define DEFINE_RANGE_NAUTIC(t, x)
-#endif
+  void RadarTxOff();
+  void RadarTxOn();
+  bool RadarStayAlive();
+  bool SetRange(int meters);
+  bool SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button);
 
-#ifndef SPOKES_MAX
-#define SPOKES_MAX 0
-#endif
+  /*
+   * Update the send address where to send data; this is variable
+   * on Navico and RME radars, we are told where it is using a message.
+   */
+  void SetSendAddress(NetworkAddress sendSendAddress) { m_send_address = sendSendAddress; }
 
-#ifndef SPOKE_LEN_MAX
-#define SPOKE_LEN_MAX 0
-#endif
+ private:
+  radar_pi *m_pi;
+  RadarInfo *m_ri;
+  SOCKET m_radar_socket;
+  wxString m_name;
+  NetworkAddress m_send_address;
 
-#ifndef RO_SINGLE
-#define RO_SINGLE (0)
-#define RO_PRIMARY (1)
-#define RO_SECONDARY (2)
-#endif
+  bool TransmitCmd(const uint8_t *msg, int size);
+  void logBinaryData(const wxString &what, const uint8_t *data, int size);
+  void SetRangeIndex(size_t index);
+};
 
-#include "emulator/emulatortype.h"
-#include "garminhd/garminhdtype.h"
-#include "garminxhd/garminxhdtype.h"
-#include "navico/br24type.h"
-#include "navico/br3gtype.h"
-#include "navico/br4gatype.h"
-#include "navico/br4gbtype.h"
-#include "navico/haloatype.h"
-#include "navico/halobtype.h"
-#include "raymarine/RME120type.h"
-#include "raymarine/RMQuantumtype.h"
+PLUGIN_END_NAMESPACE
 
-
-#undef DEFINE_RADAR  // Prepare for next inclusion
-#undef INITIALIZE_RADAR
-#undef DEFINE_RANGE_METRIC
-#undef DEFINE_RANGE_MIXED
-#undef DEFINE_RANGE_NAUTIC
+#endif /* _RM_QUANTUMCONTROL_H_ */
