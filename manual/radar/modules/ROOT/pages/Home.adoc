@@ -46,12 +46,9 @@ The following pages document the plugin for end users:
 * xref:Hardware-installation-(Garmin).adoc[Hardware installation (Garmin)]
 * xref:Hardware-installation-(Navico).adoc[Hardware installation (Navico)]
 * xref:Hardware-installation-(Raymarine).adoc[Hardware installation (Raymarine)]
-
-
 * xref:Software-installation.adoc[Software installation]
 * xref:Operation.adoc[Operation]
 * xref:Preferences.adoc[Preferences]
-
 * xref:Adding-new-radar-types.adoc[Adding new radar types]
 
 == Further development

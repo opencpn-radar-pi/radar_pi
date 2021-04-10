@@ -42,20 +42,22 @@ FIND OUT YOUR SELF AND INFORM US!!
 |Q24D |Eth+Wifi |Chirp |24 |MC/48/DO |NY
 |===
 
-Interface: * RL = Electronics is in RL Pathfinder display, which
-generates Ethernet data via Seatalk _hs_ port * RC = Electronics is in
-RC Pathfinder display, which generates Ethernet data via Seatalk _hs_
-port * E = Electronics is in E Series (Classic) display, which generates
-Ethernet data via Seatalk _hs_ port
+Interface:
 
-Features: * MC = MultiColor, e.g. more bits per ``pixel'' for more
-information on signal strength * 48 = 48 RPM at closer ranges instead of
-24 * DO = Doppler, uses different color for targets getting nearer or
-further away
+* RL = Electronics is in RL Pathfinder display, which generates Ethernet data via Seatalk _hs_ port 
+* RC = Electronics is in RC Pathfinder display, which generates Ethernet data via Seatalk _hs_ port 
+* E = Electronics is in E Series (Classic) display, which generates Ethernet data via Seatalk _hs_ port
 
-Plugin Support: * ? = We hope that this will work, we just don’t know
-yet * Yes = This is what the original plugin by ab2knovs
-(https://github.com/ab2nkovs/RMRadar_pi) claimed to support * NY = Not
-yet, please help if you have such a scanner
+Features: 
+
+* MC = MultiColor, e.g. more bits per ``pixel'' for more information on signal strength 
+* 48 = 48 RPM at closer ranges instead of 24 
+* DO = Doppler, uses different color for targets getting nearer or further away
+
+Plugin Support: 
+
+* ? = We hope that this will work, we just don’t know yet 
+* Yes = This is what the original plugin by ab2knovs (https://github.com/ab2nkovs/RMRadar_pi) claimed to support 
+* NY = Not yet, please help if you have such a scanner
 
 xref:Home.adoc[Back to overview Plugin radar_pi]
