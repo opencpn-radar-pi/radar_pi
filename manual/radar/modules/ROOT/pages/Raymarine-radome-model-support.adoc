@@ -33,10 +33,10 @@ FIND OUT YOUR SELF AND INFORM US!!
 |M92652S |RL/RC/E |Magnetron |24 | |?
 |RD218 |E |Magnetron |18 | |Yes
 |RD424 |E |Magnetron |24 | |Yes
-|RD418D |Ethernet |Magnetron + Digital |18 | |Yes
-|RD424D |Ethernet |Magnetron + Digital |24 | |Yes
-|RD418HD |Ethernet |Magnetron + Digital |18 |MC/48 |?
-|RD424HD |Ethernet |Magnetron + Digital |24 |MC/48 |?
+|RD418D |Ethernet |Magnetron + Digital |18 | |?
+|RD424D |Ethernet |Magnetron + Digital |24 | |?
+|RD418HD |Ethernet |Magnetron + Digital |18 |MC/48 |NY
+|RD424HD |Ethernet |Magnetron + Digital |24 |MC/48 |NY
 |Q24C |Eth+WiFi |Full digital |24 | |NY
 |Q24W |WiFi |Full digital |24 | |NY
 |Q24D |Eth+Wifi |Chirp |24 |MC/48/DO |NY
