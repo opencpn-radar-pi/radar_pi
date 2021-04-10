@@ -31,8 +31,8 @@
  ***************************************************************************
  */
 
-#ifndef _RME120RECEIVE_H_
-#define _RME120RECEIVE_H_
+#ifndef _RAYMARINERECEIVE_H_
+#define _RAYMARINERECEIVE_H_
 
 #include "RadarFactory.h"
 #include "RadarReceive.h"
@@ -45,9 +45,9 @@ PLUGIN_BEGIN_NAMESPACE
 // An intermediary class that implements the common parts of some radars.
 //
 
-class RME120Receive : public RadarReceive {
+class RaymarineReceive : public RadarReceive {
  public:
-  RME120Receive(radar_pi *pi, RadarInfo *ri, NetworkAddress reportAddr, NetworkAddress dataAddr, NetworkAddress sendAddr)
+   RaymarineReceive(radar_pi *pi, RadarInfo *ri, NetworkAddress reportAddr, NetworkAddress dataAddr, NetworkAddress sendAddr)
       : RadarReceive(pi, ri) {
     m_info.serialNr = wxT(" ");
     m_info.spoke_data_addr = dataAddr;
@@ -75,7 +75,7 @@ class RME120Receive : public RadarReceive {
       // In this case m_info.spoke_data_addr etc. are correct, these don't really change in the wild according to our data,
       // so write them into the RadarLocationInfo object.
       m_ri->SetRadarLocationInfo(m_info);
-      LOG_INFO(wxT("%s  RME120Receive SetRadarLocationInfo m_info= %s "), m_ri->m_name, m_info.to_string());
+      LOG_INFO(wxT("%s  RaymarineReceive SetRadarLocationInfo m_info= %s "), m_ri->m_name, m_info.to_string());
     } else if (!info.report_addr.IsNull() && ri->m_radar_type != RT_BR24) {
       // Restart, when ini file contains multicast addresses, that are hopefully still correct.
       // This will also overwrite the initial addresses for 3G and 4G with those from the ini file
@@ -90,7 +90,7 @@ class RME120Receive : public RadarReceive {
     m_previous_angle = 0;
   };
 
-  ~RME120Receive(){};
+  ~RaymarineReceive(){};
 
   void *Entry(void);
   void Shutdown(void);
@@ -140,4 +140,4 @@ class RME120Receive : public RadarReceive {
 };
 
 PLUGIN_END_NAMESPACE
-#endif /* _RME120RECEIVE_H_ */
+#endif /* _RAYMARINERECEIVE_H_ */

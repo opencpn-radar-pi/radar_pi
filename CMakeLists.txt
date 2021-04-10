@@ -158,10 +158,12 @@ set(SRC
   include/navico/haloatype.h
   include/navico/halobtype.h
   include/raymarine/RME120Control.h
+  include/raymarine/RMQuantumControl.h
   include/raymarine/RME120ControlSet.h
   include/raymarine/RME120ControlsDialog.h
-  include/raymarine/RME120Receive.h
+  include/raymarine/RaymarineReceive.h
   include/raymarine/RME120type.h
+  include/raymarine/RMQuantumtype.h
   include/raymarine/RaymarineCommon.h
   include/raymarine/RaymarineLocate.h
 
@@ -202,8 +204,9 @@ set(SRC
   src/navico/NavicoLocate.cpp
   src/navico/NavicoReceive.cpp
   src/raymarine/RME120Control.cpp
+  src/raymarine/RMQuantumControl.cpp
   src/raymarine/RME120ControlsDialog.cpp
-  src/raymarine/RME120Receive.cpp
+  src/raymarine/RaymarineReceive.cpp
   src/raymarine/RaymarineLocate.cpp
 
 )

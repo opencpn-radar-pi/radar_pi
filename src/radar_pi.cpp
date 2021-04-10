@@ -301,7 +301,7 @@ int radar_pi::Init(void) {
   // Now that the settings are made we can initialize the RadarInfos
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->Init();
-    //StartRadarLocators(r);  $$$
+    StartRadarLocators(r);
   }
   // and get rid of any radars we're not using
   for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
@@ -1178,7 +1178,7 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   }
   
    //// for testing only, simple trick to get position and heading
-   wxString nmea;   
+   wxString nmea;   // comment out $$$
    nmea = wxT("$APHDM,000.0,M*33");
    PushNMEABuffer(nmea);
    nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
@@ -2086,20 +2086,6 @@ bool radar_pi::MouseEventHook(wxMouseEvent &event) {
   }
   return false;
 }
-
-//void radar_pi::logBinaryData(const wxString &what, const uint8_t *data, int size) { $$$
-//  wxString explain;
-//  int i = 0;
-//
-//  explain.Alloc(size * 3 + 50);
-//  explain += wxT("");
-//  explain += what;
-//  explain += wxString::Format(wxT(" %d bytes: "), size);
-//  for (i = 0; i < size; i++) {
-//    explain += wxString::Format(wxT(" %02X"), data[i]);
-//  }
-//  wxLogMessage(explain);
-//}
 
 void radar_pi::logBinaryData(const wxString &what, const uint8_t *data, int size) {
   wxString explain;
