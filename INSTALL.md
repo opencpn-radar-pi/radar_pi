@@ -31,3 +31,8 @@ On windows, a different workflow is used:
 
 This is to build the installer tarball. Use _--target pkg_ to build the
 legacy NSIS installer.
+
+#### Example makefiles for standalone build
+
+Examine `Makefile`, `build.sh` and `build.cmd` for examples on how the 
+developers build the plugin in standalone mode.
