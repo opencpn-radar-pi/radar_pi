@@ -62,7 +62,7 @@ set(OCPN_RELEASE_REPO
 # -------  Plugin setup --------
 #
 project(radar_pi VERSION 5.2.0)
-set(PKG_RELEASE "2")
+set(PKG_RELEASE "")
 set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME radar)    # Dialogs, installer artifacts, ...
