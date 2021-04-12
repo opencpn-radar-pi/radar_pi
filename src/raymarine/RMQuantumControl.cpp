@@ -261,7 +261,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
 
 
     case CT_SEA: {
-      uint8_t rd_msg_set_sea[] = {0x02, 0x03, 0x28, 0x00, 0x00, 
+      uint8_t rd_msg_set_sea[] = {0x02, 0x03, 0x28, 0x00, 0x00,    // same as gain ? $$$
                                   0x28,                         // Quantum, value at pos 5
                                   0x74, 0xa3};
 
