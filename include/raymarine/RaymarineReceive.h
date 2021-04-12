@@ -128,7 +128,6 @@ class RaymarineReceive : public RadarReceive {
   void ProcessScanData(const UINT8 *data, int len);
   void ProcessQuantumScanData(const UINT8 *data, int len);
   void ProcessQuantumReport(const UINT8 *data, int len);
-  void logBinaryData(const wxString &what, const uint8_t *data, int size);
 
   void SetFirmware(wxString s);
   void UpdateSendCommand();

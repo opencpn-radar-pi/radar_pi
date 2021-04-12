@@ -127,19 +127,24 @@ void RMQuantumControl::RadarTxOn() {
   TransmitCmd(rd_msg_tx_control, sizeof(rd_msg_tx_control));
 };
 
-static uint8_t rd_msg_5s[] = {
-    0x03, 0x89, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // keeps alive for 5 seconds ?
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x68, 0x01, 0x00, 0x00,
-    0x9e, 0x03, 0x00, 0x00, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+// 1 sec stay alive not used yet. May be required for Quantum
+static uint8_t stay_alive_1sec[] = {0x00, 0x00, 0x28, 0x00, 0x52, 0x61, 0x64, 0x61, 0x72, 0x00, 0x00, 0x00}; // Quantum 1 sec stay alive
+
+
+static uint8_t rd_msg_5s[] = {0x03, 0x89, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // Quantum stay alive 5 sec message, 36 bytes
+                              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                              0x9e, 0x03, 0x00, 0x00, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 bool RMQuantumControl::RadarStayAlive() {
   TransmitCmd(rd_msg_5s, sizeof(rd_msg_5s));
   return true;
 }
 
-static uint8_t rd_msg_set_range[] = {0x01, 0x81, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
-                                     0x01,  // Range at offset 8 (0 - 1/8, 1 - 1/4, 2 - 1/2, 3 - 3/4, 4 - 1, 5 - 1.5, 6 - 3...)
-                                     0x00, 0x00, 0x00};  // length == 12
+
+
+static uint8_t rd_msg_set_range[] = {0x01, 0x01, 0x28, 0x00, 0x00, 
+                                     0x0f,    // Quantum range index at pos 5
+                                     0x00, 0x00};
 
 bool RMQuantumControl::SetRange(int meters) {
   LOG_INFO(wxT(" SetRangeMeters = %i"), meters);
@@ -152,6 +157,9 @@ bool RMQuantumControl::SetRange(int meters) {
   SetRange(11 - 1);
   return false;
 }
+
+
+
 
 void RMQuantumControl::SetRangeIndex(size_t index) {
   LOG_VERBOSE(wxT(" SetRangeIndex index = %i"), index);
@@ -223,22 +231,25 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       break;
     }
 
-    case CT_GAIN: {  // tested OK by Martin
-      uint8_t cmd[] = {0x01, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
-                       0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                       0x00,  // Gain value at offset 20
-                       0x00, 0x00, 0x00};
+
+
+
+
+    case CT_GAIN: {  
+      uint8_t cmd[] = {0x02, 0x03, 0x28, 0x00, 0x00, 
+                       0x28,                         // Quantum value at pos 5
+                       0x74, 0xa3}; 
 
       uint8_t cmd2[] = {0x01, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                         0x01,  // Gain auto - 1, manual - 0 at offset 16
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};  // not OK yet
 
       if (!autoValue) {
         cmd2[16] = 0;
         r = TransmitCmd(cmd2, sizeof(cmd2));        // set auto off
-        cmd[20] = m_ri->m_gain.DeTransform(value);  // scaling for gain
+        cmd[5] =value;
         r = TransmitCmd(cmd, sizeof(cmd));
-        LOG_TRANSMIT(wxT("send gain command gain value= %i, transmitted = %i"), value, cmd[20]);
+        LOG_TRANSMIT(wxT("send gain command gain value= %i, transmitted = %i"), value, cmd[5]);
       } else {  // auto on
         cmd2[16] = 1;
         r = TransmitCmd(cmd2, sizeof(cmd2));  // set auto on
@@ -247,21 +258,22 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       break;
     }
 
+
+
     case CT_SEA: {
-      uint8_t rd_msg_set_sea[] = {0x02, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                  0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                  0x00,  // Sea value at offset 20
-                                  0x00, 0x00, 0x00};
+      uint8_t rd_msg_set_sea[] = {0x02, 0x03, 0x28, 0x00, 0x00, 
+                                  0x28,                         // Quantum, value at pos 5
+                                  0x74, 0xa3};
 
       uint8_t rd_msg_sea_auto[] = {0x02, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                    0x01,  // Sea auto value at offset 16
-                                   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                                   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};  // $$$ wrong for Q
 
       if (!autoValue) {
         rd_msg_sea_auto[16] = 0;
-        r = TransmitCmd(rd_msg_sea_auto, sizeof(rd_msg_sea_auto));  // set auto off
-        rd_msg_set_sea[20] = m_ri->m_sea.DeTransform(value);        // scaling for gain
-        LOG_TRANSMIT(wxT("send2 sea command sea value = %i, transmitted= %i"), value, rd_msg_set_sea[20]);
+        r = TransmitCmd(rd_msg_sea_auto, sizeof(rd_msg_sea_auto));  // set auto off  // $$$
+        rd_msg_set_sea[5] = value;        // scaling for gain
+        LOG_TRANSMIT(wxT("send2 sea command sea value = %i, transmitted= %i"), value, rd_msg_set_sea[5]);
         r = TransmitCmd(rd_msg_set_sea, sizeof(rd_msg_set_sea));
       } else {
         LOG_TRANSMIT(wxT("sea auto clicked autoValue=%i"), autoValue);
@@ -271,16 +283,17 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       break;
     }
 
+
+
     case CT_RAIN: {  // Rain Clutter
 
       uint8_t rd_msg_rain_on[] = {0x03, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                   0x01,  // Rain on at offset 16
-                                  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                                  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};  // not yet updated for Q $$$
 
-      uint8_t rd_msg_rain_set[] = {0x03, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                   0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                   0x33,  // Rain value at offset 20
-                                   0x00, 0x00, 0x00};
+      uint8_t rd_msg_rain_set[] = {0x0c, 0x03, 0x28, 0x00, 0x00, 
+                                   0x28,          // Quantum value at pos 5
+                                   0x00, 0x00};
 
       if (state == RCS_OFF) {
         rd_msg_rain_on[16] = 0;  // rain off
@@ -290,12 +303,14 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       } else {
         rd_msg_rain_on[16] = 1;  // rain on first
         r = TransmitCmd(rd_msg_rain_on, sizeof(rd_msg_rain_on));
-        rd_msg_rain_set[20] = m_ri->m_rain.DeTransform(value);
-        LOG_TRANSMIT(wxT("rainvalue= %i, transmitted=%i"), value, rd_msg_rain_set[20]);
+        rd_msg_rain_set[5] = value;
+        LOG_TRANSMIT(wxT("rainvalue= %i, transmitted=%i"), value, rd_msg_rain_set[5]);
         r = TransmitCmd(rd_msg_rain_set, sizeof(rd_msg_rain_set));
       }
       break;
     }
+
+
 
     case CT_FTC: {
       uint8_t rd_msg_ftc_on[] = {0x04, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -314,9 +329,9 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
         rd_msg_ftc_on[16] = 1;  // FTC on
         r = TransmitCmd(rd_msg_ftc_on, sizeof(rd_msg_ftc_on));
         LOG_TRANSMIT(wxT("FTC state != RCS_OFF, value= %i"), value);
-        rd_msg_ftc_set[20] = m_ri->m_ftc.DeTransform(value);
+        rd_msg_ftc_set[5] = value;
         r = TransmitCmd(rd_msg_ftc_set, sizeof(rd_msg_ftc_set));
-        LOG_TRANSMIT(wxT("send FTC command FTC value = %i, transmitted= %i"), value, rd_msg_ftc_set[20]);
+        LOG_TRANSMIT(wxT("send FTC command FTC value = %i, transmitted= %i"), value, rd_msg_ftc_set[5]);
       }
       break;
     }
