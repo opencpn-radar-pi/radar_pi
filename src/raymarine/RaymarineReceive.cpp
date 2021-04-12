@@ -292,6 +292,8 @@ void *RaymarineReceive::Entry(void) {
   return 0;
 }
 
+static uint8_t previous1[1000];  // $$$
+
 void RaymarineReceive::ProcessFrame(const UINT8 *data, size_t len) {  // This is the original ProcessFrame from RMradar_pi
   time_t now = time(0);
   wxString MOD_serial;
@@ -322,6 +324,18 @@ void RaymarineReceive::ProcessFrame(const UINT8 *data, size_t len) {  // This is
         ProcessQuantumReport(data, len);
         m_ri->m_data_timeout = now + DATA_TIMEOUT;
         break;
+      case 0x00280001:
+        m_pi->logBinaryData(wxT("$$$280001"), data, len);
+        for (int i = 0; i < len; i++) {
+          if (data[i] != previous1[i]) {
+            LOG_INFO(wxT("$$$280001 not equal i=%i, data=%0x, %i, previous1=%0x, %i"), i, data[i], data[i], previous1[i], previous1[i]);
+          }
+          previous1[i] = data[i];
+        }
+        LOG_INFO(wxT("$$$280001 not equal1 all scanned"));
+        
+
+        break;
       case 0x00010006:
         IF_serial = wxString::FromAscii(data + 4, 7);
         MOD_serial = wxString::FromAscii(data + 20, 7);
@@ -337,8 +351,6 @@ void RaymarineReceive::ProcessFrame(const UINT8 *data, size_t len) {  // This is
       case 0x00018942:
         break;
       default:
-        //logBinaryData(wxT("report "), data, len);
-        //fprintf(stderr, "Unknown message ID %08X.\n", (int)msgId);
         break;
     }
   }
@@ -367,7 +379,6 @@ struct RMRadarReport {
   uint8_t range_id;     // 193
   uint8_t fieldx_4[2];  // 194
   uint8_t auto_gain;    // 196
-
   uint8_t fieldx_5[3];   // 197
   uint32_t gain;         // 200
   uint8_t auto_sea;      // 0 - disabled; 1 - harbour, 2 - offshore, 3 - coastal   // 204
@@ -395,9 +406,19 @@ struct QuantumRadarReport {
   uint8_t unknown[4];   // 0
   uint8_t status;       // 4
   uint8_t unknown2[15]; // 5
-  uint8_t range_index;  // 20
-  uint8_t unknown3[127];
-  uint32_t ranges[20]; // 148
+  uint8_t range_index;  // 20   range
+  uint8_t xx1;          // 21
+  uint8_t xx2;          // 22
+  uint8_t gain;         // 23   gain    or sea clutter ? $$$
+  uint8_t sea;          // 24   $$$ just a guess
+  uint8_t auto_gain;    // 25   $$$ just a guess
+  uint8_t rain_enabled; // 26   $$$ just a guess
+  uint8_t xx7;          // 27
+  uint8_t xx8;          // 28
+  uint8_t rain_value;   // 29   rain
+
+  uint8_t unknown3[118]; // 30
+  uint32_t ranges[20];   // 148
 
   //uint32_t field01;       // 0x010001  // 0-3
   //uint32_t ranges[11];    // 4 - 47
@@ -472,165 +493,158 @@ struct RMRadarFixedReport {
 
 #pragma pack(pop)
 
-void RaymarineReceive::logBinaryData(const wxString &what, const uint8_t *data, int size) {
-  wxString explain;
-  int i = 0;
-  explain.Alloc(size * 3 + 50);
-  explain += wxT("") + m_ri->m_name.c_str() + wxT(" ");
-  explain += what;
-  explain += wxString::Format(wxT(" %d bytes: "), size);
-  for (i = 0; i < size; i++) {
-    if (i % 16 == 0) explain += wxString::Format(wxT(" \n %d    "), i);
-    explain += wxString::Format(wxT(" %02X"), data[i]);
-    
-  }
-  LOG_INFO(explain);
-}
+static uint8_t previous[1000];  // $$$
 
 void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   QuantumRadarReport *bl_pter = (QuantumRadarReport *)data;
   wxString s;
-   logBinaryData(wxT("ProcessQuantumReport"), data, len);
-
-    switch (bl_pter->status) {
-      case 0:
-        LOG_RECEIVE(wxT("%s received transmit off from %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
-        m_ri->m_state.Update(RADAR_STANDBY);
-        break;
-      case 1:
-        LOG_RECEIVE(wxT("%s received transmit on from %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
-        m_ri->m_state.Update(RADAR_TRANSMIT);
-        break;
-      case 2:  // Warmup, but don't know if Quantum has these states
-        LOG_RECEIVE(wxT("%s radar is warming up %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
-        m_ri->m_state.Update(RADAR_WARMING_UP);
-        break;
-      case 3:  // Off
-        LOG_RECEIVE(wxT("%s radar is off %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
-        m_ri->m_state.Update(RADAR_OFF);
-        break;
-      default:
-        m_ri->m_state.Update(RADAR_STANDBY);
-        break;
+  m_pi->logBinaryData(wxT("ProcessQuantumReport"), data, len);
+  for (int i = 0; i < len; i++) {
+    if (data[i] != previous[i]) {
+      LOG_INFO(wxT("$$$ not equal i=%i, data=%0x, %i, previous=%0x, %i"), i, data[i], data[i], previous[i], previous[i]);
     }
+    previous[i] = data[i];
+  }
+  LOG_INFO(wxT("$$$ not equal all scanned"));
+  switch (bl_pter->status) {
+    case 0:
+      LOG_RECEIVE(wxT("%s received transmit off from %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
+      m_ri->m_state.Update(RADAR_STANDBY);
+      break;
+    case 1:
+      LOG_RECEIVE(wxT("%s received transmit on from %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
+      m_ri->m_state.Update(RADAR_TRANSMIT);
+      break;
+    case 2:  // Warmup, but don't know if Quantum has these states
+      LOG_RECEIVE(wxT("%s radar is warming up %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
+      m_ri->m_state.Update(RADAR_WARMING_UP);
+      break;
+    case 3:  // Off
+      LOG_RECEIVE(wxT("%s radar is off %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
+      m_ri->m_state.Update(RADAR_OFF);
+      break;
+    default:
+      m_ri->m_state.Update(RADAR_STANDBY);
+      break;
+  }
 
+  for (int i = 0; i < 20; i++) {
+    m_ri->m_radar_ranges[i] = (int)(1.852 * (double)bl_pter->ranges[i]);
+    // LOG_RECEIVE(wxT("received range= %i, radar_ranges=  %d "), bl_pter->ranges[i], m_ri->m_radar_ranges[i]);
+  }
 
-   for (int i = 0; i < 20; i++) {
-     m_ri->m_radar_ranges[i] = (int)(1.852 * (double)bl_pter->ranges[i]);
-     LOG_RECEIVE(wxT("received range= %i, radar_ranges=  %d "), bl_pter->ranges[i], m_ri->m_radar_ranges[i]);
-   }
+  if (bl_pter->ranges[2] == 125) {
+    M_SETTINGS.range_units = RANGE_NAUTIC;  // We don't know yet how Raymarine switches range units
+  } else if (bl_pter->ranges[0] == 135) {   // Raymarine has no RANGE_MIXED
+                                            // Ray marine alse has units statue miles, not supported by radar_pi
+    M_SETTINGS.range_units = RANGE_METRIC;
+  } else {
+    LOG_INFO(wxT("Other range units found, bl_pter->ranges[0]= %i"), bl_pter->ranges[0]);
+    M_SETTINGS.range_units = RANGE_NAUTIC;  // to be adapted to RANGE_MIXED if that exists with Raymarine
+  }
 
-    if (bl_pter->ranges[2] == 125) {
-      M_SETTINGS.range_units = RANGE_NAUTIC;  // We don't know yet how Raymarine switches range units
-    } else if (bl_pter->ranges[0] == 135) {   // Raymarine has no RANGE_MIXED
-                                              // Ray marine alse has units statue miles, not supported by radar_pi
-      M_SETTINGS.range_units = RANGE_METRIC;
-    } else {
-      LOG_INFO(wxT("Other range units found, bl_pter->ranges[0]= %i"), bl_pter->ranges[0]);
-      M_SETTINGS.range_units = RANGE_NAUTIC;  // to be adapted to RANGE_MIXED if that exists with Raymarine
+  int range_id = bl_pter->range_index;
+  LOG_INFO(wxT("$$$ range index=%i, range = %i"), range_id, m_ri->m_radar_ranges[range_id]);
+  if ((m_ri->m_radar_ranges[range_id] * 2) != m_range_meters) {
+    if (m_pi->m_settings.verbose >= 1) {
+      LOG_RECEIVE(wxT("%s now scanning with range %d meters (was %d meters)"), m_ri->m_name.c_str(),
+                  m_ri->m_radar_ranges[range_id] * 2, m_range_meters);
     }
-
-    
-    int range_id = bl_pter->range_index;
-    LOG_INFO(wxT("$$$ range index=%i, range = %i"), range_id, m_ri->m_radar_ranges[range_id]);
-    if ((m_ri->m_radar_ranges[range_id] * 2) != m_range_meters) {
-      if (m_pi->m_settings.verbose >= 1) {
-        LOG_RECEIVE(wxT("%s now scanning with range %d meters (was %d meters)"), m_ri->m_name.c_str(),
-                    m_ri->m_radar_ranges[range_id] * 2, m_range_meters);
-      }
-      if (m_ri->m_radar_ranges[range_id] > 0) {
-        m_range_meters = m_ri->m_radar_ranges[range_id] * 2;  // displayed values are half of scanned values
+    if (m_ri->m_radar_ranges[range_id] > 0) {
+      m_range_meters = m_ri->m_radar_ranges[range_id] * 2;  // displayed values are half of scanned values
       m_updated_range = true;
       m_ri->m_range.Update(m_range_meters / 2);  // RM MFD shows half of what is received
       LOG_RECEIVE(wxT("m_range updated to %i"), (m_range_meters / 2));
-      } else {
-        m_range_meters = 1; // prevent accidents down the road
-        return;
-      }
+    } else {
+      m_range_meters = 1;  // prevent accidents down the road
+      return;
     }
+  }
 
-  // /* RadarControlState state;
-  //  state = (bl_pter->auto_gain > 0) ? RCS_AUTO_1 : RCS_MANUAL;
-  //  m_ri->m_gain.TransformAndUpdate(bl_pter->gain);
-  //  m_ri->m_gain.UpdateState(state);
-  //  LOG_RECEIVE(wxT("gain updated received1= %i, displayed = %i"), bl_pter->gain, m_ri->m_gain.GetValue());
+  RadarControlState state;
+  state = (bl_pter->auto_gain > 0) ? RCS_AUTO_1 : RCS_MANUAL;
+  state = (RadarControlState)0;  // $$$ temp
+  m_ri->m_gain.Update(bl_pter->gain);
+  m_ri->m_gain.UpdateState(state);
+  LOG_RECEIVE(wxT("gain updated received1= %i, displayed = %i"), bl_pter->gain, m_ri->m_gain.GetValue());
 
-  //  state = (RadarControlState)bl_pter->auto_sea;
-  //  m_ri->m_sea.TransformAndUpdate(bl_pter->sea_value);
-  //  m_ri->m_sea.UpdateState(state);
-  //  LOG_RECEIVE(wxT("sea updated received= %i, displayed = %i, state=%i"), bl_pter->sea_value, m_ri->m_sea.GetValue(), state);
+  /*state = (RadarControlState)bl_pter->auto_sea;
+  m_ri->m_sea.TransformAndUpdate(bl_pter->sea_value);
+  m_ri->m_sea.UpdateState(state);
+  LOG_RECEIVE(wxT("sea updated received= %i, displayed = %i, state=%i"), bl_pter->sea_value, m_ri->m_sea.GetValue(), state);*/
 
-  //  state = (bl_pter->rain_enabled) ? RCS_MANUAL : RCS_OFF;
-  //  LOG_RECEIVE(wxT("rain state=%i bl_pter->rain_enabled=%i"), state, bl_pter->rain_enabled);
-  //  m_ri->m_rain.TransformAndUpdate(bl_pter->rain_value);
-  //  m_ri->m_rain.UpdateState(state);
-  //  LOG_RECEIVE(wxT("rain updated received= %i, displayed = %i state=%i"), bl_pter->rain_value, m_ri->m_rain.GetValue(), state);
+  state = (bl_pter->rain_enabled) ? RCS_MANUAL : RCS_OFF;
+  LOG_RECEIVE(wxT("rain state=%i bl_pter->rain_enabled=%i"), state, bl_pter->rain_enabled);
+  m_ri->m_rain.Update(bl_pter->rain_value);
+  m_ri->m_rain.UpdateState(state);
+  LOG_RECEIVE(wxT("rain updated received= %i, displayed = %i state=%i"), bl_pter->rain_value, m_ri->m_rain.GetValue(), state);
 
-  //  state = (bl_pter->ftc_enabled) ? RCS_MANUAL : RCS_OFF;
-  //  m_ri->m_ftc.TransformAndUpdate(bl_pter->ftc_value);
-  //  m_ri->m_ftc.UpdateState(state);
-  //  LOG_RECEIVE(wxT("ftc updated received= %i, displayed = %i state=%i"), bl_pter->ftc_value, m_ri->m_ftc.GetValue(), state);
+  /* state = (bl_pter->ftc_enabled) ? RCS_MANUAL : RCS_OFF;
+   m_ri->m_ftc.TransformAndUpdate(bl_pter->ftc_value);
+   m_ri->m_ftc.UpdateState(state);
+   LOG_RECEIVE(wxT("ftc updated received= %i, displayed = %i state=%i"), bl_pter->ftc_value, m_ri->m_ftc.GetValue(), state);*/
 
-  //  m_ri->m_target_expansion.Update(bl_pter->target_expansion);
-  //  m_ri->m_interference_rejection.Update(bl_pter->interference_rejection);
+  /* m_ri->m_target_expansion.Update(bl_pter->target_expansion);
+   m_ri->m_interference_rejection.Update(bl_pter->interference_rejection);*/
 
-  //  int ba = (int)bl_pter->bearing_offset;
-  //  m_ri->m_bearing_alignment.Update(ba);
+  /*int ba = (int)bl_pter->bearing_offset;
+  m_ri->m_bearing_alignment.Update(ba);*/
 
-  //  state = (bl_pter->auto_tune > 0) ? RCS_AUTO_1 : RCS_MANUAL;
-  //  m_ri->m_tune_fine.Update(bl_pter->tune, state);
+  /*state = (bl_pter->auto_tune > 0) ? RCS_AUTO_1 : RCS_MANUAL;
+  m_ri->m_tune_fine.Update(bl_pter->tune, state);*/
 
-  //  state = (bl_pter->auto_tune > 0) ? RCS_AUTO_1 : RCS_MANUAL;
+  /*state = (bl_pter->auto_tune > 0) ? RCS_AUTO_1 : RCS_MANUAL;*/
 
-  //  m_ri->m_tune_coarse.UpdateState(state);
+  /*m_ri->m_tune_coarse.UpdateState(state);*/
 
-  //  state = (bl_pter->mbs_enabled > 0) ? RCS_MANUAL : RCS_OFF;
-  //  m_ri->m_main_bang_suppression.Update(bl_pter->mbs_enabled, RCS_MANUAL);
+  /*state = (bl_pter->mbs_enabled > 0) ? RCS_MANUAL : RCS_OFF;
+  m_ri->m_main_bang_suppression.Update(bl_pter->mbs_enabled, RCS_MANUAL);*/
 
-  //  m_ri->m_warmup_time.Update(bl_pter->warmup_time);
-  //  m_ri->m_signal_strength.Update(bl_pter->signal_strength);
-  //}*/
+  /*m_ri->m_warmup_time.Update(bl_pter->warmup_time);
+  m_ri->m_signal_strength.Update(bl_pter->signal_strength);*/
 
-  int status = m_ri->m_state.GetValue();
-  //wxString stat;
-  //switch (status) {
-  //  case RADAR_OFF:
-  //    LOG_VERBOSE(wxT("%s reports status RADAR_OFF"), m_ri->m_name.c_str());
-  //    stat = _("Off");
-  //    break;
 
-  //  case RADAR_STANDBY:
-  //    LOG_VERBOSE(wxT("%s reports status STANDBY"), m_ri->m_name.c_str());
-  //    stat = _("Standby");
-  //    break;
+//int status = m_ri->m_state.GetValue();
+// wxString stat;
+// switch (status) {
+//  case RADAR_OFF:
+//    LOG_VERBOSE(wxT("%s reports status RADAR_OFF"), m_ri->m_name.c_str());
+//    stat = _("Off");
+//    break;
 
-  //  case RADAR_WARMING_UP:
-  //    LOG_VERBOSE(wxT("%s reports status RADAR_WARMING_UP"), m_ri->m_name.c_str());
-  //    stat = _("Warming up");
-  //    break;
+//  case RADAR_STANDBY:
+//    LOG_VERBOSE(wxT("%s reports status STANDBY"), m_ri->m_name.c_str());
+//    stat = _("Standby");
+//    break;
 
-  //  case RADAR_TRANSMIT:
-  //    LOG_VERBOSE(wxT("%s reports status RADAR_TRANSMIT"), m_ri->m_name.c_str());
-  //    stat = _("Transmit");
-  //    break;
+//  case RADAR_WARMING_UP:
+//    LOG_VERBOSE(wxT("%s reports status RADAR_WARMING_UP"), m_ri->m_name.c_str());
+//    stat = _("Warming up");
+//    break;
 
-  //  default:
-  //    // LOG_BINARY_RECEIVE(wxT("received unknown radar status"), report, len);
-  //    stat = _("Unknown status");
-  //    break;
-  //}
+//  case RADAR_TRANSMIT:
+//    LOG_VERBOSE(wxT("%s reports status RADAR_TRANSMIT"), m_ri->m_name.c_str());
+//    stat = _("Transmit");
+//    break;
 
-  //s = wxString::Format(wxT("IP %s %s"), m_ri->m_radar_address.FormatNetworkAddress(), stat.c_str());
+//  default:
+//    // LOG_BINARY_RECEIVE(wxT("received unknown radar status"), report, len);
+//    stat = _("Unknown status");
+//    break;
+//}
 
-  //RadarLocationInfo info = m_ri->GetRadarLocationInfo();
-  //s << wxT("\n") << _("IF-Serial #") << info.serialNr;
-  //SetInfoStatus(s);
+// s = wxString::Format(wxT("IP %s %s"), m_ri->m_radar_address.FormatNetworkAddress(), stat.c_str());
+
+// RadarLocationInfo info = m_ri->GetRadarLocationInfo();
+// s << wxT("\n") << _("IF-Serial #") << info.serialNr;
+// SetInfoStatus(s);
 }
+
 
 void RaymarineReceive::ProcessRMReport(const UINT8 *data, int len) {
   RMRadarReport *bl_pter = (RMRadarReport *)data;
   wxString s;
-  // logBinaryData(wxT("RMRadarReport"), data, len);
+  // m_pi->logBinaryData(wxT("RMRadarReport"), data, len);
   bool HDtype = bl_pter->field01 == 0x00018801;
 
   if (bl_pter->field01 == 0x00018801 || bl_pter->field01 == 0x010001) {  // HD radar or analog
@@ -855,7 +869,7 @@ void RaymarineReceive::ProcessScanData(const UINT8 *data, int len) {
     LOG_RECEIVE(wxT("Invalid range"));
     return;
   }
-  logBinaryData(wxT("Scandata"), data, len);
+  m_pi->logBinaryData(wxT("Scandata"), data, len);
   if (len > (int)(sizeof(Header1) + sizeof(Header3))) {
     Header1 *pHeader = (Header1 *)data;
     bool HDtype = false;
@@ -1039,17 +1053,16 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
     return;
   }
   QuantumHeader *qheader = (QuantumHeader *)data;
-  //logBinaryData(wxT("Scandata_x"), data, len);
+  //m_pi->logBinaryData(wxT("Scandata_x"), data, len);
   if (len > (int)(sizeof(Header1) /* + sizeof(Header3)*/)) {
     Header1 *pHeader = (Header1 *)data;
     bool HDtype = true;
     u_int returns_per_line;
 
     if (pHeader->field01 == 0x280003) {
-      LOG_INFO(wxT("$$$ quantum found 0x280003"));
     } else if (pHeader->field01 == 0x280002) {
       LOG_INFO(wxT("$$$ counters 0x280002 counter1=%i, 2= %i, 3=%i"), qheader->counter1, qheader->counter2, qheader->data_len);
-      logBinaryData(wxT("Scandata_x"), data, len);  // $$$ remove
+      m_pi->logBinaryData(wxT("Scandata_x"), data, len);  // $$$ remove
 
       return;
     }
@@ -1061,10 +1074,7 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
 
     wxLongLong nowMillis = wxGetLocalTimeMillis();
     int headerIdx = 0;
-    int nextOffset = sizeof(QuantumHeader);
-    
-      LOG_INFO(wxT("$$$0 nextOffset=%i "), nextOffset);
-      
+    int nextOffset = sizeof(QuantumHeader);      
       UINT8 unpacked_data[1024], *dataPtr = 0;
 
       uint8_t *dData = (uint8_t *)unpacked_data;
