@@ -231,10 +231,6 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       break;
     }
 
-
-
-
-
     case CT_GAIN: {  
       uint8_t cmd[] = {0x02, 0x03, 0x28, 0x00, 0x00, 
                        0x28,                         // Quantum value at pos 5

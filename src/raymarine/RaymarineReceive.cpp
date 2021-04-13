@@ -1104,11 +1104,14 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
           iD += nFill;
         }
       }  // end of while, only one spoke per packet
-      int idorg = iD;
+      while (iD < 245) {  // fill with zeros 
+        *dData++ = 0;
+        iD++;
+      }
       returns_per_line = iD;
-      if (returns_per_line >= 250) {
-        returns_per_line = 249;
-        LOG_INFO(wxT("$$$ returns_per_line too large %i"), returns_per_line);
+      if (returns_per_line > 245) {
+        LOG_INFO(wxT("Error returns_per_line too large %i"), returns_per_line);
+        returns_per_line = 245;
         }
 
        //LOG_BINARY_RECEIVE(wxT("spoke data dData"), unpacked_data, idorg);
