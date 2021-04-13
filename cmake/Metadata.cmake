@@ -82,7 +82,7 @@ endif ()
 set(pkg_semver "${PROJECT_VERSION}${_pre_rel}+${_build_id}.${_gitversion}")
 
 # pkg_displayname: Used for xml metadata and GUI name
-if (ARCH MATCHES "arm|aarch64")
+if (ARCH MATCHES "arm64|aarch64")
   set(_display_arch "-A64")
 endif()
 string(CONCAT pkg_displayname
