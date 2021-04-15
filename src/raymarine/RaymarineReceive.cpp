@@ -1158,8 +1158,8 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
         LOG_INFO(wxT("Error range invalid"));
         return;
       }
-      LOG_INFO(wxT("ProcessRadarSpoke a=%i, angle_raw=%i b=%i, bearing_raw=%i, returns_per_line=%i range=%i spokes=%i"), angle,
-         angle_raw, bearing, bearing_raw, returns_per_line, m_range_meters, m_ri->m_spokes);
+     // LOG_INFO(wxT("ProcessRadarSpoke a=%i, angle_raw=%i b=%i, bearing_raw=%i, returns_per_line=%i range=%i spokes=%i"), angle,
+        // angle_raw, bearing, bearing_raw, returns_per_line, m_range_meters, m_ri->m_spokes);
       m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, m_range_meters, nowMillis);
   }
 }
