@@ -76,24 +76,11 @@ bool RMQuantumControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, 
   return true;
 }
 
-void RMQuantumControl::logBinaryData(const wxString &what, const uint8_t *data, int size) {
-  wxString explain;
-  int i = 0;
-
-  explain.Alloc(size * 3 + 50);
-  explain += wxT("") + m_name.c_str() + wxT(" ");
-  explain += what;
-  explain += wxString::Format(wxT(" %d bytes: "), size);
-  for (i = 0; i < size; i++) {
-    explain += wxString::Format(wxT(" %02X"), data[i]);
-  }
-  LOG_TRANSMIT(explain);
-}
 
 bool RMQuantumControl::TransmitCmd(const uint8_t *msg, int size) {
   if (m_send_address.IsNull()) {
     wxLogError(wxT("%s Unable to transmit command to unknown radar"), m_name.c_str());
-    IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("not transmitted"), msg, size));
+    IF_LOG_AT(LOGLEVEL_TRANSMIT, m_pi->logBinaryData(wxT("not transmitted"), msg, size));
     return false;
   }
   if (m_radar_socket == INVALID_SOCKET) {
@@ -106,10 +93,10 @@ bool RMQuantumControl::TransmitCmd(const uint8_t *msg, int size) {
   int sendlen = sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&send_sock_addr, sizeof(send_sock_addr));
   if (sendlen < size) {
     wxLogError(wxT("%s Unable to transmit command: %s"), m_name.c_str(), SOCKETERRSTR);
-    IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("transmit"), msg, size));
+    IF_LOG_AT(LOGLEVEL_TRANSMIT, m_pi->logBinaryData(wxT("transmit"), msg, size));
     return false;
   }
-  IF_LOG_AT(LOGLEVEL_TRANSMIT, logBinaryData(wxT("transmit"), msg, size));
+  IF_LOG_AT(LOGLEVEL_TRANSMIT, m_pi->logBinaryData(wxT("transmit"), msg, size));
   return true;
 }
 

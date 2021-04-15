@@ -79,7 +79,6 @@ class RMQuantumControl : public RadarControl {
   NetworkAddress m_send_address;
 
   bool TransmitCmd(const uint8_t *msg, int size);
-  void logBinaryData(const wxString &what, const uint8_t *data, int size);
   void SetRangeIndex(size_t index);
 };
 
