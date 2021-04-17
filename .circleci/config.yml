@@ -88,6 +88,14 @@ jobs:
       - OCPN_TARGET: buster
     <<: *debian-steps
 
+  test-build-arm:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+    steps:
+      - run: uname -a
+      - run: echo "Hello, Arm!"
+
 std-filters: &std-filters
   filters:
     branches:
@@ -118,4 +126,7 @@ workflows:
           <<: *std-filters
 
       - build-buster:
+          <<: *std-filters
+
+      - test-build-arm:
           <<: *std-filters
