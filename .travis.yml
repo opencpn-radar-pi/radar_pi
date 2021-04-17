@@ -1,0 +1,22 @@
+---
+language: cpp
+
+matrix:
+  include:
+    - script:
+        - uname -a
+        - echo "Hello arm64!"
+      os: Linux
+      dist: focal
+      arch: arm64
+    - script:
+        - uname -a
+        - echo "Hello amd64"
+      os: Linux
+      dist: focal
+      arch: amd64
+
+branches:
+  only:
+    - master
+    - build
