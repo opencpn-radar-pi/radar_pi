@@ -11,18 +11,6 @@ debian-steps: &debian-steps
 
 jobs:
 
-  # build-mingw:
-  #   machine:
-  #     image: circleci/classic:201808-01
-  #   environment:
-  #     - OCPN_TARGET: mingw
-  #   steps:
-  #     - checkout
-  #     - run: ci/circleci-build-mingw.sh
-  #     - run: cd build; /bin/bash < upload.sh
-  #     - run: python3 ci/git-push
-  #   Disabled, but visible (FTBFS bugs). FIXME
-  #
   build-flatpak-arm64:
     machine:
       image: ubuntu-2004:202101-01
@@ -49,6 +37,7 @@ jobs:
     environment:
       - OCPN_TARGET: flatpak
       - FLATPAK_BRANCH: stable
+      - USE_CUSTOM_PPA: yes
     steps:
       - checkout
       - restore_cache:
@@ -138,6 +127,9 @@ workflows:
   version: 2
   build_all:
     jobs:
+      - build-flatpak-arm64:
+          <<: *std-filters
+
       - build-flatpak:
           <<: *std-filters
 
