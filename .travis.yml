@@ -5,16 +5,13 @@ matrix:
   include:
     - script:
         - uname -a
-        - echo "Hello arm64!"
+        - echo "Hello arm64 on branch $FLATPAK_BRANCH"
       os: Linux
       dist: focal
       arch: arm64
-    - script:
-        - uname -a
-        - echo "Hello amd64"
-      os: Linux
-      dist: focal
-      arch: amd64
+      env:
+        - OCPN_TARGET=flatpak-arm64
+        - FLATPAK_BRANCH=beta
 
 branches:
   only:
