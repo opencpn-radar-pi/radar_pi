@@ -403,21 +403,23 @@ struct RMRadarReport {
 
 struct QuantumRadarReport {
 
-  uint8_t unknown[4];   // 0
-  uint8_t status;       // 4
-  uint8_t unknown2[15]; // 5
-  uint8_t range_index;  // 20   range
-  uint8_t xx1;          // 21
-  uint8_t xx2;          // 22
-  uint8_t gain;         // 23   gain    or sea clutter ? $$$
-  uint8_t sea;          // 24   $$$ just a guess
-  uint8_t auto_gain;    // 25   $$$ just a guess
-  uint8_t rain_enabled; // 26   $$$ just a guess
-  uint8_t xx7;          // 27
-  uint8_t xx8;          // 28
-  uint8_t rain_value;   // 29   rain
-
-  uint8_t unknown3[118]; // 30
+  uint8_t unknown[4];    //   0
+  uint8_t status;        //   4
+  uint8_t unknown2[15];  //   5
+  uint8_t range_index;   //  20
+  uint8_t xx1;           //  21
+  uint8_t xx2;           //  22
+  uint8_t gain;          //  23
+  uint8_t xxx1;          //  24   $$$ just a guess
+  uint8_t auto_gain;     //  25   $$$ just a guess
+  uint8_t rain_enabled;  //  26   $$$ just a guess
+  uint8_t xx7;           //  27
+  uint8_t xx8;           //  28
+  uint8_t rain_value;    //  29   rain
+  uint8_t unknown4[12];  //  30
+  uint8_t sea_auto;      //  42
+  uint8_t sea;           //  43
+  uint8_t unknown5[104]; //  44
   uint32_t ranges[20];   // 148
 
   //uint32_t field01;       // 0x010001  // 0-3
@@ -568,10 +570,10 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   m_ri->m_gain.UpdateState(state);
   LOG_RECEIVE(wxT("gain updated received1= %i, displayed = %i"), bl_pter->gain, m_ri->m_gain.GetValue());
 
-  /*state = (RadarControlState)bl_pter->auto_sea;
-  m_ri->m_sea.TransformAndUpdate(bl_pter->sea_value);
+  state = (RadarControlState)bl_pter->sea_auto;  // we don't know how many auto states there are....
+  m_ri->m_sea.Update(bl_pter->sea);
   m_ri->m_sea.UpdateState(state);
-  LOG_RECEIVE(wxT("sea updated received= %i, displayed = %i, state=%i"), bl_pter->sea_value, m_ri->m_sea.GetValue(), state);*/
+  LOG_RECEIVE(wxT("sea updated received= %i, displayed = %i, state=%i"), bl_pter->sea, m_ri->m_sea.GetValue(), state);
 
   state = (bl_pter->rain_enabled) ? RCS_MANUAL : RCS_OFF;
   LOG_RECEIVE(wxT("rain state=%i bl_pter->rain_enabled=%i"), state, bl_pter->rain_enabled);
@@ -1136,21 +1138,20 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
       int bearing_raw = angle_raw + hdt_raw;
 
       SpokeBearing angle = angle_raw;      
-      SpokeBearing bearing = bearing_raw;  // divide by 2 to map on 2048 scanlines
+      SpokeBearing bearing = bearing_raw;
+      angle += 125;
+      bearing += 125;  // turn 180 degrees for Quantum
+      
       while (angle >= 250) {
-        LOG_INFO(wxT("$$$ too large angle=%i"), angle);
         angle -= 250;
       }
       while (angle < 0) {
-        LOG_INFO(wxT("$$$ too small angle=%i"), angle);
         angle += 250;
       }
       while (bearing >= 250) {
-        LOG_INFO(wxT("$$$ too large bearing=%i"), bearing);
         bearing -= 250;
       }
       while (bearing < 0) {
-        LOG_INFO(wxT("$$$ too small angle=%i"), bearing);
         bearing += 250;
       }
       

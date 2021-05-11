@@ -200,9 +200,20 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       // Made them explicit so the compiler can catch missing control types.
       break;
 
+      // Overview of Quantum radar conmmands as far as known
       // Ordering the radar commands by the first byte value.
-      // Some interesting holes here, seems there could be more commands!
+      /*
+      00 00 28       Stay alive 1 sec
+      01 01 28       Range
+      01 03 28       All to auto   to be implemented /$$$
+      02 03 28       Gain
+      05 03 28       Sea to auto / manual
+      06 03 28       Sea
+      0c 03 28       Rain
+      
 
+      
+      */
     case CT_BEARING_ALIGNMENT: {  // to be consistent with the local bearing alignment of the pi
                                   // this bearing alignment works opposite to the one an a Lowrance display
       if (value < 0) {
@@ -244,23 +255,23 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
 
 
     case CT_SEA: {
-      uint8_t rd_msg_set_sea[] = {0x02, 0x03, 0x28, 0x00, 0x00,    // same as gain ? $$$
+      uint8_t rd_msg_set_sea[] = {0x06, 0x03, 0x28, 0x00, 0x00,
                                   0x28,                         // Quantum, value at pos 5
-                                  0x74, 0xa3};
+                                  0x7e, 0xa3};
 
-      uint8_t rd_msg_sea_auto[] = {0x02, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                   0x01,  // Sea auto value at offset 16
-                                   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};  // $$$ wrong for Q
+      uint8_t rd_msg_sea_auto[] = {0x05, 0x03, 0x28, 0x00, 0x00,
+                                   0x01,  // Quantum, 0 = manual, 1 = auto
+                                   0x00, 0x00};
 
       if (!autoValue) {
-        rd_msg_sea_auto[16] = 0;
+        rd_msg_sea_auto[5] = 0;
         r = TransmitCmd(rd_msg_sea_auto, sizeof(rd_msg_sea_auto));  // set auto off  // $$$
         rd_msg_set_sea[5] = value;        // scaling for gain
         LOG_TRANSMIT(wxT("send2 sea command sea value = %i, transmitted= %i"), value, rd_msg_set_sea[5]);
         r = TransmitCmd(rd_msg_set_sea, sizeof(rd_msg_set_sea));
       } else {
-        LOG_TRANSMIT(wxT("sea auto clicked autoValue=%i"), autoValue);
-        rd_msg_sea_auto[16] = autoValue;
+        LOG_TRANSMIT(wxT("sea auto clicked autoValue=%i"), autoValue);  // has Quantum more auto values ?
+        rd_msg_sea_auto[5] = autoValue;
         r = TransmitCmd(rd_msg_sea_auto, sizeof(rd_msg_sea_auto));
       }
       break;
