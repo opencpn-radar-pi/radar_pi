@@ -51,11 +51,19 @@ MRJ­5780­01 adapter. This particular component contains a small PC board
 which allows easy access to the individual Ethernet cable pins for
 bypass jumper and switch attachment.
 
-image::rj45_pin5_coupler.png[Amphenol MRJ578001]
+// Images in open block to indicate they belong together on one row.
+// Text for the pictures in a block doesn't seem to fit in the brackets
+Amphenol MRJ-5780-01 and a mounting example.
+[.float-group]
+--
+[.left]
+image::rj45_pin5_coupler.png[] 
+image::Garmin_Pin5_assembly.jpg[]   
+--
 
 An example supplier is Digikey:
-http://www.digikey.com/product­detail/en/MRJ­5780­01/MRJ­5780­01­ND/1242671[Digikey
-Amphenol MRJ578001 adapter]
+https://www.digikey.com/en/products/detail/amphenol-icc-commercial-products/MRJ-5780-01/1242671?s=N4IgTCBcDaIIIFsAOALApgOwPYBsAEAsgEoBSArAOwAcADDQIx4CGAJk0gC5oBOIAugF8gA[Digikey
+Amphenol MRJ-5780-01 adapter]
 
 == Network interface
 
