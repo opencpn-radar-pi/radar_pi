@@ -29,27 +29,26 @@ PLUGIN_END_NAMESPACE
 
 #ifndef RM_QUANTUM_SPOKE_LEN
 
-#define RM_QUANTUM_SPOKE_LEN (250)  // BR radars generate 512 separate values per range, at 8 bits each (according to original RMradar_pi)
-#define RETURNS_PER_LINE (250)  // BR radars generate 512 separate values per range, at 8 bits each
+#define RM_QUANTUM_SPOKE_LEN (250)
+#define RETURNS_PER_LINE (250)
 
 #endif
 
-#if SPOKES_MAX < RAYMARINE_SPOKES
+#if SPOKES_MAX < RM_QUANTUM_SPOKES
 #undef SPOKES_MAX
-#define SPOKES_MAX RM_E120_SPOKES
+#define SPOKES_MAX RM_QUANTUM_SPOKES
 #endif
 #if SPOKE_LEN_MAX < RM_QUANTUM_SPOKE_LEN
 #undef SPOKE_LEN_MAX
 #define SPOKE_LEN_MAX RM_E120_SPOKE_LEN
 #endif
 
-// Raymarine E120 has 2048 spokes of exactly 1024 pixels of 4 bits each, packed in 512 bytes
 DEFINE_RADAR(RM_QUANTUM,                                   /* Type */
              wxT("Raymarine Quantum"),                     /* Name */
              RM_QUANTUM_SPOKES,                            /* Spokes */
              RM_QUANTUM_SPOKE_LEN,                         /* Spoke length (max) */
-             RME120ControlsDialog(RM_E120),             /* ControlsDialog class constructor */
+             RMQuantumControlsDialog(RM_QUANTUM),          /* ControlsDialog class constructor */
              RaymarineReceive(pi, ri, quantum_report, quantum_data, quantum_send), /* Receive class constructor */
              RMQuantumControl(pi, ri),                     /* Send/Control class constructor */
-             RO_SINGLE                                  /* This type only has a single radar and does not need locating */
+             RO_SINGLE                                     /* This type only has a single radar and does not need locating */
 )

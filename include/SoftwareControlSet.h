@@ -57,6 +57,9 @@
 #ifndef CTD_MAX_100
 #define CTD_MAX_100 100
 #endif
+#ifndef CTD_MAX_1
+#define CTD_MAX_1 1
+#endif
 #ifndef CTD_STEP_1
 #define CTD_STEP_1 1
 #endif

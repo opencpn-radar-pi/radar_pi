@@ -48,8 +48,9 @@
 #include "navico/NavicoReceive.h"
 #include "pi_common.h"
 #include "raymarine/RME120Control.h"
-#include "raymarine/RMQuantumControl.h"
 #include "raymarine/RME120ControlsDialog.h"
+#include "raymarine/RMQuantumControl.h"
+#include "raymarine/RMQuantumControlsDialog.h"
 #include "raymarine/RaymarineReceive.h"
 
 #endif /* _RADARTYPE_H_ */

@@ -112,6 +112,8 @@ class RadarInfo {
   RadarControlItem m_sea;
   RadarControlItem m_rain;
   RadarControlItem m_ftc;
+  RadarControlItem m_mode;
+  RadarControlItem m_all_to_auto;
   RadarControlItem m_scan_speed;
   RadarControlItem m_bearing_alignment;
   RadarControlItem m_range_adjustment;

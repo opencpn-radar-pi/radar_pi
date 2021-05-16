@@ -209,6 +209,8 @@ class ControlsDialog : public wxDialog {
     m_refresh_rate_button = 0;  // TODO: Set it on change
     m_gain_button = 0;
     m_sea_button = 0;
+    m_mode_button = 0;
+    m_all_to_auto_button = 0;
     m_rain_button = 0;
     m_ftc_button = 0;
     m_adjust_button = 0;
@@ -409,6 +411,8 @@ class ControlsDialog : public wxDialog {
   RadarControlButton *m_sea_button;
   RadarControlButton *m_rain_button;
   RadarControlButton *m_ftc_button;
+  RadarControlButton *m_mode_button;
+  RadarControlButton *m_all_to_auto_button;
   wxButton *m_adjust_button;
   wxButton *m_cursor_menu;
 

@@ -166,6 +166,9 @@ set(SRC
   include/raymarine/RMQuantumtype.h
   include/raymarine/RaymarineCommon.h
   include/raymarine/RaymarineLocate.h
+  include/raymarine/RMQuantumControlsDialog.h
+  include/raymarine/RMQuantumControl.h
+  include/raymarine/RMQuantumControlSet.h
 
   src/ControlsDialog.cpp
   src/GuardZone.cpp
@@ -208,6 +211,7 @@ set(SRC
   src/raymarine/RME120ControlsDialog.cpp
   src/raymarine/RaymarineReceive.cpp
   src/raymarine/RaymarineLocate.cpp
+  src/raymarine/RMQuantumControlsDialog.cpp
 
 )
 

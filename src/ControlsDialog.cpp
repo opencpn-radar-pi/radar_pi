@@ -934,6 +934,19 @@ void ControlsDialog::CreateControls() {
     m_adjust_sizer->Add(m_ftc_button, 0, wxALL, BORDER);
   }
 
+  // The MODE button (Quantum only)
+  if (m_ctrl[CT_MODE].type) {
+    m_mode_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("MODE"), m_ctrl[CT_MODE], &m_ri->m_mode);
+    m_adjust_sizer->Add(m_mode_button, 0, wxALL, BORDER);
+  }
+
+  // The ALL_TO_AUTO button (Quantum only)
+  if (m_ctrl[CT_ALL_TO_AUTO].type) {
+    m_all_to_auto_button =
+        new RadarControlButton(this, ID_CONTROL_BUTTON, _("All_To_Auto"), m_ctrl[CT_ALL_TO_AUTO], &m_ri->m_all_to_auto);
+    m_adjust_sizer->Add(m_all_to_auto_button, 0, wxALL, BORDER);
+  }
+
   m_top_sizer->Hide(m_adjust_sizer);
 
   //**************** CURSOR BOX ******************//
@@ -1738,6 +1751,12 @@ void ControlsDialog::DisableRadarControls() {
   if (m_rain_button) {
     m_rain_button->Disable();
   }
+  if (m_mode_button) {
+    m_mode_button->Disable();
+  }
+  if (m_all_to_auto_button) {
+    m_all_to_auto_button->Disable();
+  }
   if (m_interference_rejection_button) {
     m_interference_rejection_button->Disable();
   }
@@ -1824,6 +1843,12 @@ void ControlsDialog::EnableRadarControls() {
   }
   if (m_rain_button) {
     m_rain_button->Enable();
+  }
+  if (m_mode_button) {
+    m_mode_button->Enable();
+  }
+  if (m_all_to_auto_button) {
+    m_all_to_auto_button->Enable();
   }
   if (m_interference_rejection_button) {
     m_interference_rejection_button->Enable();
@@ -1985,6 +2010,16 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   //   sea
   if (m_sea_button) {
     m_sea_button->UpdateLabel();
+  }
+
+  //   mode (RM_Quantum)
+  if (m_mode_button) {
+    m_mode_button->UpdateLabel();
+  }
+
+  //   All to auto (RM_Quantum)
+  if (m_all_to_auto_button) {
+    m_all_to_auto_button->UpdateLabel();
   }
 
   //   target_boost
