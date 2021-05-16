@@ -10,6 +10,7 @@
  *           Sean D'Epagnier
  *           Martin Hassellov: testing the Raymarine radar
  *           Matt McShea: testing the Raymarine radar
+ *           Al Grant for testing and decoding Quantum radar
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -210,6 +211,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       05 03 28       Sea to auto / manual
       06 03 28       Sea
       0c 03 28       Rain
+      14 03 28       Harbour mode  // $$$ to  be done
       
 
       

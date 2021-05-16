@@ -10,6 +10,7 @@
  *           Sean D'Epagnier
  *           Martin Hassellov: testing the Raymarine radar
  *           Matt McShea: testing the Raymarine radar
+ *           Al Grant for testing and decoding Quantum radar
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -407,19 +408,24 @@ struct QuantumRadarReport {
   uint8_t status;        //   4
   uint8_t unknown2[15];  //   5
   uint8_t range_index;   //  20
-  uint8_t xx1;           //  21
+  uint8_t mode;          //  21    harbour 0 - coastal 1 - off shore 2 - weather 3
   uint8_t xx2;           //  22
-  uint8_t gain;          //  23
-  uint8_t xxx1;          //  24   $$$ just a guess
-  uint8_t auto_gain;     //  25   $$$ just a guess
+  uint8_t xx3;           //  23
+  uint8_t xxx1;          //  24   
+  uint8_t xxx2;          //  25   
   uint8_t rain_enabled;  //  26   $$$ just a guess
   uint8_t xx7;           //  27
   uint8_t xx8;           //  28
   uint8_t rain_value;    //  29   rain
-  uint8_t unknown4[12];  //  30
-  uint8_t sea_auto;      //  42
+  uint8_t unknown4[5];   //  30
+  uint8_t yyy;           //  35  unknown, but modified by mode
+  uint8_t unknown5[2];   //  36
+  uint8_t gain_auto;     //  38
+  uint8_t gain;          //  39
+  uint8_t unknown6[2];   //  40
+  uint8_t sea_auto;      //  42 auto = 1 
   uint8_t sea;           //  43
-  uint8_t unknown5[104]; //  44
+  uint8_t unknown7[104]; //  44
   uint32_t ranges[20];   // 148
 
   //uint32_t field01;       // 0x010001  // 0-3
@@ -564,8 +570,7 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   }
 
   RadarControlState state;
-  state = (bl_pter->auto_gain > 0) ? RCS_AUTO_1 : RCS_MANUAL;
-  state = (RadarControlState)0;  // $$$ temp
+  state = (RadarControlState)bl_pter->gain_auto;
   m_ri->m_gain.Update(bl_pter->gain);
   m_ri->m_gain.UpdateState(state);
   LOG_RECEIVE(wxT("gain updated received1= %i, displayed = %i"), bl_pter->gain, m_ri->m_gain.GetValue());
