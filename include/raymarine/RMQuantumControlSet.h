@@ -73,7 +73,7 @@
 
 #ifndef RM_MODE_NAMES
 #define RM_MODE_NAMES \
-  { _("Off"),_("Harbor"), _("Coastal"), _("Offshore"), _("Weather"),}
+  {_("Harbor"), _("Coastal"), _("Offshore"), _("Weather"),}
 #endif
 
 HAVE_CONTROL(CT_BEARING_ALIGNMENT, CTD_AUTO_NO, CTD_DEF_ZERO, -1800, +1800, CTD_STEP_1, {wxT("*0.1 degrees")})
@@ -91,7 +91,7 @@ HAVE_CONTROL  (CT_MODE, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 4, CTD_STEP_1, 
 
 HAVE_CONTROL(CT_ALL_TO_AUTO, CTD_AUTO_YES, CTD_DEF_ZERO, CTD_MIN_ZERO, CTD_MAX_1, CTD_STEP_1, OFF_ON_NAMES)
 
-HAVE_CONTROL(CT_TARGET_BOOST, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2, CTD_STEP_1, OFF_LOW_HIGH_NAMES)
+HAVE_CONTROL(CT_TARGET_EXPANSION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, CTD_MAX_1, CTD_STEP_1, OFF_ON_NAMES)
 
 // Don't forget to enable buttons and update labels in ControlsDialog.cpp around 1810 and 1960
 // And initialise m_xxx_button in ControlsDialog.h
