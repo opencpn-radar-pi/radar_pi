@@ -326,16 +326,7 @@ void RaymarineReceive::ProcessFrame(const UINT8 *data, size_t len) {  // This is
         m_ri->m_data_timeout = now + DATA_TIMEOUT;
         break;
       case 0x00280001:
-        m_pi->logBinaryData(wxT("$$$280001"), data, len);
-        for (int i = 0; i < len; i++) {
-          if (data[i] != previous1[i]) {
-            LOG_INFO(wxT("$$$280001 not equal i=%i, data=%0x, %i, previous1=%0x, %i"), i, data[i], data[i], previous1[i], previous1[i]);
-          }
-          previous1[i] = data[i];
-        }
-        LOG_INFO(wxT("$$$280001 not equal1 all scanned"));
-        
-
+        //  unknown
         break;
       case 0x00010006:
         IF_serial = wxString::FromAscii(data + 4, 7);
@@ -405,63 +396,36 @@ struct RMRadarReport {
 struct QuantumRadarReport {
 
   uint8_t unknown[4];    //   0
-  uint8_t status;        //   4
+  uint8_t status;        //   4  transmit == 1
   uint8_t unknown2[15];  //   5
   uint8_t range_index;   //  20
   uint8_t mode;          //  21    harbour 0 - coastal 1 - off shore 2 - weather 3
-  uint8_t xx2;           //  22
-  uint8_t xx3;           //  23
+  uint8_t xx2;           //  22     When all to auto this one 0 -> 1
+  uint8_t xx3;           //  23     Adjusted to a value after all to auto  What are these?
   uint8_t xxx1;          //  24   
   uint8_t xxx2;          //  25   
-  uint8_t rain_enabled;  //  26   $$$ just a guess
+  uint8_t xxx3;          //  26
   uint8_t xx7;           //  27
   uint8_t xx8;           //  28
-  uint8_t rain_value;    //  29   rain
+  uint8_t xx9;           //  29
   uint8_t unknown4[5];   //  30
   uint8_t yyy;           //  35  unknown, but modified by mode
   uint8_t unknown5[2];   //  36
-  uint8_t gain_auto;     //  38
+  uint8_t gain_auto;     //  38  manual == 0, auto == 1
   uint8_t gain;          //  39
   uint8_t unknown6[2];   //  40
-  uint8_t sea_auto;      //  42 auto = 1 
+  uint8_t sea_auto;      //  42  manual == 0, auto == 1
   uint8_t sea;           //  43
-  uint8_t unknown7[104]; //  44
+  uint8_t rain_auto;     //  44  auto == 0, manual == 1
+  uint8_t rain;          //  45
+  uint8_t unknown8[8];   //  46
+  uint8_t target_expansion;  //  54  target expansion off == 0, on == 1
+  uint8_t xx11;          //  55
+  uint8_t xx12;          //  56  values modified when target expansion off / on
+  uint8_t unknown7[91];  //  57
   uint32_t ranges[20];   // 148
 
-  //uint32_t field01;       // 0x010001  // 0-3
-  //uint32_t ranges[11];    // 4 - 47
-  //uint32_t fieldx_1[33];  // 48 -
 
-  //uint8_t status;       // 2 - warmup, 1 - transmit, 0 - standby, 6 - shutting down (warmup time - countdown), 3 - shutdown  // 180
-  //uint8_t fieldx_2[3];  // 181
-  //uint8_t warmup_time;  // 184
-  //uint8_t signal_strength;  // number of bars   // 185
-
-  //uint8_t fieldx_3[7];  // 186
-  //uint8_t range_id;     // 193
-  //uint8_t fieldx_4[2];  // 194
-  //uint8_t auto_gain;    // 196
-
-  //uint8_t fieldx_5[3];   // 197
-  //uint32_t gain;         // 200
-  //uint8_t auto_sea;      // 0 - disabled; 1 - harbour, 2 - offshore, 3 - coastal   // 204
-  //uint8_t fieldx_6[3];   // 205
-  //uint8_t sea_value;     // 208
-  //uint8_t rain_enabled;  // 209
-  //uint8_t fieldx_7[3];   // 210
-  //uint8_t rain_value;    // 213
-  //uint8_t ftc_enabled;   // 214
-  //uint8_t fieldx_8[3];   // 215
-  //uint8_t ftc_value;     // 218
-  //uint8_t auto_tune;
-  //uint8_t fieldx_9[3];
-  //uint8_t tune;
-  //int16_t bearing_offset;  // degrees * 10; left - negative, right - positive
-  //uint8_t interference_rejection;
-  //uint8_t fieldx_10[3];
-  //uint8_t target_expansion;
-  //uint8_t fieldx_11[13];
-  //uint8_t mbs_enabled;  // Main Bang Suppression enabled if 1
 };
 
 
@@ -509,11 +473,10 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   m_pi->logBinaryData(wxT("ProcessQuantumReport"), data, len);
   for (int i = 0; i < len; i++) {
     if (data[i] != previous[i]) {
-      LOG_INFO(wxT("$$$ not equal i=%i, data=%0x, %i, previous=%0x, %i"), i, data[i], data[i], previous[i], previous[i]);
+      LOG_INFO(wxT("$$$ not equal hex: i=%i, %0x -> %0x, decimal: %i -> %i"), i, previous[i], data[i], previous[i], data[i]);
     }
     previous[i] = data[i];
   }
-  LOG_INFO(wxT("$$$ not equal all scanned"));
   switch (bl_pter->status) {
     case 0:
       LOG_RECEIVE(wxT("%s received transmit off from %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
@@ -580,19 +543,26 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   m_ri->m_sea.UpdateState(state);
   LOG_RECEIVE(wxT("sea updated received= %i, displayed = %i, state=%i"), bl_pter->sea, m_ri->m_sea.GetValue(), state);
 
-  state = (bl_pter->rain_enabled) ? RCS_MANUAL : RCS_OFF;
-  LOG_RECEIVE(wxT("rain state=%i bl_pter->rain_enabled=%i"), state, bl_pter->rain_enabled);
-  m_ri->m_rain.Update(bl_pter->rain_value);
+  state = (bl_pter->rain_auto) ? RCS_MANUAL : RCS_AUTO_1;
+  LOG_RECEIVE(wxT("rain state=%i bl_pter->rain_auto=%i"), state, bl_pter->rain_auto);
+  m_ri->m_rain.Update(bl_pter->rain);
   m_ri->m_rain.UpdateState(state);
-  LOG_RECEIVE(wxT("rain updated received= %i, displayed = %i state=%i"), bl_pter->rain_value, m_ri->m_rain.GetValue(), state);
+  LOG_RECEIVE(wxT("rain updated received= %i, displayed = %i state=%i"), bl_pter->rain, m_ri->m_rain.GetValue(), state);
 
-  /* state = (bl_pter->ftc_enabled) ? RCS_MANUAL : RCS_OFF;
-   m_ri->m_ftc.TransformAndUpdate(bl_pter->ftc_value);
-   m_ri->m_ftc.UpdateState(state);
-   LOG_RECEIVE(wxT("ftc updated received= %i, displayed = %i state=%i"), bl_pter->ftc_value, m_ri->m_ftc.GetValue(), state);*/
+  m_ri->m_mode.Update(bl_pter->mode);
+  LOG_RECEIVE(wxT("mode updated received= %i, displayed = %i"), bl_pter->mode, m_ri->m_mode.GetValue());
 
-  /* m_ri->m_target_expansion.Update(bl_pter->target_expansion);
-   m_ri->m_interference_rejection.Update(bl_pter->interference_rejection);*/
+  if (bl_pter->gain_auto && bl_pter->sea_auto && !bl_pter->rain_auto) { // all to auto
+    m_ri->m_all_to_auto.Update(1);
+  } else {
+    m_ri->m_all_to_auto.Update(0);
+  }
+
+   m_ri->m_target_expansion.Update(bl_pter->target_expansion);
+  LOG_RECEIVE(wxT("target_expansion updated received= %i, displayed = %i"), bl_pter->target_expansion,
+              m_ri->m_target_expansion.GetValue());
+
+  // m_ri->m_interference_rejection.Update(bl_pter->interference_rejection);
 
   /*int ba = (int)bl_pter->bearing_offset;
   m_ri->m_bearing_alignment.Update(ba);*/

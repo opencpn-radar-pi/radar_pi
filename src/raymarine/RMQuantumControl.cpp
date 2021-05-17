@@ -207,263 +207,144 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       00 00 28       Stay alive 1 sec
       01 01 28       Range
       01 03 28       All to auto   to be implemented /$$$
+      01 03 28 00 00 00 00 00 Gain to manual
+      01 03 28 00 00 01 00 00 Gain to auto
       02 03 28       Gain
-      05 03 28       Sea to auto / manual
-      06 03 28       Sea
+      05 03 28 00 00 00 00 00 Sea to manual
+      05 03 28 00 00 01 00 00 Sea to auto
+      06 03 28 00 00 xx 00 00 Sea
+      0b 03 28 00 00 01 00 00 Rain to manual (different to sea!)
+      0b 03 28 00 00 00 00 00 Rain to auto
       0c 03 28       Rain
-      14 03 28       Harbour mode  // $$$ to  be done
-      
+      0f 03 28 00 00 01 00 00 Target expansion on, 00 on 5 == off
+      10 00 28 00 01 00 00 00 Radar transmit ON
+      10 00 28 00 00 00 00 00 Radar transmit OFF
+      14 03 28       Mode, harbor 0, coastal 1, offshore 2, weather 3
+      
 
-      
+      
       */
-    case CT_BEARING_ALIGNMENT: {  // to be consistent with the local bearing alignment of the pi
-                                  // this bearing alignment works opposite to the one an a Lowrance display
-      if (value < 0) {
-        value += 360;
-      }
-      uint8_t rd_msg_bearing_offset[] = {0x07, 0x82, 0x01, 0x00, 0x14, 0x00, 0x00, 0x00};
-      rd_msg_bearing_offset[4] = value & 0xff;
-      rd_msg_bearing_offset[5] = (value >> 8) & 0xff;
-      rd_msg_bearing_offset[6] = (value >> 16) & 0xff;
-      rd_msg_bearing_offset[7] = (value >> 24) & 0xff;
-      LOG_VERBOSE(wxT("%s Bearing alignment: %d"), m_name.c_str(), value);
-      r = TransmitCmd(rd_msg_bearing_offset, sizeof(rd_msg_bearing_offset));
-      break;
-    }
 
-    case CT_GAIN: {  
-      uint8_t cmd[] = {0x02, 0x03, 0x28, 0x00, 0x00, 
-                       0x28,                         // Quantum value at pos 5
-                       0x74, 0xa3}; 
+    case CT_GAIN: {
+      uint8_t command_gain_set[] = {0x02, 0x03, 0x28, 0x00, 0x00,
+                                    0x28,  // Quantum gain value at pos 5
+                                    0x74, 0xa3};
 
-      uint8_t cmd2[] = {0x01, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x01,  // Gain auto - 1, manual - 0 at offset 16
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};  // not OK yet
+      uint8_t command_gain_auto[] = {0x01, 0x03, 0x28, 0x00, 0x00,
+                                     0x01,  // Gain auto - 1, manual - 0 at offset 5
+                                     0x00, 0x00};
 
       if (!autoValue) {
-        cmd2[16] = 0;
-        r = TransmitCmd(cmd2, sizeof(cmd2));        // set auto off
-        cmd[5] =value;
-        r = TransmitCmd(cmd, sizeof(cmd));
-        LOG_TRANSMIT(wxT("send gain command gain value= %i, transmitted = %i"), value, cmd[5]);
+        command_gain_auto[5] = 0;
+        r = TransmitCmd(command_gain_auto, sizeof(command_gain_auto));  // set auto off
+        command_gain_set[5] = value;
+        r = TransmitCmd(command_gain_set, sizeof(command_gain_set));
+        LOG_TRANSMIT(wxT("send gain command gain value= %i, transmitted = %i"), value, command_gain_set[5]);
       } else {  // auto on
-        cmd2[16] = 1;
-        r = TransmitCmd(cmd2, sizeof(cmd2));  // set auto on
+        command_gain_auto[5] = 1;
+        r = TransmitCmd(command_gain_auto, sizeof(command_gain_auto));  // set auto on
       }
       LOG_VERBOSE(wxT("%s Gain: %d auto %d"), m_name.c_str(), value, autoValue);
       break;
     }
 
-
-
     case CT_SEA: {
-      uint8_t rd_msg_set_sea[] = {0x06, 0x03, 0x28, 0x00, 0x00,
-                                  0x28,                         // Quantum, value at pos 5
-                                  0x7e, 0xa3};
+      uint8_t command_sea_set[] = {0x06, 0x03, 0x28, 0x00, 0x00,
+                                   0x28,  // Quantum, value at pos 5
+                                   0x7e, 0xa3};
 
-      uint8_t rd_msg_sea_auto[] = {0x05, 0x03, 0x28, 0x00, 0x00,
-                                   0x01,  // Quantum, 0 = manual, 1 = auto
-                                   0x00, 0x00};
+      uint8_t command_sea_auto[] = {0x05, 0x03, 0x28, 0x00, 0x00,
+                                    0x01,  // Quantum, 0 = manual, 1 = auto
+                                    0x00, 0x00};
 
       if (!autoValue) {
-        rd_msg_sea_auto[5] = 0;
-        r = TransmitCmd(rd_msg_sea_auto, sizeof(rd_msg_sea_auto));  // set auto off  // $$$
-        rd_msg_set_sea[5] = value;        // scaling for gain
-        LOG_TRANSMIT(wxT("send2 sea command sea value = %i, transmitted= %i"), value, rd_msg_set_sea[5]);
-        r = TransmitCmd(rd_msg_set_sea, sizeof(rd_msg_set_sea));
+        command_sea_auto[5] = 0;
+        r = TransmitCmd(command_sea_auto, sizeof(command_sea_auto));  // set auto off  // $$$
+        command_sea_set[5] = value;                                   // scaling for gain
+        LOG_TRANSMIT(wxT("send2 sea command sea value = %i, transmitted= %i"), value, command_sea_set[5]);
+        r = TransmitCmd(command_sea_set, sizeof(command_sea_set));
       } else {
         LOG_TRANSMIT(wxT("sea auto clicked autoValue=%i"), autoValue);  // has Quantum more auto values ?
-        rd_msg_sea_auto[5] = autoValue;
-        r = TransmitCmd(rd_msg_sea_auto, sizeof(rd_msg_sea_auto));
+        command_sea_auto[5] = autoValue;
+        r = TransmitCmd(command_sea_auto, sizeof(command_sea_auto));
       }
       break;
     }
-
-
 
     case CT_RAIN: {  // Rain Clutter
+      uint8_t command_rain_auto[] = {0x0b, 0x03, 0x28, 0x00, 0x00, 0x00,
+                                     0x01,  // Auto on at offset 5, 01 = manual, 00 = auto (different from the others!)
+                                     0x00, 0x00};
 
-      uint8_t rd_msg_rain_on[] = {0x03, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                  0x01,  // Rain on at offset 16
-                                  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};  // not yet updated for Q $$$
+      uint8_t command_rain_set[] = {0x0c, 0x03, 0x28, 0x00, 0x00,
+                                    0x28,  // Quantum value at pos 5
+                                    0x00, 0x00};
 
-      uint8_t rd_msg_rain_set[] = {0x0c, 0x03, 0x28, 0x00, 0x00, 
-                                   0x28,          // Quantum value at pos 5
-                                   0x00, 0x00};
-
-      if (state == RCS_OFF) {
-        rd_msg_rain_on[16] = 0;  // rain off
-        r = TransmitCmd(rd_msg_rain_on, sizeof(rd_msg_rain_on));
-        LOG_TRANSMIT(wxT("rain state == RCS_OFF, value= %i"), value);
-        break;
+      if (!autoValue) {
+        command_rain_auto[5] = 1;  // rain manual
+        r = TransmitCmd(command_rain_auto, sizeof(command_rain_auto));
+        command_rain_set[5] = value;
+        LOG_TRANSMIT(wxT("rainvalue= %i, transmitted=%i"), value, command_rain_set[5]);
+        r = TransmitCmd(command_rain_set, sizeof(command_rain_set));
       } else {
-        rd_msg_rain_on[16] = 1;  // rain on first
-        r = TransmitCmd(rd_msg_rain_on, sizeof(rd_msg_rain_on));
-        rd_msg_rain_set[5] = value;
-        LOG_TRANSMIT(wxT("rainvalue= %i, transmitted=%i"), value, rd_msg_rain_set[5]);
-        r = TransmitCmd(rd_msg_rain_set, sizeof(rd_msg_rain_set));
+        command_rain_auto[5] = 0;  // rain auto
+        r = TransmitCmd(command_rain_auto, sizeof(command_rain_auto));
+        LOG_TRANSMIT(wxT("rain state == RCS_AUTO_1, value= %i"), value);
       }
       break;
     }
 
-
-
-    case CT_FTC: {
-      uint8_t rd_msg_ftc_on[] = {0x04, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                 0x01,  // FTC on at offset 16
-                                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-      uint8_t rd_msg_ftc_set[] = {0x04, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                  0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                  0x1a,  // FTC value at offset 20
-                                  0x00, 0x00, 0x00};
-      if (state == RCS_OFF) {
-        rd_msg_ftc_on[16] = 0;  // FTC off
-        r = TransmitCmd(rd_msg_ftc_on, sizeof(rd_msg_ftc_on));
-        LOG_TRANSMIT(wxT("FTC state == RCS_OFF, value= %i"), value);
-      } else {
-        rd_msg_ftc_on[16] = 1;  // FTC on
-        r = TransmitCmd(rd_msg_ftc_on, sizeof(rd_msg_ftc_on));
-        LOG_TRANSMIT(wxT("FTC state != RCS_OFF, value= %i"), value);
-        rd_msg_ftc_set[5] = value;
-        r = TransmitCmd(rd_msg_ftc_set, sizeof(rd_msg_ftc_set));
-        LOG_TRANSMIT(wxT("send FTC command FTC value = %i, transmitted= %i"), value, rd_msg_ftc_set[5]);
-      }
+    case CT_MODE: {  // Mode , harbor 0, coastal 1, offshore 2, weather 3
+      uint8_t command_mode_set[] = {0x14, 0x03, 0x28, 0x00, 0x00,
+                                    0x00,  // mode value at pos 5
+                                    0x00, 0x00};
+      command_mode_set[5] = value;
+      LOG_TRANSMIT(wxT("rainvalue= %i, transmitted=%i"), value, command_mode_set[5]);
+      r = TransmitCmd(command_mode_set, sizeof(command_mode_set));
       break;
     }
 
-    case CT_MAIN_BANG_SUPPRESSION: {  // Main bang suppression
-      uint8_t rd_msg_mbs_control[] = {0x01, 0x82, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
-                                      0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                      0x00,  // MBS Enable (1) at offset 16
-                                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      if (state == RCS_OFF) {
-        rd_msg_mbs_control[16] = 0;
-      } else if (state == RCS_MANUAL) {
-        rd_msg_mbs_control[16] = 1;
-      }
-      r = TransmitCmd(rd_msg_mbs_control, sizeof(rd_msg_mbs_control));
+    case CT_ALL_TO_AUTO: {  // Mode , harbor 0, coastal 1, offshore 2, weather 3
+      uint8_t command_gain_auto[] = {0x01, 0x03, 0x28, 0x00, 0x00,
+                                     0x01,  // Gain manual == 0, auto == 1 at offset 5
+                                     0x00, 0x00};
+
+      uint8_t command_sea_auto[] = {0x05, 0x03, 0x28, 0x00, 0x00,
+                                    0x01,  //  0 = manual, 1 = auto
+                                    0x00, 0x00};
+
+      uint8_t command_rain_auto[] = {0x0b, 0x03, 0x28, 0x00, 0x00, 0x00,
+                                     0x00,  // Auto on at offset 5, manual == 1, auto == 0 (different from the others!)
+                                     0x00, 0x00};
+
+      // there is one unknown command lacking here, setting field 22 of QuantumRadarReport
+      r = TransmitCmd(command_gain_auto, sizeof(command_gain_auto));
+      r = TransmitCmd(command_sea_auto, sizeof(command_sea_auto));
+      r = TransmitCmd(command_rain_auto, sizeof(command_rain_auto));
       break;
     }
 
-    case CT_DISPLAY_TIMING: {
-      uint8_t rd_msg_set_display_timing[] = {0x02, 0x82, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
-                                             0x6d,  // Display timing value at offset 8
-                                             0x00, 0x00, 0x00};
-      rd_msg_set_display_timing[8] = value;
-      r = TransmitCmd(rd_msg_set_display_timing, sizeof(rd_msg_set_display_timing));
+    case CT_TARGET_BOOST: {  // to be done $$$
+      uint8_t command_target_expansion[] = {0x0f, 0x03, 0x28, 0x00, 0x00, 0x00,
+                                            0x00,  // 0ff == 00, on == 01
+                                            0x00, 0x00};
+
+      command_target_expansion[5] = value;
+      r = TransmitCmd(command_target_expansion, sizeof(command_target_expansion));
       break;
     }
 
-      // case CT_STC: {
-      //  uint8_t rd_msg_set_stc_preset[] = {0x03, 0x82, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
-      //                                     0x74,  // STC preset value at offset 8
-      //                                     0x00, 0x00, 0x00};
-      //  rd_msg_set_stc_preset[16] = value;
-      //  r = TransmitCmd(rd_msg_set_stc_preset, sizeof(rd_msg_set_stc_preset));
-      //  break;
+    //case CT_INTERFERENCE_REJECTION: { // $$$
+    //  uint8_t rd_msg_interference_rejection[] = {0x07, 0x83, 0x01, 0x00,
+    //                                             0x01,  // Interference rejection at offset 4, 0 - off, 1 - normal, 2 - high
+    //                                             0x00, 0x00, 0x00};
 
-      //  break;
-      //}
+    //  rd_msg_interference_rejection[4] = value;
+    //  r = TransmitCmd(rd_msg_interference_rejection, sizeof(rd_msg_interference_rejection));
+    //  break;
+    //}
 
-      // case CT_TUNE_COARSE: {  // coarse tuning
-      //  uint8_t rd_msg_tune_coarse[] = {0x04, 0x82, 0x01, 0x00,
-      //                                  0x00,  // Coarse tune at offset 4
-      //                                  0x00, 0x00, 0x00};
-      //  rd_msg_tune_coarse[4] = value;
-      //  r = TransmitCmd(rd_msg_tune_coarse, sizeof(rd_msg_tune_coarse));
-      //  break;
-      //}
-
-      // case CT_TUNE_FINE: {
-      //  uint8_t rd_msg_tune_auto[] = {0x05, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      //                                       0x01,  // Enable at offset 12
-      //                                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-      //  uint8_t rd_msg_tune_fine[] = {0x05, 0x83, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
-      //                                       0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      //                                       0x00,  // Tune value at offset 16
-      //                                       0x00, 0x00, 0x00};
-
-      //  if (!autoValue) {
-      //    rd_msg_tune_fine[16] = value;
-      //    r = TransmitCmd(rd_msg_tune_fine, sizeof(rd_msg_tune_fine));
-      //  } else {
-      //    rd_msg_tune_auto[12] = 1;
-      //    r = TransmitCmd(rd_msg_tune_auto, sizeof(rd_msg_tune_auto));
-      //  }
-      //  break;
-      //}
-
-    case CT_TARGET_BOOST: {
-      uint8_t rd_msg_target_expansion[] = {0x06, 0x83, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
-                                           0x01,  // Expansion value at offset 8: 0 - disabled, 1 - low, 2 - high
-                                           0x00, 0x00, 0x00};
-
-      rd_msg_target_expansion[8] = value;
-      r = TransmitCmd(rd_msg_target_expansion, sizeof(rd_msg_target_expansion));
-      break;
-    }
-
-    case CT_INTERFERENCE_REJECTION: {
-      uint8_t rd_msg_interference_rejection[] = {0x07, 0x83, 0x01, 0x00,
-                                                 0x01,  // Interference rejection at offset 4, 0 - off, 1 - normal, 2 - high
-                                                 0x00, 0x00, 0x00};
-
-      rd_msg_interference_rejection[4] = value;
-      r = TransmitCmd(rd_msg_interference_rejection, sizeof(rd_msg_interference_rejection));
-      break;
-    }
-
-      // case CT_STC_CURVE: {
-      //  uint8_t curve_values[] = {0, 1, 2, 4, 6, 8, 10, 13};
-      //  uint8_t rd_msg_curve_select[] = {
-      //      0x0a, 0x83, 0x01, 0x00,
-      //      0x01  // Curve value at offset 4
-      //  };
-      //  rd_msg_curve_select[4] = curve_values[value - 1];
-      //  r = TransmitCmd(rd_msg_curve_select, sizeof(rd_msg_curve_select));
-      //  break;
-      //}
-
-      // case CT_SIDE_LOBE_SUPPRESSION: {
-      //  int v = value * 256 / 100;
-      //  if (v > 255) {
-      //    v = 255;
-      //  }
-      //  uint8_t cmd[] = {0x6, 0xc1, 0x05, 0, 0, 0, (uint8_t)autoValue, 0, 0, 0, (uint8_t)v};
-      //  LOG_VERBOSE(wxT("%s command Tx CT_SIDE_LOBE_SUPPRESSION: %d auto %d"), m_name.c_str(), value, autoValue);
-      //  r = TransmitCmd(cmd, sizeof(cmd));
-      //  break;
-      //}
-
-      //  // What would command 7 be?
-
-      //  // What would command b through d be?
-
-      // case CT_SCAN_SPEED: {
-      //  uint8_t cmd[] = {0x0f, 0xc1, (uint8_t)value};
-      //  LOG_VERBOSE(wxT("%s Scan speed: %d"), m_name.c_str(), value);
-      //  r = TransmitCmd(cmd, sizeof(cmd));
-      //  break;
-      //}
-
-      //  // What would command 10 through 20 be?
-
-      // case CT_NOISE_REJECTION: {
-      //  uint8_t cmd[] = {0x21, 0xc1, (uint8_t)value};
-      //  LOG_VERBOSE(wxT("%s Noise rejection: %d"), m_name.c_str(), value);
-      //  r = TransmitCmd(cmd, sizeof(cmd));
-      //  break;
-      //}
-
-      // case CT_TARGET_SEPARATION: {
-      //  uint8_t cmd[] = {0x22, 0xc1, (uint8_t)value};
-      //  LOG_VERBOSE(wxT("%s Target separation: %d"), m_name.c_str(), value);
-      //  r = TransmitCmd(cmd, sizeof(cmd));
-      //  break;
-      //}
-
+  
       // case CT_DOPPLER: {
       //  uint8_t cmd[] = {0x23, 0xc1, (uint8_t)value};
       //  LOG_VERBOSE(wxT("%s Doppler state: %d"), m_name.c_str(), value);
@@ -471,7 +352,6 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       //  break;
       //}
 
-      //  // What would command 24 through 2f be?
   }
 
   return r;
