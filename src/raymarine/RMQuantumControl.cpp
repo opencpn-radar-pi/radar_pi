@@ -186,7 +186,6 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_SIDE_LOBE_SUPPRESSION:
     case CT_STC:
     case CT_STC_CURVE:
-    case CT_TARGET_EXPANSION:
     case CT_TARGET_ON_PPI:
     case CT_TARGET_SEPARATION:
     case CT_TARGET_TRAILS:
@@ -206,7 +205,6 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       /*
       00 00 28       Stay alive 1 sec
       01 01 28       Range
-      01 03 28       All to auto   to be implemented /$$$
       01 03 28 00 00 00 00 00 Gain to manual
       01 03 28 00 00 01 00 00 Gain to auto
       02 03 28       Gain
@@ -220,9 +218,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       10 00 28 00 01 00 00 00 Radar transmit ON
       10 00 28 00 00 00 00 00 Radar transmit OFF
       14 03 28       Mode, harbor 0, coastal 1, offshore 2, weather 3
-      
-
-      
+                 
       */
 
     case CT_GAIN: {
@@ -259,7 +255,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
 
       if (!autoValue) {
         command_sea_auto[5] = 0;
-        r = TransmitCmd(command_sea_auto, sizeof(command_sea_auto));  // set auto off  // $$$
+        r = TransmitCmd(command_sea_auto, sizeof(command_sea_auto));  // set auto off
         command_sea_set[5] = value;                                   // scaling for gain
         LOG_TRANSMIT(wxT("send2 sea command sea value = %i, transmitted= %i"), value, command_sea_set[5]);
         r = TransmitCmd(command_sea_set, sizeof(command_sea_set));
@@ -324,8 +320,8 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       break;
     }
 
-    case CT_TARGET_BOOST: {  // to be done $$$
-      uint8_t command_target_expansion[] = {0x0f, 0x03, 0x28, 0x00, 0x00, 0x00,
+    case CT_TARGET_EXPANSION: {  // to be done $$$
+      uint8_t command_target_expansion[] = {0x0f, 0x03, 0x28, 0x00, 0x00,
                                             0x00,  // 0ff == 00, on == 01
                                             0x00, 0x00};
 
