@@ -129,7 +129,7 @@ void *RaymarineLocate::Entry(void) {
 
   UpdateEthernetCards();
 
-  while (!m_shutdown) {  // will run until the Raymarine radar location info has been found
+  while (!success && !m_shutdown) {  // will run until the Raymarine radar location info has been found or shutdown
     // after that we stop the Raymarine locate, saves load and prevents that the serial nr gets overwritten
     struct timeval tv = {1, 0};
     fd_set fdin;
@@ -176,7 +176,9 @@ void *RaymarineLocate::Entry(void) {
 
   CleanupCards();
   m_is_shutdown = true;
-  LOG_INFO(wxT("Ramarine locate stopped after success"));
+  if (success) {
+  LOG_INFO(wxT("Raymarine locate stopped after success"));
+  }
   return 0;
 }
 
