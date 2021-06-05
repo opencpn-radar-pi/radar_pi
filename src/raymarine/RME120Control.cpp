@@ -149,7 +149,6 @@ bool RME120Control::SetRange(int meters) {
       return true;
     }
   }
-  SetRange(11 - 1);
   return false;
 }
 

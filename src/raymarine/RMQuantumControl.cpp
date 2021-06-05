@@ -94,7 +94,7 @@ bool RMQuantumControl::TransmitCmd(const uint8_t *msg, int size) {
   int sendlen = sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&send_sock_addr, sizeof(send_sock_addr));
   if (sendlen < size) {
     wxLogError(wxT("%s Unable to transmit command: %s"), m_name.c_str(), SOCKETERRSTR);
-    IF_LOG_AT(LOGLEVEL_TRANSMIT, m_pi->logBinaryData(wxT("transmit"), msg, size));
+    IF_LOG_AT(LOGLEVEL_TRANSMIT, m_pi->logBinaryData(wxT("TransmitCmd"), msg, size));
     return false;
   }
   IF_LOG_AT(LOGLEVEL_TRANSMIT, m_pi->logBinaryData(wxT("transmit"), msg, size));
@@ -128,30 +128,24 @@ bool RMQuantumControl::RadarStayAlive() {
   return true;
 }
 
-
-
 static uint8_t rd_msg_set_range[] = {0x01, 0x01, 0x28, 0x00, 0x00, 
                                      0x0f,    // Quantum range index at pos 5
                                      0x00, 0x00};
 
 bool RMQuantumControl::SetRange(int meters) {
   LOG_INFO(wxT(" SetRangeMeters = %i"), meters);
-  for (int i = 0; i < 11; i++) {
+  for (int i = 0; i < 20; i++) {
     if (meters <= m_ri->m_radar_ranges[i]) {
       SetRangeIndex(i);
       return true;
     }
   }
-  SetRange(11 - 1);
   return false;
 }
 
-
-
-
 void RMQuantumControl::SetRangeIndex(size_t index) {
-  LOG_VERBOSE(wxT(" SetRangeIndex index = %i"), index);
-  rd_msg_set_range[8] = index;
+  LOG_INFO(wxT("$$$(verbose) SetRangeIndex index = %i"), index);
+  rd_msg_set_range[5] = index;
   TransmitCmd(rd_msg_set_range, sizeof(rd_msg_set_range));
 }
 

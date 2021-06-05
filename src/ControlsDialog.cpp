@@ -289,6 +289,7 @@ void RadarRangeControlButton::SetRangeLabel() {
 void RadarRangeControlButton::AdjustValue(int adjustment) {
   LOG_VERBOSE(wxT("%s Button '%s' adjust by %d"), m_parent->m_log_name.c_str(), GetName(), adjustment);
   m_item->UpdateState(RCS_MANUAL);
+  LOG_INFO(wxT("$$$ range AdjustValue adjustment=%i"), adjustment);
   m_parent->m_ri->AdjustRange(adjustment);  // send new value to the radar
 }
 

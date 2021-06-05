@@ -465,16 +465,17 @@ struct RMRadarFixedReport {
 
 #pragma pack(pop)
 
-static uint8_t previous[1000];  // $$$
+static uint8_t previous[1000];  // $$$ remove later
+static bool s_print_range = true;
 
 void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   QuantumRadarReport *bl_pter = (QuantumRadarReport *)data;
   wxString s;
-  m_pi->logBinaryData(wxT("ProcessQuantumReport"), data, len);
+  //m_pi->logBinaryData(wxT("ProcessQuantumReport"), data, len);  // Remove later
   for (int i = 0; i < len; i++) {
-    if (data[i] != previous[i]) {
+    /*if (data[i] != previous[i]) {
       LOG_INFO(wxT("$$$ not equal hex: i=%i, %0x -> %0x, decimal: %i -> %i"), i, previous[i], data[i], previous[i], data[i]);
-    }
+    }*/  //$$$ remove previous when no longer needed
     previous[i] = data[i];
   }
   switch (bl_pter->status) {
@@ -498,12 +499,14 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
       m_ri->m_state.Update(RADAR_STANDBY);
       break;
   }
-
+  
   for (int i = 0; i < 20; i++) {
     m_ri->m_radar_ranges[i] = (int)(1.852 * (double)bl_pter->ranges[i]);
-    // LOG_RECEIVE(wxT("received range= %i, radar_ranges=  %d "), bl_pter->ranges[i], m_ri->m_radar_ranges[i]);
+    if (s_print_range) {
+      LOG_RECEIVE(wxT("received range= %i, radar_ranges=  %d "), bl_pter->ranges[i], m_ri->m_radar_ranges[i]);
+    }
   }
-
+  s_print_range = false;
   if (bl_pter->ranges[2] == 125) {
     M_SETTINGS.range_units = RANGE_NAUTIC;  // We don't know yet how Raymarine switches range units
   } else if (bl_pter->ranges[0] == 135) {   // Raymarine has no RANGE_MIXED
@@ -658,8 +661,11 @@ void RaymarineReceive::ProcessRMReport(const UINT8 *data, int len) {
 
     for (int i = 0; i < 11; i++) {
       m_ri->m_radar_ranges[i] = (int)(1.852 * (double)bl_pter->ranges[i]);
-      //LOG_RECEIVE(wxT("received range= %i, radar_ranges=  %d "), bl_pter->ranges[i], m_ri->m_radar_ranges[i]);
+      if (s_print_range) {
+        LOG_RECEIVE(wxT("received range= %i, radar_ranges=  %d "), bl_pter->ranges[i], m_ri->m_radar_ranges[i]);
+      }
     }
+    s_print_range = false;
     int range_id;
     if (HDtype) {
       range_id = data[296];

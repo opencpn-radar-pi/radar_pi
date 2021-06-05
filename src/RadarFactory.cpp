@@ -136,9 +136,10 @@ size_t RadarFactory::GetRadarRanges(size_t radarType, RangeUnits units, const in
 
 size_t RadarFactory::GetRadarRanges(RadarInfo* ri, RangeUnits units, const int** ranges) {
   size_t n = 0;
-  if (ri->m_radar_type == RM_E120) {
+  if (ri->m_radar_type == RM_E120 || ri->m_radar_type == RM_QUANTUM) {
     *ranges = ri->m_radar_ranges;
-    return 11;
+    if (ri->m_radar_type == RM_E120) return 11;
+    if (ri->m_radar_type == RM_QUANTUM) return 20;
   }
 
   switch (units) {
