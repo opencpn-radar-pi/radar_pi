@@ -101,16 +101,19 @@ bool RMQuantumControl::TransmitCmd(const uint8_t *msg, int size) {
   return true;
 }
 
-static uint8_t rd_msg_tx_control[] = {0x01, 0x80, 0x01, 0x00,
-                                      0x00,  // Control value at offset 4 : 0 - off, 1 - on
-                                      0x00, 0x00, 0x00};
 
 void RMQuantumControl::RadarTxOff() {
+  uint8_t rd_msg_tx_control[] = {0x10, 0x80, 0x01, 0x00,
+                                 0x00,  // Control value at offset 4 : 0 - off, 1 - on
+                                 0x00, 0x00, 0x00};
   rd_msg_tx_control[4] = 0;
   TransmitCmd(rd_msg_tx_control, sizeof(rd_msg_tx_control));
 }
 
 void RMQuantumControl::RadarTxOn() {
+  uint8_t rd_msg_tx_control[] = {0x10, 0x80, 0x01, 0x00,
+                                 0x00,  // Control value at offset 4 : 0 - off, 1 - on
+                                 0x00, 0x00, 0x00};
   rd_msg_tx_control[4] = 1;
   TransmitCmd(rd_msg_tx_control, sizeof(rd_msg_tx_control));
 };
@@ -201,7 +204,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       01 01 28       Range
       01 03 28 00 00 00 00 00 Gain to manual
       01 03 28 00 00 01 00 00 Gain to auto
-      02 03 28       Gain
+      02 03 28 00 00 xx 7e a3    Gain
       05 03 28 00 00 00 00 00 Sea to manual
       05 03 28 00 00 01 00 00 Sea to auto
       06 03 28 00 00 xx 00 00 Sea
@@ -218,7 +221,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_GAIN: {
       uint8_t command_gain_set[] = {0x02, 0x03, 0x28, 0x00, 0x00,
                                     0x28,  // Quantum gain value at pos 5
-                                    0x74, 0xa3};
+                                    0x7e, 0xa3};
 
       uint8_t command_gain_auto[] = {0x01, 0x03, 0x28, 0x00, 0x00,
                                      0x01,  // Gain auto - 1, manual - 0 at offset 5
