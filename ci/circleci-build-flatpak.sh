@@ -19,6 +19,8 @@ flatpak remote-add --user --if-not-exists \
 
 # For now, horrible hack: aarch 64 builds are using the updated runtime
 # 20.08 and the opencpn beta version using old 18.08 runtime.
+
+commit_1808=959f5fd700f72e63182eabb9821b6aa52fb12189eddf72ccf99889977b389447
 if [ "$FLATPAK_BRANCH" = 'beta' ]; then
         flatpak install --user -y flathub org.freedesktop.Sdk//20.08 >/dev/null
         flatpak remote-add --user --if-not-exists flathub-beta \
@@ -32,6 +34,7 @@ else
             https://flathub.org/repo/flathub.flatpakrepo
         flatpak install --user -y --or-update flathub \
             org.opencpn.OpenCPN >/dev/null
+        flatpak update --user --commit $commit_1808 org.opencpn.OpenCPN
         FLATPAK_BRANCH='stable'
 fi
 
