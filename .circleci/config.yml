@@ -122,6 +122,29 @@ jobs:
       - OCPN_TARGET: buster
     <<: *debian-steps
 
+  build-android-arm64:
+    docker:
+      - image: circleci/android:api-28-ndk
+    environment:
+      - OCPN_TARGET: android-arm64
+    steps:
+      - checkout
+      - run: ci/circleci-build-android-arm64.sh
+      - run: cd build; /bin/bash < upload.sh
+      - run: python3 ci/git-push
+
+  build-android-armhf:
+    docker:
+      - image: circleci/android:api-28-ndk
+    environment:
+      - OCPN_TARGET: android-armhf
+    steps:
+      - checkout
+      - run: ci/circleci-build-android-armhf.sh
+      - run: cd build; /bin/bash < upload.sh
+      - run: python3 ci/git-push
+
+
 std-filters: &std-filters
   filters:
     branches:
@@ -160,3 +183,11 @@ workflows:
 
       - build-buster:
           <<: *std-filters
+
+      - build-android-arm64:
+          <<: *std-filters
+
+      - build-android-armhf:
+          <<: *std-filters
+
+ 
