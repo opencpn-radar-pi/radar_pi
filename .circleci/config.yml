@@ -9,6 +9,20 @@ debian-steps: &debian-steps
     - run: cd build; /bin/bash < upload.sh
     - run: python3 ci/git-push
 
+flatpak-steps: &flatpak-steps
+  steps:
+    - checkout
+    - restore_cache:
+        keys:
+          - <<parameters.cache-key>>-{{ checksum "ci/circleci-build-flatpak.sh" }}
+    - run: ci/circleci-build-flatpak.sh
+    - save_cache:
+        key: <<parameters.cache-key>>-{{ checksum "ci/circleci-build-flatpak.sh" }}
+        paths:
+          - /home/circleci/.local/share/flatpak/repo
+    - run: cd build; /bin/bash < upload.sh
+    - run: python3 ci/git-push
+
 jobs:
 
   build-flatpak-arm64:
@@ -18,39 +32,36 @@ jobs:
     environment:
       - OCPN_TARGET: flatpak-arm64
       - FLATPAK_BRANCH: beta
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - fp-a64-v1-{{ checksum "ci/circleci-build-flatpak.sh" }}
-      - run: ci/circleci-build-flatpak.sh
-      - save_cache:
-          key: fp-a64-v1-{{ checksum "ci/circleci-build-flatpak.sh" }}
-          paths:
-            - /home/circleci/.local/share/flatpak/repo
-      - run: cd build; /bin/bash < upload.sh
-      - run: python3 ci/git-push
- 
-  build-flatpak:
+    parameters:
+      cache-key:
+        type: string
+        default: "fp-arm20-v1"
+    <<: *flatpak-steps
+
+  build-flatpak-x86-1808:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202010-01
     environment:
       - OCPN_TARGET: flatpak
       - FLATPAK_BRANCH: stable
-      - USE_CUSTOM_PPA: yes
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - fp-v1-{{ checksum "ci/circleci-build-flatpak.sh" }}
-      - run: ci/circleci-build-flatpak.sh
-      - save_cache:
-          key: fp-v1-{{ checksum "ci/circleci-build-flatpak.sh" }}
-          paths:
-            - /home/circleci/.local/share/flatpak/repo
-      - run: cd build; /bin/bash < upload.sh
-      - run: python3 ci/git-push
+    parameters:
+      cache-key:
+        type: string
+        default: "fp-x86-18-v1"
+    <<: *flatpak-steps
 
+  build-flatpak-x86-2008:
+    machine:
+      image: ubuntu-2004:202010-01
+    environment:
+      - OCPN_TARGET: flatpak
+      - FLATPAK_BRANCH: beta
+    parameters:
+      cache-key:
+        type: string
+        default: "fp-x86-20-v1"
+    <<: *flatpak-steps
+ 
   build-macos:
     macos:
       xcode: "11.0.0"
@@ -130,9 +141,12 @@ workflows:
       - build-flatpak-arm64:
           <<: *std-filters
 
-      - build-flatpak:
+      - build-flatpak-x86-1808:
           <<: *std-filters
 
+      - build-flatpak-x86-2008:
+          <<: *std-filters
+ 
       - build-macos:
           <<: *std-filters
 
