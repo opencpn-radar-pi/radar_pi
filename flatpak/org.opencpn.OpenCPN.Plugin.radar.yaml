@@ -18,7 +18,7 @@ modules:
     buildsystem: cmake
     builddir: true
     config-opts:
-      - -DCMAKE_INSTALL_PREFIX=/app/extensions/shipdriver/
+      - -DCMAKE_INSTALL_PREFIX=/app/extensions/radar/
       - -DCMAKE_BUILD_TYPE:STRING=Release
       - -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
       - -DBUILD_TYPE:STRING=tarball
