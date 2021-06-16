@@ -30,4 +30,4 @@ modules:
     sources:
       - type: git
         url: ..
-        branch: master 
+        branch: HEAD
