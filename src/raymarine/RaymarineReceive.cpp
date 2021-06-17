@@ -539,7 +539,7 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   state = (RadarControlState)bl_pter->gain_auto;
   m_ri->m_gain.Update(bl_pter->gain);
   m_ri->m_gain.UpdateState(state);
-  LOG_RECEIVE(wxT("gain updated received1= %i, displayed = %i"), bl_pter->gain, m_ri->m_gain.GetValue());
+  LOG_RECEIVE(wxT("gain updated received1= %i, displayed = %i state= %i"), bl_pter->gain, m_ri->m_gain.GetValue(), state);
 
   state = (RadarControlState)bl_pter->sea_auto;  // we don't know how many auto states there are....
   m_ri->m_sea.Update(bl_pter->sea);

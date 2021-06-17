@@ -271,7 +271,7 @@ int radar_pi::Init(void) {
 
   //    And load the configuration items
   if (LoadConfig()) {
-    m_settings.verbose = 12; //$$$ temoporary fix verbosity in case tester forgets this
+    m_settings.verbose = 13; //$$$ temoporary fix verbosity in case tester forgets this
     LOG_INFO(wxT("Configuration file values initialised"));
     LOG_INFO(wxT("Log verbosity = %d. To modify, set VerboseLog to sum of:"), m_settings.verbose);
     LOG_INFO(wxT("VERBOSE  = %d"), LOGLEVEL_VERBOSE);
