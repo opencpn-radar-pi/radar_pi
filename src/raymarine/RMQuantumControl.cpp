@@ -103,16 +103,16 @@ bool RMQuantumControl::TransmitCmd(const uint8_t *msg, int size) {
 
 
 void RMQuantumControl::RadarTxOff() {
-  uint8_t rd_msg_tx_control[] = {0x10, 0x80, 0x01, 0x00,
-                                 0x00,  // Control value at offset 4 : 0 - off, 1 - on
+  uint8_t rd_msg_tx_control[] = {0x10, 0x00, 0x28, 0x00,
+                                 0x00,  // Control value at offset 4 : 0 - off, 1 - on   //10 00 28 00 01 00 00 00
                                  0x00, 0x00, 0x00};
   rd_msg_tx_control[4] = 0;
   TransmitCmd(rd_msg_tx_control, sizeof(rd_msg_tx_control));
 }
 
 void RMQuantumControl::RadarTxOn() {
-  uint8_t rd_msg_tx_control[] = {0x10, 0x80, 0x01, 0x00,
-                                 0x00,  // Control value at offset 4 : 0 - off, 1 - on
+  uint8_t rd_msg_tx_control[] = {0x10, 0x00, 0x28, 0x00,
+                                 0x01,  // Control value at offset 4 : 0 - off, 1 - on
                                  0x00, 0x00, 0x00};
   rd_msg_tx_control[4] = 1;
   TransmitCmd(rd_msg_tx_control, sizeof(rd_msg_tx_control));
@@ -212,7 +212,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       0b 03 28 00 00 00 00 00 Rain to auto
       0c 03 28       Rain
       0f 03 28 00 00 01 00 00 Target expansion on, 00 on 5 == off
-      10 00 28 00 01 00 00 00 Radar transmit ON
+      10 00 28 00 01 00 00 00 Radar transmit ON. Controlling value at pos 4!
       10 00 28 00 00 00 00 00 Radar transmit OFF
       14 03 28       Mode, harbor 0, coastal 1, offshore 2, weather 3
                  
