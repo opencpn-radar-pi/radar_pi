@@ -58,7 +58,7 @@ option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 #
 # -------  Plugin setup --------
 #
-project(ShipDriver_pi VERSION 2.6.3.0)
+project(ShipDriver_pi VERSION 2.6.4.0)
 set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
