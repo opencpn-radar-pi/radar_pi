@@ -52,10 +52,6 @@ else ()
   set(_pkg_arch "${ARCH}")
 endif ()
 
-if(NOT _git_tag)
-   set(_git_tag origin/master)
-endif()
-
 # pkg_repo: Repository to use for upload
 if ("${_git_tag}" STREQUAL "")
   set(pkg_repo "$ENV{CLOUDSMITH_UNSTABLE_REPO}")
