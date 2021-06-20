@@ -46,6 +46,8 @@ else ()
   set(_gitversion "${_git_tag}")
 endif ()
 
+set(_git_tag "${_git_version}")
+
 if (WIN32)
   set(_pkg_arch "win32")
 else ()
