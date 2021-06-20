@@ -30,7 +30,6 @@ PLUGIN_END_NAMESPACE
 #ifndef RM_E120_SPOKE_LEN
 
 #define RM_E120_SPOKE_LEN (1024)  // BR radars generate 512 separate values per range, at 8 bits each (according to original RMradar_pi)
-#define RETURNS_PER_LINE (1024)  // BR radars generate 512 separate values per range, at 8 bits each
 
 #endif
 

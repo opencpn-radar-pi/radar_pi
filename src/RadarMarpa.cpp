@@ -454,7 +454,6 @@ int ArpaTarget::GetContour(Polar* pol) {
     index = i;
     aa = current.angle + transl[index].angle;
     rr = current.r + transl[index].r;
-    //  if (rr > RETURNS_PER_LINE - 1) return 13;  // r too large
     succes = !Pix(aa, rr);
     if (succes) break;
   }
