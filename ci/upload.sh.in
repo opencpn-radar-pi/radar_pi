@@ -29,4 +29,4 @@ cloudsmith push raw --no-wait-for-sync \
     --summary "Plugin tarball for automatic installation" \
     @pkg_repo@ @pkg_tarname@.tar.gz
 
-echo "Using REPO: @pkg_repo ..."
+echo "Using REPO: @pkg_repo@ ..."
