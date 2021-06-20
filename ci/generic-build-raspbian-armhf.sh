@@ -47,7 +47,7 @@ docker run --rm --privileged multiarch/qemu-user-static:register --reset
 docker run --privileged -ti \
     -e "OCPN_TARGET=$OCPN_TARGET" \
     -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
-    -e "CLOUDSMITH_BETA_REPO=$CLOUDSMITH_BETA_REPO" \
+    -e "CLOUDSMITH_BETA_REPO=$OCPN_BETA_REPO" \
     -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
     -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
