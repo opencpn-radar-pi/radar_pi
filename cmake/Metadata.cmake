@@ -40,6 +40,8 @@ else ()
   string(TIMESTAMP _build_id "%y%m%d%H%M" UTC)
 endif ()
 
+message(STATUS \"Showing value of _git_tag: ${_git_tag}\")
+
 if ("${_git_tag}" STREQUAL "")
   set(_gitversion "${_git_hash}")
 else ()

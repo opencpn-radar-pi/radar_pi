@@ -1,32 +1,6 @@
 ---
 kind: pipeline
 type: docker
-name: fedora-amd64
-
-steps:
-  - name: mingw
-    image: fedora:33
-    environment: 
-      CLOUDSMITH_API_KEY:
-        from_secret: CLOUDSMITH_API_KEY
-      CLOUDSMITH_STABLE_REPO:
-        from_secret: CLOUDSMITH_STABLE_REPO
-      CLOUDSMITH_UNSTABLE_REPO:
-        from_secret: CLOUDSMITH_UNSTABLE_REPO
-      CLOUDSMITH_BETA_REPO:
-          from_secret: CLOUDSMITH_BETA_REPO
-      GIT_REPO:
-        from_secret: GIT_REPO
-      GIT_KEY_PASSWORD:
-        from_secret: GIT_KEY_PASSWORD
-    commands:
-      - ci/drone-build-mingw.sh
-      - bash -c "cd build; /bin/bash < upload.sh"
-      - python3 ci/git-push
-
----
-kind: pipeline
-type: docker
 name: raspbian-arm-1
 
 platform:
