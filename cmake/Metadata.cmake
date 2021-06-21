@@ -25,7 +25,7 @@ execute_process(
 execute_process(
   COMMAND git tag --contains HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE _git_tag
+  OUTPUT_VARIABLE GIT_TAG
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
@@ -40,12 +40,12 @@ else ()
   string(TIMESTAMP _build_id "%y%m%d%H%M" UTC)
 endif ()
 
-message(STATUS \"Showing value of _git_tag: ${_git_tag}\")
+message(STATUS \"Showing value of GIT_TAG: ${GIT_TAG}\")
 
-if ("${_git_tag}" STREQUAL "")
+if ("${GIT_TAG}" STREQUAL "")
   set(_gitversion "${_git_hash}")
 else ()
-  set(_gitversion "${_git_tag}")
+  set(_gitversion "${GIT_TAG}")
 endif ()
 
 if (WIN32)
@@ -55,13 +55,13 @@ else ()
 endif ()
 
 # pkg_repo: Repository to use for upload
-if ("${_git_tag}" STREQUAL "")
+if ("${GIT_TAG}" STREQUAL "")
   set(pkg_repo "$ENV{CLOUDSMITH_UNSTABLE_REPO}")
   if ("${pkg_repo}" STREQUAL "")
     set(pkg_repo ${OCPN_TEST_REPO})
   endif ()
 else ()
-  string(TOLOWER  ${_git_tag}  _lc_git_tag)
+  string(TOLOWER  ${GIT_TAG}  _lc_git_tag)
   if (_lc_git_tag MATCHES "beta")
     set(pkg_repo "$ENV{CLOUDSMITH_BETA_REPO}")
     if ("${pkg_repo}" STREQUAL "")
