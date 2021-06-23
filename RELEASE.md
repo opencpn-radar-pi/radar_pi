@@ -37,14 +37,14 @@ Follow these steps:
     git push
     ```
 
-   If you wait a while you will see builds turn up in Cloudsmith, built by Appveyor, drone and Cloud CI. See below for the URLs.
+   If you wait a while you will see builds turn up in Cloudsmith, built by Appveyor, Drone and Cloud CI. See below for the URLs.
 
-4. For production releases only: Add the file, commit, add a tag and push both code and tags in 1 step:
+4. For production releases only: Add the file, commit, add a commented tag and push both code and tags in 1 step:
     ```
     git add CMakeLists.txt
     git commit -m"v5.0.4"
-    git tag v5.0.4
-    git push origin refs/tags/v5.0.4
+    git tag -a -m"v5.0.4" v5.0.4
+    git push --follow-tags
     ```
 The process of adding and pushing the tag will put the releases in the "stable" repository on Cloudsmith.
 
@@ -55,7 +55,7 @@ That concludes the building actions.
 You can check the build progress at the following sites.
 
 [Circle CI pipelines](https://app.circleci.com/github/opencpn-radar-pi/radar_pi/pipelines) for Linux x86 and macOS builds
-[Travis](https://travis-ci.org/opencpn-radar-pi/radar_pi) for Raspberry Pi (armhf) builds
+[Drone](https://cloud.drone.io/opencpn-radar-pi/radar_pi) for Raspberry Pi (armhf) builds
 [Appveyor](https://ci.appveyor.com/project/keesverruijt/radar-pi) for Microsoft Windows
 
 ### New cloudsmith packages (>= 5.1.5)
