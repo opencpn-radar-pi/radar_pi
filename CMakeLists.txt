@@ -72,7 +72,7 @@ endif ()
 #
 # -------  Plugin setup --------
 #
-project(ShipDriver_pi VERSION 2.6.4.0)
+project(ShipDriver_pi VERSION 2.6.5.0)
 set(PKG_PRERELEASE "beta")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
