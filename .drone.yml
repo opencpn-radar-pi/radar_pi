@@ -26,7 +26,7 @@ steps:
       GIT_KEY_PASSWORD:
         from_secret: GIT_KEY_PASSWORD
     commands:
-      - echo $${CLOUDSMITH_BETA_REPO}
+      - echo [CLOUDSMITH_BETA_REPO]
       - export PATH=$HOME/.local/bin:$PATH
       - ci/drone-build-raspbian.sh
       - bash -c "cd build; bash < upload.sh"
