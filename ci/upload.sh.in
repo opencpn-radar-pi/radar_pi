@@ -14,10 +14,10 @@ fi
 
 echo "Version: @pkg_semver@"
 echo "Using CLOUDSMITH_API_KEY: ${CLOUDSMITH_API_KEY:0:4}..."
-echo "Using CLOUDSMITH_BETA_REPO: ${CLOUDSMITH_BETA_REPO:0:23}..."
+echo "Using CLOUDSMITH_BETA_REPO: ${CLOUDSMITH_BETA_REPO:0:20}..."
 
-pkg_repo=CLOUDSMITH_BETA_REPO
-echo @pkg_repo
+pkg_repo=$CLOUDSMITH_BETA_REPO
+echo "REPO @pkg_repo@"
 
 if [ -f ~/.uploadrc ]; then source ~/.uploadrc; fi
 set -xe
