@@ -17,7 +17,7 @@ include(PluginSetup)
 find_package (Git)
 if (GIT_FOUND)
       message("git found: ${GIT_EXECUTABLE} in version ${GIT_VERSION_STRING}")
-elsif (NOT GIT_FOUND)
+elseif (NOT GIT_FOUND)
      message("git not found")
 endif ()
 
