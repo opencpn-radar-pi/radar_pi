@@ -23,13 +23,13 @@ execute_process(
 )
 
 execute_process(
-  COMMAND git tag --points-at HEAD
+  COMMAND ${GIT_EXECUTABLE} tag --points-at HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE git_tag
+  OUTPUT_VARIABLE MYTAG
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-message(STATUS "Is this the tag???: ${git_tag}")
+message(STATUS "Is this the tag???: ${MYTAG}")
 
 if (NOT "$ENV{CIRCLE_BUILD_NUM}" STREQUAL "")
   set(_build_id "$ENV{CIRCLE_BUILD_NUM}")
