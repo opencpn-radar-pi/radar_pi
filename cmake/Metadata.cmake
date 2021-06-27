@@ -29,6 +29,7 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+message(STATUS "cmake source dir: ${CMAKE_SOURCE_DIR}")
 message(STATUS "Is this the tag???: ${MYTAG}")
 
 if (NOT "$ENV{CIRCLE_BUILD_NUM}" STREQUAL "")
