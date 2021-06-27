@@ -23,14 +23,13 @@ execute_process(
 )
 
 execute_process(
-  COMMAND ${GIT_EXECUTABLE} tag --points-at HEAD
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/cmake
-  OUTPUT_VARIABLE MYTAG
+  COMMAND git tag --points-at HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE _git_tag
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-message(STATUS "cmake source dir: ${CMAKE_SOURCE_DIR}")
-message(STATUS "Is this the tag???: ${MYTAG}")
+message(STATUS "tag is: ${_git_tag}")
 
 if (NOT "$ENV{CIRCLE_BUILD_NUM}" STREQUAL "")
   set(_build_id "$ENV{CIRCLE_BUILD_NUM}")
@@ -74,6 +73,7 @@ else ()
     endif ()
   endif()
 endif ()
+
 message(STATUS "Selected upload repository: ${pkg_repo}")
 
 # pkg_semver: Complete version including pre-release tag and build info
