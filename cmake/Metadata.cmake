@@ -14,6 +14,13 @@ include(GetArch)
 include(PluginSetup)
 
 # some helper vars (_ prefix)
+find_package (Git)
+if (GIT_FOUND)
+      message("git found: ${GIT_EXECUTABLE} in version ${GIT_VERSION_STRING}")
+elsif (NOT GIT_FOUND)
+     message("git not found")
+endif ()
+
 
 execute_process(
   COMMAND git log -1 --format=%h
