@@ -22,19 +22,12 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-set (git_cmd "git")
-set (git_arg1 "describe")
-set (git_arg2 "--tags")
-
-message(STATUS "git cmd: ${git_cmd}")
-
 execute_process(
-  COMMAND ${git_cmd} ${git_arg1} ${git_arg2}
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/.git
+  COMMAND git tag --points-at HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE _git_tag
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-
 
 
 if (NOT "$ENV{CIRCLE_BUILD_NUM}" STREQUAL "")
@@ -52,8 +45,6 @@ if ("${_git_tag}" STREQUAL "")
 else ()
   set(_gitversion "${_git_tag}")
 endif ()
-
-message(STATUS "tag is: ${_git_tag}")
 
 if (WIN32)
   set(_pkg_arch "win32")
@@ -81,7 +72,6 @@ else ()
     endif ()
   endif()
 endif ()
-
 message(STATUS "Selected upload repository: ${pkg_repo}")
 
 # pkg_semver: Complete version including pre-release tag and build info
