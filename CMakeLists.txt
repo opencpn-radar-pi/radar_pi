@@ -72,8 +72,8 @@ endif ()
 #
 # -------  Plugin setup --------
 #
-project(ShipDriver_pi VERSION 2.6.17.0)
-set(PKG_PRERELEASE "beta")  # Empty, or a tag like 'beta'
+project(ShipDriver_pi VERSION 2.7.0.0)
+set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
 set(PLUGIN_API_NAME ShipDriver) # As of GetCommonName() in plugin API
