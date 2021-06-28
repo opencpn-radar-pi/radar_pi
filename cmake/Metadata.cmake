@@ -29,7 +29,7 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-message(STATUS "tag is: ${_git_tag}")
+
 
 if (NOT "$ENV{CIRCLE_BUILD_NUM}" STREQUAL "")
   set(_build_id "$ENV{CIRCLE_BUILD_NUM}")
@@ -47,6 +47,8 @@ if ("${_git_tag}" STREQUAL "")
 else ()
   set(_gitversion "${_git_tag}")
 endif ()
+
+message(STATUS "tag is: ${_git_tag}")
 
 if (WIN32)
   set(_pkg_arch "win32")
