@@ -43,6 +43,7 @@ endif ()
 
 if ("${_git_tag}" STREQUAL "")
   set(_gitversion "${_git_hash}")
+  set(_git_tag "${pkg_semver}")
 else ()
   set(_gitversion "${_git_tag}")
 endif ()
