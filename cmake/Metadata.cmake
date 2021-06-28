@@ -22,8 +22,14 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+set (git_cmd "git")
+set (git_arg1 "describe")
+set (git_arg2 "--tags")
+
+message(STATUS "git cmd: ${git_cmd}")
+
 execute_process(
-  COMMAND git describe --exact-match --tags
+  COMMAND ${git_cmd} ${git_arg1} ${git_arg2}
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE _git_tag
   OUTPUT_STRIP_TRAILING_WHITESPACE
