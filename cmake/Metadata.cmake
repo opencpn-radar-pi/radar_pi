@@ -30,7 +30,7 @@ message(STATUS "git cmd: ${git_cmd}")
 
 execute_process(
   COMMAND ${git_cmd} ${git_arg1} ${git_arg2}
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/.git
   OUTPUT_VARIABLE _git_tag
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
