@@ -17,14 +17,14 @@ include(PluginSetup)
 
 execute_process(
   COMMAND git log -1 --format=%h
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/"
   OUTPUT_VARIABLE _git_hash
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 execute_process(
   COMMAND git tag --points-at HEAD
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/"
   OUTPUT_VARIABLE _git_tag
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
@@ -43,7 +43,6 @@ endif ()
 
 if ("${_git_tag}" STREQUAL "")
   set(_gitversion "${_git_hash}")
-  set(_git_tag "${pkg_semver}")
 else ()
   set(_gitversion "${_git_tag}")
 endif ()
