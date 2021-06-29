@@ -39,7 +39,7 @@ PLUGIN_BEGIN_NAMESPACE
 GuardZone::GuardZone(radar_pi* pi, RadarInfo* ri, int zone) {
   m_pi = pi;
   m_ri = ri;
-  m_log_name = wxString::Format(wxT("Radar %c GuardZone %d:"), m_ri->m_radar + 'A', zone + 1);
+  m_log_name = wxString::Format(wxT("Radar %c GuardZone %d:"), (char)(m_ri->m_radar + 'A'), zone + 1);
   m_type = GZ_CIRCLE;
   m_start_bearing = 0;
   m_end_bearing = 0;
