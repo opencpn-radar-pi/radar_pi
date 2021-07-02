@@ -741,6 +741,12 @@ void ControlsDialog::CreateControls() {
     m_installation_sizer->Add(m_bearing_alignment_button, 0, wxALL, BORDER);
   }
 
+  // The SCALING button
+  if (m_ctrl[CT_SCALING].type) {
+    m_scaling_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Scaling * 0.1%"), m_ctrl[CT_SCALING], &m_ri->m_scaling);
+    m_installation_sizer->Add(m_scaling_button, 0, wxALL, BORDER);
+  }
+
   // The DISPLAY TIMING button
   if (m_ctrl[CT_DISPLAY_TIMING].type) {
     m_display_timing_button =
@@ -1743,6 +1749,9 @@ void ControlsDialog::DisableRadarControls() {
   if (m_bearing_alignment_button) {
     m_bearing_alignment_button->Disable();
   }
+  if (m_scaling_button) {
+    m_scaling_button->Disable();
+  }
   if (m_no_transmit_start_button) {
     m_no_transmit_start_button->Disable();
   }
@@ -1826,6 +1835,9 @@ void ControlsDialog::EnableRadarControls() {
   }
   if (m_bearing_alignment_button) {
     m_bearing_alignment_button->Enable();
+  }
+  if (m_scaling_button) {
+    m_scaling_button->Enable();
   }
   if (m_no_transmit_start_button) {
     m_no_transmit_start_button->Enable();
@@ -2003,6 +2015,11 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   //  bearing alignment
   if (m_bearing_alignment_button) {
     m_bearing_alignment_button->UpdateLabel();
+  }
+
+  // scaling
+  if (m_scaling_button) {
+    m_scaling_button->UpdateLabel();
   }
 
   //  no transmit zone

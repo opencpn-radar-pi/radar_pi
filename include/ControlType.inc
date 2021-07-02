@@ -48,6 +48,7 @@ CONTROL_TYPE(CT_TARGET_TRAILS, "Target trails")
 CONTROL_TYPE(CT_TIMED_IDLE, "Timed idle")
 CONTROL_TYPE(CT_TIMED_RUN, "Timed run")
 CONTROL_TYPE(CT_TRAILS_MOTION, "Target trails motion")
+CONTROL_TYPE(CT_SCALING, "Scaling")
 
 // Hardware
 CONTROL_TYPE(CT_ANTENNA_HEIGHT, "Antenna height")
