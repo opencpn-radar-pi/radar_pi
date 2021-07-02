@@ -30,9 +30,10 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-if(error_code | !error_code)
-	message(WARNING "Error code is: ${error_code}")
+if (NOT "${error_code}" EQUAL 0)
+  message(WARNING "Error code is: ${error_code}")
 endif()
+
 
 if (NOT "$ENV{CIRCLE_BUILD_NUM}" STREQUAL "")
   set(_build_id "$ENV{CIRCLE_BUILD_NUM}")
@@ -76,7 +77,9 @@ else ()
     endif ()
   endif()
 endif ()
-message(STATUS "Selected upload repository: ${pkg_repo}")
+
+string(REGEX REPLACE "([a-zA-Z0-9])" "\\1 " pkg_repo_display  ${pkg_repo})
+message(STATUS "Selected upload repository: ${pkg_repo_display}")
 
 # pkg_semver: Complete version including pre-release tag and build info
 set(_pre_rel ${PKG_PRERELEASE})
