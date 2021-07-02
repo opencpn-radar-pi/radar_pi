@@ -26,9 +26,13 @@ execute_process(
   COMMAND git tag --points-at HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE _git_tag
+  RESULT_VARIABLE error_code
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+if(error_code)
+	message(WARNING "Error code is: ${error_code}")
+endif()
 
 if (NOT "$ENV{CIRCLE_BUILD_NUM}" STREQUAL "")
   set(_build_id "$ENV{CIRCLE_BUILD_NUM}")
