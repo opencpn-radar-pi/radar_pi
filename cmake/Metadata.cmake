@@ -30,7 +30,7 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-if(error_code)
+if(error_code | !error_code)
 	message(WARNING "Error code is: ${error_code}")
 endif()
 
