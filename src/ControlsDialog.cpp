@@ -219,16 +219,26 @@ void RadarControlButton::UpdateLabel(bool force) {
         break;
 
       case RCS_MANUAL:
-        if (m_ci.names) {
-          if (value >= 0 && value < m_ci.nameCount) {
-            label << m_ci.names[value];
+        if (m_ci.type != CT_RANGE_ADJUSTMENT) {
+          if (m_ci.names) {
+            if (value >= 0 && value < m_ci.nameCount) {
+              label << m_ci.names[value];
+            }
+          } else {
+            label << value;
+          }
+          if (m_ci.unit.length() > 0) {
+            label << wxT(" ") << m_ci.unit;
           }
         } else {
-          label << value;
+          // special case for range adjustment to display x.y %
+          double value1 = value / 10.;
+          label << value1;
+          if (m_ci.unit.length() > 0) {
+            label << wxT(" %");
+          }
         }
-        if (m_ci.unit.length() > 0) {
-          label << wxT(" ") << m_ci.unit;
-        }
+
         break;
 
       default:
@@ -742,9 +752,9 @@ void ControlsDialog::CreateControls() {
   }
 
   // The SCALING button
-  if (m_ctrl[CT_SCALING].type) {
-    m_scaling_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Scaling * 0.1%"), m_ctrl[CT_SCALING], &m_ri->m_scaling);
-    m_installation_sizer->Add(m_scaling_button, 0, wxALL, BORDER);
+  if (m_ctrl[CT_RANGE_ADJUSTMENT].type) {
+    m_range_adjstment_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Range adjustment"), m_ctrl[CT_RANGE_ADJUSTMENT], &m_ri->m_range_adjstment);
+    m_installation_sizer->Add(m_range_adjstment_button, 0, wxALL, BORDER);
   }
 
   // The DISPLAY TIMING button
@@ -1749,8 +1759,8 @@ void ControlsDialog::DisableRadarControls() {
   if (m_bearing_alignment_button) {
     m_bearing_alignment_button->Disable();
   }
-  if (m_scaling_button) {
-    m_scaling_button->Disable();
+  if (m_range_adjstment_button) {
+    m_range_adjstment_button->Disable();
   }
   if (m_no_transmit_start_button) {
     m_no_transmit_start_button->Disable();
@@ -1836,8 +1846,8 @@ void ControlsDialog::EnableRadarControls() {
   if (m_bearing_alignment_button) {
     m_bearing_alignment_button->Enable();
   }
-  if (m_scaling_button) {
-    m_scaling_button->Enable();
+  if (m_range_adjstment_button) {
+    m_range_adjstment_button->Enable();
   }
   if (m_no_transmit_start_button) {
     m_no_transmit_start_button->Enable();
@@ -2018,8 +2028,8 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   // scaling
-  if (m_scaling_button) {
-    m_scaling_button->UpdateLabel();
+  if (m_range_adjstment_button) {
+    m_range_adjstment_button->UpdateLabel();
   }
 
   //  no transmit zone
