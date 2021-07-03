@@ -23,7 +23,7 @@ execute_process(
 )
 
 execute_process(
-  COMMAND git tag --points-at HEAD
+  COMMAND git tag --points-at=HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE _git_tag
   RESULT_VARIABLE error_code
