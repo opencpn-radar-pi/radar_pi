@@ -76,12 +76,14 @@ message(STATUS "Selected upload repository: ${pkg_repo}")
 
 # pkg_semver: Complete version including pre-release tag and build info
 set(_pre_rel ${PKG_PRERELEASE})
-if (NOT "${_pre_rel}" STREQUAL "")
+if ("${_pre_rel}" STREQUAL "")
+  set(pkg_semver "${PROJECT_VERSION}${_pre_rel}")
+else ()
   if (_pre_rel MATCHES "^[^-]")
     string(PREPEND _pre_rel "-")
   endif ()
+  set(pkg_semver "${PROJECT_VERSION}${_pre_rel}+${_build_id}.${_gitversion}")
 endif ()
-set(pkg_semver "${PROJECT_VERSION}${_pre_rel}")
 
 # pkg_displayname: Used for xml metadata and GUI name
 if (ARCH MATCHES "arm64|aarch64")
