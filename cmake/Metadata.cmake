@@ -23,7 +23,7 @@ execute_process(
 )
 
 execute_process(
-  COMMAND git tag --points-at=HEAD
+  COMMAND git describe --abbrev=0 --tags
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE _git_tag
   RESULT_VARIABLE error_code
@@ -32,6 +32,8 @@ execute_process(
 
 if (NOT "${error_code}" EQUAL 0)
   message(WARNING "Error code is: ${error_code}")
+else ()
+  message(STATUS "The tag is: ${_git_tag}")  
 endif()
 
 
