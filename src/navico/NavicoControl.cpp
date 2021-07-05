@@ -191,6 +191,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
     case CT_DISPLAY_TIMING:
     case CT_STC_CURVE:
     case CT_MAIN_BANG_SUPPRESSION:
+    case CT_RANGE_ADJUSTMENT:
       // The above are not settings that are not radar commands or not supported by Navico radar.
       // Made them explicit so the compiler can catch missing control types.
       break;

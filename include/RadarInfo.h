@@ -114,6 +114,7 @@ class RadarInfo {
   RadarControlItem m_ftc;
   RadarControlItem m_scan_speed;
   RadarControlItem m_bearing_alignment;
+  RadarControlItem m_range_adjustment;
   RadarControlItem m_no_transmit_start;
   RadarControlItem m_no_transmit_end;
   RadarControlItem m_antenna_height;

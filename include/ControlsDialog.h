@@ -193,6 +193,7 @@ class ControlsDialog : public wxDialog {
     m_target_expansion_button = 0;
     m_scan_speed_button = 0;
     m_bearing_alignment_button = 0;
+	m_range_adjustment_button = 0;
     m_no_transmit_start_button = 0;
     m_no_transmit_end_button = 0;
     m_antenna_height_button = 0;
@@ -383,6 +384,7 @@ class ControlsDialog : public wxDialog {
 
   // Installation controls
   RadarControlButton *m_bearing_alignment_button;
+  RadarControlButton *m_range_adjustment_button;
   RadarControlButton *m_no_transmit_start_button;
   RadarControlButton *m_no_transmit_end_button;
   RadarControlButton *m_antenna_height_button;

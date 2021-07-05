@@ -122,6 +122,8 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_magnetron_current.Update(0);
   m_rotation_period.Update(0);
 
+  m_range_adjustment.Update(0, RCS_MANUAL);
+
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     m_guard_zone[z] = new GuardZone(m_pi, this, z);
   }
@@ -439,7 +441,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
     LOG_INFO(wxT("Error ProcessRadarSpoke range is zero"));
     return;
     }
-  double pixels_per_meter = len / (double)range_meters;
+  double pixels_per_meter = (len / (double)range_meters) * (1. - (double)m_range_adjustment.GetValue() * 0.001);
 
   if (m_pixels_per_meter != pixels_per_meter) {
     LOG_VERBOSE(wxT("%s detected spoke range change from %g to %g pixels/m, %d meters"), m_name.c_str(), m_pixels_per_meter,

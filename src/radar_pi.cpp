@@ -1505,6 +1505,8 @@ bool radar_pi::LoadConfig(void) {
       ri->m_antenna_forward.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dAntennaStarboard"), r), &v, 0);
       ri->m_antenna_starboard.Update(v);
+      pConf->Read(wxString::Format(wxT("Radar%dRangeAdjustment"), r), &v, 0);
+      ri->m_range_adjustment.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dRunTimeOnIdle"), r), &v, 1);
       ri->m_timed_run.Update(v);
 
@@ -1672,6 +1674,7 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dMainBangSize"), r), m_radar[r]->m_main_bang_size.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dAntennaForward"), r), m_radar[r]->m_antenna_forward.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dAntennaStarboard"), r), m_radar[r]->m_antenna_starboard.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dRangeAdjustment"), r), m_radar[r]->m_range_adjustment.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dRunTimeOnIdle"), r), m_radar[r]->m_timed_run.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dDopplerAutoTrack"), r), m_radar[r]->m_autotrack_doppler.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dMinContourLength"), r), m_radar[r]->m_min_contour_length);
