@@ -23,7 +23,7 @@ execute_process(
 )
 
 execute_process(
-  COMMAND git tag | tail -1
+  COMMAND sh -c "git tag -l | tail -1"
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE _git_tag
   RESULT_VARIABLE error_code
@@ -80,7 +80,8 @@ else ()
   endif()
 endif ()
 
-string(REGEX REPLACE "([a-zA-Z0-9])" "\\1 " pkg_repo_display  ${pkg_repo})
+# Make sure repo is displayed even if builders hides environment variables.
+string(REGEX REPLACE "([a-zA-Z0-9/-])" "\\1 " pkg_repo_display  ${pkg_repo})
 message(STATUS "Selected upload repository: ${pkg_repo_display}")
 
 # pkg_semver: Complete version including pre-release tag and build info
