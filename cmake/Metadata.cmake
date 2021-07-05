@@ -23,7 +23,7 @@ execute_process(
 )
 
 execute_process(
-  COMMAND git tag --contains HEAD
+  COMMAND git log -1 --format=%s
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE _git_tag
   RESULT_VARIABLE error_code
