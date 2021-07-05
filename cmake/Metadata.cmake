@@ -23,7 +23,7 @@ execute_process(
 )
 
 execute_process(
-  COMMAND sh -c "git tag -l | tail -1"
+  COMMAND git tag --contains HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE _git_tag
   RESULT_VARIABLE error_code
