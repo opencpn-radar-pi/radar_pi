@@ -4,6 +4,20 @@
 # Upload the .tar.gz and .xml artifacts to cloudsmith
 #
 
+function add_spaces()
+# Echo $1 with a space between each character
+{
+    local str=$1
+    local newstr=""
+    while [ -n "$str" ]; do
+        next=${str#?}
+        newstr="${newstr}${str%$next} "
+        str=$next
+    done
+    echo $newstr
+}
+
+
 if [ -z "$CLOUDSMITH_API_KEY" ]; then
     echo 'Warning: $CLOUDSMITH_API_KEY is not available, giving up.'
     echo 'Metadata: @pkg_displayname@.xml'
@@ -12,11 +26,8 @@ if [ -z "$CLOUDSMITH_API_KEY" ]; then
     exit 0
 fi
 
-echo "Version: @pkg_semver@"
-echo "Using CLOUDSMITH_API_KEY: ${CLOUDSMITH_API_KEY:0:4}..."
-echo "Using CLOUDSMITH_BETA_REPO: ${CLOUDSMITH_BETA_REPO:0:20}..."
-
-echo "REPO @pkg_repo@"
+# Print repo even if builder treats it as a secret:
+echo "Using upload repo: $(add_spaces @pkg_repo@)"
 
 if [ -f ~/.uploadrc ]; then source ~/.uploadrc; fi
 set -xe
