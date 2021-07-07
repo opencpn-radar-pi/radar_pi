@@ -30,13 +30,6 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-if (NOT "${error_code}" EQUAL 0)
-  message(WARNING "Error code is: ${error_code}")
-else ()
-  message(STATUS "The tag is: ${_git_tag}")  
-endif()
-
-
 if (NOT "$ENV{CIRCLE_BUILD_NUM}" STREQUAL "")
   set(_build_id "$ENV{CIRCLE_BUILD_NUM}")
 elseif (NOT "$ENV{TRAVIS_BUILD_NUMBER}" STREQUAL "")
