@@ -44,7 +44,7 @@ if (WIN32 AND NOT DEFINED ENV{WXWIN})
   message(WARNING ${_bad_win_env_msg})
 endif ()
 
-find_package(wxWidgets REQUIRED base core net xml html adv stc)
+find_package(wxWidgets REQUIRED base core net xml html adv stc aui)
 if (MSYS)
   # This is just a hack. I think the bug is in FindwxWidgets.cmake
   string(
@@ -53,3 +53,4 @@ if (MSYS)
   )
 endif ()
 include(${wxWidgets_USE_FILE})
+target_link_libraries(${PACKAGE_NAME} ${wxWidgets_LIBRARIES})
