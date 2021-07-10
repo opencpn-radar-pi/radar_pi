@@ -94,6 +94,8 @@ string(CONCAT pkg_displayname
   "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}"
   "-${plugin_target}${_display_arch}-${plugin_target_version}"
 )
+# pkg_xmlname: XML metadata basename
+set(pkg_xmlname ${pkg_displayname}-${_build_id})
 
 # pkg_tarname: Tarball basename
 string(CONCAT pkg_tarname 

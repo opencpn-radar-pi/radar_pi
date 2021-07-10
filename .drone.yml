@@ -67,8 +67,3 @@ steps:
       - ci/drone-build-raspbian.sh
       - bash -c "cd build; bash < upload.sh"
       - python3 ci/git-push
-
-trigger:
-  event:
-  - pull_request
-  - tag
