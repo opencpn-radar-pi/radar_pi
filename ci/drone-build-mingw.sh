@@ -5,6 +5,9 @@ set -x
 su -c "dnf install -q -y sudo dnf-plugins-core python3-pip openssh"
 sudo dnf -y copr enable leamas/opencpn-mingw
 sudo dnf -q builddep  -y build-deps/opencpn-deps.spec
+
+git fetch --all --tags
+
 rm -rf build; mkdir build; cd build
 cmake \
     -DCMAKE_BUILD_TYPE=Release \

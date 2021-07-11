@@ -32,6 +32,8 @@ sudo apt install -q \
 python3 -m pip install --user --upgrade -q setuptools wheel pip
 python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
+git fetch --all --tags
+
 mkdir  build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..

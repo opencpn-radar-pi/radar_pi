@@ -46,6 +46,8 @@ sed -i "/^runtime-version/s/:.*/: $FLATPAK_BRANCH/" flatpak/$MANIFEST
 pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
 cp .python-version $HOME
 
+git fetch --all --tags
+
 # Configure and build the plugin tarball and metadata.
 mkdir build; cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
