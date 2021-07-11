@@ -11,8 +11,7 @@ Please see the documentation Wiki at https://github.com/opencpn-radar-pi/radar_p
 
 Compiling
 ---------
-
-Building is doumented in INSTALL.md
+Building for external developers (not the plugin developers) is documented in INSTALL.md
 
 License
 -------
