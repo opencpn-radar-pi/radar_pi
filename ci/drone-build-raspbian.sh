@@ -6,6 +6,7 @@
 # Bugs: The buster build is real slow: https://forums.balena.io/t/85743
 
 set -xe
+set
 
 curl http://mirrordirector.raspbian.org/raspbian.public.key  | apt-key add -
 curl http://archive.raspbian.org/raspbian.public.key  | apt-key add -
@@ -16,6 +17,7 @@ sudo mk-build-deps -ir build-deps/control-raspbian
 sudo apt-get -q --allow-unauthenticated install -f
 
 git fetch --all --tags
+git tags
 
 # Temporary fix until 3.19 is available as a pypi package
 # 3.19 is needed: https://gitlab.kitware.com/cmake/cmake/-/issues/20568
