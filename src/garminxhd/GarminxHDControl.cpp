@@ -202,6 +202,7 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_ORIENTATION:
     case CT_OVERLAY_CANVAS:
     case CT_RANGE:
+    case CT_RANGE_ADJUSTMENT:
     case CT_REFRESHRATE:
     case CT_TARGET_ON_PPI:
     case CT_TARGET_TRAILS:

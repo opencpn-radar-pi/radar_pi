@@ -185,6 +185,7 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
     case CT_ORIENTATION:
     case CT_OVERLAY_CANVAS:
     case CT_RANGE:
+    case CT_RANGE_ADJUSTMENT:
     case CT_REFRESHRATE:
     case CT_SCAN_SPEED:
     case CT_SIDE_LOBE_SUPPRESSION:
