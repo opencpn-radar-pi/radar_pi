@@ -14,6 +14,18 @@ For step 2 you need a Linux or macOS+homebrew installation, with the 'jq' and 'c
 
 ## Publish the "download files" on Cloudsmith
 
+If you `git push` a version that is _not_ tagged, it ends up in the _unstable_ repository at
+https://cloudsmith.io/~opencpn-radar-pi/repos/opencpn-radar-pi-unstable/packages/
+which is fine; you can test that the code builds. Do not worry about cleaning this up; cloudsmith will do this
+automatically.
+
+However, at some point, the time comes to release a Beta or Production release.
+
+We release our packages with the build number and short git commit hash, so you can repeat the procedure below
+until you are satisfied and all binaries are built correctly. You should remove failed builds (where not all
+products are built) from Cloudsmith. We keep successful old builds (e.g. older versions) in the Beta and Prod
+repositories so that people that have not upgraded their catalog can still download old releases.
+
 Follow these steps:
 
 1. Check that you are using the _master_ branch.
@@ -30,22 +42,25 @@ Follow these steps:
     SET(VERSION_DATE "2019-09-08")
     ```
 
-3. For Beta releases: Add the file to the git staging area, commit this then push it to github:
+3. For Beta releases: Add the file to the git staging area, add a commented tag that includes Beta or beta:
+
     ```
     git add CMakeLists.txt
-    git commit -m"v5.0.4-beta1"
-    git push
-    ```
-
-   If you wait a while you will see builds turn up in Cloudsmith, built by Appveyor, Drone and Cloud CI. See below for the URLs.
-
-4. For production releases only: Add the file, commit, add a commented tag and push both code and tags in 1 step:
-    ```
-    git add CMakeLists.txt
-    git commit -m"v5.0.4"
-    git tag -a -m"v5.0.4" v5.0.4
+    git commit -m"v5.0.4-beta1 release"
+    git tag -a -m"v5.0.4-beta1 release" v5.0.4-beta1
     git push --follow-tags
     ```
+
+4. For Production releases: Add the file, commit, add a commented tag and push both code and tags in 1 step:
+    ```
+    git add CMakeLists.txt
+    git commit -m"v5.0.4 release"
+    git tag -a -m"v5.0.4 release" v5.0.4
+    git push --follow-tags
+    ```
+
+If you wait a while you will see builds turn up in Cloudsmith, built by Appveyor, Drone and Cloud CI. See below for the URLs.
+
 The process of adding and pushing the tag will put the releases in the "stable" repository on Cloudsmith.
 
 That concludes the building actions.
